@@ -9260,11 +9260,7 @@ vt_emit_notes (void)
   dataflow_set_destroy (&cur);
 
   if (MAY_HAVE_DEBUG_INSNS)
-    {
-      free_alloc_pool (loc_exp_dep_pool);
-      loc_exp_dep_pool = NULL;
-      htab_delete (dropped_values);
-    }
+    htab_delete (dropped_values);
 
   emit_notes = false;
 }
@@ -9453,6 +9449,17 @@ vt_add_function_parameter (tree parm)
 	  set_variable_part (out, val->val_rtx, dv, offset,
 			     VAR_INIT_STATUS_INITIALIZED, NULL, INSERT);
 	  dv = dv_from_value (val->val_rtx);
+	}
+
+      if (MEM_P (incoming))
+	{
+	  val = cselib_lookup_from_insn (XEXP (incoming, 0), mode, true,
+					 VOIDmode, get_insns ());
+	  if (val)
+	    {
+	      preserve_value (val);
+	      incoming = replace_equiv_address_nv (incoming, val->val_rtx);
+	    }
 	}
     }
 
@@ -9963,6 +9970,9 @@ vt_finalize (void)
 
   if (MAY_HAVE_DEBUG_INSNS)
     {
+      if (loc_exp_dep_pool)
+	free_alloc_pool (loc_exp_dep_pool);
+      loc_exp_dep_pool = NULL;
       free_alloc_pool (valvar_pool);
       VEC_free (rtx, heap, preserved_values);
       cselib_finish ();

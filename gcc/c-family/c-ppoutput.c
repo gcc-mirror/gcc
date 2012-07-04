@@ -86,7 +86,7 @@ preprocess_file (cpp_reader *pfile)
 {
   /* A successful cpp_read_main_file guarantees that we can call
      cpp_scan_nooutput or cpp_get_token next.  */
-  if (flag_no_output)
+  if (flag_no_output && pfile->buffer)
     {
       /* Scan -included buffers, then the main file.  */
       while (pfile->buffer->prev)

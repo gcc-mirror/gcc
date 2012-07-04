@@ -30,7 +30,7 @@ int test3 (struct foo1 *x)
 {
   if (x->i == 0)
     return 1;
-  else if (x->i == 1)
+  else if (x->i == 1) /* This test is already folded to false by fold.  */
     return 1;
   return 0;
 }
@@ -44,5 +44,5 @@ int test4 (struct foo2 *x)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "Folding" 4 "vrp1" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "Folding" 3 "vrp1" } } */
 /* { dg-final { cleanup-tree-dump "vrp1" } } */

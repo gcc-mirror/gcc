@@ -391,6 +391,530 @@ expand_vector_comparison (gimple_stmt_iterator *gsi, tree type, tree op0,
   return t;
 }
 
+/* Helper function of expand_vector_divmod.  Gimplify a RSHIFT_EXPR in type
+   of OP0 with shift counts in SHIFTCNTS array and return the temporary holding
+   the result if successful, otherwise return NULL_TREE.  */
+static tree
+add_rshift (gimple_stmt_iterator *gsi, tree type, tree op0, int *shiftcnts)
+{
+  optab op;
+  unsigned int i, nunits = TYPE_VECTOR_SUBPARTS (type);
+  bool scalar_shift = true;
+
+  for (i = 1; i < nunits; i++)
+    {
+      if (shiftcnts[i] != shiftcnts[0])
+	scalar_shift = false;
+    }
+
+  if (scalar_shift && shiftcnts[0] == 0)
+    return op0;
+
+  if (scalar_shift)
+    {
+      op = optab_for_tree_code (RSHIFT_EXPR, type, optab_scalar);
+      if (op != NULL
+	  && optab_handler (op, TYPE_MODE (type)) != CODE_FOR_nothing)
+	return gimplify_build2 (gsi, RSHIFT_EXPR, type, op0,
+				build_int_cst (NULL_TREE, shiftcnts[0]));
+    }
+
+  op = optab_for_tree_code (RSHIFT_EXPR, type, optab_vector);
+  if (op != NULL
+      && optab_handler (op, TYPE_MODE (type)) != CODE_FOR_nothing)
+    {
+      tree *vec = XALLOCAVEC (tree, nunits);
+      for (i = 0; i < nunits; i++)
+	vec[i] = build_int_cst (TREE_TYPE (type), shiftcnts[i]);
+      return gimplify_build2 (gsi, RSHIFT_EXPR, type, op0,
+			      build_vector (type, vec));
+    }
+
+  return NULL_TREE;
+}
+
+/* Try to expand integer vector division by constant using
+   widening multiply, shifts and additions.  */
+static tree
+expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
+		      tree op1, enum tree_code code)
+{
+  bool use_pow2 = true;
+  bool has_vector_shift = true;
+  int mode = -1, this_mode;
+  int pre_shift = -1, post_shift;
+  unsigned int nunits = TYPE_VECTOR_SUBPARTS (type);
+  int *shifts = XALLOCAVEC (int, nunits * 4);
+  int *pre_shifts = shifts + nunits;
+  int *post_shifts = pre_shifts + nunits;
+  int *shift_temps = post_shifts + nunits;
+  unsigned HOST_WIDE_INT *mulc = XALLOCAVEC (unsigned HOST_WIDE_INT, nunits);
+  int prec = TYPE_PRECISION (TREE_TYPE (type));
+  int dummy_int;
+  unsigned int i, unsignedp = TYPE_UNSIGNED (TREE_TYPE (type));
+  unsigned HOST_WIDE_INT mask = GET_MODE_MASK (TYPE_MODE (TREE_TYPE (type)));
+  optab op;
+  tree *vec;
+  unsigned char *sel = NULL;
+  tree cur_op, mhi, mlo, mulcst, perm_mask, wider_type, tem;
+
+  if (prec > HOST_BITS_PER_WIDE_INT)
+    return NULL_TREE;
+
+  op = optab_for_tree_code (RSHIFT_EXPR, type, optab_vector);
+  if (op == NULL
+      || optab_handler (op, TYPE_MODE (type)) == CODE_FOR_nothing)
+    has_vector_shift = false;
+
+  /* Analysis phase.  Determine if all op1 elements are either power
+     of two and it is possible to expand it using shifts (or for remainder
+     using masking).  Additionally compute the multiplicative constants
+     and pre and post shifts if the division is to be expanded using
+     widening or high part multiplication plus shifts.  */
+  for (i = 0; i < nunits; i++)
+    {
+      tree cst = VECTOR_CST_ELT (op1, i);
+      unsigned HOST_WIDE_INT ml;
+
+      if (!host_integerp (cst, unsignedp) || integer_zerop (cst))
+	return NULL_TREE;
+      pre_shifts[i] = 0;
+      post_shifts[i] = 0;
+      mulc[i] = 0;
+      if (use_pow2
+	  && (!integer_pow2p (cst) || tree_int_cst_sgn (cst) != 1))
+	use_pow2 = false;
+      if (use_pow2)
+	{
+	  shifts[i] = tree_log2 (cst);
+	  if (shifts[i] != shifts[0]
+	      && code == TRUNC_DIV_EXPR
+	      && !has_vector_shift)
+	    use_pow2 = false;
+	}
+      if (mode == -2)
+	continue;
+      if (unsignedp)
+	{
+	  unsigned HOST_WIDE_INT mh;
+	  unsigned HOST_WIDE_INT d = tree_low_cst (cst, 1) & mask;
+
+	  if (d >= ((unsigned HOST_WIDE_INT) 1 << (prec - 1)))
+	    /* FIXME: Can transform this into op0 >= op1 ? 1 : 0.  */
+	    return NULL_TREE;
+
+	  if (d <= 1)
+	    {
+	      mode = -2;
+	      continue;
+	    }
+
+	  /* Find a suitable multiplier and right shift count
+	     instead of multiplying with D.  */
+	  mh = choose_multiplier (d, prec, prec, &ml, &post_shift, &dummy_int);
+
+	  /* If the suggested multiplier is more than SIZE bits, we can
+	     do better for even divisors, using an initial right shift.  */
+	  if ((mh != 0 && (d & 1) == 0)
+	      || (!has_vector_shift && pre_shift != -1))
+	    {
+	      if (has_vector_shift)
+		pre_shift = floor_log2 (d & -d);
+	      else if (pre_shift == -1)
+		{
+		  unsigned int j;
+		  for (j = 0; j < nunits; j++)
+		    {
+		      tree cst2 = VECTOR_CST_ELT (op1, j);
+		      unsigned HOST_WIDE_INT d2;
+		      int this_pre_shift;
+
+		      if (!host_integerp (cst2, 1))
+			return NULL_TREE;
+		      d2 = tree_low_cst (cst2, 1) & mask;
+		      if (d2 == 0)
+			return NULL_TREE;
+		      this_pre_shift = floor_log2 (d2 & -d2);
+		      if (pre_shift == -1 || this_pre_shift < pre_shift)
+			pre_shift = this_pre_shift;
+		    }
+		  if (i != 0 && pre_shift != 0)
+		    {
+		      /* Restart.  */
+		      i = -1U;
+		      mode = -1;
+		      continue;
+		    }
+		}
+	      if (pre_shift != 0)
+		{
+		  if ((d >> pre_shift) <= 1)
+		    {
+		      mode = -2;
+		      continue;
+		    }
+		  mh = choose_multiplier (d >> pre_shift, prec,
+					  prec - pre_shift,
+					  &ml, &post_shift, &dummy_int);
+		  gcc_assert (!mh);
+		  pre_shifts[i] = pre_shift;
+		}
+	    }
+	  if (!mh)
+	    this_mode = 0;
+	  else
+	    this_mode = 1;
+	}
+      else
+	{
+	  HOST_WIDE_INT d = tree_low_cst (cst, 0);
+	  unsigned HOST_WIDE_INT abs_d;
+
+	  if (d == -1)
+	    return NULL_TREE;
+
+	  /* Since d might be INT_MIN, we have to cast to
+	     unsigned HOST_WIDE_INT before negating to avoid
+	     undefined signed overflow.  */
+	  abs_d = (d >= 0
+		  ? (unsigned HOST_WIDE_INT) d
+		  : - (unsigned HOST_WIDE_INT) d);
+
+	  /* n rem d = n rem -d */
+	  if (code == TRUNC_MOD_EXPR && d < 0)
+	    d = abs_d;
+	  else if (abs_d == (unsigned HOST_WIDE_INT) 1 << (prec - 1))
+	    {
+	      /* This case is not handled correctly below.  */
+	      mode = -2;
+	      continue;
+	    }
+	  if (abs_d <= 1)
+	    {
+	      mode = -2;
+	      continue;
+	    }
+
+	  choose_multiplier (abs_d, prec, prec - 1, &ml,
+			     &post_shift, &dummy_int);
+	  if (ml >= (unsigned HOST_WIDE_INT) 1 << (prec - 1))
+	    {
+	      this_mode = 4 + (d < 0);
+	      ml |= (~(unsigned HOST_WIDE_INT) 0) << (prec - 1);
+	    }
+	  else
+	    this_mode = 2 + (d < 0);
+	}
+      mulc[i] = ml;
+      post_shifts[i] = post_shift;
+      if ((i && !has_vector_shift && post_shifts[0] != post_shift)
+	  || post_shift >= prec
+	  || pre_shifts[i] >= prec)
+	this_mode = -2;
+
+      if (i == 0)
+	mode = this_mode;
+      else if (mode != this_mode)
+	mode = -2;
+    }
+
+  vec = XALLOCAVEC (tree, nunits);
+
+  if (use_pow2)
+    {
+      tree addend = NULL_TREE;
+      if (!unsignedp)
+	{
+	  tree uns_type;
+
+	  /* Both division and remainder sequences need
+	     op0 < 0 ? mask : 0 computed.  It can be either computed as
+	     (type) (((uns_type) (op0 >> (prec - 1))) >> (prec - shifts[i]))
+	     if none of the shifts is 0, or as the conditional.  */
+	  for (i = 0; i < nunits; i++)
+	    if (shifts[i] == 0)
+	      break;
+	  uns_type
+	    = build_vector_type (build_nonstandard_integer_type (prec, 1),
+				 nunits);
+	  if (i == nunits && TYPE_MODE (uns_type) == TYPE_MODE (type))
+	    {
+	      for (i = 0; i < nunits; i++)
+		shift_temps[i] = prec - 1;
+	      cur_op = add_rshift (gsi, type, op0, shift_temps);
+	      if (cur_op != NULL_TREE)
+		{
+		  cur_op = gimplify_build1 (gsi, VIEW_CONVERT_EXPR,
+					    uns_type, cur_op);
+		  for (i = 0; i < nunits; i++)
+		    shift_temps[i] = prec - shifts[i];
+		  cur_op = add_rshift (gsi, uns_type, cur_op, shift_temps);
+		  if (cur_op != NULL_TREE)
+		    addend = gimplify_build1 (gsi, VIEW_CONVERT_EXPR,
+					      type, cur_op);
+		}
+	    }
+	  if (addend == NULL_TREE
+	      && expand_vec_cond_expr_p (type, type))
+	    {
+	      tree zero, cst, cond;
+	      gimple stmt;
+
+	      zero = build_zero_cst (type);
+	      cond = build2 (LT_EXPR, type, op0, zero);
+	      for (i = 0; i < nunits; i++)
+		vec[i] = build_int_cst (TREE_TYPE (type),
+					((unsigned HOST_WIDE_INT) 1
+					 << shifts[i]) - 1);
+	      cst = build_vector (type, vec);
+	      addend = create_tmp_reg (type, NULL);
+	      add_referenced_var (addend);
+	      addend = make_ssa_name (addend, NULL);
+	      stmt = gimple_build_assign_with_ops3 (VEC_COND_EXPR, addend,
+						    cond, cst, zero);
+	      gsi_insert_before (gsi, stmt, GSI_SAME_STMT);
+	    }
+	}
+      if (code == TRUNC_DIV_EXPR)
+	{
+	  if (unsignedp)
+	    {
+	      /* q = op0 >> shift;  */
+	      cur_op = add_rshift (gsi, type, op0, shifts);
+	      if (cur_op != NULL_TREE)
+		return cur_op;
+	    }
+	  else if (addend != NULL_TREE)
+	    {
+	      /* t1 = op0 + addend;
+		 q = t1 >> shift;  */
+	      op = optab_for_tree_code (PLUS_EXPR, type, optab_default);
+	      if (op != NULL
+		  && optab_handler (op, TYPE_MODE (type)) != CODE_FOR_nothing)
+		{
+		  cur_op = gimplify_build2 (gsi, PLUS_EXPR, type, op0, addend);
+		  cur_op = add_rshift (gsi, type, cur_op, shifts);
+		  if (cur_op != NULL_TREE)
+		    return cur_op;
+		}
+	    }
+	}
+      else
+	{
+	  tree mask;
+	  for (i = 0; i < nunits; i++)
+	    vec[i] = build_int_cst (TREE_TYPE (type),
+				    ((unsigned HOST_WIDE_INT) 1
+				     << shifts[i]) - 1);
+	  mask = build_vector (type, vec);
+	  op = optab_for_tree_code (BIT_AND_EXPR, type, optab_default);
+	  if (op != NULL
+	      && optab_handler (op, TYPE_MODE (type)) != CODE_FOR_nothing)
+	    {
+	      if (unsignedp)
+		/* r = op0 & mask;  */
+		return gimplify_build2 (gsi, BIT_AND_EXPR, type, op0, mask);
+	      else if (addend != NULL_TREE)
+		{
+		  /* t1 = op0 + addend;
+		     t2 = t1 & mask;
+		     r = t2 - addend;  */
+		  op = optab_for_tree_code (PLUS_EXPR, type, optab_default);
+		  if (op != NULL
+		      && optab_handler (op, TYPE_MODE (type))
+			 != CODE_FOR_nothing)
+		    {
+		      cur_op = gimplify_build2 (gsi, PLUS_EXPR, type, op0,
+						addend);
+		      cur_op = gimplify_build2 (gsi, BIT_AND_EXPR, type,
+						cur_op, mask);
+		      op = optab_for_tree_code (MINUS_EXPR, type,
+						optab_default);
+		      if (op != NULL
+			  && optab_handler (op, TYPE_MODE (type))
+			     != CODE_FOR_nothing)
+			return gimplify_build2 (gsi, MINUS_EXPR, type,
+						cur_op, addend);
+		    }
+		}
+	    }
+	}
+    }
+
+  if (mode == -2 || BYTES_BIG_ENDIAN != WORDS_BIG_ENDIAN)
+    return NULL_TREE;
+
+  op = optab_for_tree_code (MULT_HIGHPART_EXPR, type, optab_default);
+  if (op != NULL
+      && optab_handler (op, TYPE_MODE (type)) != CODE_FOR_nothing)
+    wider_type = NULL_TREE;
+  else
+    {
+      op = optab_for_tree_code (VEC_WIDEN_MULT_LO_EXPR, type, optab_default);
+      if (op == NULL
+	  || optab_handler (op, TYPE_MODE (type)) == CODE_FOR_nothing)
+	return NULL_TREE;
+      op = optab_for_tree_code (VEC_WIDEN_MULT_HI_EXPR, type, optab_default);
+      if (op == NULL
+	  || optab_handler (op, TYPE_MODE (type)) == CODE_FOR_nothing)
+	return NULL_TREE;
+      sel = XALLOCAVEC (unsigned char, nunits);
+      for (i = 0; i < nunits; i++)
+	sel[i] = 2 * i + (BYTES_BIG_ENDIAN ? 0 : 1);
+      if (!can_vec_perm_p (TYPE_MODE (type), false, sel))
+	return NULL_TREE;
+      wider_type
+	= build_vector_type (build_nonstandard_integer_type (prec * 2,
+							     unsignedp),
+			     nunits / 2);
+      if (GET_MODE_CLASS (TYPE_MODE (wider_type)) != MODE_VECTOR_INT
+	  || GET_MODE_BITSIZE (TYPE_MODE (wider_type))
+	     != GET_MODE_BITSIZE (TYPE_MODE (type)))
+	return NULL_TREE;
+    }
+
+  cur_op = op0;
+
+  switch (mode)
+    {
+    case 0:
+      gcc_assert (unsignedp);
+      /* t1 = oprnd0 >> pre_shift;
+	 t2 = t1 h* ml;
+	 q = t2 >> post_shift;  */
+      cur_op = add_rshift (gsi, type, cur_op, pre_shifts);
+      if (cur_op == NULL_TREE)
+	return NULL_TREE;
+      break;
+    case 1:
+      gcc_assert (unsignedp);
+      for (i = 0; i < nunits; i++)
+	{
+	  shift_temps[i] = 1;
+	  post_shifts[i]--;
+	}
+      break;
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+      gcc_assert (!unsignedp);
+      for (i = 0; i < nunits; i++)
+	shift_temps[i] = prec - 1;
+      break;
+    default:
+      return NULL_TREE;
+    }
+
+  for (i = 0; i < nunits; i++)
+    vec[i] = build_int_cst (TREE_TYPE (type), mulc[i]);
+  mulcst = build_vector (type, vec);
+  if (wider_type == NULL_TREE)
+    cur_op = gimplify_build2 (gsi, MULT_HIGHPART_EXPR, type, cur_op, mulcst);
+  else
+    {
+      for (i = 0; i < nunits; i++)
+	vec[i] = build_int_cst (TREE_TYPE (type), sel[i]);
+      perm_mask = build_vector (type, vec);
+      mhi = gimplify_build2 (gsi, VEC_WIDEN_MULT_HI_EXPR, wider_type,
+			     cur_op, mulcst);
+      mhi = gimplify_build1 (gsi, VIEW_CONVERT_EXPR, type, mhi);
+      mlo = gimplify_build2 (gsi, VEC_WIDEN_MULT_LO_EXPR, wider_type,
+			     cur_op, mulcst);
+      mlo = gimplify_build1 (gsi, VIEW_CONVERT_EXPR, type, mlo);
+      if (BYTES_BIG_ENDIAN)
+	cur_op = gimplify_build3 (gsi, VEC_PERM_EXPR, type, mhi, mlo,
+				  perm_mask);
+      else
+	cur_op = gimplify_build3 (gsi, VEC_PERM_EXPR, type, mlo, mhi,
+				  perm_mask);
+    }
+
+  switch (mode)
+    {
+    case 0:
+      /* t1 = oprnd0 >> pre_shift;
+	 t2 = t1 h* ml;
+	 q = t2 >> post_shift;  */
+      cur_op = add_rshift (gsi, type, cur_op, post_shifts);
+      break;
+    case 1:
+      /* t1 = oprnd0 h* ml;
+	 t2 = oprnd0 - t1;
+	 t3 = t2 >> 1;
+	 t4 = t1 + t3;
+	 q = t4 >> (post_shift - 1);  */
+      op = optab_for_tree_code (MINUS_EXPR, type, optab_default);
+      if (op == NULL
+	  || optab_handler (op, TYPE_MODE (type)) == CODE_FOR_nothing)
+	return NULL_TREE;
+      tem = gimplify_build2 (gsi, MINUS_EXPR, type, op0, cur_op);
+      tem = add_rshift (gsi, type, tem, shift_temps);
+      op = optab_for_tree_code (PLUS_EXPR, type, optab_default);
+      if (op == NULL
+	  || optab_handler (op, TYPE_MODE (type)) == CODE_FOR_nothing)
+	return NULL_TREE;
+      tem = gimplify_build2 (gsi, PLUS_EXPR, type, cur_op, tem);
+      cur_op = add_rshift (gsi, type, tem, post_shifts);
+      if (cur_op == NULL_TREE)
+	return NULL_TREE;
+      break;
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+      /* t1 = oprnd0 h* ml;
+	 t2 = t1; [ iff (mode & 2) != 0 ]
+	 t2 = t1 + oprnd0; [ iff (mode & 2) == 0 ]
+	 t3 = t2 >> post_shift;
+	 t4 = oprnd0 >> (prec - 1);
+	 q = t3 - t4; [ iff (mode & 1) == 0 ]
+	 q = t4 - t3; [ iff (mode & 1) != 0 ]  */
+      if ((mode & 2) == 0)
+	{
+	  op = optab_for_tree_code (PLUS_EXPR, type, optab_default);
+	  if (op == NULL
+	      || optab_handler (op, TYPE_MODE (type)) == CODE_FOR_nothing)
+	    return NULL_TREE;
+	  cur_op = gimplify_build2 (gsi, PLUS_EXPR, type, cur_op, op0);
+	}
+      cur_op = add_rshift (gsi, type, cur_op, post_shifts);
+      if (cur_op == NULL_TREE)
+	return NULL_TREE;
+      tem = add_rshift (gsi, type, op0, shift_temps);
+      if (tem == NULL_TREE)
+	return NULL_TREE;
+      op = optab_for_tree_code (MINUS_EXPR, type, optab_default);
+      if (op == NULL
+	  || optab_handler (op, TYPE_MODE (type)) == CODE_FOR_nothing)
+	return NULL_TREE;
+      if ((mode & 1) == 0)
+	cur_op = gimplify_build2 (gsi, MINUS_EXPR, type, cur_op, tem);
+      else
+	cur_op = gimplify_build2 (gsi, MINUS_EXPR, type, tem, cur_op);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  if (code == TRUNC_DIV_EXPR)
+    return cur_op;
+
+  /* We divided.  Now finish by:
+     t1 = q * oprnd1;
+     r = oprnd0 - t1;  */
+  op = optab_for_tree_code (MULT_EXPR, type, optab_default);
+  if (op == NULL
+      || optab_handler (op, TYPE_MODE (type)) == CODE_FOR_nothing)
+    return NULL_TREE;
+  tem = gimplify_build2 (gsi, MULT_EXPR, type, cur_op, op1);
+  op = optab_for_tree_code (MINUS_EXPR, type, optab_default);
+  if (op == NULL
+      || optab_handler (op, TYPE_MODE (type)) == CODE_FOR_nothing)
+    return NULL_TREE;
+  return gimplify_build2 (gsi, MINUS_EXPR, type, op0, tem);
+}
+
 static tree
 expand_vector_operation (gimple_stmt_iterator *gsi, tree type, tree compute_type,
 			 gimple assign, enum tree_code code)
@@ -454,6 +978,25 @@ expand_vector_operation (gimple_stmt_iterator *gsi, tree type, tree compute_type
 
 	  return expand_vector_comparison (gsi, type, rhs1, rhs2, code);
 	}
+
+      case TRUNC_DIV_EXPR:
+      case TRUNC_MOD_EXPR:
+	{
+	  tree rhs1 = gimple_assign_rhs1 (assign);
+	  tree rhs2 = gimple_assign_rhs2 (assign);
+	  tree ret;
+
+	  if (!optimize
+	      || !VECTOR_INTEGER_TYPE_P (type)
+	      || TREE_CODE (rhs2) != VECTOR_CST)
+	    break;
+
+	  ret = expand_vector_divmod (gsi, type, rhs1, rhs2, code);
+	  if (ret != NULL_TREE)
+	    return ret;
+	  break;
+	}
+
       default:
 	break;
       }

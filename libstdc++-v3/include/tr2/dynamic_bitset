@@ -1,6 +1,6 @@
 // TR2 <dynamic_bitset> -*- C++ -*-
 
-// Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -146,19 +146,19 @@ public:
       { return this->_M_w.get_allocator(); }
 
       static size_type
-      _S_whichword(size_type __pos)
+      _S_whichword(size_type __pos) noexcept
       { return __pos / _S_bits_per_block; }
 
       static size_type
-      _S_whichbyte(size_type __pos)
+      _S_whichbyte(size_type __pos) noexcept
       { return (__pos % _S_bits_per_block) / __CHAR_BIT__; }
 
       static size_type
-      _S_whichbit(size_type __pos)
+      _S_whichbit(size_type __pos) noexcept
       { return __pos % _S_bits_per_block; }
 
       static block_type
-      _S_maskbit(size_type __pos)
+      _S_maskbit(size_type __pos) noexcept
       { return (static_cast<block_type>(1)) << _S_whichbit(__pos); }
 
       block_type&
@@ -333,7 +333,7 @@ public:
       }
 
       size_type
-      _M_size() const
+      _M_size() const noexcept
       { return this->_M_w.size(); }
 
       unsigned long
@@ -1141,28 +1141,29 @@ public:
 
       /// Returns the number of bits which are set.
       size_type
-      count() const
+      count() const noexcept
       { return this->_M_do_count(); }
 
       /// Returns the total number of bits.
       size_type
-      size() const
+      size() const noexcept
       { return this->_M_Nb; }
 
       /// Returns the total number of blocks.
-      size_type num_blocks() const
+      size_type
+      num_blocks() const noexcept
       { return this->_M_size(); }
 
       /// Returns true if the dynamic_bitset is empty.
       bool
-      empty() const
+      empty() const noexcept
       { return (this->_M_Nb == 0); }
 
       /// Returns the maximum size of a dynamic_bitset object having the same
       /// type as *this.
       /// The real answer is max() * bits_per_block but is likely to overflow.
-      /*constexpr*/ size_type
-      max_size() const
+      constexpr size_type
+      max_size() noexcept
       { return std::numeric_limits<block_type>::max(); }
 
       /**

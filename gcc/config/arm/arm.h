@@ -47,20 +47,52 @@ extern char arm_arch_name[];
     {							\
 	if (TARGET_DSP_MULTIPLY)			\
 	   builtin_define ("__ARM_FEATURE_DSP");	\
+        if (TARGET_ARM_QBIT)				\
+           builtin_define ("__ARM_FEATURE_QBIT");	\
+        if (TARGET_ARM_SAT)				\
+           builtin_define ("__ARM_FEATURE_SAT");	\
 	if (unaligned_access)				\
 	  builtin_define ("__ARM_FEATURE_UNALIGNED");	\
+	if (TARGET_ARM_FEATURE_LDREX)				\
+	  builtin_define_with_int_value (			\
+	    "__ARM_FEATURE_LDREX", TARGET_ARM_FEATURE_LDREX);	\
+	if ((TARGET_ARM_ARCH >= 5 && !TARGET_THUMB)		\
+	     || TARGET_ARM_ARCH_ISA_THUMB >=2)			\
+	  builtin_define ("__ARM_FEATURE_CLZ");			\
+	if (TARGET_INT_SIMD)					\
+	  builtin_define ("__ARM_FEATURE_SIMD32");		\
+								\
+	builtin_define_with_int_value (				\
+	  "__ARM_SIZEOF_MINIMAL_ENUM",				\
+	  flag_short_enums ? 1 : 4);				\
+	builtin_define_with_int_value (				\
+	  "__ARM_SIZEOF_WCHAR_T", WCHAR_TYPE_SIZE);		\
+	if (TARGET_ARM_ARCH_PROFILE)				\
+	  builtin_define_with_int_value (			\
+	    "__ARM_ARCH_PROFILE", TARGET_ARM_ARCH_PROFILE);	\
+								\
 	/* Define __arm__ even when in thumb mode, for	\
 	   consistency with armcc.  */			\
 	builtin_define ("__arm__");			\
+	if (TARGET_ARM_ARCH)				\
+	  builtin_define_with_int_value (		\
+	    "__ARM_ARCH", TARGET_ARM_ARCH);		\
+	if (arm_arch_notm)				\
+	  builtin_define ("__ARM_ARCH_ISA_ARM");	\
 	builtin_define ("__APCS_32__");			\
 	if (TARGET_THUMB)				\
 	  builtin_define ("__thumb__");			\
 	if (TARGET_THUMB2)				\
 	  builtin_define ("__thumb2__");		\
+	if (TARGET_ARM_ARCH_ISA_THUMB)			\
+	  builtin_define_with_int_value (		\
+	    "__ARM_ARCH_ISA_THUMB",			\
+	    TARGET_ARM_ARCH_ISA_THUMB);			\
 							\
 	if (TARGET_BIG_END)				\
 	  {						\
 	    builtin_define ("__ARMEB__");		\
+	    builtin_define ("__ARM_BIG_ENDIAN");	\
 	    if (TARGET_THUMB)				\
 	      builtin_define ("__THUMBEB__");		\
 	    if (TARGET_LITTLE_WORDS)			\
@@ -79,8 +111,24 @@ extern char arm_arch_name[];
 	if (TARGET_VFP)					\
 	  builtin_define ("__VFP_FP__");		\
 							\
+	if (TARGET_ARM_FP)				\
+	  builtin_define_with_int_value (		\
+	    "__ARM_FP", TARGET_ARM_FP);			\
+	if (arm_fp16_format == ARM_FP16_FORMAT_IEEE)		\
+	  builtin_define ("__ARM_FP16_FORMAT_IEEE");		\
+	if (arm_fp16_format == ARM_FP16_FORMAT_ALTERNATIVE)	\
+	  builtin_define ("__ARM_FP16_FORMAT_ALTERNATIVE");	\
+        if (TARGET_FMA)					\
+          builtin_define ("__ARM_FEATURE_FMA");		\
+							\
 	if (TARGET_NEON)				\
-	  builtin_define ("__ARM_NEON__");		\
+	  {						\
+	    builtin_define ("__ARM_NEON__");		\
+	    builtin_define ("__ARM_NEON");		\
+	  }						\
+	if (TARGET_NEON_FP)				\
+	  builtin_define_with_int_value (		\
+	    "__ARM_NEON_FP", TARGET_NEON_FP);		\
 							\
 	/* Add a define for interworking.		\
 	   Needed when building libgcc.a.  */		\
@@ -96,7 +144,10 @@ extern char arm_arch_name[];
 	if (arm_arch_xscale)				\
 	  builtin_define ("__XSCALE__");		\
 	if (arm_arch_iwmmxt)				\
-	  builtin_define ("__IWMMXT__");		\
+          {						\
+	    builtin_define ("__IWMMXT__");		\
+	    builtin_define ("__ARM_WMMX");		\
+	  }						\
 	if (arm_arch_iwmmxt2)				\
 	  builtin_define ("__IWMMXT2__");		\
 	if (TARGET_AAPCS_BASED)				\
@@ -248,6 +299,9 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
 /* FPU supports VFP half-precision floating-point.  */
 #define TARGET_FP16 (TARGET_VFP && arm_fpu_desc->fp16)
 
+/* FPU supports fused-multiply-add operations.  */
+#define TARGET_FMA (TARGET_VFP && arm_fpu_desc->rev >= 4)
+
 /* FPU supports Neon instructions.  The setting of this macro gets
    revealed via __ARM_NEON__ so we add extra guards upon TARGET_32BIT
    and TARGET_HARD_FLOAT to ensure that NEON instructions are
@@ -255,6 +309,12 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
 #define TARGET_NEON (TARGET_32BIT && TARGET_HARD_FLOAT \
 		     && TARGET_VFP && arm_fpu_desc->neon)
 
+/* Q-bit is present.  */
+#define TARGET_ARM_QBIT \
+  (TARGET_32BIT && arm_arch5e && (arm_arch_notm || arm_arch7))
+/* Saturation operation, e.g. SSAT.  */
+#define TARGET_ARM_SAT \
+  (TARGET_32BIT && arm_arch6 && (arm_arch_notm || arm_arch7))
 /* "DSP" multiply instructions, eg. SMULxy.  */
 #define TARGET_DSP_MULTIPLY \
   (TARGET_32BIT && arm_arch5e && (arm_arch_notm || arm_arch7em))
@@ -365,6 +425,39 @@ extern int arm_fpu_attr;
 #ifndef ARM_DEFAULT_ABI
 #define ARM_DEFAULT_ABI ARM_ABI_APCS
 #endif
+
+/* Map each of the micro-architecture variants to their corresponding
+   major architecture revision.  */
+
+enum base_architecture
+{
+  BASE_ARCH_0 = 0,
+  BASE_ARCH_2 = 2,
+  BASE_ARCH_3 = 3,
+  BASE_ARCH_3M = 3,
+  BASE_ARCH_4 = 4,
+  BASE_ARCH_4T = 4,
+  BASE_ARCH_5 = 5,
+  BASE_ARCH_5E = 5,
+  BASE_ARCH_5T = 5,
+  BASE_ARCH_5TE = 5,
+  BASE_ARCH_5TEJ = 5,
+  BASE_ARCH_6 = 6,
+  BASE_ARCH_6J = 6,
+  BASE_ARCH_6ZK = 6,
+  BASE_ARCH_6K = 6,
+  BASE_ARCH_6T2 = 6,
+  BASE_ARCH_6M = 6,
+  BASE_ARCH_6Z = 6,
+  BASE_ARCH_7 = 7,
+  BASE_ARCH_7A = 7,
+  BASE_ARCH_7R = 7,
+  BASE_ARCH_7M = 7,
+  BASE_ARCH_7EM = 7
+};
+
+/* The major revision number of the ARM Architecture implemented by the target.  */
+extern enum base_architecture arm_base_arch;
 
 /* Nonzero if this chip supports the ARM Architecture 3M extensions.  */
 extern int arm_arch3m;
@@ -2181,6 +2274,51 @@ extern int making_const_table;
 /* Do not emit .note.GNU-stack by default.  */
 #ifndef NEED_INDICATE_EXEC_STACK
 #define NEED_INDICATE_EXEC_STACK	0
+#endif
+
+#define TARGET_ARM_ARCH	\
+  (arm_base_arch)	\
+
+#define TARGET_ARM_V6M (!arm_arch_notm && !arm_arch_thumb2)
+#define TARGET_ARM_V7M (!arm_arch_notm && arm_arch_thumb2)
+
+/* The highest Thumb instruction set version supported by the chip.  */
+#define TARGET_ARM_ARCH_ISA_THUMB 		\
+  (arm_arch_thumb2 ? 2				\
+	           : ((TARGET_ARM_ARCH >= 5 || arm_arch4t) ? 1 : 0))
+
+/* Expands to an upper-case char of the target's architectural
+   profile.  */
+#define TARGET_ARM_ARCH_PROFILE				\
+  (!arm_arch_notm					\
+    ? 'M'						\
+    : (arm_arch7					\
+      ? (strlen (arm_arch_name) >=3			\
+	? (arm_arch_name[strlen (arm_arch_name) - 3])	\
+      	: 0)						\
+      : 0))
+
+/* Bit-field indicating what size LDREX/STREX loads/stores are available.
+   Bit 0 for bytes, up to bit 3 for double-words.  */
+#define TARGET_ARM_FEATURE_LDREX				\
+  ((TARGET_HAVE_LDREX ? 4 : 0)					\
+   | (TARGET_HAVE_LDREXBH ? 3 : 0)				\
+   | (TARGET_HAVE_LDREXD ? 8 : 0))
+
+/* Set as a bit mask indicating the available widths of hardware floating
+   point types.  Where bit 1 indicates 16-bit support, bit 2 indicates
+   32-bit support, bit 3 indicates 64-bit support.  */
+#define TARGET_ARM_FP			\
+  (TARGET_VFP_SINGLE ? 4		\
+  		     : (TARGET_VFP_DOUBLE ? (TARGET_FP16 ? 14 : 12) : 0))
+
+
+/* Set as a bit mask indicating the available widths of floating point
+   types for hardware NEON floating point.  This is the same as
+   TARGET_ARM_FP without the 64-bit bit set.  */
+#ifdef TARGET_NEON
+#define TARGET_NEON_FP		\
+  (TARGET_ARM_FP & (0xff ^ 0x08))
 #endif
 
 /* The maximum number of parallel loads or stores we support in an ldm/stm

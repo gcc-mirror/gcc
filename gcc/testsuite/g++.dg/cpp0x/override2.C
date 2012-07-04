@@ -18,7 +18,7 @@ template <class T> struct B4 final {};
 
 template <class T> struct B5 final {};
 
-struct undeclared<int> final { }; // { dg-error "not a template" }
+struct undeclared<int> final { }; // { dg-error "not a class template" }
 
 struct D5 : B3<D5> {};
 

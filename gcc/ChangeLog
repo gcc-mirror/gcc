@@ -1,3 +1,451 @@
+2012-06-29  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* system.h (CASE_USE_BIT_TESTS): Poison.
+	* stmt.c (CASE_USE_BIT_TESTS): Fold away into its only user ...
+	(expand_switch_using_bit_tests_p): ...here.
+	* doc/tm.texi.in (CASE_USE_BIT_TESTS): Remove documentation.
+	* doc/tm.texi (CASE_USE_BIT_TESTS): Regenerate.
+
+2012-06-29  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* system.h (IFCVT_EXTRA_FIELDS): Poison.
+	(IFCVT_INIT_EXTRA_FIELDS): Poison.
+	* basic-block.h (struct ce_if_block): Remove IFCVT_EXTRA_FIELDS.
+	* ifcvt.c (find_if_header): Use IFCVT_MACHDEP_INIT instead of
+	IFCVT_INIT_EXTRA_FIELDS.
+	* gengtype-parse.c (struct_field_seq): Remove obsolete comment.
+	* config/frv/frv.h (IFCVT_INIT_EXTRA_FIELDS): Rename to
+	IFCVT_MACHDEP_INIT.
+	* config/frv/frv.c (frv_ifcvt_init_extra_fields): Rename to
+	frv_ifcvt_machdep_init.
+	* doc/tm.texi.in (IFCVT_INIT_EXTRA_FIELDS, IFCVT_EXTRA_FIELDS):
+	Remove documentation.
+	(IFCVT_MACHDEP_INIT): Document.
+	* doc/tm.texi: Regenerate.
+
+2012-06-29  Nick Clifton  <nickc@redhat.com>
+
+	* config/lm32/lm32.c (lm32_compute_frame_size): Fix typo.
+
+2012-06-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-vect-stmts.c (vectorizable_operation): Check both
+	VEC_WIDEN_MULT_LO_EXPR and VEC_WIDEN_MULT_HI_EXPR optabs.
+	Verify that operand[0]'s mode is TYPE_MODE (wide_vectype).
+
+2012-06-28  Richard Henderson  <rth@redhat.com>
+
+	* doc/generic.texi (MULT_HIGHPART_EXPR): Document it.
+
+2012-06-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/51581
+	* tree-vect-stmts.c (permute_vec_elements): Add forward decl.
+	(vectorizable_operation): Handle vectorization of MULT_HIGHPART_EXPR
+	also using VEC_WIDEN_MULT_*_EXPR or builtin_mul_widen_* plus
+	VEC_PERM_EXPR if vector MULT_HIGHPART_EXPR isn't supported.
+	* tree-vect-patterns.c (vect_recog_divmod_pattern): Use
+	MULT_HIGHPART_EXPR instead of VEC_WIDEN_MULT_*_EXPR and shifts.
+
+	PR tree-optimization/53645
+	* tree-vect-generic.c (expand_vector_divmod): Use MULT_HIGHPART_EXPR
+	instead of VEC_WIDEN_MULT_{HI,LO}_EXPR followed by VEC_PERM_EXPR
+	if possible.
+
+2012-06-28  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR 53595
+	* config/avr/avr.c (avr_hard_regno_call_part_clobbered): New.
+	* config/avr/avr-protos.h (avr_hard_regno_call_part_clobbered): New.
+	* config/avr/avr.h (HARD_REGNO_CALL_PART_CLOBBERED): Forward to
+	avr_hard_regno_call_part_clobbered.
+
+2012-06-28  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/53790
+	* expr.c (expand_expr_real_1): Verify if the type is complete
+	before inspecting its size.
+
+2012-06-28  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* doc/include/gpl.texi: Remove.
+	* doc/sourcebuild.texi (Texinfo Manuals): Don't mention gpl.texi.
+
+2012-06-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/53645
+	* tree-vect-generic.c (add_rshift): New function.
+	(expand_vector_divmod): New function.
+	(expand_vector_operation): Use it for vector integer
+	TRUNC_{DIV,MOD}_EXPR by VECTOR_CST.
+	* tree-vect-patterns.c (vect_recog_divmod_pattern): Replace
+	unused lguup variable with dummy_int.
+
+2012-06-28  OLivier Hainque  <hainque@adacore.com>
+
+	* expr.c (convert_move): Latch mem integer inputs into a
+	register before expanding a multi-instructions sequence.
+
+2012-06-28  Alexandre Oliva  <aoliva@redhat.com>,
+            Uros Bizjak  <ubizjak@gmail.com>,
+            Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/53706
+	PR debug/47624
+	* var-tracking.c (vt_emit_notes): Release loc_exp_dep_pool...
+	(vt_finalize): ... here instead, if needed.
+
+2012-06-28  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/53740
+	PR debug/52983
+	PR debug/48866
+	* dce.c (word_dce_process_block): Check whether inserting debug
+	temps are needed even for needed insns.
+	(dce_process_block): Likewise.
+	* df-problems.c (dead_debug_add): Add comment about multi-regs.
+	(dead_debug_insert_temp): Likewise.  Don't subreg when we're
+	setting fewer regs than a multi-reg requires.
+
+2012-06-27  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c (alpha_dimode_u): New.
+	(alpha_init_builtins): Initialize it, and use it.
+	(alpha_fold_builtin_cmpbge): Use alpha_dimode_u.
+	(alpha_fold_builtin_zapnot, alpha_fold_builtin_insxx): Likewise.
+	(alpha_fold_vector_minmax, alpha_fold_builtin_perr): Likewise.
+	(alpha_fold_builtin_pklb, alpha_fold_builtin_pkwb): Likewise.
+	(alpha_fold_builtin_unpkbl, alpha_fold_builtin_unpkbw): Likewise.
+	(alpha_fold_builtin_cttz, alpha_fold_builtin_ctlz): Likewise.
+	(alpha_fold_builtin_ctpop): Likewise.
+	(alpha_fold_builtin_umulh): Remove.
+	(alpha_fold_builtin): Use MULT_HIGHPART_EXPR for UMULH; fix
+	typo in MAX_ARGS check.
+
+2012-06-27  Richard Henderson  <rth@redhat.com>
+
+	* tree.def (MULT_HIGHPART_EXPR): New.
+	* cfgexpand.c (expand_debug_expr): Ignore it.
+	* expr.c (expand_expr_real_2): Handle it.
+	* fold-const.c (int_const_binop_1): Likewise.
+	* optabs.c (optab_for_tree_code): Likewise.
+	* tree-cfg.c (verify_gimple_assign_binary): Likewise.
+	* tree-inline.c (estimate_operator_cost): Likewise.
+	* tree-pretty-print.c (dump_generic_node): Likewise.
+	(op_code_prio, op_symbol_code): Likewise.
+	* tree.c (commutative_tree_code): Likewise.  Also handle
+	WIDEN_MULT_EXPR, VEC_WIDEN_MULT_HI_EXPR, VEC_WIDEN_MULT_LO_EXPR.
+
+2012-06-27  Richard Henderson  <rth@redhat.com>
+
+	PR target/53749
+	* config/i386/i386.c (ix86_rtx_costs): Fix typo vs UNITS_PER_WORD
+	in 2012-06-23 change.  Adjust two other DImode tests as well.
+
+2012-06-27  Nick Clifton  <nickc@redhat.com>
+
+	* config/rx/rx.md (comparesi3_extend): Remove = modifier from
+	input operand.
+
+2012-06-27  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/53676
+	* tree-chrec.c (chrec_convert_1): Represent truncation to
+	a type with undefined overflow as truncation to an unsigned
+	type converted to the type with undefined overflow.
+	* tree-scalar-evolution.c (interpret_rhs_expr): For computing
+	the scalar evolution of a truncated widened operation avoid
+	looking at the non-existing evolution of the widened operation
+	result.
+
+2012-06-27  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/53774
+	* tree-ssa-reassoc.c (get_rank): All default defs have
+	precomputed rank.
+	(init_reassoc): Precompute rank for all SSA default defs.
+
+2012-06-27  Nick Clifton  <nickc@redhat.com>
+
+	* config/rx/rx.md (simple_return): Use the simple_return rtx.
+
+2012-06-26  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c (ix86_rtx_costs): Use standard_sse_constant_p
+	and don't fall thru from standard_80387_constant_p to the memory
+	fallback,
+
+2012-06-26  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c (bdesc_args): Update.  Change
+	IX86_BUILTIN_VEC_WIDEN_SMUL_ODD_V4SI to OPTION_MASK_ISA_SSE2.
+	(IX86_BUILTIN_VEC_WIDEN_SMUL_EVEN_V4SI): New.
+	(ix86_builtin_mul_widen_even): Use it.
+	(ix86_builtin_mul_widen_odd): Relax SMUL_ODD from sse4 to sse2.
+	(ix86_expand_mul_widen_evenodd): Handle signed for sse2.
+	* config/i386/sse.md (vec_widen_<s>mult_hi_<V124_AVX2>): Allow
+	for all SSE2.
+	(vec_widen_<s>mult_lo_<V124_AVX2>): Likewise.
+	(vec_widen_<s>mult_odd_<VI4_AVX2>): Likewise.  Relax from V124_AVX2.
+	(vec_widen_smult_even_v4si): New.
+
+2012-06-26  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/sse.md (mul<VI8_AVX2>3): Change from insn_and_split
+	to expander; move guts to ...
+	* config/i386/i386.c (ix86_expand_sse2_mulvxdi3): ... here.  Add
+	highparts before shifting up.
+	* config/i386/i386-protos.h: Update.
+
+2012-06-26  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* system.h (USE_COMMON_FOR_ONE_ONLY): Poison.
+	* defaults.h (USE_COMMON_FOR_ONE_ONLY): Do not provide default.
+	* config/darwin.h (USE_COMMON_FOR_ONE_ONLY): Do not define.
+
+2012-06-26  Alexandre Oliva  <aoliva@redhat.com>
+
+	* var-tracking.c (vt_add_function_parameter): Use a preserved
+	VALUE for the MEM address of an incoming parameter.
+
+2012-06-26  Sterling Augustine <saugustine@google.com>
+
+	* dwarf2out.c (output_pubnames): Add check for DW_TAG_enumerator.
+	(prune_unused_types): Likewise.
+
+2012-06-26  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* system.h (UNALIGNED_SHORT_ASM_OP, UNALIGNED_INT_ASM_OP,
+	UNALIGNED_LONG_ASM_OP, UNALIGNED_DOUBLE_INT_ASM_OP): Poison.
+	* vmsdbgout.c (UNALIGNED_SHORT_ASM_OP, UNALIGNED_INT_ASM_OP,
+	UNALIGNED_LONG_ASM_OP, UNALIGNED_DOUBLE_INT_ASM_OP): Rename to
+	VMS_UNALIGNED_SHORT_ASM_OP, VMS_UNALIGNED_INT_ASM_OP,
+	VMS_UNALIGNED_LONG_ASM_OP, and VMS_UNALIGNED_DOUBLE_INT_ASM_OP.
+	* config/microblaze/microblaze.h (UNALIGNED_SHORT_ASM_OP,
+	UNALIGNED_INT_ASM_OP, UNALIGNED_DOUBLE_INT_ASM_OP): Do not define.
+	* doc/tm.texi.in: Remove UNALIGNED_INT_ASM_OP reference from the
+	documentation.
+	* doc/tm.texi: Regenerate.
+	* doc/cpp.texi: Make example for #error generic.
+	* config/frv/frv.h: Fix example text to match tm.texi.
+
+2012-06-26  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* tree-pass.h (pass_strength_reduction): New decl.
+	* tree-ssa-loop-ivopts.c (initialize_costs): Make non-static.
+	(finalize_costs): Likewise.
+	* timevar.def (TV_TREE_SLSR): New timevar.
+	* gimple-ssa-strength-reduction.c: New.
+	* tree-flow.h (initialize_costs): New decl.
+	(finalize_costs): Likewise.
+	* Makefile.in (tree-ssa-strength-reduction.o): New dependencies.
+	* passes.c (init_optimization_passes): Add pass_strength_reduction.
+
+2012-06-26  Matt Turner  <mattst88@gmail.com>
+
+	* doc/extend.texi (__builtin_arm_tinsrb): Add missing second
+	parameter.
+	(__builtin_arm_tinsrh): Likewise.
+	(__builtin_arm_tinsrw): Likewise.
+	(__builtin_arm_wsadb): Add missing v2si parameter.
+	(__builtin_arm_wsadh): Likewise.
+	(__builtin_arm_getwcx): Delete.
+	(__builtin_arm_setwcx): Delete.
+	(__builtin_arm_getwcgr0): Add.
+	(__builtin_arm_getwcgr1): Add.
+	(__builtin_arm_getwcgr2): Add.
+	(__builtin_arm_getwcgr3): Add.
+	(__builtin_arm_setwcgr0): Add.
+	(__builtin_arm_setwcgr1): Add.
+	(__builtin_arm_setwcgr2): Add.
+	(__builtin_arm_setwcgr3): Add.
+
+2012-06-26  Richard Guenther  <rguenther@suse.de>
+
+	Revert
+	2012-06-21  Richard Guenther  <rguenther@suse.de>
+
+	* tree-inline.c (estimate_num_insns): Estimate call cost for
+	tailcalls properly.
+
+2012-06-26  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR other/33190
+	* doc/tm.texi.in: Document LOGICAL_OP_NON_SHORT_CIRCUIT.
+	* doc/tm.texi: Regenerate.
+
+2012-06-26  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR other/33190
+	* config/mips/mips.h: Do not define ALL_COP_ADDITIONAL_REGISTER_NAMES.
+	* config/frv/frv.h: Do not define REVERSE_CONDEXEC_PREDICATES_P.
+	* doc/tm.texi.in: Remove documentation for unused target macros
+	ALL_COP_ADDITIONAL_REGISTER_NAMES, DBX_OUTPUT_LBRAC, DBX_OUTPUT_NFUN,
+	DBX_OUTPUT_RBRAC, RANGE_TEST_NON_SHORT_CIRCUIT, REAL_VALUE_TRUNCATE,
+	REVERSE_CONDEXEC_PREDICATES_P, TARGET_ALIGN_ANON_BITFIELDS, and
+	TARGET_NARROW_VOLATILE_BITFIELDS.
+	Document that MD_HANDLE_UNWABI is a macro in libgcc.
+	* doc/tm.texi: Regenerate.
+	* system.h: Poison target macros
+	ALL_COP_ADDITIONAL_REGISTER_NAMES, DBX_OUTPUT_LBRAC, DBX_OUTPUT_NFUN,
+	DBX_OUTPUT_RBRAC, RANGE_TEST_NON_SHORT_CIRCUIT, REAL_VALUE_TRUNCATE,
+	REVERSE_CONDEXEC_PREDICATES_P, TARGET_ALIGN_ANON_BITFIELDS, and
+	TARGET_NARROW_VOLATILE_BITFIELDS
+
+2012-06-26  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/53572
+	* cgraph.h (varpool_can_remove_if_no_refs): Fix handling of
+	used symbols.
+
+2012-06-26  Dehao Chen  <dehao@google.com>
+
+	* tree-inline.c: (expand_call_inline): Ensure that lexical block's
+	source location is consistant with the call stmt.
+
+2012-06-26  Ulrich Weigand  <ulrich.weigand@linaro.org>
+
+	PR tree-optimization/53729
+	PR tree-optimization/53636
+	* tree-vect-slp.c (vect_slp_analyze_bb_1): Delay call to
+	vect_verify_datarefs_alignment until after statements have
+	been marked as relevant/irrelevant.
+	* tree-vect-data-refs.c (vect_verify_datarefs_alignment):
+	Skip irrelevant statements.
+	(vect_enhance_data_refs_alignment): Use STMT_VINFO_RELEVANT_P
+	instead of STMT_VINFO_RELEVANT.
+	(vect_get_data_access_cost): Do not check for supportable
+	alignment before calling vect_get_load_cost/vect_get_store_cost.
+	* tree-vect-stmts.c (vect_get_store_cost): Do not abort when
+	handling unsupported alignment.
+	(vect_get_load_cost): Likewise.
+
+2012-06-25  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* config/rl78/rl78.h: Do not undefine DONT_USE_BUILTIN_SETJMP.
+	Do not define JMP_BUF_SIZE.
+
+2012-06-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/53748
+	* tree-ssa-phiopt.c (conditional_replacement): Only optimize
+	if arg0/arg1 have integral or pointer types.
+
+2012-06-25  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/sse.md (sse2_sse4_1): Remove code attr.
+	(<s>dot_prodv4si, <s>dot_prodv8si): Remove
+	(sdot_prodv4si): New; handle only XOP.
+
+2012-06-25  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386-builtin-types.def (V4UDI, V8USI): New.
+	(V2UDI_FUNC_V4USI_V4USI): New.
+	(V4UDI_FUNC_V8USI_V8USI): New.
+	* config/i386/i386.c (ix86_expand_args_builtin): Handle them.
+	(IX86_BUILTIN_VEC_WIDEN_SMUL_ODD_V4SI): New.
+	(IX86_BUILTIN_VEC_WIDEN_SMUL_ODD_V8SI): New.
+	(IX86_BUILTIN_VEC_WIDEN_UMUL_ODD_V4SI): New.
+	(IX86_BUILTIN_VEC_WIDEN_UMUL_ODD_V8SI): New.
+	(IX86_BUILTIN_VEC_WIDEN_UMUL_EVEN_V4SI): New.
+	(IX86_BUILTIN_VEC_WIDEN_UMUL_EVEN_V8SI): New.
+	(bdesc_args): Add them.
+	(ix86_builtin_mul_widen_even, ix86_builtin_mul_widen_odd): New.
+	(TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_EVEN): New.
+	(TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_ODD): New.
+	(ix86_expand_mul_widen_evenodd): Use xop_pmacsdqh.
+	* config/i386/sse.md (vec_widen_<s>mult_odd_<V124_AVX2>): New.
+
+2012-06-25  Richard Henderson  <rth@redhat.com>
+
+	* config/i386.sse.md (mul<VI4_AVX2>3): Use xop_pmacsdd.
+
+2012-06-25  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c (ix86_rtx_costs) [MULT]: Only apply XOP cost
+	to V16QImode.
+	(ix86_expand_vec_interleave): New.
+	(ix86_expand_mul_widen_evenodd): New.
+	(ix86_expand_mul_widen_hilo): New.
+	(ix86_expand_sse2_mulv4si3): Use ix86_expand_mul_widen_evenodd.
+	* config/i386/i386.md (u_bool) New code attr.
+	* config/i386/predicates.md
+	(nonimmediate_or_const_vector_operand): Remove.
+	* config/i386/sse.md (mul<VI4_AVX2>3): Don't use it; don't test
+	both AVX and SSE4_1.
+	(vec_widen<s>mult_hi_<VI2_AVX2>): Remove.
+	(vec_widen<s>mult_lo_<VI2_AVX2>): Remove.
+	(vec_widen<s>mult_hi_v8si): Remove.
+	(vec_widen<s>mult_lo_v8si): Remove.
+	(vec_widen_smult_hi_v4si): Remove.
+	(vec_widen_smult_lo_v4si): Remove.
+	(vec_widen_umult_hi_v4si): Remove.
+	(vec_widen_umult_lo_v4si): Remove.
+	(vec_widen_<s>mult_hi_<VI124_AVX2>): New.
+	(vec_widen_<s>mult_lo_<VI124_AVX2>): New.
+	* config/i386/i386-protos.h: Update.
+
+2012-06-25  Christophe Lyon  <christophe.lyon@st.com>
+
+	* config/arm/neon.md (UNSPEC_VLD1_DUP): Remove.
+	(neon_vld1_dup): Restrict to VQ operands.
+	(neon_vld1_dupv2di): New, fixes vld1q_dup_s64.
+
+2012-06-25  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
+            James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/arm/arm.h (TARGET_CPU_CPP_BUILTINS): Add new built-ins.
+	(TARGET_FMA): New macro.
+	(TARGET_ARM_QBIT, TARGET_ARM_SAT): Likewise.
+	(TARGET_ARM_ARCH): Likewise.
+	(TARGET_ARM_ARCH_ISA_THUMB): Likewise.
+	(TARGET_V6M, TARGET_V7M): Likewise.
+	(TARGET_ARM_ARCH_PROFILE): Likewise.
+	(TARGET_ARM_FEATURE_LDREX): Likewise.
+	(TARGET_ARM_FP, TARGET_NEON_FP): Likewise.
+	(ARM_MIN_ENUM_SIZE): Likewise.
+	* config/arm/arm.c (arm_file_start): Refactor appropriately.
+	(base_architecture): New enumeration.
+	(arm_base_arch): New global variable.
+	(processors): Add field base_arch.
+	(ARM_ARCH, ARM_CORE): Adjust accordingly.
+	(arm_option_override): Add initialization of arm_base_arch.
+	* doc/cpp.texi (system-specific predefined macros.): Change.
+
+2012-06-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/53759
+	* config/i386/sse.md (sse_loadlps): Use x m x constraints instead
+	of x x x in the vmovlps load alternative.
+
+2012-06-25  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR debug/53740
+	* df.h (dead_debug_add): Remove third argument.
+	* df-problems.c (dead_debug_add): Likewise.  Use the REGNO of the
+	REG that we want to replace instead.
+	(dead_debug_insert_temp): Use the REGNO of the reg that we want
+	to replace instead of DF_REF_REGNO.  Require there to always be
+	at least one such use.  Check for cases where the same location
+	has more than df_ref associated with it.
+	(df_note_bb_compute): Remove third dead_debug_add argument.
+	* dce.c (word_dce_process_block): Likewise.
+
+2012-06-25  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* config/v850/v850.c: Remove redundant extern declarations for
+	last_assemble_variable_decl and size_directive_output.
+
+	* doc/tm.texi.in: Document JMP_BUF_SIZE.
+	* doc/tm.texi: Regenerate.
+	* config/sparc/sparc.h (JMP_BUF_SIZE): Do not define.
+	* config/pa/pa.h (JMP_BUF_SIZE): Likewise.
+	* config/stormy16/stormy16.h: Likewise.
+
+	* config/picochip/picochip.c: Do not define DONT_USE_BUILTIN_SETJMP.
+
+	* doc/sourcebuild.texi: Add missing subdirectories.
+
 2012-06-25  Tristan Gingold  <gingold@adacore.com>
 
 	* config/i386/i386.h: Fix typo.

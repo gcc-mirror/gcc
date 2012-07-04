@@ -1,4 +1,4 @@
-@c Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011
+@c Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011, 2012
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -66,6 +66,10 @@ include it in @code{libc}.
 @item libada
 The Ada runtime library.
 
+@item libatomic
+The runtime support library for atomic operations (e.g. for @code{__sync}
+and @code{__atomic}).
+
 @item libcpp
 The C preprocessor library.
 
@@ -94,6 +98,9 @@ generally useful data structures and algorithms.  @xref{Top, ,
 Introduction, libiberty, @sc{gnu} libiberty}, for more information
 about this library.
 
+@item libitm
+The runtime support library for transactional memory.
+
 @item libjava
 The Java runtime library.
 
@@ -103,6 +110,9 @@ dereferencing operations.
 
 @item libobjc
 The Objective-C and Objective-C++ runtime library.
+
+@item libquadmath
+The runtime support library for quad-precision math operations.
 
 @item libssp
 The Stack protector runtime library.
@@ -358,8 +368,7 @@ The GNU Free Documentation License.
 The section ``Funding Free Software''.
 @item gcc-common.texi
 Common definitions for manuals.
-@item gpl.texi
-@itemx gpl_v3.texi
+@item gpl_v3.texi
 The GNU General Public License.
 @item texinfo.tex
 A copy of @file{texinfo.tex} known to work with the GCC manuals.

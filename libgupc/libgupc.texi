@@ -143,7 +143,7 @@ Bugs in the GNU UPC implementation should be reported via
 @c GNU General Public License
 @c ---------------------------------------------------------------------
 
-@include gpl.texi
+@include gpl_v3.texi
 
 
 

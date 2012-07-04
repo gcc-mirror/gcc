@@ -931,6 +931,16 @@ vect_get_store_cost (struct data_reference *dr, int ncopies,
         break;
       }
 
+    case dr_unaligned_unsupported:
+      {
+        *inside_cost = VECT_MAX_COST;
+
+        if (vect_print_dump_info (REPORT_COST))
+          fprintf (vect_dump, "vect_model_store_cost: unsupported access.");
+
+        break;
+      }
+
     default:
       gcc_unreachable ();
     }
@@ -1090,6 +1100,16 @@ vect_get_load_cost (struct data_reference *dr, int ncopies,
         if (vect_print_dump_info (REPORT_COST))
           fprintf (vect_dump,
 		   "vect_model_load_cost: explicit realign optimized");
+
+        break;
+      }
+
+    case dr_unaligned_unsupported:
+      {
+        *inside_cost = VECT_MAX_COST;
+
+        if (vect_print_dump_info (REPORT_COST))
+          fprintf (vect_dump, "vect_model_load_cost: unsupported access.");
 
         break;
       }
@@ -3268,6 +3288,10 @@ vectorizable_shift (gimple stmt, gimple_stmt_iterator *gsi,
 }
 
 
+static tree permute_vec_elements (tree, tree, tree, gimple,
+				  gimple_stmt_iterator *);
+
+
 /* Function vectorizable_operation.
 
    Check if STMT performs a binary, unary or ternary operation that can
@@ -3280,17 +3304,18 @@ static bool
 vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
 			gimple *vec_stmt, slp_tree slp_node)
 {
-  tree vec_dest;
+  tree vec_dest, vec_dest2 = NULL_TREE;
+  tree vec_dest3 = NULL_TREE, vec_dest4 = NULL_TREE;
   tree scalar_dest;
   tree op0, op1 = NULL_TREE, op2 = NULL_TREE;
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
-  tree vectype;
+  tree vectype, wide_vectype = NULL_TREE;
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   enum tree_code code;
   enum machine_mode vec_mode;
   tree new_temp;
   int op_type;
-  optab optab;
+  optab optab, optab2 = NULL;
   int icode;
   tree def;
   gimple def_stmt;
@@ -3307,6 +3332,8 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
   tree vop0, vop1, vop2;
   bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_info);
   int vf;
+  unsigned char *sel = NULL;
+  tree decl1 = NULL_TREE, decl2 = NULL_TREE, perm_mask = NULL_TREE;
 
   if (!STMT_VINFO_RELEVANT_P (stmt_info) && !bb_vinfo)
     return false;
@@ -3431,31 +3458,102 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
   optab = optab_for_tree_code (code, vectype, optab_default);
 
   /* Supportable by target?  */
-  if (!optab)
+  if (!optab && code != MULT_HIGHPART_EXPR)
     {
       if (vect_print_dump_info (REPORT_DETAILS))
 	fprintf (vect_dump, "no optab.");
       return false;
     }
   vec_mode = TYPE_MODE (vectype);
-  icode = (int) optab_handler (optab, vec_mode);
+  icode = optab ? (int) optab_handler (optab, vec_mode) : CODE_FOR_nothing;
+
+  if (icode == CODE_FOR_nothing
+      && code == MULT_HIGHPART_EXPR
+      && VECTOR_MODE_P (vec_mode)
+      && BYTES_BIG_ENDIAN == WORDS_BIG_ENDIAN)
+    {
+      /* If MULT_HIGHPART_EXPR isn't supported by the backend, see
+	 if we can emit VEC_WIDEN_MULT_{LO,HI}_EXPR followed by VEC_PERM_EXPR
+	 or builtin_mul_widen_{even,odd} followed by VEC_PERM_EXPR.  */
+      unsigned int prec = TYPE_PRECISION (TREE_TYPE (scalar_dest));
+      unsigned int unsignedp = TYPE_UNSIGNED (TREE_TYPE (scalar_dest));
+      tree wide_type
+	= build_nonstandard_integer_type (prec * 2, unsignedp);
+      wide_vectype
+        = get_same_sized_vectype (wide_type, vectype);
+
+      sel = XALLOCAVEC (unsigned char, nunits_in);
+      if (VECTOR_MODE_P (TYPE_MODE (wide_vectype))
+	  && GET_MODE_SIZE (TYPE_MODE (wide_vectype))
+	     == GET_MODE_SIZE (vec_mode))
+	{
+	  if (targetm.vectorize.builtin_mul_widen_even
+	      && (decl1 = targetm.vectorize.builtin_mul_widen_even (vectype))
+	      && targetm.vectorize.builtin_mul_widen_odd
+	      && (decl2 = targetm.vectorize.builtin_mul_widen_odd (vectype))
+	      && TYPE_MODE (TREE_TYPE (TREE_TYPE (decl1)))
+		 == TYPE_MODE (wide_vectype))
+	    {
+	      for (i = 0; i < nunits_in; i++)
+		sel[i] = !BYTES_BIG_ENDIAN + (i & ~1)
+			 + ((i & 1) ? nunits_in : 0);
+	      if (can_vec_perm_p (vec_mode, false, sel))
+		icode = 0;
+	    }
+	  if (icode == CODE_FOR_nothing)
+	    {
+	      decl1 = NULL_TREE;
+	      decl2 = NULL_TREE;
+	      optab = optab_for_tree_code (VEC_WIDEN_MULT_LO_EXPR,
+					   vectype, optab_default);
+	      optab2 = optab_for_tree_code (VEC_WIDEN_MULT_HI_EXPR,
+					    vectype, optab_default);
+	      if (optab != NULL
+		  && optab2 != NULL
+		  && optab_handler (optab, vec_mode) != CODE_FOR_nothing
+		  && optab_handler (optab2, vec_mode) != CODE_FOR_nothing
+		  && insn_data[optab_handler (optab, vec_mode)].operand[0].mode
+		     == TYPE_MODE (wide_vectype)
+		  && insn_data[optab_handler (optab2,
+					      vec_mode)].operand[0].mode
+		     == TYPE_MODE (wide_vectype))
+		{
+		  for (i = 0; i < nunits_in; i++)
+		    sel[i] = !BYTES_BIG_ENDIAN + 2 * i;
+		  if (can_vec_perm_p (vec_mode, false, sel))
+		    icode = optab_handler (optab, vec_mode);
+		}
+	    }
+	}
+      if (icode == CODE_FOR_nothing)
+	{
+	  if (optab_for_tree_code (code, vectype, optab_default) == NULL)
+	    {
+	      if (vect_print_dump_info (REPORT_DETAILS))
+		fprintf (vect_dump, "no optab.");
+	      return false;
+	    }
+	  wide_vectype = NULL_TREE;
+	  optab2 = NULL;
+	}
+    }
+
   if (icode == CODE_FOR_nothing)
     {
       if (vect_print_dump_info (REPORT_DETAILS))
 	fprintf (vect_dump, "op not supported by target.");
       /* Check only during analysis.  */
       if (GET_MODE_SIZE (vec_mode) != UNITS_PER_WORD
-	  || (vf < vect_min_worthwhile_factor (code)
-              && !vec_stmt))
+	  || (!vec_stmt && vf < vect_min_worthwhile_factor (code)))
         return false;
       if (vect_print_dump_info (REPORT_DETAILS))
 	fprintf (vect_dump, "proceeding using word mode.");
     }
 
   /* Worthwhile without SIMD support?  Check only during analysis.  */
-  if (!VECTOR_MODE_P (TYPE_MODE (vectype))
-      && vf < vect_min_worthwhile_factor (code)
-      && !vec_stmt)
+  if (!VECTOR_MODE_P (vec_mode)
+      && !vec_stmt
+      && vf < vect_min_worthwhile_factor (code))
     {
       if (vect_print_dump_info (REPORT_DETAILS))
 	fprintf (vect_dump, "not worthwhile without SIMD support.");
@@ -3477,7 +3575,16 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
     fprintf (vect_dump, "transform binary/unary operation.");
 
   /* Handle def.  */
-  vec_dest = vect_create_destination_var (scalar_dest, vectype);
+  if (wide_vectype)
+    {
+      vec_dest = vect_create_destination_var (scalar_dest, wide_vectype);
+      vec_dest2 = vect_create_destination_var (scalar_dest, wide_vectype);
+      vec_dest3 = vect_create_destination_var (scalar_dest, vectype);
+      vec_dest4 = vect_create_destination_var (scalar_dest, vectype);
+      perm_mask = vect_gen_perm_mask (vectype, sel);
+    }
+  else
+    vec_dest = vect_create_destination_var (scalar_dest, vectype);
 
   /* Allocate VECs for vector operands.  In case of SLP, vector operands are
      created in the previous stages of the recursion, so no allocation is
@@ -3586,6 +3693,66 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
 		  ? VEC_index (tree, vec_oprnds1, i) : NULL_TREE);
 	  vop2 = ((op_type == ternary_op)
 		  ? VEC_index (tree, vec_oprnds2, i) : NULL_TREE);
+	  if (wide_vectype)
+	    {
+	      tree new_temp2, vce;
+
+	      gcc_assert (code == MULT_HIGHPART_EXPR);
+	      if (decl1 != NULL_TREE)
+		{
+		  new_stmt = gimple_build_call (decl1, 2, vop0, vop1);
+		  new_temp = make_ssa_name (vec_dest, new_stmt);
+		  gimple_call_set_lhs (new_stmt, new_temp);
+		  vect_finish_stmt_generation (stmt, new_stmt, gsi);
+
+		  new_stmt = gimple_build_call (decl2, 2, vop0, vop1);
+		  new_temp2 = make_ssa_name (vec_dest2, new_stmt);
+		  gimple_call_set_lhs (new_stmt, new_temp2);
+		  vect_finish_stmt_generation (stmt, new_stmt, gsi);
+		}
+	      else
+		{
+		  new_temp = make_ssa_name (vec_dest, NULL);
+		  new_stmt
+		    = gimple_build_assign_with_ops (BYTES_BIG_ENDIAN
+						    ? VEC_WIDEN_MULT_HI_EXPR
+						    : VEC_WIDEN_MULT_LO_EXPR,
+						    new_temp, vop0, vop1);
+		  vect_finish_stmt_generation (stmt, new_stmt, gsi);
+
+		  new_temp2 = make_ssa_name (vec_dest2, NULL);
+		  new_stmt
+		    = gimple_build_assign_with_ops (BYTES_BIG_ENDIAN
+						    ? VEC_WIDEN_MULT_LO_EXPR
+						    : VEC_WIDEN_MULT_HI_EXPR,
+						    new_temp2, vop0, vop1);
+		  vect_finish_stmt_generation (stmt, new_stmt, gsi);
+		}
+
+	      vce = build1 (VIEW_CONVERT_EXPR, vectype, new_temp);
+	      new_stmt = gimple_build_assign_with_ops (VIEW_CONVERT_EXPR,
+						       vec_dest3, vce,
+						       NULL_TREE);
+	      new_temp = make_ssa_name (vec_dest3, new_stmt);
+	      gimple_assign_set_lhs (new_stmt, new_temp);
+	      vect_finish_stmt_generation (stmt, new_stmt, gsi);
+
+	      vce = build1 (VIEW_CONVERT_EXPR, vectype, new_temp2);
+	      new_stmt = gimple_build_assign_with_ops (VIEW_CONVERT_EXPR,
+						       vec_dest4, vce,
+						       NULL_TREE);
+	      new_temp2 = make_ssa_name (vec_dest4, new_stmt);
+	      gimple_assign_set_lhs (new_stmt, new_temp2);
+	      vect_finish_stmt_generation (stmt, new_stmt, gsi);
+
+	      new_temp = permute_vec_elements (new_temp, new_temp2,
+					       perm_mask, stmt, gsi);
+	      new_stmt = SSA_NAME_DEF_STMT (new_temp);
+	      if (slp_node)
+		VEC_quick_push (gimple, SLP_TREE_VEC_STMTS (slp_node),
+				new_stmt);
+	      continue;
+	    }
 	  new_stmt = gimple_build_assign_with_ops3 (code, vec_dest,
 						    vop0, vop1, vop2);
 	  new_temp = make_ssa_name (vec_dest, new_stmt);

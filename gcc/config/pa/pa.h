@@ -1508,9 +1508,6 @@ do { 									\
      of the return address.  */						\
   (GEN_INT (-4))
 
-/* The number of Pmode words for the setjmp buffer.  */
-#define JMP_BUF_SIZE 50
-
 /* We need a libcall to canonicalize function pointers on TARGET_ELF32.  */
 #define CANONICALIZE_FUNCPTR_FOR_COMPARE_LIBCALL \
   "__canonicalize_funcptr_for_compare"

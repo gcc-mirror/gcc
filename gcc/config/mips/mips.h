@@ -2521,14 +2521,8 @@ typedef struct mips_args {
   { "gp",	28 + GP_REG_FIRST },					\
   { "sp",	29 + GP_REG_FIRST },					\
   { "fp",	30 + GP_REG_FIRST },					\
-  { "ra",	31 + GP_REG_FIRST },					\
-  ALL_COP_ADDITIONAL_REGISTER_NAMES					\
+  { "ra",	31 + GP_REG_FIRST }					\
 }
-
-/* This is meant to be redefined in the host dependent files.  It is a
-   set of alternative names and regnums for mips coprocessors.  */
-
-#define ALL_COP_ADDITIONAL_REGISTER_NAMES
 
 #define DBR_OUTPUT_SEQEND(STREAM)					\
 do									\

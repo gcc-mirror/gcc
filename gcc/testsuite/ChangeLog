@@ -1,4 +1,245 @@
+2012-06-29  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/47061
+	* gcc.dg/tree-ssa/vrp71.c: New testcase.
+
+2012-06-29  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/37541
+	* gcc.dg/tree-ssa/pr37508.c: Adjust and un-XFAIL.
+
+2012-06-29  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/52589
+	* gcc.dg/tree-ssa/vrp70.c: New testcase.
+
+2012-06-28  Janis Johnson  <janisjo@codesourcery.com>
+
+	* g++.dg/cpp0x/nullptr19.c: Remove exta directives on same line.
+
+	* g++.dg/template/error46.C: Add missing comment to dg-message.
+	* g++.dg/template/crash107.C: Likewise.
+	* g++.dg/template/error47.C: Likewise.
+	* g++.dg/template/crash108.C: Likewise.
+	* g++.dg/overload/operator5.C: Likewise.
+
+	* gcc.dg/Wstrict-aliasing-converted-assigned.c: Fix syntax
+	errors in dg-message directives, add comments.
+
+2012-06-28  Kai Tietz  <ktietz@redhat.com>
+
+	* g++.dg/cpp0x/constexpr-52672.C (ul_ptr): Use SIZE_TYPE instead of
+	hard-coded 'unsigned long'.
+
+2012-06-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/51581
+	* gcc.dg/vect/pr51581-4.c: New test.
+
+	PR tree-optimization/53645
+	* gcc.c-torture/execute/pr53645-2.c: New test.
+
+2012-06-28  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/53790
+	* gcc.dg/torture/pr53790.c: New testcase.
+
+2012-06-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/53645
+	* gcc.c-torture/execute/pr53645.c: New test.
+
+2012-06-28  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat.dg/deep_old.adb, gnat.dg/old_errors.adb: Removed, obsolete.
+
+2012-06-28  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/53671
+	PR debug/49888
+	* gcc.dg/guality/pr49888.c: Account for the possibility that
+	the variable is optimized out at the first test.
+
+2012-06-27  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/override2.C: Adjust.
+	* g++.dg/template/error5.C: Adjust.
+	* g++.dg/parse/crash28.C: Adjust.
+
+	PR c++/53563
+	* g++.dg/parse/template27.C: New.
+	* g++.dg/template/crash74.C: Adjust expected output.
+
+2012-06-27  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/41951
+	PR fortran/49591
+	* gfortran.dg/typebound_operator_16.f03: New.
+
+2012-06-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/i386/sse4_1-pmuldq.c (TEST): Initialize
+	even src1.i and src2.i fields even in the second half of the arrays.
+
+2012-06-27  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+	PR c++/51033.
+	* g++.dg/torture/vshuf-16.inc: New test.
+	* g++.dg/torture/vshuf-2.inc: New test.
+	* g++.dg/torture/vshuf-4.inc: New test.
+	* g++.dg/torture/vshuf-8.inc: New test.
+	* g++.dg/torture/vshuf-main.inc: New test.
+	* g++.dg/torture/vshuf-v16hi.C: New test.
+	* g++.dg/torture/vshuf-v16qi.C: New test.
+	* g++.dg/torture/vshuf-v2df.C: New test.
+	* g++.dg/torture/vshuf-v2di.C: New test.
+	* g++.dg/torture/vshuf-v2sf.C: New test.
+	* g++.dg/torture/vshuf-v2si.C: New test.
+	* g++.dg/torture/vshuf-v4df.C: New test.
+	* g++.dg/torture/vshuf-v4di.C: New test.
+	* g++.dg/torture/vshuf-v4sf.C: New test.
+	* g++.dg/torture/vshuf-v4si.C: New test.
+	* g++.dg/torture/vshuf-v8hi.C: New test.
+	* g++.dg/torture/vshuf-v8qi.C: New test.
+	* g++.dg/torture/vshuf-v8si.C: New test.
+
+2012-06-27  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/53676
+	* gcc.dg/tree-ssa/scev-6.c: New testcase.
+
+2012-06-26  Janis Johnson  <janisjo@codesourcery.com>
+
+	* lib/scandump.exp (scan-dump, scan-dump-not, scan-dump-dem,
+	scan-dump-dem-not): Use printable pattern in test name.
+
+2012-06-26  Sterling Augustine  <saugustine@google.com>
+	    Dominique Dhumieres  <dominiq@lps.ens.fr>
+
+	* gcc.dg/pubtypes-2.c: Update expected output.
+	* gcc.dg/pubtypes-3.c: Likewise.
+	* gcc.dg/pubtypes-4.c: Likewise.
+
+2012-06-26  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* gcc.dg/tree-ssa/slsr-1.c: New test.
+	* gcc.dg/tree-ssa/slsr-2.c: Likewise.
+	* gcc.dg/tree-ssa/slsr-3.c: Likewise.
+	* gcc.dg/tree-ssa/slsr-4.c: Likewise.
+
+2012-06-26  Matt Turner  <mattst88@gmail.com>
+
+	PR target/35294
+	* gcc.target/arm/mmx-2.c: New.
+
+2012-06-26  Richard Guenther  <rguenther@suse.de>
+
+	PR c++/53752
+	* g++.dg/torture/pr53752.C: New testcase.
+
+2012-06-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/53748
+	* gcc.c-torture/compile/pr53748.c: New test.
+
+2012-06-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53498
+	PR c++/53305
+	* g++.dg/cpp0x/decltype38.C: New.
+	* g++.dg/cpp0x/variadic132.C: Remove dg-error.
+
+2012-06-25  Janis Johnson  <janisjo@codesourcery.com>
+
+	* lib/target-supports-dg.exp (testname-for-summary): New.
+	* lib/profopt.exp (profopt_execute): Define testname_with_flags.
+	* lib/gcc-dg.exp (cleanup-coverage-files, cleanup-repo-notes,
+	cleanup-stack-usage, cleanup-dump, cleanup-saved-temps, scan-module,
+	scan-module-absence, output-exists, output-exists-not: Use
+	testname-for-summary.
+	(dg-test): Clean up testname_with_flags.
+	* lib/scanasm.exp (scan-assembler, scan-assembler-not, scan-hidden,
+	scan-not-hidden, scan-file, scan-file-not, scan-stack-usage,
+	scan-stack-usage-not, scan-assembler-times, scan-assembler-dem,
+	scan-assembler-dem-not, object-size: Use testname-for-summary.
+	* lib/gcov.exp (run-gcov): Likewise.
+	* lib/scandump.exp (scan-dump, scan-dump-times, scan-dump-not,
+	scan-dump-dem, scan-dump-dem-note): Likewise.
+
+	* lib/profopt.exp: Make prof_option_list local to profopt-execute.
+	* g++.dg/tree-prof/tree-prof.exp (PROFOPT_OPTIONS): Define after
+	including profopt.opt; save and restore existing value.
+	* g++.dg/bprob/bprob.exp: Likewise.
+	* gcc.dg/matrix/matrix.exp: Likewise.
+	* gcc.dg/tree-prof/tree-prof.exp: Likewise.
+	* gcc.misc-tests/bprob.exp: Likewise; also replace formerly-ignored
+	PROFOPT_OPTIONS.
+
+2012-06-25  Richard Henderson  <rth@redhat.com>
+
+	* gcc.dg/pr53749.c: New.
+
+2012-06-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/52988
+	* g++.dg/cpp0x/nullptr28.C: New.
+
+2012-06-25  Christophe Lyon  <christophe.lyon@st.com>
+
+	* gcc.target/arm/neon-vld1_dupQ.c: New.
+
+2012-06-25  Florian Weimer  <fweimer@redhat.com>
+
+	* g++.dg/init/new35.C: New.
+	* g++.dg/init/new36.C: New.
+	* g++.dg/init/new37.C: New.
+	* g++.dg/ext/vla5.C: New warning.
+	* g++.dg/ext/vla8.C: New warning.
+	* g++.dg/cpp0x/regress/debug-debug7.C: Update diagnostics.
+
+2012-06-25  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
+            James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/arm/ftest-support-arm.h New testcase.
+	* gcc.target/arm/ftest-support-thumb.h Likewise.
+	* gcc.target/arm/ftest-support.h Likewise.
+	* gcc.target/arm/ftest-armv4-arm.c: Likewise.
+	* gcc.target/arm/ftest-armv4t-arm.c: Likewise.
+	* gcc.target/arm/ftest-armv4t-thumb.c: Likewise.
+	* gcc.target/arm/ftest-armv5t-arm.c Likewise.
+	* gcc.target/arm/ftest-armv5t-thumb.c Likewise.
+	* gcc.target/arm/ftest-armv5te-arm.c: Likewise.
+	* gcc.target/arm/ftest-armv5te-thumb.c: Likewise.
+	* gcc.target/arm/ftest-armv6-arm.c Likewise.
+	* gcc.target/arm/ftest-armv6-thumb.c Likewise.
+	* gcc.target/arm/ftest-armv6k-arm.c Likewise.
+	* gcc.target/arm/ftest-armv6k-thumb.c Likewise.
+	* gcc.target/arm/ftest-armv6m-thumb.c: Likewise.
+	* gcc.target/arm/ftest-armv6t2-arm.c: Likewise.
+	* gcc.target/arm/ftest-armv6t2-thumb.c: Likewise.
+	* gcc.target/arm/ftest-armv6z-arm.c: Likewise.
+	* gcc.target/arm/ftest-armv6z-thumb.c: Likewise.
+	* gcc.target/arm/ftest-armv7a-arm.c Likewise.
+	* gcc.target/arm/ftest-armv7a-thumb.c Likewise.
+	* gcc.target/arm/ftest-armv7m-thumb.c: Likewise.
+	* gcc.target/arm/ftest-armv7em-thumb.c: Likewise.
+	* gcc.target/arm/ftest-armv7r-arm.c Likewise.
+	* gcc.target/arm/ftest-armv7r-thumb.c Likewise.
+	* gcc/testsuite/lib/target-supports.exp
+	(check_effective_target_arm_arch_FUNC): Add support for more
+	architectures.
+	(add_options_for_arm_arch_FUNC): Likewise.
+	(check_effective_target_arm_arch_FUNC_multilib): New functions.
+
+2012-06-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53202
+	* g++.dg/cpp0x/constexpr-tuple.C: New.
+
 2012-06-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/53759
+	* gcc.target/i386/pr53759.c: New test.
 
 	PR c++/53594
 	* g++.dg/cpp0x/nsdmi7.C: New test.

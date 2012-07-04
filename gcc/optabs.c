@@ -367,6 +367,9 @@ optab_for_tree_code (enum tree_code code, const_tree type,
     case BIT_XOR_EXPR:
       return xor_optab;
 
+    case MULT_HIGHPART_EXPR:
+      return TYPE_UNSIGNED (type) ? umul_highpart_optab : smul_highpart_optab;
+
     case TRUNC_MOD_EXPR:
     case CEIL_MOD_EXPR:
     case FLOOR_MOD_EXPR:

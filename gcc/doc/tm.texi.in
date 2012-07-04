@@ -3409,8 +3409,8 @@ This macro allows the target to add operating system specific code to the
 call-frame unwinder to handle the IA-64 @code{.unwabi} unwinding directive,
 usually used for signal or interrupt frames.
 
-This macro is called from @code{uw_update_context} in @file{unwind-ia64.c}.
-@var{context} is an @code{_Unwind_Context};
+This macro is called from @code{uw_update_context} in libgcc's
+@file{unwind-ia64.c}.  @var{context} is an @code{_Unwind_Context};
 @var{fs} is an @code{_Unwind_FrameState}.  Examine @code{fs->unwabi}
 for the abi and context in the @code{.unwabi} directive.  If the
 @code{.unwabi} directive can be handled, the register save addresses should
@@ -6063,20 +6063,6 @@ There is one macro that may need to be defined for targets
 supporting conditional execution, independent of how they
 represent conditional branches.
 
-@defmac REVERSE_CONDEXEC_PREDICATES_P (@var{op1}, @var{op2})
-A C expression that returns true if the conditional execution predicate
-@var{op1}, a comparison operation, is the inverse of @var{op2} and vice
-versa.  Define this to return 0 if the target has conditional execution
-predicates that cannot be reversed safely.  There is no need to validate
-that the arguments of op1 and op2 are the same, this is done separately.
-If no expansion is specified, this macro is defined as follows:
-
-@smallexample
-#define REVERSE_CONDEXEC_PREDICATES_P (x, y) \
-   (GET_CODE ((x)) == reversed_comparison_code ((y), NULL))
-@end smallexample
-@end defmac
-
 @node Costs
 @section Describing Relative Costs of Operations
 @cindex costs of instructions
@@ -6357,7 +6343,7 @@ Define this macro if it is as good or better to call a constant
 function address than to call an address kept in a register.
 @end defmac
 
-@defmac RANGE_TEST_NON_SHORT_CIRCUIT
+@defmac LOGICAL_OP_NON_SHORT_CIRCUIT
 Define this macro if a non-short-circuit operation produced by
 @samp{fold_range_test ()} is optimal.  This macro defaults to true if
 @code{BRANCH_COST} is greater than or equal to the value 2.
@@ -8815,8 +8801,8 @@ that it does not contain any extraneous set bits in it.
 Define this macro to 0 if your target supports DWARF 2 frame unwind
 information, but it does not yet work with exception handling.
 Otherwise, if your target supports this information (if it defines
-@code{INCOMING_RETURN_ADDR_RTX} and either @code{UNALIGNED_INT_ASM_OP}
-or @code{OBJECT_FORMAT_ELF}), GCC will provide a default definition of 1.
+@code{INCOMING_RETURN_ADDR_RTX} and @code{OBJECT_FORMAT_ELF}),
+GCC will provide a default definition of 1.
 @end defmac
 
 @hook TARGET_EXCEPT_UNWIND_INFO
@@ -8855,6 +8841,14 @@ command-line option processing.
 Define this macro to 1 if the @code{setjmp}/@code{longjmp}-based scheme
 should use the @code{setjmp}/@code{longjmp} functions from the C library
 instead of the @code{__builtin_setjmp}/@code{__builtin_longjmp} machinery.
+@end defmac
+
+@defmac JMP_BUF_SIZE
+This macro has no effect unless @code{DONT_USE_BUILTIN_SETJMP} is also
+defined.  Define this macro if the default size of @code{jmp_buf} buffer
+for the @code{setjmp}/@code{longjmp}-based exception handling mechanism
+is not large enough, or if it is much too large.
+The default size is @code{FIRST_PSEUDO_REGISTER * sizeof(void *)}.
 @end defmac
 
 @defmac DWARF_CIE_DATA_ALIGNMENT
@@ -9233,22 +9227,6 @@ number for a type number.
 @c prevent bad page break with this line
 These are hooks for DBX format.
 
-@defmac DBX_OUTPUT_LBRAC (@var{stream}, @var{name})
-Define this macro to say how to output to @var{stream} the debugging
-information for the start of a scope level for variable names.  The
-argument @var{name} is the name of an assembler symbol (for use with
-@code{assemble_name}) whose value is the address where the scope begins.
-@end defmac
-
-@defmac DBX_OUTPUT_RBRAC (@var{stream}, @var{name})
-Like @code{DBX_OUTPUT_LBRAC}, but for the end of a scope level.
-@end defmac
-
-@defmac DBX_OUTPUT_NFUN (@var{stream}, @var{lscope_label}, @var{decl})
-Define this macro if the target machine requires special handling to
-output an @code{N_FUN} entry for the function @var{decl}.
-@end defmac
-
 @defmac DBX_OUTPUT_SOURCE_LINE (@var{stream}, @var{line}, @var{counter})
 A C statement to output DBX debugging information before code for line
 number @var{line} of the current source file to the stdio stream
@@ -9562,13 +9540,6 @@ Returns the negative of the floating point value @var{x}.
 
 @deftypefn Macro REAL_VALUE_TYPE REAL_VALUE_ABS (REAL_VALUE_TYPE @var{x})
 Returns the absolute value of @var{x}.
-@end deftypefn
-
-@deftypefn Macro REAL_VALUE_TYPE REAL_VALUE_TRUNCATE (REAL_VALUE_TYPE @var{mode}, enum machine_mode @var{x})
-Truncates the floating point value @var{x} to fit in @var{mode}.  The
-return value is still a full-size @code{REAL_VALUE_TYPE}, but it has an
-appropriate bit pattern to be output as a floating constant whose
-precision accords with mode @var{mode}.
 @end deftypefn
 
 @deftypefn Macro void REAL_VALUE_TO_INT (HOST_WIDE_INT @var{low}, HOST_WIDE_INT @var{high}, REAL_VALUE_TYPE @var{x})
@@ -9936,15 +9907,6 @@ floating-point support; they are not included in this mechanism.
 There is one macro used in defining the MIPS coprocessor interface which
 you may want to override in subtargets; it is described below.
 
-@defmac ALL_COP_ADDITIONAL_REGISTER_NAMES
-A comma-separated list (with leading comma) of pairs describing the
-alternate names of coprocessor registers.  The format of each entry should be
-@smallexample
-@{ @var{alternatename}, @var{register_number}@}
-@end smallexample
-Default: empty.
-@end defmac
-
 @node PCH Target
 @section Parameters for Precompiled Header Validity Checking
 @cindex parameters, precompiled headers
@@ -10298,16 +10260,6 @@ is best to use a jump-table instead of a tree of conditional branches.
 The default is four for machines with a @code{casesi} instruction and
 five otherwise.  This is best for most machines.
 @end deftypefn
-
-@defmac CASE_USE_BIT_TESTS
-Define this macro to be a C expression to indicate whether C switch
-statements may be implemented by a sequence of bit tests.  This is
-advantageous on processors that can efficiently implement left shift
-of 1 by the number of bits held in a register, but inappropriate on
-targets that would require a loop.  By default, this macro returns
-@code{true} if the target defines an @code{ashlsi3} pattern, and
-@code{false} otherwise.
-@end defmac
 
 @defmac WORD_REGISTER_OPERATIONS
 Define this macro if operations between registers with integral mode
@@ -10864,15 +10816,10 @@ can be found in the @code{struct ce_if_block} structure that is pointed
 to by @var{ce_info}.
 @end defmac
 
-@defmac IFCVT_INIT_EXTRA_FIELDS (@var{ce_info})
-A C expression to initialize any extra fields in a @code{struct ce_if_block}
-structure, which are defined by the @code{IFCVT_EXTRA_FIELDS} macro.
-@end defmac
-
-@defmac IFCVT_EXTRA_FIELDS
-If defined, it should expand to a set of field declarations that will be
-added to the @code{struct ce_if_block} structure.  These should be initialized
-by the @code{IFCVT_INIT_EXTRA_FIELDS} macro.
+@defmac IFCVT_MACHDEP_INIT (@var{ce_info})
+A C expression to initialize any machine specific data for if-conversion
+of the if-block in the @code{struct ce_if_block} structure that is pointed
+to by @var{ce_info}.
 @end defmac
 
 @hook TARGET_MACHINE_DEPENDENT_REORG

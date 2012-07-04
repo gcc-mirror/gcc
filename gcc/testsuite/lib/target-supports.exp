@@ -2169,10 +2169,21 @@ proc check_effective_target_arm_fp16_ok { } {
 # (Thumb in particular - but others may be added in the future)
 # Usage: /* { dg-require-effective-target arm_arch_v5_ok } */
 #        /* { dg-add-options arm_arch_v5 } */
-foreach { armfunc armflag armdef } { v5 "-march=armv5 -marm" __ARM_ARCH_5__
+#	 /* { dg-require-effective-target arm_arch_v5_multilib } */
+foreach { armfunc armflag armdef } { v4 "-march=armv4 -marm" __ARM_ARCH_4__
+				     v4t "-march=armv4t" __ARM_ARCH_4T__
+				     v5 "-march=armv5 -marm" __ARM_ARCH_5__
+				     v5t "-march=armv5t" __ARM_ARCH_5T__
+				     v5te "-march=armv5te" __ARM_ARCH_5TE__
 				     v6 "-march=armv6" __ARM_ARCH_6__
 				     v6k "-march=armv6k" __ARM_ARCH_6K__
-				     v7a "-march=armv7-a" __ARM_ARCH_7A__ } {
+				     v6t2 "-march=armv6t2" __ARM_ARCH_6T2__
+				     v6z "-march=armv6z" __ARM_ARCH_6Z__
+				     v6m "-march=armv6-m -mthumb" __ARM_ARCH_6M__
+				     v7a "-march=armv7-a" __ARM_ARCH_7A__
+				     v7r "-march=armv7-r" __ARM_ARCH_7R__
+				     v7m "-march=armv7-m -mthumb" __ARM_ARCH_7M__
+				     v7em "-march=armv7e-m -mthumb" __ARM_ARCH_7EM__ } {
     eval [string map [list FUNC $armfunc FLAG $armflag DEF $armdef ] {
 	proc check_effective_target_arm_arch_FUNC_ok { } {
 	    if { [ string match "*-marm*" "FLAG" ] &&
@@ -2189,6 +2200,16 @@ foreach { armfunc armflag armdef } { v5 "-march=armv5 -marm" __ARM_ARCH_5__
 	proc add_options_for_arm_arch_FUNC { flags } {
 	    return "$flags FLAG"
 	}
+
+	proc check_effective_target_arm_arch_FUNC_multilib { } {
+	    return [check_runtime arm_arch_FUNC_multilib {
+		int
+		main (void)
+		{
+		    return 0;
+		}
+	    } [add_options_for_arm_arch_FUNC ""]]
+        }
     }]
 }
 

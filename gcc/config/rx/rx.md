@@ -348,7 +348,7 @@
 )
 
 (define_insn "simple_return"
-  [(return)]
+  [(simple_return)]
   ""
   "rts"
   [(set_attr "length" "1")
@@ -1868,7 +1868,7 @@
 
 (define_insn "comparesi3_<extend_types:code><small_int_modes:mode>"
   [(set (reg:CC CC_REG)
-	(compare:CC (match_operand:SI                               0 "register_operand" "=r")
+	(compare:CC (match_operand:SI                               0 "register_operand" "r")
 		    (extend_types:SI (match_operand:small_int_modes 1 "rx_restricted_mem_operand" "Q"))))]
   "(optimize < 3 || optimize_size)"
   "cmp\t%<extend_types:letter>1, %0"

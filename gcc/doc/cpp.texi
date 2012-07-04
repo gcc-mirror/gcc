@@ -2397,7 +2397,7 @@ type of system and machine is in use.  They are obviously different on
 each target supported by GCC@.  This manual, being for all systems and
 machines, cannot tell you what their names are, but you can use
 @command{cpp -dM} to see them all.  @xref{Invocation}.  All system-specific
-predefined macros expand to the constant 1, so you can test them with
+predefined macros expand to a constant value, so you can test them with
 either @samp{#ifdef} or @samp{#if}.
 
 The C standard requires that all system-specific macros be part of the
@@ -3420,8 +3420,8 @@ the installation in a consistent way, you can use conditionals to detect
 an inconsistency and report it with @samp{#error}.  For example,
 
 @smallexample
-#if !defined(UNALIGNED_INT_ASM_OP) && defined(DWARF2_DEBUGGING_INFO)
-#error "DWARF2_DEBUGGING_INFO requires UNALIGNED_INT_ASM_OP."
+#if !defined(FOO) && defined(BAR)
+#error "BAR requires FOO."
 #endif
 @end smallexample
 

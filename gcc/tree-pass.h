@@ -452,6 +452,7 @@ extern struct gimple_opt_pass pass_tm_memopt;
 extern struct gimple_opt_pass pass_tm_edges;
 extern struct gimple_opt_pass pass_split_functions;
 extern struct gimple_opt_pass pass_feedback_split_functions;
+extern struct gimple_opt_pass pass_strength_reduction;
 
 /* IPA Passes */
 extern struct simple_ipa_opt_pass pass_ipa_lower_emutls;

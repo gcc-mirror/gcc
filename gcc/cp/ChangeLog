@@ -1,3 +1,63 @@
+2012-06-27  Jason Merrill  <jason@redhat.com>
+
+	* parser.c (cp_parser_check_for_invalid_template_id): tag_type parm.
+	(cp_parser_simple_type_specifier, cp_parser_class_head): Adjust.
+	(cp_parser_elaborated_type_specifier): Adjust.
+	* decl.c (duplicate_decls): Return error_mark_node on template
+	mismatch.
+
+	PR c++/53563
+	* parser.c (cp_parser_template_id): Add tag_type parm.
+	(cp_parser_template_name): Likewise.
+	(cp_parser_id_expression, cp_parser_unqualified_id): Adjust.
+	(cp_parser_pseudo_destructor_name, cp_parser_type_name): Adjust.
+	(cp_parser_simple_type_specifier, cp_parser_class_name): Adjust.
+	(cp_parser_elaborated_type_specifier, cp_parser_class_head): Adjust.
+
+2012-06-27  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+	PR C++/51033
+	* semantics.c (constexpr_call): Fix typo in comment.
+	(cxx_eval_vec_perm_expr): New.
+	(cxx_eval_constant_expression): Fold VEC_PERM_EXPRs.
+
+2012-06-26  Richard Guenther  <rguenther@suse.de>
+
+	PR c++/53752
+	* mangle.c (write_array_type): Truncate the number-of-elements
+	result.
+
+2012-06-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53498
+	PR c++/53305
+	* pt.c (tsubst_decl) [PARM_DECL]: Don't recurse into DECL_CHAIN
+	if cp_unevaluated_operand is set.
+	(tsubst_copy) [PARM_DECL]: Don't copy before tsubsting.
+
+	PR c++/52988
+	* typeck.c (decay_conversion): Don't discard side-effects from
+	expressions of nullptr_t.
+
+2012-06-25  Florian Weimer  <fweimer@redhat.com>
+
+	* init.c (build_new_1): Warn about (T[N]) for variable N, and
+	reject T[M][N].
+
+	* parser.c (cp_parser_direct_new_declarator): Accept non-constant
+	expressions.  Handled now in build_new_1.
+
+2012-06-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53202
+	* semantics.c (build_data_member_initialization): Always keep
+	initializer for empty base.
+	(cxx_eval_bare_aggregate): Discard it here.
+
+	PR c++/53565
+	* pt.c (tsubst_omp_for_iterator): Simplify DECL_EXPR handling.
+	(tsubst_expr) [OMP_FOR]: Here, too.
+
 2012-06-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/53594

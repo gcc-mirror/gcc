@@ -1634,6 +1634,7 @@ interpret_rhs_expr (struct loop *loop, gimple at_stmt,
 		    tree type, tree rhs1, enum tree_code code, tree rhs2)
 {
   tree res, chrec1, chrec2;
+  gimple def;
 
   if (get_gimple_rhs_class (code) == GIMPLE_SINGLE_RHS)
     {
@@ -1759,7 +1760,29 @@ interpret_rhs_expr (struct loop *loop, gimple at_stmt,
       break;
 
     CASE_CONVERT:
-      chrec1 = analyze_scalar_evolution (loop, rhs1);
+      /* In case we have a truncation of a widened operation that in
+         the truncated type has undefined overflow behavior analyze
+	 the operation done in an unsigned type of the same precision
+	 as the final truncation.  We cannot derive a scalar evolution
+	 for the widened operation but for the truncated result.  */
+      if (TREE_CODE (type) == INTEGER_TYPE
+	  && TREE_CODE (TREE_TYPE (rhs1)) == INTEGER_TYPE
+	  && TYPE_PRECISION (type) < TYPE_PRECISION (TREE_TYPE (rhs1))
+	  && TYPE_OVERFLOW_UNDEFINED (type)
+	  && TREE_CODE (rhs1) == SSA_NAME
+	  && (def = SSA_NAME_DEF_STMT (rhs1))
+	  && is_gimple_assign (def)
+	  && TREE_CODE_CLASS (gimple_assign_rhs_code (def)) == tcc_binary
+	  && TREE_CODE (gimple_assign_rhs2 (def)) == INTEGER_CST)
+	{
+	  tree utype = unsigned_type_for (type);
+	  chrec1 = interpret_rhs_expr (loop, at_stmt, utype,
+				       gimple_assign_rhs1 (def),
+				       gimple_assign_rhs_code (def),
+				       gimple_assign_rhs2 (def));
+	}
+      else
+	chrec1 = analyze_scalar_evolution (loop, rhs1);
       res = chrec_convert (type, chrec1, at_stmt);
       break;
 

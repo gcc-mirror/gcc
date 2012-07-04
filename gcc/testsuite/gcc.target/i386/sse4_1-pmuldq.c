@@ -32,7 +32,7 @@ TEST (void)
   int i, sign = 1;
   long long value;
 
-  for (i = 0; i < NUM; i += 2)
+  for (i = 0; i < NUM * 2; i += 2)
     {
       src1.i[i] = i * i * sign;
       src2.i[i] = (i + 20) * sign;

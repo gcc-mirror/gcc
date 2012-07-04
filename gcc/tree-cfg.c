@@ -3731,6 +3731,7 @@ do_pointer_plus_expr_check:
       return false;
 
     case MULT_EXPR:
+    case MULT_HIGHPART_EXPR:
     case TRUNC_DIV_EXPR:
     case CEIL_DIV_EXPR:
     case FLOOR_DIV_EXPR:

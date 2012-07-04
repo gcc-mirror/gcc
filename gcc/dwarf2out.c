@@ -8283,6 +8283,12 @@ output_pubnames (VEC (pubname_entry, gc) * names)
 
   FOR_EACH_VEC_ELT (pubname_entry, names, i, pub)
     {
+      /* Enumerator names are part of the pubname table, but the parent
+         DW_TAG_enumeration_type die may have been pruned.  Don't output
+         them if that is the case.  */
+      if (pub->die->die_tag == DW_TAG_enumerator && !pub->die->die_mark)
+        continue;
+
       /* We shouldn't see pubnames for DIEs outside of the main CU.  */
       if (names == pubname_table)
 	gcc_assert (pub->die->die_mark);
@@ -21280,10 +21286,13 @@ prune_unused_types (void)
       prune_unused_types_mark (ctnode->type_die, 1);
     }
 
-  /* Also set the mark on nodes referenced from the
-     pubname_table.  */
+  /* Also set the mark on nodes referenced from the pubname_table.  Enumerators
+     are unusual in that they are pubnames that are the children of pubtypes.
+     They should only be marked via their parent DW_TAG_enumeration_type die,
+     not as roots in themselves.  */
   FOR_EACH_VEC_ELT (pubname_entry, pubname_table, i, pub)
-    prune_unused_types_mark (pub->die, 1);
+    if (pub->die->die_tag != DW_TAG_enumerator)
+      prune_unused_types_mark (pub->die, 1);
   for (i = 0; VEC_iterate (dw_die_ref, base_types, i, base_type); i++)
     prune_unused_types_mark (base_type, 1);
 

@@ -10497,7 +10497,9 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
               DECL_CHAIN (prev_r) = r;
           }
 
-	if (DECL_CHAIN (t))
+	/* If cp_unevaluated_operand is set, we're just looking for a
+	   single dummy parameter, so don't keep going.  */
+	if (DECL_CHAIN (t) && !cp_unevaluated_operand)
 	  DECL_CHAIN (r) = tsubst (DECL_CHAIN (t), args,
 				   complain, DECL_CHAIN (t));
 
@@ -12078,8 +12080,6 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
       if (r == NULL_TREE)
 	{
-	  tree c;
-
 	  /* We get here for a use of 'this' in an NSDMI.  */
 	  if (DECL_NAME (t) == this_identifier
 	      && at_function_scope_p ()
@@ -12090,12 +12090,7 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	     declaration (such as in a late-specified return type).  Just
 	     make a dummy decl, since it's only used for its type.  */
 	  gcc_assert (cp_unevaluated_operand != 0);
-	  /* We copy T because want to tsubst the PARM_DECL only,
-	     not the following PARM_DECLs that are chained to T.  */
-	  c = copy_node (t);
-	  r = tsubst_decl (c, args, complain);
-	  if (r == NULL_TREE)
-	    return error_mark_node;
+	  r = tsubst_decl (t, args, complain);
 	  /* Give it the template pattern as its context; its true context
 	     hasn't been instantiated yet and this is good enough for
 	     mangling.  */
@@ -12659,22 +12654,24 @@ tsubst_omp_for_iterator (tree t, int i, tree declv, tree initv,
 #define RECUR(NODE)				\
   tsubst_expr ((NODE), args, complain, in_decl,	\
 	       integral_constant_expression_p)
-  tree decl, init, cond, incr, auto_node;
+  tree decl, init, cond, incr;
+  bool init_decl;
 
   init = TREE_VEC_ELT (OMP_FOR_INIT (t), i);
   gcc_assert (TREE_CODE (init) == MODIFY_EXPR);
-  decl = RECUR (TREE_OPERAND (init, 0));
+  decl = TREE_OPERAND (init, 0);
   init = TREE_OPERAND (init, 1);
-  auto_node = type_uses_auto (TREE_TYPE (decl));
-  if (auto_node && init)
+  /* Do this before substituting into decl to handle 'auto'.  */
+  init_decl = (init && TREE_CODE (init) == DECL_EXPR);
+  init = RECUR (init);
+  decl = RECUR (decl);
+  if (init_decl)
     {
-      tree init_expr = init;
-      if (TREE_CODE (init_expr) == DECL_EXPR)
-	init_expr = DECL_INITIAL (DECL_EXPR_DECL (init_expr));
-      init_expr = RECUR (init_expr);
-      TREE_TYPE (decl)
-	= do_auto_deduction (TREE_TYPE (decl), init_expr, auto_node);
+      gcc_assert (!processing_template_decl);
+      init = DECL_INITIAL (decl);
+      DECL_INITIAL (decl) = NULL_TREE;
     }
+
   gcc_assert (!type_dependent_expression_p (decl));
 
   if (!CLASS_TYPE_P (TREE_TYPE (decl)))
@@ -12695,7 +12692,7 @@ tsubst_omp_for_iterator (tree t, int i, tree declv, tree initv,
       return;
     }
 
-  if (init && TREE_CODE (init) != DECL_EXPR)
+  if (init && !init_decl)
     {
       tree c;
       for (c = *clauses; c ; c = OMP_CLAUSE_CHAIN (c))
@@ -13189,33 +13186,12 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	condv = make_tree_vec (TREE_VEC_LENGTH (OMP_FOR_INIT (t)));
 	incrv = make_tree_vec (TREE_VEC_LENGTH (OMP_FOR_INIT (t)));
 
+	stmt = begin_omp_structured_block ();
+
 	for (i = 0; i < TREE_VEC_LENGTH (OMP_FOR_INIT (t)); i++)
 	  tsubst_omp_for_iterator (t, i, declv, initv, condv, incrv,
 				   &clauses, args, complain, in_decl,
 				   integral_constant_expression_p);
-
-	stmt = begin_omp_structured_block ();
-
-	for (i = 0; i < TREE_VEC_LENGTH (initv); i++)
-	  if (TREE_VEC_ELT (initv, i) == NULL
-	      || TREE_CODE (TREE_VEC_ELT (initv, i)) != DECL_EXPR)
-	    TREE_VEC_ELT (initv, i) = RECUR (TREE_VEC_ELT (initv, i));
-	  else if (CLASS_TYPE_P (TREE_TYPE (TREE_VEC_ELT (initv, i))))
-	    {
-	      tree init = RECUR (TREE_VEC_ELT (initv, i));
-	      gcc_assert (init == TREE_VEC_ELT (declv, i));
-	      TREE_VEC_ELT (initv, i) = NULL_TREE;
-	    }
-	  else
-	    {
-	      tree decl_expr = TREE_VEC_ELT (initv, i);
-	      tree init = DECL_INITIAL (DECL_EXPR_DECL (decl_expr));
-	      gcc_assert (init != NULL);
-	      TREE_VEC_ELT (initv, i) = RECUR (init);
-	      DECL_INITIAL (DECL_EXPR_DECL (decl_expr)) = NULL;
-	      RECUR (decl_expr);
-	      DECL_INITIAL (DECL_EXPR_DECL (decl_expr)) = init;
-	    }
 
 	pre_body = push_stmt_list ();
 	RECUR (OMP_FOR_PRE_BODY (t));

@@ -2668,7 +2668,9 @@ package body Exp_Ch3 is
 
                      Ritem :=
                        Get_Rep_Item
-                         (Corresponding_Concurrent_Type (Scope (Id)), Nam);
+                         (Corresponding_Concurrent_Type (Scope (Id)),
+                          Nam,
+                          Check_Parents => False);
 
                      if Present (Ritem) then
 

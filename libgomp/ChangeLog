@@ -1,3 +1,7 @@
+2012-06-28  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* libgomp.texi: Include gpl_v3.texi instead of gpl.texi.
+
 2012-06-22  Richard Guenther  <rguenther@suse.de>
 
 	Merge from graphite branch

@@ -2175,6 +2175,7 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
   tree pointer_type;
   tree non_const_pointer_type;
   tree outer_nelts = NULL_TREE;
+  bool outer_nelts_from_type = false;
   tree alloc_call, alloc_expr;
   /* The address returned by the call to "operator new".  This node is
      a VAR_DECL and is therefore reusable.  */
@@ -2209,10 +2210,14 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
     }
   else if (TREE_CODE (type) == ARRAY_TYPE)
     {
+      /* Transforms new (T[N]) to new T[N].  The former is a GNU
+	 extension for variable N.  (This also covers new T where T is
+	 a VLA typedef.)  */
       array_p = true;
       nelts = array_type_nelts_top (type);
       outer_nelts = nelts;
       type = TREE_TYPE (type);
+      outer_nelts_from_type = true;
     }
 
   /* If our base type is an array, then make sure we know how many elements
@@ -2220,10 +2225,46 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
   for (elt_type = type;
        TREE_CODE (elt_type) == ARRAY_TYPE;
        elt_type = TREE_TYPE (elt_type))
-    nelts = cp_build_binary_op (input_location,
-				MULT_EXPR, nelts,
-				array_type_nelts_top (elt_type),
-				complain);
+    {
+      tree inner_nelts = array_type_nelts_top (elt_type);
+      tree inner_nelts_cst = maybe_constant_value (inner_nelts);
+      if (!TREE_CONSTANT (inner_nelts_cst))
+	{
+	  if (complain & tf_error)
+	    {
+	      error_at (EXPR_LOC_OR_HERE (inner_nelts),
+			"array size in operator new must be constant");
+	      cxx_constant_value(inner_nelts);
+	    }
+	  nelts = error_mark_node;
+	}
+      if (nelts != error_mark_node)
+	nelts = cp_build_binary_op (input_location,
+				    MULT_EXPR, nelts,
+				    inner_nelts_cst,
+				    complain);
+    }
+
+  if (variably_modified_type_p (elt_type, NULL_TREE) && (complain & tf_error))
+    {
+      error ("variably modified type not allowed in operator new");
+      return error_mark_node;
+    }
+
+  if (nelts == error_mark_node)
+    return error_mark_node;
+
+  /* Warn if we performed the (T[N]) to T[N] transformation and N is
+     variable.  */
+  if (outer_nelts_from_type
+      && !TREE_CONSTANT (maybe_constant_value (outer_nelts)))
+    {
+      if (complain & tf_warning_or_error)
+	pedwarn(EXPR_LOC_OR_HERE (outer_nelts), OPT_Wvla,
+		"ISO C++ does not support variable-length array types");
+      else
+	return error_mark_node;
+    }
 
   if (TREE_CODE (elt_type) == VOID_TYPE)
     {

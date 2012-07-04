@@ -265,8 +265,7 @@ proc run-gcov { args } {
 	}
     }
 
-    # Get the test name, including options that make it unique, from gnu-test 2 levels up.
-    upvar 2 name testname
+    set testname [testname-for-summary]
 
     # Extract the test file name from the arguments.
     set testcase [lindex $gcov_args end]

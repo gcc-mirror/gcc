@@ -1132,7 +1132,6 @@ runfinq(void* dummy __attribute__ ((unused)))
 
 				f = &fb->fin[i];
 				params[0] = &f->arg;
-				runtime_setblockspecial(f->arg, false);
 				reflect_call(f->ft, (void*)f->fn, 0, 0, params, nil);
 				f->fn = nil;
 				f->arg = nil;
