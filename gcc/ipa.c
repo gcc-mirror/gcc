@@ -449,11 +449,6 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
   verify_symtab ();
 #endif
 
-  /* If we removed something, perhaps profile could be improved.  */
-  if (changed && optimize && inline_edge_summary_vec)
-    FOR_EACH_DEFINED_FUNCTION (node)
-      cgraph_propagate_frequency (node);
-
   return changed;
 }
 

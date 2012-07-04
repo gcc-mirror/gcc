@@ -1,3 +1,9 @@
+2012-07-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/53321
+	* ipa.c (symtab_remove_unreachable_nodes): Partially revert r187375
+	to not call cgraph_propagate_frequency if something was changed.
+
 2012-07-04  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/53433
@@ -31,7 +37,7 @@
 	as in free_lang_data_in_type.
 
 2012-07-04  Tobias Grosser <tobias@grosser.es>
-	Michael Matz  <matz@suse.de>
+	    Michael Matz  <matz@suse.de>
 
 	* Makefile.in (OBJS): Add graphite-optimize-isl.o.
 	(graphite-optimize-isl.o): Add dependencies.
