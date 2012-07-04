@@ -84,7 +84,7 @@ AC_DEFUN([ISL_INIT_FLAGS],
 
 # ISL_REQUESTED (ACTION-IF-REQUESTED, ACTION-IF-NOT)
 # ----------------------------------------------------
-# Provide actions for failed CLooG detection.
+# Provide actions for failed ISL detection.
 AC_DEFUN([ISL_REQUESTED],
 [
   AC_REQUIRE([ISL_INIT_FLAGS])
@@ -103,7 +103,7 @@ AC_DEFUN([ISL_REQUESTED],
 
 # _ISL_CHECK_CT_PROG(MAJOR, MINOR)
 # --------------------------------------------
-# Helper for verifying CLooG's compile time version.
+# Helper for verifying ISL compile time version.
 m4_define([_ISL_CHECK_CT_PROG],[AC_LANG_PROGRAM(
   [#include <isl/version.h>
    #include <string.h>],
@@ -131,7 +131,8 @@ AC_DEFUN([ISL_CHECK_VERSION],
       [gcc_cv_isl],
       [AC_RUN_IFELSE([_ISL_CHECK_CT_PROG($1,$2)],
 	[gcc_cv_isl=yes],
-	[gcc_cv_isl=no])])
+	[gcc_cv_isl=no],
+	[gcc_cv_isl=yes])])
 
     CFLAGS=$_isl_saved_CFLAGS
     LDFLAGS=$_isl_saved_LDFLAGS
