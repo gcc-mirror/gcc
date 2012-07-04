@@ -1,3 +1,10 @@
+2012-07-04  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/predicates.md (zero_extend_operand): New predicate.
+	* config/sh/sh.md (zero_extendhisi2): Simplify by using new
+	zero_extend_operand predicate.
+	(zero_extendqisi2): Likewise.
+
 2012-07-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR middle-end/53321

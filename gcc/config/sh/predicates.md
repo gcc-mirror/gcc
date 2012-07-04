@@ -368,6 +368,13 @@
 	  : nonimmediate_operand) (op, mode);
 })
 
+;; Returns 1 if the operand can be used in a zero_extend.
+(define_predicate "zero_extend_operand"
+  (ior (and (match_test "TARGET_SHMEDIA")
+	    (match_operand 0 "general_extend_operand"))
+       (and (match_test "! TARGET_SHMEDIA")
+	    (match_operand 0 "arith_reg_operand"))))
+
 ;; Returns 1 if OP can be source of a simple move operation. Same as
 ;; general_operand, but a LABEL_REF is valid, PRE_DEC is invalid as
 ;; are subregs of system registers.
