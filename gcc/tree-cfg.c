@@ -6023,14 +6023,11 @@ move_stmt_op (tree *tp, int *walk_subtrees, void *data)
 	  if ((TREE_CODE (t) == VAR_DECL
 	       && !is_global_var (t))
 	      || TREE_CODE (t) == CONST_DECL)
-	    replace_by_duplicate_decl (tp, p->vars_map, p->to_context);
-
-	  if (SSA_VAR_P (t)
-	      && gimple_in_ssa_p (cfun))
 	    {
-	      push_cfun (DECL_STRUCT_FUNCTION (p->to_context));
-	      add_referenced_var (*tp);
-	      pop_cfun ();
+	      struct function *to_fn = DECL_STRUCT_FUNCTION (p->to_context);
+	      replace_by_duplicate_decl (tp, p->vars_map, p->to_context);
+	      if (gimple_referenced_vars (to_fn))
+		add_referenced_var_1 (*tp, to_fn);
 	    }
 	}
       *walk_subtrees = 0;
