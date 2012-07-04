@@ -4725,13 +4725,8 @@ label:
 	      (const_string "ignore")))])
 
 (define_expand "zero_extendhisi2"
-  [(set (match_operand:SI 0 "arith_reg_operand" "")
-	(zero_extend:SI (match_operand:HI 1 "general_extend_operand" "")))]
-  ""
-{
-  if (! TARGET_SHMEDIA && ! arith_reg_operand (operands[1], HImode))
-    operands[1] = copy_to_mode_reg (HImode, operands[1]);
-})
+  [(set (match_operand:SI 0 "arith_reg_dest" "")
+	(zero_extend:SI (match_operand:HI 1 "zero_extend_operand" "")))])
 
 (define_insn "*zero_extendhisi2_compact"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
@@ -4770,13 +4765,8 @@ label:
 })
 
 (define_expand "zero_extendqisi2"
-  [(set (match_operand:SI 0 "arith_reg_operand" "")
-	(zero_extend:SI (match_operand:QI 1 "general_extend_operand" "")))]
-  ""
-{
-  if (! TARGET_SHMEDIA && ! arith_reg_operand (operands[1], QImode))
-    operands[1] = copy_to_mode_reg (QImode, operands[1]);
-})
+  [(set (match_operand:SI 0 "arith_reg_dest" "")
+	(zero_extend:SI (match_operand:QI 1 "zero_extend_operand" "")))])
 
 (define_insn "*zero_extendqisi2_compact"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
