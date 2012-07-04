@@ -1,8 +1,16 @@
+2012-07-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2012-07-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_option_override_internal): Fix wrong
+	code model string in the error message.
+
 2012-07-04  Tristan Gingold  <gingold@adacore.com>
 
 	Backport from mainline.
 	2012-06-25  Tristan Gingold  <gingold@adacore.com>
- 
+
 	* config/i386/winnt.c (i386_pe_seh_end_prologue): Move code to ...
 	(seh_cfa_adjust_cfa): ... that function.
 	(seh_emit_stackalloc): Do not emit out of range values.
