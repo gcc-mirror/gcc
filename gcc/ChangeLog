@@ -1,5 +1,11 @@
 2012-07-04  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/53433
+	* gimple-fold.c (get_base_constructor): Do not return an
+	error_mark_node DECL_INITIAL.
+
+2012-07-04  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/53844
 	* tree-ssa-dse.c (dse_possible_dead_store_p): Properly handle
 	the loop virtual PHI.

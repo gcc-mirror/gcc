@@ -2713,6 +2713,10 @@ get_base_constructor (tree base, HOST_WIDE_INT *bit_offset,
       if (!DECL_INITIAL (base)
 	  && (TREE_STATIC (base) || DECL_EXTERNAL (base)))
         return error_mark_node;
+      /* Do not return an error_mark_node DECL_INITIAL.  LTO uses this
+         as special marker (_not_ zero ...) for its own purposes.  */
+      if (DECL_INITIAL (base) == error_mark_node)
+	return NULL_TREE;
       return DECL_INITIAL (base);
 
     case ARRAY_REF:
