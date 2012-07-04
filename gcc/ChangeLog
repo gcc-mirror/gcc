@@ -1,3 +1,8 @@
+2012-07-04  Richard Guenther  <rguenther@suse.de>
+
+	* tree.c (find_decls_types_r): Handle TYPE_CONTEXT the same
+	as in free_lang_data_in_type.
+
 2012-07-02  Martin Jambor  <mjambor@suse.cz>
 
 	Backport from mainline.
