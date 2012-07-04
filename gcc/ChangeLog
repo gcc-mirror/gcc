@@ -1,3 +1,10 @@
+2012-07-04  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/53849
+	* tree-cfg.c (move_stmt_op): Only call add_referenced_var
+	for duplicated locals.  Use add_referenced_var_1 to avoid
+	pushing/popping cfun.
+
 2012-07-04  Kai Tietz  <ktietz@redhat.com>
 
 	* config/i386/winnt.c (i386_pe_reloc_rw_mask): New function.
