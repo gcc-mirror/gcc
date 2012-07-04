@@ -225,6 +225,11 @@ do {									\
 
 #define SUBTARGET_ENCODE_SECTION_INFO  i386_pe_encode_section_info
 
+/* Local and global relocs can be placed always into readonly memory
+   for PE-COFF targets.  */
+#undef TARGET_ASM_RELOC_RW_MASK
+#define TARGET_ASM_RELOC_RW_MASK i386_pe_reloc_rw_mask
+
 /* Output a common block.  */
 #undef ASM_OUTPUT_ALIGNED_DECL_COMMON
 #define ASM_OUTPUT_ALIGNED_DECL_COMMON \

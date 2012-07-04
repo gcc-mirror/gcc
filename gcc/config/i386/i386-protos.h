@@ -264,6 +264,8 @@ extern void i386_pe_adjust_class_at_definition (tree);
 extern bool i386_pe_type_dllimport_p (tree);
 extern bool i386_pe_type_dllexport_p (tree);
 
+extern int i386_pe_reloc_rw_mask (void);
+
 extern rtx maybe_get_pool_constant (rtx);
 
 extern char internal_label_prefix[16];

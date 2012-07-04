@@ -1,3 +1,11 @@
+2012-07-04  Kai Tietz  <ktietz@redhat.com>
+
+	* config/i386/winnt.c (i386_pe_reloc_rw_mask): New function.
+	* config/i386/i386-protos.h (i386_pe_reloc_rw_mask): Add
+	prototype.
+	* config/i386/cygming.h (TARGET_ASM_RELOC_RW_MASK): Define
+	as i386_pe_reloc_rw_mask.
+
 2012-07-04  Richard Guenther  <rguenther@suse.de>
 
 	* tree.c (find_decls_types_r): Handle TYPE_CONTEXT the same
