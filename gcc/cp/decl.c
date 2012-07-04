@@ -12561,14 +12561,7 @@ incremented enumerator value is too large for %<long%>");
     course, if we're processing a template, there may be no value.  */
   type = value ? TREE_TYPE (value) : NULL_TREE;
 
-  if (context && context == current_class_type)
-    /* This enum declaration is local to the class.  We need the full
-       lang_decl so that we can record DECL_CLASS_CONTEXT, for example.  */
-    decl = build_lang_decl_loc (loc, CONST_DECL, name, type);
-  else
-    /* It's a global enum, or it's local to a function.  (Note local to
-       a function could mean local to a class method.  */
-    decl = build_decl (loc, CONST_DECL, name, type);
+  decl = build_decl (loc, CONST_DECL, name, type);
   
   DECL_CONTEXT (decl) = enumtype;
   TREE_CONSTANT (decl) = 1;
