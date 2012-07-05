@@ -21207,7 +21207,6 @@ cp_parser_template_declaration_after_export (cp_parser* parser, bool member_p)
     {
       /* Parse the template parameters.  */
       parameter_list = cp_parser_template_parameter_list (parser);
-      fixup_template_parms ();
     }
 
   /* Get the deferred access checks from the parameter list.  These

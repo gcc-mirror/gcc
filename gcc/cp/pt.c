@@ -6600,7 +6600,7 @@ convert_template_argument (tree parm,
 	   argument specification is valid.  */
 	val = convert_nontype_argument (t, orig_arg, complain);
       else
-	val = orig_arg;
+	val = strip_typedefs_expr (orig_arg);
 
       if (val == NULL_TREE)
 	val = error_mark_node;
@@ -16598,6 +16598,7 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 	  && !TEMPLATE_PARM_PARAMETER_PACK (parm))
 	return unify_parameter_pack_mismatch (explain_p, parm, arg);
 
+      arg = strip_typedefs_expr (arg);
       TREE_VEC_ELT (INNERMOST_TEMPLATE_ARGS (targs), idx) = arg;
       return unify_success (explain_p);
 

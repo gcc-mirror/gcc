@@ -1,3 +1,13 @@
+2012-07-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50852
+	PR c++/53039
+	* tree.c (strip_typedefs_expr): New.
+	* cp-tree.h: Declare it.
+	* pt.c (convert_template_argument, unify): Use it.
+	* parser.c (cp_parser_template_declaration_after_export): Don't call
+	fixup_template_parms.
+
 2012-07-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/53848
