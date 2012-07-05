@@ -1,6 +1,6 @@
 2012-07-05  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
-        PR target/49891
+        PR target/48941
         PR target/51980
         * gcc/testsuite/gcc.target/arm/neon/vtrnf32.c: Update.
         * gcc/testsuite/gcc.target/arm/neon/vtrns32.c: Update.

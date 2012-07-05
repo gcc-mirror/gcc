@@ -1,7 +1,7 @@
 2012-07-05  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 	    Julian Brown  <julian@codesourcery.com>
 
-        PR target/49891
+        PR target/48941
         PR target/51980
         * config/arm/neon-gen.ml (return_by_ptr): Delete.
         (print_function): Handle empty strings.
