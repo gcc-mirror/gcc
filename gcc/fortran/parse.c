@@ -4512,6 +4512,7 @@ gfc_parse_file (void)
   gfc_global_ns_list = next = NULL;
 
   seen_program = 0;
+  errors_before = 0;
 
   /* Exit early for empty files.  */
   if (gfc_at_eof ())
