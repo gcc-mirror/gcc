@@ -502,8 +502,8 @@ host_xm_defines=@host_xm_defines@
 xm_file_list=@xm_file_list@
 xm_include_list=@xm_include_list@
 xm_defines=@xm_defines@
-lang_checks=check-gcc
-lang_checks_parallelized=check-gcc
+lang_checks=
+lang_checks_parallelized=
 dg_target_exps:=alpha.exp,arm.exp,avr.exp,bfin.exp,cris.exp,frv.exp
 dg_target_exps:=$(dg_target_exps),i386.exp,ia64.exp,m68k.exp,microblaze.exp
 dg_target_exps:=$(dg_target_exps),mips.exp,powerpc.exp,rx.exp,s390.exp,sh.exp
@@ -717,11 +717,11 @@ GENERATED_MANPAGES = @GENERATED_MANPAGES@
 OTHER_FIXINCLUDES_DIRS=
 
 # A list of all the language-specific executables.
-COMPILERS = cc1$(exeext) @all_compilers@
+COMPILERS = @all_compilers@
 
 # List of things which should already be built whenever we try to use xgcc
 # to compile anything (without linking).
-GCC_PASSES=xgcc$(exeext) cc1$(exeext) specs
+GCC_PASSES=xgcc$(exeext) specs
 
 # Directory to link to, when using the target `maketest'.
 DIR = ../gcc
@@ -1133,24 +1133,18 @@ CXX_TARGET_OBJS=@cxx_target_objs@
 # Target specific, Fortran specific object file
 FORTRAN_TARGET_OBJS=@fortran_target_objs@
 
-# Object files for gcc driver.
+# Object files for gcc many-languages driver.
 GCC_OBJS = gcc.o ggc-none.o
 
 # Language-specific object files shared by all C-family front ends.
+# FIXME: tree-mudflap is C-family only, but it is also part of the middle-end.
+# The mudflap machinery should be properly separated from the front ends, and
+# perhaps turned into a plugin.
 C_COMMON_OBJS = c-family/c-common.o c-family/c-cppbuiltin.o c-family/c-dump.o \
   c-family/c-format.o c-family/c-gimplify.o c-family/c-lex.o \
   c-family/c-omp.o c-family/c-opts.o c-family/c-pch.o \
   c-family/c-ppoutput.o c-family/c-pragma.o c-family/c-pretty-print.o \
-  c-family/c-semantics.o c-family/c-ada-spec.o
-
-# Language-specific object files for C and Objective C.
-C_AND_OBJC_OBJS = attribs.o c-errors.o c-decl.o c-typeck.o \
-  c-convert.o c-aux-info.o c-objc-common.o c-parser.o tree-mudflap.o \
-  $(C_COMMON_OBJS) $(C_TARGET_OBJS)
-
-C_STUB_OBJS = c-family/stub-objc.o c-family/stub-upc.o
-# Language-specific object files for C.
-C_OBJS = c-lang.o $(C_STUB_OBJS) $(C_AND_OBJC_OBJS)
+  c-family/c-semantics.o c-family/c-ada-spec.o tree-mudflap.o
 
 # Language-independent object files.
 # We put the insn-*.o files first so that a parallel make will build
@@ -1476,11 +1470,10 @@ OBJS-libcommon-target = $(common_out_object_file) prefix.o params.o \
 	opts.o opts-common.o options.o vec.o hooks.o common/common-targhooks.o
 
 # This lists all host objects for the front ends.
-ALL_HOST_FRONTEND_OBJS = $(C_OBJS) \
-  $(foreach v,$(CONFIG_LANGUAGES),$($(v)_OBJS))
+ALL_HOST_FRONTEND_OBJS = $(foreach v,$(CONFIG_LANGUAGES),$($(v)_OBJS))
 
 ALL_HOST_BACKEND_OBJS = $(GCC_OBJS) $(OBJS) $(OBJS-libcommon) \
-  $(OBJS-libcommon-target) @TREEBROWSER@ main.o gccspec.o cppspec.o \
+  $(OBJS-libcommon-target) @TREEBROWSER@ main.o c-family/cppspec.o \
   $(COLLECT2_OBJS) $(EXTRA_GCC_OBJS) $(GCOV_OBJS) $(GCOV_DUMP_OBJS)
 
 # This lists all host object files, whether they are included in this
@@ -1497,7 +1490,7 @@ MOSTLYCLEANFILES = insn-flags.h insn-config.h insn-codes.h \
  tm-preds.h tm-constrs.h checksum-options \
  tree-check.h min-insn-modes.c insn-modes.c insn-modes.h \
  genrtl.h gt-*.h gtype-*.h gtype-desc.c gtyp-input.list \
- xgcc$(exeext) cpp$(exeext) cc1$(exeext) \
+ xgcc$(exeext) cpp$(exeext) \
  $(EXTRA_PROGRAMS) gcc-cross$(exeext) \
  $(SPECS) collect2$(exeext) gcc-ar$(exeext) gcc-nm$(exeext) \
  gcc-ranlib$(exeext) \
@@ -1741,12 +1734,6 @@ ifeq ($(enable_plugin),yes)
 native: gengtype$(exeext)
 endif
 
-# Define the names for selecting languages in LANGUAGES.
-c: cc1$(exeext)
-
-# Tell GNU make these are phony targets.
-.PHONY: c
-
 # On the target machine, finish building a cross compiler.
 # This does the things that can't be done on the host machine.
 rest.cross: specs
@@ -1774,19 +1761,19 @@ libcommon.a: $(OBJS-libcommon)
 # We call this executable `xgcc' rather than `gcc'
 # to avoid confusion if the current directory is in the path
 # and CC is `gcc'.  It is renamed to `gcc' when it is installed.
-xgcc$(exeext): $(GCC_OBJS) gccspec.o libcommon-target.a $(LIBDEPS) \
+xgcc$(exeext): $(GCC_OBJS) c/gccspec.o libcommon-target.a $(LIBDEPS) \
 	$(EXTRA_GCC_OBJS)
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $(GCC_OBJS) \
-	  gccspec.o $(EXTRA_GCC_OBJS) libcommon-target.a \
+	  c/gccspec.o $(EXTRA_GCC_OBJS) libcommon-target.a \
 	  $(EXTRA_GCC_LIBS) $(LIBS)
 
-# cpp is to cpp0 as gcc is to cc1.
-# The only difference from xgcc is that it's linked with cppspec.o
-# instead of gccspec.o.
-cpp$(exeext): $(GCC_OBJS) cppspec.o libcommon-target.a $(LIBDEPS) \
+# cpp is to cpp0 as e.g. g++ is to cc1plus: Just another driver.
+# It is part of c-family because the handled extensions are hard-coded
+# and only contain c-family extensions (see known_suffixes).
+cpp$(exeext): $(GCC_OBJS) c-family/cppspec.o libcommon-target.a $(LIBDEPS) \
 	$(EXTRA_GCC_OBJS)
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $(GCC_OBJS) \
-	  cppspec.o $(EXTRA_GCC_OBJS) libcommon-target.a \
+	  c-family/cppspec.o $(EXTRA_GCC_OBJS) libcommon-target.a \
 	  $(EXTRA_GCC_LIBS) $(LIBS)
 
 # Dump a specs file to make -B./ read these specs over installed ones.
@@ -1803,19 +1790,6 @@ gcc-cross$(exeext): xgcc$(exeext)
 checksum-options:
 	echo "$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS)" > checksum-options.tmp \
 	&& $(srcdir)/../move-if-change checksum-options.tmp checksum-options
-
-# compute checksum over all object files and the options
-cc1-checksum.c : build/genchecksum$(build_exeext) checksum-options \
-	$(C_OBJS) $(BACKEND) $(LIBDEPS) 
-	build/genchecksum$(build_exeext) $(C_OBJS) $(BACKEND) $(LIBDEPS) \
-                     checksum-options > cc1-checksum.c.tmp && 		 \
-	$(srcdir)/../move-if-change cc1-checksum.c.tmp cc1-checksum.c
-
-cc1-checksum.o : cc1-checksum.c $(CONFIG_H) $(SYSTEM_H)
-
-cc1$(exeext): $(C_OBJS) cc1-checksum.o $(BACKEND) $(LIBDEPS)
-	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $(C_OBJS) \
-	  cc1-checksum.o $(BACKEND) $(LIBS) $(BACKENDLIBS)
 
 #
 # Build libgcc.a.
@@ -1865,53 +1839,6 @@ srcextra: gcc.srcextra lang.srcextra
 
 gcc.srcextra: gengtype-lex.c
 	-cp -p $^ $(srcdir)
-
-# C language specific files.
-c-aux-info.o : c-aux-info.c  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-	$(C_TREE_H) $(TREE_H) $(FLAGS_H)
-
-c-convert.o : c-convert.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-	$(TREE_H) $(C_TREE_H) $(FLAGS_H) $(C_COMMON_H) convert.h \
-	langhooks.h $(TARGET_H)
-
-c-decl.o : c-decl.c c-lang.h $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-	$(TREE_H) $(C_TREE_H) $(GGC_H) $(TARGET_H) $(FLAGS_H) $(FUNCTION_H) \
-	output.h debug.h toplev.h intl.h $(TM_P_H) $(TREE_INLINE_H) \
-	$(TIMEVAR_H) $(OPTS_H) $(C_PRAGMA_H) gt-c-decl.h $(CGRAPH_H) \
-	$(HASHTAB_H) $(LANGHOOKS_DEF_H) \
-	$(TREE_DUMP_H) $(C_COMMON_H) $(CPPLIB_H) $(DIAGNOSTIC_CORE_H) \
-	$(INPUT_H) langhooks.h pointer-set.h tree-iterator.h \
-	$(PLUGIN_H) c-family/c-ada-spec.h c-family/c-objc.h c-family/c-upc.h
-
-c-errors.o: c-errors.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
-	$(C_TREE_H) $(FLAGS_H) $(DIAGNOSTIC_H) $(TM_P_H)
-
-c-lang.o : c-lang.c c-objc-common.h \
-	$(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
-	$(C_TREE_H) $(DIAGNOSTIC_CORE_H) \
-	langhooks.h $(LANGHOOKS_DEF_H) $(C_COMMON_H) gtype-c.h \
-	$(C_PRAGMA_H) $(TREE_INLINE_H)
-
-c-objc-common.o : c-objc-common.c c-objc-common.h \
-	$(CONFIG_H) $(SYSTEM_H) coretypes.h \
-	$(TREE_H) $(C_TREE_H) $(FLAGS_H) $(DIAGNOSTIC_H) \
-	langhooks.h $(GGC_H) $(C_PRETTY_PRINT_H) intl.h \
-	$(TREE_PRETTY_PRINT_H)
-
-c-parser.o : c-parser.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-	$(TM_H) $(TREE_H) $(C_TREE_H) $(C_COMMON_H) $(C_PRAGMA_H) $(CPPLIB_H) \
-	$(GGC_H) $(TIMEVAR_H) $(INPUT_H) $(FLAGS_H) \
-	upc/upc-gasp.h upc/upc-tree.h \
-	gt-c-parser.h langhooks.h \
-	$(VEC_H) $(TARGET_H) $(CGRAPH_H) $(PLUGIN_H) \
-	 c-family/c-objc.h c-family/c-upc.h
-
-c-typeck.o : c-typeck.c c-lang.h $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-	$(TREE_H) $(C_TREE_H) $(TARGET_H) $(FLAGS_H) intl.h \
-	langhooks.h tree-iterator.h $(BITMAP_H) $(GIMPLE_H) \
-	c-family/c-objc.h c-family/c-upc.h
-
-
 
 graph.o: graph.c $(SYSTEM_H) coretypes.h $(TM_H) toplev.h $(DIAGNOSTIC_CORE_H) $(FLAGS_H) \
     $(RTL_H) $(FUNCTION_H) hard-reg-set.h $(BASIC_BLOCK_H) graph.h $(OBSTACK_H) \
@@ -1989,12 +1916,15 @@ lto-wrapper$(exeext): lto-wrapper.o ggc-none.o libcommon-target.a $(LIBDEPS)
 lto-wrapper.o: lto-wrapper.c $(CONFIG_H) $(SYSTEM_H) coretypes.h intl.h \
 	$(OBSTACK_H) $(DIAGNOSTIC_H) $(OPTS_H) $(OPTIONS_H)
 
-# Files used by all variants of C.
+# Files used by all variants of C or by the stand-alone pre-processor.
+c-family/cppspec.o: c-family/cppspec.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+    $(TM_H) $(GCC_H) $(OPTS_H)
+
 c-family/c-common.o : c-family/c-common.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 	$(TM_H) $(TREE_H) \
 	$(OBSTACK_H) $(C_COMMON_H) $(FLAGS_H) toplev.h output.h $(C_PRAGMA_H) \
 	$(GGC_H) builtin-types.def builtin-attrs.def \
-	$(DIAGNOSTIC_H) langhooks.h c-family/c-objc.h c-family/c-upc.h \
+	$(DIAGNOSTIC_H) langhooks.h c-family/c-objc.h \
 	$(TARGET_H) tree-iterator.h langhooks.h tree-mudflap.h \
 	intl.h $(OPTS_H) $(CPPLIB_H) $(TREE_INLINE_H) $(HASHTAB_H) \
 	$(BUILTINS_DEF) $(CGRAPH_H) $(BASIC_BLOCK_H) $(TARGET_DEF_H) \
@@ -2012,7 +1942,7 @@ c-family/c-dump.o : c-family/c-dump.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 c-family/c-format.o : c-family/c-format.c c-family/c-format.h \
 	$(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) langhooks.h \
 	$(C_COMMON_H) $(FLAGS_H) intl.h $(C_TARGET_H) \
-	$(DIAGNOSTIC_CORE_H) alloc-pool.h c-family/c-objc.h c-family/c-upc.h
+	$(DIAGNOSTIC_CORE_H) alloc-pool.h c-family/c-objc.h
 
 c-family/c-gimplify.o : c-family/c-gimplify.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) \
 	$(C_COMMON_H) $(DIAGNOSTIC_CORE_H) $(GIMPLE_H) \
@@ -2111,16 +2041,6 @@ gcc.o: gcc.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) intl.h multilib.h \
 	$(COMPILER) $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
   $(DRIVER_DEFINES) \
   -c $(srcdir)/gcc.c $(OUTPUT_OPTION))
-
-gccspec.o: gccspec.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(GCC_H) \
-    $(OPTS_H)
-	(SHLIB='$(SHLIB)'; \
-	$(COMPILER) $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
-  $(DRIVER_DEFINES) \
-  -c $(srcdir)/gccspec.c $(OUTPUT_OPTION))
-
-cppspec.o: cppspec.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(GCC_H) \
-    $(OPTS_H)
 
 specs.h : s-specs ; @true
 s-specs : Makefile
@@ -4592,7 +4512,7 @@ PLUGIN_HEADERS = $(TREE_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(tm_file_list) $(tm_include_list) $(tm_p_file_list) $(tm_p_include_list) \
   $(host_xm_file_list) $(host_xm_include_list) $(xm_include_list) \
   intl.h $(PLUGIN_VERSION_H) $(DIAGNOSTIC_H) ${C_TREE_H} \
-  $(C_COMMON_H) c-family/c-objc.h c-family/c-upc.h $(C_PRETTY_PRINT_H) \
+  $(C_COMMON_H) c-family/c-objc.h $(C_PRETTY_PRINT_H) \
   tree-iterator.h $(PLUGIN_H) $(TREE_FLOW_H) langhooks.h incpath.h debug.h \
   $(EXCEPT_H) tree-ssa-sccvn.h real.h output.h $(IPA_UTILS_H) \
   $(C_PRAGMA_H)  $(CPPLIB_H)  $(FUNCTION_H) \
@@ -5004,7 +4924,7 @@ site.exp: ./config.status Makefile
 		-e '1,/^## All variables above are.*##/ d' >> site.exp
 	-@rm -f ./site.tmp
 
-CHECK_TARGETS = check-gcc @check_languages@
+CHECK_TARGETS = @check_languages@
 
 check: $(CHECK_TARGETS)
 

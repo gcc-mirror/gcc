@@ -1,3 +1,9 @@
+2012-07-04  Gary Funck  <gary@intrepid.com>
+
+	Merge trunk version 189080 into gupc branch.
+	* Makefile.in: Adjust for move of C front-end files.
+	* c/Make-lang.in: Ditto.
+
 2012-07-03  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 189078 into gupc branch.

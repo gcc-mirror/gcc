@@ -1,3 +1,8 @@
+2012-06-29  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* configure.ac: Skip C if explicitly selected.
+	* configure: Regenerate.
+
 2012-06-28  Christophe Lyon <christophe.lyon@st.com>
 
 	* configure.ac (CFLAGS_FOR_TARGET, CXXFLAGS_FOR_TARGET): Make sure

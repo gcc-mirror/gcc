@@ -26,7 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "vec.h"
 #include "input.h"
-#include "c-tree.h"
+#include "c/c-tree.h"
 #include "flags.h"
 #include "opts.h"
 #include "options.h"

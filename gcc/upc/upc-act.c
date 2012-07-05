@@ -29,7 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "tree.h"
 #include "input.h"
-#include "c-tree.h"
+#include "c/c-tree.h"
 #include "langhooks.h"
 #include "flags.h"
 #include "opts.h"

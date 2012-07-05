@@ -1,3 +1,12 @@
+2012-07-04  Gary Funck  <gary@intrepid.com>
+
+	* config-lang.in: Adjust for move of C front-end files.
+	* upc-act.c: Look for c-tree.h and c-objc-common.h in c/.
+	* upc-gasp.c: Ditto.
+	* upc-genericize.c: Ditto.
+	* upc-lang.c: Ditto.
+	* upc-pts-struct.c: Ditto.
+
 2012-05-19  Gary Funck  <gary@intrepid.com>
 
 	* upc-act.c (upc_lang_layout_decl): Ignore declarations of
