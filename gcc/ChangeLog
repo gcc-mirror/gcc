@@ -1,3 +1,31 @@
+2012-07-05  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+	    Julian Brown  <julian@codesourcery.com>
+
+        PR target/49891
+        PR target/51980
+        * config/arm/neon-gen.ml (return_by_ptr): Delete.
+        (print_function): Handle empty strings.
+        (return): Delete use of return_by_ptr.
+        (mask_shape_for_shuffle): New function.
+        (mask_elems): Likewise.
+        (shuffle_fn): Likewise.
+        (params): Simplify and remove use of return_by_ptr.
+        (get_shuffle): New function.
+        (print_variant): Update.
+        * config/arm/neon.ml (rev_elems): New function.
+        (permute_range): Likewise.
+        (zip_range): Likewise.
+        (uzip_range): Likewise.
+        (trn_range): Likewise.
+        (zip_elems): Likewise.
+        (uzip_elems): Likewise.
+        (trn_elems): Likewise.
+        (features): New enumeration Use_shuffle. Delete ReturnPtr.
+        (pf_su_8_16): New.
+        (suf_32): New.
+        (ops): Update entries for Vrev64, Vrev32, Vrev16, Vtr, Vzip, Vuzp.
+        * config/arm/arm_neon.h: Regenerate.
+
 2012-07-05  Richard Guenther  <rguenther@suse.de>
 
 	* tree-pretty-print.c (dump_generic_node): Properly test
