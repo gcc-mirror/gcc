@@ -2096,12 +2096,14 @@ rx-*-elf*)
 	tmake_file="${tmake_file} rx/t-rx"
 	;;
 s390-*-linux*)
+	default_gnu_indirect_function=yes
 	tm_file="s390/s390.h dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h s390/linux.h"
 	if test x$enable_targets = xall; then
 		tmake_file="${tmake_file} s390/t-linux64"
 	fi
 	;;
 s390x-*-linux*)
+	default_gnu_indirect_function=yes
 	tm_file="s390/s390x.h s390/s390.h dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h s390/linux.h"
 	tm_p_file=s390/s390-protos.h
 	md_file=s390/s390.md
