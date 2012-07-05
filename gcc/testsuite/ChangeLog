@@ -1,3 +1,9 @@
+2012-07-05  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
+
+	* gcc.target/arm/fma-sp.c: New testcase.
+	* gcc.target/arm/fma.c: Likewise.
+	* gcc.target/arm/fma.h: Likewise.
+
 2012-07-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/53848
