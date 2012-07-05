@@ -1,3 +1,8 @@
+2012-07-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR fortran/53449
+	* parse.c (gfc_parse_file): Initialize errors_before.
+
 2012-06-27  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/41951

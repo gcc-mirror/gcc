@@ -1,3 +1,7 @@
+2012-07-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* expmed.c (expand_mult): Initialize coeff and is_neg.
+
 2012-07-04  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/predicates.md (zero_extend_operand): New predicate.
