@@ -1,3 +1,15 @@
+2012-07-05  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
+
+	* config/arm/iterators.md (SDF): New mode iterator.
+	(V_if_elem): Add support for SF and DF modes.
+	(V_reg): Likewise.
+	(F_constraint): New mode iterator attribute.
+	(F_fma_type): Likewise.
+	config/arm/vfp.md (fma<SDF:mode>4): New pattern.
+	(*fmsub<SDF:mode>4): Likewise.
+	(*fmnsub<SDF:mode>4): Likewise.
+	(*fmnadd<SDF:mode>4): Likewise.
+
 2012-07-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	* expmed.c (expand_mult): Initialize coeff and is_neg.
