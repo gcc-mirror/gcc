@@ -1,6 +1,6 @@
 // <condition_variable> -*- C++ -*-
 
-// Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -171,6 +171,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     condition_variable			_M_cond;
     mutex				_M_mutex;
 
+    // scoped unlock - unlocks in ctor, re-locks in dtor
+    template<typename _Lock>
+      struct _Unlock
+      {
+	explicit _Unlock(_Lock& __lk) : _M_lock(__lk) { __lk.unlock(); }
+
+	~_Unlock() noexcept(false)
+	{
+	  if (uncaught_exception())
+	    __try { _M_lock.lock(); } __catch(...) { }
+	  else
+	    _M_lock.lock();
+	}
+
+	_Unlock(const _Unlock&) = delete;
+	_Unlock& operator=(const _Unlock&) = delete;
+
+	_Lock& _M_lock;
+      };
+
   public:
     typedef condition_variable::native_handle_type	native_handle_type;
 
@@ -198,21 +218,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       wait(_Lock& __lock)
       {
-	// scoped unlock - unlocks in ctor, re-locks in dtor
-	struct _Unlock {
-	  explicit _Unlock(_Lock& __lk) : _M_lock(__lk) { __lk.unlock(); }
-	  ~_Unlock() noexcept(false)
-	  {
-	    if (uncaught_exception())
-	      __try { _M_lock.lock(); } __catch(...) { }
-	    else
-	      _M_lock.lock();
-	  }
-	  _Lock& _M_lock;
-	};
-
 	unique_lock<mutex> __my_lock(_M_mutex);
-	_Unlock __unlock(__lock);
+	_Unlock<_Lock> __unlock(__lock);
 	// _M_mutex must be unlocked before re-locking __lock so move
 	// ownership of _M_mutex lock to an object with shorter lifetime.
 	unique_lock<mutex> __my_lock2(std::move(__my_lock));
@@ -233,11 +240,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       wait_until(_Lock& __lock,
 		 const chrono::time_point<_Clock, _Duration>& __atime)
       {
-        unique_lock<mutex> __my_lock(_M_mutex);
-        __lock.unlock();
-        cv_status __status = _M_cond.wait_until(__my_lock, __atime);
-        __lock.lock();
-        return __status;
+	unique_lock<mutex> __my_lock(_M_mutex);
+	_Unlock<_Lock> __unlock(__lock);
+	// _M_mutex must be unlocked before re-locking __lock so move
+	// ownership of _M_mutex lock to an object with shorter lifetime.
+	unique_lock<mutex> __my_lock2(std::move(__my_lock));
+	return _M_cond.wait_until(__my_lock2, __atime);
       }
 
     template<typename _Lock, typename _Clock,
