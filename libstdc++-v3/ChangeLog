@@ -1,5 +1,9 @@
 2012-07-05  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* include/std/condition_variable: Update copyright years.
+
+2012-07-05  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	PR libstdc++/53830
 	* include/std/condition_variable (condition_variable_any::wait):
 	Move _Unlock type to class scope.
