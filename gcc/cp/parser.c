@@ -11993,8 +11993,7 @@ cp_parser_template_parameter_list (cp_parser* parser)
 						parm_loc,
 						parameter,
 						is_non_type,
-						is_parameter_pack,
-						0);
+						is_parameter_pack);
       else
        {
          tree err_parm = build_tree_list (parameter, parameter);
