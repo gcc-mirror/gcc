@@ -1,3 +1,11 @@
+2012-07-05  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/53830
+	* include/std/condition_variable (condition_variable_any::wait):
+	Move _Unlock type to class scope.
+	(condition_variable_any::wait_until): Reuse it.
+	* testsuite/30_threads/condition_variable_any/53830.cc: New.
+
 2012-07-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	Revert:
