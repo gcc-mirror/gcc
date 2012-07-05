@@ -1,5 +1,14 @@
 2012-07-05  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
+	* config/s390/s390-protos.h (s390_expand_movmem)
+	(s390_expand_cmpmem): Add return value.
+	* config/s390/s390.c (s390_expand_movmem, s390_expand_cmpmem):
+	Return FALSE to use the library function in some cases.
+	* config/s390/s390.md (movmem, cmpmem): Evaluate return value of C
+	helper functions.
+
+2012-07-05  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
 	* config.gcc: Enable ifunc attribute by default on s390 and s390x.
 
 2012-07-05  Steven Bosscher  <steven@gcc.gnu.org>
