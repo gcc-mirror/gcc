@@ -1,3 +1,8 @@
+2012-07-05  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/53732
+	* gfortran.dg/inline_sum_4.f90: New test.
+
 2012-07-05  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* gcc.c-torture/compile/20000326-1.c: Fix to not optimize to empty.
