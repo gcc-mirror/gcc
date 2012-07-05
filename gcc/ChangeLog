@@ -1,3 +1,8 @@
+2012-07-05  Richard Guenther  <rguenther@suse.de>
+
+	* tree-pretty-print.c (dump_generic_node): Properly test
+	the result of exact_log2.
+
 2012-07-05  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390-protos.h (s390_expand_movmem)
