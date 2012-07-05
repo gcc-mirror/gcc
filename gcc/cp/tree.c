@@ -3212,7 +3212,7 @@ decl_linkage (tree decl)
   /* Linkage of a CONST_DECL depends on the linkage of the enumeration
      type.  */
   if (TREE_CODE (decl) == CONST_DECL)
-    return decl_linkage (TYPE_NAME (TREE_TYPE (decl)));
+    return decl_linkage (TYPE_NAME (DECL_CONTEXT (decl)));
 
   /* Some things that are not TREE_PUBLIC have external linkage, too.
      For example, on targets that don't have weak symbols, we make all

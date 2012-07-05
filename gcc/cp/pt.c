@@ -8027,6 +8027,23 @@ uses_template_parms (tree t)
   return dependent_p;
 }
 
+/* Returns true iff current_function_decl is an incompletely instantiated
+   template.  Useful instead of processing_template_decl because the latter
+   is set to 0 during fold_non_dependent_expr.  */
+
+bool
+in_template_function (void)
+{
+  tree fn = current_function_decl;
+  bool ret;
+  ++processing_template_decl;
+  ret = (fn && DECL_LANG_SPECIFIC (fn)
+	 && DECL_TEMPLATE_INFO (fn)
+	 && any_dependent_template_arguments_p (DECL_TI_ARGS (fn)));
+  --processing_template_decl;
+  return ret;
+}
+
 /* Returns true if T depends on any template parameter with level LEVEL.  */
 
 int
@@ -12128,7 +12145,7 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	   When we instantiate f<7>::S::g(), say, lookup_name is not
 	   clever enough to find f<7>::a.  */
 	enum_type
-	  = tsubst_aggr_type (TREE_TYPE (t), args, complain, in_decl,
+	  = tsubst_aggr_type (DECL_CONTEXT (t), args, complain, in_decl,
 			      /*entering_scope=*/0);
 
 	for (v = TYPE_VALUES (enum_type);
@@ -14385,17 +14402,6 @@ tsubst_copy_and_build (tree t,
 	return stmt_expr;
       }
 
-    case CONST_DECL:
-      t = tsubst_copy (t, args, complain, in_decl);
-      /* As in finish_id_expression, we resolve enumeration constants
-	 to their underlying values.  */
-      if (TREE_CODE (t) == CONST_DECL && !processing_template_decl)
-	{
-	  used_types_insert (TREE_TYPE (t));
-	  return DECL_INITIAL (t);
-	}
-      return t;
-
     case LAMBDA_EXPR:
       {
 	tree r = build_lambda_expr ();
@@ -14412,7 +14418,7 @@ tsubst_copy_and_build (tree t,
 	LAMBDA_EXPR_DISCRIMINATOR (r)
 	  = (LAMBDA_EXPR_DISCRIMINATOR (t));
 	LAMBDA_EXPR_EXTRA_SCOPE (r)
-	  = RECUR (LAMBDA_EXPR_EXTRA_SCOPE (t));
+	  = tsubst (LAMBDA_EXPR_EXTRA_SCOPE (t), args, complain, in_decl);
 	LAMBDA_EXPR_RETURN_TYPE (r)
 	  = tsubst (LAMBDA_EXPR_RETURN_TYPE (t), args, complain, in_decl);
 
@@ -20224,6 +20230,10 @@ build_non_dependent_expr (tree expr)
 
   /* Don't wrap an initializer list, we need to be able to look inside.  */
   if (BRACE_ENCLOSED_INITIALIZER_P (expr))
+    return expr;
+
+  /* Don't wrap a dummy object, we need to be able to test for it.  */
+  if (is_dummy_object (expr))
     return expr;
 
   if (TREE_CODE (expr) == COND_EXPR)

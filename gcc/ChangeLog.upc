@@ -1,3 +1,8 @@
+2012-07-05  Gary Funck  <gary@intrepid.com>
+
+	Merge trunk version 189274 into gupc branch.
+	Incorporates graphite build infrastructure changes.
+
 2012-07-04  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 189080 into gupc branch.

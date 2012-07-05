@@ -2507,6 +2507,28 @@ const_ok_for_op (HOST_WIDE_INT i, enum rtx_code code)
     }
 }
 
+/* Return true if I is a valid di mode constant for the operation CODE.  */
+int
+const_ok_for_dimode_op (HOST_WIDE_INT i, enum rtx_code code)
+{
+  HOST_WIDE_INT hi_val = (i >> 32) & 0xFFFFFFFF;
+  HOST_WIDE_INT lo_val = i & 0xFFFFFFFF;
+  rtx hi = GEN_INT (hi_val);
+  rtx lo = GEN_INT (lo_val);
+
+  if (TARGET_THUMB1)
+    return 0;
+
+  switch (code)
+    {
+    case PLUS:
+      return arm_not_operand (hi, SImode) && arm_add_operand (lo, SImode);
+
+    default:
+      return 0;
+    }
+}
+
 /* Emit a sequence of insns to handle a large constant.
    CODE is the code of the operation required, it can be any of SET, PLUS,
    IOR, AND, XOR, MINUS;

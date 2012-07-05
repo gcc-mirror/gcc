@@ -421,6 +421,14 @@ i386_pe_unique_section (tree decl, int reloc)
   DECL_SECTION_NAME (decl) = build_string (len, string);
 }
 
+/* Local and global relocs can be placed always into readonly memory for
+   memory for PE-COFF targets.  */
+int
+i386_pe_reloc_rw_mask (void)
+{
+  return 0;
+}
+
 /* Select a set of attributes for section NAME based on the properties
    of DECL and whether or not RELOC indicates that DECL's initializer
    might contain runtime relocations.

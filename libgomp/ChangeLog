@@ -1,3 +1,18 @@
+2012-07-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/linux/x86/futex.h (cpu_relax): Use __builtin_ia32_pause.
+	* testsuite/libgomp.c/sort-1.c (busy_wait): Ditto.
+
+2012-07-02  Richard Guenther  <rguenther@suse.de>
+	    Michael Matz  <matz@suse.de>
+	    Tobias Grosser <tobias@grosser.es>
+	    Sebastian Pop <sebpop@gmail.com>
+
+	* testsuite/libgomp.graphite/force-parallel-4.c: Adjust.
+	* testsuite/libgomp.graphite/force-parallel-5.c: Likewise.
+	* testsuite/libgomp.graphite/force-parallel-7.c: Likewise.
+	* testsuite/libgomp.graphite/force-parallel-8.c: Likewise.
+
 2012-06-28  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* libgomp.texi: Include gpl_v3.texi instead of gpl.texi.

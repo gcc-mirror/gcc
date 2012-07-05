@@ -19,6 +19,18 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+
+#ifdef HAVE_cloog
+#include <isl/set.h>
+#include <isl/map.h>
+#include <isl/union_map.h>
+#include <isl/constraint.h>
+#include <isl/aff.h>
+#include <cloog/cloog.h>
+#include <cloog/cloog.h>
+#include <cloog/isl/domain.h>
+#endif
+
 #include "system.h"
 #include "coretypes.h"
 #include "tree-flow.h"
@@ -31,10 +43,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "sese.h"
 
 #ifdef HAVE_cloog
-#include "ppl_c.h"
-#include "graphite-ppl.h"
 #include "graphite-poly.h"
 #include "graphite-sese-to-poly.h"
+
+
+/* Assigns to RES the value of the INTEGER_CST T.  */
+
+static inline void
+tree_int_to_gmp (tree t, mpz_t res)
+{
+  double_int di = tree_to_double_int (t);
+  mpz_set_double_int (res, di, TYPE_UNSIGNED (TREE_TYPE (t)));
+}
 
 /* Returns the index of the PHI argument defined in the outermost
    loop.  */
@@ -390,6 +410,16 @@ build_scop_bbs (scop_p scop)
   sbitmap_free (visited);
 }
 
+/* Return an ISL identifier for the polyhedral basic block PBB.  */
+
+static isl_id *
+isl_id_for_pbb (scop_p s, poly_bb_p pbb)
+{
+  char name[50];
+  snprintf (name, sizeof (name), "S_%d", pbb_index (pbb));
+  return isl_id_alloc (s->ctx, name, pbb);
+}
+
 /* Converts the STATIC_SCHEDULE of PBB into a scattering polyhedron.
    We generate SCATTERING_DIMENSIONS scattering dimensions.
 
@@ -424,69 +454,54 @@ build_scop_bbs (scop_p scop)
    | 0   0   1   0   0   0   0   0  -5  = 0  */
 
 static void
-build_pbb_scattering_polyhedrons (ppl_Linear_Expression_t static_schedule,
+build_pbb_scattering_polyhedrons (isl_aff *static_sched,
 				  poly_bb_p pbb, int scattering_dimensions)
 {
   int i;
-  scop_p scop = PBB_SCOP (pbb);
   int nb_iterators = pbb_dim_iter_domain (pbb);
   int used_scattering_dimensions = nb_iterators * 2 + 1;
-  int nb_params = scop_nb_params (scop);
-  ppl_Coefficient_t c;
-  ppl_dimension_type dim = scattering_dimensions + nb_iterators + nb_params;
-  mpz_t v;
+  isl_int val;
+  isl_space *dc, *dm;
 
   gcc_assert (scattering_dimensions >= used_scattering_dimensions);
 
-  mpz_init (v);
-  ppl_new_Coefficient (&c);
-  PBB_TRANSFORMED (pbb) = poly_scattering_new ();
-  ppl_new_C_Polyhedron_from_space_dimension
-    (&PBB_TRANSFORMED_SCATTERING (pbb), dim, 0);
+  isl_int_init (val);
 
-  PBB_NB_SCATTERING_TRANSFORM (pbb) = scattering_dimensions;
+  dc = isl_set_get_space (pbb->domain);
+  dm = isl_space_add_dims (isl_space_from_domain (dc),
+			   isl_dim_out, scattering_dimensions);
+  pbb->schedule = isl_map_universe (dm);
 
   for (i = 0; i < scattering_dimensions; i++)
     {
-      ppl_Constraint_t cstr;
-      ppl_Linear_Expression_t expr;
-
-      ppl_new_Linear_Expression_with_dimension (&expr, dim);
-      mpz_set_si (v, 1);
-      ppl_assign_Coefficient_from_mpz_t (c, v);
-      ppl_Linear_Expression_add_to_coefficient (expr, i, c);
-
       /* Textual order inside this loop.  */
       if ((i % 2) == 0)
 	{
-	  ppl_Linear_Expression_coefficient (static_schedule, i / 2, c);
-	  ppl_Coefficient_to_mpz_t (c, v);
-	  mpz_neg (v, v);
-	  ppl_assign_Coefficient_from_mpz_t (c, v);
-	  ppl_Linear_Expression_add_to_inhomogeneous (expr, c);
+	  isl_constraint *c = isl_equality_alloc
+	      (isl_local_space_from_space (isl_map_get_space (pbb->schedule)));
+
+	  if (0 != isl_aff_get_coefficient (static_sched, isl_dim_in,
+					    i / 2, &val))
+	    gcc_unreachable ();
+
+	  isl_int_neg (val, val);
+	  c = isl_constraint_set_constant (c, val);
+	  c = isl_constraint_set_coefficient_si (c, isl_dim_out, i, 1);
+	  pbb->schedule = isl_map_add_constraint (pbb->schedule, c);
 	}
 
       /* Iterations of this loop.  */
       else /* if ((i % 2) == 1) */
 	{
 	  int loop = (i - 1) / 2;
-
-	  mpz_set_si (v, -1);
-	  ppl_assign_Coefficient_from_mpz_t (c, v);
-	  ppl_Linear_Expression_add_to_coefficient
-	    (expr, scattering_dimensions + loop, c);
+	  pbb->schedule = isl_map_equate (pbb->schedule, isl_dim_in, loop,
+					  isl_dim_out, i);
 	}
-
-      ppl_new_Constraint (&cstr, expr, PPL_CONSTRAINT_TYPE_EQUAL);
-      ppl_Polyhedron_add_constraint (PBB_TRANSFORMED_SCATTERING (pbb), cstr);
-      ppl_delete_Linear_Expression (expr);
-      ppl_delete_Constraint (cstr);
     }
 
-  mpz_clear (v);
-  ppl_delete_Coefficient (c);
+  isl_int_clear (val);
 
-  PBB_ORIGINAL (pbb) = poly_scattering_copy (PBB_TRANSFORMED (pbb));
+  pbb->transformed = isl_map_copy (pbb->schedule);
 }
 
 /* Build for BB the static schedule.
@@ -531,26 +546,21 @@ build_scop_scattering (scop_p scop)
   int i;
   poly_bb_p pbb;
   gimple_bb_p previous_gbb = NULL;
-  ppl_Linear_Expression_t static_schedule;
-  ppl_Coefficient_t c;
-  mpz_t v;
+  isl_space *dc = isl_set_get_space (scop->context);
+  isl_aff *static_sched;
 
-  mpz_init (v);
-  ppl_new_Coefficient (&c);
-  ppl_new_Linear_Expression (&static_schedule);
+  dc = isl_space_add_dims (dc, isl_dim_set, number_of_loops());
+  static_sched = isl_aff_zero_on_domain (isl_local_space_from_space (dc));
 
   /* We have to start schedules at 0 on the first component and
      because we cannot compare_prefix_loops against a previous loop,
      prefix will be equal to zero, and that index will be
      incremented before copying.  */
-  mpz_set_si (v, -1);
-  ppl_assign_Coefficient_from_mpz_t (c, v);
-  ppl_Linear_Expression_add_to_coefficient (static_schedule, 0, c);
+  static_sched = isl_aff_add_coefficient_si (static_sched, isl_dim_in, 0, -1);
 
   FOR_EACH_VEC_ELT (poly_bb_p, SCOP_BBS (scop), i, pbb)
     {
       gimple_bb_p gbb = PBB_BLACK_BOX (pbb);
-      ppl_Linear_Expression_t common;
       int prefix;
       int nb_scat_dims = pbb_dim_iter_domain (pbb) * 2 + 1;
 
@@ -560,102 +570,158 @@ build_scop_scattering (scop_p scop)
 	prefix = 0;
 
       previous_gbb = gbb;
-      ppl_new_Linear_Expression_with_dimension (&common, prefix + 1);
-      ppl_assign_Linear_Expression_from_Linear_Expression (common,
-							   static_schedule);
 
-      mpz_set_si (v, 1);
-      ppl_assign_Coefficient_from_mpz_t (c, v);
-      ppl_Linear_Expression_add_to_coefficient (common, prefix, c);
-      ppl_assign_Linear_Expression_from_Linear_Expression (static_schedule,
-							   common);
-
-      build_pbb_scattering_polyhedrons (common, pbb, nb_scat_dims);
-
-      ppl_delete_Linear_Expression (common);
+      static_sched = isl_aff_add_coefficient_si (static_sched, isl_dim_in,
+						 prefix, 1);
+      build_pbb_scattering_polyhedrons (static_sched, pbb, nb_scat_dims);
     }
 
-  mpz_clear (v);
-  ppl_delete_Coefficient (c);
-  ppl_delete_Linear_Expression (static_schedule);
+  isl_aff_free (static_sched);
 }
 
-/* Add the value K to the dimension D of the linear expression EXPR.  */
+static isl_pw_aff *extract_affine (scop_p, tree, __isl_take isl_space *space);
 
-static void
-add_value_to_dim (ppl_dimension_type d, ppl_Linear_Expression_t expr,
-		  mpz_t k)
+/* Extract an affine expression from the chain of recurrence E.  */
+
+static isl_pw_aff *
+extract_affine_chrec (scop_p s, tree e, __isl_take isl_space *space)
 {
-  mpz_t val;
-  ppl_Coefficient_t coef;
+  isl_pw_aff *lhs = extract_affine (s, CHREC_LEFT (e), isl_space_copy (space));
+  isl_pw_aff *rhs = extract_affine (s, CHREC_RIGHT (e), isl_space_copy (space));
+  isl_local_space *ls = isl_local_space_from_space (space);
+  unsigned pos = sese_loop_depth ((sese) s->region,
+				  get_loop (CHREC_VARIABLE (e))) - 1;
+  isl_aff *loop = isl_aff_set_coefficient_si
+    (isl_aff_zero_on_domain (ls), isl_dim_in, pos, 1);
+  isl_pw_aff *l = isl_pw_aff_from_aff (loop);
 
-  ppl_new_Coefficient (&coef);
-  ppl_Linear_Expression_coefficient (expr, d, coef);
-  mpz_init (val);
-  ppl_Coefficient_to_mpz_t (coef, val);
+  /* Before multiplying, make sure that the result is affine.  */
+  gcc_assert (isl_pw_aff_is_cst (rhs)
+	      || isl_pw_aff_is_cst (l));
 
-  mpz_add (val, val, k);
-
-  ppl_assign_Coefficient_from_mpz_t (coef, val);
-  ppl_Linear_Expression_add_to_coefficient (expr, d, coef);
-  mpz_clear (val);
-  ppl_delete_Coefficient (coef);
+  return isl_pw_aff_add (lhs, isl_pw_aff_mul (rhs, l));
 }
 
-/* In the context of scop S, scan E, the right hand side of a scalar
-   evolution function in loop VAR, and translate it to a linear
-   expression EXPR.  */
+/* Extract an affine expression from the mult_expr E.  */
 
-static void
-scan_tree_for_params_right_scev (sese s, tree e, int var,
-				 ppl_Linear_Expression_t expr)
+static isl_pw_aff *
+extract_affine_mul (scop_p s, tree e, __isl_take isl_space *space)
 {
-  if (expr)
+  isl_pw_aff *lhs = extract_affine (s, TREE_OPERAND (e, 0),
+				    isl_space_copy (space));
+  isl_pw_aff *rhs = extract_affine (s, TREE_OPERAND (e, 1), space);
+
+  if (!isl_pw_aff_is_cst (lhs)
+      && !isl_pw_aff_is_cst (rhs))
     {
-      loop_p loop = get_loop (var);
-      ppl_dimension_type l = sese_loop_depth (s, loop) - 1;
-      mpz_t val;
-
-      /* Scalar evolutions should happen in the sese region.  */
-      gcc_assert (sese_loop_depth (s, loop) > 0);
-
-      /* We can not deal with parametric strides like:
-
-      | p = parameter;
-      |
-      | for i:
-      |   a [i * p] = ...   */
-      gcc_assert (TREE_CODE (e) == INTEGER_CST);
-
-      mpz_init (val);
-      tree_int_to_gmp (e, val);
-      add_value_to_dim (l, expr, val);
-      mpz_clear (val);
+      isl_pw_aff_free (lhs);
+      isl_pw_aff_free (rhs);
+      return NULL;
     }
+
+  return isl_pw_aff_mul (lhs, rhs);
 }
 
-/* Scan the integer constant CST, and add it to the inhomogeneous part of the
-   linear expression EXPR.  K is the multiplier of the constant.  */
+/* Return an ISL identifier from the name of the ssa_name E.  */
 
-static void
-scan_tree_for_params_int (tree cst, ppl_Linear_Expression_t expr, mpz_t k)
+static isl_id *
+isl_id_for_ssa_name (scop_p s, tree e)
 {
-  mpz_t val;
-  ppl_Coefficient_t coef;
-  tree type = TREE_TYPE (cst);
+  const char *name = get_name (e);
+  isl_id *id;
 
-  mpz_init (val);
+  if (name)
+    id = isl_id_alloc (s->ctx, name, e);
+  else
+    {
+      char name1[50];
+      snprintf (name1, sizeof (name1), "P_%d", SSA_NAME_VERSION (e));
+      id = isl_id_alloc (s->ctx, name1, e);
+    }
 
-  /* Necessary to not get "-1 = 2^n - 1". */
-  mpz_set_double_int (val, double_int_sext (tree_to_double_int (cst),
-					    TYPE_PRECISION (type)), false);
+  return id;
+}
 
-  mpz_mul (val, val, k);
-  ppl_new_Coefficient (&coef);
-  ppl_assign_Coefficient_from_mpz_t (coef, val);
-  ppl_Linear_Expression_add_to_inhomogeneous (expr, coef);
-  mpz_clear (val);
-  ppl_delete_Coefficient (coef);
+/* Return an ISL identifier for the data reference DR.  */
+
+static isl_id *
+isl_id_for_dr (scop_p s, data_reference_p dr ATTRIBUTE_UNUSED)
+{
+  /* Data references all get the same isl_id.  They need to be comparable
+     and are distinguished through the first dimension, which contains the
+     alias set number.  */
+  return isl_id_alloc (s->ctx, "", 0);
+}
+
+/* Extract an affine expression from the ssa_name E.  */
+
+static isl_pw_aff *
+extract_affine_name (scop_p s, tree e, __isl_take isl_space *space)
+{
+  isl_aff *aff;
+  isl_set *dom;
+  isl_id *id;
+  int dimension;
+
+  id = isl_id_for_ssa_name (s, e);
+  dimension = isl_space_find_dim_by_id (space, isl_dim_param, id);
+  isl_id_free(id);
+  dom = isl_set_universe (isl_space_copy (space));
+  aff = isl_aff_zero_on_domain (isl_local_space_from_space (space));
+  aff = isl_aff_add_coefficient_si (aff, isl_dim_param, dimension, 1);
+  return isl_pw_aff_alloc (dom, aff);
+}
+
+/* Extract an affine expression from the gmp constant G.  */
+
+static isl_pw_aff *
+extract_affine_gmp (mpz_t g, __isl_take isl_space *space)
+{
+  isl_local_space *ls = isl_local_space_from_space (isl_space_copy (space));
+  isl_aff *aff = isl_aff_zero_on_domain (ls);
+  isl_set *dom = isl_set_universe (space);
+  isl_int v;
+
+  isl_int_init (v);
+  isl_int_set_gmp (v, g);
+  aff = isl_aff_add_constant (aff, v);
+  isl_int_clear (v);
+
+  return isl_pw_aff_alloc (dom, aff);
+}
+
+/* Extract an affine expression from the integer_cst E.  */
+
+static isl_pw_aff *
+extract_affine_int (tree e, __isl_take isl_space *space)
+{
+  isl_pw_aff *res;
+  mpz_t g;
+
+  mpz_init (g);
+  tree_int_to_gmp (e, g);
+  res = extract_affine_gmp (g, space);
+  mpz_clear (g);
+
+  return res;
+}
+
+/* Compute pwaff mod 2^width.  */
+
+static isl_pw_aff *
+wrap (isl_pw_aff *pwaff, unsigned width)
+{
+  isl_int mod;
+
+  isl_int_init (mod);
+  isl_int_set_si (mod, 1);
+  isl_int_mul_2exp (mod, mod, width);
+
+  pwaff = isl_pw_aff_mod (pwaff, mod);
+
+  isl_int_clear (mod);
+
+  return pwaff;
 }
 
 /* When parameter NAME is in REGION, returns its index in SESE_PARAMS.
@@ -698,14 +764,83 @@ parameter_index_in_region (tree name, sese region)
   return i;
 }
 
+/* Extract an affine expression from the tree E in the scop S.  */
+
+static isl_pw_aff *
+extract_affine (scop_p s, tree e, __isl_take isl_space *space)
+{
+  isl_pw_aff *lhs, *rhs, *res;
+  tree type;
+
+  if (e == chrec_dont_know) {
+    isl_space_free (space);
+    return NULL;
+  }
+
+  switch (TREE_CODE (e))
+    {
+    case POLYNOMIAL_CHREC:
+      res = extract_affine_chrec (s, e, space);
+      break;
+
+    case MULT_EXPR:
+      res = extract_affine_mul (s, e, space);
+      break;
+
+    case PLUS_EXPR:
+    case POINTER_PLUS_EXPR:
+      lhs = extract_affine (s, TREE_OPERAND (e, 0), isl_space_copy (space));
+      rhs = extract_affine (s, TREE_OPERAND (e, 1), space);
+      res = isl_pw_aff_add (lhs, rhs);
+      break;
+
+    case MINUS_EXPR:
+      lhs = extract_affine (s, TREE_OPERAND (e, 0), isl_space_copy (space));
+      rhs = extract_affine (s, TREE_OPERAND (e, 1), space);
+      res = isl_pw_aff_sub (lhs, rhs);
+      break;
+
+    case NEGATE_EXPR:
+    case BIT_NOT_EXPR:
+      lhs = extract_affine (s, TREE_OPERAND (e, 0), isl_space_copy (space));
+      rhs = extract_affine (s, integer_minus_one_node, space);
+      res = isl_pw_aff_mul (lhs, rhs);
+      break;
+
+    case SSA_NAME:
+      gcc_assert (-1 != parameter_index_in_region_1 (e, SCOP_REGION (s)));
+      res = extract_affine_name (s, e, space);
+      break;
+
+    case INTEGER_CST:
+      res = extract_affine_int (e, space);
+      /* No need to wrap a single integer.  */
+      return res;
+
+    CASE_CONVERT:
+    case NON_LVALUE_EXPR:
+      res = extract_affine (s, TREE_OPERAND (e, 0), space);
+      break;
+
+    default:
+      gcc_unreachable ();
+      break;
+    }
+
+  type = TREE_TYPE (e);
+  if (TYPE_UNSIGNED (type))
+    res = wrap (res, TYPE_PRECISION (type));
+
+  return res;
+}
+
 /* In the context of sese S, scan the expression E and translate it to
    a linear expression C.  When parsing a symbolic multiplication, K
    represents the constant multiplier of an expression containing
    parameters.  */
 
 static void
-scan_tree_for_params (sese s, tree e, ppl_Linear_Expression_t c,
-		      mpz_t k)
+scan_tree_for_params (sese s, tree e)
 {
   if (e == chrec_dont_know)
     return;
@@ -713,153 +848,35 @@ scan_tree_for_params (sese s, tree e, ppl_Linear_Expression_t c,
   switch (TREE_CODE (e))
     {
     case POLYNOMIAL_CHREC:
-      scan_tree_for_params_right_scev (s, CHREC_RIGHT (e),
-				       CHREC_VARIABLE (e), c);
-      scan_tree_for_params (s, CHREC_LEFT (e), c, k);
+      scan_tree_for_params (s, CHREC_LEFT (e));
       break;
 
     case MULT_EXPR:
       if (chrec_contains_symbols (TREE_OPERAND (e, 0)))
-	{
-	  if (c)
-	    {
-	      mpz_t val;
-	      gcc_assert (host_integerp (TREE_OPERAND (e, 1), 0));
-	      mpz_init (val);
-	      tree_int_to_gmp (TREE_OPERAND (e, 1), val);
-	      mpz_mul (val, val, k);
-	      scan_tree_for_params (s, TREE_OPERAND (e, 0), c, val);
-	      mpz_clear (val);
-	    }
-	  else
-	    scan_tree_for_params (s, TREE_OPERAND (e, 0), c, k);
-	}
+	scan_tree_for_params (s, TREE_OPERAND (e, 0));
       else
-	{
-	  if (c)
-	    {
-	      mpz_t val;
-	      gcc_assert (host_integerp (TREE_OPERAND (e, 0), 0));
-	      mpz_init (val);
-	      tree_int_to_gmp (TREE_OPERAND (e, 0), val);
-	      mpz_mul (val, val, k);
-	      scan_tree_for_params (s, TREE_OPERAND (e, 1), c, val);
-	      mpz_clear (val);
-	    }
-	  else
-	    scan_tree_for_params (s, TREE_OPERAND (e, 1), c, k);
-	}
+	scan_tree_for_params (s, TREE_OPERAND (e, 1));
       break;
 
     case PLUS_EXPR:
     case POINTER_PLUS_EXPR:
-      scan_tree_for_params (s, TREE_OPERAND (e, 0), c, k);
-      scan_tree_for_params (s, TREE_OPERAND (e, 1), c, k);
-      break;
-
     case MINUS_EXPR:
-      {
-	ppl_Linear_Expression_t tmp_expr = NULL;
-
-        if (c)
-	  {
-	    ppl_dimension_type dim;
-	    ppl_Linear_Expression_space_dimension (c, &dim);
-	    ppl_new_Linear_Expression_with_dimension (&tmp_expr, dim);
-	  }
-
-	scan_tree_for_params (s, TREE_OPERAND (e, 0), c, k);
-	scan_tree_for_params (s, TREE_OPERAND (e, 1), tmp_expr, k);
-
-	if (c)
-	  {
-	    ppl_subtract_Linear_Expression_from_Linear_Expression (c,
-								   tmp_expr);
-	    ppl_delete_Linear_Expression (tmp_expr);
-	  }
-
-	break;
-      }
+      scan_tree_for_params (s, TREE_OPERAND (e, 0));
+      scan_tree_for_params (s, TREE_OPERAND (e, 1));
+      break;
 
     case NEGATE_EXPR:
-      {
-	ppl_Linear_Expression_t tmp_expr = NULL;
-
-	if (c)
-	  {
-	    ppl_dimension_type dim;
-	    ppl_Linear_Expression_space_dimension (c, &dim);
-	    ppl_new_Linear_Expression_with_dimension (&tmp_expr, dim);
-	  }
-
-	scan_tree_for_params (s, TREE_OPERAND (e, 0), tmp_expr, k);
-
-	if (c)
-	  {
-	    ppl_subtract_Linear_Expression_from_Linear_Expression (c,
-								   tmp_expr);
-	    ppl_delete_Linear_Expression (tmp_expr);
-	  }
-
-	break;
-      }
-
     case BIT_NOT_EXPR:
-      {
-	ppl_Linear_Expression_t tmp_expr = NULL;
-
-	if (c)
-	  {
-	    ppl_dimension_type dim;
-	    ppl_Linear_Expression_space_dimension (c, &dim);
-	    ppl_new_Linear_Expression_with_dimension (&tmp_expr, dim);
-	  }
-
-	scan_tree_for_params (s, TREE_OPERAND (e, 0), tmp_expr, k);
-
-	if (c)
-	  {
-	    ppl_Coefficient_t coef;
-	    mpz_t minus_one;
-
-	    ppl_subtract_Linear_Expression_from_Linear_Expression (c,
-								   tmp_expr);
-	    ppl_delete_Linear_Expression (tmp_expr);
-	    mpz_init (minus_one);
-	    mpz_set_si (minus_one, -1);
-	    ppl_new_Coefficient_from_mpz_t (&coef, minus_one);
-	    ppl_Linear_Expression_add_to_inhomogeneous (c, coef);
-	    mpz_clear (minus_one);
-	    ppl_delete_Coefficient (coef);
-	  }
-
-	break;
-      }
-
-    case SSA_NAME:
-      {
-	ppl_dimension_type p = parameter_index_in_region (e, s);
-
-	if (c)
-	  {
-	    ppl_dimension_type dim;
-	    ppl_Linear_Expression_space_dimension (c, &dim);
-	    p += dim - sese_nb_params (s);
-	    add_value_to_dim (p, c, k);
-	  }
-	break;
-      }
-
-    case INTEGER_CST:
-      if (c)
-	scan_tree_for_params_int (e, c, k);
-      break;
-
     CASE_CONVERT:
     case NON_LVALUE_EXPR:
-      scan_tree_for_params (s, TREE_OPERAND (e, 0), c, k);
+      scan_tree_for_params (s, TREE_OPERAND (e, 0));
       break;
 
+    case SSA_NAME:
+      parameter_index_in_region (e, s);
+      break;
+
+    case INTEGER_CST:
     case ADDR_EXPR:
       break;
 
@@ -880,15 +897,11 @@ find_params_in_bb (sese region, gimple_bb_p gbb)
   data_reference_p dr;
   gimple stmt;
   loop_p loop = GBB_BB (gbb)->loop_father;
-  mpz_t one;
-
-  mpz_init (one);
-  mpz_set_si (one, 1);
 
   /* Find parameters in the access functions of data references.  */
   FOR_EACH_VEC_ELT (data_reference_p, GBB_DATA_REFS (gbb), i, dr)
     for (j = 0; j < DR_NUM_DIMENSIONS (dr); j++)
-      scan_tree_for_params (region, DR_ACCESS_FN (dr, j), NULL, one);
+      scan_tree_for_params (region, DR_ACCESS_FN (dr, j));
 
   /* Find parameters in conditional statements.  */
   FOR_EACH_VEC_ELT (gimple, GBB_CONDITIONS (gbb), i, stmt)
@@ -898,11 +911,9 @@ find_params_in_bb (sese region, gimple_bb_p gbb)
       tree rhs = scalar_evolution_in_region (region, loop,
 					     gimple_cond_rhs (stmt));
 
-      scan_tree_for_params (region, lhs, NULL, one);
-      scan_tree_for_params (region, rhs, NULL, one);
+      scan_tree_for_params (region, lhs);
+      scan_tree_for_params (region, rhs);
     }
-
-  mpz_clear (one);
 }
 
 /* Record the parameters used in the SCOP.  A variable is a parameter
@@ -915,10 +926,7 @@ find_scop_parameters (scop_p scop)
   unsigned i;
   sese region = SCOP_REGION (scop);
   struct loop *loop;
-  mpz_t one;
-
-  mpz_init (one);
-  mpz_set_si (one, 1);
+  int nbp;
 
   /* Find the parameters used in the loop bounds.  */
   FOR_EACH_VEC_ELT (loop_p, SESE_LOOP_NEST (region), i, loop)
@@ -929,87 +937,27 @@ find_scop_parameters (scop_p scop)
 	continue;
 
       nb_iters = scalar_evolution_in_region (region, loop, nb_iters);
-      scan_tree_for_params (region, nb_iters, NULL, one);
+      scan_tree_for_params (region, nb_iters);
     }
-
-  mpz_clear (one);
 
   /* Find the parameters used in data accesses.  */
   FOR_EACH_VEC_ELT (poly_bb_p, SCOP_BBS (scop), i, pbb)
     find_params_in_bb (region, PBB_BLACK_BOX (pbb));
 
-  scop_set_nb_params (scop, sese_nb_params (region));
+  nbp = sese_nb_params (region);
+  scop_set_nb_params (scop, nbp);
   SESE_ADD_PARAMS (region) = false;
 
-  ppl_new_Pointset_Powerset_C_Polyhedron_from_space_dimension
-    (&SCOP_CONTEXT (scop), scop_nb_params (scop), 0);
-}
-
-/* Insert in the SCOP context constraints from the estimation of the
-   number of iterations.  UB_EXPR is a linear expression describing
-   the number of iterations in a loop.  This expression is bounded by
-   the estimation NIT.  */
-
-static void
-add_upper_bounds_from_estimated_nit (scop_p scop, double_int nit,
-				     ppl_dimension_type dim,
-				     ppl_Linear_Expression_t ub_expr)
-{
-  mpz_t val;
-  ppl_Linear_Expression_t nb_iters_le;
-  ppl_Polyhedron_t pol;
-  ppl_Coefficient_t coef;
-  ppl_Constraint_t ub;
-
-  ppl_new_C_Polyhedron_from_space_dimension (&pol, dim, 0);
-  ppl_new_Linear_Expression_from_Linear_Expression (&nb_iters_le,
-						    ub_expr);
-
-  /* Construct the negated number of last iteration in VAL.  */
-  mpz_init (val);
-  mpz_set_double_int (val, nit, false);
-  mpz_sub_ui (val, val, 1);
-  mpz_neg (val, val);
-
-  /* NB_ITERS_LE holds the number of last iteration in
-     parametrical form.  Subtract estimated number of last
-     iteration and assert that result is not positive.  */
-  ppl_new_Coefficient_from_mpz_t (&coef, val);
-  ppl_Linear_Expression_add_to_inhomogeneous (nb_iters_le, coef);
-  ppl_delete_Coefficient (coef);
-  ppl_new_Constraint (&ub, nb_iters_le,
-		      PPL_CONSTRAINT_TYPE_LESS_OR_EQUAL);
-  ppl_Polyhedron_add_constraint (pol, ub);
-
-  /* Remove all but last GDIM dimensions from POL to obtain
-     only the constraints on the parameters.  */
   {
-    graphite_dim_t gdim = scop_nb_params (scop);
-    ppl_dimension_type *dims = XNEWVEC (ppl_dimension_type, dim - gdim);
-    graphite_dim_t i;
+    tree e;
+    isl_space *space = isl_space_set_alloc (scop->ctx, nbp, 0);
 
-    for (i = 0; i < dim - gdim; i++)
-      dims[i] = i;
+    FOR_EACH_VEC_ELT (tree, SESE_PARAMS (region), i, e)
+      space = isl_space_set_dim_id (space, isl_dim_param, i,
+				    isl_id_for_ssa_name (scop, e));
 
-    ppl_Polyhedron_remove_space_dimensions (pol, dims, dim - gdim);
-    XDELETEVEC (dims);
+    scop->context = isl_set_universe (space);
   }
-
-  /* Add the constraints on the parameters to the SCoP context.  */
-  {
-    ppl_Pointset_Powerset_C_Polyhedron_t constraints_ps;
-
-    ppl_new_Pointset_Powerset_C_Polyhedron_from_C_Polyhedron
-      (&constraints_ps, pol);
-    ppl_Pointset_Powerset_C_Polyhedron_intersection_assign
-      (SCOP_CONTEXT (scop), constraints_ps);
-    ppl_delete_Pointset_Powerset_C_Polyhedron (constraints_ps);
-  }
-
-  ppl_delete_Polyhedron (pol);
-  ppl_delete_Linear_Expression (nb_iters_le);
-  ppl_delete_Constraint (ub);
-  mpz_clear (val);
 }
 
 /* Builds the constraint polyhedra for LOOP in SCOP.  OUTER_PH gives
@@ -1017,210 +965,131 @@ add_upper_bounds_from_estimated_nit (scop_p scop, double_int nit,
 
 static void
 build_loop_iteration_domains (scop_p scop, struct loop *loop,
-                              ppl_Polyhedron_t outer_ph, int nb,
-			      ppl_Pointset_Powerset_C_Polyhedron_t *domains)
+                              int nb,
+			      isl_set *outer, isl_set **doms)
 {
-  int i;
-  ppl_Polyhedron_t ph;
   tree nb_iters = number_of_latch_executions (loop);
-  ppl_dimension_type dim = nb + 1 + scop_nb_params (scop);
   sese region = SCOP_REGION (scop);
 
-  {
-    ppl_const_Constraint_System_t pcs;
-    ppl_dimension_type *map
-      = (ppl_dimension_type *) XNEWVEC (ppl_dimension_type, dim);
+  isl_set *inner = isl_set_copy (outer);
+  isl_space *space;
+  isl_constraint *c;
+  int pos = isl_set_dim (outer, isl_dim_set);
+  isl_int v;
+  mpz_t g;
 
-    ppl_new_C_Polyhedron_from_space_dimension (&ph, dim, 0);
-    ppl_Polyhedron_get_constraints (outer_ph, &pcs);
-    ppl_Polyhedron_add_constraints (ph, pcs);
+  mpz_init (g);
+  isl_int_init (v);
 
-    for (i = 0; i < (int) nb; i++)
-      map[i] = i;
-    for (i = (int) nb; i < (int) dim - 1; i++)
-      map[i] = i + 1;
-    map[dim - 1] = nb;
-
-    ppl_Polyhedron_map_space_dimensions (ph, map, dim);
-    free (map);
-  }
+  inner = isl_set_add_dims (inner, isl_dim_set, 1);
+  space = isl_set_get_space (inner);
 
   /* 0 <= loop_i */
-  {
-    ppl_Constraint_t lb;
-    ppl_Linear_Expression_t lb_expr;
+  c = isl_inequality_alloc
+      (isl_local_space_from_space (isl_space_copy (space)));
+  c = isl_constraint_set_coefficient_si (c, isl_dim_set, pos, 1);
+  inner = isl_set_add_constraint (inner, c);
 
-    ppl_new_Linear_Expression_with_dimension (&lb_expr, dim);
-    ppl_set_coef (lb_expr, nb, 1);
-    ppl_new_Constraint (&lb, lb_expr, PPL_CONSTRAINT_TYPE_GREATER_OR_EQUAL);
-    ppl_delete_Linear_Expression (lb_expr);
-    ppl_Polyhedron_add_constraint (ph, lb);
-    ppl_delete_Constraint (lb);
-  }
-
+  /* loop_i <= cst_nb_iters */
   if (TREE_CODE (nb_iters) == INTEGER_CST)
     {
-      ppl_Constraint_t ub;
-      ppl_Linear_Expression_t ub_expr;
-
-      ppl_new_Linear_Expression_with_dimension (&ub_expr, dim);
-
-      /* loop_i <= cst_nb_iters */
-      ppl_set_coef (ub_expr, nb, -1);
-      ppl_set_inhomogeneous_tree (ub_expr, nb_iters);
-      ppl_new_Constraint (&ub, ub_expr, PPL_CONSTRAINT_TYPE_GREATER_OR_EQUAL);
-      ppl_Polyhedron_add_constraint (ph, ub);
-      ppl_delete_Linear_Expression (ub_expr);
-      ppl_delete_Constraint (ub);
+      c = isl_inequality_alloc
+	  (isl_local_space_from_space(isl_space_copy (space)));
+      c = isl_constraint_set_coefficient_si (c, isl_dim_set, pos, -1);
+      tree_int_to_gmp (nb_iters, g);
+      isl_int_set_gmp (v, g);
+      c = isl_constraint_set_constant (c, v);
+      inner = isl_set_add_constraint (inner, c);
     }
+
+  /* loop_i <= expr_nb_iters */
   else if (!chrec_contains_undetermined (nb_iters))
     {
-      mpz_t one;
-      ppl_Constraint_t ub;
-      ppl_Linear_Expression_t ub_expr;
       double_int nit;
+      isl_pw_aff *aff;
+      isl_set *valid;
+      isl_local_space *ls;
+      isl_aff *al;
+      isl_set *le;
 
-      mpz_init (one);
-      mpz_set_si (one, 1);
-      ppl_new_Linear_Expression_with_dimension (&ub_expr, dim);
       nb_iters = scalar_evolution_in_region (region, loop, nb_iters);
-      scan_tree_for_params (SCOP_REGION (scop), nb_iters, ub_expr, one);
-      mpz_clear (one);
+
+      aff = extract_affine (scop, nb_iters, isl_set_get_space (inner));
+      valid = isl_pw_aff_nonneg_set (isl_pw_aff_copy (aff));
+      valid = isl_set_project_out (valid, isl_dim_set, 0,
+				   isl_set_dim (valid, isl_dim_set));
+      scop->context = isl_set_intersect (scop->context, valid);
+
+      ls = isl_local_space_from_space (isl_space_copy (space));
+      al = isl_aff_set_coefficient_si (isl_aff_zero_on_domain (ls),
+				       isl_dim_in, pos, 1);
+      le = isl_pw_aff_le_set (isl_pw_aff_from_aff (al),
+			      isl_pw_aff_copy (aff));
+      inner = isl_set_intersect (inner, le);
 
       if (max_stmt_executions (loop, &nit))
-	add_upper_bounds_from_estimated_nit (scop, nit, dim, ub_expr);
+	{
+	  /* Insert in the context the constraints from the
+	     estimation of the number of iterations NIT and the
+	     symbolic number of iterations (involving parameter
+	     names) NB_ITERS.  First, build the affine expression
+	     "NIT - NB_ITERS" and then say that it is positive,
+	     i.e., NIT approximates NB_ITERS: "NIT >= NB_ITERS".  */
+	  isl_pw_aff *approx;
+	  mpz_t g;
+	  isl_set *x;
+	  isl_constraint *c;
 
-      /* loop_i <= expr_nb_iters */
-      ppl_set_coef (ub_expr, nb, -1);
-      ppl_new_Constraint (&ub, ub_expr, PPL_CONSTRAINT_TYPE_GREATER_OR_EQUAL);
-      ppl_Polyhedron_add_constraint (ph, ub);
-      ppl_delete_Linear_Expression (ub_expr);
-      ppl_delete_Constraint (ub);
+	  mpz_init (g);
+	  mpz_set_double_int (g, nit, false);
+	  mpz_sub_ui (g, g, 1);
+	  approx = extract_affine_gmp (g, isl_set_get_space (inner));
+	  x = isl_pw_aff_ge_set (approx, aff);
+	  x = isl_set_project_out (x, isl_dim_set, 0,
+				   isl_set_dim (x, isl_dim_set));
+	  scop->context = isl_set_intersect (scop->context, x);
+
+	  c = isl_inequality_alloc
+	      (isl_local_space_from_space (isl_space_copy (space)));
+	  c = isl_constraint_set_coefficient_si (c, isl_dim_set, pos, -1);
+	  isl_int_set_gmp (v, g);
+	  mpz_clear (g);
+	  c = isl_constraint_set_constant (c, v);
+	  inner = isl_set_add_constraint (inner, c);
+	}
     }
   else
     gcc_unreachable ();
 
   if (loop->inner && loop_in_sese_p (loop->inner, region))
-    build_loop_iteration_domains (scop, loop->inner, ph, nb + 1, domains);
+    build_loop_iteration_domains (scop, loop->inner, nb + 1,
+				  isl_set_copy (inner), doms);
 
   if (nb != 0
       && loop->next
       && loop_in_sese_p (loop->next, region))
-    build_loop_iteration_domains (scop, loop->next, outer_ph, nb, domains);
+    build_loop_iteration_domains (scop, loop->next, nb,
+				  isl_set_copy (outer), doms);
 
-  ppl_new_Pointset_Powerset_C_Polyhedron_from_C_Polyhedron
-    (&domains[loop->num], ph);
+  doms[loop->num] = inner;
 
-  ppl_delete_Polyhedron (ph);
+  isl_set_free (outer);
+  isl_space_free (space);
+  isl_int_clear (v);
+  mpz_clear (g);
 }
 
 /* Returns a linear expression for tree T evaluated in PBB.  */
 
-static ppl_Linear_Expression_t
-create_linear_expr_from_tree (poly_bb_p pbb, tree t)
+static isl_pw_aff *
+create_pw_aff_from_tree (poly_bb_p pbb, tree t)
 {
-  mpz_t one;
-  ppl_Linear_Expression_t res;
-  ppl_dimension_type dim;
-  sese region = SCOP_REGION (PBB_SCOP (pbb));
-  loop_p loop = pbb_loop (pbb);
+  scop_p scop = PBB_SCOP (pbb);
 
-  dim = pbb_dim_iter_domain (pbb) + pbb_nb_params (pbb);
-  ppl_new_Linear_Expression_with_dimension (&res, dim);
-
-  t = scalar_evolution_in_region (region, loop, t);
+  t = scalar_evolution_in_region (SCOP_REGION (scop), pbb_loop (pbb), t);
   gcc_assert (!automatically_generated_chrec_p (t));
 
-  mpz_init (one);
-  mpz_set_si (one, 1);
-  scan_tree_for_params (region, t, res, one);
-  mpz_clear (one);
-
-  return res;
-}
-
-/* Returns the ppl constraint type from the gimple tree code CODE.  */
-
-static enum ppl_enum_Constraint_Type
-ppl_constraint_type_from_tree_code (enum tree_code code)
-{
-  switch (code)
-    {
-    /* We do not support LT and GT to be able to work with C_Polyhedron.
-       As we work on integer polyhedron "a < b" can be expressed by
-       "a + 1 <= b".  */
-    case LT_EXPR:
-    case GT_EXPR:
-      gcc_unreachable ();
-
-    case LE_EXPR:
-      return PPL_CONSTRAINT_TYPE_LESS_OR_EQUAL;
-
-    case GE_EXPR:
-      return PPL_CONSTRAINT_TYPE_GREATER_OR_EQUAL;
-
-    case EQ_EXPR:
-      return PPL_CONSTRAINT_TYPE_EQUAL;
-
-    default:
-      gcc_unreachable ();
-    }
-}
-
-/* Add conditional statement STMT to PS.  It is evaluated in PBB and
-   CODE is used as the comparison operator.  This allows us to invert the
-   condition or to handle inequalities.  */
-
-static void
-add_condition_to_domain (ppl_Pointset_Powerset_C_Polyhedron_t ps, gimple stmt,
-			 poly_bb_p pbb, enum tree_code code)
-{
-  mpz_t v;
-  ppl_Coefficient_t c;
-  ppl_Linear_Expression_t left, right;
-  ppl_Constraint_t cstr;
-  enum ppl_enum_Constraint_Type type;
-
-  left = create_linear_expr_from_tree (pbb, gimple_cond_lhs (stmt));
-  right = create_linear_expr_from_tree (pbb, gimple_cond_rhs (stmt));
-
-  /* If we have < or > expressions convert them to <= or >= by adding 1 to
-     the left or the right side of the expression. */
-  if (code == LT_EXPR)
-    {
-      mpz_init (v);
-      mpz_set_si (v, 1);
-      ppl_new_Coefficient (&c);
-      ppl_assign_Coefficient_from_mpz_t (c, v);
-      ppl_Linear_Expression_add_to_inhomogeneous (left, c);
-      ppl_delete_Coefficient (c);
-      mpz_clear (v);
-
-      code = LE_EXPR;
-    }
-  else if (code == GT_EXPR)
-    {
-      mpz_init (v);
-      mpz_set_si (v, 1);
-      ppl_new_Coefficient (&c);
-      ppl_assign_Coefficient_from_mpz_t (c, v);
-      ppl_Linear_Expression_add_to_inhomogeneous (right, c);
-      ppl_delete_Coefficient (c);
-      mpz_clear (v);
-
-      code = GE_EXPR;
-    }
-
-  type = ppl_constraint_type_from_tree_code (code);
-
-  ppl_subtract_Linear_Expression_from_Linear_Expression (left, right);
-
-  ppl_new_Constraint (&cstr, left, type);
-  ppl_Pointset_Powerset_C_Polyhedron_add_constraint (ps, cstr);
-
-  ppl_delete_Constraint (cstr);
-  ppl_delete_Linear_Expression (left);
-  ppl_delete_Linear_Expression (right);
+  return extract_affine (scop, t, isl_set_get_space (pbb->domain));
 }
 
 /* Add conditional statement STMT to pbb.  CODE is used as the comparison
@@ -1230,19 +1099,45 @@ add_condition_to_domain (ppl_Pointset_Powerset_C_Polyhedron_t ps, gimple stmt,
 static void
 add_condition_to_pbb (poly_bb_p pbb, gimple stmt, enum tree_code code)
 {
-  if (code == NE_EXPR)
+  isl_pw_aff *lhs = create_pw_aff_from_tree (pbb, gimple_cond_lhs (stmt));
+  isl_pw_aff *rhs = create_pw_aff_from_tree (pbb, gimple_cond_rhs (stmt));
+  isl_set *cond;
+
+  switch (code)
     {
-      ppl_Pointset_Powerset_C_Polyhedron_t left = PBB_DOMAIN (pbb);
-      ppl_Pointset_Powerset_C_Polyhedron_t right;
-      ppl_new_Pointset_Powerset_C_Polyhedron_from_Pointset_Powerset_C_Polyhedron
-	(&right, left);
-      add_condition_to_domain (left, stmt, pbb, LT_EXPR);
-      add_condition_to_domain (right, stmt, pbb, GT_EXPR);
-      ppl_Pointset_Powerset_C_Polyhedron_upper_bound_assign (left, right);
-      ppl_delete_Pointset_Powerset_C_Polyhedron (right);
+      case LT_EXPR:
+	cond = isl_pw_aff_lt_set (lhs, rhs);
+	break;
+
+      case GT_EXPR:
+	cond = isl_pw_aff_gt_set (lhs, rhs);
+	break;
+
+      case LE_EXPR:
+	cond = isl_pw_aff_le_set (lhs, rhs);
+	break;
+
+      case GE_EXPR:
+	cond = isl_pw_aff_ge_set (lhs, rhs);
+	break;
+
+      case EQ_EXPR:
+	cond = isl_pw_aff_eq_set (lhs, rhs);
+	break;
+
+      case NE_EXPR:
+	cond = isl_pw_aff_ne_set (lhs, rhs);
+	break;
+
+      default:
+	isl_pw_aff_free(lhs);
+	isl_pw_aff_free(rhs);
+	return;
     }
-  else
-    add_condition_to_domain (PBB_DOMAIN (pbb), stmt, pbb, code);
+
+  cond = isl_set_coalesce (cond);
+  cond = isl_set_set_tuple_id (cond, isl_set_get_tuple_id (pbb->domain));
+  pbb->domain = isl_set_intersect (pbb->domain, cond);
 }
 
 /* Add conditions to the domain of PBB.  */
@@ -1273,7 +1168,7 @@ add_conditions_to_domain (poly_bb_p pbb)
 	  }
 
       case GIMPLE_SWITCH:
-	/* Switch statements are not supported right now - fall throught.  */
+	/* Switch statements are not supported right now - fall through.  */
 
       default:
 	gcc_unreachable ();
@@ -1420,10 +1315,8 @@ build_sese_conditions (sese region)
    of P.  */
 
 static void
-add_param_constraints (scop_p scop, ppl_Polyhedron_t context, graphite_dim_t p)
+add_param_constraints (scop_p scop, graphite_dim_t p)
 {
-  ppl_Constraint_t cstr;
-  ppl_Linear_Expression_t le;
   tree parameter = VEC_index (tree, SESE_PARAMS (SCOP_REGION (scop)), p);
   tree type = TREE_TYPE (parameter);
   tree lb = NULL_TREE;
@@ -1441,24 +1334,44 @@ add_param_constraints (scop_p scop, ppl_Polyhedron_t context, graphite_dim_t p)
 
   if (lb)
     {
-      ppl_new_Linear_Expression_with_dimension (&le, scop_nb_params (scop));
-      ppl_set_coef (le, p, -1);
-      ppl_set_inhomogeneous_tree (le, lb);
-      ppl_new_Constraint (&cstr, le, PPL_CONSTRAINT_TYPE_LESS_OR_EQUAL);
-      ppl_Polyhedron_add_constraint (context, cstr);
-      ppl_delete_Linear_Expression (le);
-      ppl_delete_Constraint (cstr);
+      isl_space *space = isl_set_get_space (scop->context);
+      isl_constraint *c;
+      mpz_t g;
+      isl_int v;
+
+      c = isl_inequality_alloc (isl_local_space_from_space (space));
+      mpz_init (g);
+      isl_int_init (v);
+      tree_int_to_gmp (lb, g);
+      isl_int_set_gmp (v, g);
+      isl_int_neg (v, v);
+      mpz_clear (g);
+      c = isl_constraint_set_constant (c, v);
+      isl_int_clear (v);
+      c = isl_constraint_set_coefficient_si (c, isl_dim_param, p, 1);
+
+      scop->context = isl_set_add_constraint (scop->context, c);
     }
 
   if (ub)
     {
-      ppl_new_Linear_Expression_with_dimension (&le, scop_nb_params (scop));
-      ppl_set_coef (le, p, -1);
-      ppl_set_inhomogeneous_tree (le, ub);
-      ppl_new_Constraint (&cstr, le, PPL_CONSTRAINT_TYPE_GREATER_OR_EQUAL);
-      ppl_Polyhedron_add_constraint (context, cstr);
-      ppl_delete_Linear_Expression (le);
-      ppl_delete_Constraint (cstr);
+      isl_space *space = isl_set_get_space (scop->context);
+      isl_constraint *c;
+      mpz_t g;
+      isl_int v;
+
+      c = isl_inequality_alloc (isl_local_space_from_space (space));
+
+      mpz_init (g);
+      isl_int_init (v);
+      tree_int_to_gmp (ub, g);
+      isl_int_set_gmp (v, g);
+      mpz_clear (g);
+      c = isl_constraint_set_constant (c, v);
+      isl_int_clear (v);
+      c = isl_constraint_set_coefficient_si (c, isl_dim_param, p, -1);
+
+      scop->context = isl_set_add_constraint (scop->context, c);
     }
 }
 
@@ -1469,22 +1382,10 @@ add_param_constraints (scop_p scop, ppl_Polyhedron_t context, graphite_dim_t p)
 static void
 build_scop_context (scop_p scop)
 {
-  ppl_Polyhedron_t context;
-  ppl_Pointset_Powerset_C_Polyhedron_t ps;
   graphite_dim_t p, n = scop_nb_params (scop);
 
-  ppl_new_C_Polyhedron_from_space_dimension (&context, n, 0);
-
   for (p = 0; p < n; p++)
-    add_param_constraints (scop, context, p);
-
-  ppl_new_Pointset_Powerset_C_Polyhedron_from_C_Polyhedron
-    (&ps, context);
-  ppl_Pointset_Powerset_C_Polyhedron_intersection_assign
-    (SCOP_CONTEXT (scop), ps);
-
-  ppl_delete_Pointset_Powerset_C_Polyhedron (ps);
-  ppl_delete_Polyhedron (context);
+    add_param_constraints (scop, p);
 }
 
 /* Build the iteration domains: the loops belonging to the current
@@ -1497,36 +1398,33 @@ build_scop_iteration_domain (scop_p scop)
   struct loop *loop;
   sese region = SCOP_REGION (scop);
   int i;
-  ppl_Polyhedron_t ph;
   poly_bb_p pbb;
   int nb_loops = number_of_loops ();
-  ppl_Pointset_Powerset_C_Polyhedron_t *domains
-    = XNEWVEC (ppl_Pointset_Powerset_C_Polyhedron_t, nb_loops);
-
-  for (i = 0; i < nb_loops; i++)
-    domains[i] = NULL;
-
-  ppl_new_C_Polyhedron_from_space_dimension (&ph, scop_nb_params (scop), 0);
+  isl_set **doms = XCNEWVEC (isl_set *, nb_loops);
 
   FOR_EACH_VEC_ELT (loop_p, SESE_LOOP_NEST (region), i, loop)
     if (!loop_in_sese_p (loop_outer (loop), region))
-      build_loop_iteration_domains (scop, loop, ph, 0, domains);
+      build_loop_iteration_domains (scop, loop, 0,
+				    isl_set_copy (scop->context), doms);
 
   FOR_EACH_VEC_ELT (poly_bb_p, SCOP_BBS (scop), i, pbb)
-    if (domains[gbb_loop (PBB_BLACK_BOX (pbb))->num])
-      ppl_new_Pointset_Powerset_C_Polyhedron_from_Pointset_Powerset_C_Polyhedron
-	(&PBB_DOMAIN (pbb), (ppl_const_Pointset_Powerset_C_Polyhedron_t)
-	 domains[gbb_loop (PBB_BLACK_BOX (pbb))->num]);
-    else
-      ppl_new_Pointset_Powerset_C_Polyhedron_from_C_Polyhedron
-	(&PBB_DOMAIN (pbb), ph);
+    {
+      loop = pbb_loop (pbb);
+
+      if (doms[loop->num])
+	pbb->domain = isl_set_copy (doms[loop->num]);
+      else
+	pbb->domain = isl_set_copy (scop->context);
+
+      pbb->domain = isl_set_set_tuple_id (pbb->domain,
+					  isl_id_for_pbb (scop, pbb));
+    }
 
   for (i = 0; i < nb_loops; i++)
-    if (domains[i])
-      ppl_delete_Pointset_Powerset_C_Polyhedron (domains[i]);
+    if (doms[i])
+      isl_set_free (doms[i]);
 
-  ppl_delete_Polyhedron (ph);
-  free (domains);
+  free (doms);
 }
 
 /* Add a constrain to the ACCESSES polyhedron for the alias set of
@@ -1534,28 +1432,44 @@ build_scop_iteration_domain (scop_p scop)
    ACCESSES polyhedron, DOM_NB_DIMS is the dimension of the iteration
    domain.  */
 
-static void
-pdr_add_alias_set (ppl_Polyhedron_t accesses, data_reference_p dr,
-		   ppl_dimension_type accessp_nb_dims,
-		   ppl_dimension_type dom_nb_dims)
+static isl_map *
+pdr_add_alias_set (isl_map *acc, data_reference_p dr)
 {
-  ppl_Linear_Expression_t alias;
-  ppl_Constraint_t cstr;
+  isl_constraint *c;
   int alias_set_num = 0;
   base_alias_pair *bap = (base_alias_pair *)(dr->aux);
 
   if (bap && bap->alias_set)
     alias_set_num = *(bap->alias_set);
 
-  ppl_new_Linear_Expression_with_dimension (&alias, accessp_nb_dims);
+  c = isl_equality_alloc
+      (isl_local_space_from_space (isl_map_get_space (acc)));
+  c = isl_constraint_set_constant_si (c, -alias_set_num);
+  c = isl_constraint_set_coefficient_si (c, isl_dim_out, 0, 1);
 
-  ppl_set_coef (alias, dom_nb_dims, 1);
-  ppl_set_inhomogeneous (alias, -alias_set_num);
-  ppl_new_Constraint (&cstr, alias, PPL_CONSTRAINT_TYPE_EQUAL);
-  ppl_Polyhedron_add_constraint (accesses, cstr);
+  return isl_map_add_constraint (acc, c);
+}
 
-  ppl_delete_Linear_Expression (alias);
-  ppl_delete_Constraint (cstr);
+/* Assign the affine expression INDEX to the output dimension POS of
+   MAP and return the result.  */
+
+static isl_map *
+set_index (isl_map *map, int pos, isl_pw_aff *index)
+{
+  isl_map *index_map;
+  int len = isl_map_dim (map, isl_dim_out);
+  isl_id *id;
+
+  index_map = isl_map_from_pw_aff (index);
+  index_map = isl_map_insert_dims (index_map, isl_dim_out, 0, pos);
+  index_map = isl_map_add_dims (index_map, isl_dim_out, len - pos - 1);
+
+  id = isl_map_get_tuple_id (map, isl_dim_out);
+  index_map = isl_map_set_tuple_id (index_map, isl_dim_out, id);
+  id = isl_map_get_tuple_id (map, isl_dim_in);
+  index_map = isl_map_set_tuple_id (index_map, isl_dim_in, id);
+
+  return isl_map_intersect (map, index_map);
 }
 
 /* Add to ACCESSES polyhedron equalities defining the access functions
@@ -1563,43 +1477,23 @@ pdr_add_alias_set (ppl_Polyhedron_t accesses, data_reference_p dr,
    polyhedron, DOM_NB_DIMS is the dimension of the iteration domain.
    PBB is the poly_bb_p that contains the data reference DR.  */
 
-static void
-pdr_add_memory_accesses (ppl_Polyhedron_t accesses, data_reference_p dr,
-			 ppl_dimension_type accessp_nb_dims,
-			 ppl_dimension_type dom_nb_dims,
-			 poly_bb_p pbb)
+static isl_map *
+pdr_add_memory_accesses (isl_map *acc, data_reference_p dr, poly_bb_p pbb)
 {
   int i, nb_subscripts = DR_NUM_DIMENSIONS (dr);
-  mpz_t v;
   scop_p scop = PBB_SCOP (pbb);
-  sese region = SCOP_REGION (scop);
-
-  mpz_init (v);
 
   for (i = 0; i < nb_subscripts; i++)
     {
-      ppl_Linear_Expression_t fn, access;
-      ppl_Constraint_t cstr;
-      ppl_dimension_type subscript = dom_nb_dims + 1 + i;
+      isl_pw_aff *aff;
       tree afn = DR_ACCESS_FN (dr, nb_subscripts - 1 - i);
 
-      ppl_new_Linear_Expression_with_dimension (&fn, dom_nb_dims);
-      ppl_new_Linear_Expression_with_dimension (&access, accessp_nb_dims);
-
-      mpz_set_si (v, 1);
-      scan_tree_for_params (region, afn, fn, v);
-      ppl_assign_Linear_Expression_from_Linear_Expression (access, fn);
-
-      ppl_set_coef (access, subscript, -1);
-      ppl_new_Constraint (&cstr, access, PPL_CONSTRAINT_TYPE_EQUAL);
-      ppl_Polyhedron_add_constraint (accesses, cstr);
-
-      ppl_delete_Linear_Expression (fn);
-      ppl_delete_Linear_Expression (access);
-      ppl_delete_Constraint (cstr);
+      aff = extract_affine (scop, afn,
+			    isl_space_domain (isl_map_get_space (acc)));
+      acc = set_index (acc, i + 1, aff);
     }
 
-  mpz_clear (v);
+  return acc;
 }
 
 /* Add constrains representing the size of the accessed data to the
@@ -1607,63 +1501,68 @@ pdr_add_memory_accesses (ppl_Polyhedron_t accesses, data_reference_p dr,
    ACCESSES polyhedron, DOM_NB_DIMS is the dimension of the iteration
    domain.  */
 
-static void
-pdr_add_data_dimensions (ppl_Polyhedron_t accesses, data_reference_p dr,
-			 ppl_dimension_type accessp_nb_dims,
-			 ppl_dimension_type dom_nb_dims)
+static isl_set *
+pdr_add_data_dimensions (isl_set *extent, scop_p scop, data_reference_p dr)
 {
   tree ref = DR_REF (dr);
   int i, nb_subscripts = DR_NUM_DIMENSIONS (dr);
 
   for (i = nb_subscripts - 1; i >= 0; i--, ref = TREE_OPERAND (ref, 0))
     {
-      ppl_Linear_Expression_t expr;
-      ppl_Constraint_t cstr;
-      ppl_dimension_type subscript = dom_nb_dims + 1 + i;
       tree low, high;
 
       if (TREE_CODE (ref) != ARRAY_REF)
 	break;
 
       low = array_ref_low_bound (ref);
-
-      /* subscript - low >= 0 */
-      if (host_integerp (low, 0))
-	{
-	  tree minus_low;
-
-	  ppl_new_Linear_Expression_with_dimension (&expr, accessp_nb_dims);
-	  ppl_set_coef (expr, subscript, 1);
-
-	  minus_low = fold_build1 (NEGATE_EXPR, TREE_TYPE (low), low);
-	  ppl_set_inhomogeneous_tree (expr, minus_low);
-
-	  ppl_new_Constraint (&cstr, expr, PPL_CONSTRAINT_TYPE_GREATER_OR_EQUAL);
-	  ppl_Polyhedron_add_constraint (accesses, cstr);
-	  ppl_delete_Linear_Expression (expr);
-	  ppl_delete_Constraint (cstr);
-	}
-
       high = array_ref_up_bound (ref);
 
-      /* high - subscript >= 0 */
-      if (high && host_integerp (high, 0)
+      /* XXX The PPL code dealt separately with
+         subscript - low >= 0 and high - subscript >= 0 in case one of
+	 the two bounds isn't known.  Do the same here?  */
+
+      if (host_integerp (low, 0)
+	  && high
+	  && host_integerp (high, 0)
 	  /* 1-element arrays at end of structures may extend over
 	     their declared size.  */
 	  && !(array_at_struct_end_p (ref)
 	       && operand_equal_p (low, high, 0)))
 	{
-	  ppl_new_Linear_Expression_with_dimension (&expr, accessp_nb_dims);
-	  ppl_set_coef (expr, subscript, -1);
+	  isl_id *id;
+	  isl_aff *aff;
+	  isl_set *univ, *lbs, *ubs;
+	  isl_pw_aff *index;
+	  isl_space *space;
+	  isl_set *valid;
+	  isl_pw_aff *lb = extract_affine_int (low, isl_set_get_space (extent));
+	  isl_pw_aff *ub = extract_affine_int (high, isl_set_get_space (extent));
 
-	  ppl_set_inhomogeneous_tree (expr, high);
+	  /* high >= 0 */
+	  valid = isl_pw_aff_nonneg_set (isl_pw_aff_copy (ub));
+	  valid = isl_set_project_out (valid, isl_dim_set, 0,
+				       isl_set_dim (valid, isl_dim_set));
+	  scop->context = isl_set_intersect (scop->context, valid);
 
-	  ppl_new_Constraint (&cstr, expr, PPL_CONSTRAINT_TYPE_GREATER_OR_EQUAL);
-	  ppl_Polyhedron_add_constraint (accesses, cstr);
-	  ppl_delete_Linear_Expression (expr);
-	  ppl_delete_Constraint (cstr);
+	  space = isl_set_get_space (extent);
+	  aff = isl_aff_zero_on_domain (isl_local_space_from_space (space));
+	  aff = isl_aff_add_coefficient_si (aff, isl_dim_in, i + 1, 1);
+	  univ = isl_set_universe (isl_space_domain (isl_aff_get_space (aff)));
+	  index = isl_pw_aff_alloc (univ, aff);
+
+	  id = isl_set_get_tuple_id (extent);
+	  lb = isl_pw_aff_set_tuple_id (lb, isl_dim_in, isl_id_copy (id));
+	  ub = isl_pw_aff_set_tuple_id (ub, isl_dim_in, id);
+
+	  /* low <= sub_i <= high */
+	  lbs = isl_pw_aff_ge_set (isl_pw_aff_copy (index), lb);
+	  ubs = isl_pw_aff_le_set (index, ub);
+	  extent = isl_set_intersect (extent, lbs);
+	  extent = isl_set_intersect (extent, ubs);
 	}
     }
+
+  return extent;
 }
 
 /* Build data accesses for DR in PBB.  */
@@ -1671,32 +1570,46 @@ pdr_add_data_dimensions (ppl_Polyhedron_t accesses, data_reference_p dr,
 static void
 build_poly_dr (data_reference_p dr, poly_bb_p pbb)
 {
-  ppl_Polyhedron_t accesses;
-  ppl_Pointset_Powerset_C_Polyhedron_t accesses_ps;
-  ppl_dimension_type dom_nb_dims;
-  ppl_dimension_type accessp_nb_dims;
   int dr_base_object_set;
+  isl_map *acc;
+  isl_set *extent;
+  scop_p scop = PBB_SCOP (pbb);
 
-  ppl_Pointset_Powerset_C_Polyhedron_space_dimension (PBB_DOMAIN (pbb),
-						      &dom_nb_dims);
-  accessp_nb_dims = dom_nb_dims + 1 + DR_NUM_DIMENSIONS (dr);
+  {
+    isl_space *dc = isl_set_get_space (pbb->domain);
+    int nb_out = 1 + DR_NUM_DIMENSIONS (dr);
+    isl_space *space = isl_space_add_dims (isl_space_from_domain (dc),
+					   isl_dim_out, nb_out);
 
-  ppl_new_C_Polyhedron_from_space_dimension (&accesses, accessp_nb_dims, 0);
+    acc = isl_map_universe (space);
+    acc = isl_map_set_tuple_id (acc, isl_dim_out, isl_id_for_dr (scop, dr));
+  }
 
-  pdr_add_alias_set (accesses, dr, accessp_nb_dims, dom_nb_dims);
-  pdr_add_memory_accesses (accesses, dr, accessp_nb_dims, dom_nb_dims, pbb);
-  pdr_add_data_dimensions (accesses, dr, accessp_nb_dims, dom_nb_dims);
+  acc = pdr_add_alias_set (acc, dr);
+  acc = pdr_add_memory_accesses (acc, dr, pbb);
 
-  ppl_new_Pointset_Powerset_C_Polyhedron_from_C_Polyhedron (&accesses_ps,
-							    accesses);
-  ppl_delete_Polyhedron (accesses);
+  {
+    isl_id *id = isl_id_for_dr (scop, dr);
+    int nb = 1 + DR_NUM_DIMENSIONS (dr);
+    isl_space *space = isl_space_set_alloc (scop->ctx, 0, nb);
+    int alias_set_num = 0;
+    base_alias_pair *bap = (base_alias_pair *)(dr->aux);
+
+    if (bap && bap->alias_set)
+      alias_set_num = *(bap->alias_set);
+
+    space = isl_space_set_tuple_id (space, isl_dim_set, id);
+    extent = isl_set_nat_universe (space);
+    extent = isl_set_fix_si (extent, isl_dim_set, 0, alias_set_num);
+    extent = pdr_add_data_dimensions (extent, scop, dr);
+  }
 
   gcc_assert (dr->aux);
   dr_base_object_set = ((base_alias_pair *)(dr->aux))->base_obj_set;
 
-  new_poly_dr (pbb, dr_base_object_set, accesses_ps,
+  new_poly_dr (pbb, dr_base_object_set,
 	       DR_IS_READ (dr) ? PDR_READ : PDR_WRITE,
-	       dr, DR_NUM_DIMENSIONS (dr));
+	       dr, DR_NUM_DIMENSIONS (dr), acc, extent);
 }
 
 /* Write to FILE the alias graph of data references in DIMACS format.  */
@@ -2139,9 +2052,7 @@ new_pbb_from_pbb (scop_p scop, poly_bb_p pbb, basic_block bb)
     if (VEC_index (poly_bb_p, SCOP_BBS (scop), index) == pbb)
       break;
 
-  if (PBB_DOMAIN (pbb))
-    ppl_new_Pointset_Powerset_C_Polyhedron_from_Pointset_Powerset_C_Polyhedron
-      (&PBB_DOMAIN (pbb1), PBB_DOMAIN (pbb));
+  pbb1->domain = isl_set_copy (pbb->domain);
 
   GBB_PBB (gbb1) = pbb1;
   GBB_CONDITIONS (gbb1) = VEC_copy (gimple, heap, GBB_CONDITIONS (gbb));

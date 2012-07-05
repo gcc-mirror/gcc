@@ -325,8 +325,7 @@ build_base_path (enum tree_code code,
      up properly yet, and the value doesn't matter there either; we're just
      interested in the result of overload resolution.  */
   if (cp_unevaluated_operand != 0
-      || (current_function_decl
-	  && uses_template_parms (current_function_decl)))
+      || in_template_function ())
     {
       expr = build_nop (ptr_target_type, expr);
       if (!want_pointer)
@@ -3114,7 +3113,8 @@ check_field_decls (tree t, tree *access_decls,
 
       /* If we've gotten this far, it's a data member, possibly static,
 	 or an enumerator.  */
-      DECL_CONTEXT (x) = t;
+      if (TREE_CODE (x) != CONST_DECL)
+	DECL_CONTEXT (x) = t;
 
       /* When this goes into scope, it will be a non-local reference.  */
       DECL_NONLOCAL (x) = 1;
@@ -6520,7 +6520,9 @@ resolves_to_fixed_type_p (tree instance, int* nonnull)
   int cdtorp = 0;
   tree fixed;
 
-  if (processing_template_decl)
+  /* processing_template_decl can be false in a template if we're in
+     fold_non_dependent_expr, but we still want to suppress this check.  */
+  if (in_template_function ())
     {
       /* In a template we only care about the type of the result.  */
       if (nonnull)

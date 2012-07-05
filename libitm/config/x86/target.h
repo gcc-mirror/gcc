@@ -63,7 +63,7 @@ typedef struct gtm_jmpbuf
 static inline void
 cpu_relax (void)
 {
-  __asm volatile ("rep; nop" : : : "memory");
+  __builtin_ia32_pause ();
 }
 
 } // namespace GTM

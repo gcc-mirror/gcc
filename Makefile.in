@@ -222,8 +222,7 @@ HOST_EXPORTS = \
 	HOST_LIBS="$(STAGE1_LIBS)"; export HOST_LIBS; \
 	GMPLIBS="$(HOST_GMPLIBS)"; export GMPLIBS; \
 	GMPINC="$(HOST_GMPINC)"; export GMPINC; \
-	PPLLIBS="$(HOST_PPLLIBS)"; export PPLLIBS; \
-	PPLINC="$(HOST_PPLINC)"; export PPLINC; \
+	ISLINC="$(HOST_ISLINC)"; export ISLINC; \
 	CLOOGLIBS="$(HOST_CLOOGLIBS)"; export CLOOGLIBS; \
 	CLOOGINC="$(HOST_CLOOGINC)"; export CLOOGINC; \
 	LIBELFLIBS="$(HOST_LIBELFLIBS)" ; export LIBELFLIBS; \
@@ -314,9 +313,8 @@ NORMAL_TARGET_EXPORTS = \
 HOST_GMPLIBS = @gmplibs@
 HOST_GMPINC = @gmpinc@
 
-# Where to find PPL
-HOST_PPLLIBS = @ppllibs@
-HOST_PPLINC = @pplinc@
+# Where to find ISL
+HOST_ISLINC = @islinc@
 
 # Where to find CLOOG
 HOST_CLOOGLIBS = @clooglibs@
@@ -637,7 +635,7 @@ TARGET_LIB_PATH_libatomic = $$r/$(TARGET_SUBDIR)/libatomic/.libs:
 
 # This is the list of directories that may be needed in RPATH_ENVVAR
 # so that programs built for the host machine work.
-HOST_LIB_PATH = $(HOST_LIB_PATH_bfd)$(HOST_LIB_PATH_opcodes)$(HOST_LIB_PATH_gmp)$(HOST_LIB_PATH_mpfr)$(HOST_LIB_PATH_mpc)$(HOST_LIB_PATH_ppl)$(HOST_LIB_PATH_cloog)$(HOST_LIB_PATH_libelf)
+HOST_LIB_PATH = $(HOST_LIB_PATH_bfd)$(HOST_LIB_PATH_opcodes)$(HOST_LIB_PATH_gmp)$(HOST_LIB_PATH_mpfr)$(HOST_LIB_PATH_mpc)$(HOST_LIB_PATH_isl)$(HOST_LIB_PATH_cloog)$(HOST_LIB_PATH_libelf)
 
 # Define HOST_LIB_PATH_gcc here, for the sake of TARGET_LIB_PATH, ouch
 @if gcc
@@ -670,10 +668,10 @@ HOST_LIB_PATH_mpc = \
   $$r/$(HOST_SUBDIR)/mpc/.libs:$$r/$(HOST_SUBDIR)/prev-mpc/.libs:
 @endif mpc
 
-@if ppl
-HOST_LIB_PATH_ppl = \
-  $$r/$(HOST_SUBDIR)/ppl/src/.libs:$$r/$(HOST_SUBDIR)/prev-ppl/src/.libs:
-@endif ppl
+@if isl
+HOST_LIB_PATH_isl = \
+  $$r/$(HOST_SUBDIR)/isl/.libs:$$r/$(HOST_SUBDIR)/prev-isl/.libs:
+@endif isl
 
 @if cloog
 HOST_LIB_PATH_cloog = \
@@ -928,7 +926,7 @@ configure-host:  \
     maybe-configure-gmp \
     maybe-configure-mpfr \
     maybe-configure-mpc \
-    maybe-configure-ppl \
+    maybe-configure-isl \
     maybe-configure-cloog \
     maybe-configure-libelf \
     maybe-configure-gold \
@@ -1048,9 +1046,9 @@ all-host: maybe-all-mpfr
 @if mpc-no-bootstrap
 all-host: maybe-all-mpc
 @endif mpc-no-bootstrap
-@if ppl-no-bootstrap
-all-host: maybe-all-ppl
-@endif ppl-no-bootstrap
+@if isl-no-bootstrap
+all-host: maybe-all-isl
+@endif isl-no-bootstrap
 @if cloog-no-bootstrap
 all-host: maybe-all-cloog
 @endif cloog-no-bootstrap
@@ -1161,7 +1159,7 @@ info-host: maybe-info-gcc
 info-host: maybe-info-gmp
 info-host: maybe-info-mpfr
 info-host: maybe-info-mpc
-info-host: maybe-info-ppl
+info-host: maybe-info-isl
 info-host: maybe-info-cloog
 info-host: maybe-info-libelf
 info-host: maybe-info-gold
@@ -1241,7 +1239,7 @@ dvi-host: maybe-dvi-gcc
 dvi-host: maybe-dvi-gmp
 dvi-host: maybe-dvi-mpfr
 dvi-host: maybe-dvi-mpc
-dvi-host: maybe-dvi-ppl
+dvi-host: maybe-dvi-isl
 dvi-host: maybe-dvi-cloog
 dvi-host: maybe-dvi-libelf
 dvi-host: maybe-dvi-gold
@@ -1321,7 +1319,7 @@ pdf-host: maybe-pdf-gcc
 pdf-host: maybe-pdf-gmp
 pdf-host: maybe-pdf-mpfr
 pdf-host: maybe-pdf-mpc
-pdf-host: maybe-pdf-ppl
+pdf-host: maybe-pdf-isl
 pdf-host: maybe-pdf-cloog
 pdf-host: maybe-pdf-libelf
 pdf-host: maybe-pdf-gold
@@ -1401,7 +1399,7 @@ html-host: maybe-html-gcc
 html-host: maybe-html-gmp
 html-host: maybe-html-mpfr
 html-host: maybe-html-mpc
-html-host: maybe-html-ppl
+html-host: maybe-html-isl
 html-host: maybe-html-cloog
 html-host: maybe-html-libelf
 html-host: maybe-html-gold
@@ -1481,7 +1479,7 @@ TAGS-host: maybe-TAGS-gcc
 TAGS-host: maybe-TAGS-gmp
 TAGS-host: maybe-TAGS-mpfr
 TAGS-host: maybe-TAGS-mpc
-TAGS-host: maybe-TAGS-ppl
+TAGS-host: maybe-TAGS-isl
 TAGS-host: maybe-TAGS-cloog
 TAGS-host: maybe-TAGS-libelf
 TAGS-host: maybe-TAGS-gold
@@ -1561,7 +1559,7 @@ install-info-host: maybe-install-info-gcc
 install-info-host: maybe-install-info-gmp
 install-info-host: maybe-install-info-mpfr
 install-info-host: maybe-install-info-mpc
-install-info-host: maybe-install-info-ppl
+install-info-host: maybe-install-info-isl
 install-info-host: maybe-install-info-cloog
 install-info-host: maybe-install-info-libelf
 install-info-host: maybe-install-info-gold
@@ -1641,7 +1639,7 @@ install-pdf-host: maybe-install-pdf-gcc
 install-pdf-host: maybe-install-pdf-gmp
 install-pdf-host: maybe-install-pdf-mpfr
 install-pdf-host: maybe-install-pdf-mpc
-install-pdf-host: maybe-install-pdf-ppl
+install-pdf-host: maybe-install-pdf-isl
 install-pdf-host: maybe-install-pdf-cloog
 install-pdf-host: maybe-install-pdf-libelf
 install-pdf-host: maybe-install-pdf-gold
@@ -1721,7 +1719,7 @@ install-html-host: maybe-install-html-gcc
 install-html-host: maybe-install-html-gmp
 install-html-host: maybe-install-html-mpfr
 install-html-host: maybe-install-html-mpc
-install-html-host: maybe-install-html-ppl
+install-html-host: maybe-install-html-isl
 install-html-host: maybe-install-html-cloog
 install-html-host: maybe-install-html-libelf
 install-html-host: maybe-install-html-gold
@@ -1801,7 +1799,7 @@ installcheck-host: maybe-installcheck-gcc
 installcheck-host: maybe-installcheck-gmp
 installcheck-host: maybe-installcheck-mpfr
 installcheck-host: maybe-installcheck-mpc
-installcheck-host: maybe-installcheck-ppl
+installcheck-host: maybe-installcheck-isl
 installcheck-host: maybe-installcheck-cloog
 installcheck-host: maybe-installcheck-libelf
 installcheck-host: maybe-installcheck-gold
@@ -1881,7 +1879,7 @@ mostlyclean-host: maybe-mostlyclean-gcc
 mostlyclean-host: maybe-mostlyclean-gmp
 mostlyclean-host: maybe-mostlyclean-mpfr
 mostlyclean-host: maybe-mostlyclean-mpc
-mostlyclean-host: maybe-mostlyclean-ppl
+mostlyclean-host: maybe-mostlyclean-isl
 mostlyclean-host: maybe-mostlyclean-cloog
 mostlyclean-host: maybe-mostlyclean-libelf
 mostlyclean-host: maybe-mostlyclean-gold
@@ -1961,7 +1959,7 @@ clean-host: maybe-clean-gcc
 clean-host: maybe-clean-gmp
 clean-host: maybe-clean-mpfr
 clean-host: maybe-clean-mpc
-clean-host: maybe-clean-ppl
+clean-host: maybe-clean-isl
 clean-host: maybe-clean-cloog
 clean-host: maybe-clean-libelf
 clean-host: maybe-clean-gold
@@ -2041,7 +2039,7 @@ distclean-host: maybe-distclean-gcc
 distclean-host: maybe-distclean-gmp
 distclean-host: maybe-distclean-mpfr
 distclean-host: maybe-distclean-mpc
-distclean-host: maybe-distclean-ppl
+distclean-host: maybe-distclean-isl
 distclean-host: maybe-distclean-cloog
 distclean-host: maybe-distclean-libelf
 distclean-host: maybe-distclean-gold
@@ -2121,7 +2119,7 @@ maintainer-clean-host: maybe-maintainer-clean-gcc
 maintainer-clean-host: maybe-maintainer-clean-gmp
 maintainer-clean-host: maybe-maintainer-clean-mpfr
 maintainer-clean-host: maybe-maintainer-clean-mpc
-maintainer-clean-host: maybe-maintainer-clean-ppl
+maintainer-clean-host: maybe-maintainer-clean-isl
 maintainer-clean-host: maybe-maintainer-clean-cloog
 maintainer-clean-host: maybe-maintainer-clean-libelf
 maintainer-clean-host: maybe-maintainer-clean-gold
@@ -2256,7 +2254,7 @@ check-host:  \
     maybe-check-gmp \
     maybe-check-mpfr \
     maybe-check-mpc \
-    maybe-check-ppl \
+    maybe-check-isl \
     maybe-check-cloog \
     maybe-check-libelf \
     maybe-check-gold \
@@ -2362,7 +2360,7 @@ install-host-nogcc:  \
     maybe-install-gmp \
     maybe-install-mpfr \
     maybe-install-mpc \
-    maybe-install-ppl \
+    maybe-install-isl \
     maybe-install-cloog \
     maybe-install-libelf \
     maybe-install-gold \
@@ -2408,7 +2406,7 @@ install-host:  \
     maybe-install-gmp \
     maybe-install-mpfr \
     maybe-install-mpc \
-    maybe-install-ppl \
+    maybe-install-isl \
     maybe-install-cloog \
     maybe-install-libelf \
     maybe-install-gold \
@@ -2508,7 +2506,7 @@ install-strip-host:  \
     maybe-install-strip-gmp \
     maybe-install-strip-mpfr \
     maybe-install-strip-mpc \
-    maybe-install-strip-ppl \
+    maybe-install-strip-isl \
     maybe-install-strip-cloog \
     maybe-install-strip-libelf \
     maybe-install-strip-gold \
@@ -13050,276 +13048,276 @@ maintainer-clean-mpc:
 
 
 
-.PHONY: configure-ppl maybe-configure-ppl
-maybe-configure-ppl:
+.PHONY: configure-isl maybe-configure-isl
+maybe-configure-isl:
 @if gcc-bootstrap
-configure-ppl: stage_current
+configure-isl: stage_current
 @endif gcc-bootstrap
-@if ppl
-maybe-configure-ppl: configure-ppl
-configure-ppl: 
+@if isl
+maybe-configure-isl: configure-isl
+configure-isl: 
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	test ! -f $(HOST_SUBDIR)/ppl/Makefile || exit 0; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/ppl ; \
+	test ! -f $(HOST_SUBDIR)/isl/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/isl ; \
 	$(HOST_EXPORTS)  \
-	echo Configuring in $(HOST_SUBDIR)/ppl; \
-	cd "$(HOST_SUBDIR)/ppl" || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/isl; \
+	cd "$(HOST_SUBDIR)/isl" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(HOST_SUBDIR)/ppl/ | \
+	  *) topdir=`echo $(HOST_SUBDIR)/isl/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/ppl"; \
-	libsrcdir="$$s/ppl"; \
+	srcdiroption="--srcdir=$${topdir}/isl"; \
+	libsrcdir="$$s/isl"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} --disable-shared --with-libgmp-prefix=$$r/$(HOST_SUBDIR)/gmp/ --with-libgmpxx-prefix=$$r/$(HOST_SUBDIR)/gmp/ \
+	  --target=${target_alias} $${srcdiroption} --disable-shared --with-gmp-library=$$r/$(HOST_SUBDIR)/gmp/.libs --with-gmp-include=$$r/$(HOST_SUBDIR)/gmp --with-bits=gmp \
 	  || exit 1
-@endif ppl
+@endif isl
 
 
 
-.PHONY: configure-stage1-ppl maybe-configure-stage1-ppl
-maybe-configure-stage1-ppl:
-@if ppl-bootstrap
-maybe-configure-stage1-ppl: configure-stage1-ppl
-configure-stage1-ppl:
+.PHONY: configure-stage1-isl maybe-configure-stage1-isl
+maybe-configure-stage1-isl:
+@if isl-bootstrap
+maybe-configure-stage1-isl: configure-stage1-isl
+configure-stage1-isl:
 	@[ $(current_stage) = stage1 ] || $(MAKE) stage1-start
-	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/ppl
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/isl
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGE1_TFLAGS)"; \
-	test ! -f $(HOST_SUBDIR)/ppl/Makefile || exit 0; \
+	test ! -f $(HOST_SUBDIR)/isl/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	CFLAGS="$(STAGE1_CFLAGS)"; export CFLAGS; \
 	CXXFLAGS="$(STAGE1_CXXFLAGS)"; export CXXFLAGS; \
 	LIBCFLAGS="$(LIBCFLAGS)"; export LIBCFLAGS;  \
-	echo Configuring stage 1 in $(HOST_SUBDIR)/ppl ; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/ppl ; \
-	cd $(HOST_SUBDIR)/ppl || exit 1; \
+	echo Configuring stage 1 in $(HOST_SUBDIR)/isl ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/isl ; \
+	cd $(HOST_SUBDIR)/isl || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(HOST_SUBDIR)/ppl/ | \
+	  *) topdir=`echo $(HOST_SUBDIR)/isl/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/ppl"; \
-	libsrcdir="$$s/ppl"; \
+	srcdiroption="--srcdir=$${topdir}/isl"; \
+	libsrcdir="$$s/isl"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption} \
 	  $(STAGE1_CONFIGURE_FLAGS) \
-	  --disable-shared --with-libgmp-prefix=$$r/$(HOST_SUBDIR)/gmp/ --with-libgmpxx-prefix=$$r/$(HOST_SUBDIR)/gmp/
-@endif ppl-bootstrap
+	  --disable-shared --with-gmp-library=$$r/$(HOST_SUBDIR)/gmp/.libs --with-gmp-include=$$r/$(HOST_SUBDIR)/gmp --with-bits=gmp
+@endif isl-bootstrap
 
-.PHONY: configure-stage2-ppl maybe-configure-stage2-ppl
-maybe-configure-stage2-ppl:
-@if ppl-bootstrap
-maybe-configure-stage2-ppl: configure-stage2-ppl
-configure-stage2-ppl:
+.PHONY: configure-stage2-isl maybe-configure-stage2-isl
+maybe-configure-stage2-isl:
+@if isl-bootstrap
+maybe-configure-stage2-isl: configure-stage2-isl
+configure-stage2-isl:
 	@[ $(current_stage) = stage2 ] || $(MAKE) stage2-start
-	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/ppl
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/isl
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGE2_TFLAGS)"; \
-	test ! -f $(HOST_SUBDIR)/ppl/Makefile || exit 0; \
+	test ! -f $(HOST_SUBDIR)/isl/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	CFLAGS="$(STAGE2_CFLAGS)"; export CFLAGS; \
 	CXXFLAGS="$(STAGE2_CXXFLAGS)"; export CXXFLAGS; \
 	LIBCFLAGS="$(STAGE2_CFLAGS)"; export LIBCFLAGS;  \
-	echo Configuring stage 2 in $(HOST_SUBDIR)/ppl ; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/ppl ; \
-	cd $(HOST_SUBDIR)/ppl || exit 1; \
+	echo Configuring stage 2 in $(HOST_SUBDIR)/isl ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/isl ; \
+	cd $(HOST_SUBDIR)/isl || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(HOST_SUBDIR)/ppl/ | \
+	  *) topdir=`echo $(HOST_SUBDIR)/isl/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/ppl"; \
-	libsrcdir="$$s/ppl"; \
+	srcdiroption="--srcdir=$${topdir}/isl"; \
+	libsrcdir="$$s/isl"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGE2_CONFIGURE_FLAGS) \
-	  --disable-shared --with-libgmp-prefix=$$r/$(HOST_SUBDIR)/gmp/ --with-libgmpxx-prefix=$$r/$(HOST_SUBDIR)/gmp/
-@endif ppl-bootstrap
+	  --disable-shared --with-gmp-library=$$r/$(HOST_SUBDIR)/gmp/.libs --with-gmp-include=$$r/$(HOST_SUBDIR)/gmp --with-bits=gmp
+@endif isl-bootstrap
 
-.PHONY: configure-stage3-ppl maybe-configure-stage3-ppl
-maybe-configure-stage3-ppl:
-@if ppl-bootstrap
-maybe-configure-stage3-ppl: configure-stage3-ppl
-configure-stage3-ppl:
+.PHONY: configure-stage3-isl maybe-configure-stage3-isl
+maybe-configure-stage3-isl:
+@if isl-bootstrap
+maybe-configure-stage3-isl: configure-stage3-isl
+configure-stage3-isl:
 	@[ $(current_stage) = stage3 ] || $(MAKE) stage3-start
-	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/ppl
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/isl
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGE3_TFLAGS)"; \
-	test ! -f $(HOST_SUBDIR)/ppl/Makefile || exit 0; \
+	test ! -f $(HOST_SUBDIR)/isl/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	CFLAGS="$(STAGE3_CFLAGS)"; export CFLAGS; \
 	CXXFLAGS="$(STAGE3_CXXFLAGS)"; export CXXFLAGS; \
 	LIBCFLAGS="$(STAGE3_CFLAGS)"; export LIBCFLAGS;  \
-	echo Configuring stage 3 in $(HOST_SUBDIR)/ppl ; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/ppl ; \
-	cd $(HOST_SUBDIR)/ppl || exit 1; \
+	echo Configuring stage 3 in $(HOST_SUBDIR)/isl ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/isl ; \
+	cd $(HOST_SUBDIR)/isl || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(HOST_SUBDIR)/ppl/ | \
+	  *) topdir=`echo $(HOST_SUBDIR)/isl/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/ppl"; \
-	libsrcdir="$$s/ppl"; \
+	srcdiroption="--srcdir=$${topdir}/isl"; \
+	libsrcdir="$$s/isl"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGE3_CONFIGURE_FLAGS) \
-	  --disable-shared --with-libgmp-prefix=$$r/$(HOST_SUBDIR)/gmp/ --with-libgmpxx-prefix=$$r/$(HOST_SUBDIR)/gmp/
-@endif ppl-bootstrap
+	  --disable-shared --with-gmp-library=$$r/$(HOST_SUBDIR)/gmp/.libs --with-gmp-include=$$r/$(HOST_SUBDIR)/gmp --with-bits=gmp
+@endif isl-bootstrap
 
-.PHONY: configure-stage4-ppl maybe-configure-stage4-ppl
-maybe-configure-stage4-ppl:
-@if ppl-bootstrap
-maybe-configure-stage4-ppl: configure-stage4-ppl
-configure-stage4-ppl:
+.PHONY: configure-stage4-isl maybe-configure-stage4-isl
+maybe-configure-stage4-isl:
+@if isl-bootstrap
+maybe-configure-stage4-isl: configure-stage4-isl
+configure-stage4-isl:
 	@[ $(current_stage) = stage4 ] || $(MAKE) stage4-start
-	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/ppl
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/isl
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGE4_TFLAGS)"; \
-	test ! -f $(HOST_SUBDIR)/ppl/Makefile || exit 0; \
+	test ! -f $(HOST_SUBDIR)/isl/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	CFLAGS="$(STAGE4_CFLAGS)"; export CFLAGS; \
 	CXXFLAGS="$(STAGE4_CXXFLAGS)"; export CXXFLAGS; \
 	LIBCFLAGS="$(STAGE4_CFLAGS)"; export LIBCFLAGS;  \
-	echo Configuring stage 4 in $(HOST_SUBDIR)/ppl ; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/ppl ; \
-	cd $(HOST_SUBDIR)/ppl || exit 1; \
+	echo Configuring stage 4 in $(HOST_SUBDIR)/isl ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/isl ; \
+	cd $(HOST_SUBDIR)/isl || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(HOST_SUBDIR)/ppl/ | \
+	  *) topdir=`echo $(HOST_SUBDIR)/isl/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/ppl"; \
-	libsrcdir="$$s/ppl"; \
+	srcdiroption="--srcdir=$${topdir}/isl"; \
+	libsrcdir="$$s/isl"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGE4_CONFIGURE_FLAGS) \
-	  --disable-shared --with-libgmp-prefix=$$r/$(HOST_SUBDIR)/gmp/ --with-libgmpxx-prefix=$$r/$(HOST_SUBDIR)/gmp/
-@endif ppl-bootstrap
+	  --disable-shared --with-gmp-library=$$r/$(HOST_SUBDIR)/gmp/.libs --with-gmp-include=$$r/$(HOST_SUBDIR)/gmp --with-bits=gmp
+@endif isl-bootstrap
 
-.PHONY: configure-stageprofile-ppl maybe-configure-stageprofile-ppl
-maybe-configure-stageprofile-ppl:
-@if ppl-bootstrap
-maybe-configure-stageprofile-ppl: configure-stageprofile-ppl
-configure-stageprofile-ppl:
+.PHONY: configure-stageprofile-isl maybe-configure-stageprofile-isl
+maybe-configure-stageprofile-isl:
+@if isl-bootstrap
+maybe-configure-stageprofile-isl: configure-stageprofile-isl
+configure-stageprofile-isl:
 	@[ $(current_stage) = stageprofile ] || $(MAKE) stageprofile-start
-	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/ppl
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/isl
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGEprofile_TFLAGS)"; \
-	test ! -f $(HOST_SUBDIR)/ppl/Makefile || exit 0; \
+	test ! -f $(HOST_SUBDIR)/isl/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	CFLAGS="$(STAGEprofile_CFLAGS)"; export CFLAGS; \
 	CXXFLAGS="$(STAGEprofile_CXXFLAGS)"; export CXXFLAGS; \
 	LIBCFLAGS="$(STAGEprofile_CFLAGS)"; export LIBCFLAGS;  \
-	echo Configuring stage profile in $(HOST_SUBDIR)/ppl ; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/ppl ; \
-	cd $(HOST_SUBDIR)/ppl || exit 1; \
+	echo Configuring stage profile in $(HOST_SUBDIR)/isl ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/isl ; \
+	cd $(HOST_SUBDIR)/isl || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(HOST_SUBDIR)/ppl/ | \
+	  *) topdir=`echo $(HOST_SUBDIR)/isl/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/ppl"; \
-	libsrcdir="$$s/ppl"; \
+	srcdiroption="--srcdir=$${topdir}/isl"; \
+	libsrcdir="$$s/isl"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGEprofile_CONFIGURE_FLAGS) \
-	  --disable-shared --with-libgmp-prefix=$$r/$(HOST_SUBDIR)/gmp/ --with-libgmpxx-prefix=$$r/$(HOST_SUBDIR)/gmp/
-@endif ppl-bootstrap
+	  --disable-shared --with-gmp-library=$$r/$(HOST_SUBDIR)/gmp/.libs --with-gmp-include=$$r/$(HOST_SUBDIR)/gmp --with-bits=gmp
+@endif isl-bootstrap
 
-.PHONY: configure-stagefeedback-ppl maybe-configure-stagefeedback-ppl
-maybe-configure-stagefeedback-ppl:
-@if ppl-bootstrap
-maybe-configure-stagefeedback-ppl: configure-stagefeedback-ppl
-configure-stagefeedback-ppl:
+.PHONY: configure-stagefeedback-isl maybe-configure-stagefeedback-isl
+maybe-configure-stagefeedback-isl:
+@if isl-bootstrap
+maybe-configure-stagefeedback-isl: configure-stagefeedback-isl
+configure-stagefeedback-isl:
 	@[ $(current_stage) = stagefeedback ] || $(MAKE) stagefeedback-start
-	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/ppl
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/isl
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGEfeedback_TFLAGS)"; \
-	test ! -f $(HOST_SUBDIR)/ppl/Makefile || exit 0; \
+	test ! -f $(HOST_SUBDIR)/isl/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	CFLAGS="$(STAGEfeedback_CFLAGS)"; export CFLAGS; \
 	CXXFLAGS="$(STAGEfeedback_CXXFLAGS)"; export CXXFLAGS; \
 	LIBCFLAGS="$(STAGEfeedback_CFLAGS)"; export LIBCFLAGS;  \
-	echo Configuring stage feedback in $(HOST_SUBDIR)/ppl ; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/ppl ; \
-	cd $(HOST_SUBDIR)/ppl || exit 1; \
+	echo Configuring stage feedback in $(HOST_SUBDIR)/isl ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/isl ; \
+	cd $(HOST_SUBDIR)/isl || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(HOST_SUBDIR)/ppl/ | \
+	  *) topdir=`echo $(HOST_SUBDIR)/isl/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	srcdiroption="--srcdir=$${topdir}/ppl"; \
-	libsrcdir="$$s/ppl"; \
+	srcdiroption="--srcdir=$${topdir}/isl"; \
+	libsrcdir="$$s/isl"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGEfeedback_CONFIGURE_FLAGS) \
-	  --disable-shared --with-libgmp-prefix=$$r/$(HOST_SUBDIR)/gmp/ --with-libgmpxx-prefix=$$r/$(HOST_SUBDIR)/gmp/
-@endif ppl-bootstrap
+	  --disable-shared --with-gmp-library=$$r/$(HOST_SUBDIR)/gmp/.libs --with-gmp-include=$$r/$(HOST_SUBDIR)/gmp --with-bits=gmp
+@endif isl-bootstrap
 
 
 
 
 
-.PHONY: all-ppl maybe-all-ppl
-maybe-all-ppl:
+.PHONY: all-isl maybe-all-isl
+maybe-all-isl:
 @if gcc-bootstrap
-all-ppl: stage_current
+all-isl: stage_current
 @endif gcc-bootstrap
-@if ppl
-TARGET-ppl=all
-maybe-all-ppl: all-ppl
-all-ppl: configure-ppl
+@if isl
+TARGET-isl=all
+maybe-all-isl: all-isl
+all-isl: configure-isl
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS)  \
-	(cd $(HOST_SUBDIR)/ppl && \
+	(cd $(HOST_SUBDIR)/isl && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)  \
-		$(TARGET-ppl))
-@endif ppl
+		$(TARGET-isl))
+@endif isl
 
 
 
-.PHONY: all-stage1-ppl maybe-all-stage1-ppl
-.PHONY: clean-stage1-ppl maybe-clean-stage1-ppl
-maybe-all-stage1-ppl:
-maybe-clean-stage1-ppl:
-@if ppl-bootstrap
-maybe-all-stage1-ppl: all-stage1-ppl
-all-stage1: all-stage1-ppl
-TARGET-stage1-ppl = $(TARGET-ppl)
-all-stage1-ppl: configure-stage1-ppl
+.PHONY: all-stage1-isl maybe-all-stage1-isl
+.PHONY: clean-stage1-isl maybe-clean-stage1-isl
+maybe-all-stage1-isl:
+maybe-clean-stage1-isl:
+@if isl-bootstrap
+maybe-all-stage1-isl: all-stage1-isl
+all-stage1: all-stage1-isl
+TARGET-stage1-isl = $(TARGET-isl)
+all-stage1-isl: configure-stage1-isl
 	@[ $(current_stage) = stage1 ] || $(MAKE) stage1-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGE1_TFLAGS)"; \
 	$(HOST_EXPORTS)  \
-	cd $(HOST_SUBDIR)/ppl && \
+	cd $(HOST_SUBDIR)/isl && \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE1_CFLAGS)" \
 		CXXFLAGS="$(STAGE1_CXXFLAGS)" \
@@ -13329,39 +13327,39 @@ all-stage1-ppl: configure-stage1-ppl
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
 		$(EXTRA_HOST_FLAGS)   \
 		TFLAGS="$(STAGE1_TFLAGS)" \
-		$(TARGET-stage1-ppl)
+		$(TARGET-stage1-isl)
 
-maybe-clean-stage1-ppl: clean-stage1-ppl
-clean-stage1: clean-stage1-ppl
-clean-stage1-ppl:
+maybe-clean-stage1-isl: clean-stage1-isl
+clean-stage1: clean-stage1-isl
+clean-stage1-isl:
 	@if [ $(current_stage) = stage1 ]; then \
-	  [ -f $(HOST_SUBDIR)/ppl/Makefile ] || exit 0; \
+	  [ -f $(HOST_SUBDIR)/isl/Makefile ] || exit 0; \
 	else \
-	  [ -f $(HOST_SUBDIR)/stage1-ppl/Makefile ] || exit 0; \
+	  [ -f $(HOST_SUBDIR)/stage1-isl/Makefile ] || exit 0; \
 	  $(MAKE) stage1-start; \
 	fi; \
-	cd $(HOST_SUBDIR)/ppl && \
+	cd $(HOST_SUBDIR)/isl && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
 		 clean
-@endif ppl-bootstrap
+@endif isl-bootstrap
 
 
-.PHONY: all-stage2-ppl maybe-all-stage2-ppl
-.PHONY: clean-stage2-ppl maybe-clean-stage2-ppl
-maybe-all-stage2-ppl:
-maybe-clean-stage2-ppl:
-@if ppl-bootstrap
-maybe-all-stage2-ppl: all-stage2-ppl
-all-stage2: all-stage2-ppl
-TARGET-stage2-ppl = $(TARGET-ppl)
-all-stage2-ppl: configure-stage2-ppl
+.PHONY: all-stage2-isl maybe-all-stage2-isl
+.PHONY: clean-stage2-isl maybe-clean-stage2-isl
+maybe-all-stage2-isl:
+maybe-clean-stage2-isl:
+@if isl-bootstrap
+maybe-all-stage2-isl: all-stage2-isl
+all-stage2: all-stage2-isl
+TARGET-stage2-isl = $(TARGET-isl)
+all-stage2-isl: configure-stage2-isl
 	@[ $(current_stage) = stage2 ] || $(MAKE) stage2-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGE2_TFLAGS)"; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS)  \
-	cd $(HOST_SUBDIR)/ppl && \
+	cd $(HOST_SUBDIR)/isl && \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE2_CFLAGS)" \
 		CXXFLAGS="$(STAGE2_CXXFLAGS)" \
@@ -13371,40 +13369,40 @@ all-stage2-ppl: configure-stage2-ppl
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
 		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		TFLAGS="$(STAGE2_TFLAGS)" \
-		$(TARGET-stage2-ppl)
+		$(TARGET-stage2-isl)
 
-maybe-clean-stage2-ppl: clean-stage2-ppl
-clean-stage2: clean-stage2-ppl
-clean-stage2-ppl:
+maybe-clean-stage2-isl: clean-stage2-isl
+clean-stage2: clean-stage2-isl
+clean-stage2-isl:
 	@if [ $(current_stage) = stage2 ]; then \
-	  [ -f $(HOST_SUBDIR)/ppl/Makefile ] || exit 0; \
+	  [ -f $(HOST_SUBDIR)/isl/Makefile ] || exit 0; \
 	else \
-	  [ -f $(HOST_SUBDIR)/stage2-ppl/Makefile ] || exit 0; \
+	  [ -f $(HOST_SUBDIR)/stage2-isl/Makefile ] || exit 0; \
 	  $(MAKE) stage2-start; \
 	fi; \
-	cd $(HOST_SUBDIR)/ppl && \
+	cd $(HOST_SUBDIR)/isl && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		 clean
-@endif ppl-bootstrap
+@endif isl-bootstrap
 
 
-.PHONY: all-stage3-ppl maybe-all-stage3-ppl
-.PHONY: clean-stage3-ppl maybe-clean-stage3-ppl
-maybe-all-stage3-ppl:
-maybe-clean-stage3-ppl:
-@if ppl-bootstrap
-maybe-all-stage3-ppl: all-stage3-ppl
-all-stage3: all-stage3-ppl
-TARGET-stage3-ppl = $(TARGET-ppl)
-all-stage3-ppl: configure-stage3-ppl
+.PHONY: all-stage3-isl maybe-all-stage3-isl
+.PHONY: clean-stage3-isl maybe-clean-stage3-isl
+maybe-all-stage3-isl:
+maybe-clean-stage3-isl:
+@if isl-bootstrap
+maybe-all-stage3-isl: all-stage3-isl
+all-stage3: all-stage3-isl
+TARGET-stage3-isl = $(TARGET-isl)
+all-stage3-isl: configure-stage3-isl
 	@[ $(current_stage) = stage3 ] || $(MAKE) stage3-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGE3_TFLAGS)"; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS)  \
-	cd $(HOST_SUBDIR)/ppl && \
+	cd $(HOST_SUBDIR)/isl && \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE3_CFLAGS)" \
 		CXXFLAGS="$(STAGE3_CXXFLAGS)" \
@@ -13414,40 +13412,40 @@ all-stage3-ppl: configure-stage3-ppl
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
 		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		TFLAGS="$(STAGE3_TFLAGS)" \
-		$(TARGET-stage3-ppl)
+		$(TARGET-stage3-isl)
 
-maybe-clean-stage3-ppl: clean-stage3-ppl
-clean-stage3: clean-stage3-ppl
-clean-stage3-ppl:
+maybe-clean-stage3-isl: clean-stage3-isl
+clean-stage3: clean-stage3-isl
+clean-stage3-isl:
 	@if [ $(current_stage) = stage3 ]; then \
-	  [ -f $(HOST_SUBDIR)/ppl/Makefile ] || exit 0; \
+	  [ -f $(HOST_SUBDIR)/isl/Makefile ] || exit 0; \
 	else \
-	  [ -f $(HOST_SUBDIR)/stage3-ppl/Makefile ] || exit 0; \
+	  [ -f $(HOST_SUBDIR)/stage3-isl/Makefile ] || exit 0; \
 	  $(MAKE) stage3-start; \
 	fi; \
-	cd $(HOST_SUBDIR)/ppl && \
+	cd $(HOST_SUBDIR)/isl && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		 clean
-@endif ppl-bootstrap
+@endif isl-bootstrap
 
 
-.PHONY: all-stage4-ppl maybe-all-stage4-ppl
-.PHONY: clean-stage4-ppl maybe-clean-stage4-ppl
-maybe-all-stage4-ppl:
-maybe-clean-stage4-ppl:
-@if ppl-bootstrap
-maybe-all-stage4-ppl: all-stage4-ppl
-all-stage4: all-stage4-ppl
-TARGET-stage4-ppl = $(TARGET-ppl)
-all-stage4-ppl: configure-stage4-ppl
+.PHONY: all-stage4-isl maybe-all-stage4-isl
+.PHONY: clean-stage4-isl maybe-clean-stage4-isl
+maybe-all-stage4-isl:
+maybe-clean-stage4-isl:
+@if isl-bootstrap
+maybe-all-stage4-isl: all-stage4-isl
+all-stage4: all-stage4-isl
+TARGET-stage4-isl = $(TARGET-isl)
+all-stage4-isl: configure-stage4-isl
 	@[ $(current_stage) = stage4 ] || $(MAKE) stage4-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGE4_TFLAGS)"; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS)  \
-	cd $(HOST_SUBDIR)/ppl && \
+	cd $(HOST_SUBDIR)/isl && \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE4_CFLAGS)" \
 		CXXFLAGS="$(STAGE4_CXXFLAGS)" \
@@ -13457,40 +13455,40 @@ all-stage4-ppl: configure-stage4-ppl
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
 		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		TFLAGS="$(STAGE4_TFLAGS)" \
-		$(TARGET-stage4-ppl)
+		$(TARGET-stage4-isl)
 
-maybe-clean-stage4-ppl: clean-stage4-ppl
-clean-stage4: clean-stage4-ppl
-clean-stage4-ppl:
+maybe-clean-stage4-isl: clean-stage4-isl
+clean-stage4: clean-stage4-isl
+clean-stage4-isl:
 	@if [ $(current_stage) = stage4 ]; then \
-	  [ -f $(HOST_SUBDIR)/ppl/Makefile ] || exit 0; \
+	  [ -f $(HOST_SUBDIR)/isl/Makefile ] || exit 0; \
 	else \
-	  [ -f $(HOST_SUBDIR)/stage4-ppl/Makefile ] || exit 0; \
+	  [ -f $(HOST_SUBDIR)/stage4-isl/Makefile ] || exit 0; \
 	  $(MAKE) stage4-start; \
 	fi; \
-	cd $(HOST_SUBDIR)/ppl && \
+	cd $(HOST_SUBDIR)/isl && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		 clean
-@endif ppl-bootstrap
+@endif isl-bootstrap
 
 
-.PHONY: all-stageprofile-ppl maybe-all-stageprofile-ppl
-.PHONY: clean-stageprofile-ppl maybe-clean-stageprofile-ppl
-maybe-all-stageprofile-ppl:
-maybe-clean-stageprofile-ppl:
-@if ppl-bootstrap
-maybe-all-stageprofile-ppl: all-stageprofile-ppl
-all-stageprofile: all-stageprofile-ppl
-TARGET-stageprofile-ppl = $(TARGET-ppl)
-all-stageprofile-ppl: configure-stageprofile-ppl
+.PHONY: all-stageprofile-isl maybe-all-stageprofile-isl
+.PHONY: clean-stageprofile-isl maybe-clean-stageprofile-isl
+maybe-all-stageprofile-isl:
+maybe-clean-stageprofile-isl:
+@if isl-bootstrap
+maybe-all-stageprofile-isl: all-stageprofile-isl
+all-stageprofile: all-stageprofile-isl
+TARGET-stageprofile-isl = $(TARGET-isl)
+all-stageprofile-isl: configure-stageprofile-isl
 	@[ $(current_stage) = stageprofile ] || $(MAKE) stageprofile-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGEprofile_TFLAGS)"; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS)  \
-	cd $(HOST_SUBDIR)/ppl && \
+	cd $(HOST_SUBDIR)/isl && \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEprofile_CFLAGS)" \
 		CXXFLAGS="$(STAGEprofile_CXXFLAGS)" \
@@ -13500,40 +13498,40 @@ all-stageprofile-ppl: configure-stageprofile-ppl
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
 		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		TFLAGS="$(STAGEprofile_TFLAGS)" \
-		$(TARGET-stageprofile-ppl)
+		$(TARGET-stageprofile-isl)
 
-maybe-clean-stageprofile-ppl: clean-stageprofile-ppl
-clean-stageprofile: clean-stageprofile-ppl
-clean-stageprofile-ppl:
+maybe-clean-stageprofile-isl: clean-stageprofile-isl
+clean-stageprofile: clean-stageprofile-isl
+clean-stageprofile-isl:
 	@if [ $(current_stage) = stageprofile ]; then \
-	  [ -f $(HOST_SUBDIR)/ppl/Makefile ] || exit 0; \
+	  [ -f $(HOST_SUBDIR)/isl/Makefile ] || exit 0; \
 	else \
-	  [ -f $(HOST_SUBDIR)/stageprofile-ppl/Makefile ] || exit 0; \
+	  [ -f $(HOST_SUBDIR)/stageprofile-isl/Makefile ] || exit 0; \
 	  $(MAKE) stageprofile-start; \
 	fi; \
-	cd $(HOST_SUBDIR)/ppl && \
+	cd $(HOST_SUBDIR)/isl && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		 clean
-@endif ppl-bootstrap
+@endif isl-bootstrap
 
 
-.PHONY: all-stagefeedback-ppl maybe-all-stagefeedback-ppl
-.PHONY: clean-stagefeedback-ppl maybe-clean-stagefeedback-ppl
-maybe-all-stagefeedback-ppl:
-maybe-clean-stagefeedback-ppl:
-@if ppl-bootstrap
-maybe-all-stagefeedback-ppl: all-stagefeedback-ppl
-all-stagefeedback: all-stagefeedback-ppl
-TARGET-stagefeedback-ppl = $(TARGET-ppl)
-all-stagefeedback-ppl: configure-stagefeedback-ppl
+.PHONY: all-stagefeedback-isl maybe-all-stagefeedback-isl
+.PHONY: clean-stagefeedback-isl maybe-clean-stagefeedback-isl
+maybe-all-stagefeedback-isl:
+maybe-clean-stagefeedback-isl:
+@if isl-bootstrap
+maybe-all-stagefeedback-isl: all-stagefeedback-isl
+all-stagefeedback: all-stagefeedback-isl
+TARGET-stagefeedback-isl = $(TARGET-isl)
+all-stagefeedback-isl: configure-stagefeedback-isl
 	@[ $(current_stage) = stagefeedback ] || $(MAKE) stagefeedback-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGEfeedback_TFLAGS)"; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS)  \
-	cd $(HOST_SUBDIR)/ppl && \
+	cd $(HOST_SUBDIR)/isl && \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEfeedback_CFLAGS)" \
 		CXXFLAGS="$(STAGEfeedback_CXXFLAGS)" \
@@ -13543,78 +13541,78 @@ all-stagefeedback-ppl: configure-stagefeedback-ppl
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
 		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		TFLAGS="$(STAGEfeedback_TFLAGS)" \
-		$(TARGET-stagefeedback-ppl)
+		$(TARGET-stagefeedback-isl)
 
-maybe-clean-stagefeedback-ppl: clean-stagefeedback-ppl
-clean-stagefeedback: clean-stagefeedback-ppl
-clean-stagefeedback-ppl:
+maybe-clean-stagefeedback-isl: clean-stagefeedback-isl
+clean-stagefeedback: clean-stagefeedback-isl
+clean-stagefeedback-isl:
 	@if [ $(current_stage) = stagefeedback ]; then \
-	  [ -f $(HOST_SUBDIR)/ppl/Makefile ] || exit 0; \
+	  [ -f $(HOST_SUBDIR)/isl/Makefile ] || exit 0; \
 	else \
-	  [ -f $(HOST_SUBDIR)/stagefeedback-ppl/Makefile ] || exit 0; \
+	  [ -f $(HOST_SUBDIR)/stagefeedback-isl/Makefile ] || exit 0; \
 	  $(MAKE) stagefeedback-start; \
 	fi; \
-	cd $(HOST_SUBDIR)/ppl && \
+	cd $(HOST_SUBDIR)/isl && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
 		 clean
-@endif ppl-bootstrap
+@endif isl-bootstrap
 
 
 
 
 
-.PHONY: check-ppl maybe-check-ppl
-maybe-check-ppl:
-@if ppl
-maybe-check-ppl: check-ppl
+.PHONY: check-isl maybe-check-isl
+maybe-check-isl:
+@if isl
+maybe-check-isl: check-isl
 
-check-ppl:
+check-isl:
 	@: $(MAKE); $(unstage)
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	(cd $(HOST_SUBDIR)/ppl && \
+	(cd $(HOST_SUBDIR)/isl && \
 	  $(MAKE) $(FLAGS_TO_PASS)  check)
 
-@endif ppl
+@endif isl
 
-.PHONY: install-ppl maybe-install-ppl
-maybe-install-ppl:
-@if ppl
-maybe-install-ppl: install-ppl
+.PHONY: install-isl maybe-install-isl
+maybe-install-isl:
+@if isl
+maybe-install-isl: install-isl
 
-install-ppl:
+install-isl:
 
-@endif ppl
+@endif isl
 
-.PHONY: install-strip-ppl maybe-install-strip-ppl
-maybe-install-strip-ppl:
-@if ppl
-maybe-install-strip-ppl: install-strip-ppl
+.PHONY: install-strip-isl maybe-install-strip-isl
+maybe-install-strip-isl:
+@if isl
+maybe-install-strip-isl: install-strip-isl
 
-install-strip-ppl:
+install-strip-isl:
 
-@endif ppl
+@endif isl
 
 # Other targets (info, dvi, pdf, etc.)
 
-.PHONY: maybe-info-ppl info-ppl
-maybe-info-ppl:
-@if ppl
-maybe-info-ppl: info-ppl
+.PHONY: maybe-info-isl info-isl
+maybe-info-isl:
+@if isl
+maybe-info-isl: info-isl
 
-info-ppl: \
-    configure-ppl 
-	@[ -f ./ppl/Makefile ] || exit 0; \
+info-isl: \
+    configure-isl 
+	@[ -f ./isl/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
 	for flag in $(EXTRA_HOST_FLAGS) ; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
-	echo "Doing info in ppl" ; \
-	(cd $(HOST_SUBDIR)/ppl && \
+	echo "Doing info in isl" ; \
+	(cd $(HOST_SUBDIR)/isl && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
@@ -13622,24 +13620,24 @@ info-ppl: \
 	          info) \
 	  || exit 1
 
-@endif ppl
+@endif isl
 
-.PHONY: maybe-dvi-ppl dvi-ppl
-maybe-dvi-ppl:
-@if ppl
-maybe-dvi-ppl: dvi-ppl
+.PHONY: maybe-dvi-isl dvi-isl
+maybe-dvi-isl:
+@if isl
+maybe-dvi-isl: dvi-isl
 
-dvi-ppl: \
-    configure-ppl 
-	@[ -f ./ppl/Makefile ] || exit 0; \
+dvi-isl: \
+    configure-isl 
+	@[ -f ./isl/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
 	for flag in $(EXTRA_HOST_FLAGS) ; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
-	echo "Doing dvi in ppl" ; \
-	(cd $(HOST_SUBDIR)/ppl && \
+	echo "Doing dvi in isl" ; \
+	(cd $(HOST_SUBDIR)/isl && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
@@ -13647,24 +13645,24 @@ dvi-ppl: \
 	          dvi) \
 	  || exit 1
 
-@endif ppl
+@endif isl
 
-.PHONY: maybe-pdf-ppl pdf-ppl
-maybe-pdf-ppl:
-@if ppl
-maybe-pdf-ppl: pdf-ppl
+.PHONY: maybe-pdf-isl pdf-isl
+maybe-pdf-isl:
+@if isl
+maybe-pdf-isl: pdf-isl
 
-pdf-ppl: \
-    configure-ppl 
-	@[ -f ./ppl/Makefile ] || exit 0; \
+pdf-isl: \
+    configure-isl 
+	@[ -f ./isl/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
 	for flag in $(EXTRA_HOST_FLAGS) ; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
-	echo "Doing pdf in ppl" ; \
-	(cd $(HOST_SUBDIR)/ppl && \
+	echo "Doing pdf in isl" ; \
+	(cd $(HOST_SUBDIR)/isl && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
@@ -13672,24 +13670,24 @@ pdf-ppl: \
 	          pdf) \
 	  || exit 1
 
-@endif ppl
+@endif isl
 
-.PHONY: maybe-html-ppl html-ppl
-maybe-html-ppl:
-@if ppl
-maybe-html-ppl: html-ppl
+.PHONY: maybe-html-isl html-isl
+maybe-html-isl:
+@if isl
+maybe-html-isl: html-isl
 
-html-ppl: \
-    configure-ppl 
-	@[ -f ./ppl/Makefile ] || exit 0; \
+html-isl: \
+    configure-isl 
+	@[ -f ./isl/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
 	for flag in $(EXTRA_HOST_FLAGS) ; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
-	echo "Doing html in ppl" ; \
-	(cd $(HOST_SUBDIR)/ppl && \
+	echo "Doing html in isl" ; \
+	(cd $(HOST_SUBDIR)/isl && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
@@ -13697,24 +13695,24 @@ html-ppl: \
 	          html) \
 	  || exit 1
 
-@endif ppl
+@endif isl
 
-.PHONY: maybe-TAGS-ppl TAGS-ppl
-maybe-TAGS-ppl:
-@if ppl
-maybe-TAGS-ppl: TAGS-ppl
+.PHONY: maybe-TAGS-isl TAGS-isl
+maybe-TAGS-isl:
+@if isl
+maybe-TAGS-isl: TAGS-isl
 
-TAGS-ppl: \
-    configure-ppl 
-	@[ -f ./ppl/Makefile ] || exit 0; \
+TAGS-isl: \
+    configure-isl 
+	@[ -f ./isl/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
 	for flag in $(EXTRA_HOST_FLAGS) ; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
-	echo "Doing TAGS in ppl" ; \
-	(cd $(HOST_SUBDIR)/ppl && \
+	echo "Doing TAGS in isl" ; \
+	(cd $(HOST_SUBDIR)/isl && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
@@ -13722,25 +13720,25 @@ TAGS-ppl: \
 	          TAGS) \
 	  || exit 1
 
-@endif ppl
+@endif isl
 
-.PHONY: maybe-install-info-ppl install-info-ppl
-maybe-install-info-ppl:
-@if ppl
-maybe-install-info-ppl: install-info-ppl
+.PHONY: maybe-install-info-isl install-info-isl
+maybe-install-info-isl:
+@if isl
+maybe-install-info-isl: install-info-isl
 
-install-info-ppl: \
-    configure-ppl \
-    info-ppl 
-	@[ -f ./ppl/Makefile ] || exit 0; \
+install-info-isl: \
+    configure-isl \
+    info-isl 
+	@[ -f ./isl/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
 	for flag in $(EXTRA_HOST_FLAGS) ; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
-	echo "Doing install-info in ppl" ; \
-	(cd $(HOST_SUBDIR)/ppl && \
+	echo "Doing install-info in isl" ; \
+	(cd $(HOST_SUBDIR)/isl && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
@@ -13748,25 +13746,25 @@ install-info-ppl: \
 	          install-info) \
 	  || exit 1
 
-@endif ppl
+@endif isl
 
-.PHONY: maybe-install-pdf-ppl install-pdf-ppl
-maybe-install-pdf-ppl:
-@if ppl
-maybe-install-pdf-ppl: install-pdf-ppl
+.PHONY: maybe-install-pdf-isl install-pdf-isl
+maybe-install-pdf-isl:
+@if isl
+maybe-install-pdf-isl: install-pdf-isl
 
-install-pdf-ppl: \
-    configure-ppl \
-    pdf-ppl 
-	@[ -f ./ppl/Makefile ] || exit 0; \
+install-pdf-isl: \
+    configure-isl \
+    pdf-isl 
+	@[ -f ./isl/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
 	for flag in $(EXTRA_HOST_FLAGS) ; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
-	echo "Doing install-pdf in ppl" ; \
-	(cd $(HOST_SUBDIR)/ppl && \
+	echo "Doing install-pdf in isl" ; \
+	(cd $(HOST_SUBDIR)/isl && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
@@ -13774,25 +13772,25 @@ install-pdf-ppl: \
 	          install-pdf) \
 	  || exit 1
 
-@endif ppl
+@endif isl
 
-.PHONY: maybe-install-html-ppl install-html-ppl
-maybe-install-html-ppl:
-@if ppl
-maybe-install-html-ppl: install-html-ppl
+.PHONY: maybe-install-html-isl install-html-isl
+maybe-install-html-isl:
+@if isl
+maybe-install-html-isl: install-html-isl
 
-install-html-ppl: \
-    configure-ppl \
-    html-ppl 
-	@[ -f ./ppl/Makefile ] || exit 0; \
+install-html-isl: \
+    configure-isl \
+    html-isl 
+	@[ -f ./isl/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
 	for flag in $(EXTRA_HOST_FLAGS) ; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
-	echo "Doing install-html in ppl" ; \
-	(cd $(HOST_SUBDIR)/ppl && \
+	echo "Doing install-html in isl" ; \
+	(cd $(HOST_SUBDIR)/isl && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
@@ -13800,24 +13798,24 @@ install-html-ppl: \
 	          install-html) \
 	  || exit 1
 
-@endif ppl
+@endif isl
 
-.PHONY: maybe-installcheck-ppl installcheck-ppl
-maybe-installcheck-ppl:
-@if ppl
-maybe-installcheck-ppl: installcheck-ppl
+.PHONY: maybe-installcheck-isl installcheck-isl
+maybe-installcheck-isl:
+@if isl
+maybe-installcheck-isl: installcheck-isl
 
-installcheck-ppl: \
-    configure-ppl 
-	@[ -f ./ppl/Makefile ] || exit 0; \
+installcheck-isl: \
+    configure-isl 
+	@[ -f ./isl/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
 	for flag in $(EXTRA_HOST_FLAGS) ; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
-	echo "Doing installcheck in ppl" ; \
-	(cd $(HOST_SUBDIR)/ppl && \
+	echo "Doing installcheck in isl" ; \
+	(cd $(HOST_SUBDIR)/isl && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
@@ -13825,23 +13823,23 @@ installcheck-ppl: \
 	          installcheck) \
 	  || exit 1
 
-@endif ppl
+@endif isl
 
-.PHONY: maybe-mostlyclean-ppl mostlyclean-ppl
-maybe-mostlyclean-ppl:
-@if ppl
-maybe-mostlyclean-ppl: mostlyclean-ppl
+.PHONY: maybe-mostlyclean-isl mostlyclean-isl
+maybe-mostlyclean-isl:
+@if isl
+maybe-mostlyclean-isl: mostlyclean-isl
 
-mostlyclean-ppl: 
-	@[ -f ./ppl/Makefile ] || exit 0; \
+mostlyclean-isl: 
+	@[ -f ./isl/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
 	for flag in $(EXTRA_HOST_FLAGS) ; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
-	echo "Doing mostlyclean in ppl" ; \
-	(cd $(HOST_SUBDIR)/ppl && \
+	echo "Doing mostlyclean in isl" ; \
+	(cd $(HOST_SUBDIR)/isl && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
@@ -13849,23 +13847,23 @@ mostlyclean-ppl:
 	          mostlyclean) \
 	  || exit 1
 
-@endif ppl
+@endif isl
 
-.PHONY: maybe-clean-ppl clean-ppl
-maybe-clean-ppl:
-@if ppl
-maybe-clean-ppl: clean-ppl
+.PHONY: maybe-clean-isl clean-isl
+maybe-clean-isl:
+@if isl
+maybe-clean-isl: clean-isl
 
-clean-ppl: 
-	@[ -f ./ppl/Makefile ] || exit 0; \
+clean-isl: 
+	@[ -f ./isl/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
 	for flag in $(EXTRA_HOST_FLAGS) ; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
-	echo "Doing clean in ppl" ; \
-	(cd $(HOST_SUBDIR)/ppl && \
+	echo "Doing clean in isl" ; \
+	(cd $(HOST_SUBDIR)/isl && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
@@ -13873,23 +13871,23 @@ clean-ppl:
 	          clean) \
 	  || exit 1
 
-@endif ppl
+@endif isl
 
-.PHONY: maybe-distclean-ppl distclean-ppl
-maybe-distclean-ppl:
-@if ppl
-maybe-distclean-ppl: distclean-ppl
+.PHONY: maybe-distclean-isl distclean-isl
+maybe-distclean-isl:
+@if isl
+maybe-distclean-isl: distclean-isl
 
-distclean-ppl: 
-	@[ -f ./ppl/Makefile ] || exit 0; \
+distclean-isl: 
+	@[ -f ./isl/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
 	for flag in $(EXTRA_HOST_FLAGS) ; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
-	echo "Doing distclean in ppl" ; \
-	(cd $(HOST_SUBDIR)/ppl && \
+	echo "Doing distclean in isl" ; \
+	(cd $(HOST_SUBDIR)/isl && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
@@ -13897,23 +13895,23 @@ distclean-ppl:
 	          distclean) \
 	  || exit 1
 
-@endif ppl
+@endif isl
 
-.PHONY: maybe-maintainer-clean-ppl maintainer-clean-ppl
-maybe-maintainer-clean-ppl:
-@if ppl
-maybe-maintainer-clean-ppl: maintainer-clean-ppl
+.PHONY: maybe-maintainer-clean-isl maintainer-clean-isl
+maybe-maintainer-clean-isl:
+@if isl
+maybe-maintainer-clean-isl: maintainer-clean-isl
 
-maintainer-clean-ppl: 
-	@[ -f ./ppl/Makefile ] || exit 0; \
+maintainer-clean-isl: 
+	@[ -f ./isl/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
 	for flag in $(EXTRA_HOST_FLAGS) ; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
-	echo "Doing maintainer-clean in ppl" ; \
-	(cd $(HOST_SUBDIR)/ppl && \
+	echo "Doing maintainer-clean in isl" ; \
+	(cd $(HOST_SUBDIR)/isl && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
@@ -13921,7 +13919,7 @@ maintainer-clean-ppl:
 	          maintainer-clean) \
 	  || exit 1
 
-@endif ppl
+@endif isl
 
 
 
@@ -13937,7 +13935,7 @@ configure-cloog:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	test ! -f $(HOST_SUBDIR)/cloog/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/cloog ; \
-	$(HOST_EXPORTS) CPPFLAGS="${CPPFLAGS} ${HOST_PPLINC}"; export CPPFLAGS; LDFLAGS="$$LDFLAGS ${HOST_PPLLIBS}"; export LDFLAGS;  \
+	$(HOST_EXPORTS) CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
 	echo Configuring in $(HOST_SUBDIR)/cloog; \
 	cd "$(HOST_SUBDIR)/cloog" || exit 1; \
 	case $(srcdir) in \
@@ -13949,7 +13947,7 @@ configure-cloog:
 	libsrcdir="$$s/cloog"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} --disable-shared --with-gmp-library=$$r/$(HOST_SUBDIR)/gmp/.libs --with-gmp-include=$$r/$(HOST_SUBDIR)/gmp --with-bits=gmp --with-ppl \
+	  --target=${target_alias} $${srcdiroption} --disable-shared --with-gmp-library=$$r/$(HOST_SUBDIR)/gmp/.libs --with-gmp-include=$$r/$(HOST_SUBDIR)/gmp --with-bits=gmp --with-isl=system \
 	  || exit 1
 @endif cloog
 
@@ -13969,7 +13967,7 @@ configure-stage1-cloog:
 	$(HOST_EXPORTS) \
 	CFLAGS="$(STAGE1_CFLAGS)"; export CFLAGS; \
 	CXXFLAGS="$(STAGE1_CXXFLAGS)"; export CXXFLAGS; \
-	LIBCFLAGS="$(LIBCFLAGS)"; export LIBCFLAGS; CPPFLAGS="${CPPFLAGS} ${HOST_PPLINC}"; export CPPFLAGS; LDFLAGS="$$LDFLAGS ${HOST_PPLLIBS}"; export LDFLAGS;  \
+	LIBCFLAGS="$(LIBCFLAGS)"; export LIBCFLAGS; CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
 	echo Configuring stage 1 in $(HOST_SUBDIR)/cloog ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/cloog ; \
 	cd $(HOST_SUBDIR)/cloog || exit 1; \
@@ -13984,7 +13982,7 @@ configure-stage1-cloog:
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption} \
 	  $(STAGE1_CONFIGURE_FLAGS) \
-	  --disable-shared --with-gmp-library=$$r/$(HOST_SUBDIR)/gmp/.libs --with-gmp-include=$$r/$(HOST_SUBDIR)/gmp --with-bits=gmp --with-ppl
+	  --disable-shared --with-gmp-library=$$r/$(HOST_SUBDIR)/gmp/.libs --with-gmp-include=$$r/$(HOST_SUBDIR)/gmp --with-bits=gmp --with-isl=system
 @endif cloog-bootstrap
 
 .PHONY: configure-stage2-cloog maybe-configure-stage2-cloog
@@ -14002,7 +14000,7 @@ configure-stage2-cloog:
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	CFLAGS="$(STAGE2_CFLAGS)"; export CFLAGS; \
 	CXXFLAGS="$(STAGE2_CXXFLAGS)"; export CXXFLAGS; \
-	LIBCFLAGS="$(STAGE2_CFLAGS)"; export LIBCFLAGS; CPPFLAGS="${CPPFLAGS} ${HOST_PPLINC}"; export CPPFLAGS; LDFLAGS="$$LDFLAGS ${HOST_PPLLIBS}"; export LDFLAGS;  \
+	LIBCFLAGS="$(STAGE2_CFLAGS)"; export LIBCFLAGS; CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
 	echo Configuring stage 2 in $(HOST_SUBDIR)/cloog ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/cloog ; \
 	cd $(HOST_SUBDIR)/cloog || exit 1; \
@@ -14018,7 +14016,7 @@ configure-stage2-cloog:
 	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGE2_CONFIGURE_FLAGS) \
-	  --disable-shared --with-gmp-library=$$r/$(HOST_SUBDIR)/gmp/.libs --with-gmp-include=$$r/$(HOST_SUBDIR)/gmp --with-bits=gmp --with-ppl
+	  --disable-shared --with-gmp-library=$$r/$(HOST_SUBDIR)/gmp/.libs --with-gmp-include=$$r/$(HOST_SUBDIR)/gmp --with-bits=gmp --with-isl=system
 @endif cloog-bootstrap
 
 .PHONY: configure-stage3-cloog maybe-configure-stage3-cloog
@@ -14036,7 +14034,7 @@ configure-stage3-cloog:
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	CFLAGS="$(STAGE3_CFLAGS)"; export CFLAGS; \
 	CXXFLAGS="$(STAGE3_CXXFLAGS)"; export CXXFLAGS; \
-	LIBCFLAGS="$(STAGE3_CFLAGS)"; export LIBCFLAGS; CPPFLAGS="${CPPFLAGS} ${HOST_PPLINC}"; export CPPFLAGS; LDFLAGS="$$LDFLAGS ${HOST_PPLLIBS}"; export LDFLAGS;  \
+	LIBCFLAGS="$(STAGE3_CFLAGS)"; export LIBCFLAGS; CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
 	echo Configuring stage 3 in $(HOST_SUBDIR)/cloog ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/cloog ; \
 	cd $(HOST_SUBDIR)/cloog || exit 1; \
@@ -14052,7 +14050,7 @@ configure-stage3-cloog:
 	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGE3_CONFIGURE_FLAGS) \
-	  --disable-shared --with-gmp-library=$$r/$(HOST_SUBDIR)/gmp/.libs --with-gmp-include=$$r/$(HOST_SUBDIR)/gmp --with-bits=gmp --with-ppl
+	  --disable-shared --with-gmp-library=$$r/$(HOST_SUBDIR)/gmp/.libs --with-gmp-include=$$r/$(HOST_SUBDIR)/gmp --with-bits=gmp --with-isl=system
 @endif cloog-bootstrap
 
 .PHONY: configure-stage4-cloog maybe-configure-stage4-cloog
@@ -14070,7 +14068,7 @@ configure-stage4-cloog:
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	CFLAGS="$(STAGE4_CFLAGS)"; export CFLAGS; \
 	CXXFLAGS="$(STAGE4_CXXFLAGS)"; export CXXFLAGS; \
-	LIBCFLAGS="$(STAGE4_CFLAGS)"; export LIBCFLAGS; CPPFLAGS="${CPPFLAGS} ${HOST_PPLINC}"; export CPPFLAGS; LDFLAGS="$$LDFLAGS ${HOST_PPLLIBS}"; export LDFLAGS;  \
+	LIBCFLAGS="$(STAGE4_CFLAGS)"; export LIBCFLAGS; CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
 	echo Configuring stage 4 in $(HOST_SUBDIR)/cloog ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/cloog ; \
 	cd $(HOST_SUBDIR)/cloog || exit 1; \
@@ -14086,7 +14084,7 @@ configure-stage4-cloog:
 	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGE4_CONFIGURE_FLAGS) \
-	  --disable-shared --with-gmp-library=$$r/$(HOST_SUBDIR)/gmp/.libs --with-gmp-include=$$r/$(HOST_SUBDIR)/gmp --with-bits=gmp --with-ppl
+	  --disable-shared --with-gmp-library=$$r/$(HOST_SUBDIR)/gmp/.libs --with-gmp-include=$$r/$(HOST_SUBDIR)/gmp --with-bits=gmp --with-isl=system
 @endif cloog-bootstrap
 
 .PHONY: configure-stageprofile-cloog maybe-configure-stageprofile-cloog
@@ -14104,7 +14102,7 @@ configure-stageprofile-cloog:
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	CFLAGS="$(STAGEprofile_CFLAGS)"; export CFLAGS; \
 	CXXFLAGS="$(STAGEprofile_CXXFLAGS)"; export CXXFLAGS; \
-	LIBCFLAGS="$(STAGEprofile_CFLAGS)"; export LIBCFLAGS; CPPFLAGS="${CPPFLAGS} ${HOST_PPLINC}"; export CPPFLAGS; LDFLAGS="$$LDFLAGS ${HOST_PPLLIBS}"; export LDFLAGS;  \
+	LIBCFLAGS="$(STAGEprofile_CFLAGS)"; export LIBCFLAGS; CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
 	echo Configuring stage profile in $(HOST_SUBDIR)/cloog ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/cloog ; \
 	cd $(HOST_SUBDIR)/cloog || exit 1; \
@@ -14120,7 +14118,7 @@ configure-stageprofile-cloog:
 	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGEprofile_CONFIGURE_FLAGS) \
-	  --disable-shared --with-gmp-library=$$r/$(HOST_SUBDIR)/gmp/.libs --with-gmp-include=$$r/$(HOST_SUBDIR)/gmp --with-bits=gmp --with-ppl
+	  --disable-shared --with-gmp-library=$$r/$(HOST_SUBDIR)/gmp/.libs --with-gmp-include=$$r/$(HOST_SUBDIR)/gmp --with-bits=gmp --with-isl=system
 @endif cloog-bootstrap
 
 .PHONY: configure-stagefeedback-cloog maybe-configure-stagefeedback-cloog
@@ -14138,7 +14136,7 @@ configure-stagefeedback-cloog:
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	CFLAGS="$(STAGEfeedback_CFLAGS)"; export CFLAGS; \
 	CXXFLAGS="$(STAGEfeedback_CXXFLAGS)"; export CXXFLAGS; \
-	LIBCFLAGS="$(STAGEfeedback_CFLAGS)"; export LIBCFLAGS; CPPFLAGS="${CPPFLAGS} ${HOST_PPLINC}"; export CPPFLAGS; LDFLAGS="$$LDFLAGS ${HOST_PPLLIBS}"; export LDFLAGS;  \
+	LIBCFLAGS="$(STAGEfeedback_CFLAGS)"; export LIBCFLAGS; CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
 	echo Configuring stage feedback in $(HOST_SUBDIR)/cloog ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/cloog ; \
 	cd $(HOST_SUBDIR)/cloog || exit 1; \
@@ -14154,7 +14152,7 @@ configure-stagefeedback-cloog:
 	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGEfeedback_CONFIGURE_FLAGS) \
-	  --disable-shared --with-gmp-library=$$r/$(HOST_SUBDIR)/gmp/.libs --with-gmp-include=$$r/$(HOST_SUBDIR)/gmp --with-bits=gmp --with-ppl
+	  --disable-shared --with-gmp-library=$$r/$(HOST_SUBDIR)/gmp/.libs --with-gmp-include=$$r/$(HOST_SUBDIR)/gmp --with-bits=gmp --with-isl=system
 @endif cloog-bootstrap
 
 
@@ -14172,9 +14170,9 @@ maybe-all-cloog: all-cloog
 all-cloog: configure-cloog
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) CPPFLAGS="${CPPFLAGS} ${HOST_PPLINC}"; export CPPFLAGS; LDFLAGS="$$LDFLAGS ${HOST_PPLLIBS}"; export LDFLAGS;  \
+	$(HOST_EXPORTS) CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
 	(cd $(HOST_SUBDIR)/cloog && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) CPPFLAGS="${CPPFLAGS} ${HOST_PPLINC}" LDFLAGS="$$LDFLAGS" \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 \
 		$(TARGET-cloog))
 @endif cloog
 
@@ -14193,7 +14191,7 @@ all-stage1-cloog: configure-stage1-cloog
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGE1_TFLAGS)"; \
-	$(HOST_EXPORTS) CPPFLAGS="${CPPFLAGS} ${HOST_PPLINC}"; export CPPFLAGS; LDFLAGS="$$LDFLAGS ${HOST_PPLLIBS}"; export LDFLAGS;  \
+	$(HOST_EXPORTS) CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
 	cd $(HOST_SUBDIR)/cloog && \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE1_CFLAGS)" \
@@ -14202,7 +14200,7 @@ all-stage1-cloog: configure-stage1-cloog
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS)  CPPFLAGS="${CPPFLAGS} ${HOST_PPLINC}" LDFLAGS="$$LDFLAGS" \
+		$(EXTRA_HOST_FLAGS)  CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 \
 		TFLAGS="$(STAGE1_TFLAGS)" \
 		$(TARGET-stage1-cloog)
 
@@ -14217,7 +14215,7 @@ clean-stage1-cloog:
 	fi; \
 	cd $(HOST_SUBDIR)/cloog && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		CPPFLAGS="${CPPFLAGS} ${HOST_PPLINC}" LDFLAGS="$$LDFLAGS" clean
+		CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 clean
 @endif cloog-bootstrap
 
 
@@ -14235,7 +14233,7 @@ all-stage2-cloog: configure-stage2-cloog
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGE2_TFLAGS)"; \
 	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS) CPPFLAGS="${CPPFLAGS} ${HOST_PPLINC}"; export CPPFLAGS; LDFLAGS="$$LDFLAGS ${HOST_PPLLIBS}"; export LDFLAGS;  \
+	$(POSTSTAGE1_HOST_EXPORTS) CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
 	cd $(HOST_SUBDIR)/cloog && \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE2_CFLAGS)" \
@@ -14244,7 +14242,7 @@ all-stage2-cloog: configure-stage2-cloog
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) CPPFLAGS="${CPPFLAGS} ${HOST_PPLINC}" LDFLAGS="$$LDFLAGS" \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 \
 		TFLAGS="$(STAGE2_TFLAGS)" \
 		$(TARGET-stage2-cloog)
 
@@ -14260,7 +14258,7 @@ clean-stage2-cloog:
 	cd $(HOST_SUBDIR)/cloog && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		CPPFLAGS="${CPPFLAGS} ${HOST_PPLINC}" LDFLAGS="$$LDFLAGS" clean
+		CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 clean
 @endif cloog-bootstrap
 
 
@@ -14278,7 +14276,7 @@ all-stage3-cloog: configure-stage3-cloog
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGE3_TFLAGS)"; \
 	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS) CPPFLAGS="${CPPFLAGS} ${HOST_PPLINC}"; export CPPFLAGS; LDFLAGS="$$LDFLAGS ${HOST_PPLLIBS}"; export LDFLAGS;  \
+	$(POSTSTAGE1_HOST_EXPORTS) CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
 	cd $(HOST_SUBDIR)/cloog && \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE3_CFLAGS)" \
@@ -14287,7 +14285,7 @@ all-stage3-cloog: configure-stage3-cloog
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) CPPFLAGS="${CPPFLAGS} ${HOST_PPLINC}" LDFLAGS="$$LDFLAGS" \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 \
 		TFLAGS="$(STAGE3_TFLAGS)" \
 		$(TARGET-stage3-cloog)
 
@@ -14303,7 +14301,7 @@ clean-stage3-cloog:
 	cd $(HOST_SUBDIR)/cloog && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		CPPFLAGS="${CPPFLAGS} ${HOST_PPLINC}" LDFLAGS="$$LDFLAGS" clean
+		CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 clean
 @endif cloog-bootstrap
 
 
@@ -14321,7 +14319,7 @@ all-stage4-cloog: configure-stage4-cloog
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGE4_TFLAGS)"; \
 	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS) CPPFLAGS="${CPPFLAGS} ${HOST_PPLINC}"; export CPPFLAGS; LDFLAGS="$$LDFLAGS ${HOST_PPLLIBS}"; export LDFLAGS;  \
+	$(POSTSTAGE1_HOST_EXPORTS) CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
 	cd $(HOST_SUBDIR)/cloog && \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE4_CFLAGS)" \
@@ -14330,7 +14328,7 @@ all-stage4-cloog: configure-stage4-cloog
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) CPPFLAGS="${CPPFLAGS} ${HOST_PPLINC}" LDFLAGS="$$LDFLAGS" \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 \
 		TFLAGS="$(STAGE4_TFLAGS)" \
 		$(TARGET-stage4-cloog)
 
@@ -14346,7 +14344,7 @@ clean-stage4-cloog:
 	cd $(HOST_SUBDIR)/cloog && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		CPPFLAGS="${CPPFLAGS} ${HOST_PPLINC}" LDFLAGS="$$LDFLAGS" clean
+		CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 clean
 @endif cloog-bootstrap
 
 
@@ -14364,7 +14362,7 @@ all-stageprofile-cloog: configure-stageprofile-cloog
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGEprofile_TFLAGS)"; \
 	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS) CPPFLAGS="${CPPFLAGS} ${HOST_PPLINC}"; export CPPFLAGS; LDFLAGS="$$LDFLAGS ${HOST_PPLLIBS}"; export LDFLAGS;  \
+	$(POSTSTAGE1_HOST_EXPORTS) CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
 	cd $(HOST_SUBDIR)/cloog && \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEprofile_CFLAGS)" \
@@ -14373,7 +14371,7 @@ all-stageprofile-cloog: configure-stageprofile-cloog
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) CPPFLAGS="${CPPFLAGS} ${HOST_PPLINC}" LDFLAGS="$$LDFLAGS" \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 \
 		TFLAGS="$(STAGEprofile_TFLAGS)" \
 		$(TARGET-stageprofile-cloog)
 
@@ -14389,7 +14387,7 @@ clean-stageprofile-cloog:
 	cd $(HOST_SUBDIR)/cloog && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		CPPFLAGS="${CPPFLAGS} ${HOST_PPLINC}" LDFLAGS="$$LDFLAGS" clean
+		CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 clean
 @endif cloog-bootstrap
 
 
@@ -14407,7 +14405,7 @@ all-stagefeedback-cloog: configure-stagefeedback-cloog
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGEfeedback_TFLAGS)"; \
 	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS) CPPFLAGS="${CPPFLAGS} ${HOST_PPLINC}"; export CPPFLAGS; LDFLAGS="$$LDFLAGS ${HOST_PPLLIBS}"; export LDFLAGS;  \
+	$(POSTSTAGE1_HOST_EXPORTS) CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
 	cd $(HOST_SUBDIR)/cloog && \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEfeedback_CFLAGS)" \
@@ -14416,7 +14414,7 @@ all-stagefeedback-cloog: configure-stagefeedback-cloog
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) CPPFLAGS="${CPPFLAGS} ${HOST_PPLINC}" LDFLAGS="$$LDFLAGS" \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 \
 		TFLAGS="$(STAGEfeedback_TFLAGS)" \
 		$(TARGET-stagefeedback-cloog)
 
@@ -14432,7 +14430,7 @@ clean-stagefeedback-cloog:
 	cd $(HOST_SUBDIR)/cloog && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		CPPFLAGS="${CPPFLAGS} ${HOST_PPLINC}" LDFLAGS="$$LDFLAGS" clean
+		CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 clean
 @endif cloog-bootstrap
 
 
@@ -14450,7 +14448,7 @@ check-cloog:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
 	(cd $(HOST_SUBDIR)/cloog && \
-	  $(MAKE) $(FLAGS_TO_PASS) CPPFLAGS="${CPPFLAGS} ${HOST_PPLINC}" LDFLAGS="$$LDFLAGS" check)
+	  $(MAKE) $(FLAGS_TO_PASS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 check)
 
 @endif cloog
 
@@ -14485,7 +14483,7 @@ info-cloog: \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="${CPPFLAGS} ${HOST_PPLINC}" LDFLAGS="$$LDFLAGS"; do \
+	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing info in cloog" ; \
@@ -14510,7 +14508,7 @@ dvi-cloog: \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="${CPPFLAGS} ${HOST_PPLINC}" LDFLAGS="$$LDFLAGS"; do \
+	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing dvi in cloog" ; \
@@ -14535,7 +14533,7 @@ pdf-cloog: \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="${CPPFLAGS} ${HOST_PPLINC}" LDFLAGS="$$LDFLAGS"; do \
+	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing pdf in cloog" ; \
@@ -14560,7 +14558,7 @@ html-cloog: \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="${CPPFLAGS} ${HOST_PPLINC}" LDFLAGS="$$LDFLAGS"; do \
+	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing html in cloog" ; \
@@ -14585,7 +14583,7 @@ TAGS-cloog: \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="${CPPFLAGS} ${HOST_PPLINC}" LDFLAGS="$$LDFLAGS"; do \
+	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing TAGS in cloog" ; \
@@ -14611,7 +14609,7 @@ install-info-cloog: \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="${CPPFLAGS} ${HOST_PPLINC}" LDFLAGS="$$LDFLAGS"; do \
+	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing install-info in cloog" ; \
@@ -14637,7 +14635,7 @@ install-pdf-cloog: \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="${CPPFLAGS} ${HOST_PPLINC}" LDFLAGS="$$LDFLAGS"; do \
+	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing install-pdf in cloog" ; \
@@ -14663,7 +14661,7 @@ install-html-cloog: \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="${CPPFLAGS} ${HOST_PPLINC}" LDFLAGS="$$LDFLAGS"; do \
+	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing install-html in cloog" ; \
@@ -14688,7 +14686,7 @@ installcheck-cloog: \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="${CPPFLAGS} ${HOST_PPLINC}" LDFLAGS="$$LDFLAGS"; do \
+	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing installcheck in cloog" ; \
@@ -14712,7 +14710,7 @@ mostlyclean-cloog:
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="${CPPFLAGS} ${HOST_PPLINC}" LDFLAGS="$$LDFLAGS"; do \
+	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing mostlyclean in cloog" ; \
@@ -14736,7 +14734,7 @@ clean-cloog:
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="${CPPFLAGS} ${HOST_PPLINC}" LDFLAGS="$$LDFLAGS"; do \
+	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing clean in cloog" ; \
@@ -14760,7 +14758,7 @@ distclean-cloog:
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="${CPPFLAGS} ${HOST_PPLINC}" LDFLAGS="$$LDFLAGS"; do \
+	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing distclean in cloog" ; \
@@ -14784,7 +14782,7 @@ maintainer-clean-cloog:
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="${CPPFLAGS} ${HOST_PPLINC}" LDFLAGS="$$LDFLAGS"; do \
+	for flag in $(EXTRA_HOST_FLAGS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing maintainer-clean in cloog" ; \
@@ -41822,11 +41820,11 @@ stage1-start::
 	  mkdir stage1-mpc; \
 	mv stage1-mpc mpc 
 @endif mpc
-@if ppl
-	@cd $(HOST_SUBDIR); [ -d stage1-ppl ] || \
-	  mkdir stage1-ppl; \
-	mv stage1-ppl ppl 
-@endif ppl
+@if isl
+	@cd $(HOST_SUBDIR); [ -d stage1-isl ] || \
+	  mkdir stage1-isl; \
+	mv stage1-isl isl 
+@endif isl
 @if cloog
 	@cd $(HOST_SUBDIR); [ -d stage1-cloog ] || \
 	  mkdir stage1-cloog; \
@@ -41922,11 +41920,11 @@ stage1-end::
 	  cd $(HOST_SUBDIR); mv mpc stage1-mpc  ; \
 	fi
 @endif mpc
-@if ppl
-	@if test -d $(HOST_SUBDIR)/ppl ; then \
-	  cd $(HOST_SUBDIR); mv ppl stage1-ppl  ; \
+@if isl
+	@if test -d $(HOST_SUBDIR)/isl ; then \
+	  cd $(HOST_SUBDIR); mv isl stage1-isl  ; \
 	fi
-@endif ppl
+@endif isl
 @if cloog
 	@if test -d $(HOST_SUBDIR)/cloog ; then \
 	  cd $(HOST_SUBDIR); mv cloog stage1-cloog  ; \
@@ -42073,12 +42071,12 @@ stage2-start::
 	mv stage2-mpc mpc  ; \
 	mv stage1-mpc prev-mpc || test -f stage1-lean 
 @endif mpc
-@if ppl
-	@cd $(HOST_SUBDIR); [ -d stage2-ppl ] || \
-	  mkdir stage2-ppl; \
-	mv stage2-ppl ppl  ; \
-	mv stage1-ppl prev-ppl || test -f stage1-lean 
-@endif ppl
+@if isl
+	@cd $(HOST_SUBDIR); [ -d stage2-isl ] || \
+	  mkdir stage2-isl; \
+	mv stage2-isl isl  ; \
+	mv stage1-isl prev-isl || test -f stage1-lean 
+@endif isl
 @if cloog
 	@cd $(HOST_SUBDIR); [ -d stage2-cloog ] || \
 	  mkdir stage2-cloog; \
@@ -42193,12 +42191,12 @@ stage2-end::
 	  mv prev-mpc stage1-mpc ; :  ; \
 	fi
 @endif mpc
-@if ppl
-	@if test -d $(HOST_SUBDIR)/ppl ; then \
-	  cd $(HOST_SUBDIR); mv ppl stage2-ppl ; \
-	  mv prev-ppl stage1-ppl ; :  ; \
+@if isl
+	@if test -d $(HOST_SUBDIR)/isl ; then \
+	  cd $(HOST_SUBDIR); mv isl stage2-isl ; \
+	  mv prev-isl stage1-isl ; :  ; \
 	fi
-@endif ppl
+@endif isl
 @if cloog
 	@if test -d $(HOST_SUBDIR)/cloog ; then \
 	  cd $(HOST_SUBDIR); mv cloog stage2-cloog ; \
@@ -42379,12 +42377,12 @@ stage3-start::
 	mv stage3-mpc mpc  ; \
 	mv stage2-mpc prev-mpc || test -f stage2-lean 
 @endif mpc
-@if ppl
-	@cd $(HOST_SUBDIR); [ -d stage3-ppl ] || \
-	  mkdir stage3-ppl; \
-	mv stage3-ppl ppl  ; \
-	mv stage2-ppl prev-ppl || test -f stage2-lean 
-@endif ppl
+@if isl
+	@cd $(HOST_SUBDIR); [ -d stage3-isl ] || \
+	  mkdir stage3-isl; \
+	mv stage3-isl isl  ; \
+	mv stage2-isl prev-isl || test -f stage2-lean 
+@endif isl
 @if cloog
 	@cd $(HOST_SUBDIR); [ -d stage3-cloog ] || \
 	  mkdir stage3-cloog; \
@@ -42499,12 +42497,12 @@ stage3-end::
 	  mv prev-mpc stage2-mpc ; :  ; \
 	fi
 @endif mpc
-@if ppl
-	@if test -d $(HOST_SUBDIR)/ppl ; then \
-	  cd $(HOST_SUBDIR); mv ppl stage3-ppl ; \
-	  mv prev-ppl stage2-ppl ; :  ; \
+@if isl
+	@if test -d $(HOST_SUBDIR)/isl ; then \
+	  cd $(HOST_SUBDIR); mv isl stage3-isl ; \
+	  mv prev-isl stage2-isl ; :  ; \
 	fi
-@endif ppl
+@endif isl
 @if cloog
 	@if test -d $(HOST_SUBDIR)/cloog ; then \
 	  cd $(HOST_SUBDIR); mv cloog stage3-cloog ; \
@@ -42741,12 +42739,12 @@ stage4-start::
 	mv stage4-mpc mpc  ; \
 	mv stage3-mpc prev-mpc || test -f stage3-lean 
 @endif mpc
-@if ppl
-	@cd $(HOST_SUBDIR); [ -d stage4-ppl ] || \
-	  mkdir stage4-ppl; \
-	mv stage4-ppl ppl  ; \
-	mv stage3-ppl prev-ppl || test -f stage3-lean 
-@endif ppl
+@if isl
+	@cd $(HOST_SUBDIR); [ -d stage4-isl ] || \
+	  mkdir stage4-isl; \
+	mv stage4-isl isl  ; \
+	mv stage3-isl prev-isl || test -f stage3-lean 
+@endif isl
 @if cloog
 	@cd $(HOST_SUBDIR); [ -d stage4-cloog ] || \
 	  mkdir stage4-cloog; \
@@ -42861,12 +42859,12 @@ stage4-end::
 	  mv prev-mpc stage3-mpc ; :  ; \
 	fi
 @endif mpc
-@if ppl
-	@if test -d $(HOST_SUBDIR)/ppl ; then \
-	  cd $(HOST_SUBDIR); mv ppl stage4-ppl ; \
-	  mv prev-ppl stage3-ppl ; :  ; \
+@if isl
+	@if test -d $(HOST_SUBDIR)/isl ; then \
+	  cd $(HOST_SUBDIR); mv isl stage4-isl ; \
+	  mv prev-isl stage3-isl ; :  ; \
 	fi
-@endif ppl
+@endif isl
 @if cloog
 	@if test -d $(HOST_SUBDIR)/cloog ; then \
 	  cd $(HOST_SUBDIR); mv cloog stage4-cloog ; \
@@ -43091,12 +43089,12 @@ stageprofile-start::
 	mv stageprofile-mpc mpc  ; \
 	mv stage1-mpc prev-mpc || test -f stage1-lean 
 @endif mpc
-@if ppl
-	@cd $(HOST_SUBDIR); [ -d stageprofile-ppl ] || \
-	  mkdir stageprofile-ppl; \
-	mv stageprofile-ppl ppl  ; \
-	mv stage1-ppl prev-ppl || test -f stage1-lean 
-@endif ppl
+@if isl
+	@cd $(HOST_SUBDIR); [ -d stageprofile-isl ] || \
+	  mkdir stageprofile-isl; \
+	mv stageprofile-isl isl  ; \
+	mv stage1-isl prev-isl || test -f stage1-lean 
+@endif isl
 @if cloog
 	@cd $(HOST_SUBDIR); [ -d stageprofile-cloog ] || \
 	  mkdir stageprofile-cloog; \
@@ -43211,12 +43209,12 @@ stageprofile-end::
 	  mv prev-mpc stage1-mpc ; :  ; \
 	fi
 @endif mpc
-@if ppl
-	@if test -d $(HOST_SUBDIR)/ppl ; then \
-	  cd $(HOST_SUBDIR); mv ppl stageprofile-ppl ; \
-	  mv prev-ppl stage1-ppl ; :  ; \
+@if isl
+	@if test -d $(HOST_SUBDIR)/isl ; then \
+	  cd $(HOST_SUBDIR); mv isl stageprofile-isl ; \
+	  mv prev-isl stage1-isl ; :  ; \
 	fi
-@endif ppl
+@endif isl
 @if cloog
 	@if test -d $(HOST_SUBDIR)/cloog ; then \
 	  cd $(HOST_SUBDIR); mv cloog stageprofile-cloog ; \
@@ -43374,12 +43372,12 @@ stagefeedback-start::
 	mv stagefeedback-mpc mpc  ; \
 	mv stageprofile-mpc prev-mpc || test -f stageprofile-lean 
 @endif mpc
-@if ppl
-	@cd $(HOST_SUBDIR); [ -d stagefeedback-ppl ] || \
-	  mkdir stagefeedback-ppl; \
-	mv stagefeedback-ppl ppl  ; \
-	mv stageprofile-ppl prev-ppl || test -f stageprofile-lean 
-@endif ppl
+@if isl
+	@cd $(HOST_SUBDIR); [ -d stagefeedback-isl ] || \
+	  mkdir stagefeedback-isl; \
+	mv stagefeedback-isl isl  ; \
+	mv stageprofile-isl prev-isl || test -f stageprofile-lean 
+@endif isl
 @if cloog
 	@cd $(HOST_SUBDIR); [ -d stagefeedback-cloog ] || \
 	  mkdir stagefeedback-cloog; \
@@ -43494,12 +43492,12 @@ stagefeedback-end::
 	  mv prev-mpc stageprofile-mpc ; :  ; \
 	fi
 @endif mpc
-@if ppl
-	@if test -d $(HOST_SUBDIR)/ppl ; then \
-	  cd $(HOST_SUBDIR); mv ppl stagefeedback-ppl ; \
-	  mv prev-ppl stageprofile-ppl ; :  ; \
+@if isl
+	@if test -d $(HOST_SUBDIR)/isl ; then \
+	  cd $(HOST_SUBDIR); mv isl stagefeedback-isl ; \
+	  mv prev-isl stageprofile-isl ; :  ; \
 	fi
-@endif ppl
+@endif isl
 @if cloog
 	@if test -d $(HOST_SUBDIR)/cloog ; then \
 	  cd $(HOST_SUBDIR); mv cloog stagefeedback-cloog ; \
@@ -43852,14 +43850,6 @@ all-stage3-gcc: maybe-all-stage3-mpc
 all-stage4-gcc: maybe-all-stage4-mpc
 all-stageprofile-gcc: maybe-all-stageprofile-mpc
 all-stagefeedback-gcc: maybe-all-stagefeedback-mpc
-all-gcc: maybe-all-ppl
-
-all-stage1-gcc: maybe-all-stage1-ppl
-all-stage2-gcc: maybe-all-stage2-ppl
-all-stage3-gcc: maybe-all-stage3-ppl
-all-stage4-gcc: maybe-all-stage4-ppl
-all-stageprofile-gcc: maybe-all-stageprofile-ppl
-all-stagefeedback-gcc: maybe-all-stagefeedback-ppl
 all-gcc: maybe-all-cloog
 
 all-stage1-gcc: maybe-all-stage1-cloog
@@ -44044,30 +44034,30 @@ configure-stage3-mpc: maybe-all-stage3-mpfr
 configure-stage4-mpc: maybe-all-stage4-mpfr
 configure-stageprofile-mpc: maybe-all-stageprofile-mpfr
 configure-stagefeedback-mpc: maybe-all-stagefeedback-mpfr
-configure-ppl: maybe-all-gmp
+configure-isl: maybe-all-gmp
 
-configure-stage1-ppl: maybe-all-stage1-gmp
-configure-stage2-ppl: maybe-all-stage2-gmp
-configure-stage3-ppl: maybe-all-stage3-gmp
-configure-stage4-ppl: maybe-all-stage4-gmp
-configure-stageprofile-ppl: maybe-all-stageprofile-gmp
-configure-stagefeedback-ppl: maybe-all-stagefeedback-gmp
-configure-ppl: maybe-all-mpfr
+configure-stage1-isl: maybe-all-stage1-gmp
+configure-stage2-isl: maybe-all-stage2-gmp
+configure-stage3-isl: maybe-all-stage3-gmp
+configure-stage4-isl: maybe-all-stage4-gmp
+configure-stageprofile-isl: maybe-all-stageprofile-gmp
+configure-stagefeedback-isl: maybe-all-stagefeedback-gmp
+configure-cloog: maybe-all-isl
 
-configure-stage1-ppl: maybe-all-stage1-mpfr
-configure-stage2-ppl: maybe-all-stage2-mpfr
-configure-stage3-ppl: maybe-all-stage3-mpfr
-configure-stage4-ppl: maybe-all-stage4-mpfr
-configure-stageprofile-ppl: maybe-all-stageprofile-mpfr
-configure-stagefeedback-ppl: maybe-all-stagefeedback-mpfr
-configure-cloog: maybe-all-ppl
+configure-stage1-cloog: maybe-all-stage1-isl
+configure-stage2-cloog: maybe-all-stage2-isl
+configure-stage3-cloog: maybe-all-stage3-isl
+configure-stage4-cloog: maybe-all-stage4-isl
+configure-stageprofile-cloog: maybe-all-stageprofile-isl
+configure-stagefeedback-cloog: maybe-all-stagefeedback-isl
+configure-cloog: maybe-all-gmp
 
-configure-stage1-cloog: maybe-all-stage1-ppl
-configure-stage2-cloog: maybe-all-stage2-ppl
-configure-stage3-cloog: maybe-all-stage3-ppl
-configure-stage4-cloog: maybe-all-stage4-ppl
-configure-stageprofile-cloog: maybe-all-stageprofile-ppl
-configure-stagefeedback-cloog: maybe-all-stagefeedback-ppl
+configure-stage1-cloog: maybe-all-stage1-gmp
+configure-stage2-cloog: maybe-all-stage2-gmp
+configure-stage3-cloog: maybe-all-stage3-gmp
+configure-stage4-cloog: maybe-all-stage4-gmp
+configure-stageprofile-cloog: maybe-all-stageprofile-gmp
+configure-stagefeedback-cloog: maybe-all-stagefeedback-gmp
 configure-gdb: maybe-all-intl
 configure-gdb: maybe-configure-sim
 configure-gdb: maybe-all-bfd

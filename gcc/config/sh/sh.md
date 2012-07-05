@@ -3113,12 +3113,55 @@ label:
 ;; Logical operations
 ;; -------------------------------------------------------------------------
 
-(define_insn "*andsi3_compact"
-  [(set (match_operand:SI 0 "arith_reg_dest" "=z,r")
-	(and:SI (match_operand:SI 1 "arith_reg_operand" "%0,0")
-		(match_operand:SI 2 "logical_operand" "K08,r")))]
+(define_expand "andsi3"
+  [(set (match_operand:SI 0 "arith_reg_operand" "")
+	(and:SI (match_operand:SI 1 "logical_reg_operand" "")
+		(match_operand:SI 2 "logical_and_operand" "")))]
+  ""
+{
+  /* If it is possible to turn the and insn into a zero extension
+     already, redundant zero extensions will be folded, which results
+     in better code.  
+     Ideally the splitter of *andsi_compact would be enough, if reundant
+     zero extensions were detected after the combine pass, which does not
+     happen at the moment.  */
+  if (TARGET_SH1)
+    {
+      if (satisfies_constraint_Jmb (operands[2]))
+	{
+	  emit_insn (gen_zero_extendqisi2 (operands[0],
+					   gen_lowpart (QImode, operands[1])));
+	  DONE;
+	}
+      else if (satisfies_constraint_Jmw (operands[2]))
+	{
+	  emit_insn (gen_zero_extendhisi2 (operands[0],
+					   gen_lowpart (HImode, operands[1])));
+	  DONE;
+	}
+    }
+})
+
+(define_insn_and_split "*andsi_compact"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r,r,z,r")
+	(and:SI (match_operand:SI 1 "arith_reg_operand" "%r,r,0,0")
+		(match_operand:SI 2 "logical_and_operand" "Jmb,Jmw,K08,r")))]
   "TARGET_SH1"
-  "and	%2,%0"
+  "@
+	extu.b	%1,%0
+	extu.w	%1,%0
+	and	%2,%0
+	and	%2,%0"
+  "&& 1"
+ [(set (match_dup 0) (zero_extend:SI (match_dup 1)))]
+{
+  if (satisfies_constraint_Jmb (operands[2]))
+    operands[1] = gen_lowpart (QImode, operands[1]);
+  else if (satisfies_constraint_Jmw (operands[2]))
+    operands[1] = gen_lowpart (HImode, operands[1]);
+  else
+    FAIL;
+}
   [(set_attr "type" "arith")])
 
 (define_insn "*andsi3_media"
@@ -3138,24 +3181,6 @@ label:
   "TARGET_SH2A && satisfies_constraint_Psz (operands[2])"
   "bclr\\t%W2,%0"
   [(set_attr "type" "arith")])
-
-;; If the constant is 255, then emit an extu.b instruction instead of an
-;; and, since that will give better code.
-
-(define_expand "andsi3"
-  [(set (match_operand:SI 0 "arith_reg_operand" "")
-	(and:SI (match_operand:SI 1 "logical_reg_operand" "")
-		(match_operand:SI 2 "logical_operand" "")))]
-  ""
-{
-  if (TARGET_SH1
-      && CONST_INT_P (operands[2]) && INTVAL (operands[2]) == 255)
-    {
-      emit_insn (gen_zero_extendqisi2 (operands[0],
-				       gen_lowpart (QImode, operands[1])));
-      DONE;
-    }
-})
 
 (define_insn_and_split "anddi3"
   [(set (match_operand:DI 0 "arith_reg_dest" "=r,r,r")
@@ -4450,8 +4475,8 @@ label:
   emit_insn (gen_movsi (operands[0], operands[1]));
 
   emit_jump_insn (INTVAL (operands[3])
-		  ? gen_branch_true (skip_neg_label)
-		  : gen_branch_false (skip_neg_label));
+		  ? gen_branch_true (skip_neg_label, get_t_reg_rtx ())
+		  : gen_branch_false (skip_neg_label, get_t_reg_rtx ()));
 
   emit_label_after (skip_neg_label,
 		    emit_insn (gen_negsi2 (operands[0], operands[1])));
@@ -4519,8 +4544,8 @@ label:
   emit_insn (gen_movsi (high_dst, high_src));
 
   emit_jump_insn (INTVAL (operands[3]) 
-		  ? gen_branch_true (skip_neg_label)
-		  : gen_branch_false (skip_neg_label));
+		  ? gen_branch_true (skip_neg_label, get_t_reg_rtx ())
+		  : gen_branch_false (skip_neg_label, get_t_reg_rtx ()));
 
   if (!INTVAL (operands[3]))
     emit_insn (gen_clrt ());
@@ -4700,13 +4725,8 @@ label:
 	      (const_string "ignore")))])
 
 (define_expand "zero_extendhisi2"
-  [(set (match_operand:SI 0 "arith_reg_operand" "")
-	(zero_extend:SI (match_operand:HI 1 "general_extend_operand" "")))]
-  ""
-{
-  if (! TARGET_SHMEDIA && ! arith_reg_operand (operands[1], HImode))
-    operands[1] = copy_to_mode_reg (HImode, operands[1]);
-})
+  [(set (match_operand:SI 0 "arith_reg_dest" "")
+	(zero_extend:SI (match_operand:HI 1 "zero_extend_operand" "")))])
 
 (define_insn "*zero_extendhisi2_compact"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
@@ -4745,13 +4765,8 @@ label:
 })
 
 (define_expand "zero_extendqisi2"
-  [(set (match_operand:SI 0 "arith_reg_operand" "")
-	(zero_extend:SI (match_operand:QI 1 "general_extend_operand" "")))]
-  ""
-{
-  if (! TARGET_SHMEDIA && ! arith_reg_operand (operands[1], QImode))
-    operands[1] = copy_to_mode_reg (QImode, operands[1]);
-})
+  [(set (match_operand:SI 0 "arith_reg_dest" "")
+	(zero_extend:SI (match_operand:QI 1 "zero_extend_operand" "")))])
 
 (define_insn "*zero_extendqisi2_compact"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
@@ -7195,66 +7210,22 @@ label:
 ;; ------------------------------------------------------------------------
 
 (define_insn "branch_true"
-  [(set (pc) (if_then_else (ne (reg:SI T_REG) (const_int 0))
+  [(set (pc) (if_then_else (ne (match_operand 1 "t_reg_operand" "")
+			       (const_int 0))
 			   (label_ref (match_operand 0 "" ""))
 			   (pc)))]
   "TARGET_SH1"
-{
-  return output_branch (1, insn, operands);
-}
-  [(set_attr "type" "cbranch")])
-
-;; The *branch_true patterns help combine when trying to invert conditions.
-(define_insn "*branch_true"
-  [(set (pc) (if_then_else (ne (zero_extend:SI (subreg:QI (reg:SI T_REG) 0))
-			       (const_int 0))
-			   (label_ref (match_operand 0 "" ""))
-			   (pc)))]
-  "TARGET_SH1 && TARGET_LITTLE_ENDIAN"
-{
-  return output_branch (1, insn, operands);
-}
-  [(set_attr "type" "cbranch")])
-
-(define_insn "*branch_true"
-  [(set (pc) (if_then_else (ne (zero_extend:SI (subreg:QI (reg:SI T_REG) 3))
-			       (const_int 0))
-			   (label_ref (match_operand 0 "" ""))
-			   (pc)))]
-  "TARGET_SH1 && ! TARGET_LITTLE_ENDIAN"
 {
   return output_branch (1, insn, operands);
 }
   [(set_attr "type" "cbranch")])
 
 (define_insn "branch_false"
-  [(set (pc) (if_then_else (eq (reg:SI T_REG) (const_int 0))
+  [(set (pc) (if_then_else (eq (match_operand 1 "t_reg_operand" "")
+			       (const_int 0))
 			   (label_ref (match_operand 0 "" ""))
 			   (pc)))]
   "TARGET_SH1"
-{
-  return output_branch (0, insn, operands);
-}
-  [(set_attr "type" "cbranch")])
-
-;; The *branch_false patterns help combine when trying to invert conditions.
-(define_insn "*branch_false"
-  [(set (pc) (if_then_else (eq (zero_extend:SI (subreg:QI (reg:SI T_REG) 0))
-			       (const_int 0))
-			   (label_ref (match_operand 0 "" ""))
-			   (pc)))]
-  "TARGET_SH1 && TARGET_LITTLE_ENDIAN"
-{
-  return output_branch (0, insn, operands);
-}
-  [(set_attr "type" "cbranch")])
-
-(define_insn "*branch_false"
-  [(set (pc) (if_then_else (eq (zero_extend:SI (subreg:QI (reg:SI T_REG) 3))
-			       (const_int 0))
-			   (label_ref (match_operand 0 "" ""))
-			   (pc)))]
-  "TARGET_SH1 && ! TARGET_LITTLE_ENDIAN"
 {
   return output_branch (0, insn, operands);
 }
@@ -9672,7 +9643,7 @@ label:
 
 (define_insn "movt"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
-	(eq:SI (reg:SI T_REG) (const_int 1)))]
+	(match_operand:SI 1 "t_reg_operand"))]
   "TARGET_SH1"
   "movt	%0"
   [(set_attr "type" "arith")])
@@ -9854,61 +9825,24 @@ label:
   "negc	%1,%0"
   [(set_attr "type" "arith")])
 
-;; The *negnegt patterns help the combine pass to figure out how to fold 
+;; The *negnegt pattern helps the combine pass to figure out how to fold 
 ;; an explicit double T bit negation.
 (define_insn_and_split "*negnegt"
   [(set (reg:SI T_REG)
-	(eq:SI (subreg:QI (xor:SI (reg:SI T_REG) (const_int 1)) 3)
-        (const_int 0)))]
-  "! TARGET_LITTLE_ENDIAN"
+	(eq:SI (match_operand 0 "negt_reg_operand" "") (const_int 0)))]
+  "TARGET_SH1"
   "#"
   ""
   [(const_int 0)])
 
-(define_insn_and_split "*negnegt"
-  [(set (reg:SI T_REG)
-	(eq:SI (subreg:QI (xor:SI (reg:SI T_REG) (const_int 1)) 0)
-        (const_int 0)))]
-  "TARGET_LITTLE_ENDIAN"
-  "#"
-  ""
-  [(const_int 0)])
-
-;; The *movtt patterns eliminate redundant T bit to T bit moves / tests.
+;; The *movtt pattern eliminates redundant T bit to T bit moves / tests.
 (define_insn_and_split "*movtt"
   [(set (reg:SI T_REG)
-	(eq:SI (zero_extend:SI (subreg:QI (reg:SI T_REG) 3))
-        (const_int 1)))]
-  "! TARGET_LITTLE_ENDIAN"
+	(eq:SI (match_operand 0 "t_reg_operand" "") (const_int 1)))]
+  "TARGET_SH1"
   "#"
   ""
   [(const_int 0)])
-
-(define_insn_and_split "*movtt"
-  [(set (reg:SI T_REG)
-	(eq:SI (zero_extend:SI (subreg:QI (reg:SI T_REG) 0))
-        (const_int 1)))]
-  "TARGET_LITTLE_ENDIAN"
-  "#"
-  ""
-  [(const_int 0)])
-
-;; The *movt_qi patterns help the combine pass convert a movrt_negc pattern
-;; into a movt Rn, xor #1 Rn pattern.  This can happen when e.g. a function
-;; returns the inverted T bit value.
-(define_insn "*movt_qi"
-  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
-	(zero_extend:SI (subreg:QI (reg:SI T_REG) 3)))]
-  "! TARGET_LITTLE_ENDIAN"
-  "movt	%0"
-  [(set_attr "type" "arith")])
-
-(define_insn "*movt_qi"
-  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
-	(zero_extend:SI (subreg:QI (reg:SI T_REG) 0)))]
-  "TARGET_LITTLE_ENDIAN"
-  "movt	%0"
-  [(set_attr "type" "arith")])
 
 (define_expand "cstoresf4"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -13960,7 +13894,7 @@ label:
   else
     {
       emit_insn (gen_stack_protect_test_si (operands[0], operands[1]));
-      emit_jump_insn (gen_branch_true (operands[2]));
+      emit_jump_insn (gen_branch_true (operands[2], get_t_reg_rtx ()));
     }
 
   DONE;

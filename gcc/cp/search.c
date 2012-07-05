@@ -579,7 +579,8 @@ context_for_name_lookup (tree decl)
      declared.  */
   tree context = DECL_CONTEXT (decl);
 
-  while (context && TYPE_P (context) && ANON_AGGR_TYPE_P (context))
+  while (context && TYPE_P (context)
+	 && (ANON_AGGR_TYPE_P (context) || UNSCOPED_ENUM_P (context)))
     context = TYPE_CONTEXT (context);
   if (!context)
     context = global_namespace;
@@ -623,9 +624,7 @@ dfs_access_in_type (tree binfo, void *data)
   else
     {
       /* First, check for an access-declaration that gives us more
-	 access to the DECL.  The CONST_DECL for an enumeration
-	 constant will not have DECL_LANG_SPECIFIC, and thus no
-	 DECL_ACCESS.  */
+	 access to the DECL.  */
       if (DECL_LANG_SPECIFIC (decl) && !DECL_DISCRIMINATOR_P (decl))
 	{
 	  tree decl_access = purpose_member (type, DECL_ACCESS (decl));

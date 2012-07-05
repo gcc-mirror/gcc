@@ -741,8 +741,8 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
 	     values. Otherwise, the resulting enumeration value is
 	     unspecified.  */
 	  if ((complain & tf_warning)
-	      && TREE_CODE (expr) == INTEGER_CST
-	      && !int_fits_type_p (expr, ENUM_UNDERLYING_TYPE (type)))
+	      && TREE_CODE (e) == INTEGER_CST
+	      && !int_fits_type_p (e, ENUM_UNDERLYING_TYPE (type)))
 	    warning_at (loc, OPT_Wconversion, 
 			"the result of the conversion is unspecified because "
 			"%qE is outside the range of type %qT",

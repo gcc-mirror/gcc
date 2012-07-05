@@ -5329,6 +5329,7 @@ inlined_function_outer_scope_p (const_tree block)
 /* In tree.c */
 extern unsigned crc32_string (unsigned, const char *);
 extern unsigned crc32_byte (unsigned, char);
+extern unsigned crc32_unsigned (unsigned, unsigned);
 extern void clean_symbol_name (char *);
 extern tree get_file_function_name (const char *);
 extern tree get_callee_fndecl (const_tree);
@@ -5886,8 +5887,6 @@ extern bool parse_input_constraint (const char **, int, int, int, int,
 				    const char * const *, bool *, bool *);
 extern void expand_asm_stmt (gimple);
 extern tree resolve_asm_operand_names (tree, tree, tree, tree);
-extern bool expand_switch_using_bit_tests_p (tree, tree, unsigned int,
-					     unsigned int);
 extern void expand_case (gimple);
 #ifdef HARD_CONST
 /* Silly ifdef to avoid having all includers depend on hard-reg-set.h.  */

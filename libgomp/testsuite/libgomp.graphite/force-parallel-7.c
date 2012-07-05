@@ -2,9 +2,16 @@
 
 int A[N+5][N+5][N+5];
 
-int foo(void)
+void abort (void);
+
+int foo (void)
 {
   int i, j, k;
+
+  for (i = 0; i < N + 5; i++)
+    for (j = 0; j < N + 5; j++)
+      for (k = 0; k < N + 5; k++)
+	A[i][j][k] = i + j + k;
 
   /* Loop i: carried no dependency.  */
   for (i = 0; i < N; i++)
@@ -12,19 +19,13 @@ int foo(void)
       for (k = 0; k < N; k++)
 	A[k+1][j+2][i+1] = A[k][j][i+1];
 
-  for (i = 0; i < N; i++)
-    /* Loop j: carried no dependency.  */
-    for (j = 0; j < N; j++)
-      /* Loop k: carreid no dependency.  */
-      for (k = 0; k < N; k++)
-	A[i+1][j][k] = A[i][j][k+1];
-
   return A[1][5][2];
 }
 
-int main(void)
+int main (void)
 {
-  foo();
+  if (5 != foo ())
+    abort ();
 
   return 0;
 }

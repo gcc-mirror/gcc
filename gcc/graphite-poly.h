@@ -1,5 +1,5 @@
 /* Graphite polyhedral representation.
-   Copyright (C) 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <sebastian.pop@amd.com> and
    Tobias Grosser <grosser@fim.uni-passau.de>.
 
@@ -34,7 +34,7 @@ typedef struct scop *scop_p;
 DEF_VEC_P(scop_p);
 DEF_VEC_ALLOC_P (scop_p, heap);
 
-typedef ppl_dimension_type graphite_dim_t;
+typedef unsigned graphite_dim_t;
 
 static inline graphite_dim_t pbb_dim_iter_domain (const struct poly_bb *);
 static inline graphite_dim_t pbb_nb_params (const struct poly_bb *);
@@ -180,7 +180,8 @@ struct poly_dr
      - P: Number of parameters.
 
      In the example, the vector "R C O I L P" is "7 7 3 2 0 1".  */
-  ppl_Pointset_Powerset_C_Polyhedron_t accesses;
+  isl_map *accesses;
+  isl_set *extent;
 
   /* Data reference's base object set number, we must assure 2 pdrs are in the
      same base object set before dependency checking.  */
@@ -195,31 +196,20 @@ struct poly_dr
 #define PDR_CDR(PDR) (PDR->compiler_dr)
 #define PDR_PBB(PDR) (PDR->pbb)
 #define PDR_TYPE(PDR) (PDR->type)
-#define PDR_ACCESSES(PDR) (PDR->accesses)
+#define PDR_ACCESSES(PDR) (NULL)
 #define PDR_BASE_OBJECT_SET(PDR) (PDR->dr_base_object_set)
 #define PDR_NB_SUBSCRIPTS(PDR) (PDR->nb_subscripts)
 
-void new_poly_dr (poly_bb_p, int, ppl_Pointset_Powerset_C_Polyhedron_t,
-		  enum poly_dr_type, void *, graphite_dim_t);
+void new_poly_dr (poly_bb_p, int, enum poly_dr_type, void *,
+		  graphite_dim_t, isl_map *, isl_set *);
 void free_poly_dr (poly_dr_p);
 void debug_pdr (poly_dr_p, int);
 void print_pdr (FILE *, poly_dr_p, int);
 static inline scop_p pdr_scop (poly_dr_p pdr);
 
-/* The dimension of the PDR_ACCESSES polyhedron of PDR.  */
-
-static inline ppl_dimension_type
-pdr_dim (poly_dr_p pdr)
-{
-  ppl_dimension_type dim;
-  ppl_Pointset_Powerset_C_Polyhedron_space_dimension (PDR_ACCESSES (pdr),
-						      &dim);
-  return dim;
-}
-
 /* The dimension of the iteration domain of the scop of PDR.  */
 
-static inline ppl_dimension_type
+static inline graphite_dim_t
 pdr_dim_iter_domain (poly_dr_p pdr)
 {
   return pbb_dim_iter_domain (PDR_PBB (pdr));
@@ -227,7 +217,7 @@ pdr_dim_iter_domain (poly_dr_p pdr)
 
 /* The number of parameters of the scop of PDR.  */
 
-static inline ppl_dimension_type
+static inline graphite_dim_t
 pdr_nb_params (poly_dr_p pdr)
 {
   return scop_nb_params (pdr_scop (pdr));
@@ -235,7 +225,7 @@ pdr_nb_params (poly_dr_p pdr)
 
 /* The dimension of the alias set in PDR.  */
 
-static inline ppl_dimension_type
+static inline graphite_dim_t
 pdr_alias_set_dim (poly_dr_p pdr)
 {
   poly_bb_p pbb = PDR_PBB (pdr);
@@ -245,7 +235,7 @@ pdr_alias_set_dim (poly_dr_p pdr)
 
 /* The dimension in PDR containing subscript S.  */
 
-static inline ppl_dimension_type
+static inline graphite_dim_t
 pdr_subscript_dim (poly_dr_p pdr, graphite_dim_t s)
 {
   poly_bb_p pbb = PDR_PBB (pdr);
@@ -255,7 +245,7 @@ pdr_subscript_dim (poly_dr_p pdr, graphite_dim_t s)
 
 /* The dimension in PDR containing the loop iterator ITER.  */
 
-static inline ppl_dimension_type
+static inline graphite_dim_t
 pdr_iterator_dim (poly_dr_p pdr ATTRIBUTE_UNUSED, graphite_dim_t iter)
 {
   return iter;
@@ -263,7 +253,7 @@ pdr_iterator_dim (poly_dr_p pdr ATTRIBUTE_UNUSED, graphite_dim_t iter)
 
 /* The dimension in PDR containing parameter PARAM.  */
 
-static inline ppl_dimension_type
+static inline graphite_dim_t
 pdr_parameter_dim (poly_dr_p pdr, graphite_dim_t param)
 {
   poly_bb_p pbb = PDR_PBB (pdr);
@@ -309,11 +299,6 @@ typedef struct poly_scattering *poly_scattering_p;
 
 struct poly_scattering
 {
-  /* The scattering function containing the transformations: the
-     layout of this polyhedron is: T|I|G with T the transform
-     scattering, I the iteration domain, G the context parameters.  */
-  ppl_Polyhedron_t scattering;
-
   /* The number of local variables.  */
   int nb_local_variables;
 
@@ -353,22 +338,22 @@ struct poly_bb
 
      The number of variables in the DOMAIN may change and is not
      related to the number of loops in the original code.  */
-  ppl_Pointset_Powerset_C_Polyhedron_t domain;
+  isl_set *domain;
 
   /* The data references we access.  */
   VEC (poly_dr_p, heap) *drs;
 
   /* The original scattering.  */
-  poly_scattering_p original;
+  poly_scattering_p _original;
+  isl_map *schedule;
 
   /* The transformed scattering.  */
-  poly_scattering_p transformed;
+  poly_scattering_p _transformed;
+  isl_map *transformed;
 
   /* A copy of the transformed scattering.  */
-  poly_scattering_p saved;
-
-  /* True when the PDR duplicates have already been removed.  */
-  bool pdr_duplicates_removed;
+  poly_scattering_p _saved;
+  isl_map *saved;
 
   /* True when this PBB contains only a reduction statement.  */
   bool is_reduction;
@@ -376,16 +361,18 @@ struct poly_bb
 
 #define PBB_BLACK_BOX(PBB) ((gimple_bb_p) PBB->black_box)
 #define PBB_SCOP(PBB) (PBB->scop)
-#define PBB_DOMAIN(PBB) (PBB->domain)
+#define PBB_DOMAIN(PBB) (NULL)
 #define PBB_DRS(PBB) (PBB->drs)
-#define PBB_ORIGINAL(PBB) (PBB->original)
-#define PBB_ORIGINAL_SCATTERING(PBB) (PBB->original->scattering)
-#define PBB_TRANSFORMED(PBB) (PBB->transformed)
-#define PBB_TRANSFORMED_SCATTERING(PBB) (PBB->transformed->scattering)
-#define PBB_SAVED(PBB) (PBB->saved)
-#define PBB_NB_LOCAL_VARIABLES(PBB) (PBB->transformed->nb_local_variables)
-#define PBB_NB_SCATTERING_TRANSFORM(PBB) (PBB->transformed->nb_scattering)
-#define PBB_PDR_DUPLICATES_REMOVED(PBB) (PBB->pdr_duplicates_removed)
+#define PBB_ORIGINAL(PBB) (PBB->_original)
+#define PBB_ORIGINAL_SCATTERING(PBB) (NULL)
+#define PBB_TRANSFORMED(PBB) (PBB->_transformed)
+#define PBB_TRANSFORMED_SCATTERING(PBB) (NULL)
+#define PBB_SAVED(PBB) (PBB->_saved)
+/* XXX isl if we ever need local vars in the scatter, we can't use the
+   out dimension of transformed to count the scatterting transform dimension.
+   */
+#define PBB_NB_LOCAL_VARIABLES(PBB) (0)
+#define PBB_NB_SCATTERING_TRANSFORM(PBB) (isl_map_n_out (PBB->transformed))
 #define PBB_IS_REDUCTION(PBB) (PBB->is_reduction)
 
 extern poly_bb_p new_poly_bb (scop_p, void *);
@@ -410,12 +397,21 @@ extern void print_iteration_domain (FILE *, poly_bb_p, int);
 extern void print_iteration_domains (FILE *, scop_p, int);
 extern void debug_iteration_domain (poly_bb_p, int);
 extern void debug_iteration_domains (scop_p, int);
+extern void print_isl_set (FILE *, isl_set *);
+extern void print_isl_map (FILE *, isl_map *);
+extern void print_isl_aff (FILE *, isl_aff *);
+extern void print_isl_constraint (FILE *, isl_constraint *);
+extern void debug_isl_set (isl_set *);
+extern void debug_isl_map (isl_map *);
+extern void debug_isl_aff (isl_aff *);
+extern void debug_isl_constraint (isl_constraint *);
 extern int scop_do_interchange (scop_p);
 extern int scop_do_strip_mine (scop_p, int);
 extern bool scop_do_block (scop_p);
 extern bool flatten_all_loops (scop_p);
+extern bool optimize_isl(scop_p);
 extern void pbb_number_of_iterations_at_time (poly_bb_p, graphite_dim_t, mpz_t);
-extern void pbb_remove_duplicate_pdrs (poly_bb_p);
+extern void debug_gmp_value (mpz_t);
 
 /* Return the number of write data references in PBB.  */
 
@@ -495,11 +491,7 @@ pbb_set_black_box (poly_bb_p pbb, void *black_box)
 static inline graphite_dim_t
 pbb_dim_iter_domain (const struct poly_bb *pbb)
 {
-  scop_p scop = PBB_SCOP (pbb);
-  ppl_dimension_type dim;
-
-  ppl_Pointset_Powerset_C_Polyhedron_space_dimension (PBB_DOMAIN (pbb), &dim);
-  return dim - scop_nb_params (scop);
+  return isl_set_dim (pbb->domain, isl_dim_set);
 }
 
 /* The number of params defined in PBB.  */
@@ -544,7 +536,7 @@ pbb_nb_dynamic_scattering_transform (const struct poly_bb *pbb)
    scattering polyhedron of PBB.  */
 
 static inline graphite_dim_t
-pbb_nb_local_vars (const struct poly_bb *pbb)
+pbb_nb_local_vars (const struct poly_bb *pbb ATTRIBUTE_UNUSED)
 {
   /* For now we do not have any local variables, as we do not do strip
      mining for example.  */
@@ -553,7 +545,7 @@ pbb_nb_local_vars (const struct poly_bb *pbb)
 
 /* The dimension in the domain of PBB containing the iterator ITER.  */
 
-static inline ppl_dimension_type
+static inline graphite_dim_t
 pbb_iterator_dim (poly_bb_p pbb ATTRIBUTE_UNUSED, graphite_dim_t iter)
 {
   return iter;
@@ -561,7 +553,7 @@ pbb_iterator_dim (poly_bb_p pbb ATTRIBUTE_UNUSED, graphite_dim_t iter)
 
 /* The dimension in the domain of PBB containing the iterator ITER.  */
 
-static inline ppl_dimension_type
+static inline graphite_dim_t
 pbb_parameter_dim (poly_bb_p pbb, graphite_dim_t param)
 {
   return param
@@ -571,7 +563,7 @@ pbb_parameter_dim (poly_bb_p pbb, graphite_dim_t param)
 /* The dimension in the original scattering polyhedron of PBB
    containing the scattering iterator SCATTER.  */
 
-static inline ppl_dimension_type
+static inline graphite_dim_t
 psco_scattering_dim (poly_bb_p pbb ATTRIBUTE_UNUSED, graphite_dim_t scatter)
 {
   gcc_assert (scatter < pbb_nb_scattering_orig (pbb));
@@ -581,20 +573,17 @@ psco_scattering_dim (poly_bb_p pbb ATTRIBUTE_UNUSED, graphite_dim_t scatter)
 /* The dimension in the transformed scattering polyhedron of PBB
    containing the scattering iterator SCATTER.  */
 
-static inline ppl_dimension_type
+static inline graphite_dim_t
 psct_scattering_dim (poly_bb_p pbb ATTRIBUTE_UNUSED, graphite_dim_t scatter)
 {
   gcc_assert (scatter <= pbb_nb_scattering_transform (pbb));
   return scatter;
 }
 
-ppl_dimension_type psct_scattering_dim_for_loop_depth (poly_bb_p,
-						       graphite_dim_t);
-
 /* The dimension in the transformed scattering polyhedron of PBB of
    the local variable LV.  */
 
-static inline ppl_dimension_type
+static inline graphite_dim_t
 psct_local_var_dim (poly_bb_p pbb, graphite_dim_t lv)
 {
   gcc_assert (lv <= pbb_nb_local_vars (pbb));
@@ -604,7 +593,7 @@ psct_local_var_dim (poly_bb_p pbb, graphite_dim_t lv)
 /* The dimension in the original scattering polyhedron of PBB
    containing the loop iterator ITER.  */
 
-static inline ppl_dimension_type
+static inline graphite_dim_t
 psco_iterator_dim (poly_bb_p pbb, graphite_dim_t iter)
 {
   gcc_assert (iter < pbb_dim_iter_domain (pbb));
@@ -614,7 +603,7 @@ psco_iterator_dim (poly_bb_p pbb, graphite_dim_t iter)
 /* The dimension in the transformed scattering polyhedron of PBB
    containing the loop iterator ITER.  */
 
-static inline ppl_dimension_type
+static inline graphite_dim_t
 psct_iterator_dim (poly_bb_p pbb, graphite_dim_t iter)
 {
   gcc_assert (iter < pbb_dim_iter_domain (pbb));
@@ -626,7 +615,7 @@ psct_iterator_dim (poly_bb_p pbb, graphite_dim_t iter)
 /* The dimension in the original scattering polyhedron of PBB
    containing parameter PARAM.  */
 
-static inline ppl_dimension_type
+static inline graphite_dim_t
 psco_parameter_dim (poly_bb_p pbb, graphite_dim_t param)
 {
   gcc_assert (param < pbb_nb_params (pbb));
@@ -638,7 +627,7 @@ psco_parameter_dim (poly_bb_p pbb, graphite_dim_t param)
 /* The dimension in the transformed scattering polyhedron of PBB
    containing parameter PARAM.  */
 
-static inline ppl_dimension_type
+static inline graphite_dim_t
 psct_parameter_dim (poly_bb_p pbb, graphite_dim_t param)
 {
   gcc_assert (param < pbb_nb_params (pbb));
@@ -651,7 +640,7 @@ psct_parameter_dim (poly_bb_p pbb, graphite_dim_t param)
 /* The scattering dimension of PBB corresponding to the dynamic level
    LEVEL.  */
 
-static inline ppl_dimension_type
+static inline graphite_dim_t
 psct_dynamic_dim (poly_bb_p pbb, graphite_dim_t level)
 {
   graphite_dim_t result = 1 + 2 * level;
@@ -663,7 +652,7 @@ psct_dynamic_dim (poly_bb_p pbb, graphite_dim_t level)
 /* The scattering dimension of PBB corresponding to the static
    sequence of the loop level LEVEL.  */
 
-static inline ppl_dimension_type
+static inline graphite_dim_t
 psct_static_dim (poly_bb_p pbb, graphite_dim_t level)
 {
   graphite_dim_t result = 2 * level;
@@ -676,25 +665,10 @@ psct_static_dim (poly_bb_p pbb, graphite_dim_t level)
    variable and returns its index.  */
 
 static inline graphite_dim_t
-psct_add_local_variable (poly_bb_p pbb)
+psct_add_local_variable (poly_bb_p pbb ATTRIBUTE_UNUSED)
 {
-  graphite_dim_t nlv = pbb_nb_local_vars (pbb);
-  ppl_dimension_type lv_column = psct_local_var_dim (pbb, nlv);
-  ppl_insert_dimensions (PBB_TRANSFORMED_SCATTERING (pbb), lv_column, 1);
-  PBB_NB_LOCAL_VARIABLES (pbb) += 1;
-  return nlv;
-}
-
-/* Adds a dimension to the transformed scattering polyhedron of PBB at
-   INDEX.  */
-
-static inline void
-psct_add_scattering_dimension (poly_bb_p pbb, ppl_dimension_type index)
-{
-  gcc_assert (index < pbb_nb_scattering_transform (pbb));
-
-  ppl_insert_dimensions (PBB_TRANSFORMED_SCATTERING (pbb), index, 1);
-  PBB_NB_SCATTERING_TRANSFORM (pbb) += 1;
+  gcc_unreachable ();
+  return 0;
 }
 
 typedef struct lst *lst_p;
@@ -1116,25 +1090,20 @@ lst_niter_for_loop (lst_p lst, mpz_t niter)
 static inline void
 pbb_update_scattering (poly_bb_p pbb, graphite_dim_t level, int dewey)
 {
-  ppl_Polyhedron_t ph = PBB_TRANSFORMED_SCATTERING (pbb);
-  ppl_dimension_type sched = psct_static_dim (pbb, level);
-  ppl_dimension_type ds[1];
-  ppl_Constraint_t new_cstr;
-  ppl_Linear_Expression_t expr;
-  ppl_dimension_type dim;
+  graphite_dim_t sched = psct_static_dim (pbb, level);
+  isl_space *d = isl_map_get_space (pbb->transformed);
+  isl_space *d1 = isl_space_range (d);
+  unsigned i, n = isl_space_dim (d1, isl_dim_out);
+  isl_space *d2 = isl_space_add_dims (d1, isl_dim_in, n);
+  isl_map *x = isl_map_universe (d2);
 
-  ppl_Polyhedron_space_dimension (ph, &dim);
-  ds[0] = sched;
-  ppl_Polyhedron_remove_space_dimensions (ph, ds, 1);
-  ppl_insert_dimensions (ph, sched, 1);
+  x = isl_map_fix_si (x, isl_dim_out, sched, dewey);
 
-  ppl_new_Linear_Expression_with_dimension (&expr, dim);
-  ppl_set_coef (expr, sched, -1);
-  ppl_set_inhomogeneous (expr, dewey);
-  ppl_new_Constraint (&new_cstr, expr, PPL_CONSTRAINT_TYPE_EQUAL);
-  ppl_delete_Linear_Expression (expr);
-  ppl_Polyhedron_add_constraint (ph, new_cstr);
-  ppl_delete_Constraint (new_cstr);
+  for (i = 0; i < n; i++)
+    if (i != sched)
+      x = isl_map_equate (x, isl_dim_in, i, isl_dim_out, i);
+
+  pbb->transformed = isl_map_apply_range (pbb->transformed, x);
 }
 
 /* Updates the scattering of all the PBBs under LST to be at the DEWEY
@@ -1401,7 +1370,18 @@ struct scop
   -128 >= a >= 127
      0 >= b >= 65,535
      c = 2a + b  */
-  ppl_Pointset_Powerset_C_Polyhedron_t context;
+  isl_set *context;
+
+  /* The context used internally by ISL.  */
+  isl_ctx *ctx;
+
+  /* The original dependence relations:
+     RAW are read after write dependences,
+     WAR are write after read dependences,
+     WAW are write after write dependences.  */
+  isl_union_map *must_raw, *may_raw, *must_raw_no_source, *may_raw_no_source,
+    *must_war, *may_war, *must_war_no_source, *may_war_no_source,
+    *must_waw, *may_waw, *must_waw_no_source, *may_waw_no_source;
 
   /* A hashtable of the data dependence relations for the original
      scattering.  */
@@ -1414,7 +1394,7 @@ struct scop
 
 #define SCOP_BBS(S) (S->bbs)
 #define SCOP_REGION(S) ((sese) S->region)
-#define SCOP_CONTEXT(S) (S->context)
+#define SCOP_CONTEXT(S) (NULL)
 #define SCOP_ORIGINAL_PDDRS(S) (S->original_pddrs)
 #define SCOP_ORIGINAL_SCHEDULE(S) (S->original_schedule)
 #define SCOP_TRANSFORMED_SCHEDULE(S) (S->transformed_schedule)
@@ -1467,7 +1447,6 @@ poly_scattering_new (void)
 {
   poly_scattering_p res = XNEW (struct poly_scattering);
 
-  res->scattering = NULL;
   res->nb_local_variables = 0;
   res->nb_scattering = 0;
   return res;
@@ -1478,7 +1457,6 @@ poly_scattering_new (void)
 static inline void
 poly_scattering_free (poly_scattering_p s)
 {
-  ppl_delete_Polyhedron (s->scattering);
   free (s);
 }
 
@@ -1489,7 +1467,6 @@ poly_scattering_copy (poly_scattering_p s)
 {
   poly_scattering_p res = poly_scattering_new ();
 
-  ppl_new_C_Polyhedron_from_C_Polyhedron (&(res->scattering), s->scattering);
   res->nb_local_variables = s->nb_local_variables;
   res->nb_scattering = s->nb_scattering;
   return res;
@@ -1500,12 +1477,8 @@ poly_scattering_copy (poly_scattering_p s)
 static inline void
 store_scattering_pbb (poly_bb_p pbb)
 {
-  gcc_assert (PBB_TRANSFORMED (pbb));
-
-  if (PBB_SAVED (pbb))
-    poly_scattering_free (PBB_SAVED (pbb));
-
-  PBB_SAVED (pbb) = poly_scattering_copy (PBB_TRANSFORMED (pbb));
+  isl_map_free (pbb->saved);
+  pbb->saved = isl_map_copy (pbb->transformed);
 }
 
 /* Stores the SCOP_TRANSFORMED_SCHEDULE to SCOP_SAVED_SCHEDULE.  */
@@ -1549,10 +1522,10 @@ store_scattering (scop_p scop)
 static inline void
 restore_scattering_pbb (poly_bb_p pbb)
 {
-  gcc_assert (PBB_SAVED (pbb));
+  gcc_assert (pbb->saved);
 
-  poly_scattering_free (PBB_TRANSFORMED (pbb));
-  PBB_TRANSFORMED (pbb) = poly_scattering_copy (PBB_SAVED (pbb));
+  isl_map_free (pbb->transformed);
+  pbb->transformed = isl_map_copy (pbb->saved);
 }
 
 /* Restores the scattering for all the pbbs in the SCOP.  */
@@ -1569,49 +1542,28 @@ restore_scattering (scop_p scop)
   restore_lst_schedule (scop);
 }
 
-/* For a given PBB, add to RES the scop context, the iteration domain,
-   the original scattering when ORIGINAL_P is true, otherwise add the
-   transformed scattering.  */
+bool graphite_legal_transform (scop_p);
+poly_bb_p find_pbb_via_hash (htab_t, basic_block);
+bool loop_is_parallel_p (loop_p, htab_t, int);
+scop_p get_loop_body_pbbs (loop_p, htab_t, VEC (poly_bb_p, heap) **);
+isl_map *reverse_loop_at_level (poly_bb_p, int);
+isl_union_map *reverse_loop_for_pbbs (scop_p, VEC (poly_bb_p, heap) *, int);
+__isl_give isl_union_map *extend_schedule (__isl_take isl_union_map *);
 
-static inline void
-combine_context_id_scat (ppl_Pointset_Powerset_C_Polyhedron_t *res,
-			 poly_bb_p pbb, bool original_p)
-{
-  ppl_Pointset_Powerset_C_Polyhedron_t context;
-  ppl_Pointset_Powerset_C_Polyhedron_t id;
 
-  ppl_new_Pointset_Powerset_C_Polyhedron_from_C_Polyhedron
-    (res, original_p ?
-     PBB_ORIGINAL_SCATTERING (pbb) : PBB_TRANSFORMED_SCATTERING (pbb));
-
-  ppl_new_Pointset_Powerset_C_Polyhedron_from_Pointset_Powerset_C_Polyhedron
-    (&context, SCOP_CONTEXT (PBB_SCOP (pbb)));
-
-  ppl_new_Pointset_Powerset_C_Polyhedron_from_Pointset_Powerset_C_Polyhedron
-    (&id, PBB_DOMAIN (pbb));
-
-  /* Extend the context and the iteration domain to the dimension of
-     the scattering: T|I|G.  */
-  {
-    ppl_dimension_type gdim, tdim, idim;
-
-    ppl_Pointset_Powerset_C_Polyhedron_space_dimension (*res, &tdim);
-    ppl_Pointset_Powerset_C_Polyhedron_space_dimension (context, &gdim);
-    ppl_Pointset_Powerset_C_Polyhedron_space_dimension (id, &idim);
-
-    if (tdim > gdim)
-      ppl_insert_dimensions_pointset (context, 0, tdim - gdim);
-
-    if (tdim > idim)
-      ppl_insert_dimensions_pointset (id, 0, tdim - idim);
-  }
-
-  /* Add the context and the iteration domain to the result.  */
-  ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (*res, context);
-  ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (*res, id);
-
-  ppl_delete_Pointset_Powerset_C_Polyhedron (context);
-  ppl_delete_Pointset_Powerset_C_Polyhedron (id);
-}
+void
+compute_deps (scop_p scop, VEC (poly_bb_p, heap) *pbbs,
+	      isl_union_map **must_raw,
+	      isl_union_map **may_raw,
+	      isl_union_map **must_raw_no_source,
+	      isl_union_map **may_raw_no_source,
+	      isl_union_map **must_war,
+	      isl_union_map **may_war,
+	      isl_union_map **must_war_no_source,
+	      isl_union_map **may_war_no_source,
+	      isl_union_map **must_waw,
+	      isl_union_map **may_waw,
+	      isl_union_map **must_waw_no_source,
+	      isl_union_map **may_waw_no_source);
 
 #endif

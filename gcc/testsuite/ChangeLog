@@ -1,3 +1,98 @@
+2012-07-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53848
+	* g++.dg/other/enum3.C: New.
+
+2012-07-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/53321
+	* g++.dg/torture/pr53321.C: New test.
+
+2012-07-04  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/53844
+	* g++.dg/tree-ssa/pr53844.C: New testcase.
+
+2012-07-04  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/53849
+	* gcc.dg/pr53849.c: New testcase.
+
+2012-07-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/53812
+	* g++.dg/ext/label14.C: New test.
+
+2012-07-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/53811
+	* g++.dg/other/pr53811.C: New test.
+
+2012-07-03  Andreas Schwab  <schwab@linux-m68k.org>
+
+	PR target/28896
+	* gcc.target/m68k/stack-limit-1.c: New testcase.
+
+2012-07-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/recursive_call.adb: New test.
+
+2012-07-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/discr37.ad[sb]: New test.
+
+2012-07-03  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* g++.dg/other/packed1.C: Remove SH from xfail list.
+
+2012-07-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53619
+	* g++.dg/cpp0x/lambda/lambda-this5.C: New.
+
+	PR c++/53783
+	* g++.dg/cpp0x/lambda/lambda-template7.C: New.
+
+	PR c++/53788
+	* g++.dg/cpp0x/decltype39.C: New.
+	* g++.dg/diagnostic/method1.C: Adjust.
+
+	PR c++/53816
+	* g++.dg/template/ref6.C: New.
+
+2012-07-02  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/53568
+	* gcc.target/sh/pr53568-1.c: New.
+
+2012-07-02  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/51244
+	* gcc.target/sh/pr51244-1.c: Check that movt insn is not generated.
+
+2012-07-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53821
+	* g++.dg/cpp0x/lambda/lambda-template6.C: New.
+
+	PR c++/53524
+	* g++.dg/template/enum7.C: New.
+	* g++.dg/other/ptrmem10.C: Adjust.
+	* g++.dg/other/ptrmem11.C: Adjust.
+	* g++.dg/cpp0x/scoped_enum.C: Adjust.
+
+2012-07-02  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* gcc.dg/tree-ssa/pr36881.c: Fix test case to not expand as bit tests.
+
+2012-07-01  Wei Guozhi  <carrot@google.com>
+
+	PR target/53447
+	* gcc.target/arm/pr53447-1.c: New testcase.
+	* gcc.target/arm/pr53447-2.c: New testcase.
+	* gcc.target/arm/pr53447-3.c: New testcase.
+	* gcc.target/arm/pr53447-4.c: New testcase.
+
 2012-06-29  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/47061
@@ -198,7 +293,7 @@
 	* g++.dg/cpp0x/regress/debug-debug7.C: Update diagnostics.
 
 2012-06-25  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
-            James Greenhalgh  <james.greenhalgh@arm.com>
+	    James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* gcc.target/arm/ftest-support-arm.h New testcase.
 	* gcc.target/arm/ftest-support-thumb.h Likewise.

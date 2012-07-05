@@ -1,3 +1,69 @@
+2012-07-04  Tristan Gingold  <gingold@adacore.com>
+
+	* configure: Regenerate.
+
+2012-07-03  Richard Guenther  <rguenther@suse.de>
+
+	* Makfile.def (isl): Remove not necessary extra_exports and
+	extra_make_flags.
+	(cloog): Use $$CPPFLAGS instead of ${CPPFLAGS}.
+	* Makefile.in: Regenerated.
+
+2012-07-03  Richard Guenther  <rguenther@suse.de>
+
+	* Makefile.def (cloog): Add V=1 to extra_make_flags.
+	* configure.ac: If either the ISL or the CLooG check failed
+	do not try to build in-tree versions.
+	* Makefile.in: Regenerated.
+	* configure: Regenerated.
+
+2012-07-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure: Regenerate.
+
+2012-07-02  Janis Johnson  <janisjo@codesourcery.com>
+
+	* MAINTAINERS (Various Maintainers): Add myself as testsuite
+	maintainer.
+
+2012-07-02  Richard Guenther  <rguenther@suse.de>
+
+	* configure: Regenerated.
+
+2012-07-02  Richard Guenther  <rguenther@suse.de>
+	Michael Matz  <matz@suse.de>
+	Tobias Grosser <tobias@grosser.es>
+	Sebastian Pop <sebpop@gmail.com>
+
+	* Makefile.def: Add ISL host module, remove PPL host module.
+	Adjust ClooG host module to use the proper ISL.
+	* Makefile.tpl: Pass ISL include flags instead of PPL ones.
+	* configure.ac: Include config/isl.m4.  Add ISL host library,
+	remove PPL.  Remove PPL configury, add ISL configury, adjust
+	ClooG configury.
+	* Makefile.in: Regenerated.
+	* configure: Likewise.
+
+2012-07-02  Richard Guenther  <rguenther@suse.de>
+
+	Merge from graphite branch
+	2011-07-21  Tobias Grosser  <tobias@grosser.es>
+    
+	* configure: Regenerated.
+	* config/cloog.m4: Remove support for CLooG-ppl and CLooG-parma,
+	both cloog.org and legacy versions. The only supported version will
+	be CLooG with the isl backend.
+
+	2011-07-21  Tobias Grosser  <tobias@grosser.es>
+    
+	* configure: Regenerated.
+	* configure.ac: Require cloog isl 0.17.0
+
+	2011-07-21  Tobias Grosser  <tobias@grosser.es>
+    
+	* configure: Regenerated.
+	* config/cloog.m4: Do not define CLOOG_ORG
+
 2012-06-29  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* configure.ac: Skip C if explicitly selected.

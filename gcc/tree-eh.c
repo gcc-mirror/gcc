@@ -1320,9 +1320,8 @@ lower_try_finally_switch (struct leh_state *state, struct leh_tf_state *tf)
 
   /* The location of the finally is either the last stmt in the finally
      block or the location of the TRY_FINALLY itself.  */
-  finally_loc = gimple_seq_last_stmt (tf->top_p_seq) != NULL ?
-    gimple_location (gimple_seq_last_stmt (tf->top_p_seq))
-    : tf_loc;
+  x = gimple_seq_last_stmt (finally);
+  finally_loc = x ? gimple_location (x) : tf_loc;
 
   /* Lower the finally block itself.  */
   lower_eh_constructs_1 (state, &finally);

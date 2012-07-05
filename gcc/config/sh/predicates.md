@@ -368,6 +368,13 @@
 	  : nonimmediate_operand) (op, mode);
 })
 
+;; Returns 1 if the operand can be used in a zero_extend.
+(define_predicate "zero_extend_operand"
+  (ior (and (match_test "TARGET_SHMEDIA")
+	    (match_operand 0 "general_extend_operand"))
+       (and (match_test "! TARGET_SHMEDIA")
+	    (match_operand 0 "arith_reg_operand"))))
+
 ;; Returns 1 if OP can be source of a simple move operation. Same as
 ;; general_operand, but a LABEL_REF is valid, PRE_DEC is invalid as
 ;; are subregs of system registers.
@@ -569,6 +576,21 @@
 	return 0;
     }
   else if (satisfies_constraint_K08 (op))
+    return 1;
+
+  return 0;
+})
+
+;; Like logical_operand but allows additional constant values which can be
+;; done with zero extensions.  Used for the second operand of and insns.
+(define_predicate "logical_and_operand"
+  (match_code "subreg,reg,const_int")
+{
+  if (logical_operand (op, mode))
+    return 1;
+
+  if (! TARGET_SHMEDIA
+      && (satisfies_constraint_Jmb (op) || satisfies_constraint_Jmw (op)))
     return 1;
 
   return 0;
@@ -898,3 +920,42 @@
 	    (match_test "mode != HImode")
 	    (match_test "TARGET_SH4A_ARCH"))))
 
+;; A predicate describing the T bit register in any form.
+(define_predicate "t_reg_operand"
+  (match_code "reg,subreg,sign_extend,zero_extend")
+{
+  switch (GET_CODE (op))
+    {
+      case REG:
+	return REGNO (op) == T_REG;
+
+      case SUBREG:
+	return REGNO (SUBREG_REG (op)) == T_REG;
+
+      case ZERO_EXTEND:
+      case SIGN_EXTEND:
+	return GET_CODE (XEXP (op, 0)) == SUBREG
+	       && REGNO (SUBREG_REG (XEXP (op, 0))) == T_REG;
+
+      default:
+	return 0;
+    }
+})
+
+;; A predicate describing a negated T bit register.
+(define_predicate "negt_reg_operand"
+  (match_code "subreg,xor")
+{
+  switch (GET_CODE (op))
+    {
+      case XOR:
+	return t_reg_operand (XEXP (op, 0), GET_MODE (XEXP (op, 0)))
+	       && satisfies_constraint_M (XEXP (op, 1));
+
+      case SUBREG:
+	return negt_reg_operand (XEXP (op, 0), GET_MODE (XEXP (op, 0)));
+
+      default:
+	return 0;
+    }
+})

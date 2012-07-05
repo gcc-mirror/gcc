@@ -50,6 +50,7 @@ extern int arm_hard_regno_mode_ok (unsigned int, enum machine_mode);
 extern bool arm_modes_tieable_p (enum machine_mode, enum machine_mode);
 extern int const_ok_for_arm (HOST_WIDE_INT);
 extern int const_ok_for_op (HOST_WIDE_INT, enum rtx_code);
+extern int const_ok_for_dimode_op (HOST_WIDE_INT, enum rtx_code);
 extern int arm_split_constant (RTX_CODE, enum machine_mode, rtx,
 			       HOST_WIDE_INT, rtx, rtx, int);
 extern RTX_CODE arm_canonicalize_comparison (RTX_CODE, rtx *, rtx *);

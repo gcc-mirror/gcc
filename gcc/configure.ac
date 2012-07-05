@@ -3817,6 +3817,10 @@ foo:	nop
     gcc_GAS_CHECK_FEATURE([rep and lock prefix],
         gcc_cv_as_ix86_rep_lock_prefix,,,
 	[rep movsl
+	 rep ret
+	 rep nop
+	 rep bsf %ecx, %eax
+	 rep bsr %ecx, %eax
 	 lock addl %edi, (%eax,%esi)
 	 lock orl $0, (%esp)],,
         [AC_DEFINE(HAVE_AS_IX86_REP_LOCK_PREFIX, 1,
@@ -5163,8 +5167,8 @@ fi
 AC_ARG_VAR(GMPLIBS,[How to link GMP])
 AC_ARG_VAR(GMPINC,[How to find GMP include files])
 
-AC_ARG_VAR(PPLLIBS,[How to link PPL])
-AC_ARG_VAR(PPLINC,[How to find PPL include files])
+AC_ARG_VAR(ISLLIBS,[How to link ISL])
+AC_ARG_VAR(ISLINC,[How to find ISL include files])
 
 AC_ARG_VAR(CLOOGLIBS,[How to link CLOOG])
 AC_ARG_VAR(CLOOGINC,[How to find CLOOG include files])

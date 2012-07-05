@@ -249,6 +249,7 @@ loop infrastructure	Zdenek Dvorak		ook@ucw.cz
 OpenMP			Jakub Jelinek		jakub@redhat.com
 testsuite		Rainer Orth		ro@CeBiTec.Uni-Bielefeld.DE
 testsuite		Mike Stump		mikestump@comcast.net
+testsuite		Janis Johnson		janisjo@codesourcery.com
 register allocation	Vladimir Makarov	vmakarov@redhat.com
 
 Note that individuals who maintain parts of the compiler need approval to

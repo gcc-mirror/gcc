@@ -5022,7 +5022,7 @@ mep_reorg_regmove (rtx insns)
       done = 1;
       for (insn = insns; insn; insn = next)
 	{
-	  next = NEXT_INSN (insn);
+	  next = next_nonnote_nondebug_insn (insn);
 	  if (GET_CODE (insn) != INSN)
 	    continue;
 	  pat = PATTERN (insn);
@@ -5035,7 +5035,7 @@ mep_reorg_regmove (rtx insns)
 	      && find_regno_note (insn, REG_DEAD, REGNO (SET_SRC (pat)))
 	      && mep_compatible_reg_class (REGNO (SET_SRC (pat)), REGNO (SET_DEST (pat))))
 	    {
-	      follow = next_nonnote_insn (insn);
+	      follow = next_nonnote_nondebug_insn (insn);
 	      if (dump_file)
 		fprintf (dump_file, "superfluous moves: considering %d\n", INSN_UID (insn));
 
@@ -5096,7 +5096,7 @@ mep_reorg_regmove (rtx insns)
 					       follow, where))
 		{
 		  count ++;
-		  next = delete_insn (insn);
+		  delete_insn (insn);
 		  if (dump_file)
 		    {
 		      fprintf (dump_file, "\n----- Success!  new insn:\n\n");

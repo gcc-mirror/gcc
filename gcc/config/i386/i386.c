@@ -3283,7 +3283,7 @@ ix86_option_override_internal (bool main_args_p)
 		   "large", "32");
 	  else if (TARGET_X32)
 	    error ("code model %qs not supported in x32 mode",
-		   "medium");
+		   "large");
 	  break;
 
 	case CM_32:
@@ -32946,6 +32946,18 @@ x86_output_mi_thunk (FILE *file,
 {
   rtx this_param = x86_this_parameter (function);
   rtx this_reg, tmp, fnaddr;
+  unsigned int tmp_regno;
+
+  if (TARGET_64BIT)
+    tmp_regno = R10_REG;
+  else
+    {
+      unsigned int ccvt = ix86_get_callcvt (TREE_TYPE (function));
+      if ((ccvt & (IX86_CALLCVT_FASTCALL | IX86_CALLCVT_THISCALL)) != 0)
+	tmp_regno = AX_REG;
+      else
+	tmp_regno = CX_REG;
+    }
 
   emit_note (NOTE_INSN_PROLOGUE_END);
 
@@ -32972,7 +32984,7 @@ x86_output_mi_thunk (FILE *file,
 	{
 	  if (!x86_64_general_operand (delta_rtx, Pmode))
 	    {
-	      tmp = gen_rtx_REG (Pmode, R10_REG);
+	      tmp = gen_rtx_REG (Pmode, tmp_regno);
 	      emit_move_insn (tmp, delta_rtx);
 	      delta_rtx = tmp;
 	    }
@@ -32985,18 +32997,7 @@ x86_output_mi_thunk (FILE *file,
   if (vcall_offset)
     {
       rtx vcall_addr, vcall_mem, this_mem;
-      unsigned int tmp_regno;
 
-      if (TARGET_64BIT)
-	tmp_regno = R10_REG;
-      else
-	{
-	  unsigned int ccvt = ix86_get_callcvt (TREE_TYPE (function));
-	  if ((ccvt & (IX86_CALLCVT_FASTCALL | IX86_CALLCVT_THISCALL)) != 0)
-	    tmp_regno = AX_REG;
-	  else
-	    tmp_regno = CX_REG;
-	}
       tmp = gen_rtx_REG (Pmode, tmp_regno);
 
       this_mem = gen_rtx_MEM (ptr_mode, this_reg);
@@ -33071,6 +33072,15 @@ x86_output_mi_thunk (FILE *file,
     emit_jump_insn (gen_indirect_jump (fnaddr));
   else
     {
+      if (!sibcall_insn_operand (fnaddr, word_mode))
+	{
+	  tmp = gen_rtx_REG (word_mode, tmp_regno);
+	  if (GET_MODE (fnaddr) != word_mode)
+	    fnaddr = gen_rtx_ZERO_EXTEND (word_mode, fnaddr);
+	  emit_move_insn (tmp, fnaddr);
+	  fnaddr = tmp;
+	}
+
       tmp = gen_rtx_MEM (QImode, fnaddr);
       tmp = gen_rtx_CALL (VOIDmode, tmp, const0_rtx);
       tmp = emit_call_insn (tmp);

@@ -1,3 +1,326 @@
+2012-07-04  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/predicates.md (zero_extend_operand): New predicate.
+	* config/sh/sh.md (zero_extendhisi2): Simplify by using new
+	zero_extend_operand predicate.
+	(zero_extendqisi2): Likewise.
+
+2012-07-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/53321
+	* ipa.c (symtab_remove_unreachable_nodes): Partially revert r187375
+	to not call cgraph_propagate_frequency if something was changed.
+
+2012-07-04  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/53433
+	* gimple-fold.c (get_base_constructor): Do not return an
+	error_mark_node DECL_INITIAL.
+
+2012-07-04  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/53844
+	* tree-ssa-dse.c (dse_possible_dead_store_p): Properly handle
+	the loop virtual PHI.
+
+2012-07-04  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/53849
+	* tree-cfg.c (move_stmt_op): Only call add_referenced_var
+	for duplicated locals.  Use add_referenced_var_1 to avoid
+	pushing/popping cfun.
+
+2012-07-04  Kai Tietz  <ktietz@redhat.com>
+
+	* config/i386/winnt.c (i386_pe_reloc_rw_mask): New function.
+	* config/i386/i386-protos.h (i386_pe_reloc_rw_mask): Add
+	prototype.
+	* config/i386/cygming.h (TARGET_ASM_RELOC_RW_MASK): Define
+	as i386_pe_reloc_rw_mask.
+
+2012-07-04  Richard Guenther  <rguenther@suse.de>
+
+	* tree.c (find_decls_types_r): Handle TYPE_CONTEXT the same
+	as in free_lang_data_in_type.
+
+2012-07-04  Tobias Grosser <tobias@grosser.es>
+	    Michael Matz  <matz@suse.de>
+
+	* Makefile.in (OBJS): Add graphite-optimize-isl.o.
+	(graphite-optimize-isl.o): Add dependencies.
+	* common.opt (floop-nest-optimize): New flag.
+	* doc/invoke.texi (floop-nest-optimize): Document.
+	* graphite-dependences.c (compute_deps): Export.
+	* graphite-poly.h (compute_deps): Declare.
+	* graphite-optimize-isl.c: New file.
+	* graphite-poly.c (apply_poly_transforms): Run the loop
+	nest optimizer.
+	* tree-ssa-loop.c (gate_graphite_transforms): Enable graphite
+	if -floop-nest-optimize is enabled.
+
+2012-07-03  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/predicates.md (logical_and_operand): New predicate.
+	* config/sh/constraints.md (Jmb, Jmw): New constraints.
+	* config/sh/sh.md (andsi3): Move expander above insns.  Add handling
+	of 0xFFFF constant.  Use logical_and_operand predicate and
+	satisfies_constraint_Jmb, satisfies_constraint_Jmw.
+	(*andsi3_compact): Make it an insn_and_split.  Use
+	logical_and_operand predicate.  Add Jmb,Jmw alternatives.
+
+2012-07-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53826
+	* tree.c (build_zero_cst): Handle NULLPTR_TYPE.
+
+2012-07-03  Nick Clifton  <nickc@redhat.com>
+
+	* config/mep/mep.c (mep_reorg_regmove): Use
+	next_nonnote_non_debug_insn to advance to the next insn.  Do not
+	expect delete_insn to return an rtx.
+
+2012-07-03  Richard Guenther  <rguenther@suse.de>
+
+	* doc/install.texi (CLooG): Clarify how CLooG needs to be
+	configured and that it needs to be built against ISL 0.10.
+
+2012-07-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_option_override_internal): Fix wrong
+	code model string in the error message.
+
+2012-07-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/53811
+	* config/i386/i386.c (x86_output_mi_thunk): Check if fnaddr satisfies
+	sibcall_insn_operand.  Move it to a temporary register if not.
+
+2012-07-03  Andreas Schwab  <schwab@linux-m68k.org>
+
+	PR target/28896
+	* config/m68k/m68k.c (m68k_option_override): Reset stack_limit_rtx
+	if !TARGET_68020.
+
+2012-07-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/xmmintrin.h (_mm_sfence): Use __builtin_ia32_pause.
+
+2012-07-03  Roland McGrath  <mcgrathr@google.com>
+
+	* configure.ac (HAVE_AS_IX86_REP_LOCK_PREFIX): Also require that the
+	assembler accept 'rep bsf ...', 'rep bsr ...', 'rep ret' and 'rep nop'.
+	* configure: Regenerated.
+	* config/i386/i386.md (simple_return_internal_long): Use %;
+	(ctz<mode>2): Likewise.
+	(*pause): Likewise.
+
+2012-07-02  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/51244
+	* config/sh/predicates.md (t_reg_operand, negt_reg_operand): New
+	predicates.
+	* config/sh/sh-protos.h (get_t_reg_rtx): New prototype.
+	* config/sh/sh.c (get_t_reg_rtx): New function.  Use it when invoking
+	gen_branch_true and gen_branch_false.
+	* config/sh/sh.md: Use get_t_reg_rtx when invoking gen_branch_true and
+	gen_branch_false.
+	(branch_true, branch_false): Use t_reg_operand predicate.
+	(*branch_true, *branch_false): Delete.
+	(movt): Use t_reg_operand predicate.
+	(*negnegt): Use negt_reg_operand predicate and fold little and big
+	endian variants.
+	(*movtt): Use t_reg_operand and fold little and big endian variants.
+	(*movt_qi): Delete.
+
+2012-07-02  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* stmt.c (emit_case_bit_tests): Remove.
+	(expand_case): Remove expand_switch_using_bit_tests_p code.
+	* tree-switch-conversion.c (hoist_edge_and_branch_if_true): New.
+	(MAX_CASE_BIT_TESTS): Moved from stmt.c to here.
+	(lshift_cheap_p): Likewise.
+	(expand_switch_using_bit_tests_p): Likewise.
+	(struct case_bit_test): Likewise.
+	(case_bit_test_cmp): Likewise.
+	(emit_case_bit_tests): New implementation for GIMPLE.
+	(gen_inbound_check): Do not release post-dominator info here.
+	(process_switch): Reorder code.  Expand as bit tests if it
+	looks like a win.
+	(do_switchconv): Release post-dominator info here if something changed.
+	(struct gimple_opt_pass): Verify more.
+	* tree.h (expand_switch_using_bit_tests_p): Remove prototype.
+
+2012-07-02  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/38474
+	* ipa-prop.c (compute_known_type_jump_func): Put BINFO check before a
+	dynamic type change check.
+
+2012-07-02  Richard Guenther  <rguenther@suse.de>
+	    Michael Matz  <matz@suse.de>
+	    Tobias Grosser <tobias@grosser.es>
+	    Sebastian Pop <sebpop@gmail.com>
+
+	* Makefile.in: Remove PPL flags in favor of ISL ones.
+	(BACKENDLIBS): Remove PPL libs.
+	(INCLUDES): Remove PPL includes in favor of ISL ones.
+	(graphite-clast-to-gimple.o): Remove graphite-dependences.h and
+	graphite-cloog-compat.h dependencies.
+	(graphite-dependences.o): Likewise.
+	(graphite-poly.o): Likewise.
+	* configure.ac: Declare ISL vars instead of PPL ones.
+	* configure: Regenerated.
+	* doc/install.texi: Replace PPL requirement documentation with ISL one.
+	* graphite-blocking.c: Remove PPL code, add ISL equivalent.
+	* graphite-clast-to-gimple.c: Likewise.
+	* graphite-dependences.c: Likewise.
+	* graphite-interchange.c: Likewise.
+	* graphite-poly.h: Likewise.
+	* graphite-poly.c: Likewise.
+	* graphite-sese-to-poly.c: Likewise.
+	* graphite.c: Likewise.
+	* graphite-scop-detection.c: Re-arrange includes.
+	* graphite-cloog-util.c: Remove.
+	* graphite-cloog-util.h: Likewise.
+	* graphite-ppl.h: Likewise.
+	* graphite-ppl.c: Likewise.
+	* graphite-dependences.h: Likewise.
+
+2012-07-02  Richard Guenther  <rguenther@suse.de>
+
+	Merge from graphite branch
+	2011-07-21  Tobias Grosser  <tobias@grosser.es>
+
+	* Makefile.in (graphite-clast-to-gimple.o, graphite-cloog-util.o):
+	Remove graphite-cloog-util.h.
+	* graphite-clast-to-gimple.c (gcc_type_for_iv_of_clast_loop,
+	build_iv_mapping, translate_clast_user, translate_clast,
+	free_scattering, initialize_cloog_names, build_cloog_prog,
+	create_params_index): Do not use old compatibility functions.
+	(clast_name_to_index, set_cloog_options): Remove code for legacy cloog.
+	* graphite-cloog-util.c (openscop_print_cloog_matrix): Do not use old
+	compatibility functions.
+	(new_Cloog_Scattering_from_ppl_Polyhedron): Remove code for legacy
+	cloog.
+	* graphite-cloog-util.h: Remove include of graphite-cloog-util.h.
+	* graphite.c (graphite.c): Do not call outdated cloog_initialize() and
+	cloog_finalize().
+	* graphite-cloog-compat.h: Remove.
+
+	2011-08-09  Tobias Grosser <tobias@grosser.es>
+
+	* graphite-clast-to-gimple.c (new_clast_name_index): Store a copy
+	of the string, no just a reference.
+	(clast_name_index): Add a new field, that specifies if we need to free
+	the name.
+	(free_clast_name_index): If necessary, free the name string.
+	(clast_name_index_elt_info): Calculate the hash based on the string
+	content, not the memory location it is stored in.
+	(clast_name_to_level): Specify that we do not need to free the name.
+	(clast_name_to_index): Dito.
+	(clast_name_to_lb_ub): Dito.
+	(eq_clast_name_indexes): Compare the strings, not their base pointers.
+	(free_scattering): Removed.
+	(initialize_cloog_names): Renamed to add_names_to_union_domain().
+	(add_names_to_union_domain): Changed to work on a union_domain,
+	instead of a CloogNames structure.
+	(build_cloog_prog): Removed.
+	(build_cloog_union_domain): New.
+	(generate_cloog_input): New.
+	(scop_to_clast): Use CloogInput instead of CloogProgram.
+	(print_generated_program): Adapt to new scop_to_clast() and do not
+	print the CloogProgram any more.
+	(create_params_index): Removed, functionality integrated in
+	add_names_to_union_domain().
+	(gloog): Adapt to new scop_to_clast().
+	* graphite-clast-to-gimple.h (scop_to_clast): Remove.
+
+	2012-01-11  Tobias Grosser <tobias@grosser.es>
+
+	* graphite-clast-to-gimple.c (clast_name_to_index,
+	clast_name_to_lb_ub, clast_name_to_gcc): Change types.
+	(clast_to_gcc_expression): Add clast_expr_name as a new
+	case. Do not assume a clast_expr_term points always to a
+	clast_expr_name.
+	(type_for_clast_term): Do not assume a clast_expr_term points always to
+	a clast_expr_name.
+	(type_for_clast_name): New.
+	(type_for_clast_expr): Add clast_expr_name as a new case.
+
+	2011-08-03  Sebastian Pop <sebpop@gmail.com>
+
+	* graphite-cloog-util.c (new_Cloog_Domain_from_ppl_Polyhedron,
+	new_Cloog_Scattering_from_ppl_Polyhedron,
+	new_Cloog_Domain_from_ppl_Pointset_Powerset): Remove ATTRIBUTE_UNUSED.
+
+2012-07-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/53645
+	* tree-vect-generic.c (expand_vector_divmod): Use TYPE_MODE (type)
+	instead of TYPE_MODE (wider_type) as can_vec_perm_p argument.
+
+2012-07-01  Wei Guozhi  <carrot@google.com>
+
+	PR target/53447
+	* config/arm/arm-protos.h (const_ok_for_dimode_op): New prototype.
+	* config/arm/arm.c (const_ok_for_dimode_op): New function.
+	* config/arm/constraints.md (Dd): New constraint.
+	* config/arm/predicates.md (arm_adddi_operand): New predicate.
+	* config/arm/arm.md (adddi3): Extend it to handle constants.
+	(arm_adddi3): Likewise.
+	(addsi3_carryin_<optab>): Extend it to handle sbc case.
+	(addsi3_carryin_alt2_<optab>): Likewise.
+	* config/arm/neon.md (adddi3_neon): Extend it to handle constants.
+
+2012-06-30  Nathan Sidwell  <nathan@acm.org>
+
+	* coverage.c (bbg_file_stamp): New.
+	(read_counts_file): Merge incoming stamp with bbg_file_stamp.
+	(build_info): Write bbg_file_stamp.
+	(coverage_init): Initialize bbg_file_stamp.  Read counts file
+	before writing graph header.
+	(coverage_finish): Don't unlink the data file if we can generate a
+	unique file stamp.
+	* tree.h (crc32_unsigned): Declare.
+	* tree.c (crc32_unsigned_bits): New, broken out of ...
+	(crc32_byte): ... here.  Use it.
+	(crc32_unsigned): New.
+
+2012-06-29  Cary Coutant  <ccoutant@google.com>
+
+	* dwarf2out.c (add_pubname_string): Don't check for want_pubnames.
+	(gen_subprogram_die): Don't add pubname if want_pubnames is false.
+	(gen_variable_die): Likewise.
+	(gen_namespace_die): Likewise.
+
+2012-06-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-eh.c (lower_try_finally_switch): Really put the location of the
+	last statement of the finally block onto the switch.
+
+2012-06-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/53539
+	* config/i386/gnu-user64.h (WCHAR_TYPE): Use "int" only for
+	TARGET_LP64.
+
+2012-06-29  Sterling Augustine  <saugustine@google.com>
+
+	* dwarf2out.c (add_pubname): Add comment.
+	(add_pubtype): Fix indentation.
+	(gen_enumeration_type_die): Likewise.
+
+2012-06-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-vect-generic.c (expand_vector_divmod): For even/odd
+	widening multiply, put even always as first argument to VEC_PERM_EXPR.
+
+2012-06-29  Richard Henderson  <rth@redhat.com>
+
+	* tree-vect-generic.c: Include target.h.
+	(expand_vector_divmod): Use builtin_mul_widen_even/odd if supported.
+	* Makefile.in (tree-vect-generic.o): Update.
+
 2012-06-29  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* configure.ac: Remove special gtfiles case for C.
@@ -98,9 +421,9 @@
 	* expr.c (convert_move): Latch mem integer inputs into a
 	register before expanding a multi-instructions sequence.
 
-2012-06-28  Alexandre Oliva  <aoliva@redhat.com>,
-            Uros Bizjak  <ubizjak@gmail.com>,
-            Jakub Jelinek  <jakub@redhat.com>
+2012-06-28  Alexandre Oliva  <aoliva@redhat.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+	    Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/53706
 	PR debug/47624
@@ -185,7 +508,7 @@
 
 	* config/i386/i386.c (ix86_rtx_costs): Use standard_sse_constant_p
 	and don't fall thru from standard_80387_constant_p to the memory
-	fallback,
+	fallback.
 
 2012-06-26  Richard Henderson  <rth@redhat.com>
 
@@ -255,8 +578,7 @@
 
 2012-06-26  Matt Turner  <mattst88@gmail.com>
 
-	* doc/extend.texi (__builtin_arm_tinsrb): Add missing second
-	parameter.
+	* doc/extend.texi (__builtin_arm_tinsrb): Add missing second parameter.
 	(__builtin_arm_tinsrh): Likewise.
 	(__builtin_arm_tinsrw): Likewise.
 	(__builtin_arm_wsadb): Add missing v2si parameter.
@@ -404,7 +726,7 @@
 	(neon_vld1_dupv2di): New, fixes vld1q_dup_s64.
 
 2012-06-25  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
-            James Greenhalgh  <james.greenhalgh@arm.com>
+	    James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/arm/arm.h (TARGET_CPU_CPP_BUILTINS): Add new built-ins.
 	(TARGET_FMA): New macro.
@@ -600,8 +922,7 @@
 
 2012-06-24  Richard Sandiford  <rdsandiford@googlemail.com>
 
-	* config/mips/mips.c (mips_process_sync_loop): Add missing
-	enum cast.
+	* config/mips/mips.c (mips_process_sync_loop): Add missing enum cast.
 
 2012-06-23  Richard Henderson  <rth@redhat.com>
 
@@ -703,7 +1024,7 @@
 
 	Merge from graphite branch
 	2011-08-10  Sebastian Pop <sebpop@gmail.com>
-    
+
 	* graphite-sese-to-poly.c (build_scop_drs): Fix memory leak.
 
 	2012-01-13  Tobias Grosser  <tobias@grosser.es>
@@ -771,8 +1092,7 @@
 
 	PR debug/53671
 	PR debug/49888
-	* alias.c (memrefs_conflict_p): Improve handling of AND for
-	alignment.
+	* alias.c (memrefs_conflict_p): Improve handling of AND for alignment.
 
 2012-06-21  Alexandre Oliva  <aoliva@redhat.com>
 
@@ -792,8 +1112,8 @@
 	created in c_push_function_context.  Always clear out the
 	x_cur_stmt_list field of the restored language function.
 
-2012-06-21   Sterling Augustine  <saugustine@google.com>
-             Cary Coutant  <ccoutant@google.com>
+2012-06-21  Sterling Augustine  <saugustine@google.com>
+	    Cary Coutant  <ccoutant@google.com>
 
 	* dwarf2out.c (is_cu_die, is_namespace_die, is_class_die,
 	add_AT_pubnames, add_enumerator_pubname, want_pubnames): New functions.
@@ -2323,7 +2643,7 @@
 	* tree-data-ref.c (struct rdg_vertex_info): Remove.
 	(rdg_vertex_for_stmt): Simplify using gimple_uid.
 	(create_rdg_vertices): Pass loop argument, remove stmt to RDG index
-	hashtable.   Record stmt data-references.
+	hashtable.  Record stmt data-references.
 	(hash_stmt_vertex_info): Remove.
 	(eq_stmt_vertex_info): Likewise.
 	(hash_stmt_vertex_del): Likewise.
@@ -4082,7 +4402,7 @@
 	(enable_warning_as_error): Do not special case Wuninitialized.
 	* optc-gen.awk: Add sanity checks.
 
-2012-05-17  Jan Hubicka   <jh@suse.cz>
+2012-05-17  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-reference.c (is_proper_for_analysis): Do not check flags
 	that might change as result of global optimization.

@@ -2,9 +2,18 @@
 
 int x[N][N], y[N];
 
+void abort (void);
+
 int foo(void)
 {
   int i, j;
+
+  for (i = 0; i < N; i++)
+    y[i] = i;
+
+  for (i = 0; i < N; i++)
+    for (j = 0; j < N; j++)
+      x[i][j] = i + j;
 
   for (i = 0; i < N; i++)
     {
@@ -27,13 +36,16 @@ int foo(void)
 
 int main(void)
 {
-  foo();
+  if (168 != foo())
+    abort ();
 
   return 0;
 }
 
 /* Check that parallel code generation part make the right answer.  */
-/* { dg-final { scan-tree-dump-times "2 loops carried no dependency" 1 "graphite" } } */
+/* { dg-final { scan-tree-dump-times "1 loops carried no dependency" 1 "graphite" } } */
+/* { dg-final { scan-tree-dump-times "3 loops carried no dependency" 1 "graphite" } } */
+/* { dg-final { scan-tree-dump-times "5 loops carried no dependency" 1 "graphite" } } */
 /* { dg-final { cleanup-tree-dump "graphite" } } */
 /* { dg-final { scan-tree-dump-times "loopfn.0" 5 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "loopfn.1" 5 "optimized" } } */

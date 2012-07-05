@@ -1874,7 +1874,7 @@ prepare_cbranch_operands (rtx *operands, enum machine_mode mode,
 void
 expand_cbranchsi4 (rtx *operands, enum rtx_code comparison, int probability)
 {
-  rtx (*branch_expander) (rtx) = gen_branch_true;
+  rtx (*branch_expander) (rtx, rtx) = gen_branch_true;
   rtx jump;
 
   comparison = prepare_cbranch_operands (operands, SImode, comparison);
@@ -1888,7 +1888,7 @@ expand_cbranchsi4 (rtx *operands, enum rtx_code comparison, int probability)
   emit_insn (gen_rtx_SET (VOIDmode, gen_rtx_REG (SImode, T_REG),
                           gen_rtx_fmt_ee (comparison, SImode,
                                           operands[1], operands[2])));
-  jump = emit_jump_insn (branch_expander (operands[3]));
+  jump = emit_jump_insn (branch_expander (operands[3], get_t_reg_rtx ()));
   if (probability >= 0)
     add_reg_note (jump, REG_BR_PROB, GEN_INT (probability));
 
@@ -1941,7 +1941,7 @@ expand_cbranchdi4 (rtx *operands, enum rtx_code comparison)
       if (TARGET_CMPEQDI_T)
 	{
 	  emit_insn (gen_cmpeqdi_t (operands[1], operands[2]));
-	  emit_jump_insn (gen_branch_true (operands[3]));
+	  emit_jump_insn (gen_branch_true (operands[3], get_t_reg_rtx ()));
 	  return true;
 	}
       msw_skip = NE;
@@ -1969,7 +1969,7 @@ expand_cbranchdi4 (rtx *operands, enum rtx_code comparison)
       if (TARGET_CMPEQDI_T)
 	{
 	  emit_insn (gen_cmpeqdi_t (operands[1], operands[2]));
-	  emit_jump_insn (gen_branch_false (operands[3]));
+	  emit_jump_insn (gen_branch_false (operands[3], get_t_reg_rtx ()));
 	  return true;
 	}
       msw_taken = NE;
@@ -2304,9 +2304,9 @@ sh_emit_compare_and_branch (rtx *operands, enum machine_mode mode)
     sh_emit_set_t_insn (gen_ieee_ccmpeqsf_t (op0, op1), mode);
 
   if (branch_code == code)
-    emit_jump_insn (gen_branch_true (operands[3]));
+    emit_jump_insn (gen_branch_true (operands[3], get_t_reg_rtx ()));
   else
-    emit_jump_insn (gen_branch_false (operands[3]));
+    emit_jump_insn (gen_branch_false (operands[3], get_t_reg_rtx ()));
 }
 
 void
@@ -2340,7 +2340,7 @@ sh_emit_compare_and_set (rtx *operands, enum machine_mode mode)
             {
               lab = gen_label_rtx ();
               sh_emit_scc_to_t (EQ, op0, op1);
-              emit_jump_insn (gen_branch_true (lab));
+              emit_jump_insn (gen_branch_true (lab, get_t_reg_rtx ()));
               code = GT;
            }
           else
@@ -3360,7 +3360,7 @@ gen_shifty_op (int code, rtx *operands)
       if (code == LSHIFTRT)
 	{
 	  emit_insn (gen_rotlsi3_1 (operands[0], operands[0]));
-	  emit_insn (gen_movt (operands[0]));
+	  emit_insn (gen_movt (operands[0], get_t_reg_rtx ()));
 	  return;
 	}
       else if (code == ASHIFT)
@@ -9504,6 +9504,15 @@ reg_unused_after (rtx reg, rtx insn)
 
 #include "ggc.h"
 
+static GTY(()) rtx t_reg_rtx;
+rtx
+get_t_reg_rtx (void)
+{
+  if (! t_reg_rtx)
+    t_reg_rtx = gen_rtx_REG (SImode, T_REG);
+  return t_reg_rtx;
+}
+
 static GTY(()) rtx fpscr_rtx;
 rtx
 get_fpscr_rtx (void)
@@ -12049,7 +12058,7 @@ sh_expand_t_scc (rtx operands[])
     result = gen_reg_rtx (SImode);
   val = INTVAL (op1);
   if ((code == EQ && val == 1) || (code == NE && val == 0))
-    emit_insn (gen_movt (result));
+    emit_insn (gen_movt (result, get_t_reg_rtx ()));
   else if ((code == EQ && val == 0) || (code == NE && val == 1))
     emit_insn (gen_movnegt (result));
   else if (code == EQ || code == NE)
