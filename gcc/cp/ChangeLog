@@ -1,5 +1,9 @@
 2012-07-05  Jason Merrill  <jason@redhat.com>
 
+	PR c++/53039
+	* pt.c (arg_from_parm_pack_p): Go back to using same_type_p or
+	cp_tree_equal.
+
 	* cp-tree.h (TEMPLATE_PARM_NUM_SIBLINGS): Remove.
 	(struct template_parm_index_s): Remove num_siblings.
 	* pt.c (fixup_template_parms, fixup_template_parm_index): Remove.
