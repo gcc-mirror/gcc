@@ -743,7 +743,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 				      ? "unsigned long long"
 				      : "signed long long"));
 		else if (TYPE_PRECISION (node) >= CHAR_TYPE_SIZE
-			 && exact_log2 (TYPE_PRECISION (node)))
+			 && exact_log2 (TYPE_PRECISION (node)) != -1)
 		  {
 		    pp_string (buffer, (TYPE_UNSIGNED (node) ? "uint" : "int"));
 		    pp_decimal_int (buffer, TYPE_PRECISION (node));
