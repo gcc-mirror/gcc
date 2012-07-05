@@ -1,5 +1,29 @@
-2012-07-04  Richard Guenther  <rguenther@suse.de>
+2012-07-05  Pat Haugen <pthaugen@us.ibm.com>
 
+	Backport from mainline
+	2012-05-24  Pat Haugen <pthaugen@us.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Change
+	rs6000_sched_costly_dep default to true_store_to_load_dep_costly.
+	(adjacent_mem_locations): Move some code to and call...
+	(get_memref_parts): ...new function.
+	(mem_locations_overlap): New function.
+	(rs6000_adjust_priority): Adjust calls to is_load_insn/is_store_insn.
+	(is_mem_ref): Rename to...
+	(find_mem_ref): ...this. Return MEM rtx.
+	(get_store_dest): Remove function.
+	(is_load_insn1, is_load_insn, is_store_insn1, is_store_insn): Add
+	new parameter and adjust calls.
+	(rs6000_is_costly_dependence): Update calls for extra arg. Make sure
+	mem refs overlap for true_store_to_load_dep_costly.
+	(rs6000_sched_reorder2): Update calls for extra arg. Adjust args
+	passed to adjacent_mem_locations.
+	(is_costly_group): Walk resolved dependency list.
+	(force_new_group): Emit group ending nop for Power6/Power7.
+	* config/rs6000/rs6000.md (UNSPEC_GRP_END_NOP): New enum value.
+	(group_ending_nop): New define_insn.
+
+2012-07-04  Richard Guenther  <rguenther@suse.de> 
 	PR middle-end/53433
 	* gimple-fold.c (get_base_constructor): Do not return an
 	error_mark_node DECL_INITIAL.

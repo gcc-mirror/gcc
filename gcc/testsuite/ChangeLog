@@ -1,3 +1,12 @@
+2012-07-05  Pat Haugen <pthaugen@us.ibm.com>
+
+	Backport from mainline
+	2012-05-24  Pat Haugen <pthaugen@us.ibm.com>
+
+	* gcc.target/powerpc/lhs-1.c: New.
+	* gcc.target/powerpc/lhs-2.c: New.
+	* gcc.target/powerpc/lhs-3.c: New.
+
 2012-07-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/recursive_call.adb: New test.
