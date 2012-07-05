@@ -1,3 +1,12 @@
+2012-07-05  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* expr.c (try_casesi): Remove bogus ATTRIBUTE_UNUSED markers.
+	* stmt.c (dump_case_nodes): New.
+	(expand_case): Split out code generation parts into new functions.
+	(expand_switch_as_decision_tree_p): Split out from expand_case.
+	(emit_case_decision_tree): Likewise.
+	(emit_case_dispatch_table): Likewise.
+
 2012-07-05  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
 
 	* config/arm/iterators.md (SDF): New mode iterator.
