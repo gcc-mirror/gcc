@@ -16825,30 +16825,6 @@ gen_call_site_die (tree decl, dw_die_ref subr_die,
   return die;
 }
 
-/* Return true if an abstract instance of function DECL can be generated in
-   the debug information.  */
-
-static bool
-function_possibly_abstracted_p (tree decl)
-{
-  /* An abstract instance of DECL can be generated if DECL can be inlined or
-     is nested in a function that can be inlined, recursively.  */
-  while (decl)
-    {
-      if (cgraph_function_possibly_inlined_p (decl))
-	return true;
-      decl = decl_function_context (decl);
-      /* Do not consider Fortran subroutines as nested in the main program.  */
-      if (decl
-	  && is_fortran ()
-	  && !strcmp (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)),
-		      "MAIN__"))
-        break;
-    }
-
-  return false;
-}
-
 /* Generate a DIE to represent a declared function (either file-scope or
    block-local).  */
 
@@ -17003,14 +16979,14 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
     {
       if (DECL_DECLARED_INLINE_P (decl))
 	{
-	  if (function_possibly_abstracted_p (decl))
+	  if (cgraph_function_possibly_inlined_p (decl))
 	    add_AT_unsigned (subr_die, DW_AT_inline, DW_INL_declared_inlined);
 	  else
 	    add_AT_unsigned (subr_die, DW_AT_inline, DW_INL_declared_not_inlined);
 	}
       else
 	{
-	  if (function_possibly_abstracted_p (decl))
+	  if (cgraph_function_possibly_inlined_p (decl))
 	    add_AT_unsigned (subr_die, DW_AT_inline, DW_INL_inlined);
 	  else
 	    add_AT_unsigned (subr_die, DW_AT_inline, DW_INL_not_inlined);
@@ -17936,8 +17912,6 @@ gen_inlined_subroutine_die (tree stmt, dw_die_ref context_die, int depth)
   gcc_assert (! BLOCK_ABSTRACT (stmt));
 
   decl = block_ultimate_origin (stmt);
-  if (DECL_IGNORED_P (decl))
-    return;
 
   /* Emit info for the abstract instance first, if we haven't yet.  We
      must emit this even if the block is abstract, otherwise when we
@@ -18882,7 +18856,6 @@ gen_block_die (tree stmt, dw_die_ref context_die, int depth)
 
 /* Process variable DECL (or variable with origin ORIGIN) within
    block STMT and add it to CONTEXT_DIE.  */
-
 static void
 process_scope_var (tree stmt, tree decl, tree origin, dw_die_ref context_die)
 {
@@ -18900,15 +18873,8 @@ process_scope_var (tree stmt, tree decl, tree origin, dw_die_ref context_die)
   if (die != NULL && die->die_parent == NULL)
     add_child_die (context_die, die);
   else if (TREE_CODE (decl_or_origin) == IMPORTED_DECL)
-    dwarf2out_imported_module_or_decl_1 (decl_or_origin,
-					 DECL_NAME (decl_or_origin),
+    dwarf2out_imported_module_or_decl_1 (decl_or_origin, DECL_NAME (decl_or_origin),
 					 stmt, context_die);
-  /* Do not emit concrete instances of abstracted nested functions within
-     concrete instances of parent functions.  */
-  else if (TREE_CODE (decl_or_origin) == FUNCTION_DECL
-	   && die
-	   && get_AT (die, DW_AT_inline))
-    ;
   else
     gen_decl_die (decl, origin, context_die);
 }
@@ -19258,11 +19224,11 @@ gen_decl_die (tree decl, tree origin, dw_die_ref context_die)
 				     ? DECL_ORIGIN (origin)
 				     : DECL_ABSTRACT_ORIGIN (decl));
 
-      /* If we're emitting an out-of-line copy of an abstracted function,
+      /* If we're emitting an out-of-line copy of an inline function,
 	 emit info for the abstract instance and set up to refer to it.  */
-      else if (!DECL_ABSTRACT (decl)
-	       && function_possibly_abstracted_p (decl)
-	       && !class_or_namespace_scope_p (context_die)
+      else if (cgraph_function_possibly_inlined_p (decl)
+	       && ! DECL_ABSTRACT (decl)
+	       && ! class_or_namespace_scope_p (context_die)
 	       /* dwarf2out_abstract_function won't emit a die if this is just
 		  a declaration.  We must avoid setting DECL_ABSTRACT_ORIGIN in
 		  that case, because that works only if we have a die.  */
@@ -22263,19 +22229,8 @@ dwarf2out_finish (const char *filename)
 	{
 	  dw_die_ref origin = get_AT_ref (die, DW_AT_abstract_origin);
 
-	  if (origin)
-	    {
-	      /* Find the first non-abstract parent instance.  */
-	      do
-		origin = origin->die_parent;
-	      while (origin
-		     && (origin->die_tag != DW_TAG_subprogram
-			 || get_AT (origin, DW_AT_inline)));
-	      if (origin)
-		add_child_die (origin, die);
-	      else
-		add_child_die (comp_unit_die (), die);
-	    }
+	  if (origin && origin->die_parent)
+	    add_child_die (origin->die_parent, die);
 	  else if (is_cu_die (die))
 	    ;
 	  else if (seen_error ())
