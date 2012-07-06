@@ -646,7 +646,6 @@ stage1_languages
 extra_host_libiberty_configure_flags
 clooginc
 clooglibs
-extra_cloog_isl_configure_flags
 islinc
 isllibs
 poststage1_ldflags
@@ -5675,17 +5674,14 @@ fi
   if test "x${with_isl_lib}" != x; then
     isllibs="-L$with_isl_lib"
   fi
-  extra_cloog_isl_configure_flags='--with-isl=system'
         if test "x${islinc}" = x && test "x${isllibs}" = x \
      && test -d ${srcdir}/isl; then
     isllibs='-L$$r/$(HOST_SUBDIR)/isl/'"$lt_cv_objdir"' '
     islinc='-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include'
-    extra_cloog_isl_configure_flags='--with-isl-builddir=$$r/$(HOST_DIR)/isl'
     ENABLE_ISL_CHECK=no
   fi
 
   isllibs="${isllibs} -lisl"
-
 
 
 

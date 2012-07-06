@@ -13904,7 +13904,7 @@ configure-cloog:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	test ! -f $(HOST_SUBDIR)/cloog/Makefile || exit 0; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/cloog ; \
-	$(HOST_EXPORTS) CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
+	$(HOST_EXPORTS) CPPFLAGS="$(HOST_GMPINC) $(HOST_ISLINC) $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/gmp/.libs -L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
 	echo Configuring in $(HOST_SUBDIR)/cloog; \
 	cd "$(HOST_SUBDIR)/cloog" || exit 1; \
 	case $(srcdir) in \
@@ -13916,7 +13916,7 @@ configure-cloog:
 	libsrcdir="$$s/cloog"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} --disable-shared --with-gmp-library=$$r/$(HOST_SUBDIR)/gmp/.libs --with-gmp-include=$$r/$(HOST_SUBDIR)/gmp --with-bits=gmp --with-isl=system \
+	  --target=${target_alias} $${srcdiroption} --disable-shared --with-gmp=system --with-bits=gmp --with-isl=system \
 	  || exit 1
 @endif cloog
 
@@ -13936,7 +13936,7 @@ configure-stage1-cloog:
 	$(HOST_EXPORTS) \
 	CFLAGS="$(STAGE1_CFLAGS)"; export CFLAGS; \
 	CXXFLAGS="$(STAGE1_CXXFLAGS)"; export CXXFLAGS; \
-	LIBCFLAGS="$(LIBCFLAGS)"; export LIBCFLAGS; CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
+	LIBCFLAGS="$(LIBCFLAGS)"; export LIBCFLAGS; CPPFLAGS="$(HOST_GMPINC) $(HOST_ISLINC) $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/gmp/.libs -L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
 	echo Configuring stage 1 in $(HOST_SUBDIR)/cloog ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/cloog ; \
 	cd $(HOST_SUBDIR)/cloog || exit 1; \
@@ -13951,7 +13951,7 @@ configure-stage1-cloog:
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption} \
 	  $(STAGE1_CONFIGURE_FLAGS) \
-	  --disable-shared --with-gmp-library=$$r/$(HOST_SUBDIR)/gmp/.libs --with-gmp-include=$$r/$(HOST_SUBDIR)/gmp --with-bits=gmp --with-isl=system
+	  --disable-shared --with-gmp=system --with-bits=gmp --with-isl=system
 @endif cloog-bootstrap
 
 .PHONY: configure-stage2-cloog maybe-configure-stage2-cloog
@@ -13969,7 +13969,7 @@ configure-stage2-cloog:
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	CFLAGS="$(STAGE2_CFLAGS)"; export CFLAGS; \
 	CXXFLAGS="$(STAGE2_CXXFLAGS)"; export CXXFLAGS; \
-	LIBCFLAGS="$(STAGE2_CFLAGS)"; export LIBCFLAGS; CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
+	LIBCFLAGS="$(STAGE2_CFLAGS)"; export LIBCFLAGS; CPPFLAGS="$(HOST_GMPINC) $(HOST_ISLINC) $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/gmp/.libs -L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
 	echo Configuring stage 2 in $(HOST_SUBDIR)/cloog ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/cloog ; \
 	cd $(HOST_SUBDIR)/cloog || exit 1; \
@@ -13985,7 +13985,7 @@ configure-stage2-cloog:
 	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGE2_CONFIGURE_FLAGS) \
-	  --disable-shared --with-gmp-library=$$r/$(HOST_SUBDIR)/gmp/.libs --with-gmp-include=$$r/$(HOST_SUBDIR)/gmp --with-bits=gmp --with-isl=system
+	  --disable-shared --with-gmp=system --with-bits=gmp --with-isl=system
 @endif cloog-bootstrap
 
 .PHONY: configure-stage3-cloog maybe-configure-stage3-cloog
@@ -14003,7 +14003,7 @@ configure-stage3-cloog:
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	CFLAGS="$(STAGE3_CFLAGS)"; export CFLAGS; \
 	CXXFLAGS="$(STAGE3_CXXFLAGS)"; export CXXFLAGS; \
-	LIBCFLAGS="$(STAGE3_CFLAGS)"; export LIBCFLAGS; CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
+	LIBCFLAGS="$(STAGE3_CFLAGS)"; export LIBCFLAGS; CPPFLAGS="$(HOST_GMPINC) $(HOST_ISLINC) $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/gmp/.libs -L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
 	echo Configuring stage 3 in $(HOST_SUBDIR)/cloog ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/cloog ; \
 	cd $(HOST_SUBDIR)/cloog || exit 1; \
@@ -14019,7 +14019,7 @@ configure-stage3-cloog:
 	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGE3_CONFIGURE_FLAGS) \
-	  --disable-shared --with-gmp-library=$$r/$(HOST_SUBDIR)/gmp/.libs --with-gmp-include=$$r/$(HOST_SUBDIR)/gmp --with-bits=gmp --with-isl=system
+	  --disable-shared --with-gmp=system --with-bits=gmp --with-isl=system
 @endif cloog-bootstrap
 
 .PHONY: configure-stage4-cloog maybe-configure-stage4-cloog
@@ -14037,7 +14037,7 @@ configure-stage4-cloog:
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	CFLAGS="$(STAGE4_CFLAGS)"; export CFLAGS; \
 	CXXFLAGS="$(STAGE4_CXXFLAGS)"; export CXXFLAGS; \
-	LIBCFLAGS="$(STAGE4_CFLAGS)"; export LIBCFLAGS; CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
+	LIBCFLAGS="$(STAGE4_CFLAGS)"; export LIBCFLAGS; CPPFLAGS="$(HOST_GMPINC) $(HOST_ISLINC) $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/gmp/.libs -L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
 	echo Configuring stage 4 in $(HOST_SUBDIR)/cloog ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/cloog ; \
 	cd $(HOST_SUBDIR)/cloog || exit 1; \
@@ -14053,7 +14053,7 @@ configure-stage4-cloog:
 	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGE4_CONFIGURE_FLAGS) \
-	  --disable-shared --with-gmp-library=$$r/$(HOST_SUBDIR)/gmp/.libs --with-gmp-include=$$r/$(HOST_SUBDIR)/gmp --with-bits=gmp --with-isl=system
+	  --disable-shared --with-gmp=system --with-bits=gmp --with-isl=system
 @endif cloog-bootstrap
 
 .PHONY: configure-stageprofile-cloog maybe-configure-stageprofile-cloog
@@ -14071,7 +14071,7 @@ configure-stageprofile-cloog:
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	CFLAGS="$(STAGEprofile_CFLAGS)"; export CFLAGS; \
 	CXXFLAGS="$(STAGEprofile_CXXFLAGS)"; export CXXFLAGS; \
-	LIBCFLAGS="$(STAGEprofile_CFLAGS)"; export LIBCFLAGS; CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
+	LIBCFLAGS="$(STAGEprofile_CFLAGS)"; export LIBCFLAGS; CPPFLAGS="$(HOST_GMPINC) $(HOST_ISLINC) $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/gmp/.libs -L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
 	echo Configuring stage profile in $(HOST_SUBDIR)/cloog ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/cloog ; \
 	cd $(HOST_SUBDIR)/cloog || exit 1; \
@@ -14087,7 +14087,7 @@ configure-stageprofile-cloog:
 	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGEprofile_CONFIGURE_FLAGS) \
-	  --disable-shared --with-gmp-library=$$r/$(HOST_SUBDIR)/gmp/.libs --with-gmp-include=$$r/$(HOST_SUBDIR)/gmp --with-bits=gmp --with-isl=system
+	  --disable-shared --with-gmp=system --with-bits=gmp --with-isl=system
 @endif cloog-bootstrap
 
 .PHONY: configure-stagefeedback-cloog maybe-configure-stagefeedback-cloog
@@ -14105,7 +14105,7 @@ configure-stagefeedback-cloog:
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	CFLAGS="$(STAGEfeedback_CFLAGS)"; export CFLAGS; \
 	CXXFLAGS="$(STAGEfeedback_CXXFLAGS)"; export CXXFLAGS; \
-	LIBCFLAGS="$(STAGEfeedback_CFLAGS)"; export LIBCFLAGS; CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
+	LIBCFLAGS="$(STAGEfeedback_CFLAGS)"; export LIBCFLAGS; CPPFLAGS="$(HOST_GMPINC) $(HOST_ISLINC) $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/gmp/.libs -L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
 	echo Configuring stage feedback in $(HOST_SUBDIR)/cloog ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/cloog ; \
 	cd $(HOST_SUBDIR)/cloog || exit 1; \
@@ -14121,7 +14121,7 @@ configure-stagefeedback-cloog:
 	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGEfeedback_CONFIGURE_FLAGS) \
-	  --disable-shared --with-gmp-library=$$r/$(HOST_SUBDIR)/gmp/.libs --with-gmp-include=$$r/$(HOST_SUBDIR)/gmp --with-bits=gmp --with-isl=system
+	  --disable-shared --with-gmp=system --with-bits=gmp --with-isl=system
 @endif cloog-bootstrap
 
 
@@ -14139,7 +14139,7 @@ maybe-all-cloog: all-cloog
 all-cloog: configure-cloog
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
+	$(HOST_EXPORTS) CPPFLAGS="$(HOST_GMPINC) $(HOST_ISLINC) $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/gmp/.libs -L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
 	(cd $(HOST_SUBDIR)/cloog && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) CPPFLAGS="$$CPPFLAGS" LDFLAGS="$$LDFLAGS" V=1 \
 		$(TARGET-cloog))
@@ -14160,7 +14160,7 @@ all-stage1-cloog: configure-stage1-cloog
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGE1_TFLAGS)"; \
-	$(HOST_EXPORTS) CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
+	$(HOST_EXPORTS) CPPFLAGS="$(HOST_GMPINC) $(HOST_ISLINC) $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/gmp/.libs -L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
 	cd $(HOST_SUBDIR)/cloog && \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE1_CFLAGS)" \
@@ -14202,7 +14202,7 @@ all-stage2-cloog: configure-stage2-cloog
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGE2_TFLAGS)"; \
 	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS) CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
+	$(POSTSTAGE1_HOST_EXPORTS) CPPFLAGS="$(HOST_GMPINC) $(HOST_ISLINC) $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/gmp/.libs -L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
 	cd $(HOST_SUBDIR)/cloog && \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE2_CFLAGS)" \
@@ -14245,7 +14245,7 @@ all-stage3-cloog: configure-stage3-cloog
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGE3_TFLAGS)"; \
 	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS) CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
+	$(POSTSTAGE1_HOST_EXPORTS) CPPFLAGS="$(HOST_GMPINC) $(HOST_ISLINC) $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/gmp/.libs -L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
 	cd $(HOST_SUBDIR)/cloog && \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE3_CFLAGS)" \
@@ -14288,7 +14288,7 @@ all-stage4-cloog: configure-stage4-cloog
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGE4_TFLAGS)"; \
 	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS) CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
+	$(POSTSTAGE1_HOST_EXPORTS) CPPFLAGS="$(HOST_GMPINC) $(HOST_ISLINC) $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/gmp/.libs -L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
 	cd $(HOST_SUBDIR)/cloog && \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE4_CFLAGS)" \
@@ -14331,7 +14331,7 @@ all-stageprofile-cloog: configure-stageprofile-cloog
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGEprofile_TFLAGS)"; \
 	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS) CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
+	$(POSTSTAGE1_HOST_EXPORTS) CPPFLAGS="$(HOST_GMPINC) $(HOST_ISLINC) $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/gmp/.libs -L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
 	cd $(HOST_SUBDIR)/cloog && \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEprofile_CFLAGS)" \
@@ -14374,7 +14374,7 @@ all-stagefeedback-cloog: configure-stagefeedback-cloog
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGEfeedback_TFLAGS)"; \
 	$(HOST_EXPORTS) \
-	$(POSTSTAGE1_HOST_EXPORTS) CPPFLAGS="-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
+	$(POSTSTAGE1_HOST_EXPORTS) CPPFLAGS="$(HOST_GMPINC) $(HOST_ISLINC) $$CPPFLAGS"; export CPPFLAGS; LDFLAGS="-L$$r/$(HOST_SUBDIR)/gmp/.libs -L$$r/$(HOST_SUBDIR)/isl/.libs $$LDFLAGS"; export LDFLAGS;  \
 	cd $(HOST_SUBDIR)/cloog && \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEfeedback_CFLAGS)" \
