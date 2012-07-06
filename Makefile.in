@@ -13041,7 +13041,7 @@ configure-isl:
 	libsrcdir="$$s/isl"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} --disable-shared --with-gmp-library=$$r/$(HOST_SUBDIR)/gmp/.libs --with-gmp-include=$$r/$(HOST_SUBDIR)/gmp --with-bits=gmp \
+	  --target=${target_alias} $${srcdiroption} --disable-shared @extra_isl_gmp_configure_flags@ \
 	  || exit 1
 @endif isl
 
@@ -13076,7 +13076,7 @@ configure-stage1-isl:
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption} \
 	  $(STAGE1_CONFIGURE_FLAGS) \
-	  --disable-shared --with-gmp-library=$$r/$(HOST_SUBDIR)/gmp/.libs --with-gmp-include=$$r/$(HOST_SUBDIR)/gmp --with-bits=gmp
+	  --disable-shared @extra_isl_gmp_configure_flags@
 @endif isl-bootstrap
 
 .PHONY: configure-stage2-isl maybe-configure-stage2-isl
@@ -13110,7 +13110,7 @@ configure-stage2-isl:
 	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGE2_CONFIGURE_FLAGS) \
-	  --disable-shared --with-gmp-library=$$r/$(HOST_SUBDIR)/gmp/.libs --with-gmp-include=$$r/$(HOST_SUBDIR)/gmp --with-bits=gmp
+	  --disable-shared @extra_isl_gmp_configure_flags@
 @endif isl-bootstrap
 
 .PHONY: configure-stage3-isl maybe-configure-stage3-isl
@@ -13144,7 +13144,7 @@ configure-stage3-isl:
 	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGE3_CONFIGURE_FLAGS) \
-	  --disable-shared --with-gmp-library=$$r/$(HOST_SUBDIR)/gmp/.libs --with-gmp-include=$$r/$(HOST_SUBDIR)/gmp --with-bits=gmp
+	  --disable-shared @extra_isl_gmp_configure_flags@
 @endif isl-bootstrap
 
 .PHONY: configure-stage4-isl maybe-configure-stage4-isl
@@ -13178,7 +13178,7 @@ configure-stage4-isl:
 	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGE4_CONFIGURE_FLAGS) \
-	  --disable-shared --with-gmp-library=$$r/$(HOST_SUBDIR)/gmp/.libs --with-gmp-include=$$r/$(HOST_SUBDIR)/gmp --with-bits=gmp
+	  --disable-shared @extra_isl_gmp_configure_flags@
 @endif isl-bootstrap
 
 .PHONY: configure-stageprofile-isl maybe-configure-stageprofile-isl
@@ -13212,7 +13212,7 @@ configure-stageprofile-isl:
 	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGEprofile_CONFIGURE_FLAGS) \
-	  --disable-shared --with-gmp-library=$$r/$(HOST_SUBDIR)/gmp/.libs --with-gmp-include=$$r/$(HOST_SUBDIR)/gmp --with-bits=gmp
+	  --disable-shared @extra_isl_gmp_configure_flags@
 @endif isl-bootstrap
 
 .PHONY: configure-stagefeedback-isl maybe-configure-stagefeedback-isl
@@ -13246,7 +13246,7 @@ configure-stagefeedback-isl:
 	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGEfeedback_CONFIGURE_FLAGS) \
-	  --disable-shared --with-gmp-library=$$r/$(HOST_SUBDIR)/gmp/.libs --with-gmp-include=$$r/$(HOST_SUBDIR)/gmp --with-bits=gmp
+	  --disable-shared @extra_isl_gmp_configure_flags@
 @endif isl-bootstrap
 
 
@@ -13266,7 +13266,7 @@ all-isl: configure-isl
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS)  \
 	(cd $(HOST_SUBDIR)/isl && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) V=1 \
 		$(TARGET-isl))
 @endif isl
 
@@ -13294,7 +13294,7 @@ all-stage1-isl: configure-stage1-isl
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS)   \
+		$(EXTRA_HOST_FLAGS)  V=1 \
 		TFLAGS="$(STAGE1_TFLAGS)" \
 		$(TARGET-stage1-isl)
 
@@ -13309,7 +13309,7 @@ clean-stage1-isl:
 	fi; \
 	cd $(HOST_SUBDIR)/isl && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
-		 clean
+		V=1 clean
 @endif isl-bootstrap
 
 
@@ -13336,7 +13336,7 @@ all-stage2-isl: configure-stage2-isl
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) V=1 \
 		TFLAGS="$(STAGE2_TFLAGS)" \
 		$(TARGET-stage2-isl)
 
@@ -13352,7 +13352,7 @@ clean-stage2-isl:
 	cd $(HOST_SUBDIR)/isl && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+		V=1 clean
 @endif isl-bootstrap
 
 
@@ -13379,7 +13379,7 @@ all-stage3-isl: configure-stage3-isl
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) V=1 \
 		TFLAGS="$(STAGE3_TFLAGS)" \
 		$(TARGET-stage3-isl)
 
@@ -13395,7 +13395,7 @@ clean-stage3-isl:
 	cd $(HOST_SUBDIR)/isl && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+		V=1 clean
 @endif isl-bootstrap
 
 
@@ -13422,7 +13422,7 @@ all-stage4-isl: configure-stage4-isl
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) V=1 \
 		TFLAGS="$(STAGE4_TFLAGS)" \
 		$(TARGET-stage4-isl)
 
@@ -13438,7 +13438,7 @@ clean-stage4-isl:
 	cd $(HOST_SUBDIR)/isl && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+		V=1 clean
 @endif isl-bootstrap
 
 
@@ -13465,7 +13465,7 @@ all-stageprofile-isl: configure-stageprofile-isl
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) V=1 \
 		TFLAGS="$(STAGEprofile_TFLAGS)" \
 		$(TARGET-stageprofile-isl)
 
@@ -13481,7 +13481,7 @@ clean-stageprofile-isl:
 	cd $(HOST_SUBDIR)/isl && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+		V=1 clean
 @endif isl-bootstrap
 
 
@@ -13508,7 +13508,7 @@ all-stagefeedback-isl: configure-stagefeedback-isl
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
-		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS) V=1 \
 		TFLAGS="$(STAGEfeedback_TFLAGS)" \
 		$(TARGET-stagefeedback-isl)
 
@@ -13524,7 +13524,7 @@ clean-stagefeedback-isl:
 	cd $(HOST_SUBDIR)/isl && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
 		$(POSTSTAGE1_FLAGS_TO_PASS)  \
-		 clean
+		V=1 clean
 @endif isl-bootstrap
 
 
@@ -13542,7 +13542,7 @@ check-isl:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
 	(cd $(HOST_SUBDIR)/isl && \
-	  $(MAKE) $(FLAGS_TO_PASS)  check)
+	  $(MAKE) $(FLAGS_TO_PASS) V=1 check)
 
 @endif isl
 
@@ -13577,7 +13577,7 @@ info-isl: \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	for flag in $(EXTRA_HOST_FLAGS) V=1; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing info in isl" ; \
@@ -13602,7 +13602,7 @@ dvi-isl: \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	for flag in $(EXTRA_HOST_FLAGS) V=1; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing dvi in isl" ; \
@@ -13627,7 +13627,7 @@ pdf-isl: \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	for flag in $(EXTRA_HOST_FLAGS) V=1; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing pdf in isl" ; \
@@ -13652,7 +13652,7 @@ html-isl: \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	for flag in $(EXTRA_HOST_FLAGS) V=1; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing html in isl" ; \
@@ -13677,7 +13677,7 @@ TAGS-isl: \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	for flag in $(EXTRA_HOST_FLAGS) V=1; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing TAGS in isl" ; \
@@ -13703,7 +13703,7 @@ install-info-isl: \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	for flag in $(EXTRA_HOST_FLAGS) V=1; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing install-info in isl" ; \
@@ -13729,7 +13729,7 @@ install-pdf-isl: \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	for flag in $(EXTRA_HOST_FLAGS) V=1; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing install-pdf in isl" ; \
@@ -13755,7 +13755,7 @@ install-html-isl: \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	for flag in $(EXTRA_HOST_FLAGS) V=1; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing install-html in isl" ; \
@@ -13780,7 +13780,7 @@ installcheck-isl: \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	for flag in $(EXTRA_HOST_FLAGS) V=1; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing installcheck in isl" ; \
@@ -13804,7 +13804,7 @@ mostlyclean-isl:
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	for flag in $(EXTRA_HOST_FLAGS) V=1; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing mostlyclean in isl" ; \
@@ -13828,7 +13828,7 @@ clean-isl:
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	for flag in $(EXTRA_HOST_FLAGS) V=1; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing clean in isl" ; \
@@ -13852,7 +13852,7 @@ distclean-isl:
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	for flag in $(EXTRA_HOST_FLAGS) V=1; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing distclean in isl" ; \
@@ -13876,7 +13876,7 @@ maintainer-clean-isl:
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
-	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	for flag in $(EXTRA_HOST_FLAGS) V=1; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing maintainer-clean in isl" ; \

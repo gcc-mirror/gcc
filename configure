@@ -646,12 +646,14 @@ stage1_languages
 extra_host_libiberty_configure_flags
 clooginc
 clooglibs
+extra_cloog_isl_configure_flags
 islinc
 isllibs
 poststage1_ldflags
 poststage1_libs
 stage1_libs
 stage1_ldflags
+extra_isl_gmp_configure_flags
 extra_mpc_mpfr_configure_flags
 extra_mpc_gmp_configure_flags
 extra_mpfr_configure_flags
@@ -5303,6 +5305,7 @@ if test "x$with_gmp$with_gmp_include$with_gmp_lib" = x && test -d ${srcdir}/gmp;
   gmpinc='-I$$r/$(HOST_SUBDIR)/gmp -I$$s/gmp '"$gmpinc"
   extra_mpfr_configure_flags='--with-gmp-include=$$r/$(HOST_SUBDIR)/gmp --with-gmp-lib=$$r/$(HOST_SUBDIR)/gmp/'"$lt_cv_objdir"
   extra_mpc_gmp_configure_flags='--with-gmp-include=$$r/$(HOST_SUBDIR)/gmp --with-gmp-lib=$$r/$(HOST_SUBDIR)/gmp/'"$lt_cv_objdir"
+  extra_isl_gmp_configure_flags='--with-gmp-builddir=$$r/$(HOST_SUBDIR)/gmp'
   # Do not test the gmp version.  Assume that it is sufficient, since
   # it is in the source tree, and the library has not been built yet
   # but it would be included on the link line in the version check below
@@ -5542,6 +5545,7 @@ fi
 
 
 
+
 # Allow host libstdc++ to be specified for static linking with PPL.
 
 # Check whether --with-host-libstdcxx was given.
@@ -5671,14 +5675,17 @@ fi
   if test "x${with_isl_lib}" != x; then
     isllibs="-L$with_isl_lib"
   fi
+  extra_cloog_isl_configure_flags='--with-isl=system'
         if test "x${islinc}" = x && test "x${isllibs}" = x \
      && test -d ${srcdir}/isl; then
     isllibs='-L$$r/$(HOST_SUBDIR)/isl/'"$lt_cv_objdir"' '
     islinc='-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include'
+    extra_cloog_isl_configure_flags='--with-isl-builddir=$$r/$(HOST_DIR)/isl'
     ENABLE_ISL_CHECK=no
   fi
 
   isllibs="${isllibs} -lisl"
+
 
 
 
