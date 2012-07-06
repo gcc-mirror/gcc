@@ -1,5 +1,9 @@
 2012-07-06  Jason Merrill  <jason@redhat.com>
 
+	PR c++/53862
+	* pt.c (tsubst_arg_types): Add "end" parameter.
+	(check_undeduced_parms): Use it.
+
 	* cp-tree.h (DECL_DECLARES_TYPE_P): Check DECL_TYPE_TEMPLATE_P.
 
 	PR c++/53858
