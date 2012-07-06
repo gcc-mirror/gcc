@@ -1,5 +1,10 @@
 2012-07-06  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/i386.md (simple lea to add peephole): Also transform
+	RTXes where second PLUS operand matches output.
+
+2012-07-06  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/i386.c (construct_plt_address): Make static.
 	* config/i386/i386-protos.h (construct_plt_address): Remove.
 
