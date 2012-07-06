@@ -1,3 +1,14 @@
+2012-07-06  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
+	2012-04-11  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/52621
+	* tree-chrec.c (evolution_function_is_invariant_rec_p): Properly
+	consider loop nesting.
+	(evolution_function_is_univariate_p): Properly check the remainder
+	for chrecs.
+
 2012-07-05  Pat Haugen <pthaugen@us.ibm.com>
 
 	Backport from mainline
