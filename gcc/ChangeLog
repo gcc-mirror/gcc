@@ -1,3 +1,8 @@
+2012-07-06  Nick Clifton  <nickc@redhat.com>
+
+	* config/mn10300/mn10300.c (mn10300_encode_section_info): Call
+	default_encode_section_info.
+
 2012-07-06  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline
@@ -62,7 +67,8 @@
 	* config/rs6000/rs6000.md (UNSPEC_GRP_END_NOP): New enum value.
 	(group_ending_nop): New define_insn.
 
-2012-07-04  Richard Guenther  <rguenther@suse.de> 
+2012-07-04  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/53433
 	* gimple-fold.c (get_base_constructor): Do not return an
 	error_mark_node DECL_INITIAL.
