@@ -1,3 +1,9 @@
+2012-07-06  Kai Tietz  <ktietz@redhat.com>
+
+	PR bootstrap/52947
+	* config/i386/mingw32.h (NATIVE_SYSTEM_HEADER_DIR): Define it always
+	as "/mingw/include".
+
 2012-07-06  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/53820
