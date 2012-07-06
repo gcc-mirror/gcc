@@ -23090,7 +23090,7 @@ ix86_expand_strlen (rtx out, rtx src, rtx eoschar, rtx align)
 
 /* For given symbol (function) construct code to compute address of it's PLT
    entry in large x86-64 PIC model.  */
-rtx
+static rtx
 construct_plt_address (rtx symbol)
 {
   rtx tmp, unspec;
