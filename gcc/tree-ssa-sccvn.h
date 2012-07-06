@@ -200,7 +200,7 @@ tree vn_reference_lookup_pieces (tree, alias_set_type, tree,
 				 VEC (vn_reference_op_s, heap) *,
 				 vn_reference_t *, vn_lookup_kind);
 tree vn_reference_lookup (tree, tree, vn_lookup_kind, vn_reference_t *);
-vn_reference_t vn_reference_insert (tree, tree, tree);
+vn_reference_t vn_reference_insert (tree, tree, tree, tree);
 vn_reference_t vn_reference_insert_pieces (tree, alias_set_type, tree,
 					   VEC (vn_reference_op_s, heap) *,
 					   tree, unsigned int);
