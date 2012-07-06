@@ -1,3 +1,8 @@
+2012-07-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (construct_plt_address): Make static.
+	* config/i386/i386-protos.h (construct_plt_address): Remove.
+
 2012-07-06  Nick Clifton  <nickc@redhat.com>
 
 	* config/mn10300/mn10300.c (mn10300_encode_section_info): Call
@@ -5,7 +10,7 @@
 
 2012-07-06  Uros Bizjak  <ubizjak@gmail.com>
 
-	PR target/53811
+	PR target/53853
 	* config/i386/i386.c (x86_output_mi_thunk): For CM_LARGE_PIC model,
 	emit PIC sequence for fnaddr symbol reference in advance.
 
@@ -28,30 +33,30 @@
 2012-07-05  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 	    Julian Brown  <julian@codesourcery.com>
 
-        PR target/48941
-        PR target/51980
-        * config/arm/neon-gen.ml (return_by_ptr): Delete.
-        (print_function): Handle empty strings.
-        (return): Delete use of return_by_ptr.
-        (mask_shape_for_shuffle): New function.
-        (mask_elems): Likewise.
-        (shuffle_fn): Likewise.
-        (params): Simplify and remove use of return_by_ptr.
-        (get_shuffle): New function.
-        (print_variant): Update.
-        * config/arm/neon.ml (rev_elems): New function.
-        (permute_range): Likewise.
-        (zip_range): Likewise.
-        (uzip_range): Likewise.
-        (trn_range): Likewise.
-        (zip_elems): Likewise.
-        (uzip_elems): Likewise.
-        (trn_elems): Likewise.
-        (features): New enumeration Use_shuffle. Delete ReturnPtr.
-        (pf_su_8_16): New.
-        (suf_32): New.
-        (ops): Update entries for Vrev64, Vrev32, Vrev16, Vtr, Vzip, Vuzp.
-        * config/arm/arm_neon.h: Regenerate.
+	PR target/48941
+	PR target/51980
+	* config/arm/neon-gen.ml (return_by_ptr): Delete.
+	(print_function): Handle empty strings.
+	(return): Delete use of return_by_ptr.
+	(mask_shape_for_shuffle): New function.
+	(mask_elems): Likewise.
+	(shuffle_fn): Likewise.
+	(params): Simplify and remove use of return_by_ptr.
+	(get_shuffle): New function.
+	(print_variant): Update.
+	* config/arm/neon.ml (rev_elems): New function.
+	(permute_range): Likewise.
+	(zip_range): Likewise.
+	(uzip_range): Likewise.
+	(trn_range): Likewise.
+	(zip_elems): Likewise.
+	(uzip_elems): Likewise.
+	(trn_elems): Likewise.
+	(features): New enumeration Use_shuffle. Delete ReturnPtr.
+	(pf_su_8_16): New.
+	(suf_32): New.
+	(ops): Update entries for Vrev64, Vrev32, Vrev16, Vtr, Vzip, Vuzp.
+	* config/arm/arm_neon.h: Regenerate.
 
 2012-07-05  Richard Guenther  <rguenther@suse.de>
 
