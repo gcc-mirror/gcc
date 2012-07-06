@@ -1,3 +1,11 @@
+2012-07-06  Alexandre Oilva  <aoliva@redhat.com>
+
+	PR rtl-optimization/53827
+	PR debug/53671
+	PR debug/49888
+	* alias.c (memrefs_conflict_p): Adjust offset and size by the
+	same amount for alignment ANDs.
+
 2012-07-06  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/51879

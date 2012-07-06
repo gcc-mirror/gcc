@@ -2107,7 +2107,7 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
       if (xsize > 0 && sc < 0 && -uc == (uc & -uc))
 	{
 	  xsize -= sc + 1;
-	  c -= sc;
+	  c -= sc + 1;
 	  return memrefs_conflict_p (xsize, canon_rtx (XEXP (x, 0)),
 				     ysize, y, c);
 	}
@@ -2119,7 +2119,7 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
       if (ysize > 0 && sc < 0 && -uc == (uc & -uc))
 	{
 	  ysize -= sc + 1;
-	  c += sc;
+	  c += sc + 1;
 	  return memrefs_conflict_p (xsize, x,
 				     ysize, canon_rtx (XEXP (y, 0)), c);
 	}
