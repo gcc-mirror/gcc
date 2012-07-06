@@ -1,3 +1,19 @@
+2012-07-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	Revert
+	2012-06-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* dwarf2out.c (function_possibly_abstracted_p): New static function.
+	(gen_subprogram_die): Use it function_possibly_abstracted_p in lieu of
+	cgraph_function_possibly_inlined_p.
+	(gen_inlined_subroutine_die): Return if the origin is to be ignored.
+	(process_scope_var): Do not emit concrete instances of abstracted
+	nested functions from here.
+	(gen_decl_die): Emit the abstract instance if the function is possibly
+	abstracted and not only possibly inlined.
+	(dwarf2out_finish): Find the first non-abstract parent instance and
+	attach concrete instances on the limbo list to it.
+
 2012-07-05  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 	    Julian Brown  <julian@codesourcery.com>
 
