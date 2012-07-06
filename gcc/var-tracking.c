@@ -9327,14 +9327,11 @@ vt_add_function_parameter (tree parm)
   if (GET_MODE (decl_rtl) == BLKmode || GET_MODE (incoming) == BLKmode)
     return;
 
-  /* If there is a DRAP register, rewrite the incoming location of parameters
-     passed on the stack into MEMs based on the argument pointer, as the DRAP
-     register can be reused for other purposes and we do not track locations
-     based on generic registers.  But the prerequisite is that this argument
-     pointer be also the virtual CFA pointer, see vt_initialize.  */
+  /* If there is a DRAP register or a pseudo in internal_arg_pointer,
+     rewrite the incoming location of parameters passed on the stack
+     into MEMs based on the argument pointer, so that incoming doesn't
+     depend on a pseudo.  */
   if (MEM_P (incoming)
-      && stack_realign_drap
-      && arg_pointer_rtx == cfa_base_rtx
       && (XEXP (incoming, 0) == crtl->args.internal_arg_pointer
 	  || (GET_CODE (XEXP (incoming, 0)) == PLUS
 	      && XEXP (XEXP (incoming, 0), 0)
