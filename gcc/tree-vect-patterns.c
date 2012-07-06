@@ -937,6 +937,11 @@ vect_operation_fits_smaller_type (gimple stmt, tree def, tree *new_type,
       || TREE_CODE (const_oprnd) != INTEGER_CST)
     return false;
 
+  /* If oprnd has other uses besides that in stmt we cannot mark it
+     as being part of a pattern only.  */
+  if (!has_single_use (oprnd))
+    return false;
+
   /* If we are in the middle of a sequence, we use DEF from a previous
      statement.  Otherwise, OPRND has to be a result of type promotion.  */
   if (*new_type)

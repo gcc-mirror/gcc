@@ -1,6 +1,14 @@
 2012-07-06  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline
+	2012-06-18  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/53693
+	* g++.dg/torture/pr53693.C: New testcase.
+
+2012-07-06  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
 	2012-04-11  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/52621
