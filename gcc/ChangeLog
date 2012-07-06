@@ -1,5 +1,12 @@
 2012-07-06  Tom de Vries  <tom@codesourcery.com>
 
+	PR tree-optimization/51879
+	* tree-ssa-sccvn.c (copy_reference_ops_from_call)
+	(visit_reference_op_call): Handle case that lhs is not an SSA_NAME.
+	(visit_use): Also call visit_reference_op_call for calls with a vdef.
+
+2012-07-06  Tom de Vries  <tom@codesourcery.com>
+
 	PR tree-optimization/52009
 	* tree-ssa-tail-merge.c (gimple_equal_p): For GIMPLE_ASSIGN, compare
 	value numbers of gimple_vdef.

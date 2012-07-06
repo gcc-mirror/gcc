@@ -946,6 +946,20 @@ copy_reference_ops_from_call (gimple call,
 {
   vn_reference_op_s temp;
   unsigned i;
+  tree lhs = gimple_call_lhs (call);
+
+  /* If 2 calls have a different non-ssa lhs, vdef value numbers should be
+     different.  By adding the lhs here in the vector, we ensure that the
+     hashcode is different, guaranteeing a different value number.  */
+  if (lhs && TREE_CODE (lhs) != SSA_NAME)
+    {
+      memset (&temp, 0, sizeof (temp));
+      temp.opcode = MODIFY_EXPR;
+      temp.type = TREE_TYPE (lhs);
+      temp.op0 = lhs;
+      temp.off = -1;
+      VEC_safe_push (vn_reference_op_s, heap, *result, &temp);
+    }
 
   /* Copy the type, opcode, function being called and static chain.  */
   memset (&temp, 0, sizeof (temp));
@@ -2633,6 +2647,10 @@ visit_reference_op_call (tree lhs, gimple stmt)
   tree vuse = gimple_vuse (stmt);
   tree vdef = gimple_vdef (stmt);
 
+  /* Non-ssa lhs is handled in copy_reference_ops_from_call.  */
+  if (lhs && TREE_CODE (lhs) != SSA_NAME)
+    lhs = NULL_TREE;
+
   vr1.vuse = vuse ? SSA_VAL (vuse) : NULL_TREE;
   vr1.operands = valueize_shared_reference_ops_from_call (stmt);
   vr1.type = gimple_expr_type (stmt);
@@ -3424,18 +3442,20 @@ visit_use (tree use)
 		}
 	    }
 
-	  /* ???  We should handle stores from calls.  */
 	  if (!gimple_call_internal_p (stmt)
-	      && (gimple_call_flags (stmt) & (ECF_PURE | ECF_CONST)
-		  /* If the call has side effects, subsequent calls won't have
-		     the same incoming vuse, so it's save to assume
-		     equality.  */
-		  || gimple_has_side_effects (stmt))
-	      && ((lhs && TREE_CODE (lhs) == SSA_NAME)
-		  || (!lhs && gimple_vdef (stmt))))
-	    {
-	      changed = visit_reference_op_call (lhs, stmt);
-	    }
+	      && (/* Calls to the same function with the same vuse
+		     and the same operands do not necessarily return the same
+		     value, unless they're pure or const.  */
+		  gimple_call_flags (stmt) & (ECF_PURE | ECF_CONST)
+		  /* If calls have a vdef, subsequent calls won't have
+		     the same incoming vuse.  So, if 2 calls with vdef have the
+		     same vuse, we know they're not subsequent.
+		     We can value number 2 calls to the same function with the
+		     same vuse and the same operands which are not subsequent
+		     the same, because there is no code in the program that can
+		     compare the 2 values.  */
+		  || gimple_vdef (stmt)))
+	    changed = visit_reference_op_call (lhs, stmt);
 	  else
 	    changed = defs_to_varying (stmt);
 	}
