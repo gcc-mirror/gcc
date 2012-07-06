@@ -1,3 +1,9 @@
+2012-07-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/53811
+	* config/i386/i386.c (x86_output_mi_thunk): For CM_LARGE_PIC model,
+	emit PIC sequence for fnaddr symbol reference in advance.
+
 2012-07-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	Revert

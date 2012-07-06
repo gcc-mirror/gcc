@@ -33057,6 +33057,10 @@ x86_output_mi_thunk (FILE *file,
     emit_jump_insn (gen_indirect_jump (fnaddr));
   else
     {
+      if (ix86_cmodel == CM_LARGE_PIC && SYMBOLIC_CONST (fnaddr))
+	fnaddr = legitimize_pic_address (fnaddr,
+					 gen_rtx_REG (Pmode, tmp_regno));
+
       if (!sibcall_insn_operand (fnaddr, word_mode))
 	{
 	  tmp = gen_rtx_REG (word_mode, tmp_regno);
