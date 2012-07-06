@@ -1,5 +1,7 @@
 2012-07-06  Jason Merrill  <jason@redhat.com>
 
+	* cp-tree.h (DECL_DECLARES_TYPE_P): Check DECL_TYPE_TEMPLATE_P.
+
 	PR c++/53858
 	* name-lookup.c (ambiguous_decl): Use DECL_TYPE_TEMPLATE_P.
 
