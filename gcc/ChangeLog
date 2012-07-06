@@ -1,3 +1,16 @@
+2012-07-06  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/52009
+	* tree-ssa-tail-merge.c (gimple_equal_p): For GIMPLE_ASSIGN, compare
+	value numbers of gimple_vdef.
+	* tree-ssa-sccvn.h (vn_reference_insert): Add vdef parameter to
+	prototype.
+	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Handle MODIFY_EXPR.
+	(vn_reference_insert): Add and handle vdef parameter.
+	(visit_reference_op_load): Add argument to vn_reference_insert call.
+	(visit_reference_op_store): Find value number of vdef of store.  Insert
+	value number of vdef of store.
+
 2012-07-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (simple lea to add peephole): Also transform
