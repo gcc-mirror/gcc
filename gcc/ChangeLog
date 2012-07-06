@@ -1,3 +1,10 @@
+2012-07-06  Kai Tietz  <ktietz@redhat.com>
+
+	Backport from mainline.
+	PR bootstrap/52947
+	* config/i386/mingw32.h (NATIVE_SYSTEM_HEADER_DIR): Define it always
+	as "/mingw/include".
+
 2012-07-06  Nick Clifton  <nickc@redhat.com>
 
 	* config/mn10300/mn10300.c (mn10300_encode_section_info): Call
