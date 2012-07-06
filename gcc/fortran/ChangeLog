@@ -1,3 +1,9 @@
+2012-07-06  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/53732
+	* trans-array.c (gfc_add_loop_ss_code): Disable self recursive calls
+	handling nested loop(s) if the subscript flag is true.
+
 2012-06-22  Tobias Burnus  <burnus@net-b.de>
 
 	Backport from mainline
