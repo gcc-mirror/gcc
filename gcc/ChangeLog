@@ -1,3 +1,8 @@
+2012-07-06  Nick Clifton  <nickc@redhat.com>
+
+	* config/mn10300/mn10300.c (mn10300_encode_section_info): Call
+	default_encode_section_info.
+
 2012-07-04  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/53433
