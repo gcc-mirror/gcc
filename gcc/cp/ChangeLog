@@ -1,3 +1,8 @@
+2012-07-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53858
+	* name-lookup.c (ambiguous_decl): Use DECL_TYPE_TEMPLATE_P.
+
 2012-07-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/53039
