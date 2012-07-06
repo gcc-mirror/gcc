@@ -1,3 +1,10 @@
+2012-07-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/53872
+	* include/std/thread (thread::_M_make_routine): Qualify make_shared
+	to prevent ADL.
+	* testsuite/30_threads/thread/adl.cc: New.
+
 2012-07-05  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/std/condition_variable: Update copyright years.
