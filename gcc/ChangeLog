@@ -1,3 +1,10 @@
+2012-07-06  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/53820
+	* var-tracking.c (vt_add_function_parameter): Convert
+	internal_arg_pointer into arg_pointer-based address even
+	without DRAP.
+
 2012-07-06  Alexandre Oilva  <aoliva@redhat.com>
 
 	PR rtl-optimization/53827
