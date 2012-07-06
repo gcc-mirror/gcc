@@ -1,5 +1,11 @@
 2012-07-06  Tom de Vries  <tom@codesourcery.com>
 
+	PR tree-optimization/51879
+	* gcc.dg/pr51879-16.c: New test.
+	* gcc.dg/pr51879-17.c: Same.
+
+2012-07-06  Tom de Vries  <tom@codesourcery.com>
+
 	PR tree-optimization/52009
 	* gcc.dg/pr51879-7.c: New test.
 	* gcc.dg/pr51879-18.c: New test.
