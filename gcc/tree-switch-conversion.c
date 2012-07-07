@@ -329,14 +329,13 @@ emit_case_bit_tests (gimple swtch, tree index_expr,
       unsigned int lo, hi;
       tree cs = gimple_switch_label (swtch, i);
       tree label = CASE_LABEL (cs);
+      edge e = find_edge (switch_bb, label_to_block (label));
       for (k = 0; k < count; k++)
-	if (label == test[k].label)
+	if (e == test[k].target_edge)
 	  break;
 
       if (k == count)
 	{
-	  edge e = find_edge (switch_bb, label_to_block (label));
-	  gcc_assert (e);
 	  gcc_checking_assert (count < MAX_CASE_BIT_TESTS);
 	  test[k].hi = 0;
 	  test[k].lo = 0;
