@@ -86,7 +86,6 @@ inline static int thumb1_index_register_rtx_p (rtx, int);
 static bool arm_legitimate_address_p (enum machine_mode, rtx, bool);
 static int thumb_far_jump_used_p (void);
 static bool thumb_force_lr_save (void);
-static rtx emit_sfm (int, int);
 static unsigned arm_size_return_regs (void);
 static bool arm_assemble_integer (rtx, unsigned int, int);
 static void arm_print_operand (FILE *, rtx, int);
@@ -661,7 +660,7 @@ static int thumb_call_reg_needed;
 #define FL_STRONG     (1 << 8)	      /* StrongARM */
 #define FL_ARCH5E     (1 << 9)        /* DSP extensions to v5 */
 #define FL_XSCALE     (1 << 10)	      /* XScale */
-#define FL_CIRRUS     (1 << 11)	      /* Cirrus/DSP.  */
+/* spare	      (1 << 11)	*/
 #define FL_ARCH6      (1 << 12)       /* Architecture rel 6.  Adds
 					 media instructions.  */
 #define FL_VFPV2      (1 << 13)       /* Vector Floating Point V2.  */
@@ -759,9 +758,6 @@ int arm_ld_sched = 0;
 
 /* Nonzero if this chip is a StrongARM.  */
 int arm_tune_strongarm = 0;
-
-/* Nonzero if this chip is a Cirrus variant.  */
-int arm_arch_cirrus = 0;
 
 /* Nonzero if this chip supports Intel Wireless MMX technology.  */
 int arm_arch_iwmmxt = 0;
@@ -1714,7 +1710,6 @@ arm_option_override (void)
   arm_arch7em = (insn_flags & FL_ARCH7EM) != 0;
   arm_arch_thumb2 = (insn_flags & FL_THUMB2) != 0;
   arm_arch_xscale = (insn_flags & FL_XSCALE) != 0;
-  arm_arch_cirrus = (insn_flags & FL_CIRRUS) != 0;
 
   arm_ld_sched = (tune_flags & FL_LDSCHED) != 0;
   arm_tune_strongarm = (tune_flags & FL_STRONG) != 0;
@@ -1774,10 +1769,7 @@ arm_option_override (void)
 #ifdef FPUTYPE_DEFAULT
       target_fpu_name = FPUTYPE_DEFAULT;
 #else
-      if (arm_arch_cirrus)
-	target_fpu_name = "maverick";
-      else
-	target_fpu_name = "fpe2";
+      target_fpu_name = "vfp";
 #endif
 
       ok = opt_enum_arg_to_value (OPT_mfpu_, target_fpu_name, &arm_fpu_index,
@@ -1789,19 +1781,6 @@ arm_option_override (void)
 
   switch (arm_fpu_desc->model)
     {
-    case ARM_FP_MODEL_FPA:
-      if (arm_fpu_desc->rev == 2)
-	arm_fpu_attr = FPU_FPE2;
-      else if (arm_fpu_desc->rev == 3)
-	arm_fpu_attr = FPU_FPE3;
-      else
-	arm_fpu_attr = FPU_FPA;
-      break;
-
-    case ARM_FP_MODEL_MAVERICK:
-      arm_fpu_attr = FPU_MAVERICK;
-      break;
-
     case ARM_FP_MODEL_VFP:
       arm_fpu_attr = FPU_VFP;
       break;
@@ -1809,10 +1788,6 @@ arm_option_override (void)
     default:
       gcc_unreachable();
     }
-
-  if (TARGET_AAPCS_BASED
-      && (arm_fpu_desc->model == ARM_FP_MODEL_FPA))
-    error ("FPA is unsupported in the AAPCS");
 
   if (TARGET_AAPCS_BASED)
     {
@@ -1822,11 +1797,6 @@ arm_option_override (void)
 	if (TARGET_CALLEE_INTERWORKING)
 	  error ("AAPCS does not support -mcallee-super-interworking");
     }
-
-  /* FPA and iWMMXt are incompatible because the insn encodings overlap.
-     VFP and iWMMXt however can coexist.  */
-  if (TARGET_IWMMXT && TARGET_HARD_FLOAT && !TARGET_VFP)
-    error ("iWMMXt and non-VFP floating point unit are incompatible");
 
   /* iWMMXt and NEON are incompatible.  */
   if (TARGET_IWMMXT && TARGET_NEON)
@@ -1866,11 +1836,9 @@ arm_option_override (void)
 	arm_pcs_default = ARM_PCS_ATPCS;
     }
 
-  /* For arm2/3 there is no need to do any scheduling if there is only
-     a floating point emulator, or we are doing software floating-point.  */
-  if ((TARGET_SOFT_FLOAT
-       || (TARGET_FPA && arm_fpu_desc->rev))
-      && (tune_flags & FL_MODE32) == 0)
+  /* For arm2/3 there is no need to do any scheduling if we are doing
+     software floating-point.  */
+  if (TARGET_SOFT_FLOAT && (tune_flags & FL_MODE32) == 0)
     flag_schedule_insns = flag_schedule_insns_after_reload = 0;
 
   /* Use the cp15 method if it is available.  */
@@ -2362,14 +2330,8 @@ use_return_insn (int iscond, rtx sibling)
   if (saved_int_regs && !(saved_int_regs & (1 << LR_REGNUM)))
     return 0;
 
-  /* Can't be done if any of the FPA regs are pushed,
+  /* Can't be done if any of the VFP regs are pushed,
      since this also requires an insn.  */
-  if (TARGET_HARD_FLOAT && TARGET_FPA)
-    for (regno = FIRST_FPA_REGNUM; regno <= LAST_FPA_REGNUM; regno++)
-      if (df_regs_ever_live_p (regno) && !call_used_regs[regno])
-	return 0;
-
-  /* Likewise VFP regs.  */
   if (TARGET_HARD_FLOAT && TARGET_VFP)
     for (regno = FIRST_VFP_REGNUM; regno <= LAST_VFP_REGNUM; regno++)
       if (df_regs_ever_live_p (regno) && !call_used_regs[regno])
@@ -3494,11 +3456,6 @@ arm_canonicalize_comparison (enum rtx_code code, rtx *op0, rtx *op1)
     {
       rtx tem;
 
-      /* To keep things simple, always use the Cirrus cfcmp64 if it is
-	 available.  */
-      if (TARGET_ARM && TARGET_HARD_FLOAT && TARGET_MAVERICK)
-	return code;
-
       if (code == GT || code == LE
 	  || (!TARGET_ARM && (code == GTU || code == LEU)))
 	{
@@ -3748,16 +3705,6 @@ arm_libcall_value_1 (enum machine_mode mode)
 {
   if (TARGET_AAPCS_BASED)
     return aapcs_libcall_value (mode);
-  else if (TARGET_32BIT
-	   && TARGET_HARD_FLOAT_ABI
-	   && TARGET_FPA
-	   && GET_MODE_CLASS (mode) == MODE_FLOAT)
-    return gen_rtx_REG (mode, FIRST_FPA_REGNUM);
-  else if (TARGET_32BIT
-	   && TARGET_HARD_FLOAT_ABI
-	   && TARGET_MAVERICK
-	   && GET_MODE_CLASS (mode) == MODE_FLOAT)
-    return gen_rtx_REG (mode, FIRST_CIRRUS_FP_REGNUM);
   else if (TARGET_IWMMXT_ABI
 	   && arm_vector_mode_supported_p (mode))
     return gen_rtx_REG (mode, FIRST_IWMMXT_REGNUM);
@@ -3795,16 +3742,8 @@ arm_function_value_regno_p (const unsigned int regno)
 	  && TARGET_VFP
 	  && TARGET_HARD_FLOAT
 	  && regno == FIRST_VFP_REGNUM)
-      || (TARGET_32BIT
-	  && TARGET_HARD_FLOAT_ABI
-	  && TARGET_MAVERICK
-	  && regno == FIRST_CIRRUS_FP_REGNUM)
       || (TARGET_IWMMXT_ABI
-	  && regno == FIRST_IWMMXT_REGNUM)
-      || (TARGET_32BIT
-	  && TARGET_HARD_FLOAT_ABI
-	  && TARGET_FPA
-	  && regno == FIRST_FPA_REGNUM))
+	  && regno == FIRST_IWMMXT_REGNUM))
     return true;
 
   return false;
@@ -3819,15 +3758,8 @@ arm_apply_result_size (void)
 
   if (TARGET_32BIT)
     {
-      if (TARGET_HARD_FLOAT_ABI)
-	{
-	  if (TARGET_VFP)
-	    size += 32;
-	  if (TARGET_FPA)
-	    size += 12;
-	  if (TARGET_MAVERICK)
-	    size += 8;
-	}
+      if (TARGET_HARD_FLOAT_ABI && TARGET_VFP)
+	size += 32;
       if (TARGET_IWMMXT_ABI)
 	size += 8;
     }
@@ -3976,28 +3908,6 @@ arm_return_in_memory (const_tree type, const_tree fntype)
 
   /* Return all other types in memory.  */
   return true;
-}
-
-/* Indicate whether or not words of a double are in big-endian order.  */
-
-int
-arm_float_words_big_endian (void)
-{
-  if (TARGET_MAVERICK)
-    return 0;
-
-  /* For FPA, float words are always big-endian.  For VFP, floats words
-     follow the memory system mode.  */
-
-  if (TARGET_FPA)
-    {
-      return 1;
-    }
-
-  if (TARGET_VFP)
-    return (TARGET_BIG_END ? 1 : 0);
-
-  return 1;
 }
 
 const struct pcs_attribute_arg
@@ -5879,9 +5789,8 @@ arm_legitimate_index_p (enum machine_mode mode, rtx index, RTX_CODE outer,
 
   /* Standard coprocessor addressing modes.  */
   if (TARGET_HARD_FLOAT
-      && (TARGET_VFP || TARGET_FPA || TARGET_MAVERICK)
-      && (mode == SFmode || mode == DFmode
-	  || (TARGET_MAVERICK && mode == DImode)))
+      && TARGET_VFP
+      && (mode == SFmode || mode == DFmode))
     return (code == CONST_INT && INTVAL (index) < 1024
 	    && INTVAL (index) > -1024
 	    && (INTVAL (index) & 3) == 0);
@@ -6000,9 +5909,8 @@ thumb2_legitimate_index_p (enum machine_mode mode, rtx index, int strict_p)
   /* ??? Combine arm and thumb2 coprocessor addressing modes.  */
   /* Standard coprocessor addressing modes.  */
   if (TARGET_HARD_FLOAT
-      && (TARGET_VFP || TARGET_FPA || TARGET_MAVERICK)
-      && (mode == SFmode || mode == DFmode
-	  || (TARGET_MAVERICK && mode == DImode)))
+      && TARGET_VFP
+      && (mode == SFmode || mode == DFmode))
     return (code == CONST_INT && INTVAL (index) < 1024
 	    /* Thumb-2 allows only > -256 index range for it's core register
 	       load/stores. Since we allow SF/DF in core registers, we have
@@ -6715,9 +6623,8 @@ arm_legitimize_reload_address (rtx *p,
 
       /* Detect coprocessor load/stores.  */
       bool coproc_p = ((TARGET_HARD_FLOAT
-			&& (TARGET_VFP || TARGET_FPA || TARGET_MAVERICK)
-			&& (mode == SFmode || mode == DFmode
-			    || (mode == DImode && TARGET_MAVERICK)))
+			&& TARGET_VFP
+			&& (mode == SFmode || mode == DFmode))
 		       || (TARGET_REALLY_IWMMXT
 			   && VALID_IWMMXT_REG_MODE (mode))
 		       || (TARGET_NEON
@@ -8573,7 +8480,6 @@ fa726te_sched_adjust_cost (rtx insn, rtx link, rtx dep, int * cost)
 
 /* Implement TARGET_REGISTER_MOVE_COST.
 
-   Moves between FPA_REGS and GENERAL_REGS are two memory insns.
    Moves between VFP_REGS and GENERAL_REGS are a single insn, but
    it is typically more expensive than a single memory access.  We set
    the cost to less than two memory accesses so that floating
@@ -8585,19 +8491,13 @@ arm_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
 {
   if (TARGET_32BIT)
     {
-      if ((from == FPA_REGS && to != FPA_REGS)
-	  || (from != FPA_REGS && to == FPA_REGS))
-	return 20;
-      else if ((IS_VFP_CLASS (from) && !IS_VFP_CLASS (to))
-	       || (!IS_VFP_CLASS (from) && IS_VFP_CLASS (to)))
+      if ((IS_VFP_CLASS (from) && !IS_VFP_CLASS (to))
+	  || (!IS_VFP_CLASS (from) && IS_VFP_CLASS (to)))
 	return 15;
       else if ((from == IWMMXT_REGS && to != IWMMXT_REGS)
 	       || (from != IWMMXT_REGS && to == IWMMXT_REGS))
 	return 4;
       else if (from == IWMMXT_GR_REGS || to == IWMMXT_GR_REGS)
-	return 20;
-      else if ((from == CIRRUS_REGS && to != CIRRUS_REGS)
-	       || (from != CIRRUS_REGS && to == CIRRUS_REGS))
 	return 20;
       else
 	return 2;
@@ -8656,7 +8556,7 @@ arm_adjust_cost (rtx insn, rtx link, rtx dep, int cost)
 	return cost;
     }
 
-  /* XXX This is not strictly true for the FPA.  */
+  /* XXX Is this strictly true?  */
   if (REG_NOTE_KIND (link) == REG_DEP_ANTI
       || REG_NOTE_KIND (link) == REG_DEP_OUTPUT)
     return 0;
@@ -9504,43 +9404,6 @@ neon_element_bits (enum machine_mode mode)
 
 
 /* Predicates for `match_operand' and `match_operator'.  */
-
-/* Return nonzero if OP is a valid Cirrus memory address pattern.  */
-int
-cirrus_memory_offset (rtx op)
-{
-  /* Reject eliminable registers.  */
-  if (! (reload_in_progress || reload_completed)
-      && (   reg_mentioned_p (frame_pointer_rtx, op)
-	  || reg_mentioned_p (arg_pointer_rtx, op)
-	  || reg_mentioned_p (virtual_incoming_args_rtx, op)
-	  || reg_mentioned_p (virtual_outgoing_args_rtx, op)
-	  || reg_mentioned_p (virtual_stack_dynamic_rtx, op)
-	  || reg_mentioned_p (virtual_stack_vars_rtx, op)))
-    return 0;
-
-  if (GET_CODE (op) == MEM)
-    {
-      rtx ind;
-
-      ind = XEXP (op, 0);
-
-      /* Match: (mem (reg)).  */
-      if (GET_CODE (ind) == REG)
-	return 1;
-
-      /* Match:
-	 (mem (plus (reg)
-	            (const))).  */
-      if (GET_CODE (ind) == PLUS
-	  && GET_CODE (XEXP (ind, 0)) == REG
-	  && REG_MODE_OK_FOR_BASE_P (XEXP (ind, 0), VOIDmode)
-	  && GET_CODE (XEXP (ind, 1)) == CONST_INT)
-	return 1;
-    }
-
-  return 0;
-}
 
 /* Return TRUE if OP is a valid coprocessor memory address pattern.
    WB is true if full writeback address modes are allowed and is false
@@ -11641,8 +11504,6 @@ arm_select_cc_mode (enum rtx_code op, rtx x, rtx y)
 	case LE:
 	case GT:
 	case GE:
-	  if (TARGET_HARD_FLOAT && TARGET_MAVERICK)
-	    return CCFPmode;
 	  return CCFPEmode;
 
 	default:
@@ -11747,11 +11608,6 @@ arm_select_cc_mode (enum rtx_code op, rtx x, rtx y)
 
   if (GET_MODE (x) == DImode || GET_MODE (y) == DImode)
     {
-      /* To keep things simple, always use the Cirrus cfcmp64 if it is
-	 available.  */
-      if (TARGET_ARM && TARGET_HARD_FLOAT && TARGET_MAVERICK)
-	return CCmode;
-
       switch (op)
 	{
 	case EQ:
@@ -11819,7 +11675,6 @@ arm_gen_compare_reg (enum rtx_code code, rtx x, rtx y, rtx scratch)
   cc_reg = gen_rtx_REG (mode, CC_REGNUM);
 
   if (dimode_comparison
-      && !(TARGET_HARD_FLOAT && TARGET_MAVERICK)
       && mode != CC_CZmode)
     {
       rtx clobber, set;
@@ -13962,47 +13817,6 @@ output_call_mem (rtx *operands)
 }
 
 
-/* Output a move from arm registers to an fpa registers.
-   OPERANDS[0] is an fpa register.
-   OPERANDS[1] is the first registers of an arm register pair.  */
-const char *
-output_mov_long_double_fpa_from_arm (rtx *operands)
-{
-  int arm_reg0 = REGNO (operands[1]);
-  rtx ops[3];
-
-  gcc_assert (arm_reg0 != IP_REGNUM);
-
-  ops[0] = gen_rtx_REG (SImode, arm_reg0);
-  ops[1] = gen_rtx_REG (SImode, 1 + arm_reg0);
-  ops[2] = gen_rtx_REG (SImode, 2 + arm_reg0);
-
-  output_asm_insn ("stm%(fd%)\t%|sp!, {%0, %1, %2}", ops);
-  output_asm_insn ("ldf%?e\t%0, [%|sp], #12", operands);
-
-  return "";
-}
-
-/* Output a move from an fpa register to arm registers.
-   OPERANDS[0] is the first registers of an arm register pair.
-   OPERANDS[1] is an fpa register.  */
-const char *
-output_mov_long_double_arm_from_fpa (rtx *operands)
-{
-  int arm_reg0 = REGNO (operands[0]);
-  rtx ops[3];
-
-  gcc_assert (arm_reg0 != IP_REGNUM);
-
-  ops[0] = gen_rtx_REG (SImode, arm_reg0);
-  ops[1] = gen_rtx_REG (SImode, 1 + arm_reg0);
-  ops[2] = gen_rtx_REG (SImode, 2 + arm_reg0);
-
-  output_asm_insn ("stf%?e\t%1, [%|sp, #-12]!", operands);
-  output_asm_insn ("ldm%(fd%)\t%|sp!, {%0, %1, %2}", ops);
-  return "";
-}
-
 /* Output a move from arm registers to arm registers of a long double
    OPERANDS[0] is the destination.
    OPERANDS[1] is the source.  */
@@ -14054,42 +13868,6 @@ arm_emit_movpair (rtx dest, rtx src)
    emit_set_insn (dest, gen_rtx_HIGH (SImode, src));
    emit_set_insn (dest, gen_rtx_LO_SUM (SImode, dest, src));
  }
-
-/* Output a move from arm registers to an fpa registers.
-   OPERANDS[0] is an fpa register.
-   OPERANDS[1] is the first registers of an arm register pair.  */
-const char *
-output_mov_double_fpa_from_arm (rtx *operands)
-{
-  int arm_reg0 = REGNO (operands[1]);
-  rtx ops[2];
-
-  gcc_assert (arm_reg0 != IP_REGNUM);
-
-  ops[0] = gen_rtx_REG (SImode, arm_reg0);
-  ops[1] = gen_rtx_REG (SImode, 1 + arm_reg0);
-  output_asm_insn ("stm%(fd%)\t%|sp!, {%0, %1}", ops);
-  output_asm_insn ("ldf%?d\t%0, [%|sp], #8", operands);
-  return "";
-}
-
-/* Output a move from an fpa register to arm registers.
-   OPERANDS[0] is the first registers of an arm register pair.
-   OPERANDS[1] is an fpa register.  */
-const char *
-output_mov_double_arm_from_fpa (rtx *operands)
-{
-  int arm_reg0 = REGNO (operands[0]);
-  rtx ops[2];
-
-  gcc_assert (arm_reg0 != IP_REGNUM);
-
-  ops[0] = gen_rtx_REG (SImode, arm_reg0);
-  ops[1] = gen_rtx_REG (SImode, 1 + arm_reg0);
-  output_asm_insn ("stf%?d\t%1, [%|sp, #-8]!", operands);
-  output_asm_insn ("ldm%(fd%)\t%|sp!, {%0, %1}", ops);
-  return "";
-}
 
 /* Output a move between double words.  It must be REG<-MEM
    or MEM<-REG.  */
@@ -16133,68 +15911,7 @@ arm_size_return_regs (void)
   return GET_MODE_SIZE (mode);
 }
 
-static rtx
-emit_sfm (int base_reg, int count)
-{
-  rtx par;
-  rtx dwarf;
-  rtx tmp, reg;
-  int i;
-
-  par = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (count));
-  dwarf = gen_rtx_SEQUENCE (VOIDmode, rtvec_alloc (count + 1));
-
-  reg = gen_rtx_REG (XFmode, base_reg++);
-
-  XVECEXP (par, 0, 0)
-    = gen_rtx_SET (VOIDmode,
-		   gen_frame_mem
-		   (BLKmode,
-		    gen_rtx_PRE_MODIFY (Pmode,
-					stack_pointer_rtx,
-					plus_constant
-					(Pmode, stack_pointer_rtx,
-					 -12 * count))
-		    ),
-		   gen_rtx_UNSPEC (BLKmode,
-				   gen_rtvec (1, reg),
-				   UNSPEC_PUSH_MULT));
-  tmp = gen_rtx_SET (VOIDmode,
-		     gen_frame_mem (XFmode, stack_pointer_rtx), reg);
-  RTX_FRAME_RELATED_P (tmp) = 1;
-  XVECEXP (dwarf, 0, 1) = tmp;
-
-  for (i = 1; i < count; i++)
-    {
-      reg = gen_rtx_REG (XFmode, base_reg++);
-      XVECEXP (par, 0, i) = gen_rtx_USE (VOIDmode, reg);
-
-      tmp = gen_rtx_SET (VOIDmode,
-			 gen_frame_mem (XFmode,
-					plus_constant (Pmode,
-						       stack_pointer_rtx,
-						       i * 12)),
-			 reg);
-      RTX_FRAME_RELATED_P (tmp) = 1;
-      XVECEXP (dwarf, 0, i + 1) = tmp;
-    }
-
-  tmp = gen_rtx_SET (VOIDmode,
-		     stack_pointer_rtx,
-		     plus_constant (Pmode, stack_pointer_rtx, -12 * count));
-
-  RTX_FRAME_RELATED_P (tmp) = 1;
-  XVECEXP (dwarf, 0, 0) = tmp;
-
-  par = emit_insn (par);
-  add_reg_note (par, REG_FRAME_RELATED_EXPR, dwarf);
-
-  return par;
-}
-
-
 /* Return true if the current function needs to save/restore LR.  */
-
 static bool
 thumb_force_lr_save (void)
 {
@@ -16207,7 +15924,6 @@ thumb_force_lr_save (void)
 
 /* Return true if r3 is used by any of the tail call insns in the
    current function.  */
-
 static bool
 any_sibcall_uses_r3 (void)
 {
@@ -16345,17 +16061,10 @@ arm_get_frame_offsets (void)
 	}
 
       func_type = arm_current_func_type ();
-      if (! IS_VOLATILE (func_type))
-	{
-	  /* Space for saved FPA registers.  */
-	  for (regno = FIRST_FPA_REGNUM; regno <= LAST_FPA_REGNUM; regno++)
-	    if (df_regs_ever_live_p (regno) && ! call_used_regs[regno])
-	    saved += 12;
-
-	  /* Space for saved VFP registers.  */
-	  if (TARGET_HARD_FLOAT && TARGET_VFP)
-	    saved += arm_get_vfp_saved_size ();
-	}
+      /* Space for saved VFP registers.  */
+      if (! IS_VOLATILE (func_type)
+	  && TARGET_HARD_FLOAT && TARGET_VFP)
+	saved += arm_get_vfp_saved_size ();
     }
   else /* TARGET_THUMB1 */
     {
@@ -16551,55 +16260,6 @@ arm_save_coproc_regs(void)
 	saved_size += 8;
       }
 
-  /* Save any floating point call-saved registers used by this
-     function.  */
-  if (TARGET_FPA_EMU2)
-    {
-      for (reg = LAST_FPA_REGNUM; reg >= FIRST_FPA_REGNUM; reg--)
-	if (df_regs_ever_live_p (reg) && !call_used_regs[reg])
-	  {
-	    insn = gen_rtx_PRE_DEC (Pmode, stack_pointer_rtx);
-	    insn = gen_rtx_MEM (XFmode, insn);
-	    insn = emit_set_insn (insn, gen_rtx_REG (XFmode, reg));
-	    RTX_FRAME_RELATED_P (insn) = 1;
-	    saved_size += 12;
-	  }
-    }
-  else
-    {
-      start_reg = LAST_FPA_REGNUM;
-
-      for (reg = LAST_FPA_REGNUM; reg >= FIRST_FPA_REGNUM; reg--)
-	{
-	  if (df_regs_ever_live_p (reg) && !call_used_regs[reg])
-	    {
-	      if (start_reg - reg == 3)
-		{
-		  insn = emit_sfm (reg, 4);
-		  RTX_FRAME_RELATED_P (insn) = 1;
-		  saved_size += 48;
-		  start_reg = reg - 1;
-		}
-	    }
-	  else
-	    {
-	      if (start_reg != reg)
-		{
-		  insn = emit_sfm (reg + 1, start_reg - reg);
-		  RTX_FRAME_RELATED_P (insn) = 1;
-		  saved_size += (start_reg - reg) * 12;
-		}
-	      start_reg = reg - 1;
-	    }
-	}
-
-      if (start_reg != reg)
-	{
-	  insn = emit_sfm (reg + 1, start_reg - reg);
-	  saved_size += (start_reg - reg) * 12;
-	  RTX_FRAME_RELATED_P (insn) = 1;
-	}
-    }
   if (TARGET_HARD_FLOAT && TARGET_VFP)
     {
       start_reg = FIRST_VFP_REGNUM;
@@ -17156,16 +16816,6 @@ arm_print_operand (FILE *stream, rtx x, int code)
       fprintf (stream, "%s", arithmetic_instr (x, 1));
       return;
 
-    /* Truncate Cirrus shift counts.  */
-    case 's':
-      if (GET_CODE (x) == CONST_INT)
-	{
-	  fprintf (stream, HOST_WIDE_INT_PRINT_DEC, INTVAL (x) & 0x3f);
-	  return;
-	}
-      arm_print_operand (stream, x, 0);
-      return;
-
     case 'I':
       fprintf (stream, "%s", arithmetic_instr (x, 0));
       return;
@@ -17352,44 +17002,15 @@ arm_print_operand (FILE *stream, rtx x, int code)
 	     stream);
       return;
 
-    /* Cirrus registers can be accessed in a variety of ways:
-         single floating point (f)
-	 double floating point (d)
-	 32bit integer         (fx)
-	 64bit integer         (dx).  */
-    case 'W':			/* Cirrus register in F mode.  */
-    case 'X':			/* Cirrus register in D mode.  */
-    case 'Y':			/* Cirrus register in FX mode.  */
-    case 'Z':			/* Cirrus register in DX mode.  */
-      gcc_assert (GET_CODE (x) == REG
-		  && REGNO_REG_CLASS (REGNO (x)) == CIRRUS_REGS);
-
-      fprintf (stream, "mv%s%s",
-	       code == 'W' ? "f"
-	       : code == 'X' ? "d"
-	       : code == 'Y' ? "fx" : "dx", reg_names[REGNO (x)] + 2);
-
-      return;
-
-    /* Print cirrus register in the mode specified by the register's mode.  */
+    case 's':
     case 'V':
-      {
-	int mode = GET_MODE (x);
-
-	if (GET_CODE (x) != REG || REGNO_REG_CLASS (REGNO (x)) != CIRRUS_REGS)
-	  {
-	    output_operand_lossage ("invalid operand for code '%c'", code);
-	    return;
-	  }
-
-	fprintf (stream, "mv%s%s",
-		 mode == DFmode ? "d"
-		 : mode == SImode ? "fx"
-		 : mode == DImode ? "dx"
-		 : "f", reg_names[REGNO (x)] + 2);
-
-	return;
-      }
+    case 'W':
+    case 'X':
+    case 'Y':
+    case 'Z':
+      /* Former Maverick support, removed after GCC-4.7.  */
+      output_operand_lossage ("obsolete Maverick format code '%c'", code);
+      return;
 
     case 'U':
       if (GET_CODE (x) != REG
@@ -18074,9 +17695,7 @@ maybe_get_arm_condition_code (rtx comparison)
 
     case CCFPEmode:
     case CCFPmode:
-      /* These encodings assume that AC=1 in the FPA system control
-	 byte.  This allows us to handle all cases except UNEQ and
-	 LTGT.  */
+      /* We can handle all cases except UNEQ and LTGT.  */
       switch (comp_code)
 	{
 	case GE: return ARM_GE;
@@ -18576,15 +18195,6 @@ arm_hard_regno_mode_ok (unsigned int regno, enum machine_mode mode)
        start of an even numbered register pair.  */
     return (ARM_NUM_REGS (mode) < 2) || (regno < LAST_LO_REGNUM);
 
-  if (TARGET_HARD_FLOAT && TARGET_MAVERICK
-      && IS_CIRRUS_REGNUM (regno))
-    /* We have outlawed SI values in Cirrus registers because they
-       reside in the lower 32 bits, but SF values reside in the
-       upper 32 bits.  This causes gcc all sorts of grief.  We can't
-       even split the registers into pairs because Cirrus SI values
-       get sign extended to 64bits-- aldyh.  */
-    return (GET_MODE_CLASS (mode) == MODE_FLOAT) || (mode == DImode);
-
   if (TARGET_HARD_FLOAT && TARGET_VFP
       && IS_VFP_REGNUM (regno))
     {
@@ -18634,12 +18244,7 @@ arm_hard_regno_mode_ok (unsigned int regno, enum machine_mode mode)
     /* We only allow integers in the fake hard registers.  */
     return GET_MODE_CLASS (mode) == MODE_INT;
 
-  /* The only registers left are the FPA registers
-     which we only allow to hold FP values.  */
-  return (TARGET_HARD_FLOAT && TARGET_FPA
-	  && GET_MODE_CLASS (mode) == MODE_FLOAT
-	  && regno >= FIRST_FPA_REGNUM
-	  && regno <= LAST_FPA_REGNUM);
+  return FALSE;
 }
 
 /* Implement MODES_TIEABLE_P.  */
@@ -18693,9 +18298,6 @@ arm_regno_class (int regno)
   if (regno == CC_REGNUM || regno == VFPCC_REGNUM)
     return TARGET_THUMB2 ? CC_REG : NO_REGS;
 
-  if (IS_CIRRUS_REGNUM (regno))
-    return CIRRUS_REGS;
-
   if (IS_VFP_REGNUM (regno))
     {
       if (regno <= D7_VFP_REGNUM)
@@ -18712,7 +18314,7 @@ arm_regno_class (int regno)
   if (IS_IWMMXT_GR_REGNUM (regno))
     return IWMMXT_GR_REGS;
 
-  return FPA_REGS;
+  return NO_REGS;
 }
 
 /* Handle a special case when computing the offset
@@ -23645,10 +23247,7 @@ arm_file_start (void)
 
       if (TARGET_SOFT_FLOAT)
 	{
-	  if (TARGET_VFP)
-	    fpu_name = "softvfp";
-	  else
-	    fpu_name = "softfpa";
+	  fpu_name = "softvfp";
 	}
       else
 	{
@@ -24550,11 +24149,6 @@ arm_dbx_register_number (unsigned int regno)
   if (regno < 16)
     return regno;
 
-  /* TODO: Legacy targets output FPA regs as registers 16-23 for backwards
-     compatibility.  The EABI defines them as registers 96-103.  */
-  if (IS_FPA_REGNUM (regno))
-    return (TARGET_AAPCS_BASED ? 96 : 16) + regno - FIRST_FPA_REGNUM;
-
   if (IS_VFP_REGNUM (regno))
     {
       /* See comment in arm_dwarf_register_span.  */
@@ -24655,12 +24249,6 @@ arm_unwind_emit_sequence (FILE * asm_out_file, rtx p)
     {
       reg_size = 8;
       fprintf (asm_out_file, "\t.vsave {");
-    }
-  else if (reg >= FIRST_FPA_REGNUM && reg <= LAST_FPA_REGNUM)
-    {
-      /* FPA registers are done differently.  */
-      asm_fprintf (asm_out_file, "\t.save %r, %wd\n", reg, nregs);
-      return;
     }
   else
     /* Unknown register type.  */
@@ -25358,7 +24946,7 @@ arm_mangle_type (const_tree type)
 static const int thumb_core_reg_alloc_order[] =
 {
    3,  2,  1,  0,  4,  5,  6,  7,
-  14, 12,  8,  9, 10, 11, 13, 15
+  14, 12,  8,  9, 10, 11
 };
 
 /* Adjust register allocation order when compiling for Thumb.  */
@@ -25441,13 +25029,6 @@ arm_conditional_register_usage (void)
 {
   int regno;
 
-  if (TARGET_SOFT_FLOAT || TARGET_THUMB1 || !TARGET_FPA)
-    {
-      for (regno = FIRST_FPA_REGNUM;
-	   regno <= LAST_FPA_REGNUM; ++regno)
-	fixed_regs[regno] = call_used_regs[regno] = 1;
-    }
-
   if (TARGET_THUMB1 && optimize_size)
     {
       /* When optimizing for size on Thumb-1, it's better not
@@ -25464,32 +25045,17 @@ arm_conditional_register_usage (void)
   if (TARGET_THUMB1)
     fixed_regs[LR_REGNUM] = call_used_regs[LR_REGNUM] = 1;
 
-  if (TARGET_32BIT && TARGET_HARD_FLOAT)
+  if (TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP)
     {
-      if (TARGET_MAVERICK)
+      /* VFPv3 registers are disabled when earlier VFP
+	 versions are selected due to the definition of
+	 LAST_VFP_REGNUM.  */
+      for (regno = FIRST_VFP_REGNUM;
+	   regno <= LAST_VFP_REGNUM; ++ regno)
 	{
-	  for (regno = FIRST_FPA_REGNUM;
-	       regno <= LAST_FPA_REGNUM; ++ regno)
-	    fixed_regs[regno] = call_used_regs[regno] = 1;
-	  for (regno = FIRST_CIRRUS_FP_REGNUM;
-	       regno <= LAST_CIRRUS_FP_REGNUM; ++ regno)
-	    {
-	      fixed_regs[regno] = 0;
-	      call_used_regs[regno] = regno < FIRST_CIRRUS_FP_REGNUM + 4;
-	    }
-	}
-      if (TARGET_VFP)
-	{
-	  /* VFPv3 registers are disabled when earlier VFP
-	     versions are selected due to the definition of
-	     LAST_VFP_REGNUM.  */
-	  for (regno = FIRST_VFP_REGNUM;
-	       regno <= LAST_VFP_REGNUM; ++ regno)
-	    {
-	      fixed_regs[regno] = 0;
-	      call_used_regs[regno] = regno < FIRST_VFP_REGNUM + 16
-	      	|| regno >= FIRST_VFP_REGNUM + 32;
-	    }
+	  fixed_regs[regno] = 0;
+	  call_used_regs[regno] = regno < FIRST_VFP_REGNUM + 16
+	    || regno >= FIRST_VFP_REGNUM + 32;
 	}
     }
 

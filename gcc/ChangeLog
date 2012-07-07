@@ -1,3 +1,92 @@
+2012-07-07  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.h (TARGET_CPU_CPP_BUILTINS): Remove Maverick support.
+	(TARGET_FPA): Delete definition.
+	(TARGET_MAVERICK): Likewise.
+	(TARGET_FPA_EMU2): Likewise.
+	(arm_fp_model): Remove FPA and Maverick models.
+	(arm_arch_cirrus): Delete declaration.
+	(FLOAT_WORDS_BIG_ENDIAN): Delete definition.
+	(FIXED_REGISTERS): Remove FPA and Maverick support.  Reorganize.
+	(CALL_USED_REGISTERS): Likewise.
+	(FIRST_FPA_REGNUM, LAST_FPA_REGNUM): Delete definition.
+	(FIRST_VFP_REGNUM): Renumbered.
+	(D7_VFP_REGNUM): Chain definition.
+	(LAST_LO_VFP_REGNUM): Likewise.
+	(FIRST_HI_VFP_REGNUM): Likewise.
+	(LAST_HI_VFP_REGNUM): Likewise.
+	(FIRST_IWMMXT_GR_REGNUM): Likewise.
+	(LAST_IWMMXT_GR_REGNUM): Likewise.
+	(FIRST_IWMMXT_REGNUM): Likewise.
+	(LAST_IWMMXT_REGNUM): Likewise.
+	(FRAME_POINTER_REGNUM): Renumbered.
+	(ARG_POINTER_REGNUM): Renumbered.
+	(FIRST_PSEUDO_REGISTER): Remove FPA and Maverick registers.
+	(FIRST_CIRRUS_FP_REGNUM, LAST_CIRRUS_FP_REGNUM): Delete definitions.
+	(HARD_REGNO_REGNUM): Remove FPA support.
+	(REG_ALLOC_ORDER): Remove FPA and Maverick registers.  Reorganize.
+	(reg_class): Likewise.
+	(REG_CLASS_NAMES): Likewise.
+	(REG_CLASS_CONTENTS): Likewise.
+	(CANNOT_CHANGE_MODE_CLASS): Never true.  Update comment.
+	(SECONDARY_INPUT_RELOAD_CLASS): Remove Maverick support.
+	(CLASS_MAX_NREGS): Remove FPA and Maverick support.
+	* aout.h (REGISTER_NAMES): Remove FPA and Maverick registers.
+	Reorganize.  Use AAPCS preferred names.
+	(ADDITIONAL_REGISTER_NAMES): Remove aliases for Maverick.  Update
+	comments.
+	(OVERLAPPING_REGISTER_NAMES): Update register numbering.
+	* arm.c (FL_CIRRUS): Delete definition.
+	(arm_arch_cirrus): Delete variable.
+	(arm_float_words_big_endian): Delete function.
+	(cirrus_memory_offset): Delete function.
+	(output_mov_long_double_fpa_from_arm): Delete function.
+	(output_mov_long_double_arm_from_fpa): Delete function.
+	(output_mov_double_fpa_from_arm): Delete function.
+	(output_mov_double_arm_from_fpa): Delete function.
+	(emit_sfm): Delete function.
+	(maybe_get_arm_condition_code): Update comment.
+	(arm_file_start): Always use softvfp for softfloat systems.
+	(thumb_core_reg_alloc_order): Adjust for updated register allocation.
+	(arm_option_override): Remove FPA and Maverick support.  Always
+	default to vfp as the fallback FPU format.
+	(use_return_insn): Remove FPA support.
+	(arm_get_frame_offsets): Likewise.
+	(arm_save_coproc_regs): Likewise.
+	(arm_canonicalize_comparison): Remove Maverick support.
+	(arm_select_cc_mode): Likewise.
+	(arm_gen_compare_reg): Likewise.
+	(arm_print_operand): Likewise.
+	(arm_libcall_value_1): Remove FPA and Maverick support.
+	(arm_function_value_regno_p): Likewise.
+	(arm_apply_result_size): Likewise.
+	(arm_legitimate_index_p): Likewise.
+	(thumb2_legitimate_index_p): Likewise.
+	(legitimize_reload_address): Likewise.
+	(arm_register_move_cost): Likewise.
+	(arm_hard_regno_mode_ok): Likewise.
+	(arm_regno_class): Likewise.
+	(arm_dbx_register_number): Likewise.
+	(arm_emit_unwind_sequence): Likewise.
+	(arm_conditional_register_usage): Likewise.
+	* arm-protos.h (neg_const_double_rtx_ok_for_fpa): Remove declaration.
+	(cirrus_memory_offset): Likewise.
+	(output_move_long_double_fpa_from_arm): Likewise.
+	(output_move_long_double_arm_from_fpa): Likewise.
+	(output_move_double_fpa_from_arm): Likewise.
+	(output_move_double_arm_from_fpa): Likewise.
+	(arm_float_words_big_endian): Likewise.
+	* arm.md (CC_REGNUM): Renumbered.
+	(VFPCC_REGNUM): Moved here.  Renumbered.
+	(FPA_F0_REGNUM, FPA_F7_REGNUM): Delete.
+	(attr fpu): Remove FPA and Maverick support.
+	* vfp.md (VFPCC_REGNUM): Delete.  Moved to arm.md.
+	* arm-cores.def (ep9312): Remove Maverick support.
+	* arm-arches.def (ep9312): Delete architecture.
+	* arm-tables.opt: Regenerated.
+
+	* arm/linux-elf.h (FPUTYPE_DEFAULT): Set to vfp.
+
 2012-07-07  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR tree-optimization/53881
