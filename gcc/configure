@@ -7236,6 +7236,17 @@ fi
 
 
 
+if test "x$prefix" = xNONE; then
+ test_prefix=/usr/local
+else
+ test_prefix=$prefix
+fi
+if test "x$exec_prefix" = xNONE; then
+ test_exec_prefix=$test_prefix
+else
+ test_exec_prefix=$exec_prefix
+fi
+
 
 # Check whether --with-sysroot was given.
 if test "${with_sysroot+set}" = set; then :
@@ -7248,16 +7259,6 @@ if test "${with_sysroot+set}" = set; then :
  TARGET_SYSTEM_ROOT_DEFINE='-DTARGET_SYSTEM_ROOT=\"$(TARGET_SYSTEM_ROOT)\"'
  CROSS_SYSTEM_HEADER_DIR='$(TARGET_SYSTEM_ROOT)$${sysroot_headers_suffix}$(NATIVE_SYSTEM_HEADER_DIR)'
 
- if test "x$prefix" = xNONE; then
-  test_prefix=/usr/local
- else
-  test_prefix=$prefix
- fi
- if test "x$exec_prefix" = xNONE; then
-  test_exec_prefix=$test_prefix
- else
-  test_exec_prefix=$exec_prefix
- fi
  case ${TARGET_SYSTEM_ROOT} in
  "${test_prefix}"|"${test_prefix}/"*|\
  "${test_exec_prefix}"|"${test_exec_prefix}/"*|\
@@ -17971,7 +17972,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17974 "configure"
+#line 17975 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18077,7 +18078,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18080 "configure"
+#line 18081 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -26631,11 +26632,11 @@ if test x$host != x$target || test "x$TARGET_SYSTEM_ROOT" != x; then
   if test "x$with_headers" != x; then
     target_header_dir=$with_headers
   elif test "x$with_sysroot" = x; then
-    target_header_dir="${exec_prefix}/${target_noncanonical}/sys-include"
+    target_header_dir="${test_exec_prefix}/${target_noncanonical}/sys-include"
   elif test "x$with_build_sysroot" != "x"; then
     target_header_dir="${with_build_sysroot}${native_system_header_dir}"
   elif test "x$with_sysroot" = xyes; then
-    target_header_dir="${exec_prefix}/${target_noncanonical}/sys-root${native_system_header_dir}"
+    target_header_dir="${test_exec_prefix}/${target_noncanonical}/sys-root${native_system_header_dir}"
   else
     target_header_dir="${with_sysroot}${native_system_header_dir}"
   fi

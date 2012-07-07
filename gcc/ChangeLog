@@ -1,3 +1,10 @@
+2012-07-07  Hans-Peter Nilsson  <hp@axis.com>
+
+	Fix configure test for "stack protector support in target C library".
+	* configure.ac (test_prefix, test_exec_prefix): Move setting from
+	inside sysroot handling to before and outside it.
+	* configure: Regenerate.
+
 2012-07-06  Kai Tietz  <ktietz@redhat.com>
 
 	PR bootstrap/52947
