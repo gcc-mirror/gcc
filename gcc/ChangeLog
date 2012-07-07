@@ -1,3 +1,8 @@
+2012-07-07  Ulrich Weigand  <ulrich.weigand@linaro.org>
+
+	* combine.c (force_to_mode) [LSHIFTRT]: Avoid undefined behaviour
+	due to negative shift amount.
+
 2012-07-06  Kai Tietz  <ktietz@redhat.com>
 
 	Backport from mainline.
