@@ -747,6 +747,17 @@ AC_ARG_WITH(build-sysroot,
   [SYSROOT_CFLAGS_FOR_TARGET=])
 AC_SUBST(SYSROOT_CFLAGS_FOR_TARGET)
 
+if test "x$prefix" = xNONE; then
+ test_prefix=/usr/local
+else
+ test_prefix=$prefix
+fi
+if test "x$exec_prefix" = xNONE; then
+ test_exec_prefix=$test_prefix
+else
+ test_exec_prefix=$exec_prefix
+fi
+
 AC_ARG_WITH(sysroot,
 [AS_HELP_STRING([[--with-sysroot[=DIR]]],
 		[search for usr/lib, usr/include, et al, within DIR])],
@@ -759,16 +770,6 @@ AC_ARG_WITH(sysroot,
  TARGET_SYSTEM_ROOT_DEFINE='-DTARGET_SYSTEM_ROOT=\"$(TARGET_SYSTEM_ROOT)\"'
  CROSS_SYSTEM_HEADER_DIR='$(TARGET_SYSTEM_ROOT)$${sysroot_headers_suffix}$(NATIVE_SYSTEM_HEADER_DIR)'
 	
- if test "x$prefix" = xNONE; then
-  test_prefix=/usr/local
- else
-  test_prefix=$prefix
- fi
- if test "x$exec_prefix" = xNONE; then
-  test_exec_prefix=$test_prefix
- else
-  test_exec_prefix=$exec_prefix
- fi
  case ${TARGET_SYSTEM_ROOT} in
  "${test_prefix}"|"${test_prefix}/"*|\
  "${test_exec_prefix}"|"${test_exec_prefix}/"*|\
@@ -4534,11 +4535,11 @@ if test x$host != x$target || test "x$TARGET_SYSTEM_ROOT" != x; then
   if test "x$with_headers" != x; then
     target_header_dir=$with_headers
   elif test "x$with_sysroot" = x; then
-    target_header_dir="${exec_prefix}/${target_noncanonical}/sys-include"
+    target_header_dir="${test_exec_prefix}/${target_noncanonical}/sys-include"
   elif test "x$with_build_sysroot" != "x"; then
     target_header_dir="${with_build_sysroot}${native_system_header_dir}"
   elif test "x$with_sysroot" = xyes; then
-    target_header_dir="${exec_prefix}/${target_noncanonical}/sys-root${native_system_header_dir}"
+    target_header_dir="${test_exec_prefix}/${target_noncanonical}/sys-root${native_system_header_dir}"
   else
     target_header_dir="${with_sysroot}${native_system_header_dir}"
   fi
