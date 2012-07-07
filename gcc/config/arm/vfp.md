@@ -19,11 +19,6 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.  */
 
-;; Additional register numbers
-(define_constants
-  [(VFPCC_REGNUM 127)]
-)
-
 ;; The VFP "type" attributes differ from those used in the FPA model.
 ;; fcpys	Single precision cpy.
 ;; ffariths	Single precision abs, neg.

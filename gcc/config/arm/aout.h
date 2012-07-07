@@ -51,30 +51,24 @@
    (each of which is overlaid on two S registers), although there are no
    actual single-precision registers which correspond to D16-D31.  */
 #ifndef REGISTER_NAMES
-#define REGISTER_NAMES				   \
-{				                   \
-  "r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7",  \
-  "r8", "r9", "sl", "fp", "ip", "sp", "lr", "pc",  \
-  "f0", "f1", "f2", "f3", "f4", "f5", "f6", "f7",  \
-  "cc", "sfp", "afp",		   		   \
-  "mv0",   "mv1",   "mv2",   "mv3",		   \
-  "mv4",   "mv5",   "mv6",   "mv7",		   \
-  "mv8",   "mv9",   "mv10",  "mv11",		   \
-  "mv12",  "mv13",  "mv14",  "mv15",		   \
-  "wcgr0", "wcgr1", "wcgr2", "wcgr3",		   \
-  "wr0",   "wr1",   "wr2",   "wr3",		   \
-  "wr4",   "wr5",   "wr6",   "wr7",		   \
-  "wr8",   "wr9",   "wr10",  "wr11",		   \
-  "wr12",  "wr13",  "wr14",  "wr15",		   \
-  "s0",  "s1",  "s2",  "s3",  "s4",  "s5",  "s6",  "s7",  \
-  "s8",  "s9",  "s10", "s11", "s12", "s13", "s14", "s15", \
-  "s16", "s17", "s18", "s19", "s20", "s21", "s22", "s23", \
-  "s24", "s25", "s26", "s27", "s28", "s29", "s30", "s31", \
-  "d16", "?16", "d17", "?17", "d18", "?18", "d19", "?19", \
-  "d20", "?20", "d21", "?21", "d22", "?22", "d23", "?23", \
-  "d24", "?24", "d25", "?25", "d26", "?26", "d27", "?27", \
-  "d28", "?28", "d29", "?29", "d30", "?30", "d31", "?31", \
-  "vfpcc"					   \
+#define REGISTER_NAMES						\
+{								\
+  "r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7",		\
+  "r8", "r9", "r10", "fp", "ip", "sp", "lr", "pc",		\
+  "s0",  "s1",  "s2",  "s3",  "s4",  "s5",  "s6",  "s7",	\
+  "s8",  "s9",  "s10", "s11", "s12", "s13", "s14", "s15",	\
+  "s16", "s17", "s18", "s19", "s20", "s21", "s22", "s23",	\
+  "s24", "s25", "s26", "s27", "s28", "s29", "s30", "s31",	\
+  "d16", "?16", "d17", "?17", "d18", "?18", "d19", "?19",	\
+  "d20", "?20", "d21", "?21", "d22", "?22", "d23", "?23",	\
+  "d24", "?24", "d25", "?25", "d26", "?26", "d27", "?27",	\
+  "d28", "?28", "d29", "?29", "d30", "?30", "d31", "?31",	\
+  "wr0",   "wr1",   "wr2",   "wr3",				\
+  "wr4",   "wr5",   "wr6",   "wr7",				\
+  "wr8",   "wr9",   "wr10",  "wr11",				\
+  "wr12",  "wr13",  "wr14",  "wr15",				\
+  "wcgr0", "wcgr1", "wcgr2", "wcgr3",				\
+  "cc", "vfpcc", "sfp", "afp"					\
 }
 #endif
 
@@ -91,117 +85,53 @@
   {"v4", 7},					\
   {"v5", 8},					\
   {"v6", 9},					\
-  {"rfp", 9}, /* Gcc used to call it this */	\
-  {"sb", 9},					\
+  {"rfp", 9}, /* Historical.  */		\
+  {"sb", 9}, /* Historical.  */			\
   {"v7", 10},					\
-  {"r10", 10},	/* sl */			\
+  {"sl", 10},	/* Historical.  */		\
   {"r11", 11},	/* fp */			\
   {"r12", 12},	/* ip */			\
   {"r13", 13},	/* sp */			\
   {"r14", 14},	/* lr */			\
-  {"r15", 15},	/* pc */			\
-  {"mvf0", 27},					\
-  {"mvf1", 28},					\
-  {"mvf2", 29},					\
-  {"mvf3", 30},					\
-  {"mvf4", 31},					\
-  {"mvf5", 32},					\
-  {"mvf6", 33},					\
-  {"mvf7", 34},					\
-  {"mvf8", 35},					\
-  {"mvf9", 36},					\
-  {"mvf10", 37},				\
-  {"mvf11", 38},				\
-  {"mvf12", 39},				\
-  {"mvf13", 40},				\
-  {"mvf14", 41},				\
-  {"mvf15", 42},				\
-  {"mvd0", 27},					\
-  {"mvd1", 28},					\
-  {"mvd2", 29},					\
-  {"mvd3", 30},					\
-  {"mvd4", 31},					\
-  {"mvd5", 32},					\
-  {"mvd6", 33},					\
-  {"mvd7", 34},					\
-  {"mvd8", 35},					\
-  {"mvd9", 36},					\
-  {"mvd10", 37},				\
-  {"mvd11", 38},				\
-  {"mvd12", 39},				\
-  {"mvd13", 40},				\
-  {"mvd14", 41},				\
-  {"mvd15", 42},				\
-  {"mvfx0", 27},				\
-  {"mvfx1", 28},				\
-  {"mvfx2", 29},				\
-  {"mvfx3", 30},				\
-  {"mvfx4", 31},				\
-  {"mvfx5", 32},				\
-  {"mvfx6", 33},				\
-  {"mvfx7", 34},				\
-  {"mvfx8", 35},				\
-  {"mvfx9", 36},				\
-  {"mvfx10", 37},				\
-  {"mvfx11", 38},				\
-  {"mvfx12", 39},				\
-  {"mvfx13", 40},				\
-  {"mvfx14", 41},				\
-  {"mvfx15", 42},				\
-  {"mvdx0", 27},				\
-  {"mvdx1", 28},				\
-  {"mvdx2", 29},				\
-  {"mvdx3", 30},				\
-  {"mvdx4", 31},				\
-  {"mvdx5", 32},				\
-  {"mvdx6", 33},				\
-  {"mvdx7", 34},				\
-  {"mvdx8", 35},				\
-  {"mvdx9", 36},				\
-  {"mvdx10", 37},				\
-  {"mvdx11", 38},				\
-  {"mvdx12", 39},				\
-  {"mvdx13", 40},				\
-  {"mvdx14", 41},				\
-  {"mvdx15", 42}				\
+  {"r15", 15}	/* pc */			\
 }
 #endif
 
 #ifndef OVERLAPPING_REGISTER_NAMES
 #define OVERLAPPING_REGISTER_NAMES		\
 {						\
-  {"d0", 63, 2},				\
-  {"d1", 65, 2},				\
-  {"d2", 67, 2},				\
-  {"d3", 69, 2},				\
-  {"d4", 71, 2},				\
-  {"d5", 73, 2},				\
-  {"d6", 75, 2},				\
-  {"d7", 77, 2},				\
-  {"d8", 79, 2},				\
-  {"d9", 81, 2},				\
-  {"d10", 83, 2},				\
-  {"d11", 85, 2},				\
-  {"d12", 87, 2},				\
-  {"d13", 89, 2},				\
-  {"d14", 91, 2},				\
-  {"d15", 93, 2},				\
-  {"q0", 63, 4},				\
-  {"q1", 67, 4},				\
-  {"q2", 71, 4},				\
-  {"q3", 75, 4},				\
-  {"q4", 79, 4},				\
-  {"q5", 83, 4},				\
-  {"q6", 87, 4},				\
-  {"q7", 91, 4},				\
-  {"q8", 95, 4},				\
-  {"q9", 99, 4},				\
-  {"q10", 103, 4},				\
-  {"q11", 107, 4},				\
-  {"q12", 111, 4},				\
-  {"q13", 115, 4},				\
-  {"q14", 119, 4},				\
-  {"q15", 123, 4}				\
+  {"d0",  FIRST_VFP_REGNUM + 0,  2},		\
+  {"d1",  FIRST_VFP_REGNUM + 2,  2},		\
+  {"d2",  FIRST_VFP_REGNUM + 4,  2},		\
+  {"d3",  FIRST_VFP_REGNUM + 6,  2},		\
+  {"d4",  FIRST_VFP_REGNUM + 8,  2},		\
+  {"d5",  FIRST_VFP_REGNUM + 10, 2},		\
+  {"d6",  FIRST_VFP_REGNUM + 12, 2},		\
+  {"d7",  FIRST_VFP_REGNUM + 14, 2},		\
+  {"d8",  FIRST_VFP_REGNUM + 16, 2},		\
+  {"d9",  FIRST_VFP_REGNUM + 18, 2},		\
+  {"d10", FIRST_VFP_REGNUM + 20, 2},		\
+  {"d11", FIRST_VFP_REGNUM + 22, 2},		\
+  {"d12", FIRST_VFP_REGNUM + 24, 2},		\
+  {"d13", FIRST_VFP_REGNUM + 26, 2},		\
+  {"d14", FIRST_VFP_REGNUM + 28, 2},		\
+  {"d15", FIRST_VFP_REGNUM + 30, 2},		\
+  {"q0",  FIRST_VFP_REGNUM + 0,  4},		\
+  {"q1",  FIRST_VFP_REGNUM + 4,  4},		\
+  {"q2",  FIRST_VFP_REGNUM + 8,  4},		\
+  {"q3",  FIRST_VFP_REGNUM + 12, 4},		\
+  {"q4",  FIRST_VFP_REGNUM + 16, 4},		\
+  {"q5",  FIRST_VFP_REGNUM + 20, 4},		\
+  {"q6",  FIRST_VFP_REGNUM + 24, 4},		\
+  {"q7",  FIRST_VFP_REGNUM + 28, 4},		\
+  {"q8",  FIRST_VFP_REGNUM + 32, 4},		\
+  {"q9",  FIRST_VFP_REGNUM + 36, 4},		\
+  {"q10", FIRST_VFP_REGNUM + 40, 4},		\
+  {"q11", FIRST_VFP_REGNUM + 44, 4},		\
+  {"q12", FIRST_VFP_REGNUM + 48, 4},		\
+  {"q13", FIRST_VFP_REGNUM + 52, 4},		\
+  {"q14", FIRST_VFP_REGNUM + 56, 4},		\
+  {"q15", FIRST_VFP_REGNUM + 60, 4}		\
 }
 #endif
 

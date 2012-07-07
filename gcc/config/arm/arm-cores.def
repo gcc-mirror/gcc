@@ -89,7 +89,7 @@ ARM_CORE("arm920",        arm920,	4T,	                         FL_LDSCHED, fastm
 ARM_CORE("arm920t",       arm920t,	4T,	                         FL_LDSCHED, fastmul)
 ARM_CORE("arm922t",       arm922t,	4T,	                         FL_LDSCHED, fastmul)
 ARM_CORE("arm940t",       arm940t,	4T,	                         FL_LDSCHED, fastmul)
-ARM_CORE("ep9312",        ep9312,	4T,	                         FL_LDSCHED |             FL_CIRRUS, fastmul)
+ARM_CORE("ep9312",        ep9312,	4T,	                         FL_LDSCHED, fastmul)
 
 /* V5T Architecture Processors */
 ARM_CORE("arm10tdmi",     arm10tdmi,	5T,	                         FL_LDSCHED, fastmul)
