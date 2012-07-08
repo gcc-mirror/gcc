@@ -7220,9 +7220,31 @@ label:
 }
   [(set_attr "type" "cbranch")])
 
+(define_insn "*branch_true_eq"
+  [(set (pc) (if_then_else (eq (match_operand 1 "t_reg_operand" "")
+			       (const_int 1))
+			   (label_ref (match_operand 0 "" ""))
+			   (pc)))]
+  "TARGET_SH1"
+{
+  return output_branch (1, insn, operands);
+}
+  [(set_attr "type" "cbranch")])
+
 (define_insn "branch_false"
   [(set (pc) (if_then_else (eq (match_operand 1 "t_reg_operand" "")
 			       (const_int 0))
+			   (label_ref (match_operand 0 "" ""))
+			   (pc)))]
+  "TARGET_SH1"
+{
+  return output_branch (0, insn, operands);
+}
+  [(set_attr "type" "cbranch")])
+
+(define_insn "*branch_false_ne"
+  [(set (pc) (if_then_else (ne (match_operand 1 "t_reg_operand" "")
+			       (const_int 1))
 			   (label_ref (match_operand 0 "" ""))
 			   (pc)))]
   "TARGET_SH1"
@@ -9843,6 +9865,20 @@ label:
   "#"
   ""
   [(const_int 0)])
+
+(define_insn_and_split "nott"
+  [(set (reg:SI T_REG) (xor:SI (reg:SI T_REG) (const_int 1)))]
+  "TARGET_SH1"
+{
+  gcc_assert (TARGET_SH2A);
+  return "nott";
+}
+  "! TARGET_SH2A && can_create_pseudo_p ()"
+  [(set (match_dup 0) (reg:SI T_REG))
+   (set (reg:SI T_REG) (eq:SI (match_dup 0) (const_int 0)))]
+{
+  operands[0] = gen_reg_rtx (SImode);
+})
 
 (define_expand "cstoresf4"
   [(set (match_operand:SI 0 "register_operand" "=r")
