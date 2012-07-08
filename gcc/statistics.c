@@ -142,7 +142,7 @@ statistics_fini_pass_2 (void **slot, void *data ATTRIBUTE_UNUSED)
 	     current_pass->static_pass_number,
 	     current_pass->name,
 	     counter->id, counter->val,
-	     cfun ? IDENTIFIER_POINTER (DECL_NAME (cfun->decl)) : "(nofn)",
+	     current_function_name (),
 	     count);
   else
     fprintf (statistics_dump_file,
@@ -150,7 +150,7 @@ statistics_fini_pass_2 (void **slot, void *data ATTRIBUTE_UNUSED)
 	     current_pass->static_pass_number,
 	     current_pass->name,
 	     counter->id,
-	     cfun ? IDENTIFIER_POINTER (DECL_NAME (cfun->decl)) : "(nofn)",
+	     current_function_name (),
 	     count);
   counter->prev_dumped_count = counter->count;
   return 1;
@@ -312,7 +312,7 @@ statistics_counter_event (struct function *fn, const char *id, int incr)
 	   current_pass->static_pass_number,
 	   current_pass->name,
 	   id,
-	   fn ? IDENTIFIER_POINTER (DECL_NAME (fn->decl)) : "(nofn)",
+	   function_name (fn),
 	   incr);
 }
 
@@ -342,5 +342,5 @@ statistics_histogram_event (struct function *fn, const char *id, int val)
 	   current_pass->static_pass_number,
 	   current_pass->name,
 	   id, val,
-	   fn ? IDENTIFIER_POINTER (DECL_NAME (fn->decl)) : "(nofn)");
+	   function_name (fn));
 }

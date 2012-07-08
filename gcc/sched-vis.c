@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "rtl.h"
+#include "tree.h"	/* FIXME: To dump INSN_VAR_LOCATION_DECL.  */
 #include "obstack.h"
 #include "hard-reg-set.h"
 #include "basic-block.h"
@@ -806,13 +807,15 @@ print_rtl_slim (FILE *f, rtx first, rtx last, int count, int flags)
        (insn != NULL) && (insn != tail) && (count != 0);
        insn = NEXT_INSN (insn))
     {
+      bool verbose = ((flags & TDF_DETAILS) != 0);
+
       if ((flags & TDF_BLOCKS)
 	  && (INSN_P (insn) || NOTE_P (insn))
 	  && BLOCK_FOR_INSN (insn)
 	  && !current_bb)
 	{
 	  current_bb = BLOCK_FOR_INSN (insn);
-	  dump_bb_info (current_bb, true, false, flags, ";; ", f);
+	  dump_bb_info (current_bb, true, false, verbose, ";; ", f);
 	}
 
       dump_insn_slim (f, insn);
@@ -821,7 +824,7 @@ print_rtl_slim (FILE *f, rtx first, rtx last, int count, int flags)
 	  && current_bb
 	  && insn == BB_END (current_bb))
 	{
-	  dump_bb_info (current_bb, false, true, flags, ";; ", f);
+	  dump_bb_info (current_bb, false, true, verbose, ";; ", f);
 	  current_bb = NULL;
 	}
       if (count > 0)

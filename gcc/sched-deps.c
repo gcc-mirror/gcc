@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "diagnostic-core.h"
 #include "rtl.h"
+#include "tree.h"		/* FIXME: Used by call_may_noreturn_p.  */
 #include "tm_p.h"
 #include "hard-reg-set.h"
 #include "regs.h"
@@ -3374,6 +3375,8 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx insn)
 
 /* Return TRUE if INSN might not always return normally (e.g. call exit,
    longjmp, loop forever, ...).  */
+/* FIXME: Why can't this function just use flags_from_decl_or_type and
+   test for ECF_NORETURN?  */
 static bool
 call_may_noreturn_p (rtx insn)
 {

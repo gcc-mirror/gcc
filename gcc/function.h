@@ -22,11 +22,14 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_FUNCTION_H
 #define GCC_FUNCTION_H
 
-#include "tree.h"
 #include "hashtab.h"
+#include "vec.h"
 #include "vecprim.h"
-#include "tm.h"		/* For CUMULATIVE_ARGS.  */
-#include "hard-reg-set.h"
+#include "vecir.h"
+#include "machmode.h"
+#include "tm.h"			/* For CUMULATIVE_ARGS.  */
+#include "hard-reg-set.h"	/* For HARD_REG_SET in struct rtl_data. */
+#include "input.h"		/* For location_t.  */
 
 /* Stack of pending (incomplete) sequences saved by `start_sequence'.
    Each element describes one pending sequence.
@@ -760,6 +763,7 @@ extern void clobber_return_register (void);
 extern rtx get_arg_pointer_save_area (void);
 
 /* Returns the name of the current function.  */
+extern const char *function_name (struct function *);
 extern const char *current_function_name (void);
 
 extern void do_warn_unused_parameter (tree);

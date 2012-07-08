@@ -1,3 +1,7 @@
+2012-07-08  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* decl.c (cp_finish_decl): Add FIXME at add_local_decl call site.
+
 2012-07-06  Jason Merrill  <jason@redhat.com>
 
 	PR c++/53862

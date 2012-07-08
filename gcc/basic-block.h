@@ -448,10 +448,6 @@ basic_block split_edge_and_insert (edge, rtx);
 extern void commit_one_edge_insertion (edge e);
 extern void commit_edge_insertions (void);
 
-extern void remove_fake_edges (void);
-extern void remove_fake_exit_edges (void);
-extern void add_noreturn_fake_exit_edges (void);
-extern void connect_infinite_loops_to_exit (void);
 extern edge unchecked_make_edge (basic_block, basic_block, int);
 extern edge cached_make_edge (sbitmap, basic_block, basic_block, int);
 extern edge make_edge (basic_block, basic_block, int);
@@ -462,15 +458,7 @@ extern edge redirect_edge_succ_nodup (edge, basic_block);
 extern void redirect_edge_pred (edge, basic_block);
 extern basic_block create_basic_block_structure (rtx, rtx, rtx, basic_block);
 extern void clear_bb_flags (void);
-extern int post_order_compute (int *, bool, bool);
-extern int inverted_post_order_compute (int *);
-extern int pre_and_rev_post_order_compute (int *, int *, bool);
-extern int dfs_enumerate_from (basic_block, int,
-			       bool (*)(const_basic_block, const void *),
-			       basic_block *, int, const void *);
-extern void compute_dominance_frontiers (struct bitmap_head_def *);
-extern bitmap compute_idf (bitmap, struct bitmap_head_def *);
-extern void dump_bb_info (basic_block, bool, bool, int, const char *, FILE *);
+extern void dump_bb_info (basic_block, bool, bool, bool, const char *, FILE *);
 extern void dump_edge_info (FILE *, edge, int);
 extern void brief_dump_cfg (FILE *);
 extern void clear_edges (void);
@@ -501,9 +489,9 @@ typedef struct ce_if_block
 } ce_if_block_t;
 
 /* This structure maintains an edge list vector.  */
+/* FIXME: Make this a VEC(edge).  */
 struct edge_list
 {
-  int num_blocks;
   int num_edges;
   edge *index_to_edge;
 };
@@ -734,13 +722,6 @@ ei_cond (edge_iterator ei, edge *p)
        ei_cond ((ITER), &(EDGE));		\
        ei_next (&(ITER)))
 
-struct edge_list * create_edge_list (void);
-void free_edge_list (struct edge_list *);
-void print_edge_list (FILE *, struct edge_list *);
-void verify_edge_list (FILE *, struct edge_list *);
-int find_edge_index (struct edge_list *, basic_block, basic_block);
-edge find_edge (basic_block, basic_block);
-
 #define CLEANUP_EXPENSIVE	1	/* Do relatively expensive optimizations
 					   except for edge forwarding */
 #define CLEANUP_CROSSJUMP	2	/* Do crossjumping.  */
@@ -789,6 +770,7 @@ extern bool predictable_edge_p (edge);
 extern void init_flow (struct function *);
 extern void debug_bb (basic_block);
 extern basic_block debug_bb_n (int);
+extern void dump_flow_info (FILE *, int);
 extern void expunge_block (basic_block);
 extern void link_block (basic_block, basic_block);
 extern void unlink_block (basic_block);
@@ -804,11 +786,25 @@ extern void free_aux_for_edges (void);
 
 /* In cfganal.c  */
 extern void find_unreachable_blocks (void);
-extern bool forwarder_block_p (const_basic_block);
-extern bool can_fallthru (basic_block, basic_block);
-extern bool could_fall_through (basic_block, basic_block);
-extern void flow_nodes_print (const char *, const_sbitmap, FILE *);
-extern void flow_edge_list_print (const char *, const edge *, int, FILE *);
+extern bool mark_dfs_back_edges (void);
+struct edge_list * create_edge_list (void);
+void free_edge_list (struct edge_list *);
+void print_edge_list (FILE *, struct edge_list *);
+void verify_edge_list (FILE *, struct edge_list *);
+int find_edge_index (struct edge_list *, basic_block, basic_block);
+edge find_edge (basic_block, basic_block);
+extern void remove_fake_edges (void);
+extern void remove_fake_exit_edges (void);
+extern void add_noreturn_fake_exit_edges (void);
+extern void connect_infinite_loops_to_exit (void);
+extern int post_order_compute (int *, bool, bool);
+extern int inverted_post_order_compute (int *);
+extern int pre_and_rev_post_order_compute (int *, int *, bool);
+extern int dfs_enumerate_from (basic_block, int,
+			       bool (*)(const_basic_block, const void *),
+			       basic_block *, int, const void *);
+extern void compute_dominance_frontiers (struct bitmap_head_def *);
+extern bitmap compute_idf (bitmap, struct bitmap_head_def *);
 
 /* In cfgrtl.c  */
 extern rtx block_label (basic_block);
@@ -817,6 +813,8 @@ extern bool purge_all_dead_edges (void);
 extern bool purge_dead_edges (basic_block);
 extern bool fixup_abnormal_edges (void);
 extern basic_block force_nonfallthru_and_redirect (edge, basic_block, rtx);
+extern bool forwarder_block_p (const_basic_block);
+extern bool can_fallthru (basic_block, basic_block);
 
 /* In cfgbuild.c.  */
 extern void find_many_sub_basic_blocks (sbitmap);
@@ -833,8 +831,6 @@ extern int flow_find_head_matching_sequence (basic_block, basic_block,
 
 extern bool delete_unreachable_blocks (void);
 
-extern bool mark_dfs_back_edges (void);
-extern void set_edge_can_fallthru_flag (void);
 extern void update_br_prob_note (basic_block);
 extern bool inside_basic_block_p (const_rtx);
 extern bool control_flow_insn_p (const_rtx);
