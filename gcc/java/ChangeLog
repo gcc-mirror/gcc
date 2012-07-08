@@ -1,3 +1,8 @@
+2012-07-08  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* verify.h: Do not include system.h and coretypes.h here.
+	* verify-impl.c: Include them here instead.
+
 2012-07-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	* jcf-io.c (read_zip_member): Initialize d_stream.

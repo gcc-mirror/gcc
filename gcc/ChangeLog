@@ -1,5 +1,21 @@
 2012-07-08  Steven Bosscher  <steven@gcc.gnu.org>
 
+	* alias.h: Do not include coretypes.h in header files.
+	* cppbuiltin.h: Likewise.
+	* double-int.h: Likewise.
+	* gimple-fold.h: Likewise.
+	* flags.h: Likewise.
+	* tree-ssa-alias.h: Likewise.
+	* gengtype.h (obstack_chunk_alloc, obstack_chunk_free,
+	OBSTACK_CHUNK_SIZE): Define here to avoid dependency on coretypes.h.
+	* Makefile.in (RTL_BASE_H): Depend on coretypes.h.
+	(TREE_H): Likewise.
+	(ALIAS_H): Do not depend on coretypes.h.
+	(FLAGS_H): Likewise.
+	(realmpfr.o): Depend on coretypes.h.
+
+2012-07-08  Steven Bosscher  <steven@gcc.gnu.org>
+
 	* Makefile.in (gengtype-lex.o, gengtype-parse.o, gengtype-state.o,
 	gengtype.o): Add -DGENERATOR_FILE manually for host gengtype objects.
 

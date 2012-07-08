@@ -22,8 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_GIMPLE_FOLD_H
 #define GCC_GIMPLE_FOLD_H
 
-#include "coretypes.h"
-
 tree fold_const_aggregate_ref_1 (tree, tree (*) (tree));
 tree fold_const_aggregate_ref (tree);
 
