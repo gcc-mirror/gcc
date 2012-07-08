@@ -9442,8 +9442,7 @@ label:
 		    && (crtl->args.info.call_cookie
 			& CALL_COOKIE_RET_TRAMP (1)))
    && reload_completed
-   && lookup_attribute (\"trap_exit\",
-			DECL_ATTRIBUTES (current_function_decl)) == NULL_TREE"
+   && ! sh_cfun_trap_exit_p ()"
 {
   if (TARGET_SH2A && (dbr_sequence_length () == 0)
       && !current_function_interrupt)
