@@ -1,3 +1,8 @@
+2012-07-08  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* Makefile.in (gengtype-lex.o, gengtype-parse.o, gengtype-state.o,
+	gengtype.o): Add -DGENERATOR_FILE manually for host gengtype objects.
+
 2012-07-07  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.h (TARGET_CPU_CPP_BUILTINS): Remove Maverick support.
