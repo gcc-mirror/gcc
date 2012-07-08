@@ -1,3 +1,11 @@
+2012-07-08  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* mcf.c: Do not include tm.h, tree.h, and langhooks.h.
+	(dump_fixup_graph): Use current_function_name.
+	(adjust_cfg_counts): Likewise.
+	* ira-conflicts.c: Do not include tree.h.
+	(ira_build_conflicts): Use REG_USERVAR_P instead of DECL_ARTIFICIAL.
+
 2012-07-08  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/51244
