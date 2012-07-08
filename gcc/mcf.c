@@ -48,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "basic-block.h"
+#include "tree.h"		/* FIXME: Only for langhooks.h.  */
 #include "langhooks.h"
 #include "tree.h"
 #include "gcov-io.h"

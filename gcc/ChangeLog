@@ -1,5 +1,103 @@
 2012-07-08  Steven Bosscher  <steven@gcc.gnu.org>
 
+	* basic-block.h: Re-group most prototypes per file.
+	(struct edge_list): Remove num_blocks field.
+	(dump_bb_info): Adjust prototypes.
+	(dump_reg_info): Move prototype to regs.h.
+	* function.h: Do not include tree.h.
+	Include vec.h, vecir.h, input.h and machmode.h to compensate.
+	(function_name): New prototype.
+	* gimple.h: Include tree.h to compensate for basic-block.h change.
+	* langhooks.h: Note that tree.h is only necessary for enum tree_code.
+	* regs.h (dump_reg_info): Prototype here.
+	* regset.h: Adjust file reference in comment.
+	(debug_regset): Remove prototype.
+	* rtl.h: Include flags.h for flag_var_tracking_assignments.
+	(MAY_HAVE_DEBUG_INSNS): Define as flag_var_tracking_assignments
+	instead of no-longer-available tree.h's MAY_HAVE_DEBUG_STMTS.
+	(dump_reg_info, dump_flow_info): Remove prototypes.
+	* bb-reorder.c (set_edge_can_fallthru_flag): Move from cfganal.c
+	to here, the only user.  Make static.
+	(reorder_basic_blocks): Call dump_reg_info before dump_flow_info.
+	* cfg.c: Do not include tm.h, tree.h, rtl.h, hard-reg-set.h, regs.h,
+	flags.h, function.h, except.h, diagnostic-core.h, tm_p.h, timevar.h,
+	tree-pass.h, cfgloop.h, and tree-flow.h.
+	Include basic-block.h, the first header I'd expect to be included.
+	(reg_obstack): Move to df-core.c.
+	(free_edge): Remove bogus ATTRIBUTE_UNUSED.
+	(remove_edge_raw): Do not call tree-ssa's redirect_edge_var_map_clear.
+	(redirect_edge_succ_nodup): Move to cfghooks.c.
+	(dump_regset, debug_regset): Move to df-core.c.
+	(dump_bb_info): Move to cfgrtl.c.
+	(dump_reg_info): Move to regstat.c.
+	(dump_flow_info): Move to cfgrtl.c.
+	(debug_flow_info): Likewise.
+	(dump_edge_info): Do not look at cfun, a CFG without cfun is nonsense.
+	* cfganal.c: Do not include tm.h, rtl.h, obstack.h, hard-reg-set.h,
+	insn-config.h, recog.h, diagnostic-core.h, tm_p.h, and cfgloop.h.
+	(flow_active_insn_p, forwarder_block_p, can_fallthru,
+	could_fall_through): Move to cfgrtl.c.
+	(set_edge_can_fallthru_flag): Moved to bb-reorder.c.
+	(create_edge_list): Do not set edge_list's removed num_blocks.
+	(print_edge_list): Look at n_basic_blocks instead of num_blocks.
+	(flow_nodes_print): Remove.
+	(flow_edge_list_print): Remove.
+	(inverted_post_order_compute): Use FOR_ALL_BB.
+	*cfgrtl.c (dump_flow_info): Moved from cfg.c.
+	Do not call dump_reg_info.
+	(debug_flow_info): Moved from cfg.c
+	(dump_bb_info): Moved from cfg.c.  Take 'verbose' argument
+	to avoid looking at TDF_* flags from tree-pass.h.
+	(flow_active_insn_p, forwarder_block_p, can_fallthru,
+	could_fall_through): Moved from cfganal.c.
+	(print_rtl_with_bb): Adjust dump_bb_info calls.
+	* cfghooks.c (redirect_edge_succ_nodup): Moved from cfg.c.
+	(remove_edge): Call redirect_edge_var_map_clear if IR_GIMPLE.
+	(cfgcleanup.c): Look at MAY_HAVE_DEBUG_INSNS, not MAY_HAVE_DEBUG_STMTS.
+	* cselib.c: Include tree.h with a FIXME.
+	* df-core.c (reg_obstack): Moved from cfg.c.
+	(dump_regset): Likewise.
+	(debug_regset): Likewise.  Make a DEBUG_FUNCTION.
+	* final.c (compute_alignments): Call dump_reg_info before
+	dump_flow_info.
+	* function.c (function_name): New function.
+	(current_function_name): Use it.
+	* ifcvt.c (rest_of_handle_if_conversion): Call dump_reg_info before
+	dump_flow_info.
+	* ira-conflicts.c: Include tree.h with a note.
+	* regstat.c (dump_reg_info): Moved here from cfg.c.
+	* loop-init.c: Include regs.h instead of hard-reg-set.h.
+	(rtl_loop_init): Call dump_reg_info before dump_flow_info.
+	(rtl_loop_done): Likewise.
+	* mcf.c: Include tree.h before langhooks.h.
+	* predict.c (maybe_hot_count_p): Assert we have cfun.
+	(probably_never_executed_bb_p): Likewise.
+	* profile.c (compute_branch_probabilities): Use gimple_dump_cfg
+	instead of dump_flow_info.
+	* sched-deps.c: Include tree.h with a FIXME.
+	(call_may_noreturn_p): Add FIXME note why this function has to
+	look at function decls instead of function decl flags.
+	* sched-vis.c: Include tree.h with a FIXME.
+	(print_rtl_slim): Adjust dump_bb_info uses.
+	* statistics.c (statistics_fini_pass_2): Use current_function_name
+	to avoid including tree.h.
+	(statistics_counter_event): Use function_name for the same reason.
+	(statistics_histogram_event): Likewise.
+	* tracer.c (tracer): Remove bogus gcc_assert.  Use brief_dump_cfg
+	instead of dump_flow_info.
+	* var-tracking.c (variable_tracking_main_1): Call dump_reg_info
+	before dump_flow_info.
+	* doc/cfg.texi: Update CFG documentation.
+	* Makefile.in (RTL_H): Depend on FLAGS_H.
+	(GIMPLE_H): Depend on TREE_H.
+	(FUNCTION_H): Depend on VEC_H, vecir.h, INPUT_H and MACHMODE_H,
+	but no longer on TREE_H.
+	(C_COMMON_H): Depend on TREE_H.
+	(cselib.o, cse.o, cfganal.o, loop-init.o, ira-conflicts.o,
+	sched-deps.o, sched-vis.o): Fixup dependencies.
+
+2012-07-08  Steven Bosscher  <steven@gcc.gnu.org>
+
 	* alias.h: Do not include coretypes.h in header files.
 	* cppbuiltin.h: Likewise.
 	* double-int.h: Likewise.

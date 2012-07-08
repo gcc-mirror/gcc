@@ -859,7 +859,7 @@ RTL_BASE_H = coretypes.h rtl.h rtl.def $(MACHMODE_H) reg-notes.def \
   insn-notes.def $(INPUT_H) $(REAL_H) statistics.h $(VEC_H) \
   $(FIXED_VALUE_H) alias.h $(HASHTAB_H)
 FIXED_VALUE_H = fixed-value.h $(MACHMODE_H) double-int.h
-RTL_H = $(RTL_BASE_H) genrtl.h vecir.h
+RTL_H = $(RTL_BASE_H) $(FLAGS_H) genrtl.h vecir.h
 RTL_ERROR_H = rtl-error.h $(RTL_H) $(DIAGNOSTIC_CORE_H)
 READ_MD_H = $(OBSTACK_H) $(HASHTAB_H) read-md.h
 PARAMS_H = params.h params.def
@@ -875,7 +875,7 @@ TREE_H = coretypes.h tree.h all-tree.def tree.def c-family/c-common.def \
 REGSET_H = regset.h $(BITMAP_H) hard-reg-set.h
 BASIC_BLOCK_H = basic-block.h $(PREDICT_H) $(VEC_H) $(FUNCTION_H) cfghooks.h
 GIMPLE_H = gimple.h gimple.def gsstruct.def pointer-set.h $(VEC_H) \
-	vecir.h $(GGC_H) $(BASIC_BLOCK_H) tree-ssa-operands.h \
+	vecir.h $(GGC_H) $(BASIC_BLOCK_H) $(TREE_H) tree-ssa-operands.h \
 	tree-ssa-alias.h $(INTERNAL_FN_H)
 TRANS_MEM_H = trans-mem.h
 GCOV_IO_H = gcov-io.h gcov-iov.h auto-host.h
@@ -886,7 +886,8 @@ ALIAS_H = alias.h
 EMIT_RTL_H = emit-rtl.h
 FLAGS_H = flags.h flag-types.h $(OPTIONS_H)
 OPTIONS_H = options.h flag-types.h $(OPTIONS_H_EXTRA)
-FUNCTION_H = function.h $(TREE_H) $(HASHTAB_H) vecprim.h $(TM_H) hard-reg-set.h
+FUNCTION_H = function.h $(HASHTAB_H) vecprim.h $(TM_H) hard-reg-set.h \
+	$(VEC_H) vecir.h $(INPUT_H) $(MACHMODE_H)
 EXPR_H = expr.h insn-config.h $(FUNCTION_H) $(RTL_H) $(FLAGS_H) $(TREE_H) $(MACHMODE_H) $(EMIT_RTL_H)
 OPTABS_H = optabs.h insn-codes.h
 REGS_H = regs.h $(MACHMODE_H) hard-reg-set.h
@@ -911,7 +912,7 @@ GGC_INTERNAL_H = ggc-internal.h $(GGC_H)
 TIMEVAR_H = timevar.h timevar.def
 INSN_ATTR_H = insn-attr.h insn-attr-common.h $(INSN_ADDR_H)
 INSN_ADDR_H = $(srcdir)/insn-addr.h vecprim.h
-C_COMMON_H = c-family/c-common.h c-family/c-common.def \
+C_COMMON_H = c-family/c-common.h c-family/c-common.def $(TREE_H) \
 	$(SPLAY_TREE_H) $(CPPLIB_H) $(GGC_H) $(DIAGNOSTIC_CORE_H)
 C_PRAGMA_H = c-family/c-pragma.h $(CPPLIB_H)
 C_TREE_H = c-tree.h $(C_COMMON_H) $(DIAGNOSTIC_H)
@@ -2937,7 +2938,7 @@ cselib.o : cselib.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    $(REGS_H) hard-reg-set.h $(FLAGS_H) insn-config.h $(RECOG_H) \
    $(EMIT_RTL_H) $(DIAGNOSTIC_CORE_H) $(FUNCTION_H) $(TREE_PASS_H) \
    cselib.h gt-cselib.h $(GGC_H) $(TM_P_H) $(PARAMS_H) alloc-pool.h \
-   $(HASHTAB_H) $(TARGET_H) $(BITMAP_H)
+   $(HASHTAB_H) $(TARGET_H) $(BITMAP_H) $(TREE_H)
 cse.o : cse.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(REGS_H) \
    hard-reg-set.h $(FLAGS_H) insn-config.h $(RECOG_H) $(EXPR_H) toplev.h $(DIAGNOSTIC_CORE_H) \
    $(FUNCTION_H) $(BASIC_BLOCK_H) $(GGC_H) $(TM_P_H) $(TIMEVAR_H) \
@@ -3076,10 +3077,8 @@ auto-inc-dec.o : auto-inc-dec.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) $(RTL_H) $(TM_P_H) hard-reg-set.h $(BASIC_BLOCK_H) insn-config.h \
    $(REGS_H) $(FLAGS_H) $(FUNCTION_H) $(EXCEPT_H) $(DIAGNOSTIC_CORE_H) $(RECOG_H) \
    $(EXPR_H) $(TIMEVAR_H) $(TREE_PASS_H) $(DF_H) $(DBGCNT_H) $(TARGET_H)
-cfg.o : cfg.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(FLAGS_H) \
-   $(REGS_H) hard-reg-set.h $(DIAGNOSTIC_CORE_H) $(FUNCTION_H) $(EXCEPT_H) $(GGC_H) \
-   $(TM_P_H) $(TIMEVAR_H) $(OBSTACK_H) $(TREE_H) alloc-pool.h \
-   $(HASHTAB_H) $(DF_H) $(CFGLOOP_H) $(TREE_FLOW_H) $(TREE_PASS_H)
+cfg.o : cfg.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(DIAGNOSTIC_CORE_H) $(GGC_H) \
+   $(OBSTACK_H) alloc-pool.h $(HASHTAB_H) $(CFGLOOP_H) $(BASIC_BLOCK_H)
 cfghooks.o: cfghooks.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    $(TREE_H) $(BASIC_BLOCK_H) $(TREE_FLOW_H) $(TIMEVAR_H) toplev.h $(DIAGNOSTIC_CORE_H) $(CFGLOOP_H)
 cfgexpand.o : cfgexpand.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
@@ -3095,10 +3094,8 @@ cfgrtl.o : cfgrtl.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_ERROR_H) \
    insn-config.h $(EXPR_H) \
    $(CFGLOOP_H) $(OBSTACK_H) $(TARGET_H) $(TREE_H) \
    $(TREE_PASS_H) $(DF_H) $(GGC_H) $(COMMON_TARGET_H) gt-cfgrtl.h
-cfganal.o : cfganal.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
-   $(BASIC_BLOCK_H) hard-reg-set.h insn-config.h $(RECOG_H) $(TM_P_H) \
-   $(TIMEVAR_H) $(OBSTACK_H) $(DIAGNOSTIC_CORE_H) vecprim.h sbitmap.h \
-   $(BITMAP_H) $(CFGLOOP_H)
+cfganal.o : cfganal.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(BASIC_BLOCK_H) \
+   $(TIMEVAR_H) vecprim.h sbitmap.h $(BITMAP_H)
 cfgbuild.o : cfgbuild.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    $(FLAGS_H) $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h $(DIAGNOSTIC_CORE_H) \
    $(FUNCTION_H) $(EXCEPT_H) $(TIMEVAR_H) $(TREE_H) $(EXPR_H) sbitmap.h
@@ -3129,7 +3126,7 @@ cfgloopmanip.o : cfgloopmanip.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) \
 loop-init.o : loop-init.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(GGC_H) \
    $(BASIC_BLOCK_H) hard-reg-set.h $(CFGLOOP_H) \
    coretypes.h $(TM_H) $(OBSTACK_H) $(TREE_PASS_H) $(TIMEVAR_H) $(FLAGS_H) \
-   $(DF_H)
+   $(REGS_H) $(DF_H)
 loop-unswitch.o : loop-unswitch.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TM_H) \
    $(BASIC_BLOCK_H) hard-reg-set.h $(CFGLOOP_H) $(PARAMS_H) \
    $(EXPR_H) coretypes.h $(TM_H) $(OBSTACK_H)
@@ -3212,7 +3209,7 @@ ira-costs.o: ira-costs.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(REGS_H) addresses.h insn-config.h $(RECOG_H) $(DIAGNOSTIC_CORE_H) $(TARGET_H) \
    $(PARAMS_H) $(IRA_INT_H) reload.h
 ira-conflicts.o: ira-conflicts.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-   $(TARGET_H) $(RTL_H) $(REGS_H) hard-reg-set.h $(FLAGS_H) \
+   $(TARGET_H) $(RTL_H) $(REGS_H) hard-reg-set.h $(TREE_H) $(FLAGS_H) \
    insn-config.h $(RECOG_H) $(BASIC_BLOCK_H) $(DIAGNOSTIC_CORE_H) $(TM_P_H) $(PARAMS_H) \
    $(DF_H) sparseset.h addresses.h $(IRA_INT_H)
 ira-color.o: ira-color.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
@@ -3263,7 +3260,7 @@ haifa-sched.o : haifa-sched.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_
 sched-deps.o : sched-deps.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(RTL_H) $(SCHED_INT_H) $(REGS_H) hard-reg-set.h $(FLAGS_H) insn-config.h \
    $(FUNCTION_H) $(INSN_ATTR_H) $(DIAGNOSTIC_CORE_H) $(RECOG_H) $(EXCEPT_H) cselib.h \
-   ira.h $(PARAMS_H) $(TM_P_H) ira.h $(TARGET_H)
+   ira.h $(PARAMS_H) $(TM_P_H) ira.h $(TARGET_H) $(TREE_H)
 sched-rgn.o : sched-rgn.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(RTL_H) $(SCHED_INT_H) $(REGS_H) hard-reg-set.h $(FLAGS_H) insn-config.h \
    $(FUNCTION_H) $(INSN_ATTR_H) $(DIAGNOSTIC_CORE_H) $(RECOG_H) $(EXCEPT_H) $(PARAMS_H) \
@@ -3275,7 +3272,7 @@ sched-ebb.o : sched-ebb.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(PARAMS_H) $(TARGET_H)
 sched-vis.o : sched-vis.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(RTL_H) $(SCHED_INT_H) hard-reg-set.h $(BASIC_BLOCK_H) $(OBSTACK_H) \
-   $(TREE_PASS_H) $(INSN_ATTR_H)
+   $(TREE_PASS_H) $(INSN_ATTR_H) $(TREE_H)
 sel-sched.o : sel-sched.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(RTL_ERROR_H) $(REGS_H) hard-reg-set.h $(FLAGS_H) insn-config.h \
    $(FUNCTION_H) $(INSN_ATTR_H)  $(RECOG_H) $(EXCEPT_H) $(PARAMS_H) \

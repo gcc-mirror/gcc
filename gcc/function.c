@@ -6738,13 +6738,20 @@ reposition_prologue_and_epilogue_notes (void)
 #endif /* HAVE_prologue or HAVE_epilogue */
 }
 
+/* Returns the name of function FN.  */
+const char *
+function_name (struct function *fn)
+{
+  if (fn == NULL)
+    return "(nofn)";
+  return lang_hooks.decl_printable_name (fn->decl, 2);
+}
+
 /* Returns the name of the current function.  */
 const char *
 current_function_name (void)
 {
-  if (cfun == NULL)
-    return "<none>";
-  return lang_hooks.decl_printable_name (cfun->decl, 2);
+  return function_name (cfun);
 }
 
 

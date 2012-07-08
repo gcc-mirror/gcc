@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "regs.h"
 #include "rtl.h"
+#include "tree.h"		/* For DECL_ARTIFICIAL and friends.  */
 #include "tm_p.h"
 #include "target.h"
 #include "flags.h"

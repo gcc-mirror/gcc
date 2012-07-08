@@ -1,3 +1,7 @@
+2012-07-08  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* c-common.h: Include tree.h.
+
 2012-07-02  Jason Merrill  <jason@redhat.com>
 
 	PR c++/53524

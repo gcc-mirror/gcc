@@ -544,3 +544,69 @@ regstat_free_calls_crossed (void)
   reg_info_p = NULL;
 }
 
+/* Dump the register info to FILE.  */
+
+void
+dump_reg_info (FILE *file)
+{
+  unsigned int i, max = max_reg_num ();
+  if (reload_completed)
+    return;
+
+  if (reg_info_p_size < max)
+    max = reg_info_p_size;
+
+  fprintf (file, "%d registers.\n", max);
+  for (i = FIRST_PSEUDO_REGISTER; i < max; i++)
+    {
+      enum reg_class rclass, altclass;
+
+      if (regstat_n_sets_and_refs)
+	fprintf (file, "\nRegister %d used %d times across %d insns",
+		 i, REG_N_REFS (i), REG_LIVE_LENGTH (i));
+      else if (df)
+	fprintf (file, "\nRegister %d used %d times across %d insns",
+		 i, DF_REG_USE_COUNT (i) + DF_REG_DEF_COUNT (i), REG_LIVE_LENGTH (i));
+
+      if (REG_BASIC_BLOCK (i) >= NUM_FIXED_BLOCKS)
+	fprintf (file, " in block %d", REG_BASIC_BLOCK (i));
+      if (regstat_n_sets_and_refs)
+	fprintf (file, "; set %d time%s", REG_N_SETS (i),
+		 (REG_N_SETS (i) == 1) ? "" : "s");
+      else if (df)
+	fprintf (file, "; set %d time%s", DF_REG_DEF_COUNT (i),
+		 (DF_REG_DEF_COUNT (i) == 1) ? "" : "s");
+      if (regno_reg_rtx[i] != NULL && REG_USERVAR_P (regno_reg_rtx[i]))
+	fputs ("; user var", file);
+      if (REG_N_DEATHS (i) != 1)
+	fprintf (file, "; dies in %d places", REG_N_DEATHS (i));
+      if (REG_N_CALLS_CROSSED (i) == 1)
+	fputs ("; crosses 1 call", file);
+      else if (REG_N_CALLS_CROSSED (i))
+	fprintf (file, "; crosses %d calls", REG_N_CALLS_CROSSED (i));
+      if (REG_FREQ_CALLS_CROSSED (i))
+	fprintf (file, "; crosses call with %d frequency", REG_FREQ_CALLS_CROSSED (i));
+      if (regno_reg_rtx[i] != NULL
+	  && PSEUDO_REGNO_BYTES (i) != UNITS_PER_WORD)
+	fprintf (file, "; %d bytes", PSEUDO_REGNO_BYTES (i));
+
+      rclass = reg_preferred_class (i);
+      altclass = reg_alternate_class (i);
+      if (rclass != GENERAL_REGS || altclass != ALL_REGS)
+	{
+	  if (altclass == ALL_REGS || rclass == ALL_REGS)
+	    fprintf (file, "; pref %s", reg_class_names[(int) rclass]);
+	  else if (altclass == NO_REGS)
+	    fprintf (file, "; %s or none", reg_class_names[(int) rclass]);
+	  else
+	    fprintf (file, "; pref %s, else %s",
+		     reg_class_names[(int) rclass],
+		     reg_class_names[(int) altclass]);
+	}
+
+      if (regno_reg_rtx[i] != NULL && REG_POINTER (regno_reg_rtx[i]))
+	fputs ("; pointer", file);
+      fputs (".\n", file);
+    }
+}
+

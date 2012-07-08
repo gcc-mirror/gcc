@@ -10041,6 +10041,7 @@ variable_tracking_main_1 (void)
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       dump_dataflow_sets ();
+      dump_reg_info (dump_file);
       dump_flow_info (dump_file, dump_flags);
     }
 

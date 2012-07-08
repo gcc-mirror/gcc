@@ -23,7 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "rtl.h"
-#include "hard-reg-set.h"
+#include "regs.h"
 #include "obstack.h"
 #include "basic-block.h"
 #include "cfgloop.h"
@@ -204,7 +204,10 @@ rtl_loop_init (void)
   gcc_assert (current_ir_type () == IR_RTL_CFGLAYOUT);
 
   if (dump_file)
-    dump_flow_info (dump_file, dump_flags);
+    {
+      dump_reg_info (dump_file);
+      dump_flow_info (dump_file, dump_flags);
+    }
 
   loop_optimizer_init (LOOPS_NORMAL);
   return 0;
@@ -242,7 +245,10 @@ rtl_loop_done (void)
 
   cleanup_cfg (0);
   if (dump_file)
-    dump_flow_info (dump_file, dump_flags);
+    {
+      dump_reg_info (dump_file);
+      dump_flow_info (dump_file, dump_flags);
+    }
 
   return 0;
 }
