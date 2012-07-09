@@ -1,6 +1,6 @@
 /* Definitions for code generation pass of GNU compiler.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
-   Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
+   2010, 2012  Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -29,6 +29,10 @@ along with GCC; see the file COPYING3.  If not see
 
    For example, add_optab applies to addition.
 
+   The insn_code slot is the enum insn_code that says how to
+   generate an insn for this operation on a particular machine mode.
+   It is CODE_FOR_nothing if there is no such insn on the target machine.
+
    The `lib_call' slot is the name of the library function that
    can be used to perform the operation.
 
@@ -36,10 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 
 struct optab_handlers
 {
-  /* I - CODE_FOR_nothing, where I is either the insn code of the
-     associated insn generator or CODE_FOR_nothing if there is no such
-     insn on the target machine.  */
-  int insn_code;
+  enum insn_code insn_code;
 };
 
 struct widening_optab_handlers
@@ -1011,8 +1012,7 @@ extern rtx expand_vec_perm (enum machine_mode, rtx, rtx, rtx, rtx);
 static inline enum insn_code
 optab_handler (optab op, enum machine_mode mode)
 {
-  return (enum insn_code) (op->handlers[(int) mode].insn_code
-			   + (int) CODE_FOR_nothing);
+  return op->handlers[(int) mode].insn_code;
 }
 
 /* Like optab_handler, but for widening_operations that have a TO_MODE and
@@ -1026,8 +1026,7 @@ widening_optab_handler (optab op, enum machine_mode to_mode,
     return optab_handler (op, to_mode);
 
   if (op->widening)
-    return (enum insn_code) (op->widening->handlers[(int) to_mode][(int) from_mode].insn_code
-			     + (int) CODE_FOR_nothing);
+    return op->widening->handlers[(int) to_mode][(int) from_mode].insn_code;
 
   return CODE_FOR_nothing;
 }
@@ -1037,7 +1036,7 @@ widening_optab_handler (optab op, enum machine_mode to_mode,
 static inline void
 set_optab_handler (optab op, enum machine_mode mode, enum insn_code code)
 {
-  op->handlers[(int) mode].insn_code = (int) code - (int) CODE_FOR_nothing;
+  op->handlers[(int) mode].insn_code = code;
 }
 
 /* Like set_optab_handler, but for widening operations that have a TO_MODE
@@ -1055,8 +1054,7 @@ set_widening_optab_handler (optab op, enum machine_mode to_mode,
 	op->widening = (struct widening_optab_handlers *)
 	      xcalloc (1, sizeof (struct widening_optab_handlers));
 
-      op->widening->handlers[(int) to_mode][(int) from_mode].insn_code
-	  = (int) code - (int) CODE_FOR_nothing;
+      op->widening->handlers[(int) to_mode][(int) from_mode].insn_code = code;
     }
 }
 
@@ -1068,9 +1066,7 @@ static inline enum insn_code
 convert_optab_handler (convert_optab op, enum machine_mode to_mode,
 		       enum machine_mode from_mode)
 {
-  return ((enum insn_code)
-	  (op->handlers[(int) to_mode][(int) from_mode].insn_code
-	   + (int) CODE_FOR_nothing));
+  return op->handlers[(int) to_mode][(int) from_mode].insn_code;
 }
 
 /* Record that insn CODE should be used to perform conversion OP
@@ -1080,8 +1076,7 @@ static inline void
 set_convert_optab_handler (convert_optab op, enum machine_mode to_mode,
 			   enum machine_mode from_mode, enum insn_code code)
 {
-  op->handlers[(int) to_mode][(int) from_mode].insn_code
-    = (int) code - (int) CODE_FOR_nothing;
+  op->handlers[(int) to_mode][(int) from_mode].insn_code = code;
 }
 
 /* Return the insn used to implement mode MODE of OP, or CODE_FOR_nothing
@@ -1090,8 +1085,7 @@ set_convert_optab_handler (convert_optab op, enum machine_mode to_mode,
 static inline enum insn_code
 direct_optab_handler (direct_optab op, enum machine_mode mode)
 {
-  return (enum insn_code) (op->handlers[(int) mode].insn_code
-			   + (int) CODE_FOR_nothing);
+  return op->handlers[(int) mode].insn_code;
 }
 
 /* Record that insn CODE should be used to implement mode MODE of OP.  */
@@ -1100,7 +1094,7 @@ static inline void
 set_direct_optab_handler (direct_optab op, enum machine_mode mode,
 			  enum insn_code code)
 {
-  op->handlers[(int) mode].insn_code = (int) code - (int) CODE_FOR_nothing;
+  op->handlers[(int) mode].insn_code = code;
 }
 
 /* Return true if UNOPTAB is for a trapping-on-overflow operation.  */
