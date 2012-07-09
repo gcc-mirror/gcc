@@ -13955,13 +13955,10 @@ package body Exp_Ch9 is
       --  will allocate an array to hold the string names of task entries.
 
       if not Restricted_Profile then
-         if Has_Entries (Ttyp)
-           and then Entry_Names_OK
-         then
-            Append_To (Args, New_Reference_To (Standard_True, Loc));
-         else
-            Append_To (Args, New_Reference_To (Standard_False, Loc));
-         end if;
+         Append_To (Args,
+           New_Reference_To
+             (Boolean_Literals (Has_Entries (Ttyp) and then Entry_Names_OK),
+              Loc));
       end if;
 
       if Restricted_Profile then

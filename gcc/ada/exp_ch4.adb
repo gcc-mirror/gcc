@@ -11327,12 +11327,7 @@ package body Exp_Ch4 is
 
             if AV = False then
                if True_Result or False_Result then
-                  if True_Result then
-                     Result := Standard_True;
-                  else
-                     Result := Standard_False;
-                  end if;
-
+                  Result := Boolean_Literals (True_Result);
                   Rewrite (N,
                     Convert_To (Typ,
                       New_Occurrence_Of (Result, Sloc (N))));

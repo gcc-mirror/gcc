@@ -10811,8 +10811,8 @@ package body Sem_Ch12 is
 
                pragma Assert (Present (Ancestor));
 
-               --  the ancestor itself may be a previous formal that
-               --  has been instantiated.
+               --  The ancestor itself may be a previous formal that has been
+               --  instantiated.
 
                Ancestor := Get_Instance_Of (Ancestor);
 

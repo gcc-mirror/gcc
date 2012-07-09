@@ -5839,9 +5839,9 @@ package body Sem_Res is
          Check_Restriction (No_Relative_Delay, N);
       end if;
 
-      --  Issue an error for a call to an eliminated subprogram.
-      --  The routine will not perform the check if the call appears within
-      --  a default expression.
+      --  Issue an error for a call to an eliminated subprogram. This routine
+      --  will not perform the check if the call appears within a default
+      --  expression.
 
       Check_For_Eliminated_Subprogram (Subp, Nam);
 

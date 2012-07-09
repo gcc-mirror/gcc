@@ -1455,14 +1455,17 @@ package body Sem_Ch9 is
 
       begin
          if Present (Ritem) then
+
             --  Pragma with one argument
 
             if Nkind (Ritem) = N_Pragma
               and then Present (Pragma_Argument_Associations (Ritem))
             then
                return
-                 Is_False (Static_Boolean
-                  (Expression (First (Pragma_Argument_Associations (Ritem)))));
+                 Is_False
+                   (Static_Boolean
+                     (Expression
+                       (First (Pragma_Argument_Associations (Ritem)))));
 
             --  Aspect Specification with expression present
 

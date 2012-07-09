@@ -3296,12 +3296,7 @@ package body Sem_Attr is
 
       when Attribute_Fast_Math =>
          Check_Standard_Prefix;
-
-         if Opt.Fast_Math then
-            Rewrite (N, New_Occurrence_Of (Standard_True, Loc));
-         else
-            Rewrite (N, New_Occurrence_Of (Standard_False, Loc));
-         end if;
+         Rewrite (N, New_Occurrence_Of (Boolean_Literals (Fast_Math), Loc));
 
       -----------
       -- First --
@@ -5879,11 +5874,7 @@ package body Sem_Attr is
                   R := Is_Check_Suppressed (Entity (E1), C);
                end if;
 
-               if R then
-                  Rewrite (N, New_Occurrence_Of (Standard_False, Loc));
-               else
-                  Rewrite (N, New_Occurrence_Of (Standard_True, Loc));
-               end if;
+               Rewrite (N, New_Occurrence_Of (Boolean_Literals (not R), Loc));
             end;
          end if;
 

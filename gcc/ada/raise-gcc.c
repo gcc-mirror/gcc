@@ -475,6 +475,9 @@ extern const int __gnat_others_value;
 extern const int __gnat_all_others_value;
 #define GNAT_ALL_OTHERS  ((_Unwind_Ptr) &__gnat_all_others_value)
 
+extern const int __gnat_unhandled_others_value;
+#define GNAT_UNHANDLED_OTHERS  ((_Unwind_Ptr) &__gnat_unhandled_others_value)
+
 /* Describe the useful region data associated with an unwind context.  */
 
 typedef struct
@@ -653,7 +656,6 @@ typedef struct
   /* If we have a handler matching our exception, these are the filter to
      trigger it and the corresponding id.  */
   _Unwind_Sword ttype_filter;
-  _Unwind_Ptr   ttype_entry;
 
 } action_descriptor;
 
@@ -852,8 +854,9 @@ is_handled_by (_Unwind_Ptr choice, _GNAT_Exception * propagated_exception)
 
       bool is_handled =
         choice == E
+        || (choice == GNAT_OTHERS && Is_Handled_By_Others (E))
         || choice == GNAT_ALL_OTHERS
-        || (choice == GNAT_OTHERS && Is_Handled_By_Others (E));
+        || choice == GNAT_UNHANDLED_OTHERS;
 
       /* In addition, on OpenVMS, Non_Ada_Error matches VMS exceptions, and we
          may have different exception data pointers that should match for the
@@ -970,7 +973,6 @@ get_action_description_for (_Unwind_Context *uw_context,
                     {
                       action->kind = handler;
                       action->ttype_filter = ar_filter;
-                      action->ttype_entry = choice;
                       return;
                     }
                 }

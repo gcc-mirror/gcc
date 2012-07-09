@@ -3072,19 +3072,9 @@ package body Exp_Attr is
       --  Rewrite the attribute reference with the value of Uses_Lock_Free
 
       when Attribute_Lock_Free => Lock_Free : declare
-         Val : Entity_Id;
-
+         V : constant Entity_Id := Boolean_Literals (Uses_Lock_Free (Ptyp));
       begin
-         if Uses_Lock_Free (Ptyp) then
-            Val := Standard_True;
-
-         else
-            Val := Standard_False;
-         end if;
-
-         Rewrite (N,
-           New_Occurrence_Of (Val, Loc));
-
+         Rewrite (N, New_Occurrence_Of (V, Loc));
          Analyze_And_Resolve (N, Standard_Boolean);
       end Lock_Free;
 

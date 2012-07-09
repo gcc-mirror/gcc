@@ -4697,16 +4697,17 @@ package body Freeze is
          else
             Id := Defining_Unit_Name (Specification (P));
 
+            --  Following complex conditional could use comments ???
+
             if Nkind (Id) = N_Defining_Identifier
-              and then (Is_Init_Proc (Id)                    or else
-                        Is_TSS (Id, TSS_Stream_Input)        or else
-                        Is_TSS (Id, TSS_Stream_Output)       or else
-                        Is_TSS (Id, TSS_Stream_Read)         or else
-                        Is_TSS (Id, TSS_Stream_Write)        or else
-                        Nkind (Original_Node (P)) =
-                          N_Subprogram_Renaming_Declaration  or else
-                        Nkind (Original_Node (P)) =
-                          N_Expression_Function)
+              and then (Is_Init_Proc (Id)
+                         or else Is_TSS (Id, TSS_Stream_Input)
+                         or else Is_TSS (Id, TSS_Stream_Output)
+                         or else Is_TSS (Id, TSS_Stream_Read)
+                         or else Is_TSS (Id, TSS_Stream_Write)
+                         or else Nkind_In (Original_Node (P),
+                                           N_Subprogram_Renaming_Declaration,
+                                           N_Expression_Function))
             then
                return True;
             else
@@ -5122,7 +5123,7 @@ package body Freeze is
             if not Is_Compilation_Unit (Current_Scope)
               and then (Is_Record_Type (Scope (Current_Scope))
                          or else Nkind (Parent (Current_Scope)) =
-                                   N_Quantified_Expression)
+                                                     N_Quantified_Expression)
             then
                Pos := Pos - 1;
             end if;

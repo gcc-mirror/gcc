@@ -850,7 +850,6 @@ package body Sem_Ch13 is
             Set_Is_Delayed_Aspect (Prag);
             Set_Parent (Prag, ASN);
          end if;
-
       end Make_Pragma_From_Boolean_Aspect;
 
    --  Start of processing for Analyze_Aspects_At_Freeze_Point
@@ -866,7 +865,6 @@ package body Sem_Ch13 is
       --  Look for aspect specification entries for this entity
 
       ASN := First_Rep_Item (E);
-
       while Present (ASN) loop
          if Nkind (ASN) = N_Aspect_Specification
            and then Entity (ASN) = E
@@ -875,6 +873,7 @@ package body Sem_Ch13 is
             A_Id := Get_Aspect_Id (Chars (Identifier (ASN)));
 
             case A_Id is
+
                --  For aspects whose expression is an optional Boolean, make
                --  the corresponding pragma at the freezing point.
 
@@ -889,7 +888,8 @@ package body Sem_Ch13 is
                     Aspect_Default_Component_Value =>
                   Analyze_Aspect_Default_Value (ASN);
 
-               when others => null;
+               when others =>
+                  null;
             end case;
 
             Ritem := Aspect_Rep_Item (ASN);
