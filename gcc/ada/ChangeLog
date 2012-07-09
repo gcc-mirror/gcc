@@ -1,3 +1,31 @@
+2012-07-09  Vincent Pucci  <pucci@adacore.com>
+
+	* sem_ch9.adb (Check_Node): Allow attributes
+	that denote static function for lock-free implementation.
+	(Is_Static_Function): New routine.
+
+2012-07-09  Tristan Gingold  <gingold@adacore.com>
+
+	* tracebak.c: Adjust skip_frames on Win64.
+
+2012-07-09  Tristan Gingold  <gingold@adacore.com>
+
+	* init.c: Add __gnat_adjust_context_for_raise for ia64/hpux.
+	* raise-gcc.c: __gnat_cleanupunwind_handler: Do not call
+	_Unwind_GetGR on hpux when using libgcc unwinder.  Part of
+
+2012-07-09  Vincent Pucci  <pucci@adacore.com>
+
+	* exp_attr.adb, sem_attr.adb: Minor reformatting.
+	* par-ch13.adb, par-ch4.adb, par-util.adb: Reformatting
+	considering that internal attribute names are not defined anymore
+	in the main attribute names list.
+	* snames.adb-tmpl (Get_Attribute_Id): Special processinf
+	for names CPU, Dispatching_Domain and Interrupt_Priority.
+	(Is_Internal_Attribute_Name): Minor reformatting.
+	* snames.ads-tmpl: New list of internal attribute names. Internal
+	attributes moved at the end of the attribute Id list.
+
 2012-07-09  Robert Dewar  <dewar@adacore.com>
 
 	* freeze.adb: Minor code reorganization (use Ekind_In).

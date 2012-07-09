@@ -244,12 +244,71 @@ package body Sem_Ch9 is
                ----------------
 
                function Check_Node (N : Node_Id) return Traverse_Result is
+                  function Is_Static_Function (Attr : Node_Id) return Boolean;
+                  --  Given an attribute reference node Attr, return True if
+                  --  Attr denotes a static function according to the rules in
+                  --  (RM 4.9 (22)).
+
+                  ------------------------
+                  -- Is_Static_Function --
+                  ------------------------
+
+                  function Is_Static_Function
+                    (Attr : Node_Id) return Boolean
+                  is
+                     Para : Node_Id;
+
+                  begin
+                     pragma Assert (Nkind (Attr) = N_Attribute_Reference);
+
+                     case Attribute_Name (Attr) is
+                        when Name_Min             |
+                             Name_Max             |
+                             Name_Pred            |
+                             Name_Succ            |
+                             Name_Value           |
+                             Name_Wide_Value      |
+                             Name_Wide_Wide_Value =>
+
+                           --  A language-defined attribute denotes a static
+                           --  function if the prefix denotes a static scalar
+                           --  subtype, and if the parameter and result types
+                           --  are scalar (RM 4.9 (22)).
+
+                           if Is_Scalar_Type (Etype (Attr))
+                             and then Is_Scalar_Type (Etype (Prefix (Attr)))
+                             and then Is_Static_Subtype (Etype (Prefix (Attr)))
+                           then
+                              Para := First (Expressions (Attr));
+
+                              while Present (Para) loop
+                                 if not Is_Scalar_Type (Etype (Para)) then
+                                    return False;
+                                 end if;
+
+                                 Next (Para);
+                              end loop;
+
+                              return True;
+
+                           else
+                              return False;
+                           end if;
+
+                        when others => return False;
+                     end case;
+                  end Is_Static_Function;
+
+               --  Start of processing for Check_Node
+
                begin
                   if Is_Procedure then
-                     --  Function calls and attribute references must be static
+                     --  Attribute references must be static or denote a static
+                     --  function.
 
                      if Nkind (N) = N_Attribute_Reference
                        and then not Is_Static_Expression (N)
+                       and then not Is_Static_Function (N)
                      then
                         if Complain then
                            Error_Msg_N
@@ -257,6 +316,8 @@ package body Sem_Ch9 is
                         end if;
 
                         return Abandon;
+
+                     --  Function calls must be static
 
                      elsif Nkind (N) = N_Function_Call
                        and then not Is_Static_Expression (N)

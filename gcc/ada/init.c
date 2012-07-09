@@ -304,6 +304,25 @@ __gnat_install_handler (void)
 #include <signal.h>
 #include <sys/ucontext.h>
 
+#if defined(__ia64__)
+#include <sys/uc_access.h>
+#define HAVE_GNAT_ADJUST_CONTEXT_FOR_RAISE
+
+void
+__gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *ucontext)
+{
+  ucontext_t *uc = (ucontext_t *) ucontext;
+  uint64_t ip;
+
+  /* Adjust on itanium, as GetIPInfo is not supported.  */
+  __uc_get_ip (uc, &ip);
+  __uc_set_ip (uc, ip + 1);
+}
+#endif /* __ia64__ */
+
+/* Tasking and Non-tasking signal handler.  Map SIGnal to Ada exception
+   propagation after the required low level adjustments.  */
+
 static void
 __gnat_error_handler (int sig,
 		      siginfo_t *si ATTRIBUTE_UNUSED,
@@ -311,6 +330,10 @@ __gnat_error_handler (int sig,
 {
   struct Exception_Data *exception;
   const char *msg;
+
+#if defined(__ia64__)
+  __gnat_adjust_context_for_raise (sig, ucontext);
+#endif
 
   switch (sig)
     {
