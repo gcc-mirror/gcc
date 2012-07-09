@@ -4811,7 +4811,7 @@ package body Make is
       --  have been regenerated.
 
       if Main_Project /= No_Project
-        and then not Codepeer_Mode
+        and then not CodePeer_Mode
         and then MLib.Tgt.Support_For_Libraries /= Prj.None
         and then (Do_Bind_Step
                    or Unique_Compile_All_Projects

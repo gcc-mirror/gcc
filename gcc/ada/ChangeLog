@@ -1,3 +1,13 @@
+2012-07-09  Pascal Obry  <obry@adacore.com>
+
+	* prj.adb (For_Every_Project_Imported_Context): Make sure we
+	callback with the project having sources.
+	Minor reformatting.
+
+2012-07-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* make.adb: Fix typo.
+
 2012-07-09  Vincent Pucci  <pucci@adacore.com>
 
 	* sem_ch9.adb (Check_Node): Allow attributes
