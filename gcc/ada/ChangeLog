@@ -1,3 +1,7 @@
+2012-07-09  Pascal Obry  <obry@adacore.com>
+
+	* prj-util.adb, prj-util.ads (For_Interface_Sources): New routine.
+
 2012-07-09  Tristan Gingold  <gingold@adacore.com>
 
 	* seh_init.c (__gnat_SEH_error_handler): On Win64 and SEH,

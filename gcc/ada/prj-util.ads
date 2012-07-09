@@ -233,6 +233,17 @@ package Prj.Util is
    procedure Next (Iter : in out Source_Info_Iterator);
    --  Advance the iterator to the next source in the project
 
+   generic
+      with procedure Action (Source : Source_Id);
+   procedure For_Interface_Sources
+     (Tree : Project_Tree_Ref; Project : Project_Id);
+   --  Call Action for every sources that are needed to use Project. This
+   --  is either the sources corresponding to the unit in the Interfaces
+   --  attributes or all sources of the project. Note that only the body
+   --  needed (because the unit if generic or contains some inline pragmas)
+   --  are handled. This routine must be called only when the project as
+   --  sucessfully been built.
+
 private
    type Text_File_Data is record
       FD                  : File_Descriptor := Invalid_FD;
