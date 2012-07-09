@@ -398,7 +398,8 @@ package body Prj.Util is
    ---------------------------
 
    procedure For_Interface_Sources
-     (Tree : Project_Tree_Ref; Project : Project_Id)
+     (Tree    : Project_Tree_Ref;
+      Project : Project_Id)
    is
       use Ada;
       use type Ada.Containers.Count_Type;
@@ -406,7 +407,7 @@ package body Prj.Util is
       package Dep_Names is new Containers.Indefinite_Ordered_Sets (String);
 
       function Load_ALI (Filename : String) return ALI_Id;
-      --  Load an ALI file and returns its id
+      --  Load an ALI file and return its id
 
       --------------
       -- Load_ALI --
@@ -416,6 +417,7 @@ package body Prj.Util is
          Result   : ALI_Id := No_ALI_Id;
          Text     : Text_Buffer_Ptr;
          Lib_File : File_Name_Type;
+
       begin
          if Directories.Exists (Filename) then
             Name_Len := 0;
@@ -435,6 +437,8 @@ package body Prj.Util is
          return Result;
       end Load_ALI;
 
+      --  Local declarations
+
       Iter : Source_Iterator := For_Each_Source (Tree, Project);
       Sid  : Source_Id;
       ALI  : ALI_Id;
@@ -444,8 +448,10 @@ package body Prj.Util is
       Body_Needed : Boolean;
       Deps        : Dep_Names.Set;
 
+   --  Start of processing for For_Interface_Sources
+
    begin
-      --  First look at all the spec, check if the body is needed
+      --  First look at each spec, check if the body is needed
 
       loop
          Sid := Element (Iter);
@@ -457,23 +463,23 @@ package body Prj.Util is
          if Sid.Kind = Spec
            and then not Sid.Locally_Removed
            and then (Project.Standalone_Library = No
-                     or else Sid.Declared_In_Interfaces)
+                      or else Sid.Declared_In_Interfaces)
          then
             Action (Sid);
 
             --  Check ALI for dependencies on body and sep
 
-            ALI := Load_ALI
-              (Get_Name_String (Get_Object_Directory (Sid.Project, True))
-               & Get_Name_String (Sid.Dep_Name));
+            ALI :=
+              Load_ALI
+                (Get_Name_String (Get_Object_Directory (Sid.Project, True))
+                 & Get_Name_String (Sid.Dep_Name));
 
             if ALI /= No_ALI_Id then
                First_Unit := ALIs.Table (ALI).First_Unit;
                Second_Unit := No_Unit_Id;
                Body_Needed := True;
 
-               --  If there is both a spec and a body, check if they are both
-               --  needed.
+               --  If there is both a spec and a body, check if both needed
 
                if Units.Table (First_Unit).Utype = Is_Body then
                   Second_Unit := ALIs.Table (ALI).Last_Unit;

@@ -1,3 +1,16 @@
+2012-07-09  Robert Dewar  <dewar@adacore.com>
+
+	* freeze.adb, prj-util.adb, prj-util.ads, sem_ch13.adb: Minor
+	reformatting.
+
+2012-07-09  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_cat.adb (Check_Categorization_Dependencies):
+	Allow dependence of both Remote_Types and Remote_Call_Interface
+	declarations (not just Remote_Types units) on preelaborated
+	units, but require that the dependence be made via a private
+	with_clause. Issue a specialized error message.
+
 2012-07-09  Pascal Obry  <obry@adacore.com>
 
 	* prj-util.adb, prj-util.ads (For_Interface_Sources): New routine.
