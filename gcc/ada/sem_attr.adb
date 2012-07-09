@@ -2215,13 +2215,13 @@ package body Sem_Attr is
            Attribute_Variable_Indexing    =>
          Error_Msg_N ("illegal attribute", N);
 
-      --  Attributes related to Ada 2012 aspects. Attribute definition clause
-      --  exists for these, but they cannot be queried.
+      --  Internal attributes used to deal with Ada 2012 delayed aspects
+      --  (already diagnosed by parser, thus nothing more to do here).
 
       when Attribute_CPU                |
            Attribute_Dispatching_Domain |
            Attribute_Interrupt_Priority =>
-         Error_Msg_N ("illegal attribute", N);
+         raise Program_Error;
 
       ------------------
       -- Abort_Signal --

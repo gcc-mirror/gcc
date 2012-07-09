@@ -300,8 +300,7 @@ package body Exp_Ch8 is
       --  Handle cases where we build a body for a renamed equality
 
       if Is_Entity_Name (Nam)
-        and then (Chars (Entity (Nam)) = Name_Op_Ne
-                   or else Chars (Entity (Nam)) = Name_Op_Eq)
+        and then Chars (Entity (Nam)) = Name_Op_Eq
         and then Scope (Entity (Nam)) = Standard_Standard
       then
          declare
@@ -315,7 +314,6 @@ package body Exp_Ch8 is
             --  untagged record type (AI05-0123).
 
             if Ada_Version >= Ada_2012
-              and then Chars (Entity (Nam)) = Name_Op_Eq
               and then Is_Record_Type (Typ)
               and then not Is_Tagged_Type (Typ)
               and then not Is_Frozen (Typ)
@@ -337,69 +335,9 @@ package body Exp_Ch8 is
                          Expand_Record_Equality
                            (Id,
                             Typ => Typ,
-                            Lhs =>
-                              Make_Identifier (Loc, Chars (First_Formal (Id))),
-                            Rhs =>
-                              Make_Identifier
-                                (Loc, Chars (Next_Formal (First_Formal (Id)))),
+                            Lhs => Make_Identifier (Loc, Chars (Left)),
+                            Rhs => Make_Identifier (Loc, Chars (Right)),
                             Bodies => Declarations (Decl))))));
-
-               Append (Decl, List_Containing (N));
-
-            --  Handle renamings of predefined dispatching equality operators.
-            --  When we analyze a renaming of the equality operator of a tagged
-            --  type, the predefined dispatching primitives are not available
-            --  (since they are added by the expander when the tagged type is
-            --  frozen) and hence they are left decorated as renamings of the
-            --  standard non-dispatching operators. Here we generate a body
-            --  for such renamings which invokes the predefined dispatching
-            --  equality operator.
-
-            --  Example:
-
-            --    type T is tagged null record;
-            --    function  Eq (X, Y : T1) return Boolean renames "=";
-            --    function Neq (X, Y : T1) return Boolean renames "/=";
-
-            elsif Is_Record_Type (Typ)
-              and then Is_Tagged_Type (Typ)
-              and then Is_Dispatching_Operation (Id)
-              and then not Is_Dispatching_Operation (Entity (Nam))
-            then
-               pragma Assert (not Is_Frozen (Typ));
-
-               Decl := Build_Body_For_Renaming;
-
-               --  Clean decoration of intrinsic subprogram
-
-               Set_Is_Intrinsic_Subprogram (Id, False);
-               Set_Convention (Id, Convention_Ada);
-
-               if Chars (Entity (Nam)) = Name_Op_Ne then
-                  Set_Handled_Statement_Sequence (Decl,
-                    Make_Handled_Sequence_Of_Statements (Loc,
-                      Statements => New_List (
-                        Make_Simple_Return_Statement (Loc,
-                          Expression =>
-                             Make_Op_Not (Loc,
-                               Make_Op_Eq (Loc,
-                                 Left_Opnd  =>
-                                   New_Reference_To (Left, Loc),
-                                 Right_Opnd =>
-                                   New_Reference_To (Right, Loc)))))));
-
-               else pragma Assert (Chars (Entity (Nam)) = Name_Op_Eq);
-                  Set_Handled_Statement_Sequence (Decl,
-                    Make_Handled_Sequence_Of_Statements (Loc,
-                      Statements => New_List (
-                        Make_Simple_Return_Statement (Loc,
-                          Expression =>
-                            Make_Op_Eq (Loc,
-                              Left_Opnd  =>
-                                New_Reference_To (Left, Loc),
-                              Right_Opnd =>
-                                New_Reference_To (Right, Loc))))));
-               end if;
 
                Append (Decl, List_Containing (N));
             end if;

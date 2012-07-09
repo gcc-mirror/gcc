@@ -392,6 +392,17 @@ package body Snames is
                    or else N not in Ada_2012_Reserved_Words);
    end Is_Keyword_Name;
 
+   --------------------------------
+   -- Is_Internal_Attribute_Name --
+   --------------------------------
+
+   function Is_Internal_Attribute_Name (N : Name_Id) return Boolean is
+   begin
+      return N = Name_CPU
+        or N = Name_Interrupt_Priority
+        or N = Name_Dispatching_Domain;
+   end Is_Internal_Attribute_Name;
+
    ----------------------------
    -- Is_Locking_Policy_Name --
    ----------------------------

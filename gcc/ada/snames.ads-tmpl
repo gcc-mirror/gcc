@@ -753,6 +753,11 @@ package Snames is
    --  implementation dependent attributes may be found in the appropriate
    --  section in Sem_Attr.
 
+   --  The entries marked INT are not real attributes. They are special names
+   --  used internally by GNAT in order to deal with delayed aspects
+   --  (Aspect_CPU, Aspect_Dispatching_Domain, Aspect_Interrupt_Priority) that
+   --  don't have corresponding pragma or attribute.
+
    --  The entries marked VMS are recognized only in OpenVMS implementations
    --  of GNAT, and are treated as illegal in all other contexts.
 
@@ -779,7 +784,7 @@ package Snames is
    Name_Constant_Indexing              : constant Name_Id := N + $; -- GNAT
    Name_Constrained                    : constant Name_Id := N + $;
    Name_Count                          : constant Name_Id := N + $;
-   Name_CPU                            : constant Name_Id := N + $; -- Ada 12
+   Name_CPU                            : constant Name_Id := N + $; -- INT
    Name_Default_Bit_Order              : constant Name_Id := N + $; -- GNAT
    Name_Default_Iterator               : constant Name_Id := N + $; -- GNAT
    Name_Definite                       : constant Name_Id := N + $;
@@ -787,7 +792,7 @@ package Snames is
    Name_Denorm                         : constant Name_Id := N + $;
    Name_Descriptor_Size                : constant Name_Id := N + $;
    Name_Digits                         : constant Name_Id := N + $;
-   Name_Dispatching_Domain             : constant Name_Id := N + $; -- Ada 12
+   Name_Dispatching_Domain             : constant Name_Id := N + $; -- INT
    Name_Elaborated                     : constant Name_Id := N + $; -- GNAT
    Name_Emax                           : constant Name_Id := N + $; -- Ada 83
    Name_Enabled                        : constant Name_Id := N + $; -- GNAT
@@ -809,7 +814,7 @@ package Snames is
    Name_Img                            : constant Name_Id := N + $; -- GNAT
    Name_Implicit_Dereference           : constant Name_Id := N + $; -- GNAT
    Name_Integer_Value                  : constant Name_Id := N + $; -- GNAT
-   Name_Interrupt_Priority             : constant Name_Id := N + $; -- Ada 12
+   Name_Interrupt_Priority             : constant Name_Id := N + $; -- INT
    Name_Invalid_Value                  : constant Name_Id := N + $; -- GNAT
    Name_Iterator_Element               : constant Name_Id := N + $; -- GNAT
    Name_Large                          : constant Name_Id := N + $; -- Ada 83
@@ -1825,6 +1830,10 @@ package Snames is
    function Is_Entity_Attribute_Name (N : Name_Id) return Boolean;
    --  Test to see if the name N is the name of a recognized entity attribute,
    --  i.e. an attribute reference that returns an entity.
+
+   function Is_Internal_Attribute_Name (N : Name_Id) return Boolean;
+   --  Test to see if the name N is the name of an INT attribute (Name_CPU,
+   --  Name_Dispatching_Domain, Name_Interrupt_Priority).
 
    function Is_Procedure_Attribute_Name (N : Name_Id) return Boolean;
    --  Test to see if the name N is the name of a recognized attribute that
