@@ -1,3 +1,9 @@
+2012-07-09  Iain Sandoe  <iain@codesourcery.com>
+
+	* config/darwin.h (SUBTARGET_C_COMMON_OVERRIDE_OPTIONS): Move NeXT
+	runtime exceptions model setting from here ...
+	* config/darwin.c (darwin_override_options): ... to here.
+
 2012-07-09  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR tree-optimization/53887
