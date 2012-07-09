@@ -1,3 +1,8 @@
+2012-07-09  Richard Guenther  <rguenther@suse.de>
+
+	PR bootstrap/53898
+	* graphite-optimize-isl.c: Make sure CU is not empty.
+
 2012-07-09  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* gensupport.c (init_rtx_reader_args_cb): Start counting code
