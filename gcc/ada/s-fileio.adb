@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -97,14 +97,6 @@ package body System.File_IO is
    pragma Import
      (C, text_translation_required, "__gnat_text_translation_required");
    --  If true, add appropriate suffix to control string for Open
-
-   function Get_Case_Sensitive return Integer;
-   pragma Import (C, Get_Case_Sensitive,
-                  "__gnat_get_file_names_case_sensitive");
-   File_Names_Case_Sensitive : constant Boolean := Get_Case_Sensitive /= 0;
-   --  Set to indicate whether the operating system convention is for file
-   --  names to be case sensitive (e.g., in Unix, set True), or non case
-   --  sensitive (e.g., in Windows, set False).
 
    -----------------------
    -- Local Subprograms --
@@ -756,6 +748,17 @@ package body System.File_IO is
       procedure Tmp_Name (Buffer : Address);
       pragma Import (C, Tmp_Name, "__gnat_tmp_name");
       --  Set buffer (a String address) with a temporary filename
+
+      function Get_Case_Sensitive return Integer;
+      pragma Import (C, Get_Case_Sensitive,
+                     "__gnat_get_file_names_case_sensitive");
+
+      File_Names_Case_Sensitive : constant Boolean := Get_Case_Sensitive /= 0;
+      --  Set to indicate whether the operating system convention is for file
+      --  names to be case sensitive (e.g., in Unix, set True), or not case
+      --  sensitive (e.g., in Windows, set False). Declared locally to avoid
+      --  breaking the Preelaborate rule that disallows function calls at the
+      --  library level.
 
       Stream : FILEs := C_Stream;
       --  Stream which we open in response to this request
