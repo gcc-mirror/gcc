@@ -1,5 +1,9 @@
 2012-07-09  Jason Merrill  <jason@redhat.com>
 
+	PR c++/53882
+	* tree.c (type_contains_placeholder_1): Handle NULLPTR_TYPE.
+	(type_hash_eq): Likewise.
+
 	PR c++/53826
 	* tree.c (build_zero_cst): Handle NULLPTR_TYPE.
 
