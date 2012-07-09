@@ -58,6 +58,7 @@ typedef char bool;
 #if defined (__hpux__) && defined (USE_LIBUNWIND_EXCEPTIONS)
 /* HP-UX B.11.31 ia64 libunwind doesn't have _Unwind_GetIPInfo. */
 #undef HAVE_GETIPINFO
+#define _UA_END_OF_STACK 0
 #endif
 
 /* The names of a couple of "standard" routines for unwinding/propagation
@@ -77,6 +78,7 @@ _Unwind_Reason_Code
 __gnat_Unwind_ForcedUnwind (_Unwind_Exception *, void *, void *);
 
 extern void __gnat_setup_current_excep (_Unwind_Exception *);
+extern void __gnat_unhandled_except_handler (_Unwind_Exception *);
 
 #include "dwarf2.h"
 #include "unwind-dw2-fde.h"
@@ -1137,6 +1139,30 @@ PERSONALITY_FUNCTION (version_arg_t version_arg,
   __gnat_setup_current_excep (uw_exception);
 
   return _URC_INSTALL_CONTEXT;
+}
+
+_Unwind_Reason_Code
+__gnat_cleanupunwind_handler (int version,
+			      _Unwind_Action phases,
+			      _Unwind_Exception_Class eclass,
+			      struct _Unwind_Exception *exception,
+			      struct _Unwind_Context *context,
+			      void *arg)
+{
+  /* Terminate when the end of the stack is reached.  */
+  if ((phases & _UA_END_OF_STACK) != 0
+#ifdef __ia64__
+      /* Strictely follow the ia64 ABI: when end of stack is reached,
+	 the callback will be called with a NULL stack pointer.  */
+      || _Unwind_GetREG (context, 12) == 0
+#endif
+      )
+    __gnat_unhandled_except_handler (exception);
+
+  /* We know there is at least one cleanup further up. Return so that it
+     is searched and entered, after which Unwind_Resume will be called
+     and this hook will gain control again.  */
+  return _URC_NO_REASON;
 }
 
 /* Define the consistently named wrappers imported by Propagate_Exception.  */

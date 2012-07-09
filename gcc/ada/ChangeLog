@@ -1,3 +1,30 @@
+2012-07-09  Tristan Gingold  <gingold@adacore.com>
+
+	* a-exexpr-gcc.adb (CleanupUnwind_Handler): Now imported from
+	raise-gcc.c
+	* raise-gcc.c (__gnat_cleanupunwind_handler): Defined.
+	Strictly follow the ABI convention on ia64.
+
+2012-07-09  Gary Dismukes  <dismukes@adacore.com>
+
+	* a-ststio.ads: Add pragma Preelaborate, per AI05-0283.
+	* i-cstrea.ads (max_path_len): Change from variable to deferred
+	constant to allow it to be used as a bound in string component
+	in type System.File_IO.Temp_File_Record.
+	* s-os_lib.ads, s-commun.ads, s-ficobl.ads, s-fileio.ads: Add pragma
+	Preelaborate.
+	* s-fileio.adb (Get_Case_Sensitive): Move function inside
+	procedure Open.
+	(File_Names_Case_Sensitive): Move variable inside
+	procedure Open, to avoid violation of Preelaborate restriction
+	(due to call to Get_Case_Sensitive).
+
+2012-07-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* layout.adb (Set_Elem_Alignment): Protect against meaningless
+	size clause, to prevent overflow in internal computation of
+	alignment.
+
 2012-07-09  Robert Dewar  <dewar@adacore.com>
 
 	* freeze.adb, prj-util.adb, prj-util.ads, sem_ch13.adb: Minor
