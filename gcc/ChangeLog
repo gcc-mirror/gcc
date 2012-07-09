@@ -1,3 +1,10 @@
+2012-07-09  Tom de Vries  <tom@codesourcery.com>
+	    Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-ccp.c (optimize_unreachable): New function.
+	(execute_fold_all_builtins): Use optimize_unreachable to optimize
+	BUILT_IN_UNREACHABLE.  Don't optimize after BUILT_IN_UNREACHABLE.
+
 2012-07-09  Richard Guenther  <rguenther@suse.de>
 
 	PR bootstrap/53898
