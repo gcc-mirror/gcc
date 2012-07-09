@@ -1,3 +1,25 @@
+2012-07-09  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* gensupport.c (init_rtx_reader_args_cb): Start counting code
+	generating patterns from 1 to free up 0 for CODE_FOR_nothing.
+	* gencodes.c (main): Give CODE_FOR_nothing the value 0.  Add
+	the LAST_INSN_CODE marker at the end.
+	* genoutput.c (nothing): New static struct data.
+	(idata): Initialize to &nothing.
+	(idata_end): Initialize to &nothing.next.
+	(init_insn_for_nothing): New function to create dummy 'nothing' insn.
+	(main): Use it.
+	* genpeep.c (insn_code_number): Remove global variable.
+	(gen_peephole): Take it as an argument instead.
+	(main): Take insn_code_number from read_md_rtx.
+	* optabs.h: Revert r161809:
+	(optab_handlers): Change type of insn_code back to insn_code.
+	(optab_handler, widening_optab_handler, set_optab_handler,
+	set_widening_optab_handler, convert_optab_handler,
+	set_convert_optab_handler, direct_optab_handler,
+	set_direct_optab_handler): Remove int casts.
+	Revert to treating the insn_code field as "insn_code".
+
 2012-07-08  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/sh.md (*return_i): Move trap_exit attribute check to ...
