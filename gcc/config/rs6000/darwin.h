@@ -422,3 +422,7 @@ do {									\
   rs6000_builtin_decls[(unsigned) (RS6000_BUILTIN_CFSTRING)]		\
     = darwin_init_cfstring_builtins ((unsigned) (RS6000_BUILTIN_CFSTRING)); \
 } while(0)
+
+/* So far, there is no rs6000_fold_builtin, if one is introduced, then
+   this will need to be modified similar to the x86 case.  */
+#define TARGET_FOLD_BUILTIN SUBTARGET_FOLD_BUILTIN

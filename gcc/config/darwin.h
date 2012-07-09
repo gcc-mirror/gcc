@@ -902,7 +902,7 @@ void add_framework_path (char *);
 #define TARGET_KEXTABI flag_apple_kext
 
 /* We have target-specific builtins.  */
-#define TARGET_FOLD_BUILTIN darwin_fold_builtin
+#define SUBTARGET_FOLD_BUILTIN darwin_fold_builtin
 
 #define TARGET_N_FORMAT_TYPES 1
 #define TARGET_FORMAT_TYPES darwin_additional_format_types

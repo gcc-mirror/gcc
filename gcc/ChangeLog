@@ -1,5 +1,15 @@
 2012-07-09  Iain Sandoe  <iain@codesourcery.com>
 
+	PR target/53283
+	* config/i386/i386.c (ix86_fold_builtin): Call SUBTARGET_FOLD_BUILTIN
+	if defined.
+	* config/darwin.h: Rename TARGET_FOLD_BUILTIN to
+	SUBTARGET_FOLD_BUILTIN.
+	* config/rs6000/darwin.h: Map TARGET_FOLD_BUILTIN onto
+	SUBTARGET_FOLD_BUILTIN.
+
+2012-07-09  Iain Sandoe  <iain@codesourcery.com>
+
 	* config/darwin.h (SUBTARGET_C_COMMON_OVERRIDE_OPTIONS): Move NeXT
 	runtime exceptions model setting from here ...
 	* config/darwin.c (darwin_override_options): ... to here.

@@ -28097,6 +28097,10 @@ ix86_fold_builtin (tree fndecl, int n_args,
 	}
     }
 
+#ifdef SUBTARGET_FOLD_BUILTIN
+  return SUBTARGET_FOLD_BUILTIN (fndecl, n_args, args, ignore);
+#endif
+
   return NULL_TREE;
 }
 
