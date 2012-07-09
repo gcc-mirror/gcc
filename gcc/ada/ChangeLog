@@ -1,5 +1,28 @@
 2012-07-09  Tristan Gingold  <gingold@adacore.com>
 
+	* seh_init.c (__gnat_SEH_error_handler): On Win64 and SEH,
+	return for unknown exceptions.
+	* raise-gcc.c (__gnat_personality_seh0): Call __gnat_SEH_error_handler.
+
+2012-07-09  Joel Brobecker  <brobecker@adacore.com brobecker>
+
+	* exp_dbug.ads (No_Dollar_In_Label): Delete.
+
+2012-07-09  Vincent Pucci  <pucci@adacore.com>
+
+	* sem_ch13.adb (Check_Overloaded_Name): New routine.
+
+2012-07-09  Vincent Pucci  <pucci@adacore.com>
+
+	* freeze.adb (Freeze_Record_Type): Analyze the delayed aspects of the
+	components in a record type.
+
+2012-07-09  Pascal Obry  <obry@adacore.com>
+
+	* prj-util.ads: Minor reformatting.
+
+2012-07-09  Tristan Gingold  <gingold@adacore.com>
+
 	* raise-gcc.c (db_indent): Simplify style, improve comments.
 	Remove !IN_RTS part (dead).
 

@@ -1182,11 +1182,22 @@ __gnat_Unwind_ForcedUnwind (_Unwind_Exception *e,
 #endif /* __USING_SJLJ_EXCEPTIONS__ */
 
 #ifdef __SEH__
+
+#define STATUS_USER_DEFINED		(1U << 29)
+EXCEPTION_DISPOSITION __gnat_SEH_error_handler
+ (struct _EXCEPTION_RECORD*, void*, struct _CONTEXT*, void*);
+
 EXCEPTION_DISPOSITION
 __gnat_personality_seh0 (PEXCEPTION_RECORD ms_exc, void *this_frame,
 			 PCONTEXT ms_orig_context,
 			 PDISPATCHER_CONTEXT ms_disp)
 {
+  /* Possibly transform run-time errors into Ada exceptions.  As a small
+     optimization, we call __gnat_SEH_error_handler only on non-user
+     exceptions.  */
+  if (!(ms_exc->ExceptionCode & STATUS_USER_DEFINED))
+    __gnat_SEH_error_handler (ms_exc, this_frame, ms_orig_context, ms_disp);
+
   return _GCC_specific_handler (ms_exc, this_frame, ms_orig_context,
 				ms_disp, __gnat_personality_imp);
 }
