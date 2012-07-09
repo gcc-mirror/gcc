@@ -1814,6 +1814,11 @@ package body Freeze is
          Junk : Boolean;
          pragma Warnings (Off, Junk);
 
+         Rec_Pushed : Boolean := False;
+         --  Set True if the record type scope Rec has been pushed on the scope
+         --  stack. Needed for the analysis of delayed aspects specified to the
+         --  components of Rec.
+
          Unplaced_Component : Boolean := False;
          --  Set True if we find at least one component with no component
          --  clause (used to warn about useless Pack pragmas).
@@ -1901,38 +1906,52 @@ package body Freeze is
       --  Start of processing for Freeze_Record_Type
 
       begin
+         --  Deal with delayed aspect specifications for components. The
+         --  analysis of the aspect is required to be delayed to the freeze
+         --  point, thus we analyze the pragma or attribute definition clause
+         --  in the tree at this point. We also analyze the aspect
+         --  specification node at the freeze point when the aspect doesn't
+         --  correspond to pragma/attribute definition clause.
+
+         Comp := First_Entity (Rec);
+         while Present (Comp) loop
+            if Ekind (Comp) = E_Component
+              and then Has_Delayed_Aspects (Comp)
+            then
+               if not Rec_Pushed then
+                  Push_Scope (Rec);
+                  Rec_Pushed := True;
+
+                  --  The visibility to the discriminants must be restored in
+                  --  order to properly analyze the aspects.
+
+                  if Has_Discriminants (Rec) then
+                     Install_Discriminants (Rec);
+                  end if;
+               end if;
+
+               Analyze_Aspects_At_Freeze_Point (Comp);
+            end if;
+
+            Next_Entity (Comp);
+         end loop;
+
+         --  Pop the scope if Rec scope has been pushed on the scope stack
+         --  during the delayed aspect analysis process.
+
+         if Rec_Pushed then
+            if Has_Discriminants (Rec) then
+               Uninstall_Discriminants (Rec);
+            end if;
+
+            Pop_Scope;
+         end if;
+
          --  Freeze components and embedded subtypes
 
          Comp := First_Entity (Rec);
          Prev := Empty;
          while Present (Comp) loop
-
-            --  Deal with delayed aspect specifications for components. The
-            --  analysis of the aspect is required to be delayed to the freeze
-            --  point, thus we analyze the pragma or attribute definition
-            --  clause in the tree at this point. We also analyze the aspect
-            --  specification node at the freeze point when the aspect doesn't
-            --  correspond to pragma/attribute definition clause.
-
-            if Ekind (Comp) = E_Component
-              and then Has_Delayed_Aspects (Comp)
-            then
-               Push_Scope (Rec);
-
-               --  The visibility to the discriminants must be restored in
-               --  order to properly analyze the aspects.
-
-               if Has_Discriminants (Rec) then
-                  Install_Discriminants (Rec);
-                  Analyze_Aspects_At_Freeze_Point (Comp);
-                  Uninstall_Discriminants (Rec);
-
-               else
-                  Analyze_Aspects_At_Freeze_Point (Comp);
-               end if;
-
-               Pop_Scope;
-            end if;
 
             --  Handle the component and discriminant case
 
