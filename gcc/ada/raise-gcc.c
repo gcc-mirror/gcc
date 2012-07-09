@@ -1167,7 +1167,7 @@ __gnat_cleanupunwind_handler (int version,
 {
   /* Terminate when the end of the stack is reached.  */
   if ((phases & _UA_END_OF_STACK) != 0
-#if defined (__ia64__) && defined (USE_LIBUNWIND_EXCEPTIONS)
+#if defined (__ia64__) && defined (__hpux__)
       /* Strictely follow the ia64 ABI: when end of stack is reached,
 	 the callback will be called with a NULL stack pointer.
 	 No need for that when using libgcc unwinder.  */

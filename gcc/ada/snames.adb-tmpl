@@ -398,9 +398,10 @@ package body Snames is
 
    function Is_Internal_Attribute_Name (N : Name_Id) return Boolean is
    begin
-      return N = Name_CPU
-        or N = Name_Interrupt_Priority
-        or N = Name_Dispatching_Domain;
+      return
+        N = Name_CPU                or else
+        N = Name_Interrupt_Priority or else
+        N = Name_Dispatching_Domain;
    end Is_Internal_Attribute_Name;
 
    ----------------------------

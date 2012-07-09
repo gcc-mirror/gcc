@@ -243,8 +243,12 @@ package body Exp_Ch8 is
       Id  : constant Entity_Id  := Defining_Entity (N);
 
       function Build_Body_For_Renaming return Node_Id;
-      --  Build and return the body for the renaming declaration of an
-      --  equality or unequality operator.
+      --  Build and return the body for the renaming declaration of an equality
+      --  or inequality operator.
+
+      -----------------------------
+      -- Build_Body_For_Renaming --
+      -----------------------------
 
       function Build_Body_For_Renaming return Node_Id is
          Body_Id : Entity_Id;
@@ -275,9 +279,11 @@ package body Exp_Ch8 is
          return Decl;
       end Build_Body_For_Renaming;
 
-      --  Local variable
+      --  Local variables
 
       Nam : constant Node_Id := Name (N);
+
+   --  Start of processing for Expand_N_Subprogram_Renaming_Declaration
 
    begin
       --  When the prefix of the name is a function call, we must force the
@@ -334,9 +340,9 @@ package body Exp_Ch8 is
                        Expression =>
                          Expand_Record_Equality
                            (Id,
-                            Typ => Typ,
-                            Lhs => Make_Identifier (Loc, Chars (Left)),
-                            Rhs => Make_Identifier (Loc, Chars (Right)),
+                            Typ    => Typ,
+                            Lhs    => Make_Identifier (Loc, Chars (Left)),
+                            Rhs    => Make_Identifier (Loc, Chars (Right)),
                             Bodies => Declarations (Decl))))));
 
                Append (Decl, List_Containing (N));
