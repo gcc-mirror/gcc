@@ -1,3 +1,19 @@
+2012-07-09  Robert Dewar  <dewar@adacore.com>
+
+	* freeze.adb: Minor code reorganization (use Ekind_In).
+	* exp_attr.adb, sem_ch9.adb par-ch4.adb, s-taprop-mingw.adb,
+	sem_attr.adb, exp_ch8.adb, snames.adb-tmpl, par-util.adb,
+	sem_ch13.adb, snames.ads-tmpl: Minor reformatting.
+
+2012-07-09  Tristan Gingold  <gingold@adacore.com>
+
+	* raise-gcc.c: Adjust previous patch.
+
+2012-07-09  Vincent Celier  <celier@adacore.com>
+
+	* make.adb (Compilation_Phase): Do not build libraries in
+	Codepeer mode (do not call Library_Phase).
+
 2012-07-09  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch13.adb: Extend previous change to elementary types.

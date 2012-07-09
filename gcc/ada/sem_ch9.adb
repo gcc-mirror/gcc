@@ -138,8 +138,7 @@ package body Sem_Ch9 is
             Pdef       : constant Node_Id := Protected_Definition (N);
             Priv_Decls : constant List_Id := Private_Declarations (Pdef);
             Vis_Decls  : constant List_Id := Visible_Declarations (Pdef);
-
-            Decl : Node_Id;
+            Decl       : Node_Id;
 
          begin
             --  Examine the visible and the private declarations
@@ -152,8 +151,8 @@ package body Sem_Ch9 is
 
                if Nkind (Decl) = N_Entry_Declaration then
                   if Complain then
-                     Error_Msg_N ("entry not allowed when Lock_Free given",
-                                  Decl);
+                     Error_Msg_N
+                       ("entry not allowed when Lock_Free given", Decl);
                   end if;
 
                   return False;
@@ -162,10 +161,10 @@ package body Sem_Ch9 is
                --  allowed by the lock-free restrictions.
 
                elsif Nkind (Decl) = N_Subprogram_Declaration
-                 and then Nkind (Specification (Decl)) =
-                            N_Procedure_Specification
-                 and then Present
-                            (Parameter_Specifications (Specification (Decl)))
+                 and then
+                   Nkind (Specification (Decl)) = N_Procedure_Specification
+                 and then
+                   Present (Parameter_Specifications (Specification (Decl)))
                then
                   declare
                      Par_Specs : constant List_Id   :=
@@ -192,8 +191,7 @@ package body Sem_Ch9 is
                   end;
                end if;
 
-               --  Examine the private declarations after the visible
-               --  declarations.
+               --  Examine private declarations after visible declarations
 
                if No (Next (Decl))
                  and then List_Containing (Decl) = Vis_Decls
@@ -433,14 +431,13 @@ package body Sem_Ch9 is
 
          begin
             Decl := First (Decls);
-
             while Present (Decl) loop
                if Nkind (Decl) = N_Subprogram_Body
                  and then not Satisfies_Lock_Free_Requirements (Decl)
                then
                   if Complain then
-                     Error_Msg_N ("body not allowed when Lock_Free given",
-                                  Decl);
+                     Error_Msg_N
+                       ("body not allowed when Lock_Free given", Decl);
                   end if;
 
                   return False;
@@ -479,7 +476,7 @@ package body Sem_Ch9 is
          else
             if Ada_Version >= Ada_2005 then
                Error_Msg_N ("expect task name or task interface class-wide "
-                          & "object for ABORT", T_Name);
+                            & "object for ABORT", T_Name);
             else
                Error_Msg_N ("expect task name for ABORT", T_Name);
             end if;
@@ -1782,13 +1779,14 @@ package body Sem_Ch9 is
       --  issued by Allows_Lock_Free_Implementation.
 
       if Uses_Lock_Free (Defining_Identifier (N)) then
+
          --  Complain when there is an explicit aspect/pragma Priority (or
          --  Interrupt_Priority) while the lock-free implementation is forced
          --  by an aspect/pragma.
 
          declare
-            Id        : constant Entity_Id :=
-                          Defining_Identifier (Original_Node (N));
+            Id : constant Entity_Id :=
+                   Defining_Identifier (Original_Node (N));
             --  The warning must be issued on the original identifier in order
             --  to deal properly with the case of a single protected object.
 
@@ -1800,6 +1798,7 @@ package body Sem_Ch9 is
 
          begin
             if Present (Prio_Item) then
+
                --  Aspect case
 
                if Nkind (Prio_Item) = N_Aspect_Specification

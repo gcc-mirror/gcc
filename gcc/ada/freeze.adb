@@ -1908,8 +1908,8 @@ package body Freeze is
       begin
          --  Deal with delayed aspect specifications for components. The
          --  analysis of the aspect is required to be delayed to the freeze
-         --  point, thus we analyze the pragma or attribute definition clause
-         --  in the tree at this point. We also analyze the aspect
+         --  point, thus we analyze the pragma or attribute definition
+         --  clause in the tree at this point. We also analyze the aspect
          --  specification node at the freeze point when the aspect doesn't
          --  correspond to pragma/attribute definition clause.
 
@@ -1955,9 +1955,7 @@ package body Freeze is
 
             --  Handle the component and discriminant case
 
-            if Ekind (Comp) = E_Component
-              or else Ekind (Comp) = E_Discriminant
-            then
+            if Ekind_In (Comp, E_Component, E_Discriminant) then
                declare
                   CC : constant Node_Id := Component_Clause (Comp);
 

@@ -7741,6 +7741,7 @@ package body Sem_Ch13 is
         and then Siz > UI_From_Int (Int'Last)
       then
          Error_Msg_N ("Size value too large for elementary type", N);
+
          if Nkind (Original_Node (N)) = N_Op_Expon then
             Error_Msg_N
               ("\maybe '* was meant, rather than '*'*", Original_Node (N));

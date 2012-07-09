@@ -725,15 +725,17 @@ package body System.Task_Primitives.Operations is
       pragma Unreferenced (Loss_Of_Inheritance);
 
    begin
-      Res := SetThreadPriority
-        (T.Common.LL.Thread, Interfaces.C.int (Underlying_Priorities (Prio)));
+      Res :=
+        SetThreadPriority
+          (T.Common.LL.Thread,
+           Interfaces.C.int (Underlying_Priorities (Prio)));
       pragma Assert (Res = Win32.TRUE);
 
       --  Note: Annex D (RM D.2.3(5/2)) requires the task to be placed at the
       --  head of its priority queue when decreasing its priority as a result
       --  of a loss of inherited priority. This is not the case, but we
-      --  consider it an acceptable variation (RM 1.1.3(6)), given this is the
-      --  built-in behavior offered by the Windows operating system.
+      --  consider it an acceptable variation (RM 1.1.3(6)), given this is
+      --  the built-in behavior offered by the Windows operating system.
 
       --  In older versions we attempted to better approximate the Annex D
       --  required behavior, but this simulation was not entirely accurate,
