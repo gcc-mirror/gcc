@@ -1,3 +1,8 @@
+2012-07-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53826
+	* tree.c (build_zero_cst): Handle NULLPTR_TYPE.
+
 2012-07-07  Ulrich Weigand  <ulrich.weigand@linaro.org>
 
 	* combine.c (force_to_mode) [LSHIFTRT]: Avoid undefined behaviour
