@@ -37,7 +37,6 @@ with Interfaces.C_Streams;
 with System.File_Control_Block;
 
 package System.File_IO is
-
    pragma Preelaborate;
 
    package FCB renames System.File_Control_Block;

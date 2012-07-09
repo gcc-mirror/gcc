@@ -207,6 +207,10 @@ db_phases (int phases)
    * Tables for the dwarf zero cost case *
    =======================================
 
+   They are fully documented in:
+     http://sourcery.mentor.com/public/cxx-abi/exceptions.pdf
+   Here is a shorter presentation, with some specific comments for Ada.
+
    call_site []
    -------------------------------------------------------------------
    * region-start | region-length | landing-pad | first-action-index *
@@ -244,19 +248,31 @@ db_phases (int phases)
    (see below), from which information may be retrieved to check if it
    matches the exception being propagated.
 
-   action-filter > 0  means there is a regular handler to be run,
+   * action-filter > 0:
+   means there is a regular handler to be run The value is also passed
+   to the landing pad to dispatch the exception.
 
-   action-filter < 0  means there is a some "exception_specification"
-                      data to retrieve, which is only relevant for C++
-		      and should never show up for Ada.
+   * action-filter < 0:
+   means there is a some "exception_specification" data to retrieve,
+   which is only relevant for C++ and should never show up for Ada.
+   (Exception specification specifies which exceptions can be thrown
+   by a function. Such filter is emitted around the body of C++
+   functions defined like:
+     void foo ([...])  throw (A, B) { [...] }
+   These can be viewed as negativ filter: the landing pad is branched
+   to for exceptions that doesn't match the filter and usually aborts
+   the program).
 
-   next-action points to the next entry in the list using a relative byte
-   index. 0 indicates there is no other entry.
+   * next-action
+   points to the next entry in the list using a relative byte offset. 0
+   indicates there is no other entry.
 
    ttypes []
    ---------------
    * ttype-value *
    ---------------
+
+   This table is an array of addresses.
 
    A null value indicates a catch-all handler.  (Not used by Ada)
 
@@ -1151,10 +1167,11 @@ __gnat_cleanupunwind_handler (int version,
 {
   /* Terminate when the end of the stack is reached.  */
   if ((phases & _UA_END_OF_STACK) != 0
-#ifdef __ia64__
+#if defined (__ia64__) && defined (USE_LIBUNWIND_EXCEPTIONS)
       /* Strictely follow the ia64 ABI: when end of stack is reached,
-	 the callback will be called with a NULL stack pointer.  */
-      || _Unwind_GetREG (context, 12) == 0
+	 the callback will be called with a NULL stack pointer.
+	 No need for that when using libgcc unwinder.  */
+      || _Unwind_GetGR (context, 12) == 0
 #endif
       )
     __gnat_unhandled_except_handler (exception);

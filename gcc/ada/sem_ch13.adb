@@ -3312,10 +3312,10 @@ package body Sem_Ch13 is
 
          when Attribute_Scalar_Storage_Order => Scalar_Storage_Order : declare
          begin
-            if not Is_Record_Type (U_Ent) then
+            if not (Is_Record_Type (U_Ent) or else Is_Array_Type (U_Ent)) then
                Error_Msg_N
-                 ("Scalar_Storage_Order can only be defined for record type",
-                  Nam);
+                 ("Scalar_Storage_Order can only be defined for "
+                  & "record or array type", Nam);
 
             elsif Duplicate_Clause then
                null;

@@ -239,11 +239,11 @@ package Prj.Util is
      (Tree    : Project_Tree_Ref;
       Project : Project_Id);
    --  Call Action for every sources that are needed to use Project. This is
-   --  either the sources corresponding to the units in attribute Interfaces or
-   --  all sources of the project. Note that only the bodies that are needed
-   --  (because the unit is generic or contains some inline pragmas) are
-   --  handled. This routine must be called only when the project has been
-   --  built successfully.
+   --  either the sources corresponding to the units in attribute Interfaces
+   --  or all sources of the project. Note that only the bodies that are
+   --  needed (because the unit is generic or contains some inline pragmas)
+   --  are handled. This routine must be called only when the project has
+   --  been built successfully.
 
 private
    type Text_File_Data is record

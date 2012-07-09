@@ -37,7 +37,6 @@ with Ada.IO_Exceptions;
 with System.File_Control_Block;
 
 package Ada.Streams.Stream_IO is
-
    pragma Preelaborate;
 
    type Stream_Access is access all Root_Stream_Type'Class;

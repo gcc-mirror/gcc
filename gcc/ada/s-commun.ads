@@ -35,7 +35,6 @@ with Ada.Streams;
 with System.CRTL;
 
 package System.Communication is
-
    pragma Preelaborate;
 
    function Last_Index
