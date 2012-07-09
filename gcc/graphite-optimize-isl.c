@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include <isl/band.h>
 #include <isl/aff.h>
 #include <isl/options.h>
+#endif
 
 #include "system.h"
 #include "coretypes.h"
@@ -39,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "sese.h"
 
+#ifdef HAVE_cloog
 #include "graphite-poly.h"
 
 static isl_union_set *
