@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -517,18 +517,25 @@ package Lib.Writ is
    --
    --      The attributes may appear in any order, separated by spaces.
 
-   --  ---------------------
-   --  -- W  Withed Units --
-   --  ---------------------
+   --  -----------------------------
+   --  -- W, Y and Z Withed Units --
+   --  -----------------------------
 
    --  Following each U line, is a series of lines of the form
 
    --    W unit-name [source-name lib-name] [E] [EA] [ED] [AD]
+   --    or
+   --    Y unit-name [source-name lib-name] [E] [EA] [ED] [AD]
+   --    or
+   --    Z unit-name [source-name lib-name] [E] [EA] [ED] [AD]
    --
-   --      One of these lines is present for each unit that is mentioned in an
-   --      explicit with clause by the current unit. The first parameter is the
-   --      unit name in internal format. The second parameter is the file name
-   --      of the file that must be compiled to compile this unit. It is
+   --      One W line is present for each unit that is mentioned in an explicit
+   --      non-limited with clause by the current unit. One Y line is present
+   --      for each unit that is mentioned in an explicit limited with clause
+   --      by the current unit. One Z line is present for each unit that is
+   --      only implicitly withed by the current unit. The first parameter is
+   --      the unit name in internal format. The second parameter is the file
+   --      name of the file that must be compiled to compile this unit. It is
    --      usually the file for the body, except for packages which have no
    --      body. For units that need a body, if the source file for the body
    --      cannot be found, the file name of the spec is used instead. The
@@ -554,8 +561,6 @@ package Lib.Writ is
    --      The parameter source-name and lib-name are omitted for the case of a
    --      generic unit compiled with earlier versions of GNAT which did not
    --      generate object or ali files for generics.
-
-   --  In fact W lines include implicit withs ???
 
    --  -----------------------
    --  -- L  Linker_Options --

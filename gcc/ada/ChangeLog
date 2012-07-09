@@ -1,3 +1,31 @@
+2012-07-09  Vincent Celier  <celier@adacore.com>
+
+	* lib-writ.ads: Add documentation for the Z lines (implicitly
+	withed units) and Y lines (limited withed units).
+
+2012-07-09  Robert Dewar  <dewar@adacore.com>
+
+	* lib.ads, exp_attr.adb, exp_ch9.adb, sem_dim.adb, sem_ch9.adb,
+	sem_prag.adb, sem_ch12.adb, mlib-utl.adb, freeze.adb, sem_res.adb,
+	sem_attr.adb, sem_case.adb, gnatlink.adb, exp_ch4.adb, sem_ch6.adb,
+	sem_elim.adb, s-dimmks.ads, sem_ch13.adb: Minor code clean ups.
+
+2012-07-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat_ugn.texi (Switches for gcc): Document -gnatn[12] only
+	lightly in the summary and more thoroughly in inlining section.
+	(Performance Considerations): Document -gnatn[12] in inlining
+	section.
+
+2012-07-09  Tristan Gingold  <gingold@adacore.com>
+
+	* a-exexpr-gcc.adb (Unhandled_Except_Handler): New procedure.
+	(Unhandled_Others_Value): New const.
+	* raise-gcc.c (GNAT_UNHANDLED_OTHERS): Define.
+	(action_descriptor): Remove ttype_entry.
+	(get_action_description_for): Do not assign ttype_entry.
+	(is_handled_by): Consider GNAT_UNHANDLED_OTHERS.
+
 2012-07-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (Call_to_gnu): Robustify test for function case
