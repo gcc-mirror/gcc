@@ -835,13 +835,16 @@ package body Exp_Attr is
            Attribute_Default_Iterator     |
            Attribute_Implicit_Dereference |
            Attribute_Iterator_Element     |
-           Attribute_Variable_Indexing    => null;
+           Attribute_Variable_Indexing    =>
+         null;
 
-      --  Attributes related to Ada 2012 aspects
+      --  Internal attributes used to deal with Ada 2012 delayed aspects
+      --  (already diagnosed by parser, thus nothing more to do here).
 
       when Attribute_CPU                |
            Attribute_Dispatching_Domain |
-           Attribute_Interrupt_Priority => null;
+           Attribute_Interrupt_Priority =>
+         raise Program_Error;
 
       ------------
       -- Access --

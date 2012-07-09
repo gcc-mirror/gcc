@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -721,7 +721,12 @@ package body Util is
 
       Error_Msg_Name_1 := First_Attribute_Name;
       while Error_Msg_Name_1 <= Last_Attribute_Name loop
-         if Is_Bad_Spelling_Of (Token_Name, Error_Msg_Name_1) then
+         --  No mispelling possible with internal attribute names since they
+         --  don't denote real attribute.
+
+         if not Is_Internal_Attribute_Name (Error_Msg_Name_1)
+           and then Is_Bad_Spelling_Of (Token_Name, Error_Msg_Name_1)
+         then
             Error_Msg_N -- CODEFIX
               ("\possible misspelling of %", Token_Node);
             exit;

@@ -434,7 +434,12 @@ package body Ch4 is
             elsif Token = Tok_Identifier then
                Attr_Name := Token_Name;
 
-               if not Is_Attribute_Name (Attr_Name) then
+               --  Note that internal attributes names don't denote real
+               --  attribute.
+
+               if not Is_Attribute_Name (Attr_Name)
+                 or else Is_Internal_Attribute_Name (Attr_Name)
+               then
                   if Apostrophe_Should_Be_Semicolon then
                      Expr_Form := EF_Name;
                      return Name_Node;
