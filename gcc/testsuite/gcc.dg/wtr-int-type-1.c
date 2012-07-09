@@ -25,8 +25,8 @@ testfunc ()
 
   /* But this one should, since it doesn't fit in long (long), but
      does fit in unsigned long (long).  */
-  i = 18446744073709551615; /* { dg-warning "integer constant is so large that it is unsigned" "decimal constant" } */
-  /* { dg-warning "this decimal constant would be unsigned in ISO C90" "decimal constant" { target *-*-* } 28 } */
+  i = 18446744073709551615; /* { dg-warning "integer constant is so large that it is unsigned" "so large" } */
+  /* { dg-warning "this decimal constant would be unsigned in ISO C90" "ISO C90" { target *-*-* } 28 } */
 
 # 29 "sys-header.h" 3
 }

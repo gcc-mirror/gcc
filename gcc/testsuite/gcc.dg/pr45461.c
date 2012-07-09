@@ -9,10 +9,10 @@ foo (int i, ...)
   short e;
   va_list ap;
   va_start (ap, i);
-  e = va_arg (ap, short);	/* { dg-warning "is promoted" } */
+  e = va_arg (ap, short);	/* { dg-warning "is promoted" "promoted" } */
   va_end (ap);
   return e;
 }
 
-/* { dg-message "note: \\(so you should pass" "" {target *-*-* } 12 } */
-/* { dg-message "note: if this code" "" {target *-*-* } 12 } */
+/* { dg-message "note: \\(so you should pass" "should pass" {target *-*-* } 12 } */
+/* { dg-message "note: if this code" "if this code" {target *-*-* } 12 } */

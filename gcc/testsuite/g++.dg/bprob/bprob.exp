@@ -33,7 +33,11 @@ if $tracelevel then {
     strace $tracelevel
 }
 
-# Override the list defined in profopt.exp.
+# Load support procs.
+load_lib profopt.exp
+
+# Save and override the default list defined in profopt.exp.
+set bprob_save_profopt_options $PROFOPT_OPTIONS
 set PROFOPT_OPTIONS [list \
 	{ -g } \
 	{ -O0 } \
@@ -46,9 +50,6 @@ set PROFOPT_OPTIONS [list \
 if $tracelevel then {
     strace $tracelevel
 }
-
-# Load support procs.
-load_lib profopt.exp
 
 set profile_options "-fprofile-arcs"
 set feedback_options "-fbranch-probabilities"
@@ -63,3 +64,5 @@ foreach profile_option $profile_options feedback_option $feedback_options {
         profopt-execute $src
     }
 }
+
+set PROFOPT_OPTIONS $bprob_save_profopt_options

@@ -31,6 +31,34 @@ proc current_compiler_flags { } {
     return "$flags1 $flags2"
 }
 
+# DejaGnu's dg-test defines a test name that includes torture options
+# which is used in most pass/fail messages.  Grab a copy of it.
+
+proc testname-for-summary { } {
+    global testname_with_flags
+
+    # A variable called "name" is too generic, so identify dg-test by
+    # the existence of dg-extra-tool-flags.
+    if ![info exists testname_with_flags] {
+	set frames 2
+	while { ![info exists flags] } {
+	    set frames [expr $frames + 1]
+	    upvar $frames dg-extra-tool-flags flags
+	}
+
+	# We've got the stack level for dg-test; get the variable we want.
+	upvar $frames name name
+	set testname_with_flags $name
+
+	# If there are flags, add an extra space to improve readability of
+	# the test summary.
+	if { [llength $testname_with_flags] > 1 } {
+	    set testname_with_flags "$testname_with_flags "
+	}
+    }
+    return "$testname_with_flags"
+}
+
 # If this target does not support weak symbols, skip this test.
 
 proc dg-require-weak { args } {

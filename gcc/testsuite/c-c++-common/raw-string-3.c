@@ -4,27 +4,27 @@
 // { dg-options "" { target c } }
 // { dg-options "-std=c++98" { target c++ } }
 
-const void	*s0	= R"(a)";	// { dg-error "was not declared|undeclared" }
-		// { dg-error "expected ',' or ';'" "" { target *-*-* } 7 }
-const void	*s1	= uR"(a)";	// { dg-error "was not declared|undeclared" }
-		// { dg-error "expected ',' or ';'" "" { target *-*-* } 9 }
-const void	*s2	= UR"(a)";	// { dg-error "was not declared|undeclared" }
-		// { dg-error "expected ',' or ';'" "" { target *-*-* } 11 }
-const void	*s3	= u8R"(a)";	// { dg-error "was not declared|undeclared" }
-		// { dg-error "expected ',' or ';'" "" { target *-*-* } 13 }
-const void	*s4	= LR"(a)";	// { dg-error "was not declared|undeclared" }
-		// { dg-error "expected ',' or ';'" "" { target *-*-* } 15 }
+const void	*s0	= R"(a)";	// { dg-error "was not declared|undeclared" "undeclared" }
+		// { dg-error "expected ',' or ';'" "expected" { target *-*-* } 7 }
+const void	*s1	= uR"(a)";	// { dg-error "was not declared|undeclared" "undeclared" }
+		// { dg-error "expected ',' or ';'" "expected" { target *-*-* } 9 }
+const void	*s2	= UR"(a)";	// { dg-error "was not declared|undeclared" "undeclared" }
+		// { dg-error "expected ',' or ';'" "expected" { target *-*-* } 11 }
+const void	*s3	= u8R"(a)";	// { dg-error "was not declared|undeclared" "undeclared" }
+		// { dg-error "expected ',' or ';'" "expected" { target *-*-* } 13 }
+const void	*s4	= LR"(a)";	// { dg-error "was not declared|undeclared" "undeclared" }
+		// { dg-error "expected ',' or ';'" "expected" { target *-*-* } 15 }
 
-const int	i0	= R'a';		// { dg-error "expected ',' or ';'" }
-		// { dg-error "was not declared" "" { target c++ } 18 }
-const int	i1	= uR'a';	// { dg-error "expected ',' or ';'" }
-		// { dg-error "was not declared" "" { target c++ } 20 }
-const int	i2	= UR'a';	// { dg-error "expected ',' or ';'" }
-		// { dg-error "was not declared" "" { target c++ } 22 }
-const int	i3	= u8R'a';	// { dg-error "expected ',' or ';'" }
-		// { dg-error "was not declared" "" { target c++ } 24 }
-const int	i4	= LR'a';	// { dg-error "expected ',' or ';'" }
-		// { dg-error "was not declared" "" { target c++ } 26 }
+const int	i0	= R'a';		// { dg-error "expected ',' or ';'" "expected" }
+		// { dg-error "was not declared" "undeclared" { target c++ } 18 }
+const int	i1	= uR'a';	// { dg-error "expected ',' or ';'" "expected" }
+		// { dg-error "was not declared" "undeclared" { target c++ } 20 }
+const int	i2	= UR'a';	// { dg-error "expected ',' or ';'" "expected" }
+		// { dg-error "was not declared" "undeclared" { target c++ } 22 }
+const int	i3	= u8R'a';	// { dg-error "expected ',' or ';'" "expected" }
+		// { dg-error "was not declared" "undeclared" { target c++ } 24 }
+const int	i4	= LR'a';	// { dg-error "expected ',' or ';'" "expected" }
+		// { dg-error "was not declared" "undeclared" { target c++ } 26 }
 
 #define R	"a"
 #define uR	"b"

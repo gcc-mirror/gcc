@@ -5,8 +5,8 @@
 
 typedef decltype(nullptr) nullptr_t;
 
-char* k( char* );	/* { dg-message "note" } { dg-message "note" } */
-nullptr_t k( nullptr_t ); /* { dg-message "note" } { dg-message "note" } */
+char* k( char* );	/* { dg-message "note" } */
+nullptr_t k( nullptr_t ); /* { dg-message "note" } */
 
 void test_k()
 {

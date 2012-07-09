@@ -37,11 +37,11 @@ struct metatuple<First, Second, Metafunctions...> { // { dg-error "struct" }
 
 int a0[metatuple<>::value == 0? 1 : -1];
 int a1[metatuple<add_pointer>::value == 1? 1 : -1];
-int a2a[metatuple<add_pointer, add_pointer>::value == 2? 1 : -1]; // { dg-error "ambiguous|array bound" }
+int a2a[metatuple<add_pointer, add_pointer>::value == 2? 1 : -1]; // { dg-error "ambiguous|array bound" "bound" }
 int a2b[metatuple<add_reference, add_reference>::value == 2? 1 : -1];
-int a3[metatuple<add_pointer, add_reference>::value == 3? 1 : -1]; // { dg-error "ambiguous|array bound" }
+int a3[metatuple<add_pointer, add_reference>::value == 3? 1 : -1]; // { dg-error "ambiguous|array bound" "bound" }
 int a4[metatuple<add_reference>::value == 4? 1 : -1];
 int a5[metatuple<add_reference, add_pointer>::value == 5? 1 : -1];
 
-// { dg-error "incomplete" "" { target *-*-* } 40 }
-// { dg-error "incomplete" "" { target *-*-* } 42 }
+// { dg-error "incomplete" "incomplete" { target *-*-* } 40 }
+// { dg-error "incomplete" "incomplete" { target *-*-* } 42 }

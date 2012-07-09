@@ -39,15 +39,16 @@ if { ![check_profiling_available "-fprofile-generate"] } {
 set tool gcc
 set prof_ext "gcda"
 
-# Override the list defined in profopt.exp.
-set PROFOPT_OPTIONS [list {}]
-
 if $tracelevel then {
     strace $tracelevel
 }
 
 # Load support procs.
 load_lib profopt.exp
+
+# Save and override the default list defined in profopt.exp.
+set matrix_save_profopt_options $PROFOPT_OPTIONS
+set PROFOPT_OPTIONS [list {}]
 
 # These are globals used by profopt-execute.  The first is options
 # needed to generate profile data, the second is options to use the
@@ -63,3 +64,4 @@ foreach src [lsort [glob -nocomplain $srcdir/$subdir/transpose-*.c]] {
     profopt-execute $src
 }
 
+set PROFOPT_OPTIONS $matrix_save_profopt_options

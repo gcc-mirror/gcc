@@ -15,5 +15,5 @@ template <typename T> void foo()
 }
 
 // Here, columns nums are not very accurate either. Still acceptable though
-// { dg-error "30:invalid type in declaration before ';' token" "" { target *-*-* } 14 }
-// { dg-error "30:two or more data types in declaration of 'e4'" "" { target *-*-* } 14 }
+// { dg-error "30:invalid type in declaration before ';' token" "invalid" { target *-*-* } 14 }
+// { dg-error "30:two or more data types in declaration of 'e4'" "2 or more" { target *-*-* } 14 }

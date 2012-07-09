@@ -40,10 +40,10 @@ void h (int x)
   fuc ('A');
   uc = 'A';
 
-  uc = x ? 1U : -1; /* { dg-warning " conversion" } */
-  /* { dg-warning "negative integer implicitly converted to unsigned type" "" { target *-*-* } 43 } */
-  uc = x ? SCHAR_MIN : 1U; /* { dg-warning " conversion" } */
-  /* { dg-warning "negative integer implicitly converted to unsigned type" "" { target *-*-* } 45 } */
+  uc = x ? 1U : -1; /* { dg-warning " conversion" "conversion" } */
+  /* { dg-warning "negative integer implicitly converted to unsigned type" "implicit" { target *-*-* } 43 } */
+  uc = x ? SCHAR_MIN : 1U; /* { dg-warning " conversion" "conversion" } */
+  /* { dg-warning "negative integer implicitly converted to unsigned type" "implicit" { target *-*-* } 45 } */
   uc = x ? 1 : -1; /* { dg-warning "negative integer implicitly converted to unsigned type" } */
   uc = x ? SCHAR_MIN : 1; /* { dg-warning "negative integer implicitly converted to unsigned type" } */
   ui = x ? 1U : -1; /* { dg-warning "negative integer implicitly converted to unsigned type" } */

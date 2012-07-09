@@ -305,5 +305,5 @@ void fc287 (int n) { { typedef int (*b)[n]; { typedef int (*c)[n]; 0;} { typedef
 void fc288 (int n) { { typedef int (*b)[n]; { typedef int (*c)[n]; 0;} { typedef int (*d)[n]; 0;} ; typedef int (*e)[n]; 0;}; { typedef int (*f)[n]; { typedef int (*g)[n]; 0;}; { typedef int (*h)[n]; 0;}; ; typedef int (*i)[n]; 0;}; ; typedef int (*j)[n]; 0;a: goto a;  }
 
 /* Match extra informative notes.  */
-/* { dg-message "note: label '\[^\n'\]*' defined here" "note: expected" { target *-*-* } 0 } */
-/* { dg-message "note: '\[^\n'\]*' declared here" "note: expected" { target *-*-* } 0 } */
+/* { dg-message "note: label '\[^\n'\]*' defined here" "note: defined" { target *-*-* } 0 } */
+/* { dg-message "note: '\[^\n'\]*' declared here" "note: declared" { target *-*-* } 0 } */

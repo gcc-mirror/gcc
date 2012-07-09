@@ -1,6 +1,6 @@
 /* PR middle-end/37009 */
 /* { dg-do run { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
-/* { dg-options "-msse2" } */
+/* { dg-additional-options "-mmmx -msse2" } */
 /* { dg-require-effective-target sse2_runtime } */
 
 #include <emmintrin.h>

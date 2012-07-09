@@ -20,8 +20,8 @@ void A::f()
 
 void f()
 {
-  A::A a; // { dg-error "constructor" }
-} // { dg-error "" "" { target *-*-* } 23 } error cascade
+  A::A a; // { dg-error "constructor" "constructor" }
+} // { dg-error "" "error cascade" { target *-*-* } 23 } error cascade
 }
 
 namespace N2 {

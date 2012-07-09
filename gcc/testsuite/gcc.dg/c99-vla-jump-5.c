@@ -30,5 +30,5 @@ f (int a, int b)
 }
 
 /* Match extra informative notes.  */
-/* { dg-message "note: switch starts here" "note: expected" { target *-*-* } 0 } */
-/* { dg-message "note: '\[^\n'\]*' declared here" "note: expected" { target *-*-* } 0 } */
+/* { dg-message "note: switch starts here" "note: starts" { target *-*-* } 0 } */
+/* { dg-message "note: '\[^\n'\]*' declared here" "note: declared" { target *-*-* } 0 } */

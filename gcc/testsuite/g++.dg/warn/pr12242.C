@@ -10,8 +10,8 @@ void example ()
   X x;
   Y y;
   
-  x = 10;  // { dg-warning "invalid conversion from .int. to .X." }
-           // { dg-warning "unspecified" "" { target *-*-* } 13 }
+  x = 10;  // { dg-warning "invalid conversion from .int. to .X." "invalid" }
+           // { dg-warning "unspecified" "unspecified" { target *-*-* } 13 }
   x = 1;   // { dg-warning "invalid conversion from .int. to .X." }
   x = C;   // { dg-error "cannot convert .Y. to .X. in assignment" }  
   x = D;   // { dg-error "cannot convert .Y. to .X. in assignment" }  

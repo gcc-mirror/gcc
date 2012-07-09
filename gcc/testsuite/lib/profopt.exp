@@ -64,8 +64,6 @@ if ![info exists PROFOPT_OPTIONS] {
 	{ -Os } ]
 }
 
-set prof_option_list $PROFOPT_OPTIONS
-
 #
 # profopt-cleanup -- remove profiling or performance results files.
 #
@@ -215,10 +213,11 @@ proc profopt-get-options { src } {
 #
 proc profopt-execute { src } {
     global srcdir tmpdir
-    global prof_option_list
+    global PROFOPT_OPTIONS
     global tool profile_option feedback_option prof_ext perf_ext perf_delta
     global generate_final_code use_final_code
     global verbose
+    global testname_with_flags
 
     if ![info exists profile_option] {
         error "No profile option specified for first compile."
@@ -226,6 +225,12 @@ proc profopt-execute { src } {
     if ![info exists feedback_option] {
         error "No feedback option specified for second compile."
     }
+
+    # Use the default option list or one defined for a set of tests.
+    if ![info exists PROFOPT_OPTIONS] {
+         error "PROFOPT_OPTIONS is not defined"
+    }
+    set prof_option_list $PROFOPT_OPTIONS
 
     regsub "(?q)$srcdir/" $src "" testcase
     # If we couldn't rip $srcdir out of `src' then just do the best we can.
@@ -235,6 +240,12 @@ proc profopt-execute { src } {
     if [string match "/*" $testcase] {
 	set testcase "[file tail [file dirname $src]]/[file tail $src]"
     }
+
+    # Several procedures access the name of the test with torture flags,
+    # normally defined in dg-test.  Profile optimization tests don't
+    # use dg-test, so define it here to make it accessible via
+    # testname-for-summary.
+    set testname_with_flags $testcase
 
     set executable $tmpdir/[file tail [file rootname $src].x]
     set basename [file tail $testcase]
@@ -268,6 +279,7 @@ proc profopt-execute { src } {
 	set extra_flags [profopt-get-options $src]
 	if { [lindex ${dg-do-what} 1 ] == "N" } {
 	    unsupported "$src"
+	    unset testname_with_flags
 	    verbose "$src not supported on this target, skipping it" 3
 	    return
 	}
@@ -433,4 +445,5 @@ proc profopt-execute { src } {
 	    remote_file build delete $execname3
 	}
     }
+    unset testname_with_flags
 }

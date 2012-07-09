@@ -14,8 +14,8 @@ union B
   A a;				// { dg-error "union member" }
 };
 
-B b;				// { dg-error "B::B\\(\\)" }
-B b2(b);			// { dg-error "B::B\\(const B&\\)" }
+B b;				// { dg-error "B::B\\(\\)" "B::B" }
+B b2(b);			// { dg-error "B::B\\(const B&\\)" "B::B" }
 
 struct C
 {
@@ -25,10 +25,10 @@ struct C
   };
 };
 
-C c;				// { dg-error "C::C\\(\\)" }
-C c2(c);			// { dg-error "C::C\\(const C&\\)" }
+C c;				// { dg-error "C::C\\(\\)" "C::C" }
+C c2(c);			// { dg-error "C::C\\(const C&\\)" "C::C" }
 
-// { dg-error "B::~B" "" { target *-*-* } 17 }
-// { dg-error "B::~B" "" { target *-*-* } 18 }
-// { dg-error "C::~C" "" { target *-*-* } 28 }
-// { dg-error "C::~C" "" { target *-*-* } 29 }
+// { dg-error "B::~B" "B::~B" { target *-*-* } 17 }
+// { dg-error "B::~B" "B::~B" { target *-*-* } 18 }
+// { dg-error "C::~C" "C::~C" { target *-*-* } 28 }
+// { dg-error "C::~C" "C::~C" { target *-*-* } 29 }

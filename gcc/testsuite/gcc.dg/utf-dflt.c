@@ -3,10 +3,10 @@
 /* { dg-do compile } */
 /* { dg-options "" } */
 
-const unsigned short	c0	= u'a';		/* { dg-error "undeclared" } */
-		/* { dg-error "expected ',' or ';'" "" { target *-*-* } 6 } */
-const unsigned long	c1	= U'a';		/* { dg-error "undeclared" } */
-		/* { dg-error "expected ',' or ';'" "" { target *-*-* } 8 } */
+const unsigned short	c0	= u'a';		/* { dg-error "undeclared" "undeclared" } */
+		/* { dg-error "expected ',' or ';'" "expected" { target *-*-* } 6 } */
+const unsigned long	c1	= U'a';		/* { dg-error "undeclared" "undeclared" } */
+		/* { dg-error "expected ',' or ';'" "expected" { target *-*-* } 8 } */
 
 #define u	1 +
 #define U	2 +

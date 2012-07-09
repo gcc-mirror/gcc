@@ -1,4 +1,4 @@
-# Copyright (C) 2008, 2010
+# Copyright (C) 2008, 2010, 2012
 # Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
@@ -18,18 +18,41 @@
 # This harness is for tests that should be run at all optimisation levels.
 
 load_lib g++-dg.exp
+load_lib torture-options.exp
+
+global DG_TORTURE_OPTIONS LTO_TORTURE_OPTIONS
+
 dg-init
-set additional_flags ""
+torture-init
+
+# default_flags are replaced by a dg-options test directive, or appended
+# to by using dg-additional-options.  Use default_flags for options that
+# are used in all of the torture sets to limit the amount of noise in
+# test summaries.
+set default_flags ""
+
+# torture_flags are combined with other torture options and do not
+# affect options specified within a test.
+set torture_flags ""
+
+set stackalign_options [list]
 
 # If automatic stack alignment is supported, force it on.
 if { [check_effective_target_automatic_stack_alignment] } then {
-    lappend additional_flags "-mstackrealign"
-    lappend additional_flags "-mpreferred-stack-boundary=5"
+    append default_flags " -mstackrealign"
+    append default_flags " -mpreferred-stack-boundary=5"
+}
+lappend stackalign_options [join $torture_flags]
+
+if { [check_effective_target_fpic] } then {
+    lappend torture_flags "-fpic"
+    lappend stackalign_options [join $torture_flags]
 }
 
-gcc-dg-runtest [lsort [glob $srcdir/$subdir/*.C]] $additional_flags
-if { [check_effective_target_fpic] } then {
-    lappend additional_flags "-fpic"
-    gcc-dg-runtest [lsort [glob $srcdir/$subdir/*.C]] $additional_flags
-}
+# Combine stackalign options with the usual torture optimization flags.
+set-torture-options [concat $DG_TORTURE_OPTIONS $LTO_TORTURE_OPTIONS] $stackalign_options
+
+gcc-dg-runtest [lsort [glob $srcdir/$subdir/*.C]] "$default_flags"
+
+torture-finish
 dg-finish

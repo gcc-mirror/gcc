@@ -13,4 +13,4 @@ inline bool equalPossiblyIgnoringCase(const String& a,
                                       const String& b,
                                       bool ignoreCase) {
   return ignoreCase ? equalIgnoringCase(a, b) : (a == b); } // { dg-error "ambiguous" }
-// { dg-message "note" { target *-*-* } 15 }
+// { dg-message "note" "note" { target *-*-* } 15 }

@@ -16,8 +16,8 @@ struct A
 
 template <class T> struct B: A<T>
 {
-  void f() { h(T()); }		// { dg-error "argument-dependent" }
-  static void g() { h(T()); }	// { dg-error "argument-dependent" }
+  void f() { h(T()); }		// { dg-error "argument-dependent" "arg-dep" }
+  static void g() { h(T()); }	// { dg-error "argument-dependent" "arg-dep" }
 };
 
 int main()
@@ -27,7 +27,7 @@ int main()
   b.g();
 }
 
-// { dg-message "dependent base .A.int" "" { target *-*-* } 19 }
-// { dg-message "this->h" "" { target *-*-* } 19 }
-// { dg-message "dependent base .A.int" "" { target *-*-* } 20 }
-// { dg-message "B::h" "" { target *-*-* } 20 }
+// { dg-message "dependent base .A.int" "base" { target *-*-* } 19 }
+// { dg-message "this->h" "this->h" { target *-*-* } 19 }
+// { dg-message "dependent base .A.int" "base" { target *-*-* } 20 }
+// { dg-message "B::h" "B::h" { target *-*-* } 20 }

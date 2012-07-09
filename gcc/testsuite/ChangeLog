@@ -1,3 +1,198 @@
+2012-07-09  Janis Johnson  <janisjo@codesourcery.com>
+
+	Backport from mainline.
+	2012-06-28  Janis Johnson  <janisjo@codesourcery.com>
+
+	* g++.dg/cpp0x/nullptr19.c: Remove exta directives on same line.
+
+	* g++.dg/template/error46.C: Add missing comment to dg-message.
+	* g++.dg/template/crash107.C: Likewise.
+	* g++.dg/template/error47.C: Likewise.
+	* g++.dg/template/crash108.C: Likewise.
+	* g++.dg/overload/operator5.C: Likewise.
+
+	* gcc.dg/Wstrict-aliasing-converted-assigned.c: Fix syntax
+	errors in dg-message directives, add comments.
+
+	2012-06-26  Janis Johnson  <janisjo@codesourcery.com>
+
+	* lib/scandump.exp (scan-dump, scan-dump-not, scan-dump-dem,
+	scan-dump-dem-not): Use printable pattern in test name.
+
+	2012-06-25  Janis Johnson  <janisjo@codesourcery.com>
+
+	* lib/target-supports-dg.exp (testname-for-summary): New.
+	* lib/profopt.exp (profopt_execute): Define testname_with_flags.
+	* lib/gcc-dg.exp (cleanup-coverage-files, cleanup-repo-notes,
+	cleanup-stack-usage, cleanup-dump, cleanup-saved-temps, scan-module,
+	scan-module-absence, output-exists, output-exists-not: Use
+	testname-for-summary.
+	(dg-test): Clean up testname_with_flags.
+	* lib/scanasm.exp (scan-assembler, scan-assembler-not, scan-hidden,
+	scan-not-hidden, scan-file, scan-file-not, scan-stack-usage,
+	scan-stack-usage-not, scan-assembler-times, scan-assembler-dem,
+	scan-assembler-dem-not, object-size: Use testname-for-summary.
+	* lib/gcov.exp (run-gcov): Likewise.
+	* lib/scandump.exp (scan-dump, scan-dump-times, scan-dump-not,
+	scan-dump-dem, scan-dump-dem-note): Likewise.
+
+	* lib/profopt.exp: Make prof_option_list local to profopt-execute.
+	* g++.dg/tree-prof/tree-prof.exp (PROFOPT_OPTIONS): Define after
+	including profopt.opt; save and restore existing value.
+	* g++.dg/bprob/bprob.exp: Likewise.
+	* gcc.dg/matrix/matrix.exp: Likewise.
+	* gcc.dg/tree-prof/tree-prof.exp: Likewise.
+	* gcc.misc-tests/bprob.exp: Likewise; also replace formerly-ignored
+	PROFOPT_OPTIONS.
+
+	2012-06-15  Janis Johnson  <janosjo@codesourcery.com>
+
+	* lib/gcov.exp (verify-lines, verify-branches, verify-calls): Use
+	testname that includes flags, passed in as new argument, in
+	pass/fail messages.
+	(run_gcov): Get testname from dg-test, use it in pass/fail messages
+	and pass it to verify-* procedures.
+
+	* g++.dg/torture/stackalign/stackalign.exp: Combine stack
+	alignment torture options with usual torture options.
+
+	* g++.dg/cpp0x/auto27.C: Add comments to checks for multiple
+	messages reported for one line of source code.
+	* g++.dg/cpp0x/constexpr-decl.C: Likewise.
+	* g++.dg/cpp0x/decltype2.C: Likewise.
+	* g++.dg/cpp0x/decltype3.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-syntax1.C: Likewise.
+	* g++.dg/cpp0x/regress/error-recovery1.C: Likewise.
+	* g++.dg/cpp0x/static_assert3.C: Likewise.
+	* g++.dg/cpp0x/udlit-cpp98-neg.C: Likewise.
+	* g++.dg/cpp0x/udlit-shadow-neg.C: Likewise.
+	* g++.dg/cpp0x/union1.C: Likewise.
+	* g++.dg/cpp0x/variadic-ex10.C: Likewise.
+	* g++.dg/cpp0x/variadic-ex14.C: Likewise.
+	* g++.dg/cpp0x/variadic2.C: Likewise.
+	* g++.dg/cpp0x/variadic20.C: Likewise.
+	* g++.dg/cpp0x/variadic74.C: Likewise.
+	* g++.dg/diagnostic/bitfld2.C: Likewise.
+	* g++.dg/ext/attrib44.C: Likewise.
+	* g++.dg/ext/no-asm-1.C: Likewise.
+	* g++.dg/other/error34.C: Likewise.
+	* g++.dg/parse/crash46.C: Likewise.
+	* g++.dg/parse/error10.C: Likewise.
+	* g++.dg/parse/error2.C: Likewise.
+	* g++.dg/parse/error3.C: Likewise.
+	* g++.dg/parse/error36.C: Likewise.
+	* g++.dg/parse/error8.C: Likewise.
+	* g++.dg/parse/error9.C: Likewise.
+	* g++.dg/parse/parser-pr28152-2.C: Likewise.
+	* g++.dg/parse/parser-pr28152.C: Likewise.
+	* g++.dg/parse/template25.C: Likewise.
+	* g++.dg/parse/typename11.C: Likewise.
+	* g++.dg/tc1/dr147.C: Likewise.
+	* g++.dg/template/deduce3.C: Likewise.
+	* g++.dg/template/koenig9.C: Likewise.
+	* g++.dg/template/pr23510.C: Likewise.
+	* g++.dg/warn/pr12242.C: Likewise.
+	* g++.dg/warn/pr30551-2.C: Likewise.
+	* g++.dg/warn/pr30551.C: Likewise.
+	* g++.old-deja/g++.other/typename1.C: Likewise.
+	* g++.old-deja/g++.pt/niklas01a.C: Likewise.
+
+	2012-06-13  Janis Johnson  <janisjo@codesourcery.com>
+
+	PR testsuite/20771
+	* lib/dg-pch.exp (dg-flags-pch): Add flags to make compile lines in
+	test summary unique.
+
+	* lib/scanasm.exp (scan-assembler, scan-assembler-not, scan-hidden,
+	scan-not-hiddent, scan-file, scan-file-not, scan-stack-usage,
+	scan-stack-usage-not): Don't strip torture options from test name.
+
+	* lib/scandump.exp (scan-dump-times): Use printable version of
+	regexp in test summary line.
+
+	* gcc.dg/di-longlong64-sync-1.c: Add comments to checks for multiple
+	messages reported for one line of source code.
+	* gcc.dg/format/few-1.c: Likewise.
+	* gcc.dg/ia64-sync-2.c: Likewise.
+	* gcc.dg/sync-2.c: Likewise.
+	* gcc.dg/noncompile/pr44517.c: Likewise.
+
+	2012-06-12  Janis Johnson  <janisjo@codesourcery.com>
+
+	* gcc.dg/torture/stackalign/stackalign.exp: Combine stack
+	alignment torture options with usual torture options.
+	* gcc.dg/torture/stackalign/alloca-2.c: Use dg-additional-options
+	instead of dg-options.
+	* gcc.dg/torture/stackalign/alloca-3.c: Likewise.
+	* gcc.dg/torture/stackalign/alloca-4.c: Likewise.
+	* gcc.dg/torture/stackalign/alloca-5.c: Likewise.
+	* gcc.dg/torture/stackalign/alloca-6.c: Likewise.
+	* gcc.dg/torture/stackalign/push-1.c: Likewise.
+	* gcc.dg/torture/stackalign/vararg-3.c: Likewise.
+
+	* gcc.target/arm/di-longlong64-sync-withhelpers.c: Add comments
+	to checks for multiple messages reported for one line of source code.
+	* gcc.target/arm/di-longlong64-sync-withldrexd.c: Likewise.
+
+	* gcc.c-torture/compile/sync-1.c: Add comments to checks for multiple
+	messages reported for one line of source code.
+
+	* gcc.dg/20031223-1.c: Add comments to check for multiple
+	messages reported for one line of source code.
+	* gcc.dg/Wconversion-integer.c: Likewise.
+	* gcc.dg/Wfatal-2.c: Likewise.
+	* gcc.dg/Wfatal.c: Likewise.
+	* gcc.dg/Wobjsize-1.c: Likewise.
+	* gcc.dg/c99-vla-jump-1.c: Likewise.
+	* gcc.dg/c99-vla-jump-2.c: Likewise.
+	* gcc.dg/c99-vla-jump-3.c: Likewise.
+	* gcc.dg/c99-vla-jump-4.c: Likewise.
+	* gcc.dg/c99-vla-jump-5.c: Likewise.
+	* gcc.dg/decl-9.c: Likewise.
+	* gcc.dg/declspec-10.c: Likewise.
+	* gcc.dg/declspec-18.c: Likewise.
+	* gcc.dg/mtune.c: Likewise.
+	* gcc.dg/parser-pr28152-2.c: Likewise.
+	* gcc.dg/parser-pr28152.c: Likewise.
+	* gcc.dg/pr14475.c: Likewise.
+	* gcc.dg/pr27953.c: Likewise.
+	* gcc.dg/pr28322-3.c: Likewise.
+	* gcc.dg/pr30457.c: Likewise.
+	* gcc.dg/pr30551-2.c: Likewise.
+	* gcc.dg/pr30551-3.c: Likewise.
+	* gcc.dg/pr30551-4.c: Likewise.
+	* gcc.dg/pr30551-5.c: Likewise.
+	* gcc.dg/pr30551-6.c: Likewise.
+	* gcc.dg/pr30551.c: Likewise.
+	* gcc.dg/pr45461.c: Likewise.
+	* gcc.dg/pr48552-1.c: Likewise.
+	* gcc.dg/pr48552-2.c: Likewise.
+	* gcc.dg/redecl-1.c: Likewise.
+	* gcc.dg/transparent-union-3.c: Likewise.
+	* gcc.dg/utf-dflt.c: Likewise.
+	* gcc.dg/utf-dflt2.c: Likewise.
+	* gcc.dg/vla-8.c: Likewise.
+	* gcc.dg/vla-init-1.c: Likewise.
+	* gcc.dg/wtr-int-type-1.c: Likewise.
+
+	* c-c++-common/raw-string-3.c: Add comments to checks for multiple
+	messages reported for for one line of source code.
+	* c-c++-common/raw-string-5.c: Likewise.
+	* c-c++-common/raw-string-4.c: Likewise.
+	* c-c++-common/raw-string-6.c: Likewise.
+	* c-c++-common/pr20000.c: Likewise.
+
+	* gcc.dg/cpp/include2a.c: Add comments to checks for multiple
+	messages reported for one line of source code.
+	* gcc.dg/cpp/pr30786.c: Likewise.
+	* gcc.dg/cpp/pr28709.c: Likewise.
+	* gcc.dg/cpp/missing-header-MD.c: Likewise.
+	* gcc.dg/cpp/macspace2.c: Likewise.
+	* gcc.dg/cpp/missing-header-1.c: Likewise.
+	* gcc.dg/cpp/missing-header-MMD.c: Likewise.
+	* gcc.dg/cpp/missing-sysheader-MD.c: Likewise.
+	* gcc.dg/cpp/missing-sysheader-MMD.c: Likewise.
+
 2012-07-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/53882

@@ -4,5 +4,5 @@
 /* { dg-do compile } */
 #define foo - ## >>
 foo;
-/* { dg-error "expected identifier.*'-'" "" { target *-*-* } 6 } */
-/* { dg-error pasting "" { target *-*-* } 6 } */
+/* { dg-error "expected identifier.*'-'" "expected" { target *-*-* } 6 } */
+/* { dg-error pasting "pasting" { target *-*-* } 6 } */
