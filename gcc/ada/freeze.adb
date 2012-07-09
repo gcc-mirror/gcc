@@ -1906,8 +1906,34 @@ package body Freeze is
          Comp := First_Entity (Rec);
          Prev := Empty;
          while Present (Comp) loop
+            --  Deal with delayed aspect specifications for components. The
+            --  analysis of the aspect is required to be delayed to the freeze
+            --  point, thus we analyze the pragma or attribute definition
+            --  clause in the tree at this point. We also analyze the aspect
+            --  specification node at the freeze point when the aspect doesn't
+            --  correspond to pragma/attribute definition clause.
 
-            --  First handle the component case
+            if Ekind (Comp) = E_Component
+               and then Has_Delayed_Aspects (Comp)
+            then
+               Push_Scope (Rec);
+
+               --  The visibility to the discriminants must be restored in
+               --  order to properly analyze the aspects.
+
+               if Has_Discriminants (Rec) then
+                  Install_Discriminants (Rec);
+                  Analyze_Aspects_At_Freeze_Point (Comp);
+                  Uninstall_Discriminants (Rec);
+
+               else
+                  Analyze_Aspects_At_Freeze_Point (Comp);
+               end if;
+
+               Pop_Scope;
+            end if;
+
+            --  Handle the component and discriminant case
 
             if Ekind (Comp) = E_Component
               or else Ekind (Comp) = E_Discriminant

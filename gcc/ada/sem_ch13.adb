@@ -6350,25 +6350,18 @@ package body Sem_Ch13 is
       --  but Expression (Ident) is a preanalyzed copy of the expression,
       --  preanalyzed just after the freeze point.
 
-   begin
-      --  Case of aspects Dimension, Dimension_System and Synchronization
+      procedure Check_Overloaded_Name;
+      --  For aspects whose expression is simply a name, this routine checks if
+      --  the name is overloaded or not. If so, it verifies there is an
+      --  interpretation that matches the entity obtained at the freeze point,
+      --  otherwise the compiler complains.
 
-      if A_Id = Aspect_Synchronization then
-         return;
+      ---------------------------
+      -- Check_Overloaded_Name --
+      ---------------------------
 
-      --  Case of stream attributes, just have to compare entities. However,
-      --  the expression is just a name (possibly overloaded), and there may
-      --  be stream operations declared for unrelated types, so we just need
-      --  to verify that one of these interpretations is the one available at
-      --  at the freeze point.
-
-      elsif A_Id = Aspect_Input  or else
-         A_Id = Aspect_Output    or else
-         A_Id = Aspect_Read      or else
-         A_Id = Aspect_Write
-      then
-         Analyze (End_Decl_Expr);
-
+      procedure Check_Overloaded_Name is
+      begin
          if not Is_Overloaded (End_Decl_Expr) then
             Err := Entity (End_Decl_Expr) /= Entity (Freeze_Expr);
 
@@ -6391,6 +6384,29 @@ package body Sem_Ch13 is
                end loop;
             end;
          end if;
+      end Check_Overloaded_Name;
+
+   --  Start of processing for Check_Aspect_At_End_Of_Declarations
+
+   begin
+      --  Case of aspects Dimension, Dimension_System and Synchronization
+
+      if A_Id = Aspect_Synchronization then
+         return;
+
+      --  Case of stream attributes, just have to compare entities. However,
+      --  the expression is just a name (possibly overloaded), and there may
+      --  be stream operations declared for unrelated types, so we just need
+      --  to verify that one of these interpretations is the one available at
+      --  at the freeze point.
+
+      elsif A_Id = Aspect_Input  or else
+         A_Id = Aspect_Output    or else
+         A_Id = Aspect_Read      or else
+         A_Id = Aspect_Write
+      then
+         Analyze (End_Decl_Expr);
+         Check_Overloaded_Name;
 
       elsif A_Id = Aspect_Variable_Indexing or else
             A_Id = Aspect_Constant_Indexing or else
@@ -6402,16 +6418,19 @@ package body Sem_Ch13 is
 
          Set_Is_Frozen (Ent, False);
          Analyze (End_Decl_Expr);
-         Analyze (Aspect_Rep_Item (ASN));
          Set_Is_Frozen (Ent, True);
 
          --  If the end of declarations comes before any other freeze
          --  point, the Freeze_Expr is not analyzed: no check needed.
 
-         Err :=
-           Analyzed (Freeze_Expr)
-             and then not In_Instance
-             and then Entity (End_Decl_Expr) /= Entity (Freeze_Expr);
+         if Analyzed (Freeze_Expr)
+           and then not In_Instance
+         then
+            Check_Overloaded_Name;
+
+         else
+            Err := False;
+         end if;
 
       --  All other cases
 

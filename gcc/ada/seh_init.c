@@ -178,9 +178,15 @@ __gnat_SEH_error_handler (struct _EXCEPTION_RECORD* ExceptionRecord,
       msg = "EXCEPTION_STACK_OVERFLOW";
       break;
 
-   default:
+    default:
+#if defined (_WIN64) && defined (__SEH__)
+      /* On Windows x64, do not transform other exception as they could
+	 be caught by user (when SEH is used to propagate exceptions).  */
+      return;
+#else
       exception = &program_error;
       msg = "unhandled signal";
+#endif
     }
 
 #if ! defined (_WIN64)
