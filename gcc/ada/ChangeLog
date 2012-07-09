@@ -1,3 +1,16 @@
+2012-07-09  Tristan Gingold  <gingold@adacore.com>
+
+	* raise-gcc.c (db_indent): Simplify style, improve comments.
+	Remove !IN_RTS part (dead).
+
+2012-07-09  Robert Dewar  <dewar@adacore.com>
+
+	* usage.adb: Minor change to format of -gnatn line.
+
+2012-07-09  Tristan Gingold  <gingold@adacore.com>
+
+	* a-exexpr-gcc.adb: Reorder routine.
+
 2012-07-09  Vincent Celier  <celier@adacore.com>
 
 	* lib-writ.ads: Add documentation for the Z lines (implicitly

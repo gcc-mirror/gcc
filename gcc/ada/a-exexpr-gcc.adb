@@ -455,18 +455,6 @@ package body Exception_Propagation is
       Unhandled_Except_Handler (GCC_Exception);
    end Propagate_GCC_Exception;
 
-   ------------------------------
-   -- Unhandled_Except_Handler --
-   ------------------------------
-
-   procedure Unhandled_Except_Handler
-     (GCC_Exception : not null GCC_Exception_Access)
-   is
-   begin
-      Setup_Current_Excep (GCC_Exception);
-      Unhandled_Exception_Terminate;
-   end Unhandled_Except_Handler;
-
    -------------------------
    -- Propagate_Exception --
    -------------------------
@@ -516,6 +504,18 @@ package body Exception_Propagation is
 
       Propagate_GCC_Exception (To_GCC_Exception (GCC_Exception));
    end Propagate_Exception;
+
+   ------------------------------
+   -- Unhandled_Except_Handler --
+   ------------------------------
+
+   procedure Unhandled_Except_Handler
+     (GCC_Exception : not null GCC_Exception_Access)
+   is
+   begin
+      Setup_Current_Excep (GCC_Exception);
+      Unhandled_Exception_Terminate;
+   end Unhandled_Except_Handler;
 
    -------------
    -- EID_For --

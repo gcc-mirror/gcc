@@ -32,7 +32,10 @@
 /* Code related to the integration of the GCC mechanism for exception
    handling.  */
 
-#ifdef IN_RTS
+#ifndef IN_RTS
+#error "RTS unit only"
+#endif
+
 #include "tconfig.h"
 #include "tsystem.h"
 #include <sys/stat.h>
@@ -40,10 +43,6 @@
 typedef char bool;
 # define true 1
 # define false 0
-#else
-#include "config.h"
-#include "system.h"
-#endif
 
 #include "adaint.h"
 #include "raise.h"
@@ -56,36 +55,20 @@ typedef char bool;
 #endif
 #endif
 
+#if defined (__hpux__) && defined (USE_LIBUNWIND_EXCEPTIONS)
+/* HP-UX B.11.31 ia64 libunwind doesn't have _Unwind_GetIPInfo. */
+#undef HAVE_GETIPINFO
+#endif
+
 /* The names of a couple of "standard" routines for unwinding/propagation
    actually vary depending on the underlying GCC scheme for exception handling
    (SJLJ or DWARF). We need a consistently named interface to import from
-   a-except, so wrappers are defined here.
-
-   Besides, even though the compiler is never setup to use the GCC propagation
-   circuitry, it still relies on exceptions internally and part of the sources
-   to handle to exceptions are shared with the run-time library.  We need
-   dummy definitions for the wrappers to satisfy the linker in this case.
-
-   The types to be used by those wrappers in the run-time library are target
-   types exported by unwind.h.  We used to piggyback on them for the compiler
-   stubs, but there is no guarantee that unwind.h is always in sight so we
-   define our own set below.  These are dummy types as the wrappers are never
-   called in the compiler case.  */
-
-#ifdef IN_RTS
+   a-except, so wrappers are defined here.  */
 
 #include "unwind.h"
 
 typedef struct _Unwind_Context _Unwind_Context;
 typedef struct _Unwind_Exception _Unwind_Exception;
-
-#else
-
-typedef void _Unwind_Context;
-typedef void _Unwind_Exception;
-typedef int  _Unwind_Reason_Code;
-
-#endif
 
 _Unwind_Reason_Code
 __gnat_Unwind_RaiseException (_Unwind_Exception *);
@@ -94,8 +77,6 @@ _Unwind_Reason_Code
 __gnat_Unwind_ForcedUnwind (_Unwind_Exception *, void *, void *);
 
 extern void __gnat_setup_current_excep (_Unwind_Exception *);
-
-#ifdef IN_RTS   /* For eh personality routine */
 
 #include "dwarf2.h"
 #include "unwind-dw2-fde.h"
@@ -164,31 +145,19 @@ db_indent (int requests)
   static int current_indentation_level = 0;
 
   if (requests & DB_INDENT_RESET)
-    {
-      current_indentation_level = 0;
-    }
+    current_indentation_level = 0;
 
   if (requests & DB_INDENT_INCREASE)
-    {
-      current_indentation_level ++;
-    }
+    current_indentation_level ++;
 
   if (requests & DB_INDENT_DECREASE)
-    {
-      current_indentation_level --;
-    }
+    current_indentation_level --;
 
   if (requests & DB_INDENT_NEWLINE)
-    {
-      fprintf (stderr, "\n");
-    }
+    fprintf (stderr, "\n");
 
   if (requests & DB_INDENT_OUTPUT)
-    {
-      fprintf (stderr, "%*s",
-	       current_indentation_level * DB_INDENT_UNIT, " ");
-    }
-
+    fprintf (stderr, "%*s", current_indentation_level * DB_INDENT_UNIT, " ");
 }
 
 static void ATTRIBUTE_PRINTF_2
@@ -264,7 +233,8 @@ db_phases (int phases)
 
    This table contains lists (called action chains) of possible actions
    associated with call-site entries described in the call-site [] table.
-   There is at most one action list per call-site entry.
+   There is at most one action list per call-site entry.  It is SLEB128
+   encoded.
 
    A null action-filter indicates a cleanup.
 
@@ -278,22 +248,19 @@ db_phases (int phases)
                       data to retrieve, which is only relevant for C++
 		      and should never show up for Ada.
 
-   next-action indexes the next entry in the list. 0 indicates there is
-   no other entry.
+   next-action points to the next entry in the list using a relative byte
+   index. 0 indicates there is no other entry.
 
    ttypes []
    ---------------
    * ttype-value *
    ---------------
 
-   A null value indicates a catch-all handler in C++, and an "others"
-   handler in Ada.
+   A null value indicates a catch-all handler.  (Not used by Ada)
 
    Non null values are used to match the exception being propagated:
    In C++ this is a pointer to some rtti data, while in Ada this is an
-   exception id.
-
-   The special id value 1 indicates an "all_others" handler.
+   exception id (with a fake id for others).
 
    For C++, this table is actually also used to store "exception
    specification" data. The differentiation between the two kinds
@@ -339,9 +306,9 @@ db_phases (int phases)
 		 +=====================+     |  the actual base.
 		 |     ttype-value     |     |
     +============+=====================+     |
-    |            |  0 => "others"      |     |
-    |    ...     |  1 => "all others"  | <---+
-    |            |  X => exception id  |
+    |            |        ...          |     |
+    |    ...     |     exception id    | <---+
+    |            |        ...          |
     |  handlers	 +---------------------+
     |            |        ...          |
     |    ...     |        ...          |
@@ -1224,27 +1191,3 @@ __gnat_personality_seh0 (PEXCEPTION_RECORD ms_exc, void *this_frame,
 				ms_disp, __gnat_personality_imp);
 }
 #endif /* SEH */
-#else
-/* ! IN_RTS  */
-
-/* Define the corresponding stubs for the compiler.  */
-
-/* We don't want fancy_abort here.  */
-#undef abort
-
-_Unwind_Reason_Code
-__gnat_Unwind_RaiseException (_Unwind_Exception *e ATTRIBUTE_UNUSED)
-{
-  abort ();
-}
-
-
-_Unwind_Reason_Code
-__gnat_Unwind_ForcedUnwind (_Unwind_Exception *e ATTRIBUTE_UNUSED,
-                            void * handler ATTRIBUTE_UNUSED,
-                            void * argument ATTRIBUTE_UNUSED)
-{
-  abort ();
-}
-
-#endif /* IN_RTS */
