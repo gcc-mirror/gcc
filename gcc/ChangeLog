@@ -1,3 +1,11 @@
+2012-07-09  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR tree-optimization/53887
+	* tree-cfg.c (group_case_labels_stmt): Make non-static.
+	* tree-flow.h (group_case_labels_stmt): Add prototype.
+	* tree-switch-conversion.c (process_switch): Use group_case_labels_stmt
+	to pre-process every switch.
+
 2012-07-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/53882

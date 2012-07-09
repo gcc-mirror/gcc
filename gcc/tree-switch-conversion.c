@@ -1339,8 +1339,14 @@ process_switch (gimple swtch)
 {
   struct switch_conv_info info;
 
-  /* Degenerate case with only a default label should never happen.  */
-  gcc_checking_assert (gimple_switch_num_labels (swtch) > 1);
+  /* Group case labels so that we get the right results from the heuristics
+     that decide on the code generation approach for this switch.  */
+  group_case_labels_stmt (swtch);
+
+  /* If this switch is now a degenerate case with only a default label,
+     there is nothing left for us to do.   */
+  if (gimple_switch_num_labels (swtch) < 2)
+    return "switch is a degenerate case";
 
   collect_switch_conv_info (swtch, &info);
 
