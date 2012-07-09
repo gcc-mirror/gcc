@@ -1,3 +1,7 @@
+2012-07-09  Sterling Augustine  <saugustine@google.com>
+
+	* error.c (lang_decl_name): Use TFF_UNQUALIFIED_NAME flag.
+
 2012-07-08  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* decl.c (cp_finish_decl): Add FIXME at add_local_decl call site.

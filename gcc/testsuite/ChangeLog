@@ -1,3 +1,7 @@
+2012-07-09  Sterling Augustine  <saugustine@google.com>
+
+	* g++.dg/debug/dwarf2/pubnames-2.C: New.
+
 2012-07-09  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR tree-optimization/53887
