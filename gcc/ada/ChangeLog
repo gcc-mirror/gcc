@@ -1,3 +1,68 @@
+2012-07-09  Thomas Quinot  <quinot@adacore.com>
+
+	* einfo.adb (Set_Reverse_Storage_Order): Update assertion,
+	flag is now valid for array types as well.
+
+2012-07-09  Tristan Gingold  <gingold@adacore.com>
+
+	* tracebak.c: Implement __gnat_backtrace for Win64 SEH.
+
+2012-07-09  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.ads: Minor reformatting.
+
+2012-07-09  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch8.adb (Expand_N_Subprogram_Renaming_Declaration): Handle as
+	renaming_as_body renamings of predefined dispatching equality
+	and unequality operators.
+
+2012-07-09  Robert Dewar  <dewar@adacore.com>
+
+	* rident.ads: Do not instantiate r-ident.ads, this is now an
+	independent unit.
+
+2012-07-09  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.adb (Write_DT): Avoid runtime crash of this debugging
+	routine.
+	* sem_disp.adb (Find_Dispatching_Time): Protect this routine
+	against partially decorated entities.
+
+2012-07-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Check_Size): Reject a size clause that specifies
+	a value greater than Int'Last for a scalar type.
+
+2012-07-09  Vincent Pucci  <pucci@adacore.com>
+
+	* sem_ch9.adb (Allows_Lock_Free_Implementation): type must support
+	atomic operation moved to the protected body case. No non-elementary
+	out parameter moved to the protected declaration case. Functions have
+	only one lock-free restriction.
+	(Analyze_Protected_Type_Declaration): Issue a warning when
+	Priority given with Lock_Free.
+
+2012-07-09  Vincent Pucci  <pucci@adacore.com>
+
+	* sem_dim.adb: Grammar of aspect Dimension fixed.
+
+2012-07-09  Vincent Pucci  <pucci@adacore.com>
+
+	* freeze.adb (Freeze_Record_Type): Code reorg in order to avoid
+	pushing and popping the scope stack whenever a delayed aspect occurs.
+
+2012-07-09  Gary Dismukes  <dismukes@adacore.com>
+
+	* s-os_lib.ads: Remove pragma Elaborate_Body, as
+	this is now unnecessary due to recently added pragma Preelaborate.
+
+2012-07-09  Jose Ruiz  <ruiz@adacore.com>
+
+	* s-taprop-mingw.adb (Set_Priority): Remove the code that was
+	previously in place to reorder the ready queue when a task drops
+	its priority due to the loss of inherited priority.
+
 2012-07-09  Robert Dewar  <dewar@adacore.com>
 
 	* layout.adb, i-cstrea.ads, a-ststio.ads, prj-util.ads, sem_cat.adb,

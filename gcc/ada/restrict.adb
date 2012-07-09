@@ -768,7 +768,7 @@ package body Restrict is
    ----------------------------------
 
    --  Note: body of this function must be coordinated with list of
-   --  renaming declarations in System.Rident.
+   --  renaming declarations in Rident.
 
    function Process_Restriction_Synonyms (N : Node_Id) return Name_Id
    is

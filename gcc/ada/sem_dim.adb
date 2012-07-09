@@ -432,7 +432,7 @@ package body Sem_Dim is
    ------------------------------
 
    --  with Dimension => (
-   --       [Symbol =>] SYMBOL,
+   --    [[Symbol =>]   SYMBOL,]
    --                   DIMENSION_VALUE
    --    [,             DIMENSION_VALUE]
    --    [,             DIMENSION_VALUE]

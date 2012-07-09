@@ -6254,7 +6254,7 @@ package body Sem_Prag is
 
       --    Set Detect_Blocking mode
 
-      --    Set required restrictions (see System.Rident for detailed list)
+      --    Set required restrictions (see Rident for detailed list)
 
       --    Set the No_Dependence rules
       --      No_Dependence => Ada.Asynchronous_Task_Control

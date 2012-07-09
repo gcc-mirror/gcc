@@ -7735,6 +7735,18 @@ package body Sem_Ch13 is
    begin
       Biased := False;
 
+      --  Reject patently improper size values.
+
+      if Is_Scalar_Type (T)
+        and then Siz > UI_From_Int (Int'Last)
+      then
+         Error_Msg_N ("Size value too large for scalar type", N);
+         if Nkind (Original_Node (N)) = N_Op_Expon then
+            Error_Msg_N
+              ("\maybe '* was meant, rather than '*'*", Original_Node (N));
+         end if;
+      end if;
+
       --  Dismiss cases for generic types or types with previous errors
 
       if No (UT)

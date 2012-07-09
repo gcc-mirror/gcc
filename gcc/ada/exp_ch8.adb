@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -239,6 +239,44 @@ package body Exp_Ch8 is
    ----------------------------------------------
 
    procedure Expand_N_Subprogram_Renaming_Declaration (N : Node_Id) is
+      Loc : constant Source_Ptr := Sloc (N);
+      Id  : constant Entity_Id  := Defining_Entity (N);
+
+      function Build_Body_For_Renaming return Node_Id;
+      --  Build and return the body for the renaming declaration of an
+      --  equality or unequality operator.
+
+      function Build_Body_For_Renaming return Node_Id is
+         Body_Id : Entity_Id;
+         Decl    : Node_Id;
+
+      begin
+         Set_Alias (Id, Empty);
+         Set_Has_Completion (Id, False);
+         Rewrite (N,
+           Make_Subprogram_Declaration (Sloc (N),
+             Specification => Specification (N)));
+         Set_Has_Delayed_Freeze (Id);
+
+         Body_Id := Make_Defining_Identifier (Sloc (N), Chars (Id));
+         Set_Debug_Info_Needed (Body_Id);
+
+         Decl :=
+           Make_Subprogram_Body (Loc,
+             Specification              =>
+               Make_Function_Specification (Loc,
+                 Defining_Unit_Name       => Body_Id,
+                 Parameter_Specifications => Copy_Parameter_List (Id),
+                 Result_Definition        =>
+                   New_Occurrence_Of (Standard_Boolean, Loc)),
+             Declarations               => Empty_List,
+             Handled_Statement_Sequence => Empty);
+
+         return Decl;
+      end Build_Body_For_Renaming;
+
+      --  Local variable
+
       Nam : constant Node_Id := Name (N);
 
    begin
@@ -259,25 +297,26 @@ package body Exp_Ch8 is
          Force_Evaluation (Prefix (Nam));
       end if;
 
-      --  Check whether this is a renaming of a predefined equality on an
-      --  untagged record type (AI05-0123).
+      --  Handle cases where we build a body for a renamed equality
 
       if Is_Entity_Name (Nam)
-        and then Chars (Entity (Nam)) = Name_Op_Eq
+        and then (Chars (Entity (Nam)) = Name_Op_Ne
+                   or else Chars (Entity (Nam)) = Name_Op_Eq)
         and then Scope (Entity (Nam)) = Standard_Standard
-        and then Ada_Version >= Ada_2012
       then
          declare
-            Loc : constant Source_Ptr := Sloc (N);
-            Id  : constant Entity_Id  := Defining_Entity (N);
-            Typ : constant Entity_Id  := Etype (First_Formal (Id));
-
-            Decl    : Node_Id;
-            Body_Id : constant Entity_Id :=
-                        Make_Defining_Identifier (Sloc (N), Chars (Id));
+            Left  : constant Entity_Id := First_Formal (Id);
+            Right : constant Entity_Id := Next_Formal (Left);
+            Typ   : constant Entity_Id := Etype (Left);
+            Decl  : Node_Id;
 
          begin
-            if Is_Record_Type (Typ)
+            --  Check whether this is a renaming of a predefined equality on an
+            --  untagged record type (AI05-0123).
+
+            if Ada_Version >= Ada_2012
+              and then Chars (Entity (Nam)) = Name_Op_Eq
+              and then Is_Record_Type (Typ)
               and then not Is_Tagged_Type (Typ)
               and then not Is_Frozen (Typ)
             then
@@ -288,23 +327,7 @@ package body Exp_Ch8 is
                --  declaration, and the body is inserted at the end of the
                --  current declaration list to prevent premature freezing.
 
-               Set_Alias (Id, Empty);
-               Set_Has_Completion (Id, False);
-               Rewrite (N,
-                 Make_Subprogram_Declaration (Sloc (N),
-                   Specification => Specification (N)));
-               Set_Has_Delayed_Freeze (Id);
-
-               Decl := Make_Subprogram_Body (Loc,
-                         Specification              =>
-                           Make_Function_Specification (Loc,
-                             Defining_Unit_Name       => Body_Id,
-                             Parameter_Specifications =>
-                               Copy_Parameter_List (Id),
-                             Result_Definition        =>
-                               New_Occurrence_Of (Standard_Boolean, Loc)),
-                         Declarations               => Empty_List,
-                         Handled_Statement_Sequence => Empty);
+               Decl := Build_Body_For_Renaming;
 
                Set_Handled_Statement_Sequence (Decl,
                  Make_Handled_Sequence_Of_Statements (Loc,
@@ -322,7 +345,63 @@ package body Exp_Ch8 is
                             Bodies => Declarations (Decl))))));
 
                Append (Decl, List_Containing (N));
-               Set_Debug_Info_Needed (Body_Id);
+
+            --  Handle renamings of predefined dispatching equality operators.
+            --  When we analyze a renaming of the equality operator of a tagged
+            --  type, the predefined dispatching primitives are not available
+            --  (since they are added by the expander when the tagged type is
+            --  frozen) and hence they are left decorated as renamings of the
+            --  standard non-dispatching operators. Here we generate a body
+            --  for such renamings which invokes the predefined dispatching
+            --  equality operator.
+
+            --  Example:
+
+            --    type T is tagged null record;
+            --    function  Eq (X, Y : T1) return Boolean renames "=";
+            --    function Neq (X, Y : T1) return Boolean renames "/=";
+
+            elsif Is_Record_Type (Typ)
+              and then Is_Tagged_Type (Typ)
+              and then Is_Dispatching_Operation (Id)
+              and then not Is_Dispatching_Operation (Entity (Nam))
+            then
+               pragma Assert (not Is_Frozen (Typ));
+
+               Decl := Build_Body_For_Renaming;
+
+               --  Clean decoration of intrinsic subprogram
+
+               Set_Is_Intrinsic_Subprogram (Id, False);
+               Set_Convention (Id, Convention_Ada);
+
+               if Chars (Entity (Nam)) = Name_Op_Ne then
+                  Set_Handled_Statement_Sequence (Decl,
+                    Make_Handled_Sequence_Of_Statements (Loc,
+                      Statements => New_List (
+                        Make_Simple_Return_Statement (Loc,
+                          Expression =>
+                             Make_Op_Not (Loc,
+                               Make_Op_Eq (Loc,
+                                 Left_Opnd  =>
+                                   New_Reference_To (Left, Loc),
+                                 Right_Opnd =>
+                                   New_Reference_To (Right, Loc)))))));
+
+               else pragma Assert (Chars (Entity (Nam)) = Name_Op_Eq);
+                  Set_Handled_Statement_Sequence (Decl,
+                    Make_Handled_Sequence_Of_Statements (Loc,
+                      Statements => New_List (
+                        Make_Simple_Return_Statement (Loc,
+                          Expression =>
+                            Make_Op_Eq (Loc,
+                              Left_Opnd  =>
+                                New_Reference_To (Left, Loc),
+                              Right_Opnd =>
+                                New_Reference_To (Right, Loc))))));
+               end if;
+
+               Append (Decl, List_Containing (N));
             end if;
          end;
       end if;

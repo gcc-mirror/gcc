@@ -5777,7 +5777,7 @@ package body Exp_Disp is
              Prefix => New_Reference_To (TSD, Loc),
              Attribute_Name => Name_Address));
 
-         --  Stage 2: Initialize the table of primitive operations
+         --  Stage 2: Initialize the table of user-defined primitive operations
 
          Prim_Ops_Aggr_List := New_List;
 
@@ -8857,7 +8857,8 @@ package body Exp_Disp is
             --  If the DTC_Entity attribute is already set we can also output
             --  the name of the interface covered by this primitive (if any).
 
-            if Present (DTC_Entity (Alias (Prim)))
+            if Ekind_In (Alias (Prim), E_Function, E_Procedure)
+              and then Present (DTC_Entity (Alias (Prim)))
               and then Is_Interface (Scope (DTC_Entity (Alias (Prim))))
             then
                Write_Str  (" from interface ");
