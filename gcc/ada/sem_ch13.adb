@@ -6423,11 +6423,8 @@ package body Sem_Ch13 is
          --  If the end of declarations comes before any other freeze
          --  point, the Freeze_Expr is not analyzed: no check needed.
 
-         if Analyzed (Freeze_Expr)
-           and then not In_Instance
-         then
+         if Analyzed (Freeze_Expr) and then not In_Instance then
             Check_Overloaded_Name;
-
          else
             Err := False;
          end if;

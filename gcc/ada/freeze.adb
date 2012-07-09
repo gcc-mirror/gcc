@@ -42,7 +42,7 @@ with Nmake;    use Nmake;
 with Opt;      use Opt;
 with Restrict; use Restrict;
 with Rident;   use Rident;
-with Rtsfind; use Rtsfind;
+with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Cat;  use Sem_Cat;
@@ -1906,6 +1906,7 @@ package body Freeze is
          Comp := First_Entity (Rec);
          Prev := Empty;
          while Present (Comp) loop
+
             --  Deal with delayed aspect specifications for components. The
             --  analysis of the aspect is required to be delayed to the freeze
             --  point, thus we analyze the pragma or attribute definition
@@ -1914,7 +1915,7 @@ package body Freeze is
             --  correspond to pragma/attribute definition clause.
 
             if Ekind (Comp) = E_Component
-               and then Has_Delayed_Aspects (Comp)
+              and then Has_Delayed_Aspects (Comp)
             then
                Push_Scope (Rec);
 
