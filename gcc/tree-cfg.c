@@ -125,7 +125,6 @@ static edge find_taken_edge_computed_goto (basic_block, tree);
 static edge find_taken_edge_cond_expr (basic_block, tree);
 static edge find_taken_edge_switch_expr (basic_block, tree);
 static tree find_case_label_for_value (gimple, tree);
-static void group_case_labels_stmt (gimple);
 
 void
 init_empty_tree_cfg_for_function (struct function *fn)
@@ -1331,7 +1330,7 @@ cleanup_dead_labels (void)
    the ones jumping to the same label.
    Eg. three separate entries 1: 2: 3: become one entry 1..3:  */
 
-static void
+void
 group_case_labels_stmt (gimple stmt)
 {
   int old_size = gimple_switch_num_labels (stmt);

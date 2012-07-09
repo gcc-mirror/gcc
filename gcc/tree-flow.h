@@ -428,6 +428,7 @@ extern void debug_loop_num (unsigned, int);
 extern void print_loops (FILE *, int);
 extern void print_loops_bb (FILE *, basic_block, int, int);
 extern void cleanup_dead_labels (void);
+extern void group_case_labels_stmt (gimple);
 extern void group_case_labels (void);
 extern gimple first_stmt (basic_block);
 extern gimple last_stmt (basic_block);
