@@ -226,8 +226,8 @@ package body Ch13 is
                --  are meant to be used only by the compiler.
 
                if not Is_Attribute_Name (Attr_Name)
-                 or else (Is_Internal_Attribute_Name (Attr_Name)
-                           and then Comes_From_Source (Token_Node))
+                 and then (not Is_Internal_Attribute_Name (Attr_Name)
+                            or else Comes_From_Source (Token_Node))
                then
                   Signal_Bad_Attribute;
                end if;

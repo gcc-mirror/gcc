@@ -721,13 +721,7 @@ package body Util is
 
       Error_Msg_Name_1 := First_Attribute_Name;
       while Error_Msg_Name_1 <= Last_Attribute_Name loop
-
-         --  No mispelling possible with internal attribute names since they
-         --  don't denote real attributes.
-
-         if not Is_Internal_Attribute_Name (Error_Msg_Name_1)
-           and then Is_Bad_Spelling_Of (Token_Name, Error_Msg_Name_1)
-         then
+         if Is_Bad_Spelling_Of (Token_Name, Error_Msg_Name_1) then
             Error_Msg_N -- CODEFIX
               ("\possible misspelling of %", Token_Node);
             exit;

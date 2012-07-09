@@ -841,9 +841,7 @@ package body Exp_Attr is
       --  Internal attributes used to deal with Ada 2012 delayed aspects. These
       --  were already rejected by the parser. Thus they shouldn't appear here.
 
-      when Attribute_CPU                |
-           Attribute_Dispatching_Domain |
-           Attribute_Interrupt_Priority =>
+      when Internal_Attribute_Id =>
          raise Program_Error;
 
       ------------

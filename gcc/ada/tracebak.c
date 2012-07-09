@@ -160,7 +160,7 @@ __gnat_backtrace (void **array,
 	break;
 
       /* Skip frames.  */
-      if (skip_frames)
+      if (skip_frames > 1)
 	{
 	  skip_frames--;
 	  continue;
