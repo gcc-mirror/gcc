@@ -2602,7 +2602,7 @@ package body Einfo is
 
    function Reverse_Storage_Order (Id : E) return B is
    begin
-      pragma Assert (Is_Record_Type (Id));
+      pragma Assert (Is_Record_Type (Id) or else Is_Array_Type (Id));
       return Flag93 (Base_Type (Id));
    end Reverse_Storage_Order;
 

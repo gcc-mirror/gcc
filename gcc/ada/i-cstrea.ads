@@ -229,7 +229,6 @@ package Interfaces.C_Streams is
    --  path name. Use max_path_len given below as the size of buffer.
 
    max_path_len : constant Integer;
-   --  max_path_len : Integer;
    --  Maximum length of an allowable full path name on the system,including a
    --  terminating NUL character. Declared as a constant to allow references
    --  from other preelaborated GNAT library packages.

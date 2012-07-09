@@ -40,7 +40,6 @@ with Interfaces.C_Streams;
 with System.CRTL;
 
 package System.File_Control_Block is
-
    pragma Preelaborate;
 
    ----------------------------

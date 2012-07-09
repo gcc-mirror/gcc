@@ -1,3 +1,19 @@
+2012-07-09  Robert Dewar  <dewar@adacore.com>
+
+	* layout.adb, i-cstrea.ads, a-ststio.ads, prj-util.ads, sem_cat.adb,
+	s-commun.ads, s-ficobl.ads, s-os_lib.ads, s-fileio.ads: Minor
+	reformatting.
+
+2012-07-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* raise-gcc.c: Update comments. Fix typo.
+
+2012-07-09  Thomas Quinot  <quinot@adacore.com>
+
+	* einfo.adb, einfo.ads, sem_attr.adb, sem_ch13.adb: Attribute
+	Scalar_Storage_Order can be defined or queried for array types as well
+	as record types.
+
 2012-07-09  Tristan Gingold  <gingold@adacore.com>
 
 	* a-exexpr-gcc.adb (CleanupUnwind_Handler): Now imported from

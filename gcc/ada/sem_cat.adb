@@ -224,9 +224,10 @@ package body Sem_Cat is
          --  AI05-0206.
 
          elsif (Unit_Category = Remote_Types
-                 or else Unit_Category = Remote_Call_Interface)
-           and then (Nkind (N) = N_With_Clause
-                      and then Private_Present (N))
+                  or else
+                Unit_Category = Remote_Call_Interface)
+           and then Nkind (N) = N_With_Clause
+           and then Private_Present (N)
            and then Is_Preelaborated (Depended_Entity)
          then
             null;
@@ -271,7 +272,8 @@ package body Sem_Cat is
          --  on a preelaborated unit with a normal with_clause.
 
          elsif (Unit_Category = Remote_Types
-                 or else Unit_Category = Remote_Call_Interface)
+                  or else
+                Unit_Category = Remote_Call_Interface)
            and then Is_Preelaborated (Depended_Entity)
          then
             Error_Msg_NE

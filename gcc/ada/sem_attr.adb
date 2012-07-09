@@ -4569,8 +4569,9 @@ package body Sem_Attr is
          Check_E0;
          Check_Type;
 
-         if not Is_Record_Type (P_Type) then
-            Error_Attr_P ("prefix of % attribute must be record type");
+         if not Is_Record_Type (P_Type) or else Is_Array_Type (P_Type) then
+            Error_Attr_P
+              ("prefix of % attribute must be record or array type");
          end if;
 
          if Bytes_Big_Endian xor Reverse_Storage_Order (P_Type) then

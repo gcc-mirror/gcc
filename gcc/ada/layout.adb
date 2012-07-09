@@ -3103,18 +3103,17 @@ package body Layout is
       --  the type, or the maximum allowed alignment.
 
       declare
-         S             : Int;
+         S : Int;
+         A : Nat;
 
-         A             : Nat;
          Max_Alignment : Nat;
 
       begin
-         --  The given esize may be larger that int'last because of a previous
+         --  The given Esize may be larger that int'last because of a previous
          --  error, and the call to UI_To_Int will fail, so use default.
 
          if Esize (E) / SSU > Ttypes.Maximum_Alignment then
             S := Ttypes.Maximum_Alignment;
-
          else
             S := UI_To_Int (Esize (E)) / SSU;
          end if;
