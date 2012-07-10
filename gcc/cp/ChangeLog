@@ -1,5 +1,15 @@
 2012-07-10  Jason Merrill  <jason@redhat.com>
 
+	DR 1402
+	PR c++/53733
+	* cp-tree.h (FNDECL_SUPPRESS_IMPLICIT_DECL): New.
+	(struct lang_decl_fn): Add suppress_implicit_decl field.
+	* method.c (implicitly_declare_fn): Check it.
+	(process_subob_fn): Add no_implicit_p parm.
+	(walk_field_subobs, synthesized_method_walk): Likewise.
+	(maybe_explain_implicit_delete): Adjust.
+	(explain_implicit_non_constexpr): Adjust.
+
 	* method.c (synthesized_method_walk): Cleanups don't affect the EH
 	spec either.
 
