@@ -1245,10 +1245,12 @@ gimple_ic (gimple icall_stmt, struct cgraph_node *direct_call,
       SSA_NAME_DEF_STMT (result) = phi;
       gimple_call_set_lhs (icall_stmt,
 			   make_ssa_name (SSA_NAME_VAR (result), icall_stmt));
-      add_phi_arg (phi, gimple_call_lhs (icall_stmt), e_ij, UNKNOWN_LOCATION);
+      add_phi_arg (phi, gimple_call_lhs (icall_stmt), e_ij, UNKNOWN_LOCATION,
+		   NULL);
       gimple_call_set_lhs (dcall_stmt,
 			   make_ssa_name (SSA_NAME_VAR (result), dcall_stmt));
-      add_phi_arg (phi, gimple_call_lhs (dcall_stmt), e_dj, UNKNOWN_LOCATION);
+      add_phi_arg (phi, gimple_call_lhs (dcall_stmt), e_dj, UNKNOWN_LOCATION,
+		   NULL);
     }
 
   /* Build an EH edge for the direct call if necessary.  */
@@ -1476,10 +1478,12 @@ gimple_stringop_fixed_value (gimple vcall_stmt, tree icall_size, int prob,
       SSA_NAME_DEF_STMT (result) = phi;
       gimple_call_set_lhs (vcall_stmt,
 			   make_ssa_name (SSA_NAME_VAR (result), vcall_stmt));
-      add_phi_arg (phi, gimple_call_lhs (vcall_stmt), e_vj, UNKNOWN_LOCATION);
+      add_phi_arg (phi, gimple_call_lhs (vcall_stmt), e_vj, UNKNOWN_LOCATION,
+		   NULL);
       gimple_call_set_lhs (icall_stmt,
 			   make_ssa_name (SSA_NAME_VAR (result), icall_stmt));
-      add_phi_arg (phi, gimple_call_lhs (icall_stmt), e_ij, UNKNOWN_LOCATION);
+      add_phi_arg (phi, gimple_call_lhs (icall_stmt), e_ij, UNKNOWN_LOCATION,
+		   NULL);
     }
 
   /* Because these are all string op builtins, they're all nothrow.  */

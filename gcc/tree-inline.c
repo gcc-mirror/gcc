@@ -2019,6 +2019,7 @@ copy_phis_for_bb (basic_block bb, copy_body_data *id)
 	      tree arg;
 	      tree new_arg;
 	      tree block = id->block;
+	      tree arg_block, *n;
 	      edge_iterator ei2;
 
 	      /* When doing partial cloning, we allow PHIs on the entry block
@@ -2046,8 +2047,15 @@ copy_phis_for_bb (basic_block bb, copy_body_data *id)
 		  gsi_insert_seq_on_edge (new_edge, stmts);
 		  inserted = true;
 		}
+	      n = (tree *) pointer_map_contains (id->decl_map,
+		gimple_phi_arg_block_from_edge (phi, old_edge));
+	      if (n)
+		arg_block = *n;
+	      else
+		arg_block = NULL;
 	      add_phi_arg (new_phi, new_arg, new_edge,
-			   gimple_phi_arg_location_from_edge (phi, old_edge));
+			   gimple_phi_arg_location_from_edge (phi, old_edge),
+			   arg_block);
 	    }
 	}
     }

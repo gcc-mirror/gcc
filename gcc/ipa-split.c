@@ -1286,7 +1286,8 @@ split_function (struct split_point *split_point)
 		  /* When there is PHI, just update its value.  */
 		  if (TREE_CODE (retval) == SSA_NAME
 		      && !gsi_end_p (psi))
-		    add_phi_arg (gsi_stmt (psi), retval, e, UNKNOWN_LOCATION);
+		    add_phi_arg (gsi_stmt (psi), retval, e, UNKNOWN_LOCATION,
+				 NULL);
 		  /* Otherwise update the return BB itself.
 		     find_return_bb allows at most one assignment to return value,
 		     so update first statement.  */

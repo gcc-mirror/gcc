@@ -1119,7 +1119,7 @@ insert_phi_nodes_for (tree var, bitmap phi_insertion_points, bool update_p)
 	     renamer will use the symbol on the LHS to get its
 	     reaching definition.  */
 	  FOR_EACH_EDGE (e, ei, bb->preds)
-	    add_phi_arg (phi, var, e, UNKNOWN_LOCATION);
+	    add_phi_arg (phi, var, e, UNKNOWN_LOCATION, NULL);
 	}
       else
 	{
@@ -1474,7 +1474,8 @@ rewrite_add_phi_arguments (basic_block bb)
 	  phi = gsi_stmt (gsi);
 	  currdef = get_reaching_def (SSA_NAME_VAR (gimple_phi_result (phi)));
 	  stmt = SSA_NAME_DEF_STMT (currdef);
-	  add_phi_arg (phi, currdef, e, gimple_location (stmt));
+	  add_phi_arg (phi, currdef, e, gimple_location (stmt),
+		       gimple_block (stmt));
 	}
     }
 }

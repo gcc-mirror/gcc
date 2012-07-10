@@ -5117,7 +5117,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 		      if (i == vec_num - 1 && j == ncopies - 1)
 			add_phi_arg (phi, lsq,
 				     loop_latch_edge (containing_loop),
-				     UNKNOWN_LOCATION);
+				     UNKNOWN_LOCATION, NULL);
 		      msq = lsq;
 		    }
 		}

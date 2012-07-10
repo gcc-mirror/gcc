@@ -51,7 +51,8 @@ static struct pointer_map_t *edge_var_maps;
 /* Add a mapping with PHI RESULT and PHI DEF associated with edge E.  */
 
 void
-redirect_edge_var_map_add (edge e, tree result, tree def, source_location locus)
+redirect_edge_var_map_add (edge e, tree result, tree def, source_location locus,
+			   tree block)
 {
   void **slot;
   edge_var_map_vector old_head, head;
@@ -70,6 +71,7 @@ redirect_edge_var_map_add (edge e, tree result, tree def, source_location locus)
   new_node.def = def;
   new_node.result = result;
   new_node.locus = locus;
+  new_node.block = block;
 
   VEC_safe_push (edge_var_map, heap, head, &new_node);
   if (old_head != head)
@@ -193,15 +195,17 @@ ssa_redirect_edge (edge e, basic_block dest)
     {
       tree def;
       source_location locus ;
+      tree block;
 
       phi = gsi_stmt (gsi);
       def = gimple_phi_arg_def (phi, e->dest_idx);
       locus = gimple_phi_arg_location (phi, e->dest_idx);
+      block = gimple_phi_arg_block (phi, e->dest_idx);
 
       if (def == NULL_TREE)
 	continue;
 
-      redirect_edge_var_map_add (e, gimple_phi_result (phi), def, locus);
+      redirect_edge_var_map_add (e, gimple_phi_result (phi), def, locus, block);
     }
 
   e = redirect_edge_succ_nodup (e, dest);
@@ -234,7 +238,8 @@ flush_pending_stmts (edge e)
 
       phi = gsi_stmt (gsi);
       def = redirect_edge_var_map_def (vm);
-      add_phi_arg (phi, def, e, redirect_edge_var_map_location (vm));
+      add_phi_arg (phi, def, e, redirect_edge_var_map_location (vm),
+		   redirect_edge_var_map_block (vm));
     }
 
   redirect_edge_var_map_clear (e);
