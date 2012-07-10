@@ -970,20 +970,6 @@ DEFHOOK
  tree, (unsigned code, tree dest_type, tree src_type),
  default_builtin_vectorized_conversion)
 
-/* Target builtin that implements vector widening multiplication.
-   builtin_mul_widen_eve computes the element-by-element products
-   for the even elements, and builtin_mul_widen_odd computes the
-   element-by-element products for the odd elements.  */
-DEFHOOK
-(builtin_mul_widen_even,
- "",
- tree, (tree x), NULL)
-
-DEFHOOK
-(builtin_mul_widen_odd,
- "",
- tree, (tree x), NULL)
-
 /* Cost of different vector/scalar statements in vectorization cost
    model. In case of misaligned vector loads and stores the cost depends
    on the data type and misalignment value.  */

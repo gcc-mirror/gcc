@@ -1,5 +1,29 @@
 2012-07-10  Richard Henderson  <rth@redhat.com>
 
+	* target.def (builtin_mul_widen_even, builtin_mul_widen_odd): Remove.
+	* system.h (TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_EVEN): Poison.
+	(TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_ODD): Poison.
+	* config/i386/i386.c (IX86_BUILTIN_VEC_WIDEN_SMUL_ODD_V4SI): Remove.
+	(IX86_BUILTIN_VEC_WIDEN_SMUL_ODD_V8SI): Remove.
+	(IX86_BUILTIN_VEC_WIDEN_UMUL_ODD_V4SI): Remove.
+	(IX86_BUILTIN_VEC_WIDEN_UMUL_ODD_V8SI): Remove.
+	(IX86_BUILTIN_VEC_WIDEN_SMUL_EVEN_V4SI): Remove.
+	(IX86_BUILTIN_VEC_WIDEN_UMUL_EVEN_V4SI): Remove.
+	(IX86_BUILTIN_VEC_WIDEN_UMUL_EVEN_V8SI): Remove.
+	(bdesc_args): Remove entries to match.
+	(ix86_builtin_mul_widen_even, ix86_builtin_mul_widen_odd): Remove.
+	(TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_EVEN): Remove.
+	(TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_ODD): Remove.
+	* config/rs6000/rs6000.c (rs6000_builtin_mul_widen_even): Remove.
+	(rs6000_builtin_mul_widen_odd): Remove.
+	(TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_EVEN): Remove.
+	(TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_ODD): Remove.
+	* config/spu/spu.c (spu_builtin_mul_widen_even): Remove.
+	(spu_builtin_mul_widen_odd): Remove.
+	(TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_EVEN): Remove.
+	(TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_ODD): Remove.
+	* doc/tm.texi.in: Don't document the removed hooks.
+
 	* tree-vect-stmts.c (supportable_widening_operation): Expand
 	WIDEN_MULT_EXPR via VEC_WIDEN_MULT_EVEN/ODD_EXPR if possible.
 

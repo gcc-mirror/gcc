@@ -211,8 +211,6 @@ static void spu_encode_section_info (tree, rtx, int);
 static rtx spu_legitimize_address (rtx, rtx, enum machine_mode);
 static rtx spu_addr_space_legitimize_address (rtx, rtx, enum machine_mode,
 					      addr_space_t);
-static tree spu_builtin_mul_widen_even (tree);
-static tree spu_builtin_mul_widen_odd (tree);
 static tree spu_builtin_mask_for_load (void);
 static int spu_builtin_vectorization_cost (enum vect_cost_for_stmt, tree, int);
 static bool spu_vector_alignment_reachable (const_tree, bool);
@@ -430,12 +428,6 @@ static void spu_setup_incoming_varargs (cumulative_args_t cum,
 
 #undef  TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO spu_encode_section_info
-
-#undef TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_EVEN
-#define TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_EVEN spu_builtin_mul_widen_even
-
-#undef TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_ODD
-#define TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_ODD spu_builtin_mul_widen_odd
 
 #undef TARGET_VECTORIZE_BUILTIN_MASK_FOR_LOAD
 #define TARGET_VECTORIZE_BUILTIN_MASK_FOR_LOAD spu_builtin_mask_for_load
@@ -6861,40 +6853,6 @@ spu_expand_builtin (tree exp,
       return spu_expand_builtin_1 (d, exp, target);
     }
   abort ();
-}
-
-/* Implement targetm.vectorize.builtin_mul_widen_even.  */
-static tree
-spu_builtin_mul_widen_even (tree type)
-{
-  switch (TYPE_MODE (type))
-    {
-    case V8HImode:
-      if (TYPE_UNSIGNED (type))
-	return spu_builtin_decls[SPU_MULE_0];
-      else
-	return spu_builtin_decls[SPU_MULE_1];
-      break;
-    default:
-      return NULL_TREE;
-    }
-}
-
-/* Implement targetm.vectorize.builtin_mul_widen_odd.  */
-static tree
-spu_builtin_mul_widen_odd (tree type)
-{
-  switch (TYPE_MODE (type))
-    {
-    case V8HImode:
-      if (TYPE_UNSIGNED (type))
-	return spu_builtin_decls[SPU_MULO_1];
-      else
-	return spu_builtin_decls[SPU_MULO_0]; 
-      break;
-    default:
-      return NULL_TREE;
-    }
 }
 
 /* Implement targetm.vectorize.builtin_mask_for_load.  */

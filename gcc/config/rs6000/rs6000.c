@@ -1273,10 +1273,6 @@ static const struct attribute_spec rs6000_attribute_table[] =
 
 #undef TARGET_VECTORIZE_BUILTIN_MASK_FOR_LOAD
 #define TARGET_VECTORIZE_BUILTIN_MASK_FOR_LOAD rs6000_builtin_mask_for_load
-#undef TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_EVEN
-#define TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_EVEN rs6000_builtin_mul_widen_even
-#undef TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_ODD
-#define TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_ODD rs6000_builtin_mul_widen_odd
 #undef TARGET_VECTORIZE_SUPPORT_VECTOR_MISALIGNMENT
 #define TARGET_VECTORIZE_SUPPORT_VECTOR_MISALIGNMENT		\
   rs6000_builtin_support_vector_misalignment
@@ -3284,53 +3280,6 @@ rs6000_loop_align_max_skip (rtx label)
 {
   return (1 << rs6000_loop_align (label)) - 1;
 }
-
-/* Implement targetm.vectorize.builtin_mul_widen_even.  */
-static tree
-rs6000_builtin_mul_widen_even (tree type)
-{
-  if (!TARGET_ALTIVEC)
-    return NULL_TREE;
-
-  switch (TYPE_MODE (type))
-    {
-    case V8HImode:
-      return TYPE_UNSIGNED (type)
-            ? rs6000_builtin_decls[ALTIVEC_BUILTIN_VMULEUH_UNS]
-            : rs6000_builtin_decls[ALTIVEC_BUILTIN_VMULESH];
-
-    case V16QImode:
-      return TYPE_UNSIGNED (type)
-            ? rs6000_builtin_decls[ALTIVEC_BUILTIN_VMULEUB_UNS]
-            : rs6000_builtin_decls[ALTIVEC_BUILTIN_VMULESB];
-    default:
-      return NULL_TREE;
-    }
-}
-
-/* Implement targetm.vectorize.builtin_mul_widen_odd.  */
-static tree
-rs6000_builtin_mul_widen_odd (tree type)
-{
-  if (!TARGET_ALTIVEC)
-    return NULL_TREE;
-
-  switch (TYPE_MODE (type))
-    {
-    case V8HImode:
-      return TYPE_UNSIGNED (type)
-            ? rs6000_builtin_decls[ALTIVEC_BUILTIN_VMULOUH_UNS]
-            : rs6000_builtin_decls[ALTIVEC_BUILTIN_VMULOSH];
-
-    case V16QImode:
-      return TYPE_UNSIGNED (type)
-            ? rs6000_builtin_decls[ALTIVEC_BUILTIN_VMULOUB_UNS]
-            : rs6000_builtin_decls[ALTIVEC_BUILTIN_VMULOSB];
-    default:
-      return NULL_TREE;
-    }
-}
-
 
 /* Return true iff, data reference of TYPE can reach vector alignment (16)
    after applying N number of iterations.  This routine does not determine
