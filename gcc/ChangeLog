@@ -1,5 +1,16 @@
 2012-07-10  Richard Henderson  <rth@redhat.com>
 
+	* config/rs6000/altivec.md (vec_widen_umult_even_v16qi): Rename
+	from altivec_vmuleub.
+	(vec_widen_smult_even_v16qi): Rename from altivec_vmulesb.
+	(vec_widen_umult_even_v8hi): Rename from altivec_vmuleuh.
+	(vec_widen_smult_even_v8hi): Rename from altivec_vmulesh.
+	(vec_widen_umult_odd_v16qi): Rename from altivec_vmuloub.
+	(vec_widen_smult_odd_v16qi): Rename from altivec_vmulosb.
+	(vec_widen_umult_odd_v8hi): Rename from altivec_vmulouh.
+	(vec_widen_smult_odd_v8hi): Rename from altivec_vmulosh.
+	* config/rs6000/rs6000-builtin.def: Update pattern names to match.
+
 	* config/i386/sse.md (vec_widen_umult_even_v8si): Rename from
 	avx2_umulv4siv4di3.
 	(vec_widen_umult_even_v4si): Rename from sse2_umulv2siv2di3.
