@@ -1,5 +1,8 @@
 2012-07-10  Richard Henderson  <rth@redhat.com>
 
+	* tree-vect-stmts.c (supportable_widening_operation): Expand
+	WIDEN_MULT_EXPR via VEC_WIDEN_MULT_EVEN/ODD_EXPR if possible.
+
 	* expmed.c (expmed_mult_highpart): Rename from expand_mult_highpart.
 	(expmed_mult_highpart_optab): Rename from expand_mult_highpart_optab.
 	* optabs.c (can_mult_highpart_p): New.

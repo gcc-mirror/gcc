@@ -6199,7 +6199,8 @@ vect_is_simple_use_1 (tree operand, gimple stmt, loop_vec_info loop_vinfo,
 bool
 supportable_widening_operation (enum tree_code code, gimple stmt,
 				tree vectype_out, tree vectype_in,
-                                tree *decl1, tree *decl2,
+                                tree *decl1 ATTRIBUTE_UNUSED,
+				tree *decl2 ATTRIBUTE_UNUSED,
                                 enum tree_code *code1, enum tree_code *code2,
                                 int *multi_step_cvt,
                                 VEC (tree, heap) **interm_types)
@@ -6207,7 +6208,6 @@ supportable_widening_operation (enum tree_code code, gimple stmt,
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   loop_vec_info loop_info = STMT_VINFO_LOOP_VINFO (stmt_info);
   struct loop *vect_loop = NULL;
-  bool ordered_p;
   enum machine_mode vec_mode;
   enum insn_code icode1, icode2;
   optab optab1, optab2;
@@ -6223,54 +6223,58 @@ supportable_widening_operation (enum tree_code code, gimple stmt,
   if (loop_info)
     vect_loop = LOOP_VINFO_LOOP (loop_info);
 
-  /* The result of a vectorized widening operation usually requires two vectors
-     (because the widened results do not fit into one vector). The generated
-     vector results would normally be expected to be generated in the same
-     order as in the original scalar computation, i.e. if 8 results are
-     generated in each vector iteration, they are to be organized as follows:
-        vect1: [res1,res2,res3,res4], vect2: [res5,res6,res7,res8].
-
-     However, in the special case that the result of the widening operation is
-     used in a reduction computation only, the order doesn't matter (because
-     when vectorizing a reduction we change the order of the computation).
-     Some targets can take advantage of this and generate more efficient code.
-     For example, targets like Altivec, that support widen_mult using a sequence
-     of {mult_even,mult_odd} generate the following vectors:
-        vect1: [res1,res3,res5,res7], vect2: [res2,res4,res6,res8].
-
-     When vectorizing outer-loops, we execute the inner-loop sequentially
-     (each vectorized inner-loop iteration contributes to VF outer-loop
-     iterations in parallel).  We therefore don't allow to change the order
-     of the computation in the inner-loop during outer-loop vectorization.  */
-
-   if (vect_loop
-       && STMT_VINFO_RELEVANT (stmt_info) == vect_used_by_reduction
-       && !nested_in_vect_loop_p (vect_loop, stmt))
-     ordered_p = false;
-   else
-     ordered_p = true;
-
-  if (!ordered_p
-      && code == WIDEN_MULT_EXPR
-      && targetm.vectorize.builtin_mul_widen_even
-      && targetm.vectorize.builtin_mul_widen_even (vectype)
-      && targetm.vectorize.builtin_mul_widen_odd
-      && targetm.vectorize.builtin_mul_widen_odd (vectype))
-    {
-      if (vect_print_dump_info (REPORT_DETAILS))
-        fprintf (vect_dump, "Unordered widening operation detected.");
-
-      *code1 = *code2 = CALL_EXPR;
-      *decl1 = targetm.vectorize.builtin_mul_widen_even (vectype);
-      *decl2 = targetm.vectorize.builtin_mul_widen_odd (vectype);
-      return true;
-    }
-
   switch (code)
     {
     case WIDEN_MULT_EXPR:
+      /* The result of a vectorized widening operation usually requires
+	 two vectors (because the widened results do not fit into one vector).
+	 The generated vector results would normally be expected to be
+	 generated in the same order as in the original scalar computation,
+	 i.e. if 8 results are generated in each vector iteration, they are
+	 to be organized as follows:
+		vect1: [res1,res2,res3,res4],
+		vect2: [res5,res6,res7,res8].
+
+	 However, in the special case that the result of the widening
+	 operation is used in a reduction computation only, the order doesn't
+	 matter (because when vectorizing a reduction we change the order of
+	 the computation).  Some targets can take advantage of this and
+	 generate more efficient code.  For example, targets like Altivec,
+	 that support widen_mult using a sequence of {mult_even,mult_odd}
+	 generate the following vectors:
+		vect1: [res1,res3,res5,res7],
+		vect2: [res2,res4,res6,res8].
+
+	 When vectorizing outer-loops, we execute the inner-loop sequentially
+	 (each vectorized inner-loop iteration contributes to VF outer-loop
+	 iterations in parallel).  We therefore don't allow to change the
+	 order of the computation in the inner-loop during outer-loop
+	 vectorization.  */
+      /* TODO: Another case in which order doesn't *really* matter is when we
+	 widen and then contract again, e.g. (short)((int)x * y >> 8).
+	 Normally, pack_trunc performs an even/odd permute, whereas the 
+	 repack from an even/odd expansion would be an interleave, which
+	 would be significantly simpler for e.g. AVX2.  */
+      /* In any case, in order to avoid duplicating the code below, recurse
+	 on VEC_WIDEN_MULT_EVEN_EXPR.  If it succeeds, all the return values
+	 are properly set up for the caller.  If we fail, we'll continue with
+	 a VEC_WIDEN_MULT_LO/HI_EXPR check.  */
+      if (vect_loop
+	  && STMT_VINFO_RELEVANT (stmt_info) == vect_used_by_reduction
+	  && !nested_in_vect_loop_p (vect_loop, stmt)
+	  && supportable_widening_operation (VEC_WIDEN_MULT_EVEN_EXPR,
+					     stmt, vectype_out, vectype_in,
+					     NULL, NULL, code1, code2,
+					     multi_step_cvt, interm_types))
+	return true;
       c1 = VEC_WIDEN_MULT_LO_EXPR;
       c2 = VEC_WIDEN_MULT_HI_EXPR;
+      break;
+
+    case VEC_WIDEN_MULT_EVEN_EXPR:
+      /* Support the recursion induced just above.  */
+      c1 = VEC_WIDEN_MULT_EVEN_EXPR;
+      c2 = VEC_WIDEN_MULT_ODD_EXPR;
       break;
 
     case WIDEN_LSHIFT_EXPR:
@@ -6298,7 +6302,7 @@ supportable_widening_operation (enum tree_code code, gimple stmt,
       gcc_unreachable ();
     }
 
-  if (BYTES_BIG_ENDIAN)
+  if (BYTES_BIG_ENDIAN && c1 != VEC_WIDEN_MULT_EVEN_EXPR)
     {
       enum tree_code ctmp = c1;
       c1 = c2;
