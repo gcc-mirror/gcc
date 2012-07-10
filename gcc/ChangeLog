@@ -1,5 +1,13 @@
 2012-07-10  Richard Henderson  <rth@redhat.com>
 
+	* config/spu/spu-builtins.md (spu_mpy): Move to spu.md.
+	(spu_mpyu, spu_mpyhhu, spu_mpyhh): Likewise.
+	* config/spu/spu.md (vec_widen_smult_odd_v8hi): Rename from spu_mpy.
+	(vec_widen_umult_odd_v8hi): Rename from spu_mpyu.
+	(vec_widen_smult_even_v8hi): Rename from spu_mpyhh.
+	(vec_widen_umult_even_v8hi): Rename from spu_mpyhhu.
+	* config/spu/spu-builtins.def: Update pattern names to match.
+
 	* config/rs6000/altivec.md (vec_widen_umult_even_v16qi): Rename
 	from altivec_vmuleub.
 	(vec_widen_smult_even_v16qi): Rename from altivec_vmulesb.

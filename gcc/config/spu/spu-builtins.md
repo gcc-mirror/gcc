@@ -197,41 +197,6 @@
   ""
   "")
 
-;; integer multiply
-(define_insn "spu_mpy"
-  [(set (match_operand:V4SI 0 "spu_reg_operand" "=r,r")
-        (mult:V4SI
-	  (sign_extend:V4SI
-	    (vec_select:V4HI
-	      (match_operand:V8HI 1 "spu_reg_operand" "r,r")
-	      (parallel [(const_int 1)(const_int 3)(const_int 5)(const_int 7)])))
-          (sign_extend:V4SI
-	    (vec_select:V4HI
-	      (match_operand:V8HI 2 "spu_arith_operand" "r,B")
-	      (parallel [(const_int 1)(const_int 3)(const_int 5)(const_int 7)])))))]
-  ""
-  "@
-   mpy\t%0,%1,%2
-   mpyi\t%0,%1,%2"
-  [(set_attr "type" "fp7")])
-
-(define_insn "spu_mpyu"
-  [(set (match_operand:V4SI 0 "spu_reg_operand" "=r,r")
-        (mult:V4SI
-	  (zero_extend:V4SI
-	    (vec_select:V4HI
-	      (match_operand:V8HI 1 "spu_reg_operand" "r,r")
-	      (parallel [(const_int 1)(const_int 3)(const_int 5)(const_int 7)])))
-          (zero_extend:V4SI
-	    (vec_select:V4HI
-	      (match_operand:V8HI 2 "spu_arith_operand" "r,B")
-	      (parallel [(const_int 1)(const_int 3)(const_int 5)(const_int 7)])))))]
-  ""
-  "@
-   mpyu\t%0,%1,%2
-   mpyui\t%0,%1,%2"
-  [(set_attr "type" "fp7")])
-
 (define_insn "spu_mpya"
   [(set (match_operand:V4SI 0 "spu_reg_operand" "=r")
         (plus:V4SI
@@ -281,36 +246,6 @@
 	  (const_vector:V4SI [(const_int 16)(const_int 16)(const_int 16)(const_int 16)])))]
   ""
   "mpys\t%0,%1,%2"
-  [(set_attr "type" "fp7")])
-
-(define_insn "spu_mpyhhu"
-  [(set (match_operand:V4SI 0 "spu_reg_operand" "=r")
-	(mult:V4SI
-	  (zero_extend:V4SI
-	    (vec_select:V4HI
-	      (match_operand:V8HI 1 "spu_reg_operand" "r")
-	      (parallel [(const_int 0)(const_int 2)(const_int 4)(const_int 6)])))
-	  (zero_extend:V4SI
-	    (vec_select:V4HI
-	      (match_operand:V8HI 2 "spu_reg_operand" "r")
-	      (parallel [(const_int 0)(const_int 2)(const_int 4)(const_int 6)])))))]
-  ""
-  "mpyhhu\t%0,%1,%2"
-  [(set_attr "type" "fp7")])
-
-(define_insn "spu_mpyhh"
-  [(set (match_operand:V4SI 0 "spu_reg_operand" "=r")
-	(mult:V4SI
-	  (sign_extend:V4SI
-	    (vec_select:V4HI
-	      (match_operand:V8HI 1 "spu_reg_operand" "r")
-	      (parallel [(const_int 0)(const_int 2)(const_int 4)(const_int 6)])))
-	  (sign_extend:V4SI
-	    (vec_select:V4HI
-	      (match_operand:V8HI 2 "spu_reg_operand" "r")
-	      (parallel [(const_int 0)(const_int 2)(const_int 4)(const_int 6)])))))]
-  ""
-  "mpyhh\t%0,%1,%2"
   [(set_attr "type" "fp7")])
 
 (define_insn "spu_mpyhhau"
