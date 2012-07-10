@@ -1,3 +1,10 @@
+2012-07-10  Andreas Schwab  <schwab@linux-m68k.org>
+
+	PR bootstrap/53913
+	* config/m68k/m68k.c (m68k_epilogue_uses): New.
+	* config/m68k/m68k.h (EPILOGUE_USES): Use it.
+	* config/m68k/m68k-protos.h (m68k_epilogue_uses): Add prototype.
+
 2012-07-10  Richard Henderson  <rth@redhat.com>
 
 	* target.def (builtin_mul_widen_even, builtin_mul_widen_odd): Remove.
