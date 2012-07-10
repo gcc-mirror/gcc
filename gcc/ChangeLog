@@ -1,3 +1,18 @@
+2012-07-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2012-07-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/53811
+	* config/i386/i386.c (x86_output_mi_thunk): Check if fnaddr satisfies
+	sibcall_insn_operand.  Move it to a temporary register if not.
+
+	2012-07-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/53853
+	* config/i386/i386.c (x86_output_mi_thunk): For CM_LARGE_PIC model,
+	emit PIC sequence for fnaddr symbol reference in advance.
+
 2012-07-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/53882
@@ -30,8 +45,7 @@
 	2012-03-30  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/52786
-	* double-int.c (rshift_double): Remove not needed
-	cast.
+	* double-int.c (rshift_double): Remove not needed cast.
 
 	2012-03-28  Richard Guenther  <rguenther@suse.de>
 
