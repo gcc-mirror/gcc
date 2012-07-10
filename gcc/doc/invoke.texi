@@ -990,6 +990,7 @@ See S/390 and zSeries Options.
 -fstack-limit-register=@var{reg}  -fstack-limit-symbol=@var{sym} @gol
 -fno-stack-limit -fsplit-stack @gol
 -fleading-underscore  -ftls-model=@var{model} @gol
+-fstack-reuse=@var{reuse_level} @gol
 -ftrapv  -fwrapv  -fbounds-check @gol
 -fvisibility -fstrict-volatile-bitfields -fsync-libcalls}
 @end table
@@ -19306,6 +19307,84 @@ For front ends that support it, generate additional code to check that
 indices used to access arrays are within the declared range.  This is
 currently only supported by the Java and Fortran front ends, where
 this option defaults to true and false respectively.
+
+@item -fstack-reuse=@var{reuse-level}
+@opindex fstack_reuse
+This option controls stack space reuse for user declared local/auto variables
+and compiler generated temporaries.  @var{reuse_level} can be @samp{all},
+@samp{named_vars}, or @samp{none}. @samp{all} enables stack reuse for all
+local variables and temporaries, @samp{named_vars} enables the reuse only for
+user defined local variables with names, and @samp{none} disables stack reuse
+completely. The default value is @samp{all}. The option is needed when the
+program extends the lifetime of a scoped local variable or a compiler generated
+temporary beyond the end point defined by the language.  When a lifetime of
+a variable ends, and if the variable lives in memory, the optimizing compiler
+has the freedom to reuse its stack space with other temporaries or scoped
+local variables whose live range does not overlap with it. Legacy code extending
+local lifetime will likely to break with the stack reuse optimization.
+
+For example,
+
+@smallexample
+   int *p;
+   @{
+     int local1;
+
+     p = &local1;
+     local1 = 10;
+     ....
+   @}
+   @{
+      int local2;
+      local2 = 20;
+      ...
+   @}
+
+   if (*p == 10)  // out of scope use of local1
+     @{
+
+     @}
+@end smallexample
+
+Another example:
+@smallexample
+
+   struct A
+   @{
+       A(int k) : i(k), j(k) @{ @}
+       int i;
+       int j;
+   @};
+
+   A *ap;
+
+   void foo(const A& ar)
+   @{
+      ap = &ar;
+   @}
+
+   void bar()
+   @{
+      foo(A(10)); // temp object's lifetime ends when foo returns
+
+      @{
+        A a(20);
+        ....
+      @}
+      ap->i+= 10;  // ap references out of scope temp whose space
+                   // is reused with a. What is the value of ap->i?
+   @}
+
+@end smallexample
+
+The lifetime of a compiler generated temporary is well defined by the C++
+standard. When a lifetime of a temporary ends, and if the temporary lives
+in memory, the optimizing compiler has the freedom to reuse its stack
+space with other temporaries or scoped local variables whose live range
+does not overlap with it. However some of the legacy code relies on
+the behavior of older compilers in which temporaries' stack space is
+not reused, the aggressive stack reuse can lead to runtime errors. This
+option is used to control the temporary stack reuse optimization.
 
 @item -ftrapv
 @opindex ftrapv
