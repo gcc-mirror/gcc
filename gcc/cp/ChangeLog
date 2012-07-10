@@ -1,3 +1,8 @@
+2012-07-10  Jason Merrill  <jason@redhat.com>
+
+	* method.c (synthesized_method_walk): Cleanups don't affect the EH
+	spec either.
+
 2012-07-02  Jason Merrill  <jason@redhat.com>
 
 	PR c++/53816
