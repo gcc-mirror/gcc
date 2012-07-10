@@ -13657,8 +13657,11 @@ fold_binary_loc (location_t loc,
 
     case VEC_WIDEN_MULT_LO_EXPR:
     case VEC_WIDEN_MULT_HI_EXPR:
+    case VEC_WIDEN_MULT_EVEN_EXPR:
+    case VEC_WIDEN_MULT_ODD_EXPR:
       {
-	unsigned int nelts = TYPE_VECTOR_SUBPARTS (type), i;
+	unsigned int nelts = TYPE_VECTOR_SUBPARTS (type);
+	unsigned int out, ofs, scale;
 	tree *elts;
 
 	gcc_assert (TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0)) == nelts * 2
@@ -13671,19 +13674,28 @@ fold_binary_loc (location_t loc,
 	    || !vec_cst_ctor_to_array (arg1, elts + nelts * 2))
 	  return NULL_TREE;
 
-	if ((!BYTES_BIG_ENDIAN) ^ (code == VEC_WIDEN_MULT_LO_EXPR))
-	  elts += nelts;
-
-	for (i = 0; i < nelts; i++)
+	if (code == VEC_WIDEN_MULT_LO_EXPR)
+	  scale = 0, ofs = BYTES_BIG_ENDIAN ? nelts : 0;
+	else if (code == VEC_WIDEN_MULT_HI_EXPR)
+	  scale = 0, ofs = BYTES_BIG_ENDIAN ? 0 : nelts;
+	else if (code == VEC_WIDEN_MULT_EVEN_EXPR)
+	  scale = 1, ofs = 0;
+	else /* if (code == VEC_WIDEN_MULT_ODD_EXPR) */
+	  scale = 1, ofs = 1;
+	
+	for (out = 0; out < nelts; out++)
 	  {
-	    elts[i] = fold_convert_const (NOP_EXPR, TREE_TYPE (type), elts[i]);
-	    elts[i + nelts * 2]
-	      = fold_convert_const (NOP_EXPR, TREE_TYPE (type),
-				    elts[i + nelts * 2]);
-	    if (elts[i] == NULL_TREE || elts[i + nelts * 2] == NULL_TREE)
+	    unsigned int in1 = (out << scale) + ofs;
+	    unsigned int in2 = in1 + nelts * 2;
+	    tree t1, t2;
+
+	    t1 = fold_convert_const (NOP_EXPR, TREE_TYPE (type), elts[in1]);
+	    t2 = fold_convert_const (NOP_EXPR, TREE_TYPE (type), elts[in2]);
+
+	    if (t1 == NULL_TREE || t2 == NULL_TREE)
 	      return NULL_TREE;
-	    elts[i] = const_binop (MULT_EXPR, elts[i], elts[i + nelts * 2]);
-	    if (elts[i] == NULL_TREE || !CONSTANT_CLASS_P (elts[i]))
+	    elts[out] = const_binop (MULT_EXPR, t1, t2);
+	    if (elts[out] == NULL_TREE || !CONSTANT_CLASS_P (elts[out]))
 	      return NULL_TREE;
 	  }
 

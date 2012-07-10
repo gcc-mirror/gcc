@@ -483,6 +483,14 @@ optab_for_tree_code (enum tree_code code, const_tree type,
       return TYPE_UNSIGNED (type) ?
 	vec_widen_umult_lo_optab : vec_widen_smult_lo_optab;
 
+    case VEC_WIDEN_MULT_EVEN_EXPR:
+      return TYPE_UNSIGNED (type) ?
+	vec_widen_umult_even_optab : vec_widen_smult_even_optab;
+
+    case VEC_WIDEN_MULT_ODD_EXPR:
+      return TYPE_UNSIGNED (type) ?
+	vec_widen_umult_odd_optab : vec_widen_smult_odd_optab;
+
     case VEC_WIDEN_LSHIFT_HI_EXPR:
       return TYPE_UNSIGNED (type) ?
         vec_widen_ushiftl_hi_optab : vec_widen_sshiftl_hi_optab;

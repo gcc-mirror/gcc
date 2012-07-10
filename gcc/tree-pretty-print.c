@@ -602,6 +602,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
   tree op0, op1;
   const char *str;
   bool is_expr;
+  enum tree_code code;
 
   if (node == NULL_TREE)
     return spc;
@@ -614,7 +615,8 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
   if ((flags & TDF_LINENO) && EXPR_HAS_LOCATION (node))
     dump_location (buffer, EXPR_LOCATION (node));
 
-  switch (TREE_CODE (node))
+  code = TREE_CODE (node);
+  switch (code)
     {
     case ERROR_MARK:
       pp_string (buffer, "<<< error >>>");
@@ -2336,31 +2338,15 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       break;
 
     case VEC_WIDEN_MULT_HI_EXPR:
-      pp_string (buffer, " VEC_WIDEN_MULT_HI_EXPR < ");
-      dump_generic_node (buffer, TREE_OPERAND (node, 0), spc, flags, false);
-      pp_string (buffer, ", ");
-      dump_generic_node (buffer, TREE_OPERAND (node, 1), spc, flags, false);
-      pp_string (buffer, " > ");
-      break;
-
     case VEC_WIDEN_MULT_LO_EXPR:
-      pp_string (buffer, " VEC_WIDEN_MULT_LO_EXPR < ");
-      dump_generic_node (buffer, TREE_OPERAND (node, 0), spc, flags, false);
-      pp_string (buffer, ", ");
-      dump_generic_node (buffer, TREE_OPERAND (node, 1), spc, flags, false);
-      pp_string (buffer, " > ");
-      break;
-
+    case VEC_WIDEN_MULT_EVEN_EXPR:
+    case VEC_WIDEN_MULT_ODD_EXPR:
     case VEC_WIDEN_LSHIFT_HI_EXPR:
-      pp_string (buffer, " VEC_WIDEN_LSHIFT_HI_EXPR < ");
-      dump_generic_node (buffer, TREE_OPERAND (node, 0), spc, flags, false);
-      pp_string (buffer, ", ");
-      dump_generic_node (buffer, TREE_OPERAND (node, 1), spc, flags, false);
-      pp_string (buffer, " > ");
-      break;
-
     case VEC_WIDEN_LSHIFT_LO_EXPR:
-      pp_string (buffer, " VEC_WIDEN_LSHIFT_HI_EXPR < ");
+      pp_character (buffer, ' ');
+      for (str = tree_code_name [code]; *str; str++)
+	pp_character (buffer, TOUPPER (*str));
+      pp_string (buffer, " < ");
       dump_generic_node (buffer, TREE_OPERAND (node, 0), spc, flags, false);
       pp_string (buffer, ", ");
       dump_generic_node (buffer, TREE_OPERAND (node, 1), spc, flags, false);
