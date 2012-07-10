@@ -1014,6 +1014,12 @@ extern bool can_vec_perm_p (enum machine_mode, bool, const unsigned char *);
 /* Generate code for VEC_PERM_EXPR.  */
 extern rtx expand_vec_perm (enum machine_mode, rtx, rtx, rtx, rtx);
 
+/* Return non-zero if target supports a given highpart multiplication.  */
+extern int can_mult_highpart_p (enum machine_mode, bool);
+
+/* Generate code for MULT_HIGHPART_EXPR.  */
+extern rtx expand_mult_highpart (enum machine_mode, rtx, rtx, rtx, bool);
+
 /* Return the insn used to implement mode MODE of OP, or CODE_FOR_nothing
    if the target does not have such an insn.  */
 

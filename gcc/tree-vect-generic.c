@@ -454,10 +454,9 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
   int dummy_int;
   unsigned int i, unsignedp = TYPE_UNSIGNED (TREE_TYPE (type));
   unsigned HOST_WIDE_INT mask = GET_MODE_MASK (TYPE_MODE (TREE_TYPE (type)));
-  optab op;
   tree *vec;
-  unsigned char *sel = NULL;
-  tree cur_op, m1, m2, mulcst, perm_mask, wider_type, tem, decl_e, decl_o;
+  tree cur_op, mulcst, tem;
+  optab op;
 
   if (prec > HOST_BITS_PER_WIDE_INT)
     return NULL_TREE;
@@ -745,54 +744,8 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
   if (mode == -2 || BYTES_BIG_ENDIAN != WORDS_BIG_ENDIAN)
     return NULL_TREE;
 
-  op = optab_for_tree_code (MULT_HIGHPART_EXPR, type, optab_default);
-  if (op != NULL && optab_handler (op, TYPE_MODE (type)) != CODE_FOR_nothing)
-    wider_type = decl_e = decl_o = NULL_TREE;
-  else
-    {
-      wider_type = build_nonstandard_integer_type (prec * 2, unsignedp),
-      wider_type = build_vector_type (wider_type, nunits / 2);
-      if (GET_MODE_CLASS (TYPE_MODE (wider_type)) != MODE_VECTOR_INT
-	  || GET_MODE_BITSIZE (TYPE_MODE (wider_type))
-	     != GET_MODE_BITSIZE (TYPE_MODE (type)))
-	return NULL_TREE;
-
-      sel = XALLOCAVEC (unsigned char, nunits);
-
-      if (targetm.vectorize.builtin_mul_widen_even
-	  && targetm.vectorize.builtin_mul_widen_odd
-	  && (decl_e = targetm.vectorize.builtin_mul_widen_even (type))
-	  && (decl_o = targetm.vectorize.builtin_mul_widen_odd (type))
-	  && (TYPE_MODE (TREE_TYPE (TREE_TYPE (decl_e)))
-	      == TYPE_MODE (wider_type)))
-	{
-	  for (i = 0; i < nunits; i++)
-	    sel[i] = !BYTES_BIG_ENDIAN + (i & ~1) + ((i & 1) ? nunits : 0);
-	  if (!can_vec_perm_p (TYPE_MODE (type), false, sel))
-	    decl_e = decl_o = NULL_TREE;
-	}
-      else
-	decl_e = decl_o = NULL_TREE;
-
-      if (decl_e == NULL_TREE)
-	{
-	  op = optab_for_tree_code (VEC_WIDEN_MULT_LO_EXPR,
-				    type, optab_default);
-	  if (op == NULL
-	      || optab_handler (op, TYPE_MODE (type)) == CODE_FOR_nothing)
-	    return NULL_TREE;
-	  op = optab_for_tree_code (VEC_WIDEN_MULT_HI_EXPR,
-				    type, optab_default);
-	  if (op == NULL
-	      || optab_handler (op, TYPE_MODE (type)) == CODE_FOR_nothing)
-	    return NULL_TREE;
-
-	  for (i = 0; i < nunits; i++)
-	    sel[i] = 2 * i + (BYTES_BIG_ENDIAN ? 0 : 1);
-	  if (!can_vec_perm_p (TYPE_MODE (type), false, sel))
-	    return NULL_TREE;
-	}
-    }
+  if (!can_mult_highpart_p (TYPE_MODE (type), TYPE_UNSIGNED (type)))
+    return NULL_TREE;
 
   cur_op = op0;
 
@@ -830,46 +783,8 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
   for (i = 0; i < nunits; i++)
     vec[i] = build_int_cst (TREE_TYPE (type), mulc[i]);
   mulcst = build_vector (type, vec);
-  if (wider_type == NULL_TREE)
-    cur_op = gimplify_build2 (gsi, MULT_HIGHPART_EXPR, type, cur_op, mulcst);
-  else
-    {
-      for (i = 0; i < nunits; i++)
-	vec[i] = build_int_cst (TREE_TYPE (type), sel[i]);
-      perm_mask = build_vector (type, vec);
 
-      if (decl_e != NULL_TREE)
-	{
-	  gimple call;
-
-	  call = gimple_build_call (decl_e, 2, cur_op, mulcst);
-	  m1 = create_tmp_reg (wider_type, NULL);
-	  add_referenced_var (m1);
-	  m1 = make_ssa_name (m1, call);
-	  gimple_call_set_lhs (call, m1);
-	  gsi_insert_seq_before (gsi, call, GSI_SAME_STMT);
-
-	  call = gimple_build_call (decl_o, 2, cur_op, mulcst);
-	  m2 = create_tmp_reg (wider_type, NULL);
-	  add_referenced_var (m2);
-	  m2 = make_ssa_name (m2, call);
-	  gimple_call_set_lhs (call, m2);
-	  gsi_insert_seq_before (gsi, call, GSI_SAME_STMT);
-	}
-      else
-	{
-	  m1 = gimplify_build2 (gsi, BYTES_BIG_ENDIAN ? VEC_WIDEN_MULT_HI_EXPR
-						      : VEC_WIDEN_MULT_LO_EXPR,
-				wider_type, cur_op, mulcst);
-	  m2 = gimplify_build2 (gsi, BYTES_BIG_ENDIAN ? VEC_WIDEN_MULT_LO_EXPR
-						      : VEC_WIDEN_MULT_HI_EXPR,
-				wider_type, cur_op, mulcst);
-	}
-
-      m1 = gimplify_build1 (gsi, VIEW_CONVERT_EXPR, type, m1);
-      m2 = gimplify_build1 (gsi, VIEW_CONVERT_EXPR, type, m2);
-      cur_op = gimplify_build3 (gsi, VEC_PERM_EXPR, type, m1, m2, perm_mask);
-    }
+  cur_op = gimplify_build2 (gsi, MULT_HIGHPART_EXPR, type, cur_op, mulcst);
 
   switch (mode)
     {
@@ -1454,13 +1369,17 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
   if (compute_type == type)
     {
       compute_mode = TYPE_MODE (compute_type);
-      if (VECTOR_MODE_P (compute_mode)
-          && op != NULL
-	  && optab_handler (op, compute_mode) != CODE_FOR_nothing)
-	return;
-      else
-	/* There is no operation in hardware, so fall back to scalars.  */
-	compute_type = TREE_TYPE (type);
+      if (VECTOR_MODE_P (compute_mode))
+	{
+          if (op && optab_handler (op, compute_mode) != CODE_FOR_nothing)
+	    return;
+	  if (code == MULT_HIGHPART_EXPR
+	      && can_mult_highpart_p (compute_mode,
+				      TYPE_UNSIGNED (compute_type)))
+	    return;
+	}
+      /* There is no operation in hardware, so fall back to scalars.  */
+      compute_type = TREE_TYPE (type);
     }
 
   gcc_assert (code != VEC_LSHIFT_EXPR && code != VEC_RSHIFT_EXPR);

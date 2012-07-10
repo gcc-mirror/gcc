@@ -1642,10 +1642,8 @@ vect_recog_divmod_pattern (VEC (gimple, heap) **stmts,
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
   bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_vinfo);
   optab optab;
-  tree dummy, q;
-  enum tree_code dummy_code;
+  tree q;
   int dummy_int, prec;
-  VEC (tree, heap) *dummy_vec;
   stmt_vec_info def_stmt_vinfo;
 
   if (!is_gimple_assign (last_stmt))
@@ -1814,23 +1812,8 @@ vect_recog_divmod_pattern (VEC (gimple, heap) **stmts,
       || prec > HOST_BITS_PER_WIDE_INT)
     return NULL;
 
-  optab = optab_for_tree_code (MULT_HIGHPART_EXPR, vectype, optab_default);
-  if (optab == NULL
-      || optab_handler (optab, TYPE_MODE (vectype)) == CODE_FOR_nothing)
-    {
-      tree witype = build_nonstandard_integer_type (prec * 2,
-						    TYPE_UNSIGNED (itype));
-      tree vecwtype = get_vectype_for_scalar_type (witype);
-
-      if (vecwtype == NULL_TREE)
-	return NULL;
-      if (!supportable_widening_operation (WIDEN_MULT_EXPR, last_stmt,
-					   vecwtype, vectype,
-					   &dummy, &dummy, &dummy_code,
-					   &dummy_code, &dummy_int,
-					   &dummy_vec))
-	return NULL;
-    }
+  if (!can_mult_highpart_p (TYPE_MODE (vectype), TYPE_UNSIGNED (itype)))
+    return NULL;
 
   STMT_VINFO_PATTERN_DEF_SEQ (stmt_vinfo) = NULL;
 
