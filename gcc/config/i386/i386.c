@@ -26619,8 +26619,8 @@ static const struct builtin_description bdesc_args[] =
   { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_psadbw, "__builtin_ia32_psadbw128", IX86_BUILTIN_PSADBW128, UNKNOWN, (int) V2DI_FTYPE_V16QI_V16QI },
 
   { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_umulv1siv1di3, "__builtin_ia32_pmuludq", IX86_BUILTIN_PMULUDQ, UNKNOWN, (int) V1DI_FTYPE_V2SI_V2SI },
-  { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_umulv2siv2di3, "__builtin_ia32_pmuludq128", IX86_BUILTIN_PMULUDQ128, UNKNOWN, (int) V2DI_FTYPE_V4SI_V4SI },
-  { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_umulv2siv2di3, "__builtin_vw_umul_even_v4si", IX86_BUILTIN_VEC_WIDEN_UMUL_EVEN_V4SI, UNKNOWN, (int) V2UDI_FTYPE_V4USI_V4USI },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_vec_widen_umult_even_v4si, "__builtin_ia32_pmuludq128", IX86_BUILTIN_PMULUDQ128, UNKNOWN, (int) V2DI_FTYPE_V4SI_V4SI },
+  { OPTION_MASK_ISA_SSE2, CODE_FOR_vec_widen_umult_even_v4si, "__builtin_vw_umul_even_v4si", IX86_BUILTIN_VEC_WIDEN_UMUL_EVEN_V4SI, UNKNOWN, (int) V2UDI_FTYPE_V4USI_V4USI },
   { OPTION_MASK_ISA_SSE2, CODE_FOR_vec_widen_smult_even_v4si, "__builtin_ia32_vw_smul_even_v4si", IX86_BUILTIN_VEC_WIDEN_SMUL_EVEN_V4SI, UNKNOWN, (int) V2DI_FTYPE_V4SI_V4SI },
   { OPTION_MASK_ISA_SSE2, CODE_FOR_vec_widen_umult_odd_v4si, "__builtin_ia32_vw_umul_odd_v4si", IX86_BUILTIN_VEC_WIDEN_UMUL_ODD_V4SI, UNKNOWN, (int) V2UDI_FTYPE_V4USI_V4USI },
   { OPTION_MASK_ISA_SSE2, CODE_FOR_vec_widen_smult_odd_v4si, "__builtin_ia32_vw_smul_odd_v4si", IX86_BUILTIN_VEC_WIDEN_SMUL_ODD_V4SI, UNKNOWN, (int) V2DI_FTYPE_V4SI_V4SI },
@@ -27015,15 +27015,15 @@ static const struct builtin_description bdesc_args[] =
   { OPTION_MASK_ISA_AVX2, CODE_FOR_avx2_zero_extendv8hiv8si2  , "__builtin_ia32_pmovzxwd256", IX86_BUILTIN_PMOVZXWD256, UNKNOWN, (int) V8SI_FTYPE_V8HI },
   { OPTION_MASK_ISA_AVX2, CODE_FOR_avx2_zero_extendv4hiv4di2  , "__builtin_ia32_pmovzxwq256", IX86_BUILTIN_PMOVZXWQ256, UNKNOWN, (int) V4DI_FTYPE_V8HI },
   { OPTION_MASK_ISA_AVX2, CODE_FOR_avx2_zero_extendv4siv4di2  , "__builtin_ia32_pmovzxdq256", IX86_BUILTIN_PMOVZXDQ256, UNKNOWN, (int) V4DI_FTYPE_V4SI },
-  { OPTION_MASK_ISA_AVX2, CODE_FOR_avx2_mulv4siv4di3  , "__builtin_ia32_pmuldq256"  , IX86_BUILTIN_PMULDQ256  , UNKNOWN, (int) V4DI_FTYPE_V8SI_V8SI },
+  { OPTION_MASK_ISA_AVX2, CODE_FOR_vec_widen_smult_even_v8si, "__builtin_ia32_pmuldq256", IX86_BUILTIN_PMULDQ256, UNKNOWN, (int) V4DI_FTYPE_V8SI_V8SI },
   { OPTION_MASK_ISA_AVX2, CODE_FOR_vec_widen_smult_odd_v8si, "__builtin_ia32_vw_smul_odd_v8si", IX86_BUILTIN_VEC_WIDEN_SMUL_ODD_V8SI, UNKNOWN, (int) V4DI_FTYPE_V8SI_V8SI },
   { OPTION_MASK_ISA_AVX2, CODE_FOR_avx2_umulhrswv16hi3 , "__builtin_ia32_pmulhrsw256", IX86_BUILTIN_PMULHRSW256, UNKNOWN, (int) V16HI_FTYPE_V16HI_V16HI },
   { OPTION_MASK_ISA_AVX2, CODE_FOR_umulv16hi3_highpart, "__builtin_ia32_pmulhuw256" , IX86_BUILTIN_PMULHUW256 , UNKNOWN, (int) V16HI_FTYPE_V16HI_V16HI },
   { OPTION_MASK_ISA_AVX2, CODE_FOR_smulv16hi3_highpart, "__builtin_ia32_pmulhw256"  , IX86_BUILTIN_PMULHW256  , UNKNOWN, (int) V16HI_FTYPE_V16HI_V16HI },
   { OPTION_MASK_ISA_AVX2, CODE_FOR_mulv16hi3, "__builtin_ia32_pmullw256"  , IX86_BUILTIN_PMULLW256  , UNKNOWN, (int) V16HI_FTYPE_V16HI_V16HI },
   { OPTION_MASK_ISA_AVX2, CODE_FOR_mulv8si3, "__builtin_ia32_pmulld256"  , IX86_BUILTIN_PMULLD256  , UNKNOWN, (int) V8SI_FTYPE_V8SI_V8SI },
-  { OPTION_MASK_ISA_AVX2, CODE_FOR_avx2_umulv4siv4di3  , "__builtin_ia32_pmuludq256" , IX86_BUILTIN_PMULUDQ256 , UNKNOWN, (int) V4DI_FTYPE_V8SI_V8SI },
-  { OPTION_MASK_ISA_AVX2, CODE_FOR_avx2_umulv4siv4di3  , "__builtin_i386_vw_umul_even_v8si" , IX86_BUILTIN_VEC_WIDEN_UMUL_EVEN_V8SI, UNKNOWN, (int) V4UDI_FTYPE_V8USI_V8USI },
+  { OPTION_MASK_ISA_AVX2, CODE_FOR_vec_widen_umult_even_v8si, "__builtin_ia32_pmuludq256", IX86_BUILTIN_PMULUDQ256, UNKNOWN, (int) V4DI_FTYPE_V8SI_V8SI },
+  { OPTION_MASK_ISA_AVX2, CODE_FOR_vec_widen_umult_even_v8si, "__builtin_i386_vw_umul_even_v8si", IX86_BUILTIN_VEC_WIDEN_UMUL_EVEN_V8SI, UNKNOWN, (int) V4UDI_FTYPE_V8USI_V8USI },
   { OPTION_MASK_ISA_AVX2, CODE_FOR_vec_widen_umult_odd_v8si, "__builtin_ia32_vw_umul_odd_v8si", IX86_BUILTIN_VEC_WIDEN_UMUL_ODD_V8SI, UNKNOWN, (int) V4UDI_FTYPE_V8USI_V8USI },
   { OPTION_MASK_ISA_AVX2, CODE_FOR_iorv4di3, "__builtin_ia32_por256", IX86_BUILTIN_POR256, UNKNOWN, (int) V4DI_FTYPE_V4DI_V4DI },
   { OPTION_MASK_ISA_AVX2, CODE_FOR_avx2_psadbw, "__builtin_ia32_psadbw256", IX86_BUILTIN_PSADBW256, UNKNOWN, (int) V16HI_FTYPE_V32QI_V32QI },
@@ -38803,19 +38803,14 @@ ix86_expand_mul_widen_evenodd (rtx dest, rtx op1, rtx op2,
   if (mode == V8SImode)
     {
       if (uns_p)
-	x = gen_avx2_umulv4siv4di3 (dest, op1, op2);
+	x = gen_vec_widen_umult_even_v8si (dest, op1, op2);
       else
-	x = gen_avx2_mulv4siv4di3 (dest, op1, op2);
+	x = gen_vec_widen_smult_even_v8si (dest, op1, op2);
     }
   else if (uns_p)
-    x = gen_sse2_umulv2siv2di3 (dest, op1, op2);
+    x = gen_vec_widen_umult_even_v4si (dest, op1, op2);
   else if (TARGET_SSE4_1)
     x = gen_sse4_1_mulv2siv2di3 (dest, op1, op2);
-  else if (TARGET_XOP)
-    {
-      x = force_reg (wmode, CONST0_RTX (wmode));
-      x = gen_xop_pmacsdql (dest, op1, op2, x);
-    }
   else
     {
       rtx s1, s2, t0, t1, t2;
@@ -38833,12 +38828,12 @@ ix86_expand_mul_widen_evenodd (rtx dest, rtx op1, rtx op2,
       /* Multiply LO(A) * HI(B), and vice-versa.  */
       t1 = gen_reg_rtx (wmode);
       t2 = gen_reg_rtx (wmode);
-      emit_insn (gen_sse2_umulv2siv2di3 (t1, s1, op2));
-      emit_insn (gen_sse2_umulv2siv2di3 (t2, s2, op1));
+      emit_insn (gen_vec_widen_umult_even_v4si (t1, s1, op2));
+      emit_insn (gen_vec_widen_umult_even_v4si (t2, s2, op1));
 
       /* Multiply LO(A) * LO(B).  */
       t0 = gen_reg_rtx (wmode);
-      emit_insn (gen_sse2_umulv2siv2di3 (t0, op1, op2));
+      emit_insn (gen_vec_widen_umult_even_v4si (t0, op1, op2));
 
       /* Combine and shift the highparts into place.  */
       t1 = expand_binop (wmode, add_optab, t1, t2, t1, 1, OPTAB_DIRECT);
@@ -39013,12 +39008,12 @@ ix86_expand_sse2_mulvxdi3 (rtx op0, rtx op1, rtx op2)
 
       if (mode == V2DImode)
 	{
-	  umul = gen_sse2_umulv2siv2di3;
+	  umul = gen_vec_widen_umult_even_v4si;
 	  nmode = V4SImode;
 	}
       else if (mode == V4DImode)
 	{
-	  umul = gen_avx2_umulv4siv4di3;
+	  umul = gen_vec_widen_umult_even_v8si;
 	  nmode = V8SImode;
 	}
       else
