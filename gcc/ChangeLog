@@ -1,3 +1,24 @@
+2012-07-10  Richard Henderson  <rth@redhat.com>
+
+	* tree.def (VEC_WIDEN_MULT_EVEN_EXPR, VEC_WIDEN_MULT_ODD_EXPR): New.
+	* cfgexpand.c (expand_debug_expr): Handle them.
+	* expr.c (expand_expr_real_2): Likewise.
+	* fold-const.c (fold_binary_loc): Likewise.
+	* gimple-pretty-print.c (dump_binary_rhs): Likewise.
+	* optabs.c (optab_for_tree_code): Likewise.
+	* tree-cfg.c (verify_gimple_assign_binary): Likewise.
+	* tree-inline.c (estimate_operator_cost): Likewise.
+	* tree-pretty-print.c (dump_generic_node): Likewise.
+	* tree.c (commutative_tree_code): Likewise.
+	* tree-vect-generic.c (expand_vector_operations_1): Likewise.
+	Handle type change before looking up optab.
+	* optabs.h (OTI_vec_widen_umult_even, OTI_vec_widen_umult_odd): New.
+	(OTI_vec_widen_smult_even, OTI_vec_widen_smult_odd): New.
+	(vec_widen_umult_even_optab, vec_widen_umult_odd_optab): New.
+	(vec_widen_smult_even_optab, vec_widen_smult_odd_optab): New.
+	* genopinit.c (optabs): Initialize them.
+	* doc/md.texi: Document them.
+
 2012-07-10  Dehao Chen  <dehao@google.com>
 
 	* tree.h (phi_arg_d): New field.

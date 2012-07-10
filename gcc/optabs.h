@@ -340,12 +340,16 @@ enum optab_index
   OTI_vec_shr,
   /* Extract specified elements from vectors, for vector load.  */
   OTI_vec_realign_load,
-  /* Widening multiplication.
-     The high/low part of the resulting vector of products is returned.  */
+  /* Widening multiplication.  The high/low/even/odd part of the
+     resulting vector of products is returned.  */
   OTI_vec_widen_umult_hi,
   OTI_vec_widen_umult_lo,
   OTI_vec_widen_smult_hi,
   OTI_vec_widen_smult_lo,
+  OTI_vec_widen_umult_even,
+  OTI_vec_widen_umult_odd,
+  OTI_vec_widen_smult_even,
+  OTI_vec_widen_smult_odd,
   /* Widening shift left.
      The high/low part of the resulting vector is returned.  */
   OTI_vec_widen_ushiftl_hi,
@@ -565,6 +569,10 @@ enum optab_index
 #define vec_widen_umult_lo_optab (&optab_table[OTI_vec_widen_umult_lo])
 #define vec_widen_smult_hi_optab (&optab_table[OTI_vec_widen_smult_hi])
 #define vec_widen_smult_lo_optab (&optab_table[OTI_vec_widen_smult_lo])
+#define vec_widen_umult_even_optab (&optab_table[OTI_vec_widen_umult_even])
+#define vec_widen_umult_odd_optab (&optab_table[OTI_vec_widen_umult_odd])
+#define vec_widen_smult_even_optab (&optab_table[OTI_vec_widen_smult_even])
+#define vec_widen_smult_odd_optab (&optab_table[OTI_vec_widen_smult_odd])
 #define vec_widen_ushiftl_hi_optab (&optab_table[OTI_vec_widen_ushiftl_hi])
 #define vec_widen_ushiftl_lo_optab (&optab_table[OTI_vec_widen_ushiftl_lo])
 #define vec_widen_sshiftl_hi_optab (&optab_table[OTI_vec_widen_sshiftl_hi])

@@ -1361,6 +1361,23 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
       || code == VEC_UNPACK_FLOAT_LO_EXPR)
     type = TREE_TYPE (rhs1);
 
+  /* For widening/narrowing vector operations, the relevant type is of the
+     arguments, not the widened result.  VEC_UNPACK_FLOAT_*_EXPR is
+     calculated in the same way above.  */
+  if (code == WIDEN_SUM_EXPR
+      || code == VEC_WIDEN_MULT_HI_EXPR
+      || code == VEC_WIDEN_MULT_LO_EXPR
+      || code == VEC_WIDEN_MULT_EVEN_EXPR
+      || code == VEC_WIDEN_MULT_ODD_EXPR
+      || code == VEC_UNPACK_HI_EXPR
+      || code == VEC_UNPACK_LO_EXPR
+      || code == VEC_PACK_TRUNC_EXPR
+      || code == VEC_PACK_SAT_EXPR
+      || code == VEC_PACK_FIX_TRUNC_EXPR
+      || code == VEC_WIDEN_LSHIFT_HI_EXPR
+      || code == VEC_WIDEN_LSHIFT_LO_EXPR)
+    type = TREE_TYPE (rhs1);
+
   /* Choose between vector shift/rotate by vector and vector shift/rotate by
      scalar */
   if (code == LSHIFT_EXPR
@@ -1408,21 +1425,6 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
     }
   else
     op = optab_for_tree_code (code, type, optab_default);
-
-  /* For widening/narrowing vector operations, the relevant type is of the
-     arguments, not the widened result.  VEC_UNPACK_FLOAT_*_EXPR is
-     calculated in the same way above.  */
-  if (code == WIDEN_SUM_EXPR
-      || code == VEC_WIDEN_MULT_HI_EXPR
-      || code == VEC_WIDEN_MULT_LO_EXPR
-      || code == VEC_UNPACK_HI_EXPR
-      || code == VEC_UNPACK_LO_EXPR
-      || code == VEC_PACK_TRUNC_EXPR
-      || code == VEC_PACK_SAT_EXPR
-      || code == VEC_PACK_FIX_TRUNC_EXPR
-      || code == VEC_WIDEN_LSHIFT_HI_EXPR
-      || code == VEC_WIDEN_LSHIFT_LO_EXPR)
-    type = TREE_TYPE (rhs1);
 
   /* Optabs will try converting a negation into a subtraction, so
      look for it as well.  TODO: negation of floating-point vectors
