@@ -1315,7 +1315,7 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
 	    {
 	      rval = locate_fn_flags (base_binfo, complete_dtor_identifier,
 				      NULL_TREE, flags, complain);
-	      process_subob_fn (rval, false, spec_p, NULL,
+	      process_subob_fn (rval, false, NULL, NULL,
 				deleted_p, NULL, NULL,
 				basetype);
 	    }
@@ -1335,7 +1335,7 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
   if (ctor_p)
     walk_field_subobs (TYPE_FIELDS (ctype), complete_dtor_identifier,
 		       sfk_destructor, TYPE_UNQUALIFIED, false,
-		       false, false, spec_p, NULL,
+		       false, false, NULL, NULL,
 		       deleted_p, NULL,
 		       NULL, flags, complain);
 

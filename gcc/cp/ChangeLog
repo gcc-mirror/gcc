@@ -1,3 +1,8 @@
+2012-07-10  Jason Merrill  <jason@redhat.com>
+
+	* method.c (synthesized_method_walk): Avoid changing
+	EH spec based on cleanups in other places, too.
+
 2012-07-09  Sterling Augustine  <saugustine@google.com>
 
 	* error.c (lang_decl_name): Use TFF_UNQUALIFIED_NAME flag.

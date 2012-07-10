@@ -1,3 +1,7 @@
+2012-07-10  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/implicit13.C: Add vbase and member tests.
+
 2012-07-09  Sterling Augustine  <saugustine@google.com>
 
 	* g++.dg/debug/dwarf2/pubnames-2.C: New.
