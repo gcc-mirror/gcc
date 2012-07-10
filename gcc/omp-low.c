@@ -3061,8 +3061,8 @@ expand_parallel_call (struct omp_region *region, basic_block bb,
 	    {
 	      gimple phi = create_phi_node (tmp_join, bb);
 	      SSA_NAME_DEF_STMT (tmp_join) = phi;
-	      add_phi_arg (phi, tmp_then, e_then, UNKNOWN_LOCATION);
-	      add_phi_arg (phi, tmp_else, e_else, UNKNOWN_LOCATION);
+	      add_phi_arg (phi, tmp_then, e_then, UNKNOWN_LOCATION, NULL);
+	      add_phi_arg (phi, tmp_else, e_else, UNKNOWN_LOCATION, NULL);
 	    }
 
 	  val = tmp_join;
@@ -4597,6 +4597,7 @@ expand_omp_for_static_chunk (struct omp_region *region, struct omp_for_data *fd)
 	{
 	  gimple nphi;
 	  source_location locus;
+	  tree block;
 
 	  phi = gsi_stmt (psi);
 	  t = gimple_phi_result (phi);
@@ -4606,14 +4607,16 @@ expand_omp_for_static_chunk (struct omp_region *region, struct omp_for_data *fd)
 
 	  t = PHI_ARG_DEF_FROM_EDGE (phi, se);
 	  locus = gimple_phi_arg_location_from_edge (phi, se);
+	  block = gimple_phi_arg_block_from_edge (phi, se);
 
 	  /* A special case -- fd->loop.v is not yet computed in
 	     iter_part_bb, we need to use v_extra instead.  */
 	  if (t == fd->loop.v)
 	    t = v_extra;
-	  add_phi_arg (nphi, t, ene, locus);
+	  add_phi_arg (nphi, t, ene, locus, block);
 	  locus = redirect_edge_var_map_location (vm);
-	  add_phi_arg (nphi, redirect_edge_var_map_def (vm), re, locus);
+	  block = redirect_edge_var_map_block (vm);
+	  add_phi_arg (nphi, redirect_edge_var_map_def (vm), re, locus, block);
 	}
       gcc_assert (!gsi_end_p (psi) && i == VEC_length (edge_var_map, head));
       redirect_edge_var_map_clear (re);
@@ -4629,9 +4632,9 @@ expand_omp_for_static_chunk (struct omp_region *region, struct omp_for_data *fd)
       phi = create_phi_node (trip_main, iter_part_bb);
       SSA_NAME_DEF_STMT (trip_main) = phi;
       add_phi_arg (phi, trip_back, single_succ_edge (trip_update_bb),
-		   UNKNOWN_LOCATION);
+		   UNKNOWN_LOCATION, NULL);
       add_phi_arg (phi, trip_init, single_succ_edge (entry_bb),
-		   UNKNOWN_LOCATION);
+		   UNKNOWN_LOCATION, NULL);
     }
 
   set_immediate_dominator (CDI_DOMINATORS, trip_update_bb, cont_bb);

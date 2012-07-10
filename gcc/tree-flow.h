@@ -507,7 +507,7 @@ extern void find_referenced_vars_in (gimple);
 extern void reserve_phi_args_for_new_edge (basic_block);
 extern void add_phi_node_to_bb (gimple phi, basic_block bb);
 extern gimple create_phi_node (tree, basic_block);
-extern void add_phi_arg (gimple, tree, edge, source_location);
+extern void add_phi_arg (gimple, tree, edge, source_location, tree);
 extern void remove_phi_args (edge);
 extern void remove_phi_node (gimple_stmt_iterator *, bool);
 extern void remove_phi_nodes (basic_block);
@@ -531,6 +531,7 @@ struct _edge_var_map {
   tree result;			/* PHI result.  */
   tree def;			/* PHI arg definition.  */
   source_location locus;        /* PHI arg location.  */
+  tree block;			/* PHI arg block.  */
 };
 typedef struct _edge_var_map edge_var_map;
 
@@ -541,7 +542,7 @@ DEF_VEC_ALLOC_O(edge_var_map, heap);
 typedef VEC(edge_var_map, heap) *edge_var_map_vector;
 
 extern void init_tree_ssa (struct function *);
-extern void redirect_edge_var_map_add (edge, tree, tree, source_location);
+extern void redirect_edge_var_map_add (edge, tree, tree, source_location, tree);
 extern void redirect_edge_var_map_clear (edge);
 extern void redirect_edge_var_map_dup (edge, edge);
 extern edge_var_map_vector redirect_edge_var_map_vector (edge);

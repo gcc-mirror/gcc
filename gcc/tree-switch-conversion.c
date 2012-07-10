@@ -1188,8 +1188,10 @@ fix_phi_nodes (edge e1f, edge e2f, basic_block bbf,
        !gsi_end_p (gsi); gsi_next (&gsi), i++)
     {
       gimple phi = gsi_stmt (gsi);
-      add_phi_arg (phi, info->target_inbound_names[i], e1f, UNKNOWN_LOCATION);
-      add_phi_arg (phi, info->target_outbound_names[i], e2f, UNKNOWN_LOCATION);
+      add_phi_arg (phi, info->target_inbound_names[i], e1f, UNKNOWN_LOCATION,
+		   NULL);
+      add_phi_arg (phi, info->target_outbound_names[i], e2f, UNKNOWN_LOCATION,
+		   NULL);
     }
 }
 
