@@ -1,3 +1,8 @@
+2012-07-10  Julian Brown  <julian@codesourcery.com>
+
+	* config/arm/arm.md (movsi): Don't split symbol refs here.
+	(define_split): New.
+
 2012-07-10  Andreas Schwab  <schwab@linux-m68k.org>
 
 	PR bootstrap/53913
