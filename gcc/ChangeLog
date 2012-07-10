@@ -1,3 +1,12 @@
+2012-07-10  Xinliang David Li  <davidxl@google.com>
+
+	* doc/invoke.texi: New option documented.
+	* flag-types.h: New enum type.
+	* gimplify.c (gimplify_bind_expr): Control
+	clobber generation with new option.
+	(gimplify_target_expr): Ditto.
+	common.opt: New option.
+
 2012-07-10  Julian Brown  <julian@codesourcery.com>
 
 	* config/arm/arm.md (movsi): Don't split symbol refs here.
