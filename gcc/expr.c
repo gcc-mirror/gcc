@@ -8554,8 +8554,13 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
       return expand_divmod (0, code, mode, op0, op1, target, unsignedp);
 
     case RDIV_EXPR:
-    case MULT_HIGHPART_EXPR:
       goto binop;
+
+    case MULT_HIGHPART_EXPR:
+      expand_operands (treeop0, treeop1, subtarget, &op0, &op1, EXPAND_NORMAL);
+      temp = expand_mult_highpart (mode, op0, op1, target, unsignedp);
+      gcc_assert (temp);
+      return temp;
 
     case TRUNC_MOD_EXPR:
     case FLOOR_MOD_EXPR:

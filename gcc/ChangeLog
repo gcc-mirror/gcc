@@ -1,5 +1,17 @@
 2012-07-10  Richard Henderson  <rth@redhat.com>
 
+	* expmed.c (expmed_mult_highpart): Rename from expand_mult_highpart.
+	(expmed_mult_highpart_optab): Rename from expand_mult_highpart_optab.
+	* optabs.c (can_mult_highpart_p): New.
+	(expand_mult_highpart): New.
+	* expr.c (expand_expr_real_2) [MULT_HIGHPART_EXPR): Use it.
+	* tree-vect-generic.c (expand_vector_operations_1): Don't expand
+	by pieces if can_mult_highpart_p.
+	(expand_vector_divmod): Use can_mult_highpart_p and always
+	generate MULT_HIGHPART_EXPR.
+	* tree-vect-patterns.c (vect_recog_divmod_pattern): Likewise.
+	* tree-vect-stmts.c (vectorizable_operation): Likewise.
+
 	* config/spu/spu-builtins.md (spu_mpy): Move to spu.md.
 	(spu_mpyu, spu_mpyhhu, spu_mpyhh): Likewise.
 	* config/spu/spu.md (vec_widen_smult_odd_v8hi): Rename from spu_mpy.

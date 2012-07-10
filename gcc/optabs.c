@@ -7162,6 +7162,132 @@ expand_vec_cond_expr (tree vec_cond_type, tree op0, tree op1, tree op2,
   return ops[0].value;
 }
 
+/* Return non-zero if a highpart multiply is supported of can be synthisized.
+   For the benefit of expand_mult_highpart, the return value is 1 for direct,
+   2 for even/odd widening, and 3 for hi/lo widening.  */
+
+int
+can_mult_highpart_p (enum machine_mode mode, bool uns_p)
+{
+  optab op;
+  unsigned char *sel;
+  unsigned i, nunits;
+
+  op = uns_p ? umul_highpart_optab : smul_highpart_optab;
+  if (optab_handler (op, mode) != CODE_FOR_nothing)
+    return 1;
+
+  /* If the mode is an integral vector, synth from widening operations.  */
+  if (GET_MODE_CLASS (mode) != MODE_VECTOR_INT)
+    return 0;
+
+  nunits = GET_MODE_NUNITS (mode);
+  sel = XALLOCAVEC (unsigned char, nunits);
+
+  op = uns_p ? vec_widen_umult_even_optab : vec_widen_smult_even_optab;
+  if (optab_handler (op, mode) != CODE_FOR_nothing)
+    {
+      op = uns_p ? vec_widen_umult_odd_optab : vec_widen_smult_odd_optab;
+      if (optab_handler (op, mode) != CODE_FOR_nothing)
+	{
+	  for (i = 0; i < nunits; ++i)
+	    sel[i] = !BYTES_BIG_ENDIAN + (i & ~1) + ((i & 1) ? nunits : 0);
+	  if (can_vec_perm_p (mode, false, sel))
+	    return 2;
+	}
+    }
+
+  op = uns_p ? vec_widen_umult_hi_optab : vec_widen_smult_hi_optab;
+  if (optab_handler (op, mode) != CODE_FOR_nothing)
+    {
+      op = uns_p ? vec_widen_umult_lo_optab : vec_widen_smult_lo_optab;
+      if (optab_handler (op, mode) != CODE_FOR_nothing)
+	{
+	  for (i = 0; i < nunits; ++i)
+	    sel[i] = 2 * i + (BYTES_BIG_ENDIAN ? 0 : 1);
+	  if (can_vec_perm_p (mode, false, sel))
+	    return 3;
+	}
+    }
+
+  return 0;
+}
+
+/* Expand a highpart multiply.  */
+
+rtx
+expand_mult_highpart (enum machine_mode mode, rtx op0, rtx op1,
+		      rtx target, bool uns_p)
+{
+  struct expand_operand eops[3];
+  enum insn_code icode;
+  int method, i, nunits;
+  enum machine_mode wmode;
+  rtx m1, m2, perm;
+  optab tab1, tab2;
+  rtvec v;
+
+  method = can_mult_highpart_p (mode, uns_p);
+  switch (method)
+    {
+    case 0:
+      return NULL_RTX;
+    case 1:
+      tab1 = uns_p ? umul_highpart_optab : smul_highpart_optab;
+      return expand_binop (mode, tab1, op0, op1, target, uns_p,
+			   OPTAB_LIB_WIDEN);
+    case 2:
+      tab1 = uns_p ? vec_widen_umult_even_optab : vec_widen_smult_even_optab;
+      tab2 = uns_p ? vec_widen_umult_odd_optab : vec_widen_smult_odd_optab;
+      break;
+    case 3:
+      tab1 = uns_p ? vec_widen_umult_lo_optab : vec_widen_smult_lo_optab;
+      tab2 = uns_p ? vec_widen_umult_hi_optab : vec_widen_smult_hi_optab;
+      if (BYTES_BIG_ENDIAN)
+	{
+	  optab t = tab1;
+	  tab1 = tab2;
+	  tab2 = t;
+	}
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  icode = optab_handler (tab1, mode);
+  nunits = GET_MODE_NUNITS (mode);
+  wmode = insn_data[icode].operand[0].mode;
+  gcc_checking_assert (2 * GET_MODE_NUNITS (wmode) == nunits);
+  gcc_checking_assert (GET_MODE_SIZE (wmode) == GET_MODE_SIZE (mode));
+
+  create_output_operand (&eops[0], gen_reg_rtx (wmode), wmode);
+  create_input_operand (&eops[1], op0, mode);
+  create_input_operand (&eops[2], op1, mode);
+  expand_insn (icode, 3, eops);
+  m1 = gen_lowpart (mode, eops[0].value);
+
+  create_output_operand (&eops[0], gen_reg_rtx (wmode), wmode);
+  create_input_operand (&eops[1], op0, mode);
+  create_input_operand (&eops[2], op1, mode);
+  expand_insn (optab_handler (tab2, mode), 3, eops);
+  m2 = gen_lowpart (mode, eops[0].value);
+
+  v = rtvec_alloc (nunits);
+  if (method == 2)
+    {
+      for (i = 0; i < nunits; ++i)
+	RTVEC_ELT (v, i) = GEN_INT (!BYTES_BIG_ENDIAN + (i & ~1)
+				    + ((i & 1) ? nunits : 0));
+    }
+  else
+    {
+      for (i = 0; i < nunits; ++i)
+	RTVEC_ELT (v, i) = GEN_INT (2 * i + (BYTES_BIG_ENDIAN ? 0 : 1));
+    }
+  perm = gen_rtx_CONST_VECTOR (mode, v);
+
+  return expand_vec_perm (mode, m1, m2, perm, target);
+}
 
 /* Return true if there is a compare_and_swap pattern.  */
 
