@@ -14,7 +14,7 @@ struct B: A { };
 // { dg-final { scan-assembler-not "_ZN1BC1Ev" } }
 B b;
 
-struct C { C() noexcept; ~C(); };
+struct C { C() noexcept; ~C() noexcept(false); };
 struct D: C { };
 extern D d;
 
@@ -22,3 +22,11 @@ void *operator new(__SIZE_TYPE__, void*) noexcept;
 
 #define SA(X) static_assert((X),#X)
 SA(noexcept(new (&d) D));
+
+struct E: virtual C { };
+extern E e;
+SA(noexcept (new (&e) E));
+
+struct F { C c; };
+extern F f;
+SA(noexcept (new (&f) F));
