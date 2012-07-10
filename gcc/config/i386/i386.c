@@ -25754,14 +25754,6 @@ enum ix86_builtins
   IX86_BUILTIN_CPYSGNPS256,
   IX86_BUILTIN_CPYSGNPD256,
 
-  IX86_BUILTIN_VEC_WIDEN_SMUL_ODD_V4SI,
-  IX86_BUILTIN_VEC_WIDEN_SMUL_ODD_V8SI,
-  IX86_BUILTIN_VEC_WIDEN_UMUL_ODD_V4SI,
-  IX86_BUILTIN_VEC_WIDEN_UMUL_ODD_V8SI,
-  IX86_BUILTIN_VEC_WIDEN_SMUL_EVEN_V4SI,
-  IX86_BUILTIN_VEC_WIDEN_UMUL_EVEN_V4SI,
-  IX86_BUILTIN_VEC_WIDEN_UMUL_EVEN_V8SI,
-
   /* FMA4 instructions.  */
   IX86_BUILTIN_VFMADDSS,
   IX86_BUILTIN_VFMADDSD,
@@ -26620,10 +26612,6 @@ static const struct builtin_description bdesc_args[] =
 
   { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_umulv1siv1di3, "__builtin_ia32_pmuludq", IX86_BUILTIN_PMULUDQ, UNKNOWN, (int) V1DI_FTYPE_V2SI_V2SI },
   { OPTION_MASK_ISA_SSE2, CODE_FOR_vec_widen_umult_even_v4si, "__builtin_ia32_pmuludq128", IX86_BUILTIN_PMULUDQ128, UNKNOWN, (int) V2DI_FTYPE_V4SI_V4SI },
-  { OPTION_MASK_ISA_SSE2, CODE_FOR_vec_widen_umult_even_v4si, "__builtin_vw_umul_even_v4si", IX86_BUILTIN_VEC_WIDEN_UMUL_EVEN_V4SI, UNKNOWN, (int) V2UDI_FTYPE_V4USI_V4USI },
-  { OPTION_MASK_ISA_SSE2, CODE_FOR_vec_widen_smult_even_v4si, "__builtin_ia32_vw_smul_even_v4si", IX86_BUILTIN_VEC_WIDEN_SMUL_EVEN_V4SI, UNKNOWN, (int) V2DI_FTYPE_V4SI_V4SI },
-  { OPTION_MASK_ISA_SSE2, CODE_FOR_vec_widen_umult_odd_v4si, "__builtin_ia32_vw_umul_odd_v4si", IX86_BUILTIN_VEC_WIDEN_UMUL_ODD_V4SI, UNKNOWN, (int) V2UDI_FTYPE_V4USI_V4USI },
-  { OPTION_MASK_ISA_SSE2, CODE_FOR_vec_widen_smult_odd_v4si, "__builtin_ia32_vw_smul_odd_v4si", IX86_BUILTIN_VEC_WIDEN_SMUL_ODD_V4SI, UNKNOWN, (int) V2DI_FTYPE_V4SI_V4SI },
 
   { OPTION_MASK_ISA_SSE2, CODE_FOR_sse2_pmaddwd, "__builtin_ia32_pmaddwd128", IX86_BUILTIN_PMADDWD128, UNKNOWN, (int) V4SI_FTYPE_V8HI_V8HI },
 
@@ -27016,15 +27004,12 @@ static const struct builtin_description bdesc_args[] =
   { OPTION_MASK_ISA_AVX2, CODE_FOR_avx2_zero_extendv4hiv4di2  , "__builtin_ia32_pmovzxwq256", IX86_BUILTIN_PMOVZXWQ256, UNKNOWN, (int) V4DI_FTYPE_V8HI },
   { OPTION_MASK_ISA_AVX2, CODE_FOR_avx2_zero_extendv4siv4di2  , "__builtin_ia32_pmovzxdq256", IX86_BUILTIN_PMOVZXDQ256, UNKNOWN, (int) V4DI_FTYPE_V4SI },
   { OPTION_MASK_ISA_AVX2, CODE_FOR_vec_widen_smult_even_v8si, "__builtin_ia32_pmuldq256", IX86_BUILTIN_PMULDQ256, UNKNOWN, (int) V4DI_FTYPE_V8SI_V8SI },
-  { OPTION_MASK_ISA_AVX2, CODE_FOR_vec_widen_smult_odd_v8si, "__builtin_ia32_vw_smul_odd_v8si", IX86_BUILTIN_VEC_WIDEN_SMUL_ODD_V8SI, UNKNOWN, (int) V4DI_FTYPE_V8SI_V8SI },
   { OPTION_MASK_ISA_AVX2, CODE_FOR_avx2_umulhrswv16hi3 , "__builtin_ia32_pmulhrsw256", IX86_BUILTIN_PMULHRSW256, UNKNOWN, (int) V16HI_FTYPE_V16HI_V16HI },
   { OPTION_MASK_ISA_AVX2, CODE_FOR_umulv16hi3_highpart, "__builtin_ia32_pmulhuw256" , IX86_BUILTIN_PMULHUW256 , UNKNOWN, (int) V16HI_FTYPE_V16HI_V16HI },
   { OPTION_MASK_ISA_AVX2, CODE_FOR_smulv16hi3_highpart, "__builtin_ia32_pmulhw256"  , IX86_BUILTIN_PMULHW256  , UNKNOWN, (int) V16HI_FTYPE_V16HI_V16HI },
   { OPTION_MASK_ISA_AVX2, CODE_FOR_mulv16hi3, "__builtin_ia32_pmullw256"  , IX86_BUILTIN_PMULLW256  , UNKNOWN, (int) V16HI_FTYPE_V16HI_V16HI },
   { OPTION_MASK_ISA_AVX2, CODE_FOR_mulv8si3, "__builtin_ia32_pmulld256"  , IX86_BUILTIN_PMULLD256  , UNKNOWN, (int) V8SI_FTYPE_V8SI_V8SI },
   { OPTION_MASK_ISA_AVX2, CODE_FOR_vec_widen_umult_even_v8si, "__builtin_ia32_pmuludq256", IX86_BUILTIN_PMULUDQ256, UNKNOWN, (int) V4DI_FTYPE_V8SI_V8SI },
-  { OPTION_MASK_ISA_AVX2, CODE_FOR_vec_widen_umult_even_v8si, "__builtin_i386_vw_umul_even_v8si", IX86_BUILTIN_VEC_WIDEN_UMUL_EVEN_V8SI, UNKNOWN, (int) V4UDI_FTYPE_V8USI_V8USI },
-  { OPTION_MASK_ISA_AVX2, CODE_FOR_vec_widen_umult_odd_v8si, "__builtin_ia32_vw_umul_odd_v8si", IX86_BUILTIN_VEC_WIDEN_UMUL_ODD_V8SI, UNKNOWN, (int) V4UDI_FTYPE_V8USI_V8USI },
   { OPTION_MASK_ISA_AVX2, CODE_FOR_iorv4di3, "__builtin_ia32_por256", IX86_BUILTIN_POR256, UNKNOWN, (int) V4DI_FTYPE_V4DI_V4DI },
   { OPTION_MASK_ISA_AVX2, CODE_FOR_avx2_psadbw, "__builtin_ia32_psadbw256", IX86_BUILTIN_PSADBW256, UNKNOWN, (int) V16HI_FTYPE_V32QI_V32QI },
   { OPTION_MASK_ISA_AVX2, CODE_FOR_avx2_pshufbv32qi3, "__builtin_ia32_pshufb256", IX86_BUILTIN_PSHUFB256, UNKNOWN, (int) V32QI_FTYPE_V32QI_V32QI },
@@ -31062,62 +31047,6 @@ ix86_builtin_reciprocal (unsigned int fn, bool md_fn,
       default:
 	return NULL_TREE;
       }
-}
-
-static tree
-ix86_builtin_mul_widen_even (tree type)
-{
-  bool uns_p = TYPE_UNSIGNED (type);
-  enum ix86_builtins code;
-
-  switch (TYPE_MODE (type))
-    {
-    case V4SImode:
-      if (!TARGET_SSE2)
-	return NULL;
-      code = (uns_p ? IX86_BUILTIN_VEC_WIDEN_UMUL_EVEN_V4SI
-	      : IX86_BUILTIN_VEC_WIDEN_SMUL_EVEN_V4SI);
-      break;
-
-    case V8SImode:
-      if (!TARGET_AVX2)
-	return NULL;
-      code = (uns_p ? IX86_BUILTIN_VEC_WIDEN_UMUL_EVEN_V8SI
-	      : IX86_BUILTIN_PMULDQ256);
-      break;
-
-    default:
-      return NULL;
-    }
-  return ix86_builtins[code];
-}
-
-static tree
-ix86_builtin_mul_widen_odd (tree type)
-{
-  bool uns_p = TYPE_UNSIGNED (type);
-  enum ix86_builtins code;
-
-  switch (TYPE_MODE (type))
-    {
-    case V4SImode:
-      if (!TARGET_SSE2)
-	return NULL;
-      code = (uns_p ? IX86_BUILTIN_VEC_WIDEN_UMUL_ODD_V4SI
-	      : IX86_BUILTIN_VEC_WIDEN_SMUL_ODD_V4SI);
-      break;
-
-    case V8SImode:
-      if (!TARGET_AVX2)
-	return NULL;
-      code = (uns_p ? IX86_BUILTIN_VEC_WIDEN_UMUL_ODD_V8SI
-	      : IX86_BUILTIN_VEC_WIDEN_SMUL_ODD_V8SI);
-      break;
-
-    default:
-      return NULL;
-    }
-  return ix86_builtins[code];
 }
 
 /* Helper for avx_vpermilps256_operand et al.  This is also used by
@@ -40203,11 +40132,6 @@ ix86_memmodel_check (unsigned HOST_WIDE_INT val)
 
 #undef TARGET_VECTORIZE_BUILTIN_GATHER
 #define TARGET_VECTORIZE_BUILTIN_GATHER ix86_vectorize_builtin_gather
-
-#undef TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_EVEN
-#define TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_EVEN ix86_builtin_mul_widen_even
-#undef TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_ODD
-#define TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_ODD ix86_builtin_mul_widen_odd
 
 #undef TARGET_BUILTIN_RECIPROCAL
 #define TARGET_BUILTIN_RECIPROCAL ix86_builtin_reciprocal
