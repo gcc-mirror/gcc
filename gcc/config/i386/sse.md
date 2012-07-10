@@ -5277,7 +5277,7 @@
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_expand "avx2_umulv4siv4di3"
+(define_expand "vec_widen_umult_even_v8si"
   [(set (match_operand:V4DI 0 "register_operand")
 	(mult:V4DI
 	  (zero_extend:V4DI
@@ -5293,7 +5293,7 @@
   "TARGET_AVX2"
   "ix86_fixup_binary_operands_no_copy (MULT, V8SImode, operands);")
 
-(define_insn "*avx_umulv4siv4di3"
+(define_insn "*vec_widen_umult_even_v8si"
   [(set (match_operand:V4DI 0 "register_operand" "=x")
 	(mult:V4DI
 	  (zero_extend:V4DI
@@ -5312,7 +5312,7 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "OI")])
 
-(define_expand "sse2_umulv2siv2di3"
+(define_expand "vec_widen_umult_even_v4si"
   [(set (match_operand:V2DI 0 "register_operand")
 	(mult:V2DI
 	  (zero_extend:V2DI
@@ -5326,7 +5326,7 @@
   "TARGET_SSE2"
   "ix86_fixup_binary_operands_no_copy (MULT, V4SImode, operands);")
 
-(define_insn "*sse2_umulv2siv2di3"
+(define_insn "*vec_widen_umult_even_v4si"
   [(set (match_operand:V2DI 0 "register_operand" "=x,x")
 	(mult:V2DI
 	  (zero_extend:V2DI
@@ -5347,7 +5347,7 @@
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "TI")])
 
-(define_expand "avx2_mulv4siv4di3"
+(define_expand "vec_widen_smult_even_v8si"
   [(set (match_operand:V4DI 0 "register_operand")
 	(mult:V4DI
 	  (sign_extend:V4DI
@@ -5363,7 +5363,7 @@
   "TARGET_AVX2"
   "ix86_fixup_binary_operands_no_copy (MULT, V8SImode, operands);")
 
-(define_insn "*avx2_mulv4siv4di3"
+(define_insn "*vec_widen_smult_even_v8si"
   [(set (match_operand:V4DI 0 "register_operand" "=x")
 	(mult:V4DI
 	  (sign_extend:V4DI
@@ -5563,12 +5563,6 @@
       if (CONSTANT_P (operands[2]))
 	operands[2] = force_const_mem (<MODE>mode, operands[2]);
       ix86_fixup_binary_operands_no_copy (MULT, <MODE>mode, operands);
-    }
-  else if (TARGET_XOP)
-    {
-      rtx z = force_reg (<MODE>mode, CONST0_RTX (<MODE>mode));
-      emit_insn (gen_xop_pmacsdd (operands[0], operands[1], operands[2], z));
-      DONE;
     }
   else
     {
