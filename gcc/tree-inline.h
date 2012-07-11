@@ -116,7 +116,7 @@ typedef struct copy_body_data
   struct pointer_set_t *statements_to_fold;
 
   /* Entry basic block to currently copied body.  */
-  struct basic_block_def *entry_bb;
+  basic_block entry_bb;
 
   /* Debug statements that need processing.  */
   VEC(gimple,heap) *debug_stmts;
