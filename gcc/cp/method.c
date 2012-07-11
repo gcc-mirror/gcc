@@ -922,7 +922,7 @@ get_copy_assign (tree type)
 static void
 process_subob_fn (tree fn, bool move_p, tree *spec_p, bool *trivial_p,
 		  bool *deleted_p, bool *constexpr_p, bool *no_implicit_p,
-		  const char *msg, tree arg)
+		  bool diag, tree arg)
 {
   if (!fn || fn == error_mark_node)
     goto bad;
@@ -942,7 +942,7 @@ process_subob_fn (tree fn, bool move_p, tree *spec_p, bool *trivial_p,
 	{
 	  if (deleted_p)
 	    *deleted_p = true;
-	  if (msg)
+	  if (diag)
 	    error ("union member %q+D with non-trivial %qD", arg, fn);
 	}
     }
@@ -955,7 +955,7 @@ process_subob_fn (tree fn, bool move_p, tree *spec_p, bool *trivial_p,
   if (constexpr_p && !DECL_DECLARED_CONSTEXPR_P (fn))
     {
       *constexpr_p = false;
-      if (msg)
+      if (diag)
 	{
 	  inform (0, "defaulted constructor calls non-constexpr "
 		  "%q+D", fn);
@@ -978,7 +978,7 @@ walk_field_subobs (tree fields, tree fnname, special_function_kind sfk,
 		   int quals, bool copy_arg_p, bool move_p,
 		   bool assign_p, tree *spec_p, bool *trivial_p,
 		   bool *deleted_p, bool *constexpr_p, bool *no_implicit_p,
-		   const char *msg, int flags, tsubst_flags_t complain)
+		   bool diag, int flags, tsubst_flags_t complain)
 {
   tree field;
   for (field = fields; field; field = DECL_CHAIN (field))
@@ -995,13 +995,13 @@ walk_field_subobs (tree fields, tree fnname, special_function_kind sfk,
 	  bool bad = true;
 	  if (CP_TYPE_CONST_P (mem_type) && !CLASS_TYPE_P (mem_type))
 	    {
-	      if (msg)
+	      if (diag)
 		error ("non-static const member %q#D, can%'t use default "
 		       "assignment operator", field);
 	    }
 	  else if (TREE_CODE (mem_type) == REFERENCE_TYPE)
 	    {
-	      if (msg)
+	      if (diag)
 		error ("non-static reference member %q#D, can%'t use "
 		       "default assignment operator", field);
 	    }
@@ -1017,7 +1017,7 @@ walk_field_subobs (tree fields, tree fnname, special_function_kind sfk,
 
 	  if (DECL_INITIAL (field))
 	    {
-	      if (msg && DECL_INITIAL (field) == error_mark_node)
+	      if (diag && DECL_INITIAL (field) == error_mark_node)
 		inform (0, "initializer for %q+#D is invalid", field);
 	      if (trivial_p)
 		*trivial_p = false;
@@ -1040,14 +1040,14 @@ walk_field_subobs (tree fields, tree fnname, special_function_kind sfk,
 	  if (CP_TYPE_CONST_P (mem_type)
 	      && default_init_uninitialized_part (mem_type))
 	    {
-	      if (msg)
+	      if (diag)
 		error ("uninitialized non-static const member %q#D",
 		       field);
 	      bad = true;
 	    }
 	  else if (TREE_CODE (mem_type) == REFERENCE_TYPE)
 	    {
-	      if (msg)
+	      if (diag)
 		error ("uninitialized non-static reference member %q#D",
 		       field);
 	      bad = true;
@@ -1063,7 +1063,7 @@ walk_field_subobs (tree fields, tree fnname, special_function_kind sfk,
 	      && TREE_CODE (DECL_CONTEXT (field)) != UNION_TYPE)
 	    {
 	      *constexpr_p = false;
-	      if (msg)
+	      if (diag)
 		inform (0, "defaulted default constructor does not "
 			"initialize %q+#D", field);
 	    }
@@ -1077,7 +1077,7 @@ walk_field_subobs (tree fields, tree fnname, special_function_kind sfk,
 	  walk_field_subobs (TYPE_FIELDS (mem_type), fnname, sfk, quals,
 			     copy_arg_p, move_p, assign_p, spec_p, trivial_p,
 			     deleted_p, constexpr_p, no_implicit_p,
-			     msg, flags, complain);
+			     diag, flags, complain);
 	  continue;
 	}
 
@@ -1094,7 +1094,7 @@ walk_field_subobs (tree fields, tree fnname, special_function_kind sfk,
       rval = locate_fn_flags (mem_type, fnname, argtype, flags, complain);
 
       process_subob_fn (rval, move_p, spec_p, trivial_p, deleted_p,
-			constexpr_p, no_implicit_p, msg, field);
+			constexpr_p, no_implicit_p, diag, field);
     }
 }
 
@@ -1115,7 +1115,6 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
   VEC(tree,gc) *vbases;
   int i, quals, flags;
   tsubst_flags_t complain;
-  const char *msg;
   bool ctor_p;
 
   if (spec_p)
@@ -1239,25 +1238,21 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
     quals = TYPE_UNQUALIFIED;
   argtype = NULL_TREE;
 
-  if (!diag)
-    msg = NULL;
-  else if (assign_p)
-    msg = ("base %qT does not have a move assignment operator or trivial "
-	   "copy assignment operator");
-  else
-    msg = ("base %qT does not have a move constructor or trivial "
-	   "copy constructor");
-
   for (binfo = TYPE_BINFO (ctype), i = 0;
        BINFO_BASE_ITERATE (binfo, i, base_binfo); ++i)
     {
       tree basetype = BINFO_TYPE (base_binfo);
+
+      if (!assign_p && BINFO_VIRTUAL_P (base_binfo))
+	/* We'll handle virtual bases below.  */
+	continue;
+
       if (copy_arg_p)
 	argtype = build_stub_type (basetype, quals, move_p);
       rval = locate_fn_flags (base_binfo, fnname, argtype, flags, complain);
 
       process_subob_fn (rval, move_p, spec_p, trivial_p, deleted_p,
-			constexpr_p, no_implicit_p, msg, basetype);
+			constexpr_p, no_implicit_p, diag, basetype);
       if (ctor_p && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (basetype))
 	{
 	  /* In a constructor we also need to check the subobject
@@ -1270,7 +1265,7 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
 	     throw) or exception-specification (a throw from one of the
 	     dtors would be a double-fault).  */
 	  process_subob_fn (rval, false, NULL, NULL,
-			    deleted_p, NULL, NULL, NULL,
+			    deleted_p, NULL, NULL, false,
 			    basetype);
 	}
 
@@ -1287,21 +1282,31 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
     }
 
   vbases = CLASSTYPE_VBASECLASSES (ctype);
-  if (vbases && assign_p && move_p)
+  if (vbases == NULL)
+    /* No virtual bases to worry about.  */;
+  else if (assign_p && move_p && no_implicit_p)
     {
+      /* Don't implicitly declare a defaulted move assignment if a virtual
+	 base has non-trivial move assignment, since moving the same base
+	 more than once is dangerous.  */
       /* Should the spec be changed to allow vbases that only occur once?  */
-      if (diag)
-	error ("%qT has virtual bases, default move assignment operator "
-	       "cannot be generated", ctype);
-      else if (deleted_p)
-	*deleted_p = true;
+      FOR_EACH_VEC_ELT (tree, vbases, i, base_binfo)
+	{
+	  tree basetype = BINFO_TYPE (base_binfo);
+	  if (copy_arg_p)
+	    argtype = build_stub_type (basetype, quals, move_p);
+	  rval = locate_fn_flags (base_binfo, fnname, argtype, flags, complain);
+	  if (rval && rval != error_mark_node
+	      && move_fn_p (rval) && !trivial_fn_p (rval))
+	    {
+	      *no_implicit_p = true;
+	      break;
+	    }
+	}
     }
   else if (!assign_p)
     {
-      if (diag)
-	msg = ("virtual base %qT does not have a move constructor "
-	       "or trivial copy constructor");
-      if (vbases && constexpr_p)
+      if (constexpr_p)
 	*constexpr_p = false;
       FOR_EACH_VEC_ELT (tree, vbases, i, base_binfo)
 	{
@@ -1311,35 +1316,29 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
 	  rval = locate_fn_flags (base_binfo, fnname, argtype, flags, complain);
 
 	  process_subob_fn (rval, move_p, spec_p, trivial_p, deleted_p,
-			    constexpr_p, no_implicit_p, msg, basetype);
+			    constexpr_p, no_implicit_p, diag, basetype);
 	  if (ctor_p && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (basetype))
 	    {
 	      rval = locate_fn_flags (base_binfo, complete_dtor_identifier,
 				      NULL_TREE, flags, complain);
 	      process_subob_fn (rval, false, NULL, NULL,
-				deleted_p, NULL, NULL, NULL,
+				deleted_p, NULL, NULL, false,
 				basetype);
 	    }
 	}
     }
-  if (!diag)
-    /* Leave msg null. */;
-  else if (assign_p)
-    msg = ("non-static data member %qD does not have a move "
-	   "assignment operator or trivial copy assignment operator");
-  else
-    msg = ("non-static data member %qD does not have a move "
-	   "constructor or trivial copy constructor");
+
+  /* Now handle the non-static data members.  */
   walk_field_subobs (TYPE_FIELDS (ctype), fnname, sfk, quals,
 		     copy_arg_p, move_p, assign_p, spec_p, trivial_p,
 		     deleted_p, constexpr_p, no_implicit_p,
-		     msg, flags, complain);
+		     diag, flags, complain);
   if (ctor_p)
     walk_field_subobs (TYPE_FIELDS (ctype), complete_dtor_identifier,
 		       sfk_destructor, TYPE_UNQUALIFIED, false,
 		       false, false, NULL, NULL,
 		       deleted_p, NULL,
-		       NULL, NULL, flags, complain);
+		       NULL, false, flags, complain);
 
   pop_scope (scope);
 

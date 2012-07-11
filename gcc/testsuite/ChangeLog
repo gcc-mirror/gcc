@@ -1,3 +1,8 @@
+2012-07-11  Jason Merrill  <jason@redhat.com>
+
+	DR 1402
+	* g++.g/cpp0x/defaulted37.C: New.
+
 2012-07-11  Greta Yorsh  <Greta.Yorsh@arm.com>
 
 	PR target/53859
