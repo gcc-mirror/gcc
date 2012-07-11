@@ -23659,7 +23659,12 @@ arm_early_load_addr_dep (rtx producer, rtx consumer)
   if (GET_CODE (addr) == COND_EXEC)
     addr = COND_EXEC_CODE (addr);
   if (GET_CODE (addr) == PARALLEL)
-    addr = XVECEXP (addr, 0, 0);
+    {
+      if (GET_CODE (XVECEXP (addr, 0, 0)) == RETURN)
+        addr = XVECEXP (addr, 0, 1);
+      else
+        addr = XVECEXP (addr, 0, 0);
+    }
   addr = XEXP (addr, 1);
 
   return reg_overlap_mentioned_p (value, addr);

@@ -1,3 +1,8 @@
+2012-07-11  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+	PR target/53859
+	* gcc.target/arm/pr53859.c: New test.
+
 2012-07-10  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/53886
