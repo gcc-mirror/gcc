@@ -509,7 +509,7 @@ cgraph_node_for_asm (tree asmname)
   return NULL;
 }
 
-/* Returns a hash value for X (which really is a die_struct).  */
+/* Returns a hash value for X (which really is a cgraph_edge).  */
 
 static hashval_t
 edge_hash (const void *x)
@@ -517,7 +517,7 @@ edge_hash (const void *x)
   return htab_hash_pointer (((const struct cgraph_edge *) x)->call_stmt);
 }
 
-/* Return nonzero if decl_id of die_struct X is the same as UID of decl *Y.  */
+/* Return nonzero if the call_stmt of of cgraph_edge X is stmt *Y.  */
 
 static int
 edge_eq (const void *x, const void *y)

@@ -1,3 +1,8 @@
+2012-07-11  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* c-gimplify.c: Do not include basic-block.h.
+	* c-common.c: Do not include linfuncs.h.
+
 2012-07-08  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* c-common.h: Include tree.h.

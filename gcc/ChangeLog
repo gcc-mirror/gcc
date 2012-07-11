@@ -1,5 +1,21 @@
 2012-07-11  Steven Bosscher  <steven@gcc.gnu.org>
 
+	* expr.h (can_move_by_pieces): Move prototype from here ...
+	* tree.h (can_move_by_pieces): ... to here.
+	* optabs.h (set_widening_optab_handler): Use XCNEW.
+	* gimplify.c: Do not include expr.h.
+
+	* toplev.c: Do not include dwarf2out.h.
+	* config/ia64/ia64.c: Likewise.
+	* config/sparc/sparc.c: Likewise.
+	* config/sparc/t-sparc (sparc.o): Fix dependencies.
+
+	* Makefile.in (toplev.o): Fix dependencies
+	(c-family/c-gimplify.o): Likewise.
+	(c-family/c-common.o): Likewise.
+
+2012-07-11  Steven Bosscher  <steven@gcc.gnu.org>
+
 	* basic-block.h (struct edge_def): Use basic_block instead of
 	basic_block_def *.
 	* cfgloop.h (struct loop_exit, struct loop): Likewise.

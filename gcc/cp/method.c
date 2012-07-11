@@ -34,7 +34,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "target.h"
 #include "common/common-target.h"
-#include "tree-pass.h"
 #include "diagnostic.h"
 #include "cgraph.h"
 #include "gimple.h"

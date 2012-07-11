@@ -41,7 +41,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "cgraph.h"
 #include "tree-iterator.h"
 #include "vecprim.h"
-#include "tm.h"         /* FIXME: For gcc_obstack_init from defaults.h.  */
 #include "target.h"
 
 static tree make_method_value (tree);

@@ -47,8 +47,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 
 #include "langhooks-def.h"	/* FIXME: for lhd_set_decl_assembler_name.  */
-#include "expr.h"		/* FIXME: for can_move_by_pieces
-				   and STACK_CHECK_MAX_VAR_SIZE.  */
 
 enum gimplify_omp_var_data
 {
@@ -3971,7 +3969,7 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	    walk_tree (&DECL_INITIAL (object), force_labels_r, NULL, NULL);
 
 	    /* ??? C++ doesn't automatically append a .<number> to the
-	       assembler name, and even when it does, it looks a FE private
+	       assembler name, and even when it does, it looks at FE private
 	       data structures to figure out what that number should be,
 	       which are not set for this variable.  I suppose this is
 	       important for local statics for inline functions, which aren't

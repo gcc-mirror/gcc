@@ -282,7 +282,7 @@ java/constants.o: java/constants.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h \
   toplev.h $(SYSTEM_H) coretypes.h $(TM_H) $(GGC_H) gt-java-constants.h
 java/decl.o: java/decl.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h \
   toplev.h $(FLAGS_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-  libfuncs.h java/java-except.h $(GGC_H) $(REAL_H) gt-java-decl.h \
+  java/java-except.h $(GGC_H) $(REAL_H) gt-java-decl.h \
   $(TARGET_H) $(CGRAPH_H) langhooks.h
 java/except.o: java/except.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h $(REAL_H) \
   java/javaop.h java/java-opcodes.h java/java-except.h \
