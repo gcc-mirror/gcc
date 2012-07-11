@@ -1,3 +1,10 @@
+2012-07-11  Jason Merrill  <jason@redhat.com>
+
+	DR 1402
+	* method.c (synthesized_method_walk): Replace uses of msg with diag.
+	Correct handling of virtual bases with move operations.
+	(process_subob_fn, walk_field_subobs): Replace uses of msg with diag.
+
 2012-07-11  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* method.c: Do not include tree-pass.h.
