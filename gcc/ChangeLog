@@ -1,3 +1,22 @@
+2012-07-11  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* basic-block.h (struct edge_def): Use basic_block instead of
+	basic_block_def *.
+	* cfgloop.h (struct loop_exit, struct loop): Likewise.
+	* gengenrtl.c (type_from_format): Likewise.  Also for 'tree'
+	instead of union tree_node *.
+	* rtl.h (union rtunion_def, emit_insn_before_noloc,
+	emit_insn_after_noloc, add_insn_before, add_insn_after,
+	debug_bb_slim): Likewise.
+	* tree-inline.h (struct copy_body_data): Likewise.
+	* sched-rgn.c (dump_region_dot): Likewise.
+	* gimple.h (struct gimple_statement_base, gimple_set_bb,
+	gsi_move_to_bb_end): Likewise.
+	* sched-vis.c (debug_bb_slim): Likewise.
+	(debug_bb_n_slim): Likewise.
+	* config/mn10300/mn10300.c (mn10300_insert_setlb_lcc): Likewise.
+	(mn10300_block_contains_call):
+
 2012-07-11  Greta Yorsh  <Greta.Yorsh@arm.com>
 
 	PR target/53859

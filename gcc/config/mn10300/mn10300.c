@@ -3178,7 +3178,7 @@ mn10300_insert_setlb_lcc (rtx label, rtx branch)
 }
 
 static bool
-mn10300_block_contains_call (struct basic_block_def * block)
+mn10300_block_contains_call (basic_block block)
 {
   rtx insn;
 
