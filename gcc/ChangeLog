@@ -1,3 +1,9 @@
+2012-07-11  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+	PR target/53859
+	* config/arm/arm.c (arm_early_load_addr_dep): Handle new
+	epilogue patterns.
+
 2012-07-11  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* doc/extend.texi (Namespace Association): Alter cautionary text.
