@@ -108,7 +108,7 @@ histogram_hash (const void *x)
   return htab_hash_pointer (((const_histogram_value)x)->hvalue.stmt);
 }
 
-/* Return nonzero if decl_id of die_struct X is the same as UID of decl *Y.  */
+/* Return nonzero if statement for histogram_value X is Y.  */
 
 static int
 histogram_eq (const void *x, const void *y)

@@ -1065,8 +1065,7 @@ set_widening_optab_handler (optab op, enum machine_mode to_mode,
   else
     {
       if (op->widening == NULL)
-	op->widening = (struct widening_optab_handlers *)
-	      xcalloc (1, sizeof (struct widening_optab_handlers));
+	op->widening = XCNEW (struct widening_optab_handlers);
 
       op->widening->handlers[(int) to_mode][(int) from_mode].insn_code = code;
     }

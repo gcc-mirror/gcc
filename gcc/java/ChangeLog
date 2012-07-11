@@ -1,3 +1,11 @@
+2012-07-11  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* decl.c: Do not include libfuncs.h.
+	* class.c: Do not include defaults.h.
+	* jvgenmain.c: Likewise.
+	* magnle.c: Likewise.
+	* Make-lang.in (decl.o): Fix dependencies.
+
 2012-07-08  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* verify.h: Do not include system.h and coretypes.h here.

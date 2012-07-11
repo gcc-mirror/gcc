@@ -1925,8 +1925,7 @@ c-family/c-common.o : c-family/c-common.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 	$(DIAGNOSTIC_H) langhooks.h c-family/c-objc.h \
 	$(TARGET_H) tree-iterator.h langhooks.h tree-mudflap.h \
 	intl.h $(OPTS_H) $(CPPLIB_H) $(TREE_INLINE_H) $(HASHTAB_H) \
-	$(BUILTINS_DEF) $(CGRAPH_H) $(BASIC_BLOCK_H) $(TARGET_DEF_H) \
-	$(LIBFUNCS_H) \
+	$(BUILTINS_DEF) $(CGRAPH_H) $(TARGET_DEF_H) \
 	gt-c-family-c-common.h $(COMMON_TARGET_H)
 
 c-family/c-cppbuiltin.o : c-family/c-cppbuiltin.c $(CONFIG_H) $(SYSTEM_H) \
@@ -1945,8 +1944,8 @@ c-family/c-format.o : c-family/c-format.c c-family/c-format.h \
 c-family/c-gimplify.o : c-family/c-gimplify.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) \
 	$(C_COMMON_H) $(DIAGNOSTIC_CORE_H) $(GIMPLE_H) \
 	$(FLAGS_H) langhooks.h $(LANGHOOKS_DEF_H) \
-	$(TM_H) coretypes.h $(C_PRETTY_PRINT_H) $(CGRAPH_H) $(BASIC_BLOCK_H) \
-	hard-reg-set.h $(TREE_DUMP_H) $(TREE_INLINE_H)
+	$(TM_H) coretypes.h $(C_PRETTY_PRINT_H) $(CGRAPH_H) \
+	$(TREE_DUMP_H) $(TREE_INLINE_H)
 
 c-family/c-lex.o : c-family/c-lex.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 	$(TM_H) $(TREE_H) $(FIXED_VALUE_H) debug.h $(C_COMMON_H) $(SPLAY_TREE_H) \
@@ -2673,7 +2672,7 @@ CFLAGS-toplev.o += -DTARGET_NAME=\"$(target_noncanonical)\"
 toplev.o : toplev.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    version.h $(RTL_H) $(FUNCTION_H) $(FLAGS_H) xcoffout.h $(INPUT_H) \
    $(INSN_ATTR_H) output.h $(DIAGNOSTIC_H) debug.h insn-config.h intl.h \
-   $(RECOG_H) Makefile toplev.h $(DWARF2OUT_H) sdbout.h dbxout.h $(EXPR_H) \
+   $(RECOG_H) Makefile toplev.h sdbout.h dbxout.h $(EXPR_H) \
    hard-reg-set.h $(BASIC_BLOCK_H) graph.h $(EXCEPT_H) $(REGS_H) $(TIMEVAR_H) \
    value-prof.h $(PARAMS_H) $(TM_P_H) reload.h ira.h dwarf2asm.h $(TARGET_H) \
    langhooks.h insn-flags.h $(CFGLOOP_H) hosthooks.h \

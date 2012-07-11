@@ -54,7 +54,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "reload.h"
 #include "params.h"
 #include "df.h"
-#include "dwarf2out.h"
 #include "opts.h"
 
 /* Processor costs */
