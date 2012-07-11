@@ -1,3 +1,7 @@
+2012-07-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/debug/dwarf2/pubnames-2.C: Allow for / comments.
+
 2012-07-11  Jason Merrill  <jason@redhat.com>
 
 	DR 1402
