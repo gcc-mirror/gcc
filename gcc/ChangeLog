@@ -1,3 +1,7 @@
+2012-07-11  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/extend.texi (Namespace Association): Alter cautionary text.
+
 2012-07-10  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/53911

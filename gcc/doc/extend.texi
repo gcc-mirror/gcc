@@ -15527,10 +15527,9 @@ See also @ref{Namespace Association}.
 @node Namespace Association
 @section Namespace Association
 
-@strong{Caution:} The semantics of this extension are not fully
-defined.  Users should refrain from using this extension as its
-semantics may change subtly over time.  It is possible that this
-extension will be removed in future versions of G++.
+@strong{Caution:} The semantics of this extension are equivalent
+to C++ 2011 inline namespaces.  Users should use inline namespaces
+instead as this extension will be removed in future versions of G++.
 
 A using-directive with @code{__attribute ((strong))} is stronger
 than a normal using-directive in two ways:
