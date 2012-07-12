@@ -1,3 +1,42 @@
+2012-07-08  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* decl.c (cp_finish_decl): Add FIXME at add_local_decl call site.
+
+2012-07-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53862
+	* pt.c (tsubst_arg_types): Add "end" parameter.
+	(check_undeduced_parms): Use it.
+
+	* cp-tree.h (DECL_DECLARES_TYPE_P): Check DECL_TYPE_TEMPLATE_P.
+
+	PR c++/53858
+	* name-lookup.c (ambiguous_decl): Use DECL_TYPE_TEMPLATE_P.
+
+2012-07-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53039
+	* pt.c (arg_from_parm_pack_p): Go back to using same_type_p or
+	cp_tree_equal.
+
+	* cp-tree.h (TEMPLATE_PARM_NUM_SIBLINGS): Remove.
+	(struct template_parm_index_s): Remove num_siblings.
+	* pt.c (fixup_template_parms, fixup_template_parm_index): Remove.
+	(fixup_template_type_parm_type): Remove.
+	(build_template_parm_index): Remove num_siblings parm.
+	(process_template_parm): Likewise.
+	* parser.c (cp_parser_template_parameter_list): Adjust.
+	* tree.c (cp_tree_equal): Don't compare num_siblings.
+	* typeck.c (comp_template_parms_position): Likewise.
+
+	PR c++/50852
+	PR c++/53039
+	* tree.c (strip_typedefs_expr): New.
+	* cp-tree.h: Declare it.
+	* pt.c (convert_template_argument, unify): Use it.
+	* parser.c (cp_parser_template_declaration_after_export): Don't call
+	fixup_template_parms.
+
 2012-07-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/53848

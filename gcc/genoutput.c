@@ -1,6 +1,7 @@
 /* Generate code from to output assembler insns as recognized from rtl.
    Copyright (C) 1987, 1988, 1992, 1994, 1995, 1997, 1998, 1999, 2000, 2002,
-   2003, 2004, 2005, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+   2003, 2004, 2005, 2007, 2008, 2009, 2010, 2012
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -171,9 +172,16 @@ struct data
   struct operand_data operand[MAX_MAX_OPERANDS];
 };
 
-/* This variable points to the first link in the insn chain.  */
+/* A dummy insn, for CODE_FOR_nothing.  */
+static struct data nothing;
 
-static struct data *idata, **idata_end = &idata;
+/* This variable points to the first link in the insn chain.  */
+static struct data *idata = &nothing;
+
+/* This variable points to the end of the insn chain.  This is where
+   everything relevant from the machien description is appended to.  */
+static struct data **idata_end = &nothing.next;
+
 
 static void output_prologue (void);
 static void output_operand_data (void);
@@ -987,6 +995,14 @@ gen_split (rtx split, int lineno)
   place_operands (d);
 }
 
+static void
+init_insn_for_nothing (void)
+{
+  memset (&nothing, 0, sizeof (nothing));
+  nothing.name = "*placeholder_for_nothing";
+  nothing.filename = "<internal>";
+}
+
 extern int main (int, char **);
 
 int
@@ -996,11 +1012,12 @@ main (int argc, char **argv)
 
   progname = "genoutput";
 
+  init_insn_for_nothing ();
+
   if (!init_rtx_reader_args (argc, argv))
     return (FATAL_EXIT_CODE);
 
   output_prologue ();
-  next_code_number = 0;
   next_index_number = 0;
 
   /* Read the machine description.  */

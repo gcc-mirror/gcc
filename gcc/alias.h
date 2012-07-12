@@ -21,8 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_ALIAS_H
 #define GCC_ALIAS_H
 
-#include "coretypes.h"
-
 /* The type of an alias set.  Code currently assumes that variables of
    this type can take the values 0 (the alias set which aliases
    everything) and -1 (sometimes indicating that the alias set is

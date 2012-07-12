@@ -1,3 +1,12 @@
+2012-07-08  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* verify.h: Do not include system.h and coretypes.h here.
+	* verify-impl.c: Include them here instead.
+
+2012-07-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* jcf-io.c (read_zip_member): Initialize d_stream.
+
 2012-05-31  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* resource.c: Do not include output.h.
@@ -658,7 +667,7 @@
 	(predefined_filenames): Declare.
 	(add_predefined_file): Use it.
 	(predefined_filename_p): Likewise.
-	(java_parse_file): Adjust for new type of current_file_list.                                                                                                                                                     *
+	(java_parse_file): Adjust for new type of current_file_list.
 
 2010-05-25  Jakub Jelinek  <jakub@redhat.com>
 

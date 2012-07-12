@@ -19,11 +19,6 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.  */
 
-;; Additional register numbers
-(define_constants
-  [(VFPCC_REGNUM 127)]
-)
-
 ;; The VFP "type" attributes differ from those used in the FPA model.
 ;; fcpys	Single precision cpy.
 ;; ffariths	Single precision abs, neg.
@@ -888,6 +883,54 @@
   "fnmscd%?\\t%P0, %P2, %P3"
   [(set_attr "predicable" "yes")
    (set_attr "type" "fmacd")]
+)
+
+;; Fused-multiply-accumulate
+
+(define_insn "fma<SDF:mode>4"
+  [(set (match_operand:SDF 0 "register_operand" "=<F_constraint>")
+        (fma:SDF (match_operand:SDF 1 "register_operand" "<F_constraint>")
+		 (match_operand:SDF 2 "register_operand" "<F_constraint>")
+		 (match_operand:SDF 3 "register_operand" "0")))]
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_FMA"
+  "vfma%?.<V_if_elem>\\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
+  [(set_attr "predicable" "yes")
+   (set_attr "type" "<F_fma_type>")]
+)
+
+(define_insn "*fmsub<SDF:mode>4"
+  [(set (match_operand:SDF 0 "register_operand" "=<F_constraint>")
+	(fma:SDF (neg:SDF (match_operand:SDF 1 "register_operand"
+					     "<F_constraint>"))
+		 (match_operand:SDF 2 "register_operand" "<F_constraint>")
+		 (match_operand:SDF 3 "register_operand" "0")))]
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_FMA"
+  "vfms%?.<V_if_elem>\\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
+  [(set_attr "predicable" "yes")
+   (set_attr "type" "<F_fma_type>")]
+)
+
+(define_insn "*fnmsub<SDF:mode>4"
+  [(set (match_operand:SDF 0 "register_operand" "=<F_constraint>")
+	(fma:SDF (match_operand:SDF 1 "register_operand" "<F_constraint>")
+		 (match_operand:SDF 2 "register_operand" "<F_constraint>")
+		 (neg:SDF (match_operand:SDF 3 "register_operand" "0"))))]
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_FMA"
+  "vfnms%?.<V_if_elem>\\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
+  [(set_attr "predicable" "yes")
+   (set_attr "type" "<F_fma_type>")]
+)
+
+(define_insn "*fnmadd<SDF:mode>4"
+  [(set (match_operand:SDF 0 "register_operand" "=<F_constraint>")
+	(fma:SDF (neg:SDF (match_operand:SDF 1 "register_operand"
+					       "<F_constraint>"))
+		 (match_operand:SDF 2 "register_operand" "<F_constraint>")
+		 (neg:SDF (match_operand:SDF 3 "register_operand" "0"))))]
+  "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_FMA"
+  "vfnma%?.<V_if_elem>\\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
+  [(set_attr "predicable" "yes")
+   (set_attr "type" "<F_fma_type>")]
 )
 
 

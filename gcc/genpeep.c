@@ -1,6 +1,6 @@
 /* Generate code from machine description to perform peephole optimizations.
    Copyright (C) 1987, 1989, 1992, 1997, 1998, 1999, 2000, 2003, 2004,
-   2007, 2010  Free Software Foundation, Inc.
+   2007, 2010, 2012  Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -47,18 +47,13 @@ static int max_opno;
 
 static int n_operands;
 
-/* Peephole optimizations get insn codes just like insn patterns.
-   Count them so we know the code of the define_peephole we are handling.  */
-
-static int insn_code_number = 0;
-
-static void gen_peephole (rtx);
+static void gen_peephole (rtx, int);
 static void match_rtx (rtx, struct link *, int);
 static void print_path (struct link *);
 static void print_code (RTX_CODE);
 
 static void
-gen_peephole (rtx peep)
+gen_peephole (rtx peep, int insn_code_number)
 {
   int ninsns = XVECLEN (peep, 0);
   int i;
@@ -392,24 +387,15 @@ from the machine description file `md'.  */\n\n");
 
   while (1)
     {
-      int line_no, rtx_number = 0;
+      int line_no;
+      int insn_code_number;
 
-      desc = read_md_rtx (&line_no, &rtx_number);
+      desc = read_md_rtx (&line_no, &insn_code_number);
       if (desc == NULL)
 	break;
 
-       if (GET_CODE (desc) == DEFINE_PEEPHOLE)
-	{
-	  gen_peephole (desc);
-	  insn_code_number++;
-	}
-      if (GET_CODE (desc) == DEFINE_INSN
-	  || GET_CODE (desc) == DEFINE_EXPAND
-	  || GET_CODE (desc) == DEFINE_SPLIT
-	  || GET_CODE (desc) == DEFINE_PEEPHOLE2)
-	{
-	  insn_code_number++;
-	}
+      if (GET_CODE (desc) == DEFINE_PEEPHOLE)
+	gen_peephole (desc, insn_code_number);
     }
 
   printf ("  return 0;\n}\n\n");

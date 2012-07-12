@@ -43,37 +43,22 @@ along with GCC; see the file COPYING3.  If not see
 	 verify_flow_info
      - Dumping and debugging
 	 print_rtl_with_bb, dump_bb, debug_bb, debug_bb_n
+
+   TODO: Document these "Available functionality" functions in the files
+   that implement them.
  */
 
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "tree.h"
-#include "rtl.h"
-#include "hard-reg-set.h"
-#include "regs.h"
-#include "flags.h"
-#include "function.h"
-#include "except.h"
-#include "diagnostic-core.h"
-#include "tm_p.h"
 #include "obstack.h"
-#include "timevar.h"
-#include "tree-pass.h"
 #include "ggc.h"
 #include "hashtab.h"
 #include "alloc-pool.h"
+#include "basic-block.h"
 #include "df.h"
-#include "cfgloop.h"
-#include "tree-flow.h"
+#include "cfgloop.h" /* FIXME: For struct loop.  */
 
-/* The obstack on which the flow graph components are allocated.  */
-
-struct bitmap_obstack reg_obstack;
-
-void debug_flow_info (void);
-static void free_edge (edge);
 
 #define RDIV(X,Y) (((X) + (Y) / 2) / (Y))
 
@@ -98,10 +83,10 @@ init_flow (struct function *the_fun)
 }
 
 /* Helper function for remove_edge and clear_edges.  Frees edge structure
-   without actually unlinking it from the pred/succ lists.  */
+   without actually removing it from the pred/succ arrays.  */
 
 static void
-free_edge (edge e ATTRIBUTE_UNUSED)
+free_edge (edge e)
 {
   n_edges--;
   ggc_free (e);
@@ -363,9 +348,6 @@ remove_edge_raw (edge e)
   disconnect_src (e);
   disconnect_dest (e);
 
-  /* This is probably not needed, but it doesn't hurt.  */
-  redirect_edge_var_map_clear (e);
-
   free_edge (e);
 }
 
@@ -384,31 +366,6 @@ redirect_edge_succ (edge e, basic_block new_succ)
   connect_dest (e);
 
   execute_on_growing_pred (e);
-}
-
-/* Like previous but avoid possible duplicate edge.  */
-
-edge
-redirect_edge_succ_nodup (edge e, basic_block new_succ)
-{
-  edge s;
-
-  s = find_edge (e->src, new_succ);
-  if (s && s != e)
-    {
-      s->flags |= e->flags;
-      s->probability += e->probability;
-      if (s->probability > REG_BR_PROB_BASE)
-	s->probability = REG_BR_PROB_BASE;
-      s->count += e->count;
-      redirect_edge_var_map_dup (s, e);
-      remove_edge (e);
-      e = s;
-    }
-  else
-    redirect_edge_succ (e, new_succ);
-
-  return e;
 }
 
 /* Redirect an edge's predecessor from one block to another.  */
@@ -485,222 +442,15 @@ check_bb_profile (basic_block bb, FILE * file)
     }
 }
 
-/* Write information about registers and basic blocks into FILE.
-   This is part of making a debugging dump.  */
-
-void
-dump_regset (regset r, FILE *outf)
-{
-  unsigned i;
-  reg_set_iterator rsi;
-
-  if (r == NULL)
-    {
-      fputs (" (nil)", outf);
-      return;
-    }
-
-  EXECUTE_IF_SET_IN_REG_SET (r, 0, i, rsi)
-    {
-      fprintf (outf, " %d", i);
-      if (i < FIRST_PSEUDO_REGISTER)
-	fprintf (outf, " [%s]",
-		 reg_names[i]);
-    }
-}
-
-/* Print a human-readable representation of R on the standard error
-   stream.  This function is designed to be used from within the
-   debugger.  */
-
-DEBUG_FUNCTION void
-debug_regset (regset r)
-{
-  dump_regset (r, stderr);
-  putc ('\n', stderr);
-}
-
-/* Emit basic block information for BB.  HEADER is true if the user wants
-   the generic information and the predecessors, FOOTER is true if they want
-   the successors.  FLAGS is the dump flags of interest; TDF_DETAILS emit
-   global register liveness information.  PREFIX is put in front of every
-   line.  The output is emitted to FILE.  */
-void
-dump_bb_info (basic_block bb, bool header, bool footer, int flags,
-	      const char *prefix, FILE *file)
-{
-  edge e;
-  edge_iterator ei;
-
-  if (header)
-    {
-      fprintf (file, "\n%sBasic block %d ", prefix, bb->index);
-      if (bb->prev_bb)
-        fprintf (file, ", prev %d", bb->prev_bb->index);
-      if (bb->next_bb)
-        fprintf (file, ", next %d", bb->next_bb->index);
-      fprintf (file, ", loop_depth %d, count ", bb->loop_depth);
-      fprintf (file, HOST_WIDEST_INT_PRINT_DEC, bb->count);
-      fprintf (file, ", freq %i", bb->frequency);
-      /* Both maybe_hot_bb_p & probably_never_executed_bb_p functions
-	 crash without cfun. */
-      if (cfun && maybe_hot_bb_p (bb))
-	fputs (", maybe hot", file);
-      if (cfun && probably_never_executed_bb_p (bb))
-	fputs (", probably never executed", file);
-      if (bb->flags)
-	{
-	  static const char * const bits[] = {
-	    "new", "reachable", "irr_loop", "superblock", "disable_sched",
-	    "hot_partition", "cold_partition", "duplicated",
-	    "non_local_goto_target", "rtl", "forwarder", "nonthreadable",
-	    "modified"
-	  };
-	  unsigned int flags;
-
-	  fputs (", flags:", file);
-	  for (flags = bb->flags; flags ; flags &= flags - 1)
-	    {
-	      unsigned i = ctz_hwi (flags);
-	      if (i < ARRAY_SIZE (bits))
-		fprintf (file, " %s", bits[i]);
-	      else
-		fprintf (file, " <%d>", i);
-	    }
-	}
-      fputs (".\n", file);
-
-      fprintf (file, "%sPredecessors: ", prefix);
-      FOR_EACH_EDGE (e, ei, bb->preds)
-	dump_edge_info (file, e, 0);
-
-      if ((flags & TDF_DETAILS)
-	  && (bb->flags & BB_RTL)
-	  && df)
-	{
-	  putc ('\n', file);
-	  df_dump_top (bb, file);
-	}
-   }
-
-  if (footer)
-    {
-      fprintf (file, "\n%sSuccessors: ", prefix);
-      FOR_EACH_EDGE (e, ei, bb->succs)
-	dump_edge_info (file, e, 1);
-
-      if ((flags & TDF_DETAILS)
-	  && (bb->flags & BB_RTL)
-	  && df)
-	{
-	  putc ('\n', file);
-	  df_dump_bottom (bb, file);
-	}
-   }
-
-  putc ('\n', file);
-}
-
-/* Dump the register info to FILE.  */
-
-void
-dump_reg_info (FILE *file)
-{
-  unsigned int i, max = max_reg_num ();
-  if (reload_completed)
-    return;
-
-  if (reg_info_p_size < max)
-    max = reg_info_p_size;
-
-  fprintf (file, "%d registers.\n", max);
-  for (i = FIRST_PSEUDO_REGISTER; i < max; i++)
-    {
-      enum reg_class rclass, altclass;
-
-      if (regstat_n_sets_and_refs)
-	fprintf (file, "\nRegister %d used %d times across %d insns",
-		 i, REG_N_REFS (i), REG_LIVE_LENGTH (i));
-      else if (df)
-	fprintf (file, "\nRegister %d used %d times across %d insns",
-		 i, DF_REG_USE_COUNT (i) + DF_REG_DEF_COUNT (i), REG_LIVE_LENGTH (i));
-
-      if (REG_BASIC_BLOCK (i) >= NUM_FIXED_BLOCKS)
-	fprintf (file, " in block %d", REG_BASIC_BLOCK (i));
-      if (regstat_n_sets_and_refs)
-	fprintf (file, "; set %d time%s", REG_N_SETS (i),
-		 (REG_N_SETS (i) == 1) ? "" : "s");
-      else if (df)
-	fprintf (file, "; set %d time%s", DF_REG_DEF_COUNT (i),
-		 (DF_REG_DEF_COUNT (i) == 1) ? "" : "s");
-      if (regno_reg_rtx[i] != NULL && REG_USERVAR_P (regno_reg_rtx[i]))
-	fputs ("; user var", file);
-      if (REG_N_DEATHS (i) != 1)
-	fprintf (file, "; dies in %d places", REG_N_DEATHS (i));
-      if (REG_N_CALLS_CROSSED (i) == 1)
-	fputs ("; crosses 1 call", file);
-      else if (REG_N_CALLS_CROSSED (i))
-	fprintf (file, "; crosses %d calls", REG_N_CALLS_CROSSED (i));
-      if (REG_FREQ_CALLS_CROSSED (i))
-	fprintf (file, "; crosses call with %d frequency", REG_FREQ_CALLS_CROSSED (i));
-      if (regno_reg_rtx[i] != NULL
-	  && PSEUDO_REGNO_BYTES (i) != UNITS_PER_WORD)
-	fprintf (file, "; %d bytes", PSEUDO_REGNO_BYTES (i));
-
-      rclass = reg_preferred_class (i);
-      altclass = reg_alternate_class (i);
-      if (rclass != GENERAL_REGS || altclass != ALL_REGS)
-	{
-	  if (altclass == ALL_REGS || rclass == ALL_REGS)
-	    fprintf (file, "; pref %s", reg_class_names[(int) rclass]);
-	  else if (altclass == NO_REGS)
-	    fprintf (file, "; %s or none", reg_class_names[(int) rclass]);
-	  else
-	    fprintf (file, "; pref %s, else %s",
-		     reg_class_names[(int) rclass],
-		     reg_class_names[(int) altclass]);
-	}
-
-      if (regno_reg_rtx[i] != NULL && REG_POINTER (regno_reg_rtx[i]))
-	fputs ("; pointer", file);
-      fputs (".\n", file);
-    }
-}
-
-
-void
-dump_flow_info (FILE *file, int flags)
-{
-  basic_block bb;
-
-  /* There are no pseudo registers after reload.  Don't dump them.  */
-  if (reg_info_p_size && (flags & TDF_DETAILS) != 0)
-    dump_reg_info (file);
-
-  fprintf (file, "\n%d basic blocks, %d edges.\n", n_basic_blocks, n_edges);
-  FOR_ALL_BB (bb)
-    {
-      dump_bb_info (bb, true, true, flags, "", file);
-      check_bb_profile (bb, file);
-    }
-
-  putc ('\n', file);
-}
-
-DEBUG_FUNCTION void
-debug_flow_info (void)
-{
-  dump_flow_info (stderr, TDF_DETAILS);
-}
-
 void
 dump_edge_info (FILE *file, edge e, int do_succ)
 {
   basic_block side = (do_succ ? e->dest : e->src);
-  /* both ENTRY_BLOCK_PTR & EXIT_BLOCK_PTR depend upon cfun. */
-  if (cfun && side == ENTRY_BLOCK_PTR)
+  /* ENTRY_BLOCK_PTR/EXIT_BLOCK_PTR depend on cfun.
+     Compare against ENTRY_BLOCK/EXIT_BLOCK to avoid that dependency.  */
+  if (side->index == ENTRY_BLOCK)
     fputs (" ENTRY", file);
-  else if (cfun && side == EXIT_BLOCK_PTR)
+  else if (side->index == EXIT_BLOCK)
     fputs (" EXIT", file);
   else
     fprintf (file, " %d", side->index);

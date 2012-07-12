@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "splay-tree.h"
 #include "cpplib.h"
 #include "ggc.h"
+#include "tree.h"
 
 /* In order for the format checking to accept the C frontend
    diagnostic framework extensions, you must include this file before

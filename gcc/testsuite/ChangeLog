@@ -1,3 +1,63 @@
+2012-07-07  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR tree-optimization/53881
+	* gcc.dg/pr53881.c: New test.
+
+2012-07-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53862
+	* g++.dg/cpp0x/variadic134.C: New.
+
+	PR c++/53858
+	* g++.dg/cpp0x/alias-decl-20.C: New.
+
+2012-07-06  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/51879
+	* gcc.dg/pr51879-16.c: New test.
+	* gcc.dg/pr51879-17.c: Same.
+
+2012-07-06  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/52009
+	* gcc.dg/pr51879-7.c: New test.
+	* gcc.dg/pr51879-18.c: New test.
+
+2012-07-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50852
+	* g++.dg/template/typedef39.C: New.
+
+	PR c++/53039
+	* g++.dg/cpp0x/variadic133.C: New.
+	* g++.dg/template/param1.C: Adjust.
+
+2012-07-05  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+        PR target/48941
+        PR target/51980
+        * gcc/testsuite/gcc.target/arm/neon/vtrnf32.c: Update.
+        * gcc/testsuite/gcc.target/arm/neon/vtrns32.c: Update.
+        * gcc/testsuite/gcc.target/arm/neon/vtrnu32.c: Update.
+        * gcc/testsuite/gcc.target/arm/neon/vzipf32.c: Update.
+        * gcc/testsuite/gcc.target/arm/neon/vzips32.c: Update.
+        * gcc/testsuite/gcc.target/arm/neon/vzipu32.c: Update.
+
+2012-07-05  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/53732
+	* gfortran.dg/inline_sum_4.f90: New test.
+
+2012-07-05  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* gcc.c-torture/compile/20000326-1.c: Fix to not optimize to empty.
+
+2012-07-05  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
+
+	* gcc.target/arm/fma-sp.c: New testcase.
+	* gcc.target/arm/fma.c: Likewise.
+	* gcc.target/arm/fma.h: Likewise.
+
 2012-07-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/53848

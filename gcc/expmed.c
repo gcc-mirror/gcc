@@ -3138,8 +3138,8 @@ expand_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target,
   if (INTEGRAL_MODE_P (mode))
     {
       rtx fake_reg;
-      HOST_WIDE_INT coeff;
-      bool is_neg;
+      HOST_WIDE_INT coeff = 0;
+      bool is_neg = false;
       int mode_bitsize;
 
       if (op1 == CONST0_RTX (mode))

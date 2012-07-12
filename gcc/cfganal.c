@@ -1,7 +1,5 @@
 /* Control flow graph analysis code for GNU compiler.
-   Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2003, 2004, 2005, 2006, 2007, 2008, 2010
-   Free Software Foundation, Inc.
+   Copyright (C) 1987-2012 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -20,24 +18,16 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 /* This file contains various simple utilities to analyze the CFG.  */
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "rtl.h"
-#include "obstack.h"
-#include "hard-reg-set.h"
 #include "basic-block.h"
-#include "insn-config.h"
-#include "recog.h"
-#include "diagnostic-core.h"
-#include "tm_p.h"
 #include "vec.h"
 #include "vecprim.h"
 #include "bitmap.h"
 #include "sbitmap.h"
 #include "timevar.h"
-#include "cfgloop.h"
 
 /* Store the data structures necessary for depth-first search.  */
 struct depth_first_search_dsS {
@@ -59,106 +49,6 @@ static void flow_dfs_compute_reverse_add_bb (depth_first_search_ds,
 static basic_block flow_dfs_compute_reverse_execute (depth_first_search_ds,
 						     basic_block);
 static void flow_dfs_compute_reverse_finish (depth_first_search_ds);
-static bool flow_active_insn_p (const_rtx);
-
-/* Like active_insn_p, except keep the return value clobber around
-   even after reload.  */
-
-static bool
-flow_active_insn_p (const_rtx insn)
-{
-  if (active_insn_p (insn))
-    return true;
-
-  /* A clobber of the function return value exists for buggy
-     programs that fail to return a value.  Its effect is to
-     keep the return value from being live across the entire
-     function.  If we allow it to be skipped, we introduce the
-     possibility for register lifetime confusion.  */
-  if (GET_CODE (PATTERN (insn)) == CLOBBER
-      && REG_P (XEXP (PATTERN (insn), 0))
-      && REG_FUNCTION_VALUE_P (XEXP (PATTERN (insn), 0)))
-    return true;
-
-  return false;
-}
-
-/* Return true if the block has no effect and only forwards control flow to
-   its single destination.  */
-
-bool
-forwarder_block_p (const_basic_block bb)
-{
-  rtx insn;
-
-  if (bb == EXIT_BLOCK_PTR || bb == ENTRY_BLOCK_PTR
-      || !single_succ_p (bb))
-    return false;
-
-  /* Protect loop latches, headers and preheaders.  */
-  if (current_loops)
-    {
-      basic_block dest;
-      if (bb->loop_father->header == bb)
-	return false;
-      dest = EDGE_SUCC (bb, 0)->dest;
-      if (dest->loop_father->header == dest)
-	return false;
-    }
-
-  for (insn = BB_HEAD (bb); insn != BB_END (bb); insn = NEXT_INSN (insn))
-    if (INSN_P (insn) && flow_active_insn_p (insn))
-      return false;
-
-  return (!INSN_P (insn)
-	  || (JUMP_P (insn) && simplejump_p (insn))
-	  || !flow_active_insn_p (insn));
-}
-
-/* Return nonzero if we can reach target from src by falling through.  */
-
-bool
-can_fallthru (basic_block src, basic_block target)
-{
-  rtx insn = BB_END (src);
-  rtx insn2;
-  edge e;
-  edge_iterator ei;
-
-  if (target == EXIT_BLOCK_PTR)
-    return true;
-  if (src->next_bb != target)
-    return 0;
-  FOR_EACH_EDGE (e, ei, src->succs)
-    if (e->dest == EXIT_BLOCK_PTR
-	&& e->flags & EDGE_FALLTHRU)
-      return 0;
-
-  insn2 = BB_HEAD (target);
-  if (insn2 && !active_insn_p (insn2))
-    insn2 = next_active_insn (insn2);
-
-  /* ??? Later we may add code to move jump tables offline.  */
-  return next_active_insn (insn) == insn2;
-}
-
-/* Return nonzero if we could reach target from src by falling through,
-   if the target was made adjacent.  If we already have a fall-through
-   edge to the exit block, we can't do that.  */
-bool
-could_fall_through (basic_block src, basic_block target)
-{
-  edge e;
-  edge_iterator ei;
-
-  if (target == EXIT_BLOCK_PTR)
-    return true;
-  FOR_EACH_EDGE (e, ei, src->succs)
-    if (e->dest == EXIT_BLOCK_PTR
-	&& e->flags & EDGE_FALLTHRU)
-      return 0;
-  return true;
-}
 
 /* Mark the back edges in DFS traversal.
    Return nonzero if a loop (natural or otherwise) is present.
@@ -252,41 +142,6 @@ mark_dfs_back_edges (void)
   return found;
 }
 
-/* Set the flag EDGE_CAN_FALLTHRU for edges that can be fallthru.  */
-
-void
-set_edge_can_fallthru_flag (void)
-{
-  basic_block bb;
-
-  FOR_EACH_BB (bb)
-    {
-      edge e;
-      edge_iterator ei;
-
-      FOR_EACH_EDGE (e, ei, bb->succs)
-	{
-	  e->flags &= ~EDGE_CAN_FALLTHRU;
-
-	  /* The FALLTHRU edge is also CAN_FALLTHRU edge.  */
-	  if (e->flags & EDGE_FALLTHRU)
-	    e->flags |= EDGE_CAN_FALLTHRU;
-	}
-
-      /* If the BB ends with an invertible condjump all (2) edges are
-	 CAN_FALLTHRU edges.  */
-      if (EDGE_COUNT (bb->succs) != 2)
-	continue;
-      if (!any_condjump_p (BB_END (bb)))
-	continue;
-      if (!invert_jump (BB_END (bb), JUMP_LABEL (BB_END (bb)), 0))
-	continue;
-      invert_jump (BB_END (bb), JUMP_LABEL (BB_END (bb)), 0);
-      EDGE_SUCC (bb, 0)->flags |= EDGE_CAN_FALLTHRU;
-      EDGE_SUCC (bb, 1)->flags |= EDGE_CAN_FALLTHRU;
-    }
-}
-
 /* Find unreachable blocks.  An unreachable block will have 0 in
    the reachable bit in block->flags.  A nonzero value indicates the
    block is reachable.  */
@@ -357,23 +212,18 @@ create_edge_list (void)
   struct edge_list *elist;
   edge e;
   int num_edges;
-  int block_count;
   basic_block bb;
   edge_iterator ei;
 
-  block_count = n_basic_blocks; /* Include the entry and exit blocks.  */
-
-  num_edges = 0;
-
   /* Determine the number of edges in the flow graph by counting successor
      edges on each basic block.  */
+  num_edges = 0;
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR, next_bb)
     {
       num_edges += EDGE_COUNT (bb->succs);
     }
 
   elist = XNEW (struct edge_list);
-  elist->num_blocks = block_count;
   elist->num_edges = num_edges;
   elist->index_to_edge = XNEWVEC (edge, num_edges);
 
@@ -407,7 +257,7 @@ print_edge_list (FILE *f, struct edge_list *elist)
   int x;
 
   fprintf (f, "Compressed edge list, %d BBs + entry & exit, and %d edges\n",
-	   elist->num_blocks, elist->num_edges);
+	   n_basic_blocks, elist->num_edges);
 
   for (x = 0; x < elist->num_edges; x++)
     {
@@ -459,7 +309,7 @@ verify_edge_list (FILE *f, struct edge_list *elist)
     }
 
   /* We've verified that all the edges are in the list, now lets make sure
-     there are no spurious edges in the list.  */
+     there are no spurious edges in the list.  This is an expensive check!  */
 
   FOR_BB_BETWEEN (p, ENTRY_BLOCK_PTR, EXIT_BLOCK_PTR, next_bb)
     FOR_BB_BETWEEN (s, ENTRY_BLOCK_PTR->next_bb, NULL, next_bb)
@@ -531,42 +381,6 @@ find_edge_index (struct edge_list *edge_list, basic_block pred, basic_block succ
 
   return (EDGE_INDEX_NO_EDGE);
 }
-
-/* Dump the list of basic blocks in the bitmap NODES.  */
-
-void
-flow_nodes_print (const char *str, const_sbitmap nodes, FILE *file)
-{
-  unsigned int node = 0;
-  sbitmap_iterator sbi;
-
-  if (! nodes)
-    return;
-
-  fprintf (file, "%s { ", str);
-  EXECUTE_IF_SET_IN_SBITMAP (nodes, 0, node, sbi)
-    fprintf (file, "%d ", node);
-  fputs ("}\n", file);
-}
-
-/* Dump the list of edges in the array EDGE_LIST.  */
-
-void
-flow_edge_list_print (const char *str, const edge *edge_list, int num_edges, FILE *file)
-{
-  int i;
-
-  if (! edge_list)
-    return;
-
-  fprintf (file, "%s { ", str);
-  for (i = 0; i < num_edges; i++)
-    fprintf (file, "%d->%d ", edge_list[i]->src->index,
-	     edge_list[i]->dest->index);
-
-  fputs ("}\n", file);
-}
-
 
 /* This routine will remove any fake predecessor edges for a basic block.
    When the edge is removed, it is also removed from whatever successor
@@ -843,7 +657,7 @@ inverted_post_order_compute (int *post_order)
   sbitmap_zero (visited);
 
   /* Put all blocks that have no successor into the initial work list.  */
-  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
+  FOR_ALL_BB (bb)
     if (EDGE_COUNT (bb->succs) == 0)
       {
         /* Push the initial edge on to the stack.  */

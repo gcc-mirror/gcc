@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "vecir.h"
 #include "ggc.h"
 #include "basic-block.h"
+#include "tree.h"
 #include "tree-ssa-operands.h"
 #include "tree-ssa-alias.h"
 #include "internal-fn.h"

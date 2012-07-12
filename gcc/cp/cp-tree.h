@@ -249,7 +249,6 @@ struct GTY(()) template_parm_index_s {
   int index;
   int level;
   int orig_level;
-  int num_siblings;
   tree decl;
 };
 typedef struct template_parm_index_s template_parm_index;
@@ -3705,7 +3704,7 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 
 /* Nonzero for a NODE which declares a type.  */
 #define DECL_DECLARES_TYPE_P(NODE) \
-  (TREE_CODE (NODE) == TYPE_DECL || DECL_CLASS_TEMPLATE_P (NODE))
+  (TREE_CODE (NODE) == TYPE_DECL || DECL_TYPE_TEMPLATE_P (NODE))
 
 /* Nonzero if NODE declares a function.  */
 #define DECL_DECLARES_FUNCTION_P(NODE) \
@@ -4523,9 +4522,6 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, TYPENAME_FLAG };
 	((template_parm_index*)TEMPLATE_PARM_INDEX_CHECK (NODE))
 #define TEMPLATE_PARM_IDX(NODE) (TEMPLATE_PARM_INDEX_CAST (NODE)->index)
 #define TEMPLATE_PARM_LEVEL(NODE) (TEMPLATE_PARM_INDEX_CAST (NODE)->level)
-/* The Number of sibling parms this template parm has.  */
-#define TEMPLATE_PARM_NUM_SIBLINGS(NODE) \
-  (TEMPLATE_PARM_INDEX_CAST (NODE)->num_siblings)
 #define TEMPLATE_PARM_DESCENDANTS(NODE) (TREE_CHAIN (NODE))
 #define TEMPLATE_PARM_ORIG_LEVEL(NODE) (TEMPLATE_PARM_INDEX_CAST (NODE)->orig_level)
 #define TEMPLATE_PARM_DECL(NODE) (TEMPLATE_PARM_INDEX_CAST (NODE)->decl)
@@ -5316,9 +5312,8 @@ extern void append_type_to_template_for_access_check (tree, tree, tree,
 extern tree splice_late_return_type		(tree, tree);
 extern bool is_auto				(const_tree);
 extern tree process_template_parm		(tree, location_t, tree, 
-						 bool, bool, unsigned);
+						 bool, bool);
 extern tree end_template_parm_list		(tree);
-void fixup_template_parms (void);
 extern void end_template_decl			(void);
 extern tree maybe_update_decl_type		(tree, tree);
 extern bool check_default_tmpl_args             (tree, tree, int, int, int);
@@ -5692,6 +5687,7 @@ extern bool type_has_nontrivial_copy_init	(const_tree);
 extern bool class_tmpl_impl_spec_p		(const_tree);
 extern int zero_init_p				(const_tree);
 extern tree strip_typedefs			(tree);
+extern tree strip_typedefs_expr			(tree);
 extern tree copy_binfo				(tree, tree, tree,
 						 tree *, int);
 extern int member_p				(const_tree);

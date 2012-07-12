@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "fixed-value.h"
 #include "alias.h"
 #include "hashtab.h"
+#include "flags.h"
 
 #undef FFS  /* Some systems predefine this symbol; don't let it interfere.  */
 #undef FLOAT /* Likewise.  */
@@ -423,7 +424,7 @@ struct GTY((variable_size)) rtvec_def {
 #define NONDEBUG_INSN_P(X) (INSN_P (X) && !DEBUG_INSN_P (X))
 
 /* Nonzero if DEBUG_INSN_P may possibly hold.  */
-#define MAY_HAVE_DEBUG_INSNS MAY_HAVE_DEBUG_STMTS
+#define MAY_HAVE_DEBUG_INSNS (flag_var_tracking_assignments)
 
 /* Predicate yielding nonzero iff X is a real insn.  */
 #define INSN_P(X) \
@@ -2511,10 +2512,6 @@ extern int fixup_args_size_notes (rtx, rtx, int);
 /* In cfgrtl.c */
 extern void print_rtl_with_bb (FILE *, const_rtx);
 extern rtx duplicate_insn_chain (rtx, rtx);
-
-/* In cfg.c.  */
-extern void dump_reg_info (FILE *);
-extern void dump_flow_info (FILE *, int);
 
 /* In expmed.c */
 extern void init_expmed (void);

@@ -2468,12 +2468,15 @@ mn10300_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
    may access it using GOTOFF instead of GOT.  */
 
 static void
-mn10300_encode_section_info (tree decl, rtx rtl, int first ATTRIBUTE_UNUSED)
+mn10300_encode_section_info (tree decl, rtx rtl, int first)
 {
   rtx symbol;
 
+  default_encode_section_info (decl, rtl, first);
+
   if (! MEM_P (rtl))
     return;
+
   symbol = XEXP (rtl, 0);
   if (GET_CODE (symbol) != SYMBOL_REF)
     return;

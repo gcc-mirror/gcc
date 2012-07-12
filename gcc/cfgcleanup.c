@@ -2797,7 +2797,7 @@ delete_unreachable_blocks (void)
      have dominators information, walking blocks backward gets us a
      better chance of retaining most debug information than
      otherwise.  */
-  if (MAY_HAVE_DEBUG_STMTS && current_ir_type () == IR_GIMPLE
+  if (MAY_HAVE_DEBUG_INSNS && current_ir_type () == IR_GIMPLE
       && dom_info_available_p (CDI_DOMINATORS))
     {
       for (b = EXIT_BLOCK_PTR->prev_bb; b != ENTRY_BLOCK_PTR; b = prev_bb)

@@ -517,6 +517,107 @@ update_bb_for_insn (basic_block bb)
 }
 
 
+/* Like active_insn_p, except keep the return value clobber around
+   even after reload.  */
+
+static bool
+flow_active_insn_p (const_rtx insn)
+{
+  if (active_insn_p (insn))
+    return true;
+
+  /* A clobber of the function return value exists for buggy
+     programs that fail to return a value.  Its effect is to
+     keep the return value from being live across the entire
+     function.  If we allow it to be skipped, we introduce the
+     possibility for register lifetime confusion.  */
+  if (GET_CODE (PATTERN (insn)) == CLOBBER
+      && REG_P (XEXP (PATTERN (insn), 0))
+      && REG_FUNCTION_VALUE_P (XEXP (PATTERN (insn), 0)))
+    return true;
+
+  return false;
+}
+
+/* Return true if the block has no effect and only forwards control flow to
+   its single destination.  */
+/* FIXME: Make this a cfg hook.  */
+
+bool
+forwarder_block_p (const_basic_block bb)
+{
+  rtx insn;
+
+  if (bb == EXIT_BLOCK_PTR || bb == ENTRY_BLOCK_PTR
+      || !single_succ_p (bb))
+    return false;
+
+  /* Protect loop latches, headers and preheaders.  */
+  if (current_loops)
+    {
+      basic_block dest;
+      if (bb->loop_father->header == bb)
+	return false;
+      dest = EDGE_SUCC (bb, 0)->dest;
+      if (dest->loop_father->header == dest)
+	return false;
+    }
+
+  for (insn = BB_HEAD (bb); insn != BB_END (bb); insn = NEXT_INSN (insn))
+    if (INSN_P (insn) && flow_active_insn_p (insn))
+      return false;
+
+  return (!INSN_P (insn)
+	  || (JUMP_P (insn) && simplejump_p (insn))
+	  || !flow_active_insn_p (insn));
+}
+
+/* Return nonzero if we can reach target from src by falling through.  */
+/* FIXME: Make this a cfg hook.  */
+
+bool
+can_fallthru (basic_block src, basic_block target)
+{
+  rtx insn = BB_END (src);
+  rtx insn2;
+  edge e;
+  edge_iterator ei;
+
+  if (target == EXIT_BLOCK_PTR)
+    return true;
+  if (src->next_bb != target)
+    return 0;
+  FOR_EACH_EDGE (e, ei, src->succs)
+    if (e->dest == EXIT_BLOCK_PTR
+	&& e->flags & EDGE_FALLTHRU)
+      return 0;
+
+  insn2 = BB_HEAD (target);
+  if (insn2 && !active_insn_p (insn2))
+    insn2 = next_active_insn (insn2);
+
+  /* ??? Later we may add code to move jump tables offline.  */
+  return next_active_insn (insn) == insn2;
+}
+
+/* Return nonzero if we could reach target from src by falling through,
+   if the target was made adjacent.  If we already have a fall-through
+   edge to the exit block, we can't do that.  */
+static bool
+could_fall_through (basic_block src, basic_block target)
+{
+  edge e;
+  edge_iterator ei;
+
+  if (target == EXIT_BLOCK_PTR)
+    return true;
+  FOR_EACH_EDGE (e, ei, src->succs)
+    if (e->dest == EXIT_BLOCK_PTR
+	&& e->flags & EDGE_FALLTHRU)
+      return 0;
+  return true;
+}
+
 /* Return the NOTE_INSN_BASIC_BLOCK of BB.  */
 rtx
 bb_note (basic_block bb)
@@ -1811,10 +1912,11 @@ print_rtl_with_bb (FILE *outf, const_rtx rtx_first)
       for (tmp_rtx = rtx_first; NULL != tmp_rtx; tmp_rtx = NEXT_INSN (tmp_rtx))
 	{
 	  int did_output;
+	  bool verbose = ((dump_flags & TDF_DETAILS) != 0);
 
 	  bb = start[INSN_UID (tmp_rtx)];
 	  if (bb != NULL)
-	    dump_bb_info (bb, true, false, dump_flags, ";; ", outf);
+	    dump_bb_info (bb, true, false, verbose, ";; ", outf);
 
 	  if (in_bb_p[INSN_UID (tmp_rtx)] == NOT_IN_BB
 	      && !NOTE_P (tmp_rtx)
@@ -1827,7 +1929,7 @@ print_rtl_with_bb (FILE *outf, const_rtx rtx_first)
 
 	  bb = end[INSN_UID (tmp_rtx)];
 	  if (bb != NULL)
-	    dump_bb_info (bb, false, true, dump_flags, ";; ", outf);
+	    dump_bb_info (bb, false, true, verbose, ";; ", outf);
 	  if (did_output)
 	    putc ('\n', outf);
 	}
@@ -1846,6 +1948,115 @@ print_rtl_with_bb (FILE *outf, const_rtx rtx_first)
     }
 }
 
+/* Emit basic block information for BB.  HEADER is true if the user wants
+   the generic information and the predecessors, FOOTER is true if they want
+   the successors.  If VERBOSE is true, emit global register liveness
+   information.  PREFIX is put in front of every line.  The output is emitted
+   to FILE.  This function should only be called by RTL CFG users.  */
+/* FIXME: Dumping of the basic block shared info (index, prev, next, etc.)
+   is done here and also in dump_bb_header (but to a pretty-printer buffer).
+   This should be re-factored to give similar dumps for RTL and GIMPLE.  */
+
+void
+dump_bb_info (basic_block bb, bool header, bool footer, bool verbose,
+	      const char *prefix, FILE *file)
+{
+  edge e;
+  edge_iterator ei;
+
+  if (header)
+    {
+      fprintf (file, "\n%sBasic block %d ", prefix, bb->index);
+      if (bb->prev_bb)
+        fprintf (file, ", prev %d", bb->prev_bb->index);
+      if (bb->next_bb)
+        fprintf (file, ", next %d", bb->next_bb->index);
+      fprintf (file, ", loop_depth %d, count ", bb->loop_depth);
+      fprintf (file, HOST_WIDEST_INT_PRINT_DEC, bb->count);
+      fprintf (file, ", freq %i", bb->frequency);
+      if (maybe_hot_bb_p (bb))
+	fputs (", maybe hot", file);
+      if (probably_never_executed_bb_p (bb))
+	fputs (", probably never executed", file);
+      if (bb->flags)
+	{
+	  static const char * const bits[] = {
+	    "new", "reachable", "irr_loop", "superblock", "disable_sched",
+	    "hot_partition", "cold_partition", "duplicated",
+	    "non_local_goto_target", "rtl", "forwarder", "nonthreadable",
+	    "modified"
+	  };
+	  unsigned int flags;
+
+	  fputs (", flags:", file);
+	  for (flags = bb->flags; flags ; flags &= flags - 1)
+	    {
+	      unsigned i = ctz_hwi (flags);
+	      if (i < ARRAY_SIZE (bits))
+		fprintf (file, " %s", bits[i]);
+	      else
+		fprintf (file, " <%d>", i);
+	    }
+	}
+      fputs (".\n", file);
+
+      fprintf (file, "%sPredecessors: ", prefix);
+      FOR_EACH_EDGE (e, ei, bb->preds)
+	dump_edge_info (file, e, 0);
+
+      if (verbose
+	  && (bb->flags & BB_RTL)
+	  && df)
+	{
+	  putc ('\n', file);
+	  df_dump_top (bb, file);
+	}
+   }
+
+  if (footer)
+    {
+      fprintf (file, "\n%sSuccessors: ", prefix);
+      FOR_EACH_EDGE (e, ei, bb->succs)
+	dump_edge_info (file, e, 1);
+
+      if (verbose
+	  && (bb->flags & BB_RTL)
+	  && df)
+	{
+	  putc ('\n', file);
+	  df_dump_bottom (bb, file);
+	}
+   }
+
+  putc ('\n', file);
+}
+
+
+void
+dump_flow_info (FILE *file, int flags)
+{
+  basic_block bb;
+  bool verbose = ((flags & TDF_DETAILS) != 0);
+
+  fprintf (file, "\n%d basic blocks, %d edges.\n", n_basic_blocks, n_edges);
+  FOR_ALL_BB (bb)
+    {
+      dump_bb_info (bb, true, true, verbose, "", file);
+      check_bb_profile (bb, file);
+    }
+
+  putc ('\n', file);
+}
+
+void debug_flow_info (void);
+DEBUG_FUNCTION void
+debug_flow_info (void)
+{
+  dump_flow_info (stderr, TDF_DETAILS);
+}
+
+/* Update the branch probability of BB if a REG_BR_PROB is present.  */
+
 void
 update_br_prob_note (basic_block bb)
 {
@@ -2893,7 +3104,13 @@ struct rtl_opt_pass pass_outof_cfg_layout_mode =
    some transformations while in cfglayout mode.  The required sequence
    of the basic blocks is in a linked list along the bb->aux field.
    This functions re-links the basic block prev_bb and next_bb pointers
-   accordingly, and it compacts and renumbers the blocks.  */
+   accordingly, and it compacts and renumbers the blocks.
+
+   FIXME: This currently works only for RTL, but the only RTL-specific
+   bits are the STAY_IN_CFGLAYOUT_MODE bits.  The tracer pass was moved
+   to GIMPLE a long time ago, but it doesn't relink the basic block
+   chain.  It could do that (to give better initial RTL) if this function
+   is made IR-agnostic (and moved to cfganal.c or cfg.c while at it).  */
 
 void
 relink_block_chain (bool stay_in_cfglayout_mode)

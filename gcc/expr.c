@@ -10850,8 +10850,7 @@ do_store_flag (sepops ops, rtx target, enum machine_mode mode)
    0 otherwise (i.e. if there is no casesi instruction).  */
 int
 try_casesi (tree index_type, tree index_expr, tree minval, tree range,
-	    rtx table_label ATTRIBUTE_UNUSED, rtx default_label,
-	    rtx fallback_label ATTRIBUTE_UNUSED)
+	    rtx table_label, rtx default_label, rtx fallback_label)
 {
   struct expand_operand ops[5];
   enum machine_mode index_mode = SImode;

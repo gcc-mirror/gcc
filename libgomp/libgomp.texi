@@ -94,7 +94,7 @@ for multi-platform shared-memory parallel programming in C/C++ and Fortran.
                                How you can copy and share this manual.
 * Funding::                    How to help assure continued work for free 
                                software.
-* Index::                      Index of this documentation.
+* Library Index::              Index of this documentation.
 @end menu
 
 
@@ -1759,8 +1759,8 @@ Bugs in the GNU OpenMP implementation should be reported via
 @c Index
 @c ---------------------------------------------------------------------
 
-@node Index
-@unnumbered Index
+@node Library Index
+@unnumbered Library Index
 
 @printindex cp
 

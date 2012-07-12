@@ -3986,9 +3986,16 @@ legitimize_reload_address (rtx ad, enum machine_mode mode ATTRIBUTE_UNUSED,
 
 /* Emit code to move LEN bytes from DST to SRC.  */
 
-void
+bool
 s390_expand_movmem (rtx dst, rtx src, rtx len)
 {
+  /* When tuning for z10 or higher we rely on the Glibc functions to
+     do the right thing. Only for constant lengths below 64k we will
+     generate inline code.  */
+  if (s390_tune >= PROCESSOR_2097_Z10
+      && (GET_CODE (len) != CONST_INT || INTVAL (len) > (1<<16)))
+    return false;
+
   if (GET_CODE (len) == CONST_INT && INTVAL (len) >= 0 && INTVAL (len) <= 256)
     {
       if (INTVAL (len) > 0)
@@ -4080,6 +4087,7 @@ s390_expand_movmem (rtx dst, rtx src, rtx len)
 				   convert_to_mode (Pmode, count, 1)));
       emit_label (end_label);
     }
+  return true;
 }
 
 /* Emit code to set LEN bytes at DST to VAL.
@@ -4218,11 +4226,18 @@ s390_expand_setmem (rtx dst, rtx len, rtx val)
 /* Emit code to compare LEN bytes at OP0 with those at OP1,
    and return the result in TARGET.  */
 
-void
+bool
 s390_expand_cmpmem (rtx target, rtx op0, rtx op1, rtx len)
 {
   rtx ccreg = gen_rtx_REG (CCUmode, CC_REGNUM);
   rtx tmp;
+
+  /* When tuning for z10 or higher we rely on the Glibc functions to
+     do the right thing. Only for constant lengths below 64k we will
+     generate inline code.  */
+  if (s390_tune >= PROCESSOR_2097_Z10
+      && (GET_CODE (len) != CONST_INT || INTVAL (len) > (1<<16)))
+    return false;
 
   /* As the result of CMPINT is inverted compared to what we need,
      we have to swap the operands.  */
@@ -4331,6 +4346,7 @@ s390_expand_cmpmem (rtx target, rtx op0, rtx op1, rtx len)
 
       emit_insn (gen_cmpint (target, ccreg));
     }
+  return true;
 }
 
 

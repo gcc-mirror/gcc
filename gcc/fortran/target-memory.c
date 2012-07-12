@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #include "system.h"
+#include "coretypes.h"
 #include "flags.h"
 #include "machmode.h"
 #include "tree.h"

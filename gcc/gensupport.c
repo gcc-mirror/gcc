@@ -1,6 +1,6 @@
 /* Support routines for the various generation passes.
    Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-   2010, Free Software Foundation, Inc.
+   2010, 2012  Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -38,6 +38,10 @@ int insn_elision = 1;
 static struct obstack obstack;
 struct obstack *rtl_obstack = &obstack;
 
+/* Counter for patterns that generate code: define_insn, define_expand,
+   define_split, define_peephole, and define_peephole2.  See read_md_rtx().
+   Any define_insn_and_splits are already in separate queues so that the
+   insn and the splitter get a unique number also.  */
 static int sequence_num;
 
 static int predicable_default;
@@ -1397,7 +1401,9 @@ init_rtx_reader_args_cb (int argc, char **argv,
   condition_table = htab_create (500, hash_c_test, cmp_c_test, NULL);
   init_predicate_table ();
   obstack_init (rtl_obstack);
-  sequence_num = 0;
+
+  /* Start at 1, to make 0 available for CODE_FOR_nothing.  */
+  sequence_num = 1;
 
   read_md_files (argc, argv, parse_opt, rtx_handle_directive);
 
@@ -1419,7 +1425,11 @@ init_rtx_reader_args (int argc, char **argv)
   return init_rtx_reader_args_cb (argc, argv, 0);
 }
 
-/* The entry point for reading a single rtx from an md file.  */
+/* The entry point for reading a single rtx from an md file.  Return
+   the rtx, or NULL if the md file has been fully processed.
+   Return the line where the rtx was found in LINENO.
+   Return the number of code generating rtx'en read since the start
+   of the md file in SEQNR.  */
 
 rtx
 read_md_rtx (int *lineno, int *seqnr)

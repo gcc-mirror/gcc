@@ -22,7 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_FLAGS_H
 #define GCC_FLAGS_H
 
-#include "coretypes.h"
 #include "flag-types.h"
 #include "options.h"
 

@@ -28,18 +28,17 @@
 ;;---------------------------------------------------------------------------
 ;; Constants
 
-;; Register numbers
+;; Register numbers -- All machine registers should be defined here
 (define_constants
-  [(R0_REGNUM        0)		; First CORE register
-   (R1_REGNUM	     1)		; Second CORE register
-   (IP_REGNUM	    12)		; Scratch register
-   (SP_REGNUM	    13)		; Stack pointer
-   (LR_REGNUM       14)		; Return address register
-   (PC_REGNUM	    15)		; Program counter
-   (CC_REGNUM       24)		; Condition code pseudo register
-   (LAST_ARM_REGNUM 15)		;
-   (FPA_F0_REGNUM   16)		; FIRST_FPA_REGNUM
-   (FPA_F7_REGNUM   23)		; LAST_FPA_REGNUM
+  [(R0_REGNUM         0)	; First CORE register
+   (R1_REGNUM	      1)	; Second CORE register
+   (IP_REGNUM	     12)	; Scratch register
+   (SP_REGNUM	     13)	; Stack pointer
+   (LR_REGNUM        14)	; Return address register
+   (PC_REGNUM	     15)	; Program counter
+   (LAST_ARM_REGNUM  15)	;
+   (CC_REGNUM       100)	; Condition code pseudo register
+   (VFPCC_REGNUM    101)	; VFP Condition code pseudo register
   ]
 )
 ;; 3rd operand to select_dominance_cc_mode
@@ -178,7 +177,7 @@
 ; Floating Point Unit.  If we only have floating point emulation, then there
 ; is no point in scheduling the floating point insns.  (Well, for best
 ; performance we should try and group them together).
-(define_attr "fpu" "none,fpa,fpe2,fpe3,maverick,vfp"
+(define_attr "fpu" "none,vfp"
   (const (symbol_ref "arm_fpu_attr")))
 
 ; LENGTH of an instruction (in bytes)

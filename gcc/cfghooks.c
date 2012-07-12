@@ -377,7 +377,38 @@ remove_edge (edge e)
   if (current_loops != NULL)
     rescan_loop_exit (e, false, true);
 
+  /* This is probably not needed, but it doesn't hurt.  */
+  /* FIXME: This should be called via a remove_edge hook.  */
+  if (current_ir_type () == IR_GIMPLE)
+    redirect_edge_var_map_clear (e);
+
   remove_edge_raw (e);
+}
+
+/* Like redirect_edge_succ but avoid possible duplicate edge.  */
+
+edge
+redirect_edge_succ_nodup (edge e, basic_block new_succ)
+{
+  edge s;
+
+  s = find_edge (e->src, new_succ);
+  if (s && s != e)
+    {
+      s->flags |= e->flags;
+      s->probability += e->probability;
+      if (s->probability > REG_BR_PROB_BASE)
+	s->probability = REG_BR_PROB_BASE;
+      s->count += e->count;
+      /* FIXME: This should be called via a hook and only for IR_GIMPLE.  */
+      redirect_edge_var_map_dup (s, e);
+      remove_edge (e);
+      e = s;
+    }
+  else
+    redirect_edge_succ (e, new_succ);
+
+  return e;
 }
 
 /* Redirect the edge E to basic block DEST even if it requires creating

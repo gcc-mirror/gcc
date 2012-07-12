@@ -29,13 +29,16 @@ along with GCC; see the file COPYING3.  If not see
    multiple header files.  Besides, Microsoft's winnt.h was 250k last
    time I looked, so by comparison this is perfectly reasonable.  */
 
+#ifndef GCC_CORETYPES_H
+#error "gfortran.h must be included after coretypes.h"
+#endif
+
 /* Declarations common to the front-end and library are put in
    libgfortran/libgfortran_frontend.h  */
 #include "libgfortran.h"
 
 
 #include "intl.h"
-#include "coretypes.h"
 #include "input.h"
 #include "splay-tree.h"
 

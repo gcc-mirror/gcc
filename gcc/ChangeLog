@@ -1,3 +1,420 @@
+2012-07-09  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* gensupport.c (init_rtx_reader_args_cb): Start counting code
+	generating patterns from 1 to free up 0 for CODE_FOR_nothing.
+	* gencodes.c (main): Give CODE_FOR_nothing the value 0.  Add
+	the LAST_INSN_CODE marker at the end.
+	* genoutput.c (nothing): New static struct data.
+	(idata): Initialize to &nothing.
+	(idata_end): Initialize to &nothing.next.
+	(init_insn_for_nothing): New function to create dummy 'nothing' insn.
+	(main): Use it.
+	* genpeep.c (insn_code_number): Remove global variable.
+	(gen_peephole): Take it as an argument instead.
+	(main): Take insn_code_number from read_md_rtx.
+	* optabs.h: Revert r161809:
+	(optab_handlers): Change type of insn_code back to insn_code.
+	(optab_handler, widening_optab_handler, set_optab_handler,
+	set_widening_optab_handler, convert_optab_handler,
+	set_convert_optab_handler, direct_optab_handler,
+	set_direct_optab_handler): Remove int casts.
+	Revert to treating the insn_code field as "insn_code".
+
+2012-07-08  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/sh.md (*return_i): Move trap_exit attribute check to ...
+	* config/sh/sh.c (sh_cfun_trap_exit_p): ... this new function.
+	* config/sh/sh-protos.h: Declare it.
+
+2012-07-08  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* mcf.c: Do not include tm.h, tree.h, and langhooks.h.
+	(dump_fixup_graph): Use current_function_name.
+	(adjust_cfg_counts): Likewise.
+	* ira-conflicts.c: Do not include tree.h.
+	(ira_build_conflicts): Use REG_USERVAR_P instead of DECL_ARTIFICIAL.
+
+2012-07-08  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/51244
+	* config/sh/sh.md (*branch_true_eq, *branch_false_ne, nott): New insns.
+
+2012-07-08  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* basic-block.h: Re-group most prototypes per file.
+	(struct edge_list): Remove num_blocks field.
+	(dump_bb_info): Adjust prototypes.
+	(dump_reg_info): Move prototype to regs.h.
+	* function.h: Do not include tree.h.
+	Include vec.h, vecir.h, input.h and machmode.h to compensate.
+	(function_name): New prototype.
+	* gimple.h: Include tree.h to compensate for basic-block.h change.
+	* langhooks.h: Note that tree.h is only necessary for enum tree_code.
+	* regs.h (dump_reg_info): Prototype here.
+	* regset.h: Adjust file reference in comment.
+	(debug_regset): Remove prototype.
+	* rtl.h: Include flags.h for flag_var_tracking_assignments.
+	(MAY_HAVE_DEBUG_INSNS): Define as flag_var_tracking_assignments
+	instead of no-longer-available tree.h's MAY_HAVE_DEBUG_STMTS.
+	(dump_reg_info, dump_flow_info): Remove prototypes.
+	* bb-reorder.c (set_edge_can_fallthru_flag): Move from cfganal.c
+	to here, the only user.  Make static.
+	(reorder_basic_blocks): Call dump_reg_info before dump_flow_info.
+	* cfg.c: Do not include tm.h, tree.h, rtl.h, hard-reg-set.h, regs.h,
+	flags.h, function.h, except.h, diagnostic-core.h, tm_p.h, timevar.h,
+	tree-pass.h, cfgloop.h, and tree-flow.h.
+	Include basic-block.h, the first header I'd expect to be included.
+	(reg_obstack): Move to df-core.c.
+	(free_edge): Remove bogus ATTRIBUTE_UNUSED.
+	(remove_edge_raw): Do not call tree-ssa's redirect_edge_var_map_clear.
+	(redirect_edge_succ_nodup): Move to cfghooks.c.
+	(dump_regset, debug_regset): Move to df-core.c.
+	(dump_bb_info): Move to cfgrtl.c.
+	(dump_reg_info): Move to regstat.c.
+	(dump_flow_info): Move to cfgrtl.c.
+	(debug_flow_info): Likewise.
+	(dump_edge_info): Do not look at cfun, a CFG without cfun is nonsense.
+	* cfganal.c: Do not include tm.h, rtl.h, obstack.h, hard-reg-set.h,
+	insn-config.h, recog.h, diagnostic-core.h, tm_p.h, and cfgloop.h.
+	(flow_active_insn_p, forwarder_block_p, can_fallthru,
+	could_fall_through): Move to cfgrtl.c.
+	(set_edge_can_fallthru_flag): Moved to bb-reorder.c.
+	(create_edge_list): Do not set edge_list's removed num_blocks.
+	(print_edge_list): Look at n_basic_blocks instead of num_blocks.
+	(flow_nodes_print): Remove.
+	(flow_edge_list_print): Remove.
+	(inverted_post_order_compute): Use FOR_ALL_BB.
+	*cfgrtl.c (dump_flow_info): Moved from cfg.c.
+	Do not call dump_reg_info.
+	(debug_flow_info): Moved from cfg.c
+	(dump_bb_info): Moved from cfg.c.  Take 'verbose' argument
+	to avoid looking at TDF_* flags from tree-pass.h.
+	(flow_active_insn_p, forwarder_block_p, can_fallthru,
+	could_fall_through): Moved from cfganal.c.
+	(print_rtl_with_bb): Adjust dump_bb_info calls.
+	* cfghooks.c (redirect_edge_succ_nodup): Moved from cfg.c.
+	(remove_edge): Call redirect_edge_var_map_clear if IR_GIMPLE.
+	(cfgcleanup.c): Look at MAY_HAVE_DEBUG_INSNS, not MAY_HAVE_DEBUG_STMTS.
+	* cselib.c: Include tree.h with a FIXME.
+	* df-core.c (reg_obstack): Moved from cfg.c.
+	(dump_regset): Likewise.
+	(debug_regset): Likewise.  Make a DEBUG_FUNCTION.
+	* final.c (compute_alignments): Call dump_reg_info before
+	dump_flow_info.
+	* function.c (function_name): New function.
+	(current_function_name): Use it.
+	* ifcvt.c (rest_of_handle_if_conversion): Call dump_reg_info before
+	dump_flow_info.
+	* ira-conflicts.c: Include tree.h with a note.
+	* regstat.c (dump_reg_info): Moved here from cfg.c.
+	* loop-init.c: Include regs.h instead of hard-reg-set.h.
+	(rtl_loop_init): Call dump_reg_info before dump_flow_info.
+	(rtl_loop_done): Likewise.
+	* mcf.c: Include tree.h before langhooks.h.
+	* predict.c (maybe_hot_count_p): Assert we have cfun.
+	(probably_never_executed_bb_p): Likewise.
+	* profile.c (compute_branch_probabilities): Use gimple_dump_cfg
+	instead of dump_flow_info.
+	* sched-deps.c: Include tree.h with a FIXME.
+	(call_may_noreturn_p): Add FIXME note why this function has to
+	look at function decls instead of function decl flags.
+	* sched-vis.c: Include tree.h with a FIXME.
+	(print_rtl_slim): Adjust dump_bb_info uses.
+	* statistics.c (statistics_fini_pass_2): Use current_function_name
+	to avoid including tree.h.
+	(statistics_counter_event): Use function_name for the same reason.
+	(statistics_histogram_event): Likewise.
+	* tracer.c (tracer): Remove bogus gcc_assert.  Use brief_dump_cfg
+	instead of dump_flow_info.
+	* var-tracking.c (variable_tracking_main_1): Call dump_reg_info
+	before dump_flow_info.
+	* doc/cfg.texi: Update CFG documentation.
+	* Makefile.in (RTL_H): Depend on FLAGS_H.
+	(GIMPLE_H): Depend on TREE_H.
+	(FUNCTION_H): Depend on VEC_H, vecir.h, INPUT_H and MACHMODE_H,
+	but no longer on TREE_H.
+	(C_COMMON_H): Depend on TREE_H.
+	(cselib.o, cse.o, cfganal.o, loop-init.o, ira-conflicts.o,
+	sched-deps.o, sched-vis.o): Fixup dependencies.
+
+2012-07-08  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* alias.h: Do not include coretypes.h in header files.
+	* cppbuiltin.h: Likewise.
+	* double-int.h: Likewise.
+	* gimple-fold.h: Likewise.
+	* flags.h: Likewise.
+	* tree-ssa-alias.h: Likewise.
+	* gengtype.h (obstack_chunk_alloc, obstack_chunk_free,
+	OBSTACK_CHUNK_SIZE): Define here to avoid dependency on coretypes.h.
+	* Makefile.in (RTL_BASE_H): Depend on coretypes.h.
+	(TREE_H): Likewise.
+	(ALIAS_H): Do not depend on coretypes.h.
+	(FLAGS_H): Likewise.
+	(realmpfr.o): Depend on coretypes.h.
+
+2012-07-08  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* Makefile.in (gengtype-lex.o, gengtype-parse.o, gengtype-state.o,
+	gengtype.o): Add -DGENERATOR_FILE manually for host gengtype objects.
+
+2012-07-07  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.h (TARGET_CPU_CPP_BUILTINS): Remove Maverick support.
+	(TARGET_FPA): Delete definition.
+	(TARGET_MAVERICK): Likewise.
+	(TARGET_FPA_EMU2): Likewise.
+	(arm_fp_model): Remove FPA and Maverick models.
+	(arm_arch_cirrus): Delete declaration.
+	(FLOAT_WORDS_BIG_ENDIAN): Delete definition.
+	(FIXED_REGISTERS): Remove FPA and Maverick support.  Reorganize.
+	(CALL_USED_REGISTERS): Likewise.
+	(FIRST_FPA_REGNUM, LAST_FPA_REGNUM): Delete definition.
+	(FIRST_VFP_REGNUM): Renumbered.
+	(D7_VFP_REGNUM): Chain definition.
+	(LAST_LO_VFP_REGNUM): Likewise.
+	(FIRST_HI_VFP_REGNUM): Likewise.
+	(LAST_HI_VFP_REGNUM): Likewise.
+	(FIRST_IWMMXT_GR_REGNUM): Likewise.
+	(LAST_IWMMXT_GR_REGNUM): Likewise.
+	(FIRST_IWMMXT_REGNUM): Likewise.
+	(LAST_IWMMXT_REGNUM): Likewise.
+	(FRAME_POINTER_REGNUM): Renumbered.
+	(ARG_POINTER_REGNUM): Renumbered.
+	(FIRST_PSEUDO_REGISTER): Remove FPA and Maverick registers.
+	(FIRST_CIRRUS_FP_REGNUM, LAST_CIRRUS_FP_REGNUM): Delete definitions.
+	(HARD_REGNO_REGNUM): Remove FPA support.
+	(REG_ALLOC_ORDER): Remove FPA and Maverick registers.  Reorganize.
+	(reg_class): Likewise.
+	(REG_CLASS_NAMES): Likewise.
+	(REG_CLASS_CONTENTS): Likewise.
+	(CANNOT_CHANGE_MODE_CLASS): Never true.  Update comment.
+	(SECONDARY_INPUT_RELOAD_CLASS): Remove Maverick support.
+	(CLASS_MAX_NREGS): Remove FPA and Maverick support.
+	* aout.h (REGISTER_NAMES): Remove FPA and Maverick registers.
+	Reorganize.  Use AAPCS preferred names.
+	(ADDITIONAL_REGISTER_NAMES): Remove aliases for Maverick.  Update
+	comments.
+	(OVERLAPPING_REGISTER_NAMES): Update register numbering.
+	* arm.c (FL_CIRRUS): Delete definition.
+	(arm_arch_cirrus): Delete variable.
+	(arm_float_words_big_endian): Delete function.
+	(cirrus_memory_offset): Delete function.
+	(output_mov_long_double_fpa_from_arm): Delete function.
+	(output_mov_long_double_arm_from_fpa): Delete function.
+	(output_mov_double_fpa_from_arm): Delete function.
+	(output_mov_double_arm_from_fpa): Delete function.
+	(emit_sfm): Delete function.
+	(maybe_get_arm_condition_code): Update comment.
+	(arm_file_start): Always use softvfp for softfloat systems.
+	(thumb_core_reg_alloc_order): Adjust for updated register allocation.
+	(arm_option_override): Remove FPA and Maverick support.  Always
+	default to vfp as the fallback FPU format.
+	(use_return_insn): Remove FPA support.
+	(arm_get_frame_offsets): Likewise.
+	(arm_save_coproc_regs): Likewise.
+	(arm_canonicalize_comparison): Remove Maverick support.
+	(arm_select_cc_mode): Likewise.
+	(arm_gen_compare_reg): Likewise.
+	(arm_print_operand): Likewise.
+	(arm_libcall_value_1): Remove FPA and Maverick support.
+	(arm_function_value_regno_p): Likewise.
+	(arm_apply_result_size): Likewise.
+	(arm_legitimate_index_p): Likewise.
+	(thumb2_legitimate_index_p): Likewise.
+	(legitimize_reload_address): Likewise.
+	(arm_register_move_cost): Likewise.
+	(arm_hard_regno_mode_ok): Likewise.
+	(arm_regno_class): Likewise.
+	(arm_dbx_register_number): Likewise.
+	(arm_emit_unwind_sequence): Likewise.
+	(arm_conditional_register_usage): Likewise.
+	* arm-protos.h (neg_const_double_rtx_ok_for_fpa): Remove declaration.
+	(cirrus_memory_offset): Likewise.
+	(output_move_long_double_fpa_from_arm): Likewise.
+	(output_move_long_double_arm_from_fpa): Likewise.
+	(output_move_double_fpa_from_arm): Likewise.
+	(output_move_double_arm_from_fpa): Likewise.
+	(arm_float_words_big_endian): Likewise.
+	* arm.md (CC_REGNUM): Renumbered.
+	(VFPCC_REGNUM): Moved here.  Renumbered.
+	(FPA_F0_REGNUM, FPA_F7_REGNUM): Delete.
+	(attr fpu): Remove FPA and Maverick support.
+	* vfp.md (VFPCC_REGNUM): Delete.  Moved to arm.md.
+	* arm-cores.def (ep9312): Remove Maverick support.
+	* arm-arches.def (ep9312): Delete architecture.
+	* arm-tables.opt: Regenerated.
+
+	* arm/linux-elf.h (FPUTYPE_DEFAULT): Set to vfp.
+
+2012-07-07  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR tree-optimization/53881
+	* tree-switch-conversion.c (emit_case_bit_tests): Do not rely on
+	comparing labels to establish uniqueness of a switch case target,
+	use the CFG instead.
+
+2012-07-07  Ulrich Weigand  <ulrich.weigand@linaro.org>
+
+	* combine.c (force_to_mode) [LSHIFTRT]: Avoid undefined behaviour
+	due to negative shift amount.
+
+2012-07-07  Hans-Peter Nilsson  <hp@axis.com>
+
+	Fix configure test for "stack protector support in target C library".
+	* configure.ac (test_prefix, test_exec_prefix): Move setting from
+	inside sysroot handling to before and outside it.
+	* configure: Regenerate.
+
+2012-07-06  Kai Tietz  <ktietz@redhat.com>
+
+	PR bootstrap/52947
+	* config/i386/mingw32.h (NATIVE_SYSTEM_HEADER_DIR): Define it always
+	as "/mingw/include".
+
+2012-07-06  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/53820
+	* var-tracking.c (vt_add_function_parameter): Convert
+	internal_arg_pointer into arg_pointer-based address even
+	without DRAP.
+
+2012-07-06  Alexandre Oilva  <aoliva@redhat.com>
+
+	PR rtl-optimization/53827
+	PR debug/53671
+	PR debug/49888
+	* alias.c (memrefs_conflict_p): Adjust offset and size by the
+	same amount for alignment ANDs.
+
+2012-07-06  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/51879
+	* tree-ssa-sccvn.c (copy_reference_ops_from_call)
+	(visit_reference_op_call): Handle case that lhs is not an SSA_NAME.
+	(visit_use): Also call visit_reference_op_call for calls with a vdef.
+
+2012-07-06  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/52009
+	* tree-ssa-tail-merge.c (gimple_equal_p): For GIMPLE_ASSIGN, compare
+	value numbers of gimple_vdef.
+	* tree-ssa-sccvn.h (vn_reference_insert): Add vdef parameter to
+	prototype.
+	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Handle MODIFY_EXPR.
+	(vn_reference_insert): Add and handle vdef parameter.
+	(visit_reference_op_load): Add argument to vn_reference_insert call.
+	(visit_reference_op_store): Find value number of vdef of store.  Insert
+	value number of vdef of store.
+
+2012-07-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (simple lea to add peephole): Also transform
+	RTXes where second PLUS operand matches output.
+
+2012-07-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (construct_plt_address): Make static.
+	* config/i386/i386-protos.h (construct_plt_address): Remove.
+
+2012-07-06  Nick Clifton  <nickc@redhat.com>
+
+	* config/mn10300/mn10300.c (mn10300_encode_section_info): Call
+	default_encode_section_info.
+
+2012-07-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/53853
+	* config/i386/i386.c (x86_output_mi_thunk): For CM_LARGE_PIC model,
+	emit PIC sequence for fnaddr symbol reference in advance.
+
+2012-07-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	Revert
+	2012-06-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* dwarf2out.c (function_possibly_abstracted_p): New static function.
+	(gen_subprogram_die): Use it function_possibly_abstracted_p in lieu of
+	cgraph_function_possibly_inlined_p.
+	(gen_inlined_subroutine_die): Return if the origin is to be ignored.
+	(process_scope_var): Do not emit concrete instances of abstracted
+	nested functions from here.
+	(gen_decl_die): Emit the abstract instance if the function is possibly
+	abstracted and not only possibly inlined.
+	(dwarf2out_finish): Find the first non-abstract parent instance and
+	attach concrete instances on the limbo list to it.
+
+2012-07-05  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+	    Julian Brown  <julian@codesourcery.com>
+
+	PR target/48941
+	PR target/51980
+	* config/arm/neon-gen.ml (return_by_ptr): Delete.
+	(print_function): Handle empty strings.
+	(return): Delete use of return_by_ptr.
+	(mask_shape_for_shuffle): New function.
+	(mask_elems): Likewise.
+	(shuffle_fn): Likewise.
+	(params): Simplify and remove use of return_by_ptr.
+	(get_shuffle): New function.
+	(print_variant): Update.
+	* config/arm/neon.ml (rev_elems): New function.
+	(permute_range): Likewise.
+	(zip_range): Likewise.
+	(uzip_range): Likewise.
+	(trn_range): Likewise.
+	(zip_elems): Likewise.
+	(uzip_elems): Likewise.
+	(trn_elems): Likewise.
+	(features): New enumeration Use_shuffle. Delete ReturnPtr.
+	(pf_su_8_16): New.
+	(suf_32): New.
+	(ops): Update entries for Vrev64, Vrev32, Vrev16, Vtr, Vzip, Vuzp.
+	* config/arm/arm_neon.h: Regenerate.
+
+2012-07-05  Richard Guenther  <rguenther@suse.de>
+
+	* tree-pretty-print.c (dump_generic_node): Properly test
+	the result of exact_log2.
+
+2012-07-05  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390-protos.h (s390_expand_movmem)
+	(s390_expand_cmpmem): Add return value.
+	* config/s390/s390.c (s390_expand_movmem, s390_expand_cmpmem):
+	Return FALSE to use the library function in some cases.
+	* config/s390/s390.md (movmem, cmpmem): Evaluate return value of C
+	helper functions.
+
+2012-07-05  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config.gcc: Enable ifunc attribute by default on s390 and s390x.
+
+2012-07-05  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* expr.c (try_casesi): Remove bogus ATTRIBUTE_UNUSED markers.
+	* stmt.c (dump_case_nodes): New.
+	(expand_case): Split out code generation parts into new functions.
+	(expand_switch_as_decision_tree_p): Split out from expand_case.
+	(emit_case_decision_tree): Likewise.
+	(emit_case_dispatch_table): Likewise.
+
+2012-07-05  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
+
+	* config/arm/iterators.md (SDF): New mode iterator.
+	(V_if_elem): Add support for SF and DF modes.
+	(V_reg): Likewise.
+	(F_constraint): New mode iterator attribute.
+	(F_fma_type): Likewise.
+	config/arm/vfp.md (fma<SDF:mode>4): New pattern.
+	(*fmsub<SDF:mode>4): Likewise.
+	(*fmnsub<SDF:mode>4): Likewise.
+	(*fmnadd<SDF:mode>4): Likewise.
+
+2012-07-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* expmed.c (expand_mult): Initialize coeff and is_neg.
+
 2012-07-04  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/predicates.md (zero_extend_operand): New predicate.

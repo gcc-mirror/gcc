@@ -1716,6 +1716,35 @@ add_case_node (struct case_node *head, tree type, tree low, tree high,
   return r;
 }
 
+/* Dump ROOT, a list or tree of case nodes, to file.  */
+
+static void
+dump_case_nodes (FILE *f, struct case_node *root,
+		 int indent_step, int indent_level)
+{
+  HOST_WIDE_INT low, high;
+
+  if (root == 0)
+    return;
+  indent_level++;
+
+  dump_case_nodes (f, root->left, indent_step, indent_level);
+
+  low = tree_low_cst (root->low, 0);
+  high = tree_low_cst (root->high, 0);
+
+  fputs (";; ", f);
+  if (high == low)
+    fprintf(f, "%*s" HOST_WIDE_INT_PRINT_DEC,
+	    indent_step * indent_level, "", low);
+  else
+    fprintf(f, "%*s" HOST_WIDE_INT_PRINT_DEC " ... " HOST_WIDE_INT_PRINT_DEC,
+	    indent_step * indent_level, "", low, high);
+  fputs ("\n", f);
+
+  dump_case_nodes (f, root->right, indent_step, indent_level);
+}
+
 #ifndef HAVE_casesi
 #define HAVE_casesi 0
 #endif
@@ -1738,6 +1767,215 @@ case_values_threshold (void)
   return threshold;
 }
 
+/* Return true if a switch should be expanded as a decision tree.
+   RANGE is the difference between highest and lowest case.
+   UNIQ is number of unique case node targets, not counting the default case.
+   COUNT is the number of comparisons needed, not counting the default case.  */
+
+static bool
+expand_switch_as_decision_tree_p (tree range,
+				  unsigned int uniq ATTRIBUTE_UNUSED,
+				  unsigned int count)
+{
+  int max_ratio;
+
+  /* If neither casesi or tablejump is available, or flag_jump_tables
+     over-ruled us, we really have no choice.  */
+  if (!HAVE_casesi && !HAVE_tablejump)
+    return true;
+  if (!flag_jump_tables)
+    return true;
+
+  /* If the switch is relatively small such that the cost of one
+     indirect jump on the target are higher than the cost of a
+     decision tree, go with the decision tree.
+
+     If range of values is much bigger than number of values,
+     or if it is too large to represent in a HOST_WIDE_INT,
+     make a sequence of conditional branches instead of a dispatch.
+
+     The definition of "much bigger" depends on whether we are
+     optimizing for size or for speed.  If the former, the maximum
+     ratio range/count = 3, because this was found to be the optimal
+     ratio for size on i686-pc-linux-gnu, see PR11823.  The ratio
+     10 is much older, and was probably selected after an extensive
+     benchmarking investigation on numerous platforms.  Or maybe it
+     just made sense to someone at some point in the history of GCC,
+     who knows...  */
+  max_ratio = optimize_insn_for_size_p () ? 3 : 10;
+  if (count < case_values_threshold ()
+      || ! host_integerp (range, /*pos=*/1)
+      || compare_tree_int (range, max_ratio * count) > 0)
+    return true;
+
+  return false;
+}
+
+/* Generate a decision tree, switching on INDEX_EXPR and jumping to
+   one of the labels in CASE_LIST or to the DEFAULT_LABEL.
+   
+   We generate a binary decision tree to select the appropriate target
+   code.  This is done as follows:
+
+     If the index is a short or char that we do not have
+     an insn to handle comparisons directly, convert it to
+     a full integer now, rather than letting each comparison
+     generate the conversion.
+
+     Load the index into a register.
+
+     The list of cases is rearranged into a binary tree,
+     nearly optimal assuming equal probability for each case.
+
+     The tree is transformed into RTL, eliminating redundant
+     test conditions at the same time.
+
+     If program flow could reach the end of the decision tree
+     an unconditional jump to the default code is emitted.
+
+   The above process is unaware of the CFG.  The caller has to fix up
+   the CFG itself.  This is done in cfgexpand.c.  */     
+
+static void
+emit_case_decision_tree (tree index_expr, tree index_type,
+			 struct case_node *case_list, rtx default_label)
+{
+  rtx index = expand_normal (index_expr);
+
+  if (GET_MODE_CLASS (GET_MODE (index)) == MODE_INT
+      && ! have_insn_for (COMPARE, GET_MODE (index)))
+    {
+      int unsignedp = TYPE_UNSIGNED (index_type);
+      enum machine_mode wider_mode;
+      for (wider_mode = GET_MODE (index); wider_mode != VOIDmode;
+	   wider_mode = GET_MODE_WIDER_MODE (wider_mode))
+	if (have_insn_for (COMPARE, wider_mode))
+	  {
+	    index = convert_to_mode (wider_mode, index, unsignedp);
+	    break;
+	  }
+    }
+
+  do_pending_stack_adjust ();
+
+  if (MEM_P (index))
+    {
+      index = copy_to_reg (index);
+      if (TREE_CODE (index_expr) == SSA_NAME)
+	set_reg_attrs_for_decl_rtl (SSA_NAME_VAR (index_expr), index);
+    }
+
+  balance_case_nodes (&case_list, NULL);
+
+  /* Don't want to include tree-pass.h here.  This code will be moved
+     to a GIMPLE pass for GCC 4.9 anyway, so for now always dump.  */
+  if (dump_file && 1/*(dump_flags & TDF_DETAILS)*/)
+    {
+      int indent_step = ceil_log2 (TYPE_PRECISION (index_type)) + 2;
+      fprintf (dump_file, ";; Expanding GIMPLE switch as decision tree:\n");
+      dump_case_nodes (dump_file, case_list, indent_step, 0);
+    }
+
+  emit_case_nodes (index, case_list, default_label, index_type);
+  if (default_label)
+    emit_jump (default_label);
+}
+
+/* Generate a dispatch tabler, switching on INDEX_EXPR and jumping to
+   one of the labels in CASE_LIST or to the DEFAULT_LABEL.
+   MINVAL, MAXVAL, and RANGE are the extrema and range of the case
+   labels in CASE_LIST.
+
+   First, a jump insn is emitted.  First we try "casesi".  If that
+   fails, try "tablejump".   A target *must* have one of them (or both).
+
+   Then, a table with the target labels is emitted.
+
+   The process is unaware of the CFG.  The caller has to fix up
+   the CFG itself.  This is done in cfgexpand.c.  */     
+
+static void
+emit_case_dispatch_table (tree index_expr, tree index_type,
+			  struct case_node *case_list, rtx default_label,
+			  tree minval, tree maxval, tree range)
+{
+  int i, ncases;
+  struct case_node *n;
+  rtx *labelvec;
+  rtx fallback_label = label_rtx (case_list->code_label);
+  rtx table_label = gen_label_rtx ();
+
+  if (! try_casesi (index_type, index_expr, minval, range,
+		    table_label, default_label, fallback_label))
+    {
+      bool ok;
+
+      /* Index jumptables from zero for suitable values of minval to avoid
+	 a subtraction.  For the rationale see:
+	 "http://gcc.gnu.org/ml/gcc-patches/2001-10/msg01234.html".  */
+      if (optimize_insn_for_speed_p ()
+	  && compare_tree_int (minval, 0) > 0
+	  && compare_tree_int (minval, 3) < 0)
+	{
+	  minval = build_int_cst (index_type, 0);
+	  range = maxval;
+	}
+
+      ok = try_tablejump (index_type, index_expr, minval, range,
+			  table_label, default_label);
+      gcc_assert (ok);
+    }
+
+  /* Get table of labels to jump to, in order of case index.  */
+
+  ncases = tree_low_cst (range, 0) + 1;
+  labelvec = XALLOCAVEC (rtx, ncases);
+  memset (labelvec, 0, ncases * sizeof (rtx));
+
+  for (n = case_list; n; n = n->right)
+    {
+      /* Compute the low and high bounds relative to the minimum
+	 value since that should fit in a HOST_WIDE_INT while the
+	 actual values may not.  */
+      HOST_WIDE_INT i_low
+	= tree_low_cst (fold_build2 (MINUS_EXPR, index_type,
+				     n->low, minval), 1);
+      HOST_WIDE_INT i_high
+	= tree_low_cst (fold_build2 (MINUS_EXPR, index_type,
+				     n->high, minval), 1);
+      HOST_WIDE_INT i;
+
+      for (i = i_low; i <= i_high; i ++)
+	labelvec[i]
+	  = gen_rtx_LABEL_REF (Pmode, label_rtx (n->code_label));
+    }
+
+  /* Fill in the gaps with the default.  We may have gaps at
+     the beginning if we tried to avoid the minval subtraction,
+     so substitute some label even if the default label was
+     deemed unreachable.  */
+  if (!default_label)
+    default_label = fallback_label;
+  for (i = 0; i < ncases; i++)
+    if (labelvec[i] == 0)
+      labelvec[i] = gen_rtx_LABEL_REF (Pmode, default_label);
+
+  /* Output the table.  */
+  emit_label (table_label);
+
+  if (CASE_VECTOR_PC_RELATIVE || flag_pic)
+    emit_jump_insn (gen_rtx_ADDR_DIFF_VEC (CASE_VECTOR_MODE,
+					   gen_rtx_LABEL_REF (Pmode, table_label),
+					   gen_rtvec_v (ncases, labelvec),
+					   const0_rtx, const0_rtx));
+  else
+    emit_jump_insn (gen_rtx_ADDR_VEC (CASE_VECTOR_MODE,
+				      gen_rtvec_v (ncases, labelvec)));
+
+  /* Record no drop-through after the table.  */
+  emit_barrier ();
+}
+
 /* Terminate a case (Pascal/Ada) or switch (C) statement
    in which ORIG_INDEX is the expression to be tested.
    If ORIG_TYPE is not NULL, it is the original ORIG_INDEX
@@ -1748,19 +1986,16 @@ void
 expand_case (gimple stmt)
 {
   tree minval = NULL_TREE, maxval = NULL_TREE, range = NULL_TREE;
-  rtx default_label = 0;
-  struct case_node *n;
+  rtx default_label = NULL_RTX;
   unsigned int count, uniq;
-  rtx index;
-  rtx table_label;
-  int ncases;
-  rtx *labelvec;
-  int i;
-  rtx before_case, end, lab;
-
+  int i, stopi = 0;
+  rtx before_case, end;
+  int ncases = gimple_switch_num_labels (stmt);
   tree index_expr = gimple_switch_index (stmt);
   tree index_type = TREE_TYPE (index_expr);
-  int unsignedp = TYPE_UNSIGNED (index_type);
+
+  tree elt;
+  bitmap label_bitmap;
 
   /* The insn after which the case dispatch should finally
      be emitted.  Zero for a dummy.  */
@@ -1770,244 +2005,106 @@ expand_case (gimple stmt)
      be rearranged into a nearly balanced binary tree.  */
   struct case_node *case_list = 0;
 
-  /* Label to jump to if no case matches.  */
-  tree default_label_decl = NULL_TREE;
+  /* A pool for case nodes.  */
+  alloc_pool case_node_pool;
 
-  alloc_pool case_node_pool = create_alloc_pool ("struct case_node pool",
-                                                 sizeof (struct case_node),
-                                                 100);
+  /* An ERROR_MARK occurs for various reasons including invalid data type.
+     ??? Can this still happen, with GIMPLE and all?  */
+  if (index_type == error_mark_node)
+    return;
+
+  /* cleanup_tree_cfg removes all SWITCH_EXPR with their index
+     expressions being INTEGER_CST.  */
+  gcc_assert (TREE_CODE (index_expr) != INTEGER_CST);
+  
+  case_node_pool = create_alloc_pool ("struct case_node pool",
+				      sizeof (struct case_node),
+				      100);
 
   do_pending_stack_adjust ();
 
-  /* An ERROR_MARK occurs for various reasons including invalid data type.  */
-  if (index_type != error_mark_node)
+  /* The default case, if ever taken, is the first element.  */
+  elt = gimple_switch_label (stmt, 0);
+  if (!CASE_LOW (elt) && !CASE_HIGH (elt))
     {
-      tree elt;
-      bitmap label_bitmap;
-      int stopi = 0;
-
-      /* cleanup_tree_cfg removes all SWITCH_EXPR with their index
-	 expressions being INTEGER_CST.  */
-      gcc_assert (TREE_CODE (index_expr) != INTEGER_CST);
-
-      /* The default case, if ever taken, is the first element.  */
-      elt = gimple_switch_label (stmt, 0);
-      if (!CASE_LOW (elt) && !CASE_HIGH (elt))
-	{
-	  default_label_decl = CASE_LABEL (elt);
-	  stopi = 1;
-	}
-
-      for (i = gimple_switch_num_labels (stmt) - 1; i >= stopi; --i)
-	{
-	  tree low, high;
-	  elt = gimple_switch_label (stmt, i);
-
-	  low = CASE_LOW (elt);
-	  gcc_assert (low);
-	  high = CASE_HIGH (elt);
-
-	  /* The canonical from of a case label in GIMPLE is that a simple case
-	     has an empty CASE_HIGH.  For the casesi and tablejump expanders,
-	     the back ends want simple cases to have high == low.  */
-	  gcc_assert (! high || tree_int_cst_lt (low, high));
-	  if (! high)
-	    high = low;
-
-	  case_list = add_case_node (case_list, index_type, low, high,
-                                     CASE_LABEL (elt), case_node_pool);
-	}
-
-
-      before_case = start = get_last_insn ();
-      if (default_label_decl)
-	default_label = label_rtx (default_label_decl);
-
-      /* Get upper and lower bounds of case values.  */
-
-      uniq = 0;
-      count = 0;
-      label_bitmap = BITMAP_ALLOC (NULL);
-      for (n = case_list; n; n = n->right)
-	{
-	  /* Count the elements and track the largest and smallest
-	     of them (treating them as signed even if they are not).  */
-	  if (count++ == 0)
-	    {
-	      minval = n->low;
-	      maxval = n->high;
-	    }
-	  else
-	    {
-	      if (tree_int_cst_lt (n->low, minval))
-		minval = n->low;
-	      if (tree_int_cst_lt (maxval, n->high))
-		maxval = n->high;
-	    }
-	  /* A range counts double, since it requires two compares.  */
-	  if (! tree_int_cst_equal (n->low, n->high))
-	    count++;
-
-	  /* If we have not seen this label yet, then increase the
-	     number of unique case node targets seen.  */
-	  lab = label_rtx (n->code_label);
-	  if (bitmap_set_bit (label_bitmap, CODE_LABEL_NUMBER (lab)))
-	    uniq++;
-	}
-
-      BITMAP_FREE (label_bitmap);
-
-      /* cleanup_tree_cfg removes all SWITCH_EXPR with a single
-	 destination, such as one with a default case only.
-	 It also removes cases that are out of range for the switch
-	 type, so we should never get a zero here.  */
-      gcc_assert (count > 0);
-
-      /* Compute span of values.  */
-      range = fold_build2 (MINUS_EXPR, index_type, maxval, minval);
-
-      /* If range of values is much bigger than number of values,
-	 make a sequence of conditional branches instead of a dispatch.
-	 If the switch-index is a constant, do it this way
-	 because we can optimize it.  */
-
-      if (count < case_values_threshold ()
-	  || compare_tree_int (range,
-			       (optimize_insn_for_size_p () ? 3 : 10) * count) > 0
-	  /* RANGE may be signed, and really large ranges will show up
-	     as negative numbers.  */
-	  || compare_tree_int (range, 0) < 0
-	  || !flag_jump_tables
-	  || TREE_CONSTANT (index_expr)
-	  /* If neither casesi or tablejump is available, we can
-	     only go this way.  */
-	  || (!HAVE_casesi && !HAVE_tablejump))
-	{
-	  index = expand_normal (index_expr);
-
-	  /* If the index is a short or char that we do not have
-	     an insn to handle comparisons directly, convert it to
-	     a full integer now, rather than letting each comparison
-	     generate the conversion.  */
-
-	  if (GET_MODE_CLASS (GET_MODE (index)) == MODE_INT
-	      && ! have_insn_for (COMPARE, GET_MODE (index)))
-	    {
-	      enum machine_mode wider_mode;
-	      for (wider_mode = GET_MODE (index); wider_mode != VOIDmode;
-		   wider_mode = GET_MODE_WIDER_MODE (wider_mode))
-		if (have_insn_for (COMPARE, wider_mode))
-		  {
-		    index = convert_to_mode (wider_mode, index, unsignedp);
-		    break;
-		  }
-	    }
-
-	  do_pending_stack_adjust ();
-
-	  if (MEM_P (index))
-	    {
-	      index = copy_to_reg (index);
-	      if (TREE_CODE (index_expr) == SSA_NAME)
-		set_reg_attrs_for_decl_rtl (SSA_NAME_VAR (index_expr), index);
-	    }
-
-	  /* We generate a binary decision tree to select the
-	     appropriate target code.  This is done as follows:
-
-	     The list of cases is rearranged into a binary tree,
-	     nearly optimal assuming equal probability for each case.
-
-	     The tree is transformed into RTL, eliminating
-	     redundant test conditions at the same time.
-
-	     If program flow could reach the end of the
-	     decision tree an unconditional jump to the
-	     default code is emitted.  */
-
-	  balance_case_nodes (&case_list, NULL);
-	  emit_case_nodes (index, case_list, default_label, index_type);
-	  if (default_label)
-	    emit_jump (default_label);
-	}
-      else
-	{
-	  rtx fallback_label = label_rtx (case_list->code_label);
-	  table_label = gen_label_rtx ();
-	  if (! try_casesi (index_type, index_expr, minval, range,
-			    table_label, default_label, fallback_label))
-	    {
-	      bool ok;
-
-	      /* Index jumptables from zero for suitable values of
-                 minval to avoid a subtraction.  */
-	      if (optimize_insn_for_speed_p ()
-		  && compare_tree_int (minval, 0) > 0
-		  && compare_tree_int (minval, 3) < 0)
-		{
-		  minval = build_int_cst (index_type, 0);
-		  range = maxval;
-		}
-
-	      ok = try_tablejump (index_type, index_expr, minval, range,
-				  table_label, default_label);
-	      gcc_assert (ok);
-	    }
-
-	  /* Get table of labels to jump to, in order of case index.  */
-
-	  ncases = tree_low_cst (range, 0) + 1;
-	  labelvec = XALLOCAVEC (rtx, ncases);
-	  memset (labelvec, 0, ncases * sizeof (rtx));
-
-	  for (n = case_list; n; n = n->right)
-	    {
-	      /* Compute the low and high bounds relative to the minimum
-		 value since that should fit in a HOST_WIDE_INT while the
-		 actual values may not.  */
-	      HOST_WIDE_INT i_low
-		= tree_low_cst (fold_build2 (MINUS_EXPR, index_type,
-					     n->low, minval), 1);
-	      HOST_WIDE_INT i_high
-		= tree_low_cst (fold_build2 (MINUS_EXPR, index_type,
-					     n->high, minval), 1);
-	      HOST_WIDE_INT i;
-
-	      for (i = i_low; i <= i_high; i ++)
-		labelvec[i]
-		  = gen_rtx_LABEL_REF (Pmode, label_rtx (n->code_label));
-	    }
-
-	  /* Fill in the gaps with the default.  We may have gaps at
-	     the beginning if we tried to avoid the minval subtraction,
-	     so substitute some label even if the default label was
-	     deemed unreachable.  */
-	  if (!default_label)
-	    default_label = fallback_label;
-	  for (i = 0; i < ncases; i++)
-	    if (labelvec[i] == 0)
-	      labelvec[i] = gen_rtx_LABEL_REF (Pmode, default_label);
-
-	  /* Output the table.  */
-	  emit_label (table_label);
-
-	  if (CASE_VECTOR_PC_RELATIVE || flag_pic)
-	    emit_jump_insn (gen_rtx_ADDR_DIFF_VEC (CASE_VECTOR_MODE,
-						   gen_rtx_LABEL_REF (Pmode, table_label),
-						   gen_rtvec_v (ncases, labelvec),
-						   const0_rtx, const0_rtx));
-	  else
-	    emit_jump_insn (gen_rtx_ADDR_VEC (CASE_VECTOR_MODE,
-					      gen_rtvec_v (ncases, labelvec)));
-
-	  /* Record no drop-through after the table.  */
-	  emit_barrier ();
-	}
-
-      before_case = NEXT_INSN (before_case);
-      end = get_last_insn ();
-      reorder_insns (before_case, end, start);
+      default_label = label_rtx (CASE_LABEL (elt));
+      stopi = 1;
     }
+
+  /* Get upper and lower bounds of case values.  */
+  elt = gimple_switch_label (stmt, stopi);
+  minval = fold_convert (index_type, CASE_LOW (elt));
+  elt = gimple_switch_label (stmt, ncases - 1);
+  if (CASE_HIGH (elt))
+    maxval = fold_convert (index_type, CASE_HIGH (elt));
+  else
+    maxval = fold_convert (index_type, CASE_LOW (elt));
+
+  /* Compute span of values.  */
+  range = fold_build2 (MINUS_EXPR, index_type, maxval, minval);
+
+  /* Listify the labels queue and gather some numbers to decide
+     how to expand this switch().  */
+  uniq = 0;
+  count = 0;
+  label_bitmap = BITMAP_ALLOC (NULL);
+  for (i = gimple_switch_num_labels (stmt) - 1; i >= stopi; --i)
+    {
+      tree low, high;
+      rtx lab;
+
+      elt = gimple_switch_label (stmt, i);
+      low = CASE_LOW (elt);
+      gcc_assert (low);
+      high = CASE_HIGH (elt);
+      gcc_assert (! high || tree_int_cst_lt (low, high));
+
+      /* Count the elements.
+	 A range counts double, since it requires two compares.  */
+      count++;
+      if (high)
+	count++;
+
+      /* If we have not seen this label yet, then increase the
+	 number of unique case node targets seen.  */
+      lab = label_rtx (CASE_LABEL (elt));
+      if (bitmap_set_bit (label_bitmap, CODE_LABEL_NUMBER (lab)))
+	uniq++;
+
+      /* The canonical from of a case label in GIMPLE is that a simple case
+	 has an empty CASE_HIGH.  For the casesi and tablejump expanders,
+	 the back ends want simple cases to have high == low.  */
+      if (! high)
+	high = low;
+
+      case_list = add_case_node (case_list, index_type, low, high,
+				 CASE_LABEL (elt), case_node_pool);
+    }
+  BITMAP_FREE (label_bitmap);
+
+  /* cleanup_tree_cfg removes all SWITCH_EXPR with a single
+     destination, such as one with a default case only.
+     It also removes cases that are out of range for the switch
+     type, so we should never get a zero here.  */
+  gcc_assert (count > 0);
+
+  before_case = start = get_last_insn ();
+
+  /* Decide how to expand this switch.
+     The two options at this point are a dispatch table (casesi or
+     tablejump) or a decision tree.  */
+
+  if (expand_switch_as_decision_tree_p (range, uniq, count))
+    emit_case_decision_tree (index_expr, index_type,
+			     case_list, default_label);
+  else
+    emit_case_dispatch_table (index_expr, index_type,
+			      case_list, default_label,
+			      minval, maxval, range);
+
+  before_case = NEXT_INSN (before_case);
+  end = get_last_insn ();
+  reorder_insns (before_case, end, start);
 
   free_temp_slots ();
   free_alloc_pool (case_node_pool);

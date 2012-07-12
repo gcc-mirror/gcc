@@ -1,3 +1,48 @@
+2012-07-08  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* gfortran.h: Do not include coretypes.h here.
+	Make it an error to include this before coretypes.h
+	* openmp.c: Include coretypes.h.
+	* interface.c: Likewise.
+	* intrinsic.c: Likewise.
+	* symbol.c: Likewise.
+	* class.c: Likewise.
+	* decl.c: Likewise.
+	* matchexp.c: Likewise.
+	* dump-parse-tree.c: Likewise.
+	* array.c: Likewise.
+	* constructor.c: Likewise.
+	* error.c: Likewise.
+	* data.c: Likewise.
+	* expr.c: Likewise.
+	* module.c: Likewise.
+	* scanner.c: Likewise.
+	* bbt.c: Likewise.
+	* io.c: Likewise.
+	* frontend-passes.c: Likewise.
+	* resolve.c: Likewise.
+	* st.c: Likewise.
+	* target-memory.c: Likewise.
+	* match.c: Likewise.
+	* arith.c: Likewise.
+	* parse.c: Likewise.
+	* check.c: Likewise.
+	* dependency.c: Likewise.
+	* primary.c: Likewise.
+	* misc.c: Likewise.
+	* simplify.c: Likewise.
+
+2012-07-05  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/53732
+	* trans-array.c (gfc_add_loop_ss_code): Disable self recursive calls
+	handling nested loop(s) if the subscript flag is true.
+
+2012-07-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR fortran/53449
+	* parse.c (gfc_parse_file): Initialize errors_before.
+
 2012-06-27  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/41951

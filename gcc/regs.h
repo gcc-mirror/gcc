@@ -92,7 +92,7 @@ REG_N_SETS (int regno)
 #define INC_REG_N_SETS(N,V) (regstat_n_sets_and_refs[N].sets += V)
 
 
-/* Functions defined in reg-stat.c.  */
+/* Functions defined in regstat.c.  */
 extern void regstat_init_n_sets_and_refs (void);
 extern void regstat_free_n_sets_and_refs (void);
 extern void regstat_compute_ri (void);
@@ -100,7 +100,7 @@ extern void regstat_free_ri (void);
 extern bitmap regstat_get_setjmp_crosses (void);
 extern void regstat_compute_calls_crossed (void);
 extern void regstat_free_calls_crossed (void);
-
+extern void dump_reg_info (FILE *);
 
 /* Register information indexed by register number.  This structure is
    initialized by calling regstat_compute_ri and is destroyed by

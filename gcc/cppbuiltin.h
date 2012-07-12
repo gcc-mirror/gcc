@@ -21,9 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_CPPBUILTIN_H
 #define GCC_CPPBUILTIN_H
 
-#include "coretypes.h"
-
-
 /* Parse a BASEVER version string of the format "major.minor.patchlevel"
    or "major.minor" to extract its components.  */
 extern void parse_basever (int *, int *, int *);
