@@ -1,3 +1,49 @@
+2012-07-12  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* vms_data.ads: Add VMS qualifiers for -gnatn1/2 switches.
+
+2012-07-12  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch5.adb, exp_pakd.adb, rtsfind.ads, freeze.adb, sem_util.adb,
+	sem_util.ads, exp_aggr.adb
+	(Exp_Aggr.Packed_Array_Aggregate_Handled): Simplify processing
+	for reverse storage order aggregate.
+	(Exp_Pakd.Byte_Swap): New utility routine used by...
+	(Exp_Pakd.Expand_Bit_Packed_Element_Set,
+	Expand_Packed_Element_Reference): For the case of a free-standing
+	packed array with reverse storage order, perform byte swapping.
+	(Rtsfind): Make new entities RE_Bswap_{16,32,64} available.
+	(Freeze.Check_Component_Storage_Order): New utility routine
+	to enforce legality rules for nested composite types whose
+	enclosing composite has an explicitly defined Scalar_Storage_Order
+	attribute.
+	(Sem_Util.In_Reverse_Storage_Order_Object): Renamed from
+	Sem_Util.In_Reverse_Storage_Order_Record, as SSO now applies to
+	array types as well.
+	(Exp_Ch5.Expand_Assign_Array): Remove now unnecessary kludge
+	for change of scalar storage order in assignments. The Lhs and
+	Rhs now always have the same scalar storage order.
+
+2012-07-12  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* g-debpoo.adb (Allocate): Add local constant
+	No_Element. Initialize the allocated memory chunk to No_Element.
+
+2012-07-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Validate_Derived_Type_Instance): Handle properly
+	the case of an instance of a child unit where a formal derived
+	type DT is an extension of a type T declared in a parent unit,
+	and the actual in the instance of the child is the type T declared
+	in the parent instance, and that actual is not a derived type.
+
+2012-07-12  Eric Botcazou  <ebotcazou@adacore.com>
+	    Tristan Gingold  <gingold@adacore.com>
+
+	* system-hpux-ia64.ads: Enable ZCX by default.
+	* gcc-interface/Makefile.in: Use alternate stack on ia64-hpux.
+	Change soext to .so.
+
 2012-07-12  Robert Dewar  <dewar@adacore.com>
 
 	* s-atopri.adb, s-atopri.ads: Minor reformatting.

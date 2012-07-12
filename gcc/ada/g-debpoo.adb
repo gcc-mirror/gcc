@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -668,9 +668,10 @@ package body GNAT.Debug_Pools is
       --  terms of wasted memory). To do that, all we should have to do it to
       --  set the size of this array to the page size. See mprotect().
 
-      P : Ptr;
+      No_Element : constant Storage_Element := 0;
 
       Current : Byte_Count;
+      P       : Ptr;
       Trace   : Traceback_Htable_Elem_Ptr;
 
    begin
@@ -693,15 +694,16 @@ package body GNAT.Debug_Pools is
       --  Use standard (i.e. through malloc) allocations. This automatically
       --  raises Storage_Error if needed. We also try once more to physically
       --  release memory, so that even marked blocks, in the advanced scanning,
-      --  are freed.
+      --  are freed. Initialize the storage array to avoid bogus warnings by
+      --  valgrind.
 
       begin
-         P := new Local_Storage_Array;
+         P := new Local_Storage_Array'(others => No_Element);
 
       exception
          when Storage_Error =>
             Free_Physically (Pool);
-            P := new Local_Storage_Array;
+            P := new Local_Storage_Array'(others => No_Element);
       end;
 
       Storage_Address :=

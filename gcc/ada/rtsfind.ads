@@ -215,6 +215,7 @@ package Rtsfind is
       System_Aux_DEC,
       System_Bit_Ops,
       System_Boolean_Array_Operations,
+      System_Byte_Swapping,
       System_Checked_Pools,
       System_Compare_Array_Signed_16,
       System_Compare_Array_Signed_32,
@@ -771,6 +772,10 @@ package Rtsfind is
      RE_Vector_Nor,                      -- System_Boolean_Array_Operations,
      RE_Vector_Nxor,                     -- System_Boolean_Array_Operations,
      RE_Vector_Xor,                      -- System_Boolean_Array_Operations,
+
+     RE_Bswap_16,                        -- System.Byte_Swapping
+     RE_Bswap_32,                        -- System.Byte_Swapping
+     RE_Bswap_64,                        -- System.Byte_Swapping
 
      RE_Checked_Pool,                    -- System.Checked_Pools
 
@@ -1995,6 +2000,10 @@ package Rtsfind is
      RE_Vector_Nor                       => System_Boolean_Array_Operations,
      RE_Vector_Nxor                      => System_Boolean_Array_Operations,
      RE_Vector_Xor                       => System_Boolean_Array_Operations,
+
+     RE_Bswap_16                         => System_Byte_Swapping,
+     RE_Bswap_32                         => System_Byte_Swapping,
+     RE_Bswap_64                         => System_Byte_Swapping,
 
      RE_Compare_Array_S8                 => System_Compare_Array_Signed_8,
      RE_Compare_Array_S8_Unaligned       => System_Compare_Array_Signed_8,

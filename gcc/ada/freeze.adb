@@ -88,6 +88,14 @@ package body Freeze is
    --  Apply legality checks to address clauses for object declarations,
    --  at the point the object is frozen.
 
+   procedure Check_Component_Storage_Order
+     (Encl_Type : Entity_Id;
+      Comp      : Entity_Id);
+   --  For an Encl_Type that has a Scalar_Storage_Order attribute definition
+   --  clause, verify that the component type is compatible. For arrays,
+   --  Comp is Empty; for records, it is the entity of the component under
+   --  consideration.
+
    procedure Check_Strict_Alignment (E : Entity_Id);
    --  E is a base type. If E is tagged or has a component that is aliased
    --  or tagged or contains something this is aliased or tagged, set
@@ -1007,6 +1015,60 @@ package body Freeze is
    begin
       Set_Size_Known_At_Compile_Time (T, Size_Known (T));
    end Check_Compile_Time_Size;
+
+   -----------------------------------
+   -- Check_Component_Storage_Order --
+   -----------------------------------
+
+   procedure Check_Component_Storage_Order
+     (Encl_Type : Entity_Id;
+      Comp      : Entity_Id)
+   is
+      Comp_Type : Entity_Id;
+      Comp_Def  : Node_Id;
+      Err_Node  : Node_Id;
+      ADC       : Node_Id;
+
+   begin
+      --  Record case
+
+      if Present (Comp) then
+         Err_Node  := Comp;
+         Comp_Type := Etype (Comp);
+         Comp_Def  := Component_Definition (Parent (Comp));
+
+      --  Array case
+
+      else
+         Err_Node  := Encl_Type;
+         Comp_Type := Component_Type (Encl_Type);
+         Comp_Def  := Component_Definition
+                        (Type_Definition (Declaration_Node (Encl_Type)));
+      end if;
+
+      --  Note: the Reverse_Storage_Order flag is set on the base type,
+      --  but the attribute definition clause is attached to the first
+      --  subtype.
+
+      Comp_Type := Base_Type (Comp_Type);
+      ADC := Get_Attribute_Definition_Clause
+               (First_Subtype (Comp_Type),
+                Attribute_Scalar_Storage_Order);
+
+      if (Is_Record_Type (Comp_Type) or else Is_Array_Type (Comp_Type))
+           and then
+         (No (ADC) or else Reverse_Storage_Order (Encl_Type)
+                        /= Reverse_Storage_Order (Etype (Comp_Type)))
+      then
+         Error_Msg_N
+           ("component type must have same scalar storage order as "
+            & "enclosing composite", Err_Node);
+
+      elsif Aliased_Present (Comp_Def) then
+         Error_Msg_N ("aliased component not permitted for type with "
+                      & "explicit Scalar_Storage_Order", Err_Node);
+      end if;
+   end Check_Component_Storage_Order;
 
    -----------------------------
    -- Check_Debug_Info_Needed --
@@ -2202,12 +2264,21 @@ package body Freeze is
             end if;
 
             --  Warn if there is a Scalar_Storage_Order but no component clause
+            --  (or pragma Pack).
 
-            if not Placed_Component then
+            if not (Placed_Component or else Is_Packed (Rec)) then
                Error_Msg_N
                  ("?scalar storage order specified but no component clause",
                   ADC);
             end if;
+
+            --  Check attribute on component types
+
+            Comp := First_Component (Rec);
+            while Present (Comp) loop
+               Check_Component_Storage_Order (Rec, Comp);
+               Next_Component (Comp);
+            end loop;
          end if;
 
          --  Deal with Bit_Order aspect specifying a non-default bit order
@@ -2215,7 +2286,7 @@ package body Freeze is
          ADC := Get_Attribute_Definition_Clause (Rec, Attribute_Bit_Order);
 
          if Present (ADC) and then Base_Type (Rec) = Rec then
-            if not Placed_Component then
+            if not (Placed_Component or else Is_Packed (Rec)) then
                Error_Msg_N ("?bit order specification has no effect", ADC);
                Error_Msg_N
                  ("\?since no component clauses were specified", ADC);
@@ -3670,6 +3741,14 @@ package body Freeze is
                         Error_Msg_N
                           ("\because of pragma Pack#?", Clause);
                      end if;
+                  end if;
+
+                  --  Check for scalar storage order
+
+                  if Present (Get_Attribute_Definition_Clause
+                               (E, Attribute_Scalar_Storage_Order))
+                  then
+                     Check_Component_Storage_Order (E, Empty);
                   end if;
 
                --  Processing that is done only for subtypes
