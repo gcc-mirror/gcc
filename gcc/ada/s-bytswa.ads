@@ -29,8 +29,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Supporting routines for GNAT.Byte_Swapping, also used directly by
---  expended code.
+--  Intrinsic routines for byte swapping. These are used by the expanded code
+--  (supporting alternative byte ordering), and by the GNAT.Byte_Swapping run
+--  time package which provides user level routines for byte swapping.
 
 package System.Byte_Swapping is
 

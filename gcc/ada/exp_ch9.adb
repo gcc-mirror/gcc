@@ -2955,30 +2955,40 @@ package body Exp_Ch9 is
    --  manner:
 
    --    procedure P (...) is
+   --       Expected_Comp : constant Comp_Type :=
+   --                         Comp_Type
+   --                           (System.Atomic_Primitives.Lock_Free_Read_N
+   --                              (_Object.Comp'Address));
    --    begin
    --       loop
    --          declare
    --             <original declarations before the object renaming declaration
    --              of Comp>
-   --             Saved_Comp   : constant ... :=
-   --                              Atomic_Load (_Object.Comp'Address, Relaxed);
-   --             Current_Comp : ... := Saved_Comp;
-   --             Comp         : Comp_Type renames Current_Comp;
+   --
+   --             Desired_Comp : Comp_Type := Expected_Comp;
+   --             Comp         : Comp_Type renames Desired_Comp;
+   --
    --             <original delarations after the object renaming declaration
    --              of Comp>
+   --
    --          begin
    --             <original statements>
-   --             exit when Atomic_Compare
-   --                         (_Object.Comp, Saved_Comp, Current_Comp);
+   --             exit when System.Atomic_Primitives.Lock_Free_Try_Write_N
+   --                         (_Object.Comp'Address,
+   --                          Interfaces.Unsigned_N (Expected_Comp),
+   --                          Interfaces.Unsigned_N (Desired_Comp));
    --          end;
-   --          <<L0>>
    --       end loop;
    --    end P;
 
    --  Each return and raise statement of P is transformed into an atomic
    --  status check:
 
-   --    if Atomic_Compare (_Object.Comp, Saved_Comp, Current_Comp) then
+   --    if System.Atomic_Primitives.Lock_Free_Try_Write_N
+   --         (_Object.Comp'Address,
+   --          Interfaces.Unsigned_N (Expected_Comp),
+   --          Interfaces.Unsigned_N (Desired_Comp));
+   --    then
    --       <original statement>
    --    else
    --       goto L0;
@@ -2991,10 +3001,16 @@ package body Exp_Ch9 is
    --    function F (...) return ... is
    --       <original declarations before the object renaming declaration
    --        of Comp>
-   --       Saved_Comp : constant ... := Atomic_Load (_Object.Comp'Address);
-   --       Comp       : Comp_Type renames Saved_Comp;
+   --
+   --       Expected_Comp : constant Comp_Type :=
+   --                         Comp_Type
+   --                           (System.Atomic_Primitives.Lock_Free_Read_N
+   --                              (_Object.Comp'Address));
+   --       Comp          : Comp_Type renames Expected_Comp;
+   --
    --       <original delarations after the object renaming declaration of
    --        Comp>
+   --
    --    begin
    --       <original statements>
    --    end F;
@@ -3003,11 +3019,6 @@ package body Exp_Ch9 is
      (N        : Node_Id;
       Prot_Typ : Node_Id) return Node_Id
    is
-      Is_Procedure : constant Boolean    :=
-                       Ekind (Corresponding_Spec (N)) = E_Procedure;
-      Loc          : constant Source_Ptr := Sloc (N);
-      Label_Id     : Entity_Id := Empty;
-
       function Referenced_Component (N : Node_Id) return Entity_Id;
       --  Subprograms which meet the lock-free implementation criteria are
       --  allowed to reference only one unique component. Return the prival
@@ -3068,9 +3079,10 @@ package body Exp_Ch9 is
 
       --  Local variables
 
-      Comp          : constant Entity_Id := Referenced_Component (N);
-      Hand_Stmt_Seq : Node_Id            := Handled_Statement_Sequence (N);
-      Decls         : List_Id            := Declarations (N);
+      Comp          : constant Entity_Id  := Referenced_Component (N);
+      Loc           : constant Source_Ptr := Sloc (N);
+      Hand_Stmt_Seq : Node_Id             := Handled_Statement_Sequence (N);
+      Decls         : List_Id             := Declarations (N);
 
    --  Start of processing for Build_Lock_Free_Unprotected_Subprogram_Body
 
@@ -3088,19 +3100,24 @@ package body Exp_Ch9 is
             Comp_Decl    : constant Node_Id   := Parent (Comp);
             Comp_Sel_Nam : constant Node_Id   := Name (Comp_Decl);
             Comp_Type    : constant Entity_Id := Etype (Comp);
-            Block_Decls  : List_Id;
-            Compare      : Entity_Id;
-            Current_Comp : Entity_Id;
-            Decl         : Node_Id;
-            Label        : Node_Id;
-            Load         : Entity_Id;
-            Load_Params  : List_Id;
-            Saved_Comp   : Entity_Id;
-            Stmt         : Node_Id;
-            Stmts        : List_Id :=
-                             New_Copy_List (Statements (Hand_Stmt_Seq));
-            Typ_Size     : Int;
-            Unsigned     : Entity_Id;
+
+            Is_Procedure : constant Boolean :=
+                             Ekind (Corresponding_Spec (N)) = E_Procedure;
+            --  Indicates if N is a protected procedure body
+
+            Block_Decls   : List_Id;
+            Try_Write     : Entity_Id;
+            Desired_Comp  : Entity_Id;
+            Decl          : Node_Id;
+            Label         : Node_Id;
+            Label_Id      : Entity_Id := Empty;
+            Read          : Entity_Id;
+            Expected_Comp : Entity_Id;
+            Stmt          : Node_Id;
+            Stmts         : List_Id :=
+                              New_Copy_List (Statements (Hand_Stmt_Seq));
+            Typ_Size      : Int;
+            Unsigned      : Entity_Id;
 
             function Process_Node (N : Node_Id) return Traverse_Result;
             --  Transform a single node if it is a return statement, a raise
@@ -3110,10 +3127,10 @@ package body Exp_Ch9 is
             --  Given a statement sequence Stmts, wrap any return or raise
             --  statements in the following manner:
             --
-            --    if System.Atomic_Primitives.Atomic_Compare_Exchange
-            --         (Comp'Address,
-            --          Interfaces.Unsigned (Saved_Comp),
-            --          Interfaces.Unsigned (Current_Comp))
+            --    if System.Atomic_Primitives.Lock_Free_Try_Write_N
+            --         (_Object.Comp'Address,
+            --          Interfaces.Unsigned_N (Expected_Comp),
+            --          Interfaces.Unsigned_N (Desired_Comp))
             --    then
             --       <Stmt>;
             --    else
@@ -3149,10 +3166,10 @@ package body Exp_Ch9 is
 
                   --  Generate:
 
-                  --    if System.Atomic_Primitives.Atomic_Compare_Exchange
-                  --         (Comp'Address,
-                  --          Interfaces.Unsigned (Saved_Comp),
-                  --          Interfaces.Unsigned (Current_Comp))
+                  --    if System.Atomic_Primitives.Lock_Free_Try_Write_N
+                  --         (_Object.Comp'Address,
+                  --          Interfaces.Unsigned_N (Expected_Comp),
+                  --          Interfaces.Unsigned_N (Desired_Comp))
                   --    then
                   --       <Stmt>;
                   --    else
@@ -3164,17 +3181,17 @@ package body Exp_Ch9 is
                       Condition =>
                         Make_Function_Call (Loc,
                           Name                   =>
-                            New_Reference_To (Compare, Loc),
+                            New_Reference_To (Try_Write, Loc),
                           Parameter_Associations => New_List (
                             Make_Attribute_Reference (Loc,
                               Prefix         => Relocate_Node (Comp_Sel_Nam),
                               Attribute_Name => Name_Address),
 
                             Unchecked_Convert_To (Unsigned,
-                              New_Reference_To (Saved_Comp, Loc)),
+                              New_Reference_To (Expected_Comp, Loc)),
 
                             Unchecked_Convert_To (Unsigned,
-                              New_Reference_To (Current_Comp, Loc)))),
+                              New_Reference_To (Desired_Comp, Loc)))),
 
                       Then_Statements => New_List (Relocate_Node (Stmt)),
 
@@ -3253,67 +3270,53 @@ package body Exp_Ch9 is
 
             case Typ_Size is
                when 8 =>
-                  Compare  := RTE (RE_Atomic_Compare_Exchange_8);
-                  Load     := RTE (RE_Atomic_Load_8);
-                  Unsigned := RTE (RE_Uint8);
+                  Try_Write := RTE (RE_Lock_Free_Try_Write_8);
+                  Read      := RTE (RE_Lock_Free_Read_8);
+                  Unsigned  := RTE (RE_Uint8);
 
                when 16 =>
-                  Compare  := RTE (RE_Atomic_Compare_Exchange_16);
-                  Load     := RTE (RE_Atomic_Load_16);
-                  Unsigned := RTE (RE_Uint16);
+                  Try_Write := RTE (RE_Lock_Free_Try_Write_16);
+                  Read      := RTE (RE_Lock_Free_Read_16);
+                  Unsigned  := RTE (RE_Uint16);
 
                when 32 =>
-                  Compare  := RTE (RE_Atomic_Compare_Exchange_32);
-                  Load     := RTE (RE_Atomic_Load_32);
-                  Unsigned := RTE (RE_Uint32);
+                  Try_Write := RTE (RE_Lock_Free_Try_Write_32);
+                  Read      := RTE (RE_Lock_Free_Read_32);
+                  Unsigned  := RTE (RE_Uint32);
 
                when 64 =>
-                  Compare  := RTE (RE_Atomic_Compare_Exchange_64);
-                  Load     := RTE (RE_Atomic_Load_64);
-                  Unsigned := RTE (RE_Uint64);
+                  Try_Write := RTE (RE_Lock_Free_Try_Write_64);
+                  Read      := RTE (RE_Lock_Free_Read_64);
+                  Unsigned  := RTE (RE_Uint64);
 
                when others =>
                   raise Program_Error;
             end case;
 
             --  Generate:
-            --    For functions:
 
-            --       Saved_Comp : constant Comp_Type :=
-            --                      Comp_Type (Atomic_Load (Comp'Address));
+            --  Expected_Comp : constant Comp_Type :=
+            --                    Comp_Type
+            --                      (System.Atomic_Primitives.Lock_Free_Read_N
+            --                         (_Object.Comp'Address));
 
-            --    For procedures:
-
-            --       Saved_Comp : constant Comp_Type :=
-            --                      Comp_Type (Atomic_Load (Comp'Address),
-            --                                             Relaxed);
-
-            Saved_Comp :=
+            Expected_Comp :=
               Make_Defining_Identifier (Loc,
                 New_External_Name (Chars (Comp), Suffix => "_saved"));
 
-            Load_Params := New_List (
-              Make_Attribute_Reference (Loc,
-                Prefix         => Relocate_Node (Comp_Sel_Nam),
-                Attribute_Name => Name_Address));
-
-            --  For protected procedures, set the memory model to be relaxed
-
-            if Is_Procedure then
-               Append_To (Load_Params,
-                 New_Reference_To (RTE (RE_Relaxed), Loc));
-            end if;
-
             Decl :=
               Make_Object_Declaration (Loc,
-                Defining_Identifier => Saved_Comp,
-                Constant_Present    => True,
+                Defining_Identifier => Expected_Comp,
                 Object_Definition   => New_Reference_To (Comp_Type, Loc),
+                Constant_Present    => True,
                 Expression          =>
                   Unchecked_Convert_To (Comp_Type,
                     Make_Function_Call (Loc,
-                      Name                   => New_Reference_To (Load, Loc),
-                      Parameter_Associations => Load_Params)));
+                      Name                   => New_Reference_To (Read, Loc),
+                      Parameter_Associations => New_List (
+                        Make_Attribute_Reference (Loc,
+                          Prefix         => Relocate_Node (Comp_Sel_Nam),
+                          Attribute_Name => Name_Address)))));
 
             --  Protected procedures
 
@@ -3322,37 +3325,35 @@ package body Exp_Ch9 is
 
                Block_Decls := Decls;
 
-               --  Reset the declarations list of the protected procedure to be
-               --  an empty list.
+               --  Reset the declarations list of the protected procedure to
+               --  contain only Decl.
 
-               Decls := Empty_List;
+               Decls := New_List (Decl);
 
                --  Generate:
-               --    Current_Comp : Comp_Type := Saved_Comp;
+               --    Desired_Comp : Comp_Type := Expected_Comp;
 
-               Current_Comp :=
+               Desired_Comp :=
                  Make_Defining_Identifier (Loc,
                    New_External_Name (Chars (Comp), Suffix => "_current"));
 
-               --  Insert the declarations of Saved_Comp and Current_Comp in
+               --  Insert the declarations of Expected_Comp and Desired_Comp in
                --  the block declarations right before the renaming of the
                --  protected component.
 
-               Insert_Before (Comp_Decl, Decl);
-
                Insert_Before (Comp_Decl,
                  Make_Object_Declaration (Loc,
-                   Defining_Identifier => Current_Comp,
+                   Defining_Identifier => Desired_Comp,
                    Object_Definition   => New_Reference_To (Comp_Type, Loc),
                    Expression          =>
-                     New_Reference_To (Saved_Comp, Loc)));
+                     New_Reference_To (Expected_Comp, Loc)));
 
             --  Protected function
 
             else
-               Current_Comp := Saved_Comp;
+               Desired_Comp := Expected_Comp;
 
-               --  Insert the declaration of Saved_Comp in the function
+               --  Insert the declaration of Expected_Comp in the function
                --  declarations right before the renaming of the protected
                --  component.
 
@@ -3360,10 +3361,10 @@ package body Exp_Ch9 is
             end if;
 
             --  Rewrite the protected component renaming declaration to be a
-            --  renaming of Current_Comp.
+            --  renaming of Desired_Comp.
 
             --  Generate:
-            --    Comp : Comp_Type renames Current_Comp;
+            --    Comp : Comp_Type renames Desired_Comp;
 
             Rewrite (Comp_Decl,
               Make_Object_Renaming_Declaration (Loc,
@@ -3372,7 +3373,7 @@ package body Exp_Ch9 is
                 Subtype_Mark      =>
                   New_Occurrence_Of (Comp_Type, Loc),
                 Name              =>
-                  New_Reference_To (Current_Comp, Loc)));
+                  New_Reference_To (Desired_Comp, Loc)));
 
             --  Wrap any return or raise statements in Stmts in same the manner
             --  described in Process_Stmts.
@@ -3381,10 +3382,10 @@ package body Exp_Ch9 is
 
             --  Generate:
 
-            --    exit when System.Atomic_Primitives.Atomic_Compare_Exchange
-            --                (Comp'Address,
-            --                 Interfaces.Unsigned (Saved_Comp),
-            --                 Interfaces.Unsigned (Current_Comp))
+            --    exit when System.Atomic_Primitives.Lock_Free_Try_Write_N
+            --                (_Object.Comp'Address,
+            --                 Interfaces.Unsigned_N (Expected_Comp),
+            --                 Interfaces.Unsigned_N (Desired_Comp))
 
             if Is_Procedure then
                Stmt :=
@@ -3392,17 +3393,17 @@ package body Exp_Ch9 is
                    Condition =>
                      Make_Function_Call (Loc,
                        Name                   =>
-                         New_Reference_To (Compare, Loc),
+                         New_Reference_To (Try_Write, Loc),
                        Parameter_Associations => New_List (
                          Make_Attribute_Reference (Loc,
                            Prefix         => Relocate_Node (Comp_Sel_Nam),
                            Attribute_Name => Name_Address),
 
                          Unchecked_Convert_To (Unsigned,
-                           New_Reference_To (Saved_Comp, Loc)),
+                           New_Reference_To (Expected_Comp, Loc)),
 
                          Unchecked_Convert_To (Unsigned,
-                           New_Reference_To (Current_Comp, Loc)))));
+                           New_Reference_To (Desired_Comp, Loc)))));
 
                --  Small optimization: transform the default return statement
                --  of a procedure into the atomic exit statement.
@@ -3439,9 +3440,6 @@ package body Exp_Ch9 is
             if Is_Procedure then
                Stmts :=
                  New_List (
-                   Make_Procedure_Call_Statement (Loc,
-                      Name =>
-                        New_Reference_To (RTE (RE_Atomic_Synchronize), Loc)),
                    Make_Loop_Statement (Loc,
                      Statements => New_List (
                        Make_Block_Statement (Loc,
