@@ -1,5 +1,48 @@
 2012-07-12  Robert Dewar  <dewar@adacore.com>
 
+	* sem_disp.adb: Minor reformatting
+	* s-bytswa.ads: Minor comment update.
+
+2012-07-12  Vincent Pucci  <pucci@adacore.com>
+
+	* exp_ch9.adb (Build_Lock_Free_Unprotected_Subprogram_Body):
+	Atomic_Load_N replaced by Lock_Free_Read_N. Atomic_Compare_Exchange_N
+	replaced by Lock_Free_Try_Write_N.
+	Renaming of several local variables. For
+	procedure, Expected_Comp declaration moved to the declaration
+	list of the procedure.
+	* rtsfind.ads: RE_Atomic_Compare_Exchange_8,
+	RE_Atomic_Compare_Exchange_16, RE_Atomic_Compare_Exchange_32,
+	RE_Atomic_Compare_Exchange_64, RE_Atomic_Load_8,
+	RE_Atomic_Load_16, RE_Atomic_Load_32, RE_Atomic_Load_64,
+	RE_Atomic_Synchronize, RE_Relaxed removed.  RE_Lock_Free_Read_8,
+	RE_Lock_Free_Read_16, RE_Lock_Free_Read_32, RE_Lock_Free_Read_64,
+	RE_Lock_Free_Try_Write_8, RE_Lock_Free_Try_Write_16,
+	RE_Lock_Free_Try_Write_32, RE_Lock_Free_Try_Write_64 added.
+	* s-atopri.adb: New file.
+	* s-atopri.ads (Atomic_Compare_Exchange_8): Renaming of
+	parameters.  Import primitive __sync_val_compare_and_swap_1.
+	(Atomic_Compare_Exchange_16): Renaming of parameters.
+	Import primitive __sync_val_compare_and_swap_2.
+	(Atomic_Compare_Exchange_32): Renaming of parameters.
+	Import primitive __sync_val_compare_and_swap_4.
+	(Atomic_Compare_Exchange_64): Renaming of parameters.  Import
+	primitive __sync_val_compare_and_swap_8.
+	(Atomic_Load_8): Ptr renames parameter X.
+	(Atomic_Load_16): Ptr renames parameter X.
+	(Atomic_Load_32): Ptr renames parameter X.
+	(Atomic_Load_64): Ptr renames parameter X.
+	(Lock_Free_Read_8): New routine.
+	(Lock_Free_Read_16): New routine.
+	(Lock_Free_Read_32): New routine.
+	(Lock_Free_Read_64): New routine.
+	(Lock_Free_Try_Write_8): New routine.
+	(Lock_Free_Try_Write_16): New routine.
+	(Lock_Free_Try_Write_32): New routine.
+	(Lock_Free_Try_Write_64): New routine.
+
+2012-07-12  Robert Dewar  <dewar@adacore.com>
+
 	* exp_attr.adb, exp_ch9.adb, sem_ch9.adb, exp_aggr.adb: Minor
 	reformatting.
 
