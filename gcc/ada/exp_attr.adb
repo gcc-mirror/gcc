@@ -816,9 +816,9 @@ package body Exp_Attr is
 
       if Is_Protected_Self_Reference (Pref)
         and then not
-             (Nkind_In (Parent (N), N_Index_Or_Discriminant_Constraint,
-                                    N_Discriminant_Association)
-                and then Nkind (Parent (Parent (Parent (Parent (N))))) =
+          (Nkind_In (Parent (N), N_Index_Or_Discriminant_Constraint,
+                                 N_Discriminant_Association)
+            and then Nkind (Parent (Parent (Parent (Parent (N))))) =
                                                       N_Component_Definition)
 
          --  No action needed for these attributes since the current instance

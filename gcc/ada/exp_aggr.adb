@@ -294,8 +294,8 @@ package body Exp_Aggr is
 
       --  The normal limit is 5000, but we increase this limit to 2**24 (about
       --  16 million) if Restrictions (No_Elaboration_Code) or Restrictions
-      --  (No_Implicit_Loops) is specified, since in either case we are at risk
-      --  of declaring the program illegal because of this limit. We also
+      --  (No_Implicit_Loops) is specified, since in either case we are at
+      --  risk of declaring the program illegal because of this limit. We also
       --  increase the limit when Static_Elaboration_Desired, given that this
       --  means that objects are intended to be placed in data memory.
 
@@ -3517,9 +3517,9 @@ package body Exp_Aggr is
                            --  Check for maximum others replication. Note that
                            --  we skip this test if either of the restrictions
                            --  No_Elaboration_Code or No_Implicit_Loops is
-                           --  active, if this is a preelaborable unit or a
-                           --  predefined unit, or if the unit must be placed
-                           --  in data memory. This also ensures that
+                           --  active, if this is a preelaborable unit or
+                           --  a predefined unit, or if the unit must be
+                           --  placed in data memory. This also ensures that
                            --  predefined units get the same level of constant
                            --  folding in Ada 95 and Ada 2005, where their
                            --  categorization has changed.
@@ -3537,7 +3537,8 @@ package body Exp_Aggr is
                                 or else
                                   (Ekind (Current_Scope) = E_Package
                                     and then
-                                    Static_Elaboration_Desired (Current_Scope))
+                                      Static_Elaboration_Desired
+                                        (Current_Scope))
                                 or else Is_Preelaborated (P)
                                 or else (Ekind (P) = E_Package_Body
                                           and then
@@ -3746,11 +3747,13 @@ package body Exp_Aggr is
                         and then Ekind (Entity (Expr)) = E_Enumeration_Literal)
                   then
                      null;
+
                   else
-                     Error_Msg_N ("non-static object "
-                       & " requires elaboration code?", N);
+                     Error_Msg_N
+                       ("non-static object  requires elaboration code?", N);
                      exit;
                   end if;
+
                   Next (Expr);
                end loop;
 

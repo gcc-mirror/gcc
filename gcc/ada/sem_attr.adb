@@ -6322,11 +6322,12 @@ package body Sem_Attr is
               Attribute_Iterator_Element     |
               Attribute_Variable_Indexing    => null;
 
-         --  Atributes related to Ada 2012 aspects
+         --  Internal attributes used to deal with Ada 2012 delayed aspects.
+         --  These were already rejected by the parser. Thus they shouldn't
+         --  appear here.
 
-         when Attribute_CPU                |
-              Attribute_Dispatching_Domain |
-              Attribute_Interrupt_Priority => null;
+         when Internal_Attribute_Id =>
+            raise Program_Error;
 
       --------------
       -- Adjacent --

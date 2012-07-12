@@ -493,7 +493,33 @@ package body Sem_Disp is
 
       procedure Check_Dispatching_Context is
          Subp : constant Entity_Id := Entity (Name (N));
+         Typ  : constant Entity_Id := Etype (Subp);
          Par  : Node_Id;
+
+         procedure Abstract_Context_Error;
+         --  Indicate that the abstract call that dispatches on result is not
+         --  dispatching.
+
+         -----------------------------
+         --  Bastract_Context_Error --
+         -----------------------------
+
+         procedure Abstract_Context_Error is
+         begin
+            if Ekind (Subp) = E_Function then
+               Error_Msg_N
+                 ("call to abstract function must be dispatching", N);
+
+            --  This error can occur for a procedure in the case of a
+            --  call to an abstract formal procedure with a statically
+            --  tagged operand.
+
+            else
+               Error_Msg_N
+                 ("call to abstract procedure must be dispatching",
+                  N);
+            end if;
+         end Abstract_Context_Error;
 
       begin
          if Is_Abstract_Subprogram (Subp)
@@ -510,15 +536,78 @@ package body Sem_Disp is
                return;
 
             else
+               --  We need to determine whether the context of the call
+               --  provides a tag to make the call dispatching. This requires
+               --  the call to be the actual in an enclosing call, and that
+               --  actual must be controlling.  If the call is an operand of
+               --  equality, the other operand must not ve abstract.
+
+               if not Is_Tagged_Type (Typ)
+                 and then not
+                    (Ekind (Typ) = E_Anonymous_Access_Type
+                      and then Is_Tagged_Type (Designated_Type (Typ)))
+               then
+                  Abstract_Context_Error;
+                  return;
+               end if;
+
                Par := Parent (N);
+               if Nkind (Par) = N_Parameter_Association then
+                  Par := Parent (Par);
+               end if;
+
                while Present (Par) loop
-                  if Nkind_In (Par, N_Function_Call,
-                                    N_Procedure_Call_Statement,
-                                    N_Assignment_Statement,
-                                    N_Op_Eq,
-                                    N_Op_Ne)
-                    and then Is_Tagged_Type (Etype (Subp))
+                  if Nkind_In (Par,
+                                 N_Function_Call,
+                                 N_Procedure_Call_Statement)
+                    and then Is_Entity_Name (Name (Par))
                   then
+                     declare
+                        A : Node_Id;
+                        F : Entity_Id;
+
+                     begin
+                        --  Find formal for which call is the actual.
+
+                        F := First_Formal (Entity (Name (Par)));
+                        A := First_Actual (Par);
+
+                        while Present (F) loop
+
+                           if Is_Controlling_Formal (F)
+                             and then
+                               (N = A or else Parent (N) = A)
+                           then
+                              return;
+                           end if;
+
+                           Next_Formal (F);
+                           Next_Actual (A);
+                        end loop;
+
+                        Error_Msg_N
+                          ("call to abstract function must be dispatching", N);
+                        return;
+                     end;
+
+                  --  For equalitiy operators, one of the operands must
+                  --  be statically or dynamically tagged.
+
+                  elsif Nkind_In (Par, N_Op_Eq, N_Op_Ne) then
+                     if N = Right_Opnd (Par)
+                       and then Is_Tag_Indeterminate (Left_Opnd (Par))
+                     then
+                        Abstract_Context_Error;
+
+                     elsif N = Left_Opnd (Par)
+                       and then Is_Tag_Indeterminate (Right_Opnd (Par))
+                     then
+                        Abstract_Context_Error;
+                     end if;
+
+                     return;
+
+                  elsif Nkind (Par) = N_Assignment_Statement then
                      return;
 
                   elsif Nkind (Par) = N_Qualified_Expression
@@ -527,20 +616,7 @@ package body Sem_Disp is
                      Par := Parent (Par);
 
                   else
-                     if Ekind (Subp) = E_Function then
-                        Error_Msg_N
-                          ("call to abstract function must be dispatching", N);
-
-                     --  This error can occur for a procedure in the case of a
-                     --  call to an abstract formal procedure with a statically
-                     --  tagged operand.
-
-                     else
-                        Error_Msg_N
-                          ("call to abstract procedure must be dispatching",
-                           N);
-                     end if;
-
+                     Abstract_Context_Error;
                      return;
                   end if;
                end loop;

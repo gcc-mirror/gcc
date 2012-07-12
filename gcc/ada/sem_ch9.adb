@@ -175,7 +175,6 @@ package body Sem_Ch9 is
 
                   begin
                      Par := First (Par_Specs);
-
                      while Present (Par) loop
                         if Out_Present (Par)
                           and then not Is_Elementary_Type
@@ -183,10 +182,9 @@ package body Sem_Ch9 is
                         then
                            if Complain then
                               Error_Msg_NE
-                                ("non-elementary out parameter& not allowed " &
-                                 "when Lock_Free given",
-                                 Par,
-                                 Defining_Identifier (Par));
+                                ("non-elementary out parameter& not allowed "
+                                 & "when Lock_Free given",
+                                 Par, Defining_Identifier (Par));
                            end if;
 
                            return False;
