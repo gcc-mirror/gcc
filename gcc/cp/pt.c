@@ -116,8 +116,6 @@ enum template_base_result {
 
 static void push_access_scope (tree);
 static void pop_access_scope (tree);
-static void push_deduction_access_scope (tree);
-static void pop_deduction_access_scope (tree);
 static bool resolve_overloaded_unification (tree, tree, tree, tree,
 					    unification_kind_t, int,
 					    bool);
@@ -14263,9 +14261,10 @@ deduction_tsubst_fntype (tree fn, tree targs, tsubst_flags_t complain)
 
   input_location = DECL_SOURCE_LOCATION (fn);
   ++deduction_depth;
-  push_deduction_access_scope (fn);
+  /* We will do access checks in instantiate_template.  */
+  push_deferring_access_checks (dk_deferred);
   r = tsubst (fntype, targs, complain, NULL_TREE);
-  pop_deduction_access_scope (fn);
+  pop_deferring_access_checks ();
   --deduction_depth;
 
   if (excessive_deduction_depth)
@@ -14374,6 +14373,10 @@ instantiate_template_1 (tree tmpl, tree orig_args, tsubst_flags_t complain)
   if (fndecl == error_mark_node)
     return error_mark_node;
 
+  /* The DECL_TI_TEMPLATE should always be the immediate parent
+     template, not the most general template.  */
+  DECL_TI_TEMPLATE (fndecl) = tmpl;
+
   /* Now we know the specialization, compute access previously
      deferred.  */
   push_access_scope (fndecl);
@@ -14386,10 +14389,6 @@ instantiate_template_1 (tree tmpl, tree orig_args, tsubst_flags_t complain)
   perform_deferred_access_checks ();
   pop_access_scope (fndecl);
   pop_deferring_access_checks ();
-
-  /* The DECL_TI_TEMPLATE should always be the immediate parent
-     template, not the most general template.  */
-  DECL_TI_TEMPLATE (fndecl) = tmpl;
 
   /* If we've just instantiated the main entry point for a function,
      instantiate all the alternate entry points as well.  We do this
@@ -14411,36 +14410,6 @@ instantiate_template (tree tmpl, tree orig_args, tsubst_flags_t complain)
   ret = instantiate_template_1 (tmpl, orig_args,  complain);
   timevar_pop (TV_TEMPLATE_INST);
   return ret;
-}
-
-/* We're going to do deduction substitution on the type of TMPL, a function
-   template.  In C++11 mode, push into that access scope.  In C++03 mode,
-   disable access checking.  */
-
-static void
-push_deduction_access_scope (tree tmpl)
-{
-  if (cxx_dialect >= cxx0x)
-    {
-      int ptd = processing_template_decl;
-      push_access_scope (DECL_TEMPLATE_RESULT (tmpl));
-      /* Preserve processing_template_decl across push_to_top_level.  */
-      if (ptd && !processing_template_decl)
-	++processing_template_decl;
-    }
-  else
-    push_deferring_access_checks (dk_no_check);
-}
-
-/* And pop back out.  */
-
-static void
-pop_deduction_access_scope (tree tmpl)
-{
-  if (cxx_dialect >= cxx0x)
-    pop_access_scope (DECL_TEMPLATE_RESULT (tmpl));
-  else
-    pop_deferring_access_checks ();
 }
 
 /* PARM is a template parameter pack for FN.  Returns true iff
