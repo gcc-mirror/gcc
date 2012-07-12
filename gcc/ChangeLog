@@ -1,3 +1,10 @@
+2012-07-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (QImode and HImode cmove splitters): Merge
+	QImode and HImode splitters.  Use ix86_comparison_operator.
+	Explicitly match FLAGS_REG.
+	(DFmode cmove splitter): Explicitly match FLAGS_REG.
+
 2012-07-11  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* expr.h (can_move_by_pieces): Move prototype from here ...
@@ -55,7 +62,7 @@
 	* gimplify.c (gimplify_bind_expr): Control
 	clobber generation with new option.
 	(gimplify_target_expr): Ditto.
-	common.opt: New option.
+	* common.opt: New option.
 
 2012-07-10  Julian Brown  <julian@codesourcery.com>
 
@@ -167,8 +174,7 @@
 	(gimple_phi_arg_has_block): New function.
 	(redirect_edge_var_map_block): New function.
 	* tree-flow.h (_edge_var_map): New field.
-	* tree-ssa-live.c (remove_unused_locals): Mark phi_arg's block
-	as used.
+	* tree-ssa-live.c (remove_unused_locals): Mark phi_arg's block as used.
 	* tree-eh.c (cleanup_empty_eh_merge_phis): Add block debug info for
 	redirect_edge_var_map_add.
 	* tree-outof-ssa.c (_elim_graph): New field.
