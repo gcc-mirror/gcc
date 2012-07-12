@@ -56,9 +56,6 @@ package body System.Byte_Swapping is
    function Swapped2 (Input : Item) return Item is
       function As_U16 is new Unchecked_Conversion (Item, U16);
       function As_Item is new Unchecked_Conversion (U16, Item);
-
-      function Bswap_16 (X : U16) return U16 is (X / 256 or X * 256);
-      --  ??? Need to have function local here to allow inlining
       pragma Compile_Time_Error (Item'Max_Size_In_Storage_Elements /= 2,
         "storage size must be 2 bytes");
    begin
