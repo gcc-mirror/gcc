@@ -1,5 +1,8 @@
 2012-07-12  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (instantiate_decl): Check typedefs access here.
+	(instantiate_template_1): Not here.
+
 	* pt.c (deduction_tsubst_fntype): Just suppress access checking.
 	(instantiate_template_1): Set DECL_TI_TEMPLATE before access checking.
 	(push_deduction_access_scope, pop_deduction_access_scope): Remove.
