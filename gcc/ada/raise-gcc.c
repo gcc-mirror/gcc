@@ -81,7 +81,6 @@ extern void __gnat_setup_current_excep (_Unwind_Exception *);
 extern void __gnat_unhandled_except_handler (_Unwind_Exception *);
 
 #include "dwarf2.h"
-#include "unwind-dw2-fde.h"
 #include "unwind-pe.h"
 
 /* The known and handled exception classes.  */
@@ -426,7 +425,7 @@ db_phases (int phases)
 	   |
 	   +--> get_region_description_for (context)
 	   |
-	   +--> get_action_description_for (context, exception, region)
+	   +--> get_action_description_for (ip, exception, region)
 	   |       |
 	   |       +--> get_call_site_action_for (context, region)
 	   |            (one version for each underlying scheme)
@@ -514,14 +513,10 @@ get_ip_from_context (_Unwind_Context *uw_context)
 }
 
 static void
-db_region_for (region_descriptor *region, _Unwind_Context *uw_context)
+db_region_for (region_descriptor *region, _Unwind_Ptr ip)
 {
-  _Unwind_Ptr ip;
-
   if (! (db_accepted_codes () & DB_REGIONS))
     return;
-
-  ip = get_ip_from_context (uw_context);
 
   db (DB_REGIONS, "For ip @ %p => ", (void *)ip);
 
@@ -607,7 +602,7 @@ get_region_description_for (_Unwind_Context *uw_context,
 /* Describe an action to be taken when propagating an exception up to
    some context.  */
 
-typedef enum
+enum action_kind
 {
   /* Found some call site base data, but need to analyze further
      before being able to decide.  */
@@ -620,8 +615,12 @@ typedef enum
   cleanup,
 
   /* There is a handler for the exception in this context.  */
-  handler
-} action_kind;
+  handler,
+
+  /* There is a handler for the exception, but it is only for catching
+     unhandled exceptions.  */
+  unhandler
+};
 
 /* filter value for cleanup actions.  */
 static const int cleanup_filter = 0;
@@ -629,7 +628,7 @@ static const int cleanup_filter = 0;
 typedef struct
 {
   /* The kind of action to be taken.  */
-  action_kind kind;
+  enum action_kind kind;
 
   /* A pointer to the action record entry.  */
   const unsigned char *table_entry;
@@ -645,10 +644,8 @@ typedef struct
 } action_descriptor;
 
 static void
-db_action_for (action_descriptor *action, _Unwind_Context *uw_context)
+db_action_for (action_descriptor *action, _Unwind_Ptr ip)
 {
-  _Unwind_Ptr ip = get_ip_from_context (uw_context);
-
   db (DB_ACTIONS, "For ip @ %p => ", (void *)ip);
 
   switch (action->kind)
@@ -691,12 +688,10 @@ db_action_for (action_descriptor *action, _Unwind_Context *uw_context)
 #define __builtin_eh_return_data_regno(x) x
 
 static void
-get_call_site_action_for (_Unwind_Context *uw_context,
+get_call_site_action_for (_Unwind_Ptr call_site,
                           region_descriptor *region,
                           action_descriptor *action)
 {
-  _Unwind_Ptr call_site = get_ip_from_context (uw_context);
-
   /* call_site is a direct index into the call-site table, with two special
      values : -1 for no-action and 0 for "terminate".  The latter should never
      show up for Ada.  To test for the former, beware that _Unwind_Ptr might
@@ -705,17 +700,16 @@ get_call_site_action_for (_Unwind_Context *uw_context,
   if ((int)call_site < 0)
     {
       action->kind = nothing;
-      return;
     }
   else if (call_site == 0)
     {
       db (DB_ERR, "========> Err, null call_site for Ada/sjlj\n");
       action->kind = nothing;
-      return;
     }
   else
     {
       _uleb128_t cs_lp, cs_action;
+      const unsigned char *p = region->call_site_table;
 
       /* Let the caller know there may be an action to take, but let it
 	 determine the kind.  */
@@ -725,13 +719,13 @@ get_call_site_action_for (_Unwind_Context *uw_context,
 	 made of leb128 values, the encoding length of which is variable.  We
 	 can't merely compute an offset from the index, then, but have to read
 	 all the entries before the one of interest.  */
-
-      const unsigned char *p = region->call_site_table;
-
-      do {
-	p = read_uleb128 (p, &cs_lp);
-	p = read_uleb128 (p, &cs_action);
-      } while (--call_site);
+      p = region->call_site_table;
+      do
+	{
+	  p = read_uleb128 (p, &cs_lp);
+	  p = read_uleb128 (p, &cs_action);
+	}
+      while (--call_site);
 
       action->landing_pad = cs_lp + 1;
 
@@ -739,20 +733,17 @@ get_call_site_action_for (_Unwind_Context *uw_context,
 	action->table_entry = region->action_table + cs_action - 1;
       else
 	action->table_entry = 0;
-
-      return;
     }
 }
 
 #else /* !__USING_SJLJ_EXCEPTIONS__  */
 
 static void
-get_call_site_action_for (_Unwind_Context *uw_context,
+get_call_site_action_for (_Unwind_Ptr ip,
                           region_descriptor *region,
                           action_descriptor *action)
 {
   const unsigned char *p = region->call_site_table;
-  _Unwind_Ptr ip = get_ip_from_context (uw_context);
 
   /* Unless we are able to determine otherwise...  */
   action->kind = nothing;
@@ -824,24 +815,28 @@ extern Exception_Code Import_Code_For (_Unwind_Ptr eid);
 
 extern Exception_Id EID_For (_GNAT_Exception * e);
 
-static int
+static enum action_kind
 is_handled_by (_Unwind_Ptr choice, _GNAT_Exception * propagated_exception)
 {
+  if (choice == GNAT_ALL_OTHERS)
+    return handler;
+
   if (propagated_exception->common.exception_class == GNAT_EXCEPTION_CLASS)
     {
       /* Pointer to the GNAT exception data corresponding to the propagated
          occurrence.  */
       _Unwind_Ptr E = (_Unwind_Ptr) EID_For (propagated_exception);
 
+      if (choice == GNAT_UNHANDLED_OTHERS)
+	return unhandler;
+
+      E = (_Unwind_Ptr) EID_For (propagated_exception);
+
       /* Base matching rules: An exception data (id) matches itself, "when
          all_others" matches anything and "when others" matches anything
          unless explicitly stated otherwise in the propagated occurrence.  */
-
-      bool is_handled =
-        choice == E
-        || (choice == GNAT_OTHERS && Is_Handled_By_Others (E))
-        || choice == GNAT_ALL_OTHERS
-        || choice == GNAT_UNHANDLED_OTHERS;
+      if (choice == E || (choice == GNAT_OTHERS && Is_Handled_By_Others (E)))
+	return handler;
 
       /* In addition, on OpenVMS, Non_Ada_Error matches VMS exceptions, and we
          may have different exception data pointers that should match for the
@@ -854,43 +849,44 @@ is_handled_by (_Unwind_Ptr choice, _GNAT_Exception * propagated_exception)
 #     define Non_Ada_Error system__aux_dec__non_ada_error
       extern struct Exception_Data Non_Ada_Error;
 
-      is_handled |=
-        (Language_For (E) == 'V'
-         && choice != GNAT_OTHERS && choice != GNAT_ALL_OTHERS
-         && ((Language_For (choice) == 'V' && Import_Code_For (choice) != 0
-              && Import_Code_For (choice) == Import_Code_For (E))
-             || choice == (_Unwind_Ptr)&Non_Ada_Error));
+      if ((Language_For (E) == 'V'
+	   && choice != GNAT_OTHERS
+	   && ((Language_For (choice) == 'V'
+		&& Import_Code_For (choice) != 0
+		&& Import_Code_For (choice) == Import_Code_For (E))
+	       || choice == (_Unwind_Ptr)&Non_Ada_Error)))
+	return handler;
 #endif
-
-      return is_handled;
     }
   else
     {
-#     define Foreign_Exception system__exceptions__foreign_exception;
+#     define Foreign_Exception system__exceptions__foreign_exception
       extern struct Exception_Data Foreign_Exception;
 
-      return choice == GNAT_ALL_OTHERS
-        || choice == GNAT_OTHERS
-        || choice == (_Unwind_Ptr)&Foreign_Exception;
+      if (choice == GNAT_ALL_OTHERS
+	  || choice == GNAT_OTHERS
+	  || choice == (_Unwind_Ptr) &Foreign_Exception)
+	return handler;
     }
+  return nothing;
 }
 
 /* Fill out the ACTION to be taken from propagating UW_EXCEPTION up to
    UW_CONTEXT in REGION.  */
 
 static void
-get_action_description_for (_Unwind_Context *uw_context,
+get_action_description_for (_Unwind_Ptr ip,
                             _Unwind_Exception *uw_exception,
                             _Unwind_Action uw_phase,
                             region_descriptor *region,
                             action_descriptor *action)
 {
-  _GNAT_Exception * gnat_exception = (_GNAT_Exception *) uw_exception;
+  _GNAT_Exception *gnat_exception = (_GNAT_Exception *) uw_exception;
 
   /* Search the call site table first, which may get us a landing pad as well
      as the head of an action record list.  */
-  get_call_site_action_for (uw_context, region, action);
-  db_action_for (action, uw_context);
+  get_call_site_action_for (ip, region, action);
+  db_action_for (action, ip);
 
   /* If there is not even a call_site entry, we are done.  */
   if (action->kind == nothing)
@@ -954,9 +950,9 @@ get_action_description_for (_Unwind_Context *uw_context,
                      matches the one we are propagating.  */
                   _Unwind_Ptr choice = get_ttype_entry_for (region, ar_filter);
 
-                  if (is_handled_by (choice, gnat_exception))
+		  action->kind = is_handled_by (choice, gnat_exception);
+                  if (action->kind != nothing)
                     {
-                      action->kind = handler;
                       action->ttype_filter = ar_filter;
                       return;
                     }
@@ -1006,6 +1002,7 @@ setup_to_install (_Unwind_Context *uw_context,
    automatic backtraces upon exception raise, as provided through the
    GNAT.Traceback facilities.  */
 extern void __gnat_notify_handled_exception (void);
+extern void __gnat_notify_unhandled_exception (void);
 
 /* Below is the eh personality routine per se. We currently assume that only
    GNU-Ada exceptions are met.  */
@@ -1072,6 +1069,7 @@ PERSONALITY_FUNCTION (version_arg_t version_arg,
   _Unwind_Action uw_phases = (_Unwind_Action) phases_arg;
   region_descriptor region;
   action_descriptor action;
+  _Unwind_Ptr ip;
 
   /* Check that we're called from the ABI context we expect, with a major
      possible variation on VMS for IA64.  */
@@ -1104,7 +1102,8 @@ PERSONALITY_FUNCTION (version_arg_t version_arg,
      will tell us if there is some lsda, call_site, action and/or ttype data
      for the associated ip.  */
   get_region_description_for (uw_context, &region);
-  db_region_for (&region, uw_context);
+  ip = get_ip_from_context (uw_context);
+  db_region_for (&region, ip);
 
   /* No LSDA => no handlers or cleanups => we shall unwind further up.  */
   if (! region.lsda)
@@ -1112,9 +1111,8 @@ PERSONALITY_FUNCTION (version_arg_t version_arg,
 
   /* Search the call-site and action-record tables for the action associated
      with this IP.  */
-  get_action_description_for (uw_context, uw_exception, uw_phases,
-                              &region, &action);
-  db_action_for (&action, uw_context);
+  get_action_description_for (ip, uw_exception, uw_phases, &region, &action);
+  db_action_for (&action, ip);
 
   /* Whatever the phase, if there is nothing relevant in this frame,
      unwinding should just go on.  */
@@ -1137,7 +1135,10 @@ PERSONALITY_FUNCTION (version_arg_t version_arg,
 	     phase starts, which ensures the stack is still intact.
              First, setup the Ada occurrence.  */
           __gnat_setup_current_excep (uw_exception);
-	  __gnat_notify_handled_exception ();
+	  if (action.kind == unhandler)
+	    __gnat_notify_unhandled_exception ();
+	  else
+	    __gnat_notify_handled_exception ();
 
 	  return _URC_HANDLER_FOUND;
 	}
@@ -1157,13 +1158,16 @@ PERSONALITY_FUNCTION (version_arg_t version_arg,
   return _URC_INSTALL_CONTEXT;
 }
 
+/* Callback routine called by Unwind_ForcedUnwind to execute all the cleanup
+   before exiting the task.  */
+
 _Unwind_Reason_Code
-__gnat_cleanupunwind_handler (int version,
+__gnat_cleanupunwind_handler (int version ATTRIBUTE_UNUSED,
 			      _Unwind_Action phases,
-			      _Unwind_Exception_Class eclass,
+			      _Unwind_Exception_Class eclass ATTRIBUTE_UNUSED,
 			      struct _Unwind_Exception *exception,
-			      struct _Unwind_Context *context,
-			      void *arg)
+			      struct _Unwind_Context *context ATTRIBUTE_UNUSED,
+			      void *arg ATTRIBUTE_UNUSED)
 {
   /* Terminate when the end of the stack is reached.  */
   if ((phases & _UA_END_OF_STACK) != 0
@@ -1184,45 +1188,27 @@ __gnat_cleanupunwind_handler (int version,
 
 /* Define the consistently named wrappers imported by Propagate_Exception.  */
 
+_Unwind_Reason_Code
+__gnat_Unwind_RaiseException (_Unwind_Exception *e)
+{
 #ifdef __USING_SJLJ_EXCEPTIONS__
-
-#undef _Unwind_RaiseException
-
-_Unwind_Reason_Code
-__gnat_Unwind_RaiseException (_Unwind_Exception *e)
-{
   return _Unwind_SjLj_RaiseException (e);
-}
-
-
-#undef _Unwind_ForcedUnwind
-
-_Unwind_Reason_Code
-__gnat_Unwind_ForcedUnwind (_Unwind_Exception *e,
-                            void * handler,
-                            void * argument)
-{
-  return _Unwind_SjLj_ForcedUnwind (e, handler, argument);
-}
-
-
-#else /* __USING_SJLJ_EXCEPTIONS__ */
-
-_Unwind_Reason_Code
-__gnat_Unwind_RaiseException (_Unwind_Exception *e)
-{
+#else
   return _Unwind_RaiseException (e);
+#endif
 }
 
 _Unwind_Reason_Code
 __gnat_Unwind_ForcedUnwind (_Unwind_Exception *e,
-                            void * handler,
-                            void * argument)
+			    void *handler,
+			    void *argument)
 {
+#ifdef __USING_SJLJ_EXCEPTIONS__
+  return _Unwind_SjLj_ForcedUnwind (e, handler, argument);
+#else
   return _Unwind_ForcedUnwind (e, handler, argument);
+#endif
 }
-
-#endif /* __USING_SJLJ_EXCEPTIONS__ */
 
 #ifdef __SEH__
 

@@ -1,3 +1,36 @@
+2012-07-12  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch3.adb (Make_Neq_Body): Fix typo in comment.
+
+2012-07-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tb-gcc.c (trace_callback): On IA-64/HP-UX, use workaround only
+	if USE_LIBUNWIND_EXCEPTIONS is defined.
+	* init.c: Further tweaks for IA-64/HP-UX.
+
+2012-07-12  Tristan Gingold  <gingold@adacore.com>
+
+	* raise-gcc.c: Do not include unwind-dw2-fde.h. Adjust comments.
+	(db_region_for): Second argument is ip.  Do not recompute ip.
+	(action_kind): Remove typedef, add unhandler enum const.
+	(action_descriptor): Adjust type of kind field.
+	(db_action_for): Second argument is ip, do not recompute it.
+	(get_call_site_action_for): First argument is call_site, do not
+	recompute it.  Remove useless return.
+	(is_handled_by): Now return enum action_kind.
+	Handle GNAT_ALL_OTHERS first.
+	Return unhandler for GNAT_UNHANDLED_OTHERS.
+	(get_action_description_for): First argument is now ip, do not
+	recompute it.  Adjust code for call to is_handled_by.
+	(__gnat_notify_unhandled_exception): Add prototype.
+	(PERSONALITY_FUNCTION): Call get_ip_from_context.  Adjust calls.
+	Handle unhandler case.
+	(__gnat_cleanupunwind_handler): Add comments, add
+	ATTRIBUTE_UNUSED on arguments.
+	(__gnat_Unwind_RaiseException, __gnat_Unwind_ForcedUnwind): Define
+	only once.
+	* raise.h: Makes struct Exception_Data opaque.
+
 2012-07-12  Robert Dewar  <dewar@adacore.com>
 
 	* make.adb, sem_ch9.adb, prj.adb, s-rident.ads, snames.ads-tmpl: Minor

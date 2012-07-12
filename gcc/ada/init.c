@@ -304,8 +304,10 @@ __gnat_install_handler (void)
 #include <signal.h>
 #include <sys/ucontext.h>
 
-#if defined(__ia64__)
+#if defined (IN_RTS) && defined (__ia64__)
+
 #include <sys/uc_access.h>
+
 #define HAVE_GNAT_ADJUST_CONTEXT_FOR_RAISE
 
 void
@@ -318,7 +320,7 @@ __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *ucontext)
   __uc_get_ip (uc, &ip);
   __uc_set_ip (uc, ip + 1);
 }
-#endif /* __ia64__ */
+#endif /* IN_RTS && __ia64__ */
 
 /* Tasking and Non-tasking signal handler.  Map SIGnal to Ada exception
    propagation after the required low level adjustments.  */
@@ -331,9 +333,7 @@ __gnat_error_handler (int sig,
   struct Exception_Data *exception;
   const char *msg;
 
-#if defined(__ia64__)
   __gnat_adjust_context_for_raise (sig, ucontext);
-#endif
 
   switch (sig)
     {

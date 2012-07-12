@@ -8204,7 +8204,7 @@ package body Exp_Ch3 is
       --  otherwise, the inherited or predefined subprogram is called, see
       --  (RM 8.5.4(8))
 
-      --  Stage 1: Search for a renaming of the unequality primitive and also
+      --  Stage 1: Search for a renaming of the inequality primitive and also
       --  search for an overriding of the equality primitive located before the
       --  renaming declaration.
 
