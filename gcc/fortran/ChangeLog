@@ -1,3 +1,8 @@
+2012-07-12  Tobias Burnus  <burnus@net-b.de>
+
+	* trans-expr.c (conv_isocbinding_procedure): Generate c_f_pointer code
+	inline.
+
 2012-07-11  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* trans.c: Do not include defaults.h.
