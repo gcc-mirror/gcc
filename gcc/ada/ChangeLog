@@ -1,3 +1,32 @@
+2012-07-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb (Convert_To_Positional): Increase acceptable size
+	of static aggregate when Static_Elaboration_Desired is requested.
+	Add a warning if the request cannot be satisfied either because
+	some components or some array bounds are non-static.
+
+2012-07-12  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_pakd.adb: Minor reformatting.
+
+2012-07-12  Tristan Gingold  <gingold@adacore.com>
+
+	* tracebak.c: Fix warnings.
+	* raise-gcc.c (__gnat_adjust_context): New function
+	(__gnat_personality_seh0): Call __gnat_adjust_context to adjust
+	PC in machine frame for exceptions that occur in the current
+	function.
+
+2012-07-12  Thomas Quinot  <quinot@adacore.com>
+
+	* g-bytswa.adb, g-bytswa.ads, s-bytswa.adb, s-bytswa.ads, Makefile.rtl:
+	Move GNAT.Byte_Swapping to System (with a renaming under GNAT)
+	so that it is usable in expanded code.
+
+2012-07-12  Tristan Gingold  <gingold@adacore.com>
+
+	* s-osinte-hpux.ads: Increase alternate stack size on hpux.
+
 2012-07-12  Javier Miranda  <miranda@adacore.com>
 
 	* exp_ch3.adb (Make_Neq_Body): Fix typo in comment.

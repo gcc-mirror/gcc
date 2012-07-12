@@ -1593,8 +1593,7 @@ package body Exp_Pakd is
                      --  Note that Rhs_Val has already been normalized to
                      --  be an unsigned value with the proper number of bits.
 
-                     Rhs :=
-                       Make_Integer_Literal (Loc, Rhs_Val);
+                     Rhs := Make_Integer_Literal (Loc, Rhs_Val);
 
                   --  Otherwise we need an unchecked conversion
 

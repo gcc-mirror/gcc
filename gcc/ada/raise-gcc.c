@@ -1216,6 +1216,75 @@ __gnat_Unwind_ForcedUnwind (_Unwind_Exception *e,
 EXCEPTION_DISPOSITION __gnat_SEH_error_handler
  (struct _EXCEPTION_RECORD*, void*, struct _CONTEXT*, void*);
 
+/* Unwind opcodes.  */
+#define UWOP_PUSH_NONVOL 0
+#define UWOP_ALLOC_LARGE 1
+#define UWOP_ALLOC_SMALL 2
+#define UWOP_SET_FPREG	 3
+#define UWOP_SAVE_NONVOL 4
+#define UWOP_SAVE_NONVOL_FAR 5
+#define UWOP_SAVE_XMM128 8
+#define UWOP_SAVE_XMM128_FAR 9
+#define UWOP_PUSH_MACHFRAME 10
+
+/* Modify the IP value saved in the machine frame.  This is really a kludge,
+   that will be removed if we could propagate the Windows exception (and not
+   the GCC one).
+   What is very wrong is that the Windows unwinder will try to decode the
+   instruction at IP, which isn't valid anymore after the adjust.  */
+
+static void
+__gnat_adjust_context (unsigned char *unw, ULONG64 rsp)
+{
+  unsigned int len;
+
+  /* Version = 1, no flags, no prolog.  */
+  if (unw[0] != 1 || unw[1] != 0)
+    return;
+  len = unw[2];
+  /* No frame pointer.  */
+  if (unw[3] != 0)
+    return;
+  unw += 4;
+  while (len > 0)
+    {
+      /* Offset in prolog = 0.  */
+      if (unw[0] != 0)
+	return;
+      switch (unw[1] & 0xf)
+	{
+	case UWOP_ALLOC_LARGE:
+	  /* Expect < 512KB.  */
+	  if ((unw[1] & 0xf0) != 0)
+	    return;
+	  rsp += *(unsigned short *)(unw + 2) * 8;
+	  len--;
+	  unw += 2;
+	  break;
+	case UWOP_SAVE_NONVOL:
+	case UWOP_SAVE_XMM128:
+	  len--;
+	  unw += 2;
+	  break;
+	case UWOP_PUSH_MACHFRAME:
+	  {
+	    ULONG64 *rip;
+	    rip = (ULONG64 *)rsp;
+	    if ((unw[1] & 0xf0) == 0x10)
+	      rip++;
+	    /* Adjust rip.  */
+	    (*rip)++;
+	  }
+	  return;
+	default:
+	  /* Unexpected.  */
+	  return;
+	}
+      unw += 2;
+      len--;
+    }
+}
+
 EXCEPTION_DISPOSITION
 __gnat_personality_seh0 (PEXCEPTION_RECORD ms_exc, void *this_frame,
 			 PCONTEXT ms_orig_context,
@@ -1225,7 +1294,67 @@ __gnat_personality_seh0 (PEXCEPTION_RECORD ms_exc, void *this_frame,
      optimization, we call __gnat_SEH_error_handler only on non-user
      exceptions.  */
   if (!(ms_exc->ExceptionCode & STATUS_USER_DEFINED))
-    __gnat_SEH_error_handler (ms_exc, this_frame, ms_orig_context, ms_disp);
+    {
+      ULONG64 excpip = (ULONG64) ms_exc->ExceptionAddress;
+      if (excpip != 0
+	  && excpip >= (ms_disp->ImageBase
+			+ ms_disp->FunctionEntry->BeginAddress)
+	  && excpip < (ms_disp->ImageBase
+		       + ms_disp->FunctionEntry->EndAddress))
+	{
+	  /* This is a fault in this function.  We need to adjust the return
+	     address before raising the GCC exception.  */
+	  CONTEXT context;
+	  PRUNTIME_FUNCTION mf_func = NULL;
+	  ULONG64 mf_imagebase;
+	  ULONG64 mf_rsp;
+
+	  /* Get the context.  */
+	  RtlCaptureContext (&context);
+
+	  while (1)
+	    {
+	      PRUNTIME_FUNCTION RuntimeFunction;
+	      ULONG64 ImageBase;
+	      VOID *HandlerData;
+	      ULONG64 EstablisherFrame;
+
+	      /* Get function metadata.  */
+	      RuntimeFunction = RtlLookupFunctionEntry
+		(context.Rip, &ImageBase, ms_disp->HistoryTable);
+	      if (RuntimeFunction == ms_disp->FunctionEntry)
+		break;
+	      mf_func = RuntimeFunction;
+	      mf_imagebase = ImageBase;
+	      mf_rsp = context.Rsp;
+
+	      if (!RuntimeFunction)
+		{
+		  /* In case of failure, assume this is a leaf function.  */
+		  context.Rip = *(ULONG64 *) context.Rsp;
+		  context.Rsp += 8;
+		}
+	      else
+		{
+		  /* Unwind.  */
+		  RtlVirtualUnwind (0, ImageBase, context.Rip, RuntimeFunction,
+				    &context, &HandlerData, &EstablisherFrame,
+				    NULL);
+		}
+
+	      /* 0 means bottom of the stack.  */
+	      if (context.Rip == 0)
+		{
+		  mf_func = NULL;
+		  break;
+		}
+	    }
+	  if (mf_func != NULL)
+	    __gnat_adjust_context
+	      ((unsigned char *)(mf_imagebase + mf_func->UnwindData), mf_rsp);
+	}
+      __gnat_SEH_error_handler (ms_exc, this_frame, ms_orig_context, ms_disp);
+    }
 
   return _GCC_specific_handler (ms_exc, this_frame, ms_orig_context,
 				ms_disp, __gnat_personality_imp);

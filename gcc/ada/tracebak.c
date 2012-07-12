@@ -143,7 +143,7 @@ __gnat_backtrace (void **array,
       if (!RuntimeFunction)
 	{
 	  /* In case of failure, assume this is a leaf function.  */
-	  context.Rip = *(ULONG64 **) context.Rsp;
+	  context.Rip = *(ULONG64 *) context.Rsp;
 	  context.Rsp += 8;
 	}
       else
@@ -170,7 +170,7 @@ __gnat_backtrace (void **array,
 	  && (void *)context.Rip <= exclude_max)
 	continue;
 
-      array[i++] = context.Rip - 2;
+      array[i++] = (void *)(context.Rip - 2);
       if (i >= size)
 	break;
     }
