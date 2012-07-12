@@ -1,3 +1,9 @@
+2012-07-12  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/c_f_pointer_shape_tests_5.f90: New.
+	* gfortran.dg/c_f_pointer_tests_3.f90: Update
+	scan-tree-dump-times pattern.
+
 2012-07-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* g++.dg/debug/dwarf2/pubnames-2.C: Allow for / comments.
