@@ -1,3 +1,9 @@
+2012-07-12  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (deduction_tsubst_fntype): Just suppress access checking.
+	(instantiate_template_1): Set DECL_TI_TEMPLATE before access checking.
+	(push_deduction_access_scope, pop_deduction_access_scope): Remove.
+
 2012-07-11  Jason Merrill  <jason@redhat.com>
 
 	DR 1402
