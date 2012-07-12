@@ -1,3 +1,16 @@
+2012-07-12  Robert Dewar  <dewar@adacore.com>
+
+	* make.adb, sem_ch9.adb, prj.adb, s-rident.ads, snames.ads-tmpl: Minor
+	reformatting.
+
+2012-07-12  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch3.adb (Is_User_Defined_Equality): New subprogram.
+	(Make_Neq_Body): New subprogram.
+	(Make_Predefined_Primitive_Specs): Adding local variable
+	Has_Predef_Eq_ Renaming to ensure that we enable the machinery
+	which handles renamings of predefined primitive operators.
+
 2012-07-09  Pascal Obry  <obry@adacore.com>
 
 	* prj.adb (For_Every_Project_Imported_Context): Make sure we

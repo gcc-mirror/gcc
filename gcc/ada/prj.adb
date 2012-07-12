@@ -599,12 +599,14 @@ package body Prj is
 
             function Has_Sources (P : Project_Id) return Boolean is
                Lang : Language_Ptr;
+
             begin
                Lang := P.Languages;
                while Lang /= No_Language_Index loop
                   if Lang.First_Source /= No_Source then
                      return True;
                   end if;
+
                   Lang := Lang.Next;
                end loop;
 
@@ -617,6 +619,7 @@ package body Prj is
 
             function Get_From_Tree (P : Project_Id) return Project_Id is
                List : Project_List := Tree.Projects;
+
             begin
                if not Has_Sources (P) then
                   while List /= null loop
@@ -625,6 +628,7 @@ package body Prj is
                      then
                         return List.Project;
                      end if;
+
                      List := List.Next;
                   end loop;
                end if;
@@ -632,7 +636,11 @@ package body Prj is
                return P;
             end Get_From_Tree;
 
+            --  Local variables
+
             List : Project_List;
+
+         --  Start of processing for Recursive_Check
 
          begin
             if not Seen_Name.Contains (Project.Name) then

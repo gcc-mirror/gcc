@@ -244,6 +244,9 @@ package body Sem_Ch9 is
                ----------------
 
                function Check_Node (N : Node_Id) return Traverse_Result is
+
+                  --  The following function belongs in sem_eval ???
+
                   function Is_Static_Function (Attr : Node_Id) return Boolean;
                   --  Given an attribute reference node Attr, return True if
                   --  Attr denotes a static function according to the rules in

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,16 +30,17 @@
 ------------------------------------------------------------------------------
 
 --  This package defines the set of restriction identifiers. It is a generic
---  package that is instantiated by the compiler/binder in package Rident, and
---  is instantiated in package System.Restrictions for use at run-time.
+--  package that is instantiated by the binder for output of the restrictions
+--  structure, and is instantiated in package System.Restrictions for use at
+--  run-time.
 
 --  The reason that we make this a generic package is so that in the case of
---  the instantiation in Rident for use at compile time and bind time, we can
---  generate normal image tables for the enumeration types, which are needed
---  for diagnostic and informational messages. At run-time we really do not
---  want to waste the space for these image tables, and they are not needed,
---  so we can do the instantiation under control of Discard_Names to remove
---  the tables.
+--  the instantiation in the binder, we can generate normal image tables for
+--  the enumeration types, which are needed for diagnostic and informational
+--  messages as well as for identification of restrictions. At run-time we
+--  really do not want to waste the space for these image tables, and they are
+--  not needed, so we can do the instantiation under control of Discard_Names
+--  to remove the tables.
 
 pragma Compiler_Unit;
 

@@ -4807,8 +4807,10 @@ package body Make is
          return;
       end if;
 
-      --  Regenerate libraries, if there are any and if object files
-      --  have been regenerated.
+      --  Regenerate libraries, if there are any and if object files have been
+      --  regenerated. Note that we skip this in CodePeer mode because we don't
+      --  need libraries in this case, and more importantly, the object files
+      --  may not be present.
 
       if Main_Project /= No_Project
         and then not CodePeer_Mode
