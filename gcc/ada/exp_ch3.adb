@@ -202,6 +202,9 @@ package body Exp_Ch3 is
    --  Check if E is defined in the RTL (in a child of Ada or System). Used
    --  to avoid to bring in the overhead of _Input, _Output for tagged types.
 
+   function Is_User_Defined_Equality (Prim : Node_Id) return Boolean;
+   --  Returns true if Prim is a user defined equality function
+
    function Is_Variable_Size_Array (E : Entity_Id) return Boolean;
    --  Returns true if E has variable size components
 
@@ -236,6 +239,11 @@ package body Exp_Ch3 is
    --  components of local temporaries named X and Y (that are declared as
    --  formals at some upper level). E provides the Sloc to be used for the
    --  generated code.
+
+   function Make_Neq_Body (Tag_Typ : Entity_Id) return Node_Id;
+   --  Search for a renaming of the inequality dispatching primitive of
+   --  this tagged type. If found then build and return the corresponding
+   --  rename-as-body inequality subprogram; otherwise return Empty.
 
    procedure Make_Predefined_Primitive_Specs
      (Tag_Typ     : Entity_Id;
@@ -7677,6 +7685,18 @@ package body Exp_Ch3 is
       end loop;
    end Init_Secondary_Tags;
 
+   ------------------------
+   -- Is_User_Defined_Eq --
+   ------------------------
+
+   function Is_User_Defined_Equality (Prim : Node_Id) return Boolean is
+   begin
+      return Chars (Prim) = Name_Op_Eq
+        and then Etype (First_Formal (Prim)) =
+                 Etype (Next_Formal (First_Formal (Prim)))
+        and then Base_Type (Etype (Prim)) = Standard_Boolean;
+   end Is_User_Defined_Equality;
+
    ----------------------------
    -- Is_Variable_Size_Array --
    ----------------------------
@@ -8140,6 +8160,175 @@ package body Exp_Ch3 is
       end if;
    end Make_Eq_If;
 
+   --------------------
+   --  Make_Neq_Body --
+   --------------------
+
+   function Make_Neq_Body (Tag_Typ : Entity_Id) return Node_Id is
+
+      function Is_Predefined_Neq_Renaming (Prim : Node_Id) return Boolean;
+      --  Returns true if Prim is a renaming of an unresolved predefined
+      --  inequality operation.
+
+      --------------------------------
+      -- Is_Predefined_Neq_Renaming --
+      --------------------------------
+
+      function Is_Predefined_Neq_Renaming (Prim : Node_Id) return Boolean is
+      begin
+         return Chars (Prim) /= Name_Op_Ne
+           and then Present (Alias (Prim))
+           and then Comes_From_Source (Prim)
+           and then Is_Intrinsic_Subprogram (Alias (Prim))
+           and then Chars (Alias (Prim)) = Name_Op_Ne;
+      end Is_Predefined_Neq_Renaming;
+
+      --  Local variables
+
+      Loc           : constant Source_Ptr := Sloc (Parent (Tag_Typ));
+      Stmts         : constant List_Id    := New_List;
+      Decl          : Node_Id;
+      Eq_Prim       : Entity_Id;
+      Left_Op       : Entity_Id;
+      Renaming_Prim : Entity_Id;
+      Right_Op      : Entity_Id;
+      Target        : Entity_Id;
+
+   --  Start of processing for Make_Neq_Body
+
+   begin
+      --  For a call on a renaming of a dispatching subprogram that is
+      --  overridden, if the overriding occurred before the renaming, then
+      --  the body executed is that of the overriding declaration, even if the
+      --  overriding declaration is not visible at the place of the renaming;
+      --  otherwise, the inherited or predefined subprogram is called, see
+      --  (RM 8.5.4(8))
+
+      --  Stage 1: Search for a renaming of the unequality primitive and also
+      --  search for an overriding of the equality primitive located before the
+      --  renaming declaration.
+
+      declare
+         Elmt : Elmt_Id;
+         Prim : Node_Id;
+
+      begin
+         Eq_Prim       := Empty;
+         Renaming_Prim := Empty;
+
+         Elmt := First_Elmt (Primitive_Operations (Tag_Typ));
+         while Present (Elmt) loop
+            Prim := Node (Elmt);
+
+            if Is_User_Defined_Equality (Prim)
+              and then No (Alias (Prim))
+            then
+               if No (Renaming_Prim) then
+                  pragma Assert (No (Eq_Prim));
+                  Eq_Prim := Prim;
+               end if;
+
+            elsif Is_Predefined_Neq_Renaming (Prim) then
+               Renaming_Prim := Prim;
+            end if;
+
+            Next_Elmt (Elmt);
+         end loop;
+      end;
+
+      --  No further action needed if no renaming was found
+
+      if No (Renaming_Prim) then
+         return Empty;
+      end if;
+
+      --  Stage 2: Replace the renaming declaration by a subprogram declaration
+      --  (required to add its body)
+
+      Decl := Parent (Parent (Renaming_Prim));
+      Rewrite (Decl,
+        Make_Subprogram_Declaration (Loc,
+          Specification => Specification (Decl)));
+      Set_Analyzed (Decl);
+
+      --  Remove the decoration of intrinsic renaming subprogram
+
+      Set_Is_Intrinsic_Subprogram (Renaming_Prim, False);
+      Set_Convention (Renaming_Prim, Convention_Ada);
+      Set_Alias (Renaming_Prim, Empty);
+      Set_Has_Completion (Renaming_Prim, False);
+
+      --  Stage 3: Build the corresponding body
+
+      Left_Op  := First_Formal (Renaming_Prim);
+      Right_Op := Next_Formal (Left_Op);
+
+      Decl :=
+        Predef_Spec_Or_Body (Loc,
+          Tag_Typ => Tag_Typ,
+          Name    => Chars (Renaming_Prim),
+          Profile => New_List (
+            Make_Parameter_Specification (Loc,
+              Defining_Identifier =>
+                Make_Defining_Identifier (Loc, Chars (Left_Op)),
+              Parameter_Type      => New_Reference_To (Tag_Typ, Loc)),
+
+            Make_Parameter_Specification (Loc,
+              Defining_Identifier =>
+                Make_Defining_Identifier (Loc, Chars (Right_Op)),
+              Parameter_Type      => New_Reference_To (Tag_Typ, Loc))),
+
+          Ret_Type => Standard_Boolean,
+          For_Body => True);
+
+      --  If the overriding of the equality primitive occurred before the
+      --  renaming, then generate:
+
+      --    function <Neq_Name> (X : Y : Typ) return Boolean is
+      --    begin
+      --       return not Oeq (X, Y);
+      --    end;
+
+      if Present (Eq_Prim) then
+         Target := Eq_Prim;
+
+      --  Otherwise build a nested subprogram which performs the predefined
+      --  evaluation of the equality operator. That is, generate:
+
+      --    function <Neq_Name> (X : Y : Typ) return Boolean is
+      --       function Oeq (X : Y) return Boolean is
+      --       begin
+      --          <<body of default implementation>>
+      --       end;
+      --    begin
+      --       return not Oeq (X, Y);
+      --    end;
+
+      else
+         declare
+            Local_Subp : Node_Id;
+         begin
+            Local_Subp := Make_Eq_Body (Tag_Typ, Name_Op_Eq);
+            Set_Declarations (Decl, New_List (Local_Subp));
+            Target := Defining_Entity (Local_Subp);
+         end;
+      end if;
+
+      Append_To (Stmts,
+        Make_Simple_Return_Statement (Loc,
+          Expression =>
+            Make_Op_Not (Loc,
+              Make_Function_Call (Loc,
+                Name => New_Reference_To (Target, Loc),
+                Parameter_Associations => New_List (
+                  Make_Identifier (Loc, Chars (Left_Op)),
+                  Make_Identifier (Loc, Chars (Right_Op)))))));
+
+      Set_Handled_Statement_Sequence
+        (Decl, Make_Handled_Sequence_Of_Statements (Loc, Stmts));
+      return Decl;
+   end Make_Neq_Body;
+
    -------------------------------
    -- Make_Null_Procedure_Specs --
    -------------------------------
@@ -8238,13 +8427,6 @@ package body Exp_Ch3 is
       Predef_List : out List_Id;
       Renamed_Eq  : out Entity_Id)
    is
-      Loc       : constant Source_Ptr := Sloc (Tag_Typ);
-      Res       : constant List_Id    := New_List;
-      Eq_Name   : Name_Id := Name_Op_Eq;
-      Eq_Needed : Boolean;
-      Eq_Spec   : Node_Id;
-      Prim      : Elmt_Id;
-
       function Is_Predefined_Eq_Renaming (Prim : Node_Id) return Boolean;
       --  Returns true if Prim is a renaming of an unresolved predefined
       --  equality operation.
@@ -8261,6 +8443,19 @@ package body Exp_Ch3 is
            and then Is_Intrinsic_Subprogram (Alias (Prim))
            and then Chars (Alias (Prim)) = Name_Op_Eq;
       end Is_Predefined_Eq_Renaming;
+
+      --  Local variables
+
+      Loc       : constant Source_Ptr := Sloc (Tag_Typ);
+      Res       : constant List_Id    := New_List;
+      Eq_Name   : Name_Id := Name_Op_Eq;
+      Eq_Needed : Boolean;
+      Eq_Spec   : Node_Id;
+      Prim      : Elmt_Id;
+
+      Has_Predef_Eq_Renaming : Boolean := False;
+      --  Set to True if Tag_Typ has a primitive that renames the predefined
+      --  equality operator. Used to implement (RM 8-5-4(8)).
 
    --  Start of processing for Make_Predefined_Primitive_Specs
 
@@ -8299,9 +8494,9 @@ package body Exp_Ch3 is
          end loop;
       end;
 
-      --  Spec of "=" is expanded if the type is not limited and if a
-      --  user defined "=" was not already declared for the non-full
-      --  view of a private extension
+      --  Spec of "=" is expanded if the type is not limited and if a user
+      --  defined "=" was not already declared for the non-full view of a
+      --  private extension
 
       if not Is_Limited_Type (Tag_Typ) then
          Eq_Needed := True;
@@ -8311,21 +8506,18 @@ package body Exp_Ch3 is
             --  If a primitive is encountered that renames the predefined
             --  equality operator before reaching any explicit equality
             --  primitive, then we still need to create a predefined equality
-            --  function, because calls to it can occur via the renaming. A new
-            --  name is created for the equality to avoid conflicting with any
-            --  user-defined equality. (Note that this doesn't account for
+            --  function, because calls to it can occur via the renaming. A
+            --  new name is created for the equality to avoid conflicting with
+            --  any user-defined equality. (Note that this doesn't account for
             --  renamings of equality nested within subpackages???)
 
             if Is_Predefined_Eq_Renaming (Node (Prim)) then
+               Has_Predef_Eq_Renaming := True;
                Eq_Name := New_External_Name (Chars (Node (Prim)), 'E');
 
             --  User-defined equality
 
-            elsif Chars (Node (Prim)) = Name_Op_Eq
-              and then Etype (First_Formal (Node (Prim))) =
-                         Etype (Next_Formal (First_Formal (Node (Prim))))
-              and then Base_Type (Etype (Node (Prim))) = Standard_Boolean
-            then
+            elsif Is_User_Defined_Equality (Node (Prim)) then
                if No (Alias (Node (Prim)))
                  or else Nkind (Unit_Declaration_Node (Node (Prim))) =
                            N_Subprogram_Renaming_Declaration
@@ -8394,7 +8586,7 @@ package body Exp_Ch3 is
                 Ret_Type => Standard_Boolean);
             Append_To (Res, Eq_Spec);
 
-            if Eq_Name /= Name_Op_Eq then
+            if Has_Predef_Eq_Renaming then
                Renamed_Eq := Defining_Unit_Name (Specification (Eq_Spec));
 
                Prim := First_Elmt (Primitive_Operations (Tag_Typ));
@@ -8963,6 +9155,14 @@ package body Exp_Ch3 is
 
          if Eq_Needed then
             Decl := Make_Eq_Body (Tag_Typ, Eq_Name);
+            Append_To (Res, Decl);
+         end if;
+
+         --  Body for inequality (if required!)
+
+         Decl := Make_Neq_Body (Tag_Typ);
+
+         if Present (Decl) then
             Append_To (Res, Decl);
          end if;
 
