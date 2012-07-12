@@ -30,14 +30,15 @@
 ------------------------------------------------------------------------------
 
 package body System.Atomic_Primitives is
+
    ---------------------------
    -- Lock_Free_Try_Write_8 --
    ---------------------------
 
    function Lock_Free_Try_Write_8
-      (Ptr       : Address;
-       Expected  : in out uint8;
-       Desired   : uint8) return Boolean
+      (Ptr      : Address;
+       Expected : in out uint8;
+       Desired  : uint8) return Boolean
    is
       Actual : uint8;
 
@@ -59,9 +60,9 @@ package body System.Atomic_Primitives is
    ----------------------------
 
    function Lock_Free_Try_Write_16
-      (Ptr       : Address;
-       Expected  : in out uint16;
-       Desired   : uint16) return Boolean
+      (Ptr      : Address;
+       Expected : in out uint16;
+       Desired  : uint16) return Boolean
    is
       Actual : uint16;
 
@@ -83,9 +84,9 @@ package body System.Atomic_Primitives is
    ----------------------------
 
    function Lock_Free_Try_Write_32
-      (Ptr       : Address;
-       Expected  : in out uint32;
-       Desired   : uint32) return Boolean
+      (Ptr      : Address;
+       Expected : in out uint32;
+       Desired  : uint32) return Boolean
    is
       Actual : uint32;
 
@@ -107,9 +108,9 @@ package body System.Atomic_Primitives is
    ----------------------------
 
    function Lock_Free_Try_Write_64
-      (Ptr       : Address;
-       Expected  : in out uint64;
-       Desired   : uint64) return Boolean
+      (Ptr      : Address;
+       Expected : in out uint64;
+       Desired  : uint64) return Boolean
    is
       Actual : uint64;
 

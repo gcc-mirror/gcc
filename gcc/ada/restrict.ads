@@ -332,10 +332,10 @@ package Restrict is
    --  exception propagation is activated.
 
    function Process_Restriction_Synonyms (N : Node_Id) return Name_Id;
-   --  Id is a node whose Chars field contains the name of a restriction. If it
-   --  is one of synonyms that we allow for historical purposes (for list see
-   --  Rident), then the proper official name is returned. Otherwise the Chars
-   --  field of the argument is returned unchanged.
+   --  Id is a node whose Chars field contains the name of a restriction.
+   --  If it is one of synonyms that we allow for historical purposes (for
+   --  list see System.Rident), then the proper official name is returned.
+   --  Otherwise the Chars field of the argument is returned unchanged.
 
    function Restriction_Active (R : All_Restrictions) return Boolean;
    pragma Inline (Restriction_Active);

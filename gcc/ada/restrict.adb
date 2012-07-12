@@ -541,10 +541,10 @@ package body Restrict is
       then
          null;
 
-      --  Here if restriction set, check for violation (either this is a
-      --  Boolean restriction, or a parameter restriction with a value of
-      --  zero and an unknown count, or a parameter restriction with a
-      --  known value that exceeds the restriction count).
+      --  Here if restriction set, check for violation (this is a Boolean
+      --  restriction, or a parameter restriction with a value of zero and an
+      --  unknown count, or a parameter restriction with a known value that
+      --  exceeds the restriction count).
 
       elsif R in All_Boolean_Restrictions
         or else (Restrictions.Unknown (R)
@@ -768,7 +768,7 @@ package body Restrict is
    ----------------------------------
 
    --  Note: body of this function must be coordinated with list of
-   --  renaming declarations in Rident.
+   --  renaming declarations in System.Rident.
 
    function Process_Restriction_Synonyms (N : Node_Id) return Name_Id
    is
