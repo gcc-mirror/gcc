@@ -8334,7 +8334,7 @@ apply_late_template_attributes (tree *decl_p, tree attributes, int attr_flags,
 
 /* Perform (or defer) access check for typedefs that were referenced
    from within the template TMPL code.
-   This is a subroutine of instantiate_template and instantiate_class_template.
+   This is a subroutine of instantiate_decl and instantiate_class_template.
    TMPL is the template to consider and TARGS is the list of arguments of
    that template.  */
 
@@ -14380,12 +14380,6 @@ instantiate_template_1 (tree tmpl, tree orig_args, tsubst_flags_t complain)
   /* Now we know the specialization, compute access previously
      deferred.  */
   push_access_scope (fndecl);
-
-  /* Some typedefs referenced from within the template code need to be access
-     checked at template instantiation time, i.e now. These types were
-     added to the template at parsing time. Let's get those and perfom
-     the acces checks then.  */
-  perform_typedefs_access_check (DECL_TEMPLATE_RESULT (tmpl), targ_ptr);
   perform_deferred_access_checks ();
   pop_access_scope (fndecl);
   pop_deferring_access_checks ();
@@ -18394,6 +18388,13 @@ instantiate_decl (tree d, int defer_ok,
 
       /* Set up context.  */
       start_preparsed_function (d, NULL_TREE, SF_PRE_PARSED);
+
+      /* Some typedefs referenced from within the template code need to be
+	 access checked at template instantiation time, i.e now. These
+	 types were added to the template at parsing time. Let's get those
+	 and perform the access checks then.  */
+      perform_typedefs_access_check (DECL_TEMPLATE_RESULT (gen_tmpl),
+				     gen_args);
 
       /* Create substitution entries for the parameters.  */
       subst_decl = DECL_TEMPLATE_RESULT (template_for_substitution (d));

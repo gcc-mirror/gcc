@@ -18,8 +18,8 @@ template <int>
 int
 bar ()
 {
-  Beta<0>::Y i = 0;
-  return Alpha::X ();
+  Beta<0>::Y i = 0;		// { dg-error "within this context" }
+  return Alpha::X ();		// { dg-error "within this context" }
 }
 
-int i = bar<0> (); // { dg-error "within this context" }
+int i = bar<0> ();
