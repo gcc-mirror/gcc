@@ -1,3 +1,33 @@
+2012-07-12  Robert Dewar  <dewar@adacore.com>
+
+	* exp_attr.adb, exp_ch9.adb, sem_ch9.adb, exp_aggr.adb: Minor
+	reformatting.
+
+2012-07-12  Vincent Pucci  <pucci@adacore.com>
+
+	* sem_dim.adb (Analyze_Dimension_Function_Call): Reformatting of error
+	msgs for elementary functions.
+
+2012-07-12  Vincent Pucci  <pucci@adacore.com>
+
+	* sem_attr.adb (Eval_Attribute): Minor reformatting.
+
+2012-07-12  Pascal Obry  <obry@adacore.com>
+
+	* prj-nmsc.adb (Check_Library_Attributes): Allow the same library
+	project in different project tree (different aggregated projects).
+
+2012-07-12  Thomas Quinot  <quinot@adacore.com>
+
+	* s-bytswa.adb, g-bytswa.adb, g-bytswa.ads, s-bytswa.ads: Further
+	reorganization of byte swapping routines.
+
+2012-07-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_disp.adb (Check_Dispatching_Context): Refine legality
+	checks on tagg indeterminate calls to abstract operations,
+	that appear in the context of other calls.
+
 2012-07-12  Thomas Quinot  <quinot@adacore.com>
 
 	* s-bytswa.adb (Swapped2.Bswap16): Remove local function,

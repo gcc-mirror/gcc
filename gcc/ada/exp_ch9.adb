@@ -3084,7 +3084,7 @@ package body Exp_Ch9 is
       --  protected component.
 
       if Present (Comp) then
-         declare
+         Protected_Component_Ref : declare
             Comp_Decl    : constant Node_Id   := Parent (Comp);
             Comp_Sel_Nam : constant Node_Id   := Name (Comp_Decl);
             Comp_Type    : constant Entity_Id := Etype (Comp);
@@ -3220,7 +3220,6 @@ package body Exp_Ch9 is
 
             procedure Process_Stmts (Stmts : List_Id) is
                Stmt : Node_Id;
-
             begin
                Stmt := First (Stmts);
                while Present (Stmt) loop
@@ -3228,6 +3227,8 @@ package body Exp_Ch9 is
                   Next (Stmt);
                end loop;
             end Process_Stmts;
+
+         --  Start of processing for Protected_Component_Ref
 
          begin
             --  Get the type size
@@ -3436,23 +3437,24 @@ package body Exp_Ch9 is
             --    end loop;
 
             if Is_Procedure then
-               Stmts := New_List (
-                 Make_Procedure_Call_Statement (Loc,
-                    Name =>
-                      New_Reference_To (RTE (RE_Atomic_Synchronize), Loc)),
-                 Make_Loop_Statement (Loc,
-                   Statements => New_List (
-                     Make_Block_Statement (Loc,
-                       Declarations               => Block_Decls,
-                       Handled_Statement_Sequence =>
-                         Make_Handled_Sequence_Of_Statements (Loc,
-                           Statements => Stmts))),
-                   End_Label  => Empty));
+               Stmts :=
+                 New_List (
+                   Make_Procedure_Call_Statement (Loc,
+                      Name =>
+                        New_Reference_To (RTE (RE_Atomic_Synchronize), Loc)),
+                   Make_Loop_Statement (Loc,
+                     Statements => New_List (
+                       Make_Block_Statement (Loc,
+                         Declarations               => Block_Decls,
+                         Handled_Statement_Sequence =>
+                           Make_Handled_Sequence_Of_Statements (Loc,
+                             Statements => Stmts))),
+                     End_Label  => Empty));
             end if;
 
             Hand_Stmt_Seq :=
               Make_Handled_Sequence_Of_Statements (Loc, Statements => Stmts);
-         end;
+         end Protected_Component_Ref;
       end if;
 
       --  Make an unprotected version of the subprogram for use within the same

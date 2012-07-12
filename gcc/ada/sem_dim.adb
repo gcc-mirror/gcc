@@ -1585,8 +1585,7 @@ package body Sem_Dim is
                   Dims_Of_Actual := Dimensions_Of (Actual);
 
                   if Exists (Dims_Of_Actual) then
-                     Error_Msg_NE ("parameter should be dimensionless for " &
-                                   "elementary function&",
+                     Error_Msg_NE ("parameter of& must be dimensionless",
                                    Actual, Name_Call);
                      Error_Msg_N ("\parameter " & Dimensions_Msg_Of (Actual),
                                   Actual);
