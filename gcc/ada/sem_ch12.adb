@@ -10821,6 +10821,17 @@ package body Sem_Ch12 is
                  Get_Instance_Of (Base_Type (Get_Instance_Of (A_Gen_T)));
             end if;
 
+         --  An unusual case: the actual is a type declared in a parent unit,
+         --  but is not a formal type so there is no instance_of for it.
+         --  Retrieve it by analyzing the record extension.
+
+         elsif Is_Child_Unit (Scope (A_Gen_T))
+           and then In_Open_Scopes (Scope (Act_T))
+           and then Is_Generic_Instance (Scope (Act_T))
+         then
+            Analyze (Subtype_Mark (Def));
+            Ancestor := Entity (Subtype_Mark (Def));
+
          else
             Ancestor := Get_Instance_Of (Etype (Base_Type (A_Gen_T)));
          end if;

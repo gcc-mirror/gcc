@@ -344,15 +344,6 @@ package body Exp_Ch5 is
       elsif Has_Controlled_Component (L_Type) then
          Loop_Required := True;
 
-      --  If changing scalar storage order and assigning a bit packed array,
-      --  force loop expansion.
-
-      elsif Is_Bit_Packed_Array (L_Type)
-        and then (In_Reverse_Storage_Order_Record (Rhs) /=
-                  In_Reverse_Storage_Order_Record (Lhs))
-      then
-         Loop_Required := True;
-
       --  If object is atomic, we cannot tolerate a loop
 
       elsif Is_Atomic_Object (Act_Lhs)
