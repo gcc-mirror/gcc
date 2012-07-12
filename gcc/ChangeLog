@@ -1,3 +1,12 @@
+2012-07-12  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR rtl-optimization/53176
+	* rtlanal.c (rtx_cost): Adjust default cost for X with a
+	UNITS_PER_WORD factor for all X according to the size of
+	its mode, not just for SUBREGs with untieable modes.
+	Handle SET.  Use factor * factor for MULT, DIV, UDIV,
+	MOD, UMOD.
+
 2012-07-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (QImode and HImode cmove splitters): Merge
