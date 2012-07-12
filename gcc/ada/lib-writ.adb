@@ -26,6 +26,7 @@
 with ALI;      use ALI;
 with Atree;    use Atree;
 with Casing;   use Casing;
+with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Errout;   use Errout;
 with Fname;    use Fname;
@@ -1140,52 +1141,128 @@ package body Lib.Writ is
          end if;
       end loop;
 
-      --  Output first restrictions line
+      --  Positional case (only if debug flag -gnatd.R is set)
 
-      Write_Info_Initiate ('R');
-      Write_Info_Char (' ');
+      if Debug_Flag_Dot_RR then
 
-      --  First the information for the boolean restrictions
+         --  Output first restrictions line
 
-      for R in All_Boolean_Restrictions loop
-         if Main_Restrictions.Set (R)
-           and then not Restriction_Warnings (R)
-         then
-            Write_Info_Char ('r');
-         elsif Main_Restrictions.Violated (R) then
-            Write_Info_Char ('v');
-         else
-            Write_Info_Char ('n');
-         end if;
-      end loop;
+         Write_Info_Initiate ('R');
+         Write_Info_Char (' ');
 
-      --  And now the information for the parameter restrictions
+         --  First the information for the boolean restrictions
 
-      for RP in All_Parameter_Restrictions loop
-         if Main_Restrictions.Set (RP)
-           and then not Restriction_Warnings (RP)
-         then
-            Write_Info_Char ('r');
-            Write_Info_Nat (Nat (Main_Restrictions.Value (RP)));
-         else
-            Write_Info_Char ('n');
-         end if;
-
-         if not Main_Restrictions.Violated (RP)
-           or else RP not in Checked_Parameter_Restrictions
-         then
-            Write_Info_Char ('n');
-         else
-            Write_Info_Char ('v');
-            Write_Info_Nat (Nat (Main_Restrictions.Count (RP)));
-
-            if Main_Restrictions.Unknown (RP) then
-               Write_Info_Char ('+');
+         for R in All_Boolean_Restrictions loop
+            if Main_Restrictions.Set (R)
+              and then not Restriction_Warnings (R)
+            then
+               Write_Info_Char ('r');
+            elsif Main_Restrictions.Violated (R) then
+               Write_Info_Char ('v');
+            else
+               Write_Info_Char ('n');
             end if;
-         end if;
-      end loop;
+         end loop;
 
-      Write_Info_EOL;
+         --  And now the information for the parameter restrictions
+
+         for RP in All_Parameter_Restrictions loop
+            if Main_Restrictions.Set (RP)
+              and then not Restriction_Warnings (RP)
+            then
+               Write_Info_Char ('r');
+               Write_Info_Nat (Nat (Main_Restrictions.Value (RP)));
+            else
+               Write_Info_Char ('n');
+            end if;
+
+            if not Main_Restrictions.Violated (RP)
+              or else RP not in Checked_Parameter_Restrictions
+            then
+               Write_Info_Char ('n');
+            else
+               Write_Info_Char ('v');
+               Write_Info_Nat (Nat (Main_Restrictions.Count (RP)));
+
+               if Main_Restrictions.Unknown (RP) then
+                  Write_Info_Char ('+');
+               end if;
+            end if;
+         end loop;
+
+         Write_Info_EOL;
+
+      --  Named case (if debug flag -gnatd.R is not set)
+
+      else
+         declare
+            C : Character;
+
+         begin
+            --  Write RN header line with preceding blank line
+
+            Write_Info_EOL;
+            Write_Info_Initiate ('R');
+            Write_Info_Char ('N');
+            Write_Info_EOL;
+
+            --  First the lines for the boolean restrictions
+
+            for R in All_Boolean_Restrictions loop
+               if Main_Restrictions.Set (R)
+                 and then not Restriction_Warnings (R)
+               then
+                  C := 'R';
+               elsif Main_Restrictions.Violated (R) then
+                  C := 'V';
+               else
+                  goto Continue;
+               end if;
+
+               Write_Info_Initiate ('R');
+               Write_Info_Char (C);
+               Write_Info_Char (' ');
+               Write_Info_Str (All_Boolean_Restrictions'Image (R));
+               Write_Info_EOL;
+
+            <<Continue>>
+               null;
+            end loop;
+         end;
+
+         --  And now the lines for the parameter restrictions
+
+         for RP in All_Parameter_Restrictions loop
+            if Main_Restrictions.Set (RP)
+              and then not Restriction_Warnings (RP)
+            then
+               Write_Info_Initiate ('R');
+               Write_Info_Str ("R ");
+               Write_Info_Str (All_Parameter_Restrictions'Image (RP));
+               Write_Info_Char ('=');
+               Write_Info_Nat (Nat (Main_Restrictions.Value (RP)));
+               Write_Info_EOL;
+            end if;
+
+            if not Main_Restrictions.Violated (RP)
+              or else RP not in Checked_Parameter_Restrictions
+            then
+               null;
+            else
+               Write_Info_Initiate ('R');
+               Write_Info_Str ("V ");
+               Write_Info_Str (All_Parameter_Restrictions'Image (RP));
+               Write_Info_Char ('=');
+               Write_Info_Nat (Nat (Main_Restrictions.Count (RP)));
+
+               if Main_Restrictions.Unknown (RP) then
+                  Write_Info_Char ('+');
+               end if;
+
+               Write_Info_EOL;
+            end if;
+         end loop;
+      end if;
 
       --  Output R lines for No_Dependence entries
 

@@ -152,24 +152,24 @@ package System.Atomic_Primitives is
       (Atomic_Load_64 (Ptr, Acquire));
 
    function Lock_Free_Try_Write_8
-      (Ptr       : Address;
-       Expected  : in out uint8;
-       Desired   : uint8) return Boolean;
+      (Ptr      : Address;
+       Expected : in out uint8;
+       Desired  : uint8) return Boolean;
 
    function Lock_Free_Try_Write_16
-      (Ptr       : Address;
-       Expected  : in out uint16;
-       Desired   : uint16) return Boolean;
+      (Ptr      : Address;
+       Expected : in out uint16;
+       Desired  : uint16) return Boolean;
 
    function Lock_Free_Try_Write_32
-      (Ptr       : Address;
-       Expected  : in out uint32;
-       Desired   : uint32) return Boolean;
+      (Ptr      : Address;
+       Expected : in out uint32;
+       Desired  : uint32) return Boolean;
 
    function Lock_Free_Try_Write_64
-      (Ptr       : Address;
-       Expected  : in out uint64;
-       Desired   : uint64) return Boolean;
+      (Ptr      : Address;
+       Expected : in out uint64;
+       Desired  : uint64) return Boolean;
 
    pragma Inline (Lock_Free_Read_8);
    pragma Inline (Lock_Free_Read_16);

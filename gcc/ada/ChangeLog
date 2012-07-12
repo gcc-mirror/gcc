@@ -1,5 +1,26 @@
 2012-07-12  Robert Dewar  <dewar@adacore.com>
 
+	* s-atopri.adb, s-atopri.ads: Minor reformatting.
+
+2012-07-12  Robert Dewar  <dewar@adacore.com>
+
+	* ali.adb: Add circuitry to read new named form of restrictions lines.
+	* debug.adb: Add doc for new -gnatd.R switch (used positional
+	notation for output of restrictions data in ali file).
+	* lib-writ.adb: Implement new named format for restrictions lines.
+	* lib-writ.ads: Add documentation for new named format for
+	restrictions in ali files.
+	* restrict.adb, restrict.ads, sem_prag.adb: Update comments.
+	* rident.ads: Go back to withing System.Rident
+	* s-rident.ads: Add extensive comment on dealing with consistency
+	checking.
+
+2012-07-12  Thomas Quinot  <quinot@adacore.com>
+
+	* par_sco.adb, scos.ads: Emit detailed SCOs for SELECT statements.
+
+2012-07-12  Robert Dewar  <dewar@adacore.com>
+
 	* sem_disp.adb: Minor reformatting
 	* s-bytswa.ads: Minor comment update.
 

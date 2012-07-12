@@ -135,7 +135,7 @@ package body Debug is
    --  d.O  Dump internal SCO tables
    --  d.P  Previous (non-optimized) handling of length comparisons
    --  d.Q
-   --  d.R
+   --  d.R  Restrictions in ali files in positional form
    --  d.S  Force Optimize_Alignment (Space)
    --  d.T  Force Optimize_Alignment (Time)
    --  d.U  Ignore indirect calls for static elaboration
@@ -641,6 +641,11 @@ package body Debug is
    --       flag inhibits the effect of Optimize_Length_Comparison in Exp_Ch4.
    --       This is there in case we find a situation where the optimization
    --       malfunctions, to provide a work around.
+
+   --  d.R  As documented in lib-writ.ads, restrictions in the ali file can
+   --       have two forms, positional and named. The named notation is the
+   --       current preferred form, but the use of this debug switch will force
+   --       the use of the obsolescent positional form.
 
    --  d.S  Force Optimize_Alignment (Space) mode as the default
 
