@@ -37,7 +37,16 @@ extern "C" {
 
 typedef unsigned Exception_Code;
 
-struct Exception_Data;
+struct Exception_Data
+{
+  char Not_Handled_By_Others;
+  char Lang;
+  int Name_Length;
+  char *Full_Name, *Htable_Ptr;
+  Exception_Code Import_Code;
+  void (*Raise_Hook)(void);
+};
+
 typedef struct Exception_Data *Exception_Id;
 
 extern void _gnat_builtin_longjmp	(void *, int);

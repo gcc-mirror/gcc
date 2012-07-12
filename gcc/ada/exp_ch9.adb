@@ -2955,26 +2955,30 @@ package body Exp_Ch9 is
    --  manner:
 
    --    procedure P (...) is
-   --       <original declarations>
    --    begin
    --       loop
    --          declare
+   --             <original declarations before the object renaming declaration
+   --              of Comp>
    --             Saved_Comp   : constant ... :=
-   --                              Atomic_Load (Comp'Address, Relaxed);
+   --                              Atomic_Load (_Object.Comp'Address, Relaxed);
    --             Current_Comp : ... := Saved_Comp;
+   --             Comp         : Comp_Type renames Current_Comp;
+   --             <original delarations after the object renaming declaration
+   --              of Comp>
    --          begin
    --             <original statements>
-   --             exit when Atomic_Compare (Comp, Saved_Comp, Current_Comp);
+   --             exit when Atomic_Compare
+   --                         (_Object.Comp, Saved_Comp, Current_Comp);
    --          end;
    --          <<L0>>
    --       end loop;
    --    end P;
 
-   --  References to Comp which appear in the original statements are replaced
-   --  with references to Current_Comp. Each return and raise statement of P is
-   --  transformed into an atomic status check:
+   --  Each return and raise statement of P is transformed into an atomic
+   --  status check:
 
-   --    if Atomic_Compare (Comp, Saved_Comp, Current_Comp) then
+   --    if Atomic_Compare (_Object.Comp, Saved_Comp, Current_Comp) then
    --       <original statement>
    --    else
    --       goto L0;
@@ -2985,14 +2989,15 @@ package body Exp_Ch9 is
    --  manner:
 
    --    function F (...) return ... is
-   --       <original declarations>
-   --       Saved_Comp : constant ... := Atomic_Load (Comp'Address);
+   --       <original declarations before the object renaming declaration
+   --        of Comp>
+   --       Saved_Comp : constant ... := Atomic_Load (_Object.Comp'Address);
+   --       Comp       : Comp_Type renames Saved_Comp;
+   --       <original delarations after the object renaming declaration of
+   --        Comp>
    --    begin
    --       <original statements>
    --    end F;
-
-   --  References to Comp which appear in the original statements are replaced
-   --  with references to Saved_Comp.
 
    function Build_Lock_Free_Unprotected_Subprogram_Body
      (N        : Node_Id;
@@ -3003,161 +3008,10 @@ package body Exp_Ch9 is
       Loc          : constant Source_Ptr := Sloc (N);
       Label_Id     : Entity_Id := Empty;
 
-      procedure Process_Stmts
-        (Stmts        : List_Id;
-         Compare      : Entity_Id;
-         Unsigned     : Entity_Id;
-         Comp         : Entity_Id;
-         Saved_Comp   : Entity_Id;
-         Current_Comp : Entity_Id);
-      --  Given a statement sequence Stmts, wrap any return or raise statements
-      --  in the following manner:
-      --
-      --    if System.Atomic_Primitives.Atomic_Compare_Exchange
-      --         (Comp'Address,
-      --          Interfaces.Unsigned (Saved_Comp),
-      --          Interfaces.Unsigned (Current_Comp))
-      --    then
-      --       <Stmt>;
-      --    else
-      --       goto L0;
-      --    end if;
-      --
-      --  Replace all references to Comp with a reference to Current_Comp.
-
       function Referenced_Component (N : Node_Id) return Entity_Id;
       --  Subprograms which meet the lock-free implementation criteria are
       --  allowed to reference only one unique component. Return the prival
       --  of the said component.
-
-      -------------------
-      -- Process_Stmts --
-      -------------------
-
-      procedure Process_Stmts
-        (Stmts        : List_Id;
-         Compare      : Entity_Id;
-         Unsigned     : Entity_Id;
-         Comp         : Entity_Id;
-         Saved_Comp   : Entity_Id;
-         Current_Comp : Entity_Id)
-      is
-         function Process_Node (N : Node_Id) return Traverse_Result;
-         --  Transform a single node if it is a return statement, a raise
-         --  statement or a reference to Comp.
-
-         ------------------
-         -- Process_Node --
-         ------------------
-
-         function Process_Node (N : Node_Id) return Traverse_Result is
-
-            procedure Wrap_Statement (Stmt : Node_Id);
-            --  Wrap an arbitrary statement inside an if statement where the
-            --  condition does an atomic check on the state of the object.
-
-            --------------------
-            -- Wrap_Statement --
-            --------------------
-
-            procedure Wrap_Statement (Stmt : Node_Id) is
-            begin
-               --  The first time through, create the declaration of a label
-               --  which is used to skip the remainder of source statements if
-               --  the state of the object has changed.
-
-               if No (Label_Id) then
-                  Label_Id :=
-                    Make_Identifier (Loc, New_External_Name ('L', 0));
-                  Set_Entity (Label_Id,
-                    Make_Defining_Identifier (Loc, Chars (Label_Id)));
-               end if;
-
-               --  Generate:
-
-               --    if System.Atomic_Primitives.Atomic_Compare_Exchange
-               --         (Comp'Address,
-               --          Interfaces.Unsigned (Saved_Comp),
-               --          Interfaces.Unsigned (Current_Comp))
-               --    then
-               --       <Stmt>;
-               --    else
-               --       goto L0;
-               --    end if;
-
-               Rewrite (Stmt,
-                 Make_If_Statement (Loc,
-                   Condition =>
-                     Make_Function_Call (Loc,
-                       Name                   =>
-                         New_Reference_To (Compare, Loc),
-                       Parameter_Associations => New_List (
-                         Make_Attribute_Reference (Loc,
-                           Prefix         => New_Reference_To (Comp, Loc),
-                           Attribute_Name => Name_Address),
-
-                         Unchecked_Convert_To (Unsigned,
-                           New_Reference_To (Saved_Comp, Loc)),
-
-                         Unchecked_Convert_To (Unsigned,
-                           New_Reference_To (Current_Comp, Loc)))),
-
-                   Then_Statements => New_List (Relocate_Node (Stmt)),
-
-                   Else_Statements => New_List (
-                     Make_Goto_Statement (Loc,
-                       Name => New_Reference_To (Entity (Label_Id), Loc)))));
-            end Wrap_Statement;
-
-         --  Start of processing for Process_Node
-
-         begin
-            --  Wrap each return and raise statement that appear inside a
-            --  procedure. Skip the last return statement which is added by
-            --  default since it is transformed into an exit statement.
-
-            if Is_Procedure
-              and then Nkind_In (N, N_Simple_Return_Statement,
-                                    N_Extended_Return_Statement,
-                                    N_Raise_Statement)
-              and then Nkind (Last (Stmts)) /= N_Simple_Return_Statement
-            then
-               Wrap_Statement (N);
-               return Skip;
-
-            --  Replace all references to the original component by a reference
-            --  to the current state of the component.
-
-            elsif Nkind (N) = N_Identifier
-              and then Present (Entity (N))
-              and then Entity (N) = Comp
-            then
-               Rewrite (N, Make_Identifier (Loc, Chars (Current_Comp)));
-               return Skip;
-            end if;
-
-            --  Force reanalysis
-
-            Set_Analyzed (N, False);
-
-            return OK;
-         end Process_Node;
-
-         procedure Process_Nodes is new Traverse_Proc (Process_Node);
-
-         --  Local variables
-
-         Stmt : Node_Id;
-
-      --  Start of processing for Process_Stmts
-
-      begin
-         Stmt := First (Stmts);
-         while Present (Stmt) loop
-            Process_Nodes (Stmt);
-            Next (Stmt);
-         end loop;
-      end Process_Stmts;
 
       --------------------------
       -- Referenced_Component --
@@ -3214,20 +3068,25 @@ package body Exp_Ch9 is
 
       --  Local variables
 
-      Comp  : constant Entity_Id := Referenced_Component (N);
-      Decls : constant List_Id   := Declarations (N);
-      Stmts : List_Id;
+      Comp          : constant Entity_Id := Referenced_Component (N);
+      Hand_Stmt_Seq : Node_Id            := Handled_Statement_Sequence (N);
+      Decls         : List_Id            := Declarations (N);
 
    --  Start of processing for Build_Lock_Free_Unprotected_Subprogram_Body
 
    begin
-      Stmts := New_Copy_List (Statements (Handled_Statement_Sequence (N)));
+      --  Add renamings for the protection object, discriminals, privals and
+      --  the entry index constant for use by debugger.
+
+      Debug_Private_Data_Declarations (Decls);
 
       --  Perform the lock-free expansion when the subprogram references a
       --  protected component.
 
       if Present (Comp) then
          declare
+            Comp_Decl    : constant Node_Id   := Parent (Comp);
+            Comp_Sel_Nam : constant Node_Id   := Name (Comp_Decl);
             Comp_Type    : constant Entity_Id := Etype (Comp);
             Block_Decls  : List_Id;
             Compare      : Entity_Id;
@@ -3238,8 +3097,137 @@ package body Exp_Ch9 is
             Load_Params  : List_Id;
             Saved_Comp   : Entity_Id;
             Stmt         : Node_Id;
+            Stmts        : List_Id :=
+                             New_Copy_List (Statements (Hand_Stmt_Seq));
             Typ_Size     : Int;
             Unsigned     : Entity_Id;
+
+            function Process_Node (N : Node_Id) return Traverse_Result;
+            --  Transform a single node if it is a return statement, a raise
+            --  statement or a reference to Comp.
+
+            procedure Process_Stmts (Stmts : List_Id);
+            --  Given a statement sequence Stmts, wrap any return or raise
+            --  statements in the following manner:
+            --
+            --    if System.Atomic_Primitives.Atomic_Compare_Exchange
+            --         (Comp'Address,
+            --          Interfaces.Unsigned (Saved_Comp),
+            --          Interfaces.Unsigned (Current_Comp))
+            --    then
+            --       <Stmt>;
+            --    else
+            --       goto L0;
+            --    end if;
+
+            ------------------
+            -- Process_Node --
+            ------------------
+
+            function Process_Node (N : Node_Id) return Traverse_Result is
+
+               procedure Wrap_Statement (Stmt : Node_Id);
+               --  Wrap an arbitrary statement inside an if statement where the
+               --  condition does an atomic check on the state of the object.
+
+               --------------------
+               -- Wrap_Statement --
+               --------------------
+
+               procedure Wrap_Statement (Stmt : Node_Id) is
+               begin
+                  --  The first time through, create the declaration of a label
+                  --  which is used to skip the remainder of source statements
+                  --  if the state of the object has changed.
+
+                  if No (Label_Id) then
+                     Label_Id :=
+                       Make_Identifier (Loc, New_External_Name ('L', 0));
+                     Set_Entity (Label_Id,
+                       Make_Defining_Identifier (Loc, Chars (Label_Id)));
+                  end if;
+
+                  --  Generate:
+
+                  --    if System.Atomic_Primitives.Atomic_Compare_Exchange
+                  --         (Comp'Address,
+                  --          Interfaces.Unsigned (Saved_Comp),
+                  --          Interfaces.Unsigned (Current_Comp))
+                  --    then
+                  --       <Stmt>;
+                  --    else
+                  --       goto L0;
+                  --    end if;
+
+                  Rewrite (Stmt,
+                    Make_If_Statement (Loc,
+                      Condition =>
+                        Make_Function_Call (Loc,
+                          Name                   =>
+                            New_Reference_To (Compare, Loc),
+                          Parameter_Associations => New_List (
+                            Make_Attribute_Reference (Loc,
+                              Prefix         => Relocate_Node (Comp_Sel_Nam),
+                              Attribute_Name => Name_Address),
+
+                            Unchecked_Convert_To (Unsigned,
+                              New_Reference_To (Saved_Comp, Loc)),
+
+                            Unchecked_Convert_To (Unsigned,
+                              New_Reference_To (Current_Comp, Loc)))),
+
+                      Then_Statements => New_List (Relocate_Node (Stmt)),
+
+                      Else_Statements => New_List (
+                        Make_Goto_Statement (Loc,
+                          Name =>
+                            New_Reference_To (Entity (Label_Id), Loc)))));
+               end Wrap_Statement;
+
+            --  Start of processing for Process_Node
+
+            begin
+               --  Wrap each return and raise statement that appear inside a
+               --  procedure. Skip the last return statement which is added by
+               --  default since it is transformed into an exit statement.
+
+               if Is_Procedure
+                 and then ((Nkind (N) = N_Simple_Return_Statement
+                             and then N /= Last (Stmts))
+                            or else Nkind (N) = N_Extended_Return_Statement
+                            or else (Nkind_In (N, N_Raise_Constraint_Error,
+                                                  N_Raise_Program_Error,
+                                                  N_Raise_Statement,
+                                                  N_Raise_Storage_Error)
+                                      and then Comes_From_Source (N)))
+               then
+                  Wrap_Statement (N);
+                  return Skip;
+               end if;
+
+               --  Force reanalysis
+
+               Set_Analyzed (N, False);
+
+               return OK;
+            end Process_Node;
+
+            procedure Process_Nodes is new Traverse_Proc (Process_Node);
+
+            -------------------
+            -- Process_Stmts --
+            -------------------
+
+            procedure Process_Stmts (Stmts : List_Id) is
+               Stmt : Node_Id;
+
+            begin
+               Stmt := First (Stmts);
+               while Present (Stmt) loop
+                  Process_Nodes (Stmt);
+                  Next (Stmt);
+               end loop;
+            end Process_Stmts;
 
          begin
             --  Get the type size
@@ -3305,7 +3293,7 @@ package body Exp_Ch9 is
 
             Load_Params := New_List (
               Make_Attribute_Reference (Loc,
-                Prefix         => New_Reference_To (Comp, Loc),
+                Prefix         => Relocate_Node (Comp_Sel_Nam),
                 Attribute_Name => Name_Address));
 
             --  For protected procedures, set the memory model to be relaxed
@@ -3329,7 +3317,14 @@ package body Exp_Ch9 is
             --  Protected procedures
 
             if Is_Procedure then
-               Block_Decls := New_List (Decl);
+               --  Move the original declarations inside the generated block
+
+               Block_Decls := Decls;
+
+               --  Reset the declarations list of the protected procedure to be
+               --  an empty list.
+
+               Decls := Empty_List;
 
                --  Generate:
                --    Current_Comp : Comp_Type := Saved_Comp;
@@ -3338,21 +3333,50 @@ package body Exp_Ch9 is
                  Make_Defining_Identifier (Loc,
                    New_External_Name (Chars (Comp), Suffix => "_current"));
 
-               Append_To (Block_Decls,
+               --  Insert the declarations of Saved_Comp and Current_Comp in
+               --  the block declarations right before the renaming of the
+               --  protected component.
+
+               Insert_Before (Comp_Decl, Decl);
+
+               Insert_Before (Comp_Decl,
                  Make_Object_Declaration (Loc,
                    Defining_Identifier => Current_Comp,
                    Object_Definition   => New_Reference_To (Comp_Type, Loc),
-                   Expression          => New_Reference_To (Saved_Comp, Loc)));
+                   Expression          =>
+                     New_Reference_To (Saved_Comp, Loc)));
 
             --  Protected function
 
             else
-               Append_To (Decls, Decl);
                Current_Comp := Saved_Comp;
+
+               --  Insert the declaration of Saved_Comp in the function
+               --  declarations right before the renaming of the protected
+               --  component.
+
+               Insert_Before (Comp_Decl, Decl);
             end if;
 
-            Process_Stmts
-              (Stmts, Compare, Unsigned, Comp, Saved_Comp, Current_Comp);
+            --  Rewrite the protected component renaming declaration to be a
+            --  renaming of Current_Comp.
+
+            --  Generate:
+            --    Comp : Comp_Type renames Current_Comp;
+
+            Rewrite (Comp_Decl,
+              Make_Object_Renaming_Declaration (Loc,
+                Defining_Identifier =>
+                  Defining_Identifier (Comp_Decl),
+                Subtype_Mark      =>
+                  New_Occurrence_Of (Comp_Type, Loc),
+                Name              =>
+                  New_Reference_To (Current_Comp, Loc)));
+
+            --  Wrap any return or raise statements in Stmts in same the manner
+            --  described in Process_Stmts.
+
+            Process_Stmts (Stmts);
 
             --  Generate:
 
@@ -3370,7 +3394,7 @@ package body Exp_Ch9 is
                          New_Reference_To (Compare, Loc),
                        Parameter_Associations => New_List (
                          Make_Attribute_Reference (Loc,
-                           Prefix         => New_Reference_To (Comp, Loc),
+                           Prefix         => Relocate_Node (Comp_Sel_Nam),
                            Attribute_Name => Name_Address),
 
                          Unchecked_Convert_To (Unsigned,
@@ -3413,7 +3437,7 @@ package body Exp_Ch9 is
 
             if Is_Procedure then
                Stmts := New_List (
-                Make_Procedure_Call_Statement (Loc,
+                 Make_Procedure_Call_Statement (Loc,
                     Name =>
                       New_Reference_To (RTE (RE_Atomic_Synchronize), Loc)),
                  Make_Loop_Statement (Loc,
@@ -3425,13 +3449,11 @@ package body Exp_Ch9 is
                            Statements => Stmts))),
                    End_Label  => Empty));
             end if;
+
+            Hand_Stmt_Seq :=
+              Make_Handled_Sequence_Of_Statements (Loc, Statements => Stmts);
          end;
       end if;
-
-      --  Add renamings for the protection object, discriminals, privals and
-      --  the entry index constant for use by debugger.
-
-      Debug_Private_Data_Declarations (Decls);
 
       --  Make an unprotected version of the subprogram for use within the same
       --  object, with new name and extra parameter representing the object.
@@ -3441,8 +3463,7 @@ package body Exp_Ch9 is
           Specification              =>
             Build_Protected_Sub_Specification (N, Prot_Typ, Unprotected_Mode),
           Declarations               => Decls,
-          Handled_Statement_Sequence =>
-            Make_Handled_Sequence_Of_Statements (Loc, Statements => Stmts));
+          Handled_Statement_Sequence => Hand_Stmt_Seq);
    end Build_Lock_Free_Unprotected_Subprogram_Body;
 
    -------------------------

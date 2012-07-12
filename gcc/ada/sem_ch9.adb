@@ -170,24 +170,30 @@ package body Sem_Ch9 is
                      Par_Specs : constant List_Id   :=
                                    Parameter_Specifications
                                      (Specification (Decl));
-                     Par       : constant Node_Id   := First (Par_Specs);
-                     Par_Typ   : constant Entity_Id :=
-                                   Etype (Parameter_Type (Par));
+
+                     Par : Node_Id;
 
                   begin
-                     if Out_Present (Par)
-                       and then not Is_Elementary_Type (Par_Typ)
-                     then
-                        if Complain then
-                           Error_Msg_NE
-                             ("non-elementary out parameter& not allowed " &
-                              "when Lock_Free given",
-                              Par,
-                              Defining_Identifier (Par));
+                     Par := First (Par_Specs);
+
+                     while Present (Par) loop
+                        if Out_Present (Par)
+                          and then not Is_Elementary_Type
+                                         (Etype (Parameter_Type (Par)))
+                        then
+                           if Complain then
+                              Error_Msg_NE
+                                ("non-elementary out parameter& not allowed " &
+                                 "when Lock_Free given",
+                                 Par,
+                                 Defining_Identifier (Par));
+                           end if;
+
+                           return False;
                         end if;
 
-                        return False;
-                     end if;
+                        Next (Par);
+                     end loop;
                   end;
                end if;
 
@@ -451,9 +457,9 @@ package body Sem_Ch9 is
                               --  already been accessed by the subprogram body.
 
                               if No (Comp) then
-                                 Comp := Id;
+                                 Comp := Comp_Id;
 
-                              elsif Comp /= Id then
+                              elsif Comp /= Comp_Id then
                                  if Complain then
                                     Error_Msg_N
                                       ("only one protected component allowed",
