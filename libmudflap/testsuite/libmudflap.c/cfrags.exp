@@ -1,5 +1,5 @@
 global MUDFLAP_FLAGS
-set MUDFLAP_FLAGS [list {} {-static} {-O2} {-O3}]
+set MUDFLAP_FLAGS [list {-O0} {-static} {-O2} {-O3}]
 
 libmudflap-init c
 
