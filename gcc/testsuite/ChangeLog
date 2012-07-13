@@ -1,3 +1,8 @@
+2012-07-13  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR c++/53531
+	* testsuite/g++.dg/cpp0x/variadic135.C: New.
+
 2012-07-12  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/template/sfinae6_neg.C: Adjust.
