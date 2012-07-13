@@ -1,3 +1,9 @@
+2012-07-13  Richard Guenther  <rguenther@suse.de>
+
+	* gimple.c (gimple_types_compatible_p_1): Remove redundant
+	type attribute comparisons.
+	(gimple_canonical_types_compatible_p): Likewise.
+
 2012-07-12  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR rtl-optimization/53176
