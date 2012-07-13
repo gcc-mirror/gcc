@@ -1,3 +1,8 @@
+2012-07-13  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* emit-rtl.c (make_debug_insn_raw, make_jump_insn_raw): Make static.
+	* rtl.h (make_debug_insn_raw, make_jump_insn_raw): Remove prototypes.
+
 2012-07-13  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/53907

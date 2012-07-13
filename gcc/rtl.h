@@ -1777,8 +1777,6 @@ extern rtx emit_clobber (rtx);
 extern rtx gen_use (rtx);
 extern rtx emit_use (rtx);
 extern rtx make_insn_raw (rtx);
-extern rtx make_debug_insn_raw (rtx);
-extern rtx make_jump_insn_raw (rtx);
 extern void add_function_usage_to (rtx, rtx);
 extern rtx last_call_insn (void);
 extern rtx previous_insn (rtx);
