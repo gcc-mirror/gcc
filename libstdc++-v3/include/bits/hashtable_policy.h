@@ -831,15 +831,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using __base_type::insert;
 
       template<typename _Pair>
-	using __is_conv = std::is_convertible<_Pair, value_type>;
+	using __is_cons = std::is_constructible<value_type, _Pair&&>;
 
       template<typename _Pair>
-	using _IFconv = std::enable_if<__is_conv<_Pair>::value>;
+	using _IFcons = std::enable_if<__is_cons<_Pair>::value>;
 
       template<typename _Pair>
-	using _IFconvp = typename _IFconv<_Pair>::type;
+	using _IFconsp = typename _IFcons<_Pair>::type;
 
-      template<typename _Pair, typename = _IFconvp<_Pair>>
+      template<typename _Pair, typename = _IFconsp<_Pair>>
 	__ireturn_type
 	insert(_Pair&& __v)
 	{
@@ -847,7 +847,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return __h._M_insert(std::forward<_Pair>(__v), __unique_keys());
 	}
 
-      template<typename _Pair, typename = _IFconvp<_Pair>>
+      template<typename _Pair, typename = _IFconsp<_Pair>>
 	iterator
 	insert(const_iterator, _Pair&& __v)
 	{ return __iconv_type()(insert(std::forward<_Pair>(__v))); }

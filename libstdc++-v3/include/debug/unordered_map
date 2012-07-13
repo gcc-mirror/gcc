@@ -248,8 +248,8 @@ namespace __debug
       }
 
       template<typename _Pair, typename = typename
-	       std::enable_if<std::is_convertible<_Pair,
-						  value_type>::value>::type>
+	       std::enable_if<std::is_constructible<value_type,
+						    _Pair&&>::value>::type>
 	std::pair<iterator, bool>
 	insert(_Pair&& __obj)
 	{
@@ -261,8 +261,8 @@ namespace __debug
 	}
 
       template<typename _Pair, typename = typename
-	       std::enable_if<std::is_convertible<_Pair,
-						  value_type>::value>::type>
+	       std::enable_if<std::is_constructible<value_type,
+						    _Pair&&>::value>::type>
 	iterator
 	insert(const_iterator __hint, _Pair&& __obj)
 	{
@@ -663,8 +663,8 @@ namespace __debug
       }
 
       template<typename _Pair, typename = typename
-	       std::enable_if<std::is_convertible<_Pair,
-						  value_type>::value>::type>
+	       std::enable_if<std::is_constructible<value_type,
+						    _Pair&&>::value>::type>
 	iterator
 	insert(_Pair&& __obj)
 	{
@@ -675,8 +675,8 @@ namespace __debug
 	}
 
       template<typename _Pair, typename = typename
-	       std::enable_if<std::is_convertible<_Pair,
-						  value_type>::value>::type>
+	       std::enable_if<std::is_constructible<value_type,
+						    _Pair&&>::value>::type>
 	iterator
 	insert(const_iterator __hint, _Pair&& __obj)
 	{
