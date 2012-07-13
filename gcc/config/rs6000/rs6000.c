@@ -3522,7 +3522,7 @@ rs6000_preferred_simd_mode (enum machine_mode mode)
 
 /* Implement targetm.vectorize.init_cost.  */
 
-void *
+static void *
 rs6000_init_cost (struct loop *loop_info ATTRIBUTE_UNUSED)
 {
   unsigned *cost = XNEW (unsigned);
@@ -3532,7 +3532,7 @@ rs6000_init_cost (struct loop *loop_info ATTRIBUTE_UNUSED)
 
 /* Implement targetm.vectorize.add_stmt_cost.  */
 
-unsigned
+static unsigned
 rs6000_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
 		      struct _stmt_vec_info *stmt_info, int misalign)
 {
@@ -3559,7 +3559,7 @@ rs6000_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
 
 /* Implement targetm.vectorize.finish_cost.  */
 
-unsigned
+static unsigned
 rs6000_finish_cost (void *data)
 {
   return *((unsigned *) data);
@@ -3567,7 +3567,7 @@ rs6000_finish_cost (void *data)
 
 /* Implement targetm.vectorize.destroy_cost_data.  */
 
-void
+static void
 rs6000_destroy_cost_data (void *data)
 {
   free (data);

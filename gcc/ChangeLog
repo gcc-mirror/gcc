@@ -1,3 +1,19 @@
+2012-07-13  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR bootstrap/53955
+	* config/spu/spu.c (spu_init_cost): Mark static.
+	(spu_add_stmt_cost): Likewise.
+	(spu_finish_cost): Likewise.
+	(spu_destroy_cost_data): Likewise.
+	* config/i386/i386.c (ix86_init_cost): Mark static.
+	(ix86_add_stmt_cost): Likewise.
+	(ix86_finish_cost): Likewise.
+	(ix86_destroy_cost_data): Likewise.
+	* config/rs6000/rs6000.c (rs6000_init_cost): Mark static.
+	(rs6000_add_stmt_cost): Likewise.
+	(rs6000_finish_cost): Likewise.
+	(rs6000_destroy_cost_data): Likewise.
+
 2012-07-13  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* ggc.h (ggc_internal_alloc_stat, ggc_alloc_typed_stat,

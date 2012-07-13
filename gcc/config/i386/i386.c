@@ -40066,7 +40066,7 @@ ix86_autovectorize_vector_sizes (void)
 
 /* Implement targetm.vectorize.init_cost.  */
 
-void *
+static void *
 ix86_init_cost (struct loop *loop_info ATTRIBUTE_UNUSED)
 {
   unsigned *cost = XNEW (unsigned);
@@ -40076,7 +40076,7 @@ ix86_init_cost (struct loop *loop_info ATTRIBUTE_UNUSED)
 
 /* Implement targetm.vectorize.add_stmt_cost.  */
 
-unsigned
+static unsigned
 ix86_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
 		    struct _stmt_vec_info *stmt_info, int misalign)
 {
@@ -40103,7 +40103,7 @@ ix86_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
 
 /* Implement targetm.vectorize.finish_cost.  */
 
-unsigned
+static unsigned
 ix86_finish_cost (void *data)
 {
   return *((unsigned *) data);
@@ -40111,7 +40111,7 @@ ix86_finish_cost (void *data)
 
 /* Implement targetm.vectorize.destroy_cost_data.  */
 
-void
+static void
 ix86_destroy_cost_data (void *data)
 {
   free (data);
