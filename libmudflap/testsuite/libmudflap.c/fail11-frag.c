@@ -10,7 +10,7 @@ y = x;
 while (i--)
 {
   ++x;
-  *x = 0;
+  *x = i;
 }
 return 0;
 }
