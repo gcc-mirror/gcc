@@ -61,7 +61,7 @@ extern alloc_pool create_alloc_pool (const char *, size_t, size_t);
 extern void free_alloc_pool (alloc_pool);
 extern void empty_alloc_pool (alloc_pool);
 extern void free_alloc_pool_if_empty (alloc_pool *);
-extern void *pool_alloc (alloc_pool);
+extern void *pool_alloc (alloc_pool) ATTRIBUTE_MALLOC;
 extern void pool_free (alloc_pool, void *);
 extern void dump_alloc_pool_statistics (void);
 #endif
