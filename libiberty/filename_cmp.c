@@ -141,3 +141,52 @@ filename_ncmp (const char *s1, const char *s2, size_t n)
   return 0;
 #endif
 }
+
+/*
+
+@deftypefn Extension hashval_t filename_hash (const void *@var{s})
+
+Return the hash value for file name @var{s} that will be compared
+using filename_cmp.
+This function is for use with hashtab.c hash tables.
+
+@end deftypefn
+
+*/
+
+hashval_t
+filename_hash (const void *s)
+{
+  /* The cast is for -Wc++-compat.  */
+  const unsigned char *str = (const unsigned char *) s;
+  hashval_t r = 0;
+  unsigned char c;
+
+  while ((c = *str++) != 0)
+    {
+      if (c == '\\')
+	c = '/';
+      c = TOLOWER (c);
+      r = r * 67 + c - 113;
+    }
+
+  return r;
+}
+
+/*
+
+@deftypefn Extension int filename_eq (const void *@var{s1}, const void *@var{s2})
+
+Return non-zero if file names @var{s1} and @var{s2} are equivalent.
+This function is for use with hashtab.c hash tables.
+
+@end deftypefn
+
+*/
+
+int
+filename_eq (const void *s1, const void *s2)
+{
+  /* The casts are for -Wc++-compat.  */
+  return filename_cmp ((const char *) s1, (const char *) s2) == 0;
+}

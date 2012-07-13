@@ -1,3 +1,8 @@
+2012-07-13  Doug Evans  <dje@google.com>
+
+	* filenames.h: #include "hashtab.h".
+	(filename_hash, filename_eq): Declare.
+
 2012-06-18  Doug Evans  <dje@google.com>
 
 	* dwarf2.def (DW_OP): Add DW_OP_GNU_const_index.
