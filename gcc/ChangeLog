@@ -1,5 +1,15 @@
 2012-07-13  Steven Bosscher  <steven@gcc.gnu.org>
 
+	* ggc.h (ggc_internal_alloc_stat, ggc_alloc_typed_stat,
+	ggc_internal_cleared_alloc_stat, ggc_cleared_alloc_htab_ignore_args,
+	ggc_cleared_alloc_ptr_array_two_args, ggc_splay_alloc): Add
+	ATTRIBUTE_MALLOC.
+	* alloc-pool.h (pool_alloc): Likewise.
+
+	* final.c (final): Do not loop to find max_uid.
+
+2012-07-13  Steven Bosscher  <steven@gcc.gnu.org>
+
 	* emit-rtl.c (make_debug_insn_raw, make_jump_insn_raw): Make static.
 	* rtl.h (make_debug_insn_raw, make_jump_insn_raw): Remove prototypes.
 
