@@ -550,8 +550,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Pair, typename = typename
 	std::enable_if<__and_<integral_constant<bool, !__constant_iterators>,
-			      std::is_convertible<_Pair,
-						  value_type>>::value>::type>
+			      std::is_constructible<value_type,
+						    _Pair&&>>::value>::type>
 	_Insert_Return_Type
 	insert(_Pair&& __v)
 	{ return _M_insert(std::forward<_Pair>(__v),
@@ -559,8 +559,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Pair, typename = typename
         std::enable_if<__and_<integral_constant<bool, !__constant_iterators>,
-			      std::is_convertible<_Pair,
-						  value_type>>::value>::type>
+			      std::is_constructible<value_type,
+						    _Pair&&>>::value>::type>
 	iterator
 	insert(const_iterator, _Pair&& __v)
 	{ return _Insert_Conv_Type()(insert(std::forward<_Pair>(__v))); }

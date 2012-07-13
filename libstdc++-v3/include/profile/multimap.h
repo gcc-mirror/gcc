@@ -1,6 +1,6 @@
 // Profiling multimap implementation -*- C++ -*-
 
-// Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -186,8 +186,8 @@ namespace __profile
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       template<typename _Pair, typename = typename
-	       std::enable_if<std::is_convertible<_Pair,
-						  value_type>::value>::type>
+	       std::enable_if<std::is_constructible<value_type,
+						    _Pair&&>::value>::type>
         iterator
         insert(_Pair&& __x)
         { return iterator(_Base::insert(std::forward<_Pair>(__x))); }
@@ -209,8 +209,8 @@ namespace __profile
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       template<typename _Pair, typename = typename
-	       std::enable_if<std::is_convertible<_Pair,
-						  value_type>::value>::type>
+	       std::enable_if<std::is_constructible<value_type,
+						    _Pair&&>::value>::type>
         iterator
         insert(const_iterator __position, _Pair&& __x)
         { return iterator(_Base::insert(__position,

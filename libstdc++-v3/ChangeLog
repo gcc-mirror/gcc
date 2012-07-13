@@ -1,3 +1,22 @@
+2012-07-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/53657
+	* include/bits/stl_pair.h (pair<>::pair(pair&&)): Declare defaulted,
+	per C++11.
+	* include/bits/stl_map.h (map<>::insert(_Pair&&), map<>::insert
+	(const_iterator, _Pair&&)): Constrain with std::is_constructible,
+	per LWG2005.
+	* include/bits/stl_multimap.h (multimap<>::insert(_Pair&&),
+	multimap<>::insert(const_iterator, _Pair&&)): Likewise.
+	* include/bits/hashtable_policy.h (_Insert<>::insert(_Pair&&),
+	_Insert<>::insert(const_iterator, _Pair&&)): Likewise.
+	* include/debug/unordered_map: Adjust.
+	* include/debug/map.h: Likewise.
+	* include/debug/multimap.h: Likewise.
+	* include/profile/unordered_map: Likewise.
+	* include/profile/map.h: Likewise.
+	* include/profile/multimap.h: Likewise.
+
 2012-07-07  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/53578

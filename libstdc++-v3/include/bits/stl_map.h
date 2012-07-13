@@ -1,7 +1,7 @@
 // Map implementation -*- C++ -*-
 
 // Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-// 2011 Free Software Foundation, Inc.
+// 2011, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -524,8 +524,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       template<typename _Pair, typename = typename
-	       std::enable_if<std::is_convertible<_Pair,
-						  value_type>::value>::type>
+	       std::enable_if<std::is_constructible<value_type,
+						    _Pair&&>::value>::type>
         std::pair<iterator, bool>
         insert(_Pair&& __x)
         { return _M_t._M_insert_unique(std::forward<_Pair>(__x)); }
@@ -577,8 +577,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       template<typename _Pair, typename = typename
-	       std::enable_if<std::is_convertible<_Pair,
-						  value_type>::value>::type>
+	       std::enable_if<std::is_constructible<value_type,
+						    _Pair&&>::value>::type>
         iterator
         insert(const_iterator __position, _Pair&& __x)
         { return _M_t._M_insert_unique_(__position,
