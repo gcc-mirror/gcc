@@ -5702,6 +5702,14 @@ mode returned by @code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE}.
 The default is zero which means to not iterate over other vector sizes.
 @end deftypefn
 
+@hook TARGET_VECTORIZE_INIT_COST
+
+@hook TARGET_VECTORIZE_ADD_STMT_COST
+
+@hook TARGET_VECTORIZE_FINISH_COST
+
+@hook TARGET_VECTORIZE_DESTROY_COST_DATA
+
 @hook TARGET_VECTORIZE_BUILTIN_TM_LOAD
 
 @hook TARGET_VECTORIZE_BUILTIN_TM_STORE
