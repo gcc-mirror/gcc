@@ -213,8 +213,8 @@ namespace __debug
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       template<typename _Pair, typename = typename
-	       std::enable_if<std::is_convertible<_Pair,
-						  value_type>::value>::type>
+	       std::enable_if<std::is_constructible<value_type,
+						    _Pair&&>::value>::type>
         std::pair<iterator, bool>
         insert(_Pair&& __x)
         {
@@ -244,8 +244,8 @@ namespace __debug
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       template<typename _Pair, typename = typename
-	       std::enable_if<std::is_convertible<_Pair,
-						  value_type>::value>::type>
+	       std::enable_if<std::is_constructible<value_type,
+						    _Pair&&>::value>::type>
         iterator
         insert(const_iterator __position, _Pair&& __x)
         {
