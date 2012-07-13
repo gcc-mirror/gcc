@@ -26,6 +26,8 @@ Foundation, Inc., 51 Franklin Street - Fifth Floor, Boston, MA 02110-1301, USA. 
 #ifndef FILENAMES_H
 #define FILENAMES_H
 
+#include "hashtab.h" /* for hashval_t */
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -83,6 +85,10 @@ extern int filename_cmp (const char *s1, const char *s2);
 
 extern int filename_ncmp (const char *s1, const char *s2,
 			  size_t n);
+
+extern hashval_t filename_hash (const void *s);
+
+extern int filename_eq (const void *s1, const void *s2);
 
 #ifdef __cplusplus
 }
