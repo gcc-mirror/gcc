@@ -1,3 +1,8 @@
+2012-07-13  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR rtl-optimization/53908
+	* gcc.dg/torture/pr53908.c: New test.
+
 2012-07-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
