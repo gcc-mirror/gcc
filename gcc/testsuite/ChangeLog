@@ -1,5 +1,10 @@
 2012-07-13  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/53907
+	* gcc.target/i386/pr53907.c: New testcase.
+
+2012-07-13  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/53922
 	* gcc.dg/torture/pr53922.c: New testcase.
 
