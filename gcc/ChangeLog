@@ -1,5 +1,11 @@
 2012-07-13  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/53907
+	* tree-ssa-forwprop.c (associate_pointerplus): New function.
+	(ssa_forward_propagate_and_combine): Call it.
+
+2012-07-13  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/53922
 	* tree-vrp.c (value_inside_range): Change prototype to take
 	min/max instead of value-range.
