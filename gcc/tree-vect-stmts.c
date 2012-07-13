@@ -41,6 +41,66 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 
 
+/* Return the vectorized type for the given statement.  */
+
+tree
+stmt_vectype (struct _stmt_vec_info *stmt_info)
+{
+  return STMT_VINFO_VECTYPE (stmt_info);
+}
+
+/* Return TRUE iff the given statement is in an inner loop relative to
+   the loop being vectorized.  */
+bool
+stmt_in_inner_loop_p (struct _stmt_vec_info *stmt_info)
+{
+  gimple stmt = STMT_VINFO_STMT (stmt_info);
+  basic_block bb = gimple_bb (stmt);
+  loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
+  struct loop* loop;
+
+  if (!loop_vinfo)
+    return false;
+
+  loop = LOOP_VINFO_LOOP (loop_vinfo);
+
+  return (bb->loop_father == loop->inner);
+}
+
+/* Record the cost of a statement, either by directly informing the 
+   target model or by saving it in a vector for later processing.
+   Return a preliminary estimate of the statement's cost.  */
+
+unsigned
+record_stmt_cost (stmt_vector_for_cost *stmt_cost_vec, int count,
+		  enum vect_cost_for_stmt kind, stmt_vec_info stmt_info,
+		  int misalign)
+{
+  if (stmt_cost_vec)
+    {
+      tree vectype = stmt_vectype (stmt_info);
+      add_stmt_info_to_vec (stmt_cost_vec, count, kind,
+			    STMT_VINFO_STMT (stmt_info), misalign);
+      return (unsigned)
+	(targetm.vectorize.builtin_vectorization_cost (kind, vectype, misalign)
+	 * count);
+	 
+    }
+  else
+    {
+      loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
+      bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_info);
+      void *target_cost_data;
+
+      if (loop_vinfo)
+	target_cost_data = LOOP_VINFO_TARGET_COST_DATA (loop_vinfo);
+      else
+	target_cost_data = BB_VINFO_TARGET_COST_DATA (bb_vinfo);
+
+      return add_stmt_cost (target_cost_data, count, kind, stmt_info, misalign);
+    }
+}
+
 /* Return a variable of type ELEM_TYPE[NELEMS].  */
 
 static tree
@@ -735,7 +795,8 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
 
 void
 vect_model_simple_cost (stmt_vec_info stmt_info, int ncopies,
-			enum vect_def_type *dt, slp_tree slp_node)
+			enum vect_def_type *dt, slp_tree slp_node,
+			stmt_vector_for_cost *stmt_cost_vec)
 {
   int i;
   int inside_cost = 0, outside_cost = 0;
@@ -744,8 +805,6 @@ vect_model_simple_cost (stmt_vec_info stmt_info, int ncopies,
   if (PURE_SLP_STMT (stmt_info))
     return;
 
-  inside_cost = ncopies * vect_get_stmt_cost (vector_stmt); 
-
   /* FORNOW: Assuming maximum 2 args per stmts.  */
   for (i = 0; i < 2; i++)
     {
@@ -753,13 +812,16 @@ vect_model_simple_cost (stmt_vec_info stmt_info, int ncopies,
 	outside_cost += vect_get_stmt_cost (vector_stmt); 
     }
 
+  /* Set the costs either in STMT_INFO or SLP_NODE (if exists).  */
+  stmt_vinfo_set_outside_of_loop_cost (stmt_info, slp_node, outside_cost);
+
+  /* Pass the inside-of-loop statements to the target-specific cost model.  */
+  inside_cost = record_stmt_cost (stmt_cost_vec, ncopies, vector_stmt,
+				  stmt_info, 0);
+
   if (vect_print_dump_info (REPORT_COST))
     fprintf (vect_dump, "vect_model_simple_cost: inside_cost = %d, "
              "outside_cost = %d .", inside_cost, outside_cost);
-
-  /* Set the costs either in STMT_INFO or SLP_NODE (if exists).  */
-  stmt_vinfo_set_inside_of_loop_cost (stmt_info, slp_node, inside_cost);
-  stmt_vinfo_set_outside_of_loop_cost (stmt_info, slp_node, outside_cost);
 }
 
 
@@ -773,18 +835,26 @@ vect_model_promotion_demotion_cost (stmt_vec_info stmt_info,
 				    enum vect_def_type *dt, int pwr)
 {
   int i, tmp;
-  int inside_cost = 0, outside_cost = 0, single_stmt_cost;
+  int inside_cost = 0, outside_cost = 0;
+  loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
+  bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_info);
+  void *target_cost_data;
 
   /* The SLP costs were already calculated during SLP tree build.  */
   if (PURE_SLP_STMT (stmt_info))
     return;
 
-  single_stmt_cost = vect_get_stmt_cost (vec_promote_demote);
+  if (loop_vinfo)
+    target_cost_data = LOOP_VINFO_TARGET_COST_DATA (loop_vinfo);
+  else
+    target_cost_data = BB_VINFO_TARGET_COST_DATA (bb_vinfo);
+
   for (i = 0; i < pwr + 1; i++)
     {
       tmp = (STMT_VINFO_TYPE (stmt_info) == type_promotion_vec_info_type) ?
 	(i + 1) : i;
-      inside_cost += vect_pow2 (tmp) * single_stmt_cost;
+      inside_cost += add_stmt_cost (target_cost_data, vect_pow2 (tmp),
+				    vec_promote_demote, stmt_info, 0);
     }
 
   /* FORNOW: Assuming maximum 2 args per stmts.  */
@@ -799,7 +869,6 @@ vect_model_promotion_demotion_cost (stmt_vec_info stmt_info,
              "outside_cost = %d .", inside_cost, outside_cost);
 
   /* Set the costs in STMT_INFO.  */
-  stmt_vinfo_set_inside_of_loop_cost (stmt_info, NULL, inside_cost);
   stmt_vinfo_set_outside_of_loop_cost (stmt_info, NULL, outside_cost);
 }
 
@@ -829,7 +898,7 @@ vect_cost_group_size (stmt_vec_info stmt_info)
 void
 vect_model_store_cost (stmt_vec_info stmt_info, int ncopies,
 		       bool store_lanes_p, enum vect_def_type dt,
-		       slp_tree slp_node)
+		       slp_tree slp_node, stmt_vector_for_cost *stmt_cost_vec)
 {
   int group_size;
   unsigned int inside_cost = 0, outside_cost = 0;
@@ -873,8 +942,10 @@ vect_model_store_cost (stmt_vec_info stmt_info, int ncopies,
   if (!store_lanes_p && group_size > 1)
     {
       /* Uses a high and low interleave operation for each needed permute.  */
-      inside_cost = ncopies * exact_log2(group_size) * group_size
-        * vect_get_stmt_cost (vec_perm);
+      
+      int nstmts = ncopies * exact_log2 (group_size) * group_size;
+      inside_cost = record_stmt_cost (stmt_cost_vec, nstmts, vec_perm,
+				      stmt_info, 0);
 
       if (vect_print_dump_info (REPORT_COST))
         fprintf (vect_dump, "vect_model_store_cost: strided group_size = %d .",
@@ -882,14 +953,13 @@ vect_model_store_cost (stmt_vec_info stmt_info, int ncopies,
     }
 
   /* Costs of the stores.  */
-  vect_get_store_cost (first_dr, ncopies, &inside_cost);
+  vect_get_store_cost (first_dr, ncopies, &inside_cost, stmt_cost_vec);
 
   if (vect_print_dump_info (REPORT_COST))
     fprintf (vect_dump, "vect_model_store_cost: inside_cost = %d, "
              "outside_cost = %d .", inside_cost, outside_cost);
 
   /* Set the costs either in STMT_INFO or SLP_NODE (if exists).  */
-  stmt_vinfo_set_inside_of_loop_cost (stmt_info, slp_node, inside_cost);
   stmt_vinfo_set_outside_of_loop_cost (stmt_info, slp_node, outside_cost);
 }
 
@@ -897,15 +967,19 @@ vect_model_store_cost (stmt_vec_info stmt_info, int ncopies,
 /* Calculate cost of DR's memory access.  */
 void
 vect_get_store_cost (struct data_reference *dr, int ncopies,
-                     unsigned int *inside_cost)
+		     unsigned int *inside_cost,
+		     stmt_vector_for_cost *stmt_cost_vec)
 {
   int alignment_support_scheme = vect_supportable_dr_alignment (dr, false);
+  gimple stmt = DR_STMT (dr);
+  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
 
   switch (alignment_support_scheme)
     {
     case dr_aligned:
       {
-        *inside_cost += ncopies * vect_get_stmt_cost (vector_store);
+	*inside_cost += record_stmt_cost (stmt_cost_vec, ncopies,
+					  vector_store, stmt_info, 0);
 
         if (vect_print_dump_info (REPORT_COST))
           fprintf (vect_dump, "vect_model_store_cost: aligned.");
@@ -915,14 +989,10 @@ vect_get_store_cost (struct data_reference *dr, int ncopies,
 
     case dr_unaligned_supported:
       {
-        gimple stmt = DR_STMT (dr);
-        stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
-        tree vectype = STMT_VINFO_VECTYPE (stmt_info);
-
         /* Here, we assign an additional cost for the unaligned store.  */
-        *inside_cost += ncopies
-          * targetm.vectorize.builtin_vectorization_cost (unaligned_store,
-                                 vectype, DR_MISALIGNMENT (dr));
+	*inside_cost += record_stmt_cost (stmt_cost_vec, ncopies,
+					  unaligned_store, stmt_info,
+					  DR_MISALIGNMENT (dr));
 
         if (vect_print_dump_info (REPORT_COST))
           fprintf (vect_dump, "vect_model_store_cost: unaligned supported by "
@@ -956,7 +1026,7 @@ vect_get_store_cost (struct data_reference *dr, int ncopies,
 
 void
 vect_model_load_cost (stmt_vec_info stmt_info, int ncopies, bool load_lanes_p,
-		      slp_tree slp_node)
+		      slp_tree slp_node, stmt_vector_for_cost *stmt_cost_vec)
 {
   int group_size;
   gimple first_stmt;
@@ -988,8 +1058,9 @@ vect_model_load_cost (stmt_vec_info stmt_info, int ncopies, bool load_lanes_p,
   if (!load_lanes_p && group_size > 1)
     {
       /* Uses an even and odd extract operations for each needed permute.  */
-      inside_cost = ncopies * exact_log2(group_size) * group_size
-	* vect_get_stmt_cost (vec_perm);
+      int nstmts = ncopies * exact_log2 (group_size) * group_size;
+      inside_cost += record_stmt_cost (stmt_cost_vec, nstmts, vec_perm,
+				       stmt_info, 0);
 
       if (vect_print_dump_info (REPORT_COST))
         fprintf (vect_dump, "vect_model_load_cost: strided group_size = %d .",
@@ -1001,24 +1072,23 @@ vect_model_load_cost (stmt_vec_info stmt_info, int ncopies, bool load_lanes_p,
     {
       /* N scalar loads plus gathering them into a vector.  */
       tree vectype = STMT_VINFO_VECTYPE (stmt_info);
-      inside_cost += (vect_get_stmt_cost (scalar_load) * ncopies
-		      * TYPE_VECTOR_SUBPARTS (vectype));
-      inside_cost += ncopies
-	* targetm.vectorize.builtin_vectorization_cost (vec_construct,
-							vectype, 0);
+      inside_cost += record_stmt_cost (stmt_cost_vec,
+				       ncopies * TYPE_VECTOR_SUBPARTS (vectype),
+				       scalar_load, stmt_info, 0);
+      inside_cost += record_stmt_cost (stmt_cost_vec, ncopies, vec_construct,
+				       stmt_info, 0);
     }
   else
     vect_get_load_cost (first_dr, ncopies,
 			((!STMT_VINFO_GROUPED_ACCESS (stmt_info))
 			 || group_size > 1 || slp_node),
-			&inside_cost, &outside_cost);
+			&inside_cost, &outside_cost, stmt_cost_vec);
 
   if (vect_print_dump_info (REPORT_COST))
     fprintf (vect_dump, "vect_model_load_cost: inside_cost = %d, "
              "outside_cost = %d .", inside_cost, outside_cost);
 
   /* Set the costs either in STMT_INFO or SLP_NODE (if exists).  */
-  stmt_vinfo_set_inside_of_loop_cost (stmt_info, slp_node, inside_cost);
   stmt_vinfo_set_outside_of_loop_cost (stmt_info, slp_node, outside_cost);
 }
 
@@ -1026,16 +1096,20 @@ vect_model_load_cost (stmt_vec_info stmt_info, int ncopies, bool load_lanes_p,
 /* Calculate cost of DR's memory access.  */
 void
 vect_get_load_cost (struct data_reference *dr, int ncopies,
-                    bool add_realign_cost, unsigned int *inside_cost,
-                    unsigned int *outside_cost)
+		    bool add_realign_cost, unsigned int *inside_cost,
+		    unsigned int *outside_cost,
+		    stmt_vector_for_cost *stmt_cost_vec)
 {
   int alignment_support_scheme = vect_supportable_dr_alignment (dr, false);
+  gimple stmt = DR_STMT (dr);
+  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
 
   switch (alignment_support_scheme)
     {
     case dr_aligned:
       {
-        *inside_cost += ncopies * vect_get_stmt_cost (vector_load); 
+	*inside_cost += record_stmt_cost (stmt_cost_vec, ncopies,
+					  vector_load, stmt_info, 0);
 
         if (vect_print_dump_info (REPORT_COST))
           fprintf (vect_dump, "vect_model_load_cost: aligned.");
@@ -1044,14 +1118,11 @@ vect_get_load_cost (struct data_reference *dr, int ncopies,
       }
     case dr_unaligned_supported:
       {
-        gimple stmt = DR_STMT (dr);
-        stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
-        tree vectype = STMT_VINFO_VECTYPE (stmt_info);
-
         /* Here, we assign an additional cost for the unaligned load.  */
-        *inside_cost += ncopies
-          * targetm.vectorize.builtin_vectorization_cost (unaligned_load,
-                                           vectype, DR_MISALIGNMENT (dr));
+	*inside_cost += record_stmt_cost (stmt_cost_vec, ncopies,
+					  unaligned_load, stmt_info,
+					  DR_MISALIGNMENT (dr));
+
         if (vect_print_dump_info (REPORT_COST))
           fprintf (vect_dump, "vect_model_load_cost: unaligned supported by "
                    "hardware.");
@@ -1060,14 +1131,17 @@ vect_get_load_cost (struct data_reference *dr, int ncopies,
       }
     case dr_explicit_realign:
       {
-        *inside_cost += ncopies * (2 * vect_get_stmt_cost (vector_load)
-				   + vect_get_stmt_cost (vec_perm));
+	*inside_cost += record_stmt_cost (stmt_cost_vec, ncopies * 2,
+					  vector_load, stmt_info, 0);
+	*inside_cost += record_stmt_cost (stmt_cost_vec, ncopies,
+					  vec_perm, stmt_info, 0);
 
         /* FIXME: If the misalignment remains fixed across the iterations of
            the containing loop, the following cost should be added to the
            outside costs.  */
         if (targetm.vectorize.builtin_mask_for_load)
-          *inside_cost += vect_get_stmt_cost (vector_stmt);
+	  *inside_cost += record_stmt_cost (stmt_cost_vec, 1, vector_stmt,
+					    stmt_info, 0);
 
         if (vect_print_dump_info (REPORT_COST))
           fprintf (vect_dump, "vect_model_load_cost: explicit realign");
@@ -1094,8 +1168,10 @@ vect_get_load_cost (struct data_reference *dr, int ncopies,
               *outside_cost += vect_get_stmt_cost (vector_stmt);
           }
 
-        *inside_cost += ncopies * (vect_get_stmt_cost (vector_load)
-				   + vect_get_stmt_cost (vec_perm));
+	*inside_cost += record_stmt_cost (stmt_cost_vec, ncopies,
+					  vector_load, stmt_info, 0);
+	*inside_cost += record_stmt_cost (stmt_cost_vec, ncopies,
+					  vec_perm, stmt_info, 0);
 
         if (vect_print_dump_info (REPORT_COST))
           fprintf (vect_dump,
@@ -1719,7 +1795,7 @@ vectorizable_call (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
       STMT_VINFO_TYPE (stmt_info) = call_vec_info_type;
       if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "=== vectorizable_call ===");
-      vect_model_simple_cost (stmt_info, ncopies, dt, NULL);
+      vect_model_simple_cost (stmt_info, ncopies, dt, NULL, NULL);
       return true;
     }
 
@@ -2433,7 +2509,7 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
       if (code == FIX_TRUNC_EXPR || code == FLOAT_EXPR)
         {
 	  STMT_VINFO_TYPE (stmt_info) = type_conversion_vec_info_type;
-	  vect_model_simple_cost (stmt_info, ncopies, dt, NULL);
+	  vect_model_simple_cost (stmt_info, ncopies, dt, NULL, NULL);
 	}
       else if (modifier == NARROW)
 	{
@@ -2841,7 +2917,7 @@ vectorizable_assignment (gimple stmt, gimple_stmt_iterator *gsi,
       STMT_VINFO_TYPE (stmt_info) = assignment_vec_info_type;
       if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "=== vectorizable_assignment ===");
-      vect_model_simple_cost (stmt_info, ncopies, dt, NULL);
+      vect_model_simple_cost (stmt_info, ncopies, dt, NULL, NULL);
       return true;
     }
 
@@ -3187,7 +3263,7 @@ vectorizable_shift (gimple stmt, gimple_stmt_iterator *gsi,
       STMT_VINFO_TYPE (stmt_info) = shift_vec_info_type;
       if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "=== vectorizable_shift ===");
-      vect_model_simple_cost (stmt_info, ncopies, dt, NULL);
+      vect_model_simple_cost (stmt_info, ncopies, dt, NULL, NULL);
       return true;
     }
 
@@ -3501,7 +3577,7 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
       STMT_VINFO_TYPE (stmt_info) = op_vec_info_type;
       if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "=== vectorizable_operation ===");
-      vect_model_simple_cost (stmt_info, ncopies, dt, NULL);
+      vect_model_simple_cost (stmt_info, ncopies, dt, NULL, NULL);
       return true;
     }
 
@@ -3805,7 +3881,7 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
   if (!vec_stmt) /* transformation not required.  */
     {
       STMT_VINFO_TYPE (stmt_info) = store_vec_info_type;
-      vect_model_store_cost (stmt_info, ncopies, store_lanes_p, dt, NULL);
+      vect_model_store_cost (stmt_info, ncopies, store_lanes_p, dt, NULL, NULL);
       return true;
     }
 
@@ -4361,7 +4437,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
   if (!vec_stmt) /* transformation not required.  */
     {
       STMT_VINFO_TYPE (stmt_info) = load_vec_info_type;
-      vect_model_load_cost (stmt_info, ncopies, load_lanes_p, NULL);
+      vect_model_load_cost (stmt_info, ncopies, load_lanes_p, NULL, NULL);
       return true;
     }
 
@@ -5801,7 +5877,6 @@ new_stmt_vec_info (gimple stmt, loop_vec_info loop_vinfo,
     STMT_VINFO_DEF_TYPE (res) = vect_internal_def;
 
   STMT_VINFO_SAME_ALIGN_REFS (res) = VEC_alloc (dr_p, heap, 5);
-  STMT_VINFO_INSIDE_OF_LOOP_COST (res) = 0;
   STMT_VINFO_OUTSIDE_OF_LOOP_COST (res) = 0;
   STMT_SLP_TYPE (res) = loop_vect;
   GROUP_FIRST_ELEMENT (res) = NULL;

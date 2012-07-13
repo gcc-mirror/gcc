@@ -40064,6 +40064,59 @@ ix86_autovectorize_vector_sizes (void)
   return (TARGET_AVX && !TARGET_PREFER_AVX128) ? 32 | 16 : 0;
 }
 
+/* Implement targetm.vectorize.init_cost.  */
+
+void *
+ix86_init_cost (struct loop *loop_info ATTRIBUTE_UNUSED)
+{
+  unsigned *cost = XNEW (unsigned);
+  *cost = 0;
+  return cost;
+}
+
+/* Implement targetm.vectorize.add_stmt_cost.  */
+
+unsigned
+ix86_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
+		    struct _stmt_vec_info *stmt_info, int misalign)
+{
+  unsigned *cost = (unsigned *) data;
+  unsigned retval = 0;
+
+  if (flag_vect_cost_model)
+    {
+      tree vectype = stmt_vectype (stmt_info);
+      int stmt_cost = ix86_builtin_vectorization_cost (kind, vectype, misalign);
+
+      /* Statements in an inner loop relative to the loop being
+	 vectorized are weighted more heavily.  The value here is
+	 arbitrary and could potentially be improved with analysis.  */
+      if (stmt_in_inner_loop_p (stmt_info))
+	count *= 50;  /* FIXME.  */
+
+      retval = (unsigned) (count * stmt_cost);
+      *cost += retval;
+    }
+
+  return retval;
+}
+
+/* Implement targetm.vectorize.finish_cost.  */
+
+unsigned
+ix86_finish_cost (void *data)
+{
+  return *((unsigned *) data);
+}
+
+/* Implement targetm.vectorize.destroy_cost_data.  */
+
+void
+ix86_destroy_cost_data (void *data)
+{
+  free (data);
+}
+
 /* Validate target specific memory model bits in VAL. */
 
 static unsigned HOST_WIDE_INT
@@ -40369,6 +40422,14 @@ ix86_memmodel_check (unsigned HOST_WIDE_INT val)
 #undef TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES
 #define TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES \
   ix86_autovectorize_vector_sizes
+#undef TARGET_VECTORIZE_INIT_COST
+#define TARGET_VECTORIZE_INIT_COST ix86_init_cost
+#undef TARGET_VECTORIZE_ADD_STMT_COST
+#define TARGET_VECTORIZE_ADD_STMT_COST ix86_add_stmt_cost
+#undef TARGET_VECTORIZE_FINISH_COST
+#define TARGET_VECTORIZE_FINISH_COST ix86_finish_cost
+#undef TARGET_VECTORIZE_DESTROY_COST_DATA
+#define TARGET_VECTORIZE_DESTROY_COST_DATA ix86_destroy_cost_data
 
 #undef TARGET_SET_CURRENT_FUNCTION
 #define TARGET_SET_CURRENT_FUNCTION ix86_set_current_function

@@ -435,6 +435,18 @@ static void spu_setup_incoming_varargs (cumulative_args_t cum,
 #undef TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST
 #define TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST spu_builtin_vectorization_cost
 
+#undef TARGET_VECTORIZE_INIT_COST
+#define TARGET_VECTORIZE_INIT_COST spu_init_cost
+
+#undef TARGET_VECTORIZE_ADD_STMT_COST
+#define TARGET_VECTORIZE_ADD_STMT_COST spu_add_stmt_cost
+
+#undef TARGET_VECTORIZE_FINISH_COST
+#define TARGET_VECTORIZE_FINISH_COST spu_finish_cost
+
+#undef TARGET_VECTORIZE_DESTROY_COST_DATA
+#define TARGET_VECTORIZE_DESTROY_COST_DATA spu_destroy_cost_data
+
 #undef TARGET_VECTORIZE_VECTOR_ALIGNMENT_REACHABLE
 #define TARGET_VECTORIZE_VECTOR_ALIGNMENT_REACHABLE spu_vector_alignment_reachable
 
@@ -6903,6 +6915,59 @@ spu_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
       default:
         gcc_unreachable ();
     }
+}
+
+/* Implement targetm.vectorize.init_cost.  */
+
+void *
+spu_init_cost (struct loop *loop_info ATTRIBUTE_UNUSED)
+{
+  unsigned *cost = XNEW (unsigned);
+  *cost = 0;
+  return cost;
+}
+
+/* Implement targetm.vectorize.add_stmt_cost.  */
+
+unsigned
+spu_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
+		   struct _stmt_vec_info *stmt_info, int misalign)
+{
+  unsigned *cost = (unsigned *) data;
+  unsigned retval = 0;
+
+  if (flag_vect_cost_model)
+    {
+      tree vectype = stmt_vectype (stmt_info);
+      int stmt_cost = spu_builtin_vectorization_cost (kind, vectype, misalign);
+
+      /* Statements in an inner loop relative to the loop being
+	 vectorized are weighted more heavily.  The value here is
+	 arbitrary and could potentially be improved with analysis.  */
+      if (stmt_in_inner_loop_p (stmt_info))
+	count *= 50;  /* FIXME.  */
+
+      retval = (unsigned) (count * stmt_cost);
+      *cost += retval;
+    }
+
+  return retval;
+}
+
+/* Implement targetm.vectorize.finish_cost.  */
+
+unsigned
+spu_finish_cost (void *data)
+{
+  return *((unsigned *) data);
+}
+
+/* Implement targetm.vectorize.destroy_cost_data.  */
+
+void
+spu_destroy_cost_data (void *data)
+{
+  free (data);
 }
 
 /* Return true iff, data reference of TYPE can reach vector alignment (16)

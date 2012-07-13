@@ -1,3 +1,147 @@
+2012-07-13  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* doc/tm.texi: Regenerate.
+	* doc/tm.texi.in (TARGET_VECTORIZE_INIT_COST): New hook.
+	(TARGET_VECTORIZE_ADD_STMT_COST): Likewise.
+	(TARGET_VECTORIZE_FINISH_COST): Likewise.
+	(TARGET_VECTORIZE_DESTROY_COST_DATA): Likewise.
+	* targhooks.c (default_init_cost): New function.
+	(default_add_stmt_cost): Likewise.
+	(default_finish_cost): Likewise.
+	(default_destroy_cost_data): Likewise.
+	* targhooks.h (default_init_cost): New decl.
+	(default_add_stmt_cost): Likewise.
+	(default_finish_cost): Likewise.
+	(default_destroy_cost_data): Likewise.
+	* target.def (init_cost): New DEFHOOK.
+	(add_stmt_cost): Likewise.
+	(finish_cost): Likewise.
+	(destroy_cost_data): Likewise.
+	* target.h (struct _stmt_vec_info): New extern decl.
+	(stmt_vectype): Likewise.
+	(stmt_in_inner_loop_p): Likewise.
+	* tree-vectorizer.h (stmt_info_for_cost): New struct/typedef.
+	(stmt_vector_for_cost): New VEC/typedef.
+	(add_stmt_info_to_vec): New function.
+	(struct _slp_tree): Remove cost.inside_of_loop field.
+	(struct _slp_instance): Remove cost.inside_of_loop field; add
+	stmt_cost_vec field.
+	(SLP_INSTANCE_INSIDE_OF_LOOP_COST): Remove macro.
+	(SLP_INSTANCE_STMT_COST_VEC): New accessor macro.
+	(SLP_TREE_INSIDE_OF_LOOP_COST): Remove macro.
+	(struct _vect_peel_extended_info): Add stmt_cost_vec field.
+	(struct _loop_vec_info): Add target_cost_data field.
+	(LOOP_VINFO_TARGET_COST_DATA): New accessor macro.
+	(struct _bb_vec_info): Add target_cost_data field.
+	(BB_VINFO_TARGET_COST_DATA): New accessor macro.
+	(struct _stmt_vec_info): Remove cost.inside_of_loop field.
+	(STMT_VINFO_INSIDE_OF_LOOP_COST): Remove macro.
+	(stmt_vinfo_set_inside_of_loop_cost): Remove function.
+	(init_cost): New function.
+	(add_stmt_cost): Likewise.
+	(finish_cost): Likewise.
+	(destroy_cost_data): Likewise.
+	(vect_model_simple_cost): Change parameter list.
+	(vect_model_store_cost): Likewise.
+	(vect_model_load_cost): Likewise.
+	(record_stmt_cost): New extern decl.
+	(vect_get_load_cost): Change parameter list.
+	(vect_get_store_cost): Likewise.
+	* tree-vect-loop.c (new_loop_vec_info): Call init_cost.
+	(destroy_loop_vec_info): Call destroy_cost_data.
+	(vect_estimate_min_profitable_iters): Remove old calculation of
+	inside costs; call finish_cost instead.
+	(vect_model_reduction_cost): Call add_stmt_cost instead of old
+	inside-costs calculation.
+	(vect_model_induction_cost): Likewise.
+	* tree-vect-data-refs.c (vect_get_data_access_cost): Change to
+	return a stmt_vector_for_cost; modify calls to vect_get_load_cost
+	and vect_get_store_cost to obtain the value to return.
+	(vect_peeling_hash_get_lowest_cost): Obtain a stmt_cost_vec from
+	vect_get_data_access_cost and store it in the minimum peeling
+	structure.
+	(vect_peeling_hash_choose_best_peeling): Change the parameter list
+	to add a (stmt_vector_for_cost *) output parameter, and set its value.
+	(vect_enhance_data_refs_alignment): Ignore the new return value from
+	calls to vect_get_data_access_cost; obtain stmt_cost_vec from
+	vect_peeling_hash_choose_best_peeling and pass its contents to the
+	target cost model.
+	* tree-vect-stmts.c (stmt_vectype): New function.
+	(stmt_in_inner_loop_p): Likewise.
+	(record_stmt_cost): Likewise.
+	(vect_model_simple_cost): Add stmt_cost_vec parameter; call
+	record_stmt_cost instead of old calculation; don't call
+	stmt_vinfo_set_inside_of_loop_cost.
+	(vect_model_promotion_demotion_cost): Call add_stmt_cost instead of
+	old calculation; don't call stmt_vinfo_set_inside_of_loop_cost.
+	(vect_model_store_cost): Add stmt_cost_vec parameter; call
+	record_stmt_cost instead of old calculation; add stmt_cost_vec
+	parameter to vect_get_store_cost call; don't call
+	stmt_vinfo_set_inside_of_loop_cost.
+	(vect_get_store_cost): Add stmt_cost_vec parameter; call
+	record_stmt_cost instead of old calculation.
+	(vect_model_load_cost): Add stmt_cost_vec parameter; call
+	record_stmt_cost instead of old calculation; add stmt_cost_vec
+	parameter to vect_get_load_cost call; don't call
+	stmt_vinfo_set_inside_of_loop_cost.
+	(vect_get_load_cost): Add stmt_cost_vec parameter; call
+	record_stmt_cost instead of old calculation.
+	(vectorizable_call): Add NULL parameter to vect_model_simple_cost call.
+	(vectorizable_conversion): Likewise.
+	(vectorizable_assignment): Likewise.
+	(vectorizable_shift): Likewise.
+	(vectorizable_operation): Likewise.
+	(vectorizable_store): Add NULL parameter to vect_model_store_cost call.
+	(vectorizable_load): Add NULL parameter to vect_model_load_cost call.
+	(new_stmt_vec_info): Don't set STMT_VINFO_INSIDE_OF_LOOP_COST.
+	* config/spu/spu.c (TARGET_VECTORIZE_INIT_COST): New macro def.
+	(TARGET_VECTORIZE_ADD_STMT_COST): Likewise.
+	(TARGET_VECTORIZE_FINISH_COST): Likewise.
+	(TARGET_VECTORIZE_DESTROY_COST_DATA): Likewise.
+	(spu_init_cost): New function.
+	(spu_add_stmt_cost): Likewise.
+	(spu_finish_cost): Likewise.
+	(spu_destroy_cost_data): Likewise.
+	* config/i386/i386.c (ix86_init_cost): New function.
+	(ix86_add_stmt_cost): Likewise.
+	(ix86_finish_cost): Likewise.
+	(ix86_destroy_cost_data): Likewise.
+	(TARGET_VECTORIZE_INIT_COST): New macro def.
+	(TARGET_VECTORIZE_ADD_STMT_COST): Likewise.
+	(TARGET_VECTORIZE_FINISH_COST): Likewise.
+	(TARGET_VECTORIZE_DESTROY_COST_DATA): Likewise.
+	* config/rs6000/rs6000.c (TARGET_VECTORIZE_INIT_COST): New macro def.
+	(TARGET_VECTORIZE_ADD_STMT_COST): Likewise.
+	(TARGET_VECTORIZE_FINISH_COST): Likewise.
+	(TARGET_VECTORIZE_DESTROY_COST_DATA): Likewise.
+	(rs6000_init_cost): New function.
+	(rs6000_add_stmt_cost): Likewise.
+	(rs6000_finish_cost): Likewise.
+	(rs6000_destroy_cost_data): Likewise.
+	* tree-vect-slp.c (vect_free_slp_instance): Free stmt_cost_vec.
+	(vect_create_new_slp_node): Don't set SLP_TREE_INSIDE_OF_LOOP_COST.
+	(vect_get_and_check_slp_defs): Add stmt_cost_vec parameter; add
+	stmt_cost_vec parameter to vect_model_store_cost and
+	vect_model_simple_cost calls.
+	(vect_build_slp_tree): Remove inside_cost parameter; add stmt_cost_vec
+	parameter; add stmt_cost_vec parameter to vect_get_and_check_slp_defs,
+	vect_model_load_cost, and recursive vect_build_slp_tree calls; prevent
+	calculating cost more than once for loads; remove inside_cost
+	parameter from recursive vect_build_slp_tree calls; call
+	record_stmt_cost instead of old calculation.
+	(vect_analyze_slp_instance): Allocate stmt_cost_vec and save it with
+	the instance; free it on premature exit; remove inside_cost parameter
+	from vect_build_slp_tree call; add stmt_cost_vec parameter to
+	vect_build_slp_tree call; don't set SLP_INSTANCE_INSIDE_OF_LOOP_COST.
+	(new_bb_vec_info): Call init_cost.
+	(destroy_bb_vec_info): Call destroy_cost_data.
+	(vect_bb_vectorization_profitable_p): Call add_stmt_cost for each
+	statement recorded with an SLP instance; call finish_cost instead of
+	the old calculation.
+	(vect_update_slp_costs_according_to_vf): Record statement costs from
+	SLP instances, multiplying by the appropriate number of copies; don't
+	update SLP_INSTANCE_INSIDE_OF_LOOP_COST.
+
 2012-07-13  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/53937
