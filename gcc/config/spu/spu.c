@@ -6919,7 +6919,7 @@ spu_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 
 /* Implement targetm.vectorize.init_cost.  */
 
-void *
+static void *
 spu_init_cost (struct loop *loop_info ATTRIBUTE_UNUSED)
 {
   unsigned *cost = XNEW (unsigned);
@@ -6929,7 +6929,7 @@ spu_init_cost (struct loop *loop_info ATTRIBUTE_UNUSED)
 
 /* Implement targetm.vectorize.add_stmt_cost.  */
 
-unsigned
+static unsigned
 spu_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
 		   struct _stmt_vec_info *stmt_info, int misalign)
 {
@@ -6956,7 +6956,7 @@ spu_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
 
 /* Implement targetm.vectorize.finish_cost.  */
 
-unsigned
+static unsigned
 spu_finish_cost (void *data)
 {
   return *((unsigned *) data);
@@ -6964,7 +6964,7 @@ spu_finish_cost (void *data)
 
 /* Implement targetm.vectorize.destroy_cost_data.  */
 
-void
+static void
 spu_destroy_cost_data (void *data)
 {
   free (data);
