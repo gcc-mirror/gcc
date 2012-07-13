@@ -1123,6 +1123,9 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
   if (spec_p)
     *spec_p = (cxx_dialect >= cxx0x ? noexcept_true_spec : empty_except_spec);
 
+  if (no_implicit_p)
+    *no_implicit_p = false;
+
   if (deleted_p)
     {
       /* "The closure type associated with a lambda-expression has a deleted
@@ -1197,9 +1200,6 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
   expected_trivial = type_has_trivial_fn (ctype, sfk);
   if (trivial_p)
     *trivial_p = expected_trivial;
-
-  if (no_implicit_p)
-    *no_implicit_p = false;
 
   /* The TYPE_HAS_COMPLEX_* flags tell us about constraints from base
      class versions and other properties of the type.  But a subobject
