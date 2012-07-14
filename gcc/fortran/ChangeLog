@@ -1,3 +1,12 @@
+2012-07-14  Mikael Morin  <mikael@gcc.gnu.org>
+
+	Backport from trunk:
+	2012-01-09  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/51758
+	* trans-array.c (gfc_walk_elemental_function_args):
+	Skip over NULL() actual arguments.
+
 2012-06-14  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/53597
