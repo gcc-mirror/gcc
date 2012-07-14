@@ -1,3 +1,8 @@
+2012-07-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_set_reg_reg_cost): Enable TFmode/TCmode
+	for TARGET_SSE.
+
 2012-07-14  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* toplev.c (init_asm_output): Open asm_out_file in 'w' mode.
