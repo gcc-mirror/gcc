@@ -1,3 +1,7 @@
+2012-07-14  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* toplev.c (init_asm_output): Open asm_out_file in 'w' mode.
+
 2012-07-13  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	PR bootstrap/53955
