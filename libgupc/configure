@@ -14489,7 +14489,7 @@ else
 int
 main ()
 {
-int foo, bar; bar = __sync_val_compare_and_swap(&foo, 0, 1);
+int foo; (void) __sync_val_compare_and_swap(&foo, 0, 1);
   ;
   return 0;
 }

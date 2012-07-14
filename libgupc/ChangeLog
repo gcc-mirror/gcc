@@ -1,3 +1,9 @@
+2012-07-14  Gary Funck  <gary@intrepid.com>
+
+	* acinclude.m4 (LIBGUPC_CHECK_SYNC_BUILTINS): Remove
+	set-but-not-used variable in the check for builtin sync. ops.
+	* configure: Re-generate.
+
 2012-07-03  Gary Funck  <gary@intrepid.com>
 
 	* libgupc.texi: Include gpl_v3.texi instead of gpl.texi.

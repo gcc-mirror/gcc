@@ -95,8 +95,9 @@ dnl Check whether the target supports __sync_*_compare_and_swap.
 AC_DEFUN([LIBGUPC_CHECK_SYNC_BUILTINS], [
   AC_CACHE_CHECK([whether the target supports __sync_*_compare_and_swap],
 		 libgupc_cv_have_sync_builtins, [
-  AC_TRY_LINK([], [int foo, bar; bar = __sync_val_compare_and_swap(&foo, 0, 1);],
-	      libgupc_cv_have_sync_builtins=yes, libgupc_cv_have_sync_builtins=no)])
+  AC_TRY_LINK([], [int foo; (void) __sync_val_compare_and_swap(&foo, 0, 1);],
+	      libgupc_cv_have_sync_builtins=yes,
+	      libgupc_cv_have_sync_builtins=no)])
   if test $libgupc_cv_have_sync_builtins = yes; then
     AC_DEFINE(HAVE_SYNC_BUILTINS, 1,
 	      [Define to 1 if the target supports __sync_*_compare_and_swap])
