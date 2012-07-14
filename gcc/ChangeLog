@@ -1,3 +1,10 @@
+2012-07-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (QImode and HImode cmove splitters): Merge
+	QImode and HImode splitters.  Use ix86_comparison_operator.
+	Explicitly match FLAGS_REG.
+	(DFmode cmove splitter): Explicitly match FLAGS_REG.
+
 2012-07-13  Richard Sandiford  <rdsandiford@googlemail.com>
 	    Steven Bosscher  <steven@gcc.gnu.org>
 	    Bernd Schmidt  <bernds@codesourcery.com>
@@ -163,8 +170,10 @@
 2012-06-29  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
 	* configure: Regenerate.
+
 	Backport from mainline.
-        2012-03-15  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+	2012-03-15  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
 	* config.gcc (target_type_format_char): New. Document it. Set it for
 	arm*-*-* .
 	* configure.ac (gnu_unique_option): Use target_type_format_char
@@ -173,7 +182,8 @@
 2012-06-29  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
 	Backport from mainline.
-        2012-05-30  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+	2012-05-30  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
 	* config/arm/arm.c (arm_evpc_neon_vrev): Adjust off by one error.
 
 2012-06-28  Georg-Johann Lay  <avr@gjlay.de>
