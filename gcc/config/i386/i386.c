@@ -31962,7 +31962,7 @@ ix86_set_reg_reg_cost (enum machine_mode mode)
       break;
 
     case MODE_FLOAT:
-      if ((TARGET_SSE2 && mode == TFmode)
+      if ((TARGET_SSE && mode == TFmode)
 	  || (TARGET_80387 && mode == XFmode)
 	  || ((TARGET_80387 || TARGET_SSE2) && mode == DFmode)
 	  || ((TARGET_80387 || TARGET_SSE) && mode == SFmode))
@@ -31970,7 +31970,7 @@ ix86_set_reg_reg_cost (enum machine_mode mode)
       break;
 
     case MODE_COMPLEX_FLOAT:
-      if ((TARGET_SSE2 && mode == TCmode)
+      if ((TARGET_SSE && mode == TCmode)
 	  || (TARGET_80387 && mode == XCmode)
 	  || ((TARGET_80387 || TARGET_SSE2) && mode == DCmode)
 	  || ((TARGET_80387 || TARGET_SSE) && mode == SCmode))
