@@ -1,3 +1,8 @@
+2012-07-14  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* c-pch.c (CHECK_NO_ASM_OUT_DURING_PCH): Do not define.
+	Remove code conditional on it.
+
 2012-07-11  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* c-gimplify.c: Do not include basic-block.h.

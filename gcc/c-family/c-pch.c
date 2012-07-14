@@ -35,24 +35,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "timevar.h"
 
-/* PCH was introduced before unit-at-a-time became the only supported
-   compilation mode.  To exactly replay the content parsed at PCH generate
-   time, anything written to asm_out_file was read back in and stored in
-   the PCH, and written back out to asm_out_file while reading a PCH.
-
-   Nowadays, ideally no action by a front end should never result in output
-   to asm_out_file, and front-end files should not include output.h.  For
-   now assert that nothing is written to asm_out_file while a PCH is being
-   generated.  Before GCC 4.8 is released, this code should be removed.
-   FIXME.  */
-#define CHECK_NO_ASM_OUT_DURING_PCH
-#ifdef CHECK_NO_ASM_OUT_DURING_PCH
-extern FILE *asm_out_file;
-
-/* The position in the assembler output file when pch_init was called.  */
-static long asm_file_startpos;
-#endif
-
 /* This is a list of flag variables that must match exactly, and their
    names for the error message.  The possible values for *flag_var must
    fit in a 'signed char'.  */
@@ -112,9 +94,7 @@ get_ident (void)
 }
 
 /* Prepare to write a PCH file, if one is being written.  This is
-   called at the start of compilation.
-
-   Also, print out the executable checksum if -fverbose-asm is in effect.  */
+   called at the start of compilation.  */
 
 void
 pch_init (void)
@@ -153,10 +133,6 @@ pch_init (void)
       || fwrite (target_validity, v.target_data_length, 1, f) != 1)
     fatal_error ("can%'t write to %s: %m", pch_file);
 
-#ifdef CHECK_NO_ASM_OUT_DURING_PCH
-  asm_file_startpos = ftell (asm_out_file);
-#endif
-
   /* Let the debugging format deal with the PCHness.  */
   (*debug_hooks->handle_pch) (0);
 
@@ -176,10 +152,6 @@ c_common_write_pch (void)
   (*debug_hooks->handle_pch) (1);
 
   cpp_write_pch_deps (parse_in, pch_outfile);
-
-#ifdef CHECK_NO_ASM_OUT_DURING_PCH
-  gcc_assert (ftell (asm_out_file) - asm_file_startpos == 0);
-#endif
 
   gt_pch_save (pch_outfile);
 
