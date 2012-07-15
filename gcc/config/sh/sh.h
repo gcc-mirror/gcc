@@ -338,8 +338,8 @@ do { \
 #endif
 
 #define SH_ASM_SPEC \
- "%(subtarget_asm_endian_spec) %{mrelax:-relax %(subtarget_asm_relax_spec)}\
-%(subtarget_asm_isa_spec) %(subtarget_asm_spec)\
+ "%(subtarget_asm_endian_spec) %{mrelax:-relax %(subtarget_asm_relax_spec)} \
+%(subtarget_asm_isa_spec) %(subtarget_asm_spec) \
 %{m2a:--isa=sh2a} \
 %{m2a-single:--isa=sh2a} \
 %{m2a-single-only:--isa=sh2a} \
