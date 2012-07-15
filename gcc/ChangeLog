@@ -1,3 +1,8 @@
+2012-07-14  Andrew Stubbs  <ams@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config/sh/sh.h (SH_ASM_SPEC): Add spaces between options.
+
 2012-07-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_set_reg_reg_cost): Enable TFmode/TCmode
