@@ -85,5 +85,5 @@
 
 (define_insn_reservation "xlr_hilo" 2
   (and (eq_attr "cpu" "xlr") 
-       (eq_attr "type" "mfhilo,mthilo"))
+       (eq_attr "type" "mfhi,mflo,mthi,mtlo"))
   "xlr_imuldiv_nopipe")

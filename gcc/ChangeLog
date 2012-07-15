@@ -1,3 +1,43 @@
+2012-07-15  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips.md (move_type): Replace mfhilo and mthilo
+	with mflo and mtlo.
+	(type): Split mfhilo into mfhi and mflo.  Split mthilo into mthi
+	and mtlo.  Adjust move_type->type mapping.
+	(may_clobber_hilo): Split mthilo into mthi and mtlo.
+	(*movdi_32bit, *movdi_32bit_mips16, *movdi_64bit, *movdi_64bit_mips16)
+	(*mov<mode>_internal, *mov<mode>_mips16, *movhi_internal)
+	(*movhi_mips16, *movqi_internal, *movqi_mips16): Use mtlo and mflo
+	instead of mthilo and mfhilo.
+	(mfhi<GPR:mode>_<HILO:mode>): Use mfhi instead of mfhilo.
+	(mthi<GPR:mode>_<HILO:mode>): Use mthi instead of mthilo.
+	* config/mips/mips-dsp.md (mips_extr_w, mips_extr_r_w, mips_extr_rs_w)
+	(mips_extr_s_h, mips_extp, mips_extpdp, mips_shilo, mips_mthlip):
+	Use mflo instead of mfhilo.
+	* config/mips/10000.md (r10k_arith): Split mthilo.
+	(r10k_mfhi, r10k_mflo): Use mfhi and mflo directly.
+	* config/mips/sb1.md (ir_sb1_mfhi, ir_sb1_mflo): Likewise.
+	(ir_sb1_mthilo): Split mthilo into mthi and mtlo.
+	* config/mips/20kc.md (r20kc_imthilo, r20kc_imfhilo): Split
+	mthilo and mfhilo.
+	* config/mips/24k.md (r24k_int_mfhilo, r24k_int_mthilo): Likewise.
+	* config/mips/4130.md (vr4130_class, vr4130_mfhilo, vr4130_mthilo):
+	Likewise.
+	* config/mips/4k.md (r4k_int_mthilo, r4k_int_mfhilo): Likewise.
+	* config/mips/5400.md (ir_vr54_hilo): Likewise.
+	* config/mips/5500.md (ir_vr55_mthilo, ir_vr55_mfhilo): Likewise.
+	* config/mips/5k.md (r5k_int_mthilo, r5k_int_mfhilo): Likewise.
+	* config/mips/7000.md (rm7_mthilo, rm7_mfhilo): Likewise.
+	* config/mips/74k.md (r74k_int_mfhilo, r74k_int_mthilo): Likewise.
+	* config/mips/9000.md (rm9k_mfhilo, rm9k_mthilo): Likewise.
+	* config/mips/generic.md (generic_hilo): Likewise.
+	* config/mips/loongson2ef.md (ls2_alu): Likewise.
+	* config/mips/loongson3a.md (ls3a_mfhilo): Likewise.
+	* config/mips/octeon.md (octeon_imul_o1, octeon_imul_o2)
+	(octeon_mfhilo_o1, octeon_mfhilo_o2): Likewise.
+	* config/mips/sr71k.md (ir_sr70_hilo): Likewise.
+	* config/mips/xlr.md (xlr_hilo): Likewise.
+
 2012-07-14  Andrew Stubbs  <ams@codesourcery.com>
 	    Sandra Loosemore  <sandra@codesourcery.com>
 
