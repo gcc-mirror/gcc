@@ -909,7 +909,7 @@
     }
   return "extrv.w\t%0,%q1,%2";
 }
-  [(set_attr "type"	"mfhilo")
+  [(set_attr "type"	"mflo")
    (set_attr "mode"	"SI")])
 
 (define_insn "mips_extr_r_w"
@@ -930,7 +930,7 @@
     }
   return "extrv_r.w\t%0,%q1,%2";
 }
-  [(set_attr "type"	"mfhilo")
+  [(set_attr "type"	"mflo")
    (set_attr "mode"	"SI")])
 
 (define_insn "mips_extr_rs_w"
@@ -951,7 +951,7 @@
     }
   return "extrv_rs.w\t%0,%q1,%2";
 }
-  [(set_attr "type"	"mfhilo")
+  [(set_attr "type"	"mflo")
    (set_attr "mode"	"SI")])
 
 ;; EXTR*_S.H
@@ -973,7 +973,7 @@
     }
   return "extrv_s.h\t%0,%q1,%2";
 }
-  [(set_attr "type"	"mfhilo")
+  [(set_attr "type"	"mflo")
    (set_attr "mode"	"SI")])
 
 ;; EXTP*
@@ -996,7 +996,7 @@
     }
   return "extpv\t%0,%q1,%2";
 }
-  [(set_attr "type"	"mfhilo")
+  [(set_attr "type"	"mflo")
    (set_attr "mode"	"SI")])
 
 (define_insn "mips_extpdp"
@@ -1021,7 +1021,7 @@
     }
   return "extpdpv\t%0,%q1,%2";
 }
-  [(set_attr "type"	"mfhilo")
+  [(set_attr "type"	"mflo")
    (set_attr "mode"	"SI")])
 
 ;; SHILO*
@@ -1040,7 +1040,7 @@
     }
   return "shilov\t%q0,%2";
 }
-  [(set_attr "type"	"mfhilo")
+  [(set_attr "type"	"mflo")
    (set_attr "mode"	"SI")])
 
 ;; MTHLIP*
@@ -1056,7 +1056,7 @@
 			 (reg:CCDSP CCDSP_PO_REGNUM)] UNSPEC_MTHLIP))])]
   "ISA_HAS_DSP && !TARGET_64BIT"
   "mthlip\t%2,%q0"
-  [(set_attr "type"	"mfhilo")
+  [(set_attr "type"	"mflo")
    (set_attr "mode"	"SI")])
 
 ;; WRDSP

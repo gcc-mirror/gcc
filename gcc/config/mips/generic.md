@@ -43,7 +43,7 @@
   "alu")
 
 (define_insn_reservation "generic_hilo" 1
-  (eq_attr "type" "mfhilo,mthilo")
+  (eq_attr "type" "mfhi,mflo,mthi,mtlo")
   "imuldiv*3")
 
 (define_insn_reservation "generic_imul" 17

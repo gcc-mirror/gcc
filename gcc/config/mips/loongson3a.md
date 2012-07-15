@@ -53,7 +53,7 @@
 
 (define_insn_reservation "ls3a_mfhilo" 1
   (and (eq_attr "cpu" "loongson_3a")
-       (eq_attr "type" "mfhilo,mthilo"))
+       (eq_attr "type" "mfhi,mflo,mthi,mtlo"))
   "ls3a_alu2")
 
 ;; Operation imul3nc is fully pipelined.
