@@ -8046,6 +8046,10 @@ intrin_return_compatible_p (intrin_binding_t * inb)
       && !VOID_TYPE_P (btin_return_type))
     return true;
 
+  /* If return type is Address (integer type), map it to void *.  */
+  if (Is_Descendent_Of_Address (Etype (inb->gnat_entity)))
+    ada_return_type = ptr_void_type_node;
+
   /* Check return types compatibility otherwise.  Note that this
      handles void/void as well.  */
   if (intrin_types_incompatible_p (btin_return_type, ada_return_type))

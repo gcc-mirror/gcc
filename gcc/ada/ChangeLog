@@ -1,3 +1,8 @@
+2012-07-16  Tristan Gingold  <gingold@adacore.com>
+
+	* gcc-interface/decl.c (intrin_return_compatible_p): Map Address to
+	void *.
+
 2012-07-16  Thomas Quinot  <quinot@adacore.com>
 
 	* exp_ch9.adb (Ensure_Statement_Present): New subprogram.
