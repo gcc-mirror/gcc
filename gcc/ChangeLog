@@ -1,3 +1,7 @@
+2012-07-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/rtmintrin.h (_xabort): Remove trailing semicolon.
+
 2012-07-16  Ulrich Weigand  <ulrich.weigand@linaro.org>
 
 	* tree-ssa-ccp.c (optimize_unreachable): Check gsi_end_p
