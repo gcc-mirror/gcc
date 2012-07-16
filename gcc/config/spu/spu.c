@@ -147,88 +147,11 @@ static struct spu_builtin_range spu_builtin_range[] = {
 char regs_ever_allocated[FIRST_PSEUDO_REGISTER];
 
 /*  Prototypes and external defs.  */
-static void spu_option_override (void);
-static void spu_init_builtins (void);
-static tree spu_builtin_decl (unsigned, bool);
-static bool spu_scalar_mode_supported_p (enum machine_mode mode);
-static bool spu_vector_mode_supported_p (enum machine_mode mode);
-static bool spu_legitimate_address_p (enum machine_mode, rtx, bool);
-static bool spu_addr_space_legitimate_address_p (enum machine_mode, rtx,
-						 bool, addr_space_t);
-static rtx adjust_operand (rtx op, HOST_WIDE_INT * start);
-static rtx get_pic_reg (void);
-static int need_to_save_reg (int regno, int saving);
-static rtx frame_emit_store (int regno, rtx addr, HOST_WIDE_INT offset);
-static rtx frame_emit_load (int regno, rtx addr, HOST_WIDE_INT offset);
-static rtx frame_emit_add_imm (rtx dst, rtx src, HOST_WIDE_INT imm,
-			       rtx scratch);
-static void emit_nop_for_insn (rtx insn);
-static bool insn_clobbers_hbr (rtx insn);
-static void spu_emit_branch_hint (rtx before, rtx branch, rtx target,
-				  int distance, sbitmap blocks);
-static rtx spu_emit_vector_compare (enum rtx_code rcode, rtx op0, rtx op1,
-	                            enum machine_mode dmode);
-static rtx get_branch_target (rtx branch);
-static void spu_machine_dependent_reorg (void);
-static int spu_sched_issue_rate (void);
-static int spu_sched_variable_issue (FILE * dump, int verbose, rtx insn,
-				     int can_issue_more);
 static int get_pipe (rtx insn);
-static int spu_sched_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost);
-static void spu_sched_init_global (FILE *, int, int);
-static void spu_sched_init (FILE *, int, int);
-static int spu_sched_reorder (FILE *, int, rtx *, int *, int);
-static tree spu_handle_fndecl_attribute (tree * node, tree name, tree args,
-					 int flags,
-					 bool *no_add_attrs);
-static tree spu_handle_vector_attribute (tree * node, tree name, tree args,
-					 int flags,
-					 bool *no_add_attrs);
 static int spu_naked_function_p (tree func);
-static bool spu_pass_by_reference (cumulative_args_t cum,
-				   enum machine_mode mode,
-				   const_tree type, bool named);
-static rtx spu_function_arg (cumulative_args_t cum, enum machine_mode mode,
-			     const_tree type, bool named);
-static void spu_function_arg_advance (cumulative_args_t cum,
-				      enum machine_mode mode,
-				      const_tree type, bool named);
-static tree spu_build_builtin_va_list (void);
-static void spu_va_start (tree, rtx);
-static tree spu_gimplify_va_arg_expr (tree valist, tree type,
-				      gimple_seq * pre_p, gimple_seq * post_p);
-static int store_with_one_insn_p (rtx mem);
 static int mem_is_padded_component_ref (rtx x);
-static int reg_aligned_for_addr (rtx x);
-static bool spu_assemble_integer (rtx x, unsigned int size, int aligned_p);
-static void spu_asm_globalize_label (FILE * file, const char *name);
-static bool spu_rtx_costs (rtx x, int code, int outer_code, int opno,
-			   int *total, bool speed);
-static bool spu_function_ok_for_sibcall (tree decl, tree exp);
-static void spu_init_libfuncs (void);
-static bool spu_return_in_memory (const_tree type, const_tree fntype);
 static void fix_range (const char *);
-static void spu_encode_section_info (tree, rtx, int);
-static rtx spu_legitimize_address (rtx, rtx, enum machine_mode);
-static rtx spu_addr_space_legitimize_address (rtx, rtx, enum machine_mode,
-					      addr_space_t);
-static tree spu_builtin_mask_for_load (void);
-static int spu_builtin_vectorization_cost (enum vect_cost_for_stmt, tree, int);
-static bool spu_vector_alignment_reachable (const_tree, bool);
-static enum machine_mode spu_addr_space_pointer_mode (addr_space_t);
-static enum machine_mode spu_addr_space_address_mode (addr_space_t);
-static bool spu_addr_space_subset_p (addr_space_t, addr_space_t);
-static rtx spu_addr_space_convert (rtx, tree, tree);
-static int spu_sms_res_mii (struct ddg *g);
-static unsigned int spu_section_type_flags (tree, const char *, int);
-static section *spu_select_section (tree, int, unsigned HOST_WIDE_INT);
-static void spu_unique_section (tree, int);
 static rtx spu_expand_load (rtx, rtx, rtx, int);
-static void spu_trampoline_init (rtx, tree, rtx);
-static void spu_conditional_register_usage (void);
-static bool spu_ref_may_alias_errno (ao_ref *);
-static void spu_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
-				 HOST_WIDE_INT, tree);
 
 /* Which instruction set architecture to use.  */
 int spu_arch;
@@ -272,233 +195,10 @@ static int cpat_info(unsigned char *arr, int size, int *prun, int *pstart);
 static enum immediate_class classify_immediate (rtx op,
 						enum machine_mode mode);
 
-static enum machine_mode spu_unwind_word_mode (void);
-
-static enum machine_mode
-spu_libgcc_cmp_return_mode (void);
-
-static enum machine_mode
-spu_libgcc_shift_count_mode (void);
-
 /* Pointer mode for __ea references.  */
 #define EAmode (spu_ea_model != 32 ? DImode : SImode)
 
 
-/*  Table of machine attributes.  */
-static const struct attribute_spec spu_attribute_table[] =
-{
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
-       affects_type_identity } */
-  { "naked",          0, 0, true,  false, false, spu_handle_fndecl_attribute,
-    false },
-  { "spu_vector",     0, 0, false, true,  false, spu_handle_vector_attribute,
-    false },
-  { NULL,             0, 0, false, false, false, NULL, false }
-};
-
-/*  TARGET overrides.  */
-
-#undef TARGET_ADDR_SPACE_POINTER_MODE
-#define TARGET_ADDR_SPACE_POINTER_MODE spu_addr_space_pointer_mode
-
-#undef TARGET_ADDR_SPACE_ADDRESS_MODE
-#define TARGET_ADDR_SPACE_ADDRESS_MODE spu_addr_space_address_mode
-
-#undef TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P
-#define TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P \
-  spu_addr_space_legitimate_address_p
-
-#undef TARGET_ADDR_SPACE_LEGITIMIZE_ADDRESS
-#define TARGET_ADDR_SPACE_LEGITIMIZE_ADDRESS spu_addr_space_legitimize_address
-
-#undef TARGET_ADDR_SPACE_SUBSET_P
-#define TARGET_ADDR_SPACE_SUBSET_P spu_addr_space_subset_p
-
-#undef TARGET_ADDR_SPACE_CONVERT
-#define TARGET_ADDR_SPACE_CONVERT spu_addr_space_convert
-
-#undef TARGET_INIT_BUILTINS
-#define TARGET_INIT_BUILTINS spu_init_builtins
-#undef TARGET_BUILTIN_DECL
-#define TARGET_BUILTIN_DECL spu_builtin_decl
-
-#undef TARGET_EXPAND_BUILTIN
-#define TARGET_EXPAND_BUILTIN spu_expand_builtin
-
-#undef TARGET_UNWIND_WORD_MODE
-#define TARGET_UNWIND_WORD_MODE spu_unwind_word_mode
-
-#undef TARGET_LEGITIMIZE_ADDRESS
-#define TARGET_LEGITIMIZE_ADDRESS spu_legitimize_address
-
-/* The current assembler doesn't like .4byte foo@ppu, so use the normal .long
-   and .quad for the debugger.  When it is known that the assembler is fixed,
-   these can be removed.  */
-#undef TARGET_ASM_UNALIGNED_SI_OP
-#define TARGET_ASM_UNALIGNED_SI_OP	"\t.long\t"
-
-#undef TARGET_ASM_ALIGNED_DI_OP
-#define TARGET_ASM_ALIGNED_DI_OP	"\t.quad\t"
-
-/* The .8byte directive doesn't seem to work well for a 32 bit
-   architecture. */
-#undef TARGET_ASM_UNALIGNED_DI_OP
-#define TARGET_ASM_UNALIGNED_DI_OP NULL
-
-#undef TARGET_RTX_COSTS
-#define TARGET_RTX_COSTS spu_rtx_costs
-
-#undef TARGET_ADDRESS_COST
-#define TARGET_ADDRESS_COST hook_int_rtx_bool_0
-
-#undef TARGET_SCHED_ISSUE_RATE
-#define TARGET_SCHED_ISSUE_RATE spu_sched_issue_rate
-
-#undef TARGET_SCHED_INIT_GLOBAL
-#define TARGET_SCHED_INIT_GLOBAL spu_sched_init_global
-
-#undef TARGET_SCHED_INIT
-#define TARGET_SCHED_INIT spu_sched_init
-
-#undef TARGET_SCHED_VARIABLE_ISSUE
-#define TARGET_SCHED_VARIABLE_ISSUE spu_sched_variable_issue
-
-#undef TARGET_SCHED_REORDER
-#define TARGET_SCHED_REORDER spu_sched_reorder
-
-#undef TARGET_SCHED_REORDER2
-#define TARGET_SCHED_REORDER2 spu_sched_reorder
-
-#undef TARGET_SCHED_ADJUST_COST
-#define TARGET_SCHED_ADJUST_COST spu_sched_adjust_cost
-
-#undef  TARGET_ATTRIBUTE_TABLE
-#define TARGET_ATTRIBUTE_TABLE spu_attribute_table
-
-#undef TARGET_ASM_INTEGER
-#define TARGET_ASM_INTEGER spu_assemble_integer
-
-#undef TARGET_SCALAR_MODE_SUPPORTED_P
-#define TARGET_SCALAR_MODE_SUPPORTED_P	spu_scalar_mode_supported_p
-
-#undef TARGET_VECTOR_MODE_SUPPORTED_P
-#define TARGET_VECTOR_MODE_SUPPORTED_P	spu_vector_mode_supported_p
-
-#undef TARGET_FUNCTION_OK_FOR_SIBCALL
-#define TARGET_FUNCTION_OK_FOR_SIBCALL spu_function_ok_for_sibcall
-
-#undef TARGET_ASM_GLOBALIZE_LABEL
-#define TARGET_ASM_GLOBALIZE_LABEL spu_asm_globalize_label
-
-#undef TARGET_PASS_BY_REFERENCE
-#define TARGET_PASS_BY_REFERENCE spu_pass_by_reference
-
-#undef TARGET_FUNCTION_ARG
-#define TARGET_FUNCTION_ARG spu_function_arg
-
-#undef TARGET_FUNCTION_ARG_ADVANCE
-#define TARGET_FUNCTION_ARG_ADVANCE spu_function_arg_advance
-
-#undef TARGET_MUST_PASS_IN_STACK
-#define TARGET_MUST_PASS_IN_STACK must_pass_in_stack_var_size
-
-#undef TARGET_BUILD_BUILTIN_VA_LIST
-#define TARGET_BUILD_BUILTIN_VA_LIST spu_build_builtin_va_list
-
-#undef TARGET_EXPAND_BUILTIN_VA_START
-#define TARGET_EXPAND_BUILTIN_VA_START spu_va_start
-
-static void spu_setup_incoming_varargs (cumulative_args_t cum,
-					enum machine_mode mode,
-					tree type, int *pretend_size,
-					int no_rtl);
-#undef TARGET_SETUP_INCOMING_VARARGS
-#define TARGET_SETUP_INCOMING_VARARGS spu_setup_incoming_varargs
-
-#undef TARGET_MACHINE_DEPENDENT_REORG
-#define TARGET_MACHINE_DEPENDENT_REORG spu_machine_dependent_reorg
-
-#undef TARGET_GIMPLIFY_VA_ARG_EXPR
-#define TARGET_GIMPLIFY_VA_ARG_EXPR spu_gimplify_va_arg_expr
-
-#undef TARGET_INIT_LIBFUNCS
-#define TARGET_INIT_LIBFUNCS spu_init_libfuncs
-
-#undef TARGET_RETURN_IN_MEMORY
-#define TARGET_RETURN_IN_MEMORY spu_return_in_memory
-
-#undef  TARGET_ENCODE_SECTION_INFO
-#define TARGET_ENCODE_SECTION_INFO spu_encode_section_info
-
-#undef TARGET_VECTORIZE_BUILTIN_MASK_FOR_LOAD
-#define TARGET_VECTORIZE_BUILTIN_MASK_FOR_LOAD spu_builtin_mask_for_load
-
-#undef TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST
-#define TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST spu_builtin_vectorization_cost
-
-#undef TARGET_VECTORIZE_INIT_COST
-#define TARGET_VECTORIZE_INIT_COST spu_init_cost
-
-#undef TARGET_VECTORIZE_ADD_STMT_COST
-#define TARGET_VECTORIZE_ADD_STMT_COST spu_add_stmt_cost
-
-#undef TARGET_VECTORIZE_FINISH_COST
-#define TARGET_VECTORIZE_FINISH_COST spu_finish_cost
-
-#undef TARGET_VECTORIZE_DESTROY_COST_DATA
-#define TARGET_VECTORIZE_DESTROY_COST_DATA spu_destroy_cost_data
-
-#undef TARGET_VECTORIZE_VECTOR_ALIGNMENT_REACHABLE
-#define TARGET_VECTORIZE_VECTOR_ALIGNMENT_REACHABLE spu_vector_alignment_reachable
-
-#undef TARGET_LIBGCC_CMP_RETURN_MODE
-#define TARGET_LIBGCC_CMP_RETURN_MODE spu_libgcc_cmp_return_mode
-
-#undef TARGET_LIBGCC_SHIFT_COUNT_MODE
-#define TARGET_LIBGCC_SHIFT_COUNT_MODE spu_libgcc_shift_count_mode
-
-#undef TARGET_SCHED_SMS_RES_MII
-#define TARGET_SCHED_SMS_RES_MII spu_sms_res_mii
-
-#undef TARGET_SECTION_TYPE_FLAGS
-#define TARGET_SECTION_TYPE_FLAGS spu_section_type_flags
-
-#undef TARGET_ASM_SELECT_SECTION
-#define TARGET_ASM_SELECT_SECTION  spu_select_section
-
-#undef TARGET_ASM_UNIQUE_SECTION
-#define TARGET_ASM_UNIQUE_SECTION  spu_unique_section
-
-#undef TARGET_LEGITIMATE_ADDRESS_P
-#define TARGET_LEGITIMATE_ADDRESS_P spu_legitimate_address_p
-
-#undef TARGET_LEGITIMATE_CONSTANT_P
-#define TARGET_LEGITIMATE_CONSTANT_P spu_legitimate_constant_p
-
-#undef TARGET_TRAMPOLINE_INIT
-#define TARGET_TRAMPOLINE_INIT spu_trampoline_init
-
-#undef TARGET_OPTION_OVERRIDE
-#define TARGET_OPTION_OVERRIDE spu_option_override
-
-#undef TARGET_CONDITIONAL_REGISTER_USAGE
-#define TARGET_CONDITIONAL_REGISTER_USAGE spu_conditional_register_usage
-
-#undef TARGET_REF_MAY_ALIAS_ERRNO
-#define TARGET_REF_MAY_ALIAS_ERRNO spu_ref_may_alias_errno
-
-#undef TARGET_ASM_OUTPUT_MI_THUNK
-#define TARGET_ASM_OUTPUT_MI_THUNK spu_output_mi_thunk
-#undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
-#define TARGET_ASM_CAN_OUTPUT_MI_THUNK hook_bool_const_tree_hwi_hwi_const_tree_true
-
-/* Variable tracking should be run after all optimizations which
-   change order of insns.  It also needs a valid CFG.  */
-#undef TARGET_DELAY_VARTRACK
-#define TARGET_DELAY_VARTRACK true
-
-struct gcc_target targetm = TARGET_INITIALIZER;
-
 /* Define the structure for the machine field in struct function.  */
 struct GTY(()) machine_function
 {
@@ -3888,7 +3588,7 @@ spu_addr_space_legitimate_address_p (enum machine_mode mode, rtx x,
 
 /* When the address is reg + const_int, force the const_int into a
    register.  */
-rtx
+static rtx
 spu_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 			enum machine_mode mode ATTRIBUTE_UNUSED)
 {
@@ -7375,5 +7075,217 @@ spu_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 
   final_end_function ();
 }
+
+
+/*  Table of machine attributes.  */
+static const struct attribute_spec spu_attribute_table[] =
+{
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
+       affects_type_identity } */
+  { "naked",          0, 0, true,  false, false, spu_handle_fndecl_attribute,
+    false },
+  { "spu_vector",     0, 0, false, true,  false, spu_handle_vector_attribute,
+    false },
+  { NULL,             0, 0, false, false, false, NULL, false }
+};
+
+/*  TARGET overrides.  */
+
+#undef TARGET_ADDR_SPACE_POINTER_MODE
+#define TARGET_ADDR_SPACE_POINTER_MODE spu_addr_space_pointer_mode
+
+#undef TARGET_ADDR_SPACE_ADDRESS_MODE
+#define TARGET_ADDR_SPACE_ADDRESS_MODE spu_addr_space_address_mode
+
+#undef TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P
+#define TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P \
+  spu_addr_space_legitimate_address_p
+
+#undef TARGET_ADDR_SPACE_LEGITIMIZE_ADDRESS
+#define TARGET_ADDR_SPACE_LEGITIMIZE_ADDRESS spu_addr_space_legitimize_address
+
+#undef TARGET_ADDR_SPACE_SUBSET_P
+#define TARGET_ADDR_SPACE_SUBSET_P spu_addr_space_subset_p
+
+#undef TARGET_ADDR_SPACE_CONVERT
+#define TARGET_ADDR_SPACE_CONVERT spu_addr_space_convert
+
+#undef TARGET_INIT_BUILTINS
+#define TARGET_INIT_BUILTINS spu_init_builtins
+#undef TARGET_BUILTIN_DECL
+#define TARGET_BUILTIN_DECL spu_builtin_decl
+
+#undef TARGET_EXPAND_BUILTIN
+#define TARGET_EXPAND_BUILTIN spu_expand_builtin
+
+#undef TARGET_UNWIND_WORD_MODE
+#define TARGET_UNWIND_WORD_MODE spu_unwind_word_mode
+
+#undef TARGET_LEGITIMIZE_ADDRESS
+#define TARGET_LEGITIMIZE_ADDRESS spu_legitimize_address
+
+/* The current assembler doesn't like .4byte foo@ppu, so use the normal .long
+   and .quad for the debugger.  When it is known that the assembler is fixed,
+   these can be removed.  */
+#undef TARGET_ASM_UNALIGNED_SI_OP
+#define TARGET_ASM_UNALIGNED_SI_OP	"\t.long\t"
+
+#undef TARGET_ASM_ALIGNED_DI_OP
+#define TARGET_ASM_ALIGNED_DI_OP	"\t.quad\t"
+
+/* The .8byte directive doesn't seem to work well for a 32 bit
+   architecture. */
+#undef TARGET_ASM_UNALIGNED_DI_OP
+#define TARGET_ASM_UNALIGNED_DI_OP NULL
+
+#undef TARGET_RTX_COSTS
+#define TARGET_RTX_COSTS spu_rtx_costs
+
+#undef TARGET_ADDRESS_COST
+#define TARGET_ADDRESS_COST hook_int_rtx_bool_0
+
+#undef TARGET_SCHED_ISSUE_RATE
+#define TARGET_SCHED_ISSUE_RATE spu_sched_issue_rate
+
+#undef TARGET_SCHED_INIT_GLOBAL
+#define TARGET_SCHED_INIT_GLOBAL spu_sched_init_global
+
+#undef TARGET_SCHED_INIT
+#define TARGET_SCHED_INIT spu_sched_init
+
+#undef TARGET_SCHED_VARIABLE_ISSUE
+#define TARGET_SCHED_VARIABLE_ISSUE spu_sched_variable_issue
+
+#undef TARGET_SCHED_REORDER
+#define TARGET_SCHED_REORDER spu_sched_reorder
+
+#undef TARGET_SCHED_REORDER2
+#define TARGET_SCHED_REORDER2 spu_sched_reorder
+
+#undef TARGET_SCHED_ADJUST_COST
+#define TARGET_SCHED_ADJUST_COST spu_sched_adjust_cost
+
+#undef  TARGET_ATTRIBUTE_TABLE
+#define TARGET_ATTRIBUTE_TABLE spu_attribute_table
+
+#undef TARGET_ASM_INTEGER
+#define TARGET_ASM_INTEGER spu_assemble_integer
+
+#undef TARGET_SCALAR_MODE_SUPPORTED_P
+#define TARGET_SCALAR_MODE_SUPPORTED_P	spu_scalar_mode_supported_p
+
+#undef TARGET_VECTOR_MODE_SUPPORTED_P
+#define TARGET_VECTOR_MODE_SUPPORTED_P	spu_vector_mode_supported_p
+
+#undef TARGET_FUNCTION_OK_FOR_SIBCALL
+#define TARGET_FUNCTION_OK_FOR_SIBCALL spu_function_ok_for_sibcall
+
+#undef TARGET_ASM_GLOBALIZE_LABEL
+#define TARGET_ASM_GLOBALIZE_LABEL spu_asm_globalize_label
+
+#undef TARGET_PASS_BY_REFERENCE
+#define TARGET_PASS_BY_REFERENCE spu_pass_by_reference
+
+#undef TARGET_FUNCTION_ARG
+#define TARGET_FUNCTION_ARG spu_function_arg
+
+#undef TARGET_FUNCTION_ARG_ADVANCE
+#define TARGET_FUNCTION_ARG_ADVANCE spu_function_arg_advance
+
+#undef TARGET_MUST_PASS_IN_STACK
+#define TARGET_MUST_PASS_IN_STACK must_pass_in_stack_var_size
+
+#undef TARGET_BUILD_BUILTIN_VA_LIST
+#define TARGET_BUILD_BUILTIN_VA_LIST spu_build_builtin_va_list
+
+#undef TARGET_EXPAND_BUILTIN_VA_START
+#define TARGET_EXPAND_BUILTIN_VA_START spu_va_start
+
+#undef TARGET_SETUP_INCOMING_VARARGS
+#define TARGET_SETUP_INCOMING_VARARGS spu_setup_incoming_varargs
+
+#undef TARGET_MACHINE_DEPENDENT_REORG
+#define TARGET_MACHINE_DEPENDENT_REORG spu_machine_dependent_reorg
+
+#undef TARGET_GIMPLIFY_VA_ARG_EXPR
+#define TARGET_GIMPLIFY_VA_ARG_EXPR spu_gimplify_va_arg_expr
+
+#undef TARGET_INIT_LIBFUNCS
+#define TARGET_INIT_LIBFUNCS spu_init_libfuncs
+
+#undef TARGET_RETURN_IN_MEMORY
+#define TARGET_RETURN_IN_MEMORY spu_return_in_memory
+
+#undef  TARGET_ENCODE_SECTION_INFO
+#define TARGET_ENCODE_SECTION_INFO spu_encode_section_info
+
+#undef TARGET_VECTORIZE_BUILTIN_MASK_FOR_LOAD
+#define TARGET_VECTORIZE_BUILTIN_MASK_FOR_LOAD spu_builtin_mask_for_load
+
+#undef TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST
+#define TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST spu_builtin_vectorization_cost
+
+#undef TARGET_VECTORIZE_INIT_COST
+#define TARGET_VECTORIZE_INIT_COST spu_init_cost
+
+#undef TARGET_VECTORIZE_ADD_STMT_COST
+#define TARGET_VECTORIZE_ADD_STMT_COST spu_add_stmt_cost
+
+#undef TARGET_VECTORIZE_FINISH_COST
+#define TARGET_VECTORIZE_FINISH_COST spu_finish_cost
+
+#undef TARGET_VECTORIZE_DESTROY_COST_DATA
+#define TARGET_VECTORIZE_DESTROY_COST_DATA spu_destroy_cost_data
+
+#undef TARGET_VECTORIZE_VECTOR_ALIGNMENT_REACHABLE
+#define TARGET_VECTORIZE_VECTOR_ALIGNMENT_REACHABLE spu_vector_alignment_reachable
+
+#undef TARGET_LIBGCC_CMP_RETURN_MODE
+#define TARGET_LIBGCC_CMP_RETURN_MODE spu_libgcc_cmp_return_mode
+
+#undef TARGET_LIBGCC_SHIFT_COUNT_MODE
+#define TARGET_LIBGCC_SHIFT_COUNT_MODE spu_libgcc_shift_count_mode
+
+#undef TARGET_SCHED_SMS_RES_MII
+#define TARGET_SCHED_SMS_RES_MII spu_sms_res_mii
+
+#undef TARGET_SECTION_TYPE_FLAGS
+#define TARGET_SECTION_TYPE_FLAGS spu_section_type_flags
+
+#undef TARGET_ASM_SELECT_SECTION
+#define TARGET_ASM_SELECT_SECTION  spu_select_section
+
+#undef TARGET_ASM_UNIQUE_SECTION
+#define TARGET_ASM_UNIQUE_SECTION  spu_unique_section
+
+#undef TARGET_LEGITIMATE_ADDRESS_P
+#define TARGET_LEGITIMATE_ADDRESS_P spu_legitimate_address_p
+
+#undef TARGET_LEGITIMATE_CONSTANT_P
+#define TARGET_LEGITIMATE_CONSTANT_P spu_legitimate_constant_p
+
+#undef TARGET_TRAMPOLINE_INIT
+#define TARGET_TRAMPOLINE_INIT spu_trampoline_init
+
+#undef TARGET_OPTION_OVERRIDE
+#define TARGET_OPTION_OVERRIDE spu_option_override
+
+#undef TARGET_CONDITIONAL_REGISTER_USAGE
+#define TARGET_CONDITIONAL_REGISTER_USAGE spu_conditional_register_usage
+
+#undef TARGET_REF_MAY_ALIAS_ERRNO
+#define TARGET_REF_MAY_ALIAS_ERRNO spu_ref_may_alias_errno
+
+#undef TARGET_ASM_OUTPUT_MI_THUNK
+#define TARGET_ASM_OUTPUT_MI_THUNK spu_output_mi_thunk
+#undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
+#define TARGET_ASM_CAN_OUTPUT_MI_THUNK hook_bool_const_tree_hwi_hwi_const_tree_true
+
+/* Variable tracking should be run after all optimizations which
+   change order of insns.  It also needs a valid CFG.  */
+#undef TARGET_DELAY_VARTRACK
+#define TARGET_DELAY_VARTRACK true
+
+struct gcc_target targetm = TARGET_INITIALIZER;
 
 #include "gt-spu.h"

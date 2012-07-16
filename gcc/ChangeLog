@@ -1,3 +1,33 @@
+2012-07-16  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/spu/spu.c (targetm): Move to bottom of file.
+	(spu_attribute_table): Likewise.
+	(spu_option_override, spu_init_builtins, spu_builtin_decl,
+	spu_scalar_mode_supported_p, spu_vector_mode_supported_p,
+	spu_legitimate_address_p, spu_addr_space_legitimate_address_p,
+	adjust_operand, get_pic_reg, need_to_save_reg, frame_emit_store,
+	frame_emit_load, frame_emit_add_imm, emit_nop_for_insn,
+	insn_clobbers_hbr, spu_emit_branch_hint, spu_emit_vector_compare,
+	get_branch_target, spu_machine_dependent_reorg, spu_sched_issue_rate,
+	spu_sched_variable_issue, spu_sched_adjust_cost, spu_sched_init_global,
+	spu_sched_init, spu_sched_reorder, spu_handle_fndecl_attribute,
+	spu_handle_vector_attribute, spu_pass_by_reference, spu_function_arg,
+	spu_function_arg_advance, spu_build_builtin_va_list, spu_va_start,
+	spu_gimplify_va_arg_expr, store_with_one_insn_p, reg_aligned_for_addr,
+	spu_assemble_integer, spu_asm_globalize_label, spu_rtx_costs,
+	spu_function_ok_for_sibcall, spu_init_libfuncs, spu_return_in_memory,
+	spu_encode_section_info, spu_legitimize_address,
+	spu_addr_space_legitimize_address, spu_builtin_mask_for_load,
+	spu_builtin_vectorization_cost, spu_vector_alignment_reachable,
+	spu_addr_space_pointer_mode, spu_addr_space_address_mode,
+	spu_addr_space_subset_p, spu_addr_space_convert, spu_sms_res_mii,
+	spu_section_type_flags, spu_select_section, spu_unique_section,
+	spu_trampoline_init, spu_conditional_register_usage,
+	spu_ref_may_alias_errno, spu_output_mi_thunk, spu_unwind_word_mode,
+	spu_libgcc_cmp_return_mode, spu_libgcc_shift_count_mode,
+	spu_setup_incoming_varargs): Remove prototypes.
+	(spu_legitimize_address): Add "static" to definition.
+
 2012-07-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/rtmintrin.h (_xabort): Remove trailing semicolon.
