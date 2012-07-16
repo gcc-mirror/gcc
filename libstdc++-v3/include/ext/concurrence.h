@@ -1,7 +1,6 @@
 // Support for concurrent programing -*- C++ -*-
 
-// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
+// Copyright (C) 2003-2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -143,8 +142,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   class __mutex 
   {
   private:
-#if __GTHREADS && defined __GTHREAD_MUTEX_INIT \
-    && defined __GXX_EXPERIMENTAL_CXX0X__
+#if __GTHREADS && defined __GTHREAD_MUTEX_INIT
     __gthread_mutex_t _M_mutex = __GTHREAD_MUTEX_INIT;
 #else
     __gthread_mutex_t _M_mutex;
@@ -156,19 +154,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   public:
     __mutex() 
     { 
-#if __GTHREADS
+#if __GTHREADS && ! defined __GTHREAD_MUTEX_INIT
       if (__gthread_active_p())
-	{
-#if defined __GTHREAD_MUTEX_INIT
-# ifndef __GXX_EXPERIMENTAL_CXX0X__
-	  __gthread_mutex_t __tmp = __GTHREAD_MUTEX_INIT;
-	  _M_mutex = __tmp;
-# endif
-#else
-	  __GTHREAD_MUTEX_INIT_FUNCTION(&_M_mutex); 
+	__GTHREAD_MUTEX_INIT_FUNCTION(&_M_mutex);
 #endif
-	}
-#endif 
     }
 
 #if __GTHREADS && ! defined __GTHREAD_MUTEX_INIT
@@ -208,8 +197,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   class __recursive_mutex 
   {
   private:
-#if __GTHREADS && defined __GTHREAD_RECURSIVE_MUTEX_INIT \
-    && defined __GXX_EXPERIMENTAL_CXX0X__
+#if __GTHREADS && defined __GTHREAD_RECURSIVE_MUTEX_INIT
     __gthread_recursive_mutex_t _M_mutex = __GTHREAD_RECURSIVE_MUTEX_INIT;
 #else
     __gthread_recursive_mutex_t _M_mutex;
@@ -221,19 +209,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   public:
     __recursive_mutex() 
     { 
-#if __GTHREADS
+#if __GTHREADS && ! defined __GTHREAD_RECURSIVE_MUTEX_INIT
       if (__gthread_active_p())
-	{
-#if defined __GTHREAD_RECURSIVE_MUTEX_INIT
-# ifndef __GXX_EXPERIMENTAL_CXX0X__
-	  __gthread_recursive_mutex_t __tmp = __GTHREAD_RECURSIVE_MUTEX_INIT;
-	  _M_mutex = __tmp;
-# endif
-#else
-	  __GTHREAD_RECURSIVE_MUTEX_INIT_FUNCTION(&_M_mutex); 
+	__GTHREAD_RECURSIVE_MUTEX_INIT_FUNCTION(&_M_mutex);
 #endif
-	}
-#endif 
     }
 
 #if __GTHREADS && ! defined __GTHREAD_RECURSIVE_MUTEX_INIT
@@ -333,8 +312,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   class __cond
   {
   private:
-#if __GTHREADS && defined __GTHREAD_COND_INIT \
-    && defined __GXX_EXPERIMENTAL_CXX0X__
+#if __GTHREADS && defined __GTHREAD_COND_INIT
     __gthread_cond_t _M_cond = __GTHREAD_COND_INIT;
 #else
     __gthread_cond_t _M_cond;
@@ -346,19 +324,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   public:
     __cond() 
     { 
-#if __GTHREADS
+#if __GTHREADS && ! defined __GTHREAD_COND_INIT
       if (__gthread_active_p())
-	{
-#if defined __GTHREAD_COND_INIT
-# ifndef __GXX_EXPERIMENTAL_CXX0X__
-	  __gthread_cond_t __tmp = __GTHREAD_COND_INIT;
-	  _M_cond = __tmp;
-# endif
-#else
-	  __GTHREAD_COND_INIT_FUNCTION(&_M_cond);
+	__GTHREAD_COND_INIT_FUNCTION(&_M_cond);
 #endif
-	}
-#endif 
     }
 
 #if __GTHREADS && ! defined __GTHREAD_COND_INIT
