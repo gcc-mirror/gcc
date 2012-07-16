@@ -17,7 +17,6 @@ foo (void)
      them.  */
   asm ("\n;# %b0" : : "r" (0));		/* { dg-error "modifier" } */
   asm ("\n;# %v0" : : "r" (0));		/* { dg-error "modifier" } */
-  asm ("\n;# %P0" : : "r" (0));		/* { dg-error "modifier" } */
   asm ("\n;# %p0" : : "r" (0));		/* { dg-error "modifier" } */
   asm ("\n;# %z0" : : "r" (0));		/* { dg-error "modifier" } */
   asm ("\n;# %H0" : : "F" (0.5));	/* { dg-error "modifier" } */
