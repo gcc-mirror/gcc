@@ -1,5 +1,13 @@
 2012-07-16  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	* config/sh/sh.h (CONST_OK_FOR_I06): Delete.
+	(CONST_OK_FOR_I10): Move macro to ...
+	* config/sh/sh.c: ... here.
+	(sh_legitimate_index_p): Use satisfies_constraint_I06 instead of
+	CONST_OK_FOR_I06.
+
+2012-07-16  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	* config/sh/sh.md: Delete mov related define_peephole patterns.
 
 2012-07-16  Jonathan Wakely  <jwakely.gcc@gmail.com>
