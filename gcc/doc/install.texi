@@ -149,13 +149,15 @@ Free Documentation License}''.
 
 The latest version of this document is always available at
 @uref{http://gcc.gnu.org/install/,,http://gcc.gnu.org/install/}.
+It refers to the current development sources, instructions for
+specific released versions are included with the sources.
 
 This document describes the generic installation procedure for GCC as well
 as detailing some target specific installation instructions.
 
 GCC includes several components that previously were separate distributions
 with their own installation instructions.  This document supersedes all
-package specific installation instructions.
+package-specific installation instructions.
 
 @emph{Before} starting the build/install procedure please check the
 @ifnothtml
