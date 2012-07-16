@@ -80,10 +80,10 @@ extern "C" {
 #ifdef IN_RTS
 #include "tconfig.h"
 #include "tsystem.h"
-
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <time.h>
+
 #ifdef VMS
 #include <unixio.h>
 #endif

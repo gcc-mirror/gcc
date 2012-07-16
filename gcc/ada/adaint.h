@@ -120,7 +120,7 @@ extern int    __gnat_symlink                       (char *, char *);
 extern int    __gnat_try_lock                      (char *, char *);
 extern int    __gnat_open_new                      (char *, int);
 extern int    __gnat_open_new_temp		   (char *, int);
-extern int    __gnat_mkdir			   (char *);
+extern int    __gnat_mkdir			   (char *, int);
 extern int    __gnat_stat			   (char *,
 						    GNAT_STRUCT_STAT *);
 extern int    __gnat_unlink                        (char *);

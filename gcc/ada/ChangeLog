@@ -1,3 +1,16 @@
+2012-07-16  Pascal Obry  <obry@adacore.com>
+
+	* s-crtl.ads (mkdir): New routine, support encoding.
+	* adaint.h (__gnat_mkdir): Update spec to pass encoding.
+	* mkdir.c (__gnat_mkdir): Add encoding parameter.
+	* a-direct.adb (Create_Directory): Use CRTL.mkdir, parse encoding
+	in form parameter.
+	* g-dirope.adb (Make_Dir): Update to pass encoding parameter.
+
+2012-07-16  Pascal Obry  <obry@adacore.com>
+
+	* adaint.c: Minor reformatting.
+
 2012-07-16  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* gcc-interface/utils.c: Include timevar.h.
