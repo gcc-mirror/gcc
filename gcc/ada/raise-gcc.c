@@ -1213,8 +1213,22 @@ __gnat_Unwind_ForcedUnwind (_Unwind_Exception *e,
 #ifdef __SEH__
 
 #define STATUS_USER_DEFINED		(1U << 29)
+
+/* From unwind-seh.c.  */
+#define GCC_MAGIC			(('G' << 16) | ('C' << 8) | 'C')
+#define GCC_EXCEPTION(TYPE)		\
+       (STATUS_USER_DEFINED | ((TYPE) << 24) | GCC_MAGIC)
+#define STATUS_GCC_THROW		GCC_EXCEPTION (0)
+
 EXCEPTION_DISPOSITION __gnat_SEH_error_handler
  (struct _EXCEPTION_RECORD*, void*, struct _CONTEXT*, void*);
+
+struct Exception_Data *
+__gnat_map_SEH (EXCEPTION_RECORD* ExceptionRecord, const char **msg);
+
+struct _Unwind_Exception *
+__gnat_create_machine_occurrence_from_signal_handler (Exception_Id,
+						      const char *);
 
 /* Unwind opcodes.  */
 #define UWOP_PUSH_NONVOL 0
@@ -1295,7 +1309,10 @@ __gnat_personality_seh0 (PEXCEPTION_RECORD ms_exc, void *this_frame,
      exceptions.  */
   if (!(ms_exc->ExceptionCode & STATUS_USER_DEFINED))
     {
+      struct Exception_Data *exception;
+      const char *msg;
       ULONG64 excpip = (ULONG64) ms_exc->ExceptionAddress;
+
       if (excpip != 0
 	  && excpip >= (ms_disp->ImageBase
 			+ ms_disp->FunctionEntry->BeginAddress)
@@ -1353,7 +1370,26 @@ __gnat_personality_seh0 (PEXCEPTION_RECORD ms_exc, void *this_frame,
 	    __gnat_adjust_context
 	      ((unsigned char *)(mf_imagebase + mf_func->UnwindData), mf_rsp);
 	}
-      __gnat_SEH_error_handler (ms_exc, this_frame, ms_orig_context, ms_disp);
+
+      exception = __gnat_map_SEH (ms_exc, &msg);
+      if (exception != NULL)
+	{
+	  struct _Unwind_Exception *exc;
+
+	  /* Directly convert the system exception to a GCC one.
+	     This is really breaking the API, but is necessary for stack size
+	     reasons: the normal way is to call Raise_From_Signal_Handler,
+	     which build the exception and calls _Unwind_RaiseException, which
+	     unwinds the stack and will call this personality routine. But
+	     the Windows unwinder needs about 2KB of stack.  */
+	  exc = __gnat_create_machine_occurrence_from_signal_handler
+	    (exception, msg);
+	  memset (exc->private_, 0, sizeof (exc->private_));
+	  ms_exc->ExceptionCode = STATUS_GCC_THROW;
+	  ms_exc->NumberParameters = 1;
+	  ms_exc->ExceptionInformation[0] = (ULONG_PTR)exc;
+	}
+
     }
 
   return _GCC_specific_handler (ms_exc, this_frame, ms_orig_context,

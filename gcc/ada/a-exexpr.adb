@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,42 +43,29 @@ package body Exception_Propagation is
    pragma No_Return (builtin_longjmp);
    pragma Import (Intrinsic, builtin_longjmp, "__builtin_longjmp");
 
+   procedure Propagate_Continue (Excep : EOA);
+   pragma No_Return (Propagate_Continue);
+   pragma Export (C, Propagate_Continue, "__gnat_raise_nodefer_with_msg");
+   --  A call to this procedure is inserted automatically by GIGI, in order
+   --  to continue the propagation when the exception was not handled.
+   --  The linkage name is historical.
+
+   -------------------------
+   -- Allocate_Occurrence --
+   -------------------------
+
+   function Allocate_Occurrence return EOA is
+   begin
+      return Get_Current_Excep.all;
+   end Allocate_Occurrence;
+
    -------------------------
    -- Propagate_Exception --
    -------------------------
 
-   procedure Propagate_Exception
-   is
+   procedure Propagate_Exception (Excep : EOA) is
       Jumpbuf_Ptr : constant Address := Get_Jmpbuf_Address.all;
-      Excep       : constant EOA := Get_Current_Excep.all;
    begin
-      --  Compute the backtrace for this occurrence if corresponding binder
-      --  option has been set. Call_Chain takes care of the reraise case.
-
-      Call_Chain (Excep);
-
-      --  Note on above call to Call_Chain:
-
-      --  We used to only do this if From_Signal_Handler was not set,
-      --  based on the assumption that backtracing from a signal handler
-      --  would not work due to stack layout oddities. However, since
-
-      --   1. The flag is never set in tasking programs (Notify_Exception
-      --      performs regular raise statements), and
-
-      --   2. No problem has shown up in tasking programs around here so
-      --      far, this turned out to be too strong an assumption.
-
-      --  As, in addition, the test was
-
-      --   1. preventing the production of backtraces in non-tasking
-      --      programs, and
-
-      --   2. introducing a behavior inconsistency between
-      --      the tasking and non-tasking cases,
-
-      --  we have simply removed it
-
       --  If the jump buffer pointer is non-null, transfer control using
       --  it. Otherwise announce an unhandled exception (note that this
       --  means that we have no finalizations to do other than at the outer
@@ -97,5 +84,14 @@ package body Exception_Propagation is
          Exception_Traces.Unhandled_Exception_Terminate;
       end if;
    end Propagate_Exception;
+
+   ------------------------
+   -- Propagate_Continue --
+   ------------------------
+
+   procedure Propagate_Continue (Excep : EOA) is
+   begin
+      Propagate_Exception (Excep);
+   end Propagate_Continue;
 
 end Exception_Propagation;

@@ -772,18 +772,19 @@ package body Exp_Ch3 is
    --------------------------------
 
    procedure Build_Array_Invariant_Proc (A_Type : Entity_Id; Nod : Node_Id) is
-      Loc              : constant Source_Ptr := Sloc (Nod);
-      Object_Name      : constant Name_Id := New_Internal_Name ('I');
+      Loc : constant Source_Ptr := Sloc (Nod);
+
+      Object_Name : constant Name_Id := New_Internal_Name ('I');
       --  Name for argument of invariant procedure
 
       Object_Entity : constant Node_Id :=
                         Make_Defining_Identifier (Loc, Object_Name);
       --  The procedure declaration entity for the argument
 
-      Body_Stmts       : List_Id;
-      Index_List       : List_Id;
-      Proc_Id          : Entity_Id;
-      Proc_Body        : Node_Id;
+      Body_Stmts : List_Id;
+      Index_List : List_Id;
+      Proc_Id    : Entity_Id;
+      Proc_Body  : Node_Id;
 
       function Build_Component_Invariant_Call return Node_Id;
       --  Create one statement to verify invariant on one array component,
@@ -803,19 +804,17 @@ package body Exp_Ch3 is
 
       function Build_Component_Invariant_Call return Node_Id is
          Comp : Node_Id;
-
       begin
          Comp :=
            Make_Indexed_Component (Loc,
              Prefix      => New_Occurrence_Of (Object_Entity, Loc),
-                                   Expressions => Index_List);
+             Expressions => Index_List);
          return
            Make_Procedure_Call_Statement (Loc,
              Name                   =>
                New_Occurrence_Of
                  (Invariant_Procedure (Component_Type (A_Type)), Loc),
              Parameter_Associations => New_List (Comp));
-
       end Build_Component_Invariant_Call;
 
       -------------------------
@@ -826,8 +825,8 @@ package body Exp_Ch3 is
          Index : Entity_Id;
 
       begin
-         --  If all dimensions dealt with, we simply check invariant of
-         --  the component
+         --  If all dimensions dealt with, we simply check invariant of the
+         --  component.
 
          if N > Number_Dimensions (A_Type) then
             return New_List (Build_Component_Invariant_Call);
@@ -842,19 +841,20 @@ package body Exp_Ch3 is
 
             return New_List (
               Make_Implicit_Loop_Statement (Nod,
-                Identifier => Empty,
+                Identifier       => Empty,
                 Iteration_Scheme =>
                   Make_Iteration_Scheme (Loc,
                     Loop_Parameter_Specification =>
                       Make_Loop_Parameter_Specification (Loc,
-                        Defining_Identifier => Index,
+                        Defining_Identifier         => Index,
                         Discrete_Subtype_Definition =>
                           Make_Attribute_Reference (Loc,
-                            Prefix => New_Occurrence_Of (Object_Entity, Loc),
+                            Prefix          =>
+                              New_Occurrence_Of (Object_Entity, Loc),
                             Attribute_Name  => Name_Range,
                             Expressions     => New_List (
                               Make_Integer_Literal (Loc, N))))),
-                Statements =>  Check_One_Dimension (N + 1)));
+                Statements       =>  Check_One_Dimension (N + 1)));
          end if;
       end Check_One_Dimension;
 
@@ -875,13 +875,13 @@ package body Exp_Ch3 is
         Make_Subprogram_Body (Loc,
           Specification =>
             Make_Procedure_Specification (Loc,
-              Defining_Unit_Name => Proc_Id,
+              Defining_Unit_Name       => Proc_Id,
               Parameter_Specifications => New_List (
                 Make_Parameter_Specification (Loc,
                   Defining_Identifier => Object_Entity,
                   Parameter_Type      => New_Occurrence_Of (A_Type, Loc)))),
 
-          Declarations => New_List,
+          Declarations               => Empty_List,
           Handled_Statement_Sequence =>
             Make_Handled_Sequence_Of_Statements (Loc,
               Statements => Body_Stmts));
