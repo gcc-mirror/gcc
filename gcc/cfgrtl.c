@@ -1365,8 +1365,8 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
 	 one and create separate abnormal edge to original destination.
 	 This allows bb-reorder to make such edge non-fallthru.  */
       gcc_assert (e->dest == target);
-      abnormal_edge_flags = e->flags & ~(EDGE_FALLTHRU | EDGE_CAN_FALLTHRU);
-      e->flags &= EDGE_FALLTHRU | EDGE_CAN_FALLTHRU;
+      abnormal_edge_flags = e->flags & ~EDGE_FALLTHRU;
+      e->flags &= EDGE_FALLTHRU;
     }
   else
     {
