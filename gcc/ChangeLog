@@ -1,3 +1,8 @@
+2012-07-16  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* opts.c (default_option): Add -fvect-cost-model to default options
+	at -O3 and above.
+
 2012-07-16  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* graphite-clast-to-gimple.c, graphite-dependences.c,
