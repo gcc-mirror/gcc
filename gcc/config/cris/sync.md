@@ -130,7 +130,7 @@
    (set (match_operand:BWD 0 "register_operand" "=&r")
 	(match_dup 1))
    (clobber (match_scratch:SI 3 "=&r"))]
-  ""
+  "<MODE>mode == QImode || !TARGET_ATOMICS_MAY_CALL_LIBFUNCS"
 {
   /* Can't be too sure; better ICE if this happens.  */
   gcc_assert (!reg_overlap_mentioned_p (operands[2], operands[1]));
@@ -210,7 +210,7 @@
    (match_operand 5)
    (match_operand 6)
    (match_operand 7)]
-  ""
+  "<MODE>mode == QImode || !TARGET_ATOMICS_MAY_CALL_LIBFUNCS"
 {
   enum memmodel mmodel = (enum memmodel) INTVAL (operands[6]);
 
@@ -244,7 +244,7 @@
 	  (match_dup 3)
 	  (match_operand:BWD 4 "register_operand" "r")]
 	 CRIS_UNSPEC_ATOMIC_SWAP_MEM))]
-  ""
+  "<MODE>mode == QImode || !TARGET_ATOMICS_MAY_CALL_LIBFUNCS"
 {
   if (TARGET_V32)
     return

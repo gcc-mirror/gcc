@@ -1,5 +1,16 @@
 2012-07-16  Hans-Peter Nilsson  <hp@axis.com>
 
+	* config/cris/cris.c (cris_init_libfuncs): Handle initialization
+	of library functions for basic atomic compare-and-swap.
+	* config/cris/cris.h (TARGET_ATOMICS_MAY_CALL_LIBFUNCS): New macro.
+	* config/cris/cris.opt (munaligned-atomic-may-use-library): New
+	option.
+	* config/cris/sync.md ("atomic_fetch_<atomic_op_name><mode>")
+	("cris_atomic_fetch_<atomic_op_name><mode>_1")
+	("atomic_compare_and_swap<mode>")
+	("cris_atomic_compare_and_swap<mode>_1"): Make
+	conditional on TARGET_ATOMICS_MAY_CALL_LIBFUNCS for
+	sizes larger than byte.
 	* config/cris/cris.c (cris_print_operand) <case 'P', 'q'>: New cases.
 	* config/cris/sync.md (atomic_op_op_cnstr): New code_attr.
 	(atomic_op_op_pred): Ditto.

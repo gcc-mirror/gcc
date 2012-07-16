@@ -2761,6 +2761,16 @@ cris_init_libfuncs (void)
   set_optab_libfunc (udiv_optab, SImode, "__Udiv");
   set_optab_libfunc (smod_optab, SImode, "__Mod");
   set_optab_libfunc (umod_optab, SImode, "__Umod");
+
+  /* Atomic data being unaligned is unfortunately a reality.
+     Deal with it.  */
+  if (TARGET_ATOMICS_MAY_CALL_LIBFUNCS)
+    {
+      set_optab_libfunc (sync_compare_and_swap_optab, SImode,
+			 "__cris_atcmpxchgr32");
+      set_optab_libfunc (sync_compare_and_swap_optab, HImode,
+			 "__cris_atcmpxchgr16");
+    }
 }
 
 /* The INIT_EXPANDERS worker sets the per-function-data initializer and

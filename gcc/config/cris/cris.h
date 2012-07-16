@@ -316,6 +316,11 @@ extern int cris_cpu_version;
 #define TARGET_TRAP_USING_BREAK8 \
  (cris_trap_using_break8 == 2 ? TARGET_HAS_BREAK : cris_trap_using_break8)
 
+/* Call library functions by default for GNU/Linux.  */
+#define TARGET_ATOMICS_MAY_CALL_LIBFUNCS		\
+ (cris_atomics_calling_libfunc == 2			\
+  ? TARGET_LINUX : cris_atomics_calling_libfunc)
+
 /* The < v10 atomics turn off interrupts, so they don't need alignment.
    Incidentally, by default alignment is off there causing variables to
    be default unaligned all over, so we'd have to make support
