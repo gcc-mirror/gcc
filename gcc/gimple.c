@@ -3422,6 +3422,10 @@ gimple_types_compatible_p_1 (tree t1, tree t2, type_pair_t p,
 	goto different_types;
     }
 
+  /* If their attributes are not the same they can't be the same type.  */
+  if (!attribute_list_equal (TYPE_ATTRIBUTES (t1), TYPE_ATTRIBUTES (t2)))
+    goto different_types;
+
   /* Do type-specific comparisons.  */
   switch (TREE_CODE (t1))
     {
