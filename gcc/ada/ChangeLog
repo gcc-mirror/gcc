@@ -1,3 +1,8 @@
+2012-07-16  Robert Dewar  <dewar@adacore.com>
+
+	* exp_pakd.adb, freeze.adb, sem_util.adb, vms_data.ads: Minor
+	reformatting.
+
 2012-07-12  Vasiliy Fofanov  <fofanov@adacore.com>
 
 	* vms_data.ads: Add VMS qualifiers for -gnatn1/2 switches.

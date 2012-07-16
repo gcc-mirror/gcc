@@ -1046,9 +1046,8 @@ package body Freeze is
                         (Type_Definition (Declaration_Node (Encl_Type)));
       end if;
 
-      --  Note: the Reverse_Storage_Order flag is set on the base type,
-      --  but the attribute definition clause is attached to the first
-      --  subtype.
+      --  Note: the Reverse_Storage_Order flag is set on the base type, but
+      --  the attribute definition clause is attached to the first subtype.
 
       Comp_Type := Base_Type (Comp_Type);
       ADC := Get_Attribute_Definition_Clause
@@ -1057,16 +1056,17 @@ package body Freeze is
 
       if (Is_Record_Type (Comp_Type) or else Is_Array_Type (Comp_Type))
            and then
-         (No (ADC) or else Reverse_Storage_Order (Encl_Type)
-                        /= Reverse_Storage_Order (Etype (Comp_Type)))
+             (No (ADC) or else Reverse_Storage_Order (Encl_Type) /=
+                               Reverse_Storage_Order (Etype (Comp_Type)))
       then
          Error_Msg_N
            ("component type must have same scalar storage order as "
             & "enclosing composite", Err_Node);
 
       elsif Aliased_Present (Comp_Def) then
-         Error_Msg_N ("aliased component not permitted for type with "
-                      & "explicit Scalar_Storage_Order", Err_Node);
+         Error_Msg_N
+           ("aliased component not permitted for type with "
+            & "explicit Scalar_Storage_Order", Err_Node);
       end if;
    end Check_Component_Storage_Order;
 
@@ -3746,7 +3746,7 @@ package body Freeze is
                   --  Check for scalar storage order
 
                   if Present (Get_Attribute_Definition_Clause
-                               (E, Attribute_Scalar_Storage_Order))
+                                (E, Attribute_Scalar_Storage_Order))
                   then
                      Check_Component_Storage_Order (E, Empty);
                   end if;

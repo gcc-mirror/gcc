@@ -570,13 +570,12 @@ package body Exp_Pakd is
 
       Swap_F := RTE (Swap_RE);
 
-      return Unchecked_Convert_To
-               (T,
-                Make_Function_Call (Loc,
-                  Name                   =>
-                    New_Occurrence_Of (Swap_F, Loc),
-                  Parameter_Associations =>
-                    New_List (Unchecked_Convert_To (Etype (Swap_F), N))));
+      return
+        Unchecked_Convert_To (T,
+          Make_Function_Call (Loc,
+            Name                   => New_Occurrence_Of (Swap_F, Loc),
+            Parameter_Associations =>
+              New_List (Unchecked_Convert_To (Etype (Swap_F), N))));
    end Byte_Swap;
 
    ------------------------------
@@ -1534,8 +1533,8 @@ package body Exp_Pakd is
             Set_Etype (New_Rhs, T);
 
             if Reverse_Storage_Order (Base_Type (Atyp))
-                 and then Esize (T) > 8
-                 and then not In_Reverse_Storage_Order_Object (Obj)
+              and then Esize (T) > 8
+              and then not In_Reverse_Storage_Order_Object (Obj)
             then
                Require_Byte_Swapping := True;
                New_Rhs := Byte_Swap (New_Rhs);
@@ -2042,8 +2041,8 @@ package body Exp_Pakd is
          --  in Expand_Bit_Packed_Element_Set).
 
          if Reverse_Storage_Order (Atyp)
-              and then Esize (Atyp) > 8
-              and then not In_Reverse_Storage_Order_Object (Obj)
+           and then Esize (Atyp) > 8
+           and then not In_Reverse_Storage_Order_Object (Obj)
          then
             Obj := Byte_Swap (Obj);
          end if;
