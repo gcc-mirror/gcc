@@ -6726,15 +6726,17 @@ have a @code{Scalar_Storage_Order} attribute definition clause. In addition,
 if the component does not start on a byte boundary, then the scalar storage
 order specified for S and for the nested component type shall be identical.
 
+No component of a type that has a @code{Scalar_Storage_Order} attribute
+definition may be aliased.
+
 A confirming @code{Scalar_Storage_Order} attribute definition clause (i.e.
 with a value equal to @code{System.Default_Bit_Order}) has no effect.
 
-If the opposite storage order is specified, then whenever the
-value of a scalar component of S is read, the storage elements of the
-enclosing machine scalar are first reversed (before retrieving the
-component value, possibly applying some shift and mask operatings on the
-enclosing machine scalar), and the opposite operation is done for
-writes.
+If the opposite storage order is specified, then whenever the value of
+a scalar component of S is read, the storage elements of the enclosing
+machine scalar are first reversed (before retrieving the component value,
+possibly applying some shift and mask operatings on the enclosing machine
+scalar), and the opposite operation is done for writes.
 
 In that case, the restrictions set forth in 13.5.1(10.3/2) for scalar components
 are relaxed. Instead, the following rules apply:
@@ -13705,7 +13707,9 @@ ENCODING=[UTF8|8BITS]
 @end smallexample
 
 @noindent
-The use of these parameters is described later in this section.
+The use of these parameters is described later in this section. If an
+unrecognized keyword appears in a form string, it is silently ignored
+and not considered invalid.
 
 @node Direct_IO
 @section Direct_IO

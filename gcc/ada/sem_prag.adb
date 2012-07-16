@@ -2011,8 +2011,7 @@ package body Sem_Prag is
          ---------------
 
          procedure Chain_PPC (PO : Node_Id) is
-            S   : Entity_Id;
-            P   : Node_Id;
+            S : Entity_Id;
 
          begin
             if Nkind (PO) = N_Abstract_Subprogram_Declaration then
@@ -2058,60 +2057,6 @@ package body Sem_Prag is
                S := Defining_Entity (PO);
             else
                S := Defining_Unit_Name (Specification (PO));
-            end if;
-
-            --  Make sure we do not have the case of a precondition pragma when
-            --  the Pre'Class aspect is present.
-
-            --  We do this by looking at pragmas already chained to the entity
-            --  since the aspect derived pragma will be put on this list first.
-
-            if Pragma_Name (N) = Name_Precondition then
-               if not From_Aspect_Specification (N) then
-                  P := Spec_PPC_List (Contract (S));
-                  while Present (P) loop
-                     if Pragma_Name (P) = Name_Precondition
-                       and then From_Aspect_Specification (P)
-                       and then Class_Present (P)
-                     then
-                        Error_Msg_Sloc := Sloc (P);
-                        Error_Pragma
-                          ("pragma% not allowed, `Pre''Class` aspect given#");
-                     end if;
-
-                     P := Next_Pragma (P);
-                  end loop;
-               end if;
-            end if;
-
-            --  Similarly check for Pre with inherited Pre'Class. Note that
-            --  we cover the aspect case as well here.
-
-            if Pragma_Name (N) = Name_Precondition
-              and then not Class_Present (N)
-            then
-               declare
-                  Inherited : constant Subprogram_List :=
-                                Inherited_Subprograms (S);
-                  P         : Node_Id;
-
-               begin
-                  for J in Inherited'Range loop
-                     P := Spec_PPC_List (Contract (Inherited (J)));
-                     while Present (P) loop
-                        if Pragma_Name (P) = Name_Precondition
-                          and then Class_Present (P)
-                        then
-                           Error_Msg_Sloc := Sloc (P);
-                           Error_Pragma
-                             ("pragma% not allowed, `Pre''Class` "
-                              & "aspect inherited from#");
-                        end if;
-
-                        P := Next_Pragma (P);
-                     end loop;
-                  end loop;
-               end;
             end if;
 
             --  Note: we do not analyze the pragma at this point. Instead we

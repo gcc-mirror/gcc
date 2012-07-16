@@ -1,5 +1,16 @@
 2012-07-16  Thomas Quinot  <quinot@adacore.com>
 
+	* gnat_rm.texi: Minor documentation improvements.
+
+2012-07-16  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Allow Pre
+	and Pre'Class aspects on the same declaration.
+	* sem_prag.adb (Chain_PPC): Allow Pre and Pre'Class aspects on the
+	same hierarchy of primitive operations.
+
+2012-07-16  Thomas Quinot  <quinot@adacore.com>
+
 	* freeze.adb (Check_Component_Storage_Order): Do not reject a
 	nested composite with different scalar storage order if it is
 	byte aligned.
