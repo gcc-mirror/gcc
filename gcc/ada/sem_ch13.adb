@@ -1098,29 +1098,7 @@ package body Sem_Ch13 is
                              ("aspect `%''Class` for & previously given#",
                               Id, E);
                         end if;
-
-                        --  Case of Pre and Pre'Class both specified
-
-                     elsif Nam = Name_Pre then
-                        if Class_Present (Aspect) then
-                           Error_Msg_NE
-                             ("aspect `Pre''Class` for & is not allowed here",
-                              Id, E);
-                           Error_Msg_NE
-                             ("\since aspect `Pre` previously given#",
-                              Id, E);
-
-                        else
-                           Error_Msg_NE
-                             ("aspect `Pre` for & is not allowed here",
-                              Id, E);
-                           Error_Msg_NE
-                             ("\since aspect `Pre''Class` previously given#",
-                              Id, E);
-                        end if;
                      end if;
-
-                     --  Allowed case of X and X'Class both specified
                   end if;
 
                   Next (Anod);
