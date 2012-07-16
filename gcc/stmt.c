@@ -1400,42 +1400,6 @@ resolve_operand_name_1 (char *p, tree outputs, tree inputs, tree labels)
   return p;
 }
 
-/* Generate RTL to evaluate the expression EXP.  */
-
-void
-expand_expr_stmt (tree exp)
-{
-  rtx value;
-  tree type;
-
-  value = expand_expr (exp, const0_rtx, VOIDmode, EXPAND_NORMAL);
-  type = TREE_TYPE (exp);
-
-  /* If all we do is reference a volatile value in memory,
-     copy it to a register to be sure it is actually touched.  */
-  if (value && MEM_P (value) && TREE_THIS_VOLATILE (exp))
-    {
-      if (TYPE_MODE (type) == VOIDmode)
-	;
-      else if (TYPE_MODE (type) != BLKmode)
-	copy_to_reg (value);
-      else
-	{
-	  rtx lab = gen_label_rtx ();
-
-	  /* Compare the value with itself to reference it.  */
-	  emit_cmp_and_jump_insns (value, value, EQ,
-				   expand_normal (TYPE_SIZE (type)),
-				   BLKmode, 0, lab);
-	  emit_label (lab);
-	}
-    }
-
-  /* Free any temporaries used to evaluate this expression.  */
-  free_temp_slots ();
-}
-
-
 /* Generate RTL to return from the current function, with no value.
    (That is, we do not do anything about returning any value.)  */
 

@@ -4660,7 +4660,8 @@ stack_protect_epilogue (void)
   if (JUMP_P (tmp))
     predict_insn_def (tmp, PRED_NORETURN, TAKEN);
 
-  expand_expr_stmt (targetm.stack_protect_fail ());
+  expand_call (targetm.stack_protect_fail (), NULL_RTX, /*ignore=*/true);
+  free_temp_slots ();
   emit_label (label);
 }
 

@@ -4934,7 +4934,7 @@ The default version of this hook creates a variable called
 @end deftypefn
 
 @hook TARGET_STACK_PROTECT_FAIL
-This hook returns a tree expression that alerts the runtime that the
+This hook returns a @code{CALL_EXPR} that alerts the runtime that the
 stack protect guard variable has been modified.  This expression should
 involve a call to a @code{noreturn} function.
 
