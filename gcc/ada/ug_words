@@ -84,6 +84,8 @@ gcc -c          ^ GNAT COMPILE
 -gnatm          ^ /ERROR_LIMIT
 -gnatm2         ^ /ERROR_LIMIT=2
 -gnatn          ^ /INLINE=PRAGMA
+-gnatn1         ^ /INLINE=PRAGMA_LEVEL_1
+-gnatn2         ^ /INLINE=PRAGMA_LEVEL_2
 -gnatN          ^ /INLINE=FULL
 -gnato          ^ /CHECKS=OVERFLOW
 -gnatp          ^ /CHECKS=SUPPRESS_ALL

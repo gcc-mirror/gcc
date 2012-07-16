@@ -5796,9 +5796,11 @@ package Sinfo is
       --  Unreferenced_In_Spec (Flag7-Sem)
       --  No_Entities_Ref_In_Spec (Flag8-Sem)
 
-      --  Note: Limited_Present and Limited_View_Installed give support to
-      --        Ada 2005 (AI-50217).
-      --  Similarly, Private_Present gives support to AI-50262.
+      --  Note: Limited_Present and Limited_View_Installed are used to support
+      --  the implementation of Ada 2005 (AI-50217).
+
+      --  Similarly, Private_Present is used to support the implementation of
+      --  Ada 2005 (AI-50262).
 
       ----------------------
       -- With_Type clause --
@@ -5806,8 +5808,9 @@ package Sinfo is
 
       --  This is a GNAT extension, used to implement mutually recursive
       --  types declared in different packages.
+
       --  Note: this is now obsolete. The functionality of this construct
-      --  is now implemented by the Ada 2005 Limited_with_Clause.
+      --  is now implemented by the Ada 2005 limited_with_clause.
 
       ---------------------
       -- 10.2  Body stub --
