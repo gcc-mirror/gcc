@@ -62,6 +62,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "df.h"
 #include "hashtab.h"
+#include "dumpfile.h"
 
 /* Possible return values of iv_get_reaching_def.  */
 

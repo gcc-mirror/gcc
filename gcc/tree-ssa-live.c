@@ -24,11 +24,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
-#include "tree-pretty-print.h"
 #include "gimple-pretty-print.h"
 #include "bitmap.h"
 #include "tree-flow.h"
-#include "tree-dump.h"
+#include "timevar.h"
+#include "dumpfile.h"
 #include "tree-ssa-live.h"
 #include "diagnostic-core.h"
 #include "debug.h"
@@ -1230,95 +1230,6 @@ dump_live_info (FILE *f, tree_live_info_p live, int flag)
 	  fprintf (f, "\n");
 	}
     }
-}
-
-struct GTY(()) numbered_tree_d
-{
-  tree t;
-  int num;
-};
-typedef struct numbered_tree_d numbered_tree;
-
-DEF_VEC_O (numbered_tree);
-DEF_VEC_ALLOC_O (numbered_tree, heap);
-
-/* Compare two declarations references by their DECL_UID / sequence number.
-   Called via qsort.  */
-
-static int
-compare_decls_by_uid (const void *pa, const void *pb)
-{
-  const numbered_tree *nt_a = ((const numbered_tree *)pa);
-  const numbered_tree *nt_b = ((const numbered_tree *)pb);
-
-  if (DECL_UID (nt_a->t) != DECL_UID (nt_b->t))
-    return  DECL_UID (nt_a->t) - DECL_UID (nt_b->t);
-  return nt_a->num - nt_b->num;
-}
-
-/* Called via walk_gimple_stmt / walk_gimple_op by dump_enumerated_decls.  */
-static tree
-dump_enumerated_decls_push (tree *tp, int *walk_subtrees, void *data)
-{
-  struct walk_stmt_info *wi = (struct walk_stmt_info *) data;
-  VEC (numbered_tree, heap) **list = (VEC (numbered_tree, heap) **) &wi->info;
-  numbered_tree nt;
-
-  if (!DECL_P (*tp))
-    return NULL_TREE;
-  nt.t = *tp;
-  nt.num = VEC_length (numbered_tree, *list);
-  VEC_safe_push (numbered_tree, heap, *list, &nt);
-  *walk_subtrees = 0;
-  return NULL_TREE;
-}
-
-/* Find all the declarations used by the current function, sort them by uid,
-   and emit the sorted list.  Each declaration is tagged with a sequence
-   number indicating when it was found during statement / tree walking,
-   so that TDF_NOUID comparisons of anonymous declarations are still
-   meaningful.  Where a declaration was encountered more than once, we
-   emit only the sequence number of the first encounter.
-   FILE is the dump file where to output the list and FLAGS is as in
-   print_generic_expr.  */
-void
-dump_enumerated_decls (FILE *file, int flags)
-{
-  basic_block bb;
-  struct walk_stmt_info wi;
-  VEC (numbered_tree, heap) *decl_list = VEC_alloc (numbered_tree, heap, 40);
-
-  memset (&wi, '\0', sizeof (wi));
-  wi.info = (void*) decl_list;
-  FOR_EACH_BB (bb)
-    {
-      gimple_stmt_iterator gsi;
-
-      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-	if (!is_gimple_debug (gsi_stmt (gsi)))
-	  walk_gimple_stmt (&gsi, NULL, dump_enumerated_decls_push, &wi);
-    }
-  decl_list = (VEC (numbered_tree, heap) *) wi.info;
-  VEC_qsort (numbered_tree, decl_list, compare_decls_by_uid);
-  if (VEC_length (numbered_tree, decl_list))
-    {
-      unsigned ix;
-      numbered_tree *ntp;
-      tree last = NULL_TREE;
-
-      fprintf (file, "Declarations used by %s, sorted by DECL_UID:\n",
-	       current_function_name ());
-      FOR_EACH_VEC_ELT (numbered_tree, decl_list, ix, ntp)
-	{
-	  if (ntp->t == last)
-	    continue;
-	  fprintf (file, "%d: ", ntp->num);
-	  print_generic_decl (file, ntp->t, flags);
-	  fprintf (file, "\n");
-	  last = ntp->t;
-	}
-    }
-  VEC_free (numbered_tree, heap, decl_list);
 }
 
 #ifdef ENABLE_CHECKING

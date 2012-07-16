@@ -45,7 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-codes.h"
 #include "ggc.h"
 #include "tm-constrs.h"
-#include "tree-pass.h"
+#include "tree-pass.h"	/* for current_pass */
 
 /* Which cpu we're compiling for.  */
 int epiphany_cpu_type;

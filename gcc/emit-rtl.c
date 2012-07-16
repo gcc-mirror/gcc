@@ -56,7 +56,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "ggc.h"
 #include "debug.h"
 #include "langhooks.h"
-#include "tree-pass.h"
 #include "df.h"
 #include "params.h"
 #include "target.h"

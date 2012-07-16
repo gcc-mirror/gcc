@@ -28,7 +28,7 @@
 #include "input.h"
 #include "function.h"
 #include "tm_p.h"
-#include "tree-pass.h"
+#include "tree-pass.h"	/* for current_pass */
 
 /* This file supplies some functions for AVR back-end developers
    with a printf-like interface.  The functions are called through

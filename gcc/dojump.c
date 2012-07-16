@@ -1083,15 +1083,10 @@ do_compare_rtx_and_jump (rtx op0, rtx op1, enum rtx_code code, int unsignedp,
 	       last = NEXT_INSN (last))
 	    if (JUMP_P (last))
 	      break;
-	  if (!last
-	      || !JUMP_P (last)
-	      || NEXT_INSN (last)
-	      || !any_condjump_p (last))
-	    {
-	      if (dump_file)
-		fprintf (dump_file, "Failed to add probability note\n");
-	    }
-	  else
+	  if (last
+	      && JUMP_P (last)
+	      && ! NEXT_INSN (last)
+	      && any_condjump_p (last))
 	    {
 	      gcc_assert (!find_reg_note (last, REG_BR_PROB, 0));
 	      add_reg_note (last, REG_BR_PROB, GEN_INT (prob));

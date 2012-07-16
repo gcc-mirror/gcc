@@ -29,11 +29,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "function.h"
 #include "ggc.h"
-#include "langhooks.h"
-#include "tree-pretty-print.h"
 #include "gimple-pretty-print.h"
 #include "tree-flow.h"
-#include "timevar.h"
 #include "tree-dump.h"
 #include "tree-pass.h"
 #include "diagnostic-core.h"
@@ -2130,9 +2127,7 @@ dump_cfg_stats (FILE *file)
   const char * const fmt_str_1 = "%-30s%13d%11lu%c\n";
   const char * const fmt_str_2 = "%-30s%13ld%11lu%c\n";
   const char * const fmt_str_3 = "%-43s%11lu%c\n";
-  const char *funcname
-    = lang_hooks.decl_printable_name (current_function_decl, 2);
-
+  const char *funcname = current_function_name ();
 
   fprintf (file, "\nCFG Statistics for %s\n\n", funcname);
 
@@ -2187,8 +2182,7 @@ gimple_cfg2vcg (FILE *file)
   edge e;
   edge_iterator ei;
   basic_block bb;
-  const char *funcname
-    = lang_hooks.decl_printable_name (current_function_decl, 2);
+  const char *funcname = current_function_name ();
 
   /* Write the file header.  */
   fprintf (file, "graph: { title: \"%s\"\n", funcname);
@@ -6638,7 +6632,7 @@ dump_function_to_file (tree fn, FILE *file, int flags)
   tree chain;
   bool tmclone = TREE_CODE (fn) == FUNCTION_DECL && decl_is_tm_clone (fn);
 
-  fprintf (file, "%s %s(", lang_hooks.decl_printable_name (fn, 2),
+  fprintf (file, "%s %s(", current_function_name (),
 	   tmclone ? "[tm-clone] " : "");
 
   arg = DECL_ARGUMENTS (fn);

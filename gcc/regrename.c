@@ -35,7 +35,6 @@
 #include "recog.h"
 #include "flags.h"
 #include "obstack.h"
-#include "timevar.h"
 #include "tree-pass.h"
 #include "df.h"
 #include "target.h"

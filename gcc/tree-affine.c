@@ -22,11 +22,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tree.h"
 #include "tree-pretty-print.h"
-#include "tree-dump.h"
 #include "pointer-set.h"
 #include "tree-affine.h"
 #include "gimple.h"
 #include "flags.h"
+#include "dumpfile.h"
 
 /* Extends CST as appropriate for the affine combinations COMB.  */
 

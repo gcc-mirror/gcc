@@ -29,15 +29,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "gimple-pretty-print.h"
 #include "tree-flow.h"
-#include "tree-dump.h"
 #include "cfgloop.h"
 #include "expr.h"
 #include "optabs.h"
 #include "params.h"
 #include "tree-data-ref.h"
 #include "tree-vectorizer.h"
-#include "recog.h"
+#include "recog.h"		/* FIXME: for insn_data */
 #include "diagnostic-core.h"
+#include "dumpfile.h"
 
 /* Pattern recognition functions  */
 static gimple vect_recog_widen_sum_pattern (VEC (gimple, heap) **, tree *,

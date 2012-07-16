@@ -41,7 +41,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "except.h"
 #include "diagnostic-core.h"
 #include "reload.h"
-#include "timevar.h"
 #include "tree-pass.h"
 #include "df.h"
 #include "ira.h"

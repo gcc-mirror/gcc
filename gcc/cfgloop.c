@@ -23,8 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "rtl.h"
-#include "hard-reg-set.h"
-#include "obstack.h"
 #include "function.h"
 #include "basic-block.h"
 #include "cfgloop.h"
@@ -34,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-flow.h"
 #include "pointer-set.h"
 #include "ggc.h"
+#include "dumpfile.h"
 
 static void flow_loops_cfg_dump (FILE *);
 

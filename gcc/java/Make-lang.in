@@ -321,7 +321,7 @@ java/verify-impl.o: java/verify-impl.c $(CONFIG_H) java/verify.h $(SYSTEM_H) \
 java/zextract.o: java/zextract.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   java/zipfile.h
 java/java-gimplify.o: java/java-gimplify.c $(CONFIG_H) $(SYSTEM_H) \
-  coretypes.h $(JAVA_TREE_H) $(GIMPLE_H)
+  coretypes.h dumpfile.h $(JAVA_TREE_H) $(GIMPLE_H)
 
 # jcf-io.o needs $(ZLIBINC) added to cflags.
 CFLAGS-java/jcf-io.o += $(ZLIBINC)

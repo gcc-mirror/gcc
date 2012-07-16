@@ -1,3 +1,110 @@
+2012-07-16  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* system.h (dump_file): Do not define.
+	* tree-pass.h: Include dumpfile.h, which is a new file containing...
+	(enum tree_dump_index, TDF_*, get_dump_file_name, dump_enabled_p,
+	dump_initialized_p, dump_begin, dump_end, dump_node, dump_switch_p,
+	dump_flag_name, dump_file, dump_flags, dump_file_name,
+	get_dump_file_info, struct dump_file_info): all of this, moved to...
+	* dumpfile.h: Here, new file.
+	* tree-dump.h: Include dumpfile.h, but not tree-pass.h.
+	(dump_stmt): Remove prototype for C++ specific function.
+	(dump_enumerated_decls): Move prototype from here...
+	* tree-flow.h (dump_enumerated_decls): ... to here.
+	(get_ref_base_and_extent) Move prototype from here ...
+	* tree.h (get_ref_base_and_extent) ... to here.
+	* tree-ssa-live.c: Do not inclde tree-pretty-print.h, because
+	gimple-pretty-print.h is enough.  Do not include tree-dump.h,
+	include timevar.h and dumpfile.h instead.
+	(struct numbered_tree_d, compare_decls_by_uid,
+	dump_enumerated_decls_push, dump_enumerated_decls): Move from here ...
+	* tree-dfa.c:(struct numbered_tree_d, compare_decls_by_uid,
+	dump_enumerated_decls_push, dump_enumerated_decls):... to here.
+	Do not include timevar.h.
+	* tree.c: Do not include timevar.h.
+	* tree-cfg.c: Do not include langhooks.h, tree-pretty-print.h, and
+	timevar.h.
+	(dump_cfg_stats): Use current_function_name.
+	(gimple_cfg2vcg): Likewise.
+	(dump_function_to_file): Likewise.
+	* df-scan.c: Do not include tree-pass.h and timevar.h.
+	Include dumpfile.h.
+	(df_entry_block_bitmap_verify, df_exit_block_bitmap_verify): Do not
+	use print_current_pass.
+	* df-problems.c: Include dumpfile.h.
+	Always define REG_DEAD_DEBUGGING, avoid #ifdef code, because it
+	leads to errors in the code not selected.
+	(df_note_compute): Do not print_rtl_with_bb here.  Fix compilation
+	bug if REG_DEAD_DEBUGGING is not 0, get_insns is not available here.
+	* lcm.c: Include dumpfile.h.
+	Remove obsolete include of insn-attr.h.
+	* dojump.c (do_compare_rtx_and_jump): Remove failure printing for
+	missing probability notes.
+	* stmt.c: Include dumpfile.h.
+	(emit_case_decision_tree): Re-enable printing expand details only
+	if TDF_DETAILS.
+	* alias.c, auto-inc-dec.c, bb-reorder.c, caller-save.c, cfg.c, 
+	cfgcleanup.c, cfgexpand.c, cfgloop.c, cfgloopmanip.c, cgraph.c, 
+	cgraphclones.c, cgraphunit.c, combine.c, combine-stack-adj.c, 
+	coverage.c, cprop.c, cse.c, cselib.c, dbgcnt.c, dce.c, df-core.c, 
+	dse.c, dwarf2out.c, emit-rtl.c, except.c, expr.c, final.c, 
+	function.c, fwprop.c, gcse.c, gimple-fold.c, 
+	gimple-pretty-print.c, gimple-ssa-strength-reduction.c, 
+	gimplify.c, graphite-blocking.c, graphite-clast-to-gimple.c, 
+	graphite-dependences.c, graphite-interchange.c, 
+	graphite-optimize-isl.c, graphite-poly.c, 
+	graphite-sese-to-poly.c, haifa-sched.c, hw-doloop.c, ifcvt.c, 
+	ipa.c, ipa-cp.c, ipa-inline-analysis.c, ipa-inline.c, 
+	ipa-inline-transform.c, ipa-prop.c, ipa-pure-const.c, 
+	ipa-reference.c, ipa-split.c, ipa-utils.c, ira.c, ira-emit.c, 
+	jump.c, loop-doloop.c, loop-init.c, loop-invariant.c, loop-iv.c, 
+	loop-unroll.c, loop-unswitch.c, lower-subreg.c, 
+	lto-section-out.c, lto-streamer-in.c, matrix-reorg.c, mcf.c, 
+	mode-switching.c, modulo-sched.c, omega.c, omp-low.c, passes.c, 
+	plugin.c, postreload.c, postreload-gcse.c, predict.c, print-rtl.c, 
+	print-tree.c, profile.c, recog.c, ree.c, regcprop.c, reginfo.c, 
+	regmove.c, regrename.c, reg-stack.c, reload1.c, reorg.c, 
+	sched-rgn.c, sched-vis.c, sel-sched.c, sel-sched-ir.c, 
+	store-motion.c, tracer.c, trans-mem.c, tree-affine.c, 
+	tree-call-cdce.c, tree-cfgcleanup.c, tree-chrec.c, 
+	tree-data-ref.c, tree-diagnostic.c, tree-dump.c,
+	tree-eh.c, tree-flow-inline.h, tree-if-conv.c, tree-into-ssa.c, 
+	tree-mudflap.c, tree-nrv.c, tree-object-size.c, 
+	tree-optimize.c, tree-outof-ssa.c, tree-predcom.c, 
+	tree-pretty-print.c, tree-profile.c, tree-scalar-evolution.c, 
+	tree-sra.c, tree-ssa-address.c, tree-ssa-alias.c, tree-ssa.c, 
+	tree-ssa-ccp.c, tree-ssa-coalesce.c, tree-ssa-copy.c, 
+	tree-ssa-copyrename.c,, tree-ssa-dce.c, tree-ssa-dom.c, 
+	tree-ssa-dse.c, tree-ssa-forwprop.c, tree-ssa-ifcombine.c, 
+	tree-ssa-loop.c, tree-ssa-loop-ch.c, tree-ssa-loop-im.c, 
+	tree-ssa-loop-ivcanon.c, tree-ssa-loop-ivopts.c, 
+	tree-ssa-loop-manip.c, tree-ssa-loop-niter.c, 
+	tree-ssa-loop-prefetch.c, tree-ssa-loop-unswitch.c, 
+	tree-ssa-math-opts.c, tree-ssa-operands.c, tree-ssa-phiopt.c, 
+	tree-ssa-phiprop.c, tree-ssa-pre.c, tree-ssa-propagate.c, 
+	tree-ssa-reassoc.c, tree-ssa-sccvn.c, tree-ssa-sink.c, 
+	tree-ssa-structalias.c, tree-ssa-tail-merge.c, tree-ssa-ter.c, 
+	tree-ssa-threadedge.c, tree-ssa-threadupdate.c, 
+	tree-ssa-uncprop.c, tree-ssa-uninit.c, 
+	tree-switch-conversion.c, tree-tailcall.c, 
+	tree-vect-data-refs.c, tree-vect-loop.c, 
+	tree-vect-loop-manip.c, tree-vectorizer.c, 
+	tree-vect-patterns.c, tree-vect-slp.c, tree-vect-stmts.c, 
+	tree-vrp.c, value-prof.c, var-tracking.c, web.c: Include tree-pass.h
+	only if needed.  If tree-pass.h is included, do not include timevar.h
+	and dumpfile.h.  If tree-pass.h is not included but dump_file, or
+	dump_flags, or the TDF_* flags are used, include dumpfile.h.
+	If gimple-pretty-print.h is included, don't include tree-pretty-print.h.
+	Remove assorted unnecessary includes.
+
+	* config/mn10300/mn10300.c, config/c6x/c6x.c, config/ia64/ia64.c,
+	config/arm/arm.c, config/bfin/bfin.c, config/frv/frv.c,
+	config/spu/spu.c, config/mep/mep.c, config/i386/i386.c:
+	Include dumpfile.h.
+	* config/rl78/rl78.c: Include dumpfile.h instead of tree-pass.h.
+	* arm/t-arm, avr/t-avr, i386/t-i386, ia64/t-ia64, mep/t-mep,
+	spu/t-spu-elf: Fix dependencies.
+
 2012-07-16  Dehao Chen  <dehao@google.com>
 
 	Revert

@@ -44,7 +44,6 @@
 #include "basic-block.h"
 #include "fibheap.h"
 #include "flags.h"
-#include "timevar.h"
 #include "params.h"
 #include "coverage.h"
 #include "tree-pass.h"

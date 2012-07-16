@@ -48,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "targhooks.h"
 #include "langhooks.h"
 #include "df.h"
+#include "dumpfile.h"
 
 #ifndef FRV_INLINE
 #define FRV_INLINE inline

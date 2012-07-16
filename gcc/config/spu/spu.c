@@ -52,6 +52,7 @@
 #include "sbitmap.h"
 #include "timevar.h"
 #include "df.h"
+#include "dumpfile.h"
 
 /* Builtin types, data and prototypes. */
 

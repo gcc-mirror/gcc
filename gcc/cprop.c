@@ -41,7 +41,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cselib.h"
 #include "intl.h"
 #include "obstack.h"
-#include "timevar.h"
 #include "tree-pass.h"
 #include "hashtab.h"
 #include "df.h"

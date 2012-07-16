@@ -34,7 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "langhooks.h"
 #include "diagnostic-core.h"
-#include "tree-dump.h"
+#include "dumpfile.h"
 #include "gimple.h"
 #include "tree-iterator.h"
 #include "cgraph.h"

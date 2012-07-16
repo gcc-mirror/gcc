@@ -45,7 +45,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "reload.h"
 #include "diagnostic-core.h"
 #include "output.h"
-#include "timevar.h"
 #include "hashtab.h"
 #include "target.h"
 #include "tree-pass.h"

@@ -202,6 +202,15 @@ dump_op (dump_info_p di, tree t)
   }
 }
 
+/* Dump information common to statements from STMT.  */
+
+static void
+dump_stmt (dump_info_p di, const_tree t)
+{
+  if (EXPR_HAS_LOCATION (t))
+    dump_int (di, "line", EXPR_LINENO (t));
+}
+
 bool
 cp_dump_tree (void* dump_info, tree t)
 {

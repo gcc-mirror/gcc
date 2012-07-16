@@ -1,3 +1,8 @@
+2012-07-16  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* f95-lang.c: Include dumpfile.h instead of tree-dump.h.
+	* Make-lang.in: Fix dependencies.
+
 2012-07-16  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/53956

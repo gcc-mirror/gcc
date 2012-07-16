@@ -64,9 +64,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "value-prof.h"
 #include "tree.h"
 #include "tree-flow.h"
-#include "timevar.h"
 #include "cfgloop.h"
-#include "tree-pass.h"
+#include "dumpfile.h"
 
 #include "profile.h"
 

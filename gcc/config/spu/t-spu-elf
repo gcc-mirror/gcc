@@ -19,7 +19,7 @@
 MULTILIB_OPTIONS=mea64
 
 spu.o: $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-  $(RTL_H) $(REGS_H) hard-reg-set.h \
+  $(RTL_H) $(REGS_H) hard-reg-set.h dumpfile.h \
   real.h insn-config.h conditions.h insn-attr.h flags.h $(RECOG_H) \
   $(OBSTACK_H) $(TREE_H) $(EXPR_H) $(OPTABS_H) except.h function.h \
   output.h $(BASIC_BLOCK_H) $(GGC_H) $(HASHTAB_H) \

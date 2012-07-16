@@ -27,7 +27,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "coretypes.h"
 #include "tree.h"
 #include "java-tree.h"
-#include "tree-dump.h"
+#include "dumpfile.h"
 #include "gimple.h"
 
 static tree java_gimplify_block (tree);

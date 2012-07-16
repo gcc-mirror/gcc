@@ -391,7 +391,6 @@ are write-only operations.
 #include "basic-block.h"
 #include "sbitmap.h"
 #include "bitmap.h"
-#include "timevar.h"
 #include "df.h"
 #include "tree-pass.h"
 #include "params.h"

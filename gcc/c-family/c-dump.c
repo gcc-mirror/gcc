@@ -26,15 +26,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dump.h"
 #include "c-common.h"
 
-/* Dump information common to statements from STMT.  */
-
-void
-dump_stmt (dump_info_p di, const_tree t)
-{
-  if (EXPR_HAS_LOCATION (t))
-    dump_int (di, "line", EXPR_LINENO (t));
-}
-
 /* Dump any C-specific tree codes and attributes of common codes.  */
 
 bool

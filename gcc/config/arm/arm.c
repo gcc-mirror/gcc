@@ -55,6 +55,7 @@
 #include "libfuncs.h"
 #include "params.h"
 #include "opts.h"
+#include "dumpfile.h"
 
 /* Forward definitions of types.  */
 typedef struct minipool_node    Mnode;

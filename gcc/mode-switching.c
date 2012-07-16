@@ -33,7 +33,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "function.h"
 #include "tree-pass.h"
-#include "timevar.h"
 #include "df.h"
 #include "emit-rtl.h"
 

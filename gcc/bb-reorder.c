@@ -72,7 +72,6 @@
 #include "rtl.h"
 #include "regs.h"
 #include "flags.h"
-#include "timevar.h"
 #include "output.h"
 #include "fibheap.h"
 #include "target.h"

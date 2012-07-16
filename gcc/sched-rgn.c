@@ -64,7 +64,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "sched-int.h"
 #include "sel-sched.h"
 #include "target.h"
-#include "timevar.h"
 #include "tree-pass.h"
 #include "dbgcnt.h"
 

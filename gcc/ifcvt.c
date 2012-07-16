@@ -40,7 +40,6 @@
 #include "tm_p.h"
 #include "cfgloop.h"
 #include "target.h"
-#include "timevar.h"
 #include "tree-pass.h"
 #include "df.h"
 #include "vec.h"

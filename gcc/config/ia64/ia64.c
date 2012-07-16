@@ -61,6 +61,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "sel-sched.h"
 #include "reload.h"
 #include "opts.h"
+#include "dumpfile.h"
 
 /* This is used for communication between ASM_OUTPUT_LABEL and
    ASM_OUTPUT_LABELREF.  */

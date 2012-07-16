@@ -28,18 +28,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "target.h"
 #include "basic-block.h"
-#include "tree-pretty-print.h"
 #include "gimple-pretty-print.h"
 #include "tree-flow.h"
-#include "tree-dump.h"
 #include "cfgloop.h"
 #include "expr.h"
-#include "recog.h"
+#include "recog.h"		/* FIXME: for insn_data */
 #include "optabs.h"
 #include "diagnostic-core.h"
 #include "tree-vectorizer.h"
-#include "langhooks.h"
+#include "dumpfile.h"
 
+/* For lang_hooks.types.type_for_mode.  */
+#include "langhooks.h"
 
 /* Return the vectorized type for the given statement.  */
 

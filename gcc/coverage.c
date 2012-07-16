@@ -46,7 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hashtab.h"
 #include "tree-iterator.h"
 #include "cgraph.h"
-#include "tree-pass.h"
+#include "dumpfile.h"
 #include "diagnostic-core.h"
 #include "intl.h"
 #include "filenames.h"

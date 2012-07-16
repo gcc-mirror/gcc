@@ -58,6 +58,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "df.h"
 #include "cfgloop.h" /* FIXME: For struct loop.  */
+#include "dumpfile.h"
 
 
 #define RDIV(X,Y) (((X) + (Y) / 2) / (Y))

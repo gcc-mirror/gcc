@@ -167,7 +167,6 @@
 #include "basic-block.h"
 #include "reload.h"
 #include "ggc.h"
-#include "timevar.h"
 #include "tree-pass.h"
 #include "target.h"
 #include "df.h"

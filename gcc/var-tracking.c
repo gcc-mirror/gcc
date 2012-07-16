@@ -104,7 +104,6 @@
 #include "hashtab.h"
 #include "regs.h"
 #include "expr.h"
-#include "timevar.h"
 #include "tree-pass.h"
 #include "tree-flow.h"
 #include "cselib.h"

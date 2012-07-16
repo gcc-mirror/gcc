@@ -57,7 +57,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 #include "except.h"
 #include "reload.h"
-#include "timevar.h"
 #include "tree-pass.h"
 
 

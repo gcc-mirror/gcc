@@ -35,7 +35,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-iterator.h"
 #include "tree-flow.h"
 #include "tree-mudflap.h"
-#include "tree-dump.h"
 #include "tree-pass.h"
 #include "hashtab.h"
 #include "diagnostic.h"
