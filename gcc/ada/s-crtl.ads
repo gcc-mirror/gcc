@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2003-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -164,6 +164,11 @@ package System.CRTL is
 
    function chdir (dir_name : String) return int;
    pragma Import (C, chdir, "__gnat_chdir");
+
+   function mkdir
+     (dir_name : String;
+      encoding : Filename_Encoding := Unspecified) return int;
+   pragma Import (C, mkdir, "__gnat_mkdir");
 
    function setvbuf
      (stream : FILEs;
