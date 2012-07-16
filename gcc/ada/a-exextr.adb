@@ -72,17 +72,6 @@ package body Exception_Traces is
    --  latter case because Notify_Handled_Exception may be called for an
    --  actually unhandled occurrence in the Front-End-SJLJ case.
 
-   --------------------------------
-   -- Import Run-Time C Routines --
-   --------------------------------
-
-   --  The purpose of the following pragma Import is to ensure that we
-   --  generate appropriate subprogram descriptors for all C routines in
-   --  the standard GNAT library that can raise exceptions. This ensures
-   --  that the exception propagation can properly find these routines
-
-   pragma Propagate_Exceptions;
-
    ----------------------
    -- Notify_Exception --
    ----------------------
@@ -132,18 +121,16 @@ package body Exception_Traces is
    -- Notify_Handled_Exception --
    ------------------------------
 
-   procedure Notify_Handled_Exception is
+   procedure Notify_Handled_Exception (Excep : EOA) is
    begin
-      Notify_Exception (Get_Current_Excep.all, Is_Unhandled => False);
+      Notify_Exception (Excep, Is_Unhandled => False);
    end Notify_Handled_Exception;
 
    --------------------------------
    -- Notify_Unhandled_Exception --
    --------------------------------
 
-   procedure Notify_Unhandled_Exception is
-      Excep : constant EOA := Get_Current_Excep.all;
-
+   procedure Notify_Unhandled_Exception (Excep : EOA) is
    begin
       --  Check whether there is any termination handler to be executed for
       --  the environment task, and execute it if needed. Here we handle both
@@ -161,8 +148,8 @@ package body Exception_Traces is
    -- Unhandled_Exception_Terminate --
    -----------------------------------
 
-   procedure Unhandled_Exception_Terminate is
-      Excep : Exception_Occurrence;
+   procedure Unhandled_Exception_Terminate (Excep : EOA) is
+      Occ : Exception_Occurrence;
       --  This occurrence will be used to display a message after finalization.
       --  It is necessary to save a copy here, or else the designated value
       --  could be overwritten if an exception is raised during finalization
@@ -172,8 +159,8 @@ package body Exception_Traces is
       --  that there is enough room on the stack however.
 
    begin
-      Save_Occurrence (Excep, Get_Current_Excep.all.all);
-      Last_Chance_Handler (Excep);
+      Save_Occurrence (Occ, Excep.all);
+      Last_Chance_Handler (Occ);
    end Unhandled_Exception_Terminate;
 
    ------------------------------------

@@ -77,7 +77,8 @@ __gnat_Unwind_RaiseException (_Unwind_Exception *);
 _Unwind_Reason_Code
 __gnat_Unwind_ForcedUnwind (_Unwind_Exception *, void *, void *);
 
-extern void __gnat_setup_current_excep (_Unwind_Exception *);
+extern struct Exception_Occurrence *__gnat_setup_current_excep
+ (_Unwind_Exception *);
 extern void __gnat_unhandled_except_handler (_Unwind_Exception *);
 
 #include "dwarf2.h"
@@ -1001,8 +1002,8 @@ setup_to_install (_Unwind_Context *uw_context,
 /* The following is defined from a-except.adb. Its purpose is to enable
    automatic backtraces upon exception raise, as provided through the
    GNAT.Traceback facilities.  */
-extern void __gnat_notify_handled_exception (void);
-extern void __gnat_notify_unhandled_exception (void);
+extern void __gnat_notify_handled_exception (struct Exception_Occurrence *);
+extern void __gnat_notify_unhandled_exception (struct Exception_Occurrence *);
 
 /* Below is the eh personality routine per se. We currently assume that only
    GNU-Ada exceptions are met.  */
@@ -1131,14 +1132,16 @@ PERSONALITY_FUNCTION (version_arg_t version_arg,
 	}
       else
 	{
+	  struct Exception_Occurrence *excep;
+
 	  /* Trigger the appropriate notification routines before the second
 	     phase starts, which ensures the stack is still intact.
              First, setup the Ada occurrence.  */
-          __gnat_setup_current_excep (uw_exception);
+          excep = __gnat_setup_current_excep (uw_exception);
 	  if (action.kind == unhandler)
-	    __gnat_notify_unhandled_exception ();
+	    __gnat_notify_unhandled_exception (excep);
 	  else
-	    __gnat_notify_handled_exception ();
+	    __gnat_notify_handled_exception (excep);
 
 	  return _URC_HANDLER_FOUND;
 	}
@@ -1324,7 +1327,7 @@ __gnat_personality_seh0 (PEXCEPTION_RECORD ms_exc, void *this_frame,
 	  CONTEXT context;
 	  PRUNTIME_FUNCTION mf_func = NULL;
 	  ULONG64 mf_imagebase;
-	  ULONG64 mf_rsp;
+	  ULONG64 mf_rsp = 0;
 
 	  /* Get the context.  */
 	  RtlCaptureContext (&context);
