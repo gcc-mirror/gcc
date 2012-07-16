@@ -1,3 +1,11 @@
+2012-07-16  Steven Bosscher  <steven@gcc.gnu.org>
+
+	Backport from trunk:
+	2012-07-13  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR rtl-optimization/53908
+	* gcc.dg/torture/pr53908.c: New test.
+
 2012-07-14  Mikael Morin  <mikael.morin@gcc.gnu.org>
 
 	Backport from trunk:

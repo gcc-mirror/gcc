@@ -3956,6 +3956,19 @@ can_move_insns_across (rtx from, rtx to, rtx across_from, rtx across_to,
   df_simulate_initialize_backwards (merge_bb, test_use);
   for (insn = across_to; ; insn = next)
     {
+      if (CALL_P (insn))
+	{
+	  if (RTL_CONST_OR_PURE_CALL_P (insn))
+	    /* Pure functions can read from memory.  Const functions can
+	       read from arguments that the ABI has forced onto the stack.
+	       Neither sort of read can be volatile.  */
+	    memrefs_in_across |= MEMREF_NORMAL;
+	  else
+	    {
+	      memrefs_in_across |= MEMREF_VOLATILE;
+	      mem_sets_in_across |= MEMREF_VOLATILE;
+	    }
+	}
       if (NONDEBUG_INSN_P (insn))
 	{
 	  df_simulate_find_defs (insn, test_set);
