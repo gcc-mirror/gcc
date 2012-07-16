@@ -1,3 +1,15 @@
+2012-07-16  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/53956
+	* gfortran.h (gfc_copy_formal_args,gfc_copy_formal_args_ppc): Modified
+	prototypes.
+	* symbol.c (gfc_copy_formal_args): New argument 'if_src'. Copy if_source
+	of dummy procedures.
+	(gfc_copy_formal_args_ppc): Ditto.
+	* resolve.c (resolve_procedure_interface): Pass IFSRC_DECL to
+	gfc_copy_formal_args.
+	(resolve_fl_derived0): Pass IFSRC_DECL to gfc_copy_formal_args_ppc.
+
 2012-07-12  Tobias Burnus  <burnus@net-b.de>
 
 	* trans-expr.c (conv_isocbinding_procedure): Generate c_f_pointer code
