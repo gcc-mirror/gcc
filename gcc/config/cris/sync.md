@@ -184,11 +184,12 @@
 ;; can_compare_and_swap_p call in omp-low.c, 4.8 era).  We'd slightly
 ;; prefer atomic_exchange<mode> over this, but having both would be
 ;; redundant.
+;; FIXME: handle memory without side-effects for operand[3].
 (define_expand "atomic_compare_and_swap<mode>"
   [(match_operand:SI 0 "register_operand")
    (match_operand:BWD 1 "register_operand")
    (match_operand:BWD 2 "memory_operand")
-   (match_operand:BWD 3 "general_operand")
+   (match_operand:BWD 3 "nonmemory_operand")
    (match_operand:BWD 4 "register_operand")
    (match_operand 5)
    (match_operand 6)
@@ -218,7 +219,7 @@
   [(set (match_operand:SI 0 "register_operand" "=&r")
 	(unspec_volatile:SI
 	 [(match_operand:BWD 2 "memory_operand" "+Q")
-	  (match_operand:BWD 3 "general_operand" "g")]
+	  (match_operand:BWD 3 "nonmemory_operand" "ri")]
 	 CRIS_UNSPEC_ATOMIC_SWAP_BOOL))
    (set (match_operand:BWD 1 "register_operand" "=&r") (match_dup 2))
    (set (match_dup 2)
