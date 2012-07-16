@@ -1,5 +1,14 @@
 2012-07-16  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	PR libstdc++/53270
+	* include/ext/concurrence.h (__mutex, __recursive_mutex, __cond): Use
+	NSDMI in C++98 mode too.
+	* include/ext/rope: Add system_header pragma.
+	(_Refcount_Base, _Rope_RopeRep): Use NSDMI.
+	(_Rope_RopeRep::~_Rope_RopeRep): Destroy mutex.
+
+2012-07-16  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	PR libstdc++/53978
 	* include/bits/alloc_traits.h (allocator_traits): Define static
 	constants.
