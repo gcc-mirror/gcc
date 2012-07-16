@@ -339,6 +339,17 @@ package body Exp_Ch9 is
    --  step of the expansion must to be done after private data has been moved
    --  to its final resting scope to ensure proper visibility of debug objects.
 
+   procedure Ensure_Statement_Present (Loc : Source_Ptr; Alt : Node_Id);
+   --  If control flow optimizations are suppressed, and Alt is an accept,
+   --  delay, or entry call alternative with no trailing statements, insert a
+   --  null trailing statement with the given Loc (which is the sloc of the
+   --  accept, delay, or entry call statement). There might not be any
+   --  generated code for the accept, delay, or entry call itself (the
+   --  effect of these statements is part of the general processsing done
+   --  for the enclosing selective accept, timed entry call, or asynchronous
+   --  select), and the null statement is there to carry the sloc of that
+   --  statement to the back-end for trace-based coverage analysis purposes.
+
    procedure Extract_Dispatching_Call
      (N        : Node_Id;
       Call_Ent : out Entity_Id;
@@ -5468,6 +5479,19 @@ package body Exp_Ch9 is
       end loop;
    end Debug_Private_Data_Declarations;
 
+   ------------------------------
+   -- Ensure_Statement_Present --
+   ------------------------------
+
+   procedure Ensure_Statement_Present (Loc : Source_Ptr; Alt : Node_Id) is
+   begin
+      if Opt.Suppress_Control_Flow_Optimizations
+           and then Is_Empty_List (Statements (Alt))
+      then
+         Set_Statements (Alt, New_List (Make_Null_Statement (Loc)));
+      end if;
+   end Ensure_Statement_Present;
+
    ----------------------------
    -- Entry_Index_Expression --
    ----------------------------
@@ -6587,7 +6611,7 @@ package body Exp_Ch9 is
       Abortable_Block   : Node_Id;
       Actuals           : List_Id;
       Astats            : List_Id;
-      Blk_Ent           : Entity_Id;
+      Blk_Ent           : constant Entity_Id := Make_Temporary (Loc, 'A');
       Blk_Typ           : Entity_Id;
       Call              : Node_Id;
       Call_Ent          : Entity_Id;
@@ -6632,14 +6656,15 @@ package body Exp_Ch9 is
       Process_Statements_For_Controlled_Objects (Trig);
       Process_Statements_For_Controlled_Objects (Abrt);
 
+      Ecall := Triggering_Statement (Trig);
+
+      Ensure_Statement_Present (Sloc (Ecall), Trig);
+
       --  Retrieve Astats and Tstats now because the finalization machinery may
       --  wrap them in blocks.
 
       Astats := Statements (Abrt);
       Tstats := Statements (Trig);
-
-      Blk_Ent := Make_Temporary (Loc, 'A');
-      Ecall   := Triggering_Statement (Trig);
 
       --  The arguments in the call may require dynamic allocation, and the
       --  call statement may have been transformed into a block. The block
@@ -10301,6 +10326,8 @@ package body Exp_Ch9 is
             Alt_Stats := New_List;
          end if;
 
+         Ensure_Statement_Present (Sloc (Astmt), Alt);
+
          --  After the call, if any, branch to trailing statements, if any.
          --  We create a label for each, as well as the corresponding label
          --  declaration.
@@ -10330,6 +10357,7 @@ package body Exp_Ch9 is
       -------------------------------
 
       procedure Process_Delay_Alternative (Alt : Node_Id; Index : Int) is
+         Dloc      : constant Source_Ptr := Sloc (Delay_Statement (Alt));
          Choices   : List_Id;
          Cond      : Node_Id;
          Delay_Alt : List_Id;
@@ -10432,6 +10460,8 @@ package body Exp_Ch9 is
          end if;
 
          Append_List (Delay_Alt, Delay_List);
+
+         Ensure_Statement_Present (Dloc, Alt);
 
          --  If the delay alternative has a statement part, add choice to the
          --  case statements for delays.
@@ -11883,6 +11913,8 @@ package body Exp_Ch9 is
 
       Process_Statements_For_Controlled_Objects (E_Alt);
       Process_Statements_For_Controlled_Objects (D_Alt);
+
+      Ensure_Statement_Present (Sloc (D_Stat), D_Alt);
 
       --  Retrieve E_Stats and D_Stats now because the finalization machinery
       --  may wrap them in blocks.

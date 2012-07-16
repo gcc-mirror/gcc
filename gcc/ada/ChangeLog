@@ -1,3 +1,19 @@
+2012-07-16  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch9.adb (Ensure_Statement_Present): New subprogram.
+	(Expand_N_Asynchronous_Select,
+	Expand_N_Selective_Accept.Process_Accept_Alternative,
+	Expand_N_Selective_Accept.Process_Delay_Alternative,
+	Expand_N_Timed_Entry_Call): For an alternative with no trailing
+	statements, introduce a null statement to carry the sloc of
+	the initial special statement (accept, delay, or entry call)
+	in the alternative, for coverage analysis purposes.
+
+2012-07-16  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_eval.adb (In_Subrange_Of): Fix typo in test for scalar
+	arguments.
+
 2012-07-16  Robert Dewar  <dewar@adacore.com>
 
 	* a-exexpr.adb, freeze.adb, a-exexpr-gcc.adb, a-except-2005.adb,

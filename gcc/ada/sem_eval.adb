@@ -4154,7 +4154,7 @@ package body Sem_Eval is
       --  Never in range if both types are not scalar. Don't know if this can
       --  actually happen, but just in case.
 
-      elsif not Is_Scalar_Type (T1) or else not Is_Scalar_Type (T1) then
+      elsif not Is_Scalar_Type (T1) or else not Is_Scalar_Type (T2) then
          return False;
 
       --  If T1 has infinities but T2 doesn't have infinities, then T1 is
