@@ -1,7 +1,11 @@
 2012-07-16  Hans-Peter Nilsson  <hp@axis.com>
 
-	* config/cris/cris.c (cris_preferred_reload_class):
-	Don't return GENERAL_REGS as preferred to MOF_SRP_REGS.
+	* config/cris/cris-protos.h (cris_legitimate_address_p): Declare.
+	* config/cris/cris.h (CONSTANT_ADDRESS_P): Define in terms of
+	CONSTANT_P and cris_legitimate_address_p.
+	* config/cris/cris.c (cris_legitimate_address_p): Make non-static.
+	(cris_preferred_reload_class): Don't return GENERAL_REGS as
+	preferred to MOF_SRP_REGS.
 
 	* config/cris/cris.c (cris_init_libfuncs): Handle initialization
 	of library functions for basic atomic compare-and-swap.

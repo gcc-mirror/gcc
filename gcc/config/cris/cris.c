@@ -127,8 +127,6 @@ static void cris_init_libfuncs (void);
 
 static reg_class_t cris_preferred_reload_class (rtx, reg_class_t);
 
-static bool cris_legitimate_address_p (enum machine_mode, rtx, bool);
-
 static int cris_register_move_cost (enum machine_mode, reg_class_t, reg_class_t);
 static int cris_memory_move_cost (enum machine_mode, reg_class_t, bool);
 static bool cris_rtx_costs (rtx, int, int, int, int *, bool);
@@ -1414,7 +1412,7 @@ cris_biap_index_p (const_rtx x, bool strict)
    here (but is thankfully a general_operand in itself).  A local PIC
    symbol is valid for the plain "symbol + offset" case.  */
 
-static bool
+bool
 cris_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
 {
   const_rtx x1, x2;
