@@ -1,3 +1,7 @@
+2012-07-16  Andrew Pinski  <apinski@cavium.com>
+
+	* gcc.dg/torture/builtins-1.c: New testcase.
+
 2012-07-16  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc.target/cris/sync-2i.c, gcc.target/cris/sync-2s.c,
