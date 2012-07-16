@@ -93,11 +93,15 @@
   if (<MODE>mode != QImode && TARGET_TRAP_UNALIGNED_ATOMIC)
     cris_emit_trap_for_misalignment (operands[1]);
 
-  expand_mem_thread_fence (mmodel);
+  if (need_atomic_barrier_p (mmodel, true))
+    expand_mem_thread_fence (mmodel);
+
   emit_insn (gen_cris_atomic_fetch_<atomic_op_name><mode>_1 (operands[0],
 							     operands[1],
 							     operands[2]));
-  expand_mem_thread_fence (mmodel);
+  if (need_atomic_barrier_p (mmodel, false))
+    expand_mem_thread_fence (mmodel);
+
   DONE;
 })
 
@@ -196,13 +200,17 @@
   if (<MODE>mode != QImode && TARGET_TRAP_UNALIGNED_ATOMIC)
     cris_emit_trap_for_misalignment (operands[2]);
 
-  expand_mem_thread_fence (mmodel);
+  if (need_atomic_barrier_p (mmodel, true))
+    expand_mem_thread_fence (mmodel);
+
   emit_insn (gen_cris_atomic_compare_and_swap<mode>_1 (operands[0],
 						       operands[1],
 						       operands[2],
 						       operands[3],
 						       operands[4]));
-  expand_mem_thread_fence (mmodel);
+  if (need_atomic_barrier_p (mmodel, false))
+    expand_mem_thread_fence (mmodel);
+
   DONE;
 })
 
