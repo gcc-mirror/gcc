@@ -4049,8 +4049,7 @@ gen_shape_param (gfc_formal_arglist **head,
    reference to the list of formal arguments).  */
 
 static void
-add_proc_interface (gfc_symbol *sym, ifsrc source,
-                    gfc_formal_arglist *formal)
+add_proc_interface (gfc_symbol *sym, ifsrc source, gfc_formal_arglist *formal)
 {
 
   sym->formal = formal;
@@ -4066,7 +4065,7 @@ add_proc_interface (gfc_symbol *sym, ifsrc source,
    args based on the args of a given named interface.  */
 
 void
-gfc_copy_formal_args (gfc_symbol *dest, gfc_symbol *src)
+gfc_copy_formal_args (gfc_symbol *dest, gfc_symbol *src, ifsrc if_src)
 {
   gfc_formal_arglist *head = NULL;
   gfc_formal_arglist *tail = NULL;
@@ -4090,7 +4089,8 @@ gfc_copy_formal_args (gfc_symbol *dest, gfc_symbol *src)
       formal_arg->sym->attr = curr_arg->sym->attr;
       formal_arg->sym->ts = curr_arg->sym->ts;
       formal_arg->sym->as = gfc_copy_array_spec (curr_arg->sym->as);
-      gfc_copy_formal_args (formal_arg->sym, curr_arg->sym);
+      gfc_copy_formal_args (formal_arg->sym, curr_arg->sym,
+			    curr_arg->sym->attr.if_source);
 
       /* If this isn't the first arg, set up the next ptr.  For the
         last arg built, the formal_arg->next will never get set to
@@ -4110,7 +4110,7 @@ gfc_copy_formal_args (gfc_symbol *dest, gfc_symbol *src)
     }
 
   /* Add the interface to the symbol.  */
-  add_proc_interface (dest, IFSRC_DECL, head);
+  add_proc_interface (dest, if_src, head);
 
   /* Store the formal namespace information.  */
   if (dest->formal != NULL)
@@ -4183,7 +4183,7 @@ gfc_copy_formal_args_intr (gfc_symbol *dest, gfc_intrinsic_sym *src)
 
 
 void
-gfc_copy_formal_args_ppc (gfc_component *dest, gfc_symbol *src)
+gfc_copy_formal_args_ppc (gfc_component *dest, gfc_symbol *src, ifsrc if_src)
 {
   gfc_formal_arglist *head = NULL;
   gfc_formal_arglist *tail = NULL;
@@ -4207,7 +4207,8 @@ gfc_copy_formal_args_ppc (gfc_component *dest, gfc_symbol *src)
       formal_arg->sym->attr = curr_arg->sym->attr;
       formal_arg->sym->ts = curr_arg->sym->ts;
       formal_arg->sym->as = gfc_copy_array_spec (curr_arg->sym->as);
-      gfc_copy_formal_args (formal_arg->sym, curr_arg->sym);
+      gfc_copy_formal_args (formal_arg->sym, curr_arg->sym,
+			    curr_arg->sym->attr.if_source);
 
       /* If this isn't the first arg, set up the next ptr.  For the
         last arg built, the formal_arg->next will never get set to
@@ -4229,7 +4230,7 @@ gfc_copy_formal_args_ppc (gfc_component *dest, gfc_symbol *src)
   /* Add the interface to the symbol.  */
   gfc_free_formal_arglist (dest->formal);
   dest->formal = head;
-  dest->attr.if_source = IFSRC_DECL;
+  dest->attr.if_source = if_src;
 
   /* Store the formal namespace information.  */
   if (dest->formal != NULL)

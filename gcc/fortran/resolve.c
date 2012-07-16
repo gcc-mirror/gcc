@@ -173,7 +173,7 @@ resolve_procedure_interface (gfc_symbol *sym)
       sym->ts.interface = ifc;
       sym->attr.function = ifc->attr.function;
       sym->attr.subroutine = ifc->attr.subroutine;
-      gfc_copy_formal_args (sym, ifc);
+      gfc_copy_formal_args (sym, ifc, IFSRC_DECL);
 
       sym->attr.allocatable = ifc->attr.allocatable;
       sym->attr.pointer = ifc->attr.pointer;
@@ -11790,7 +11790,7 @@ resolve_fl_derived0 (gfc_symbol *sym)
 	      c->ts.interface = ifc;
 	      c->attr.function = ifc->attr.function;
 	      c->attr.subroutine = ifc->attr.subroutine;
-	      gfc_copy_formal_args_ppc (c, ifc);
+	      gfc_copy_formal_args_ppc (c, ifc, IFSRC_DECL);
 
 	      c->attr.pure = ifc->attr.pure;
 	      c->attr.elemental = ifc->attr.elemental;
