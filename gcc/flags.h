@@ -106,30 +106,6 @@ extern int dump_for_graph;
 #define abi_version_at_least(N) \
   (flag_abi_version == 0 || flag_abi_version >= (N))
 
-/* True if overflow wraps around for the given integral type.  That
-   is, TYPE_MAX + 1 == TYPE_MIN.  */
-#define TYPE_OVERFLOW_WRAPS(TYPE) \
-  (TYPE_UNSIGNED (TYPE) || flag_wrapv)
-
-/* True if overflow is undefined for the given integral type.  We may
-   optimize on the assumption that values in the type never overflow.
-
-   IMPORTANT NOTE: Any optimization based on TYPE_OVERFLOW_UNDEFINED
-   must issue a warning based on warn_strict_overflow.  In some cases
-   it will be appropriate to issue the warning immediately, and in
-   other cases it will be appropriate to simply set a flag and let the
-   caller decide whether a warning is appropriate or not.  */
-#define TYPE_OVERFLOW_UNDEFINED(TYPE) \
-  (!TYPE_UNSIGNED (TYPE) && !flag_wrapv && !flag_trapv && flag_strict_overflow)
-
-/* True if overflow for the given integral type should issue a
-   trap.  */
-#define TYPE_OVERFLOW_TRAPS(TYPE) \
-  (!TYPE_UNSIGNED (TYPE) && flag_trapv)
-
-/* True if pointer types have undefined overflow.  */
-#define POINTER_TYPE_OVERFLOW_UNDEFINED (flag_strict_overflow)
-
 /* Whether to emit an overflow warning whose code is C.  */
 #define issue_strict_overflow_warning(c) (warn_strict_overflow >= (int) (c))
 
