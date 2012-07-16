@@ -1,5 +1,16 @@
 2012-07-16  Steven Bosscher  <steven@gcc.gnu.org>
 
+	* haifa-sched.c (init_before_recovery): Do not set EDGE_CAN_FALLTHRU.
+	* cfgrtl.c (force_nonfallthru_and_redirect): Likewise.
+
+	* function.c (stack_protect_epilogue): Use expand_call to expand
+	targetm.stack_protect_fail.
+	* stmt.c (expand_expr_stmt): Remove now-unused function.
+	* tree.h (expand_expr_stmt): Remove prototype.
+	* doc/tm.texi.in (TARGET_STACK_PROTECT_FAIL): Document that this
+	hook must return a CALL_EXPR.
+	* doc/tm.texi: Regenerate.
+
 	* emit-rtl.c (emit_label_before): Do not allow the same label
         to be emitted twice.
 	(emit_label_after): Likewise.
