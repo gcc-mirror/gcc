@@ -1,3 +1,13 @@
+2012-07-16 Sergey Melnikov <sergey.melnikov@intel.com>
+
+	* config/i386/i386.md (stack_protect_set): Disable the pattern
+	for Android since Android libc (bionic) does not provide random
+	value for stack protection guard at gs:0x14. Guard value
+	will be provided from external symbol (default implementation).
+	(stack_protect_set_<mode>): Likewise.
+	(stack_protect_test): Likewise.
+	(stack_protect_test_<mode>): Likewise.
+
 2012-07-16  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/cris-protos.h (cris_legitimate_address_p): Declare.
