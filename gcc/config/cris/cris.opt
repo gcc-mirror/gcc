@@ -183,6 +183,10 @@ mtrap-unaligned-atomic
 Target Report Var(cris_trap_unaligned_atomic) Init(2)
 Emit checks causing \"break 8\" instructions to execute when applying atomic builtins on misaligned memory
 
+munaligned-atomic-may-use-library
+Target Report Var(cris_atomics_calling_libfunc) Init(2)
+Handle atomic builtins that may be applied to unaligned data by calling library functions. Overrides -mtrap-unaligned-atomic.
+
 ; TARGET_SVINTO: Currently this just affects alignment.  FIXME:
 ; Redundant with TARGET_ALIGN_BY_32, or put machine stuff here?
 ; This and the others below could just as well be variables and
