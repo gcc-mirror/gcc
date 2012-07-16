@@ -1466,7 +1466,7 @@ replace_block_by (basic_block bb1, basic_block bb2)
       bb2_phi = vop_phi (bb2);
 
       add_phi_arg (bb2_phi, SSA_NAME_VAR (gimple_phi_result (bb2_phi)),
-		   pred_edge, UNKNOWN_LOCATION, NULL);
+		   pred_edge, UNKNOWN_LOCATION);
     }
 
   bb2->frequency += bb1->frequency;

@@ -2553,8 +2553,7 @@ reinstall_phi_args (edge new_edge, edge old_edge)
 
       gcc_assert (result == gimple_phi_result (phi));
 
-      add_phi_arg (phi, arg, new_edge, redirect_edge_var_map_location (vm),
-		   redirect_edge_var_map_block (vm));
+      add_phi_arg (phi, arg, new_edge, redirect_edge_var_map_location (vm));
     }
 
   redirect_edge_var_map_clear (old_edge);
@@ -5016,7 +5015,7 @@ gimple_make_forwarder_block (edge fallthru)
       SSA_NAME_DEF_STMT (var) = new_phi;
       gimple_phi_set_result (phi, make_ssa_name (SSA_NAME_VAR (var), phi));
       add_phi_arg (new_phi, gimple_phi_result (phi), fallthru,
-		   UNKNOWN_LOCATION, NULL);
+		   UNKNOWN_LOCATION);
     }
 
   /* Add the arguments we have stored on edges.  */
@@ -5477,8 +5476,7 @@ add_phi_args_after_copy_edge (edge e_copy)
       phi_copy = gsi_stmt (psi_copy);
       def = PHI_ARG_DEF_FROM_EDGE (phi, e);
       add_phi_arg (phi_copy, def, e_copy,
-		   gimple_phi_arg_location_from_edge (phi, e),
-		   gimple_phi_arg_block_from_edge (phi, e));
+		   gimple_phi_arg_location_from_edge (phi, e));
     }
 }
 
@@ -5853,8 +5851,7 @@ gimple_duplicate_sese_tail (edge entry ATTRIBUTE_UNUSED, edge exit ATTRIBUTE_UNU
 	  {
 	    phi = gsi_stmt (psi);
 	    def = PHI_ARG_DEF (phi, nexits[0]->dest_idx);
-	    add_phi_arg (phi, def, e, gimple_phi_arg_location_from_edge (phi, e),
-			 gimple_phi_arg_block_from_edge (phi, e));
+	    add_phi_arg (phi, def, e, gimple_phi_arg_location_from_edge (phi, e));
 	  }
       }
   e = redirect_edge_and_branch (nexits[1], nexits[0]->dest);
@@ -7427,8 +7424,7 @@ gimple_lv_adjust_loop_header_phi (basic_block first, basic_block second,
       phi1 = gsi_stmt (psi1);
       phi2 = gsi_stmt (psi2);
       def = PHI_ARG_DEF (phi2, e2->dest_idx);
-      add_phi_arg (phi1, def, e, gimple_phi_arg_location_from_edge (phi2, e2),
-		   gimple_phi_arg_block_from_edge (phi2, e2));
+      add_phi_arg (phi1, def, e, gimple_phi_arg_location_from_edge (phi2, e2));
     }
 }
 
