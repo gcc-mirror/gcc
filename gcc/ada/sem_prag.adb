@@ -4690,6 +4690,12 @@ package body Sem_Prag is
                   Get_Pragma_Arg (Arg2));
             end if;
 
+            if Etype (Def_Id) /= Def_Id
+              and then not Is_CPP_Class (Root_Type (Def_Id))
+            then
+               Error_Msg_N ("root type must be a 'C'P'P type", Arg1);
+            end if;
+
             Set_Is_CPP_Class (Def_Id);
 
             --  Imported CPP types must not have discriminants (because C++
@@ -7651,108 +7657,13 @@ package body Sem_Prag is
          --  pragma CPP_Class ([Entity =>] local_NAME)
 
          when Pragma_CPP_Class => CPP_Class : declare
-            Arg : Node_Id;
-            Typ : Entity_Id;
-
          begin
+            GNAT_Pragma;
+
             if Warn_On_Obsolescent_Feature then
                Error_Msg_N
-                 ("'G'N'A'T pragma cpp'_class is now obsolete; replace it" &
-                  " by pragma import?", N);
-            end if;
-
-            GNAT_Pragma;
-            Check_Arg_Count (1);
-            Check_Optional_Identifier (Arg1, Name_Entity);
-            Check_Arg_Is_Local_Name (Arg1);
-
-            Arg := Get_Pragma_Arg (Arg1);
-            Analyze (Arg);
-
-            if Etype (Arg) = Any_Type then
-               return;
-            end if;
-
-            if not Is_Entity_Name (Arg)
-              or else not Is_Type (Entity (Arg))
-            then
-               Error_Pragma_Arg ("pragma% requires a type mark", Arg1);
-            end if;
-
-            Typ := Entity (Arg);
-
-            if not Is_Tagged_Type (Typ) then
-               Error_Pragma_Arg ("pragma% applicable to tagged types ", Arg1);
-            end if;
-
-            --  Types treated as CPP classes must be declared limited (note:
-            --  this used to be a warning but there is no real benefit to it
-            --  since we did effectively intend to treat the type as limited
-            --  anyway).
-
-            if not Is_Limited_Type (Typ) then
-               Error_Msg_N
-                 ("imported 'C'P'P type must be limited",
-                  Get_Pragma_Arg (Arg1));
-            end if;
-
-            Set_Is_CPP_Class (Typ);
-            Set_Convention (Typ, Convention_CPP);
-
-            --  Imported CPP types must not have discriminants (because C++
-            --  classes do not have discriminants).
-
-            if Has_Discriminants (Typ) then
-               Error_Msg_N
-                 ("imported 'C'P'P type cannot have discriminants",
-                  First (Discriminant_Specifications
-                          (Declaration_Node (Typ))));
-            end if;
-
-            --  Components of imported CPP types must not have default
-            --  expressions because the constructor (if any) is in the
-            --  C++ side.
-
-            if Is_Incomplete_Or_Private_Type (Typ)
-              and then No (Underlying_Type (Typ))
-            then
-               --  It should be an error to apply pragma CPP to a private
-               --  type if the underlying type is not visible (as it is
-               --  for any representation item). For now, for backward
-               --  compatibility we do nothing but we cannot check components
-               --  because they are not available at this stage. All this code
-               --  will be removed when we cleanup this obsolete GNAT pragma???
-
-               null;
-
-            else
-               declare
-                  Tdef  : constant Node_Id :=
-                            Type_Definition (Declaration_Node (Typ));
-                  Clist : Node_Id;
-                  Comp  : Node_Id;
-
-               begin
-                  if Nkind (Tdef) = N_Record_Definition then
-                     Clist := Component_List (Tdef);
-                  else
-                     pragma Assert (Nkind (Tdef) = N_Derived_Type_Definition);
-                     Clist := Component_List (Record_Extension_Part (Tdef));
-                  end if;
-
-                  if Present (Clist) then
-                     Comp := First (Component_Items (Clist));
-                     while Present (Comp) loop
-                        if Present (Expression (Comp)) then
-                           Error_Msg_N
-                             ("component of imported 'C'P'P type cannot have" &
-                              " default expression", Expression (Comp));
-                        end if;
-
-                        Next (Comp);
-                     end loop;
-                  end if;
-               end;
+                 ("'G'N'A'T pragma cpp'_class is now obsolete and has no " &
+                  "effect; replace it by pragma import?", N);
             end if;
          end CPP_Class;
 
@@ -7802,6 +7713,12 @@ package body Sem_Prag is
                                    and then
                                   Is_CPP_Class (Root_Type (Etype (Def_Id)))))
             then
+               if Scope (Def_Id) /= Scope (Etype (Def_Id)) then
+                  Error_Msg_N
+                    ("'C'P'P constructor must be defined in the scope of " &
+                     "its returned type", Arg1);
+               end if;
+
                if Arg_Count >= 2 then
                   Set_Imported (Def_Id);
                   Set_Is_Public (Def_Id);
@@ -7822,8 +7739,8 @@ package body Sem_Prag is
 
                if Is_Tagged_Type (Etype (Def_Id))
                  and then not Is_Class_Wide_Type (Etype (Def_Id))
+                 and then Is_Dispatching_Operation (Def_Id)
                then
-                  pragma Assert (Is_Dispatching_Operation (Def_Id));
                   Tag_Typ := Etype (Def_Id);
 
                   Elmt := First_Elmt (Primitive_Operations (Tag_Typ));

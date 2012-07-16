@@ -274,22 +274,21 @@ package body Ada.Exceptions is
 
    function Create_Occurrence_From_Signal_Handler
      (E : Exception_Id;
-      M : System.Address)
-     return EOA;
+      M : System.Address) return EOA;
    --  Create and build an exception occurrence using exception id E and
    --  nul-terminated message M.
 
    function Create_Machine_Occurrence_From_Signal_Handler
      (E : Exception_Id;
-      M : System.Address)
-     return System.Address;
+      M : System.Address) return System.Address;
    pragma Export (C, Create_Machine_Occurrence_From_Signal_Handler,
                   "__gnat_create_machine_occurrence_from_signal_handler");
    --  Create and build an exception occurrence using exception id E and
    --  nul-terminated message M. Return the machine occurrence.
 
    procedure Raise_Exception_No_Defer
-      (E : Exception_Id; Message : String := "");
+     (E       : Exception_Id;
+      Message : String := "");
    pragma Export
     (Ada, Raise_Exception_No_Defer,
      "ada__exceptions__raise_exception_no_defer");
@@ -1051,10 +1050,10 @@ package body Ada.Exceptions is
 
    function Create_Occurrence_From_Signal_Handler
      (E : Exception_Id;
-      M : System.Address)
-     return EOA
+      M : System.Address) return EOA
    is
       X : constant EOA := Exception_Propagation.Allocate_Occurrence;
+
    begin
       Exception_Data.Set_Exception_C_Msg (X, E, M);
 
@@ -1072,8 +1071,7 @@ package body Ada.Exceptions is
 
    function Create_Machine_Occurrence_From_Signal_Handler
      (E : Exception_Id;
-      M : System.Address)
-     return System.Address
+      M : System.Address) return System.Address
    is
    begin
       return Create_Occurrence_From_Signal_Handler (E, M).Machine_Occurrence;

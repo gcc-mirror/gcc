@@ -65,6 +65,7 @@ package body Exception_Propagation is
 
    procedure Propagate_Exception (Excep : EOA) is
       Jumpbuf_Ptr : constant Address := Get_Jmpbuf_Address.all;
+
    begin
       --  If the jump buffer pointer is non-null, transfer control using
       --  it. Otherwise announce an unhandled exception (note that this

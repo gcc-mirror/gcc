@@ -1,3 +1,34 @@
+2012-07-16  Robert Dewar  <dewar@adacore.com>
+
+	* a-exexpr.adb, freeze.adb, a-exexpr-gcc.adb, a-except-2005.adb,
+	sem_eval.adb, s-fileio.adb: Minor reformatting.
+
+2012-07-16  Javier Miranda  <miranda@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Remove support for obsolescent
+	pragma CPP_Class.
+	* sem_ch13.adb (Analyze_Freeze_Entity): Add missing error on Ada
+	derivations of CPP types.  Found updating the tests affected by
+	the removal of pragma CPP_Class.
+
+2012-07-16  Thomas Quinot  <quinot@adacore.com>
+
+	* back_end.adb: Minor reformatting.
+
+2012-07-16  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch9.adb (Expand_N_Selective_Accept.Process_Accept_Alternative):
+	Remove junk test that was always true. For the case of no statements
+	following the ACCEPT, jump directly to End_Lab instead of
+	introducing an intermediate jump.
+	(Expand_N_Selective_Accept.Process_Delay_Alternative): Fix
+	predicate testing for presence of statements following the DELAY.
+	that was always true. For the case of no statements following
+	the ACCEPT, jump directly to End_Lab instead of introducing an
+	intermediate jump.
+	(Expand_N_Selective_Accept): Fix incorrect insertion point for
+	end label.
+
 2012-07-16  Thomas Quinot  <quinot@adacore.com>
 
 	* gnat_rm.texi: Minor documentation improvements.
