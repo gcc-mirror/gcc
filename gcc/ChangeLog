@@ -1,3 +1,9 @@
+2012-07-16  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/sync.md ("atomic_fetch_<atomic_op_name><mode>")
+	("atomic_compare_and_swap<mode>"): Gate expand_mem_thread_fence
+	calls on result of call to need_atomic_barrier_p.
+
 2012-07-15  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/mips.md (move_type): Replace mfhilo and mthilo
