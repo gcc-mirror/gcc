@@ -1,5 +1,12 @@
 2012-07-16  Steven Bosscher  <steven@gcc.gnu.org>
 
+	* flags.h (TYPE_OVERFLOW_WRAPS, TYPE_OVERFLOW_UNDEFINED,
+	TYPE_OVERFLOW_TRAPS, POINTER_TYPE_OVERFLOW_UNDEFINED): Move to tree.h.
+	* tree.h (TYPE_OVERFLOW_WRAPS, TYPE_OVERFLOW_UNDEFINED,
+	TYPE_OVERFLOW_TRAPS, POINTER_TYPE_OVERFLOW_UNDEFINED): New home.
+
+2012-07-16  Steven Bosscher  <steven@gcc.gnu.org>
+
 	* system.h (dump_file): Do not define.
 	* tree-pass.h: Include dumpfile.h, which is a new file containing...
 	(enum tree_dump_index, TDF_*, get_dump_file_name, dump_enabled_p,
