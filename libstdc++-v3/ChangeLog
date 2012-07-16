@@ -1,5 +1,19 @@
 2012-07-16  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	PR libstdc++/53270
+	* include/ext/concurrence.h: Use NSDMI for gthreads types.
+	* include/ext/rope: Likewise. Destroy mutexes in destructors. Add
+	system_header pragma.
+
+	Revert:
+	2012-06-19  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/53270
+	* config/os/gnu-linux/os_defines.h: Disable static initializer macros
+	for gthreads types in C++11 mode.
+
+2012-07-16  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	PR libstdc++/53978
 	* include/bits/alloc_traits.h (allocator_traits): Define static
 	constants.

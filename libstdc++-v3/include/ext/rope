@@ -1,7 +1,7 @@
 // SGI's rope class -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
-// Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
+// 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -43,6 +43,8 @@
 
 #ifndef _ROPE
 #define _ROPE 1
+
+#pragma GCC system_header
 
 #include <algorithm>
 #include <iosfwd>
@@ -458,19 +460,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     volatile _RC_t _M_ref_count;
 
     // Constructor
-    __gthread_mutex_t _M_ref_count_lock;
-
-    _Refcount_Base(_RC_t __n) : _M_ref_count(__n), _M_ref_count_lock()
-    {
 #ifdef __GTHREAD_MUTEX_INIT
-      __gthread_mutex_t __tmp = __GTHREAD_MUTEX_INIT;
-      _M_ref_count_lock = __tmp;
-#elif defined(__GTHREAD_MUTEX_INIT_FUNCTION)
+    __gthread_mutex_t _M_ref_count_lock = __GTHREAD_MUTEX_INIT;
+#else
+    __gthread_mutex_t _M_ref_count_lock;
+#endif
+
+    _Refcount_Base(_RC_t __n) : _M_ref_count(__n)
+    {
+#ifndef __GTHREAD_MUTEX_INIT
+#ifdef __GTHREAD_MUTEX_INIT_FUNCTION
       __GTHREAD_MUTEX_INIT_FUNCTION (&_M_ref_count_lock);
 #else
 #error __GTHREAD_MUTEX_INIT or __GTHREAD_MUTEX_INIT_FUNCTION should be defined by gthr.h abstraction layer, report problem to libstdc++@gcc.gnu.org.
 #endif
+#endif
     }
+
+#ifndef __GTHREAD_MUTEX_INIT
+    ~_Refcount_Base()
+    { __gthread_mutex_destroy(&_M_ref_count_lock); }
+#endif
 
     void
     _M_incr()
@@ -581,7 +591,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bool _M_is_balanced:8;
       unsigned char _M_depth;
       __GC_CONST _CharT* _M_c_string;
+#ifdef __GTHREAD_MUTEX_INIT
+      __gthread_mutex_t _M_c_string_lock = __GTHREAD_MUTEX_INIT;
+#else
       __gthread_mutex_t _M_c_string_lock;
+#endif
                         /* Flattened version of string, if needed.  */
                         /* typically 0.                             */
                         /* If it's not 0, then the memory is owned  */
@@ -602,13 +616,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 	_M_tag(__t), _M_is_balanced(__b), _M_depth(__d), _M_c_string(0)
 #ifdef __GTHREAD_MUTEX_INIT
-    {
-      // Do not copy a POSIX/gthr mutex once in use.  However, bits are bits.
-      __gthread_mutex_t __tmp = __GTHREAD_MUTEX_INIT;
-      _M_c_string_lock = __tmp;
-    }
+      { }
 #else
-    { __GTHREAD_MUTEX_INIT_FUNCTION (&_M_c_string_lock); }
+      { __GTHREAD_MUTEX_INIT_FUNCTION (&_M_c_string_lock); }
+      ~_Rope_RopeRep()
+      { __gthread_mutex_destroy (&_M_c_string_lock); }
 #endif
 #ifdef __GC
       void
