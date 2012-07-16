@@ -1,3 +1,41 @@
+2012-07-16  Robert Dewar  <dewar@adacore.com>
+
+	* a-direct.adb, g-dirope.adb: Minor reformatting.
+
+2012-07-16  Tristan Gingold  <gingold@adacore.com>
+
+	* a-except.ads, a-except-2005.ads: Remove outdated comment.
+
+2012-07-16  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch6.adb (Subprogram_Name_Greater): Fix algorithm to
+	conform to documentation.
+
+2012-07-16  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat1drv.adb (Check_Library_Items): Removed, no longer used.
+
+2012-07-16  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Array_Type_Declaration): if component type has
+	invariants, the array type itself requires an invariant procedure.
+	* exp_ch3.ads, exp_ch3.adb (Build_Array_Invariant_Proc): new
+	procedure, to build a checking procedure that applies the
+	invariant check on some type T to each component of an array
+	of T's.  Code is similar to the construction of the init_proc
+	for an array, and handles multidimensional arrays by recursing
+	over successive dimensions.
+
+2012-07-16  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* g-debpoo.adb: Revert previous change.
+
+2012-07-16  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* freeze.adb (Freeze_Entity): Insert the itype reference to a
+	library-level class-wide subtype after the freeze node of the
+	equivalent record type.
+
 2012-07-16  Pascal Obry  <obry@adacore.com>
 
 	* s-crtl.ads (mkdir): New routine, support encoding.

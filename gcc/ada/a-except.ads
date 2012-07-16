@@ -271,9 +271,6 @@ private
    type Exception_Occurrence is record
       Id : Exception_Id;
       --  Exception_Identity for this exception occurrence
-      --  WARNING System.System.Finalization_Implementation.Finalize_List
-      --  relies on the fact that this field is always first in the exception
-      --  occurrence
 
       Msg_Length : Natural := 0;
       --  Length of message (zero = no message)

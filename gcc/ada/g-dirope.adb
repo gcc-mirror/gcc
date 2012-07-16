@@ -604,7 +604,6 @@ package body GNAT.Directory_Operations is
 
    procedure Make_Dir (Dir_Name : Dir_Name_Str) is
       C_Dir_Name : constant String := Dir_Name & ASCII.NUL;
-
    begin
       if CRTL.mkdir (C_Dir_Name, Unspecified) /= 0 then
          raise Directory_Error;

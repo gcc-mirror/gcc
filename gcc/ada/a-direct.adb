@@ -408,25 +408,22 @@ package body Ada.Directories is
          --  Acquire setting of encoding parameter
 
          declare
-            Formstr  : constant String := To_Lower (Form);
+            Formstr : constant String := To_Lower (Form);
 
             Encoding : CRTL.Filename_Encoding;
             --  Filename encoding specified into the form parameter
 
-            V1, V2   : Natural;
+            V1, V2 : Natural;
 
          begin
             Form_Parameter (Formstr, "encoding", V1, V2);
 
             if V1 = 0 then
                Encoding := CRTL.Unspecified;
-
             elsif Formstr (V1 .. V2) = "utf8" then
                Encoding := CRTL.UTF8;
-
             elsif Formstr (V1 .. V2) = "8bits" then
                Encoding := CRTL.ASCII_8bits;
-
             else
                raise Use_Error with "invalid Form";
             end if;

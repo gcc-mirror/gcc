@@ -3860,11 +3860,19 @@ package body Freeze is
                return Result;
             end if;
 
-            --  If the Class_Wide_Type is an Itype (when type is the anonymous
-            --  parent of a derived type) and it is a library-level entity,
-            --  generate an itype reference for it. Otherwise, its first
-            --  explicit reference may be in an inner scope, which will be
-            --  rejected by the back-end.
+            --  The equivalent type associated with a class-wide subtype needs
+            --  to be frozen to ensure that its layout is done.
+
+            if Ekind (E) = E_Class_Wide_Subtype
+              and then Present (Equivalent_Type (E))
+            then
+               Freeze_And_Append (Equivalent_Type (E), N, Result);
+            end if;
+
+            --  Generate an itype reference for a library-level class-wide type
+            --  at the freeze point. Otherwise the first explicit reference to
+            --  the type may appear in an inner scope which will be rejected by
+            --  the back-end.
 
             if Is_Itype (E)
               and then Is_Compilation_Unit (Scope (E))
@@ -3874,17 +3882,20 @@ package body Freeze is
 
                begin
                   Set_Itype (Ref, E);
-                  Add_To_Result (Ref);
+
+                  --  From a gigi point of view, a class-wide subtype derives
+                  --  from its record equivalent type. As a result, the itype
+                  --  reference must appear after the freeze node of the
+                  --  equivalent type or gigi will reject the reference.
+
+                  if Ekind (E) = E_Class_Wide_Subtype
+                    and then Present (Equivalent_Type (E))
+                  then
+                     Insert_After (Freeze_Node (Equivalent_Type (E)), Ref);
+                  else
+                     Add_To_Result (Ref);
+                  end if;
                end;
-            end if;
-
-            --  The equivalent type associated with a class-wide subtype needs
-            --  to be frozen to ensure that its layout is done.
-
-            if Ekind (E) = E_Class_Wide_Subtype
-              and then Present (Equivalent_Type (E))
-            then
-               Freeze_And_Append (Equivalent_Type (E), N, Result);
             end if;
 
          --  For a record (sub)type, freeze all the component types (RM
