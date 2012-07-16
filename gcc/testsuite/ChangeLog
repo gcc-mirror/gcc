@@ -1,3 +1,10 @@
+2012-07-16  Andrew Pinski  <apinski@cavium.com>
+
+	* gcc.c-torture/execute/bswap-1.c: New testcase.
+	* gcc.c-torture/compile/unalign-1.c: New testcase.
+	* gcc.c-torture/compile/20120524-1.c: New testcase.
+	* gcc.c-torture/compile/20101216-1.c: New testcase.
+
 2012-07-16  Dehao Chen  <dehao@google.com>
 
 	Revert
