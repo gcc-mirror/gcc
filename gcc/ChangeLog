@@ -1,6 +1,10 @@
 2012-07-16  Hans-Peter Nilsson  <hp@axis.com>
 
-	* config/cris/sync.md ("atomic_fetch_<atomic_op_name><mode>")
+	* config/cris/sync.md ("atomic_compare_and_swap<mode>"): Change
+	predicate to nonmemory_operand for operand 3.  Add FIXME.
+	("cris_atomic_compare_and_swap<mode>_1"): Change predicates and
+	constraints for operand 3 to exclude memory.
+	("atomic_fetch_<atomic_op_name><mode>")
 	("atomic_compare_and_swap<mode>"): Gate expand_mem_thread_fence
 	calls on result of call to need_atomic_barrier_p.
 
