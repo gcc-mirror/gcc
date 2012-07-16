@@ -1,3 +1,9 @@
+2012-07-16  Thomas König  <tkoenig@gcc.gnu.org>
+
+	PR fortran/53824
+	* resolve.c (resolve_allocate_deallocate):  If both
+	start indices are NULL, skip the test for equality.
+
 2012-07-16  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* f95-lang.c: Include dumpfile.h instead of tree-dump.h.
