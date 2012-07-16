@@ -1,5 +1,8 @@
 2012-07-16  Hans-Peter Nilsson  <hp@axis.com>
 
+	* config/cris/cris.c (cris_preferred_reload_class):
+	Don't return GENERAL_REGS as preferred to MOF_SRP_REGS.
+
 	* config/cris/cris.c (cris_init_libfuncs): Handle initialization
 	of library functions for basic atomic compare-and-swap.
 	* config/cris/cris.h (TARGET_ATOMICS_MAY_CALL_LIBFUNCS): New macro.
