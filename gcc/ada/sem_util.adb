@@ -6312,11 +6312,11 @@ package body Sem_Util is
    function In_Reverse_Storage_Order_Object (N : Node_Id) return Boolean is
       Pref : Node_Id;
       Btyp : Entity_Id := Empty;
-   begin
-      Pref := N;
 
+   begin
       --  Climb up indexed components
 
+      Pref := N;
       loop
          case Nkind (Pref) is
             when N_Selected_Component =>
@@ -6336,9 +6336,10 @@ package body Sem_Util is
          Btyp := Base_Type (Etype (Pref));
       end if;
 
-      return Present (Btyp)
-               and then (Is_Record_Type (Btyp) or else Is_Array_Type (Btyp))
-               and then Reverse_Storage_Order (Btyp);
+      return
+        Present (Btyp)
+          and then (Is_Record_Type (Btyp) or else Is_Array_Type (Btyp))
+          and then Reverse_Storage_Order (Btyp);
    end In_Reverse_Storage_Order_Object;
 
    --------------------------------------
