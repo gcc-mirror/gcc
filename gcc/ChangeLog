@@ -1,5 +1,12 @@
 2012-07-16  Steven Bosscher  <steven@gcc.gnu.org>
 
+	* graphite-clast-to-gimple.c, graphite-dependences.c,
+	graphite-sese-to-poly.c: Include tree-pass.h instead of dumpfile.h
+	for pass TODO flags.
+	* Makefile.in: Fix dependencies.
+
+2012-07-16  Steven Bosscher  <steven@gcc.gnu.org>
+
 	* haifa-sched.c (init_before_recovery): Do not set EDGE_CAN_FALLTHRU.
 	* cfgrtl.c (force_nonfallthru_and_redirect): Likewise.
 
