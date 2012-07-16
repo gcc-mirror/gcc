@@ -1,6 +1,6 @@
 // Allocator traits -*- C++ -*-
 
-// Copyright (C) 2011 Free Software Foundation, Inc.
+// Copyright (C) 2011-2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -55,6 +55,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       static const bool __value = _S_chk<_Alloc, _Tp>(nullptr);
     };
+
+  template<typename _Alloc, typename _Tp>
+    const bool __alloctr_rebind_helper<_Alloc, _Tp>::__value;
 
   template<typename _Alloc, typename _Tp,
            bool = __alloctr_rebind_helper<_Alloc, _Tp>::__value>
@@ -421,6 +424,27 @@ _GLIBCXX_ALLOC_TR_NESTED_TYPE(propagate_on_container_swap,
       select_on_container_copy_construction(const _Alloc& __rhs)
       { return _S_select(__rhs); }
     };
+
+  template<typename _Alloc>
+  template<typename _Alloc2>
+    const bool allocator_traits<_Alloc>::__allocate_helper<_Alloc2>::value;
+
+  template<typename _Alloc>
+  template<typename _Tp, typename... _Args>
+    const bool
+    allocator_traits<_Alloc>::__construct_helper<_Tp, _Args...>::value;
+
+  template<typename _Alloc>
+  template<typename _Tp>
+    const bool allocator_traits<_Alloc>::__destroy_helper<_Tp>::value;
+
+  template<typename _Alloc>
+  template<typename _Alloc2>
+    const bool allocator_traits<_Alloc>::__maxsize_helper<_Alloc2>::value;
+
+  template<typename _Alloc>
+  template<typename _Alloc2>
+    const bool allocator_traits<_Alloc>::__select_helper<_Alloc2>::value;
 
   template<typename _Alloc>
     inline void

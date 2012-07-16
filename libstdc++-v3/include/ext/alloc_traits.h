@@ -1,6 +1,6 @@
 // Allocator traits -*- C++ -*-
 
-// Copyright (C) 2011 Free Software Foundation, Inc.
+// Copyright (C) 2011-2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -49,13 +49,19 @@ namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-template<typename _Alloc>
-  struct __allocator_always_compares_equal
-  { static const bool value = false; };
+  template<typename _Alloc>
+    struct __allocator_always_compares_equal
+    { static const bool value = false; };
+
+  template<typename _Alloc>
+    const bool __allocator_always_compares_equal<_Alloc>::value;
 
   template<typename _Tp>
     struct __allocator_always_compares_equal<std::allocator<_Tp>>
     { static const bool value = true; };
+
+  template<typename _Tp>
+    const bool __allocator_always_compares_equal<std::allocator<_Tp>>::value;
 
   template<typename, typename> struct array_allocator;
 
@@ -63,11 +69,18 @@ template<typename _Alloc>
     struct __allocator_always_compares_equal<array_allocator<_Tp, _Array>>
     { static const bool value = true; };
 
+  template<typename _Tp, typename _Array>
+    const bool
+    __allocator_always_compares_equal<array_allocator<_Tp, _Array>>::value;
+
   template<typename> struct mt_allocator;
 
   template<typename _Tp>
     struct __allocator_always_compares_equal<mt_allocator<_Tp>>
     { static const bool value = true; };
+
+  template<typename _Tp>
+    const bool __allocator_always_compares_equal<mt_allocator<_Tp>>::value;
 
   template<typename> struct new_allocator;
 
@@ -75,11 +88,17 @@ template<typename _Alloc>
     struct __allocator_always_compares_equal<new_allocator<_Tp>>
     { static const bool value = true; };
 
+  template<typename _Tp>
+    const bool __allocator_always_compares_equal<new_allocator<_Tp>>::value;
+
   template<typename> struct pool_allocator;
 
   template<typename _Tp>
     struct __allocator_always_compares_equal<pool_allocator<_Tp>>
     { static const bool value = true; };
+
+  template<typename _Tp>
+    const bool __allocator_always_compares_equal<pool_allocator<_Tp>>::value;
 #endif
 
 /**
