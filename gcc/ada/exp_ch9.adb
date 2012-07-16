@@ -3165,7 +3165,6 @@ package body Exp_Ch9 is
                   end if;
 
                   --  Generate:
-
                   --    if System.Atomic_Primitives.Lock_Free_Try_Write_N
                   --         (_Object.Comp'Address,
                   --          Interfaces.Unsigned_N (Expected_Comp),
@@ -3177,7 +3176,7 @@ package body Exp_Ch9 is
                   --    end if;
 
                   Rewrite (Stmt,
-                    Make_If_Statement (Loc,
+                    Make_Implicit_If_Statement (N,
                       Condition =>
                         Make_Function_Call (Loc,
                           Name                   =>
@@ -3294,7 +3293,6 @@ package body Exp_Ch9 is
             end case;
 
             --  Generate:
-
             --  Expected_Comp : constant Comp_Type :=
             --                    Comp_Type
             --                      (System.Atomic_Primitives.Lock_Free_Read_N
@@ -3381,7 +3379,6 @@ package body Exp_Ch9 is
             Process_Stmts (Stmts);
 
             --  Generate:
-
             --    exit when System.Atomic_Primitives.Lock_Free_Try_Write_N
             --                (_Object.Comp'Address,
             --                 Interfaces.Unsigned_N (Expected_Comp),
@@ -3428,7 +3425,6 @@ package body Exp_Ch9 is
             end if;
 
             --  Generate:
-
             --    loop
             --       declare
             --          <Decls>
@@ -4788,7 +4784,7 @@ package body Exp_Ch9 is
 
          Rewrite (N,
            Make_Block_Statement (Loc,
-             Declarations => Decls,
+             Declarations               => Decls,
              Handled_Statement_Sequence =>
                Make_Handled_Sequence_Of_Statements (Loc,
                  Statements => Stats)));
@@ -4838,7 +4834,7 @@ package body Exp_Ch9 is
              Name => Name,
              Parameter_Associations =>
                New_List (Make_Attribute_Reference (Loc,
-                 Prefix => New_Occurrence_Of (Chain, Loc),
+                 Prefix         => New_Occurrence_Of (Chain, Loc),
                  Attribute_Name => Name_Unchecked_Access)));
 
          if Nkind (N) = N_Package_Declaration then
@@ -4954,7 +4950,7 @@ package body Exp_Ch9 is
                   Name => New_Reference_To (RTE (RE_Activate_Tasks), Loc),
                   Parameter_Associations => New_List (
                     Make_Attribute_Reference (Loc,
-                      Prefix => New_Reference_To (Chain, Loc),
+                      Prefix         => New_Reference_To (Chain, Loc),
                       Attribute_Name => Name_Unchecked_Access))))),
 
           Has_Created_Identifier => True,
@@ -4991,7 +4987,7 @@ package body Exp_Ch9 is
           Name => New_Reference_To (RTE (RE_Activate_Tasks), Loc),
           Parameter_Associations => New_List (
             Make_Attribute_Reference (Loc,
-              Prefix => New_Reference_To (Chain, Loc),
+              Prefix         => New_Reference_To (Chain, Loc),
               Attribute_Name => Name_Unchecked_Access))));
 
       Block :=
@@ -5229,8 +5225,8 @@ package body Exp_Ch9 is
       Formal   : Entity_Id;
 
    begin
-      --  If the result type is an access_to_subprogram, we must create
-      --  new entities for its spec.
+      --  If the result type is an access_to_subprogram, we must create new
+      --  entities for its spec.
 
       if Nkind (New_Res) = N_Access_Definition
         and then Present (Access_To_Subprogram_Definition (New_Res))
@@ -5354,9 +5350,7 @@ package body Exp_Ch9 is
                  Make_Explicit_Dereference (Loc, N)),
              Selector_Name => Make_Identifier (Loc, Sel));
 
-      elsif Is_Entity_Name (N)
-        and then Is_Concurrent_Type (Entity (N))
-      then
+      elsif Is_Entity_Name (N) and then Is_Concurrent_Type (Entity (N)) then
          if Is_Task_Type (Entity (N)) then
 
             if Is_Current_Task (Entity (N)) then
@@ -5442,9 +5436,7 @@ package body Exp_Ch9 is
 
    begin
       Decl := First (Decls);
-      while Present (Decl)
-        and then not Comes_From_Source (Decl)
-      loop
+      while Present (Decl) and then not Comes_From_Source (Decl) loop
          --  Declaration for concurrent entity _object and its access type,
          --  along with the entry index subtype:
          --    type prot_typVP is access prot_typV;
@@ -5536,8 +5528,8 @@ package body Exp_Ch9 is
                  Sloc,
                  Make_Attribute_Reference (Sloc,
                    Attribute_Name => Name_Pos,
-                   Prefix => New_Reference_To (Base_Type (S), Sloc),
-                   Expressions => New_List (Relocate_Node (Index))),
+                   Prefix         => New_Reference_To (Base_Type (S), Sloc),
+                   Expressions    => New_List (Relocate_Node (Index))),
                  Type_Low_Bound (S),
                  Ttyp,
                  False));
@@ -5659,7 +5651,6 @@ package body Exp_Ch9 is
       Stats  : constant Node_Id    := Handled_Statement_Sequence (N);
       Ann    : Entity_Id           := Empty;
       Adecl  : Node_Id;
-      Lab_Id : Node_Id;
       Lab    : Node_Id;
       Ldecl  : Node_Id;
       Ldecl2 : Node_Id;
@@ -5692,8 +5683,7 @@ package body Exp_Ch9 is
 
             begin
                Ent := Make_Temporary (Loc, 'L');
-               Lab_Id := New_Reference_To (Ent, Loc);
-               Lab := Make_Label (Loc, Lab_Id);
+               Lab := Make_Label (Loc, New_Reference_To (Ent, Loc));
                Ldecl :=
                  Make_Implicit_Label_Declaration (Loc,
                    Defining_Identifier  => Ent,
@@ -5701,8 +5691,7 @@ package body Exp_Ch9 is
                Append (Lab, Statements (Handled_Statement_Sequence (N)));
 
                Ent := Make_Temporary (Loc, 'L');
-               Lab_Id := New_Reference_To (Ent, Loc);
-               Lab := Make_Label (Loc, Lab_Id);
+               Lab := Make_Label (Loc, New_Reference_To (Ent, Loc));
                Ldecl2 :=
                  Make_Implicit_Label_Declaration (Loc,
                    Defining_Identifier  => Ent,
@@ -5711,7 +5700,7 @@ package body Exp_Ch9 is
             end;
 
          else
-            Ldecl := Empty;
+            Ldecl  := Empty;
             Ldecl2 := Empty;
          end if;
 
@@ -5725,17 +5714,12 @@ package body Exp_Ch9 is
                Adecl :=
                  Make_Object_Declaration (Loc,
                    Defining_Identifier => Ann,
-                   Object_Definition =>
+                   Object_Definition   =>
                      New_Reference_To (RTE (RE_Address), Loc));
 
-               Insert_Before (N, Adecl);
-               Analyze (Adecl);
-
-               Insert_Before (N, Ldecl);
-               Analyze (Ldecl);
-
-               Insert_Before (N, Ldecl2);
-               Analyze (Ldecl2);
+               Insert_Before_And_Analyze (N, Adecl);
+               Insert_Before_And_Analyze (N, Ldecl);
+               Insert_Before_And_Analyze (N, Ldecl2);
             end if;
 
          --  Case of accept statement which is in an accept alternative
@@ -5781,11 +5765,10 @@ package body Exp_Ch9 is
                   Adecl :=
                     Make_Object_Declaration (Loc,
                       Defining_Identifier => Ann,
-                      Object_Definition =>
+                      Object_Definition   =>
                         New_Reference_To (RTE (RE_Address), Loc));
 
-                  Insert_Before (Sel_Acc, Adecl);
-                  Analyze (Adecl);
+                  Insert_Before_And_Analyze (Sel_Acc, Adecl);
 
                --  If we are not the first accept statement, then find the Ann
                --  variable allocated by the first accept and use it.
@@ -5830,8 +5813,7 @@ package body Exp_Ch9 is
 
                while Present (Formal) loop
                   Comp  := Entry_Component (Formal);
-                  New_F :=
-                    Make_Defining_Identifier (Loc, Chars (Formal));
+                  New_F := Make_Defining_Identifier (Loc, Chars (Formal));
 
                   Set_Etype (New_F, Etype (Formal));
                   Set_Scope (New_F, Ent);
@@ -5915,10 +5897,9 @@ package body Exp_Ch9 is
       Decl1 :=
         Make_Full_Type_Declaration (Loc,
           Defining_Identifier => D_T2,
-          Type_Definition => Def1);
+          Type_Definition     => Def1);
 
-      Insert_After (N, Decl1);
-      Analyze (Decl1);
+      Insert_After_And_Analyze (N, Decl1);
 
       --  Associate the access to subprogram with its original access to
       --  protected subprogram type. Needed by the backend to know that this
@@ -5934,7 +5915,7 @@ package body Exp_Ch9 is
           Defining_Identifier  => Make_Temporary (Loc, 'P'),
           Component_Definition =>
             Make_Component_Definition (Loc,
-              Aliased_Present => False,
+              Aliased_Present    => False,
               Subtype_Indication =>
                 New_Occurrence_Of (RTE (RE_Address), Loc))),
 
@@ -5953,8 +5934,7 @@ package body Exp_Ch9 is
               Component_List =>
                 Make_Component_List (Loc, Component_Items => Comps)));
 
-      Insert_After (Decl1, Decl2);
-      Analyze (Decl2);
+      Insert_After_And_Analyze (Decl1, Decl2);
       Set_Equivalent_Type (T, E_T);
    end Expand_Access_Protected_Subprogram_Type;
 
@@ -6024,9 +6004,7 @@ package body Exp_Ch9 is
          --  condition does not reference any of the generated renamings
          --  within the function.
 
-         if Full_Expander_Active
-           and then Scope (Entity (Cond)) /= Func
-         then
+         if Full_Expander_Active and then Scope (Entity (Cond)) /= Func then
             Set_Declarations (B_F, Empty_List);
          end if;
 
@@ -6094,8 +6072,7 @@ package body Exp_Ch9 is
          then
             Append_To (Component_Associations (Aggr),
               Make_Component_Association (Loc,
-                Choices => New_List (
-                  Make_Integer_Literal (Loc, Count)),
+                Choices    => New_List (Make_Integer_Literal (Loc, Count)),
                 Expression =>
 
                   --  Task_Id (Tasknm._disp_get_task_id)
@@ -6103,7 +6080,7 @@ package body Exp_Ch9 is
                   Make_Unchecked_Type_Conversion (Loc,
                     Subtype_Mark =>
                       New_Reference_To (RTE (RO_ST_Task_Id), Loc),
-                    Expression =>
+                    Expression   =>
                       Make_Selected_Component (Loc,
                         Prefix        => New_Copy_Tree (Tasknm),
                         Selector_Name =>
@@ -6112,8 +6089,7 @@ package body Exp_Ch9 is
          else
             Append_To (Component_Associations (Aggr),
               Make_Component_Association (Loc,
-                Choices => New_List (
-                  Make_Integer_Literal (Loc, Count)),
+                Choices    => New_List (Make_Integer_Literal (Loc, Count)),
                 Expression => Concurrent_Ref (Tasknm)));
          end if;
 
@@ -6126,7 +6102,7 @@ package body Exp_Ch9 is
           Parameter_Associations => New_List (
             Make_Qualified_Expression (Loc,
               Subtype_Mark => New_Reference_To (RTE (RE_Task_List), Loc),
-              Expression => Aggr))));
+              Expression   => Aggr))));
 
       Analyze (N);
    end Expand_N_Abort_Statement;
@@ -6204,11 +6180,9 @@ package body Exp_Ch9 is
       Call    : Node_Id;
       Block   : Node_Id;
 
-   --  Start of processing for Expand_N_Accept_Statement
-
    begin
-      --  If accept statement is not part of a list, then its parent must be
-      --  an accept alternative, and, as described above, we do not do any
+      --  If the accept statement is not part of a list, then its parent must
+      --  be an accept alternative, and, as described above, we do not do any
       --  expansion for such accept statements at this level.
 
       if not Is_List_Member (N) then
@@ -6300,9 +6274,7 @@ package body Exp_Ch9 is
          if Parent (Stats) = N then
             Prepend (Call, Statements (Stats));
          else
-            Set_Declarations
-              (Parent (Stats),
-                New_List (Call));
+            Set_Declarations (Parent (Stats), New_List (Call));
          end if;
 
          Analyze (Call);
@@ -6797,10 +6769,8 @@ package body Exp_Ch9 is
                     New_Copy_Tree (Obj),             --  <object>
                     New_Reference_To (S, Loc),       --  S
                     Make_Attribute_Reference (Loc,   --  P'Address
-                      Prefix =>
-                        New_Reference_To (P, Loc),
-                      Attribute_Name =>
-                        Name_Address),
+                      Prefix         => New_Reference_To (P, Loc),
+                      Attribute_Name => Name_Address),
                     Make_Identifier (Loc, Name_uD),  --  D
                     New_Reference_To (B, Loc))));    --  B
 
@@ -6810,14 +6780,13 @@ package body Exp_Ch9 is
             --    end if;
 
             Append_To (Cleanup_Stmts,
-              Make_If_Statement (Loc,
+              Make_Implicit_If_Statement (N,
                 Condition =>
                   Make_Function_Call (Loc,
                     Name =>
                       New_Reference_To (RTE (RE_Enqueued), Loc),
                     Parameter_Associations =>
-                      New_List (
-                        New_Reference_To (Bnn, Loc))),
+                      New_List (New_Reference_To (Bnn, Loc))),
 
                 Then_Statements =>
                   New_Copy_List_Tree (Astats)));
@@ -6856,8 +6825,7 @@ package body Exp_Ch9 is
             ProtE_Stmts :=
               New_List (
                 Make_Implicit_Label_Declaration (Loc,
-                  Defining_Identifier =>
-                    Abort_Block_Ent),
+                  Defining_Identifier => Abort_Block_Ent),
 
                 Build_Abort_Block
                   (Loc, Abort_Block_Ent, Cleanup_Block_Ent, Cleanup_Block));
@@ -6868,7 +6836,7 @@ package body Exp_Ch9 is
             --    end if;
 
             Append_To (ProtE_Stmts,
-              Make_If_Statement (Loc,
+              Make_Implicit_If_Statement (N,
                 Condition =>
                   Make_Op_Not (Loc,
                     Right_Opnd =>
@@ -6876,8 +6844,7 @@ package body Exp_Ch9 is
                         Name =>
                           New_Reference_To (RTE (RE_Cancelled), Loc),
                         Parameter_Associations =>
-                          New_List (
-                            New_Reference_To (Bnn, Loc)))),
+                          New_List (New_Reference_To (Bnn, Loc)))),
 
                 Then_Statements =>
                   New_Copy_List_Tree (Tstats)));
@@ -6916,15 +6883,14 @@ package body Exp_Ch9 is
                     Find_Prim_Op (Etype (Etype (Obj)),
                       Name_uDisp_Asynchronous_Select),
                     Loc),
+
                 Parameter_Associations =>
                   New_List (
                     New_Copy_Tree (Obj),             --  <object>
                     New_Reference_To (S, Loc),       --  S
                     Make_Attribute_Reference (Loc,   --  P'Address
-                      Prefix =>
-                        New_Reference_To (P, Loc),
-                      Attribute_Name =>
-                        Name_Address),
+                      Prefix         => New_Reference_To (P, Loc),
+                      Attribute_Name => Name_Address),
                     Make_Identifier (Loc, Name_uD),  --  D
                     New_Reference_To (B, Loc))));    --  B
 
@@ -6933,10 +6899,8 @@ package body Exp_Ch9 is
 
             Prepend_To (TaskE_Stmts,
               Make_Procedure_Call_Statement (Loc,
-                Name =>
-                  New_Reference_To (RTE (RE_Abort_Defer), Loc),
-                Parameter_Associations =>
-                  No_List));
+                Name => New_Reference_To (RTE (RE_Abort_Defer), Loc),
+                Parameter_Associations => No_List));
 
             --  Generate:
             --    Abort_Undefer;
@@ -6946,10 +6910,8 @@ package body Exp_Ch9 is
 
             Prepend_To (Cleanup_Stmts,
               Make_Procedure_Call_Statement (Loc,
-                Name =>
-                  New_Reference_To (RTE (RE_Abort_Undefer), Loc),
-                Parameter_Associations =>
-                  No_List));
+                Name => New_Reference_To (RTE (RE_Abort_Undefer), Loc),
+                Parameter_Associations => No_List));
 
             --  Wrap the statements in a block. Exp_Ch7.Expand_Cleanup_Actions
             --  will generate a _clean for the additional status flag.
@@ -6995,11 +6957,9 @@ package body Exp_Ch9 is
             --    end if;
 
             Append_To (TaskE_Stmts,
-              Make_If_Statement (Loc,
+              Make_Implicit_If_Statement (N,
                 Condition =>
-                  Make_Op_Not (Loc,
-                    Right_Opnd =>
-                      New_Reference_To (T, Loc)),
+                  Make_Op_Not (Loc, Right_Opnd => New_Reference_To (T, Loc)),
 
                 Then_Statements =>
                   New_Copy_List_Tree (Tstats)));
@@ -7048,10 +7008,10 @@ package body Exp_Ch9 is
             --    end if;
 
             Append_To (Conc_Typ_Stmts,
-              Make_If_Statement (Loc,
+              Make_Implicit_If_Statement (N,
                 Condition =>
                   Make_Op_Eq (Loc,
-                    Left_Opnd =>
+                    Left_Opnd  =>
                       New_Reference_To (C, Loc),
                     Right_Opnd =>
                       New_Reference_To (RTE (RE_POK_Protected_Entry), Loc)),
@@ -7064,7 +7024,7 @@ package body Exp_Ch9 is
                     Make_Elsif_Part (Loc,
                       Condition =>
                         Make_Op_Eq (Loc,
-                          Left_Opnd =>
+                          Left_Opnd  =>
                             New_Reference_To (C, Loc),
                           Right_Opnd =>
                             New_Reference_To (RTE (RE_POK_Task_Entry), Loc)),
@@ -7090,10 +7050,10 @@ package body Exp_Ch9 is
             --    end if;
 
             Append_To (Stmts,
-              Make_If_Statement (Loc,
+              Make_Implicit_If_Statement (N,
                 Condition =>
                    Make_Op_Eq (Loc,
-                     Left_Opnd =>
+                     Left_Opnd  =>
                        New_Reference_To (K, Loc),
                      Right_Opnd =>
                        New_Reference_To (RTE (RE_TK_Limited_Tagged), Loc)),
@@ -7138,7 +7098,7 @@ package body Exp_Ch9 is
 
             Append_To (Parameter_Associations (Ecall),
               Make_Attribute_Reference (Loc,
-                Prefix => New_Reference_To (Dblock_Ent, Loc),
+                Prefix         => New_Reference_To (Dblock_Ent, Loc),
                 Attribute_Name => Name_Unchecked_Access));
 
             --  Create the inner block to protect the abortable part
@@ -7162,9 +7122,10 @@ package body Exp_Ch9 is
 
             Rewrite (Ecall,
               Make_Implicit_If_Statement (N,
-                Condition => Make_Function_Call (Loc,
-                  Name => Enqueue_Call,
-                  Parameter_Associations => Parameter_Associations (Ecall)),
+                Condition =>
+                  Make_Function_Call (Loc,
+                    Name => Enqueue_Call,
+                    Parameter_Associations => Parameter_Associations (Ecall)),
                 Then_Statements =>
                   New_List (Make_Block_Statement (Loc,
                     Handled_Statement_Sequence =>
@@ -7182,13 +7143,14 @@ package body Exp_Ch9 is
 
             Append_To (Stmts,
               Make_Implicit_If_Statement (N,
-                Condition => Make_Function_Call (Loc,
-                  Name => New_Reference_To (
-                    RTE (RE_Timed_Out), Loc),
-                  Parameter_Associations => New_List (
-                    Make_Attribute_Reference (Loc,
-                      Prefix => New_Reference_To (Dblock_Ent, Loc),
-                      Attribute_Name => Name_Unchecked_Access))),
+                Condition =>
+                  Make_Function_Call (Loc,
+                    Name => New_Reference_To (
+                      RTE (RE_Timed_Out), Loc),
+                    Parameter_Associations => New_List (
+                      Make_Attribute_Reference (Loc,
+                        Prefix         => New_Reference_To (Dblock_Ent, Loc),
+                        Attribute_Name => Name_Unchecked_Access))),
                 Then_Statements => Tstats));
 
             --  The result is the new block
@@ -7200,8 +7162,8 @@ package body Exp_Ch9 is
                 Declarations => New_List (
                   Make_Object_Declaration (Loc,
                     Defining_Identifier => Dblock_Ent,
-                    Aliased_Present => True,
-                    Object_Definition => New_Reference_To (
+                    Aliased_Present     => True,
+                    Object_Definition   => New_Reference_To (
                       RTE (RE_Delay_Block), Loc))),
 
                 Handled_Statement_Sequence =>
@@ -7278,18 +7240,18 @@ package body Exp_Ch9 is
 
          Append_To (Stmts,
            Make_Implicit_If_Statement (N,
-             Condition => Make_Function_Call (Loc,
-               Name => New_Reference_To (RTE (RE_Enqueued), Loc),
-               Parameter_Associations => New_List (
-                 New_Reference_To (Cancel_Param, Loc))),
+             Condition =>
+               Make_Function_Call (Loc,
+                 Name => New_Reference_To (RTE (RE_Enqueued), Loc),
+                 Parameter_Associations => New_List (
+                   New_Reference_To (Cancel_Param, Loc))),
              Then_Statements => Astats));
 
          Abortable_Block :=
            Make_Block_Statement (Loc,
              Identifier => New_Reference_To (Blk_Ent, Loc),
              Handled_Statement_Sequence =>
-               Make_Handled_Sequence_Of_Statements (Loc,
-                 Statements => Stmts),
+               Make_Handled_Sequence_Of_Statements (Loc, Statements => Stmts),
              Has_Created_Identifier => True,
              Is_Asynchronous_Call_Block => True);
 
@@ -7367,7 +7329,7 @@ package body Exp_Ch9 is
          Prepend_To (Decls,
            Make_Object_Declaration (Loc,
              Defining_Identifier => B,
-             Object_Definition => New_Reference_To (Standard_Boolean, Loc)));
+             Object_Definition   => New_Reference_To (Standard_Boolean, Loc)));
 
          Cancel_Param := Make_Defining_Identifier (Loc, Name_uC);
 
@@ -7376,7 +7338,7 @@ package body Exp_Ch9 is
          Prepend_To (Decls,
            Make_Object_Declaration (Loc,
              Defining_Identifier => Cancel_Param,
-             Object_Definition => New_Reference_To (Standard_Boolean, Loc)));
+             Object_Definition   => New_Reference_To (Standard_Boolean, Loc)));
 
          --  Remove and save the call to Call_Simple
 
@@ -7402,11 +7364,10 @@ package body Exp_Ch9 is
 
          Abortable_Block :=
            Make_Block_Statement (Loc,
-             Identifier => New_Reference_To (Blk_Ent, Loc),
+             Identifier                 => New_Reference_To (Blk_Ent, Loc),
              Handled_Statement_Sequence =>
-               Make_Handled_Sequence_Of_Statements (Loc,
-                 Statements => Astats),
-             Has_Created_Identifier => True,
+               Make_Handled_Sequence_Of_Statements (Loc, Statements => Astats),
+             Has_Created_Identifier     => True,
              Is_Asynchronous_Call_Block => True);
 
          Insert_After (Call,
@@ -7415,10 +7376,8 @@ package body Exp_Ch9 is
                Make_Handled_Sequence_Of_Statements (Loc,
                  Statements => New_List (
                    Make_Implicit_Label_Declaration (Loc,
-                     Defining_Identifier =>
-                       Blk_Ent,
-                     Label_Construct =>
-                       Abortable_Block),
+                     Defining_Identifier => Blk_Ent,
+                     Label_Construct     => Abortable_Block),
                    Abortable_Block),
                  Exception_Handlers => Hdle)));
 
@@ -7428,13 +7387,11 @@ package body Exp_Ch9 is
 
          Append_To (Params,
            New_Reference_To (RTE (RE_Asynchronous_Call), Loc));
-         Append_To (Params,
-           New_Reference_To (B, Loc));
+         Append_To (Params, New_Reference_To (B, Loc));
 
          Rewrite (Call,
            Make_Procedure_Call_Statement (Loc,
-             Name =>
-               New_Reference_To (RTE (RE_Task_Entry_Call), Loc),
+             Name => New_Reference_To (RTE (RE_Task_Entry_Call), Loc),
              Parameter_Associations => Params));
 
          --  Construct statement sequence for new block
@@ -7442,8 +7399,7 @@ package body Exp_Ch9 is
          Append_To (Stmts,
            Make_Implicit_If_Statement (N,
              Condition =>
-               Make_Op_Not (Loc,
-                 New_Reference_To (Cancel_Param, Loc)),
+               Make_Op_Not (Loc, New_Reference_To (Cancel_Param, Loc)),
              Then_Statements => Tstats));
 
          --  Protected the call against abort
@@ -7671,10 +7627,8 @@ package body Exp_Ch9 is
                  New_Copy_Tree (Obj),            --  <object>
                  New_Reference_To (S, Loc),      --  S
                  Make_Attribute_Reference (Loc,  --  P'Address
-                   Prefix =>
-                     New_Reference_To (P, Loc),
-                   Attribute_Name =>
-                     Name_Address),
+                   Prefix         => New_Reference_To (P, Loc),
+                   Attribute_Name => Name_Address),
                  New_Reference_To (C, Loc),      --  C
                  New_Reference_To (B, Loc))));   --  B
 
@@ -7694,7 +7648,7 @@ package body Exp_Ch9 is
 
          if Present (Unpack) then
             Append_To (Conc_Typ_Stmts,
-              Make_If_Statement (Loc,
+              Make_Implicit_If_Statement (N,
 
                 Condition =>
                   Make_Or_Else (Loc,
@@ -7732,7 +7686,7 @@ package body Exp_Ch9 is
          N_Stats := New_Copy_List_Tree (Statements (Alt));
 
          Prepend_To (N_Stats,
-           Make_If_Statement (Loc,
+           Make_Implicit_If_Statement (N,
              Condition =>
                Make_Or_Else (Loc,
                  Left_Opnd =>
@@ -7764,8 +7718,8 @@ package body Exp_Ch9 is
                New_List (Blk)));
 
          Append_To (Conc_Typ_Stmts,
-           Make_If_Statement (Loc,
-             Condition => New_Reference_To (B, Loc),
+           Make_Implicit_If_Statement (N,
+             Condition       => New_Reference_To (B, Loc),
              Then_Statements => N_Stats,
              Else_Statements => Else_Statements (N)));
 
@@ -7784,7 +7738,7 @@ package body Exp_Ch9 is
          --    end if;
 
          Append_To (Stmts,
-           Make_If_Statement (Loc,
+           Make_Implicit_If_Statement (N,
              Condition =>
                Make_Op_Eq (Loc,
                  Left_Opnd =>
@@ -7805,7 +7759,7 @@ package body Exp_Ch9 is
              Handled_Statement_Sequence =>
                Make_Handled_Sequence_Of_Statements (Loc, Stmts)));
 
-      --  As described above, The entry alternative is transformed into a
+      --  As described above, the entry alternative is transformed into a
       --  block that contains the gnulli call, and possibly assignment
       --  statements for in-out parameters. The gnulli call may itself be
       --  rewritten into a transient block if some unconstrained parameters
@@ -7882,7 +7836,7 @@ package body Exp_Ch9 is
             Prepend_To (Declarations (Blk),
               Make_Object_Declaration (Loc,
                 Defining_Identifier => B,
-                Object_Definition =>
+                Object_Definition   =>
                   New_Reference_To (Standard_Boolean, Loc)));
 
             --  Create new call statement
@@ -7900,7 +7854,7 @@ package body Exp_Ch9 is
 
             Append_To (Stmts,
               Make_Implicit_If_Statement (N,
-                Condition => New_Reference_To (B, Loc),
+                Condition       => New_Reference_To (B, Loc),
                 Then_Statements => Statements (Alt),
                 Else_Statements => Else_Statements (N)));
          end if;
@@ -9714,7 +9668,7 @@ package body Exp_Ch9 is
             --    or else C = POK_Task_Entry
             --  then
 
-           Make_If_Statement (Loc,
+           Make_Implicit_If_Statement (N,
              Condition =>
                Make_Op_Or (Loc,
                  Left_Opnd =>
@@ -10022,8 +9976,8 @@ package body Exp_Ch9 is
       Alts           : constant List_Id    := Select_Alternatives (N);
 
       --  Note: in the below declarations a lot of new lists are allocated
-      --  unconditionally which may well not end up being used. That's
-      --  not a good idea since it wastes space gratuitously ???
+      --  unconditionally which may well not end up being used. That's not
+      --  a good idea since it wastes space gratuitously ???
 
       Accept_Case    : List_Id;
       Accept_List    : constant List_Id := New_List;
@@ -10033,7 +9987,6 @@ package body Exp_Ch9 is
       Alt_Stats      : List_Id;
       Ann            : Entity_Id := Empty;
 
-      Block          : Node_Id;
       Check_Guard    : Boolean := True;
 
       Decls          : constant List_Id := New_List;
@@ -10066,9 +10019,7 @@ package body Exp_Ch9 is
       Num_Alts       : Int;
       Num_Accept     : Nat := 0;
       Proc           : Node_Id;
-      Q              : Node_Id;
       Time_Type      : Entity_Id;
-      X              : Node_Id;
       Select_Call    : Node_Id;
 
       Qnam : constant Entity_Id :=
@@ -10152,25 +10103,24 @@ package body Exp_Ch9 is
 
          Stats := New_List (
            Make_Implicit_Loop_Statement (N,
-             Identifier => Empty,
              Iteration_Scheme =>
                Make_Iteration_Scheme (Loc,
                  Loop_Parameter_Specification =>
                    Make_Loop_Parameter_Specification (Loc,
-                     Defining_Identifier => J,
+                     Defining_Identifier         => J,
                      Discrete_Subtype_Definition =>
                        Make_Attribute_Reference (Loc,
-                         Prefix => New_Reference_To (Qnam, Loc),
+                         Prefix         => New_Reference_To (Qnam, Loc),
                          Attribute_Name => Name_Range,
-                         Expressions => New_List (
+                         Expressions    => New_List (
                            Make_Integer_Literal (Loc, 1))))),
 
-             Statements => New_List (
+             Statements       => New_List (
                Make_Implicit_If_Statement (N,
-                 Condition =>  Cond,
+                 Condition       =>  Cond,
                  Then_Statements => New_List (
                    Make_Select_Call (
-                    New_Reference_To (RTE (RE_Simple_Mode), Loc)),
+                     New_Reference_To (RTE (RE_Simple_Mode), Loc)),
                    Make_Exit_Statement (Loc))))));
 
          Append_To (Stats,
@@ -10238,12 +10188,12 @@ package body Exp_Ch9 is
 
             Proc_Body :=
               Make_Subprogram_Body (Eloc,
-                Specification =>
+                Specification              =>
                   Make_Procedure_Specification (Eloc,
                     Defining_Unit_Name => PB_Ent),
-               Declarations => Declarations (Acc_Stm),
-               Handled_Statement_Sequence =>
-                 Build_Accept_Body (Accept_Statement (Alt)));
+                Declarations               => Declarations (Acc_Stm),
+                Handled_Statement_Sequence =>
+                  Build_Accept_Body (Accept_Statement (Alt)));
 
             --  During the analysis of the body of the accept statement, any
             --  zero cost exception handler records were collected in the
@@ -10287,7 +10237,7 @@ package body Exp_Ch9 is
            Make_Implicit_Label_Declaration (Loc,
              Defining_Identifier  =>
                Make_Defining_Identifier (Loc, Chars (Lab_Id)),
-             Label_Construct => Lab));
+             Label_Construct      => Lab));
 
          return Lab;
       end Make_And_Declare_Label;
@@ -10302,11 +10252,11 @@ package body Exp_Ch9 is
       begin
          Append (
            Make_Attribute_Reference (Loc,
-             Prefix => New_Reference_To (Qnam, Loc),
+             Prefix         => New_Reference_To (Qnam, Loc),
              Attribute_Name => Name_Unchecked_Access),
            Params);
-         Append (Select_Mode, Params);
-         Append (New_Reference_To (Ann, Loc), Params);
+         Append (Select_Mode,                  Params);
+         Append (New_Reference_To (Ann, Loc),  Params);
          Append (New_Reference_To (Xnam, Loc), Params);
 
          return
@@ -10325,13 +10275,14 @@ package body Exp_Ch9 is
          Proc  : Node_Id)
       is
          Choices   : List_Id := No_List;
+         Astmt     : constant Node_Id := Accept_Statement (Alt);
          Alt_Stats : List_Id;
 
       begin
          Adjust_Condition (Condition (Alt));
          Alt_Stats := No_List;
 
-         if Present (Handled_Statement_Sequence (Accept_Statement (Alt))) then
+         if Present (Handled_Statement_Sequence (Astmt)) then
             Choices := New_List (
               Make_Integer_Literal (Loc, Index));
 
@@ -10341,43 +10292,37 @@ package body Exp_Ch9 is
                   Defining_Unit_Name (Specification (Proc)), Sloc (Proc))));
          end if;
 
-         if Statements (Alt) /= Empty_List then
+         if No (Alt_Stats) then
 
-            if No (Alt_Stats) then
+            --  Accept with no body, followed by trailing statements
 
-               --  Accept with no body, followed by trailing statements
+            Choices := New_List (Make_Integer_Literal (Loc, Index));
 
-               Choices := New_List (
-                 Make_Integer_Literal (Loc, Index));
+            Alt_Stats := New_List;
+         end if;
 
-               Alt_Stats := New_List;
-            end if;
+         --  After the call, if any, branch to trailing statements, if any.
+         --  We create a label for each, as well as the corresponding label
+         --  declaration.
 
-            --  After the call, if any, branch to trailing statements. We
-            --  create a label for each, as well as the corresponding label
-            --  declaration.
-
+         if not Is_Empty_List (Statements (Alt)) then
             Lab := Make_And_Declare_Label (Index);
-            Append_To (Alt_Stats,
-              Make_Goto_Statement (Loc,
-                Name => New_Copy (Identifier (Lab))));
-
             Append (Lab, Trailing_List);
             Append_List (Statements (Alt), Trailing_List);
             Append_To (Trailing_List,
               Make_Goto_Statement (Loc,
                 Name => New_Copy (Identifier (End_Lab))));
+         else
+            Lab := End_Lab;
          end if;
 
-         if Present (Alt_Stats) then
+         Append_To (Alt_Stats,
+           Make_Goto_Statement (Loc, Name => New_Copy (Identifier (Lab))));
 
-            --  Procedure call. and/or trailing statements
-
-            Append_To (Alt_List,
-              Make_Case_Statement_Alternative (Loc,
-                Discrete_Choices => Choices,
-                Statements => Alt_Stats));
-         end if;
+         Append_To (Alt_List,
+           Make_Case_Statement_Alternative (Loc,
+             Discrete_Choices => Choices,
+             Statements       => Alt_Stats));
       end Process_Accept_Alternative;
 
       -------------------------------
@@ -10409,14 +10354,12 @@ package body Exp_Ch9 is
 
          --  The enclosing if-statement is omitted if there is no guard
 
-         if Delay_Count = 1
-           or else First_Delay
-         then
+         if Delay_Count = 1 or else First_Delay then
             First_Delay := False;
 
             Delay_Alt := New_List (
               Make_Assignment_Statement (Loc,
-                Name => New_Reference_To (Delay_Min, Loc),
+                Name       => New_Reference_To (Delay_Min, Loc),
                 Expression => Expression (Delay_Statement (Alt))));
 
             if Delay_Count > 1 then
@@ -10429,7 +10372,7 @@ package body Exp_Ch9 is
          else
             Delay_Alt := New_List (
               Make_Assignment_Statement (Loc,
-                Name => New_Reference_To (Delay_Val, Loc),
+                Name       => New_Reference_To (Delay_Val, Loc),
                 Expression => Expression (Delay_Statement (Alt))));
 
             if Time_Type = Standard_Duration then
@@ -10447,10 +10390,11 @@ package body Exp_Ch9 is
                Cond :=
                  Make_Function_Call (Loc,
                    Name => Make_Selected_Component (Loc,
-                     Prefix => New_Reference_To (Scope (Time_Type), Loc),
+                     Prefix        =>
+                       New_Reference_To (Scope (Time_Type), Loc),
                      Selector_Name =>
                        Make_Operator_Symbol (Loc,
-                         Chars => Name_Op_Lt,
+                         Chars  => Name_Op_Lt,
                          Strval => No_String)),
                     Parameter_Associations =>
                       New_List (
@@ -10476,14 +10420,14 @@ package body Exp_Ch9 is
          if Check_Guard then
             Append_To (Delay_Alt,
               Make_Assignment_Statement (Loc,
-                Name => New_Reference_To (Guard_Open, Loc),
+                Name       => New_Reference_To (Guard_Open, Loc),
                 Expression => New_Reference_To (Standard_True, Loc)));
          end if;
 
          if Present (Condition (Alt)) then
             Delay_Alt := New_List (
               Make_Implicit_If_Statement (N,
-                Condition => Condition (Alt),
+                Condition       => Condition (Alt),
                 Then_Statements => Delay_Alt));
          end if;
 
@@ -10492,19 +10436,18 @@ package body Exp_Ch9 is
          --  If the delay alternative has a statement part, add choice to the
          --  case statements for delays.
 
-         if Present (Statements (Alt)) then
+         if not Is_Empty_List (Statements (Alt)) then
 
             if Delay_Count = 1 then
                Append_List (Statements (Alt), Delay_Alt_List);
 
             else
-               Choices := New_List (
-                 Make_Integer_Literal (Loc, Index));
+               Choices := New_List (Make_Integer_Literal (Loc, Index));
 
                Append_To (Delay_Alt_List,
                  Make_Case_Statement_Alternative (Loc,
                    Discrete_Choices => Choices,
-                   Statements => Statements (Alt)));
+                   Statements       => Statements (Alt)));
             end if;
 
          elsif Delay_Count = 1 then
@@ -10609,36 +10552,30 @@ package body Exp_Ch9 is
       --  If a guard is statically known to be false, the entry can simply
       --  be omitted from the accept list.
 
-      Q :=
+      Append_To (Decls,
         Make_Object_Declaration (Loc,
           Defining_Identifier => Qnam,
-          Object_Definition =>
-            New_Reference_To (RTE (RE_Accept_List), Loc),
-          Aliased_Present => True,
-
-          Expression =>
+          Object_Definition   => New_Reference_To (RTE (RE_Accept_List), Loc),
+          Aliased_Present     => True,
+          Expression          =>
              Make_Qualified_Expression (Loc,
                Subtype_Mark =>
                  New_Reference_To (RTE (RE_Accept_List), Loc),
-               Expression =>
-                 Make_Aggregate (Loc, Expressions => Accept_List)));
-
-      Append (Q, Decls);
+               Expression   =>
+                 Make_Aggregate (Loc, Expressions => Accept_List))));
 
       --  Then we declare the variable that holds the index for the accept
       --  that will be selected for service:
 
       --    Xnn : Select_Index;
 
-      X :=
+      Append_To (Decls,
         Make_Object_Declaration (Loc,
           Defining_Identifier => Xnam,
           Object_Definition =>
             New_Reference_To (RTE (RE_Select_Index), Loc),
           Expression =>
-            New_Reference_To (RTE (RE_No_Rendezvous), Loc));
-
-      Append (X, Decls);
+            New_Reference_To (RTE (RE_No_Rendezvous), Loc)));
 
       --  After this follow procedure declarations for each accept body
 
@@ -10744,7 +10681,7 @@ package body Exp_Ch9 is
             Append_To (Decls,
               Make_Object_Declaration (Loc,
                 Defining_Identifier => D,
-                Object_Definition =>
+                Object_Definition   =>
                   New_Reference_To (Standard_Duration, Loc)));
 
             Append_To (Decls,
@@ -10860,7 +10797,7 @@ package body Exp_Ch9 is
       Append_To (Alt_List,
         Make_Case_Statement_Alternative (Loc,
           Discrete_Choices => Choices,
-          Statements => Alt_Stats));
+          Statements       => Alt_Stats));
 
       --  We make use of the fact that Accept_Index is an integer type, and
       --  generate successive literals for entries for each accept. Only those
@@ -10905,7 +10842,6 @@ package body Exp_Ch9 is
           Alternatives => Alt_List));
 
       Append_List (Trailing_List, Accept_Case);
-      Append (End_Lab, Accept_Case);
       Append_List (Body_List, Decls);
 
       --  Construct case statement for trailing statements of delay
@@ -10978,7 +10914,7 @@ package body Exp_Ch9 is
             end if;
 
             Stmt := Make_Assignment_Statement (Loc,
-              Name => New_Reference_To (D, Loc),
+              Name       => New_Reference_To (D, Loc),
               Expression => Conv);
 
             --  Change the value for Accept_Modes. (Else_Mode -> Delay_Mode)
@@ -10986,9 +10922,7 @@ package body Exp_Ch9 is
             Parms := Parameter_Associations (Select_Call);
             Parm := First (Parms);
 
-            while Present (Parm)
-              and then Parm /= Select_Mode
-            loop
+            while Present (Parm) and then Parm /= Select_Mode loop
                Next (Parm);
             end loop;
 
@@ -11018,10 +10952,10 @@ package body Exp_Ch9 is
             if Check_Guard then
                Stmt :=
                  Make_Implicit_If_Statement (N,
-                   Condition => New_Reference_To (Guard_Open, Loc),
-                   Then_Statements =>
-                     New_List (New_Copy_Tree (Stmt),
-                       New_Copy_Tree (Select_Call)),
+                   Condition       => New_Reference_To (Guard_Open, Loc),
+                   Then_Statements => New_List (
+                     New_Copy_Tree (Stmt),
+                     New_Copy_Tree (Select_Call)),
                    Else_Statements => Accept_Or_Raise);
                Rewrite (Select_Call, Stmt);
             else
@@ -11041,17 +10975,15 @@ package body Exp_Ch9 is
             Append (Cases, Stats);
          end;
       end if;
+      Append (End_Lab, Stats);
 
       --  Replace accept statement with appropriate block
 
-      Block :=
+      Rewrite (N,
         Make_Block_Statement (Loc,
-          Declarations => Decls,
+          Declarations               => Decls,
           Handled_Statement_Sequence =>
-            Make_Handled_Sequence_Of_Statements (Loc,
-              Statements => Stats));
-
-      Rewrite (N, Block);
+            Make_Handled_Sequence_Of_Statements (Loc, Statements => Stats)));
       Analyze (N);
 
       --  Note: have to worry more about abort deferral in above code ???
@@ -11804,11 +11736,11 @@ package body Exp_Ch9 is
    --        T.E;
    --        S1;
    --     or
-   --        Delay D;
+   --        delay D;
    --        S2;
    --     end select;
 
-   --  is expanded as follow:
+   --  is expanded as follows:
 
    --  1) When T.E is a task entry_call;
 
@@ -11909,14 +11841,16 @@ package body Exp_Ch9 is
       Call_Ent       : Entity_Id;
       Conc_Typ_Stmts : List_Id;
       Concval        : Node_Id;
+      D_Alt          : constant Node_Id := Delay_Alternative (N);
       D_Conv         : Node_Id;
       D_Disc         : Node_Id;
-      D_Stat         : Node_Id;
+      D_Stat         : Node_Id := Delay_Statement (D_Alt);
       D_Stats        : List_Id;
       D_Type         : Entity_Id;
       Decls          : List_Id;
       Dummy          : Node_Id;
-      E_Call         : Node_Id;
+      E_Alt          : constant Node_Id := Entry_Call_Alternative (N);
+      E_Call         : Node_Id := Entry_Call_Statement (E_Alt);
       E_Stats        : List_Id;
       Ename          : Node_Id;
       Formals        : List_Id;
@@ -11947,17 +11881,14 @@ package body Exp_Ch9 is
          return;
       end if;
 
-      E_Call := Entry_Call_Statement (Entry_Call_Alternative (N));
-      D_Stat := Delay_Statement (Delay_Alternative (N));
-
-      Process_Statements_For_Controlled_Objects (Entry_Call_Alternative (N));
-      Process_Statements_For_Controlled_Objects (Delay_Alternative (N));
+      Process_Statements_For_Controlled_Objects (E_Alt);
+      Process_Statements_For_Controlled_Objects (D_Alt);
 
       --  Retrieve E_Stats and D_Stats now because the finalization machinery
       --  may wrap them in blocks.
 
-      E_Stats := Statements (Entry_Call_Alternative (N));
-      D_Stats := Statements (Delay_Alternative (N));
+      E_Stats := Statements (E_Alt);
+      D_Stats := Statements (D_Alt);
 
       --  The arguments in the call may require dynamic allocation, and the
       --  call statement may have been transformed into a block. The block
@@ -12155,7 +12086,7 @@ package body Exp_Ch9 is
 
          if Present (Unpack) then
             Append_To (Conc_Typ_Stmts,
-              Make_If_Statement (Loc,
+              Make_Implicit_If_Statement (N,
 
                 Condition       =>
                   Make_Or_Else (Loc,
@@ -12192,7 +12123,7 @@ package body Exp_Ch9 is
          N_Stats := Copy_Separate_List (E_Stats);
 
          Prepend_To (N_Stats,
-           Make_If_Statement (Loc,
+           Make_Implicit_If_Statement (N,
 
              Condition =>
                Make_Or_Else (Loc,
@@ -12220,7 +12151,7 @@ package body Exp_Ch9 is
              Then_Statements => New_List (E_Call)));
 
          Append_To (Conc_Typ_Stmts,
-           Make_If_Statement (Loc,
+           Make_Implicit_If_Statement (N,
              Condition       => New_Reference_To (B, Loc),
              Then_Statements => N_Stats,
              Else_Statements => D_Stats));
@@ -12240,7 +12171,7 @@ package body Exp_Ch9 is
          --    end if;
 
          Append_To (Stmts,
-           Make_If_Statement (Loc,
+           Make_Implicit_If_Statement (N,
              Condition       =>
                Make_Op_Eq (Loc,
                  Left_Opnd  => New_Reference_To (K, Loc),

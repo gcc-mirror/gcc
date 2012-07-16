@@ -48,6 +48,7 @@ with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Ch9;  use Sem_Ch9;
 with Sem_Dim;  use Sem_Dim;
+with Sem_Disp; use Sem_Disp;
 with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
 with Sem_Type; use Sem_Type;
@@ -4315,6 +4316,46 @@ package body Sem_Ch13 is
                        ("?'C'P'P constructor required for type %", Prim);
                      Error_Reported := True;
                   end if;
+               end if;
+
+               Next_Elmt (Elmt);
+            end loop;
+         end;
+      end if;
+
+      --  Check Ada derivation of CPP type
+
+      if Expander_Active
+        and then Tagged_Type_Expansion
+        and then Ekind (E) = E_Record_Type
+        and then Etype (E) /= E
+        and then Is_CPP_Class (Etype (E))
+        and then CPP_Num_Prims (Etype (E)) > 0
+        and then not Is_CPP_Class (E)
+        and then not Has_CPP_Constructors (Etype (E))
+      then
+         --  If the parent has C++ primitives but it has no constructor then
+         --  check that all the primitives are overridden in this derivation;
+         --  otherwise the constructor of the parent is needed to build the
+         --  dispatch table.
+
+         declare
+            Elmt : Elmt_Id;
+            Prim : Node_Id;
+
+         begin
+            Elmt := First_Elmt (Primitive_Operations (E));
+            while Present (Elmt) loop
+               Prim := Node (Elmt);
+
+               if not Is_Abstract_Subprogram (Prim)
+                 and then No (Interface_Alias (Prim))
+                 and then Find_Dispatching_Type (Ultimate_Alias (Prim)) /= E
+               then
+                  Error_Msg_Name_1 := Chars (Etype (E));
+                  Error_Msg_N
+                    ("'C'P'P constructor required for parent type %", E);
+                  exit;
                end if;
 
                Next_Elmt (Elmt);

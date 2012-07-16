@@ -203,8 +203,7 @@ package body Exception_Propagation is
    --  directly from gigi.
 
    function Setup_Current_Excep
-     (GCC_Exception : not null GCC_Exception_Access)
-     return EOA;
+     (GCC_Exception : not null GCC_Exception_Access) return EOA;
    pragma Export (C, Setup_Current_Excep, "__gnat_setup_current_excep");
    --  Write Get_Current_Excep.all from GCC_Exception
 
@@ -344,8 +343,7 @@ package body Exception_Propagation is
    -------------------------
 
    function Setup_Current_Excep
-     (GCC_Exception : not null GCC_Exception_Access)
-     return EOA
+     (GCC_Exception : not null GCC_Exception_Access) return EOA
    is
       Excep : constant EOA := Get_Current_Excep.all;
 
@@ -427,6 +425,7 @@ package body Exception_Propagation is
      (GCC_Exception : not null GCC_Exception_Access)
    is
       Excep : EOA;
+
    begin
       --  Perform a standard raise first. If a regular handler is found, it
       --  will be entered after all the intermediate cleanups have run. If

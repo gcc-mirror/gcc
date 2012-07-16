@@ -626,7 +626,6 @@ package body System.File_IO is
          then
             Start := J + 1;
             Stop := Start - 1;
-
             while Form (Stop + 1) /= ASCII.NUL
               and then Form (Stop + 1) /= ','
             loop

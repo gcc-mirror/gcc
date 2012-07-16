@@ -1041,8 +1041,9 @@ package body Freeze is
          Comp_Type := Etype (Comp);
          Comp_Def  := Component_Definition (Parent (Comp));
 
-         Comp_Byte_Aligned := Present (Component_Clause (Comp))
-           and then Normalized_First_Bit (Comp) mod System_Storage_Unit = 0;
+         Comp_Byte_Aligned :=
+           Present (Component_Clause (Comp))
+             and then Normalized_First_Bit (Comp) mod System_Storage_Unit = 0;
 
       --  Array case
 

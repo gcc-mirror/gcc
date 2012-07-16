@@ -218,12 +218,12 @@ package body Sem_Eval is
    --  If Fold and Stat are both set to False then this routine performs also
    --  the following extra actions:
    --
-   --    * If either operand is Any_Type then propagate it to result to
-   --      prevent cascaded errors.
+   --    If either operand is Any_Type then propagate it to result to
+   --    prevent cascaded errors.
    --
-   --    * If some operand raises constraint error, then replace the node N
-   --      with the raise constraint error node. This replacement inherits the
-   --      Is_Static_Expression flag from the operands.
+   --    If some operand raises constraint error, then replace the node N
+   --    with the raise constraint error node. This replacement inherits the
+   --    Is_Static_Expression flag from the operands.
 
    procedure Test_Expression_Is_Foldable
      (N    : Node_Id;
