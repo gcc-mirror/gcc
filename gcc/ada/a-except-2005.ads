@@ -302,6 +302,10 @@ private
       Id : Exception_Id;
       --  Exception_Identity for this exception occurrence
 
+      Machine_Occurrence : System.Address;
+      --  The underlying machine occurrence. For GCC, this corresponds to the
+      --  _Unwind_Exception structure address.
+
       Msg_Length : Natural := 0;
       --  Length of message (zero = no message)
 
@@ -339,12 +343,13 @@ private
    --  Functions for implementing Exception_Occurrence stream attributes
 
    Null_Occurrence : constant Exception_Occurrence := (
-     Id               => null,
-     Msg_Length       => 0,
-     Msg              => (others => ' '),
-     Exception_Raised => False,
-     Pid              => 0,
-     Num_Tracebacks   => 0,
-     Tracebacks       => (others => TBE.Null_TB_Entry));
+     Id                 => null,
+     Machine_Occurrence => System.Null_Address,
+     Msg_Length         => 0,
+     Msg                => (others => ' '),
+     Exception_Raised   => False,
+     Pid                => 0,
+     Num_Tracebacks     => 0,
+     Tracebacks         => (others => TBE.Null_TB_Entry));
 
 end Ada.Exceptions;

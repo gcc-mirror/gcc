@@ -692,7 +692,9 @@ package body GNAT.Debug_Pools is
       --  Use standard (i.e. through malloc) allocations. This automatically
       --  raises Storage_Error if needed. We also try once more to physically
       --  release memory, so that even marked blocks, in the advanced scanning,
-      --  are freed.
+      --  are freed. Note that we do not initialize the storage array since it
+      --  is not necessary to do so (however this will cause bogus valgrind
+      --  warnings, which should simply be ignored).
 
       begin
          P := new Local_Storage_Array;

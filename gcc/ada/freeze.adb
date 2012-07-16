@@ -3898,15 +3898,13 @@ package body Freeze is
                end;
             end if;
 
-         --  For a record (sub)type, freeze all the component types (RM
-         --  13.14(15). We test for E_Record_(sub)Type here, rather than using
-         --  Is_Record_Type, because we don't want to attempt the freeze for
-         --  the case of a private type with record extension (we will do that
-         --  later when the full type is frozen).
+         --  For a record type or record subtype, freeze all component types
+         --  (RM 13.14(15)). We test for E_Record_(sub)Type here, rather than
+         --  using Is_Record_Type, because we don't want to attempt the freeze
+         --  for the case of a private type with record extension (we will do
+         --  that later when the full type is frozen).
 
-         elsif Ekind (E) = E_Record_Type
-           or else Ekind (E) = E_Record_Subtype
-         then
+         elsif Ekind_In (E, E_Record_Type, E_Record_Subtype) then
             Freeze_Record_Type (E);
 
          --  For a concurrent type, freeze corresponding record type. This

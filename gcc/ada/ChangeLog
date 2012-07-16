@@ -1,5 +1,68 @@
 2012-07-16  Robert Dewar  <dewar@adacore.com>
 
+	* freeze.adb, g-debpoo.adb, exp_ch3.adb: Minor reformatting.
+
+2012-07-16  Thomas Quinot  <quinot@adacore.com>
+
+	* s-oscons-tmplt.c: Add definitions of E2BIG and EILSEQ.
+
+2012-07-16  Tristan Gingold  <gingold@adacore.com>
+
+	* a-exexpr.adb (Propagate_Continue): New function replacing
+	Raise_Current_Excep.
+	(Allocate_Occurrence): New function.
+	(Propagate_Exception): Add Excep parameter, remove call to Call_Chain.
+	* a-exexpr-gcc.adb (GNAT_GCC_Exception): Occurrence component
+	is now aliased.
+	(To_GCC_Exception): Convert from Address.
+	(Allocate_Occurrence): Allocate an Unwind exception occurrence.
+	(Setup_Current_Excep): Fill the machine occurrence in case of
+	foreign exception.
+	(Propagate_Exception): Add Excep parameter, remove call to Call_Chain.
+	* a-except.adb (Set_Exception_C_Msg, Set_Exception_Msg): add
+	Excep parameter.
+	(Raise_Exception, Raise_Exception_Always,
+	Raise_Exception_No_Defer): Adjust calls to the above procedures.
+	(Raise_From_Signal_Handler, Raise_With_Location_And_Msg)
+	(Rcheck_PE_Finalize_Raised_Exception): Likewise.
+	* a-except-2005.adb (Set_Exception_C_Msg, Set_Exception_Msg):
+	add Excep parameter.
+	(Propagate_Exception): Likewise.
+	(Allocate_Occurrence): New function.
+	(Raise_Current_Excep): Removed.
+	(Complete_Occurrence): New function to save the call chain.
+	(Complete_And_Propagate_Occurrence): New procedure.
+	(Create_Occurrence_From_Signal_Handler): New function to build an
+	occurrence without propagating it.
+	(Create_Machine_Occurrence_From_Signal_Handler): Likewise, but
+	return the machine occurrence.
+	(Raise_From_Signal_Handler): Use Create_Occurrence_From_Signal_Handler.
+	(Raise_Exception, Raise_Exception_Always, Raise_Exception_No_Defer):
+	Adjust calls to the above procedures. Allocate the occurrence at
+	the beginning.
+	(Raise_With_Location_And_Msg, Raise_With_Msg)
+	(Rcheck_PE_Finalize_Raised_Exceptionm Reraise): Likewise.
+	(Reraise_Occurrence): Use Reraise_Occurrence_Always.
+	(Reraise_Occurrence_Always): Use Reraise_Occurrence_No_Defer.
+	(Reraise_Occurrence_No_Defer): Preserve machine occurrence.
+	(Save_Occurrence): Do not save machine occurrence.
+	* a-except-2005.ads (Exception_Occurrence): Add Machine_Occurrence
+	component.
+	(Null_Occurrence): Consider it.
+	* a-exexda.adb (Set_Exception_C_Msg, Set_Exception_Msg): add
+	Excep parameter.
+
+2012-07-16  Tristan Gingold  <gingold@adacore.com>
+
+	* seh_init.c (__gnat_map_SEH): New function extracted from
+	__gnat_SEH_error_handler.
+	* raise-gcc.c: __gnat_personality_seh0: Directly transforms
+	Windows system exception into GCC one when possible, in order
+	to save stack room (particularly useful when Storage_Error will
+	be propagated).
+
+2012-07-16  Robert Dewar  <dewar@adacore.com>
+
 	* a-direct.adb, g-dirope.adb: Minor reformatting.
 
 2012-07-16  Tristan Gingold  <gingold@adacore.com>

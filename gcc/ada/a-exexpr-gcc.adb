@@ -39,6 +39,8 @@ with System.Storage_Elements;  use System.Storage_Elements;
 separate (Ada.Exceptions)
 package body Exception_Propagation is
 
+   use Exception_Traces;
+
    ------------------------------------------------
    -- Entities to interface with the GCC runtime --
    ------------------------------------------------
@@ -110,7 +112,7 @@ package body Exception_Propagation is
       Private2 : Unwind_Word;
 
       --  Usual exception structure has only two private fields, but the SEH
-      --  one has six. To avoid makeing this file more complex, we use six
+      --  one has six. To avoid making this file more complex, we use six
       --  fields on all platforms, wasting a few bytes on some.
 
       Private3 : Unwind_Word;
@@ -151,7 +153,7 @@ package body Exception_Propagation is
       Header : Unwind_Exception;
       --  ABI Exception header first
 
-      Occurrence : Exception_Occurrence;
+      Occurrence : aliased Exception_Occurrence;
       --  The Ada occurrence
    end record;
 
@@ -177,7 +179,7 @@ package body Exception_Propagation is
    type GNAT_GCC_Exception_Access is access all GNAT_GCC_Exception;
 
    function To_GCC_Exception is new
-     Unchecked_Conversion (GNAT_GCC_Exception_Access, GCC_Exception_Access);
+     Unchecked_Conversion (System.Address, GCC_Exception_Access);
 
    function To_GNAT_GCC_Exception is new
      Unchecked_Conversion (GCC_Exception_Access, GNAT_GCC_Exception_Access);
@@ -297,6 +299,24 @@ package body Exception_Propagation is
    --  exceptions on targets which always handle exceptions (such as SEH).
    --  The handler will simply call Unhandled_Except_Handler.
 
+   -------------------------
+   -- Allocate_Occurrence --
+   -------------------------
+
+   function Allocate_Occurrence return EOA is
+      Res : GNAT_GCC_Exception_Access;
+   begin
+      Res :=
+        new GNAT_GCC_Exception'
+        (Header     => (Class   => GNAT_Exception_Class,
+                        Cleanup => GNAT_GCC_Exception_Cleanup'Address,
+                        others  => 0),
+         Occurrence => (others => <>));
+      Res.Occurrence.Machine_Occurrence := Res.all'Address;
+
+      return Res.Occurrence'Access;
+   end Allocate_Occurrence;
+
    --------------------------------
    -- GNAT_GCC_Exception_Cleanup --
    --------------------------------
@@ -345,6 +365,7 @@ package body Exception_Propagation is
          --  A default one
 
          Excep.Id := Foreign_Exception'Access;
+         Excep.Machine_Occurrence := GCC_Exception.all'Address;
          Excep.Msg_Length := 0;
          Excep.Exception_Raised := True;
          Excep.Pid := Local_Partition_ID;
@@ -433,50 +454,9 @@ package body Exception_Propagation is
    -- Propagate_Exception --
    -------------------------
 
-   --  Build an object suitable for the libgcc processing and call
-   --  Unwind_RaiseException to actually do the raise, taking care of
-   --  handling the two phase scheme it implements.
-
-   procedure Propagate_Exception is
-      Excep         : constant EOA := Get_Current_Excep.all;
-      GCC_Exception : GNAT_GCC_Exception_Access;
-
+   procedure Propagate_Exception (Excep : EOA) is
    begin
-      --  Compute the backtrace for this occurrence if the corresponding
-      --  binder option has been set. Call_Chain takes care of the reraise
-      --  case.
-
-      --  ??? Using Call_Chain here means we are going to walk up the stack
-      --  once only for backtracing purposes before doing it again for the
-      --  propagation per se.
-
-      --  The first inspection is much lighter, though, as it only requires
-      --  partial unwinding of each frame. Additionally, although we could use
-      --  the personality routine to record the addresses while propagating,
-      --  this method has two drawbacks:
-
-      --  1) the trace is incomplete if the exception is handled since we
-      --  don't walk past the frame with the handler,
-
-      --    and
-
-      --  2) we would miss the frames for which our personality routine is not
-      --  called, e.g. if C or C++ calls are on the way.
-
-      Call_Chain (Excep);
-
-      --  Allocate the GCC exception
-
-      GCC_Exception :=
-        new GNAT_GCC_Exception'
-          (Header     => (Class   => GNAT_Exception_Class,
-                          Cleanup => GNAT_GCC_Exception_Cleanup'Address,
-                          others  => 0),
-           Occurrence => Excep.all);
-
-      --  Propagate it
-
-      Propagate_GCC_Exception (To_GCC_Exception (GCC_Exception));
+      Propagate_GCC_Exception (To_GCC_Exception (Excep.Machine_Occurrence));
    end Propagate_Exception;
 
    ------------------------------
