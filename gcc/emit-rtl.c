@@ -4220,14 +4220,9 @@ emit_barrier_before (rtx before)
 rtx
 emit_label_before (rtx label, rtx before)
 {
-  /* This can be called twice for the same label as a result of the
-     confusion that follows a syntax error!  So make it harmless.  */
-  if (INSN_UID (label) == 0)
-    {
-      INSN_UID (label) = cur_insn_uid++;
-      add_insn_before (label, before, NULL);
-    }
-
+  gcc_checking_assert (INSN_UID (label) == 0);
+  INSN_UID (label) = cur_insn_uid++;
+  add_insn_before (label, before, NULL);
   return label;
 }
 
@@ -4386,15 +4381,9 @@ emit_barrier_after (rtx after)
 rtx
 emit_label_after (rtx label, rtx after)
 {
-  /* This can be called twice for the same label
-     as a result of the confusion that follows a syntax error!
-     So make it harmless.  */
-  if (INSN_UID (label) == 0)
-    {
-      INSN_UID (label) = cur_insn_uid++;
-      add_insn_after (label, after, NULL);
-    }
-
+  gcc_checking_assert (INSN_UID (label) == 0);
+  INSN_UID (label) = cur_insn_uid++;
+  add_insn_after (label, after, NULL);
   return label;
 }
 
@@ -4810,14 +4799,9 @@ emit_call_insn (rtx x)
 rtx
 emit_label (rtx label)
 {
-  /* This can be called twice for the same label
-     as a result of the confusion that follows a syntax error!
-     So make it harmless.  */
-  if (INSN_UID (label) == 0)
-    {
-      INSN_UID (label) = cur_insn_uid++;
-      add_insn (label);
-    }
+  gcc_checking_assert (INSN_UID (label) == 0);
+  INSN_UID (label) = cur_insn_uid++;
+  add_insn (label);
   return label;
 }
 
