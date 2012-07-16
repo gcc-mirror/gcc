@@ -981,6 +981,53 @@ cris_print_operand (FILE *file, rtx x, int code)
       fprintf (file, INTVAL (operand) < 0 ? "adds.w" : "addq");
       return;
 
+    case 'P':
+      /* For const_int operands, print the additive mnemonic and the
+	 modified operand (byte-sized operands don't save anything):
+          N=MIN_INT..-65536: add.d N
+          -65535..-64: subu.w -N
+          -63..-1: subq -N
+          0..63: addq N
+          64..65535: addu.w N
+          65536..MAX_INT: add.d N.
+	 (Emitted mnemonics are capitalized to simplify testing.)
+	 For anything else (N.B: only register is valid), print "add.d".  */
+      if (REG_P (operand))
+	{
+	  fprintf (file, "Add.d ");
+
+	  /* Deal with printing the operand by dropping through to the
+	     normal path.  */
+	  break;
+	}
+      else
+	{
+	  int val;
+	  gcc_assert (CONST_INT_P (operand));
+
+	  val = INTVAL (operand);
+	  if (!IN_RANGE (val, -65535, 65535))
+	      fprintf (file, "Add.d %d", val);
+	  else if (val <= -64)
+	    fprintf (file, "Subu.w %d", -val);
+	  else if (val <= -1)
+	    fprintf (file, "Subq %d", -val);
+	  else if (val <= 63)
+	      fprintf (file, "Addq %d", val);
+	  else if (val <= 65535)
+	    fprintf (file, "Addu.w %d", val);
+	  return;
+	}
+      break;
+
+    case 'q':
+      /* If the operand is an integer -31..31, print "q" else ".d".  */
+      if (CONST_INT_P (operand) && IN_RANGE (INTVAL (operand), -31, 31))
+	fprintf (file, "q");
+      else
+	fprintf (file, ".d");
+      return;
+
     case 'd':
       /* If this is a GOT symbol, force it to be emitted as :GOT and
 	 :GOTPLT regardless of -fpic (i.e. not as :GOT16, :GOTPLT16).
