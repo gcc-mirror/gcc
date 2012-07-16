@@ -14,14 +14,14 @@ template<typename T> struct enable_if<false, T> { };
 template<typename F, typename T1, typename T2>
   typename enable_if<sizeof(create_a<F>()(create_a<T1>(), create_a<T2>()), 1),
 		     yes_type>::type
-  check_is_callable2(type<F>, type<T1>, type<T2>);
+  check_is_callable2(type<F>, type<T1>, type<T2>); // { dg-error "within this context" }
 
 no_type check_is_callable2(...);
 
 template<typename F, typename T1, typename T2 = T1>
 struct is_callable2
 {
-  static const bool value = // { dg-error "within this context" }
+  static const bool value =
     (sizeof(check_is_callable2(type<F>(), type<T1>(), type<T2>()))
      == sizeof(yes_type));
 };

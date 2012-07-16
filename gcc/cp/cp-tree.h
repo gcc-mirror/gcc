@@ -5484,6 +5484,8 @@ typedef struct GTY(()) deferred_access_check {
   tree decl;
   /* The declaration that should be used in the error message.  */
   tree diag_decl;
+  /* The location of this access.  */
+  location_t loc;
 } deferred_access_check;
 DEF_VEC_O(deferred_access_check);
 DEF_VEC_ALLOC_O(deferred_access_check,gc);
