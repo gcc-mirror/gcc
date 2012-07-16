@@ -1,5 +1,12 @@
 2012-07-16  Hans-Peter Nilsson  <hp@axis.com>
 
+	* gcc.target/cris/sync-2i.c, gcc.target/cris/sync-2s.c,
+	gcc.target/cris/sync-3i.c, gcc.target/cris/sync-3s.c,
+	gcc.target/cris/sync-4i.c, gcc.target/cris/sync-4s.c,
+	gcc.target/cris/sync-1-v10.c,
+	gcc.target/cris/sync-1-v32.c: For cris*-*-linux*, also
+	pass -mno-unaligned-atomic-may-use-library.
+	* gcc.target/cris/sync-xchg-1.c: New test.
 	* gcc.target/cris/20011127-1.c: Adjust to %P being a
 	valid register operand output modifier.
 
