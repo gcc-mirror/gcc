@@ -34,7 +34,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "diagnostic-core.h"
 #include "tree-flow.h"
-#include "timevar.h"
 #include "flags.h"
 #include "function.h"
 #include "expr.h"

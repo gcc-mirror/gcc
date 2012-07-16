@@ -42,7 +42,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "except.h"
 #include "debug.h"
 #include "vec.h"
-#include "timevar.h"
 #include "ipa-utils.h"
 #include "data-streamer.h"
 #include "gimple-streamer.h"

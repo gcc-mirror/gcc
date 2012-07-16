@@ -28,7 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "intl.h"
 #include "plugin.h"
-#include "timevar.h"
 #include "ggc.h"
 
 #ifdef ENABLE_PLUGIN

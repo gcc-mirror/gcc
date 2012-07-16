@@ -24,11 +24,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "tree.h"
 #include "basic-block.h"
-#include "timevar.h"
 #include "tree-pretty-print.h"
 #include "tree-flow.h"
 #include "tree-pass.h"
-#include "tree-dump.h"
 
 /* This pass combines COND_EXPRs to simplify control flow.  It
    currently recognizes bit tests and comparisons in chains that

@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "gcov-io.h"
 #include "profile.h"
+#include "dumpfile.h"
 
 /* CAP_INFINITY: Constant to represent infinite capacity.  */
 #define CAP_INFINITY INTTYPE_MAXIMUM (HOST_WIDEST_INT)

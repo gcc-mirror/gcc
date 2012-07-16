@@ -28,7 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "cfgloop.h"
 #include "tree-pass.h"
-#include "timevar.h"
 #include "flags.h"
 #include "df.h"
 #include "ggc.h"

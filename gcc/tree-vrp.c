@@ -30,8 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-flow.h"
 #include "tree-pass.h"
 #include "tree-dump.h"
-#include "timevar.h"
-#include "tree-pretty-print.h"
 #include "gimple-pretty-print.h"
 #include "diagnostic-core.h"
 #include "intl.h"

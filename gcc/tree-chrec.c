@@ -31,7 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "tree-flow.h"
 #include "tree-chrec.h"
-#include "tree-pass.h"
+#include "dumpfile.h"
 #include "params.h"
 #include "tree-scalar-evolution.h"
 

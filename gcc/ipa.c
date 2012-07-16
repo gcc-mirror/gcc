@@ -24,7 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "cgraph.h"
 #include "tree-pass.h"
-#include "timevar.h"
 #include "gimple.h"
 #include "ggc.h"
 #include "flags.h"

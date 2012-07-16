@@ -63,11 +63,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "tree-pretty-print.h"
 #include "tree-flow.h"
-#include "tree-dump.h"
 #include "cfgloop.h"
 #include "tree-vectorizer.h"
 #include "tree-pass.h"
-#include "timevar.h"
 
 /* vect_dump will be set to stderr or dump_file if exist.  */
 FILE *vect_dump;

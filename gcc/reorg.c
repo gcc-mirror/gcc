@@ -132,7 +132,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "resource.h"
 #include "except.h"
 #include "params.h"
-#include "timevar.h"
 #include "target.h"
 #include "tree-pass.h"
 

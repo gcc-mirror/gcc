@@ -32,7 +32,6 @@
 #include "params.h"
 #include "target.h"
 #include "langhooks.h"
-#include "tree-pretty-print.h"
 #include "gimple-pretty-print.h"
 #include "cfgloop.h"
 

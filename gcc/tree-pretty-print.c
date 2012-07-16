@@ -30,7 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "tree-iterator.h"
 #include "tree-chrec.h"
-#include "tree-pass.h"
+#include "dumpfile.h"
 #include "value-prof.h"
 #include "predict.h"
 
@@ -126,7 +126,7 @@ print_generic_decl (FILE *file, tree decl, int flags)
 }
 
 /* Print tree T, and its successors, on file FILE.  FLAGS specifies details
-   to show in the dump.  See TDF_* in tree-pass.h.  */
+   to show in the dump.  See TDF_* in dumpfile.h.  */
 
 void
 print_generic_stmt (FILE *file, tree t, int flags)
@@ -137,7 +137,7 @@ print_generic_stmt (FILE *file, tree t, int flags)
 }
 
 /* Print tree T, and its successors, on file FILE.  FLAGS specifies details
-   to show in the dump.  See TDF_* in tree-pass.h.  The output is indented by
+   to show in the dump.  See TDF_* in dumpfile.h.  The output is indented by
    INDENT spaces.  */
 
 void
@@ -154,7 +154,7 @@ print_generic_stmt_indented (FILE *file, tree t, int flags, int indent)
 }
 
 /* Print a single expression T on file FILE.  FLAGS specifies details to show
-   in the dump.  See TDF_* in tree-pass.h.  */
+   in the dump.  See TDF_* in dumpfile.h.  */
 
 void
 print_generic_expr (FILE *file, tree t, int flags)
@@ -591,7 +591,7 @@ dump_block_node (pretty_printer *buffer, tree block, int spc, int flags)
 
 /* Dump the node NODE on the pretty_printer BUFFER, SPC spaces of
    indent.  FLAGS specifies details to show in the dump (see TDF_* in
-   tree-pass.h).  If IS_STMT is true, the object printed is considered
+   dumpfile.h).  If IS_STMT is true, the object printed is considered
    to be a statement and it is terminated by ';' if appropriate.  */
 
 int

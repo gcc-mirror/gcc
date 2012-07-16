@@ -51,6 +51,7 @@
 #include "opts.h"
 #include "hw-doloop.h"
 #include "regrename.h"
+#include "dumpfile.h"
 
 /* Table of supported architecture variants.  */
 typedef struct

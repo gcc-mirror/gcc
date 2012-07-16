@@ -38,7 +38,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "reload.h"
 #include "target.h"
-#include "timevar.h"
 #include "tree-pass.h"
 #include "df.h"
 

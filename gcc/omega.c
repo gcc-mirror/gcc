@@ -36,7 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tree.h"
 #include "diagnostic-core.h"
-#include "tree-pass.h"
+#include "dumpfile.h"
 #include "omega.h"
 
 /* When set to true, keep substitution variables.  When set to false,

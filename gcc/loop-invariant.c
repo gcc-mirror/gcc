@@ -55,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "regs.h"
 #include "ira.h"
+#include "dumpfile.h"
 
 /* The data stored for the loop.  */
 

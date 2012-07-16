@@ -163,7 +163,7 @@ c/c-decl.o : c/c-decl.c c/c-lang.h $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 	output.h debug.h toplev.h intl.h $(TM_P_H) $(TREE_INLINE_H) \
 	$(TIMEVAR_H) $(OPTS_H) $(C_PRAGMA_H) gt-c-c-decl.h $(CGRAPH_H) \
 	$(HASHTAB_H) $(LANGHOOKS_DEF_H) \
-	$(TREE_DUMP_H) $(C_COMMON_H) $(CPPLIB_H) $(DIAGNOSTIC_CORE_H) \
+	dumpfile.h $(C_COMMON_H) $(CPPLIB_H) $(DIAGNOSTIC_CORE_H) \
 	$(INPUT_H) langhooks.h pointer-set.h tree-iterator.h \
 	$(PLUGIN_H) c-family/c-ada-spec.h c-family/c-objc.h
 

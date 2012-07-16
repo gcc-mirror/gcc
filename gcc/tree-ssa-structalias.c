@@ -37,7 +37,6 @@
 #include "function.h"
 #include "cgraph.h"
 #include "tree-pass.h"
-#include "timevar.h"
 #include "alloc-pool.h"
 #include "splay-tree.h"
 #include "params.h"

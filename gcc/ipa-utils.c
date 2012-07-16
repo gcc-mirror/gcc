@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "tree-flow.h"
 #include "tree-inline.h"
-#include "tree-pass.h"
+#include "dumpfile.h"
 #include "langhooks.h"
 #include "pointer-set.h"
 #include "splay-tree.h"
@@ -35,7 +35,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "cgraph.h"
 #include "flags.h"
-#include "timevar.h"
 #include "diagnostic.h"
 #include "langhooks.h"
 

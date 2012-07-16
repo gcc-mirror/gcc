@@ -40,6 +40,7 @@
 #include "langhooks.h"
 #include "cgraph.h"
 #include "diagnostic.h"
+#include "timevar.h"
 #include "tree-dump.h"
 #include "tree-inline.h"
 #include "tree-iterator.h"

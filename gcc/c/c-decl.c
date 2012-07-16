@@ -51,7 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "tree-iterator.h"
 #include "diagnostic-core.h"
-#include "tree-dump.h"
+#include "dumpfile.h"
 #include "cgraph.h"
 #include "hashtab.h"
 #include "langhooks-def.h"

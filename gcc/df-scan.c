@@ -38,12 +38,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "sbitmap.h"
 #include "bitmap.h"
-#include "timevar.h"
+#include "dumpfile.h"
 #include "tree.h"
 #include "target.h"
 #include "target-def.h"
 #include "df.h"
-#include "tree-pass.h"
 #include "emit-rtl.h"  /* FIXME: Can go away once crtl is moved to rtl.h.  */
 
 DEF_VEC_P(df_ref);
@@ -4478,7 +4477,6 @@ df_entry_block_bitmap_verify (bool abort_if_fail)
 
   if (!is_eq && abort_if_fail)
     {
-      print_current_pass (stderr);
       fprintf (stderr, "entry_block_defs = ");
       df_print_regset (stderr, &entry_block_defs);
       fprintf (stderr, "df->entry_block_defs = ");
@@ -4508,7 +4506,6 @@ df_exit_block_bitmap_verify (bool abort_if_fail)
 
   if (!is_eq && abort_if_fail)
     {
-      print_current_pass (stderr);
       fprintf (stderr, "exit_block_uses = ");
       df_print_regset (stderr, &exit_block_uses);
       fprintf (stderr, "df->exit_block_uses = ");

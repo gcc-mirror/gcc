@@ -374,7 +374,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "recog.h"
 #include "params.h"
-#include "timevar.h"
 #include "tree-pass.h"
 #include "output.h"
 #include "except.h"

@@ -42,7 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "tree-pretty-print.h"
 #include "cselib.h"
-#include "tree-pass.h"
+#include "dumpfile.h"	/* for dump_flags */
 #include "dwarf2out.h"
 #endif
 

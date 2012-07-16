@@ -49,7 +49,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "insn-config.h"
 #include "recog.h"
-#include "timevar.h"
 #include "tree-pass.h"
 
 

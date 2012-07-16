@@ -28,8 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "flags.h"
 #include "tree-flow.h"
-#include "tree-dump.h"
-#include "timevar.h"
 #include "function.h"
 #include "langhooks.h"
 #include "diagnostic-core.h"

@@ -663,14 +663,6 @@ extern int vsnprintf(char *, size_t, const char *, va_list);
 #define __builtin_expect(a, b) (a)
 #endif
 
-/* Default file in which to dump debug output.  Here for lack of a better
-   place to put it.  This used to be defined in output.h, but that results
-   in almost all files including output.h, even if they don't output anything
-   except, maybe, something to the dump file.  */
-#ifdef BUFSIZ
-extern FILE *dump_file;
-#endif
-
 /* Redefine abort to report an internal error w/o coredump, and
    reporting the location of the error in the source file.  */
 extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;

@@ -98,7 +98,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-codes.h"
 #include "rtlhooks-def.h"
 #include "params.h"
-#include "timevar.h"
 #include "tree-pass.h"
 #include "df.h"
 #include "cgraph.h"

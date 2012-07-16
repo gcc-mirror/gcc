@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "addresses.h"
 #include "ggc.h"
+#include "dumpfile.h"
 
 #define MOVE_MAX_WORDS (MOVE_MAX / UNITS_PER_WORD)
 

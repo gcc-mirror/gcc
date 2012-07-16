@@ -32,7 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "insn-attr.h"
 #include "sched-int.h"
-#include "tree-pass.h"
+#include "dumpfile.h"	/* for the TDF_* flags */
 
 static char *safe_concat (char *, char *, const char *);
 

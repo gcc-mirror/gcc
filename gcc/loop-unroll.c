@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hashtab.h"
 #include "recog.h"
 #include "target.h"
+#include "dumpfile.h"
 
 /* This pass performs loop unrolling and peeling.  We only perform these
    optimizations on innermost loops (with single exception) because

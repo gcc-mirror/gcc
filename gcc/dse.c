@@ -37,7 +37,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "df.h"
 #include "cselib.h"
-#include "timevar.h"
 #include "tree-pass.h"
 #include "alloc-pool.h"
 #include "alias.h"

@@ -47,7 +47,7 @@
 #include "target-def.h"
 #include "langhooks.h"
 #include "rl78-protos.h"
-#include "tree-pass.h"
+#include "dumpfile.h"
 
 static inline bool is_interrupt_func (const_tree decl);
 static inline bool is_brk_interrupt_func (const_tree decl);

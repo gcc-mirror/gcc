@@ -54,6 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "pretty-print.h"
 #include "bitmap.h"
 #include "params.h"
+#include "dumpfile.h"
 
 
 /* Functions and data structures for expanding case statements.  */
@@ -1867,9 +1868,7 @@ emit_case_decision_tree (tree index_expr, tree index_type,
 
   balance_case_nodes (&case_list, NULL);
 
-  /* Don't want to include tree-pass.h here.  This code will be moved
-     to a GIMPLE pass for GCC 4.9 anyway, so for now always dump.  */
-  if (dump_file && 1/*(dump_flags & TDF_DETAILS)*/)
+  if (dump_file && (dump_flags & TDF_DETAILS))
     {
       int indent_step = ceil_log2 (TYPE_PRECISION (index_type)) + 2;
       fprintf (dump_file, ";; Expanding GIMPLE switch as decision tree:\n");

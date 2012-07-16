@@ -29,7 +29,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "toplev.h"
 #include "tree-dump.h"
-#include "tree-pass.h"
 #include "langhooks.h"
 #include "tree-iterator.h"
 

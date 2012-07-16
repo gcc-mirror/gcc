@@ -54,7 +54,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "cgraph.h"
 #include "flags.h"
-#include "timevar.h"
 #include "diagnostic.h"
 #include "langhooks.h"
 #include "data-streamer.h"

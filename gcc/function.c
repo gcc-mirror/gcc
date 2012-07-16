@@ -61,7 +61,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "predict.h"
 #include "df.h"
-#include "timevar.h"
 #include "vecprim.h"
 #include "params.h"
 #include "bb-reorder.h"
