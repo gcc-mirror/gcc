@@ -2355,9 +2355,11 @@ optimize_unreachable (gimple_stmt_iterator i)
   FOR_EACH_EDGE (e, ei, bb->preds)
     {
       gsi = gsi_last_bb (e->src);
-      stmt = gsi_stmt (gsi);
+      if (gsi_end_p (gsi))
+	continue;
 
-      if (stmt && gimple_code (stmt) == GIMPLE_COND)
+      stmt = gsi_stmt (gsi);
+      if (gimple_code (stmt) == GIMPLE_COND)
 	{
 	  if (e->flags & EDGE_TRUE_VALUE)
 	    gimple_cond_make_false (stmt);

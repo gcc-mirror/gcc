@@ -1,3 +1,8 @@
+2012-07-16  Ulrich Weigand  <ulrich.weigand@linaro.org>
+
+	* tree-ssa-ccp.c (optimize_unreachable): Check gsi_end_p
+	before calling gsi_stmt.
+
 2012-07-16  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	Revert
