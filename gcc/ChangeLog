@@ -1,5 +1,10 @@
 2012-07-16  Steven Bosscher  <steven@gcc.gnu.org>
 
+	* emit-rtl.c (emit_label_before): Do not allow the same label
+        to be emitted twice.
+	(emit_label_after): Likewise.
+	(emit_label): Likewise.
+
 	* flags.h (TYPE_OVERFLOW_WRAPS, TYPE_OVERFLOW_UNDEFINED,
 	TYPE_OVERFLOW_TRAPS, POINTER_TYPE_OVERFLOW_UNDEFINED): Move to tree.h.
 	* tree.h (TYPE_OVERFLOW_WRAPS, TYPE_OVERFLOW_UNDEFINED,
