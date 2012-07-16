@@ -661,7 +661,7 @@ package Lib is
    --  one with no code, but the ALI file has the normal form, and we need
    --  this ALI file so that the binder can work out a correct order of
    --  elaboration.
-
+   --
    --  However, ancient versions of GNAT used to not generate code or ALI
    --  files for generic units, and this would yield complex order of
    --  elaboration issues. These were fixed in GNAT 3.10. The support for not

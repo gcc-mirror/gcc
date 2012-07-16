@@ -221,7 +221,14 @@ package body Ch13 is
             if Token = Tok_Identifier then
                Attr_Name := Token_Name;
 
-               if not Is_Attribute_Name (Attr_Name) then
+               --  Note that the parser must complain in case of an internal
+               --  attribute names that comes from source since internal names
+               --  are meant to be used only by the compiler.
+
+               if not Is_Attribute_Name (Attr_Name)
+                 and then (not Is_Internal_Attribute_Name (Attr_Name)
+                            or else Comes_From_Source (Token_Node))
+               then
                   Signal_Bad_Attribute;
                end if;
 

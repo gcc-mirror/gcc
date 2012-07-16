@@ -852,6 +852,7 @@ new_loop_vec_info (struct loop *loop)
   LOOP_VINFO_SLP_INSTANCES (res) = VEC_alloc (slp_instance, heap, 10);
   LOOP_VINFO_SLP_UNROLLING_FACTOR (res) = 1;
   LOOP_VINFO_PEELING_HTAB (res) = NULL;
+  LOOP_VINFO_TARGET_COST_DATA (res) = init_cost (loop);
   LOOP_VINFO_PEELING_FOR_GAPS (res) = false;
 
   return res;
@@ -928,6 +929,8 @@ destroy_loop_vec_info (loop_vec_info loop_vinfo, bool clean_stmts)
 
   if (LOOP_VINFO_PEELING_HTAB (loop_vinfo))
     htab_delete (LOOP_VINFO_PEELING_HTAB (loop_vinfo));
+
+  destroy_cost_data (LOOP_VINFO_TARGET_COST_DATA (loop_vinfo));
 
   free (loop_vinfo);
   loop->aux = NULL;
@@ -1362,7 +1365,7 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo, bool slp)
                            "not vectorized: relevant phi not supported: ");
                   print_gimple_stmt (vect_dump, phi, 0, TDF_SLIM);
                 }
-              return false;
+	      return false;
             }
         }
 
@@ -2498,7 +2501,6 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
   int nbbs = loop->num_nodes;
   int npeel = LOOP_PEELING_FOR_ALIGNMENT (loop_vinfo);
   int peel_guard_costs = 0;
-  int innerloop_iters = 0, factor;
   VEC (slp_instance, heap) *slp_instances;
   slp_instance instance;
 
@@ -2544,19 +2546,10 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
      TODO: Consider assigning different costs to different scalar
      statements.  */
 
-  /* FORNOW.  */
-  if (loop->inner)
-    innerloop_iters = 50; /* FIXME */
-
   for (i = 0; i < nbbs; i++)
     {
       gimple_stmt_iterator si;
       basic_block bb = bbs[i];
-
-      if (bb->loop_father == loop->inner)
- 	factor = innerloop_iters;
-      else
- 	factor = 1;
 
       for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
 	{
@@ -2575,7 +2568,6 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
                  || !VECTORIZABLE_CYCLE_DEF (STMT_VINFO_DEF_TYPE (stmt_info))))
 	    continue;
 
-	  vec_inside_cost += STMT_VINFO_INSIDE_OF_LOOP_COST (stmt_info) * factor;
 	  /* FIXME: for stmts in the inner-loop in outer-loop vectorization,
 	     some of the "outside" costs are generated inside the outer-loop.  */
 	  vec_outside_cost += STMT_VINFO_OUTSIDE_OF_LOOP_COST (stmt_info);
@@ -2592,14 +2584,9 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
 		    = vinfo_for_stmt (pattern_def_stmt);
                   if (STMT_VINFO_RELEVANT_P (pattern_def_stmt_info)
                       || STMT_VINFO_LIVE_P (pattern_def_stmt_info))
-		    {
-                      vec_inside_cost
-			+= STMT_VINFO_INSIDE_OF_LOOP_COST
-			   (pattern_def_stmt_info) * factor;
-                      vec_outside_cost
-			+= STMT_VINFO_OUTSIDE_OF_LOOP_COST
-			   (pattern_def_stmt_info);
-                    }
+		    vec_outside_cost
+		      += STMT_VINFO_OUTSIDE_OF_LOOP_COST
+		        (pattern_def_stmt_info);
 		}
 	    }
 	}
@@ -2725,11 +2712,12 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
   /* Add SLP costs.  */
   slp_instances = LOOP_VINFO_SLP_INSTANCES (loop_vinfo);
   FOR_EACH_VEC_ELT (slp_instance, slp_instances, i, instance)
-    {
-      vec_outside_cost += SLP_INSTANCE_OUTSIDE_OF_LOOP_COST (instance);
-      vec_inside_cost += SLP_INSTANCE_INSIDE_OF_LOOP_COST (instance);
-    }
+    vec_outside_cost += SLP_INSTANCE_OUTSIDE_OF_LOOP_COST (instance);
 
+  /* Complete the target-specific cost calculation for the inside-of-loop
+     costs.  */
+  vec_inside_cost = finish_cost (LOOP_VINFO_TARGET_COST_DATA (loop_vinfo));
+  
   /* Calculate number of iterations required to make the vector version
      profitable, relative to the loop bodies only.  The following condition
      must hold true:
@@ -2826,10 +2814,10 @@ vect_model_reduction_cost (stmt_vec_info stmt_info, enum tree_code reduc_code,
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
 
-
   /* Cost of reduction op inside loop.  */
-  STMT_VINFO_INSIDE_OF_LOOP_COST (stmt_info) 
-    += ncopies * vect_get_stmt_cost (vector_stmt);
+  unsigned inside_cost
+    = add_stmt_cost (LOOP_VINFO_TARGET_COST_DATA (loop_vinfo),
+		     ncopies, vector_stmt, stmt_info, 0);
 
   stmt = STMT_VINFO_STMT (stmt_info);
 
@@ -2915,7 +2903,7 @@ vect_model_reduction_cost (stmt_vec_info stmt_info, enum tree_code reduc_code,
 
   if (vect_print_dump_info (REPORT_COST))
     fprintf (vect_dump, "vect_model_reduction_cost: inside_cost = %d, "
-             "outside_cost = %d .", STMT_VINFO_INSIDE_OF_LOOP_COST (stmt_info),
+             "outside_cost = %d .", inside_cost,
              STMT_VINFO_OUTSIDE_OF_LOOP_COST (stmt_info));
 
   return true;
@@ -2929,16 +2917,20 @@ vect_model_reduction_cost (stmt_vec_info stmt_info, enum tree_code reduc_code,
 static void
 vect_model_induction_cost (stmt_vec_info stmt_info, int ncopies)
 {
+  loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
+
   /* loop cost for vec_loop.  */
-  STMT_VINFO_INSIDE_OF_LOOP_COST (stmt_info) 
-    = ncopies * vect_get_stmt_cost (vector_stmt);
+  unsigned inside_cost
+    = add_stmt_cost (LOOP_VINFO_TARGET_COST_DATA (loop_vinfo), ncopies,
+		     vector_stmt, stmt_info, 0);
+
   /* prologue cost for vec_init and vec_step.  */
   STMT_VINFO_OUTSIDE_OF_LOOP_COST (stmt_info)  
     = 2 * vect_get_stmt_cost (scalar_to_vec);
 
   if (vect_print_dump_info (REPORT_COST))
     fprintf (vect_dump, "vect_model_induction_cost: inside_cost = %d, "
-             "outside_cost = %d .", STMT_VINFO_INSIDE_OF_LOOP_COST (stmt_info),
+             "outside_cost = %d .", inside_cost,
              STMT_VINFO_OUTSIDE_OF_LOOP_COST (stmt_info));
 }
 
@@ -3131,9 +3123,9 @@ get_initial_def_for_induction (gimple iv_phi)
                                                    NULL));
 
   /* Set the arguments of the phi node:  */
-  add_phi_arg (induction_phi, vec_init, pe, UNKNOWN_LOCATION);
+  add_phi_arg (induction_phi, vec_init, pe, UNKNOWN_LOCATION, NULL);
   add_phi_arg (induction_phi, vec_def, loop_latch_edge (iv_loop),
-	       UNKNOWN_LOCATION);
+	       UNKNOWN_LOCATION, NULL);
 
 
   /* In case that vectorization factor (VF) is bigger than the number
@@ -3617,13 +3609,13 @@ vect_create_epilog_for_reduction (VEC (tree, heap) *vect_defs, gimple stmt,
         {
           /* Set the loop-entry arg of the reduction-phi.  */
           add_phi_arg (phi, vec_init_def, loop_preheader_edge (loop),
-                       UNKNOWN_LOCATION);
+                       UNKNOWN_LOCATION, NULL);
 
           /* Set the loop-latch arg for the reduction-phi.  */
           if (j > 0)
             def = vect_get_vec_def_for_stmt_copy (vect_unknown_def_type, def);
 
-          add_phi_arg (phi, def, loop_latch_edge (loop), UNKNOWN_LOCATION);
+          add_phi_arg (phi, def, loop_latch_edge (loop), UNKNOWN_LOCATION, NULL);
 
           if (vect_print_dump_info (REPORT_DETAILS))
             {
@@ -4241,9 +4233,10 @@ vect_finalize_reduction:
                   /* Update phi node arguments with vs0 and vs2.  */
                   add_phi_arg (vect_phi, vect_phi_init,
                                loop_preheader_edge (outer_loop),
-                               UNKNOWN_LOCATION);
+                               UNKNOWN_LOCATION, NULL);
                   add_phi_arg (vect_phi, PHI_RESULT (inner_phi),
-                               loop_latch_edge (outer_loop), UNKNOWN_LOCATION);
+                               loop_latch_edge (outer_loop), UNKNOWN_LOCATION,
+			       NULL);
                   if (vect_print_dump_info (REPORT_DETAILS))
                     {
                       fprintf (vect_dump, "created double reduction phi "

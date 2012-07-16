@@ -1,3 +1,538 @@
+2012-07-12  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* vms_data.ads: Add VMS qualifiers for -gnatn1/2 switches.
+
+2012-07-12  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch5.adb, exp_pakd.adb, rtsfind.ads, freeze.adb, sem_util.adb,
+	sem_util.ads, exp_aggr.adb
+	(Exp_Aggr.Packed_Array_Aggregate_Handled): Simplify processing
+	for reverse storage order aggregate.
+	(Exp_Pakd.Byte_Swap): New utility routine used by...
+	(Exp_Pakd.Expand_Bit_Packed_Element_Set,
+	Expand_Packed_Element_Reference): For the case of a free-standing
+	packed array with reverse storage order, perform byte swapping.
+	(Rtsfind): Make new entities RE_Bswap_{16,32,64} available.
+	(Freeze.Check_Component_Storage_Order): New utility routine
+	to enforce legality rules for nested composite types whose
+	enclosing composite has an explicitly defined Scalar_Storage_Order
+	attribute.
+	(Sem_Util.In_Reverse_Storage_Order_Object): Renamed from
+	Sem_Util.In_Reverse_Storage_Order_Record, as SSO now applies to
+	array types as well.
+	(Exp_Ch5.Expand_Assign_Array): Remove now unnecessary kludge
+	for change of scalar storage order in assignments. The Lhs and
+	Rhs now always have the same scalar storage order.
+
+2012-07-12  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* g-debpoo.adb (Allocate): Add local constant
+	No_Element. Initialize the allocated memory chunk to No_Element.
+
+2012-07-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Validate_Derived_Type_Instance): Handle properly
+	the case of an instance of a child unit where a formal derived
+	type DT is an extension of a type T declared in a parent unit,
+	and the actual in the instance of the child is the type T declared
+	in the parent instance, and that actual is not a derived type.
+
+2012-07-12  Eric Botcazou  <ebotcazou@adacore.com>
+	    Tristan Gingold  <gingold@adacore.com>
+
+	* system-hpux-ia64.ads: Enable ZCX by default.
+	* gcc-interface/Makefile.in: Use alternate stack on ia64-hpux.
+	Change soext to .so.
+
+2012-07-12  Robert Dewar  <dewar@adacore.com>
+
+	* s-atopri.adb, s-atopri.ads: Minor reformatting.
+
+2012-07-12  Robert Dewar  <dewar@adacore.com>
+
+	* ali.adb: Add circuitry to read new named form of restrictions lines.
+	* debug.adb: Add doc for new -gnatd.R switch (used positional
+	notation for output of restrictions data in ali file).
+	* lib-writ.adb: Implement new named format for restrictions lines.
+	* lib-writ.ads: Add documentation for new named format for
+	restrictions in ali files.
+	* restrict.adb, restrict.ads, sem_prag.adb: Update comments.
+	* rident.ads: Go back to withing System.Rident
+	* s-rident.ads: Add extensive comment on dealing with consistency
+	checking.
+
+2012-07-12  Thomas Quinot  <quinot@adacore.com>
+
+	* par_sco.adb, scos.ads: Emit detailed SCOs for SELECT statements.
+
+2012-07-12  Robert Dewar  <dewar@adacore.com>
+
+	* sem_disp.adb: Minor reformatting
+	* s-bytswa.ads: Minor comment update.
+
+2012-07-12  Vincent Pucci  <pucci@adacore.com>
+
+	* exp_ch9.adb (Build_Lock_Free_Unprotected_Subprogram_Body):
+	Atomic_Load_N replaced by Lock_Free_Read_N. Atomic_Compare_Exchange_N
+	replaced by Lock_Free_Try_Write_N.
+	Renaming of several local variables. For
+	procedure, Expected_Comp declaration moved to the declaration
+	list of the procedure.
+	* rtsfind.ads: RE_Atomic_Compare_Exchange_8,
+	RE_Atomic_Compare_Exchange_16, RE_Atomic_Compare_Exchange_32,
+	RE_Atomic_Compare_Exchange_64, RE_Atomic_Load_8,
+	RE_Atomic_Load_16, RE_Atomic_Load_32, RE_Atomic_Load_64,
+	RE_Atomic_Synchronize, RE_Relaxed removed.  RE_Lock_Free_Read_8,
+	RE_Lock_Free_Read_16, RE_Lock_Free_Read_32, RE_Lock_Free_Read_64,
+	RE_Lock_Free_Try_Write_8, RE_Lock_Free_Try_Write_16,
+	RE_Lock_Free_Try_Write_32, RE_Lock_Free_Try_Write_64 added.
+	* s-atopri.adb: New file.
+	* s-atopri.ads (Atomic_Compare_Exchange_8): Renaming of
+	parameters.  Import primitive __sync_val_compare_and_swap_1.
+	(Atomic_Compare_Exchange_16): Renaming of parameters.
+	Import primitive __sync_val_compare_and_swap_2.
+	(Atomic_Compare_Exchange_32): Renaming of parameters.
+	Import primitive __sync_val_compare_and_swap_4.
+	(Atomic_Compare_Exchange_64): Renaming of parameters.  Import
+	primitive __sync_val_compare_and_swap_8.
+	(Atomic_Load_8): Ptr renames parameter X.
+	(Atomic_Load_16): Ptr renames parameter X.
+	(Atomic_Load_32): Ptr renames parameter X.
+	(Atomic_Load_64): Ptr renames parameter X.
+	(Lock_Free_Read_8): New routine.
+	(Lock_Free_Read_16): New routine.
+	(Lock_Free_Read_32): New routine.
+	(Lock_Free_Read_64): New routine.
+	(Lock_Free_Try_Write_8): New routine.
+	(Lock_Free_Try_Write_16): New routine.
+	(Lock_Free_Try_Write_32): New routine.
+	(Lock_Free_Try_Write_64): New routine.
+
+2012-07-12  Robert Dewar  <dewar@adacore.com>
+
+	* exp_attr.adb, exp_ch9.adb, sem_ch9.adb, exp_aggr.adb: Minor
+	reformatting.
+
+2012-07-12  Vincent Pucci  <pucci@adacore.com>
+
+	* sem_dim.adb (Analyze_Dimension_Function_Call): Reformatting of error
+	msgs for elementary functions.
+
+2012-07-12  Vincent Pucci  <pucci@adacore.com>
+
+	* sem_attr.adb (Eval_Attribute): Minor reformatting.
+
+2012-07-12  Pascal Obry  <obry@adacore.com>
+
+	* prj-nmsc.adb (Check_Library_Attributes): Allow the same library
+	project in different project tree (different aggregated projects).
+
+2012-07-12  Thomas Quinot  <quinot@adacore.com>
+
+	* s-bytswa.adb, g-bytswa.adb, g-bytswa.ads, s-bytswa.ads: Further
+	reorganization of byte swapping routines.
+
+2012-07-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_disp.adb (Check_Dispatching_Context): Refine legality
+	checks on tagg indeterminate calls to abstract operations,
+	that appear in the context of other calls.
+
+2012-07-12  Thomas Quinot  <quinot@adacore.com>
+
+	* s-bytswa.adb (Swapped2.Bswap16): Remove local function,
+	no longer needed.
+
+2012-07-12  Javier Miranda  <miranda@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference): For
+	attributes 'access, 'unchecked_access and 'unrestricted_access,
+	iff the current instance reference is located in a protected
+	subprogram or entry then rewrite the access attribute to be the
+	name of the "_object" parameter.
+
+2012-07-12  Tristan Gingold  <gingold@adacore.com>
+
+	* raise.h: Revert previous patch: structure is used in init.c
+	by vms.
+
+2012-07-12  Vincent Celier  <celier@adacore.com>
+
+	* make.adb (Binding_Phase): If --subdirs was used, but not
+	-P, change the working directory to the specified subdirectory
+	before invoking gnatbind.
+	(Linking_Phase): If --subdirs was used, but not -P, change the working
+	directory to the specified subdirectory before invoking gnatlink.
+
+2012-07-12  Vincent Pucci  <pucci@adacore.com>
+
+	* exp_ch9.adb (Build_Lock_Free_Unprotected_Subprogram_Body):
+	For a procedure, instead of replacing each Comp reference by a
+	reference to Current_Comp, make a renaming Comp of Current_Comp
+	that rewrites the original renaming generated by the compiler
+	during the analysis. Move the declarations of the procedure
+	inside the generated block.
+	(Process_Stmts): Moved in the body
+	of Build_Lock_Free_Unprotected_Subprogram_Body.
+	(Process_Node):
+	Moved in the body of Build_Lock_Free_Unprotected_Subprogram_Body.
+	* sem_ch9.adb (Allows_Lock_Free_Implementation): Restrict any
+	non-elementary out parameters in protected procedures.
+
+2012-07-12  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause, case
+	Scalar_Storage_Order): Attribute applies to base type only.
+
+2012-07-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb (Convert_To_Positional): Increase acceptable size
+	of static aggregate when Static_Elaboration_Desired is requested.
+	Add a warning if the request cannot be satisfied either because
+	some components or some array bounds are non-static.
+
+2012-07-12  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_pakd.adb: Minor reformatting.
+
+2012-07-12  Tristan Gingold  <gingold@adacore.com>
+
+	* tracebak.c: Fix warnings.
+	* raise-gcc.c (__gnat_adjust_context): New function
+	(__gnat_personality_seh0): Call __gnat_adjust_context to adjust
+	PC in machine frame for exceptions that occur in the current
+	function.
+
+2012-07-12  Thomas Quinot  <quinot@adacore.com>
+
+	* g-bytswa.adb, g-bytswa.ads, s-bytswa.adb, s-bytswa.ads, Makefile.rtl:
+	Move GNAT.Byte_Swapping to System (with a renaming under GNAT)
+	so that it is usable in expanded code.
+
+2012-07-12  Tristan Gingold  <gingold@adacore.com>
+
+	* s-osinte-hpux.ads: Increase alternate stack size on hpux.
+
+2012-07-12  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch3.adb (Make_Neq_Body): Fix typo in comment.
+
+2012-07-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tb-gcc.c (trace_callback): On IA-64/HP-UX, use workaround only
+	if USE_LIBUNWIND_EXCEPTIONS is defined.
+	* init.c: Further tweaks for IA-64/HP-UX.
+
+2012-07-12  Tristan Gingold  <gingold@adacore.com>
+
+	* raise-gcc.c: Do not include unwind-dw2-fde.h. Adjust comments.
+	(db_region_for): Second argument is ip.  Do not recompute ip.
+	(action_kind): Remove typedef, add unhandler enum const.
+	(action_descriptor): Adjust type of kind field.
+	(db_action_for): Second argument is ip, do not recompute it.
+	(get_call_site_action_for): First argument is call_site, do not
+	recompute it.  Remove useless return.
+	(is_handled_by): Now return enum action_kind.
+	Handle GNAT_ALL_OTHERS first.
+	Return unhandler for GNAT_UNHANDLED_OTHERS.
+	(get_action_description_for): First argument is now ip, do not
+	recompute it.  Adjust code for call to is_handled_by.
+	(__gnat_notify_unhandled_exception): Add prototype.
+	(PERSONALITY_FUNCTION): Call get_ip_from_context.  Adjust calls.
+	Handle unhandler case.
+	(__gnat_cleanupunwind_handler): Add comments, add
+	ATTRIBUTE_UNUSED on arguments.
+	(__gnat_Unwind_RaiseException, __gnat_Unwind_ForcedUnwind): Define
+	only once.
+	* raise.h: Makes struct Exception_Data opaque.
+
+2012-07-12  Robert Dewar  <dewar@adacore.com>
+
+	* make.adb, sem_ch9.adb, prj.adb, s-rident.ads, snames.ads-tmpl: Minor
+	reformatting.
+
+2012-07-12  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch3.adb (Is_User_Defined_Equality): New subprogram.
+	(Make_Neq_Body): New subprogram.
+	(Make_Predefined_Primitive_Specs): Adding local variable
+	Has_Predef_Eq_ Renaming to ensure that we enable the machinery
+	which handles renamings of predefined primitive operators.
+
+2012-07-09  Pascal Obry  <obry@adacore.com>
+
+	* prj.adb (For_Every_Project_Imported_Context): Make sure we
+	callback with the project having sources.
+	Minor reformatting.
+
+2012-07-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* make.adb: Fix typo.
+
+2012-07-09  Vincent Pucci  <pucci@adacore.com>
+
+	* sem_ch9.adb (Check_Node): Allow attributes
+	that denote static function for lock-free implementation.
+	(Is_Static_Function): New routine.
+
+2012-07-09  Tristan Gingold  <gingold@adacore.com>
+
+	* tracebak.c: Adjust skip_frames on Win64.
+
+2012-07-09  Tristan Gingold  <gingold@adacore.com>
+
+	* init.c: Add __gnat_adjust_context_for_raise for ia64/hpux.
+	* raise-gcc.c: __gnat_cleanupunwind_handler: Do not call
+	_Unwind_GetGR on hpux when using libgcc unwinder.  Part of
+
+2012-07-09  Vincent Pucci  <pucci@adacore.com>
+
+	* exp_attr.adb, sem_attr.adb: Minor reformatting.
+	* par-ch13.adb, par-ch4.adb, par-util.adb: Reformatting
+	considering that internal attribute names are not defined anymore
+	in the main attribute names list.
+	* snames.adb-tmpl (Get_Attribute_Id): Special processinf
+	for names CPU, Dispatching_Domain and Interrupt_Priority.
+	(Is_Internal_Attribute_Name): Minor reformatting.
+	* snames.ads-tmpl: New list of internal attribute names. Internal
+	attributes moved at the end of the attribute Id list.
+
+2012-07-09  Robert Dewar  <dewar@adacore.com>
+
+	* freeze.adb: Minor code reorganization (use Ekind_In).
+	* exp_attr.adb, sem_ch9.adb par-ch4.adb, s-taprop-mingw.adb,
+	sem_attr.adb, exp_ch8.adb, snames.adb-tmpl, par-util.adb,
+	sem_ch13.adb, snames.ads-tmpl: Minor reformatting.
+
+2012-07-09  Tristan Gingold  <gingold@adacore.com>
+
+	* raise-gcc.c: Adjust previous patch.
+
+2012-07-09  Vincent Celier  <celier@adacore.com>
+
+	* make.adb (Compilation_Phase): Do not build libraries in
+	Codepeer mode (do not call Library_Phase).
+
+2012-07-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb: Extend previous change to elementary types.
+
+2012-07-09  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch8.adb (Expand_N_Subprogram_Renaming_Declaration): Reverse
+	previous patch since unconditionally handling as renaming_as_body
+	renamings of predefined dispatching equality and unequality operator
+	cause visibility problems with private overridings of the equality
+	operator (see ACATS C854001).
+
+2012-07-09  Vincent Pucci  <pucci@adacore.com>
+
+	* exp_attr.adb (Signal_Bad_Attribute): Raise Program_Error in
+	case of internal attribute names (already rejected by the parser).
+	* par-ch13.adb (P_Representation_Clause): Complain if an internal
+	attribute name that comes from source occurs.
+	* par-ch4.adb (P_Name): Complain if an internal attribute name
+	occurs in the context of an attribute reference.
+	* par-util.adb (Signal_Bad_Attribute): Don't complain about
+	mispelling attribute with internal attributes.
+	* sem_attr.adb (Analyze_Attribute): Raise Program_Error in case
+	of internal attribute names (already rejected by the parser).
+	* snames.adb-tmpl (Is_Internal_Attribute_Name): New routine.
+	* snames.ads-tmpl: Attributes CPU, Dispatching_Domain and
+	Interrupt_Priority are marked as INT attributes since they
+	don't denote real attribute and are only used internally in
+	the compiler.
+	(Is_Internal_Attribute_Name): New routine.
+
+2012-07-09  Thomas Quinot  <quinot@adacore.com>
+
+	* einfo.adb (Set_Reverse_Storage_Order): Update assertion,
+	flag is now valid for array types as well.
+
+2012-07-09  Tristan Gingold  <gingold@adacore.com>
+
+	* tracebak.c: Implement __gnat_backtrace for Win64 SEH.
+
+2012-07-09  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.ads: Minor reformatting.
+
+2012-07-09  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch8.adb (Expand_N_Subprogram_Renaming_Declaration): Handle as
+	renaming_as_body renamings of predefined dispatching equality
+	and unequality operators.
+
+2012-07-09  Robert Dewar  <dewar@adacore.com>
+
+	* rident.ads: Do not instantiate r-ident.ads, this is now an
+	independent unit.
+
+2012-07-09  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.adb (Write_DT): Avoid runtime crash of this debugging
+	routine.
+	* sem_disp.adb (Find_Dispatching_Time): Protect this routine
+	against partially decorated entities.
+
+2012-07-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Check_Size): Reject a size clause that specifies
+	a value greater than Int'Last for a scalar type.
+
+2012-07-09  Vincent Pucci  <pucci@adacore.com>
+
+	* sem_ch9.adb (Allows_Lock_Free_Implementation): type must support
+	atomic operation moved to the protected body case. No non-elementary
+	out parameter moved to the protected declaration case. Functions have
+	only one lock-free restriction.
+	(Analyze_Protected_Type_Declaration): Issue a warning when
+	Priority given with Lock_Free.
+
+2012-07-09  Vincent Pucci  <pucci@adacore.com>
+
+	* sem_dim.adb: Grammar of aspect Dimension fixed.
+
+2012-07-09  Vincent Pucci  <pucci@adacore.com>
+
+	* freeze.adb (Freeze_Record_Type): Code reorg in order to avoid
+	pushing and popping the scope stack whenever a delayed aspect occurs.
+
+2012-07-09  Gary Dismukes  <dismukes@adacore.com>
+
+	* s-os_lib.ads: Remove pragma Elaborate_Body, as
+	this is now unnecessary due to recently added pragma Preelaborate.
+
+2012-07-09  Jose Ruiz  <ruiz@adacore.com>
+
+	* s-taprop-mingw.adb (Set_Priority): Remove the code that was
+	previously in place to reorder the ready queue when a task drops
+	its priority due to the loss of inherited priority.
+
+2012-07-09  Robert Dewar  <dewar@adacore.com>
+
+	* layout.adb, i-cstrea.ads, a-ststio.ads, prj-util.ads, sem_cat.adb,
+	s-commun.ads, s-ficobl.ads, s-os_lib.ads, s-fileio.ads: Minor
+	reformatting.
+
+2012-07-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* raise-gcc.c: Update comments. Fix typo.
+
+2012-07-09  Thomas Quinot  <quinot@adacore.com>
+
+	* einfo.adb, einfo.ads, sem_attr.adb, sem_ch13.adb: Attribute
+	Scalar_Storage_Order can be defined or queried for array types as well
+	as record types.
+
+2012-07-09  Tristan Gingold  <gingold@adacore.com>
+
+	* a-exexpr-gcc.adb (CleanupUnwind_Handler): Now imported from
+	raise-gcc.c
+	* raise-gcc.c (__gnat_cleanupunwind_handler): Defined.
+	Strictly follow the ABI convention on ia64.
+
+2012-07-09  Gary Dismukes  <dismukes@adacore.com>
+
+	* a-ststio.ads: Add pragma Preelaborate, per AI05-0283.
+	* i-cstrea.ads (max_path_len): Change from variable to deferred
+	constant to allow it to be used as a bound in string component
+	in type System.File_IO.Temp_File_Record.
+	* s-os_lib.ads, s-commun.ads, s-ficobl.ads, s-fileio.ads: Add pragma
+	Preelaborate.
+	* s-fileio.adb (Get_Case_Sensitive): Move function inside
+	procedure Open.
+	(File_Names_Case_Sensitive): Move variable inside
+	procedure Open, to avoid violation of Preelaborate restriction
+	(due to call to Get_Case_Sensitive).
+
+2012-07-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* layout.adb (Set_Elem_Alignment): Protect against meaningless
+	size clause, to prevent overflow in internal computation of
+	alignment.
+
+2012-07-09  Robert Dewar  <dewar@adacore.com>
+
+	* freeze.adb, prj-util.adb, prj-util.ads, sem_ch13.adb: Minor
+	reformatting.
+
+2012-07-09  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_cat.adb (Check_Categorization_Dependencies):
+	Allow dependence of both Remote_Types and Remote_Call_Interface
+	declarations (not just Remote_Types units) on preelaborated
+	units, but require that the dependence be made via a private
+	with_clause. Issue a specialized error message.
+
+2012-07-09  Pascal Obry  <obry@adacore.com>
+
+	* prj-util.adb, prj-util.ads (For_Interface_Sources): New routine.
+
+2012-07-09  Tristan Gingold  <gingold@adacore.com>
+
+	* seh_init.c (__gnat_SEH_error_handler): On Win64 and SEH,
+	return for unknown exceptions.
+	* raise-gcc.c (__gnat_personality_seh0): Call __gnat_SEH_error_handler.
+
+2012-07-09  Joel Brobecker  <brobecker@adacore.com brobecker>
+
+	* exp_dbug.ads (No_Dollar_In_Label): Delete.
+
+2012-07-09  Vincent Pucci  <pucci@adacore.com>
+
+	* sem_ch13.adb (Check_Overloaded_Name): New routine.
+
+2012-07-09  Vincent Pucci  <pucci@adacore.com>
+
+	* freeze.adb (Freeze_Record_Type): Analyze the delayed aspects of the
+	components in a record type.
+
+2012-07-09  Pascal Obry  <obry@adacore.com>
+
+	* prj-util.ads: Minor reformatting.
+
+2012-07-09  Tristan Gingold  <gingold@adacore.com>
+
+	* raise-gcc.c (db_indent): Simplify style, improve comments.
+	Remove !IN_RTS part (dead).
+
+2012-07-09  Robert Dewar  <dewar@adacore.com>
+
+	* usage.adb: Minor change to format of -gnatn line.
+
+2012-07-09  Tristan Gingold  <gingold@adacore.com>
+
+	* a-exexpr-gcc.adb: Reorder routine.
+
+2012-07-09  Vincent Celier  <celier@adacore.com>
+
+	* lib-writ.ads: Add documentation for the Z lines (implicitly
+	withed units) and Y lines (limited withed units).
+
+2012-07-09  Robert Dewar  <dewar@adacore.com>
+
+	* lib.ads, exp_attr.adb, exp_ch9.adb, sem_dim.adb, sem_ch9.adb,
+	sem_prag.adb, sem_ch12.adb, mlib-utl.adb, freeze.adb, sem_res.adb,
+	sem_attr.adb, sem_case.adb, gnatlink.adb, exp_ch4.adb, sem_ch6.adb,
+	sem_elim.adb, s-dimmks.ads, sem_ch13.adb: Minor code clean ups.
+
+2012-07-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat_ugn.texi (Switches for gcc): Document -gnatn[12] only
+	lightly in the summary and more thoroughly in inlining section.
+	(Performance Considerations): Document -gnatn[12] in inlining
+	section.
+
+2012-07-09  Tristan Gingold  <gingold@adacore.com>
+
+	* a-exexpr-gcc.adb (Unhandled_Except_Handler): New procedure.
+	(Unhandled_Others_Value): New const.
+	* raise-gcc.c (GNAT_UNHANDLED_OTHERS): Define.
+	(action_descriptor): Remove ttype_entry.
+	(get_action_description_for): Do not assign ttype_entry.
+	(is_handled_by): Consider GNAT_UNHANDLED_OTHERS.
+
 2012-07-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (Call_to_gnu): Robustify test for function case

@@ -294,15 +294,21 @@ package body Exp_Aggr is
 
       --  The normal limit is 5000, but we increase this limit to 2**24 (about
       --  16 million) if Restrictions (No_Elaboration_Code) or Restrictions
-      --  (No_Implicit_Loops) is specified, since in either case, we are at
-      --  risk of declaring the program illegal because of this limit.
+      --  (No_Implicit_Loops) is specified, since in either case we are at
+      --  risk of declaring the program illegal because of this limit. We also
+      --  increase the limit when Static_Elaboration_Desired, given that this
+      --  means that objects are intended to be placed in data memory.
 
       Max_Aggr_Size : constant Nat :=
                         5000 + (2 ** 24 - 5000) *
                           Boolean'Pos
                             (Restriction_Active (No_Elaboration_Code)
-                              or else
-                             Restriction_Active (No_Implicit_Loops));
+                               or else
+                             Restriction_Active (No_Implicit_Loops)
+                               or else
+                             ((Ekind (Current_Scope) = E_Package
+                               and then
+                                 Static_Elaboration_Desired (Current_Scope))));
 
       function Component_Count (T : Entity_Id) return Int;
       --  The limit is applied to the total number of components that the
@@ -3511,11 +3517,12 @@ package body Exp_Aggr is
                            --  Check for maximum others replication. Note that
                            --  we skip this test if either of the restrictions
                            --  No_Elaboration_Code or No_Implicit_Loops is
-                           --  active, if this is a preelaborable unit or a
-                           --  predefined unit. This ensures that predefined
-                           --  units get the same level of constant folding in
-                           --  Ada 95 and Ada 2005, where their categorization
-                           --  has changed.
+                           --  active, if this is a preelaborable unit or
+                           --  a predefined unit, or if the unit must be
+                           --  placed in data memory. This also ensures that
+                           --  predefined units get the same level of constant
+                           --  folding in Ada 95 and Ada 2005, where their
+                           --  categorization has changed.
 
                            declare
                               P : constant Entity_Id :=
@@ -3527,6 +3534,11 @@ package body Exp_Aggr is
 
                               if Restriction_Active (No_Elaboration_Code)
                                 or else Restriction_Active (No_Implicit_Loops)
+                                or else
+                                  (Ekind (Current_Scope) = E_Package
+                                    and then
+                                      Static_Elaboration_Desired
+                                        (Current_Scope))
                                 or else Is_Preelaborated (P)
                                 or else (Ekind (P) = E_Package_Body
                                           and then
@@ -3716,6 +3728,40 @@ package body Exp_Aggr is
          end if;
 
          Analyze_And_Resolve (N, Typ);
+      end if;
+
+      if (Ekind (Current_Scope) = E_Package
+        and then Static_Elaboration_Desired (Current_Scope))
+        and then Nkind (Parent (N)) = N_Object_Declaration
+      then
+         declare
+            Expr : Node_Id;
+
+         begin
+            if Present (Expressions (N)) then
+               Expr := First (Expressions (N));
+               while Present (Expr) loop
+                  if Nkind_In (Expr, N_Integer_Literal, N_Real_Literal)
+                    or else
+                      (Is_Entity_Name (Expr)
+                        and then Ekind (Entity (Expr)) = E_Enumeration_Literal)
+                  then
+                     null;
+
+                  else
+                     Error_Msg_N
+                       ("non-static object  requires elaboration code?", N);
+                     exit;
+                  end if;
+
+                  Next (Expr);
+               end loop;
+
+               if Present (Component_Associations (N)) then
+                  Error_Msg_N ("object requires elaboration code?", N);
+               end if;
+            end if;
+         end;
       end if;
    end Convert_To_Positional;
 
@@ -6077,35 +6123,7 @@ package body Exp_Aggr is
             Expr : Node_Id;
             --  Next expression from positional parameters of aggregate
 
-            Enclosing_Aggregate : Node_Id;
-
-            In_Reverse_Storage_Order_Record : Boolean;
-            --  True if we are within an aggregate of a record type with
-            --  reversed storage order.
-
          begin
-            --  Determine whether we are in a reversed storage order record
-            --  aggregate.
-
-            In_Reverse_Storage_Order_Record := False;
-            Enclosing_Aggregate := Parent (N);
-            while Present (Enclosing_Aggregate) loop
-               if Nkind (Enclosing_Aggregate) = N_Component_Association then
-                  null;
-
-               elsif Nkind (Enclosing_Aggregate) /= N_Aggregate then
-                  exit;
-
-               elsif Is_Record_Type (Etype (Enclosing_Aggregate))
-                 and then Reverse_Storage_Order (Etype (Enclosing_Aggregate))
-               then
-                  In_Reverse_Storage_Order_Record := True;
-                  exit;
-               end if;
-
-               Enclosing_Aggregate := Parent (Enclosing_Aggregate);
-            end loop;
-
             --  For little endian, we fill up the low order bits of the target
             --  value. For big endian we fill up the high order bits of the
             --  target value (which is a left justified modular value).
@@ -6118,7 +6136,7 @@ package body Exp_Aggr is
 
             if Bytes_Big_Endian
               xor Debug_Flag_8
-              xor In_Reverse_Storage_Order_Record
+              xor Reverse_Storage_Order (Base_Type (Typ))
             then
                Shift := Csiz * (Len - 1);
                Incr  := -Csiz;
@@ -6145,9 +6163,7 @@ package body Exp_Aggr is
 
             --  Now we can rewrite with the proper value
 
-            Lit :=
-              Make_Integer_Literal (Loc,
-                Intval => Aggregate_Val);
+            Lit := Make_Integer_Literal (Loc, Intval => Aggregate_Val);
             Set_Print_In_Hex (Lit);
 
             --  Construct the expression using this literal. Note that it is

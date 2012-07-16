@@ -904,6 +904,7 @@ procedure Gnatlink is
 
       procedure Write_RF (S : String) is
          Success : Boolean := True;
+
       begin
          --  If a GNU response file is used, space and backslash need to be
          --  escaped because they are interpreted as a string separator and
@@ -912,17 +913,18 @@ procedure Gnatlink is
          --  they are interpreted as string delimiters on both sides.
 
          if Using_GNU_response_file then
-            for I in S'Range loop
-               if S (I) = ' ' or else S (I) = '\' then
+            for J in S'Range loop
+               if S (J) = ' ' or else S (J) = '\' then
                   if Write (Tname_FD, ASCII.BACK_SLASH'Address, 1) /= 1 then
                      Success := False;
                   end if;
                end if;
 
-               if Write (Tname_FD, S (I)'Address, 1) /= 1 then
+               if Write (Tname_FD, S (J)'Address, 1) /= 1 then
                   Success := False;
                end if;
             end loop;
+
          else
             if Write (Tname_FD, S'Address, S'Length) /= S'Length then
                Success := False;
@@ -973,9 +975,9 @@ procedure Gnatlink is
 
          Linker_Objects.Increment_Last;
 
-         --  Mark the positions of first and last object files in case
-         --  they need to be placed with a named file on systems having
-         --  linker line limitations.
+         --  Mark the positions of first and last object files in case they
+         --  need to be placed with a named file on systems having linker
+         --  line limitations.
 
          if Objs_Begin = 0 then
             Objs_Begin := Linker_Objects.Last;
@@ -1016,9 +1018,9 @@ procedure Gnatlink is
                    and then Link_Bytes > Link_Max)
       then
          --  Create a temporary file containing the Ada user object files
-         --  needed by the link. This list is taken from the bind file
-         --  and is output one object per line for maximal compatibility with
-         --  linkers supporting this option.
+         --  needed by the link. This list is taken from the bind file and is
+         --  output one object per line for maximal compatibility with linkers
+         --  supporting this option.
 
          Create_Temp_File (Tname_FD, Tname);
 
@@ -1045,9 +1047,9 @@ procedure Gnatlink is
                        Tname (Tname'First .. Tname'Last - 1));
 
          --  The slots containing these object file names are then removed
-         --  from the objects table so they do not appear in the link. They
-         --  are removed by moving up the linker options and non-Ada object
-         --  files appearing after the Ada object list in the table.
+         --  from the objects table so they do not appear in the link. They are
+         --  removed by moving up the linker options and non-Ada object files
+         --  appearing after the Ada object list in the table.
 
          declare
             N : Integer;
@@ -1082,8 +1084,8 @@ procedure Gnatlink is
             elsif Next_Line (Nfirst .. Nlast) = "-shared" then
                GNAT_Shared := True;
 
-            --  Add binder options only if not already set on the command
-            --  line. This rule is a way to control the linker options order.
+            --  Add binder options only if not already set on the command line.
+            --  This rule is a way to control the linker options order.
 
             --  The following test needs comments, why is it VMS specific.
             --  The above comment looks out of date ???
@@ -1095,8 +1097,8 @@ procedure Gnatlink is
                if Nlast > Nfirst + 2 and then
                  Next_Line (Nfirst .. Nfirst + 1) = "-L"
                then
-                  --  Construct a library search path for use later
-                  --  to locate static gnatlib libraries.
+                  --  Construct a library search path for use later to locate
+                  --  static gnatlib libraries.
 
                   if Libpath.Last > 1 then
                      Libpath.Increment_Last;
@@ -2208,6 +2210,7 @@ begin
             System.OS_Lib.Spawn (Linker_Path.all, Args, Success);
 
             if Success then
+
                --  Delete the temporary file used in conjunction with linking
                --  if one was created. See Process_Bind_File for details.
 

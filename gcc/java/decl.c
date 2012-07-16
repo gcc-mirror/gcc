@@ -34,7 +34,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "flags.h"
 #include "java-tree.h"
 #include "jcf.h"
-#include "libfuncs.h"
 #include "java-except.h"
 #include "ggc.h"
 #include "cgraph.h"

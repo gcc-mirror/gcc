@@ -1,5 +1,5 @@
 /* A pass for lowering trees to RTL.
-   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -3410,6 +3410,8 @@ expand_debug_expr (tree exp)
     case VEC_UNPACK_LO_EXPR:
     case VEC_WIDEN_MULT_HI_EXPR:
     case VEC_WIDEN_MULT_LO_EXPR:
+    case VEC_WIDEN_MULT_EVEN_EXPR:
+    case VEC_WIDEN_MULT_ODD_EXPR:
     case VEC_WIDEN_LSHIFT_HI_EXPR:
     case VEC_WIDEN_LSHIFT_LO_EXPR:
     case VEC_PERM_EXPR:

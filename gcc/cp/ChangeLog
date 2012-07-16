@@ -1,3 +1,47 @@
+2012-07-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53953
+	* method.c (synthesized_method_walk): Initialize no_implicit_p sooner.
+
+2012-07-12  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (instantiate_decl): Check typedefs access here.
+	(instantiate_template_1): Not here.
+
+	* pt.c (deduction_tsubst_fntype): Just suppress access checking.
+	(instantiate_template_1): Set DECL_TI_TEMPLATE before access checking.
+	(push_deduction_access_scope, pop_deduction_access_scope): Remove.
+
+2012-07-11  Jason Merrill  <jason@redhat.com>
+
+	DR 1402
+	* method.c (synthesized_method_walk): Replace uses of msg with diag.
+	Correct handling of virtual bases with move operations.
+	(process_subob_fn, walk_field_subobs): Replace uses of msg with diag.
+
+2012-07-11  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* method.c: Do not include tree-pass.h.
+
+2012-07-10  Jason Merrill  <jason@redhat.com>
+
+	DR 1402
+	PR c++/53733
+	* cp-tree.h (FNDECL_SUPPRESS_IMPLICIT_DECL): New.
+	(struct lang_decl_fn): Add suppress_implicit_decl field.
+	* method.c (implicitly_declare_fn): Check it.
+	(process_subob_fn): Add no_implicit_p parm.
+	(walk_field_subobs, synthesized_method_walk): Likewise.
+	(maybe_explain_implicit_delete): Adjust.
+	(explain_implicit_non_constexpr): Adjust.
+
+	* method.c (synthesized_method_walk): Avoid changing
+	EH spec based on cleanups in other places, too.
+
+2012-07-09  Sterling Augustine  <saugustine@google.com>
+
+	* error.c (lang_decl_name): Use TFF_UNQUALIFIED_NAME flag.
+
 2012-07-08  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* decl.c (cp_finish_decl): Add FIXME at add_local_decl call site.

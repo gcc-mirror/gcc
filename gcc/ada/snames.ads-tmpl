@@ -779,7 +779,6 @@ package Snames is
    Name_Constant_Indexing              : constant Name_Id := N + $; -- GNAT
    Name_Constrained                    : constant Name_Id := N + $;
    Name_Count                          : constant Name_Id := N + $;
-   Name_CPU                            : constant Name_Id := N + $; -- Ada 12
    Name_Default_Bit_Order              : constant Name_Id := N + $; -- GNAT
    Name_Default_Iterator               : constant Name_Id := N + $; -- GNAT
    Name_Definite                       : constant Name_Id := N + $;
@@ -787,7 +786,6 @@ package Snames is
    Name_Denorm                         : constant Name_Id := N + $;
    Name_Descriptor_Size                : constant Name_Id := N + $;
    Name_Digits                         : constant Name_Id := N + $;
-   Name_Dispatching_Domain             : constant Name_Id := N + $; -- Ada 12
    Name_Elaborated                     : constant Name_Id := N + $; -- GNAT
    Name_Emax                           : constant Name_Id := N + $; -- Ada 83
    Name_Enabled                        : constant Name_Id := N + $; -- GNAT
@@ -809,7 +807,6 @@ package Snames is
    Name_Img                            : constant Name_Id := N + $; -- GNAT
    Name_Implicit_Dereference           : constant Name_Id := N + $; -- GNAT
    Name_Integer_Value                  : constant Name_Id := N + $; -- GNAT
-   Name_Interrupt_Priority             : constant Name_Id := N + $; -- Ada 12
    Name_Invalid_Value                  : constant Name_Id := N + $; -- GNAT
    Name_Iterator_Element               : constant Name_Id := N + $; -- GNAT
    Name_Large                          : constant Name_Id := N + $; -- Ada 83
@@ -954,6 +951,27 @@ package Snames is
    Last_Type_Attribute_Name            : constant Name_Id := N + $;
    Last_Entity_Attribute_Name          : constant Name_Id := N + $;
    Last_Attribute_Name                 : constant Name_Id := N + $;
+
+   --  Names of internal attributes. They are not real attributes but special
+   --  names used internally by GNAT in order to deal with delayed aspects
+   --  (Aspect_CPU, Aspect_Dispatching_Domain, Aspect_Interrupt_Priority) that
+   --  don't have corresponding pragmas or user-referencable attributes.
+
+   --  It is convenient to have these internal attributes available for
+   --  processing the aspects, since the normal approach is to convert an
+   --  aspect into its corresponding pragma or attribute specification.
+
+   --  These attributes do have Attribute_Id values so that case statements
+   --  on Attribute_Id include these cases, but they are NOT included in the
+   --  Attribute_Name subtype defined above, which is typically used in the
+   --  front end for checking syntax of submitted programs (where the use of
+   --  internal attributes is not permitted).
+
+   First_Internal_Attribute_Name       : constant Name_Id := N + $;
+   Name_CPU                            : constant Name_Id := N + $;
+   Name_Dispatching_Domain             : constant Name_Id := N + $;
+   Name_Interrupt_Priority             : constant Name_Id := N + $;
+   Last_Internal_Attribute_Name        : constant Name_Id := N + $;
 
    --  Names of recognized locking policy identifiers
 
@@ -1358,7 +1376,6 @@ package Snames is
       Attribute_Constant_Indexing,
       Attribute_Constrained,
       Attribute_Count,
-      Attribute_CPU,
       Attribute_Default_Bit_Order,
       Attribute_Default_Iterator,
       Attribute_Definite,
@@ -1366,7 +1383,6 @@ package Snames is
       Attribute_Denorm,
       Attribute_Descriptor_Size,
       Attribute_Digits,
-      Attribute_Dispatching_Domain,
       Attribute_Elaborated,
       Attribute_Emax,
       Attribute_Enabled,
@@ -1388,7 +1404,6 @@ package Snames is
       Attribute_Img,
       Attribute_Implicit_Dereference,
       Attribute_Integer_Value,
-      Attribute_Interrupt_Priority,
       Attribute_Invalid_Value,
       Attribute_Iterator_Element,
       Attribute_Large,
@@ -1518,7 +1533,18 @@ package Snames is
 
       Attribute_Base,
       Attribute_Class,
-      Attribute_Stub_Type);
+      Attribute_Stub_Type,
+
+      --  The internal attributes are on their own, out of order, because of
+      --  the special processing required to deal with the fact that their
+      --  names are not attribute names.
+
+      Attribute_CPU,
+      Attribute_Dispatching_Domain,
+      Attribute_Interrupt_Priority);
+
+      subtype Internal_Attribute_Id is Attribute_Id range
+        Attribute_CPU .. Attribute_Interrupt_Priority;
 
       type Attribute_Class_Array is array (Attribute_Id) of Boolean;
       --  Type used to build attribute classification flag arrays
@@ -1826,6 +1852,10 @@ package Snames is
    --  Test to see if the name N is the name of a recognized entity attribute,
    --  i.e. an attribute reference that returns an entity.
 
+   function Is_Internal_Attribute_Name (N : Name_Id) return Boolean;
+   --  Test to see if the name N is the name of an INT attribute (Name_CPU,
+   --  Name_Dispatching_Domain, Name_Interrupt_Priority).
+
    function Is_Procedure_Attribute_Name (N : Name_Id) return Boolean;
    --  Test to see if the name N is the name of a recognized attribute that
    --  designates a procedure (and can therefore appear as a statement).
@@ -1885,7 +1915,9 @@ package Snames is
 
    function Get_Attribute_Id (N : Name_Id) return Attribute_Id;
    --  Returns Id of attribute corresponding to given name. It is an error to
-   --  call this function with a name that is not the name of a attribute.
+   --  call this function with a name that is not the name of a attribute. Note
+   --  that the function also works correctly for internal attribute names even
+   --  though there are not included in the main list of attribute Names.
 
    function Get_Convention_Id (N : Name_Id) return Convention_Id;
    --  Returns Id of language convention corresponding to given name. It is

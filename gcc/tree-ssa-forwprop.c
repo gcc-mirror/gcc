@@ -2474,6 +2474,59 @@ out:
   return false;
 }
 
+/* Associate operands of a POINTER_PLUS_EXPR assignmen at *GSI.  Returns
+   true if anything changed, false otherwise.  */
+
+static bool
+associate_pointerplus (gimple_stmt_iterator *gsi)
+{
+  gimple stmt = gsi_stmt (*gsi);
+  gimple def_stmt;
+  tree ptr, rhs, algn;
+
+  /* Pattern match
+       tem = (sizetype) ptr;
+       tem = tem & algn;
+       tem = -tem;
+       ... = ptr p+ tem;
+     and produce the simpler and easier to analyze with respect to alignment
+       ... = ptr & ~algn;  */
+  ptr = gimple_assign_rhs1 (stmt);
+  rhs = gimple_assign_rhs2 (stmt);
+  if (TREE_CODE (rhs) != SSA_NAME)
+    return false;
+  def_stmt = SSA_NAME_DEF_STMT (rhs);
+  if (!is_gimple_assign (def_stmt)
+      || gimple_assign_rhs_code (def_stmt) != NEGATE_EXPR)
+    return false;
+  rhs = gimple_assign_rhs1 (def_stmt);
+  if (TREE_CODE (rhs) != SSA_NAME)
+    return false;
+  def_stmt = SSA_NAME_DEF_STMT (rhs);
+  if (!is_gimple_assign (def_stmt)
+      || gimple_assign_rhs_code (def_stmt) != BIT_AND_EXPR)
+    return false;
+  rhs = gimple_assign_rhs1 (def_stmt);
+  algn = gimple_assign_rhs2 (def_stmt);
+  if (TREE_CODE (rhs) != SSA_NAME
+      || TREE_CODE (algn) != INTEGER_CST)
+    return false;
+  def_stmt = SSA_NAME_DEF_STMT (rhs);
+  if (!is_gimple_assign (def_stmt)
+      || !CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def_stmt)))
+    return false;
+  if (gimple_assign_rhs1 (def_stmt) != ptr)
+    return false;
+
+  algn = double_int_to_tree (TREE_TYPE (ptr),
+			     double_int_not (tree_to_double_int (algn)));
+  gimple_assign_set_rhs_with_ops (gsi, BIT_AND_EXPR, ptr, algn);
+  fold_stmt_inplace (gsi);
+  update_stmt (stmt);
+
+  return true;
+}
+
 /* Combine two conversions in a row for the second conversion at *GSI.
    Returns 1 if there were any changes made, 2 if cfg-cleanup needs to
    run.  Else it returns 0.  */
@@ -2815,6 +2868,8 @@ ssa_forward_propagate_and_combine (void)
 		else if (code == PLUS_EXPR
 			 || code == MINUS_EXPR)
 		  changed = associate_plusminus (&gsi);
+		else if (code == POINTER_PLUS_EXPR)
+		  changed = associate_pointerplus (&gsi);
 		else if (CONVERT_EXPR_CODE_P (code)
 			 || code == FLOAT_EXPR
 			 || code == FIX_TRUNC_EXPR)

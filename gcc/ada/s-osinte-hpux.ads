@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                                                                          --
 --               Copyright (C) 1991-1994, Florida State University          --
---            Copyright (C) 1995-2011, Free Software Foundation, Inc.       --
+--            Copyright (C) 1995-2012, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -290,7 +290,7 @@ package System.OS_Interface is
    pragma Import (C, Alternate_Stack, "__gnat_alternate_stack");
    --  The alternate signal stack for stack overflows
 
-   Alternate_Stack_Size : constant := 16 * 1024;
+   Alternate_Stack_Size : constant := 128 * 1024;
    --  This must be in keeping with init.c:__gnat_alternate_stack
 
    Stack_Base_Available : constant Boolean := False;

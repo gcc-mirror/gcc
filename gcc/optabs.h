@@ -360,12 +360,16 @@ enum optab_index
   OTI_vec_shr,
   /* Extract specified elements from vectors, for vector load.  */
   OTI_vec_realign_load,
-  /* Widening multiplication.
-     The high/low part of the resulting vector of products is returned.  */
+  /* Widening multiplication.  The high/low/even/odd part of the
+     resulting vector of products is returned.  */
   OTI_vec_widen_umult_hi,
   OTI_vec_widen_umult_lo,
   OTI_vec_widen_smult_hi,
   OTI_vec_widen_smult_lo,
+  OTI_vec_widen_umult_even,
+  OTI_vec_widen_umult_odd,
+  OTI_vec_widen_smult_even,
+  OTI_vec_widen_smult_odd,
   /* Widening shift left.
      The high/low part of the resulting vector is returned.  */
   OTI_vec_widen_ushiftl_hi,
@@ -585,6 +589,10 @@ enum optab_index
 #define vec_widen_umult_lo_optab (&optab_table[OTI_vec_widen_umult_lo])
 #define vec_widen_smult_hi_optab (&optab_table[OTI_vec_widen_smult_hi])
 #define vec_widen_smult_lo_optab (&optab_table[OTI_vec_widen_smult_lo])
+#define vec_widen_umult_even_optab (&optab_table[OTI_vec_widen_umult_even])
+#define vec_widen_umult_odd_optab (&optab_table[OTI_vec_widen_umult_odd])
+#define vec_widen_smult_even_optab (&optab_table[OTI_vec_widen_smult_even])
+#define vec_widen_smult_odd_optab (&optab_table[OTI_vec_widen_smult_odd])
 #define vec_widen_ushiftl_hi_optab (&optab_table[OTI_vec_widen_ushiftl_hi])
 #define vec_widen_ushiftl_lo_optab (&optab_table[OTI_vec_widen_ushiftl_lo])
 #define vec_widen_sshiftl_hi_optab (&optab_table[OTI_vec_widen_sshiftl_hi])
@@ -1046,6 +1054,12 @@ extern bool can_vec_perm_p (enum machine_mode, bool, const unsigned char *);
 /* Generate code for VEC_PERM_EXPR.  */
 extern rtx expand_vec_perm (enum machine_mode, rtx, rtx, rtx, rtx);
 
+/* Return non-zero if target supports a given highpart multiplication.  */
+extern int can_mult_highpart_p (enum machine_mode, bool);
+
+/* Generate code for MULT_HIGHPART_EXPR.  */
+extern rtx expand_mult_highpart (enum machine_mode, rtx, rtx, rtx, bool);
+
 /* Return the insn used to implement mode MODE of OP, or CODE_FOR_nothing
    if the target does not have such an insn.  */
 
@@ -1091,8 +1105,7 @@ set_widening_optab_handler (optab op, enum machine_mode to_mode,
   else
     {
       if (op->widening == NULL)
-	op->widening = (struct widening_optab_handlers *)
-	      xcalloc (1, sizeof (struct widening_optab_handlers));
+	op->widening = XCNEW (struct widening_optab_handlers);
 
       op->widening->handlers[(int) to_mode][(int) from_mode].insn_code = code;
     }

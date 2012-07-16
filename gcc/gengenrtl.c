@@ -64,9 +64,9 @@ type_from_format (int c)
     case 'E':
       return "rtvec ";
     case 't':
-      return "union tree_node *";  /* tree - typedef not available */
+      return "tree ";
     case 'B':
-      return "struct basic_block_def *";  /* basic block - typedef not available */
+      return "basic_block ";
     default:
       gcc_unreachable ();
     }

@@ -165,6 +165,7 @@ package body Prj.Nmsc is
    type Lib_Data is record
       Name : Name_Id;
       Proj : Project_Id;
+      Tree : Project_Tree_Ref;
    end record;
 
    package Lib_Data_Table is new GNAT.Table
@@ -3639,7 +3640,9 @@ package body Prj.Nmsc is
          --  Check if the same library name is used in an other library project
 
          for J in 1 .. Lib_Data_Table.Last loop
-            if Lib_Data_Table.Table (J).Name = Project.Library_Name then
+            if Lib_Data_Table.Table (J).Name = Project.Library_Name
+              and then Lib_Data_Table.Table (J).Tree = Data.Tree
+            then
                Error_Msg_Name_1 := Lib_Data_Table.Table (J).Proj.Name;
                Error_Msg
                  (Data.Flags,
@@ -3656,7 +3659,9 @@ package body Prj.Nmsc is
          --  Record the library name
 
          Lib_Data_Table.Append
-           ((Name => Project.Library_Name, Proj => Project));
+           ((Name => Project.Library_Name,
+             Proj => Project,
+             Tree => Data.Tree));
       end if;
    end Check_Library_Attributes;
 

@@ -584,8 +584,63 @@ package body Prj is
             In_Aggregate_Lib      : Boolean;
             From_Encapsulated_Lib : Boolean)
          is
+
+            function Has_Sources (P : Project_Id) return Boolean;
+            --  Returns True if P has sources
+
+            function Get_From_Tree (P : Project_Id) return Project_Id;
+            --  Get project P from Tree. If P has no sources get another
+            --  instance of this project with sources. If P has sources,
+            --  returns it.
+
+            -----------------
+            -- Has_Sources --
+            -----------------
+
+            function Has_Sources (P : Project_Id) return Boolean is
+               Lang : Language_Ptr;
+
+            begin
+               Lang := P.Languages;
+               while Lang /= No_Language_Index loop
+                  if Lang.First_Source /= No_Source then
+                     return True;
+                  end if;
+
+                  Lang := Lang.Next;
+               end loop;
+
+               return False;
+            end Has_Sources;
+
+            -------------------
+            -- Get_From_Tree --
+            -------------------
+
+            function Get_From_Tree (P : Project_Id) return Project_Id is
+               List : Project_List := Tree.Projects;
+
+            begin
+               if not Has_Sources (P) then
+                  while List /= null loop
+                     if List.Project.Name = P.Name
+                       and then Has_Sources (List.Project)
+                     then
+                        return List.Project;
+                     end if;
+
+                     List := List.Next;
+                  end loop;
+               end if;
+
+               return P;
+            end Get_From_Tree;
+
+            --  Local variables
+
             List : Project_List;
-            T    : Project_Tree_Ref;
+
+         --  Start of processing for Recursive_Check
 
          begin
             if not Seen_Name.Contains (Project.Name) then
@@ -597,7 +652,7 @@ package body Prj is
 
                if not Imported_First then
                   Action
-                    (Project,
+                    (Get_From_Tree (Project),
                      Tree,
                      Project_Context'(In_Aggregate_Lib, From_Encapsulated_Lib),
                      With_State);
@@ -640,23 +695,20 @@ package body Prj is
                         --  of the aggregate library.
 
                         if Project.Qualifier = Aggregate_Library then
-                           T := Tree;
                            Recursive_Check
-                             (Agg.Project, T,
+                             (Agg.Project, Tree,
                               True,
                               From_Encapsulated_Lib
                                 or else
                                   Project.Standalone_Library = Encapsulated);
 
                         else
-                           T := Agg.Tree;
-
                            --  Use a new context as we want to returns the same
                            --  project in different project tree for aggregated
                            --  projects.
 
                            Recursive_Check_Context
-                             (Agg.Project, T, False, False);
+                             (Agg.Project, Agg.Tree, False, False);
                         end if;
 
                         Agg := Agg.Next;
@@ -666,7 +718,7 @@ package body Prj is
 
                if Imported_First then
                   Action
-                    (Project,
+                    (Get_From_Tree (Project),
                      Tree,
                      Project_Context'(In_Aggregate_Lib, From_Encapsulated_Lib),
                      With_State);

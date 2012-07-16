@@ -201,7 +201,7 @@
 
 (define_insn_reservation "ir_sr70_hilo" 1
   (and (eq_attr "cpu" "sr71000")
-       (eq_attr "type" "mthilo,mfhilo"))
+       (eq_attr "type" "mthi,mtlo,mfhi,mflo"))
   "ri_insns")
 
 (define_insn_reservation "ir_sr70_arith" 1

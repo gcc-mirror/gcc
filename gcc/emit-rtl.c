@@ -149,7 +149,6 @@ static GTY ((if_marked ("ggc_marked_p"), param_is (struct rtx_def)))
 #define cur_debug_insn_uid (crtl->emit.x_cur_debug_insn_uid)
 #define first_label_num (crtl->emit.x_first_label_num)
 
-static rtx make_call_insn_raw (rtx);
 static rtx change_address_1 (rtx, enum machine_mode, rtx, int);
 static void set_used_decls (tree);
 static void mark_label_nuses (rtx);
@@ -3692,7 +3691,7 @@ make_insn_raw (rtx pattern)
 
 /* Like `make_insn_raw' but make a DEBUG_INSN instead of an insn.  */
 
-rtx
+static rtx
 make_debug_insn_raw (rtx pattern)
 {
   rtx insn;
@@ -3713,7 +3712,7 @@ make_debug_insn_raw (rtx pattern)
 
 /* Like `make_insn_raw' but make a JUMP_INSN instead of an insn.  */
 
-rtx
+static rtx
 make_jump_insn_raw (rtx pattern)
 {
   rtx insn;

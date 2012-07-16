@@ -2086,7 +2086,7 @@ execute_sm_if_changed (edge ex, tree mem, tree tmp_var, tree flag)
 	  if (gimple_phi_arg_edge (phi, i)->src == new_bb)
 	    {
 	      tree arg = gimple_phi_arg_def (phi, i);
-	      add_phi_arg (phi, arg, then_old_edge, UNKNOWN_LOCATION);
+	      add_phi_arg (phi, arg, then_old_edge, UNKNOWN_LOCATION, NULL);
 	      update_stmt (phi);
 	    }
       }

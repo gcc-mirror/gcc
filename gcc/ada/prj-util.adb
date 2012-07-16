@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,11 +23,14 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Ada.Containers.Indefinite_Ordered_Sets;
+with Ada.Directories;
 with Ada.Unchecked_Deallocation;
 
 with GNAT.Case_Util; use GNAT.Case_Util;
 with GNAT.Regexp;    use GNAT.Regexp;
 
+with ALI;      use ALI;
 with Osint;    use Osint;
 with Output;   use Output;
 with Opt;
@@ -389,6 +392,149 @@ package body Prj.Util is
 
       return Add_Suffix (Name_Find);
    end Executable_Of;
+
+   ---------------------------
+   -- For_Interface_Sources --
+   ---------------------------
+
+   procedure For_Interface_Sources
+     (Tree    : Project_Tree_Ref;
+      Project : Project_Id)
+   is
+      use Ada;
+      use type Ada.Containers.Count_Type;
+
+      package Dep_Names is new Containers.Indefinite_Ordered_Sets (String);
+
+      function Load_ALI (Filename : String) return ALI_Id;
+      --  Load an ALI file and return its id
+
+      --------------
+      -- Load_ALI --
+      --------------
+
+      function Load_ALI (Filename : String) return ALI_Id is
+         Result   : ALI_Id := No_ALI_Id;
+         Text     : Text_Buffer_Ptr;
+         Lib_File : File_Name_Type;
+
+      begin
+         if Directories.Exists (Filename) then
+            Name_Len := 0;
+            Add_Str_To_Name_Buffer (Filename);
+            Lib_File := Name_Find;
+            Text := Osint.Read_Library_Info (Lib_File);
+            Result :=
+              ALI.Scan_ALI
+                (Lib_File,
+                 Text,
+                 Ignore_ED  => False,
+                 Err        => True,
+                 Read_Lines => "UD");
+            Free (Text);
+         end if;
+
+         return Result;
+      end Load_ALI;
+
+      --  Local declarations
+
+      Iter : Source_Iterator := For_Each_Source (Tree, Project);
+      Sid  : Source_Id;
+      ALI  : ALI_Id;
+
+      First_Unit  : Unit_Id;
+      Second_Unit : Unit_Id;
+      Body_Needed : Boolean;
+      Deps        : Dep_Names.Set;
+
+   --  Start of processing for For_Interface_Sources
+
+   begin
+      --  First look at each spec, check if the body is needed
+
+      loop
+         Sid := Element (Iter);
+         exit when Sid = No_Source;
+
+         --  Skip sources that are removed/excluded and sources not part of
+         --  the interface for standalone libraries.
+
+         if Sid.Kind = Spec
+           and then not Sid.Locally_Removed
+           and then (Project.Standalone_Library = No
+                      or else Sid.Declared_In_Interfaces)
+         then
+            Action (Sid);
+
+            --  Check ALI for dependencies on body and sep
+
+            ALI :=
+              Load_ALI
+                (Get_Name_String (Get_Object_Directory (Sid.Project, True))
+                 & Get_Name_String (Sid.Dep_Name));
+
+            if ALI /= No_ALI_Id then
+               First_Unit := ALIs.Table (ALI).First_Unit;
+               Second_Unit := No_Unit_Id;
+               Body_Needed := True;
+
+               --  If there is both a spec and a body, check if both needed
+
+               if Units.Table (First_Unit).Utype = Is_Body then
+                  Second_Unit := ALIs.Table (ALI).Last_Unit;
+
+                  --  If the body is not needed, then reset First_Unit
+
+                  if not Units.Table (Second_Unit).Body_Needed_For_SAL then
+                     Body_Needed := False;
+                  end if;
+
+               elsif Units.Table (First_Unit).Utype = Is_Spec_Only then
+                  Body_Needed := False;
+               end if;
+
+               --  Handle all the separates, if any
+
+               if Body_Needed then
+                  if Other_Part (Sid) /= null then
+                     Deps.Include (Get_Name_String (Other_Part (Sid).File));
+                  end if;
+
+                  for Dep in ALIs.Table (ALI).First_Sdep ..
+                    ALIs.Table (ALI).Last_Sdep
+                  loop
+                     if Sdep.Table (Dep).Subunit_Name /= No_Name then
+                        Deps.Include
+                          (Get_Name_String (Sdep.Table (Dep).Sfile));
+                     end if;
+                  end loop;
+               end if;
+            end if;
+         end if;
+
+         Next (Iter);
+      end loop;
+
+      --  Now handle the bodies and separates if needed
+
+      if Deps.Length /= 0 then
+         Iter := For_Each_Source (Tree, Project);
+
+         loop
+            Sid := Element (Iter);
+            exit when Sid = No_Source;
+
+            if Sid.Kind /= Spec
+              and then Deps.Contains (Get_Name_String (Sid.File))
+            then
+               Action (Sid);
+            end if;
+
+            Next (Iter);
+         end loop;
+      end if;
+   end For_Interface_Sources;
 
    --------------
    -- Get_Line --

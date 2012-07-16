@@ -154,8 +154,8 @@
 ;; Reservation for integer instructions.
 (define_insn_reservation "ls2_alu" 2
   (and (eq_attr "cpu" "loongson_2e,loongson_2f")
-       (eq_attr "type" "arith,condmove,const,logical,mfhilo,move,
-                        mthilo,nop,shift,signext,slt"))
+       (eq_attr "type" "arith,condmove,const,logical,mfhi,mflo,move,
+                        mthi,mtlo,nop,shift,signext,slt"))
   "ls2_alu")
 
 ;; Reservation for branch instructions.

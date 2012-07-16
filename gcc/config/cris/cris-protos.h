@@ -40,6 +40,7 @@ extern bool cris_base_p (const_rtx, bool);
 extern bool cris_base_or_autoincr_p (const_rtx, bool);
 extern bool cris_bdap_index_p (const_rtx, bool);
 extern bool cris_biap_index_p (const_rtx, bool);
+extern bool cris_legitimate_address_p (enum machine_mode, rtx, bool);
 extern bool cris_store_multiple_op_p (rtx);
 extern bool cris_movem_load_rest_p (rtx, int);
 extern void cris_asm_output_symbol_ref (FILE *, rtx);

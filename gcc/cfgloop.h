@@ -80,7 +80,7 @@ struct GTY ((chain_next ("%h.next"))) nb_iter_bound {
 
 struct GTY (()) loop_exit {
   /* The exit edge.  */
-  struct edge_def *e;
+  edge e;
 
   /* Previous and next exit in the list of the exits of the loop.  */
   struct loop_exit *prev;
@@ -114,10 +114,10 @@ struct GTY ((chain_next ("%h.next"))) loop {
   unsigned ninsns;
 
   /* Basic block of loop header.  */
-  struct basic_block_def *header;
+  basic_block header;
 
   /* Basic block of loop latch.  */
-  struct basic_block_def *latch;
+  basic_block latch;
 
   /* For loop unrolling/peeling decision.  */
   struct lpt_decision lpt_decision;

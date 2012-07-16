@@ -295,21 +295,19 @@
 
 (define_insn_reservation "ir_sb1_mfhi" 1
   (and (eq_attr "cpu" "sb1,sb1a")
-       (and (eq_attr "type" "mfhilo")
-	    (not (match_operand 1 "lo_operand"))))
+       (eq_attr "type" "mfhi"))
   "sb1_ex1")
 
 (define_insn_reservation "ir_sb1_mflo" 1
   (and (eq_attr "cpu" "sb1,sb1a")
-       (and (eq_attr "type" "mfhilo")
-	    (match_operand 1 "lo_operand")))
+       (eq_attr "type" "mflo"))
   "sb1_ex1")
 
 ;; mt{hi,lo} to mul/div is 4 cycles.
 
 (define_insn_reservation "ir_sb1_mthilo" 4
   (and (eq_attr "cpu" "sb1,sb1a")
-       (eq_attr "type" "mthilo"))
+       (eq_attr "type" "mthi,mtlo"))
   "sb1_ex1")
 
 ;; mt{hi,lo} to mf{hi,lo} is 3 cycles.

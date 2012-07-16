@@ -152,14 +152,16 @@ package SCOs is
    --      o        object declaration
    --      r        renaming declaration
    --      i        generic instantiation
-   --      C        CASE statement (from CASE through end of expression)
+   --      A        ACCEPT statement (from ACCEPT to end of parameter profile)
+   --      C        CASE statement (from CASE to end of expression)
    --      E        EXIT statement
-   --      F        FOR loop (from FOR through end of iteration scheme)
-   --      I        IF statement (from IF through end of condition)
+   --      F        FOR loop (from FOR to end of iteration scheme)
+   --      I        IF statement (from IF to end of condition)
    --      P[name:] PRAGMA with the indicated name
    --      p[name:] disabled PRAGMA with the indicated name
    --      R        extended RETURN statement
-   --      W        WHILE loop statement (from WHILE through end of condition)
+   --      S        SELECT statement
+   --      W        WHILE loop statement (from WHILE to end of condition)
 
    --      Note: for I and W, condition above is in the RM syntax sense (this
    --      condition is a decision in SCO terminology).

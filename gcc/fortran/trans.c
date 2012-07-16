@@ -26,7 +26,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"	/* For create_tmp_var_raw.  */
 #include "tree-iterator.h"
 #include "diagnostic-core.h"  /* For internal_error.  */
-#include "defaults.h"
 #include "flags.h"
 #include "gfortran.h"
 #include "trans.h"

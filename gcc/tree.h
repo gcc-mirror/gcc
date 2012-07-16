@@ -2130,6 +2130,7 @@ struct GTY(()) phi_arg_d {
      pointer arithmetic with it.  See phi_arg_index_from_use.  */
   struct ssa_use_operand_d imm_use;
   tree def;
+  tree block;
   location_t locus;
 };
 
@@ -6045,6 +6046,12 @@ extern void fini_object_sizes (void);
 extern unsigned HOST_WIDE_INT compute_builtin_object_size (tree, int);
 
 /* In expr.c.  */
+
+/* Determine whether the LEN bytes can be moved by using several move
+   instructions.  Return nonzero if a call to move_by_pieces should
+   succeed.  */
+extern int can_move_by_pieces (unsigned HOST_WIDE_INT, unsigned int);
+
 extern unsigned HOST_WIDE_INT highest_pow2_factor (const_tree);
 extern tree build_personality_function (const char *);
 

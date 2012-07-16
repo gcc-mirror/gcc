@@ -833,7 +833,7 @@ print_rtl_slim (FILE *f, rtx first, rtx last, int count, int flags)
 }
 
 DEBUG_FUNCTION void
-debug_bb_slim (struct basic_block_def *bb)
+debug_bb_slim (basic_block bb)
 {
   print_rtl_slim (stderr, BB_HEAD (bb), BB_END (bb), -1, 32);
 }
@@ -841,7 +841,7 @@ debug_bb_slim (struct basic_block_def *bb)
 DEBUG_FUNCTION void
 debug_bb_n_slim (int n)
 {
-  struct basic_block_def *bb = BASIC_BLOCK (n);
+  basic_block bb = BASIC_BLOCK (n);
   debug_bb_slim (bb);
 }
 

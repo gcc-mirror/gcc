@@ -3307,14 +3307,17 @@ conv_isocbinding_procedure (gfc_se * se, gfc_symbol * sym,
   
       return 1;
     }
-  else if ((sym->intmod_sym_id == ISOCBINDING_F_POINTER
-	    && arg->next->expr->rank == 0)
+  else if (sym->intmod_sym_id == ISOCBINDING_F_POINTER
 	   || sym->intmod_sym_id == ISOCBINDING_F_PROCPOINTER)
     {
-      /* Convert c_f_pointer if fptr is a scalar
-	 and convert c_f_procpointer.  */
+      /* Convert c_f_pointer and c_f_procpointer.  */
       gfc_se cptrse;
       gfc_se fptrse;
+      gfc_se shapese;
+      gfc_ss *ss, *shape_ss;
+      tree desc, dim, tmp, stride, offset;
+      stmtblock_t body, block;
+      gfc_loopinfo loop;
 
       gfc_init_se (&cptrse, NULL);
       gfc_conv_expr (&cptrse, arg->expr);
@@ -3322,25 +3325,103 @@ conv_isocbinding_procedure (gfc_se * se, gfc_symbol * sym,
       gfc_add_block_to_block (&se->post, &cptrse.post);
 
       gfc_init_se (&fptrse, NULL);
-      if (sym->intmod_sym_id == ISOCBINDING_F_POINTER
-	  || gfc_is_proc_ptr_comp (arg->next->expr, NULL))
-	fptrse.want_pointer = 1;
+      if (arg->next->expr->rank == 0)
+	{
+	  if (sym->intmod_sym_id == ISOCBINDING_F_POINTER
+	      || gfc_is_proc_ptr_comp (arg->next->expr, NULL))
+	    fptrse.want_pointer = 1;
 
-      gfc_conv_expr (&fptrse, arg->next->expr);
-      gfc_add_block_to_block (&se->pre, &fptrse.pre);
-      gfc_add_block_to_block (&se->post, &fptrse.post);
-      
-      if (arg->next->expr->symtree->n.sym->attr.proc_pointer
-	  && arg->next->expr->symtree->n.sym->attr.dummy)
-	fptrse.expr = build_fold_indirect_ref_loc (input_location,
-						   fptrse.expr);
-      
-      se->expr = fold_build2_loc (input_location, MODIFY_EXPR,
-				  TREE_TYPE (fptrse.expr),
-				  fptrse.expr,
-				  fold_convert (TREE_TYPE (fptrse.expr),
-						cptrse.expr));
+	  gfc_conv_expr (&fptrse, arg->next->expr);
+	  gfc_add_block_to_block (&se->pre, &fptrse.pre);
+	  gfc_add_block_to_block (&se->post, &fptrse.post);
+	  if (arg->next->expr->symtree->n.sym->attr.proc_pointer
+	      && arg->next->expr->symtree->n.sym->attr.dummy)
+	    fptrse.expr = build_fold_indirect_ref_loc (input_location,
+						       fptrse.expr);
+     	  se->expr = fold_build2_loc (input_location, MODIFY_EXPR,
+				      TREE_TYPE (fptrse.expr),
+				      fptrse.expr,
+				      fold_convert (TREE_TYPE (fptrse.expr),
+						    cptrse.expr));
+	  return 1;
+	}
 
+      gfc_start_block (&block);
+
+      /* Get the descriptor of the Fortran pointer.  */
+      ss = gfc_walk_expr (arg->next->expr);
+      gcc_assert (ss != gfc_ss_terminator);
+      fptrse.descriptor_only = 1;
+      gfc_conv_expr_descriptor (&fptrse, arg->next->expr, ss);
+      gfc_add_block_to_block (&block, &fptrse.pre);
+      desc = fptrse.expr;
+
+      /* Set data value, dtype, and offset.  */
+      tmp = GFC_TYPE_ARRAY_DATAPTR_TYPE (TREE_TYPE (desc));
+      gfc_conv_descriptor_data_set (&block, desc,
+				    fold_convert (tmp, cptrse.expr));
+      gfc_add_modify (&block, gfc_conv_descriptor_dtype (desc),
+		      gfc_get_dtype (TREE_TYPE (desc)));
+
+      /* Start scalarization of the bounds, using the shape argument.  */
+
+      shape_ss = gfc_walk_expr (arg->next->next->expr);
+      gcc_assert (shape_ss != gfc_ss_terminator);
+      gfc_init_se (&shapese, NULL);
+
+      gfc_init_loopinfo (&loop);
+      gfc_add_ss_to_loop (&loop, shape_ss);
+      gfc_conv_ss_startstride (&loop);
+      gfc_conv_loop_setup (&loop, &arg->next->expr->where);
+      gfc_mark_ss_chain_used (shape_ss, 1);
+
+      gfc_copy_loopinfo_to_se (&shapese, &loop);
+      shapese.ss = shape_ss;
+
+      stride = gfc_create_var (gfc_array_index_type, "stride");
+      offset = gfc_create_var (gfc_array_index_type, "offset");
+      gfc_add_modify (&block, stride, gfc_index_one_node);
+      gfc_add_modify (&block, offset, gfc_index_zero_node);
+
+      /* Loop body.  */
+      gfc_start_scalarized_body (&loop, &body);
+
+      dim = fold_build2_loc (input_location, MINUS_EXPR, gfc_array_index_type,
+			     loop.loopvar[0], loop.from[0]);
+
+      /* Set bounds and stride. */
+      gfc_conv_descriptor_lbound_set (&body, desc, dim, gfc_index_one_node);
+      gfc_conv_descriptor_stride_set (&body, desc, dim, stride);
+
+      gfc_conv_expr (&shapese, arg->next->next->expr);
+      gfc_add_block_to_block (&body, &shapese.pre);
+      gfc_conv_descriptor_ubound_set (&body, desc, dim, shapese.expr);
+      gfc_add_block_to_block (&body, &shapese.post);
+
+      /* Calculate offset. */
+      gfc_add_modify (&body, offset,
+		      fold_build2_loc (input_location, PLUS_EXPR,
+				       gfc_array_index_type, offset, stride));
+      /* Update stride.  */
+      gfc_add_modify (&body, stride,
+		      fold_build2_loc (input_location, MULT_EXPR,
+				       gfc_array_index_type, stride,
+				       fold_convert (gfc_array_index_type,
+						     shapese.expr)));
+      /* Finish scalarization loop.  */ 
+      gfc_trans_scalarizing_loops (&loop, &body);
+      gfc_add_block_to_block (&block, &loop.pre);
+      gfc_add_block_to_block (&block, &loop.post);
+      gfc_add_block_to_block (&block, &fptrse.post);
+      gfc_cleanup_loop (&loop);
+      gfc_free_ss (ss);
+
+      gfc_add_modify (&block, offset, 
+		      fold_build1_loc (input_location, NEGATE_EXPR,
+				       gfc_array_index_type, offset));
+      gfc_conv_descriptor_offset_set (&block, desc, offset);
+
+      se->expr = gfc_finish_block (&block);
       return 1;
     }
   else if (sym->intmod_sym_id == ISOCBINDING_ASSOCIATED)

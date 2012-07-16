@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1996-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -410,14 +410,6 @@ package Exp_Dbug is
    ----------------------------------------------------
    -- Conversion between Entities and External Names --
    ----------------------------------------------------
-
-   No_Dollar_In_Label : constant Boolean := True;
-   --  True iff the target does not allow dollar signs ("$") in external names
-   --  ??? We want to migrate all platforms to use the same convention. As a
-   --  first step, we force this constant to always be True. This constant will
-   --  eventually be deleted after we have verified that the migration does not
-   --  cause any unforeseen adverse impact. We chose "__" because it is
-   --  supported on all platforms, which is not the case of "$".
 
    procedure Get_External_Name
      (Entity     : Entity_Id;

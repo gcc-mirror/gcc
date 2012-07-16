@@ -116,6 +116,8 @@ package body Sem_Dim is
 
    No_Symbols : constant Symbol_Array := (others => No_String);
 
+   --  The following record should be documented field by field
+
    type System_Type is record
       Type_Decl    : Node_Id;
       Unit_Names   : Name_Array;
@@ -430,7 +432,7 @@ package body Sem_Dim is
    ------------------------------
 
    --  with Dimension => (
-   --       [Symbol =>] SYMBOL,
+   --    [[Symbol =>]   SYMBOL,]
    --                   DIMENSION_VALUE
    --    [,             DIMENSION_VALUE]
    --    [,             DIMENSION_VALUE]
@@ -543,8 +545,7 @@ package body Sem_Dim is
       Errors_Count : Nat;
       --  Errors_Count is a count of errors detected by the compiler so far
       --  just before the extraction of symbol, names and values in the
-      --  aggregate
-      --  (Step 2).
+      --  aggregate (Step 2).
       --
       --  At the end of the analysis, there is a check to verify that this
       --  count equals to Serious_Errors_Detected i.e. no erros have been
@@ -614,9 +615,8 @@ package body Sem_Dim is
             Assoc  := First (Component_Associations (Aggr));
             Choice := First (Choices (Assoc));
 
-            if No (Next (Choice))
-              and then Nkind (Choice) = N_Identifier
-            then
+            if No (Next (Choice)) and then Nkind (Choice) = N_Identifier then
+
                --  Symbol component association is present
 
                if Chars (Choice) = Name_Symbol then
@@ -629,9 +629,9 @@ package body Sem_Dim is
                                                 N_String_Literal)
                   then
                      Symbol_Expr := Empty;
-                     Error_Msg_N ("symbol expression must be character or " &
-                                  "string",
-                                  Symbol_Expr);
+                     Error_Msg_N
+                       ("symbol expression must be character or string",
+                        Symbol_Expr);
                   end if;
 
                --  Special error if no Symbol choice but expression is string
@@ -656,9 +656,7 @@ package body Sem_Dim is
 
       --  Skip the symbol expression when present
 
-      if Present (Symbol_Expr)
-        and then Num_Choices = 0
-      then
+      if Present (Symbol_Expr) and then Num_Choices = 0 then
          Expr := Next (Expr);
       end if;
 
@@ -689,9 +687,9 @@ package body Sem_Dim is
       end if;
 
       while Present (Assoc) loop
-         Expr   := Expression (Assoc);
-         Choice := First (Choices (Assoc));
+         Expr := Expression (Assoc);
 
+         Choice := First (Choices (Assoc));
          while Present (Choice) loop
 
             --  Identifier case: NAME => EXPRESSION
@@ -747,9 +745,7 @@ package body Sem_Dim is
             --  Others case: OTHERS => EXPRESSION
 
             elsif Nkind (Choice) = N_Others_Choice then
-               if Present (Next (Choice))
-                 or else Present (Prev (Choice))
-               then
+               if Present (Next (Choice)) or else Present (Prev (Choice)) then
                   Error_Msg_N
                     ("OTHERS must appear alone in a choice list", Choice);
 
@@ -828,11 +824,10 @@ package body Sem_Dim is
       --  Check that no errors have been detected during the analysis
 
       if Errors_Count = Serious_Errors_Detected then
-         --  useless declaration
 
-         if Symbol = No_String
-           and then not Exists (Dimensions)
-         then
+         --  Check for useless declaration
+
+         if Symbol = No_String and then not Exists (Dimensions) then
             Error_Msg_N ("useless dimension declaration", Aggr);
          end if;
 
@@ -968,6 +963,7 @@ package body Sem_Dim is
                --  Named dimension aggregate
 
                if Present (Component_Associations (Dim_Aggr)) then
+
                   --  Check first argument denotes the unit name
 
                   Assoc     := First (Component_Associations (Dim_Aggr));
@@ -1589,8 +1585,7 @@ package body Sem_Dim is
                   Dims_Of_Actual := Dimensions_Of (Actual);
 
                   if Exists (Dims_Of_Actual) then
-                     Error_Msg_NE ("parameter should be dimensionless for " &
-                                   "elementary function&",
+                     Error_Msg_NE ("parameter of& must be dimensionless",
                                    Actual, Name_Call);
                      Error_Msg_N ("\parameter " & Dimensions_Msg_Of (Actual),
                                   Actual);
@@ -2235,11 +2230,11 @@ package body Sem_Dim is
    -- Expand_Put_Call_With_Symbol --
    ---------------------------------
 
-   --  For procedure Put (resp. Put_Dim_Of) defined in
-   --  System.Dim.Float_IO/System.Dim.Integer_IO, the default string parameter
-   --  must be rewritten to include the unit symbols (resp. dimension symbols)
-   --  in the output of a dimensioned object. Note that if a value is already
-   --  supplied for parameter Symbol, this routine doesn't do anything.
+   --  For procedure Put (resp. Put_Dim_Of) defined in System.Dim.Float_IO
+   --  (System.Dim.Integer_IO), the default string parameter must be rewritten
+   --  to include the unit symbols (resp. dimension symbols) in the output
+   --  of a dimensioned object. Note that if a value is already supplied for
+   --  parameter Symbol, this routine doesn't do anything.
 
    --  Case 1. Item is dimensionless
 
@@ -2330,22 +2325,20 @@ package body Sem_Dim is
             if Nkind (Actual) = N_Parameter_Association
               and then Chars (Selector_Name (Actual)) = Name_Symbol
             then
-
-               --  return True if the actual comes from source or if the string
-               --  of symbols doesn't have the default value (i.e "").
+               --  Return True if the actual comes from source or if the string
+               --  of symbols doesn't have the default value (i.e. it is "").
 
                return Comes_From_Source (Actual)
-                        or else String_Length
-                                  (Strval
-                                    (Explicit_Actual_Parameter (Actual))) /= 0;
+                 or else
+                   String_Length
+                     (Strval (Explicit_Actual_Parameter (Actual))) /= 0;
             end if;
 
             Next (Actual);
          end loop;
 
-         --  At this point, the call has no parameter association
-         --  Look to the last actual since the symbols parameter is the last
-         --  one.
+         --  At this point, the call has no parameter association. Look to the
+         --  last actual since the symbols parameter is the last one.
 
          return Nkind (Last (Actuals)) = N_String_Literal;
       end Has_Symbols;
@@ -2441,6 +2434,7 @@ package body Sem_Dim is
          --  Put_Dim_Of case
 
          if Is_Put_Dim_Of then
+
             --  Check that the item is not dimensionless
 
             --  Create the new String_Literal with the new String_Id generated
@@ -2536,11 +2530,10 @@ package body Sem_Dim is
    -- From_Dim_To_Str_Of_Dim_Symbols --
    ------------------------------------
 
-   --  Given a dimension vector and the corresponding dimension system,
-   --  create a String_Id to output the dimension symbols corresponding to the
-   --  dimensions Dims. If In_Error_Msg is True, there is a special handling
-   --  for character asterisk * which is an insertion character in error
-   --  messages.
+   --  Given a dimension vector and the corresponding dimension system, create
+   --  a String_Id to output dimension symbols corresponding to the dimensions
+   --  Dims. If In_Error_Msg is True, there is a special handling for character
+   --  asterisk * which is an insertion character in error messages.
 
    function From_Dim_To_Str_Of_Dim_Symbols
      (Dims         : Dimension_Type;
@@ -2551,9 +2544,9 @@ package body Sem_Dim is
       First_Dim : Boolean := True;
 
       procedure Store_String_Oexpon;
-      --  Store the expon operator symbol "**" to the string. In error
-      --  messages, asterisk * is a special character and must be precede by a
-      --  quote ' to be placed literally into the message.
+      --  Store the expon operator symbol "**" in the string. In error
+      --  messages, asterisk * is a special character and must be quoted
+      --  to be placed literally into the message.
 
       -------------------------
       -- Store_String_Oexpon --
@@ -2563,7 +2556,6 @@ package body Sem_Dim is
       begin
          if In_Error_Msg then
             Store_String_Chars ("'*'*");
-
          else
             Store_String_Chars ("**");
          end if;
@@ -2639,7 +2631,6 @@ package body Sem_Dim is
       end loop;
 
       Store_String_Char (']');
-
       return End_String;
    end From_Dim_To_Str_Of_Dim_Symbols;
 
@@ -2669,6 +2660,7 @@ package body Sem_Dim is
 
       for Position in Dimension_Type'Range loop
          Dim_Power := Dims (Position);
+
          if Dim_Power /= Zero then
 
             if First_Dim then
@@ -2682,6 +2674,7 @@ package body Sem_Dim is
             --  Positive dimension case
 
             if Dim_Power.Numerator > 0 then
+
                --  Integer case
 
                if Dim_Power.Denominator = 1 then
@@ -2956,4 +2949,5 @@ package body Sem_Dim is
 
       return Null_System;
    end System_Of;
+
 end Sem_Dim;

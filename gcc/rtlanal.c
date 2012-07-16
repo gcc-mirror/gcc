@@ -3755,9 +3755,16 @@ rtx_cost (rtx x, enum rtx_code outer_code, int opno, bool speed)
   enum rtx_code code;
   const char *fmt;
   int total;
+  int factor;
 
   if (x == 0)
     return 0;
+
+  /* A size N times larger than UNITS_PER_WORD likely needs N times as
+     many insns, taking N times as long.  */
+  factor = GET_MODE_SIZE (GET_MODE (x)) / UNITS_PER_WORD;
+  if (factor == 0)
+    factor = 1;
 
   /* Compute the default costs of certain things.
      Note that targetm.rtx_costs can override the defaults.  */
@@ -3766,20 +3773,31 @@ rtx_cost (rtx x, enum rtx_code outer_code, int opno, bool speed)
   switch (code)
     {
     case MULT:
-      total = COSTS_N_INSNS (5);
+      /* Multiplication has time-complexity O(N*N), where N is the
+	 number of units (translated from digits) when using
+	 schoolbook long multiplication.  */
+      total = factor * factor * COSTS_N_INSNS (5);
       break;
     case DIV:
     case UDIV:
     case MOD:
     case UMOD:
-      total = COSTS_N_INSNS (7);
+      /* Similarly, complexity for schoolbook long division.  */
+      total = factor * factor * COSTS_N_INSNS (7);
       break;
     case USE:
       /* Used in combine.c as a marker.  */
       total = 0;
       break;
+    case SET:
+      /* A SET doesn't have a mode, so let's look at the SET_DEST to get
+	 the mode for the factor.  */
+      factor = GET_MODE_SIZE (GET_MODE (SET_DEST (x))) / UNITS_PER_WORD;
+      if (factor == 0)
+	factor = 1;
+      /* Pass through.  */
     default:
-      total = COSTS_N_INSNS (1);
+      total = factor * COSTS_N_INSNS (1);
     }
 
   switch (code)
@@ -3792,8 +3810,7 @@ rtx_cost (rtx x, enum rtx_code outer_code, int opno, bool speed)
       /* If we can't tie these modes, make this expensive.  The larger
 	 the mode, the more expensive it is.  */
       if (! MODES_TIEABLE_P (GET_MODE (x), GET_MODE (SUBREG_REG (x))))
-	return COSTS_N_INSNS (2
-			      + GET_MODE_SIZE (GET_MODE (x)) / UNITS_PER_WORD);
+	return COSTS_N_INSNS (2 + factor);
       break;
 
     default:

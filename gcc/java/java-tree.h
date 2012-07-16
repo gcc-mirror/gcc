@@ -1094,7 +1094,6 @@ extern int merge_type_state (tree);
 extern int push_type_0 (tree);
 extern void push_type (tree);
 extern void add_interface (tree, tree);
-extern tree force_evaluation_order (tree);
 extern tree java_create_object (tree);
 extern int verify_constant_pool (struct JCF *);
 extern void start_java_method (tree);

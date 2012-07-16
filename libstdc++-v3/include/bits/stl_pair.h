@@ -1,7 +1,7 @@
 // Pair implementation -*- C++ -*-
 
 // Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-// 2010, 2011
+// 2010, 2011, 2012
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -122,13 +122,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: first(__p.first), second(__p.second) { }
 
       constexpr pair(const pair&) = default;
-
-      // XXX Defaulted?!? Breaks std::map!!!
-      pair(pair&& __p)
-      noexcept(__and_<is_nothrow_move_constructible<_T1>,
-	              is_nothrow_move_constructible<_T2>>::value)
-      : first(std::forward<first_type>(__p.first)),
-	second(std::forward<second_type>(__p.second)) { }
+      constexpr pair(pair&&) = default;
 
       // DR 811.
       template<class _U1, class = typename

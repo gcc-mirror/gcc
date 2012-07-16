@@ -1,3 +1,16 @@
+2012-07-13  Richard Guenther  <rguenther@suse.de>
+
+	* testsuite/libmudflap.c++/ctors.exp: Explicitely specify -O0.
+	* testsuite/libmudflap.c++/c++frags.exp: Likewise.
+	* testsuite/libmudflap.cth/cthfrags.exp: Likewise.
+	* testsuite/libmudflap.c/cfrags.exp: Likewise.
+	* testsuite/libmudflap.c/externs.exp: Likewise.
+
+2012-07-13  Richard Guenther  <rguenther@suse.de>
+
+	* testsuite/libmudflap.c/fail11-frag.c: Adjust to not look like memset.
+	* testsuite/libmudflap.c/fail12-frag.c: Likewise.
+
 2012-05-29  Joseph Myers  <joseph@codesourcery.com>
 
 	* mf-impl.h: Fix typo.

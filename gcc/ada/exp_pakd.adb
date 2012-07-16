@@ -543,6 +543,42 @@ package body Exp_Pakd is
    --  array type on the fly). Such actions are inserted into the tree
    --  directly using Insert_Action.
 
+   function Byte_Swap (N : Node_Id) return Node_Id;
+   --  Wrap N in a call to a byte swapping function, with appropriate type
+   --  conversions.
+
+   ---------------
+   -- Byte_Swap --
+   ---------------
+
+   function Byte_Swap (N : Node_Id) return Node_Id is
+      Loc     : constant Source_Ptr := Sloc (N);
+      T       : constant Entity_Id := Etype (N);
+      Swap_RE : RE_Id;
+      Swap_F  : Entity_Id;
+
+   begin
+      pragma Assert (Esize (T) > 8);
+
+      if Esize (T) <= 16 then
+         Swap_RE := RE_Bswap_16;
+      elsif Esize (T) <= 32 then
+         Swap_RE := RE_Bswap_32;
+      else pragma Assert (Esize (T) <= 64);
+         Swap_RE := RE_Bswap_64;
+      end if;
+
+      Swap_F := RTE (Swap_RE);
+
+      return Unchecked_Convert_To
+               (T,
+                Make_Function_Call (Loc,
+                  Name                   =>
+                    New_Occurrence_Of (Swap_F, Loc),
+                  Parameter_Associations =>
+                    New_List (Unchecked_Convert_To (Etype (Swap_F), N))));
+   end Byte_Swap;
+
    ------------------------------
    -- Compute_Linear_Subscript --
    ------------------------------
@@ -1304,6 +1340,12 @@ package body Exp_Pakd is
       --  contains the value. Otherwise Rhs_Val_Known is set False, and
       --  the Rhs_Val is undefined.
 
+      Require_Byte_Swapping : Boolean := False;
+      --  True if byte swapping required, for the Reverse_Storage_Order case
+      --  when the packed array is a free-standing object. (If it is part
+      --  of a composite type, and therefore potentially not aligned on a byte
+      --  boundary, the swapping is done by the back-end).
+
       function Get_Shift return Node_Id;
       --  Function used to get the value of Shift, making sure that it
       --  gets duplicated if the function is called more than once.
@@ -1415,6 +1457,11 @@ package body Exp_Pakd is
 
          --    Obj := atyp!((Obj and Mask1) or (shift_left (rhs, Shift)))
 
+         --  or in the case of a freestanding Reverse_Storage_Order object,
+
+         --    Obj := Swap (atyp!((Swap (Obj) and Mask1)
+         --                         or (shift_left (rhs, Shift))))
+
          --      where Mask1 is obtained by shifting Cmask left Shift bits
          --      and then complementing the result.
 
@@ -1485,6 +1532,14 @@ package body Exp_Pakd is
             Set_Etype (Obj, T);
             Set_Etype (New_Lhs, T);
             Set_Etype (New_Rhs, T);
+
+            if Reverse_Storage_Order (Base_Type (Atyp))
+                 and then Esize (T) > 8
+                 and then not In_Reverse_Storage_Order_Object (Obj)
+            then
+               Require_Byte_Swapping := True;
+               New_Rhs := Byte_Swap (New_Rhs);
+            end if;
          end;
 
          --  First we deal with the "and"
@@ -1593,8 +1648,7 @@ package body Exp_Pakd is
                      --  Note that Rhs_Val has already been normalized to
                      --  be an unsigned value with the proper number of bits.
 
-                     Rhs :=
-                       Make_Integer_Literal (Loc, Rhs_Val);
+                     Rhs := Make_Integer_Literal (Loc, Rhs_Val);
 
                   --  Otherwise we need an unchecked conversion
 
@@ -1614,6 +1668,11 @@ package body Exp_Pakd is
                    Left_Opnd  => New_Rhs,
                    Right_Opnd => Or_Rhs);
             end;
+         end if;
+
+         if Require_Byte_Swapping then
+            Set_Etype (New_Rhs, Etype (Obj));
+            New_Rhs := Byte_Swap (New_Rhs);
          end if;
 
          --  Now do the rewrite
@@ -1977,6 +2036,17 @@ package body Exp_Pakd is
          Setup_Inline_Packed_Array_Reference (N, Atyp, Obj, Cmask, Shift);
          Lit := Make_Integer_Literal (Loc, Cmask);
          Set_Print_In_Hex (Lit);
+
+         --  Byte swapping required for the Reverse_Storage_Order case, but
+         --  only for a free-standing object (see note on Require_Byte_Swapping
+         --  in Expand_Bit_Packed_Element_Set).
+
+         if Reverse_Storage_Order (Atyp)
+              and then Esize (Atyp) > 8
+              and then not In_Reverse_Storage_Order_Object (Obj)
+         then
+            Obj := Byte_Swap (Obj);
+         end if;
 
          --  We generate a shift right to position the field, followed by a
          --  masking operation to extract the bit field, and we finally do an
@@ -2727,7 +2797,7 @@ package body Exp_Pakd is
 
       --  We also have to adjust if the storage order is reversed
 
-      if Bytes_Big_Endian xor In_Reverse_Storage_Order_Record (Obj) then
+      if Bytes_Big_Endian xor Reverse_Storage_Order (Base_Type (Atyp)) then
          Shift :=
            Make_Op_Subtract (Loc,
              Left_Opnd  => Make_Integer_Literal (Loc, Osiz - Csiz),

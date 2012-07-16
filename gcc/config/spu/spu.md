@@ -1387,8 +1387,8 @@
     rtx mask = gen_reg_rtx (V4SImode);
 
     emit_move_insn (mask, spu_const (V4SImode, 0x0000ffff));
-    emit_insn (gen_spu_mpyhh (high, operands[1], operands[2]));
-    emit_insn (gen_spu_mpy (low, operands[1], operands[2]));
+    emit_insn (gen_vec_widen_smult_even_v8hi (high, operands[1], operands[2]));
+    emit_insn (gen_vec_widen_smult_odd_v8hi (low, operands[1], operands[2]));
     emit_insn (gen_vashlv4si3 (shift, high, spu_const(V4SImode, 16)));
     emit_insn (gen_selb (result, shift, low, mask));
     DONE;
@@ -1482,7 +1482,7 @@
     rtx op2 = simplify_gen_subreg (V8HImode, operands[2], V4SImode, 0);
     emit_insn (gen_spu_mpyh(a, op1, op2));
     emit_insn (gen_spu_mpyh(b, op2, op1));
-    emit_insn (gen_spu_mpyu(c, op1, op2));
+    emit_insn (gen_vec_widen_umult_odd_v8hi (c, op1, op2));
     emit_insn (gen_addv4si3(d, a, b));
     emit_insn (gen_addv4si3(operands[0], d, c));
     DONE;
@@ -4612,6 +4612,70 @@ selb\t%0,%4,%0,%3"
   DONE;
 }")
 
+(define_insn "vec_widen_smult_odd_v8hi"
+  [(set (match_operand:V4SI 0 "spu_reg_operand" "=r,r")
+        (mult:V4SI
+	  (sign_extend:V4SI
+	    (vec_select:V4HI
+	      (match_operand:V8HI 1 "spu_reg_operand" "r,r")
+	      (parallel [(const_int 1)(const_int 3)(const_int 5)(const_int 7)])))
+          (sign_extend:V4SI
+	    (vec_select:V4HI
+	      (match_operand:V8HI 2 "spu_arith_operand" "r,B")
+	      (parallel [(const_int 1)(const_int 3)(const_int 5)(const_int 7)])))))]
+  ""
+  "@
+   mpy\t%0,%1,%2
+   mpyi\t%0,%1,%2"
+  [(set_attr "type" "fp7")])
+
+(define_insn "vec_widen_umult_odd_v8hi"
+  [(set (match_operand:V4SI 0 "spu_reg_operand" "=r,r")
+        (mult:V4SI
+	  (zero_extend:V4SI
+	    (vec_select:V4HI
+	      (match_operand:V8HI 1 "spu_reg_operand" "r,r")
+	      (parallel [(const_int 1)(const_int 3)(const_int 5)(const_int 7)])))
+          (zero_extend:V4SI
+	    (vec_select:V4HI
+	      (match_operand:V8HI 2 "spu_arith_operand" "r,B")
+	      (parallel [(const_int 1)(const_int 3)(const_int 5)(const_int 7)])))))]
+  ""
+  "@
+   mpyu\t%0,%1,%2
+   mpyui\t%0,%1,%2"
+  [(set_attr "type" "fp7")])
+
+(define_insn "vec_widen_smult_even_v8hi"
+  [(set (match_operand:V4SI 0 "spu_reg_operand" "=r")
+	(mult:V4SI
+	  (sign_extend:V4SI
+	    (vec_select:V4HI
+	      (match_operand:V8HI 1 "spu_reg_operand" "r")
+	      (parallel [(const_int 0)(const_int 2)(const_int 4)(const_int 6)])))
+	  (sign_extend:V4SI
+	    (vec_select:V4HI
+	      (match_operand:V8HI 2 "spu_reg_operand" "r")
+	      (parallel [(const_int 0)(const_int 2)(const_int 4)(const_int 6)])))))]
+  ""
+  "mpyhh\t%0,%1,%2"
+  [(set_attr "type" "fp7")])
+
+(define_insn "vec_widen_umult_even_v8hi"
+  [(set (match_operand:V4SI 0 "spu_reg_operand" "=r")
+	(mult:V4SI
+	  (zero_extend:V4SI
+	    (vec_select:V4HI
+	      (match_operand:V8HI 1 "spu_reg_operand" "r")
+	      (parallel [(const_int 0)(const_int 2)(const_int 4)(const_int 6)])))
+	  (zero_extend:V4SI
+	    (vec_select:V4HI
+	      (match_operand:V8HI 2 "spu_reg_operand" "r")
+	      (parallel [(const_int 0)(const_int 2)(const_int 4)(const_int 6)])))))]
+  ""
+  "mpyhhu\t%0,%1,%2"
+  [(set_attr "type" "fp7")])
+
 (define_expand "vec_widen_umult_hi_v8hi"
   [(set (match_operand:V4SI 0 "register_operand"   "=r")
         (mult:V4SI
@@ -4634,8 +4698,8 @@ selb\t%0,%4,%0,%3"
     0x04, 0x05, 0x06, 0x07, 0x14, 0x15, 0x16, 0x17};
   
   emit_move_insn (mask, array_to_constant (TImode, arr));
-  emit_insn (gen_spu_mpyhhu (ve, operands[1], operands[2]));
-  emit_insn (gen_spu_mpyu (vo, operands[1], operands[2]));
+  emit_insn (gen_vec_widen_umult_even_v8hi (ve, operands[1], operands[2]));
+  emit_insn (gen_vec_widen_umult_odd_v8hi (vo, operands[1], operands[2]));
   emit_insn (gen_shufb (operands[0], ve, vo, mask));
   DONE;
 }")
@@ -4662,8 +4726,8 @@ selb\t%0,%4,%0,%3"
     0x0C, 0x0D, 0x0E, 0x0F, 0x1C, 0x1D, 0x1E, 0x1F};
 
   emit_move_insn (mask, array_to_constant (TImode, arr));
-  emit_insn (gen_spu_mpyhhu (ve, operands[1], operands[2]));
-  emit_insn (gen_spu_mpyu (vo, operands[1], operands[2]));
+  emit_insn (gen_vec_widen_umult_even_v8hi (ve, operands[1], operands[2]));
+  emit_insn (gen_vec_widen_umult_odd_v8hi (vo, operands[1], operands[2]));
   emit_insn (gen_shufb (operands[0], ve, vo, mask));
   DONE;
 }")
@@ -4690,8 +4754,8 @@ selb\t%0,%4,%0,%3"
     0x04, 0x05, 0x06, 0x07, 0x14, 0x15, 0x16, 0x17};
   
   emit_move_insn (mask, array_to_constant (TImode, arr));
-  emit_insn (gen_spu_mpyhh (ve, operands[1], operands[2]));
-  emit_insn (gen_spu_mpy (vo, operands[1], operands[2]));
+  emit_insn (gen_vec_widen_smult_even_v8hi (ve, operands[1], operands[2]));
+  emit_insn (gen_vec_widen_smult_odd_v8hi (vo, operands[1], operands[2]));
   emit_insn (gen_shufb (operands[0], ve, vo, mask));
   DONE;
 }")
@@ -4718,8 +4782,8 @@ selb\t%0,%4,%0,%3"
     0x0C, 0x0D, 0x0E, 0x0F, 0x1C, 0x1D, 0x1E, 0x1F};
 
   emit_move_insn (mask, array_to_constant (TImode, arr));
-  emit_insn (gen_spu_mpyhh (ve, operands[1], operands[2]));
-  emit_insn (gen_spu_mpy (vo, operands[1], operands[2]));
+  emit_insn (gen_vec_widen_smult_even_v8hi (ve, operands[1], operands[2]));
+  emit_insn (gen_vec_widen_smult_odd_v8hi (vo, operands[1], operands[2]));
   emit_insn (gen_shufb (operands[0], ve, vo, mask));
   DONE;
 }")

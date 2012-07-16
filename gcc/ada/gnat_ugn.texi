@@ -4306,10 +4306,8 @@ means that no limit applies.
 @cindex @option{-gnatn} (@command{gcc})
 Activate inlining for subprograms for which pragma @code{Inline} is
 specified. This inlining is performed by the GCC back-end. An optional
-digit sets the inlining level: 1 for moderate inlining across modules,
-which is a good compromise between compilation times and performances
-at run time, and 2 for full inlining across modules, which may bring
-about longer compilation times. If no inlining level is specified,
+digit sets the inlining level: 1 for moderate inlining across modules
+or 2 for full inlining across modules. If no inlining level is specified,
 the compiler will pick it based on the optimization level.
 
 @item -gnatN
@@ -7335,20 +7333,27 @@ For the source file naming rules, @xref{File Naming Rules}.
 
 @table @option
 @c !sort!
-@item -gnatn
+@item -gnatn[12]
 @cindex @option{-gnatn} (@command{gcc})
 @ifclear vms
 The @code{n} here is intended to suggest the first syllable of the
 word ``inline''.
 @end ifclear
 GNAT recognizes and processes @code{Inline} pragmas. However, for the
-inlining to actually occur, optimization must be enabled. To enable
-inlining of subprograms specified by pragma @code{Inline},
+inlining to actually occur, optimization must be enabled and, in order
+to enable inlining of subprograms specified by pragma @code{Inline},
 you must also specify this switch.
 In the absence of this switch, GNAT does not attempt
 inlining and does not need to access the bodies of
 subprograms for which @code{pragma Inline} is specified if they are not
 in the current unit.
+
+You can optionally specify the inlining level: 1 for moderate inlining across
+modules, which is a good compromise between compilation times and performances
+at run time, or 2 for full inlining across modules, which may bring about
+longer compilation times. If no inlining level is specified, the compiler will
+pick it based on the optimization level: 1 for @option{-O1}, @option{-O2} or
+@option{-Os} and 2 for @option{-O3}.
 
 If you specify this switch the compiler will access these bodies,
 creating an extra source dependency for the resulting object file, and
@@ -10733,19 +10738,22 @@ Note: The @option{-fno-inline-functions-called-once} switch
 can be used to prevent inlining of subprograms local to the unit
 and called once from within it if @option{-O1} is used.
 
-Note regarding the use of @option{-O3}: There is no difference in inlining
-behavior between @option{-O2} and @option{-O3} for subprograms with an explicit
-pragma @code{Inline} assuming the use of @option{-gnatn}
-or @option{-gnatN} (the switches that activate inlining). If you have used
-pragma @code{Inline} in appropriate cases, then it is usually much better
-to use @option{-O2} and @option{-gnatn} and avoid the use of @option{-O3} which
-in this case only has the effect of inlining subprograms you did not
-think should be inlined. We often find that the use of @option{-O3} slows
-down code by performing excessive inlining, leading to increased instruction
-cache pressure from the increased code size. So the bottom line here is
-that you should not automatically assume that @option{-O3} is better than
-@option{-O2}, and indeed you should use @option{-O3} only if tests show that
-it actually improves performance.
+Note regarding the use of @option{-O3}: @option{-gnatn} is made up of two
+sub-switches @option{-gnatn1} and @option{-gnatn2} that can be directly
+specified in lieu of it, @option{-gnatn} being translated into one of them
+based on the optimization level. With @option{-O2} or below, @option{-gnatn}
+is equivalent to @option{-gnatn1} which activates pragma @code{Inline} with
+moderate inlining across modules. With @option{-O3}, @option{-gnatn} is
+equivalent to @option{-gnatn2} which activates pragma @code{Inline} with
+full inlining across modules. If you have used pragma @code{Inline} in appropriate cases, then it is usually much better to use @option{-O2} and @option{-gnatn} and avoid the use of @option{-O3} which has the additional
+effect of inlining subprograms you did not think should be inlined. We have
+found that the use of @option{-O3} may slow down the compilation and increase
+the code size by performing excessive inlining, leading to increased
+instruction cache pressure from the increased code size and thus minor
+performance improvements. So the bottom line here is that you should not
+automatically assume that @option{-O3} is better than @option{-O2}, and
+indeed you should use @option{-O3} only if tests show that it actually
+improves performance for your program.
 
 @node Vectorization of loops
 @subsection Vectorization of loops

@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 2004-2011, Free Software Foundation, Inc.         *
+ *          Copyright (C) 2004-2012, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -64,7 +64,7 @@ trace_callback (struct _Unwind_Context * uw_context, uw_data_t * uw_data)
 {
   char * pc;
 
-#if defined (__ia64__) && defined (__hpux__)
+#if defined (__ia64__) && defined (__hpux__) && defined (USE_LIBUNWIND_EXCEPTIONS)
   /* Work around problem with _Unwind_GetIP on ia64 HP-UX. */
   uwx_get_reg ((struct uwx_env *) uw_context, UWX_REG_IP, (uint64_t *) &pc);
 #else

@@ -6506,4 +6506,14 @@ m68k_init_sync_libfuncs (void)
   init_sync_libfuncs (UNITS_PER_WORD);
 }
 
+/* Implements EPILOGUE_USES.  All registers are live on exit from an
+   interrupt routine.  */
+bool
+m68k_epilogue_uses (int regno ATTRIBUTE_UNUSED)
+{
+  return (reload_completed
+	  && (m68k_get_function_kind (current_function_decl)
+	      == m68k_fk_interrupt_handler));
+}
+
 #include "gt-m68k.h"

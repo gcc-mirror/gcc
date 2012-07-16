@@ -5714,28 +5714,6 @@ the argument @var{OFF} to @code{REALIGN_LOAD}, in which case the low
 log2(@var{VS}) @minus{} 1 bits of @var{addr} will be considered.
 @end deftypefn
 
-@deftypefn {Target Hook} tree TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_EVEN (tree @var{x})
-This hook should return the DECL of a function @var{f} that implements
-widening multiplication of the even elements of two input vectors of type @var{x}.
-
-If this hook is defined, the autovectorizer will use it along with the
-@code{TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_ODD} target hook when vectorizing
-widening multiplication in cases that the order of the results does not have to be
-preserved (e.g.@: used only by a reduction computation). Otherwise, the
-@code{widen_mult_hi/lo} idioms will be used.
-@end deftypefn
-
-@deftypefn {Target Hook} tree TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_ODD (tree @var{x})
-This hook should return the DECL of a function @var{f} that implements
-widening multiplication of the odd elements of two input vectors of type @var{x}.
-
-If this hook is defined, the autovectorizer will use it along with the
-@code{TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_EVEN} target hook when vectorizing
-widening multiplication in cases that the order of the results does not have to be
-preserved (e.g.@: used only by a reduction computation). Otherwise, the
-@code{widen_mult_hi/lo} idioms will be used.
-@end deftypefn
-
 @deftypefn {Target Hook} int TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST (enum vect_cost_for_stmt @var{type_of_cost}, tree @var{vectype}, int @var{misalign})
 Returns cost of different scalar or vector statements for vectorization cost model.
 For vector memory operations the cost may depend on type (@var{vectype}) and
@@ -5791,6 +5769,22 @@ This hook should return a mask of sizes that should be iterated over
 after trying to autovectorize using the vector size derived from the
 mode returned by @code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE}.
 The default is zero which means to not iterate over other vector sizes.
+@end deftypefn
+
+@deftypefn {Target Hook} {void *} TARGET_VECTORIZE_INIT_COST (struct loop *@var{loop_info})
+This hook should initialize target-specific data structures in preparation for modeling the costs of vectorizing a loop or basic block.  The default allocates an unsigned integer for accumulating a single cost.  If @var{loop_info} is non-NULL, it identifies the loop being vectorized; otherwise a single block is being vectorized.
+@end deftypefn
+
+@deftypefn {Target Hook} unsigned TARGET_VECTORIZE_ADD_STMT_COST (void *@var{data}, int @var{count}, enum vect_cost_for_stmt @var{kind}, struct _stmt_vec_info *@var{stmt_info}, int @var{misalign})
+This hook should update the target-specific @var{data} in response to adding @var{count} copies of the given @var{kind} of statement to the body of a loop or basic block.  The default adds the builtin vectorizer cost for the copies of the statement to the accumulator, and returns the amount added.  The return value should be viewed as a tentative cost that may later be overridden.
+@end deftypefn
+
+@deftypefn {Target Hook} unsigned TARGET_VECTORIZE_FINISH_COST (void *@var{data})
+This hook should complete calculations of the cost of vectorizing a loop or basic block based on @var{data}, and return that cost as an unsigned integer.  The default returns the value of the accumulator.
+@end deftypefn
+
+@deftypefn {Target Hook} void TARGET_VECTORIZE_DESTROY_COST_DATA (void *@var{data})
+This hook should release @var{data} and any related data structures allocated by TARGET_VECTORIZE_INIT_COST.  The default releases the accumulator.
 @end deftypefn
 
 @deftypefn {Target Hook} tree TARGET_VECTORIZE_BUILTIN_TM_LOAD (tree)

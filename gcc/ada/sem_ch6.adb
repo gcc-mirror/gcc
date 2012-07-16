@@ -1260,9 +1260,7 @@ package body Sem_Ch6 is
       --  rewritten if the original call was in prefix notation) then error
       --  has been emitted already, mark node and return.
 
-      if Error_Posted (N)
-        or else Etype (Name (N)) = Any_Type
-      then
+      if Error_Posted (N) or else Etype (Name (N)) = Any_Type then
          Set_Etype (N, Any_Type);
          return;
       end if;
@@ -1282,9 +1280,9 @@ package body Sem_Ch6 is
       --  Special processing for Elab_Spec, Elab_Body and Elab_Subp_Body calls
 
       if Nkind (P) = N_Attribute_Reference
-        and then (Attribute_Name (P) = Name_Elab_Spec
-                   or else Attribute_Name (P) = Name_Elab_Body
-                   or else Attribute_Name (P) = Name_Elab_Subp_Body)
+        and then (Attribute_Name (P) = Name_Elab_Spec or else
+                  Attribute_Name (P) = Name_Elab_Body or else
+                  Attribute_Name (P) = Name_Elab_Subp_Body)
       then
          if Present (Actuals) then
             Error_Msg_N
@@ -5503,12 +5501,10 @@ package body Sem_Ch6 is
             end if;
          end if;
 
-         --  Ada 2012:  mode conformance also requires that formal parameters
+         --  Ada 2012: Mode conformance also requires that formal parameters
          --  be both aliased, or neither.
 
-         if Ctype >= Mode_Conformant
-           and then Ada_Version >= Ada_2012
-         then
+         if Ctype >= Mode_Conformant and then Ada_Version >= Ada_2012 then
             if Is_Aliased (Old_Formal) /= Is_Aliased (New_Formal) then
                Conformance_Error
                  ("\aliased parameter mismatch!", New_Formal);

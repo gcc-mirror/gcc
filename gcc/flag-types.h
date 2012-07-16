@@ -106,6 +106,14 @@ enum symbol_visibility
 };
 #endif
 
+/* The stack reuse level.  */
+enum stack_reuse_level
+{
+  SR_NONE,
+  SR_NAMED_VARS,
+  SR_ALL
+};
+
 /* The algorithm used for the integrated register allocator (IRA).  */
 enum ira_algorithm
 {

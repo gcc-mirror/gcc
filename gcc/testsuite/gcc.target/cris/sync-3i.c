@@ -4,6 +4,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -Dxchg -Dtype=int" } */
 /* { dg-additional-options "-mtrap-using-break8 -mtrap-unaligned-atomic" { target cris-*-elf } } */
+/* { dg-additional-options "-mno-unaligned-atomic-may-use-library" { target cris*-*-linux* } } */
 /* { dg-final { scan-assembler "\tbreak 8" } } */
 /* { dg-final { scan-assembler "\tbtstq \\(2-1\\)," { xfail *-*-* } } } */
 /* { dg-final { scan-assembler-not "\tand" { xfail *-*-* } } } */

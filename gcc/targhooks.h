@@ -90,6 +90,11 @@ default_builtin_support_vector_misalignment (enum machine_mode mode,
 					     int, bool);
 extern enum machine_mode default_preferred_simd_mode (enum machine_mode mode);
 extern unsigned int default_autovectorize_vector_sizes (void);
+extern void *default_init_cost (struct loop *);
+extern unsigned default_add_stmt_cost (void *, int, enum vect_cost_for_stmt,
+				       struct _stmt_vec_info *, int);
+extern unsigned default_finish_cost (void *);
+extern void default_destroy_cost_data (void *);
 
 /* These are here, and not in hooks.[ch], because not all users of
    hooks.h include tm.h, and thus we don't have CUMULATIVE_ARGS.  */

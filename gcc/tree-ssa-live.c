@@ -765,6 +765,10 @@ remove_unused_locals (void)
           FOR_EACH_PHI_ARG (arg_p, phi, i, SSA_OP_ALL_USES)
             {
 	      tree arg = USE_FROM_PTR (arg_p);
+	      int index = PHI_ARG_INDEX_FROM_USE (arg_p);
+	      tree block = gimple_phi_arg_block (phi, index);
+	      if (block != NULL)
+		TREE_USED (block) = true;
 	      mark_all_vars_used (&arg, global_unused_vars);
             }
         }

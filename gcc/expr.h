@@ -369,11 +369,6 @@ rtx set_storage_via_libcall (rtx, rtx, rtx, bool);
 extern bool set_storage_via_setmem (rtx, rtx, rtx, unsigned int,
 				    unsigned int, HOST_WIDE_INT);
 
-/* Determine whether the LEN bytes can be moved by using several move
-   instructions.  Return nonzero if a call to move_by_pieces should
-   succeed.  */
-extern int can_move_by_pieces (unsigned HOST_WIDE_INT, unsigned int);
-
 extern unsigned HOST_WIDE_INT move_by_pieces_ninsns (unsigned HOST_WIDE_INT,
 						     unsigned int,
 						     unsigned int);

@@ -219,10 +219,15 @@ package body Sem_Cat is
          then
             null;
 
-         --  Special case: Remote_Types can depend on Preelaborated per
-         --  Ada 2005 AI 0206.
+         --  Special case: Remote_Types and Remote_Call_Interface declarations
+         --  can depend on a preelaborated unit via a private with_clause, per
+         --  AI05-0206.
 
-         elsif Unit_Category = Remote_Types
+         elsif (Unit_Category = Remote_Types
+                  or else
+                Unit_Category = Remote_Call_Interface)
+           and then Nkind (N) = N_With_Clause
+           and then Private_Present (N)
            and then Is_Preelaborated (Depended_Entity)
          then
             null;
@@ -262,6 +267,18 @@ package body Sem_Cat is
            and then not Is_Internal_File_Name (Unit_File_Name (Main_Unit))
          then
             return;
+
+         --  Dependence of Remote_Types or Remote_Call_Interface declaration
+         --  on a preelaborated unit with a normal with_clause.
+
+         elsif (Unit_Category = Remote_Types
+                  or else
+                Unit_Category = Remote_Call_Interface)
+           and then Is_Preelaborated (Depended_Entity)
+         then
+            Error_Msg_NE
+              ("<must use private with clause for preelaborated unit& ",
+               N, Depended_Entity);
 
          --  Subunit case
 

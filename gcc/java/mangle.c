@@ -35,7 +35,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "diagnostic-core.h"
 #include "ggc.h"
 #include "langhooks-def.h"
-#include "tm.h"         /* FIXME: For gcc_obstack_init from defaults.h.  */
 
 static void mangle_class_field (tree);
 static void mangle_vtable (tree);

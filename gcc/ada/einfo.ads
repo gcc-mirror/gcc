@@ -3535,11 +3535,12 @@ package Einfo is
 --       Ada 2005 AI-133), or must occupy an integral number of storage units.
 
 --    Reverse_Storage_Order (Flag93) [base type only]
---       Present in all record type entities. Set if entity has a
+--       Present in all record and array type entities. Set if entity has a
 --       Scalar_Storage_Order aspect (set by an aspect clause or attribute
 --       definition clause) that has reversed the order of storage elements
---       from the default value. When this flag is set, the Bit_Order aspect
---       must be set to the same value.
+--       from the default value. When this flag is set for a record type,
+--       the Bit_Order aspect must be set to the same value (either explicitly
+--       or as the target default value).
 
 --    RM_Size (Uint13)
 --       Present in all type and subtype entities. Contains the value of
@@ -5020,6 +5021,7 @@ package Einfo is
    --    Has_Component_Size_Clause           (Flag68)   (base type only)
    --    Has_Pragma_Pack                     (Flag121)  (impl base type only)
    --    Is_Constrained                      (Flag12)
+   --    Reverse_Storage_Order               (Flag93)   (base type only)
    --    Next_Index                          (synth)
    --    Number_Dimensions                   (synth)
    --    (plus type attributes)

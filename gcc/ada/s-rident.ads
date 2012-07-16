@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,6 +40,34 @@
 --  want to waste the space for these image tables, and they are not needed,
 --  so we can do the instantiation under control of Discard_Names to remove
 --  the tables.
+
+---------------------------------------------------
+-- Note On Compile/Run-Time Consistency Checking --
+---------------------------------------------------
+
+--  This unit is with'ed by the run-time (to make System.Restrictions which is
+--  used for run-time access to restriction information), by the compiler (to
+--  determine what restrictions are implemented and what their category is) and
+--  by the binder (in processing ali files, and generating the information used
+--  at run-time to access restriction information).
+
+--  Normally the version of System.Rident referenced in all three contexts
+--  should be the same. However, problems could arise in certain inconsistent
+--  builds that used inconsistent versions of the compiler and run-time. This
+--  sort of thing is not strictly correct, but it does arise when short-cuts
+--  are taken in build procedures.
+
+--  Previously, this kind of inconsistency could cause a significant problem.
+--  If versions of System.Rident accessed by the compiler and binder differed,
+--  then the binder could fail to recognize the R (restrictions line) in the
+--  ali file, leading to bind errors when restrictions were added or removed.
+
+--  The latest implementation avoids both this problem by using a named
+--  scheme for recording restrictions, rather than a positional scheme which
+--  fails completely if restrictions are added or subtracted. Now the worst
+--  that happens at bind time in incosistent builds is that unrecognized
+--  restrictions are ignored, and the consistency checking for restrictions
+--  might be incomplete, which is no big deal.
 
 pragma Compiler_Unit;
 

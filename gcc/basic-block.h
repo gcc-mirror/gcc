@@ -35,8 +35,8 @@ typedef HOST_WIDEST_INT gcov_type;
 /* Control flow edge information.  */
 struct GTY(()) edge_def {
   /* The two blocks at the ends of the edge.  */
-  struct basic_block_def *src;
-  struct basic_block_def *dest;
+  basic_block src;
+  basic_block dest;
 
   /* Instructions queued on the edge.  */
   union edge_def_insns {
@@ -161,8 +161,8 @@ struct GTY((chain_next ("%h.next_bb"), chain_prev ("%h.prev_bb"))) basic_block_d
   struct et_node * GTY ((skip (""))) dom[2];
 
   /* Previous and next blocks in the chain.  */
-  struct basic_block_def *prev_bb;
-  struct basic_block_def *next_bb;
+  basic_block prev_bb;
+  basic_block next_bb;
 
   union basic_block_il_dependent {
       struct gimple_bb_info GTY ((tag ("0"))) gimple;

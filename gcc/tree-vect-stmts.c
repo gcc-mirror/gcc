@@ -41,6 +41,66 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 
 
+/* Return the vectorized type for the given statement.  */
+
+tree
+stmt_vectype (struct _stmt_vec_info *stmt_info)
+{
+  return STMT_VINFO_VECTYPE (stmt_info);
+}
+
+/* Return TRUE iff the given statement is in an inner loop relative to
+   the loop being vectorized.  */
+bool
+stmt_in_inner_loop_p (struct _stmt_vec_info *stmt_info)
+{
+  gimple stmt = STMT_VINFO_STMT (stmt_info);
+  basic_block bb = gimple_bb (stmt);
+  loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
+  struct loop* loop;
+
+  if (!loop_vinfo)
+    return false;
+
+  loop = LOOP_VINFO_LOOP (loop_vinfo);
+
+  return (bb->loop_father == loop->inner);
+}
+
+/* Record the cost of a statement, either by directly informing the 
+   target model or by saving it in a vector for later processing.
+   Return a preliminary estimate of the statement's cost.  */
+
+unsigned
+record_stmt_cost (stmt_vector_for_cost *stmt_cost_vec, int count,
+		  enum vect_cost_for_stmt kind, stmt_vec_info stmt_info,
+		  int misalign)
+{
+  if (stmt_cost_vec)
+    {
+      tree vectype = stmt_vectype (stmt_info);
+      add_stmt_info_to_vec (stmt_cost_vec, count, kind,
+			    STMT_VINFO_STMT (stmt_info), misalign);
+      return (unsigned)
+	(targetm.vectorize.builtin_vectorization_cost (kind, vectype, misalign)
+	 * count);
+	 
+    }
+  else
+    {
+      loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
+      bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_info);
+      void *target_cost_data;
+
+      if (loop_vinfo)
+	target_cost_data = LOOP_VINFO_TARGET_COST_DATA (loop_vinfo);
+      else
+	target_cost_data = BB_VINFO_TARGET_COST_DATA (bb_vinfo);
+
+      return add_stmt_cost (target_cost_data, count, kind, stmt_info, misalign);
+    }
+}
+
 /* Return a variable of type ELEM_TYPE[NELEMS].  */
 
 static tree
@@ -735,7 +795,8 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
 
 void
 vect_model_simple_cost (stmt_vec_info stmt_info, int ncopies,
-			enum vect_def_type *dt, slp_tree slp_node)
+			enum vect_def_type *dt, slp_tree slp_node,
+			stmt_vector_for_cost *stmt_cost_vec)
 {
   int i;
   int inside_cost = 0, outside_cost = 0;
@@ -744,8 +805,6 @@ vect_model_simple_cost (stmt_vec_info stmt_info, int ncopies,
   if (PURE_SLP_STMT (stmt_info))
     return;
 
-  inside_cost = ncopies * vect_get_stmt_cost (vector_stmt); 
-
   /* FORNOW: Assuming maximum 2 args per stmts.  */
   for (i = 0; i < 2; i++)
     {
@@ -753,13 +812,16 @@ vect_model_simple_cost (stmt_vec_info stmt_info, int ncopies,
 	outside_cost += vect_get_stmt_cost (vector_stmt); 
     }
 
+  /* Set the costs either in STMT_INFO or SLP_NODE (if exists).  */
+  stmt_vinfo_set_outside_of_loop_cost (stmt_info, slp_node, outside_cost);
+
+  /* Pass the inside-of-loop statements to the target-specific cost model.  */
+  inside_cost = record_stmt_cost (stmt_cost_vec, ncopies, vector_stmt,
+				  stmt_info, 0);
+
   if (vect_print_dump_info (REPORT_COST))
     fprintf (vect_dump, "vect_model_simple_cost: inside_cost = %d, "
              "outside_cost = %d .", inside_cost, outside_cost);
-
-  /* Set the costs either in STMT_INFO or SLP_NODE (if exists).  */
-  stmt_vinfo_set_inside_of_loop_cost (stmt_info, slp_node, inside_cost);
-  stmt_vinfo_set_outside_of_loop_cost (stmt_info, slp_node, outside_cost);
 }
 
 
@@ -773,18 +835,26 @@ vect_model_promotion_demotion_cost (stmt_vec_info stmt_info,
 				    enum vect_def_type *dt, int pwr)
 {
   int i, tmp;
-  int inside_cost = 0, outside_cost = 0, single_stmt_cost;
+  int inside_cost = 0, outside_cost = 0;
+  loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
+  bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_info);
+  void *target_cost_data;
 
   /* The SLP costs were already calculated during SLP tree build.  */
   if (PURE_SLP_STMT (stmt_info))
     return;
 
-  single_stmt_cost = vect_get_stmt_cost (vec_promote_demote);
+  if (loop_vinfo)
+    target_cost_data = LOOP_VINFO_TARGET_COST_DATA (loop_vinfo);
+  else
+    target_cost_data = BB_VINFO_TARGET_COST_DATA (bb_vinfo);
+
   for (i = 0; i < pwr + 1; i++)
     {
       tmp = (STMT_VINFO_TYPE (stmt_info) == type_promotion_vec_info_type) ?
 	(i + 1) : i;
-      inside_cost += vect_pow2 (tmp) * single_stmt_cost;
+      inside_cost += add_stmt_cost (target_cost_data, vect_pow2 (tmp),
+				    vec_promote_demote, stmt_info, 0);
     }
 
   /* FORNOW: Assuming maximum 2 args per stmts.  */
@@ -799,7 +869,6 @@ vect_model_promotion_demotion_cost (stmt_vec_info stmt_info,
              "outside_cost = %d .", inside_cost, outside_cost);
 
   /* Set the costs in STMT_INFO.  */
-  stmt_vinfo_set_inside_of_loop_cost (stmt_info, NULL, inside_cost);
   stmt_vinfo_set_outside_of_loop_cost (stmt_info, NULL, outside_cost);
 }
 
@@ -829,7 +898,7 @@ vect_cost_group_size (stmt_vec_info stmt_info)
 void
 vect_model_store_cost (stmt_vec_info stmt_info, int ncopies,
 		       bool store_lanes_p, enum vect_def_type dt,
-		       slp_tree slp_node)
+		       slp_tree slp_node, stmt_vector_for_cost *stmt_cost_vec)
 {
   int group_size;
   unsigned int inside_cost = 0, outside_cost = 0;
@@ -873,8 +942,10 @@ vect_model_store_cost (stmt_vec_info stmt_info, int ncopies,
   if (!store_lanes_p && group_size > 1)
     {
       /* Uses a high and low interleave operation for each needed permute.  */
-      inside_cost = ncopies * exact_log2(group_size) * group_size
-        * vect_get_stmt_cost (vec_perm);
+      
+      int nstmts = ncopies * exact_log2 (group_size) * group_size;
+      inside_cost = record_stmt_cost (stmt_cost_vec, nstmts, vec_perm,
+				      stmt_info, 0);
 
       if (vect_print_dump_info (REPORT_COST))
         fprintf (vect_dump, "vect_model_store_cost: strided group_size = %d .",
@@ -882,14 +953,13 @@ vect_model_store_cost (stmt_vec_info stmt_info, int ncopies,
     }
 
   /* Costs of the stores.  */
-  vect_get_store_cost (first_dr, ncopies, &inside_cost);
+  vect_get_store_cost (first_dr, ncopies, &inside_cost, stmt_cost_vec);
 
   if (vect_print_dump_info (REPORT_COST))
     fprintf (vect_dump, "vect_model_store_cost: inside_cost = %d, "
              "outside_cost = %d .", inside_cost, outside_cost);
 
   /* Set the costs either in STMT_INFO or SLP_NODE (if exists).  */
-  stmt_vinfo_set_inside_of_loop_cost (stmt_info, slp_node, inside_cost);
   stmt_vinfo_set_outside_of_loop_cost (stmt_info, slp_node, outside_cost);
 }
 
@@ -897,15 +967,19 @@ vect_model_store_cost (stmt_vec_info stmt_info, int ncopies,
 /* Calculate cost of DR's memory access.  */
 void
 vect_get_store_cost (struct data_reference *dr, int ncopies,
-                     unsigned int *inside_cost)
+		     unsigned int *inside_cost,
+		     stmt_vector_for_cost *stmt_cost_vec)
 {
   int alignment_support_scheme = vect_supportable_dr_alignment (dr, false);
+  gimple stmt = DR_STMT (dr);
+  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
 
   switch (alignment_support_scheme)
     {
     case dr_aligned:
       {
-        *inside_cost += ncopies * vect_get_stmt_cost (vector_store);
+	*inside_cost += record_stmt_cost (stmt_cost_vec, ncopies,
+					  vector_store, stmt_info, 0);
 
         if (vect_print_dump_info (REPORT_COST))
           fprintf (vect_dump, "vect_model_store_cost: aligned.");
@@ -915,14 +989,10 @@ vect_get_store_cost (struct data_reference *dr, int ncopies,
 
     case dr_unaligned_supported:
       {
-        gimple stmt = DR_STMT (dr);
-        stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
-        tree vectype = STMT_VINFO_VECTYPE (stmt_info);
-
         /* Here, we assign an additional cost for the unaligned store.  */
-        *inside_cost += ncopies
-          * targetm.vectorize.builtin_vectorization_cost (unaligned_store,
-                                 vectype, DR_MISALIGNMENT (dr));
+	*inside_cost += record_stmt_cost (stmt_cost_vec, ncopies,
+					  unaligned_store, stmt_info,
+					  DR_MISALIGNMENT (dr));
 
         if (vect_print_dump_info (REPORT_COST))
           fprintf (vect_dump, "vect_model_store_cost: unaligned supported by "
@@ -956,7 +1026,7 @@ vect_get_store_cost (struct data_reference *dr, int ncopies,
 
 void
 vect_model_load_cost (stmt_vec_info stmt_info, int ncopies, bool load_lanes_p,
-		      slp_tree slp_node)
+		      slp_tree slp_node, stmt_vector_for_cost *stmt_cost_vec)
 {
   int group_size;
   gimple first_stmt;
@@ -988,8 +1058,9 @@ vect_model_load_cost (stmt_vec_info stmt_info, int ncopies, bool load_lanes_p,
   if (!load_lanes_p && group_size > 1)
     {
       /* Uses an even and odd extract operations for each needed permute.  */
-      inside_cost = ncopies * exact_log2(group_size) * group_size
-	* vect_get_stmt_cost (vec_perm);
+      int nstmts = ncopies * exact_log2 (group_size) * group_size;
+      inside_cost += record_stmt_cost (stmt_cost_vec, nstmts, vec_perm,
+				       stmt_info, 0);
 
       if (vect_print_dump_info (REPORT_COST))
         fprintf (vect_dump, "vect_model_load_cost: strided group_size = %d .",
@@ -1001,24 +1072,23 @@ vect_model_load_cost (stmt_vec_info stmt_info, int ncopies, bool load_lanes_p,
     {
       /* N scalar loads plus gathering them into a vector.  */
       tree vectype = STMT_VINFO_VECTYPE (stmt_info);
-      inside_cost += (vect_get_stmt_cost (scalar_load) * ncopies
-		      * TYPE_VECTOR_SUBPARTS (vectype));
-      inside_cost += ncopies
-	* targetm.vectorize.builtin_vectorization_cost (vec_construct,
-							vectype, 0);
+      inside_cost += record_stmt_cost (stmt_cost_vec,
+				       ncopies * TYPE_VECTOR_SUBPARTS (vectype),
+				       scalar_load, stmt_info, 0);
+      inside_cost += record_stmt_cost (stmt_cost_vec, ncopies, vec_construct,
+				       stmt_info, 0);
     }
   else
     vect_get_load_cost (first_dr, ncopies,
 			((!STMT_VINFO_GROUPED_ACCESS (stmt_info))
 			 || group_size > 1 || slp_node),
-			&inside_cost, &outside_cost);
+			&inside_cost, &outside_cost, stmt_cost_vec);
 
   if (vect_print_dump_info (REPORT_COST))
     fprintf (vect_dump, "vect_model_load_cost: inside_cost = %d, "
              "outside_cost = %d .", inside_cost, outside_cost);
 
   /* Set the costs either in STMT_INFO or SLP_NODE (if exists).  */
-  stmt_vinfo_set_inside_of_loop_cost (stmt_info, slp_node, inside_cost);
   stmt_vinfo_set_outside_of_loop_cost (stmt_info, slp_node, outside_cost);
 }
 
@@ -1026,16 +1096,20 @@ vect_model_load_cost (stmt_vec_info stmt_info, int ncopies, bool load_lanes_p,
 /* Calculate cost of DR's memory access.  */
 void
 vect_get_load_cost (struct data_reference *dr, int ncopies,
-                    bool add_realign_cost, unsigned int *inside_cost,
-                    unsigned int *outside_cost)
+		    bool add_realign_cost, unsigned int *inside_cost,
+		    unsigned int *outside_cost,
+		    stmt_vector_for_cost *stmt_cost_vec)
 {
   int alignment_support_scheme = vect_supportable_dr_alignment (dr, false);
+  gimple stmt = DR_STMT (dr);
+  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
 
   switch (alignment_support_scheme)
     {
     case dr_aligned:
       {
-        *inside_cost += ncopies * vect_get_stmt_cost (vector_load); 
+	*inside_cost += record_stmt_cost (stmt_cost_vec, ncopies,
+					  vector_load, stmt_info, 0);
 
         if (vect_print_dump_info (REPORT_COST))
           fprintf (vect_dump, "vect_model_load_cost: aligned.");
@@ -1044,14 +1118,11 @@ vect_get_load_cost (struct data_reference *dr, int ncopies,
       }
     case dr_unaligned_supported:
       {
-        gimple stmt = DR_STMT (dr);
-        stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
-        tree vectype = STMT_VINFO_VECTYPE (stmt_info);
-
         /* Here, we assign an additional cost for the unaligned load.  */
-        *inside_cost += ncopies
-          * targetm.vectorize.builtin_vectorization_cost (unaligned_load,
-                                           vectype, DR_MISALIGNMENT (dr));
+	*inside_cost += record_stmt_cost (stmt_cost_vec, ncopies,
+					  unaligned_load, stmt_info,
+					  DR_MISALIGNMENT (dr));
+
         if (vect_print_dump_info (REPORT_COST))
           fprintf (vect_dump, "vect_model_load_cost: unaligned supported by "
                    "hardware.");
@@ -1060,14 +1131,17 @@ vect_get_load_cost (struct data_reference *dr, int ncopies,
       }
     case dr_explicit_realign:
       {
-        *inside_cost += ncopies * (2 * vect_get_stmt_cost (vector_load)
-				   + vect_get_stmt_cost (vec_perm));
+	*inside_cost += record_stmt_cost (stmt_cost_vec, ncopies * 2,
+					  vector_load, stmt_info, 0);
+	*inside_cost += record_stmt_cost (stmt_cost_vec, ncopies,
+					  vec_perm, stmt_info, 0);
 
         /* FIXME: If the misalignment remains fixed across the iterations of
            the containing loop, the following cost should be added to the
            outside costs.  */
         if (targetm.vectorize.builtin_mask_for_load)
-          *inside_cost += vect_get_stmt_cost (vector_stmt);
+	  *inside_cost += record_stmt_cost (stmt_cost_vec, 1, vector_stmt,
+					    stmt_info, 0);
 
         if (vect_print_dump_info (REPORT_COST))
           fprintf (vect_dump, "vect_model_load_cost: explicit realign");
@@ -1094,8 +1168,10 @@ vect_get_load_cost (struct data_reference *dr, int ncopies,
               *outside_cost += vect_get_stmt_cost (vector_stmt);
           }
 
-        *inside_cost += ncopies * (vect_get_stmt_cost (vector_load)
-				   + vect_get_stmt_cost (vec_perm));
+	*inside_cost += record_stmt_cost (stmt_cost_vec, ncopies,
+					  vector_load, stmt_info, 0);
+	*inside_cost += record_stmt_cost (stmt_cost_vec, ncopies,
+					  vec_perm, stmt_info, 0);
 
         if (vect_print_dump_info (REPORT_COST))
           fprintf (vect_dump,
@@ -1719,7 +1795,7 @@ vectorizable_call (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
       STMT_VINFO_TYPE (stmt_info) = call_vec_info_type;
       if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "=== vectorizable_call ===");
-      vect_model_simple_cost (stmt_info, ncopies, dt, NULL);
+      vect_model_simple_cost (stmt_info, ncopies, dt, NULL, NULL);
       return true;
     }
 
@@ -2433,7 +2509,7 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
       if (code == FIX_TRUNC_EXPR || code == FLOAT_EXPR)
         {
 	  STMT_VINFO_TYPE (stmt_info) = type_conversion_vec_info_type;
-	  vect_model_simple_cost (stmt_info, ncopies, dt, NULL);
+	  vect_model_simple_cost (stmt_info, ncopies, dt, NULL, NULL);
 	}
       else if (modifier == NARROW)
 	{
@@ -2841,7 +2917,7 @@ vectorizable_assignment (gimple stmt, gimple_stmt_iterator *gsi,
       STMT_VINFO_TYPE (stmt_info) = assignment_vec_info_type;
       if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "=== vectorizable_assignment ===");
-      vect_model_simple_cost (stmt_info, ncopies, dt, NULL);
+      vect_model_simple_cost (stmt_info, ncopies, dt, NULL, NULL);
       return true;
     }
 
@@ -3187,7 +3263,7 @@ vectorizable_shift (gimple stmt, gimple_stmt_iterator *gsi,
       STMT_VINFO_TYPE (stmt_info) = shift_vec_info_type;
       if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "=== vectorizable_shift ===");
-      vect_model_simple_cost (stmt_info, ncopies, dt, NULL);
+      vect_model_simple_cost (stmt_info, ncopies, dt, NULL, NULL);
       return true;
     }
 
@@ -3304,18 +3380,17 @@ static bool
 vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
 			gimple *vec_stmt, slp_tree slp_node)
 {
-  tree vec_dest, vec_dest2 = NULL_TREE;
-  tree vec_dest3 = NULL_TREE, vec_dest4 = NULL_TREE;
+  tree vec_dest;
   tree scalar_dest;
   tree op0, op1 = NULL_TREE, op2 = NULL_TREE;
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
-  tree vectype, wide_vectype = NULL_TREE;
+  tree vectype;
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   enum tree_code code;
   enum machine_mode vec_mode;
   tree new_temp;
   int op_type;
-  optab optab, optab2 = NULL;
+  optab optab;
   int icode;
   tree def;
   gimple def_stmt;
@@ -3332,8 +3407,6 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
   tree vop0, vop1, vop2;
   bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_info);
   int vf;
-  unsigned char *sel = NULL;
-  tree decl1 = NULL_TREE, decl2 = NULL_TREE, perm_mask = NULL_TREE;
 
   if (!STMT_VINFO_RELEVANT_P (stmt_info) && !bb_vinfo)
     return false;
@@ -3455,87 +3528,26 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
       || code == RROTATE_EXPR)
    return false;
 
-  optab = optab_for_tree_code (code, vectype, optab_default);
-
   /* Supportable by target?  */
-  if (!optab && code != MULT_HIGHPART_EXPR)
-    {
-      if (vect_print_dump_info (REPORT_DETAILS))
-	fprintf (vect_dump, "no optab.");
-      return false;
-    }
+
   vec_mode = TYPE_MODE (vectype);
-  icode = optab ? (int) optab_handler (optab, vec_mode) : CODE_FOR_nothing;
-
-  if (icode == CODE_FOR_nothing
-      && code == MULT_HIGHPART_EXPR
-      && VECTOR_MODE_P (vec_mode)
-      && BYTES_BIG_ENDIAN == WORDS_BIG_ENDIAN)
+  if (code == MULT_HIGHPART_EXPR)
     {
-      /* If MULT_HIGHPART_EXPR isn't supported by the backend, see
-	 if we can emit VEC_WIDEN_MULT_{LO,HI}_EXPR followed by VEC_PERM_EXPR
-	 or builtin_mul_widen_{even,odd} followed by VEC_PERM_EXPR.  */
-      unsigned int prec = TYPE_PRECISION (TREE_TYPE (scalar_dest));
-      unsigned int unsignedp = TYPE_UNSIGNED (TREE_TYPE (scalar_dest));
-      tree wide_type
-	= build_nonstandard_integer_type (prec * 2, unsignedp);
-      wide_vectype
-        = get_same_sized_vectype (wide_type, vectype);
-
-      sel = XALLOCAVEC (unsigned char, nunits_in);
-      if (VECTOR_MODE_P (TYPE_MODE (wide_vectype))
-	  && GET_MODE_SIZE (TYPE_MODE (wide_vectype))
-	     == GET_MODE_SIZE (vec_mode))
+      if (can_mult_highpart_p (vec_mode, TYPE_UNSIGNED (vectype)))
+	icode = 0;
+      else
+	icode = CODE_FOR_nothing;
+    }
+  else
+    {
+      optab = optab_for_tree_code (code, vectype, optab_default);
+      if (!optab)
 	{
-	  if (targetm.vectorize.builtin_mul_widen_even
-	      && (decl1 = targetm.vectorize.builtin_mul_widen_even (vectype))
-	      && targetm.vectorize.builtin_mul_widen_odd
-	      && (decl2 = targetm.vectorize.builtin_mul_widen_odd (vectype))
-	      && TYPE_MODE (TREE_TYPE (TREE_TYPE (decl1)))
-		 == TYPE_MODE (wide_vectype))
-	    {
-	      for (i = 0; i < nunits_in; i++)
-		sel[i] = !BYTES_BIG_ENDIAN + (i & ~1)
-			 + ((i & 1) ? nunits_in : 0);
-	      if (can_vec_perm_p (vec_mode, false, sel))
-		icode = 0;
-	    }
-	  if (icode == CODE_FOR_nothing)
-	    {
-	      decl1 = NULL_TREE;
-	      decl2 = NULL_TREE;
-	      optab = optab_for_tree_code (VEC_WIDEN_MULT_LO_EXPR,
-					   vectype, optab_default);
-	      optab2 = optab_for_tree_code (VEC_WIDEN_MULT_HI_EXPR,
-					    vectype, optab_default);
-	      if (optab != NULL
-		  && optab2 != NULL
-		  && optab_handler (optab, vec_mode) != CODE_FOR_nothing
-		  && optab_handler (optab2, vec_mode) != CODE_FOR_nothing
-		  && insn_data[optab_handler (optab, vec_mode)].operand[0].mode
-		     == TYPE_MODE (wide_vectype)
-		  && insn_data[optab_handler (optab2,
-					      vec_mode)].operand[0].mode
-		     == TYPE_MODE (wide_vectype))
-		{
-		  for (i = 0; i < nunits_in; i++)
-		    sel[i] = !BYTES_BIG_ENDIAN + 2 * i;
-		  if (can_vec_perm_p (vec_mode, false, sel))
-		    icode = optab_handler (optab, vec_mode);
-		}
-	    }
+	  if (vect_print_dump_info (REPORT_DETAILS))
+	    fprintf (vect_dump, "no optab.");
+	  return false;
 	}
-      if (icode == CODE_FOR_nothing)
-	{
-	  if (optab_for_tree_code (code, vectype, optab_default) == NULL)
-	    {
-	      if (vect_print_dump_info (REPORT_DETAILS))
-		fprintf (vect_dump, "no optab.");
-	      return false;
-	    }
-	  wide_vectype = NULL_TREE;
-	  optab2 = NULL;
-	}
+      icode = (int) optab_handler (optab, vec_mode);
     }
 
   if (icode == CODE_FOR_nothing)
@@ -3565,7 +3577,7 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
       STMT_VINFO_TYPE (stmt_info) = op_vec_info_type;
       if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "=== vectorizable_operation ===");
-      vect_model_simple_cost (stmt_info, ncopies, dt, NULL);
+      vect_model_simple_cost (stmt_info, ncopies, dt, NULL, NULL);
       return true;
     }
 
@@ -3575,16 +3587,7 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
     fprintf (vect_dump, "transform binary/unary operation.");
 
   /* Handle def.  */
-  if (wide_vectype)
-    {
-      vec_dest = vect_create_destination_var (scalar_dest, wide_vectype);
-      vec_dest2 = vect_create_destination_var (scalar_dest, wide_vectype);
-      vec_dest3 = vect_create_destination_var (scalar_dest, vectype);
-      vec_dest4 = vect_create_destination_var (scalar_dest, vectype);
-      perm_mask = vect_gen_perm_mask (vectype, sel);
-    }
-  else
-    vec_dest = vect_create_destination_var (scalar_dest, vectype);
+  vec_dest = vect_create_destination_var (scalar_dest, vectype);
 
   /* Allocate VECs for vector operands.  In case of SLP, vector operands are
      created in the previous stages of the recursion, so no allocation is
@@ -3693,66 +3696,6 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
 		  ? VEC_index (tree, vec_oprnds1, i) : NULL_TREE);
 	  vop2 = ((op_type == ternary_op)
 		  ? VEC_index (tree, vec_oprnds2, i) : NULL_TREE);
-	  if (wide_vectype)
-	    {
-	      tree new_temp2, vce;
-
-	      gcc_assert (code == MULT_HIGHPART_EXPR);
-	      if (decl1 != NULL_TREE)
-		{
-		  new_stmt = gimple_build_call (decl1, 2, vop0, vop1);
-		  new_temp = make_ssa_name (vec_dest, new_stmt);
-		  gimple_call_set_lhs (new_stmt, new_temp);
-		  vect_finish_stmt_generation (stmt, new_stmt, gsi);
-
-		  new_stmt = gimple_build_call (decl2, 2, vop0, vop1);
-		  new_temp2 = make_ssa_name (vec_dest2, new_stmt);
-		  gimple_call_set_lhs (new_stmt, new_temp2);
-		  vect_finish_stmt_generation (stmt, new_stmt, gsi);
-		}
-	      else
-		{
-		  new_temp = make_ssa_name (vec_dest, NULL);
-		  new_stmt
-		    = gimple_build_assign_with_ops (BYTES_BIG_ENDIAN
-						    ? VEC_WIDEN_MULT_HI_EXPR
-						    : VEC_WIDEN_MULT_LO_EXPR,
-						    new_temp, vop0, vop1);
-		  vect_finish_stmt_generation (stmt, new_stmt, gsi);
-
-		  new_temp2 = make_ssa_name (vec_dest2, NULL);
-		  new_stmt
-		    = gimple_build_assign_with_ops (BYTES_BIG_ENDIAN
-						    ? VEC_WIDEN_MULT_LO_EXPR
-						    : VEC_WIDEN_MULT_HI_EXPR,
-						    new_temp2, vop0, vop1);
-		  vect_finish_stmt_generation (stmt, new_stmt, gsi);
-		}
-
-	      vce = build1 (VIEW_CONVERT_EXPR, vectype, new_temp);
-	      new_stmt = gimple_build_assign_with_ops (VIEW_CONVERT_EXPR,
-						       vec_dest3, vce,
-						       NULL_TREE);
-	      new_temp = make_ssa_name (vec_dest3, new_stmt);
-	      gimple_assign_set_lhs (new_stmt, new_temp);
-	      vect_finish_stmt_generation (stmt, new_stmt, gsi);
-
-	      vce = build1 (VIEW_CONVERT_EXPR, vectype, new_temp2);
-	      new_stmt = gimple_build_assign_with_ops (VIEW_CONVERT_EXPR,
-						       vec_dest4, vce,
-						       NULL_TREE);
-	      new_temp2 = make_ssa_name (vec_dest4, new_stmt);
-	      gimple_assign_set_lhs (new_stmt, new_temp2);
-	      vect_finish_stmt_generation (stmt, new_stmt, gsi);
-
-	      new_temp = permute_vec_elements (new_temp, new_temp2,
-					       perm_mask, stmt, gsi);
-	      new_stmt = SSA_NAME_DEF_STMT (new_temp);
-	      if (slp_node)
-		VEC_quick_push (gimple, SLP_TREE_VEC_STMTS (slp_node),
-				new_stmt);
-	      continue;
-	    }
 	  new_stmt = gimple_build_assign_with_ops3 (code, vec_dest,
 						    vop0, vop1, vop2);
 	  new_temp = make_ssa_name (vec_dest, new_stmt);
@@ -3938,7 +3881,7 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
   if (!vec_stmt) /* transformation not required.  */
     {
       STMT_VINFO_TYPE (stmt_info) = store_vec_info_type;
-      vect_model_store_cost (stmt_info, ncopies, store_lanes_p, dt, NULL);
+      vect_model_store_cost (stmt_info, ncopies, store_lanes_p, dt, NULL, NULL);
       return true;
     }
 
@@ -4494,7 +4437,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
   if (!vec_stmt) /* transformation not required.  */
     {
       STMT_VINFO_TYPE (stmt_info) = load_vec_info_type;
-      vect_model_load_cost (stmt_info, ncopies, load_lanes_p, NULL);
+      vect_model_load_cost (stmt_info, ncopies, load_lanes_p, NULL, NULL);
       return true;
     }
 
@@ -5117,7 +5060,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 		      if (i == vec_num - 1 && j == ncopies - 1)
 			add_phi_arg (phi, lsq,
 				     loop_latch_edge (containing_loop),
-				     UNKNOWN_LOCATION);
+				     UNKNOWN_LOCATION, NULL);
 		      msq = lsq;
 		    }
 		}
@@ -5934,7 +5877,6 @@ new_stmt_vec_info (gimple stmt, loop_vec_info loop_vinfo,
     STMT_VINFO_DEF_TYPE (res) = vect_internal_def;
 
   STMT_VINFO_SAME_ALIGN_REFS (res) = VEC_alloc (dr_p, heap, 5);
-  STMT_VINFO_INSIDE_OF_LOOP_COST (res) = 0;
   STMT_VINFO_OUTSIDE_OF_LOOP_COST (res) = 0;
   STMT_SLP_TYPE (res) = loop_vect;
   GROUP_FIRST_ELEMENT (res) = NULL;
@@ -6332,7 +6274,8 @@ vect_is_simple_use_1 (tree operand, gimple stmt, loop_vec_info loop_vinfo,
 bool
 supportable_widening_operation (enum tree_code code, gimple stmt,
 				tree vectype_out, tree vectype_in,
-                                tree *decl1, tree *decl2,
+                                tree *decl1 ATTRIBUTE_UNUSED,
+				tree *decl2 ATTRIBUTE_UNUSED,
                                 enum tree_code *code1, enum tree_code *code2,
                                 int *multi_step_cvt,
                                 VEC (tree, heap) **interm_types)
@@ -6340,7 +6283,6 @@ supportable_widening_operation (enum tree_code code, gimple stmt,
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   loop_vec_info loop_info = STMT_VINFO_LOOP_VINFO (stmt_info);
   struct loop *vect_loop = NULL;
-  bool ordered_p;
   enum machine_mode vec_mode;
   enum insn_code icode1, icode2;
   optab optab1, optab2;
@@ -6356,54 +6298,58 @@ supportable_widening_operation (enum tree_code code, gimple stmt,
   if (loop_info)
     vect_loop = LOOP_VINFO_LOOP (loop_info);
 
-  /* The result of a vectorized widening operation usually requires two vectors
-     (because the widened results do not fit into one vector). The generated
-     vector results would normally be expected to be generated in the same
-     order as in the original scalar computation, i.e. if 8 results are
-     generated in each vector iteration, they are to be organized as follows:
-        vect1: [res1,res2,res3,res4], vect2: [res5,res6,res7,res8].
-
-     However, in the special case that the result of the widening operation is
-     used in a reduction computation only, the order doesn't matter (because
-     when vectorizing a reduction we change the order of the computation).
-     Some targets can take advantage of this and generate more efficient code.
-     For example, targets like Altivec, that support widen_mult using a sequence
-     of {mult_even,mult_odd} generate the following vectors:
-        vect1: [res1,res3,res5,res7], vect2: [res2,res4,res6,res8].
-
-     When vectorizing outer-loops, we execute the inner-loop sequentially
-     (each vectorized inner-loop iteration contributes to VF outer-loop
-     iterations in parallel).  We therefore don't allow to change the order
-     of the computation in the inner-loop during outer-loop vectorization.  */
-
-   if (vect_loop
-       && STMT_VINFO_RELEVANT (stmt_info) == vect_used_by_reduction
-       && !nested_in_vect_loop_p (vect_loop, stmt))
-     ordered_p = false;
-   else
-     ordered_p = true;
-
-  if (!ordered_p
-      && code == WIDEN_MULT_EXPR
-      && targetm.vectorize.builtin_mul_widen_even
-      && targetm.vectorize.builtin_mul_widen_even (vectype)
-      && targetm.vectorize.builtin_mul_widen_odd
-      && targetm.vectorize.builtin_mul_widen_odd (vectype))
-    {
-      if (vect_print_dump_info (REPORT_DETAILS))
-        fprintf (vect_dump, "Unordered widening operation detected.");
-
-      *code1 = *code2 = CALL_EXPR;
-      *decl1 = targetm.vectorize.builtin_mul_widen_even (vectype);
-      *decl2 = targetm.vectorize.builtin_mul_widen_odd (vectype);
-      return true;
-    }
-
   switch (code)
     {
     case WIDEN_MULT_EXPR:
+      /* The result of a vectorized widening operation usually requires
+	 two vectors (because the widened results do not fit into one vector).
+	 The generated vector results would normally be expected to be
+	 generated in the same order as in the original scalar computation,
+	 i.e. if 8 results are generated in each vector iteration, they are
+	 to be organized as follows:
+		vect1: [res1,res2,res3,res4],
+		vect2: [res5,res6,res7,res8].
+
+	 However, in the special case that the result of the widening
+	 operation is used in a reduction computation only, the order doesn't
+	 matter (because when vectorizing a reduction we change the order of
+	 the computation).  Some targets can take advantage of this and
+	 generate more efficient code.  For example, targets like Altivec,
+	 that support widen_mult using a sequence of {mult_even,mult_odd}
+	 generate the following vectors:
+		vect1: [res1,res3,res5,res7],
+		vect2: [res2,res4,res6,res8].
+
+	 When vectorizing outer-loops, we execute the inner-loop sequentially
+	 (each vectorized inner-loop iteration contributes to VF outer-loop
+	 iterations in parallel).  We therefore don't allow to change the
+	 order of the computation in the inner-loop during outer-loop
+	 vectorization.  */
+      /* TODO: Another case in which order doesn't *really* matter is when we
+	 widen and then contract again, e.g. (short)((int)x * y >> 8).
+	 Normally, pack_trunc performs an even/odd permute, whereas the 
+	 repack from an even/odd expansion would be an interleave, which
+	 would be significantly simpler for e.g. AVX2.  */
+      /* In any case, in order to avoid duplicating the code below, recurse
+	 on VEC_WIDEN_MULT_EVEN_EXPR.  If it succeeds, all the return values
+	 are properly set up for the caller.  If we fail, we'll continue with
+	 a VEC_WIDEN_MULT_LO/HI_EXPR check.  */
+      if (vect_loop
+	  && STMT_VINFO_RELEVANT (stmt_info) == vect_used_by_reduction
+	  && !nested_in_vect_loop_p (vect_loop, stmt)
+	  && supportable_widening_operation (VEC_WIDEN_MULT_EVEN_EXPR,
+					     stmt, vectype_out, vectype_in,
+					     NULL, NULL, code1, code2,
+					     multi_step_cvt, interm_types))
+	return true;
       c1 = VEC_WIDEN_MULT_LO_EXPR;
       c2 = VEC_WIDEN_MULT_HI_EXPR;
+      break;
+
+    case VEC_WIDEN_MULT_EVEN_EXPR:
+      /* Support the recursion induced just above.  */
+      c1 = VEC_WIDEN_MULT_EVEN_EXPR;
+      c2 = VEC_WIDEN_MULT_ODD_EXPR;
       break;
 
     case WIDEN_LSHIFT_EXPR:
@@ -6431,7 +6377,7 @@ supportable_widening_operation (enum tree_code code, gimple stmt,
       gcc_unreachable ();
     }
 
-  if (BYTES_BIG_ENDIAN)
+  if (BYTES_BIG_ENDIAN && c1 != VEC_WIDEN_MULT_EVEN_EXPR)
     {
       enum tree_code ctmp = c1;
       c1 = c2;

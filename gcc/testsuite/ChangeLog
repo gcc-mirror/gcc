@@ -1,3 +1,111 @@
+2012-07-16  Andrew Pinski  <apinski@cavium.com>
+
+	* gcc.dg/torture/builtins-1.c: New testcase.
+
+2012-07-16  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.target/cris/sync-2i.c, gcc.target/cris/sync-2s.c,
+	gcc.target/cris/sync-3i.c, gcc.target/cris/sync-3s.c,
+	gcc.target/cris/sync-4i.c, gcc.target/cris/sync-4s.c,
+	gcc.target/cris/sync-1-v10.c,
+	gcc.target/cris/sync-1-v32.c: For cris*-*-linux*, also
+	pass -mno-unaligned-atomic-may-use-library.
+	* gcc.target/cris/sync-xchg-1.c: New test.
+	* gcc.target/cris/20011127-1.c: Adjust to %P being a
+	valid register operand output modifier.
+
+2012-07-15  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* g++.dg/debug/dwarf2/pubnames-2.C: Support all known comment
+	characters.
+
+2012-07-13  Andrew Pinski  <apinski@cavium.com>
+
+	* gcc.target/mips/octeon2-pipe-1.c: Use cleanup-rtl-dump
+	rather than cleanup-tree-dump.
+	* gcc.target/mips/octeon-pipe-1.c: Likewise.
+
+2012-07-13  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/53907
+	* gcc.target/i386/pr53907.c: New testcase.
+
+2012-07-13  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/53922
+	* gcc.dg/torture/pr53922.c: New testcase.
+
+2012-07-13  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR rtl-optimization/53908
+	* gcc.dg/torture/pr53908.c: New test.
+
+2012-07-13  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR c++/53531
+	* testsuite/g++.dg/cpp0x/variadic135.C: New.
+
+2012-07-12  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/template/sfinae6_neg.C: Adjust.
+
+2012-07-12  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/c_f_pointer_shape_tests_5.f90: New.
+	* gfortran.dg/c_f_pointer_tests_3.f90: Update
+	scan-tree-dump-times pattern.
+
+2012-07-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/debug/dwarf2/pubnames-2.C: Allow for / comments.
+
+2012-07-11  Jason Merrill  <jason@redhat.com>
+
+	DR 1402
+	* g++.g/cpp0x/defaulted37.C: New.
+
+2012-07-11  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+	PR target/53859
+	* gcc.target/arm/pr53859.c: New test.
+
+2012-07-10  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/53886
+	* gcc.c-torture/compile/pr53886.c: New.
+
+2012-07-10  Dehao Chen  <dehao@google.com>
+
+	* gcc.dg/debug_info_inline.c: New test.
+
+2012-07-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53733
+	* g++.dg/cpp0x/defaulted36.C: New.
+	* g++.dg/cpp0x/defaulted21.C: Adjust.
+
+	* g++.dg/cpp0x/implicit13.C: Add vbase and member tests.
+
+2012-07-09  Sterling Augustine  <saugustine@google.com>
+
+	* g++.dg/debug/dwarf2/pubnames-2.C: New.
+
+2012-07-09  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR tree-optimization/53887
+	* gcc.dg/pr53887.c: New test.
+
+2012-07-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53882
+	* g++.dg/cpp0x/nullptr29.C: New.
+
+2012-07-09  Tom de Vries  <tom@codesourcery.com>
+	    Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/builtin-unreachable-6.c: New test.
+	* gcc.dg/builtin-unreachable-5.c: New test.
+
 2012-07-07  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR tree-optimization/53881

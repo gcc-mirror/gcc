@@ -76,10 +76,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-alias.h"
 #include "plugin.h"
 
-#if defined (DWARF2_UNWIND_INFO) || defined (DWARF2_DEBUGGING_INFO)
-#include "dwarf2out.h"
-#endif
-
 #if defined(DBX_DEBUGGING_INFO) || defined(XCOFF_DEBUGGING_INFO)
 #include "dbxout.h"
 #endif
@@ -912,7 +908,7 @@ init_asm_output (const char *name)
       if (!strcmp (asm_file_name, "-"))
 	asm_out_file = stdout;
       else
-	asm_out_file = fopen (asm_file_name, "w+b");
+	asm_out_file = fopen (asm_file_name, "w");
       if (asm_out_file == 0)
 	fatal_error ("can%'t open %s for writing: %m", asm_file_name);
     }

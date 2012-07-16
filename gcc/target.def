@@ -970,20 +970,6 @@ DEFHOOK
  tree, (unsigned code, tree dest_type, tree src_type),
  default_builtin_vectorized_conversion)
 
-/* Target builtin that implements vector widening multiplication.
-   builtin_mul_widen_eve computes the element-by-element products
-   for the even elements, and builtin_mul_widen_odd computes the
-   element-by-element products for the odd elements.  */
-DEFHOOK
-(builtin_mul_widen_even,
- "",
- tree, (tree x), NULL)
-
-DEFHOOK
-(builtin_mul_widen_odd,
- "",
- tree, (tree x), NULL)
-
 /* Cost of different vector/scalar statements in vectorization cost
    model. In case of misaligned vector loads and stores the cost depends
    on the data type and misalignment value.  */
@@ -1062,6 +1048,55 @@ DEFHOOK
  tree,
  (const_tree mem_vectype, const_tree index_type, int scale),
  NULL)
+
+/* Target function to initialize the cost model for a loop or block.  */
+DEFHOOK
+(init_cost,
+ "This hook should initialize target-specific data structures in preparation "
+ "for modeling the costs of vectorizing a loop or basic block.  The default "
+ "allocates an unsigned integer for accumulating a single cost.  "
+ "If @var{loop_info} is non-NULL, it identifies the loop being vectorized; "
+ "otherwise a single block is being vectorized.",
+ void *,
+ (struct loop *loop_info),
+ default_init_cost)
+
+/* Target function to record N statements of the given kind using the
+   given vector type within the cost model data for the current loop
+   or block.  */
+DEFHOOK
+(add_stmt_cost,
+ "This hook should update the target-specific @var{data} in response to "
+ "adding @var{count} copies of the given @var{kind} of statement to the "
+ "body of a loop or basic block.  The default adds the builtin vectorizer "
+ "cost for the copies of the statement to the accumulator, and returns "
+ "the amount added.  The return value should be viewed as a tentative "
+ "cost that may later be overridden.",
+ unsigned,
+ (void *data, int count, enum vect_cost_for_stmt kind,
+  struct _stmt_vec_info *stmt_info, int misalign),
+ default_add_stmt_cost)
+
+/* Target function to calculate the total cost of the current vectorized
+   loop or block.  */
+DEFHOOK
+(finish_cost,
+ "This hook should complete calculations of the cost of vectorizing a loop "
+ "or basic block based on @var{data}, and return that cost as an unsigned "
+ "integer.  The default returns the value of the accumulator.",
+ unsigned,
+ (void *data),
+ default_finish_cost)
+
+/* Function to delete target-specific cost modeling data.  */
+DEFHOOK
+(destroy_cost_data,
+ "This hook should release @var{data} and any related data structures "
+ "allocated by TARGET_VECTORIZE_INIT_COST.  The default releases the "
+ "accumulator.",
+ void,
+ (void *data),
+ default_destroy_cost_data)
 
 HOOK_VECTOR_END (vectorize)
 

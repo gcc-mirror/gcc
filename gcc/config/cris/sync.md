@@ -73,31 +73,50 @@
 (define_code_attr atomic_op_name
  [(plus "add") (minus "sub") (and "and") (ior "or") (xor "xor") (mult "nand")])
 
+;; The operator nonatomic-operand can be memory, constant or register
+;; for all but xor.  We can't use memory or addressing modes with
+;; side-effects though, so just use registers and literal constants.
+(define_code_attr atomic_op_op_cnstr
+ [(plus "ri") (minus "ri") (and "ri") (ior "ri") (xor "r") (mult "ri")])
+
+(define_code_attr atomic_op_op_pred
+ [(plus "nonmemory_operand") (minus "nonmemory_operand")
+  (and "nonmemory_operand") (ior "nonmemory_operand")
+  (xor "register_operand") (mult "nonmemory_operand")])
+
 ;; Pairs of these are used to insert the "not" after the "and" for nand.
-(define_code_attr atomic_op_mnem_pre ;; Upper-case only to sinplify testing.
- [(plus "Add.d") (minus "Sub.d") (and "And.d") (ior "Or.d") (xor "Xor")
-  (mult "aNd.d")])
+(define_code_attr atomic_op_mnem_pre_op2 ;; Upper-case only to simplify testing.
+ [(plus "%P2") (minus "Sub.d %2") (and "And%q2 %2") (ior "Or%q2 %2") (xor "Xor %2")
+  (mult "aNd%q2 %2")])
+
 (define_code_attr atomic_op_mnem_post_op3
  [(plus "") (minus "") (and "") (ior "") (xor "") (mult "not %3\;")])
+
+;; For SImode, emit "q" for operands -31..31.
+(define_mode_attr qm3 [(SI "%q3") (HI ".w") (QI ".b")])
 
 (define_expand "atomic_fetch_<atomic_op_name><mode>"
   [(match_operand:BWD 0 "register_operand")
    (match_operand:BWD 1 "memory_operand")
-   (match_operand:BWD 2 "register_operand")
+   (match_operand:BWD 2 "<atomic_op_op_pred>")
    (match_operand 3)
    (atomic_op:BWD (match_dup 0) (match_dup 1))]
-  ""
+  "<MODE>mode == QImode || !TARGET_ATOMICS_MAY_CALL_LIBFUNCS"
 {
   enum memmodel mmodel = (enum memmodel) INTVAL (operands[3]);
 
   if (<MODE>mode != QImode && TARGET_TRAP_UNALIGNED_ATOMIC)
     cris_emit_trap_for_misalignment (operands[1]);
 
-  expand_mem_thread_fence (mmodel);
+  if (need_atomic_barrier_p (mmodel, true))
+    expand_mem_thread_fence (mmodel);
+
   emit_insn (gen_cris_atomic_fetch_<atomic_op_name><mode>_1 (operands[0],
 							     operands[1],
 							     operands[2]));
-  expand_mem_thread_fence (mmodel);
+  if (need_atomic_barrier_p (mmodel, false))
+    expand_mem_thread_fence (mmodel);
+
   DONE;
 })
 
@@ -105,12 +124,13 @@
   [(set (match_operand:BWD 1 "memory_operand" "+Q")
 	(atomic_op:BWD
 	 (unspec_volatile:BWD [(match_dup 1)] CRIS_UNSPEC_ATOMIC_OP)
-	 ;; FIXME: relax this for plus, minus, and, ior.
-	 (match_operand:BWD 2 "register_operand" "r")))
+	 ;; FIXME: improve constants more for plus, minus, and, ior.
+	 ;; FIXME: handle memory operands without side-effects.
+	 (match_operand:BWD 2 "<atomic_op_op_pred>" "<atomic_op_op_cnstr>")))
    (set (match_operand:BWD 0 "register_operand" "=&r")
 	(match_dup 1))
    (clobber (match_scratch:SI 3 "=&r"))]
-  ""
+  "<MODE>mode == QImode || !TARGET_ATOMICS_MAY_CALL_LIBFUNCS"
 {
   /* Can't be too sure; better ICE if this happens.  */
   gcc_assert (!reg_overlap_mentioned_p (operands[2], operands[1]));
@@ -121,7 +141,7 @@
       ".Lsync.%=:\;"
       "move<m> %1,%0\;"
       "move.d %0,%3\;"
-      "<atomic_op_mnem_pre> %2,%3\;<atomic_op_mnem_post_op3>"
+      "<atomic_op_mnem_pre_op2>,%3\;<atomic_op_mnem_post_op3>"
       "ax\;"
       "move<m> %3,%1\;"
       "bcs .Lsync.%=\;"
@@ -132,7 +152,7 @@
       ".Lsync.%=:\;"
       "move<m> %1,%0\;"
       "move.d %0,%3\;"
-      "<atomic_op_mnem_pre> %2,%3\;<atomic_op_mnem_post_op3>"
+      "<atomic_op_mnem_pre_op2>,%3\;<atomic_op_mnem_post_op3>"
       "ax\;"
       "move<m> %3,%1\;"
       "bwf .Lsync.%=\;"
@@ -163,12 +183,12 @@
 	"bmi .Lsync.irqon.%=\;"
 	"move.d %0,%3\;"
 
-	"<atomic_op_mnem_pre> %2,%3\;<atomic_op_mnem_post_op3>"
+	"<atomic_op_mnem_pre_op2>,%3\;<atomic_op_mnem_post_op3>"
 	"ba .Lsync.irqoff.%=\;"
 	"move<m> %3,%1\n"
 
 	".Lsync.irqon.%=:\;"
-	"<atomic_op_mnem_pre> %2,%3\;<atomic_op_mnem_post_op3>"
+	"<atomic_op_mnem_pre_op2>,%3\;<atomic_op_mnem_post_op3>"
 	"move<m> %3,%1\;"
 	"ei\n"
 	".Lsync.irqoff.%=:";
@@ -180,29 +200,34 @@
 ;; can_compare_and_swap_p call in omp-low.c, 4.8 era).  We'd slightly
 ;; prefer atomic_exchange<mode> over this, but having both would be
 ;; redundant.
+;; FIXME: handle memory without side-effects for operand[3].
 (define_expand "atomic_compare_and_swap<mode>"
   [(match_operand:SI 0 "register_operand")
    (match_operand:BWD 1 "register_operand")
    (match_operand:BWD 2 "memory_operand")
-   (match_operand:BWD 3 "general_operand")
+   (match_operand:BWD 3 "nonmemory_operand")
    (match_operand:BWD 4 "register_operand")
    (match_operand 5)
    (match_operand 6)
    (match_operand 7)]
-  ""
+  "<MODE>mode == QImode || !TARGET_ATOMICS_MAY_CALL_LIBFUNCS"
 {
   enum memmodel mmodel = (enum memmodel) INTVAL (operands[6]);
 
   if (<MODE>mode != QImode && TARGET_TRAP_UNALIGNED_ATOMIC)
     cris_emit_trap_for_misalignment (operands[2]);
 
-  expand_mem_thread_fence (mmodel);
+  if (need_atomic_barrier_p (mmodel, true))
+    expand_mem_thread_fence (mmodel);
+
   emit_insn (gen_cris_atomic_compare_and_swap<mode>_1 (operands[0],
 						       operands[1],
 						       operands[2],
 						       operands[3],
 						       operands[4]));
-  expand_mem_thread_fence (mmodel);
+  if (need_atomic_barrier_p (mmodel, false))
+    expand_mem_thread_fence (mmodel);
+
   DONE;
 })
 
@@ -210,7 +235,7 @@
   [(set (match_operand:SI 0 "register_operand" "=&r")
 	(unspec_volatile:SI
 	 [(match_operand:BWD 2 "memory_operand" "+Q")
-	  (match_operand:BWD 3 "general_operand" "g")]
+	  (match_operand:BWD 3 "nonmemory_operand" "ri")]
 	 CRIS_UNSPEC_ATOMIC_SWAP_BOOL))
    (set (match_operand:BWD 1 "register_operand" "=&r") (match_dup 2))
    (set (match_dup 2)
@@ -219,36 +244,34 @@
 	  (match_dup 3)
 	  (match_operand:BWD 4 "register_operand" "r")]
 	 CRIS_UNSPEC_ATOMIC_SWAP_MEM))]
-  ""
+  "<MODE>mode == QImode || !TARGET_ATOMICS_MAY_CALL_LIBFUNCS"
 {
   if (TARGET_V32)
     return
-      "clearf p\n"
-      ".Lsync.repeat.%=:\;"
+      "\n.Lsync.repeat.%=:\;"
+      "clearf p\;"
       "move<m> %2,%1\;"
-      "cmp<m> %3,%1\;"
+      "cmp<qm3> %3,%1\;"
       "bne .Lsync.after.%=\;"
-      "seq %0\;"
-
       "ax\;"
+
       "move<m> %4,%2\;"
-      "bcs .Lsync.repeat.%=\;"
-      "clearf p\n"
-      ".Lsync.after.%=:";
+      "bcs .Lsync.repeat.%=\n"
+      ".Lsync.after.%=:\;"
+      "seq %0";
   else if (cris_cpu_version == 10)
     return
-      "clearf\n"
-      ".Lsync.repeat.%=:\;"
+      "\n.Lsync.repeat.%=:\;"
+      "clearf\;"
       "move<m> %2,%1\;"
-      "cmp<m> %3,%1\;"
+      "cmp<qm3> %3,%1\;"
       "bne .Lsync.after.%=\;"
-      "seq %0\;"
-
       "ax\;"
+
       "move<m> %4,%2\;"
-      "bwf .Lsync.repeat.%=\;"
-      "clearf\n"
-      ".Lsync.after.%=:";
+      "bwf .Lsync.repeat.%=\n"
+      ".Lsync.after.%=:\;"
+      "seq %0";
   else
     {
       /* This one is for CRIS versions without load-locked-store-conditional
@@ -275,14 +298,14 @@
 	"bmi .Lsync.irqon.%=\;"
 	"nop\;"
 
-	"cmp<m> %3,%1\;"
+	"cmp<qm3> %3,%1\;"
 	"bne .Lsync.after.%=\;"
 	"seq %0\;"
 	"ba .Lsync.after.%=\;"
 	"move<m> %4,%2\n"
 
 	".Lsync.irqon.%=:\;"
-	"cmp<m> %3,%1\;"
+	"cmp<qm3> %3,%1\;"
 	"bne .Lsync.after.%=\;"
 	"seq %0\;"
 	"move<m> %4,%2\;"

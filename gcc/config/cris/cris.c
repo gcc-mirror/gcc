@@ -127,8 +127,6 @@ static void cris_init_libfuncs (void);
 
 static reg_class_t cris_preferred_reload_class (rtx, reg_class_t);
 
-static bool cris_legitimate_address_p (enum machine_mode, rtx, bool);
-
 static int cris_register_move_cost (enum machine_mode, reg_class_t, reg_class_t);
 static int cris_memory_move_cost (enum machine_mode, reg_class_t, bool);
 static bool cris_rtx_costs (rtx, int, int, int, int *, bool);
@@ -981,6 +979,53 @@ cris_print_operand (FILE *file, rtx x, int code)
       fprintf (file, INTVAL (operand) < 0 ? "adds.w" : "addq");
       return;
 
+    case 'P':
+      /* For const_int operands, print the additive mnemonic and the
+	 modified operand (byte-sized operands don't save anything):
+          N=MIN_INT..-65536: add.d N
+          -65535..-64: subu.w -N
+          -63..-1: subq -N
+          0..63: addq N
+          64..65535: addu.w N
+          65536..MAX_INT: add.d N.
+	 (Emitted mnemonics are capitalized to simplify testing.)
+	 For anything else (N.B: only register is valid), print "add.d".  */
+      if (REG_P (operand))
+	{
+	  fprintf (file, "Add.d ");
+
+	  /* Deal with printing the operand by dropping through to the
+	     normal path.  */
+	  break;
+	}
+      else
+	{
+	  int val;
+	  gcc_assert (CONST_INT_P (operand));
+
+	  val = INTVAL (operand);
+	  if (!IN_RANGE (val, -65535, 65535))
+	      fprintf (file, "Add.d %d", val);
+	  else if (val <= -64)
+	    fprintf (file, "Subu.w %d", -val);
+	  else if (val <= -1)
+	    fprintf (file, "Subq %d", -val);
+	  else if (val <= 63)
+	      fprintf (file, "Addq %d", val);
+	  else if (val <= 65535)
+	    fprintf (file, "Addu.w %d", val);
+	  return;
+	}
+      break;
+
+    case 'q':
+      /* If the operand is an integer -31..31, print "q" else ".d".  */
+      if (CONST_INT_P (operand) && IN_RANGE (INTVAL (operand), -31, 31))
+	fprintf (file, "q");
+      else
+	fprintf (file, ".d");
+      return;
+
     case 'd':
       /* If this is a GOT symbol, force it to be emitted as :GOT and
 	 :GOTPLT regardless of -fpic (i.e. not as :GOT16, :GOTPLT16).
@@ -1367,7 +1412,7 @@ cris_biap_index_p (const_rtx x, bool strict)
    here (but is thankfully a general_operand in itself).  A local PIC
    symbol is valid for the plain "symbol + offset" case.  */
 
-static bool
+bool
 cris_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
 {
   const_rtx x1, x2;
@@ -1503,6 +1548,7 @@ cris_preferred_reload_class (rtx x ATTRIBUTE_UNUSED, reg_class_t rclass)
 {
   if (rclass != ACR_REGS
       && rclass != MOF_REGS
+      && rclass != MOF_SRP_REGS
       && rclass != SRP_REGS
       && rclass != CC0_REGS
       && rclass != SPECIAL_REGS)
@@ -2714,6 +2760,16 @@ cris_init_libfuncs (void)
   set_optab_libfunc (udiv_optab, SImode, "__Udiv");
   set_optab_libfunc (smod_optab, SImode, "__Mod");
   set_optab_libfunc (umod_optab, SImode, "__Umod");
+
+  /* Atomic data being unaligned is unfortunately a reality.
+     Deal with it.  */
+  if (TARGET_ATOMICS_MAY_CALL_LIBFUNCS)
+    {
+      set_optab_libfunc (sync_compare_and_swap_optab, SImode,
+			 "__cris_atcmpxchgr32");
+      set_optab_libfunc (sync_compare_and_swap_optab, HImode,
+			 "__cris_atcmpxchgr16");
+    }
 }
 
 /* The INIT_EXPANDERS worker sets the per-function-data initializer and

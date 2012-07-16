@@ -4435,6 +4435,13 @@ package body Make is
          declare
             Success : Boolean := False;
          begin
+            --  If gnatmake was invoked with --subdirs and no project file,
+            --  put the executable in the subdirectory specified.
+
+            if Prj.Subdirs /= null and then Main_Project = No_Project then
+               Change_Dir (Object_Directory_Path.all);
+            end if;
+
             Link (Main_ALI_File,
                   Link_With_Shared_Libgcc.all &
                   Args (Args'First .. Last_Arg),
@@ -4569,6 +4576,13 @@ package body Make is
                  new String'("-F=" & Get_Name_String (Mapping_Path));
             end if;
          end if;
+      end if;
+
+      --  If gnatmake was invoked with --subdirs and no project file, put the
+      --  binder generated files in the subdirectory specified.
+
+      if Main_Project = No_Project and then Prj.Subdirs /= null then
+         Change_Dir (Object_Directory_Path.all);
       end if;
 
       begin
@@ -4807,10 +4821,13 @@ package body Make is
          return;
       end if;
 
-      --  Regenerate libraries, if there are any and if object files
-      --  have been regenerated.
+      --  Regenerate libraries, if there are any and if object files have been
+      --  regenerated. Note that we skip this in CodePeer mode because we don't
+      --  need libraries in this case, and more importantly, the object files
+      --  may not be present.
 
       if Main_Project /= No_Project
+        and then not CodePeer_Mode
         and then MLib.Tgt.Support_For_Libraries /= Prj.None
         and then (Do_Bind_Step
                    or Unique_Compile_All_Projects

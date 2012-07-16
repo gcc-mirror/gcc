@@ -832,8 +832,8 @@ package body Sem_Elim is
 
       function OK_Selected_Component (N : Node_Id) return Boolean;
       --  Test if N is a selected component with all identifiers, or a selected
-      --  component whose selector is an operator symbol. As a side effect if
-      --  result is True, sets Num_Names to the number of names present
+      --  component whose selector is an operator symbol. As a side effect
+      --  if result is True, sets Num_Names to the number of names present
       --  (identifiers, and operator if any).
 
       ---------------------------

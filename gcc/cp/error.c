@@ -2633,7 +2633,7 @@ lang_decl_name (tree decl, int v, bool translate)
     dump_function_name (decl, TFF_PLAIN_IDENTIFIER);
   else if ((DECL_NAME (decl) == NULL_TREE)
            && TREE_CODE (decl) == NAMESPACE_DECL)
-    dump_decl (decl, TFF_PLAIN_IDENTIFIER);
+    dump_decl (decl, TFF_PLAIN_IDENTIFIER | TFF_UNQUALIFIED_NAME);
   else
     dump_decl (DECL_NAME (decl), TFF_PLAIN_IDENTIFIER);
 

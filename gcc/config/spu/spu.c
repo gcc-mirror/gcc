@@ -211,8 +211,6 @@ static void spu_encode_section_info (tree, rtx, int);
 static rtx spu_legitimize_address (rtx, rtx, enum machine_mode);
 static rtx spu_addr_space_legitimize_address (rtx, rtx, enum machine_mode,
 					      addr_space_t);
-static tree spu_builtin_mul_widen_even (tree);
-static tree spu_builtin_mul_widen_odd (tree);
 static tree spu_builtin_mask_for_load (void);
 static int spu_builtin_vectorization_cost (enum vect_cost_for_stmt, tree, int);
 static bool spu_vector_alignment_reachable (const_tree, bool);
@@ -431,17 +429,23 @@ static void spu_setup_incoming_varargs (cumulative_args_t cum,
 #undef  TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO spu_encode_section_info
 
-#undef TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_EVEN
-#define TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_EVEN spu_builtin_mul_widen_even
-
-#undef TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_ODD
-#define TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_ODD spu_builtin_mul_widen_odd
-
 #undef TARGET_VECTORIZE_BUILTIN_MASK_FOR_LOAD
 #define TARGET_VECTORIZE_BUILTIN_MASK_FOR_LOAD spu_builtin_mask_for_load
 
 #undef TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST
 #define TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST spu_builtin_vectorization_cost
+
+#undef TARGET_VECTORIZE_INIT_COST
+#define TARGET_VECTORIZE_INIT_COST spu_init_cost
+
+#undef TARGET_VECTORIZE_ADD_STMT_COST
+#define TARGET_VECTORIZE_ADD_STMT_COST spu_add_stmt_cost
+
+#undef TARGET_VECTORIZE_FINISH_COST
+#define TARGET_VECTORIZE_FINISH_COST spu_finish_cost
+
+#undef TARGET_VECTORIZE_DESTROY_COST_DATA
+#define TARGET_VECTORIZE_DESTROY_COST_DATA spu_destroy_cost_data
 
 #undef TARGET_VECTORIZE_VECTOR_ALIGNMENT_REACHABLE
 #define TARGET_VECTORIZE_VECTOR_ALIGNMENT_REACHABLE spu_vector_alignment_reachable
@@ -6863,40 +6867,6 @@ spu_expand_builtin (tree exp,
   abort ();
 }
 
-/* Implement targetm.vectorize.builtin_mul_widen_even.  */
-static tree
-spu_builtin_mul_widen_even (tree type)
-{
-  switch (TYPE_MODE (type))
-    {
-    case V8HImode:
-      if (TYPE_UNSIGNED (type))
-	return spu_builtin_decls[SPU_MULE_0];
-      else
-	return spu_builtin_decls[SPU_MULE_1];
-      break;
-    default:
-      return NULL_TREE;
-    }
-}
-
-/* Implement targetm.vectorize.builtin_mul_widen_odd.  */
-static tree
-spu_builtin_mul_widen_odd (tree type)
-{
-  switch (TYPE_MODE (type))
-    {
-    case V8HImode:
-      if (TYPE_UNSIGNED (type))
-	return spu_builtin_decls[SPU_MULO_1];
-      else
-	return spu_builtin_decls[SPU_MULO_0]; 
-      break;
-    default:
-      return NULL_TREE;
-    }
-}
-
 /* Implement targetm.vectorize.builtin_mask_for_load.  */
 static tree
 spu_builtin_mask_for_load (void)
@@ -6945,6 +6915,59 @@ spu_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
       default:
         gcc_unreachable ();
     }
+}
+
+/* Implement targetm.vectorize.init_cost.  */
+
+static void *
+spu_init_cost (struct loop *loop_info ATTRIBUTE_UNUSED)
+{
+  unsigned *cost = XNEW (unsigned);
+  *cost = 0;
+  return cost;
+}
+
+/* Implement targetm.vectorize.add_stmt_cost.  */
+
+static unsigned
+spu_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
+		   struct _stmt_vec_info *stmt_info, int misalign)
+{
+  unsigned *cost = (unsigned *) data;
+  unsigned retval = 0;
+
+  if (flag_vect_cost_model)
+    {
+      tree vectype = stmt_vectype (stmt_info);
+      int stmt_cost = spu_builtin_vectorization_cost (kind, vectype, misalign);
+
+      /* Statements in an inner loop relative to the loop being
+	 vectorized are weighted more heavily.  The value here is
+	 arbitrary and could potentially be improved with analysis.  */
+      if (stmt_in_inner_loop_p (stmt_info))
+	count *= 50;  /* FIXME.  */
+
+      retval = (unsigned) (count * stmt_cost);
+      *cost += retval;
+    }
+
+  return retval;
+}
+
+/* Implement targetm.vectorize.finish_cost.  */
+
+static unsigned
+spu_finish_cost (void *data)
+{
+  return *((unsigned *) data);
+}
+
+/* Implement targetm.vectorize.destroy_cost_data.  */
+
+static void
+spu_destroy_cost_data (void *data)
+{
+  free (data);
 }
 
 /* Return true iff, data reference of TYPE can reach vector alignment (16)

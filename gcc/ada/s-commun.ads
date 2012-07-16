@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2001-2009, AdaCore                     --
+--                     Copyright (C) 2001-2012, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,6 +35,7 @@ with Ada.Streams;
 with System.CRTL;
 
 package System.Communication is
+   pragma Preelaborate;
 
    function Last_Index
      (First : Ada.Streams.Stream_Element_Offset;

@@ -127,7 +127,15 @@ package body Snames is
 
    function Get_Attribute_Id (N : Name_Id) return Attribute_Id is
    begin
-      return Attribute_Id'Val (N - First_Attribute_Name);
+      if N = Name_CPU then
+         return Attribute_CPU;
+      elsif N = Name_Dispatching_Domain then
+         return Attribute_Dispatching_Domain;
+      elsif N = Name_Interrupt_Priority then
+         return Attribute_Interrupt_Priority;
+      else
+         return Attribute_Id'Val (N - First_Attribute_Name);
+      end if;
    end Get_Attribute_Id;
 
    -----------------------
@@ -391,6 +399,16 @@ package body Snames is
         and then (Ada_Version >= Ada_2012
                    or else N not in Ada_2012_Reserved_Words);
    end Is_Keyword_Name;
+
+   --------------------------------
+   -- Is_Internal_Attribute_Name --
+   --------------------------------
+
+   function Is_Internal_Attribute_Name (N : Name_Id) return Boolean is
+   begin
+      return
+        N in First_Internal_Attribute_Name .. Last_Internal_Attribute_Name;
+   end Is_Internal_Attribute_Name;
 
    ----------------------------
    -- Is_Locking_Policy_Name --

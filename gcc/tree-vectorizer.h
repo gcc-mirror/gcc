@@ -71,6 +71,32 @@ enum vect_def_type {
                                    || ((D) == vect_double_reduction_def) \
                                    || ((D) == vect_nested_cycle))
 
+/* Structure to encapsulate information about a group of like
+   instructions to be presented to the target cost model.  */
+typedef struct _stmt_info_for_cost {
+  int count;
+  enum vect_cost_for_stmt kind;
+  gimple stmt;
+  int misalign;
+} stmt_info_for_cost;
+
+DEF_VEC_O (stmt_info_for_cost);
+DEF_VEC_ALLOC_O (stmt_info_for_cost, heap);
+
+typedef VEC(stmt_info_for_cost, heap) *stmt_vector_for_cost;
+
+static inline void
+add_stmt_info_to_vec (stmt_vector_for_cost *stmt_cost_vec, int count,
+		      enum vect_cost_for_stmt kind, gimple stmt, int misalign)
+{
+  stmt_info_for_cost si;
+  si.count = count;
+  si.kind = kind;
+  si.stmt = stmt;
+  si.misalign = misalign;
+  VEC_safe_push (stmt_info_for_cost, heap, *stmt_cost_vec, &si);
+}
+
 /************************************************************************
   SLP
  ************************************************************************/
@@ -96,7 +122,6 @@ typedef struct _slp_tree {
   struct
   {
     int outside_of_loop;     /* Statements generated outside loop.  */
-    int inside_of_loop;      /* Statements generated inside loop.  */
   } cost;
 } *slp_tree;
 
@@ -119,8 +144,10 @@ typedef struct _slp_instance {
   struct
   {
     int outside_of_loop;     /* Statements generated outside loop.  */
-    int inside_of_loop;      /* Statements generated inside loop.  */
   } cost;
+
+  /* Inside-loop costs.  */
+  stmt_vector_for_cost stmt_cost_vec;
 
   /* Loads permutation relatively to the stores, NULL if there is no
      permutation.  */
@@ -142,7 +169,7 @@ DEF_VEC_ALLOC_P(slp_instance, heap);
 #define SLP_INSTANCE_GROUP_SIZE(S)               (S)->group_size
 #define SLP_INSTANCE_UNROLLING_FACTOR(S)         (S)->unrolling_factor
 #define SLP_INSTANCE_OUTSIDE_OF_LOOP_COST(S)     (S)->cost.outside_of_loop
-#define SLP_INSTANCE_INSIDE_OF_LOOP_COST(S)      (S)->cost.inside_of_loop
+#define SLP_INSTANCE_STMT_COST_VEC(S)            (S)->stmt_cost_vec
 #define SLP_INSTANCE_LOAD_PERMUTATION(S)         (S)->load_permutation
 #define SLP_INSTANCE_LOADS(S)                    (S)->loads
 #define SLP_INSTANCE_FIRST_LOAD_STMT(S)          (S)->first_load
@@ -152,7 +179,6 @@ DEF_VEC_ALLOC_P(slp_instance, heap);
 #define SLP_TREE_VEC_STMTS(S)                    (S)->vec_stmts
 #define SLP_TREE_NUMBER_OF_VEC_STMTS(S)          (S)->vec_stmts_size
 #define SLP_TREE_OUTSIDE_OF_LOOP_COST(S)         (S)->cost.outside_of_loop
-#define SLP_TREE_INSIDE_OF_LOOP_COST(S)          (S)->cost.inside_of_loop
 
 /* This structure is used in creation of an SLP tree.  Each instance
    corresponds to the same operand in a group of scalar stmts in an SLP
@@ -186,6 +212,7 @@ typedef struct _vect_peel_extended_info
   struct _vect_peel_info peel_info;
   unsigned int inside_cost;
   unsigned int outside_cost;
+  stmt_vector_for_cost stmt_cost_vec;
 } *vect_peel_extended_info;
 
 /*-----------------------------------------------------------------*/
@@ -274,6 +301,9 @@ typedef struct _loop_vec_info {
   /* Hash table used to choose the best peeling option.  */
   htab_t peeling_htab;
 
+  /* Cost data used by the target cost model.  */
+  void *target_cost_data;
+
   /* When we have grouped data accesses with gaps, we may introduce invalid
      memory accesses.  We peel the last iteration of the loop to prevent
      this.  */
@@ -307,6 +337,7 @@ typedef struct _loop_vec_info {
 #define LOOP_VINFO_REDUCTIONS(L)           (L)->reductions
 #define LOOP_VINFO_REDUCTION_CHAINS(L)     (L)->reduction_chains
 #define LOOP_VINFO_PEELING_HTAB(L)         (L)->peeling_htab
+#define LOOP_VINFO_TARGET_COST_DATA(L)     (L)->target_cost_data
 #define LOOP_VINFO_PEELING_FOR_GAPS(L)     (L)->peeling_for_gaps
 
 #define LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT(L) \
@@ -350,13 +381,18 @@ typedef struct _bb_vec_info {
 
   /* All data dependences in the basic block.  */
   VEC (ddr_p, heap) *ddrs;
+
+  /* Cost data used by the target cost model.  */
+  void *target_cost_data;
+
 } *bb_vec_info;
 
-#define BB_VINFO_BB(B)              (B)->bb
-#define BB_VINFO_GROUPED_STORES(B)  (B)->grouped_stores
-#define BB_VINFO_SLP_INSTANCES(B)   (B)->slp_instances
-#define BB_VINFO_DATAREFS(B)        (B)->datarefs
-#define BB_VINFO_DDRS(B)            (B)->ddrs
+#define BB_VINFO_BB(B)               (B)->bb
+#define BB_VINFO_GROUPED_STORES(B)   (B)->grouped_stores
+#define BB_VINFO_SLP_INSTANCES(B)    (B)->slp_instances
+#define BB_VINFO_DATAREFS(B)         (B)->datarefs
+#define BB_VINFO_DDRS(B)             (B)->ddrs
+#define BB_VINFO_TARGET_COST_DATA(B) (B)->target_cost_data
 
 static inline bb_vec_info
 vec_info_for_bb (basic_block bb)
@@ -534,7 +570,6 @@ typedef struct _stmt_vec_info {
   struct
   {
     int outside_of_loop;     /* Statements generated outside loop.  */
-    int inside_of_loop;      /* Statements generated inside loop.  */
   } cost;
 
   /* The bb_vec_info with respect to which STMT is vectorized.  */
@@ -594,7 +629,6 @@ typedef struct _stmt_vec_info {
 
 #define STMT_VINFO_RELEVANT_P(S)          ((S)->relevant != vect_unused_in_scope)
 #define STMT_VINFO_OUTSIDE_OF_LOOP_COST(S) (S)->cost.outside_of_loop
-#define STMT_VINFO_INSIDE_OF_LOOP_COST(S)  (S)->cost.inside_of_loop
 
 #define HYBRID_SLP_STMT(S)                ((S)->slp_type == hybrid)
 #define PURE_SLP_STMT(S)                  ((S)->slp_type == pure_slp)
@@ -733,19 +767,7 @@ is_loop_header_bb_p (basic_block bb)
   return false;
 }
 
-/* Set inside loop vectorization cost.  */
-
-static inline void
-stmt_vinfo_set_inside_of_loop_cost (stmt_vec_info stmt_info, slp_tree slp_node,
-				    int cost)
-{
-  if (slp_node)
-    SLP_TREE_INSIDE_OF_LOOP_COST (slp_node) = cost;
-  else
-    STMT_VINFO_INSIDE_OF_LOOP_COST (stmt_info) = cost;
-}
-
-/* Set inside loop vectorization cost.  */
+/* Set outside loop vectorization cost.  */
 
 static inline void
 stmt_vinfo_set_outside_of_loop_cost (stmt_vec_info stmt_info, slp_tree slp_node,
@@ -781,6 +803,41 @@ int vect_get_stmt_cost (enum vect_cost_for_stmt type_of_cost)
   return targetm.vectorize.builtin_vectorization_cost (type_of_cost,
                                                        dummy_type, dummy);
 }
+
+/* Alias targetm.vectorize.init_cost.  */
+
+static inline void *
+init_cost (struct loop *loop_info)
+{
+  return targetm.vectorize.init_cost (loop_info);
+}
+
+/* Alias targetm.vectorize.add_stmt_cost.  */
+
+static inline unsigned
+add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
+	       stmt_vec_info stmt_info, int misalign)
+{
+  return targetm.vectorize.add_stmt_cost (data, count, kind,
+					  stmt_info, misalign);
+}
+
+/* Alias targetm.vectorize.finish_cost.  */
+
+static inline unsigned
+finish_cost (void *data)
+{
+  return targetm.vectorize.finish_cost (data);
+}
+
+/* Alias targetm.vectorize.destroy_cost_data.  */
+
+static inline void
+destroy_cost_data (void *data)
+{
+  targetm.vectorize.destroy_cost_data (data);
+}
+
 
 /*-----------------------------------------------------------------*/
 /* Info on data references alignment.                              */
@@ -849,10 +906,14 @@ extern stmt_vec_info new_stmt_vec_info (gimple stmt, loop_vec_info,
 extern void free_stmt_vec_info (gimple stmt);
 extern tree vectorizable_function (gimple, tree, tree);
 extern void vect_model_simple_cost (stmt_vec_info, int, enum vect_def_type *,
-                                    slp_tree);
+                                    slp_tree, stmt_vector_for_cost *);
 extern void vect_model_store_cost (stmt_vec_info, int, bool,
-				   enum vect_def_type, slp_tree);
-extern void vect_model_load_cost (stmt_vec_info, int, bool, slp_tree);
+				   enum vect_def_type, slp_tree,
+				   stmt_vector_for_cost *);
+extern void vect_model_load_cost (stmt_vec_info, int, bool, slp_tree,
+				  stmt_vector_for_cost *);
+extern unsigned record_stmt_cost (stmt_vector_for_cost *, int,
+				  enum vect_cost_for_stmt, stmt_vec_info, int);
 extern void vect_finish_stmt_generation (gimple, gimple,
                                          gimple_stmt_iterator *);
 extern bool vect_mark_stmts_to_be_vectorized (loop_vec_info);
@@ -867,8 +928,10 @@ extern bool vect_analyze_stmt (gimple, bool *, slp_tree);
 extern bool vectorizable_condition (gimple, gimple_stmt_iterator *, gimple *,
                                     tree, int, slp_tree);
 extern void vect_get_load_cost (struct data_reference *, int, bool,
-                                unsigned int *, unsigned int *);
-extern void vect_get_store_cost (struct data_reference *, int, unsigned int *);
+				unsigned int *, unsigned int *,
+				stmt_vector_for_cost *);
+extern void vect_get_store_cost (struct data_reference *, int,
+				 unsigned int *, stmt_vector_for_cost *);
 extern bool vect_supportable_shift (enum tree_code, tree);
 extern void vect_get_vec_defs (tree, tree, gimple, VEC (tree, heap) **,
 			       VEC (tree, heap) **, slp_tree, int);

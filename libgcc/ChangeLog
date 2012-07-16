@@ -1,3 +1,7 @@
+2012-07-14  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* config/t-darwin (crt3.0): Remove work-around for fixed PR26840.
+
 2012-06-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sfp-machine.h (FP_HANDLE_EXCEPTIONS): Use

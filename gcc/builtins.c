@@ -536,6 +536,13 @@ get_pointer_alignment_1 (tree exp, unsigned int *alignp,
 	  return false;
 	}
     }
+  else if (TREE_CODE (exp) == INTEGER_CST)
+    {
+      *alignp = BIGGEST_ALIGNMENT;
+      *bitposp = ((TREE_INT_CST_LOW (exp) * BITS_PER_UNIT)
+		  & (BIGGEST_ALIGNMENT - 1));
+      return true;
+    }
 
   *bitposp = 0;
   *alignp = BITS_PER_UNIT;

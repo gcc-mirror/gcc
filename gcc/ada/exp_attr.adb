@@ -815,11 +815,19 @@ package body Exp_Attr is
       --  rewrite into reference to current instance.
 
       if Is_Protected_Self_Reference (Pref)
-           and then not
-             (Nkind_In (Parent (N), N_Index_Or_Discriminant_Constraint,
-                                    N_Discriminant_Association)
-                and then Nkind (Parent (Parent (Parent (Parent (N))))) =
+        and then not
+          (Nkind_In (Parent (N), N_Index_Or_Discriminant_Constraint,
+                                 N_Discriminant_Association)
+            and then Nkind (Parent (Parent (Parent (Parent (N))))) =
                                                       N_Component_Definition)
+
+         --  No action needed for these attributes since the current instance
+         --  will be rewritten to be the name of the _object parameter
+         --  associated with the enclosing protected subprogram (see below).
+
+        and then Id /= Attribute_Access
+        and then Id /= Attribute_Unchecked_Access
+        and then Id /= Attribute_Unrestricted_Access
       then
          Rewrite (Pref, Concurrent_Ref (Pref));
          Analyze (Pref);
@@ -835,13 +843,14 @@ package body Exp_Attr is
            Attribute_Default_Iterator     |
            Attribute_Implicit_Dereference |
            Attribute_Iterator_Element     |
-           Attribute_Variable_Indexing    => null;
+           Attribute_Variable_Indexing    =>
+         null;
 
-      --  Attributes related to Ada 2012 aspects
+      --  Internal attributes used to deal with Ada 2012 delayed aspects. These
+      --  were already rejected by the parser. Thus they shouldn't appear here.
 
-      when Attribute_CPU                |
-           Attribute_Dispatching_Domain |
-           Attribute_Interrupt_Priority => null;
+      when Internal_Attribute_Id =>
+         raise Program_Error;
 
       ------------
       -- Access --
@@ -1027,10 +1036,36 @@ package body Exp_Attr is
                          New_Occurrence_Of (Formal, Loc)));
                      Set_Etype (N, Typ);
 
-                     --  The expression must appear in a default expression,
-                     --  (which in the initialization procedure is the
-                     --  right-hand side of an assignment), and not in a
-                     --  discriminant constraint.
+                  elsif Is_Protected_Type (Entity (Pref)) then
+
+                     --  No action needed for current instance located in a
+                     --  component definition (expansion will occur in the
+                     --  init proc)
+
+                     if Is_Protected_Type (Current_Scope) then
+                        null;
+
+                     --  If the current instance reference is located in a
+                     --  protected subprogram or entry then rewrite the access
+                     --  attribute to be the name of the "_object" parameter.
+                     --  An unchecked conversion is applied to ensure a type
+                     --  match in cases of expander-generated calls (e.g. init
+                     --  procs).
+
+                     else
+                        Formal :=
+                          First_Entity
+                            (Protected_Body_Subprogram (Current_Scope));
+                        Rewrite (N,
+                          Unchecked_Convert_To (Typ,
+                            New_Occurrence_Of (Formal, Loc)));
+                        Set_Etype (N, Typ);
+                     end if;
+
+                  --  The expression must appear in a default expression,
+                  --  (which in the initialization procedure is the right-hand
+                  --  side of an assignment), and not in a discriminant
+                  --  constraint.
 
                   else
                      Par := Parent (N);
@@ -3072,19 +3107,9 @@ package body Exp_Attr is
       --  Rewrite the attribute reference with the value of Uses_Lock_Free
 
       when Attribute_Lock_Free => Lock_Free : declare
-         Val : Entity_Id;
-
+         V : constant Entity_Id := Boolean_Literals (Uses_Lock_Free (Ptyp));
       begin
-         if Uses_Lock_Free (Ptyp) then
-            Val := Standard_True;
-
-         else
-            Val := Standard_False;
-         end if;
-
-         Rewrite (N,
-           New_Occurrence_Of (Val, Loc));
-
+         Rewrite (N, New_Occurrence_Of (V, Loc));
          Analyze_And_Resolve (N, Standard_Boolean);
       end Lock_Free;
 

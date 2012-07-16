@@ -850,7 +850,6 @@ package body Sem_Ch13 is
             Set_Is_Delayed_Aspect (Prag);
             Set_Parent (Prag, ASN);
          end if;
-
       end Make_Pragma_From_Boolean_Aspect;
 
    --  Start of processing for Analyze_Aspects_At_Freeze_Point
@@ -866,7 +865,6 @@ package body Sem_Ch13 is
       --  Look for aspect specification entries for this entity
 
       ASN := First_Rep_Item (E);
-
       while Present (ASN) loop
          if Nkind (ASN) = N_Aspect_Specification
            and then Entity (ASN) = E
@@ -875,6 +873,7 @@ package body Sem_Ch13 is
             A_Id := Get_Aspect_Id (Chars (Identifier (ASN)));
 
             case A_Id is
+
                --  For aspects whose expression is an optional Boolean, make
                --  the corresponding pragma at the freezing point.
 
@@ -889,7 +888,8 @@ package body Sem_Ch13 is
                     Aspect_Default_Component_Value =>
                   Analyze_Aspect_Default_Value (ASN);
 
-               when others => null;
+               when others =>
+                  null;
             end case;
 
             Ritem := Aspect_Rep_Item (ASN);
@@ -3312,10 +3312,10 @@ package body Sem_Ch13 is
 
          when Attribute_Scalar_Storage_Order => Scalar_Storage_Order : declare
          begin
-            if not Is_Record_Type (U_Ent) then
+            if not (Is_Record_Type (U_Ent) or else Is_Array_Type (U_Ent)) then
                Error_Msg_N
-                 ("Scalar_Storage_Order can only be defined for record type",
-                  Nam);
+                 ("Scalar_Storage_Order can only be defined for "
+                  & "record or array type", Nam);
 
             elsif Duplicate_Clause then
                null;
@@ -3332,7 +3332,7 @@ package body Sem_Ch13 is
 
                else
                   if (Expr_Value (Expr) = 0) /= Bytes_Big_Endian then
-                     Set_Reverse_Storage_Order (U_Ent, True);
+                     Set_Reverse_Storage_Order (Base_Type (U_Ent), True);
                   end if;
                end if;
             end if;
@@ -6350,25 +6350,18 @@ package body Sem_Ch13 is
       --  but Expression (Ident) is a preanalyzed copy of the expression,
       --  preanalyzed just after the freeze point.
 
-   begin
-      --  Case of aspects Dimension, Dimension_System and Synchronization
+      procedure Check_Overloaded_Name;
+      --  For aspects whose expression is simply a name, this routine checks if
+      --  the name is overloaded or not. If so, it verifies there is an
+      --  interpretation that matches the entity obtained at the freeze point,
+      --  otherwise the compiler complains.
 
-      if A_Id = Aspect_Synchronization then
-         return;
+      ---------------------------
+      -- Check_Overloaded_Name --
+      ---------------------------
 
-      --  Case of stream attributes, just have to compare entities. However,
-      --  the expression is just a name (possibly overloaded), and there may
-      --  be stream operations declared for unrelated types, so we just need
-      --  to verify that one of these interpretations is the one available at
-      --  at the freeze point.
-
-      elsif A_Id = Aspect_Input  or else
-         A_Id = Aspect_Output    or else
-         A_Id = Aspect_Read      or else
-         A_Id = Aspect_Write
-      then
-         Analyze (End_Decl_Expr);
-
+      procedure Check_Overloaded_Name is
+      begin
          if not Is_Overloaded (End_Decl_Expr) then
             Err := Entity (End_Decl_Expr) /= Entity (Freeze_Expr);
 
@@ -6391,6 +6384,29 @@ package body Sem_Ch13 is
                end loop;
             end;
          end if;
+      end Check_Overloaded_Name;
+
+   --  Start of processing for Check_Aspect_At_End_Of_Declarations
+
+   begin
+      --  Case of aspects Dimension, Dimension_System and Synchronization
+
+      if A_Id = Aspect_Synchronization then
+         return;
+
+      --  Case of stream attributes, just have to compare entities. However,
+      --  the expression is just a name (possibly overloaded), and there may
+      --  be stream operations declared for unrelated types, so we just need
+      --  to verify that one of these interpretations is the one available at
+      --  at the freeze point.
+
+      elsif A_Id = Aspect_Input  or else
+         A_Id = Aspect_Output    or else
+         A_Id = Aspect_Read      or else
+         A_Id = Aspect_Write
+      then
+         Analyze (End_Decl_Expr);
+         Check_Overloaded_Name;
 
       elsif A_Id = Aspect_Variable_Indexing or else
             A_Id = Aspect_Constant_Indexing or else
@@ -6402,16 +6418,16 @@ package body Sem_Ch13 is
 
          Set_Is_Frozen (Ent, False);
          Analyze (End_Decl_Expr);
-         Analyze (Aspect_Rep_Item (ASN));
          Set_Is_Frozen (Ent, True);
 
          --  If the end of declarations comes before any other freeze
          --  point, the Freeze_Expr is not analyzed: no check needed.
 
-         Err :=
-           Analyzed (Freeze_Expr)
-             and then not In_Instance
-             and then Entity (End_Decl_Expr) /= Entity (Freeze_Expr);
+         if Analyzed (Freeze_Expr) and then not In_Instance then
+            Check_Overloaded_Name;
+         else
+            Err := False;
+         end if;
 
       --  All other cases
 
@@ -7718,6 +7734,19 @@ package body Sem_Ch13 is
 
    begin
       Biased := False;
+
+      --  Reject patently improper size values.
+
+      if Is_Elementary_Type (T)
+        and then Siz > UI_From_Int (Int'Last)
+      then
+         Error_Msg_N ("Size value too large for elementary type", N);
+
+         if Nkind (Original_Node (N)) = N_Op_Expon then
+            Error_Msg_N
+              ("\maybe '* was meant, rather than '*'*", Original_Node (N));
+         end if;
+      end if;
 
       --  Dismiss cases for generic types or types with previous errors
 

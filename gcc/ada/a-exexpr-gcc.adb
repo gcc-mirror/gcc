@@ -44,9 +44,7 @@ package body Exception_Propagation is
    ------------------------------------------------
 
    --  These come from "C++ ABI for Itanium: Exception handling", which is
-   --  the reference for GCC. They are used only when we are relying on
-   --  back-end tables for exception propagation, which in turn is currently
-   --  only the case for Zero_Cost_Exceptions in GNAT5.
+   --  the reference for GCC.
 
    --  Return codes from the GCC runtime functions used to propagate
    --  an exception.
@@ -63,7 +61,8 @@ package body Exception_Propagation is
       URC_CONTINUE_UNWIND);
 
    pragma Unreferenced
-     (URC_FOREIGN_EXCEPTION_CAUGHT,
+     (URC_NO_REASON,
+      URC_FOREIGN_EXCEPTION_CAUGHT,
       URC_PHASE2_ERROR,
       URC_PHASE1_ERROR,
       URC_NORMAL_STOP,
@@ -83,13 +82,14 @@ package body Exception_Propagation is
    UA_CLEANUP_PHASE : constant Unwind_Action := 2;
    UA_HANDLER_FRAME : constant Unwind_Action := 4;
    UA_FORCE_UNWIND  : constant Unwind_Action := 8;
-   UA_END_OF_STACK  : constant Unwind_Action := 16;  --  GCC extension ?
+   UA_END_OF_STACK  : constant Unwind_Action := 16;  --  GCC extension
 
    pragma Unreferenced
      (UA_SEARCH_PHASE,
       UA_CLEANUP_PHASE,
       UA_HANDLER_FRAME,
-      UA_FORCE_UNWIND);
+      UA_FORCE_UNWIND,
+      UA_END_OF_STACK);
 
    --  Mandatory common header for any exception object handled by the
    --  GCC unwinding runtime.
@@ -205,6 +205,15 @@ package body Exception_Propagation is
    pragma Export (C, Setup_Current_Excep, "__gnat_setup_current_excep");
    --  Write Get_Current_Excep.all from GCC_Exception
 
+   procedure Unhandled_Except_Handler
+     (GCC_Exception : not null GCC_Exception_Access);
+   pragma No_Return (Unhandled_Except_Handler);
+   pragma Export (C, Unhandled_Except_Handler,
+                  "__gnat_unhandled_except_handler");
+   --  Called for handle unhandled exceptions, ie the last chance handler
+   --  on platforms (such as SEH) that never returns after throwing an
+   --  exception. Called directly by gigi.
+
    function CleanupUnwind_Handler
      (UW_Version   : Integer;
       UW_Phases    : Unwind_Action;
@@ -212,6 +221,8 @@ package body Exception_Propagation is
       UW_Exception : not null GCC_Exception_Access;
       UW_Context   : System.Address;
       UW_Argument  : System.Address) return Unwind_Reason_Code;
+   pragma Import (C, CleanupUnwind_Handler,
+                  "__gnat_cleanupunwind_handler");
    --  Hook called at each step of the forced unwinding we perform to
    --  trigger cleanups found during the propagation of an unhandled
    --  exception.
@@ -280,6 +291,12 @@ package body Exception_Propagation is
    All_Others_Value : constant Integer := 16#7FFF#;
    pragma Export (C, All_Others_Value, "__gnat_all_others_value");
 
+   Unhandled_Others_Value : constant Integer := 16#7FFF#;
+   pragma Export (C, Unhandled_Others_Value, "__gnat_unhandled_others_value");
+   --  Special choice (emitted by gigi) to catch and notify unhandled
+   --  exceptions on targets which always handle exceptions (such as SEH).
+   --  The handler will simply call Unhandled_Except_Handler.
+
    --------------------------------
    -- GNAT_GCC_Exception_Cleanup --
    --------------------------------
@@ -300,35 +317,6 @@ package body Exception_Propagation is
 
       Free (Copy);
    end GNAT_GCC_Exception_Cleanup;
-
-   ---------------------------
-   -- CleanupUnwind_Handler --
-   ---------------------------
-
-   function CleanupUnwind_Handler
-     (UW_Version   : Integer;
-      UW_Phases    : Unwind_Action;
-      UW_Eclass    : Exception_Class;
-      UW_Exception : not null GCC_Exception_Access;
-      UW_Context   : System.Address;
-      UW_Argument  : System.Address) return Unwind_Reason_Code
-   is
-      pragma Unreferenced (UW_Version, UW_Eclass, UW_Context, UW_Argument);
-
-   begin
-      --  Terminate when the end of the stack is reached
-
-      if UW_Phases >= UA_END_OF_STACK then
-         Setup_Current_Excep (UW_Exception);
-         Unhandled_Exception_Terminate;
-      end if;
-
-      --  We know there is at least one cleanup further up. Return so that it
-      --  is searched and entered, after which Unwind_Resume will be called
-      --  and this hook will gain control again.
-
-      return URC_NO_REASON;
-   end CleanupUnwind_Handler;
 
    -------------------------
    -- Setup_Current_Excep --
@@ -438,8 +426,7 @@ package body Exception_Propagation is
       --  We get here in case of error. The debugger has been notified before
       --  the second step above.
 
-      Setup_Current_Excep (GCC_Exception);
-      Unhandled_Exception_Terminate;
+      Unhandled_Except_Handler (GCC_Exception);
    end Propagate_GCC_Exception;
 
    -------------------------
@@ -491,6 +478,18 @@ package body Exception_Propagation is
 
       Propagate_GCC_Exception (To_GCC_Exception (GCC_Exception));
    end Propagate_Exception;
+
+   ------------------------------
+   -- Unhandled_Except_Handler --
+   ------------------------------
+
+   procedure Unhandled_Except_Handler
+     (GCC_Exception : not null GCC_Exception_Access)
+   is
+   begin
+      Setup_Current_Excep (GCC_Exception);
+      Unhandled_Exception_Terminate;
+   end Unhandled_Except_Handler;
 
    -------------
    -- EID_For --
