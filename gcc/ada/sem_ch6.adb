@@ -7238,7 +7238,9 @@ package body Sem_Ch6 is
          N1, N2 : Natural;
 
       begin
-         --  Remove trailing numeric parts
+         --  Deal with special case where names are identical except for a
+         --  numerical suffix. These are handled specially, taking the numeric
+         --  ordering from the suffix into account.
 
          L1 := S1'Last;
          while S1 (L1) in '0' .. '9' loop
@@ -7250,13 +7252,10 @@ package body Sem_Ch6 is
             L2 := L2 - 1;
          end loop;
 
-         --  If non-numeric parts non-equal, that's decisive
+         --  If non-numeric parts non-equal, do straight compare
 
-         if S1 (S1'First .. L1) < S2 (S2'First .. L2) then
-            return False;
-
-         elsif S1 (S1'First .. L1) > S2 (S2'First .. L2) then
-            return True;
+         if S1 (S1'First .. L1) /= S2 (S2'First .. L2) then
+            return S1 > S2;
 
          --  If non-numeric parts equal, compare suffixed numeric parts. Note
          --  that a missing suffix is treated as numeric zero in this test.

@@ -104,11 +104,6 @@ procedure Gnat1drv is
    --  Called when we are not generating code, to check if -gnatR was requested
    --  and if so, explain that we will not be honoring the request.
 
-   procedure Check_Library_Items;
-   --  For debugging -- checks the behavior of Walk_Library_Items
-   pragma Warnings (Off, Check_Library_Items);
-   --  In case the call below is commented out
-
    ----------------------------
    -- Adjust_Global_Switches --
    ----------------------------
@@ -659,35 +654,6 @@ procedure Gnat1drv is
       end if;
    end Check_Bad_Body;
 
-   -------------------------
-   -- Check_Library_Items --
-   -------------------------
-
-   --  Walk_Library_Items has plenty of assertions, so all we need to do is
-   --  call it, just for these assertions, not actually doing anything else.
-
-   procedure Check_Library_Items is
-
-      procedure Action (Item : Node_Id);
-      --  Action passed to Walk_Library_Items to do nothing
-
-      ------------
-      -- Action --
-      ------------
-
-      procedure Action (Item : Node_Id) is
-      begin
-         null;
-      end Action;
-
-      procedure Walk is new Sem.Walk_Library_Items (Action);
-
-   --  Start of processing for Check_Library_Items
-
-   begin
-      Walk;
-   end Check_Library_Items;
-
    --------------------
    -- Check_Rep_Info --
    --------------------
@@ -1135,14 +1101,6 @@ begin
       Sinput.Lock;
       Namet.Lock;
       Stringt.Lock;
-
-      --  ???Check_Library_Items under control of a debug flag, because it
-      --  currently does not work if the -gnatn switch (back end inlining) is
-      --  used.
-
-      if Debug_Flag_Dot_WW then
-         Check_Library_Items;
-      end if;
 
       --  Here we call the back end to generate the output code
 

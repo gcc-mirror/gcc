@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -45,6 +45,12 @@ package Exp_Ch3 is
 
    procedure Expand_Record_Extension (T : Entity_Id; Def : Node_Id);
    --  Add a field _parent in the extension part of the record
+
+   procedure Build_Array_Invariant_Proc (A_Type : Entity_Id; Nod : Node_Id);
+   --  If the component of type of array type has invariants, build procedure
+   --  that checks invariant on all components of the array. Ada 2012 specifies
+   --  that an invariant on some type T must be applied to in-out parameters
+   --  and return values that include a part of type T.
 
    procedure Build_Discr_Checking_Funcs (N : Node_Id);
    --  Builds function which checks whether the component name is consistent
