@@ -189,19 +189,19 @@ package body Ada.Exceptions is
       --  exported to be usable by the Ada exception handling personality
       --  routine when the GCC 3 mechanism is used.
 
-      procedure Notify_Handled_Exception;
+      procedure Notify_Handled_Exception (Excep : EOA);
       pragma Export
         (C, Notify_Handled_Exception, "__gnat_notify_handled_exception");
       --  This routine is called for a handled occurrence is about to be
       --  propagated.
 
-      procedure Notify_Unhandled_Exception;
+      procedure Notify_Unhandled_Exception (Excep : EOA);
       pragma Export
         (C, Notify_Unhandled_Exception, "__gnat_notify_unhandled_exception");
       --  This routine is called when an unhandled occurrence is about to be
       --  propagated.
 
-      procedure Unhandled_Exception_Terminate;
+      procedure Unhandled_Exception_Terminate (Excep : EOA);
       pragma No_Return (Unhandled_Exception_Terminate);
       --  This procedure is called to terminate program execution following an
       --  unhandled exception. The exception information, including traceback
@@ -895,14 +895,14 @@ package body Ada.Exceptions is
       if Jumpbuf_Ptr /= Null_Address then
          if not Excep.Exception_Raised then
             Excep.Exception_Raised := True;
-            Exception_Traces.Notify_Handled_Exception;
+            Exception_Traces.Notify_Handled_Exception (Excep);
          end if;
 
          builtin_longjmp (Jumpbuf_Ptr, 1);
 
       else
-         Exception_Traces.Notify_Unhandled_Exception;
-         Exception_Traces.Unhandled_Exception_Terminate;
+         Exception_Traces.Notify_Unhandled_Exception (Excep);
+         Exception_Traces.Unhandled_Exception_Terminate (Excep);
       end if;
    end Process_Raise_Exception;
 

@@ -43,7 +43,7 @@ package body Exception_Propagation is
    pragma No_Return (builtin_longjmp);
    pragma Import (Intrinsic, builtin_longjmp, "__builtin_longjmp");
 
-   procedure Propagate_Continue (Excep : EOA);
+   procedure Propagate_Continue (E : Exception_Id);
    pragma No_Return (Propagate_Continue);
    pragma Export (C, Propagate_Continue, "__gnat_raise_nodefer_with_msg");
    --  A call to this procedure is inserted automatically by GIGI, in order
@@ -74,14 +74,14 @@ package body Exception_Propagation is
       if Jumpbuf_Ptr /= Null_Address then
          if not Excep.Exception_Raised then
             Excep.Exception_Raised := True;
-            Exception_Traces.Notify_Handled_Exception;
+            Exception_Traces.Notify_Handled_Exception (Excep);
          end if;
 
          builtin_longjmp (Jumpbuf_Ptr, 1);
 
       else
-         Exception_Traces.Notify_Unhandled_Exception;
-         Exception_Traces.Unhandled_Exception_Terminate;
+         Exception_Traces.Notify_Unhandled_Exception (Excep);
+         Exception_Traces.Unhandled_Exception_Terminate (Excep);
       end if;
    end Propagate_Exception;
 
@@ -89,9 +89,10 @@ package body Exception_Propagation is
    -- Propagate_Continue --
    ------------------------
 
-   procedure Propagate_Continue (Excep : EOA) is
+   procedure Propagate_Continue (E : Exception_Id) is
+      pragma Unreferenced (E);
    begin
-      Propagate_Exception (Excep);
+      Propagate_Exception (Get_Current_Excep.all);
    end Propagate_Continue;
 
 end Exception_Propagation;

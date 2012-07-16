@@ -1,3 +1,43 @@
+2012-07-16  Thomas Quinot  <quinot@adacore.com>
+
+	* freeze.adb (Check_Component_Storage_Order): Do not reject a
+	nested composite with different scalar storage order if it is
+	byte aligned.
+
+2012-07-16  Thomas Quinot  <quinot@adacore.com>
+
+	* gnat_rm.texi: Update documentation for Scalar_Storage_Order.
+
+2012-07-16  Tristan Gingold  <gingold@adacore.com>
+
+	* a-exexpr.adb (Propagate_Exception): Adjust call to
+	Exception_Traces procedures.
+	* a-exexpr-gcc.adb (Setup_Current_Excep): Now a
+	function that returns an access to the Ada occurrence.
+	(Propagate_GCC_Exception): Adjust calls.
+	* raise.h (struct Exception_Occurrence): Declare.
+	* a-exextr.adb: Remove useless pragma.	(Notify_Handled_Exception,
+	Notify_Unhandled_Exception) (Unhandled_Exception_Terminate):
+	Add Excep parameter.
+	* a-except.adb (Notify_Handled_Exception,
+	Notify_Unhandled_Exception) (Unhandled_Exception_Terminate):
+	Add Excep parameter.
+	(Process_Raise_Exception): Adjust calls.
+	* a-except-2005.adb (Notify_Handled_Exception,
+	Notify_Unhandled_Exception) (Unhandled_Exception_Terminate): Add
+	Excep parameter.
+	(Raise_Exception): Calls Raise_Exception_Always.
+	* raise-gcc.c (__gnat_setup_current_excep,
+	__gnat_notify_handled_exception)
+	(__gnat_notify_unhandled_exception): Adjust declarations.
+	(PERSONALITY_FUNCTION): Adjust calls.
+	(__gnat_personality_seh0): Remove warning.
+
+2012-07-16  Javier Miranda  <miranda@adacore.com>
+
+	* sem_eval.adb (Test_Expression_Is_Foldable): Adding documentation.
+	(Eval_Relational_Op): Adding documentation.
+
 2012-07-16  Robert Dewar  <dewar@adacore.com>
 
 	* freeze.adb, g-debpoo.adb, exp_ch3.adb: Minor reformatting.

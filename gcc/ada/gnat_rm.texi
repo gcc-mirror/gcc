@@ -6709,7 +6709,7 @@ this attribute.
 @cindex Scalar storage order
 @findex Scalar_Storage_Order
 @noindent
-For every record subtype @var{S}, the representation attribute
+For every array or record type @var{S}, the representation attribute
 @code{Scalar_Storage_Order} denotes the order in which storage elements
 that make up scalar components are ordered within S. Other properties are
 as for standard representation attribute @code{Bit_Order}, as defined by
@@ -6720,6 +6720,11 @@ equal to @code{@var{S}'Bit_Order}. Note: This means that if a
 @code{Scalar_Storage_Order} attribute definition clause is not confirming,
 then the type's @code{Bit_Order} shall be specified explicitly and set to
 the same value.
+
+If a component of S has itself a record or array type, then it shall also
+have a @code{Scalar_Storage_Order} attribute definition clause. In addition,
+if the component does not start on a byte boundary, then the scalar storage
+order specified for S and for the nested component type shall be identical.
 
 A confirming @code{Scalar_Storage_Order} attribute definition clause (i.e.
 with a value equal to @code{System.Default_Bit_Order}) has no effect.

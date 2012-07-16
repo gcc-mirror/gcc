@@ -1029,6 +1029,10 @@ package body Freeze is
       Err_Node  : Node_Id;
       ADC       : Node_Id;
 
+      Comp_Byte_Aligned : Boolean;
+      --  Set True for the record case, when Comp starts on a byte boundary
+      --  (in which case it is allowed to have different storage order).
+
    begin
       --  Record case
 
@@ -1037,6 +1041,9 @@ package body Freeze is
          Comp_Type := Etype (Comp);
          Comp_Def  := Component_Definition (Parent (Comp));
 
+         Comp_Byte_Aligned := Present (Component_Clause (Comp))
+           and then Normalized_First_Bit (Comp) mod System_Storage_Unit = 0;
+
       --  Array case
 
       else
@@ -1044,6 +1051,8 @@ package body Freeze is
          Comp_Type := Component_Type (Encl_Type);
          Comp_Def  := Component_Definition
                         (Type_Definition (Declaration_Node (Encl_Type)));
+
+         Comp_Byte_Aligned := False;
       end if;
 
       --  Note: the Reverse_Storage_Order flag is set on the base type, but
@@ -1054,14 +1063,20 @@ package body Freeze is
                (First_Subtype (Comp_Type),
                 Attribute_Scalar_Storage_Order);
 
-      if (Is_Record_Type (Comp_Type) or else Is_Array_Type (Comp_Type))
-           and then
-             (No (ADC) or else Reverse_Storage_Order (Encl_Type) /=
-                               Reverse_Storage_Order (Etype (Comp_Type)))
-      then
-         Error_Msg_N
-           ("component type must have same scalar storage order as "
-            & "enclosing composite", Err_Node);
+      if Is_Record_Type (Comp_Type) or else Is_Array_Type (Comp_Type) then
+         if No (ADC) then
+            Error_Msg_N ("nested composite must have explicit scalar "
+                         & "storage order", Err_Node);
+
+         elsif (Reverse_Storage_Order (Encl_Type)
+                  /=
+                Reverse_Storage_Order (Etype (Comp_Type)))
+           and then not Comp_Byte_Aligned
+         then
+            Error_Msg_N
+              ("type of non-byte-aligned component must have same scalar "
+               & "storage order as enclosing composite", Err_Node);
+         end if;
 
       elsif Aliased_Present (Comp_Def) then
          Error_Msg_N

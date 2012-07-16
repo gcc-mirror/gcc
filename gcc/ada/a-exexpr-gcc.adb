@@ -202,8 +202,9 @@ package body Exception_Propagation is
    --  Called to implement raise without exception, ie reraise.  Called
    --  directly from gigi.
 
-   procedure Setup_Current_Excep
-     (GCC_Exception : not null GCC_Exception_Access);
+   function Setup_Current_Excep
+     (GCC_Exception : not null GCC_Exception_Access)
+     return EOA;
    pragma Export (C, Setup_Current_Excep, "__gnat_setup_current_excep");
    --  Write Get_Current_Excep.all from GCC_Exception
 
@@ -342,8 +343,9 @@ package body Exception_Propagation is
    -- Setup_Current_Excep --
    -------------------------
 
-   procedure Setup_Current_Excep
+   function Setup_Current_Excep
      (GCC_Exception : not null GCC_Exception_Access)
+     return EOA
    is
       Excep : constant EOA := Get_Current_Excep.all;
 
@@ -359,6 +361,8 @@ package body Exception_Propagation is
                                 To_GNAT_GCC_Exception (GCC_Exception);
          begin
             Excep.all := GNAT_Occurrence.Occurrence;
+
+            return GNAT_Occurrence.Occurrence'Access;
          end;
       else
 
@@ -370,6 +374,8 @@ package body Exception_Propagation is
          Excep.Exception_Raised := True;
          Excep.Pid := Local_Partition_ID;
          Excep.Num_Tracebacks := 0;
+
+         return Excep;
       end if;
    end Setup_Current_Excep;
 
@@ -420,6 +426,7 @@ package body Exception_Propagation is
    procedure Propagate_GCC_Exception
      (GCC_Exception : not null GCC_Exception_Access)
    is
+      Excep : EOA;
    begin
       --  Perform a standard raise first. If a regular handler is found, it
       --  will be entered after all the intermediate cleanups have run. If
@@ -432,8 +439,8 @@ package body Exception_Propagation is
       --  the necessary steps to enable the debugger to gain control while the
       --  stack is still intact.
 
-      Setup_Current_Excep (GCC_Exception);
-      Notify_Unhandled_Exception;
+      Excep := Setup_Current_Excep (GCC_Exception);
+      Notify_Unhandled_Exception (Excep);
 
       --  Now, un a forced unwind to trigger cleanups. Control should not
       --  resume there, if there are cleanups and in any cases as the
@@ -466,9 +473,10 @@ package body Exception_Propagation is
    procedure Unhandled_Except_Handler
      (GCC_Exception : not null GCC_Exception_Access)
    is
+      Excep : EOA;
    begin
-      Setup_Current_Excep (GCC_Exception);
-      Unhandled_Exception_Terminate;
+      Excep := Setup_Current_Excep (GCC_Exception);
+      Unhandled_Exception_Terminate (Excep);
    end Unhandled_Except_Handler;
 
    -------------

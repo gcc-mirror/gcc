@@ -209,19 +209,19 @@ package body Ada.Exceptions is
       --  exported to be usable by the Ada exception handling personality
       --  routine when the GCC 3 mechanism is used.
 
-      procedure Notify_Handled_Exception;
+      procedure Notify_Handled_Exception (Excep : EOA);
       pragma Export
         (C, Notify_Handled_Exception, "__gnat_notify_handled_exception");
       --  This routine is called for a handled occurrence is about to be
       --  propagated.
 
-      procedure Notify_Unhandled_Exception;
+      procedure Notify_Unhandled_Exception (Excep : EOA);
       pragma Export
         (C, Notify_Unhandled_Exception, "__gnat_notify_unhandled_exception");
       --  This routine is called when an unhandled occurrence is about to be
       --  propagated.
 
-      procedure Unhandled_Exception_Terminate;
+      procedure Unhandled_Exception_Terminate (Excep : EOA);
       pragma No_Return (Unhandled_Exception_Terminate);
       --  This procedure is called to terminate execution following an
       --  unhandled exception. The exception information, including
@@ -395,15 +395,16 @@ package body Ada.Exceptions is
    --  Reraises the exception referenced by the Current_Excep field of
    --  the TSD (all fields of this exception occurrence are set). Abort
    --  is deferred before the reraise operation.
+   --  Called from System.Tasking.RendezVous.Exceptional_Complete_RendezVous
 
    procedure Transfer_Occurrence
      (Target : Exception_Occurrence_Access;
       Source : Exception_Occurrence);
    pragma Export (C, Transfer_Occurrence, "__gnat_transfer_occurrence");
-   --  Called from System.Tasking.RendezVous.Exceptional_Complete_RendezVous
-   --  to setup Target from Source as an exception to be propagated in the
-   --  caller task. Target is expected to be a pointer to the fixed TSD
-   --  occurrence for this task.
+   --  Called from s-tasren.adb:Local_Complete_RendezVous and
+   --  s-tpobop.adb:Exceptional_Complete_Entry_Body to setup Target from
+   --  Source as an exception to be propagated in the caller task. Target is
+   --  expected to be a pointer to the fixed TSD occurrence for this task.
 
    -----------------------------
    -- Run-Time Check Routines --
@@ -953,8 +954,6 @@ package body Ada.Exceptions is
       Message : String := "")
    is
       EF : Exception_Id := E;
-      X : constant EOA := Exception_Propagation.Allocate_Occurrence;
-
    begin
       --  Raise CE if E = Null_ID (AI-446)
 
@@ -964,14 +963,7 @@ package body Ada.Exceptions is
 
       --  Go ahead and raise appropriate exception
 
-      Exception_Data.Set_Exception_Msg (X, EF, Message);
-
-      if not ZCX_By_Default then
-         Abort_Defer.all;
-      end if;
-
-      Complete_Occurrence (X);
-      Exception_Propagation.Propagate_Exception (X);
+      Raise_Exception_Always (EF, Message);
    end Raise_Exception;
 
    ----------------------------
