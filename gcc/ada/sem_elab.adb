@@ -325,11 +325,13 @@ package body Sem_Elab is
    --  Given two scopes E1 and E2, returns True if E1 is equal to E2, or is one
    --  of its contained scopes, False otherwise.
 
-   function Within_Elaborate_All (E : Entity_Id) return Boolean;
-   --  Before emitting a warning on a scope E for a missing elaborate_all,
-   --  check whether E may be in the context of a directly visible unit U to
-   --  which the pragma applies. This prevents spurious warnings when the
-   --  called entity is renamed within U.
+   function Within_Elaborate_All
+     (Unit : Unit_Number_Type;
+      E    : Entity_Id) return Boolean;
+   --  Return True if we are within the scope of an Elaborate_All for E, or if
+   --  we are within the scope of an Elaborate_All for some other unit U, and U
+   --  with's E. This prevents spurious warnings when the called entity is
+   --  renamed within U, or in case of generic instances.
 
    --------------------------------------
    -- Activate_Elaborate_All_Desirable --
@@ -831,7 +833,7 @@ package body Sem_Elab is
             end loop;
          end if;
 
-         if Within_Elaborate_All (E_Scope) then
+         if Within_Elaborate_All (Current_Sem_Unit, E_Scope) then
             return;
          end if;
 
@@ -1229,9 +1231,8 @@ package body Sem_Elab is
 
       P := Parent (N);
       while Present (P) loop
-         if Nkind (P) = N_Parameter_Specification
-              or else
-            Nkind (P) = N_Component_Declaration
+         if Nkind_In (P, N_Parameter_Specification,
+                         N_Component_Declaration)
          then
             return;
 
@@ -3282,46 +3283,121 @@ package body Sem_Elab is
    -- Within_Elaborate_All --
    --------------------------
 
-   function Within_Elaborate_All (E : Entity_Id) return Boolean is
-      Item    : Node_Id;
-      Item2   : Node_Id;
-      Elab_Id : Entity_Id;
-      Par     : Node_Id;
+   function Within_Elaborate_All
+     (Unit : Unit_Number_Type;
+      E    : Entity_Id) return Boolean
+   is
+      type Unit_Number_Set is array (Main_Unit .. Last_Unit) of Boolean;
+      pragma Pack (Unit_Number_Set);
 
-   begin
-      Item := First (Context_Items (Cunit (Current_Sem_Unit)));
-      while Present (Item) loop
-         if Nkind (Item) = N_Pragma
-           and then Pragma_Name (Item) = Name_Elaborate_All
-         then
-            --  Return if some previous error on the pragma itself
+      Seen : Unit_Number_Set := (others => False);
+      --  Seen (X) is True after we have seen unit X in the walk. This is used
+      --  to prevent processing the same unit more than once.
 
-            if Error_Posted (Item) then
-               return False;
-            end if;
+      Result : Boolean := False;
 
-            Elab_Id :=
-              Entity
-                (Expression (First (Pragma_Argument_Associations (Item))));
+      procedure Helper (Unit : Unit_Number_Type);
+      --  This helper procedure does all the work for Within_Elaborate_All. It
+      --  walks the dependency graph, and sets Result to True if it finds an
+      --  appropriate Elaborate_All.
 
-            Par := Parent (Unit_Declaration_Node (Elab_Id));
+      ------------
+      -- Helper --
+      ------------
 
-            Item2 := First (Context_Items (Par));
-            while Present (Item2) loop
-               if Nkind (Item2) = N_With_Clause
-                 and then Entity (Name (Item2)) = E
-               then
-                  return True;
-               end if;
+      procedure Helper (Unit : Unit_Number_Type) is
+         CU : constant Node_Id := Cunit (Unit);
 
-               Next (Item2);
-            end loop;
+         Item    : Node_Id;
+         Item2   : Node_Id;
+         Elab_Id : Entity_Id;
+         Par     : Node_Id;
+
+      begin
+         if Seen (Unit) then
+            return;
+         else
+            Seen (Unit) := True;
          end if;
 
-         Next (Item);
-      end loop;
+         --  First, check for Elaborate_Alls on this unit
 
-      return False;
+         Item := First (Context_Items (CU));
+         while Present (Item) loop
+            if Nkind (Item) = N_Pragma
+              and then Pragma_Name (Item) = Name_Elaborate_All
+            then
+               --  Return if some previous error on the pragma itself
+
+               if Error_Posted (Item) then
+                  return;
+               end if;
+
+               Elab_Id :=
+                 Entity
+                   (Expression (First (Pragma_Argument_Associations (Item))));
+
+               if E = Elab_Id then
+                  Result := True;
+                  return;
+               end if;
+
+               Par := Parent (Unit_Declaration_Node (Elab_Id));
+
+               Item2 := First (Context_Items (Par));
+               while Present (Item2) loop
+                  if Nkind (Item2) = N_With_Clause
+                    and then Entity (Name (Item2)) = E
+                    and then not Limited_Present (Item2)
+                  then
+                     Result := True;
+                     return;
+                  end if;
+
+                  Next (Item2);
+               end loop;
+            end if;
+
+            Next (Item);
+         end loop;
+
+         --  Second, recurse on with's. We could do this as part of the above
+         --  loop, but it's probably more efficient to have two loops, because
+         --  the relevant Elaborate_All is likely to be on the initial unit. In
+         --  other words, we're walking the with's breadth-first. This part is
+         --  only necessary in the dynamic elaboration model.
+
+         if Dynamic_Elaboration_Checks then
+            Item := First (Context_Items (CU));
+            while Present (Item) loop
+               if Nkind (Item) = N_With_Clause
+                 and then not Limited_Present (Item)
+               then
+                  --  Note: the following call to Get_Cunit_Unit_Number does a
+                  --  linear search, which could be slow, but it's OK because
+                  --  we're about to give a warning anyway. Also, there might
+                  --  be hundreds of units, but not millions. If it turns out
+                  --  to be a problem, we could store the Get_Cunit_Unit_Number
+                  --  in each N_Compilation_Unit node, but that would involve
+                  --  rearranging N_Compilation_Unit_Aux to make room.
+
+                  Helper (Get_Cunit_Unit_Number (Library_Unit (Item)));
+
+                  if Result then
+                     return;
+                  end if;
+               end if;
+
+               Next (Item);
+            end loop;
+         end if;
+      end Helper;
+
+   --  Start of processing for Within_Elaborate_All
+
+   begin
+      Helper (Unit);
+      return Result;
    end Within_Elaborate_All;
 
 end Sem_Elab;
