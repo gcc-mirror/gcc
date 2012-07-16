@@ -1331,7 +1331,7 @@ canonicalize_loop_closed_ssa (loop_p loop)
 					  gimple_phi_result_ptr (close_phi));
 		add_phi_arg (close_phi, arg,
 			     gimple_phi_arg_edge (close_phi, 0),
-			     UNKNOWN_LOCATION, NULL);
+			     UNKNOWN_LOCATION);
 		use_p = gimple_phi_arg_imm_use_ptr (phi, i);
 		replace_exp (use_p, res);
 		update_stmt (phi);

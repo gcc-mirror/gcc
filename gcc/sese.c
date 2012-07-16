@@ -349,8 +349,8 @@ sese_add_exit_phis_edge (basic_block exit, tree use, edge false_e, edge true_e)
 
   create_new_def_for (gimple_phi_result (phi), phi,
 		      gimple_phi_result_ptr (phi));
-  add_phi_arg (phi, use, false_e, UNKNOWN_LOCATION, NULL);
-  add_phi_arg (phi, use, true_e, UNKNOWN_LOCATION, NULL);
+  add_phi_arg (phi, use, false_e, UNKNOWN_LOCATION);
+  add_phi_arg (phi, use, true_e, UNKNOWN_LOCATION);
 }
 
 /* Insert in the block BB phi nodes for variables defined in REGION

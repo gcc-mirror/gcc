@@ -316,9 +316,7 @@ copy_phi_args (basic_block bb, edge src_e, edge tgt_e)
     {
       gimple phi = gsi_stmt (gsi);
       source_location locus = gimple_phi_arg_location (phi, src_indx);
-      tree block = gimple_phi_arg_block (phi, src_indx);
-      add_phi_arg (phi, gimple_phi_arg_def (phi, src_indx), tgt_e, locus,
-		   block);
+      add_phi_arg (phi, gimple_phi_arg_def (phi, src_indx), tgt_e, locus);
     }
 }
 

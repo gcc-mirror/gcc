@@ -3853,15 +3853,13 @@ cleanup_empty_eh_merge_phis (basic_block new_bb, basic_block old_bb,
 	  FOR_EACH_EDGE (e, ei, old_bb->preds)
 	    {
 	      location_t oloc;
-	      tree oblock;
 	      tree oop;
 
 	      if ((e->flags & EDGE_EH) == 0)
 		continue;
 	      oop = gimple_phi_arg_def (ophi, e->dest_idx);
 	      oloc = gimple_phi_arg_location (ophi, e->dest_idx);
-	      oblock = gimple_phi_arg_block (ophi, e->dest_idx);
-	      redirect_edge_var_map_add (e, nresult, oop, oloc, oblock);
+	      redirect_edge_var_map_add (e, nresult, oop, oloc);
 	    }
 	}
       /* If we didn't find the PHI, but it's a VOP, remember to rename
@@ -3876,9 +3874,8 @@ cleanup_empty_eh_merge_phis (basic_block new_bb, basic_block old_bb,
 	{
 	  location_t nloc
 	    = gimple_phi_arg_location (nphi, old_bb_out->dest_idx);
-	  tree nblock = gimple_phi_arg_block (nphi, old_bb_out->dest_idx);
 	  FOR_EACH_EDGE (e, ei, old_bb->preds)
-	    redirect_edge_var_map_add (e, nresult, nop, nloc, nblock);
+	    redirect_edge_var_map_add (e, nresult, nop, nloc);
 	}
     }
 
