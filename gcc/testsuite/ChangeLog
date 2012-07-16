@@ -1,3 +1,8 @@
+2012-07-16  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.target/cris/20011127-1.c: Adjust to %P being a
+	valid register operand output modifier.
+
 2012-07-15  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* g++.dg/debug/dwarf2/pubnames-2.C: Support all known comment
