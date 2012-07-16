@@ -101,7 +101,7 @@
    (match_operand:BWD 2 "<atomic_op_op_pred>")
    (match_operand 3)
    (atomic_op:BWD (match_dup 0) (match_dup 1))]
-  ""
+  "<MODE>mode == QImode || !TARGET_ATOMICS_MAY_CALL_LIBFUNCS"
 {
   enum memmodel mmodel = (enum memmodel) INTVAL (operands[3]);
 
