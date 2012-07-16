@@ -259,12 +259,18 @@ perform_access_checks (VEC (deferred_access_check,gc)* checks)
 {
   int i;
   deferred_access_check *chk;
+  location_t loc = input_location;
 
   if (!checks)
     return;
 
   FOR_EACH_VEC_ELT (deferred_access_check, checks, i, chk)
-    enforce_access (chk->binfo, chk->decl, chk->diag_decl);
+    {
+      input_location = chk->loc;
+      enforce_access (chk->binfo, chk->decl, chk->diag_decl);
+    }
+
+  input_location = loc;
 }
 
 /* Perform the deferred access checks.
@@ -334,6 +340,7 @@ perform_or_defer_access_check (tree binfo, tree decl, tree diag_decl)
   new_access->binfo = binfo;
   new_access->decl = decl;
   new_access->diag_decl = diag_decl;
+  new_access->loc = input_location;
 }
 
 /* Used by build_over_call in LOOKUP_SPECULATIVE mode: return whether DECL
