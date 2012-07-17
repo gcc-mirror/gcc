@@ -599,7 +599,6 @@ vect_recog_widen_mult_pattern (VEC (gimple, heap) **stmts,
   tree type, half_type0, half_type1;
   gimple pattern_stmt;
   tree vectype, vectype_out = NULL_TREE;
-  tree dummy;
   tree var;
   enum tree_code dummy_code;
   int dummy_int;
@@ -692,8 +691,8 @@ vect_recog_widen_mult_pattern (VEC (gimple, heap) **stmts,
       || !vectype_out
       || !supportable_widening_operation (WIDEN_MULT_EXPR, last_stmt,
 					  vectype_out, vectype,
-					  &dummy, &dummy, &dummy_code,
-					  &dummy_code, &dummy_int, &dummy_vec))
+					  &dummy_code, &dummy_code,
+					  &dummy_int, &dummy_vec))
     return NULL;
 
   *type_in = vectype;
@@ -1370,7 +1369,6 @@ vect_recog_widen_shift_pattern (VEC (gimple, heap) **stmts,
   tree type, half_type0;
   gimple pattern_stmt;
   tree vectype, vectype_out = NULL_TREE;
-  tree dummy;
   tree var;
   enum tree_code dummy_code;
   int dummy_int;
@@ -1441,9 +1439,8 @@ vect_recog_widen_shift_pattern (VEC (gimple, heap) **stmts,
       || !vectype_out
       || !supportable_widening_operation (WIDEN_LSHIFT_EXPR, last_stmt,
 					  vectype_out, vectype,
-					  &dummy, &dummy, &dummy_code,
-					  &dummy_code, &dummy_int,
-					  &dummy_vec))
+					  &dummy_code, &dummy_code,
+					  &dummy_int, &dummy_vec))
     return NULL;
 
   *type_in = vectype;
