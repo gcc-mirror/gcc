@@ -115,7 +115,7 @@ package System is
 
 private
 
-   pragma Linker_Options ("-crtbe");
+   pragma Linker_Options ("-crtbe" & ASCII.NUL & "-auto-register");
    --  Required by ZCX on VxWorks kernel
 
    type Address is mod Memory_Size;

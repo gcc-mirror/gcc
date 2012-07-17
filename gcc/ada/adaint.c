@@ -83,7 +83,6 @@ extern "C" {
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <time.h>
-
 #ifdef VMS
 #include <unixio.h>
 #endif

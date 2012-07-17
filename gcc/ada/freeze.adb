@@ -3026,6 +3026,21 @@ package body Freeze is
                      end if;
                   end if;
                end;
+
+               --  Pre/Post conditions are implemented through a subprogram in
+               --  the corresponding body, and therefore are not checked on an
+               --  imported subprogram for which the body is not available.
+
+               if Is_Subprogram (E)
+                 and then Is_Imported (E)
+                 and then Present (Contract (E))
+                 and then Present (Spec_PPC_List (Contract (E)))
+               then
+                  Error_Msg_NE ("pre/post conditions on imported subprogram "
+                     & "are not enforced?",
+                     E, Spec_PPC_List (Contract (E)));
+               end if;
+
             end if;
 
             --  Must freeze its parent first if it is a derived subprogram

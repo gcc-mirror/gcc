@@ -62,50 +62,6 @@ package System.Atomic_Primitives is
    -- GCC built-in atomic primitives --
    ------------------------------------
 
-   function Atomic_Compare_Exchange_8
-     (Ptr      : Address;
-      Expected : uint8;
-      Desired  : uint8) return uint8;
-   pragma Import (Intrinsic,
-                  Atomic_Compare_Exchange_8,
-                  "__sync_val_compare_and_swap_1");
-
-   --  ??? Should use __atomic_compare_exchange_1 (doesn't work yet):
-   --  function Atomic_Compare_Exchange_8
-   --    (Ptr           : Address;
-   --     Expected      : Address;
-   --     Desired       : uint8;
-   --     Weak          : Boolean   := False;
-   --     Success_Model : Mem_Model := Seq_Cst;
-   --     Failure_Model : Mem_Model := Seq_Cst) return Boolean;
-   --  pragma Import (Intrinsic,
-   --                 Atomic_Compare_Exchange_8,
-   --                 "__atomic_compare_exchange_1");
-
-   function Atomic_Compare_Exchange_16
-     (Ptr      : Address;
-      Expected : uint16;
-      Desired  : uint16) return uint16;
-   pragma Import (Intrinsic,
-                  Atomic_Compare_Exchange_16,
-                  "__sync_val_compare_and_swap_2");
-
-   function Atomic_Compare_Exchange_32
-     (Ptr      : Address;
-      Expected : uint32;
-      Desired  : uint32) return uint32;
-   pragma Import (Intrinsic,
-                  Atomic_Compare_Exchange_32,
-                  "__sync_val_compare_and_swap_4");
-
-   function Atomic_Compare_Exchange_64
-     (Ptr      : Address;
-      Expected : uint64;
-      Desired  : uint64) return uint64;
-   pragma Import (Intrinsic,
-                  Atomic_Compare_Exchange_64,
-                  "__sync_val_compare_and_swap_8");
-
    function Atomic_Load_8
      (Ptr   : Address;
       Model : Mem_Model := Seq_Cst) return uint8;
@@ -126,6 +82,50 @@ package System.Atomic_Primitives is
       Model : Mem_Model := Seq_Cst) return uint64;
    pragma Import (Intrinsic, Atomic_Load_64, "__atomic_load_8");
 
+   function Sync_Compare_And_Swap_8
+     (Ptr      : Address;
+      Expected : uint8;
+      Desired  : uint8) return uint8;
+   pragma Import (Intrinsic,
+                  Sync_Compare_And_Swap_8,
+                  "__sync_val_compare_and_swap_1");
+
+   --  ??? Should use __atomic_compare_exchange_1 (doesn't work yet):
+   --  function Sync_Compare_And_Swap_8
+   --    (Ptr           : Address;
+   --     Expected      : Address;
+   --     Desired       : uint8;
+   --     Weak          : Boolean   := False;
+   --     Success_Model : Mem_Model := Seq_Cst;
+   --     Failure_Model : Mem_Model := Seq_Cst) return Boolean;
+   --  pragma Import (Intrinsic,
+   --                 Sync_Compare_And_Swap_8,
+   --                 "__atomic_compare_exchange_1");
+
+   function Sync_Compare_And_Swap_16
+     (Ptr      : Address;
+      Expected : uint16;
+      Desired  : uint16) return uint16;
+   pragma Import (Intrinsic,
+                  Sync_Compare_And_Swap_16,
+                  "__sync_val_compare_and_swap_2");
+
+   function Sync_Compare_And_Swap_32
+     (Ptr      : Address;
+      Expected : uint32;
+      Desired  : uint32) return uint32;
+   pragma Import (Intrinsic,
+                  Sync_Compare_And_Swap_32,
+                  "__sync_val_compare_and_swap_4");
+
+   function Sync_Compare_And_Swap_64
+     (Ptr      : Address;
+      Expected : uint64;
+      Desired  : uint64) return Boolean;
+   pragma Import (Intrinsic,
+                  Sync_Compare_And_Swap_64,
+                  "__sync_bool_compare_and_swap_8");
+
    --------------------------
    -- Lock-free operations --
    --------------------------
@@ -136,8 +136,8 @@ package System.Atomic_Primitives is
    --  * Lock_Free_Read_N atomically loads the value of the protected component
    --    accessed by the current protected operation.
 
-   --  * Lock_Free_Try_Write_N tries to write the the Desired value into Ptr
-   --    only if Expected and Desired mismatch.
+   --  * Lock_Free_Try_Write_N tries to write the Desired value into Ptr only
+   --    if Expected and Desired mismatch.
 
    function Lock_Free_Read_8 (Ptr : Address) return uint8 is
      (Atomic_Load_8 (Ptr, Acquire));
@@ -148,8 +148,9 @@ package System.Atomic_Primitives is
    function Lock_Free_Read_32 (Ptr : Address) return uint32 is
       (Atomic_Load_32 (Ptr, Acquire));
 
-   function Lock_Free_Read_64 (Ptr : Address) return uint64 is
-      (Atomic_Load_64 (Ptr, Acquire));
+   function Lock_Free_Read_64
+     (Ptr : Address;
+      Model : Mem_Model := Seq_Cst) return uint64 renames Atomic_Load_64;
 
    function Lock_Free_Try_Write_8
       (Ptr      : Address;
@@ -168,8 +169,8 @@ package System.Atomic_Primitives is
 
    function Lock_Free_Try_Write_64
       (Ptr      : Address;
-       Expected : in out uint64;
-       Desired  : uint64) return Boolean;
+       Expected : uint64;
+       Desired  : uint64) return Boolean renames Sync_Compare_And_Swap_64;
 
    pragma Inline (Lock_Free_Read_8);
    pragma Inline (Lock_Free_Read_16);

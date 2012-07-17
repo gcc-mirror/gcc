@@ -1,3 +1,87 @@
+2012-07-17  Tristan Gingold  <gingold@adacore.com>
+
+	* gnat_rm.texi: Adjust previous change.
+
+2012-07-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Process_Import_Or_Interface): If the pragma
+	comes from an aspect, it applies to the corresponding entity
+	without further check.
+
+2012-07-17  Olivier Hainque  <hainque@adacore.com>
+
+	* initialize.c (__gnat_initialize for VxWorks): Remove section with
+	call to __gnat_vxw_setup_for_eh.
+	* system-vxworks-ppc.ads: Add -auto-register to -crtbe, relying
+	on the VxWorks constructor mechanism for network loaded modules
+	by default.
+
+2012-07-17  Tristan Gingold  <gingold@adacore.com>
+
+	* adaint.c: Minor reformatting.
+
+2012-07-17  Pascal Obry  <obry@adacore.com>
+
+	* s-regexp.adb (Adjust): Fix access violation in Adjust.
+
+2012-07-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Freeze_Entity): Warn if an imported subprogram
+	has pre/post conditions, because these will not be enforced.
+
+2012-07-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch7.adb (Process_Transient_Objects): Put all the
+	finalization blocks and the final raise statement into a wrapper
+	block.
+
+2012-07-17  Vincent Pucci  <pucci@adacore.com>
+
+	* s-atopri.adb (Lock_Free_Try_Write_X): Atomic_Compare_Exchange_X
+	replaced by Sync_Compare_And_Swap_X.
+	(Lock_Free_Try_Write_64): Removed.
+	* s-atopri.ads (Sync_Compare_And_Swap_X): Replaces previous
+	routine Atomic_Compare_Exchange_X.
+	(Lock_Free_Read_64): Renaming of Atomic_Load_64.
+	(Lock_Free_Try_Write_64): Renaming of Sync_Compare_And_Swap_64.
+
+2012-07-17  Vincent Celier  <celier@adacore.com>
+
+	* switch-m.adb (Normalize_Compiler_Switches): Recognize new
+	switches -gnatn1 and -gnatn2.
+
+2012-07-17  Vincent Pucci  <pucci@adacore.com>
+
+	* gnat_ugn.texi: GNAT dimensionality checking
+	documentation updated with System.Dim.Mks modifications.
+
+2012-07-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch3.adb: sloc of array init_proc is sloc of type declaration.
+
+2012-07-17  Tristan Gingold  <gingold@adacore.com>
+
+	* raise-gcc.c (get_call_site_action_for): Remove useless init
+	expression for p.
+	(get_action_description_for): Do not overwrite action->kind.
+
+2012-07-17  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference): Add local variables Attr
+	and Conversion_Added.  Add local constant Typ.
+	Retrieve the original attribute after the arithmetic check
+	machinery has modified the node. Add a conversion to the target
+	type when the prefix of attribute Max_Size_In_Storage_Elements
+	is a controlled type.
+
+2012-07-17  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch6.adb (Expand_Inlined_Call): For each actual parameter
+	of mode 'out' or 'in out' that denotes an entity, reset
+	Last_Assignment on the entity so that any assignments to the
+	corresponding formal in the inlining will not trigger spurious
+	warnings about overwriting assignments.
+
 2012-07-17  Robert Dewar  <dewar@adacore.com>
 
 	* s-assert.ads: Fix comments to make it clear that this is used

@@ -16638,10 +16638,11 @@ This pragma identifies an imported function (imported in the usual way
 with pragma @code{Import}) as corresponding to a C++ constructor.
 @end table
 
-In addition, C++ exceptions are propagated and can be handled in a
+In addition, C++ exceptions are propagated and can be handled in an
 @code{others} choice of an exception handler. The corresponding Ada
 occurrence has no message, and the simple name of the exception identity
-contains @samp{Foreign_Exception}.
+contains @samp{Foreign_Exception}. Finalization and awaiting dependent
+tasks works properly when such foreign exceptions are propagated.
 
 @node Interfacing to COBOL
 @section Interfacing to COBOL
