@@ -4390,6 +4390,7 @@ package body Exp_Ch7 is
          Obj_Id    : Entity_Id;
          Obj_Ref   : Node_Id;
          Obj_Typ   : Entity_Id;
+         Prev_Fin  : Node_Id := Empty;
          Stmt      : Node_Id;
          Stmts     : List_Id;
          Temp_Id   : Entity_Id;
@@ -4428,7 +4429,6 @@ package body Exp_Ch7 is
                   Fin_Decls := New_List;
 
                   Build_Object_Declarations (Fin_Data, Fin_Decls, Loc);
-                  Insert_List_Before_And_Analyze (First_Object, Fin_Decls);
 
                   Built := True;
                end if;
@@ -4560,14 +4560,24 @@ package body Exp_Ch7 is
                        Exception_Handlers => New_List (
                          Build_Exception_Handler (Fin_Data))));
 
-               Insert_After_And_Analyze (Last_Object, Fin_Block);
+               --  The single raise statement must be inserted after all the
+               --  finalization blocks. And we put everything into a wrapper
+               --  block to clearly expose the construct to the back-end.
 
-               --  The raise statement must be inserted after all the
-               --  finalization blocks.
+               if Present (Prev_Fin) then
+                  Insert_Before_And_Analyze (Prev_Fin, Fin_Block);
+               else
+                  Insert_After_And_Analyze (Last_Object,
+                    Make_Block_Statement (Loc,
+                      Declarations => Fin_Decls,
+                      Handled_Statement_Sequence =>
+                        Make_Handled_Sequence_Of_Statements (Loc,
+                          Statements => New_List (Fin_Block))));
 
-               if No (Last_Fin) then
                   Last_Fin := Fin_Block;
                end if;
+
+               Prev_Fin := Fin_Block;
 
             --  When the associated node is an array object, the expander may
             --  sometimes generate a loop and create transient objects inside

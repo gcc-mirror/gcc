@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2011, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2012, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -221,7 +221,8 @@ __gnat_initialize (void *eh ATTRIBUTE_UNUSED)
 
 		     FindClose (hDir);
 
-		     free (dir);
+		     if (dir != NULL)
+		       free (dir);
 		   }
 	       }
 	     else
@@ -280,58 +281,6 @@ void
 __gnat_initialize (void *eh)
 {
   __gnat_init_float ();
-
-  /* On targets where we use the ZCX scheme, we need to register the frame
-     tables at load/startup time.
-
-     For applications loaded as a set of "modules", the crtstuff objects
-     linked in (crtbegin.o/end.o) are tailored to provide this service
-     automatically, a-la C++ constructor fashion, triggered by the VxWorks
-     loader thanks to a special variable declaration in crtbegin.o (_ctors).
-
-     Automatic de-registration is handled symmetrically, a-la C++ destructor
-     fashion (with a _dtors variable also in crtbegin.o) triggered by the
-     dynamic unloader.
-
-     Note that since the tables shall be registered against a common
-     data structure, libgcc should be one of the modules (vs being partially
-     linked against all the others at build time) and shall be loaded first.
-
-     For applications linked with the kernel, the scheme above would lead to
-     duplicated symbols because the VxWorks kernel build "munches" by default,
-     so we link against crtbeginT.o instead of crtbegin.o, which doesn't
-     include the special variables. We know which set of crt objects is used
-     thanks to a boolean indicator present in both sets (__module_has_ctors),
-     and directly call the appropriate function here in the not-automatic
-     case. We'll never unload that, so there is no de-registration to worry
-     about.
-
-     For whole applications loaded as a single module, we may use one scheme
-     or the other, except for the mixed Ada/C++ case in which the first scheme
-     would fail for the same reason as in the linked-with-kernel situation.
-
-     The crt set selection is controlled by command line options via GCC's
-     STARTFILE_SPEC in rs6000/vxworks.h.  This is tightly synchronized with a
-     number of other GCC configuration and crtstuff changes, and we need to
-     ensure that those changes are there to activate this circuitry.  */
-
-#if (__GNUC__ >= 3) && (defined (_ARCH_PPC) || defined (__ppc))
- {
-   /* The scheme described above is only useful for the actual ZCX case, and
-      we don't want any reference to the crt provided symbols otherwise.  We
-      may not link with any of the crt objects in the non-ZCX case, e.g. from
-      documented procedures instructing the use of -nostdlib, and references
-      to the ctors symbols here would just remain unsatisfied.
-
-      We have no way to avoid those references in the right conditions in this
-      C module, because we have nothing like a IN_ZCX_RTS macro.  This aspect
-      is then deferred to an Ada routine, which can do that based on a test
-      against a constant System flag value.  */
-
-   extern void __gnat_vxw_setup_for_eh (void);
-   __gnat_vxw_setup_for_eh ();
- }
-#endif
 }
 
 #elif defined(_T_HPUX10) || (!defined(IN_RTS) && defined(_X_HPUX10))

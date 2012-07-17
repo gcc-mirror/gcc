@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1999-2010, AdaCore                     --
+--                     Copyright (C) 1999-2012, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -100,10 +100,12 @@ package body System.Regexp is
       Tmp : Regexp_Access;
 
    begin
-      Tmp := new Regexp_Value (Alphabet_Size => R.R.Alphabet_Size,
-                               Num_States    => R.R.Num_States);
-      Tmp.all := R.R.all;
-      R.R := Tmp;
+      if R.R /= null then
+         Tmp := new Regexp_Value (Alphabet_Size => R.R.Alphabet_Size,
+                                  Num_States    => R.R.Num_States);
+         Tmp.all := R.R.all;
+         R.R := Tmp;
+      end if;
    end Adjust;
 
    -------------
