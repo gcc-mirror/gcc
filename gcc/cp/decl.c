@@ -11843,7 +11843,14 @@ xref_basetypes (tree ref, tree base_list)
     {
       tree basetype = TREE_VALUE (*basep);
 
-      if (!(processing_template_decl && uses_template_parms (basetype))
+      /* The dependent_type_p call below should really be dependent_scope_p
+	 so that we give a hard error about using an incomplete type as a
+	 base, but we allow it with a pedwarn for backward
+	 compatibility.  */
+      if (processing_template_decl
+	  && CLASS_TYPE_P (basetype) && TYPE_BEING_DEFINED (basetype))
+	cxx_incomplete_type_diagnostic (NULL_TREE, basetype, DK_PEDWARN);
+      if (!dependent_type_p (basetype)
 	  && !complete_type_or_else (basetype, NULL))
 	/* An incomplete type.  Remove it from the list.  */
 	*basep = TREE_CHAIN (*basep);

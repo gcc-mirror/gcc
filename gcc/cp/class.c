@@ -6325,6 +6325,15 @@ finish_struct (tree t, tree attributes)
 
       /* Remember current #pragma pack value.  */
       TYPE_PRECISION (t) = maximum_field_alignment;
+
+      /* Fix up any variants we've already built.  */
+      for (x = TYPE_NEXT_VARIANT (t); x; x = TYPE_NEXT_VARIANT (x))
+	{
+	  TYPE_SIZE (x) = TYPE_SIZE (t);
+	  TYPE_SIZE_UNIT (x) = TYPE_SIZE_UNIT (t);
+	  TYPE_FIELDS (x) = TYPE_FIELDS (t);
+	  TYPE_METHODS (x) = TYPE_METHODS (t);
+	}
     }
   else
     finish_struct_1 (t);
