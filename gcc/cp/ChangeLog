@@ -1,5 +1,9 @@
 2012-07-17  Jason Merrill  <jason@redhat.com>
 
+	PR c++/53989
+	* tree.c (build_cplus_array_type): Also add TYPE_CANONICAL
+	to the list of variants.
+
 	* decl.c (xref_basetypes): Complain about incomplete template base.
 	* class.c (finish_struct): Adjust variants in templates, too.
 
