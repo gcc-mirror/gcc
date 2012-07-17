@@ -4,25 +4,34 @@
 template<typename T>
 struct A
 {
-    int foo;
+  int foo;
 
-    struct B : A<T>
-    {
-        using A::foo;
-    };
+  struct B;
+  struct C;
+  struct D;
+  struct E;
+};
 
-    struct C : A
-    {
-        using A::foo;
-    };
+template <class T>
+struct A<T>::B : A<T>
+{
+  using A::foo;
+};
 
-    struct D : A<T>
-    {
-	using A<T>::foo;
-    };
+template <class T>
+struct A<T>::C : A
+{
+  using A::foo;
+};
 
-    struct E : A
-    {
-	using A<T>::foo;
-    };
+template <class T>
+struct A<T>::D : A<T>
+{
+  using A<T>::foo;
+};
+
+template <class T>
+struct A<T>::E : A
+{
+  using A<T>::foo;
 };

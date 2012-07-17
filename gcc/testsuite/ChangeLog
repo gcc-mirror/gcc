@@ -1,5 +1,9 @@
 2012-07-17  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/template/inherit8.C: Adjust.
+	* g++.dg/template/using21.C: Adjust.
+	* g++.dg/template/using22.C: Adjust.
+
 	PR c++/53549
 	* g++.dg/template/current-inst1.C: New.
 	* g++.dg/parse/crash35.C: Adjust.

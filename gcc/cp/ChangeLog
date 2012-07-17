@@ -1,5 +1,8 @@
 2012-07-17  Jason Merrill  <jason@redhat.com>
 
+	* decl.c (xref_basetypes): Complain about incomplete template base.
+	* class.c (finish_struct): Adjust variants in templates, too.
+
 	PR c++/53549
 	* parser.c (cp_parser_class_head): Call xref_basetypes here.
 	(cp_parser_class_specifier_1): Not here.
