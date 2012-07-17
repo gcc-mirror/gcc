@@ -188,9 +188,6 @@ package body Treepr is
    --  level and the bars used to link list elements). In addition, for lines
    --  other than the first, an additional character Prefix_Char is output.
 
-   procedure Print_Sloc (Loc : Source_Ptr);
-   --  Print the human readable representation of Loc
-
    function Serial_Number (Id : Int) return Nat;
    --  Given a Node_Id, List_Id or Elist_Id, returns the previously assigned
    --  serial number, or zero if no serial number has yet been assigned.
@@ -890,6 +887,7 @@ package body Treepr is
       Field_To_Be_Printed : Boolean;
       Prefix_Str_Char     : String (Prefix_Str'First .. Prefix_Str'Last + 1);
 
+      Sfile : Source_File_Index;
       Fmt   : UI_Format;
 
    begin
@@ -935,7 +933,20 @@ package body Treepr is
          Print_Str (Prefix_Str_Char);
          Print_Str ("Sloc = ");
 
-         Print_Sloc (Sloc (N));
+         if Sloc (N) = Standard_Location then
+            Print_Str ("Standard_Location");
+
+         elsif Sloc (N) = Standard_ASCII_Location then
+            Print_Str ("Standard_ASCII_Location");
+
+         else
+            Sfile := Get_Source_File_Index (Sloc (N));
+            Print_Int (Int (Sloc (N)) - Int (Source_Text (Sfile)'First));
+            Write_Str ("  ");
+            Write_Location (Sloc (N));
+         end if;
+
+         Print_Eol;
       end if;
 
       --  Print Chars field if present
@@ -1386,30 +1397,6 @@ package body Treepr is
       Print_Term;
    end Print_Node_Subtree;
 
-   ----------------
-   -- Print_Sloc --
-   ----------------
-
-   procedure Print_Sloc (Loc : Source_Ptr) is
-      Sfile : Source_File_Index;
-
-   begin
-      if Loc = Standard_Location then
-         Print_Str ("Standard_Location");
-
-      elsif Loc = Standard_ASCII_Location then
-         Print_Str ("Standard_ASCII_Location");
-
-      else
-         Sfile := Get_Source_File_Index (Loc);
-         Print_Int (Int (Loc) - Int (Source_Text (Sfile)'First));
-         Write_Str ("  ");
-         Write_Location (Loc);
-      end if;
-
-      Print_Eol;
-   end Print_Sloc;
-
    ---------------
    -- Print_Str --
    ---------------
@@ -1536,16 +1523,6 @@ package body Treepr is
       Phase := Printing;
       Print_Node (N, Label, ' ');
    end Print_Tree_Node;
-
-   -----------
-   -- psloc --
-   -----------
-
-   procedure psloc (Loc : Source_Ptr) is
-   begin
-      Phase := Printing;
-      Print_Sloc (Loc);
-   end psloc;
 
    --------
    -- pt --

@@ -1,5 +1,44 @@
 2012-07-17  Robert Dewar  <dewar@adacore.com>
 
+	* s-assert.ads: Fix comments to make it clear that this is used
+	for all assertions, not just pragma Assert.
+
+2012-07-17  Jerome Guitton  <guitton@adacore.com>
+
+	* par_sco.ads: Minor typo fix.
+
+2012-07-17  Gary Dismukes  <dismukes@adacore.com>
+
+	* layout.adb (Layout_Type): In the case where the target is
+	AAMP, use 32 bits (a single pointer) rather than 64 bits for an
+	anonymous access-to-subprogram type if the type is library-level
+	and Is_Local_Anonymous_Access is True.
+
+2012-07-17  Jose Ruiz  <ruiz@adacore.com>
+
+	* s-tassta.adb, s-tarest.adb (Create_Task, Create_Restricted_Task,
+	Initialize): Add comments explaining that the CPU affinity value that
+	is passed to the run-time library can be either Unspecified_CPU, to
+	indicate that the task inherits the affinity of its activating task,
+	or a value in the range of CPU_Range but no greater than Number_Of_CPUs.
+
+2012-07-17  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.adb (Make_DT): Remove decoration of Ada.Tags entities.
+	(Make_Tags): Add decoration of Ada.Tags entities.
+
+2012-07-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Check_Statement_Sequence): When locating the
+	last significant statement in a sequence, ignore iserted nodes
+	that typically come from expansion of controlled operations.
+
+2012-07-17  Tristan Gingold  <gingold@adacore.com>
+
+	* gnat_rm.texi: Document foreign exceptions.
+
+2012-07-17  Robert Dewar  <dewar@adacore.com>
+
 	* sem_prag.adb, treepr.ads: Minor reformatting.
 
 2012-07-17  Robert Dewar  <dewar@adacore.com>
@@ -11,13 +50,6 @@
 
 	* seh_init.c (__gnat_SEH_error_handler): Not compiled anymore
 	on Windows 64 (+ SEH), as it is unused.
-
-2012-07-17  Tristan Gingold  <gingold@adacore.com>
-
-	* treepr.ads (psloc): Declare.
-	* treepr.adb (psloc): New debug procedure to print a sloc.
-	(Print_Sloc): New procedure, from ...
-	(Print_Node_Subtree): ... this.  Call Print_Sloc.
 
 2012-07-17  Javier Miranda  <miranda@adacore.com>
 
