@@ -1,5 +1,9 @@
 2012-07-17  Tom de Vries  <tom@codesourcery.com>
 
+	* hwint.c: Fix loop range.
+
+2012-07-17  Tom de Vries  <tom@codesourcery.com>
+
 	* double-int.h (double_int_popcount): New inline function.
 	* hwint.c (popcount_hwi): New function.
 	* hwint.h (popcount_hwi): Declare function.  New inline function.

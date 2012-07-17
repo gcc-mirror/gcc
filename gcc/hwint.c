@@ -113,8 +113,9 @@ int
 popcount_hwi (unsigned HOST_WIDE_INT x)
 {
   int i, ret = 0;
+  size_t bits = sizeof (x) * CHAR_BIT;
 
-  for (i = 0; i < sizeof (x); i += 1)
+  for (i = 0; i < bits; i += 1)
     {
       ret += x & 1;
       x >>= 1;
