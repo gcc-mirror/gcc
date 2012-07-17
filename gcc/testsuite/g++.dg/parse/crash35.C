@@ -3,5 +3,5 @@
 
 struct a {};
 
-class foo : public a, a
-{ /* { dg-error "duplicate base type|at end of input" } */
+class foo : public a, a		// { dg-error "duplicate base" }
+{ /* { dg-error "at end of input" } */
