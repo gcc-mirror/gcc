@@ -5108,6 +5108,7 @@ match_procedure_in_interface (void)
   match m;
   gfc_symbol *sym;
   char name[GFC_MAX_SYMBOL_LEN + 1];
+  locus old_locus;
 
   if (current_interface.type == INTERFACE_NAMELESS
       || current_interface.type == INTERFACE_ABSTRACT)
@@ -5115,6 +5116,19 @@ match_procedure_in_interface (void)
       gfc_error ("PROCEDURE at %C must be in a generic interface");
       return MATCH_ERROR;
     }
+
+  /* Check if the F2008 optional double colon appears.  */
+  gfc_gobble_whitespace ();
+  old_locus = gfc_current_locus;
+  if (gfc_match ("::") == MATCH_YES)
+    {
+      if (gfc_notify_std (GFC_STD_F2008, "Fortran 2008: double colon in "
+			 "MODULE PROCEDURE statement at %L", &old_locus)
+	  == FAILURE)
+	return MATCH_ERROR;
+    }
+  else
+    gfc_current_locus = old_locus;
 
   for(;;)
     {

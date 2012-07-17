@@ -1,3 +1,9 @@
+2012-07-17  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/49265
+	* gfortran.dg/module_procedure_double_colon_3.f90: New.
+	* gfortran.dg/module_procedure_double_colon_4.f90: New.
+
 2012-07-16  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/parse/access8.C: Adjust.
