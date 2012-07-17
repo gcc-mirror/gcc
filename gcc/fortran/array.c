@@ -555,7 +555,7 @@ gfc_match_array_spec (gfc_array_spec **asp, bool match_dim, bool match_codim)
 	}
 
       if (as->corank + as->rank >= 7
-	  && gfc_notify_std (GFC_STD_F2008, "Fortran 2008: Array "
+	  && gfc_notify_std (GFC_STD_F2008, "Array "
 			     "specification at %C with more than 7 dimensions")
 	     == FAILURE)
 	goto cleanup;
@@ -568,7 +568,7 @@ coarray:
   if (gfc_match_char ('[')  != MATCH_YES)
     goto done;
 
-  if (gfc_notify_std (GFC_STD_F2008, "Fortran 2008: Coarray declaration at %C")
+  if (gfc_notify_std (GFC_STD_F2008, "Coarray declaration at %C")
       == FAILURE)
     goto cleanup;
 
@@ -1027,7 +1027,7 @@ gfc_match_array_constructor (gfc_expr **result)
 	return MATCH_NO;
       else
 	{
-	  if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: [...] "
+	  if (gfc_notify_std (GFC_STD_F2003, "[...] "
 			      "style array constructors at %C") == FAILURE)
 	    return MATCH_ERROR;
 	  end_delim = " ]";
@@ -1047,7 +1047,7 @@ gfc_match_array_constructor (gfc_expr **result)
 
       if (seen_ts)
 	{
-	  if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: Array constructor "
+	  if (gfc_notify_std (GFC_STD_F2003, "Array constructor "
 			      "including type specification at %C") == FAILURE)
 	    goto cleanup;
 

@@ -481,7 +481,7 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
     conf (external, subroutine);
 
   if (attr->proc_pointer && gfc_notify_std (GFC_STD_F2003,
-			    "Fortran 2003: Procedure pointer at %C") == FAILURE)
+			    "Procedure pointer at %C") == FAILURE)
     return FAILURE;
 
   conf (allocatable, pointer);
@@ -772,13 +772,13 @@ conflict:
 conflict_std:
   if (name == NULL)
     {
-      return gfc_notify_std (standard, "Fortran 2003: %s attribute "
+      return gfc_notify_std (standard, "%s attribute "
                              "with %s attribute at %L", a1, a2,
                              where);
     }
   else
     {
-      return gfc_notify_std (standard, "Fortran 2003: %s attribute "
+      return gfc_notify_std (standard, "%s attribute "
 			     "with %s attribute in '%s' at %L",
                              a1, a2, name, where);
     }
@@ -1597,7 +1597,7 @@ gfc_add_is_bind_c (symbol_attribute *attr, const char *name, locus *where,
   if (where == NULL)
     where = &gfc_current_locus;
    
-  if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: BIND(C) at %L", where)
+  if (gfc_notify_std (GFC_STD_F2003, "BIND(C) at %L", where)
       == FAILURE)
     return FAILURE;
 
@@ -1618,7 +1618,7 @@ gfc_add_extension (symbol_attribute *attr, locus *where)
   else
     attr->extension = 1;
 
-  if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: EXTENDS at %L", where)
+  if (gfc_notify_std (GFC_STD_F2003, "EXTENDS at %L", where)
 	== FAILURE)
     return FAILURE;
 
@@ -4746,7 +4746,7 @@ gfc_check_symbol_typed (gfc_symbol* sym, gfc_namespace* ns,
 	}
 
       if (gfc_notify_std (GFC_STD_GNU,
-			  "Extension: Symbol '%s' is used before"
+			  "Symbol '%s' is used before"
 			  " it is typed at %L", sym->name, &where) == FAILURE)
 	return FAILURE;
     }

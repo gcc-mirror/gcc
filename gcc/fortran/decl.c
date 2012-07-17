@@ -269,7 +269,7 @@ var_element (gfc_data_variable *new_var)
 
   if (gfc_current_state () != COMP_BLOCK_DATA
       && sym->attr.in_common
-      && gfc_notify_std (GFC_STD_GNU, "Extension: initialization of "
+      && gfc_notify_std (GFC_STD_GNU, "initialization of "
 			 "common block variable '%s' in DATA statement at %C",
 			 sym->name) == FAILURE)
     return MATCH_ERROR;
@@ -677,7 +677,7 @@ char_len_param_value (gfc_expr **expr, bool *deferred)
 
   if (gfc_match_char (':') == MATCH_YES)
     {
-      if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: deferred type "
+      if (gfc_notify_std (GFC_STD_F2003, "deferred type "
 			  "parameter at %C") == FAILURE)
 	return MATCH_ERROR;
 
@@ -740,7 +740,7 @@ match_char_length (gfc_expr **expr, bool *deferred, bool obsolenscent_check)
   if (m == MATCH_YES)
     {
       if (obsolenscent_check
-	  && gfc_notify_std (GFC_STD_F95_OBS, "Obsolescent feature: "
+	  && gfc_notify_std (GFC_STD_F95_OBS,
 			     "Old-style character length at %C") == FAILURE)
 	return MATCH_ERROR;
       *expr = gfc_get_int_expr (gfc_default_integer_kind, NULL, length);
@@ -1083,7 +1083,7 @@ gfc_verify_c_interop_param (gfc_symbol *sym)
 	      retval = FAILURE;
 	    }
 	  else if (sym->attr.optional == 1
-		   && gfc_notify_std (GFC_STD_F2008_TS, "TS29113: Variable '%s' "
+		   && gfc_notify_std (GFC_STD_F2008_TS, "Variable '%s' "
 				      "at %L with OPTIONAL attribute in "
 				      "procedure '%s' which is BIND(C)",
 				      sym->name, &(sym->declared_at),
@@ -1739,7 +1739,7 @@ match_pointer_init (gfc_expr **init, int procptr)
   if (!procptr)
     gfc_resolve_expr (*init);
   
-  if (gfc_notify_std (GFC_STD_F2008, "Fortran 2008: non-NULL pointer "
+  if (gfc_notify_std (GFC_STD_F2008, "non-NULL pointer "
 		      "initialization at %C") == FAILURE)
     return MATCH_ERROR;
 
@@ -1836,7 +1836,7 @@ variable_decl (int elem)
 
       if (as->type == AS_IMPLIED_SHAPE
 	  && gfc_notify_std (GFC_STD_F2008,
-			     "Fortran 2008: Implied-shape array at %L",
+			     "Implied-shape array at %L",
 			     &var_locus) == FAILURE)
 	{
 	  m = MATCH_ERROR;
@@ -1995,7 +1995,7 @@ variable_decl (int elem)
 
   if (!colon_seen && gfc_match (" /") == MATCH_YES)
     {
-      if (gfc_notify_std (GFC_STD_GNU, "Extension: Old-style "
+      if (gfc_notify_std (GFC_STD_GNU, "Old-style "
 			  "initialization at %C") == FAILURE)
 	return MATCH_ERROR;
  
@@ -2588,7 +2588,7 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
 
   if (gfc_match (" byte") == MATCH_YES)
     {
-      if (gfc_notify_std (GFC_STD_GNU, "Extension: BYTE type at %C")
+      if (gfc_notify_std (GFC_STD_GNU, "BYTE type at %C")
 	  == FAILURE)
 	return MATCH_ERROR;
 
@@ -2619,7 +2619,7 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
 	      gfc_error ("Assumed type at %C is not allowed for components");
 	      return MATCH_ERROR;
 	    }
-	  if (gfc_notify_std (GFC_STD_F2008_TS, "TS 29113: Assumed type "
+	  if (gfc_notify_std (GFC_STD_F2008_TS, "Assumed type "
 			  "at %C") == FAILURE)
 	    return MATCH_ERROR;
 	  ts->type = BT_ASSUMED;
@@ -2642,7 +2642,7 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
       || (!matched_type && gfc_match (" character") == MATCH_YES))
     {
       if (matched_type
-	  && gfc_notify_std (GFC_STD_F2008, "Fortran 2008: TYPE with "
+	  && gfc_notify_std (GFC_STD_F2008, "TYPE with "
 			  "intrinsic-type-spec at %C") == FAILURE)
 	return MATCH_ERROR;
 
@@ -2673,7 +2673,7 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
       || (!matched_type && gfc_match (" double precision") == MATCH_YES))
     {
       if (matched_type
-	  && gfc_notify_std (GFC_STD_F2008, "Fortran 2008: TYPE with "
+	  && gfc_notify_std (GFC_STD_F2008, "TYPE with "
 			  "intrinsic-type-spec at %C") == FAILURE)
 	return MATCH_ERROR;
       if (matched_type && gfc_match_char (')') != MATCH_YES)
@@ -2698,12 +2698,12 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
 	       && gfc_match (" complex") == MATCH_YES)))
       || (!matched_type && gfc_match (" double complex") == MATCH_YES))
     {
-      if (gfc_notify_std (GFC_STD_GNU, "Extension: DOUBLE COMPLEX at %C")
+      if (gfc_notify_std (GFC_STD_GNU, "DOUBLE COMPLEX at %C")
 	  == FAILURE)
 	return MATCH_ERROR;
 
       if (matched_type
-	  && gfc_notify_std (GFC_STD_F2008, "Fortran 2008: TYPE with "
+	  && gfc_notify_std (GFC_STD_F2008, "TYPE with "
 			  "intrinsic-type-spec at %C") == FAILURE)
 	return MATCH_ERROR;
 
@@ -2745,7 +2745,7 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
 	return m;
       ts->type = BT_CLASS;
 
-      if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: CLASS statement at %C")
+      if (gfc_notify_std (GFC_STD_F2003, "CLASS statement at %C")
 			  == FAILURE)
 	return MATCH_ERROR;
     }
@@ -2853,7 +2853,7 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
 
 get_kind:
   if (matched_type
-      && gfc_notify_std (GFC_STD_F2008, "Fortran 2008: TYPE with "
+      && gfc_notify_std (GFC_STD_F2008, "TYPE with "
 			 "intrinsic-type-spec at %C") == FAILURE)
     return MATCH_ERROR;
 
@@ -3138,7 +3138,7 @@ gfc_match_import (void)
       return MATCH_ERROR;
     }
 
-  if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: IMPORT statement at %C")
+  if (gfc_notify_std (GFC_STD_F2003, "IMPORT statement at %C")
       == FAILURE)
     return MATCH_ERROR;
 
@@ -3634,7 +3634,7 @@ match_attr_spec (void)
 	{
 	  if (d == DECL_ALLOCATABLE)
 	    {
-	      if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: ALLOCATABLE "
+	      if (gfc_notify_std (GFC_STD_F2003, "ALLOCATABLE "
 				  "attribute at %C in a TYPE definition")
 		  == FAILURE)
 		{
@@ -3662,7 +3662,7 @@ match_attr_spec (void)
 	      && gfc_state_stack->previous
 	      && gfc_state_stack->previous->state == COMP_MODULE)
 	    {
-	      if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: Attribute %s "
+	      if (gfc_notify_std (GFC_STD_F2003, "Attribute %s "
 				  "at %L in a TYPE definition", attr,
 				  &seen_at[d])
 		  == FAILURE)
@@ -3688,7 +3688,7 @@ match_attr_spec (void)
 
 	case DECL_ASYNCHRONOUS:
 	  if (gfc_notify_std (GFC_STD_F2003,
-			      "Fortran 2003: ASYNCHRONOUS attribute at %C")
+			      "ASYNCHRONOUS attribute at %C")
 	      == FAILURE)
 	    t = FAILURE;
 	  else
@@ -3701,7 +3701,7 @@ match_attr_spec (void)
 
 	case DECL_CONTIGUOUS:
 	  if (gfc_notify_std (GFC_STD_F2008,
-			      "Fortran 2008: CONTIGUOUS attribute at %C")
+			      "CONTIGUOUS attribute at %C")
 	      == FAILURE)
 	    t = FAILURE;
 	  else
@@ -3753,7 +3753,7 @@ match_attr_spec (void)
 	       break;
 	    }
 
-	  if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: PROTECTED "
+	  if (gfc_notify_std (GFC_STD_F2003, "PROTECTED "
 			      "attribute at %C")
 	      == FAILURE)
 	    t = FAILURE;
@@ -3784,7 +3784,7 @@ match_attr_spec (void)
            break;
            
 	case DECL_VALUE:
-	  if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: VALUE attribute "
+	  if (gfc_notify_std (GFC_STD_F2003, "VALUE attribute "
 			      "at %C")
 	      == FAILURE)
 	    t = FAILURE;
@@ -3794,7 +3794,7 @@ match_attr_spec (void)
 
 	case DECL_VOLATILE:
 	  if (gfc_notify_std (GFC_STD_F2003,
-			      "Fortran 2003: VOLATILE attribute at %C")
+			      "VOLATILE attribute at %C")
 	      == FAILURE)
 	    t = FAILURE;
 	  else
@@ -4374,7 +4374,7 @@ gfc_match_prefix (gfc_typespec *ts)
       if (gfc_match ("impure% ") == MATCH_YES)
 	{
 	  if (gfc_notify_std (GFC_STD_F2008,
-			      "Fortran 2008: IMPURE procedure at %C")
+			      "IMPURE procedure at %C")
 		== FAILURE)
 	    goto error;
 
@@ -4660,7 +4660,7 @@ gfc_match_suffix (gfc_symbol *sym, gfc_symbol **result)
       /* Fortran 2008 draft allows BIND(C) for internal procedures.  */
       if (gfc_current_state () == COMP_CONTAINS
 	  && sym->ns->proc_name->attr.flavor != FL_MODULE
-	  && gfc_notify_std (GFC_STD_F2008, "Fortran 2008: BIND(C) attribute "
+	  && gfc_notify_std (GFC_STD_F2008, "BIND(C) attribute "
 			     "at %L may not be specified for an internal "
 			     "procedure", &gfc_current_locus)
 	     == FAILURE)
@@ -5031,7 +5031,7 @@ match_ppc_decl (void)
       return MATCH_ERROR;
     }
 
-  if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: Procedure pointer "
+  if (gfc_notify_std (GFC_STD_F2003, "Procedure pointer "
                      "component at %C") == FAILURE)
     return MATCH_ERROR;
 
@@ -5123,7 +5123,7 @@ match_procedure_in_interface (void)
   old_locus = gfc_current_locus;
   if (gfc_match ("::") == MATCH_YES)
     {
-      if (gfc_notify_std (GFC_STD_F2008, "Fortran 2008: double colon in "
+      if (gfc_notify_std (GFC_STD_F2008, "double colon in "
 			 "MODULE PROCEDURE statement at %L", &old_locus)
 	  == FAILURE)
 	return MATCH_ERROR;
@@ -5193,7 +5193,7 @@ gfc_match_procedure (void)
   if (m != MATCH_YES)
     return m;
 
-  if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: PROCEDURE statement at %C")
+  if (gfc_notify_std (GFC_STD_F2003, "PROCEDURE statement at %C")
       == FAILURE)
     return MATCH_ERROR;
 
@@ -5404,7 +5404,7 @@ gfc_match_entry (void)
   if (m != MATCH_YES)
     return m;
 
-  if (gfc_notify_std (GFC_STD_F2008_OBS, "Fortran 2008 obsolescent feature: "
+  if (gfc_notify_std (GFC_STD_F2008_OBS,
 		      "ENTRY statement at %C") == FAILURE)
     return MATCH_ERROR;
 
@@ -5715,7 +5715,7 @@ gfc_match_subroutine (void)
       /* The following is allowed in the Fortran 2008 draft.  */
       if (gfc_current_state () == COMP_CONTAINS
 	  && sym->ns->proc_name->attr.flavor != FL_MODULE
-	  && gfc_notify_std (GFC_STD_F2008, "Fortran 2008: BIND(C) attribute "
+	  && gfc_notify_std (GFC_STD_F2008, "BIND(C) attribute "
 			     "at %L may not be specified for an internal "
 			     "procedure", &gfc_current_locus)
 	     == FAILURE)
@@ -6085,7 +6085,7 @@ gfc_match_end (gfc_statement *st)
     {
       if (!eos_ok && (*st == ST_END_SUBROUTINE || *st == ST_END_FUNCTION))
 	{
-	  if (gfc_notify_std (GFC_STD_F2008, "Fortran 2008: END statement "
+	  if (gfc_notify_std (GFC_STD_F2008, "END statement "
 			      "instead of %s statement at %L",
 			      gfc_ascii_statement (*st), &old_loc) == FAILURE)
 	    goto cleanup;
@@ -6611,7 +6611,7 @@ gfc_match_codimension (void)
 match
 gfc_match_contiguous (void)
 {
-  if (gfc_notify_std (GFC_STD_F2008, "Fortran 2008: CONTIGUOUS statement at %C")
+  if (gfc_notify_std (GFC_STD_F2008, "CONTIGUOUS statement at %C")
       == FAILURE)
     return MATCH_ERROR;
 
@@ -6764,7 +6764,7 @@ gfc_match_protected (void)
 
     }
 
-  if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: PROTECTED statement at %C")
+  if (gfc_notify_std (GFC_STD_F2003, "PROTECTED statement at %C")
       == FAILURE)
     return MATCH_ERROR;
 
@@ -7062,7 +7062,7 @@ gfc_match_value (void)
       return MATCH_ERROR;
     }
 
-  if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: VALUE statement at %C")
+  if (gfc_notify_std (GFC_STD_F2003, "VALUE statement at %C")
       == FAILURE)
     return MATCH_ERROR;
 
@@ -7113,7 +7113,7 @@ gfc_match_volatile (void)
   gfc_symbol *sym;
   match m;
 
-  if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: VOLATILE statement at %C")
+  if (gfc_notify_std (GFC_STD_F2003, "VOLATILE statement at %C")
       == FAILURE)
     return MATCH_ERROR;
 
@@ -7174,7 +7174,7 @@ gfc_match_asynchronous (void)
   gfc_symbol *sym;
   match m;
 
-  if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: ASYNCHRONOUS statement at %C")
+  if (gfc_notify_std (GFC_STD_F2003, "ASYNCHRONOUS statement at %C")
       == FAILURE)
     return MATCH_ERROR;
 
@@ -7265,7 +7265,7 @@ gfc_match_modproc (void)
   old_locus = gfc_current_locus;
   if (gfc_match ("::") == MATCH_YES)
     {
-      if (gfc_notify_std (GFC_STD_F2008, "Fortran 2008: double colon in "
+      if (gfc_notify_std (GFC_STD_F2008, "double colon in "
 			 "MODULE PROCEDURE statement at %L", &old_locus)
 	  == FAILURE)
 	return MATCH_ERROR;
@@ -7432,7 +7432,7 @@ gfc_get_type_attr_spec (symbol_attribute *attr, char *name)
     }
   else if (gfc_match (" , abstract") == MATCH_YES)
     {
-      if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: ABSTRACT type at %C")
+      if (gfc_notify_std (GFC_STD_F2003, "ABSTRACT type at %C")
 	    == FAILURE)
 	return MATCH_ERROR;
 
@@ -7663,7 +7663,7 @@ gfc_match_enum (void)
   if (m != MATCH_YES)
     return m;
 
-  if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: ENUM and ENUMERATOR at %C")
+  if (gfc_notify_std (GFC_STD_F2003, "ENUM and ENUMERATOR at %C")
       == FAILURE)
     return MATCH_ERROR;
 
@@ -8157,7 +8157,7 @@ match_procedure_in_type (void)
 	  return MATCH_ERROR;
 	}
 
-      if (num>1 && gfc_notify_std (GFC_STD_F2008, "Fortran 2008: PROCEDURE list"
+      if (num>1 && gfc_notify_std (GFC_STD_F2008, "PROCEDURE list"
 				   " at %C") == FAILURE)
 	return MATCH_ERROR;
 

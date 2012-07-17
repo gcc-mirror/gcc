@@ -1393,7 +1393,7 @@ match_arithmetic_if (void)
       return MATCH_ERROR;
     }
 
-  if (gfc_notify_std (GFC_STD_F95_OBS, "Obsolescent feature: Arithmetic IF "
+  if (gfc_notify_std (GFC_STD_F95_OBS, "Arithmetic IF "
 		      "statement at %C") == FAILURE)
     return MATCH_ERROR;
 
@@ -1474,7 +1474,7 @@ gfc_match_if (gfc_statement *if_type)
 	  return MATCH_ERROR;
 	}
       
-      if (gfc_notify_std (GFC_STD_F95_OBS, "Obsolescent feature: Arithmetic IF "
+      if (gfc_notify_std (GFC_STD_F95_OBS, "Arithmetic IF "
 			  "statement at %C") == FAILURE)
 	return MATCH_ERROR;
 
@@ -1758,7 +1758,7 @@ gfc_match_critical (void)
   if (gfc_implicit_pure (NULL))
     gfc_current_ns->proc_name->attr.implicit_pure = 0;
 
-  if (gfc_notify_std (GFC_STD_F2008, "Fortran 2008: CRITICAL statement at %C")
+  if (gfc_notify_std (GFC_STD_F2008, "CRITICAL statement at %C")
       == FAILURE)
     return MATCH_ERROR;
 
@@ -2382,7 +2382,7 @@ gfc_match_do (void)
       gfc_forall_iterator *head;
       gfc_expr *mask;
 
-      if (gfc_notify_std (GFC_STD_F2008, "Fortran 2008: DO CONCURRENT "
+      if (gfc_notify_std (GFC_STD_F2008, "DO CONCURRENT "
 			   "construct at %C") == FAILURE)
 	return MATCH_ERROR;
 
@@ -2581,7 +2581,7 @@ match_exit_cycle (gfc_statement st, gfc_exec_op op)
 	  return MATCH_ERROR;
 	}
       gcc_assert (op == EXEC_EXIT);
-      if (gfc_notify_std (GFC_STD_F2008, "Fortran 2008: EXIT statement with no"
+      if (gfc_notify_std (GFC_STD_F2008, "EXIT statement with no"
 			  " do-construct-name at %C") == FAILURE)
 	return MATCH_ERROR;
       break;
@@ -2772,7 +2772,7 @@ gfc_match_pause (void)
   m = gfc_match_stopcode (ST_PAUSE);
   if (m == MATCH_YES)
     {
-      if (gfc_notify_std (GFC_STD_F95_DEL, "Deleted feature: PAUSE statement"
+      if (gfc_notify_std (GFC_STD_F95_DEL, "PAUSE statement"
 	  " at %C")
 	  == FAILURE)
 	m = MATCH_ERROR;
@@ -2795,7 +2795,7 @@ gfc_match_stop (void)
 match
 gfc_match_error_stop (void)
 {
-  if (gfc_notify_std (GFC_STD_F2008, "Fortran 2008: ERROR STOP statement at %C")
+  if (gfc_notify_std (GFC_STD_F2008, "ERROR STOP statement at %C")
       == FAILURE)
     return MATCH_ERROR;
 
@@ -2977,7 +2977,7 @@ cleanup:
 match
 gfc_match_lock (void)
 {
-  if (gfc_notify_std (GFC_STD_F2008, "Fortran 2008: LOCK statement at %C")
+  if (gfc_notify_std (GFC_STD_F2008, "LOCK statement at %C")
       == FAILURE)
     return MATCH_ERROR;
 
@@ -2988,7 +2988,7 @@ gfc_match_lock (void)
 match
 gfc_match_unlock (void)
 {
-  if (gfc_notify_std (GFC_STD_F2008, "Fortran 2008: UNLOCK statement at %C")
+  if (gfc_notify_std (GFC_STD_F2008, "UNLOCK statement at %C")
       == FAILURE)
     return MATCH_ERROR;
 
@@ -3021,7 +3021,7 @@ sync_statement (gfc_statement st)
   if (gfc_implicit_pure (NULL))
     gfc_current_ns->proc_name->attr.implicit_pure = 0;
 
-  if (gfc_notify_std (GFC_STD_F2008, "Fortran 2008: SYNC statement at %C")
+  if (gfc_notify_std (GFC_STD_F2008, "SYNC statement at %C")
       == FAILURE)
     return MATCH_ERROR;
 
@@ -3219,7 +3219,7 @@ gfc_match_assign (void)
 	return MATCH_ERROR;
       if (gfc_match (" to %v%t", &expr) == MATCH_YES)
 	{
-	  if (gfc_notify_std (GFC_STD_F95_DEL, "Deleted feature: ASSIGN "
+	  if (gfc_notify_std (GFC_STD_F95_DEL, "ASSIGN "
 			      "statement at %C")
 	      == FAILURE)
 	    return MATCH_ERROR;
@@ -3265,7 +3265,7 @@ gfc_match_goto (void)
 
   if (gfc_match_variable (&expr, 0) == MATCH_YES)
     {
-      if (gfc_notify_std (GFC_STD_F95_DEL, "Deleted feature: Assigned GOTO "
+      if (gfc_notify_std (GFC_STD_F95_DEL, "Assigned GOTO "
 			  "statement at %C")
 	  == FAILURE)
 	return MATCH_ERROR;
@@ -3375,7 +3375,7 @@ gfc_match_goto (void)
   if (gfc_match (" %e%t", &expr) != MATCH_YES)
     goto syntax;
 
-  if (gfc_notify_std (GFC_STD_F95_OBS, "Obsolescent feature: Computed GOTO "
+  if (gfc_notify_std (GFC_STD_F95_OBS, "Computed GOTO "
 		      "at %C") == FAILURE)
     return MATCH_ERROR;
 
@@ -3457,7 +3457,7 @@ gfc_match_allocate (void)
     {
       if (gfc_match (" :: ") == MATCH_YES)
 	{
-	  if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: typespec in "
+	  if (gfc_notify_std (GFC_STD_F2003, "typespec in "
 			      "ALLOCATE at %L", &old_locus) == FAILURE)
 	    goto cleanup;
 
@@ -3620,7 +3620,7 @@ alloc_opt_list:
 	goto cleanup;
       if (m == MATCH_YES)
 	{
-	  if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: ERRMSG tag at %L",
+	  if (gfc_notify_std (GFC_STD_F2003, "ERRMSG tag at %L",
 			      &tmp->where) == FAILURE)
 	    goto cleanup;
 
@@ -3644,7 +3644,7 @@ alloc_opt_list:
 	goto cleanup;
       if (m == MATCH_YES)
 	{
-	  if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: SOURCE tag at %L",
+	  if (gfc_notify_std (GFC_STD_F2003, "SOURCE tag at %L",
 			      &tmp->where) == FAILURE)
 	    goto cleanup;
 
@@ -3664,7 +3664,7 @@ alloc_opt_list:
 	    }
 
 	  if (head->next
-	      && gfc_notify_std (GFC_STD_F2008, "Fortran 2008: SOURCE tag at %L"
+	      && gfc_notify_std (GFC_STD_F2008, "SOURCE tag at %L"
 				 " with more than a single allocate object",
 				 &tmp->where) == FAILURE)
 	    goto cleanup;
@@ -3682,7 +3682,7 @@ alloc_opt_list:
 	goto cleanup;
       if (m == MATCH_YES)
 	{
-	  if (gfc_notify_std (GFC_STD_F2008, "Fortran 2008: MOLD tag at %L",
+	  if (gfc_notify_std (GFC_STD_F2008, "MOLD tag at %L",
 			      &tmp->where) == FAILURE)
 	    goto cleanup;
 
@@ -3944,7 +3944,7 @@ dealloc_opt_list:
 	goto cleanup;
       if (m == MATCH_YES)
 	{
-	  if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: ERRMSG at %L",
+	  if (gfc_notify_std (GFC_STD_F2003, "ERRMSG at %L",
 			      &tmp->where) == FAILURE)
 	    goto cleanup;
 
@@ -4022,7 +4022,7 @@ gfc_match_return (void)
       goto cleanup;
     }
 
-  if (gfc_notify_std (GFC_STD_F95_OBS, "Obsolescent feature: Alternate RETURN "
+  if (gfc_notify_std (GFC_STD_F95_OBS, "Alternate RETURN "
 		      "at %C") == FAILURE)
     return MATCH_ERROR;
 
@@ -4052,7 +4052,7 @@ cleanup:
 done:
   gfc_enclosing_unit (&s);
   if (s == COMP_PROGRAM
-      && gfc_notify_std (GFC_STD_GNU, "Extension: RETURN statement in "
+      && gfc_notify_std (GFC_STD_GNU, "RETURN statement in "
 			"main program at %C") == FAILURE)
       return MATCH_ERROR;
 
@@ -4966,7 +4966,7 @@ gfc_match_st_function (void)
 
   sym->value = expr;
 
-  if (gfc_notify_std (GFC_STD_F95_OBS, "Obsolescent feature: "
+  if (gfc_notify_std (GFC_STD_F95_OBS,
 		      "Statement function at %C") == FAILURE)
     return MATCH_ERROR;
 
