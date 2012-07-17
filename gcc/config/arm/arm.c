@@ -2009,6 +2009,11 @@ arm_option_override (void)
                            global_options.x_param_values,
                            global_options_set.x_param_values);
 
+  /* Use the alternative scheduling-pressure algorithm by default.  */
+  maybe_set_param_value (PARAM_SCHED_PRESSURE_ALGORITHM, 2,
+                         global_options.x_param_values,
+                         global_options_set.x_param_values);
+
   /* Register global variables with the garbage collector.  */
   arm_add_gc_roots ();
 }

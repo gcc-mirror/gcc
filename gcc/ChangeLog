@@ -1,3 +1,11 @@
+2012-07-17  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+	    Ulrich Weigand  <ulrich.weigand@linaro.org>
+
+	* common/config/arm/arm-common.c (arm_option_optimization_table):
+	Enable -fsched-pressure by default while optimizing.
+	* config/arm/arm.c (arm_option_override): Use the alternate scheduler
+	pressure algorithm by default.
+
 2012-07-16  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/sh.h (CONST_OK_FOR_I06): Delete.
