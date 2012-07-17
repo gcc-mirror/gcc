@@ -1028,8 +1028,8 @@ gfc_verify_c_interop_param (gfc_symbol *sym)
 			   "because it is polymorphic",
 			   sym->name, &(sym->declared_at),
 			   sym->ns->proc_name->name);
-	      else
-		gfc_warning ("Variable '%s' at %L is a parameter to the "
+	      else if (gfc_option.warn_c_binding_type)
+		gfc_warning ("Variable '%s' at %L is a dummy argument of the "
 			     "BIND(C) procedure '%s' but may not be C "
 			     "interoperable",
 			     sym->name, &(sym->declared_at),

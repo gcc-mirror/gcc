@@ -1,3 +1,12 @@
+2012-07-17  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/53985
+	* gfortran.dg/bind_c_usage_26.f90: New.
+	* gfortran.dg/bind_c_procs.f03: Add dg-options "-Wc-binding-type".
+	* gfortran.dg/bind_c_usage_13.f03: Ditto.
+	* gfortran.dg/bind_c_usage_18.f90: Ditto.
+	* gfortran.dg/interop_params.f03: Ditto.
+
 2012-07-17  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/template/inherit8.C: Adjust.

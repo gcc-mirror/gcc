@@ -1,4 +1,5 @@
 ! { dg-do compile }
+! { dg-options "-Wc-binding-type" }
 module bind_c_procs
   use, intrinsic :: iso_c_binding, only: c_int
 

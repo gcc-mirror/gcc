@@ -1,5 +1,11 @@
 2012-07-17  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/53985
+	* decl.c (gfc_verify_c_interop_param): Make warning conditional
+	on -Wc-binding-type works and improve the wording.
+
+2012-07-17  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/52101
 	* decl.c (match_char_length): Extra argument, show obsolenscent
 	warning only if *length is used after the typename.
