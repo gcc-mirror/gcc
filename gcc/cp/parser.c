@@ -2007,7 +2007,7 @@ static tree cp_parser_class_name
 static tree cp_parser_class_specifier
   (cp_parser *);
 static tree cp_parser_class_head
-  (cp_parser *, bool *, tree *);
+  (cp_parser *, bool *);
 static enum tag_types cp_parser_class_key
   (cp_parser *);
 static void cp_parser_member_specification_opt
@@ -17906,15 +17906,13 @@ cp_parser_class_specifier_1 (cp_parser* parser)
   bool saved_in_unbraced_linkage_specification_p;
   tree old_scope = NULL_TREE;
   tree scope = NULL_TREE;
-  tree bases;
   cp_token *closing_brace;
 
   push_deferring_access_checks (dk_no_deferred);
 
   /* Parse the class-head.  */
   type = cp_parser_class_head (parser,
-			       &nested_name_specifier_p,
-			       &bases);
+			       &nested_name_specifier_p);
   /* If the class-head was a semantic disaster, skip the entire body
      of the class.  */
   if (!type)
@@ -17927,18 +17925,6 @@ cp_parser_class_specifier_1 (cp_parser* parser)
   /* Look for the `{'.  */
   if (!cp_parser_require (parser, CPP_OPEN_BRACE, RT_OPEN_BRACE))
     {
-      pop_deferring_access_checks ();
-      return error_mark_node;
-    }
-
-  /* Process the base classes. If they're invalid, skip the 
-     entire class body.  */
-  if (!xref_basetypes (type, bases))
-    {
-      /* Consuming the closing brace yields better error messages
-         later on.  */
-      if (cp_parser_skip_to_closing_brace (parser))
-	cp_lexer_consume_token (parser->lexer);
       pop_deferring_access_checks ();
       return error_mark_node;
     }
@@ -18228,14 +18214,14 @@ cp_parser_class_specifier (cp_parser* parser)
 
 static tree
 cp_parser_class_head (cp_parser* parser,
-		      bool* nested_name_specifier_p,
-		      tree *bases)
+		      bool* nested_name_specifier_p)
 {
   tree nested_name_specifier;
   enum tag_types class_key;
   tree id = NULL_TREE;
   tree type = NULL_TREE;
   tree attributes;
+  tree bases;
   cp_virt_specifiers virt_specifiers = VIRT_SPEC_UNSPECIFIED;
   bool template_id_p = false;
   bool qualified_p = false;
@@ -18251,8 +18237,6 @@ cp_parser_class_head (cp_parser* parser,
      type.  */
   num_templates = 0;
   parser->colon_corrects_to_scope_p = false;
-
-  *bases = NULL_TREE;
 
   /* Look for the class-key.  */
   class_key = cp_parser_class_key (parser);
@@ -18614,7 +18598,15 @@ cp_parser_class_head (cp_parser* parser,
 
   /* Get the list of base-classes, if there is one.  */
   if (cp_lexer_next_token_is (parser->lexer, CPP_COLON))
-    *bases = cp_parser_base_clause (parser);
+    bases = cp_parser_base_clause (parser);
+  else
+    bases = NULL_TREE;
+
+  /* If we're really defining a class, process the base classes.
+     If they're invalid, fail.  */
+  if (type && cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE)
+      && !xref_basetypes (type, bases))
+    type = NULL_TREE;
 
  done:
   /* Leave the scope given by the nested-name-specifier.  We will

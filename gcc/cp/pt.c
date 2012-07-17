@@ -10590,8 +10590,12 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
       break;
 
     case USING_DECL:
-      /* We reach here only for member using decls.  */
-      if (DECL_DEPENDENT_P (t))
+      /* We reach here only for member using decls.  We also need to check
+	 uses_template_parms because DECL_DEPENDENT_P is not set for a
+	 using-declaration that designates a member of the current
+	 instantiation (c++/53549).  */
+      if (DECL_DEPENDENT_P (t)
+	  || uses_template_parms (USING_DECL_SCOPE (t)))
 	{
 	  r = do_class_using_decl
 	    (tsubst_copy (USING_DECL_SCOPE (t), args, complain, in_decl),

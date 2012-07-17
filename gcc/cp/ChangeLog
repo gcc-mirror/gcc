@@ -1,3 +1,11 @@
+2012-07-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53549
+	* parser.c (cp_parser_class_head): Call xref_basetypes here.
+	(cp_parser_class_specifier_1): Not here.
+	* pt.c (tsubst_decl) [USING_DECL]: Check uses_template_parms
+	as well as DECL_DEPENDENT_P.
+
 2012-07-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/53953
