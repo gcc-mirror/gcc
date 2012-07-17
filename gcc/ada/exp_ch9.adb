@@ -5486,7 +5486,7 @@ package body Exp_Ch9 is
    procedure Ensure_Statement_Present (Loc : Source_Ptr; Alt : Node_Id) is
    begin
       if Opt.Suppress_Control_Flow_Optimizations
-           and then Is_Empty_List (Statements (Alt))
+        and then Is_Empty_List (Statements (Alt))
       then
          Set_Statements (Alt, New_List (Make_Null_Statement (Loc)));
       end if;
@@ -7674,7 +7674,6 @@ package body Exp_Ch9 is
          if Present (Unpack) then
             Append_To (Conc_Typ_Stmts,
               Make_Implicit_If_Statement (N,
-
                 Condition =>
                   Make_Or_Else (Loc,
                     Left_Opnd =>
@@ -7684,6 +7683,7 @@ package body Exp_Ch9 is
                         Right_Opnd =>
                           New_Reference_To (RTE (
                             RE_POK_Protected_Entry), Loc)),
+
                     Right_Opnd =>
                       Make_Op_Eq (Loc,
                         Left_Opnd =>
@@ -7691,8 +7691,7 @@ package body Exp_Ch9 is
                         Right_Opnd =>
                           New_Reference_To (RTE (RE_POK_Task_Entry), Loc))),
 
-                 Then_Statements =>
-                   Unpack));
+                Then_Statements => Unpack));
          end if;
 
          --  Generate:
@@ -10299,31 +10298,29 @@ package body Exp_Ch9 is
          Index : Int;
          Proc  : Node_Id)
       is
-         Choices   : List_Id := No_List;
          Astmt     : constant Node_Id := Accept_Statement (Alt);
+         Choices   : List_Id;
          Alt_Stats : List_Id;
 
       begin
          Adjust_Condition (Condition (Alt));
-         Alt_Stats := No_List;
+         Choices := New_List (Make_Integer_Literal (Loc, Index));
+
+         --  Accept with body
 
          if Present (Handled_Statement_Sequence (Astmt)) then
-            Choices := New_List (
-              Make_Integer_Literal (Loc, Index));
+            Alt_Stats :=
+              New_List (
+                Make_Procedure_Call_Statement (Sloc (Proc),
+                  Name =>
+                    New_Reference_To
+                      (Defining_Unit_Name (Specification (Proc)),
+                       Sloc (Proc))));
 
-            Alt_Stats := New_List (
-              Make_Procedure_Call_Statement (Sloc (Proc),
-                Name => New_Reference_To (
-                  Defining_Unit_Name (Specification (Proc)), Sloc (Proc))));
-         end if;
+         --  Accept with no body (followed by trailing statements)
 
-         if No (Alt_Stats) then
-
-            --  Accept with no body, followed by trailing statements
-
-            Choices := New_List (Make_Integer_Literal (Loc, Index));
-
-            Alt_Stats := New_List;
+         else
+            Alt_Stats := Empty_List;
          end if;
 
          Ensure_Statement_Present (Sloc (Astmt), Alt);
@@ -10339,6 +10336,7 @@ package body Exp_Ch9 is
             Append_To (Trailing_List,
               Make_Goto_Statement (Loc,
                 Name => New_Copy (Identifier (End_Lab))));
+
          else
             Lab := End_Lab;
          end if;

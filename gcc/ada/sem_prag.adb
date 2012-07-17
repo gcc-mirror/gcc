@@ -7665,6 +7665,19 @@ package body Sem_Prag is
                  ("'G'N'A'T pragma cpp'_class is now obsolete and has no " &
                   "effect; replace it by pragma import?", N);
             end if;
+
+            Check_Arg_Count (1);
+
+            Rewrite (N,
+              Make_Pragma (Loc,
+                Chars => Name_Import,
+                Pragma_Argument_Associations =>
+                  New_List (
+                    Make_Pragma_Argument_Association (Loc,
+                      Expression => Make_Identifier (Loc, Name_CPP)),
+                    New_Copy
+                      (First (Pragma_Argument_Associations (N))))));
+            Analyze (N);
          end CPP_Class;
 
          ---------------------
