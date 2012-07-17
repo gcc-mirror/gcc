@@ -723,7 +723,7 @@ syntax:
    char_len_param_value in parenthesis.  */
 
 static match
-match_char_length (gfc_expr **expr, bool *deferred)
+match_char_length (gfc_expr **expr, bool *deferred, bool obsolenscent_check)
 {
   int length;
   match m;
@@ -739,8 +739,9 @@ match_char_length (gfc_expr **expr, bool *deferred)
 
   if (m == MATCH_YES)
     {
-      if (gfc_notify_std (GFC_STD_F95_OBS, "Obsolescent feature: "
-			  "Old-style character length at %C") == FAILURE)
+      if (obsolenscent_check
+	  && gfc_notify_std (GFC_STD_F95_OBS, "Obsolescent feature: "
+			     "Old-style character length at %C") == FAILURE)
 	return MATCH_ERROR;
       *expr = gfc_get_int_expr (gfc_default_integer_kind, NULL, length);
       return m;
@@ -1849,7 +1850,7 @@ variable_decl (int elem)
 
   if (current_ts.type == BT_CHARACTER)
     {
-      switch (match_char_length (&char_len, &cl_deferred))
+      switch (match_char_length (&char_len, &cl_deferred, false))
 	{
 	case MATCH_YES:
 	  cl = gfc_new_charlen (gfc_current_ns, NULL);
@@ -2411,7 +2412,7 @@ gfc_match_char_spec (gfc_typespec *ts)
   /* Try the old-style specification first.  */
   old_char_selector = 0;
 
-  m = match_char_length (&len, &deferred);
+  m = match_char_length (&len, &deferred, true);
   if (m != MATCH_NO)
     {
       if (m == MATCH_YES)
