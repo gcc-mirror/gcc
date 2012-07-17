@@ -7661,6 +7661,7 @@ package body Sem_Prag is
             GNAT_Pragma;
 
             if Warn_On_Obsolescent_Feature then
+               --  Following message is obsolete ???
                Error_Msg_N
                  ("'G'N'A'T pragma cpp'_class is now obsolete and has no " &
                   "effect; replace it by pragma import?", N);
@@ -7670,13 +7671,12 @@ package body Sem_Prag is
 
             Rewrite (N,
               Make_Pragma (Loc,
-                Chars => Name_Import,
+                Chars                        => Name_Import,
                 Pragma_Argument_Associations =>
                   New_List (
                     Make_Pragma_Argument_Association (Loc,
                       Expression => Make_Identifier (Loc, Name_CPP)),
-                    New_Copy
-                      (First (Pragma_Argument_Associations (N))))));
+                    New_Copy (First (Pragma_Argument_Associations (N))))));
             Analyze (N);
          end CPP_Class;
 
