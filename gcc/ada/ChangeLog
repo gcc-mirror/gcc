@@ -1,3 +1,25 @@
+2012-07-17  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch9.adb: Minor code reorganization.
+	* exp_ch3.adb: Minor code improvement.
+
+2012-07-17  Tristan Gingold  <gingold@adacore.com>
+
+	* seh_init.c (__gnat_SEH_error_handler): Not compiled anymore
+	on Windows 64 (+ SEH), as it is unused.
+
+2012-07-17  Tristan Gingold  <gingold@adacore.com>
+
+	* treepr.ads (psloc): Declare.
+	* treepr.adb (psloc): New debug procedure to print a sloc.
+	(Print_Sloc): New procedure, from ...
+	(Print_Node_Subtree): ... this.  Call Print_Sloc.
+
+2012-07-17  Javier Miranda  <miranda@adacore.com>
+
+	* sem_prag.adb (CPP_Class): Transform obsolescent pragma CPP_Class into
+	CPP convention automatically.
+
 2012-07-16  Tristan Gingold  <gingold@adacore.com>
 
 	* gcc-interface/decl.c (intrin_return_compatible_p): Map Address to

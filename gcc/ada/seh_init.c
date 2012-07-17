@@ -169,9 +169,11 @@ __gnat_map_SEH (EXCEPTION_RECORD* ExceptionRecord, const char **msg)
     }
 }
 
+#if !(defined (_WIN64) && defined (__SEH__))
+
 EXCEPTION_DISPOSITION
 __gnat_SEH_error_handler (struct _EXCEPTION_RECORD* ExceptionRecord,
-			  void *EstablisherFrame,
+			  void *EstablisherFrame ATTRIBUTE_UNUSED,
 			  struct _CONTEXT* ContextRecord ATTRIBUTE_UNUSED,
 			  void *DispatcherContext ATTRIBUTE_UNUSED)
 {
@@ -182,14 +184,8 @@ __gnat_SEH_error_handler (struct _EXCEPTION_RECORD* ExceptionRecord,
 
   if (exception == NULL)
     {
-#if defined (_WIN64) && defined (__SEH__)
-      /* On Windows x64, do not transform other exception as they could
-	 be caught by user (when SEH is used to propagate exceptions).  */
-      return;
-#else
       exception = &program_error;
       msg = "unhandled signal";
-#endif
     }
 
 #if ! defined (_WIN64)
@@ -204,6 +200,7 @@ __gnat_SEH_error_handler (struct _EXCEPTION_RECORD* ExceptionRecord,
   Raise_From_Signal_Handler (exception, msg);
   return 0; /* This is never reached, avoid compiler warning  */
 }
+#endif /* !(defined (_WIN64) && defined (__SEH__)) */
 
 #if defined (_WIN64)
 /*  On x86_64 windows exception mechanism is no more based on a chained list

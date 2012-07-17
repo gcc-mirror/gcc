@@ -3128,7 +3128,7 @@ package body Exp_Ch3 is
          --  to make it a valid Ada tree.
 
          if Is_Empty_List (Stmts) then
-            Append (New_Node (N_Null_Statement, Loc), Stmts);
+            Append (Make_Null_Statement (Loc), Stmts);
          end if;
 
          return Stmts;
