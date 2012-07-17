@@ -710,7 +710,7 @@ get_call_site_action_for (_Unwind_Ptr call_site,
   else
     {
       _uleb128_t cs_lp, cs_action;
-      const unsigned char *p = region->call_site_table;
+      const unsigned char *p;
 
       /* Let the caller know there may be an action to take, but let it
 	 determine the kind.  */
@@ -947,13 +947,16 @@ get_action_description_for (_Unwind_Ptr ip,
                  passed (to follow the ABI).  */
               if (!(uw_phase & _UA_FORCE_UNWIND))
                 {
+		  enum action_kind act;
+
                   /* See if the filter we have is for an exception which
                      matches the one we are propagating.  */
                   _Unwind_Ptr choice = get_ttype_entry_for (region, ar_filter);
 
-		  action->kind = is_handled_by (choice, gnat_exception);
-                  if (action->kind != nothing)
+		  act = is_handled_by (choice, gnat_exception);
+                  if (act != nothing)
                     {
+		      action->kind = act;
                       action->ttype_filter = ar_filter;
                       return;
                     }

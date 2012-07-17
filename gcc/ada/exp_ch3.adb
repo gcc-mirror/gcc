@@ -518,11 +518,11 @@ package body Exp_Ch3 is
    ---------------------------
 
    procedure Build_Array_Init_Proc (A_Type : Entity_Id; Nod : Node_Id) is
-      Loc              : constant Source_Ptr := Sloc (Nod);
       Comp_Type        : constant Entity_Id  := Component_Type (A_Type);
       Body_Stmts       : List_Id;
       Has_Default_Init : Boolean;
       Index_List       : List_Id;
+      Loc              : Source_Ptr;
       Proc_Id          : Entity_Id;
 
       function Init_Component return List_Id;
@@ -631,6 +631,19 @@ package body Exp_Ch3 is
    --  Start of processing for Build_Array_Init_Proc
 
    begin
+      --  The init proc is created when analyzing the freeze node for the type,
+      --  but it properly belongs with the array type declaration. However, if
+      --  the freeze node is for a subtype of a type declared in another unit
+      --  it seems preferable to use the freeze node as the source location of
+      --  of the init.proc. In any case this is preferable for gcov usage, and
+      --  the Sloc is not otherwise used by the compiler.
+
+      if In_Open_Scopes (Scope (A_Type)) then
+         Loc := Sloc (A_Type);
+      else
+         Loc := Sloc (Nod);
+      end if;
+
       --  Nothing to generate in the following cases:
 
       --    1. Initialization is suppressed for the type
