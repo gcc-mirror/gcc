@@ -1,3 +1,53 @@
+2012-07-17  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/51081
+	* error.c (gfc_notify_std): Automatically print the relevant Fortran
+	standard version.
+	* arith.c (arith_power): Remove explicit standard reference string.
+	* array.c (gfc_match_array_spec, gfc_match_array_constructor): Ditto.
+	* check.c (gfc_check_a_p, gfc_check_besn, gfc_check_count,
+	gfc_check_float, gfc_check_fn_rc2008, gfc_check_iand,
+	gfc_check_ichar_iachar, gfc_check_ieor, gfc_check_index, gfc_check_ior,
+	gfc_check_lbound, gfc_check_len_lentrim, check_rest, gfc_check_min_max,
+	gfc_check_null, gfc_check_scan, gfc_check_selected_real_kind,
+	gfc_check_shape, gfc_check_size, gfc_check_sngl, gfc_check_ubound,
+	gfc_check_verify): Ditto.
+	* data.c (gfc_assign_data_value): Ditto.
+	* decl.c (var_element, char_len_param_value, match_char_length,
+	gfc_verify_c_interop_param, match_pointer_init, variable_decl,
+	gfc_match_decl_type_spec, gfc_match_import, match_attr_spec, 
+	gfc_match_prefix, gfc_match_suffix, match_ppc_decl,
+	match_procedure_in_interface, gfc_match_procedure,gfc_match_entry,
+	gfc_match_subroutine, gfc_match_end, gfc_match_codimension,
+	gfc_match_protected, gfc_match_value, gfc_match_volatile,
+	gfc_match_asynchronous, gfc_match_modproc, gfc_get_type_attr_spec,
+	gfc_match_enum, match_procedure_in_type): Ditto.
+	* expr.c (check_elemental, gfc_check_assign, gfc_check_pointer_assign):
+	Ditto.
+	* interface.c (gfc_match_abstract_interface, check_interface0): Ditto.
+	* intrinsic.c (gfc_intrinsic_func_interface): Ditto.
+	* io.c (format_lex, resolve_tag_format, resolve_tag,
+	compare_to_allowed_values, gfc_match_open, gfc_match_rewind,
+	gfc_resolve_dt, gfc_match_wait): Ditto.
+	* match.c (match_arithmetic_if, gfc_match_if, gfc_match_critical,
+	gfc_match_do, match_exit_cycle, gfc_match_pause, gfc_match_stop,
+	gfc_match_lock, sync_statement, gfc_match_assign, gfc_match_goto,
+	gfc_match_allocate, gfc_match_return, gfc_match_st_function): Ditto.
+	* module.c (gfc_match_use, gfc_use_module): Ditto.
+	* parse.c (parse_derived_contains, parse_block_construct,
+	parse_associate, parse_contained): Ditto.
+	* primary.c (match_hollerith_constant, match_boz_constant,
+	match_real_constant, match_sym_complex_part, match_arg_list_function,
+	build_actual_constructor, gfc_convert_to_structure_constructor): Ditto.
+	* resolve.c (resolve_formal_arglist, resolve_entries,
+	resolve_common_blocks, resolve_actual_arglist, gfc_resolve_index_1,
+	gfc_resolve_iterator_expr, resolve_ordinary_assign,
+	resolve_fl_var_and_proc, resolve_fl_variable_derived,
+	resolve_fl_procedure, resolve_fl_derived0, resolve_fl_derived,
+	resolve_fl_namelist, resolve_symbol, resolve_fntype): Ditto.
+	* symbol.c (check_conflict, conflict, gfc_add_is_bind_c,
+	gfc_add_extension, gfc_check_symbol_typed): Ditto.
+
 2012-07-17  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/53985

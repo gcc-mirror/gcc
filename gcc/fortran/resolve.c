@@ -331,7 +331,7 @@ resolve_formal_arglist (gfc_symbol *proc)
 	      if (proc->attr.function && sym->attr.intent != INTENT_IN)
 		{
 		  if (sym->attr.value)
-		    gfc_notify_std (GFC_STD_F2008, "Fortran 2008: Argument '%s'"
+		    gfc_notify_std (GFC_STD_F2008, "Argument '%s'"
 				    " of pure function '%s' at %L with VALUE "
 				    "attribute but without INTENT(IN)",
 				    sym->name, proc->name, &sym->declared_at);
@@ -344,7 +344,7 @@ resolve_formal_arglist (gfc_symbol *proc)
 	      if (proc->attr.subroutine && sym->attr.intent == INTENT_UNKNOWN)
 		{
 		  if (sym->attr.value)
-		    gfc_notify_std (GFC_STD_F2008, "Fortran 2008: Argument '%s'"
+		    gfc_notify_std (GFC_STD_F2008, "Argument '%s'"
 				    " of pure subroutine '%s' at %L with VALUE "
 				    "attribute but without INTENT", sym->name,
 				    proc->name, &sym->declared_at);
@@ -723,7 +723,7 @@ resolve_entries (gfc_namespace *ns)
 			   && ts->u.cl->length->expr_type == EXPR_CONSTANT
 		           && mpz_cmp (ts->u.cl->length->value.integer,
 				       fts->u.cl->length->value.integer) != 0)))
-	    gfc_notify_std (GFC_STD_GNU, "Extension: Function %s at %L with "
+	    gfc_notify_std (GFC_STD_GNU, "Function %s at %L with "
 			    "entries returning variables of different "
 			    "string lengths", ns->entries->sym->name,
 			    &ns->entries->sym->declared_at);
@@ -916,12 +916,12 @@ resolve_common_blocks (gfc_symtree *common_root)
 	       sym->name, &common_root->n.common->where);
   else if (sym->attr.result
 	   || gfc_is_function_return_value (sym, gfc_current_ns))
-    gfc_notify_std (GFC_STD_F2003, "Fortran 2003: COMMON block '%s' at %L "
+    gfc_notify_std (GFC_STD_F2003, "COMMON block '%s' at %L "
 		    "that is also a function result", sym->name,
 		    &common_root->n.common->where);
   else if (sym->attr.flavor == FL_PROCEDURE && sym->attr.proc != PROC_INTERNAL
 	   && sym->attr.proc != PROC_ST_FUNCTION)
-    gfc_notify_std (GFC_STD_F2003, "Fortran 2003: COMMON block '%s' at %L "
+    gfc_notify_std (GFC_STD_F2003, "COMMON block '%s' at %L "
 		    "that is also a global procedure", sym->name,
 		    &common_root->n.common->where);
 }
@@ -1673,7 +1673,7 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
 	      && sym->ns->proc_name->attr.flavor != FL_MODULE)
 	    {
 	      if (gfc_notify_std (GFC_STD_F2008,
-				  "Fortran 2008: Internal procedure '%s' is"
+				  "Internal procedure '%s' is"
 				  " used as actual argument at %L",
 				  sym->name, &e->where) == FAILURE)
 		return FAILURE;
@@ -4450,7 +4450,7 @@ gfc_resolve_index_1 (gfc_expr *index, int check_scalar,
     }
 
   if (index->ts.type == BT_REAL)
-    if (gfc_notify_std (GFC_STD_LEGACY, "Extension: REAL array index at %L",
+    if (gfc_notify_std (GFC_STD_LEGACY, "REAL array index at %L",
 			&index->where) == FAILURE)
       return FAILURE;
 
@@ -6420,7 +6420,7 @@ gfc_resolve_iterator_expr (gfc_expr *expr, bool real_ok,
 	{
 	  if (real_ok)
 	    return gfc_notify_std (GFC_STD_F95_DEL,
-				   "Deleted feature: %s at %L must be integer",
+				   "%s at %L must be integer",
 				   _(name_msgid), &expr->where);
 	  else
 	    {
@@ -9158,7 +9158,7 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
   rhs = code->expr2;
 
   if (rhs->is_boz
-      && gfc_notify_std (GFC_STD_GNU, "Extension: BOZ literal at %L outside "
+      && gfc_notify_std (GFC_STD_GNU, "BOZ literal at %L outside "
 			 "a DATA statement and outside INT/REAL/DBLE/CMPLX",
 			 &code->loc) == FAILURE)
     return false;
@@ -10327,9 +10327,9 @@ resolve_fl_var_and_proc (gfc_symbol *sym, int mp_flag)
 			 "a deferred shape", sym->name, &sym->declared_at);
 	      return FAILURE;
 	    }
-	  else if (gfc_notify_std (GFC_STD_F2003, "Scalar object '%s' at %L "
-				   "may not be ALLOCATABLE", sym->name,
-				   &sym->declared_at) == FAILURE)
+	  else if (gfc_notify_std (GFC_STD_F2003, "Scalar object "
+				   "'%s' at %L may not be ALLOCATABLE",
+				   sym->name, &sym->declared_at) == FAILURE)
 	    return FAILURE;
 	}
 
@@ -10423,7 +10423,7 @@ resolve_fl_variable_derived (gfc_symbol *sym, int no_init_flag)
       && !sym->ns->save_all && !sym->attr.save
       && !sym->attr.pointer && !sym->attr.allocatable
       && gfc_has_default_initializer (sym->ts.u.derived)
-      && gfc_notify_std (GFC_STD_F2008, "Fortran 2008: Implied SAVE for "
+      && gfc_notify_std (GFC_STD_F2008, "Implied SAVE for "
 			 "module variable '%s' at %L, needed due to "
 			 "the default initialization", sym->name,
 			 &sym->declared_at) == FAILURE)
@@ -10638,7 +10638,7 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 	      && arg->sym->ts.type == BT_DERIVED
 	      && !arg->sym->ts.u.derived->attr.use_assoc
 	      && !gfc_check_symbol_access (arg->sym->ts.u.derived)
-	      && gfc_notify_std (GFC_STD_F2003, "Fortran 2003: '%s' is of a "
+	      && gfc_notify_std (GFC_STD_F2003, "'%s' is of a "
 				 "PRIVATE type and cannot be a dummy argument"
 				 " of '%s', which is PUBLIC at %L",
 				 arg->sym->name, sym->name, &sym->declared_at)
@@ -10660,7 +10660,7 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 		  && arg->sym->ts.type == BT_DERIVED
 		  && !arg->sym->ts.u.derived->attr.use_assoc
 		  && !gfc_check_symbol_access (arg->sym->ts.u.derived)
-		  && gfc_notify_std (GFC_STD_F2003, "Fortran 2003: Procedure "
+		  && gfc_notify_std (GFC_STD_F2003, "Procedure "
 				     "'%s' in PUBLIC interface '%s' at %L "
 				     "takes dummy arguments of '%s' which is "
 				     "PRIVATE", iface->sym->name, sym->name,
@@ -10684,7 +10684,7 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 		  && arg->sym->ts.type == BT_DERIVED
 		  && !arg->sym->ts.u.derived->attr.use_assoc
 		  && !gfc_check_symbol_access (arg->sym->ts.u.derived)
-		  && gfc_notify_std (GFC_STD_F2003, "Fortran 2003: Procedure "
+		  && gfc_notify_std (GFC_STD_F2003, "Procedure "
 				     "'%s' in PUBLIC interface '%s' at %L "
 				     "takes dummy arguments of '%s' which is "
 				     "PRIVATE", iface->sym->name, sym->name,
@@ -10772,7 +10772,7 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
       if (!sym->attr.contained
 	    && gfc_current_form != FORM_FIXED
 	    && !sym->ts.deferred)
-	gfc_notify_std (GFC_STD_F95_OBS, "Obsolescent feature: "
+	gfc_notify_std (GFC_STD_F95_OBS,
 			"CHARACTER(*) function '%s' at %L",
 			sym->name, &sym->declared_at);
     }
@@ -11992,7 +11992,7 @@ resolve_fl_derived0 (gfc_symbol *sym)
 	  && !is_sym_host_assoc (c->ts.u.derived, sym->ns)
 	  && !c->ts.u.derived->attr.use_assoc
 	  && !gfc_check_symbol_access (c->ts.u.derived)
-	  && gfc_notify_std (GFC_STD_F2003, "Fortran 2003: the component '%s' "
+	  && gfc_notify_std (GFC_STD_F2003, "the component '%s' "
 			     "is a PRIVATE type and cannot be a component of "
 			     "'%s', which is PUBLIC at %L", c->name,
 			     sym->name, &sym->declared_at) == FAILURE)
@@ -12100,7 +12100,7 @@ resolve_fl_derived (gfc_symbol *sym)
   if (gen_dt && gen_dt->generic && gen_dt->generic->next
       && (!gen_dt->generic->sym->attr.use_assoc
 	  || gen_dt->generic->sym->module != gen_dt->generic->next->sym->module)
-      && gfc_notify_std (GFC_STD_F2003, "Fortran 2003: Generic name '%s' of "
+      && gfc_notify_std (GFC_STD_F2003, "Generic name '%s' of "
 			 "function '%s' at %L being the same name as derived "
 			 "type at %L", sym->name,
 			 gen_dt->generic->sym == sym
@@ -12158,14 +12158,14 @@ resolve_fl_namelist (gfc_symbol *sym)
 	}
 
       if (nl->sym->as && nl->sym->as->type == AS_ASSUMED_SHAPE
-	  && gfc_notify_std (GFC_STD_F2003, "Fortran 2003: NAMELIST array "
+	  && gfc_notify_std (GFC_STD_F2003, "NAMELIST array "
 			     "object '%s' with assumed shape in namelist "
 			     "'%s' at %L", nl->sym->name, sym->name,
 			     &sym->declared_at) == FAILURE)
 	return FAILURE;
 
       if (is_non_constant_shape_array (nl->sym)
-	  && gfc_notify_std (GFC_STD_F2003,  "Fortran 2003: NAMELIST array "
+	  && gfc_notify_std (GFC_STD_F2003, "NAMELIST array "
 			     "object '%s' with nonconstant shape in namelist "
 			     "'%s' at %L", nl->sym->name, sym->name,
 			     &sym->declared_at) == FAILURE)
@@ -12174,7 +12174,7 @@ resolve_fl_namelist (gfc_symbol *sym)
       if (nl->sym->ts.type == BT_CHARACTER
 	  && (nl->sym->ts.u.cl->length == NULL
 	      || !gfc_is_constant_expr (nl->sym->ts.u.cl->length))
-	  && gfc_notify_std (GFC_STD_F2003,  "Fortran 2003: NAMELIST object "
+	  && gfc_notify_std (GFC_STD_F2003, "NAMELIST object "
 			     "'%s' with nonconstant character length in "
 			     "namelist '%s' at %L", nl->sym->name, sym->name,
 			     &sym->declared_at) == FAILURE)
@@ -12194,7 +12194,7 @@ resolve_fl_namelist (gfc_symbol *sym)
 	  && (nl->sym->ts.u.derived->attr.alloc_comp
 	      || nl->sym->ts.u.derived->attr.pointer_comp))
 	{
-	  if (gfc_notify_std (GFC_STD_F2003,  "Fortran 2003: NAMELIST object "
+	  if (gfc_notify_std (GFC_STD_F2003, "NAMELIST object "
 			      "'%s' in namelist '%s' at %L with ALLOCATABLE "
 			      "or POINTER components", nl->sym->name,
 			      sym->name, &sym->declared_at) == FAILURE)
@@ -12672,7 +12672,7 @@ resolve_symbol (gfc_symbol *sym)
       && !sym->ts.u.derived->attr.use_assoc
       && gfc_check_symbol_access (sym)
       && !gfc_check_symbol_access (sym->ts.u.derived)
-      && gfc_notify_std (GFC_STD_F2003, "Fortran 2003: PUBLIC %s '%s' at %L "
+      && gfc_notify_std (GFC_STD_F2003, "PUBLIC %s '%s' at %L "
 		         "of PRIVATE derived type '%s'",
 			 (sym->attr.flavor == FL_PARAMETER) ? "parameter"
 			 : "variable", sym->name, &sym->declared_at,
@@ -13838,7 +13838,7 @@ resolve_fntype (gfc_namespace *ns)
       && !gfc_check_symbol_access (sym->ts.u.derived)
       && gfc_check_symbol_access (sym))
     {
-      gfc_notify_std (GFC_STD_F2003, "Fortran 2003: PUBLIC function '%s' at "
+      gfc_notify_std (GFC_STD_F2003, "PUBLIC function '%s' at "
 		      "%L of PRIVATE type '%s'", sym->name,
 		      &sym->declared_at, sym->ts.u.derived->name);
     }

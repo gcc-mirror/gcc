@@ -4083,7 +4083,7 @@ gfc_intrinsic_func_interface (gfc_expr *expr, int error_flag)
   if ((isym->id == GFC_ISYM_REAL || isym->id == GFC_ISYM_DBLE
        || isym->id == GFC_ISYM_CMPLX)
       && gfc_init_expr_flag
-      && gfc_notify_std (GFC_STD_F2003, "Fortran 2003: Function '%s' "
+      && gfc_notify_std (GFC_STD_F2003, "Function '%s' "
 			 "as initialization expression at %L", name,
 			 &expr->where) == FAILURE)
     {
@@ -4159,7 +4159,7 @@ got_specific:
            where each argument is an initialization expression  */
 
   if (gfc_init_expr_flag && isym->elemental && flag
-      && gfc_notify_std (GFC_STD_F2003, "Fortran 2003: Elemental function "
+      && gfc_notify_std (GFC_STD_F2003, "Elemental function "
 			"as initialization expression with non-integer/non-"
 		        "character arguments at %L", &expr->where) == FAILURE)
     return MATCH_ERROR;
