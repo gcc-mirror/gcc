@@ -1,4 +1,11 @@
 2012-07-17  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52101
+	* decl.c (match_char_length): Extra argument, show obsolenscent
+	warning only if *length is used after the typename.
+	(variable_decl, gfc_match_char_spec): Update call
+
+2012-07-17  Tobias Burnus  <burnus@net-b.de>
 	    Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/49265
