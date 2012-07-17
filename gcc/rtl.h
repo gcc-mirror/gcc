@@ -2460,12 +2460,7 @@ extern void dump_combine_total_stats (FILE *);
 extern void delete_dead_jumptables (void);
 
 /* In sched-vis.c.  */
-extern void debug_bb_n_slim (int);
-extern void debug_bb_slim (basic_block);
-extern void print_rtl_slim (FILE *, rtx, rtx, int, int);
-extern void print_rtl_slim_with_bb (FILE *, rtx, int);
-extern void dump_insn_slim (FILE *f, rtx x);
-extern void debug_insn_slim (rtx x);
+extern void dump_insn_slim (FILE *, const_rtx x);
 
 /* In sched-rgn.c.  */
 extern void schedule_insns (void);
@@ -2508,7 +2503,7 @@ extern HOST_WIDE_INT find_args_size_adjust (rtx);
 extern int fixup_args_size_notes (rtx, rtx, int);
 
 /* In cfgrtl.c */
-extern void print_rtl_with_bb (FILE *, const_rtx);
+extern void print_rtl_with_bb (FILE *, const_rtx, int);
 extern rtx duplicate_insn_chain (rtx, rtx);
 
 /* In expmed.c */

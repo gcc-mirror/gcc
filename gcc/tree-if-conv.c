@@ -819,8 +819,7 @@ if_convertible_bb_p (struct loop *loop, basic_block bb, basic_block exit_bb)
 
   /* Be less adventurous and handle only normal edges.  */
   FOR_EACH_EDGE (e, ei, bb->succs)
-    if (e->flags &
-	(EDGE_ABNORMAL_CALL | EDGE_EH | EDGE_ABNORMAL | EDGE_IRREDUCIBLE_LOOP))
+    if (e->flags & (EDGE_EH | EDGE_ABNORMAL | EDGE_IRREDUCIBLE_LOOP))
       {
 	if (dump_file && (dump_flags & TDF_DETAILS))
 	  fprintf (dump_file, "Difficult to handle edges\n");

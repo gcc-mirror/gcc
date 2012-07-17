@@ -444,9 +444,15 @@ check_bb_profile (basic_block bb, FILE * file)
 }
 
 void
-dump_edge_info (FILE *file, edge e, int do_succ)
+dump_edge_info (FILE *file, edge e, int flags, int do_succ)
 {
   basic_block side = (do_succ ? e->dest : e->src);
+  bool do_details = false;
+  
+  if ((flags & TDF_DETAILS) != 0
+      && (flags & TDF_SLIM) == 0)
+    do_details = true;
+
   /* ENTRY_BLOCK_PTR/EXIT_BLOCK_PTR depend on cfun.
      Compare against ENTRY_BLOCK/EXIT_BLOCK to avoid that dependency.  */
   if (side->index == ENTRY_BLOCK)
@@ -456,25 +462,28 @@ dump_edge_info (FILE *file, edge e, int do_succ)
   else
     fprintf (file, " %d", side->index);
 
-  if (e->probability)
+  if (e->probability && do_details)
     fprintf (file, " [%.1f%%] ", e->probability * 100.0 / REG_BR_PROB_BASE);
 
-  if (e->count)
+  if (e->count && do_details)
     {
       fputs (" count:", file);
       fprintf (file, HOST_WIDEST_INT_PRINT_DEC, e->count);
     }
 
-  if (e->flags)
+  if (e->flags && do_details)
     {
-      static const char * const bitnames[] = {
-	"fallthru", "ab", "abcall", "eh", "fake", "dfs_back",
-	"can_fallthru", "irreducible", "sibcall", "loop_exit",
-	"true", "false", "exec", "crossing", "preserve"
-      };
-      int comma = 0;
+      static const char * const bitnames[] =
+	{
+#define DEF_EDGE_FLAG(NAME,IDX) #NAME ,
+#include "cfg-flags.def"
+	  NULL
+#undef DEF_EDGE_FLAG
+	};
+      bool comma = false;
       int i, flags = e->flags;
 
+      gcc_assert (e->flags <= EDGE_ALL_FLAGS);
       fputs (" (", file);
       for (i = 0; flags; i++)
 	if (flags & (1 << i))
@@ -483,11 +492,8 @@ dump_edge_info (FILE *file, edge e, int do_succ)
 
 	    if (comma)
 	      fputc (',', file);
-	    if (i < (int) ARRAY_SIZE (bitnames))
-	      fputs (bitnames[i], file);
-	    else
-	      fprintf (file, "%d", i);
-	    comma = 1;
+	    fputs (bitnames[i], file);
+	    comma = true;
 	  }
 
       fputc (')', file);
@@ -641,57 +647,114 @@ free_aux_for_edges (void)
 DEBUG_FUNCTION void
 debug_bb (basic_block bb)
 {
-  dump_bb (bb, stderr, 0);
+  dump_bb (stderr, bb, 0, dump_flags | TDF_BLOCKS);
 }
 
 DEBUG_FUNCTION basic_block
 debug_bb_n (int n)
 {
   basic_block bb = BASIC_BLOCK (n);
-  dump_bb (bb, stderr, 0);
+  debug_bb (bb);
   return bb;
 }
 
-/* Dumps cfg related information about basic block BB to FILE.  */
+/* Dumps cfg related information about basic block BB to OUTF.
+   If HEADER is true, dump things that appear before the instructions
+   contained in BB.  If FOOTER is true, dump things that appear after.
+   Flags are the TDF_* masks as documented in dumpfile.h.
+   NB: With TDF_DETAILS, it is assumed that cfun is available, so
+   that maybe_hot_bb_p and probably_never_executed_bb_p don't ICE.  */
 
-static void
-dump_cfg_bb_info (FILE *file, basic_block bb)
+void
+dump_bb_info (FILE *outf, basic_block bb, int indent, int flags,
+	      bool do_header, bool do_footer)
 {
-  unsigned i;
   edge_iterator ei;
-  bool first = true;
+  edge e;
   static const char * const bb_bitnames[] =
     {
-      "new", "reachable", "irreducible_loop", "superblock",
-      "nosched", "hot", "cold", "dup", "xlabel", "rtl",
-      "fwdr", "nothrd"
+#define DEF_BASIC_BLOCK_FLAG(NAME,IDX) #NAME ,
+#include "cfg-flags.def"
+      NULL
+#undef DEF_BASIC_BLOCK_FLAG
     };
   const unsigned n_bitnames = sizeof (bb_bitnames) / sizeof (char *);
-  edge e;
+  char *s_indent = (char *) alloca ((size_t) indent + 1);
+  memset ((void *) s_indent, ' ', (size_t) indent);
+  s_indent[indent] = '\0';
 
-  fprintf (file, "Basic block %d", bb->index);
-  for (i = 0; i < n_bitnames; i++)
-    if (bb->flags & (1 << i))
-      {
-	if (first)
-	  fputs (" (", file);
-	else
-	  fputs (", ", file);
-	first = false;
-	fputs (bb_bitnames[i], file);
-      }
-  if (!first)
-    putc (')', file);
-  putc ('\n', file);
+  gcc_assert (bb->flags <= BB_ALL_FLAGS);
 
-  fputs ("Predecessors: ", file);
-  FOR_EACH_EDGE (e, ei, bb->preds)
-    dump_edge_info (file, e, 0);
+  if (do_header)
+    {
+      unsigned i;
 
-  fprintf (file, "\nSuccessors: ");
-  FOR_EACH_EDGE (e, ei, bb->succs)
-    dump_edge_info (file, e, 1);
-  fputs ("\n\n", file);
+      if (flags & TDF_COMMENT)
+	fputs (";; ", outf);
+      fprintf (outf, "%sbasic block %d", s_indent, bb->index);
+      if (flags & TDF_DETAILS)
+	{
+	  fprintf (outf, ", loop depth %d, count " HOST_WIDEST_INT_PRINT_DEC,
+		   bb->loop_depth, (HOST_WIDEST_INT) bb->count);
+	  fprintf (outf, ", freq %i", bb->frequency);
+	  if (maybe_hot_bb_p (bb))
+	    fputs (", maybe hot", outf);
+	  if (probably_never_executed_bb_p (bb))
+	    fputs (", probably never executed", outf);
+	}
+      fputc ('\n', outf);
+
+      if (flags & TDF_DETAILS)
+	{
+	  bool first = true;
+
+	  if (flags & TDF_COMMENT)
+	    fputs (";; ", outf);
+	  fprintf (outf, "%s prev block ", s_indent);
+	  if (bb->prev_bb)
+	    fprintf (outf, "%d", bb->prev_bb->index);
+	  else
+	    fprintf (outf, "(nil)");
+	  fprintf (outf, ", next block ");
+	  if (bb->next_bb)
+	    fprintf (outf, "%d", bb->next_bb->index);
+	  else
+	    fprintf (outf, "(nil)");
+
+	  fputs (", flags:", outf);
+	  for (i = 0; i < n_bitnames; i++)
+	    if (bb->flags & (1 << i))
+	      {
+		if (first)
+		  fputs (" (", outf);
+		else
+		  fputs (", ", outf);
+		first = false;
+		fputs (bb_bitnames[i], outf);
+	      }
+	  if (!first)
+	    fputc (')', outf);
+	}
+      fputc ('\n', outf);
+
+      if (flags & TDF_COMMENT)
+	fputs (";; ", outf);
+      fprintf (outf, "%s pred:      ", s_indent);
+      FOR_EACH_EDGE (e, ei, bb->preds)
+	dump_edge_info (outf, e, flags, 0);
+      fputc ('\n', outf);
+    }
+
+  if (do_footer)
+    {
+      fputc ('\n', outf);
+      if (flags & TDF_COMMENT)
+	fputs (";; ", outf);
+      fprintf (outf, "%s succ:      ", s_indent);
+      FOR_EACH_EDGE (e, ei, bb->succs)
+	dump_edge_info (outf, e, flags, 1);
+      fputs ("\n\n", outf);
+    }
 }
 
 /* Dumps a brief description of cfg to FILE.  */
@@ -703,7 +766,7 @@ brief_dump_cfg (FILE *file)
 
   FOR_EACH_BB (bb)
     {
-      dump_cfg_bb_info (file, bb);
+      dump_bb_info (file, bb, 0, 0, true, true);
     }
 }
 

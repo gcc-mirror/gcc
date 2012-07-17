@@ -1448,7 +1448,7 @@ gimple_can_merge_blocks_p (basic_block a, basic_block b)
   if (!single_succ_p (a))
     return false;
 
-  if (single_succ_edge (a)->flags & (EDGE_ABNORMAL | EDGE_EH | EDGE_PRESERVE))
+  if (single_succ_edge (a)->flags & EDGE_COMPLEX)
     return false;
 
   if (single_succ (a) != b)
@@ -1844,7 +1844,7 @@ remove_bb (basic_block bb)
       fprintf (dump_file, "Removing basic block %d\n", bb->index);
       if (dump_flags & TDF_DETAILS)
 	{
-	  dump_bb (bb, dump_file, 0);
+	  dump_bb (dump_file, bb, 0, 0);
 	  fprintf (dump_file, "\n");
 	}
     }
@@ -2063,7 +2063,7 @@ find_case_label_for_value (gimple switch_stmt, tree val)
 void
 gimple_debug_bb (basic_block bb)
 {
-  gimple_dump_bb (bb, stderr, 0, TDF_VOPS|TDF_MEMSYMS);
+  dump_bb (stderr, bb, 0, TDF_VOPS|TDF_MEMSYMS);
 }
 
 
@@ -6695,7 +6695,7 @@ dump_function_to_file (tree fn, FILE *file, int flags)
 	fprintf (file, "\n");
 
       FOR_EACH_BB (bb)
-	gimple_dump_bb (bb, file, 2, flags);
+	gimple_dump_bb (file, bb, 2, flags);
 
       fprintf (file, "}\n");
       check_bb_profile (EXIT_BLOCK_PTR, file);
@@ -6821,7 +6821,7 @@ print_loops_bb (FILE *file, basic_block bb, int indent, int verbosity)
   if (verbosity >= 3)
     {
       fprintf (file, "%s  {\n", s_indent);
-      gimple_dump_bb (bb, file, indent + 4, TDF_VOPS|TDF_MEMSYMS);
+      gimple_dump_bb (file, bb, indent + 4, TDF_VOPS|TDF_MEMSYMS);
       fprintf (file, "%s  }\n", s_indent);
     }
 }
