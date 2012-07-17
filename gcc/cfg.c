@@ -747,7 +747,6 @@ dump_bb_info (FILE *outf, basic_block bb, int indent, int flags,
 
   if (do_footer)
     {
-      fputc ('\n', outf);
       if (flags & TDF_COMMENT)
 	fputs (";; ", outf);
       fprintf (outf, "%s succ:      ", s_indent);
