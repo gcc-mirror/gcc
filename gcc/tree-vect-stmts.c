@@ -2410,8 +2410,8 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
 
     case WIDEN:
       if (supportable_widening_operation (code, stmt, vectype_out, vectype_in,
-					  &decl1, &decl2, &code1, &code2,
-					  &multi_step_cvt, &interm_types))
+					  &code1, &code2, &multi_step_cvt,
+					  &interm_types))
 	{
 	  /* Binary widening operation can only be supported directly by the
 	     architecture.  */
@@ -2443,18 +2443,16 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
 		goto unsupported;
 	    }
 	  else if (!supportable_widening_operation (code, stmt, vectype_out,
-						    cvt_type, &decl1, &decl2,
-						    &codecvt1, &codecvt2,
-						    &multi_step_cvt,
+						    cvt_type, &codecvt1,
+						    &codecvt2, &multi_step_cvt,
 						    &interm_types))
 	    continue;
 	  else
 	    gcc_assert (multi_step_cvt == 0);
 
 	  if (supportable_widening_operation (NOP_EXPR, stmt, cvt_type,
-					      vectype_in, NULL, NULL, &code1,
-					      &code2, &multi_step_cvt,
-					      &interm_types))
+					      vectype_in, &code1, &code2,
+					      &multi_step_cvt, &interm_types))
 	    break;
 	}
 
@@ -6262,9 +6260,6 @@ vect_is_simple_use_1 (tree operand, gimple stmt, loop_vec_info loop_vinfo,
    Output:
    - CODE1 and CODE2 are codes of vector operations to be used when
    vectorizing the operation, if available.
-   - DECL1 and DECL2 are decls of target builtin functions to be used
-   when vectorizing the operation, if available.  In this case,
-   CODE1 and CODE2 are CALL_EXPR.
    - MULTI_STEP_CVT determines the number of required intermediate steps in
    case of multi-step conversion (like char->short->int - in that case
    MULTI_STEP_CVT will be 1).
@@ -6274,8 +6269,6 @@ vect_is_simple_use_1 (tree operand, gimple stmt, loop_vec_info loop_vinfo,
 bool
 supportable_widening_operation (enum tree_code code, gimple stmt,
 				tree vectype_out, tree vectype_in,
-                                tree *decl1 ATTRIBUTE_UNUSED,
-				tree *decl2 ATTRIBUTE_UNUSED,
                                 enum tree_code *code1, enum tree_code *code2,
                                 int *multi_step_cvt,
                                 VEC (tree, heap) **interm_types)
@@ -6339,8 +6332,8 @@ supportable_widening_operation (enum tree_code code, gimple stmt,
 	  && !nested_in_vect_loop_p (vect_loop, stmt)
 	  && supportable_widening_operation (VEC_WIDEN_MULT_EVEN_EXPR,
 					     stmt, vectype_out, vectype_in,
-					     NULL, NULL, code1, code2,
-					     multi_step_cvt, interm_types))
+					     code1, code2, multi_step_cvt,
+					     interm_types))
 	return true;
       c1 = VEC_WIDEN_MULT_LO_EXPR;
       c2 = VEC_WIDEN_MULT_HI_EXPR;
