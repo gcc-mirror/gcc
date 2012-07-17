@@ -3034,8 +3034,6 @@ get_initial_def_for_induction (gimple iv_phi)
       /* iv_loop is the loop to be vectorized. Create:
 	 vec_init = [X, X+S, X+2*S, X+3*S] (S = step_expr, X = init_expr)  */
       new_var = vect_get_new_vect_var (scalar_type, vect_scalar_var, "var_");
-      add_referenced_var (new_var);
-
       new_name = force_gimple_operand (init_expr, &stmts, false, new_var);
       if (stmts)
 	{
@@ -3106,7 +3104,6 @@ get_initial_def_for_induction (gimple iv_phi)
 
   /* Create the induction-phi that defines the induction-operand.  */
   vec_dest = vect_get_new_vect_var (vectype, vect_simple_var, "vec_iv_");
-  add_referenced_var (vec_dest);
   induction_phi = create_phi_node (vec_dest, iv_loop->header);
   set_vinfo_for_stmt (induction_phi,
 		      new_stmt_vec_info (induction_phi, loop_vinfo, NULL));

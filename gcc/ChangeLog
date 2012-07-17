@@ -1,3 +1,21 @@
+2012-07-17  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vect-data-refs.c (vect_get_new_vect_var): Add referenced
+	vars here, use create_tmp_reg where appropriate.
+	(vect_create_addr_base_for_vector_ref): Do not add referenced
+	vars here, use create_tmp_reg where appropriate.
+	(vect_create_data_ref_ptr): Likewise.
+	(vect_create_destination_var): Likewise.
+	(vect_permute_store_chain): Likewise.
+	(vect_permute_load_chain): Likewise.
+	* tree-vect-loop-manip.c (vect_create_cond_for_align_checks):
+	Likewise.
+	* tree-vect-loop.c (get_initial_def_for_induction): Likewise.
+	* tree-vect-patterns.c (vect_recog_temp_ssa_var): Likewise.
+	(vect_handle_widen_op_by_const): Likewise.
+	* tree-vect-stmts.c (vect_init_vector): Likewise.
+	(vectorizable_load): Likewise.
+
 2012-07-17  Tom de Vries  <tom@codesourcery.com>
 
 	* hwint.c: Fix loop range.

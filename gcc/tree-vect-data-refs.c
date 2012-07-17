@@ -3397,15 +3397,12 @@ vect_get_new_vect_var (tree type, enum vect_var_kind var_kind, const char *name)
   if (name)
     {
       char* tmp = concat (prefix, name, NULL);
-      new_vect_var = create_tmp_var (type, tmp);
+      new_vect_var = create_tmp_reg (type, tmp);
       free (tmp);
     }
   else
-    new_vect_var = create_tmp_var (type, prefix);
-
-  /* Mark vector typed variable as a gimple register variable.  */
-  if (TREE_CODE (type) == VECTOR_TYPE)
-    DECL_GIMPLE_REG_P (new_vect_var) = true;
+    new_vect_var = create_tmp_reg (type, prefix);
+  add_referenced_var (new_vect_var);
 
   return new_vect_var;
 }
@@ -3533,7 +3530,6 @@ vect_create_addr_base_for_vector_ref (gimple stmt,
   vec_stmt = fold_convert (vect_ptr_type, addr_base);
   addr_expr = vect_get_new_vect_var (vect_ptr_type, vect_pointer_var,
                                      get_name (base_name));
-  add_referenced_var (addr_expr);
   vec_stmt = force_gimple_operand (vec_stmt, &seq, false, addr_expr);
   gimple_seq_add_seq (new_stmt_list, seq);
 
@@ -3731,8 +3727,6 @@ vect_create_data_ref_ptr (gimple stmt, tree aggr_type, struct loop *at_loop,
 	}
       while (orig_stmt);
     }
-
-  add_referenced_var (aggr_ptr);
 
   /* Note: If the dataref is in an inner-loop nested in LOOP, and we are
      vectorizing LOOP (i.e., outer-loop vectorization), we need to create two
@@ -3983,7 +3977,6 @@ vect_create_destination_var (tree scalar_dest, tree vectype)
   if (!new_name)
     new_name = "var_";
   vec_dest = vect_get_new_vect_var (type, kind, new_name);
-  add_referenced_var (vec_dest);
 
   return vec_dest;
 }
@@ -4144,8 +4137,7 @@ vect_permute_store_chain (VEC(tree,heap) *dr_chain,
 
 	  /* Create interleaving stmt:
 	     high = VEC_PERM_EXPR <vect1, vect2, {0, nelt, 1, nelt+1, ...}>  */
-	  perm_dest = create_tmp_var (vectype, "vect_inter_high");
-	  DECL_GIMPLE_REG_P (perm_dest) = 1;
+	  perm_dest = create_tmp_reg (vectype, "vect_inter_high");
 	  add_referenced_var (perm_dest);
 	  high = make_ssa_name (perm_dest, NULL);
 	  perm_stmt
@@ -4157,8 +4149,7 @@ vect_permute_store_chain (VEC(tree,heap) *dr_chain,
 	  /* Create interleaving stmt:
 	     low = VEC_PERM_EXPR <vect1, vect2, {nelt/2, nelt*3/2, nelt/2+1,
 						 nelt*3/2+1, ...}>  */
-	  perm_dest = create_tmp_var (vectype, "vect_inter_low");
-	  DECL_GIMPLE_REG_P (perm_dest) = 1;
+	  perm_dest = create_tmp_reg (vectype, "vect_inter_low");
 	  add_referenced_var (perm_dest);
 	  low = make_ssa_name (perm_dest, NULL);
 	  perm_stmt
@@ -4601,8 +4592,7 @@ vect_permute_load_chain (VEC(tree,heap) *dr_chain,
 	  second_vect = VEC_index (tree, dr_chain, j+1);
 
 	  /* data_ref = permute_even (first_data_ref, second_data_ref);  */
-	  perm_dest = create_tmp_var (vectype, "vect_perm_even");
-	  DECL_GIMPLE_REG_P (perm_dest) = 1;
+	  perm_dest = create_tmp_reg (vectype, "vect_perm_even");
 	  add_referenced_var (perm_dest);
 
 	  perm_stmt = gimple_build_assign_with_ops3 (VEC_PERM_EXPR, perm_dest,
@@ -4616,8 +4606,7 @@ vect_permute_load_chain (VEC(tree,heap) *dr_chain,
 	  VEC_replace (tree, *result_chain, j/2, data_ref);
 
 	  /* data_ref = permute_odd (first_data_ref, second_data_ref);  */
-	  perm_dest = create_tmp_var (vectype, "vect_perm_odd");
-	  DECL_GIMPLE_REG_P (perm_dest) = 1;
+	  perm_dest = create_tmp_reg (vectype, "vect_perm_odd");
 	  add_referenced_var (perm_dest);
 
 	  perm_stmt = gimple_build_assign_with_ops3 (VEC_PERM_EXPR, perm_dest,
