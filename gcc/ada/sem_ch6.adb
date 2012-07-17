@@ -6633,6 +6633,11 @@ package body Sem_Ch6 is
                 and then Exception_Junk (Last_Stm))
            or else Nkind (Last_Stm) in N_Push_xxx_Label
            or else Nkind (Last_Stm) in N_Pop_xxx_Label
+
+         --  Inserted code, such as finalization calls, is irrelevant: we only
+         --  need to check original source.
+
+           or else Is_Rewrite_Insertion (Last_Stm)
          loop
             Prev (Last_Stm);
          end loop;

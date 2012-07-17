@@ -6255,12 +6255,6 @@ package body Exp_Disp is
             Elmt : Elmt_Id;
 
          begin
-            --  Ensure that entities Prim_Ptr and Predef_Prims_Table_Ptr have
-            --  the decoration required by the backend
-
-            Set_Is_Dispatch_Table_Entity (RTE (RE_Prim_Ptr));
-            Set_Is_Dispatch_Table_Entity (RTE (RE_Predef_Prims_Table_Ptr));
-
             --  Object declarations
 
             Elmt := First_Elmt (DT_Decl);
@@ -7136,6 +7130,12 @@ package body Exp_Disp is
 
       Set_Ekind        (DT_Ptr, E_Variable);
       Set_Related_Type (DT_Ptr, Typ);
+
+      --  Ensure that entities Prim_Ptr and Predef_Prims_Table_Ptr have
+      --  the decoration required by the backend
+
+      Set_Is_Dispatch_Table_Entity (RTE (RE_Prim_Ptr));
+      Set_Is_Dispatch_Table_Entity (RTE (RE_Predef_Prims_Table_Ptr));
 
       --  For CPP types there is no need to build the dispatch tables since
       --  they are imported from the C++ side. If the CPP type has an IP then

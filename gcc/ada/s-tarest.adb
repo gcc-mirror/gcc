@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1999-2011, Free Software Foundation, Inc.          --
+--         Copyright (C) 1999-2012, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -483,6 +483,12 @@ package body System.Tasking.Restricted.Stages is
          then Self_ID.Common.Base_Priority
          else System.Any_Priority (Priority));
 
+      --  Legal values of CPU are the special Unspecified_CPU value which is
+      --  inserted by the compiler for tasks without CPU aspect, and those in
+      --  the range of CPU_Range but no greater than Number_Of_CPUs. Otherwise
+      --  the task is defined to have failed, and it becomes a completed task
+      --  (RM D.16(14/3)).
+
       if CPU /= Unspecified_CPU
         and then (CPU < Integer (System.Multiprocessors.CPU_Range'First)
           or else CPU > Integer (System.Multiprocessors.CPU_Range'Last)
@@ -492,6 +498,13 @@ package body System.Tasking.Restricted.Stages is
 
       --  Normal CPU affinity
       else
+         --  When the application code says nothing about the task affinity
+         --  (task without CPU aspect) then the compiler inserts the
+         --  Unspecified_CPU value which indicates to the run-time library that
+         --  the task will activate and execute on the same processor as its
+         --  activating task if the activating task is assigned a processor
+         --  (RM D.16(14/3)).
+
          Base_CPU :=
            (if CPU = Unspecified_CPU
             then Self_ID.Common.Base_CPU
