@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-fdump-tree-original" }
+! { dg-options "-fdump-tree-original -Wc-binding-type" }
 !
 ! PR fortran/34079
 ! Character bind(c) arguments shall not pass the length as additional argument
