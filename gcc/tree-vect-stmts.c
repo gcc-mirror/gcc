@@ -1283,7 +1283,6 @@ vect_init_vector (gimple stmt, tree val, tree type, gimple_stmt_iterator *gsi)
     }
 
   new_var = vect_get_new_vect_var (type, vect_simple_var, "cst_");
-  add_referenced_var (new_var);
   init_stmt = gimple_build_assign  (new_var, val);
   new_temp = make_ssa_name (new_var, init_stmt);
   gimple_assign_set_lhs (init_stmt, new_temp);
@@ -4542,7 +4541,6 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	      gcc_assert (TYPE_VECTOR_SUBPARTS (TREE_TYPE (op))
 			  == TYPE_VECTOR_SUBPARTS (idxtype));
 	      var = vect_get_new_vect_var (idxtype, vect_simple_var, NULL);
-	      add_referenced_var (var);
 	      var = make_ssa_name (var, NULL);
 	      op = build1 (VIEW_CONVERT_EXPR, idxtype, op);
 	      new_stmt
@@ -4560,7 +4558,6 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	      gcc_assert (TYPE_VECTOR_SUBPARTS (vectype)
 			  == TYPE_VECTOR_SUBPARTS (rettype));
 	      var = vect_get_new_vect_var (rettype, vect_simple_var, NULL);
-	      add_referenced_var (var);
 	      op = make_ssa_name (var, new_stmt);
 	      gimple_call_set_lhs (new_stmt, op);
 	      vect_finish_stmt_generation (stmt, new_stmt, gsi);

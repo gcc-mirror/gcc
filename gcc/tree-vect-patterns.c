@@ -206,7 +206,7 @@ type_conversion_p (tree name, gimple use_stmt, bool check_sign,
 static tree
 vect_recog_temp_ssa_var (tree type, gimple stmt)
 {
-  tree var = create_tmp_var (type, "patt");
+  tree var = create_tmp_reg (type, "patt");
 
   add_referenced_var (var);
   var = make_ssa_name (var, stmt);
@@ -501,7 +501,7 @@ vect_handle_widen_op_by_const (gimple stmt, enum tree_code code,
     {
       /* Create a_T = (NEW_TYPE) a_t;  */
       *oprnd = gimple_assign_rhs1 (def_stmt);
-      tmp = create_tmp_var (new_type, NULL);
+      tmp = create_tmp_reg (new_type, NULL);
       add_referenced_var (tmp);
       new_oprnd = make_ssa_name (tmp, NULL);
       new_stmt = gimple_build_assign_with_ops (NOP_EXPR, new_oprnd, *oprnd,

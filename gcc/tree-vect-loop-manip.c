@@ -2249,7 +2249,7 @@ vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
 	gimple_seq_add_seq (cond_expr_stmt_list, new_stmt_list);
 
       sprintf (tmp_name, "%s%d", "addr2int", i);
-      addr_tmp = create_tmp_var (int_ptrsize_type, tmp_name);
+      addr_tmp = create_tmp_reg (int_ptrsize_type, tmp_name);
       add_referenced_var (addr_tmp);
       addr_tmp_name = make_ssa_name (addr_tmp, NULL);
       addr_stmt = gimple_build_assign_with_ops (NOP_EXPR, addr_tmp_name,
@@ -2263,7 +2263,7 @@ vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
         {
           /* create: or_tmp = or_tmp | addr_tmp */
           sprintf (tmp_name, "%s%d", "orptrs", i);
-          or_tmp = create_tmp_var (int_ptrsize_type, tmp_name);
+          or_tmp = create_tmp_reg (int_ptrsize_type, tmp_name);
           add_referenced_var (or_tmp);
 	  new_or_tmp_name = make_ssa_name (or_tmp, NULL);
 	  or_stmt = gimple_build_assign_with_ops (BIT_IOR_EXPR,
@@ -2281,7 +2281,7 @@ vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
   mask_cst = build_int_cst (int_ptrsize_type, mask);
 
   /* create: and_tmp = or_tmp & mask  */
-  and_tmp = create_tmp_var (int_ptrsize_type, "andmask" );
+  and_tmp = create_tmp_reg (int_ptrsize_type, "andmask" );
   add_referenced_var (and_tmp);
   and_tmp_name = make_ssa_name (and_tmp, NULL);
 
