@@ -179,6 +179,9 @@ extern int clz_hwi (unsigned HOST_WIDE_INT x);
 extern int ctz_hwi (unsigned HOST_WIDE_INT x);
 extern int ffs_hwi (unsigned HOST_WIDE_INT x);
 
+/* Return the number of set bits in X.  */
+extern int popcount_hwi (unsigned HOST_WIDE_INT x);
+
 /* Return log2, or -1 if not exact.  */
 extern int exact_log2                  (unsigned HOST_WIDE_INT);
 
@@ -228,6 +231,18 @@ ffs_hwi (unsigned HOST_WIDE_INT x)
   return __builtin_ffsll (x);
 # else
   return __builtin_ffs (x);
+# endif
+}
+
+static inline int
+popcount_hwi (unsigned HOST_WIDE_INT x)
+{
+# if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG
+  return __builtin_popcountl (x);
+# elif HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONGLONG
+  return __builtin_popcountll (x);
+# else
+  return __builtin_popcount (x);
 # endif
 }
 
