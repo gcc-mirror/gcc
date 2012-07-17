@@ -1,3 +1,89 @@
+2012-07-18  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* dumpfile.h (TDF_COMMENT): New define.
+	* basic-block.h (EDGE_FALLTHRU, EDGE_ABNORMAL, EDGE_ABNORMAL_CALL,
+	EDGE_EH, EDGE_FAKE, EDGE_DFS_BACK, EDGE_CAN_FALLTHRU,
+	EDGE_IRREDUCIBLE_LOOP, EDGE_SIBCALL, EDGE_LOOP_EXIT, EDGE_TRUE_VALUE,
+	EDGE_FALSE_VALUE, EDGE_EXECUTABLE, EDGE_CROSSING, EDGE_PRESERVE):
+	Move to new file cfg-flags.h.
+	(enum cfg_edge_flags): New enum, using cfg-flags.h.
+	(EDGE_ALL_FLAGS): Compute value automatically.
+	(BB_NEW, BB_REACHABLE, BB_IRREDUCIBLE_LOOP, BB_SUPERBLOCK,
+	BB_DISABLE_SCHEDULE, BB_HOT_PARTITION, BB_COLD_PARTITION,
+	BB_DUPLICATED, BB_NON_LOCAL_GOTO_TARGET, BB_RTL,
+	BB_FORWARDER_BLOCK, BB_NONTHREADABLE_BLOCK, BB_MODIFIED, BB_VISITED,
+	BB_IN_TRANSACTION): Move to new file cfg-flags.h.
+	(enum bb_flags): Rename to cfg_bb_flags.  Use cfg-flags.h.
+	(BB_ALL_FLAGS): New, compute value automatically.
+	(dump_bb_info): Update prototype.
+	(dump_edge_info): Update prototype.
+	* cfg-flags.h: New file.
+	* cfg.c (dump_edge_info): Take flags argument.  Be verbose only if
+	TDF_DETAILS and not TDF_SLIM.  Include cfg-flags.h for bitnames.
+	Check that the edge flags are within the range of EDGE_ALL_FLAGS.
+	(debug_bb): Update dump_bb call.
+	(dump_cfg_bb_info): Remove.
+	(dump_bb_info): New function.  Use cfg-flags.h for bitnames.
+	Adjust verbosity using TDF_* flags.  Check that the basic block flags
+	are within the range of BB_ALL_FLAGS.
+	(brief_dump_cfg): Use dump_bb_info instead of dump_cfg_bb_info.
+	* cfghooks.h (struct cfghooks): Update dump_bb hook, take a FILE
+	first for consistency with other dump functions.
+	(dump_bb): Update prototype accordingly.
+	* cfghooks.c: Include dumpfile.h.
+	(verify_flow_info): Update dump_edge_info calls.
+	(dump_bb): Take a flags argument and pass it around.
+	Use dump_bb_info to dump common information about a basic block.
+	(dump_flow_info): Moved here from cfgrtl.c.  Make IL agnostic.
+	(debug_flow_info): Moved here from cfgrtl.c.
+	* profile.c (is_edge_inconsistent): Update dump_bb calls.
+	* loop-invariant.c (find_defs): Update print_rtl_with_bb call.
+	* rtl.h (debug_bb_n_slim, debug_bb_slim, print_rtl_slim,
+	print_rtl_slim_with_bb): Remove prototypes.
+	(dump_insn_slim): Adjust prototype to take a const_rtx.
+	(print_rtl_with_bb): Adjust prototype.
+	* sched-rgn.c (debug_region): Use dump_bb instead of debug_bb_n_slim.
+	* sched-vis.c (dump_insn_slim): Take a const_rtx.
+	(debug_insn_slim): Prototype here near DEBUG_FUNCTION marker.
+	(print_rtl_slim_with_bb): Remove.
+	(print_rtl_slim): Rename to debug_rtl_slim.  Print only insn info,
+	not basic block info (print_rtl_with_bb with TDF_SLIM should be used
+	for that.  Prototype here near DEBUG_FUNCTION marker.
+	(debug_bb_slim): Prototype here near DEBUG_FUNCTION marker.
+	Use dump_bb.
+	(debug_bb_n_slim): Prototype here near DEBUG_FUNCTION marker.
+	* tree-cfg.c (gimple_can_merge_blocks_p): Use EDGE_COMPLEX.
+	(remove_bb): Update dump_bb call.
+	(gimple_debug_bb): Use dump_bb.
+	(dump_function_to_file): Update gimple_dump_bb call.
+	(print_loops_bb): Likewise.
+	* tree-flow.h (gimple_dump_bb): Update prototype.
+	* gimple-pretty-print.c (dump_bb_header): Rename to
+	dump_gimple_bb_header.  Write to a stream instead of a pretty
+	printer.  Use dump_bb_info to dump basic block info.
+	(dump_bb_end): Rename to dump_gimple_bb_footer.  Write to a
+	stream instead of a pretty printer.  Use dump_bb_info.
+	(gimple_dump_bb_buff): Do not call dump_bb_header and dump_bb_end.
+	(gimple_dump_bb): Do it here with dump_gimple_bb_header and
+	dump_gimple_bb_footer.
+	* cfgrtl.c (rtl_dump_bb): Update prototype.  Only dump DF if the
+	dump flags have TDF_DETAILS.  Use dump_insn_slim if TDF_SLIM.
+	(print_rtl_with_bb): Take a flags argument and pass it around.
+	Use dump_insn_slim if TDF_SLIM.
+	(dump_bb_info): Removed and re-incarnated in cfg.c.
+	(dump_flow_info): Moved to cfghooks.c.
+	(debug_flow_info): Moved to cfghooks.c.
+	* passes.c (execute_function_dump): Unconditionally use
+	print_rtl_with_bb for RTL dumps, now that it understands TDF_SLIM.
+	* final.c (dump_basic_block_info): Update dump_edge_info calls.
+	* tree-vrp.c (dump_asserts_for): Likewise.
+	* ifcvt.c (if_convert): Unconditionally use print_rtl_with_bb.
+	* tree-if-conv.c (if_convertible_bb_p): Don't look at
+	EDGE_ABNORMAL_CALL, it has no meaning in the GIMPLE world.
+	* trans-mem.c (make_tm_edge): Don't set EDGE_ABNORMAL_CALL,
+	for the same reason.
+	* config/rl78/rl78.c (rl78_reorg): Update print_rtl_with_bb calls.
+
 2012-07-17  Richard Guenther  <rguenther@suse.de>
 
 	* tree-vect-data-refs.c (vect_get_new_vect_var): Add referenced

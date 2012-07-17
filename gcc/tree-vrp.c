@@ -4121,7 +4121,7 @@ dump_asserts_for (FILE *file, tree name)
 	{
 	  fprintf (file, "\n\tEDGE %d->%d", loc->e->src->index,
 	           loc->e->dest->index);
-	  dump_edge_info (file, loc->e, 0);
+	  dump_edge_info (file, loc->e, dump_flags, 0);
 	}
       fprintf (file, "\n\tPREDICATE: ");
       print_generic_expr (file, name, 0);

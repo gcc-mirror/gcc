@@ -276,8 +276,8 @@ is_edge_inconsistent (VEC(edge,gc) *edges)
 		  fprintf (dump_file,
 		  	   "Edge %i->%i is inconsistent, count"HOST_WIDEST_INT_PRINT_DEC,
 			   e->src->index, e->dest->index, e->count);
-		  dump_bb (e->src, dump_file, 0);
-		  dump_bb (e->dest, dump_file, 0);
+		  dump_bb (dump_file, e->src, 0, TDF_DETAILS);
+		  dump_bb (dump_file, e->dest, 0, TDF_DETAILS);
 		}
               return true;
 	    }
@@ -326,7 +326,7 @@ is_inconsistent (void)
 		       HOST_WIDEST_INT_PRINT_DEC,
 		       bb->index,
 		       bb->count);
-	      dump_bb (bb, dump_file, 0);
+	      dump_bb (dump_file, bb, 0, TDF_DETAILS);
 	    }
 	  inconsistent = true;
 	}
@@ -339,7 +339,7 @@ is_inconsistent (void)
 		       bb->index,
 		       bb->count,
 		       sum_edge_counts (bb->preds));
-	      dump_bb (bb, dump_file, 0);
+	      dump_bb (dump_file, bb, 0, TDF_DETAILS);
 	    }
 	  inconsistent = true;
 	}
@@ -353,7 +353,7 @@ is_inconsistent (void)
 		       bb->index,
 		       bb->count,
 		       sum_edge_counts (bb->succs));
-	      dump_bb (bb, dump_file, 0);
+	      dump_bb (dump_file, bb, 0, TDF_DETAILS);
 	    }
 	  inconsistent = true;
 	}

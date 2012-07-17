@@ -414,7 +414,7 @@ extern bool is_ctrl_altering_stmt (gimple);
 extern bool simple_goto_p (gimple);
 extern bool stmt_can_make_abnormal_goto (gimple);
 extern basic_block single_noncomplex_succ (basic_block bb);
-extern void gimple_dump_bb (basic_block, FILE *, int, int);
+extern void gimple_dump_bb (FILE *, basic_block, int, int);
 extern void gimple_debug_bb (basic_block);
 extern basic_block gimple_debug_bb_n (int);
 extern void gimple_dump_cfg (FILE *, int);

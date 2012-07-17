@@ -2059,83 +2059,52 @@ dump_gimple_stmt (pretty_printer *buffer, gimple gs, int spc, int flags)
 }
 
 
-/* Dumps header of basic block BB to buffer BUFFER indented by INDENT
+/* Dumps header of basic block BB to OUTF indented by INDENT
    spaces and details described by flags.  */
 
 static void
-dump_bb_header (pretty_printer *buffer, basic_block bb, int indent, int flags)
+dump_gimple_bb_header (FILE *outf, basic_block bb, int indent, int flags)
 {
-  edge e;
-  gimple stmt;
-  edge_iterator ei;
-
   if (flags & TDF_BLOCKS)
     {
-      INDENT (indent);
-      pp_string (buffer, "# BLOCK ");
-      pp_decimal_int (buffer, bb->index);
-      if (bb->frequency)
-	{
-          pp_string (buffer, " freq:");
-          pp_decimal_int (buffer, bb->frequency);
-	}
-      if (bb->count)
-	{
-          pp_string (buffer, " count:");
-          pp_widest_integer (buffer, bb->count);
-	}
+      dump_bb_info (outf, bb, indent, flags, true, false);
 
       if (flags & TDF_LINENO)
 	{
 	  gimple_stmt_iterator gsi;
+	  char *s_indent = (char *) alloca ((size_t) indent + 1);
+	  memset (s_indent, ' ', (size_t) indent);
+	  s_indent[indent] = '\0';
+
+	  if (flags & TDF_COMMENT)
+	    fputs (";; ", outf);
 
 	  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	    if (!is_gimple_debug (gsi_stmt (gsi))
 		&& get_lineno (gsi_stmt (gsi)) != UNKNOWN_LOCATION)
 	      {
-		pp_string (buffer, ", starting at line ");
-		pp_decimal_int (buffer, get_lineno (gsi_stmt (gsi)));
+		fprintf (outf, "%sstarting at line %d",
+			 s_indent, get_lineno (gsi_stmt (gsi)));
 		break;
 	      }
-
-          if (bb->discriminator)
-            {
-              pp_string (buffer, ", discriminator ");
-	      pp_decimal_int (buffer, bb->discriminator);
-            }
+	  if (bb->discriminator)
+	    fprintf (outf, ", discriminator %i", bb->discriminator);
+	  fputc ('\n', outf);
 	}
-      newline_and_indent (buffer, indent);
-
-      pp_string (buffer, "# PRED:");
-      pp_write_text_to_stream (buffer);
-      FOR_EACH_EDGE (e, ei, bb->preds)
-	if (flags & TDF_SLIM)
-	  {
-	    pp_character (buffer, ' ');
-	    if (e->src == ENTRY_BLOCK_PTR)
-	      pp_string (buffer, "ENTRY");
-	    else
-	      pp_decimal_int (buffer, e->src->index);
-	  }
-	else
-	  dump_edge_info (buffer->buffer->stream, e, 0);
-      pp_newline (buffer);
     }
   else
     {
-      stmt = first_stmt (bb);
+      gimple stmt = first_stmt (bb);
       if (!stmt || gimple_code (stmt) != GIMPLE_LABEL)
 	{
-	  INDENT (indent - 2);
-	  pp_string (buffer, "<bb ");
-	  pp_decimal_int (buffer, bb->index);
-	  pp_string (buffer, ">:");
-	  pp_newline (buffer);
+	  char *s_indent = (char *) alloca ((size_t) indent - 2 + 1);
+	  memset (s_indent, ' ', (size_t) indent);
+	  s_indent[indent] = '\0';
+	  fprintf (outf, "%s<bb %d>:\n", s_indent, bb->index);
 	}
     }
-  pp_write_text_to_stream (buffer);
   if (cfun)
-    check_bb_profile (bb, buffer->buffer->stream);
+    check_bb_profile (bb, outf);
 }
 
 
@@ -2143,26 +2112,9 @@ dump_bb_header (pretty_printer *buffer, basic_block bb, int indent, int flags)
    spaces.  */
 
 static void
-dump_bb_end (pretty_printer *buffer, basic_block bb, int indent, int flags)
+dump_gimple_bb_footer (FILE *outf, basic_block bb, int indent, int flags)
 {
-  edge e;
-  edge_iterator ei;
-
-  INDENT (indent);
-  pp_string (buffer, "# SUCC:");
-  pp_write_text_to_stream (buffer);
-  FOR_EACH_EDGE (e, ei, bb->succs)
-    if (flags & TDF_SLIM)
-      {
-	pp_character (buffer, ' ');
-	if (e->dest == EXIT_BLOCK_PTR)
-	  pp_string (buffer, "EXIT");
-	else
-	  pp_decimal_int (buffer, e->dest->index);
-      }
-    else
-      dump_edge_info (buffer->buffer->stream, e, 1);
-  pp_newline (buffer);
+  dump_bb_info (outf, bb, indent, flags, false, true);
 }
 
 
@@ -2292,7 +2244,6 @@ gimple_dump_bb_buff (pretty_printer *buffer, basic_block bb, int indent,
   if (label_indent < 0)
     label_indent = 0;
 
-  dump_bb_header (buffer, bb, indent, flags);
   dump_phi_nodes (buffer, bb, indent, flags);
 
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
@@ -2310,9 +2261,6 @@ gimple_dump_bb_buff (pretty_printer *buffer, basic_block bb, int indent,
     }
 
   dump_implicit_edges (buffer, bb, indent, flags);
-
-  if (flags & TDF_BLOCKS)
-    dump_bb_end (buffer, bb, indent, flags);
 }
 
 
@@ -2320,9 +2268,11 @@ gimple_dump_bb_buff (pretty_printer *buffer, basic_block bb, int indent,
    indented by INDENT spaces.  */
 
 void
-gimple_dump_bb (basic_block bb, FILE *file, int indent, int flags)
+gimple_dump_bb (FILE *file, basic_block bb, int indent, int flags)
 {
+  dump_gimple_bb_header (file, bb, indent, flags);
   maybe_init_pretty_print (file);
   gimple_dump_bb_buff (&buffer, bb, indent, flags);
   pp_flush (&buffer);
+  dump_gimple_bb_footer (file, bb, indent, flags);
 }

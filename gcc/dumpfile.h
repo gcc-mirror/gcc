@@ -81,6 +81,7 @@ enum tree_dump_index
 #define TDF_ENUMERATE_LOCALS (1 << 22)	/* Enumerate locals by uid.  */
 #define TDF_CSELIB	(1 << 23)	/* Dump cselib details.  */
 #define TDF_SCEV	(1 << 24)	/* Dump SCEV details.  */
+#define TDF_COMMENT	(1 << 25)	/* Dump lines with prefix ";;"  */
 
 
 /* In tree-dump.c */
