@@ -74,6 +74,7 @@ package Treepr is
    procedure psloc (Loc : Source_Ptr);
    pragma Export (Ada, psloc);
    --  Prints the sloc Loc
+   --  Why is this here??? use the routines in Sprint instead ???
 
    --  The following are no longer needed; you can use pp or ppp instead
 
