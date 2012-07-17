@@ -4846,6 +4846,16 @@ package body Exp_Ch6 is
             return;
          end if;
 
+         --  Reset Last_Assignment for any parameters of mode out or in out, to
+         --  prevent spurious warnings about overwriting for assignments to the
+         --  formal in the inlined code.
+
+         if Is_Entity_Name (A)
+           and then Ekind (F) /= E_In_Parameter
+         then
+            Set_Last_Assignment (Entity (A), Empty);
+         end if;
+
          --  If the argument may be a controlling argument in a call within
          --  the inlined body, we must preserve its classwide nature to insure
          --  that dynamic dispatching take place subsequently. If the formal
