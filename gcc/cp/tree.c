@@ -794,11 +794,22 @@ build_cplus_array_type (tree elt_type, tree index_type)
     {
       tree m = build_cplus_array_type (TYPE_MAIN_VARIANT (elt_type),
 				       index_type);
+      tree c = TYPE_CANONICAL (t);
+
       if (TYPE_MAIN_VARIANT (t) != m)
 	{
 	  TYPE_MAIN_VARIANT (t) = m;
 	  TYPE_NEXT_VARIANT (t) = TYPE_NEXT_VARIANT (m);
 	  TYPE_NEXT_VARIANT (m) = t;
+	}
+
+      /* If we built a new array type for TYPE_CANONICAL, add
+	 that to the list of variants as well.  */
+      if (c && c != t && TYPE_MAIN_VARIANT (c) != m)
+	{
+	  TYPE_MAIN_VARIANT (c) = m;
+	  TYPE_NEXT_VARIANT (c) = t;
+	  TYPE_NEXT_VARIANT (m) = c;
 	}
     }
 

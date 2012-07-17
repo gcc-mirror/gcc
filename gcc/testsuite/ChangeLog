@@ -1,5 +1,10 @@
 2012-07-17  Jason Merrill  <jason@redhat.com>
 
+	PR c++/53989
+	* g++.dg/template/array23.C: New.
+
+2012-07-17  Jason Merrill  <jason@redhat.com>
+
 	PR c++/53549
 	* g++.dg/template/current-inst1.C: New.
 	* g++.dg/parse/crash35.C: Adjust.
