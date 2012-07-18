@@ -21,12 +21,6 @@ details.  */
 #define HANDLE_SEGV 1
 #define HANDLE_FPE 1
 
-#ifdef __ILP32__
-# define CHECK_67H_PREFIX 1
-#else
-# define CHECK_67H_PREFIX 0
-#endif
-
 #define SIGNAL_HANDLER(_name)					\
 static void _Jv_##_name (int, siginfo_t *,			\
 			 void *_p __attribute__ ((__unused__)))
@@ -53,8 +47,8 @@ do									\
 									\
   bool _is_64_bit = false;						\
 									\
-  /* Check and skip 67h address size prefix if needed.  */		\
-  if (CHECK_67H_PREFIX && _rip[0] == 0x67)				\
+  /* Skip 67h address size prefix.  */			\
+  if (_rip[0] == 0x67)							\
     _rip++;								\
 									\
   if ((_rip[0] & 0xf0) == 0x40)  /* REX byte present.  */		\
