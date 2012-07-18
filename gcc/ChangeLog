@@ -1,3 +1,15 @@
+2012-07-18  Andrew Stubbs  <ams@codesourcery.com>
+	    Mark Shinwell  <shinwell@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+	gcc/
+	* config/arm/vfp.md (*arm_movsi_vfp, *thumb2_movsi_vfp)
+	(*movdi_vfp_cortexa8, *movsf_vfp, *thumb2_movsf_vfp)
+	(*movdf_vfp, *thumb2_movdf_vfp, *movsfcc_vfp)
+	(*thumb2_movsfcc_vfp, *movdfcc_vfp, *thumb2_movdfcc_vfp): Add
+	neon_type.
+	* config/arm/arm.md (neon_type): Update comment.
+
 2012-07-18  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/53970
