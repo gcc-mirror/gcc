@@ -1,5 +1,9 @@
 2012-07-18  Steven Bosscher  <steven@gcc.gnu.org>
 
+	* graphite-poly.c (print_pbb_body): Fixup dump_bb call.
+
+2012-07-18  Steven Bosscher  <steven@gcc.gnu.org>
+
 	* dumpfile.h (TDF_COMMENT): New define.
 	* basic-block.h (EDGE_FALLTHRU, EDGE_ABNORMAL, EDGE_ABNORMAL_CALL,
 	EDGE_EH, EDGE_FAKE, EDGE_DFS_BACK, EDGE_CAN_FALLTHRU,
