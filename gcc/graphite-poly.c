@@ -673,7 +673,7 @@ print_pbb_body (FILE *file, poly_bb_p pbb, int verbosity,
     fprintf (file, "# Statement body\n");
 
   fprintf (file, "{\n");
-  dump_bb (pbb_bb (pbb), file, 0);
+  dump_bb (file, pbb_bb (pbb), 0, 0);
   fprintf (file, "}\n");
 
   if (verbosity > 1)
