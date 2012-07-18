@@ -21,6 +21,12 @@ details.  */
 #define HANDLE_SEGV 1
 #define HANDLE_FPE 1
 
+#ifdef __ILP32__
+# define CHECK_67H_PREFIX 1
+#else
+# define CHECK_67H_PREFIX 0
+#endif
+
 #define SIGNAL_HANDLER(_name)					\
 static void _Jv_##_name (int, siginfo_t *,			\
 			 void *_p __attribute__ ((__unused__)))
@@ -47,6 +53,10 @@ do									\
 									\
   bool _is_64_bit = false;						\
 									\
+  /* Check and skip 67h address size prefix if needed.  */		\
+  if (CHECK_67H_PREFIX && _rip[0] == 0x67)				\
+    _rip++;								\
+									\
   if ((_rip[0] & 0xf0) == 0x40)  /* REX byte present.  */		\
     {									\
       unsigned char _rex = _rip[0] & 0x0f;				\
@@ -64,10 +74,10 @@ do									\
 	{								\
 	  if (_is_64_bit)						\
 	    _min_value_dividend =					\
-	      _gregs[REG_RAX] == (greg_t)0x8000000000000000UL;		\
+	      _gregs[REG_RAX] == (greg_t)0x8000000000000000ULL;		\
 	  else								\
 	    _min_value_dividend =					\
-	      (_gregs[REG_RAX] & 0xffffffff) == (greg_t)0x80000000UL;	\
+	      (_gregs[REG_RAX] & 0xffffffff) == (greg_t)0x80000000ULL;	\
 	}								\
 									\
       if (_min_value_dividend)						\
