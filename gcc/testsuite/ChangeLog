@@ -1,3 +1,8 @@
+2012-07-18  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/53970
+	* g++.dg/torture/pr53970.C: New testcase.
+
 2012-07-18  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/38621

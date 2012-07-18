@@ -1131,6 +1131,18 @@ vect_verify_datarefs_alignment (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
   return true;
 }
 
+/* Given an memory reference EXP return whether its alignment is less
+   than its size.  */
+
+static bool
+not_size_aligned (tree exp)
+{
+  if (!host_integerp (TYPE_SIZE (TREE_TYPE (exp)), 1))
+    return true;
+
+  return (tree_low_cst (TYPE_SIZE (TREE_TYPE (exp)), 1)
+	  > get_object_alignment (exp));
+}
 
 /* Function vector_alignment_reachable_p
 
@@ -1184,12 +1196,8 @@ vector_alignment_reachable_p (struct data_reference *dr)
 
   if (!known_alignment_for_access_p (dr))
     {
-      tree type = (TREE_TYPE (DR_REF (dr)));
-      bool is_packed = contains_packed_reference (DR_REF (dr));
-
-      if (compare_tree_int (TYPE_SIZE (type), TYPE_ALIGN (type)) > 0)
-	is_packed = true;
-
+      tree type = TREE_TYPE (DR_REF (dr));
+      bool is_packed = not_size_aligned (DR_REF (dr));
       if (vect_print_dump_info (REPORT_DETAILS))
 	fprintf (vect_dump, "Unknown misalignment, is_packed = %d",is_packed);
       if (targetm.vectorize.vector_alignment_reachable (type, is_packed))
@@ -4863,7 +4871,7 @@ vect_supportable_dr_alignment (struct data_reference *dr,
 	    return dr_explicit_realign_optimized;
 	}
       if (!known_alignment_for_access_p (dr))
-	is_packed = contains_packed_reference (DR_REF (dr));
+	is_packed = not_size_aligned (DR_REF (dr));
 
       if (targetm.vectorize.
 	  support_vector_misalignment (mode, type,
@@ -4877,7 +4885,7 @@ vect_supportable_dr_alignment (struct data_reference *dr,
       tree type = (TREE_TYPE (DR_REF (dr)));
 
       if (!known_alignment_for_access_p (dr))
-	is_packed = contains_packed_reference (DR_REF (dr));
+	is_packed = not_size_aligned (DR_REF (dr));
 
      if (targetm.vectorize.
          support_vector_misalignment (mode, type,
