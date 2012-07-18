@@ -1,3 +1,9 @@
+2012-07-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (stmt_group_may_fallthru): New function.
+	(gnat_to_gnu) <N_Block_Statement>: Use it to find out whether the
+	block needs to be translated.
+
 2012-07-17  Tristan Gingold  <gingold@adacore.com>
 
 	* gnat_rm.texi: Adjust previous change.
