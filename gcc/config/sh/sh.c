@@ -599,11 +599,6 @@ sh_option_override (void)
   SUBTARGET_OVERRIDE_OPTIONS;
   if (optimize > 1 && !optimize_size)
     target_flags |= MASK_SAVE_ALL_TARGET_REGS;
-  if (flag_finite_math_only == 2)
-    flag_finite_math_only
-      = !flag_signaling_nans && TARGET_SH2E && ! TARGET_IEEE;
-  if (TARGET_SH2E && !flag_finite_math_only)
-    target_flags |= MASK_IEEE;
   sh_cpu = PROCESSOR_SH1;
   assembler_dialect = 0;
   if (TARGET_SH2)
@@ -888,6 +883,11 @@ sh_option_override (void)
   TARGET_FSRRA = TARGET_FSRRA
 		 && flag_unsafe_math_optimizations
 		 && flag_finite_math_only;
+
+  /* If the -mieee option was not explicitly set by the user, turn it on
+     unless -ffinite-math-only was specified.  See also PR 33135.  */
+  if (! global_options_set.x_TARGET_IEEE)
+    TARGET_IEEE = ! flag_finite_math_only;
 
   if (sh_fixed_range_str)
     sh_fix_range (sh_fixed_range_str);
