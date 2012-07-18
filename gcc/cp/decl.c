@@ -12347,7 +12347,7 @@ finish_enum_value_list (tree enumtype)
   for (t = TYPE_MAIN_VARIANT (enumtype); t; t = TYPE_NEXT_VARIANT (t))
     TYPE_VALUES (t) = TYPE_VALUES (enumtype);
 
-  if (current_class_type
+  if (at_class_scope_p ()
       && COMPLETE_TYPE_P (current_class_type)
       && UNSCOPED_ENUM_P (enumtype))
     insert_late_enum_def_into_classtype_sorted_fields (enumtype,
