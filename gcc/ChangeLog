@@ -1,3 +1,16 @@
+2012-07-18  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* doc/invoke.texi: Add -fhoist-adjacent-loads and -ftree-slsr to list
+	of flags controlling optimization; add -ftree-slsr to list of flags
+	enabled by default at -O; add -fhoist-adjacent-loads to list of flags
+	enabled by default at -O2; add -fvect-cost-model to list of flags
+	enabled by default at -O3; document -fhoist-adjacent-loads and
+	-ftree-slsr.
+	* opts.c (default_option): Make -ftree-slsr default at -O1 and above.
+	* gimple-ssa-strength-reduction.c (gate_strength_reduction): Use
+	flag_tree_slsr.
+	* common.opt: Add -ftree-slsr with flag_tree_slsr.
+
 2012-07-18  Jie Zhang  <jzhang918@gmail.com>
 	    Julian Brown  <julian@codesourcery.com>
 

@@ -2080,6 +2080,10 @@ ftree-sink
 Common Report Var(flag_tree_sink) Optimization
 Enable SSA code sinking on trees
 
+ftree-slsr
+Common Report Var(flag_tree_slsr) Optimization
+Perform straight-line strength reduction
+
 ftree-sra
 Common Report Var(flag_tree_sra) Optimization
 Perform scalar replacement of aggregates

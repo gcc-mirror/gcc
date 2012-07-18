@@ -1501,7 +1501,7 @@ execute_strength_reduction (void)
 static bool
 gate_strength_reduction (void)
 {
-  return optimize > 0;
+  return flag_tree_slsr;
 }
 
 struct gimple_opt_pass pass_strength_reduction =
