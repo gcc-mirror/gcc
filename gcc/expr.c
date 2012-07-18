@@ -4590,7 +4590,7 @@ expand_assignment (tree to, tree from, bool nontemporal)
        || TREE_CODE (to) == TARGET_MEM_REF)
       && mode != BLKmode
       && !mem_ref_refers_to_non_mem_p (to)
-      && ((align = get_object_or_type_alignment (to))
+      && ((align = get_object_alignment (to))
 	  < GET_MODE_ALIGNMENT (mode))
       && (((icode = optab_handler (movmisalign_optab, mode))
 	   != CODE_FOR_nothing)
@@ -4652,7 +4652,7 @@ expand_assignment (tree to, tree from, bool nontemporal)
       mode = TYPE_MODE (TREE_TYPE (tem));
       if (TREE_CODE (tem) == MEM_REF
 	  && mode != BLKmode
-	  && ((align = get_object_or_type_alignment (tem))
+	  && ((align = get_object_alignment (tem))
 	      < GET_MODE_ALIGNMENT (mode))
 	  && ((icode = optab_handler (movmisalign_optab, mode))
 	      != CODE_FOR_nothing))
@@ -9496,7 +9496,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	temp = gen_rtx_MEM (mode, op0);
 	set_mem_attributes (temp, exp, 0);
 	set_mem_addr_space (temp, as);
-	align = get_object_or_type_alignment (exp);
+	align = get_object_alignment (exp);
 	if (modifier != EXPAND_WRITE
 	    && mode != BLKmode
 	    && align < GET_MODE_ALIGNMENT (mode)
@@ -9570,7 +9570,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 			   gimple_assign_rhs1 (def_stmt), mask);
 	    TREE_OPERAND (exp, 0) = base;
 	  }
-	align = get_object_or_type_alignment (exp);
+	align = get_object_alignment (exp);
 	op0 = expand_expr (base, NULL_RTX, VOIDmode, EXPAND_SUM);
 	op0 = memory_address_addr_space (address_mode, op0, as);
 	if (!integer_zerop (TREE_OPERAND (exp, 1)))
