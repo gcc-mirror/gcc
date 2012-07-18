@@ -1,5 +1,5 @@
 // Test mangling of type casts
-// { dg-options "-fabi-version=2" }
+// { dg-options "-fabi-version=0" }
 // { dg-do compile }
 
 template<int i> class A {};
@@ -17,4 +17,4 @@ int main()
 }
 
 // { dg-final { scan-assembler "\n_?_Z1fILi1EEvR1AIXT_EER1BIXcvbT_EE\[: \t\n\]" } }
-// { dg-final { scan-assembler "\n_?_Z1gILi1EEvR1AIXT_EER1BIXcvbT_EE\[: \t\n\]" } }
+// { dg-final { scan-assembler "\n_?_Z1gILi1EEvR1AIXT_EER1BIXscbT_EE\[: \t\n\]" } }

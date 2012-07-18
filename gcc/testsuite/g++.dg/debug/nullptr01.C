@@ -1,5 +1,5 @@
 // Test that debugging backends don't crash on NULLPTR_TYPE.
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++0x -fabi-version=0" }
 
 typedef decltype(nullptr) nullptr_t;
 
@@ -12,4 +12,4 @@ template <> nullptr_t g(A<nullptr_t>)
   nullptr_t local;
 }
 // { dg-final { scan-assembler "_Z1fDn" } }
-// { dg-final { scan-assembler "_Z1gI1AIDnEES1_T_" } }
+// { dg-final { scan-assembler "_Z1gI1AIDnEEDnT_" } }
