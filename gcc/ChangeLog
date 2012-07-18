@@ -1,5 +1,14 @@
 2012-07-18  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/53970
+	* tree.h (contains_packed_reference): Remove.
+	* expr.c (contains_packed_reference): Likewise.
+	* tree-vect-data-refs.c (not_size_aligned): New function.
+	(vector_alignment_reachable_p): Use it.
+	(vect_supportable_dr_alignment): Likewise.
+
+2012-07-18  Richard Guenther  <rguenther@suse.de>
+
 	* tree.h (get_object_or_type_alignment): Remove.
 	* builtins.c (get_object_alignment_2): New function copied from
 	get_object_alignment_1.  Take extra argument to indicate whether
