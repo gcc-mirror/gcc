@@ -1,3 +1,8 @@
+2012-07-18  Julian Brown  <julian@codesourcery.com>
+	    Sandra Loosemore <sandra@codesroucery.com>
+
+	* gcc.c-torture/execute/20101011-1.c: Skip on bare-metal m68k.
+
 2012-07-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/noreturn4.ad[sb]: New test.
