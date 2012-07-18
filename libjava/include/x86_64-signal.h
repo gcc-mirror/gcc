@@ -47,7 +47,7 @@ do									\
 									\
   bool _is_64_bit = false;						\
 									\
-  /* Skip 67h address size prefix.  */			\
+  /* Skip 67h address size prefix.  */					\
   if (_rip[0] == 0x67)							\
     _rip++;								\
 									\
