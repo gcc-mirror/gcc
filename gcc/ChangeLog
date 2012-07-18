@@ -1,3 +1,7 @@
+2012-07-18  Nick Clifton  <nickc@redhat.com>
+
+	* doc/invoke.texi (ARM Options): Document -munaligned-access.
+
 2012-07-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/53961
