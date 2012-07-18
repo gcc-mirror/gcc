@@ -1,3 +1,12 @@
+2012-07-18  Maciej W. Rozycki  <macro@codesourcery.com>
+	    Chao-ying Fu  <fu@mips.com>
+
+	* config/mips/mips.opt (mmcu): New option.
+	* config/mips/mips.h (TARGET_CPU_CPP_BUILTINS): Define 
+	_mips_mcu when TARGET_MCU.
+	(ASM_SPEC): Pass mcu options to the assembler.
+	* doc/invoke.texi (MIPS Options): Document -mmcu and -mno-mcu.
+
 2012-07-18  Ralf Corsépius  <ralf.corsepius@rtems.org>
 
        * config.gcc (v850-*-rtems*): New target.

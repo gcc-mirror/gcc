@@ -734,6 +734,7 @@ Objective-C and Objective-C++ Dialects}.
 -mshared  -mno-shared  -mplt  -mno-plt  -mxgot  -mno-xgot @gol
 -mgp32  -mgp64  -mfp32  -mfp64  -mhard-float  -msoft-float @gol
 -msingle-float  -mdouble-float  -mdsp  -mno-dsp  -mdspr2  -mno-dspr2 @gol
+-mmcu -mmno-mcu @gol
 -mfpu=@var{fpu-type} @gol
 -msmartmips  -mno-smartmips @gol
 -mpaired-single  -mno-paired-single  -mdmx  -mno-mdmx @gol
@@ -15722,6 +15723,12 @@ The option @option{-mips3d} implies @option{-mpaired-single}.
 @opindex mmt
 @opindex mno-mt
 Use (do not use) MT Multithreading instructions.
+
+@item -mmcu
+@itemx -mno-mcu
+@opindex mmcu
+@opindex mno-mcu
+Use (do not use) the MIPS MCU ASE instructions.
 
 @item -mlong64
 @opindex mlong64
