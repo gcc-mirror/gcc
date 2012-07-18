@@ -1,0 +1,3 @@
+# Custom multilibs for RTEMS
+
+MULTILIB_MATCHES  += mv850e=mv850es

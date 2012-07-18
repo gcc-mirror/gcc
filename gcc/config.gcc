@@ -2448,6 +2448,16 @@ tilepro-*-linux*)
 	c_target_objs="tilepro-c.o"
 	cxx_target_objs="tilepro-c.o"
 	;;
+v850-*-rtems*)
+	target_cpu_default="TARGET_CPU_generic"
+	tm_file="dbxelf.h elfos.h v850/v850.h"
+	tm_file="${tm_file} rtems.h v850/rtems.h newlib-stdint.h"
+	tmake_file="${tmake_file} v850/t-v850"
+	tmake_file="${tmake_file} t-rtems v850/t-rtems"
+	use_collect2=no
+	c_target_objs="v850-c.o"
+	cxx_target_objs="v850-c.o"
+	;;
 v850*-*-*)
 	case ${target} in
 	v850e2v3-*-*)
