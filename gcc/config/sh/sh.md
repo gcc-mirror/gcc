@@ -1431,21 +1431,14 @@
   [(set_attr "type" "arith_media")
    (set_attr "highpart" "ignore")])
 
-(define_insn "adddi3_compact"
+(define_insn_and_split "adddi3_compact"
   [(set (match_operand:DI 0 "arith_reg_dest" "=&r")
 	(plus:DI (match_operand:DI 1 "arith_reg_operand" "%0")
 		 (match_operand:DI 2 "arith_reg_operand" "r")))
    (clobber (reg:SI T_REG))]
   "TARGET_SH1"
   "#"
-  [(set_attr "length" "6")])
-
-(define_split
-  [(set (match_operand:DI 0 "arith_reg_dest" "")
-	(plus:DI (match_operand:DI 1 "arith_reg_operand" "")
-		 (match_operand:DI 2 "arith_reg_operand" "")))
-   (clobber (reg:SI T_REG))]
-  "TARGET_SH1 && reload_completed"
+  "&& reload_completed"
   [(const_int 0)]
 {
   rtx high0 = gen_highpart (SImode, operands[0]);
@@ -1556,21 +1549,14 @@
   [(set_attr "type" "arith_media")
    (set_attr "highpart" "ignore")])
 
-(define_insn "subdi3_compact"
+(define_insn_and_split "subdi3_compact"
   [(set (match_operand:DI 0 "arith_reg_dest" "=&r")
 	(minus:DI (match_operand:DI 1 "arith_reg_operand" "0")
 		 (match_operand:DI 2 "arith_reg_operand" "r")))
    (clobber (reg:SI T_REG))]
   "TARGET_SH1"
   "#"
-  [(set_attr "length" "6")])
-
-(define_split
-  [(set (match_operand:DI 0 "arith_reg_dest" "")
-	(minus:DI (match_operand:DI 1 "arith_reg_operand" "")
-		  (match_operand:DI 2 "arith_reg_operand" "")))
-   (clobber (reg:SI T_REG))]
-  "TARGET_SH1 && reload_completed"
+  "&& reload_completed"
   [(const_int 0)]
 {
   rtx high0 = gen_highpart (SImode, operands[0]);
@@ -2861,9 +2847,9 @@ label:
   [(set_attr "type" "dmpy")])
 
 (define_expand "mulsidi3"
-  [(set (match_operand:DI 0 "arith_reg_operand" "=r")
-	(mult:DI (sign_extend:DI (match_operand:SI 1 "arith_reg_operand" "r"))
-		 (sign_extend:DI (match_operand:SI 2 "arith_reg_operand" "r"))))]
+  [(set (match_operand:DI 0 "arith_reg_dest" "")
+	(mult:DI (sign_extend:DI (match_operand:SI 1 "arith_reg_operand" ""))
+		 (sign_extend:DI (match_operand:SI 2 "arith_reg_operand" ""))))]
   "TARGET_SH2 || TARGET_SHMEDIA"
 {
   if (TARGET_SH2)
@@ -2882,7 +2868,7 @@ label:
   [(set_attr "type" "dmpy_media")
    (set_attr "highpart" "ignore")])
 
-(define_insn "mulsidi3_compact"
+(define_insn_and_split "mulsidi3_compact"
   [(set (match_operand:DI 0 "arith_reg_dest" "=r")
 	(mult:DI
 	 (sign_extend:DI (match_operand:SI 1 "arith_reg_operand" "r"))
@@ -2890,16 +2876,8 @@ label:
    (clobber (reg:SI MACH_REG))
    (clobber (reg:SI MACL_REG))]
   "TARGET_SH2"
-  "#")
-
-(define_split
-  [(set (match_operand:DI 0 "arith_reg_dest" "")
-	(mult:DI
-	 (sign_extend:DI (match_operand:SI 1 "arith_reg_operand" ""))
-	 (sign_extend:DI (match_operand:SI 2 "arith_reg_operand" ""))))
-   (clobber (reg:SI MACH_REG))
-   (clobber (reg:SI MACL_REG))]
-  "TARGET_SH2"
+  "#"
+  "&& 1"
   [(const_int 0)]
 {
   rtx low_dst = gen_lowpart (SImode, operands[0]);
@@ -2930,9 +2908,9 @@ label:
   [(set_attr "type" "dmpy")])
 
 (define_expand "umulsidi3"
-  [(set (match_operand:DI 0 "arith_reg_operand" "=r")
-	(mult:DI (zero_extend:DI (match_operand:SI 1 "arith_reg_operand" "r"))
-		 (zero_extend:DI (match_operand:SI 2 "arith_reg_operand" "r"))))]
+  [(set (match_operand:DI 0 "arith_reg_dest" "")
+	(mult:DI (zero_extend:DI (match_operand:SI 1 "arith_reg_operand" ""))
+		 (zero_extend:DI (match_operand:SI 2 "arith_reg_operand" ""))))]
   "TARGET_SH2 || TARGET_SHMEDIA"
 {
   if (TARGET_SH2)
@@ -2951,7 +2929,7 @@ label:
   [(set_attr "type" "dmpy_media")
    (set_attr "highpart" "ignore")])
 
-(define_insn "umulsidi3_compact"
+(define_insn_and_split "umulsidi3_compact"
   [(set (match_operand:DI 0 "arith_reg_dest" "=r")
 	(mult:DI
 	 (zero_extend:DI (match_operand:SI 1 "arith_reg_operand" "r"))
@@ -2959,15 +2937,8 @@ label:
    (clobber (reg:SI MACH_REG))
    (clobber (reg:SI MACL_REG))]
   "TARGET_SH2"
-  "#")
-
-(define_split
-  [(set (match_operand:DI 0 "arith_reg_dest" "")
-	(mult:DI (zero_extend:DI (match_operand:SI 1 "arith_reg_operand" ""))
-		 (zero_extend:DI (match_operand:SI 2 "arith_reg_operand" ""))))
-   (clobber (reg:SI MACH_REG))
-   (clobber (reg:SI MACL_REG))]
-  "TARGET_SH2"
+  "#"
+  "&& 1"
   [(const_int 0)]
 {
   rtx low_dst = gen_lowpart (SImode, operands[0]);
@@ -3366,9 +3337,9 @@ label:
 ;; -------------------------------------------------------------------------
 
 (define_expand "rotldi3"
-  [(set (match_operand:DI 0 "arith_reg_dest" "=r")
-	(rotate:DI (match_operand:DI 1 "arith_reg_operand" "r")
-		   (match_operand:HI 2 "mextr_bit_offset" "i")))]
+  [(set (match_operand:DI 0 "arith_reg_dest" "")
+	(rotate:DI (match_operand:DI 1 "arith_reg_operand" "")
+		   (match_operand:HI 2 "mextr_bit_offset" "")))]
   "TARGET_SHMEDIA"
   "if (! mextr_bit_offset (operands[2], HImode)) FAIL;")
 
@@ -3387,9 +3358,9 @@ label:
   [(set_attr "type" "arith_media")])
 
 (define_expand "rotrdi3"
-  [(set (match_operand:DI 0 "arith_reg_dest" "=r")
-	(rotatert:DI (match_operand:DI 1 "arith_reg_operand" "r")
-		     (match_operand:HI 2 "mextr_bit_offset" "i")))]
+  [(set (match_operand:DI 0 "arith_reg_dest" "")
+	(rotatert:DI (match_operand:DI 1 "arith_reg_operand" "")
+		     (match_operand:HI 2 "mextr_bit_offset" "")))]
   "TARGET_SHMEDIA"
 {
   if (! mextr_bit_offset (operands[2], HImode))
@@ -3567,13 +3538,19 @@ label:
 	shll%O2	%0"
   [(set_attr "type" "arith")])
 
-(define_insn "ashlsi3_n"
+(define_insn_and_split "ashlsi3_n"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
 	(ashift:SI (match_operand:SI 1 "arith_reg_operand" "0")
 		   (match_operand:SI 2 "const_int_operand" "n")))
    (clobber (reg:SI T_REG))]
   "TARGET_SH1 && ! sh_dynamicalize_shift_p (operands[2])"
   "#"
+  "TARGET_SH1 && reload_completed"
+  [(use (reg:SI R0_REG))]
+{
+  gen_shifty_op (ASHIFT, operands);
+  DONE;
+}
   [(set (attr "length")
 	(cond [(match_test "shift_insns_rtx (insn)")
 	       (const_string "2")
@@ -3583,18 +3560,6 @@ label:
 	       (const_string "6")]
 	      (const_string "8")))
    (set_attr "type" "arith")])
-
-(define_split
-  [(set (match_operand:SI 0 "arith_reg_dest" "")
-	(ashift:SI (match_operand:SI 1 "arith_reg_operand" "")
-		   (match_operand:SI 2 "const_int_operand" "")))
-   (clobber (reg:SI T_REG))]
-  "TARGET_SH1 && reload_completed"
-  [(use (reg:SI R0_REG))]
-{
-  gen_shifty_op (ASHIFT, operands);
-  DONE;
-})
 
 (define_insn "ashlsi3_media"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r,r")
@@ -3631,21 +3596,6 @@ label:
     FAIL;
 })
 
-(define_insn "*ashlhi3_n"
-  [(set (match_operand:HI 0 "arith_reg_dest" "=r")
-	(ashift:HI (match_operand:HI 1 "arith_reg_operand" "0")
-		   (match_operand:HI 2 "const_int_operand" "n")))
-   (clobber (reg:SI T_REG))]
-  "TARGET_SH1"
-  "#"
-  [(set (attr "length")
-	(cond [(match_test "shift_insns_rtx (insn)")
-	       (const_string "2")
-	       (eq (symbol_ref "shift_insns_rtx (insn)") (const_int 2))
-	       (const_string "4")]
-	      (const_string "6")))
-   (set_attr "type" "arith")])
-
 (define_expand "ashlhi3"
   [(parallel [(set (match_operand:HI 0 "arith_reg_operand" "")
 		   (ashift:HI (match_operand:HI 1 "arith_reg_operand" "")
@@ -3661,17 +3611,26 @@ label:
     operands[1] = copy_to_mode_reg (HImode, operands[1]);
 })
 
-(define_split
-  [(set (match_operand:HI 0 "arith_reg_dest" "")
-	(ashift:HI (match_operand:HI 1 "arith_reg_operand" "")
-		   (match_operand:HI 2 "const_int_operand" "")))
+(define_insn_and_split "*ashlhi3_n"
+  [(set (match_operand:HI 0 "arith_reg_dest" "=r")
+	(ashift:HI (match_operand:HI 1 "arith_reg_operand" "0")
+		   (match_operand:HI 2 "const_int_operand" "n")))
    (clobber (reg:SI T_REG))]
-  "TARGET_SH1 && reload_completed"
+  "TARGET_SH1"
+  "#"
+  "&& reload_completed"
   [(use (reg:SI R0_REG))]
 {
   gen_shifty_hi_op (ASHIFT, operands);
   DONE;
-})
+}
+  [(set (attr "length")
+	(cond [(match_test "shift_insns_rtx (insn)")
+	       (const_string "2")
+	       (eq (symbol_ref "shift_insns_rtx (insn)") (const_int 2))
+	       (const_string "4")]
+	      (const_string "6")))
+   (set_attr "type" "arith")])
 
 ;;
 ;; arithmetic shift right
@@ -3694,19 +3653,13 @@ label:
 
 ;; ??? This should be a define expand.
 
-(define_insn "ashrsi2_16"
+(define_insn_and_split "ashrsi2_16"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
         (ashiftrt:SI (match_operand:SI 1 "arith_reg_operand" "r")
                      (const_int 16)))]
   "TARGET_SH1"
   "#"
-  [(set_attr "length" "4")])
-
-(define_split
-  [(set (match_operand:SI 0 "arith_reg_dest" "")
-        (ashiftrt:SI (match_operand:SI 1 "arith_reg_operand" "")
-		     (const_int 16)))]
-  "TARGET_SH1"
+  "&& 1"
   [(set (match_dup 0) (rotate:SI (match_dup 1) (const_int 16)))
    (set (match_dup 0) (sign_extend:SI (match_dup 2)))]
 {
@@ -3715,21 +3668,14 @@ label:
 
 ;; ??? This should be a define expand.
 
-(define_insn "ashrsi2_31"
+(define_insn_and_split "ashrsi2_31"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
 	(ashiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
 		     (const_int 31)))
    (clobber (reg:SI T_REG))]
   "TARGET_SH1"
   "#"
-  [(set_attr "length" "4")])
-
-(define_split
-  [(set (match_operand:SI 0 "arith_reg_dest" "")
-	(ashiftrt:SI (match_operand:SI 1 "arith_reg_operand" "")
-		     (const_int 31)))
-   (clobber (reg:SI T_REG))]
-  "TARGET_SH1"
+  "&& 1"
   [(const_int 0)]
 {
   emit_insn (gen_ashlsi_c (operands[0], operands[1]));
@@ -3799,7 +3745,7 @@ label:
    (set_attr "highpart" "ignore")])
 
 (define_expand "ashrsi3"
-  [(parallel [(set (match_operand:SI 0 "arith_reg_operand" "")
+  [(parallel [(set (match_operand:SI 0 "arith_reg_dest" "")
 		   (ashiftrt:SI (match_operand:SI 1 "arith_reg_operand" "")
 				(match_operand:SI 2 "nonmemory_operand" "")))
 	      (clobber (reg:SI T_REG))])]
@@ -3846,13 +3792,19 @@ label:
   "shlr%O2	%0"
   [(set_attr "type" "arith")])
 
-(define_insn "lshrsi3_n"
+(define_insn_and_split "lshrsi3_n"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
 	(lshiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
 		     (match_operand:SI 2 "const_int_operand" "n")))
    (clobber (reg:SI T_REG))]
   "TARGET_SH1 && ! sh_dynamicalize_shift_p (operands[2])"
   "#"
+  "TARGET_SH1 && reload_completed"
+  [(use (reg:SI R0_REG))]
+{
+  gen_shifty_op (LSHIFTRT, operands);
+  DONE;
+}
   [(set (attr "length")
 	(cond [(match_test "shift_insns_rtx (insn)")
 	       (const_string "2")
@@ -3862,18 +3814,6 @@ label:
 	       (const_string "6")]
 	      (const_string "8")))
    (set_attr "type" "arith")])
-
-(define_split
-  [(set (match_operand:SI 0 "arith_reg_dest" "")
-	(lshiftrt:SI (match_operand:SI 1 "arith_reg_operand" "")
-		     (match_operand:SI 2 "const_int_operand" "")))
-   (clobber (reg:SI T_REG))]
-  "TARGET_SH1 && reload_completed"
-  [(use (reg:SI R0_REG))]
-{
-  gen_shifty_op (LSHIFTRT, operands);
-  DONE;
-})
 
 (define_insn "lshrsi3_media"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r,r")

@@ -1,5 +1,14 @@
 2012-07-18  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	* config/sh/sh.md (mulsidi3, umulsidi3): Remove constraints in
+	expander.  Use arith_reg_dest predicate.
+	(rotldi3, rotrdi3): Remove constraints in expander.
+	(adddi3_compact, subdi3_compact, mulsidi3_compact, umulsidi3_compact,
+	ashlsi3_n, *ashlhi3_n, ashrsi2_16, ashrsi2_31, lshrsi3_n): Convert to
+	insn_and_split.
+
+2012-07-18  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	PR target/33135
 	* config/sh/sh.opt (mieee): Use Var instead of Mask.  Correct
 	description.
