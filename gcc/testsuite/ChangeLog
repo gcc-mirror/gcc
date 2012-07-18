@@ -1,5 +1,10 @@
 2012-07-18  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	PR target/38621
+	* gcc.c-torture/compile/pr38621.c: New.
+
+2012-07-18  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	PR target/33135
 	* gcc.target/sh/pr33135-1.c: New.
 	* gcc.target/sh/pr33135-2.c: New.
