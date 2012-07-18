@@ -1,3 +1,9 @@
+2012-07-17  Kazu Hirata  <kazu@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gcc.target/m68k/pr36134.c: Use dg-skip-if to skip the testcase
+	if there is a conflict with -mcpu=.  Use -mcpu=5208.
+
 2012-07-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/53989
