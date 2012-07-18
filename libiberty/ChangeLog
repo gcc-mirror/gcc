@@ -1,3 +1,9 @@
+2012-07-18  Jason Merrill  <jason@redhat.com>
+
+	* cp-demangle.c (cplus_demangle_operators): Add *_cast.
+	(op_is_new_cast): New.
+	(d_expression, d_print_comp): Check it.
+
 2012-07-13  Doug Evans  <dje@google.com>
 
 	* filename_cmp.c (filename_hash, filename_eq): New functions.
