@@ -1,3 +1,8 @@
+2012-07-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53995
+	* g++.dg/parse/enum9.C: New.
+
 2012-07-17  Kazu Hirata  <kazu@codesourcery.com>
 	    Sandra Loosemore  <sandra@codesourcery.com>
 
