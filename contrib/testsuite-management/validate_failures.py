@@ -1,4 +1,4 @@
-#!/usr/bin/python2.6
+#!/usr/bin/python
 
 # Script to compare testsuite failures against a list of known-to-fail
 # tests.
