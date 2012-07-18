@@ -1,3 +1,17 @@
+2012-07-18  Richard Guenther  <rguenther@suse.de>
+
+	* tree.h (get_object_or_type_alignment): Remove.
+	* builtins.c (get_object_alignment_2): New function copied from
+	get_object_alignment_1.  Take extra argument to indicate whether
+	we take the address of EXP.  Rework to use type alignment information
+	if not, and return whether the result is an approximation or not.
+	(get_object_alignment_1): Wrap around get_object_alignment_2.
+	(get_pointer_alignment_1): Call get_object_alignment_2 indicating
+	we take the address.
+	(get_object_or_type_alignment): Remove.
+	* expr.c (expand_assignment): Call get_object_alignment.
+	(expand_expr_real_1): Likewise.
+
 2012-07-18  Nick Clifton  <nickc@redhat.com>
 
 	* doc/invoke.texi (ARM Options): Document -munaligned-access.
