@@ -1,6 +1,13 @@
 2012-07-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR libjava/53973
+	* include/x86_64-signal.h (CHECK_67H_PREFIX): Removed.
+	(HANDLE_DIVIDE_OVERFLOW): Skip 67h address size prefix
+	unconditionally.
+
+2012-07-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR libjava/53973
 	* include/x86_64-signal.h (CHECK_67H_PREFIX): New.
 	(HANDLE_DIVIDE_OVERFLOW): Check and and skip 67h address size
 	prefix if CHECK_67H_PREFIX is 1.  Use ULL suffix for 64-bit
