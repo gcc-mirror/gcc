@@ -1,3 +1,8 @@
+2012-07-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/noreturn4.ad[sb]: New test.
+	* gnat.dg/noreturn4_pkg.ads: New helper.
+
 2012-07-18  Jie Zhang  <jzhang918@gmail.com>
 	    Julian Brown  <julian@codesourcery.com>
 
