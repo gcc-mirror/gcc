@@ -1,3 +1,14 @@
+2012-07-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR libffi/53982
+	PR libffi/53973
+	* src/x86/ffitarget.h: Check __ILP32__ instead of __LP64__ for x32.
+	(FFI_SIZEOF_JAVA_RAW): Defined to 4 for x32.
+
+2012-05-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure: Regenerated.
+
 2012-04-02  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* src/powerpc/ffi.c (ffi_prep_args_SYSV): Declare double_tmp.
