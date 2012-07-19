@@ -3531,7 +3531,7 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
   if (code == MULT_HIGHPART_EXPR)
     {
       if (can_mult_highpart_p (vec_mode, TYPE_UNSIGNED (vectype)))
-	icode = 0;
+	icode = LAST_INSN_CODE;
       else
 	icode = CODE_FOR_nothing;
     }
