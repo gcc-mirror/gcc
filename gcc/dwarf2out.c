@@ -4011,6 +4011,23 @@ get_AT (dw_die_ref die, enum dwarf_attribute attr_kind)
   return NULL;
 }
 
+/* Returns the parent of the declaration of DIE.  */
+
+static dw_die_ref
+get_die_parent (dw_die_ref die)
+{
+  dw_die_ref t;
+
+  if (!die)
+    return NULL;
+
+  if ((t = get_AT_ref (die, DW_AT_abstract_origin))
+      || (t = get_AT_ref (die, DW_AT_specification)))
+    die = t;
+
+  return die->die_parent;
+}
+
 /* Return the "low pc" attribute value, typically associated with a subprogram
    DIE.  Return null if the "low pc" attribute is either not present, or if it
    cannot be represented as an assembler label identifier.  */
@@ -5630,9 +5647,11 @@ generate_type_signature (dw_die_ref die, comdat_type_node *type_node)
   unsigned char checksum[16];
   struct md5_ctx ctx;
   dw_die_ref decl;
+  dw_die_ref parent;
 
   name = get_AT_string (die, DW_AT_name);
   decl = get_AT_ref (die, DW_AT_specification);
+  parent = get_die_parent (die);
 
   /* First, compute a signature for just the type name (and its surrounding
      context, if any.  This is stored in the type unit DIE for link-time
@@ -5643,8 +5662,8 @@ generate_type_signature (dw_die_ref die, comdat_type_node *type_node)
       md5_init_ctx (&ctx);
 
       /* Checksum the names of surrounding namespaces and structures.  */
-      if (decl != NULL && decl->die_parent != NULL)
-        checksum_die_context (decl->die_parent, &ctx);
+      if (parent != NULL)
+        checksum_die_context (parent, &ctx);
 
       md5_process_bytes (&die->die_tag, sizeof (die->die_tag), &ctx);
       md5_process_bytes (name, strlen (name) + 1, &ctx);
@@ -5660,8 +5679,8 @@ generate_type_signature (dw_die_ref die, comdat_type_node *type_node)
   die->die_mark = mark;
 
   /* Checksum the names of surrounding namespaces and structures.  */
-  if (decl != NULL && decl->die_parent != NULL)
-    checksum_die_context (decl->die_parent, &ctx);
+  if (parent != NULL)
+    checksum_die_context (parent, &ctx);
 
   /* Checksum the DIE and its children.  */
   die_checksum_ordered (die, &ctx, &mark);
