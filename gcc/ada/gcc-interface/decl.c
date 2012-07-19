@@ -911,6 +911,16 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 						debug_info_p);
 	  }
 
+	/* ??? If this is an object of CW type initialized to a value, try to
+	   ensure that the object is sufficient aligned for this value, but
+	   without pessimizing the allocation.  This is a kludge necessary
+	   because we don't support dynamic alignment.  */
+	if (align == 0
+	    && Ekind (Etype (gnat_entity)) == E_Class_Wide_Subtype
+	    && No (Renamed_Object (gnat_entity))
+	    && No (Address_Clause (gnat_entity)))
+	  align = get_target_system_allocator_alignment () * BITS_PER_UNIT;
+
 #ifdef MINIMUM_ATOMIC_ALIGNMENT
 	/* If the size is a constant and no alignment is specified, force
 	   the alignment to be the minimum valid atomic alignment.  The
@@ -920,7 +930,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	   necessary and can interfere with constant replacement.  Finally,
 	   do not do it for Out parameters since that creates an
 	   size inconsistency with In parameters.  */
-	if (align == 0 && MINIMUM_ATOMIC_ALIGNMENT > TYPE_ALIGN (gnu_type)
+	if (align == 0
+	    && MINIMUM_ATOMIC_ALIGNMENT > TYPE_ALIGN (gnu_type)
 	    && !FLOAT_TYPE_P (gnu_type)
 	    && !const_flag && No (Renamed_Object (gnat_entity))
 	    && !imported_p && No (Address_Clause (gnat_entity))
