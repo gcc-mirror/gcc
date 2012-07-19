@@ -888,8 +888,8 @@ enum epiphany_function_type
 
 #define MODE_ENTRY(ENTITY) (epiphany_mode_entry_exit ((ENTITY), false))
 #define MODE_EXIT(ENTITY) (epiphany_mode_entry_exit ((ENTITY), true))
-#define MODE_AFTER(LAST_MODE, INSN) \
-  (epiphany_mode_after (e, (LAST_MODE), (INSN)))
+#define MODE_AFTER(ENTITY, LAST_MODE, INSN) \
+  (epiphany_mode_after ((ENTITY), (LAST_MODE), (INSN)))
 
 #define TARGET_INSERT_MODE_SWITCH_USE epiphany_insert_mode_switch_use
 

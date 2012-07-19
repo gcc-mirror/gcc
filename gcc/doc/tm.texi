@@ -9708,8 +9708,9 @@ return an integer value not larger than the corresponding element in
 be switched into prior to the execution of @var{insn}.
 @end defmac
 
-@defmac MODE_AFTER (@var{mode}, @var{insn})
-If this macro is defined, it is evaluated for every @var{insn} during
+@defmac MODE_AFTER (@var{entity}, @var{mode}, @var{insn})
+@var{entity} is an integer specifying a mode-switched entity.  If
+this macro is defined, it is evaluated for every @var{insn} during
 mode switching.  It determines the mode that an insn results in (if
 different from the incoming mode).
 @end defmac

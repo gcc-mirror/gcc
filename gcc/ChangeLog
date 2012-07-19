@@ -1,3 +1,11 @@
+2012-07-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* doc/tm.texi.in (MODE_AFTER): Add entity as the first macro argument.
+	* doc/tm.texi: Regenerate.
+	* mode-switching.c (optimize_mode_switching): Update MODE_AFTER call.
+	* config/sh/sh.h (MODE_AFTER): Update.
+	* config/epiphany/epiphany.h (MODE_AFTER): Update.
+
 2012-07-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/54017
@@ -12,19 +20,17 @@
 	* config/sh/sh.c (gen_far_branch): Set JUMP_LABEL for return jumps.
 
 2012-07-19  Richard Guenther  <rguenther@suse.de>
-	Eric Botcazou  <ebotcazou@adacore.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-ssa-ccp.c (valid_lattice_transition): Clarify comment
 	about transition from invariant to known bits.
-	(likely_value): Addresses with UNDEFINED components are
-	UNDEFINED.
+	(likely_value): Addresses with UNDEFINED components are UNDEFINED.
 
 2012-07-19  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/53970
-	* tree-vect-data-refs.c (not_size_aligned): Avoid sign-compare
-	warning.
- 
+	* tree-vect-data-refs.c (not_size_aligned): Avoid sign-compare warning.
+
 2012-07-19  Tristan Gingold  <gingold@adacore.com>
 	    Richard Henderson  <rth@redhat.com>
 
@@ -44,16 +50,16 @@
 	    Chao-ying Fu  <fu@mips.com>
 
 	* config/mips/mips.opt (mmcu): New option.
-	* config/mips/mips.h (TARGET_CPU_CPP_BUILTINS): Define 
+	* config/mips/mips.h (TARGET_CPU_CPP_BUILTINS): Define
 	_mips_mcu when TARGET_MCU.
 	(ASM_SPEC): Pass mcu options to the assembler.
 	* doc/invoke.texi (MIPS Options): Document -mmcu and -mno-mcu.
 
 2012-07-18  Ralf Corsépius  <ralf.corsepius@rtems.org>
 
-       * config.gcc (v850-*-rtems*): New target.
-       * config/v850/rtems.h: New.
-       * config/v850/t-rtems: New.
+	* config.gcc (v850-*-rtems*): New target.
+	* config/v850/rtems.h: New.
+	* config/v850/t-rtems: New.
 
 2012-07-18  Bill Schmidt  <wschmidt@linux.ibm.com>
 
@@ -71,8 +77,7 @@
 2012-07-18  Jie Zhang  <jzhang918@gmail.com>
 	    Julian Brown  <julian@codesourcery.com>
 
-	* config/arm/arm.c (arm_rtx_costs_1): Adjust cost for
-	CONST_VECTOR.
+	* config/arm/arm.c (arm_rtx_costs_1): Adjust cost for CONST_VECTOR.
 	(arm_size_rtx_costs): Likewise.
 	(neon_valid_immediate): Add a case for double 0.0.
 
@@ -372,7 +377,7 @@
 	* doc/tm.texi: Regenerate.
 
 	* emit-rtl.c (emit_label_before): Do not allow the same label
-        to be emitted twice.
+	to be emitted twice.
 	(emit_label_after): Likewise.
 	(emit_label): Likewise.
 
@@ -426,59 +431,59 @@
 	* stmt.c: Include dumpfile.h.
 	(emit_case_decision_tree): Re-enable printing expand details only
 	if TDF_DETAILS.
-	* alias.c, auto-inc-dec.c, bb-reorder.c, caller-save.c, cfg.c, 
-	cfgcleanup.c, cfgexpand.c, cfgloop.c, cfgloopmanip.c, cgraph.c, 
-	cgraphclones.c, cgraphunit.c, combine.c, combine-stack-adj.c, 
-	coverage.c, cprop.c, cse.c, cselib.c, dbgcnt.c, dce.c, df-core.c, 
-	dse.c, dwarf2out.c, emit-rtl.c, except.c, expr.c, final.c, 
-	function.c, fwprop.c, gcse.c, gimple-fold.c, 
-	gimple-pretty-print.c, gimple-ssa-strength-reduction.c, 
-	gimplify.c, graphite-blocking.c, graphite-clast-to-gimple.c, 
-	graphite-dependences.c, graphite-interchange.c, 
-	graphite-optimize-isl.c, graphite-poly.c, 
-	graphite-sese-to-poly.c, haifa-sched.c, hw-doloop.c, ifcvt.c, 
-	ipa.c, ipa-cp.c, ipa-inline-analysis.c, ipa-inline.c, 
-	ipa-inline-transform.c, ipa-prop.c, ipa-pure-const.c, 
-	ipa-reference.c, ipa-split.c, ipa-utils.c, ira.c, ira-emit.c, 
-	jump.c, loop-doloop.c, loop-init.c, loop-invariant.c, loop-iv.c, 
-	loop-unroll.c, loop-unswitch.c, lower-subreg.c, 
-	lto-section-out.c, lto-streamer-in.c, matrix-reorg.c, mcf.c, 
-	mode-switching.c, modulo-sched.c, omega.c, omp-low.c, passes.c, 
-	plugin.c, postreload.c, postreload-gcse.c, predict.c, print-rtl.c, 
-	print-tree.c, profile.c, recog.c, ree.c, regcprop.c, reginfo.c, 
-	regmove.c, regrename.c, reg-stack.c, reload1.c, reorg.c, 
-	sched-rgn.c, sched-vis.c, sel-sched.c, sel-sched-ir.c, 
-	store-motion.c, tracer.c, trans-mem.c, tree-affine.c, 
-	tree-call-cdce.c, tree-cfgcleanup.c, tree-chrec.c, 
+	* alias.c, auto-inc-dec.c, bb-reorder.c, caller-save.c, cfg.c,
+	cfgcleanup.c, cfgexpand.c, cfgloop.c, cfgloopmanip.c, cgraph.c,
+	cgraphclones.c, cgraphunit.c, combine.c, combine-stack-adj.c,
+	coverage.c, cprop.c, cse.c, cselib.c, dbgcnt.c, dce.c, df-core.c,
+	dse.c, dwarf2out.c, emit-rtl.c, except.c, expr.c, final.c,
+	function.c, fwprop.c, gcse.c, gimple-fold.c,
+	gimple-pretty-print.c, gimple-ssa-strength-reduction.c,
+	gimplify.c, graphite-blocking.c, graphite-clast-to-gimple.c,
+	graphite-dependences.c, graphite-interchange.c,
+	graphite-optimize-isl.c, graphite-poly.c,
+	graphite-sese-to-poly.c, haifa-sched.c, hw-doloop.c, ifcvt.c,
+	ipa.c, ipa-cp.c, ipa-inline-analysis.c, ipa-inline.c,
+	ipa-inline-transform.c, ipa-prop.c, ipa-pure-const.c,
+	ipa-reference.c, ipa-split.c, ipa-utils.c, ira.c, ira-emit.c,
+	jump.c, loop-doloop.c, loop-init.c, loop-invariant.c, loop-iv.c,
+	loop-unroll.c, loop-unswitch.c, lower-subreg.c,
+	lto-section-out.c, lto-streamer-in.c, matrix-reorg.c, mcf.c,
+	mode-switching.c, modulo-sched.c, omega.c, omp-low.c, passes.c,
+	plugin.c, postreload.c, postreload-gcse.c, predict.c, print-rtl.c,
+	print-tree.c, profile.c, recog.c, ree.c, regcprop.c, reginfo.c,
+	regmove.c, regrename.c, reg-stack.c, reload1.c, reorg.c,
+	sched-rgn.c, sched-vis.c, sel-sched.c, sel-sched-ir.c,
+	store-motion.c, tracer.c, trans-mem.c, tree-affine.c,
+	tree-call-cdce.c, tree-cfgcleanup.c, tree-chrec.c,
 	tree-data-ref.c, tree-diagnostic.c, tree-dump.c,
-	tree-eh.c, tree-flow-inline.h, tree-if-conv.c, tree-into-ssa.c, 
-	tree-mudflap.c, tree-nrv.c, tree-object-size.c, 
-	tree-optimize.c, tree-outof-ssa.c, tree-predcom.c, 
-	tree-pretty-print.c, tree-profile.c, tree-scalar-evolution.c, 
-	tree-sra.c, tree-ssa-address.c, tree-ssa-alias.c, tree-ssa.c, 
-	tree-ssa-ccp.c, tree-ssa-coalesce.c, tree-ssa-copy.c, 
-	tree-ssa-copyrename.c,, tree-ssa-dce.c, tree-ssa-dom.c, 
-	tree-ssa-dse.c, tree-ssa-forwprop.c, tree-ssa-ifcombine.c, 
-	tree-ssa-loop.c, tree-ssa-loop-ch.c, tree-ssa-loop-im.c, 
-	tree-ssa-loop-ivcanon.c, tree-ssa-loop-ivopts.c, 
-	tree-ssa-loop-manip.c, tree-ssa-loop-niter.c, 
-	tree-ssa-loop-prefetch.c, tree-ssa-loop-unswitch.c, 
-	tree-ssa-math-opts.c, tree-ssa-operands.c, tree-ssa-phiopt.c, 
-	tree-ssa-phiprop.c, tree-ssa-pre.c, tree-ssa-propagate.c, 
-	tree-ssa-reassoc.c, tree-ssa-sccvn.c, tree-ssa-sink.c, 
-	tree-ssa-structalias.c, tree-ssa-tail-merge.c, tree-ssa-ter.c, 
-	tree-ssa-threadedge.c, tree-ssa-threadupdate.c, 
-	tree-ssa-uncprop.c, tree-ssa-uninit.c, 
-	tree-switch-conversion.c, tree-tailcall.c, 
-	tree-vect-data-refs.c, tree-vect-loop.c, 
-	tree-vect-loop-manip.c, tree-vectorizer.c, 
-	tree-vect-patterns.c, tree-vect-slp.c, tree-vect-stmts.c, 
+	tree-eh.c, tree-flow-inline.h, tree-if-conv.c, tree-into-ssa.c,
+	tree-mudflap.c, tree-nrv.c, tree-object-size.c,
+	tree-optimize.c, tree-outof-ssa.c, tree-predcom.c,
+	tree-pretty-print.c, tree-profile.c, tree-scalar-evolution.c,
+	tree-sra.c, tree-ssa-address.c, tree-ssa-alias.c, tree-ssa.c,
+	tree-ssa-ccp.c, tree-ssa-coalesce.c, tree-ssa-copy.c,
+	tree-ssa-copyrename.c,, tree-ssa-dce.c, tree-ssa-dom.c,
+	tree-ssa-dse.c, tree-ssa-forwprop.c, tree-ssa-ifcombine.c,
+	tree-ssa-loop.c, tree-ssa-loop-ch.c, tree-ssa-loop-im.c,
+	tree-ssa-loop-ivcanon.c, tree-ssa-loop-ivopts.c,
+	tree-ssa-loop-manip.c, tree-ssa-loop-niter.c,
+	tree-ssa-loop-prefetch.c, tree-ssa-loop-unswitch.c,
+	tree-ssa-math-opts.c, tree-ssa-operands.c, tree-ssa-phiopt.c,
+	tree-ssa-phiprop.c, tree-ssa-pre.c, tree-ssa-propagate.c,
+	tree-ssa-reassoc.c, tree-ssa-sccvn.c, tree-ssa-sink.c,
+	tree-ssa-structalias.c, tree-ssa-tail-merge.c, tree-ssa-ter.c,
+	tree-ssa-threadedge.c, tree-ssa-threadupdate.c,
+	tree-ssa-uncprop.c, tree-ssa-uninit.c,
+	tree-switch-conversion.c, tree-tailcall.c,
+	tree-vect-data-refs.c, tree-vect-loop.c,
+	tree-vect-loop-manip.c, tree-vectorizer.c,
+	tree-vect-patterns.c, tree-vect-slp.c, tree-vect-stmts.c,
 	tree-vrp.c, value-prof.c, var-tracking.c, web.c: Include tree-pass.h
 	only if needed.  If tree-pass.h is included, do not include timevar.h
 	and dumpfile.h.  If tree-pass.h is not included but dump_file, or
 	dump_flags, or the TDF_* flags are used, include dumpfile.h.
-	If gimple-pretty-print.h is included, don't include tree-pretty-print.h.
-	Remove assorted unnecessary includes.
+	If gimple-pretty-print.h is included, don't include
+	tree-pretty-print.h.  Remove assorted unnecessary includes.
 
 	* config/mn10300/mn10300.c, config/c6x/c6x.c, config/ia64/ia64.c,
 	config/arm/arm.c, config/bfin/bfin.c, config/frv/frv.c,
@@ -622,7 +627,7 @@
 	reflect the change to include %2 in expansion.  All callers changed.
 	(qm3): New mode_attr.
 	("atomic_fetch_<atomic_op_name><mode>"): Use <atomic_op_op_pred>
-	as predicate for operand 2. 
+	as predicate for operand 2.
 	("cris_atomic_fetch_<atomic_op_name><mode>_1"): Update FIXME.  Use
 	"<atomic_op_op_pred>" "<atomic_op_op_cnstr>" for predicate and
 	constraint for operand 2.
