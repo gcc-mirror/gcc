@@ -1,3 +1,7 @@
+2012-07-18  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (instantiate_decl): Don't recheck substitutions.
+
 2012-07-18  Paolo Carlini  <paolo.carlini@oracle.com>
 	    Jason Merrill  <jason@redhat.com>
 

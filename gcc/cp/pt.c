@@ -18248,35 +18248,6 @@ instantiate_decl (tree d, int defer_ok,
   if (TREE_CODE (d) == FUNCTION_DECL)
     maybe_instantiate_noexcept (d);
 
-  /* Recheck the substitutions to obtain any warning messages
-     about ignoring cv qualifiers.  Don't do this for artificial decls,
-     as it breaks the context-sensitive substitution for lambda op(). */
-  if (!defer_ok && !DECL_ARTIFICIAL (d))
-    {
-      tree gen = DECL_TEMPLATE_RESULT (gen_tmpl);
-      tree type = TREE_TYPE (gen);
-
-      /* Make sure that we can see identifiers, and compute access
-	 correctly.  D is already the target FUNCTION_DECL with the
-	 right context.  */
-      push_access_scope (d);
-
-      if (TREE_CODE (gen) == FUNCTION_DECL)
-	{
-	  tsubst (DECL_ARGUMENTS (gen), gen_args, tf_warning_or_error, d);
-          tsubst_exception_specification (type, gen_args, tf_warning_or_error,
-                                          d, /*defer_ok*/true);
-	  /* Don't simply tsubst the function type, as that will give
-	     duplicate warnings about poor parameter qualifications.
-	     The function arguments are the same as the decl_arguments
-	     without the top level cv qualifiers.  */
-	  type = TREE_TYPE (type);
-	}
-      tsubst (type, gen_args, tf_warning_or_error, d);
-
-      pop_access_scope (d);
-    }
-
   /* Defer all other templates, unless we have been explicitly
      forbidden from doing so.  */
   if (/* If there is no definition, we cannot instantiate the
