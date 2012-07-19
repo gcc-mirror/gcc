@@ -1,3 +1,10 @@
+2012-07-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/53942
+	* function.c (assign_parm_setup_reg): Avoid zero/sign extension
+	directly from likely spilled non-fixed hard registers, move them
+	to pseudo first.
+
 2012-07-19  Steve Ellcey  <sellcey@mips.com>
 
 	* config/mips/mips.c (mips_set_mips16_mode): Clear SYNCI_MASK in
