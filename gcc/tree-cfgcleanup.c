@@ -606,48 +606,13 @@ split_bbs_on_noreturn_calls (void)
   return changed;
 }
 
-/* If GIMPLE_OMP_RETURN in basic block BB is unreachable, remove it.  */
-
-static bool
-cleanup_omp_return (basic_block bb)
-{
-  gimple stmt = last_stmt (bb);
-  basic_block control_bb;
-
-  if (stmt == NULL
-      || gimple_code (stmt) != GIMPLE_OMP_RETURN
-      || !single_pred_p (bb))
-    return false;
-
-  control_bb = single_pred (bb);
-  stmt = last_stmt (control_bb);
-
-  if (stmt == NULL || gimple_code (stmt) != GIMPLE_OMP_SECTIONS_SWITCH)
-    return false;
-
-  /* The block with the control statement normally has two entry edges -- one
-     from entry, one from continue.  If continue is removed, return is
-     unreachable, so we remove it here as well.  */
-  if (EDGE_COUNT (control_bb->preds) == 2)
-    return false;
-
-  gcc_assert (EDGE_COUNT (control_bb->preds) == 1);
-  remove_edge_and_dominated_blocks (single_pred_edge (bb));
-  return true;
-}
-
 /* Tries to cleanup cfg in basic block BB.  Returns true if anything
    changes.  */
 
 static bool
 cleanup_tree_cfg_bb (basic_block bb)
 {
-  bool retval = false;
-
-  if (cleanup_omp_return (bb))
-    return true;
-
-  retval = cleanup_control_flow_bb (bb);
+  bool retval = cleanup_control_flow_bb (bb);
 
   if (tree_forwarder_block_p (bb, false)
       && remove_forwarder_block (bb))
