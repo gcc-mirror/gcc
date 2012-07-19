@@ -81,19 +81,19 @@ struct Y { };
 
 struct Z {
 private:
-  Z operator+(); // { dg-error "is private" }
-  Z operator-(); // { dg-error "is private" }
-  int operator*(); // { dg-error "is private" }
-  Z operator~(); // { dg-error "is private" } 
-  bool operator!(); // { dg-error "is private" }  
-  Z& operator++(); // { dg-error "is private" }  
-  Z& operator--(); // { dg-error "is private" }  
-  Z& operator++(int); // { dg-error "is private" }  
-  Z& operator--(int); // { dg-error "is private" }  
+  Z operator+();
+  Z operator-();
+  int operator*();
+  Z operator~();
+  bool operator!();
+  Z& operator++();
+  Z& operator--();
+  Z& operator++(int);
+  Z& operator--(int);
 };
 
 // has_unary_plus
-DEFINE_PREFIX_UNARY_TRAIT(has_unary_plus, +); // { dg-error "within this context" }
+DEFINE_PREFIX_UNARY_TRAIT(has_unary_plus, +);
 STATIC_ASSERT((has_unary_plus<int>::value));
 STATIC_ASSERT((!has_unary_plus<int X::*>::value));
 STATIC_ASSERT((has_unary_plus<W>::value));
@@ -101,7 +101,7 @@ STATIC_ASSERT((has_unary_plus<X>::value));
 STATIC_ASSERT((!has_unary_plus<Y>::value));
 
 // is_negatable
-DEFINE_PREFIX_UNARY_TRAIT(is_negatable, -); // { dg-error "within this context" }
+DEFINE_PREFIX_UNARY_TRAIT(is_negatable, -);
 STATIC_ASSERT((is_negatable<int>::value));
 STATIC_ASSERT((!is_negatable<int X::*>::value));
 STATIC_ASSERT((is_negatable<W>::value));
@@ -109,7 +109,7 @@ STATIC_ASSERT((is_negatable<X>::value));
 STATIC_ASSERT((!is_negatable<Y>::value));
 
 // is_dereferenceable
-DEFINE_PREFIX_UNARY_TRAIT(is_dereferenceable, *); // { dg-error "within this context" }
+DEFINE_PREFIX_UNARY_TRAIT(is_dereferenceable, *);
 STATIC_ASSERT((!is_dereferenceable<int>::value));
 STATIC_ASSERT((is_dereferenceable<int*>::value));
 STATIC_ASSERT((is_dereferenceable<W>::value));
@@ -117,7 +117,7 @@ STATIC_ASSERT((is_dereferenceable<X>::value));
 STATIC_ASSERT((!is_dereferenceable<Y>::value));
 
 // has_bitwise_not
-DEFINE_PREFIX_UNARY_TRAIT(has_bitwise_not, ~); // { dg-error "within this context" }
+DEFINE_PREFIX_UNARY_TRAIT(has_bitwise_not, ~);
 STATIC_ASSERT((has_bitwise_not<int>::value));
 STATIC_ASSERT((!has_bitwise_not<int*>::value));
 STATIC_ASSERT((has_bitwise_not<W>::value));
@@ -125,7 +125,7 @@ STATIC_ASSERT((has_bitwise_not<X>::value));
 STATIC_ASSERT((!has_bitwise_not<Y>::value));
 
 // has_truth_not
-DEFINE_PREFIX_UNARY_TRAIT(has_truth_not, !); // { dg-error "within this context" }
+DEFINE_PREFIX_UNARY_TRAIT(has_truth_not, !);
 STATIC_ASSERT((has_truth_not<int>::value));
 STATIC_ASSERT((has_truth_not<int*>::value));
 STATIC_ASSERT((has_truth_not<W>::value));
@@ -133,7 +133,7 @@ STATIC_ASSERT((has_truth_not<X>::value));
 STATIC_ASSERT((!has_truth_not<Y>::value));
 
 // has_preincrement
-DEFINE_PREFIX_UNARY_TRAIT(has_preincrement, ++); // { dg-error "within this context" }
+DEFINE_PREFIX_UNARY_TRAIT(has_preincrement, ++);
 STATIC_ASSERT((has_preincrement<int>::value));
 STATIC_ASSERT((has_preincrement<int*>::value));
 STATIC_ASSERT((!has_preincrement<int X::*>::value));
@@ -142,7 +142,7 @@ STATIC_ASSERT((has_preincrement<X>::value));
 STATIC_ASSERT((!has_preincrement<Y>::value));
 
 // has_predecrement
-DEFINE_PREFIX_UNARY_TRAIT(has_predecrement, --); // { dg-error "within this context" }
+DEFINE_PREFIX_UNARY_TRAIT(has_predecrement, --);
 STATIC_ASSERT((has_predecrement<int>::value));
 STATIC_ASSERT((has_predecrement<int*>::value));
 STATIC_ASSERT((!has_predecrement<int X::*>::value));
@@ -151,7 +151,7 @@ STATIC_ASSERT((has_predecrement<X>::value));
 STATIC_ASSERT((!has_predecrement<Y>::value));
 
 // has_postincrement
-DEFINE_POSTFIX_UNARY_TRAIT(has_postincrement, ++); // { dg-error "within this context" }
+DEFINE_POSTFIX_UNARY_TRAIT(has_postincrement, ++);
 STATIC_ASSERT((has_postincrement<int>::value));
 STATIC_ASSERT((has_postincrement<int*>::value));
 STATIC_ASSERT((!has_postincrement<int X::*>::value));
@@ -160,7 +160,7 @@ STATIC_ASSERT((has_postincrement<X>::value));
 STATIC_ASSERT((!has_postincrement<Y>::value));
 
 // has_postdecrement
-DEFINE_POSTFIX_UNARY_TRAIT(has_postdecrement, --); // { dg-error "within this context" }
+DEFINE_POSTFIX_UNARY_TRAIT(has_postdecrement, --);
 STATIC_ASSERT((has_postdecrement<int>::value));
 STATIC_ASSERT((has_postdecrement<int*>::value));
 STATIC_ASSERT((!has_postdecrement<int X::*>::value));
@@ -169,13 +169,12 @@ STATIC_ASSERT((has_postdecrement<X>::value));
 STATIC_ASSERT((!has_postdecrement<Y>::value));
 
 // Check for private members
-STATIC_ASSERT((has_unary_plus<Z>::value)); // { dg-message "required from here" }
-STATIC_ASSERT((is_negatable<Z>::value)); // { dg-message "required from here" }
-STATIC_ASSERT((is_dereferenceable<Z>::value)); // { dg-message "required from here" }
-STATIC_ASSERT((has_bitwise_not<Z>::value)); // { dg-message "required from here" }
-STATIC_ASSERT((has_truth_not<Z>::value)); // { dg-message "required from here" }
-STATIC_ASSERT((has_preincrement<Z>::value)); // { dg-message "required from here" }
-STATIC_ASSERT((has_predecrement<Z>::value)); // { dg-message "required from here" }
-STATIC_ASSERT((has_postincrement<Z>::value)); // { dg-message "required from here" }
-STATIC_ASSERT((has_postdecrement<Z>::value)); // { dg-message "required from here" }
-
+STATIC_ASSERT((!has_unary_plus<Z>::value));
+STATIC_ASSERT((!is_negatable<Z>::value));
+STATIC_ASSERT((!is_dereferenceable<Z>::value));
+STATIC_ASSERT((!has_bitwise_not<Z>::value));
+STATIC_ASSERT((!has_truth_not<Z>::value));
+STATIC_ASSERT((!has_preincrement<Z>::value));
+STATIC_ASSERT((!has_predecrement<Z>::value));
+STATIC_ASSERT((!has_postincrement<Z>::value));
+STATIC_ASSERT((!has_postdecrement<Z>::value));

@@ -10515,7 +10515,7 @@ cp_parser_simple_declaration (cp_parser* parser,
       if (cp_parser_declares_only_class_p (parser))
 	shadow_tag (&decl_specifiers);
       /* Perform any deferred access checks.  */
-      perform_deferred_access_checks ();
+      perform_deferred_access_checks (tf_warning_or_error);
     }
 
   /* Consume the `;'.  */
@@ -12416,7 +12416,8 @@ cp_parser_template_id (cp_parser *parser,
 	  FOR_EACH_VEC_ELT (deferred_access_check, access_check, i, chk)
 	    perform_or_defer_access_check (chk->binfo,
 					   chk->decl,
-					   chk->diag_decl);
+					   chk->diag_decl,
+					   tf_warning_or_error);
 	}
       /* Return the stored value.  */
       return check_value->value;
@@ -15751,7 +15752,7 @@ cp_parser_init_declarator (cp_parser* parser,
 
       /* Perform the access control checks for the declarator and the
 	 decl-specifiers.  */
-      perform_deferred_access_checks ();
+      perform_deferred_access_checks (tf_warning_or_error);
 
       /* Restore the saved value.  */
       if (TREE_CODE (decl) == FUNCTION_DECL)
@@ -21009,7 +21010,7 @@ cp_parser_function_definition_from_specifiers_and_declarator
      did not check, check them now.  We must wait until we are in the
      scope of the function to perform the checks, since the function
      might be a friend.  */
-  perform_deferred_access_checks ();
+  perform_deferred_access_checks (tf_warning_or_error);
 
   if (!success_p)
     {
@@ -21303,7 +21304,7 @@ static void
 cp_parser_perform_template_parameter_access_checks (VEC (deferred_access_check,gc)* checks)
 {
   ++processing_template_parmlist;
-  perform_access_checks (checks);
+  perform_access_checks (checks, tf_warning_or_error);
   --processing_template_parmlist;
 }
 
@@ -22752,7 +22753,7 @@ cp_parser_pre_parsed_nested_name_specifier (cp_parser *parser)
       FOR_EACH_VEC_ELT (deferred_access_check, checks, i, chk)
 	perform_or_defer_access_check (chk->binfo,
 				       chk->decl,
-				       chk->diag_decl);
+				       chk->diag_decl, tf_warning_or_error);
     }
   /* Set the scope from the stored value.  */
   parser->scope = check_value->value;
@@ -24010,7 +24011,7 @@ cp_parser_objc_method_definition_list (cp_parser* parser)
 	  if (!(ptk->type == CPP_PLUS || ptk->type == CPP_MINUS 
 		|| ptk->type == CPP_EOF || ptk->keyword == RID_AT_END))
 	    {
-	      perform_deferred_access_checks ();
+	      perform_deferred_access_checks (tf_warning_or_error);
 	      stop_deferring_access_checks ();
 	      meth = cp_parser_function_definition_after_declarator (parser,
 								     false);

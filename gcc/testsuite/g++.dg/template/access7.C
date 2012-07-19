@@ -14,5 +14,5 @@ typename A::T* f (A) {			// { dg-error "this context" }
 }
 
 void g () {
-  f (S<int> ());			// { dg-message "required" }
+  f (S<int> ());			// { dg-message "required|no match" }
 }

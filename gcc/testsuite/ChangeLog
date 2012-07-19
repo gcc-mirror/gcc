@@ -1,3 +1,12 @@
+2012-07-18  Paolo Carlini  <paolo.carlini@oracle.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/sfinae37.C: New.
+	* g++.dg/template/access23.C: New.
+	* g++.dg/template/access7.C: Adjust.
+	* g++.dg/template/sfinae10.C: Don't expect errors.
+	* g++.dg/template/sfinae6_neg.C: Don't expect errors.
+
 2012-07-18  Julian Brown  <julian@codesourcery.com>
 	    Sandra Loosemore <sandra@codesroucery.com>
 

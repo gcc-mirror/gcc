@@ -1189,7 +1189,8 @@ alter_access (tree t, tree fdecl, tree access)
     }
   else
     {
-      perform_or_defer_access_check (TYPE_BINFO (t), fdecl, fdecl);
+      perform_or_defer_access_check (TYPE_BINFO (t), fdecl, fdecl,
+				     tf_warning_or_error);
       DECL_ACCESS (fdecl) = tree_cons (t, access, DECL_ACCESS (fdecl));
       return 1;
     }
@@ -7147,7 +7148,8 @@ resolve_address_of_overloaded_function (tree target_type,
       && DECL_FUNCTION_MEMBER_P (fn))
     {
       gcc_assert (access_path);
-      perform_or_defer_access_check (access_path, fn, fn);
+      perform_or_defer_access_check (access_path, fn, fn,
+				     tf_warning_or_error);
     }
 
   if (TYPE_PTRFN_P (target_type) || TYPE_PTRMEMFUNC_P (target_type))

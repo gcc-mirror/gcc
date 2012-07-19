@@ -1,3 +1,21 @@
+2012-07-18  Paolo Carlini  <paolo.carlini@oracle.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	DR 1170
+	PR c++/51213
+	* semantics.c (perform_access_checks): Add complain parm, return bool.
+	(perform_deferred_access_checks): Likewise.
+	(perform_or_defer_access_check): Likewise.
+	(speculative_access_check): Remove.
+	* call.c (enforce_access): Add complain parm, return bool.
+	* decl.c, friend.c, class.c, init.c, parser.c: Adjust callers.
+	* search.c: Adjust callers.
+	* cp-tree.h (TINFO_RECHECK_ACCESS_P): New macro.
+	(FNDECL_RECHECK_ACCESS_P): New macro.
+	* method.c (synthesized_method_walk): Stop deferring access checks.
+	* pt.c (recheck_decl_substitution): New.
+	(instantiate_template_1): Set and check FNDECL_RECHECK_ACCESS_P.
+
 2012-07-18  Jason Merrill  <jason@redhat.com>
 
 	* method.c (process_subob_fn): Make sure no_implicit_p is non-null
