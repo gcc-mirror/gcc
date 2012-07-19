@@ -3288,9 +3288,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      else
 		gnu_unpad_base_type = gnu_base_type;
 
-	      /* Look for a REP part in the base type.  */
-	      gnu_rep_part = get_rep_part (gnu_unpad_base_type);
-
 	      /* Look for a variant part in the base type.  */
 	      gnu_variant_part = get_variant_part (gnu_unpad_base_type);
 
@@ -3418,7 +3415,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		       and put the field either in the new type if there is a
 		       selected variant or in one of the new variants.  */
 		    if (gnu_context == gnu_unpad_base_type
-		        || (gnu_rep_part
+		        || ((gnu_rep_part = get_rep_part (gnu_unpad_base_type))
 			    && gnu_context == TREE_TYPE (gnu_rep_part)))
 		      gnu_cont_type = gnu_type;
 		    else
@@ -3429,7 +3426,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 			t = NULL_TREE;
 			FOR_EACH_VEC_ELT_REVERSE (variant_desc,
 						  gnu_variant_list, ix, v)
-			  if (v->type == gnu_context)
+			  if (gnu_context == v->type
+			      || ((gnu_rep_part = get_rep_part (v->type))
+				  && gnu_context == TREE_TYPE (gnu_rep_part)))
 			    {
 			      t = v->type;
 			      break;
@@ -8898,7 +8897,8 @@ get_rep_part (tree record_type)
 
   /* The REP part is the first field, internal, another record, and its name
      starts with an 'R'.  */
-  if (DECL_INTERNAL_P (field)
+  if (field
+      && DECL_INTERNAL_P (field)
       && TREE_CODE (TREE_TYPE (field)) == RECORD_TYPE
       && IDENTIFIER_POINTER (DECL_NAME (field)) [0] == 'R')
     return field;
