@@ -1,3 +1,11 @@
+2012-07-19   Diego Novillo  <dnovillo@google.com>
+
+	* testsuite-management/validate_failures.py (CollectSumFiles):
+	Rename from GetSumFiles.
+	(GetSumFiles): Factor out of CheckExpectedResults.
+	(CheckExpectedResults): Call it.
+	(ProduceManifest): Call it.
+
 2012-07-18   Diego Novillo  <dnovillo@google.com>
 
 	* testsuite-management/validate_failures.py: Fix
