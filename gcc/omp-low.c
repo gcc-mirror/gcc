@@ -4758,45 +4758,40 @@ expand_omp_sections (struct omp_region *region)
   unsigned i, casei;
   bool exit_reachable = region->cont != NULL;
 
-  gcc_assert (exit_reachable == (region->exit != NULL));
+  gcc_assert (region->exit != NULL);
   entry_bb = region->entry;
   l0_bb = single_succ (entry_bb);
   l1_bb = region->cont;
   l2_bb = region->exit;
-  if (exit_reachable)
-    {
-      if (single_pred_p (l2_bb) && single_pred (l2_bb) == l0_bb)
-	l2 = gimple_block_label (l2_bb);
-      else
-	{
-	  /* This can happen if there are reductions.  */
-	  len = EDGE_COUNT (l0_bb->succs);
-	  gcc_assert (len > 0);
-	  e = EDGE_SUCC (l0_bb, len - 1);
-	  si = gsi_last_bb (e->dest);
-	  l2 = NULL_TREE;
-	  if (gsi_end_p (si)
-	      || gimple_code (gsi_stmt (si)) != GIMPLE_OMP_SECTION)
-	    l2 = gimple_block_label (e->dest);
-	  else
-	    FOR_EACH_EDGE (e, ei, l0_bb->succs)
-	      {
-		si = gsi_last_bb (e->dest);
-		if (gsi_end_p (si)
-		    || gimple_code (gsi_stmt (si)) != GIMPLE_OMP_SECTION)
-		  {
-		    l2 = gimple_block_label (e->dest);
-		    break;
-		  }
-	      }
-	}
-      default_bb = create_empty_bb (l1_bb->prev_bb);
-    }
+  if (single_pred_p (l2_bb) && single_pred (l2_bb) == l0_bb)
+    l2 = gimple_block_label (l2_bb);
   else
     {
-      default_bb = create_empty_bb (l0_bb);
-      l2 = gimple_block_label (default_bb);
+      /* This can happen if there are reductions.  */
+      len = EDGE_COUNT (l0_bb->succs);
+      gcc_assert (len > 0);
+      e = EDGE_SUCC (l0_bb, len - 1);
+      si = gsi_last_bb (e->dest);
+      l2 = NULL_TREE;
+      if (gsi_end_p (si)
+          || gimple_code (gsi_stmt (si)) != GIMPLE_OMP_SECTION)
+	l2 = gimple_block_label (e->dest);
+      else
+	FOR_EACH_EDGE (e, ei, l0_bb->succs)
+	  {
+	    si = gsi_last_bb (e->dest);
+	    if (gsi_end_p (si)
+		|| gimple_code (gsi_stmt (si)) != GIMPLE_OMP_SECTION)
+	      {
+		l2 = gimple_block_label (e->dest);
+		break;
+	      }
+	  }
     }
+  if (exit_reachable)
+    default_bb = create_empty_bb (l1_bb->prev_bb);
+  else
+    default_bb = create_empty_bb (l0_bb);
 
   /* We will build a switch() with enough cases for all the
      GIMPLE_OMP_SECTION regions, a '0' case to handle the end of more work
@@ -4849,13 +4844,9 @@ expand_omp_sections (struct omp_region *region)
       vnext = NULL_TREE;
     }
 
-  i = 0;
-  if (exit_reachable)
-    {
-      t = build_case_label (build_int_cst (unsigned_type_node, 0), NULL, l2);
-      VEC_quick_push (tree, label_vec, t);
-      i++;
-    }
+  t = build_case_label (build_int_cst (unsigned_type_node, 0), NULL, l2);
+  VEC_quick_push (tree, label_vec, t);
+  i = 1;
 
   /* Convert each GIMPLE_OMP_SECTION into a CASE_LABEL_EXPR.  */
   for (inner = region->inner, casei = 1;
@@ -4925,17 +4916,17 @@ expand_omp_sections (struct omp_region *region)
       gsi_remove (&si, true);
 
       single_succ_edge (l1_bb)->flags = EDGE_FALLTHRU;
-
-      /* Cleanup function replaces GIMPLE_OMP_RETURN in EXIT_BB.  */
-      si = gsi_last_bb (l2_bb);
-      if (gimple_omp_return_nowait_p (gsi_stmt (si)))
-	t = builtin_decl_explicit (BUILT_IN_GOMP_SECTIONS_END_NOWAIT);
-      else
-	t = builtin_decl_explicit (BUILT_IN_GOMP_SECTIONS_END);
-      stmt = gimple_build_call (t, 0);
-      gsi_insert_after (&si, stmt, GSI_SAME_STMT);
-      gsi_remove (&si, true);
     }
+
+  /* Cleanup function replaces GIMPLE_OMP_RETURN in EXIT_BB.  */
+  si = gsi_last_bb (l2_bb);
+  if (gimple_omp_return_nowait_p (gsi_stmt (si)))
+    t = builtin_decl_explicit (BUILT_IN_GOMP_SECTIONS_END_NOWAIT);
+  else
+    t = builtin_decl_explicit (BUILT_IN_GOMP_SECTIONS_END);
+  stmt = gimple_build_call (t, 0);
+  gsi_insert_after (&si, stmt, GSI_SAME_STMT);
+  gsi_remove (&si, true);
 
   set_immediate_dominator (CDI_DOMINATORS, default_bb, l0_bb);
 }

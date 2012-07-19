@@ -1,3 +1,8 @@
+2012-07-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/54017
+	* c-c++-common/gomp/pr54017.c: New test.
+
 2012-07-18  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline
