@@ -1,3 +1,8 @@
+2012-07-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/derived_type3.adb: New test.
+	* gnat.dg/derived_type3_pkg.ad[sb]: New helper.
+
 2012-07-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/53942
