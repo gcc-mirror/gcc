@@ -1679,8 +1679,7 @@ vect_recog_divmod_pattern (VEC (gimple, heap) **stmts,
     {
       enum machine_mode vec_mode = TYPE_MODE (vectype);
       int icode = (int) optab_handler (optab, vec_mode);
-      if (icode != CODE_FOR_nothing
-	  || GET_MODE_SIZE (vec_mode) == UNITS_PER_WORD)
+      if (icode != CODE_FOR_nothing)
 	return NULL;
     }
 
