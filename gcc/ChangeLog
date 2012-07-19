@@ -1,5 +1,8 @@
 2012-07-19  Richard Henderson  <rth@redhat.com>
 
+	* tree-vect-patterns.c (vect_recog_divmod_pattern): Do not require
+	vectors larger than UNITS_PER_WORD.
+
 	* expr.c (store_constructor): Initialize icode with CODE_FOR_nothing.
 	* tree-vect-stmts.c (vectorizable_operation): Use LAST_INSN_CODE for
 	dummy != CODE_FOR_nothing value.
