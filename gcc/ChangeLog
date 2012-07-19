@@ -1,3 +1,8 @@
+2012-07-19  Steve Ellcey  <sellcey@mips.com>
+
+	* config/mips/mips.c (mips_set_mips16_mode): Clear SYNCI_MASK in
+	MIPS16 mode.
+
 2012-07-19  Jason Merrill  <jason@redhat.com>
 
 	PR debug/53235

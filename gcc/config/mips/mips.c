@@ -15652,6 +15652,9 @@ mips_set_mips16_mode (int mips16_p)
       /* Switch to MIPS16 mode.  */
       target_flags |= MASK_MIPS16;
 
+      /* Turn off SYNCI if it was on, MIPS16 doesn't support it.  */
+      target_flags &= ~MASK_SYNCI;
+
       /* Don't run the scheduler before reload, since it tends to
          increase register pressure.  */
       flag_schedule_insns = 0;
