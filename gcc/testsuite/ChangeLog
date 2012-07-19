@@ -1,5 +1,11 @@
 2012-07-19  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/opt25.adb: New test.
+	* gnat.dg/opt25_pkg1.ad[sb]: New helper.
+	* gnat.dg/opt25_pkg2.ad[sb]: Likewise.
+
+2012-07-19  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/aggr20.ad[sb]: New test.
 	* gnat.dg/aggr20_pkg.ads: New helper.
 

@@ -2247,6 +2247,11 @@ combine_conversions (gimple_stmt_iterator *gsi)
       unsigned int final_prec = TYPE_PRECISION (type);
       int final_unsignedp = TYPE_UNSIGNED (type);
 
+      /* Don't propagate ssa names that occur in abnormal phis.  */
+      if (TREE_CODE (defop0) == SSA_NAME
+	  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (defop0))
+	return 0;
+
       /* In addition to the cases of two conversions in a row
 	 handled below, if we are converting something to its own
 	 type via an object of identical or wider precision, neither

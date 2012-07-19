@@ -1,5 +1,10 @@
 2012-07-19  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* tree-ssa-forwprop.c (combine_conversions): Punt if the RHS of the
+	defining statement is a SSA name that occurs in abnormal PHIs.
+
+2012-07-19  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gimple-fold.c (canonicalize_constructor_val): Strip only useless type
 	conversions.
 
