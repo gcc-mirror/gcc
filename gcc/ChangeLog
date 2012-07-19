@@ -1,3 +1,9 @@
+2012-07-19  Richard Henderson  <rth@redhat.com>
+
+	* expr.c (store_constructor): Initialize icode with CODE_FOR_nothing.
+	* tree-vect-stmts.c (vectorizable_operation): Use LAST_INSN_CODE for
+	dummy != CODE_FOR_nothing value.
+
 2012-07-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	* doc/tm.texi.in (MODE_AFTER): Add entity as the first macro argument.
