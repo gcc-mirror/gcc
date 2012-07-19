@@ -1225,6 +1225,7 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
 
   ++cp_unevaluated_operand;
   ++c_inhibit_evaluation_warnings;
+  push_deferring_access_checks (dk_no_deferred);
 
   scope = push_scope (ctype);
 
@@ -1342,6 +1343,7 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
 
   pop_scope (scope);
 
+  pop_deferring_access_checks ();
   --cp_unevaluated_operand;
   --c_inhibit_evaluation_warnings;
 }

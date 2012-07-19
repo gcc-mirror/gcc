@@ -3306,9 +3306,9 @@ make_typename_type (tree context, tree name, enum tag_types tag_type,
 	       context, name, t);
       return error_mark_node;
     }
-  
-  if (complain & tf_error)
-    perform_or_defer_access_check (TYPE_BINFO (context), t, t);
+
+  if (!perform_or_defer_access_check (TYPE_BINFO (context), t, t, complain))
+    return error_mark_node;
 
   /* If we are currently parsing a template and if T is a typedef accessed
      through CONTEXT then we need to remember and check access of T at
@@ -3378,8 +3378,9 @@ make_unbound_class_template (tree context, tree name, tree parm_list,
 	  return error_mark_node;
 	}
 
-      if (complain & tf_error)
-	perform_or_defer_access_check (TYPE_BINFO (context), tmpl, tmpl);
+      if (!perform_or_defer_access_check (TYPE_BINFO (context), tmpl, tmpl,
+					  complain))
+	return error_mark_node;
 
       return tmpl;
     }
@@ -6647,7 +6648,8 @@ register_dtor_fn (tree decl)
       gcc_assert (idx >= 0);
       cleanup = VEC_index (tree, CLASSTYPE_METHOD_VEC (type), idx);
       /* Make sure it is accessible.  */
-      perform_or_defer_access_check (TYPE_BINFO (type), cleanup, cleanup);
+      perform_or_defer_access_check (TYPE_BINFO (type), cleanup, cleanup,
+				     tf_warning_or_error);
     }
   else
     {

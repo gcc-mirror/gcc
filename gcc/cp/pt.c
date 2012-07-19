@@ -8370,7 +8370,8 @@ perform_typedefs_access_check (tree tmpl, tree targs)
          of the use of the typedef.  */
       input_location = iter->locus;
       perform_or_defer_access_check (TYPE_BINFO (type_scope),
-				     type_decl, type_decl);
+				     type_decl, type_decl,
+				     tf_warning_or_error);
     }
     input_location = saved_location;
 }
@@ -8877,7 +8878,7 @@ instantiate_class_template_1 (tree type)
      added to the template at parsing time. Let's get those and perform
      the access checks then.  */
   perform_typedefs_access_check (pattern, args);
-  perform_deferred_access_checks ();
+  perform_deferred_access_checks (tf_warning_or_error);
   pop_nested_class ();
   maximum_field_alignment = saved_maximum_field_alignment;
   if (!fn_context)
@@ -14288,6 +14289,23 @@ deduction_tsubst_fntype (tree fn, tree targs, tsubst_flags_t complain)
   return r;
 }
 
+/* We're out of SFINAE context now, so generate diagnostics for the access
+   errors we saw earlier when instantiating D from TMPL and ARGS.  */
+
+static void
+recheck_decl_substitution (tree d, tree tmpl, tree args)
+{
+  tree pattern = DECL_TEMPLATE_RESULT (tmpl);
+  tree type = TREE_TYPE (pattern);
+  location_t loc = input_location;
+
+  push_access_scope (d);
+  input_location = DECL_SOURCE_LOCATION (pattern);
+  tsubst (type, args, tf_warning_or_error, d);
+  input_location = loc;
+  pop_access_scope (d);
+}
+
 /* Instantiate the indicated variable or function template TMPL with
    the template arguments in TARG_PTR.  */
 
@@ -14298,6 +14316,7 @@ instantiate_template_1 (tree tmpl, tree orig_args, tsubst_flags_t complain)
   tree fndecl;
   tree gen_tmpl;
   tree spec;
+  bool access_ok = true;
 
   if (tmpl == error_mark_node)
     return error_mark_node;
@@ -14345,7 +14364,11 @@ instantiate_template_1 (tree tmpl, tree orig_args, tsubst_flags_t complain)
 	      || fndecl == NULL_TREE);
 
   if (spec != NULL_TREE)
-    return spec;
+    {
+      if (FNDECL_RECHECK_ACCESS_P (spec) && (complain & tf_error))
+	recheck_decl_substitution (spec, gen_tmpl, targ_ptr);
+      return spec;
+    }
 
   if (check_instantiated_args (gen_tmpl, INNERMOST_TEMPLATE_ARGS (targ_ptr),
 			       complain))
@@ -14375,7 +14398,10 @@ instantiate_template_1 (tree tmpl, tree orig_args, tsubst_flags_t complain)
   pop_from_top_level ();
 
   if (fndecl == error_mark_node)
-    return error_mark_node;
+    {
+      pop_deferring_access_checks ();
+      return error_mark_node;
+    }
 
   /* The DECL_TI_TEMPLATE should always be the immediate parent
      template, not the most general template.  */
@@ -14384,7 +14410,8 @@ instantiate_template_1 (tree tmpl, tree orig_args, tsubst_flags_t complain)
   /* Now we know the specialization, compute access previously
      deferred.  */
   push_access_scope (fndecl);
-  perform_deferred_access_checks ();
+  if (!perform_deferred_access_checks (complain))
+    access_ok = false;
   pop_access_scope (fndecl);
   pop_deferring_access_checks ();
 
@@ -14395,6 +14422,16 @@ instantiate_template_1 (tree tmpl, tree orig_args, tsubst_flags_t complain)
   if (DECL_CHAIN (gen_tmpl) && DECL_CLONED_FUNCTION_P (DECL_CHAIN (gen_tmpl)))
     clone_function_decl (fndecl, /*update_method_vec_p=*/0);
 
+  if (!access_ok)
+    {
+      if (!(complain & tf_error))
+	{
+	  /* Remember to reinstantiate when we're out of SFINAE so the user
+	     can see the errors.  */
+	  FNDECL_RECHECK_ACCESS_P (fndecl) = true;
+	}
+      return error_mark_node;
+    }
   return fndecl;
 }
 

@@ -14,7 +14,7 @@ template<typename T> struct enable_if<false, T> { };
 template<typename F, typename T1, typename T2>
   typename enable_if<sizeof(create_a<F>()(create_a<T1>(), create_a<T2>()), 1),
 		     yes_type>::type
-  check_is_callable2(type<F>, type<T1>, type<T2>); // { dg-error "within this context" }
+  check_is_callable2(type<F>, type<T1>, type<T2>);
 
 no_type check_is_callable2(...);
 
@@ -52,7 +52,7 @@ struct F {
   void operator()(A, A);
 
 private:
-  void operator()(B, B); // { dg-error "is private" }
+  void operator()(B, B);
 };
 
-STATIC_ASSERT((is_callable2<F, B, B>::value));
+STATIC_ASSERT((!is_callable2<F, B, B>::value));

@@ -1876,9 +1876,11 @@ build_offset_ref (tree type, tree member, bool address_p)
 	       (or any class derived from that class).  */
 	  if (address_p && DECL_P (t)
 	      && DECL_NONSTATIC_MEMBER_P (t))
-	    perform_or_defer_access_check (TYPE_BINFO (type), t, t);
+	    perform_or_defer_access_check (TYPE_BINFO (type), t, t,
+					   tf_warning_or_error);
 	  else
-	    perform_or_defer_access_check (basebinfo, t, t);
+	    perform_or_defer_access_check (basebinfo, t, t,
+					   tf_warning_or_error);
 
 	  if (DECL_STATIC_FUNCTION_P (t))
 	    return t;
@@ -1891,7 +1893,8 @@ build_offset_ref (tree type, tree member, bool address_p)
     /* We need additional test besides the one in
        check_accessibility_of_qualified_id in case it is
        a pointer to non-static member.  */
-    perform_or_defer_access_check (TYPE_BINFO (type), member, member);
+    perform_or_defer_access_check (TYPE_BINFO (type), member, member,
+				   tf_warning_or_error);
 
   if (!address_p)
     {
