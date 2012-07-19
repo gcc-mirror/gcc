@@ -1743,7 +1743,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
     }
 
   /* F2008, 12.5.2.5; IR F08/0073.  */
-  if (formal->ts.type == BT_CLASS
+  if (formal->ts.type == BT_CLASS && actual->expr_type != EXPR_NULL
       && ((CLASS_DATA (formal)->attr.class_pointer
 	   && !formal->attr.intent == INTENT_IN)
           || CLASS_DATA (formal)->attr.allocatable))
@@ -2289,11 +2289,21 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	  return 0;
 	}
 
-      if (a->expr->expr_type == EXPR_NULL && !f->sym->attr.pointer
-	  && (f->sym->attr.allocatable || !f->sym->attr.optional
-	      || (gfc_option.allow_std & GFC_STD_F2008) == 0))
+      if (a->expr->expr_type == EXPR_NULL
+	  && ((f->sym->ts.type != BT_CLASS && !f->sym->attr.pointer
+	       && (f->sym->attr.allocatable || !f->sym->attr.optional
+		   || (gfc_option.allow_std & GFC_STD_F2008) == 0))
+	      || (f->sym->ts.type == BT_CLASS
+		  && !CLASS_DATA (f->sym)->attr.class_pointer
+		  && (CLASS_DATA (f->sym)->attr.allocatable
+		      || !f->sym->attr.optional
+		      || (gfc_option.allow_std & GFC_STD_F2008) == 0))))
 	{
-	  if (where && (f->sym->attr.allocatable || !f->sym->attr.optional))
+	  if (where
+	      && (!f->sym->attr.optional
+		  || (f->sym->ts.type != BT_CLASS && f->sym->attr.allocatable)
+		  || (f->sym->ts.type == BT_CLASS
+			 && CLASS_DATA (f->sym)->attr.allocatable)))
 	    gfc_error ("Unexpected NULL() intrinsic at %L to dummy '%s'",
 		       where, f->sym->name);
 	  else if (where)
