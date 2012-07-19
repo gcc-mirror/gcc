@@ -11011,6 +11011,9 @@ build_personality_function (const char *lang)
     case UI_TARGET:
       unwind_and_version = "_v0";
       break;
+    case UI_SEH:
+      unwind_and_version = "_seh0";
+      break;
     default:
       gcc_unreachable ();
     }

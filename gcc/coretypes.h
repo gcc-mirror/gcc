@@ -116,7 +116,8 @@ enum unwind_info_type
   UI_NONE,
   UI_SJLJ,
   UI_DWARF2,
-  UI_TARGET
+  UI_TARGET,
+  UI_SEH
 };
 
 /* Callgraph node profile representation.  */

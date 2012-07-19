@@ -258,6 +258,8 @@ extern tree i386_pe_mangle_assembler_name (const char *);
 extern void i386_pe_seh_init (FILE *);
 extern void i386_pe_seh_end_prologue (FILE *);
 extern void i386_pe_seh_unwind_emit (FILE *, rtx);
+extern void i386_pe_seh_emit_except_personality (rtx);
+extern void i386_pe_seh_init_sections (void);
 
 /* In winnt-cxx.c and winnt-stubs.c  */
 extern void i386_pe_adjust_class_at_definition (tree);

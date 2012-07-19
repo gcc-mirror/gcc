@@ -1357,6 +1357,7 @@ CXXABI_1.3 {
     __cxa_vec_new3;
     __gxx_personality_v0;
     __gxx_personality_sj0;
+    __gxx_personality_seh0;
     __dynamic_cast;
 
     # *_type_info classes, ctor and dtor

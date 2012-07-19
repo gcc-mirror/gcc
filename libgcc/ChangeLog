@@ -1,3 +1,16 @@
+2012-07-19  Tristan Gingold  <gingold@adacore.com>
+	    Richard Henderson  <rth@redhat.com>
+
+	* unwind-seh.c: New file.
+	* unwind-generic.h: Include windows.h for SEH.
+	(_Unwind_Exception): Use 6 private fields for SEH.
+	(_GCC_specific_handler): Declare.
+	* unwind-c.c (__gcc_personality_seh0): New function.
+	Adjust for SEH.
+	* config/i386/libgcc-cygming.ver: New file.
+	* config/i386/t-seh-eh: New file.
+	* config.host (x86_64-*-mingw*): Default to seh.
+
 2012-07-14  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* config/t-darwin (crt3.0): Remove work-around for fixed PR26840.

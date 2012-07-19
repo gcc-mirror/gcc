@@ -1,3 +1,10 @@
+2012-07-19  Tristan Gingold  <gingold@adacore.com>
+	    Richard Henderson  <rth@redhat.com>
+
+	* libgcj.ver: Add __gcj_personality_seh0.
+	* exception.cc (__gcj_personality_seh0): New function.
+	Adjust for SEH.
+
 2012-07-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR libjava/53973

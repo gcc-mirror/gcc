@@ -1,0 +1,6 @@
+
+# We are using SEH EH.
+EH_MODEL = seh
+
+# Use SEH exception handling.
+LIB2ADDEH = $(srcdir)/unwind-seh.c $(srcdir)/unwind-sjlj.c $(srcdir)/unwind-c.c
