@@ -1,3 +1,9 @@
+2012-07-19  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/53970
+	* tree-vect-data-refs.c (not_size_aligned): Avoid sign-compare
+	warning.
+ 
 2012-07-19  Tristan Gingold  <gingold@adacore.com>
 	    Richard Henderson  <rth@redhat.com>
 
