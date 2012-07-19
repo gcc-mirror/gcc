@@ -139,7 +139,7 @@ can_refer_decl_in_current_unit_p (tree decl, tree from_decl)
 tree
 canonicalize_constructor_val (tree cval, tree from_decl)
 {
-  STRIP_NOPS (cval);
+  STRIP_USELESS_TYPE_CONVERSION (cval);
   if (TREE_CODE (cval) == POINTER_PLUS_EXPR
       && TREE_CODE (TREE_OPERAND (cval, 1)) == INTEGER_CST)
     {
