@@ -1140,7 +1140,7 @@ not_size_aligned (tree exp)
   if (!host_integerp (TYPE_SIZE (TREE_TYPE (exp)), 1))
     return true;
 
-  return (tree_low_cst (TYPE_SIZE (TREE_TYPE (exp)), 1)
+  return (TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (exp)))
 	  > get_object_alignment (exp));
 }
 
