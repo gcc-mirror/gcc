@@ -1,3 +1,11 @@
+2012-07-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/54017
+	* tree-cfgcleanup.c (cleanup_omp_return): Remove.
+	(cleanup_tree_cfg_bb): Don't call it.
+	* omp-low.c (expand_omp_sections): Fix up the !exit_reachable case
+	handling.
+
 2012-07-19  Christian Bruel  <christian.bruel@st.com>
 
 	PR target/54029
