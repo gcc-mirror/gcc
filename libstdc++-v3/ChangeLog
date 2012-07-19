@@ -1,3 +1,10 @@
+2012-07-19  Tristan Gingold  <gingold@adacore.com>
+	    Richard Henderson  <rth@redhat.com>
+
+	* libsupc++/eh_personality.cc (__gxx_personality_seh0): New function.
+	Adjust for SEH.
+	* config/abi/pre/gnu.ver: Add __gxx_personality_seh0.
+
 2012-07-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51213

@@ -197,6 +197,8 @@ get_ttype_entry (_Unwind_Context *context, lsda_header_info *info, long i)
 #ifdef SJLJ_EXCEPTIONS
 #define PERSONALITY_FUNCTION	__gcj_personality_sj0
 #define __builtin_eh_return_data_regno(x) x
+#elif defined (__SEH__)
+#define PERSONALITY_FUNCTION	__gcj_personality_imp
 #else
 #define PERSONALITY_FUNCTION	__gcj_personality_v0
 #endif
@@ -220,7 +222,12 @@ PERSONALITY_FUNCTION (_Unwind_State state,
 
 #define CONTINUE_UNWINDING return _URC_CONTINUE_UNWIND
 
-extern "C" _Unwind_Reason_Code
+#ifdef __SEH__
+static
+#else
+extern "C"
+#endif
+_Unwind_Reason_Code
 PERSONALITY_FUNCTION (int version,
 		      _Unwind_Action actions,
 		      _Unwind_Exception_Class exception_class,
@@ -484,3 +491,14 @@ PERSONALITY_FUNCTION (int version,
 #endif
   return _URC_INSTALL_CONTEXT;
 }
+
+#ifdef __SEH__
+extern "C"
+EXCEPTION_DISPOSITION
+__gcj_personality_seh0 (PEXCEPTION_RECORD ms_exc, void *this_frame,
+			PCONTEXT ms_orig_context, PDISPATCHER_CONTEXT ms_disp)
+{
+  return _GCC_specific_handler (ms_exc, this_frame, ms_orig_context,
+				ms_disp, __gcj_personality_imp);
+}
+#endif /* SEH */

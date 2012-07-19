@@ -1,3 +1,18 @@
+2012-07-19  Tristan Gingold  <gingold@adacore.com>
+	    Richard Henderson  <rth@redhat.com>
+
+	* opts.c (finish_options): Handle UI_SEH.
+	* expr.c (build_personality_function): Handle UI_SEH.
+	* dwarf2out.c (dwarf2out_begin_prologue): Handle UI_SEH.
+	* coretypes.h (unwind_info_type): Add UI_SEH.
+	* config/i386/winnt.c (i386_pe_seh_emit_except_personality):
+	New function.
+	(i386_pe_seh_init_sections): Likewise.
+	* config/i386/cygming.h (TARGET_ASM_EMIT_EXCEPT_PERSONALITY): Define.
+	(TARGET_ASM_INIT_SECTIONS): Define.
+	* common/config/i386/i386-common.c (TARGET_EXCEPT_UNWIND_INFO): Define.
+	(i386_except_unwind_info): New function.
+
 2012-07-18  Maciej W. Rozycki  <macro@codesourcery.com>
 	    Chao-ying Fu  <fu@mips.com>
 

@@ -55,4 +55,4 @@ SHLIB_MKMAP = $(srcdir)/mkmap-flat.awk
 # We'd like to use SHLIB_SONAME here too, but shlib_base_name
 # does not get substituted before mkmap-flat.awk is run.
 SHLIB_MKMAP_OPTS = -v pe_dll=libgcc_s_$(EH_MODEL)-$(SHLIB_SOVERSION)$(SHLIB_EXT)
-SHLIB_MAPFILES = libgcc-std.ver
+SHLIB_MAPFILES = libgcc-std.ver $(srcdir)/config/i386/libgcc-cygming.ver

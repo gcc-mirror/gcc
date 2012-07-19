@@ -28,6 +28,11 @@
 #ifndef _UNWIND_H
 #define _UNWIND_H
 
+#ifdef __SEH__
+/* Only for _GCC_specific_handler.  */
+#include <windows.h>
+#endif
+
 #ifndef HIDE_EXPORTS
 #pragma GCC visibility push(default)
 #endif
@@ -86,8 +91,13 @@ struct _Unwind_Exception
 {
   _Unwind_Exception_Class exception_class;
   _Unwind_Exception_Cleanup_Fn exception_cleanup;
+
+#if !defined (__USING_SJLJ_EXCEPTIONS__) && defined (__SEH__)
+  _Unwind_Word private_[6];
+#else
   _Unwind_Word private_1;
   _Unwind_Word private_2;
+#endif
 
   /* @@@ The IA-64 ABI says that this structure must be double-word aligned.
      Taking that literally does not make much sense generically.  Instead we
@@ -263,6 +273,13 @@ extern void * _Unwind_FindEnclosingFunction (void *pc);
   typedef unsigned long long _uleb128_t;
 #else
 # error "What type shall we use for _sleb128_t?"
+#endif
+
+#ifdef __SEH__
+/* Handles the mapping from SEH to GCC interfaces.  */
+EXCEPTION_DISPOSITION _GCC_specific_handler (PEXCEPTION_RECORD, void *,
+					     PCONTEXT, PDISPATCHER_CONTEXT,
+					     _Unwind_Personality_Fn);
 #endif
 
 #ifdef __cplusplus

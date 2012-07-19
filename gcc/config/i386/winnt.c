@@ -1143,6 +1143,48 @@ i386_pe_seh_unwind_emit (FILE *asm_out_file, rtx insn)
  found:
   seh_frame_related_expr (asm_out_file, seh, pat);
 }
+
+void
+i386_pe_seh_emit_except_personality (rtx personality)
+{
+  int flags = 0;
+
+  if (!TARGET_SEH)
+    return;
+
+  fputs ("\t.seh_handler\t", asm_out_file);
+  output_addr_const (asm_out_file, personality);
+
+#if 0
+  /* ??? The current implementation of _GCC_specific_handler requires
+     both except and unwind handling, regardless of which sorts the
+     user-level function requires.  */
+  eh_region r;
+  FOR_ALL_EH_REGION(r)
+    {
+      if (r->type == ERT_CLEANUP)
+	flags |= 1;
+      else
+	flags |= 2;
+    }
+#else
+  flags = 3;
+#endif
+
+  if (flags & 1)
+    fputs (", @unwind", asm_out_file);
+  if (flags & 2)
+    fputs (", @except", asm_out_file);
+  fputc ('\n', asm_out_file);
+}
+
+void
+i386_pe_seh_init_sections (void)
+{
+  if (TARGET_SEH)
+    exception_section = get_unnamed_section (0, output_section_asm_op,
+					     "\t.seh_handlerdata");
+}
 
 void
 i386_pe_start_function (FILE *f, const char *name, tree decl)
