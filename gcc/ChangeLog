@@ -1,3 +1,8 @@
+2012-07-19  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/54029
+	* config/sh/sh.c (gen_far_branch): Set JUMP_LABEL for return jumps.
+
 2012-07-18  Ralf Corsépius  <ralf.corsepius@rtems.org>
 
        * config.gcc (v850-*-rtems*): New target.

@@ -5149,6 +5149,7 @@ gen_far_branch (struct far_branch *bp)
     }
   else
     jump = emit_jump_insn_after (gen_return (), insn);
+
   /* Emit a barrier so that reorg knows that any following instructions
      are not reachable via a fall-through path.
      But don't do this when not optimizing, since we wouldn't suppress the
@@ -5157,7 +5158,16 @@ gen_far_branch (struct far_branch *bp)
   if (optimize)
     emit_barrier_after (jump);
   emit_label_after (bp->near_label, insn);
-  JUMP_LABEL (jump) = bp->far_label;
+
+  if (bp->far_label)
+    JUMP_LABEL (jump) = bp->far_label;
+  else
+    {
+      rtx pat = PATTERN (jump);
+      gcc_assert (ANY_RETURN_P (pat));
+      JUMP_LABEL (jump) = pat;
+    }
+
   ok = invert_jump (insn, label, 1);
   gcc_assert (ok);
   
