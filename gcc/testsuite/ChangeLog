@@ -1,3 +1,7 @@
+2012-07-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/discr38.adb: New test.
+
 2012-07-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/54017
