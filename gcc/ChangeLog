@@ -1,5 +1,9 @@
 2012-07-19  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* config/sparc/sparc.md (adddi3_insn_sp32): Add earlyclobber.
+
+2012-07-19  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* tree-ssa-forwprop.c (combine_conversions): Punt if the RHS of the
 	defining statement is a SSA name that occurs in abnormal PHIs.
 
