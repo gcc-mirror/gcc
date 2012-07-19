@@ -1,3 +1,9 @@
+2012-07-19  Richard Guenther  <rguenther@suse.de>
+	    Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/loop_optimization11.adb: New testcase.
+	* gnat.dg/loop_optimization11_pkg.ads: Likewise.
+
 2012-07-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/discr38.adb: New test.
