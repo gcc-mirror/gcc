@@ -1,5 +1,10 @@
 2012-07-19  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/aggr20.ad[sb]: New test.
+	* gnat.dg/aggr20_pkg.ads: New helper.
+
+2012-07-19  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/derived_type3.adb: New test.
 	* gnat.dg/derived_type3_pkg.ad[sb]: New helper.
 
