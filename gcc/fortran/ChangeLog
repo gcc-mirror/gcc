@@ -1,5 +1,12 @@
 2012-07-19  Tobias Burnus  <burnus@net-b.de>
 
+	* trans-expr.c (gfc_conv_procedure_call): Fix handling
+	of polymorphic arguments.
+	* resolve.c (resolve_formal_arglist): Ditto, mark polymorphic
+	assumed-shape arrays as such.
+
+2012-07-19  Tobias Burnus  <burnus@net-b.de>
+
 	* interface.c (compare_parameter, compare_actual_formal): Fix
 	handling of polymorphic arguments.
 

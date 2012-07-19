@@ -251,6 +251,7 @@ resolve_formal_arglist (gfc_symbol *proc)
   for (f = proc->formal; f; f = f->next)
     {
       sym = f->sym;
+      gfc_array_spec *as;
 
       if (sym == NULL)
 	{
@@ -284,23 +285,33 @@ resolve_formal_arglist (gfc_symbol *proc)
 	    gfc_set_default_type (sym, 1, sym->ns);
 	}
 
-      gfc_resolve_array_spec (sym->as, 0);
+      as = sym->ts.type == BT_CLASS && sym->attr.class_ok
+	   ? CLASS_DATA (sym)->as : sym->as;
+
+      gfc_resolve_array_spec (as, 0);
 
       /* We can't tell if an array with dimension (:) is assumed or deferred
 	 shape until we know if it has the pointer or allocatable attributes.
       */
-      if (sym->as && sym->as->rank > 0 && sym->as->type == AS_DEFERRED
-	  && !(sym->attr.pointer || sym->attr.allocatable)
+      if (as && as->rank > 0 && as->type == AS_DEFERRED
+	  && ((sym->ts.type != BT_CLASS
+	       && !(sym->attr.pointer || sym->attr.allocatable))
+              || (sym->ts.type == BT_CLASS
+		  && !(CLASS_DATA (sym)->attr.class_pointer
+		       || CLASS_DATA (sym)->attr.allocatable)))
 	  && sym->attr.flavor != FL_PROCEDURE)
 	{
-	  sym->as->type = AS_ASSUMED_SHAPE;
-	  for (i = 0; i < sym->as->rank; i++)
-	    sym->as->lower[i] = gfc_get_int_expr (gfc_default_integer_kind,
-						  NULL, 1);
+	  as->type = AS_ASSUMED_SHAPE;
+	  for (i = 0; i < as->rank; i++)
+	    as->lower[i] = gfc_get_int_expr (gfc_default_integer_kind, NULL, 1);
 	}
 
-      if ((sym->as && sym->as->rank > 0 && sym->as->type == AS_ASSUMED_SHAPE)
+      if ((as && as->rank > 0 && as->type == AS_ASSUMED_SHAPE)
 	  || sym->attr.pointer || sym->attr.allocatable || sym->attr.target
+	  || (sym->ts.type == BT_CLASS && sym->attr.class_ok
+	      && (CLASS_DATA (sym)->attr.class_pointer
+		  || CLASS_DATA (sym)->attr.allocatable
+		  || CLASS_DATA (sym)->attr.target))
 	  || sym->attr.optional)
 	{
 	  proc->attr.always_explicit = 1;

@@ -3620,10 +3620,15 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		parmse.string_length = build_int_cst (gfc_charlen_type_node, 0);
 	    }
 	}
-      else if (arg->expr->expr_type == EXPR_NULL && fsym && !fsym->attr.pointer)
+      else if (arg->expr->expr_type == EXPR_NULL
+	       && fsym && !fsym->attr.pointer
+	       && (fsym->ts.type != BT_CLASS
+		   || !CLASS_DATA (fsym)->attr.class_pointer))
 	{
 	  /* Pass a NULL pointer to denote an absent arg.  */
-	  gcc_assert (fsym->attr.optional && !fsym->attr.allocatable);
+	  gcc_assert (fsym->attr.optional && !fsym->attr.allocatable
+		      && (fsym->ts.type != BT_CLASS
+			  || !CLASS_DATA (fsym)->attr.allocatable));
 	  gfc_init_se (&parmse, NULL);
 	  parmse.expr = null_pointer_node;
 	  if (arg->missing_arg_type == BT_CHARACTER)
