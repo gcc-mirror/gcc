@@ -1,4 +1,12 @@
 2012-07-19  Richard Guenther  <rguenther@suse.de>
+	Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-ccp.c (valid_lattice_transition): Clarify comment
+	about transition from invariant to known bits.
+	(likely_value): Addresses with UNDEFINED components are
+	UNDEFINED.
+
+2012-07-19  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/53970
 	* tree-vect-data-refs.c (not_size_aligned): Avoid sign-compare

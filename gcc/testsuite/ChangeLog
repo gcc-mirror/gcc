@@ -1,3 +1,9 @@
+2012-07-19  Richard Guenther  <rguenther@suse.de>
+	Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/loop_optimization11.adb: New testcase.
+	* gnat.dg/loop_optimization11_pkg.ads: Likewise.
+
 2012-07-18  Paolo Carlini  <paolo.carlini@oracle.com>
 	    Jason Merrill  <jason@redhat.com>
 
