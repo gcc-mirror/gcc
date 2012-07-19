@@ -1,3 +1,9 @@
+2012-07-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/54021
+	* call.c (build_cxx_call): Set optimize when folding
+	__builtin_constant_p in a constexpr function.
+
 2012-07-18  Jason Merrill  <jason@redhat.com>
 
 	* pt.c (instantiate_decl): Don't recheck substitutions.
