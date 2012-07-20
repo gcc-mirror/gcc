@@ -1,5 +1,11 @@
 2012-07-20  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/54031
+	* tree-ssa-ccp.c (get_value_from_alignment): Use
+	get_pointer_alignment_1.
+
+2012-07-20  Richard Guenther  <rguenther@suse.de>
+
 	* tree-inline.c (add_local_variables): Remove check_var_ann
 	parameter and dead code.
 	(expand_call_inline): Adjust.
