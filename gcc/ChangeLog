@@ -1,3 +1,9 @@
+2012-07-20  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	PR target/53877
+	* config/i386/lzcntintrin.h (_lzcnt_u32): New.
+	(_lzcnt_u64): Ditto.
+
 2012-07-20  Andrey Belevantsev  <abel@ispras.ru>
 
 	Backport from mainline
