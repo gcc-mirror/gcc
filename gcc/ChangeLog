@@ -1,3 +1,14 @@
+2012-07-20  Andrey Belevantsev  <abel@ispras.ru>
+
+	Backport from mainline
+	2012-03-06  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/52250
+	* sel-sched-ir.c (maybe_tidy_empty_bb): Try harder to find a bb
+	to put note list into.  Unconditionally call move_bb_info.
+	(move_bb_info): Do not assert the blocks being in the same region,
+	just drop the note list if they are not.
+
 2012-07-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc.md (adddi3_insn_sp32): Add earlyclobber.
@@ -34,9 +45,9 @@
 
 2012-07-18  Ralf Corsépius  <ralf.corsepius@rtems.org>
 
-       * config.gcc (v850-*-rtems*): New target.
-       * config/v850/rtems.h: New.
-       * config/v850/t-rtems: New.
+	* config.gcc (v850-*-rtems*): New target.
+	* config/v850/rtems.h: New.
+	* config/v850/t-rtems: New.
 
 2012-07-18  Nick Clifton  <nickc@redhat.com>
 

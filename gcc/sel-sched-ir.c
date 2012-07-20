@@ -3658,7 +3658,7 @@ sel_recompute_toporder (void)
 static bool
 maybe_tidy_empty_bb (basic_block bb)
 {
-  basic_block succ_bb, pred_bb;
+  basic_block succ_bb, pred_bb, note_bb;
   VEC (basic_block, heap) *dom_bbs;
   edge e;
   edge_iterator ei;
@@ -3696,6 +3696,17 @@ maybe_tidy_empty_bb (basic_block bb)
   rescan_p = true;
   pred_bb = NULL;
   dom_bbs = NULL;
+
+  /* Save a pred/succ from the current region to attach the notes to.  */
+  note_bb = NULL;
+  FOR_EACH_EDGE (e, ei, bb->preds)
+    if (in_current_region_p (e->src))
+      {
+	note_bb = e->src;
+	break;
+      }
+  if (note_bb == NULL)
+    note_bb = succ_bb;
 
   /* Redirect all non-fallthru edges to the next bb.  */
   while (rescan_p)
@@ -3746,10 +3757,8 @@ maybe_tidy_empty_bb (basic_block bb)
   else
     {
       /* This is a block without fallthru predecessor.  Just delete it.  */
-      gcc_assert (pred_bb != NULL);
-
-      if (in_current_region_p (pred_bb))
-	move_bb_info (pred_bb, bb);
+      gcc_assert (note_bb);
+      move_bb_info (note_bb, bb);
       remove_empty_bb (bb, true);
     }
 
@@ -5231,10 +5240,9 @@ sel_remove_bb (basic_block bb, bool remove_from_cfg_p)
 static void
 move_bb_info (basic_block merge_bb, basic_block empty_bb)
 {
-  gcc_assert (in_current_region_p (merge_bb));
-
-  concat_note_lists (BB_NOTE_LIST (empty_bb),
-		     &BB_NOTE_LIST (merge_bb));
+  if (in_current_region_p (merge_bb))
+    concat_note_lists (BB_NOTE_LIST (empty_bb),
+		       &BB_NOTE_LIST (merge_bb));
   BB_NOTE_LIST (empty_bb) = NULL_RTX;
 
 }
