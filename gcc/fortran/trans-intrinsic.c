@@ -1315,29 +1315,37 @@ trans_num_images (gfc_se * se)
 }
 
 
+static tree
+get_rank_from_desc (tree desc)
+{
+  tree tmp;
+  tree dtype;
+
+  dtype = gfc_conv_descriptor_dtype (desc);
+  tmp = build_int_cst (TREE_TYPE (dtype), GFC_DTYPE_RANK_MASK);
+  tmp = fold_build2_loc (input_location, BIT_AND_EXPR, TREE_TYPE (dtype),
+			 dtype, tmp);
+  return fold_convert (gfc_get_int_type (gfc_default_integer_kind), tmp);
+}
+
+
 static void
 gfc_conv_intrinsic_rank (gfc_se *se, gfc_expr *expr)
 {
   gfc_se argse;
   gfc_ss *ss;
-  tree dtype, tmp;
 
   ss = gfc_walk_expr (expr->value.function.actual->expr);
   gcc_assert (ss != gfc_ss_terminator);
   gfc_init_se (&argse, NULL);
   argse.data_not_needed = 1;
-  argse.want_pointer = 1;
+  argse.descriptor_only = 1;
 
   gfc_conv_expr_descriptor (&argse, expr->value.function.actual->expr, ss);
   gfc_add_block_to_block (&se->pre, &argse.pre);
   gfc_add_block_to_block (&se->post, &argse.post);
-  argse.expr = build_fold_indirect_ref_loc (input_location, argse.expr);
-  argse.expr = build_fold_indirect_ref_loc (input_location, argse.expr);
-  dtype = gfc_conv_descriptor_dtype (argse.expr);
-  tmp = build_int_cst (TREE_TYPE (dtype), GFC_DTYPE_RANK_MASK);
-  tmp = fold_build2_loc (input_location, BIT_AND_EXPR, TREE_TYPE (dtype),
-			 dtype, tmp);
-  se->expr = fold_convert (gfc_get_int_type (gfc_default_integer_kind), tmp);
+
+  se->expr = get_rank_from_desc (argse.expr);
 }
 
 
@@ -5855,8 +5863,15 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
 	     present.  */
 	  arg1se.descriptor_only = 1;
 	  gfc_conv_expr_lhs (&arg1se, arg1->expr);
-	  tmp = gfc_conv_descriptor_stride_get (arg1se.expr,
-					    gfc_rank_cst[arg1->expr->rank - 1]);
+	  if (arg1->expr->rank == -1)
+	    {
+	      tmp = get_rank_from_desc (arg1se.expr);
+	      tmp = fold_build2_loc (input_location, MINUS_EXPR,
+				     TREE_TYPE (tmp), tmp, gfc_index_one_node);
+	    }
+	  else
+	    tmp = gfc_rank_cst[arg1->expr->rank - 1];
+	  tmp = gfc_conv_descriptor_stride_get (arg1se.expr, tmp);
 	  nonzero_arraylen = fold_build2_loc (input_location, NE_EXPR,
 					      boolean_type_node, tmp,
 					      build_int_cst (TREE_TYPE (tmp), 0));

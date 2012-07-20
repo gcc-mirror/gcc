@@ -31,7 +31,7 @@ end subroutine six
 
 subroutine seven(y)
  type(*) :: y(:)
- call a7(y(3:5)) ! { dg-error "Assumed-type variable y with designator" }
+ call a7(y(3:5)) ! { dg-error "Assumed-type variable y at .1. shall not have a subobject reference" }
 contains
  subroutine a7(x)
    type(*) :: x(*)
@@ -115,5 +115,5 @@ end subroutine thirteen
 
 subroutine fourteen(x)
   type(*) :: x
-  x = x ! { dg-error "Invalid expression with assumed-type variable" }
+  x = x ! { dg-error "Assumed-type variable x at .1. may only be used as actual argument" }
 end subroutine fourteen

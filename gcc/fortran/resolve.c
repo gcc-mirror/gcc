@@ -64,7 +64,13 @@ static code_stack *cs_base = NULL;
 static int forall_flag;
 static int do_concurrent_flag;
 
-static bool assumed_type_expr_allowed = false;
+/* True when we are resolving an expression that is an actual argument to
+   a procedure.  */
+static bool actual_arg = false;
+/* True when we are resolving an expression that is the first actual argument
+   to a procedure.  */
+static bool first_actual_arg = false;
+
 
 /* Nonzero if we're inside a OpenMP WORKSHARE or PARALLEL WORKSHARE block.  */
 
@@ -85,6 +91,7 @@ static bitmap_obstack labels_obstack;
 
 /* True when simplifying a EXPR_VARIABLE argument to an inquiry function.  */
 static bool inquiry_argument = false;
+
 
 int
 gfc_is_formal_arg (void)
@@ -240,7 +247,7 @@ resolve_formal_arglist (gfc_symbol *proc)
 
   if (gfc_elemental (proc)
       || sym->attr.pointer || sym->attr.allocatable
-      || (sym->as && sym->as->rank > 0))
+      || (sym->as && sym->as->rank != 0))
     {
       proc->attr.always_explicit = 1;
       sym->attr.always_explicit = 1;
@@ -307,6 +314,7 @@ resolve_formal_arglist (gfc_symbol *proc)
 	}
 
       if ((as && as->rank > 0 && as->type == AS_ASSUMED_SHAPE)
+	  || (as && as->type == AS_ASSUMED_RANK)
 	  || sym->attr.pointer || sym->attr.allocatable || sym->attr.target
 	  || (sym->ts.type == BT_CLASS && sym->attr.class_ok
 	      && (CLASS_DATA (sym)->attr.class_pointer
@@ -1610,8 +1618,11 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
   gfc_symtree *parent_st;
   gfc_expr *e;
   int save_need_full_assumed_size;
+  gfc_try return_value = FAILURE;
+  bool actual_arg_sav = actual_arg, first_actual_arg_sav = first_actual_arg;
 
-  assumed_type_expr_allowed = true;
+  actual_arg = true;
+  first_actual_arg = true;
 
   for (; arg; arg = arg->next)
     {
@@ -1625,9 +1636,10 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
 		{
 		  gfc_error ("Label %d referenced at %L is never defined",
 			     arg->label->value, &arg->label->where);
-		  return FAILURE;
+		  goto cleanup;
 		}
 	    }
+	  first_actual_arg = false;
 	  continue;
 	}
 
@@ -1635,7 +1647,7 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
 	    && e->symtree->n.sym->attr.generic
 	    && no_formal_args
 	    && count_specific_procs (e) != 1)
-	return FAILURE;
+	goto cleanup;
 
       if (e->ts.type != BT_PROCEDURE)
 	{
@@ -1643,7 +1655,7 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
 	  if (e->expr_type != EXPR_VARIABLE)
 	    need_full_assumed_size = 0;
 	  if (gfc_resolve_expr (e) != SUCCESS)
-	    return FAILURE;
+	    goto cleanup;
 	  need_full_assumed_size = save_need_full_assumed_size;
 	  goto argument_list;
 	}
@@ -1687,7 +1699,7 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
 				  "Internal procedure '%s' is"
 				  " used as actual argument at %L",
 				  sym->name, &e->where) == FAILURE)
-		return FAILURE;
+		goto cleanup;
 	    }
 
 	  if (sym->attr.elemental && !sym->attr.intrinsic)
@@ -1700,8 +1712,8 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
 	  /* Check if a generic interface has a specific procedure
 	    with the same name before emitting an error.  */
 	  if (sym->attr.generic && count_specific_procs (e) != 1)
-	    return FAILURE;
-	  
+	    goto cleanup;
+
 	  /* Just in case a specific was found for the expression.  */
 	  sym = e->symtree->n.sym;
 
@@ -1722,7 +1734,7 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
 		  gfc_error ("Unable to find a specific INTRINSIC procedure "
 			     "for the reference '%s' at %L", sym->name,
 			     &e->where);
-		  return FAILURE;
+		  goto cleanup;
 		}
 	      sym->ts = isym->ts;
 	      sym->attr.intrinsic = 1;
@@ -1730,7 +1742,7 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
 	    }
 
 	  if (gfc_resolve_expr (e) == FAILURE)
-	    return FAILURE;
+	    goto cleanup;
 	  goto argument_list;
 	}
 
@@ -1742,7 +1754,7 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
       if (gfc_find_sym_tree (sym->name, sym->ns->parent, 1, &parent_st))
 	{
 	  gfc_error ("Symbol '%s' at %L is ambiguous", sym->name, &e->where);
-	  return FAILURE;
+	  goto cleanup;
 	}
 
       if (parent_st == NULL)
@@ -1756,7 +1768,7 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
 	  || sym->attr.external)
 	{
 	  if (gfc_resolve_expr (e) == FAILURE)
-	    return FAILURE;
+	    goto cleanup;
 	  goto argument_list;
 	}
 
@@ -1784,7 +1796,7 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
       if (e->expr_type != EXPR_VARIABLE)
 	need_full_assumed_size = 0;
       if (gfc_resolve_expr (e) != SUCCESS)
-	return FAILURE;
+	goto cleanup;
       need_full_assumed_size = save_need_full_assumed_size;
 
     argument_list:
@@ -1798,14 +1810,14 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
 		{
 		  gfc_error ("By-value argument at %L is not of numeric "
 			     "type", &e->where);
-		  return FAILURE;
+		  goto cleanup;
 		}
 
 	      if (e->rank)
 		{
 		  gfc_error ("By-value argument at %L cannot be an array or "
 			     "an array section", &e->where);
-		return FAILURE;
+		  goto cleanup;
 		}
 
 	      /* Intrinsics are still PROC_UNKNOWN here.  However,
@@ -1819,7 +1831,7 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
 		{
 		  gfc_error ("By-value argument at %L is not allowed "
 			     "in this context", &e->where);
-		  return FAILURE;
+		  goto cleanup;
 		}
 	    }
 
@@ -1831,23 +1843,30 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
 		{
 		  gfc_error ("Passing internal procedure at %L by location "
 			     "not allowed", &e->where);
-		  return FAILURE;
+		  goto cleanup;
 		}
 	    }
 	}
 
       /* Fortran 2008, C1237.  */
       if (e->expr_type == EXPR_VARIABLE && gfc_is_coindexed (e)
-          && gfc_has_ultimate_pointer (e))
-        {
-          gfc_error ("Coindexed actual argument at %L with ultimate pointer "
+	  && gfc_has_ultimate_pointer (e))
+	{
+	  gfc_error ("Coindexed actual argument at %L with ultimate pointer "
 		     "component", &e->where);
-          return FAILURE;
-        }
-    }
-  assumed_type_expr_allowed = false;
+	  goto cleanup;
+	}
 
-  return SUCCESS;
+      first_actual_arg = false;
+    }
+
+  return_value = SUCCESS;
+
+cleanup:
+  actual_arg = actual_arg_sav;
+  first_actual_arg = first_actual_arg_sav;
+
+  return return_value;
 }
 
 
@@ -1907,7 +1926,7 @@ resolve_elemental_actual (gfc_expr *expr, gfc_code *c)
   /* The rank of an elemental is the rank of its array argument(s).  */
   for (arg = arg0; arg; arg = arg->next)
     {
-      if (arg->expr != NULL && arg->expr->rank > 0)
+      if (arg->expr != NULL && arg->expr->rank != 0)
 	{
 	  rank = arg->expr->rank;
 	  if (arg->expr->expr_type == EXPR_VARIABLE
@@ -2206,6 +2225,15 @@ resolve_global_procedure (gfc_symbol *sym, locus *where,
 			   sym->name, &sym->declared_at, arg->sym->name);
 		break;
 	      }
+	    /* TS 29113, 6.2.  */
+	    else if (arg->sym && arg->sym->as
+		     && arg->sym->as->type == AS_ASSUMED_RANK)
+	      {
+		gfc_error ("Procedure '%s' at %L with assumed-rank dummy "
+			   "argument '%s' must have an explicit interface",
+			   sym->name, &sym->declared_at, arg->sym->name);
+		break;
+	      }
 	    /* F2008, 12.4.2.2 (2c)  */
 	    else if (arg->sym->attr.codimension)
 	      {
@@ -2227,6 +2255,15 @@ resolve_global_procedure (gfc_symbol *sym, locus *where,
 	    else if (arg->sym->ts.type == BT_CLASS)
 	      {
 		gfc_error ("Procedure '%s' at %L with polymorphic dummy "
+			   "argument '%s' must have an explicit interface",
+			   sym->name, &sym->declared_at, arg->sym->name);
+		break;
+	      }
+	    /* As assumed-type is unlimited polymorphic (cf. above).
+	       See also  TS 29113, Note 6.1.  */
+	    else if (arg->sym->ts.type == BT_ASSUMED)
+	      {
+		gfc_error ("Procedure '%s' at %L with assumed-type dummy "
 			   "argument '%s' must have an explicit interface",
 			   sym->name, &sym->declared_at, arg->sym->name);
 		break;
@@ -4976,7 +5013,7 @@ expression_shape (gfc_expr *e)
   mpz_t array[GFC_MAX_DIMENSIONS];
   int i;
 
-  if (e->rank == 0 || e->shape != NULL)
+  if (e->rank <= 0 || e->shape != NULL)
     return;
 
   for (i = 0; i < e->rank; i++)
@@ -5079,22 +5116,78 @@ resolve_variable (gfc_expr *e)
   sym = e->symtree->n.sym;
 
   /* TS 29113, 407b.  */
-  if (e->ts.type == BT_ASSUMED && !assumed_type_expr_allowed)
+  if (e->ts.type == BT_ASSUMED)
     {
-      gfc_error ("Invalid expression with assumed-type variable %s at %L",
-		 sym->name, &e->where);
-      return FAILURE;
+      if (!actual_arg)
+	{
+	  gfc_error ("Assumed-type variable %s at %L may only be used "
+		     "as actual argument", sym->name, &e->where);
+	  return FAILURE;
+	}
+      else if (inquiry_argument && !first_actual_arg)
+	{
+	  /* FIXME: It doesn't work reliably as inquiry_argument is not set
+	     for all inquiry functions in resolve_function; the reason is
+	     that the function-name resolution happens too late in that
+	     function.  */
+	  gfc_error ("Assumed-type variable %s at %L as actual argument to "
+		     "an inquiry function shall be the first argument",
+		     sym->name, &e->where);
+	  return FAILURE;
+	}
+    }
+
+  /* TS 29113, C535b.  */
+  if ((sym->ts.type == BT_CLASS && sym->attr.class_ok
+	&& CLASS_DATA (sym)->as
+	&& CLASS_DATA (sym)->as->type == AS_ASSUMED_RANK)
+       || (sym->ts.type != BT_CLASS && sym->as
+	   && sym->as->type == AS_ASSUMED_RANK))
+    {
+      if (!actual_arg)
+	{
+	  gfc_error ("Assumed-rank variable %s at %L may only be used as "
+		     "actual argument", sym->name, &e->where);
+	  return FAILURE;
+	}
+      else if (inquiry_argument && !first_actual_arg)
+	{
+	  /* FIXME: It doesn't work reliably as inquiry_argument is not set
+	     for all inquiry functions in resolve_function; the reason is
+	     that the function-name resolution happens too late in that
+	     function.  */
+	  gfc_error ("Assumed-rank variable %s at %L as actual argument "
+		     "to an inquiry function shall be the first argument",
+		     sym->name, &e->where);
+	  return FAILURE;
+	}
     }
 
   /* TS 29113, 407b.  */
   if (e->ts.type == BT_ASSUMED && e->ref
       && !(e->ref->type == REF_ARRAY && e->ref->u.ar.type == AR_FULL
-           && e->ref->next == NULL))
+	   && e->ref->next == NULL))
     {
-      gfc_error ("Assumed-type variable %s with designator at %L",
-                 sym->name, &e->ref->u.ar.where);
+      gfc_error ("Assumed-type variable %s at %L shall not have a subobject "
+		 "reference", sym->name, &e->ref->u.ar.where);
       return FAILURE;
     }
+
+  /* TS 29113, C535b.  */
+  if (((sym->ts.type == BT_CLASS && sym->attr.class_ok
+	&& CLASS_DATA (sym)->as
+	&& CLASS_DATA (sym)->as->type == AS_ASSUMED_RANK)
+       || (sym->ts.type != BT_CLASS && sym->as
+	   && sym->as->type == AS_ASSUMED_RANK))
+      && e->ref
+      && !(e->ref->type == REF_ARRAY && e->ref->u.ar.type == AR_FULL
+	   && e->ref->next == NULL))
+    {
+      gfc_error ("Assumed-rank variable %s at %L shall not have a subobject "
+		 "reference", sym->name, &e->ref->u.ar.where);
+      return FAILURE;
+    }
+
 
   /* If this is an associate-name, it may be parsed with an array reference
      in error even though the target is scalar.  Fail directly in this case.
@@ -5596,7 +5689,7 @@ update_ppc_arglist (gfc_expr* e)
     return FAILURE;
 
   /* F08:R739.  */
-  if (po->rank > 0)
+  if (po->rank != 0)
     {
       gfc_error ("Passed-object at %L must be scalar", &e->where);
       return FAILURE;
@@ -5644,7 +5737,7 @@ check_typebound_baseobject (gfc_expr* e)
 
   /* F08:C1230. If the procedure called is NOPASS,
      the base object must be scalar.  */
-  if (e->value.compcall.tbp->nopass && base->rank > 0)
+  if (e->value.compcall.tbp->nopass && base->rank != 0)
     {
       gfc_error ("Base object for NOPASS type-bound procedure call at %L must"
 		 " be scalar", &e->where);
@@ -6306,15 +6399,22 @@ gfc_try
 gfc_resolve_expr (gfc_expr *e)
 {
   gfc_try t;
-  bool inquiry_save;
+  bool inquiry_save, actual_arg_save, first_actual_arg_save;
 
   if (e == NULL)
     return SUCCESS;
 
   /* inquiry_argument only applies to variables.  */
   inquiry_save = inquiry_argument;
+  actual_arg_save = actual_arg;
+  first_actual_arg_save = first_actual_arg;
+
   if (e->expr_type != EXPR_VARIABLE)
-    inquiry_argument = false;
+    {
+      inquiry_argument = false;
+      actual_arg = false;
+      first_actual_arg = false;
+    }
 
   switch (e->expr_type)
     {
@@ -6404,6 +6504,8 @@ gfc_resolve_expr (gfc_expr *e)
     fixup_charlen (e);
 
   inquiry_argument = inquiry_save;
+  actual_arg = actual_arg_save;
+  first_actual_arg = first_actual_arg_save;
 
   return t;
 }
@@ -10332,10 +10434,10 @@ resolve_fl_var_and_proc (gfc_symbol *sym, int mp_flag)
 
       if (allocatable)
 	{
-	  if (dimension)
+	  if (dimension && as->type != AS_ASSUMED_RANK)
 	    {
-	      gfc_error ("Allocatable array '%s' at %L must have "
-			 "a deferred shape", sym->name, &sym->declared_at);
+	      gfc_error ("Allocatable array '%s' at %L must have a deferred "
+			 "shape or assumed rank", sym->name, &sym->declared_at);
 	      return FAILURE;
 	    }
 	  else if (gfc_notify_std (GFC_STD_F2003, "Scalar object "
@@ -10344,10 +10446,10 @@ resolve_fl_var_and_proc (gfc_symbol *sym, int mp_flag)
 	    return FAILURE;
 	}
 
-      if (pointer && dimension)
+      if (pointer && dimension && as->type != AS_ASSUMED_RANK)
 	{
-	  gfc_error ("Array pointer '%s' at %L must have a deferred shape",
-		     sym->name, &sym->declared_at);
+	  gfc_error ("Array pointer '%s' at %L must have a deferred shape or "
+		     "assumed rank", sym->name, &sym->declared_at);
 	  return FAILURE;
 	}
     }
@@ -10961,7 +11063,7 @@ gfc_resolve_finalizers (gfc_symbol* derived)
 	}
 
       /* Warn if the procedure is non-scalar and not assumed shape.  */
-      if (gfc_option.warn_surprising && arg->as && arg->as->rank > 0
+      if (gfc_option.warn_surprising && arg->as && arg->as->rank != 0
 	  && arg->as->type != AS_ASSUMED_SHAPE)
 	gfc_warning ("Non-scalar FINAL procedure at %L should have assumed"
 		     " shape argument", &arg->declared_at);
@@ -11490,7 +11592,7 @@ resolve_typebound_procedure (gfc_symtree* stree)
 	}
   
       gcc_assert (me_arg->ts.type == BT_CLASS);
-      if (CLASS_DATA (me_arg)->as && CLASS_DATA (me_arg)->as->rank > 0)
+      if (CLASS_DATA (me_arg)->as && CLASS_DATA (me_arg)->as->rank != 0)
 	{
 	  gfc_error ("Passed-object dummy argument of '%s' at %L must be"
 		     " scalar", proc->name, &where);
@@ -12504,6 +12606,20 @@ resolve_symbol (gfc_symbol *sym)
 		       &sym->declared_at);
 	  return;
 	}
+      /* TS 29113, C535a.  */
+      if (as->type == AS_ASSUMED_RANK && !sym->attr.dummy)
+	{
+	  gfc_error ("Assumed-rank array at %L must be a dummy argument",
+		     &sym->declared_at);
+	  return;
+	}
+      if (as->type == AS_ASSUMED_RANK
+	  && (sym->attr.codimension || sym->attr.value))
+	{
+	  gfc_error ("Assumed-rank array at %L may not have the VALUE or "
+		     "CODIMENSION attribute", &sym->declared_at);
+	  return;
+	}
     }
 
   /* Make sure symbols with known intent or optional are really dummy
@@ -12573,6 +12689,13 @@ resolve_symbol (gfc_symbol *sym)
     	{
 	  gfc_error ("Assumed-type variable %s at %L may not have the "
 		     "ALLOCATABLE, CODIMENSION, POINTER or VALUE attribute",
+		     sym->name, &sym->declared_at);
+	  return;
+	}
+      if (sym->attr.intent == INTENT_OUT)
+    	{
+	  gfc_error ("Assumed-type variable %s at %L may not have the "
+		     "INTENT(OUT) attribute",
 		     sym->name, &sym->declared_at);
 	  return;
 	}

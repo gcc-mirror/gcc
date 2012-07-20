@@ -1,3 +1,62 @@
+2012-07-20  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48820
+	* array.c (match_array_element_spec, gfc_match_array_spec,
+	spec_size, gfc_array_dimen_size): Add support for
+	assumed-rank arrays.
+	* check.c (dim_rank_check): Ditto.
+	* class.c (gfc_add_component_ref): Ditto.
+	(gfc_build_class_symbol): Regard assumed-rank arrays
+	as having GFC_MAX_DIMENSIONS. And build extra class
+	container for a scalar pointer class.
+	* decl.c (merge_array_spec): Add assert.
+	* dump-parse-tree.c (show_array_spec): Add support for
+	assumed-rank arrays.
+	* expr.c (gfc_is_simply_contiguous): Ditto.
+	* gfortran.h (array_type): Ditto.
+	(gfc_array_spec, gfc_expr): Add comment to "rank" field.
+	* interface.c (compare_type_rank, argument_rank_mismatch,
+	compare_parameter, gfc_procedure_use): Ditto.
+	(compare_actual_formal): Fix NULL() to optional-dummy
+	handling for polymorphic dummies.
+	* module.c (mio_typespec): Add support for
+	assumed-rank arrays.
+	* resolve.c (resolve_formal_arglist, resolve_actual_arglist,
+	resolve_elemental_actual, resolve_global_procedure,
+	expression_shape, resolve_variable, update_ppc_arglist,
+	check_typebound_baseobject, gfc_resolve_expr,
+	resolve_fl_var_and_proc, gfc_resolve_finalizers,
+	resolve_typebound_procedure, resolve_symbol): Ditto.
+	(assumed_type_expr_allowed): Remove static variable.
+	(actual_arg, first_actual_arg): New static variables.
+	* simplify.c (simplify_bound, gfc_simplify_range): Add
+	support for assumed-rank arrays.
+	* trans-array.c (gfc_conv_array_parameter): Ditto.
+	(gfc_get_descriptor_dimension): New function, which returns
+	the descriptor.
+	(gfc_conv_descriptor_dimension): Use it.
+	(gfc_conv_descriptor_stride_get, gfc_conv_array_parameter):
+	Handle GFC_ARRAY_ASSUMED_RANK_CONT and AS_ASSUMED_RANK.
+	* trans-array.h (gfc_get_descriptor_dimension): New prototype.
+	* trans-decl. (gfc_build_dummy_array_decl,
+	gfc_trans_deferred_vars, add_argument_checking): Add
+	support for assumed-rank arrays.
+	* trans-expr.c (gfc_conv_expr_present, gfc_conv_variable,
+	gfc_conv_procedure_call): Ditto.
+	(get_scalar_to_descriptor_type, class_array_data_assign,
+	conv_scalar_to_descriptor): New static functions.
+	(gfc_conv_derived_to_class, gfc_conv_class_to_class): Use
+	them.
+	* trans-intrinsic.c (get_rank_from_desc): New function.
+	(gfc_conv_intrinsic_rank, gfc_conv_associated): Use it.
+	* trans-types.c (gfc_array_descriptor_base_caf,
+	gfc_array_descriptor_base): Make space for scalar array.
+	(gfc_is_nodesc_array, gfc_is_nodesc_array,
+	gfc_build_array_type, gfc_get_array_descriptor_base): Add
+	support for assumed-rank arrays.
+	* trans.h (gfc_array_kind): Add GFC_ARRAY_ASSUMED_RANK and
+	GFC_ARRAY_ASSUMED_RANK_CONT.
+
 2012-07-19  Tobias Burnus  <burnus@net-b.de>
 
 	* trans-expr.c (gfc_conv_procedure_call): Fix handling

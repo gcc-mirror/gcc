@@ -620,6 +620,10 @@ dim_rank_check (gfc_expr *dim, gfc_expr *array, int allow_assumed)
   else
     rank = array->rank;
 
+  /* Assumed-rank array.  */
+  if (rank == -1)
+    rank = GFC_MAX_DIMENSIONS;
+
   if (array->expr_type == EXPR_VARIABLE)
     {
       ar = gfc_find_array_ref (array);

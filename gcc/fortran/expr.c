@@ -4443,7 +4443,8 @@ gfc_is_simply_contiguous (gfc_expr *expr, bool strict)
 	    || (!part_ref
 		&& !sym->attr.contiguous
 		&& (sym->attr.pointer
-		      || sym->as->type == AS_ASSUMED_SHAPE))))
+		    || sym->as->type == AS_ASSUMED_RANK
+		    || sym->as->type == AS_ASSUMED_SHAPE))))
     return false;
 
   if (!ar || ar->type == AR_FULL)

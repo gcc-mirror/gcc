@@ -512,7 +512,9 @@ compare_type_rank (gfc_symbol *s1, gfc_symbol *s2)
   r1 = (s1->as != NULL) ? s1->as->rank : 0;
   r2 = (s2->as != NULL) ? s2->as->rank : 0;
 
-  if (r1 != r2)
+  if (r1 != r2
+      && (!s1->as || s1->as->type != AS_ASSUMED_RANK)
+      && (!s2->as || s2->as->type != AS_ASSUMED_RANK))
     return 0;			/* Ranks differ.  */
 
   return gfc_compare_types (&s1->ts, &s2->ts)
@@ -1635,7 +1637,14 @@ static void
 argument_rank_mismatch (const char *name, locus *where,
 			int rank1, int rank2)
 {
-  if (rank1 == 0)
+
+  /* TS 29113, C407b.  */
+  if (rank2 == -1)
+    {
+      gfc_error ("The assumed-rank array at %L requires that the dummy argument"
+		 " '%s' has assumed-rank", where, name);
+    }
+  else if (rank1 == 0)
     {
       gfc_error ("Rank mismatch in argument '%s' at %L "
 		 "(scalar and rank-%d)", name, where, rank2);
@@ -1860,7 +1869,8 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 		     " is modified",  &actual->where, formal->name);
     }
 
-  if (symbol_rank (formal) == actual->rank)
+  /* If the rank is the same or the formal argument has assumed-rank.  */
+  if (symbol_rank (formal) == actual->rank || symbol_rank (formal) == -1)
     return 1;
 
   if (actual->ts.type == BT_CLASS && CLASS_DATA (actual)->as
@@ -2999,6 +3009,15 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
 	      && a->expr->ts.type == BT_UNKNOWN)
 	    {
 	      gfc_error ("MOLD argument to NULL required at %L", &a->expr->where);
+	      return;
+	    }
+
+	  /* TS 29113, C407b.  */
+	  if (a->expr && a->expr->expr_type == EXPR_VARIABLE
+	      && symbol_rank (a->expr->symtree->n.sym) == -1)
+	    {
+	      gfc_error ("Assumed-rank argument requires an explicit interface "
+			 "at %L", &a->expr->where);
 	      return;
 	    }
 	}

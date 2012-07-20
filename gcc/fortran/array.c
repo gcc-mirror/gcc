@@ -390,9 +390,11 @@ match_array_element_spec (gfc_array_spec *as)
 {
   gfc_expr **upper, **lower;
   match m;
+  int rank;
 
-  lower = &as->lower[as->rank + as->corank - 1];
-  upper = &as->upper[as->rank + as->corank - 1];
+  rank = as->rank == -1 ? 0 : as->rank;
+  lower = &as->lower[rank + as->corank - 1];
+  upper = &as->upper[rank + as->corank - 1];
 
   if (gfc_match_char ('*') == MATCH_YES)
     {
@@ -453,6 +455,20 @@ gfc_match_array_spec (gfc_array_spec **asp, bool match_dim, bool match_codim)
 
   if (gfc_match_char ('(') != MATCH_YES)
     {
+      if (!match_codim)
+	goto done;
+      goto coarray;
+    }
+
+  if (gfc_match (" .. )") == MATCH_YES)
+    {
+      as->type = AS_ASSUMED_RANK;
+      as->rank = -1;
+
+      if (gfc_notify_std (GFC_STD_F2008_TS, "Assumed-rank array at %C")
+	  == FAILURE)
+	goto cleanup;
+
       if (!match_codim)
 	goto done;
       goto coarray;
@@ -536,6 +552,9 @@ gfc_match_array_spec (gfc_array_spec **asp, bool match_dim, bool match_codim)
 
 	    gfc_error ("Bad specification for assumed size array at %C");
 	    goto cleanup;
+
+	  case AS_ASSUMED_RANK:
+	    gcc_unreachable (); 
 	  }
 
       if (gfc_match_char (')') == MATCH_YES)
@@ -642,6 +661,9 @@ coarray:
 	    case AS_ASSUMED_SIZE:
 	      gfc_error ("Bad specification for assumed size array at %C");
 	      goto cleanup;
+
+	    case AS_ASSUMED_RANK:
+	      gcc_unreachable (); 
 	  }
 
       if (gfc_match_char (']') == MATCH_YES)
@@ -1960,6 +1982,9 @@ spec_size (gfc_array_spec *as, mpz_t *result)
   mpz_t size;
   int d;
 
+  if (as->type == AS_ASSUMED_RANK)
+    return FAILURE;
+
   mpz_init_set_ui (*result, 1);
 
   for (d = 0; d < as->rank; d++)
@@ -2114,6 +2139,9 @@ gfc_array_dimen_size (gfc_expr *array, int dimen, mpz_t *result)
   int i;
 
   if (array->ts.type == BT_CLASS)
+    return FAILURE;
+
+  if (array->rank == -1)
     return FAILURE;
 
   if (dimen < 0 || array == NULL || dimen > array->rank - 1)
