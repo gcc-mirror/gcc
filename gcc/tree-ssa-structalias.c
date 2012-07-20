@@ -6736,9 +6736,6 @@ compute_may_aliases (void)
 
 	  /* But still dump what we have remaining it.  */
 	  dump_alias_info (dump_file);
-
-	  if (dump_flags & TDF_DETAILS)
-	    dump_referenced_vars (dump_file);
 	}
 
       return 0;
@@ -6751,12 +6748,7 @@ compute_may_aliases (void)
 
   /* Debugging dumps.  */
   if (dump_file)
-    {
-      dump_alias_info (dump_file);
-
-      if (dump_flags & TDF_DETAILS)
-	dump_referenced_vars (dump_file);
-    }
+    dump_alias_info (dump_file);
 
   /* Deallocate memory used by aliasing data structures and the internal
      points-to solution.  */

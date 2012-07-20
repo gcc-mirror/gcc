@@ -1,3 +1,17 @@
+2012-07-20  Richard Guenther  <rguenther@suse.de>
+
+	* tree-dfa.c (collect_dfa_stats): Simplify.
+	* tree-ssa-structalias.c (compute_may_aliases): Do not dump
+	referenced vars.
+	* cfgexpand.c (estimated_stack_frame_size): Walk over local
+	decls instead of referenced vars.
+	* tree-ssa.c (delete_tree_ssa): Simplify.
+	* tree-tailcall.c (find_tail_calls): Walk over local decls
+	instead of referenced vars.
+	(add_virtual_phis): Remove.
+	(tree_optimize_tail_calls_1): Instead mark the virtual operand
+	for renaming.
+
 2012-07-20  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* basic-block.h (BB_FLAGS_TO_PRESERVE): New define.
