@@ -1,7 +1,8 @@
 // { dg-do compile }
-// { dg-options "-std=gnu++0x" }
+// { dg-options "-std=gnu++11" }
+// { dg-require-cstdint "" }
 
-// Copyright (C) 2010, 2011, 2012 Free Software Foundation, Inc.
+// Copyright (C) 2012 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,22 +19,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+#include <atomic>
 #include <chrono>
-#include <testsuite_common_types.h>
 
-int main()
-{
-  __gnu_test::constexpr_default_constructible test1;
-  struct Seconds
-  {
-    constexpr Seconds() = default;
-    std::chrono::seconds s{};
-  };
-  test1.operator()<std::chrono::duration<Seconds>>();
-
-  __gnu_test::constexpr_single_value_constructible test2;
-  test2.operator()<std::chrono::seconds, std::chrono::seconds>();
-  test2.operator()<std::chrono::seconds, std::chrono::seconds::rep>();
-  test2.operator()<std::chrono::minutes, std::chrono::hours>();
-  return 0;
-}
+std::atomic<std::chrono::duration<long, std::micro>> dur;
