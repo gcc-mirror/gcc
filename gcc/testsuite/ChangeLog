@@ -1,3 +1,7 @@
+2012-07-20  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/assumed_rank_12.f90: Update dg-error.
+
 2012-07-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/54038
