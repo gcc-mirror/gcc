@@ -16,6 +16,6 @@ function f() result(res)
 end function f
 end
 
-! { dg-final { scan-tree-dump " = f \\(\\);.*desc.0.dtype = 600;.*desc.0.data = .void .. D.*;.*sub \\(&desc.0\\);.*D.*= .integer.kind=4. .. desc.0.data;" "original" } }
+! { dg-final { scan-tree-dump " = f \\(\\);.*desc.0.dtype = .*;.*desc.0.data = .void .. D.*;.*sub \\(&desc.0\\);.*D.*= .integer.kind=4. .. desc.0.data;" "original" } }
 ! { dg-final { cleanup-tree-dump "original" } }
 
