@@ -1,3 +1,7 @@
+2012-07-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/30_threads/thread/adl.cc: Add missing dg-requires.
+
 2012-07-16  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/53270
