@@ -1,5 +1,10 @@
 2012-07-20  Tobias Burnus  <burnus@net-b.de>
 
+	* decl.c (gfc_verify_c_interop_param): Allow assumed-shape
+	with -std=f2008ts.
+
+2012-07-20  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/48820
 	* array.c (match_array_element_spec, gfc_match_array_spec,
 	spec_size, gfc_array_dimen_size): Add support for

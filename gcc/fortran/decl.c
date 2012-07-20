@@ -1095,29 +1095,15 @@ gfc_verify_c_interop_param (gfc_symbol *sym)
 	    retval = FAILURE;
 
           /* Make sure that if it has the dimension attribute, that it is
-	     either assumed size or explicit shape.  */
-	  if (sym->as != NULL)
-	    {
-	      if (sym->as->type == AS_ASSUMED_SHAPE)
-		{
-		  gfc_error ("Assumed-shape array '%s' at %L cannot be an "
-			     "argument to the procedure '%s' at %L because "
-			     "the procedure is BIND(C)", sym->name,
-			     &(sym->declared_at), sym->ns->proc_name->name,
-			     &(sym->ns->proc_name->declared_at));
-		  retval = FAILURE;
-		}
-
-	      if (sym->as->type == AS_DEFERRED)
-		{
-		  gfc_error ("Deferred-shape array '%s' at %L cannot be an "
-			     "argument to the procedure '%s' at %L because "
-			     "the procedure is BIND(C)", sym->name,
-			     &(sym->declared_at), sym->ns->proc_name->name,
- 			     &(sym->ns->proc_name->declared_at));
-		  retval = FAILURE;
-		}
-	  }
+	     either assumed size or explicit shape. Deferred shape is already
+	     covered by the pointer/allocatable attribute.  */
+	  if (sym->as != NULL && sym->as->type == AS_ASSUMED_SHAPE
+	      && gfc_notify_std (GFC_STD_F2008_TS, "Assumed-shape array '%s' "
+			      "at %L as dummy argument to the BIND(C) "
+			      "procedure '%s' at %L", sym->name,
+			      &(sym->declared_at), sym->ns->proc_name->name,
+			      &(sym->ns->proc_name->declared_at)) == FAILURE)
+	    retval = FAILURE;
 	}
     }
 
