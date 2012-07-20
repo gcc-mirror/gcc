@@ -1875,8 +1875,9 @@ rtl_dump_bb (FILE *outf, basic_block bb, int indent, int flags)
 
 }
 
-/* Like print_rtl, but also print out live information for the start of each
-   basic block.  FLAGS are the flags documented in dumpfile.h.  */
+/* Like dump_function_to_file, but for RTL.  Print out dataflow information
+   for the start of each basic block.  FLAGS are the TDF_* masks documented
+   in dumpfile.h.  */
 
 void
 print_rtl_with_bb (FILE *outf, const_rtx rtx_first, int flags)
@@ -1891,52 +1892,74 @@ print_rtl_with_bb (FILE *outf, const_rtx rtx_first, int flags)
       basic_block *start = XCNEWVEC (basic_block, max_uid);
       basic_block *end = XCNEWVEC (basic_block, max_uid);
       enum bb_state *in_bb_p = XCNEWVEC (enum bb_state, max_uid);
-
       basic_block bb;
+
+      /* After freeing the CFG, we still have BLOCK_FOR_INSN set on most
+	 insns, but the CFG is not maintained so the basic block info
+	 is not reliable.  Therefore it's omitted from the dumps.  */
+      if (! (cfun->curr_properties & PROP_cfg))
+        flags &= ~TDF_BLOCKS;
 
       if (df)
 	df_dump_start (outf);
 
-      FOR_EACH_BB_REVERSE (bb)
+      if (flags & TDF_BLOCKS)
 	{
-	  rtx x;
-
-	  start[INSN_UID (BB_HEAD (bb))] = bb;
-	  end[INSN_UID (BB_END (bb))] = bb;
-	  for (x = BB_HEAD (bb); x != NULL_RTX; x = NEXT_INSN (x))
+	  FOR_EACH_BB_REVERSE (bb)
 	    {
-	      enum bb_state state = IN_MULTIPLE_BB;
+	      rtx x;
 
-	      if (in_bb_p[INSN_UID (x)] == NOT_IN_BB)
-		state = IN_ONE_BB;
-	      in_bb_p[INSN_UID (x)] = state;
+	      start[INSN_UID (BB_HEAD (bb))] = bb;
+	      end[INSN_UID (BB_END (bb))] = bb;
+	      for (x = BB_HEAD (bb); x != NULL_RTX; x = NEXT_INSN (x))
+		{
+		  enum bb_state state = IN_MULTIPLE_BB;
 
-	      if (x == BB_END (bb))
-		break;
+		  if (in_bb_p[INSN_UID (x)] == NOT_IN_BB)
+		    state = IN_ONE_BB;
+		  in_bb_p[INSN_UID (x)] = state;
+
+		  if (x == BB_END (bb))
+		    break;
+		}
 	    }
 	}
 
       for (tmp_rtx = rtx_first; NULL != tmp_rtx; tmp_rtx = NEXT_INSN (tmp_rtx))
 	{
-	  bb = start[INSN_UID (tmp_rtx)];
-	  if (bb != NULL)
-	    dump_bb_info (outf, bb, 0, dump_flags | TDF_COMMENT, true, false);
+	  if (flags & TDF_BLOCKS)
+	    {
+	      bb = start[INSN_UID (tmp_rtx)];
+	      if (bb != NULL)
+		{
+		  dump_bb_info (outf, bb, 0, dump_flags | TDF_COMMENT, true, false);
+		  if (df && (flags & TDF_DETAILS))
+		    df_dump_top (bb, outf);
+		}
 
-	  if (in_bb_p[INSN_UID (tmp_rtx)] == NOT_IN_BB
-	      && !NOTE_P (tmp_rtx)
-	      && !BARRIER_P (tmp_rtx))
-	    fprintf (outf, ";; Insn is not within a basic block\n");
-	  else if (in_bb_p[INSN_UID (tmp_rtx)] == IN_MULTIPLE_BB)
-	    fprintf (outf, ";; Insn is in multiple basic blocks\n");
+	      if (in_bb_p[INSN_UID (tmp_rtx)] == NOT_IN_BB
+		  && !NOTE_P (tmp_rtx)
+		  && !BARRIER_P (tmp_rtx))
+		fprintf (outf, ";; Insn is not within a basic block\n");
+	      else if (in_bb_p[INSN_UID (tmp_rtx)] == IN_MULTIPLE_BB)
+		fprintf (outf, ";; Insn is in multiple basic blocks\n");
+	    }
 
 	  if (! (flags & TDF_SLIM))
 	    print_rtl_single (outf, tmp_rtx);
 	  else
 	    dump_insn_slim (outf, tmp_rtx);
 
-	  bb = end[INSN_UID (tmp_rtx)];
-	  if (bb != NULL)
-	    dump_bb_info (outf, bb, 0, dump_flags | TDF_COMMENT, false, true);
+	  if (flags & TDF_BLOCKS)
+	    {
+	      bb = end[INSN_UID (tmp_rtx)];
+	      if (bb != NULL)
+		{
+		  dump_bb_info (outf, bb, 0, dump_flags | TDF_COMMENT, false, true);
+		  if (df && (flags & TDF_DETAILS))
+		    df_dump_bottom (bb, outf);
+		}
+	    }
 
 	  putc ('\n', outf);
 	}

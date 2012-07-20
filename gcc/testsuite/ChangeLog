@@ -1,3 +1,12 @@
+2012-07-20  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* gcc.dg/tree-prof/update-loopch.c: Look for counts on the dumps of
+	the basic block and check loop depth.
+	* gcc.dg/tree-ssa/pr18133-1.c: Dump details, not blocks.  Update
+	matching patterns and comments.
+	* gcc.dg/tree-ssa/20031021-1.c: Fix check patterns.
+	* gcc.dg/tree-ssa/vector-2.c: Likewise.
+
 2012-07-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/28656

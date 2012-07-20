@@ -90,8 +90,7 @@ DEF_BASIC_BLOCK_FLAG(MODIFIED, 12)
 DEF_BASIC_BLOCK_FLAG(VISITED, 13)
 
 /* Set on blocks that are in a transaction.  This is calculated on
-   demand, and is available after calling
-   compute_transaction_bits().  */
+   demand, and is available after calling compute_transaction_bits().  */
 DEF_BASIC_BLOCK_FLAG(IN_TRANSACTION, 14)
 
 #endif

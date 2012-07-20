@@ -203,8 +203,14 @@ enum cfg_bb_flags
 };
 #undef DEF_BASIC_BLOCK_FLAG
 
-/* Bit mask for all edge flags.  */
+/* Bit mask for all basic block flags.  */
 #define BB_ALL_FLAGS		((LAST_CFG_BB_FLAG - 1) * 2 - 1)
+
+/* Bit mask for all basic block flags that must be preserved.  These are
+   the bit masks that are *not* cleared by clear_bb_flags.  */
+#define BB_FLAGS_TO_PRESERVE					\
+  (BB_DISABLE_SCHEDULE | BB_RTL | BB_NON_LOCAL_GOTO_TARGET	\
+   | BB_HOT_PARTITION | BB_COLD_PARTITION)
 
 /* Dummy bitmask for convenience in the hot/cold partitioning code.  */
 #define BB_UNPARTITIONED	0
@@ -395,7 +401,7 @@ extern basic_block create_basic_block_structure (rtx, rtx, rtx, basic_block);
 extern void clear_bb_flags (void);
 extern void dump_bb_info (FILE *, basic_block, int, int, bool, bool);
 extern void dump_edge_info (FILE *, edge, int, int);
-extern void brief_dump_cfg (FILE *);
+extern void brief_dump_cfg (FILE *, int);
 extern void clear_edges (void);
 extern void scale_bbs_frequencies_int (basic_block *, int, int, int);
 extern void scale_bbs_frequencies_gcov_type (basic_block *, int, gcov_type,
@@ -816,7 +822,6 @@ unsigned bb_dom_dfs_out (enum cdi_direction, basic_block);
 extern edge try_redirect_by_replacing_jump (edge, basic_block, bool);
 extern void break_superblocks (void);
 extern void relink_block_chain (bool);
-extern void check_bb_profile (basic_block, FILE *);
 extern void update_bb_profile_for_threading (basic_block, int, gcov_type, edge);
 extern void init_rtl_bb_info (basic_block);
 

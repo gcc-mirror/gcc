@@ -1725,11 +1725,7 @@ execute_function_dump (void *data ATTRIBUTE_UNUSED)
         dump_function_to_file (current_function_decl, dump_file, dump_flags);
       else
 	{
-	  if ((cfun->curr_properties & PROP_cfg)
-	      && (dump_flags & TDF_BLOCKS))
-	    print_rtl_with_bb (dump_file, get_insns (), dump_flags);
-          else
-	    print_rtl (dump_file, get_insns ());
+	  print_rtl_with_bb (dump_file, get_insns (), dump_flags);
 
 	  if ((cfun->curr_properties & PROP_cfg)
 	      && graph_dump_format != no_graph

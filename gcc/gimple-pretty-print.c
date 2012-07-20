@@ -115,7 +115,9 @@ print_gimple_expr (FILE *file, gimple g, int spc, int flags)
 
 
 /* Print the GIMPLE sequence SEQ on BUFFER using SPC indentantion
-   spaces and FLAGS as in dump_gimple_stmt.  */
+   spaces and FLAGS as in dump_gimple_stmt.
+   The caller is responsible for calling pp_flush on BUFFER to finalize
+   the pretty printer.  */
 
 static void
 dump_gimple_seq (pretty_printer *buffer, gimple_seq seq, int spc, int flags)
@@ -1578,8 +1580,9 @@ dump_gimple_asm (pretty_printer *buffer, gimple gs, int spc, int flags)
 }
 
 
-/* Dump a PHI node PHI.  BUFFER, SPC and FLAGS are as in
-   dump_gimple_stmt.  */
+/* Dump a PHI node PHI.  BUFFER, SPC and FLAGS are as in dump_gimple_stmt.
+   The caller is responsible for calling pp_flush on BUFFER to finalize
+   pretty printer.  */
 
 static void
 dump_gimple_phi (pretty_printer *buffer, gimple phi, int spc, int flags)
@@ -1843,7 +1846,8 @@ dump_gimple_mem_ops (pretty_printer *buffer, gimple gs, int spc, int flags)
 
 /* Dump the gimple statement GS on the pretty printer BUFFER, SPC
    spaces of indent.  FLAGS specifies details to show in the dump (see
-   TDF_* in dumpfile.h).  */
+   TDF_* in dumpfile.h).  The caller is responsible for calling
+   pp_flush on BUFFER to finalize the pretty printer.  */
 
 void
 dump_gimple_stmt (pretty_printer *buffer, gimple gs, int spc, int flags)
@@ -2067,8 +2071,6 @@ dump_gimple_bb_header (FILE *outf, basic_block bb, int indent, int flags)
 {
   if (flags & TDF_BLOCKS)
     {
-      dump_bb_info (outf, bb, indent, flags, true, false);
-
       if (flags & TDF_LINENO)
 	{
 	  gimple_stmt_iterator gsi;
@@ -2103,8 +2105,6 @@ dump_gimple_bb_header (FILE *outf, basic_block bb, int indent, int flags)
 	  fprintf (outf, "%s<bb %d>:\n", s_indent, bb->index);
 	}
     }
-  if (cfun)
-    check_bb_profile (bb, outf);
 }
 
 
@@ -2112,9 +2112,13 @@ dump_gimple_bb_header (FILE *outf, basic_block bb, int indent, int flags)
    spaces.  */
 
 static void
-dump_gimple_bb_footer (FILE *outf, basic_block bb, int indent, int flags)
+dump_gimple_bb_footer (FILE *outf ATTRIBUTE_UNUSED,
+		       basic_block bb ATTRIBUTE_UNUSED,
+		       int indent ATTRIBUTE_UNUSED,
+		       int flags ATTRIBUTE_UNUSED)
 {
-  dump_bb_info (outf, bb, indent, flags, false, true);
+  /* There is currently no GIMPLE-specific basic block info to dump.  */
+  return;
 }
 
 
@@ -2256,7 +2260,7 @@ gimple_dump_bb_buff (pretty_printer *buffer, basic_block bb, int indent,
 
       INDENT (curr_indent);
       dump_gimple_stmt (buffer, stmt, curr_indent, flags);
-      pp_newline (buffer);
+      pp_flush (buffer);
       dump_histograms_for_stmt (cfun, buffer->buffer->stream, stmt);
     }
 
@@ -2271,8 +2275,10 @@ void
 gimple_dump_bb (FILE *file, basic_block bb, int indent, int flags)
 {
   dump_gimple_bb_header (file, bb, indent, flags);
-  maybe_init_pretty_print (file);
-  gimple_dump_bb_buff (&buffer, bb, indent, flags);
-  pp_flush (&buffer);
+  if (bb->index >= NUM_FIXED_BLOCKS)
+    {
+      maybe_init_pretty_print (file);
+      gimple_dump_bb_buff (&buffer, bb, indent, flags);
+    }
   dump_gimple_bb_footer (file, bb, indent, flags);
 }

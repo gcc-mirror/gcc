@@ -759,6 +759,7 @@ void
 pp_base_newline (pretty_printer *pp)
 {
   obstack_1grow (pp->buffer->obstack, '\n');
+  pp_needs_newline (pp) = false;
   pp->buffer->line_length = 0;
 }
 
