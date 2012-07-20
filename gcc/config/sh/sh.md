@@ -3496,12 +3496,35 @@ label:
     FAIL;
 })
 
-;;
-;; shift left
+;; . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+;; SImode shift left
+
+(define_expand "ashlsi3"
+  [(parallel [(set (match_operand:SI 0 "arith_reg_operand" "")
+		   (ashift:SI (match_operand:SI 1 "arith_reg_operand" "")
+			      (match_operand:SI 2 "nonmemory_operand" "")))
+	      (clobber (reg:SI T_REG))])]
+  ""
+{
+  if (TARGET_SHMEDIA)
+    {
+      emit_insn (gen_ashlsi3_media (operands[0], operands[1], operands[2]));
+      DONE;
+    }
+  if (CONST_INT_P (operands[2])
+      && sh_dynamicalize_shift_p (operands[2]))
+    operands[2] = force_reg (SImode, operands[2]);
+  if (TARGET_SH3 || TARGET_SH2A)
+    {
+      emit_insn (gen_ashlsi3_std (operands[0], operands[1], operands[2]));
+      DONE;
+    }
+  if (! immediate_operand (operands[2], GET_MODE (operands[2])))
+    FAIL;
+})
 
 ;; This pattern is used by init_expmed for computing the costs of shift
 ;; insns.
-
 (define_insn_and_split "ashlsi3_std"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r,r,r,r")
 	(ashift:SI (match_operand:SI 1 "arith_reg_operand" "0,0,0,0")
@@ -3528,16 +3551,6 @@ label:
   [(set_attr "length" "*,*,*,4")
    (set_attr "type" "dyn_shift,arith,arith,arith")])
 
-(define_insn "ashlhi3_k"
-  [(set (match_operand:HI 0 "arith_reg_dest" "=r,r")
-	(ashift:HI (match_operand:HI 1 "arith_reg_operand" "0,0")
-		   (match_operand:HI 2 "const_int_operand" "M,P27")))]
-  "TARGET_SH1 && satisfies_constraint_P27 (operands[2])"
-  "@
-	add	%0,%0
-	shll%O2	%0"
-  [(set_attr "type" "arith")])
-
 (define_insn_and_split "ashlsi3_n"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
 	(ashift:SI (match_operand:SI 1 "arith_reg_operand" "0")
@@ -3549,150 +3562,6 @@ label:
   [(use (reg:SI R0_REG))]
 {
   gen_shifty_op (ASHIFT, operands);
-  DONE;
-}
-  [(set (attr "length")
-	(cond [(match_test "shift_insns_rtx (insn)")
-	       (const_string "2")
-	       (eq (symbol_ref "shift_insns_rtx (insn)") (const_int 2))
-	       (const_string "4")
-	       (eq (symbol_ref "shift_insns_rtx (insn)") (const_int 3))
-	       (const_string "6")]
-	      (const_string "8")))
-   (set_attr "type" "arith")])
-
-(define_insn "ashlsi3_media"
-  [(set (match_operand:SI 0 "arith_reg_dest" "=r,r")
-	(ashift:SI (match_operand:SI 1 "extend_reg_operand" "r,r")
-		   (match_operand:SI 2 "shift_count_operand" "r,n")))]
-  "TARGET_SHMEDIA"
-  "@
-	shlld.l	%1, %2, %0
-	shlli.l	%1, %2, %0"
-  [(set_attr "type" "arith_media")
-   (set_attr "highpart" "ignore")])
-
-(define_expand "ashlsi3"
-  [(parallel [(set (match_operand:SI 0 "arith_reg_operand" "")
-		   (ashift:SI (match_operand:SI 1 "arith_reg_operand" "")
-			      (match_operand:SI 2 "nonmemory_operand" "")))
-	      (clobber (reg:SI T_REG))])]
-  ""
-{
-  if (TARGET_SHMEDIA)
-    {
-      emit_insn (gen_ashlsi3_media (operands[0], operands[1], operands[2]));
-      DONE;
-    }
-  if (CONST_INT_P (operands[2])
-      && sh_dynamicalize_shift_p (operands[2]))
-    operands[2] = force_reg (SImode, operands[2]);
-  if (TARGET_SH3 || TARGET_SH2A)
-    {
-      emit_insn (gen_ashlsi3_std (operands[0], operands[1], operands[2]));
-      DONE;
-    }
-  if (! immediate_operand (operands[2], GET_MODE (operands[2])))
-    FAIL;
-})
-
-(define_expand "ashlhi3"
-  [(parallel [(set (match_operand:HI 0 "arith_reg_operand" "")
-		   (ashift:HI (match_operand:HI 1 "arith_reg_operand" "")
-			      (match_operand:SI 2 "nonmemory_operand" "")))
-	      (clobber (reg:SI T_REG))])]
-  "TARGET_SH1"
-{
-  if (!CONST_INT_P (operands[2]))
-    FAIL;
-  /* It may be possible to call gen_ashlhi3 directly with more generic
-     operands.  Make sure operands[1] is a HImode register here.  */
-  if (!arith_reg_operand (operands[1], HImode))
-    operands[1] = copy_to_mode_reg (HImode, operands[1]);
-})
-
-(define_insn_and_split "*ashlhi3_n"
-  [(set (match_operand:HI 0 "arith_reg_dest" "=r")
-	(ashift:HI (match_operand:HI 1 "arith_reg_operand" "0")
-		   (match_operand:HI 2 "const_int_operand" "n")))
-   (clobber (reg:SI T_REG))]
-  "TARGET_SH1"
-  "#"
-  "&& reload_completed"
-  [(use (reg:SI R0_REG))]
-{
-  gen_shifty_hi_op (ASHIFT, operands);
-  DONE;
-}
-  [(set (attr "length")
-	(cond [(match_test "shift_insns_rtx (insn)")
-	       (const_string "2")
-	       (eq (symbol_ref "shift_insns_rtx (insn)") (const_int 2))
-	       (const_string "4")]
-	      (const_string "6")))
-   (set_attr "type" "arith")])
-
-;;
-;; arithmetic shift right
-;;
-
-(define_insn "ashrsi3_k"
-  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
-	(ashiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
-		     (match_operand:SI 2 "const_int_operand" "M")))
-   (clobber (reg:SI T_REG))]
-  "TARGET_SH1 && INTVAL (operands[2]) == 1"
-  "shar	%0"
-  [(set_attr "type" "arith")])
-
-;; We can't do HImode right shifts correctly unless we start out with an
-;; explicit zero / sign extension; doing that would result in worse overall
-;; code, so just let the machine independent code widen the mode.
-;; That's why we don't have ashrhi3_k / lshrhi3_k / lshrhi3_m / lshrhi3 .
-
-
-;; ??? This should be a define expand.
-
-(define_insn_and_split "ashrsi2_16"
-  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
-        (ashiftrt:SI (match_operand:SI 1 "arith_reg_operand" "r")
-                     (const_int 16)))]
-  "TARGET_SH1"
-  "#"
-  "&& 1"
-  [(set (match_dup 0) (rotate:SI (match_dup 1) (const_int 16)))
-   (set (match_dup 0) (sign_extend:SI (match_dup 2)))]
-{
-  operands[2] = gen_lowpart (HImode, operands[0]);
-})
-
-;; ??? This should be a define expand.
-
-(define_insn_and_split "ashrsi2_31"
-  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
-	(ashiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
-		     (const_int 31)))
-   (clobber (reg:SI T_REG))]
-  "TARGET_SH1"
-  "#"
-  "&& 1"
-  [(const_int 0)]
-{
-  emit_insn (gen_ashlsi_c (operands[0], operands[1]));
-  emit_insn (gen_mov_neg_si_t (copy_rtx (operands[0])));
-  DONE;
-})
-
-(define_peephole2
-  [(set (match_operand:SI 0 "arith_reg_dest" "") (const_int 0))
-   (set (reg:SI T_REG)
-	(gt:SI (match_dup 0) (match_operand:SI 1 "arith_reg_operand" "")))]
-  "TARGET_SH1
-   && peep2_reg_dead_p (2, operands[0])
-   && peep2_reg_dead_p (2, operands[1])"
-  [(const_int 0)]
-{
-  emit_insn (gen_ashlsi_c (operands[1], operands[1]));
   DONE;
 })
 
@@ -3712,6 +3581,217 @@ label:
   "TARGET_SH1 && cse_not_expected"
   "shll	%0"
   [(set_attr "type" "arith")])
+
+(define_peephole2
+  [(set (match_operand:SI 0 "arith_reg_dest" "") (const_int 0))
+   (set (reg:SI T_REG)
+	(gt:SI (match_dup 0) (match_operand:SI 1 "arith_reg_operand" "")))]
+  "TARGET_SH1
+   && peep2_reg_dead_p (2, operands[0])
+   && peep2_reg_dead_p (2, operands[1])"
+  [(const_int 0)]
+{
+  emit_insn (gen_ashlsi_c (operands[1], operands[1]));
+  DONE;
+})
+
+(define_insn "ashlsi3_media"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r,r")
+	(ashift:SI (match_operand:SI 1 "extend_reg_operand" "r,r")
+		   (match_operand:SI 2 "shift_count_operand" "r,n")))]
+  "TARGET_SHMEDIA"
+  "@
+	shlld.l	%1, %2, %0
+	shlli.l	%1, %2, %0"
+  [(set_attr "type" "arith_media")
+   (set_attr "highpart" "ignore")])
+
+;; . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+;; HImode shift left
+
+(define_expand "ashlhi3"
+  [(parallel [(set (match_operand:HI 0 "arith_reg_operand" "")
+		   (ashift:HI (match_operand:HI 1 "arith_reg_operand" "")
+			      (match_operand:SI 2 "nonmemory_operand" "")))
+	      (clobber (reg:SI T_REG))])]
+  "TARGET_SH1"
+{
+  if (!CONST_INT_P (operands[2]))
+    FAIL;
+  /* It may be possible to call gen_ashlhi3 directly with more generic
+     operands.  Make sure operands[1] is a HImode register here.  */
+  if (!arith_reg_operand (operands[1], HImode))
+    operands[1] = copy_to_mode_reg (HImode, operands[1]);
+})
+
+(define_insn "ashlhi3_k"
+  [(set (match_operand:HI 0 "arith_reg_dest" "=r,r")
+	(ashift:HI (match_operand:HI 1 "arith_reg_operand" "0,0")
+		   (match_operand:HI 2 "const_int_operand" "M,P27")))]
+  "TARGET_SH1 && satisfies_constraint_P27 (operands[2])"
+  "@
+	add	%0,%0
+	shll%O2	%0"
+  [(set_attr "type" "arith")])
+
+(define_insn_and_split "*ashlhi3_n"
+  [(set (match_operand:HI 0 "arith_reg_dest" "=r")
+	(ashift:HI (match_operand:HI 1 "arith_reg_operand" "0")
+		   (match_operand:HI 2 "const_int_operand" "n")))
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH1"
+  "#"
+  "&& reload_completed"
+  [(use (reg:SI R0_REG))]
+{
+  gen_shifty_hi_op (ASHIFT, operands);
+  DONE;
+})
+
+;; . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+;; DImode shift left
+
+(define_expand "ashldi3"
+  [(parallel [(set (match_operand:DI 0 "arith_reg_operand" "")
+		   (ashift:DI (match_operand:DI 1 "arith_reg_operand" "")
+			      (match_operand:DI 2 "immediate_operand" "")))
+	      (clobber (reg:SI T_REG))])]
+  ""
+{
+  if (TARGET_SHMEDIA)
+    {
+      emit_insn (gen_ashldi3_media (operands[0], operands[1], operands[2]));
+      DONE;
+    }
+  if (CONST_INT_P (operands[2]) && INTVAL (operands[2]) == 1)
+    {
+      emit_insn (gen_ashldi3_k (operands[0], operands[1]));
+      DONE;
+    }
+  else if (CONST_INT_P (operands[2]) && INTVAL (operands[2]) < 32)
+    {
+      emit_insn (gen_ashldi3_std (operands[0], operands[1], operands[2]));
+      DONE;
+    }
+  else
+    FAIL;
+})
+
+;; Expander for DImode shift left with SImode operations.
+(define_expand "ashldi3_std"
+  [(set (match_operand:DI 0 "arith_reg_dest" "=r")
+	(ashift:DI (match_operand:DI 1 "arith_reg_operand" "r")
+                   (match_operand:DI 2 "const_int_operand" "n")))]
+  "TARGET_SH1 && INTVAL (operands[2]) < 32"
+{
+  rtx low_src = gen_lowpart (SImode, operands[1]);
+  rtx high_src = gen_highpart (SImode, operands[1]);
+  rtx dst = gen_reg_rtx (DImode);
+  rtx low_dst = gen_lowpart (SImode, dst);
+  rtx high_dst = gen_highpart (SImode, dst);
+  rtx tmp0 = gen_reg_rtx (SImode);
+  rtx tmp1 = gen_reg_rtx (SImode);
+
+  emit_insn (gen_lshrsi3 (tmp0, low_src, GEN_INT (32 - INTVAL (operands[2]))));
+  emit_insn (gen_ashlsi3 (low_dst, low_src, operands[2]));  
+  emit_insn (gen_ashlsi3 (tmp1, high_src, operands[2]));  
+  emit_insn (gen_iorsi3 (high_dst, tmp0, tmp1));
+  emit_move_insn (operands[0], dst);
+  DONE;
+})
+
+;; This should be an define_insn_and_split.
+(define_insn "ashldi3_k"
+  [(set (match_operand:DI 0 "arith_reg_dest" "=r")
+	(ashift:DI (match_operand:DI 1 "arith_reg_operand" "0")
+		   (const_int 1)))
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH1"
+  "shll	%R0\;rotcl	%S0"
+  [(set_attr "length" "4")
+   (set_attr "type" "arith")])
+
+(define_insn "ashldi3_media"
+  [(set (match_operand:DI 0 "arith_reg_dest" "=r,r")
+	(ashift:DI (match_operand:DI 1 "arith_reg_operand" "r,r")
+		   (match_operand:DI 2 "shift_count_operand" "r,n")))]
+  "TARGET_SHMEDIA"
+  "@
+	shlld	%1, %2, %0
+	shlli	%1, %2, %0"
+  [(set_attr "type" "arith_media")])
+
+(define_insn "*ashldisi3_media"
+  [(set (subreg:DI (match_operand:SI 0 "arith_reg_operand" "=r") 0)
+	(ashift:DI (match_operand:DI 1 "arith_reg_operand" "r")
+		   (match_operand:DI 2 "const_int_operand" "n")))]
+  "TARGET_SHMEDIA && INTVAL (operands[2]) < 32"
+  "shlli.l	%1, %2, %0"
+  [(set_attr "type" "arith_media")
+   (set_attr "highpart" "ignore")])
+
+;; . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+;; SImode arithmetic shift right
+;;
+;; We can't do HImode right shifts correctly unless we start out with an
+;; explicit zero / sign extension; doing that would result in worse overall
+;; code, so just let the machine independent code widen the mode.
+;; That's why we don't have ashrhi3_k / lshrhi3_k / lshrhi3_m / lshrhi3 .
+
+(define_expand "ashrsi3"
+  [(parallel [(set (match_operand:SI 0 "arith_reg_dest" "")
+		   (ashiftrt:SI (match_operand:SI 1 "arith_reg_operand" "")
+				(match_operand:SI 2 "nonmemory_operand" "")))
+	      (clobber (reg:SI T_REG))])]
+  ""
+{
+  if (TARGET_SHMEDIA)
+    {
+      emit_insn (gen_ashrsi3_media (operands[0], operands[1], operands[2]));
+      DONE;
+    }
+  if (expand_ashiftrt (operands))
+    DONE;
+  else
+    FAIL;
+})
+
+(define_insn "ashrsi3_k"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+	(ashiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
+		     (match_operand:SI 2 "const_int_operand" "M")))
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH1 && INTVAL (operands[2]) == 1"
+  "shar	%0"
+  [(set_attr "type" "arith")])
+
+(define_insn_and_split "ashrsi2_16"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+        (ashiftrt:SI (match_operand:SI 1 "arith_reg_operand" "r")
+                     (const_int 16)))]
+  "TARGET_SH1"
+  "#"
+  "&& 1"
+  [(set (match_dup 0) (rotate:SI (match_dup 1) (const_int 16)))
+   (set (match_dup 0) (sign_extend:SI (match_dup 2)))]
+{
+  operands[2] = gen_lowpart (HImode, operands[0]);
+})
+
+(define_insn_and_split "ashrsi2_31"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+	(ashiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
+		     (const_int 31)))
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH1"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  emit_insn (gen_ashlsi_c (operands[0], operands[1]));
+  emit_insn (gen_mov_neg_si_t (copy_rtx (operands[0])));
+  DONE;
+})
 
 (define_insn "ashrsi3_d"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
@@ -3744,247 +3824,26 @@ label:
   [(set_attr "type" "arith_media")
    (set_attr "highpart" "ignore")])
 
-(define_expand "ashrsi3"
-  [(parallel [(set (match_operand:SI 0 "arith_reg_dest" "")
-		   (ashiftrt:SI (match_operand:SI 1 "arith_reg_operand" "")
-				(match_operand:SI 2 "nonmemory_operand" "")))
-	      (clobber (reg:SI T_REG))])]
-  ""
-{
-  if (TARGET_SHMEDIA)
-    {
-      emit_insn (gen_ashrsi3_media (operands[0], operands[1], operands[2]));
-      DONE;
-    }
-  if (expand_ashiftrt (operands))
-    DONE;
-  else
-    FAIL;
-})
+;; . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+;; DImode arithmetic shift right
 
-;; logical shift right
-
-(define_insn "lshrsi3_d"
-  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
-	(lshiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
-		     (neg:SI (match_operand:SI 2 "arith_reg_operand" "r"))))]
-  "TARGET_SH3 || TARGET_SH2A"
-  "shld	%2,%0"
-  [(set_attr "type" "dyn_shift")])
-
-;;  Only the single bit shift clobbers the T bit.
-
-(define_insn "lshrsi3_m"
-  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
-	(lshiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
-		     (match_operand:SI 2 "const_int_operand" "M")))
-   (clobber (reg:SI T_REG))]
-  "TARGET_SH1 && satisfies_constraint_M (operands[2])"
-  "shlr	%0"
-  [(set_attr "type" "arith")])
-
-(define_insn "lshrsi3_k"
-  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
-	(lshiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
-		     (match_operand:SI 2 "const_int_operand" "P27")))]
-  "TARGET_SH1 && satisfies_constraint_P27 (operands[2])
-   && ! satisfies_constraint_M (operands[2])"
-  "shlr%O2	%0"
-  [(set_attr "type" "arith")])
-
-(define_insn_and_split "lshrsi3_n"
-  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
-	(lshiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
-		     (match_operand:SI 2 "const_int_operand" "n")))
-   (clobber (reg:SI T_REG))]
-  "TARGET_SH1 && ! sh_dynamicalize_shift_p (operands[2])"
-  "#"
-  "TARGET_SH1 && reload_completed"
-  [(use (reg:SI R0_REG))]
-{
-  gen_shifty_op (LSHIFTRT, operands);
-  DONE;
-}
-  [(set (attr "length")
-	(cond [(match_test "shift_insns_rtx (insn)")
-	       (const_string "2")
-	       (eq (symbol_ref "shift_insns_rtx (insn)") (const_int 2))
-	       (const_string "4")
-	       (eq (symbol_ref "shift_insns_rtx (insn)") (const_int 3))
-	       (const_string "6")]
-	      (const_string "8")))
-   (set_attr "type" "arith")])
-
-(define_insn "lshrsi3_media"
-  [(set (match_operand:SI 0 "arith_reg_dest" "=r,r")
-	(lshiftrt:SI (match_operand:SI 1 "extend_reg_operand" "r,r")
-		     (match_operand:SI 2 "shift_count_operand" "r,n")))]
-  "TARGET_SHMEDIA"
-  "@
-	shlrd.l	%1, %2, %0
-	shlri.l	%1, %2, %0"
-  [(set_attr "type" "arith_media")
-   (set_attr "highpart" "ignore")])
-
-(define_expand "lshrsi3"
-  [(parallel [(set (match_operand:SI 0 "arith_reg_dest" "")
-		   (lshiftrt:SI (match_operand:SI 1 "arith_reg_operand" "")
-				(match_operand:SI 2 "nonmemory_operand" "")))
-	      (clobber (reg:SI T_REG))])]
-  ""
-{
-  if (TARGET_SHMEDIA)
-    {
-      emit_insn (gen_lshrsi3_media (operands[0], operands[1], operands[2]));
-      DONE;
-    }
-  if (CONST_INT_P (operands[2])
-      && sh_dynamicalize_shift_p (operands[2]))
-    operands[2] = force_reg (SImode, operands[2]);
-  if ((TARGET_SH3 || TARGET_SH2A)
-      && arith_reg_operand (operands[2], GET_MODE (operands[2])))
-    {
-      rtx count = copy_to_mode_reg (SImode, operands[2]);
-      emit_insn (gen_negsi2 (count, count));
-      emit_insn (gen_lshrsi3_d (operands[0], operands[1], count));
-      DONE;
-    }
-  if (! immediate_operand (operands[2], GET_MODE (operands[2])))
-    FAIL;
-})
-
-;; ??? This should be a define expand.
-
-(define_insn "ashldi3_k"
-  [(set (match_operand:DI 0 "arith_reg_dest" "=r")
-	(ashift:DI (match_operand:DI 1 "arith_reg_operand" "0")
-		   (const_int 1)))
-   (clobber (reg:SI T_REG))]
-  "TARGET_SH1"
-  "shll	%R0\;rotcl	%S0"
-  [(set_attr "length" "4")
-   (set_attr "type" "arith")])
-
-;; Expander for DImode shift left with SImode operations.
-
-(define_expand "ashldi3_std"
-  [(set (match_operand:DI 0 "arith_reg_dest" "=r")
-	(ashift:DI (match_operand:DI 1 "arith_reg_operand" "r")
-                   (match_operand:DI 2 "const_int_operand" "n")))]
-  "TARGET_SH1 && INTVAL (operands[2]) < 32"
-{
-  rtx low_src = gen_lowpart (SImode, operands[1]);
-  rtx high_src = gen_highpart (SImode, operands[1]);
-  rtx dst = gen_reg_rtx (DImode);
-  rtx low_dst = gen_lowpart (SImode, dst);
-  rtx high_dst = gen_highpart (SImode, dst);
-  rtx tmp0 = gen_reg_rtx (SImode);
-  rtx tmp1 = gen_reg_rtx (SImode);
-
-  emit_insn (gen_lshrsi3 (tmp0, low_src, GEN_INT (32 - INTVAL (operands[2]))));
-  emit_insn (gen_ashlsi3 (low_dst, low_src, operands[2]));  
-  emit_insn (gen_ashlsi3 (tmp1, high_src, operands[2]));  
-  emit_insn (gen_iorsi3 (high_dst, tmp0, tmp1));
-  emit_move_insn (operands[0], dst);
-  DONE;
-})
-
-(define_insn "ashldi3_media"
-  [(set (match_operand:DI 0 "arith_reg_dest" "=r,r")
-	(ashift:DI (match_operand:DI 1 "arith_reg_operand" "r,r")
-		   (match_operand:DI 2 "shift_count_operand" "r,n")))]
-  "TARGET_SHMEDIA"
-  "@
-	shlld	%1, %2, %0
-	shlli	%1, %2, %0"
-  [(set_attr "type" "arith_media")])
-
-(define_insn "*ashldisi3_media"
-  [(set (subreg:DI (match_operand:SI 0 "arith_reg_operand" "=r") 0)
-	(ashift:DI (match_operand:DI 1 "arith_reg_operand" "r")
-		   (match_operand:DI 2 "const_int_operand" "n")))]
-  "TARGET_SHMEDIA && INTVAL (operands[2]) < 32"
-  "shlli.l	%1, %2, %0"
-  [(set_attr "type" "arith_media")
-   (set_attr "highpart" "ignore")])
-
-(define_expand "ashldi3"
+(define_expand "ashrdi3"
   [(parallel [(set (match_operand:DI 0 "arith_reg_operand" "")
-		   (ashift:DI (match_operand:DI 1 "arith_reg_operand" "")
-			      (match_operand:DI 2 "immediate_operand" "")))
+		   (ashiftrt:DI (match_operand:DI 1 "arith_reg_operand" "")
+				(match_operand:DI 2 "immediate_operand" "")))
 	      (clobber (reg:SI T_REG))])]
   ""
 {
   if (TARGET_SHMEDIA)
     {
-      emit_insn (gen_ashldi3_media (operands[0], operands[1], operands[2]));
-      DONE;
-    }
-  if (CONST_INT_P (operands[2]) && INTVAL (operands[2]) == 1)
-    {
-      emit_insn (gen_ashldi3_k (operands[0], operands[1]));
-      DONE;
-    }
-  else if (CONST_INT_P (operands[2]) && INTVAL (operands[2]) < 32)
-    {
-      emit_insn (gen_ashldi3_std (operands[0], operands[1], operands[2]));
-      DONE;
-    }
-  else
-    FAIL;
-})
-
-;; ??? This should be a define expand.
-
-(define_insn "lshrdi3_k"
-  [(set (match_operand:DI 0 "arith_reg_dest" "=r")
-	(lshiftrt:DI (match_operand:DI 1 "arith_reg_operand" "0")
-		     (const_int 1)))
-   (clobber (reg:SI T_REG))]
-  "TARGET_SH1"
-  "shlr	%S0\;rotcr	%R0"
-  [(set_attr "length" "4")
-   (set_attr "type" "arith")])
-
-(define_insn "lshrdi3_media"
-  [(set (match_operand:DI 0 "ext_dest_operand" "=r,r")
-	(lshiftrt:DI (match_operand:DI 1 "arith_reg_operand" "r,r")
-		     (match_operand:DI 2 "shift_count_operand" "r,n")))]
-  "TARGET_SHMEDIA
-   && (arith_reg_dest (operands[0], DImode)
-       || (CONST_INT_P (operands[2]) && INTVAL (operands[2]) > 32))"
-  "@
-	shlrd	%1, %2, %0
-	shlri	%1, %2, %0"
-  [(set_attr "type" "arith_media")])
-
-(define_insn "*lshrdisi3_media"
-  [(set (subreg:DI (match_operand:SI 0 "arith_reg_operand" "=r") 0)
-	(lshiftrt:DI (match_operand:DI 1 "arith_reg_operand" "r")
-		     (match_operand:DI 2 "const_int_operand" "n")))]
-  "TARGET_SHMEDIA && INTVAL (operands[2]) < 32"
-  "shlri.l	%1, %2, %0"
-  [(set_attr "type" "arith_media")
-   (set_attr "highpart" "ignore")])
-
-(define_expand "lshrdi3"
-  [(parallel [(set (match_operand:DI 0 "arith_reg_operand" "")
-		   (lshiftrt:DI (match_operand:DI 1 "arith_reg_operand" "")
-			       (match_operand:DI 2 "immediate_operand" "")))
-	     (clobber (reg:SI T_REG))])]
-  ""
-{
-  if (TARGET_SHMEDIA)
-    {
-      emit_insn (gen_lshrdi3_media (operands[0], operands[1], operands[2]));
+      emit_insn (gen_ashrdi3_media (operands[0], operands[1], operands[2]));
       DONE;
     }
   if (!CONST_INT_P (operands[2]) || INTVAL (operands[2]) != 1)
     FAIL;
 })
 
-;; ??? This should be a define expand.
-
+;; This should be a define_insn_and_split
 (define_insn "ashrdi3_k"
   [(set (match_operand:DI 0 "arith_reg_dest" "=r")
 	(ashiftrt:DI (match_operand:DI 1 "arith_reg_operand" "0")
@@ -4034,23 +3893,141 @@ label:
   "shari	%1, %2, %0"
   [(set_attr "type" "arith_media")])
 
-(define_expand "ashrdi3"
-  [(parallel [(set (match_operand:DI 0 "arith_reg_operand" "")
-		   (ashiftrt:DI (match_operand:DI 1 "arith_reg_operand" "")
-				(match_operand:DI 2 "immediate_operand" "")))
+;; . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+;; SImode logical shift right
+
+;; Only the single bit shift clobbers the T bit.
+(define_expand "lshrsi3"
+  [(parallel [(set (match_operand:SI 0 "arith_reg_dest" "")
+		   (lshiftrt:SI (match_operand:SI 1 "arith_reg_operand" "")
+				(match_operand:SI 2 "nonmemory_operand" "")))
 	      (clobber (reg:SI T_REG))])]
   ""
 {
   if (TARGET_SHMEDIA)
     {
-      emit_insn (gen_ashrdi3_media (operands[0], operands[1], operands[2]));
+      emit_insn (gen_lshrsi3_media (operands[0], operands[1], operands[2]));
+      DONE;
+    }
+  if (CONST_INT_P (operands[2])
+      && sh_dynamicalize_shift_p (operands[2]))
+    operands[2] = force_reg (SImode, operands[2]);
+  if ((TARGET_SH3 || TARGET_SH2A)
+      && arith_reg_operand (operands[2], GET_MODE (operands[2])))
+    {
+      rtx count = copy_to_mode_reg (SImode, operands[2]);
+      emit_insn (gen_negsi2 (count, count));
+      emit_insn (gen_lshrsi3_d (operands[0], operands[1], count));
+      DONE;
+    }
+  if (! immediate_operand (operands[2], GET_MODE (operands[2])))
+    FAIL;
+})
+
+(define_insn "lshrsi3_d"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+	(lshiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
+		     (neg:SI (match_operand:SI 2 "arith_reg_operand" "r"))))]
+  "TARGET_SH3 || TARGET_SH2A"
+  "shld	%2,%0"
+  [(set_attr "type" "dyn_shift")])
+
+(define_insn "lshrsi3_m"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+	(lshiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
+		     (match_operand:SI 2 "const_int_operand" "M")))
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH1 && satisfies_constraint_M (operands[2])"
+  "shlr	%0"
+  [(set_attr "type" "arith")])
+
+(define_insn "lshrsi3_k"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+	(lshiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
+		     (match_operand:SI 2 "const_int_operand" "P27")))]
+  "TARGET_SH1 && satisfies_constraint_P27 (operands[2])
+   && ! satisfies_constraint_M (operands[2])"
+  "shlr%O2	%0"
+  [(set_attr "type" "arith")])
+
+(define_insn_and_split "lshrsi3_n"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+	(lshiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
+		     (match_operand:SI 2 "const_int_operand" "n")))
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH1 && ! sh_dynamicalize_shift_p (operands[2])"
+  "#"
+  "TARGET_SH1 && reload_completed"
+  [(use (reg:SI R0_REG))]
+{
+  gen_shifty_op (LSHIFTRT, operands);
+  DONE;
+})
+
+(define_insn "lshrsi3_media"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r,r")
+	(lshiftrt:SI (match_operand:SI 1 "extend_reg_operand" "r,r")
+		     (match_operand:SI 2 "shift_count_operand" "r,n")))]
+  "TARGET_SHMEDIA"
+  "@
+	shlrd.l	%1, %2, %0
+	shlri.l	%1, %2, %0"
+  [(set_attr "type" "arith_media")
+   (set_attr "highpart" "ignore")])
+
+;; . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+;; DImode logical shift right
+
+(define_expand "lshrdi3"
+  [(parallel [(set (match_operand:DI 0 "arith_reg_operand" "")
+		   (lshiftrt:DI (match_operand:DI 1 "arith_reg_operand" "")
+			       (match_operand:DI 2 "immediate_operand" "")))
+	     (clobber (reg:SI T_REG))])]
+  ""
+{
+  if (TARGET_SHMEDIA)
+    {
+      emit_insn (gen_lshrdi3_media (operands[0], operands[1], operands[2]));
       DONE;
     }
   if (!CONST_INT_P (operands[2]) || INTVAL (operands[2]) != 1)
     FAIL;
 })
 
-;; combined left/right shift
+;; This should be a define_insn_and_split
+(define_insn "lshrdi3_k"
+  [(set (match_operand:DI 0 "arith_reg_dest" "=r")
+	(lshiftrt:DI (match_operand:DI 1 "arith_reg_operand" "0")
+		     (const_int 1)))
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH1"
+  "shlr	%S0\;rotcr	%R0"
+  [(set_attr "length" "4")
+   (set_attr "type" "arith")])
+
+(define_insn "lshrdi3_media"
+  [(set (match_operand:DI 0 "ext_dest_operand" "=r,r")
+	(lshiftrt:DI (match_operand:DI 1 "arith_reg_operand" "r,r")
+		     (match_operand:DI 2 "shift_count_operand" "r,n")))]
+  "TARGET_SHMEDIA
+   && (arith_reg_dest (operands[0], DImode)
+       || (CONST_INT_P (operands[2]) && INTVAL (operands[2]) > 32))"
+  "@
+	shlrd	%1, %2, %0
+	shlri	%1, %2, %0"
+  [(set_attr "type" "arith_media")])
+
+(define_insn "*lshrdisi3_media"
+  [(set (subreg:DI (match_operand:SI 0 "arith_reg_operand" "=r") 0)
+	(lshiftrt:DI (match_operand:DI 1 "arith_reg_operand" "r")
+		     (match_operand:DI 2 "const_int_operand" "n")))]
+  "TARGET_SHMEDIA && INTVAL (operands[2]) < 32"
+  "shlri.l	%1, %2, %0"
+  [(set_attr "type" "arith_media")
+   (set_attr "highpart" "ignore")])
+
+;; . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+;; Combined left/right shifts
 
 (define_split
   [(set (match_operand:SI 0 "register_operand" "")
