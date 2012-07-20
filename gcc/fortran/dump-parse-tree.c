@@ -166,7 +166,7 @@ show_array_spec (gfc_array_spec *as)
 
   fprintf (dumpfile, "(%d [%d]", as->rank, as->corank);
 
-  if (as->rank + as->corank > 0)
+  if (as->rank + as->corank > 0 || as->rank == -1)
     {
       switch (as->type)
       {
@@ -174,6 +174,7 @@ show_array_spec (gfc_array_spec *as)
 	case AS_DEFERRED:      c = "AS_DEFERRED";      break;
 	case AS_ASSUMED_SIZE:  c = "AS_ASSUMED_SIZE";  break;
 	case AS_ASSUMED_SHAPE: c = "AS_ASSUMED_SHAPE"; break;
+	case AS_ASSUMED_RANK:  c = "AS_ASSUMED_RANK";  break;
 	default:
 	  gfc_internal_error ("show_array_spec(): Unhandled array shape "
 			      "type.");

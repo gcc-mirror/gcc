@@ -1,3 +1,20 @@
+2012-07-20  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48820
+	* gfortran.dg/assumed_type_3.f90: Update dg-error.
+	* gfortran.dg/assumed_rank_1.f90: New.
+	* gfortran.dg/assumed_rank_1_c.c: New.
+	* gfortran.dg/assumed_rank_2.f90: New.
+	* gfortran.dg/assumed_rank_4.f90: New.
+	* gfortran.dg/assumed_rank_5.f90: New.
+	* gfortran.dg/assumed_rank_6.f90: New.
+	* gfortran.dg/assumed_rank_7.f90: New.
+	* gfortran.dg/assumed_rank_8.f90: New.
+	* gfortran.dg/assumed_rank_8_c.c: New.
+	* gfortran.dg/assumed_rank_9.f90: New.
+	* gfortran.dg/assumed_rank_10.f90: New.
+	* gfortran.dg/assumed_rank_12.f90: New.
+
 2012-07-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt25.adb: New test.

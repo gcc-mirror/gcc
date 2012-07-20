@@ -594,6 +594,9 @@ merge_array_spec (gfc_array_spec *from, gfc_array_spec *to, bool copy)
 {
   int i;
 
+  gcc_assert (from->rank != -1 || to->corank == 0);
+  gcc_assert (to->rank != -1 || from->corank == 0);
+
   if (to->rank == 0 && from->rank > 0)
     {
       to->rank = from->rank;
