@@ -1,3 +1,8 @@
+2012-07-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/54038
+	* g++.dg/other/array7.C: New.
+
 2012-07-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/54026
