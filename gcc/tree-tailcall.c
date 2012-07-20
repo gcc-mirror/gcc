@@ -390,7 +390,6 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
   basic_block abb;
   size_t idx;
   tree var;
-  referenced_var_iterator rvi;
 
   if (!single_succ_p (bb))
     return;
@@ -484,7 +483,7 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
 
   /* Make sure the tail invocation of this function does not refer
      to local variables.  */
-  FOR_EACH_REFERENCED_VAR (cfun, var, rvi)
+  FOR_EACH_LOCAL_DECL (cfun, idx, var)
     {
       if (TREE_CODE (var) != PARM_DECL
 	  && auto_var_in_fn_p (var, cfun->decl)
@@ -872,36 +871,6 @@ eliminate_tail_call (struct tailcall *t)
   release_defs (call);
 }
 
-/* Add phi nodes for the virtual operands defined in the function to the
-   header of the loop created by tail recursion elimination.
-
-   Originally, we used to add phi nodes only for call clobbered variables,
-   as the value of the non-call clobbered ones obviously cannot be used
-   or changed within the recursive call.  However, the local variables
-   from multiple calls now share the same location, so the virtual ssa form
-   requires us to say that the location dies on further iterations of the loop,
-   which requires adding phi nodes.
-*/
-static void
-add_virtual_phis (void)
-{
-  referenced_var_iterator rvi;
-  tree var;
-
-  /* The problematic part is that there is no way how to know what
-     to put into phi nodes (there in fact does not have to be such
-     ssa name available).  A solution would be to have an artificial
-     use/kill for all virtual operands in EXIT node.  Unless we have
-     this, we cannot do much better than to rebuild the ssa form for
-     possibly affected virtual ssa names from scratch.  */
-
-  FOR_EACH_REFERENCED_VAR (cfun, var, rvi)
-    {
-      if (!is_gimple_reg (var) && gimple_default_def (cfun, var) != NULL_TREE)
-	mark_sym_for_renaming (var);
-    }
-}
-
 /* Optimizes the tailcall described by T.  If OPT_TAILCALLS is true, also
    mark the tailcalls for the sibcall optimization.  */
 
@@ -1056,8 +1025,12 @@ tree_optimize_tail_calls_1 (bool opt_tailcalls)
   if (changed)
     free_dominance_info (CDI_DOMINATORS);
 
+  /* Add phi nodes for the virtual operands defined in the function to the
+     header of the loop created by tail recursion elimination.  Do so
+     by triggering the SSA renamer.  */
   if (phis_constructed)
-    add_virtual_phis ();
+    mark_sym_for_renaming (gimple_vop (cfun));
+
   if (changed)
     return TODO_cleanup_cfg | TODO_update_ssa_only_virtuals;
   return 0;

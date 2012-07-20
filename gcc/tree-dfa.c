@@ -371,17 +371,13 @@ static void
 collect_dfa_stats (struct dfa_stats_d *dfa_stats_p ATTRIBUTE_UNUSED)
 {
   basic_block bb;
-  referenced_var_iterator vi;
-  tree var;
 
   gcc_assert (dfa_stats_p);
 
   memset ((void *)dfa_stats_p, 0, sizeof (struct dfa_stats_d));
 
   /* Count all the variable annotations.  */
-  FOR_EACH_REFERENCED_VAR (cfun, var, vi)
-    if (var_ann (var))
-      dfa_stats_p->num_var_anns++;
+  dfa_stats_p->num_var_anns = htab_elements (gimple_referenced_vars (cfun));
 
   /* Walk all the statements in the function counting references.  */
   FOR_EACH_BB (bb)
