@@ -2520,10 +2520,6 @@ cris_legitimate_pic_operand (rtx x)
 void 
 cris_asm_output_ident (const char *string)
 {
-  const char *section_asm_op;
-  int size;
-  char *buf;
-
   if (cgraph_state != CGRAPH_STATE_PARSING)
     return;
 
