@@ -955,6 +955,18 @@ const struct tune_params arm_cortex_tune =
   false                                         /* Prefer LDRD/STRD.  */
 };
 
+const struct tune_params arm_cortex_a15_tune =
+{
+  arm_9e_rtx_costs,
+  NULL,
+  1,						/* Constant limit.  */
+  5,						/* Max cond insns.  */
+  ARM_PREFETCH_NOT_BENEFICIAL,
+  false,					/* Prefer constant pool.  */
+  arm_default_branch_cost,
+  true                                          /* Prefer LDRD/STRD.  */
+};
+
 /* Branches can be dual-issued on Cortex-A5, so conditional execution is
    less appealing.  Set max_insns_skipped to a low value.  */
 
