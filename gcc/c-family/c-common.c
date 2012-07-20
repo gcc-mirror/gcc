@@ -8051,26 +8051,42 @@ handle_nonnull_attribute (tree *node, tree ARG_UNUSED (name),
 static void
 check_function_nonnull (tree attrs, int nargs, tree *argarray)
 {
-  tree a, args;
+  tree a;
   int i;
 
-  for (a = attrs; a; a = TREE_CHAIN (a))
-    {
-      if (is_attribute_p ("nonnull", TREE_PURPOSE (a)))
-	{
-	  args = TREE_VALUE (a);
+  attrs = lookup_attribute ("nonnull", attrs);
+  if (attrs == NULL_TREE)
+    return;
 
-	  /* Walk the argument list.  If we encounter an argument number we
-	     should check for non-null, do it.  If the attribute has no args,
-	     then every pointer argument is checked (in which case the check
-	     for pointer type is done in check_nonnull_arg).  */
-	  for (i = 0; i < nargs; i++)
+  a = attrs;
+  /* See if any of the nonnull attributes has no arguments.  If so,
+     then every pointer argument is checked (in which case the check
+     for pointer type is done in check_nonnull_arg).  */
+  if (TREE_VALUE (a) != NULL_TREE)
+    do
+      a = lookup_attribute ("nonnull", TREE_CHAIN (a));
+    while (a != NULL_TREE && TREE_VALUE (a) != NULL_TREE);
+
+  if (a != NULL_TREE)
+    for (i = 0; i < nargs; i++)
+      check_function_arguments_recurse (check_nonnull_arg, NULL, argarray[i],
+					i + 1);
+  else
+    {
+      /* Walk the argument list.  If we encounter an argument number we
+	 should check for non-null, do it.  */
+      for (i = 0; i < nargs; i++)
+	{
+	  for (a = attrs; ; a = TREE_CHAIN (a))
 	    {
-	      if (!args || nonnull_check_p (args, i + 1))
-		check_function_arguments_recurse (check_nonnull_arg, NULL,
-						  argarray[i],
-						  i + 1);
+	      a = lookup_attribute ("nonnull", a);
+	      if (a == NULL_TREE || nonnull_check_p (TREE_VALUE (a), i + 1))
+		break;
 	    }
+
+	  if (a != NULL_TREE)
+	    check_function_arguments_recurse (check_nonnull_arg, NULL,
+					      argarray[i], i + 1);
 	}
     }
 }

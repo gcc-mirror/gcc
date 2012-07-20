@@ -1,3 +1,9 @@
+2012-07-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/28656
+	* c-common.c (check_function_nonnull): Handle multiple nonnull
+	attributes properly.
+
 2012-07-16  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* c-gimplify.c: Include dumpfile.h instead of tree-dump.h.

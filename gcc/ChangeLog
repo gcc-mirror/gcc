@@ -1,3 +1,9 @@
+2012-07-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/28656
+	* tree-vrp.c (nonnull_arg_p): Handle all nonnull attributes instead
+	of just the first one.
+
 2012-07-20  Richard Guenther  <rguenther@suse.de>
 
 	* builtins.c (get_object_alignment_2): Correct offset handling

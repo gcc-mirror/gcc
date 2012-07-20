@@ -1,3 +1,8 @@
+2012-07-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/28656
+	* c-c++-common/pr28656.c: New test.
+
 2012-07-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/54026
