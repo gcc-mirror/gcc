@@ -228,7 +228,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
 	static_assert(_Period::num > 0, "period must be positive");
 
 	// 20.8.3.1 construction / copy / destroy
-	constexpr duration() : __r() { }
+	constexpr duration() = default;
 
 	constexpr duration(const duration&) = default;
 

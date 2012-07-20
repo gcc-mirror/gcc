@@ -1,3 +1,11 @@
+2012-07-20  Chip Salzenberg  <chip@pobox.com>
+	    Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/54025
+	* include/std/chrono (duration<>::duration): Fix per C++11.
+	* testsuite/20_util/duration/cons/54025.cc: New.
+	* testsuite/20_util/duration/cons/constexpr.cc: Adjust.
+
 2012-07-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/30_threads/thread/adl.cc: Add missing dg-requires.
