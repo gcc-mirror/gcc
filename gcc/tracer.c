@@ -374,7 +374,7 @@ tracer (void)
 
   mark_dfs_back_edges ();
   if (dump_file)
-    brief_dump_cfg (dump_file);
+    brief_dump_cfg (dump_file, dump_flags);
 
   /* Trace formation is done on the fly inside tail_duplicate */
   changed = tail_duplicate ();
@@ -382,7 +382,7 @@ tracer (void)
     free_dominance_info (CDI_DOMINATORS);
 
   if (dump_file)
-    brief_dump_cfg (dump_file);
+    brief_dump_cfg (dump_file, dump_flags);
 
   return changed ? TODO_cleanup_cfg : 0;
 }

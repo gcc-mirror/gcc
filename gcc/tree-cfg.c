@@ -1844,7 +1844,7 @@ remove_bb (basic_block bb)
       fprintf (dump_file, "Removing basic block %d\n", bb->index);
       if (dump_flags & TDF_DETAILS)
 	{
-	  dump_bb (dump_file, bb, 0, 0);
+	  dump_bb (dump_file, bb, 0, dump_flags);
 	  fprintf (dump_file, "\n");
 	}
     }
@@ -2063,7 +2063,7 @@ find_case_label_for_value (gimple switch_stmt, tree val)
 void
 gimple_debug_bb (basic_block bb)
 {
-  dump_bb (stderr, bb, 0, TDF_VOPS|TDF_MEMSYMS);
+  dump_bb (stderr, bb, 0, TDF_VOPS|TDF_MEMSYMS|TDF_BLOCKS);
 }
 
 
@@ -2103,7 +2103,7 @@ gimple_dump_cfg (FILE *file, int flags)
       fprintf (file, ";; \n%d basic blocks, %d edges, last basic block %d.\n\n",
 	       n_basic_blocks, n_edges, last_basic_block);
 
-      brief_dump_cfg (file);
+      brief_dump_cfg (file, flags | TDF_COMMENT);
       fprintf (file, "\n");
     }
 
@@ -6687,7 +6687,6 @@ dump_function_to_file (tree fn, FILE *file, int flags)
   if (cfun && cfun->decl == fn && cfun->cfg && basic_block_info)
     {
       /* If the CFG has been built, emit a CFG-based dump.  */
-      check_bb_profile (ENTRY_BLOCK_PTR, file);
       if (!ignore_topmost_bind)
 	fprintf (file, "{\n");
 
@@ -6695,10 +6694,9 @@ dump_function_to_file (tree fn, FILE *file, int flags)
 	fprintf (file, "\n");
 
       FOR_EACH_BB (bb)
-	gimple_dump_bb (file, bb, 2, flags);
+	dump_bb (file, bb, 2, flags | TDF_COMMENT);
 
       fprintf (file, "}\n");
-      check_bb_profile (EXIT_BLOCK_PTR, file);
     }
   else if (DECL_SAVED_TREE (fn) == NULL)
     {
@@ -6821,7 +6819,7 @@ print_loops_bb (FILE *file, basic_block bb, int indent, int verbosity)
   if (verbosity >= 3)
     {
       fprintf (file, "%s  {\n", s_indent);
-      gimple_dump_bb (file, bb, indent + 4, TDF_VOPS|TDF_MEMSYMS);
+      dump_bb (file, bb, indent + 4, TDF_VOPS|TDF_MEMSYMS);
       fprintf (file, "%s  }\n", s_indent);
     }
 }

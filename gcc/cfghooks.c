@@ -271,9 +271,11 @@ verify_flow_info (void)
 void
 dump_bb (FILE *outf, basic_block bb, int indent, int flags)
 {
-  dump_bb_info (outf, bb, indent, flags | TDF_COMMENT, true, true);
+  dump_bb_info (outf, bb, indent, flags, true, false);
   if (cfg_hooks->dump_bb)
     cfg_hooks->dump_bb (outf, bb, indent, flags);
+  dump_bb_info (outf, bb, indent, flags, false, true);
+  fputc ('\n', outf);
 }
 
 /* Dump the complete CFG to FILE.  FLAGS are the TDF_* flags in dumpfile.h.  */
@@ -284,10 +286,7 @@ dump_flow_info (FILE *file, int flags)
 
   fprintf (file, "\n%d basic blocks, %d edges.\n", n_basic_blocks, n_edges);
   FOR_ALL_BB (bb)
-    {
-      dump_bb (file, bb, 0, flags);
-      check_bb_profile (bb, file);
-    }
+    dump_bb (file, bb, 0, flags);
 
   putc ('\n', file);
 }

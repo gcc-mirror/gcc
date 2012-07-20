@@ -397,7 +397,7 @@ debug_region (int rgn)
   for (bb = 0; bb < rgn_table[rgn].rgn_nr_blocks; bb++)
     {
       dump_bb (stderr, BASIC_BLOCK (rgn_bb_table[current_blocks + bb]),
-	       0, TDF_SLIM);
+	       0, TDF_SLIM | TDF_BLOCKS);
       fprintf (stderr, "\n");
     }
 

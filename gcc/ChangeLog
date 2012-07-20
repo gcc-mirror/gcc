@@ -1,3 +1,42 @@
+2012-07-20  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* basic-block.h (BB_FLAGS_TO_PRESERVE): New define.
+	(brief_dump_cfg): Update prototype to take flags argument.
+	(check_bb_profile): Remove prototype.
+	* tracer.c (tracer): Update brief_dump_cfg calls.
+	* cfghooks.c (dump_bb): Do not pass TDF_COMMENT to dump_bb_info.
+	Call dump_bb_info before and after the cfghook dump_bb.  Terminate
+	the dump with a newline.
+	(dump_flow_info): Do not call check_bb_profile.
+	* cfg.c (clear_bb_flags): Update using BB_FLAGS_TO_PRESERVE.
+	(check_bb_profile): Make static.  Take indent and flags arguments.
+	(dump_bb_info): Always dump loop depth.  With TDF_DETAILS, call
+	check_bb_profile.  Print one edge per line.
+	(brief_dump_cfg): Take a flags argument, and filter out
+	TDF_COMMENT and TDF_DETAILS.
+	* pretty-print.c (pp_base_newline): Set pp_needs_newline to false.
+	* gimple-pretty-print.c (dump_gimple_bb_header): Do not use dump_bb_info
+	here, it is already called from dump_bb.  Idem for check_bb_profile.
+	(dump_gimple_bb_footer): Likewise.
+	(gimple_dump_bb_buff): Call pp_flush after dump_gimple_stmt to
+	avoid broken dumps for statement histograms.
+	(gimple_dump_bb): Handle ENTRY_BLOCK and EXIT_BLOCK.  Do
+	not call pp_flush here, the buffer should be empty.
+	* sched-rgn.c (debug_region): Pass TDF_BLOCKS to dump_bb.
+	* sched-vis.c (debug_bb_slim): Likewise.
+	* tree-cfg.c (remove_bb): Pass dump_flags to dump_bb.
+	(gimple_debug_bb): Pass TDF_BLOCKS to dump_bb.
+	(gimple_dump_cfg): Do brief_dump_cfg with TDF_COMMENT.
+	(dump_function_to_file): Do not call check_bb_profile on
+	ENTRY_BLOCK and EXIT_BLOCK, check_bb_profile doesn't handle them.
+	Use dump_bb instead of gimple_dump_bb.
+	(print_loops_bb): Use dump_bb instead of gimple_dump_bb.
+	* passes.c (execute_function_dump): Always call print_rtl_with_bb
+	for RTL dumps.
+	* cfgrtl.c (print_rtl_with_bb): Handle printing without an up-to-date
+	CFG.  With TDF_BLOCKS and TDF_DETAILS, do DF dumps at the top and bottom
+	of each basic block.
+
 2012-07-20  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/54031
@@ -1398,7 +1437,7 @@
 	(flow_nodes_print): Remove.
 	(flow_edge_list_print): Remove.
 	(inverted_post_order_compute): Use FOR_ALL_BB.
-	*cfgrtl.c (dump_flow_info): Moved from cfg.c.
+	* cfgrtl.c (dump_flow_info): Moved from cfg.c.
 	Do not call dump_reg_info.
 	(debug_flow_info): Moved from cfg.c
 	(dump_bb_info): Moved from cfg.c.  Take 'verbose' argument

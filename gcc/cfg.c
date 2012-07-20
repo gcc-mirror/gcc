@@ -382,16 +382,14 @@ redirect_edge_pred (edge e, basic_block new_pred)
   connect_src (e);
 }
 
-/* Clear all basic block flags, with the exception of partitioning and
-   setjmp_target.  */
+/* Clear all basic block flags that do not have to be preserved.  */
 void
 clear_bb_flags (void)
 {
   basic_block bb;
 
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
-    bb->flags = (BB_PARTITION (bb)
-		 | (bb->flags & (BB_DISABLE_SCHEDULE + BB_RTL + BB_NON_LOCAL_GOTO_TARGET)));
+    bb->flags &= BB_FLAGS_TO_PRESERVE;
 }
 
 /* Check the consistency of profile information.  We can't do that
@@ -399,13 +397,16 @@ clear_bb_flags (void)
    solved graphs, later eliminating of conditionals or roundoff errors.
    It is still practical to have them reported for debugging of simple
    testcases.  */
-void
-check_bb_profile (basic_block bb, FILE * file)
+static void
+check_bb_profile (basic_block bb, FILE * file, int indent, int flags)
 {
   edge e;
   int sum = 0;
   gcov_type lsum;
   edge_iterator ei;
+  char *s_indent = (char *) alloca ((size_t) indent + 1);
+  memset ((void *) s_indent, ' ', (size_t) indent);
+  s_indent[indent] = '\0';
 
   if (profile_status == PROFILE_ABSENT)
     return;
@@ -415,14 +416,16 @@ check_bb_profile (basic_block bb, FILE * file)
       FOR_EACH_EDGE (e, ei, bb->succs)
 	sum += e->probability;
       if (EDGE_COUNT (bb->succs) && abs (sum - REG_BR_PROB_BASE) > 100)
-	fprintf (file, "Invalid sum of outgoing probabilities %.1f%%\n",
+	fprintf (file, "%s%sInvalid sum of outgoing probabilities %.1f%%\n",
+		 (flags & TDF_COMMENT) ? ";; " : "", s_indent,
 		 sum * 100.0 / REG_BR_PROB_BASE);
       lsum = 0;
       FOR_EACH_EDGE (e, ei, bb->succs)
 	lsum += e->count;
       if (EDGE_COUNT (bb->succs)
 	  && (lsum - bb->count > 100 || lsum - bb->count < -100))
-	fprintf (file, "Invalid sum of outgoing counts %i, should be %i\n",
+	fprintf (file, "%s%sInvalid sum of outgoing counts %i, should be %i\n",
+		 (flags & TDF_COMMENT) ? ";; " : "", s_indent,
 		 (int) lsum, (int) bb->count);
     }
   if (bb != ENTRY_BLOCK_PTR)
@@ -432,13 +435,15 @@ check_bb_profile (basic_block bb, FILE * file)
 	sum += EDGE_FREQUENCY (e);
       if (abs (sum - bb->frequency) > 100)
 	fprintf (file,
-		 "Invalid sum of incoming frequencies %i, should be %i\n",
+		 "%s%sInvalid sum of incoming frequencies %i, should be %i\n",
+		 (flags & TDF_COMMENT) ? ";; " : "", s_indent,
 		 sum, bb->frequency);
       lsum = 0;
       FOR_EACH_EDGE (e, ei, bb->preds)
 	lsum += e->count;
       if (lsum - bb->count > 100 || lsum - bb->count < -100)
-	fprintf (file, "Invalid sum of incoming counts %i, should be %i\n",
+	fprintf (file, "%s%sInvalid sum of incoming counts %i, should be %i\n",
+		 (flags & TDF_COMMENT) ? ";; " : "", s_indent,
 		 (int) lsum, (int) bb->count);
     }
 }
@@ -679,6 +684,7 @@ dump_bb_info (FILE *outf, basic_block bb, int indent, int flags,
 #undef DEF_BASIC_BLOCK_FLAG
     };
   const unsigned n_bitnames = sizeof (bb_bitnames) / sizeof (char *);
+  bool first;
   char *s_indent = (char *) alloca ((size_t) indent + 1);
   memset ((void *) s_indent, ' ', (size_t) indent);
   s_indent[indent] = '\0';
@@ -691,11 +697,12 @@ dump_bb_info (FILE *outf, basic_block bb, int indent, int flags,
 
       if (flags & TDF_COMMENT)
 	fputs (";; ", outf);
-      fprintf (outf, "%sbasic block %d", s_indent, bb->index);
+      fprintf (outf, "%sbasic block %d, loop depth %d",
+	       s_indent, bb->index, bb->loop_depth);
       if (flags & TDF_DETAILS)
 	{
-	  fprintf (outf, ", loop depth %d, count " HOST_WIDEST_INT_PRINT_DEC,
-		   bb->loop_depth, (HOST_WIDEST_INT) bb->count);
+	  fprintf (outf, ", count " HOST_WIDEST_INT_PRINT_DEC,
+		   (HOST_WIDEST_INT) bb->count);
 	  fprintf (outf, ", freq %i", bb->frequency);
 	  if (maybe_hot_bb_p (bb))
 	    fputs (", maybe hot", outf);
@@ -703,11 +710,11 @@ dump_bb_info (FILE *outf, basic_block bb, int indent, int flags,
 	    fputs (", probably never executed", outf);
 	}
       fputc ('\n', outf);
+      if (TDF_DETAILS)
+	check_bb_profile (bb, outf, indent, flags);
 
       if (flags & TDF_DETAILS)
 	{
-	  bool first = true;
-
 	  if (flags & TDF_COMMENT)
 	    fputs (";; ", outf);
 	  fprintf (outf, "%s prev block ", s_indent);
@@ -722,6 +729,7 @@ dump_bb_info (FILE *outf, basic_block bb, int indent, int flags,
 	    fprintf (outf, "(nil)");
 
 	  fputs (", flags:", outf);
+	  first = true;
 	  for (i = 0; i < n_bitnames; i++)
 	    if (bb->flags & (1 << i))
 	      {
@@ -734,15 +742,25 @@ dump_bb_info (FILE *outf, basic_block bb, int indent, int flags,
 	      }
 	  if (!first)
 	    fputc (')', outf);
+	  fputc ('\n', outf);
 	}
-      fputc ('\n', outf);
 
       if (flags & TDF_COMMENT)
 	fputs (";; ", outf);
       fprintf (outf, "%s pred:      ", s_indent);
+      first = true;
       FOR_EACH_EDGE (e, ei, bb->preds)
-	dump_edge_info (outf, e, flags, 0);
-      fputc ('\n', outf);
+	{
+	  if (! first)
+	    {
+	      if (flags & TDF_COMMENT)
+		fputs (";; ", outf);
+	      fprintf (outf, "%s            ", s_indent);
+	    }
+	  first = false;
+	  dump_edge_info (outf, e, flags, 0);
+	  fputc ('\n', outf);
+	}
     }
 
   if (do_footer)
@@ -750,22 +768,34 @@ dump_bb_info (FILE *outf, basic_block bb, int indent, int flags,
       if (flags & TDF_COMMENT)
 	fputs (";; ", outf);
       fprintf (outf, "%s succ:      ", s_indent);
+      first = true;
       FOR_EACH_EDGE (e, ei, bb->succs)
-	dump_edge_info (outf, e, flags, 1);
-      fputs ("\n\n", outf);
+        {
+	  if (! first)
+	    {
+	      if (flags & TDF_COMMENT)
+		fputs (";; ", outf);
+	      fprintf (outf, "%s            ", s_indent);
+	    }
+	  first = false;
+	  dump_edge_info (outf, e, flags, 1);
+	  fputc ('\n', outf);
+	}
     }
 }
 
 /* Dumps a brief description of cfg to FILE.  */
 
 void
-brief_dump_cfg (FILE *file)
+brief_dump_cfg (FILE *file, int flags)
 {
   basic_block bb;
 
   FOR_EACH_BB (bb)
     {
-      dump_bb_info (file, bb, 0, 0, true, true);
+      dump_bb_info (file, bb, 0,
+		    flags & (TDF_COMMENT | TDF_DETAILS),
+		    true, true);
     }
 }
 
