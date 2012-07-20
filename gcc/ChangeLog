@@ -14,20 +14,20 @@
 	(power4-three): Likewise.
 
 2012-07-20  Sameera Deshpande  <sameera.deshpande@arm.com>
-            Greta Yorsh  <Greta.Yorsh@arm.com>
+	    Greta Yorsh  <Greta.Yorsh@arm.com>
 
-        * config/arm/arm.c (arm_cortex_a15_tune): New tune.
-        * config/arm/arm-cores.def (cortex-a15): Use it.
+	* config/arm/arm.c (arm_cortex_a15_tune): New tune.
+	* config/arm/arm-cores.def (cortex-a15): Use it.
 
 2012-07-20  Sameera Deshpande  <sameera.deshpande@arm.com>
-            Greta Yorsh  <Greta.Yorsh@arm.com>
+	    Greta Yorsh  <Greta.Yorsh@arm.com>
 
-        * config/arm/arm-protos.h (tune_params): Add prefer_ldrd_strd.
-        * config/arm/arm.c (arm_slowmul_tune): Initialize it.
-        (arm_fastmul_tune, arm_strongarm_tune): Likewise.
-        (arm_xscale_tune, arm_9e_tune, arm_v6t2_tune): Likewise.
-        (arm_cortex_tune, arm_cortex_a5_tune, arm_cortex_a9_tune): Likewise.
-        (arm_fa726te_tune): Likewise.
+	* config/arm/arm-protos.h (tune_params): Add prefer_ldrd_strd.
+	* config/arm/arm.c (arm_slowmul_tune): Initialize it.
+	(arm_fastmul_tune, arm_strongarm_tune): Likewise.
+	(arm_xscale_tune, arm_9e_tune, arm_v6t2_tune): Likewise.
+	(arm_cortex_tune, arm_cortex_a5_tune, arm_cortex_a9_tune): Likewise.
+	(arm_fa726te_tune): Likewise.
 
 2012-07-20  Richard Guenther  <rguenther@suse.de>
 
