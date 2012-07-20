@@ -36,6 +36,9 @@
   /* Attempting to trap division-by-zero in this way isn't likely to work on 
      bare-metal m68k systems.  */
 # define DO_TEST 0
+#elif defined (__CRIS__)
+  /* No SIGFPE for CRIS integer division.  */
+# define DO_TEST 0
 #else
 # define DO_TEST 1
 #endif

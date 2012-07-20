@@ -1,3 +1,7 @@
+2012-07-21  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.c-torture/execute/20101011-1.c (DO_TEST): Define as 0 for CRIS.
+
 2012-07-20  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/bind_c_array_params_2.f90: New.
