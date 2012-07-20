@@ -141,12 +141,10 @@
        (eq_attr "cpu" "power4"))
   "((du1_power4+du2_power4,lsu1_power4)\
     |(du2_power4+du3_power4,lsu2_power4)\
-    |(du3_power4+du4_power4,lsu2_power4)\
     |(du3_power4+du4_power4,lsu2_power4))+\
-   ((nothing,iu2_power4,iu1_power4)\
+   ((nothing,iu1_power4,iu2_power4)\
     |(nothing,iu2_power4,iu2_power4)\
-    |(nothing,iu1_power4,iu2_power4)\
-    |(nothing,iu1_power4,iu2_power4))")
+    |(nothing,iu2_power4,iu1_power4))")
 
 (define_insn_reservation "power4-store-update-indexed" 12
   (and (eq_attr "type" "store_ux")
@@ -212,7 +210,7 @@
    ((iu1_power4,nothing,iu2_power4,nothing,iu2_power4)\
     |(iu2_power4,nothing,iu2_power4,nothing,iu1_power4)\
     |(iu2_power4,nothing,iu1_power4,nothing,iu1_power4)\
-    |(iu1_power4,nothing,iu2_power4,nothing,iu2_power4))")
+    |(iu1_power4,nothing,iu1_power4,nothing,iu2_power4))")
 
 (define_insn_reservation "power4-insert" 4
   (and (eq_attr "type" "insert_word")
