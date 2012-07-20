@@ -875,7 +875,8 @@ const struct tune_params arm_slowmul_tune =
   5,						/* Max cond insns.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
   true,						/* Prefer constant pool.  */
-  arm_default_branch_cost
+  arm_default_branch_cost,
+  false                                         /* Prefer LDRD/STRD.  */
 };
 
 const struct tune_params arm_fastmul_tune =
@@ -886,7 +887,8 @@ const struct tune_params arm_fastmul_tune =
   5,						/* Max cond insns.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
   true,						/* Prefer constant pool.  */
-  arm_default_branch_cost
+  arm_default_branch_cost,
+  false                                         /* Prefer LDRD/STRD.  */
 };
 
 /* StrongARM has early execution of branches, so a sequence that is worth
@@ -900,7 +902,8 @@ const struct tune_params arm_strongarm_tune =
   3,						/* Max cond insns.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
   true,						/* Prefer constant pool.  */
-  arm_default_branch_cost
+  arm_default_branch_cost,
+  false                                         /* Prefer LDRD/STRD.  */
 };
 
 const struct tune_params arm_xscale_tune =
@@ -911,7 +914,8 @@ const struct tune_params arm_xscale_tune =
   3,						/* Max cond insns.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
   true,						/* Prefer constant pool.  */
-  arm_default_branch_cost
+  arm_default_branch_cost,
+  false                                         /* Prefer LDRD/STRD.  */
 };
 
 const struct tune_params arm_9e_tune =
@@ -922,7 +926,8 @@ const struct tune_params arm_9e_tune =
   5,						/* Max cond insns.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
   true,						/* Prefer constant pool.  */
-  arm_default_branch_cost
+  arm_default_branch_cost,
+  false                                         /* Prefer LDRD/STRD.  */
 };
 
 const struct tune_params arm_v6t2_tune =
@@ -933,7 +938,8 @@ const struct tune_params arm_v6t2_tune =
   5,						/* Max cond insns.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
   false,					/* Prefer constant pool.  */
-  arm_default_branch_cost
+  arm_default_branch_cost,
+  false                                         /* Prefer LDRD/STRD.  */
 };
 
 /* Generic Cortex tuning.  Use more specific tunings if appropriate.  */
@@ -945,7 +951,8 @@ const struct tune_params arm_cortex_tune =
   5,						/* Max cond insns.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
   false,					/* Prefer constant pool.  */
-  arm_default_branch_cost
+  arm_default_branch_cost,
+  false                                         /* Prefer LDRD/STRD.  */
 };
 
 /* Branches can be dual-issued on Cortex-A5, so conditional execution is
@@ -959,7 +966,8 @@ const struct tune_params arm_cortex_a5_tune =
   1,						/* Max cond insns.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
   false,					/* Prefer constant pool.  */
-  arm_cortex_a5_branch_cost
+  arm_cortex_a5_branch_cost,
+  false                                         /* Prefer LDRD/STRD.  */
 };
 
 const struct tune_params arm_cortex_a9_tune =
@@ -970,7 +978,8 @@ const struct tune_params arm_cortex_a9_tune =
   5,						/* Max cond insns.  */
   ARM_PREFETCH_BENEFICIAL(4,32,32),
   false,					/* Prefer constant pool.  */
-  arm_default_branch_cost
+  arm_default_branch_cost,
+  false                                         /* Prefer LDRD/STRD.  */
 };
 
 const struct tune_params arm_fa726te_tune =
@@ -981,7 +990,8 @@ const struct tune_params arm_fa726te_tune =
   5,						/* Max cond insns.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
   true,						/* Prefer constant pool.  */
-  arm_default_branch_cost
+  arm_default_branch_cost,
+  false                                         /* Prefer LDRD/STRD.  */
 };
 
 

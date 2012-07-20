@@ -238,6 +238,8 @@ struct tune_params
   int l1_cache_line_size;
   bool prefer_constant_pool;
   int (*branch_cost) (bool, bool);
+  /* Prefer STRD/LDRD instructions over PUSH/POP/LDM/STM.  */
+  bool prefer_ldrd_strd;
 };
 
 extern const struct tune_params *current_tune;
