@@ -1,3 +1,7 @@
+2012-07-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/30_threads/thread/adl.cc: Add missing dg-requires.
+
 2012-07-19  Tristan Gingold  <gingold@adacore.com>
 	    Richard Henderson  <rth@redhat.com>
 
