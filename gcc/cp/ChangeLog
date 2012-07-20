@@ -1,3 +1,9 @@
+2012-07-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/54038
+	* tree.c (build_cplus_array_type): Use build_cplus_array_type to build
+	canonical array type rather than mess with its TYPE_*_VARIANT.
+
 2012-07-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/54026
