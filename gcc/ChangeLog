@@ -1,3 +1,8 @@
+2012-07-20  Richard Guenther  <rguenther@suse.de>
+
+	* builtins.c (get_object_alignment_2): Correct offset handling
+	when using type alignment of a MEM_REF kind base.
+
 2012-07-20  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	PR target/53877

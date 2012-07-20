@@ -346,12 +346,10 @@ get_object_alignment_2 (tree exp, unsigned int *alignp,
 
       known_alignment
 	= get_pointer_alignment_1 (addr, &ptr_align, &ptr_bitpos);
-      bitpos += ptr_bitpos;
       align = MAX (ptr_align, align);
 
-      if (TREE_CODE (exp) == MEM_REF
-	  || TREE_CODE (exp) == TARGET_MEM_REF)
-	bitpos += mem_ref_offset (exp).low * BITS_PER_UNIT;
+      /* The alignment of the pointer operand in a TARGET_MEM_REF
+	 has to take the variable offset parts into account.  */
       if (TREE_CODE (exp) == TARGET_MEM_REF)
 	{
 	  if (TMR_INDEX (exp))
@@ -369,9 +367,19 @@ get_object_alignment_2 (tree exp, unsigned int *alignp,
       /* When EXP is an actual memory reference then we can use
 	 TYPE_ALIGN of a pointer indirection to derive alignment.
 	 Do so only if get_pointer_alignment_1 did not reveal absolute
-	 alignment knowledge.  */
-      if (!addr_p && !known_alignment)
-	align = MAX (TYPE_ALIGN (TREE_TYPE (exp)), align);
+	 alignment knowledge and if using that alignment would
+	 improve the situation.  */
+      if (!addr_p && !known_alignment
+	  && TYPE_ALIGN (TREE_TYPE (exp)) > align)
+	align = TYPE_ALIGN (TREE_TYPE (exp));
+      else
+	{
+	  /* Else adjust bitpos accordingly.  */
+	  bitpos += ptr_bitpos;
+	  if (TREE_CODE (exp) == MEM_REF
+	      || TREE_CODE (exp) == TARGET_MEM_REF)
+	    bitpos += mem_ref_offset (exp).low * BITS_PER_UNIT;
+	}
     }
   else if (TREE_CODE (exp) == STRING_CST)
     {
