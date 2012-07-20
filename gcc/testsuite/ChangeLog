@@ -1,3 +1,8 @@
+2012-07-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/54026
+	* g++.dg/init/mutable1.C: New.
+
 2012-07-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt25.adb: New test.

@@ -8296,9 +8296,9 @@ cp_apply_type_quals_to_decl (int type_quals, tree decl)
      constructor can produce constant init, so rely on cp_finish_decl to
      clear TREE_READONLY if the variable has non-constant init.  */
 
-  /* If the type has a mutable component, that component might be
-     modified.  */
-  if (TYPE_HAS_MUTABLE_P (type))
+  /* If the type has (or might have) a mutable component, that component
+     might be modified.  */
+  if (TYPE_HAS_MUTABLE_P (type) || !COMPLETE_TYPE_P (type))
     type_quals &= ~TYPE_QUAL_CONST;
 
   c_apply_type_quals_to_decl (type_quals, decl);

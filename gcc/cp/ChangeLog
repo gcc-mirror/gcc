@@ -1,3 +1,8 @@
+2012-07-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/54026
+	* typeck.c (cp_apply_type_quals_to_decl): Check COMPLETE_TYPE_P.
+
 2012-07-18  Jason Merrill  <jason@redhat.com>
 
 	* method.c (process_subob_fn): Make sure no_implicit_p is non-null
