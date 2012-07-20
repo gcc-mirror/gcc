@@ -510,7 +510,7 @@ get_value_from_alignment (tree expr)
 
   gcc_assert (TREE_CODE (expr) == ADDR_EXPR);
 
-  get_object_alignment_1 (TREE_OPERAND (expr, 0), &align, &bitpos);
+  get_pointer_alignment_1 (expr, &align, &bitpos);
   val.mask
     = double_int_and_not (POINTER_TYPE_P (type) || TYPE_UNSIGNED (type)
 			  ? double_int_mask (TYPE_PRECISION (type))
