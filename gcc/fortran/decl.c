@@ -589,13 +589,17 @@ cleanup:
 
 /* Auxiliary function to merge DIMENSION and CODIMENSION array specs.  */
 
-static void
+static gfc_try
 merge_array_spec (gfc_array_spec *from, gfc_array_spec *to, bool copy)
 {
   int i;
 
-  gcc_assert (from->rank != -1 || to->corank == 0);
-  gcc_assert (to->rank != -1 || from->corank == 0);
+  if ((from->type == AS_ASSUMED_RANK && to->corank)
+      || (to->type == AS_ASSUMED_RANK && from->corank))
+    {
+      gfc_error ("The assumed-rank array at %C shall not have a codimension");
+      return FAILURE;
+    }
 
   if (to->rank == 0 && from->rank > 0)
     {
@@ -642,6 +646,8 @@ merge_array_spec (gfc_array_spec *from, gfc_array_spec *to, bool copy)
 	    }
 	}
     }
+
+  return SUCCESS;
 }
 
 
@@ -1799,8 +1805,12 @@ variable_decl (int elem)
 
   if (m == MATCH_NO)
     as = gfc_copy_array_spec (current_as);
-  else if (current_as)
-    merge_array_spec (current_as, as, true);
+  else if (current_as
+	   && merge_array_spec (current_as, as, true) == FAILURE)
+    {
+      m = MATCH_ERROR;
+      goto cleanup;
+    }
 
   if (gfc_option.flag_cray_pointer)
     cp_as = gfc_copy_array_spec (as);
@@ -3512,7 +3522,8 @@ match_attr_spec (void)
 	    current_as = as;
 	  else if (m == MATCH_YES)
 	    {
-	      merge_array_spec (as, current_as, false);
+	      if (merge_array_spec (as, current_as, false) == FAILURE)
+		m = MATCH_ERROR;
 	      free (as);
 	    }
 

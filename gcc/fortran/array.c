@@ -750,6 +750,14 @@ gfc_set_array_spec (gfc_symbol *sym, gfc_array_spec *as, locus *error_loc)
       return SUCCESS;
     }
 
+  if ((sym->as->type == AS_ASSUMED_RANK && as->corank)
+      || (as->type == AS_ASSUMED_RANK && sym->as->corank))
+    {
+      gfc_error ("The assumed-rank array '%s' at %L shall not have a "
+		 "codimension", sym->name, error_loc);
+      return FAILURE;
+    }
+
   if (as->corank)
     {
       /* The "sym" has no corank (checked via gfc_add_codimension). Thus

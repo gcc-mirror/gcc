@@ -4,8 +4,6 @@
 !
 ! Handle type/class for assumed-rank arrays
 !
-! FIXME: The ubound/lbound checks have to be re-enabled when
-! after they are supported.
 ! FIXME: Passing a CLASS to a CLASS has to be re-enabled.
 implicit none
 type t
@@ -29,38 +27,38 @@ if (i /= 12) call abort()
 contains
   subroutine bar(x)
     type(t) :: x(..)
-!    if (lbound(x,1) /= 1 .or. lbound(x,2) /= 1) call abort()
+    if (lbound(x,1) /= 1 .or. lbound(x,2) /= 1) call abort()
     if (size(x) /= 6) call abort()
     if (size(x,1) /= 2 .or. size(x,2) /= 3) call abort()
-!    if (ubound(x,1) /= 2 .or. ubound(x,2) /= 3) call abort()
+    if (ubound(x,1) /= 2 .or. ubound(x,2) /= 3) call abort()
     i = i + 1
     call foo(x)
     call bar2(x)
   end subroutine
   subroutine bar2(x)
     type(t) :: x(..)
-!    if (lbound(x,1) /= 1 .or. lbound(x,2) /= 1) call abort()
+    if (lbound(x,1) /= 1 .or. lbound(x,2) /= 1) call abort()
     if (size(x) /= 6) call abort()
     if (size(x,1) /= 2 .or. size(x,2) /= 3) call abort()
-!    if (ubound(x,1) /= 2 .or. ubound(x,2) /= 3) call abort()
+    if (ubound(x,1) /= 2 .or. ubound(x,2) /= 3) call abort()
     i = i + 1
   end subroutine
   subroutine foo(x)
     class(t) :: x(..)
-!    if (lbound(x,1) /= 1 .or. lbound(x,2) /= 1) call abort()
+    if (lbound(x,1) /= 1 .or. lbound(x,2) /= 1) call abort()
     if (size(x) /= 6) call abort()
     if (size(x,1) /= 2 .or. size(x,2) /= 3) call abort()
-!    if (ubound(x,1) /= 2 .or. ubound(x,2) /= 3) call abort()
+    if (ubound(x,1) /= 2 .or. ubound(x,2) /= 3) call abort()
     i = i + 1
     call foo2(x)
 !    call bar2(x) ! Passing a CLASS to a TYPE does not yet work
   end subroutine
   subroutine foo2(x)
     class(t) :: x(..)
-!    if (lbound(x,1) /= 1 .or. lbound(x,2) /= 1) call abort()
+    if (lbound(x,1) /= 1 .or. lbound(x,2) /= 1) call abort()
     if (size(x) /= 6) call abort()
     if (size(x,1) /= 2 .or. size(x,2) /= 3) call abort()
-!    if (ubound(x,1) /= 2 .or. ubound(x,2) /= 3) call abort()
+    if (ubound(x,1) /= 2 .or. ubound(x,2) /= 3) call abort()
     i = i + 1
   end subroutine
 end 

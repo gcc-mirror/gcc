@@ -5,8 +5,6 @@
 !
 ! Assumed-rank tests
 !
-! FIXME: The ubound/lbound checks have to be re-enabled when
-! after they are supported
 
 implicit none
 
@@ -106,14 +104,14 @@ contains
     if (size(a) /= product (high - low +1)) call abort()
 
     if (rnk > 0) then
-!      if (1 /= lbound(a,1)) call abort()
-!      if (high(1)-low(1)+1 /= ubound(a,1)) call abort()
+      if (1 /= lbound(a,1)) call abort()
+      if (high(1)-low(1)+1 /= ubound(a,1)) call abort()
       if (size (a,1) /= high(1)-low(1)+1) call abort()
     end if
 
     do i = 1, rnk
-!      if (1 /= lbound(a,i)) call abort()
-!      if (high(i)-low(i)+1 /= ubound(a,i)) call abort()
+      if (1 /= lbound(a,i)) call abort()
+      if (high(i)-low(i)+1 /= ubound(a,i)) call abort()
       if (size (a,i) /= high(i)-low(i)+1) call abort()
     end do
     call check_value (a, rnk, val)
@@ -131,14 +129,14 @@ contains
     if (size(a) /= product (high - low +1)) call abort()
 
     if (rnk > 0) then
-!      if (low(1) /= lbound(a,1)) call abort()
-!      if (high(1) /= ubound(a,1)) call abort()
+      if (low(1) /= lbound(a,1)) call abort()
+      if (high(1) /= ubound(a,1)) call abort()
       if (size (a,1) /= high(1)-low(1)+1) call abort()
     end if
 
     do i = 1, rnk
-!      if (low(i) /= lbound(a,i)) call abort()
-!      if (high(i) /= ubound(a,i)) call abort()
+      if (low(i) /= lbound(a,i)) call abort()
+      if (high(i) /= ubound(a,i)) call abort()
       if (size (a,i) /= high(i)-low(i)+1) call abort()
     end do
     call check_value (a, rnk, val)
