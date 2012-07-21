@@ -7217,9 +7217,10 @@ mips_get_unaligned_mem (rtx *op, HOST_WIDE_INT width, HOST_WIDE_INT bitpos,
   if (MEM_ALIGN (*op) >= width)
     return false;
 
-  /* Adjust *OP to refer to the whole field.  This also has the effect
-     of legitimizing *OP's address for BLKmode, possibly simplifying it.  */
-  *op = adjust_address (*op, BLKmode, 0);
+  /* Create a copy of *OP that refers to the whole field.  This also has
+     the effect of legitimizing *OP's address for BLKmode, possibly
+     simplifying it.  */
+  *op = copy_rtx (adjust_address (*op, BLKmode, 0));
   set_mem_size (*op, width / BITS_PER_UNIT);
 
   /* Get references to both ends of the field.  We deliberately don't
