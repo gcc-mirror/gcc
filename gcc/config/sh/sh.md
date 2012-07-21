@@ -5094,9 +5094,14 @@ label:
   DONE;
 })
 
-;; These two patterns can happen as the result of optimization, when
-;; comparisons get simplified to a move of zero or 1 into the T reg.
-;; They don't disappear completely, because the T reg is a fixed hard reg.
+;; The clrt and sett patterns can happen as the result of optimization and
+;; insn expansion.
+;; Comparisons might get simplified to a move of zero or 1 into the T reg.
+;; In this case they might not disappear completely, because the T reg is
+;; a fixed hard reg.
+;; When DImode operations that use the T reg as carry/borrow are split into
+;; individual SImode operations, the T reg is usually cleared before the
+;; first SImode insn.
 
 (define_insn "clrt"
   [(set (reg:SI T_REG) (const_int 0))]
