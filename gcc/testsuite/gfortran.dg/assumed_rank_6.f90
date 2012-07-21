@@ -30,8 +30,8 @@ contains
   end subroutine
 end subroutine
 
-subroutine foo4(x) ! { dg-error "may not have the VALUE or CODIMENSION attribute" }
-  integer, codimension[*] :: x(..)
+subroutine foo4(x)
+  integer, codimension[*] :: x(..) ! { dg-error "The assumed-rank array at .1. shall not have a codimension" }
 end subroutine
 
 subroutine foo5(y) ! { dg-error "may not have the VALUE or CODIMENSION attribute" }
