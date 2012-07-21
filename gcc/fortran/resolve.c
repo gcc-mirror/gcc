@@ -257,8 +257,9 @@ resolve_formal_arglist (gfc_symbol *proc)
 
   for (f = proc->formal; f; f = f->next)
     {
-      sym = f->sym;
       gfc_array_spec *as;
+
+      sym = f->sym;
 
       if (sym == NULL)
 	{
