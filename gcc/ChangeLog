@@ -1,5 +1,17 @@
 2012-07-21  Andrew Pinski  <apinski@cavium.com>
 
+	* config/mips/mips-protos.h (mips_expand_ext_as_unaligned_load):
+	Add a bool argument.
+	* config/mips/mips.c (mips_block_move_straight): Update call to
+	mips_expand_ext_as_unaligned_load.
+	(mips_expand_ext_as_unaligned_load): Add unsigned_p argument.
+	Accept DImode dest when the width is that of SImode.
+        * config/mips/mips.md (extv): Update call to
+	mips_expand_ext_as_unaligned_load.
+	(extzv): Likewise.
+
+2012-07-21  Andrew Pinski  <apinski@cavium.com>
+
 	* config/mips/mips.c (mips_get_unaligned_mem): Copy *op after calling
 	adjust_address.
 

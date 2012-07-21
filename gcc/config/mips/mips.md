@@ -3657,7 +3657,8 @@
 {
   if (mips_expand_ext_as_unaligned_load (operands[0], operands[1],
 					 INTVAL (operands[2]),
-					 INTVAL (operands[3])))
+					 INTVAL (operands[3]),
+					 /*unsigned=*/ false))
     DONE;
   else if (register_operand (operands[1], GET_MODE (operands[0]))
 	   && ISA_HAS_EXTS && UINTVAL (operands[2]) <= 32)
@@ -3694,7 +3695,8 @@
 {
   if (mips_expand_ext_as_unaligned_load (operands[0], operands[1],
 					 INTVAL (operands[2]),
-					 INTVAL (operands[3])))
+					 INTVAL (operands[3]),
+					 /*unsigned=*/true))
     DONE;
   else if (mips_use_ins_ext_p (operands[1], INTVAL (operands[2]),
 			       INTVAL (operands[3])))
