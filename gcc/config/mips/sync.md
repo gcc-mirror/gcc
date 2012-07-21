@@ -654,7 +654,8 @@
 	(unspec_volatile:GPR [(match_operand:GPR 2 "register_operand" "0")]
 	 UNSPEC_ATOMIC_EXCHANGE))]
   "ISA_HAS_SWAP"
-  "swap<size>\t%0,%b1")
+  "swap<size>\t%0,%b1"
+  [(set_attr "type" "atomic")])
 
 (define_expand "atomic_fetch_add<mode>"
   [(match_operand:GPR 0 "register_operand")
@@ -712,4 +713,5 @@
 		    (match_operand:GPR 2 "register_operand" "0"))]
 	 UNSPEC_ATOMIC_FETCH_OP))]
   "ISA_HAS_LDADD"
-  "ldadd<size>\t%0,%b1")
+  "ldadd<size>\t%0,%b1"
+  [(set_attr "type" "atomic")])

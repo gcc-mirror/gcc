@@ -103,3 +103,19 @@
 (define_insn_reservation "generic_frecip_fsqrt_step" 5
   (eq_attr "type" "frdiv1,frdiv2,frsqrt1,frsqrt2")
   "alu")
+
+(define_insn_reservation "generic_atomic" 10
+  (eq_attr "type" "atomic")
+  "alu")
+
+;; Sync loop consists of (in order)
+;; (1) optional sync,
+;; (2) LL instruction,
+;; (3) branch and 1-2 ALU instructions,
+;; (4) SC instruction,
+;; (5) branch and ALU instruction.
+;; The net result of this reservation is a big delay with a flush of
+;; ALU pipeline.
+(define_insn_reservation "generic_sync_loop" 40
+  (eq_attr "type" "syncloop")
+  "alu*39")

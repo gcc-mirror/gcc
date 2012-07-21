@@ -1,3 +1,21 @@
+2012-07-20  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* config/mips/mips.md (define_attr sync_*): Move before "type".
+	(define_attr "type"): New values "atomic" and "syncloop".
+	* config/mips/sync.md (atomic_exchange<mode>, atomic_fetch_add<mode>):
+	Set "type" attribute.
+	* config/mips/generic.md (generic_atomic, generic_syncloop):
+	New reservations.
+	* gcc/config/mips/10000.md, gcc/config/mips/20kc.md,
+	* gcc/config/mips/24k.md, gcc/config/mips/4130.md,
+        * gcc/config/mips/4k.md, gcc/config/mips/5400.md,
+	* gcc/config/mips/5500.md, gcc/config/mips/5k.md,
+        * gcc/config/mips/7000.md, gcc/config/mips/74k.md,
+	* gcc/config/mips/9000.md, gcc/config/mips/loongson2ef.md,
+	* gcc/config/mips/loongson3a.md, gcc/config/mips/octeon.md,
+	* gcc/config/mips/sb1.md, gcc/config/mips/sr71k.md,
+	* gcc/config/mips/xlr.md: Handle "atomic" and "syncloop" types.
+
 2012-07-20  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/sh.md: Group and sort shift related patterns.
