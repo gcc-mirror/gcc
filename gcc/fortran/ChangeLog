@@ -1,5 +1,10 @@
 2012-07-21  Tobias Burnus  <burnus@net-b.de>
 
+	* iso-c-binding.def (C_PTRDIFF_T): New TS29113 parameter.
+	* intrinsic.texi (ISO_C_BINDING): Document it.
+
+2012-07-21  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/48820
 	* trans-intrinsic.c (gfc_conv_intrinsic_bound): Support
 	lbound/ubound with dim= for assumed-rank arrays.

@@ -13029,11 +13029,11 @@ The @code{ISO_C_BINDING} module provides the following named constants of
 type default integer, which can be used as KIND type parameters.
 
 In addition to the integer named constants required by the Fortran 2003 
-standard, GNU Fortran provides as an extension named constants for the 
-128-bit integer types supported by the C compiler: @code{C_INT128_T, 
-C_INT_LEAST128_T, C_INT_FAST128_T}. Furthermore, if @code{__float} is
-supported in C, the named constants @code{C_FLOAT128, C_FLOAT128_COMPLEX}
-are defined.
+standard and @code{C_PTRDIFF_T} of TS 29113, GNU Fortran provides as an
+extension named constants for the 128-bit integer types supported by the
+C compiler: @code{C_INT128_T, C_INT_LEAST128_T, C_INT_FAST128_T}.
+Furthermore, if @code{__float128} is supported in C, the named constants
+@code{C_FLOAT128, C_FLOAT128_COMPLEX} are defined.
 
 @multitable @columnfractions .15 .35 .35 .35
 @item Fortran Type  @tab Named constant         @tab C type                                @tab Extension
@@ -13060,6 +13060,7 @@ are defined.
 @item @code{INTEGER}@tab @code{C_INT_FAST128_T} @tab @code{int_fast128_t}                 @tab Ext.
 @item @code{INTEGER}@tab @code{C_INTMAX_T}      @tab @code{intmax_t}
 @item @code{INTEGER}@tab @code{C_INTPTR_T}      @tab @code{intptr_t}
+@item @code{INTEGER}@tab @code{C_PTRDIFF_T}     @tab @code{intptr_t}                      @tab TS 29113
 @item @code{REAL}   @tab @code{C_FLOAT}         @tab @code{float}
 @item @code{REAL}   @tab @code{C_DOUBLE}        @tab @code{double}
 @item @code{REAL}   @tab @code{C_LONG_DOUBLE}   @tab @code{long double}
