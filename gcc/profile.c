@@ -1133,6 +1133,9 @@ branch_prob (void)
   if (dump_file)
     fprintf (dump_file, "%d ignored edges\n", ignored_edges);
 
+  total_num_edges_instrumented += num_instrumented;
+  if (dump_file)
+    fprintf (dump_file, "%d instrumentation edges\n", num_instrumented);
 
   /* Compute two different checksums. Note that we want to compute
      the checksum in only once place, since it depends on the shape

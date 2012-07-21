@@ -1,3 +1,9 @@
+2012-07-21  Steven Bosscher <steven@gcc.gnu.org>
+
+	PR gcov-profile/32543
+	* profile.c (branch_prob): Update total_num_edges_instrumented and
+	report the number of edges to instrument.
+
 2012-07-21  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/sh.md: Correct comment regarding clrt and sett insns.
