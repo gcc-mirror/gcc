@@ -176,7 +176,7 @@ as a single bit test:
 	if ((1<<x) & ((1<<4)|(1<<6)|(1<<9)|(1<<11)))
 
 This transformation is only applied if the number of case targets is small,
-if CST constains at least 3 bits, and "x << 1" is cheap.  The bit tests are
+if CST constains at least 3 bits, and "1 << x" is cheap.  The bit tests are
 performed in "word_mode".
 
 The following example shows the code the transformation generates:
