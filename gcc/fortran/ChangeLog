@@ -1,3 +1,8 @@
+2012-07-21  Tobias Burnus  <burnus@net-b.de>
+
+	* trans-expr.c (gfc_conv_derived_to_class): Fix argument passed
+	to class_array_data_assign.
+
 2012-07-20  Tobias Burnus  <burnus@net-b.de>
 
 	* decl.c (gfc_verify_c_interop_param): Allow assumed-shape

@@ -307,8 +307,7 @@ gfc_conv_derived_to_class (gfc_se *parmse, gfc_expr *e,
 	  gfc_conv_expr_descriptor (parmse, e, ss);
 
 	  if (e->rank != class_ts.u.derived->components->as->rank)
-	    class_array_data_assign (&parmse->pre, ctree, parmse->expr,
-				     TREE_TYPE (parmse->expr));
+	    class_array_data_assign (&parmse->pre, ctree, parmse->expr, true);
 	  else
 	    gfc_add_modify (&parmse->pre, ctree, parmse->expr);
 	}
