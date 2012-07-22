@@ -1,3 +1,14 @@
+2012-07-22  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/33135
+	* config/sh/sh.opt (mieee): Use Var instead of Mask.  Correct
+	description.
+	* config/sh/sh.c (sh_option_override): Do not change 
+	flag_finite_math_only.  Set TARGET_IEEE to complement of
+	flag_finite_math_only.
+	* doc/invoke.texi (SH options): Add mno-ieee.  Correct
+	description of mieee and mno-ieee behavior.
+
 2012-07-16  Steven Bosscher  <steven@gcc.gnu.org>
 
 	Backported from trunk:
