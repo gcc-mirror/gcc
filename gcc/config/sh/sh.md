@@ -3514,7 +3514,7 @@ label:
   if (CONST_INT_P (operands[2])
       && sh_dynamicalize_shift_p (operands[2]))
     operands[2] = force_reg (SImode, operands[2]);
-  if (TARGET_SH3 || TARGET_SH2A)
+  if (TARGET_DYNSHIFT)
     {
       emit_insn (gen_ashlsi3_std (operands[0], operands[1], operands[2]));
       DONE;
@@ -3530,14 +3530,13 @@ label:
 	(ashift:SI (match_operand:SI 1 "arith_reg_operand" "0,0,0,0")
 		   (match_operand:SI 2 "nonmemory_operand" "r,M,P27,?ri")))
    (clobber (match_scratch:SI 3 "=X,X,X,&r"))]
-  "(TARGET_SH3 || TARGET_SH2A)
-   || (TARGET_SH1 && satisfies_constraint_P27 (operands[2]))"
+  "TARGET_DYNSHIFT || (TARGET_SH1 && satisfies_constraint_P27 (operands[2]))"
   "@
    shld	%2,%0
    add	%0,%0
    shll%O2	%0
    #"
-  "(TARGET_SH3 || TARGET_SH2A)
+  "TARGET_DYNSHIFT
    && reload_completed
    && CONST_INT_P (operands[2])
    && ! satisfies_constraint_P27 (operands[2])"
@@ -3797,7 +3796,7 @@ label:
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
 	(ashiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
 		     (neg:SI (match_operand:SI 2 "arith_reg_operand" "r"))))]
-  "TARGET_SH3 || TARGET_SH2A"
+  "TARGET_DYNSHIFT"
   "shad	%2,%0"
   [(set_attr "type" "dyn_shift")])
 
@@ -3912,7 +3911,7 @@ label:
   if (CONST_INT_P (operands[2])
       && sh_dynamicalize_shift_p (operands[2]))
     operands[2] = force_reg (SImode, operands[2]);
-  if ((TARGET_SH3 || TARGET_SH2A)
+  if (TARGET_DYNSHIFT
       && arith_reg_operand (operands[2], GET_MODE (operands[2])))
     {
       rtx count = copy_to_mode_reg (SImode, operands[2]);
@@ -3928,7 +3927,7 @@ label:
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
 	(lshiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
 		     (neg:SI (match_operand:SI 2 "arith_reg_operand" "r"))))]
-  "TARGET_SH3 || TARGET_SH2A"
+  "TARGET_DYNSHIFT"
   "shld	%2,%0"
   [(set_attr "type" "dyn_shift")])
 

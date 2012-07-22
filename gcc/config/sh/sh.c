@@ -3437,7 +3437,7 @@ expand_ashiftrt (rtx *operands)
   char func[18];
   int value;
 
-  if (TARGET_SH3 || TARGET_SH2A)
+  if (TARGET_DYNSHIFT)
     {
       if (!CONST_INT_P (operands[2]))
 	{
@@ -3507,10 +3507,16 @@ expand_ashiftrt (rtx *operands)
   return true;
 }
 
+/* Return true if it is potentially beneficial to use a dynamic shift
+   instruction (shad / shar) instead of a combination of 1/2/8/16 
+   shift instructions for the specified shift count.
+   If dynamic shifts are not available, always return false.  */
 bool
 sh_dynamicalize_shift_p (rtx count)
 {
-  return shift_insns[INTVAL (count) & 31] > 1 + SH_DYNAMIC_SHIFT_COST;
+  gcc_assert (CONST_INT_P (count));
+  return TARGET_DYNSHIFT
+	 && (shift_insns[INTVAL (count) & 31] > 1 + SH_DYNAMIC_SHIFT_COST);
 }
 
 /* Try to find a good way to implement the combiner pattern
@@ -3886,7 +3892,7 @@ shl_sext_kind (rtx left_rtx, rtx size_rtx, int *costp)
 	    }
 	}
     }
-  if (TARGET_SH3 || TARGET_SH2A)
+  if (TARGET_DYNSHIFT)
     {
       /* Try to use a dynamic shift.  */
       cost = shift_insns[32 - insize] + 1 + SH_DYNAMIC_SHIFT_COST;

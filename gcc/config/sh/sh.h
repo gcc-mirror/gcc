@@ -1928,6 +1928,13 @@ struct sh_args {
 /* Nonzero if access to memory by bytes is no faster than for words.  */
 #define SLOW_BYTE_ACCESS 1
 
+/* Nonzero if the target supports dynamic shift instructions
+   like shad and shld.  */
+#define TARGET_DYNSHIFT (TARGET_SH3 || TARGET_SH2A)
+
+#define SH_DYNAMIC_SHIFT_COST \
+  (TARGET_HARD_SH4 ? 1 : TARGET_DYNSHIFT ? (optimize_size ? 1 : 2) : 20)
+
 /* Immediate shift counts are truncated by the output routines (or was it
    the assembler?).  Shift counts in a register are truncated by SH.  Note
    that the native compiler puts too large (> 32) immediate shift counts
@@ -2316,11 +2323,6 @@ extern int current_function_interrupt;
 /* Better to allocate once the maximum space for outgoing args in the
    prologue rather than duplicate around each call.  */
 #define ACCUMULATE_OUTGOING_ARGS TARGET_ACCUMULATE_OUTGOING_ARGS
-
-#define SH_DYNAMIC_SHIFT_COST \
-  (TARGET_HARD_SH4 ? 1	\
-   : (TARGET_SH3 || TARGET_SH2A) ? (optimize_size ? 1 : 2) : 20)
-
 
 #define NUM_MODES_FOR_MODE_SWITCHING { FP_MODE_NONE }
 
