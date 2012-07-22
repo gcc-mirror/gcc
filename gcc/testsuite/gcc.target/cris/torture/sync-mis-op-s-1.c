@@ -1,6 +1,6 @@
 /* { dg-do run { target *-*-linux* } } */
 /* { dg-additional-sources "../sync-1.c" } */
-/* { dg-options "-Dop -Dtype=short" } */
+/* { dg-options "-Dop -Dtype=short -mno-unaligned-atomic-may-use-library" } */
 
 /* Make sure we get a SIGTRAP or equivalent when passing unaligned
    but otherwise valid pointers to the atomic builtins.  */
@@ -76,7 +76,6 @@ void trap_handler(int signum)
 
 int main(void)
 {
-  type x = 0;
   type ret;
 
 #ifndef TRAP_USING_ABORT
@@ -86,7 +85,9 @@ int main(void)
 #endif
 #endif
 
+#ifndef mis_ok
   trap_expected = 1;
+#endif
 
 #if op
   sfa (&s.i, &s.i, 42);
@@ -98,9 +99,23 @@ int main(void)
      should do it.  */
   trap_expected = 0;
 
+#ifdef mis_ok
+  /* We're missing a sequence point, but we shouldn't have the initial
+     value.  */
+  if (s.i == (type) 0xdeadbeef)
+    abort ();
+  exit (0);
+#endif
+
   sfa (&x, &x, 1);
 #else
   acen (&s.i, &x, &ret);
+
+#ifdef mis_ok
+  if (s.i != 2 || x != 2 || ret != (type) 0xdeadbeef)
+    abort ();
+  exit (0);
+#endif
 
   trap_expected = 0;
 
