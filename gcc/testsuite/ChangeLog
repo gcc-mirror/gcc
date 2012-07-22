@@ -1,3 +1,35 @@
+2012-07-22  Hans-Peter Nilsson  <hp@axis.com>
+
+	Handle recent changes in default atomics for cris*-*-linux*.
+	* gcc.target/cris/torture/sync-mis-xchg-i-1ml.c,
+	gcc.target/cris/torture/sync-mis-xchg-i-2ml.c,
+	gcc.target/cris/torture/sync-mis-xchg-i-3ml.c,
+	gcc.target/cris/torture/sync-mis-xchg-s-1ml.c,
+	gcc.target/cris/torture/sync-mis-op-i-1ml.c,
+	gcc.target/cris/torture/sync-mis-op-i-2ml.c,
+	gcc.target/cris/torture/sync-mis-op-i-3ml.c,
+	gcc.target/cris/torture/sync-mis-op-s-1ml.c: New tests.
+	* gcc.target/cris/torture/sync-mis-op-i-2a.c: Make sure
+	-mno-unaligned-atomic-may-use-library is in effect for
+	cris*-*-linux*.
+	* gcc.target/cris/torture/sync-mis-xchg-i-1.c,
+	gcc.target/cris/torture/sync-mis-xchg-i-2.c,
+	gcc.target/cris/torture/sync-mis-xchg-i-3.c,
+	gcc.target/cris/torture/sync-mis-xchg-i-2a.c,
+	gcc.target/cris/torture/sync-mis-xchg-s-1.c,
+	gcc.target/cris/torture/sync-mis-op-i-1.c,
+	gcc.target/cris/torture/sync-mis-op-i-2.c,
+	gcc.target/cris/torture/sync-mis-op-i-1a.c,
+	gcc.target/cris/torture/sync-mis-op-i-3.c,
+	gcc.target/cris/torture/sync-mis-op-i-3a.c,
+	gcc.target/cris/torture/sync-mis-op-s-1a.c,
+	gcc.target/cris/torture/sync-mis-xchg-i-1a.c,
+	gcc.target/cris/torture/sync-mis-xchg-i-3a.c,
+	gcc.target/cris/torture/sync-mis-xchg-s-1a.c: Similar.
+	* gcc.target/cris/torture/sync-mis-op-s-1.c: Ditto.
+	(main): Remove local variable x.
+	[mis_ok]: Check that atomics don't fail.
+
 2012-07-21  Andrew Pinski  <apinski@cavium.com>
 
 	*  gcc.dg/tree-ssa/vrp72.c: New test.
