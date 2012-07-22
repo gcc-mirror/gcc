@@ -1,5 +1,15 @@
 2012-07-22  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	* config/sh/sh.h (TARGET_DYNSHIFT): New macro.
+	(SH_DYNAMIC_SHIFT_COST): Use it.
+	* config/sh/sh.c (expand_ashiftrt, shl_sext_kind): Likewise.
+	(sh_dynamicalize_shift_p): Add TARGET_DYNSHIFT condition.
+	Add sanity check for input value.  Add function description.
+	* config/sh/sh.md (ashlsi3, ashlsi3_std, ashrsi3_d, lshrsi3,
+	lshrsi3_d): Use TARGET_DYNSHIFT.
+
+2012-07-22  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	* config/sh/sh.md (negc): Delete expander.
 	(*negc): Rename insn to negc.
 
