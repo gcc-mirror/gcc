@@ -4256,17 +4256,7 @@ label:
 ;; Unary arithmetic
 ;; -------------------------------------------------------------------------
 
-(define_expand "negc"
-  [(parallel [(set (match_operand:SI 0 "arith_reg_dest" "")
-	(neg:SI (plus:SI (reg:SI T_REG)
-			 (match_operand:SI 1 "arith_reg_operand" ""))))
-   (set (reg:SI T_REG)
-	(ne:SI (ior:SI (reg:SI T_REG) (match_dup 1))
-	       (const_int 0)))])]
-  ""
-  "")
-
-(define_insn "*negc"
+(define_insn "negc"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
 	(neg:SI (plus:SI (reg:SI T_REG)
 			 (match_operand:SI 1 "arith_reg_operand" "r"))))
