@@ -11576,9 +11576,18 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
   int retval = 1;
   enum ix86_address_seg seg = SEG_DEFAULT;
 
+  /* Allow SImode subregs of DImode addresses,
+     they will be emitted with addr32 prefix.  */
+  if (TARGET_64BIT && GET_MODE (addr) == SImode)
+    {
+      if (GET_CODE (addr) == SUBREG
+	  && GET_MODE (XEXP (addr, 0)) == DImode)
+	addr = SUBREG_REG (addr);
+    }
+
   /* Allow zero-extended SImode addresses,
      they will be emitted with addr32 prefix.  */
-  if (TARGET_64BIT && GET_MODE (addr) == DImode)
+  else if (TARGET_64BIT && GET_MODE (addr) == DImode)
     {
       if (GET_CODE (addr) == ZERO_EXTEND
 	  && GET_MODE (XEXP (addr, 0)) == SImode)
@@ -14755,10 +14764,10 @@ ix86_print_operand_address (FILE *file, rtx addr)
     }
   else
     {
-      /* Print SImode register names for zero-extended
-	 addresses to force addr32 prefix.  */
+      /* Print SImode register names to force addr32 prefix.  */
       if (TARGET_64BIT
-	  && (GET_CODE (addr) == ZERO_EXTEND
+	  && (GET_CODE (addr) == SUBREG
+	      || GET_CODE (addr) == ZERO_EXTEND
 	      || GET_CODE (addr) == AND))
 	{
 	  gcc_assert (!code);
@@ -16854,6 +16863,11 @@ ix86_avoid_lea_for_add (rtx insn, rtx operands[])
   unsigned int regno0 = true_regnum (operands[0]);
   unsigned int regno1 = true_regnum (operands[1]);
   unsigned int regno2 = true_regnum (operands[2]);
+
+  /* FIXME: Handle zero-extended addresses.  */
+  if (GET_CODE (operands[1]) == ZERO_EXTEND
+      || GET_CODE (operands[1]) == AND)
+    return false;
 
   /* Check if we need to optimize.  */
   if (!TARGET_OPT_AGU || optimize_function_for_size_p (cfun))

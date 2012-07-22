@@ -1,3 +1,16 @@
+2012-07-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/53961
+	* config/i386/i386.md (*lea): New insn pattern.
+	(*lea_1): Remove.
+	(*lea<mode>_2): Ditto.
+	(*lea_{3,4,5,6}_zext): Ditto.
+	* config/i386/constraints.md (j): Remove address constraint.
+	* config/i386/i386.c (ix86_decompose_address): Allow SImode subreg
+	of an address.
+	(ix86_print_operand_address): Handle SImode subreg of an address.
+	(ix86_avoid_lea_for_add): Reject zero-extended addresses for now.
+
 2012-07-22  Hans-Peter Nilsson  <hp@axis.com>
 
 	Emit executable-stack note correctly for CRIS targets.
@@ -35,7 +48,7 @@
 	mips_expand_ext_as_unaligned_load.
 	(mips_expand_ext_as_unaligned_load): Add unsigned_p argument.
 	Accept DImode dest when the width is that of SImode.
-        * config/mips/mips.md (extv): Update call to
+	* config/mips/mips.md (extv): Update call to
 	mips_expand_ext_as_unaligned_load.
 	(extzv): Likewise.
 
@@ -54,9 +67,9 @@
 	New reservations.
 	* gcc/config/mips/10000.md, gcc/config/mips/20kc.md,
 	* gcc/config/mips/24k.md, gcc/config/mips/4130.md,
-        * gcc/config/mips/4k.md, gcc/config/mips/5400.md,
+	* gcc/config/mips/4k.md, gcc/config/mips/5400.md,
 	* gcc/config/mips/5500.md, gcc/config/mips/5k.md,
-        * gcc/config/mips/7000.md, gcc/config/mips/74k.md,
+	* gcc/config/mips/7000.md, gcc/config/mips/74k.md,
 	* gcc/config/mips/9000.md, gcc/config/mips/loongson2ef.md,
 	* gcc/config/mips/loongson3a.md, gcc/config/mips/octeon.md,
 	* gcc/config/mips/sb1.md, gcc/config/mips/sr71k.md,
@@ -124,8 +137,9 @@
 	(brief_dump_cfg): Take a flags argument, and filter out
 	TDF_COMMENT and TDF_DETAILS.
 	* pretty-print.c (pp_base_newline): Set pp_needs_newline to false.
-	* gimple-pretty-print.c (dump_gimple_bb_header): Do not use dump_bb_info
-	here, it is already called from dump_bb.  Idem for check_bb_profile.
+	* gimple-pretty-print.c (dump_gimple_bb_header): Do not use
+	dump_bb_info here, it is already called from dump_bb.  Idem for
+	check_bb_profile.
 	(dump_gimple_bb_footer): Likewise.
 	(gimple_dump_bb_buff): Call pp_flush after dump_gimple_stmt to
 	avoid broken dumps for statement histograms.
@@ -143,8 +157,8 @@
 	* passes.c (execute_function_dump): Always call print_rtl_with_bb
 	for RTL dumps.
 	* cfgrtl.c (print_rtl_with_bb): Handle printing without an up-to-date
-	CFG.  With TDF_BLOCKS and TDF_DETAILS, do DF dumps at the top and bottom
-	of each basic block.
+	CFG.  With TDF_BLOCKS and TDF_DETAILS, do DF dumps at the top and
+	bottom of each basic block.
 
 2012-07-20  Richard Guenther  <rguenther@suse.de>
 
