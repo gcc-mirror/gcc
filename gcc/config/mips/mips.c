@@ -12502,6 +12502,9 @@ mips_issue_rate (void)
     case PROCESSOR_LOONGSON_3A:
       return 4;
 
+    case PROCESSOR_XLP:
+      return (reload_completed ? 4 : 3);
+
     default:
       return 1;
     }
