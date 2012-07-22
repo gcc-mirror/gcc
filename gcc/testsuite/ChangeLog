@@ -1,5 +1,10 @@
 2012-07-21  Andrew Pinski  <apinski@cavium.com>
 
+	* gcc.dg/tree-ssa/alias-21.c: New testcase.
+	* gcc.dg/tree-ssa/alias-22.c: New testcase.
+
+2012-07-21  Andrew Pinski  <apinski@cavium.com>
+
 	* gcc.target/mips/octeon-pop-2.c: New testcase.
 
 2012-07-21  Tobias Burnus  <burnus@net-b.de>
