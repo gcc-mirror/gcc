@@ -692,6 +692,9 @@
 /* Define if a fully dynamic basic_string is wanted. */
 #undef _GLIBCXX_FULLY_DYNAMIC_STRING
 
+/* Define if gthreads types cannot be copy-assigned in C++11. */
+#undef _GLIBCXX_GTHREADS_NO_COPY_ASSIGN_IN_CXX11
+
 /* Define if gthreads library is available. */
 #undef _GLIBCXX_HAS_GTHREADS
 

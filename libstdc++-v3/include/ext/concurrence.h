@@ -1,6 +1,6 @@
 // Support for concurrent programing -*- C++ -*-
 
-// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -140,6 +140,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   }
 #endif
  
+  template<typename _Tp>
+    static inline void
+    __copy_gthr_type(_Tp& __to, const _Tp& __from)
+    {
+#if defined __GXX_EXPERIMENTAL_CXX0X__ \
+  && defined _GLIBCXX_GTHREADS_NO_COPY_ASSIGN_IN_CXX11
+      __builtin_memcpy(&__to, &__from, sizeof(__to));
+#else
+      __to = __from;
+#endif
+    }
+
   class __mutex 
   {
   private:
@@ -156,7 +168,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 #if defined __GTHREAD_MUTEX_INIT
 	  __gthread_mutex_t __tmp = __GTHREAD_MUTEX_INIT;
-	  _M_mutex = __tmp;
+	  __copy_gthr_type(_M_mutex, __tmp);
 #else
 	  __GTHREAD_MUTEX_INIT_FUNCTION(&_M_mutex); 
 #endif
@@ -214,7 +226,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 #if defined __GTHREAD_RECURSIVE_MUTEX_INIT
 	  __gthread_recursive_mutex_t __tmp = __GTHREAD_RECURSIVE_MUTEX_INIT;
-	  _M_mutex = __tmp;
+	  __copy_gthr_type(_M_mutex, __tmp);
 #else
 	  __GTHREAD_RECURSIVE_MUTEX_INIT_FUNCTION(&_M_mutex); 
 #endif
@@ -332,7 +344,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 #if defined __GTHREAD_COND_INIT
 	  __gthread_cond_t __tmp = __GTHREAD_COND_INIT;
-	  _M_cond = __tmp;
+	  __copy_gthr_type(_M_cond, __tmp);
 #else
 	  __GTHREAD_COND_INIT_FUNCTION(&_M_cond);
 #endif

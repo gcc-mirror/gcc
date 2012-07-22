@@ -1,3 +1,19 @@
+2012-07-22  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/53270
+	* acinclude.m4 (GLIBCXX_GTHREADS_CXX11_COPY_ASSIGN): Define.
+	* configure.ac (GLIBCXX_GTHREADS_CXX11_COPY_ASSIGN): Use it.
+	* config.h.in: Regenerate.
+	* configure: Likewise.
+	* include/ext/concurrence.h (__copy_gthr_type): Define.
+	(__mutex::__mutex, __recursive_mutex::__recursive_mutex,
+	__cond::__cond): Use it.
+	* include/ext/rope (__copy_gthr_mutex): Define.
+	(_Refcount_Base::_Refcount_Base, _Rope_RopeRep::_Rope_RopeRep): Use
+	it.
+	* src/condition_variable.cc (condition_variable::condition_variable):
+	Use memcpy instead of assignment.
+
 2012-07-07  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/53578

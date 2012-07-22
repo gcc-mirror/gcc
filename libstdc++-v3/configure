@@ -19477,6 +19477,84 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
+# For copy-assignable gthreads types
+
+
+
+  ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS="$CXXFLAGS -std=c++0x -I${toplevel_srcdir}/gcc"
+
+  target_thread_file=`$CXX -v 2>&1 | sed -n 's/^Thread model: //p'`
+  case $target_thread_file in
+    posix)
+      CXXFLAGS="$CXXFLAGS -DSUPPORTS_WEAK -DGTHREAD_USE_WEAK -D_PTHREADS"
+  esac
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether gthreads types are copy-assignable in C++11 mode" >&5
+$as_echo_n "checking whether gthreads types are copy-assignable in C++11 mode... " >&6; }
+
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include "gthr.h"
+int
+main ()
+{
+
+      #ifdef __GTHREAD_MUTEX_INIT
+      __gthread_mutex_t m1;
+      __gthread_mutex_t m2 = __GTHREAD_MUTEX_INIT;
+      m1 = m2;
+      #endif
+      #ifdef __GTHREAD_RECURSIVE_MUTEX_INIT
+      __gthread_recursive_mutex_t r1;
+      __gthread_recursive_mutex_t r2 = __GTHREAD_RECURSIVE_MUTEX_INIT;
+      r1 = r2;
+      #endif
+      #ifdef __GTHREAD_HAS_COND
+      #ifdef __GTHREAD_COND_INIT
+      __gthread_cond_t c1;
+      __gthread_cond_t c2 = __GTHREAD_COND_INIT;
+      c1 = c2;
+      #endif
+      #endif
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  ac_gthread_cxx11_copy_assign=1
+else
+  ac_gthread_cxx11_copy_assign=0
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+  if test $ac_gthread_cxx11_copy_assign = 1 ; then res_gthr_copy_assign=yes ;
+  else res_gthr_copy_assign=no ; fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $res_gthr_copy_assign" >&5
+$as_echo "$res_gthr_copy_assign" >&6; }
+
+  if test x"$res_gthr_copy_assign" = x"no"; then
+
+$as_echo "#define _GLIBCXX_GTHREADS_NO_COPY_ASSIGN_IN_CXX11 1" >>confdefs.h
+
+  fi
+
+  CXXFLAGS="$ac_save_CXXFLAGS"
+  ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+
 
   ac_fn_c_check_header_mongrel "$LINENO" "locale.h" "ac_cv_header_locale_h" "$ac_includes_default"
 if test "x$ac_cv_header_locale_h" = x""yes; then :

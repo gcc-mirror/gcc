@@ -3213,6 +3213,58 @@ AC_DEFUN([AC_LC_MESSAGES], [
   ])
 ])
 
+dnl
+dnl Check whether gthreads types can be copy-assigned in C++11 mode.
+dnl
+AC_DEFUN([GLIBCXX_GTHREADS_CXX11_COPY_ASSIGN], [
+
+  AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS="$CXXFLAGS -std=c++0x -I${toplevel_srcdir}/gcc"
+
+  target_thread_file=`$CXX -v 2>&1 | sed -n 's/^Thread model: //p'`
+  case $target_thread_file in
+    posix)
+      CXXFLAGS="$CXXFLAGS -DSUPPORTS_WEAK -DGTHREAD_USE_WEAK -D_PTHREADS"
+  esac
+
+  AC_MSG_CHECKING([whether gthreads types are copy-assignable in C++11 mode])
+
+  AC_TRY_COMPILE([#include "gthr.h"],
+    [
+      #ifdef __GTHREAD_MUTEX_INIT
+      __gthread_mutex_t m1;
+      __gthread_mutex_t m2 = __GTHREAD_MUTEX_INIT;
+      m1 = m2;
+      #endif
+      #ifdef __GTHREAD_RECURSIVE_MUTEX_INIT
+      __gthread_recursive_mutex_t r1;
+      __gthread_recursive_mutex_t r2 = __GTHREAD_RECURSIVE_MUTEX_INIT;
+      r1 = r2;
+      #endif
+      #ifdef __GTHREAD_HAS_COND
+      #ifdef __GTHREAD_COND_INIT
+      __gthread_cond_t c1;
+      __gthread_cond_t c2 = __GTHREAD_COND_INIT;
+      c1 = c2;
+      #endif
+      #endif
+    ], [ac_gthread_cxx11_copy_assign=1], [ac_gthread_cxx11_copy_assign=0])
+
+  if test $ac_gthread_cxx11_copy_assign = 1 ; then res_gthr_copy_assign=yes ;
+  else res_gthr_copy_assign=no ; fi
+  AC_MSG_RESULT([$res_gthr_copy_assign])
+
+  if test x"$res_gthr_copy_assign" = x"no"; then
+    AC_DEFINE(_GLIBCXX_GTHREADS_NO_COPY_ASSIGN_IN_CXX11, 1,
+	      [Define if gthreads types cannot be copy-assigned in C++11.])
+  fi
+
+  CXXFLAGS="$ac_save_CXXFLAGS"
+  AC_LANG_RESTORE
+])
+
 # Macros from the top-level gcc directory.
 m4_include([../config/gc++filt.m4])
 m4_include([../config/tls.m4])
