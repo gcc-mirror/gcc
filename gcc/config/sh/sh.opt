@@ -270,8 +270,8 @@ Target Report RejectNegative Mask(HITACHI)
 Follow Renesas (formerly Hitachi) / SuperH calling conventions
 
 mieee
-Target Report Mask(IEEE)
-Increase the IEEE compliance for floating-point code
+Target Var(TARGET_IEEE)
+Increase the IEEE compliance for floating-point comparisons
 
 mindexed-addressing
 Target Report Mask(ALLOW_INDEXED_ADDRESS) Condition(SUPPORT_ANY_SH5_32MEDIA)
