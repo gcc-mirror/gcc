@@ -942,6 +942,7 @@
 (include "sb1.md")
 (include "sr71k.md")
 (include "xlr.md")
+(include "xlp.md")
 (include "generic.md")
 
 ;;

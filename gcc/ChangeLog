@@ -1,3 +1,11 @@
+2012-07-22  Chung-Lin Tang  <cltang@codesourcery.com>
+	    Maxim Kuvyrkov  <maxim@codesourcery.com>
+	    NetLogic Microsystems Inc.
+
+	* config/mips/mips.c (mips_issue_rate): Handle XLP.
+	* config/mips/mips.md: Include xlp.md.
+	* config/mips/xlp.md: New file.
+
 2012-07-21  Steven Bosscher <steven@gcc.gnu.org>
 
 	PR gcov-profile/32543
