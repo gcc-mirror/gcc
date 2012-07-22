@@ -1,5 +1,12 @@
 2012-07-21  Andrew Pinski  <apinski@cavium.com>
 
+	*  gcc.dg/tree-ssa/vrp72.c: New test.
+	*  gcc.dg/tree-ssa/vrp73.c: New test.
+	*  gcc.dg/tree-ssa/vrp74.c: New test.
+	*  gcc.dg/tree-ssa/vrp75.c: New test.
+
+2012-07-21  Andrew Pinski  <apinski@cavium.com>
+
 	* gcc.dg/tree-ssa/alias-21.c: New testcase.
 	* gcc.dg/tree-ssa/alias-22.c: New testcase.
 
