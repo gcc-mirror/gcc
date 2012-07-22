@@ -1,3 +1,9 @@
+2012-07-22  Hans-Peter Nilsson  <hp@axis.com>
+
+	Emit executable-stack note correctly for CRIS targets.
+	* config/cris/cris.c (cris_file_end): New function.
+	(TARGET_ASM_FILE_END): Define.
+
 2012-07-22  Chung-Lin Tang  <cltang@codesourcery.com>
 	    Maxim Kuvyrkov  <maxim@codesourcery.com>
 	    NetLogic Microsystems Inc.
