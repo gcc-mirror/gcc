@@ -382,6 +382,9 @@
 (define_predicate "general_movsrc_operand"
   (match_code "subreg,reg,const_int,const_double,mem,symbol_ref,label_ref,const,const_vector")
 {
+  if (t_reg_operand (op, mode))
+    return 0;
+
   if (MEM_P (op))
     {
       rtx inside = XEXP (op, 0);
@@ -455,6 +458,9 @@
 (define_predicate "general_movdst_operand"
   (match_code "subreg,reg,mem")
 {
+  if (t_reg_operand (op, mode))
+    return 0;
+
   /* Only pre dec allowed.  */
   if (MEM_P (op) && GET_CODE (XEXP (op, 0)) == POST_INC)
     return 0;
