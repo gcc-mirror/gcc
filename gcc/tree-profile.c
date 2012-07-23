@@ -100,6 +100,8 @@ init_ic_make_global_vars (void)
   varpool_finalize_decl (ic_gcov_type_ptr_var);
 }
 
+/* Create the type and function decls for the interface with gcov.  */
+
 void
 gimple_init_edge_profiler (void)
 {
@@ -332,8 +334,9 @@ gimple_gen_ic_profiler (histogram_value value, unsigned tag, unsigned base)
 
   /* Insert code:
 
-    __gcov_indirect_call_counters = get_relevant_counter_ptr ();
-    __gcov_indirect_call_callee = (void *) indirect call argument;
+    stmt1: __gcov_indirect_call_counters = get_relevant_counter_ptr ();
+    stmt2: tmp1 = (void *) (indirect call argument value)
+    stmt3: __gcov_indirect_call_callee = tmp1;
    */
 
   tmp1 = create_tmp_reg (ptr_void, "PROF");
@@ -368,6 +371,13 @@ gimple_gen_ic_func_profiler (void)
 
   gimple_init_edge_profiler ();
 
+  /* Insert code:
+
+    stmt1: __gcov_indirect_call_profiler (__gcov_indirect_call_counters,
+					  current_function_funcdef_no,
+					  &current_function_decl,
+					  __gcov_indirect_call_callee);
+   */
   gsi = gsi_after_labels (single_succ (ENTRY_BLOCK_PTR));
 
   cur_func = force_gimple_operand_gsi (&gsi,
@@ -461,12 +471,9 @@ tree_profiling (void)
 {
   struct cgraph_node *node;
 
-  /* Don't profile functions produced at destruction time, particularly
-     the gcov datastructure initializer.  Don't profile if it has been
-     already instrumented either (when OpenMP expansion creates
-     child function from already instrumented body).  */
-  if (cgraph_state == CGRAPH_STATE_FINISHED)
-    return 0;
+  /* This is a small-ipa pass that gets called only once, from
+     cgraphunit.c:ipa_passes().  */
+  gcc_assert (cgraph_state == CGRAPH_STATE_IPA_SSA);
 
   init_node_map();
 
@@ -476,8 +483,7 @@ tree_profiling (void)
 	continue;
 
       /* Don't profile functions produced for builtin stuff.  */
-      if (DECL_SOURCE_LOCATION (node->symbol.decl) == BUILTINS_LOCATION
-	  || DECL_STRUCT_FUNCTION (node->symbol.decl)->after_tree_profile)
+      if (DECL_SOURCE_LOCATION (node->symbol.decl) == BUILTINS_LOCATION)
 	continue;
 
       push_cfun (DECL_STRUCT_FUNCTION (node->symbol.decl));
@@ -489,6 +495,7 @@ tree_profiling (void)
       /* Local pure-const may imply need to fixup the cfg.  */
       if (execute_fixup_cfg () & TODO_cleanup_cfg)
 	cleanup_tree_cfg ();
+
       branch_prob ();
 
       if (! flag_branch_probabilities
@@ -519,8 +526,7 @@ tree_profiling (void)
 	continue;
 
       /* Don't profile functions produced for builtin stuff.  */
-      if (DECL_SOURCE_LOCATION (node->symbol.decl) == BUILTINS_LOCATION
-	  || DECL_STRUCT_FUNCTION (node->symbol.decl)->after_tree_profile)
+      if (DECL_SOURCE_LOCATION (node->symbol.decl) == BUILTINS_LOCATION)
 	continue;
 
       cgraph_set_const_flag (node, false, false);
@@ -538,8 +544,7 @@ tree_profiling (void)
 	continue;
 
       /* Don't profile functions produced for builtin stuff.  */
-      if (DECL_SOURCE_LOCATION (node->symbol.decl) == BUILTINS_LOCATION
-	  || DECL_STRUCT_FUNCTION (node->symbol.decl)->after_tree_profile)
+      if (DECL_SOURCE_LOCATION (node->symbol.decl) == BUILTINS_LOCATION)
 	continue;
 
       push_cfun (DECL_STRUCT_FUNCTION (node->symbol.decl));
@@ -556,7 +561,6 @@ tree_profiling (void)
 	    }
 	}
 
-      cfun->after_tree_profile = 1;
       update_ssa (TODO_update_ssa);
 
       rebuild_cgraph_edges ();

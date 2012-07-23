@@ -645,9 +645,6 @@ struct GTY(()) function {
      return the address of where it has put a structure value.  */
   unsigned int returns_pcc_struct : 1;
 
-  /* Nonzero if pass_tree_profile was run on this function.  */
-  unsigned int after_tree_profile : 1;
-
   /* Nonzero if this function has local DECL_HARD_REGISTER variables.
      In this case code motion has to be done more carefully.  */
   unsigned int has_local_explicit_reg_vars : 1;

@@ -757,7 +757,6 @@ output_struct_function_base (struct output_block *ob, struct function *fn)
   bp = bitpack_create (ob->main_stream);
   bp_pack_value (&bp, fn->is_thunk, 1);
   bp_pack_value (&bp, fn->has_local_explicit_reg_vars, 1);
-  bp_pack_value (&bp, fn->after_tree_profile, 1);
   bp_pack_value (&bp, fn->returns_pcc_struct, 1);
   bp_pack_value (&bp, fn->returns_struct, 1);
   bp_pack_value (&bp, fn->can_throw_non_call_exceptions, 1);
