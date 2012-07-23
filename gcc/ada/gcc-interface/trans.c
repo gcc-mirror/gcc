@@ -4456,6 +4456,7 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
   else if (gcc_zcx)
     {
       tree gnu_handlers;
+      location_t locus;
 
       /* First make a block containing the handlers.  */
       start_stmt_group ();
@@ -4468,7 +4469,14 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
       /* Now make the TRY_CATCH_EXPR for the block.  */
       gnu_result = build2 (TRY_CATCH_EXPR, void_type_node,
 			   gnu_inner_block, gnu_handlers);
-      set_expr_location_from_node (gnu_result, gnat_node);
+      /* Set a location.  We need to find a uniq location for the dispatching
+	 code, otherwise we can get coverage or debugging issues.  Try with
+	 the location of the end label.  */
+      if (Present (End_Label (gnat_node))
+	  && Sloc_to_locus (Sloc (End_Label (gnat_node)), &locus))
+	SET_EXPR_LOCATION (gnu_result, locus);
+      else
+	set_expr_location_from_node (gnu_result, gnat_node);
     }
   else
     gnu_result = gnu_inner_block;

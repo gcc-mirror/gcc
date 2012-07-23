@@ -2800,15 +2800,18 @@ gnatlib-shared:
              $(GNATLIB_SHARED)
 
 # When building a SJLJ runtime for VxWorks, in addition to forcing
-# ZCX_By_default to True, we need to ensure that -crtbe linker options
-# is not passed. Otherwise we will end with weak symbols on 
-# __register_frame_info and __deregister_frame_info. The VxWorks 5.x
-# will issue an error on weak symbols.
+# ZCX_By_default to False, we need to ensure that extra linker options
+# are not passed to prevent the inclusion of useless objects and
+# potential troubles from the presence of extra symbols and references
+# in some configurations.  The inhibition is performed by commenting
+# the pragma instead of deleting the line, as the latter might result
+# in getting multiple blank lines, hence a style check error, as a
+# result.
 gnatlib-sjlj:
 	$(MAKE) $(FLAGS_TO_PASS) EH_MECHANISM="" \
 	THREAD_KIND="$(THREAD_KIND)" ../stamp-gnatlib1-$(RTSDIR)
 	sed -e 's/ZCX_By_Default.*/ZCX_By_Default            : constant Boolean := False;/' $(RTSDIR)/system.ads > $(RTSDIR)/s.ads
-	cat $(RTSDIR)/s.ads | grep -v "Linker_Options.*-crtbe" > $(RTSDIR)/s2.ads
+	sed -e 's/\(pragma Linker.*crtbe.*\)/--  \1/' $(RTSDIR)/s.ads > $(RTSDIR)/s2.ads
 	$(RM) $(RTSDIR)/s.ads
 	$(MV) $(RTSDIR)/s2.ads $(RTSDIR)/system.ads
 	$(MAKE) $(FLAGS_TO_PASS) \
