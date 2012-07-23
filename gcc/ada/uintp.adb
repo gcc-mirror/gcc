@@ -1188,7 +1188,7 @@ package body Uintp is
 
             if D > Int_1 then
 
-               --  Multiply Dividend by D
+               --  Multiply Dividend by d
 
                Carry := 0;
                for J in reverse Dividend'Range loop
