@@ -1,3 +1,8 @@
+2012-07-23  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-alias.c (dump_alias_info): Walk over local decls
+	instead of referenced vars.
+
 2012-07-22  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* coverage.c: Refer to "notes file" instead of "graph file"

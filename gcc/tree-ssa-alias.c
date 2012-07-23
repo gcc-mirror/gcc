@@ -378,17 +378,16 @@ stmt_may_clobber_global_p (gimple stmt)
 void
 dump_alias_info (FILE *file)
 {
-  size_t i;
+  unsigned i;
   const char *funcname
     = lang_hooks.decl_printable_name (current_function_decl, 2);
-  referenced_var_iterator rvi;
   tree var;
 
   fprintf (file, "\n\nAlias information for %s\n\n", funcname);
 
   fprintf (file, "Aliased symbols\n\n");
 
-  FOR_EACH_REFERENCED_VAR (cfun, var, rvi)
+  FOR_EACH_LOCAL_DECL (cfun, i, var)
     {
       if (may_be_aliased (var))
 	dump_variable (file, var);
