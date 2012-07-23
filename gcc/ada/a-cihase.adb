@@ -185,6 +185,11 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
 
    procedure Assign (Node : Node_Access; Item : Element_Type) is
       X : Element_Access := Node.Element;
+
+      pragma Unsuppress (Accessibility_Check);
+      --  The element allocator may need an accessibility check in the case the
+      --  actual type is class-wide or has access discriminants (RM 4.8(10.1)
+      --  and AI12-0035).
    begin
       Node.Element := new Element_Type'(Item);
       Free_Element (X);
@@ -807,7 +812,14 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
 
          X := Position.Node.Element;
 
-         Position.Node.Element := new Element_Type'(New_Item);
+         declare
+            pragma Unsuppress (Accessibility_Check);
+            --  The element allocator may need an accessibility check in the
+            --  case the actual type is class-wide or has access discriminants
+            --  (see RM 4.8(10.1) and AI12-0035).
+         begin
+            Position.Node.Element := new Element_Type'(New_Item);
+         end;
 
          Free_Element (X);
       end if;
@@ -863,6 +875,11 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
       --------------
 
       function New_Node (Next : Node_Access) return Node_Access is
+         pragma Unsuppress (Accessibility_Check);
+         --  The element allocator may need an accessibility check in the case
+         --  the actual type is class-wide or has access discriminants (see
+         --  RM 4.8(10.1) and AI12-0035).
+
          Element : Element_Access := new Element_Type'(New_Item);
       begin
          return new Node_Type'(Element, Next);
@@ -1317,7 +1334,14 @@ package body Ada.Containers.Indefinite_Hashed_Sets is
 
       X := Node.Element;
 
-      Node.Element := new Element_Type'(New_Item);
+      declare
+         pragma Unsuppress (Accessibility_Check);
+         --  The element allocator may need an accessibility check in the case
+         --  the actual type is class-wide or has access discriminants (see
+         --  RM 4.8(10.1) and AI12-0035).
+      begin
+         Node.Element := new Element_Type'(New_Item);
+      end;
 
       Free_Element (X);
    end Replace;

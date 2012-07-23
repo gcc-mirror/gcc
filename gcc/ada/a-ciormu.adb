@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1167,6 +1167,11 @@ package body Ada.Containers.Indefinite_Ordered_Multisets is
       --------------
 
       function New_Node return Node_Access is
+         pragma Unsuppress (Accessibility_Check);
+         --  The element allocator may need an accessibility check in the case
+         --  the actual type is class-wide or has access discriminants (see
+         --  RM 4.8(10.1) and AI12-0035).
+
          Element : Element_Access := new Element_Type'(New_Item);
 
       begin
@@ -1768,6 +1773,11 @@ package body Ada.Containers.Indefinite_Ordered_Multisets is
 
          declare
             X : Element_Access := Node.Element;
+
+            pragma Unsuppress (Accessibility_Check);
+            --  The element allocator may need an accessibility check in the
+            --  case the actual type is class-wide or has access discriminants
+            --  (see RM 4.8(10.1) and AI12-0035).
          begin
             Node.Element := new Element_Type'(Item);
             Free_Element (X);
@@ -1793,6 +1803,10 @@ package body Ada.Containers.Indefinite_Ordered_Multisets is
          --------------
 
          function New_Node return Node_Access is
+            pragma Unsuppress (Accessibility_Check);
+            --  The element allocator may need an accessibility check in the
+            --  case the actual type is class-wide or has access discriminants
+            --  (see RM 4.8(10.1) and AI12-0035).
          begin
             Node.Element := new Element_Type'(Item);  -- OK if fails
             Node.Color := Red_Black_Trees.Red;

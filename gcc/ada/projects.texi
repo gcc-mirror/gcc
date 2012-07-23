@@ -342,8 +342,8 @@ locating the specified source files in the specified source directories.
   is explicitly specified.
   @xref{Naming Schemes}.
 
-@item @code{Source Files}
-  @cindex @code{Source_Files}
+@item @code{Source_Files}
+@cindex @code{Source_Files}
   In some cases, source directories might contain files that should not be
   included in a project. One can specify the explicit list of file names to
   be considered through the @b{Source_Files} attribute.

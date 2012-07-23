@@ -659,7 +659,7 @@ package body Exp_Ch4 is
       --  Ada 2005 (AI-344): For an allocator with a class-wide designated
       --  type, generate an accessibility check to verify that the level of the
       --  type of the created object is not deeper than the level of the access
-      --  type. If the type of the qualified expression is class- wide, then
+      --  type. If the type of the qualified expression is class-wide, then
       --  always generate the check (except in the case where it is known to be
       --  unnecessary, see comment below). Otherwise, only generate the check
       --  if the level of the qualified expression type is statically deeper
@@ -690,7 +690,11 @@ package body Exp_Ch4 is
         (Ref            : Node_Id;
          Built_In_Place : Boolean := False)
       is
-         New_Node : Node_Id;
+         Pool_Id   : constant Entity_Id := Associated_Storage_Pool (PtrT);
+         Cond      : Node_Id;
+         Free_Stmt : Node_Id;
+         Obj_Ref   : Node_Id;
+         Stmts     : List_Id;
 
       begin
          if Ada_Version >= Ada_2005
@@ -701,6 +705,8 @@ package body Exp_Ch4 is
                or else
                  (Is_Class_Wide_Type (Etype (Exp))
                    and then Scope (PtrT) /= Current_Scope))
+           and then
+             (Tagged_Type_Expansion or else VM_Target /= No_VM)
          then
             --  If the allocator was built in place, Ref is already a reference
             --  to the access object initialized to the result of the allocator
@@ -712,39 +718,109 @@ package body Exp_Ch4 is
 
             if Built_In_Place then
                Remove_Side_Effects (Ref);
-               New_Node := New_Copy (Ref);
+               Obj_Ref := New_Copy (Ref);
             else
-               New_Node := New_Reference_To (Ref, Loc);
+               Obj_Ref := New_Reference_To (Ref, Loc);
             end if;
 
-            New_Node :=
+            --  Step 1: Create the object clean up code
+
+            Stmts := New_List;
+
+            --  Create an explicit free statement to clean up the allocated
+            --  object in case the accessibility check fails. Generate:
+
+            --    Free (Obj_Ref);
+
+            Free_Stmt := Make_Free_Statement (Loc, New_Copy (Obj_Ref));
+            Set_Storage_Pool (Free_Stmt, Pool_Id);
+
+            Append_To (Stmts, Free_Stmt);
+
+            --  Finalize the object (if applicable), but wrap the call inside
+            --  a block to ensure that the object would still be deallocated in
+            --  case the finalization fails. Generate:
+
+            --    begin
+            --       [Deep_]Finalize (Obj_Ref.all);
+            --    exception
+            --       when others =>
+            --          Free (Obj_Ref);
+            --          raise;
+            --    end;
+
+            if Needs_Finalization (DesigT) then
+               Prepend_To (Stmts,
+                 Make_Block_Statement (Loc,
+                   Handled_Statement_Sequence =>
+                     Make_Handled_Sequence_Of_Statements (Loc,
+                       Statements => New_List (
+                         Make_Final_Call (
+                           Obj_Ref =>
+                             Make_Explicit_Dereference (Loc,
+                               Prefix => New_Copy (Obj_Ref)),
+                           Typ     => DesigT)),
+
+                     Exception_Handlers => New_List (
+                       Make_Exception_Handler (Loc,
+                         Exception_Choices => New_List (
+                           Make_Others_Choice (Loc)),
+                         Statements        => New_List (
+                           New_Copy_Tree (Free_Stmt),
+                           Make_Raise_Statement (Loc)))))));
+            end if;
+
+            --  Signal the accessibility failure through a Program_Error
+
+            Append_To (Stmts,
+              Make_Raise_Program_Error (Loc,
+                Condition => New_Reference_To (Standard_True, Loc),
+                Reason    => PE_Accessibility_Check_Failed));
+
+            --  Step 2: Create the accessibility comparison
+
+            --  Generate:
+            --    Ref'Tag
+
+            Obj_Ref :=
               Make_Attribute_Reference (Loc,
-                Prefix         => New_Node,
+                Prefix         => Obj_Ref,
                 Attribute_Name => Name_Tag);
 
+            --  For tagged types, determine the accessibility level by looking
+            --  at the type specific data of the dispatch table. Generate:
+
+            --    Type_Specific_Data (Address (Ref'Tag)).Access_Level
+
             if Tagged_Type_Expansion then
-               New_Node := Build_Get_Access_Level (Loc, New_Node);
+               Cond := Build_Get_Access_Level (Loc, Obj_Ref);
 
-            elsif VM_Target /= No_VM then
-               New_Node :=
-                 Make_Function_Call (Loc,
-                   Name => New_Reference_To (RTE (RE_Get_Access_Level), Loc),
-                   Parameter_Associations => New_List (New_Node));
+            --  Use a runtime call to determine the accessibility level when
+            --  compiling on virtual machine targets. Generate:
 
-            --  Cannot generate the runtime check
+            --    Get_Access_Level (Ref'Tag)
 
             else
-               return;
+               Cond :=
+                 Make_Function_Call (Loc,
+                   Name                   =>
+                     New_Reference_To (RTE (RE_Get_Access_Level), Loc),
+                   Parameter_Associations => New_List (Obj_Ref));
             end if;
 
+            Cond :=
+              Make_Op_Gt (Loc,
+                Left_Opnd  => Cond,
+                Right_Opnd =>
+                  Make_Integer_Literal (Loc, Type_Access_Level (PtrT)));
+
+            --  Due to the complexity and side effects of the check, utilize an
+            --  if statement instead of the regular Program_Error circuitry.
+
             Insert_Action (N,
-              Make_Raise_Program_Error (Loc,
-                Condition =>
-                  Make_Op_Gt (Loc,
-                    Left_Opnd  => New_Node,
-                    Right_Opnd =>
-                      Make_Integer_Literal (Loc, Type_Access_Level (PtrT))),
-                Reason => PE_Accessibility_Check_Failed));
+              Make_If_Statement (Loc,
+                Condition       => Cond,
+                Then_Statements => Stmts));
          end if;
       end Apply_Accessibility_Check;
 

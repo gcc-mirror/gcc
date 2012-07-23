@@ -1562,7 +1562,12 @@ package body Ch6 is
               ("(style) IN should be omitted");
          end if;
 
-         if Token = Tok_Access then
+         --  Since Ada 2005, formal objects can have an anonymous access type,
+         --  and of course carry a mode indicator.
+
+         if Token = Tok_Access
+           and then Nkind (Node) /= N_Formal_Object_Declaration
+         then
             Error_Msg_SP ("IN not allowed together with ACCESS");
             Scan; -- past ACCESS
          end if;
