@@ -11576,22 +11576,17 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
   int retval = 1;
   enum ix86_address_seg seg = SEG_DEFAULT;
 
-  /* Allow SImode subregs of DImode addresses,
-     they will be emitted with addr32 prefix.  */
-  if (TARGET_64BIT && GET_MODE (addr) == SImode)
-    {
-      if (GET_CODE (addr) == SUBREG
-	  && GET_MODE (XEXP (addr, 0)) == DImode)
-	addr = SUBREG_REG (addr);
-    }
-
   /* Allow zero-extended SImode addresses,
      they will be emitted with addr32 prefix.  */
-  else if (TARGET_64BIT && GET_MODE (addr) == DImode)
+  if (TARGET_64BIT && GET_MODE (addr) == DImode)
     {
       if (GET_CODE (addr) == ZERO_EXTEND
 	  && GET_MODE (XEXP (addr, 0)) == SImode)
-	addr = XEXP (addr, 0);
+	{
+	  addr = XEXP (addr, 0);
+	  if (CONST_INT_P (addr))
+	    return 0;
+	}	      
       else if (GET_CODE (addr) == AND
 	       && const_32bit_mask (XEXP (addr, 1), DImode))
 	{
@@ -11600,10 +11595,27 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
 	  /* Adjust SUBREGs.  */
 	  if (GET_CODE (addr) == SUBREG
 	      && GET_MODE (SUBREG_REG (addr)) == SImode)
-	    addr = SUBREG_REG (addr);
+	    {
+	      addr = SUBREG_REG (addr);
+	      if (CONST_INT_P (addr))
+		return 0;
+	    }
 	  else if (GET_MODE (addr) == DImode)
 	    addr = gen_rtx_SUBREG (SImode, addr, 0);
 	  else if (GET_MODE (addr) != VOIDmode)
+	    return 0;
+	}
+    }
+
+  /* Allow SImode subregs of DImode addresses,
+     they will be emitted with addr32 prefix.  */
+  if (TARGET_64BIT && GET_MODE (addr) == SImode)
+    {
+      if (GET_CODE (addr) == SUBREG
+	  && GET_MODE (SUBREG_REG (addr)) == DImode)
+	{
+	  addr = SUBREG_REG (addr);
+	  if (CONST_INT_P (addr))
 	    return 0;
 	}
     }
@@ -14765,11 +14777,19 @@ ix86_print_operand_address (FILE *file, rtx addr)
   else
     {
       /* Print SImode register names to force addr32 prefix.  */
-      if (TARGET_64BIT
-	  && (GET_CODE (addr) == SUBREG
-	      || GET_CODE (addr) == ZERO_EXTEND
-	      || GET_CODE (addr) == AND))
+      if (GET_CODE (addr) == SUBREG)
 	{
+	  gcc_assert (TARGET_64BIT);
+	  gcc_assert (GET_MODE (addr) == SImode);
+	  gcc_assert (GET_MODE (SUBREG_REG (addr)) == DImode);
+	  gcc_assert (!code);
+	  code = 'l';
+	}
+      else if (GET_CODE (addr) == ZERO_EXTEND
+	       || GET_CODE (addr) == AND)
+	{
+	  gcc_assert (TARGET_64BIT);
+	  gcc_assert (GET_MODE (addr) == DImode);
 	  gcc_assert (!code);
 	  code = 'l';
 	}
