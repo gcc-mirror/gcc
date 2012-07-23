@@ -5372,6 +5372,13 @@ package body Exp_Attr is
 
          Validity_Checks_On := False;
 
+         --  Retrieve the base type. Handle the case where the base type is a
+         --  private enumeration type.
+
+         if Is_Private_Type (Btyp) and then Present (Full_View (Btyp)) then
+            Btyp := Full_View (Btyp);
+         end if;
+
          --  Floating-point case. This case is handled by the Valid attribute
          --  code in the floating-point attribute run-time library.
 
@@ -5472,15 +5479,14 @@ package body Exp_Attr is
          --       (X >= type(X)'First and then type(X)'Last <= X)
 
          elsif Is_Enumeration_Type (Ptyp)
-           and then Present (Enum_Pos_To_Rep (Base_Type (Ptyp)))
+           and then Present (Enum_Pos_To_Rep (Btyp))
          then
             Tst :=
               Make_Op_Ge (Loc,
                 Left_Opnd =>
                   Make_Function_Call (Loc,
                     Name =>
-                      New_Reference_To
-                        (TSS (Base_Type (Ptyp), TSS_Rep_To_Pos), Loc),
+                      New_Reference_To (TSS (Btyp, TSS_Rep_To_Pos), Loc),
                     Parameter_Associations => New_List (
                       Pref,
                       New_Occurrence_Of (Standard_False, Loc))),

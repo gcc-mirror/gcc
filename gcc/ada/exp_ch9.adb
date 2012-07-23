@@ -3188,7 +3188,7 @@ package body Exp_Ch9 is
 
                   Rewrite (Stmt,
                     Make_Implicit_If_Statement (N,
-                      Condition =>
+                      Condition       =>
                         Make_Function_Call (Loc,
                           Name                   =>
                             New_Reference_To (Try_Write, Loc),
@@ -3379,9 +3379,9 @@ package body Exp_Ch9 is
               Make_Object_Renaming_Declaration (Loc,
                 Defining_Identifier =>
                   Defining_Identifier (Comp_Decl),
-                Subtype_Mark      =>
+                Subtype_Mark        =>
                   New_Occurrence_Of (Comp_Type, Loc),
-                Name              =>
+                Name                =>
                   New_Reference_To (Desired_Comp, Loc)));
 
             --  Wrap any return or raise statements in Stmts in same the manner

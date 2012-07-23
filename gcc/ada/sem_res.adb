@@ -7071,7 +7071,8 @@ package body Sem_Res is
       if Is_Overloaded (P) then
 
          --  Use the context type to select the prefix that has the correct
-         --  designated type.
+         --  designated type. Keep the first match, which will be the inner-
+         --  most.
 
          Get_First_Interp (P, I, It);
 
@@ -7079,7 +7080,9 @@ package body Sem_Res is
             if Is_Access_Type (It.Typ)
               and then Covers (Typ, Designated_Type (It.Typ))
             then
-               P_Typ := It.Typ;
+               if No (P_Typ) then
+                  P_Typ := It.Typ;
+               end if;
 
             --  Remove access types that do not match, but preserve access
             --  to subprogram interpretations, in case a further dereference

@@ -2633,14 +2633,14 @@ package body Sem_Ch5 is
       --  types the actual subtype of the components will only be determined
       --  when the cursor declaration is analyzed.
 
-      --  If the expander is not active, then we want to analyze the loop body
-      --  now even in the Ada 2012 iterator case, since the rewriting will not
-      --  be done. Insert the loop variable in the current scope, if not done
-      --  when analysing the iteration scheme.
+      --  If the expander is not active, or in Alfa mode, then we want to
+      --  analyze the loop body now even in the Ada 2012 iterator case, since
+      --  the rewriting will not be done. Insert the loop variable in the
+      --  current scope, if not done when analysing the iteration scheme.
 
       if No (Iter)
         or else No (Iterator_Specification (Iter))
-        or else not Expander_Active
+        or else not Full_Expander_Active
       then
          if Present (Iter)
            and then Present (Iterator_Specification (Iter))
