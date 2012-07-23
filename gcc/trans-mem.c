@@ -32,7 +32,6 @@
 #include "params.h"
 #include "target.h"
 #include "langhooks.h"
-#include "tree-pretty-print.h"
 #include "gimple-pretty-print.h"
 #include "cfgloop.h"
 
@@ -2577,7 +2576,7 @@ make_tm_edge (gimple stmt, basic_block bb, struct tm_region *region)
       n->label_or_list = tree_cons (NULL, dummy.label_or_list, old);
     }
 
-  make_edge (bb, region->entry_block, EDGE_ABNORMAL | EDGE_ABNORMAL_CALL);
+  make_edge (bb, region->entry_block, EDGE_ABNORMAL);
 }
 
 

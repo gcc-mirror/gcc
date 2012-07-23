@@ -26,10 +26,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "basic-block.h"
 #include "tree-flow.h"
-#include "tree-dump.h"
-#include "timevar.h"
+#include "dumpfile.h"
 #include "cfgloop.h"
-#include "tree-pass.h"
+#include "tree-pass.h"	/* ??? for TODO_update_ssa but this isn't a pass.  */
 #include "tree-scalar-evolution.h"
 #include "params.h"
 #include "tree-inline.h"
@@ -121,9 +120,8 @@ create_iv (tree base, tree step, tree var, struct loop *loop,
 
   stmt = create_phi_node (vb, loop->header);
   SSA_NAME_DEF_STMT (vb) = stmt;
-  add_phi_arg (stmt, initial, loop_preheader_edge (loop), UNKNOWN_LOCATION,
-	       NULL);
-  add_phi_arg (stmt, va, loop_latch_edge (loop), UNKNOWN_LOCATION, NULL);
+  add_phi_arg (stmt, initial, loop_preheader_edge (loop), UNKNOWN_LOCATION);
+  add_phi_arg (stmt, va, loop_latch_edge (loop), UNKNOWN_LOCATION);
 }
 
 /* Add exit phis for the USE on EXIT.  */
@@ -153,7 +151,7 @@ add_exit_phis_edge (basic_block exit, tree use)
   create_new_def_for (gimple_phi_result (phi), phi,
 		      gimple_phi_result_ptr (phi));
   FOR_EACH_EDGE (e, ei, exit->preds)
-    add_phi_arg (phi, use, e, UNKNOWN_LOCATION, NULL);
+    add_phi_arg (phi, use, e, UNKNOWN_LOCATION);
 }
 
 /* Add exit phis for VAR that is used in LIVEIN.
@@ -486,14 +484,12 @@ split_loop_exit_edge (edge exit)
   use_operand_p op_p;
   gimple_stmt_iterator psi;
   source_location locus;
-  tree block;
 
   for (psi = gsi_start_phis (dest); !gsi_end_p (psi); gsi_next (&psi))
     {
       phi = gsi_stmt (psi);
       op_p = PHI_ARG_DEF_PTR_FROM_EDGE (phi, single_succ_edge (bb));
       locus = gimple_phi_arg_location_from_edge (phi, single_succ_edge (bb));
-      block = gimple_phi_arg_block_from_edge (phi, single_succ_edge (bb));
 
       name = USE_FROM_PTR (op_p);
 
@@ -507,7 +503,7 @@ split_loop_exit_edge (edge exit)
       new_name = duplicate_ssa_name (name, NULL);
       new_phi = create_phi_node (new_name, bb);
       SSA_NAME_DEF_STMT (new_name) = new_phi;
-      add_phi_arg (new_phi, name, exit, locus, block);
+      add_phi_arg (new_phi, name, exit, locus);
       SET_USE (op_p, new_name);
     }
 
@@ -1027,8 +1023,8 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
       phi_rest = create_phi_node (new_init, rest);
       SSA_NAME_DEF_STMT (new_init) = phi_rest;
 
-      add_phi_arg (phi_rest, init, precond_edge, UNKNOWN_LOCATION, NULL);
-      add_phi_arg (phi_rest, next, new_exit, UNKNOWN_LOCATION, NULL);
+      add_phi_arg (phi_rest, init, precond_edge, UNKNOWN_LOCATION);
+      add_phi_arg (phi_rest, next, new_exit, UNKNOWN_LOCATION);
       SET_USE (op, new_init);
     }
 

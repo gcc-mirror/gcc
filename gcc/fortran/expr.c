@@ -2405,7 +2405,7 @@ check_elemental (gfc_expr *e)
 
   if (e->ts.type != BT_INTEGER
       && e->ts.type != BT_CHARACTER
-      && gfc_notify_std (GFC_STD_F2003, "Extension: Evaluation of "
+      && gfc_notify_std (GFC_STD_F2003, "Evaluation of "
 			"nonstandard initialization expression at %L",
 			&e->where) == FAILURE)
     return MATCH_ERROR;
@@ -3164,13 +3164,13 @@ gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform)
 
   if (rvalue->is_boz && lvalue->ts.type != BT_INTEGER
       && lvalue->symtree->n.sym->attr.data
-      && gfc_notify_std (GFC_STD_GNU, "Extension: BOZ literal at %L used to "
+      && gfc_notify_std (GFC_STD_GNU, "BOZ literal at %L used to "
                          "initialize non-integer variable '%s'",
 			 &rvalue->where, lvalue->symtree->n.sym->name)
 	 == FAILURE)
     return FAILURE;
   else if (rvalue->is_boz && !lvalue->symtree->n.sym->attr.data
-      && gfc_notify_std (GFC_STD_GNU, "Extension: BOZ literal at %L outside "
+      && gfc_notify_std (GFC_STD_GNU, "BOZ literal at %L outside "
 			 "a DATA statement and outside INT/REAL/DBLE/CMPLX",
 			 &rvalue->where) == FAILURE)
     return FAILURE;
@@ -3338,7 +3338,7 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 	      return FAILURE;
 	    }
 
-	  if (gfc_notify_std (GFC_STD_F2003,"Fortran 2003: Bounds "
+	  if (gfc_notify_std (GFC_STD_F2003,"Bounds "
 			      "specification for '%s' in pointer assignment "
 			      "at %L", lvalue->symtree->n.sym->name,
 			      &lvalue->where) == FAILURE)
@@ -3439,9 +3439,10 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 	      return FAILURE;
 	    }
 	  if (attr.proc == PROC_INTERNAL &&
-	      gfc_notify_std (GFC_STD_F2008, "Internal procedure '%s' is "
-			      "invalid in procedure pointer assignment at %L",
-			      rvalue->symtree->name, &rvalue->where) == FAILURE)
+	      gfc_notify_std (GFC_STD_F2008, "Internal procedure "
+			      "'%s' is invalid in procedure pointer assignment "
+			      "at %L", rvalue->symtree->name, &rvalue->where)
+			      == FAILURE)
 	    return FAILURE;
 	}
       /* Check for F08:C730.  */
@@ -3562,7 +3563,7 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 			 " simply contiguous at %L", &rvalue->where);
 	      return FAILURE;
 	    }
-	  if (gfc_notify_std (GFC_STD_F2008, "Fortran 2008: Rank remapping"
+	  if (gfc_notify_std (GFC_STD_F2008, "Rank remapping"
 			      " target is not rank 1 at %L", &rvalue->where)
 		== FAILURE)
 	    return FAILURE;
@@ -4442,7 +4443,8 @@ gfc_is_simply_contiguous (gfc_expr *expr, bool strict)
 	    || (!part_ref
 		&& !sym->attr.contiguous
 		&& (sym->attr.pointer
-		      || sym->as->type == AS_ASSUMED_SHAPE))))
+		    || sym->as->type == AS_ASSUMED_RANK
+		    || sym->as->type == AS_ASSUMED_SHAPE))))
     return false;
 
   if (!ar || ar->type == AR_FULL)

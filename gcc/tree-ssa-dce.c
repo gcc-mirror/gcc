@@ -49,14 +49,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 
 #include "tree.h"
-#include "tree-pretty-print.h"
 #include "gimple-pretty-print.h"
 #include "basic-block.h"
 #include "tree-flow.h"
 #include "gimple.h"
-#include "tree-dump.h"
 #include "tree-pass.h"
-#include "timevar.h"
 #include "flags.h"
 #include "cfgloop.h"
 #include "tree-scalar-evolution.h"
@@ -1129,7 +1126,6 @@ forward_edge_to_pdom (edge e, basic_block post_dom_bb)
 	  gimple phi = gsi_stmt (gsi);
 	  tree op;
 	  source_location locus;
-	  tree block;
 
 	  /* PHIs for virtuals have no control dependency relation on them.
 	     We are lost here and must force renaming of the symbol.  */
@@ -1149,8 +1145,7 @@ forward_edge_to_pdom (edge e, basic_block post_dom_bb)
 
 	  op = gimple_phi_arg_def (phi, e2->dest_idx);
 	  locus = gimple_phi_arg_location (phi, e2->dest_idx);
-	  block = gimple_phi_arg_block (phi, e2->dest_idx);
-	  add_phi_arg (phi, op, e, locus, block);
+	  add_phi_arg (phi, op, e, locus);
 	  /* The resulting PHI if not dead can only be degenerate.  */
 	  gcc_assert (degenerate_phi_p (phi));
 	  gsi_next (&gsi);

@@ -589,6 +589,16 @@ CND(ETOOMANYREFS, "Too many references")
 #endif
 CND(EWOULDBLOCK, "Operation would block")
 
+#ifndef E2BIG
+# define E2BIG -1
+#endif
+CND(E2BIG, "Argument list too long")
+
+#ifndef EILSEQ
+# define EILSEQ -1
+#endif
+CND(EILSEQ, "Illegal byte sequence")
+
 /**
  **  Terminal I/O constants
  **/

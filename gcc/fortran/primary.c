@@ -269,7 +269,7 @@ match_hollerith_constant (gfc_expr **result)
   if (match_integer_constant (&e, 0) == MATCH_YES
       && gfc_match_char ('h') == MATCH_YES)
     {
-      if (gfc_notify_std (GFC_STD_LEGACY, "Extension: Hollerith constant "
+      if (gfc_notify_std (GFC_STD_LEGACY, "Hollerith constant "
 			  "at %C") == FAILURE)
 	goto cleanup;
 
@@ -393,7 +393,7 @@ match_boz_constant (gfc_expr **result)
     goto backup;
 
   if (x_hex
-      && (gfc_notify_std (GFC_STD_GNU, "Extension: Hexadecimal "
+      && (gfc_notify_std (GFC_STD_GNU, "Hexadecimal "
 			  "constant at %C uses non-standard syntax")
 	  == FAILURE))
       return MATCH_ERROR;
@@ -432,7 +432,7 @@ match_boz_constant (gfc_expr **result)
 	  goto backup;
 	}
 
-      if (gfc_notify_std (GFC_STD_GNU, "Extension: BOZ constant "
+      if (gfc_notify_std (GFC_STD_GNU, "BOZ constant "
 			  "at %C uses non-standard postfix syntax")
 	  == FAILURE)
 	return MATCH_ERROR;
@@ -469,7 +469,7 @@ match_boz_constant (gfc_expr **result)
     }
 
   if (!gfc_in_match_data ()
-      && (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: BOZ used outside a DATA "
+      && (gfc_notify_std (GFC_STD_F2003, "BOZ used outside a DATA "
 			  "statement at %C")
 	  == FAILURE))
       return MATCH_ERROR;
@@ -560,7 +560,7 @@ match_real_constant (gfc_expr **result, int signflag)
 
   if (c == 'q')
     {
-      if (gfc_notify_std (GFC_STD_GNU, "Extension: exponent-letter 'q' in "
+      if (gfc_notify_std (GFC_STD_GNU, "exponent-letter 'q' in "
 			 "real-literal-constant at %C") == FAILURE)
 	return MATCH_ERROR;
       else if (gfc_option.warn_real_q_constant)
@@ -1218,7 +1218,7 @@ match_sym_complex_part (gfc_expr **result)
       return MATCH_ERROR;
     }
 
-  if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: PARAMETER symbol in "
+  if (gfc_notify_std (GFC_STD_F2003, "PARAMETER symbol in "
 		      "complex constant at %C") == FAILURE)
     return MATCH_ERROR;
 
@@ -1646,7 +1646,7 @@ match_arg_list_function (gfc_actual_arglist *result)
 	}
     }
 
-  if (gfc_notify_std (GFC_STD_GNU, "Extension: argument list "
+  if (gfc_notify_std (GFC_STD_GNU, "argument list "
 		      "function at %C") == FAILURE)
     {
       m = MATCH_ERROR;
@@ -2353,7 +2353,7 @@ build_actual_constructor (gfc_structure_ctor_component **comp_head,
 	{
 	  if (comp->initializer)
 	    {
-	      if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: Structure"
+	      if (gfc_notify_std (GFC_STD_F2003, "Structure"
 				  " constructor with missing optional arguments"
 				  " at %C") == FAILURE)
 		return FAILURE;
@@ -2429,7 +2429,7 @@ gfc_convert_to_structure_constructor (gfc_expr *e, gfc_symbol *sym, gfc_expr **c
        	}
       if (actual->name)
 	{
-	  if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: Structure"
+	  if (gfc_notify_std (GFC_STD_F2003, "Structure"
 			      " constructor with named arguments at %C")
 	      == FAILURE)
 	    goto cleanup;

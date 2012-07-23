@@ -668,8 +668,6 @@ package body GNAT.Debug_Pools is
       --  terms of wasted memory). To do that, all we should have to do it to
       --  set the size of this array to the page size. See mprotect().
 
-      No_Element : constant Storage_Element := 0;
-
       Current : Byte_Count;
       P       : Ptr;
       Trace   : Traceback_Htable_Elem_Ptr;
@@ -694,16 +692,17 @@ package body GNAT.Debug_Pools is
       --  Use standard (i.e. through malloc) allocations. This automatically
       --  raises Storage_Error if needed. We also try once more to physically
       --  release memory, so that even marked blocks, in the advanced scanning,
-      --  are freed. Initialize the storage array to avoid bogus warnings by
-      --  valgrind.
+      --  are freed. Note that we do not initialize the storage array since it
+      --  is not necessary to do so (however this will cause bogus valgrind
+      --  warnings, which should simply be ignored).
 
       begin
-         P := new Local_Storage_Array'(others => No_Element);
+         P := new Local_Storage_Array;
 
       exception
          when Storage_Error =>
             Free_Physically (Pool);
-            P := new Local_Storage_Array'(others => No_Element);
+            P := new Local_Storage_Array;
       end;
 
       Storage_Address :=

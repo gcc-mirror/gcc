@@ -241,7 +241,7 @@ extern bool mips_pad_arg_upward (enum machine_mode, const_tree);
 extern bool mips_pad_reg_upward (enum machine_mode, tree);
 
 extern bool mips_expand_ext_as_unaligned_load (rtx, rtx, HOST_WIDE_INT,
-					       HOST_WIDE_INT);
+					       HOST_WIDE_INT, bool);
 extern bool mips_expand_ins_as_unaligned_store (rtx, rtx, HOST_WIDE_INT,
 						HOST_WIDE_INT);
 extern bool mips_mem_fits_mode_p (enum machine_mode mode, rtx x);

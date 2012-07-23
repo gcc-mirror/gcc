@@ -92,7 +92,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "tree.h"
 #include "tree-flow.h"
-#include "timevar.h"
 #include "tree-pass.h"
 #include "alloc-pool.h"
 #include "basic-block.h"

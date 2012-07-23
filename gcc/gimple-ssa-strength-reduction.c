@@ -49,9 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "basic-block.h"
 #include "tree-pass.h"
-#include "timevar.h"
 #include "cfgloop.h"
-#include "tree-pretty-print.h"
 #include "gimple-pretty-print.h"
 #include "tree-flow.h"
 #include "domwalk.h"
@@ -1503,7 +1501,7 @@ execute_strength_reduction (void)
 static bool
 gate_strength_reduction (void)
 {
-  return optimize > 0;
+  return flag_tree_slsr;
 }
 
 struct gimple_opt_pass pass_strength_reduction =

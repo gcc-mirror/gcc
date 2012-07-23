@@ -214,6 +214,16 @@ package body Sem_Eval is
    --  e.g. in the two operand case below, for string comparison, the result
    --  is not static even though the two operands are static. In such cases,
    --  the caller must reset the Is_Static_Expression flag in N.
+   --
+   --  If Fold and Stat are both set to False then this routine performs also
+   --  the following extra actions:
+   --
+   --    If either operand is Any_Type then propagate it to result to
+   --    prevent cascaded errors.
+   --
+   --    If some operand raises constraint error, then replace the node N
+   --    with the raise constraint error node. This replacement inherits the
+   --    Is_Static_Expression flag from the operands.
 
    procedure Test_Expression_Is_Foldable
      (N    : Node_Id;
@@ -2702,8 +2712,6 @@ package body Sem_Eval is
       Typ    : constant Entity_Id := Etype (Left);
       Otype  : Entity_Id := Empty;
       Result : Boolean;
-      Stat   : Boolean;
-      Fold   : Boolean;
 
    begin
       --  One special case to deal with first. If we can tell that the result
@@ -2919,128 +2927,144 @@ package body Sem_Eval is
          end Length_Mismatch;
       end if;
 
-      --  Test for expression being foldable
+      declare
+         Is_Static_Expression : Boolean;
+         Is_Foldable          : Boolean;
+         pragma Unreferenced (Is_Foldable);
 
-      Test_Expression_Is_Foldable (N, Left, Right, Stat, Fold);
+      begin
+         --  Initialize the value of Is_Static_Expression. The value of
+         --  Is_Foldable returned by Test_Expression_Is_Foldable is not needed
+         --  since, even when some operand is a variable, we can still perform
+         --  the static evaluation of the expression in some cases (for
+         --  example, for a variable of a subtype of Integer we statically
+         --  know that any value stored in such variable is smaller than
+         --  Integer'Last).
 
-      --  Only comparisons of scalars can give static results. In particular,
-      --  comparisons of strings never yield a static result, even if both
-      --  operands are static strings.
+         Test_Expression_Is_Foldable
+           (N, Left, Right, Is_Static_Expression, Is_Foldable);
 
-      if not Is_Scalar_Type (Typ) then
-         Stat := False;
-         Set_Is_Static_Expression (N, False);
-      end if;
+         --  Only comparisons of scalars can give static results. In
+         --  particular, comparisons of strings never yield a static
+         --  result, even if both operands are static strings.
 
-      --  For operators on universal numeric types called as functions with
-      --  an explicit scope, determine appropriate specific numeric type, and
-      --  diagnose possible ambiguity.
+         if not Is_Scalar_Type (Typ) then
+            Is_Static_Expression := False;
+            Set_Is_Static_Expression (N, False);
+         end if;
 
-      if Is_Universal_Numeric_Type (Etype (Left))
-           and then
-         Is_Universal_Numeric_Type (Etype (Right))
-      then
-         Otype := Find_Universal_Operator_Type (N);
-      end if;
+         --  For operators on universal numeric types called as functions with
+         --  an explicit scope, determine appropriate specific numeric type,
+         --  and diagnose possible ambiguity.
 
-      --  For static real type expressions, we cannot use Compile_Time_Compare
-      --  since it worries about run-time results which are not exact.
+         if Is_Universal_Numeric_Type (Etype (Left))
+              and then
+            Is_Universal_Numeric_Type (Etype (Right))
+         then
+            Otype := Find_Universal_Operator_Type (N);
+         end if;
 
-      if Stat and then Is_Real_Type (Typ) then
-         declare
-            Left_Real  : constant Ureal := Expr_Value_R (Left);
-            Right_Real : constant Ureal := Expr_Value_R (Right);
+         --  For static real type expressions, we cannot use
+         --  Compile_Time_Compare since it worries about run-time
+         --  results which are not exact.
 
-         begin
-            case Nkind (N) is
-               when N_Op_Eq => Result := (Left_Real =  Right_Real);
-               when N_Op_Ne => Result := (Left_Real /= Right_Real);
-               when N_Op_Lt => Result := (Left_Real <  Right_Real);
-               when N_Op_Le => Result := (Left_Real <= Right_Real);
-               when N_Op_Gt => Result := (Left_Real >  Right_Real);
-               when N_Op_Ge => Result := (Left_Real >= Right_Real);
+         if Is_Static_Expression and then Is_Real_Type (Typ) then
+            declare
+               Left_Real  : constant Ureal := Expr_Value_R (Left);
+               Right_Real : constant Ureal := Expr_Value_R (Right);
 
-               when others =>
-                  raise Program_Error;
-            end case;
+            begin
+               case Nkind (N) is
+                  when N_Op_Eq => Result := (Left_Real =  Right_Real);
+                  when N_Op_Ne => Result := (Left_Real /= Right_Real);
+                  when N_Op_Lt => Result := (Left_Real <  Right_Real);
+                  when N_Op_Le => Result := (Left_Real <= Right_Real);
+                  when N_Op_Gt => Result := (Left_Real >  Right_Real);
+                  when N_Op_Ge => Result := (Left_Real >= Right_Real);
 
-            Fold_Uint (N, Test (Result), True);
-         end;
+                  when others =>
+                     raise Program_Error;
+               end case;
 
-      --  For all other cases, we use Compile_Time_Compare to do the compare
+               Fold_Uint (N, Test (Result), True);
+            end;
 
-      else
-         declare
-            CR : constant Compare_Result :=
-                   Compile_Time_Compare (Left, Right, Assume_Valid => False);
+         --  For all other cases, we use Compile_Time_Compare to do the compare
 
-         begin
-            if CR = Unknown then
-               return;
-            end if;
+         else
+            declare
+               CR : constant Compare_Result :=
+                      Compile_Time_Compare
+                        (Left, Right, Assume_Valid => False);
 
-            case Nkind (N) is
-               when N_Op_Eq =>
-                  if CR = EQ then
-                     Result := True;
-                  elsif CR = NE or else CR = GT or else CR = LT then
-                     Result := False;
-                  else
-                     return;
-                  end if;
+            begin
+               if CR = Unknown then
+                  return;
+               end if;
 
-               when N_Op_Ne =>
-                  if CR = NE or else CR = GT or else CR = LT then
-                     Result := True;
-                  elsif CR = EQ then
-                     Result := False;
-                  else
-                     return;
-                  end if;
+               case Nkind (N) is
+                  when N_Op_Eq =>
+                     if CR = EQ then
+                        Result := True;
+                     elsif CR = NE or else CR = GT or else CR = LT then
+                        Result := False;
+                     else
+                        return;
+                     end if;
 
-               when N_Op_Lt =>
-                  if CR = LT then
-                     Result := True;
-                  elsif CR = EQ or else CR = GT or else CR = GE then
-                     Result := False;
-                  else
-                     return;
-                  end if;
+                  when N_Op_Ne =>
+                     if CR = NE or else CR = GT or else CR = LT then
+                        Result := True;
+                     elsif CR = EQ then
+                        Result := False;
+                     else
+                        return;
+                     end if;
 
-               when N_Op_Le =>
-                  if CR = LT or else CR = EQ or else CR = LE then
-                     Result := True;
-                  elsif CR = GT then
-                     Result := False;
-                  else
-                     return;
-                  end if;
+                  when N_Op_Lt =>
+                     if CR = LT then
+                        Result := True;
+                     elsif CR = EQ or else CR = GT or else CR = GE then
+                        Result := False;
+                     else
+                        return;
+                     end if;
 
-               when N_Op_Gt =>
-                  if CR = GT then
-                     Result := True;
-                  elsif CR = EQ or else CR = LT or else CR = LE then
-                     Result := False;
-                  else
-                     return;
-                  end if;
+                  when N_Op_Le =>
+                     if CR = LT or else CR = EQ or else CR = LE then
+                        Result := True;
+                     elsif CR = GT then
+                        Result := False;
+                     else
+                        return;
+                     end if;
 
-               when N_Op_Ge =>
-                  if CR = GT or else CR = EQ or else CR = GE then
-                     Result := True;
-                  elsif CR = LT then
-                     Result := False;
-                  else
-                     return;
-                  end if;
+                  when N_Op_Gt =>
+                     if CR = GT then
+                        Result := True;
+                     elsif CR = EQ or else CR = LT or else CR = LE then
+                        Result := False;
+                     else
+                        return;
+                     end if;
 
-               when others =>
-                  raise Program_Error;
-            end case;
-         end;
+                  when N_Op_Ge =>
+                     if CR = GT or else CR = EQ or else CR = GE then
+                        Result := True;
+                     elsif CR = LT then
+                        Result := False;
+                     else
+                        return;
+                     end if;
 
-         Fold_Uint (N, Test (Result), Stat);
-      end if;
+                  when others =>
+                     raise Program_Error;
+               end case;
+            end;
+
+            Fold_Uint (N, Test (Result), Is_Static_Expression);
+         end if;
+      end;
 
       --  For the case of a folded relational operator on a specific numeric
       --  type, freeze operand type now.
@@ -4130,7 +4154,7 @@ package body Sem_Eval is
       --  Never in range if both types are not scalar. Don't know if this can
       --  actually happen, but just in case.
 
-      elsif not Is_Scalar_Type (T1) or else not Is_Scalar_Type (T1) then
+      elsif not Is_Scalar_Type (T1) or else not Is_Scalar_Type (T2) then
          return False;
 
       --  If T1 has infinities but T2 doesn't have infinities, then T1 is

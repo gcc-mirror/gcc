@@ -25,11 +25,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "tm_p.h"
 #include "basic-block.h"
-#include "timevar.h"
 #include "gimple-pretty-print.h"
 #include "tree-flow.h"
 #include "tree-pass.h"
-#include "tree-dump.h"
 #include "langhooks.h"
 #include "flags.h"
 #include "gimple.h"
@@ -2585,6 +2583,11 @@ combine_conversions (gimple_stmt_iterator *gsi)
       int final_vec = TREE_CODE (type) == VECTOR_TYPE;
       unsigned int final_prec = TYPE_PRECISION (type);
       int final_unsignedp = TYPE_UNSIGNED (type);
+
+      /* Don't propagate ssa names that occur in abnormal phis.  */
+      if (TREE_CODE (defop0) == SSA_NAME
+	  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (defop0))
+	return 0;
 
       /* In addition to the cases of two conversions in a row
 	 handled below, if we are converting something to its own

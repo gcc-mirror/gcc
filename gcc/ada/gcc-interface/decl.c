@@ -895,6 +895,16 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 						debug_info_p);
 	  }
 
+	/* ??? If this is an object of CW type initialized to a value, try to
+	   ensure that the object is sufficient aligned for this value, but
+	   without pessimizing the allocation.  This is a kludge necessary
+	   because we don't support dynamic alignment.  */
+	if (align == 0
+	    && Ekind (Etype (gnat_entity)) == E_Class_Wide_Subtype
+	    && No (Renamed_Object (gnat_entity))
+	    && No (Address_Clause (gnat_entity)))
+	  align = get_target_system_allocator_alignment () * BITS_PER_UNIT;
+
 #ifdef MINIMUM_ATOMIC_ALIGNMENT
 	/* If the size is a constant and no alignment is specified, force
 	   the alignment to be the minimum valid atomic alignment.  The
@@ -904,7 +914,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	   necessary and can interfere with constant replacement.  Finally,
 	   do not do it for Out parameters since that creates an
 	   size inconsistency with In parameters.  */
-	if (align == 0 && MINIMUM_ATOMIC_ALIGNMENT > TYPE_ALIGN (gnu_type)
+	if (align == 0
+	    && MINIMUM_ATOMIC_ALIGNMENT > TYPE_ALIGN (gnu_type)
 	    && !FLOAT_TYPE_P (gnu_type)
 	    && !const_flag && No (Renamed_Object (gnat_entity))
 	    && !imported_p && No (Address_Clause (gnat_entity))
@@ -3287,9 +3298,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      else
 		gnu_unpad_base_type = gnu_base_type;
 
-	      /* Look for a REP part in the base type.  */
-	      gnu_rep_part = get_rep_part (gnu_unpad_base_type);
-
 	      /* Look for a variant part in the base type.  */
 	      gnu_variant_part = get_variant_part (gnu_unpad_base_type);
 
@@ -3415,7 +3423,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		       and put the field either in the new type if there is a
 		       selected variant or in one of the new variants.  */
 		    if (gnu_context == gnu_unpad_base_type
-		        || (gnu_rep_part
+		        || ((gnu_rep_part = get_rep_part (gnu_unpad_base_type))
 			    && gnu_context == TREE_TYPE (gnu_rep_part)))
 		      gnu_cont_type = gnu_type;
 		    else
@@ -3425,7 +3433,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 			t = NULL_TREE;
 			FOR_EACH_VEC_ELT (variant_desc, gnu_variant_list, i, v)
-			  if (v->type == gnu_context)
+			  if (gnu_context == v->type
+			      || ((gnu_rep_part = get_rep_part (v->type))
+				  && gnu_context == TREE_TYPE (gnu_rep_part)))
 			    {
 			      t = v->type;
 			      break;
@@ -8046,6 +8056,10 @@ intrin_return_compatible_p (intrin_binding_t * inb)
       && !VOID_TYPE_P (btin_return_type))
     return true;
 
+  /* If return type is Address (integer type), map it to void *.  */
+  if (Is_Descendent_Of_Address (Etype (inb->gnat_entity)))
+    ada_return_type = ptr_void_type_node;
+
   /* Check return types compatibility otherwise.  Note that this
      handles void/void as well.  */
   if (intrin_types_incompatible_p (btin_return_type, ada_return_type))
@@ -8168,7 +8182,8 @@ get_rep_part (tree record_type)
 
   /* The REP part is the first field, internal, another record, and its name
      starts with an 'R'.  */
-  if (DECL_INTERNAL_P (field)
+  if (field
+      && DECL_INTERNAL_P (field)
       && TREE_CODE (TREE_TYPE (field)) == RECORD_TYPE
       && IDENTIFIER_POINTER (DECL_NAME (field)) [0] == 'R')
     return field;

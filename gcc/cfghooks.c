@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "dumpfile.h"
 #include "tm.h"
 #include "tree.h"
 #include "rtl.h"
@@ -183,9 +184,9 @@ verify_flow_info (void)
 	      error ("verify_flow_info: Basic block %d succ edge is corrupted",
 		     bb->index);
 	      fprintf (stderr, "Predecessor: ");
-	      dump_edge_info (stderr, e, 0);
+	      dump_edge_info (stderr, e, TDF_DETAILS, 0);
 	      fprintf (stderr, "\nSuccessor: ");
-	      dump_edge_info (stderr, e, 1);
+	      dump_edge_info (stderr, e, TDF_DETAILS, 1);
 	      fprintf (stderr, "\n");
 	      err = 1;
 	    }
@@ -204,9 +205,9 @@ verify_flow_info (void)
 	    {
 	      error ("basic block %d pred edge is corrupted", bb->index);
 	      fputs ("Predecessor: ", stderr);
-	      dump_edge_info (stderr, e, 0);
+	      dump_edge_info (stderr, e, TDF_DETAILS, 0);
 	      fputs ("\nSuccessor: ", stderr);
-	      dump_edge_info (stderr, e, 1);
+	      dump_edge_info (stderr, e, TDF_DETAILS, 1);
 	      fputc ('\n', stderr);
 	      err = 1;
 	    }
@@ -217,9 +218,9 @@ verify_flow_info (void)
 	      error ("its dest_idx should be %d, not %d",
 		     ei.index, e->dest_idx);
 	      fputs ("Predecessor: ", stderr);
-	      dump_edge_info (stderr, e, 0);
+	      dump_edge_info (stderr, e, TDF_DETAILS, 0);
 	      fputs ("\nSuccessor: ", stderr);
-	      dump_edge_info (stderr, e, 1);
+	      dump_edge_info (stderr, e, TDF_DETAILS, 1);
 	      fputc ('\n', stderr);
 	      err = 1;
 	    }
@@ -260,50 +261,42 @@ verify_flow_info (void)
   timevar_pop (TV_CFG_VERIFY);
 }
 
-/* Print out one basic block.  This function takes care of the purely
-   graph related information.  The cfg hook for the active representation
-   should dump representation-specific information.  */
+/* Print out one basic block BB to file OUTF.  INDENT is printed at the
+   start of each new line.  FLAGS are the TDF_* flags in dumpfile.h.
+
+   This function takes care of the purely graph related information.
+   The cfg hook for the active representation should dump
+   representation-specific information.  */
 
 void
-dump_bb (basic_block bb, FILE *outf, int indent)
+dump_bb (FILE *outf, basic_block bb, int indent, int flags)
 {
-  edge e;
-  edge_iterator ei;
-  char *s_indent;
-
-  s_indent = (char *) alloca ((size_t) indent + 1);
-  memset (s_indent, ' ', (size_t) indent);
-  s_indent[indent] = '\0';
-
-  fprintf (outf, ";;%s basic block %d, loop depth %d, count ",
-	   s_indent, bb->index, bb->loop_depth);
-  fprintf (outf, HOST_WIDEST_INT_PRINT_DEC, (HOST_WIDEST_INT) bb->count);
-  putc ('\n', outf);
-
-  fprintf (outf, ";;%s prev block ", s_indent);
-  if (bb->prev_bb)
-    fprintf (outf, "%d, ", bb->prev_bb->index);
-  else
-    fprintf (outf, "(nil), ");
-  fprintf (outf, "next block ");
-  if (bb->next_bb)
-    fprintf (outf, "%d", bb->next_bb->index);
-  else
-    fprintf (outf, "(nil)");
-  putc ('\n', outf);
-
-  fprintf (outf, ";;%s pred:      ", s_indent);
-  FOR_EACH_EDGE (e, ei, bb->preds)
-    dump_edge_info (outf, e, 0);
-  putc ('\n', outf);
-
-  fprintf (outf, ";;%s succ:      ", s_indent);
-  FOR_EACH_EDGE (e, ei, bb->succs)
-    dump_edge_info (outf, e, 1);
-  putc ('\n', outf);
-
+  dump_bb_info (outf, bb, indent, flags, true, false);
   if (cfg_hooks->dump_bb)
-    cfg_hooks->dump_bb (bb, outf, indent, 0);
+    cfg_hooks->dump_bb (outf, bb, indent, flags);
+  dump_bb_info (outf, bb, indent, flags, false, true);
+  fputc ('\n', outf);
+}
+
+/* Dump the complete CFG to FILE.  FLAGS are the TDF_* flags in dumpfile.h.  */
+void
+dump_flow_info (FILE *file, int flags)
+{
+  basic_block bb;
+
+  fprintf (file, "\n%d basic blocks, %d edges.\n", n_basic_blocks, n_edges);
+  FOR_ALL_BB (bb)
+    dump_bb (file, bb, 0, flags);
+
+  putc ('\n', file);
+}
+
+/* Like above, but dump to stderr.  To be called from debuggers.  */
+void debug_flow_info (void);
+DEBUG_FUNCTION void
+debug_flow_info (void)
+{
+  dump_flow_info (stderr, TDF_DETAILS);
 }
 
 /* Redirect edge E to the given basic block DEST and update underlying program

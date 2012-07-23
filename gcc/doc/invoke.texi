@@ -364,7 +364,8 @@ Objective-C and Objective-C++ Dialects}.
 -ffast-math -ffinite-math-only -ffloat-store -fexcess-precision=@var{style} @gol
 -fforward-propagate -ffp-contract=@var{style} -ffunction-sections @gol
 -fgcse -fgcse-after-reload -fgcse-las -fgcse-lm -fgraphite-identity @gol
--fgcse-sm -fif-conversion -fif-conversion2 -findirect-inlining @gol
+-fgcse-sm -fhoist-adjacent-loads -fif-conversion @gol
+-fif-conversion2 -findirect-inlining @gol
 -finline-functions -finline-functions-called-once -finline-limit=@var{n} @gol
 -finline-small-functions -fipa-cp -fipa-cp-clone -fipa-matrix-reorg @gol
 -fipa-pta -fipa-profile -fipa-pure-const -fipa-reference @gol
@@ -413,8 +414,8 @@ Objective-C and Objective-C++ Dialects}.
 -ftree-phiprop -ftree-loop-distribution -ftree-loop-distribute-patterns @gol
 -ftree-loop-ivcanon -ftree-loop-linear -ftree-loop-optimize @gol
 -ftree-parallelize-loops=@var{n} -ftree-pre -ftree-partial-pre -ftree-pta @gol
--ftree-reassoc @gol
--ftree-sink -ftree-sra -ftree-switch-conversion -ftree-tail-merge @gol
+-ftree-reassoc -ftree-sink -ftree-slsr -ftree-sra @gol
+-ftree-switch-conversion -ftree-tail-merge @gol
 -ftree-ter -ftree-vect-loop-version -ftree-vectorize -ftree-vrp @gol
 -funit-at-a-time -funroll-all-loops -funroll-loops @gol
 -funsafe-loop-optimizations -funsafe-math-optimizations -funswitch-loops @gol
@@ -497,7 +498,8 @@ Objective-C and Objective-C++ Dialects}.
 -mcaller-super-interworking  -mcallee-super-interworking @gol
 -mtp=@var{name} -mtls-dialect=@var{dialect} @gol
 -mword-relocations @gol
--mfix-cortex-m3-ldrd}
+-mfix-cortex-m3-ldrd @gol
+-munaligned-access}
 
 @emph{AVR Options}
 @gccoptlist{-mmcu=@var{mcu} -maccumulate-args -mbranch-cost=@var{cost} @gol
@@ -732,6 +734,7 @@ Objective-C and Objective-C++ Dialects}.
 -mshared  -mno-shared  -mplt  -mno-plt  -mxgot  -mno-xgot @gol
 -mgp32  -mgp64  -mfp32  -mfp64  -mhard-float  -msoft-float @gol
 -msingle-float  -mdouble-float  -mdsp  -mno-dsp  -mdspr2  -mno-dspr2 @gol
+-mmcu -mmno-mcu @gol
 -mfpu=@var{fpu-type} @gol
 -msmartmips  -mno-smartmips @gol
 -mpaired-single  -mno-paired-single  -mdmx  -mno-mdmx @gol
@@ -881,8 +884,8 @@ See RS/6000 and PowerPC Options.
 -m5-compact  -m5-compact-nofpu @gol
 -mb  -ml  -mdalign  -mrelax @gol
 -mbigtable -mfmovd -mhitachi -mrenesas -mno-renesas -mnomacsave @gol
--mieee  -mbitops  -misize  -minline-ic_invalidate -mpadstruct  -mspace @gol
--mprefergot  -musermode -multcost=@var{number} -mdiv=@var{strategy} @gol
+-mieee -mno-ieee -mbitops  -misize  -minline-ic_invalidate -mpadstruct @gol
+-mspace -mprefergot  -musermode -multcost=@var{number} -mdiv=@var{strategy} @gol
 -mdivsi3_libfunc=@var{name} -mfixed-range=@var{register-range} @gol
 -mindexed-addressing -mgettrcost=@var{number} -mpt-fixed @gol
 -maccumulate-outgoing-args -minvalid-symbols -msoft-atomic -mhard-atomic @gol
@@ -6259,6 +6262,7 @@ compilation time.
 -ftree-forwprop @gol
 -ftree-fre @gol
 -ftree-phiprop @gol
+-ftree-slsr @gol
 -ftree-sra @gol
 -ftree-pta @gol
 -ftree-ter @gol
@@ -6286,6 +6290,7 @@ also turns on the following optimization flags:
 -fdevirtualize @gol
 -fexpensive-optimizations @gol
 -fgcse  -fgcse-lm  @gol
+-fhoist-adjacent-loads @gol
 -finline-small-functions @gol
 -findirect-inlining @gol
 -fipa-sra @gol
@@ -6311,6 +6316,7 @@ Optimize yet more.  @option{-O3} turns on all optimizations specified
 by @option{-O2} and also turns on the @option{-finline-functions},
 @option{-funswitch-loops}, @option{-fpredictive-commoning},
 @option{-fgcse-after-reload}, @option{-ftree-vectorize},
+@option{-fvect-cost-model},
 @option{-ftree-partial-pre} and @option{-fipa-cp-clone} options.
 
 @item -O0
@@ -7129,6 +7135,13 @@ This flag is enabled by default at @option{-O} and higher.
 Perform hoisting of loads from conditional pointers on trees.  This
 pass is enabled by default at @option{-O} and higher.
 
+@item -fhoist-adjacent-loads
+@opindex hoist-adjacent-loads
+Speculatively hoist loads from both branches of an if-then-else if the
+loads are from adjacent locations in the same structure and the target
+architecture has a conditional move instruction.  This flag is enabled
+by default at @option{-O2} and higher.
+
 @item -ftree-copy-prop
 @opindex ftree-copy-prop
 Perform copy propagation on trees.  This pass eliminates unnecessary
@@ -7529,6 +7542,13 @@ defining expression.  This results in non-GIMPLE code, but gives the expanders
 much more complex trees to work on resulting in better RTL generation.  This is
 enabled by default at @option{-O} and higher.
 
+@item -ftree-slsr
+@opindex ftree-slsr
+Perform straight-line strength reduction on trees.  This recognizes related
+expressions involving multiplications and replaces them by less expensive
+calculations when possible.  This is enabled by default at @option{-O} and
+higher.
+
 @item -ftree-vectorize
 @opindex ftree-vectorize
 Perform loop vectorization on trees. This flag is enabled by default at
@@ -7550,7 +7570,8 @@ except at level @option{-Os} where it is disabled.
 
 @item -fvect-cost-model
 @opindex fvect-cost-model
-Enable cost model for vectorization.
+Enable cost model for vectorization.  This option is enabled by default at
+@option{-O3}.
 
 @item -ftree-vrp
 @opindex ftree-vrp
@@ -11048,6 +11069,23 @@ Some Cortex-M3 cores can cause data corruption when @code{ldrd} instructions
 with overlapping destination and base registers are used.  This option avoids
 generating these instructions.  This option is enabled by default when
 @option{-mcpu=cortex-m3} is specified.
+
+@item -munaligned-access
+@itemx -mno-unaligned-access
+@opindex munaligned-access
+@opindex mno-unaligned-access
+Enables (or disables) reading and writing of 16- and 32- bit values
+from addresses that are not 16- or 32- bit aligned.  By default
+unaligned access is disabled for all pre-ARMv6 and all ARMv6-M
+architectures, and enabled for all other architectures.  If unaligned
+access is not enabled then words in packed data structures will be
+accessed a byte at a time.
+
+The ARM attribute @code{Tag_CPU_unaligned_access} will be set in the
+generated object file to either true or false, depending upon the
+setting of this option.  If unaligned access is enabled then the
+preprocessor symbol @code{__ARM_FEATURE_UNALIGNED} will also be
+defined.
 
 @end table
 
@@ -15686,6 +15724,12 @@ The option @option{-mips3d} implies @option{-mpaired-single}.
 @opindex mno-mt
 Use (do not use) MT Multithreading instructions.
 
+@item -mmcu
+@itemx -mno-mcu
+@opindex mmcu
+@opindex mno-mcu
+Use (do not use) the MIPS MCU ASE instructions.
+
 @item -mlong64
 @opindex mlong64
 Force @code{long} types to be 64 bits wide.  See @option{-mlong32} for
@@ -18099,13 +18143,15 @@ Mark the @code{MAC} register as call-clobbered, even if
 @option{-mhitachi} is given.
 
 @item -mieee
+@item -mno-ieee
 @opindex mieee
-Increase IEEE compliance of floating-point code.
-At the moment, this is equivalent to @option{-fno-finite-math-only}.
-When generating 16-bit SH opcodes, getting IEEE-conforming results for
-comparisons of NANs / infinities incurs extra overhead in every
-floating-point comparison, therefore the default is set to
-@option{-ffinite-math-only}.
+@opindex mnoieee
+Control the IEEE compliance of floating-point comparisons, which affects the
+handling of cases where the result of a comparison is unordered.  By default
+@option{-mieee} is implicitly enabled.  If @option{-ffinite-math-only} is
+enabled @option{-mno-ieee} is implicitly set, which results in faster
+floating-point greater-equal and less-equal comparisons.  The implcit settings
+can be overridden by specifying either @option{-mieee} or @option{-mno-ieee}.
 
 @item -minline-ic_invalidate
 @opindex minline-ic_invalidate

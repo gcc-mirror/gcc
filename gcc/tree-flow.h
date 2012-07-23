@@ -414,7 +414,7 @@ extern bool is_ctrl_altering_stmt (gimple);
 extern bool simple_goto_p (gimple);
 extern bool stmt_can_make_abnormal_goto (gimple);
 extern basic_block single_noncomplex_succ (basic_block bb);
-extern void gimple_dump_bb (basic_block, FILE *, int, int);
+extern void gimple_dump_bb (FILE *, basic_block, int, int);
 extern void gimple_debug_bb (basic_block);
 extern basic_block gimple_debug_bb_n (int);
 extern void gimple_dump_cfg (FILE *, int);
@@ -498,16 +498,15 @@ extern tree make_rename_temp (tree, const char *);
 extern void set_default_def (tree, tree);
 extern tree gimple_default_def (struct function *, tree);
 extern bool stmt_references_abnormal_ssa_name (gimple);
-extern tree get_ref_base_and_extent (tree, HOST_WIDE_INT *,
-				     HOST_WIDE_INT *, HOST_WIDE_INT *);
 extern tree get_addr_base_and_unit_offset (tree, HOST_WIDE_INT *);
 extern void find_referenced_vars_in (gimple);
+extern void dump_enumerated_decls (FILE *, int);
 
 /* In tree-phinodes.c  */
 extern void reserve_phi_args_for_new_edge (basic_block);
 extern void add_phi_node_to_bb (gimple phi, basic_block bb);
 extern gimple create_phi_node (tree, basic_block);
-extern void add_phi_arg (gimple, tree, edge, source_location, tree);
+extern void add_phi_arg (gimple, tree, edge, source_location);
 extern void remove_phi_args (edge);
 extern void remove_phi_node (gimple_stmt_iterator *, bool);
 extern void remove_phi_nodes (basic_block);
@@ -531,7 +530,6 @@ struct _edge_var_map {
   tree result;			/* PHI result.  */
   tree def;			/* PHI arg definition.  */
   source_location locus;        /* PHI arg location.  */
-  tree block;			/* PHI arg block.  */
 };
 typedef struct _edge_var_map edge_var_map;
 
@@ -542,7 +540,7 @@ DEF_VEC_ALLOC_O(edge_var_map, heap);
 typedef VEC(edge_var_map, heap) *edge_var_map_vector;
 
 extern void init_tree_ssa (struct function *);
-extern void redirect_edge_var_map_add (edge, tree, tree, source_location, tree);
+extern void redirect_edge_var_map_add (edge, tree, tree, source_location);
 extern void redirect_edge_var_map_clear (edge);
 extern void redirect_edge_var_map_dup (edge, edge);
 extern edge_var_map_vector redirect_edge_var_map_vector (edge);

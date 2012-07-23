@@ -19,7 +19,7 @@
 
 ;;; Unused letters:
 ;;;     B     H           T
-;;;           h  k          v
+;;;           h jk          v
 
 ;; Integer register constraints.
 ;; It is not necessary to define 'r' here.
@@ -132,11 +132,6 @@
   "@internal Call memory operand."
   (and (not (match_test "TARGET_X32"))
        (match_operand 0 "memory_operand")))
-
-(define_address_constraint "j"
-  "@internal Address operand that can be zero extended in LEA instruction."
-  (and (not (match_code "const_int"))
-       (match_operand 0 "address_operand")))
 
 ;; Integer constant constraints.
 (define_constraint "I"

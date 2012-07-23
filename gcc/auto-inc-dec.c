@@ -35,7 +35,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "recog.h"
 #include "expr.h"
-#include "timevar.h"
 #include "tree-pass.h"
 #include "df.h"
 #include "dbgcnt.h"

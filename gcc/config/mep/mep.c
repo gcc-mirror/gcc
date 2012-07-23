@@ -51,6 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 #include "gimple.h"
 #include "opts.h"
+#include "dumpfile.h"
 
 /* Structure of this file:
 

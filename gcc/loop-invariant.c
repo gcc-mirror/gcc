@@ -55,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "regs.h"
 #include "ira.h"
+#include "dumpfile.h"
 
 /* The data stored for the loop.  */
 
@@ -674,7 +675,7 @@ find_defs (struct loop *loop, basic_block *body)
     {
       df_dump_region (dump_file);
       fprintf (dump_file, "*****starting processing of loop  ******\n");
-      print_rtl_with_bb (dump_file, get_insns ());
+      print_rtl_with_bb (dump_file, get_insns (), dump_flags);
       fprintf (dump_file, "*****ending processing of loop  ******\n");
     }
   check_invariant_table_size ();

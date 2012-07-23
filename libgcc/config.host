@@ -618,7 +618,7 @@ x86_64-*-mingw*)
 	if test x$enable_sjlj_exceptions = xyes; then
 		tmake_eh_file="i386/t-sjlj-eh"
 	else
-		tmake_eh_file="i386/t-dw2-eh"
+		tmake_eh_file="i386/t-seh-eh"
 	fi
 	# Shared libgcc DLL install dir depends on cross/native build.
 	if test x${build} = x${host} ; then

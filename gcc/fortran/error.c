@@ -809,6 +809,8 @@ gfc_notify_std (int std, const char *gmsgid, ...)
 {
   va_list argp;
   bool warning;
+  const char *msg1, *msg2;
+  char *buffer;
 
   warning = ((gfc_option.warn_std & std) != 0) && !inhibit_warnings;
   if ((gfc_option.allow_std & std) != 0 && !warning)
@@ -821,11 +823,48 @@ gfc_notify_std (int std, const char *gmsgid, ...)
   cur_error_buffer->flag = 1;
   cur_error_buffer->index = 0;
 
-  va_start (argp, gmsgid);
   if (warning)
-    error_print (_("Warning:"), _(gmsgid), argp);
+    msg1 = _("Warning:");
   else
-    error_print (_("Error:"), _(gmsgid), argp);
+    msg1 = _("Error:");
+  
+  switch (std)
+  {
+    case GFC_STD_F2008_TS:
+      msg2 = "TS 29113:";
+      break;
+    case GFC_STD_F2008_OBS:
+      msg2 = _("Fortran 2008 obsolescent feature:");
+      break;
+    case GFC_STD_F2008:
+      msg2 = "Fortran 2008:";
+      break;
+    case GFC_STD_F2003:
+      msg2 = "Fortran 2003:";
+      break;
+    case GFC_STD_GNU:
+      msg2 = _("GNU Extension:");
+      break;
+    case GFC_STD_LEGACY:
+      msg2 = _("Legacy Extension:");
+      break;
+    case GFC_STD_F95_OBS:
+      msg2 = _("Obsolescent feature:");
+      break;
+    case GFC_STD_F95_DEL:
+      msg2 = _("Deleted feature:");
+      break;
+    default:
+      gcc_unreachable ();
+  }
+
+  buffer = (char *) alloca (strlen (msg1) + strlen (msg2) + 2);
+  strcpy (buffer, msg1);
+  strcat (buffer, " ");
+  strcat (buffer, msg2);
+
+  va_start (argp, gmsgid);
+  error_print (buffer, _(gmsgid), argp);
   va_end (argp);
 
   error_char ('\0');

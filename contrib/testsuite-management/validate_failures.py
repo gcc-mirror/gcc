@@ -1,4 +1,4 @@
-#!/usr/bin/python2.6
+#!/usr/bin/python
 
 # Script to compare testsuite failures against a list of known-to-fail
 # tests.
@@ -195,7 +195,7 @@ def GetManifest(manifest_name):
     return set()
 
 
-def GetSumFiles(builddir):
+def CollectSumFiles(builddir):
   sum_files = []
   for root, dirs, files in os.walk(builddir):
     if '.svn' in dirs:
@@ -255,6 +255,16 @@ def PrintSummary(msg, summary):
     print result
 
 
+def GetSumFiles(results, build_dir):
+  if not results:
+    print 'Getting actual results from build'
+    sum_files = CollectSumFiles(build_dir)
+  else:
+    print 'Getting actual results from user-provided results'
+    sum_files = results.split()
+  return sum_files
+
+
 def CheckExpectedResults(options):
   if not options.manifest:
     (srcdir, target, valid_build) = GetBuildData(options)
@@ -268,13 +278,7 @@ def CheckExpectedResults(options):
 
   print 'Manifest:         %s' % manifest_name
   manifest = GetManifest(manifest_name)
-
-  if not options.results:
-    print 'Getting actual results from build'
-    sum_files = GetSumFiles(options.build_dir)
-  else:
-    print 'Getting actual results from user-provided results'
-    sum_files = options.results.split()
+  sum_files = GetSumFiles(options.results, options.build_dir)
   actual = GetResults(sum_files)
 
   if options.verbosity >= 1:
@@ -311,7 +315,8 @@ def ProduceManifest(options):
     Error('Manifest file %s already exists.\nUse --force to overwrite.' %
           manifest_name)
 
-  actual = GetResults(options.build_dir)
+  sum_files = GetSumFiles(options.results, options.build_dir)
+  actual = GetResults(sum_files)
   with open(manifest_name, 'w') as manifest_file:
     for result in sorted(actual):
       print result

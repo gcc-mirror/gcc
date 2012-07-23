@@ -895,9 +895,8 @@ extern bool vect_is_simple_use_1 (tree, gimple, loop_vec_info,
 				  bb_vec_info, gimple *,
 				  tree *,  enum vect_def_type *, tree *);
 extern bool supportable_widening_operation (enum tree_code, gimple, tree, tree,
-                                            tree *, tree *, enum tree_code *,
-                                            enum tree_code *, int *,
-                                            VEC (tree, heap) **);
+                                            enum tree_code *, enum tree_code *,
+					    int *, VEC (tree, heap) **);
 extern bool supportable_narrowing_operation (enum tree_code, tree, tree,
 					     enum tree_code *,
 					     int *, VEC (tree, heap) **);

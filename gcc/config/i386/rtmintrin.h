@@ -71,7 +71,7 @@ _xabort (const unsigned int imm)
   __builtin_ia32_xabort (imm);
 }
 #else
-#define _xabort(N)  __builtin_ia32_xabort (N);
+#define _xabort(N)  __builtin_ia32_xabort (N)
 #endif /* __OPTIMIZE__ */
 
 #endif /* _RTMINTRIN_H_INCLUDED */

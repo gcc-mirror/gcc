@@ -224,6 +224,57 @@
 	 (const_string "yes")]
 	(const_string "no")))
 
+;; Attributes describing a sync loop.  These loops have the form:
+;;
+;;       if (RELEASE_BARRIER == YES) sync
+;;    1: OLDVAL = *MEM
+;;       if ((OLDVAL & INCLUSIVE_MASK) != REQUIRED_OLDVAL) goto 2
+;;         CMP  = 0 [delay slot]
+;;       $TMP1 = OLDVAL & EXCLUSIVE_MASK
+;;       $TMP2 = INSN1 (OLDVAL, INSN1_OP2)
+;;       $TMP3 = INSN2 ($TMP2, INCLUSIVE_MASK)
+;;       $AT |= $TMP1 | $TMP3
+;;       if (!commit (*MEM = $AT)) goto 1.
+;;         if (INSN1 != MOVE && INSN1 != LI) NEWVAL = $TMP3 [delay slot]
+;;       CMP  = 1
+;;       if (ACQUIRE_BARRIER == YES) sync
+;;    2:
+;;
+;; where "$" values are temporaries and where the other values are
+;; specified by the attributes below.  Values are specified as operand
+;; numbers and insns are specified as enums.  If no operand number is
+;; specified, the following values are used instead:
+;;
+;;    - OLDVAL: $AT
+;;    - CMP: NONE
+;;    - NEWVAL: $AT
+;;    - INCLUSIVE_MASK: -1
+;;    - REQUIRED_OLDVAL: OLDVAL & INCLUSIVE_MASK
+;;    - EXCLUSIVE_MASK: 0
+;;
+;; MEM and INSN1_OP2 are required.
+;;
+;; Ideally, the operand attributes would be integers, with -1 meaning "none",
+;; but the gen* programs don't yet support that.
+(define_attr "sync_mem" "none,0,1,2,3,4,5" (const_string "none"))
+(define_attr "sync_oldval" "none,0,1,2,3,4,5" (const_string "none"))
+(define_attr "sync_cmp" "none,0,1,2,3,4,5" (const_string "none"))
+(define_attr "sync_newval" "none,0,1,2,3,4,5" (const_string "none"))
+(define_attr "sync_inclusive_mask" "none,0,1,2,3,4,5" (const_string "none"))
+(define_attr "sync_exclusive_mask" "none,0,1,2,3,4,5" (const_string "none"))
+(define_attr "sync_required_oldval" "none,0,1,2,3,4,5" (const_string "none"))
+(define_attr "sync_insn1_op2" "none,0,1,2,3,4,5" (const_string "none"))
+(define_attr "sync_insn1" "move,li,addu,addiu,subu,and,andi,or,ori,xor,xori"
+  (const_string "move"))
+(define_attr "sync_insn2" "nop,and,xor,not"
+  (const_string "nop"))
+;; Memory model specifier.
+;; "0"-"9" values specify the operand that stores the memory model value.
+;; "10" specifies MEMMODEL_ACQ_REL,
+;; "11" specifies MEMMODEL_ACQUIRE.
+(define_attr "sync_memmodel" "" (const_int 10))
+
+
 ;; Classification of each insn.
 ;; branch	conditional branch
 ;; jump		unconditional jump
@@ -276,6 +327,8 @@
 ;; frsqrt1      floating point reciprocal square root step1
 ;; frsqrt2      floating point reciprocal square root step2
 ;; multi	multiword sequence (or user asm statements)
+;; atomic	atomic memory update instruction
+;; syncloop	memory atomic operation implemented as a sync loop
 ;; nop		no operation
 ;; ghost	an instruction that produces no real code
 (define_attr "type"
@@ -283,7 +336,7 @@
    prefetch,prefetchx,condmove,mtc,mfc,mthi,mtlo,mfhi,mflo,const,arith,logical,
    shift,slt,signext,clz,pop,trap,imul,imul3,imul3nc,imadd,idiv,idiv3,move,
    fmove,fadd,fmul,fmadd,fdiv,frdiv,frdiv1,frdiv2,fabs,fneg,fcmp,fcvt,fsqrt,
-   frsqrt,frsqrt1,frsqrt2,multi,nop,ghost"
+   frsqrt,frsqrt1,frsqrt2,multi,atomic,syncloop,nop,ghost"
   (cond [(eq_attr "jal" "!unset") (const_string "call")
 	 (eq_attr "got" "load") (const_string "load")
 
@@ -322,7 +375,8 @@
 	      (eq_attr "dword_mode" "yes"))
 	   (const_string "multi")
 	 (eq_attr "move_type" "move") (const_string "move")
-	 (eq_attr "move_type" "const") (const_string "const")]
+	 (eq_attr "move_type" "const") (const_string "const")
+	 (eq_attr "sync_mem" "!none") (const_string "syncloop")]
 	;; We classify "lui_movf" as "unknown" rather than "multi"
 	;; because we don't split it.  FIXME: we should split instead.
 	(const_string "unknown")))
@@ -345,56 +399,6 @@
 		     (eq_attr "jal" "direct"))
 		(const_string "yes")
 		(const_string "no")))
-
-;; Attributes describing a sync loop.  These loops have the form:
-;;
-;;       if (RELEASE_BARRIER == YES) sync
-;;    1: OLDVAL = *MEM
-;;       if ((OLDVAL & INCLUSIVE_MASK) != REQUIRED_OLDVAL) goto 2
-;;         CMP  = 0 [delay slot]
-;;       $TMP1 = OLDVAL & EXCLUSIVE_MASK
-;;       $TMP2 = INSN1 (OLDVAL, INSN1_OP2)
-;;       $TMP3 = INSN2 ($TMP2, INCLUSIVE_MASK)
-;;       $AT |= $TMP1 | $TMP3
-;;       if (!commit (*MEM = $AT)) goto 1.
-;;         if (INSN1 != MOVE && INSN1 != LI) NEWVAL = $TMP3 [delay slot]
-;;       CMP  = 1
-;;       if (ACQUIRE_BARRIER == YES) sync
-;;    2:
-;;
-;; where "$" values are temporaries and where the other values are
-;; specified by the attributes below.  Values are specified as operand
-;; numbers and insns are specified as enums.  If no operand number is
-;; specified, the following values are used instead:
-;;
-;;    - OLDVAL: $AT
-;;    - CMP: NONE
-;;    - NEWVAL: $AT
-;;    - INCLUSIVE_MASK: -1
-;;    - REQUIRED_OLDVAL: OLDVAL & INCLUSIVE_MASK
-;;    - EXCLUSIVE_MASK: 0
-;;
-;; MEM and INSN1_OP2 are required.
-;;
-;; Ideally, the operand attributes would be integers, with -1 meaning "none",
-;; but the gen* programs don't yet support that.
-(define_attr "sync_mem" "none,0,1,2,3,4,5" (const_string "none"))
-(define_attr "sync_oldval" "none,0,1,2,3,4,5" (const_string "none"))
-(define_attr "sync_cmp" "none,0,1,2,3,4,5" (const_string "none"))
-(define_attr "sync_newval" "none,0,1,2,3,4,5" (const_string "none"))
-(define_attr "sync_inclusive_mask" "none,0,1,2,3,4,5" (const_string "none"))
-(define_attr "sync_exclusive_mask" "none,0,1,2,3,4,5" (const_string "none"))
-(define_attr "sync_required_oldval" "none,0,1,2,3,4,5" (const_string "none"))
-(define_attr "sync_insn1_op2" "none,0,1,2,3,4,5" (const_string "none"))
-(define_attr "sync_insn1" "move,li,addu,addiu,subu,and,andi,or,ori,xor,xori"
-  (const_string "move"))
-(define_attr "sync_insn2" "nop,and,xor,not"
-  (const_string "nop"))
-;; Memory model specifier.
-;; "0"-"9" values specify the operand that stores the memory model value.
-;; "10" specifies MEMMODEL_ACQ_REL,
-;; "11" specifies MEMMODEL_ACQUIRE.
-(define_attr "sync_memmodel" "" (const_int 10))
 
 ;; Length of instruction in bytes.
 (define_attr "length" ""
@@ -938,6 +942,7 @@
 (include "sb1.md")
 (include "sr71k.md")
 (include "xlr.md")
+(include "xlp.md")
 (include "generic.md")
 
 ;;
@@ -2639,6 +2644,16 @@
   "<d>pop\t%0,%1"
   [(set_attr "type" "pop")
    (set_attr "mode" "<MODE>")])
+
+;; The POP instruction is special as it does not take into account the upper
+;; 32bits and is documented that way.
+(define_insn "*popcountdi2_trunc"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+       (popcount:SI (truncate:SI (match_operand:DI 1 "register_operand" "d"))))]
+  "ISA_HAS_POP && TARGET_64BIT"
+  "pop\t%0,%1"
+  [(set_attr "type" "pop")
+   (set_attr "mode" "SI")])
 
 ;;
 ;;  ....................
@@ -3653,7 +3668,8 @@
 {
   if (mips_expand_ext_as_unaligned_load (operands[0], operands[1],
 					 INTVAL (operands[2]),
-					 INTVAL (operands[3])))
+					 INTVAL (operands[3]),
+					 /*unsigned=*/ false))
     DONE;
   else if (register_operand (operands[1], GET_MODE (operands[0]))
 	   && ISA_HAS_EXTS && UINTVAL (operands[2]) <= 32)
@@ -3690,7 +3706,8 @@
 {
   if (mips_expand_ext_as_unaligned_load (operands[0], operands[1],
 					 INTVAL (operands[2]),
-					 INTVAL (operands[3])))
+					 INTVAL (operands[3]),
+					 /*unsigned=*/true))
     DONE;
   else if (mips_use_ins_ext_p (operands[1], INTVAL (operands[2]),
 			       INTVAL (operands[3])))

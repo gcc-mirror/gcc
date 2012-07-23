@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1998-2010, AdaCore                     --
+--                     Copyright (C) 1998-2012, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -305,7 +305,7 @@ package body GNAT.Spitbol is
    begin
       if Start > Str'Length then
          raise Index_Error;
-      elsif Start + Len > Str'Length then
+      elsif Start + Len - 1 > Str'Length then
          raise Length_Error;
       else
          return

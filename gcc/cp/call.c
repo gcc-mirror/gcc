@@ -5515,7 +5515,8 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
       /* If the FN is a member function, make sure that it is
 	 accessible.  */
       if (BASELINK_P (fns))
-	perform_or_defer_access_check (BASELINK_BINFO (fns), fn, fn);
+	perform_or_defer_access_check (BASELINK_BINFO (fns), fn, fn,
+				       complain);
 
       /* Core issue 901: It's ok to new a type with deleted delete.  */
       if (DECL_DELETED_FN (fn) && alloc_fn)
@@ -5573,19 +5574,23 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
    the declaration to use in the error diagnostic.  */
 
 bool
-enforce_access (tree basetype_path, tree decl, tree diag_decl)
+enforce_access (tree basetype_path, tree decl, tree diag_decl,
+		tsubst_flags_t complain)
 {
   gcc_assert (TREE_CODE (basetype_path) == TREE_BINFO);
 
   if (!accessible_p (basetype_path, decl, true))
     {
-      if (TREE_PRIVATE (decl))
-	error ("%q+#D is private", diag_decl);
-      else if (TREE_PROTECTED (decl))
-	error ("%q+#D is protected", diag_decl);
-      else
-	error ("%q+#D is inaccessible", diag_decl);
-      error ("within this context");
+      if (complain & tf_error)
+	{
+	  if (TREE_PRIVATE (decl))
+	    error ("%q+#D is private", diag_decl);
+	  else if (TREE_PROTECTED (decl))
+	    error ("%q+#D is protected", diag_decl);
+	  else
+	    error ("%q+#D is inaccessible", diag_decl);
+	  error ("within this context");
+	}
       return false;
     }
 
@@ -6510,14 +6515,9 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	access_fn = DECL_TI_TEMPLATE (fn);
       else
 	access_fn = fn;
-      if (flags & LOOKUP_SPECULATIVE)
-	{
-	  if (!speculative_access_check (cand->access_path, access_fn, fn,
-					 complain & tf_error))
-	    return error_mark_node;
-	}
-      else
-	perform_or_defer_access_check (cand->access_path, access_fn, fn);
+      if (!perform_or_defer_access_check (cand->access_path, access_fn,
+					  fn, complain))
+	return error_mark_node;
     }
 
   /* If we're checking for implicit delete, don't bother with argument
@@ -6900,6 +6900,7 @@ tree
 build_cxx_call (tree fn, int nargs, tree *argarray)
 {
   tree fndecl;
+  int optimize_sav;
 
   /* Remember roughly where this call is.  */
   location_t loc = EXPR_LOC_OR_HERE (fn);
@@ -6916,8 +6917,15 @@ build_cxx_call (tree fn, int nargs, tree *argarray)
     return error_mark_node;
 
   /* Some built-in function calls will be evaluated at compile-time in
-     fold ().  */
+     fold ().  Set optimize to 1 when folding __builtin_constant_p inside
+     a constexpr function so that fold_builtin_1 doesn't fold it to 0.  */
+  optimize_sav = optimize;
+  if (!optimize && fndecl && DECL_IS_BUILTIN_CONSTANT_P (fndecl)
+      && current_function_decl
+      && DECL_DECLARED_CONSTEXPR_P (current_function_decl))
+    optimize = 1;
   fn = fold_if_not_in_template (fn);
+  optimize = optimize_sav;
 
   if (VOID_TYPE_P (TREE_TYPE (fn)))
     return fn;

@@ -3151,6 +3151,9 @@ package body Checks is
       Cindex : Cache_Index;
       --  Used to search cache
 
+      Btyp : Entity_Id;
+      --  Base type
+
       function OK_Operands return Boolean;
       --  Used for binary operators. Determines the ranges of the left and
       --  right operands, and if they are both OK, returns True, and puts
@@ -3267,6 +3270,15 @@ package body Checks is
          Typ := Underlying_Type (Base_Type (Typ));
       end if;
 
+      --  Retrieve the base type. Handle the case where the base type is a
+      --  private enumeration type.
+
+      Btyp := Base_Type (Typ);
+
+      if Is_Private_Type (Btyp) and then Present (Full_View (Btyp)) then
+         Btyp := Full_View (Btyp);
+      end if;
+
       --  We use the actual bound unless it is dynamic, in which case use the
       --  corresponding base type bound if possible. If we can't get a bound
       --  then we figure we can't determine the range (a peculiar case, that
@@ -3280,8 +3292,8 @@ package body Checks is
       if Compile_Time_Known_Value (Bound) then
          Lo := Expr_Value (Bound);
 
-      elsif Compile_Time_Known_Value (Type_Low_Bound (Base_Type (Typ))) then
-         Lo := Expr_Value (Type_Low_Bound (Base_Type (Typ)));
+      elsif Compile_Time_Known_Value (Type_Low_Bound (Btyp)) then
+         Lo := Expr_Value (Type_Low_Bound (Btyp));
 
       else
          OK := False;
@@ -3296,8 +3308,8 @@ package body Checks is
       --  always be compile time known. Again, it is not clear that this
       --  can ever be false, but no point in bombing.
 
-      if Compile_Time_Known_Value (Type_High_Bound (Base_Type (Typ))) then
-         Hbound := Expr_Value (Type_High_Bound (Base_Type (Typ)));
+      if Compile_Time_Known_Value (Type_High_Bound (Btyp)) then
+         Hbound := Expr_Value (Type_High_Bound (Btyp));
          Hi := Hbound;
 
       else
@@ -4744,17 +4756,17 @@ package body Checks is
             --  associated subtype.
 
             Insert_Action (N,
-               Make_Raise_Constraint_Error (Loc,
-                 Condition =>
-                    Make_Not_In (Loc,
-                      Left_Opnd  =>
-                        Convert_To (Base_Type (Etype (Sub)),
-                          Duplicate_Subexpr_Move_Checks (Sub)),
-                      Right_Opnd =>
-                        Make_Attribute_Reference (Loc,
-                          Prefix         => New_Reference_To (Etype (A), Loc),
-                          Attribute_Name => Name_Range)),
-                 Reason => CE_Index_Check_Failed));
+              Make_Raise_Constraint_Error (Loc,
+                Condition =>
+                   Make_Not_In (Loc,
+                     Left_Opnd  =>
+                       Convert_To (Base_Type (Etype (Sub)),
+                         Duplicate_Subexpr_Move_Checks (Sub)),
+                     Right_Opnd =>
+                       Make_Attribute_Reference (Loc,
+                         Prefix         => New_Reference_To (Etype (A), Loc),
+                         Attribute_Name => Name_Range)),
+                Reason => CE_Index_Check_Failed));
          end if;
 
       --  General case
@@ -4831,14 +4843,14 @@ package body Checks is
                   end if;
 
                   Insert_Action (N,
-                     Make_Raise_Constraint_Error (Loc,
-                       Condition =>
-                          Make_Not_In (Loc,
-                            Left_Opnd  =>
-                              Convert_To (Base_Type (Etype (Sub)),
-                                Duplicate_Subexpr_Move_Checks (Sub)),
-                            Right_Opnd => Range_N),
-                       Reason => CE_Index_Check_Failed));
+                    Make_Raise_Constraint_Error (Loc,
+                      Condition =>
+                         Make_Not_In (Loc,
+                           Left_Opnd  =>
+                             Convert_To (Base_Type (Etype (Sub)),
+                               Duplicate_Subexpr_Move_Checks (Sub)),
+                           Right_Opnd => Range_N),
+                      Reason => CE_Index_Check_Failed));
                end if;
 
                A_Idx := Next_Index (A_Idx);

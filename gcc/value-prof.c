@@ -36,14 +36,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-flow.h"
 #include "tree-flow-inline.h"
 #include "diagnostic.h"
-#include "tree-pretty-print.h"
 #include "gimple-pretty-print.h"
 #include "coverage.h"
 #include "tree.h"
 #include "gcov-io.h"
 #include "cgraph.h"
 #include "timevar.h"
-#include "tree-pass.h"
+#include "dumpfile.h"
 #include "pointer-set.h"
 #include "profile.h"
 
@@ -1245,12 +1244,10 @@ gimple_ic (gimple icall_stmt, struct cgraph_node *direct_call,
       SSA_NAME_DEF_STMT (result) = phi;
       gimple_call_set_lhs (icall_stmt,
 			   make_ssa_name (SSA_NAME_VAR (result), icall_stmt));
-      add_phi_arg (phi, gimple_call_lhs (icall_stmt), e_ij, UNKNOWN_LOCATION,
-		   NULL);
+      add_phi_arg (phi, gimple_call_lhs (icall_stmt), e_ij, UNKNOWN_LOCATION);
       gimple_call_set_lhs (dcall_stmt,
 			   make_ssa_name (SSA_NAME_VAR (result), dcall_stmt));
-      add_phi_arg (phi, gimple_call_lhs (dcall_stmt), e_dj, UNKNOWN_LOCATION,
-		   NULL);
+      add_phi_arg (phi, gimple_call_lhs (dcall_stmt), e_dj, UNKNOWN_LOCATION);
     }
 
   /* Build an EH edge for the direct call if necessary.  */
@@ -1478,12 +1475,10 @@ gimple_stringop_fixed_value (gimple vcall_stmt, tree icall_size, int prob,
       SSA_NAME_DEF_STMT (result) = phi;
       gimple_call_set_lhs (vcall_stmt,
 			   make_ssa_name (SSA_NAME_VAR (result), vcall_stmt));
-      add_phi_arg (phi, gimple_call_lhs (vcall_stmt), e_vj, UNKNOWN_LOCATION,
-		   NULL);
+      add_phi_arg (phi, gimple_call_lhs (vcall_stmt), e_vj, UNKNOWN_LOCATION);
       gimple_call_set_lhs (icall_stmt,
 			   make_ssa_name (SSA_NAME_VAR (result), icall_stmt));
-      add_phi_arg (phi, gimple_call_lhs (icall_stmt), e_ij, UNKNOWN_LOCATION,
-		   NULL);
+      add_phi_arg (phi, gimple_call_lhs (icall_stmt), e_ij, UNKNOWN_LOCATION);
     }
 
   /* Because these are all string op builtins, they're all nothrow.  */

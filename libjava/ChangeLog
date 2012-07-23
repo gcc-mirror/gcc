@@ -1,3 +1,25 @@
+2012-07-19  Tristan Gingold  <gingold@adacore.com>
+	    Richard Henderson  <rth@redhat.com>
+
+	* libgcj.ver: Add __gcj_personality_seh0.
+	* exception.cc (__gcj_personality_seh0): New function.
+	Adjust for SEH.
+
+2012-07-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR libjava/53973
+	* include/x86_64-signal.h (CHECK_67H_PREFIX): Removed.
+	(HANDLE_DIVIDE_OVERFLOW): Skip 67h address size prefix
+	unconditionally.
+
+2012-07-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR libjava/53973
+	* include/x86_64-signal.h (CHECK_67H_PREFIX): New.
+	(HANDLE_DIVIDE_OVERFLOW): Check and and skip 67h address size
+	prefix if CHECK_67H_PREFIX is 1.  Use ULL suffix for 64-bit
+	integer.
+
 2012-06-20  David Edelsohn  <dje.gcc@gmail.com>
 	    Alan Modra  <amodra@gmail.com>
 

@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "recog.h"
 #include "target.h"
 #include "hw-doloop.h"
+#include "dumpfile.h"
 
 #ifdef HAVE_doloop_end
 

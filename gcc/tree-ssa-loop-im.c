@@ -25,11 +25,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "tm_p.h"
 #include "basic-block.h"
-#include "tree-pretty-print.h"
 #include "gimple-pretty-print.h"
 #include "tree-flow.h"
-#include "tree-dump.h"
-#include "timevar.h"
 #include "cfgloop.h"
 #include "domwalk.h"
 #include "params.h"
@@ -2086,7 +2083,7 @@ execute_sm_if_changed (edge ex, tree mem, tree tmp_var, tree flag)
 	  if (gimple_phi_arg_edge (phi, i)->src == new_bb)
 	    {
 	      tree arg = gimple_phi_arg_def (phi, i);
-	      add_phi_arg (phi, arg, then_old_edge, UNKNOWN_LOCATION, NULL);
+	      add_phi_arg (phi, arg, then_old_edge, UNKNOWN_LOCATION);
 	      update_stmt (phi);
 	    }
       }

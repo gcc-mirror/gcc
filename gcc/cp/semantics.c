@@ -223,7 +223,7 @@ pop_to_parent_deferring_access_checks (void)
       if (ptr->deferring_access_checks_kind == dk_no_deferred)
 	{
 	  /* Check access.  */
-	  perform_access_checks (checks);
+	  perform_access_checks (checks, tf_warning_or_error);
 	}
       else
 	{
@@ -252,19 +252,30 @@ pop_to_parent_deferring_access_checks (void)
 
 /* Perform the access checks in CHECKS.  The TREE_PURPOSE of each node
    is the BINFO indicating the qualifying scope used to access the
-   DECL node stored in the TREE_VALUE of the node.  */
+   DECL node stored in the TREE_VALUE of the node.  If CHECKS is empty
+   or we aren't in SFINAE context or all the checks succeed return TRUE,
+   otherwise FALSE.  */
 
-void
-perform_access_checks (VEC (deferred_access_check,gc)* checks)
+bool
+perform_access_checks (VEC (deferred_access_check,gc)* checks,
+		       tsubst_flags_t complain)
 {
   int i;
   deferred_access_check *chk;
+  location_t loc = input_location;
+  bool ok = true;
 
   if (!checks)
-    return;
+    return true;
 
   FOR_EACH_VEC_ELT (deferred_access_check, checks, i, chk)
-    enforce_access (chk->binfo, chk->decl, chk->diag_decl);
+    {
+      input_location = chk->loc;
+      ok &= enforce_access (chk->binfo, chk->decl, chk->diag_decl, complain);
+    }
+
+  input_location = loc;
+  return (complain & tf_error) ? true : ok;
 }
 
 /* Perform the deferred access checks.
@@ -281,19 +292,21 @@ perform_access_checks (VEC (deferred_access_check,gc)* checks)
      A::X A::a, x;	// No error for `A::a', error for `x'
 
    We have to perform deferred access of `A::X', first with `A::a',
-   next with `x'.  */
+   next with `x'.  Return value like perform_access_checks above.  */
 
-void
-perform_deferred_access_checks (void)
+bool
+perform_deferred_access_checks (tsubst_flags_t complain)
 {
-  perform_access_checks (get_deferred_access_checks ());
+  return perform_access_checks (get_deferred_access_checks (), complain);
 }
 
 /* Defer checking the accessibility of DECL, when looked up in
-   BINFO. DIAG_DECL is the declaration to use to print diagnostics.  */
+   BINFO. DIAG_DECL is the declaration to use to print diagnostics.
+   Return value like perform_access_checks above.  */
 
-void
-perform_or_defer_access_check (tree binfo, tree decl, tree diag_decl)
+bool
+perform_or_defer_access_check (tree binfo, tree decl, tree diag_decl,
+			       tsubst_flags_t complain)
 {
   int i;
   deferred_access *ptr;
@@ -304,7 +317,7 @@ perform_or_defer_access_check (tree binfo, tree decl, tree diag_decl)
   /* Exit if we are in a context that no access checking is performed.
      */
   if (deferred_access_no_check)
-    return;
+    return true;
 
   gcc_assert (TREE_CODE (binfo) == TREE_BINFO);
 
@@ -313,8 +326,8 @@ perform_or_defer_access_check (tree binfo, tree decl, tree diag_decl)
   /* If we are not supposed to defer access checks, just check now.  */
   if (ptr->deferring_access_checks_kind == dk_no_deferred)
     {
-      enforce_access (binfo, decl, diag_decl);
-      return;
+      bool ok = enforce_access (binfo, decl, diag_decl, complain);
+      return (complain & tf_error) ? true : ok;
     }
 
   /* See if we are already going to perform this check.  */
@@ -324,7 +337,7 @@ perform_or_defer_access_check (tree binfo, tree decl, tree diag_decl)
       if (chk->decl == decl && chk->binfo == binfo &&
 	  chk->diag_decl == diag_decl)
 	{
-	  return;
+	  return true;
 	}
     }
   /* If not, record the check.  */
@@ -334,28 +347,7 @@ perform_or_defer_access_check (tree binfo, tree decl, tree diag_decl)
   new_access->binfo = binfo;
   new_access->decl = decl;
   new_access->diag_decl = diag_decl;
-}
-
-/* Used by build_over_call in LOOKUP_SPECULATIVE mode: return whether DECL
-   is accessible in BINFO, and possibly complain if not.  If we're not
-   checking access, everything is accessible.  */
-
-bool
-speculative_access_check (tree binfo, tree decl, tree diag_decl,
-			  bool complain)
-{
-  if (deferred_access_no_check)
-    return true;
-
-  /* If we're checking for implicit delete, we don't want access
-     control errors.  */
-  if (!accessible_p (binfo, decl, true))
-    {
-      /* Unless we're under maybe_explain_implicit_delete.  */
-      if (complain)
-	enforce_access (binfo, decl, diag_decl);
-      return false;
-    }
+  new_access->loc = input_location;
 
   return true;
 }
@@ -1604,7 +1596,7 @@ finish_non_static_data_member (tree decl, tree object, tree qualifying_scope)
       tree access_type = TREE_TYPE (object);
 
       perform_or_defer_access_check (TYPE_BINFO (access_type), decl,
-				     decl);
+				     decl, tf_warning_or_error);
 
       /* If the data member was named `C::M', convert `*this' to `C'
 	 first.  */
@@ -1726,7 +1718,7 @@ check_accessibility_of_qualified_id (tree decl,
       && CLASS_TYPE_P (qualifying_type)
       && !dependent_type_p (qualifying_type))
     perform_or_defer_access_check (TYPE_BINFO (qualifying_type), decl,
-				   decl);
+				   decl, tf_warning_or_error);
 }
 
 /* EXPR is the result of a qualified-id.  The QUALIFYING_CLASS was the
@@ -3329,7 +3321,8 @@ finish_id_expression (tree id_expression,
 		{
 		  tree path = currently_open_derived_class (context);
 		  perform_or_defer_access_check (TYPE_BINFO (path),
-						 decl, decl);
+						 decl, decl,
+						 tf_warning_or_error);
 		}
 	    }
 

@@ -27,7 +27,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "rtl.h"
 #include "tm_p.h"
-#include "timevar.h"
 #include "flags.h"
 #include "insn-config.h"
 #include "obstack.h"

@@ -93,7 +93,8 @@ package body Ada.Exceptions is
       ---------------------------------
 
       procedure Set_Exception_C_Msg
-        (Id     : Exception_Id;
+        (Excep  : EOA;
+         Id     : Exception_Id;
          Msg1   : System.Address;
          Line   : Integer        := 0;
          Column : Integer        := 0;
@@ -107,7 +108,8 @@ package body Ada.Exceptions is
       --  additional null terminated string is added to the message.
 
       procedure Set_Exception_Msg
-        (Id      : Exception_Id;
+        (Excep   : EOA;
+         Id      : Exception_Id;
          Message : String);
       --  This routine is called to setup the exception referenced by the
       --  Current_Excep field in the TSD to contain the indicated Id value and
@@ -187,19 +189,19 @@ package body Ada.Exceptions is
       --  exported to be usable by the Ada exception handling personality
       --  routine when the GCC 3 mechanism is used.
 
-      procedure Notify_Handled_Exception;
+      procedure Notify_Handled_Exception (Excep : EOA);
       pragma Export
         (C, Notify_Handled_Exception, "__gnat_notify_handled_exception");
       --  This routine is called for a handled occurrence is about to be
       --  propagated.
 
-      procedure Notify_Unhandled_Exception;
+      procedure Notify_Unhandled_Exception (Excep : EOA);
       pragma Export
         (C, Notify_Unhandled_Exception, "__gnat_notify_unhandled_exception");
       --  This routine is called when an unhandled occurrence is about to be
       --  propagated.
 
-      procedure Unhandled_Exception_Terminate;
+      procedure Unhandled_Exception_Terminate (Excep : EOA);
       pragma No_Return (Unhandled_Exception_Terminate);
       --  This procedure is called to terminate program execution following an
       --  unhandled exception. The exception information, including traceback
@@ -893,14 +895,14 @@ package body Ada.Exceptions is
       if Jumpbuf_Ptr /= Null_Address then
          if not Excep.Exception_Raised then
             Excep.Exception_Raised := True;
-            Exception_Traces.Notify_Handled_Exception;
+            Exception_Traces.Notify_Handled_Exception (Excep);
          end if;
 
          builtin_longjmp (Jumpbuf_Ptr, 1);
 
       else
-         Exception_Traces.Notify_Unhandled_Exception;
-         Exception_Traces.Unhandled_Exception_Terminate;
+         Exception_Traces.Notify_Unhandled_Exception (Excep);
+         Exception_Traces.Unhandled_Exception_Terminate (Excep);
       end if;
    end Process_Raise_Exception;
 
@@ -966,8 +968,8 @@ package body Ada.Exceptions is
      (E       : Exception_Id;
       Message : String := "")
    is
-      EF : Exception_Id := E;
-
+      EF    : Exception_Id := E;
+      Excep : constant EOA := Get_Current_Excep.all;
    begin
       --  Raise CE if E = Null_ID (AI-446)
 
@@ -977,7 +979,7 @@ package body Ada.Exceptions is
 
       --  Go ahead and raise appropriate exception
 
-      Exception_Data.Set_Exception_Msg (EF, Message);
+      Exception_Data.Set_Exception_Msg (Excep, EF, Message);
       Abort_Defer.all;
       Raise_Current_Excep (EF);
    end Raise_Exception;
@@ -990,8 +992,9 @@ package body Ada.Exceptions is
      (E       : Exception_Id;
       Message : String := "")
    is
+      Excep : constant EOA := Get_Current_Excep.all;
    begin
-      Exception_Data.Set_Exception_Msg (E, Message);
+      Exception_Data.Set_Exception_Msg (Excep, E, Message);
       Abort_Defer.all;
       Raise_Current_Excep (E);
    end Raise_Exception_Always;
@@ -1004,8 +1007,9 @@ package body Ada.Exceptions is
      (E       : Exception_Id;
       Message : String := "")
    is
+      Excep : constant EOA := Get_Current_Excep.all;
    begin
-      Exception_Data.Set_Exception_Msg (E, Message);
+      Exception_Data.Set_Exception_Msg (Excep, E, Message);
 
       --  Do not call Abort_Defer.all, as specified by the spec
 
@@ -1065,8 +1069,9 @@ package body Ada.Exceptions is
      (E : Exception_Id;
       M : System.Address)
    is
+      Excep : constant EOA := Get_Current_Excep.all;
    begin
-      Exception_Data.Set_Exception_C_Msg (E, M);
+      Exception_Data.Set_Exception_C_Msg (Excep, E, M);
       Abort_Defer.all;
       Process_Raise_Exception (E);
    end Raise_From_Signal_Handler;
@@ -1135,8 +1140,9 @@ package body Ada.Exceptions is
       L : Integer;
       M : System.Address := System.Null_Address)
    is
+      Excep : constant EOA := Get_Current_Excep.all;
    begin
-      Exception_Data.Set_Exception_C_Msg (E, F, L, Msg2 => M);
+      Exception_Data.Set_Exception_C_Msg (Excep, E, F, L, Msg2 => M);
       Abort_Defer.all;
       Raise_Current_Excep (E);
    end Raise_With_Location_And_Msg;
@@ -1402,8 +1408,8 @@ package body Ada.Exceptions is
    procedure Rcheck_PE_Finalize_Raised_Exception
      (File : System.Address; Line : Integer)
    is
-      E : constant Exception_Id := Program_Error_Def'Access;
-
+      E     : constant Exception_Id := Program_Error_Def'Access;
+      Excep : constant EOA := Get_Current_Excep.all;
    begin
       --  This is "finalize/adjust raised exception". This subprogram is always
       --  called with abort deferred, unlike all other Rcheck_* routines, it
@@ -1411,7 +1417,8 @@ package body Ada.Exceptions is
 
       --  This is consistent with Raise_From_Controlled_Operation
 
-      Exception_Data.Set_Exception_C_Msg (E, File, Line, 0, Rmsg_22'Address);
+      Exception_Data.Set_Exception_C_Msg (Excep, E, File, Line, 0,
+                                          Rmsg_22'Address);
       Raise_Current_Excep (E);
    end Rcheck_PE_Finalize_Raised_Exception;
 

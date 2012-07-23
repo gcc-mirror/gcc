@@ -23,11 +23,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "rtl.h"
-#include "hard-reg-set.h"
-#include "obstack.h"
 #include "basic-block.h"
 #include "cfgloop.h"
 #include "tree-flow.h"
+#include "dumpfile.h"
 
 static void copy_loops_to (struct loop **, int,
 			   struct loop *);

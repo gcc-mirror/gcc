@@ -1,7 +1,3 @@
-2012-05-16  H.J. Lu  <hongjiu.lu@intel.com>
-
-	* configure: Regenerated.
-
 2004-01-14  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* configure.in: Add in AC_PREREQ(2.13)

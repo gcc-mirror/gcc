@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *             Copyright (C) 2002-2009, Free Software Foundation, Inc.      *
+ *             Copyright (C) 2002-2012, Free Software Foundation, Inc.      *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -58,14 +58,20 @@
 /*  This function provides a portable binding to the mkdir function.  */
 
 int
-__gnat_mkdir (char *dir_name)
+__gnat_mkdir (char *dir_name, int encoding ATTRIBUTE_UNUSED)
 {
 #if defined (__vxworks) && !(defined (__RTP__) && (_WRS_VXWORKS_MINOR != 0))
   return mkdir (dir_name);
 #elif defined (__MINGW32__)
   TCHAR wname [GNAT_MAX_PATH_LEN + 2];
 
-  S2WSC (wname, dir_name, GNAT_MAX_PATH_LEN + 2);
+  if (encoding == Encoding_Unspecified)
+    S2WSC (wname, dir_name, GNAT_MAX_PATH_LEN);
+  else if (encoding == Encoding_UTF8)
+    S2WSU (wname, dir_name, GNAT_MAX_PATH_LEN);
+  else
+    S2WS (wname, dir_name, GNAT_MAX_PATH_LEN);
+
   return _tmkdir (wname);
 #else
   return mkdir (dir_name, S_IRWXU | S_IRWXG | S_IRWXO);

@@ -31,8 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "ggc.h"
 #include "langhooks.h"
 #include "tree-flow.h"
-#include "timevar.h"
-#include "tree-dump.h"
 #include "tree-pass.h"
 #include "except.h"
 #include "cfgloop.h"
@@ -444,9 +442,7 @@ remove_forwarder_block (basic_block bb)
 	    {
 	      gimple phi = gsi_stmt (gsi);
 	      source_location l = gimple_phi_arg_location_from_edge (phi, succ);
-	      tree b = gimple_phi_arg_block_from_edge (phi, succ);
-	      add_phi_arg (phi, gimple_phi_arg_def (phi, succ->dest_idx), s, l,
-			   b);
+	      add_phi_arg (phi, gimple_phi_arg_def (phi, succ->dest_idx), s, l);
 	    }
 	}
     }
@@ -610,48 +606,13 @@ split_bbs_on_noreturn_calls (void)
   return changed;
 }
 
-/* If GIMPLE_OMP_RETURN in basic block BB is unreachable, remove it.  */
-
-static bool
-cleanup_omp_return (basic_block bb)
-{
-  gimple stmt = last_stmt (bb);
-  basic_block control_bb;
-
-  if (stmt == NULL
-      || gimple_code (stmt) != GIMPLE_OMP_RETURN
-      || !single_pred_p (bb))
-    return false;
-
-  control_bb = single_pred (bb);
-  stmt = last_stmt (control_bb);
-
-  if (stmt == NULL || gimple_code (stmt) != GIMPLE_OMP_SECTIONS_SWITCH)
-    return false;
-
-  /* The block with the control statement normally has two entry edges -- one
-     from entry, one from continue.  If continue is removed, return is
-     unreachable, so we remove it here as well.  */
-  if (EDGE_COUNT (control_bb->preds) == 2)
-    return false;
-
-  gcc_assert (EDGE_COUNT (control_bb->preds) == 1);
-  remove_edge_and_dominated_blocks (single_pred_edge (bb));
-  return true;
-}
-
 /* Tries to cleanup cfg in basic block BB.  Returns true if anything
    changes.  */
 
 static bool
 cleanup_tree_cfg_bb (basic_block bb)
 {
-  bool retval = false;
-
-  if (cleanup_omp_return (bb))
-    return true;
-
-  retval = cleanup_control_flow_bb (bb);
+  bool retval = cleanup_control_flow_bb (bb);
 
   if (tree_forwarder_block_p (bb, false)
       && remove_forwarder_block (bb))
@@ -873,7 +834,6 @@ remove_forwarder_block_with_phi (basic_block bb)
 	  gimple phi = gsi_stmt (gsi);
 	  tree def = gimple_phi_arg_def (phi, succ->dest_idx);
 	  source_location locus = gimple_phi_arg_location_from_edge (phi, succ);
-	  tree block = gimple_phi_arg_block_from_edge (phi, succ);
 
 	  if (TREE_CODE (def) == SSA_NAME)
 	    {
@@ -894,13 +854,12 @@ remove_forwarder_block_with_phi (basic_block bb)
 		    {
 		      def = new_arg;
 		      locus = redirect_edge_var_map_location (vm);
-		      block = redirect_edge_var_map_block (vm);
 		      break;
 		    }
 		}
 	    }
 
-	  add_phi_arg (phi, def, s, locus, block);
+	  add_phi_arg (phi, def, s, locus);
 	}
 
       redirect_edge_var_map_clear (e);

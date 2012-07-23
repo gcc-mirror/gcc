@@ -35,7 +35,6 @@
 #include "flags.h"
 #include "diagnostic-core.h"
 #include "obstack.h"
-#include "timevar.h"
 #include "tree-pass.h"
 #include "df.h"
 

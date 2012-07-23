@@ -149,6 +149,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ira.h"
 #include "emit-rtl.h"  /* FIXME: Can go away once crtl is moved to rtl.h.  */
 #include "hashtab.h"
+#include "dumpfile.h"
 
 #ifdef INSN_SCHEDULING
 
@@ -7193,8 +7194,7 @@ init_before_recovery (basic_block *before_recovery_ptr)
 
       redirect_edge_succ (e, single);
       make_single_succ_edge (single, empty, 0);
-      make_single_succ_edge (empty, EXIT_BLOCK_PTR,
-			     EDGE_FALLTHRU | EDGE_CAN_FALLTHRU);
+      make_single_succ_edge (empty, EXIT_BLOCK_PTR, EDGE_FALLTHRU);
 
       label = block_label (empty);
       x = emit_jump_insn_after (gen_jump (label), BB_END (single));

@@ -81,7 +81,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
-#include "gimple.h"
+#include "gimple.h"		/* For create_tmp_var_name.  */
 #include "diagnostic-core.h"	/* For internal_error/fatal_error.  */
 #include "flags.h"
 #include "gfortran.h"
@@ -247,12 +247,11 @@ gfc_conv_descriptor_dtype (tree desc)
 			  desc, field, NULL_TREE);
 }
 
-static tree
-gfc_conv_descriptor_dimension (tree desc, tree dim)
+
+tree
+gfc_get_descriptor_dimension (tree desc)
 {
-  tree field;
-  tree type;
-  tree tmp;
+  tree type, field;
 
   type = TREE_TYPE (desc);
   gcc_assert (GFC_DESCRIPTOR_TYPE_P (type));
@@ -262,10 +261,19 @@ gfc_conv_descriptor_dimension (tree desc, tree dim)
 	  && TREE_CODE (TREE_TYPE (field)) == ARRAY_TYPE
 	  && TREE_CODE (TREE_TYPE (TREE_TYPE (field))) == RECORD_TYPE);
 
-  tmp = fold_build3_loc (input_location, COMPONENT_REF, TREE_TYPE (field),
-			 desc, field, NULL_TREE);
-  tmp = gfc_build_array_ref (tmp, dim, NULL);
-  return tmp;
+  return fold_build3_loc (input_location, COMPONENT_REF, TREE_TYPE (field),
+			  desc, field, NULL_TREE);
+}
+
+
+static tree
+gfc_conv_descriptor_dimension (tree desc, tree dim)
+{
+  tree tmp;
+
+  tmp = gfc_get_descriptor_dimension (desc);
+
+  return gfc_build_array_ref (tmp, dim, NULL);
 }
 
 
@@ -311,6 +319,7 @@ gfc_conv_descriptor_stride_get (tree desc, tree dim)
   if (integer_zerop (dim)
       && (GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_ALLOCATABLE
 	  ||GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_ASSUMED_SHAPE_CONT
+	  ||GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_ASSUMED_RANK_CONT
 	  ||GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_POINTER_CONT))
     return gfc_index_one_node;
 
@@ -6900,9 +6909,10 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, bool g77,
 	}
 
       if (!sym->attr.pointer
-	    && sym->as
-	    && sym->as->type != AS_ASSUMED_SHAPE 
-            && !sym->attr.allocatable)
+	  && sym->as
+	  && sym->as->type != AS_ASSUMED_SHAPE 
+	  && sym->as->type != AS_ASSUMED_RANK 
+	  && !sym->attr.allocatable)
         {
 	  /* Some variables are declared directly, others are declared as
 	     pointers and allocated on the heap.  */
@@ -6938,10 +6948,12 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, bool g77,
   no_pack = ((sym && sym->as
 		  && !sym->attr.pointer
 		  && sym->as->type != AS_DEFERRED
+		  && sym->as->type != AS_ASSUMED_RANK
 		  && sym->as->type != AS_ASSUMED_SHAPE)
 		      ||
 	     (ref && ref->u.ar.as
 		  && ref->u.ar.as->type != AS_DEFERRED
+		  && ref->u.ar.as->type != AS_ASSUMED_RANK
 		  && ref->u.ar.as->type != AS_ASSUMED_SHAPE)
 		      ||
 	     gfc_is_simply_contiguous (expr, false));

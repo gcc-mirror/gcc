@@ -107,6 +107,23 @@ ffs_hwi (unsigned HOST_WIDE_INT x)
   return 1 + floor_log2 (x & -x);
 }
 
+/* Return the number of set bits in X.  */
+
+int
+popcount_hwi (unsigned HOST_WIDE_INT x)
+{
+  int i, ret = 0;
+  size_t bits = sizeof (x) * CHAR_BIT;
+
+  for (i = 0; i < bits; i += 1)
+    {
+      ret += x & 1;
+      x >>= 1;
+    }
+
+  return ret;
+}
+
 #endif /* GCC_VERSION < 3004 */
 
 /* Compute the absolute value of X.  */

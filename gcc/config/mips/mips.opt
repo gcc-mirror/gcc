@@ -269,6 +269,10 @@ mno-float
 Target Report RejectNegative Var(TARGET_NO_FLOAT) Condition(TARGET_SUPPORTS_NO_FLOAT)
 Prevent the use of all floating-point operations
 
+mmcu
+Target Report Var(TARGET_MCU)
+Use MCU instructions
+
 mno-flush-func
 Target RejectNegative
 Do not use a cache-flushing function before calling stack trampolines

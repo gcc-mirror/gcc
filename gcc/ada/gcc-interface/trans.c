@@ -244,6 +244,7 @@ static void add_cleanup (tree, Node_Id);
 static void add_stmt_list (List_Id);
 static void push_exception_label_stack (VEC(tree,gc) **, Entity_Id);
 static tree build_stmt_group (List_Id, bool);
+static inline bool stmt_group_may_fallthru (void);
 static enum gimplify_status gnat_gimplify_stmt (tree *);
 static void elaborate_all_entities (Node_Id);
 static void process_freeze_entity (Node_Id);
@@ -4455,6 +4456,7 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
   else if (gcc_zcx)
     {
       tree gnu_handlers;
+      location_t locus;
 
       /* First make a block containing the handlers.  */
       start_stmt_group ();
@@ -4467,6 +4469,14 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
       /* Now make the TRY_CATCH_EXPR for the block.  */
       gnu_result = build2 (TRY_CATCH_EXPR, void_type_node,
 			   gnu_inner_block, gnu_handlers);
+      /* Set a location.  We need to find a uniq location for the dispatching
+	 code, otherwise we can get coverage or debugging issues.  Try with
+	 the location of the end label.  */
+      if (Present (End_Label (gnat_node))
+	  && Sloc_to_locus (Sloc (End_Label (gnat_node)), &locus))
+	SET_EXPR_LOCATION (gnu_result, locus);
+      else
+	set_expr_location_from_node (gnu_result, gnat_node);
     }
   else
     gnu_result = gnu_inner_block;
@@ -6197,12 +6207,18 @@ gnat_to_gnu (Node_Id gnat_node)
       break;
 
     case N_Block_Statement:
-      start_stmt_group ();
-      gnat_pushlevel ();
-      process_decls (Declarations (gnat_node), Empty, Empty, true, true);
-      add_stmt (gnat_to_gnu (Handled_Statement_Sequence (gnat_node)));
-      gnat_poplevel ();
-      gnu_result = end_stmt_group ();
+      /* The only way to enter the block is to fall through to it.  */
+      if (stmt_group_may_fallthru ())
+	{
+	  start_stmt_group ();
+	  gnat_pushlevel ();
+	  process_decls (Declarations (gnat_node), Empty, Empty, true, true);
+	  add_stmt (gnat_to_gnu (Handled_Statement_Sequence (gnat_node)));
+	  gnat_poplevel ();
+	  gnu_result = end_stmt_group ();
+	}
+      else
+	gnu_result = alloc_stmt_list ();
       break;
 
     case N_Exit_Statement:
@@ -7238,6 +7254,17 @@ end_stmt_group (void)
   stmt_group_free_list = group;
 
   return gnu_retval;
+}
+
+/* Return whether the current statement group may fall through.  */
+
+static inline bool
+stmt_group_may_fallthru (void)
+{
+  if (current_stmt_group->stmt_list)
+    return block_may_fallthru (current_stmt_group->stmt_list);
+  else
+    return true;
 }
 
 /* Add a list of statements from GNAT_LIST, a possibly-empty list of

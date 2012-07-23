@@ -2935,7 +2935,6 @@ gfc_simplify_iparity (gfc_expr *array, gfc_expr *dim, gfc_expr *mask)
 }
 
 
-
 gfc_expr *
 gfc_simplify_is_iostat_end (gfc_expr *x)
 {
@@ -3381,7 +3380,8 @@ simplify_bound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind, int upper)
 
  done:
 
-  if (as && (as->type == AS_DEFERRED || as->type == AS_ASSUMED_SHAPE))
+  if (as && (as->type == AS_DEFERRED || as->type == AS_ASSUMED_SHAPE
+	     || as->type == AS_ASSUMED_RANK))
     return NULL;
 
   if (dim == NULL)
@@ -3443,12 +3443,15 @@ simplify_bound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind, int upper)
 
       d = mpz_get_si (dim->value.integer);
 
-      if (d < 1 || d > array->rank
+      if ((d < 1 || d > array->rank)
 	  || (d == array->rank && as && as->type == AS_ASSUMED_SIZE && upper))
 	{
 	  gfc_error ("DIM argument at %L is out of bounds", &dim->where);
 	  return &gfc_bad_expr;
 	}
+
+      if (as && as->type == AS_ASSUMED_RANK)
+	return NULL;
 
       return simplify_bound_dim (array, kind, d, upper, as, ref, false);
     }
@@ -4780,6 +4783,10 @@ gfc_simplify_range (gfc_expr *e)
 gfc_expr *
 gfc_simplify_rank (gfc_expr *e)
 {
+  /* Assumed rank.  */
+  if (e->rank == -1)
+    return NULL;
+
   return gfc_get_int_expr (gfc_default_integer_kind, &e->where, e->rank);
 }
 

@@ -29,10 +29,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "target.h"
 #include "basic-block.h"
-#include "tree-pretty-print.h"
 #include "gimple-pretty-print.h"
 #include "tree-flow.h"
-#include "tree-dump.h"
+#include "dumpfile.h"
 #include "cfgloop.h"
 #include "tree-chrec.h"
 #include "tree-scalar-evolution.h"
@@ -1132,6 +1131,18 @@ vect_verify_datarefs_alignment (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
   return true;
 }
 
+/* Given an memory reference EXP return whether its alignment is less
+   than its size.  */
+
+static bool
+not_size_aligned (tree exp)
+{
+  if (!host_integerp (TYPE_SIZE (TREE_TYPE (exp)), 1))
+    return true;
+
+  return (TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (exp)))
+	  > get_object_alignment (exp));
+}
 
 /* Function vector_alignment_reachable_p
 
@@ -1185,12 +1196,8 @@ vector_alignment_reachable_p (struct data_reference *dr)
 
   if (!known_alignment_for_access_p (dr))
     {
-      tree type = (TREE_TYPE (DR_REF (dr)));
-      bool is_packed = contains_packed_reference (DR_REF (dr));
-
-      if (compare_tree_int (TYPE_SIZE (type), TYPE_ALIGN (type)) > 0)
-	is_packed = true;
-
+      tree type = TREE_TYPE (DR_REF (dr));
+      bool is_packed = not_size_aligned (DR_REF (dr));
       if (vect_print_dump_info (REPORT_DETAILS))
 	fprintf (vect_dump, "Unknown misalignment, is_packed = %d",is_packed);
       if (targetm.vectorize.vector_alignment_reachable (type, is_packed))
@@ -3398,15 +3405,12 @@ vect_get_new_vect_var (tree type, enum vect_var_kind var_kind, const char *name)
   if (name)
     {
       char* tmp = concat (prefix, name, NULL);
-      new_vect_var = create_tmp_var (type, tmp);
+      new_vect_var = create_tmp_reg (type, tmp);
       free (tmp);
     }
   else
-    new_vect_var = create_tmp_var (type, prefix);
-
-  /* Mark vector typed variable as a gimple register variable.  */
-  if (TREE_CODE (type) == VECTOR_TYPE)
-    DECL_GIMPLE_REG_P (new_vect_var) = true;
+    new_vect_var = create_tmp_reg (type, prefix);
+  add_referenced_var (new_vect_var);
 
   return new_vect_var;
 }
@@ -3534,7 +3538,6 @@ vect_create_addr_base_for_vector_ref (gimple stmt,
   vec_stmt = fold_convert (vect_ptr_type, addr_base);
   addr_expr = vect_get_new_vect_var (vect_ptr_type, vect_pointer_var,
                                      get_name (base_name));
-  add_referenced_var (addr_expr);
   vec_stmt = force_gimple_operand (vec_stmt, &seq, false, addr_expr);
   gimple_seq_add_seq (new_stmt_list, seq);
 
@@ -3732,8 +3735,6 @@ vect_create_data_ref_ptr (gimple stmt, tree aggr_type, struct loop *at_loop,
 	}
       while (orig_stmt);
     }
-
-  add_referenced_var (aggr_ptr);
 
   /* Note: If the dataref is in an inner-loop nested in LOOP, and we are
      vectorizing LOOP (i.e., outer-loop vectorization), we need to create two
@@ -3984,7 +3985,6 @@ vect_create_destination_var (tree scalar_dest, tree vectype)
   if (!new_name)
     new_name = "var_";
   vec_dest = vect_get_new_vect_var (type, kind, new_name);
-  add_referenced_var (vec_dest);
 
   return vec_dest;
 }
@@ -4145,8 +4145,7 @@ vect_permute_store_chain (VEC(tree,heap) *dr_chain,
 
 	  /* Create interleaving stmt:
 	     high = VEC_PERM_EXPR <vect1, vect2, {0, nelt, 1, nelt+1, ...}>  */
-	  perm_dest = create_tmp_var (vectype, "vect_inter_high");
-	  DECL_GIMPLE_REG_P (perm_dest) = 1;
+	  perm_dest = create_tmp_reg (vectype, "vect_inter_high");
 	  add_referenced_var (perm_dest);
 	  high = make_ssa_name (perm_dest, NULL);
 	  perm_stmt
@@ -4158,8 +4157,7 @@ vect_permute_store_chain (VEC(tree,heap) *dr_chain,
 	  /* Create interleaving stmt:
 	     low = VEC_PERM_EXPR <vect1, vect2, {nelt/2, nelt*3/2, nelt/2+1,
 						 nelt*3/2+1, ...}>  */
-	  perm_dest = create_tmp_var (vectype, "vect_inter_low");
-	  DECL_GIMPLE_REG_P (perm_dest) = 1;
+	  perm_dest = create_tmp_reg (vectype, "vect_inter_low");
 	  add_referenced_var (perm_dest);
 	  low = make_ssa_name (perm_dest, NULL);
 	  perm_stmt
@@ -4433,7 +4431,7 @@ vect_setup_realignment (gimple stmt, gimple_stmt_iterator *gsi,
   msq = make_ssa_name (vec_dest, NULL);
   phi_stmt = create_phi_node (msq, containing_loop->header);
   SSA_NAME_DEF_STMT (msq) = phi_stmt;
-  add_phi_arg (phi_stmt, msq_init, pe, UNKNOWN_LOCATION, NULL);
+  add_phi_arg (phi_stmt, msq_init, pe, UNKNOWN_LOCATION);
 
   return msq;
 }
@@ -4602,8 +4600,7 @@ vect_permute_load_chain (VEC(tree,heap) *dr_chain,
 	  second_vect = VEC_index (tree, dr_chain, j+1);
 
 	  /* data_ref = permute_even (first_data_ref, second_data_ref);  */
-	  perm_dest = create_tmp_var (vectype, "vect_perm_even");
-	  DECL_GIMPLE_REG_P (perm_dest) = 1;
+	  perm_dest = create_tmp_reg (vectype, "vect_perm_even");
 	  add_referenced_var (perm_dest);
 
 	  perm_stmt = gimple_build_assign_with_ops3 (VEC_PERM_EXPR, perm_dest,
@@ -4617,8 +4614,7 @@ vect_permute_load_chain (VEC(tree,heap) *dr_chain,
 	  VEC_replace (tree, *result_chain, j/2, data_ref);
 
 	  /* data_ref = permute_odd (first_data_ref, second_data_ref);  */
-	  perm_dest = create_tmp_var (vectype, "vect_perm_odd");
-	  DECL_GIMPLE_REG_P (perm_dest) = 1;
+	  perm_dest = create_tmp_reg (vectype, "vect_perm_odd");
 	  add_referenced_var (perm_dest);
 
 	  perm_stmt = gimple_build_assign_with_ops3 (VEC_PERM_EXPR, perm_dest,
@@ -4875,7 +4871,7 @@ vect_supportable_dr_alignment (struct data_reference *dr,
 	    return dr_explicit_realign_optimized;
 	}
       if (!known_alignment_for_access_p (dr))
-	is_packed = contains_packed_reference (DR_REF (dr));
+	is_packed = not_size_aligned (DR_REF (dr));
 
       if (targetm.vectorize.
 	  support_vector_misalignment (mode, type,
@@ -4889,7 +4885,7 @@ vect_supportable_dr_alignment (struct data_reference *dr,
       tree type = (TREE_TYPE (DR_REF (dr)));
 
       if (!known_alignment_for_access_p (dr))
-	is_packed = contains_packed_reference (DR_REF (dr));
+	is_packed = not_size_aligned (DR_REF (dr));
 
      if (targetm.vectorize.
          support_vector_misalignment (mode, type,

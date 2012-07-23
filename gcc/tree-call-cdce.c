@@ -28,9 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "tree-flow.h"
 #include "gimple.h"
-#include "tree-dump.h"
 #include "tree-pass.h"
-#include "timevar.h"
 #include "flags.h"
 
 

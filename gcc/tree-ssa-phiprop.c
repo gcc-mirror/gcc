@@ -25,12 +25,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "tm_p.h"
 #include "basic-block.h"
-#include "timevar.h"
-#include "tree-pretty-print.h"
 #include "gimple-pretty-print.h"
 #include "tree-flow.h"
 #include "tree-pass.h"
-#include "tree-dump.h"
 #include "langhooks.h"
 #include "flags.h"
 
@@ -159,11 +156,9 @@ phiprop_insert_phi (basic_block bb, gimple phi, gimple use_stmt,
       tree old_arg, new_var;
       gimple tmp;
       source_location locus;
-      tree block;
 
       old_arg = PHI_ARG_DEF_FROM_EDGE (phi, e);
       locus = gimple_phi_arg_location_from_edge (phi, e);
-      block = gimple_phi_arg_block_from_edge (phi, e);
       while (TREE_CODE (old_arg) == SSA_NAME
 	     && (SSA_NAME_VERSION (old_arg) >= n
 	         || phivn[SSA_NAME_VERSION (old_arg)].value == NULL_TREE))
@@ -171,7 +166,6 @@ phiprop_insert_phi (basic_block bb, gimple phi, gimple use_stmt,
 	  gimple def_stmt = SSA_NAME_DEF_STMT (old_arg);
 	  old_arg = gimple_assign_rhs1 (def_stmt);
 	  locus = gimple_location (def_stmt);
-	  block = gimple_block (def_stmt);
 	}
 
       if (TREE_CODE (old_arg) == SSA_NAME)
@@ -206,7 +200,6 @@ phiprop_insert_phi (basic_block bb, gimple phi, gimple use_stmt,
 	  new_var = make_ssa_name (new_var, tmp);
 	  gimple_assign_set_lhs (tmp, new_var);
 	  gimple_set_location (tmp, locus);
-	  gimple_set_block (tmp, block);
 
 	  gsi_insert_on_edge (e, tmp);
 	  update_stmt (tmp);
@@ -220,7 +213,7 @@ phiprop_insert_phi (basic_block bb, gimple phi, gimple use_stmt,
 	    }
 	}
 
-      add_phi_arg (new_phi, new_var, e, locus, block);
+      add_phi_arg (new_phi, new_var, e, locus);
     }
 
   update_stmt (new_phi);

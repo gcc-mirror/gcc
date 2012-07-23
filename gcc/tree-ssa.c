@@ -30,16 +30,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "basic-block.h"
 #include "function.h"
-#include "tree-pretty-print.h"
 #include "gimple-pretty-print.h"
 #include "bitmap.h"
 #include "pointer-set.h"
 #include "tree-flow.h"
 #include "gimple.h"
 #include "tree-inline.h"
-#include "timevar.h"
 #include "hashtab.h"
-#include "tree-dump.h"
 #include "tree-pass.h"
 #include "diagnostic-core.h"
 #include "cfgloop.h"
@@ -51,8 +48,7 @@ static struct pointer_map_t *edge_var_maps;
 /* Add a mapping with PHI RESULT and PHI DEF associated with edge E.  */
 
 void
-redirect_edge_var_map_add (edge e, tree result, tree def, source_location locus,
-			   tree block)
+redirect_edge_var_map_add (edge e, tree result, tree def, source_location locus)
 {
   void **slot;
   edge_var_map_vector old_head, head;
@@ -71,7 +67,6 @@ redirect_edge_var_map_add (edge e, tree result, tree def, source_location locus,
   new_node.def = def;
   new_node.result = result;
   new_node.locus = locus;
-  new_node.block = block;
 
   VEC_safe_push (edge_var_map, heap, head, &new_node);
   if (old_head != head)
@@ -195,17 +190,15 @@ ssa_redirect_edge (edge e, basic_block dest)
     {
       tree def;
       source_location locus ;
-      tree block;
 
       phi = gsi_stmt (gsi);
       def = gimple_phi_arg_def (phi, e->dest_idx);
       locus = gimple_phi_arg_location (phi, e->dest_idx);
-      block = gimple_phi_arg_block (phi, e->dest_idx);
 
       if (def == NULL_TREE)
 	continue;
 
-      redirect_edge_var_map_add (e, gimple_phi_result (phi), def, locus, block);
+      redirect_edge_var_map_add (e, gimple_phi_result (phi), def, locus);
     }
 
   e = redirect_edge_succ_nodup (e, dest);
@@ -238,8 +231,7 @@ flush_pending_stmts (edge e)
 
       phi = gsi_stmt (gsi);
       def = redirect_edge_var_map_def (vm);
-      add_phi_arg (phi, def, e, redirect_edge_var_map_location (vm),
-		   redirect_edge_var_map_block (vm));
+      add_phi_arg (phi, def, e, redirect_edge_var_map_location (vm));
     }
 
   redirect_edge_var_map_clear (e);
@@ -1164,13 +1156,8 @@ delete_tree_ssa (void)
   /* Remove annotations from every referenced local variable.  */
   FOR_EACH_REFERENCED_VAR (cfun, var, rvi)
     {
-      if (is_global_var (var))
-	continue;
-      if (var_ann (var))
-	{
-	  ggc_free (var_ann (var));
-	  *DECL_VAR_ANN_PTR (var) = NULL;
-	}
+      ggc_free (var_ann (var));
+      *DECL_VAR_ANN_PTR (var) = NULL;
     }
   htab_delete (gimple_referenced_vars (cfun));
   cfun->gimple_df->referenced_vars = NULL;

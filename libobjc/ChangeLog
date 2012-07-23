@@ -1,3 +1,8 @@
+2012-07-19  Tristan Gingold  <gingold@adacore.com>
+	    Richard Henderson  <rth@redhat.com>
+
+	* exception.c (__gnu_objc_personality_seh0): New function.
+
 2012-05-16  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* configure: Regenerated.
@@ -38,7 +43,7 @@
 	fields other than the first two upon loading a class.
 
 2011-10-09  Nicola Pero  <nicola.pero@meta-innovation.com>
-	
+
 	* class.c (objc_lookup_class): Added back for compatibility with
 	clang which seems to emit calls to it.
 

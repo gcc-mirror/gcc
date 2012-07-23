@@ -278,7 +278,29 @@
   "pmpyshr2.u %0 = %1, %2, %3"
   [(set_attr "itanium_class" "mmmul")])
 
-(define_insn "pmpy2_even"
+(define_expand "smulv4hi3_highpart"
+  [(match_operand:V4HI 0 "gr_register_operand")
+   (match_operand:V4HI 1 "gr_register_operand")
+   (match_operand:V4HI 2 "gr_register_operand")]
+  ""
+{
+  emit_insn (gen_pmpyshr2 (operands[0], operands[1],
+			   operands[2], GEN_INT (16)));
+  DONE;
+})
+
+(define_expand "umulv4hi3_highpart"
+  [(match_operand:V4HI 0 "gr_register_operand")
+   (match_operand:V4HI 1 "gr_register_operand")
+   (match_operand:V4HI 2 "gr_register_operand")]
+  ""
+{
+  emit_insn (gen_pmpyshr2_u (operands[0], operands[1],
+			     operands[2], GEN_INT (16)));
+  DONE;
+})
+
+(define_insn "vec_widen_smult_even_v4hi"
   [(set (match_operand:V2SI 0 "gr_register_operand" "=r")
 	(mult:V2SI
 	  (vec_select:V2SI
@@ -299,7 +321,7 @@
 }
   [(set_attr "itanium_class" "mmshf")])
 
-(define_insn "pmpy2_odd"
+(define_insn "vec_widen_smult_odd_v4hi"
   [(set (match_operand:V2SI 0 "gr_register_operand" "=r")
 	(mult:V2SI
 	  (vec_select:V2SI
@@ -599,68 +621,6 @@
   ""
 {
   ia64_expand_widen_sum (operands, false);
-  DONE;
-})
-
-(define_expand "udot_prodv8qi"
-  [(match_operand:V2SI 0 "gr_register_operand" "")
-   (match_operand:V8QI 1 "gr_register_operand" "")
-   (match_operand:V8QI 2 "gr_register_operand" "")
-   (match_operand:V2SI 3 "gr_register_operand" "")]
-  ""
-{
-  ia64_expand_dot_prod_v8qi (operands, true);
-  DONE;
-})
-
-(define_expand "sdot_prodv8qi"
-  [(match_operand:V2SI 0 "gr_register_operand" "")
-   (match_operand:V8QI 1 "gr_register_operand" "")
-   (match_operand:V8QI 2 "gr_register_operand" "")
-   (match_operand:V2SI 3 "gr_register_operand" "")]
-  ""
-{
-  ia64_expand_dot_prod_v8qi (operands, false);
-  DONE;
-})
-
-(define_expand "sdot_prodv4hi"
-  [(match_operand:V2SI 0 "gr_register_operand" "")
-   (match_operand:V4HI 1 "gr_register_operand" "")
-   (match_operand:V4HI 2 "gr_register_operand" "")
-   (match_operand:V2SI 3 "gr_register_operand" "")]
-  ""
-{
-  rtx e, o, t;
-
-  e = gen_reg_rtx (V2SImode);
-  o = gen_reg_rtx (V2SImode);
-  t = gen_reg_rtx (V2SImode);
-
-  emit_insn (gen_pmpy2_even (e, operands[1], operands[2]));
-  emit_insn (gen_pmpy2_odd (o, operands[1], operands[2]));
-  emit_insn (gen_addv2si3 (t, e, operands[3]));
-  emit_insn (gen_addv2si3 (operands[0], t, o));
-  DONE;
-})
-
-(define_expand "udot_prodv4hi"
-  [(match_operand:V2SI 0 "gr_register_operand" "")
-   (match_operand:V4HI 1 "gr_register_operand" "")
-   (match_operand:V4HI 2 "gr_register_operand" "")
-   (match_operand:V2SI 3 "gr_register_operand" "")]
-  ""
-{
-  rtx l, h, t;
-
-  l = gen_reg_rtx (V2SImode);
-  h = gen_reg_rtx (V2SImode);
-  t = gen_reg_rtx (V2SImode);
-
-  emit_insn (gen_vec_widen_umult_lo_v4hi (l, operands[1], operands[2]));
-  emit_insn (gen_vec_widen_umult_hi_v4hi (h, operands[1], operands[2]));
-  emit_insn (gen_addv2si3 (t, l, operands[3]));
-  emit_insn (gen_addv2si3 (operands[0], t, h));
   DONE;
 })
 

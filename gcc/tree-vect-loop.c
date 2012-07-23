@@ -27,10 +27,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "ggc.h"
 #include "tree.h"
 #include "basic-block.h"
-#include "tree-pretty-print.h"
 #include "gimple-pretty-print.h"
 #include "tree-flow.h"
-#include "tree-dump.h"
+#include "tree-pass.h"
 #include "cfgloop.h"
 #include "expr.h"
 #include "recog.h"
@@ -3035,8 +3034,6 @@ get_initial_def_for_induction (gimple iv_phi)
       /* iv_loop is the loop to be vectorized. Create:
 	 vec_init = [X, X+S, X+2*S, X+3*S] (S = step_expr, X = init_expr)  */
       new_var = vect_get_new_vect_var (scalar_type, vect_scalar_var, "var_");
-      add_referenced_var (new_var);
-
       new_name = force_gimple_operand (init_expr, &stmts, false, new_var);
       if (stmts)
 	{
@@ -3107,7 +3104,6 @@ get_initial_def_for_induction (gimple iv_phi)
 
   /* Create the induction-phi that defines the induction-operand.  */
   vec_dest = vect_get_new_vect_var (vectype, vect_simple_var, "vec_iv_");
-  add_referenced_var (vec_dest);
   induction_phi = create_phi_node (vec_dest, iv_loop->header);
   set_vinfo_for_stmt (induction_phi,
 		      new_stmt_vec_info (induction_phi, loop_vinfo, NULL));
@@ -3123,9 +3119,9 @@ get_initial_def_for_induction (gimple iv_phi)
                                                    NULL));
 
   /* Set the arguments of the phi node:  */
-  add_phi_arg (induction_phi, vec_init, pe, UNKNOWN_LOCATION, NULL);
+  add_phi_arg (induction_phi, vec_init, pe, UNKNOWN_LOCATION);
   add_phi_arg (induction_phi, vec_def, loop_latch_edge (iv_loop),
-	       UNKNOWN_LOCATION, NULL);
+	       UNKNOWN_LOCATION);
 
 
   /* In case that vectorization factor (VF) is bigger than the number
@@ -3609,13 +3605,13 @@ vect_create_epilog_for_reduction (VEC (tree, heap) *vect_defs, gimple stmt,
         {
           /* Set the loop-entry arg of the reduction-phi.  */
           add_phi_arg (phi, vec_init_def, loop_preheader_edge (loop),
-                       UNKNOWN_LOCATION, NULL);
+                       UNKNOWN_LOCATION);
 
           /* Set the loop-latch arg for the reduction-phi.  */
           if (j > 0)
             def = vect_get_vec_def_for_stmt_copy (vect_unknown_def_type, def);
 
-          add_phi_arg (phi, def, loop_latch_edge (loop), UNKNOWN_LOCATION, NULL);
+          add_phi_arg (phi, def, loop_latch_edge (loop), UNKNOWN_LOCATION);
 
           if (vect_print_dump_info (REPORT_DETAILS))
             {
@@ -4233,10 +4229,9 @@ vect_finalize_reduction:
                   /* Update phi node arguments with vs0 and vs2.  */
                   add_phi_arg (vect_phi, vect_phi_init,
                                loop_preheader_edge (outer_loop),
-                               UNKNOWN_LOCATION, NULL);
+                               UNKNOWN_LOCATION);
                   add_phi_arg (vect_phi, PHI_RESULT (inner_phi),
-                               loop_latch_edge (outer_loop), UNKNOWN_LOCATION,
-			       NULL);
+                               loop_latch_edge (outer_loop), UNKNOWN_LOCATION);
                   if (vect_print_dump_info (REPORT_DETAILS))
                     {
                       fprintf (vect_dump, "created double reduction phi "

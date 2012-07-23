@@ -28,18 +28,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "target.h"
 #include "basic-block.h"
-#include "tree-pretty-print.h"
 #include "gimple-pretty-print.h"
 #include "tree-flow.h"
-#include "tree-dump.h"
 #include "cfgloop.h"
 #include "expr.h"
-#include "recog.h"
+#include "recog.h"		/* FIXME: for insn_data */
 #include "optabs.h"
 #include "diagnostic-core.h"
 #include "tree-vectorizer.h"
-#include "langhooks.h"
+#include "dumpfile.h"
 
+/* For lang_hooks.types.type_for_mode.  */
+#include "langhooks.h"
 
 /* Return the vectorized type for the given statement.  */
 
@@ -1283,7 +1283,6 @@ vect_init_vector (gimple stmt, tree val, tree type, gimple_stmt_iterator *gsi)
     }
 
   new_var = vect_get_new_vect_var (type, vect_simple_var, "cst_");
-  add_referenced_var (new_var);
   init_stmt = gimple_build_assign  (new_var, val);
   new_temp = make_ssa_name (new_var, init_stmt);
   gimple_assign_set_lhs (init_stmt, new_temp);
@@ -2410,8 +2409,8 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
 
     case WIDEN:
       if (supportable_widening_operation (code, stmt, vectype_out, vectype_in,
-					  &decl1, &decl2, &code1, &code2,
-					  &multi_step_cvt, &interm_types))
+					  &code1, &code2, &multi_step_cvt,
+					  &interm_types))
 	{
 	  /* Binary widening operation can only be supported directly by the
 	     architecture.  */
@@ -2443,18 +2442,16 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
 		goto unsupported;
 	    }
 	  else if (!supportable_widening_operation (code, stmt, vectype_out,
-						    cvt_type, &decl1, &decl2,
-						    &codecvt1, &codecvt2,
-						    &multi_step_cvt,
+						    cvt_type, &codecvt1,
+						    &codecvt2, &multi_step_cvt,
 						    &interm_types))
 	    continue;
 	  else
 	    gcc_assert (multi_step_cvt == 0);
 
 	  if (supportable_widening_operation (NOP_EXPR, stmt, cvt_type,
-					      vectype_in, NULL, NULL, &code1,
-					      &code2, &multi_step_cvt,
-					      &interm_types))
+					      vectype_in, &code1, &code2,
+					      &multi_step_cvt, &interm_types))
 	    break;
 	}
 
@@ -3534,7 +3531,7 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
   if (code == MULT_HIGHPART_EXPR)
     {
       if (can_mult_highpart_p (vec_mode, TYPE_UNSIGNED (vectype)))
-	icode = 0;
+	icode = LAST_INSN_CODE;
       else
 	icode = CODE_FOR_nothing;
     }
@@ -4544,7 +4541,6 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	      gcc_assert (TYPE_VECTOR_SUBPARTS (TREE_TYPE (op))
 			  == TYPE_VECTOR_SUBPARTS (idxtype));
 	      var = vect_get_new_vect_var (idxtype, vect_simple_var, NULL);
-	      add_referenced_var (var);
 	      var = make_ssa_name (var, NULL);
 	      op = build1 (VIEW_CONVERT_EXPR, idxtype, op);
 	      new_stmt
@@ -4562,7 +4558,6 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	      gcc_assert (TYPE_VECTOR_SUBPARTS (vectype)
 			  == TYPE_VECTOR_SUBPARTS (rettype));
 	      var = vect_get_new_vect_var (rettype, vect_simple_var, NULL);
-	      add_referenced_var (var);
 	      op = make_ssa_name (var, new_stmt);
 	      gimple_call_set_lhs (new_stmt, op);
 	      vect_finish_stmt_generation (stmt, new_stmt, gsi);
@@ -5060,7 +5055,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 		      if (i == vec_num - 1 && j == ncopies - 1)
 			add_phi_arg (phi, lsq,
 				     loop_latch_edge (containing_loop),
-				     UNKNOWN_LOCATION, NULL);
+				     UNKNOWN_LOCATION);
 		      msq = lsq;
 		    }
 		}
@@ -6262,9 +6257,6 @@ vect_is_simple_use_1 (tree operand, gimple stmt, loop_vec_info loop_vinfo,
    Output:
    - CODE1 and CODE2 are codes of vector operations to be used when
    vectorizing the operation, if available.
-   - DECL1 and DECL2 are decls of target builtin functions to be used
-   when vectorizing the operation, if available.  In this case,
-   CODE1 and CODE2 are CALL_EXPR.
    - MULTI_STEP_CVT determines the number of required intermediate steps in
    case of multi-step conversion (like char->short->int - in that case
    MULTI_STEP_CVT will be 1).
@@ -6274,8 +6266,6 @@ vect_is_simple_use_1 (tree operand, gimple stmt, loop_vec_info loop_vinfo,
 bool
 supportable_widening_operation (enum tree_code code, gimple stmt,
 				tree vectype_out, tree vectype_in,
-                                tree *decl1 ATTRIBUTE_UNUSED,
-				tree *decl2 ATTRIBUTE_UNUSED,
                                 enum tree_code *code1, enum tree_code *code2,
                                 int *multi_step_cvt,
                                 VEC (tree, heap) **interm_types)
@@ -6339,8 +6329,8 @@ supportable_widening_operation (enum tree_code code, gimple stmt,
 	  && !nested_in_vect_loop_p (vect_loop, stmt)
 	  && supportable_widening_operation (VEC_WIDEN_MULT_EVEN_EXPR,
 					     stmt, vectype_out, vectype_in,
-					     NULL, NULL, code1, code2,
-					     multi_step_cvt, interm_types))
+					     code1, code2, multi_step_cvt,
+					     interm_types))
 	return true;
       c1 = VEC_WIDEN_MULT_LO_EXPR;
       c2 = VEC_WIDEN_MULT_HI_EXPR;

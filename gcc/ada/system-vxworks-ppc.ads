@@ -115,8 +115,14 @@ package System is
 
 private
 
-   pragma Linker_Options ("-crtbe");
-   --  Required by ZCX on VxWorks kernel
+   --  Note: we now more closely rely on the VxWorks mechanisms to register
+   --  exception tables for ZCX support in kernel mode, thanks to crt objects
+   --  featuring dedicated constructors triggered by linker options below.
+
+   --  Commenting the pragma for the sjlj runtimes is performed automatically
+   --  by our Makefiles, so this line needs to be manipulated with care.
+
+   pragma Linker_Options ("-crtbe" & ASCII.NUL & "-auto-register");
 
    type Address is mod Memory_Size;
    Null_Address : constant Address := 0;
@@ -148,6 +154,7 @@ private
    Stack_Check_Probes        : constant Boolean := False;
    Stack_Check_Limits        : constant Boolean := True;
    Support_Aggregates        : constant Boolean := True;
+   Support_Atomic_Primitives : constant Boolean := False;
    Support_Composite_Assign  : constant Boolean := True;
    Support_Composite_Compare : constant Boolean := True;
    Support_Long_Shifts       : constant Boolean := True;

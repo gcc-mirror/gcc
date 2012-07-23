@@ -1173,9 +1173,16 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
               "attempt to tamper with elements (set is locked)";
          end if;
 
-         X := Position.Node.Element;
-         Position.Node.Element := new Element_Type'(New_Item);
-         Free_Element (X);
+         declare
+            pragma Unsuppress (Accessibility_Check);
+            --  The element allocator may need an accessibility check in the
+            --  case the actual type is class-wide or has access discriminants
+            --  (see RM 4.8(10.1) and AI12-0035).
+         begin
+            X := Position.Node.Element;
+            Position.Node.Element := new Element_Type'(New_Item);
+            Free_Element (X);
+         end;
       end if;
    end Include;
 
@@ -1238,6 +1245,11 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       --------------
 
       function New_Node return Node_Access is
+         pragma Unsuppress (Accessibility_Check);
+         --  The element allocator may need an accessibility check in the case
+         --  the actual type is class-wide or has access discriminants (see
+         --  RM 4.8(10.1) and AI12-0035).
+
          Element : Element_Access := new Element_Type'(New_Item);
 
       begin
@@ -1818,9 +1830,16 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
            "attempt to tamper with elements (set is locked)";
       end if;
 
-      X := Node.Element;
-      Node.Element := new Element_Type'(New_Item);
-      Free_Element (X);
+      declare
+         pragma Unsuppress (Accessibility_Check);
+         --  The element allocator may need an accessibility check in the case
+         --  the actual type is class-wide or has access discriminants (see
+         --  RM 4.8(10.1) and AI12-0035).
+      begin
+         X := Node.Element;
+         Node.Element := new Element_Type'(New_Item);
+         Free_Element (X);
+      end;
    end Replace;
 
    ---------------------
@@ -1854,6 +1873,10 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       --------------
 
       function New_Node return Node_Access is
+         pragma Unsuppress (Accessibility_Check);
+         --  The element allocator may need an accessibility check in the case
+         --  the actual type is class-wide or has access discriminants (see
+         --  RM 4.8(10.1) and AI12-0035).
       begin
          Node.Element := new Element_Type'(Item);  -- OK if fails
          Node.Color := Red;
@@ -1883,8 +1906,15 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
               "attempt to tamper with elements (set is locked)";
          end if;
 
-         Node.Element := new Element_Type'(Item);
-         Free_Element (X);
+         declare
+            pragma Unsuppress (Accessibility_Check);
+            --  The element allocator may need an accessibility check in the
+            --  case the actual type is class-wide or has access discriminants
+            --  (see RM 4.8(10.1) and AI12-0035).
+         begin
+            Node.Element := new Element_Type'(Item);
+            Free_Element (X);
+         end;
 
          return;
       end if;
@@ -1901,8 +1931,15 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
                  "attempt to tamper with elements (set is locked)";
             end if;
 
-            Node.Element := new Element_Type'(Item);
-            Free_Element (X);
+            declare
+               pragma Unsuppress (Accessibility_Check);
+               --  The element allocator may need an accessibility check in the
+               --  case actual type is class-wide or has access discriminants
+               --  (see RM 4.8(10.1) and AI12-0035).
+            begin
+               Node.Element := new Element_Type'(Item);
+               Free_Element (X);
+            end;
 
             return;
          end if;

@@ -7852,9 +7852,9 @@ package body Sem_Ch12 is
      (N      : Node_Id;
       F_Node : Node_Id)
    is
-      Inst  : constant Entity_Id := Entity (F_Node);
       Decl  : Node_Id;
       Decls : List_Id;
+      Inst  : Entity_Id;
       Par_N : Node_Id;
 
       function Enclosing_Body (N : Node_Id) return Node_Id;
@@ -7921,9 +7921,18 @@ package body Sem_Ch12 is
 
    begin
       if not Is_List_Member (F_Node) then
-         Decls := List_Containing (N);
-         Par_N := Parent (Decls);
          Decl  := N;
+         Decls := List_Containing (N);
+         Inst  := Entity (F_Node);
+         Par_N := Parent (Decls);
+
+         --  When processing a subprogram instantiation, utilize the actual
+         --  subprogram instantiation rather than its package wrapper as it
+         --  carries all the context information.
+
+         if Is_Wrapper_Package (Inst) then
+            Inst := Related_Instance (Inst);
+         end if;
 
          --  If this is a package instance, check whether the generic is
          --  declared in a previous instance and the current instance is

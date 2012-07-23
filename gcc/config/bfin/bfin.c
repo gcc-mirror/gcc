@@ -56,6 +56,7 @@
 #include "sel-sched.h"
 #include "hw-doloop.h"
 #include "opts.h"
+#include "dumpfile.h"
 
 /* A C structure for machine-specific, per-function data.
    This is added to the cfun structure.  */

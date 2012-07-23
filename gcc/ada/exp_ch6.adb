@@ -4835,8 +4835,8 @@ package body Exp_Ch6 is
          Ret_Type := Etype (Subp);
       end if;
 
-      --  Create temporaries for the actuals that are expressions, or that
-      --  are scalars and require copying to preserve semantics.
+      --  Create temporaries for the actuals that are expressions, or that are
+      --  scalars and require copying to preserve semantics.
 
       F := First_Formal (Subp);
       A := First_Actual (N);
@@ -4844,6 +4844,14 @@ package body Exp_Ch6 is
          if Present (Renamed_Object (F)) then
             Error_Msg_N ("cannot inline call to recursive subprogram", N);
             return;
+         end if;
+
+         --  Reset Last_Assignment for any parameters of mode out or in out, to
+         --  prevent spurious warnings about overwriting for assignments to the
+         --  formal in the inlined code.
+
+         if Is_Entity_Name (A) and then Ekind (F) /= E_In_Parameter then
+            Set_Last_Assignment (Entity (A), Empty);
          end if;
 
          --  If the argument may be a controlling argument in a call within
@@ -4878,9 +4886,9 @@ package body Exp_Ch6 is
                (not Is_Scalar_Type (Etype (A))
                  or else Ekind (Entity (A)) = E_Enumeration_Literal))
 
-         --  When the actual is an identifier and the corresponding formal
-         --  is used only once in the original body, the formal can be
-         --  substituted directly with the actual parameter.
+         --  When the actual is an identifier and the corresponding formal is
+         --  used only once in the original body, the formal can be substituted
+         --  directly with the actual parameter.
 
            or else (Nkind (A) = N_Identifier
              and then Formal_Is_Used_Once (F))
@@ -4926,8 +4934,8 @@ package body Exp_Ch6 is
 
             Set_Sloc (New_A, Sloc (N));
 
-            --  If the actual has a by-reference type, it cannot be copied, so
-            --  its value is captured in a renaming declaration. Otherwise
+            --  If the actual has a by-reference type, it cannot be copied,
+            --  so its value is captured in a renaming declaration. Otherwise
             --  declare a local constant initialized with the actual.
 
             --  We also use a renaming declaration for expressions of an array
@@ -5151,8 +5159,8 @@ package body Exp_Ch6 is
          end if;
       end if;
 
-      --  Analyze Blk with In_Inlined_Body set, to avoid spurious errors on
-      --  conflicting private views that Gigi would ignore. If this is a
+      --  Analyze Blk with In_Inlined_Body set, to avoid spurious errors
+      --  on conflicting private views that Gigi would ignore. If this is a
       --  predefined unit, analyze with checks off, as is done in the non-
       --  inlined run-time units.
 

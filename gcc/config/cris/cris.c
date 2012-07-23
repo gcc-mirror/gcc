@@ -153,6 +153,7 @@ static void cris_trampoline_init (rtx, tree, rtx);
 static rtx cris_function_value(const_tree, const_tree, bool);
 static rtx cris_libcall_value (enum machine_mode, const_rtx);
 static bool cris_function_value_regno_p (const unsigned int);
+static void cris_file_end (void);
 
 /* This is the parsed result of the "-max-stack-stackframe=" option.  If
    it (still) is zero, then there was no such option given.  */
@@ -199,6 +200,8 @@ int cris_cpu_version = CRIS_DEFAULT_CPU_VERSION;
 
 #undef TARGET_ASM_FILE_START
 #define TARGET_ASM_FILE_START cris_file_start
+#undef TARGET_ASM_FILE_END
+#define TARGET_ASM_FILE_END cris_file_end
 
 #undef TARGET_INIT_LIBFUNCS
 #define TARGET_INIT_LIBFUNCS cris_init_libfuncs
@@ -2520,10 +2523,6 @@ cris_legitimate_pic_operand (rtx x)
 void 
 cris_asm_output_ident (const char *string)
 {
-  const char *section_asm_op;
-  int size;
-  char *buf;
-
   if (cgraph_state != CGRAPH_STATE_PARSING)
     return;
 
@@ -2749,6 +2748,17 @@ cris_file_start (void)
   targetm.asm_file_start_app_off = !(TARGET_PDEBUG || flag_print_asm_name);
 
   default_file_start ();
+}
+
+/* Output that goes at the end of the file, similarly.  */
+
+static void
+cris_file_end (void)
+{
+  /* For CRIS, the default is to assume *no* executable stack, so output
+     an executable-stack-note only when needed.  */
+  if (TARGET_LINUX && trampolines_created)
+    file_end_indicate_exec_stack ();
 }
 
 /* Rename the function calls for integer multiply and divide.  */

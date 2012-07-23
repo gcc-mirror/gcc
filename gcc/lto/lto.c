@@ -38,7 +38,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-prop.h"
 #include "common.h"
 #include "debug.h"
-#include "timevar.h"
 #include "gimple.h"
 #include "lto.h"
 #include "lto-tree.h"

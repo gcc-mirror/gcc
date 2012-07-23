@@ -85,11 +85,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-flow.h"
 #include "tree-pass.h"
 #include "flags.h"
-#include "timevar.h"
 #include "diagnostic.h"
 #include "tree-dump.h"
 #include "tree-inline.h"
-#include "fibheap.h"
 #include "params.h"
 #include "gimple-pretty-print.h"
 #include "ipa-inline.h"
@@ -1286,8 +1284,7 @@ split_function (struct split_point *split_point)
 		  /* When there is PHI, just update its value.  */
 		  if (TREE_CODE (retval) == SSA_NAME
 		      && !gsi_end_p (psi))
-		    add_phi_arg (gsi_stmt (psi), retval, e, UNKNOWN_LOCATION,
-				 NULL);
+		    add_phi_arg (gsi_stmt (psi), retval, e, UNKNOWN_LOCATION);
 		  /* Otherwise update the return BB itself.
 		     find_return_bb allows at most one assignment to return value,
 		     so update first statement.  */

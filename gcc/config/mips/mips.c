@@ -6916,7 +6916,7 @@ mips_block_move_straight (rtx dest, rtx src, HOST_WIDE_INT length)
       else
 	{
 	  rtx part = adjust_address (src, BLKmode, offset);
-	  if (!mips_expand_ext_as_unaligned_load (regs[i], part, bits, 0))
+	  if (!mips_expand_ext_as_unaligned_load (regs[i], part, bits, 0, 0))
 	    gcc_unreachable ();
 	}
     }
@@ -7217,9 +7217,10 @@ mips_get_unaligned_mem (rtx *op, HOST_WIDE_INT width, HOST_WIDE_INT bitpos,
   if (MEM_ALIGN (*op) >= width)
     return false;
 
-  /* Adjust *OP to refer to the whole field.  This also has the effect
-     of legitimizing *OP's address for BLKmode, possibly simplifying it.  */
-  *op = adjust_address (*op, BLKmode, 0);
+  /* Create a copy of *OP that refers to the whole field.  This also has
+     the effect of legitimizing *OP's address for BLKmode, possibly
+     simplifying it.  */
+  *op = copy_rtx (adjust_address (*op, BLKmode, 0));
   set_mem_size (*op, width / BITS_PER_UNIT);
 
   /* Get references to both ends of the field.  We deliberately don't
@@ -7248,9 +7249,10 @@ mips_get_unaligned_mem (rtx *op, HOST_WIDE_INT width, HOST_WIDE_INT bitpos,
 
 bool
 mips_expand_ext_as_unaligned_load (rtx dest, rtx src, HOST_WIDE_INT width,
-				   HOST_WIDE_INT bitpos)
+				   HOST_WIDE_INT bitpos, bool unsigned_p)
 {
   rtx left, right, temp;
+  rtx dest1 = NULL_RTX;
 
   /* If TARGET_64BIT, the destination of a 32-bit "extz" or "extzv" will
      be a paradoxical word_mode subreg.  This is the only case in which
@@ -7259,6 +7261,16 @@ mips_expand_ext_as_unaligned_load (rtx dest, rtx src, HOST_WIDE_INT width,
       && GET_MODE (dest) == DImode
       && GET_MODE (SUBREG_REG (dest)) == SImode)
     dest = SUBREG_REG (dest);
+
+  /* If TARGET_64BIT, the destination of a 32-bit "extz" or "extzv" will
+     be a DImode, create a new temp and emit a zero extend at the end.  */
+  if (GET_MODE (dest) == DImode
+      && REG_P (dest)
+      && GET_MODE_BITSIZE (SImode) == width)
+    {
+      dest1 = dest;
+      dest = gen_reg_rtx (SImode);
+    }
 
   /* After the above adjustment, the destination must be the same
      width as the source.  */
@@ -7278,6 +7290,16 @@ mips_expand_ext_as_unaligned_load (rtx dest, rtx src, HOST_WIDE_INT width,
     {
       emit_insn (gen_mov_lwl (temp, src, left));
       emit_insn (gen_mov_lwr (dest, copy_rtx (src), right, temp));
+    }
+
+  /* If we were loading 32bits and the original register was DI then
+     sign/zero extend into the orignal dest.  */
+  if (dest1)
+    {
+      if (unsigned_p)
+        emit_insn (gen_zero_extendsidi2 (dest1, dest));
+      else
+        emit_insn (gen_extendsidi2 (dest1, dest));
     }
   return true;
 }
@@ -12480,6 +12502,9 @@ mips_issue_rate (void)
     case PROCESSOR_LOONGSON_3A:
       return 4;
 
+    case PROCESSOR_XLP:
+      return (reload_completed ? 4 : 3);
+
     default:
       return 1;
     }
@@ -15651,6 +15676,9 @@ mips_set_mips16_mode (int mips16_p)
     {
       /* Switch to MIPS16 mode.  */
       target_flags |= MASK_MIPS16;
+
+      /* Turn off SYNCI if it was on, MIPS16 doesn't support it.  */
+      target_flags &= ~MASK_SYNCI;
 
       /* Don't run the scheduler before reload, since it tends to
          increase register pressure.  */

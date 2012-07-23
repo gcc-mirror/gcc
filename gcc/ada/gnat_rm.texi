@@ -1869,8 +1869,6 @@ functions (see pragma @code{CPP_Constructor}). Such types are implicitly
 limited if not explicitly declared as limited or derived from a limited
 type, and an error is issued in that case.
 
-Pragma @code{CPP_Class} is intended primarily for automatic generation
-using an automatic binding generator tool.
 See @ref{Interfacing to C++} for related information.
 
 Note: Pragma @code{CPP_Class} is currently obsolete. It is supported
@@ -1927,7 +1925,8 @@ If no constructors are imported, it is impossible to create any objects
 on the Ada side and the type is implicitly declared abstract.
 
 Pragma @code{CPP_Constructor} is intended primarily for automatic generation
-using an automatic binding generator tool.
+using an automatic binding generator tool (such as the @code{-fdump-ada-spec}
+GCC switch).
 See @ref{Interfacing to C++} for more related information.
 
 Note: The use of functions returning class-wide types for constructors is
@@ -6709,7 +6708,7 @@ this attribute.
 @cindex Scalar storage order
 @findex Scalar_Storage_Order
 @noindent
-For every record subtype @var{S}, the representation attribute
+For every array or record type @var{S}, the representation attribute
 @code{Scalar_Storage_Order} denotes the order in which storage elements
 that make up scalar components are ordered within S. Other properties are
 as for standard representation attribute @code{Bit_Order}, as defined by
@@ -6721,15 +6720,22 @@ equal to @code{@var{S}'Bit_Order}. Note: This means that if a
 then the type's @code{Bit_Order} shall be specified explicitly and set to
 the same value.
 
+If a component of S has itself a record or array type, then it shall also
+have a @code{Scalar_Storage_Order} attribute definition clause. In addition,
+if the component does not start on a byte boundary, then the scalar storage
+order specified for S and for the nested component type shall be identical.
+
+No component of a type that has a @code{Scalar_Storage_Order} attribute
+definition may be aliased.
+
 A confirming @code{Scalar_Storage_Order} attribute definition clause (i.e.
 with a value equal to @code{System.Default_Bit_Order}) has no effect.
 
-If the opposite storage order is specified, then whenever the
-value of a scalar component of S is read, the storage elements of the
-enclosing machine scalar are first reversed (before retrieving the
-component value, possibly applying some shift and mask operatings on the
-enclosing machine scalar), and the opposite operation is done for
-writes.
+If the opposite storage order is specified, then whenever the value of
+a scalar component of S is read, the storage elements of the enclosing
+machine scalar are first reversed (before retrieving the component value,
+possibly applying some shift and mask operatings on the enclosing machine
+scalar), and the opposite operation is done for writes.
 
 In that case, the restrictions set forth in 13.5.1(10.3/2) for scalar components
 are relaxed. Instead, the following rules apply:
@@ -13700,7 +13706,9 @@ ENCODING=[UTF8|8BITS]
 @end smallexample
 
 @noindent
-The use of these parameters is described later in this section.
+The use of these parameters is described later in this section. If an
+unrecognized keyword appears in a form string, it is silently ignored
+and not considered invalid.
 
 @node Direct_IO
 @section Direct_IO
@@ -16608,8 +16616,7 @@ of the length corresponding to the @code{@var{type}'Size} value in Ada.
 @noindent
 The interface to C++ makes use of the following pragmas, which are
 primarily intended to be constructed automatically using a binding generator
-tool, although it is possible to construct them by hand.  No suitable binding
-generator tool is supplied with GNAT though.
+tool, although it is possible to construct them by hand.
 
 Using these pragmas it is possible to achieve complete
 inter-operability between Ada tagged types and C++ class definitions.
@@ -16630,6 +16637,12 @@ using pragma @code{Import} with @code{Convention} = @code{CPP}.
 This pragma identifies an imported function (imported in the usual way
 with pragma @code{Import}) as corresponding to a C++ constructor.
 @end table
+
+In addition, C++ exceptions are propagated and can be handled in an
+@code{others} choice of an exception handler. The corresponding Ada
+occurrence has no message, and the simple name of the exception identity
+contains @samp{Foreign_Exception}. Finalization and awaiting dependent
+tasks works properly when such foreign exceptions are propagated.
 
 @node Interfacing to COBOL
 @section Interfacing to COBOL

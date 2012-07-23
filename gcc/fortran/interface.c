@@ -253,7 +253,7 @@ gfc_match_abstract_interface (void)
 {
   match m;
 
-  if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: ABSTRACT INTERFACE at %C")
+  if (gfc_notify_std (GFC_STD_F2003, "ABSTRACT INTERFACE at %C")
 		      == FAILURE)
     return MATCH_ERROR;
 
@@ -512,7 +512,9 @@ compare_type_rank (gfc_symbol *s1, gfc_symbol *s2)
   r1 = (s1->as != NULL) ? s1->as->rank : 0;
   r2 = (s2->as != NULL) ? s2->as->rank : 0;
 
-  if (r1 != r2)
+  if (r1 != r2
+      && (!s1->as || s1->as->type != AS_ASSUMED_RANK)
+      && (!s2->as || s2->as->type != AS_ASSUMED_RANK))
     return 0;			/* Ranks differ.  */
 
   return gfc_compare_types (&s1->ts, &s2->ts)
@@ -1313,7 +1315,7 @@ check_interface0 (gfc_interface *p, const char *interface_name)
 
       /* F2003, C1207. F2008, C1207.  */
       if (p->sym->attr.proc == PROC_INTERNAL
-	  && gfc_notify_std (GFC_STD_F2008, "Fortran 2008: Internal procedure "
+	  && gfc_notify_std (GFC_STD_F2008, "Internal procedure "
 			     "'%s' in %s at %L", p->sym->name, interface_name,
 			     &p->sym->declared_at) == FAILURE)
 	return 1;
@@ -1635,7 +1637,14 @@ static void
 argument_rank_mismatch (const char *name, locus *where,
 			int rank1, int rank2)
 {
-  if (rank1 == 0)
+
+  /* TS 29113, C407b.  */
+  if (rank2 == -1)
+    {
+      gfc_error ("The assumed-rank array at %L requires that the dummy argument"
+		 " '%s' has assumed-rank", where, name);
+    }
+  else if (rank1 == 0)
     {
       gfc_error ("Rank mismatch in argument '%s' at %L "
 		 "(scalar and rank-%d)", name, where, rank2);
@@ -1743,7 +1752,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
     }
 
   /* F2008, 12.5.2.5; IR F08/0073.  */
-  if (formal->ts.type == BT_CLASS
+  if (formal->ts.type == BT_CLASS && actual->expr_type != EXPR_NULL
       && ((CLASS_DATA (formal)->attr.class_pointer
 	   && !formal->attr.intent == INTENT_IN)
           || CLASS_DATA (formal)->attr.allocatable))
@@ -1860,7 +1869,8 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 		     " is modified",  &actual->where, formal->name);
     }
 
-  if (symbol_rank (formal) == actual->rank)
+  /* If the rank is the same or the formal argument has assumed-rank.  */
+  if (symbol_rank (formal) == actual->rank || symbol_rank (formal) == -1)
     return 1;
 
   if (actual->ts.type == BT_CLASS && CLASS_DATA (actual)->as
@@ -2289,11 +2299,21 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	  return 0;
 	}
 
-      if (a->expr->expr_type == EXPR_NULL && !f->sym->attr.pointer
-	  && (f->sym->attr.allocatable || !f->sym->attr.optional
-	      || (gfc_option.allow_std & GFC_STD_F2008) == 0))
+      if (a->expr->expr_type == EXPR_NULL
+	  && ((f->sym->ts.type != BT_CLASS && !f->sym->attr.pointer
+	       && (f->sym->attr.allocatable || !f->sym->attr.optional
+		   || (gfc_option.allow_std & GFC_STD_F2008) == 0))
+	      || (f->sym->ts.type == BT_CLASS
+		  && !CLASS_DATA (f->sym)->attr.class_pointer
+		  && (CLASS_DATA (f->sym)->attr.allocatable
+		      || !f->sym->attr.optional
+		      || (gfc_option.allow_std & GFC_STD_F2008) == 0))))
 	{
-	  if (where && (f->sym->attr.allocatable || !f->sym->attr.optional))
+	  if (where
+	      && (!f->sym->attr.optional
+		  || (f->sym->ts.type != BT_CLASS && f->sym->attr.allocatable)
+		  || (f->sym->ts.type == BT_CLASS
+			 && CLASS_DATA (f->sym)->attr.allocatable)))
 	    gfc_error ("Unexpected NULL() intrinsic at %L to dummy '%s'",
 		       where, f->sym->name);
 	  else if (where)
@@ -2989,6 +3009,15 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
 	      && a->expr->ts.type == BT_UNKNOWN)
 	    {
 	      gfc_error ("MOLD argument to NULL required at %L", &a->expr->where);
+	      return;
+	    }
+
+	  /* TS 29113, C407b.  */
+	  if (a->expr && a->expr->expr_type == EXPR_VARIABLE
+	      && symbol_rank (a->expr->symtree->n.sym) == -1)
+	    {
+	      gfc_error ("Assumed-rank argument requires an explicit interface "
+			 "at %L", &a->expr->where);
 	      return;
 	    }
 	}

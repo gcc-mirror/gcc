@@ -1315,29 +1315,37 @@ trans_num_images (gfc_se * se)
 }
 
 
+static tree
+get_rank_from_desc (tree desc)
+{
+  tree tmp;
+  tree dtype;
+
+  dtype = gfc_conv_descriptor_dtype (desc);
+  tmp = build_int_cst (TREE_TYPE (dtype), GFC_DTYPE_RANK_MASK);
+  tmp = fold_build2_loc (input_location, BIT_AND_EXPR, TREE_TYPE (dtype),
+			 dtype, tmp);
+  return fold_convert (gfc_get_int_type (gfc_default_integer_kind), tmp);
+}
+
+
 static void
 gfc_conv_intrinsic_rank (gfc_se *se, gfc_expr *expr)
 {
   gfc_se argse;
   gfc_ss *ss;
-  tree dtype, tmp;
 
   ss = gfc_walk_expr (expr->value.function.actual->expr);
   gcc_assert (ss != gfc_ss_terminator);
   gfc_init_se (&argse, NULL);
   argse.data_not_needed = 1;
-  argse.want_pointer = 1;
+  argse.descriptor_only = 1;
 
   gfc_conv_expr_descriptor (&argse, expr->value.function.actual->expr, ss);
   gfc_add_block_to_block (&se->pre, &argse.pre);
   gfc_add_block_to_block (&se->post, &argse.post);
-  argse.expr = build_fold_indirect_ref_loc (input_location, argse.expr);
-  argse.expr = build_fold_indirect_ref_loc (input_location, argse.expr);
-  dtype = gfc_conv_descriptor_dtype (argse.expr);
-  tmp = build_int_cst (TREE_TYPE (dtype), GFC_DTYPE_RANK_MASK);
-  tmp = fold_build2_loc (input_location, BIT_AND_EXPR, TREE_TYPE (dtype),
-			 dtype, tmp);
-  se->expr = fold_convert (gfc_get_int_type (gfc_default_integer_kind), tmp);
+
+  se->expr = get_rank_from_desc (argse.expr);
 }
 
 
@@ -1359,6 +1367,7 @@ gfc_conv_intrinsic_bound (gfc_se * se, gfc_expr * expr, int upper)
   gfc_se argse;
   gfc_ss *ss;
   gfc_array_spec * as;
+  bool assumed_rank_lb_one;
 
   arg = expr->value.function.actual;
   arg2 = arg->next;
@@ -1400,27 +1409,36 @@ gfc_conv_intrinsic_bound (gfc_se * se, gfc_expr * expr, int upper)
 
   desc = argse.expr;
 
+  as = gfc_get_full_arrayspec_from_expr (arg->expr);
+
   if (INTEGER_CST_P (bound))
     {
       int hi, low;
 
       hi = TREE_INT_CST_HIGH (bound);
       low = TREE_INT_CST_LOW (bound);
-      if (hi || low < 0 || low >= GFC_TYPE_ARRAY_RANK (TREE_TYPE (desc)))
+      if (hi || low < 0
+	  || ((!as || as->type != AS_ASSUMED_RANK)
+	      && low >= GFC_TYPE_ARRAY_RANK (TREE_TYPE (desc)))
+	  || low > GFC_MAX_DIMENSIONS)
 	gfc_error ("'dim' argument of %s intrinsic at %L is not a valid "
 		   "dimension index", upper ? "UBOUND" : "LBOUND",
 		   &expr->where);
     }
-  else
+
+  if (!INTEGER_CST_P (bound) || (as && as->type == AS_ASSUMED_RANK))
     {
       if (gfc_option.rtcheck & GFC_RTCHECK_BOUNDS)
         {
           bound = gfc_evaluate_now (bound, &se->pre);
           cond = fold_build2_loc (input_location, LT_EXPR, boolean_type_node,
 				  bound, build_int_cst (TREE_TYPE (bound), 0));
-          tmp = gfc_rank_cst[GFC_TYPE_ARRAY_RANK (TREE_TYPE (desc))];
+	  if (as && as->type == AS_ASSUMED_RANK)
+	    tmp = get_rank_from_desc (desc);
+	  else
+	    tmp = gfc_rank_cst[GFC_TYPE_ARRAY_RANK (TREE_TYPE (desc))];
           tmp = fold_build2_loc (input_location, GE_EXPR, boolean_type_node,
-				 bound, tmp);
+				 bound, fold_convert(TREE_TYPE (bound), tmp));
           cond = fold_build2_loc (input_location, TRUTH_ORIF_EXPR,
 				  boolean_type_node, cond, tmp);
           gfc_trans_runtime_check (true, false, cond, &se->pre, &expr->where,
@@ -1428,11 +1446,19 @@ gfc_conv_intrinsic_bound (gfc_se * se, gfc_expr * expr, int upper)
         }
     }
 
+  /* Take care of the lbound shift for assumed-rank arrays, which are
+     nonallocatable and nonpointers. Those has a lbound of 1.  */
+  assumed_rank_lb_one = as && as->type == AS_ASSUMED_RANK
+			&& ((arg->expr->ts.type != BT_CLASS
+			     && !arg->expr->symtree->n.sym->attr.allocatable
+			     && !arg->expr->symtree->n.sym->attr.pointer)
+			    || (arg->expr->ts.type == BT_CLASS
+			     && !CLASS_DATA (arg->expr)->attr.allocatable
+			     && !CLASS_DATA (arg->expr)->attr.class_pointer));
+
   ubound = gfc_conv_descriptor_ubound_get (desc, bound);
   lbound = gfc_conv_descriptor_lbound_get (desc, bound);
   
-  as = gfc_get_full_arrayspec_from_expr (arg->expr);
-
   /* 13.14.53: Result value for LBOUND
 
      Case (i): For an array section or for an array expression other than a
@@ -1454,7 +1480,9 @@ gfc_conv_intrinsic_bound (gfc_se * se, gfc_expr * expr, int upper)
                not have size zero and has value zero if dimension DIM has
                size zero.  */
 
-  if (as)
+  if (!upper && assumed_rank_lb_one)
+    se->expr = gfc_index_one_node;
+  else if (as)
     {
       tree stride = gfc_conv_descriptor_stride_get (desc, bound);
 
@@ -1480,9 +1508,19 @@ gfc_conv_intrinsic_bound (gfc_se * se, gfc_expr * expr, int upper)
 	  cond = fold_build2_loc (input_location, TRUTH_OR_EXPR,
 				  boolean_type_node, cond, cond5);
 
+	  if (assumed_rank_lb_one)
+	    {
+	      tmp = fold_build2_loc (input_location, MINUS_EXPR,
+			       gfc_array_index_type, ubound, lbound);
+	      tmp = fold_build2_loc (input_location, PLUS_EXPR,
+			       gfc_array_index_type, tmp, gfc_index_one_node);
+	    }
+          else
+            tmp = ubound;
+
 	  se->expr = fold_build3_loc (input_location, COND_EXPR,
 				      gfc_array_index_type, cond,
-				      ubound, gfc_index_zero_node);
+				      tmp, gfc_index_zero_node);
 	}
       else
 	{
@@ -5855,8 +5893,15 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
 	     present.  */
 	  arg1se.descriptor_only = 1;
 	  gfc_conv_expr_lhs (&arg1se, arg1->expr);
-	  tmp = gfc_conv_descriptor_stride_get (arg1se.expr,
-					    gfc_rank_cst[arg1->expr->rank - 1]);
+	  if (arg1->expr->rank == -1)
+	    {
+	      tmp = get_rank_from_desc (arg1se.expr);
+	      tmp = fold_build2_loc (input_location, MINUS_EXPR,
+				     TREE_TYPE (tmp), tmp, gfc_index_one_node);
+	    }
+	  else
+	    tmp = gfc_rank_cst[arg1->expr->rank - 1];
+	  tmp = gfc_conv_descriptor_stride_get (arg1se.expr, tmp);
 	  nonzero_arraylen = fold_build2_loc (input_location, NE_EXPR,
 					      boolean_type_node, tmp,
 					      build_int_cst (TREE_TYPE (tmp), 0));

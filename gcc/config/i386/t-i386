@@ -16,7 +16,7 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-i386.o: $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+i386.o: $(CONFIG_H) $(SYSTEM_H) coretypes.h dumpfile.h $(TM_H) \
   $(RTL_H) $(TREE_H) $(TM_P_H) $(REGS_H) hard-reg-set.h \
   $(REAL_H) insn-config.h conditions.h output.h insn-codes.h \
   $(INSN_ATTR_H) $(FLAGS_H) $(C_COMMON_H) except.h $(FUNCTION_H) \

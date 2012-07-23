@@ -26,14 +26,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "tree.h"
 #include "basic-block.h"
-#include "tree-pretty-print.h"
 #include "gimple-pretty-print.h"
 #include "tree-inline.h"
 #include "tree-flow.h"
 #include "gimple.h"
-#include "tree-dump.h"
-#include "timevar.h"
-#include "fibheap.h"
 #include "hashtab.h"
 #include "tree-iterator.h"
 #include "alloc-pool.h"
@@ -3403,10 +3399,10 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
       gcc_assert (get_expr_type (ae) == type
 		  || useless_type_conversion_p (type, get_expr_type (ae)));
       if (ae->kind == CONSTANT)
-	add_phi_arg (phi, PRE_EXPR_CONSTANT (ae), pred, UNKNOWN_LOCATION, NULL);
+	add_phi_arg (phi, PRE_EXPR_CONSTANT (ae), pred, UNKNOWN_LOCATION);
       else
 	add_phi_arg (phi, PRE_EXPR_NAME (avail[pred->src->index]), pred,
-		     UNKNOWN_LOCATION, NULL);
+		     UNKNOWN_LOCATION);
     }
 
   newphi = get_or_alloc_expr_for_name (gimple_phi_result (phi));

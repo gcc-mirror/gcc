@@ -483,36 +483,12 @@ gimple_phi_arg_location_from_edge (gimple gs, edge e)
   return gimple_phi_arg (gs, e->dest_idx)->locus;
 }
 
-/* Return the block location of gimple argument I of phi node GS.  */
-
-static inline tree
-gimple_phi_arg_block (gimple gs, size_t i)
-{
-  return gimple_phi_arg (gs, i)->block;
-}
-
-/* Return the block location of the argument on edge E of phi node GS.  */
-
-static inline tree
-gimple_phi_arg_block_from_edge (gimple gs, edge e)
-{
-  return gimple_phi_arg (gs, e->dest_idx)->block;
-}
-
 /* Set the source location of gimple argument I of phi node GS to LOC.  */
 
 static inline void
 gimple_phi_arg_set_location (gimple gs, size_t i, source_location loc)
 {
   gimple_phi_arg (gs, i)->locus = loc;
-}
-
-/* Set the block location of gimple argument I of phi node GS to BLOCK.  */
-
-static inline void
-gimple_phi_arg_set_block (gimple gs, size_t i, tree block)
-{
-  gimple_phi_arg (gs, i)->block = block;
 }
 
 /* Return TRUE if argument I of phi node GS has a location record.  */
@@ -523,13 +499,6 @@ gimple_phi_arg_has_location (gimple gs, size_t i)
   return gimple_phi_arg_location (gs, i) != UNKNOWN_LOCATION;
 }
 
-/* Return TRUE if argument I of phi node GS has a location record.  */
-
-static inline bool
-gimple_phi_arg_has_block (gimple gs, size_t i)
-{
-  return gimple_phi_arg_block (gs, i) != NULL;
-}
 
 /* Return the PHI nodes for basic block BB, or NULL if there are no
    PHI nodes.  */
@@ -1248,13 +1217,6 @@ redirect_edge_var_map_location (edge_var_map *v)
   return v->locus;
 }
 
-/* Given an edge_var_map V, return the PHI arg location.  */
-
-static inline tree
-redirect_edge_var_map_block (edge_var_map *v)
-{
-  return v->block;
-}
 
 /* Return an SSA_NAME node for variable VAR defined in statement STMT
    in function cfun.  */
@@ -1271,6 +1233,9 @@ make_ssa_name (tree var, gimple stmt)
    is not BITS_PER_UNIT-aligned.
    VALUEIZE if non-NULL is used to valueize SSA names.  It should return
    its argument or a constant if the argument is known to be constant.  */
+/* ??? This is a static inline here to avoid the overhead of the indirect calls
+   to VALUEIZE.  But is this overhead really that significant?  And should we
+   perhaps just rely on WHOPR to specialize the function?  */
 
 static inline tree
 get_addr_base_and_unit_offset_1 (tree exp, HOST_WIDE_INT *poffset,

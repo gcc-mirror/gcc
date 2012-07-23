@@ -237,7 +237,7 @@ package body Back_End is
             elsif Switch_Chars (First .. Last) = "fpreserve-control-flow" then
                Opt.Suppress_Control_Flow_Optimizations := True;
 
-            --  Back end switcg -fdump-scos, which exists primarily for C, is
+            --  Back end switch -fdump-scos, which exists primarily for C, is
             --  also accepted for Ada as a synonym of -gnateS.
 
             elsif Switch_Chars (First .. Last) = "fdump-scos" then

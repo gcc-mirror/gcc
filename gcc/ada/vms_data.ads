@@ -1826,6 +1826,14 @@ package VMS_Data is
    --                    (/OPTIMIZE=SOME) or higher (/OPTIMIZE=UNROLL_LOOPS)
    --                    levels of optimization.
    --
+   --        PRAGMA_LEVEL_1
+   --                    Direct control of the level of "Inline" pragmas
+   --                    optimization with moderate inlining across modules.
+   --
+   --        PRAGMA_LEVEL_2
+   --                    Direct control of the level of "Inline" pragmas
+   --                    optimization with full inlining across modules.
+   --
    --        FULL        Front end inlining. The front end inlining activated
    --                    by this switch is generally more extensive, and quite
    --                    often more effective than the standard PRAGMA inlining

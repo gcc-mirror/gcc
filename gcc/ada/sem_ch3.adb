@@ -4973,6 +4973,13 @@ package body Sem_Ch3 is
            ("the type of a component cannot be abstract",
             Subtype_Indication (Component_Def));
       end if;
+
+      --  Ada 2012: if the element type has invariants we must create an
+      --  invariant procedure for the array type as well.
+
+      if Has_Invariants (Element_Type) then
+         Set_Has_Invariants (T);
+      end if;
    end Array_Type_Declaration;
 
    ------------------------------------------------------

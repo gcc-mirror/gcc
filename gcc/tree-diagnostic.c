@@ -27,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "tree-pretty-print.h"
 #include "tree-diagnostic.h"
-#include "tree-pass.h" /* TDF_DIAGNOSTIC */
+#include "dumpfile.h" /* TDF_DIAGNOSTIC */
 #include "langhooks.h"
 #include "langhooks-def.h"
 #include "vec.h"

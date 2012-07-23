@@ -25,9 +25,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "flags.h"
 #include "function.h"
-#include "tree-dump.h"
+#include "dumpfile.h"
 #include "tree-flow.h"
-#include "tree-pass.h"
 #include "tree-ssa-propagate.h"
 #include "target.h"
 #include "gimple-fold.h"
@@ -140,7 +139,7 @@ can_refer_decl_in_current_unit_p (tree decl, tree from_decl)
 tree
 canonicalize_constructor_val (tree cval, tree from_decl)
 {
-  STRIP_NOPS (cval);
+  STRIP_USELESS_TYPE_CONVERSION (cval);
   if (TREE_CODE (cval) == POINTER_PLUS_EXPR
       && TREE_CODE (TREE_OPERAND (cval, 1)) == INTEGER_CST)
     {

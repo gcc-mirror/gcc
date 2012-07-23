@@ -4369,12 +4369,16 @@ package body Exp_Ch7 is
          function Requires_Hooking return Boolean is
          begin
             --  The context is either a procedure or function call or an object
-            --  declaration initialized by a function call. In all these cases,
-            --  the calls might raise an exception.
+            --  declaration initialized by a function call. Note that in the
+            --  latter case, a function call that returns on the secondary
+            --  stack is usually rewritten into something else. Its proper
+            --  detection requires examination of the original initialization
+            --  expression.
 
             return Nkind (N) in N_Subprogram_Call
-               or else (Nkind (N) = N_Object_Declaration
-                         and then Nkind (Expression (N)) = N_Function_Call);
+              or else (Nkind (N) = N_Object_Declaration
+                         and then Nkind (Original_Node (Expression (N))) =
+                                    N_Function_Call);
          end Requires_Hooking;
 
          --  Local variables
@@ -4390,6 +4394,7 @@ package body Exp_Ch7 is
          Obj_Id    : Entity_Id;
          Obj_Ref   : Node_Id;
          Obj_Typ   : Entity_Id;
+         Prev_Fin  : Node_Id := Empty;
          Stmt      : Node_Id;
          Stmts     : List_Id;
          Temp_Id   : Entity_Id;
@@ -4428,7 +4433,6 @@ package body Exp_Ch7 is
                   Fin_Decls := New_List;
 
                   Build_Object_Declarations (Fin_Data, Fin_Decls, Loc);
-                  Insert_List_Before_And_Analyze (First_Object, Fin_Decls);
 
                   Built := True;
                end if;
@@ -4560,14 +4564,24 @@ package body Exp_Ch7 is
                        Exception_Handlers => New_List (
                          Build_Exception_Handler (Fin_Data))));
 
-               Insert_After_And_Analyze (Last_Object, Fin_Block);
+               --  The single raise statement must be inserted after all the
+               --  finalization blocks, and we put everything into a wrapper
+               --  block to clearly expose the construct to the back-end.
 
-               --  The raise statement must be inserted after all the
-               --  finalization blocks.
+               if Present (Prev_Fin) then
+                  Insert_Before_And_Analyze (Prev_Fin, Fin_Block);
+               else
+                  Insert_After_And_Analyze (Last_Object,
+                    Make_Block_Statement (Loc,
+                      Declarations => Fin_Decls,
+                      Handled_Statement_Sequence =>
+                        Make_Handled_Sequence_Of_Statements (Loc,
+                          Statements => New_List (Fin_Block))));
 
-               if No (Last_Fin) then
                   Last_Fin := Fin_Block;
                end if;
+
+               Prev_Fin := Fin_Block;
 
             --  When the associated node is an array object, the expander may
             --  sometimes generate a loop and create transient objects inside

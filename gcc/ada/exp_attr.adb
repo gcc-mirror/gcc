@@ -3201,8 +3201,25 @@ package body Exp_Attr is
       -- Max_Size_In_Storage_Elements --
       ----------------------------------
 
-      when Attribute_Max_Size_In_Storage_Elements =>
+      when Attribute_Max_Size_In_Storage_Elements => declare
+         Typ  : constant Entity_Id := Etype (N);
+         Attr : Node_Id;
+
+         Conversion_Added : Boolean := False;
+         --  A flag which tracks whether the original attribute has been
+         --  wrapped inside a type conversion.
+
+      begin
          Apply_Universal_Integer_Attribute_Checks (N);
+
+         --  The universal integer check may sometimes add a type conversion,
+         --  retrieve the original attribute reference from the expression.
+
+         Attr := N;
+         if Nkind (Attr) = N_Type_Conversion then
+            Attr := Expression (Attr);
+            Conversion_Added := True;
+         end if;
 
          --  Heap-allocated controlled objects contain two extra pointers which
          --  are not part of the actual type. Transform the attribute reference
@@ -3212,20 +3229,20 @@ package body Exp_Attr is
          --  two pointers are already present in the type.
 
          if VM_Target = No_VM
-           and then Nkind (N) = N_Attribute_Reference
+           and then Nkind (Attr) = N_Attribute_Reference
            and then Needs_Finalization (Ptyp)
-           and then not Header_Size_Added (N)
+           and then not Header_Size_Added (Attr)
          then
-            Set_Header_Size_Added (N);
+            Set_Header_Size_Added (Attr);
 
             --  Generate:
             --    P'Max_Size_In_Storage_Elements +
             --      Universal_Integer
             --        (Header_Size_With_Padding (Ptyp'Alignment))
 
-            Rewrite (N,
+            Rewrite (Attr,
               Make_Op_Add (Loc,
-                Left_Opnd  => Relocate_Node (N),
+                Left_Opnd  => Relocate_Node (Attr),
                 Right_Opnd =>
                   Convert_To (Universal_Integer,
                     Make_Function_Call (Loc,
@@ -3239,9 +3256,19 @@ package body Exp_Attr is
                             New_Reference_To (Ptyp, Loc),
                           Attribute_Name => Name_Alignment))))));
 
-            Analyze (N);
+            --  Add a conversion to the target type
+
+            if not Conversion_Added then
+               Rewrite (Attr,
+                 Make_Type_Conversion (Loc,
+                   Subtype_Mark => New_Reference_To (Typ, Loc),
+                   Expression   => Relocate_Node (Attr)));
+            end if;
+
+            Analyze (Attr);
             return;
          end if;
+      end;
 
       --------------------
       -- Mechanism_Code --
@@ -5345,6 +5372,13 @@ package body Exp_Attr is
 
          Validity_Checks_On := False;
 
+         --  Retrieve the base type. Handle the case where the base type is a
+         --  private enumeration type.
+
+         if Is_Private_Type (Btyp) and then Present (Full_View (Btyp)) then
+            Btyp := Full_View (Btyp);
+         end if;
+
          --  Floating-point case. This case is handled by the Valid attribute
          --  code in the floating-point attribute run-time library.
 
@@ -5445,15 +5479,14 @@ package body Exp_Attr is
          --       (X >= type(X)'First and then type(X)'Last <= X)
 
          elsif Is_Enumeration_Type (Ptyp)
-           and then Present (Enum_Pos_To_Rep (Base_Type (Ptyp)))
+           and then Present (Enum_Pos_To_Rep (Btyp))
          then
             Tst :=
               Make_Op_Ge (Loc,
                 Left_Opnd =>
                   Make_Function_Call (Loc,
                     Name =>
-                      New_Reference_To
-                        (TSS (Base_Type (Ptyp), TSS_Rep_To_Pos), Loc),
+                      New_Reference_To (TSS (Btyp, TSS_Rep_To_Pos), Loc),
                     Parameter_Associations => New_List (
                       Pref,
                       New_Occurrence_Of (Standard_False, Loc))),

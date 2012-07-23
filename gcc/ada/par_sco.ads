@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2009-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2009-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,7 +24,7 @@
 ------------------------------------------------------------------------------
 
 --  This package contains the routines used to deal with generation and output
---  of Soure Coverage Obligations (SCO's) used for coverage analysis purposes.
+--  of Source Coverage Obligations (SCO's) used for coverage analysis purposes.
 --  See package SCOs for full documentation of format of SCO information.
 
 with Types; use Types;

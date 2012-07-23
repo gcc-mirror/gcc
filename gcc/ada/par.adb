@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -875,6 +875,12 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       --  permitted). Note: this routine never checks the terminator token
       --  for aspects so it does not matter whether the aspect specifications
       --  are terminated by semicolon or some other character.
+
+      function Get_Aspect_Specifications
+        (Semicolon : Boolean := True) return List_Id;
+      --  Parse a list of aspects but do not attach them to a declaration node.
+      --  Subsidiary to the following procedure. Used when parsing a subprogram
+      --  specification that may be a declaration or a body.
 
       procedure P_Aspect_Specifications
         (Decl      : Node_Id;

@@ -1,3 +1,8 @@
+2012-07-16  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* lto.c: Do not include timevar.h.
+	* Make-lang.in: Fix dependencies.
+
 2012-06-18  Lawrence Crowl  <crowl@google.com>
 
         * lto.c (do_whole_program_analysis):  Rename use of TV_PHASE_CGRAPH to

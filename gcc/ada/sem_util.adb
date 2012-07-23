@@ -4500,7 +4500,8 @@ package body Sem_Util is
       Pos : Uint;
       Loc : Source_Ptr) return Node_Id
    is
-      Lit : Node_Id;
+      Btyp : Entity_Id := Base_Type (T);
+      Lit  : Node_Id;
 
    begin
       --  In the case where the literal is of type Character, Wide_Character
@@ -4522,7 +4523,11 @@ package body Sem_Util is
       --
 
       else
-         Lit := First_Literal (Base_Type (T));
+         if Is_Private_Type (Btyp) and then Present (Full_View (Btyp)) then
+            Btyp := Full_View (Btyp);
+         end if;
+
+         Lit := First_Literal (Btyp);
          for J in 1 .. UI_To_Int (Pos) loop
             Next_Literal (Lit);
          end loop;
@@ -6312,11 +6317,11 @@ package body Sem_Util is
    function In_Reverse_Storage_Order_Object (N : Node_Id) return Boolean is
       Pref : Node_Id;
       Btyp : Entity_Id := Empty;
-   begin
-      Pref := N;
 
+   begin
       --  Climb up indexed components
 
+      Pref := N;
       loop
          case Nkind (Pref) is
             when N_Selected_Component =>
@@ -6336,9 +6341,10 @@ package body Sem_Util is
          Btyp := Base_Type (Etype (Pref));
       end if;
 
-      return Present (Btyp)
-               and then (Is_Record_Type (Btyp) or else Is_Array_Type (Btyp))
-               and then Reverse_Storage_Order (Btyp);
+      return
+        Present (Btyp)
+          and then (Is_Record_Type (Btyp) or else Is_Array_Type (Btyp))
+          and then Reverse_Storage_Order (Btyp);
    end In_Reverse_Storage_Order_Object;
 
    --------------------------------------

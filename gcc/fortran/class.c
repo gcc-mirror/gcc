@@ -220,7 +220,7 @@ gfc_add_component_ref (gfc_expr *e, const char *name)
 void
 gfc_add_class_array_ref (gfc_expr *e)
 {
-  int rank =  CLASS_DATA (e)->as->rank;
+  int rank = CLASS_DATA (e)->as->rank;
   gfc_array_spec *as = CLASS_DATA (e)->as;
   gfc_ref *ref = NULL;
   gfc_add_component_ref (e, "_data");
@@ -498,6 +498,7 @@ gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
   gfc_symbol *fclass;
   gfc_symbol *vtab;
   gfc_component *c;
+  int rank;
 
   if (as && *as && (*as)->type == AS_ASSUMED_SIZE)
     {
@@ -518,11 +519,14 @@ gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
     return SUCCESS;
 
   /* Determine the name of the encapsulating type.  */
+  rank = !(*as) || (*as)->rank == -1 ? GFC_MAX_DIMENSIONS : (*as)->rank;
   get_unique_hashed_string (tname, ts->u.derived);
   if ((*as) && attr->allocatable)
-    sprintf (name, "__class_%s_%d_%da", tname, (*as)->rank, (*as)->corank);
+    sprintf (name, "__class_%s_%d_%da", tname, rank, (*as)->corank);
+  else if ((*as) && attr->pointer)
+    sprintf (name, "__class_%s_%d_%dp", tname, rank, (*as)->corank);
   else if ((*as))
-    sprintf (name, "__class_%s_%d_%d", tname, (*as)->rank, (*as)->corank);
+    sprintf (name, "__class_%s_%d_%d", tname, rank, (*as)->corank);
   else if (attr->pointer)
     sprintf (name, "__class_%s_p", tname);
   else if (attr->allocatable)

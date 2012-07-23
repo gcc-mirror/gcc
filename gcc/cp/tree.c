@@ -795,7 +795,18 @@ build_cplus_array_type (tree elt_type, tree index_type)
 	}
     }
   else
-    t = build_array_type (elt_type, index_type);
+    {
+      if (!TYPE_STRUCTURAL_EQUALITY_P (elt_type)
+	  && !(index_type && TYPE_STRUCTURAL_EQUALITY_P (index_type))
+	  && (TYPE_CANONICAL (elt_type) != elt_type
+	      || (index_type && TYPE_CANONICAL (index_type) != index_type)))
+	/* Make sure that the canonical type is on the appropriate
+	   variants list.  */
+	build_cplus_array_type
+	  (TYPE_CANONICAL (elt_type),
+	   index_type ? TYPE_CANONICAL (index_type) : index_type);
+      t = build_array_type (elt_type, index_type);
+    }
 
   /* We want TYPE_MAIN_VARIANT of an array to strip cv-quals from the
      element type as well, so fix it up if needed.  */
@@ -803,6 +814,7 @@ build_cplus_array_type (tree elt_type, tree index_type)
     {
       tree m = build_cplus_array_type (TYPE_MAIN_VARIANT (elt_type),
 				       index_type);
+
       if (TYPE_MAIN_VARIANT (t) != m)
 	{
 	  TYPE_MAIN_VARIANT (t) = m;

@@ -1,3 +1,45 @@
+2012-07-20  Chip Salzenberg  <chip@pobox.com>
+	    Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/54025
+	* include/std/chrono (duration<>::duration): Fix per C++11.
+	* testsuite/20_util/duration/cons/54025.cc: New.
+	* testsuite/20_util/duration/cons/constexpr.cc: Adjust.
+
+2012-07-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/30_threads/thread/adl.cc: Add missing dg-requires.
+
+2012-07-19  Tristan Gingold  <gingold@adacore.com>
+	    Richard Henderson  <rth@redhat.com>
+
+	* libsupc++/eh_personality.cc (__gxx_personality_seh0): New function.
+	Adjust for SEH.
+	* config/abi/pre/gnu.ver: Add __gxx_personality_seh0.
+
+2012-07-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51213
+	* testsuite/20_util/pair/noncopyable.cc: New.
+
+2012-07-16  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/53270
+	* include/ext/concurrence.h (__mutex, __recursive_mutex, __cond): Use
+	NSDMI in C++98 mode too.
+	* include/ext/rope: Add system_header pragma.
+	(_Refcount_Base, _Rope_RopeRep): Use NSDMI.
+	(_Rope_RopeRep::~_Rope_RopeRep): Destroy mutex.
+
+2012-07-16  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/53978
+	* include/bits/alloc_traits.h (allocator_traits): Define static
+	constants.
+	* include/bits/ptr_traits.h (pointer_traits): Likewise.
+	* include/ext/alloc_traits.h (__allocator_always_compares_equal):
+	Likewise.
+
 2012-07-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/53657

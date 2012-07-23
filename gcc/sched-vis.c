@@ -32,7 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "insn-attr.h"
 #include "sched-int.h"
-#include "tree-pass.h"
+#include "dumpfile.h"	/* for the TDF_* flags */
 
 static char *safe_concat (char *, char *, const char *);
 
@@ -761,7 +761,7 @@ print_insn (char *buf, const_rtx x, int verbose)
 /* Emit a slim dump of X (an insn) to the file F, including any register
    note attached to the instruction.  */
 void
-dump_insn_slim (FILE *f, rtx x)
+dump_insn_slim (FILE *f, const_rtx x)
 {
   char t[BUF_LEN + 32];
   rtx note;
@@ -779,65 +779,41 @@ dump_insn_slim (FILE *f, rtx x)
 }
 
 /* Emit a slim dump of X (an insn) to stderr.  */
+extern void debug_insn_slim (const_rtx);
 DEBUG_FUNCTION void
-debug_insn_slim (rtx x)
+debug_insn_slim (const_rtx x)
 {
   dump_insn_slim (stderr, x);
 }
 
-/* Provide a slim dump the instruction chain starting at FIRST to F, honoring
-   the dump flags given in FLAGS.  Currently, TDF_BLOCKS and TDF_DETAILS
-   include more information on the basic blocks.  */
-void
-print_rtl_slim_with_bb (FILE *f, rtx first, int flags)
-{
-  print_rtl_slim (f, first, NULL, -1, flags);
-}
-
 /* Same as above, but stop at LAST or when COUNT == 0.
    If COUNT < 0 it will stop only at LAST or NULL rtx.  */
-void
-print_rtl_slim (FILE *f, rtx first, rtx last, int count, int flags)
+extern void debug_rtl_slim (FILE *, const_rtx, const_rtx, int, int);
+DEBUG_FUNCTION void
+debug_rtl_slim (FILE *f, const_rtx first, const_rtx last,
+		int count, int flags ATTRIBUTE_UNUSED)
 {
-  basic_block current_bb = NULL;
-  rtx insn, tail;
+  const_rtx insn, tail;
 
   tail = last ? NEXT_INSN (last) : NULL_RTX;
   for (insn = first;
        (insn != NULL) && (insn != tail) && (count != 0);
        insn = NEXT_INSN (insn))
     {
-      bool verbose = ((flags & TDF_DETAILS) != 0);
-
-      if ((flags & TDF_BLOCKS)
-	  && (INSN_P (insn) || NOTE_P (insn))
-	  && BLOCK_FOR_INSN (insn)
-	  && !current_bb)
-	{
-	  current_bb = BLOCK_FOR_INSN (insn);
-	  dump_bb_info (current_bb, true, false, verbose, ";; ", f);
-	}
-
       dump_insn_slim (f, insn);
-
-      if ((flags & TDF_BLOCKS)
-	  && current_bb
-	  && insn == BB_END (current_bb))
-	{
-	  dump_bb_info (current_bb, false, true, verbose, ";; ", f);
-	  current_bb = NULL;
-	}
       if (count > 0)
         count--;
     }
 }
 
+extern void debug_bb_slim (basic_block);
 DEBUG_FUNCTION void
 debug_bb_slim (basic_block bb)
 {
-  print_rtl_slim (stderr, BB_HEAD (bb), BB_END (bb), -1, 32);
+  dump_bb (stderr, bb, 0, TDF_SLIM | TDF_BLOCKS);
 }
 
+extern void debug_bb_n_slim (int);
 DEBUG_FUNCTION void
 debug_bb_n_slim (int n)
 {

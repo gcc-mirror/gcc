@@ -40,7 +40,6 @@
 #include "tm_p.h"
 #include "cfgloop.h"
 #include "target.h"
-#include "timevar.h"
 #include "tree-pass.h"
 #include "df.h"
 #include "vec.h"
@@ -4392,12 +4391,7 @@ if_convert (void)
 
 #ifdef IFCVT_MULTIPLE_DUMPS
       if (dump_file && cond_exec_changed_p)
-	{
-	  if (dump_flags & TDF_SLIM)
-	    print_rtl_slim_with_bb (dump_file, get_insns (), dump_flags);
-	  else
-	    print_rtl_with_bb (dump_file, get_insns ());
-	}
+	print_rtl_with_bb (dump_file, get_insns (), dump_flags);
 #endif
     }
   while (cond_exec_changed_p);

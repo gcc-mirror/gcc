@@ -33,7 +33,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "function.h"
 #include "tree-pass.h"
-#include "timevar.h"
 #include "df.h"
 #include "emit-rtl.h"
 
@@ -534,7 +533,7 @@ optimize_mode_switching (void)
 		      RESET_BIT (transp[bb->index], j);
 		    }
 #ifdef MODE_AFTER
-		  last_mode = MODE_AFTER (last_mode, insn);
+		  last_mode = MODE_AFTER (e, last_mode, insn);
 #endif
 		  /* Update LIVE_NOW.  */
 		  for (link = REG_NOTES (insn); link; link = XEXP (link, 1))

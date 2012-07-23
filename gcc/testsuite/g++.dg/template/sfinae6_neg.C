@@ -21,7 +21,7 @@ no_type check_is_callable2(...);
 template<typename F, typename T1, typename T2 = T1>
 struct is_callable2
 {
-  static const bool value = // { dg-error "within this context" }
+  static const bool value =
     (sizeof(check_is_callable2(type<F>(), type<T1>(), type<T2>()))
      == sizeof(yes_type));
 };
@@ -52,7 +52,7 @@ struct F {
   void operator()(A, A);
 
 private:
-  void operator()(B, B); // { dg-error "is private" }
+  void operator()(B, B);
 };
 
-STATIC_ASSERT((is_callable2<F, B, B>::value));
+STATIC_ASSERT((!is_callable2<F, B, B>::value));

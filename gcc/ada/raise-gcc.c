@@ -77,7 +77,8 @@ __gnat_Unwind_RaiseException (_Unwind_Exception *);
 _Unwind_Reason_Code
 __gnat_Unwind_ForcedUnwind (_Unwind_Exception *, void *, void *);
 
-extern void __gnat_setup_current_excep (_Unwind_Exception *);
+extern struct Exception_Occurrence *__gnat_setup_current_excep
+ (_Unwind_Exception *);
 extern void __gnat_unhandled_except_handler (_Unwind_Exception *);
 
 #include "dwarf2.h"
@@ -709,7 +710,7 @@ get_call_site_action_for (_Unwind_Ptr call_site,
   else
     {
       _uleb128_t cs_lp, cs_action;
-      const unsigned char *p = region->call_site_table;
+      const unsigned char *p;
 
       /* Let the caller know there may be an action to take, but let it
 	 determine the kind.  */
@@ -946,13 +947,16 @@ get_action_description_for (_Unwind_Ptr ip,
                  passed (to follow the ABI).  */
               if (!(uw_phase & _UA_FORCE_UNWIND))
                 {
+		  enum action_kind act;
+
                   /* See if the filter we have is for an exception which
                      matches the one we are propagating.  */
                   _Unwind_Ptr choice = get_ttype_entry_for (region, ar_filter);
 
-		  action->kind = is_handled_by (choice, gnat_exception);
-                  if (action->kind != nothing)
+		  act = is_handled_by (choice, gnat_exception);
+                  if (act != nothing)
                     {
+		      action->kind = act;
                       action->ttype_filter = ar_filter;
                       return;
                     }
@@ -1001,8 +1005,8 @@ setup_to_install (_Unwind_Context *uw_context,
 /* The following is defined from a-except.adb. Its purpose is to enable
    automatic backtraces upon exception raise, as provided through the
    GNAT.Traceback facilities.  */
-extern void __gnat_notify_handled_exception (void);
-extern void __gnat_notify_unhandled_exception (void);
+extern void __gnat_notify_handled_exception (struct Exception_Occurrence *);
+extern void __gnat_notify_unhandled_exception (struct Exception_Occurrence *);
 
 /* Below is the eh personality routine per se. We currently assume that only
    GNU-Ada exceptions are met.  */
@@ -1131,14 +1135,16 @@ PERSONALITY_FUNCTION (version_arg_t version_arg,
 	}
       else
 	{
+	  struct Exception_Occurrence *excep;
+
 	  /* Trigger the appropriate notification routines before the second
 	     phase starts, which ensures the stack is still intact.
              First, setup the Ada occurrence.  */
-          __gnat_setup_current_excep (uw_exception);
+          excep = __gnat_setup_current_excep (uw_exception);
 	  if (action.kind == unhandler)
-	    __gnat_notify_unhandled_exception ();
+	    __gnat_notify_unhandled_exception (excep);
 	  else
-	    __gnat_notify_handled_exception ();
+	    __gnat_notify_handled_exception (excep);
 
 	  return _URC_HANDLER_FOUND;
 	}
@@ -1213,8 +1219,22 @@ __gnat_Unwind_ForcedUnwind (_Unwind_Exception *e,
 #ifdef __SEH__
 
 #define STATUS_USER_DEFINED		(1U << 29)
+
+/* From unwind-seh.c.  */
+#define GCC_MAGIC			(('G' << 16) | ('C' << 8) | 'C')
+#define GCC_EXCEPTION(TYPE)		\
+       (STATUS_USER_DEFINED | ((TYPE) << 24) | GCC_MAGIC)
+#define STATUS_GCC_THROW		GCC_EXCEPTION (0)
+
 EXCEPTION_DISPOSITION __gnat_SEH_error_handler
  (struct _EXCEPTION_RECORD*, void*, struct _CONTEXT*, void*);
+
+struct Exception_Data *
+__gnat_map_SEH (EXCEPTION_RECORD* ExceptionRecord, const char **msg);
+
+struct _Unwind_Exception *
+__gnat_create_machine_occurrence_from_signal_handler (Exception_Id,
+						      const char *);
 
 /* Unwind opcodes.  */
 #define UWOP_PUSH_NONVOL 0
@@ -1295,7 +1315,10 @@ __gnat_personality_seh0 (PEXCEPTION_RECORD ms_exc, void *this_frame,
      exceptions.  */
   if (!(ms_exc->ExceptionCode & STATUS_USER_DEFINED))
     {
+      struct Exception_Data *exception;
+      const char *msg;
       ULONG64 excpip = (ULONG64) ms_exc->ExceptionAddress;
+
       if (excpip != 0
 	  && excpip >= (ms_disp->ImageBase
 			+ ms_disp->FunctionEntry->BeginAddress)
@@ -1307,7 +1330,7 @@ __gnat_personality_seh0 (PEXCEPTION_RECORD ms_exc, void *this_frame,
 	  CONTEXT context;
 	  PRUNTIME_FUNCTION mf_func = NULL;
 	  ULONG64 mf_imagebase;
-	  ULONG64 mf_rsp;
+	  ULONG64 mf_rsp = 0;
 
 	  /* Get the context.  */
 	  RtlCaptureContext (&context);
@@ -1353,7 +1376,26 @@ __gnat_personality_seh0 (PEXCEPTION_RECORD ms_exc, void *this_frame,
 	    __gnat_adjust_context
 	      ((unsigned char *)(mf_imagebase + mf_func->UnwindData), mf_rsp);
 	}
-      __gnat_SEH_error_handler (ms_exc, this_frame, ms_orig_context, ms_disp);
+
+      exception = __gnat_map_SEH (ms_exc, &msg);
+      if (exception != NULL)
+	{
+	  struct _Unwind_Exception *exc;
+
+	  /* Directly convert the system exception to a GCC one.
+	     This is really breaking the API, but is necessary for stack size
+	     reasons: the normal way is to call Raise_From_Signal_Handler,
+	     which build the exception and calls _Unwind_RaiseException, which
+	     unwinds the stack and will call this personality routine. But
+	     the Windows unwinder needs about 2KB of stack.  */
+	  exc = __gnat_create_machine_occurrence_from_signal_handler
+	    (exception, msg);
+	  memset (exc->private_, 0, sizeof (exc->private_));
+	  ms_exc->ExceptionCode = STATUS_GCC_THROW;
+	  ms_exc->NumberParameters = 1;
+	  ms_exc->ExceptionInformation[0] = (ULONG_PTR)exc;
+	}
+
     }
 
   return _GCC_specific_handler (ms_exc, this_frame, ms_orig_context,

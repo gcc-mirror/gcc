@@ -1254,8 +1254,10 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type,
       && !really_overloaded_fn (rval))
     {
       tree decl = is_overloaded_fn (rval) ? get_first_fn (rval) : rval;
-      if (!DECL_NONSTATIC_MEMBER_FUNCTION_P (decl))
-	perform_or_defer_access_check (basetype_path, decl, decl);
+      if (!DECL_NONSTATIC_MEMBER_FUNCTION_P (decl)
+	  && !perform_or_defer_access_check (basetype_path, decl, decl,
+					     complain))
+	rval = error_mark_node;
     }
 
   if (errstr && protect)

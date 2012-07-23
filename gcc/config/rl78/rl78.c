@@ -47,7 +47,7 @@
 #include "target-def.h"
 #include "langhooks.h"
 #include "rl78-protos.h"
-#include "tree-pass.h"
+#include "dumpfile.h"
 
 static inline bool is_interrupt_func (const_tree decl);
 static inline bool is_brk_interrupt_func (const_tree decl);
@@ -2663,7 +2663,7 @@ rl78_reorg (void)
   if (dump_file)
     {
       fprintf (dump_file, "\n================DEVIRT:=AFTER=ALLOC=PHYSICAL=REGISTERS================\n");
-      print_rtl_with_bb (dump_file, get_insns ());
+      print_rtl_with_bb (dump_file, get_insns (), 0);
     }
 
   rl78_propogate_register_origins ();
@@ -2672,7 +2672,7 @@ rl78_reorg (void)
   if (dump_file)
     {
       fprintf (dump_file, "\n================DEVIRT:=AFTER=PROPOGATION=============================\n");
-      print_rtl_with_bb (dump_file, get_insns ());
+      print_rtl_with_bb (dump_file, get_insns (), 0);
       fprintf (dump_file, "\n======================================================================\n");
     }
 

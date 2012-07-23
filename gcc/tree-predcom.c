@@ -198,7 +198,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "tree-chrec.h"
 #include "params.h"
-#include "tree-pretty-print.h"
 #include "gimple-pretty-print.h"
 #include "tree-pass.h"
 #include "tree-affine.h"
@@ -1531,8 +1530,8 @@ initialize_root_vars (struct loop *loop, chain_p chain, bitmap tmp_vars)
 
       phi = create_phi_node (var, loop->header);
       SSA_NAME_DEF_STMT (var) = phi;
-      add_phi_arg (phi, init, entry, UNKNOWN_LOCATION, NULL);
-      add_phi_arg (phi, next, latch, UNKNOWN_LOCATION, NULL);
+      add_phi_arg (phi, init, entry, UNKNOWN_LOCATION);
+      add_phi_arg (phi, next, latch, UNKNOWN_LOCATION);
     }
 }
 
@@ -1595,8 +1594,8 @@ initialize_root_vars_lm (struct loop *loop, dref root, bool written,
       next = VEC_index (tree, *vars, 1);
       phi = create_phi_node (var, loop->header);
       SSA_NAME_DEF_STMT (var) = phi;
-      add_phi_arg (phi, init, entry, UNKNOWN_LOCATION, NULL);
-      add_phi_arg (phi, next, latch, UNKNOWN_LOCATION, NULL);
+      add_phi_arg (phi, init, entry, UNKNOWN_LOCATION);
+      add_phi_arg (phi, next, latch, UNKNOWN_LOCATION);
     }
   else
     {

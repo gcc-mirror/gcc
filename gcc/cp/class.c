@@ -35,7 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "convert.h"
 #include "cgraph.h"
-#include "tree-dump.h"
+#include "dumpfile.h"
 #include "splay-tree.h"
 #include "pointer-set.h"
 
@@ -1189,7 +1189,8 @@ alter_access (tree t, tree fdecl, tree access)
     }
   else
     {
-      perform_or_defer_access_check (TYPE_BINFO (t), fdecl, fdecl);
+      perform_or_defer_access_check (TYPE_BINFO (t), fdecl, fdecl,
+				     tf_warning_or_error);
       DECL_ACCESS (fdecl) = tree_cons (t, access, DECL_ACCESS (fdecl));
       return 1;
     }
@@ -6325,6 +6326,15 @@ finish_struct (tree t, tree attributes)
 
       /* Remember current #pragma pack value.  */
       TYPE_PRECISION (t) = maximum_field_alignment;
+
+      /* Fix up any variants we've already built.  */
+      for (x = TYPE_NEXT_VARIANT (t); x; x = TYPE_NEXT_VARIANT (x))
+	{
+	  TYPE_SIZE (x) = TYPE_SIZE (t);
+	  TYPE_SIZE_UNIT (x) = TYPE_SIZE_UNIT (t);
+	  TYPE_FIELDS (x) = TYPE_FIELDS (t);
+	  TYPE_METHODS (x) = TYPE_METHODS (t);
+	}
     }
   else
     finish_struct_1 (t);
@@ -7138,7 +7148,8 @@ resolve_address_of_overloaded_function (tree target_type,
       && DECL_FUNCTION_MEMBER_P (fn))
     {
       gcc_assert (access_path);
-      perform_or_defer_access_check (access_path, fn, fn);
+      perform_or_defer_access_check (access_path, fn, fn,
+				     tf_warning_or_error);
     }
 
   if (TYPE_PTRFN_P (target_type) || TYPE_PTRMEMFUNC_P (target_type))

@@ -949,7 +949,7 @@ process_subob_fn (tree fn, bool move_p, tree *spec_p, bool *trivial_p,
 
   /* Core 1402: A non-trivial copy op suppresses the implicit
      declaration of the move ctor/op=.  */
-  if (move_p && !move_fn_p (fn) && !trivial_fn_p (fn))
+  if (no_implicit_p && move_p && !move_fn_p (fn) && !trivial_fn_p (fn))
     *no_implicit_p = true;
 
   if (constexpr_p && !DECL_DECLARED_CONSTEXPR_P (fn))
@@ -1225,6 +1225,7 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
 
   ++cp_unevaluated_operand;
   ++c_inhibit_evaluation_warnings;
+  push_deferring_access_checks (dk_no_deferred);
 
   scope = push_scope (ctype);
 
@@ -1342,6 +1343,7 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
 
   pop_scope (scope);
 
+  pop_deferring_access_checks ();
   --cp_unevaluated_operand;
   --c_inhibit_evaluation_warnings;
 }

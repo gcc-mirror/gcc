@@ -55,6 +55,7 @@
 #include "libfuncs.h"
 #include "params.h"
 #include "opts.h"
+#include "dumpfile.h"
 
 /* Forward definitions of types.  */
 typedef struct minipool_node    Mnode;
@@ -874,7 +875,8 @@ const struct tune_params arm_slowmul_tune =
   5,						/* Max cond insns.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
   true,						/* Prefer constant pool.  */
-  arm_default_branch_cost
+  arm_default_branch_cost,
+  false                                         /* Prefer LDRD/STRD.  */
 };
 
 const struct tune_params arm_fastmul_tune =
@@ -885,7 +887,8 @@ const struct tune_params arm_fastmul_tune =
   5,						/* Max cond insns.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
   true,						/* Prefer constant pool.  */
-  arm_default_branch_cost
+  arm_default_branch_cost,
+  false                                         /* Prefer LDRD/STRD.  */
 };
 
 /* StrongARM has early execution of branches, so a sequence that is worth
@@ -899,7 +902,8 @@ const struct tune_params arm_strongarm_tune =
   3,						/* Max cond insns.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
   true,						/* Prefer constant pool.  */
-  arm_default_branch_cost
+  arm_default_branch_cost,
+  false                                         /* Prefer LDRD/STRD.  */
 };
 
 const struct tune_params arm_xscale_tune =
@@ -910,7 +914,8 @@ const struct tune_params arm_xscale_tune =
   3,						/* Max cond insns.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
   true,						/* Prefer constant pool.  */
-  arm_default_branch_cost
+  arm_default_branch_cost,
+  false                                         /* Prefer LDRD/STRD.  */
 };
 
 const struct tune_params arm_9e_tune =
@@ -921,7 +926,8 @@ const struct tune_params arm_9e_tune =
   5,						/* Max cond insns.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
   true,						/* Prefer constant pool.  */
-  arm_default_branch_cost
+  arm_default_branch_cost,
+  false                                         /* Prefer LDRD/STRD.  */
 };
 
 const struct tune_params arm_v6t2_tune =
@@ -932,7 +938,8 @@ const struct tune_params arm_v6t2_tune =
   5,						/* Max cond insns.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
   false,					/* Prefer constant pool.  */
-  arm_default_branch_cost
+  arm_default_branch_cost,
+  false                                         /* Prefer LDRD/STRD.  */
 };
 
 /* Generic Cortex tuning.  Use more specific tunings if appropriate.  */
@@ -944,7 +951,20 @@ const struct tune_params arm_cortex_tune =
   5,						/* Max cond insns.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
   false,					/* Prefer constant pool.  */
-  arm_default_branch_cost
+  arm_default_branch_cost,
+  false                                         /* Prefer LDRD/STRD.  */
+};
+
+const struct tune_params arm_cortex_a15_tune =
+{
+  arm_9e_rtx_costs,
+  NULL,
+  1,						/* Constant limit.  */
+  5,						/* Max cond insns.  */
+  ARM_PREFETCH_NOT_BENEFICIAL,
+  false,					/* Prefer constant pool.  */
+  arm_default_branch_cost,
+  true                                          /* Prefer LDRD/STRD.  */
 };
 
 /* Branches can be dual-issued on Cortex-A5, so conditional execution is
@@ -958,7 +978,8 @@ const struct tune_params arm_cortex_a5_tune =
   1,						/* Max cond insns.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
   false,					/* Prefer constant pool.  */
-  arm_cortex_a5_branch_cost
+  arm_cortex_a5_branch_cost,
+  false                                         /* Prefer LDRD/STRD.  */
 };
 
 const struct tune_params arm_cortex_a9_tune =
@@ -969,7 +990,8 @@ const struct tune_params arm_cortex_a9_tune =
   5,						/* Max cond insns.  */
   ARM_PREFETCH_BENEFICIAL(4,32,32),
   false,					/* Prefer constant pool.  */
-  arm_default_branch_cost
+  arm_default_branch_cost,
+  false                                         /* Prefer LDRD/STRD.  */
 };
 
 const struct tune_params arm_fa726te_tune =
@@ -980,7 +1002,8 @@ const struct tune_params arm_fa726te_tune =
   5,						/* Max cond insns.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
   true,						/* Prefer constant pool.  */
-  arm_default_branch_cost
+  arm_default_branch_cost,
+  false                                         /* Prefer LDRD/STRD.  */
 };
 
 
@@ -2007,6 +2030,11 @@ arm_option_override (void)
                            current_tune->l1_cache_size,
                            global_options.x_param_values,
                            global_options_set.x_param_values);
+
+  /* Use the alternative scheduling-pressure algorithm by default.  */
+  maybe_set_param_value (PARAM_SCHED_PRESSURE_ALGORITHM, 2,
+                         global_options.x_param_values,
+                         global_options_set.x_param_values);
 
   /* Register global variables with the garbage collector.  */
   arm_add_gc_roots ();
@@ -7608,6 +7636,17 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
 	}
       return true;
 
+    case CONST_VECTOR:
+      if (TARGET_NEON
+	  && TARGET_HARD_FLOAT
+	  && outer == SET
+	  && (VALID_NEON_DREG_MODE (mode) || VALID_NEON_QREG_MODE (mode))
+	  && neon_immediate_valid_for_move (x, mode, NULL, NULL))
+	*total = COSTS_N_INSNS (1);
+      else
+	*total = COSTS_N_INSNS (4);
+      return true;
+
     default:
       *total = COSTS_N_INSNS (4);
       return false;
@@ -7946,6 +7985,17 @@ arm_size_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
 
     case CONST_DOUBLE:
       *total = COSTS_N_INSNS (4);
+      return true;
+
+    case CONST_VECTOR:
+      if (TARGET_NEON
+	  && TARGET_HARD_FLOAT
+	  && outer_code == SET
+	  && (VALID_NEON_DREG_MODE (mode) || VALID_NEON_QREG_MODE (mode))
+	  && neon_immediate_valid_for_move (x, mode, NULL, NULL))
+	*total = COSTS_N_INSNS (1);
+      else
+	*total = COSTS_N_INSNS (4);
       return true;
 
     case HIGH:
@@ -8768,10 +8818,13 @@ vfp3_const_double_rtx (rtx x)
    vmov  i64    17    aaaaaaaa bbbbbbbb cccccccc dddddddd
                       eeeeeeee ffffffff gggggggg hhhhhhhh
    vmov  f32    18    aBbbbbbc defgh000 00000000 00000000
+   vmov  f32    19    00000000 00000000 00000000 00000000
 
    For case 18, B = !b. Representable values are exactly those accepted by
    vfp3_const_double_index, but are output as floating-point numbers rather
    than indices.
+
+   For case 19, we will change it to vmov.i32 when assembling.
 
    Variants 0-5 (inclusive) may also be used as immediates for the second
    operand of VORR/VBIC instructions.
@@ -8829,7 +8882,7 @@ neon_valid_immediate (rtx op, enum machine_mode mode, int inverse,
       rtx el0 = CONST_VECTOR_ELT (op, 0);
       REAL_VALUE_TYPE r0;
 
-      if (!vfp3_const_double_rtx (el0))
+      if (!vfp3_const_double_rtx (el0) && el0 != CONST0_RTX (GET_MODE (el0)))
         return -1;
 
       REAL_VALUE_FROM_CONST_DOUBLE (r0, el0);
@@ -8851,7 +8904,10 @@ neon_valid_immediate (rtx op, enum machine_mode mode, int inverse,
       if (elementwidth)
         *elementwidth = 0;
 
-      return 18;
+      if (el0 == CONST0_RTX (GET_MODE (el0)))
+	return 19;
+      else
+	return 18;
     }
 
   /* Splat vector constant out into a byte vector.  */

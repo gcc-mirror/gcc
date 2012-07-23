@@ -284,6 +284,14 @@ double_int_equal_p (double_int cst1, double_int cst2)
   return cst1.low == cst2.low && cst1.high == cst2.high;
 }
 
+/* Return number of set bits of CST.  */
+
+static inline int
+double_int_popcount (double_int cst)
+{
+  return popcount_hwi (cst.high) + popcount_hwi (cst.low);
+}
+
 
 /* Legacy interface with decomposed high/low parts.  */
 

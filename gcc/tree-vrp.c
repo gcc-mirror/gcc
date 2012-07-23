@@ -30,8 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-flow.h"
 #include "tree-pass.h"
 #include "tree-dump.h"
-#include "timevar.h"
-#include "tree-pretty-print.h"
 #include "gimple-pretty-print.h"
 #include "diagnostic-core.h"
 #include "intl.h"
@@ -355,32 +353,35 @@ nonnull_arg_p (const_tree arg)
     return true;
 
   fntype = TREE_TYPE (current_function_decl);
-  attrs = lookup_attribute ("nonnull", TYPE_ATTRIBUTES (fntype));
-
-  /* If "nonnull" wasn't specified, we know nothing about the argument.  */
-  if (attrs == NULL_TREE)
-    return false;
-
-  /* If "nonnull" applies to all the arguments, then ARG is non-null.  */
-  if (TREE_VALUE (attrs) == NULL_TREE)
-    return true;
-
-  /* Get the position number for ARG in the function signature.  */
-  for (arg_num = 1, t = DECL_ARGUMENTS (current_function_decl);
-       t;
-       t = DECL_CHAIN (t), arg_num++)
+  for (attrs = TYPE_ATTRIBUTES (fntype); attrs; attrs = TREE_CHAIN (attrs))
     {
-      if (t == arg)
-	break;
-    }
+      attrs = lookup_attribute ("nonnull", attrs);
 
-  gcc_assert (t == arg);
+      /* If "nonnull" wasn't specified, we know nothing about the argument.  */
+      if (attrs == NULL_TREE)
+	return false;
 
-  /* Now see if ARG_NUM is mentioned in the nonnull list.  */
-  for (t = TREE_VALUE (attrs); t; t = TREE_CHAIN (t))
-    {
-      if (compare_tree_int (TREE_VALUE (t), arg_num) == 0)
+      /* If "nonnull" applies to all the arguments, then ARG is non-null.  */
+      if (TREE_VALUE (attrs) == NULL_TREE)
 	return true;
+
+      /* Get the position number for ARG in the function signature.  */
+      for (arg_num = 1, t = DECL_ARGUMENTS (current_function_decl);
+	   t;
+	   t = DECL_CHAIN (t), arg_num++)
+	{
+	  if (t == arg)
+	    break;
+	}
+
+      gcc_assert (t == arg);
+
+      /* Now see if ARG_NUM is mentioned in the nonnull list.  */
+      for (t = TREE_VALUE (attrs); t; t = TREE_CHAIN (t))
+	{
+	  if (compare_tree_int (TREE_VALUE (t), arg_num) == 0)
+	    return true;
+	}
     }
 
   return false;
@@ -4123,7 +4124,7 @@ dump_asserts_for (FILE *file, tree name)
 	{
 	  fprintf (file, "\n\tEDGE %d->%d", loc->e->src->index,
 	           loc->e->dest->index);
-	  dump_edge_info (file, loc->e, 0);
+	  dump_edge_info (file, loc->e, dump_flags, 0);
 	}
       fprintf (file, "\n\tPREDICATE: ");
       print_generic_expr (file, name, 0);

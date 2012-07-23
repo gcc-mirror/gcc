@@ -58,7 +58,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-diagnostic.h"
 #include "tree-pretty-print.h"
 #include "cgraph.h"
-#include "timevar.h"
 #include "except.h"
 #include "debug.h"
 #include "intl.h"

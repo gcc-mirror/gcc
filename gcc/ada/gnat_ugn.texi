@@ -487,7 +487,9 @@ Creating Unit Tests Using gnattest
 * Tagged Types Substitutability Testing::
 * Testing with Contracts::
 * Additional Tests::
+@ifclear vms
 * Support for other platforms/run-times::
+@end ifclear
 * Current Limitations::
 
 Other Utility Programs
@@ -18107,7 +18109,9 @@ is installed at its default location.
 * Tagged Types Substitutability Testing::
 * Testing with Contracts::
 * Additional Tests::
+@ifclear vms
 * Support for other platforms/run-times::
+@end ifclear
 * Current Limitations::
 @end menu
 
@@ -18416,7 +18420,7 @@ as passed to gnattest when generating the test driver.
 Passing it to the driver generated on the first example:
 
 @smallexample
-test_runner --stub-default=pass
+test_runner --skeleton-default=pass
 @end smallexample
 
 makes both tests pass, even the unimplemented one.
@@ -18621,6 +18625,7 @@ gnatmake -Pmixing/test_driver.gpr
 mixing/test_runner
 @end smallexample
 
+@ifclear vms
 @node Support for other platforms/run-times
 @section Support for other platforms/run-times
 
@@ -18633,12 +18638,15 @@ such as Zero FootPrint (ZFP), a simplified harness is generated.
 Two variables are used to tell the underlying AUnit framework how to generate
 the test harness: @code{PLATFORM}, which identifies the target, and
 @code{RUNTIME}, used to determine the run-time library for which the harness
-is generated. For example, the following options are used to generate the
-AUnit test harness for a PowerPC ELF target using the ZFP run-time library:
+is generated. Corresponding prefix should also be used when calling
+@command{gnattest} for non-native targets. For example, the following options
+are used to generate the AUnit test harness for a PowerPC ELF target using
+the ZFP run-time library:
 
 @smallexample
-gnattest -Psimple.gpr -XPLATFORM=powerpc-elf -XRUNTIME=zfp
+powerpc-elf-gnattest -Psimple.gpr -XPLATFORM=powerpc-elf -XRUNTIME=zfp
 @end smallexample
+@end ifclear
 
 @node Current Limitations
 @section Current Limitations
@@ -18650,7 +18658,6 @@ The tool currently does not support following features:
 @itemize @bullet
 @item generic tests for generic packages and package instantiations
 @item tests for protected subprograms and entries
-@item generating test packages for code that is not conformant with ada 2005
 
 @end itemize
 
@@ -18684,13 +18691,13 @@ package, in file s-dimmks.ads.
    type Mks_Type is new Long_Long_Float
      with
       Dimension_System => (
-        (Meter,    'm'),
-        (Kilogram, "kg"),
-        (Second,   's'),
-        (Ampere,   'A'),
-        (Kelvin,   'K'),
-        (Mole,     "mol"),
-        (Candela,  "cd"));
+        (Unit_Name => Meter,    Unit_Symbol => 'm',   Dim_Symbol => 'L'),
+        (Unit_Name => Kilogram, Unit_Symbol => "kg",  Dim_Symbol => 'M'),
+        (Unit_Name => Second,   Unit_Symbol => 's',   Dim_Symbol => 'T'),
+        (Unit_Name => Ampere,   Unit_Symbol => 'A',   Dim_Symbol => 'I'),
+        (Unit_Name => Kelvin,   Unit_Symbol => 'K',   Dim_Symbol => "Theta"),
+        (Unit_Name => Mole,     Unit_Symbol => "mol", Dim_Symbol => 'N'),
+        (Unit_Name => Candela,  Unit_Symbol => "cd",  Dim_Symbol => 'J'));
 @end smallexample
 
 @noindent
@@ -18699,8 +18706,8 @@ conventional units. For example:
 @smallexample @c ada
    subtype Length is Mks_Type
      with
-      Dimension => ('m',
-        Meter =>  1,
+      Dimension => (Symbol => 'm',
+        Meter  => 1,
         others => 0);
 @end smallexample
 @noindent
@@ -18712,10 +18719,10 @@ The package also defines conventional names for values of each unit, for
 example:
 
 @smallexample @c ada
-   m   : constant Length                    := 1.0;
-   kg  : constant Mass                      := 1.0;
-   s   : constant Time                      := 1.0;
-   A   : constant Electric_Current          := 1.0;
+   m   : constant Length           := 1.0;
+   kg  : constant Mass             := 1.0;
+   s   : constant Time             := 1.0;
+   A   : constant Electric_Current := 1.0;
 @end smallexample
 
 @noindent
@@ -18783,13 +18790,13 @@ are rejected with the following diagnoses:
 @smallexample
    Distance := 5.0;
       >>> dimensions mismatch in assignment
-      >>> left-hand side has dimensions (1, 0, 0, 0, 0, 0, 0)
+      >>> left-hand side has dimension [L]
       >>> right-hand side is dimensionless
 
    Distance := 5.0 * kg:
       >>> dimensions mismatch in assignment
-      >>> left-hand side has dimensions  (1, 0, 0, 0, 0, 0, 0)
-      >>> right-hand side has dimensions (0, 1, 0, 0, 0, 0, 0)
+      >>> left-hand side has dimension [L]
+      >>> right-hand side has dimension [M]
 @end smallexample
 
 @noindent

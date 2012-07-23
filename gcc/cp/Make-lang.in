@@ -279,7 +279,7 @@ cp/decl.o: cp/decl.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) cp/decl.h \
   c-family/c-objc.h
 cp/decl2.o: cp/decl2.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) cp/decl.h \
   toplev.h $(C_COMMON_H) gt-cp-decl2.h $(CGRAPH_H) \
-  $(C_PRAGMA_H) $(TREE_DUMP_H) intl.h $(TARGET_H) $(GIMPLE_H) pointer-set.h \
+  $(C_PRAGMA_H) dumpfile.h intl.h $(TARGET_H) $(GIMPLE_H) pointer-set.h \
   $(SPLAY_TREE_H) c-family/c-ada-spec.h \
   c-family/c-objc.h
 cp/cp-objcp-common.o : cp/cp-objcp-common.c $(CONFIG_H) $(SYSTEM_H) \
@@ -292,7 +292,7 @@ cp/typeck.o: cp/typeck.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) \
   toplev.h $(DIAGNOSTIC_H) convert.h $(C_COMMON_H) $(TARGET_H) \
   c-family/c-objc.h
 cp/class.o: cp/class.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) toplev.h \
-  $(TARGET_H) convert.h $(CGRAPH_H) $(TREE_DUMP_H) gt-cp-class.h \
+  $(TARGET_H) convert.h $(CGRAPH_H) dumpfile.h gt-cp-class.h \
   $(SPLAY_TREE_H) pointer-set.h
 cp/call.o: cp/call.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) toplev.h \
   $(DIAGNOSTIC_CORE_H) intl.h gt-cp-call.h convert.h $(TARGET_H) langhooks.h \
@@ -331,7 +331,8 @@ cp/semantics.o: cp/semantics.c $(CXX_TREE_H) $(TM_H) toplev.h \
 cp/dump.o: cp/dump.c $(CXX_TREE_H) $(TM_H) $(TREE_DUMP_H)
 cp/optimize.o: cp/optimize.c $(CXX_TREE_H) $(TM_H) \
   input.h $(PARAMS_H) debug.h $(TREE_INLINE_H) $(GIMPLE_H) \
-  $(TARGET_H) tree-iterator.h $(CGRAPH_H) $(DIAGNOSTIC_CORE_H)
+  $(TARGET_H) tree-iterator.h $(CGRAPH_H) $(DIAGNOSTIC_CORE_H) \
+  dumpfile.h
 cp/mangle.o: cp/mangle.c $(CXX_TREE_H) $(TM_H) $(REAL_H) \
   gt-cp-mangle.h $(TARGET_H) $(TM_P_H) $(CGRAPH_H)
 cp/parser.o: cp/parser.c $(CXX_TREE_H) $(TM_H) $(DIAGNOSTIC_CORE_H) \

@@ -888,6 +888,13 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       end if;
 
       declare
+         pragma Unsuppress (Accessibility_Check);
+         --  The element allocator may need an accessibility check in the case
+         --  the actual type is class-wide or has access discriminants (see
+         --  RM 4.8(10.1) and AI12-0035). We don't unsuppress the check on the
+         --  allocator in the loop below, because the one in this block would
+         --  have failed already.
+
          Element : Element_Access := new Element_Type'(New_Item);
       begin
          New_Node := new Node_Type'(Element, null, null);
@@ -1461,8 +1468,12 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       pragma Assert (Vet (Position), "bad cursor in Replace_Element");
 
       declare
-         X : Element_Access := Position.Node.Element;
+         pragma Unsuppress (Accessibility_Check);
+         --  The element allocator may need an accessibility check in the case
+         --  the actual type is class-wide or has access discriminants (see
+         --  RM 4.8(10.1) and AI12-0035).
 
+         X : Element_Access := Position.Node.Element;
       begin
          Position.Node.Element := new Element_Type'(New_Item);
          Free (X);

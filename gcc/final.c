@@ -74,7 +74,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "tree-pass.h"
 #include "tree-flow.h"
-#include "timevar.h"
 #include "cgraph.h"
 #include "coverage.h"
 #include "df.h"
@@ -1800,7 +1799,7 @@ dump_basic_block_info (FILE *file, rtx insn, basic_block *start_to_bb,
       fprintf (file, "\n%s PRED:", ASM_COMMENT_START);
       FOR_EACH_EDGE (e, ei, bb->preds)
         {
-          dump_edge_info (file, e, 0);
+          dump_edge_info (file, e, TDF_DETAILS, 0);
         }
       fprintf (file, "\n");
     }
@@ -1813,7 +1812,7 @@ dump_basic_block_info (FILE *file, rtx insn, basic_block *start_to_bb,
       fprintf (asm_out_file, "%s SUCC:", ASM_COMMENT_START);
       FOR_EACH_EDGE (e, ei, bb->succs)
        {
-         dump_edge_info (asm_out_file, e, 1);
+         dump_edge_info (asm_out_file, e, TDF_DETAILS, 1);
        }
       fprintf (file, "\n");
     }

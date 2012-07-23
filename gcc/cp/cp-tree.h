@@ -78,6 +78,7 @@ c-common.h, not after.
       CONVERT_EXPR_VBASE_PATH (in CONVERT_EXPR)
       OVL_ARG_DEPENDENT (in OVERLOAD)
       PACK_EXPANSION_LOCAL_P (in *_PACK_EXPANSION)
+      TINFO_RECHECK_ACCESS_P (in TEMPLATE_INFO)
    1: IDENTIFIER_VIRTUAL_P (in IDENTIFIER_NODE)
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
@@ -724,6 +725,14 @@ struct GTY(()) qualified_typedef_usage_s {
 typedef struct qualified_typedef_usage_s qualified_typedef_usage_t;
 DEF_VEC_O (qualified_typedef_usage_t);
 DEF_VEC_ALLOC_O (qualified_typedef_usage_t,gc);
+
+/* Non-zero if this template specialization has access violations that
+   should be rechecked when the function is instantiated outside argument
+   deduction.  */
+#define TINFO_RECHECK_ACCESS_P(NODE) \
+  (TREE_LANG_FLAG_0 (TEMPLATE_INFO_CHECK (NODE)))
+#define FNDECL_RECHECK_ACCESS_P(NODE) \
+  (TINFO_RECHECK_ACCESS_P (DECL_TEMPLATE_INFO (NODE)))
 
 struct GTY(()) tree_template_info {
   struct tree_common common;
@@ -4424,9 +4433,7 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, TYPENAME_FLAG };
    Used by sythesized_method_walk to determine which functions will
    be called to initialize subobjects, in order to determine exception
    specification and possible implicit delete.
-   This is kind of a hack, but since access control doesn't respect SFINAE
-   we can't just use tf_none to avoid access control errors, we need
-   another mechanism.  Exiting early also avoids problems with trying
+   This is kind of a hack, but exiting early avoids problems with trying
    to perform argument conversions when the class isn't complete yet.  */
 #define LOOKUP_SPECULATIVE (LOOKUP_LIST_ONLY << 1)
 /* Used by calls from defaulted functions to limit the overload set to avoid
@@ -4901,7 +4908,8 @@ extern bool can_convert_arg			(tree, tree, tree, int,
 						 tsubst_flags_t);
 extern bool can_convert_arg_bad			(tree, tree, tree, int,
 						 tsubst_flags_t);
-extern bool enforce_access			(tree, tree, tree);
+extern bool enforce_access			(tree, tree, tree,
+						 tsubst_flags_t);
 extern void push_defarg_context			(tree);
 extern void pop_defarg_context			(void);
 extern tree convert_default_arg			(tree, tree, tree, int,
@@ -5484,6 +5492,8 @@ typedef struct GTY(()) deferred_access_check {
   tree decl;
   /* The declaration that should be used in the error message.  */
   tree diag_decl;
+  /* The location of this access.  */
+  location_t loc;
 } deferred_access_check;
 DEF_VEC_O(deferred_access_check);
 DEF_VEC_ALLOC_O(deferred_access_check,gc);
@@ -5495,10 +5505,11 @@ extern void stop_deferring_access_checks	(void);
 extern void pop_deferring_access_checks		(void);
 extern VEC (deferred_access_check,gc)* get_deferred_access_checks		(void);
 extern void pop_to_parent_deferring_access_checks (void);
-extern void perform_access_checks		(VEC (deferred_access_check,gc)*);
-extern void perform_deferred_access_checks	(void);
-extern void perform_or_defer_access_check	(tree, tree, tree);
-extern bool speculative_access_check		(tree, tree, tree, bool);
+extern bool perform_access_checks (VEC (deferred_access_check,gc)*,
+				   tsubst_flags_t);
+extern bool perform_deferred_access_checks	(tsubst_flags_t);
+extern bool perform_or_defer_access_check	(tree, tree, tree,
+						 tsubst_flags_t);
 extern int stmts_are_full_exprs_p		(void);
 extern void init_cp_semantics			(void);
 extern tree do_poplevel				(tree);

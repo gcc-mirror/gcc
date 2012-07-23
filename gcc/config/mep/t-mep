@@ -40,7 +40,7 @@ MD_INCLUDES = \
 	$(srcdir)/config/mep/predicates.md \
 	$(srcdir)/config/mep/constraints.md
 
-mep.o : $(srcdir)/config/mep/mep-intrin.h
+mep.o : $(srcdir)/config/mep/mep-intrin.h dumpfile.h
 
 # begin-isas
 MEP_CORE = ext_core1

@@ -4026,14 +4026,15 @@ package body Sem_Attr is
          --  an entity in the enclosing subprogram. If it is a component of
          --  a formal its expansion might generate actual subtypes that may
          --  be referenced in an inner context, and which must be elaborated
-         --  within the subprogram itself. As a result we create a
-         --  declaration for it and insert it at the start of the enclosing
-         --  subprogram. This is properly an expansion activity but it has
-         --  to be performed now to prevent out-of-order issues.
+         --  within the subprogram itself. If the prefix includes a function
+         --  call it may involve finalization actions that should only be
+         --  inserted when the attribute has been rewritten as a declarations.
+         --  As a result, if the prefix is not a simple name we create a
+         --  declaration for it now,  and insert it at the start of the
+         --  enclosing subprogram. This is properly an expansion activity but
+         --  it has to be performed now to prevent out-of-order issues.
 
-         if Nkind (P) = N_Selected_Component
-           and then Has_Discriminants (Etype (Prefix (P)))
-         then
+         if not Is_Entity_Name (P) then
             P_Type := Base_Type (P_Type);
             Set_Etype (N, P_Type);
             Set_Etype (P, P_Type);

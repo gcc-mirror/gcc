@@ -27,16 +27,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "tm_p.h"
 #include "basic-block.h"
-#include "timevar.h"
 #include "tree-flow.h"
 #include "tree-pass.h"
-#include "tree-dump.h"
 #include "langhooks.h"
 #include "pointer-set.h"
 #include "domwalk.h"
 #include "cfgloop.h"
 #include "tree-data-ref.h"
-#include "tree-pretty-print.h"
 #include "gimple-pretty-print.h"
 #include "insn-config.h"
 #include "expr.h"
@@ -1454,7 +1451,6 @@ cond_store_replacement (basic_block middle_bb, basic_block join_bb,
   gimple newphi, new_stmt;
   gimple_stmt_iterator gsi;
   source_location locus;
-  tree block;
 
   /* Check if middle_bb contains of only one store.  */
   if (!assign
@@ -1462,7 +1458,6 @@ cond_store_replacement (basic_block middle_bb, basic_block join_bb,
     return false;
 
   locus = gimple_location (assign);
-  block = gimple_block (assign);
   lhs = gimple_assign_lhs (assign);
   rhs = gimple_assign_rhs1 (assign);
   if (TREE_CODE (lhs) != MEM_REF
@@ -1496,15 +1491,14 @@ cond_store_replacement (basic_block middle_bb, basic_block join_bb,
   name = make_ssa_name (condstoretemp, new_stmt);
   gimple_assign_set_lhs (new_stmt, name);
   gimple_set_location (new_stmt, locus);
-  gimple_set_block (new_stmt, block);
   gsi_insert_on_edge (e1, new_stmt);
 
   /* 4) Create a PHI node at the join block, with one argument
         holding the old RHS, and the other holding the temporary
         where we stored the old memory contents.  */
   newphi = create_phi_node (condstoretemp, join_bb);
-  add_phi_arg (newphi, rhs, e0, locus, block);
-  add_phi_arg (newphi, name, e1, locus, block);
+  add_phi_arg (newphi, rhs, e0, locus);
+  add_phi_arg (newphi, name, e1, locus);
 
   lhs = unshare_expr (lhs);
   new_stmt = gimple_build_assign (lhs, PHI_RESULT (newphi));
@@ -1531,7 +1525,6 @@ cond_if_else_store_replacement_1 (basic_block then_bb, basic_block else_bb,
 {
   tree lhs_base, lhs, then_rhs, else_rhs;
   source_location then_locus, else_locus;
-  tree then_block, else_block;
   gimple_stmt_iterator gsi;
   gimple newphi, new_stmt;
 
@@ -1557,8 +1550,6 @@ cond_if_else_store_replacement_1 (basic_block then_bb, basic_block else_bb,
   else_rhs = gimple_assign_rhs1 (else_assign);
   then_locus = gimple_location (then_assign);
   else_locus = gimple_location (else_assign);
-  then_block = gimple_block (then_assign);
-  else_block = gimple_block (else_assign);
 
   /* Now we've checked the constraints, so do the transformation:
      1) Remove the stores.  */
@@ -1582,10 +1573,8 @@ cond_if_else_store_replacement_1 (basic_block then_bb, basic_block else_bb,
 	holding the old RHS, and the other holding the temporary
 	where we stored the old memory contents.  */
   newphi = create_phi_node (condstoretemp, join_bb);
-  add_phi_arg (newphi, then_rhs, EDGE_SUCC (then_bb, 0), then_locus,
-	       then_block);
-  add_phi_arg (newphi, else_rhs, EDGE_SUCC (else_bb, 0), else_locus,
-	       else_block);
+  add_phi_arg (newphi, then_rhs, EDGE_SUCC (then_bb, 0), then_locus);
+  add_phi_arg (newphi, else_rhs, EDGE_SUCC (else_bb, 0), else_locus);
 
   new_stmt = gimple_build_assign (lhs, PHI_RESULT (newphi));
 

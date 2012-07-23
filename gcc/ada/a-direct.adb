@@ -395,12 +395,7 @@ package body Ada.Directories is
      (New_Directory : String;
       Form          : String := "")
    is
-      pragma Unreferenced (Form);
-
       C_Dir_Name : constant String := New_Directory & ASCII.NUL;
-
-      function mkdir (Dir_Name : String) return Integer;
-      pragma Import (C, mkdir, "__gnat_mkdir");
 
    begin
       --  First, the invalid case
@@ -410,10 +405,34 @@ package body Ada.Directories is
            "invalid new directory path name """ & New_Directory & '"';
 
       else
-         if mkdir (C_Dir_Name) /= 0 then
-            raise Use_Error with
-              "creation of new directory """ & New_Directory & """ failed";
-         end if;
+         --  Acquire setting of encoding parameter
+
+         declare
+            Formstr : constant String := To_Lower (Form);
+
+            Encoding : CRTL.Filename_Encoding;
+            --  Filename encoding specified into the form parameter
+
+            V1, V2 : Natural;
+
+         begin
+            Form_Parameter (Formstr, "encoding", V1, V2);
+
+            if V1 = 0 then
+               Encoding := CRTL.Unspecified;
+            elsif Formstr (V1 .. V2) = "utf8" then
+               Encoding := CRTL.UTF8;
+            elsif Formstr (V1 .. V2) = "8bits" then
+               Encoding := CRTL.ASCII_8bits;
+            else
+               raise Use_Error with "invalid Form";
+            end if;
+
+            if CRTL.mkdir (C_Dir_Name, Encoding) /= 0 then
+               raise Use_Error with
+                 "creation of new directory """ & New_Directory & """ failed";
+            end if;
+         end;
       end if;
    end Create_Directory;
 
@@ -425,8 +444,6 @@ package body Ada.Directories is
      (New_Directory : String;
       Form          : String := "")
    is
-      pragma Unreferenced (Form);
-
       New_Dir : String (1 .. New_Directory'Length + 1);
       Last    : Positive := 1;
       Start   : Positive := 1;
@@ -487,7 +504,8 @@ package body Ada.Directories is
                     "file """ & New_Dir (1 .. Last) & """ already exists";
 
                else
-                  Create_Directory (New_Directory => New_Dir (1 .. Last));
+                  Create_Directory
+                    (New_Directory => New_Dir (1 .. Last), Form => Form);
                end if;
             end if;
          end loop;

@@ -390,9 +390,11 @@ match_array_element_spec (gfc_array_spec *as)
 {
   gfc_expr **upper, **lower;
   match m;
+  int rank;
 
-  lower = &as->lower[as->rank + as->corank - 1];
-  upper = &as->upper[as->rank + as->corank - 1];
+  rank = as->rank == -1 ? 0 : as->rank;
+  lower = &as->lower[rank + as->corank - 1];
+  upper = &as->upper[rank + as->corank - 1];
 
   if (gfc_match_char ('*') == MATCH_YES)
     {
@@ -453,6 +455,20 @@ gfc_match_array_spec (gfc_array_spec **asp, bool match_dim, bool match_codim)
 
   if (gfc_match_char ('(') != MATCH_YES)
     {
+      if (!match_codim)
+	goto done;
+      goto coarray;
+    }
+
+  if (gfc_match (" .. )") == MATCH_YES)
+    {
+      as->type = AS_ASSUMED_RANK;
+      as->rank = -1;
+
+      if (gfc_notify_std (GFC_STD_F2008_TS, "Assumed-rank array at %C")
+	  == FAILURE)
+	goto cleanup;
+
       if (!match_codim)
 	goto done;
       goto coarray;
@@ -536,6 +552,9 @@ gfc_match_array_spec (gfc_array_spec **asp, bool match_dim, bool match_codim)
 
 	    gfc_error ("Bad specification for assumed size array at %C");
 	    goto cleanup;
+
+	  case AS_ASSUMED_RANK:
+	    gcc_unreachable (); 
 	  }
 
       if (gfc_match_char (')') == MATCH_YES)
@@ -555,7 +574,7 @@ gfc_match_array_spec (gfc_array_spec **asp, bool match_dim, bool match_codim)
 	}
 
       if (as->corank + as->rank >= 7
-	  && gfc_notify_std (GFC_STD_F2008, "Fortran 2008: Array "
+	  && gfc_notify_std (GFC_STD_F2008, "Array "
 			     "specification at %C with more than 7 dimensions")
 	     == FAILURE)
 	goto cleanup;
@@ -568,7 +587,7 @@ coarray:
   if (gfc_match_char ('[')  != MATCH_YES)
     goto done;
 
-  if (gfc_notify_std (GFC_STD_F2008, "Fortran 2008: Coarray declaration at %C")
+  if (gfc_notify_std (GFC_STD_F2008, "Coarray declaration at %C")
       == FAILURE)
     goto cleanup;
 
@@ -642,6 +661,9 @@ coarray:
 	    case AS_ASSUMED_SIZE:
 	      gfc_error ("Bad specification for assumed size array at %C");
 	      goto cleanup;
+
+	    case AS_ASSUMED_RANK:
+	      gcc_unreachable (); 
 	  }
 
       if (gfc_match_char (']') == MATCH_YES)
@@ -726,6 +748,14 @@ gfc_set_array_spec (gfc_symbol *sym, gfc_array_spec *as, locus *error_loc)
     {
       sym->as = as;
       return SUCCESS;
+    }
+
+  if ((sym->as->type == AS_ASSUMED_RANK && as->corank)
+      || (as->type == AS_ASSUMED_RANK && sym->as->corank))
+    {
+      gfc_error ("The assumed-rank array '%s' at %L shall not have a "
+		 "codimension", sym->name, error_loc);
+      return FAILURE;
     }
 
   if (as->corank)
@@ -1027,7 +1057,7 @@ gfc_match_array_constructor (gfc_expr **result)
 	return MATCH_NO;
       else
 	{
-	  if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: [...] "
+	  if (gfc_notify_std (GFC_STD_F2003, "[...] "
 			      "style array constructors at %C") == FAILURE)
 	    return MATCH_ERROR;
 	  end_delim = " ]";
@@ -1047,7 +1077,7 @@ gfc_match_array_constructor (gfc_expr **result)
 
       if (seen_ts)
 	{
-	  if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: Array constructor "
+	  if (gfc_notify_std (GFC_STD_F2003, "Array constructor "
 			      "including type specification at %C") == FAILURE)
 	    goto cleanup;
 
@@ -1960,6 +1990,9 @@ spec_size (gfc_array_spec *as, mpz_t *result)
   mpz_t size;
   int d;
 
+  if (as->type == AS_ASSUMED_RANK)
+    return FAILURE;
+
   mpz_init_set_ui (*result, 1);
 
   for (d = 0; d < as->rank; d++)
@@ -2114,6 +2147,9 @@ gfc_array_dimen_size (gfc_expr *array, int dimen, mpz_t *result)
   int i;
 
   if (array->ts.type == BT_CLASS)
+    return FAILURE;
+
+  if (array->rank == -1)
     return FAILURE;
 
   if (dimen < 0 || array == NULL || dimen > array->rank - 1)

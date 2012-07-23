@@ -64,9 +64,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "value-prof.h"
 #include "tree.h"
 #include "tree-flow.h"
-#include "timevar.h"
 #include "cfgloop.h"
-#include "tree-pass.h"
+#include "dumpfile.h"
 
 #include "profile.h"
 
@@ -277,8 +276,8 @@ is_edge_inconsistent (VEC(edge,gc) *edges)
 		  fprintf (dump_file,
 		  	   "Edge %i->%i is inconsistent, count"HOST_WIDEST_INT_PRINT_DEC,
 			   e->src->index, e->dest->index, e->count);
-		  dump_bb (e->src, dump_file, 0);
-		  dump_bb (e->dest, dump_file, 0);
+		  dump_bb (dump_file, e->src, 0, TDF_DETAILS);
+		  dump_bb (dump_file, e->dest, 0, TDF_DETAILS);
 		}
               return true;
 	    }
@@ -327,7 +326,7 @@ is_inconsistent (void)
 		       HOST_WIDEST_INT_PRINT_DEC,
 		       bb->index,
 		       bb->count);
-	      dump_bb (bb, dump_file, 0);
+	      dump_bb (dump_file, bb, 0, TDF_DETAILS);
 	    }
 	  inconsistent = true;
 	}
@@ -340,7 +339,7 @@ is_inconsistent (void)
 		       bb->index,
 		       bb->count,
 		       sum_edge_counts (bb->preds));
-	      dump_bb (bb, dump_file, 0);
+	      dump_bb (dump_file, bb, 0, TDF_DETAILS);
 	    }
 	  inconsistent = true;
 	}
@@ -354,7 +353,7 @@ is_inconsistent (void)
 		       bb->index,
 		       bb->count,
 		       sum_edge_counts (bb->succs));
-	      dump_bb (bb, dump_file, 0);
+	      dump_bb (dump_file, bb, 0, TDF_DETAILS);
 	    }
 	  inconsistent = true;
 	}
@@ -1134,6 +1133,9 @@ branch_prob (void)
   if (dump_file)
     fprintf (dump_file, "%d ignored edges\n", ignored_edges);
 
+  total_num_edges_instrumented += num_instrumented;
+  if (dump_file)
+    fprintf (dump_file, "%d instrumentation edges\n", num_instrumented);
 
   /* Compute two different checksums. Note that we want to compute
      the checksum in only once place, since it depends on the shape

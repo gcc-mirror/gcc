@@ -2008,7 +2008,7 @@ static tree cp_parser_class_name
 static tree cp_parser_class_specifier
   (cp_parser *);
 static tree cp_parser_class_head
-  (cp_parser *, bool *, tree *);
+  (cp_parser *, bool *);
 static enum tag_types cp_parser_class_key
   (cp_parser *);
 static void cp_parser_member_specification_opt
@@ -10515,7 +10515,7 @@ cp_parser_simple_declaration (cp_parser* parser,
       if (cp_parser_declares_only_class_p (parser))
 	shadow_tag (&decl_specifiers);
       /* Perform any deferred access checks.  */
-      perform_deferred_access_checks ();
+      perform_deferred_access_checks (tf_warning_or_error);
     }
 
   /* Consume the `;'.  */
@@ -12416,7 +12416,8 @@ cp_parser_template_id (cp_parser *parser,
 	  FOR_EACH_VEC_ELT (deferred_access_check, access_check, i, chk)
 	    perform_or_defer_access_check (chk->binfo,
 					   chk->decl,
-					   chk->diag_decl);
+					   chk->diag_decl,
+					   tf_warning_or_error);
 	}
       /* Return the stored value.  */
       return check_value->value;
@@ -15751,7 +15752,7 @@ cp_parser_init_declarator (cp_parser* parser,
 
       /* Perform the access control checks for the declarator and the
 	 decl-specifiers.  */
-      perform_deferred_access_checks ();
+      perform_deferred_access_checks (tf_warning_or_error);
 
       /* Restore the saved value.  */
       if (TREE_CODE (decl) == FUNCTION_DECL)
@@ -17961,15 +17962,13 @@ cp_parser_class_specifier_1 (cp_parser* parser)
   bool saved_in_unbraced_linkage_specification_p;
   tree old_scope = NULL_TREE;
   tree scope = NULL_TREE;
-  tree bases;
   cp_token *closing_brace;
 
   push_deferring_access_checks (dk_no_deferred);
 
   /* Parse the class-head.  */
   type = cp_parser_class_head (parser,
-			       &nested_name_specifier_p,
-			       &bases);
+			       &nested_name_specifier_p);
   /* If the class-head was a semantic disaster, skip the entire body
      of the class.  */
   if (!type)
@@ -17982,18 +17981,6 @@ cp_parser_class_specifier_1 (cp_parser* parser)
   /* Look for the `{'.  */
   if (!cp_parser_require (parser, CPP_OPEN_BRACE, RT_OPEN_BRACE))
     {
-      pop_deferring_access_checks ();
-      return error_mark_node;
-    }
-
-  /* Process the base classes. If they're invalid, skip the 
-     entire class body.  */
-  if (!xref_basetypes (type, bases))
-    {
-      /* Consuming the closing brace yields better error messages
-         later on.  */
-      if (cp_parser_skip_to_closing_brace (parser))
-	cp_lexer_consume_token (parser->lexer);
       pop_deferring_access_checks ();
       return error_mark_node;
     }
@@ -18283,14 +18270,14 @@ cp_parser_class_specifier (cp_parser* parser)
 
 static tree
 cp_parser_class_head (cp_parser* parser,
-		      bool* nested_name_specifier_p,
-		      tree *bases)
+		      bool* nested_name_specifier_p)
 {
   tree nested_name_specifier;
   enum tag_types class_key;
   tree id = NULL_TREE;
   tree type = NULL_TREE;
   tree attributes;
+  tree bases;
   cp_virt_specifiers virt_specifiers = VIRT_SPEC_UNSPECIFIED;
   bool template_id_p = false;
   bool qualified_p = false;
@@ -18306,8 +18293,6 @@ cp_parser_class_head (cp_parser* parser,
      type.  */
   num_templates = 0;
   parser->colon_corrects_to_scope_p = false;
-
-  *bases = NULL_TREE;
 
   /* Look for the class-key.  */
   class_key = cp_parser_class_key (parser);
@@ -18671,7 +18656,15 @@ cp_parser_class_head (cp_parser* parser,
 
   /* Get the list of base-classes, if there is one.  */
   if (cp_lexer_next_token_is (parser->lexer, CPP_COLON))
-    *bases = cp_parser_base_clause (parser);
+    bases = cp_parser_base_clause (parser);
+  else
+    bases = NULL_TREE;
+
+  /* If we're really defining a class, process the base classes.
+     If they're invalid, fail.  */
+  if (type && cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE)
+      && !xref_basetypes (type, bases))
+    type = NULL_TREE;
 
  done:
   /* Leave the scope given by the nested-name-specifier.  We will
@@ -21017,7 +21010,7 @@ cp_parser_function_definition_from_specifiers_and_declarator
      did not check, check them now.  We must wait until we are in the
      scope of the function to perform the checks, since the function
      might be a friend.  */
-  perform_deferred_access_checks ();
+  perform_deferred_access_checks (tf_warning_or_error);
 
   if (!success_p)
     {
@@ -21311,7 +21304,7 @@ static void
 cp_parser_perform_template_parameter_access_checks (VEC (deferred_access_check,gc)* checks)
 {
   ++processing_template_parmlist;
-  perform_access_checks (checks);
+  perform_access_checks (checks, tf_warning_or_error);
   --processing_template_parmlist;
 }
 
@@ -22760,7 +22753,7 @@ cp_parser_pre_parsed_nested_name_specifier (cp_parser *parser)
       FOR_EACH_VEC_ELT (deferred_access_check, checks, i, chk)
 	perform_or_defer_access_check (chk->binfo,
 				       chk->decl,
-				       chk->diag_decl);
+				       chk->diag_decl, tf_warning_or_error);
     }
   /* Set the scope from the stored value.  */
   parser->scope = check_value->value;
@@ -24018,7 +24011,7 @@ cp_parser_objc_method_definition_list (cp_parser* parser)
 	  if (!(ptk->type == CPP_PLUS || ptk->type == CPP_MINUS 
 		|| ptk->type == CPP_EOF || ptk->keyword == RID_AT_END))
 	    {
-	      perform_deferred_access_checks ();
+	      perform_deferred_access_checks (tf_warning_or_error);
 	      stop_deferring_access_checks ();
 	      meth = cp_parser_function_definition_after_declarator (parser,
 								     false);

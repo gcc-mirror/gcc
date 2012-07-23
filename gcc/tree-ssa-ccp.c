@@ -119,10 +119,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "basic-block.h"
 #include "function.h"
-#include "tree-pretty-print.h"
 #include "gimple-pretty-print.h"
-#include "timevar.h"
-#include "tree-dump.h"
 #include "tree-flow.h"
 #include "tree-pass.h"
 #include "tree-ssa-propagate.h"
@@ -408,7 +405,8 @@ valid_lattice_transition (prop_value_t old_val, prop_value_t new_val)
 
   /* Now both lattice values are CONSTANT.  */
 
-  /* Allow transitioning from &x to &x & ~3.  */
+  /* Allow transitioning from PHI <&x, not executable> == &x
+     to PHI <&x, &y> == common alignment.  */
   if (TREE_CODE (old_val.value) != INTEGER_CST
       && TREE_CODE (new_val.value) == INTEGER_CST)
     return true;
@@ -512,7 +510,7 @@ get_value_from_alignment (tree expr)
 
   gcc_assert (TREE_CODE (expr) == ADDR_EXPR);
 
-  get_object_alignment_1 (TREE_OPERAND (expr, 0), &align, &bitpos);
+  get_pointer_alignment_1 (expr, &align, &bitpos);
   val.mask
     = double_int_and_not (POINTER_TYPE_P (type) || TYPE_UNSIGNED (type)
 			  ? double_int_mask (TYPE_PRECISION (type))
@@ -649,6 +647,11 @@ likely_value (gimple stmt)
 	     Not COMPLEX_EXPR as one VARYING operand makes the result partly
 	     not UNDEFINED.  Not *DIV_EXPR, comparisons and shifts because
 	     the undefined operand may be promoted.  */
+	  return UNDEFINED;
+
+	case ADDR_EXPR:
+	  /* If any part of an address is UNDEFINED, like the index
+	     of an ARRAY_EXPR, then treat the result as UNDEFINED.  */
 	  return UNDEFINED;
 
 	default:
@@ -2358,9 +2361,11 @@ optimize_unreachable (gimple_stmt_iterator i)
   FOR_EACH_EDGE (e, ei, bb->preds)
     {
       gsi = gsi_last_bb (e->src);
-      stmt = gsi_stmt (gsi);
+      if (gsi_end_p (gsi))
+	continue;
 
-      if (stmt && gimple_code (stmt) == GIMPLE_COND)
+      stmt = gsi_stmt (gsi);
+      if (gimple_code (stmt) == GIMPLE_COND)
 	{
 	  if (e->flags & EDGE_TRUE_VALUE)
 	    gimple_cond_make_false (stmt);

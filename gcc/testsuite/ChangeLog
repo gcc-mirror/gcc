@@ -1,3 +1,297 @@
+2012-07-22  Hans-Peter Nilsson  <hp@axis.com>
+
+	Handle recent changes in default atomics for cris*-*-linux*.
+	* gcc.target/cris/torture/sync-mis-xchg-i-1ml.c,
+	gcc.target/cris/torture/sync-mis-xchg-i-2ml.c,
+	gcc.target/cris/torture/sync-mis-xchg-i-3ml.c,
+	gcc.target/cris/torture/sync-mis-xchg-s-1ml.c,
+	gcc.target/cris/torture/sync-mis-op-i-1ml.c,
+	gcc.target/cris/torture/sync-mis-op-i-2ml.c,
+	gcc.target/cris/torture/sync-mis-op-i-3ml.c,
+	gcc.target/cris/torture/sync-mis-op-s-1ml.c: New tests.
+	* gcc.target/cris/torture/sync-mis-op-i-2a.c: Make sure
+	-mno-unaligned-atomic-may-use-library is in effect for
+	cris*-*-linux*.
+	* gcc.target/cris/torture/sync-mis-xchg-i-1.c,
+	gcc.target/cris/torture/sync-mis-xchg-i-2.c,
+	gcc.target/cris/torture/sync-mis-xchg-i-3.c,
+	gcc.target/cris/torture/sync-mis-xchg-i-2a.c,
+	gcc.target/cris/torture/sync-mis-xchg-s-1.c,
+	gcc.target/cris/torture/sync-mis-op-i-1.c,
+	gcc.target/cris/torture/sync-mis-op-i-2.c,
+	gcc.target/cris/torture/sync-mis-op-i-1a.c,
+	gcc.target/cris/torture/sync-mis-op-i-3.c,
+	gcc.target/cris/torture/sync-mis-op-i-3a.c,
+	gcc.target/cris/torture/sync-mis-op-s-1a.c,
+	gcc.target/cris/torture/sync-mis-xchg-i-1a.c,
+	gcc.target/cris/torture/sync-mis-xchg-i-3a.c,
+	gcc.target/cris/torture/sync-mis-xchg-s-1a.c: Similar.
+	* gcc.target/cris/torture/sync-mis-op-s-1.c: Ditto.
+	(main): Remove local variable x.
+	[mis_ok]: Check that atomics don't fail.
+
+2012-07-21  Andrew Pinski  <apinski@cavium.com>
+
+	*  gcc.dg/tree-ssa/vrp72.c: New test.
+	*  gcc.dg/tree-ssa/vrp73.c: New test.
+	*  gcc.dg/tree-ssa/vrp74.c: New test.
+	*  gcc.dg/tree-ssa/vrp75.c: New test.
+
+2012-07-21  Andrew Pinski  <apinski@cavium.com>
+
+	* gcc.dg/tree-ssa/alias-21.c: New testcase.
+	* gcc.dg/tree-ssa/alias-22.c: New testcase.
+
+2012-07-21  Andrew Pinski  <apinski@cavium.com>
+
+	* gcc.target/mips/octeon-pop-2.c: New testcase.
+
+2012-07-21  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48820
+	* gfortran.dg/assumed_rank_3.f90: New.
+	* gfortran.dg/assumed_rank_11.f90: New.
+	* gfortran.dg/assumed_rank_1.f90: Update dg-error.
+	* gfortran.dg/assumed_rank_2.f90: Update dg-error.
+	* gfortran.dg/assumed_rank_7.f90: Update dg-error.
+
+2012-07-21  Andrew Pinski  <apinski@cavium.com>
+
+	* gcc.target/mips/unaligned-1.c: New testcase.
+
+2012-07-21  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.c-torture/execute/20101011-1.c (DO_TEST): Define as 0 for CRIS.
+
+2012-07-20  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/bind_c_array_params_2.f90: New.
+	* gfortran.dg/bind_c_array_params.f03: Add -std=f2003
+	and update dg-error.
+
+2012-07-20  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/assumed_rank_12.f90: Update dg-error.
+
+2012-07-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/54038
+	* g++.dg/other/array7.C: New.
+
+2012-07-20  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* gcc.dg/tree-prof/update-loopch.c: Look for counts on the dumps of
+	the basic block and check loop depth.
+	* gcc.dg/tree-ssa/pr18133-1.c: Dump details, not blocks.  Update
+	matching patterns and comments.
+	* gcc.dg/tree-ssa/20031021-1.c: Fix check patterns.
+	* gcc.dg/tree-ssa/vector-2.c: Likewise.
+
+2012-07-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/28656
+	* c-c++-common/pr28656.c: New test.
+
+2012-07-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/54026
+	* g++.dg/init/mutable1.C: New.
+
+2012-07-20  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48820
+	* gfortran.dg/assumed_type_3.f90: Update dg-error.
+	* gfortran.dg/assumed_rank_1.f90: New.
+	* gfortran.dg/assumed_rank_1_c.c: New.
+	* gfortran.dg/assumed_rank_2.f90: New.
+	* gfortran.dg/assumed_rank_4.f90: New.
+	* gfortran.dg/assumed_rank_5.f90: New.
+	* gfortran.dg/assumed_rank_6.f90: New.
+	* gfortran.dg/assumed_rank_7.f90: New.
+	* gfortran.dg/assumed_rank_8.f90: New.
+	* gfortran.dg/assumed_rank_8_c.c: New.
+	* gfortran.dg/assumed_rank_9.f90: New.
+	* gfortran.dg/assumed_rank_10.f90: New.
+	* gfortran.dg/assumed_rank_12.f90: New.
+
+2012-07-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt25.adb: New test.
+	* gnat.dg/opt25_pkg1.ad[sb]: New helper.
+	* gnat.dg/opt25_pkg2.ad[sb]: Likewise.
+
+2012-07-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/aggr20.ad[sb]: New test.
+	* gnat.dg/aggr20_pkg.ads: New helper.
+
+2012-07-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/derived_type3.adb: New test.
+	* gnat.dg/derived_type3_pkg.ad[sb]: New helper.
+
+2012-07-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/53942
+	* gcc.dg/pr53942.c: New test.
+
+2012-07-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/54021
+	* g++.dg/cpp0x/constexpr-builtin2.C: New.
+
+2012-07-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/discr38.adb: New test.
+
+2012-07-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/54017
+	* c-c++-common/gomp/pr54017.c: New test.
+
+2012-07-19  Richard Guenther  <rguenther@suse.de>
+	    Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/loop_optimization11.adb: New testcase.
+	* gnat.dg/loop_optimization11_pkg.ads: Likewise.
+
+2012-07-18  Paolo Carlini  <paolo.carlini@oracle.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/sfinae37.C: New.
+	* g++.dg/template/access23.C: New.
+	* g++.dg/template/access7.C: Adjust.
+	* g++.dg/template/sfinae10.C: Don't expect errors.
+	* g++.dg/template/sfinae6_neg.C: Don't expect errors.
+
+2012-07-18  Julian Brown  <julian@codesourcery.com>
+	    Sandra Loosemore <sandra@codesroucery.com>
+
+	* gcc.c-torture/execute/20101011-1.c: Skip on bare-metal m68k.
+
+2012-07-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/noreturn4.ad[sb]: New test.
+	* gnat.dg/noreturn4_pkg.ads: New helper.
+
+2012-07-18  Jie Zhang  <jzhang918@gmail.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+	* gcc.target/arm/neon-vdup-1.c: New test case.
+	* gcc.target/arm/neon-vdup-2.c: New test case.
+	* gcc.target/arm/neon-vdup-3.c: New test case.
+	* gcc.target/arm/neon-vdup-4.c: New test case.
+	* gcc.target/arm/neon-vdup-5.c: New test case.
+	* gcc.target/arm/neon-vdup-6.c: New test case.
+	* gcc.target/arm/neon-vdup-7.c: New test case.
+	* gcc.target/arm/neon-vdup-8.c: New test case.
+	* gcc.target/arm/neon-vdup-9.c: New test case.
+	* gcc.target/arm/neon-vdup-10.c: New test case.
+	* gcc.target/arm/neon-vdup-11.c: New test case.
+	* gcc.target/arm/neon-vdup-12.c: New test case.
+	* gcc.target/arm/neon-vdup-13.c: New test case.
+	* gcc.target/arm/neon-vdup-14.c: New test case.
+	* gcc.target/arm/neon-vdup-15.c: New test case.
+	* gcc.target/arm/neon-vdup-16.c: New test case.
+	* gcc.target/arm/neon-vdup-17.c: New test case.
+	* gcc.target/arm/neon-vdup-18.c: New test case.
+	* gcc.target/arm/neon-vdup-19.c: New test case.
+	* gcc.target/arm/neon-combine-sub-abs-into-vabd.c: Make intrinsic
+	arguments non-constant.
+
+2012-07-18  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/53970
+	* g++.dg/torture/pr53970.C: New testcase.
+
+2012-07-18  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/38621
+	* gcc.c-torture/compile/pr38621.c: New.
+
+2012-07-18  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/33135
+	* gcc.target/sh/pr33135-1.c: New.
+	* gcc.target/sh/pr33135-2.c: New.
+	* gcc.target/sh/pr33135-3.c: New.
+	* gcc.target/sh/pr33135-4.c: New.
+
+2012-07-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53995
+	* g++.dg/parse/enum9.C: New.
+
+2012-07-17  Kazu Hirata  <kazu@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gcc.target/m68k/pr36134.c: Use dg-skip-if to skip the testcase
+	if there is a conflict with -mcpu=.  Use -mcpu=5208.
+
+2012-07-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53989
+	* g++.dg/template/array23.C: New.
+
+2012-07-17  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/53985
+	* gfortran.dg/bind_c_usage_26.f90: New.
+	* gfortran.dg/bind_c_procs.f03: Add dg-options "-Wc-binding-type".
+	* gfortran.dg/bind_c_usage_13.f03: Ditto.
+	* gfortran.dg/bind_c_usage_18.f90: Ditto.
+	* gfortran.dg/interop_params.f03: Ditto.
+
+2012-07-17  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/template/inherit8.C: Adjust.
+	* g++.dg/template/using21.C: Adjust.
+	* g++.dg/template/using22.C: Adjust.
+
+	PR c++/53549
+	* g++.dg/template/current-inst1.C: New.
+	* g++.dg/parse/crash35.C: Adjust.
+
+2012-07-17  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52101
+	* gfortran.dg/oldstyle_4.f90: New.
+
+2012-07-17  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/49265
+	* gfortran.dg/module_procedure_double_colon_3.f90: New.
+	* gfortran.dg/module_procedure_double_colon_4.f90: New.
+
+2012-07-16  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/parse/access8.C: Adjust.
+	* g++.dg/template/sfinae6_neg.C: Adjust.
+
+2012-07-16  Thomas König  <tkoenig@gcc.gnu.org>
+
+	PR fortran/53824
+	* gfortran.dg/coarray_allocate_1.f90:  New test.
+
+2012-07-16  Andrew Pinski  <apinski@cavium.com>
+
+	* gcc.c-torture/execute/bswap-1.c: New testcase.
+	* gcc.c-torture/compile/unalign-1.c: New testcase.
+	* gcc.c-torture/compile/20120524-1.c: New testcase.
+	* gcc.c-torture/compile/20101216-1.c: New testcase.
+
+2012-07-16  Dehao Chen  <dehao@google.com>
+
+	Revert
+	2012-07-10  Dehao Chen  <dehao@google.com>
+
+	* gcc.dg/debug_info_inline.c: New test.
+
+2012-07-16  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/53956
+	* gfortran.dg/proc_decl_28.f90: New.
+
 2012-07-16  Andrew Pinski  <apinski@cavium.com>
 
 	* gcc.dg/torture/builtins-1.c: New testcase.

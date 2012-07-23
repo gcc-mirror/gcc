@@ -1,4 +1,5 @@
 ! { dg-do compile }
+! { dg-options "-Wc-binding-type" }
 !
 ! PR fortran/38160
 !

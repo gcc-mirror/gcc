@@ -36,7 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "diagnostic-core.h"
 #include "tree-flow.h"
-#include "tree-dump.h"
+#include "tree-pass.h"
 #include "cfgloop.h"
 #include "tree-chrec.h"
 #include "tree-data-ref.h"

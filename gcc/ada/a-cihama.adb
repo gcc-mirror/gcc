@@ -694,6 +694,11 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
 
          Position.Node.Key := new Key_Type'(Key);
 
+         declare
+            pragma Unsuppress (Accessibility_Check);
+            --  The element allocator may need an accessibility check in the
+            --  case the actual type is class-wide or has access discriminants
+            --  (see RM 4.8(10.1) and AI12-0035).
          begin
             Position.Node.Element := new Element_Type'(New_Item);
          exception
@@ -730,6 +735,11 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
       function New_Node (Next : Node_Access) return Node_Access is
          K  : Key_Access := new Key_Type'(Key);
          E  : Element_Access;
+
+         pragma Unsuppress (Accessibility_Check);
+         --  The element allocator may need an accessibility check in the case
+         --  the actual type is class-wide or has access discriminants (see
+         --  RM 4.8(10.1) and AI12-0035).
 
       begin
          E := new Element_Type'(New_Item);
@@ -1166,6 +1176,11 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
 
       Node.Key := new Key_Type'(Key);
 
+      declare
+         pragma Unsuppress (Accessibility_Check);
+         --  The element allocator may need an accessibility check in the case
+         --  the actual type is class-wide or has access discriminants (see
+         --  RM 4.8(10.1) and AI12-0035).
       begin
          Node.Element := new Element_Type'(New_Item);
       exception
@@ -1215,6 +1230,10 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
       declare
          X : Element_Access := Position.Node.Element;
 
+         pragma Unsuppress (Accessibility_Check);
+         --  The element allocator may need an accessibility check in the case
+         --  the actual type is class-wide or has access discriminants (see
+         --  RM 4.8(10.1) and AI12-0035).
       begin
          Position.Node.Element := new Element_Type'(New_Item);
          Free_Element (X);

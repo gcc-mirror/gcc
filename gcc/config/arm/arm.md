@@ -397,8 +397,6 @@
 (define_attr "ldsched" "no,yes" (const (symbol_ref "arm_ld_sched")))
 
 ;; Classification of NEON instructions for scheduling purposes.
-;; Do not set this attribute and the "type" attribute together in
-;; any one instruction pattern.
 (define_attr "neon_type"
    "neon_int_1,\
    neon_int_2,\

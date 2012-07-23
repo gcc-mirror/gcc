@@ -1,7 +1,7 @@
 // { dg-do compile }
 // { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2010 Free Software Foundation, Inc.
+// Copyright (C) 2010, 2011, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,7 +24,12 @@
 int main()
 {
   __gnu_test::constexpr_default_constructible test1;
-  test1.operator()<std::chrono::seconds>();
+  struct Seconds
+  {
+    constexpr Seconds() = default;
+    std::chrono::seconds s{};
+  };
+  test1.operator()<std::chrono::duration<Seconds>>();
 
   __gnu_test::constexpr_single_value_constructible test2;
   test2.operator()<std::chrono::seconds, std::chrono::seconds>();

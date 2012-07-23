@@ -28,8 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "function.h"
 #include "tree-flow.h"
-#include "tree-dump.h"
-#include "tree-pass.h"
+#include "dumpfile.h"
 #include "cfgloop.h"
 
 /* Given a block B, update the CFG and SSA graph to reflect redirecting
@@ -316,9 +315,7 @@ copy_phi_args (basic_block bb, edge src_e, edge tgt_e)
     {
       gimple phi = gsi_stmt (gsi);
       source_location locus = gimple_phi_arg_location (phi, src_indx);
-      tree block = gimple_phi_arg_block (phi, src_indx);
-      add_phi_arg (phi, gimple_phi_arg_def (phi, src_indx), tgt_e, locus,
-		   block);
+      add_phi_arg (phi, gimple_phi_arg_def (phi, src_indx), tgt_e, locus);
     }
 }
 

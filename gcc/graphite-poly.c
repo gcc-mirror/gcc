@@ -36,7 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "diagnostic-core.h"
 #include "tree-flow.h"
-#include "tree-dump.h"
+#include "dumpfile.h"
 #include "gimple-pretty-print.h"
 #include "cfgloop.h"
 #include "tree-chrec.h"
@@ -673,7 +673,7 @@ print_pbb_body (FILE *file, poly_bb_p pbb, int verbosity,
     fprintf (file, "# Statement body\n");
 
   fprintf (file, "{\n");
-  dump_bb (pbb_bb (pbb), file, 0);
+  dump_bb (file, pbb_bb (pbb), 0, 0);
   fprintf (file, "}\n");
 
   if (verbosity > 1)

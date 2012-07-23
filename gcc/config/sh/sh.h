@@ -1213,12 +1213,8 @@ extern enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
 
 /* Defines for sh.md and constraints.md.  */
 
-#define CONST_OK_FOR_I06(VALUE) (((HOST_WIDE_INT)(VALUE)) >= -32 \
-				 && ((HOST_WIDE_INT)(VALUE)) <= 31)
 #define CONST_OK_FOR_I08(VALUE) (((HOST_WIDE_INT)(VALUE))>= -128 \
 				 && ((HOST_WIDE_INT)(VALUE)) <= 127)
-#define CONST_OK_FOR_I10(VALUE) (((HOST_WIDE_INT)(VALUE)) >= -512 \
-				 && ((HOST_WIDE_INT)(VALUE)) <= 511)
 #define CONST_OK_FOR_I16(VALUE) (((HOST_WIDE_INT)(VALUE)) >= -32768 \
 				 && ((HOST_WIDE_INT)(VALUE)) <= 32767)
 
@@ -1932,6 +1928,13 @@ struct sh_args {
 /* Nonzero if access to memory by bytes is no faster than for words.  */
 #define SLOW_BYTE_ACCESS 1
 
+/* Nonzero if the target supports dynamic shift instructions
+   like shad and shld.  */
+#define TARGET_DYNSHIFT (TARGET_SH3 || TARGET_SH2A)
+
+#define SH_DYNAMIC_SHIFT_COST \
+  (TARGET_HARD_SH4 ? 1 : TARGET_DYNSHIFT ? (optimize_size ? 1 : 2) : 20)
+
 /* Immediate shift counts are truncated by the output routines (or was it
    the assembler?).  Shift counts in a register are truncated by SH.  Note
    that the native compiler puts too large (> 32) immediate shift counts
@@ -2321,11 +2324,6 @@ extern int current_function_interrupt;
    prologue rather than duplicate around each call.  */
 #define ACCUMULATE_OUTGOING_ARGS TARGET_ACCUMULATE_OUTGOING_ARGS
 
-#define SH_DYNAMIC_SHIFT_COST \
-  (TARGET_HARD_SH4 ? 1	\
-   : (TARGET_SH3 || TARGET_SH2A) ? (optimize_size ? 1 : 2) : 20)
-
-
 #define NUM_MODES_FOR_MODE_SWITCHING { FP_MODE_NONE }
 
 #define OPTIMIZE_MODE_SWITCHING(ENTITY) (TARGET_SH4 || TARGET_SH2A_DOUBLE)
@@ -2351,7 +2349,7 @@ extern int current_function_interrupt;
    ? get_attr_fp_mode (INSN)						\
    : FP_MODE_NONE)
 
-#define MODE_AFTER(MODE, INSN)                  \
+#define MODE_AFTER(ENTITY, MODE, INSN)		\
      (TARGET_HITACHI				\
       && recog_memoized (INSN) >= 0		\
       && get_attr_fp_set (INSN) != FP_SET_NONE  \

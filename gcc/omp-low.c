@@ -34,7 +34,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "diagnostic-core.h"
 #include "tree-flow.h"
-#include "timevar.h"
 #include "flags.h"
 #include "function.h"
 #include "expr.h"
@@ -3061,8 +3060,8 @@ expand_parallel_call (struct omp_region *region, basic_block bb,
 	    {
 	      gimple phi = create_phi_node (tmp_join, bb);
 	      SSA_NAME_DEF_STMT (tmp_join) = phi;
-	      add_phi_arg (phi, tmp_then, e_then, UNKNOWN_LOCATION, NULL);
-	      add_phi_arg (phi, tmp_else, e_else, UNKNOWN_LOCATION, NULL);
+	      add_phi_arg (phi, tmp_then, e_then, UNKNOWN_LOCATION);
+	      add_phi_arg (phi, tmp_else, e_else, UNKNOWN_LOCATION);
 	    }
 
 	  val = tmp_join;
@@ -4597,7 +4596,6 @@ expand_omp_for_static_chunk (struct omp_region *region, struct omp_for_data *fd)
 	{
 	  gimple nphi;
 	  source_location locus;
-	  tree block;
 
 	  phi = gsi_stmt (psi);
 	  t = gimple_phi_result (phi);
@@ -4607,16 +4605,14 @@ expand_omp_for_static_chunk (struct omp_region *region, struct omp_for_data *fd)
 
 	  t = PHI_ARG_DEF_FROM_EDGE (phi, se);
 	  locus = gimple_phi_arg_location_from_edge (phi, se);
-	  block = gimple_phi_arg_block_from_edge (phi, se);
 
 	  /* A special case -- fd->loop.v is not yet computed in
 	     iter_part_bb, we need to use v_extra instead.  */
 	  if (t == fd->loop.v)
 	    t = v_extra;
-	  add_phi_arg (nphi, t, ene, locus, block);
+	  add_phi_arg (nphi, t, ene, locus);
 	  locus = redirect_edge_var_map_location (vm);
-	  block = redirect_edge_var_map_block (vm);
-	  add_phi_arg (nphi, redirect_edge_var_map_def (vm), re, locus, block);
+	  add_phi_arg (nphi, redirect_edge_var_map_def (vm), re, locus);
 	}
       gcc_assert (!gsi_end_p (psi) && i == VEC_length (edge_var_map, head));
       redirect_edge_var_map_clear (re);
@@ -4632,9 +4628,9 @@ expand_omp_for_static_chunk (struct omp_region *region, struct omp_for_data *fd)
       phi = create_phi_node (trip_main, iter_part_bb);
       SSA_NAME_DEF_STMT (trip_main) = phi;
       add_phi_arg (phi, trip_back, single_succ_edge (trip_update_bb),
-		   UNKNOWN_LOCATION, NULL);
+		   UNKNOWN_LOCATION);
       add_phi_arg (phi, trip_init, single_succ_edge (entry_bb),
-		   UNKNOWN_LOCATION, NULL);
+		   UNKNOWN_LOCATION);
     }
 
   set_immediate_dominator (CDI_DOMINATORS, trip_update_bb, cont_bb);
@@ -4755,45 +4751,40 @@ expand_omp_sections (struct omp_region *region)
   unsigned i, casei;
   bool exit_reachable = region->cont != NULL;
 
-  gcc_assert (exit_reachable == (region->exit != NULL));
+  gcc_assert (region->exit != NULL);
   entry_bb = region->entry;
   l0_bb = single_succ (entry_bb);
   l1_bb = region->cont;
   l2_bb = region->exit;
-  if (exit_reachable)
-    {
-      if (single_pred_p (l2_bb) && single_pred (l2_bb) == l0_bb)
-	l2 = gimple_block_label (l2_bb);
-      else
-	{
-	  /* This can happen if there are reductions.  */
-	  len = EDGE_COUNT (l0_bb->succs);
-	  gcc_assert (len > 0);
-	  e = EDGE_SUCC (l0_bb, len - 1);
-	  si = gsi_last_bb (e->dest);
-	  l2 = NULL_TREE;
-	  if (gsi_end_p (si)
-	      || gimple_code (gsi_stmt (si)) != GIMPLE_OMP_SECTION)
-	    l2 = gimple_block_label (e->dest);
-	  else
-	    FOR_EACH_EDGE (e, ei, l0_bb->succs)
-	      {
-		si = gsi_last_bb (e->dest);
-		if (gsi_end_p (si)
-		    || gimple_code (gsi_stmt (si)) != GIMPLE_OMP_SECTION)
-		  {
-		    l2 = gimple_block_label (e->dest);
-		    break;
-		  }
-	      }
-	}
-      default_bb = create_empty_bb (l1_bb->prev_bb);
-    }
+  if (single_pred_p (l2_bb) && single_pred (l2_bb) == l0_bb)
+    l2 = gimple_block_label (l2_bb);
   else
     {
-      default_bb = create_empty_bb (l0_bb);
-      l2 = gimple_block_label (default_bb);
+      /* This can happen if there are reductions.  */
+      len = EDGE_COUNT (l0_bb->succs);
+      gcc_assert (len > 0);
+      e = EDGE_SUCC (l0_bb, len - 1);
+      si = gsi_last_bb (e->dest);
+      l2 = NULL_TREE;
+      if (gsi_end_p (si)
+          || gimple_code (gsi_stmt (si)) != GIMPLE_OMP_SECTION)
+	l2 = gimple_block_label (e->dest);
+      else
+	FOR_EACH_EDGE (e, ei, l0_bb->succs)
+	  {
+	    si = gsi_last_bb (e->dest);
+	    if (gsi_end_p (si)
+		|| gimple_code (gsi_stmt (si)) != GIMPLE_OMP_SECTION)
+	      {
+		l2 = gimple_block_label (e->dest);
+		break;
+	      }
+	  }
     }
+  if (exit_reachable)
+    default_bb = create_empty_bb (l1_bb->prev_bb);
+  else
+    default_bb = create_empty_bb (l0_bb);
 
   /* We will build a switch() with enough cases for all the
      GIMPLE_OMP_SECTION regions, a '0' case to handle the end of more work
@@ -4846,13 +4837,9 @@ expand_omp_sections (struct omp_region *region)
       vnext = NULL_TREE;
     }
 
-  i = 0;
-  if (exit_reachable)
-    {
-      t = build_case_label (build_int_cst (unsigned_type_node, 0), NULL, l2);
-      VEC_quick_push (tree, label_vec, t);
-      i++;
-    }
+  t = build_case_label (build_int_cst (unsigned_type_node, 0), NULL, l2);
+  VEC_quick_push (tree, label_vec, t);
+  i = 1;
 
   /* Convert each GIMPLE_OMP_SECTION into a CASE_LABEL_EXPR.  */
   for (inner = region->inner, casei = 1;
@@ -4922,17 +4909,17 @@ expand_omp_sections (struct omp_region *region)
       gsi_remove (&si, true);
 
       single_succ_edge (l1_bb)->flags = EDGE_FALLTHRU;
-
-      /* Cleanup function replaces GIMPLE_OMP_RETURN in EXIT_BB.  */
-      si = gsi_last_bb (l2_bb);
-      if (gimple_omp_return_nowait_p (gsi_stmt (si)))
-	t = builtin_decl_explicit (BUILT_IN_GOMP_SECTIONS_END_NOWAIT);
-      else
-	t = builtin_decl_explicit (BUILT_IN_GOMP_SECTIONS_END);
-      stmt = gimple_build_call (t, 0);
-      gsi_insert_after (&si, stmt, GSI_SAME_STMT);
-      gsi_remove (&si, true);
     }
+
+  /* Cleanup function replaces GIMPLE_OMP_RETURN in EXIT_BB.  */
+  si = gsi_last_bb (l2_bb);
+  if (gimple_omp_return_nowait_p (gsi_stmt (si)))
+    t = builtin_decl_explicit (BUILT_IN_GOMP_SECTIONS_END_NOWAIT);
+  else
+    t = builtin_decl_explicit (BUILT_IN_GOMP_SECTIONS_END);
+  stmt = gimple_build_call (t, 0);
+  gsi_insert_after (&si, stmt, GSI_SAME_STMT);
+  gsi_remove (&si, true);
 
   set_immediate_dominator (CDI_DOMINATORS, default_bb, l0_bb);
 }

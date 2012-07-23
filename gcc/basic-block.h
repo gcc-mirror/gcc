@@ -55,7 +55,7 @@ struct GTY(()) edge_def {
      dest->preds.  */
   unsigned int dest_idx;
 
-  int flags;			/* see EDGE_* below  */
+  int flags;			/* see cfg-flags.def */
   int probability;		/* biased by REG_BR_PROB_BASE */
   gcov_type count;		/* Expected number of executions calculated
 				   in profile.c  */
@@ -65,32 +65,20 @@ DEF_VEC_P(edge);
 DEF_VEC_ALLOC_P(edge,gc);
 DEF_VEC_ALLOC_P(edge,heap);
 
-/* Always update the table in cfg.c dump_edge_info.  */
-#define EDGE_FALLTHRU		0x0001	/* 'Straight line' flow */
-#define EDGE_ABNORMAL		0x0002	/* Strange flow, like computed
-					   label, or eh */
-#define EDGE_ABNORMAL_CALL	0x0004	/* Call with abnormal exit
-					   like an exception, or sibcall */
-#define EDGE_EH			0x0008	/* Exception throw */
-#define EDGE_FAKE		0x0010	/* Not a real edge (profile.c) */
-#define EDGE_DFS_BACK		0x0020	/* A backwards edge */
-#define EDGE_CAN_FALLTHRU	0x0040	/* Candidate for straight line
-					   flow.  */
-#define EDGE_IRREDUCIBLE_LOOP	0x0080	/* Part of irreducible loop.  */
-#define EDGE_SIBCALL		0x0100	/* Edge from sibcall to exit.  */
-#define EDGE_LOOP_EXIT		0x0200	/* Exit of a loop.  */
-#define EDGE_TRUE_VALUE		0x0400	/* Edge taken when controlling
-					   predicate is nonzero.  */
-#define EDGE_FALSE_VALUE	0x0800	/* Edge taken when controlling
-					   predicate is zero.  */
-#define EDGE_EXECUTABLE		0x1000	/* Edge is executable.  Only
-					   valid during SSA-CCP.  */
-#define EDGE_CROSSING		0x2000	/* Edge crosses between hot
-					   and cold sections, when we
-					   do partitioning.  */
-#define EDGE_PRESERVE		0x4000	/* Never merge blocks via this edge. */
-#define EDGE_ALL_FLAGS		0x7fff
+/* Masks for edge.flags.  */
+#define DEF_EDGE_FLAG(NAME,IDX) EDGE_##NAME = 1 << IDX ,
+enum cfg_edge_flags {
+#include "cfg-flags.def"
+  LAST_CFG_EDGE_FLAG		/* this is only used for EDGE_ALL_FLAGS */
+};
+#undef DEF_EDGE_FLAG
 
+/* Bit mask for all edge flags.  */
+#define EDGE_ALL_FLAGS		((LAST_CFG_EDGE_FLAG - 1) * 2 - 1)
+
+/* The following four flags all indicate something special about an edge.
+   Test the edge flags on EDGE_COMPLEX to detect all forms of "strange"
+   control flow transfers.  */
 #define EDGE_COMPLEX \
   (EDGE_ABNORMAL | EDGE_ABNORMAL_CALL | EDGE_EH | EDGE_PRESERVE)
 
@@ -184,10 +172,12 @@ struct GTY((chain_next ("%h.next_bb"), chain_prev ("%h.prev_bb"))) basic_block_d
   /* Expected frequency.  Normalized to be in range 0 to BB_FREQ_MAX.  */
   int frequency;
 
-  /* The discriminator for this block.  */
+  /* The discriminator for this block.  The discriminator distinguishes
+     among several basic blocks that share a common locus, allowing for
+     more accurate sample-based profiling.  */
   int discriminator;
 
-  /* Various flags.  See BB_* below.  */
+  /* Various flags.  See cfg-flags.def.  */
   int flags;
 };
 
@@ -204,74 +194,25 @@ DEF_VEC_ALLOC_P(basic_block,heap);
 
 #define BB_FREQ_MAX 10000
 
-/* Masks for basic_block.flags.
-
-   BB_HOT_PARTITION and BB_COLD_PARTITION should be preserved throughout
-   the compilation, so they are never cleared.
-
-   All other flags may be cleared by clear_bb_flags().  It is generally
-   a bad idea to rely on any flags being up-to-date.
-
-   Always update the table in cfg.c dump_bb_info.  */
-
-enum bb_flags
+/* Masks for basic_block.flags.  */
+#define DEF_BASIC_BLOCK_FLAG(NAME,IDX) BB_##NAME = 1 << IDX ,
+enum cfg_bb_flags
 {
-  /* Only set on blocks that have just been created by create_bb.  */
-  BB_NEW = 1 << 0,
-
-  /* Set by find_unreachable_blocks.  Do not rely on this being set in any
-     pass.  */
-  BB_REACHABLE = 1 << 1,
-
-  /* Set for blocks in an irreducible loop by loop analysis.  */
-  BB_IRREDUCIBLE_LOOP = 1 << 2,
-
-  /* Set on blocks that may actually not be single-entry single-exit block.  */
-  BB_SUPERBLOCK = 1 << 3,
-
-  /* Set on basic blocks that the scheduler should not touch.  This is used
-     by SMS to prevent other schedulers from messing with the loop schedule.  */
-  BB_DISABLE_SCHEDULE = 1 << 4,
-
-  /* Set on blocks that should be put in a hot section.  */
-  BB_HOT_PARTITION = 1 << 5,
-
-  /* Set on blocks that should be put in a cold section.  */
-  BB_COLD_PARTITION = 1 << 6,
-
-  /* Set on block that was duplicated.  */
-  BB_DUPLICATED = 1 << 7,
-
-  /* Set if the label at the top of this block is the target of a non-local goto.  */
-  BB_NON_LOCAL_GOTO_TARGET = 1 << 8,
-
-  /* Set on blocks that are in RTL format.  */
-  BB_RTL = 1 << 9 ,
-
-  /* Set on blocks that are forwarder blocks.
-     Only used in cfgcleanup.c.  */
-  BB_FORWARDER_BLOCK = 1 << 10,
-
-  /* Set on blocks that cannot be threaded through.
-     Only used in cfgcleanup.c.  */
-  BB_NONTHREADABLE_BLOCK = 1 << 11,
-
-  /* Set on blocks that were modified in some way.  This bit is set in
-     df_set_bb_dirty, but not cleared by df_analyze, so it can be used
-     to test whether a block has been modified prior to a df_analyze
-     call.  */
-  BB_MODIFIED = 1 << 12,
-
-  /* A general visited flag for passes to use.  */
-  BB_VISITED = 1 << 13,
-
-  /* Set on blocks that are in a transaction.  This is calculated on
-     demand, and is available after calling
-     compute_transaction_bits().  */
-  BB_IN_TRANSACTION = 1 << 14
+#include "cfg-flags.def"
+  LAST_CFG_BB_FLAG		/* this is only used for BB_ALL_FLAGS */
 };
+#undef DEF_BASIC_BLOCK_FLAG
 
-/* Dummy flag for convenience in the hot/cold partitioning code.  */
+/* Bit mask for all basic block flags.  */
+#define BB_ALL_FLAGS		((LAST_CFG_BB_FLAG - 1) * 2 - 1)
+
+/* Bit mask for all basic block flags that must be preserved.  These are
+   the bit masks that are *not* cleared by clear_bb_flags.  */
+#define BB_FLAGS_TO_PRESERVE					\
+  (BB_DISABLE_SCHEDULE | BB_RTL | BB_NON_LOCAL_GOTO_TARGET	\
+   | BB_HOT_PARTITION | BB_COLD_PARTITION)
+
+/* Dummy bitmask for convenience in the hot/cold partitioning code.  */
 #define BB_UNPARTITIONED	0
 
 /* Partitions, to be used when partitioning hot and cold basic blocks into
@@ -458,9 +399,9 @@ extern edge redirect_edge_succ_nodup (edge, basic_block);
 extern void redirect_edge_pred (edge, basic_block);
 extern basic_block create_basic_block_structure (rtx, rtx, rtx, basic_block);
 extern void clear_bb_flags (void);
-extern void dump_bb_info (basic_block, bool, bool, bool, const char *, FILE *);
-extern void dump_edge_info (FILE *, edge, int);
-extern void brief_dump_cfg (FILE *);
+extern void dump_bb_info (FILE *, basic_block, int, int, bool, bool);
+extern void dump_edge_info (FILE *, edge, int, int);
+extern void brief_dump_cfg (FILE *, int);
 extern void clear_edges (void);
 extern void scale_bbs_frequencies_int (basic_block *, int, int, int);
 extern void scale_bbs_frequencies_gcov_type (basic_block *, int, gcov_type,
@@ -881,7 +822,6 @@ unsigned bb_dom_dfs_out (enum cdi_direction, basic_block);
 extern edge try_redirect_by_replacing_jump (edge, basic_block, bool);
 extern void break_superblocks (void);
 extern void relink_block_chain (bool);
-extern void check_bb_profile (basic_block, FILE *);
 extern void update_bb_profile_for_threading (basic_block, int, gcov_type, edge);
 extern void init_rtl_bb_info (basic_block);
 

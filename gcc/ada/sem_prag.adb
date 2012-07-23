@@ -2011,8 +2011,7 @@ package body Sem_Prag is
          ---------------
 
          procedure Chain_PPC (PO : Node_Id) is
-            S   : Entity_Id;
-            P   : Node_Id;
+            S : Entity_Id;
 
          begin
             if Nkind (PO) = N_Abstract_Subprogram_Declaration then
@@ -2058,60 +2057,6 @@ package body Sem_Prag is
                S := Defining_Entity (PO);
             else
                S := Defining_Unit_Name (Specification (PO));
-            end if;
-
-            --  Make sure we do not have the case of a precondition pragma when
-            --  the Pre'Class aspect is present.
-
-            --  We do this by looking at pragmas already chained to the entity
-            --  since the aspect derived pragma will be put on this list first.
-
-            if Pragma_Name (N) = Name_Precondition then
-               if not From_Aspect_Specification (N) then
-                  P := Spec_PPC_List (Contract (S));
-                  while Present (P) loop
-                     if Pragma_Name (P) = Name_Precondition
-                       and then From_Aspect_Specification (P)
-                       and then Class_Present (P)
-                     then
-                        Error_Msg_Sloc := Sloc (P);
-                        Error_Pragma
-                          ("pragma% not allowed, `Pre''Class` aspect given#");
-                     end if;
-
-                     P := Next_Pragma (P);
-                  end loop;
-               end if;
-            end if;
-
-            --  Similarly check for Pre with inherited Pre'Class. Note that
-            --  we cover the aspect case as well here.
-
-            if Pragma_Name (N) = Name_Precondition
-              and then not Class_Present (N)
-            then
-               declare
-                  Inherited : constant Subprogram_List :=
-                                Inherited_Subprograms (S);
-                  P         : Node_Id;
-
-               begin
-                  for J in Inherited'Range loop
-                     P := Spec_PPC_List (Contract (Inherited (J)));
-                     while Present (P) loop
-                        if Pragma_Name (P) = Name_Precondition
-                          and then Class_Present (P)
-                        then
-                           Error_Msg_Sloc := Sloc (P);
-                           Error_Pragma
-                             ("pragma% not allowed, `Pre''Class` "
-                              & "aspect inherited from#");
-                        end if;
-
-                        P := Next_Pragma (P);
-                     end loop;
-                  end loop;
-               end;
             end if;
 
             --  Note: we do not analyze the pragma at this point. Instead we
@@ -4610,10 +4555,12 @@ package body Sem_Prag is
                   null;
 
                --  Verify that the homonym is in the same declarative part (not
-               --  just the same scope).
+               --  just the same scope). If the pragma comes from an aspect
+               --  specification we know that it is part of the declaration.
 
                elsif Parent (Unit_Declaration_Node (Def_Id)) /= Parent (N)
                  and then Nkind (Parent (N)) /= N_Compilation_Unit_Aux
+                 and then not From_Aspect_Specification (N)
                then
                   exit;
 
@@ -4743,6 +4690,12 @@ package body Sem_Prag is
                Error_Msg_N
                  ("imported 'C'P'P type must be limited",
                   Get_Pragma_Arg (Arg2));
+            end if;
+
+            if Etype (Def_Id) /= Def_Id
+              and then not Is_CPP_Class (Root_Type (Def_Id))
+            then
+               Error_Msg_N ("root type must be a 'C'P'P type", Arg1);
             end if;
 
             Set_Is_CPP_Class (Def_Id);
@@ -4988,6 +4941,15 @@ package body Sem_Prag is
                   then
                      Error_Msg_N
                        ("Inline cannot apply to a formal subprogram", N);
+
+                  --  If Subp is a renaming, it is the renamed entity that
+                  --  will appear in any call, and be inlined. However, for
+                  --  ASIS uses it is convenient to indicate that the renaming
+                  --  itself is an inlined subprogram, so that some gnatcheck
+                  --  rules can be applied in the absence of expansion.
+
+                  elsif Nkind (Decl) = N_Subprogram_Renaming_Declaration then
+                     Set_Inline_Flags (Subp);
                   end if;
                end if;
 
@@ -5667,9 +5629,7 @@ package body Sem_Prag is
             --  If this is a first subtype, and the base type is distinct,
             --  then also set the suppress flags on the base type.
 
-            if Is_First_Subtype (E)
-              and then Etype (E) /= E
-            then
+            if Is_First_Subtype (E) and then Etype (E) /= E then
                Suppress_Unsuppress_Echeck (Etype (E), C);
             end if;
          end Suppress_Unsuppress_Echeck;
@@ -7706,109 +7666,27 @@ package body Sem_Prag is
          --  pragma CPP_Class ([Entity =>] local_NAME)
 
          when Pragma_CPP_Class => CPP_Class : declare
-            Arg : Node_Id;
-            Typ : Entity_Id;
-
          begin
-            if Warn_On_Obsolescent_Feature then
-               Error_Msg_N
-                 ("'G'N'A'T pragma cpp'_class is now obsolete; replace it" &
-                  " by pragma import?", N);
-            end if;
-
             GNAT_Pragma;
+
+            if Warn_On_Obsolescent_Feature then
+               --  Following message is obsolete ???
+               Error_Msg_N
+                 ("'G'N'A'T pragma cpp'_class is now obsolete and has no " &
+                  "effect; replace it by pragma import?", N);
+            end if;
+
             Check_Arg_Count (1);
-            Check_Optional_Identifier (Arg1, Name_Entity);
-            Check_Arg_Is_Local_Name (Arg1);
 
-            Arg := Get_Pragma_Arg (Arg1);
-            Analyze (Arg);
-
-            if Etype (Arg) = Any_Type then
-               return;
-            end if;
-
-            if not Is_Entity_Name (Arg)
-              or else not Is_Type (Entity (Arg))
-            then
-               Error_Pragma_Arg ("pragma% requires a type mark", Arg1);
-            end if;
-
-            Typ := Entity (Arg);
-
-            if not Is_Tagged_Type (Typ) then
-               Error_Pragma_Arg ("pragma% applicable to tagged types ", Arg1);
-            end if;
-
-            --  Types treated as CPP classes must be declared limited (note:
-            --  this used to be a warning but there is no real benefit to it
-            --  since we did effectively intend to treat the type as limited
-            --  anyway).
-
-            if not Is_Limited_Type (Typ) then
-               Error_Msg_N
-                 ("imported 'C'P'P type must be limited",
-                  Get_Pragma_Arg (Arg1));
-            end if;
-
-            Set_Is_CPP_Class (Typ);
-            Set_Convention (Typ, Convention_CPP);
-
-            --  Imported CPP types must not have discriminants (because C++
-            --  classes do not have discriminants).
-
-            if Has_Discriminants (Typ) then
-               Error_Msg_N
-                 ("imported 'C'P'P type cannot have discriminants",
-                  First (Discriminant_Specifications
-                          (Declaration_Node (Typ))));
-            end if;
-
-            --  Components of imported CPP types must not have default
-            --  expressions because the constructor (if any) is in the
-            --  C++ side.
-
-            if Is_Incomplete_Or_Private_Type (Typ)
-              and then No (Underlying_Type (Typ))
-            then
-               --  It should be an error to apply pragma CPP to a private
-               --  type if the underlying type is not visible (as it is
-               --  for any representation item). For now, for backward
-               --  compatibility we do nothing but we cannot check components
-               --  because they are not available at this stage. All this code
-               --  will be removed when we cleanup this obsolete GNAT pragma???
-
-               null;
-
-            else
-               declare
-                  Tdef  : constant Node_Id :=
-                            Type_Definition (Declaration_Node (Typ));
-                  Clist : Node_Id;
-                  Comp  : Node_Id;
-
-               begin
-                  if Nkind (Tdef) = N_Record_Definition then
-                     Clist := Component_List (Tdef);
-                  else
-                     pragma Assert (Nkind (Tdef) = N_Derived_Type_Definition);
-                     Clist := Component_List (Record_Extension_Part (Tdef));
-                  end if;
-
-                  if Present (Clist) then
-                     Comp := First (Component_Items (Clist));
-                     while Present (Comp) loop
-                        if Present (Expression (Comp)) then
-                           Error_Msg_N
-                             ("component of imported 'C'P'P type cannot have" &
-                              " default expression", Expression (Comp));
-                        end if;
-
-                        Next (Comp);
-                     end loop;
-                  end if;
-               end;
-            end if;
+            Rewrite (N,
+              Make_Pragma (Loc,
+                Chars                        => Name_Import,
+                Pragma_Argument_Associations =>
+                  New_List (
+                    Make_Pragma_Argument_Association (Loc,
+                      Expression => Make_Identifier (Loc, Name_CPP)),
+                    New_Copy (First (Pragma_Argument_Associations (N))))));
+            Analyze (N);
          end CPP_Class;
 
          ---------------------
@@ -7857,6 +7735,12 @@ package body Sem_Prag is
                                    and then
                                   Is_CPP_Class (Root_Type (Etype (Def_Id)))))
             then
+               if Scope (Def_Id) /= Scope (Etype (Def_Id)) then
+                  Error_Msg_N
+                    ("'C'P'P constructor must be defined in the scope of " &
+                     "its returned type", Arg1);
+               end if;
+
                if Arg_Count >= 2 then
                   Set_Imported (Def_Id);
                   Set_Is_Public (Def_Id);
@@ -7877,8 +7761,8 @@ package body Sem_Prag is
 
                if Is_Tagged_Type (Etype (Def_Id))
                  and then not Is_Class_Wide_Type (Etype (Def_Id))
+                 and then Is_Dispatching_Operation (Def_Id)
                then
-                  pragma Assert (Is_Dispatching_Operation (Def_Id));
                   Tag_Typ := Etype (Def_Id);
 
                   Elmt := First_Elmt (Primitive_Operations (Tag_Typ));

@@ -38,7 +38,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "hard-reg-set.h"
 #include "regs.h"
-#include "timevar.h"
 #include "insn-config.h"
 #include "flags.h"
 #include "recog.h"

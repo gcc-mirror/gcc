@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -236,9 +236,9 @@ package body Switch.M is
                   --  One-letter switches
 
                   when 'a' | 'A' | 'b' | 'B' | 'c' | 'C' | 'E' | 'f' |
-                       'F' | 'g' | 'h' | 'H' | 'I' | 'L' | 'n' | 'N' |
-                       'o' | 'p' | 'P' | 'q' | 'Q' | 'r' | 's' | 'S' |
-                       't' | 'u' | 'U' | 'v' | 'x' | 'X' | 'Z' =>
+                       'F' | 'g' | 'h' | 'H' | 'I' | 'L' | 'N' | 'o' |
+                       'p' | 'P' | 'q' | 'Q' | 'r' | 's' | 'S' | 't' |
+                       'u' | 'U' | 'v' | 'x' | 'X' | 'Z' =>
                      Storing (First_Stored) := C;
                      Add_Switch_Component
                        (Storing (Storing'First .. First_Stored));
@@ -422,6 +422,24 @@ package body Switch.M is
                           ("-gnatl" & Switch_Chars (Ptr .. Max));
                         return;
                      end if;
+
+                  --  -gnatn may be -gnatn, -gnatn1, or -gnatn2
+
+                  when 'n' =>
+                     Last_Stored := First_Stored;
+                     Storing (Last_Stored) := 'n';
+                     Ptr := Ptr + 1;
+
+                     if Ptr <= Max
+                       and then Switch_Chars (Ptr) in '1' .. '2'
+                     then
+                        Last_Stored := Last_Stored + 1;
+                        Storing (Last_Stored) := Switch_Chars (Ptr);
+                        Ptr := Ptr + 1;
+                     end if;
+
+                     Add_Switch_Component
+                       (Storing (Storing'First .. Last_Stored));
 
                   --  -gnatR may be followed by '0', '1', '2' or '3',
                   --  then by 's'

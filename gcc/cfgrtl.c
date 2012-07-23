@@ -88,7 +88,7 @@ static void rtl_delete_block (basic_block);
 static basic_block rtl_redirect_edge_and_branch_force (edge, basic_block);
 static edge rtl_redirect_edge_and_branch (edge, basic_block);
 static basic_block rtl_split_block (basic_block, void *);
-static void rtl_dump_bb (basic_block, FILE *, int, int);
+static void rtl_dump_bb (FILE *, basic_block, int, int);
 static int rtl_verify_flow_info_1 (void);
 static void rtl_make_forwarder_block (edge);
 
@@ -1365,8 +1365,8 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
 	 one and create separate abnormal edge to original destination.
 	 This allows bb-reorder to make such edge non-fallthru.  */
       gcc_assert (e->dest == target);
-      abnormal_edge_flags = e->flags & ~(EDGE_FALLTHRU | EDGE_CAN_FALLTHRU);
-      e->flags &= EDGE_FALLTHRU | EDGE_CAN_FALLTHRU;
+      abnormal_edge_flags = e->flags & ~EDGE_FALLTHRU;
+      e->flags &= EDGE_FALLTHRU;
     }
   else
     {
@@ -1836,10 +1836,11 @@ commit_edge_insertions (void)
 
 
 /* Print out RTL-specific basic block information (live information
-   at start and end).  */
+   at start and end with TDF_DETAILS).  FLAGS are the TDF_* masks
+   documented in dumpfile.h.  */
 
 static void
-rtl_dump_bb (basic_block bb, FILE *outf, int indent, int flags ATTRIBUTE_UNUSED)
+rtl_dump_bb (FILE *outf, basic_block bb, int indent, int flags)
 {
   rtx insn;
   rtx last;
@@ -1849,7 +1850,7 @@ rtl_dump_bb (basic_block bb, FILE *outf, int indent, int flags ATTRIBUTE_UNUSED)
   memset (s_indent, ' ', (size_t) indent);
   s_indent[indent] = '\0';
 
-  if (df)
+  if (df && (flags & TDF_DETAILS))
     {
       df_dump_top (bb, outf);
       putc ('\n', outf);
@@ -1858,9 +1859,15 @@ rtl_dump_bb (basic_block bb, FILE *outf, int indent, int flags ATTRIBUTE_UNUSED)
   if (bb->index != ENTRY_BLOCK && bb->index != EXIT_BLOCK)
     for (insn = BB_HEAD (bb), last = NEXT_INSN (BB_END (bb)); insn != last;
 	 insn = NEXT_INSN (insn))
-      print_rtl_single (outf, insn);
+      {
+	if (! (flags & TDF_SLIM))
+	  print_rtl_single (outf, insn);
+	else
+	  dump_insn_slim (outf, insn);
 
-  if (df)
+      }
+
+  if (df && (flags & TDF_DETAILS))
     {
       df_dump_bottom (bb, outf);
       putc ('\n', outf);
@@ -1868,11 +1875,12 @@ rtl_dump_bb (basic_block bb, FILE *outf, int indent, int flags ATTRIBUTE_UNUSED)
 
 }
 
-/* Like print_rtl, but also print out live information for the start of each
-   basic block.  */
+/* Like dump_function_to_file, but for RTL.  Print out dataflow information
+   for the start of each basic block.  FLAGS are the TDF_* masks documented
+   in dumpfile.h.  */
 
 void
-print_rtl_with_bb (FILE *outf, const_rtx rtx_first)
+print_rtl_with_bb (FILE *outf, const_rtx rtx_first, int flags)
 {
   const_rtx tmp_rtx;
   if (rtx_first == 0)
@@ -1884,54 +1892,76 @@ print_rtl_with_bb (FILE *outf, const_rtx rtx_first)
       basic_block *start = XCNEWVEC (basic_block, max_uid);
       basic_block *end = XCNEWVEC (basic_block, max_uid);
       enum bb_state *in_bb_p = XCNEWVEC (enum bb_state, max_uid);
-
       basic_block bb;
+
+      /* After freeing the CFG, we still have BLOCK_FOR_INSN set on most
+	 insns, but the CFG is not maintained so the basic block info
+	 is not reliable.  Therefore it's omitted from the dumps.  */
+      if (! (cfun->curr_properties & PROP_cfg))
+        flags &= ~TDF_BLOCKS;
 
       if (df)
 	df_dump_start (outf);
 
-      FOR_EACH_BB_REVERSE (bb)
+      if (flags & TDF_BLOCKS)
 	{
-	  rtx x;
-
-	  start[INSN_UID (BB_HEAD (bb))] = bb;
-	  end[INSN_UID (BB_END (bb))] = bb;
-	  for (x = BB_HEAD (bb); x != NULL_RTX; x = NEXT_INSN (x))
+	  FOR_EACH_BB_REVERSE (bb)
 	    {
-	      enum bb_state state = IN_MULTIPLE_BB;
+	      rtx x;
 
-	      if (in_bb_p[INSN_UID (x)] == NOT_IN_BB)
-		state = IN_ONE_BB;
-	      in_bb_p[INSN_UID (x)] = state;
+	      start[INSN_UID (BB_HEAD (bb))] = bb;
+	      end[INSN_UID (BB_END (bb))] = bb;
+	      for (x = BB_HEAD (bb); x != NULL_RTX; x = NEXT_INSN (x))
+		{
+		  enum bb_state state = IN_MULTIPLE_BB;
 
-	      if (x == BB_END (bb))
-		break;
+		  if (in_bb_p[INSN_UID (x)] == NOT_IN_BB)
+		    state = IN_ONE_BB;
+		  in_bb_p[INSN_UID (x)] = state;
+
+		  if (x == BB_END (bb))
+		    break;
+		}
 	    }
 	}
 
       for (tmp_rtx = rtx_first; NULL != tmp_rtx; tmp_rtx = NEXT_INSN (tmp_rtx))
 	{
-	  int did_output;
-	  bool verbose = ((dump_flags & TDF_DETAILS) != 0);
+	  if (flags & TDF_BLOCKS)
+	    {
+	      bb = start[INSN_UID (tmp_rtx)];
+	      if (bb != NULL)
+		{
+		  dump_bb_info (outf, bb, 0, dump_flags | TDF_COMMENT, true, false);
+		  if (df && (flags & TDF_DETAILS))
+		    df_dump_top (bb, outf);
+		}
 
-	  bb = start[INSN_UID (tmp_rtx)];
-	  if (bb != NULL)
-	    dump_bb_info (bb, true, false, verbose, ";; ", outf);
+	      if (in_bb_p[INSN_UID (tmp_rtx)] == NOT_IN_BB
+		  && !NOTE_P (tmp_rtx)
+		  && !BARRIER_P (tmp_rtx))
+		fprintf (outf, ";; Insn is not within a basic block\n");
+	      else if (in_bb_p[INSN_UID (tmp_rtx)] == IN_MULTIPLE_BB)
+		fprintf (outf, ";; Insn is in multiple basic blocks\n");
+	    }
 
-	  if (in_bb_p[INSN_UID (tmp_rtx)] == NOT_IN_BB
-	      && !NOTE_P (tmp_rtx)
-	      && !BARRIER_P (tmp_rtx))
-	    fprintf (outf, ";; Insn is not within a basic block\n");
-	  else if (in_bb_p[INSN_UID (tmp_rtx)] == IN_MULTIPLE_BB)
-	    fprintf (outf, ";; Insn is in multiple basic blocks\n");
+	  if (! (flags & TDF_SLIM))
+	    print_rtl_single (outf, tmp_rtx);
+	  else
+	    dump_insn_slim (outf, tmp_rtx);
 
-	  did_output = print_rtl_single (outf, tmp_rtx);
+	  if (flags & TDF_BLOCKS)
+	    {
+	      bb = end[INSN_UID (tmp_rtx)];
+	      if (bb != NULL)
+		{
+		  dump_bb_info (outf, bb, 0, dump_flags | TDF_COMMENT, false, true);
+		  if (df && (flags & TDF_DETAILS))
+		    df_dump_bottom (bb, outf);
+		}
+	    }
 
-	  bb = end[INSN_UID (tmp_rtx)];
-	  if (bb != NULL)
-	    dump_bb_info (bb, false, true, verbose, ";; ", outf);
-	  if (did_output)
-	    putc ('\n', outf);
+	  putc ('\n', outf);
 	}
 
       free (start);
@@ -1946,113 +1976,6 @@ print_rtl_with_bb (FILE *outf, const_rtx rtx_first)
 	   tmp_rtx = XEXP (tmp_rtx, 1))
 	print_rtl_single (outf, XEXP (tmp_rtx, 0));
     }
-}
-
-/* Emit basic block information for BB.  HEADER is true if the user wants
-   the generic information and the predecessors, FOOTER is true if they want
-   the successors.  If VERBOSE is true, emit global register liveness
-   information.  PREFIX is put in front of every line.  The output is emitted
-   to FILE.  This function should only be called by RTL CFG users.  */
-/* FIXME: Dumping of the basic block shared info (index, prev, next, etc.)
-   is done here and also in dump_bb_header (but to a pretty-printer buffer).
-   This should be re-factored to give similar dumps for RTL and GIMPLE.  */
-
-void
-dump_bb_info (basic_block bb, bool header, bool footer, bool verbose,
-	      const char *prefix, FILE *file)
-{
-  edge e;
-  edge_iterator ei;
-
-  if (header)
-    {
-      fprintf (file, "\n%sBasic block %d ", prefix, bb->index);
-      if (bb->prev_bb)
-        fprintf (file, ", prev %d", bb->prev_bb->index);
-      if (bb->next_bb)
-        fprintf (file, ", next %d", bb->next_bb->index);
-      fprintf (file, ", loop_depth %d, count ", bb->loop_depth);
-      fprintf (file, HOST_WIDEST_INT_PRINT_DEC, bb->count);
-      fprintf (file, ", freq %i", bb->frequency);
-      if (maybe_hot_bb_p (bb))
-	fputs (", maybe hot", file);
-      if (probably_never_executed_bb_p (bb))
-	fputs (", probably never executed", file);
-      if (bb->flags)
-	{
-	  static const char * const bits[] = {
-	    "new", "reachable", "irr_loop", "superblock", "disable_sched",
-	    "hot_partition", "cold_partition", "duplicated",
-	    "non_local_goto_target", "rtl", "forwarder", "nonthreadable",
-	    "modified"
-	  };
-	  unsigned int flags;
-
-	  fputs (", flags:", file);
-	  for (flags = bb->flags; flags ; flags &= flags - 1)
-	    {
-	      unsigned i = ctz_hwi (flags);
-	      if (i < ARRAY_SIZE (bits))
-		fprintf (file, " %s", bits[i]);
-	      else
-		fprintf (file, " <%d>", i);
-	    }
-	}
-      fputs (".\n", file);
-
-      fprintf (file, "%sPredecessors: ", prefix);
-      FOR_EACH_EDGE (e, ei, bb->preds)
-	dump_edge_info (file, e, 0);
-
-      if (verbose
-	  && (bb->flags & BB_RTL)
-	  && df)
-	{
-	  putc ('\n', file);
-	  df_dump_top (bb, file);
-	}
-   }
-
-  if (footer)
-    {
-      fprintf (file, "\n%sSuccessors: ", prefix);
-      FOR_EACH_EDGE (e, ei, bb->succs)
-	dump_edge_info (file, e, 1);
-
-      if (verbose
-	  && (bb->flags & BB_RTL)
-	  && df)
-	{
-	  putc ('\n', file);
-	  df_dump_bottom (bb, file);
-	}
-   }
-
-  putc ('\n', file);
-}
-
-
-void
-dump_flow_info (FILE *file, int flags)
-{
-  basic_block bb;
-  bool verbose = ((flags & TDF_DETAILS) != 0);
-
-  fprintf (file, "\n%d basic blocks, %d edges.\n", n_basic_blocks, n_edges);
-  FOR_ALL_BB (bb)
-    {
-      dump_bb_info (bb, true, true, verbose, "", file);
-      check_bb_profile (bb, file);
-    }
-
-  putc ('\n', file);
-}
-
-void debug_flow_info (void);
-DEBUG_FUNCTION void
-debug_flow_info (void)
-{
-  dump_flow_info (stderr, TDF_DETAILS);
 }
 
 /* Update the branch probability of BB if a REG_BR_PROB is present.  */

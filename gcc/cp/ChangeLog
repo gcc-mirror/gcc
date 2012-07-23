@@ -1,3 +1,78 @@
+2012-07-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/54038
+	* tree.c (build_cplus_array_type): Use build_cplus_array_type to build
+	canonical array type rather than mess with its TYPE_*_VARIANT.
+
+2012-07-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/54026
+	* typeck.c (cp_apply_type_quals_to_decl): Check COMPLETE_TYPE_P.
+
+	PR c++/54021
+	* call.c (build_cxx_call): Set optimize when folding
+	__builtin_constant_p in a constexpr function.
+
+2012-07-18  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (instantiate_decl): Don't recheck substitutions.
+
+2012-07-18  Paolo Carlini  <paolo.carlini@oracle.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	DR 1170
+	PR c++/51213
+	* semantics.c (perform_access_checks): Add complain parm, return bool.
+	(perform_deferred_access_checks): Likewise.
+	(perform_or_defer_access_check): Likewise.
+	(speculative_access_check): Remove.
+	* call.c (enforce_access): Add complain parm, return bool.
+	* decl.c, friend.c, class.c, init.c, parser.c: Adjust callers.
+	* search.c: Adjust callers.
+	* cp-tree.h (TINFO_RECHECK_ACCESS_P): New macro.
+	(FNDECL_RECHECK_ACCESS_P): New macro.
+	* method.c (synthesized_method_walk): Stop deferring access checks.
+	* pt.c (recheck_decl_substitution): New.
+	(instantiate_template_1): Set and check FNDECL_RECHECK_ACCESS_P.
+
+2012-07-18  Jason Merrill  <jason@redhat.com>
+
+	* method.c (process_subob_fn): Make sure no_implicit_p is non-null
+	before trying to store through it.
+
+2012-07-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53995
+	* decl.c (finish_enum_value_list): Only call
+	insert_late_enum_def_into_classtype_sorted_fields in class scope.
+
+	PR c++/53989
+	* tree.c (build_cplus_array_type): Also add TYPE_CANONICAL
+	to the list of variants.
+
+	* decl.c (xref_basetypes): Complain about incomplete template base.
+	* class.c (finish_struct): Adjust variants in templates, too.
+
+	PR c++/53549
+	* parser.c (cp_parser_class_head): Call xref_basetypes here.
+	(cp_parser_class_specifier_1): Not here.
+	* pt.c (tsubst_decl) [USING_DECL]: Check uses_template_parms
+	as well as DECL_DEPENDENT_P.
+
+2012-07-16  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (struct deferred_access_check): Add location.
+	* semantics.c (perform_access_checks): Use it.
+	(perform_or_defer_access_check): Store it.
+
+2012-07-16  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* dump.c (dump_stmt): Moved here from c-dump.c.
+	* optimize.c: Include dumpfile.h instead of tree-dump.h.
+	* class.c: Likewise.
+	* decl2.c: Likewise.
+	* Make-lang.in: Fix dependencies.
+
 2012-07-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/53953

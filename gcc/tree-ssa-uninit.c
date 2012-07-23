@@ -26,7 +26,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "flags.h"
 #include "tm_p.h"
-#include "langhooks.h"
 #include "basic-block.h"
 #include "function.h"
 #include "gimple-pretty-print.h"
@@ -35,12 +34,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-flow.h"
 #include "gimple.h"
 #include "tree-inline.h"
-#include "timevar.h"
 #include "hashtab.h"
-#include "tree-dump.h"
 #include "tree-pass.h"
 #include "diagnostic-core.h"
-#include "timevar.h"
 
 /* This implements the pass that does predicate aware warning on uses of
    possibly uninitialized variables. The pass first collects the set of

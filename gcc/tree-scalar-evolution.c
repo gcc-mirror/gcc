@@ -262,7 +262,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "tree-chrec.h"
 #include "tree-scalar-evolution.h"
-#include "tree-pass.h"
+#include "dumpfile.h"
 #include "params.h"
 
 static tree analyze_scalar_evolution_1 (struct loop *, tree, tree);

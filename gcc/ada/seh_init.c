@@ -68,20 +68,21 @@ extern void Raise_From_Signal_Handler (struct Exception_Data *, const char *);
 #include <windows.h>
 #include <excpt.h>
 
+/* Prototypes.  */
 extern void _global_unwind2 (void *);
 
 EXCEPTION_DISPOSITION __gnat_SEH_error_handler
 (struct _EXCEPTION_RECORD*, void*, struct _CONTEXT*, void*);
 
-EXCEPTION_DISPOSITION
-__gnat_SEH_error_handler (struct _EXCEPTION_RECORD* ExceptionRecord,
-			  void *EstablisherFrame,
-			  struct _CONTEXT* ContextRecord ATTRIBUTE_UNUSED,
-			  void *DispatcherContext ATTRIBUTE_UNUSED)
-{
-  struct Exception_Data *exception;
-  const char *msg;
+struct Exception_Data *
+__gnat_map_SEH (EXCEPTION_RECORD* ExceptionRecord, const char **msg);
 
+/* Convert an SEH exception to an Ada one.  Return the exception ID
+   and set MSG with the corresponding message.  */
+
+struct Exception_Data *
+__gnat_map_SEH (EXCEPTION_RECORD* ExceptionRecord, const char **msg)
+{
   switch (ExceptionRecord->ExceptionCode)
     {
     case EXCEPTION_ACCESS_VIOLATION:
@@ -92,101 +93,99 @@ __gnat_SEH_error_handler (struct _EXCEPTION_RECORD* ExceptionRecord,
 	  || IsBadCodePtr
 	  ((void *)(ExceptionRecord->ExceptionInformation[1] + 4096)))
 	{
-	  exception = &program_error;
-	  msg = "EXCEPTION_ACCESS_VIOLATION";
+	  *msg = "EXCEPTION_ACCESS_VIOLATION";
+	  return &program_error;
 	}
       else
 	{
 	  /* otherwise it is a stack overflow  */
-	  exception = &storage_error;
-	  msg = "stack overflow or erroneous memory access";
+	  *msg = "stack overflow or erroneous memory access";
+	  return &storage_error;
 	}
-      break;
 
     case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:
-      exception = &constraint_error;
-      msg = "EXCEPTION_ARRAY_BOUNDS_EXCEEDED";
-      break;
+      *msg = "EXCEPTION_ARRAY_BOUNDS_EXCEEDED";
+      return &constraint_error;
 
     case EXCEPTION_DATATYPE_MISALIGNMENT:
-      exception = &constraint_error;
-      msg = "EXCEPTION_DATATYPE_MISALIGNMENT";
-      break;
+      *msg = "EXCEPTION_DATATYPE_MISALIGNMENT";
+      return &constraint_error;
 
     case EXCEPTION_FLT_DENORMAL_OPERAND:
-      exception = &constraint_error;
-      msg = "EXCEPTION_FLT_DENORMAL_OPERAND";
-      break;
+      *msg = "EXCEPTION_FLT_DENORMAL_OPERAND";
+      return &constraint_error;
 
     case EXCEPTION_FLT_DIVIDE_BY_ZERO:
-      exception = &constraint_error;
-      msg = "EXCEPTION_FLT_DENORMAL_OPERAND";
-      break;
+      *msg = "EXCEPTION_FLT_DENORMAL_OPERAND";
+      return &constraint_error;
 
     case EXCEPTION_FLT_INVALID_OPERATION:
-      exception = &constraint_error;
-      msg = "EXCEPTION_FLT_INVALID_OPERATION";
-      break;
+      *msg = "EXCEPTION_FLT_INVALID_OPERATION";
+      return &constraint_error;
 
     case EXCEPTION_FLT_OVERFLOW:
-      exception = &constraint_error;
-      msg = "EXCEPTION_FLT_OVERFLOW";
-      break;
+      *msg = "EXCEPTION_FLT_OVERFLOW";
+      return &constraint_error;
 
     case EXCEPTION_FLT_STACK_CHECK:
-      exception = &program_error;
-      msg = "EXCEPTION_FLT_STACK_CHECK";
-      break;
+      *msg = "EXCEPTION_FLT_STACK_CHECK";
+      return &program_error;
 
     case EXCEPTION_FLT_UNDERFLOW:
-      exception = &constraint_error;
-      msg = "EXCEPTION_FLT_UNDERFLOW";
-      break;
+      *msg = "EXCEPTION_FLT_UNDERFLOW";
+      return &constraint_error;
 
     case EXCEPTION_INT_DIVIDE_BY_ZERO:
-      exception = &constraint_error;
-      msg = "EXCEPTION_INT_DIVIDE_BY_ZERO";
-      break;
+      *msg = "EXCEPTION_INT_DIVIDE_BY_ZERO";
+      return &constraint_error;
 
     case EXCEPTION_INT_OVERFLOW:
-      exception = &constraint_error;
-      msg = "EXCEPTION_INT_OVERFLOW";
-      break;
+      *msg = "EXCEPTION_INT_OVERFLOW";
+      return &constraint_error;
 
     case EXCEPTION_INVALID_DISPOSITION:
-      exception = &program_error;
-      msg = "EXCEPTION_INVALID_DISPOSITION";
-      break;
+      *msg = "EXCEPTION_INVALID_DISPOSITION";
+      return &program_error;
 
     case EXCEPTION_NONCONTINUABLE_EXCEPTION:
-      exception = &program_error;
-      msg = "EXCEPTION_NONCONTINUABLE_EXCEPTION";
-      break;
+      *msg = "EXCEPTION_NONCONTINUABLE_EXCEPTION";
+      return &program_error;
 
     case EXCEPTION_PRIV_INSTRUCTION:
-      exception = &program_error;
-      msg = "EXCEPTION_PRIV_INSTRUCTION";
-      break;
+      *msg = "EXCEPTION_PRIV_INSTRUCTION";
+      return &program_error;
 
     case EXCEPTION_SINGLE_STEP:
-      exception = &program_error;
-      msg = "EXCEPTION_SINGLE_STEP";
-      break;
+      *msg = "EXCEPTION_SINGLE_STEP";
+      return &program_error;
 
     case EXCEPTION_STACK_OVERFLOW:
-      exception = &storage_error;
-      msg = "EXCEPTION_STACK_OVERFLOW";
-      break;
+      *msg = "EXCEPTION_STACK_OVERFLOW";
+      return &storage_error;
 
     default:
-#if defined (_WIN64) && defined (__SEH__)
-      /* On Windows x64, do not transform other exception as they could
-	 be caught by user (when SEH is used to propagate exceptions).  */
-      return;
-#else
+      *msg = NULL;
+      return NULL;
+    }
+}
+
+#if !(defined (_WIN64) && defined (__SEH__))
+
+EXCEPTION_DISPOSITION
+__gnat_SEH_error_handler (struct _EXCEPTION_RECORD* ExceptionRecord,
+			  void *EstablisherFrame ATTRIBUTE_UNUSED,
+			  struct _CONTEXT* ContextRecord ATTRIBUTE_UNUSED,
+			  void *DispatcherContext ATTRIBUTE_UNUSED)
+{
+  struct Exception_Data *exception;
+  const char *msg;
+
+  exception = __gnat_map_SEH (ExceptionRecord, &msg);
+
+  if (exception == NULL)
+    {
       exception = &program_error;
       msg = "unhandled signal";
-#endif
     }
 
 #if ! defined (_WIN64)
@@ -201,6 +200,7 @@ __gnat_SEH_error_handler (struct _EXCEPTION_RECORD* ExceptionRecord,
   Raise_From_Signal_Handler (exception, msg);
   return 0; /* This is never reached, avoid compiler warning  */
 }
+#endif /* !(defined (_WIN64) && defined (__SEH__)) */
 
 #if defined (_WIN64)
 /*  On x86_64 windows exception mechanism is no more based on a chained list

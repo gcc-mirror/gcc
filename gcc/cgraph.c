@@ -41,7 +41,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "intl.h"
 #include "gimple.h"
-#include "tree-dump.h"
+#include "timevar.h"
+#include "dumpfile.h"
 #include "tree-flow.h"
 #include "value-prof.h"
 #include "except.h"
@@ -52,6 +53,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-inline.h"
 #include "cfgloop.h"
 #include "gimple-pretty-print.h"
+
+/* FIXME: Only for PROP_loops, but cgraph shouldn't have to know about this.  */
+#include "tree-pass.h"
 
 static void cgraph_node_remove_callers (struct cgraph_node *node);
 static inline void cgraph_edge_remove_caller (struct cgraph_edge *e);
