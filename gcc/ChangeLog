@@ -1,3 +1,9 @@
+2012-07-23  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/sh.md (addc1, subc1): Delete.
+	(adddi3_compact): Use addc instead of addc1.
+	(subdi3_compact): Use subc instead of subc1.
+
 2012-07-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386-protos.c (ix86_lea_outperforms): Remove prototype.
