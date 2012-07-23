@@ -1,3 +1,11 @@
+2012-07-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/53961
+	* config/i386/i386.md (*lea): Add asserts to detect invalid addresses.
+	* config/i386/i386.c (ix86_print_operand_address): Ditto.
+	(ix86_decompose_address): Allow (zero_extend:DI (subreg:SI (...)))
+	addresses.  Prevent zero extensions of CONST_INT operands.
+
 2012-07-22  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* sbitmap.h (struct int_list): Remove.
@@ -50,7 +58,7 @@
 
 2012-07-22  Steven Bosscher <steven@gcc.gnu.org>
 
-	* opts.c (common_handle_option): Do not set 
+	* opts.c (common_handle_option): Do not set
 	flag_value_profile_transformations for -fprofile-generate.
 	* profile.c (instrument_values): Use COUNTER_FOR_HIST_TYPE.
 	(BB_TO_GCOV_INDEX): Remove.
