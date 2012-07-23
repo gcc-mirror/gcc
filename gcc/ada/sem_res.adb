@@ -7057,11 +7057,16 @@ package body Sem_Res is
       Loc   : constant Source_Ptr := Sloc (N);
       New_N : Node_Id;
       P     : constant Node_Id := Prefix (N);
+
+      P_Typ : Entity_Id;
+      --  The candidate prefix type, if overloaded
+
       I     : Interp_Index;
       It    : Interp;
 
    begin
       Check_Fully_Declared_Prefix (Typ, P);
+      P_Typ := Empty;
 
       if Is_Overloaded (P) then
 
@@ -7069,14 +7074,28 @@ package body Sem_Res is
          --  designated type.
 
          Get_First_Interp (P, I, It);
+
          while Present (It.Typ) loop
-            exit when Is_Access_Type (It.Typ)
-              and then Covers (Typ, Designated_Type (It.Typ));
+            if Is_Access_Type (It.Typ)
+              and then Covers (Typ, Designated_Type (It.Typ))
+            then
+               P_Typ := It.Typ;
+
+            --  Remove access types that do not match, but preserve access
+            --  to subprogram interpretations, in case a further dereference
+            --  is needed (see below).
+
+            elsif Ekind (It.Typ) /= E_Access_Subprogram_Type then
+               Remove_Interp (I);
+            end if;
+
             Get_Next_Interp (I, It);
          end loop;
 
-         if Present (It.Typ) then
-            Resolve (P, It.Typ);
+         if Present (P_Typ) then
+            Resolve (P, P_Typ);
+            Set_Etype (N, Designated_Type (P_Typ));
+
          else
             --  If no interpretation covers the designated type of the prefix,
             --  this is the pathological case where not all implementations of
@@ -7107,9 +7126,9 @@ package body Sem_Res is
             return;
          end if;
 
-         Set_Etype (N, Designated_Type (It.Typ));
-
       else
+         --  If not overloaded, resolve P with its own type
+
          Resolve (P);
       end if;
 
