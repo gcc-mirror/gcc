@@ -1,3 +1,10 @@
+2012-07-22  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR tree-optimization/53881
+	* gcc.dg/pr53881.c: Renamed to ...
+	* gcc.dg/pr53881-1.c: ... this.
+	* gcc.dg/pr53881-2.c: New test.
+
 2012-07-22  Hans-Peter Nilsson  <hp@axis.com>
 
 	Handle recent changes in default atomics for cris*-*-linux*.
