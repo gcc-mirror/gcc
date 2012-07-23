@@ -1,3 +1,9 @@
+2012-07-22  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR tree-optimization/53881
+	* tree-cfg.c (group_case_labels_stmt): Look up the basic block
+	for each label and compare them instead of labels.
+
 2012-07-22  Steven Bosscher <steven@gcc.gnu.org>
 
 	* opts.c (common_handle_option): Do not set 
