@@ -15,9 +15,6 @@
 #elif defined (__TMS320C6X__)
   /* On TI C6X division by zero does not trap.  */
 # define DO_TEST 0
-#elif defined (__arm__)
- /* We cannot rely on division by zero generating a trap. */
-# define DO_TEST 0
 #elif defined (__mips__) && !defined(__linux__)
   /* MIPS divisions do trap by default, but libgloss targets do not
      intercept the trap and raise a SIGFPE.  The same is probably
@@ -39,6 +36,24 @@
 #elif defined (__CRIS__)
   /* No SIGFPE for CRIS integer division.  */
 # define DO_TEST 0
+#elif defined (__arm__) && defined (__ARM_EABI__)
+# ifdef __ARM_ARCH_EXT_IDIV__
+  /* Hardware division instructions may not trap, and handle trapping
+     differently anyway.  Skip the test if we have those instructions.  */
+#  define DO_TEST 0
+# else
+#  include <signal.h>
+  /* ARM division-by-zero behaviour is to call a helper function, which
+     can do several different things, depending on requirements.  Emulate
+     the behaviour of other targets here by raising SIGFPE.  */
+int __attribute__((used))
+__aeabi_idiv0 (int return_value)
+{
+  raise (SIGFPE);
+  return return_value;
+}
+#  define DO_TEST 1
+# endif
 #else
 # define DO_TEST 1
 #endif
