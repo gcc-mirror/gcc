@@ -10229,7 +10229,14 @@ label:
 	(mult:SF (match_operand:SF 1 "fp_arith_reg_operand" "")
 		 (match_operand:SF 2 "fp_arith_reg_operand" "")))]
   "TARGET_SH2E || TARGET_SHMEDIA_FPU"
-  "")
+{
+  if (TARGET_SH2E)
+    {
+      emit_insn (gen_mulsf3_i (operands[0], operands[1], operands[2],
+		 get_fpscr_rtx ()));
+      DONE;
+    }
+})
 
 (define_insn "*mulsf3_media"
   [(set (match_operand:SF 0 "fp_arith_reg_operand" "=f")
@@ -10239,30 +10246,7 @@ label:
   "fmul.s	%1, %2, %0"
   [(set_attr "type" "fparith_media")])
 
-;; FIXME: These fmac combine pass assisting specifics are obsolete since 
-;;	  we now use the FMA patterns, which do not depend on the combine
-;;	  pass anymore.
-;; Unfortunately, the combiner is unable to cope with the USE of the FPSCR
-;; register in feeding fp instructions.  Thus, in order to generate fmac,
-;; we start out with a mulsf pattern that does not depend on fpscr.
-;; This is split after combine to introduce the dependency, in order to
-;; get mode switching and scheduling right.
-(define_insn_and_split "mulsf3_ie"
-  [(set (match_operand:SF 0 "fp_arith_reg_operand" "=f")
-	(mult:SF (match_operand:SF 1 "fp_arith_reg_operand" "%0")
-		 (match_operand:SF 2 "fp_arith_reg_operand" "f")))]
-  "TARGET_SH2E"
-  "fmul	%2,%0"
-  "TARGET_SH4 || TARGET_SH2A_SINGLE"
-  [(const_int 0)]
-{
-  emit_insn (gen_mulsf3_i4 (operands[0], operands[1], operands[2],
-	     get_fpscr_rtx ()));
-  DONE;
-}
-  [(set_attr "type" "fp")])
-
-(define_insn "mulsf3_i4"
+(define_insn "mulsf3_i"
   [(set (match_operand:SF 0 "fp_arith_reg_operand" "=f")
 	(mult:SF (match_operand:SF 1 "fp_arith_reg_operand" "%0")
 		 (match_operand:SF 2 "fp_arith_reg_operand" "f")))
