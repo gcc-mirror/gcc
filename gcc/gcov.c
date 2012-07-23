@@ -57,10 +57,10 @@ along with Gcov; see the file COPYING3.  If not see
 
 /* The code validates that the profile information read in corresponds
    to the code currently being compiled.  Rather than checking for
-   identical files, the code below computes a checksum on the CFG
+   identical files, the code below compares a checksum on the CFG
    (based on the order of basic blocks and the arcs in the CFG).  If
-   the CFG checksum in the gcda file match the CFG checksum for the
-   code currently being compiled, the profile data will be used.  */
+   the CFG checksum in the gcda file match the CFG checksum in the
+   gcno file, the profile data will be used.  */
 
 /* This is the size of the buffer used to read in source file lines.  */
 
@@ -177,7 +177,10 @@ typedef struct function_info
   /* The graph contains at least one fake incoming edge.  */
   unsigned has_catch : 1;
 
-  /* Array of basic blocks.  */
+  /* Array of basic blocks.  Like in GCC, the entry block is
+     at blocks[0] and the exit block is at blocks[1].  */
+#define ENTRY_BLOCK (0)
+#define EXIT_BLOCK (1)
   block_t *blocks;
   unsigned num_blocks;
   unsigned blocks_executed;
@@ -1363,21 +1366,21 @@ solve_flow_graph (function_t *fn)
 	     bbg_file_name, fn->name);
   else
     {
-      if (fn->blocks[0].num_pred)
+      if (fn->blocks[ENTRY_BLOCK].num_pred)
 	fnotice (stderr, "%s:'%s' has arcs to entry block\n",
 		 bbg_file_name, fn->name);
       else
 	/* We can't deduce the entry block counts from the lack of
 	   predecessors.  */
-	fn->blocks[0].num_pred = ~(unsigned)0;
+	fn->blocks[ENTRY_BLOCK].num_pred = ~(unsigned)0;
 
-      if (fn->blocks[fn->num_blocks - 1].num_succ)
+      if (fn->blocks[EXIT_BLOCK].num_succ)
 	fnotice (stderr, "%s:'%s' has arcs from exit block\n",
 		 bbg_file_name, fn->name);
       else
 	/* Likewise, we can't deduce exit block counts from the lack
 	   of its successors.  */
-	fn->blocks[fn->num_blocks - 1].num_succ = ~(unsigned)0;
+	fn->blocks[EXIT_BLOCK].num_succ = ~(unsigned)0;
     }
 
   /* Propagate the measured counts, this must be done in the same
@@ -1637,7 +1640,7 @@ add_branch_counts (coverage_t *coverage, const arc_t *arc)
     }
 }
 
-/* Format a HOST_WIDE_INT as either a percent ratio, or absolute
+/* Format a GCOV_TYPE integer as either a percent ratio, or absolute
    count.  If dp >= 0, format TOP/BOTTOM * 100 to DP decimal places.
    If DP is zero, no decimal point is printed. Only print 100% when
    TOP==BOTTOM and only print 0% when TOP=0.  If dp < 0, then simply
@@ -2266,8 +2269,9 @@ output_lines (FILE *gcov_file, const source_t *src)
     {
       for (; fn && fn->line == line_num; fn = fn->line_next)
 	{
-	  arc_t *arc = fn->blocks[fn->num_blocks - 1].pred;
-	  gcov_type return_count = fn->blocks[fn->num_blocks - 1].count;
+	  arc_t *arc = fn->blocks[EXIT_BLOCK].pred;
+	  gcov_type return_count = fn->blocks[EXIT_BLOCK].count;
+	  gcov_type called_count = fn->blocks[ENTRY_BLOCK].count;
 
 	  for (; arc; arc = arc->pred_next)
 	    if (arc->fake)
@@ -2275,9 +2279,9 @@ output_lines (FILE *gcov_file, const source_t *src)
 
 	  fprintf (gcov_file, "function %s", fn->name);
 	  fprintf (gcov_file, " called %s",
-		   format_gcov (fn->blocks[0].count, 0, -1));
+		   format_gcov (called_count, 0, -1));
 	  fprintf (gcov_file, " returned %s",
-		   format_gcov (return_count, fn->blocks[0].count, 0));
+		   format_gcov (return_count, called_count, 0));
 	  fprintf (gcov_file, " blocks executed %s",
 		   format_gcov (fn->blocks_executed, fn->num_blocks - 2, 0));
 	  fprintf (gcov_file, "\n");

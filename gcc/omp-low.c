@@ -3398,9 +3398,6 @@ expand_omp_taskreg (struct omp_region *region)
   entry_stmt = last_stmt (region->entry);
   child_fn = gimple_omp_taskreg_child_fn (entry_stmt);
   child_cfun = DECL_STRUCT_FUNCTION (child_fn);
-  /* If this function has been already instrumented, make sure
-     the child function isn't instrumented again.  */
-  child_cfun->after_tree_profile = cfun->after_tree_profile;
 
   entry_bb = region->entry;
   exit_bb = region->exit;

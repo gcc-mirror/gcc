@@ -53,28 +53,63 @@ along with GCC; see the file COPYING3.  If not see
    1) Division/modulo specialization.  Provided that we can determine that the
       operands of the division have some special properties, we may use it to
       produce more effective code.
-   2) Speculative prefetching.  If we are able to determine that the difference
+
+   2) Indirect/virtual call specialization. If we can determine most
+      common function callee in indirect/virtual call. We can use this
+      information to improve code effectiveness (especially info for
+      the inliner).
+
+   3) Speculative prefetching.  If we are able to determine that the difference
       between addresses accessed by a memory reference is usually constant, we
       may add the prefetch instructions.
       FIXME: This transformation was removed together with RTL based value
       profiling.
 
-   3) Indirect/virtual call specialization. If we can determine most
-      common function callee in indirect/virtual call. We can use this
-      information to improve code effectiveness (especially info for
-      inliner).
 
-   Every such optimization should add its requirements for profiled values to
-   insn_values_to_profile function.  This function is called from branch_prob
-   in profile.c and the requested values are instrumented by it in the first
-   compilation with -fprofile-arcs.  The optimization may then read the
-   gathered data in the second compilation with -fbranch-probabilities.
+   Value profiling internals
+   ==========================
 
-   The measured data is pointed to from the histograms
-   field of the statement annotation of the instrumented insns.  It is
-   kept as a linked list of struct histogram_value_t's, which contain the
-   same information as above.  */
+   Every value profiling transformation starts with defining what values
+   to profile.  There are different histogram types (see HIST_TYPE_* in
+   value-prof.h) and each transformation can request one or more histogram
+   types per GIMPLE statement.  The function gimple_find_values_to_profile()
+   collects the values to profile in a VEC, and adds the number of counters
+   required for the different histogram types.
 
+   For a -fprofile-generate run, the statements for which values should be
+   recorded, are instrumented in instrument_values().  The instrumentation
+   is done by helper functions that can be found in tree-profile.c, where
+   new types of histograms can be added if necessary.
+
+   After a -fprofile-use, the value profiling data is read back in by
+   compute_value_histograms() that translates the collected data to
+   histograms and attaches them to the profiled statements via
+   gimple_add_histogram_value().  Histograms are stored in a hash table
+   that is attached to every intrumented function, see VALUE_HISTOGRAMS
+   in function.h.
+   
+   The value-profile transformations driver is the function
+   gimple_value_profile_transformations().  It traverses all statements in
+   the to-be-transformed function, and looks for statements with one or
+   more histograms attached to it.  If a statement has histograms, the
+   transformation functions are called on the statement.
+
+   Limitations / FIXME / TODO:
+   * Only one histogram of each type can be associated with a statement.
+   * Currently, HIST_TYPE_CONST_DELTA is not implemented.
+     (This type of histogram was originally used to implement a form of
+     stride profiling based speculative prefetching to improve SPEC2000
+     scores for memory-bound benchmarks, mcf and equake.  However, this
+     was an RTL value-profiling transformation, and those have all been
+     removed.)
+   * Some value profile transformations are done in builtins.c (?!)
+   * Updating of histograms needs some TLC.
+   * The value profiling code could be used to record analysis results
+     from non-profiling (e.g. VRP).
+   * Adding new profilers should be simplified, starting with a cleanup
+     of what-happens-where andwith making gimple_find_values_to_profile
+     and gimple_value_profile_transformations table-driven, perhaps...
+*/
 
 static tree gimple_divmod_fixed_value (gimple, tree, int, gcov_type, gcov_type);
 static tree gimple_mod_pow2 (gimple, int, gcov_type, gcov_type);
@@ -84,7 +119,7 @@ static bool gimple_divmod_fixed_value_transform (gimple_stmt_iterator *);
 static bool gimple_mod_pow2_value_transform (gimple_stmt_iterator *);
 static bool gimple_mod_subtract_transform (gimple_stmt_iterator *);
 static bool gimple_stringops_transform (gimple_stmt_iterator *);
-static bool gimple_ic_transform (gimple);
+static bool gimple_ic_transform (gimple_stmt_iterator *);
 
 /* Allocate histogram value.  */
 
@@ -309,7 +344,7 @@ dump_histograms_for_stmt (struct function *fun, FILE *dump_file, gimple stmt)
 {
   histogram_value hist;
   for (hist = gimple_histogram_value (fun, stmt); hist; hist = hist->hvalue.next)
-   dump_histogram_value (dump_file, hist);
+    dump_histogram_value (dump_file, hist);
 }
 
 /* Remove all histograms associated with STMT.  */
@@ -519,12 +554,11 @@ gimple_value_profile_transformations (void)
 	     will be added before the current statement, and that the
 	     current statement remain valid (although possibly
 	     modified) upon return.  */
-	  if (flag_value_profile_transformations
-	      && (gimple_mod_subtract_transform (&gsi)
-		  || gimple_divmod_fixed_value_transform (&gsi)
-		  || gimple_mod_pow2_value_transform (&gsi)
-		  || gimple_stringops_transform (&gsi)
-		  || gimple_ic_transform (stmt)))
+	  if (gimple_mod_subtract_transform (&gsi)
+	      || gimple_divmod_fixed_value_transform (&gsi)
+	      || gimple_mod_pow2_value_transform (&gsi)
+	      || gimple_stringops_transform (&gsi)
+	      || gimple_ic_transform (&gsi))
 	    {
 	      stmt = gsi_stmt (gsi);
 	      changed = true;
@@ -1283,8 +1317,9 @@ gimple_ic (gimple icall_stmt, struct cgraph_node *direct_call,
  */
 
 static bool
-gimple_ic_transform (gimple stmt)
+gimple_ic_transform (gimple_stmt_iterator *gsi)
 {
+  gimple stmt = gsi_stmt (*gsi);
   histogram_value histogram;
   gcov_type val, count, all, bb_all;
   gcov_type prob;
@@ -1749,12 +1784,9 @@ gimple_stringops_values_to_profile (gimple stmt, histogram_values *values)
 static void
 gimple_values_to_profile (gimple stmt, histogram_values *values)
 {
-  if (flag_value_profile_transformations)
-    {
-      gimple_divmod_values_to_profile (stmt, values);
-      gimple_stringops_values_to_profile (stmt, values);
-      gimple_indirect_call_to_profile (stmt, values);
-    }
+  gimple_divmod_values_to_profile (stmt, values);
+  gimple_stringops_values_to_profile (stmt, values);
+  gimple_indirect_call_to_profile (stmt, values);
 }
 
 void

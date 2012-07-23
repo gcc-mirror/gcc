@@ -1,3 +1,33 @@
+2012-07-22  Steven Bosscher <steven@gcc.gnu.org>
+
+	* opts.c (common_handle_option): Do not set 
+	flag_value_profile_transformations for -fprofile-generate.
+	* profile.c (instrument_values): Use COUNTER_FOR_HIST_TYPE.
+	(BB_TO_GCOV_INDEX): Remove.
+	(output_location): Don't use it.
+	(branch_prob): Likewise.  Don't fiddle with the index of
+	ENTRY_BLOCK_PTR and EXIT_BLOCK_PTR.  Use clear_aux_for_blocks.
+	(find_spanning_tree):
+	* gcov.c (struct function_info): Document that blocks 0 and 1
+	are the entry resp. exit blocks in gcov, too, like in GCC itself.
+	(solve_flow_graph): Use ENTRY_BLOCK and EXIT_BLOCK for special
+	blocks identification.
+	(output_lines): Likewise.
+	* value-prof.c (gimple_value_profile_transformations): Do not
+	test flag_value_profile_transformations again.
+	(gimple_ic_transform): Take a gimple_stmt_iterator like all other
+	transformation functions.
+	(gimple_values_to_profile):
+	Don't test flag_value_profile_transformations
+	* tree-profile.c (tree_profiling): Assert that the cgraph is in
+	the CGRAPH_STATE_IPA_SSA state.
+	Do not set, or look at, after_tree_profile.
+	* function.h (struct function): Remove after_tree_profile bit.
+	* omp-low.c (expand_omp_taskreg): Don't set after_tree_profile.
+	* tree-inline.c (initialize_cfun): Don't copy it.
+	* lto-streamer-out.c (output_struct_function_base): Don't stream it.
+	* lto-streamer-in.c (input_struct_function_base): Likewise.
+
 2012-07-22  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/sh.h (TARGET_DYNSHIFT): New macro.

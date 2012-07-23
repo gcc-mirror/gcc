@@ -2110,7 +2110,6 @@ initialize_cfun (tree new_fndecl, tree callee_fndecl, gcov_type count)
   cfun->can_delete_dead_exceptions = src_cfun->can_delete_dead_exceptions;
   cfun->returns_struct = src_cfun->returns_struct;
   cfun->returns_pcc_struct = src_cfun->returns_pcc_struct;
-  cfun->after_tree_profile = src_cfun->after_tree_profile;
 
   init_empty_tree_cfg ();
 
