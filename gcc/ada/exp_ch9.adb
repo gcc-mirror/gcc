@@ -10307,12 +10307,10 @@ package body Exp_Ch9 is
          Proc  : Node_Id)
       is
          Astmt     : constant Node_Id := Accept_Statement (Alt);
-         Choices   : List_Id;
          Alt_Stats : List_Id;
 
       begin
          Adjust_Condition (Condition (Alt));
-         Choices := New_List (Make_Integer_Literal (Loc, Index));
 
          --  Accept with body
 
@@ -10354,7 +10352,7 @@ package body Exp_Ch9 is
 
          Append_To (Alt_List,
            Make_Case_Statement_Alternative (Loc,
-             Discrete_Choices => Choices,
+             Discrete_Choices => New_List (Make_Integer_Literal (Loc, Index)),
              Statements       => Alt_Stats));
       end Process_Accept_Alternative;
 
@@ -10364,7 +10362,6 @@ package body Exp_Ch9 is
 
       procedure Process_Delay_Alternative (Alt : Node_Id; Index : Int) is
          Dloc      : constant Source_Ptr := Sloc (Delay_Statement (Alt));
-         Choices   : List_Id;
          Cond      : Node_Id;
          Delay_Alt : List_Id;
 
@@ -10478,11 +10475,10 @@ package body Exp_Ch9 is
                Append_List (Statements (Alt), Delay_Alt_List);
 
             else
-               Choices := New_List (Make_Integer_Literal (Loc, Index));
-
                Append_To (Delay_Alt_List,
                  Make_Case_Statement_Alternative (Loc,
-                   Discrete_Choices => Choices,
+                   Discrete_Choices => New_List (
+                                         Make_Integer_Literal (Loc, Index)),
                    Statements       => Statements (Alt)));
             end if;
 

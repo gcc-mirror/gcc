@@ -1,3 +1,22 @@
+2012-07-23  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-tasinf-linux.ads: Fix typo.
+
+2012-07-23  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch7.adb, switch-m.adb, exp_ch3.adb, freeze.adb: Minor reformatting
+
+2012-07-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb (Expand_Iterator_Loop_Over_Array): If original
+	loop carries an identifier, preserve it when rewriting it as a
+	standard loop to validate exit statements that may reference
+	that name in the body of the loop.
+
+2012-07-23  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch9.adb: Minor code cleanup.
+
 2012-07-23  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch4.adb (Analyze_Selected_Component): When checking for

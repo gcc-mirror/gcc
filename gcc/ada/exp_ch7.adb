@@ -4565,7 +4565,7 @@ package body Exp_Ch7 is
                          Build_Exception_Handler (Fin_Data))));
 
                --  The single raise statement must be inserted after all the
-               --  finalization blocks. And we put everything into a wrapper
+               --  finalization blocks, and we put everything into a wrapper
                --  block to clearly expose the construct to the back-end.
 
                if Present (Prev_Fin) then
