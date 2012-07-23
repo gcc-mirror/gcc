@@ -1447,7 +1447,7 @@
 
   emit_insn (gen_clrt ());
   emit_insn (gen_addc (low0, low0, gen_lowpart (SImode, operands[2])));
-  emit_insn (gen_addc1 (high0, high0, high2));
+  emit_insn (gen_addc (high0, high0, high2));
   DONE;
 })
 
@@ -1458,16 +1458,6 @@
 		 (reg:SI T_REG)))
    (set (reg:SI T_REG)
 	(ltu:SI (plus:SI (match_dup 1) (match_dup 2)) (match_dup 1)))]
-  "TARGET_SH1"
-  "addc	%2,%0"
-  [(set_attr "type" "arith")])
-
-(define_insn "addc1"
-  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
-	(plus:SI (plus:SI (match_operand:SI 1 "arith_reg_operand" "0")
-			  (match_operand:SI 2 "arith_reg_operand" "r"))
-		 (reg:SI T_REG)))
-   (clobber (reg:SI T_REG))]
   "TARGET_SH1"
   "addc	%2,%0"
   [(set_attr "type" "arith")])
@@ -1565,7 +1555,7 @@
 
   emit_insn (gen_clrt ());
   emit_insn (gen_subc (low0, low0, gen_lowpart (SImode, operands[2])));
-  emit_insn (gen_subc1 (high0, high0, high2));
+  emit_insn (gen_subc (high0, high0, high2));
   DONE;
 })
 
@@ -1578,16 +1568,6 @@
 	(gtu:SI (minus:SI (minus:SI (match_dup 1) (match_dup 2))
 			  (reg:SI T_REG))
 		(match_dup 1)))]
-  "TARGET_SH1"
-  "subc	%2,%0"
-  [(set_attr "type" "arith")])
-
-(define_insn "subc1"
-  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
-	(minus:SI (minus:SI (match_operand:SI 1 "arith_reg_operand" "0")
-			    (match_operand:SI 2 "arith_reg_operand" "r"))
-		  (reg:SI T_REG)))
-   (clobber (reg:SI T_REG))]
   "TARGET_SH1"
   "subc	%2,%0"
   [(set_attr "type" "arith")])
