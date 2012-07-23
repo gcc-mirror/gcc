@@ -1,6 +1,6 @@
 /* Frv prototypes.
    Copyright (C) 1999, 2000, 2001, 2003, 2004, 2005, 2007, 2008, 2009, 2010,
-   2011
+   2011, 2012
    Free Software Foundation, Inc.
    Contributed by Red Hat, Inc.
 
@@ -26,6 +26,7 @@ extern void frv_expand_epilogue			(bool);
 extern frv_stack_t *frv_stack_info		(void);
 extern void frv_debug_stack			(frv_stack_t *);
 extern int frv_initial_elimination_offset	(int, int);
+extern void frv_ifcvt_machdep_init		(void *);
 
 #ifdef RTX_CODE
 extern int frv_legitimate_address_p_1		(enum machine_mode, rtx,
