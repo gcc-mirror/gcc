@@ -23,15 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "sbitmap.h"
 
-#ifdef IN_GCC
-/* FIXME: sbitmap is just a data structure, but we define dataflow functions
-   here also.  This is conditional on IN_GCC (see second #ifdef IN_GCC
-   further down).
-   For now, also only conditionally include basic-block.h, but we should
-   find a better place for the dataflow functions.  Perhaps cfganal.c?  */
-#include "basic-block.h"
-#endif
-
 #if GCC_VERSION >= 3400
 #  if HOST_BITS_PER_WIDEST_FAST_INT == HOST_BITS_PER_LONG
 #    define do_popcount(x) __builtin_popcountl(x)
@@ -744,184 +735,6 @@ sbitmap_a_and_b_or_c (sbitmap dst, const_sbitmap a, const_sbitmap b, const_sbitm
     *dstp++ = *ap++ & (*bp++ | *cp++);
 }
 
-#ifdef IN_GCC
-/* FIXME: depends on basic-block.h, see comment at start of this file.
-
-   Ironically, the comments before the functions below suggest they do
-   dataflow using the "new flow graph structures", but that's the *old*
-   new data structures.  The functions receive basic block numbers and
-   use BASIC_BLOCK(idx) to get the basic block.  They should receive
-   the basic block directly,  *sigh*.  */
-
-/* Set the bitmap DST to the intersection of SRC of successors of
-   block number BB, using the new flow graph structures.  */
-
-void
-sbitmap_intersection_of_succs (sbitmap dst, sbitmap *src, int bb)
-{
-  basic_block b = BASIC_BLOCK (bb);
-  unsigned int set_size = dst->size;
-  edge e;
-  unsigned ix;
-
-  gcc_assert (!dst->popcount);
-
-  for (e = NULL, ix = 0; ix < EDGE_COUNT (b->succs); ix++)
-    {
-      e = EDGE_SUCC (b, ix);
-      if (e->dest == EXIT_BLOCK_PTR)
-	continue;
-
-      sbitmap_copy (dst, src[e->dest->index]);
-      break;
-    }
-
-  if (e == 0)
-    sbitmap_ones (dst);
-  else
-    for (++ix; ix < EDGE_COUNT (b->succs); ix++)
-      {
-	unsigned int i;
-	sbitmap_ptr p, r;
-
-	e = EDGE_SUCC (b, ix);
-	if (e->dest == EXIT_BLOCK_PTR)
-	  continue;
-
-	p = src[e->dest->index]->elms;
-	r = dst->elms;
-	for (i = 0; i < set_size; i++)
-	  *r++ &= *p++;
-      }
-}
-
-/* Set the bitmap DST to the intersection of SRC of predecessors of
-   block number BB, using the new flow graph structures.  */
-
-void
-sbitmap_intersection_of_preds (sbitmap dst, sbitmap *src, int bb)
-{
-  basic_block b = BASIC_BLOCK (bb);
-  unsigned int set_size = dst->size;
-  edge e;
-  unsigned ix;
-
-  gcc_assert (!dst->popcount);
-
-  for (e = NULL, ix = 0; ix < EDGE_COUNT (b->preds); ix++)
-    {
-      e = EDGE_PRED (b, ix);
-      if (e->src == ENTRY_BLOCK_PTR)
-	continue;
-
-      sbitmap_copy (dst, src[e->src->index]);
-      break;
-    }
-
-  if (e == 0)
-    sbitmap_ones (dst);
-  else
-    for (++ix; ix < EDGE_COUNT (b->preds); ix++)
-      {
-	unsigned int i;
-	sbitmap_ptr p, r;
-
-	e = EDGE_PRED (b, ix);
-	if (e->src == ENTRY_BLOCK_PTR)
-	  continue;
-
-	p = src[e->src->index]->elms;
-	r = dst->elms;
-	for (i = 0; i < set_size; i++)
-	  *r++ &= *p++;
-      }
-}
-
-/* Set the bitmap DST to the union of SRC of successors of
-   block number BB, using the new flow graph structures.  */
-
-void
-sbitmap_union_of_succs (sbitmap dst, sbitmap *src, int bb)
-{
-  basic_block b = BASIC_BLOCK (bb);
-  unsigned int set_size = dst->size;
-  edge e;
-  unsigned ix;
-
-  gcc_assert (!dst->popcount);
-
-  for (ix = 0; ix < EDGE_COUNT (b->succs); ix++)
-    {
-      e = EDGE_SUCC (b, ix);
-      if (e->dest == EXIT_BLOCK_PTR)
-	continue;
-
-      sbitmap_copy (dst, src[e->dest->index]);
-      break;
-    }
-
-  if (ix == EDGE_COUNT (b->succs))
-    sbitmap_zero (dst);
-  else
-    for (ix++; ix < EDGE_COUNT (b->succs); ix++)
-      {
-	unsigned int i;
-	sbitmap_ptr p, r;
-
-	e = EDGE_SUCC (b, ix);
-	if (e->dest == EXIT_BLOCK_PTR)
-	  continue;
-
-	p = src[e->dest->index]->elms;
-	r = dst->elms;
-	for (i = 0; i < set_size; i++)
-	  *r++ |= *p++;
-      }
-}
-
-/* Set the bitmap DST to the union of SRC of predecessors of
-   block number BB, using the new flow graph structures.  */
-
-void
-sbitmap_union_of_preds (sbitmap dst, sbitmap *src, int bb)
-{
-  basic_block b = BASIC_BLOCK (bb);
-  unsigned int set_size = dst->size;
-  edge e;
-  unsigned ix;
-
-  gcc_assert (!dst->popcount);
-
-  for (ix = 0; ix < EDGE_COUNT (b->preds); ix++)
-    {
-      e = EDGE_PRED (b, ix);
-      if (e->src== ENTRY_BLOCK_PTR)
-	continue;
-
-      sbitmap_copy (dst, src[e->src->index]);
-      break;
-    }
-
-  if (ix == EDGE_COUNT (b->preds))
-    sbitmap_zero (dst);
-  else
-    for (ix++; ix < EDGE_COUNT (b->preds); ix++)
-      {
-	unsigned int i;
-	sbitmap_ptr p, r;
-
-	e = EDGE_PRED (b, ix);
-	if (e->src == ENTRY_BLOCK_PTR)
-	  continue;
-
-	p = src[e->src->index]->elms;
-	r = dst->elms;
-	for (i = 0; i < set_size; i++)
-	  *r++ |= *p++;
-      }
-}
-#endif
-
 /* Return number of first bit set in the bitmap, -1 if none.  */
 
 int
@@ -1021,13 +834,13 @@ void
 dump_sbitmap_vector (FILE *file, const char *title, const char *subtitle,
 		     sbitmap *bmaps, int n_maps)
 {
-  int bb;
+  int i;
 
   fprintf (file, "%s\n", title);
-  for (bb = 0; bb < n_maps; bb++)
+  for (i = 0; i < n_maps; i++)
     {
-      fprintf (file, "%s %d\n", subtitle, bb);
-      dump_sbitmap (file, bmaps[bb]);
+      fprintf (file, "%s %d\n", subtitle, i);
+      dump_sbitmap (file, bmaps[i]);
     }
 
   fprintf (file, "\n");

@@ -1,3 +1,23 @@
+2012-07-22  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* sbitmap.h (struct int_list): Remove.
+	(sbitmap_intersect_of_predsucc, sbitmap_union_of_predsucc):
+	Remove prototypes of non-existing function.
+	(sbitmap_intersect_of_predecessors, sbitmap_intersect_of_successors,
+	sbitmap_union_of_predecessors, sbitmap_union_of_successors): Remove
+	unused defines.
+	(sbitmap_intersection_of_succs, sbitmap_intersection_of_preds,
+	sbitmap_union_of_succs, sbitmap_union_of_preds): Move prototypes to...
+	* basic-block.h: ... here.
+	* sbitmap.c: Do not include basic-block.h.
+	(sbitmap_intersection_of_succs, sbitmap_intersection_of_preds,
+	sbitmap_union_of_succs, sbitmap_union_of_preds): Move functions to...
+	* cfganal.c: ... here.
+	* bt-load.c (compute_out, link_btr_uses): Update for above changes.
+	* gcse.c (compute_code_hoist_vbeinout): Likewise.
+	* lcm.c (compute_antinout_edge, compute_available): Likewise.
+	* Makefile.in: Fix sbitmap.o dependencies.
+
 2012-07-23  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 	    Nick Clifton  <nickc@redhat.com>
 
