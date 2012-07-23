@@ -57,6 +57,7 @@ package body Targparm is
       PAS,  --   Preallocated_Stacks
       RTX,  --   RTX_RTSS_Kernel_Module
       SAG,  --   Support_Aggregates
+      SAP,  --   Support_Atomic_Primitives
       SCA,  --   Support_Composite_Assign
       SCC,  --   Support_Composite_Compare
       SCD,  --   Stack_Check_Default
@@ -93,6 +94,7 @@ package body Targparm is
    PAS_Str : aliased constant Source_Buffer := "Preallocated_Stacks";
    RTX_Str : aliased constant Source_Buffer := "RTX_RTSS_Kernel_Module";
    SAG_Str : aliased constant Source_Buffer := "Support_Aggregates";
+   SAP_Str : aliased constant Source_Buffer := "Support_Atomic_Primitives";
    SCA_Str : aliased constant Source_Buffer := "Support_Composite_Assign";
    SCC_Str : aliased constant Source_Buffer := "Support_Composite_Compare";
    SCD_Str : aliased constant Source_Buffer := "Stack_Check_Default";
@@ -129,6 +131,7 @@ package body Targparm is
       PAS_Str'Access,
       RTX_Str'Access,
       SAG_Str'Access,
+      SAP_Str'Access,
       SCA_Str'Access,
       SCC_Str'Access,
       SCD_Str'Access,
@@ -586,6 +589,7 @@ package body Targparm is
                      when PAS => Preallocated_Stacks_On_Target       := Result;
                      when RTX => RTX_RTSS_Kernel_Module_On_Target    := Result;
                      when SAG => Support_Aggregates_On_Target        := Result;
+                     when SAP => Support_Atomic_Primitives_On_Target := Result;
                      when SCA => Support_Composite_Assign_On_Target  := Result;
                      when SCC => Support_Composite_Compare_On_Target := Result;
                      when SCD => Stack_Check_Default_On_Target       := Result;

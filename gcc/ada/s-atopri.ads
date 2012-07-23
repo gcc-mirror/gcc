@@ -36,6 +36,8 @@
 package System.Atomic_Primitives is
    pragma Preelaborate;
 
+   type uint is mod 2 ** Long_Integer'Size;
+
    type uint8  is mod 2**8
      with Size => 8;
 
@@ -121,10 +123,10 @@ package System.Atomic_Primitives is
    function Sync_Compare_And_Swap_64
      (Ptr      : Address;
       Expected : uint64;
-      Desired  : uint64) return Boolean;
+      Desired  : uint64) return uint64;
    pragma Import (Intrinsic,
                   Sync_Compare_And_Swap_64,
-                  "__sync_bool_compare_and_swap_8");
+                  "__sync_val_compare_and_swap_8");
 
    --------------------------
    -- Lock-free operations --
@@ -139,18 +141,13 @@ package System.Atomic_Primitives is
    --  * Lock_Free_Try_Write_N tries to write the Desired value into Ptr only
    --    if Expected and Desired mismatch.
 
-   function Lock_Free_Read_8 (Ptr : Address) return uint8 is
-     (Atomic_Load_8 (Ptr, Acquire));
+   function Lock_Free_Read_8 (Ptr : Address) return uint8;
 
-   function Lock_Free_Read_16 (Ptr : Address) return uint16 is
-      (Atomic_Load_16 (Ptr, Acquire));
+   function Lock_Free_Read_16 (Ptr : Address) return uint16;
 
-   function Lock_Free_Read_32 (Ptr : Address) return uint32 is
-      (Atomic_Load_32 (Ptr, Acquire));
+   function Lock_Free_Read_32 (Ptr : Address) return uint32;
 
-   function Lock_Free_Read_64
-     (Ptr : Address;
-      Model : Mem_Model := Seq_Cst) return uint64 renames Atomic_Load_64;
+   function Lock_Free_Read_64 (Ptr : Address) return uint64;
 
    function Lock_Free_Try_Write_8
       (Ptr      : Address;
@@ -169,8 +166,8 @@ package System.Atomic_Primitives is
 
    function Lock_Free_Try_Write_64
       (Ptr      : Address;
-       Expected : uint64;
-       Desired  : uint64) return Boolean renames Sync_Compare_And_Swap_64;
+       Expected : in out uint64;
+       Desired  : uint64) return Boolean;
 
    pragma Inline (Lock_Free_Read_8);
    pragma Inline (Lock_Free_Read_16);
