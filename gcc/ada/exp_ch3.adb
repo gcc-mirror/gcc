@@ -635,7 +635,7 @@ package body Exp_Ch3 is
       --  but it properly belongs with the array type declaration. However, if
       --  the freeze node is for a subtype of a type declared in another unit
       --  it seems preferable to use the freeze node as the source location of
-      --  of the init.proc. In any case this is preferable for gcov usage, and
+      --  of the init proc. In any case this is preferable for gcov usage, and
       --  the Sloc is not otherwise used by the compiler.
 
       if In_Open_Scopes (Scope (A_Type)) then

@@ -3204,6 +3204,13 @@ package body Exp_Ch5 is
              Statements => Stats,
              End_Label  => Empty);
 
+         --  If present, preserve identifier of loop, which can be used in
+         --  an exit statement in the body.
+
+         if Present (Identifier (N)) then
+            Set_Identifier (New_Loop, Relocate_Node (Identifier (N)));
+         end if;
+
          --  Create the declarations for Iterator and cursor and insert them
          --  before the source loop. Given that the domain of iteration is
          --  already an entity, the iterator is just a renaming of that
@@ -3378,6 +3385,13 @@ package body Exp_Ch5 is
             Prepend_To (Expressions (Ind_Comp),
               New_Reference_To (Iterator, Loc));
          end loop;
+      end if;
+
+      --  If original loop has a name, preserve it so it can be recognized by
+      --  an exit statement in the body of the rewritten loop.
+
+      if Present (Identifier (N)) then
+         Set_Identifier (Core_Loop, Relocate_Node (Identifier (N)));
       end if;
 
       Rewrite (N, Core_Loop);

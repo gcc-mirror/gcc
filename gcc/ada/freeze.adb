@@ -3027,9 +3027,9 @@ package body Freeze is
                   end if;
                end;
 
-               --  Pre/Post conditions are implemented through a subprogram in
+               --  Pre/post conditions are implemented through a subprogram in
                --  the corresponding body, and therefore are not checked on an
-               --  imported subprogram for which the body is not available.
+               --  imported subprogram, for which the body is not available.
 
                --  Could consider generating a wrapper to take care of this???
 

@@ -423,7 +423,7 @@ package body Switch.M is
                         return;
                      end if;
 
-                  --  -gnatn may be -gnatn, -gnatn1 or -gnat2
+                  --  -gnatn may be -gnatn, -gnatn1, or -gnatn2
 
                   when 'n' =>
                      Last_Stored := First_Stored;
