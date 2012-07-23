@@ -92,8 +92,6 @@ extern void ix86_fixup_binary_operands_no_copy (enum rtx_code,
 extern void ix86_expand_binary_operator (enum rtx_code,
 					 enum machine_mode, rtx[]);
 extern bool ix86_binary_operator_ok (enum rtx_code, enum machine_mode, rtx[]);
-extern bool ix86_lea_outperforms (rtx, unsigned int, unsigned int,
-				  unsigned int, unsigned int);
 extern bool ix86_avoid_lea_for_add (rtx, rtx[]);
 extern bool ix86_use_lea_for_mov (rtx, rtx[]);
 extern bool ix86_avoid_lea_for_addr (rtx, rtx[]);

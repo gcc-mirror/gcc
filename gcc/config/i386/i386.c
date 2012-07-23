@@ -16805,9 +16805,9 @@ distance_agu_use (unsigned int regno0, rtx insn)
    over a sequence of instructions.  Instructions sequence has
    SPLIT_COST cycles higher latency than lea latency.  */
 
-bool
+static bool
 ix86_lea_outperforms (rtx insn, unsigned int regno0, unsigned int regno1,
-		      unsigned int regno2, unsigned int split_cost)
+		      unsigned int regno2, int split_cost)
 {
   int dist_define, dist_use;
 
@@ -16880,9 +16880,7 @@ ix86_ok_to_clobber_flags (rtx insn)
 bool
 ix86_avoid_lea_for_add (rtx insn, rtx operands[])
 {
-  unsigned int regno0 = true_regnum (operands[0]);
-  unsigned int regno1 = true_regnum (operands[1]);
-  unsigned int regno2 = true_regnum (operands[2]);
+  unsigned int regno0, regno1, regno2;
 
   /* Check if we need to optimize.  */
   if (!TARGET_OPT_AGU || optimize_function_for_size_p (cfun))
@@ -16891,6 +16889,10 @@ ix86_avoid_lea_for_add (rtx insn, rtx operands[])
   /* Check it is correct to split here.  */
   if (!ix86_ok_to_clobber_flags(insn))
     return false;
+
+  regno0 = true_regnum (operands[0]);
+  regno1 = true_regnum (operands[1]);
+  regno2 = true_regnum (operands[2]);
 
   /* We need to split only adds with non destructive
      destination operand.  */
@@ -16906,8 +16908,7 @@ ix86_avoid_lea_for_add (rtx insn, rtx operands[])
 bool
 ix86_use_lea_for_mov (rtx insn, rtx operands[])
 {
-  unsigned int regno0;
-  unsigned int regno1;
+  unsigned int regno0, regno1;
 
   /* Check if we need to optimize.  */
   if (!TARGET_OPT_AGU || optimize_function_for_size_p (cfun))
@@ -16920,7 +16921,7 @@ ix86_use_lea_for_mov (rtx insn, rtx operands[])
   regno0 = true_regnum (operands[0]);
   regno1 = true_regnum (operands[1]);
 
-  return ix86_lea_outperforms (insn, regno0, regno1, -1, 0);
+  return ix86_lea_outperforms (insn, regno0, regno1, INVALID_REGNUM, 0);
 }
 
 /* Return true if we need to split lea into a sequence of
@@ -16929,10 +16930,8 @@ ix86_use_lea_for_mov (rtx insn, rtx operands[])
 bool
 ix86_avoid_lea_for_addr (rtx insn, rtx operands[])
 {
-  unsigned int regno0 = true_regnum (operands[0]) ;
-  unsigned int regno1 = -1;
-  unsigned int regno2 = -1;
-  unsigned int split_cost = 0;
+  unsigned int regno0, regno1, regno2;
+  int split_cost;
   struct ix86_address parts;
   int ok;
 
@@ -16957,10 +16956,16 @@ ix86_avoid_lea_for_addr (rtx insn, rtx operands[])
   if (parts.disp && flag_pic && !LEGITIMATE_PIC_OPERAND_P (parts.disp))
     return false;
 
+  regno0 = true_regnum (operands[0]) ;
+  regno1 = INVALID_REGNUM;
+  regno2 = INVALID_REGNUM;
+
   if (parts.base)
     regno1 = true_regnum (parts.base);
   if (parts.index)
     regno2 = true_regnum (parts.index);
+
+  split_cost = 0;
 
   /* Compute how many cycles we will add to execution time
      if split lea into a sequence of instructions.  */
@@ -17021,27 +17026,31 @@ ix86_emit_binop (enum rtx_code code, enum machine_mode mode,
 extern void
 ix86_split_lea_for_addr (rtx operands[], enum machine_mode mode)
 {
-  unsigned int regno0 = true_regnum (operands[0]) ;
-  unsigned int regno1 = INVALID_REGNUM;
-  unsigned int regno2 = INVALID_REGNUM;
+  unsigned int regno0, regno1, regno2;
   struct ix86_address parts;
-  rtx tmp;
+  rtx target, tmp;
   int ok, adds;
 
   ok = ix86_decompose_address (operands[1], &parts);
   gcc_assert (ok);
 
+  target = operands[0];
+
+  regno0 = true_regnum (target);
+  regno1 = INVALID_REGNUM;
+  regno2 = INVALID_REGNUM;
+
   if (parts.base)
     {
       if (GET_MODE (parts.base) != mode)
-	parts.base = gen_rtx_SUBREG (mode, parts.base, 0);
+	parts.base = gen_lowpart (mode, parts.base);
       regno1 = true_regnum (parts.base);
     }
 
   if (parts.index)
     {
       if (GET_MODE (parts.index) != mode)
-	parts.index = gen_rtx_SUBREG (mode, parts.index, 0);
+	parts.index = gen_lowpart (mode, parts.index);
       regno2 = true_regnum (parts.index);
     }
 
@@ -17057,41 +17066,41 @@ ix86_split_lea_for_addr (rtx operands[], enum machine_mode mode)
 	  gcc_assert (regno2 != regno0);
 
 	  for (adds = parts.scale; adds > 0; adds--)
-	    ix86_emit_binop (PLUS, mode, operands[0], parts.index);
+	    ix86_emit_binop (PLUS, mode, target, parts.index);
 	}
       else
 	{
 	  /* r1 = r2 + r3 * C case.  Need to move r3 into r1.  */
 	  if (regno0 != regno2)
-	    emit_insn (gen_rtx_SET (VOIDmode, operands[0], parts.index));
+	    emit_insn (gen_rtx_SET (VOIDmode, target, parts.index));
 
 	  /* Use shift for scaling.  */
-	  ix86_emit_binop (ASHIFT, mode, operands[0],
+	  ix86_emit_binop (ASHIFT, mode, target,
 			   GEN_INT (exact_log2 (parts.scale)));
 
 	  if (parts.base)
-	    ix86_emit_binop (PLUS, mode, operands[0], parts.base);
+	    ix86_emit_binop (PLUS, mode, target, parts.base);
 
 	  if (parts.disp && parts.disp != const0_rtx)
-	    ix86_emit_binop (PLUS, mode, operands[0], parts.disp);
+	    ix86_emit_binop (PLUS, mode, target, parts.disp);
 	}
     }
   else if (!parts.base && !parts.index)
     {
       gcc_assert(parts.disp);
-      emit_insn (gen_rtx_SET (VOIDmode, operands[0], parts.disp));
+      emit_insn (gen_rtx_SET (VOIDmode, target, parts.disp));
     }
   else
     {
       if (!parts.base)
 	{
 	  if (regno0 != regno2)
-	    emit_insn (gen_rtx_SET (VOIDmode, operands[0], parts.index));
+	    emit_insn (gen_rtx_SET (VOIDmode, target, parts.index));
 	}
       else if (!parts.index)
 	{
 	  if (regno0 != regno1)
-	    emit_insn (gen_rtx_SET (VOIDmode, operands[0], parts.base));
+	    emit_insn (gen_rtx_SET (VOIDmode, target, parts.base));
 	}
       else
 	{
@@ -17101,15 +17110,15 @@ ix86_split_lea_for_addr (rtx operands[], enum machine_mode mode)
 	    tmp = parts.base;
 	  else
 	    {
-	      emit_insn (gen_rtx_SET (VOIDmode, operands[0], parts.base));
+	      emit_insn (gen_rtx_SET (VOIDmode, target, parts.base));
 	      tmp = parts.index;
 	    }
 
-	  ix86_emit_binop (PLUS, mode, operands[0], tmp);
+	  ix86_emit_binop (PLUS, mode, target, tmp);
 	}
 
       if (parts.disp && parts.disp != const0_rtx)
-	ix86_emit_binop (PLUS, mode, operands[0], parts.disp);
+	ix86_emit_binop (PLUS, mode, target, parts.disp);
     }
 }
 
