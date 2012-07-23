@@ -18784,13 +18784,13 @@ are rejected with the following diagnoses:
 @smallexample
    Distance := 5.0;
       >>> dimensions mismatch in assignment
-      >>> left-hand side has dimensions (1, 0, 0, 0, 0, 0, 0)
+      >>> left-hand side has dimension [L]
       >>> right-hand side is dimensionless
 
    Distance := 5.0 * kg:
       >>> dimensions mismatch in assignment
-      >>> left-hand side has dimensions  (1, 0, 0, 0, 0, 0, 0)
-      >>> right-hand side has dimensions (0, 1, 0, 0, 0, 0, 0)
+      >>> left-hand side has dimension [L]
+      >>> right-hand side has dimension [M]
 @end smallexample
 
 @noindent

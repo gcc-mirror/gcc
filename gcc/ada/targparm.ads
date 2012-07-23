@@ -408,6 +408,14 @@ package Targparm is
    --  are available. If any of these routines is not available, then
    --  this flag is False, and the use of aggregates is not permitted.
 
+   Support_Atomic_Primitives_On_Target : Boolean := False;
+   --  If this flag is True, then the back-end support GCC built-in atomic
+   --  operations for memory model such as atomic load or atomic compare
+   --  exchange (see the GCC manual for more information). If the flag is
+   --  False, then the back-end doesn't provide this support. Note this flag is
+   --  set to True only if the target supports all atomic primitives up to 64
+   --  bits. ??? To be modified.
+
    Support_Composite_Assign_On_Target : Boolean := True;
    --  The assignment of composite objects other than small records and
    --  arrays whose size is 64-bits or less and is set by an explicit

@@ -1,3 +1,57 @@
+2012-07-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch12.adb (Insert_Freeze_Node_For_Instance): Inst is now
+	a local variable. Retrieve the related instance when processing
+	a subprogram instantiation. Such instances appear as wrapper
+	packages.
+
+2012-07-23  Vincent Pucci  <pucci@adacore.com>
+
+	* system-aix64.ads, system-aix.ads, system-darwin-ppc.ads,
+	system-hpux.ads, system-linux-alpha.ads,
+	system-linux-hppa.ads, system-linux-ppc.ads,
+	system-linux-s390.ads, system-linux-s390x.ads,
+	system-linux-sh4.ads, system-linux-sparc.ads,
+	system-lynxos-ppc.ads, system-mingw.ads,
+	system-solaris-sparc.ads, system-solaris-sparcv9.ads,
+	system-vms_64.ads, * system-vxworks-arm.ads, system-vxworks-m68k.ads,
+	system-vxworks-mips.ads, system-vxworks-ppc.ads,
+	system-vxworks-sparcv9.ads: Support_Atomic_Primitives set to False.
+	* system-darwin-x86.ads, system-darwin-x86_64.ads,
+	system-freebsd-x86.ads, system-freebsd-x86_64.ads,
+	system-hpux-ia64.ads, system-linux-ia64.ads, system-linux-x86.ads,
+	system-linux-x86_64.ads, system-lynxos-x86.ads,
+	system-mingw-x86_64.ads, system-solaris-x86.ads,
+	system-solaris-x86_64.ads, system-vms-ia64.ads,
+	system-vxworks-x86.ads: Support_Atomic_Primitives set to True.
+	* s-atopri.adb (Lock_Free_Read_X): New body.
+	(Lock_Free_Try_Write_X): Support_Atomic_Primitives check added.
+	(Lock_Free_Try_Write_64): New body.
+	* s-atopri.ads: New type uint.
+	(Sync_Compare_And_Swap_64): __sync_val_compare_and_swap_8 intrinsic
+	import.
+	(Lock_Free_Read_X): Body moved to s-atopri.adb.
+	(Lock_Free_Try_Write_64): Similar to other Lock_Free_Try_Write_X
+	routines.
+	* targparm.adb: New enumeration literal SAP
+	(Support_Atomic_Primitives) for type Targparm_Tags. New constant
+	SAP_Str. New component SAP_Str'Access for array Targparm_Str.
+	(Get_Target_Parameters): Parse Support_Atomic_Primitives_On_Target
+	flag.
+	* targparm.ads: New back-end code generation flag
+	Support_Atomic_Primitives_On_Target
+
+2012-07-23  Vincent Pucci  <pucci@adacore.com>
+
+	* gnat_ugn.texi: Dimensionality checking documentation updated.
+
+2012-07-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Make_Inline): If the pragma applies to a
+	subprogram renaming, set inline flags on both the renamed entity
+	and on the renaming, so that some ASIS queries can be handled
+	consistently in the absence of expansion.
+
 2012-07-23  Fedor Rybin  <frybin@adacore.com>
 
 	* gnat_ugn.texi: Removing obsolete limitation of gnattest

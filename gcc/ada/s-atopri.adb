@@ -31,6 +31,58 @@
 
 package body System.Atomic_Primitives is
 
+   ----------------------
+   -- Lock_Free_Read_8 --
+   ----------------------
+
+   function Lock_Free_Read_8 (Ptr : Address) return uint8 is
+   begin
+      if Support_Atomic_Primitives then
+         return Atomic_Load_8 (Ptr, Acquire);
+      else
+         raise Program_Error;
+      end if;
+   end Lock_Free_Read_8;
+
+   ----------------------
+   -- Lock_Free_Read_16 --
+   ----------------------
+
+   function Lock_Free_Read_16 (Ptr : Address) return uint16 is
+   begin
+      if Support_Atomic_Primitives then
+         return Atomic_Load_16 (Ptr, Acquire);
+      else
+         raise Program_Error;
+      end if;
+   end Lock_Free_Read_16;
+
+   ----------------------
+   -- Lock_Free_Read_32 --
+   ----------------------
+
+   function Lock_Free_Read_32 (Ptr : Address) return uint32 is
+   begin
+      if Support_Atomic_Primitives then
+         return Atomic_Load_32 (Ptr, Acquire);
+      else
+         raise Program_Error;
+      end if;
+   end Lock_Free_Read_32;
+
+   ----------------------
+   -- Lock_Free_Read_64 --
+   ----------------------
+
+   function Lock_Free_Read_64 (Ptr : Address) return uint64 is
+   begin
+      if Support_Atomic_Primitives then
+         return Atomic_Load_64 (Ptr, Acquire);
+      else
+         raise Program_Error;
+      end if;
+   end Lock_Free_Read_64;
+
    ---------------------------
    -- Lock_Free_Try_Write_8 --
    ---------------------------
@@ -44,7 +96,12 @@ package body System.Atomic_Primitives is
 
    begin
       if Expected /= Desired then
-         Actual := Sync_Compare_And_Swap_8 (Ptr, Expected, Desired);
+
+         if Support_Atomic_Primitives then
+            Actual := Sync_Compare_And_Swap_8 (Ptr, Expected, Desired);
+         else
+            raise Program_Error;
+         end if;
 
          if Actual /= Expected then
             Expected := Actual;
@@ -68,7 +125,12 @@ package body System.Atomic_Primitives is
 
    begin
       if Expected /= Desired then
-         Actual := Sync_Compare_And_Swap_16 (Ptr, Expected, Desired);
+
+         if Support_Atomic_Primitives then
+            Actual := Sync_Compare_And_Swap_16 (Ptr, Expected, Desired);
+         else
+            raise Program_Error;
+         end if;
 
          if Actual /= Expected then
             Expected := Actual;
@@ -92,7 +154,12 @@ package body System.Atomic_Primitives is
 
    begin
       if Expected /= Desired then
-         Actual := Sync_Compare_And_Swap_32 (Ptr, Expected, Desired);
+
+         if Support_Atomic_Primitives then
+            Actual := Sync_Compare_And_Swap_32 (Ptr, Expected, Desired);
+         else
+            raise Program_Error;
+         end if;
 
          if Actual /= Expected then
             Expected := Actual;
@@ -102,4 +169,33 @@ package body System.Atomic_Primitives is
 
       return True;
    end Lock_Free_Try_Write_32;
+
+   ----------------------------
+   -- Lock_Free_Try_Write_64 --
+   ----------------------------
+
+   function Lock_Free_Try_Write_64
+      (Ptr      : Address;
+       Expected : in out uint64;
+       Desired  : uint64) return Boolean
+   is
+      Actual : uint64;
+
+   begin
+      if Expected /= Desired then
+
+         if Support_Atomic_Primitives then
+            Actual := Sync_Compare_And_Swap_64 (Ptr, Expected, Desired);
+         else
+            raise Program_Error;
+         end if;
+
+         if Actual /= Expected then
+            Expected := Actual;
+            return False;
+         end if;
+      end if;
+
+      return True;
+   end Lock_Free_Try_Write_64;
 end System.Atomic_Primitives;
