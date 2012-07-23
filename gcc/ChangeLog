@@ -1,3 +1,13 @@
+2012-07-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-protos.c (ix86_lea_outperforms): Remove prototype.
+	* config/i386/i386.c (ix86_lea_outperforms): Make static.  Make
+	split_cost argument signed.
+	(ix86_avoid_lea_for_add): Cleanup.
+	(ix86_use_lea_for_mov): Use INVALID_REGNUM instead of -1.
+	(ix86_avoid_lea_for_addr): Ditto.  Make split_cost signed.
+	Use gen_lowpart instead of gen_rtx_SUBREG.  Cleanup.
+
 2012-07-23  Ulrich Weigand  <ulrich.weigand@linaro.org>
 
 	* config/arm/arm.c (arm_reorg): Ensure all insns are split.
