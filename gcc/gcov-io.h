@@ -99,7 +99,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    tags, values [41..9f] for the notes file and [a1..ff] for the data
    file.
 
-   The basic block graph file contains the following records
+   The notes file contains the following records
    	note: unit function-graph*
 	unit: header int32:checksum string:source
 	function-graph: announce_function basic_blocks {arcs | lines}*
