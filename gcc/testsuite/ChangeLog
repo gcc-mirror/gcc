@@ -1,3 +1,7 @@
+2012-07-23  Paul Brook  <paul@codesourcery.com>
+
+	* g++.dg/other/armv7m-1.c: New test.
+
 2012-07-23  Julian Brown  <julian@codesourcery.com>
 
 	* gcc.c-torture/execute/20101011-1.c (__aeabi_idiv0): Define for
