@@ -4222,13 +4222,21 @@ package body Sem_Ch4 is
 
                --  Duplicate the call. This is required to avoid problems with
                --  the tree transformations performed by Try_Object_Operation.
+               --  Set properly the parent of the copied call, because it is
+               --  about to be reanalyzed.
 
-              and then
-                Try_Object_Operation
-                  (N            => Sinfo.Name (New_Copy_Tree (Parent (N))),
-                   CW_Test_Only => True)
             then
-               return;
+               declare
+                  Par : constant Node_Id := New_Copy_Tree (Parent (N));
+
+               begin
+                  Set_Parent (Par, Parent (Parent (N)));
+                  if Try_Object_Operation
+                    (Sinfo.Name (Par), CW_Test_Only => True)
+                  then
+                     return;
+                  end if;
+               end;
             end if;
          end if;
 

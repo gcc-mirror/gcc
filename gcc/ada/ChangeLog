@@ -1,5 +1,46 @@
 2012-07-23  Ed Schonberg  <schonberg@adacore.com>
 
+	* sem_ch4.adb (Analyze_Selected_Component): When checking for
+	potential ambiguities with class-wide operations on synchronized
+	types, attach the copied node properly to the tree, to prevent
+	errors during expansion.
+
+2012-07-23  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch5.adb (Analyze_Loop_Statement): Make sure the loop body
+	is analyzed in Alfa mode.
+
+2012-07-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb: Adjust previous change.
+
+2012-07-23  Vincent Pucci  <pucci@adacore.com>
+
+	* sem_ch9.adb (Allows_Lock_Free_Implementation): Flag
+	Lock_Free_Given renames previous flag Complain. Description
+	updated. Henceforth, catch every error messages issued by this
+	routine when Lock_Free_Given is True.  Declaration restriction
+	updated: No non-elementary parameter instead (even in parameter)
+	New subprogram body restrictions implemented: No allocator,
+	no address, import or export rep items, no delay statement,
+	no goto statement, no quantified expression and no dereference
+	of access value.
+
+2012-07-23  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* checks.adb (Determine_Range): Add local variable Btyp. Handle
+	the case where the base type of an enumeration subtype is
+	private. Replace all occurrences of Base_Type with Btyp.
+	* exp_attr.adb (Attribute_Valid): Handle the case where the
+	base type of an enumeration subtype is private. Replace all
+	occurrences of Base_Type with Btyp.
+	* sem_util.adb (Get_Enum_Lit_From_Pos): Add local variable
+	Btyp. Handle the case where the base type of an enumeration
+	subtype is private. Replace all occurrences of Base_Type with
+	Btyp.
+
+2012-07-23  Ed Schonberg  <schonberg@adacore.com>
+
 	* par-ch6.adb (P_Mode): in Ada 2005, a mode indicator can apply
 	to a formal object of an anonymous access type.
 
