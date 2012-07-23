@@ -4468,6 +4468,7 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
       /* Now make the TRY_CATCH_EXPR for the block.  */
       gnu_result = build2 (TRY_CATCH_EXPR, void_type_node,
 			   gnu_inner_block, gnu_handlers);
+      set_expr_location_from_node (gnu_result, gnat_node);
     }
   else
     gnu_result = gnu_inner_block;

@@ -1,3 +1,8 @@
+2012-07-23  Tristan Gingold  <gingold@adacore.com>
+
+	* gcc-interface/trans.c: (Handled_Sequence_Of_Statements_to_gnu): Set
+	location on TRY_CATCH_EXPR.
+
 2012-07-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <object>: Try to ensure
