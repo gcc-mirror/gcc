@@ -24,7 +24,7 @@
 	* config/i386/i386.c (ix86_decompose_address): Allow SImode subreg
 	of an address.
 	(ix86_print_operand_address): Handle SImode subreg of an address.
-	(ix86_avoid_lea_for_add): Reject zero-extended addresses for now.
+	(ix86_avoid_lea_for_addr): Reject zero-extended addresses for now.
 
 2012-07-22  Hans-Peter Nilsson  <hp@axis.com>
 

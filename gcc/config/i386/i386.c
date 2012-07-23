@@ -16864,11 +16864,6 @@ ix86_avoid_lea_for_add (rtx insn, rtx operands[])
   unsigned int regno1 = true_regnum (operands[1]);
   unsigned int regno2 = true_regnum (operands[2]);
 
-  /* FIXME: Handle zero-extended addresses.  */
-  if (GET_CODE (operands[1]) == ZERO_EXTEND
-      || GET_CODE (operands[1]) == AND)
-    return false;
-
   /* Check if we need to optimize.  */
   if (!TARGET_OPT_AGU || optimize_function_for_size_p (cfun))
     return false;
@@ -16920,6 +16915,11 @@ ix86_avoid_lea_for_addr (rtx insn, rtx operands[])
   unsigned int split_cost = 0;
   struct ix86_address parts;
   int ok;
+
+  /* FIXME: Handle zero-extended addresses.  */
+  if (GET_CODE (operands[1]) == ZERO_EXTEND
+      || GET_CODE (operands[1]) == AND)
+    return false;
 
   /* Check we need to optimize.  */
   if (!TARGET_OPT_AGU || optimize_function_for_size_p (cfun))
