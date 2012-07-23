@@ -487,7 +487,9 @@ Creating Unit Tests Using gnattest
 * Tagged Types Substitutability Testing::
 * Testing with Contracts::
 * Additional Tests::
+@ifclear vms
 * Support for other platforms/run-times::
+@end ifclear
 * Current Limitations::
 
 Other Utility Programs
@@ -18107,7 +18109,9 @@ is installed at its default location.
 * Tagged Types Substitutability Testing::
 * Testing with Contracts::
 * Additional Tests::
+@ifclear vms
 * Support for other platforms/run-times::
+@end ifclear
 * Current Limitations::
 @end menu
 
@@ -18621,6 +18625,7 @@ gnatmake -Pmixing/test_driver.gpr
 mixing/test_runner
 @end smallexample
 
+@ifclear vms
 @node Support for other platforms/run-times
 @section Support for other platforms/run-times
 
@@ -18641,6 +18646,7 @@ the ZFP run-time library:
 @smallexample
 powerpc-elf-gnattest -Psimple.gpr -XPLATFORM=powerpc-elf -XRUNTIME=zfp
 @end smallexample
+@end ifclear
 
 @node Current Limitations
 @section Current Limitations

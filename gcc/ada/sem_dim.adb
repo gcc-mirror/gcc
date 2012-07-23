@@ -1617,6 +1617,14 @@ package body Sem_Dim is
 
       if Exists (Dims_Of_Etyp) then
          Set_Dimensions (N, Dims_Of_Etyp);
+
+      --  Propagation of the dimensions from the entity for identifier whose
+      --  entity is a non-dimensionless consant.
+
+      elsif Nkind (N) = N_Identifier
+        and then Exists (Dimensions_Of (Entity (N)))
+      then
+         Set_Dimensions (N, Dimensions_Of (Entity (N)));
       end if;
 
       --  Removal of dimensions in expression
@@ -1692,7 +1700,7 @@ package body Sem_Dim is
       if Present (Expr) then
          Dim_Of_Expr := Dimensions_Of (Expr);
 
-         --  case when expression is not a literal and when dimensions of the
+         --  Case when expression is not a literal and when dimensions of the
          --  expression and of the type mismatch
 
          if not Nkind_In (Original_Node (Expr),
@@ -1700,7 +1708,20 @@ package body Sem_Dim is
                              N_Integer_Literal)
            and then Dim_Of_Expr /= Dim_Of_Etyp
          then
-            Error_Dim_Msg_For_Object_Declaration (N, Etyp, Expr);
+            --  Propagate the dimension from the expression to the object
+            --  entity when the object is a constant whose type is a
+            --  dimensioned type.
+
+            if Constant_Present (N)
+              and then not Exists (Dim_Of_Etyp)
+            then
+               Set_Dimensions (Id, Dim_Of_Expr);
+
+            --  Otherwise, issue an error message
+
+            else
+               Error_Dim_Msg_For_Object_Declaration (N, Etyp, Expr);
+            end if;
          end if;
 
          --  Removal of dimensions in expression
