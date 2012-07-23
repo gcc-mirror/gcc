@@ -1,3 +1,7 @@
+2012-07-23  Ulrich Weigand  <ulrich.weigand@linaro.org>
+
+	* config/arm/arm.c (arm_reorg): Ensure all insns are split.
+
 2012-07-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/53961
