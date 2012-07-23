@@ -1,3 +1,14 @@
+2012-07-23  Tristan Gingold  <gingold@adacore.com>
+
+	* gcc-interface/trans.c (Handled_Sequence_Of_Statements_to_gnu): Use
+	End_Label sloc when possible for sloc of the TRY_CATCH_EXPR node.
+
+2012-07-23  Olivier Hainque  <hainque@adacore.com>
+
+	* gcc-interface/Makefile.in: Adjust processing of Linker_Options for
+	VxWorks.
+	* gcc-interface/Make-lang.in: Update dependencies.
+
 2012-07-23  Arnaud Charlet  <charlet@adacore.com>
 
 	* s-tasinf-linux.ads: Fix typo.
