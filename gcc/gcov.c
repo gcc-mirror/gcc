@@ -286,14 +286,16 @@ static unsigned total_executed;
 
 static time_t bbg_file_time;
 
-/* Name and file pointer of the input file for the basic block graph.  */
+/* Name of the notes (gcno) output file.  The "bbg" prefix is for
+   historical reasons, when the notes file contained only the
+   basic block graph notes.  */
 
 static char *bbg_file_name;
 
 /* Stamp of the bbg file */
 static unsigned bbg_stamp;
 
-/* Name and file pointer of the input file for the arc count data.  */
+/* Name and file pointer of the input file for the count data (gcda).  */
 
 static char *da_file_name;
 
@@ -976,7 +978,7 @@ find_source (const char *file_name)
     {
       static int info_emitted;
 
-      fnotice (stderr, "%s:source file is newer than graph file '%s'\n",
+      fnotice (stderr, "%s:source file is newer than notes file '%s'\n",
 	       file_name, bbg_file_name);
       if (!info_emitted)
 	{
@@ -990,7 +992,7 @@ find_source (const char *file_name)
   return idx;
 }
 
-/* Read the graph file.  Return list of functions read -- in reverse order.  */
+/* Read the notes file.  Return list of functions read -- in reverse order.  */
 
 static function_t *
 read_graph_file (void)
@@ -1006,13 +1008,13 @@ read_graph_file (void)
 
   if (!gcov_open (bbg_file_name, 1))
     {
-      fnotice (stderr, "%s:cannot open graph file\n", bbg_file_name);
+      fnotice (stderr, "%s:cannot open notes file\n", bbg_file_name);
       return fns;
     }
   bbg_file_time = gcov_time ();
   if (!gcov_magic (gcov_read_unsigned (), GCOV_NOTE_MAGIC))
     {
-      fnotice (stderr, "%s:not a gcov graph file\n", bbg_file_name);
+      fnotice (stderr, "%s:not a gcov notes file\n", bbg_file_name);
       gcov_close ();
       return fns;
     }
@@ -1248,7 +1250,7 @@ read_count_file (function_t *fns)
   tag = gcov_read_unsigned ();
   if (tag != bbg_stamp)
     {
-      fnotice (stderr, "%s:stamp mismatch with graph file\n", da_file_name);
+      fnotice (stderr, "%s:stamp mismatch with notes file\n", da_file_name);
       goto cleanup;
     }
 

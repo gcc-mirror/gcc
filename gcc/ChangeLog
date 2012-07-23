@@ -1,5 +1,17 @@
 2012-07-22  Steven Bosscher  <steven@gcc.gnu.org>
 
+	* coverage.c: Refer to "notes file" instead of "graph file"
+	in all comments.  Explain history of bbg prefix.
+	* gcov-io.h: Likewise.
+	* gcov.c: Likewise.
+	(find_source): Likewise in fnotice.
+	(read_graph_file): Likewise.
+	(read_count_file): Likewise.
+	* doc/gcov.texi: Document -fprofile-dir flag.  Add "notes file"
+	and "data file" explicitly in the explanation of the files.
+
+2012-07-22  Steven Bosscher  <steven@gcc.gnu.org>
+
 	PR tree-optimization/53881
 	* tree-cfg.c (group_case_labels_stmt): Look up the basic block
 	for each label and compare them instead of labels.

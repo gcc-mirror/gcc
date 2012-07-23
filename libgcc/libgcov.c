@@ -1040,8 +1040,7 @@ __gcov_average_profiler (gcov_type *counters, gcov_type value)
 #endif
 
 #ifdef L_gcov_ior_profiler
-/* Increase corresponding COUNTER by VALUE.  FIXME: Perhaps we want
-   to saturate up.  */
+/* Bitwise-OR VALUE into COUNTER.  */
 
 void
 __gcov_ior_profiler (gcov_type *counters, gcov_type value)
