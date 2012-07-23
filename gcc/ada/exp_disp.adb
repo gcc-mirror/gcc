@@ -7132,7 +7132,10 @@ package body Exp_Disp is
       Set_Related_Type (DT_Ptr, Typ);
 
       --  Ensure that entities Prim_Ptr and Predef_Prims_Table_Ptr have
-      --  the decoration required by the backend
+      --  the decoration required by the backend.
+
+      --  Odd comment, the back end cannot require anything not properly
+      --  documented in einfo! ???
 
       Set_Is_Dispatch_Table_Entity (RTE (RE_Prim_Ptr));
       Set_Is_Dispatch_Table_Entity (RTE (RE_Predef_Prims_Table_Ptr));

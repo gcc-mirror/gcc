@@ -236,9 +236,9 @@ package body Switch.M is
                   --  One-letter switches
 
                   when 'a' | 'A' | 'b' | 'B' | 'c' | 'C' | 'E' | 'f' |
-                       'F' | 'g' | 'h' | 'H' | 'I' | 'L' | 'N' |
-                       'o' | 'p' | 'P' | 'q' | 'Q' | 'r' | 's' | 'S' |
-                       't' | 'u' | 'U' | 'v' | 'x' | 'X' | 'Z' =>
+                       'F' | 'g' | 'h' | 'H' | 'I' | 'L' | 'N' | 'o' |
+                       'p' | 'P' | 'q' | 'Q' | 'r' | 's' | 'S' | 't' |
+                       'u' | 'U' | 'v' | 'x' | 'X' | 'Z' =>
                      Storing (First_Stored) := C;
                      Add_Switch_Component
                        (Storing (Storing'First .. First_Stored));

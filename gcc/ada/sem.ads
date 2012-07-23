@@ -449,7 +449,7 @@ package Sem is
       --  Pointer to name of last subprogram body in this scope. Used for
       --  testing proper alpha ordering of subprogram bodies in scope.
 
-      Save_Scope_Suppress  : Suppress_Array;
+      Save_Scope_Suppress : Suppress_Array;
       --  Save contents of Scope_Suppress on entry
 
       Save_Local_Suppress_Stack_Top : Suppress_Stack_Entry_Ptr;

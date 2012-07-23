@@ -3031,6 +3031,8 @@ package body Freeze is
                --  the corresponding body, and therefore are not checked on an
                --  imported subprogram for which the body is not available.
 
+               --  Could consider generating a wrapper to take care of this???
+
                if Is_Subprogram (E)
                  and then Is_Imported (E)
                  and then Present (Contract (E))

@@ -2460,15 +2460,14 @@ package body Layout is
          elsif AAMP_On_Target
            and then
              ((Ekind (E) = E_Access_Subprogram_Type
-                and then Present (Enclosing_Subprogram (E)))
-                  or else
-                    (Ekind (E) = E_Anonymous_Access_Subprogram_Type
-                      and then
-                        (not Is_Local_Anonymous_Access (E)
-                          or else Present (Enclosing_Subprogram (E)))))
+                  and then Present (Enclosing_Subprogram (E)))
+                or else
+                  (Ekind (E) = E_Anonymous_Access_Subprogram_Type
+                    and then
+                      (not Is_Local_Anonymous_Access (E)
+                        or else Present (Enclosing_Subprogram (E)))))
          then
             Init_Size (E, 2 * System_Address_Size);
-
          else
             Init_Size (E, System_Address_Size);
          end if;
