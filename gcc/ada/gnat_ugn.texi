@@ -18416,7 +18416,7 @@ as passed to gnattest when generating the test driver.
 Passing it to the driver generated on the first example:
 
 @smallexample
-test_runner --stub-default=pass
+test_runner --skeleton-default=pass
 @end smallexample
 
 makes both tests pass, even the unimplemented one.
@@ -18633,11 +18633,13 @@ such as Zero FootPrint (ZFP), a simplified harness is generated.
 Two variables are used to tell the underlying AUnit framework how to generate
 the test harness: @code{PLATFORM}, which identifies the target, and
 @code{RUNTIME}, used to determine the run-time library for which the harness
-is generated. For example, the following options are used to generate the
-AUnit test harness for a PowerPC ELF target using the ZFP run-time library:
+is generated. Corresponding prefix should also be used when calling
+@command{gnattest} for non-native targets. For example, the following options
+are used to generate the AUnit test harness for a PowerPC ELF target using
+the ZFP run-time library:
 
 @smallexample
-gnattest -Psimple.gpr -XPLATFORM=powerpc-elf -XRUNTIME=zfp
+powerpc-elf-gnattest -Psimple.gpr -XPLATFORM=powerpc-elf -XRUNTIME=zfp
 @end smallexample
 
 @node Current Limitations
@@ -18650,7 +18652,6 @@ The tool currently does not support following features:
 @itemize @bullet
 @item generic tests for generic packages and package instantiations
 @item tests for protected subprograms and entries
-@item generating test packages for code that is not conformant with ada 2005
 
 @end itemize
 

@@ -1,3 +1,26 @@
+2012-07-23  Fedor Rybin  <frybin@adacore.com>
+
+	* gnat_ugn.texi: Removing obsolete limitation of gnattest
+	to support only ada05.	Updating gnattest support for other
+	platforms/run-times section to reflect the usage of taget
+	prefix in gnattest calls.  Fixing missed obsolete --stub-default
+	option name.
+
+2012-07-23  Robert Dewar  <dewar@adacore.com>
+
+	* uintp.adb: Minor reformatting.
+
+2012-07-23  Olivier Hainque  <hainque@adacore.com>
+
+	* system-vxworks-ppc.ads: Replace the default
+	Linker_Options requesting crtbe by a commented out request for
+	-nostartfiles.
+
+2012-07-23  Vincent Celier  <celier@adacore.com>
+
+	* prj-nmsc.adb (Check_Naming): Do not get the exceptions names
+	in a virtual project.
+
 2012-07-23  Robert Dewar  <dewar@adacore.com>
 
 	* layout.adb, sem_prag.adb, sem.ads, freeze.adb,
