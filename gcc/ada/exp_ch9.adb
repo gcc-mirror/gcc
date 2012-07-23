@@ -5484,11 +5484,19 @@ package body Exp_Ch9 is
    ------------------------------
 
    procedure Ensure_Statement_Present (Loc : Source_Ptr; Alt : Node_Id) is
+      Stmt : Node_Id;
    begin
       if Opt.Suppress_Control_Flow_Optimizations
         and then Is_Empty_List (Statements (Alt))
       then
-         Set_Statements (Alt, New_List (Make_Null_Statement (Loc)));
+         Stmt := Make_Null_Statement (Loc);
+
+         --  Mark NULL statement as coming from source so that it is not
+         --  eliminated by GIGI.
+
+         Set_Comes_From_Source (Stmt, True);
+
+         Set_Statements (Alt, New_List (Stmt));
       end if;
    end Ensure_Statement_Present;
 

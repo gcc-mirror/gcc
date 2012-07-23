@@ -4369,12 +4369,16 @@ package body Exp_Ch7 is
          function Requires_Hooking return Boolean is
          begin
             --  The context is either a procedure or function call or an object
-            --  declaration initialized by a function call. In all these cases,
-            --  the calls might raise an exception.
+            --  declaration initialized by a function call. Note that in the
+            --  latter case, a function call that returns on the secondary
+            --  stack is usually rewritten into something else. Its proper
+            --  detection requires examination of the original initialization
+            --  expression.
 
             return Nkind (N) in N_Subprogram_Call
-               or else (Nkind (N) = N_Object_Declaration
-                         and then Nkind (Expression (N)) = N_Function_Call);
+              or else (Nkind (N) = N_Object_Declaration
+                         and then Nkind (Original_Node (Expression (N))) =
+                                    N_Function_Call);
          end Requires_Hooking;
 
          --  Local variables

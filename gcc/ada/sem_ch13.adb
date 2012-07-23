@@ -1150,17 +1150,14 @@ package body Sem_Ch13 is
                     Aspect_Bit_Order            |
                     Aspect_Component_Size       |
                     Aspect_Constant_Indexing    |
-                    Aspect_CPU                  |
                     Aspect_Default_Iterator     |
                     Aspect_Dispatching_Domain   |
                     Aspect_External_Tag         |
                     Aspect_Input                |
-                    Aspect_Interrupt_Priority   |
                     Aspect_Iterator_Element     |
                     Aspect_Machine_Radix        |
                     Aspect_Object_Size          |
                     Aspect_Output               |
-                    Aspect_Priority             |
                     Aspect_Read                 |
                     Aspect_Scalar_Storage_Order |
                     Aspect_Size                 |
@@ -1340,6 +1337,29 @@ package body Sem_Ch13 is
                          Pragma_Identifier            =>
                             Make_Identifier (Loc, P_Name));
                   end;
+
+               --  The following three aspects can be specified for a
+               --  subprogram body, in which case we generate pragmas for them
+               --  and insert them ahead of local declarations, rather than
+               --  after the body.
+
+               when Aspect_CPU                |
+                    Aspect_Interrupt_Priority |
+                    Aspect_Priority           =>
+                  if Nkind (N) = N_Subprogram_Body then
+                     Aitem :=
+                       Make_Pragma (Loc,
+                         Pragma_Argument_Associations =>
+                           New_List (Relocate_Node (Expr)),
+                         Pragma_Identifier            =>
+                           Make_Identifier (Sloc (Id), Chars (Id)));
+                  else
+                     Aitem :=
+                       Make_Attribute_Definition_Clause (Loc,
+                         Name       => Ent,
+                         Chars      => Chars (Id),
+                         Expression => Relocate_Node (Expr));
+                  end if;
 
                when Aspect_Warnings =>
 
@@ -1725,7 +1745,8 @@ package body Sem_Ch13 is
 
             --  In the context of a compilation unit, we directly put the
             --  pragma in the Pragmas_After list of the
-            --  N_Compilation_Unit_Aux node. No delay is required here.
+            --  N_Compilation_Unit_Aux node (No delay is required here)
+            --  except for aspects on a subprogram body (see below).
 
             if Nkind (Parent (N)) = N_Compilation_Unit
               and then (Present (Aitem) or else Is_Boolean_Aspect (Aspect))
@@ -1757,11 +1778,25 @@ package body Sem_Ch13 is
                      end if;
                   end if;
 
-                  if No (Pragmas_After (Aux)) then
-                     Set_Pragmas_After (Aux, Empty_List);
+                  --  If the aspect is on a subprogram body (relevant aspects
+                  --  are Inline and Priority), add the pragma in front of
+                  --  the declarations.
+
+                  if Nkind (N) = N_Subprogram_Body then
+                     if No (Declarations (N)) then
+                        Set_Declarations (N, New_List);
+                     end if;
+
+                     Prepend (Aitem, Declarations (N));
+
+                  else
+                     if No (Pragmas_After (Aux)) then
+                        Set_Pragmas_After (Aux, Empty_List);
+                     end if;
+
+                     Append (Aitem, Pragmas_After (Aux));
                   end if;
 
-                  Append (Aitem, Pragmas_After (Aux));
                   goto Continue;
                end;
             end if;
@@ -3243,10 +3278,11 @@ package body Sem_Ch13 is
 
             if From_Aspect_Specification (N) then
                if not (Is_Protected_Type (U_Ent)
-                        or else Is_Task_Type (U_Ent))
+                        or else Is_Task_Type (U_Ent)
+                        or else Ekind (U_Ent) = E_Procedure)
                then
                   Error_Msg_N
-                    ("Priority can only be defined for task and protected" &
+                    ("Priority can only be defined for task and protected " &
                      "object",
                      Nam);
 
