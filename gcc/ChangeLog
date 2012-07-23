@@ -1,3 +1,10 @@
+2012-07-23  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+	    Nick Clifton  <nickc@redhat.com>
+
+	* config/frv/frv-protos.h (frv_ifcvt_machdep_init): Prototype.
+	* config/frv/frv.c (frv_ifcvt_machdep_init): Change type of
+	(unused) parameter to void *.
+
 2012-07-23  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-alias.c (dump_alias_info): Walk over local decls

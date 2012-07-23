@@ -5226,7 +5226,7 @@ frv_clear_registers_used (rtx *ptr, void *data)
    On the FR-V, we don't have any extra fields per se, but it is useful hook to
    initialize the static storage.  */
 void
-frv_ifcvt_machdep_init (ce_if_block_t *ce_info ATTRIBUTE_UNUSED)
+frv_ifcvt_machdep_init (void *ce_info ATTRIBUTE_UNUSED)
 {
   frv_ifcvt.added_insns_list = NULL_RTX;
   frv_ifcvt.cur_scratch_regs = 0;
