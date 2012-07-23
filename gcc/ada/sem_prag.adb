@@ -5620,9 +5620,7 @@ package body Sem_Prag is
             --  If this is a first subtype, and the base type is distinct,
             --  then also set the suppress flags on the base type.
 
-            if Is_First_Subtype (E)
-              and then Etype (E) /= E
-            then
+            if Is_First_Subtype (E) and then Etype (E) /= E then
                Suppress_Unsuppress_Echeck (Etype (E), C);
             end if;
          end Suppress_Unsuppress_Echeck;

@@ -1,3 +1,9 @@
+2012-07-23  Robert Dewar  <dewar@adacore.com>
+
+	* layout.adb, sem_prag.adb, sem.ads, freeze.adb,
+	switch-m.adb, exp_disp.adb, system-vxworks-ppc.ads, exp_ch6.adb: Minor
+	reformatting.
+
 2012-07-23  Tristan Gingold  <gingold@adacore.com>
 
 	* gcc-interface/trans.c: (Handled_Sequence_Of_Statements_to_gnu): Set

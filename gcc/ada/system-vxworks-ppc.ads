@@ -115,6 +115,12 @@ package System is
 
 private
 
+   --  Note: we are moving to a scheme where we more closely rely on the
+   --  VxWorks mechanisms to register exception tables. This change requests
+   --  it by default (-auto-register) and removes the incomplete circuitry
+   --  that was taking care of the registration as part of the Ada RTS
+   --  initialization.
+
    pragma Linker_Options ("-crtbe" & ASCII.NUL & "-auto-register");
    --  Required by ZCX on VxWorks kernel
 
