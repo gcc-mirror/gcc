@@ -201,8 +201,6 @@ do {									\
 #define sbitmap_free(MAP)		(free((MAP)->popcount), free((MAP)))
 #define sbitmap_vector_free(VEC)	free(VEC)
 
-struct int_list;
-
 extern void dump_sbitmap (FILE *, const_sbitmap);
 extern void dump_sbitmap_file (FILE *, const_sbitmap);
 extern void dump_sbitmap_vector (FILE *, const char *, const char *, sbitmap *,
@@ -241,26 +239,8 @@ extern bool sbitmap_a_subset_b_p (const_sbitmap, const_sbitmap);
 extern int sbitmap_first_set_bit (const_sbitmap);
 extern int sbitmap_last_set_bit (const_sbitmap);
 
-extern void sbitmap_intersect_of_predsucc (sbitmap, sbitmap *, int,
-					   struct int_list **);
-#define sbitmap_intersect_of_predecessors  sbitmap_intersect_of_predsucc
-#define sbitmap_intersect_of_successors    sbitmap_intersect_of_predsucc
-
-extern void sbitmap_union_of_predsucc (sbitmap, sbitmap *, int,
-				       struct int_list **);
-#define sbitmap_union_of_predecessors  sbitmap_union_of_predsucc
-#define sbitmap_union_of_successors    sbitmap_union_of_predsucc
-
-/* Intersection and Union of preds/succs using the new flow graph
-   structure instead of the pred/succ arrays.  */
-
-extern void sbitmap_intersection_of_succs (sbitmap, sbitmap *, int);
-extern void sbitmap_intersection_of_preds (sbitmap, sbitmap *, int);
-extern void sbitmap_union_of_succs (sbitmap, sbitmap *, int);
-extern void sbitmap_union_of_preds (sbitmap, sbitmap *, int);
-
 extern void debug_sbitmap (const_sbitmap);
 extern sbitmap sbitmap_realloc (sbitmap, unsigned int);
-extern unsigned long sbitmap_popcount(const_sbitmap, unsigned long);
+extern unsigned long sbitmap_popcount (const_sbitmap, unsigned long);
 extern void sbitmap_verify_popcount (const_sbitmap);
 #endif /* ! GCC_SBITMAP_H */
