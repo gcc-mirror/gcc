@@ -1,5 +1,12 @@
 2012-07-23  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	PR target/53511
+	* config/sh/sh.md (mulsf3_ie): Delete.
+	(mulsf3_i4): Rename to mulsf3_i.
+	(mulsf3): Emit mulsf3_i insn.
+
+2012-07-23  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	* config/sh/sh.md (addc1, subc1): Delete.
 	(adddi3_compact): Use addc instead of addc1.
 	(subdi3_compact): Use subc instead of subc1.
