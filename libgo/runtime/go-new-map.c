@@ -90,9 +90,9 @@ __go_map_next_prime (uintptr_t n)
       /* Here LOW <= MID < HIGH.  */
 
       if (prime_list[mid] < n)
-	high = mid;
-      else if (prime_list[mid] > n)
 	low = mid + 1;
+      else if (prime_list[mid] > n)
+	high = mid;
       else
 	return n;
     }
