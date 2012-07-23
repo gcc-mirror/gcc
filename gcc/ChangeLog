@@ -1,5 +1,15 @@
 2012-07-23  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	PR target/51244
+	* config/sh/predicates.md (general_movsrc_operand,
+	general_movdst_operand): Reject T_REG.
+	* config/sh/sh.md (*extendqisi2_compact_reg, *extendhisi2_compact_reg,
+	movsi_i, movsi_ie, movsi_i_lowpart, *movqi_reg_reg, *movhi_reg_reg):
+	Remove T_REG alternatives.
+	(*negtstsi): New insn.
+
+2012-07-23  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	PR target/53511
 	* config/sh/sh.md (mulsf3_ie): Delete.
 	(mulsf3_i4): Rename to mulsf3_i.
