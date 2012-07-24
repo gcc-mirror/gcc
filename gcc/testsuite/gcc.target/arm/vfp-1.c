@@ -129,7 +129,7 @@ void test_ldst (float f[], double d[]) {
   /* { dg-final { scan-assembler "flds.+ \\\[r0, #1020\\\]" } } */
   /* { dg-final { scan-assembler "flds.+ \\\[r\[0-9\], #-1020\\\]" { target { arm32 && { ! arm_thumb2_ok } } } } } */
   /* { dg-final { scan-assembler "add.+ r0, #1024" } } */
-  /* { dg-final { scan-assembler "fsts.+ \\\[r\[0-9\], #0\\\]\n" } } */
+  /* { dg-final { scan-assembler "fsts.+ \\\[r\[0-9\]\\\]\n" } } */
   f[256] = f[255] + f[-255];
 
   /* { dg-final { scan-assembler "fldd.+ \\\[r1, #1016\\\]" } } */

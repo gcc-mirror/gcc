@@ -17420,7 +17420,7 @@ arm_print_operand_address (FILE *stream, rtx x)
       int is_minus = GET_CODE (x) == MINUS;
 
       if (GET_CODE (x) == REG)
-	asm_fprintf (stream, "[%r, #0]", REGNO (x));
+	asm_fprintf (stream, "[%r]", REGNO (x));
       else if (GET_CODE (x) == PLUS || is_minus)
 	{
 	  rtx base = XEXP (x, 0);
