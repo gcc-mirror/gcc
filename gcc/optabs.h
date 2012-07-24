@@ -50,7 +50,7 @@ struct widening_optab_handlers
 
 struct optab_d
 {
-  enum rtx_code code;
+  enum rtx_code code_;
   char libcall_suffix;
   const char *libcall_basename;
   void (*libcall_gen)(struct optab_d *, const char *name, char suffix,
@@ -65,7 +65,7 @@ typedef struct optab_d * optab;
    is the source mode.  */
 struct convert_optab_d
 {
-  enum rtx_code code;
+  enum rtx_code code_;
   const char *libcall_basename;
   void (*libcall_gen)(struct convert_optab_d *, const char *name,
 		      enum machine_mode,
@@ -671,7 +671,15 @@ enum convert_optab_index
 #define vcondu_optab (&convert_optab_table[(int) COI_vcondu])
 
 /* Contains the optab used for each rtx code.  */
-extern optab code_to_optab[NUM_RTX_CODE + 1];
+extern optab code_to_optab_[NUM_RTX_CODE + 1];
+
+static inline optab
+code_to_optab (enum rtx_code code)
+{
+  return code_to_optab_[code];
+}
+
+#define optab_to_code(op)	((op)->code_)
 
 
 typedef rtx (*rtxfun) (rtx);

@@ -55,7 +55,7 @@ struct target_libfuncs *this_target_libfuncs = &default_target_libfuncs;
   (this_target_libfuncs->x_libfunc_hash)
 
 /* Contains the optab used for each rtx code.  */
-optab code_to_optab[NUM_RTX_CODE + 1];
+optab code_to_optab_[NUM_RTX_CODE + 1];
 
 static void prepare_float_lib_cmp (rtx, rtx, enum rtx_code, rtx *,
 				   enum machine_mode *);
@@ -678,8 +678,8 @@ simplify_expand_binop (enum machine_mode mode, optab binoptab,
 {
   if (CONSTANT_P (op0) && CONSTANT_P (op1))
     {
-      rtx x = simplify_binary_operation (binoptab->code, mode, op0, op1);
-
+      rtx x = simplify_binary_operation (optab_to_code (binoptab),
+					 mode, op0, op1);
       if (x)
 	return x;
     }
@@ -1266,7 +1266,7 @@ expand_simple_binop (enum machine_mode mode, enum rtx_code code, rtx op0,
 		     rtx op1, rtx target, int unsignedp,
 		     enum optab_methods methods)
 {
-  optab binop = code_to_optab[(int) code];
+  optab binop = code_to_optab (code);
   gcc_assert (binop);
 
   return expand_binop (mode, binop, op0, op1, target, unsignedp, methods);
@@ -1300,7 +1300,7 @@ swap_commutative_operands_with_target (rtx target, rtx op0, rtx op1)
 static bool
 shift_optab_p (optab binoptab)
 {
-  switch (binoptab->code)
+  switch (optab_to_code (binoptab))
     {
     case ASHIFT:
     case SS_ASHIFT:
@@ -1321,7 +1321,7 @@ shift_optab_p (optab binoptab)
 static bool
 commutative_optab_p (optab binoptab)
 {
-  return (GET_RTX_CLASS (binoptab->code) == RTX_COMM_ARITH
+  return (GET_RTX_CLASS (optab_to_code (binoptab)) == RTX_COMM_ARITH
 	  || binoptab == smul_widen_optab
 	  || binoptab == umul_widen_optab
 	  || binoptab == smul_highpart_optab
@@ -1342,7 +1342,8 @@ avoid_expensive_constant (enum machine_mode mode, optab binoptab,
   if (mode != VOIDmode
       && optimize
       && CONSTANT_P (x)
-      && rtx_cost (x, binoptab->code, opn, speed) > set_src_cost (x, speed))
+      && (rtx_cost (x, optab_to_code (binoptab), opn, speed)
+	  > set_src_cost (x, speed)))
     {
       if (CONST_INT_P (x))
 	{
@@ -1458,7 +1459,7 @@ expand_binop_directly (enum machine_mode mode, optab binoptab,
 	 REG_EQUAL note to it.  If we can't because TEMP conflicts with an
 	 operand, call expand_binop again, this time without a target.  */
       if (INSN_P (pat) && NEXT_INSN (pat) != NULL_RTX
-	  && ! add_equal_note (pat, ops[0].value, binoptab->code,
+	  && ! add_equal_note (pat, ops[0].value, optab_to_code (binoptab),
 			       ops[1].value, ops[2].value))
 	{
 	  delete_insns_since (last);
@@ -2029,8 +2030,8 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
 	      rtx temp = emit_move_insn (target, xtarget);
 
 	      set_dst_reg_note (temp, REG_EQUAL,
-				gen_rtx_fmt_ee (binoptab->code, mode,
-						copy_rtx (xop0),
+				gen_rtx_fmt_ee (optab_to_code (binoptab),
+						mode, copy_rtx (xop0),
 						copy_rtx (xop1)),
 				target);
 	    }
@@ -2128,7 +2129,8 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
 
       target = gen_reg_rtx (mode);
       emit_libcall_block_1 (insns, target, value,
-			    gen_rtx_fmt_ee (binoptab->code, mode, op0, op1),
+			    gen_rtx_fmt_ee (optab_to_code (binoptab),
+					    mode, op0, op1),
 			    trapv_binoptab_p (binoptab));
 
       return target;
@@ -2481,7 +2483,7 @@ rtx
 expand_simple_unop (enum machine_mode mode, enum rtx_code code, rtx op0,
 		    rtx target, int unsignedp)
 {
-  optab unop = code_to_optab[(int) code];
+  optab unop = code_to_optab (code);
   gcc_assert (unop);
 
   return expand_unop (mode, unop, op0, target, unsignedp);
@@ -2971,7 +2973,7 @@ expand_unop_direct (enum machine_mode mode, optab unoptab, rtx op0, rtx target,
       if (pat)
 	{
 	  if (INSN_P (pat) && NEXT_INSN (pat) != NULL_RTX
-	      && ! add_equal_note (pat, ops[0].value, unoptab->code,
+	      && ! add_equal_note (pat, ops[0].value, optab_to_code (unoptab),
 				   ops[1].value, NULL_RTX))
 	    {
 	      delete_insns_since (last);
@@ -3170,7 +3172,7 @@ expand_unop (enum machine_mode mode, optab unoptab, rtx op0, rtx target,
       return target;
     }
 
-  if (unoptab->code == NEG)
+  if (optab_to_code (unoptab) == NEG)
     {
       /* Try negating floating point values by flipping the sign bit.  */
       if (SCALAR_FLOAT_MODE_P (mode))
@@ -3246,7 +3248,7 @@ expand_unop (enum machine_mode mode, optab unoptab, rtx op0, rtx target,
       end_sequence ();
 
       target = gen_reg_rtx (outmode);
-      eq_value = gen_rtx_fmt_e (unoptab->code, mode, op0);
+      eq_value = gen_rtx_fmt_e (optab_to_code (unoptab), mode, op0);
       if (GET_MODE_SIZE (outmode) < GET_MODE_SIZE (mode))
 	eq_value = simplify_gen_unary (TRUNCATE, outmode, eq_value, mode);
       else if (GET_MODE_SIZE (outmode) > GET_MODE_SIZE (mode))
@@ -3326,7 +3328,7 @@ expand_unop (enum machine_mode mode, optab unoptab, rtx op0, rtx target,
 
   /* One final attempt at implementing negation via subtraction,
      this time allowing widening of the operand.  */
-  if (unoptab->code == NEG && !HONOR_SIGNED_ZEROS (mode))
+  if (optab_to_code (unoptab) == NEG && !HONOR_SIGNED_ZEROS (mode))
     {
       rtx temp;
       temp = expand_binop (mode,
@@ -4325,12 +4327,12 @@ prepare_float_lib_cmp (rtx x, rtx y, enum rtx_code comparison,
        mode != VOIDmode;
        mode = GET_MODE_WIDER_MODE (mode))
     {
-      if (code_to_optab[comparison]
-	  && (libfunc = optab_libfunc (code_to_optab[comparison], mode)))
+      if (code_to_optab (comparison)
+	  && (libfunc = optab_libfunc (code_to_optab (comparison), mode)))
 	break;
 
-      if (code_to_optab[swapped]
-	  && (libfunc = optab_libfunc (code_to_optab[swapped], mode)))
+      if (code_to_optab (swapped)
+	  && (libfunc = optab_libfunc (code_to_optab (swapped), mode)))
 	{
 	  rtx tmp;
 	  tmp = x; x = y; y = tmp;
@@ -4338,8 +4340,8 @@ prepare_float_lib_cmp (rtx x, rtx y, enum rtx_code comparison,
 	  break;
 	}
 
-      if (code_to_optab[reversed]
-	  && (libfunc = optab_libfunc (code_to_optab[reversed], mode)))
+      if (code_to_optab (reversed)
+	  && (libfunc = optab_libfunc (code_to_optab (reversed), mode)))
 	{
 	  comparison = reversed;
 	  reversed_p = true;
@@ -5355,7 +5357,7 @@ expand_fixed_convert (rtx to, rtx from, int uintp, int satp)
   end_sequence ();
 
   emit_libcall_block (insns, to, value,
-		      gen_rtx_fmt_e (tab->code, to_mode, from));
+		      gen_rtx_fmt_e (optab_to_code (tab), to_mode, from));
 }
 
 /* Generate code to convert FROM to fixed point and store in TO.  FROM
@@ -5408,8 +5410,8 @@ expand_sfix_optab (rtx to, rtx from, convert_optab tab)
 int
 have_insn_for (enum rtx_code code, enum machine_mode mode)
 {
-  return (code_to_optab[(int) code] != 0
-	  && (optab_handler (code_to_optab[(int) code], mode)
+  return (code_to_optab (code)
+	  && (optab_handler (code_to_optab (code), mode)
 	      != CODE_FOR_nothing));
 }
 
@@ -5427,8 +5429,8 @@ init_insn_codes (void)
 static inline void
 init_optab (optab op, enum rtx_code code)
 {
-  op->code = code;
-  code_to_optab[(int) code] = op;
+  op->code_ = code;
+  code_to_optab_[(int) code] = op;
 }
 
 /* Same, but fill in its code as CODE, and do _not_ write it into
@@ -5436,14 +5438,14 @@ init_optab (optab op, enum rtx_code code)
 static inline void
 init_optabv (optab op, enum rtx_code code)
 {
-  op->code = code;
+  op->code_ = code;
 }
 
 /* Conversion optabs never go in the code_to_optab table.  */
 static void
 init_convert_optab (convert_optab op, enum rtx_code code)
 {
-  op->code = code;
+  op->code_ = code;
 }
 
 /* Initialize the libfunc fields of an entire group of entries in some
@@ -6701,7 +6703,7 @@ debug_optab_libfuncs (void)
 	  {
 	    gcc_assert (GET_CODE (l) == SYMBOL_REF);
 	    fprintf (stderr, "%s\t%s:\t%s\n",
-		     GET_RTX_NAME (o->code),
+		     GET_RTX_NAME (optab_to_code (o)),
 		     GET_MODE_NAME (j),
 		     XSTR (l, 0));
 	  }
@@ -6722,7 +6724,7 @@ debug_optab_libfuncs (void)
 	    {
 	      gcc_assert (GET_CODE (l) == SYMBOL_REF);
 	      fprintf (stderr, "%s\t%s\t%s:\t%s\n",
-		       GET_RTX_NAME (o->code),
+		       GET_RTX_NAME (optab_to_code (o)),
 		       GET_MODE_NAME (j),
 		       GET_MODE_NAME (k),
 		       XSTR (l, 0));

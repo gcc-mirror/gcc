@@ -1037,7 +1037,7 @@ do_compare_rtx_and_jump (rtx op0, rtx op1, enum rtx_code code, int unsignedp,
 		  we can jump on other conditions...  */
 	       && (have_insn_for (COMPARE, mode)
 	           /* ... or if there is no libcall for it.  */
-	           || code_to_optab[code] == unknown_optab))
+	           || code_to_optab (code) == unknown_optab))
         {
 	  enum rtx_code first_code;
 	  bool and_them = split_comparison (code, mode, &first_code, &code);
