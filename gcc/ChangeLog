@@ -1,3 +1,8 @@
+2012-07-24  Roland McGrath  <mcgrathr@google.com>
+
+	* arm.c (arm_get_frame_offsets): Don't use fixed regs for 
+	stack alignment padding.
+
 2012-07-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/53961
