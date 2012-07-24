@@ -10339,12 +10339,6 @@ Define this macro if loading short immediate values into registers sign
 extends.
 @end defmac
 
-@defmac FIXUNS_TRUNC_LIKE_FIX_TRUNC
-Define this macro if the same instructions that convert a floating
-point number to a signed fixed point number also convert validly to an
-unsigned one.
-@end defmac
-
 @deftypefn {Target Hook} {unsigned int} TARGET_MIN_DIVISIONS_FOR_RECIP_MUL (enum machine_mode @var{mode})
 When @option{-ffast-math} is in effect, GCC tries to optimize
 divisions by the same divisor, by turning them into multiplications by
