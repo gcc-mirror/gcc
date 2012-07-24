@@ -6139,7 +6139,7 @@ convert_template_argument (tree parm,
       orig_arg = make_typename_type (TREE_OPERAND (arg, 0),
 				     TREE_OPERAND (arg, 1),
 				     typename_type,
-				     complain & tf_error);
+				     complain);
       arg = orig_arg;
       is_type = 1;
     }
@@ -11402,7 +11402,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  }
 
 	f = make_typename_type (ctx, f, typename_type,
-				(complain & tf_error) | tf_keep_type_decl);
+				complain | tf_keep_type_decl);
 	if (f == error_mark_node)
 	  return f;
 	if (TREE_CODE (f) == TYPE_DECL)
