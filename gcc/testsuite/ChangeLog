@@ -1,3 +1,9 @@
+2012-07-24  Julian Brown  <julian@codesourcery.com>
+
+	* lib/target-supports.exp (check_effective_target_arm_hf_eabi): New.
+	* gcc.dg/torture/stackalign/builtin-apply-2.c: Skip for
+	hard-float ARM.
+
 2012-07-23  Paul Brook  <paul@codesourcery.com>
 
 	* g++.dg/other/armv7m-1.c: New test.

@@ -1497,6 +1497,11 @@ ARM target generates 32-bit code.
 @item arm_eabi
 ARM target adheres to the ABI for the ARM Architecture.
 
+@item arm_hf_eabi
+ARM target adheres to the VFP and Advanced SIMD Register Arguments
+variant of the ABI for the ARM Architecture (as selected with
+@code{-mfloat-abi=hard}).
+
 @item arm_hard_vfp_ok
 ARM target supports @code{-mfpu=vfp -mfloat-abi=hard}.
 Some multilibs may be incompatible with these options.
