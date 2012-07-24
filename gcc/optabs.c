@@ -54,9 +54,6 @@ struct target_libfuncs *this_target_libfuncs = &default_target_libfuncs;
 #define libfunc_hash \
   (this_target_libfuncs->x_libfunc_hash)
 
-/* Contains the optab used for each rtx code.  */
-optab code_to_optab_[NUM_RTX_CODE + 1];
-
 static void prepare_float_lib_cmp (rtx, rtx, enum rtx_code, rtx *,
 				   enum machine_mode *);
 static rtx expand_unop_direct (enum machine_mode, optab, rtx, rtx, int);
@@ -78,9 +75,7 @@ static hashval_t
 hash_libfunc (const void *p)
 {
   const struct libfunc_entry *const e = (const struct libfunc_entry *) p;
-
-  return (((int) e->mode1 + (int) e->mode2 * NUM_MACHINE_MODES)
-	  ^ e->optab);
+  return (((int) e->mode1 + (int) e->mode2 * NUM_MACHINE_MODES) ^ e->op);
 }
 
 /* Used for libfunc_hash.  */
@@ -90,10 +85,7 @@ eq_libfunc (const void *p, const void *q)
 {
   const struct libfunc_entry *const e1 = (const struct libfunc_entry *) p;
   const struct libfunc_entry *const e2 = (const struct libfunc_entry *) q;
-
-  return (e1->optab == e2->optab
-	  && e1->mode1 == e2->mode1
-	  && e1->mode2 == e2->mode2);
+  return e1->op == e2->op && e1->mode1 == e2->mode1 && e1->mode2 == e2->mode2;
 }
 
 /* Return libfunc corresponding operation defined by OPTAB converting
@@ -106,22 +98,30 @@ convert_optab_libfunc (convert_optab optab, enum machine_mode mode1,
   struct libfunc_entry e;
   struct libfunc_entry **slot;
 
-  e.optab = (size_t) (optab - &convert_optab_table[0]);
+  /* ??? This ought to be an assert, but not all of the places
+     that we expand optabs know about the optabs that got moved
+     to being direct.  */
+  if (!(optab >= FIRST_CONV_OPTAB && optab <= LAST_CONVLIB_OPTAB))
+    return NULL_RTX;
+
+  e.op = optab;
   e.mode1 = mode1;
   e.mode2 = mode2;
-  slot = (struct libfunc_entry **) htab_find_slot (libfunc_hash, &e, NO_INSERT);
+  slot = (struct libfunc_entry **)
+    htab_find_slot (libfunc_hash, &e, NO_INSERT);
   if (!slot)
     {
-      if (optab->libcall_gen)
-	{
-	  optab->libcall_gen (optab, optab->libcall_basename, mode1, mode2);
-          slot = (struct libfunc_entry **) htab_find_slot (libfunc_hash, &e, NO_INSERT);
-	  if (slot)
-	    return (*slot)->libfunc;
-	  else
-	    return NULL;
-	}
-      return NULL;
+      const struct convert_optab_libcall_d *d
+	= &convlib_def[optab - FIRST_CONV_OPTAB];
+
+      if (d->libcall_gen == NULL)
+	return NULL;
+
+      d->libcall_gen (optab, d->libcall_basename, mode1, mode2);
+      slot = (struct libfunc_entry **)
+	htab_find_slot (libfunc_hash, &e, NO_INSERT);
+      if (!slot)
+	return NULL;
     }
   return (*slot)->libfunc;
 }
@@ -135,24 +135,30 @@ optab_libfunc (optab optab, enum machine_mode mode)
   struct libfunc_entry e;
   struct libfunc_entry **slot;
 
-  e.optab = (size_t) (optab - &optab_table[0]);
+  /* ??? This ought to be an assert, but not all of the places
+     that we expand optabs know about the optabs that got moved
+     to being direct.  */
+  if (!(optab >= FIRST_NORM_OPTAB && optab <= LAST_NORMLIB_OPTAB))
+    return NULL_RTX;
+
+  e.op = optab;
   e.mode1 = mode;
   e.mode2 = VOIDmode;
-  slot = (struct libfunc_entry **) htab_find_slot (libfunc_hash, &e, NO_INSERT);
+  slot = (struct libfunc_entry **)
+    htab_find_slot (libfunc_hash, &e, NO_INSERT);
   if (!slot)
     {
-      if (optab->libcall_gen)
-	{
-	  optab->libcall_gen (optab, optab->libcall_basename,
-			      optab->libcall_suffix, mode);
-          slot = (struct libfunc_entry **) htab_find_slot (libfunc_hash,
-							   &e, NO_INSERT);
-	  if (slot)
-	    return (*slot)->libfunc;
-	  else
-	    return NULL;
-	}
-      return NULL;
+      const struct optab_libcall_d *d
+	= &normlib_def[optab - FIRST_NORM_OPTAB];
+
+      if (d->libcall_gen == NULL)
+	return NULL;
+
+      d->libcall_gen (optab, d->libcall_basename, d->libcall_suffix, mode);
+      slot = (struct libfunc_entry **)
+	htab_find_slot (libfunc_hash, &e, NO_INSERT);
+      if (!slot)
+	return NULL;
     }
   return (*slot)->libfunc;
 }
@@ -2227,7 +2233,7 @@ sign_expand_binop (enum machine_mode mode, optab uoptab, optab soptab,
 {
   rtx temp;
   optab direct_optab = unsignedp ? uoptab : soptab;
-  struct optab_d wide_soptab;
+  bool save_enable;
 
   /* Do it without widening, if possible.  */
   temp = expand_binop (mode, direct_optab, op0, op1, target,
@@ -2235,38 +2241,38 @@ sign_expand_binop (enum machine_mode mode, optab uoptab, optab soptab,
   if (temp || methods == OPTAB_DIRECT)
     return temp;
 
-  /* Try widening to a signed int.  Make a fake signed optab that
-     hides any signed insn for direct use.  */
-  wide_soptab = *soptab;
-  set_optab_handler (&wide_soptab, mode, CODE_FOR_nothing);
-  /* We don't want to generate new hash table entries from this fake
-     optab.  */
-  wide_soptab.libcall_gen = NULL;
+  /* Try widening to a signed int.  Disable any direct use of any
+     signed insn in the current mode.  */
+  save_enable = swap_optab_enable (soptab, mode, false);
 
-  temp = expand_binop (mode, &wide_soptab, op0, op1, target,
+  temp = expand_binop (mode, soptab, op0, op1, target,
 		       unsignedp, OPTAB_WIDEN);
 
   /* For unsigned operands, try widening to an unsigned int.  */
-  if (temp == 0 && unsignedp)
+  if (!temp && unsignedp)
     temp = expand_binop (mode, uoptab, op0, op1, target,
 			 unsignedp, OPTAB_WIDEN);
   if (temp || methods == OPTAB_WIDEN)
-    return temp;
+    goto egress;
 
   /* Use the right width libcall if that exists.  */
-  temp = expand_binop (mode, direct_optab, op0, op1, target, unsignedp, OPTAB_LIB);
+  temp = expand_binop (mode, direct_optab, op0, op1, target,
+		       unsignedp, OPTAB_LIB);
   if (temp || methods == OPTAB_LIB)
-    return temp;
+    goto egress;
 
   /* Must widen and use a libcall, use either signed or unsigned.  */
-  temp = expand_binop (mode, &wide_soptab, op0, op1, target,
+  temp = expand_binop (mode, soptab, op0, op1, target,
 		       unsignedp, methods);
-  if (temp != 0)
-    return temp;
-  if (unsignedp)
-    return expand_binop (mode, uoptab, op0, op1, target,
+  if (!temp && unsignedp)
+    temp = expand_binop (mode, uoptab, op0, op1, target,
 			 unsignedp, methods);
-  return 0;
+
+ egress:
+  /* Undo the fiddling above.  */
+  if (save_enable)
+    swap_optab_enable (soptab, mode, true);
+  return temp;
 }
 
 /* Generate code to perform an operation specified by UNOPPTAB
@@ -5415,39 +5421,6 @@ have_insn_for (enum rtx_code code, enum machine_mode mode)
 	      != CODE_FOR_nothing));
 }
 
-/* Set all insn_code fields to CODE_FOR_nothing.  */
-
-static void
-init_insn_codes (void)
-{
-  memset (optab_table, 0, sizeof (optab_table));
-  memset (convert_optab_table, 0, sizeof (convert_optab_table));
-  memset (direct_optab_table, 0, sizeof (direct_optab_table));
-}
-
-/* Initialize OP's code to CODE, and write it into the code_to_optab table.  */
-static inline void
-init_optab (optab op, enum rtx_code code)
-{
-  op->code_ = code;
-  code_to_optab_[(int) code] = op;
-}
-
-/* Same, but fill in its code as CODE, and do _not_ write it into
-   the code_to_optab table.  */
-static inline void
-init_optabv (optab op, enum rtx_code code)
-{
-  op->code_ = code;
-}
-
-/* Conversion optabs never go in the code_to_optab table.  */
-static void
-init_convert_optab (convert_optab op, enum rtx_code code)
-{
-  op->code_ = code;
-}
-
 /* Initialize the libfunc fields of an entire group of entries in some
    optab.  Each entry is set equal to a string consisting of a leading
    pair of underscores followed by a generic operation name followed by
@@ -5463,7 +5436,8 @@ init_convert_optab (convert_optab op, enum rtx_code code)
 */
 
 static void
-gen_libfunc (optab optable, const char *opname, int suffix, enum machine_mode mode)
+gen_libfunc (optab optable, const char *opname, int suffix,
+	     enum machine_mode mode)
 {
   unsigned opname_len = strlen (opname);
   const char *mname = GET_MODE_NAME (mode);
@@ -5497,7 +5471,7 @@ gen_libfunc (optab optable, const char *opname, int suffix, enum machine_mode mo
 
 /* Like gen_libfunc, but verify that integer operation is involved.  */
 
-static void
+void
 gen_int_libfunc (optab optable, const char *opname, char suffix,
 		 enum machine_mode mode)
 {
@@ -5515,7 +5489,7 @@ gen_int_libfunc (optab optable, const char *opname, char suffix,
 
 /* Like gen_libfunc, but verify that FP and set decimal prefix if needed.  */
 
-static void
+void
 gen_fp_libfunc (optab optable, const char *opname, char suffix,
 		enum machine_mode mode)
 {
@@ -5536,7 +5510,7 @@ gen_fp_libfunc (optab optable, const char *opname, char suffix,
 
 /* Like gen_libfunc, but verify that fixed-point operation is involved.  */
 
-static void
+void
 gen_fixed_libfunc (optab optable, const char *opname, char suffix,
 		   enum machine_mode mode)
 {
@@ -5548,7 +5522,7 @@ gen_fixed_libfunc (optab optable, const char *opname, char suffix,
 /* Like gen_libfunc, but verify that signed fixed-point operation is
    involved.  */
 
-static void
+void
 gen_signed_fixed_libfunc (optab optable, const char *opname, char suffix,
 			  enum machine_mode mode)
 {
@@ -5560,7 +5534,7 @@ gen_signed_fixed_libfunc (optab optable, const char *opname, char suffix,
 /* Like gen_libfunc, but verify that unsigned fixed-point operation is
    involved.  */
 
-static void
+void
 gen_unsigned_fixed_libfunc (optab optable, const char *opname, char suffix,
 			    enum machine_mode mode)
 {
@@ -5571,7 +5545,7 @@ gen_unsigned_fixed_libfunc (optab optable, const char *opname, char suffix,
 
 /* Like gen_libfunc, but verify that FP or INT operation is involved.  */
 
-static void
+void
 gen_int_fp_libfunc (optab optable, const char *name, char suffix,
 		    enum machine_mode mode)
 {
@@ -5584,7 +5558,7 @@ gen_int_fp_libfunc (optab optable, const char *name, char suffix,
 /* Like gen_libfunc, but verify that FP or INT operation is involved
    and add 'v' suffix for integer operation.  */
 
-static void
+void
 gen_intv_fp_libfunc (optab optable, const char *name, char suffix,
 		     enum machine_mode mode)
 {
@@ -5604,7 +5578,7 @@ gen_intv_fp_libfunc (optab optable, const char *name, char suffix,
 /* Like gen_libfunc, but verify that FP or INT or FIXED operation is
    involved.  */
 
-static void
+void
 gen_int_fp_fixed_libfunc (optab optable, const char *name, char suffix,
 			  enum machine_mode mode)
 {
@@ -5619,7 +5593,7 @@ gen_int_fp_fixed_libfunc (optab optable, const char *name, char suffix,
 /* Like gen_libfunc, but verify that FP or INT or signed FIXED operation is
    involved.  */
 
-static void
+void
 gen_int_fp_signed_fixed_libfunc (optab optable, const char *name, char suffix,
 				 enum machine_mode mode)
 {
@@ -5634,7 +5608,7 @@ gen_int_fp_signed_fixed_libfunc (optab optable, const char *name, char suffix,
 /* Like gen_libfunc, but verify that INT or FIXED operation is
    involved.  */
 
-static void
+void
 gen_int_fixed_libfunc (optab optable, const char *name, char suffix,
 		       enum machine_mode mode)
 {
@@ -5647,7 +5621,7 @@ gen_int_fixed_libfunc (optab optable, const char *name, char suffix,
 /* Like gen_libfunc, but verify that INT or signed FIXED operation is
    involved.  */
 
-static void
+void
 gen_int_signed_fixed_libfunc (optab optable, const char *name, char suffix,
 			      enum machine_mode mode)
 {
@@ -5660,7 +5634,7 @@ gen_int_signed_fixed_libfunc (optab optable, const char *name, char suffix,
 /* Like gen_libfunc, but verify that INT or unsigned FIXED operation is
    involved.  */
 
-static void
+void
 gen_int_unsigned_fixed_libfunc (optab optable, const char *name, char suffix,
 				enum machine_mode mode)
 {
@@ -5676,7 +5650,7 @@ gen_int_unsigned_fixed_libfunc (optab optable, const char *name, char suffix,
    a mode name and an operand count these functions have two mode names
    and no operand count.  */
 
-static void
+void
 gen_interclass_conv_libfunc (convert_optab tab,
 			     const char *opname,
 			     enum machine_mode tmode,
@@ -5748,7 +5722,7 @@ gen_interclass_conv_libfunc (convert_optab tab,
 /* Same as gen_interclass_conv_libfunc but verify that we are producing
    int->fp conversion.  */
 
-static void
+void
 gen_int_to_fp_conv_libfunc (convert_optab tab,
 			    const char *opname,
 			    enum machine_mode tmode,
@@ -5764,7 +5738,7 @@ gen_int_to_fp_conv_libfunc (convert_optab tab,
 /* ufloat_optab is special by using floatun for FP and floatuns decimal fp
    naming scheme.  */
 
-static void
+void
 gen_ufloat_conv_libfunc (convert_optab tab,
 			 const char *opname ATTRIBUTE_UNUSED,
 			 enum machine_mode tmode,
@@ -5779,7 +5753,7 @@ gen_ufloat_conv_libfunc (convert_optab tab,
 /* Same as gen_interclass_conv_libfunc but verify that we are producing
    fp->int conversion.  */
 
-static void
+void
 gen_int_to_fp_nondecimal_conv_libfunc (convert_optab tab,
 			               const char *opname,
 			               enum machine_mode tmode,
@@ -5795,7 +5769,7 @@ gen_int_to_fp_nondecimal_conv_libfunc (convert_optab tab,
 /* Same as gen_interclass_conv_libfunc but verify that we are producing
    fp->int conversion with no decimal floating point involved.  */
 
-static void
+void
 gen_fp_to_int_conv_libfunc (convert_optab tab,
 			    const char *opname,
 			    enum machine_mode tmode,
@@ -5812,7 +5786,7 @@ gen_fp_to_int_conv_libfunc (convert_optab tab,
    The string formation rules are
    similar to the ones for init_libfunc, above.  */
 
-static void
+void
 gen_intraclass_conv_libfunc (convert_optab tab, const char *opname,
 			     enum machine_mode tmode, enum machine_mode fmode)
 {
@@ -5882,7 +5856,7 @@ gen_intraclass_conv_libfunc (convert_optab tab, const char *opname,
 /* Pick proper libcall for trunc_optab.  We need to chose if we do
    truncation or extension and interclass or intraclass.  */
 
-static void
+void
 gen_trunc_conv_libfunc (convert_optab tab,
 			 const char *opname,
 			 enum machine_mode tmode,
@@ -5911,7 +5885,7 @@ gen_trunc_conv_libfunc (convert_optab tab,
 /* Pick proper libcall for extend_optab.  We need to chose if we do
    truncation or extension and interclass or intraclass.  */
 
-static void
+void
 gen_extend_conv_libfunc (convert_optab tab,
 			 const char *opname ATTRIBUTE_UNUSED,
 			 enum machine_mode tmode,
@@ -5940,7 +5914,7 @@ gen_extend_conv_libfunc (convert_optab tab,
 /* Pick proper libcall for fract_optab.  We need to chose if we do
    interclass or intraclass.  */
 
-static void
+void
 gen_fract_conv_libfunc (convert_optab tab,
 			const char *opname,
 			enum machine_mode tmode,
@@ -5959,7 +5933,7 @@ gen_fract_conv_libfunc (convert_optab tab,
 
 /* Pick proper libcall for fractuns_optab.  */
 
-static void
+void
 gen_fractuns_conv_libfunc (convert_optab tab,
 			   const char *opname,
 			   enum machine_mode tmode,
@@ -5980,7 +5954,7 @@ gen_fractuns_conv_libfunc (convert_optab tab,
 /* Pick proper libcall for satfract_optab.  We need to chose if we do
    interclass or intraclass.  */
 
-static void
+void
 gen_satfract_conv_libfunc (convert_optab tab,
 			   const char *opname,
 			   enum machine_mode tmode,
@@ -6000,7 +5974,7 @@ gen_satfract_conv_libfunc (convert_optab tab,
 
 /* Pick proper libcall for satfractuns_optab.  */
 
-static void
+void
 gen_satfractuns_conv_libfunc (convert_optab tab,
 			      const char *opname,
 			      enum machine_mode tmode,
@@ -6101,12 +6075,13 @@ set_user_assembler_libfunc (const char *name, const char *asmspec)
 /* Call this to reset the function entry for one optab (OPTABLE) in mode
    MODE to NAME, which should be either 0 or a string constant.  */
 void
-set_optab_libfunc (optab optable, enum machine_mode mode, const char *name)
+set_optab_libfunc (optab op, enum machine_mode mode, const char *name)
 {
   rtx val;
   struct libfunc_entry e;
   struct libfunc_entry **slot;
-  e.optab = (size_t) (optable - &optab_table[0]);
+
+  e.op = op;
   e.mode1 = mode;
   e.mode2 = VOIDmode;
 
@@ -6117,7 +6092,7 @@ set_optab_libfunc (optab optable, enum machine_mode mode, const char *name)
   slot = (struct libfunc_entry **) htab_find_slot (libfunc_hash, &e, INSERT);
   if (*slot == NULL)
     *slot = ggc_alloc_libfunc_entry ();
-  (*slot)->optab = (size_t) (optable - &optab_table[0]);
+  (*slot)->op = op;
   (*slot)->mode1 = mode;
   (*slot)->mode2 = VOIDmode;
   (*slot)->libfunc = val;
@@ -6127,13 +6102,14 @@ set_optab_libfunc (optab optable, enum machine_mode mode, const char *name)
    (OPTABLE) from mode FMODE to mode TMODE to NAME, which should be
    either 0 or a string constant.  */
 void
-set_conv_libfunc (convert_optab optable, enum machine_mode tmode,
+set_conv_libfunc (convert_optab optab, enum machine_mode tmode,
 		  enum machine_mode fmode, const char *name)
 {
   rtx val;
   struct libfunc_entry e;
   struct libfunc_entry **slot;
-  e.optab = (size_t) (optable - &convert_optab_table[0]);
+
+  e.op = optab;
   e.mode1 = tmode;
   e.mode2 = fmode;
 
@@ -6144,7 +6120,7 @@ set_conv_libfunc (convert_optab optable, enum machine_mode tmode,
   slot = (struct libfunc_entry **) htab_find_slot (libfunc_hash, &e, INSERT);
   if (*slot == NULL)
     *slot = ggc_alloc_libfunc_entry ();
-  (*slot)->optab = (size_t) (optable - &convert_optab_table[0]);
+  (*slot)->op = optab;
   (*slot)->mode1 = tmode;
   (*slot)->mode2 = fmode;
   (*slot)->libfunc = val;
@@ -6157,420 +6133,12 @@ void
 init_optabs (void)
 {
   if (libfunc_hash)
-    {
-      htab_empty (libfunc_hash);
-      /* We statically initialize the insn_codes with the equivalent of
-	 CODE_FOR_nothing.  Repeat the process if reinitialising.  */
-      init_insn_codes ();
-    }
+    htab_empty (libfunc_hash);
   else
     libfunc_hash = htab_create_ggc (10, hash_libfunc, eq_libfunc, NULL);
 
-  init_optab (add_optab, PLUS);
-  init_optabv (addv_optab, PLUS);
-  init_optab (sub_optab, MINUS);
-  init_optabv (subv_optab, MINUS);
-  init_optab (ssadd_optab, SS_PLUS);
-  init_optab (usadd_optab, US_PLUS);
-  init_optab (sssub_optab, SS_MINUS);
-  init_optab (ussub_optab, US_MINUS);
-  init_optab (smul_optab, MULT);
-  init_optab (ssmul_optab, SS_MULT);
-  init_optab (usmul_optab, US_MULT);
-  init_optabv (smulv_optab, MULT);
-  init_optab (smul_highpart_optab, UNKNOWN);
-  init_optab (umul_highpart_optab, UNKNOWN);
-  init_optab (smul_widen_optab, UNKNOWN);
-  init_optab (umul_widen_optab, UNKNOWN);
-  init_optab (usmul_widen_optab, UNKNOWN);
-  init_optab (smadd_widen_optab, UNKNOWN);
-  init_optab (umadd_widen_optab, UNKNOWN);
-  init_optab (ssmadd_widen_optab, UNKNOWN);
-  init_optab (usmadd_widen_optab, UNKNOWN);
-  init_optab (smsub_widen_optab, UNKNOWN);
-  init_optab (umsub_widen_optab, UNKNOWN);
-  init_optab (ssmsub_widen_optab, UNKNOWN);
-  init_optab (usmsub_widen_optab, UNKNOWN);
-  init_optab (sdiv_optab, DIV);
-  init_optab (ssdiv_optab, SS_DIV);
-  init_optab (usdiv_optab, US_DIV);
-  init_optabv (sdivv_optab, DIV);
-  init_optab (sdivmod_optab, UNKNOWN);
-  init_optab (udiv_optab, UDIV);
-  init_optab (udivmod_optab, UNKNOWN);
-  init_optab (smod_optab, MOD);
-  init_optab (umod_optab, UMOD);
-  init_optab (fmod_optab, UNKNOWN);
-  init_optab (remainder_optab, UNKNOWN);
-  init_optab (ftrunc_optab, UNKNOWN);
-  init_optab (and_optab, AND);
-  init_optab (ior_optab, IOR);
-  init_optab (xor_optab, XOR);
-  init_optab (ashl_optab, ASHIFT);
-  init_optab (ssashl_optab, SS_ASHIFT);
-  init_optab (usashl_optab, US_ASHIFT);
-  init_optab (ashr_optab, ASHIFTRT);
-  init_optab (lshr_optab, LSHIFTRT);
-  init_optabv (vashl_optab, ASHIFT);
-  init_optabv (vashr_optab, ASHIFTRT);
-  init_optabv (vlshr_optab, LSHIFTRT);
-  init_optab (rotl_optab, ROTATE);
-  init_optab (rotr_optab, ROTATERT);
-  init_optab (smin_optab, SMIN);
-  init_optab (smax_optab, SMAX);
-  init_optab (umin_optab, UMIN);
-  init_optab (umax_optab, UMAX);
-  init_optab (pow_optab, UNKNOWN);
-  init_optab (atan2_optab, UNKNOWN);
-  init_optab (fma_optab, FMA);
-  init_optab (fms_optab, UNKNOWN);
-  init_optab (fnma_optab, UNKNOWN);
-  init_optab (fnms_optab, UNKNOWN);
-
-  /* These three have codes assigned exclusively for the sake of
-     have_insn_for.  */
-  init_optab (mov_optab, SET);
-  init_optab (movstrict_optab, STRICT_LOW_PART);
-  init_optab (cbranch_optab, COMPARE);
-
-  init_optab (cmov_optab, UNKNOWN);
-  init_optab (cstore_optab, UNKNOWN);
-  init_optab (ctrap_optab, UNKNOWN);
-
-  init_optab (storent_optab, UNKNOWN);
-
-  init_optab (cmp_optab, UNKNOWN);
-  init_optab (ucmp_optab, UNKNOWN);
-
-  init_optab (eq_optab, EQ);
-  init_optab (ne_optab, NE);
-  init_optab (gt_optab, GT);
-  init_optab (ge_optab, GE);
-  init_optab (lt_optab, LT);
-  init_optab (le_optab, LE);
-  init_optab (unord_optab, UNORDERED);
-
-  init_optab (neg_optab, NEG);
-  init_optab (ssneg_optab, SS_NEG);
-  init_optab (usneg_optab, US_NEG);
-  init_optabv (negv_optab, NEG);
-  init_optab (abs_optab, ABS);
-  init_optabv (absv_optab, ABS);
-  init_optab (addcc_optab, UNKNOWN);
-  init_optab (one_cmpl_optab, NOT);
-  init_optab (bswap_optab, BSWAP);
-  init_optab (ffs_optab, FFS);
-  init_optab (clz_optab, CLZ);
-  init_optab (ctz_optab, CTZ);
-  init_optab (clrsb_optab, CLRSB);
-  init_optab (popcount_optab, POPCOUNT);
-  init_optab (parity_optab, PARITY);
-  init_optab (sqrt_optab, SQRT);
-  init_optab (floor_optab, UNKNOWN);
-  init_optab (ceil_optab, UNKNOWN);
-  init_optab (round_optab, UNKNOWN);
-  init_optab (btrunc_optab, UNKNOWN);
-  init_optab (nearbyint_optab, UNKNOWN);
-  init_optab (rint_optab, UNKNOWN);
-  init_optab (sincos_optab, UNKNOWN);
-  init_optab (sin_optab, UNKNOWN);
-  init_optab (asin_optab, UNKNOWN);
-  init_optab (cos_optab, UNKNOWN);
-  init_optab (acos_optab, UNKNOWN);
-  init_optab (exp_optab, UNKNOWN);
-  init_optab (exp10_optab, UNKNOWN);
-  init_optab (exp2_optab, UNKNOWN);
-  init_optab (expm1_optab, UNKNOWN);
-  init_optab (ldexp_optab, UNKNOWN);
-  init_optab (scalb_optab, UNKNOWN);
-  init_optab (significand_optab, UNKNOWN);
-  init_optab (logb_optab, UNKNOWN);
-  init_optab (ilogb_optab, UNKNOWN);
-  init_optab (log_optab, UNKNOWN);
-  init_optab (log10_optab, UNKNOWN);
-  init_optab (log2_optab, UNKNOWN);
-  init_optab (log1p_optab, UNKNOWN);
-  init_optab (tan_optab, UNKNOWN);
-  init_optab (atan_optab, UNKNOWN);
-  init_optab (copysign_optab, UNKNOWN);
-  init_optab (signbit_optab, UNKNOWN);
-
-  init_optab (isinf_optab, UNKNOWN);
-
-  init_optab (strlen_optab, UNKNOWN);
-  init_optab (push_optab, UNKNOWN);
-
-  init_optab (reduc_smax_optab, UNKNOWN);
-  init_optab (reduc_umax_optab, UNKNOWN);
-  init_optab (reduc_smin_optab, UNKNOWN);
-  init_optab (reduc_umin_optab, UNKNOWN);
-  init_optab (reduc_splus_optab, UNKNOWN);
-  init_optab (reduc_uplus_optab, UNKNOWN);
-
-  init_optab (ssum_widen_optab, UNKNOWN);
-  init_optab (usum_widen_optab, UNKNOWN);
-  init_optab (sdot_prod_optab, UNKNOWN);
-  init_optab (udot_prod_optab, UNKNOWN);
-
-  init_optab (vec_extract_optab, UNKNOWN);
-  init_optab (vec_set_optab, UNKNOWN);
-  init_optab (vec_init_optab, UNKNOWN);
-  init_optab (vec_shl_optab, UNKNOWN);
-  init_optab (vec_shr_optab, UNKNOWN);
-  init_optab (vec_realign_load_optab, UNKNOWN);
-  init_optab (movmisalign_optab, UNKNOWN);
-  init_optab (vec_widen_umult_hi_optab, UNKNOWN);
-  init_optab (vec_widen_umult_lo_optab, UNKNOWN);
-  init_optab (vec_widen_smult_hi_optab, UNKNOWN);
-  init_optab (vec_widen_smult_lo_optab, UNKNOWN);
-  init_optab (vec_widen_ushiftl_hi_optab, UNKNOWN);
-  init_optab (vec_widen_ushiftl_lo_optab, UNKNOWN);
-  init_optab (vec_widen_sshiftl_hi_optab, UNKNOWN);
-  init_optab (vec_widen_sshiftl_lo_optab, UNKNOWN);
-  init_optab (vec_unpacks_hi_optab, UNKNOWN);
-  init_optab (vec_unpacks_lo_optab, UNKNOWN);
-  init_optab (vec_unpacku_hi_optab, UNKNOWN);
-  init_optab (vec_unpacku_lo_optab, UNKNOWN);
-  init_optab (vec_unpacks_float_hi_optab, UNKNOWN);
-  init_optab (vec_unpacks_float_lo_optab, UNKNOWN);
-  init_optab (vec_unpacku_float_hi_optab, UNKNOWN);
-  init_optab (vec_unpacku_float_lo_optab, UNKNOWN);
-  init_optab (vec_pack_trunc_optab, UNKNOWN);
-  init_optab (vec_pack_usat_optab, UNKNOWN);
-  init_optab (vec_pack_ssat_optab, UNKNOWN);
-  init_optab (vec_pack_ufix_trunc_optab, UNKNOWN);
-  init_optab (vec_pack_sfix_trunc_optab, UNKNOWN);
-
-  init_optab (powi_optab, UNKNOWN);
-
-  /* Conversions.  */
-  init_convert_optab (sext_optab, SIGN_EXTEND);
-  init_convert_optab (zext_optab, ZERO_EXTEND);
-  init_convert_optab (trunc_optab, TRUNCATE);
-  init_convert_optab (sfix_optab, FIX);
-  init_convert_optab (ufix_optab, UNSIGNED_FIX);
-  init_convert_optab (sfixtrunc_optab, UNKNOWN);
-  init_convert_optab (ufixtrunc_optab, UNKNOWN);
-  init_convert_optab (sfloat_optab, FLOAT);
-  init_convert_optab (ufloat_optab, UNSIGNED_FLOAT);
-  init_convert_optab (lrint_optab, UNKNOWN);
-  init_convert_optab (lround_optab, UNKNOWN);
-  init_convert_optab (lfloor_optab, UNKNOWN);
-  init_convert_optab (lceil_optab, UNKNOWN);
-
-  init_convert_optab (fract_optab, FRACT_CONVERT);
-  init_convert_optab (fractuns_optab, UNSIGNED_FRACT_CONVERT);
-  init_convert_optab (satfract_optab, SAT_FRACT);
-  init_convert_optab (satfractuns_optab, UNSIGNED_SAT_FRACT);
-
   /* Fill in the optabs with the insns we support.  */
   init_all_optabs ();
-
-  /* Initialize the optabs with the names of the library functions.  */
-  add_optab->libcall_basename = "add";
-  add_optab->libcall_suffix = '3';
-  add_optab->libcall_gen = gen_int_fp_fixed_libfunc;
-  addv_optab->libcall_basename = "add";
-  addv_optab->libcall_suffix = '3';
-  addv_optab->libcall_gen = gen_intv_fp_libfunc;
-  ssadd_optab->libcall_basename = "ssadd";
-  ssadd_optab->libcall_suffix = '3';
-  ssadd_optab->libcall_gen = gen_signed_fixed_libfunc;
-  usadd_optab->libcall_basename = "usadd";
-  usadd_optab->libcall_suffix = '3';
-  usadd_optab->libcall_gen = gen_unsigned_fixed_libfunc;
-  sub_optab->libcall_basename = "sub";
-  sub_optab->libcall_suffix = '3';
-  sub_optab->libcall_gen = gen_int_fp_fixed_libfunc;
-  subv_optab->libcall_basename = "sub";
-  subv_optab->libcall_suffix = '3';
-  subv_optab->libcall_gen = gen_intv_fp_libfunc;
-  sssub_optab->libcall_basename = "sssub";
-  sssub_optab->libcall_suffix = '3';
-  sssub_optab->libcall_gen = gen_signed_fixed_libfunc;
-  ussub_optab->libcall_basename = "ussub";
-  ussub_optab->libcall_suffix = '3';
-  ussub_optab->libcall_gen = gen_unsigned_fixed_libfunc;
-  smul_optab->libcall_basename = "mul";
-  smul_optab->libcall_suffix = '3';
-  smul_optab->libcall_gen = gen_int_fp_fixed_libfunc;
-  smulv_optab->libcall_basename = "mul";
-  smulv_optab->libcall_suffix = '3';
-  smulv_optab->libcall_gen = gen_intv_fp_libfunc;
-  ssmul_optab->libcall_basename = "ssmul";
-  ssmul_optab->libcall_suffix = '3';
-  ssmul_optab->libcall_gen = gen_signed_fixed_libfunc;
-  usmul_optab->libcall_basename = "usmul";
-  usmul_optab->libcall_suffix = '3';
-  usmul_optab->libcall_gen = gen_unsigned_fixed_libfunc;
-  sdiv_optab->libcall_basename = "div";
-  sdiv_optab->libcall_suffix = '3';
-  sdiv_optab->libcall_gen = gen_int_fp_signed_fixed_libfunc;
-  sdivv_optab->libcall_basename = "divv";
-  sdivv_optab->libcall_suffix = '3';
-  sdivv_optab->libcall_gen = gen_int_libfunc;
-  ssdiv_optab->libcall_basename = "ssdiv";
-  ssdiv_optab->libcall_suffix = '3';
-  ssdiv_optab->libcall_gen = gen_signed_fixed_libfunc;
-  udiv_optab->libcall_basename = "udiv";
-  udiv_optab->libcall_suffix = '3';
-  udiv_optab->libcall_gen = gen_int_unsigned_fixed_libfunc;
-  usdiv_optab->libcall_basename = "usdiv";
-  usdiv_optab->libcall_suffix = '3';
-  usdiv_optab->libcall_gen = gen_unsigned_fixed_libfunc;
-  sdivmod_optab->libcall_basename = "divmod";
-  sdivmod_optab->libcall_suffix = '4';
-  sdivmod_optab->libcall_gen = gen_int_libfunc;
-  udivmod_optab->libcall_basename = "udivmod";
-  udivmod_optab->libcall_suffix = '4';
-  udivmod_optab->libcall_gen = gen_int_libfunc;
-  smod_optab->libcall_basename = "mod";
-  smod_optab->libcall_suffix = '3';
-  smod_optab->libcall_gen = gen_int_libfunc;
-  umod_optab->libcall_basename = "umod";
-  umod_optab->libcall_suffix = '3';
-  umod_optab->libcall_gen = gen_int_libfunc;
-  ftrunc_optab->libcall_basename = "ftrunc";
-  ftrunc_optab->libcall_suffix = '2';
-  ftrunc_optab->libcall_gen = gen_fp_libfunc;
-  and_optab->libcall_basename = "and";
-  and_optab->libcall_suffix = '3';
-  and_optab->libcall_gen = gen_int_libfunc;
-  ior_optab->libcall_basename = "ior";
-  ior_optab->libcall_suffix = '3';
-  ior_optab->libcall_gen = gen_int_libfunc;
-  xor_optab->libcall_basename = "xor";
-  xor_optab->libcall_suffix = '3';
-  xor_optab->libcall_gen = gen_int_libfunc;
-  ashl_optab->libcall_basename = "ashl";
-  ashl_optab->libcall_suffix = '3';
-  ashl_optab->libcall_gen = gen_int_fixed_libfunc;
-  ssashl_optab->libcall_basename = "ssashl";
-  ssashl_optab->libcall_suffix = '3';
-  ssashl_optab->libcall_gen = gen_signed_fixed_libfunc;
-  usashl_optab->libcall_basename = "usashl";
-  usashl_optab->libcall_suffix = '3';
-  usashl_optab->libcall_gen = gen_unsigned_fixed_libfunc;
-  ashr_optab->libcall_basename = "ashr";
-  ashr_optab->libcall_suffix = '3';
-  ashr_optab->libcall_gen = gen_int_signed_fixed_libfunc;
-  lshr_optab->libcall_basename = "lshr";
-  lshr_optab->libcall_suffix = '3';
-  lshr_optab->libcall_gen = gen_int_unsigned_fixed_libfunc;
-  smin_optab->libcall_basename = "min";
-  smin_optab->libcall_suffix = '3';
-  smin_optab->libcall_gen = gen_int_fp_libfunc;
-  smax_optab->libcall_basename = "max";
-  smax_optab->libcall_suffix = '3';
-  smax_optab->libcall_gen = gen_int_fp_libfunc;
-  umin_optab->libcall_basename = "umin";
-  umin_optab->libcall_suffix = '3';
-  umin_optab->libcall_gen = gen_int_libfunc;
-  umax_optab->libcall_basename = "umax";
-  umax_optab->libcall_suffix = '3';
-  umax_optab->libcall_gen = gen_int_libfunc;
-  neg_optab->libcall_basename = "neg";
-  neg_optab->libcall_suffix = '2';
-  neg_optab->libcall_gen = gen_int_fp_fixed_libfunc;
-  ssneg_optab->libcall_basename = "ssneg";
-  ssneg_optab->libcall_suffix = '2';
-  ssneg_optab->libcall_gen = gen_signed_fixed_libfunc;
-  usneg_optab->libcall_basename = "usneg";
-  usneg_optab->libcall_suffix = '2';
-  usneg_optab->libcall_gen = gen_unsigned_fixed_libfunc;
-  negv_optab->libcall_basename = "neg";
-  negv_optab->libcall_suffix = '2';
-  negv_optab->libcall_gen = gen_intv_fp_libfunc;
-  one_cmpl_optab->libcall_basename = "one_cmpl";
-  one_cmpl_optab->libcall_suffix = '2';
-  one_cmpl_optab->libcall_gen = gen_int_libfunc;
-  ffs_optab->libcall_basename = "ffs";
-  ffs_optab->libcall_suffix = '2';
-  ffs_optab->libcall_gen = gen_int_libfunc;
-  clz_optab->libcall_basename = "clz";
-  clz_optab->libcall_suffix = '2';
-  clz_optab->libcall_gen = gen_int_libfunc;
-  ctz_optab->libcall_basename = "ctz";
-  ctz_optab->libcall_suffix = '2';
-  ctz_optab->libcall_gen = gen_int_libfunc;
-  clrsb_optab->libcall_basename = "clrsb";
-  clrsb_optab->libcall_suffix = '2';
-  clrsb_optab->libcall_gen = gen_int_libfunc;
-  popcount_optab->libcall_basename = "popcount";
-  popcount_optab->libcall_suffix = '2';
-  popcount_optab->libcall_gen = gen_int_libfunc;
-  parity_optab->libcall_basename = "parity";
-  parity_optab->libcall_suffix = '2';
-  parity_optab->libcall_gen = gen_int_libfunc;
-
-  /* Comparison libcalls for integers MUST come in pairs,
-     signed/unsigned.  */
-  cmp_optab->libcall_basename = "cmp";
-  cmp_optab->libcall_suffix = '2';
-  cmp_optab->libcall_gen = gen_int_fp_fixed_libfunc;
-  ucmp_optab->libcall_basename = "ucmp";
-  ucmp_optab->libcall_suffix = '2';
-  ucmp_optab->libcall_gen = gen_int_libfunc;
-
-  /* EQ etc are floating point only.  */
-  eq_optab->libcall_basename = "eq";
-  eq_optab->libcall_suffix = '2';
-  eq_optab->libcall_gen = gen_fp_libfunc;
-  ne_optab->libcall_basename = "ne";
-  ne_optab->libcall_suffix = '2';
-  ne_optab->libcall_gen = gen_fp_libfunc;
-  gt_optab->libcall_basename = "gt";
-  gt_optab->libcall_suffix = '2';
-  gt_optab->libcall_gen = gen_fp_libfunc;
-  ge_optab->libcall_basename = "ge";
-  ge_optab->libcall_suffix = '2';
-  ge_optab->libcall_gen = gen_fp_libfunc;
-  lt_optab->libcall_basename = "lt";
-  lt_optab->libcall_suffix = '2';
-  lt_optab->libcall_gen = gen_fp_libfunc;
-  le_optab->libcall_basename = "le";
-  le_optab->libcall_suffix = '2';
-  le_optab->libcall_gen = gen_fp_libfunc;
-  unord_optab->libcall_basename = "unord";
-  unord_optab->libcall_suffix = '2';
-  unord_optab->libcall_gen = gen_fp_libfunc;
-
-  powi_optab->libcall_basename = "powi";
-  powi_optab->libcall_suffix = '2';
-  powi_optab->libcall_gen = gen_fp_libfunc;
-
-  /* Conversions.  */
-  sfloat_optab->libcall_basename = "float";
-  sfloat_optab->libcall_gen = gen_int_to_fp_conv_libfunc;
-  ufloat_optab->libcall_gen = gen_ufloat_conv_libfunc;
-  sfix_optab->libcall_basename = "fix";
-  sfix_optab->libcall_gen = gen_fp_to_int_conv_libfunc;
-  ufix_optab->libcall_basename = "fixuns";
-  ufix_optab->libcall_gen = gen_fp_to_int_conv_libfunc;
-  lrint_optab->libcall_basename = "lrint";
-  lrint_optab->libcall_gen = gen_int_to_fp_nondecimal_conv_libfunc;
-  lround_optab->libcall_basename = "lround";
-  lround_optab->libcall_gen = gen_int_to_fp_nondecimal_conv_libfunc;
-  lfloor_optab->libcall_basename = "lfloor";
-  lfloor_optab->libcall_gen = gen_int_to_fp_nondecimal_conv_libfunc;
-  lceil_optab->libcall_basename = "lceil";
-  lceil_optab->libcall_gen = gen_int_to_fp_nondecimal_conv_libfunc;
-
-  /* trunc_optab is also used for FLOAT_EXTEND.  */
-  sext_optab->libcall_basename = "extend";
-  sext_optab->libcall_gen = gen_extend_conv_libfunc;
-  trunc_optab->libcall_basename = "trunc";
-  trunc_optab->libcall_gen = gen_trunc_conv_libfunc;
-
-  /* Conversions for fixed-point modes and other modes.  */
-  fract_optab->libcall_basename = "fract";
-  fract_optab->libcall_gen = gen_fract_conv_libfunc;
-  satfract_optab->libcall_basename = "satfract";
-  satfract_optab->libcall_gen = gen_satfract_conv_libfunc;
-  fractuns_optab->libcall_basename = "fractuns";
-  fractuns_optab->libcall_gen = gen_fractuns_conv_libfunc;
-  satfractuns_optab->libcall_basename = "satfractuns";
-  satfractuns_optab->libcall_gen = gen_satfractuns_conv_libfunc;
 
   /* The ffs function operates on `int'.  Fall back on it if we do not
      have a libgcc2 function for that width.  */
@@ -6594,7 +6162,8 @@ init_optabs (void)
   /* Use cabs for double complex abs, since systems generally have cabs.
      Don't define any libcall for float complex, so that cabs will be used.  */
   if (complex_double_type_node)
-    set_optab_libfunc (abs_optab, TYPE_MODE (complex_double_type_node), "cabs");
+    set_optab_libfunc (abs_optab, TYPE_MODE (complex_double_type_node),
+		       "cabs");
 
   abort_libfunc = init_one_libfunc ("abort");
   memcpy_libfunc = init_one_libfunc ("memcpy");
@@ -6686,45 +6255,35 @@ init_sync_libfuncs (int max)
 DEBUG_FUNCTION void
 debug_optab_libfuncs (void)
 {
-  int i;
-  int j;
-  int k;
+  int i, j, k;
 
   /* Dump the arithmetic optabs.  */
-  for (i = 0; i != (int) OTI_MAX; i++)
+  for (i = FIRST_NORM_OPTAB; i <= LAST_NORMLIB_OPTAB; ++i)
     for (j = 0; j < NUM_MACHINE_MODES; ++j)
       {
-	optab o;
-	rtx l;
-
-	o = &optab_table[i];
-	l = optab_libfunc (o, (enum machine_mode) j);
+	rtx l = optab_libfunc ((optab) i, (enum machine_mode) j);
 	if (l)
 	  {
 	    gcc_assert (GET_CODE (l) == SYMBOL_REF);
 	    fprintf (stderr, "%s\t%s:\t%s\n",
-		     GET_RTX_NAME (optab_to_code (o)),
+		     GET_RTX_NAME (optab_to_code ((optab) i)),
 		     GET_MODE_NAME (j),
 		     XSTR (l, 0));
 	  }
       }
 
   /* Dump the conversion optabs.  */
-  for (i = 0; i < (int) COI_MAX; ++i)
+  for (i = FIRST_CONV_OPTAB; i <= LAST_CONVLIB_OPTAB; ++i)
     for (j = 0; j < NUM_MACHINE_MODES; ++j)
       for (k = 0; k < NUM_MACHINE_MODES; ++k)
 	{
-	  convert_optab o;
-	  rtx l;
-
-	  o = &convert_optab_table[i];
-	  l = convert_optab_libfunc (o, (enum machine_mode) j,
-				     (enum machine_mode) k);
+	  rtx l = convert_optab_libfunc ((optab) i, (enum machine_mode) j,
+					 (enum machine_mode) k);
 	  if (l)
 	    {
 	      gcc_assert (GET_CODE (l) == SYMBOL_REF);
 	      fprintf (stderr, "%s\t%s\t%s:\t%s\n",
-		       GET_RTX_NAME (optab_to_code (o)),
+		       GET_RTX_NAME (optab_to_code ((optab) i)),
 		       GET_MODE_NAME (j),
 		       GET_MODE_NAME (k),
 		       XSTR (l, 0));

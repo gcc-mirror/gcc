@@ -55,8 +55,13 @@ enum rtx_code  {
 				   NUM_RTX_CODE.
 				   Assumes default enum value assignment.  */
 
+/* The cast here, saves many elsewhere.  */
 #define NUM_RTX_CODE ((int) LAST_AND_UNUSED_RTX_CODE)
-				/* The cast here, saves many elsewhere.  */
+
+/* Similar, but since generator files get more entries... */
+#ifdef GENERATOR_FILE
+# define NON_GENERATOR_NUM_RTX_CODE ((int) MATCH_OPERAND)
+#endif
 
 /* Register Transfer Language EXPRESSIONS CODE CLASSES */
 

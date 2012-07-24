@@ -889,7 +889,7 @@ OPTIONS_H = options.h flag-types.h $(OPTIONS_H_EXTRA)
 FUNCTION_H = function.h $(HASHTAB_H) vecprim.h $(TM_H) hard-reg-set.h \
 	$(VEC_H) vecir.h $(INPUT_H) $(MACHMODE_H)
 EXPR_H = expr.h insn-config.h $(FUNCTION_H) $(RTL_H) $(FLAGS_H) $(TREE_H) $(MACHMODE_H) $(EMIT_RTL_H)
-OPTABS_H = optabs.h insn-codes.h
+OPTABS_H = optabs.h insn-codes.h insn-opinit.h
 REGS_H = regs.h $(MACHMODE_H) hard-reg-set.h
 SCHED_INT_H = sched-int.h $(INSN_ATTR_H) $(BASIC_BLOCK_H) $(RTL_H) $(DF_H) \
 	vecprim.h $(REGSET_H)
@@ -1484,7 +1484,7 @@ BACKEND = libbackend.a main.o @TREEBROWSER@ libcommon-target.a libcommon.a \
 MOSTLYCLEANFILES = insn-flags.h insn-config.h insn-codes.h \
  insn-output.c insn-recog.c insn-emit.c insn-extract.c insn-peep.c \
  insn-attr.h insn-attr-common.h insn-attrtab.c insn-dfatab.c \
- insn-latencytab.c insn-opinit.c insn-preds.c insn-constants.h \
+ insn-latencytab.c insn-opinit.c insn-opinit.h insn-preds.c insn-constants.h \
  tm-preds.h tm-constrs.h checksum-options \
  tree-check.h min-insn-modes.c insn-modes.c insn-modes.h \
  genrtl.h gt-*.h gtype-*.h gtype-desc.c gtyp-input.list \
@@ -3430,7 +3430,7 @@ insn-modes.o : insn-modes.c $(CONFIG_H) $(SYSTEM_H) coretypes.h	$(TM_H) \
   $(MACHMODE_H)
 insn-opinit.o : insn-opinit.c $(CONFIG_H) $(SYSTEM_H) coretypes.h	\
   $(TM_H) $(RTL_H) $(TM_P_H) insn-config.h $(FLAGS_H) $(RECOG_H)	\
-  $(EXPR_H) $(OPTABS_H) reload.h
+  $(EXPR_H) $(OPTABS_H)
 insn-output.o : insn-output.c $(CONFIG_H) $(SYSTEM_H) coretypes.h	\
   $(TM_H) $(RTL_H) $(GGC_H) $(REGS_H) conditions.h			\
   hard-reg-set.h insn-config.h $(INSN_ATTR_H) $(EXPR_H) output.h	\
@@ -3459,7 +3459,7 @@ simple_rtl_generated_h	= insn-attr.h insn-attr-common.h insn-codes.h \
 			  insn-config.h insn-flags.h
 
 simple_rtl_generated_c	= insn-automata.c insn-emit.c \
-			  insn-extract.c insn-opinit.c insn-output.c \
+			  insn-extract.c insn-output.c \
 			  insn-peep.c insn-recog.c
 
 simple_generated_h	= $(simple_rtl_generated_h) insn-constants.h
@@ -3505,6 +3505,15 @@ s-attrtab : $(MD_DEPS) build/genattrtab$(build_exeext) \
 	$(SHELL) $(srcdir)/../move-if-change tmp-dfatab.c     insn-dfatab.c
 	$(SHELL) $(srcdir)/../move-if-change tmp-latencytab.c insn-latencytab.c
 	$(STAMP) s-attrtab
+
+# genopinit produces two files.
+insn-opinit.c insn-opinit.h: s-opinit ; @true
+s-opinit: $(MD_DEPS) build/genopinit$(build_exeext) insn-conditions.md
+	$(RUN_GEN) build/genopinit$(build_exeext) $(md_file) \
+	  insn-conditions.md -htmp-opinit.h -ctmp-opinit.c
+	$(SHELL) $(srcdir)/../move-if-change tmp-opinit.h insn-opinit.h
+	$(SHELL) $(srcdir)/../move-if-change tmp-opinit.c insn-opinit.c
+	$(STAMP) s-opinit
 
 # gencondmd doesn't use the standard naming convention.
 build/gencondmd.c: s-conditions; @true
@@ -3859,7 +3868,7 @@ build/genmddeps.o: genmddeps.c $(BCONFIG_H) $(SYSTEM_H) coretypes.h	\
 build/genmodes.o : genmodes.c $(BCONFIG_H) $(SYSTEM_H) errors.h		\
   $(HASHTAB_H) machmode.def $(extra_modes_file)
 build/genopinit.o : genopinit.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
-  coretypes.h $(GTM_H) errors.h gensupport.h
+  coretypes.h $(GTM_H) errors.h gensupport.h optabs.def
 build/genoutput.o : genoutput.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
   coretypes.h $(GTM_H) errors.h $(READ_MD_H) gensupport.h
 build/genpeep.o : genpeep.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
