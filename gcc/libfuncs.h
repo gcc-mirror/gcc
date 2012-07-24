@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_LIBFUNCS_H
 
 #include "hashtab.h"
+#include "optabs.h"
 
 /* Enumeration of indexes into libfunc_table.  */
 enum libfunc_index

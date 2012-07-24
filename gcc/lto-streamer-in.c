@@ -38,7 +38,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "ggc.h"
 #include "diagnostic.h"
-#include "libfuncs.h"
 #include "except.h"
 #include "debug.h"
 #include "vec.h"
