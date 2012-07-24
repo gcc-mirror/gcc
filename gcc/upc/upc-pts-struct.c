@@ -577,16 +577,30 @@ upc_pts_struct_build_cvt (location_t loc, tree exp)
   return result;
 }
 
-/* Rewrite op0 CMP op1 into a field by field
-   comparison of the UPC pointer-to-shared operands
-   in the following order: vaddr, thread, phase.  */
+
+/* Expand the expression EXP, which is a comparison between two
+   UPC pointers-to-shared.
+
+   Per 6.4.2p6:
+   Two compatible pointers-to-shared which point to the same object
+   (i.e.  having the same address and thread components) shall compare
+   as equal according to == and !=, regardless of whether the phase
+   components match.
+
+   Thus, for the equality comparison, the phase component of the
+   pointers is omitted from the comparison.  In that case,
+   rewrite the pointer-to-shared comparison operation into a
+   field by field comparison of the UPC pointer-to-shared operands
+   in the following order: (vaddr, thread).
+
+   If the bit-wise comparison cannot be performed, then the difference
+   between the pointers is compared to zero.  */
 
 static tree
 upc_pts_struct_build_cond_expr (location_t loc, tree exp)
 {
   tree result;
   const enum tree_code code = TREE_CODE (exp);
-  const int is_bitwise_cmp = (code == EQ_EXPR || code == NE_EXPR);
   tree op0 = TREE_OPERAND (exp, 0);
   tree op1 = TREE_OPERAND (exp, 1);
   const tree type0 = TREE_TYPE (op0);
@@ -605,8 +619,10 @@ upc_pts_struct_build_cond_expr (location_t loc, tree exp)
       const tree bs1 = upc_get_block_factor (ttype1);
       const int has_phase0 = !(integer_zerop (bs0) || integer_onep (bs0));
       const int has_phase1 = !(integer_zerop (bs1) || integer_onep (bs1));
-      const int has_phase = has_phase0 && has_phase1;
-      if (is_bitwise_cmp)
+      const int has_phase = has_phase0 || has_phase1;
+      const int is_eq_op = (code == EQ_EXPR || code == NE_EXPR);
+      const int is_vaddr_thread_cmp = !has_phase || is_eq_op;
+      if (is_vaddr_thread_cmp)
 	{
 	  const tree t_t = TREE_TYPE (upc_thread_field_node);
 	  const tree v_t = TREE_TYPE (upc_vaddr_field_node);
@@ -639,19 +655,6 @@ upc_pts_struct_build_cond_expr (location_t loc, tree exp)
 	    const tree thread_cmp =
 	      build_binary_op (loc, code, thread0, thread1, 0);
 	    result = build_binary_op (loc, tcode, off_cmp, thread_cmp, 0);
-	    if (has_phase)
-	      {
-		const tree p_t = TREE_TYPE (upc_phase_field_node);
-		const tree phase0 = build3 (COMPONENT_REF, p_t, op0,
-					    upc_phase_field_node,
-					    NULL_TREE);
-		const tree phase1 = build3 (COMPONENT_REF, p_t, op1,
-					    upc_phase_field_node,
-					    NULL_TREE);
-		const tree phase_cmp =
-		  build_binary_op (loc, code, phase0, phase1, 0);
-		result = build_binary_op (loc, tcode, result, phase_cmp, 0);
-	      }
 	    /* Remove possible C_MAYBE_EXPR operands. */
 	    result = c_fully_fold (result, 0, NULL);
 	    result = gimple_boolify (result);

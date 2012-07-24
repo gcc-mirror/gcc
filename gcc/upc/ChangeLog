@@ -1,3 +1,16 @@
+2012-07-24  Gary Funck  <gary@intrepid.com>
+
+	Per UPC spec. 6.4.2p6, ignore the value of the
+	phase of a pointer-to-shared, when comparing for
+	equal or not equal.
+	* upc-pts-packed.c (upc_pts_packed_build_cond_expr):
+	Use bit-wise comparison only if the UPC pointer-to-shared
+	target type has a block size <= 1 and the representation
+	has vaddr first or the comparison is for equality/inequality.
+	* upc-pts-struct.c (upc_pts_struct_build_cond_expr):
+	Use (vaddr, thread) comparison only if the UPC pointer-to-shared
+	has a block size <= 1 or the comparison is for equality/inequality.
+	
 2012-07-04  Gary Funck  <gary@intrepid.com>
 
 	* config-lang.in: Adjust for move of C front-end files.

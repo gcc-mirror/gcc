@@ -571,11 +571,20 @@ upc_pts_packed_build_cvt (location_t loc, tree exp)
 /* Expand the expression EXP, which is a comparison between two
    UPC pointers-to-shared.
 
-   When a UPC pointer-to-shared is represented as (vaddr, thread, phase)
-   the comparison can be done all at once, when comparing
-   for equality.  For the 'packed' representation, we can
-   use a straight integer comparison of the representation types.  */
+   Per 6.4.2p6:
+   Two compatible pointers-to-shared which point to the same object
+   (i.e.  having the same address and thread components) shall compare
+   as equal according to == and !=, regardless of whether the phase
+   components match.
 
+   When a UPC pointer-to-shared is represented as (vaddr, thread, phase)
+   and the underlying pointer component types have a block size <=1,
+   we can use a straight unsigned integer comparison of the
+   representation types.  Otherwise, if vaddr comes
+   last, then the straight bit-wise comparison works only for equality.
+
+   For the equality operation when the block size is greater than 1,
+   the phase field is first masked off.  */
 static tree
 upc_pts_packed_build_cond_expr (location_t loc, tree exp)
 {
@@ -601,9 +610,10 @@ upc_pts_packed_build_cond_expr (location_t loc, tree exp)
       const tree bs1 = upc_get_block_factor (elem_type1);
       const int has_phase0 = !(integer_zerop (bs0) || integer_onep (bs0));
       const int has_phase1 = !(integer_zerop (bs1) || integer_onep (bs1));
-      const int has_phase = has_phase0 && has_phase1;
-      const int is_bitwise_cmp = ((code == EQ_EXPR || code == NE_EXPR)
-				  || (!has_phase && UPC_PTS_VADDR_FIRST));
+      const int has_phase = has_phase0 || has_phase1;
+      const int is_eq_op = (code == EQ_EXPR || code == NE_EXPR);
+      const int is_bitwise_cmp = is_eq_op
+                                 || (!has_phase && UPC_PTS_VADDR_FIRST);
       if (is_bitwise_cmp)
 	{
 	  if (ttcode0 == VIEW_CONVERT_EXPR
@@ -616,6 +626,17 @@ upc_pts_packed_build_cond_expr (location_t loc, tree exp)
 	    op1 = TREE_OPERAND (op1, 0);
 	  else
 	    op1 = build1 (VIEW_CONVERT_EXPR, upc_pts_rep_type_node, op1);
+          if (is_eq_op)
+	    {
+	      /* Mask off the phase value.  */
+	      const_tree phase_mask =
+	        fold_build1_loc (loc, BIT_NOT_EXPR, upc_pts_rep_type_node,
+		        build_binary_op (loc, LSHIFT_EXPR,
+			                 upc_phase_mask_node,
+		                         upc_phase_shift_node, 0));
+	      op0 = build_binary_op (loc, BIT_AND_EXPR, op0, phase_mask, 0);
+	      op1 = build_binary_op (loc, BIT_AND_EXPR, op1, phase_mask, 0);
+	    }
 	}
       else
 	{
