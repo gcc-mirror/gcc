@@ -1,3 +1,9 @@
+2012-07-24  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+	PR target/54051
+	* gcc.target/arm/pr54051.c: New.
+	* gcc.target/arm/vfp-1.c: Adjust test.
+
 2012-07-24  Julian Brown  <julian@codesourcery.com>
 
 	* lib/target-supports.exp (check_effective_target_arm_hf_eabi): New.

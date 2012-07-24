@@ -1,6 +1,18 @@
+2012-07-24  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+	PR target/54051
+	* config/arm/arm.c (arm_print_operand_address): Remove superfluous
+	printing of 0.
+	* config/arm/neon.md ("neon_vld3_lane<mode>":VD): Remove alignment
+	specifier.
+	("neon_vld3_lane<mode>":VMQ): Likewise.
+	("neon_vld3_dup<mode>":VDX): Likewise.
+	("neon_vst3_lane<mode>":VD): Likewise.
+	("neon_vst3_lane<mode>":VMQ): Likewise.
+
 2012-07-24  Roland McGrath  <mcgrathr@google.com>
 
-	* arm.c (arm_get_frame_offsets): Don't use fixed regs for 
+	* arm.c (arm_get_frame_offsets): Don't use fixed regs for
 	stack alignment padding.
 
 2012-07-24  Uros Bizjak  <ubizjak@gmail.com>
