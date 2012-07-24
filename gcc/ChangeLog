@@ -1,3 +1,9 @@
+2012-07-24  Jason Merrill  <jason@redhat.com>
+
+	* bitmap.c (bitmap_descriptor): Adjust order of parameters to
+	match MEM_STAT_DECL.
+	* statistics.h (ALONE_FINAL_MEM_STAT_DECL): Correct typo.
+
 2012-07-24  Richard Henderson  <rth@redhat.com>
 
 	* optabs.h (struct optab_d): Rename code member to code_.
