@@ -66,14 +66,12 @@ static tree dfs_get_pure_virtuals (tree, void *);
 
 
 /* Variables for gathering statistics.  */
-#ifdef GATHER_STATISTICS
 static int n_fields_searched;
 static int n_calls_lookup_field, n_calls_lookup_field_1;
 static int n_calls_lookup_fnfields, n_calls_lookup_fnfields_1;
 static int n_calls_get_base_type;
 static int n_outer_fields_searched;
 static int n_contexts_saved;
-#endif /* GATHER_STATISTICS */
 
 
 /* Data for lookup_base and its workers.  */
@@ -407,9 +405,8 @@ lookup_field_1 (tree type, tree name, bool want_type)
 	{
 	  i = (lo + hi) / 2;
 
-#ifdef GATHER_STATISTICS
-	  n_fields_searched++;
-#endif /* GATHER_STATISTICS */
+	  if (GATHER_STATISTICS)
+	    n_fields_searched++;
 
 	  if (DECL_NAME (fields[i]) > name)
 	    hi = i;
@@ -454,16 +451,16 @@ lookup_field_1 (tree type, tree name, bool want_type)
 
   field = TYPE_FIELDS (type);
 
-#ifdef GATHER_STATISTICS
-  n_calls_lookup_field_1++;
-#endif /* GATHER_STATISTICS */
+  if (GATHER_STATISTICS)
+    n_calls_lookup_field_1++;
+
   for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
     {
       tree decl = field;
 
-#ifdef GATHER_STATISTICS
-      n_fields_searched++;
-#endif /* GATHER_STATISTICS */
+      if (GATHER_STATISTICS)
+	n_fields_searched++;
+
       gcc_assert (DECL_P (field));
       if (DECL_NAME (field) == NULL_TREE
 	  && ANON_AGGR_TYPE_P (TREE_TYPE (field)))
@@ -1203,9 +1200,8 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type,
   if (!basetype_path)
     return NULL_TREE;
 
-#ifdef GATHER_STATISTICS
-  n_calls_lookup_field++;
-#endif /* GATHER_STATISTICS */
+  if (GATHER_STATISTICS)
+    n_calls_lookup_field++;
 
   memset (&lfi, 0, sizeof (lfi));
   lfi.type = type;
@@ -1370,9 +1366,8 @@ lookup_fnfields_idx_nolazy (tree type, tree name)
   if (!method_vec)
     return -1;
 
-#ifdef GATHER_STATISTICS
-  n_calls_lookup_fnfields_1++;
-#endif /* GATHER_STATISTICS */
+  if (GATHER_STATISTICS)
+    n_calls_lookup_fnfields_1++;
 
   /* Constructors are first...  */
   if (name == ctor_identifier)
@@ -1408,9 +1403,8 @@ lookup_fnfields_idx_nolazy (tree type, tree name)
 	{
 	  i = (lo + hi) / 2;
 
-#ifdef GATHER_STATISTICS
-	  n_outer_fields_searched++;
-#endif /* GATHER_STATISTICS */
+	  if (GATHER_STATISTICS)
+	    n_outer_fields_searched++;
 
 	  tmp = VEC_index (tree, method_vec, i);
 	  tmp = DECL_NAME (OVL_CURRENT (tmp));
@@ -1425,9 +1419,8 @@ lookup_fnfields_idx_nolazy (tree type, tree name)
   else
     for (; VEC_iterate (tree, method_vec, i, fn); ++i)
       {
-#ifdef GATHER_STATISTICS
-	n_outer_fields_searched++;
-#endif /* GATHER_STATISTICS */
+	if (GATHER_STATISTICS)
+	  n_outer_fields_searched++;
 	if (DECL_NAME (OVL_CURRENT (fn)) == name)
 	  return i;
       }
@@ -2207,28 +2200,28 @@ note_debug_info_needed (tree type)
 void
 print_search_statistics (void)
 {
-#ifdef GATHER_STATISTICS
+  if (! GATHER_STATISTICS)
+    {
+      fprintf (stderr, "no search statistics\n");
+      return;
+    }
+
   fprintf (stderr, "%d fields searched in %d[%d] calls to lookup_field[_1]\n",
 	   n_fields_searched, n_calls_lookup_field, n_calls_lookup_field_1);
   fprintf (stderr, "%d fnfields searched in %d calls to lookup_fnfields\n",
 	   n_outer_fields_searched, n_calls_lookup_fnfields);
   fprintf (stderr, "%d calls to get_base_type\n", n_calls_get_base_type);
-#else /* GATHER_STATISTICS */
-  fprintf (stderr, "no search statistics\n");
-#endif /* GATHER_STATISTICS */
 }
 
 void
 reinit_search_statistics (void)
 {
-#ifdef GATHER_STATISTICS
   n_fields_searched = 0;
   n_calls_lookup_field = 0, n_calls_lookup_field_1 = 0;
   n_calls_lookup_fnfields = 0, n_calls_lookup_fnfields_1 = 0;
   n_calls_get_base_type = 0;
   n_outer_fields_searched = 0;
   n_contexts_saved = 0;
-#endif /* GATHER_STATISTICS */
 }
 
 /* Helper for lookup_conversions_r.  TO_TYPE is the type converted to

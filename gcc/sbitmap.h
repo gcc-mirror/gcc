@@ -25,16 +25,8 @@ along with GCC; see the file COPYING3.  If not see
    It should be straightforward to convert so for now we keep things simple
    while more important issues are dealt with.  */
 
-#define SBITMAP_ELT_BITS ((unsigned) HOST_BITS_PER_WIDEST_FAST_INT)
+#define SBITMAP_ELT_BITS (HOST_BITS_PER_WIDEST_FAST_INT * 1u)
 #define SBITMAP_ELT_TYPE unsigned HOST_WIDEST_FAST_INT
-
-/* Can't use SBITMAP_ELT_BITS in this macro because it contains a
-   cast.  There is no perfect macro in GCC to test against.  This
-   suffices for roughly 99% of the hosts we run on, and the rest
-   don't have 256 bit integers.  */
-#if HOST_BITS_PER_WIDEST_FAST_INT > 255
-#error Need to increase size of datatype used for popcount
-#endif
 
 struct simple_bitmap_def
 {

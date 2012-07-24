@@ -23,10 +23,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "sbitmap.h"
 
+/* This suffices for roughly 99% of the hosts we run on, and the rest
+   don't have 256 bit integers.  */
+#if SBITMAP_ELT_BITS > 255
+#error Need to increase size of datatype used for popcount
+#endif
+
 #if GCC_VERSION >= 3400
-#  if HOST_BITS_PER_WIDEST_FAST_INT == HOST_BITS_PER_LONG
+#  if SBITMAP_ELT_BITS == HOST_BITS_PER_LONG
 #    define do_popcount(x) __builtin_popcountl(x)
-#  elif HOST_BITS_PER_WIDEST_FAST_INT == HOST_BITS_PER_LONGLONG
+#  elif SBITMAP_ELT_BITS == HOST_BITS_PER_LONGLONG
 #    define do_popcount(x) __builtin_popcountll(x)
 #  else
 #    error "internal error: sbitmap.h and hwint.h are inconsistent"

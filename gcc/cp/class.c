@@ -212,7 +212,6 @@ static tree get_vcall_index (tree, tree);
 
 /* Variables shared between class.c and call.c.  */
 
-#ifdef GATHER_STATISTICS
 int n_vtables = 0;
 int n_vtable_entries = 0;
 int n_vtable_searches = 0;
@@ -220,7 +219,6 @@ int n_vtable_elems = 0;
 int n_convert_harshness = 0;
 int n_compute_conversion_costs = 0;
 int n_inner_fields_searched = 0;
-#endif
 
 /* Convert to or from a base subobject.  EXPR is an expression of type
    `A' or `A*', an expression of type `B' or `B*' is returned.  To
@@ -836,10 +834,11 @@ build_primary_vtable (tree binfo, tree type)
       virtuals = NULL_TREE;
     }
 
-#ifdef GATHER_STATISTICS
-  n_vtables += 1;
-  n_vtable_elems += list_length (virtuals);
-#endif
+  if (GATHER_STATISTICS)
+    {
+      n_vtables += 1;
+      n_vtable_elems += list_length (virtuals);
+    }
 
   /* Initialize the association list for this type, based
      on our first approximation.  */
@@ -7332,7 +7331,9 @@ get_vfield_name (tree type)
 void
 print_class_statistics (void)
 {
-#ifdef GATHER_STATISTICS
+  if (! GATHER_STATISTICS)
+    return;
+
   fprintf (stderr, "convert_harshness = %d\n", n_convert_harshness);
   fprintf (stderr, "compute_conversion_costs = %d\n", n_compute_conversion_costs);
   if (n_vtables)
@@ -7342,7 +7343,6 @@ print_class_statistics (void)
       fprintf (stderr, "vtable entries = %d; vtable elems = %d\n",
 	       n_vtable_entries, n_vtable_elems);
     }
-#endif
 }
 
 /* Build a dummy reference to ourselves so Derived::Base (and A::A) works,

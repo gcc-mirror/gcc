@@ -61,10 +61,8 @@ along with GCC; see the file COPYING3.  If not see
    numbers after the special ones.  */
 #define UNUSED_NAME_VERSION 0
 
-#ifdef GATHER_STATISTICS
 unsigned int ssa_name_nodes_reused;
 unsigned int ssa_name_nodes_created;
-#endif
 
 /* Initialize management of SSA_NAMEs to default SIZE.  If SIZE is
    zero use default.  */
@@ -101,14 +99,12 @@ fini_ssanames (void)
 
 /* Dump some simple statistics regarding the re-use of SSA_NAME nodes.  */
 
-#ifdef GATHER_STATISTICS
 void
 ssanames_print_statistics (void)
 {
   fprintf (stderr, "SSA_NAME nodes allocated: %u\n", ssa_name_nodes_created);
   fprintf (stderr, "SSA_NAME nodes reused: %u\n", ssa_name_nodes_reused);
 }
-#endif
 
 /* Return an SSA_NAME node for variable VAR defined in statement STMT
    in function FN.  STMT may be an empty statement for artificial
@@ -127,9 +123,8 @@ make_ssa_name_fn (struct function *fn, tree var, gimple stmt)
   if (!VEC_empty (tree, FREE_SSANAMES (fn)))
     {
       t = VEC_pop (tree, FREE_SSANAMES (fn));
-#ifdef GATHER_STATISTICS
-      ssa_name_nodes_reused++;
-#endif
+      if (GATHER_STATISTICS)
+	ssa_name_nodes_reused++;
 
       /* The node was cleared out when we put it on the free list, so
 	 there is no need to do so again here.  */
@@ -141,9 +136,8 @@ make_ssa_name_fn (struct function *fn, tree var, gimple stmt)
       t = make_node (SSA_NAME);
       SSA_NAME_VERSION (t) = VEC_length (tree, SSANAMES (fn));
       VEC_safe_push (tree, gc, SSANAMES (fn), t);
-#ifdef GATHER_STATISTICS
-      ssa_name_nodes_created++;
-#endif
+      if (GATHER_STATISTICS)
+	ssa_name_nodes_created++;
     }
 
   TREE_TYPE (t) = TREE_TYPE (var);
