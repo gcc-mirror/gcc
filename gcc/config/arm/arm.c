@@ -16178,7 +16178,11 @@ arm_get_frame_offsets (void)
 	  else
 	    for (i = 4; i <= (TARGET_THUMB1 ? LAST_LO_REGNUM : 11); i++)
 	      {
-		if ((offsets->saved_regs_mask & (1 << i)) == 0)
+		/* Avoid fixed registers; they may be changed at
+		   arbitrary times so it's unsafe to restore them
+		   during the epilogue.  */
+		if (!fixed_regs[i]
+		    && (offsets->saved_regs_mask & (1 << i)) == 0)
 		  {
 		    reg = i;
 		    break;
