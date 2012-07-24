@@ -140,11 +140,10 @@ create_alloc_pool (const char *name, size_t size, size_t num)
   /* Now align the size to a multiple of 4.  */
   size = align_eight (size);
 
-  if (ENABLE_CHECKING)
-    {
-      /* Add the aligned size of ID.  */
-      size += offsetof (allocation_object, u.data);
-    }
+#ifdef ENABLE_CHECKING
+  /* Add the aligned size of ID.  */
+  size += offsetof (allocation_object, u.data);
+#endif
 
   /* Um, we can't really allocate 0 elements per block.  */
   gcc_checking_assert (num);
