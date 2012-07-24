@@ -52,7 +52,7 @@ enum libfunc_index
    for normal optabs and conversion optabs.  In the first case mode2
    is unused.  */
 struct GTY(()) libfunc_entry {
-  size_t optab;
+  optab op;
   enum machine_mode mode1, mode2;
   rtx libfunc;
 };

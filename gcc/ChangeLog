@@ -1,3 +1,139 @@
+2012-07-24  Richard Henderson  <rth@redhat.com>
+
+	* optabs.def: New file.
+	* Makefile.in (OPTABS_H): Add insn-opinit.h.
+	(MOSTLYCLEANFILES): Likewise.
+	(insn-opinit.o): Remove reload.h
+	(simple_rtl_generated_c): Remove insn-opinit.c.
+	(s-opinit): New rule.
+	(build/genopinit.o): Add optabs.def.
+	* genopinit.c (rtx_upname): New.
+	(optabs): Extract to optabs.def
+	(enum optab_tag, struct optab_def_d, optabs): New.
+	(struct pattern_d, patterns): New.
+	(match_pattern): Split out from ...
+	(gen_insn): ... here.  Push matches on patterns vec.
+	(pattern_cmp, optab_kind_cmp, optab_rcode_cmp): New.
+	(header_file_name, source_file_name, handle_arg): New.
+	(open_outfile): New.
+	(main): Sort and emit new tables.  Generate lookup_handler,
+	raw_optab_handler, swap_optab_enable.
+	* libfuncs.h (libfunc_entry): Change "size_t optab" to "optab op".
+	* optabs.c (code_to_optab_): Remove.
+	(hash_libfunc): Update for optab name change.
+	(eq_libfunc): Likewise.
+	(convert_optab_libfunc): Update computation of optab member;
+	use the new convlib_def table.
+	(optab_libfunc): Similarly.
+	(set_optab_libfunc, set_conv_libfunc): Likewise.
+	(sign_expand_binop): Use swap_optab_enable instead of fake optabs.
+	(init_insn_codes, init_optab, init_optabv, init_convert_optab): Remove.
+	(init_optabs): Don't call them; export the data to optabs.def.
+	(gen_int_libfunc, gen_fp_libfunc): Export non-static.
+	(gen_fixed_libfunc, gen_signed_fixed_libfunc): Likewise.
+	(gen_unsigned_fixed_libfunc, gen_int_fp_libfunc): Likewise.
+	(gen_intv_fp_libfunc, gen_int_fp_fixed_libfunc): Likewise.
+	(gen_int_fp_signed_fixed_libfunc, gen_int_fixed_libfunc): Likewise.
+	(gen_int_signed_fixed_libfunc): Likewise.
+	(gen_int_unsigned_fixed_libfunc): Likewise.
+	(gen_interclass_conv_libfunc, gen_int_to_fp_conv_libfunc): Likewise.
+	(gen_ufloat_conv_libfunc): Likewise.
+	(gen_int_to_fp_nondecimal_conv_libfunc): Likewise.
+	(gen_fp_to_int_conv_libfunc, gen_intraclass_conv_libfunc): Likewise.
+	(gen_trunc_conv_libfunc, gen_extend_conv_libfunc): Likewise.
+	(gen_fract_conv_libfunc, gen_fractuns_conv_libfunc): Likewise.
+	(gen_satfract_conv_libfunc, gen_satfractuns_conv_libfunc): Likewise.
+	(debug_optab_libfuncs): Update for optab representation change.
+	* optabs.h: Include insn-opinit.h.
+	(optab, convert_optab, direct_optab): New typedefs.
+	(struct optab_handlers, struct widening_optab_handlers): Remove.
+	(struct optab_libcall_d): Rename from optab_d; remove code_,
+	handlers, widening members.
+	(struct convert_optab_libcall_d): Rename from convert_optab_d;
+	remove code_ and handlers members.
+	(enum optab_index, enum convert_optab_index): Remove.
+	(enum direct_optab_index): Remove.
+	(code_to_optab_): Fix array range.
+	(optab_to_code): Covert to inline function.
+	(optab_to_code_, convlib_def, normlib_def): Declare.
+	(raw_optab_handler, swap_optab_enable): Declare.
+	(unknown_optab): Remove; export to optabs.def
+	(ssadd_optab, usadd_optab, sssub_optab, ussub_optab, ssmul_optab,
+	usmul_optab, ssdiv_optab, usdiv_optab, ssneg_optab, usneg_optab,
+	ssashl_optab, usashl_optab, add_optab, sub_optab, smul_optab,
+	addv_optab, subv_optab, smul_highpart_optab, umul_highpart_optab,
+	smul_widen_optab, umul_widen_optab, usmul_widen_optab,
+	smadd_widen_optab, umadd_widen_optab, ssmadd_widen_optab,
+	usmadd_widen_optab, smsub_widen_optab, umsub_widen_optab,
+	ssmsub_widen_optab, usmsub_widen_optab, sdiv_optab, smulv_optab,
+	sdivv_optab, sdivmod_optab, udiv_optab, udivmod_optab, smod_optab,
+	umod_optab, fmod_optab, remainder_optab, ftrunc_optab, and_optab,
+	ior_optab, xor_optab, ashl_optab, lshr_optab, ashr_optab, rotl_optab,
+	rotr_optab, vashl_optab, vlshr_optab, vashr_optab, vrotl_optab,
+	vrotr_optab, smin_optab, smax_optab, umin_optab, umax_optab, pow_optab,
+	atan2_optab, fma_optab, fms_optab, fnma_optab, fnms_optab, mov_optab,
+	movstrict_optab, movmisalign_optab, storent_optab, neg_optab,
+	negv_optab, abs_optab, absv_optab, one_cmpl_optab, bswap_optab,
+	ffs_optab, clz_optab, ctz_optab, clrsb_optab, popcount_optab,
+	parity_optab, sqrt_optab, sincos_optab, sin_optab, asin_optab,
+	cos_optab, acos_optab, exp_optab, exp10_optab, exp2_optab, expm1_optab,
+	ldexp_optab, scalb_optab, significand_optab, logb_optab, ilogb_optab,
+	log_optab, log10_optab, log2_optab, log1p_optab, floor_optab,
+	ceil_optab, btrunc_optab, round_optab, nearbyint_optab, rint_optab,
+	tan_optab, atan_optab, copysign_optab, signbit_optab, isinf_optab,
+	cmp_optab, ucmp_optab, eq_optab, ne_optab, gt_optab, ge_optab,
+	lt_optab, le_optab, unord_optab, strlen_optab, cbranch_optab,
+	cmov_optab, cstore_optab, ctrap_optab, push_optab, addcc_optab,
+	reduc_smax_optab, reduc_umax_optab, reduc_smin_optab, reduc_umin_optab,
+	reduc_splus_optab, reduc_uplus_optab, ssum_widen_optab,
+	usum_widen_optab, sdot_prod_optab, udot_prod_optab, vec_set_optab,
+	vec_extract_optab, vec_init_optab, vec_shl_optab, vec_shr_optab,
+	vec_realign_load_optab, vec_widen_umult_hi_optab,
+	vec_widen_umult_lo_optab, vec_widen_smult_hi_optab,
+	vec_widen_smult_lo_optab, vec_widen_umult_even_optab,
+	vec_widen_umult_odd_optab, vec_widen_smult_even_optab,
+	vec_widen_smult_odd_optab, vec_widen_ushiftl_hi_optab,
+	vec_widen_ushiftl_lo_optab, vec_widen_sshiftl_hi_optab,
+	vec_widen_sshiftl_lo_optab, vec_unpacks_hi_optab, vec_unpacks_lo_optab,
+	vec_unpacku_hi_optab, vec_unpacku_lo_optab, vec_unpacks_float_hi_optab,
+	vec_unpacks_float_lo_optab, vec_unpacku_float_hi_optab,
+	vec_unpacku_float_lo_optab, vec_pack_trunc_optab, vec_pack_ssat_optab,
+	vec_pack_usat_optab, vec_pack_sfix_trunc_optab,
+	vec_pack_ufix_trunc_optab, powi_optab, sync_compare_and_swap_optab,
+	sync_lock_test_and_set_optab, sync_old_add_optab, sync_old_sub_optab,
+	sync_old_ior_optab, sync_old_and_optab, sync_old_xor_optab,
+	sync_old_nand_optab, sync_new_add_optab, sync_new_sub_optab,
+	sync_new_ior_optab, sync_new_and_optab, sync_new_xor_optab,
+	sync_new_nand_optab, sext_optab, zext_optab, trunc_optab, sfix_optab,
+	ufix_optab, sfixtrunc_optab, ufixtrunc_optab, sfloat_optab,
+	ufloat_optab, lrint_optab, lround_optab, lfloor_optab, lceil_optab,
+	fract_optab, fractuns_optab, satfract_optab, satfractuns_optab,
+	vec_load_lanes_optab, vec_store_lanes_optab, vcond_optab, vcondu_optab,
+	movcc_optab, reload_in_optab, reload_out_optab, movmem_optab,
+	setmem_optab, cmpstr_optab, cmpstrn_optab, cmpmem_optab,
+	sync_lock_release_optab, sync_add_optab, sync_sub_optab,
+	sync_ior_optab, sync_and_optab, sync_xor_optab, sync_nand_optab,
+	atomic_exchange_optab, atomic_compare_and_swap_optab,
+	atomic_load_optab, atomic_store_optab, atomic_add_fetch_optab,
+	atomic_sub_fetch_optab, atomic_and_fetch_optab,
+	atomic_nand_fetch_optab, atomic_xor_fetch_optab, atomic_or_fetch_optab,
+	atomic_fetch_add_optab, atomic_fetch_sub_optab, atomic_fetch_and_optab,
+	atomic_fetch_nand_optab, atomic_fetch_xor_optab, atomic_fetch_or_optab,
+	atomic_add_optab, atomic_sub_optab, atomic_and_optab,
+	atomic_nand_optab, atomic_xor_optab, atomic_or_optab,
+	atomic_always_lock_free_optab, atomic_is_lock_free_optab,
+	atomic_thread_fence_optab, atomic_signal_fence_optab,
+	vec_perm_optab, vec_perm_const_optab): Likewise.
+	(struct target_optabs): Remove x_optab_table, x_convert_optab_table,
+	and x_direct_optab_table members; add pat_enable.
+	(optab_table, convert_optab_table, direct_optab_table): Remove.
+	(optab_handler): Use raw_optab_handler.
+	(widening_optab_handler, convert_optab_handler): Likewise.
+	(set_optab_handler, set_widening_optab_handler): Remove.
+	(set_convert_optab_handler, set_direct_optab_handler): Remove.
+	(direct_optab_handler): Defer to optab_handler.
+	* rtl.h (NON_GENERATOR_NUM_RTX_CODE): New.
+
 2012-07-24  Jason Merrill  <jason@redhat.com>
 
 	* bitmap.c (bitmap_descriptor): Adjust order of parameters to
