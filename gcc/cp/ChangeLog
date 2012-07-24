@@ -1,15 +1,20 @@
+2012-07-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* pt.c (convert_template_argument, tsubst): Simplify fourth argument
+	to make_typename_type (complain & tf_error -> complain).
+
 2012-07-24  Steven Bosscher  <steven@gcc.gnu.org>
 
-	* cp/class.c (n_vtables, n_vtable_entries, n_vtable_searches,
+	* class.c (n_vtables, n_vtable_entries, n_vtable_searches,
 	n_vtable_elems, n_convert_harshness, n_compute_conversion_costs,
 	n_inner_fields_searched): Always define.
 	(build_primary_vtable): Convert #ifdef GATHER_STATISTICS to if-code.
 	(print_class_statistics): Convert #ifdef GATHER_STATISTICS to if-code.
-	* cp/tree.c (depth_reached): Always define global.
+	* tree.c (depth_reached): Always define global.
 	(cxx_print_statistics): Convert #ifdef GATHER_STATISTICS to if-code.
-	* cp/pt.c (depth_reached): Always define.
+	* pt.c (depth_reached): Always define.
 	(push_tinst_level): Convert #ifdef GATHER_STATISTICS to if-code.
-	* cp/search.c (n_fields_searched, n_calls_lookup_field,
+	* search.c (n_fields_searched, n_calls_lookup_field,
 	n_calls_lookup_field_1, n_calls_lookup_fnfields,
 	n_calls_lookup_fnfields_1, n_calls_get_base_type,
 	n_outer_fields_searched, n_contexts_saved): Always define.
@@ -18,7 +23,7 @@
 	(lookup_fnfields_idx_nolazy): Likewise.
 	(print_search_statistics): Likewise.
 	(reinit_search_statistics): Unconditionally re-set counters.
-	* cp/lex.c (retrofit_lang_decl): Convert #ifdef GATHER_STATISTICS
+	* lex.c (retrofit_lang_decl): Convert #ifdef GATHER_STATISTICS
 	to if-code.
 	(cxx_dup_lang_specific_decl): Likewise.
 	(copy_lang_type): Likewise.
