@@ -36,7 +36,7 @@ struct GTY((variable_size)) lang_type {
   tree objc_info;
 };
 
-struct GTY(()) lang_decl {
+struct GTY((variable_size)) lang_decl {
   char dummy;
 };
 

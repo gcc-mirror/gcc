@@ -28,7 +28,7 @@ struct GTY(()) lang_identifier
   struct tree_identifier base;
 };
 
-struct GTY(()) lang_decl
+struct GTY((variable_size)) lang_decl
 {
   int dummy;  /* Added because ggc does not like empty structs.  */
 };

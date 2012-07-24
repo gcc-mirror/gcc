@@ -1,3 +1,7 @@
+2012-07-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	* lto-tree.h (lang_decl): Add variable_size GTY option.
+
 2012-07-16  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* lto.c: Do not include timevar.h.

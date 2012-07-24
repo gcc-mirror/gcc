@@ -1,3 +1,7 @@
+2012-07-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	* c-lang.h (lang_decl): Add variable_size GTY option.
+
 2012-07-16  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* c-decl.c: Include dumpfile.h instead of tree-dump.h.
