@@ -6986,11 +6986,12 @@ else
   enable_gather_detailed_mem_stats=no
 fi
 
-if test x$enable_gather_detailed_mem_stats = xyes ; then
+gather_stats=`if test $enable_gather_detailed_mem_stats != no; then echo 1; else echo 0; fi`
 
-$as_echo "#define GATHER_STATISTICS 1" >>confdefs.h
+cat >>confdefs.h <<_ACEOF
+#define GATHER_STATISTICS $gather_stats
+_ACEOF
 
-fi
 
 # -------------------------------
 # Miscenalleous configure options

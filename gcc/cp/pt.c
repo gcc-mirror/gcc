@@ -7754,9 +7754,8 @@ limit_bad_template_recursion (tree decl)
 
 static int tinst_depth;
 extern int max_tinst_depth;
-#ifdef GATHER_STATISTICS
 int depth_reached;
-#endif
+
 static GTY(()) struct tinst_level *last_error_tinst_level;
 
 /* We're starting to instantiate D; record the template instantiation context
@@ -7799,10 +7798,8 @@ push_tinst_level (tree d)
   current_tinst_level = new_level;
 
   ++tinst_depth;
-#ifdef GATHER_STATISTICS
-  if (tinst_depth > depth_reached)
+  if (GATHER_STATISTICS && (tinst_depth > depth_reached))
     depth_reached = tinst_depth;
-#endif
 
   return 1;
 }

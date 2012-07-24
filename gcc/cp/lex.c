@@ -571,10 +571,11 @@ retrofit_lang_decl (tree t)
   else
     gcc_unreachable ();
 
-#ifdef GATHER_STATISTICS
-  tree_node_counts[(int)lang_decl] += 1;
-  tree_node_sizes[(int)lang_decl] += size;
-#endif
+  if (GATHER_STATISTICS)
+    {
+      tree_node_counts[(int)lang_decl] += 1;
+      tree_node_sizes[(int)lang_decl] += size;
+    }
 }
 
 void
@@ -601,10 +602,11 @@ cxx_dup_lang_specific_decl (tree node)
   memcpy (ld, DECL_LANG_SPECIFIC (node), size);
   DECL_LANG_SPECIFIC (node) = ld;
 
-#ifdef GATHER_STATISTICS
-  tree_node_counts[(int)lang_decl] += 1;
-  tree_node_sizes[(int)lang_decl] += size;
-#endif
+  if (GATHER_STATISTICS)
+    {
+      tree_node_counts[(int)lang_decl] += 1;
+      tree_node_sizes[(int)lang_decl] += size;
+    }
 }
 
 /* Copy DECL, including any language-specific parts.  */
@@ -638,10 +640,11 @@ copy_lang_type (tree node)
   memcpy (lt, TYPE_LANG_SPECIFIC (node), size);
   TYPE_LANG_SPECIFIC (node) = lt;
 
-#ifdef GATHER_STATISTICS
-  tree_node_counts[(int)lang_type] += 1;
-  tree_node_sizes[(int)lang_type] += size;
-#endif
+  if (GATHER_STATISTICS)
+    {
+      tree_node_counts[(int)lang_type] += 1;
+      tree_node_sizes[(int)lang_type] += size;
+    }
 }
 
 /* Copy TYPE, including any language-specific parts.  */
@@ -671,10 +674,11 @@ cxx_make_type (enum tree_code code)
       TYPE_LANG_SPECIFIC (t) = pi;
       pi->u.c.h.is_lang_type_class = 1;
 
-#ifdef GATHER_STATISTICS
-      tree_node_counts[(int)lang_type] += 1;
-      tree_node_sizes[(int)lang_type] += sizeof (struct lang_type);
-#endif
+      if (GATHER_STATISTICS)
+	{
+	  tree_node_counts[(int)lang_type] += 1;
+	  tree_node_sizes[(int)lang_type] += sizeof (struct lang_type);
+	}
     }
 
   /* Set up some flags that give proper default behavior.  */

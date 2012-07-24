@@ -78,9 +78,7 @@ typedef struct GTY(()) bitmap_head_def {
   unsigned int indx;		/* Index of last element looked at.  */
   bitmap_obstack *obstack;	/* Obstack to allocate elements from.
 				   If NULL, then use GGC allocation.  */
-#ifdef GATHER_STATISTICS
   struct bitmap_descriptor GTY((skip)) *desc;
-#endif
 } bitmap_head;
 
 /* Global data */
@@ -166,9 +164,8 @@ bitmap_initialize_stat (bitmap head, bitmap_obstack *obstack MEM_STAT_DECL)
 {
   head->first = head->current = NULL;
   head->obstack = obstack;
-#ifdef GATHER_STATISTICS
-  bitmap_register (head PASS_MEM_STAT);
-#endif
+  if (GATHER_STATISTICS)
+    bitmap_register (head PASS_MEM_STAT);
 }
 #define bitmap_initialize(h,o) bitmap_initialize_stat (h,o MEM_STAT_INFO)
 

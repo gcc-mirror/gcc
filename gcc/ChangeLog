@@ -1,3 +1,102 @@
+2012-07-24  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* sbitmap.h (SBITMAP_ELT_BITS): Use "1u" trick as for BITMAP_WORD_BITS.
+	Move test to check that there is a popcount function for the the number
+	of bits in SBITMAP_ELT_BITS to sbitmap.c.
+	* sbitmap.c: Test SBITMAP_ELT_BITS, not HOST_BITS_PER_WIDEST_FAST_INT.
+	MEM_STAT_INFO): Define in terms of their ALONE counterparts.
+
+	* configure.ac (GATHER_STATISTICS): Always define, non-zero if enabled.
+	* configure: Regenerate.
+	* statistics.h (GATHER_STATISTICS): Error out if it is not defined.
+	(GCC_MEM_STAT_ARGUMENTS): New define.
+	(ALONE_MEM_STAT_DECL): Define in terms of GCC_MEM_STAT_ARGUMENTS.
+	(ALONE_FINAL_MEM_STAT_DECL, ALONE_FINAL_PASS_MEM_STAT): New defines.
+	(MEM_STAT_DECL, FINAL_MEM_STAT_DECL, PASS_MEM_STAT, FINAL_PASS_MEM_STAT,
+	* ggc-internal.h (ggc_record_overhead): Use FINAL_MEM_STAT_DECL.
+	* ggc.h (ggc_record_overhead, ggc_free_overhead,
+	ggc_prune_overhead_list): Remove internal prototypes, they are defined
+	already in ggc-internal.h.
+	* ggc-common.c (struct loc_descriptor): Remove #ifdef GATHER_STATISTICS
+	wrappers.
+	(add_statistics): Likewise.
+	(dump_ggc_loc_statistics): Likewise. Return if GATHER_STATISTICS is 0. 
+	* ggc-zone.c (struct page_entry): Remove #ifdef GATHER_STATISTICS
+	wrappers around "survived" and "stats" members.
+	(alloc_large_page): Always initialize survived.
+	(ggc_internal_alloc_zone_stat): Likewise.
+	Remove #ifdef GATHER_STATISTICS wrappers.  Record overhead if
+	GATHER_STATISTICS is non-0.
+	(ggc_free): Convert #ifdef GATHER_STATISTICS to if-code.
+	(sweep_pages): Always increase survived.
+	(ggc_collect_1): Convert #ifdef GATHER_STATISTICS to if-code.
+	(calculate_average_page_survival): Always define.
+	(ggc_collect): Convert #ifdef GATHER_STATISTICS to if-code.
+	(ggc_print_statistics): Likewise.
+	(ggc_pch_read): Likewise.
+	* ggc-page.c (struct globals): Always define "stats" member.
+	(ggc_internal_alloc_stat): Convert #ifdef GATHER_STATISTICS to if-code.
+	(ggc_free): Likewise.
+	(ggc_collec): Likewise.
+	(ggc_print_statistics): Likewise.
+	* bitmap.h (struct bitmap_head_def): Always define "desc" member.
+	(bitmap_initialize_stat): Convert #ifdef GATHER_STATISTICS to if-code.
+	* gimple.h (enum gimple_alloc_kind): Always define.
+	(gimple_alloc_kind): Likewise.
+	* tree-flow.h (phinodes_print_statistics): Always define.
+	(ssanames_print_statistics): Likewise.
+	* vec.h (vec_heap_free): Always define.
+	(VEC_stack_alloc): Define if GATHER_STATISTICS is non-0.
+	* alloc-pool.c (alloc_pool_descriptor): Always define.
+	(create_alloc_pool): Convert #ifdef GATHER_STATISTICS to if-code.
+	(empty_alloc_pool): Likewise.
+	(pool_alloc): Likewise.
+	(pool_free): Likewise.
+	(dump_alloc_pool_statistics): Likewise.
+	(print_statistics): Always define.
+	* bitmap.c (struct bitmap_descriptor): Always define.
+	(bitmap_register): Pass ALONE_FINAL_PASS_MEM_STAT.
+	(register_overhead): Always define.
+	(bitmap_element_free): Convert #ifdef GATHER_STATISTICS to if-code.
+	(bitmap_element_allocate): Likewise.
+	(bitmap_elt_clear_from): Likewise.
+	(bitmap_obstack_alloc_stat): Likewise.
+	(bitmap_gc_alloc_stat): Likewise.
+	(bitmap_obstack_free): Likewise.
+	(bitmap_find_bit): Likewise.
+	(bitmap_ior_and_into):  Likewise.
+	(bitmap_print): Likewise.
+	(dump_bitmap_statistics): Likewise. Return if GATHER_STATISTICS is 0.
+	* gimple.c (gimple_alloc_counts, gimple_alloc_sizes): Always define.
+	(gimple_alloc_kind_names): Likewise.
+	(gimple_alloc_stat): Convert #ifdef GATHER_STATISTICS to if-code.
+	(dump_gimple_statistics): Likewise. Return if GATHER_STATISTICS is 0.
+	* rtl.c (rtx_alloc_counts, rtx_alloc_sizes, rtvec_alloc_counts,
+	rtvec_alloc_sizes): Always define.
+	(rvec_alloc): Convert #ifdef GATHER_STATISTICS to if-code.
+	(rtx_alloc_stat): Likewise.
+	(dump_rtx_statistics): Likewise. Return if GATHER_STATISTICS is 0.
+	* tree.c (_obstack_allocated_p, tree_code_counts, tree_node_counts,
+	tree_node_sizes, tree_node_kind_names): Always define.
+	(record_node_allocation_statistics): Convert #ifdef GATHER_STATISTICS
+	to if-code.
+	(type_hash_canon): Likewise.
+	(dump_tree_statistics): Likewise.
+	* tree-ssanames.c (ssa_name_nodes_reused, ssa_name_nodes_created):
+	Always define.
+	(ssanames_print_statistics): Likewise.
+	(make_ssa_name_fn): Convert #ifdef GATHER_STATISTICS to if-code.
+	* tree-phinodes.c (phi_nodes_reused, phi_nodes_created): Always define.
+	(phinodes_print_statistics): Likewise.
+	(allocate_phi_node): Convert #ifdef GATHER_STATISTICS to if-code.
+	* vec.c (struct vec_descriptor): Always define.
+	(hash_descriptor, eq_descriptor, ptr_hash_entry, hash_ptr, eq_ptr,
+	vec_descriptor, rester_overhead, free_overhead): Likewise.
+	(cmp_statistic): Likewise.
+	(vec_heap_free): Convert #ifdef GATHER_STATISTICS to if-code.
+	(vec_heap_o_reserve_1): Likewise.
+	(dump_vec_loc_statistics): Likewise.
+
 2012-07-24  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/53616
@@ -95,7 +194,7 @@
 	(ix86_decompose_address): Allow (zero_extend:DI (subreg:SI (...)))
 	addresses.  Prevent zero extensions of CONST_INT operands.
 
-2012-07-22  Steven Bosscher  <steven@gcc.gnu.org>
+2012-07-23  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* sbitmap.h (struct int_list): Remove.
 	(sbitmap_intersect_of_predsucc, sbitmap_union_of_predsucc):
@@ -127,7 +226,7 @@
 	* tree-ssa-alias.c (dump_alias_info): Walk over local decls
 	instead of referenced vars.
 
-2012-07-22  Steven Bosscher  <steven@gcc.gnu.org>
+2012-07-23  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* coverage.c: Refer to "notes file" instead of "graph file"
 	in all comments.  Explain history of bbg prefix.
