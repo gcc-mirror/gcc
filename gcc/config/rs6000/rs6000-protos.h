@@ -38,6 +38,7 @@ extern bool macho_lo_sum_memory_operand (rtx, enum machine_mode);
 extern int num_insns_constant (rtx, enum machine_mode);
 extern int num_insns_constant_wide (HOST_WIDE_INT);
 extern int small_data_operand (rtx, enum machine_mode);
+extern bool mem_operand_gpr (rtx, enum machine_mode);
 extern bool toc_relative_expr_p (const_rtx, bool);
 extern bool invalid_e500_subreg (rtx, enum machine_mode);
 extern void validate_condition_mode (enum rtx_code, enum machine_mode);
@@ -83,7 +84,7 @@ extern bool (*rs6000_cannot_change_mode_class_ptr) (enum machine_mode,
 						    enum machine_mode,
 						    enum reg_class);
 extern void rs6000_secondary_reload_inner (rtx, rtx, rtx, bool);
-extern void rs6000_secondary_reload_ppc64 (rtx, rtx, rtx, bool);
+extern void rs6000_secondary_reload_gpr (rtx, rtx, rtx, bool);
 extern int paired_emit_vector_cond_expr (rtx, rtx, rtx,
                                          rtx, rtx, rtx);
 extern void paired_expand_vector_move (rtx operands[]);
@@ -121,9 +122,9 @@ extern void rs6000_emit_move (rtx, rtx, enum machine_mode);
 extern rtx rs6000_secondary_memory_needed_rtx (enum machine_mode);
 extern rtx (*rs6000_legitimize_reload_address_ptr) (rtx, enum machine_mode,
 						    int, int, int, int *);
-extern bool rs6000_legitimate_offset_address_p (enum machine_mode, rtx, int);
+extern bool rs6000_legitimate_offset_address_p (enum machine_mode, rtx,
+						bool, bool);
 extern rtx rs6000_find_base_term (rtx);
-extern bool rs6000_offsettable_memref_p (rtx);
 extern rtx rs6000_return_addr (int, rtx);
 extern void rs6000_output_symbol_ref (FILE*, rtx);
 extern HOST_WIDE_INT rs6000_initial_elimination_offset (int, int);

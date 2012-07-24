@@ -150,8 +150,9 @@ to use @samp{m} or @samp{es} in @code{asm} statements)"
        (match_test "GET_CODE (XEXP (op, 0)) == REG")))
 
 (define_memory_constraint "Y"
-  "Indexed or word-aligned displacement memory operand"
-  (match_operand 0 "word_offset_memref_operand"))
+  "memory operand for 8 byte and 16 byte gpr load/store"
+  (and (match_code "mem")
+       (match_operand 0 "mem_operand_gpr")))
 
 (define_memory_constraint "Z"
   "Memory operand that is an indexed or indirect from a register (it is
