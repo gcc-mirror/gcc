@@ -1,3 +1,8 @@
+2012-07-24  Julian Brown  <julian@codesourcery.com>
+
+	* doc/sourcebuild.texi (arm_hf_eabi): Document effective-target
+	check.
+
 2012-07-24  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* sbitmap.h (SBITMAP_ELT_BITS): Use "1u" trick as for BITMAP_WORD_BITS.
