@@ -1,5 +1,20 @@
 2012-07-24  Richard Henderson  <rth@redhat.com>
 
+	* optabs.h (struct optab_d): Rename code member to code_.
+	(struct convert_optab_h): Likewise.
+	(code_to_optab_): Rename from code_to_optab.
+	(code_to_optab, optab_to_code): New.
+	* dojump.c (do_compare_rtx_and_jump): Use code_to_optab.
+	* ifcvt.c (noce_emit_move_insn): Likewise.
+	* optabs.c (simplify_expand_binop): Use optab_to_code.
+	(expand_simple_binop, shift_optab_p, commutative_optab_p): Likewise.
+	(avoid_expensive_constant, expand_binop_directly): Likewise.
+	(expand_binop, expand_simple_unop, expand_unop_direct): Likewise.
+	(expand_unop, prepare_float_lib_cmp, expand_fixed_convert): Likewise.
+	(have_insn_for, debug_optab_libfuncs): Likewise.
+	(init_optab, init_optabv, init_convert_optab): Update for optab
+	member name change.
+
 	* libfuncs.h: Include optabs.h.
 	* dwarf2out.c, lto-streamer.in.c: Don't include libfuncs.h.
 	* Makefile.in (LIBFUNCS_H): Add OPTABS_H.

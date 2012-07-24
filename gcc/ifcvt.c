@@ -902,7 +902,7 @@ noce_emit_move_insn (rtx x, rtx y)
 	  switch (GET_RTX_CLASS (GET_CODE (y)))
 	    {
 	    case RTX_UNARY:
-	      ot = code_to_optab[GET_CODE (y)];
+	      ot = code_to_optab (GET_CODE (y));
 	      if (ot)
 		{
 		  start_sequence ();
@@ -919,7 +919,7 @@ noce_emit_move_insn (rtx x, rtx y)
 
 	    case RTX_BIN_ARITH:
 	    case RTX_COMM_ARITH:
-	      ot = code_to_optab[GET_CODE (y)];
+	      ot = code_to_optab (GET_CODE (y));
 	      if (ot)
 		{
 		  start_sequence ();
