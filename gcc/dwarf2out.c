@@ -72,7 +72,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "output.h"
 #include "expr.h"
-#include "libfuncs.h"
 #include "except.h"
 #include "dwarf2.h"
 #include "dwarf2out.h"

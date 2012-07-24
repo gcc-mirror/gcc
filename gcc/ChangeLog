@@ -1,5 +1,10 @@
 2012-07-24  Richard Henderson  <rth@redhat.com>
 
+	* libfuncs.h: Include optabs.h.
+	* dwarf2out.c, lto-streamer.in.c: Don't include libfuncs.h.
+	* Makefile.in (LIBFUNCS_H): Add OPTABS_H.
+	(lto-streamer-in.o, dwarf2out.o): Update deps.
+
 	* optabs.h (unknown_optab): New.
 	* builtins.c (interclass_mathfn_icode): Use it.
 	* dojump.c (do_compare_rtx_and_jump): Likewise.
