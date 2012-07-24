@@ -1055,8 +1055,6 @@ enum cris_pic_symbol_type
 /* FIXME: Investigate CASE_VECTOR_SHORTEN_MODE to make sure HImode is not
    used when broken-.word could possibly fail (plus testcase).  */
 
-#define FIXUNS_TRUNC_LIKE_FIX_TRUNC
-
 /* This is the number of bytes that can be moved in one
    reasonably fast instruction sequence.  For CRIS, this is two
    instructions: mem => reg, reg => mem.  */

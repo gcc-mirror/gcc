@@ -703,10 +703,6 @@ do {									     \
 
 #define LOAD_EXTEND_OP(MODE) ZERO_EXTEND
 
-/* This flag, if defined, says the same insns that convert to a signed fixnum
-   also convert validly to an unsigned one.  */
-#define FIXUNS_TRUNC_LIKE_FIX_TRUNC
-
 /* Max number of bytes we can move from memory to memory
    in one reasonably fast instruction.  */
 #define MOVE_MAX	4
