@@ -60,7 +60,7 @@
 
 	PR target/53961
 	* config/i386/i386.c (ix86_legitimate_address_p): Move check for
-	negative constant address for TARET_X32 ...
+	negative constant address for TARGET_X32 ...
 	(ix86_decompose_address): ... here.  Reject constant addresses
 	that don't satisfy x86_64_immediate_operand predicate.
 
@@ -367,6 +367,8 @@
 	(*lea_1): Remove.
 	(*lea<mode>_2): Ditto.
 	(*lea_{3,4,5,6}_zext): Ditto.
+	* config/i386/predicates.md (lea_address_operand): Do not reject
+	zero-extended address operands.
 	* config/i386/constraints.md (j): Remove address constraint.
 	* config/i386/i386.c (ix86_decompose_address): Allow SImode subreg
 	of an address.
