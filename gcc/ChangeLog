@@ -1,3 +1,9 @@
+2012-07-24  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/53616
+	* tree-loop-distribution.c (ldist_gen): Do not change
+	partition ordering when merging partitions.
+
 2012-07-24  Alan Modra  <amodra@gmail.com>
 
 	PR target/53914

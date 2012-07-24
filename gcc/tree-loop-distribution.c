@@ -1289,16 +1289,25 @@ ldist_gen (struct loop *loop, struct graph *rdg,
 	  nbp = 0;
 	  goto ldist_done;
 	}
-      for (i = 0; VEC_iterate (partition_t, partitions, i, into); ++i)
-	if (!partition_builtin_p (into))
-	  break;
-      for (++i; VEC_iterate (partition_t, partitions, i, partition); ++i)
-	if (!partition_builtin_p (partition))
-	  {
-	    bitmap_ior_into (into->stmts, partition->stmts);
-	    VEC_ordered_remove (partition_t, partitions, i);
-	    i--;
-	  }
+      /* Only fuse adjacent non-builtin partitions, see PR53616.
+         ???  Use dependence information to improve partition ordering.  */
+      i = 0;
+      do
+	{
+	  for (; VEC_iterate (partition_t, partitions, i, into); ++i)
+	    if (!partition_builtin_p (into))
+	      break;
+	  for (++i; VEC_iterate (partition_t, partitions, i, partition); ++i)
+	    if (!partition_builtin_p (partition))
+	      {
+		bitmap_ior_into (into->stmts, partition->stmts);
+		VEC_ordered_remove (partition_t, partitions, i);
+		i--;
+	      }
+	    else
+	      break;
+	}
+      while ((unsigned) i < VEC_length (partition_t, partitions));
     }
   else
     {
