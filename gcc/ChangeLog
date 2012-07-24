@@ -1,3 +1,49 @@
+2012-07-24  Alan Modra  <amodra@gmail.com>
+
+	PR target/53914
+	PR target/54009
+	* config/rs6000/constraints.md (Y): Use mem_operand_gpr.
+	* config/rs6000/predicates.md (word_offset_memref_operand): Delete.
+	Adjust all rs6000_legitimate_offset_address_p calls.
+	* config/rs6000/rs6000-protos.h (mem_operand_gpr): Declare.
+	(rs6000_secondary_reload_gpr): Declare.
+	(rs6000_legitimate_offset_address_p): Update prototype.
+	(rs6000_offsettable_memref_p): Delete.
+	(rs6000_secondary_reload_ppc64): Delete.
+	* config/rs6000/rs6000.c (address_offset): New function.
+	(mem_operand_gpr): Likewise.
+	(rs6000_legitimate_offset_address_p): Add worst_case param.  When
+	not worst_case assume class of regs with least restrictive offsets.
+	Adjust all calls.
+	(legitimate_lo_sum_address_p): Simplify register mode tests.
+	(rs6000_legitimize_address): Likewise.  Assume best case offset
+	addressing.  Combine ELF and MACHO lo_sum code.
+	(rs6000_mode_dependent_address): Correct offset addressing limits.
+	(rs6000_offsettable_memref_p): Make static, add reg_mode param.
+	Use reg_mode to help rs6000_legitimate_offset_address_p.
+	(rs6000_secondary_reload): Use address_offset.  Handle 32-bit multi
+	gpr load/store when offset too large.
+	(rs6000_secondary_reload_gpr): Renamed rs6000_secondary_reload_ppc64.
+	(rs6000_split_multireg_move): Adjust rs6000_offsettable_memref_p calls.
+	* config/rs6000/rs6000.md (movdf_hardfloat32): Use 'Y' constraint
+	for gpr load/store.  Order alternatives as r->Y,Y->r,r->r and
+	d->m,m->d,d->d.  Correct size of gpr load/store.
+	(movdf_softfloat32): Use 'Y' constraint for gpr load/store.  Order
+	alternatives.
+	(movti_ppc64): Likewise.
+	(movdi_internal32): Likewise.  Also disparage fprs.
+	(movdi_mfpgpr, movdi_internal64): Likewise.
+	(movtf_internal): Use 'm' for fpr load/store.  Order alternatives.
+	(movtf_softfloat): Order alternatives.
+	(extenddftf2_internal): Use 'm' and 'Y' for store.
+	(movti_power, movti_string): Use 'Y' for gpr load/store.  Order.
+	(stack_protect_setdi, stack_protect_testdi): Likewise.
+	(movdf_hardfloat64_mfpgpr, movdf_hardfloat64): Order alternatives.
+	(movdf_softfloat64): Likewise.
+	(reload_<mode>_store): Adjust reload_di_store to provide
+	reload_si_store as well.
+	(reload_<mode>_load): Likewise.
+
 2012-07-23  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/51244

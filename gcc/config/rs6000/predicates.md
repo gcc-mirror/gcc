@@ -432,29 +432,6 @@
   (and (match_operand 0 "memory_operand")
        (match_test "offsettable_nonstrict_memref_p (op)")))
 
-;; Return 1 if the operand is a memory operand with an address divisible by 4
-(define_predicate "word_offset_memref_operand"
-  (match_operand 0 "memory_operand")
-{
-  /* Address inside MEM.  */
-  op = XEXP (op, 0);
-
-  /* Extract address from auto-inc/dec.  */
-  if (GET_CODE (op) == PRE_INC
-      || GET_CODE (op) == PRE_DEC)
-    op = XEXP (op, 0);
-  else if (GET_CODE (op) == PRE_MODIFY)
-    op = XEXP (op, 1);
-  else if (GET_CODE (op) == LO_SUM
-	   && GET_CODE (XEXP (op, 0)) == REG
-	   && GET_CODE (XEXP (op, 1)) == CONST)
-    op = XEXP (XEXP (op, 1), 0);
-
-  return (GET_CODE (op) != PLUS
-	  || GET_CODE (XEXP (op, 1)) != CONST_INT
-	  || INTVAL (XEXP (op, 1)) % 4 == 0);
-})
-
 ;; Return 1 if the operand is an indexed or indirect memory operand.
 (define_predicate "indexed_or_indirect_operand"
   (match_code "mem")
@@ -892,7 +869,8 @@
   return input_operand (op, mode);
 })
 
-;; Return true if OP is an invalid SUBREG operation on the e500.
+;; Return true if OP is a non-immediate operand and not an invalid
+;; SUBREG operation on the e500.
 (define_predicate "rs6000_nonimmediate_operand"
   (match_code "reg,subreg,mem")
 {
@@ -1325,7 +1303,7 @@
       if (base_regno == 0)
 	return 0;
     }
-  else if (rs6000_legitimate_offset_address_p (SImode, src_addr, 0))
+  else if (rs6000_legitimate_offset_address_p (SImode, src_addr, false, false))
     {
       offset = INTVAL (XEXP (src_addr, 1));
       base_regno = REGNO (XEXP (src_addr, 0));
@@ -1353,7 +1331,7 @@
 	  newoffset = 0;
 	  addr_reg = newaddr;
 	}
-      else if (rs6000_legitimate_offset_address_p (SImode, newaddr, 0))
+      else if (rs6000_legitimate_offset_address_p (SImode, newaddr, false, false))
 	{
 	  addr_reg = XEXP (newaddr, 0);
 	  newoffset = INTVAL (XEXP (newaddr, 1));
@@ -1400,7 +1378,7 @@
       if (base_regno == 0)
 	return 0;
     }
-  else if (rs6000_legitimate_offset_address_p (SImode, dest_addr, 0))
+  else if (rs6000_legitimate_offset_address_p (SImode, dest_addr, false, false))
     {
       offset = INTVAL (XEXP (dest_addr, 1));
       base_regno = REGNO (XEXP (dest_addr, 0));
@@ -1428,7 +1406,7 @@
 	  newoffset = 0;
 	  addr_reg = newaddr;
 	}
-      else if (rs6000_legitimate_offset_address_p (SImode, newaddr, 0))
+      else if (rs6000_legitimate_offset_address_p (SImode, newaddr, false, false))
 	{
 	  addr_reg = XEXP (newaddr, 0);
 	  newoffset = INTVAL (XEXP (newaddr, 1));
