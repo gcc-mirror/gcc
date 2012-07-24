@@ -390,7 +390,7 @@ optab_for_tree_code (enum tree_code code, const_tree type,
       if (TREE_CODE (type) == VECTOR_TYPE)
 	{
 	  if (subtype == optab_vector)
-	    return TYPE_SATURATING (type) ? NULL : vashl_optab;
+	    return TYPE_SATURATING (type) ? unknown_optab : vashl_optab;
 
 	  gcc_assert (subtype == optab_scalar);
 	}
@@ -560,7 +560,7 @@ optab_for_tree_code (enum tree_code code, const_tree type,
       return trapv ? absv_optab : abs_optab;
 
     default:
-      return NULL;
+      return unknown_optab;
     }
 }
 
@@ -1580,7 +1580,7 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
      shift by a vector.  If so, broadcast the scalar into a vector.  */
   if (mclass == MODE_VECTOR_INT)
     {
-      optab otheroptab = NULL;
+      optab otheroptab = unknown_optab;
 
       if (binoptab == ashl_optab)
 	otheroptab = vashl_optab;

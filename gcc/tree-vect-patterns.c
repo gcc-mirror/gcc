@@ -1675,7 +1675,7 @@ vect_recog_divmod_pattern (VEC (gimple, heap) **stmts,
   /* If the target can handle vectorized division or modulo natively,
      don't attempt to optimize this.  */
   optab = optab_for_tree_code (rhs_code, vectype, optab_default);
-  if (optab != NULL)
+  if (optab != unknown_optab)
     {
       enum machine_mode vec_mode = TYPE_MODE (vectype);
       int icode = (int) optab_handler (optab, vec_mode);

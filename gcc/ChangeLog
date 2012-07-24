@@ -1,3 +1,14 @@
+2012-07-24  Richard Henderson  <rth@redhat.com>
+
+	* optabs.h (unknown_optab): New.
+	* builtins.c (interclass_mathfn_icode): Use it.
+	* dojump.c (do_compare_rtx_and_jump): Likewise.
+	* optabs.c (optab_for_tree_code, expand_binop): Likewise.
+	* tree-vect-generic.c (add_rshift, expand_vector_divmod): Likewise.
+	(expand_vector_operations_1): Likewise.
+	* tree-vect-patterns.c (vect_recog_divmod_pattern): Likewise.
+	* tree-vect-stmts.c (supportable_narrowing_operation): Likewise.
+
 2012-07-24  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* alloc-pool.c (create_alloc_pool): Fix ENABLE_CHECKING check.
