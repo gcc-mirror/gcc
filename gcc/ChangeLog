@@ -1,7 +1,14 @@
+2012-07-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/53961
+	* config/i386/i386.c (ix86_legitimate_address_p): Move check for
+	negative constant address for TARET_X32 ...
+	(ix86_decompose_address): ... here.  Reject constant addresses
+	that don't satisfy x86_64_immediate_operand predicate.
+
 2012-07-24  Julian Brown  <julian@codesourcery.com>
 
-	* doc/sourcebuild.texi (arm_hf_eabi): Document effective-target
-	check.
+	* doc/sourcebuild.texi (arm_hf_eabi): Document effective-target check.
 
 2012-07-24  Steven Bosscher  <steven@gcc.gnu.org>
 
@@ -17,7 +24,8 @@
 	(GCC_MEM_STAT_ARGUMENTS): New define.
 	(ALONE_MEM_STAT_DECL): Define in terms of GCC_MEM_STAT_ARGUMENTS.
 	(ALONE_FINAL_MEM_STAT_DECL, ALONE_FINAL_PASS_MEM_STAT): New defines.
-	(MEM_STAT_DECL, FINAL_MEM_STAT_DECL, PASS_MEM_STAT, FINAL_PASS_MEM_STAT,
+	(MEM_STAT_DECL, FINAL_MEM_STAT_DECL, PASS_MEM_STAT,
+	FINAL_PASS_MEM_STAT): Define.
 	* ggc-internal.h (ggc_record_overhead): Use FINAL_MEM_STAT_DECL.
 	* ggc.h (ggc_record_overhead, ggc_free_overhead,
 	ggc_prune_overhead_list): Remove internal prototypes, they are defined
@@ -25,7 +33,7 @@
 	* ggc-common.c (struct loc_descriptor): Remove #ifdef GATHER_STATISTICS
 	wrappers.
 	(add_statistics): Likewise.
-	(dump_ggc_loc_statistics): Likewise. Return if GATHER_STATISTICS is 0. 
+	(dump_ggc_loc_statistics): Likewise. Return if GATHER_STATISTICS is 0.
 	* ggc-zone.c (struct page_entry): Remove #ifdef GATHER_STATISTICS
 	wrappers around "survived" and "stats" members.
 	(alloc_large_page): Always initialize survived.
