@@ -68,7 +68,7 @@ eq_descriptor (const void *p1, const void *p2)
 
 /* For given file and line, return descriptor, create new if needed.  */
 static struct bitmap_descriptor *
-bitmap_descriptor (const char *file, const char *function, int line)
+bitmap_descriptor (const char *file, int line, const char *function)
 {
   struct bitmap_descriptor **slot;
   struct loc loc;
