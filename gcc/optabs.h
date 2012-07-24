@@ -412,6 +412,8 @@ enum optab_index
   OTI_MAX
 };
 
+#define unknown_optab NULL
+
 #define ssadd_optab (&optab_table[OTI_ssadd])
 #define usadd_optab (&optab_table[OTI_usadd])
 #define sssub_optab (&optab_table[OTI_sssub])

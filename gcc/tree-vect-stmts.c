@@ -6545,7 +6545,7 @@ supportable_narrowing_operation (enum tree_code code,
 	= lang_hooks.types.type_for_mode (TYPE_MODE (vectype_out), 0);
       interm_optab
 	= optab_for_tree_code (c1, intermediate_type, optab_default);
-      if (interm_optab != NULL
+      if (interm_optab != unknown_optab
 	  && (icode2 = optab_handler (optab1, vec_mode)) != CODE_FOR_nothing
 	  && insn_data[icode1].operand[0].mode
 	     == insn_data[icode2].operand[0].mode)
