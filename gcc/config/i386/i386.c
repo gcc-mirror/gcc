@@ -14094,7 +14094,7 @@ ix86_print_operand (FILE *file, rtx x, int code)
 
 	  output_address (x);
 	  return;
-	    
+
 	case 'L':
 	  if (ASSEMBLER_DIALECT == ASM_ATT)
 	    putc ('l', file);
