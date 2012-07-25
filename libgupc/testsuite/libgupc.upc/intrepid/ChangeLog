@@ -1,3 +1,8 @@
+2012-07-25  Gary Funck  <gary@intrepid.com>
+
+	* test26.upc: Implement check for 6.4.2p6 conformance
+	and improve formatting and indentation.
+
 2012-01-04  Gary Funck  <gary@intrepid.com>
 
 	* test18.upc: Revert lost GCC/UPC -> GUPC change.

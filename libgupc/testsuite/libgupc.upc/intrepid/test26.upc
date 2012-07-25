@@ -1,5 +1,5 @@
 /* Copyright (c) 2008, 2009, 2010, 2011, 2012
-   Free Software Foundation, Inc. 
+   Free Software Foundation, Inc.
    This file is part of the UPC runtime library test suite.
    Written by Gary Funck <gary@intrepid.com>
    and Nenad Vukicevic <nenad@intrepid.com>
@@ -31,18 +31,19 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <string.h>
 
 #define BLKSIZE 3
-#define FACTOR 33 
+#define FACTOR 33
 #define N (FACTOR * BLKSIZE)
 #define NT (N * THREADS)
 
-shared           int a[NT];
+shared int a[NT];
 shared [BLKSIZE] int ablocked[NT];
 
 char *
-sptr(char *buf, shared void *p)
+sptr (char *buf, shared void *p)
 {
   sprintf (buf, "(0x%0lx,%ld,%ld)",
-    (long)upc_addrfield(p), (long)upc_threadof(p), (long)upc_phaseof(p));
+	   (long) upc_addrfield (p), (long) upc_threadof (p),
+	   (long) upc_phaseof (p));
   return buf;
 }
 
@@ -62,18 +63,18 @@ void
 test_compare (enum pkind kind, enum cmp_op op,
               int t0, int t1, int j, int k)
 {
-  const char * const kind_s = pkind_name_tbl[kind];
-  shared[BLKSIZE] int *pp0, *pp1;
-  shared int *p0, *p1;
+  const char *const kind_s = pkind_name_tbl[kind];
   int bs = (kind == phased) ? BLKSIZE : 1;
-  /* calculate the index of item 'j' on thread 't0'  */
+  /* Calculate the index of item 'j' on thread 't0'.  */
   int jj = ((j / bs) * THREADS + t0) * bs + (j % bs);
-  /* calculate the index of item 'k' on thread 't1'  */
+  /* Calculate the index of item 'k' on thread 't1'.  */
   int kk = ((k / bs) * THREADS + t1) * bs + (k % bs);
   int diff = (jj - kk);
   int expected, got;
-  if (jj < 0 || jj >= NT) abort ();
-  if (kk < 0 || kk >= NT) abort ();
+  if (jj < 0 || jj >= NT)
+    abort ();
+  if (kk < 0 || kk >= NT)
+    abort ();
   switch (op)
     {
     case EQ_OP: expected = (diff == 0); break;
@@ -86,7 +87,21 @@ test_compare (enum pkind kind, enum cmp_op op,
     }
   if (kind == phased)
     {
-      pp0 = &ablocked[jj]; pp1 = &ablocked[kk];
+      shared [] int *const pp0_phase_reset = (shared [] int *) &ablocked[jj];
+      shared [] int *const pp1_phase_reset = (shared [] int *) &ablocked[kk];
+      shared [BLKSIZE] int *pp0, *pp1;
+      pp0 = &ablocked[jj];
+      pp1 = &ablocked[kk];
+      /* Per 6.4.2p6:
+         Two compatible pointers-to-shared which point to the
+         same object (i.e.  having the same address and thread
+         components) shall compare as equal according
+	 to == and !=, regardless of whether the phase
+	 components match.  */
+      if (op == EQ_OP)
+	pp0 = (shared [BLKSIZE] int *) pp0_phase_reset;
+      else if (op == NE_OP)
+	pp1 = (shared [BLKSIZE] int *) pp1_phase_reset;
       switch (op)
 	{
 	case EQ_OP: got = (pp0 == pp1); break;
@@ -100,21 +115,23 @@ test_compare (enum pkind kind, enum cmp_op op,
       if (got != expected)
 	{
 	  char b1[100], b2[100];
-	  const char * const op_s   = op_name_tbl[op];
-	  const char * const p0_s   = sptr(b1, pp0);
-	  const char * const p1_s   = sptr(b2, pp1);
+	  const char *const op_s = op_name_tbl[op];
+	  const char *const p0_s = sptr (b1, pp0);
+	  const char *const p1_s = sptr (b2, pp1);
 	  fprintf (stderr, "test26: Error: thread %d: %s PTS comparison "
-	           "%s failed.\n"
-	           "        t0=%d t1=%d j=%d k=%d jj=%d kk=%d "
-	           "p0=%s p1=%s expected=%d got=%d\n",
-	           MYTHREAD, kind_s, op_s, t0, t1, j, k, jj, kk,
-	           p0_s, p1_s, expected, got);
+		   "%s failed.\n"
+		   "        t0=%d t1=%d j=%d k=%d jj=%d kk=%d "
+		   "p0=%s p1=%s expected=%d got=%d\n",
+		   MYTHREAD, kind_s, op_s, t0, t1, j, k, jj, kk,
+		   p0_s, p1_s, expected, got);
 	  abort ();
 	}
     }
   else
     {
-      p0 = &a[jj]; p1 = &a[kk];
+      shared int *p0, *p1;
+      p0 = &a[jj];
+      p1 = &a[kk];
       switch (op)
 	{
 	case EQ_OP: got = (p0 == p1); break;
@@ -128,14 +145,14 @@ test_compare (enum pkind kind, enum cmp_op op,
       if (got != expected)
 	{
 	  char b1[100], b2[100];
-	  const char * const op_s   = op_name_tbl[op];
-	  const char * const p0_s   = sptr(b1, p0);
-	  const char * const p1_s   = sptr(b2, p1);
+	  const char *const op_s = op_name_tbl[op];
+	  const char *const p0_s = sptr (b1, p0);
+	  const char *const p1_s = sptr (b2, p1);
 	  fprintf (stderr, "test26: Error: thread %d: %s "
-	           "PTS comparison %s failed.\n"
-	           "        t0=%d t1=%d j=%d k=%d jj=%d kk=%d "
+		   "PTS comparison %s failed.\n"
+		   "        t0=%d t1=%d j=%d k=%d jj=%d kk=%d "
 		   "p0=%s p1=%s expected=%d got=%d\n",
-	           MYTHREAD, kind_s, op_s, t0, t1, j, k, jj, kk,
+		   MYTHREAD, kind_s, op_s, t0, t1, j, k, jj, kk,
 		   p0_s, p1_s, expected, got);
 	  abort ();
 	}
@@ -152,7 +169,7 @@ test26 ()
   for (kind = phaseless; kind <= phased; ++kind)
     {
       for (op = FIRST_OP; op <= LAST_OP; ++op)
-        {
+	{
 	  int tmax = (THREADS > 128) ? 128 : THREADS;
 	  for (t1 = 0; t1 < tmax; ++t1)
 	    {
@@ -165,7 +182,7 @@ test26 ()
 		}
 	    }
 	}
-     }
+    }
 }
 
 
