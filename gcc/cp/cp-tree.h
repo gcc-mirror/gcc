@@ -4170,8 +4170,6 @@ enum tsubst_flags {
 				    conversion might be permissible,
 				    not actually performing the
 				    conversion.  */
-  tf_no_access_control = 1 << 7, /* Do not perform access checks, even
-				    when issuing other errors.   */
   tf_partial = 1 << 8,		 /* Doing initial explicit argument
 				    substitution in fn_type_unification.  */
   /* Convenient substitution flags combinations.  */

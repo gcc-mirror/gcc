@@ -8,7 +8,7 @@ enum X{ a, b, c };
 
 struct C
 {
-  static void func (X &ref = a); // { dg-error "default argument" "" }
+  static void func (X &ref = a); // { dg-error "" }
 };
 
 template <typename T>
@@ -21,5 +21,7 @@ void Foo (X & obj)
 {
   D<int>::func (obj);
 
-  D<int>::func (); // { dg-error "default argument" "" }
+  D<int>::func (); // { dg-error "" }
 }
+
+// { dg-prune-output "passing argument" }
