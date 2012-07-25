@@ -626,7 +626,7 @@ upc_pts_packed_build_cond_expr (location_t loc, tree exp)
 	    op1 = TREE_OPERAND (op1, 0);
 	  else
 	    op1 = build1 (VIEW_CONVERT_EXPR, upc_pts_rep_type_node, op1);
-          if (is_eq_op)
+          if (is_eq_op && has_phase)
 	    {
 	      /* Mask off the phase value.  */
 	      tree phase_mask =

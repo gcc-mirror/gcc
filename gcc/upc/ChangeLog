@@ -1,3 +1,10 @@
+2012-07-25  Gary Funck  <gary@intrepid.com>
+
+	* upc-pts-struct.c (upc_pts_struct_build_cond_expr):
+	Fix regression: field-by-field comparison of UPC
+	pointer-to-shared (vaddr, thread) only works
+	(with the current logic) for the == and != operators.
+
 2012-07-24  Gary Funck  <gary@intrepid.com>
 
 	* upc-pts-packed.c (upc_pts_packed_build_cond_expr):

@@ -590,8 +590,8 @@ upc_pts_struct_build_cvt (location_t loc, tree exp)
    Thus, for the equality comparison, the phase component of the
    pointers is omitted from the comparison.  In that case,
    rewrite the pointer-to-shared comparison operation into a
-   field by field comparison of the UPC pointer-to-shared operands
-   in the following order: (vaddr, thread).
+   field by field comparison the vaddr and thread fields
+   of the UPC pointer-to-shared operands.
 
    If the bit-wise comparison cannot be performed, then the difference
    between the pointers is compared to zero.  */
@@ -601,6 +601,7 @@ upc_pts_struct_build_cond_expr (location_t loc, tree exp)
 {
   tree result;
   const enum tree_code code = TREE_CODE (exp);
+  const int is_eq_op = (code == EQ_EXPR || code == NE_EXPR);
   tree op0 = TREE_OPERAND (exp, 0);
   tree op1 = TREE_OPERAND (exp, 1);
   const tree type0 = TREE_TYPE (op0);
@@ -614,64 +615,56 @@ upc_pts_struct_build_cond_expr (location_t loc, tree exp)
     const tree elem_type1 = strip_array_types (ttype1);
     gcc_assert (TREE_SHARED (elem_type0));
     gcc_assert (TREE_SHARED (elem_type1));
-    {
-      const tree bs0 = upc_get_block_factor (ttype0);
-      const tree bs1 = upc_get_block_factor (ttype1);
-      const int has_phase0 = !(integer_zerop (bs0) || integer_onep (bs0));
-      const int has_phase1 = !(integer_zerop (bs1) || integer_onep (bs1));
-      const int has_phase = has_phase0 || has_phase1;
-      const int is_eq_op = (code == EQ_EXPR || code == NE_EXPR);
-      const int is_vaddr_thread_cmp = !has_phase || is_eq_op;
-      if (is_vaddr_thread_cmp)
+    /* For == and !=, per 6.4.2p6 only compare (vaddr, thread).  */ 
+    if (is_eq_op)
+      {
+	const tree t_t = TREE_TYPE (upc_thread_field_node);
+	const tree v_t = TREE_TYPE (upc_vaddr_field_node);
+	const enum tree_code code0 = TREE_CODE (op0);
+	const enum tree_code code1 = TREE_CODE (op1);
+	const enum tree_code tcode = (code == EQ_EXPR)
+	  ? TRUTH_ANDIF_EXPR : TRUTH_ORIF_EXPR;
+	if (code0 == VIEW_CONVERT_EXPR
+	    && TREE_TYPE (TREE_OPERAND (op0, 0)) == upc_pts_rep_type_node)
+	  op0 = TREE_OPERAND (op0, 0);
+	else
+	  op0 = build1 (VIEW_CONVERT_EXPR, upc_pts_rep_type_node, op0);
+	if (code1 == VIEW_CONVERT_EXPR
+	    && TREE_TYPE (TREE_OPERAND (op1, 0)) == upc_pts_rep_type_node)
+	  op1 = TREE_OPERAND (op1, 0);
+	else
+	  op1 = build1 (VIEW_CONVERT_EXPR, upc_pts_rep_type_node, op1);
+	op0 = save_expr (op0);
+	op1 = save_expr (op1);
 	{
-	  const tree t_t = TREE_TYPE (upc_thread_field_node);
-	  const tree v_t = TREE_TYPE (upc_vaddr_field_node);
-	  const enum tree_code code0 = TREE_CODE (op0);
-	  const enum tree_code code1 = TREE_CODE (op1);
-	  const enum tree_code tcode = (code == EQ_EXPR)
-	    ? TRUTH_ANDIF_EXPR : TRUTH_ORIF_EXPR;
-	  if (code0 == VIEW_CONVERT_EXPR
-	      && TREE_TYPE (TREE_OPERAND (op0, 0)) == upc_pts_rep_type_node)
-	    op0 = TREE_OPERAND (op0, 0);
-	  else
-	    op0 = build1 (VIEW_CONVERT_EXPR, upc_pts_rep_type_node, op0);
-	  if (code1 == VIEW_CONVERT_EXPR
-	      && TREE_TYPE (TREE_OPERAND (op1, 0)) == upc_pts_rep_type_node)
-	    op1 = TREE_OPERAND (op1, 0);
-	  else
-	    op1 = build1 (VIEW_CONVERT_EXPR, upc_pts_rep_type_node, op1);
-	  op0 = save_expr (op0);
-	  op1 = save_expr (op1);
-	  {
-	    const tree off0 = build3 (COMPONENT_REF, v_t, op0,
-				      upc_vaddr_field_node, NULL_TREE);
-	    const tree off1 = build3 (COMPONENT_REF, v_t, op1,
-				      upc_vaddr_field_node, NULL_TREE);
-	    const tree off_cmp = build_binary_op (loc, code, off0, off1, 0);
-	    const tree thread0 = build3 (COMPONENT_REF, t_t, op0,
-					 upc_thread_field_node, NULL_TREE);
-	    const tree thread1 = build3 (COMPONENT_REF, t_t, op1,
-					 upc_thread_field_node, NULL_TREE);
-	    const tree thread_cmp =
-	      build_binary_op (loc, code, thread0, thread1, 0);
-	    result = build_binary_op (loc, tcode, off_cmp, thread_cmp, 0);
-	    /* Remove possible C_MAYBE_EXPR operands. */
-	    result = c_fully_fold (result, 0, NULL);
-	    result = gimple_boolify (result);
-	    result = fold_convert (TREE_TYPE (exp), result);
-	  }
+	  const tree off0 = build3 (COMPONENT_REF, v_t, op0,
+				    upc_vaddr_field_node, NULL_TREE);
+	  const tree off1 = build3 (COMPONENT_REF, v_t, op1,
+				    upc_vaddr_field_node, NULL_TREE);
+	  const tree off_cmp = build_binary_op (loc, code, off0, off1, 0);
+	  const tree thread0 = build3 (COMPONENT_REF, t_t, op0,
+				       upc_thread_field_node, NULL_TREE);
+	  const tree thread1 = build3 (COMPONENT_REF, t_t, op1,
+				       upc_thread_field_node, NULL_TREE);
+	  const tree thread_cmp =
+	    build_binary_op (loc, code, thread0, thread1, 0);
+	  result = build_binary_op (loc, tcode, off_cmp, thread_cmp, 0);
+	  /* Remove possible C_MAYBE_EXPR operands. */
+	  result = c_fully_fold (result, 0, NULL);
+	  result = gimple_boolify (result);
+	  result = fold_convert (TREE_TYPE (exp), result);
 	}
-      else
-	{
-	  const tree ptr_diff =
-	    build_binary_op (loc, MINUS_EXPR, op0, op1, 0);
-	  op0 = ptr_diff;
-	  op1 = build_int_cst (TREE_TYPE (op0), 0);
-	  TREE_OPERAND (exp, 0) = op0;
-	  TREE_OPERAND (exp, 1) = op1;
-	  result = exp;
-	}
-    }
+      }
+    else
+      {
+	const tree ptr_diff =
+	  build_binary_op (loc, MINUS_EXPR, op0, op1, 0);
+	op0 = ptr_diff;
+	op1 = build_int_cst (TREE_TYPE (op0), 0);
+	TREE_OPERAND (exp, 0) = op0;
+	TREE_OPERAND (exp, 1) = op1;
+	result = exp;
+      }
   }
   return result;
 }
