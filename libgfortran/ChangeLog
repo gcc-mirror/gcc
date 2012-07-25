@@ -1,3 +1,8 @@
+2012-07-25  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* io/list_read.c (list_formatted_read_scalar): Fix copying real
+	value back to temporary.
+
 2012-06-21  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/39654
