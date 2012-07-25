@@ -108,7 +108,7 @@ struct GTY(()) gimple_bb_info {
   gimple_seq phi_nodes;
 };
 
-/* A basic block is a sequence of instructions with only entry and
+/* A basic block is a sequence of instructions with only one entry and
    only one exit.  If any one of the instructions are executed, they
    will all be executed, and in sequence from first to last.
 
