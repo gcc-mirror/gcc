@@ -1,3 +1,7 @@
+2012-07-25  Dodji Seketeli  <dodji@redhat.com>
+
+	* basic-block.c: Fix typo in comment.
+
 2012-07-25  Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
