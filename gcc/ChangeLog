@@ -1,3 +1,27 @@
+2012-7-25  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
+	btver2 Enablement
+	* config.gcc (i[34567]86-*-linux* | ...): Add btver2.
+	(case ${target}): Add btver2.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Let
+	-march=native recognize btver2 processors.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Add
+	btver2 def_and_undef
+	* config/i386/i386.c (struct processor_costs btver2_cost): New
+	btver2 cost table.
+	(m_BTVER2): New definition.
+	(m_AMD_MULTIPLE): Includes m_BTVER2.
+	(initial_ix86_tune_features): Add btver2 tune.
+	(processor_target_table): Add btver2 entry.
+	(static const char *const cpu_names): Add btver2 entry.
+	(software_prefetching_beneficial_p): Add btver2.
+	(ix86_option_override_internal): Add btver2 instruction sets.
+	(ix86_issue_rate): Add btver2.
+	(ix86_adjust_cost): Add btver2.
+	* config/i386/i386.h (TARGET_BTVER2): New definition.
+	(enum target_cpu_default): Add TARGET_CPU_DEFAULT_btver2.
+	(enum processor_type): Add PROCESSOR_BTVER2.
+	* config/i386/i386.md (define_attr "cpu"): Add btver2.
+
 2012-07-24  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	* doc/tm.texi: Regenerate.

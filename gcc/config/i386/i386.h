@@ -249,6 +249,7 @@ extern const struct processor_costs ix86_size_cost;
 #define TARGET_BDVER1 (ix86_tune == PROCESSOR_BDVER1)
 #define TARGET_BDVER2 (ix86_tune == PROCESSOR_BDVER2)
 #define TARGET_BTVER1 (ix86_tune == PROCESSOR_BTVER1)
+#define TARGET_BTVER2 (ix86_tune == PROCESSOR_BTVER2)
 #define TARGET_ATOM (ix86_tune == PROCESSOR_ATOM)
 
 /* Feature tests against the various tunings.  */
@@ -608,6 +609,7 @@ enum target_cpu_default
   TARGET_CPU_DEFAULT_bdver1,
   TARGET_CPU_DEFAULT_bdver2,
   TARGET_CPU_DEFAULT_btver1,
+  TARGET_CPU_DEFAULT_btver2,
 
   TARGET_CPU_DEFAULT_max
 };
@@ -2067,6 +2069,7 @@ enum processor_type
   PROCESSOR_BDVER1,
   PROCESSOR_BDVER2,
   PROCESSOR_BTVER1,
+  PROCESSOR_BTVER2,
   PROCESSOR_ATOM,
   PROCESSOR_max
 };
