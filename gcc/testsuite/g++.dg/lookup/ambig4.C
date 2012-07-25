@@ -4,10 +4,10 @@
 
 namespace N
 {
-  int i;            // { dg-error "i" }
+  int i;            // { dg-message "i" }
 }
 
-int i;              // { dg-error "i" }
+int i;              // { dg-message "i" }
 
 using namespace N;
 

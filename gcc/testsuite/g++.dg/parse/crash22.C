@@ -4,17 +4,17 @@
 // PR 19030: ICE
 // Origin: Volker Reichelt <reichelt@gcc.gnu.org>
 
-struct A; // { dg-error "A" }
+struct A; // { dg-message "A" }
 
 namespace N
 {
-  struct A; // { dg-error "A" }
+  struct A; // { dg-message "A" }
 }
 
 using namespace N;
 
-int A::i; // { dg-error "ambiguous|declared here" "" }
-int A::i; // { dg-error "ambiguous|redefinition of" "" }
+int A::i; // { dg-message "ambiguous|declared here" "" }
+int A::i; // { dg-message "ambiguous|redefinition of" "" }
 
 namespace N
 {
