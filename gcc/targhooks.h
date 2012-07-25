@@ -92,8 +92,9 @@ extern enum machine_mode default_preferred_simd_mode (enum machine_mode mode);
 extern unsigned int default_autovectorize_vector_sizes (void);
 extern void *default_init_cost (struct loop *);
 extern unsigned default_add_stmt_cost (void *, int, enum vect_cost_for_stmt,
-				       struct _stmt_vec_info *, int);
-extern unsigned default_finish_cost (void *);
+				       struct _stmt_vec_info *, int,
+				       enum vect_cost_model_location);
+extern void default_finish_cost (void *, unsigned *, unsigned *, unsigned *);
 extern void default_destroy_cost_data (void *);
 
 /* These are here, and not in hooks.[ch], because not all users of
