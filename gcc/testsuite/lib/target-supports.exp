@@ -984,6 +984,14 @@ proc check_named_sections_available { } {
     }]
 }
 
+# Return true if the "naked" function attribute is supported on this target.
+
+proc check_effective_target_naked_functions { } {
+    return [check_no_compiler_messages naked_functions assembly {
+	void f() __attribute__((naked));
+    }]
+}
+
 # Return 1 if the target supports Fortran real kinds larger than real(8),
 # 0 otherwise.
 #

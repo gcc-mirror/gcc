@@ -686,6 +686,17 @@ avr_can_eliminate (const int from, const int to)
               && !frame_pointer_needed));
 }
 
+
+/* Implement TARGET_WARN_FUNC_RETURN.  */
+
+static bool
+avr_warn_func_return (tree decl)
+{
+  /* Naked functions are implemented entirely in assembly, including the
+     return sequence, so suppress warnings about this.  */
+  return !avr_naked_function_p (decl);
+}
+
 /* Compute offset between arg_pointer and frame_pointer.  */
 
 int
@@ -10789,6 +10800,9 @@ avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
 #define TARGET_FRAME_POINTER_REQUIRED avr_frame_pointer_required_p
 #undef  TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE avr_can_eliminate
+
+#undef TARGET_WARN_FUNC_RETURN
+#define TARGET_WARN_FUNC_RETURN avr_warn_func_return
 
 #undef  TARGET_CLASS_LIKELY_SPILLED_P
 #define TARGET_CLASS_LIKELY_SPILLED_P avr_class_likely_spilled_p

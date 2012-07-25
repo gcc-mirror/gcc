@@ -1,3 +1,29 @@
+2012-07-25  Sandra Loosemore  <sandra@codesourcery.com>
+	    Paul Brook  <paul@codesourcery.com>
+
+	PR target/53633
+
+	* target.def (warn_func_return): New hook.
+	* doc/tm.texi.in (TARGET_WARN_FUNC_RETURN): New hook.
+	* doc/tm.texi: Regenerate.
+	* doc/sourcebuild.texi (Effective-Target Keywords): Document
+	naked_functions.
+	* ipa-pure-const.c (warn_function_noreturn): Check
+	targetm.warn_func_return.
+	* tree-cfg.c (execute_warn_function_return): Likewise.
+	* config/spu/spu.c (spu_warn_func_return): New.
+	(TARGET_WARN_FUNC_RETURN): Define.
+	* config/rx/rx.c (rx_warn_func_return): New.
+	(TARGET_WARN_FUNC_RETURN): Define.
+	* config/avr/avr.c (avr_warn_func_return): New.
+	(TARGET_WARN_FUNC_RETURN): Define.
+	* config/arm/arm.c (arm_warn_func_return): New.
+	(TARGET_WARN_FUNC_RETURN): Define.
+	* config/mcore/mcore.c (mcore_warn_func_return): New.
+	(TARGET_WARN_FUNC_RETURN): Define.
+	(saved_warn_return_type, saved_warn_return_type_count): Remove.
+	(mcore_reorg, mcore_handle_naked_attribute): Remove warn_return hack.
+
 2012-07-25  Siddhesh Poyarekar  <siddhesh@redhat.com>
 
 	* final.c [ASSEMBLER_DIALECT](do_assembler_dialects): New

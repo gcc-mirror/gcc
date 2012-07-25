@@ -186,7 +186,8 @@ void
 warn_function_noreturn (tree decl)
 {
   static struct pointer_set_t *warned_about;
-  if (!lang_hooks.missing_noreturn_ok_p (decl))
+  if (!lang_hooks.missing_noreturn_ok_p (decl)
+      && targetm.warn_func_return (decl))
     warned_about 
       = suggest_attribute (OPT_Wsuggest_attribute_noreturn, decl,
 			   true, warned_about, "noreturn");
