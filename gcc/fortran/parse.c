@@ -76,7 +76,7 @@ match_word (const char *str, match (*subr) (void), locus *old_locus)
 }
 
 
-/* Load symbols from all USE statements encounted in this scoping unit.  */
+/* Load symbols from all USE statements encountered in this scoping unit.  */
 
 static void
 use_modules (void)
@@ -3268,7 +3268,7 @@ parse_critical_block (void)
 	    if (s.ext.end_do_label != NULL
 		&& s.ext.end_do_label != gfc_statement_label)
 	      gfc_error_now ("Statement label in END CRITICAL at %C does not "
-			     "match CRITIAL label");
+			     "match CRITICAL label");
 
 	    if (gfc_statement_label != NULL)
 	      {
@@ -3393,7 +3393,7 @@ parse_associate (void)
 	 however, as it may only be set on the target during resolution.
 	 Still, sometimes it helps to have it right now -- especially
 	 for parsing component references on the associate-name
-	 in case of assication to a derived-type.  */
+	 in case of association to a derived-type.  */
       sym->ts = a->target->ts;
     }
 
