@@ -1,3 +1,8 @@
+2012-07-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils2.c (gnat_stabilize_reference) <BIT_FIELD_REF>: Do
+	not stabilize operand #1 and #2.
+
 2012-07-23  Tristan Gingold  <gingold@adacore.com>
 
 	* gcc-interface/trans.c (Handled_Sequence_Of_Statements_to_gnu): Use

@@ -2257,7 +2257,7 @@ gimplify_compound_lval (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 			fallback | fb_lvalue);
   ret = MIN (ret, tret);
 
-  /* And finally, the indices and operands to BIT_FIELD_REF.  During this
+  /* And finally, the indices and operands of ARRAY_REF.  During this
      loop we also remove any useless conversions.  */
   for (; VEC_length (tree, stack) > 0; )
     {
@@ -2272,15 +2272,6 @@ gimplify_compound_lval (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 				    is_gimple_val, fb_rvalue);
 	      ret = MIN (ret, tret);
 	    }
-	}
-      else if (TREE_CODE (t) == BIT_FIELD_REF)
-	{
-	  tret = gimplify_expr (&TREE_OPERAND (t, 1), pre_p, post_p,
-				is_gimple_val, fb_rvalue);
-	  ret = MIN (ret, tret);
-	  tret = gimplify_expr (&TREE_OPERAND (t, 2), pre_p, post_p,
-				is_gimple_val, fb_rvalue);
-	  ret = MIN (ret, tret);
 	}
 
       STRIP_USELESS_TYPE_CONVERSION (TREE_OPERAND (t, 0));
@@ -7406,19 +7397,9 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	  break;
 
 	case BIT_FIELD_REF:
-	  {
-	    enum gimplify_status r0, r1, r2;
-
-	    r0 = gimplify_expr (&TREE_OPERAND (*expr_p, 0), pre_p,
-				post_p, is_gimple_lvalue, fb_either);
-	    r1 = gimplify_expr (&TREE_OPERAND (*expr_p, 1), pre_p,
-				post_p, is_gimple_val, fb_rvalue);
-	    r2 = gimplify_expr (&TREE_OPERAND (*expr_p, 2), pre_p,
-				post_p, is_gimple_val, fb_rvalue);
-	    recalculate_side_effects (*expr_p);
-
-	    ret = MIN (r0, MIN (r1, r2));
-	  }
+	  ret = gimplify_expr (&TREE_OPERAND (*expr_p, 0), pre_p,
+			       post_p, is_gimple_lvalue, fb_either);
+	  recalculate_side_effects (*expr_p);
 	  break;
 
 	case TARGET_MEM_REF:

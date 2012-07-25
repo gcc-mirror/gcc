@@ -2667,7 +2667,7 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
 	  CALL_EXPR_STATIC_CHAIN (folded) = sc;
 	return folded;
       }
-      break;
+
     case MEM_REF:
       {
 	tree baseop = create_component_ref_by_pieces_1 (block, ref, operand,
@@ -2690,7 +2690,7 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
 	  }
 	return fold_build2 (MEM_REF, currop->type, baseop, offset);
       }
-      break;
+
     case TARGET_MEM_REF:
       {
 	pre_expr op0expr, op1expr;
@@ -2720,7 +2720,7 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
 	return build5 (TARGET_MEM_REF, currop->type,
 		       baseop, currop->op2, genop0, currop->op1, genop1);
       }
-      break;
+
     case ADDR_EXPR:
       if (currop->op0)
 	{
@@ -2732,17 +2732,15 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
     case IMAGPART_EXPR:
     case VIEW_CONVERT_EXPR:
       {
-	tree folded;
 	tree genop0 = create_component_ref_by_pieces_1 (block, ref,
 							operand,
 							stmts, domstmt);
 	if (!genop0)
 	  return NULL_TREE;
-	folded = fold_build1 (currop->opcode, currop->type,
-			      genop0);
-	return folded;
+
+	return fold_build1 (currop->opcode, currop->type, genop0);
       }
-      break;
+
     case WITH_SIZE_EXPR:
       {
 	tree genop0 = create_component_ref_by_pieces_1 (block, ref, operand,
@@ -2759,28 +2757,18 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
 
 	return fold_build2 (currop->opcode, currop->type, genop0, genop1);
       }
-      break;
+
     case BIT_FIELD_REF:
       {
-	tree folded;
 	tree genop0 = create_component_ref_by_pieces_1 (block, ref, operand,
 							stmts, domstmt);
-	pre_expr op1expr = get_or_alloc_expr_for (currop->op0);
-	pre_expr op2expr = get_or_alloc_expr_for (currop->op1);
-	tree genop1;
-	tree genop2;
+	tree op1 = currop->op0;
+	tree op2 = currop->op1;
 
 	if (!genop0)
 	  return NULL_TREE;
-	genop1 = find_or_generate_expression (block, op1expr, stmts, domstmt);
-	if (!genop1)
-	  return NULL_TREE;
-	genop2 = find_or_generate_expression (block, op2expr, stmts, domstmt);
-	if (!genop2)
-	  return NULL_TREE;
-	folded = fold_build3 (BIT_FIELD_REF, currop->type, genop0, genop1,
-			      genop2);
-	return folded;
+
+	return fold_build3 (BIT_FIELD_REF, currop->type, genop0, op1, op2);
       }
 
       /* For array ref vn_reference_op's, operand 1 of the array ref
@@ -2866,10 +2854,9 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
 	      return NULL_TREE;
 	  }
 
-	return fold_build3 (COMPONENT_REF, TREE_TYPE (op1), op0, op1,
-			    genop2);
+	return fold_build3 (COMPONENT_REF, TREE_TYPE (op1), op0, op1, genop2);
       }
-      break;
+
     case SSA_NAME:
       {
 	pre_expr op0expr = get_or_alloc_expr_for (currop->op0);
