@@ -1,3 +1,9 @@
+2012-07-25  Bharathi Seshadri  <bseshadr@cisco.com>
+	    Jim Wilson  <jimwilso@cisco.com>
+
+	* config/arm/bpabi.h (BE8_LINK_SPEC): Set according to
+	TARGET_BIG_ENDIAN_DEFAULT.
+
 2012-07-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimple-low.c (lower_try_catch): New function.

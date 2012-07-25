@@ -55,15 +55,27 @@
 #define TARGET_FIX_V4BX_SPEC " %{mcpu=arm8|mcpu=arm810|mcpu=strongarm*"\
   "|march=armv4|mcpu=fa526|mcpu=fa626:--fix-v4bx}"
 
+#if TARGET_BIG_ENDIAN_DEFAULT
 #define BE8_LINK_SPEC \
-  " %{mbig-endian:%{march=armv7-a|mcpu=cortex-a5	\
-   |mcpu=cortex-a7					\
-   |mcpu=cortex-a8|mcpu=cortex-a9|mcpu=cortex-a15	\
-   |mcpu=generic-armv7-a				\
-   |march=armv7-m|mcpu=cortex-m3			\
-   |march=armv7e-m|mcpu=cortex-m4			\
-   |march=armv6-m|mcpu=cortex-m0			\
+  " %{!mlittle-endian:%{march=armv7-a|mcpu=cortex-a5    \
+   |mcpu=cortex-a7                                      \
+   |mcpu=cortex-a8|mcpu=cortex-a9|mcpu=cortex-a15       \
+   |mcpu=generic-armv7-a                                \
+   |march=armv7-m|mcpu=cortex-m3                        \
+   |march=armv7e-m|mcpu=cortex-m4                       \
+   |march=armv6-m|mcpu=cortex-m0                        \
    :%{!r:--be8}}}"
+#else
+#define BE8_LINK_SPEC \
+  " %{mbig-endian:%{march=armv7-a|mcpu=cortex-a5        \
+   |mcpu=cortex-a7                                      \
+   |mcpu=cortex-a8|mcpu=cortex-a9|mcpu=cortex-a15       \
+   |mcpu=generic-armv7-a                                \
+   |march=armv7-m|mcpu=cortex-m3                        \
+   |march=armv7e-m|mcpu=cortex-m4                       \
+   |march=armv6-m|mcpu=cortex-m0                        \
+   :%{!r:--be8}}}"
+#endif
 
 /* Tell the assembler to build BPABI binaries.  */
 #undef  SUBTARGET_EXTRA_ASM_SPEC
