@@ -6,9 +6,9 @@
 // bug 147. We ICE'd on an unprocessed LOOKUP_EXPR during tsubsting
 
 namespace EManip {
-    template <class T> void do_assign(T* d);  // { dg-error "" } candidate
+    template <class T> void do_assign(T* d);  // { dg-message "" } candidate
 }
-template <class T> void do_assign(T* d);    // { dg-error "" } candidate
+template <class T> void do_assign(T* d);    // { dg-message "" } candidate
 
 template <class T>
 struct MatrixC

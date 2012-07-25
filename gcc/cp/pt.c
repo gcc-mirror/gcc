@@ -1718,19 +1718,21 @@ print_candidates_1 (tree fns, bool more, const char **str)
       }
     else
       {
+	tree cand = OVL_CURRENT (fn);
         if (!*str)
           {
             /* Pick the prefix string.  */
             if (!more && !OVL_NEXT (fns))
               {
-                error ("candidate is: %+#D", OVL_CURRENT (fn));
+                inform (DECL_SOURCE_LOCATION (cand),
+			"candidate is: %#D", cand);
                 continue;
               }
 
             *str = _("candidates are:");
             spaces = get_spaces (*str);
           }
-        error ("%s %+#D", *str, OVL_CURRENT (fn));
+        inform (DECL_SOURCE_LOCATION (cand), "%s %#D", *str, cand);
         *str = spaces ? spaces : *str;
       }
 

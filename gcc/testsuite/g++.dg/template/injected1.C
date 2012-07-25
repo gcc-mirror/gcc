@@ -1,6 +1,6 @@
 // PR c++/13950, DR 176
 
-template <class T> struct Base { }; // { dg-error "" } candidate
+template <class T> struct Base { }; // { dg-message "" } candidate
 
 struct D1: Base<void>
 {

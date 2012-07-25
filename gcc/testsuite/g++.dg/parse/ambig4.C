@@ -1,12 +1,12 @@
 // PR c++/20293
 
-namespace hide { // { dg-error "hide" }
+namespace hide { // { dg-message "hide" }
   int k;
 }
 
 namespace {
   int i; 
-  namespace hide { // { dg-error "hide" }
+  namespace hide { // { dg-message "hide" }
     int j; 
   }
 }
