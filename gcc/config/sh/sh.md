@@ -3492,10 +3492,9 @@ label:
 ;; SImode shift left
 
 (define_expand "ashlsi3"
-  [(parallel [(set (match_operand:SI 0 "arith_reg_operand" "")
-		   (ashift:SI (match_operand:SI 1 "arith_reg_operand" "")
-			      (match_operand:SI 2 "nonmemory_operand" "")))
-	      (clobber (reg:SI T_REG))])]
+  [(set (match_operand:SI 0 "arith_reg_operand" "")
+	(ashift:SI (match_operand:SI 1 "arith_reg_operand" "")
+		   (match_operand:SI 2 "shift_count_operand" "")))]
   ""
 {
   if (TARGET_SHMEDIA)
@@ -3503,56 +3502,74 @@ label:
       emit_insn (gen_ashlsi3_media (operands[0], operands[1], operands[2]));
       DONE;
     }
-  if (CONST_INT_P (operands[2])
-      && sh_dynamicalize_shift_p (operands[2]))
-    operands[2] = force_reg (SImode, operands[2]);
-  if (TARGET_DYNSHIFT)
-    {
-      emit_insn (gen_ashlsi3_std (operands[0], operands[1], operands[2]));
-      DONE;
-    }
-  if (! immediate_operand (operands[2], GET_MODE (operands[2])))
-    FAIL;
+  if (TARGET_DYNSHIFT
+      && CONST_INT_P (operands[2]) && sh_dynamicalize_shift_p (operands[2]))
+      operands[2] = force_reg (SImode, operands[2]);
 })
 
-;; This pattern is used by init_expmed for computing the costs of shift
-;; insns.
-(define_insn_and_split "ashlsi3_std"
-  [(set (match_operand:SI 0 "arith_reg_dest" "=r,r,r,r")
-	(ashift:SI (match_operand:SI 1 "arith_reg_operand" "0,0,0,0")
-		   (match_operand:SI 2 "nonmemory_operand" "r,M,P27,?ri")))
-   (clobber (match_scratch:SI 3 "=X,X,X,&r"))]
-  "TARGET_DYNSHIFT || (TARGET_SH1 && satisfies_constraint_P27 (operands[2]))"
+(define_insn "ashlsi3_k"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r,r")
+	(ashift:SI (match_operand:SI 1 "arith_reg_operand" "0,0")
+		   (match_operand:SI 2 "p27_shift_count_operand" "M,P27")))]
+  "TARGET_SH1"
   "@
-   shld	%2,%0
-   add	%0,%0
-   shll%O2	%0
-   #"
-  "TARGET_DYNSHIFT
-   && reload_completed
-   && CONST_INT_P (operands[2])
-   && ! satisfies_constraint_P27 (operands[2])"
-  [(set (match_dup 3) (match_dup 2))
-   (parallel
-    [(set (match_dup 0) (ashift:SI (match_dup 1) (match_dup 3)))
-     (clobber (match_dup 4))])]
+	add	%0,%0
+	shll%O2	%0"
+  [(set_attr "type" "arith")])
+
+(define_insn_and_split "ashlsi3_d"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+	(ashift:SI (match_operand:SI 1 "arith_reg_operand" "0")
+		   (match_operand:SI 2 "shift_count_operand" "r")))]
+  "TARGET_DYNSHIFT"
+  "shld	%2,%0"
+  "&& (CONST_INT_P (operands[2]) && ! sh_dynamicalize_shift_p (operands[2]))"
+  [(const_int 0)]
 {
-  operands[4] = gen_rtx_SCRATCH (SImode);
+  if (satisfies_constraint_P27 (operands[2]))
+    {
+      emit_insn (gen_ashlsi3_k (operands[0], operands[1], operands[2]));
+      DONE;
+    }
+  else if (!satisfies_constraint_P27 (operands[2]))
+    {
+      emit_insn (gen_ashlsi3_n (operands[0], operands[1], operands[2]));
+      DONE;
+    }
+
+  FAIL;
 }
-  [(set_attr "length" "*,*,*,4")
-   (set_attr "type" "dyn_shift,arith,arith,arith")])
+  [(set_attr "type" "arith")])
 
 (define_insn_and_split "ashlsi3_n"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
 	(ashift:SI (match_operand:SI 1 "arith_reg_operand" "0")
-		   (match_operand:SI 2 "const_int_operand" "n")))
-   (clobber (reg:SI T_REG))]
-  "TARGET_SH1 && ! sh_dynamicalize_shift_p (operands[2])"
+		   (match_operand:SI 2 "not_p27_shift_count_operand" "")))]
+  "TARGET_SH1"
   "#"
-  "TARGET_SH1 && reload_completed"
-  [(use (reg:SI R0_REG))]
+  "&& (reload_completed || INTVAL (operands[2]) == 31
+       || (sh_dynamicalize_shift_p (operands[2]) && can_create_pseudo_p ()))"
+  [(const_int 0)]
 {
-  gen_shifty_op (ASHIFT, operands);
+  if (INTVAL (operands[2]) == 31)
+    {
+      /* If the shift amount is 31 we split into a different sequence before
+	 reload so that it gets a chance to allocate R0 for the sequence.
+	 If it fails to do so (due to pressure on R0), it will take one insn
+	 more for the and.  */
+      emit_insn (gen_andsi3 (operands[0], operands[1], const1_rtx));
+      emit_insn (gen_rotlsi3_31 (operands[0], operands[0]));
+    }
+  else if (sh_dynamicalize_shift_p (operands[2]) && can_create_pseudo_p ())
+    {
+      /* If this pattern was picked and dynamic shifts are supported, switch
+	 to dynamic shift pattern before reload.  */
+      operands[2] = force_reg (SImode, operands[2]);
+      emit_insn (gen_ashlsi3_d (operands[0], operands[1], operands[2]));
+    }
+  else
+    gen_shifty_op (ASHIFT, operands);
+
   DONE;
 })
 

@@ -74,8 +74,6 @@ extern rtx sh_emit_cheap_store_flag (enum machine_mode, enum rtx_code, rtx, rtx)
 extern void sh_emit_compare_and_branch (rtx *, enum machine_mode);
 extern void sh_emit_compare_and_set (rtx *, enum machine_mode);
 extern int shift_insns_rtx (rtx);
-extern void gen_ashift (int, int, rtx);
-extern void gen_ashift_hi (int, int, rtx);
 extern void gen_shifty_op (int, rtx *);
 extern void gen_shifty_hi_op (int, rtx *);
 extern bool expand_ashiftrt (rtx *);

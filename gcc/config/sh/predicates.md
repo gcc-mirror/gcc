@@ -755,6 +755,13 @@
 (define_predicate "shift_count_operand"
   (match_code "const_int,const_double,const,symbol_ref,label_ref,subreg,reg,zero_extend,sign_extend")
 {
+  /* Allow T_REG as shift count for dynamic shifts, although it is not
+     really possible.  It will then be copied to a general purpose reg.  */
+  if (! TARGET_SHMEDIA)
+    return const_int_operand (op, mode)
+	   || (TARGET_DYNSHIFT && (arith_reg_operand (op, mode)
+				   || t_reg_operand (op, mode)));
+
   return (CONSTANT_P (op)
 	  ? (CONST_INT_P (op)
 	     ? (unsigned) INTVAL (op) < GET_MODE_BITSIZE (mode)
@@ -784,6 +791,14 @@
     }
   return arith_reg_operand (op, mode);
 })
+
+(define_predicate "p27_shift_count_operand"
+  (and (match_code "const_int")
+       (match_test "satisfies_constraint_P27 (op)")))
+
+(define_predicate "not_p27_shift_count_operand"
+  (and (match_code "const_int")
+       (match_test "! satisfies_constraint_P27 (op)")))
 
 ;; TODO: Add a comment here.
 

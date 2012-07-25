@@ -1,3 +1,19 @@
+2012-07-25  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54089
+	* config/sh/predicates.md (shift_count_operand): Handle not-SHMEDIA
+	case.
+	(p27_shift_count_operand, not_p27_shift_count_operand): New predicates.
+	* config/sh/sh.md (ashlsi3): Remove parallel and T_REG clobber
+	from expander.  Do not emit shift insn for not-SHMEDIA case.
+	(ashlsi3_std): Replace with ...
+	(ashlsi3_k, ashlsi3_d): ... these new insns.
+	* config/sh/sh.c (gen_ashift): Make static.  Add sanity checks.
+	Emit ashlsi3_k insn instead of ashlsi3_std in ASHIFT case.
+	(gen_ashift_hi): Make static.
+	* config/sh/sh-protos.h (gen_ashift, gen_ashift_hi): Remove forward
+	declaration.
+
 2012-07-25  Bharathi Seshadri  <bseshadr@cisco.com>
 	    Jim Wilson  <jimwilso@cisco.com>
 

@@ -3277,9 +3277,11 @@ sh_address_cost (rtx x, bool speed ATTRIBUTE_UNUSED)
 
 /* Code to expand a shift.  */
 
-void
+static void
 gen_ashift (int type, int n, rtx reg)
 {
+  rtx n_rtx;
+
   /* Negative values here come from the shift_amounts array.  */
   if (n < 0)
     {
@@ -3290,26 +3292,30 @@ gen_ashift (int type, int n, rtx reg)
       n = -n;
     }
 
+  n_rtx = GEN_INT (n);
+  gcc_assert (satisfies_constraint_P27 (n_rtx));
+
   switch (type)
     {
     case ASHIFTRT:
-      emit_insn (gen_ashrsi3_k (reg, reg, GEN_INT (n)));
+      emit_insn (gen_ashrsi3_k (reg, reg, n_rtx));
       break;
     case LSHIFTRT:
       if (n == 1)
-	emit_insn (gen_lshrsi3_m (reg, reg, GEN_INT (n)));
+	emit_insn (gen_lshrsi3_m (reg, reg, n_rtx));
       else
-	emit_insn (gen_lshrsi3_k (reg, reg, GEN_INT (n)));
+	emit_insn (gen_lshrsi3_k (reg, reg, n_rtx));
       break;
     case ASHIFT:
-      emit_insn (gen_ashlsi3_std (reg, reg, GEN_INT (n)));
+      emit_insn (gen_ashlsi3_k (reg, reg, n_rtx));
       break;
+    default:
+      gcc_unreachable ();
     }
 }
 
 /* Same for HImode */
-
-void
+static void
 gen_ashift_hi (int type, int n, rtx reg)
 {
   /* Negative values here come from the shift_amounts array.  */
