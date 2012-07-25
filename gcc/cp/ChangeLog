@@ -1,5 +1,9 @@
 2012-07-25  Jason Merrill  <jason@redhat.com>
 
+	PR c++/54020
+	* semantics.c (potential_constant_expression_1) [COND_EXPR]: Call
+	maybe_constant_value.
+
 	* cp-tree.h (tsubst_flags): Remove tf_no_access_control.
 	* call.c (standard_conversion): Don't set it.
 	* class.c (resolve_address_of_overloaded_function): Don't check it.
