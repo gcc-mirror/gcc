@@ -5,6 +5,7 @@ template<typename Enum>
 class QFlags
 {
     int i;
+public:
     inline QFlags(Enum f) : i(f) {}
 };
 class QString {};

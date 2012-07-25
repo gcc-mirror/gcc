@@ -1,5 +1,11 @@
 2012-07-25  Jason Merrill  <jason@redhat.com>
 
+	* cp-tree.h (tsubst_flags): Remove tf_no_access_control.
+	* call.c (standard_conversion): Don't set it.
+	* class.c (resolve_address_of_overloaded_function): Don't check it.
+	* decl.c (check_default_argument): Call
+	perform_implicit_conversion_flags.
+
 	* pt.c (print_candidates_1): Use inform instead of error.
 
 2012-07-24  Paolo Carlini  <paolo.carlini@oracle.com>
