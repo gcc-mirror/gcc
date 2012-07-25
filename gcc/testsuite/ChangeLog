@@ -1,3 +1,7 @@
+2012-07-25  Janis Johnson  <janisjo@codesourcery.com>
+
+	* g++.dg/cpp0x/nullptr21.c: Remove printfs, make self-checking.
+
 2012-07-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/noreturn5.ad[sb]: New test.
