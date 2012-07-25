@@ -1,3 +1,15 @@
+2012-07-25  Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+        * gcc.target/i386/prefetchw-1.c: New.
+	* gcc.target/i386/sse-12.c: Add -mprfchw.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* g++.dg/other/i386-2.C: Ditto.
+	* g++.dg/other/i386-3.C: Ditto.
+
 2012-07-24  Janis Johnson  <janisjo@codesourcery.com>
 
 	* lib/gcc-dg.exp (process-message): Don't ignore errors.

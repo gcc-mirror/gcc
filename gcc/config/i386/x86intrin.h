@@ -97,4 +97,8 @@
 #include <popcntintrin.h>
 #endif
 
+#ifdef __PRFCHW__
+#include <prfchwintrin.h>
+#endif
+
 #endif /* _X86INTRIN_H_INCLUDED */

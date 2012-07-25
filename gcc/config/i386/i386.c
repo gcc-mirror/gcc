@@ -2748,7 +2748,7 @@ ix86_target_string (HOST_WIDE_INT isa, int flags, const char *arch,
      preceding options while match those first.  */
   static struct ix86_target_opts isa_opts[] =
   {
-    { "-mfma4",		OPTION_MASK_ISA_FMA4 },
+    { "-mfma4",	OPTION_MASK_ISA_FMA4 },
     { "-mfma",		OPTION_MASK_ISA_FMA },
     { "-mxop",		OPTION_MASK_ISA_XOP },
     { "-mlwp",		OPTION_MASK_ISA_LWP },
@@ -2756,17 +2756,18 @@ ix86_target_string (HOST_WIDE_INT isa, int flags, const char *arch,
     { "-msse4.2",	OPTION_MASK_ISA_SSE4_2 },
     { "-msse4.1",	OPTION_MASK_ISA_SSE4_1 },
     { "-mssse3",	OPTION_MASK_ISA_SSSE3 },
-    { "-msse3",		OPTION_MASK_ISA_SSE3 },
-    { "-msse2",		OPTION_MASK_ISA_SSE2 },
+    { "-msse3",	OPTION_MASK_ISA_SSE3 },
+    { "-msse2",	OPTION_MASK_ISA_SSE2 },
     { "-msse",		OPTION_MASK_ISA_SSE },
     { "-m3dnow",	OPTION_MASK_ISA_3DNOW },
     { "-m3dnowa",	OPTION_MASK_ISA_3DNOW_A },
     { "-mmmx",		OPTION_MASK_ISA_MMX },
     { "-mabm",		OPTION_MASK_ISA_ABM },
     { "-mbmi",		OPTION_MASK_ISA_BMI },
-    { "-mbmi2", 	OPTION_MASK_ISA_BMI2 },
+    { "-mbmi2",	OPTION_MASK_ISA_BMI2 },
     { "-mlzcnt",	OPTION_MASK_ISA_LZCNT },
     { "-mhle",		OPTION_MASK_ISA_HLE },
+    { "-mprfchw",	OPTION_MASK_ISA_PRFCHW },
     { "-mtbm",		OPTION_MASK_ISA_TBM },
     { "-mpopcnt",	OPTION_MASK_ISA_POPCNT },
     { "-mmovbe",	OPTION_MASK_ISA_MOVBE },
@@ -2775,7 +2776,7 @@ ix86_target_string (HOST_WIDE_INT isa, int flags, const char *arch,
     { "-mpclmul",	OPTION_MASK_ISA_PCLMUL },
     { "-mfsgsbase",	OPTION_MASK_ISA_FSGSBASE },
     { "-mrdrnd",	OPTION_MASK_ISA_RDRND },
-    { "-mf16c",		OPTION_MASK_ISA_F16C },
+    { "-mf16c",	OPTION_MASK_ISA_F16C },
     { "-mrtm",		OPTION_MASK_ISA_RTM },
   };
 
@@ -3042,7 +3043,8 @@ ix86_option_override_internal (bool main_args_p)
 #define PTA_AVX2		(HOST_WIDE_INT_1 << 30)
 #define PTA_BMI2	 	(HOST_WIDE_INT_1 << 31)
 #define PTA_RTM		 	(HOST_WIDE_INT_1 << 32)
-#define PTA_HLE	 		(HOST_WIDE_INT_1 << 33)
+#define PTA_HLE			(HOST_WIDE_INT_1 << 33)
+#define PTA_PRFCHW		(HOST_WIDE_INT_1 << 34)
 /* if this reaches 64, need to widen struct pta flags below */
 
   static struct pta
@@ -3528,6 +3530,9 @@ ix86_option_override_internal (bool main_args_p)
 	if (processor_alias_table[i].flags & PTA_HLE
 	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_HLE))
 	  ix86_isa_flags |= OPTION_MASK_ISA_HLE;
+	if (processor_alias_table[i].flags & PTA_PRFCHW
+	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_PRFCHW))
+	  ix86_isa_flags |= OPTION_MASK_ISA_PRFCHW;
 	if (processor_alias_table[i].flags & (PTA_PREFETCH_SSE | PTA_SSE))
 	  x86_prefetch_sse = true;
 
@@ -3735,10 +3740,11 @@ ix86_option_override_internal (bool main_args_p)
 
   /* Turn on MMX builtins for -msse.  */
   if (TARGET_SSE)
-    {
-      ix86_isa_flags |= OPTION_MASK_ISA_MMX & ~ix86_isa_flags_explicit;
-      x86_prefetch_sse = true;
-    }
+    ix86_isa_flags |= OPTION_MASK_ISA_MMX & ~ix86_isa_flags_explicit;
+
+  /* Enable SSE prefetch.  */
+  if (TARGET_SSE || TARGET_PRFCHW)
+    x86_prefetch_sse = true;
 
   /* Turn on popcnt instruction for -msse4.2 or -mabm.  */
   if (TARGET_SSE4_2 || TARGET_ABM)
@@ -4348,6 +4354,7 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
     IX86_ATTR_ISA ("f16c",	OPT_mf16c),
     IX86_ATTR_ISA ("rtm",	OPT_mrtm),
     IX86_ATTR_ISA ("hle",	OPT_mhle),
+    IX86_ATTR_ISA ("prfchw",	OPT_mprfchw),
 
     /* enum options */
     IX86_ATTR_ENUM ("fpmath=",	OPT_mfpmath_),
