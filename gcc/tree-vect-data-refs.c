@@ -1212,10 +1212,11 @@ vector_alignment_reachable_p (struct data_reference *dr)
 
 /* Calculate the cost of the memory access represented by DR.  */
 
-static stmt_vector_for_cost
+static void
 vect_get_data_access_cost (struct data_reference *dr,
                            unsigned int *inside_cost,
-                           unsigned int *outside_cost)
+                           unsigned int *outside_cost,
+			   stmt_vector_for_cost *body_cost_vec)
 {
   gimple stmt = DR_STMT (dr);
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
@@ -1223,19 +1224,16 @@ vect_get_data_access_cost (struct data_reference *dr,
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   int vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
   int ncopies = vf / nunits;
-  stmt_vector_for_cost stmt_cost_vec = VEC_alloc (stmt_info_for_cost, heap, 2);
 
   if (DR_IS_READ (dr))
-    vect_get_load_cost (dr, ncopies, true, inside_cost,
-			outside_cost, &stmt_cost_vec);
+    vect_get_load_cost (dr, ncopies, true, inside_cost, outside_cost,
+			NULL, body_cost_vec, false);
   else
-    vect_get_store_cost (dr, ncopies, inside_cost, &stmt_cost_vec);
+    vect_get_store_cost (dr, ncopies, inside_cost, body_cost_vec);
 
   if (vect_print_dump_info (REPORT_COST))
     fprintf (vect_dump, "vect_get_data_access_cost: inside_cost = %d, "
              "outside_cost = %d.", *inside_cost, *outside_cost);
-
-  return stmt_cost_vec;
 }
 
 
@@ -1328,7 +1326,12 @@ vect_peeling_hash_get_lowest_cost (void **slot, void *data)
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   VEC (data_reference_p, heap) *datarefs = LOOP_VINFO_DATAREFS (loop_vinfo);
   struct data_reference *dr;
-  stmt_vector_for_cost stmt_cost_vec = NULL;
+  stmt_vector_for_cost prologue_cost_vec, body_cost_vec, epilogue_cost_vec;
+  int single_iter_cost;
+
+  prologue_cost_vec = VEC_alloc (stmt_info_for_cost, heap, 2);
+  body_cost_vec     = VEC_alloc (stmt_info_for_cost, heap, 2);
+  epilogue_cost_vec = VEC_alloc (stmt_info_for_cost, heap, 2);
 
   FOR_EACH_VEC_ELT (data_reference_p, datarefs, i, dr)
     {
@@ -1342,23 +1345,35 @@ vect_peeling_hash_get_lowest_cost (void **slot, void *data)
 
       save_misalignment = DR_MISALIGNMENT (dr);
       vect_update_misalignment_for_peel (dr, elem->dr, elem->npeel);
-      stmt_cost_vec = vect_get_data_access_cost (dr, &inside_cost,
-						 &outside_cost);
+      vect_get_data_access_cost (dr, &inside_cost, &outside_cost,
+				 &body_cost_vec);
       SET_DR_MISALIGNMENT (dr, save_misalignment);
     }
 
-  outside_cost += vect_get_known_peeling_cost (loop_vinfo, elem->npeel, &dummy,
-                         vect_get_single_scalar_iteration_cost (loop_vinfo));
+  single_iter_cost = vect_get_single_scalar_iteration_cost (loop_vinfo);
+  outside_cost += vect_get_known_peeling_cost (loop_vinfo, elem->npeel,
+					       &dummy, single_iter_cost,
+					       &prologue_cost_vec,
+					       &epilogue_cost_vec);
+
+  /* Prologue and epilogue costs are added to the target model later.
+     These costs depend only on the scalar iteration cost, the
+     number of peeling iterations finally chosen, and the number of
+     misaligned statements.  So discard the information found here.  */
+  VEC_free (stmt_info_for_cost, heap, prologue_cost_vec);
+  VEC_free (stmt_info_for_cost, heap, epilogue_cost_vec);
 
   if (inside_cost < min->inside_cost
       || (inside_cost == min->inside_cost && outside_cost < min->outside_cost))
     {
       min->inside_cost = inside_cost;
       min->outside_cost = outside_cost;
-      min->stmt_cost_vec = stmt_cost_vec;
+      min->body_cost_vec = body_cost_vec;
       min->peel_info.dr = elem->dr;
       min->peel_info.npeel = elem->npeel;
     }
+  else
+    VEC_free (stmt_info_for_cost, heap, body_cost_vec);
 
   return 1;
 }
@@ -1371,12 +1386,12 @@ vect_peeling_hash_get_lowest_cost (void **slot, void *data)
 static struct data_reference *
 vect_peeling_hash_choose_best_peeling (loop_vec_info loop_vinfo,
                                        unsigned int *npeel,
-				       stmt_vector_for_cost *stmt_cost_vec)
+				       stmt_vector_for_cost *body_cost_vec)
 {
    struct _vect_peel_extended_info res;
 
    res.peel_info.dr = NULL;
-   res.stmt_cost_vec = NULL;
+   res.body_cost_vec = NULL;
 
    if (flag_vect_cost_model)
      {
@@ -1393,7 +1408,7 @@ vect_peeling_hash_choose_best_peeling (loop_vec_info loop_vinfo,
      }
 
    *npeel = res.peel_info.npeel;
-   *stmt_cost_vec = res.stmt_cost_vec;
+   *body_cost_vec = res.body_cost_vec;
    return res.peel_info.dr;
 }
 
@@ -1510,7 +1525,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
   unsigned possible_npeel_number = 1;
   tree vectype;
   unsigned int nelements, mis, same_align_drs_max = 0;
-  stmt_vector_for_cost stmt_cost_vec = NULL;
+  stmt_vector_for_cost body_cost_vec = NULL;
 
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "=== vect_enhance_data_refs_alignment ===");
@@ -1714,11 +1729,14 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
           unsigned int store_inside_cost = 0, store_outside_cost = 0;
           unsigned int load_inside_penalty = 0, load_outside_penalty = 0;
           unsigned int store_inside_penalty = 0, store_outside_penalty = 0;
+	  stmt_vector_for_cost dummy = VEC_alloc (stmt_info_for_cost, heap, 2);
 
-          (void) vect_get_data_access_cost (dr0, &load_inside_cost,
-					    &load_outside_cost);
-          (void) vect_get_data_access_cost (first_store, &store_inside_cost,
-					    &store_outside_cost);
+          vect_get_data_access_cost (dr0, &load_inside_cost, &load_outside_cost,
+				     &dummy);
+          vect_get_data_access_cost (first_store, &store_inside_cost,
+				     &store_outside_cost, &dummy);
+
+	  VEC_free (stmt_info_for_cost, heap, dummy);
 
           /* Calculate the penalty for leaving FIRST_STORE unaligned (by
              aligning the load DR0).  */
@@ -1783,7 +1801,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 
       /* Choose the best peeling from the hash table.  */
       dr0 = vect_peeling_hash_choose_best_peeling (loop_vinfo, &npeel,
-						   &stmt_cost_vec);
+						   &body_cost_vec);
       if (!dr0 || !npeel)
         do_peeling = false;
     }
@@ -1868,6 +1886,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
       if (do_peeling)
         {
 	  stmt_info_for_cost *si;
+	  void *data = LOOP_VINFO_TARGET_COST_DATA (loop_vinfo);
 
           /* (1.2) Update the DR_MISALIGNMENT of each data reference DR_i.
              If the misalignment of DR_i is identical to that of dr0 then set
@@ -1895,13 +1914,16 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 	  /* We've delayed passing the inside-loop peeling costs to the
 	     target cost model until we were sure peeling would happen.
 	     Do so now.  */
-	  if (stmt_cost_vec)
+	  if (body_cost_vec)
 	    {
-	      FOR_EACH_VEC_ELT (stmt_info_for_cost, stmt_cost_vec, i, si)
-		(void) add_stmt_cost (LOOP_VINFO_TARGET_COST_DATA (loop_vinfo),
-				      si->count, si->kind,
-				      vinfo_for_stmt (si->stmt), si->misalign);
-	      VEC_free (stmt_info_for_cost, heap, stmt_cost_vec);
+	      FOR_EACH_VEC_ELT (stmt_info_for_cost, body_cost_vec, i, si)
+		{
+		  struct _stmt_vec_info *stmt_info
+		    = si->stmt ? vinfo_for_stmt (si->stmt) : NULL;
+		  (void) add_stmt_cost (data, si->count, si->kind, stmt_info,
+					si->misalign, vect_body);
+		}
+	      VEC_free (stmt_info_for_cost, heap, body_cost_vec);
 	    }
 
 	  stat = vect_verify_datarefs_alignment (loop_vinfo, NULL);

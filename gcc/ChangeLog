@@ -1,3 +1,120 @@
+2012-07-24  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* doc/tm.texi: Regenerate.
+	* targhooks.c (default_init_cost): Add prologue and epilogue costs.
+	(default_add_stmt_cost): Likewise; also handle NULL stmt_info.
+	(default_finish_cost): Add prologue and epilogue costs.
+	* targhooks.h (default_add_stmt_cost): Change parameter list.
+	(default_finish_cost): Likewise.
+	* target.def (init_cost): Change documentation string.
+	(add_stmt_cost): Change documentation string and parameter list.
+	(finish_cost): Likewise.
+	* target.h (vect_cost_model_location): New enum.
+	* tree-vectorizer.h (struct _slp_tree): Remove cost substruct.
+	(struct _slp_instance): Remove cost substruct; rename stmt_cost_vec
+	to body_cost_vec.
+	(SLP_INSTANCE_OUTSIDE_OF_LOOP_COST): Remove.
+	(SLP_INSTANCE_STMT_COST_VEC): Rename to SLP_INSTANCE_BODY_COST_VEC.
+	(SLP_TREE_OUTSIDE_OF_LOOP_COST): Remove.
+	(struct _vect_peel_extended_info): Rename stmt_cost_vec to
+	body_cost_vec.
+	(struct _stmt_vec_info): Remove cost substruct.
+	(STMT_VINFO_OUTSIDE_OF_LOOP_COST): Remove.
+	(stmt_vinfo_set_outside_of_loop_cost): Remove.
+	(builtin_vectorization_cost): New function.
+	(vect_get_stmt_cost): Change to use builtin_vectorization_cost.
+	(add_stmt_cost): Change parameter list.
+	(finish_cost): Likewise.
+	(vect_model_simple_cost): Likewise.
+	(vect_model_store_cost): Likewise.
+	(vect_model_load_cost): Likewise.
+	(record_stmt_cost): Likewise.
+	(vect_get_load_cost): Likewise.
+	(vect_get_known_peeling_cost): Likewise.
+	* tree-vect-loop.c (vect_get_known_peeling_cost): Change parameter
+	list; call record_stmt_cost for prologue and epilogue costs.
+	(vect_estimate_min_profitable_iters): Call add_stmt_cost for
+	prologue and epilogue costs; remove computation of vec_outside_cost;
+	return vec_prologue_cost and vec_epilogue_cost from finish_cost.
+	(vect_model_reduction_cost): Revise call to add_stmt_cost for body
+	costs; call add_stmt_cost for prologue and epilogue costs.
+	(vect_model_induction_cost): Revise call to add_stmt_cost for body
+	costs; call add_stmt_cost for prologue costs.
+	* tree-vect-data-refs.c (vect_get_data_access_cost): Change parameter
+	list for function and arguments for calls to vect_get_load_cost and
+	vect_get_store_cost.
+	(vect_peeling_hash_get_lowest_cost): Change argument list for calls to
+	vect_get_data_access_cost and vect_get_known_peeling_cost; use
+	temporary vectors prologue_cost_vec and epilogue_cost_vec for the
+	latter call and discard their results; rename stmt_cost_vec to
+	body_cost_vec; correct possible storage leak for body_cost_vec.
+	(vect_peeling_hash_choose_best_peeling): Rename stmt_cost_vec to
+	body_cost_vec.
+	(vect_enhance_data_refs_alignment): Rename stmt_cost_vec to
+	body_cost_vec; add extra dummy parameter on calls to
+	vect_get_data_access_cost; tolerate null si->stmt; add vect_body to
+	argument list on call to add_stmt_cost.
+	* tree-vect-stmts.c (record_stmt_cost): Change parameter list;
+	rename stmt_cost_vec to body_cost_vec; tolerate null stmt_info; call
+	builtin_vectorization_cost; add "where" parameter on call to
+	add_stmt_cost.
+	(vect_model_simple_cost): Change parameter list; call record_stmt_cost
+	for prologue costs; remove call to stmt_vinfo_set_outside_of_loop_cost;
+	rename stmt_cost_vec to body_cost_vec.
+	(vect_model_promotion_demotion_cost): Add vect_body argument to call
+	to add_stmt_cost; call add_stmt_cost for prologue costs; remove call
+	to stmt_vinfo_set_outside_of_loop_cost.
+	(vect_model_store_cost): Change parameter list; call record_stmt_cost
+	for prologue costs; add vect_body argument to call to record_stmt_cost;
+	rename stmt_cost_vec to body_cost_vec; remove call to
+	stmt_vinfo_set_outside_of_loop_cost.
+	(vect_get_store_cost): Rename stmt_cost_vec to body_cost_vec; add
+	vect_body argument to calls to record_stmt_cost.
+	(vect_model_load_cost): Change parameter list; rename stmt_cost_vec to
+	body_cost_vec; add vect_body argument to calls to record_stmt_cost;
+	remove call to stmt_vinfo_set_outside_of_loop_cost.
+	(vect_get_load_cost): Change parameter list; rename stmt_cost_vec to
+	body_cost_vec; add vect_body argument to calls to record_stmt_cost;
+	call record_stmt_cost for prologue costs.
+	(vectorizable_store): Change argument list for call to
+	vect_model_store_cost.
+	(vectorizable_load): Change argument list for call to
+	vect_model_load_cost.
+	(new_stmt_vec_info): Remove assignment to
+	STMT_VINFO_OUTSIDE_OF_LOOP_COST.
+	* config/spu/spu.c (spu_init_cost): Add prologue and epilogue costs.
+	(spu_add_stmt_cost): Likewise; also handle NULL stmt_info.
+	(spu_finish_cost): Add prologue and epilogue costs.
+	* config/i386/i386.c (i386_init_cost): Add prologue and epilogue costs.
+	(i386_add_stmt_cost): Likewise; also handle NULL stmt_info.
+	(i386_finish_cost): Add prologue and epilogue costs.
+	* config/rs6000/rs6000.c (rs6000_init_cost): Add prologue and epilogue
+	costs.
+	(rs6000_add_stmt_cost): Likewise; also handle NULL stmt_info.
+	(rs6000_finish_cost): Add prologue and epilogue costs.
+	* tree-vect-slp.c (vect_free_slp_instance): Rename
+	SLP_INSTANCE_STMT_COST_VEC to SLP_INSTANCE_BODY_COST_VEC.
+	(vect_create_new_slp_node): Remove assignment to
+	SLP_TREE_OUTSIDE_OF_LOOP_COST.
+	(vect_get_and_check_slp_defs): Change parameter list; change argument
+	lists to calls to vect_model_store_cost and vect_model_simple_cost.
+	(vect_build_slp_tree): Change parameter list; change argument lists
+	to calls to vect_model_load_cost, vect_get_and_check_slp_defs, and
+	recursive self-calls; remove setting of outside_cost from
+	SLP_TREE_OUTSIDE_OF_LOOP_COST; add vect_body argument to call to
+	record_stmt_cost.
+	(vect_analyze_slp_instance): Rename stmt_cost_vec to body_cost_vec;
+	rename SLP_INSTANCE_STMT_COST_VEC to SLP_INSTANCE_BODY_COST_VEC;
+	remove assignment to SLP_INSTANCE_OUTSIDE_OF_LOOP_COST; record SLP
+	prologue costs.
+	(vect_bb_vectorization_profitable_p): Rename stmt_cost_vec to
+	body_cost_vec; handle null ci->stmt; add vect_body argument to call
+	to add_stmt_cost; simplify calls to targetm.vectorize.
+	builtin_vectorization_cost; return vec_prologue_cost and
+	vec_epilogue_cost from finish_cost.
+	(vect_update_slp_costs_according_to_vf): Rename stmt_cost_vec to
+	body_cost_vec; add vect_body argument to call to add_stmt_cost.
+
 2012-07-24  Richard Henderson  <rth@redhat.com>
 
 	* system.h (FIXUNS_TRUNC_LIKE_FIX_TRUNC): Poison.
