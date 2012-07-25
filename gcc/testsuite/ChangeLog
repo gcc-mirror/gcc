@@ -1,3 +1,7 @@
+2012-07-25  Siddhesh Poyarekar  <siddhesh@redhat.com>
+
+	* gcc.target/i386/asm-dialect-1.c: New test case.
+
 2012-07-25  Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
