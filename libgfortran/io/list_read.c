@@ -1888,7 +1888,7 @@ list_formatted_read_scalar (st_parameter_dt *dtp, bt type, void *p,
       read_real (dtp, p, kind);
       /* Copy value back to temporary if needed.  */
       if (dtp->u.p.repeat_count > 0)
-	memcpy (dtp->u.p.value, p, kind);
+	memcpy (dtp->u.p.value, p, size);
       break;
     case BT_COMPLEX:
       read_complex (dtp, p, kind, size);
