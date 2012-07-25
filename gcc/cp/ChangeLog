@@ -1,5 +1,8 @@
 2012-07-25  Jason Merrill  <jason@redhat.com>
 
+	PR c++/54086
+	* decl.c (grokdeclarator): Allow const and constexpr together.
+
 	PR c++/54020
 	* semantics.c (potential_constant_expression_1) [COND_EXPR]: Call
 	maybe_constant_value.
