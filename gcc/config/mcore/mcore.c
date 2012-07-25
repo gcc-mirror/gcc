@@ -138,6 +138,7 @@ static unsigned int mcore_function_arg_boundary (enum machine_mode,
 						 const_tree);
 static void       mcore_asm_trampoline_template (FILE *);
 static void       mcore_trampoline_init		(rtx, tree, rtx);
+static bool       mcore_warn_func_return        (tree);
 static void       mcore_option_override		(void);
 static bool       mcore_legitimate_constant_p   (enum machine_mode, rtx);
 
@@ -227,6 +228,9 @@ static const struct attribute_spec mcore_attribute_table[] =
 
 #undef TARGET_LEGITIMATE_CONSTANT_P
 #define TARGET_LEGITIMATE_CONSTANT_P mcore_legitimate_constant_p
+
+#undef TARGET_WARN_FUNC_RETURN
+#define TARGET_WARN_FUNC_RETURN mcore_warn_func_return
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2580,9 +2584,6 @@ conditionalize_optimization (void)
     continue;
 }
 
-static int saved_warn_return_type = -1;
-static int saved_warn_return_type_count = 0;
-
 /* This is to handle loads from the constant pool.  */
 
 static void
@@ -2590,21 +2591,6 @@ mcore_reorg (void)
 {
   /* Reset this variable.  */
   current_function_anonymous_args = 0;
-  
-  /* Restore the warn_return_type if it has been altered.  */
-  if (saved_warn_return_type != -1)
-    {
-      /* Only restore the value if we have reached another function.
-	 The test of warn_return_type occurs in final_function () in
-	 c-decl.c a long time after the code for the function is generated,
-	 so we need a counter to tell us when we have finished parsing that
-	 function and can restore the flag.  */
-      if (--saved_warn_return_type_count == 0)
-	{
-	  warn_return_type = saved_warn_return_type;
-	  saved_warn_return_type = -1;
-	}
-    }
   
   if (optimize == 0)
     return;
@@ -3056,25 +3042,7 @@ static tree
 mcore_handle_naked_attribute (tree * node, tree name, tree args ATTRIBUTE_UNUSED,
 			      int flags ATTRIBUTE_UNUSED, bool * no_add_attrs)
 {
-  if (TREE_CODE (*node) == FUNCTION_DECL)
-    {
-      /* PR14310 - don't complain about lack of return statement
-	 in naked functions.  The solution here is a gross hack
-	 but this is the only way to solve the problem without
-	 adding a new feature to GCC.  I did try submitting a patch
-	 that would add such a new feature, but it was (rightfully)
-	 rejected on the grounds that it was creeping featurism,
-	 so hence this code.  */
-      if (warn_return_type)
-	{
-	  saved_warn_return_type = warn_return_type;
-	  warn_return_type = 0;
-	  saved_warn_return_type_count = 2;
-	}
-      else if (saved_warn_return_type_count)
-	saved_warn_return_type_count = 2;
-    }
-  else
+  if (TREE_CODE (*node) != FUNCTION_DECL)
     {
       warning (OPT_Wattributes, "%qE attribute only applies to functions",
 	       name);
@@ -3124,6 +3092,14 @@ int
 mcore_naked_function_p (void)
 {
   return lookup_attribute ("naked", DECL_ATTRIBUTES (current_function_decl)) != NULL_TREE;
+}
+
+static bool
+mcore_warn_func_return (tree decl)
+{
+  /* Naked functions are implemented entirely in assembly, including the
+     return sequence, so suppress warnings about this.  */
+  return lookup_attribute ("naked", DECL_ATTRIBUTES (decl)) == NULL_TREE;
 }
 
 #ifdef OBJECT_FORMAT_ELF

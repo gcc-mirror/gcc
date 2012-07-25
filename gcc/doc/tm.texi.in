@@ -4918,6 +4918,8 @@ FRAME_POINTER_REGNUM, ARG_POINTER_REGNUM, and the PIC_OFFSET_TABLE_REGNUM.
 
 @hook TARGET_SET_UP_BY_PROLOGUE
 
+@hook TARGET_WARN_FUNC_RETURN
+
 @node Stack Smashing Protection
 @subsection Stack smashing protection
 @cindex stack smashing protection

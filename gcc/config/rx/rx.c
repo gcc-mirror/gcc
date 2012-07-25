@@ -2629,6 +2629,14 @@ rx_func_attr_inlinable (const_tree decl)
     &&   ! is_naked_func (decl);  
 }
 
+static bool
+rx_warn_func_return (tree decl)
+{
+  /* Naked functions are implemented entirely in assembly, including the
+     return sequence, so suppress warnings about this.  */
+  return !is_naked_func (decl);
+}
+
 /* Return nonzero if it is ok to make a tail-call to DECL,
    a function_decl or NULL if this is an indirect call, using EXP  */
 
@@ -3281,6 +3289,9 @@ rx_adjust_insn_length (rtx insn, int current_length)
 
 #undef  TARGET_LEGITIMIZE_ADDRESS
 #define TARGET_LEGITIMIZE_ADDRESS		rx_legitimize_address
+
+#undef TARGET_WARN_FUNC_RETURN
+#define TARGET_WARN_FUNC_RETURN rx_warn_func_return
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

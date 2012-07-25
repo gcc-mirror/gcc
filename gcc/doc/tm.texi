@@ -4977,6 +4977,10 @@ FRAME_POINTER_REGNUM, ARG_POINTER_REGNUM, and the PIC_OFFSET_TABLE_REGNUM.
 This hook should add additional registers that are computed by the prologue to the hard regset for shrink-wrapping optimization purposes.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_WARN_FUNC_RETURN (tree)
+True if a function's return statements should be checked for matching the function's return type.  This includes checking for falling off the end of a non-void function.  Return false if no such check should be made.
+@end deftypefn
+
 @node Stack Smashing Protection
 @subsection Stack smashing protection
 @cindex stack smashing protection

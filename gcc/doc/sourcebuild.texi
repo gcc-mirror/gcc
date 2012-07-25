@@ -1787,6 +1787,9 @@ Target keeps null pointer checks, either due to the use of
 @item lto
 Compiler has been configured to support link-time optimization (LTO).
 
+@item naked_functions
+Target supports the @code{naked} function attribute.
+
 @item named_sections
 Target supports named sections.
 
