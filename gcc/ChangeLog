@@ -1,3 +1,24 @@
+2012-07-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* expr.c (expand_expr_real_1): Do not expand operand #1 and #2
+	of BIT_FIELD_REF for ignored results.
+	* fold-const.c (fold_ternary_loc) <BIT_FIELD_REF>: Check that the
+	CONSTRUCTOR has vector type before using vector accessors on it.
+	* gimplify.c (gimplify_compound_lval): Do not gimplify operand #1 and
+	#2 of BIT_FIELD_REF.
+	(gimplify_expr) <BIT_FIELD_REF>: Likewise.
+	* tree-nested.c (convert_nonlocal_reference_op) <BIT_FIELD_REF>: Do
+	not process operand #1 and #2.
+	(convert_local_reference_op): Likewise.
+	* tree-ssa-pre.c (create_component_ref_by_pieces_1): Remove superfluous
+	breaks throughout.
+	<BIT_FIELD_REF>: Reuse operand #1 and #2 directly.
+	* tree.c (stabilize_reference) <BIT_FIELD_REF>: Do not stabilize
+	operand #1 and #2.
+	(UPDATE_FLAGS): Do not consider operand #2 of BIT_FIELD_REF.
+	(build6_stat): Delete.
+	* tree.h (build6_stat, build6, build6_stat_loc, build6_loc): Likewise.
+
 2012-07-25 Marc Glisse <marc.glisse@inria.fr>
 
 	PR tree-optimization/30318

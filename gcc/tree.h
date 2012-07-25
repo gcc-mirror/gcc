@@ -4245,12 +4245,8 @@ extern tree build4_stat (enum tree_code, tree, tree, tree, tree,
 extern tree build5_stat (enum tree_code, tree, tree, tree, tree, tree,
 			 tree MEM_STAT_DECL);
 #define build5(c,t1,t2,t3,t4,t5,t6) build5_stat (c,t1,t2,t3,t4,t5,t6 MEM_STAT_INFO)
-extern tree build6_stat (enum tree_code, tree, tree, tree, tree, tree,
-			 tree, tree MEM_STAT_DECL);
-#define build6(c,t1,t2,t3,t4,t5,t6,t7) \
-  build6_stat (c,t1,t2,t3,t4,t5,t6,t7 MEM_STAT_INFO)
 
-/* _loc versions of build[1-6].  */
+/* _loc versions of build[1-5].  */
 
 static inline tree
 build1_stat_loc (location_t loc, enum tree_code code, tree type,
@@ -4310,20 +4306,6 @@ build5_stat_loc (location_t loc, enum tree_code code, tree type, tree arg0,
 }
 #define build5_loc(l,c,t1,t2,t3,t4,t5,t6) \
   build5_stat_loc (l,c,t1,t2,t3,t4,t5,t6 MEM_STAT_INFO)
-
-static inline tree
-build6_stat_loc (location_t loc, enum tree_code code, tree type, tree arg0,
-		 tree arg1, tree arg2, tree arg3, tree arg4,
-		 tree arg5 MEM_STAT_DECL)
-{
-  tree t = build6_stat (code, type, arg0, arg1, arg2, arg3, arg4,
-			arg5 PASS_MEM_STAT);
-  if (CAN_HAVE_LOCATION_P (t))
-    SET_EXPR_LOCATION (t, loc);
-  return t;
-}
-#define build6_loc(l,c,t1,t2,t3,t4,t5,t6,t7) \
-  build6_stat_loc (l,c,t1,t2,t3,t4,t5,t6,t7 MEM_STAT_INFO)
 
 extern tree build_var_debug_value_stat (tree, tree MEM_STAT_DECL);
 #define build_var_debug_value(t1,t2) \

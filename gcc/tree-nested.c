@@ -1013,13 +1013,6 @@ convert_nonlocal_reference_op (tree *tp, int *walk_subtrees, void *data)
 	      walk_tree (&TREE_OPERAND (t, 3), convert_nonlocal_reference_op,
 			 wi, NULL);
 	    }
-	  else if (TREE_CODE (t) == BIT_FIELD_REF)
-	    {
-	      walk_tree (&TREE_OPERAND (t, 1), convert_nonlocal_reference_op,
-			 wi, NULL);
-	      walk_tree (&TREE_OPERAND (t, 2), convert_nonlocal_reference_op,
-			 wi, NULL);
-	    }
 	}
       wi->val_only = false;
       walk_tree (tp, convert_nonlocal_reference_op, wi, NULL);
@@ -1489,13 +1482,6 @@ convert_local_reference_op (tree *tp, int *walk_subtrees, void *data)
 	      walk_tree (&TREE_OPERAND (t, 2), convert_local_reference_op, wi,
 			 NULL);
 	      walk_tree (&TREE_OPERAND (t, 3), convert_local_reference_op, wi,
-			 NULL);
-	    }
-	  else if (TREE_CODE (t) == BIT_FIELD_REF)
-	    {
-	      walk_tree (&TREE_OPERAND (t, 1), convert_local_reference_op, wi,
-			 NULL);
-	      walk_tree (&TREE_OPERAND (t, 2), convert_local_reference_op, wi,
 			 NULL);
 	    }
 	}
