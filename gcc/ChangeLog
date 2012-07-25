@@ -1,5 +1,12 @@
 2012-07-25  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gimple-low.c (lower_try_catch): New function.
+	(lower_stmt) <GIMPLE_TRY>: Use it to lower GIMPLE_TRY_CATCH.
+	<GIMPLE_CATCH>: Delete.
+	<GIMPLE_EH_FILTER>: Likewise.
+
+2012-07-25  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* expr.c (expand_expr_real_1): Do not expand operand #1 and #2
 	of BIT_FIELD_REF for ignored results.
 	* fold-const.c (fold_ternary_loc) <BIT_FIELD_REF>: Check that the
