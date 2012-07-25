@@ -532,6 +532,10 @@ mhle
 Target Report Mask(ISA_HLE) Var(ix86_isa_flags) Save
 Support Hardware Lock Elision prefixes
 
+mprfchw
+Target Report Mask(ISA_PRFCHW) Var(ix86_isa_flags) Save
+Support PREFETCHW instruction
+
 mtbm
 Target Report Mask(ISA_TBM) Var(ix86_isa_flags) Save
 Support TBM built-in functions and code generation
