@@ -1,3 +1,10 @@
+2012-07-25 Marc Glisse <marc.glisse@inria.fr>
+
+	PR tree-optimization/30318
+	* tree-vrp.c (extract_range_from_binary_expr_1) [PLUS_EXPR]:
+	Handle __int128.
+	[MINUS_EXPR]: Merge with PLUS_EXPR.
+
 2012-07-25  Sandra Loosemore  <sandra@codesourcery.com>
 	    Paul Brook  <paul@codesourcery.com>
 

@@ -2352,15 +2352,14 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 
   /* For integer ranges, apply the operation to each end of the
      range and see what we end up with.  */
-  if (code == PLUS_EXPR)
+  if (code == PLUS_EXPR || code == MINUS_EXPR)
     {
       /* If we have a PLUS_EXPR with two VR_RANGE integer constant
          ranges compute the precise range for such case if possible.  */
       if (range_int_cst_p (&vr0)
 	  && range_int_cst_p (&vr1)
-	  /* We attempt to do infinite precision signed integer arithmetic,
-	     thus we need two more bits than the possibly unsigned inputs.  */
-	  && TYPE_PRECISION (expr_type) < HOST_BITS_PER_DOUBLE_INT - 1)
+	  /* We need as many bits as the possibly unsigned inputs.  */
+	  && TYPE_PRECISION (expr_type) <= HOST_BITS_PER_DOUBLE_INT)
 	{
 	  double_int min0 = tree_to_double_int (vr0.min);
 	  double_int max0 = tree_to_double_int (vr0.max);
@@ -2372,9 +2371,60 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 	  double_int type_max
 	    = double_int_max_value (TYPE_PRECISION (expr_type), uns);
 	  double_int dmin, dmax;
+	  int min_ovf = 0;
+	  int max_ovf = 0;
 
-	  dmin = double_int_add (min0, min1);
-	  dmax = double_int_add (max0, max1);
+	  if (code == PLUS_EXPR)
+	    {
+	      dmin = double_int_add (min0, min1);
+	      dmax = double_int_add (max0, max1);
+
+	      /* Check for overflow in double_int.  */
+	      if (double_int_cmp (min1, double_int_zero, uns)
+		  != double_int_cmp (dmin, min0, uns))
+		min_ovf = double_int_cmp (min0, dmin, uns);
+	      if (double_int_cmp (max1, double_int_zero, uns)
+		  != double_int_cmp (dmax, max0, uns))
+		max_ovf = double_int_cmp (max0, dmax, uns);
+	    }
+	  else /* if (code == MINUS_EXPR) */
+	    {
+	      dmin = double_int_sub (min0, max1);
+	      dmax = double_int_sub (max0, min1);
+
+	      if (double_int_cmp (double_int_zero, max1, uns)
+		  != double_int_cmp (dmin, min0, uns))
+		min_ovf = double_int_cmp (min0, max1, uns);
+	      if (double_int_cmp (double_int_zero, min1, uns)
+		  != double_int_cmp (dmax, max0, uns))
+		max_ovf = double_int_cmp (max0, min1, uns);
+	    }
+
+	  /* For non-wrapping arithmetic look at possibly smaller
+	     value-ranges of the type.  */
+	  if (!TYPE_OVERFLOW_WRAPS (expr_type))
+	    {
+	      if (vrp_val_min (expr_type))
+		type_min = tree_to_double_int (vrp_val_min (expr_type));
+	      if (vrp_val_max (expr_type))
+		type_max = tree_to_double_int (vrp_val_max (expr_type));
+	    }
+
+	  /* Check for type overflow.  */
+	  if (min_ovf == 0)
+	    {
+	      if (double_int_cmp (dmin, type_min, uns) == -1)
+		min_ovf = -1;
+	      else if (double_int_cmp (dmin, type_max, uns) == 1)
+		min_ovf = 1;
+	    }
+	  if (max_ovf == 0)
+	    {
+	      if (double_int_cmp (dmax, type_min, uns) == -1)
+		max_ovf = -1;
+	      else if (double_int_cmp (dmax, type_max, uns) == 1)
+		max_ovf = 1;
+	    }
 
 	  if (TYPE_OVERFLOW_WRAPS (expr_type))
 	    {
@@ -2384,21 +2434,15 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 		= double_int_ext (dmin, TYPE_PRECISION (expr_type), uns);
 	      double_int tmax
 		= double_int_ext (dmax, TYPE_PRECISION (expr_type), uns);
-	      gcc_assert (double_int_scmp (dmin, dmax) <= 0);
-	      if ((double_int_scmp (dmin, type_min) == -1
-		   && double_int_scmp (dmax, type_min) == -1)
-		  || (double_int_scmp (dmin, type_max) == 1
-		      && double_int_scmp (dmax, type_max) == 1)
-		  || (double_int_scmp (type_min, dmin) <= 0
-		      && double_int_scmp (dmax, type_max) <= 0))
+	      if (min_ovf == max_ovf)
 		{
 		  /* No overflow or both overflow or underflow.  The
 		     range kind stays VR_RANGE.  */
 		  min = double_int_to_tree (expr_type, tmin);
 		  max = double_int_to_tree (expr_type, tmax);
 		}
-	      else if (double_int_scmp (dmin, type_min) == -1
-		       && double_int_scmp (dmax, type_max) == 1)
+	      else if (min_ovf == -1
+		       && max_ovf == 1)
 		{
 		  /* Underflow and overflow, drop to VR_VARYING.  */
 		  set_value_range_to_varying (vr);
@@ -2409,12 +2453,8 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 		  /* Min underflow or max overflow.  The range kind
 		     changes to VR_ANTI_RANGE.  */
 		  double_int tem = tmin;
-		  gcc_assert ((double_int_scmp (dmin, type_min) == -1
-			       && double_int_scmp (dmax, type_min) >= 0
-			       && double_int_scmp (dmax, type_max) <= 0)
-			      || (double_int_scmp (dmax, type_max) == 1
-				  && double_int_scmp (dmin, type_min) >= 0
-				  && double_int_scmp (dmin, type_max) <= 0));
+		  gcc_assert ((min_ovf == -1 && max_ovf == 0)
+			      || (max_ovf == 1 && min_ovf == 0));
 		  type = VR_ANTI_RANGE;
 		  tmin = double_int_add (tmax, double_int_one);
 		  tmax = double_int_add (tem, double_int_minus_one);
@@ -2434,16 +2474,9 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 	    }
 	  else
 	    {
-	      /* For non-wrapping arithmetic look at possibly smaller
-		 value-ranges of the type.  */
-	      if (vrp_val_min (expr_type))
-		type_min = tree_to_double_int (vrp_val_min (expr_type));
-	      if (vrp_val_max (expr_type))
-		type_max = tree_to_double_int (vrp_val_max (expr_type));
-
 	      /* If overflow does not wrap, saturate to the types min/max
 	         value.  */
-	      if (double_int_scmp (dmin, type_min) == -1)
+	      if (min_ovf == -1)
 		{
 		  if (needs_overflow_infinity (expr_type)
 		      && supports_overflow_infinity (expr_type))
@@ -2451,7 +2484,7 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 		  else
 		    min = double_int_to_tree (expr_type, type_min);
 		}
-	      else if (double_int_scmp (dmin, type_max) == 1)
+	      else if (min_ovf == 1)
 		{
 		  if (needs_overflow_infinity (expr_type)
 		      && supports_overflow_infinity (expr_type))
@@ -2462,7 +2495,7 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 	      else
 		min = double_int_to_tree (expr_type, dmin);
 
-	      if (double_int_scmp (dmax, type_min) == -1)
+	      if (max_ovf == -1)
 		{
 		  if (needs_overflow_infinity (expr_type)
 		      && supports_overflow_infinity (expr_type))
@@ -2470,7 +2503,7 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 		  else
 		    max = double_int_to_tree (expr_type, type_min);
 		}
-	      else if (double_int_scmp (dmax, type_max) == 1)
+	      else if (max_ovf == 1)
 		{
 		  if (needs_overflow_infinity (expr_type)
 		      && supports_overflow_infinity (expr_type))
@@ -2485,10 +2518,14 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 	      && supports_overflow_infinity (expr_type))
 	    {
 	      if (is_negative_overflow_infinity (vr0.min)
-		  || is_negative_overflow_infinity (vr1.min))
+		  || (code == PLUS_EXPR
+		      ? is_negative_overflow_infinity (vr1.min)
+		      : is_positive_overflow_infinity (vr1.max)))
 		min = negative_overflow_infinity (expr_type);
 	      if (is_positive_overflow_infinity (vr0.max)
-		  || is_positive_overflow_infinity (vr1.max))
+		  || (code == PLUS_EXPR
+		      ? is_positive_overflow_infinity (vr1.max)
+		      : is_negative_overflow_infinity (vr1.min)))
 		max = positive_overflow_infinity (expr_type);
 	    }
 	}
@@ -2716,26 +2753,6 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 	min = build_int_cst (TREE_TYPE (max), 0);
       else
 	min = fold_unary_to_constant (NEGATE_EXPR, expr_type, max);
-    }
-  else if (code == MINUS_EXPR)
-    {
-      /* If we have a MINUS_EXPR with two VR_ANTI_RANGEs, drop to
-	 VR_VARYING.  It would take more effort to compute a precise
-	 range for such a case.  For example, if we have op0 == 1 and
-	 op1 == 1 with their ranges both being ~[0,0], we would have
-	 op0 - op1 == 0, so we cannot claim that the difference is in
-	 ~[0,0].  Note that we are guaranteed to have
-	 vr0.type == vr1.type at this point.  */
-      if (vr0.type == VR_ANTI_RANGE)
-	{
-	  set_value_range_to_varying (vr);
-	  return;
-	}
-
-      /* For MINUS_EXPR, apply the operation to the opposite ends of
-	 each range.  */
-      min = vrp_int_const_binop (code, vr0.min, vr1.max);
-      max = vrp_int_const_binop (code, vr0.max, vr1.min);
     }
   else if (code == BIT_AND_EXPR || code == BIT_IOR_EXPR || code == BIT_XOR_EXPR)
     {
