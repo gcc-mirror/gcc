@@ -1,5 +1,10 @@
 2012-07-24  Gary Funck  <gary@intrepid.com>
 
+	* upc-pts-packed.c (upc_pts_packed_build_cond_expr):
+	Fix warning about use of const_tree.
+
+2012-07-24  Gary Funck  <gary@intrepid.com>
+
 	Per UPC spec. 6.4.2p6, ignore the value of the
 	phase of a pointer-to-shared, when comparing for
 	equal or not equal.

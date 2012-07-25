@@ -629,7 +629,7 @@ upc_pts_packed_build_cond_expr (location_t loc, tree exp)
           if (is_eq_op)
 	    {
 	      /* Mask off the phase value.  */
-	      const_tree phase_mask =
+	      tree phase_mask =
 	        fold_build1_loc (loc, BIT_NOT_EXPR, upc_pts_rep_type_node,
 		        build_binary_op (loc, LSHIFT_EXPR,
 			                 upc_phase_mask_node,
