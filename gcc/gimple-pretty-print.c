@@ -2265,6 +2265,7 @@ gimple_dump_bb_buff (pretty_printer *buffer, basic_block bb, int indent,
     }
 
   dump_implicit_edges (buffer, bb, indent, flags);
+  pp_flush (buffer);
 }
 
 

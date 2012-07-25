@@ -1,4 +1,9 @@
-2012-7-25  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
+2012-07-25  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* gimple-pretty-print.c (gimple_dump_bb_buff): Call pp_flush.
+
+2012-07-25  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
+
 	btver2 Enablement
 	* config.gcc (i[34567]86-*-linux* | ...): Add btver2.
 	(case ${target}): Add btver2.
@@ -744,6 +749,7 @@
 
 2012-07-20  Pat Haugen <pthaugen@us.ibm.com>
 	    Steven Bosscher  <steven@gcc.gnu.org>
+
 	* config/rs6000/power4.md (power4-store-update): Fix reservation.
 	(power4-three): Likewise.
 
