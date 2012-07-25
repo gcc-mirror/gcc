@@ -419,7 +419,7 @@ typedef gfc_expr* (*transformational_op)(gfc_expr*, gfc_expr*);
 /* Wrapper function, implements 'op1 += 1'. Only called if MASK
    of COUNT intrinsic is .TRUE..
 
-   Interface and implimentation mimics arith functions as
+   Interface and implementation mimics arith functions as
    gfc_add, gfc_multiply, etc.  */
 
 static gfc_expr* gfc_count (gfc_expr *op1, gfc_expr *op2)

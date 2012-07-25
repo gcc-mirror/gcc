@@ -732,7 +732,7 @@ syntax:
    char_len_param_value in parenthesis.  */
 
 static match
-match_char_length (gfc_expr **expr, bool *deferred, bool obsolenscent_check)
+match_char_length (gfc_expr **expr, bool *deferred, bool obsolescent_check)
 {
   int length;
   match m;
@@ -748,7 +748,7 @@ match_char_length (gfc_expr **expr, bool *deferred, bool obsolenscent_check)
 
   if (m == MATCH_YES)
     {
-      if (obsolenscent_check
+      if (obsolescent_check
 	  && gfc_notify_std (GFC_STD_F95_OBS,
 			     "Old-style character length at %C") == FAILURE)
 	return MATCH_ERROR;

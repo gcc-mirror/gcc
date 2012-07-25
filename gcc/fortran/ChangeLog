@@ -1,3 +1,19 @@
+2012-07-25  Tobias Burnus  <burnus@net-b.de>
+
+	* trans-types.c (gfc_real16_is_float128): Fix spelling
+	in a comment.
+	* trans.h (struct gfc_array_info): Ditto.
+	* gfortran.h (gfc_expr): Ditto.
+	* simplify.c (gfc_count): Ditto.
+	* trans-expr.c (gfc_copy_class_to_class,
+	conv_parent_component_references,
+	gfc_trans_pointer_assignment): Ditto.
+	* expr.c (check_pointer_assign): Fix diagnostic spelling.
+	* interface.c (compare_parameter): Ditto.
+	* parse.c (use_modules, parse_associate): Ditto.
+	* decl.c (match_char_length): Fix spelling of the
+	an function argument.
+
 2012-07-21  Tobias Burnus  <burnus@net-b.de>
 
 	* iso-c-binding.def (C_PTRDIFF_T): New TS29113 parameter.

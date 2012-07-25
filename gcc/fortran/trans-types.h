@@ -40,7 +40,7 @@ extern GTY(()) tree complex_float128_type_node;
    and runtime library.  */
 extern GTY(()) tree gfc_charlen_type_node;
 
-/* The following flags give us information on the correspondance of
+/* The following flags give us information on the correspondence of
    real (and complex) kinds with C floating-point types long double
    and __float128.  */
 extern bool gfc_real16_is_float128;

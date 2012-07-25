@@ -3449,7 +3449,7 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
       if (attr.elemental && !attr.intrinsic)
 	{
 	  gfc_error ("Nonintrinsic elemental procedure '%s' is invalid "
-		     "in procedure pointer assigment at %L",
+		     "in procedure pointer assignment at %L",
 		     rvalue->symtree->name, &rvalue->where);
 	  return FAILURE;
 	}

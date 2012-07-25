@@ -1710,7 +1710,7 @@ typedef struct gfc_expr
      is not a variable.  */
   struct gfc_expr *base_expr;
 
-  /* is_boz is true if the integer is regarded as BOZ bitpatten and is_snan
+  /* is_boz is true if the integer is regarded as BOZ bit pattern and is_snan
      denotes a signalling not-a-number.  */
   unsigned int is_boz : 1, is_snan : 1;
 
