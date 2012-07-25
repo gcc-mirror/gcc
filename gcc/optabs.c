@@ -75,7 +75,7 @@ static hashval_t
 hash_libfunc (const void *p)
 {
   const struct libfunc_entry *const e = (const struct libfunc_entry *) p;
-  return (((int) e->mode1 + (int) e->mode2 * NUM_MACHINE_MODES) ^ e->op);
+  return ((e->mode1 + e->mode2 * NUM_MACHINE_MODES) ^ e->op);
 }
 
 /* Used for libfunc_hash.  */

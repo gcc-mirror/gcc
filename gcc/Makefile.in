@@ -971,7 +971,7 @@ GCC_PLUGIN_H = gcc-plugin.h highlev-plugin-common.h plugin.def \
 		$(CONFIG_H) $(SYSTEM_H) $(HASHTAB_H)
 PLUGIN_H = plugin.h $(GCC_PLUGIN_H)
 PLUGIN_VERSION_H = plugin-version.h configargs.h
-LIBFUNCS_H = libfuncs.h $(HASHTAB_H) $(OPTABS_H)
+LIBFUNCS_H = libfuncs.h $(HASHTAB_H)
 
 #
 # Now figure out from those variables how to compile and link.
