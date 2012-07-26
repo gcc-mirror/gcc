@@ -741,24 +741,17 @@ pex_win32_exec_child (struct pex_obj *obj ATTRIBUTE_UNUSED, int flags,
   int orig_out, orig_in, orig_err;
   BOOL separate_stderr = !(flags & PEX_STDERR_TO_STDOUT);
 
-  /* Ensure we have inheritable descriptors to pass to the child, and close the
-     original descriptors.  */
+  /* Ensure we have inheritable descriptors to pass to the child.  */
   orig_in = in;
   in = _dup (orig_in);
-  if (orig_in != STDIN_FILENO)
-    _close (orig_in);
   
   orig_out = out;
   out = _dup (orig_out);
-  if (orig_out != STDOUT_FILENO)
-    _close (orig_out);
   
   if (separate_stderr)
     {
       orig_err = errdes;
       errdes = _dup (orig_err);
-      if (orig_err != STDERR_FILENO)
-	_close (orig_err);
     }
 
   stdin_handle = INVALID_HANDLE_VALUE;
@@ -834,6 +827,22 @@ pex_win32_exec_child (struct pex_obj *obj ATTRIBUTE_UNUSED, int flags,
     {
       *err = ENOENT;
       *errmsg = "CreateProcess";
+    }
+
+  /* If the child was created successfully, close the original file
+     descriptors.  If the process creation fails, these are closed by
+     pex_run_in_environment instead.  We must not close them twice as
+     that seems to cause a Windows exception.  */
+     
+  if (pid != (pid_t) -1)
+    {
+      if (orig_in != STDIN_FILENO)
+	_close (orig_in);
+      if (orig_out != STDOUT_FILENO)
+	_close (orig_out);
+      if (separate_stderr
+	  && orig_err != STDERR_FILENO)
+	_close (orig_err);
     }
 
   /* Close the standard input, standard output and standard error handles

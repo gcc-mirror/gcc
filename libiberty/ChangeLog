@@ -1,3 +1,9 @@
+2012-07-26  Kazu Hirata  <kazu@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	* pex-win32.c (pex_win32_exec_child): Only close original file
+	descriptors if child is launched successfully.
+
 2012-07-18  Jason Merrill  <jason@redhat.com>
 
 	* cp-demangle.c (cplus_demangle_operators): Add *_cast.
