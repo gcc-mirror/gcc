@@ -1748,6 +1748,50 @@ gfc_expanded_ac (gfc_expr *e)
 
 /*************** Type resolution of array constructors ***************/
 
+
+/* The symbol expr_is_sought_symbol_ref will try to find.  */
+static const gfc_symbol *sought_symbol = NULL;
+
+
+/* Tells whether the expression E is a variable reference to the symbol
+   in the static variable SOUGHT_SYMBOL, and sets the locus pointer WHERE
+   accordingly.
+   To be used with gfc_expr_walker: if a reference is found we don't need
+   to look further so we return 1 to skip any further walk.  */
+
+static int
+expr_is_sought_symbol_ref (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
+			   void *where)
+{
+  gfc_expr *expr = *e;
+  locus *sym_loc = (locus *)where;
+
+  if (expr->expr_type == EXPR_VARIABLE
+      && expr->symtree->n.sym == sought_symbol)
+    {
+      *sym_loc = expr->where;
+      return 1;
+    }
+
+  return 0;
+}
+
+
+/* Tells whether the expression EXPR contains a reference to the symbol
+   SYM and in that case sets the position SYM_LOC where the reference is.  */
+
+static bool
+find_symbol_in_expr (gfc_symbol *sym, gfc_expr *expr, locus *sym_loc)
+{
+  int ret;
+
+  sought_symbol = sym;
+  ret = gfc_expr_walker (&expr, &expr_is_sought_symbol_ref, sym_loc);
+  sought_symbol = NULL;
+  return ret;
+}
+
+
 /* Recursive array list resolution function.  All of the elements must
    be of the same type.  */
 
@@ -1756,14 +1800,46 @@ resolve_array_list (gfc_constructor_base base)
 {
   gfc_try t;
   gfc_constructor *c;
+  gfc_iterator *iter;
 
   t = SUCCESS;
 
   for (c = gfc_constructor_first (base); c; c = gfc_constructor_next (c))
     {
-      if (c->iterator != NULL
-	  && gfc_resolve_iterator (c->iterator, false) == FAILURE)
-	t = FAILURE;
+      iter = c->iterator;
+      if (iter != NULL)
+        {
+	  gfc_symbol *iter_var;
+	  locus iter_var_loc;
+	 
+	  if (gfc_resolve_iterator (iter, false) == FAILURE)
+	    t = FAILURE;
+
+	  /* Check for bounds referencing the iterator variable.  */
+	  gcc_assert (iter->var->expr_type == EXPR_VARIABLE);
+	  iter_var = iter->var->symtree->n.sym;
+	  if (find_symbol_in_expr (iter_var, iter->start, &iter_var_loc))
+	    {
+	      if (gfc_notify_std (GFC_STD_LEGACY, "AC-IMPLIED-DO initial "
+				  "expression references control variable "
+				  "at %L", &iter_var_loc) == FAILURE)
+	       t = FAILURE;
+	    }
+	  if (find_symbol_in_expr (iter_var, iter->end, &iter_var_loc))
+	    {
+	      if (gfc_notify_std (GFC_STD_LEGACY, "AC-IMPLIED-DO final "
+				  "expression references control variable "
+				  "at %L", &iter_var_loc) == FAILURE)
+	       t = FAILURE;
+	    }
+	  if (find_symbol_in_expr (iter_var, iter->step, &iter_var_loc))
+	    {
+	      if (gfc_notify_std (GFC_STD_LEGACY, "AC-IMPLIED-DO step "
+				  "expression references control variable "
+				  "at %L", &iter_var_loc) == FAILURE)
+	       t = FAILURE;
+	    }
+	}
 
       if (gfc_resolve_expr (c->expr) == FAILURE)
 	t = FAILURE;

@@ -1,3 +1,8 @@
+2012-07-26  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/44354
+	* gfortran.dg/array_constructor_38.f90: New test.
+
 2012-07-25  Janis Johnson  <janisjo@codesourcery.com>
 
 	* g++.dg/cpp0x/nullptr21.c: Remove printfs, make self-checking.
