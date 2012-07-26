@@ -2029,7 +2029,7 @@ GOTESTFLAGS =
 
 # Check a package.
 CHECK = \
-	GC="$(GOC) $(GOCFLAGS) -L `${PWD_COMMAND}` -L `${PWD_COMMAND}`/.libs"; \
+	GC="$(GOC) $(GOCFLAGS) $($(subst /,_,$@)_GOCFLAGS) -L `${PWD_COMMAND}` -L `${PWD_COMMAND}`/.libs"; \
 	export GC; \
 	GOLIBS="$(MATH_LIBS) $(NET_LIBS)"; \
 	export GOLIBS; \
@@ -2089,6 +2089,9 @@ CHECK_DEPS = libgo.la libgobegin.a \
 	$(toolexeclibgotexttemplate_DATA) \
 	$(toolexeclibgounicode_DATA)
 
+# At least for now, we need -static-libgo for this test, because
+# otherwise we can't get the line numbers.
+runtime_pprof_check_GOCFLAGS = -static-libgo
 
 # How to build a .gox file from a .lo file.
 BUILDGOX = \
@@ -2218,6 +2221,7 @@ TEST_PACKAGES = \
 	os/user/check \
 	path/filepath/check \
 	regexp/syntax/check \
+	runtime/pprof/check \
 	sync/atomic/check \
 	text/scanner/check \
 	text/tabwriter/check \
