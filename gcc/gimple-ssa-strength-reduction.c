@@ -54,6 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-flow.h"
 #include "domwalk.h"
 #include "pointer-set.h"
+#include "expmed.h"
 
 /* Information about a strength reduction candidate.  Each statement
    in the candidate table represents an expression of one of the
@@ -340,29 +341,22 @@ stmt_cost (gimple gs, bool speed)
       rhs2 = gimple_assign_rhs2 (gs);
 
       if (host_integerp (rhs2, 0))
-	return multiply_by_const_cost (TREE_INT_CST_LOW (rhs2), lhs_mode,
-				       speed);
+	return mult_by_coeff_cost (TREE_INT_CST_LOW (rhs2), lhs_mode, speed);
 
       gcc_assert (TREE_CODE (rhs1) != INTEGER_CST);
-      return multiply_regs_cost (TYPE_MODE (TREE_TYPE (lhs)), speed);
+      return mul_cost[speed][lhs_mode];
 
     case PLUS_EXPR:
     case POINTER_PLUS_EXPR:
     case MINUS_EXPR:
       rhs2 = gimple_assign_rhs2 (gs);
-
-      if (host_integerp (rhs2, 0))
-	return add_const_cost (TYPE_MODE (TREE_TYPE (rhs1)), speed);
-
-      gcc_assert (TREE_CODE (rhs1) != INTEGER_CST);
-      return add_regs_cost (lhs_mode, speed);
+      return add_cost[speed][lhs_mode];
 
     case NEGATE_EXPR:
-      return negate_reg_cost (lhs_mode, speed);
+      return neg_cost[speed][lhs_mode];
 
     case NOP_EXPR:
-      return extend_or_trunc_reg_cost (TREE_TYPE (lhs), TREE_TYPE (rhs1),
-				       speed);
+      return convert_cost (lhs_mode, TYPE_MODE (TREE_TYPE (rhs1)), speed);
 
     /* Note that we don't assign costs to copies that in most cases
        will go away.  */
@@ -1460,9 +1454,6 @@ execute_strength_reduction (void)
      back edges, and this gives us dominator information as well.  */
   loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
 
-  /* Initialize costs tables in IVOPTS.  */
-  initialize_costs ();
-
   /* Set up callbacks for the generic dominator tree walker.  */
   walk_data.dom_direction = CDI_DOMINATORS;
   walk_data.initialize_block_local_data = NULL;
@@ -1493,7 +1484,6 @@ execute_strength_reduction (void)
   pointer_map_destroy (stmt_cand_map);
   VEC_free (slsr_cand_t, heap, cand_vec);
   obstack_free (&cand_obstack, NULL);
-  finalize_costs ();
 
   return 0;
 }

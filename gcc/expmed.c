@@ -112,6 +112,7 @@ struct init_expmed_rtl
   struct rtx_def shift_add;	rtunion shift_add_fld1;
   struct rtx_def shift_sub0;	rtunion shift_sub0_fld1;
   struct rtx_def shift_sub1;	rtunion shift_sub1_fld1;
+  struct rtx_def convert;
 
   rtx pow2[MAX_BITS_PER_WORD];
   rtx cint[MAX_BITS_PER_WORD];
@@ -122,6 +123,7 @@ init_expmed_one_mode (struct init_expmed_rtl *all,
 		      enum machine_mode mode, int speed)
 {
   int m, n, mode_bitsize;
+  enum machine_mode mode_from;
 
   mode_bitsize = GET_MODE_UNIT_BITSIZE (mode);
 
@@ -139,6 +141,7 @@ init_expmed_one_mode (struct init_expmed_rtl *all,
   PUT_MODE (&all->shift_add, mode);
   PUT_MODE (&all->shift_sub0, mode);
   PUT_MODE (&all->shift_sub1, mode);
+  PUT_MODE (&all->convert, mode);
 
   add_cost[speed][mode] = set_src_cost (&all->plus, speed);
   neg_cost[speed][mode] = set_src_cost (&all->neg, speed);
@@ -183,6 +186,30 @@ init_expmed_one_mode (struct init_expmed_rtl *all,
 	  mul_highpart_cost[speed][mode]
 	    = set_src_cost (&all->wide_trunc, speed);
 	}
+
+      for (mode_from = GET_CLASS_NARROWEST_MODE (MODE_INT);
+	   mode_from != VOIDmode;
+	   mode_from = GET_MODE_WIDER_MODE (mode_from))
+	if (mode != mode_from)
+	  {
+	    unsigned short size_to = GET_MODE_SIZE (mode);
+	    unsigned short size_from = GET_MODE_SIZE (mode_from);
+	    if (size_to < size_from)
+	      {
+		PUT_CODE (&all->convert, TRUNCATE);
+		PUT_MODE (&all->reg, mode_from);
+		set_convert_cost (mode, mode_from, speed,
+				  set_src_cost (&all->convert, speed));
+	      }
+	    else if (size_from < size_to)
+	      {
+		/* Assume cost of zero-extend and sign-extend is the same.  */
+		PUT_CODE (&all->convert, ZERO_EXTEND);
+		PUT_MODE (&all->reg, mode_from);
+		set_convert_cost (mode, mode_from, speed,
+				  set_src_cost (&all->convert, speed));
+	      }
+	  }
     }
 }
 
@@ -261,6 +288,9 @@ init_expmed (void)
   PUT_CODE (&all.shift_sub1, MINUS);
   XEXP (&all.shift_sub1, 0) = &all.reg;
   XEXP (&all.shift_sub1, 1) = &all.shift_mult;
+
+  PUT_CODE (&all.convert, TRUNCATE);
+  XEXP (&all.convert, 0) = &all.reg;
 
   for (speed = 0; speed < 2; speed++)
     {
@@ -3260,6 +3290,24 @@ expand_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target,
 		      op0, op1, target, unsignedp, OPTAB_LIB_WIDEN);
   gcc_assert (op0);
   return op0;
+}
+
+/* Return a cost estimate for multiplying a register by the given
+   COEFFicient in the given MODE and SPEED.  */
+
+int
+mult_by_coeff_cost (HOST_WIDE_INT coeff, enum machine_mode mode, bool speed)
+{
+  int max_cost;
+  struct algorithm algorithm;
+  enum mult_variant variant;
+
+  rtx fake_reg = gen_raw_REG (mode, LAST_VIRTUAL_REGISTER + 1);
+  max_cost = set_src_cost (gen_rtx_MULT (mode, fake_reg, fake_reg), speed);
+  if (choose_mult_variant (mode, coeff, &algorithm, &variant, max_cost))
+    return algorithm.cost.cost;
+  else
+    return max_cost;
 }
 
 /* Perform a widening multiplication and return an rtx for the result.

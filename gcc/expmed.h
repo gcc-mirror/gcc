@@ -124,6 +124,8 @@ struct alg_hash_entry {
 #define NUM_ALG_HASH_ENTRIES 307
 #endif
 
+#define NUM_MODE_INT (MAX_MODE_INT - MIN_MODE_INT + 1)
+
 /* Target-dependent globals.  */
 struct target_expmed {
   /* Each entry of ALG_HASH caches alg_code for some integer.  This is
@@ -155,6 +157,11 @@ struct target_expmed {
   int x_udiv_cost[2][NUM_MACHINE_MODES];
   int x_mul_widen_cost[2][NUM_MACHINE_MODES];
   int x_mul_highpart_cost[2][NUM_MACHINE_MODES];
+
+  /* Conversion costs are only defined between two scalar integer modes
+     of different sizes.  The first machine mode is the destination mode,
+     and the second is the source mode.  */
+  int x_convert_cost[2][NUM_MODE_INT][NUM_MODE_INT];
 };
 
 extern struct target_expmed default_target_expmed;
@@ -197,4 +204,43 @@ extern struct target_expmed *this_target_expmed;
 #define mul_highpart_cost \
   (this_target_expmed->x_mul_highpart_cost)
 
+/* Set the COST for converting from FROM_MODE to TO_MODE when optimizing
+   for SPEED.  */
+
+static inline void
+set_convert_cost (enum machine_mode to_mode, enum machine_mode from_mode,
+		  bool speed, int cost)
+{
+  int to_idx, from_idx;
+
+  gcc_assert (to_mode >= MIN_MODE_INT
+	      && to_mode <= MAX_MODE_INT
+	      && from_mode >= MIN_MODE_INT
+	      && from_mode <= MAX_MODE_INT);
+
+  to_idx = to_mode - MIN_MODE_INT;
+  from_idx = from_mode - MIN_MODE_INT;
+  this_target_expmed->x_convert_cost[speed][to_idx][from_idx] = cost;
+}
+
+/* Return the cost for converting from FROM_MODE to TO_MODE when optimizing
+   for SPEED.  */
+
+static inline int
+convert_cost (enum machine_mode to_mode, enum machine_mode from_mode,
+	      bool speed)
+{
+  int to_idx, from_idx;
+
+  gcc_assert (to_mode >= MIN_MODE_INT
+	      && to_mode <= MAX_MODE_INT
+	      && from_mode >= MIN_MODE_INT
+	      && from_mode <= MAX_MODE_INT);
+
+  to_idx = to_mode - MIN_MODE_INT;
+  from_idx = from_mode - MIN_MODE_INT;
+  return this_target_expmed->x_convert_cost[speed][to_idx][from_idx];
+}
+
+extern int mult_by_coeff_cost (HOST_WIDE_INT, enum machine_mode, bool);
 #endif
