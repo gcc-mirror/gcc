@@ -1,3 +1,18 @@
+2012-07-26  Nick Clifton  <nickc@redhat.com>
+
+	* config/mn10300/mn10300.c (REG_SAVE_BYTES): Delete.
+	(mn10300_get_live_callee_saved_regs): If requested return a count
+	of the number of bytes in the mask.
+	(mn10300_expand_prologue): Add argument to invocation of
+	mn10300_get_live_callee_regs.
+	(mn10300_expand_epilogue): Compute reg_save_bytes by calling
+	mn10300_get_live_callee_saved_regs.
+	(mn10300_initial_offset): Likewise.
+	* config/mn10300/mn10300-protos.h (mn10300_get_live_callee_saved_regs):
+	Update prototype.
+	* config/mn10300/mn10300.md (return_ret): Add argument to
+	invocation of mn10300_get_live_callee_saved_regs.
+
 2012-07-26  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR regression/54084
