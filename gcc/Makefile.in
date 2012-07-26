@@ -2355,7 +2355,7 @@ gimple-ssa-strength-reduction.o : gimple-ssa-strength-reduction.c $(CONFIG_H) \
    $(SYSTEM_H) coretypes.h $(TREE_H) $(GIMPLE_H) $(BASIC_BLOCK_H) \
    $(TREE_PASS_H) $(CFGLOOP_H) $(TREE_PRETTY_PRINT_H) \
    $(GIMPLE_PRETTY_PRINT_H) alloc-pool.h $(TREE_FLOW_H) domwalk.h \
-   pointer-set.h
+   pointer-set.h expmed.h
 tree-vrp.o : tree-vrp.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    $(TREE_FLOW_H) $(TREE_PASS_H) $(DIAGNOSTIC_CORE_H) $(GGC_H) \
    $(BASIC_BLOCK_H) tree-ssa-propagate.h $(FLAGS_H) $(TREE_DUMP_H) \
@@ -2423,7 +2423,7 @@ tree-ssa-address.o : tree-ssa-address.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(DIAGNOSTIC_H) $(TM_H) coretypes.h dumpfile.h \
    $(FLAGS_H) $(TREE_INLINE_H) $(RECOG_H) insn-config.h \
    $(EXPR_H) gt-tree-ssa-address.h $(GGC_H) tree-affine.h $(TARGET_H) \
-   $(TREE_PRETTY_PRINT_H)
+   $(TREE_PRETTY_PRINT_H) expmed.h
 tree-ssa-loop-niter.o : tree-ssa-loop-niter.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(SYSTEM_H) $(TREE_H) $(TM_P_H) $(CFGLOOP_H) $(PARAMS_H) \
    $(TREE_INLINE_H) $(DIAGNOSTIC_H) $(TM_H) coretypes.h dumpfile.h \

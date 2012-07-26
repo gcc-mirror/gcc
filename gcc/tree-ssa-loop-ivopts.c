@@ -88,9 +88,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-propagate.h"
 #include "expmed.h"
 
-static hashval_t mbc_entry_hash (const void *);
-static int mbc_entry_eq (const void*, const void *);
-
 /* FIXME: Expressions are expanded to RTL in this pass to determine the
    cost of different addressing modes.  This should be moved to a TBD
    interface between the GIMPLE and RTL worlds.  */
@@ -380,11 +377,6 @@ struct iv_ca_delta
    here.  */
 
 static VEC(tree,heap) *decl_rtl_to_reset;
-
-/* Cached costs for multiplies by constants, and a flag to indicate
-   when they're valid.  */
-static htab_t mult_costs[2];
-static bool cost_tables_exist = false;
 
 static comp_cost force_expr_to_var_cost (tree, bool);
 
@@ -851,26 +843,6 @@ htab_inv_expr_hash (const void *ent)
   return expr->hash;
 }
 
-/* Allocate data structures for the cost model.  */
-
-void
-initialize_costs (void)
-{
-  mult_costs[0] = htab_create (100, mbc_entry_hash, mbc_entry_eq, free);
-  mult_costs[1] = htab_create (100, mbc_entry_hash, mbc_entry_eq, free);
-  cost_tables_exist = true;
-}
-
-/* Release data structures for the cost model.  */
-
-void
-finalize_costs (void)
-{
-  cost_tables_exist = false;
-  htab_delete (mult_costs[0]);
-  htab_delete (mult_costs[1]);
-}
-
 /* Initializes data structures used by the iv optimization pass, stored
    in DATA.  */
 
@@ -889,8 +861,6 @@ tree_ssa_iv_optimize_init (struct ivopts_data *data)
                                     htab_inv_expr_eq, free);
   data->inv_expr_id = 0;
   decl_rtl_to_reset = VEC_alloc (tree, heap, 20);
-
-  initialize_costs ();
 }
 
 /* Returns a memory object to that EXPR points.  In case we are able to
@@ -3077,250 +3047,6 @@ adjust_setup_cost (struct ivopts_data *data, unsigned cost)
     return cost;
 }
 
-/* Returns cost of addition in MODE.  */
-
-unsigned
-add_regs_cost (enum machine_mode mode, bool speed)
-{
-  static unsigned costs[NUM_MACHINE_MODES][2];
-  rtx seq;
-  unsigned cost;
-
-  if (costs[mode][speed])
-    return costs[mode][speed];
-
-  start_sequence ();
-  force_operand (gen_rtx_fmt_ee (PLUS, mode,
-				 gen_raw_REG (mode, LAST_VIRTUAL_REGISTER + 1),
-				 gen_raw_REG (mode, LAST_VIRTUAL_REGISTER + 2)),
-		 NULL_RTX);
-  seq = get_insns ();
-  end_sequence ();
-
-  cost = seq_cost (seq, speed);
-  if (!cost)
-    cost = 1;
-
-  costs[mode][speed] = cost;
-
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "Addition in %s costs %d\n",
-	     GET_MODE_NAME (mode), cost);
-  return cost;
-}
-
-/* Returns cost of multiplication in MODE.  */
-
-unsigned
-multiply_regs_cost (enum machine_mode mode, bool speed)
-{
-  static unsigned costs[NUM_MACHINE_MODES][2];
-  rtx seq;
-  unsigned cost;
-
-  if (costs[mode][speed])
-    return costs[mode][speed];
-
-  start_sequence ();
-  force_operand (gen_rtx_fmt_ee (MULT, mode,
-				 gen_raw_REG (mode, LAST_VIRTUAL_REGISTER + 1),
-				 gen_raw_REG (mode, LAST_VIRTUAL_REGISTER + 2)),
-		 NULL_RTX);
-  seq = get_insns ();
-  end_sequence ();
-
-  cost = seq_cost (seq, speed);
-  if (!cost)
-    cost = 1;
-
-  costs[mode][speed] = cost;
-
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "Multiplication in %s costs %d\n",
-	     GET_MODE_NAME (mode), cost);
-  return cost;
-}
-
-/* Returns cost of addition with a constant in MODE.  */
-
-unsigned
-add_const_cost (enum machine_mode mode, bool speed)
-{
-  static unsigned costs[NUM_MACHINE_MODES][2];
-  rtx seq;
-  unsigned cost;
-
-  if (costs[mode][speed])
-    return costs[mode][speed];
-
-  /* Arbitrarily generate insns for x + 2, as the exact constant
-     shouldn't matter.  */
-  start_sequence ();
-  force_operand (gen_rtx_fmt_ee (PLUS, mode,
-				 gen_raw_REG (mode, LAST_VIRTUAL_REGISTER + 1),
-				 gen_int_mode (2, mode)),
-		 NULL_RTX);
-  seq = get_insns ();
-  end_sequence ();
-
-  cost = seq_cost (seq, speed);
-  if (!cost)
-    cost = 1;
-
-  costs[mode][speed] = cost;
-
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "Addition to constant in %s costs %d\n",
-	     GET_MODE_NAME (mode), cost);
-  return cost;
-}
-
-/* Returns cost of extend or truncate in MODE.  */
-
-unsigned
-extend_or_trunc_reg_cost (tree type_to, tree type_from, bool speed)
-{
-  static unsigned costs[NUM_MACHINE_MODES][NUM_MACHINE_MODES][2];
-  rtx seq;
-  unsigned cost;
-  enum machine_mode mode_to = TYPE_MODE (type_to);
-  enum machine_mode mode_from = TYPE_MODE (type_from);
-  tree size_to = TYPE_SIZE (type_to);
-  tree size_from = TYPE_SIZE (type_from);
-  enum rtx_code code;
-
-  gcc_assert (TREE_CODE (size_to) == INTEGER_CST
-	      && TREE_CODE (size_from) == INTEGER_CST);
-
-  if (costs[mode_to][mode_from][speed])
-    return costs[mode_to][mode_from][speed];
-
-  if (tree_int_cst_lt (size_to, size_from))
-    code = TRUNCATE;
-  else if (TYPE_UNSIGNED (type_to))
-    code = ZERO_EXTEND;
-  else
-    code = SIGN_EXTEND;
-
-  start_sequence ();
-  gen_rtx_fmt_e (code, mode_to,
-		 gen_raw_REG (mode_from, LAST_VIRTUAL_REGISTER + 1));
-  seq = get_insns ();
-  end_sequence ();
-
-  cost = seq_cost (seq, speed);
-  if (!cost)
-    cost = 1;
-
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "Conversion from %s to %s costs %d\n",
-	     GET_MODE_NAME (mode_to), GET_MODE_NAME (mode_from), cost);
-
-  costs[mode_to][mode_from][speed] = cost;
-  return cost;
-}
-
-/* Returns cost of negation in MODE.  */
-
-unsigned
-negate_reg_cost (enum machine_mode mode, bool speed)
-{
-  static unsigned costs[NUM_MACHINE_MODES][2];
-  rtx seq;
-  unsigned cost;
-
-  if (costs[mode][speed])
-    return costs[mode][speed];
-
-  start_sequence ();
-  force_operand (gen_rtx_fmt_e (NEG, mode,
-				gen_raw_REG (mode, LAST_VIRTUAL_REGISTER + 1)),
-		 NULL_RTX);
-  seq = get_insns ();
-  end_sequence ();
-
-  cost = seq_cost (seq, speed);
-  if (!cost)
-    cost = 1;
-
-  costs[mode][speed] = cost;
-
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "Negation in %s costs %d\n",
-	     GET_MODE_NAME (mode), cost);
-  return cost;
-}
-
-/* Entry in a hashtable of already known costs for multiplication.  */
-struct mbc_entry
-{
-  HOST_WIDE_INT cst;		/* The constant to multiply by.  */
-  enum machine_mode mode;	/* In mode.  */
-  unsigned cost;		/* The cost.  */
-};
-
-/* Counts hash value for the ENTRY.  */
-
-static hashval_t
-mbc_entry_hash (const void *entry)
-{
-  const struct mbc_entry *e = (const struct mbc_entry *) entry;
-
-  return 57 * (hashval_t) e->mode + (hashval_t) (e->cst % 877);
-}
-
-/* Compares the hash table entries ENTRY1 and ENTRY2.  */
-
-static int
-mbc_entry_eq (const void *entry1, const void *entry2)
-{
-  const struct mbc_entry *e1 = (const struct mbc_entry *) entry1;
-  const struct mbc_entry *e2 = (const struct mbc_entry *) entry2;
-
-  return (e1->mode == e2->mode
-	  && e1->cst == e2->cst);
-}
-
-/* Returns cost of multiplication by constant CST in MODE.  */
-
-unsigned
-multiply_by_const_cost (HOST_WIDE_INT cst, enum machine_mode mode, bool speed)
-{
-  struct mbc_entry **cached, act;
-  rtx seq;
-  unsigned cost;
-
-  gcc_assert (cost_tables_exist);
-
-  act.mode = mode;
-  act.cst = cst;
-  cached = (struct mbc_entry **)
-    htab_find_slot (mult_costs[speed], &act, INSERT);
-    
-  if (*cached)
-    return (*cached)->cost;
-
-  *cached = XNEW (struct mbc_entry);
-  (*cached)->mode = mode;
-  (*cached)->cst = cst;
-
-  start_sequence ();
-  expand_mult (mode, gen_raw_REG (mode, LAST_VIRTUAL_REGISTER + 1),
-	       gen_int_mode (cst, mode), NULL_RTX, 0);
-  seq = get_insns ();
-  end_sequence ();
-
-  cost = seq_cost (seq, speed);
-
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "Multiplication by %d in %s costs %d\n",
-	     (int) cst, GET_MODE_NAME (mode), cost);
-
-  (*cached)->cost = cost;
-
-  return cost;
-}
-
 /* Returns true if multiplying by RATIO is allowed in an address.  Test the
    validity for a memory reference accessing memory of mode MODE in
    address space AS.  */
@@ -3582,7 +3308,7 @@ get_address_cost (bool symbol_present, bool var_present,
 	 If VAR_PRESENT is true, try whether the mode with
 	 SYMBOL_PRESENT = false is cheaper even with cost of addition, and
 	 if this is the case, use it.  */
-      add_c = add_regs_cost (address_mode, speed);
+      add_c = add_cost[speed][address_mode];
       for (i = 0; i < 8; i++)
 	{
 	  var_p = i & 1;
@@ -3663,10 +3389,10 @@ get_address_cost (bool symbol_present, bool var_present,
 	     && multiplier_allowed_in_address_p (ratio, mem_mode, as));
 
   if (ratio != 1 && !ratio_p)
-    cost += multiply_by_const_cost (ratio, address_mode, speed);
+    cost += mult_by_coeff_cost (ratio, address_mode, speed);
 
   if (s_offset && !offset_p && !symbol_present)
-    cost += add_regs_cost (address_mode, speed);
+    cost += add_cost[speed][address_mode];
 
   if (may_autoinc)
     *may_autoinc = autoinc;
@@ -3833,7 +3559,7 @@ force_expr_to_var_cost (tree expr, bool speed)
     case PLUS_EXPR:
     case MINUS_EXPR:
     case NEGATE_EXPR:
-      cost = new_cost (add_regs_cost (mode, speed), 0);
+      cost = new_cost (add_cost[speed][mode], 0);
       if (TREE_CODE (expr) != NEGATE_EXPR)
         {
           tree mult = NULL_TREE;
@@ -3853,11 +3579,11 @@ force_expr_to_var_cost (tree expr, bool speed)
 
     case MULT_EXPR:
       if (cst_and_fits_in_hwi (op0))
-	cost = new_cost (multiply_by_const_cost (int_cst_value (op0),
-						 mode, speed), 0);
+	cost = new_cost (mult_by_coeff_cost (int_cst_value (op0),
+					     mode, speed), 0);
       else if (cst_and_fits_in_hwi (op1))
-	cost = new_cost (multiply_by_const_cost (int_cst_value (op1),
-						 mode, speed), 0);
+	cost = new_cost (mult_by_coeff_cost (int_cst_value (op1),
+					     mode, speed), 0);
       else
 	return new_cost (target_spill_cost [speed], 0);
       break;
@@ -4023,7 +3749,7 @@ difference_cost (struct ivopts_data *data,
   if (integer_zerop (e1))
     {
       comp_cost cost = force_var_cost (data, e2, depends_on);
-      cost.cost += multiply_by_const_cost (-1, mode, data->speed);
+      cost.cost += mult_by_coeff_cost (-1, mode, data->speed);
       return cost;
     }
 
@@ -4334,7 +4060,7 @@ get_computation_cost_at (struct ivopts_data *data,
 					 &symbol_present, &var_present,
 					 &offset, depends_on));
       cost.cost /= avg_loop_niter (data->current_loop);
-      cost.cost += add_regs_cost (TYPE_MODE (ctype), data->speed);
+      cost.cost += add_cost[data->speed][TYPE_MODE (ctype)];
     }
 
   if (inv_expr_id)
@@ -4367,7 +4093,7 @@ get_computation_cost_at (struct ivopts_data *data,
   if (!symbol_present && !var_present && !offset)
     {
       if (ratio != 1)
-	cost.cost += multiply_by_const_cost (ratio, TYPE_MODE (ctype), speed);
+	cost.cost += mult_by_coeff_cost (ratio, TYPE_MODE (ctype), speed);
       return cost;
     }
 
@@ -4375,18 +4101,18 @@ get_computation_cost_at (struct ivopts_data *data,
       are added once to the variable, if present.  */
   if (var_present && (symbol_present || offset))
     cost.cost += adjust_setup_cost (data,
-				    add_regs_cost (TYPE_MODE (ctype), speed));
+				    add_cost[speed][TYPE_MODE (ctype)]);
 
   /* Having offset does not affect runtime cost in case it is added to
      symbol, but it increases complexity.  */
   if (offset)
     cost.complexity++;
 
-  cost.cost += add_regs_cost (TYPE_MODE (ctype), speed);
+  cost.cost += add_cost[speed][TYPE_MODE (ctype)];
 
   aratio = ratio > 0 ? ratio : -ratio;
   if (aratio != 1)
-    cost.cost += multiply_by_const_cost (aratio, TYPE_MODE (ctype), speed);
+    cost.cost += mult_by_coeff_cost (aratio, TYPE_MODE (ctype), speed);
   return cost;
 
 fallback:
@@ -5232,7 +4958,7 @@ determine_iv_cost (struct ivopts_data *data, struct iv_cand *cand)
      or a const set.  */
   if (cost_base.cost == 0)
     cost_base.cost = COSTS_N_INSNS (1);
-  cost_step = add_regs_cost (TYPE_MODE (TREE_TYPE (base)), data->speed);
+  cost_step = add_cost[data->speed][TYPE_MODE (TREE_TYPE (base))];
 
   cost = cost_step + adjust_setup_cost (data, cost_base.cost);
 
@@ -6804,8 +6530,6 @@ tree_ssa_iv_optimize_finalize (struct ivopts_data *data)
   VEC_free (iv_use_p, heap, data->iv_uses);
   VEC_free (iv_cand_p, heap, data->iv_candidates);
   htab_delete (data->inv_expr_tab);
-
-  finalize_costs ();
 }
 
 /* Returns true if the loop body BODY includes any function calls.  */

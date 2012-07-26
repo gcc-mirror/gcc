@@ -1,3 +1,55 @@
+2012-07-26  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* tree-ssa-loop-ivopts.c (mbc_entry_hash): Remove.
+	(mbc_entry_eq): Likewise.
+	(mult_costs): Likewise.
+	(cost_tables_exist): Likewise.
+	(initialize_costs): Likewise.
+	(finalize_costs): Likewise.
+	(tree_ssa_iv_optimize_init): Remove call to initialize_costs.
+	(add_regs_cost): Remove.
+	(multiply_regs_cost): Likewise.
+	(add_const_cost): Likewise.
+	(extend_or_trunc_reg_cost): Likewise.
+	(negate_reg_cost): Likewise.
+	(struct mbc_entry): Likewise.
+	(multiply_by_const_cost): Likewise.
+	(get_address_cost): Change add_regs_cost calls to add_cost lookups;
+	change multiply_by_const_cost to mult_by_coeff_cost.
+	(force_expr_to_var_cost): Likewise.
+	(difference_cost): Change multiply_by_const_cost to mult_by_coeff_cost.
+	(get_computation_cost_at): Change add_regs_cost calls to add_cost
+	lookups; change multiply_by_const_cost to mult_by_coeff_cost.
+	(determine_iv_cost): Change add_regs_cost calls to add_cost lookups.
+	(tree_ssa_iv_optimize_finalize): Remove call to finalize_costs.
+	* tree-ssa-address.c (expmed.h): New #include.
+	(most_expensive_mult_to_index): Change multiply_by_const_cost to
+	mult_by_coeff_cost.
+	* gimple-ssa-strength-reduction.c (expmed.h): New #include.
+	(stmt_cost): Change to use mult_by_coeff_cost, mul_cost, add_cost,
+	neg_cost, and convert_cost instead of IVOPTS interfaces.
+	(execute_strength_reduction): Remove calls to initialize_costs and
+	finalize_costs.
+	* expmed.c (struct init_expmed_rtl): Add convert rtx_def.
+	(init_expmed_one_mode): Initialize convert rtx_def; initialize
+	x_convert_cost for related modes.
+	(mult_by_coeff_cost): New function.
+	* expmed.h (NUM_MODE_INT): New #define.
+	(struct target_expmed): Add x_convert_cost matrix.
+	(set_convert_cost): New inline function.
+	(convert_cost): Likewise.
+	(mult_by_coeff_cost): New extern decl.
+	* tree-flow.h (initialize_costs): Remove decl.
+	(finalize_costs): Likewise.
+	(multiply_by_const_cost): Likewise.
+	(add_regs_cost): Likewise.
+	(multiply_regs_cost): Likewise.
+	(add_const_cost): Likewise.
+	(extend_or_trunc_reg_cost): Likewise.
+	(negate_reg_cost): Likewise.
+	* Makefile.in (gimple-ssa-strength-reduction.o): Update dependencies.
+	(tree-ssa-address.o): Update dependencies.
+
 2012-07-26  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* bitmap.h: Add explanation of sparse set as linked-list bitmap.
