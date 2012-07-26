@@ -1,6 +1,13 @@
 2012-07-26  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/44354
+	* trans-array.c (gfc_trans_array_constructor_value):
+	Evaluate the iteration bounds before the inner variable shadows
+	the outer.
+
+2012-07-26  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/44354
 	* array.c (sought_symbol): New variable.
 	(expr_is_sought_symbol_ref, find_symbol_in_expr): New functions.
 	(resolve_array_list): Check for references to the induction
