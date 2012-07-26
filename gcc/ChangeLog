@@ -1,3 +1,18 @@
+2012-07-26  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* bitmap.h: Add explanation of sparse set as linked-list bitmap.
+	* sbitmap.h: Add explanation about non-sparse sets as simple bitmap.
+	(TEST_BIT): Make a static inline function for stronger type checking.
+	(SET_BIT): Don't handle sbitmaps with popcount.
+	(RESET_BIT): Likewise.
+	(SET_BIT_WITH_POPCOUNT): New, like SET_BIT but with popcount.
+	(RESET_BIT_WITH_POPCOUNT): New, like RESET_BIT but with popcount.
+	* ebitmap.c (ebitmap_clear_bit): Use SET_BIT_WITH_POPCOUNT and
+	RESET_BIT_WITH_POPCOUNT on wordmask bitmaps.
+	(ebitmap_set_bit, ebitmap_and_into, ebitmap_and, ebitmap_ior_into,
+	ebitmap_and_compl_into, ebitmap_and_compl): Likewise.
+	* sparseset.h: Add explanation of sparse set representation.
+
 2012-07-26  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/54098

@@ -1,5 +1,5 @@
 /* SparseSet implementation.
-   Copyright (C) 2007, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2007-2012 Free Software Foundation, Inc.
    Contributed by Peter Bergner <bergner@vnet.ibm.com>
 
 This file is part of GCC.
@@ -21,10 +21,70 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_SPARSESET_H
 #define GCC_SPARSESET_H
 
-#define SPARSESET_ELT_BITS ((unsigned) HOST_BITS_PER_WIDEST_FAST_INT)
-#define SPARSESET_ELT_TYPE unsigned int
+/* Implementation of the Briggs and Torczon sparse set representation.
+   The sparse set representation was first published in:
+
+   "An Efficient Representation for Sparse Sets",
+   ACM LOPLAS, Vol. 2, Nos. 1-4, March-December 1993, Pages 59-69.
+
+   The sparse set representation is suitable for integer sets with a
+   fixed-size universe.  Two vectors are used to store the members of
+   the set.  If an element I is in the set, then sparse[I] is the
+   index of I in the dense vector, and dense[sparse[I]] == I.  The dense
+   vector works like a stack.  The size of the stack is the cardinality
+   of the set.
+
+   The following operations can be performed in O(1) time:
+
+     * clear			: sparseset_clear
+     * cardinality		: sparseset_cardinality
+     * set_size			: sparseset_size
+     * member_p			: sparseset_bit_p
+     * add_member		: sparseset_set_bit
+     * remove_member		: sparseset_clear_bit
+     * choose_one		: sparseset_pop
+
+   Additionally, the sparse set representation supports enumeration of
+   the members in O(N) time, where n is the number of members in the set.
+   The members of the set are stored cache-friendly in the dense vector.
+   This makes it a competitive choice for iterating over relatively sparse
+   sets requiring operations:
+
+     * forall			: EXECUTE_IF_SET_IN_SPARSESET
+     * set_copy			: sparseset_copy
+     * set_intersection		: sparseset_and
+     * set_union		: sparseset_ior
+     * set_difference		: sparseset_and_compl
+     * set_disjuction		: (not implemented)
+     * set_compare		: sparseset_equal_p
+
+   NB: It is OK to use remove_member during EXECUTE_IF_SET_IN_SPARSESET.
+   The iterator is updated for it.
+
+   Based on the efficiency of these operations, this representation of
+   sparse sets will often be superior to alternatives such as simple
+   bitmaps, linked-list bitmaps, array bitmaps, balanced binary trees,
+   hash tables, linked lists, etc., if the set is sufficiently sparse.
+   In the LOPLAS paper the cut-off point where sparse sets became faster
+   than simple bitmaps (see sbitmap.h) when N / U < 64 (where U is the
+   size of the universe of the set).
+
+   Because the set universe is fixed, the set cannot be resized.  For
+   sparse sets with initially unknown size, linked-list bitmaps are a
+   better choice, see bitmap.h.
+
+   Sparse sets storage requirements are relatively large: O(U) with a
+   larger constant than sbitmaps (if the storage requirement for an
+   sbitmap with universe U is S, then the storage required for a sparse
+   set for the same universe are 2*HOST_BITS_PER_WIDEST_FAST_INT * S).
+   Accessing the sparse vector is not very cache-friendly, but iterating
+   over the members in the set is cache-friendly because only the dense
+   vector is used.  */
 
 /* Data Structure used for the SparseSet representation.  */
+
+#define SPARSESET_ELT_BITS ((unsigned) HOST_BITS_PER_WIDEST_FAST_INT)
+#define SPARSESET_ELT_TYPE unsigned HOST_WIDEST_FAST_INT
 
 typedef struct sparseset_def
 {
@@ -107,7 +167,7 @@ sparseset_set_bit (sparseset s, SPARSESET_ELT_TYPE e)
     sparseset_insert_bit (s, e, s->members++);
 }
 
-/* Return and remove an arbitrary element from the set S.  */
+/* Return and remove the last member added to the set S.  */
 
 static inline SPARSESET_ELT_TYPE
 sparseset_pop (sparseset s)
