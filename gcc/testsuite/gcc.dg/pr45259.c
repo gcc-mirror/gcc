@@ -1,6 +1,7 @@
 /* PR debug/45259 */
 /* { dg-do compile } */
-/* { dg-options "-g -O2 -fpic -w" { target fpic } } */
+/* { dg-options "-g -O2 -w -fpic" { target fpic } } */
+/* { dg-options "-g -O2 -w" { target { ! fpic } } } */
 
 struct S { void (*bar) (long); };
 struct T { struct S *t; };
