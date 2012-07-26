@@ -129,7 +129,7 @@ subroutine C1241
   integer, pointer, contiguous :: a(:)
   integer, pointer :: b(:)
   call test(a)
-  call test(b) ! { dg-error "must be simply contigous" }
+  call test(b) ! { dg-error "must be simply contiguous" }
 contains
   subroutine test(x)
     integer, pointer, contiguous :: x(:)
@@ -169,7 +169,7 @@ end subroutine sect12528
 subroutine test34
   implicit none
   integer, volatile,pointer :: a(:,:),i
-  call foo(a(2,2:3:2)) ! { dg-error "must be simply contigous" }
+  call foo(a(2,2:3:2)) ! { dg-error "must be simply contiguous" }
 contains
   subroutine foo(x)
     integer, pointer, contiguous, volatile :: x(:)
