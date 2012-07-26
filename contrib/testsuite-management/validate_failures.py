@@ -138,12 +138,14 @@ class TestResult(object):
 
 def GetMakefileValue(makefile_name, value_name):
   if os.path.exists(makefile_name):
-    with open(makefile_name) as makefile:
-      for line in makefile:
-        if line.startswith(value_name):
-          (_, value) = line.split('=', 1)
-          value = value.strip()
-          return value
+    makefile = open(makefile_name)
+    for line in makefile:
+      if line.startswith(value_name):
+        (_, value) = line.split('=', 1)
+        value = value.strip()
+        makefile.close()
+        return value
+    makefile.close()
   return None
 
 
@@ -173,10 +175,11 @@ def IsInterestingResult(line):
 def ParseSummary(sum_fname):
   """Create a set of TestResult instances from the given summary file."""
   result_set = set()
-  with open(sum_fname) as sum_file:
-    for line in sum_file:
-      if IsInterestingResult(line):
-        result_set.add(TestResult(line))
+  sum_file = open(sum_fname)
+  for line in sum_file:
+    if IsInterestingResult(line):
+      result_set.add(TestResult(line))
+  sum_file.close()
   return result_set
 
 
@@ -317,10 +320,11 @@ def ProduceManifest(options):
 
   sum_files = GetSumFiles(options.results, options.build_dir)
   actual = GetResults(sum_files)
-  with open(manifest_name, 'w') as manifest_file:
-    for result in sorted(actual):
-      print result
-      manifest_file.write('%s\n' % result)
+  manifest_file = open(manifest_name, 'w')
+  for result in sorted(actual):
+    print result
+    manifest_file.write('%s\n' % result)
+  manifest_file.close()
 
   return True
 

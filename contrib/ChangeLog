@@ -1,3 +1,8 @@
+2012-07-26   Diego Novillo  <dnovillo@google.com>
+
+	* testsuite-management/validate_failures.py: Do not use
+	'with ... as ...' constructs.
+
 2012-07-19   Diego Novillo  <dnovillo@google.com>
 
 	* testsuite-management/validate_failures.py (CollectSumFiles):
