@@ -1,3 +1,8 @@
+2012-07-26  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/54098
+	* gcc.dg/torture/pr54098.c: New testcase.
+
 2012-07-26  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
 	* gcc.target/arm/neon/vld1Q_dupu64.c: Regenerate.

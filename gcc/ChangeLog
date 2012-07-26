@@ -1,3 +1,9 @@
+2012-07-26  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/54098
+	* tree-vrp.c (vrp_visit_phi_node): Iterate once more if the
+	original range was UNDEFINED.
+
 2012-07-26  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
 	* config/arm/neon.ml (ops): Fix regexp for vld1Q_dups64 and

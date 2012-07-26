@@ -7684,10 +7684,12 @@ vrp_visit_phi_node (gimple phi)
      when the new value is slightly bigger or smaller than the
      previous one.  We don't do this if we have seen a new executable
      edge; this helps us avoid an overflow infinity for conditionals
-     which are not in a loop.  */
+     which are not in a loop.  If the old value-range was VR_UNDEFINED
+     use the updated range and iterate one more time.  */
   if (edges > 0
       && gimple_phi_num_args (phi) > 1
-      && edges == old_edges)
+      && edges == old_edges
+      && lhs_vr->type != VR_UNDEFINED)
     {
       int cmp_min = compare_values (lhs_vr->min, vr_result.min);
       int cmp_max = compare_values (lhs_vr->max, vr_result.max);
