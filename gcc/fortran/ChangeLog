@@ -1,3 +1,12 @@
+2012-07-26  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/44354
+	* array.c (sought_symbol): New variable.
+	(expr_is_sought_symbol_ref, find_symbol_in_expr): New functions.
+	(resolve_array_list): Check for references to the induction
+	variable in the iteration bounds and issue a diagnostic if some
+	are found.
+
 2012-07-26  Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
 	    Tobias Burnus  <burnus@net-b.de>
 
