@@ -1681,10 +1681,7 @@ static struct {
 
 // Called if we receive a SIGPROF signal.
 void
-runtime_sigprof(uint8 *pc __attribute__ ((unused)),
-		uint8 *sp __attribute__ ((unused)),
-		uint8 *lr __attribute__ ((unused)),
-		G *gp __attribute__ ((unused)))
+runtime_sigprof()
 {
 	int32 n;
 
