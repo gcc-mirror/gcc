@@ -2059,6 +2059,29 @@ tree_estimate_probability_bb (basic_block bb)
 
   FOR_EACH_EDGE (e, ei, bb->succs)
     {
+      /* Predict edges to user labels with attributes.  */
+      if (e->dest != EXIT_BLOCK_PTR)
+	{
+	  gimple_stmt_iterator gi;
+	  for (gi = gsi_start_bb (e->dest); !gsi_end_p (gi); gsi_next (&gi))
+	    {
+	      gimple stmt = gsi_stmt (gi);
+	      tree decl;
+
+	      if (gimple_code (stmt) != GIMPLE_LABEL)
+		break;
+	      decl = gimple_label_label (stmt);
+	      if (DECL_ARTIFICIAL (decl))
+		continue;
+
+	      /* Finally, we have a user-defined label.  */
+	      if (lookup_attribute ("cold", DECL_ATTRIBUTES (decl)))
+		predict_edge_def (e, PRED_COLD_LABEL, NOT_TAKEN);
+	      else if (lookup_attribute ("hot", DECL_ATTRIBUTES (decl)))
+		predict_edge_def (e, PRED_HOT_LABEL, TAKEN);
+	    }
+	}
+
       /* Predict early returns to be probable, as we've already taken
 	 care for error returns and other cases are often used for
 	 fast paths through function.
