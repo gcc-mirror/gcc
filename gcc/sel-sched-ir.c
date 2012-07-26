@@ -954,7 +954,13 @@ return_regset_to_pool (regset rs)
 static int
 cmp_v_in_regset_pool (const void *x, const void *xx)
 {
-  return *((const regset *) x) - *((const regset *) xx);
+  uintptr_t r1 = (uintptr_t) *((const regset *) x);
+  uintptr_t r2 = (uintptr_t) *((const regset *) xx);
+  if (r1 > r2)
+    return 1;
+  else if (r1 < r2)
+    return -1;
+  gcc_unreachable ();
 }
 #endif
 
