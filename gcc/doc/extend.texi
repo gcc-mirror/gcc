@@ -3345,33 +3345,53 @@ than 2.96.
 
 @item hot
 @cindex @code{hot} function attribute
-The @code{hot} attribute is used to inform the compiler that a function is a
-hot spot of the compiled program.  The function is optimized more aggressively
-and on many target it is placed into special subsection of the text section so
-all hot functions appears close together improving locality.
+The @code{hot} attribute on a function is used to inform the compiler that
+the function is a hot spot of the compiled program.  The function is
+optimized more aggressively and on many target it is placed into special
+subsection of the text section so all hot functions appears close together
+improving locality.
 
 When profile feedback is available, via @option{-fprofile-use}, hot functions
 are automatically detected and this attribute is ignored.
 
-The @code{hot} attribute is not implemented in GCC versions earlier
-than 4.3.
+The @code{hot} attribute on functions is not implemented in GCC versions
+earlier than 4.3.
+
+@cindex @code{hot} label attribute
+The @code{hot} attribute on a label is used to inform the compiler that
+path following the label are more likely than paths that are not so
+annotated.  This attribute is used in cases where @code{__builtin_expect}
+cannot be used, for instance with computed goto or @code{asm goto}.
+
+The @code{hot} attribute on labels is not implemented in GCC versions
+earlier than 4.8.
 
 @item cold
 @cindex @code{cold} function attribute
-The @code{cold} attribute is used to inform the compiler that a function is
-unlikely executed.  The function is optimized for size rather than speed and on
-many targets it is placed into special subsection of the text section so all
-cold functions appears close together improving code locality of non-cold parts
-of program.  The paths leading to call of cold functions within code are marked
-as unlikely by the branch prediction mechanism. It is thus useful to mark
-functions used to handle unlikely conditions, such as @code{perror}, as cold to
-improve optimization of hot functions that do call marked functions in rare
-occasions.
+The @code{cold} attribute on functions is used to inform the compiler that
+the function is unlikely to be executed.  The function is optimized for
+size rather than speed and on many targets it is placed into special
+subsection of the text section so all cold functions appears close together
+improving code locality of non-cold parts of program.  The paths leading
+to call of cold functions within code are marked as unlikely by the branch
+prediction mechanism.  It is thus useful to mark functions used to handle
+unlikely conditions, such as @code{perror}, as cold to improve optimization
+of hot functions that do call marked functions in rare occasions.
 
-When profile feedback is available, via @option{-fprofile-use}, hot functions
+When profile feedback is available, via @option{-fprofile-use}, cold functions
 are automatically detected and this attribute is ignored.
 
-The @code{cold} attribute is not implemented in GCC versions earlier than 4.3.
+The @code{cold} attribute on functions is not implemented in GCC versions
+earlier than 4.3.
+
+@cindex @code{cold} label attribute
+The @code{cold} attribute on labels is used to inform the compiler that
+the path following the label is unlikely to be executed.  This attribute
+is used in cases where @code{__builtin_expect} cannot be used, for instance
+with computed goto or @code{asm goto}.
+
+The @code{cold} attribute on labels is not implemented in GCC versions
+earlier than 4.8.
 
 @item regparm (@var{number})
 @cindex @code{regparm} attribute
