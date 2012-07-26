@@ -1,3 +1,9 @@
+2012-07-26  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR regression/54084
+	* sel-sched-ir.c (cmp_v_in_regset_pool): Clarify logic, fix
+	pointer difference check.
+
 2012-07-26  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	* tree-ssa-loop-ivopts.c (mbc_entry_hash): Remove.
