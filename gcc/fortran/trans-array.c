@@ -1520,6 +1520,9 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
 				   bool dynamic)
 {
   tree tmp;
+  tree start = NULL_TREE;
+  tree end = NULL_TREE;
+  tree step = NULL_TREE;
   stmtblock_t body;
   gfc_se se;
   mpz_t size;
@@ -1542,8 +1545,30 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
 	 expression in an interface mapping.  */
       if (c->iterator)
 	{
-	  gfc_symbol *sym = c->iterator->var->symtree->n.sym;
-	  tree type = gfc_typenode_for_spec (&sym->ts);
+	  gfc_symbol *sym;
+	  tree type;
+
+	  /* Evaluate loop bounds before substituting the loop variable
+	     in case they depend on it.  Such a case is invalid, but it is
+	     not more expensive to do the right thing here.
+	     See PR 44354.  */
+	  gfc_init_se (&se, NULL);
+	  gfc_conv_expr_val (&se, c->iterator->start);
+	  gfc_add_block_to_block (pblock, &se.pre);
+	  start = gfc_evaluate_now (se.expr, pblock);
+
+	  gfc_init_se (&se, NULL);
+	  gfc_conv_expr_val (&se, c->iterator->end);
+	  gfc_add_block_to_block (pblock, &se.pre);
+	  end = gfc_evaluate_now (se.expr, pblock);
+
+	  gfc_init_se (&se, NULL);
+	  gfc_conv_expr_val (&se, c->iterator->step);
+	  gfc_add_block_to_block (pblock, &se.pre);
+	  step = gfc_evaluate_now (se.expr, pblock);
+
+	  sym = c->iterator->var->symtree->n.sym;
+	  type = gfc_typenode_for_spec (&sym->ts);
 
 	  shadow_loopvar = gfc_create_var (type, "shadow_loopvar");
 	  gfc_shadow_sym (sym, shadow_loopvar, &saved_loopvar);
@@ -1678,8 +1703,6 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
 	  /* Build the implied do-loop.  */
 	  stmtblock_t implied_do_block;
 	  tree cond;
-	  tree end;
-	  tree step;
 	  tree exit_label;
 	  tree loopbody;
 	  tree tmp2;
@@ -1691,20 +1714,7 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
 	  gfc_start_block(&implied_do_block);
 
 	  /* Initialize the loop.  */
-	  gfc_init_se (&se, NULL);
-	  gfc_conv_expr_val (&se, c->iterator->start);
-	  gfc_add_block_to_block (&implied_do_block, &se.pre);
-	  gfc_add_modify (&implied_do_block, shadow_loopvar, se.expr);
-
-	  gfc_init_se (&se, NULL);
-	  gfc_conv_expr_val (&se, c->iterator->end);
-	  gfc_add_block_to_block (&implied_do_block, &se.pre);
-	  end = gfc_evaluate_now (se.expr, &implied_do_block);
-
-	  gfc_init_se (&se, NULL);
-	  gfc_conv_expr_val (&se, c->iterator->step);
-	  gfc_add_block_to_block (&implied_do_block, &se.pre);
-	  step = gfc_evaluate_now (se.expr, &implied_do_block);
+	  gfc_add_modify (&implied_do_block, shadow_loopvar, start);
 
 	  /* If this array expands dynamically, and the number of iterations
 	     is not constant, we won't have allocated space for the static
