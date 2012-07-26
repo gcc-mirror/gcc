@@ -4378,11 +4378,11 @@ label:
 			  (match_operand:SI 3 "const_int_operand" "M,N"))
 	 (match_operand:SI 1 "arith_reg_operand" "0,0")
 	 (neg:SI (match_operand:SI 2 "arith_reg_operand" "r,r"))))]
-  "TARGET_HARD_SH4"
+  "TARGET_SH1 && TARGET_ZDCBRANCH"
   "@
 	bt\\t0f\;neg\\t%2,%0\\n0:
 	bf\\t0f\;neg\\t%2,%0\\n0:"
-  "!TARGET_HARD_SH4"
+  "TARGET_SH1 && ! TARGET_ZDCBRANCH"
   [(const_int 0)]
 {
   rtx skip_neg_label = gen_label_rtx ();

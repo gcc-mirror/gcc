@@ -889,8 +889,9 @@ See RS/6000 and PowerPC Options.
 -mdivsi3_libfunc=@var{name} -mfixed-range=@var{register-range} @gol
 -mindexed-addressing -mgettrcost=@var{number} -mpt-fixed @gol
 -maccumulate-outgoing-args -minvalid-symbols -msoft-atomic -mhard-atomic @gol
--mbranch-cost=@var{num} -mcbranchdi -mcmpeqdi -mfused-madd -mno-fused-madd @gol
--mfsca -mno-fsca -mfsrra -mno-fsrra -mpretend-cmove -menable-tas}
+-mbranch-cost=@var{num} -mzdcbranch -mno-zdcbranch -mcbranchdi -mcmpeqdi @gol
+-mfused-madd -mno-fused-madd -mfsca -mno-fsca -mfsrra -mno-fsrra @gol
+-mpretend-cmove -menable-tas}
 
 @emph{Solaris 2 Options}
 @gccoptlist{-mimpure-text  -mno-impure-text @gol
@@ -18365,6 +18366,16 @@ Assume @var{num} to be the cost for a branch instruction.  Higher numbers
 make the compiler try to generate more branch-free code if possible.  
 If not specified the value is selected depending on the processor type that
 is being compiled for.
+
+@item -mzdcbranch
+@itemx -mno-zdcbranch
+@opindex mzdcbranch
+@opindex mno-zdcbranch
+Assume (do not assume) that zero displacement conditional branch instructions
+@code{bt} and @code{bf} are fast.  If @option{-mzdcbranch} is specified, the
+compiler will try to prefer zero displacement branch code sequences.  This is
+enabled by default when generating code for SH4 and SH4A.  It can be explicitly
+disabled by specifying @option{-mno-zdcbranch}.
 
 @item -mcbranchdi
 @opindex mcbranchdi
