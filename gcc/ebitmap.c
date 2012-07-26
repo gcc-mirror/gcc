@@ -1,5 +1,5 @@
 /* Sparse array-based bitmaps.
-   Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2007-2012  Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dberlin@dberlin.org>
 
 This file is part of GCC.
@@ -258,7 +258,7 @@ ebitmap_clear_bit (ebitmap map, unsigned int bit)
             map->cache = map->cache - 1;
         }
 
-      RESET_BIT (map->wordmask, wordindex);
+      RESET_BIT_WITH_POPCOUNT (map->wordmask, wordindex);
 
       memmove(&map->elts[eltwordindex], &map->elts[eltwordindex + 1],
 	      sizeof (EBITMAP_ELT_TYPE) * (map->numwords - eltwordindex));
@@ -293,7 +293,7 @@ ebitmap_set_bit (ebitmap map, unsigned int bit)
       unsigned long count;
       unsigned int i;
 
-      SET_BIT (map->wordmask, wordindex);
+      SET_BIT_WITH_POPCOUNT (map->wordmask, wordindex);
       count = sbitmap_popcount (map->wordmask, wordindex);
       gcc_assert (count <= map->numwords);
 
@@ -449,7 +449,7 @@ ebitmap_and_into (ebitmap dst, ebitmap src)
 	  *dstplace = tmpword;
 	}
       else
-	RESET_BIT (dst->wordmask, i);
+	RESET_BIT_WITH_POPCOUNT (dst->wordmask, i);
     }
 #ifdef EBITMAP_DEBUGGING
   {
@@ -508,7 +508,7 @@ ebitmap_and (ebitmap dst, ebitmap src1, ebitmap src2)
 	      *dstplace = tmpword;
 	    }
 	  else
-	    RESET_BIT (dst->wordmask, i);
+	    RESET_BIT_WITH_POPCOUNT (dst->wordmask, i);
 	}
       else if (src1hasword)
 	src1eltindex++;
@@ -624,7 +624,7 @@ ebitmap_ior_into (ebitmap dst, ebitmap src)
 	{
 	  newarray [neweltindex++] = ebitmap_array_get (src, srceltindex++);
 	  gcc_assert (i < dst->wordmask->n_bits);
-	  SET_BIT (dst->wordmask, i);
+	  SET_BIT_WITH_POPCOUNT (dst->wordmask, i);
 	  changed |= true;
 	}
     }
@@ -825,7 +825,7 @@ ebitmap_and_compl_into (ebitmap dst, ebitmap src)
 	      *dstplace = tmpword;
 	    }
 	  else
-	    RESET_BIT (dst->wordmask, i);
+	    RESET_BIT_WITH_POPCOUNT (dst->wordmask, i);
 	}
       else
 	{
@@ -904,7 +904,7 @@ ebitmap_and_compl (ebitmap dst, ebitmap src1, ebitmap src2)
 	      newarray[neweltindex++] = tmpword;
 	    }
 	  else
-	    RESET_BIT (tempmask, i);
+	    RESET_BIT_WITH_POPCOUNT (tempmask, i);
 
 	}
       else
