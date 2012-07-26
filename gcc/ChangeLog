@@ -1,3 +1,8 @@
+2012-07-26  Andrew Jenner  <andrew@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	* cse.c (find_comparison_args): Check for cycles of any length.
+
 2012-07-26  Nick Clifton  <nickc@redhat.com>
 
 	* config/mn10300/mn10300.c (REG_SAVE_BYTES): Delete.

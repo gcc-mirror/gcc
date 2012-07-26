@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "df.h"
 #include "dbgcnt.h"
+#include "pointer-set.h"
 
 /* The basic idea of common subexpression elimination is to go
    through the code, keeping a record of expressions that would
@@ -2897,6 +2898,9 @@ find_comparison_args (enum rtx_code code, rtx *parg1, rtx *parg2,
 		      enum machine_mode *pmode1, enum machine_mode *pmode2)
 {
   rtx arg1, arg2;
+  struct pointer_set_t *visited = NULL;
+  /* Set nonzero when we find something of interest.  */
+  rtx x = NULL;
 
   arg1 = *parg1, arg2 = *parg2;
 
@@ -2904,10 +2908,17 @@ find_comparison_args (enum rtx_code code, rtx *parg1, rtx *parg2,
 
   while (arg2 == CONST0_RTX (GET_MODE (arg1)))
     {
-      /* Set nonzero when we find something of interest.  */
-      rtx x = 0;
       int reverse_code = 0;
       struct table_elt *p = 0;
+
+      /* Remember state from previous iteration.  */
+      if (x)
+	{
+	  if (!visited)
+	    visited = pointer_set_create ();
+	  pointer_set_insert (visited, x);
+	  x = 0;
+	}
 
       /* If arg1 is a COMPARE, extract the comparison arguments from it.
 	 On machines with CC0, this is the only case that can occur, since
@@ -2985,10 +2996,8 @@ find_comparison_args (enum rtx_code code, rtx *parg1, rtx *parg2,
 	  if (! exp_equiv_p (p->exp, p->exp, 1, false))
 	    continue;
 
-	  /* If it's the same comparison we're already looking at, skip it.  */
-	  if (COMPARISON_P (p->exp)
-	      && XEXP (p->exp, 0) == arg1
-	      && XEXP (p->exp, 1) == arg2)
+	  /* If it's a comparison we've used before, skip it.  */
+	  if (visited && pointer_set_contains (visited, p->exp))
 	    continue;
 
 	  if (GET_CODE (p->exp) == COMPARE
@@ -3069,6 +3078,8 @@ find_comparison_args (enum rtx_code code, rtx *parg1, rtx *parg2,
   *pmode1 = GET_MODE (arg1), *pmode2 = GET_MODE (arg2);
   *parg1 = fold_rtx (arg1, 0), *parg2 = fold_rtx (arg2, 0);
 
+  if (visited)
+    pointer_set_destroy (visited);
   return code;
 }
 
