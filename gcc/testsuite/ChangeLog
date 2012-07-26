@@ -1,3 +1,8 @@
+2012-07-26  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/contiguous_1.f90: Update dg-error.
+	* gfortran.dg/proc_ptr_32.f90: Ditto.
+
 2012-07-26  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/54098
