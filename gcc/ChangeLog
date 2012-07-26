@@ -1,3 +1,13 @@
+2012-07-26  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/51244
+	* config/sh/sh.opt (mzdcbranch): New option.
+	* doc/invoke.texi: Document it.
+	* config/sh/sh.md (negsi_cond): Use TARGET_ZDCBRANCH as condition
+	instead of TARGET_HARD_SH4.
+	* config/sh/sh.c (sh_option_override): Set TARGET_ZDCBRANCH as default
+	for TARGET_HARD_SH4.
+
 2012-07-25  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/54089

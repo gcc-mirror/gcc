@@ -225,6 +225,10 @@ mbranch-cost=
 Target RejectNegative Joined UInteger Var(sh_branch_cost) Init(-1)
 Cost to assume for a branch insn
 
+mzdcbranch
+Target Var(TARGET_ZDCBRANCH)
+Assume that zero displacement conditional branches are fast
+
 mcbranchdi
 Target Var(TARGET_CBRANCHDI4)
 Enable cbranchdi4 pattern

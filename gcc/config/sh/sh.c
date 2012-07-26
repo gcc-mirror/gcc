@@ -741,6 +741,10 @@ sh_option_override (void)
 	sh_branch_cost = 2;
     }
 
+  /* Set -mzdcbranch for SH4 / SH4A if not otherwise specified by the user.  */
+  if (! global_options_set.x_TARGET_ZDCBRANCH && TARGET_HARD_SH4)
+    TARGET_ZDCBRANCH = 1;
+
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
     if (! VALID_REGISTER_P (regno))
       sh_register_names[regno][0] = '\0';
