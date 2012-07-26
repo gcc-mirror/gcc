@@ -149,8 +149,7 @@ sig_handler (int sig)
 #ifdef SIGPROF
   if (sig == SIGPROF)
     {
-      /* FIXME.  */
-      runtime_sigprof (0, 0, nil, nil);
+      runtime_sigprof ();
       return;
     }
 #endif
