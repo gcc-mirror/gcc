@@ -1,8 +1,5 @@
 /* Subroutines used for code generation on IBM RS/6000.
-   Copyright (C) 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011,
-   2012
-   Free Software Foundation, Inc.
+   Copyright (C) 1991-2012 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
    This file is part of GCC.
@@ -352,44 +349,6 @@ struct processor_costs size64_cost = {
   0,
   0,
   0,
-};
-
-/* Instruction costs on RIOS1 processors.  */
-static const
-struct processor_costs rios1_cost = {
-  COSTS_N_INSNS (5),    /* mulsi */
-  COSTS_N_INSNS (4),    /* mulsi_const */
-  COSTS_N_INSNS (3),    /* mulsi_const9 */
-  COSTS_N_INSNS (5),    /* muldi */
-  COSTS_N_INSNS (19),   /* divsi */
-  COSTS_N_INSNS (19),   /* divdi */
-  COSTS_N_INSNS (2),    /* fp */
-  COSTS_N_INSNS (2),    /* dmul */
-  COSTS_N_INSNS (19),   /* sdiv */
-  COSTS_N_INSNS (19),   /* ddiv */
-  128,			/* cache line size */
-  64,			/* l1 cache */
-  512,			/* l2 cache */
-  0,			/* streams */
-};
-
-/* Instruction costs on RIOS2 processors.  */
-static const
-struct processor_costs rios2_cost = {
-  COSTS_N_INSNS (2),    /* mulsi */
-  COSTS_N_INSNS (2),    /* mulsi_const */
-  COSTS_N_INSNS (2),    /* mulsi_const9 */
-  COSTS_N_INSNS (2),    /* muldi */
-  COSTS_N_INSNS (13),   /* divsi */
-  COSTS_N_INSNS (13),   /* divdi */
-  COSTS_N_INSNS (2),    /* fp */
-  COSTS_N_INSNS (2),    /* dmul */
-  COSTS_N_INSNS (17),   /* sdiv */
-  COSTS_N_INSNS (17),   /* ddiv */
-  256,			/* cache line size */
-  256,			/* l1 cache */
-  1024,			/* l2 cache */
-  0,			/* streams */
 };
 
 /* Instruction costs on RS64A processors.  */
@@ -3001,14 +2960,6 @@ rs6000_option_override_internal (bool global_init_p)
   else
     switch (rs6000_cpu)
       {
-      case PROCESSOR_RIOS1:
-	rs6000_cost = &rios1_cost;
-	break;
-
-      case PROCESSOR_RIOS2:
-	rs6000_cost = &rios2_cost;
-	break;
-
       case PROCESSOR_RS64A:
 	rs6000_cost = &rs64a_cost;
 	break;
@@ -6575,8 +6526,7 @@ rs6000_conditional_register_usage (void)
     fprintf (stderr, "rs6000_conditional_register_usage called\n");
 
   /* Set MQ register fixed (already call_used) if not POWER
-     architecture (RIOS1, RIOS2, RSC, and PPC601) so that it will not
-     be allocated.  */
+     architecture (PPC601) so that it will not be allocated.  */
   if (! TARGET_POWER)
     fixed_regs[64] = 1;
 
@@ -23162,7 +23112,6 @@ rs6000_issue_rate (void)
     return 1;
 
   switch (rs6000_cpu_attr) {
-  case CPU_RIOS1:  /* ? */
   case CPU_RS64A:
   case CPU_PPC601: /* ? */
   case CPU_PPC7450:
@@ -23182,7 +23131,6 @@ rs6000_issue_rate (void)
   case CPU_PPCE6500:
   case CPU_TITAN:
     return 2;
-  case CPU_RIOS2:
   case CPU_PPC476:
   case CPU_PPC604:
   case CPU_PPC604E:
