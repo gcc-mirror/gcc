@@ -1,5 +1,13 @@
 2012-07-27  Richard Guenther  <rguenther@suse.de>
 
+	* tree-into-ssa.c (def_blocks_p): New typedef.
+	(insert_phi_nodes_compare_def_blocks): New function.
+	(insert_phi_nodes): Do not walk over referenced vars, instead
+	walk over recorded def_blocks, record relevant ones and sort
+	them to avoid repeated hashtable lookups.
+
+2012-07-27  Richard Guenther  <rguenther@suse.de>
+
 	* doc/invoke.texi (min-virtual-mappings, virtual-mappings-ratio):
 	Remove param documentation.
 	* params.def (PARAM_MIN_VIRTUAL_MAPPINGS,
