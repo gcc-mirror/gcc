@@ -67,6 +67,11 @@ struct def_blocks_d
   bitmap livein_blocks;
 };
 
+typedef struct def_blocks_d *def_blocks_p;
+
+DEF_VEC_P(def_blocks_p);
+DEF_VEC_ALLOC_P(def_blocks_p,heap);
+
 
 /* Each entry in DEF_BLOCKS contains an element of type STRUCT
    DEF_BLOCKS_D, mapping a variable VAR to a bitmap describing all the
@@ -1104,6 +1109,18 @@ insert_phi_nodes_for (tree var, bitmap phi_insertion_points, bool update_p)
     }
 }
 
+/* Sort def_blocks after DECL_UID of their var.  */
+
+static int
+insert_phi_nodes_compare_def_blocks (const void *a, const void *b)
+{
+  const struct def_blocks_d *defa = *(struct def_blocks_d * const *)a;
+  const struct def_blocks_d *defb = *(struct def_blocks_d * const *)b;
+  if (DECL_UID (defa->var) < DECL_UID (defb->var))
+    return -1;
+  else
+    return 1;
+}
 
 /* Insert PHI nodes at the dominance frontier of blocks with variable
    definitions.  DFS contains the dominance frontier information for
@@ -1112,43 +1129,30 @@ insert_phi_nodes_for (tree var, bitmap phi_insertion_points, bool update_p)
 static void
 insert_phi_nodes (bitmap_head *dfs)
 {
-  referenced_var_iterator rvi;
-  bitmap_iterator bi;
-  tree var;
-  bitmap vars;
-  unsigned uid;
+  htab_iterator hi;
+  unsigned i;
+  struct def_blocks_d *def_map;
+  VEC(def_blocks_p,heap) *vars;
 
   timevar_push (TV_TREE_INSERT_PHI_NODES);
 
+  vars = VEC_alloc (def_blocks_p, heap, htab_elements (def_blocks));
+  FOR_EACH_HTAB_ELEMENT (def_blocks, def_map, struct def_blocks_d *, hi)
+    if (get_phi_state (def_map->var) != NEED_PHI_STATE_NO)
+      VEC_quick_push (def_blocks_p, vars, def_map);
+
   /* Do two stages to avoid code generation differences for UID
      differences but no UID ordering differences.  */
+  VEC_qsort (def_blocks_p, vars, insert_phi_nodes_compare_def_blocks);
 
-  vars = BITMAP_ALLOC (NULL);
-  FOR_EACH_REFERENCED_VAR (cfun, var, rvi)
+  FOR_EACH_VEC_ELT (def_blocks_p, vars, i, def_map)
     {
-      struct def_blocks_d *def_map;
-
-      def_map = find_def_blocks_for (var);
-      if (def_map == NULL)
-	continue;
-
-      if (get_phi_state (var) != NEED_PHI_STATE_NO)
-	bitmap_set_bit (vars, DECL_UID (var));
-    }
-
-  EXECUTE_IF_SET_IN_BITMAP (vars, 0, uid, bi)
-    {
-      tree var = referenced_var (uid);
-      struct def_blocks_d *def_map;
-      bitmap idf;
-
-      def_map = find_def_blocks_for (var);
-      idf = compute_idf (def_map->def_blocks, dfs);
-      insert_phi_nodes_for (var, idf, false);
+      bitmap idf = compute_idf (def_map->def_blocks, dfs);
+      insert_phi_nodes_for (def_map->var, idf, false);
       BITMAP_FREE (idf);
     }
 
-  BITMAP_FREE (vars);
+  VEC_free(def_blocks_p, heap, vars);
 
   timevar_pop (TV_TREE_INSERT_PHI_NODES);
 }
