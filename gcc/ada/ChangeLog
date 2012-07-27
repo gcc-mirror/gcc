@@ -1,3 +1,7 @@
+2012-07-27  Iain Sandoe  <iain@codesourcery.com>
+
+	* system-darwin-ppc64.ads: Add Support_Atomic_Primitives, set to True.
+
 2012-07-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils2.c (gnat_stabilize_reference) <BIT_FIELD_REF>: Do
