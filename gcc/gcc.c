@@ -6189,17 +6189,18 @@ main (int argc, char **argv)
 				   CL_DRIVER,
 				   &decoded_options, &decoded_options_count);
 
-#ifdef GCC_DRIVER_HOST_INITIALIZATION
-  /* Perform host dependent initialization when needed.  */
-  GCC_DRIVER_HOST_INITIALIZATION;
-#endif
-
   /* Unlock the stdio streams.  */
   unlock_std_streams ();
 
   gcc_init_libintl ();
 
   diagnostic_initialize (global_dc, 0);
+
+#ifdef GCC_DRIVER_HOST_INITIALIZATION
+  /* Perform host dependent initialization when needed.  */
+  GCC_DRIVER_HOST_INITIALIZATION;
+#endif
+
   if (atexit (delete_temp_files) != 0)
     fatal_error ("atexit failed");
 
