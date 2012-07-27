@@ -128,18 +128,6 @@ static bitmap blocks_with_phis_to_rewrite;
    strategy.  */
 #define NAME_SETS_GROWTH_FACTOR	(MAX (3, num_ssa_names / 3))
 
-/* Tuple used to represent replacement mappings.  */
-struct repl_map_d
-{
-  tree name;
-  bitmap set;
-};
-
-
-/* NEW -> OLD_SET replacement table.  If we are replacing several
-   existing SSA names O_1, O_2, ..., O_j with a new name N_i,
-   then REPL_TBL[N_i] = { O_1, O_2, ..., O_j }.  */
-static htab_t repl_tbl;
 
 /* The function the SSA updating data structures have been initialized for.
    NULL if they need to be initialized by register_new_name_mapping.  */
@@ -157,18 +145,21 @@ struct mark_def_sites_global_data
 /* Information stored for SSA names.  */
 struct ssa_name_info
 {
-  /* The current reaching definition replacing this SSA name.  */
-  tree current_def;
+  /* Age of this record (so that info_for_ssa_name table can be cleared
+     quickly); if AGE < CURRENT_INFO_FOR_SSA_NAME_AGE, then the fields
+     are assumed to be null.  */
+  unsigned age;
 
   /* This field indicates whether or not the variable may need PHI nodes.
      See the enum's definition for more detailed information about the
      states.  */
   ENUM_BITFIELD (need_phi_state) need_phi_state : 2;
 
-  /* Age of this record (so that info_for_ssa_name table can be cleared
-     quickly); if AGE < CURRENT_INFO_FOR_SSA_NAME_AGE, then the fields
-     are assumed to be null.  */
-  unsigned age;
+  /* The current reaching definition replacing this SSA name.  */
+  tree current_def;
+
+  /* Replacement mappings, allocated from update_ssa_obstack.  */
+  bitmap repl_set;
 };
 
 /* The information associated with names.  */
@@ -178,6 +169,8 @@ DEF_VEC_ALLOC_P (ssa_name_info_p, heap);
 
 static VEC(ssa_name_info_p, heap) *info_for_ssa_name;
 static unsigned current_info_for_ssa_name_age;
+
+static bitmap_obstack update_ssa_obstack;
 
 /* The set of blocks affected by update_ssa.  */
 static bitmap blocks_to_update;
@@ -288,6 +281,7 @@ get_ssa_name_ann (tree name)
     {
       info->need_phi_state = NEED_PHI_STATE_UNKNOWN;
       info->current_def = NULL_TREE;
+      info->repl_set = NULL;
       info->age = current_info_for_ssa_name_age;
     }
 
@@ -301,6 +295,10 @@ static void
 clear_ssa_name_info (void)
 {
   current_info_for_ssa_name_age++;
+
+  /* If current_info_for_ssa_name_age wraps we use stale information.
+     Asser that this does not happen.  */
+  gcc_assert (current_info_for_ssa_name_age != 0);
 }
 
 
@@ -573,45 +571,12 @@ is_new_name (tree name)
 }
 
 
-/* Hashing and equality functions for REPL_TBL.  */
-
-static hashval_t
-repl_map_hash (const void *p)
-{
-  return htab_hash_pointer ((const void *)((const struct repl_map_d *)p)->name);
-}
-
-static int
-repl_map_eq (const void *p1, const void *p2)
-{
-  return ((const struct repl_map_d *)p1)->name
-	 == ((const struct repl_map_d *)p2)->name;
-}
-
-static void
-repl_map_free (void *p)
-{
-  BITMAP_FREE (((struct repl_map_d *)p)->set);
-  free (p);
-}
-
-
 /* Return the names replaced by NEW_TREE (i.e., REPL_TBL[NEW_TREE].SET).  */
 
 static inline bitmap
 names_replaced_by (tree new_tree)
 {
-  struct repl_map_d m;
-  void **slot;
-
-  m.name = new_tree;
-  slot = htab_find_slot (repl_tbl, (void *) &m, NO_INSERT);
-
-  /* If N was not registered in the replacement table, return NULL.  */
-  if (slot == NULL || *slot == NULL)
-    return NULL;
-
-  return ((struct repl_map_d *) *slot)->set;
+  return get_ssa_name_ann (new_tree)->repl_set;
 }
 
 
@@ -620,22 +585,10 @@ names_replaced_by (tree new_tree)
 static inline void
 add_to_repl_tbl (tree new_tree, tree old)
 {
-  struct repl_map_d m, *mp;
-  void **slot;
-
-  m.name = new_tree;
-  slot = htab_find_slot (repl_tbl, (void *) &m, INSERT);
-  if (*slot == NULL)
-    {
-      mp = XNEW (struct repl_map_d);
-      mp->name = new_tree;
-      mp->set = BITMAP_ALLOC (NULL);
-      *slot = (void *) mp;
-    }
-  else
-    mp = (struct repl_map_d *) *slot;
-
-  bitmap_set_bit (mp->set, SSA_NAME_VERSION (old));
+  bitmap *set = &get_ssa_name_ann (new_tree)->repl_set;
+  if (!*set)
+    *set = BITMAP_ALLOC (&update_ssa_obstack);
+  bitmap_set_bit (*set, SSA_NAME_VERSION (old));
 }
 
 
@@ -1719,7 +1672,7 @@ htab_statistics (FILE *file, htab_t htab)
 void
 dump_tree_ssa_stats (FILE *file)
 {
-  if (def_blocks || repl_tbl)
+  if (def_blocks)
     fprintf (file, "\nHash table statistics:\n");
 
   if (def_blocks)
@@ -1728,13 +1681,7 @@ dump_tree_ssa_stats (FILE *file)
       htab_statistics (file, def_blocks);
     }
 
-  if (repl_tbl)
-    {
-      fprintf (file, "    repl_tbl:     ");
-      htab_statistics (file, repl_tbl);
-    }
-
-  if (def_blocks || repl_tbl)
+  if (def_blocks)
     fprintf (file, "\n");
 }
 
@@ -2838,7 +2785,8 @@ init_update_ssa (struct function *fn)
   new_ssa_names = sbitmap_alloc (num_ssa_names + NAME_SETS_GROWTH_FACTOR);
   sbitmap_zero (new_ssa_names);
 
-  repl_tbl = htab_create (20, repl_map_hash, repl_map_eq, repl_map_free);
+  bitmap_obstack_initialize (&update_ssa_obstack);
+
   names_to_release = NULL;
   update_ssa_initialized_fn = fn;
 }
@@ -2857,9 +2805,6 @@ delete_update_ssa (void)
 
   sbitmap_free (new_ssa_names);
   new_ssa_names = NULL;
-
-  htab_delete (repl_tbl);
-  repl_tbl = NULL;
 
   bitmap_clear (SYMS_TO_RENAME (update_ssa_initialized_fn));
 
@@ -2885,6 +2830,9 @@ delete_update_ssa (void)
 
   BITMAP_FREE (blocks_with_phis_to_rewrite);
   BITMAP_FREE (blocks_to_update);
+
+  bitmap_obstack_release (&update_ssa_obstack);
+
   update_ssa_initialized_fn = NULL;
 }
 
@@ -2955,19 +2903,6 @@ need_ssa_update_p (struct function *fn)
   return (update_ssa_initialized_fn == fn
 	  || (fn->gimple_df
 	      && !bitmap_empty_p (SYMS_TO_RENAME (fn))));
-}
-
-/* Return true if SSA name mappings have been registered for SSA updating.  */
-
-bool
-name_mappings_registered_p (void)
-{
-  if (!update_ssa_initialized_fn)
-    return false;
-
-  gcc_assert (update_ssa_initialized_fn == cfun);
-
-  return repl_tbl && htab_elements (repl_tbl) > 0;
 }
 
 /* Return true if name N has been registered in the replacement table.  */
@@ -3212,7 +3147,6 @@ update_ssa (unsigned update_flags)
     {
       sbitmap_zero (old_ssa_names);
       sbitmap_zero (new_ssa_names);
-      htab_empty (repl_tbl);
     }
 
   insert_phi_p = (update_flags != TODO_update_ssa_no_phi);

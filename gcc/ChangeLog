@@ -1,3 +1,23 @@
+2012-07-27  Richard Guenther  <rguenther@suse.de>
+
+	* tree-cfg.c (gimple_can_merge_blocks_p): Do more fine-grained
+	check whether SSA form is not up-to-date.
+	* tree-flow.h (name_mappings_registered_p): Remove.
+	* tree-into-ssa.c (struct repl_map_d): Remove.
+	(repl_tbl): Likewise.
+	(struct ssa_name_info): Add repl_set member.
+	(update_ssa_obstack): New static global.
+	(get_ssa_name_ann): Initialize repl_set.
+	(clear_ssa_name_info): Assert age did not wrap.
+	(repl_map_hash, repl_map_eq, repl_map_free): Remove.
+	(names_replaced_by): Adjust.
+	(add_to_repl_tbl): Likewise.
+	(dump_tree_ssa_stats): Likewise.
+	(init_update_ssa): Initialize update_ssa_obstack.
+	(delete_update_ssa): Free update_ssa_obstack.
+	(name_mappings_registered_p): Remove.
+	(update_ssa): Adjust.
+
 2012-07-27  Segher Boessenkool  <segher@kernel.crashing.org>
 
         * config/rs6000/constraints.md: Delete "q" constraint.
