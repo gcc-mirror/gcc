@@ -34,7 +34,7 @@ along with GCC; see the file COPYING3.  If not see
       (There is one exception needed for implementing GCC extern inline
 	function.)
 
-    - varpool_finalize_variable
+    - varpool_finalize_decl
 
       This function has same behavior as the above but is used for static
       variables.
