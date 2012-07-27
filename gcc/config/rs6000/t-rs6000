@@ -1,7 +1,6 @@
 # General rules that all rs6000/ targets must have.
 #
-# Copyright (C) 1995, 1997, 1998, 1999, 2001, 2002, 2003, 2004, 2008, 2009,
-# 2010, 2011 Free Software Foundation, Inc.
+# Copyright (C) 1995-2012 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -44,12 +43,11 @@ $(srcdir)/config/rs6000/rs6000-tables.opt: $(srcdir)/config/rs6000/genopt.sh \
 # The rs6000 backend doesn't cause warnings in these files.
 insn-conditions.o-warn =
 
-MD_INCLUDES = $(srcdir)/config/rs6000/rios1.md \
-	$(srcdir)/config/rs6000/rios2.md \
-	$(srcdir)/config/rs6000/rs64.md \
+MD_INCLUDES = $(srcdir)/config/rs6000/rs64.md \
 	$(srcdir)/config/rs6000/mpc.md \
 	$(srcdir)/config/rs6000/40x.md \
 	$(srcdir)/config/rs6000/440.md \
+	$(srcdir)/config/rs6000/601.md \
 	$(srcdir)/config/rs6000/603.md \
 	$(srcdir)/config/rs6000/6xx.md \
 	$(srcdir)/config/rs6000/7xx.md \

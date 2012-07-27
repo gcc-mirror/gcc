@@ -1,5 +1,5 @@
 /* Subroutines for the gcc driver.
-   Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2007-2012 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -295,15 +295,6 @@ detect_processor_aix (void)
 {
   switch (_system_configuration.implementation)
     {
-    case 0x0001:
-      return "rios1";
-
-    case 0x0002:
-      return "rsc";
-
-    case 0x0004:
-      return "rios2";
-
     case 0x0008:
       return "601";
 
@@ -392,11 +383,6 @@ static const struct asm_name asm_names[] = {
   { "power6x",	"%(asm_cpu_power6) -maltivec" },
   { "power7",	"%(asm_cpu_power7)" },
   { "powerpc",	"-mppc" },
-  { "rios",	"-mpwr" },
-  { "rios1",	"-mpwr" },
-  { "rios2",	"-mpwrx" },
-  { "rsc",	"-mpwr" },
-  { "rsc1",	"-mpwr" },
   { "rs64a",	"-mppc64" },
   { "401",	"-mppc" },
   { "403",	"-m403" },

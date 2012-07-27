@@ -1,3 +1,38 @@
+2012-07-27  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/601.md: New file.
+	* config/rs6000/aix43.h (ASM_CPU_SPEC): Delete support for
+	RIOS CPUs.
+	* config/rs6000/aix51.h (ASM_CPU_SPEC): Likewise.
+	* config/rs6000/driver-rs6000.c (detect_processor_aix,
+	struct asm_names): Likewise.
+	* config/rs6000/rios1.md: Delete file.
+	* config/rs6000/rios2.md: Delete file.
+	* config/rs6000/rs6000-cpus.def: Delete definitions for RIOS
+	CPUs.
+	* config/rs6000/rs6000-opts.h (enum processor_type): Delete
+	PROCESSOR_RIOS1 and PROCESSOR_RIOS2.
+	* config/rs6000/rs6000-tables.opt: Regenerated.
+	* config/rs6000/rs6000.c (struct rios1_cost, struct rios2_cost):
+	Delete.
+	(rs6000_option_override_internal): Delete support for RIOS CPUs.
+	(rs6000_conditional_register_usage): Adjust comment.
+	(rs6000_issue_rate):Delete support for RIOS CPUs.
+	* config/rs6000/rs6000.h (ASM_CPU_SPEC): Delete support for
+	RIOS CPUs.
+	(PROCESSOR_POWER): Change to PROCESSOR_PPC601.
+	(PROCESSOR_DEFAULT): Change to PROCESSOR_PPC603.
+	* config/rs6000/rs6000.md (define_attr "cpu"): Delete rios1
+	and rios2.
+	(include "rios1.md", include "rios2.md"): Delete.
+	(include "601.md"): New.
+	* config/rs6000/rs6000.opt (enum rs6000_cpu): Default to
+	PROCESSOR_PPC603.
+	* config/rs6000/t-aix43 (MULTILIB_MATCHES): Delete support
+	for RIOS CPUs.
+	* config/rs6000/t-rs6000 (MD_INCLUDES): Delete rios1.md and
+	rios2.md .  Add 601.md .
+
 2012-07-26  Richard Henderson  <rth@redhat.com>
 
 	* doc/extend.texi (attribute): Document hot/cold for labels.
