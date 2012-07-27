@@ -1,3 +1,8 @@
+2012-07-27  Anna Tikhonova  <anna.tikhonova@intel.com>
+
+	* gcc.dg/20020201-1.c: Remove declarations for exit, abort,
+	rand, srand. Include <stdlib.h>.
+
 2012-07-26  Janis Johnson  <janisjo@codesourcery.com>
 
 	* gcc.dg/pr45259.c: Only -fpic depends on fpic support.
