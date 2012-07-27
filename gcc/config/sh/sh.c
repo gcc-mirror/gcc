@@ -2859,26 +2859,22 @@ shiftcosts (rtx x)
 {
   int value;
 
-  /* There is no pattern for constant first operand.  */
-  if (CONST_INT_P (XEXP (x, 0)))
-    return MAX_COST;
-
   if (TARGET_SHMEDIA)
-    return COSTS_N_INSNS (1);
+    return 1;
 
   if (GET_MODE_SIZE (GET_MODE (x)) > UNITS_PER_WORD)
     {
       if (GET_MODE (x) == DImode
 	  && CONST_INT_P (XEXP (x, 1))
 	  && INTVAL (XEXP (x, 1)) == 1)
-	return COSTS_N_INSNS (2);
+	return 2;
 
       /* Everything else is invalid, because there is no pattern for it.  */
-      return MAX_COST;
+      return -1;
     }
   /* If shift by a non constant, then this will be expensive.  */
   if (!CONST_INT_P (XEXP (x, 1)))
-    return COSTS_N_INSNS (SH_DYNAMIC_SHIFT_COST);
+    return SH_DYNAMIC_SHIFT_COST;
 
   /* Otherwise, return the true cost in instructions.  Cope with out of range
      shift counts more or less arbitrarily.  */
@@ -2887,13 +2883,14 @@ shiftcosts (rtx x)
   if (GET_CODE (x) == ASHIFTRT)
     {
       int cost = ashiftrt_insns[value];
-      /* If SH3, then we put the constant in a reg and use shad.  */
+      /* If dynamic shifts are available and profitable in this case, then we
+	 put the constant in a reg and use shad.  */
       if (cost > 1 + SH_DYNAMIC_SHIFT_COST)
 	cost = 1 + SH_DYNAMIC_SHIFT_COST;
-      return COSTS_N_INSNS (cost);
+      return cost;
     }
   else
-    return COSTS_N_INSNS (shift_insns[value]);
+    return shift_insns[value];
 }
 
 /* Return the cost of an AND/XOR/IOR operation.  */
@@ -3147,8 +3144,13 @@ sh_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
     case ASHIFT:
     case ASHIFTRT:
     case LSHIFTRT:
-      *total = shiftcosts (x);
-      return true;
+      {
+	int cost = shiftcosts (x);
+	if (cost < 0)
+	  return false;
+	*total = COSTS_N_INSNS (cost);
+	return true;
+      }
 
     case DIV:
     case UDIV:
