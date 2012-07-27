@@ -1,5 +1,5 @@
 ;; Constraint definitions for RS6000
-;; Copyright (C) 2006, 2007, 2009, 2010 Free Software Foundation, Inc.
+;; Copyright (C) 2006-2012 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -17,7 +17,7 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
 
-;; Available constraint letters: "e", "k", "u", "A", "B", "C", "D"
+;; Available constraint letters: "e", "k", "q", "u", "A", "B", "C", "D"
 
 ;; Register constraints
 
@@ -31,9 +31,6 @@
   "@internal")
 
 (define_register_constraint "h" "SPECIAL_REGS"
-  "@internal")
-
-(define_register_constraint "q" "MQ_REGS"
   "@internal")
 
 (define_register_constraint "c" "CTR_REGS"

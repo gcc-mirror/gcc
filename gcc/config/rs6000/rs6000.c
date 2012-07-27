@@ -1750,7 +1750,6 @@ rs6000_debug_reg_global (void)
   rs6000_debug_reg_print (LR_REGNO, LR_REGNO, "lr");
   rs6000_debug_reg_print (CTR_REGNO, CTR_REGNO, "ctr");
   rs6000_debug_reg_print (CR0_REGNO, CR7_REGNO, "cr");
-  rs6000_debug_reg_print (MQ_REGNO, MQ_REGNO, "mq");
   rs6000_debug_reg_print (CA_REGNO, CA_REGNO, "ca");
   rs6000_debug_reg_print (VRSAVE_REGNO, VRSAVE_REGNO, "vrsave");
   rs6000_debug_reg_print (VSCR_REGNO, VSCR_REGNO, "vscr");
@@ -1973,7 +1972,6 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
   for (r = CR1_REGNO; r <= CR7_REGNO; ++r)
     rs6000_regno_regclass[r] = CR_REGS;
 
-  rs6000_regno_regclass[MQ_REGNO] = MQ_REGS;
   rs6000_regno_regclass[LR_REGNO] = LINK_REGS;
   rs6000_regno_regclass[CTR_REGNO] = CTR_REGS;
   rs6000_regno_regclass[CA_REGNO] = CA_REGS;
@@ -27167,8 +27165,6 @@ rs6000_dbx_register_number (unsigned int regno)
 {
   if (regno <= 63 || write_symbols != DWARF2_DEBUG)
     return regno;
-  if (regno == MQ_REGNO)
-    return 100;
   if (regno == LR_REGNO)
     return 108;
   if (regno == CTR_REGNO)

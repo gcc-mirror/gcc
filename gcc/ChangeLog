@@ -1,3 +1,25 @@
+2012-07-27  Segher Boessenkool  <segher@kernel.crashing.org>
+
+        * config/rs6000/constraints.md: Delete "q" constraint.
+        * config/rs6000/dfp.md (movsd_hardfloat, movsd_softfloat):
+        Delete the "q" alternative.
+        * config/rs6000/predicates.md (gpc_reg_operand): Adjust.
+        * config/rs6000/rs6000.c (rs6000_debug_reg_global,
+        rs6000_init_hard_regno_mode_ok, rs6000_dbx_register_number):
+        Adjust to MQ_REGNO removal.
+        * config/rs6000/rs6000.h (FIRST_PSEUDO_REGISTER): Adjust
+        comment.
+        (REG_ALLOC_ORDER): Adjust comment.  Remove MQ from alloc order.
+        (enum reg_class): Adjust comment.  Delete MQ_REGS.
+        (REG_CLASS_CONTENTS): Adjust.
+        (REGISTER_NAMES, ADDITIONAL_REGISTER_NAMES): Adjust comment.
+        * config/rs6000/rs6000.md: Delete MQ_REGNO.
+        (movsi_internal1, movsi_internal1_single, movhi_internal,
+        movqi_internal, movcc_internal1, movsf_hardfloat,
+        movsf_softfloat): Delete the "q" alternative.
+        (ctr<mode>_internal1, ctr<mode>_internal2, ctr<mode>_internal5,
+        ctr<mode>_internal6): Delete "q" constraint.
+
 2012-07-27  Richard Guenther  <rguenther@suse.de>
 
 	* tree-into-ssa.c (def_blocks_p): New typedef.

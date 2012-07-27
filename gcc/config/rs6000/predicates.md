@@ -1,6 +1,5 @@
 ;; Predicate definitions for POWER and PowerPC.
-;; Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
-;; Free Software Foundation, Inc.
+;; Copyright (C) 2005-2012 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -128,7 +127,8 @@
 	(match_test "(GET_CODE (op) != REG
 		      || (REGNO (op) >= ARG_POINTER_REGNUM
 			  && !CA_REGNO_P (REGNO (op)))
-		      || REGNO (op) < MQ_REGNO)
+		      || INT_REGNO_P (REGNO (op))
+		      || FP_REGNO_P (REGNO (op)))
 		     && !((TARGET_E500_DOUBLE || TARGET_SPE)
 			  && invalid_e500_subreg (op, mode))")))
 
