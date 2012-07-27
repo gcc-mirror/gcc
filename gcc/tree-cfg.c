@@ -1445,7 +1445,6 @@ gimple_can_merge_blocks_p (basic_block a, basic_block b)
 {
   gimple stmt;
   gimple_stmt_iterator gsi;
-  gimple_seq phis;
 
   if (!single_succ_p (a))
     return false;
@@ -1495,10 +1494,13 @@ gimple_can_merge_blocks_p (basic_block a, basic_block b)
   /* It must be possible to eliminate all phi nodes in B.  If ssa form
      is not up-to-date and a name-mapping is registered, we cannot eliminate
      any phis.  Symbols marked for renaming are never a problem though.  */
-  phis = phi_nodes (b);
-  if (!gimple_seq_empty_p (phis)
-      && name_mappings_registered_p ())
-    return false;
+  for (gsi = gsi_start_phis (b); !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      gimple phi = gsi_stmt (gsi);
+      /* Technically only new names matter.  */
+      if (name_registered_for_update_p (PHI_RESULT (phi)))
+	return false;
+    }
 
   /* When not optimizing, don't merge if we'd lose goto_locus.  */
   if (!optimize

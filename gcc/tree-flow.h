@@ -570,7 +570,6 @@ void delete_update_ssa (void);
 void register_new_name_mapping (tree, tree);
 tree create_new_def_for (tree, gimple, def_operand_p);
 bool need_ssa_update_p (struct function *);
-bool name_mappings_registered_p (void);
 bool name_registered_for_update_p (tree);
 void release_ssa_name_after_update_ssa (tree);
 void compute_global_livein (bitmap, bitmap);
