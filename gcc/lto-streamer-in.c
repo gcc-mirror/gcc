@@ -38,7 +38,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "ggc.h"
 #include "diagnostic.h"
-#include "libfuncs.h"
 #include "except.h"
 #include "debug.h"
 #include "vec.h"
@@ -798,7 +797,6 @@ input_struct_function_base (struct function *fn, struct data_in *data_in,
   bp = streamer_read_bitpack (ib);
   fn->is_thunk = bp_unpack_value (&bp, 1);
   fn->has_local_explicit_reg_vars = bp_unpack_value (&bp, 1);
-  fn->after_tree_profile = bp_unpack_value (&bp, 1);
   fn->returns_pcc_struct = bp_unpack_value (&bp, 1);
   fn->returns_struct = bp_unpack_value (&bp, 1);
   fn->can_throw_non_call_exceptions = bp_unpack_value (&bp, 1);

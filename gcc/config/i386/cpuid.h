@@ -65,11 +65,14 @@
 
 /* Extended Features (%eax == 7) */
 #define bit_FSGSBASE	(1 << 0)
-#define bit_BMI		(1 << 3)
-#define bit_HLE		(1 << 4)
+#define bit_BMI	(1 << 3)
+#define bit_HLE	(1 << 4)
 #define bit_AVX2	(1 << 5)
 #define bit_BMI2	(1 << 8)
-#define bit_RTM		(1 << 11)
+#define bit_PRFCHW	(1 << 8)
+#define bit_RTM	(1 << 11)
+#define bit_RDSEED	(1 << 18)
+#define bit_ADX	(1 << 19)
 
 #if defined(__i386__) && defined(__PIC__)
 /* %ebx may be the PIC register.  */

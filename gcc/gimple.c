@@ -79,7 +79,6 @@ EXPORTED_CONST enum gimple_statement_structure_enum gss_for_code_[] = {
 };
 #undef DEFGSCODE
 
-#ifdef GATHER_STATISTICS
 /* Gimple stats.  */
 
 int gimple_alloc_counts[(int) gimple_alloc_kind_all];
@@ -92,8 +91,6 @@ static const char * const gimple_alloc_kind_names[] = {
     "conditionals",
     "everything else"
 };
-
-#endif /* GATHER_STATISTICS */
 
 /* Private API manipulation functions shared only with some
    other files.  */
@@ -134,13 +131,12 @@ gimple_alloc_stat (enum gimple_code code, unsigned num_ops MEM_STAT_DECL)
   if (num_ops > 0)
     size += sizeof (tree) * (num_ops - 1);
 
-#ifdef GATHER_STATISTICS
-  {
-    enum gimple_alloc_kind kind = gimple_alloc_kind (code);
-    gimple_alloc_counts[(int) kind]++;
-    gimple_alloc_sizes[(int) kind] += size;
-  }
-#endif
+  if (GATHER_STATISTICS)
+    {
+      enum gimple_alloc_kind kind = gimple_alloc_kind (code);
+      gimple_alloc_counts[(int) kind]++;
+      gimple_alloc_sizes[(int) kind] += size;
+    }
 
   stmt = ggc_alloc_cleared_gimple_statement_d_stat (size PASS_MEM_STAT);
   gimple_set_code (stmt, code);
@@ -645,9 +641,8 @@ gimple_build_asm_1 (const char *string, unsigned ninputs, unsigned noutputs,
   p->gimple_asm.nl = nlabels;
   p->gimple_asm.string = ggc_alloc_string (string, size);
 
-#ifdef GATHER_STATISTICS
-  gimple_alloc_sizes[(int) gimple_alloc_kind (GIMPLE_ASM)] += size;
-#endif
+  if (GATHER_STATISTICS)
+    gimple_alloc_sizes[(int) gimple_alloc_kind (GIMPLE_ASM)] += size;
 
   return p;
 }
@@ -2503,8 +2498,13 @@ gimple_assign_rhs_could_trap_p (gimple s)
 void
 dump_gimple_statistics (void)
 {
-#ifdef GATHER_STATISTICS
   int i, total_tuples = 0, total_bytes = 0;
+
+  if (! GATHER_STATISTICS)
+    {
+      fprintf (stderr, "No gimple statistics\n");
+      return;
+    }
 
   fprintf (stderr, "\nGIMPLE statements\n");
   fprintf (stderr, "Kind                   Stmts      Bytes\n");
@@ -2519,9 +2519,6 @@ dump_gimple_statistics (void)
   fprintf (stderr, "---------------------------------------\n");
   fprintf (stderr, "%-20s %7d %10d\n", "Total", total_tuples, total_bytes);
   fprintf (stderr, "---------------------------------------\n");
-#else
-  fprintf (stderr, "No gimple statistics\n");
-#endif
 }
 
 

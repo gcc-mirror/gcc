@@ -1,3 +1,51 @@
+2012-07-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/54086
+	* decl.c (grokdeclarator): Allow const and constexpr together.
+
+	PR c++/54020
+	* semantics.c (potential_constant_expression_1) [COND_EXPR]: Call
+	maybe_constant_value.
+
+	* cp-tree.h (tsubst_flags): Remove tf_no_access_control.
+	* call.c (standard_conversion): Don't set it.
+	* class.c (resolve_address_of_overloaded_function): Don't check it.
+	* decl.c (check_default_argument): Call
+	perform_implicit_conversion_flags.
+
+	* pt.c (print_candidates_1): Use inform instead of error.
+
+2012-07-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* pt.c (convert_template_argument, tsubst): Simplify fourth argument
+	to make_typename_type (complain & tf_error -> complain).
+
+2012-07-24  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* class.c (n_vtables, n_vtable_entries, n_vtable_searches,
+	n_vtable_elems, n_convert_harshness, n_compute_conversion_costs,
+	n_inner_fields_searched): Always define.
+	(build_primary_vtable): Convert #ifdef GATHER_STATISTICS to if-code.
+	(print_class_statistics): Convert #ifdef GATHER_STATISTICS to if-code.
+	* tree.c (depth_reached): Always define global.
+	(cxx_print_statistics): Convert #ifdef GATHER_STATISTICS to if-code.
+	* pt.c (depth_reached): Always define.
+	(push_tinst_level): Convert #ifdef GATHER_STATISTICS to if-code.
+	* search.c (n_fields_searched, n_calls_lookup_field,
+	n_calls_lookup_field_1, n_calls_lookup_fnfields,
+	n_calls_lookup_fnfields_1, n_calls_get_base_type,
+	n_outer_fields_searched, n_contexts_saved): Always define.
+	(lookup_field_1): Convert #ifdef GATHER_STATISTICS to if-code.
+	(lookup_member): Likewise.
+	(lookup_fnfields_idx_nolazy): Likewise.
+	(print_search_statistics): Likewise.
+	(reinit_search_statistics): Unconditionally re-set counters.
+	* lex.c (retrofit_lang_decl): Convert #ifdef GATHER_STATISTICS
+	to if-code.
+	(cxx_dup_lang_specific_decl): Likewise.
+	(copy_lang_type): Likewise.
+	(cxx_make_type): Likewise.
+
 2012-07-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/54038

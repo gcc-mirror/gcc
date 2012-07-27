@@ -650,7 +650,7 @@ compute_out (sbitmap *bb_out, sbitmap *bb_gen, sbitmap *bb_kill, int max_uid)
       changed = 0;
       for (i = NUM_FIXED_BLOCKS; i < last_basic_block; i++)
 	{
-	  sbitmap_union_of_preds (bb_in, bb_out, i);
+	  sbitmap_union_of_preds (bb_in, bb_out, BASIC_BLOCK (i));
 	  changed |= sbitmap_union_of_diff_cg (bb_out[i], bb_gen[i],
 					       bb_in, bb_kill[i]);
 	}
@@ -673,7 +673,7 @@ link_btr_uses (btr_def *def_array, btr_user *use_array, sbitmap *bb_out,
       rtx insn;
       rtx last;
 
-      sbitmap_union_of_preds (reaching_defs, bb_out, i);
+      sbitmap_union_of_preds (reaching_defs, bb_out, BASIC_BLOCK (i));
       for (insn = BB_HEAD (bb), last = NEXT_INSN (BB_END (bb));
 	   insn != last;
 	   insn = NEXT_INSN (insn))

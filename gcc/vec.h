@@ -482,12 +482,7 @@ extern void *vec_heap_o_reserve (void *, int, size_t, size_t MEM_STAT_DECL);
 extern void *vec_heap_o_reserve_exact (void *, int, size_t, size_t
 				       MEM_STAT_DECL);
 extern void dump_vec_loc_statistics (void);
-#ifdef GATHER_STATISTICS
-void vec_heap_free (void *);
-#else
-/* Avoid problems with frontends that #define free(x).  */
-#define vec_heap_free(V) (free) (V)
-#endif
+extern void vec_heap_free (void *);
 
 #if ENABLE_CHECKING
 #define VEC_CHECK_INFO ,__FILE__,__LINE__,__FUNCTION__
@@ -1356,7 +1351,8 @@ extern void *vec_stack_o_reserve_exact (void *, int, size_t, size_t
 					 MEM_STAT_DECL);
 extern void vec_stack_free (void *);
 
-#ifdef GATHER_STATISTICS
+/* Unfortunately, we cannot use MEM_STAT_DECL here.  */
+#if GATHER_STATISTICS
 #define VEC_stack_alloc(T,alloc,name,line,function)			  \
   (VEC_OP (T,stack,alloc1)						  \
    (alloc, XALLOCAVAR (VEC(T,stack), VEC_embedded_size (T, alloc))))

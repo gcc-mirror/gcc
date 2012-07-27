@@ -212,7 +212,6 @@ static tree get_vcall_index (tree, tree);
 
 /* Variables shared between class.c and call.c.  */
 
-#ifdef GATHER_STATISTICS
 int n_vtables = 0;
 int n_vtable_entries = 0;
 int n_vtable_searches = 0;
@@ -220,7 +219,6 @@ int n_vtable_elems = 0;
 int n_convert_harshness = 0;
 int n_compute_conversion_costs = 0;
 int n_inner_fields_searched = 0;
-#endif
 
 /* Convert to or from a base subobject.  EXPR is an expression of type
    `A' or `A*', an expression of type `B' or `B*' is returned.  To
@@ -836,10 +834,11 @@ build_primary_vtable (tree binfo, tree type)
       virtuals = NULL_TREE;
     }
 
-#ifdef GATHER_STATISTICS
-  n_vtables += 1;
-  n_vtable_elems += list_length (virtuals);
-#endif
+  if (GATHER_STATISTICS)
+    {
+      n_vtables += 1;
+      n_vtable_elems += list_length (virtuals);
+    }
 
   /* Initialize the association list for this type, based
      on our first approximation.  */
@@ -6879,9 +6878,8 @@ pop_lang_context (void)
 
    If OVERLOAD is for one or more member functions, then ACCESS_PATH
    is the base path used to reference those member functions.  If
-   TF_NO_ACCESS_CONTROL is not set in FLAGS, and the address is
-   resolved to a member function, access checks will be performed and
-   errors issued if appropriate.  */
+   the address is resolved to a member function, access checks will be
+   performed and errors issued if appropriate.  */
 
 static tree
 resolve_address_of_overloaded_function (tree target_type,
@@ -7144,12 +7142,10 @@ resolve_address_of_overloaded_function (tree target_type,
   /* We could not check access to member functions when this
      expression was originally created since we did not know at that
      time to which function the expression referred.  */
-  if (!(flags & tf_no_access_control) 
-      && DECL_FUNCTION_MEMBER_P (fn))
+  if (DECL_FUNCTION_MEMBER_P (fn))
     {
       gcc_assert (access_path);
-      perform_or_defer_access_check (access_path, fn, fn,
-				     tf_warning_or_error);
+      perform_or_defer_access_check (access_path, fn, fn, flags);
     }
 
   if (TYPE_PTRFN_P (target_type) || TYPE_PTRMEMFUNC_P (target_type))
@@ -7332,7 +7328,9 @@ get_vfield_name (tree type)
 void
 print_class_statistics (void)
 {
-#ifdef GATHER_STATISTICS
+  if (! GATHER_STATISTICS)
+    return;
+
   fprintf (stderr, "convert_harshness = %d\n", n_convert_harshness);
   fprintf (stderr, "compute_conversion_costs = %d\n", n_compute_conversion_costs);
   if (n_vtables)
@@ -7342,7 +7340,6 @@ print_class_statistics (void)
       fprintf (stderr, "vtable entries = %d; vtable elems = %d\n",
 	       n_vtable_entries, n_vtable_elems);
     }
-#endif
 }
 
 /* Build a dummy reference to ourselves so Derived::Base (and A::A) works,

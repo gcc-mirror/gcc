@@ -6,8 +6,8 @@
 // Based on bug report by JDonner <jdonner@schedsys.com>
 
 struct foo {
-  static int bar(); // { dg-error "foo::bar" }
-  void bar(int); // { dg-error "foo::bar" }
+  static int bar(); // { dg-message "foo::bar" }
+  void bar(int); // { dg-message "foo::bar" }
 };
 
 /* gcc emits a hard error without -pedantic, and a warning with

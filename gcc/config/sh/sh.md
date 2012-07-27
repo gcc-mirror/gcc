@@ -779,6 +779,18 @@
 	cmp/pz	%0"
    [(set_attr "type" "mt_group")])
 
+;; FIXME: This is actually wrong.  There is no way to literally move a
+;; general reg to t reg.  Luckily, it seems that this pattern will be only
+;; used when the general reg is known be either '0' or '1' during combine.
+;; What we actually need is reg != 0 -> T, but we have only reg == 0 -> T.
+;; Due to interactions with other patterns, combine fails to pick the latter
+;; and invert the dependent logic.
+(define_insn "*negtstsi"
+  [(set (reg:SI T_REG) (match_operand:SI 0 "arith_reg_operand" "r"))]
+  "TARGET_SH1"
+  "cmp/pl	%0"
+   [(set_attr "type" "mt_group")])
+
 ;; -------------------------------------------------------------------------
 ;; SImode compare and branch
 ;; -------------------------------------------------------------------------
@@ -1447,7 +1459,7 @@
 
   emit_insn (gen_clrt ());
   emit_insn (gen_addc (low0, low0, gen_lowpart (SImode, operands[2])));
-  emit_insn (gen_addc1 (high0, high0, high2));
+  emit_insn (gen_addc (high0, high0, high2));
   DONE;
 })
 
@@ -1458,16 +1470,6 @@
 		 (reg:SI T_REG)))
    (set (reg:SI T_REG)
 	(ltu:SI (plus:SI (match_dup 1) (match_dup 2)) (match_dup 1)))]
-  "TARGET_SH1"
-  "addc	%2,%0"
-  [(set_attr "type" "arith")])
-
-(define_insn "addc1"
-  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
-	(plus:SI (plus:SI (match_operand:SI 1 "arith_reg_operand" "0")
-			  (match_operand:SI 2 "arith_reg_operand" "r"))
-		 (reg:SI T_REG)))
-   (clobber (reg:SI T_REG))]
   "TARGET_SH1"
   "addc	%2,%0"
   [(set_attr "type" "arith")])
@@ -1565,7 +1567,7 @@
 
   emit_insn (gen_clrt ());
   emit_insn (gen_subc (low0, low0, gen_lowpart (SImode, operands[2])));
-  emit_insn (gen_subc1 (high0, high0, high2));
+  emit_insn (gen_subc (high0, high0, high2));
   DONE;
 })
 
@@ -1578,16 +1580,6 @@
 	(gtu:SI (minus:SI (minus:SI (match_dup 1) (match_dup 2))
 			  (reg:SI T_REG))
 		(match_dup 1)))]
-  "TARGET_SH1"
-  "subc	%2,%0"
-  [(set_attr "type" "arith")])
-
-(define_insn "subc1"
-  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
-	(minus:SI (minus:SI (match_operand:SI 1 "arith_reg_operand" "0")
-			    (match_operand:SI 2 "arith_reg_operand" "r"))
-		  (reg:SI T_REG)))
-   (clobber (reg:SI T_REG))]
   "TARGET_SH1"
   "subc	%2,%0"
   [(set_attr "type" "arith")])
@@ -4813,22 +4805,18 @@ label:
 })
 
 (define_insn "*extendqisi2_compact_reg"
-  [(set (match_operand:SI 0 "arith_reg_dest" "=r,r")
-	(sign_extend:SI (match_operand:QI 1 "register_operand" "r,t")))]
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+	(sign_extend:SI (match_operand:QI 1 "register_operand" "r")))]
   "TARGET_SH1"
-  "@
-	exts.b	%1,%0
-	movt	%0"
-  [(set_attr "type" "arith,arith")])
+  "exts.b	%1,%0"
+  [(set_attr "type" "arith")])
 
 (define_insn "*extendhisi2_compact_reg"
-  [(set (match_operand:SI 0 "arith_reg_dest" "=r,r")
-	(sign_extend:SI (match_operand:HI 1 "register_operand" "r,t")))]
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+	(sign_extend:SI (match_operand:HI 1 "register_operand" "r")))]
   "TARGET_SH1"
-  "@
-	exts.w	%1,%0
-	movt	%0"
-  [(set_attr "type" "arith,arith")])
+  "exts.w	%1,%0"
+  [(set_attr "type" "arith")])
 
 ;; FIXME: Fold non-SH2A and SH2A alternatives with "enabled" attribute.
 ;; See movqi insns.
@@ -5122,9 +5110,9 @@ label:
 ;; (made from (set (subreg:SI (reg:QI ###) 0) ) into T.
 (define_insn "movsi_i"
   [(set (match_operand:SI 0 "general_movdst_operand"
-	    "=r,r,r,t,r,r,r,r,m,<,<,x,l,x,l,r")
+	    "=r,r,r,r,r,r,m,<,<,x,l,x,l,r")
 	(match_operand:SI 1 "general_movsrc_operand"
-	 "Q,r,I08,r,mr,x,l,t,r,x,l,r,r,>,>,i"))]
+	 "Q,r,I08,mr,x,l,r,x,l,r,r,>,>,i"))]
   "TARGET_SH1
    && ! TARGET_SH2E
    && ! TARGET_SH2A
@@ -5134,11 +5122,9 @@ label:
 	mov.l	%1,%0
 	mov	%1,%0
 	mov	%1,%0
-	cmp/pl	%1
 	mov.l	%1,%0
 	sts	%1,%0
 	sts	%1,%0
-	movt	%0
 	mov.l	%1,%0
 	sts.l	%1,%0
 	sts.l	%1,%0
@@ -5147,8 +5133,8 @@ label:
 	lds.l	%1,%0
 	lds.l	%1,%0
 	fake	%1,%0"
-  [(set_attr "type" "pcload_si,move,movi8,mt_group,load_si,mac_gp,prget,arith,store,mac_mem,pstore,gp_mac,prset,mem_mac,pload,pcload_si")
-   (set_attr "length" "*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*")])
+  [(set_attr "type" "pcload_si,move,movi8,load_si,mac_gp,prget,store,mac_mem,pstore,gp_mac,prset,mem_mac,pload,pcload_si")
+   (set_attr "length" "*,*,*,*,*,*,*,*,*,*,*,*,*,*")])
 
 ;; t/r must come after r/r, lest reload will try to reload stuff like
 ;; (subreg:SI (reg:SF FR14_REG) 0) into T (compiling stdlib/strtod.c -m3e -O2)
@@ -5158,9 +5144,9 @@ label:
 ;; TARGET_FMOVD is in effect, and mode switching is done before reload.
 (define_insn "movsi_ie"
   [(set (match_operand:SI 0 "general_movdst_operand"
-	    "=r,r,r,r,r,t,r,r,r,r,m,<,<,x,l,x,l,y,<,r,y,r,*f,y,*f,y")
+	    "=r,r,r,r,r,r,r,r,m,<,<,x,l,x,l,y,<,r,y,r,*f,y,*f,y")
 	(match_operand:SI 1 "general_movsrc_operand"
-	 "Q,r,I08,I20,I28,r,mr,x,l,t,r,x,l,r,r,>,>,>,y,i,r,y,y,*f,*f,y"))]
+	 "Q,r,I08,I20,I28,mr,x,l,r,x,l,r,r,>,>,>,y,i,r,y,y,*f,*f,y"))]
   "(TARGET_SH2E || TARGET_SH2A)
    && (register_operand (operands[0], SImode)
        || register_operand (operands[1], SImode))"
@@ -5170,11 +5156,9 @@ label:
 	mov	%1,%0
 	movi20	%1,%0
 	movi20s	%1,%0
-	cmp/pl	%1
 	mov.l	%1,%0
 	sts	%1,%0
 	sts	%1,%0
-	movt	%0
 	mov.l	%1,%0
 	sts.l	%1,%0
 	sts.l	%1,%0
@@ -5191,19 +5175,17 @@ label:
 	flds	%1,fpul
 	fmov	%1,%0
 	! move optimized away"
-  [(set_attr "type" "pcload_si,move,movi8,move,move,*,load_si,mac_gp,prget,arith,store,mac_mem,pstore,gp_mac,prset,mem_mac,pload,load,fstore,pcload_si,gp_fpul,fpul_gp,fmove,fmove,fmove,nil")
-   (set_attr "late_fp_use" "*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,yes,*,*,yes,*,*,*,*")
+  [(set_attr "type" "pcload_si,move,movi8,move,move,load_si,mac_gp,prget,store,mac_mem,pstore,gp_mac,prset,mem_mac,pload,load,fstore,pcload_si,gp_fpul,fpul_gp,fmove,fmove,fmove,nil")
+   (set_attr "late_fp_use" "*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,yes,*,*,yes,*,*,*,*")
    (set_attr_alternative "length"
      [(const_int 2)
       (const_int 2)
       (const_int 2)
       (const_int 4)
       (const_int 4)
-      (const_int 2)
       (if_then_else
 	(match_test "TARGET_SH2A")
 	(const_int 4) (const_int 2))
-      (const_int 2)
       (const_int 2)
       (const_int 2)
       (if_then_else
@@ -5226,8 +5208,8 @@ label:
       (const_int 0)])])
 
 (define_insn "movsi_i_lowpart"
-  [(set (strict_low_part (match_operand:SI 0 "general_movdst_operand" "+r,r,r,r,r,r,r,m,r"))
-	(match_operand:SI 1 "general_movsrc_operand" "Q,r,I08,mr,x,l,t,r,i"))]
+  [(set (strict_low_part (match_operand:SI 0 "general_movdst_operand" "+r,r,r,r,r,r,m,r"))
+	(match_operand:SI 1 "general_movsrc_operand" "Q,r,I08,mr,x,l,r,i"))]
    "TARGET_SH1
     && (register_operand (operands[0], SImode)
         || register_operand (operands[1], SImode))"
@@ -5238,10 +5220,9 @@ label:
 	mov.l	%1,%0
 	sts	%1,%0
 	sts	%1,%0
-	movt	%0
 	mov.l	%1,%0
 	fake	%1,%0"
-  [(set_attr "type" "pcload,move,arith,load,mac_gp,prget,arith,store,pcload")])
+  [(set_attr "type" "pcload,move,arith,load,mac_gp,prget,store,pcload")])
 
 (define_insn_and_split "load_ra"
   [(set (match_operand:SI 0 "general_movdst_operand" "")
@@ -5508,22 +5489,18 @@ label:
 ;; try other insns and not stick to movqi_reg_reg.
 ;; The same applies to the movhi variants.
 (define_insn "*movqi_reg_reg"
-  [(set (match_operand:QI 0 "arith_reg_dest"   "=r,r")
-	(match_operand:QI 1 "register_operand" "r,t"))]
+  [(set (match_operand:QI 0 "arith_reg_dest" "=r")
+	(match_operand:QI 1 "register_operand" "r"))]
   "TARGET_SH1"
-  "@
-	mov	%1,%0
-	movt	%0"
-  [(set_attr "type" "move,arith")])
+  "mov	%1,%0"
+  [(set_attr "type" "move")])
 
 (define_insn "*movhi_reg_reg"
-  [(set (match_operand:HI 0 "arith_reg_dest"   "=r,r")
-	(match_operand:HI 1 "register_operand" "r,t"))]
+  [(set (match_operand:HI 0 "arith_reg_dest" "=r")
+	(match_operand:HI 1 "register_operand" "r"))]
   "TARGET_SH1"
-  "@
-	mov	%1,%0
-	movt	%0"
-  [(set_attr "type" "move,arith")])
+  "mov	%1,%0"
+  [(set_attr "type" "move")])
 
 ;; FIXME: The non-SH2A and SH2A variants should be combined by adding
 ;; "enabled" attribute as it is done in other targets.
@@ -10249,7 +10226,14 @@ label:
 	(mult:SF (match_operand:SF 1 "fp_arith_reg_operand" "")
 		 (match_operand:SF 2 "fp_arith_reg_operand" "")))]
   "TARGET_SH2E || TARGET_SHMEDIA_FPU"
-  "")
+{
+  if (TARGET_SH2E)
+    {
+      emit_insn (gen_mulsf3_i (operands[0], operands[1], operands[2],
+		 get_fpscr_rtx ()));
+      DONE;
+    }
+})
 
 (define_insn "*mulsf3_media"
   [(set (match_operand:SF 0 "fp_arith_reg_operand" "=f")
@@ -10259,30 +10243,7 @@ label:
   "fmul.s	%1, %2, %0"
   [(set_attr "type" "fparith_media")])
 
-;; FIXME: These fmac combine pass assisting specifics are obsolete since 
-;;	  we now use the FMA patterns, which do not depend on the combine
-;;	  pass anymore.
-;; Unfortunately, the combiner is unable to cope with the USE of the FPSCR
-;; register in feeding fp instructions.  Thus, in order to generate fmac,
-;; we start out with a mulsf pattern that does not depend on fpscr.
-;; This is split after combine to introduce the dependency, in order to
-;; get mode switching and scheduling right.
-(define_insn_and_split "mulsf3_ie"
-  [(set (match_operand:SF 0 "fp_arith_reg_operand" "=f")
-	(mult:SF (match_operand:SF 1 "fp_arith_reg_operand" "%0")
-		 (match_operand:SF 2 "fp_arith_reg_operand" "f")))]
-  "TARGET_SH2E"
-  "fmul	%2,%0"
-  "TARGET_SH4 || TARGET_SH2A_SINGLE"
-  [(const_int 0)]
-{
-  emit_insn (gen_mulsf3_i4 (operands[0], operands[1], operands[2],
-	     get_fpscr_rtx ()));
-  DONE;
-}
-  [(set_attr "type" "fp")])
-
-(define_insn "mulsf3_i4"
+(define_insn "mulsf3_i"
   [(set (match_operand:SF 0 "fp_arith_reg_operand" "=f")
 	(mult:SF (match_operand:SF 1 "fp_arith_reg_operand" "%0")
 		 (match_operand:SF 2 "fp_arith_reg_operand" "f")))

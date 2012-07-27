@@ -2360,7 +2360,7 @@ static enum insn_code
 interclass_mathfn_icode (tree arg, tree fndecl)
 {
   bool errno_set = false;
-  optab builtin_optab = 0;
+  optab builtin_optab = unknown_optab;
   enum machine_mode mode;
 
   switch (DECL_FUNCTION_CODE (fndecl))

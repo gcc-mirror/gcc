@@ -1,3 +1,711 @@
+2012-07-25  Siddhesh Poyarekar  <siddhesh@redhat.com>
+
+	* final.c [ASSEMBLER_DIALECT](do_assembler_dialects): New
+	function to implement assembler dialects.
+	(output_asm_insn): Use do_assembler_dialects.
+	(asm_fprintf): Likewise.
+
+2012-07-25  Richard Henderson  <rth@redhat.com>
+
+	PR bootstrap/54092
+	* libfuncs.h: Don't include optabs.h.
+	(struct libfunc_entry): Use "int" for op, mode1, mode2 members.
+	* optabs.c (hash_libfunc): Don't cast members to int.
+	* Makefile.in (LIBFUNCS_H): Don't include OPTABS_H.
+
+2012-07-25  Dodji Seketeli  <dodji@redhat.com>
+
+	* basic-block.c: Fix typo in comment.
+
+2012-07-25  Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+        * common/config/i386/i386-common.c (OPTION_MASK_ISA_PRFCHW_SET): New.
+        (OPTION_MASK_ISA_PRFCHW_UNSET): Likewise.
+        (ix86_handle_option): Handle mprfchw option.
+        * config.gcc (i[34567]86-*-*): Add prfchwintrin.h.
+        (x86_64-*-*): Likewise.
+        * config/i386/prfchwintrin.h: New header.
+        * config/i386/cpuid.h (bit_PRFCHW): New.
+        (bit_BMI): Formatting fix.
+        (bit_HLE): Likewise.
+        (bit_RTM): Likewise.
+        * config/i386/driver-i386.c (host_detect_local_cpu): Detect
+        PREFETCHW support.
+        * config/i386/i386-c.c: Define __PRFCHW__ if needed.
+        * config/i386/i386.c (ix86_target_string): Define
+        -mprfchw option. Formatting fixes.
+        (PTA_HLE): Formatting fix.
+        (PTA_PRFCHW): New.
+        (ix86_option_override_internal): Handle new option.
+        (ix86_valid_target_attribute_inner_p): Add OPT_mprfchw.
+        * config/i386/i386.h (TARGET_PRFCHW): New.
+        * config/i386/i386.md (prefetch): Enable for TARGET_PRFCHW.
+        * config/i386/i386.opt (mprfchw): New.
+        * config/i386/mm3dnow.h: Move _m_prefetchw from here to
+        prfchwintrin.h.
+        * config/i386/x86intrin.h: Include prfchwintrin.h.
+
+2012-07-25 Sergey Melnikov <sergey.melnikov@intel.com>
+
+	* config/i386/i386.md (stack_protect_set): Disable the pattern
+	for Android since Android libc (bionic) does not provide random
+	value for stack protection guard at gs:0x14. Guard value
+	will be provided from external symbol (default implementation).
+	(stack_protect_set_<mode>): Likewise.
+	(stack_protect_test): Likewise.
+	(stack_protect_test_<mode>): Likewise.
+	* gcc/defaults.h: Define macro TARGET_HAS_BIONIC to 0 - target does
+	not have Bionic by default
+	* config/linux.h: Redefine macro TARGET_HAS_BIONIC to (OPTION_BIONIC)
+	Macro OPTION_BIONIC is defined in this file and provides Bionic
+	accessibility status
+
+2012-07-25  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* gimple-pretty-print.c (gimple_dump_bb_buff): Call pp_flush.
+
+2012-07-25  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
+
+	btver2 Enablement
+	* config.gcc (i[34567]86-*-linux* | ...): Add btver2.
+	(case ${target}): Add btver2.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Let
+	-march=native recognize btver2 processors.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Add
+	btver2 def_and_undef
+	* config/i386/i386.c (struct processor_costs btver2_cost): New
+	btver2 cost table.
+	(m_BTVER2): New definition.
+	(m_AMD_MULTIPLE): Includes m_BTVER2.
+	(initial_ix86_tune_features): Add btver2 tune.
+	(processor_target_table): Add btver2 entry.
+	(static const char *const cpu_names): Add btver2 entry.
+	(software_prefetching_beneficial_p): Add btver2.
+	(ix86_option_override_internal): Add btver2 instruction sets.
+	(ix86_issue_rate): Add btver2.
+	(ix86_adjust_cost): Add btver2.
+	* config/i386/i386.h (TARGET_BTVER2): New definition.
+	(enum target_cpu_default): Add TARGET_CPU_DEFAULT_btver2.
+	(enum processor_type): Add PROCESSOR_BTVER2.
+	* config/i386/i386.md (define_attr "cpu"): Add btver2.
+
+2012-07-24  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* doc/tm.texi: Regenerate.
+	* targhooks.c (default_init_cost): Add prologue and epilogue costs.
+	(default_add_stmt_cost): Likewise; also handle NULL stmt_info.
+	(default_finish_cost): Add prologue and epilogue costs.
+	* targhooks.h (default_add_stmt_cost): Change parameter list.
+	(default_finish_cost): Likewise.
+	* target.def (init_cost): Change documentation string.
+	(add_stmt_cost): Change documentation string and parameter list.
+	(finish_cost): Likewise.
+	* target.h (vect_cost_model_location): New enum.
+	* tree-vectorizer.h (struct _slp_tree): Remove cost substruct.
+	(struct _slp_instance): Remove cost substruct; rename stmt_cost_vec
+	to body_cost_vec.
+	(SLP_INSTANCE_OUTSIDE_OF_LOOP_COST): Remove.
+	(SLP_INSTANCE_STMT_COST_VEC): Rename to SLP_INSTANCE_BODY_COST_VEC.
+	(SLP_TREE_OUTSIDE_OF_LOOP_COST): Remove.
+	(struct _vect_peel_extended_info): Rename stmt_cost_vec to
+	body_cost_vec.
+	(struct _stmt_vec_info): Remove cost substruct.
+	(STMT_VINFO_OUTSIDE_OF_LOOP_COST): Remove.
+	(stmt_vinfo_set_outside_of_loop_cost): Remove.
+	(builtin_vectorization_cost): New function.
+	(vect_get_stmt_cost): Change to use builtin_vectorization_cost.
+	(add_stmt_cost): Change parameter list.
+	(finish_cost): Likewise.
+	(vect_model_simple_cost): Likewise.
+	(vect_model_store_cost): Likewise.
+	(vect_model_load_cost): Likewise.
+	(record_stmt_cost): Likewise.
+	(vect_get_load_cost): Likewise.
+	(vect_get_known_peeling_cost): Likewise.
+	* tree-vect-loop.c (vect_get_known_peeling_cost): Change parameter
+	list; call record_stmt_cost for prologue and epilogue costs.
+	(vect_estimate_min_profitable_iters): Call add_stmt_cost for
+	prologue and epilogue costs; remove computation of vec_outside_cost;
+	return vec_prologue_cost and vec_epilogue_cost from finish_cost.
+	(vect_model_reduction_cost): Revise call to add_stmt_cost for body
+	costs; call add_stmt_cost for prologue and epilogue costs.
+	(vect_model_induction_cost): Revise call to add_stmt_cost for body
+	costs; call add_stmt_cost for prologue costs.
+	* tree-vect-data-refs.c (vect_get_data_access_cost): Change parameter
+	list for function and arguments for calls to vect_get_load_cost and
+	vect_get_store_cost.
+	(vect_peeling_hash_get_lowest_cost): Change argument list for calls to
+	vect_get_data_access_cost and vect_get_known_peeling_cost; use
+	temporary vectors prologue_cost_vec and epilogue_cost_vec for the
+	latter call and discard their results; rename stmt_cost_vec to
+	body_cost_vec; correct possible storage leak for body_cost_vec.
+	(vect_peeling_hash_choose_best_peeling): Rename stmt_cost_vec to
+	body_cost_vec.
+	(vect_enhance_data_refs_alignment): Rename stmt_cost_vec to
+	body_cost_vec; add extra dummy parameter on calls to
+	vect_get_data_access_cost; tolerate null si->stmt; add vect_body to
+	argument list on call to add_stmt_cost.
+	* tree-vect-stmts.c (record_stmt_cost): Change parameter list;
+	rename stmt_cost_vec to body_cost_vec; tolerate null stmt_info; call
+	builtin_vectorization_cost; add "where" parameter on call to
+	add_stmt_cost.
+	(vect_model_simple_cost): Change parameter list; call record_stmt_cost
+	for prologue costs; remove call to stmt_vinfo_set_outside_of_loop_cost;
+	rename stmt_cost_vec to body_cost_vec.
+	(vect_model_promotion_demotion_cost): Add vect_body argument to call
+	to add_stmt_cost; call add_stmt_cost for prologue costs; remove call
+	to stmt_vinfo_set_outside_of_loop_cost.
+	(vect_model_store_cost): Change parameter list; call record_stmt_cost
+	for prologue costs; add vect_body argument to call to record_stmt_cost;
+	rename stmt_cost_vec to body_cost_vec; remove call to
+	stmt_vinfo_set_outside_of_loop_cost.
+	(vect_get_store_cost): Rename stmt_cost_vec to body_cost_vec; add
+	vect_body argument to calls to record_stmt_cost.
+	(vect_model_load_cost): Change parameter list; rename stmt_cost_vec to
+	body_cost_vec; add vect_body argument to calls to record_stmt_cost;
+	remove call to stmt_vinfo_set_outside_of_loop_cost.
+	(vect_get_load_cost): Change parameter list; rename stmt_cost_vec to
+	body_cost_vec; add vect_body argument to calls to record_stmt_cost;
+	call record_stmt_cost for prologue costs.
+	(vectorizable_store): Change argument list for call to
+	vect_model_store_cost.
+	(vectorizable_load): Change argument list for call to
+	vect_model_load_cost.
+	(new_stmt_vec_info): Remove assignment to
+	STMT_VINFO_OUTSIDE_OF_LOOP_COST.
+	* config/spu/spu.c (spu_init_cost): Add prologue and epilogue costs.
+	(spu_add_stmt_cost): Likewise; also handle NULL stmt_info.
+	(spu_finish_cost): Add prologue and epilogue costs.
+	* config/i386/i386.c (i386_init_cost): Add prologue and epilogue costs.
+	(i386_add_stmt_cost): Likewise; also handle NULL stmt_info.
+	(i386_finish_cost): Add prologue and epilogue costs.
+	* config/rs6000/rs6000.c (rs6000_init_cost): Add prologue and epilogue
+	costs.
+	(rs6000_add_stmt_cost): Likewise; also handle NULL stmt_info.
+	(rs6000_finish_cost): Add prologue and epilogue costs.
+	* tree-vect-slp.c (vect_free_slp_instance): Rename
+	SLP_INSTANCE_STMT_COST_VEC to SLP_INSTANCE_BODY_COST_VEC.
+	(vect_create_new_slp_node): Remove assignment to
+	SLP_TREE_OUTSIDE_OF_LOOP_COST.
+	(vect_get_and_check_slp_defs): Change parameter list; change argument
+	lists to calls to vect_model_store_cost and vect_model_simple_cost.
+	(vect_build_slp_tree): Change parameter list; change argument lists
+	to calls to vect_model_load_cost, vect_get_and_check_slp_defs, and
+	recursive self-calls; remove setting of outside_cost from
+	SLP_TREE_OUTSIDE_OF_LOOP_COST; add vect_body argument to call to
+	record_stmt_cost.
+	(vect_analyze_slp_instance): Rename stmt_cost_vec to body_cost_vec;
+	rename SLP_INSTANCE_STMT_COST_VEC to SLP_INSTANCE_BODY_COST_VEC;
+	remove assignment to SLP_INSTANCE_OUTSIDE_OF_LOOP_COST; record SLP
+	prologue costs.
+	(vect_bb_vectorization_profitable_p): Rename stmt_cost_vec to
+	body_cost_vec; handle null ci->stmt; add vect_body argument to call
+	to add_stmt_cost; simplify calls to targetm.vectorize.
+	builtin_vectorization_cost; return vec_prologue_cost and
+	vec_epilogue_cost from finish_cost.
+	(vect_update_slp_costs_according_to_vf): Rename stmt_cost_vec to
+	body_cost_vec; add vect_body argument to call to add_stmt_cost.
+
+2012-07-24  Richard Henderson  <rth@redhat.com>
+
+	* system.h (FIXUNS_TRUNC_LIKE_FIX_TRUNC): Poison.
+	* config/cris/cris.h (FIXUNS_TRUNC_LIKE_FIX_TRUNC): Remove.
+	* config/h8300/h8300.h (FIXUNS_TRUNC_LIKE_FIX_TRUNC): Remove.
+	* config/mn10300/mn10300.h (FIXUNS_TRUNC_LIKE_FIX_TRUNC): Remove.
+	* config/rs6000/rs6000.h (FIXUNS_TRUNC_LIKE_FIX_TRUNC): Remove
+	comment reference.
+	* config/v850/v850.h (FIXUNS_TRUNC_LIKE_FIX_TRUNC): Remove.
+	* config/v850/v850.md (fixuns_truncsfsi2, fixuns_truncdfsi2): New.
+	(fix_truncsfsi2, fix_truncdfsi2): Avoid double FIX.
+	* config/vax/vax.h (FIXUNS_TRUNC_LIKE_FIX_TRUNC): Remove.
+	* config/vax/vax.md (fixuns_trunc<VAXfp><VAXint>): New.
+	* doc/tm.texi.in (FIXUNS_TRUNC_LIKE_FIX_TRUNC): Remove.
+	* doc/tm.texi: Rebuild.
+
+2012-07-24  Richard Henderson  <rth@redhat.com>
+
+	* optabs.def: New file.
+	* Makefile.in (OPTABS_H): Add insn-opinit.h.
+	(MOSTLYCLEANFILES): Likewise.
+	(insn-opinit.o): Remove reload.h
+	(simple_rtl_generated_c): Remove insn-opinit.c.
+	(s-opinit): New rule.
+	(build/genopinit.o): Add optabs.def.
+	* genopinit.c (rtx_upname): New.
+	(optabs): Extract to optabs.def
+	(enum optab_tag, struct optab_def_d, optabs): New.
+	(struct pattern_d, patterns): New.
+	(match_pattern): Split out from ...
+	(gen_insn): ... here.  Push matches on patterns vec.
+	(pattern_cmp, optab_kind_cmp, optab_rcode_cmp): New.
+	(header_file_name, source_file_name, handle_arg): New.
+	(open_outfile): New.
+	(main): Sort and emit new tables.  Generate lookup_handler,
+	raw_optab_handler, swap_optab_enable.
+	* libfuncs.h (libfunc_entry): Change "size_t optab" to "optab op".
+	* optabs.c (code_to_optab_): Remove.
+	(hash_libfunc): Update for optab name change.
+	(eq_libfunc): Likewise.
+	(convert_optab_libfunc): Update computation of optab member;
+	use the new convlib_def table.
+	(optab_libfunc): Similarly.
+	(set_optab_libfunc, set_conv_libfunc): Likewise.
+	(sign_expand_binop): Use swap_optab_enable instead of fake optabs.
+	(init_insn_codes, init_optab, init_optabv, init_convert_optab): Remove.
+	(init_optabs): Don't call them; export the data to optabs.def.
+	(gen_int_libfunc, gen_fp_libfunc): Export non-static.
+	(gen_fixed_libfunc, gen_signed_fixed_libfunc): Likewise.
+	(gen_unsigned_fixed_libfunc, gen_int_fp_libfunc): Likewise.
+	(gen_intv_fp_libfunc, gen_int_fp_fixed_libfunc): Likewise.
+	(gen_int_fp_signed_fixed_libfunc, gen_int_fixed_libfunc): Likewise.
+	(gen_int_signed_fixed_libfunc): Likewise.
+	(gen_int_unsigned_fixed_libfunc): Likewise.
+	(gen_interclass_conv_libfunc, gen_int_to_fp_conv_libfunc): Likewise.
+	(gen_ufloat_conv_libfunc): Likewise.
+	(gen_int_to_fp_nondecimal_conv_libfunc): Likewise.
+	(gen_fp_to_int_conv_libfunc, gen_intraclass_conv_libfunc): Likewise.
+	(gen_trunc_conv_libfunc, gen_extend_conv_libfunc): Likewise.
+	(gen_fract_conv_libfunc, gen_fractuns_conv_libfunc): Likewise.
+	(gen_satfract_conv_libfunc, gen_satfractuns_conv_libfunc): Likewise.
+	(debug_optab_libfuncs): Update for optab representation change.
+	* optabs.h: Include insn-opinit.h.
+	(optab, convert_optab, direct_optab): New typedefs.
+	(struct optab_handlers, struct widening_optab_handlers): Remove.
+	(struct optab_libcall_d): Rename from optab_d; remove code_,
+	handlers, widening members.
+	(struct convert_optab_libcall_d): Rename from convert_optab_d;
+	remove code_ and handlers members.
+	(enum optab_index, enum convert_optab_index): Remove.
+	(enum direct_optab_index): Remove.
+	(code_to_optab_): Fix array range.
+	(optab_to_code): Covert to inline function.
+	(optab_to_code_, convlib_def, normlib_def): Declare.
+	(raw_optab_handler, swap_optab_enable): Declare.
+	(unknown_optab): Remove; export to optabs.def
+	(ssadd_optab, usadd_optab, sssub_optab, ussub_optab, ssmul_optab,
+	usmul_optab, ssdiv_optab, usdiv_optab, ssneg_optab, usneg_optab,
+	ssashl_optab, usashl_optab, add_optab, sub_optab, smul_optab,
+	addv_optab, subv_optab, smul_highpart_optab, umul_highpart_optab,
+	smul_widen_optab, umul_widen_optab, usmul_widen_optab,
+	smadd_widen_optab, umadd_widen_optab, ssmadd_widen_optab,
+	usmadd_widen_optab, smsub_widen_optab, umsub_widen_optab,
+	ssmsub_widen_optab, usmsub_widen_optab, sdiv_optab, smulv_optab,
+	sdivv_optab, sdivmod_optab, udiv_optab, udivmod_optab, smod_optab,
+	umod_optab, fmod_optab, remainder_optab, ftrunc_optab, and_optab,
+	ior_optab, xor_optab, ashl_optab, lshr_optab, ashr_optab, rotl_optab,
+	rotr_optab, vashl_optab, vlshr_optab, vashr_optab, vrotl_optab,
+	vrotr_optab, smin_optab, smax_optab, umin_optab, umax_optab, pow_optab,
+	atan2_optab, fma_optab, fms_optab, fnma_optab, fnms_optab, mov_optab,
+	movstrict_optab, movmisalign_optab, storent_optab, neg_optab,
+	negv_optab, abs_optab, absv_optab, one_cmpl_optab, bswap_optab,
+	ffs_optab, clz_optab, ctz_optab, clrsb_optab, popcount_optab,
+	parity_optab, sqrt_optab, sincos_optab, sin_optab, asin_optab,
+	cos_optab, acos_optab, exp_optab, exp10_optab, exp2_optab, expm1_optab,
+	ldexp_optab, scalb_optab, significand_optab, logb_optab, ilogb_optab,
+	log_optab, log10_optab, log2_optab, log1p_optab, floor_optab,
+	ceil_optab, btrunc_optab, round_optab, nearbyint_optab, rint_optab,
+	tan_optab, atan_optab, copysign_optab, signbit_optab, isinf_optab,
+	cmp_optab, ucmp_optab, eq_optab, ne_optab, gt_optab, ge_optab,
+	lt_optab, le_optab, unord_optab, strlen_optab, cbranch_optab,
+	cmov_optab, cstore_optab, ctrap_optab, push_optab, addcc_optab,
+	reduc_smax_optab, reduc_umax_optab, reduc_smin_optab, reduc_umin_optab,
+	reduc_splus_optab, reduc_uplus_optab, ssum_widen_optab,
+	usum_widen_optab, sdot_prod_optab, udot_prod_optab, vec_set_optab,
+	vec_extract_optab, vec_init_optab, vec_shl_optab, vec_shr_optab,
+	vec_realign_load_optab, vec_widen_umult_hi_optab,
+	vec_widen_umult_lo_optab, vec_widen_smult_hi_optab,
+	vec_widen_smult_lo_optab, vec_widen_umult_even_optab,
+	vec_widen_umult_odd_optab, vec_widen_smult_even_optab,
+	vec_widen_smult_odd_optab, vec_widen_ushiftl_hi_optab,
+	vec_widen_ushiftl_lo_optab, vec_widen_sshiftl_hi_optab,
+	vec_widen_sshiftl_lo_optab, vec_unpacks_hi_optab, vec_unpacks_lo_optab,
+	vec_unpacku_hi_optab, vec_unpacku_lo_optab, vec_unpacks_float_hi_optab,
+	vec_unpacks_float_lo_optab, vec_unpacku_float_hi_optab,
+	vec_unpacku_float_lo_optab, vec_pack_trunc_optab, vec_pack_ssat_optab,
+	vec_pack_usat_optab, vec_pack_sfix_trunc_optab,
+	vec_pack_ufix_trunc_optab, powi_optab, sync_compare_and_swap_optab,
+	sync_lock_test_and_set_optab, sync_old_add_optab, sync_old_sub_optab,
+	sync_old_ior_optab, sync_old_and_optab, sync_old_xor_optab,
+	sync_old_nand_optab, sync_new_add_optab, sync_new_sub_optab,
+	sync_new_ior_optab, sync_new_and_optab, sync_new_xor_optab,
+	sync_new_nand_optab, sext_optab, zext_optab, trunc_optab, sfix_optab,
+	ufix_optab, sfixtrunc_optab, ufixtrunc_optab, sfloat_optab,
+	ufloat_optab, lrint_optab, lround_optab, lfloor_optab, lceil_optab,
+	fract_optab, fractuns_optab, satfract_optab, satfractuns_optab,
+	vec_load_lanes_optab, vec_store_lanes_optab, vcond_optab, vcondu_optab,
+	movcc_optab, reload_in_optab, reload_out_optab, movmem_optab,
+	setmem_optab, cmpstr_optab, cmpstrn_optab, cmpmem_optab,
+	sync_lock_release_optab, sync_add_optab, sync_sub_optab,
+	sync_ior_optab, sync_and_optab, sync_xor_optab, sync_nand_optab,
+	atomic_exchange_optab, atomic_compare_and_swap_optab,
+	atomic_load_optab, atomic_store_optab, atomic_add_fetch_optab,
+	atomic_sub_fetch_optab, atomic_and_fetch_optab,
+	atomic_nand_fetch_optab, atomic_xor_fetch_optab, atomic_or_fetch_optab,
+	atomic_fetch_add_optab, atomic_fetch_sub_optab, atomic_fetch_and_optab,
+	atomic_fetch_nand_optab, atomic_fetch_xor_optab, atomic_fetch_or_optab,
+	atomic_add_optab, atomic_sub_optab, atomic_and_optab,
+	atomic_nand_optab, atomic_xor_optab, atomic_or_optab,
+	atomic_always_lock_free_optab, atomic_is_lock_free_optab,
+	atomic_thread_fence_optab, atomic_signal_fence_optab,
+	vec_perm_optab, vec_perm_const_optab): Likewise.
+	(struct target_optabs): Remove x_optab_table, x_convert_optab_table,
+	and x_direct_optab_table members; add pat_enable.
+	(optab_table, convert_optab_table, direct_optab_table): Remove.
+	(optab_handler): Use raw_optab_handler.
+	(widening_optab_handler, convert_optab_handler): Likewise.
+	(set_optab_handler, set_widening_optab_handler): Remove.
+	(set_convert_optab_handler, set_direct_optab_handler): Remove.
+	(direct_optab_handler): Defer to optab_handler.
+	* rtl.h (NON_GENERATOR_NUM_RTX_CODE): New.
+
+2012-07-24  Jason Merrill  <jason@redhat.com>
+
+	* bitmap.c (bitmap_descriptor): Adjust order of parameters to
+	match MEM_STAT_DECL.
+	* statistics.h (ALONE_FINAL_MEM_STAT_DECL): Correct typo.
+
+2012-07-24  Richard Henderson  <rth@redhat.com>
+
+	* optabs.h (struct optab_d): Rename code member to code_.
+	(struct convert_optab_h): Likewise.
+	(code_to_optab_): Rename from code_to_optab.
+	(code_to_optab, optab_to_code): New.
+	* dojump.c (do_compare_rtx_and_jump): Use code_to_optab.
+	* ifcvt.c (noce_emit_move_insn): Likewise.
+	* optabs.c (simplify_expand_binop): Use optab_to_code.
+	(expand_simple_binop, shift_optab_p, commutative_optab_p): Likewise.
+	(avoid_expensive_constant, expand_binop_directly): Likewise.
+	(expand_binop, expand_simple_unop, expand_unop_direct): Likewise.
+	(expand_unop, prepare_float_lib_cmp, expand_fixed_convert): Likewise.
+	(have_insn_for, debug_optab_libfuncs): Likewise.
+	(init_optab, init_optabv, init_convert_optab): Update for optab
+	member name change.
+
+	* libfuncs.h: Include optabs.h.
+	* dwarf2out.c, lto-streamer.in.c: Don't include libfuncs.h.
+	* Makefile.in (LIBFUNCS_H): Add OPTABS_H.
+	(lto-streamer-in.o, dwarf2out.o): Update deps.
+
+	* optabs.h (unknown_optab): New.
+	* builtins.c (interclass_mathfn_icode): Use it.
+	* dojump.c (do_compare_rtx_and_jump): Likewise.
+	* optabs.c (optab_for_tree_code, expand_binop): Likewise.
+	* tree-vect-generic.c (add_rshift, expand_vector_divmod): Likewise.
+	(expand_vector_operations_1): Likewise.
+	* tree-vect-patterns.c (vect_recog_divmod_pattern): Likewise.
+	* tree-vect-stmts.c (supportable_narrowing_operation): Likewise.
+
+2012-07-24  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* alloc-pool.c (create_alloc_pool): Fix ENABLE_CHECKING check.
+
+2012-07-24  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+	PR target/54051
+	* config/arm/arm.c (arm_print_operand_address): Remove superfluous
+	printing of 0.
+	* config/arm/neon.md ("neon_vld3_lane<mode>":VD): Remove alignment
+	specifier.
+	("neon_vld3_lane<mode>":VMQ): Likewise.
+	("neon_vld3_dup<mode>":VDX): Likewise.
+	("neon_vst3_lane<mode>":VD): Likewise.
+	("neon_vst3_lane<mode>":VMQ): Likewise.
+
+2012-07-24  Roland McGrath  <mcgrathr@google.com>
+
+	* arm.c (arm_get_frame_offsets): Don't use fixed regs for
+	stack alignment padding.
+
+2012-07-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/53961
+	* config/i386/i386.c (ix86_legitimate_address_p): Move check for
+	negative constant address for TARGET_X32 ...
+	(ix86_decompose_address): ... here.  Reject constant addresses
+	that don't satisfy x86_64_immediate_operand predicate.
+
+2012-07-24  Julian Brown  <julian@codesourcery.com>
+
+	* doc/sourcebuild.texi (arm_hf_eabi): Document effective-target check.
+
+2012-07-24  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* sbitmap.h (SBITMAP_ELT_BITS): Use "1u" trick as for BITMAP_WORD_BITS.
+	Move test to check that there is a popcount function for the the number
+	of bits in SBITMAP_ELT_BITS to sbitmap.c.
+	* sbitmap.c: Test SBITMAP_ELT_BITS, not HOST_BITS_PER_WIDEST_FAST_INT.
+	MEM_STAT_INFO): Define in terms of their ALONE counterparts.
+
+	* configure.ac (GATHER_STATISTICS): Always define, non-zero if enabled.
+	* configure: Regenerate.
+	* statistics.h (GATHER_STATISTICS): Error out if it is not defined.
+	(GCC_MEM_STAT_ARGUMENTS): New define.
+	(ALONE_MEM_STAT_DECL): Define in terms of GCC_MEM_STAT_ARGUMENTS.
+	(ALONE_FINAL_MEM_STAT_DECL, ALONE_FINAL_PASS_MEM_STAT): New defines.
+	(MEM_STAT_DECL, FINAL_MEM_STAT_DECL, PASS_MEM_STAT,
+	FINAL_PASS_MEM_STAT): Define.
+	* ggc-internal.h (ggc_record_overhead): Use FINAL_MEM_STAT_DECL.
+	* ggc.h (ggc_record_overhead, ggc_free_overhead,
+	ggc_prune_overhead_list): Remove internal prototypes, they are defined
+	already in ggc-internal.h.
+	* ggc-common.c (struct loc_descriptor): Remove #ifdef GATHER_STATISTICS
+	wrappers.
+	(add_statistics): Likewise.
+	(dump_ggc_loc_statistics): Likewise. Return if GATHER_STATISTICS is 0.
+	* ggc-zone.c (struct page_entry): Remove #ifdef GATHER_STATISTICS
+	wrappers around "survived" and "stats" members.
+	(alloc_large_page): Always initialize survived.
+	(ggc_internal_alloc_zone_stat): Likewise.
+	Remove #ifdef GATHER_STATISTICS wrappers.  Record overhead if
+	GATHER_STATISTICS is non-0.
+	(ggc_free): Convert #ifdef GATHER_STATISTICS to if-code.
+	(sweep_pages): Always increase survived.
+	(ggc_collect_1): Convert #ifdef GATHER_STATISTICS to if-code.
+	(calculate_average_page_survival): Always define.
+	(ggc_collect): Convert #ifdef GATHER_STATISTICS to if-code.
+	(ggc_print_statistics): Likewise.
+	(ggc_pch_read): Likewise.
+	* ggc-page.c (struct globals): Always define "stats" member.
+	(ggc_internal_alloc_stat): Convert #ifdef GATHER_STATISTICS to if-code.
+	(ggc_free): Likewise.
+	(ggc_collec): Likewise.
+	(ggc_print_statistics): Likewise.
+	* bitmap.h (struct bitmap_head_def): Always define "desc" member.
+	(bitmap_initialize_stat): Convert #ifdef GATHER_STATISTICS to if-code.
+	* gimple.h (enum gimple_alloc_kind): Always define.
+	(gimple_alloc_kind): Likewise.
+	* tree-flow.h (phinodes_print_statistics): Always define.
+	(ssanames_print_statistics): Likewise.
+	* vec.h (vec_heap_free): Always define.
+	(VEC_stack_alloc): Define if GATHER_STATISTICS is non-0.
+	* alloc-pool.c (alloc_pool_descriptor): Always define.
+	(create_alloc_pool): Convert #ifdef GATHER_STATISTICS to if-code.
+	(empty_alloc_pool): Likewise.
+	(pool_alloc): Likewise.
+	(pool_free): Likewise.
+	(dump_alloc_pool_statistics): Likewise.
+	(print_statistics): Always define.
+	* bitmap.c (struct bitmap_descriptor): Always define.
+	(bitmap_register): Pass ALONE_FINAL_PASS_MEM_STAT.
+	(register_overhead): Always define.
+	(bitmap_element_free): Convert #ifdef GATHER_STATISTICS to if-code.
+	(bitmap_element_allocate): Likewise.
+	(bitmap_elt_clear_from): Likewise.
+	(bitmap_obstack_alloc_stat): Likewise.
+	(bitmap_gc_alloc_stat): Likewise.
+	(bitmap_obstack_free): Likewise.
+	(bitmap_find_bit): Likewise.
+	(bitmap_ior_and_into):  Likewise.
+	(bitmap_print): Likewise.
+	(dump_bitmap_statistics): Likewise. Return if GATHER_STATISTICS is 0.
+	* gimple.c (gimple_alloc_counts, gimple_alloc_sizes): Always define.
+	(gimple_alloc_kind_names): Likewise.
+	(gimple_alloc_stat): Convert #ifdef GATHER_STATISTICS to if-code.
+	(dump_gimple_statistics): Likewise. Return if GATHER_STATISTICS is 0.
+	* rtl.c (rtx_alloc_counts, rtx_alloc_sizes, rtvec_alloc_counts,
+	rtvec_alloc_sizes): Always define.
+	(rvec_alloc): Convert #ifdef GATHER_STATISTICS to if-code.
+	(rtx_alloc_stat): Likewise.
+	(dump_rtx_statistics): Likewise. Return if GATHER_STATISTICS is 0.
+	* tree.c (_obstack_allocated_p, tree_code_counts, tree_node_counts,
+	tree_node_sizes, tree_node_kind_names): Always define.
+	(record_node_allocation_statistics): Convert #ifdef GATHER_STATISTICS
+	to if-code.
+	(type_hash_canon): Likewise.
+	(dump_tree_statistics): Likewise.
+	* tree-ssanames.c (ssa_name_nodes_reused, ssa_name_nodes_created):
+	Always define.
+	(ssanames_print_statistics): Likewise.
+	(make_ssa_name_fn): Convert #ifdef GATHER_STATISTICS to if-code.
+	* tree-phinodes.c (phi_nodes_reused, phi_nodes_created): Always define.
+	(phinodes_print_statistics): Likewise.
+	(allocate_phi_node): Convert #ifdef GATHER_STATISTICS to if-code.
+	* vec.c (struct vec_descriptor): Always define.
+	(hash_descriptor, eq_descriptor, ptr_hash_entry, hash_ptr, eq_ptr,
+	vec_descriptor, rester_overhead, free_overhead): Likewise.
+	(cmp_statistic): Likewise.
+	(vec_heap_free): Convert #ifdef GATHER_STATISTICS to if-code.
+	(vec_heap_o_reserve_1): Likewise.
+	(dump_vec_loc_statistics): Likewise.
+
+2012-07-24  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/53616
+	* tree-loop-distribution.c (ldist_gen): Do not change
+	partition ordering when merging partitions.
+
+2012-07-24  Alan Modra  <amodra@gmail.com>
+
+	PR target/53914
+	PR target/54009
+	* config/rs6000/constraints.md (Y): Use mem_operand_gpr.
+	* config/rs6000/predicates.md (word_offset_memref_operand): Delete.
+	Adjust all rs6000_legitimate_offset_address_p calls.
+	* config/rs6000/rs6000-protos.h (mem_operand_gpr): Declare.
+	(rs6000_secondary_reload_gpr): Declare.
+	(rs6000_legitimate_offset_address_p): Update prototype.
+	(rs6000_offsettable_memref_p): Delete.
+	(rs6000_secondary_reload_ppc64): Delete.
+	* config/rs6000/rs6000.c (address_offset): New function.
+	(mem_operand_gpr): Likewise.
+	(rs6000_legitimate_offset_address_p): Add worst_case param.  When
+	not worst_case assume class of regs with least restrictive offsets.
+	Adjust all calls.
+	(legitimate_lo_sum_address_p): Simplify register mode tests.
+	(rs6000_legitimize_address): Likewise.  Assume best case offset
+	addressing.  Combine ELF and MACHO lo_sum code.
+	(rs6000_mode_dependent_address): Correct offset addressing limits.
+	(rs6000_offsettable_memref_p): Make static, add reg_mode param.
+	Use reg_mode to help rs6000_legitimate_offset_address_p.
+	(rs6000_secondary_reload): Use address_offset.  Handle 32-bit multi
+	gpr load/store when offset too large.
+	(rs6000_secondary_reload_gpr): Renamed rs6000_secondary_reload_ppc64.
+	(rs6000_split_multireg_move): Adjust rs6000_offsettable_memref_p calls.
+	* config/rs6000/rs6000.md (movdf_hardfloat32): Use 'Y' constraint
+	for gpr load/store.  Order alternatives as r->Y,Y->r,r->r and
+	d->m,m->d,d->d.  Correct size of gpr load/store.
+	(movdf_softfloat32): Use 'Y' constraint for gpr load/store.  Order
+	alternatives.
+	(movti_ppc64): Likewise.
+	(movdi_internal32): Likewise.  Also disparage fprs.
+	(movdi_mfpgpr, movdi_internal64): Likewise.
+	(movtf_internal): Use 'm' for fpr load/store.  Order alternatives.
+	(movtf_softfloat): Order alternatives.
+	(extenddftf2_internal): Use 'm' and 'Y' for store.
+	(movti_power, movti_string): Use 'Y' for gpr load/store.  Order.
+	(stack_protect_setdi, stack_protect_testdi): Likewise.
+	(movdf_hardfloat64_mfpgpr, movdf_hardfloat64): Order alternatives.
+	(movdf_softfloat64): Likewise.
+	(reload_<mode>_store): Adjust reload_di_store to provide
+	reload_si_store as well.
+	(reload_<mode>_load): Likewise.
+
+2012-07-23  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/51244
+	* config/sh/predicates.md (general_movsrc_operand,
+	general_movdst_operand): Reject T_REG.
+	* config/sh/sh.md (*extendqisi2_compact_reg, *extendhisi2_compact_reg,
+	movsi_i, movsi_ie, movsi_i_lowpart, *movqi_reg_reg, *movhi_reg_reg):
+	Remove T_REG alternatives.
+	(*negtstsi): New insn.
+
+2012-07-23  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/53511
+	* config/sh/sh.md (mulsf3_ie): Delete.
+	(mulsf3_i4): Rename to mulsf3_i.
+	(mulsf3): Emit mulsf3_i insn.
+
+2012-07-23  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/sh.md (addc1, subc1): Delete.
+	(adddi3_compact): Use addc instead of addc1.
+	(subdi3_compact): Use subc instead of subc1.
+
+2012-07-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-protos.c (ix86_lea_outperforms): Remove prototype.
+	* config/i386/i386.c (ix86_lea_outperforms): Make static.  Make
+	split_cost argument signed.
+	(ix86_avoid_lea_for_add): Cleanup.
+	(ix86_use_lea_for_mov): Use INVALID_REGNUM instead of -1.
+	(ix86_avoid_lea_for_addr): Ditto.  Make split_cost signed.
+	Use gen_lowpart instead of gen_rtx_SUBREG.  Cleanup.
+
+2012-07-23  Ulrich Weigand  <ulrich.weigand@linaro.org>
+
+	* config/arm/arm.c (arm_reorg): Ensure all insns are split.
+
+2012-07-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/53961
+	* config/i386/i386.md (*lea): Add asserts to detect invalid addresses.
+	* config/i386/i386.c (ix86_print_operand_address): Ditto.
+	(ix86_decompose_address): Allow (zero_extend:DI (subreg:SI (...)))
+	addresses.  Prevent zero extensions of CONST_INT operands.
+
+2012-07-23  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* sbitmap.h (struct int_list): Remove.
+	(sbitmap_intersect_of_predsucc, sbitmap_union_of_predsucc):
+	Remove prototypes of non-existing function.
+	(sbitmap_intersect_of_predecessors, sbitmap_intersect_of_successors,
+	sbitmap_union_of_predecessors, sbitmap_union_of_successors): Remove
+	unused defines.
+	(sbitmap_intersection_of_succs, sbitmap_intersection_of_preds,
+	sbitmap_union_of_succs, sbitmap_union_of_preds): Move prototypes to...
+	* basic-block.h: ... here.
+	* sbitmap.c: Do not include basic-block.h.
+	(sbitmap_intersection_of_succs, sbitmap_intersection_of_preds,
+	sbitmap_union_of_succs, sbitmap_union_of_preds): Move functions to...
+	* cfganal.c: ... here.
+	* bt-load.c (compute_out, link_btr_uses): Update for above changes.
+	* gcse.c (compute_code_hoist_vbeinout): Likewise.
+	* lcm.c (compute_antinout_edge, compute_available): Likewise.
+	* Makefile.in: Fix sbitmap.o dependencies.
+
+2012-07-23  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+	    Nick Clifton  <nickc@redhat.com>
+
+	* config/frv/frv-protos.h (frv_ifcvt_machdep_init): Prototype.
+	* config/frv/frv.c (frv_ifcvt_machdep_init): Change type of
+	(unused) parameter to void *.
+
+2012-07-23  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-alias.c (dump_alias_info): Walk over local decls
+	instead of referenced vars.
+
+2012-07-23  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* coverage.c: Refer to "notes file" instead of "graph file"
+	in all comments.  Explain history of bbg prefix.
+	* gcov-io.h: Likewise.
+	* gcov.c: Likewise.
+	(find_source): Likewise in fnotice.
+	(read_graph_file): Likewise.
+	(read_count_file): Likewise.
+	* doc/gcov.texi: Document -fprofile-dir flag.  Add "notes file"
+	and "data file" explicitly in the explanation of the files.
+
+2012-07-22  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR tree-optimization/53881
+	* tree-cfg.c (group_case_labels_stmt): Look up the basic block
+	for each label and compare them instead of labels.
+
+2012-07-22  Steven Bosscher <steven@gcc.gnu.org>
+
+	* opts.c (common_handle_option): Do not set
+	flag_value_profile_transformations for -fprofile-generate.
+	* profile.c (instrument_values): Use COUNTER_FOR_HIST_TYPE.
+	(BB_TO_GCOV_INDEX): Remove.
+	(output_location): Don't use it.
+	(branch_prob): Likewise.  Don't fiddle with the index of
+	ENTRY_BLOCK_PTR and EXIT_BLOCK_PTR.  Use clear_aux_for_blocks.
+	(find_spanning_tree):
+	* gcov.c (struct function_info): Document that blocks 0 and 1
+	are the entry resp. exit blocks in gcov, too, like in GCC itself.
+	(solve_flow_graph): Use ENTRY_BLOCK and EXIT_BLOCK for special
+	blocks identification.
+	(output_lines): Likewise.
+	* value-prof.c (gimple_value_profile_transformations): Do not
+	test flag_value_profile_transformations again.
+	(gimple_ic_transform): Take a gimple_stmt_iterator like all other
+	transformation functions.
+	(gimple_values_to_profile):
+	Don't test flag_value_profile_transformations
+	* tree-profile.c (tree_profiling): Assert that the cgraph is in
+	the CGRAPH_STATE_IPA_SSA state.
+	Do not set, or look at, after_tree_profile.
+	* function.h (struct function): Remove after_tree_profile bit.
+	* omp-low.c (expand_omp_taskreg): Don't set after_tree_profile.
+	* tree-inline.c (initialize_cfun): Don't copy it.
+	* lto-streamer-out.c (output_struct_function_base): Don't stream it.
+	* lto-streamer-in.c (input_struct_function_base): Likewise.
+
 2012-07-22  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/sh.h (TARGET_DYNSHIFT): New macro.
@@ -20,6 +728,8 @@
 	(*lea_1): Remove.
 	(*lea<mode>_2): Ditto.
 	(*lea_{3,4,5,6}_zext): Ditto.
+	* config/i386/predicates.md (lea_address_operand): Do not reject
+	zero-extended address operands.
 	* config/i386/constraints.md (j): Remove address constraint.
 	* config/i386/i386.c (ix86_decompose_address): Allow SImode subreg
 	of an address.
@@ -102,6 +812,7 @@
 
 2012-07-20  Pat Haugen <pthaugen@us.ibm.com>
 	    Steven Bosscher  <steven@gcc.gnu.org>
+
 	* config/rs6000/power4.md (power4-store-update): Fix reservation.
 	(power4-three): Likewise.
 

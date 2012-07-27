@@ -12,7 +12,7 @@ struct A {
 template <int s>
 static void g();
 template <int s>
-void f();         // { dg-error "" } candiate
+void f();         // { dg-message "" } candiate
 
 static void f_plus ()
   {

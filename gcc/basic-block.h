@@ -108,7 +108,7 @@ struct GTY(()) gimple_bb_info {
   gimple_seq phi_nodes;
 };
 
-/* A basic block is a sequence of instructions with only entry and
+/* A basic block is a sequence of instructions with only one entry and
    only one exit.  If any one of the instructions are executed, they
    will all be executed, and in sequence from first to last.
 
@@ -673,6 +673,12 @@ ei_cond (edge_iterator ei, edge *p)
 					   insns.  */
 #define CLEANUP_CFGLAYOUT	32	/* Do cleanup in cfglayout mode.  */
 #define CLEANUP_CFG_CHANGED	64      /* The caller changed the CFG.  */
+
+/* In cfganal.c */
+extern void sbitmap_intersection_of_succs (sbitmap, sbitmap *, basic_block);
+extern void sbitmap_intersection_of_preds (sbitmap, sbitmap *, basic_block);
+extern void sbitmap_union_of_succs (sbitmap, sbitmap *, basic_block);
+extern void sbitmap_union_of_preds (sbitmap, sbitmap *, basic_block);
 
 /* In lcm.c */
 extern struct edge_list *pre_edge_lcm (int, sbitmap *, sbitmap *,

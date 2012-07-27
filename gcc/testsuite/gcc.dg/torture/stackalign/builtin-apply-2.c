@@ -5,6 +5,8 @@
    with pre-pushed arguments (e.g. SPARC).  */
 
 /* { dg-do run } */
+
+/* { dg-skip-if "Variadic funcs use Base AAPCS.  Normal funcs use VFP variant." { arm_hf_eabi } } */
    
 
 #define INTEGER_ARG  5

@@ -77,21 +77,17 @@ static unsigned long free_phinode_count;
 
 static int ideal_phi_node_len (int);
 
-#ifdef GATHER_STATISTICS
 unsigned int phi_nodes_reused;
 unsigned int phi_nodes_created;
-#endif
 
 /* Dump some simple statistics regarding the re-use of PHI nodes.  */
 
-#ifdef GATHER_STATISTICS
 void
 phinodes_print_statistics (void)
 {
   fprintf (stderr, "PHI nodes allocated: %u\n", phi_nodes_created);
   fprintf (stderr, "PHI nodes reused: %u\n", phi_nodes_reused);
 }
-#endif
 
 /* Allocate a PHI node with at least LEN arguments.  If the free list
    happens to contain a PHI node with LEN arguments or more, return
@@ -119,21 +115,19 @@ allocate_phi_node (size_t len)
       phi = VEC_pop (gimple, free_phinodes[bucket]);
       if (VEC_empty (gimple, free_phinodes[bucket]))
 	VEC_free (gimple, gc, free_phinodes[bucket]);
-#ifdef GATHER_STATISTICS
-      phi_nodes_reused++;
-#endif
+      if (GATHER_STATISTICS)
+	phi_nodes_reused++;
     }
   else
     {
       phi = ggc_alloc_gimple_statement_d (size);
-#ifdef GATHER_STATISTICS
-      phi_nodes_created++;
+      if (GATHER_STATISTICS)
 	{
 	  enum gimple_alloc_kind kind = gimple_alloc_kind (GIMPLE_PHI);
-          gimple_alloc_counts[(int) kind]++;
-          gimple_alloc_sizes[(int) kind] += size;
+	  phi_nodes_created++;
+	  gimple_alloc_counts[(int) kind]++;
+	  gimple_alloc_sizes[(int) kind] += size;
 	}
-#endif
     }
 
   return phi;

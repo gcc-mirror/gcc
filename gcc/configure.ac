@@ -588,10 +588,9 @@ AC_ARG_ENABLE(gather-detailed-mem-stats,
 [AS_HELP_STRING([--enable-gather-detailed-mem-stats],
 		[enable detailed memory allocation stats gathering])], [],
 [enable_gather_detailed_mem_stats=no])
-if test x$enable_gather_detailed_mem_stats = xyes ; then
-  AC_DEFINE(GATHER_STATISTICS, 1,
-        [Define to enable detailed memory allocation stats gathering.])
-fi
+gather_stats=`if test $enable_gather_detailed_mem_stats != no; then echo 1; else echo 0; fi`
+AC_DEFINE_UNQUOTED(GATHER_STATISTICS, $gather_stats,
+[Define to enable detailed memory allocation stats gathering.])
 
 # -------------------------------
 # Miscenalleous configure options

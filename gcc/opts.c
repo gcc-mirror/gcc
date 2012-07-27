@@ -1593,8 +1593,6 @@ common_handle_option (struct gcc_options *opts,
 	opts->x_profile_arc_flag = value;
       if (!opts_set->x_flag_profile_values)
 	opts->x_flag_profile_values = value;
-      if (!opts_set->x_flag_value_profile_transformations)
-	opts->x_flag_value_profile_transformations = value;
       if (!opts_set->x_flag_inline_functions)
 	opts->x_flag_inline_functions = value;
       /* FIXME: Instrumentation we insert makes ipa-reference bitmaps

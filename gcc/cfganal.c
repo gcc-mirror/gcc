@@ -1182,4 +1182,177 @@ compute_idf (bitmap def_blocks, bitmap_head *dfs)
   return phi_insertion_points;
 }
 
+/* Intersection and union of preds/succs for sbitmap based data flow
+   solvers.  All four functions defined below take the same arguments:
+   B is the basic block to perform the operation for.  DST is the
+   target sbitmap, i.e. the result.  SRC is an sbitmap vector of size
+   last_basic_block so that it can be indexed with basic block indices.
+   DST may be (but does not have to be) SRC[B->index].  */
 
+/* Set the bitmap DST to the intersection of SRC of successors of
+   basic block B.  */
+
+void
+sbitmap_intersection_of_succs (sbitmap dst, sbitmap *src,
+			       basic_block b)
+{
+  unsigned int set_size = dst->size;
+  edge e;
+  unsigned ix;
+
+  gcc_assert (!dst->popcount);
+
+  for (e = NULL, ix = 0; ix < EDGE_COUNT (b->succs); ix++)
+    {
+      e = EDGE_SUCC (b, ix);
+      if (e->dest == EXIT_BLOCK_PTR)
+	continue;
+
+      sbitmap_copy (dst, src[e->dest->index]);
+      break;
+    }
+
+  if (e == 0)
+    sbitmap_ones (dst);
+  else
+    for (++ix; ix < EDGE_COUNT (b->succs); ix++)
+      {
+	unsigned int i;
+	SBITMAP_ELT_TYPE *p, *r;
+
+	e = EDGE_SUCC (b, ix);
+	if (e->dest == EXIT_BLOCK_PTR)
+	  continue;
+
+	p = src[e->dest->index]->elms;
+	r = dst->elms;
+	for (i = 0; i < set_size; i++)
+	  *r++ &= *p++;
+      }
+}
+
+/* Set the bitmap DST to the intersection of SRC of predecessors of
+   basic block B.  */
+
+void
+sbitmap_intersection_of_preds (sbitmap dst, sbitmap *src,
+			       basic_block b)
+{
+  unsigned int set_size = dst->size;
+  edge e;
+  unsigned ix;
+
+  gcc_assert (!dst->popcount);
+
+  for (e = NULL, ix = 0; ix < EDGE_COUNT (b->preds); ix++)
+    {
+      e = EDGE_PRED (b, ix);
+      if (e->src == ENTRY_BLOCK_PTR)
+	continue;
+
+      sbitmap_copy (dst, src[e->src->index]);
+      break;
+    }
+
+  if (e == 0)
+    sbitmap_ones (dst);
+  else
+    for (++ix; ix < EDGE_COUNT (b->preds); ix++)
+      {
+	unsigned int i;
+	SBITMAP_ELT_TYPE *p, *r;
+
+	e = EDGE_PRED (b, ix);
+	if (e->src == ENTRY_BLOCK_PTR)
+	  continue;
+
+	p = src[e->src->index]->elms;
+	r = dst->elms;
+	for (i = 0; i < set_size; i++)
+	  *r++ &= *p++;
+      }
+}
+
+/* Set the bitmap DST to the union of SRC of successors of
+   basic block B.  */
+
+void
+sbitmap_union_of_succs (sbitmap dst, sbitmap *src,
+			basic_block b)
+{
+  unsigned int set_size = dst->size;
+  edge e;
+  unsigned ix;
+
+  gcc_assert (!dst->popcount);
+
+  for (ix = 0; ix < EDGE_COUNT (b->succs); ix++)
+    {
+      e = EDGE_SUCC (b, ix);
+      if (e->dest == EXIT_BLOCK_PTR)
+	continue;
+
+      sbitmap_copy (dst, src[e->dest->index]);
+      break;
+    }
+
+  if (ix == EDGE_COUNT (b->succs))
+    sbitmap_zero (dst);
+  else
+    for (ix++; ix < EDGE_COUNT (b->succs); ix++)
+      {
+	unsigned int i;
+	SBITMAP_ELT_TYPE *p, *r;
+
+	e = EDGE_SUCC (b, ix);
+	if (e->dest == EXIT_BLOCK_PTR)
+	  continue;
+
+	p = src[e->dest->index]->elms;
+	r = dst->elms;
+	for (i = 0; i < set_size; i++)
+	  *r++ |= *p++;
+      }
+}
+
+/* Set the bitmap DST to the union of SRC of predecessors of
+   basic block B.  */
+
+void
+sbitmap_union_of_preds (sbitmap dst, sbitmap *src,
+			basic_block b)
+{
+  unsigned int set_size = dst->size;
+  edge e;
+  unsigned ix;
+
+  gcc_assert (!dst->popcount);
+
+  for (ix = 0; ix < EDGE_COUNT (b->preds); ix++)
+    {
+      e = EDGE_PRED (b, ix);
+      if (e->src== ENTRY_BLOCK_PTR)
+	continue;
+
+      sbitmap_copy (dst, src[e->src->index]);
+      break;
+    }
+
+  if (ix == EDGE_COUNT (b->preds))
+    sbitmap_zero (dst);
+  else
+    for (ix++; ix < EDGE_COUNT (b->preds); ix++)
+      {
+	unsigned int i;
+	SBITMAP_ELT_TYPE *p, *r;
+
+	e = EDGE_PRED (b, ix);
+	if (e->src == ENTRY_BLOCK_PTR)
+	  continue;
+
+	p = src[e->src->index]->elms;
+	r = dst->elms;
+	for (i = 0; i < set_size; i++)
+	  *r++ |= *p++;
+      }
+}

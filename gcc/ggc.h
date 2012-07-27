@@ -166,10 +166,6 @@ extern void *ggc_realloc_stat (void *, size_t MEM_STAT_DECL);
 /* Free a block.  To be used when known for certain it's not reachable.  */
 extern void ggc_free (void *);
 
-extern void ggc_record_overhead (size_t, size_t, void * MEM_STAT_DECL);
-extern void ggc_free_overhead (void *);
-extern void ggc_prune_overhead_list (void);
-
 extern void dump_ggc_loc_statistics (bool);
 
 /* Reallocators.  */

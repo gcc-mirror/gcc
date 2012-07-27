@@ -2,17 +2,17 @@
 
 namespace Q {
   inline namespace V1 {
-    extern int i;		// { dg-error "" }
-    extern int j;		// { dg-error "" }
-    void f();			// { dg-error "" }
-    void g();			// { dg-error "" }
+    extern int i;		// { dg-message "" }
+    extern int j;		// { dg-message "" }
+    void f();			// { dg-message "" }
+    void g();			// { dg-message "" }
   }
   inline namespace V2 {
-    extern int j;		// { dg-error "" }
-    void g();			// { dg-error "" }
+    extern int j;		// { dg-message "" }
+    void g();			// { dg-message "" }
   }
-  extern int i;			// { dg-error "" }
-  void f();			// { dg-error "" }
+  extern int i;			// { dg-message "" }
+  void f();			// { dg-message "" }
   void h();
 }
 namespace R {

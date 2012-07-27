@@ -551,20 +551,23 @@ collected at that point to be dumped to @file{.gcda} output files.
 
 @command{gcov} uses two files for profiling.  The names of these files
 are derived from the original @emph{object} file by substituting the
-file suffix with either @file{.gcno}, or @file{.gcda}.  All of these files
-are placed in the same directory as the object file, and contain data
-stored in a platform-independent format.
+file suffix with either @file{.gcno}, or @file{.gcda}.  The files
+contain coverage and profile data stored in a platform-independent format.
+The @file{.gcno} files are placed in the same directory as the object
+file.  By default, the @file{.gcda} files are also stored in the same
+directory as the object file, but the GCC @option{-profile-dir} option
+may be used to store the @file{.gcda} files in a separate directory.
 
-The @file{.gcno} file is generated when the source file is compiled with
-the GCC @option{-ftest-coverage} option.  It contains information to
+The @file{.gcno} notes file is generated when the source file is compiled
+with the GCC @option{-ftest-coverage} option.  It contains information to
 reconstruct the basic block graphs and assign source line numbers to
 blocks.
 
-The @file{.gcda} file is generated when a program containing object files
-built with the GCC @option{-fprofile-arcs} option is executed.  A
-separate @file{.gcda} file is created for each object file compiled with
-this option.  It contains arc transition counts, and some summary
-information.
+The @file{.gcda} count data file is generated when a program containing
+object files built with the GCC @option{-fprofile-arcs} option is executed.
+A separate @file{.gcda} file is created for each object file compiled with
+this option.  It contains arc transition counts, value profile counts, and
+some summary information.
 
 The full details of the file format is specified in @file{gcov-io.h},
 and functions provided in that header file should be used to access the

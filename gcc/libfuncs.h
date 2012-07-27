@@ -1,5 +1,5 @@
 /* Definitions for code generation pass of GNU compiler.
-   Copyright (C) 2001, 2004, 2007, 2008, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2001-2012 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -47,12 +47,16 @@ enum libfunc_index
   LTI_MAX
 };
 
-/* Information about an optab-related libfunc.  We use the same hashtable
-   for normal optabs and conversion optabs.  In the first case mode2
-   is unused.  */
+/* Information about an optab-related libfunc.  The op field is logically
+   an enum optab_d, and the mode fields are logically enum machine_mode.
+   However, in the absence of forward-declared enums, there's no practical
+   benefit of pulling in the defining headers.
+
+   We use the same hashtable for normal optabs and conversion optabs.  In
+   the first case mode2 is forced to VOIDmode.  */
+
 struct GTY(()) libfunc_entry {
-  size_t optab;
-  enum machine_mode mode1, mode2;
+  int op, mode1, mode2;
   rtx libfunc;
 };
 

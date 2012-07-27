@@ -157,6 +157,14 @@ enum vect_cost_for_stmt
   vec_construct
 };
 
+/* Separate locations for which the vectorizer cost model should
+   track costs.  */
+enum vect_cost_model_location {
+  vect_prologue = 0,
+  vect_body = 1,
+  vect_epilogue = 2
+};
+
 /* The target structure.  This holds all the backend hooks.  */
 #define DEFHOOKPOD(NAME, DOC, TYPE, INIT) TYPE NAME;
 #define DEFHOOK(NAME, DOC, TYPE, PARAMS, INIT) TYPE (* NAME) PARAMS;

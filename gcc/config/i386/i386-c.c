@@ -118,6 +118,10 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
       def_or_undef (parse_in, "__btver1");
       def_or_undef (parse_in, "__btver1__");
       break;
+    case PROCESSOR_BTVER2:
+      def_or_undef (parse_in, "__btver2");
+      def_or_undef (parse_in, "__btver2__");
+      break;
     case PROCESSOR_PENTIUM4:
       def_or_undef (parse_in, "__pentium4");
       def_or_undef (parse_in, "__pentium4__");
@@ -208,6 +212,9 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
    case PROCESSOR_BTVER1:
       def_or_undef (parse_in, "__tune_btver1__");
       break;
+    case PROCESSOR_BTVER2:
+      def_or_undef (parse_in, "__tune_btver2__");
+       break;
     case PROCESSOR_PENTIUM4:
       def_or_undef (parse_in, "__tune_pentium4__");
       break;
@@ -289,6 +296,8 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     def_or_undef (parse_in, "__RDRND__");
   if (isa_flag & OPTION_MASK_ISA_F16C)
     def_or_undef (parse_in, "__F16C__");
+  if (isa_flag & OPTION_MASK_ISA_PRFCHW)
+    def_or_undef (parse_in, "__PRFCHW__");
   if ((fpmath & FPMATH_SSE) && (isa_flag & OPTION_MASK_ISA_SSE))
     def_or_undef (parse_in, "__SSE_MATH__");
   if ((fpmath & FPMATH_SSE) && (isa_flag & OPTION_MASK_ISA_SSE2))

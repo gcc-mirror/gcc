@@ -4,8 +4,8 @@
 
 typedef __SIZE_TYPE__ size_t; 
 
-struct A { void *operator new(size_t s){} };  // { dg-error "operator new" }
-struct B { void *operator new(size_t s){} };  // { dg-error "operator new" }
+struct A { void *operator new(size_t s){} };  // { dg-message "operator new" }
+struct B { void *operator new(size_t s){} };  // { dg-message "operator new" }
 
 struct C : A,B {}; 
 

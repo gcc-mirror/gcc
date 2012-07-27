@@ -1,7 +1,7 @@
 // PR c++/48046
 
-namespace N1 { typedef int   T; } // { dg-error "" }
-namespace N2 { typedef float T; } // { dg-error "" }
+namespace N1 { typedef int   T; } // { dg-message "" }
+namespace N2 { typedef float T; } // { dg-message "" }
 
 int main()
 {

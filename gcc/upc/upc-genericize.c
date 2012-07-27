@@ -57,6 +57,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "upc-genericize.h"
 #include "langhooks.h"
 
+static void get_lc_mode_name (char *, enum machine_mode);
 static tree upc_expand_get (location_t, tree, int);
 static tree upc_expand_put (location_t, tree, tree, int);
 static tree upc_create_tmp_var (tree);
@@ -147,6 +148,16 @@ upc_copy_value_to_tmp_var (tree *val_expr, tree val)
   return tmp_var;
 }
 
+static void
+get_lc_mode_name (char *mname, enum machine_mode mode)
+{
+  char *m = mname;
+  const char *m_upper = GET_MODE_NAME (mode);
+  while (*m_upper)
+    *m++ = TOLOWER (*m_upper++);
+  *m = '\0';
+}
+
 /* Generate a call to the runtime to implement a 'get' of a shared
    object.  SRC is a reference to  a UPC shared value; it must
    be addressable. */
@@ -161,25 +172,23 @@ upc_expand_get (location_t loc, tree src, int want_stable_value)
     || (!TYPE_RELAXED (type) && get_upc_consistency_mode ());
   int doprofcall = flag_upc_debug
                    || (flag_upc_instrument && get_upc_pupc_mode ());
-  optab get_op = (POINTER_SIZE == 64)
-    ? (doprofcall ? (strict_mode ? xgetsg_optab : xgetg_optab)
-       : (strict_mode ? xgets_optab : xget_optab))
-    : (doprofcall ? (strict_mode ? getsg_optab : getg_optab)
-       : (strict_mode ? gets_optab : get_optab));
   enum machine_mode mode = TYPE_MODE (type);
   enum machine_mode op_mode = (mode == TImode) ? BLKmode : mode;
-  rtx lib_op = optab_libfunc (get_op, op_mode);
   expanded_location s = expand_location (loc);
   const char *src_filename = s.file;
   const int src_line = s.line;
-  const char *libfunc_name;
+  char libfunc_name[16], mname[8];
   tree src_addr, result, result_tmp, libfunc, lib_args, lib_call;
   src_addr = upc_shared_addr_rep (loc, src);
   gcc_assert (TREE_TYPE (src_addr) == upc_pts_rep_type_node);
-  if (!lib_op)
-    internal_error ("UPC runtime library operation for "
-                    "get operation not found");
-  libfunc_name = XSTR (lib_op, 0);
+  get_lc_mode_name (mname, (op_mode));
+  sprintf (libfunc_name, "__get%s%s%s%s",
+           strict_mode ? "s" : "",
+           doprofcall ? "g" : "",
+	   mname,
+	   (op_mode == BLKmode)
+	     ? (doprofcall ? "5" : "3")
+	     : (doprofcall ? "3" : "2"));
   libfunc = identifier_global_value (get_identifier (libfunc_name));
   if (!libfunc)
     internal_error ("UPC runtime function %s not found", libfunc_name);
@@ -236,11 +245,6 @@ upc_expand_put (location_t loc, tree dest, tree src, int want_value)
     || (!TYPE_RELAXED (type) && get_upc_consistency_mode ());
   int doprofcall = flag_upc_debug
                    || (flag_upc_instrument && get_upc_pupc_mode ());
-  optab put_op = (POINTER_SIZE == 64)
-    ? (doprofcall ? (strict_mode ? xputsg_optab : xputg_optab)
-       : (strict_mode ? xputs_optab : xput_optab))
-    : (doprofcall ? (strict_mode ? putsg_optab : putg_optab)
-       : (strict_mode ? puts_optab : put_optab));
   enum machine_mode mode = TYPE_MODE (type);
   enum machine_mode op_mode = (mode == TImode) ? BLKmode : mode;
   int is_src_shared = (TREE_SHARED (src)
@@ -252,10 +256,10 @@ upc_expand_put (location_t loc, tree dest, tree src, int want_value)
 	    || !is_gimple_variable (src)
 	    || needs_to_live_in_memory (src)));
   int is_shared_copy = !local_copy && (op_mode == BLKmode) && is_src_shared;
+  char libfunc_name[16], mname[8];
   expanded_location s = expand_location (loc);
   const char *src_filename = s.file;
   const int src_line = s.line;
-  const char *libfunc_name;
   tree dest_addr, libfunc, lib_args, src_tmp_init_expr, result;
   dest_addr = upc_shared_addr_rep (loc, dest);
   gcc_assert (TREE_TYPE (dest_addr) == upc_pts_rep_type_node);
@@ -263,16 +267,22 @@ upc_expand_put (location_t loc, tree dest, tree src, int want_value)
     src = upc_copy_value_to_tmp_var (&src_tmp_init_expr, src);
   lib_args = tree_cons (NULL_TREE, dest_addr, NULL_TREE);
   if (is_shared_copy)
-    libfunc_name = doprofcall
-      ? (strict_mode ? "__copysgblk5" : "__copygblk5")
-      : (strict_mode ? "__copysblk3" : "__copyblk3");
+    {
+      sprintf (libfunc_name, "__copy%s%sblk%s",
+	       strict_mode ? "s" : "",
+	       doprofcall ? "g" : "",
+	       doprofcall ? "5" : "3");
+    }
   else
     {
-      rtx lib_op = optab_libfunc (put_op, op_mode);
-      if (!lib_op)
-        internal_error ("UPC runtime library operation for "
-	                "put operation not found");
-      libfunc_name = XSTR (lib_op, 0);
+      get_lc_mode_name (mname, op_mode);
+      sprintf (libfunc_name, "__put%s%s%s%s",
+	       strict_mode ? "s" : "",
+	       doprofcall ? "g" : "",
+	       mname,
+	       (op_mode == BLKmode)
+	       ? (doprofcall ? "5" : "3")
+	       : (doprofcall ? "4" : "2"));
     }
   libfunc = identifier_global_value (get_identifier (libfunc_name));
   if (!libfunc)

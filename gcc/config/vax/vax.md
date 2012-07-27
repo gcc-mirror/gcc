@@ -318,9 +318,14 @@
 
 (define_insn "fix_trunc<VAXfp:mode><VAXint:mode>2"
   [(set (match_operand:VAXint 0 "nonimmediate_operand" "=g")
-	(fix:VAXint (fix:VAXfp (match_operand:VAXfp 1 "general_operand" "gF"))))]
+	(fix:VAXint (match_operand:VAXfp 1 "general_operand" "gF")))]
   ""
   "cvt<VAXfp:fsfx><VAXint:isfx> %1,%0")
+
+(define_expand "fixuns_trunc<VAXfp:mode><VAXint:mode>2"
+  [(set (match_operand:VAXint 0 "nonimmediate_operand" "")
+	(fix:VAXint (match_operand:VAXfp 1 "general_operand")))]
+  "")
 
 ;;- All kinds of add instructions.
 

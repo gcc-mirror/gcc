@@ -30,6 +30,7 @@
 #ifdef __3dNOW__
 
 #include <mmintrin.h>
+#include <prfchwintrin.h>
 
 extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _m_femms (void)
@@ -155,12 +156,6 @@ extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artific
 _m_prefetch (void *__P)
 {
   __builtin_prefetch (__P, 0, 3 /* _MM_HINT_T0 */);
-}
-
-extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_m_prefetchw (void *__P)
-{
-  __builtin_prefetch (__P, 1, 3 /* _MM_HINT_T0 */);
 }
 
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))

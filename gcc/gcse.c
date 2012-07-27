@@ -2790,7 +2790,7 @@ compute_code_hoist_vbeinout (void)
 	  if (bb->next_bb != EXIT_BLOCK_PTR)
 	    {
 	      sbitmap_intersection_of_succs (hoist_vbeout[bb->index],
-					     hoist_vbein, bb->index);
+					     hoist_vbein, bb);
 
 	      /* Include expressions in VBEout that are calculated
 		 in BB and available at its end.  */

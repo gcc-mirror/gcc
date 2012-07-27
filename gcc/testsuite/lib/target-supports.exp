@@ -2341,6 +2341,19 @@ proc check_effective_target_arm_eabi { } {
     }]
 }
 
+# Return 1 if this is an ARM target that adheres to the hard-float variant of
+# the ABI for the ARM Architecture (e.g. -mfloat-abi=hard).
+
+proc check_effective_target_arm_hf_eabi { } {
+    return [check_no_compiler_messages arm_hf_eabi object {
+	#if !defined(__ARM_EABI__) || !defined(__ARM_PCS_VFP)
+	#error not hard-float EABI
+	#else
+	int dummy;
+	#endif
+    }]
+}
+
 # Return 1 if this is an ARM target supporting -mcpu=iwmmxt.
 # Some multilibs may be incompatible with this option.
 

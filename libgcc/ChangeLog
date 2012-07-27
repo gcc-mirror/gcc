@@ -1,3 +1,7 @@
+2012-07-22  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* libgcov.c (__gcov_ior_profiler): Benign comment fix.
+
 2012-07-19  Tristan Gingold  <gingold@adacore.com>
 	    Richard Henderson  <rth@redhat.com>
 

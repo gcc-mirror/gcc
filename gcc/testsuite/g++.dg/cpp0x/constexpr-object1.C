@@ -18,8 +18,7 @@ extern constexpr int i2; // { dg-error "definition" }
 // error: missing initializer
 constexpr A1 a2; // { dg-error "uninitialized const" }
 
-// error: duplicate cv
-const constexpr A1 a3 = A1(); // { dg-error "both .const. and .constexpr. cannot" }
+const constexpr A1 a3 = A1();
 
 volatile constexpr A1 a4 = A1(); // { dg-error "both .volatile. and .constexpr. cannot" }
 

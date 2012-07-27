@@ -1095,8 +1095,6 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
       && expr && type_unknown_p (expr))
     {
       tsubst_flags_t tflags = tf_conv;
-      if (!(flags & LOOKUP_PROTECT))
-	tflags |= tf_no_access_control;
       expr = instantiate_type (to, expr, tflags);
       if (expr == error_mark_node)
 	return NULL;

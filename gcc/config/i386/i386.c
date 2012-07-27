@@ -1509,6 +1509,85 @@ struct processor_costs btver1_cost = {
   1,					/* cond_not_taken_branch_cost.  */
 };
 
+struct processor_costs btver2_cost = {
+  COSTS_N_INSNS (1),			/* cost of an add instruction */
+  COSTS_N_INSNS (2),			/* cost of a lea instruction */
+  COSTS_N_INSNS (1),			/* variable shift costs */
+  COSTS_N_INSNS (1),			/* constant shift costs */
+  {COSTS_N_INSNS (3),			/* cost of starting multiply for QI */
+   COSTS_N_INSNS (4),			/*				 HI */
+   COSTS_N_INSNS (3),			/*				 SI */
+   COSTS_N_INSNS (4),			/*				 DI */
+   COSTS_N_INSNS (5)},			/*			      other */
+  0,					/* cost of multiply per each bit set */
+  {COSTS_N_INSNS (19),			/* cost of a divide/mod for QI */
+   COSTS_N_INSNS (35),			/*			    HI */
+   COSTS_N_INSNS (51),			/*			    SI */
+   COSTS_N_INSNS (83),			/*			    DI */
+   COSTS_N_INSNS (83)},			/*			    other */
+  COSTS_N_INSNS (1),			/* cost of movsx */
+  COSTS_N_INSNS (1),			/* cost of movzx */
+  8,					/* "large" insn */
+  9,					/* MOVE_RATIO */
+  4,				     /* cost for loading QImode using movzbl */
+  {3, 4, 3},				/* cost of loading integer registers
+					   in QImode, HImode and SImode.
+					   Relative to reg-reg move (2).  */
+  {3, 4, 3},				/* cost of storing integer registers */
+  4,					/* cost of reg,reg fld/fst */
+  {4, 4, 12},				/* cost of loading fp registers
+					   in SFmode, DFmode and XFmode */
+  {6, 6, 8},				/* cost of storing fp registers
+					   in SFmode, DFmode and XFmode */
+  2,					/* cost of moving MMX register */
+  {3, 3},				/* cost of loading MMX registers
+					   in SImode and DImode */
+  {4, 4},				/* cost of storing MMX registers
+					   in SImode and DImode */
+  2,					/* cost of moving SSE register */
+  {4, 4, 3},				/* cost of loading SSE registers
+					   in SImode, DImode and TImode */
+  {4, 4, 5},				/* cost of storing SSE registers
+					   in SImode, DImode and TImode */
+  3,					/* MMX or SSE register to integer */
+					/* On K8:
+					   MOVD reg64, xmmreg Double FSTORE 4
+					   MOVD reg32, xmmreg Double FSTORE 4
+					   On AMDFAM10:
+					   MOVD reg64, xmmreg Double FADD 3
+							       1/1  1/1
+					    MOVD reg32, xmmreg Double FADD 3
+							       1/1  1/1 */
+  32,					/* size of l1 cache.  */
+  2048,					/* size of l2 cache.  */
+  64,					/* size of prefetch block */
+  100,					/* number of parallel prefetches */
+  2,					/* Branch cost */
+  COSTS_N_INSNS (4),			/* cost of FADD and FSUB insns.  */
+  COSTS_N_INSNS (4),			/* cost of FMUL instruction.  */
+  COSTS_N_INSNS (19),			/* cost of FDIV instruction.  */
+  COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
+  COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
+  COSTS_N_INSNS (35),			/* cost of FSQRT instruction.  */
+
+  {{libcall, {{6, loop}, {14, unrolled_loop}, {-1, rep_prefix_4_byte}}},
+   {libcall, {{16, loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}},
+  {{libcall, {{8, loop}, {24, unrolled_loop},
+	      {2048, rep_prefix_4_byte}, {-1, libcall}}},
+   {libcall, {{48, unrolled_loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}},
+  4,					/* scalar_stmt_cost.  */
+  2,					/* scalar load_cost.  */
+  2,					/* scalar_store_cost.  */
+  6,					/* vec_stmt_cost.  */
+  0,					/* vec_to_scalar_cost.  */
+  2,					/* scalar_to_vec_cost.  */
+  2,					/* vec_align_load_cost.  */
+  2,					/* vec_unalign_load_cost.  */
+  2,					/* vec_store_cost.  */
+  2,					/* cond_taken_branch_cost.  */
+  1,					/* cond_not_taken_branch_cost.  */
+};
+
 static const
 struct processor_costs pentium4_cost = {
   COSTS_N_INSNS (1),			/* cost of an add instruction */
@@ -1909,8 +1988,10 @@ const struct processor_costs *ix86_cost = &pentium_cost;
 #define m_BDVER1 (1<<PROCESSOR_BDVER1)
 #define m_BDVER2 (1<<PROCESSOR_BDVER2)
 #define m_BDVER	(m_BDVER1 | m_BDVER2)
+#define m_BTVER (m_BTVER1 | m_BTVER2)
 #define m_BTVER1 (1<<PROCESSOR_BTVER1)
-#define m_AMD_MULTIPLE (m_ATHLON_K8 | m_AMDFAM10 | m_BDVER | m_BTVER1)
+#define m_BTVER2 (1<<PROCESSOR_BTVER2)
+#define m_AMD_MULTIPLE (m_ATHLON_K8 | m_AMDFAM10 | m_BDVER | m_BTVER)
 
 #define m_GENERIC32 (1<<PROCESSOR_GENERIC32)
 #define m_GENERIC64 (1<<PROCESSOR_GENERIC64)
@@ -1950,7 +2031,7 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
   ~m_386,
 
   /* X86_TUNE_USE_SAHF */
-  m_PPRO | m_P4_NOCONA | m_CORE2I7 | m_ATOM | m_K6_GEODE | m_K8 | m_AMDFAM10 | m_BDVER | m_BTVER1 | m_GENERIC,
+  m_PPRO | m_P4_NOCONA | m_CORE2I7 | m_ATOM | m_K6_GEODE | m_K8 | m_AMDFAM10 | m_BDVER | m_BTVER | m_GENERIC,
 
   /* X86_TUNE_MOVX: Enable to zero extend integer registers to avoid
      partial dependencies.  */
@@ -2056,7 +2137,7 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
   m_PPRO | m_P4_NOCONA | m_CORE2I7 | m_ATOM  | m_AMDFAM10 | m_BDVER | m_GENERIC,
 
   /* X86_TUNE_SSE_UNALIGNED_LOAD_OPTIMAL */
-  m_COREI7 | m_AMDFAM10 | m_BDVER | m_BTVER1,
+  m_COREI7 | m_AMDFAM10 | m_BDVER | m_BTVER,
 
   /* X86_TUNE_SSE_UNALIGNED_STORE_OPTIMAL */
   m_COREI7 | m_BDVER,
@@ -2131,11 +2212,11 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
 
   /* X86_TUNE_SLOW_IMUL_IMM32_MEM: Imul of 32-bit constant and memory is
      vector path on AMD machines.  */
-  m_CORE2I7_64 | m_K8 | m_AMDFAM10 | m_BDVER | m_BTVER1 | m_GENERIC64,
+  m_CORE2I7_64 | m_K8 | m_AMDFAM10 | m_BDVER | m_BTVER | m_GENERIC64,
 
   /* X86_TUNE_SLOW_IMUL_IMM8: Imul of 8-bit constant is vector path on AMD
      machines.  */
-  m_CORE2I7_64 | m_K8 | m_AMDFAM10 | m_BDVER | m_BTVER1 | m_GENERIC64,
+  m_CORE2I7_64 | m_K8 | m_AMDFAM10 | m_BDVER | m_BTVER | m_GENERIC64,
 
   /* X86_TUNE_MOVE_M1_VIA_OR: On pentiums, it is faster to load -1 via OR
      than a MOV.  */
@@ -2606,6 +2687,7 @@ static const struct ptt processor_target_table[PROCESSOR_max] =
   {&bdver1_cost, 32, 24, 32, 7, 32},
   {&bdver2_cost, 32, 24, 32, 7, 32},
   {&btver1_cost, 32, 24, 32, 7, 32},
+  {&btver2_cost, 32, 24, 32, 7, 32},
   {&atom_cost, 16, 15, 16, 7, 16}
 };
 
@@ -2636,7 +2718,8 @@ static const char *const cpu_names[TARGET_CPU_DEFAULT_max] =
   "amdfam10",
   "bdver1",
   "bdver2",
-  "btver1"
+  "btver1",
+  "btver2"
 };
 
 /* Return true if a red-zone is in use.  */
@@ -2665,7 +2748,7 @@ ix86_target_string (HOST_WIDE_INT isa, int flags, const char *arch,
      preceding options while match those first.  */
   static struct ix86_target_opts isa_opts[] =
   {
-    { "-mfma4",		OPTION_MASK_ISA_FMA4 },
+    { "-mfma4",	OPTION_MASK_ISA_FMA4 },
     { "-mfma",		OPTION_MASK_ISA_FMA },
     { "-mxop",		OPTION_MASK_ISA_XOP },
     { "-mlwp",		OPTION_MASK_ISA_LWP },
@@ -2673,17 +2756,18 @@ ix86_target_string (HOST_WIDE_INT isa, int flags, const char *arch,
     { "-msse4.2",	OPTION_MASK_ISA_SSE4_2 },
     { "-msse4.1",	OPTION_MASK_ISA_SSE4_1 },
     { "-mssse3",	OPTION_MASK_ISA_SSSE3 },
-    { "-msse3",		OPTION_MASK_ISA_SSE3 },
-    { "-msse2",		OPTION_MASK_ISA_SSE2 },
+    { "-msse3",	OPTION_MASK_ISA_SSE3 },
+    { "-msse2",	OPTION_MASK_ISA_SSE2 },
     { "-msse",		OPTION_MASK_ISA_SSE },
     { "-m3dnow",	OPTION_MASK_ISA_3DNOW },
     { "-m3dnowa",	OPTION_MASK_ISA_3DNOW_A },
     { "-mmmx",		OPTION_MASK_ISA_MMX },
     { "-mabm",		OPTION_MASK_ISA_ABM },
     { "-mbmi",		OPTION_MASK_ISA_BMI },
-    { "-mbmi2", 	OPTION_MASK_ISA_BMI2 },
+    { "-mbmi2",	OPTION_MASK_ISA_BMI2 },
     { "-mlzcnt",	OPTION_MASK_ISA_LZCNT },
     { "-mhle",		OPTION_MASK_ISA_HLE },
+    { "-mprfchw",	OPTION_MASK_ISA_PRFCHW },
     { "-mtbm",		OPTION_MASK_ISA_TBM },
     { "-mpopcnt",	OPTION_MASK_ISA_POPCNT },
     { "-mmovbe",	OPTION_MASK_ISA_MOVBE },
@@ -2692,7 +2776,7 @@ ix86_target_string (HOST_WIDE_INT isa, int flags, const char *arch,
     { "-mpclmul",	OPTION_MASK_ISA_PCLMUL },
     { "-mfsgsbase",	OPTION_MASK_ISA_FSGSBASE },
     { "-mrdrnd",	OPTION_MASK_ISA_RDRND },
-    { "-mf16c",		OPTION_MASK_ISA_F16C },
+    { "-mf16c",	OPTION_MASK_ISA_F16C },
     { "-mrtm",		OPTION_MASK_ISA_RTM },
   };
 
@@ -2959,7 +3043,8 @@ ix86_option_override_internal (bool main_args_p)
 #define PTA_AVX2		(HOST_WIDE_INT_1 << 30)
 #define PTA_BMI2	 	(HOST_WIDE_INT_1 << 31)
 #define PTA_RTM		 	(HOST_WIDE_INT_1 << 32)
-#define PTA_HLE	 		(HOST_WIDE_INT_1 << 33)
+#define PTA_HLE			(HOST_WIDE_INT_1 << 33)
+#define PTA_PRFCHW		(HOST_WIDE_INT_1 << 34)
 /* if this reaches 64, need to widen struct pta flags below */
 
   static struct pta
@@ -3082,6 +3167,11 @@ ix86_option_override_internal (bool main_args_p)
         | PTA_SSSE3 | PTA_SSE4A |PTA_ABM | PTA_CX16},
       {"generic32", PROCESSOR_GENERIC32, CPU_PENTIUMPRO,
 	PTA_HLE /* flags are only used for -march switch.  */ },
+      {"btver2", PROCESSOR_BTVER2, CPU_GENERIC64,
+	PTA_64BIT | PTA_MMX |  PTA_SSE  | PTA_SSE2 | PTA_SSE3
+	| PTA_SSSE3 | PTA_SSE4A |PTA_ABM | PTA_CX16 | PTA_SSE4_1
+	| PTA_SSE4_2 | PTA_AES | PTA_PCLMUL | PTA_AVX
+	| PTA_BMI | PTA_F16C | PTA_MOVBE},
       {"generic64", PROCESSOR_GENERIC64, CPU_GENERIC64,
 	PTA_64BIT
         | PTA_HLE /* flags are only used for -march switch.  */ },
@@ -3440,6 +3530,9 @@ ix86_option_override_internal (bool main_args_p)
 	if (processor_alias_table[i].flags & PTA_HLE
 	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_HLE))
 	  ix86_isa_flags |= OPTION_MASK_ISA_HLE;
+	if (processor_alias_table[i].flags & PTA_PRFCHW
+	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_PRFCHW))
+	  ix86_isa_flags |= OPTION_MASK_ISA_PRFCHW;
 	if (processor_alias_table[i].flags & (PTA_PREFETCH_SSE | PTA_SSE))
 	  x86_prefetch_sse = true;
 
@@ -3647,10 +3740,11 @@ ix86_option_override_internal (bool main_args_p)
 
   /* Turn on MMX builtins for -msse.  */
   if (TARGET_SSE)
-    {
-      ix86_isa_flags |= OPTION_MASK_ISA_MMX & ~ix86_isa_flags_explicit;
-      x86_prefetch_sse = true;
-    }
+    ix86_isa_flags |= OPTION_MASK_ISA_MMX & ~ix86_isa_flags_explicit;
+
+  /* Enable SSE prefetch.  */
+  if (TARGET_SSE || TARGET_PRFCHW)
+    x86_prefetch_sse = true;
 
   /* Turn on popcnt instruction for -msse4.2 or -mabm.  */
   if (TARGET_SSE4_2 || TARGET_ABM)
@@ -4260,6 +4354,7 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
     IX86_ATTR_ISA ("f16c",	OPT_mf16c),
     IX86_ATTR_ISA ("rtm",	OPT_mrtm),
     IX86_ATTR_ISA ("hle",	OPT_mhle),
+    IX86_ATTR_ISA ("prfchw",	OPT_mprfchw),
 
     /* enum options */
     IX86_ATTR_ENUM ("fpmath=",	OPT_mfpmath_),
@@ -11591,22 +11686,17 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
   int retval = 1;
   enum ix86_address_seg seg = SEG_DEFAULT;
 
-  /* Allow SImode subregs of DImode addresses,
-     they will be emitted with addr32 prefix.  */
-  if (TARGET_64BIT && GET_MODE (addr) == SImode)
-    {
-      if (GET_CODE (addr) == SUBREG
-	  && GET_MODE (XEXP (addr, 0)) == DImode)
-	addr = SUBREG_REG (addr);
-    }
-
   /* Allow zero-extended SImode addresses,
      they will be emitted with addr32 prefix.  */
-  else if (TARGET_64BIT && GET_MODE (addr) == DImode)
+  if (TARGET_64BIT && GET_MODE (addr) == DImode)
     {
       if (GET_CODE (addr) == ZERO_EXTEND
 	  && GET_MODE (XEXP (addr, 0)) == SImode)
-	addr = XEXP (addr, 0);
+	{
+	  addr = XEXP (addr, 0);
+	  if (CONST_INT_P (addr))
+	    return 0;
+	}	      
       else if (GET_CODE (addr) == AND
 	       && const_32bit_mask (XEXP (addr, 1), DImode))
 	{
@@ -11615,10 +11705,27 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
 	  /* Adjust SUBREGs.  */
 	  if (GET_CODE (addr) == SUBREG
 	      && GET_MODE (SUBREG_REG (addr)) == SImode)
-	    addr = SUBREG_REG (addr);
+	    {
+	      addr = SUBREG_REG (addr);
+	      if (CONST_INT_P (addr))
+		return 0;
+	    }
 	  else if (GET_MODE (addr) == DImode)
 	    addr = gen_rtx_SUBREG (SImode, addr, 0);
 	  else if (GET_MODE (addr) != VOIDmode)
+	    return 0;
+	}
+    }
+
+  /* Allow SImode subregs of DImode addresses,
+     they will be emitted with addr32 prefix.  */
+  if (TARGET_64BIT && GET_MODE (addr) == SImode)
+    {
+      if (GET_CODE (addr) == SUBREG
+	  && GET_MODE (SUBREG_REG (addr)) == DImode)
+	{
+	  addr = SUBREG_REG (addr);
+	  if (CONST_INT_P (addr))
 	    return 0;
 	}
     }
@@ -11735,6 +11842,19 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
 	return 0;
       scale = 1 << scale;
       retval = -1;
+    }
+  else if (CONST_INT_P (addr))
+    {
+      if (!x86_64_immediate_operand (addr, VOIDmode))
+	return 0;
+
+      /* Constant addresses are sign extended to 64bit, we have to
+	 prevent addresses from 0x80000000 to 0xffffffff in x32 mode.  */
+      if (TARGET_X32
+	  && val_signbit_known_set_p (SImode, INTVAL (addr)))
+	return 0;
+
+      disp = addr;
     }
   else
     disp = addr;			/* displacement */
@@ -12244,13 +12364,6 @@ ix86_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
   struct ix86_address parts;
   rtx base, index, disp;
   HOST_WIDE_INT scale;
-
-  /* Since constant address in x32 is signed extended to 64bit,
-     we have to prevent addresses from 0x80000000 to 0xffffffff.  */
-  if (TARGET_X32
-      && CONST_INT_P (addr)
-      && INTVAL (addr) < 0)
-    return false;
 
   if (ix86_decompose_address (addr, &parts) <= 0)
     /* Decomposition failed.  */
@@ -14091,7 +14204,7 @@ ix86_print_operand (FILE *file, rtx x, int code)
 
 	  output_address (x);
 	  return;
-	    
+
 	case 'L':
 	  if (ASSEMBLER_DIALECT == ASM_ATT)
 	    putc ('l', file);
@@ -14780,11 +14893,19 @@ ix86_print_operand_address (FILE *file, rtx addr)
   else
     {
       /* Print SImode register names to force addr32 prefix.  */
-      if (TARGET_64BIT
-	  && (GET_CODE (addr) == SUBREG
-	      || GET_CODE (addr) == ZERO_EXTEND
-	      || GET_CODE (addr) == AND))
+      if (GET_CODE (addr) == SUBREG)
 	{
+	  gcc_assert (TARGET_64BIT);
+	  gcc_assert (GET_MODE (addr) == SImode);
+	  gcc_assert (GET_MODE (SUBREG_REG (addr)) == DImode);
+	  gcc_assert (!code);
+	  code = 'l';
+	}
+      else if (GET_CODE (addr) == ZERO_EXTEND
+	       || GET_CODE (addr) == AND)
+	{
+	  gcc_assert (TARGET_64BIT);
+	  gcc_assert (GET_MODE (addr) == DImode);
 	  gcc_assert (!code);
 	  code = 'l';
 	}
@@ -16800,9 +16921,9 @@ distance_agu_use (unsigned int regno0, rtx insn)
    over a sequence of instructions.  Instructions sequence has
    SPLIT_COST cycles higher latency than lea latency.  */
 
-bool
+static bool
 ix86_lea_outperforms (rtx insn, unsigned int regno0, unsigned int regno1,
-		      unsigned int regno2, unsigned int split_cost)
+		      unsigned int regno2, int split_cost)
 {
   int dist_define, dist_use;
 
@@ -16875,9 +16996,7 @@ ix86_ok_to_clobber_flags (rtx insn)
 bool
 ix86_avoid_lea_for_add (rtx insn, rtx operands[])
 {
-  unsigned int regno0 = true_regnum (operands[0]);
-  unsigned int regno1 = true_regnum (operands[1]);
-  unsigned int regno2 = true_regnum (operands[2]);
+  unsigned int regno0, regno1, regno2;
 
   /* Check if we need to optimize.  */
   if (!TARGET_OPT_AGU || optimize_function_for_size_p (cfun))
@@ -16886,6 +17005,10 @@ ix86_avoid_lea_for_add (rtx insn, rtx operands[])
   /* Check it is correct to split here.  */
   if (!ix86_ok_to_clobber_flags(insn))
     return false;
+
+  regno0 = true_regnum (operands[0]);
+  regno1 = true_regnum (operands[1]);
+  regno2 = true_regnum (operands[2]);
 
   /* We need to split only adds with non destructive
      destination operand.  */
@@ -16901,8 +17024,7 @@ ix86_avoid_lea_for_add (rtx insn, rtx operands[])
 bool
 ix86_use_lea_for_mov (rtx insn, rtx operands[])
 {
-  unsigned int regno0;
-  unsigned int regno1;
+  unsigned int regno0, regno1;
 
   /* Check if we need to optimize.  */
   if (!TARGET_OPT_AGU || optimize_function_for_size_p (cfun))
@@ -16915,7 +17037,7 @@ ix86_use_lea_for_mov (rtx insn, rtx operands[])
   regno0 = true_regnum (operands[0]);
   regno1 = true_regnum (operands[1]);
 
-  return ix86_lea_outperforms (insn, regno0, regno1, -1, 0);
+  return ix86_lea_outperforms (insn, regno0, regno1, INVALID_REGNUM, 0);
 }
 
 /* Return true if we need to split lea into a sequence of
@@ -16924,10 +17046,8 @@ ix86_use_lea_for_mov (rtx insn, rtx operands[])
 bool
 ix86_avoid_lea_for_addr (rtx insn, rtx operands[])
 {
-  unsigned int regno0 = true_regnum (operands[0]) ;
-  unsigned int regno1 = -1;
-  unsigned int regno2 = -1;
-  unsigned int split_cost = 0;
+  unsigned int regno0, regno1, regno2;
+  int split_cost;
   struct ix86_address parts;
   int ok;
 
@@ -16952,10 +17072,16 @@ ix86_avoid_lea_for_addr (rtx insn, rtx operands[])
   if (parts.disp && flag_pic && !LEGITIMATE_PIC_OPERAND_P (parts.disp))
     return false;
 
+  regno0 = true_regnum (operands[0]) ;
+  regno1 = INVALID_REGNUM;
+  regno2 = INVALID_REGNUM;
+
   if (parts.base)
     regno1 = true_regnum (parts.base);
   if (parts.index)
     regno2 = true_regnum (parts.index);
+
+  split_cost = 0;
 
   /* Compute how many cycles we will add to execution time
      if split lea into a sequence of instructions.  */
@@ -17016,27 +17142,31 @@ ix86_emit_binop (enum rtx_code code, enum machine_mode mode,
 extern void
 ix86_split_lea_for_addr (rtx operands[], enum machine_mode mode)
 {
-  unsigned int regno0 = true_regnum (operands[0]) ;
-  unsigned int regno1 = INVALID_REGNUM;
-  unsigned int regno2 = INVALID_REGNUM;
+  unsigned int regno0, regno1, regno2;
   struct ix86_address parts;
-  rtx tmp;
+  rtx target, tmp;
   int ok, adds;
 
   ok = ix86_decompose_address (operands[1], &parts);
   gcc_assert (ok);
 
+  target = operands[0];
+
+  regno0 = true_regnum (target);
+  regno1 = INVALID_REGNUM;
+  regno2 = INVALID_REGNUM;
+
   if (parts.base)
     {
       if (GET_MODE (parts.base) != mode)
-	parts.base = gen_rtx_SUBREG (mode, parts.base, 0);
+	parts.base = gen_lowpart (mode, parts.base);
       regno1 = true_regnum (parts.base);
     }
 
   if (parts.index)
     {
       if (GET_MODE (parts.index) != mode)
-	parts.index = gen_rtx_SUBREG (mode, parts.index, 0);
+	parts.index = gen_lowpart (mode, parts.index);
       regno2 = true_regnum (parts.index);
     }
 
@@ -17052,41 +17182,41 @@ ix86_split_lea_for_addr (rtx operands[], enum machine_mode mode)
 	  gcc_assert (regno2 != regno0);
 
 	  for (adds = parts.scale; adds > 0; adds--)
-	    ix86_emit_binop (PLUS, mode, operands[0], parts.index);
+	    ix86_emit_binop (PLUS, mode, target, parts.index);
 	}
       else
 	{
 	  /* r1 = r2 + r3 * C case.  Need to move r3 into r1.  */
 	  if (regno0 != regno2)
-	    emit_insn (gen_rtx_SET (VOIDmode, operands[0], parts.index));
+	    emit_insn (gen_rtx_SET (VOIDmode, target, parts.index));
 
 	  /* Use shift for scaling.  */
-	  ix86_emit_binop (ASHIFT, mode, operands[0],
+	  ix86_emit_binop (ASHIFT, mode, target,
 			   GEN_INT (exact_log2 (parts.scale)));
 
 	  if (parts.base)
-	    ix86_emit_binop (PLUS, mode, operands[0], parts.base);
+	    ix86_emit_binop (PLUS, mode, target, parts.base);
 
 	  if (parts.disp && parts.disp != const0_rtx)
-	    ix86_emit_binop (PLUS, mode, operands[0], parts.disp);
+	    ix86_emit_binop (PLUS, mode, target, parts.disp);
 	}
     }
   else if (!parts.base && !parts.index)
     {
       gcc_assert(parts.disp);
-      emit_insn (gen_rtx_SET (VOIDmode, operands[0], parts.disp));
+      emit_insn (gen_rtx_SET (VOIDmode, target, parts.disp));
     }
   else
     {
       if (!parts.base)
 	{
 	  if (regno0 != regno2)
-	    emit_insn (gen_rtx_SET (VOIDmode, operands[0], parts.index));
+	    emit_insn (gen_rtx_SET (VOIDmode, target, parts.index));
 	}
       else if (!parts.index)
 	{
 	  if (regno0 != regno1)
-	    emit_insn (gen_rtx_SET (VOIDmode, operands[0], parts.base));
+	    emit_insn (gen_rtx_SET (VOIDmode, target, parts.base));
 	}
       else
 	{
@@ -17096,15 +17226,15 @@ ix86_split_lea_for_addr (rtx operands[], enum machine_mode mode)
 	    tmp = parts.base;
 	  else
 	    {
-	      emit_insn (gen_rtx_SET (VOIDmode, operands[0], parts.base));
+	      emit_insn (gen_rtx_SET (VOIDmode, target, parts.base));
 	      tmp = parts.index;
 	    }
 
-	  ix86_emit_binop (PLUS, mode, operands[0], tmp);
+	  ix86_emit_binop (PLUS, mode, target, tmp);
 	}
 
       if (parts.disp && parts.disp != const0_rtx)
-	ix86_emit_binop (PLUS, mode, operands[0], parts.disp);
+	ix86_emit_binop (PLUS, mode, target, parts.disp);
     }
 }
 
@@ -23672,6 +23802,7 @@ ix86_issue_rate (void)
     case PROCESSOR_PENTIUM:
     case PROCESSOR_ATOM:
     case PROCESSOR_K6:
+    case PROCESSOR_BTVER2:
       return 2;
 
     case PROCESSOR_PENTIUMPRO:
@@ -23878,6 +24009,7 @@ ix86_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
     case PROCESSOR_BDVER1:
     case PROCESSOR_BDVER2:
     case PROCESSOR_BTVER1:
+    case PROCESSOR_BTVER2:
     case PROCESSOR_ATOM:
     case PROCESSOR_GENERIC32:
     case PROCESSOR_GENERIC64:
@@ -40099,8 +40231,8 @@ ix86_autovectorize_vector_sizes (void)
 static void *
 ix86_init_cost (struct loop *loop_info ATTRIBUTE_UNUSED)
 {
-  unsigned *cost = XNEW (unsigned);
-  *cost = 0;
+  unsigned *cost = XNEWVEC (unsigned, 3);
+  cost[vect_prologue] = cost[vect_body] = cost[vect_epilogue] = 0;
   return cost;
 }
 
@@ -40108,24 +40240,25 @@ ix86_init_cost (struct loop *loop_info ATTRIBUTE_UNUSED)
 
 static unsigned
 ix86_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
-		    struct _stmt_vec_info *stmt_info, int misalign)
+		    struct _stmt_vec_info *stmt_info, int misalign,
+		    enum vect_cost_model_location where)
 {
   unsigned *cost = (unsigned *) data;
   unsigned retval = 0;
 
   if (flag_vect_cost_model)
     {
-      tree vectype = stmt_vectype (stmt_info);
+      tree vectype = stmt_info ? stmt_vectype (stmt_info) : NULL_TREE;
       int stmt_cost = ix86_builtin_vectorization_cost (kind, vectype, misalign);
 
       /* Statements in an inner loop relative to the loop being
 	 vectorized are weighted more heavily.  The value here is
 	 arbitrary and could potentially be improved with analysis.  */
-      if (stmt_in_inner_loop_p (stmt_info))
+      if (where == vect_body && stmt_info && stmt_in_inner_loop_p (stmt_info))
 	count *= 50;  /* FIXME.  */
 
       retval = (unsigned) (count * stmt_cost);
-      *cost += retval;
+      cost[where] += retval;
     }
 
   return retval;
@@ -40133,10 +40266,14 @@ ix86_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
 
 /* Implement targetm.vectorize.finish_cost.  */
 
-static unsigned
-ix86_finish_cost (void *data)
+static void
+ix86_finish_cost (void *data, unsigned *prologue_cost,
+		  unsigned *body_cost, unsigned *epilogue_cost)
 {
-  return *((unsigned *) data);
+  unsigned *cost = (unsigned *) data;
+  *prologue_cost = cost[vect_prologue];
+  *body_cost     = cost[vect_body];
+  *epilogue_cost = cost[vect_epilogue];
 }
 
 /* Implement targetm.vectorize.destroy_cost_data.  */

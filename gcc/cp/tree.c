@@ -2044,9 +2044,7 @@ no_linkage_check (tree t, bool relaxed_p)
     }
 }
 
-#ifdef GATHER_STATISTICS
 extern int depth_reached;
-#endif
 
 void
 cxx_print_statistics (void)
@@ -2054,10 +2052,9 @@ cxx_print_statistics (void)
   print_search_statistics ();
   print_class_statistics ();
   print_template_statistics ();
-#ifdef GATHER_STATISTICS
-  fprintf (stderr, "maximum template instantiation depth reached: %d\n",
-	   depth_reached);
-#endif
+  if (GATHER_STATISTICS)
+    fprintf (stderr, "maximum template instantiation depth reached: %d\n",
+	     depth_reached);
 }
 
 /* Return, as an INTEGER_CST node, the number of elements for TYPE

@@ -5,12 +5,12 @@
 
 namespace foo {
   inline namespace foo_impl {
-    class T; // { dg-error "T" "" }
+    class T; // { dg-message "T" "" }
   }
 }
 namespace bar {
   inline namespace bar_impl {
-    class T; // { dg-error "T" "" }
+    class T; // { dg-message "T" "" }
   }
   using namespace foo;
 }

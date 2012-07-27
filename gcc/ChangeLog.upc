@@ -1,3 +1,14 @@
+2012-07-27  Gary Funck  <gary@intrepid.com>
+
+	Merge trunk version 189856 into gupc branch.
+	Incorporates fix for bootstrap with a sub-set of language
+	specific source directories present.
+	* optabs.c: Revert to trunk.  Rather than defining opcodes
+	as a way of defining get/put runtime library function names,
+	generate them directly in gcc/upc/upc-genericize.c.
+	* optabs.h: Ditto.
+	* genopinit.c: Ditto.
+
 2012-07-23  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 189777 into gupc branch.

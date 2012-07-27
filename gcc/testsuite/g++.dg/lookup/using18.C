@@ -4,12 +4,12 @@
 
 namespace N1 {
   void f ();
-  struct f; // { dg-error "" "candidate" }
+  struct f; // { dg-message "" "candidate" }
 }
 
 namespace N2 {
   void f (int);
-  struct f; // { dg-error "" "candidate" }
+  struct f; // { dg-message "" "candidate" }
 }
 
 namespace M {
