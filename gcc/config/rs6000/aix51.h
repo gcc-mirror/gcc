@@ -22,14 +22,8 @@
 /* The macro SUBTARGET_OVERRIDE_OPTIONS is provided for subtargets, to
    get control in TARGET_OPTION_OVERRIDE.  */
 
-#define NON_POWERPC_MASKS (MASK_POWER | MASK_POWER2)
 #define SUBTARGET_OVERRIDE_OPTIONS					\
 do {									\
-  if (TARGET_64BIT && (target_flags & NON_POWERPC_MASKS))		\
-    {									\
-      target_flags &= ~NON_POWERPC_MASKS;				\
-      warning (0, "-maix64 and POWER architecture are incompatible");	\
-    }									\
   if (TARGET_64BIT && ! TARGET_POWERPC64)				\
     {									\
       target_flags |= MASK_POWERPC64;					\
@@ -49,14 +43,10 @@ do {									\
 #undef ASM_CPU_SPEC
 #define ASM_CPU_SPEC \
 "%{!mcpu*: %{!maix64: \
-  %{mpower: %{!mpower2: -mpwr}} \
-  %{mpower2: -mpwr2} \
   %{mpowerpc*: %{!mpowerpc64: -mppc}} \
   %{mpowerpc64: -mppc64} \
   %{!mpower*: %{!mpowerpc*: %(asm_default)}}}} \
 %{mcpu=common: -mcom} \
-%{mcpu=power: -mpwr} \
-%{mcpu=power2: -mpwr2} \
 %{mcpu=power3: -m620} \
 %{mcpu=power4: -m620} \
 %{mcpu=powerpc: -mppc} \

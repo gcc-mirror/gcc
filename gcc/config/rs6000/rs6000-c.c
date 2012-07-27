@@ -1,6 +1,5 @@
-/* Subroutines for the C front end on the POWER and PowerPC architectures.
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
-   Free Software Foundation, Inc.
+/* Subroutines for the C front end on the PowerPC architecture.
+   Copyright (C) 2002-2012 Free Software Foundation, Inc.
 
    Contributed by Zack Weinberg <zack@codesourcery.com>
    and Paolo Bonzini <bonzini@gnu.org>
@@ -294,10 +293,6 @@ rs6000_target_modify_macros (bool define_p, int flags, unsigned bu_mask)
 	     (unsigned) flags, bu_mask);
 
   /* target_flags based options.  */
-  if ((flags & MASK_POWER2) != 0)
-    rs6000_define_or_undefine_macro (define_p, "_ARCH_PWR2");
-  else if ((flags & MASK_POWER) != 0)
-    rs6000_define_or_undefine_macro (define_p, "_ARCH_PWR");
   if ((flags & MASK_POWERPC) != 0)
     rs6000_define_or_undefine_macro (define_p, "_ARCH_PPC");
   if ((flags & MASK_PPC_GPOPT) != 0)
@@ -353,7 +348,7 @@ rs6000_cpu_cpp_builtins (cpp_reader *pfile)
 
   /* _ARCH_COM does not fit in the framework of target_modify_macros, so handle
      it specially.  */
-  if (! TARGET_POWER && ! TARGET_POWER2 && ! TARGET_POWERPC)
+  if (! TARGET_POWERPC)
     builtin_define ("_ARCH_COM");
   if (TARGET_FRE)
     builtin_define ("__RECIP__");

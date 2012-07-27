@@ -1,7 +1,5 @@
 /* Target definitions for GNU compiler for PowerPC running System V.4
-   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003,
-   2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
-   Free Software Foundation, Inc.
+   Copyright (C) 1995-2012 Free Software Foundation, Inc.
    Contributed by Cygnus Support.
 
    This file is part of GCC.
@@ -227,10 +225,6 @@ do {									\
 /* Override rs6000.h definition.  */
 #undef	PROCESSOR_DEFAULT
 #define	PROCESSOR_DEFAULT PROCESSOR_PPC750
-
-/* SVR4 only defined for PowerPC, so short-circuit POWER patterns.  */
-#undef  TARGET_POWER
-#define TARGET_POWER 0
 
 #define FIXED_R2 1
 /* System V.4 uses register 13 as a pointer to the small data area,

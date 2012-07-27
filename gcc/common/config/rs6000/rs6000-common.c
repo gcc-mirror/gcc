@@ -1,7 +1,5 @@
 /* Common hooks for IBM RS/6000.
-   Copyright (C) 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
-   Free Software Foundation, Inc.
+   Copyright (C) 1991-2012 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -83,12 +81,6 @@ rs6000_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
 
   switch (code)
     {
-    case OPT_mno_power:
-      opts->x_target_flags &= ~(MASK_POWER | MASK_POWER2
-				| MASK_MULTIPLE | MASK_STRING);
-      opts_set->x_target_flags |= (MASK_POWER | MASK_POWER2
-				   | MASK_MULTIPLE | MASK_STRING);
-      break;
     case OPT_mno_powerpc:
       opts->x_target_flags &= ~(MASK_POWERPC | MASK_PPC_GPOPT
 				| MASK_PPC_GFXOPT | MASK_POWERPC64);
@@ -140,24 +132,6 @@ rs6000_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
 	{
 	  opts->x_TARGET_NO_FP_IN_TOC = 0;
 	  opts->x_TARGET_NO_SUM_IN_TOC = 0;
-	}
-      break;
-
-    case OPT_mpower:
-      if (value == 1)
-	{
-	  opts->x_target_flags |= (MASK_MULTIPLE | MASK_STRING);
-	  opts_set->x_target_flags |= (MASK_MULTIPLE | MASK_STRING);
-	}
-      break;
-
-    case OPT_mpower2:
-      if (value == 1)
-	{
-	  opts->x_target_flags |= (MASK_POWER | MASK_MULTIPLE | MASK_STRING);
-	  opts_set->x_target_flags |= (MASK_POWER
-				       | MASK_MULTIPLE
-				       | MASK_STRING);
 	}
       break;
 

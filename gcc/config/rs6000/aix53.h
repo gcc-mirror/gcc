@@ -1,7 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for IBM RS/6000 POWER running AIX V5.3.
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
-   Free Software Foundation, Inc.
+   Copyright (C) 2002-2012 Free Software Foundation, Inc.
    Contributed by David Edelsohn (edelsohn@gnu.org).
 
    This file is part of GCC.
@@ -23,14 +22,8 @@
 /* The macro SUBTARGET_OVERRIDE_OPTIONS is provided for subtargets, to
    get control in TARGET_OPTION_OVERRIDE.  */
 
-#define NON_POWERPC_MASKS (MASK_POWER | MASK_POWER2)
 #define SUBTARGET_OVERRIDE_OPTIONS					\
 do {									\
-  if (TARGET_64BIT && (target_flags & NON_POWERPC_MASKS))		\
-    {									\
-      target_flags &= ~NON_POWERPC_MASKS;				\
-      warning (0, "-maix64 and POWER architecture are incompatible");	\
-    }									\
   if (TARGET_64BIT && ! TARGET_POWERPC64)				\
     {									\
       target_flags |= MASK_POWERPC64;					\
@@ -118,9 +111,6 @@ do {									\
 #define PROCESSOR_DEFAULT PROCESSOR_POWER5
 #undef  PROCESSOR_DEFAULT64
 #define PROCESSOR_DEFAULT64 PROCESSOR_POWER5
-
-#undef  TARGET_POWER
-#define TARGET_POWER 0
 
 /* Define this macro as a C expression for the initializer of an
    array of string to tell the driver program which options are

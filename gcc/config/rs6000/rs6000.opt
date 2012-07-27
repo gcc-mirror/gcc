@@ -90,18 +90,6 @@ unsigned int rs6000_debug
 TargetSave
 int rs6000_target_flags_explicit
 
-mpower
-Target Report RejectNegative Mask(POWER)
-Use POWER instruction set
-
-mno-power
-Target Report RejectNegative
-Do not use POWER instruction set
-
-mpower2
-Target Report Mask(POWER2)
-Use POWER2 instruction set
-
 mpowerpc
 Target Report RejectNegative Mask(POWERPC)
 Use PowerPC instruction set
