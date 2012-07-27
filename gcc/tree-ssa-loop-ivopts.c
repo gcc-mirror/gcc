@@ -3308,7 +3308,7 @@ get_address_cost (bool symbol_present, bool var_present,
 	 If VAR_PRESENT is true, try whether the mode with
 	 SYMBOL_PRESENT = false is cheaper even with cost of addition, and
 	 if this is the case, use it.  */
-      add_c = add_cost[speed][address_mode];
+      add_c = add_cost (speed, address_mode);
       for (i = 0; i < 8; i++)
 	{
 	  var_p = i & 1;
@@ -3392,7 +3392,7 @@ get_address_cost (bool symbol_present, bool var_present,
     cost += mult_by_coeff_cost (ratio, address_mode, speed);
 
   if (s_offset && !offset_p && !symbol_present)
-    cost += add_cost[speed][address_mode];
+    cost += add_cost (speed, address_mode);
 
   if (may_autoinc)
     *may_autoinc = autoinc;
@@ -3422,10 +3422,10 @@ get_shiftadd_cost (tree expr, enum machine_mode mode, comp_cost cost0,
     return false;
 
   sa_cost = (TREE_CODE (expr) != MINUS_EXPR
-             ? shiftadd_cost[speed][mode][m]
+             ? shiftadd_cost (speed, mode, m)
              : (mult == op1
-                ? shiftsub1_cost[speed][mode][m]
-                : shiftsub0_cost[speed][mode][m]));
+                ? shiftsub1_cost (speed, mode, m)
+                : shiftsub0_cost (speed, mode, m)));
   res = new_cost (sa_cost, 0);
   res = add_costs (res, mult == op1 ? cost0 : cost1);
 
@@ -3559,7 +3559,7 @@ force_expr_to_var_cost (tree expr, bool speed)
     case PLUS_EXPR:
     case MINUS_EXPR:
     case NEGATE_EXPR:
-      cost = new_cost (add_cost[speed][mode], 0);
+      cost = new_cost (add_cost (speed, mode), 0);
       if (TREE_CODE (expr) != NEGATE_EXPR)
         {
           tree mult = NULL_TREE;
@@ -3571,8 +3571,8 @@ force_expr_to_var_cost (tree expr, bool speed)
 
           if (mult != NULL_TREE
               && cst_and_fits_in_hwi (TREE_OPERAND (mult, 1))
-              && get_shiftadd_cost (expr, mode, cost0, cost1, mult, speed,
-                                    &sa_cost))
+              && get_shiftadd_cost (expr, mode, cost0, cost1, mult,
+                                    speed, &sa_cost))
             return sa_cost;
         }
       break;
@@ -4060,7 +4060,7 @@ get_computation_cost_at (struct ivopts_data *data,
 					 &symbol_present, &var_present,
 					 &offset, depends_on));
       cost.cost /= avg_loop_niter (data->current_loop);
-      cost.cost += add_cost[data->speed][TYPE_MODE (ctype)];
+      cost.cost += add_cost (data->speed, TYPE_MODE (ctype));
     }
 
   if (inv_expr_id)
@@ -4101,14 +4101,14 @@ get_computation_cost_at (struct ivopts_data *data,
       are added once to the variable, if present.  */
   if (var_present && (symbol_present || offset))
     cost.cost += adjust_setup_cost (data,
-				    add_cost[speed][TYPE_MODE (ctype)]);
+				    add_cost (speed, TYPE_MODE (ctype)));
 
   /* Having offset does not affect runtime cost in case it is added to
      symbol, but it increases complexity.  */
   if (offset)
     cost.complexity++;
 
-  cost.cost += add_cost[speed][TYPE_MODE (ctype)];
+  cost.cost += add_cost (speed, TYPE_MODE (ctype));
 
   aratio = ratio > 0 ? ratio : -ratio;
   if (aratio != 1)
@@ -4958,7 +4958,7 @@ determine_iv_cost (struct ivopts_data *data, struct iv_cand *cand)
      or a const set.  */
   if (cost_base.cost == 0)
     cost_base.cost = COSTS_N_INSNS (1);
-  cost_step = add_cost[data->speed][TYPE_MODE (TREE_TYPE (base))];
+  cost_step = add_cost (data->speed, TYPE_MODE (TREE_TYPE (base)));
 
   cost = cost_step + adjust_setup_cost (data, cost_base.cost);
 

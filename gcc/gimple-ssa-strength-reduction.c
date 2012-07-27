@@ -344,16 +344,16 @@ stmt_cost (gimple gs, bool speed)
 	return mult_by_coeff_cost (TREE_INT_CST_LOW (rhs2), lhs_mode, speed);
 
       gcc_assert (TREE_CODE (rhs1) != INTEGER_CST);
-      return mul_cost[speed][lhs_mode];
+      return mul_cost (speed, lhs_mode);
 
     case PLUS_EXPR:
     case POINTER_PLUS_EXPR:
     case MINUS_EXPR:
       rhs2 = gimple_assign_rhs2 (gs);
-      return add_cost[speed][lhs_mode];
+      return add_cost (speed, lhs_mode);
 
     case NEGATE_EXPR:
-      return neg_cost[speed][lhs_mode];
+      return neg_cost (speed, lhs_mode);
 
     case NOP_EXPR:
       return convert_cost (lhs_mode, TYPE_MODE (TREE_TYPE (rhs1)), speed);

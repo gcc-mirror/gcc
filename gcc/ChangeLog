@@ -1,3 +1,25 @@
+2012-07-27  Nathan Froyd  <froydnj@gcc.gnu.org>
+
+	* expmed.h (alg_hash, alg_hash_used_p, sdiv_pow2_cheap,
+	smod_pow2_cheap, zero_cost, add_cost, neg_cost, shift_cost)
+	shiftadd_cost, shiftsub0_cost, shiftsub1_cost, mul_cost,
+	sdiv_cost, udiv_cost, mul_widen_cost, mul_highpart_cost): Delete
+	macro definitions and re-purpose as inline functions.
+	(alg_hash_entry_ptr, set_alg_hash_used_p, sdiv_pow2_cheap_ptr,
+	set_sdiv_pow2_cheap, smod_pow2_cheap_ptr, set_smod_pow2_cheap,
+	zero_cost_ptr, set_zero_cost, add_cost_ptr, set_add_cost,
+	neg_cost_ptr, set_neg_cost, shift_cost_ptr, set_shift_cost,
+	shiftadd_cost_ptr, set_shiftadd_cost, shiftsub0_cost_ptr,
+	set_shiftsub0_cost, shiftsub1_cost_ptr, set_shiftsub1_cost,
+	mul_cost_ptr, set_mul_cost, sdiv_cost_ptr, set_sdiv_cost,
+	udiv_cost_ptr, set_udiv_cost, mul_widen_cost_ptr,
+	set_mul_widen_cost, mul_highpart_cost_ptr, set_mul_highpart_cost):
+	New functions.
+	(convert_cost_ptr): New function, split out from...
+	(set_convert_cost, convert_cost): ...here.
+	* expmed.c, tree-ssa-loop-ivopts.c: Update for new functions.
+	* gimple-ssa-strength-reduction.c: Likewise.
+
 2012-07-20  Ryan Mansfield  <rmansfield@qnx.com>
 
 	* gcc.c (main): Move GCC_DRIVER_HOST_INITIALIZATION after
@@ -6,7 +28,7 @@
 2012-07-27  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/54089
-	* config/sh/sh.c (shiftcosts): Remove case where first operand 
+	* config/sh/sh.c (shiftcosts): Remove case where first operand
 	is a const_int.  Move COSTS_N_INSNS usage into caller ...
 	(sh_rtx_costs) ... here.  Return false when shiftcosts cannot be
 	calculated instead of MAX_COST.
