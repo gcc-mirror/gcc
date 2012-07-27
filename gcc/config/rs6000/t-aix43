@@ -20,14 +20,12 @@
 # different processor models
 
 MULTILIB_OPTIONS	= pthread \
-			  mcpu=common/mcpu=power/mcpu=powerpc/maix64
+			  mcpu=common/mcpu=powerpc/maix64
 
 MULTILIB_DIRNAMES	= pthread \
-			  common power powerpc ppc64
+			  common powerpc ppc64
 
-MULTILIB_MATCHES	= mcpu?power=mcpu?power \
-			  mcpu?power=mcpu?power2 \
-			  mcpu?powerpc=mcpu?power3 \
+MULTILIB_MATCHES	= mcpu?powerpc=mcpu?power3 \
 			  mcpu?powerpc=mcpu?power4 \
 			  mcpu?powerpc=mcpu?powerpc \
 			  mcpu?powerpc=mcpu?rs64a \

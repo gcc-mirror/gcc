@@ -101,17 +101,12 @@
    you make changes here, make them also there.  */
 #define ASM_CPU_SPEC \
 "%{!mcpu*: \
-  %{mpower: %{!mpower2: -mpwr}} \
-  %{mpower2: -mpwrx} \
   %{mpowerpc64*: -mppc64} \
   %{!mpowerpc64*: %{mpowerpc*: -mppc}} \
-  %{mno-power: %{!mpowerpc*: -mcom}} \
-  %{!mno-power: %{!mpower*: %(asm_default)}}} \
+  %{!mpowerpc*: -mcom}} \
 %{mcpu=native: %(asm_cpu_native)} \
 %{mcpu=common: -mcom} \
 %{mcpu=cell: -mcell} \
-%{mcpu=power: -mpwr} \
-%{mcpu=power2: -mpwrx} \
 %{mcpu=power3: -mppc64} \
 %{mcpu=power4: -mpower4} \
 %{mcpu=power5: %(asm_cpu_power5)} \
@@ -332,7 +327,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
     /* The option machinery will define this.  */
 #endif
 
-#define TARGET_DEFAULT (MASK_POWER | MASK_MULTIPLE | MASK_STRING)
+#define TARGET_DEFAULT (MASK_MULTIPLE | MASK_STRING)
 
 /* FPU operations supported. 
    Each use of TARGET_SINGLE_FLOAT or TARGET_DOUBLE_FLOAT must 
@@ -348,7 +343,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 /* Define generic processor types based upon current deployment.  */
 #define PROCESSOR_COMMON    PROCESSOR_PPC601
-#define PROCESSOR_POWER     PROCESSOR_PPC601
 #define PROCESSOR_POWERPC   PROCESSOR_PPC604
 #define PROCESSOR_POWERPC64 PROCESSOR_RS64A
 
@@ -1877,8 +1871,7 @@ extern unsigned rs6000_pmode;
 
    The sle and sre instructions which allow SHIFT_COUNT_TRUNCATED
    have been dropped from the PowerPC architecture.  */
-
-#define SHIFT_COUNT_TRUNCATED (TARGET_POWER ? 1 : 0)
+#define SHIFT_COUNT_TRUNCATED 0
 
 /* Adjust the length of an INSN.  LENGTH is the currently-computed length and
    should be adjusted to reflect any required changes.  This macro is used when

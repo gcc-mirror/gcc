@@ -1,5 +1,114 @@
 2012-07-27  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* common/config/rs6000/rs6000-common.c (rs6000_handle_option):
+	Delete code for -mno-power, -mpower, and -mpower2.
+	* config/rs6000/aix43.h (NON_POWERPC_MASKS): Delete.
+	(SUBTARGET_OVERRIDE_OPTIONS): Delete check for POWER together
+	with -maix64.
+	(ASM_CPU_SPEC): Delete support for POWER and POWER2.
+	* config/rs6000/aix51.h (NON_POWERPC_MASKS): Delete.
+	(SUBTARGET_OVERRIDE_OPTIONS): Delete check for POWER together
+	with -maix64.
+	(ASM_CPU_SPEC): Delete support for POWER and POWER2.
+	* config/rs6000/aix52.h (NON_POWERPC_MASKS): Delete.
+	(SUBTARGET_OVERRIDE_OPTIONS): Delete check for POWER together
+	with -maix64.
+	(TARGET_POWER): Delete.
+	* config/rs6000/aix53.h (NON_POWERPC_MASKS): Delete.
+	(SUBTARGET_OVERRIDE_OPTIONS): Delete check for POWER together
+	with -maix64.
+	(TARGET_POWER): Delete.
+	* config/rs6000/aix61.h (NON_POWERPC_MASKS): Delete.
+	(SUBTARGET_OVERRIDE_OPTIONS): Delete check for POWER together
+	with -maix64.
+	(TARGET_POWER): Delete.
+	* config/rs6000/darwin.h (TARGET_POWER): Delete.
+	* config/rs6000/driver-rs6000.c (struct asm_names): Delete
+	support for -mpower, -mpower2, and -mno-power.
+	* config/rs6000/rs6000-c.c (rs6000_target_modify_macros):
+	Likewise.
+	(rs6000_cpu_cpp_builtins): Likewise.
+	* config/rs6000/rs6000-cpus.def: Likewise.
+	* config/rs6000/rs6000-tables.opt: Regenerate.
+	* config/rs6000/rs6000.c (POWER_MASKS): Delete.
+	(rs6000_option_override_internal): Adjust.
+	(rs6000_conditional_register_usage): Adjust.
+	(rs6000_emit_move): Adjust.
+	(rs6000_common_init_builtins): Adjust.
+	(rs6000_init_libfuncs): Adjust.
+	(rs6000_output_function_prologue): Adjust.
+	(rs6000_adjust_cost): Adjust.
+	(struct rs6000_opt_masks): Delete MASK_POWER and MASK_POWER2.
+	* config/rs6000/rs6000.h (ASM_CPU_SPEC): Delete support for
+	POWER and POWER2.
+	(TARGET_DEFAULT): Adjust.
+	(PROCESSOR_POWER): Delete.
+	(SHIFT_COUNT_TRUNCATED): Adjust.
+	* config/rs6000/rs6000.md (extendqisi2): Delete POWER support.
+	(extendqisi2_power): Delete.
+	(extendqisi2_no_power): Adjust.
+	(extendqihi2, extendqihi2_power, extendqihi2_no_power):
+	Likewise.
+	(sminsi3, smaxsi3, uminsi3, umaxsi3): Adjust.
+	(anonymous doz insn patterns): Delete.
+	(abssi2): Adjust.
+	(abssi2_power): Delete.
+	(abssi2_nopower): Adjust.
+	(nabs_power, nabs_nopower): Likewise.
+	(mulsi3, mulsi3_mq, mulsi3_no_mq, mulsi3_mq_internal1):
+	Likewise.  Delete anonymous post-reload splitter.
+	(mulsi3_no_mq_internal1): rename to...
+	(mulsi3_internal1): New define_insn.
+	(mulsi3_mq_internal2, mulsi3_no_mq_internal2, mulsi3_internal2):
+	Likewise.
+	(divmodsi4, divmodsi4_internal, udiv<mode>3, udivsi3_mq,
+	udivsi3_no_mq, udivsi3, div<mode>3, divsi3_mq, div<mode>3_no_mq,
+	udivmodsi4_normal, udivmodsi4_tests, udivmodsi4): Likewise.
+	(mulh_call, mull_call, divss_call, divus_call, quoss_call,
+	quous_call): Likewise.
+	(maskir_internal1, maskir_internal2, maskir_internal3,
+	maskir_internal4, maskir_internal5, maskir_internal6,
+	maskir_internal7, maskir_internal8): Delete.
+	(ashlsi3, ashlsi3_power, ashlsi3_no_power): Adjust.
+	(anonymous sl insn patterns): Delete.
+	(lshrsi3, lshrsi3_power, lshrsi3_no_power): Adjust.
+	(lshrsi3_64): Adjust.
+	(anonymous sr insn patterns): Delete.
+	(anonymous rrib insn patterns): Delete.
+	(ashrsi3, ashrsi3_power, ashrsi3_no_power): Adjust.
+	(anonymous sra insn patterns): Delete.
+	(sqrtsf2, sqrtdf2, sqrtdf2_fpr): Adjust.
+	(fix_trunc<mode>si2, fix_trunc<mode>si2_internal,
+	fctiwz_<mode>): Adjust.
+	(mulsidi3, mulsidi3_mq, mulsidi3_no_mq, umulsidi3, umulsidi3_mq,
+	umulsidi3_no_mq, smulsi3_highpart, smulsi3_highpart_mq,
+	smulsi3_highpart_no_mq, umulsi3_highpart, umulsi3_highpart_mq,
+	umulsi3_highpart_no_mq): Adjust.
+	(ashldi3_power, lshrdi3_power, ashrdi3_power): Delete.
+	(ashrdi3_no_power, ashldi3, ashldi3_internal1,
+	lshrdi3_internal1): Adjust.
+	(fix_trunctfsi2, fix_trunctfsi2_fprs): Adjust.
+	(movti_power): Delete.
+	(movti_string): Adjust.
+	(stmsi8, stmsi7, stmsi6, stmsi5, stmsi4, stmsi3): Adjust.
+	(stmsi8_power, stmsi7_power, stmsi6_power, stmsi5_power,
+	stmsi4_power, stmsi3_power): Delete.
+	(anonymous movmemsi insn patterns): Adjust.
+	(lfq_power2, stfq_power2): Delete.
+	(eq<mode>, eq<mode>_compare): Adjust.
+	(eqsi_power): Delete.
+	(ne0si): Adjust.
+	(anonymous le, lt, ge, gt insn patterns): Delete.
+	* config/rs6000/rs6000.opt (mpower, mno-power, mpower2): Delete.
+	* config/rs6000/sysv4.h (TARGET_POWER): Delete.
+	* config/rs6000/t-aix43 (MULTILIB_OPTIONS, MULTILIB_DIRNAMES,
+	MULTILIB_MATCHES): Adjust.
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Delete
+	-mpower, -mno-power, -mpower2, -mno-power2 documentation.
+	Delete -mcpu=power and -mcpu=power2 documentation.
+
+2012-07-27  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/601.md: New file.
 	* config/rs6000/aix43.h (ASM_CPU_SPEC): Delete support for
 	RIOS CPUs.

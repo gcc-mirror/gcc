@@ -1,3 +1,8 @@
+2012-07-27  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.target/powerpc/rs6000-power2-1.c: Delete.
+	* gcc.target/powerpc/rs6000-power2-2.c: Delete.
+
 2012-07-27  Anna Tikhonova  <anna.tikhonova@intel.com>
 
 	* gcc.dg/20020201-1.c: Remove declarations for exit, abort,

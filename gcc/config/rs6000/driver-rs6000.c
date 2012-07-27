@@ -373,8 +373,6 @@ static const struct asm_name asm_names[] = {
 #else
   { "common",	"-mcom" },
   { "cell",	"-mcell" },
-  { "power",	"-mpwr" },
-  { "power2",	"-mpwrx" },
   { "power3",	"-mppc64" },
   { "power4",	"-mpower4" },
   { "power5",	"%(asm_cpu_power5)" },
@@ -420,12 +418,9 @@ static const struct asm_name asm_names[] = {
   { "e300c3",	"-me300" },
   { "e500mc",	"-me500mc" },
   { NULL,	"\
-%{mpower: %{!mpower2: -mpwr}} \
-%{mpower2: -mpwrx} \
 %{mpowerpc64*: -mppc64} \
 %{!mpowerpc64*: %{mpowerpc*: -mppc}} \
-%{mno-power: %{!mpowerpc*: -mcom}} \
-%{!mno-power: %{!mpower*: %(asm_default)}}" },
+%{!mpowerpc*: -mcom}" },
 #endif
 };
 
