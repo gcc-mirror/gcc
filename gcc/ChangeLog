@@ -1,3 +1,20 @@
+2012-07-27  Richard Guenther  <rguenther@suse.de>
+
+	* doc/invoke.texi (min-virtual-mappings, virtual-mappings-ratio):
+	Remove param documentation.
+	* params.def (PARAM_MIN_VIRTUAL_MAPPINGS,
+	PARAM_VIRTUAL_MAPPINGS_TO_SYMS_RATIO): Remove.
+	* tree-flow.h (mark_set_for_renaming): Remove.
+	* tree-into-ssa.c (struct update_ssa_stats_d): Remove.
+	(add_new_name_mapping): Remove bookkeeping code.
+	(dump_update_ssa): Remove stats dumping code.
+	(init_update_ssa): Remove stats allocation code.
+	(delete_update_ssa): Remove stats freeing code.
+	(mark_set_for_renaming): Remove.
+	(switch_virtuals_to_full_rewrite_p): Likewise.
+	(switch_virtuals_to_full_rewrite): Likewise.
+	(update_ssa): Do not call switch_virtuals_to_full_rewrite.
+
 2012-07-27  Marek Polacek  <polacek@redhat.com>
 
 	* cgraphunit.c: Rename varpool_finalize_variable to
