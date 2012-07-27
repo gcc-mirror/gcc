@@ -1,3 +1,8 @@
+2012-07-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gfortran.dg/bind_c_array_params_2.f90: Add "-mno-explicit-relocs"
+	for alpha*-*-* targets.  Cleanup original tree dump.
+
 2012-07-27  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* gcc.target/powerpc/rs6000-power2-1.c: Delete.
@@ -60,8 +65,7 @@
 
 	PR target/53633
 
-	* lib/target-suports.exp (check_effective_target_naked_functions):
-	New.
+	* lib/target-suports.exp (check_effective_target_naked_functions): New.
 	* c-c++-common/pr53633.c: New test.
 
 2012-07-25  Siddhesh Poyarekar  <siddhesh@redhat.com>
@@ -71,7 +75,7 @@
 2012-07-25  Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
-        * gcc.target/i386/prefetchw-1.c: New.
+	* gcc.target/i386/prefetchw-1.c: New.
 	* gcc.target/i386/sse-12.c: Add -mprfchw.
 	* gcc.target/i386/sse-13.c: Ditto.
 	* gcc.target/i386/sse-14.c: Ditto.
@@ -551,14 +555,14 @@
 
 2012-07-05  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
-        PR target/48941
-        PR target/51980
-        * gcc/testsuite/gcc.target/arm/neon/vtrnf32.c: Update.
-        * gcc/testsuite/gcc.target/arm/neon/vtrns32.c: Update.
-        * gcc/testsuite/gcc.target/arm/neon/vtrnu32.c: Update.
-        * gcc/testsuite/gcc.target/arm/neon/vzipf32.c: Update.
-        * gcc/testsuite/gcc.target/arm/neon/vzips32.c: Update.
-        * gcc/testsuite/gcc.target/arm/neon/vzipu32.c: Update.
+	PR target/48941
+	PR target/51980
+	* gcc/testsuite/gcc.target/arm/neon/vtrnf32.c: Update.
+	* gcc/testsuite/gcc.target/arm/neon/vtrns32.c: Update.
+	* gcc/testsuite/gcc.target/arm/neon/vtrnu32.c: Update.
+	* gcc/testsuite/gcc.target/arm/neon/vzipf32.c: Update.
+	* gcc/testsuite/gcc.target/arm/neon/vzips32.c: Update.
+	* gcc/testsuite/gcc.target/arm/neon/vzipu32.c: Update.
 
 2012-07-05  Mikael Morin  <mikael@gcc.gnu.org>
 
