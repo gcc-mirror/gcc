@@ -1,3 +1,11 @@
+2012-07-27  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54089
+	* config/sh/sh.c (shiftcosts): Remove case where first operand 
+	is a const_int.  Move COSTS_N_INSNS usage into caller ...
+	(sh_rtx_costs) ... here.  Return false when shiftcosts cannot be
+	calculated instead of MAX_COST.
+
 2012-07-27  Richard Guenther  <rguenther@suse.de>
 
 	* tree-cfg.c (gimple_can_merge_blocks_p): Do more fine-grained
