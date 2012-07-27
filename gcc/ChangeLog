@@ -1,3 +1,8 @@
+2012-07-27  Marek Polacek  <polacek@redhat.com>
+
+	* cgraphunit.c: Rename varpool_finalize_variable to
+	varpool_finalize_decl in a comment.
+
 2012-07-27  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* common/config/rs6000/rs6000-common.c (rs6000_handle_option):
