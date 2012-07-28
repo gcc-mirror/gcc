@@ -13582,8 +13582,11 @@ rs6000_secondary_reload (bool in_p,
 	   && GET_MODE_SIZE (GET_MODE (x)) >= UNITS_PER_WORD)
     {
       rtx off = address_offset (XEXP (x, 0));
+      unsigned int extra = GET_MODE_SIZE (GET_MODE (x)) - UNITS_PER_WORD;
 
-      if (off != NULL_RTX && (INTVAL (off) & 3) != 0)
+      if (off != NULL_RTX
+	  && (INTVAL (off) & 3) != 0
+	  && (unsigned HOST_WIDE_INT) INTVAL (off) + 0x8000 < 0x10000 - extra)
 	{
 	  if (in_p)
 	    sri->icode = CODE_FOR_reload_di_load;
@@ -13601,10 +13604,17 @@ rs6000_secondary_reload (bool in_p,
 	   && GET_MODE_SIZE (GET_MODE (x)) > UNITS_PER_WORD)
     {
       rtx off = address_offset (XEXP (x, 0));
+      unsigned int extra = GET_MODE_SIZE (GET_MODE (x)) - UNITS_PER_WORD;
 
+      /* We need a secondary reload only when our legitimate_address_p
+	 says the address is good (as otherwise the entire address
+	 will be reloaded).  So for mode sizes of 8 and 16 this will
+	 be when the offset is in the ranges [0x7ffc,0x7fff] and
+	 [0x7ff4,0x7ff7] respectively.  Note that the address we see
+	 here may have been manipulated by legitimize_reload_address.  */
       if (off != NULL_RTX
-	  && ((unsigned HOST_WIDE_INT) INTVAL (off) + 0x8000
-	      >= 0x1000u - (GET_MODE_SIZE (GET_MODE (x)) - UNITS_PER_WORD)))
+	  && ((unsigned HOST_WIDE_INT) INTVAL (off) - (0x8000 - extra)
+	      < UNITS_PER_WORD))
 	{
 	  if (in_p)
 	    sri->icode = CODE_FOR_reload_si_load;
