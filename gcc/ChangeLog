@@ -1,3 +1,17 @@
+2012-07-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_avoid_lea_for_addr): Handle
+	zero-extended addresses.  Return false if the address has less
+	than two components.
+	(ix86_split_lea_for_addr): Unconditionally convert target and
+	all address operands to requested mode.
+	* config/i386/i386.md (*lea<mode>): Recover operands from curr_insn.
+	Pass SImode to ix86_split_lea_for_addr when splitting zero-extended
+	address.
+	(zero-extended add splitter): New splitter to conditionally split
+	non-destructive adds.
+	(*zero_extendsidi2_rex64): Conditionally emit leal instead of movl.
+
 2012-07-28  Alan Modra  <amodra@gmail.com>
 
 	PR target/54093
