@@ -1,3 +1,10 @@
+2012-07-28  Alan Modra  <amodra@gmail.com>
+
+	PR target/54093
+	* config/rs6000/rs6000.c (rs6000_secondary_reload): Limit 32-bit
+	multi-gpr reload to cases where predicate passes.  Do the same for
+	64-bit multi-gpr reload.
+
 2012-07-27  Nathan Froyd  <froydnj@gcc.gnu.org>
 
 	* expmed.h (alg_hash, alg_hash_used_p, sdiv_pow2_cheap,
