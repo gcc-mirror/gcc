@@ -17036,11 +17036,6 @@ ix86_avoid_lea_for_addr (rtx insn, rtx operands[])
   struct ix86_address parts;
   int ok;
 
-  /* FIXME: Handle zero-extended addresses.  */
-  if (GET_CODE (operands[1]) == ZERO_EXTEND
-      || GET_CODE (operands[1]) == AND)
-    return false;
-
   /* Check we need to optimize.  */
   if (!TARGET_OPT_AGU || optimize_function_for_size_p (cfun))
     return false;
@@ -17051,6 +17046,11 @@ ix86_avoid_lea_for_addr (rtx insn, rtx operands[])
 
   ok = ix86_decompose_address (operands[1], &parts);
   gcc_assert (ok);
+
+  /* There should be at least two components in the address.  */
+  if ((parts.base != NULL_RTX) + (parts.index != NULL_RTX)
+      + (parts.disp != NULL_RTX) + (parts.scale > 1) < 2)
+    return false;
 
   /* We should not split into add if non legitimate pic
      operand is used as displacement. */
@@ -17124,7 +17124,7 @@ ix86_emit_binop (enum rtx_code code, enum machine_mode mode,
    It is assumed that it is allowed to clobber flags register
    at lea position.  */
 
-extern void
+void
 ix86_split_lea_for_addr (rtx operands[], enum machine_mode mode)
 {
   unsigned int regno0, regno1, regno2;
@@ -17135,7 +17135,7 @@ ix86_split_lea_for_addr (rtx operands[], enum machine_mode mode)
   ok = ix86_decompose_address (operands[1], &parts);
   gcc_assert (ok);
 
-  target = operands[0];
+  target = gen_lowpart (mode, operands[0]);
 
   regno0 = true_regnum (target);
   regno1 = INVALID_REGNUM;
@@ -17143,17 +17143,18 @@ ix86_split_lea_for_addr (rtx operands[], enum machine_mode mode)
 
   if (parts.base)
     {
-      if (GET_MODE (parts.base) != mode)
-	parts.base = gen_lowpart (mode, parts.base);
+      parts.base = gen_lowpart (mode, parts.base);
       regno1 = true_regnum (parts.base);
     }
 
   if (parts.index)
     {
-      if (GET_MODE (parts.index) != mode)
-	parts.index = gen_lowpart (mode, parts.index);
+      parts.index = gen_lowpart (mode, parts.index);
       regno2 = true_regnum (parts.index);
     }
+
+  if (parts.disp)
+    parts.disp = gen_lowpart (mode, parts.disp);
 
   if (parts.scale > 1)
     {
