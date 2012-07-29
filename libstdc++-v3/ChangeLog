@@ -1,3 +1,11 @@
+2012-07-29  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/54075
+	* include/bits/hashtable_policy.h
+	(_Prime_rehash_policy::_M_next_bkt): Add a growth factor set to 2
+	to boost growth in the number of buckets.
+	* testsuite/performance/23_containers/insert/unordered_set.cc: New.
+
 2012-07-26  François Dumont  <fdumont@gcc.gnu.org>
 
 	PR libstdc++/54075
