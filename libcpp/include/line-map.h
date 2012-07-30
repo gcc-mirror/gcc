@@ -165,7 +165,7 @@ struct GTY(()) line_map_macro {
      In the example above x1 (for token "+") is going to be the same
      as y1.  x0 is the spelling location for the argument token "1",
      and x2 is the spelling location for the argument token "2".  */
-  source_location * GTY((length ("2 * %h.n_tokens"))) macro_locations;
+  source_location * GTY((atomic)) macro_locations;
 
   /* This is the location of the expansion point of the current macro
      map.  It's the location of the macro name.  That location is held

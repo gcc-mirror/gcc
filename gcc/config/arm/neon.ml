@@ -1445,8 +1445,10 @@ let ops =
                                         CstPtrTo Corereg |]]],
       Use_operands [| Qreg; CstPtrTo Corereg |], "vld1Q_dup",
       bits_1, pf_su_8_32;
+    (* Treated identically to vld1_dup above as we now
+       do a single load followed by a duplicate.  *)
     Vldx_dup 1,
-      [Disassembles_as [Use_operands [| VecArray (2, Dreg);
+      [Disassembles_as [Use_operands [| VecArray (1, Dreg);
                                         CstPtrTo Corereg |]]],
       Use_operands [| Qreg; CstPtrTo Corereg |], "vld1Q_dup",
       bits_1, [S64; U64];

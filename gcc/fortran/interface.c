@@ -1732,7 +1732,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
     {
       if (where)
 	gfc_error ("Actual argument to contiguous pointer dummy '%s' at %L "
-		   "must be simply contigous", formal->name, &actual->where);
+		   "must be simply contiguous", formal->name, &actual->where);
       return 0;
     }
 

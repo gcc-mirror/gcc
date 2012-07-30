@@ -1,8 +1,5 @@
 /* Subroutines used for code generation on IBM RS/6000.
-   Copyright (C) 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011,
-   2012
-   Free Software Foundation, Inc.
+   Copyright (C) 1991-2012 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
    This file is part of GCC.
@@ -352,44 +349,6 @@ struct processor_costs size64_cost = {
   0,
   0,
   0,
-};
-
-/* Instruction costs on RIOS1 processors.  */
-static const
-struct processor_costs rios1_cost = {
-  COSTS_N_INSNS (5),    /* mulsi */
-  COSTS_N_INSNS (4),    /* mulsi_const */
-  COSTS_N_INSNS (3),    /* mulsi_const9 */
-  COSTS_N_INSNS (5),    /* muldi */
-  COSTS_N_INSNS (19),   /* divsi */
-  COSTS_N_INSNS (19),   /* divdi */
-  COSTS_N_INSNS (2),    /* fp */
-  COSTS_N_INSNS (2),    /* dmul */
-  COSTS_N_INSNS (19),   /* sdiv */
-  COSTS_N_INSNS (19),   /* ddiv */
-  128,			/* cache line size */
-  64,			/* l1 cache */
-  512,			/* l2 cache */
-  0,			/* streams */
-};
-
-/* Instruction costs on RIOS2 processors.  */
-static const
-struct processor_costs rios2_cost = {
-  COSTS_N_INSNS (2),    /* mulsi */
-  COSTS_N_INSNS (2),    /* mulsi_const */
-  COSTS_N_INSNS (2),    /* mulsi_const9 */
-  COSTS_N_INSNS (2),    /* muldi */
-  COSTS_N_INSNS (13),   /* divsi */
-  COSTS_N_INSNS (13),   /* divdi */
-  COSTS_N_INSNS (2),    /* fp */
-  COSTS_N_INSNS (2),    /* dmul */
-  COSTS_N_INSNS (17),   /* sdiv */
-  COSTS_N_INSNS (17),   /* ddiv */
-  256,			/* cache line size */
-  256,			/* l1 cache */
-  1024,			/* l2 cache */
-  0,			/* streams */
 };
 
 /* Instruction costs on RS64A processors.  */
@@ -1508,7 +1467,6 @@ enum {
    the user's specification.  */
 
 enum {
-  POWER_MASKS = MASK_POWER | MASK_POWER2 | MASK_MULTIPLE | MASK_STRING,
   POWERPC_MASKS = (POWERPC_BASE_MASK | MASK_PPC_GPOPT | MASK_STRICT_ALIGN
 		   | MASK_PPC_GFXOPT | MASK_POWERPC64 | MASK_ALTIVEC
 		   | MASK_MFCRF | MASK_POPCNTB | MASK_FPRND | MASK_MULHW
@@ -1792,7 +1750,6 @@ rs6000_debug_reg_global (void)
   rs6000_debug_reg_print (LR_REGNO, LR_REGNO, "lr");
   rs6000_debug_reg_print (CTR_REGNO, CTR_REGNO, "ctr");
   rs6000_debug_reg_print (CR0_REGNO, CR7_REGNO, "cr");
-  rs6000_debug_reg_print (MQ_REGNO, MQ_REGNO, "mq");
   rs6000_debug_reg_print (CA_REGNO, CA_REGNO, "ca");
   rs6000_debug_reg_print (VRSAVE_REGNO, VRSAVE_REGNO, "vrsave");
   rs6000_debug_reg_print (VSCR_REGNO, VSCR_REGNO, "vscr");
@@ -2015,7 +1972,6 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
   for (r = CR1_REGNO; r <= CR7_REGNO; ++r)
     rs6000_regno_regclass[r] = CR_REGS;
 
-  rs6000_regno_regclass[MQ_REGNO] = MQ_REGS;
   rs6000_regno_regclass[LR_REGNO] = LINK_REGS;
   rs6000_regno_regclass[CTR_REGNO] = CTR_REGS;
   rs6000_regno_regclass[CA_REGNO] = CA_REGS;
@@ -2458,7 +2414,7 @@ rs6000_option_override_internal (bool global_init_p)
       rs6000_pointer_size = 32;
     }
 
-  set_masks = POWER_MASKS | POWERPC_MASKS | MASK_SOFT_FLOAT;
+  set_masks = POWERPC_MASKS | MASK_SOFT_FLOAT;
 #ifdef OS_MISSING_POWERPC64
   if (OS_MISSING_POWERPC64)
     set_masks &= ~MASK_POWERPC64;
@@ -3001,14 +2957,6 @@ rs6000_option_override_internal (bool global_init_p)
   else
     switch (rs6000_cpu)
       {
-      case PROCESSOR_RIOS1:
-	rs6000_cost = &rios1_cost;
-	break;
-
-      case PROCESSOR_RIOS2:
-	rs6000_cost = &rios2_cost;
-	break;
-
       case PROCESSOR_RS64A:
 	rs6000_cost = &rs64a_cost;
 	break;
@@ -6574,11 +6522,9 @@ rs6000_conditional_register_usage (void)
   if (TARGET_DEBUG_TARGET)
     fprintf (stderr, "rs6000_conditional_register_usage called\n");
 
-  /* Set MQ register fixed (already call_used) if not POWER
-     architecture (RIOS1, RIOS2, RSC, and PPC601) so that it will not
-     be allocated.  */
-  if (! TARGET_POWER)
-    fixed_regs[64] = 1;
+  /* Set MQ register fixed (already call_used) so that it will not be
+     allocated.  */
+  fixed_regs[64] = 1;
 
   /* 64-bit AIX and Linux reserve GPR13 for thread-private data.  */
   if (TARGET_64BIT)
@@ -7250,17 +7196,6 @@ rs6000_emit_move (rtx dest, rtx source, enum machine_mode mode)
 
     case TImode:
       rs6000_eliminate_indexed_memrefs (operands);
-
-      if (TARGET_POWER)
-	{
-	  emit_insn (gen_rtx_PARALLEL (VOIDmode,
-		       gen_rtvec (2,
-				  gen_rtx_SET (VOIDmode,
-					       operands[0], operands[1]),
-				  gen_rtx_CLOBBER (VOIDmode,
-						   gen_rtx_SCRATCH (SImode)))));
-	  return;
-	}
       break;
 
     default:
@@ -12690,8 +12625,7 @@ rs6000_common_init_builtins (void)
 static void
 rs6000_init_libfuncs (void)
 {
-  if (DEFAULT_ABI != ABI_V4 && TARGET_XCOFF
-      && !TARGET_POWER2 && !TARGET_POWERPC)
+  if (DEFAULT_ABI != ABI_V4 && TARGET_XCOFF && !TARGET_POWERPC)
     {
       /* AIX library routines for float->int conversion.  */
       set_conv_libfunc (sfix_optab, SImode, DFmode, "__itrunc");
@@ -12748,7 +12682,7 @@ rs6000_init_libfuncs (void)
       set_optab_libfunc (neg_optab, TFmode, "_q_neg");
       set_optab_libfunc (smul_optab, TFmode, "_q_mul");
       set_optab_libfunc (sdiv_optab, TFmode, "_q_div");
-      if (TARGET_PPC_GPOPT || TARGET_POWER2)
+      if (TARGET_PPC_GPOPT)
 	set_optab_libfunc (sqrt_optab, TFmode, "_q_sqrt");
 
       set_optab_libfunc (eq_optab, TFmode, "_q_feq");
@@ -13664,8 +13598,11 @@ rs6000_secondary_reload (bool in_p,
 	   && GET_MODE_SIZE (GET_MODE (x)) >= UNITS_PER_WORD)
     {
       rtx off = address_offset (XEXP (x, 0));
+      unsigned int extra = GET_MODE_SIZE (GET_MODE (x)) - UNITS_PER_WORD;
 
-      if (off != NULL_RTX && (INTVAL (off) & 3) != 0)
+      if (off != NULL_RTX
+	  && (INTVAL (off) & 3) != 0
+	  && (unsigned HOST_WIDE_INT) INTVAL (off) + 0x8000 < 0x10000 - extra)
 	{
 	  if (in_p)
 	    sri->icode = CODE_FOR_reload_di_load;
@@ -13683,10 +13620,17 @@ rs6000_secondary_reload (bool in_p,
 	   && GET_MODE_SIZE (GET_MODE (x)) > UNITS_PER_WORD)
     {
       rtx off = address_offset (XEXP (x, 0));
+      unsigned int extra = GET_MODE_SIZE (GET_MODE (x)) - UNITS_PER_WORD;
 
+      /* We need a secondary reload only when our legitimate_address_p
+	 says the address is good (as otherwise the entire address
+	 will be reloaded).  So for mode sizes of 8 and 16 this will
+	 be when the offset is in the ranges [0x7ffc,0x7fff] and
+	 [0x7ff4,0x7ff7] respectively.  Note that the address we see
+	 here may have been manipulated by legitimize_reload_address.  */
       if (off != NULL_RTX
-	  && ((unsigned HOST_WIDE_INT) INTVAL (off) + 0x8000
-	      >= 0x1000u - (GET_MODE_SIZE (GET_MODE (x)) - UNITS_PER_WORD)))
+	  && ((unsigned HOST_WIDE_INT) INTVAL (off) - (0x8000 - extra)
+	      < UNITS_PER_WORD))
 	{
 	  if (in_p)
 	    sri->icode = CODE_FOR_reload_si_load;
@@ -20302,7 +20246,7 @@ rs6000_output_function_prologue (FILE *file,
     }
 
   /* Write .extern for AIX common mode routines, if needed.  */
-  if (! TARGET_POWER && ! TARGET_POWERPC && ! common_mode_defined)
+  if (! TARGET_POWERPC && ! common_mode_defined)
     {
       fputs ("\t.extern __mulh\n", file);
       fputs ("\t.extern __mull\n", file);
@@ -22606,7 +22550,7 @@ rs6000_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
                scheduling pass will not know about this latency since
                the mtctr instruction, which has the latency associated
                to it, will be generated by reload.  */
-            return TARGET_POWER ? 5 : 4;
+            return 4;
           case TYPE_BRANCH:
             /* Leave some extra cycles between a compare and its
                dependent branch, to inhibit expensive mispredicts.  */
@@ -23179,7 +23123,6 @@ rs6000_issue_rate (void)
     return 1;
 
   switch (rs6000_cpu_attr) {
-  case CPU_RIOS1:  /* ? */
   case CPU_RS64A:
   case CPU_PPC601: /* ? */
   case CPU_PPC7450:
@@ -23199,7 +23142,6 @@ rs6000_issue_rate (void)
   case CPU_PPCE6500:
   case CPU_TITAN:
     return 2;
-  case CPU_RIOS2:
   case CPU_PPC476:
   case CPU_PPC604:
   case CPU_PPC604E:
@@ -27250,8 +27192,6 @@ rs6000_dbx_register_number (unsigned int regno)
 {
   if (regno <= 63 || write_symbols != DWARF2_DEBUG)
     return regno;
-  if (regno == MQ_REGNO)
-    return 100;
   if (regno == LR_REGNO)
     return 108;
   if (regno == CTR_REGNO)
@@ -27420,8 +27360,6 @@ static struct rs6000_opt_mask const rs6000_opt_masks[] =
 #ifdef MASK_STRICT_ALIGN
   { "strict-align",	MASK_STRICT_ALIGN,	false, false },
 #endif
-  { "power",		MASK_POWER,		false, false },
-  { "power2",		MASK_POWER2,		false, false },
   { "powerpc",		MASK_POWERPC,		false, false },
   { "soft-float",	MASK_SOFT_FLOAT,	false, false },
   { "string",		MASK_STRING,		false, false },

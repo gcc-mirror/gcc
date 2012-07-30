@@ -1,8 +1,5 @@
 /* Definitions of target machine for GNU compiler, for IBM RS/6000.
-   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-   2010, 2011
-   Free Software Foundation, Inc.
+   Copyright (C) 1992-2012 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
    This file is part of GCC.
@@ -104,17 +101,12 @@
    you make changes here, make them also there.  */
 #define ASM_CPU_SPEC \
 "%{!mcpu*: \
-  %{mpower: %{!mpower2: -mpwr}} \
-  %{mpower2: -mpwrx} \
   %{mpowerpc64*: -mppc64} \
   %{!mpowerpc64*: %{mpowerpc*: -mppc}} \
-  %{mno-power: %{!mpowerpc*: -mcom}} \
-  %{!mno-power: %{!mpower*: %(asm_default)}}} \
+  %{!mpowerpc*: -mcom}} \
 %{mcpu=native: %(asm_cpu_native)} \
 %{mcpu=common: -mcom} \
 %{mcpu=cell: -mcell} \
-%{mcpu=power: -mpwr} \
-%{mcpu=power2: -mpwrx} \
 %{mcpu=power3: -mppc64} \
 %{mcpu=power4: -mpower4} \
 %{mcpu=power5: %(asm_cpu_power5)} \
@@ -124,11 +116,6 @@
 %{mcpu=power7: %(asm_cpu_power7)} \
 %{mcpu=a2: -ma2} \
 %{mcpu=powerpc: -mppc} \
-%{mcpu=rios: -mpwr} \
-%{mcpu=rios1: -mpwr} \
-%{mcpu=rios2: -mpwrx} \
-%{mcpu=rsc: -mpwr} \
-%{mcpu=rsc1: -mpwr} \
 %{mcpu=rs64a: -mppc64} \
 %{mcpu=401: -mppc} \
 %{mcpu=403: -m403} \
@@ -340,7 +327,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
     /* The option machinery will define this.  */
 #endif
 
-#define TARGET_DEFAULT (MASK_POWER | MASK_MULTIPLE | MASK_STRING)
+#define TARGET_DEFAULT (MASK_MULTIPLE | MASK_STRING)
 
 /* FPU operations supported. 
    Each use of TARGET_SINGLE_FLOAT or TARGET_DOUBLE_FLOAT must 
@@ -356,12 +343,11 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 /* Define generic processor types based upon current deployment.  */
 #define PROCESSOR_COMMON    PROCESSOR_PPC601
-#define PROCESSOR_POWER     PROCESSOR_RIOS1
 #define PROCESSOR_POWERPC   PROCESSOR_PPC604
 #define PROCESSOR_POWERPC64 PROCESSOR_RS64A
 
 /* Define the default processor.  This is overridden by other tm.h files.  */
-#define PROCESSOR_DEFAULT   PROCESSOR_RIOS1
+#define PROCESSOR_DEFAULT   PROCESSOR_PPC603
 #define PROCESSOR_DEFAULT64 PROCESSOR_RS64A
 
 /* Specify the dialect of assembler to use.  New mnemonics is dialect one
@@ -786,9 +772,9 @@ extern unsigned rs6000_pointer_size;
    even those that are not normally considered general registers.
 
    RS/6000 has 32 fixed-point registers, 32 floating-point registers,
-   an MQ register, a count register, a link register, and 8 condition
-   register fields, which we view here as separate registers.  AltiVec
-   adds 32 vector registers and a VRsave register.
+   a count register, a link register, and 8 condition register fields,
+   which we view here as separate registers.  AltiVec adds 32 vector
+   registers and a VRsave register.
 
    In addition, the difference between the frame and argument pointers is
    a function of the number of registers saved, so we need to have a
@@ -932,7 +918,6 @@ extern unsigned rs6000_pointer_size;
 	r0		(not saved; cannot be base reg)
 	r31 - r13	(saved; order given to save least number)
 	r12		(not saved; if used for DImode or DFmode would use r13)
-	mq		(not saved; best to use it if we can)
 	ctr		(not saved; when we have the choice ctr is better)
 	lr		(saved)
 	cr5, r1, r2, ap, ca (fixed)
@@ -974,7 +959,7 @@ extern unsigned rs6000_pointer_size;
    3, EARLY_R12 11, 0,						\
    31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19,		\
    18, 17, 16, 15, 14, 13, LATE_R12				\
-   64, 66, 65,							\
+   66, 65,							\
    73, 1, MAYBE_R2_FIXED 67, 76,				\
    /* AltiVec registers.  */					\
    77, 78,							\
@@ -1172,7 +1157,7 @@ extern unsigned rs6000_pointer_size;
    class that represents their union.  */
 
 /* The RS/6000 has three types of registers, fixed-point, floating-point, and
-   condition registers, plus three special registers, MQ, CTR, and the link
+   condition registers, plus three special registers, CTR, and the link
    register.  AltiVec adds a vector register class.  VSX registers overlap the
    FPR registers and the Altivec registers.
 
@@ -1195,7 +1180,6 @@ enum reg_class
   SPE_ACC_REGS,
   SPEFSCR_REGS,
   NON_SPECIAL_REGS,
-  MQ_REGS,
   LINK_REGS,
   CTR_REGS,
   LINK_OR_CTR_REGS,
@@ -1226,7 +1210,6 @@ enum reg_class
   "SPE_ACC_REGS",                                                       \
   "SPEFSCR_REGS",                                                       \
   "NON_SPECIAL_REGS",							\
-  "MQ_REGS",								\
   "LINK_REGS",								\
   "CTR_REGS",								\
   "LINK_OR_CTR_REGS",							\
@@ -1256,17 +1239,16 @@ enum reg_class
   { 0x00000000, 0x00000000, 0x00000000, 0x00008000 }, /* SPE_ACC_REGS */     \
   { 0x00000000, 0x00000000, 0x00000000, 0x00010000 }, /* SPEFSCR_REGS */     \
   { 0xffffffff, 0xffffffff, 0x00000008, 0x00020000 }, /* NON_SPECIAL_REGS */ \
-  { 0x00000000, 0x00000000, 0x00000001, 0x00000000 }, /* MQ_REGS */	     \
   { 0x00000000, 0x00000000, 0x00000002, 0x00000000 }, /* LINK_REGS */	     \
   { 0x00000000, 0x00000000, 0x00000004, 0x00000000 }, /* CTR_REGS */	     \
   { 0x00000000, 0x00000000, 0x00000006, 0x00000000 }, /* LINK_OR_CTR_REGS */ \
-  { 0x00000000, 0x00000000, 0x00000007, 0x00002000 }, /* SPECIAL_REGS */     \
-  { 0xffffffff, 0x00000000, 0x0000000f, 0x00022000 }, /* SPEC_OR_GEN_REGS */ \
+  { 0x00000000, 0x00000000, 0x00000006, 0x00002000 }, /* SPECIAL_REGS */     \
+  { 0xffffffff, 0x00000000, 0x0000000e, 0x00022000 }, /* SPEC_OR_GEN_REGS */ \
   { 0x00000000, 0x00000000, 0x00000010, 0x00000000 }, /* CR0_REGS */	     \
   { 0x00000000, 0x00000000, 0x00000ff0, 0x00000000 }, /* CR_REGS */	     \
-  { 0xffffffff, 0x00000000, 0x00000fff, 0x00020000 }, /* NON_FLOAT_REGS */   \
+  { 0xffffffff, 0x00000000, 0x00000ffe, 0x00020000 }, /* NON_FLOAT_REGS */   \
   { 0x00000000, 0x00000000, 0x00001000, 0x00000000 }, /* CA_REGS */	     \
-  { 0xffffffff, 0xffffffff, 0xffffffff, 0x0003ffff }  /* ALL_REGS */	     \
+  { 0xffffffff, 0xffffffff, 0xfffffffe, 0x0003ffff }  /* ALL_REGS */	     \
 }
 
 /* The same information, inverted:
@@ -1885,8 +1867,7 @@ extern unsigned rs6000_pmode;
 
    The sle and sre instructions which allow SHIFT_COUNT_TRUNCATED
    have been dropped from the PowerPC architecture.  */
-
-#define SHIFT_COUNT_TRUNCATED (TARGET_POWER ? 1 : 0)
+#define SHIFT_COUNT_TRUNCATED 0
 
 /* Adjust the length of an INSN.  LENGTH is the currently-computed length and
    should be adjusted to reflect any required changes.  This macro is used when
@@ -2119,7 +2100,7 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0).  */
   &rs6000_reg_names[62][0],	/* fr30 */				\
   &rs6000_reg_names[63][0],	/* fr31 */				\
 									\
-  &rs6000_reg_names[64][0],     /* mq   */				\
+  &rs6000_reg_names[64][0],     /* was mq  */				\
   &rs6000_reg_names[65][0],	/* lr   */				\
   &rs6000_reg_names[66][0],	/* ctr  */				\
   &rs6000_reg_names[67][0],	/* ap   */				\
@@ -2203,7 +2184,7 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0).  */
   {"v28",  105},{"v29",  106},{"v30",  107},{"v31",  108},      \
   {"vrsave", 109}, {"vscr", 110},				\
   {"spe_acc", 111}, {"spefscr", 112},				\
-  /* no additional names for: mq, lr, ctr, ap */		\
+  /* no additional names for: lr, ctr, ap */			\
   {"cr0",  68}, {"cr1",  69}, {"cr2",  70}, {"cr3",  71},	\
   {"cr4",  72}, {"cr5",  73}, {"cr6",  74}, {"cr7",  75},	\
   {"cc",   68}, {"sp",    1}, {"toc",   2},			\

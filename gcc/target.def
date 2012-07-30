@@ -2715,6 +2715,15 @@ DEFHOOK
  void, (struct hard_reg_set_container *),
  NULL)
 
+/* For targets that have attributes that can affect whether a
+   function's return statements need checking.  For instance a 'naked'
+   function attribute.  */
+DEFHOOK
+(warn_func_return,
+ "True if a function's return statements should be checked for matching the function's return type.  This includes checking for falling off the end of a non-void function.  Return false if no such check should be made.",
+ bool, (tree),
+ hook_bool_tree_true)
+
 /* Determine the type of unwind info to emit for debugging.  */
 DEFHOOK
 (debug_unwind_info,

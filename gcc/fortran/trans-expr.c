@@ -464,7 +464,7 @@ gfc_get_class_array_ref (tree index, tree class_decl)
 
 /* Copies one class expression to another, assuming that if either
    'to' or 'from' are arrays they are packed.  Should 'from' be
-   NULL_TREE, the inialization expression for 'to' is used, assuming
+   NULL_TREE, the initialization expression for 'to' is used, assuming
    that the _vptr is set.  */
 
 tree
@@ -1278,7 +1278,7 @@ gfc_conv_component_ref (gfc_se * se, gfc_ref * ref)
 
 
 /* This function deals with component references to components of the
-   parent type for derived type extensons.  */
+   parent type for derived type extensions.  */
 static void
 conv_parent_component_references (gfc_se * se, gfc_ref * ref)
 {
@@ -6044,7 +6044,7 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
       /* Array pointer.  Find the last reference on the LHS and if it is an
 	 array section ref, we're dealing with bounds remapping.  In this case,
 	 set it to AR_FULL so that gfc_conv_expr_descriptor does
-	 not see it and process the bounds remapping afterwards explicitely.  */
+	 not see it and process the bounds remapping afterwards explicitly.  */
       for (remap = expr1->ref; remap; remap = remap->next)
 	if (!remap->next && remap->type == REF_ARRAY
 	    && remap->u.ar.type == AR_SECTION)

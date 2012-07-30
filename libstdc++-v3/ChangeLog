@@ -1,3 +1,25 @@
+2012-07-29  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/54075
+	* include/bits/hashtable_policy.h
+	(_Prime_rehash_policy::_M_next_bkt): Add a growth factor set to 2
+	to boost growth in the number of buckets.
+	* testsuite/performance/23_containers/insert/unordered_set.cc: New.
+
+2012-07-25  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/54075
+	* include/bits/hashtable.h
+	(_Hashtable<>::_Hashtable(_InputIterator, _InputIterator,
+	size_type, ...): Remove std::max usage to guarantee that hashtable
+	state is consistent with hash policy state.
+	(_Hashtable<>::rehash): Likewise. Set _M_prev_resize to 0 to avoid
+	the hashtable shrinking on next insertion.
+	* testsuite/23_containers/unordered_set/modifiers/reserve.cc: New.
+	* testsuite/23_containers/unordered_multiset/modifiers/reserve.cc: New.
+	* testsuite/23_containers/unordered_map/modifiers/reserve.cc: New.
+	* testsuite/23_containers/unordered_multimap/modifiers/reserve.cc: New.
+
 2012-07-20  Chip Salzenberg  <chip@pobox.com>
 	    Jonathan Wakely  <jwakely.gcc@gmail.com>
 

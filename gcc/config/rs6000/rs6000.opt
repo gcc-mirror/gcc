@@ -1,7 +1,6 @@
 ; Options for the rs6000 port of the compiler
 ;
-; Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011 Free Software
-; Foundation, Inc.
+; Copyright (C) 2005-2012 Free Software Foundation, Inc.
 ; Contributed by Aldy Hernandez <aldy@quesejoda.com>.
 ;
 ; This file is part of GCC.
@@ -25,7 +24,7 @@ config/rs6000/rs6000-opts.h
 
 ;; Current processor
 TargetVariable
-enum processor_type rs6000_cpu = PROCESSOR_RIOS1
+enum processor_type rs6000_cpu = PROCESSOR_PPC603
 
 ;; Always emit branch hint bits.
 TargetVariable
@@ -90,18 +89,6 @@ unsigned int rs6000_debug
 ;; Save for target_flags_explicit
 TargetSave
 int rs6000_target_flags_explicit
-
-mpower
-Target Report RejectNegative Mask(POWER)
-Use POWER instruction set
-
-mno-power
-Target Report RejectNegative
-Do not use POWER instruction set
-
-mpower2
-Target Report Mask(POWER2)
-Use POWER2 instruction set
 
 mpowerpc
 Target Report RejectNegative Mask(POWERPC)

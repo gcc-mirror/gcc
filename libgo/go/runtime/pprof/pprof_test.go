@@ -71,7 +71,8 @@ func TestCPUProfile(t *testing.T) {
 			if f == nil {
 				continue
 			}
-			if strings.Contains(f.Name(), "ChecksumIEEE") {
+			if strings.Contains(f.Name(), "ChecksumIEEE") ||
+				(strings.Contains(f.Name(), "update") && strings.Contains(f.Name(), "crc32")) {
 				found = true
 			}
 		}

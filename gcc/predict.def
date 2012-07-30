@@ -126,3 +126,10 @@ DEF_PREDICTOR (PRED_LOOP_IV_COMPARE_GUESS, "guess loop iv compare",
    to set probability of branches that compares IV to loop bound variable.  */
 DEF_PREDICTOR (PRED_LOOP_IV_COMPARE, "loop iv compare", PROB_VERY_LIKELY,
 	       PRED_FLAG_FIRST_MATCH)
+
+/* Branches to hot labels are likely.  */
+DEF_PREDICTOR (PRED_HOT_LABEL, "hot label", HITRATE (85), 0)
+
+/* Branches to cold labels are extremely unlikely.  */
+DEF_PREDICTOR (PRED_COLD_LABEL, "cold label", PROB_VERY_LIKELY,
+	       PRED_FLAG_FIRST_MATCH)

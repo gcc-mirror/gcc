@@ -1,3 +1,10 @@
+2012-07-25  Sandra Loosemore  <sandra@codesourcery.com>
+	    Paul Brook  <paul@codesourcery.com>
+
+	PR target/53633
+
+	* decl.c (finish_function): Check targetm.warn_func_return.
+
 2012-07-25  Jason Merrill  <jason@redhat.com>
 
 	PR c++/54086

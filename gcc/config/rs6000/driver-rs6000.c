@@ -1,5 +1,5 @@
 /* Subroutines for the gcc driver.
-   Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2007-2012 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -295,15 +295,6 @@ detect_processor_aix (void)
 {
   switch (_system_configuration.implementation)
     {
-    case 0x0001:
-      return "rios1";
-
-    case 0x0002:
-      return "rsc";
-
-    case 0x0004:
-      return "rios2";
-
     case 0x0008:
       return "601";
 
@@ -382,8 +373,6 @@ static const struct asm_name asm_names[] = {
 #else
   { "common",	"-mcom" },
   { "cell",	"-mcell" },
-  { "power",	"-mpwr" },
-  { "power2",	"-mpwrx" },
   { "power3",	"-mppc64" },
   { "power4",	"-mpower4" },
   { "power5",	"%(asm_cpu_power5)" },
@@ -392,11 +381,6 @@ static const struct asm_name asm_names[] = {
   { "power6x",	"%(asm_cpu_power6) -maltivec" },
   { "power7",	"%(asm_cpu_power7)" },
   { "powerpc",	"-mppc" },
-  { "rios",	"-mpwr" },
-  { "rios1",	"-mpwr" },
-  { "rios2",	"-mpwrx" },
-  { "rsc",	"-mpwr" },
-  { "rsc1",	"-mpwr" },
   { "rs64a",	"-mppc64" },
   { "401",	"-mppc" },
   { "403",	"-m403" },
@@ -434,12 +418,9 @@ static const struct asm_name asm_names[] = {
   { "e300c3",	"-me300" },
   { "e500mc",	"-me500mc" },
   { NULL,	"\
-%{mpower: %{!mpower2: -mpwr}} \
-%{mpower2: -mpwrx} \
 %{mpowerpc64*: -mppc64} \
 %{!mpowerpc64*: %{mpowerpc*: -mppc}} \
-%{mno-power: %{!mpowerpc*: -mcom}} \
-%{!mno-power: %{!mpower*: %(asm_default)}}" },
+%{!mpowerpc*: -mcom}" },
 #endif
 };
 

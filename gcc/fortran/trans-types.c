@@ -1272,7 +1272,7 @@ gfc_is_nodesc_array (gfc_symbol * sym)
     return 0;
 
   /* We want a descriptor for associate-name arrays that do not have an
-     explicitely known shape already.  */
+     explicitly known shape already.  */
   if (sym->assoc && sym->as->type != AS_EXPLICIT)
     return 0;
 

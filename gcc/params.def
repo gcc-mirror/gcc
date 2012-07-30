@@ -644,30 +644,6 @@ DEFPARAM (PARAM_INTEGER_SHARE_LIMIT,
 	  "The upper bound for sharing integer constants",
 	  256, 2, 2)
 
-/* Incremental SSA updates for virtual operands may be very slow if
-   there is a large number of mappings to process.  In those cases, it
-   is faster to rewrite the virtual symbols from scratch as if they
-   had been recently introduced.  This heuristic cannot be applied to
-   SSA mappings for real SSA names, only symbols kept in FUD chains.
-
-   PARAM_MIN_VIRTUAL_MAPPINGS specifies the minimum number of virtual
-   mappings that should be registered to trigger the heuristic.
-
-   PARAM_VIRTUAL_MAPPINGS_TO_SYMS_RATIO specifies the ratio between
-   mappings and symbols.  If the number of virtual mappings is
-   PARAM_VIRTUAL_MAPPINGS_TO_SYMS_RATIO bigger than the number of
-   virtual symbols to be updated, then the updater switches to a full
-   update for those symbols.  */
-DEFPARAM (PARAM_MIN_VIRTUAL_MAPPINGS,
-	  "min-virtual-mappings",
-	  "Minimum number of virtual mappings to consider switching to full virtual renames",
-	  100, 0, 0)
-
-DEFPARAM (PARAM_VIRTUAL_MAPPINGS_TO_SYMS_RATIO,
-	  "virtual-mappings-ratio",
-	  "Ratio between virtual mappings and virtual symbols to do full virtual renames",
-	  3, 0, 0)
-
 DEFPARAM (PARAM_SSP_BUFFER_SIZE,
 	  "ssp-buffer-size",
 	  "The lower bound for a buffer to be considered for stack smashing protection",

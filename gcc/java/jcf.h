@@ -82,7 +82,7 @@ typedef struct GTY(()) CPool {
   /* The constant_pool_count. */
   int		count;
 
-  uint8* GTY((length ("%h.count")))	tags;
+  uint8 * GTY((atomic)) tags;
 
   union cpool_entry * GTY((length ("%h.count"),
 			   desc ("cpool_entry_is_tree (%1.tags%a)")))	data;
@@ -91,7 +91,7 @@ typedef struct GTY(()) CPool {
 typedef struct GTY(()) bootstrap_method {
   unsigned method_ref;
   unsigned num_arguments;
-  unsigned* GTY((length ("%h.num_arguments"))) bootstrap_arguments;
+  unsigned * GTY((atomic)) bootstrap_arguments;
 } bootstrap_method;
 
 typedef struct GTY(()) BootstrapMethods {

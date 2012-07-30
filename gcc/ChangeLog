@@ -1,3 +1,515 @@
+2012-07-30  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/39423
+	* config/gcc/sh/sh.md (*movsi_index_disp, *movhi_index_disp): New insns.
+
+2012-07-30  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/51244
+	* config/sh/sh.md (mov_neg_si_t): Move to Scc instructions section.
+	Use t_reg_operand predicate.  Add split for negated case.
+	(ashrsi2_31): Pass get_t_reg_rtx to gen_mov_neg_si_t.
+	* config/sh/sh.c (expand_ashiftrt): Likewise.
+
+2012-07-30  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54089
+	* config/sh/sh.md (ashlsi3_d): Invoke gen_shifty_op directly instead
+	of trying to emit ashlsi3_n.
+
+2012-07-30  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
+	    Steven Bosscher  <steven@gcc.gnu.org>
+
+	* gengtype.c (adjust_field_type): Diagnose duplicate "length"
+	option applications and option being applied to arrays of atomic
+	types.
+	(walk_type): Allow "atomic" option on strings too.
+	* dwarf2out.h (struct dw_vec_struct): Use the "atomic" GTY option
+	for the array field.
+	* vec.h: Describe the atomic object "A" type of the macros in
+	the header comment.
+	(VEC_T_GTY_ATOMIC, DEF_VEC_A, DEF_VEC_ALLOC_A): Define.
+	* emit-rtl.c (locations_locators_vals): use the atomic object
+	vector.
+	* doc/gty.texi: Clarify that GTY option "length" is only for
+	arrays of non-atomic objects.  Fix typo in the description of the
+	"atomic" option.
+
+2012-07-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_avoid_lea_for_addr): Handle
+	zero-extended addresses.  Return false if the address has less
+	than two components.
+	(ix86_split_lea_for_addr): Unconditionally convert target and
+	all address operands to requested mode.
+	* config/i386/i386.md (*lea<mode>): Recover operands from curr_insn.
+	Pass SImode to ix86_split_lea_for_addr when splitting zero-extended
+	address.
+	(zero-extended add splitter): New splitter to conditionally split
+	non-destructive adds.
+	(*zero_extendsidi2_rex64): Conditionally emit leal instead of movl.
+
+2012-07-28  Alan Modra  <amodra@gmail.com>
+
+	PR target/54093
+	* config/rs6000/rs6000.c (rs6000_secondary_reload): Limit 32-bit
+	multi-gpr reload to cases where predicate passes.  Do the same for
+	64-bit multi-gpr reload.
+
+2012-07-27  Nathan Froyd  <froydnj@gcc.gnu.org>
+
+	* expmed.h (alg_hash, alg_hash_used_p, sdiv_pow2_cheap,
+	smod_pow2_cheap, zero_cost, add_cost, neg_cost, shift_cost)
+	shiftadd_cost, shiftsub0_cost, shiftsub1_cost, mul_cost,
+	sdiv_cost, udiv_cost, mul_widen_cost, mul_highpart_cost): Delete
+	macro definitions and re-purpose as inline functions.
+	(alg_hash_entry_ptr, set_alg_hash_used_p, sdiv_pow2_cheap_ptr,
+	set_sdiv_pow2_cheap, smod_pow2_cheap_ptr, set_smod_pow2_cheap,
+	zero_cost_ptr, set_zero_cost, add_cost_ptr, set_add_cost,
+	neg_cost_ptr, set_neg_cost, shift_cost_ptr, set_shift_cost,
+	shiftadd_cost_ptr, set_shiftadd_cost, shiftsub0_cost_ptr,
+	set_shiftsub0_cost, shiftsub1_cost_ptr, set_shiftsub1_cost,
+	mul_cost_ptr, set_mul_cost, sdiv_cost_ptr, set_sdiv_cost,
+	udiv_cost_ptr, set_udiv_cost, mul_widen_cost_ptr,
+	set_mul_widen_cost, mul_highpart_cost_ptr, set_mul_highpart_cost):
+	New functions.
+	(convert_cost_ptr): New function, split out from...
+	(set_convert_cost, convert_cost): ...here.
+	* expmed.c, tree-ssa-loop-ivopts.c: Update for new functions.
+	* gimple-ssa-strength-reduction.c: Likewise.
+
+2012-07-20  Ryan Mansfield  <rmansfield@qnx.com>
+
+	* gcc.c (main): Move GCC_DRIVER_HOST_INITIALIZATION after
+	diagnostic_initialize.
+
+2012-07-27  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54089
+	* config/sh/sh.c (shiftcosts): Remove case where first operand
+	is a const_int.  Move COSTS_N_INSNS usage into caller ...
+	(sh_rtx_costs) ... here.  Return false when shiftcosts cannot be
+	calculated instead of MAX_COST.
+
+2012-07-27  Richard Guenther  <rguenther@suse.de>
+
+	* tree-cfg.c (gimple_can_merge_blocks_p): Do more fine-grained
+	check whether SSA form is not up-to-date.
+	* tree-flow.h (name_mappings_registered_p): Remove.
+	* tree-into-ssa.c (struct repl_map_d): Remove.
+	(repl_tbl): Likewise.
+	(struct ssa_name_info): Add repl_set member.
+	(update_ssa_obstack): New static global.
+	(get_ssa_name_ann): Initialize repl_set.
+	(clear_ssa_name_info): Assert age did not wrap.
+	(repl_map_hash, repl_map_eq, repl_map_free): Remove.
+	(names_replaced_by): Adjust.
+	(add_to_repl_tbl): Likewise.
+	(dump_tree_ssa_stats): Likewise.
+	(init_update_ssa): Initialize update_ssa_obstack.
+	(delete_update_ssa): Free update_ssa_obstack.
+	(name_mappings_registered_p): Remove.
+	(update_ssa): Adjust.
+
+2012-07-27  Segher Boessenkool  <segher@kernel.crashing.org>
+
+        * config/rs6000/constraints.md: Delete "q" constraint.
+        * config/rs6000/dfp.md (movsd_hardfloat, movsd_softfloat):
+        Delete the "q" alternative.
+        * config/rs6000/predicates.md (gpc_reg_operand): Adjust.
+        * config/rs6000/rs6000.c (rs6000_debug_reg_global,
+        rs6000_init_hard_regno_mode_ok, rs6000_dbx_register_number):
+        Adjust to MQ_REGNO removal.
+        * config/rs6000/rs6000.h (FIRST_PSEUDO_REGISTER): Adjust
+        comment.
+        (REG_ALLOC_ORDER): Adjust comment.  Remove MQ from alloc order.
+        (enum reg_class): Adjust comment.  Delete MQ_REGS.
+        (REG_CLASS_CONTENTS): Adjust.
+        (REGISTER_NAMES, ADDITIONAL_REGISTER_NAMES): Adjust comment.
+        * config/rs6000/rs6000.md: Delete MQ_REGNO.
+        (movsi_internal1, movsi_internal1_single, movhi_internal,
+        movqi_internal, movcc_internal1, movsf_hardfloat,
+        movsf_softfloat): Delete the "q" alternative.
+        (ctr<mode>_internal1, ctr<mode>_internal2, ctr<mode>_internal5,
+        ctr<mode>_internal6): Delete "q" constraint.
+
+2012-07-27  Richard Guenther  <rguenther@suse.de>
+
+	* tree-into-ssa.c (def_blocks_p): New typedef.
+	(insert_phi_nodes_compare_def_blocks): New function.
+	(insert_phi_nodes): Do not walk over referenced vars, instead
+	walk over recorded def_blocks, record relevant ones and sort
+	them to avoid repeated hashtable lookups.
+
+2012-07-27  Richard Guenther  <rguenther@suse.de>
+
+	* doc/invoke.texi (min-virtual-mappings, virtual-mappings-ratio):
+	Remove param documentation.
+	* params.def (PARAM_MIN_VIRTUAL_MAPPINGS,
+	PARAM_VIRTUAL_MAPPINGS_TO_SYMS_RATIO): Remove.
+	* tree-flow.h (mark_set_for_renaming): Remove.
+	* tree-into-ssa.c (struct update_ssa_stats_d): Remove.
+	(add_new_name_mapping): Remove bookkeeping code.
+	(dump_update_ssa): Remove stats dumping code.
+	(init_update_ssa): Remove stats allocation code.
+	(delete_update_ssa): Remove stats freeing code.
+	(mark_set_for_renaming): Remove.
+	(switch_virtuals_to_full_rewrite_p): Likewise.
+	(switch_virtuals_to_full_rewrite): Likewise.
+	(update_ssa): Do not call switch_virtuals_to_full_rewrite.
+
+2012-07-27  Marek Polacek  <polacek@redhat.com>
+
+	* cgraphunit.c: Rename varpool_finalize_variable to
+	varpool_finalize_decl in a comment.
+
+2012-07-27  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* common/config/rs6000/rs6000-common.c (rs6000_handle_option):
+	Delete code for -mno-power, -mpower, and -mpower2.
+	* config/rs6000/aix43.h (NON_POWERPC_MASKS): Delete.
+	(SUBTARGET_OVERRIDE_OPTIONS): Delete check for POWER together
+	with -maix64.
+	(ASM_CPU_SPEC): Delete support for POWER and POWER2.
+	* config/rs6000/aix51.h (NON_POWERPC_MASKS): Delete.
+	(SUBTARGET_OVERRIDE_OPTIONS): Delete check for POWER together
+	with -maix64.
+	(ASM_CPU_SPEC): Delete support for POWER and POWER2.
+	* config/rs6000/aix52.h (NON_POWERPC_MASKS): Delete.
+	(SUBTARGET_OVERRIDE_OPTIONS): Delete check for POWER together
+	with -maix64.
+	(TARGET_POWER): Delete.
+	* config/rs6000/aix53.h (NON_POWERPC_MASKS): Delete.
+	(SUBTARGET_OVERRIDE_OPTIONS): Delete check for POWER together
+	with -maix64.
+	(TARGET_POWER): Delete.
+	* config/rs6000/aix61.h (NON_POWERPC_MASKS): Delete.
+	(SUBTARGET_OVERRIDE_OPTIONS): Delete check for POWER together
+	with -maix64.
+	(TARGET_POWER): Delete.
+	* config/rs6000/darwin.h (TARGET_POWER): Delete.
+	* config/rs6000/driver-rs6000.c (struct asm_names): Delete
+	support for -mpower, -mpower2, and -mno-power.
+	* config/rs6000/rs6000-c.c (rs6000_target_modify_macros):
+	Likewise.
+	(rs6000_cpu_cpp_builtins): Likewise.
+	* config/rs6000/rs6000-cpus.def: Likewise.
+	* config/rs6000/rs6000-tables.opt: Regenerate.
+	* config/rs6000/rs6000.c (POWER_MASKS): Delete.
+	(rs6000_option_override_internal): Adjust.
+	(rs6000_conditional_register_usage): Adjust.
+	(rs6000_emit_move): Adjust.
+	(rs6000_common_init_builtins): Adjust.
+	(rs6000_init_libfuncs): Adjust.
+	(rs6000_output_function_prologue): Adjust.
+	(rs6000_adjust_cost): Adjust.
+	(struct rs6000_opt_masks): Delete MASK_POWER and MASK_POWER2.
+	* config/rs6000/rs6000.h (ASM_CPU_SPEC): Delete support for
+	POWER and POWER2.
+	(TARGET_DEFAULT): Adjust.
+	(PROCESSOR_POWER): Delete.
+	(SHIFT_COUNT_TRUNCATED): Adjust.
+	* config/rs6000/rs6000.md (extendqisi2): Delete POWER support.
+	(extendqisi2_power): Delete.
+	(extendqisi2_no_power): Adjust.
+	(extendqihi2, extendqihi2_power, extendqihi2_no_power):
+	Likewise.
+	(sminsi3, smaxsi3, uminsi3, umaxsi3): Adjust.
+	(anonymous doz insn patterns): Delete.
+	(abssi2): Adjust.
+	(abssi2_power): Delete.
+	(abssi2_nopower): Adjust.
+	(nabs_power, nabs_nopower): Likewise.
+	(mulsi3, mulsi3_mq, mulsi3_no_mq, mulsi3_mq_internal1):
+	Likewise.  Delete anonymous post-reload splitter.
+	(mulsi3_no_mq_internal1): rename to...
+	(mulsi3_internal1): New define_insn.
+	(mulsi3_mq_internal2, mulsi3_no_mq_internal2, mulsi3_internal2):
+	Likewise.
+	(divmodsi4, divmodsi4_internal, udiv<mode>3, udivsi3_mq,
+	udivsi3_no_mq, udivsi3, div<mode>3, divsi3_mq, div<mode>3_no_mq,
+	udivmodsi4_normal, udivmodsi4_tests, udivmodsi4): Likewise.
+	(mulh_call, mull_call, divss_call, divus_call, quoss_call,
+	quous_call): Likewise.
+	(maskir_internal1, maskir_internal2, maskir_internal3,
+	maskir_internal4, maskir_internal5, maskir_internal6,
+	maskir_internal7, maskir_internal8): Delete.
+	(ashlsi3, ashlsi3_power, ashlsi3_no_power): Adjust.
+	(anonymous sl insn patterns): Delete.
+	(lshrsi3, lshrsi3_power, lshrsi3_no_power): Adjust.
+	(lshrsi3_64): Adjust.
+	(anonymous sr insn patterns): Delete.
+	(anonymous rrib insn patterns): Delete.
+	(ashrsi3, ashrsi3_power, ashrsi3_no_power): Adjust.
+	(anonymous sra insn patterns): Delete.
+	(sqrtsf2, sqrtdf2, sqrtdf2_fpr): Adjust.
+	(fix_trunc<mode>si2, fix_trunc<mode>si2_internal,
+	fctiwz_<mode>): Adjust.
+	(mulsidi3, mulsidi3_mq, mulsidi3_no_mq, umulsidi3, umulsidi3_mq,
+	umulsidi3_no_mq, smulsi3_highpart, smulsi3_highpart_mq,
+	smulsi3_highpart_no_mq, umulsi3_highpart, umulsi3_highpart_mq,
+	umulsi3_highpart_no_mq): Adjust.
+	(ashldi3_power, lshrdi3_power, ashrdi3_power): Delete.
+	(ashrdi3_no_power, ashldi3, ashldi3_internal1,
+	lshrdi3_internal1): Adjust.
+	(fix_trunctfsi2, fix_trunctfsi2_fprs): Adjust.
+	(movti_power): Delete.
+	(movti_string): Adjust.
+	(stmsi8, stmsi7, stmsi6, stmsi5, stmsi4, stmsi3): Adjust.
+	(stmsi8_power, stmsi7_power, stmsi6_power, stmsi5_power,
+	stmsi4_power, stmsi3_power): Delete.
+	(anonymous movmemsi insn patterns): Adjust.
+	(lfq_power2, stfq_power2): Delete.
+	(eq<mode>, eq<mode>_compare): Adjust.
+	(eqsi_power): Delete.
+	(ne0si): Adjust.
+	(anonymous le, lt, ge, gt insn patterns): Delete.
+	* config/rs6000/rs6000.opt (mpower, mno-power, mpower2): Delete.
+	* config/rs6000/sysv4.h (TARGET_POWER): Delete.
+	* config/rs6000/t-aix43 (MULTILIB_OPTIONS, MULTILIB_DIRNAMES,
+	MULTILIB_MATCHES): Adjust.
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Delete
+	-mpower, -mno-power, -mpower2, -mno-power2 documentation.
+	Delete -mcpu=power and -mcpu=power2 documentation.
+
+2012-07-27  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/601.md: New file.
+	* config/rs6000/aix43.h (ASM_CPU_SPEC): Delete support for
+	RIOS CPUs.
+	* config/rs6000/aix51.h (ASM_CPU_SPEC): Likewise.
+	* config/rs6000/driver-rs6000.c (detect_processor_aix,
+	struct asm_names): Likewise.
+	* config/rs6000/rios1.md: Delete file.
+	* config/rs6000/rios2.md: Delete file.
+	* config/rs6000/rs6000-cpus.def: Delete definitions for RIOS
+	CPUs.
+	* config/rs6000/rs6000-opts.h (enum processor_type): Delete
+	PROCESSOR_RIOS1 and PROCESSOR_RIOS2.
+	* config/rs6000/rs6000-tables.opt: Regenerated.
+	* config/rs6000/rs6000.c (struct rios1_cost, struct rios2_cost):
+	Delete.
+	(rs6000_option_override_internal): Delete support for RIOS CPUs.
+	(rs6000_conditional_register_usage): Adjust comment.
+	(rs6000_issue_rate):Delete support for RIOS CPUs.
+	* config/rs6000/rs6000.h (ASM_CPU_SPEC): Delete support for
+	RIOS CPUs.
+	(PROCESSOR_POWER): Change to PROCESSOR_PPC601.
+	(PROCESSOR_DEFAULT): Change to PROCESSOR_PPC603.
+	* config/rs6000/rs6000.md (define_attr "cpu"): Delete rios1
+	and rios2.
+	(include "rios1.md", include "rios2.md"): Delete.
+	(include "601.md"): New.
+	* config/rs6000/rs6000.opt (enum rs6000_cpu): Default to
+	PROCESSOR_PPC603.
+	* config/rs6000/t-aix43 (MULTILIB_MATCHES): Delete support
+	for RIOS CPUs.
+	* config/rs6000/t-rs6000 (MD_INCLUDES): Delete rios1.md and
+	rios2.md .  Add 601.md .
+
+2012-07-26  Richard Henderson  <rth@redhat.com>
+
+	* doc/extend.texi (attribute): Document hot/cold for labels.
+	* predict.c (tree_estimate_probability_bb): Handle hot/cold
+	attributes on user labels.
+	* predict.def (PRED_HOT_LABEL, PRED_COLD_LABEL): New.
+
+2012-07-26  Andrew Jenner  <andrew@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	* cse.c (find_comparison_args): Check for cycles of any length.
+
+2012-07-26  Nick Clifton  <nickc@redhat.com>
+
+	* config/mn10300/mn10300.c (REG_SAVE_BYTES): Delete.
+	(mn10300_get_live_callee_saved_regs): If requested return a count
+	of the number of bytes in the mask.
+	(mn10300_expand_prologue): Add argument to invocation of
+	mn10300_get_live_callee_regs.
+	(mn10300_expand_epilogue): Compute reg_save_bytes by calling
+	mn10300_get_live_callee_saved_regs.
+	(mn10300_initial_offset): Likewise.
+	* config/mn10300/mn10300-protos.h (mn10300_get_live_callee_saved_regs):
+	Update prototype.
+	* config/mn10300/mn10300.md (return_ret): Add argument to
+	invocation of mn10300_get_live_callee_saved_regs.
+
+2012-07-26  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR regression/54084
+	* sel-sched-ir.c (cmp_v_in_regset_pool): Clarify logic, fix
+	pointer difference check.
+
+2012-07-26  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* tree-ssa-loop-ivopts.c (mbc_entry_hash): Remove.
+	(mbc_entry_eq): Likewise.
+	(mult_costs): Likewise.
+	(cost_tables_exist): Likewise.
+	(initialize_costs): Likewise.
+	(finalize_costs): Likewise.
+	(tree_ssa_iv_optimize_init): Remove call to initialize_costs.
+	(add_regs_cost): Remove.
+	(multiply_regs_cost): Likewise.
+	(add_const_cost): Likewise.
+	(extend_or_trunc_reg_cost): Likewise.
+	(negate_reg_cost): Likewise.
+	(struct mbc_entry): Likewise.
+	(multiply_by_const_cost): Likewise.
+	(get_address_cost): Change add_regs_cost calls to add_cost lookups;
+	change multiply_by_const_cost to mult_by_coeff_cost.
+	(force_expr_to_var_cost): Likewise.
+	(difference_cost): Change multiply_by_const_cost to mult_by_coeff_cost.
+	(get_computation_cost_at): Change add_regs_cost calls to add_cost
+	lookups; change multiply_by_const_cost to mult_by_coeff_cost.
+	(determine_iv_cost): Change add_regs_cost calls to add_cost lookups.
+	(tree_ssa_iv_optimize_finalize): Remove call to finalize_costs.
+	* tree-ssa-address.c (expmed.h): New #include.
+	(most_expensive_mult_to_index): Change multiply_by_const_cost to
+	mult_by_coeff_cost.
+	* gimple-ssa-strength-reduction.c (expmed.h): New #include.
+	(stmt_cost): Change to use mult_by_coeff_cost, mul_cost, add_cost,
+	neg_cost, and convert_cost instead of IVOPTS interfaces.
+	(execute_strength_reduction): Remove calls to initialize_costs and
+	finalize_costs.
+	* expmed.c (struct init_expmed_rtl): Add convert rtx_def.
+	(init_expmed_one_mode): Initialize convert rtx_def; initialize
+	x_convert_cost for related modes.
+	(mult_by_coeff_cost): New function.
+	* expmed.h (NUM_MODE_INT): New #define.
+	(struct target_expmed): Add x_convert_cost matrix.
+	(set_convert_cost): New inline function.
+	(convert_cost): Likewise.
+	(mult_by_coeff_cost): New extern decl.
+	* tree-flow.h (initialize_costs): Remove decl.
+	(finalize_costs): Likewise.
+	(multiply_by_const_cost): Likewise.
+	(add_regs_cost): Likewise.
+	(multiply_regs_cost): Likewise.
+	(add_const_cost): Likewise.
+	(extend_or_trunc_reg_cost): Likewise.
+	(negate_reg_cost): Likewise.
+	* Makefile.in (gimple-ssa-strength-reduction.o): Update dependencies.
+	(tree-ssa-address.o): Update dependencies.
+
+2012-07-26  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* bitmap.h: Add explanation of sparse set as linked-list bitmap.
+	* sbitmap.h: Add explanation about non-sparse sets as simple bitmap.
+	(TEST_BIT): Make a static inline function for stronger type checking.
+	(SET_BIT): Don't handle sbitmaps with popcount.
+	(RESET_BIT): Likewise.
+	(SET_BIT_WITH_POPCOUNT): New, like SET_BIT but with popcount.
+	(RESET_BIT_WITH_POPCOUNT): New, like RESET_BIT but with popcount.
+	* ebitmap.c (ebitmap_clear_bit): Use SET_BIT_WITH_POPCOUNT and
+	RESET_BIT_WITH_POPCOUNT on wordmask bitmaps.
+	(ebitmap_set_bit, ebitmap_and_into, ebitmap_and, ebitmap_ior_into,
+	ebitmap_and_compl_into, ebitmap_and_compl): Likewise.
+	* sparseset.h: Add explanation of sparse set representation.
+
+2012-07-26  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/54098
+	* tree-vrp.c (vrp_visit_phi_node): Iterate once more if the
+	original range was UNDEFINED.
+
+2012-07-26  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+	* config/arm/neon.ml (ops): Fix regexp for vld1Q_dups64 and
+	vld1Q_dupu64 tests.
+
+2012-07-26  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/51244
+	* config/sh/sh.opt (mzdcbranch): New option.
+	* doc/invoke.texi: Document it.
+	* config/sh/sh.md (negsi_cond): Use TARGET_ZDCBRANCH as condition
+	instead of TARGET_HARD_SH4.
+	* config/sh/sh.c (sh_option_override): Set TARGET_ZDCBRANCH as default
+	for TARGET_HARD_SH4.
+
+2012-07-25  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54089
+	* config/sh/predicates.md (shift_count_operand): Handle not-SHMEDIA
+	case.
+	(p27_shift_count_operand, not_p27_shift_count_operand): New predicates.
+	* config/sh/sh.md (ashlsi3): Remove parallel and T_REG clobber
+	from expander.  Do not emit shift insn for not-SHMEDIA case.
+	(ashlsi3_std): Replace with ...
+	(ashlsi3_k, ashlsi3_d): ... these new insns.
+	* config/sh/sh.c (gen_ashift): Make static.  Add sanity checks.
+	Emit ashlsi3_k insn instead of ashlsi3_std in ASHIFT case.
+	(gen_ashift_hi): Make static.
+	* config/sh/sh-protos.h (gen_ashift, gen_ashift_hi): Remove forward
+	declaration.
+
+2012-07-25  Bharathi Seshadri  <bseshadr@cisco.com>
+	    Jim Wilson  <jimwilso@cisco.com>
+
+	* config/arm/bpabi.h (BE8_LINK_SPEC): Set according to
+	TARGET_BIG_ENDIAN_DEFAULT.
+
+2012-07-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimple-low.c (lower_try_catch): New function.
+	(lower_stmt) <GIMPLE_TRY>: Use it to lower GIMPLE_TRY_CATCH.
+	<GIMPLE_CATCH>: Delete.
+	<GIMPLE_EH_FILTER>: Likewise.
+
+2012-07-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* expr.c (expand_expr_real_1): Do not expand operand #1 and #2
+	of BIT_FIELD_REF for ignored results.
+	* fold-const.c (fold_ternary_loc) <BIT_FIELD_REF>: Check that the
+	CONSTRUCTOR has vector type before using vector accessors on it.
+	* gimplify.c (gimplify_compound_lval): Do not gimplify operand #1 and
+	#2 of BIT_FIELD_REF.
+	(gimplify_expr) <BIT_FIELD_REF>: Likewise.
+	* tree-nested.c (convert_nonlocal_reference_op) <BIT_FIELD_REF>: Do
+	not process operand #1 and #2.
+	(convert_local_reference_op): Likewise.
+	* tree-ssa-pre.c (create_component_ref_by_pieces_1): Remove superfluous
+	breaks throughout.
+	<BIT_FIELD_REF>: Reuse operand #1 and #2 directly.
+	* tree.c (stabilize_reference) <BIT_FIELD_REF>: Do not stabilize
+	operand #1 and #2.
+	(UPDATE_FLAGS): Do not consider operand #2 of BIT_FIELD_REF.
+	(build6_stat): Delete.
+	* tree.h (build6_stat, build6, build6_stat_loc, build6_loc): Likewise.
+
+2012-07-25 Marc Glisse <marc.glisse@inria.fr>
+
+	PR tree-optimization/30318
+	* tree-vrp.c (extract_range_from_binary_expr_1) [PLUS_EXPR]:
+	Handle __int128.
+	[MINUS_EXPR]: Merge with PLUS_EXPR.
+
+2012-07-25  Sandra Loosemore  <sandra@codesourcery.com>
+	    Paul Brook  <paul@codesourcery.com>
+
+	PR target/53633
+	* target.def (warn_func_return): New hook.
+	* doc/tm.texi.in (TARGET_WARN_FUNC_RETURN): New hook.
+	* doc/tm.texi: Regenerate.
+	* doc/sourcebuild.texi (Effective-Target Keywords): Document
+	naked_functions.
+	* ipa-pure-const.c (warn_function_noreturn): Check
+	targetm.warn_func_return.
+	* tree-cfg.c (execute_warn_function_return): Likewise.
+	* config/spu/spu.c (spu_warn_func_return): New.
+	(TARGET_WARN_FUNC_RETURN): Define.
+	* config/rx/rx.c (rx_warn_func_return): New.
+	(TARGET_WARN_FUNC_RETURN): Define.
+	* config/avr/avr.c (avr_warn_func_return): New.
+	(TARGET_WARN_FUNC_RETURN): Define.
+	* config/arm/arm.c (arm_warn_func_return): New.
+	(TARGET_WARN_FUNC_RETURN): Define.
+	* config/mcore/mcore.c (mcore_warn_func_return): New.
+	(TARGET_WARN_FUNC_RETURN): Define.
+	(saved_warn_return_type, saved_warn_return_type_count): Remove.
+	(mcore_reorg, mcore_handle_naked_attribute): Remove warn_return hack.
+
 2012-07-25  Siddhesh Poyarekar  <siddhesh@redhat.com>
 
 	* final.c [ASSEMBLER_DIALECT](do_assembler_dialects): New
@@ -20,31 +532,30 @@
 2012-07-25  Kirill Yukhin  <kirill.yukhin@intel.com>
 	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
-        * common/config/i386/i386-common.c (OPTION_MASK_ISA_PRFCHW_SET): New.
-        (OPTION_MASK_ISA_PRFCHW_UNSET): Likewise.
-        (ix86_handle_option): Handle mprfchw option.
-        * config.gcc (i[34567]86-*-*): Add prfchwintrin.h.
-        (x86_64-*-*): Likewise.
-        * config/i386/prfchwintrin.h: New header.
-        * config/i386/cpuid.h (bit_PRFCHW): New.
-        (bit_BMI): Formatting fix.
-        (bit_HLE): Likewise.
-        (bit_RTM): Likewise.
-        * config/i386/driver-i386.c (host_detect_local_cpu): Detect
-        PREFETCHW support.
-        * config/i386/i386-c.c: Define __PRFCHW__ if needed.
-        * config/i386/i386.c (ix86_target_string): Define
-        -mprfchw option. Formatting fixes.
-        (PTA_HLE): Formatting fix.
-        (PTA_PRFCHW): New.
-        (ix86_option_override_internal): Handle new option.
-        (ix86_valid_target_attribute_inner_p): Add OPT_mprfchw.
-        * config/i386/i386.h (TARGET_PRFCHW): New.
-        * config/i386/i386.md (prefetch): Enable for TARGET_PRFCHW.
-        * config/i386/i386.opt (mprfchw): New.
-        * config/i386/mm3dnow.h: Move _m_prefetchw from here to
-        prfchwintrin.h.
-        * config/i386/x86intrin.h: Include prfchwintrin.h.
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA_PRFCHW_SET): New.
+	(OPTION_MASK_ISA_PRFCHW_UNSET): Likewise.
+	(ix86_handle_option): Handle mprfchw option.
+	* config.gcc (i[34567]86-*-*): Add prfchwintrin.h.
+	(x86_64-*-*): Likewise.
+	* config/i386/prfchwintrin.h: New header.
+	* config/i386/cpuid.h (bit_PRFCHW): New.
+	(bit_BMI): Formatting fix.
+	(bit_HLE): Likewise.
+	(bit_RTM): Likewise.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect
+	PREFETCHW support.
+	* config/i386/i386-c.c: Define __PRFCHW__ if needed.
+	* config/i386/i386.c (ix86_target_string): Define
+	-mprfchw option. Formatting fixes.
+	(PTA_HLE): Formatting fix.
+	(PTA_PRFCHW): New.
+	(ix86_option_override_internal): Handle new option.
+	(ix86_valid_target_attribute_inner_p): Add OPT_mprfchw.
+	* config/i386/i386.h (TARGET_PRFCHW): New.
+	* config/i386/i386.md (prefetch): Enable for TARGET_PRFCHW.
+	* config/i386/i386.opt (mprfchw): New.
+	* config/i386/mm3dnow.h: Move _m_prefetchw from here to	prfchwintrin.h.
+	* config/i386/x86intrin.h: Include prfchwintrin.h.
 
 2012-07-25 Sergey Melnikov <sergey.melnikov@intel.com>
 

@@ -67,6 +67,11 @@ struct def_blocks_d
   bitmap livein_blocks;
 };
 
+typedef struct def_blocks_d *def_blocks_p;
+
+DEF_VEC_P(def_blocks_p);
+DEF_VEC_ALLOC_P(def_blocks_p,heap);
+
 
 /* Each entry in DEF_BLOCKS contains an element of type STRUCT
    DEF_BLOCKS_D, mapping a variable VAR to a bitmap describing all the
@@ -123,37 +128,10 @@ static bitmap blocks_with_phis_to_rewrite;
    strategy.  */
 #define NAME_SETS_GROWTH_FACTOR	(MAX (3, num_ssa_names / 3))
 
-/* Tuple used to represent replacement mappings.  */
-struct repl_map_d
-{
-  tree name;
-  bitmap set;
-};
-
-
-/* NEW -> OLD_SET replacement table.  If we are replacing several
-   existing SSA names O_1, O_2, ..., O_j with a new name N_i,
-   then REPL_TBL[N_i] = { O_1, O_2, ..., O_j }.  */
-static htab_t repl_tbl;
 
 /* The function the SSA updating data structures have been initialized for.
    NULL if they need to be initialized by register_new_name_mapping.  */
 static struct function *update_ssa_initialized_fn = NULL;
-
-/* Statistics kept by update_ssa to use in the virtual mapping
-   heuristic.  If the number of virtual mappings is beyond certain
-   threshold, the updater will switch from using the mappings into
-   renaming the virtual symbols from scratch.  In some cases, the
-   large number of name mappings for virtual names causes significant
-   slowdowns in the PHI insertion code.  */
-struct update_ssa_stats_d
-{
-  unsigned num_virtual_mappings;
-  unsigned num_total_mappings;
-  bitmap virtual_symbols;
-  unsigned num_virtual_symbols;
-};
-static struct update_ssa_stats_d update_ssa_stats;
 
 /* Global data to attach to the main dominator walk structure.  */
 struct mark_def_sites_global_data
@@ -167,18 +145,21 @@ struct mark_def_sites_global_data
 /* Information stored for SSA names.  */
 struct ssa_name_info
 {
-  /* The current reaching definition replacing this SSA name.  */
-  tree current_def;
+  /* Age of this record (so that info_for_ssa_name table can be cleared
+     quickly); if AGE < CURRENT_INFO_FOR_SSA_NAME_AGE, then the fields
+     are assumed to be null.  */
+  unsigned age;
 
   /* This field indicates whether or not the variable may need PHI nodes.
      See the enum's definition for more detailed information about the
      states.  */
   ENUM_BITFIELD (need_phi_state) need_phi_state : 2;
 
-  /* Age of this record (so that info_for_ssa_name table can be cleared
-     quickly); if AGE < CURRENT_INFO_FOR_SSA_NAME_AGE, then the fields
-     are assumed to be null.  */
-  unsigned age;
+  /* The current reaching definition replacing this SSA name.  */
+  tree current_def;
+
+  /* Replacement mappings, allocated from update_ssa_obstack.  */
+  bitmap repl_set;
 };
 
 /* The information associated with names.  */
@@ -188,6 +169,8 @@ DEF_VEC_ALLOC_P (ssa_name_info_p, heap);
 
 static VEC(ssa_name_info_p, heap) *info_for_ssa_name;
 static unsigned current_info_for_ssa_name_age;
+
+static bitmap_obstack update_ssa_obstack;
 
 /* The set of blocks affected by update_ssa.  */
 static bitmap blocks_to_update;
@@ -298,6 +281,7 @@ get_ssa_name_ann (tree name)
     {
       info->need_phi_state = NEED_PHI_STATE_UNKNOWN;
       info->current_def = NULL_TREE;
+      info->repl_set = NULL;
       info->age = current_info_for_ssa_name_age;
     }
 
@@ -311,6 +295,10 @@ static void
 clear_ssa_name_info (void)
 {
   current_info_for_ssa_name_age++;
+
+  /* If current_info_for_ssa_name_age wraps we use stale information.
+     Asser that this does not happen.  */
+  gcc_assert (current_info_for_ssa_name_age != 0);
 }
 
 
@@ -583,45 +571,12 @@ is_new_name (tree name)
 }
 
 
-/* Hashing and equality functions for REPL_TBL.  */
-
-static hashval_t
-repl_map_hash (const void *p)
-{
-  return htab_hash_pointer ((const void *)((const struct repl_map_d *)p)->name);
-}
-
-static int
-repl_map_eq (const void *p1, const void *p2)
-{
-  return ((const struct repl_map_d *)p1)->name
-	 == ((const struct repl_map_d *)p2)->name;
-}
-
-static void
-repl_map_free (void *p)
-{
-  BITMAP_FREE (((struct repl_map_d *)p)->set);
-  free (p);
-}
-
-
 /* Return the names replaced by NEW_TREE (i.e., REPL_TBL[NEW_TREE].SET).  */
 
 static inline bitmap
 names_replaced_by (tree new_tree)
 {
-  struct repl_map_d m;
-  void **slot;
-
-  m.name = new_tree;
-  slot = htab_find_slot (repl_tbl, (void *) &m, NO_INSERT);
-
-  /* If N was not registered in the replacement table, return NULL.  */
-  if (slot == NULL || *slot == NULL)
-    return NULL;
-
-  return ((struct repl_map_d *) *slot)->set;
+  return get_ssa_name_ann (new_tree)->repl_set;
 }
 
 
@@ -630,22 +585,10 @@ names_replaced_by (tree new_tree)
 static inline void
 add_to_repl_tbl (tree new_tree, tree old)
 {
-  struct repl_map_d m, *mp;
-  void **slot;
-
-  m.name = new_tree;
-  slot = htab_find_slot (repl_tbl, (void *) &m, INSERT);
-  if (*slot == NULL)
-    {
-      mp = XNEW (struct repl_map_d);
-      mp->name = new_tree;
-      mp->set = BITMAP_ALLOC (NULL);
-      *slot = (void *) mp;
-    }
-  else
-    mp = (struct repl_map_d *) *slot;
-
-  bitmap_set_bit (mp->set, SSA_NAME_VERSION (old));
+  bitmap *set = &get_ssa_name_ann (new_tree)->repl_set;
+  if (!*set)
+    *set = BITMAP_ALLOC (&update_ssa_obstack);
+  bitmap_set_bit (*set, SSA_NAME_VERSION (old));
 }
 
 
@@ -661,26 +604,6 @@ add_new_name_mapping (tree new_tree, tree old)
 
   /* OLD and NEW_TREE must be different SSA names for the same symbol.  */
   gcc_assert (new_tree != old && SSA_NAME_VAR (new_tree) == SSA_NAME_VAR (old));
-
-  /* If this mapping is for virtual names, we will need to update
-     virtual operands.  If this is a mapping for .MEM, then we gather
-     the symbols associated with each name.  */
-  if (!is_gimple_reg (new_tree))
-    {
-      tree sym;
-
-      update_ssa_stats.num_virtual_mappings++;
-      update_ssa_stats.num_virtual_symbols++;
-
-      /* Keep counts of virtual mappings and symbols to use in the
-	 virtual mapping heuristic.  If we have large numbers of
-	 virtual mappings for a relatively low number of symbols, it
-	 will make more sense to rename the symbols from scratch.
-	 Otherwise, the insertion of PHI nodes for each of the old
-	 names in these mappings will be very slow.  */
-      sym = SSA_NAME_VAR (new_tree);
-      bitmap_set_bit (update_ssa_stats.virtual_symbols, DECL_UID (sym));
-    }
 
   /* We may need to grow NEW_SSA_NAMES and OLD_SSA_NAMES because our
      caller may have created new names since the set was created.  */
@@ -703,9 +626,6 @@ add_new_name_mapping (tree new_tree, tree old)
      respectively.  */
   SET_BIT (new_ssa_names, SSA_NAME_VERSION (new_tree));
   SET_BIT (old_ssa_names, SSA_NAME_VERSION (old));
-
-  /* Update mapping counter to use in the virtual mapping heuristic.  */
-  update_ssa_stats.num_total_mappings++;
 
   timevar_pop (TV_TREE_SSA_INCREMENTAL);
 }
@@ -1142,6 +1062,18 @@ insert_phi_nodes_for (tree var, bitmap phi_insertion_points, bool update_p)
     }
 }
 
+/* Sort def_blocks after DECL_UID of their var.  */
+
+static int
+insert_phi_nodes_compare_def_blocks (const void *a, const void *b)
+{
+  const struct def_blocks_d *defa = *(struct def_blocks_d * const *)a;
+  const struct def_blocks_d *defb = *(struct def_blocks_d * const *)b;
+  if (DECL_UID (defa->var) < DECL_UID (defb->var))
+    return -1;
+  else
+    return 1;
+}
 
 /* Insert PHI nodes at the dominance frontier of blocks with variable
    definitions.  DFS contains the dominance frontier information for
@@ -1150,43 +1082,30 @@ insert_phi_nodes_for (tree var, bitmap phi_insertion_points, bool update_p)
 static void
 insert_phi_nodes (bitmap_head *dfs)
 {
-  referenced_var_iterator rvi;
-  bitmap_iterator bi;
-  tree var;
-  bitmap vars;
-  unsigned uid;
+  htab_iterator hi;
+  unsigned i;
+  struct def_blocks_d *def_map;
+  VEC(def_blocks_p,heap) *vars;
 
   timevar_push (TV_TREE_INSERT_PHI_NODES);
 
+  vars = VEC_alloc (def_blocks_p, heap, htab_elements (def_blocks));
+  FOR_EACH_HTAB_ELEMENT (def_blocks, def_map, struct def_blocks_d *, hi)
+    if (get_phi_state (def_map->var) != NEED_PHI_STATE_NO)
+      VEC_quick_push (def_blocks_p, vars, def_map);
+
   /* Do two stages to avoid code generation differences for UID
      differences but no UID ordering differences.  */
+  VEC_qsort (def_blocks_p, vars, insert_phi_nodes_compare_def_blocks);
 
-  vars = BITMAP_ALLOC (NULL);
-  FOR_EACH_REFERENCED_VAR (cfun, var, rvi)
+  FOR_EACH_VEC_ELT (def_blocks_p, vars, i, def_map)
     {
-      struct def_blocks_d *def_map;
-
-      def_map = find_def_blocks_for (var);
-      if (def_map == NULL)
-	continue;
-
-      if (get_phi_state (var) != NEED_PHI_STATE_NO)
-	bitmap_set_bit (vars, DECL_UID (var));
-    }
-
-  EXECUTE_IF_SET_IN_BITMAP (vars, 0, uid, bi)
-    {
-      tree var = referenced_var (uid);
-      struct def_blocks_d *def_map;
-      bitmap idf;
-
-      def_map = find_def_blocks_for (var);
-      idf = compute_idf (def_map->def_blocks, dfs);
-      insert_phi_nodes_for (var, idf, false);
+      bitmap idf = compute_idf (def_map->def_blocks, dfs);
+      insert_phi_nodes_for (def_map->var, idf, false);
       BITMAP_FREE (idf);
     }
 
-  BITMAP_FREE (vars);
+  VEC_free(def_blocks_p, heap, vars);
 
   timevar_pop (TV_TREE_INSERT_PHI_NODES);
 }
@@ -1753,7 +1672,7 @@ htab_statistics (FILE *file, htab_t htab)
 void
 dump_tree_ssa_stats (FILE *file)
 {
-  if (def_blocks || repl_tbl)
+  if (def_blocks)
     fprintf (file, "\nHash table statistics:\n");
 
   if (def_blocks)
@@ -1762,13 +1681,7 @@ dump_tree_ssa_stats (FILE *file)
       htab_statistics (file, def_blocks);
     }
 
-  if (repl_tbl)
-    {
-      fprintf (file, "    repl_tbl:     ");
-      htab_statistics (file, repl_tbl);
-    }
-
-  if (def_blocks || repl_tbl)
+  if (def_blocks)
     fprintf (file, "\n");
 }
 
@@ -2827,18 +2740,6 @@ dump_update_ssa (FILE *file)
 
       EXECUTE_IF_SET_IN_SBITMAP (new_ssa_names, 0, i, sbi)
 	dump_names_replaced_by (file, ssa_name (i));
-
-      fprintf (file, "\n");
-      fprintf (file, "Number of virtual NEW -> OLD mappings: %7u\n",
-	       update_ssa_stats.num_virtual_mappings);
-      fprintf (file, "Number of real NEW -> OLD mappings:    %7u\n",
-	       update_ssa_stats.num_total_mappings
-	       - update_ssa_stats.num_virtual_mappings);
-      fprintf (file, "Number of total NEW -> OLD mappings:   %7u\n",
-	       update_ssa_stats.num_total_mappings);
-
-      fprintf (file, "\nNumber of virtual symbols: %u\n",
-	       update_ssa_stats.num_virtual_symbols);
     }
 
   if (!bitmap_empty_p (SYMS_TO_RENAME (cfun)))
@@ -2884,10 +2785,9 @@ init_update_ssa (struct function *fn)
   new_ssa_names = sbitmap_alloc (num_ssa_names + NAME_SETS_GROWTH_FACTOR);
   sbitmap_zero (new_ssa_names);
 
-  repl_tbl = htab_create (20, repl_map_hash, repl_map_eq, repl_map_free);
+  bitmap_obstack_initialize (&update_ssa_obstack);
+
   names_to_release = NULL;
-  memset (&update_ssa_stats, 0, sizeof (update_ssa_stats));
-  update_ssa_stats.virtual_symbols = BITMAP_ALLOC (NULL);
   update_ssa_initialized_fn = fn;
 }
 
@@ -2906,11 +2806,7 @@ delete_update_ssa (void)
   sbitmap_free (new_ssa_names);
   new_ssa_names = NULL;
 
-  htab_delete (repl_tbl);
-  repl_tbl = NULL;
-
   bitmap_clear (SYMS_TO_RENAME (update_ssa_initialized_fn));
-  BITMAP_FREE (update_ssa_stats.virtual_symbols);
 
   if (names_to_release)
     {
@@ -2934,6 +2830,9 @@ delete_update_ssa (void)
 
   BITMAP_FREE (blocks_with_phis_to_rewrite);
   BITMAP_FREE (blocks_to_update);
+
+  bitmap_obstack_release (&update_ssa_obstack);
+
   update_ssa_initialized_fn = NULL;
 }
 
@@ -2994,22 +2893,6 @@ mark_sym_for_renaming (tree sym)
 }
 
 
-/* Register all the symbols in SET to be renamed by update_ssa.  */
-
-void
-mark_set_for_renaming (bitmap set)
-{
-  bitmap_iterator bi;
-  unsigned i;
-
-  if (set == NULL || bitmap_empty_p (set))
-    return;
-
-  EXECUTE_IF_SET_IN_BITMAP (set, 0, i, bi)
-    mark_sym_for_renaming (referenced_var (i));
-}
-
-
 /* Return true if there is any work to be done by update_ssa
    for function FN.  */
 
@@ -3020,19 +2903,6 @@ need_ssa_update_p (struct function *fn)
   return (update_ssa_initialized_fn == fn
 	  || (fn->gimple_df
 	      && !bitmap_empty_p (SYMS_TO_RENAME (fn))));
-}
-
-/* Return true if SSA name mappings have been registered for SSA updating.  */
-
-bool
-name_mappings_registered_p (void)
-{
-  if (!update_ssa_initialized_fn)
-    return false;
-
-  gcc_assert (update_ssa_initialized_fn == cfun);
-
-  return repl_tbl && htab_elements (repl_tbl) > 0;
 }
 
 /* Return true if name N has been registered in the replacement table.  */
@@ -3171,73 +3041,6 @@ insert_updated_phi_nodes_for (tree var, bitmap_head *dfs, bitmap blocks,
 }
 
 
-/* Heuristic to determine whether SSA name mappings for virtual names
-   should be discarded and their symbols rewritten from scratch.  When
-   there is a large number of mappings for virtual names, the
-   insertion of PHI nodes for the old names in the mappings takes
-   considerable more time than if we inserted PHI nodes for the
-   symbols instead.
-
-   Currently the heuristic takes these stats into account:
-
-   	- Number of mappings for virtual SSA names.
-	- Number of distinct virtual symbols involved in those mappings.
-
-   If the number of virtual mappings is much larger than the number of
-   virtual symbols, then it will be faster to compute PHI insertion
-   spots for the symbols.  Even if this involves traversing the whole
-   CFG, which is what happens when symbols are renamed from scratch.  */
-
-static bool
-switch_virtuals_to_full_rewrite_p (void)
-{
-  if (update_ssa_stats.num_virtual_mappings < (unsigned) MIN_VIRTUAL_MAPPINGS)
-    return false;
-
-  if (update_ssa_stats.num_virtual_mappings
-      > (unsigned) VIRTUAL_MAPPINGS_TO_SYMS_RATIO
-        * update_ssa_stats.num_virtual_symbols)
-    return true;
-
-  return false;
-}
-
-
-/* Remove every virtual mapping and mark all the affected virtual
-   symbols for renaming.  */
-
-static void
-switch_virtuals_to_full_rewrite (void)
-{
-  unsigned i = 0;
-  sbitmap_iterator sbi;
-
-  if (dump_file)
-    {
-      fprintf (dump_file, "\nEnabled virtual name mapping heuristic.\n");
-      fprintf (dump_file, "\tNumber of virtual mappings:       %7u\n",
-	       update_ssa_stats.num_virtual_mappings);
-      fprintf (dump_file, "\tNumber of unique virtual symbols: %7u\n",
-	       update_ssa_stats.num_virtual_symbols);
-      fprintf (dump_file, "Updating FUD-chains from top of CFG will be "
-	                  "faster than processing\nthe name mappings.\n\n");
-    }
-
-  /* Remove all virtual names from NEW_SSA_NAMES and OLD_SSA_NAMES.
-     Note that it is not really necessary to remove the mappings from
-     REPL_TBL, that would only waste time.  */
-  EXECUTE_IF_SET_IN_SBITMAP (new_ssa_names, 0, i, sbi)
-    if (!is_gimple_reg (ssa_name (i)))
-      RESET_BIT (new_ssa_names, i);
-
-  EXECUTE_IF_SET_IN_SBITMAP (old_ssa_names, 0, i, sbi)
-    if (!is_gimple_reg (ssa_name (i)))
-      RESET_BIT (old_ssa_names, i);
-
-  mark_set_for_renaming (update_ssa_stats.virtual_symbols);
-}
-
-
 /* Given a set of newly created SSA names (NEW_SSA_NAMES) and a set of
    existing SSA names (OLD_SSA_NAMES), update the SSA form so that:
 
@@ -3344,7 +3147,6 @@ update_ssa (unsigned update_flags)
     {
       sbitmap_zero (old_ssa_names);
       sbitmap_zero (new_ssa_names);
-      htab_empty (repl_tbl);
     }
 
   insert_phi_p = (update_flags != TODO_update_ssa_no_phi);
@@ -3365,11 +3167,6 @@ update_ssa (unsigned update_flags)
     {
       def_blocks = NULL;
     }
-
-  /* Heuristic to avoid massive slow downs when the replacement
-     mappings include lots of virtual names.  */
-  if (insert_phi_p && switch_virtuals_to_full_rewrite_p ())
-    switch_virtuals_to_full_rewrite ();
 
   /* If there are names defined in the replacement table, prepare
      definition and use sites for all the names in NEW_SSA_NAMES and

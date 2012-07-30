@@ -1,3 +1,41 @@
+2012-07-26  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/44354
+	* trans-array.c (gfc_trans_array_constructor_value):
+	Evaluate the iteration bounds before the inner variable shadows
+	the outer.
+
+2012-07-26  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/44354
+	* array.c (sought_symbol): New variable.
+	(expr_is_sought_symbol_ref, find_symbol_in_expr): New functions.
+	(resolve_array_list): Check for references to the induction
+	variable in the iteration bounds and issue a diagnostic if some
+	are found.
+
+2012-07-26  Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	* module.c (mio_array_spec): Don't read as->lower for
+	assumed-rank arrays.
+
+2012-07-25  Tobias Burnus  <burnus@net-b.de>
+
+	* trans-types.c (gfc_real16_is_float128): Fix spelling
+	in a comment.
+	* trans.h (struct gfc_array_info): Ditto.
+	* gfortran.h (gfc_expr): Ditto.
+	* simplify.c (gfc_count): Ditto.
+	* trans-expr.c (gfc_copy_class_to_class,
+	conv_parent_component_references,
+	gfc_trans_pointer_assignment): Ditto.
+	* expr.c (check_pointer_assign): Fix diagnostic spelling.
+	* interface.c (compare_parameter): Ditto.
+	* parse.c (use_modules, parse_associate): Ditto.
+	* decl.c (match_char_length): Fix spelling of the
+	an function argument.
+
 2012-07-21  Tobias Burnus  <burnus@net-b.de>
 
 	* iso-c-binding.def (C_PTRDIFF_T): New TS29113 parameter.

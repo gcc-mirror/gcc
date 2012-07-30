@@ -570,12 +570,10 @@ void delete_update_ssa (void);
 void register_new_name_mapping (tree, tree);
 tree create_new_def_for (tree, gimple, def_operand_p);
 bool need_ssa_update_p (struct function *);
-bool name_mappings_registered_p (void);
 bool name_registered_for_update_p (tree);
 void release_ssa_name_after_update_ssa (tree);
 void compute_global_livein (bitmap, bitmap);
 void mark_sym_for_renaming (tree);
-void mark_set_for_renaming (bitmap);
 bool symbol_marked_for_renaming (tree);
 tree get_current_def (tree);
 void set_current_def (tree, tree);
@@ -806,14 +804,6 @@ bool expr_invariant_in_loop_p (struct loop *, tree);
 bool stmt_invariant_in_loop_p (struct loop *, gimple);
 bool multiplier_allowed_in_address_p (HOST_WIDE_INT, enum machine_mode,
 				      addr_space_t);
-void initialize_costs (void);
-void finalize_costs (void);
-unsigned multiply_by_const_cost (HOST_WIDE_INT, enum machine_mode, bool);
-unsigned add_regs_cost (enum machine_mode, bool);
-unsigned multiply_regs_cost (enum machine_mode, bool);
-unsigned add_const_cost (enum machine_mode, bool);
-unsigned extend_or_trunc_reg_cost (tree, tree, bool);
-unsigned negate_reg_cost (enum machine_mode, bool);
 bool may_be_nonaddressable_p (tree expr);
 
 /* In tree-ssa-threadupdate.c.  */

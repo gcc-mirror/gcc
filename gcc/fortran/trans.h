@@ -109,7 +109,7 @@ typedef enum
 gfc_coarray_type;
 
 
-/* The array-specific scalarization informations.  The array members of
+/* The array-specific scalarization information.  The array members of
    this struct are indexed by actual array index, and thus can be sparse.  */
 
 typedef struct gfc_array_info

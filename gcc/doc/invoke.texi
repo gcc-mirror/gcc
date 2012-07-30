@@ -796,7 +796,6 @@ See RS/6000 and PowerPC Options.
 @gccoptlist{-mcpu=@var{cpu-type} @gol
 -mtune=@var{cpu-type} @gol
 -mcmodel=@var{code-model} @gol
--mpower  -mno-power  -mpower2  -mno-power2 @gol
 -mpowerpc  -mpowerpc64  -mno-powerpc @gol
 -maltivec  -mno-altivec @gol
 -mpowerpc-gpopt  -mno-powerpc-gpopt @gol
@@ -889,8 +888,9 @@ See RS/6000 and PowerPC Options.
 -mdivsi3_libfunc=@var{name} -mfixed-range=@var{register-range} @gol
 -mindexed-addressing -mgettrcost=@var{number} -mpt-fixed @gol
 -maccumulate-outgoing-args -minvalid-symbols -msoft-atomic -mhard-atomic @gol
--mbranch-cost=@var{num} -mcbranchdi -mcmpeqdi -mfused-madd -mno-fused-madd @gol
--mfsca -mno-fsca -mfsrra -mno-fsrra -mpretend-cmove -menable-tas}
+-mbranch-cost=@var{num} -mzdcbranch -mno-zdcbranch -mcbranchdi -mcmpeqdi @gol
+-mfused-madd -mno-fused-madd -mfsca -mno-fsca -mfsrra -mno-fsrra @gol
+-mpretend-cmove -menable-tas}
 
 @emph{Solaris 2 Options}
 @gccoptlist{-mimpure-text  -mno-impure-text @gol
@@ -9155,18 +9155,6 @@ Small integer constants can use a shared data structure, reducing the
 compiler's memory usage and increasing its speed.  This sets the maximum
 value of a shared integer constant.  The default value is 256.
 
-@item min-virtual-mappings
-Specifies the minimum number of virtual mappings in the incremental
-SSA updater that should be registered to trigger the virtual mappings
-heuristic defined by virtual-mappings-ratio.  The default value is
-100.
-
-@item virtual-mappings-ratio
-If the number of virtual mappings is virtual-mappings-ratio bigger
-than the number of virtual symbols to be updated, then the incremental
-SSA updater switches to a full update for those symbols.  The default
-ratio is 3.
-
 @item ssp-buffer-size
 The minimum size of buffers (i.e.@: arrays) that receive stack smashing
 protection when @option{-fstack-protection} is used.
@@ -16561,11 +16549,7 @@ standard hardware multiplication defined in the RL78 software manual.
 
 These @samp{-m} options are defined for the IBM RS/6000 and PowerPC:
 @table @gcctabopt
-@item -mpower
-@itemx -mno-power
-@itemx -mpower2
-@itemx -mno-power2
-@itemx -mpowerpc
+@item -mpowerpc
 @itemx -mno-powerpc
 @itemx -mpowerpc-gpopt
 @itemx -mno-powerpc-gpopt
@@ -16589,10 +16573,6 @@ These @samp{-m} options are defined for the IBM RS/6000 and PowerPC:
 @itemx -mno-mfpgpr
 @itemx -mhard-dfp
 @itemx -mno-hard-dfp
-@opindex mpower
-@opindex mno-power
-@opindex mpower2
-@opindex mno-power2
 @opindex mpowerpc
 @opindex mno-powerpc
 @opindex mpowerpc-gpopt
@@ -16633,12 +16613,6 @@ determined when configuring GCC@.  Specifying the
 options.  We recommend you use the @option{-mcpu=@var{cpu_type}} option
 rather than the options listed above.
 
-The @option{-mpower} option allows GCC to generate instructions that
-are found only in the POWER architecture and to use the MQ register.
-Specifying @option{-mpower2} implies @option{-power} and also allows GCC
-to generate instructions that are present in the POWER2 architecture but
-not the original POWER architecture.
-
 The @option{-mpowerpc} option allows GCC to generate instructions that
 are found only in the 32-bit subset of the PowerPC architecture.
 Specifying @option{-mpowerpc-gpopt} implies @option{-mpowerpc} and also allows
@@ -16677,12 +16651,9 @@ The @option{-mpowerpc64} option allows GCC to generate the additional
 and to treat GPRs as 64-bit, doubleword quantities.  GCC defaults to
 @option{-mno-powerpc64}.
 
-If you specify both @option{-mno-power} and @option{-mno-powerpc}, GCC
-uses only the instructions in the common subset of both
-architectures plus some special AIX common-mode calls, and does not use
-the MQ register.  Specifying both @option{-mpower} and @option{-mpowerpc}
-permits GCC to use any instruction from either architecture and to
-allow use of the MQ register; specify this for the Motorola MPC601.
+If you specify @option{-mno-powerpc}, GCC uses only the instructions
+in the common subset of both the POWER and PowerPC
+architectures plus some special AIX common-mode calls.
 
 @item -mnew-mnemonics
 @itemx -mold-mnemonics
@@ -16713,11 +16684,9 @@ Supported values for @var{cpu_type} are @samp{401}, @samp{403},
 @samp{860}, @samp{970}, @samp{8540}, @samp{a2}, @samp{e300c2},
 @samp{e300c3}, @samp{e500mc}, @samp{e500mc64}, @samp{e5500},
 @samp{e6500}, @samp{ec603e}, @samp{G3}, @samp{G4}, @samp{G5},
-@samp{titan}, @samp{power}, @samp{power2}, @samp{power3},
-@samp{power4}, @samp{power5}, @samp{power5+}, @samp{power6},
-@samp{power6x}, @samp{power7}, @samp{common}, @samp{powerpc},
-@samp{powerpc64}, @samp{rios}, @samp{rios1}, @samp{rios2}, @samp{rsc},
-and @samp{rs64}.
+@samp{titan}, @samp{power3}, @samp{power4}, @samp{power5}, @samp{power5+},
+@samp{power6}, @samp{power6x}, @samp{power7}, @samp{common}, @samp{powerpc},
+@samp{powerpc64}, and @samp{rs64}.
 
 @option{-mcpu=common} selects a completely generic processor.  Code
 generated under this option runs on any POWER or PowerPC processor.
@@ -16725,9 +16694,8 @@ GCC uses only the instructions in the common subset of both
 architectures, and does not use the MQ register.  GCC assumes a generic
 processor model for scheduling purposes.
 
-@option{-mcpu=power}, @option{-mcpu=power2}, @option{-mcpu=powerpc}, and
-@option{-mcpu=powerpc64} specify generic POWER, POWER2, pure 32-bit
-PowerPC (i.e., not MPC601), and 64-bit PowerPC architecture machine
+@option{-mcpu=powerpc}, and @option{-mcpu=powerpc64} specify pure 32-bit
+PowerPC (i.e., not MPC601) and 64-bit PowerPC architecture machine
 types, with an appropriate, generic processor model assumed for
 scheduling purposes.
 
@@ -16739,7 +16707,7 @@ The @option{-mcpu} options automatically enable or disable the
 following options:
 
 @gccoptlist{-maltivec  -mfprnd  -mhard-float  -mmfcrf  -mmultiple @gol
--mnew-mnemonics  -mpopcntb -mpopcntd  -mpower  -mpower2  -mpowerpc64 @gol
+-mnew-mnemonics  -mpopcntb -mpopcntd  -mpowerpc64 @gol
 -mpowerpc-gpopt  -mpowerpc-gfxopt  -msingle-float -mdouble-float @gol
 -msimple-fpu -mstring  -mmulhw  -mdlmzb  -mmfpgpr -mvsx}
 
@@ -18365,6 +18333,16 @@ Assume @var{num} to be the cost for a branch instruction.  Higher numbers
 make the compiler try to generate more branch-free code if possible.  
 If not specified the value is selected depending on the processor type that
 is being compiled for.
+
+@item -mzdcbranch
+@itemx -mno-zdcbranch
+@opindex mzdcbranch
+@opindex mno-zdcbranch
+Assume (do not assume) that zero displacement conditional branch instructions
+@code{bt} and @code{bf} are fast.  If @option{-mzdcbranch} is specified, the
+compiler will try to prefer zero displacement branch code sequences.  This is
+enabled by default when generating code for SH4 and SH4A.  It can be explicitly
+disabled by specifying @option{-mno-zdcbranch}.
 
 @item -mcbranchdi
 @opindex mcbranchdi

@@ -5881,6 +5881,14 @@ spu_trampoline_init (rtx m_tramp, tree fndecl, rtx cxt)
   emit_insn (gen_sync ());
 }
 
+static bool
+spu_warn_func_return (tree decl)
+{
+  /* Naked functions are implemented entirely in assembly, including the
+     return sequence, so suppress warnings about this.  */
+  return !spu_naked_function_p (decl);
+}
+
 void
 spu_expand_sign_extend (rtx ops[])
 {
@@ -7271,6 +7279,9 @@ static const struct attribute_spec spu_attribute_table[] =
 
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT spu_trampoline_init
+
+#undef TARGET_WARN_FUNC_RETURN
+#define TARGET_WARN_FUNC_RETURN spu_warn_func_return
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE spu_option_override

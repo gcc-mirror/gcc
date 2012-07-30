@@ -1,6 +1,5 @@
 /* Functions to support general ended bitmaps.
-   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-   2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 1997-2012  Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -20,6 +19,114 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifndef GCC_BITMAP_H
 #define GCC_BITMAP_H
+
+/* Implementation of sparse integer sets as a linked list.
+
+   This sparse set representation is suitable for sparse sets with an
+   unknown (a priori) universe.  The set is represented as a double-linked
+   list of container nodes (struct bitmap_element_def).  Each node consists
+   of an index for the first member that could be held in the container,
+   a small array of integers that represent the members in the container,
+   and pointers to the next and previous element in the linked list.  The
+   elements in the list are sorted in ascending order, i.e. the head of
+   the list holds the element with the smallest member of the set.
+
+   For a given member I in the set:
+     - the element for I will have index is I / (bits per element)
+     - the position for I within element is I % (bits per element)
+
+   This representation is very space-efficient for large sparse sets, and
+   the size of the set can be changed dynamically without much overhead.
+   An important parameter is the number of bits per element.  In this
+   implementation, there are 128 bits per element.  This results in a
+   high storage overhead *per element*, but a small overall overhead if
+   the set is very sparse.
+
+   The downside is that many operations are relatively slow because the
+   linked list has to be traversed to test membership (i.e. member_p/
+   add_member/remove_member).  To improve the performance of this set
+   representation, the last accessed element and its index are cached.
+   For membership tests on members close to recently accessed members,
+   the cached last element improves membership test to a constant-time
+   operation.
+
+   The following operations can always be performed in O(1) time:
+
+     * clear			: bitmap_clear
+     * choose_one		: (not implemented, but could be
+				   implemented in constant time)
+
+   The following operations can be performed in O(E) time worst-case (with
+   E the number of elements in the linked list), but in O(1) time with a
+   suitable access patterns:
+
+     * member_p			: bitmap_bit_p
+     * add_member		: bitmap_set_bit
+     * remove_member		: bitmap_clear_bit
+
+   The following operations can be performed in O(E) time:
+
+     * cardinality		: bitmap_count_bits
+     * set_size			: bitmap_last_set_bit (but this could
+				  in constant time with a pointer to
+				  the last element in the chain)
+
+   Additionally, the linked-list sparse set representation supports
+   enumeration of the members in O(E) time:
+
+     * forall			: EXECUTE_IF_SET_IN_BITMAP
+     * set_copy			: bitmap_copy
+     * set_intersection		: bitmap_intersect_p /
+				  bitmap_and / bitmap_and_into /
+				  EXECUTE_IF_AND_IN_BITMAP
+     * set_union		: bitmap_ior / bitmap_ior_into
+     * set_difference		: bitmap_intersect_compl_p /
+				  bitmap_and_comp / bitmap_and_comp_into /
+				  EXECUTE_IF_AND_COMPL_IN_BITMAP
+     * set_disjuction		: bitmap_xor_comp / bitmap_xor_comp_into
+     * set_compare		: bitmap_equal_p
+
+   Some operations on 3 sets that occur frequently in in data flow problems
+   are also implemented:
+
+     * A | (B & C)		: bitmap_ior_and_into
+     * A | (B & ~C)		: bitmap_ior_and_compl /
+				  bitmap_ior_and_compl_into
+
+   The storage requirements for linked-list sparse sets are O(E), with E->N
+   in the worst case (a sparse set with large distances between the values
+   of the set members).
+
+   The linked-list set representation works well for problems involving very
+   sparse sets.  The canonical example in GCC is, of course, the "set of
+   sets" for some CFG-based data flow problems (liveness analysis, dominance
+   frontiers, etc.).
+   
+   This representation also works well for data flow problems where the size
+   of the set may grow dynamically, but care must be taken that the member_p,
+   add_member, and remove_member operations occur with a suitable access
+   pattern.
+   
+   For random-access sets with a known, relatively small universe size, the
+   SparseSet or simple bitmap representations may be more efficient than a
+   linked-list set.  For random-access sets of unknown universe, a hash table
+   or a balanced binary tree representation is likely to be a more suitable
+   choice.
+
+   Traversing linked lists is usually cache-unfriendly, even with the last
+   accessed element cached.
+   
+   Cache performance can be improved by keeping the elements in the set
+   grouped together in memory, using a dedicated obstack for a set (or group
+   of related sets).  Elements allocated on obstacks are released to a
+   free-list and taken off the free list.  If multiple sets are allocated on
+   the same obstack, elements freed from one set may be re-used for one of
+   the other sets.  This usually helps avoid cache misses.
+
+   A single free-list is used for all sets allocated in GGC space.  This is
+   bad for persistent sets, so persistent sets should be allocated on an
+   obstack whenever possible.  */
+
 #include "hashtab.h"
 #include "statistics.h"
 #include "obstack.h"
@@ -130,9 +237,11 @@ extern void bitmap_xor_into (bitmap, const_bitmap);
 /* DST = A | (B & C).  Return true if DST changes.  */
 extern bool bitmap_ior_and_into (bitmap DST, const_bitmap B, const_bitmap C);
 /* DST = A | (B & ~C).  Return true if DST changes.  */
-extern bool bitmap_ior_and_compl (bitmap DST, const_bitmap A, const_bitmap B, const_bitmap C);
+extern bool bitmap_ior_and_compl (bitmap DST, const_bitmap A,
+				  const_bitmap B, const_bitmap C);
 /* A |= (B & ~C).  Return true if A changes.  */
-extern bool bitmap_ior_and_compl_into (bitmap DST, const_bitmap B, const_bitmap C);
+extern bool bitmap_ior_and_compl_into (bitmap A,
+				       const_bitmap B, const_bitmap C);
 
 /* Clear a single bit in a bitmap.  Return true if the bit changed.  */
 extern bool bitmap_clear_bit (bitmap, int);
@@ -328,7 +437,8 @@ bmp_iter_and_init (bitmap_iterator *bi, const_bitmap map1, const_bitmap map2,
    */
 
 static inline void
-bmp_iter_and_compl_init (bitmap_iterator *bi, const_bitmap map1, const_bitmap map2,
+bmp_iter_and_compl_init (bitmap_iterator *bi,
+			 const_bitmap map1, const_bitmap map2,
 			 unsigned start_bit, unsigned *bit_no)
 {
   bi->elt1 = map1->first;
