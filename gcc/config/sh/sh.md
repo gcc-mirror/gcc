@@ -5103,6 +5103,132 @@ label:
   "TARGET_SH1"
   "sett")
 
+
+;; Use the combine pass to transform sequences such as
+;;	mov	r5,r0
+;;	add	#1,r0
+;;	shll2	r0
+;;	mov.l	@(r0,r4),r0
+;; into
+;;	shll2	r5
+;;	add	r4,r5
+;;	mov.l	@(4,r5),r0
+;;
+;; See also PR 39423.
+;; FIXME: Fold copy pasted patterns somehow.
+;; FIXME: Combine never tries this kind of patterns for DImode.
+(define_insn_and_split "*movsi_index_disp"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+	(mem:SI
+	  (plus:SI
+	    (plus:SI (mult:SI (match_operand:SI 1 "arith_reg_operand" "r")
+			      (match_operand:SI 2 "const_int_operand"))
+		     (match_operand:SI 3 "arith_reg_operand" "r"))
+	    (match_operand:SI 4 "const_int_operand"))))]
+  "TARGET_SH1 && sh_legitimate_index_p (SImode, operands[4], TARGET_SH2A, true)
+   && exact_log2 (INTVAL (operands[2])) > 0"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(set (match_dup 5) (ashift:SI (match_dup 1) (match_dup 2)))
+   (set (match_dup 6) (plus:SI (match_dup 5) (match_dup 3)))
+   (set (match_dup 0) (mem:SI (plus:SI (match_dup 6) (match_dup 4))))]
+{
+  operands[5] = gen_reg_rtx (SImode);
+  operands[6] = gen_reg_rtx (SImode);
+  operands[2] = GEN_INT (exact_log2 (INTVAL (operands[2])));
+})
+
+(define_insn_and_split "*movhi_index_disp"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+	(sign_extend:SI
+	  (mem:HI
+	    (plus:SI
+	      (plus:SI (mult:SI (match_operand:SI 1 "arith_reg_operand" "r")
+				(match_operand:SI 2 "const_int_operand"))
+		       (match_operand:SI 3 "arith_reg_operand" "r"))
+	      (match_operand:SI 4 "const_int_operand")))))]
+  "TARGET_SH1 && sh_legitimate_index_p (HImode, operands[4], TARGET_SH2A, true)
+   && exact_log2 (INTVAL (operands[2])) > 0"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(set (match_dup 5) (ashift:SI (match_dup 1) (match_dup 2)))
+   (set (match_dup 6) (plus:SI (match_dup 5) (match_dup 3)))
+   (set (match_dup 0)
+	(sign_extend:SI (mem:HI (plus:SI (match_dup 6) (match_dup 4)))))]
+{
+  operands[5] = gen_reg_rtx (SImode);
+  operands[6] = gen_reg_rtx (SImode);
+  operands[2] = GEN_INT (exact_log2 (INTVAL (operands[2])));
+})
+
+(define_insn_and_split "*movhi_index_disp"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+	(zero_extend:SI
+	  (mem:HI
+	    (plus:SI
+	      (plus:SI (mult:SI (match_operand:SI 1 "arith_reg_operand" "r")
+				(match_operand:SI 2 "const_int_operand"))
+		       (match_operand:SI 3 "arith_reg_operand" "r"))
+	      (match_operand:SI 4 "const_int_operand")))))]
+  "TARGET_SH1 && sh_legitimate_index_p (HImode, operands[4], TARGET_SH2A, true)
+   && exact_log2 (INTVAL (operands[2])) > 0"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(set (match_dup 5) (ashift:SI (match_dup 1) (match_dup 2)))
+   (set (match_dup 6) (plus:SI (match_dup 5) (match_dup 3)))
+   (set (match_dup 7)
+	(sign_extend:SI (mem:HI (plus:SI (match_dup 6) (match_dup 4)))))
+   (set (match_dup 0) (zero_extend:SI (match_dup 8)))]
+{
+  operands[5] = gen_reg_rtx (SImode);
+  operands[6] = gen_reg_rtx (SImode);
+  operands[7] = gen_reg_rtx (SImode);
+  operands[8] = gen_lowpart (HImode, operands[7]);
+  operands[2] = GEN_INT (exact_log2 (INTVAL (operands[2])));
+})
+
+(define_insn_and_split "*movsi_index_disp"
+  [(set (mem:SI
+	  (plus:SI
+	    (plus:SI (mult:SI (match_operand:SI 1 "arith_reg_operand" "r")
+			      (match_operand:SI 2 "const_int_operand"))
+		     (match_operand:SI 3 "arith_reg_operand" "r"))
+	  (match_operand:SI 4 "const_int_operand")))
+	(match_operand:SI 0 "arith_reg_operand" "r"))]
+  "TARGET_SH1 && sh_legitimate_index_p (SImode, operands[4], TARGET_SH2A, true)
+   && exact_log2 (INTVAL (operands[2])) > 0"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(set (match_dup 5) (ashift:SI (match_dup 1) (match_dup 2)))
+   (set (match_dup 6) (plus:SI (match_dup 5) (match_dup 3)))
+   (set (mem:SI (plus:SI (match_dup 6) (match_dup 4))) (match_dup 0))]
+{
+  operands[5] = gen_reg_rtx (SImode);
+  operands[6] = gen_reg_rtx (SImode);
+  operands[2] = GEN_INT (exact_log2 (INTVAL (operands[2])));
+})
+
+(define_insn_and_split "*movhi_index_disp"
+  [(set (mem:HI
+	  (plus:SI
+	    (plus:SI (mult:SI (match_operand:SI 1 "arith_reg_operand" "r")
+			      (match_operand:SI 2 "const_int_operand"))
+		     (match_operand:SI 3 "arith_reg_operand" "r"))
+	  (match_operand:SI 4 "const_int_operand")))
+	(match_operand:HI 0 "arith_reg_operand" "r"))]
+  "TARGET_SH1 && sh_legitimate_index_p (HImode, operands[4], TARGET_SH2A, true)
+   && exact_log2 (INTVAL (operands[2])) > 0"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(set (match_dup 5) (ashift:SI (match_dup 1) (match_dup 2)))
+   (set (match_dup 6) (plus:SI (match_dup 5) (match_dup 3)))
+   (set (mem:HI (plus:SI (match_dup 6) (match_dup 4))) (match_dup 0))]
+{
+  operands[5] = gen_reg_rtx (SImode);
+  operands[6] = gen_reg_rtx (SImode);
+  operands[2] = GEN_INT (exact_log2 (INTVAL (operands[2])));
+})
+
 ;; Define additional pop for SH1 and SH2 so it does not get 
 ;; placed in the delay slot.
 (define_insn "*movsi_pop"
