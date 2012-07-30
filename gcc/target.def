@@ -1664,6 +1664,16 @@ DEFHOOK
  bool, (enum machine_mode mode),
  hook_bool_mode_false)
 
+DEFHOOK
+(vector_alignment,
+ "This hook can be used to define the alignment for a vector of type\n\
+@var{type}, in order to comply with a platform ABI.  The default is to\n\
+require natural alignment for vector types.  The alignment returned by\n\
+this hook must be a power-of-two multiple of the default alignment of\n\
+the vector element type.",
+ HOST_WIDE_INT, (const_tree type),
+ default_vector_alignment)
+
 /* True if we should try to use a scalar mode to represent an array,
    overriding the usual MAX_FIXED_MODE limit.  */
 DEFHOOK
