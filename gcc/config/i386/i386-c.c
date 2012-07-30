@@ -296,6 +296,8 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     def_or_undef (parse_in, "__RDRND__");
   if (isa_flag & OPTION_MASK_ISA_F16C)
     def_or_undef (parse_in, "__F16C__");
+  if (isa_flag & OPTION_MASK_ISA_RDSEED)
+    def_or_undef (parse_in, "__RDSEED__");
   if (isa_flag & OPTION_MASK_ISA_PRFCHW)
     def_or_undef (parse_in, "__PRFCHW__");
   if ((fpmath & FPMATH_SSE) && (isa_flag & OPTION_MASK_ISA_SSE))
