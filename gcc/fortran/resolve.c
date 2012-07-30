@@ -139,7 +139,6 @@ resolve_typespec_used (gfc_typespec* ts, locus* where, const char* name)
 
 
 static void resolve_symbol (gfc_symbol *sym);
-static gfc_try resolve_intrinsic (gfc_symbol *sym, locus *loc);
 
 
 /* Resolve the interface for a PROCEDURE declaration or procedure pointer.  */
@@ -168,7 +167,7 @@ resolve_procedure_interface (gfc_symbol *sym)
       resolve_symbol (ifc);
 
       if (ifc->attr.intrinsic)
-	resolve_intrinsic (ifc, &ifc->declared_at);
+	gfc_resolve_intrinsic (ifc, &ifc->declared_at);
 
       if (ifc->result)
 	{
@@ -1499,8 +1498,8 @@ is_illegal_recursion (gfc_symbol* sym, gfc_namespace* context)
 /* Resolve an intrinsic procedure: Set its function/subroutine attribute,
    its typespec and formal argument list.  */
 
-static gfc_try
-resolve_intrinsic (gfc_symbol *sym, locus *loc)
+gfc_try
+gfc_resolve_intrinsic (gfc_symbol *sym, locus *loc)
 {
   gfc_intrinsic_sym* isym = NULL;
   const char* symstd;
@@ -1588,7 +1587,7 @@ resolve_procedure_expression (gfc_expr* expr)
   sym = expr->symtree->n.sym;
 
   if (sym->attr.intrinsic)
-    resolve_intrinsic (sym, &expr->where);
+    gfc_resolve_intrinsic (sym, &expr->where);
 
   if (sym->attr.flavor != FL_PROCEDURE
       || (sym->attr.function && sym->result == sym))
@@ -3064,7 +3063,7 @@ resolve_function (gfc_expr *expr)
     return SUCCESS;
   
   if (sym && sym->attr.intrinsic
-      && resolve_intrinsic (sym, &expr->where) == FAILURE)
+      && gfc_resolve_intrinsic (sym, &expr->where) == FAILURE)
     return FAILURE;
 
   if (sym && (sym->attr.flavor == FL_VARIABLE || sym->attr.subroutine))
@@ -11884,7 +11883,7 @@ resolve_fl_derived0 (gfc_symbol *sym)
 		resolve_symbol (ifc);
 
 	      if (ifc->attr.intrinsic)
-		resolve_intrinsic (ifc, &ifc->declared_at);
+		gfc_resolve_intrinsic (ifc, &ifc->declared_at);
 
 	      if (ifc->result)
 		{
@@ -12519,7 +12518,7 @@ resolve_symbol (gfc_symbol *sym)
      representation. This needs to be done before assigning a default 
      type to avoid spurious warnings.  */
   if (sym->attr.flavor != FL_MODULE && sym->attr.intrinsic
-      && resolve_intrinsic (sym, &sym->declared_at) == FAILURE)
+      && gfc_resolve_intrinsic (sym, &sym->declared_at) == FAILURE)
     return;
 
   /* Resolve associate names.  */
