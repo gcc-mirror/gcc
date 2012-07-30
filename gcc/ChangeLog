@@ -1,5 +1,13 @@
 2012-07-30  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	PR target/51244
+	* config/sh/sh.md (mov_neg_si_t): Move to Scc instructions section.
+	Use t_reg_operand predicate.  Add split for negated case.
+	(ashrsi2_31): Pass get_t_reg_rtx to gen_mov_neg_si_t.
+	* config/sh/sh.c (expand_ashiftrt): Likewise.
+
+2012-07-30  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	PR target/54089
 	* config/sh/sh.md (ashlsi3_d): Invoke gen_shifty_op directly instead
 	of trying to emit ashlsi3_n.
