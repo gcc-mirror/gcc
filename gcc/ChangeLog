@@ -1,3 +1,9 @@
+2012-07-30  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54089
+	* config/sh/sh.md (ashlsi3_d): Invoke gen_shifty_op directly instead
+	of trying to emit ashlsi3_n.
+
 2012-07-30  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
 	    Steven Bosscher  <steven@gcc.gnu.org>
 

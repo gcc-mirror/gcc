@@ -3533,7 +3533,12 @@ label:
     }
   else if (!satisfies_constraint_P27 (operands[2]))
     {
-      emit_insn (gen_ashlsi3_n (operands[0], operands[1], operands[2]));
+      /* This must happen before reload, otherwise the constant will be moved
+	 into a register due to the "r" constraint, after which this split
+	 cannot be done anymore.
+	 Unfortunately the move insn will not always be eliminated.  */
+      emit_move_insn (operands[0], operands[1]);
+      gen_shifty_op (ASHIFT, operands);
       DONE;
     }
 
