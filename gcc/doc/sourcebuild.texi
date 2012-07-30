@@ -176,6 +176,12 @@ those for other languages are not.  @xref{Front End, ,
 Anatomy of a Language Front End}, for details of the files in these
 directories.
 
+@item common
+Source files shared between the compiler drivers (such as
+@command{gcc}) and the compilers proper (such as @file{cc1}).  If an
+architecture defines target hooks shared between those places, it also
+has a subdirectory in @file{common/config}.  @xref{Target Structure}.
+
 @item config
 Configuration files for supported architectures and operating
 systems.  @xref{Back End, , Anatomy of a Target Back End}, for
