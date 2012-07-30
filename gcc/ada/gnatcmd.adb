@@ -273,7 +273,7 @@ procedure GNATCmd is
    --  Add the -L and -l switches to the linker for all of the library
    --  projects.
 
-   procedure Test_If_Relative_Path
+   procedure Ensure_Absolute_Path
      (Switch : in out String_Access;
       Parent : String);
    --  Test if Switch is a relative search path switch. If it is and it
@@ -1303,20 +1303,20 @@ procedure GNATCmd is
    end Set_Library_For;
 
    ---------------------------
-   -- Test_If_Relative_Path --
+   -- Ensure_Absolute_Path --
    ---------------------------
 
-   procedure Test_If_Relative_Path
+   procedure Ensure_Absolute_Path
      (Switch : in out String_Access;
       Parent : String)
    is
    begin
-      Makeutl.Test_If_Relative_Path
+      Makeutl.Ensure_Absolute_Path
         (Switch, Parent,
          Do_Fail              => Osint.Fail'Access,
          Including_Non_Switch => False,
          Including_RTS        => True);
-   end Test_If_Relative_Path;
+   end Ensure_Absolute_Path;
 
    -------------------
    -- Non_VMS_Usage --
@@ -2387,7 +2387,7 @@ begin
             --  arguments.
 
             for J in 1 .. Last_Switches.Last loop
-               GNATCmd.Test_If_Relative_Path
+               GNATCmd.Ensure_Absolute_Path
                  (Last_Switches.Table (J), Current_Work_Dir);
             end loop;
 
@@ -2397,7 +2397,7 @@ begin
                Project_Dir : constant String := Name_Buffer (1 .. Name_Len);
             begin
                for J in 1 .. First_Switches.Last loop
-                  GNATCmd.Test_If_Relative_Path
+                  GNATCmd.Ensure_Absolute_Path
                     (First_Switches.Table (J), Project_Dir);
                end loop;
             end;

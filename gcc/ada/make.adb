@@ -2366,7 +2366,7 @@ package body Make is
                                  Last_New := Last_New + 1;
                                  New_Args (Last_New) :=
                                    new String'(Name_Buffer (1 .. Name_Len));
-                                 Test_If_Relative_Path
+                                 Ensure_Absolute_Path
                                    (New_Args (Last_New),
                                     Do_Fail              => Make_Failed'Access,
                                     Parent               => Dir_Path,
@@ -2399,7 +2399,7 @@ package body Make is
                                         Directory.Display_Name);
 
                      begin
-                        Test_If_Relative_Path
+                        Ensure_Absolute_Path
                           (New_Args (1),
                            Do_Fail              => Make_Failed'Access,
                            Parent               => Dir_Path,
@@ -5028,36 +5028,36 @@ package body Make is
                       Get_Name_String (Main_Project.Directory.Display_Name);
       begin
          for J in 1 .. Binder_Switches.Last loop
-            Test_If_Relative_Path
+            Ensure_Absolute_Path
               (Binder_Switches.Table (J),
                Do_Fail => Make_Failed'Access,
-               Parent => Dir_Path, Including_L_Switch => False);
+               Parent => Dir_Path, For_Gnatbind => True);
          end loop;
 
          for J in 1 .. Saved_Binder_Switches.Last loop
-            Test_If_Relative_Path
+            Ensure_Absolute_Path
               (Saved_Binder_Switches.Table (J),
-               Do_Fail            => Make_Failed'Access,
-               Parent             => Current_Work_Dir,
-               Including_L_Switch => False);
+               Do_Fail             => Make_Failed'Access,
+               Parent              => Current_Work_Dir,
+               For_Gnatbind        => True);
          end loop;
 
          for J in 1 .. Linker_Switches.Last loop
-            Test_If_Relative_Path
+            Ensure_Absolute_Path
               (Linker_Switches.Table (J),
                Parent  => Dir_Path,
                Do_Fail => Make_Failed'Access);
          end loop;
 
          for J in 1 .. Saved_Linker_Switches.Last loop
-            Test_If_Relative_Path
+            Ensure_Absolute_Path
               (Saved_Linker_Switches.Table (J),
                Do_Fail => Make_Failed'Access,
                Parent  => Current_Work_Dir);
          end loop;
 
          for J in 1 .. Gcc_Switches.Last loop
-            Test_If_Relative_Path
+            Ensure_Absolute_Path
               (Gcc_Switches.Table (J),
                Do_Fail              => Make_Failed'Access,
                Parent               => Dir_Path,
@@ -5065,7 +5065,7 @@ package body Make is
          end loop;
 
          for J in 1 .. Saved_Gcc_Switches.Last loop
-            Test_If_Relative_Path
+            Ensure_Absolute_Path
               (Saved_Gcc_Switches.Table (J),
                Parent               => Current_Work_Dir,
                Do_Fail              => Make_Failed'Access,
@@ -5387,14 +5387,14 @@ package body Make is
                  Get_Name_String (Main_Project.Directory.Display_Name);
             begin
                for J in Last_Binder_Switch + 1 .. Binder_Switches.Last loop
-                  Test_If_Relative_Path
+                  Ensure_Absolute_Path
                     (Binder_Switches.Table (J),
                      Do_Fail => Make_Failed'Access,
-                     Parent  => Dir_Path, Including_L_Switch => False);
+                     Parent  => Dir_Path, For_Gnatbind => True);
                end loop;
 
                for J in Last_Linker_Switch + 1 .. Linker_Switches.Last loop
-                  Test_If_Relative_Path
+                  Ensure_Absolute_Path
                     (Linker_Switches.Table (J),
                      Parent  => Dir_Path,
                      Do_Fail => Make_Failed'Access);

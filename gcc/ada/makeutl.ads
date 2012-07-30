@@ -235,20 +235,19 @@ package Makeutl is
    --  Find the index of a unit in a source file. Return zero if the file is
    --  not a multi-unit source file.
 
-   procedure Test_If_Relative_Path
+   procedure Ensure_Absolute_Path
      (Switch               : in out String_Access;
       Parent               : String;
       Do_Fail              : Fail_Proc;
-      Including_L_Switch   : Boolean := True;
+      For_Gnatbind         : Boolean := False;
       Including_Non_Switch : Boolean := True;
       Including_RTS        : Boolean := False);
-   --  Test if Switch is a relative search path switch. If so, fail if Parent
-   --  is the empty string, otherwise prepend the path with Parent. This
-   --  subprogram is only used when using project files. For gnatbind switches,
-   --  Including_L_Switch is False, because the argument of the -L switch is
-   --  not a path. If Including_RTS is True, process also switches --RTS=.
-   --  Do_Fail is called in case of error. Using Osint.Fail might be
-   --  appropriate.
+   --  Do nothing if Switch is an absolute path switch. If relative, fail if
+   --  Parent is the empty string, otherwise prepend the path with Parent. This
+   --  subprogram is only used when using project files. If For_Gnatbind is
+   --  True, gnatbind switches that are not paths (-L, -A) are left unchaned.
+   --  If Including_RTS is True, process also switches --RTS=. Do_Fail is
+   --  called in case of error. Using Osint.Fail might be appropriate.
 
    function Path_Or_File_Name (Path : Path_Name_Type) return String;
    --  Returns a file name if -df is used, otherwise return a path name

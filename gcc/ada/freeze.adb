@@ -4201,12 +4201,16 @@ package body Freeze is
                Check_Suspicious_Modulus (E);
             end if;
 
-         elsif Is_Access_Type (E) then
+         elsif Is_Access_Type (E)
+           and then not Is_Access_Subprogram_Type (E)
+         then
 
             --  If a pragma Default_Storage_Pool applies, and this type has no
             --  Storage_Pool or Storage_Size clause (which must have occurred
             --  before the freezing point), then use the default. This applies
             --  only to base types.
+            --  None of this applies to access to subprogramss, for which there
+            --  are clearly no pools.
 
             if Present (Default_Pool)
               and then Is_Base_Type (E)
