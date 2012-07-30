@@ -7129,9 +7129,9 @@ package body Sem_Res is
             return;
          end if;
 
-      else
-         --  If not overloaded, resolve P with its own type
+      --  If not overloaded, resolve P with its own type
 
+      else
          Resolve (P);
       end if;
 

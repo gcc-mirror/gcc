@@ -1,3 +1,12 @@
+2012-07-30  Robert Dewar  <dewar@adacore.com>
+
+	* par_sco.adb, a-cihama.adb, a-coinve.adb, exp_ch7.adb, a-ciorse.adb,
+	exp_ch9.adb, sem_dim.adb, par-ch13.adb, sem_ch9.adb, a-cidlli.adb,
+	a-cimutr.adb, freeze.adb, a-ciormu.adb, sem_res.adb, sem_attr.adb,
+	a-cihase.adb, exp_ch4.adb, sem_ch4.adb, a-ciorma.adb,
+	s-tasinf-linux.ads, sem_ch13.adb, a-coinho.adb: Minor reformatting.
+	Add comments.
+
 2012-07-30  Vincent Pucci  <pucci@adacore.com>
 
 	* sem_ch9.adb (Allows_Lock_Free_Implementation): Restrict implicit

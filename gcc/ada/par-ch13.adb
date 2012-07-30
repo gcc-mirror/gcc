@@ -645,7 +645,6 @@ package body Ch13 is
       Ptr     : Source_Ptr;
 
    begin
-
       --  Aspect Specification is present
 
       Ptr := Token_Ptr;
@@ -834,11 +833,10 @@ package body Ch13 is
       --  Otherwise we have an illegal range attribute. Note that P_Name
       --  ensures that Token = Tok_Range is the only possibility left here.
 
-      else -- Token = Tok_Range
+      else
          Error_Msg_SC ("RANGE attribute illegal here!");
          raise Error_Resync;
       end if;
-
    end P_Code_Statement;
 
 end Ch13;

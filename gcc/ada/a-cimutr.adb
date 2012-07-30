@@ -292,12 +292,14 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       end if;
 
       declare
-         pragma Unsuppress (Accessibility_Check);
          --  The element allocator may need an accessibility check in the case
          --  the actual type is class-wide or has access discriminants (see
          --  RM 4.8(10.1) and AI12-0035). We don't unsuppress the check on the
          --  allocator in the loop below, because the one in this block would
          --  have failed already.
+
+         pragma Unsuppress (Accessibility_Check);
+
       begin
          Element := new Element_Type'(New_Item);
       end;
@@ -1251,12 +1253,14 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       Position.Container := Parent.Container;
 
       declare
-         pragma Unsuppress (Accessibility_Check);
          --  The element allocator may need an accessibility check in the case
          --  the actual type is class-wide or has access discriminants (see
          --  RM 4.8(10.1) and AI12-0035). We don't unsuppress the check on the
          --  allocator in the loop below, because the one in this block would
          --  have failed already.
+
+         pragma Unsuppress (Accessibility_Check);
+
       begin
          Element := new Element_Type'(New_Item);
       end;
@@ -1826,12 +1830,14 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       end if;
 
       declare
-         pragma Unsuppress (Accessibility_Check);
          --  The element allocator may need an accessibility check in the case
          --  the actual type is class-wide or has access discriminants (see
          --  RM 4.8(10.1) and AI12-0035). We don't unsuppress the check on the
          --  allocator in the loop below, because the one in this block would
          --  have failed already.
+
+         pragma Unsuppress (Accessibility_Check);
+
       begin
          Element := new Element_Type'(New_Item);
       end;
@@ -2194,10 +2200,12 @@ package body Ada.Containers.Indefinite_Multiway_Trees is
       end if;
 
       declare
-         pragma Unsuppress (Accessibility_Check);
          --  The element allocator may need an accessibility check in the case
          --  the actual type is class-wide or has access discriminants (see
          --  RM 4.8(10.1) and AI12-0035).
+
+         pragma Unsuppress (Accessibility_Check);
+
       begin
          E := new Element_Type'(New_Item);
       end;

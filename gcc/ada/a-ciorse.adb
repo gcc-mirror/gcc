@@ -1174,10 +1174,12 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
          end if;
 
          declare
-            pragma Unsuppress (Accessibility_Check);
             --  The element allocator may need an accessibility check in the
             --  case the actual type is class-wide or has access discriminants
             --  (see RM 4.8(10.1) and AI12-0035).
+
+            pragma Unsuppress (Accessibility_Check);
+
          begin
             X := Position.Node.Element;
             Position.Node.Element := new Element_Type'(New_Item);
@@ -1245,10 +1247,11 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       --------------
 
       function New_Node return Node_Access is
-         pragma Unsuppress (Accessibility_Check);
          --  The element allocator may need an accessibility check in the case
          --  the actual type is class-wide or has access discriminants (see
          --  RM 4.8(10.1) and AI12-0035).
+
+         pragma Unsuppress (Accessibility_Check);
 
          Element : Element_Access := new Element_Type'(New_Item);
 
@@ -1258,6 +1261,7 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
                                Right   => null,
                                Color   => Red_Black_Trees.Red,
                                Element => Element);
+
       exception
          when others =>
             Free_Element (Element);
@@ -1831,10 +1835,12 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       end if;
 
       declare
-         pragma Unsuppress (Accessibility_Check);
          --  The element allocator may need an accessibility check in the case
          --  the actual type is class-wide or has access discriminants (see
          --  RM 4.8(10.1) and AI12-0035).
+
+         pragma Unsuppress (Accessibility_Check);
+
       begin
          X := Node.Element;
          Node.Element := new Element_Type'(New_Item);
@@ -1873,10 +1879,13 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       --------------
 
       function New_Node return Node_Access is
-         pragma Unsuppress (Accessibility_Check);
+
          --  The element allocator may need an accessibility check in the case
          --  the actual type is class-wide or has access discriminants (see
          --  RM 4.8(10.1) and AI12-0035).
+
+         pragma Unsuppress (Accessibility_Check);
+
       begin
          Node.Element := new Element_Type'(Item);  -- OK if fails
          Node.Color := Red;
@@ -1895,9 +1904,7 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
       --  Start of processing for Replace_Element
 
    begin
-      if Item < Node.Element.all
-        or else Node.Element.all < Item
-      then
+      if Item < Node.Element.all or else Node.Element.all < Item then
          null;
 
       else
@@ -1907,10 +1914,12 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
          end if;
 
          declare
-            pragma Unsuppress (Accessibility_Check);
             --  The element allocator may need an accessibility check in the
             --  case the actual type is class-wide or has access discriminants
             --  (see RM 4.8(10.1) and AI12-0035).
+
+            pragma Unsuppress (Accessibility_Check);
+
          begin
             Node.Element := new Element_Type'(Item);
             Free_Element (X);
@@ -1932,10 +1941,12 @@ package body Ada.Containers.Indefinite_Ordered_Sets is
             end if;
 
             declare
-               pragma Unsuppress (Accessibility_Check);
                --  The element allocator may need an accessibility check in the
                --  case actual type is class-wide or has access discriminants
                --  (see RM 4.8(10.1) and AI12-0035).
+
+               pragma Unsuppress (Accessibility_Check);
+
             begin
                Node.Element := new Element_Type'(Item);
                Free_Element (X);

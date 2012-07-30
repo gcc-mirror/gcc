@@ -4029,10 +4029,10 @@ package body Sem_Attr is
          --  within the subprogram itself. If the prefix includes a function
          --  call it may involve finalization actions that should only be
          --  inserted when the attribute has been rewritten as a declarations.
-         --  As a result, if the prefix is not a simple name we create a
-         --  declaration for it now,  and insert it at the start of the
-         --  enclosing subprogram. This is properly an expansion activity but
-         --  it has to be performed now to prevent out-of-order issues.
+         --  As a result, if the prefix is not a simple name we create
+         --  a declaration for it now, and insert it at the start of the
+         --  enclosing subprogram. This is properly an expansion activity
+         --  but it has to be performed now to prevent out-of-order issues.
 
          if not Is_Entity_Name (P) then
             P_Type := Base_Type (P_Type);
@@ -4474,9 +4474,9 @@ package body Sem_Attr is
          Check_Decimal_Fixed_Point_Type;
          Set_Etype (N, P_Base_Type);
 
-         --  Because the context is universal_real (3.5.10(12)) it is a legal
-         --  context for a universal fixed expression. This is the only
-         --  attribute whose functional description involves U_R.
+         --  Because the context is universal_real (3.5.10(12)) it is a
+         --  legal context for a universal fixed expression. This is the
+         --  only attribute whose functional description involves U_R.
 
          if Etype (E1) = Universal_Fixed then
             declare
@@ -4771,8 +4771,8 @@ package body Sem_Attr is
 
                Validate_Remote_Access_To_Class_Wide_Type (N);
 
-            --  The prefix is allowed to be an implicit dereference
-            --  of an access value designating a task.
+            --  The prefix is allowed to be an implicit dereference of an
+            --  access value designating a task.
 
             else
                Check_Task_Prefix;
