@@ -3481,7 +3481,7 @@ expand_ashiftrt (rtx *operands)
 	{
 	  emit_insn (gen_cmpgtsi_t (force_reg (SImode, CONST0_RTX (SImode)),
 				    operands[1]));
-	  emit_insn (gen_mov_neg_si_t (operands[0]));
+	  emit_insn (gen_mov_neg_si_t (operands[0], get_t_reg_rtx ()));
 	  return true;
 	}
       emit_insn (gen_ashrsi2_31 (operands[0], operands[1]));

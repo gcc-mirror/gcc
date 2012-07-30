@@ -1584,15 +1584,6 @@
   "subc	%2,%0"
   [(set_attr "type" "arith")])
 
-;; life_analysis thinks rn is live before subc rn,rn, so make a special
-;; pattern for this case.  This helps multimedia applications that compute
-;; the sum of absolute differences.
-(define_insn "mov_neg_si_t"
-  [(set (match_operand:SI 0 "arith_reg_dest" "=r") (neg:SI (reg:SI T_REG)))]
-  "TARGET_SH1"
-  "subc	%0,%0"
-  [(set_attr "type" "arith")])
-
 (define_insn "*subsi3_internal"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
 	(minus:SI (match_operand:SI 1 "arith_reg_operand" "0")
@@ -3802,7 +3793,7 @@ label:
   [(const_int 0)]
 {
   emit_insn (gen_ashlsi_c (operands[0], operands[1]));
-  emit_insn (gen_mov_neg_si_t (copy_rtx (operands[0])));
+  emit_insn (gen_mov_neg_si_t (operands[0], get_t_reg_rtx ()));
   DONE;
 })
 
@@ -9708,6 +9699,25 @@ label:
   "#"
   ""
   [(const_int 0)])
+
+;; Store T bit as all zeros or ones in a reg.
+(define_insn "mov_neg_si_t"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+	(neg:SI (match_operand 1 "t_reg_operand" "")))]
+  "TARGET_SH1"
+  "subc	%0,%0"
+  [(set_attr "type" "arith")])
+
+;; Store negated T bit as all zeros or ones in a reg.
+;; Use the following sequence:
+;; 	subc	Rn,Rn	! Rn = Rn - Rn - T; T = T
+;;	not	Rn,Rn	! Rn = 0 - Rn
+(define_split
+  [(set (match_operand:SI 0 "arith_reg_dest" "")
+	(neg:SI (match_operand 1 "negt_reg_operand" "")))]
+  "TARGET_SH1"
+  [(set (match_dup 0) (neg:SI (reg:SI T_REG)))
+   (set (match_dup 0) (not:SI (match_dup 0)))])
 
 ;; The *movtt pattern eliminates redundant T bit to T bit moves / tests.
 (define_insn_and_split "*movtt"
