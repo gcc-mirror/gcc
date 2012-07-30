@@ -733,7 +733,8 @@ Objective-C and Objective-C++ Dialects}.
 -mabi=@var{abi}  -mabicalls  -mno-abicalls @gol
 -mshared  -mno-shared  -mplt  -mno-plt  -mxgot  -mno-xgot @gol
 -mgp32  -mgp64  -mfp32  -mfp64  -mhard-float  -msoft-float @gol
--msingle-float  -mdouble-float  -mdsp  -mno-dsp  -mdspr2  -mno-dspr2 @gol
+-mno-float -msingle-float  -mdouble-float  @gol
+-mdsp  -mno-dsp  -mdspr2  -mno-dspr2 @gol
 -mmcu -mmno-mcu @gol
 -mfpu=@var{fpu-type} @gol
 -msmartmips  -mno-smartmips @gol
@@ -15632,6 +15633,18 @@ Use floating-point coprocessor instructions.
 @opindex msoft-float
 Do not use floating-point coprocessor instructions.  Implement
 floating-point calculations using library calls instead.
+
+@item -mno-float
+@opindex mno-float
+Equivalent to @option{-msoft-float}, but additionally asserts that the
+program being compiled does not perform any floating-point operations.
+This option is presently supported only by some bare-metal MIPS
+configurations, where it may select a special set of libraries
+that lack all floating-point support (including, for example, the
+floating-point @code{printf} formats).  
+If code compiled with @code{-mno-float} accidentally contains
+floating-point operations, it is likely to suffer a link-time
+or run-time failure.
 
 @item -msingle-float
 @opindex msingle-float

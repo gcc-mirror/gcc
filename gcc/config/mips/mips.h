@@ -713,7 +713,7 @@ struct mips_cpu_info {
    link-compatible.  */
 
 #define MIPS_ARCH_FLOAT_SPEC \
-  "%{mhard-float|msoft-float|march=mips*:; \
+  "%{mhard-float|msoft-float|mno-float|march=mips*:; \
      march=vr41*|march=m4k|march=4k*|march=24kc|march=24kec \
      |march=34kc|march=74kc|march=1004kc|march=5kc \
      |march=octeon|march=xlr: -msoft-float;		  \
