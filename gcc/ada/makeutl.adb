@@ -1316,11 +1316,12 @@ package body Makeutl is
                   --  Object files and -L switches specified with relative
                   --  paths must be converted to absolute paths.
 
-                  Test_If_Relative_Path
-                    (Switch  => Linker_Options_Buffer (Last_Linker_Option),
-                     Parent  => Dir_Path,
-                     Do_Fail => Do_Fail,
-                     Including_L_Switch => True);
+                  Ensure_Absolute_Path
+                    (Switch       =>
+                       Linker_Options_Buffer (Last_Linker_Option),
+                     Parent       => Dir_Path,
+                     Do_Fail      => Do_Fail,
+                     For_Gnatbind => False);
                end if;
 
                Options := In_Tree.Shared.String_Elements.Table (Options).Next;
@@ -1936,14 +1937,14 @@ package body Makeutl is
    end Path_Or_File_Name;
 
    ---------------------------
-   -- Test_If_Relative_Path --
+   -- Ensure_Absolute_Path --
    ---------------------------
 
-   procedure Test_If_Relative_Path
+   procedure Ensure_Absolute_Path
      (Switch               : in out String_Access;
       Parent               : String;
       Do_Fail              : Fail_Proc;
-      Including_L_Switch   : Boolean := True;
+      For_Gnatbind         : Boolean := False;
       Including_Non_Switch : Boolean := True;
       Including_RTS        : Boolean := False)
    is
@@ -1958,9 +1959,10 @@ package body Makeutl is
 
             if Sw (1) = '-' then
                if Sw'Length >= 3
-                 and then (Sw (2) = 'A'
-                            or else Sw (2) = 'I'
-                            or else (Including_L_Switch and then Sw (2) = 'L'))
+                 and then (Sw (2) = 'I'
+                            or else (not For_Gnatbind
+                                       and then (Sw (2) = 'L'
+                                         or else Sw (2) = 'A')))
                then
                   Start := 3;
 
@@ -1973,7 +1975,9 @@ package body Makeutl is
                              or else
                            Sw (2 .. 3) = "aO"
                              or else
-                           Sw (2 .. 3) = "aI")
+                           Sw (2 .. 3) = "aI"
+                             or else
+                           (For_Gnatbind and then Sw (2 .. 3) = "A="))
                then
                   Start := 4;
 
@@ -2033,7 +2037,7 @@ package body Makeutl is
             end if;
          end;
       end if;
-   end Test_If_Relative_Path;
+   end Ensure_Absolute_Path;
 
    -------------------
    -- Unit_Index_Of --

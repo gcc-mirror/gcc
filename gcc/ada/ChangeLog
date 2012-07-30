@@ -1,3 +1,21 @@
+2012-07-30  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch12.adb (Earlier): Add local variables T1 and T2. Minor code
+	refactoring.
+
+2012-07-30  Thomas Quinot  <quinot@adacore.com>
+
+	* gnatcmd.adb, make.adb, makeutl.adb, makeutl.ads
+	(Test_If_Relative_Path): Rename to Ensure_Absolute_Path to better
+	reflect what this subprogram does. Rename argument Including_L_Switch
+	to For_Gnatbind, and also exempt -A from rewriting.
+	* bindusg.adb: Document optional =file argument to gnatbind -A.
+
+2012-07-30  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Freeze_Entity): Do no apply restriction check on
+	storage pools to access to subprogram types.
+
 2012-07-30  Robert Dewar  <dewar@adacore.com>
 
 	* par_sco.adb, a-cihama.adb, a-coinve.adb, exp_ch7.adb, a-ciorse.adb,
