@@ -530,7 +530,10 @@ package body Sem_Ch9 is
 
                      --  Quantified expression restricted
 
-                     elsif Kind = N_Quantified_Expression then
+                     elsif Kind = N_Quantified_Expression
+                       or else Nkind (Original_Node (N)) =
+                                 N_Quantified_Expression
+                     then
                         if Lock_Free_Given then
                            Error_Msg_N ("quantified expression not allowed",
                                         N);
@@ -552,7 +555,7 @@ package body Sem_Ch9 is
                         Id        : constant Entity_Id := Entity (N);
                         Comp_Decl : Node_Id;
                         Comp_Id   : Entity_Id := Empty;
-                        Comp_Size : Int;
+                        Comp_Size : Int := 0;
                         Comp_Type : Entity_Id;
 
                      begin
@@ -579,6 +582,10 @@ package body Sem_Ch9 is
 
                               Layout_Type (Comp_Type);
 
+                              --  Note that Known_Esize is used and not
+                              --  Known_Static_Esize in order to capture the
+                              --  errors properly at the instantiation point.
+
                               if Known_Esize (Comp_Type) then
                                  Comp_Size := UI_To_Int (Esize (Comp_Type));
 
@@ -587,7 +594,7 @@ package body Sem_Ch9 is
                               --  (Value_Size) since it may have been set by an
                               --  explicit representation clause.
 
-                              else
+                              elsif Known_RM_Size (Comp_Type) then
                                  Comp_Size := UI_To_Int (RM_Size (Comp_Type));
                               end if;
 
