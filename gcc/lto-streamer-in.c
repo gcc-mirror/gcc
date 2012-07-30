@@ -979,6 +979,9 @@ lto_read_body (struct lto_file_decl_data *file_data, tree fn_decl,
       push_cfun (fn);
       init_tree_ssa (fn);
 
+      /* We input IL in SSA form.  */
+      cfun->gimple_df->in_ssa_p = true;
+
       /* Use the function's decl state. */
       decl_state = lto_get_function_in_decl_state (file_data, fn_decl);
       gcc_assert (decl_state);
@@ -1014,9 +1017,6 @@ lto_read_body (struct lto_file_decl_data *file_data, tree fn_decl,
 		}
 	    }
 	}
-
-      /* We should now be in SSA.  */
-      cfun->gimple_df->in_ssa_p = true;
 
       /* Restore decl state */
       file_data->current_decl_state = file_data->global_decl_state;

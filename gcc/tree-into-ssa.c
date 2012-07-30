@@ -675,7 +675,7 @@ mark_def_sites (basic_block bb, gimple stmt, bitmap kills)
 
   /* If a variable is used before being set, then the variable is live
      across a block boundary, so mark it live-on-entry to BB.  */
-  FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE)
+  FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_ALL_USES)
     {
       tree sym = USE_FROM_PTR (use_p);
       gcc_assert (DECL_P (sym));
@@ -686,7 +686,7 @@ mark_def_sites (basic_block bb, gimple stmt, bitmap kills)
 
   /* Now process the defs.  Mark BB as the definition block and add
      each def to the set of killed symbols.  */
-  FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter, SSA_OP_DEF)
+  FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter, SSA_OP_ALL_DEFS)
     {
       gcc_assert (DECL_P (def));
       set_def_block (def, bb, false);
@@ -1336,7 +1336,7 @@ rewrite_stmt (gimple_stmt_iterator si)
       if (is_gimple_debug (stmt))
 	rewrite_debug_stmt_uses (stmt);
       else
-	FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE)
+	FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_ALL_USES)
 	  {
 	    tree var = USE_FROM_PTR (use_p);
 	    gcc_assert (DECL_P (var));
@@ -1346,7 +1346,7 @@ rewrite_stmt (gimple_stmt_iterator si)
 
   /* Step 2.  Register the statement's DEF operands.  */
   if (register_defs_p (stmt))
-    FOR_EACH_SSA_DEF_OPERAND (def_p, stmt, iter, SSA_OP_DEF)
+    FOR_EACH_SSA_DEF_OPERAND (def_p, stmt, iter, SSA_OP_ALL_DEFS)
       {
 	tree var = DEF_FROM_PTR (def_p);
 	tree name = make_ssa_name (var, stmt);
@@ -1404,7 +1404,6 @@ static void
 rewrite_enter_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
 		     basic_block bb)
 {
-  gimple phi;
   gimple_stmt_iterator gsi;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -1418,11 +1417,7 @@ rewrite_enter_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
      node introduces a new version for the associated variable.  */
   for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
-      tree result;
-
-      phi = gsi_stmt (gsi);
-      result = gimple_phi_result (phi);
-      gcc_assert (is_gimple_reg (result));
+      tree result = gimple_phi_result (gsi_stmt (gsi));
       register_new_def (result, SSA_NAME_VAR (result));
     }
 
@@ -2437,8 +2432,7 @@ struct gimple_opt_pass pass_build_ssa =
   PROP_ssa,				/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_update_ssa_only_virtuals
-    | TODO_verify_ssa
+  TODO_verify_ssa
     | TODO_remove_unused_locals		/* todo_flags_finish */
  }
 };
@@ -2889,7 +2883,8 @@ register_new_name_mapping (tree new_tree, tree old)
 void
 mark_sym_for_renaming (tree sym)
 {
-  bitmap_set_bit (SYMS_TO_RENAME (cfun), DECL_UID (sym));
+  if (cfun->gimple_df->in_ssa_p)
+    bitmap_set_bit (SYMS_TO_RENAME (cfun), DECL_UID (sym));
 }
 
 
