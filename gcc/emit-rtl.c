@@ -5910,8 +5910,8 @@ gen_hard_reg_clobber (enum machine_mode mode, unsigned int regno)
 static VEC(int,heap) *block_locators_locs;
 static GTY(()) VEC(tree,gc) *block_locators_blocks;
 static VEC(int,heap) *locations_locators_locs;
-DEF_VEC_O(location_t);
-DEF_VEC_ALLOC_O(location_t,heap);
+DEF_VEC_A(location_t);
+DEF_VEC_ALLOC_A(location_t,heap);
 static VEC(location_t,heap) *locations_locators_vals;
 int prologue_locator;
 int epilogue_locator;

@@ -95,24 +95,25 @@ along with GCC; see the file COPYING3.  If not see
    the 'space' predicate will tell you whether there is spare capacity
    in the vector.  You will not normally need to use these two functions.
 
-   Vector types are defined using a DEF_VEC_{O,P,I}(TYPEDEF) macro, to
+   Vector types are defined using a DEF_VEC_{O,A,P,I}(TYPEDEF) macro, to
    get the non-memory allocation version, and then a
-   DEF_VEC_ALLOC_{O,P,I}(TYPEDEF,ALLOC) macro to get memory managed
+   DEF_VEC_ALLOC_{O,A,P,I}(TYPEDEF,ALLOC) macro to get memory managed
    vectors.  Variables of vector type are declared using a
    VEC(TYPEDEF,ALLOC) macro.  The ALLOC argument specifies the
    allocation strategy, and can be either 'gc' or 'heap' for garbage
    collected and heap allocated respectively.  It can be 'none' to get
    a vector that must be explicitly allocated (for instance as a
-   trailing array of another structure).  The characters O, P and I
-   indicate whether TYPEDEF is a pointer (P), object (O) or integral
-   (I) type.  Be careful to pick the correct one, as you'll get an
-   awkward and inefficient API if you use the wrong one.  There is a
-   check, which results in a compile-time warning, for the P and I
-   versions, but there is no check for the O versions, as that is not
-   possible in plain C.  Due to the way GTY works, you must annotate
-   any structures you wish to insert or reference from a vector with a
-   GTY(()) tag.  You need to do this even if you never declare the GC
-   allocated variants.
+   trailing array of another structure).  The characters O, A, P and I
+   indicate whether TYPEDEF is a pointer (P), object (O), atomic object
+   (A) or integral (I) type.  Be careful to pick the correct one, as
+   you'll get an awkward and inefficient API if you use the wrong one or
+   a even a crash if you pick the atomic object version when the object
+   version should have been chosen instead.  There is a check, which
+   results in a compile-time warning, for the P and I versions, but there
+   is no check for the O versions, as that is not possible in plain C.
+   Due to the way GTY works, you must annotate any structures you wish to
+   insert or reference from a vector with a GTY(()) tag.  You need to do
+   this even if you never declare the GC allocated variants.
 
    An example of their use would be,
 
@@ -530,6 +531,13 @@ typedef struct GTY(()) VEC(T,B)				 		  \
   T GTY ((length ("%h.prefix.num"))) vec[1];				  \
 } VEC(T,B)
 
+#define VEC_T_GTY_ATOMIC(T,B)						  \
+typedef struct GTY(()) VEC(T,B)						  \
+{									  \
+  struct vec_prefix prefix;						  \
+  T GTY ((atomic)) vec[1];						  \
+} VEC(T,B)
+
 /* Derived vector type, user visible.  */
 #define VEC_TA_GTY(T,B,A,GTY)						  \
 typedef struct GTY VEC(T,A)						  \
@@ -903,6 +911,14 @@ VEC_TA(T,base,A);							  \
 DEF_VEC_ALLOC_FUNC_O(T,A)						  \
 DEF_VEC_NONALLOC_FUNCS_O(T,A)						  \
 struct vec_swallow_trailing_semi
+
+/* Vector of atomic object.  */
+#define DEF_VEC_A(T)							  \
+VEC_T_GTY_ATOMIC(T,base);						  \
+VEC_TA(T,base,none);							  \
+DEF_VEC_FUNC_O(T)							  \
+struct vec_swallow_trailing_semi
+#define DEF_VEC_ALLOC_A(T,A) DEF_VEC_ALLOC_O(T,A)
 
 #define DEF_VEC_FUNC_O(T)						  \
 static inline unsigned VEC_OP (T,base,length) (const VEC(T,base) *vec_)	  \

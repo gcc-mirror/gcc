@@ -1,3 +1,8 @@
+2012-07-30  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
+
+	* include/line-map.h (line_map_macro): Use the "atomic" GTY option
+	for the macro_locations field.
+
 2011-06-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	* lex.c (search_line_sse42): Use __builtin_ia32_loaddqu and
