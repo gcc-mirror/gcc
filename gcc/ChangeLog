@@ -1,3 +1,10 @@
+2012-07-30  Sandra Loosemore  <sandra@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+	* doc/invoke.texi (MIPS Options): Document -mno-float.
+	* config/mips/mips.h (MIPS_ARCH_FLOAT_SPEC): Make it know
+	about -mno-float.
+
 2012-07-30  Joseph Myers  <joseph@codesourcery.com>
 
 	* doc/sourcebuild.texi (Subdirectories): Document common
