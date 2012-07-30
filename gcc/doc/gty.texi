@@ -134,8 +134,8 @@ The available options are:
 @item length ("@var{expression}")
 
 There are two places the type machinery will need to be explicitly told
-the length of an array.  The first case is when a structure ends in a
-variable-length array, like this:
+the length of an array of non-atomic objects.  The first case is when a
+structure ends in a variable-length array, like this:
 @smallexample
 struct GTY(()) rtvec_def @{
   int num_elem;         /* @r{number of elements} */
@@ -162,6 +162,11 @@ This second use of @code{length} also works on global variables, like:
 @verbatim
 static GTY((length("reg_known_value_size"))) rtx *reg_known_value;
 @end verbatim
+
+Note that the @code{length} option is only meant for use with arrays of
+non-atomic objects, that is, objects that contain pointers pointing to
+other GTY-managed objects.  For other GC-allocated arrays and strings
+you should use @code{atomic}.
 
 @findex skip
 @item skip
@@ -411,7 +416,7 @@ Here is an example of how to use it:
 @smallexample
 struct GTY(()) my_struct @{
   int number_of_elements;
-  unsigned int GTY ((atomic)) * elements;
+  unsigned int * GTY ((atomic)) elements;
 @};
 @end smallexample
 In this case, @code{elements} is a pointer under GC, and the memory it

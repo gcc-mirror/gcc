@@ -1,3 +1,21 @@
+2012-07-30  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
+	    Steven Bosscher  <steven@gcc.gnu.org>
+
+	* gengtype.c (adjust_field_type): Diagnose duplicate "length"
+	option applications and option being applied to arrays of atomic
+	types.
+	(walk_type): Allow "atomic" option on strings too.
+	* dwarf2out.h (struct dw_vec_struct): Use the "atomic" GTY option
+	for the array field.
+	* vec.h: Describe the atomic object "A" type of the macros in
+	the header comment.
+	(VEC_T_GTY_ATOMIC, DEF_VEC_A, DEF_VEC_ALLOC_A): Define.
+	* emit-rtl.c (locations_locators_vals): use the atomic object
+	vector.
+	* doc/gty.texi: Clarify that GTY option "length" is only for
+	arrays of non-atomic objects.  Fix typo in the description of the
+	"atomic" option.
+
 2012-07-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_avoid_lea_for_addr): Handle

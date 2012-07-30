@@ -1256,7 +1256,17 @@ adjust_field_type (type_p t, options_p opt)
 
   for (; opt; opt = opt->next)
     if (strcmp (opt->name, "length") == 0)
-      length_p = 1;
+      {
+	if (length_p)
+	  error_at_line (&lexer_line, "duplicate `%s' option", opt->name);
+	if (t->u.p->kind == TYPE_SCALAR || t->u.p->kind == TYPE_STRING)
+	  {
+	    error_at_line (&lexer_line,
+			   "option `%s' may not be applied to "
+			   "arrays of atomic types", opt->name);
+	  }
+	length_p = 1;
+      }
     else if ((strcmp (opt->name, "param_is") == 0
 	      || (strncmp (opt->name, "param", 5) == 0
 		  && ISDIGIT (opt->name[5])
@@ -2495,7 +2505,7 @@ walk_type (type_p t, struct walk_type_data *d)
       return;
     }
 
-  if (atomic_p && (t->kind != TYPE_POINTER))
+  if (atomic_p && (t->kind != TYPE_POINTER) && (t->kind != TYPE_STRING))
     {
       error_at_line (d->line, "field `%s' has invalid option `atomic'\n", d->val);
       return;
