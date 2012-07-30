@@ -2805,7 +2805,8 @@ int gfc_is_formal_arg (void);
 void gfc_resolve_substring_charlen (gfc_expr *);
 match gfc_iso_c_sub_interface(gfc_code *, gfc_symbol *);
 gfc_expr *gfc_expr_to_initialize (gfc_expr *);
-bool gfc_type_is_extensible (gfc_symbol *sym);
+bool gfc_type_is_extensible (gfc_symbol *);
+gfc_try gfc_resolve_intrinsic (gfc_symbol *, locus *);
 
 
 /* array.c */

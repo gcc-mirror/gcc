@@ -1,3 +1,15 @@
+2012-07-30  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/51081
+	* gfortran.h (gfc_resolve_intrinsic): Add prototype.
+	* expr.c (gfc_check_pointer_assign): Set INTRINSIC attribute if needed.
+	Check for invalid intrinsics.
+	* primary.c (gfc_match_rvalue): Check for intrinsics came too early.
+	Set procedure flavor if appropriate.
+	* resolve.c (resolve_intrinsic): Renamed to gfc_resolve_intrinsic.
+	(resolve_procedure_interface,resolve_procedure_expression,
+	resolve_function,resolve_fl_derived0,resolve_symbol): Ditto.
+
 2012-07-26  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/44354

@@ -3421,6 +3421,21 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 		     &rvalue->where);
 	  return FAILURE;
 	}
+      if (rvalue->expr_type == EXPR_VARIABLE && !attr.proc_pointer)
+	{
+      	  /* Check for intrinsics.  */
+	  gfc_symbol *sym = rvalue->symtree->n.sym;
+	  if (!sym->attr.intrinsic
+	      && !(sym->attr.contained || sym->attr.use_assoc
+		   || sym->attr.external || sym->attr.if_source == IFSRC_IFBODY)
+	      && (gfc_is_intrinsic (sym, 0, sym->declared_at)
+		  || gfc_is_intrinsic (sym, 1, sym->declared_at)))
+	    {
+	      sym->attr.intrinsic = 1;
+	      gfc_resolve_intrinsic (sym, &rvalue->where);
+	      attr = gfc_expr_attr (rvalue);
+	    }
+	}
       if (attr.abstract)
 	{
 	  gfc_error ("Abstract interface '%s' is invalid "
@@ -3444,6 +3459,13 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 			      "at %L", rvalue->symtree->name, &rvalue->where)
 			      == FAILURE)
 	    return FAILURE;
+	  if (attr.intrinsic && gfc_intrinsic_actual_ok (rvalue->symtree->name,
+							 attr.subroutine) == 0)
+	    {
+	      gfc_error ("Intrinsic '%s' at %L is invalid in procedure pointer "
+			 "assignment", rvalue->symtree->name, &rvalue->where);
+	      return FAILURE;
+	    }
 	}
       /* Check for F08:C730.  */
       if (attr.elemental && !attr.intrinsic)
