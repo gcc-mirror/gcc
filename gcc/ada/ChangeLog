@@ -1,3 +1,8 @@
+2012-07-30  Vincent Pucci  <pucci@adacore.com>
+
+	* sem_ch9.adb (Allows_Lock_Free_Implementation): Restrict implicit
+	dereferences of access values.
+
 2012-07-27  Iain Sandoe  <iain@codesourcery.com>
 
 	* system-darwin-ppc64.ads: Add Support_Atomic_Primitives, set to True.

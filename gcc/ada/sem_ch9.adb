@@ -411,12 +411,15 @@ package body Sem_Ch9 is
 
                         return Abandon;
 
-                     --  Explicit dereferences restricted (i.e. dereferences of
-                     --  access values).
+                     --  Dereferences of access values restricted
 
-                     elsif Kind = N_Explicit_Dereference then
+                     elsif Kind = N_Explicit_Dereference
+                       or else (Kind = N_Selected_Component
+                                 and then Is_Access_Type (Etype (Prefix (N))))
+                     then
                         if Lock_Free_Given then
-                           Error_Msg_N ("explicit dereference not allowed", N);
+                           Error_Msg_N ("dereference of access value " &
+                                        "not allowed", N);
                            return Skip;
                         end if;
 
