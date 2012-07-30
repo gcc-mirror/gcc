@@ -1,3 +1,27 @@
+2012-07-30  Robert Dewar  <dewar@adacore.com>
+
+	* bindusg.adb: Clarify file in -A lines.
+
+2012-07-30  Robert Dewar  <dewar@adacore.com>
+
+	* freeze.adb: Minor reformatting.
+
+2012-07-30  Robert Dewar  <dewar@adacore.com>
+
+	* gnatcmd.adb, makeutl.adb, makeutl.ads: Minor code reorganization.
+
+2012-07-30  Vincent Pucci  <pucci@adacore.com>
+
+	* exp_ch9.adb (Build_Lock_Free_Unprotected_Subprogram_Body): Minor
+	reformatting.
+	* sem_ch9.adb (Allows_Lock_Free_Implementation): Minor reformatting.
+	Capture the correct error message in case of a quantified expression.
+
+2012-07-30  Thomas Quinot  <quinot@adacore.com>
+
+	* g-socket.adb (Get_Socket_Option, Set_Socket_Option): On Windows, the
+	value is a milliseconds count in a DWORD, not a struct timeval.
+
 2012-07-30  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_ch12.adb (Earlier): Add local variables T1 and T2. Minor code

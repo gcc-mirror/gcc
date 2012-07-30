@@ -76,9 +76,10 @@ package body Bindusg is
       Write_Line ("  -a        Automatically initialize elaboration " &
                   "procedure");
 
-      --  Line for -A switch
+      --  Lines for -A switch
 
-      Write_Line ("  -A[=file] Give list of ALI files in partition");
+      Write_Line ("  -A        Give list of ALI files in partition");
+      Write_Line ("  -A=file   Write ALI file list to named file");
 
       --  Line for -b switch
 
