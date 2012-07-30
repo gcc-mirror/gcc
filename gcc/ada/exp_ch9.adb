@@ -5485,6 +5485,7 @@ package body Exp_Ch9 is
 
    procedure Ensure_Statement_Present (Loc : Source_Ptr; Alt : Node_Id) is
       Stmt : Node_Id;
+
    begin
       if Opt.Suppress_Control_Flow_Optimizations
         and then Is_Empty_List (Statements (Alt))
@@ -5493,6 +5494,9 @@ package body Exp_Ch9 is
 
          --  Mark NULL statement as coming from source so that it is not
          --  eliminated by GIGI.
+
+         --  Another covert channel! If this is a requirement, it must be
+         --  documented in sinfo/einfo ???
 
          Set_Comes_From_Source (Stmt, True);
 

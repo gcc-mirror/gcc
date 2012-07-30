@@ -4231,8 +4231,9 @@ package body Sem_Ch4 is
 
                begin
                   Set_Parent (Par, Parent (Parent (N)));
+
                   if Try_Object_Operation
-                    (Sinfo.Name (Par), CW_Test_Only => True)
+                       (Sinfo.Name (Par), CW_Test_Only => True)
                   then
                      return;
                   end if;
@@ -6531,7 +6532,6 @@ package body Sem_Ch4 is
 
       declare
          Arg : Node_Id;
-
       begin
          Arg := First (Exprs);
          while Present (Arg) loop
@@ -6542,9 +6542,10 @@ package body Sem_Ch4 is
 
       if not Is_Overloaded (Func_Name) then
          Func := Entity (Func_Name);
-         Indexing := Make_Function_Call (Loc,
-           Name => New_Occurrence_Of (Func, Loc),
-           Parameter_Associations => Assoc);
+         Indexing :=
+           Make_Function_Call (Loc,
+             Name                   => New_Occurrence_Of (Func, Loc),
+             Parameter_Associations => Assoc);
          Rewrite (N, Indexing);
          Analyze (N);
 
@@ -6609,8 +6610,8 @@ package body Sem_Ch4 is
       end if;
 
       if Etype (N) = Any_Type then
-         Error_Msg_NE ("container cannot be indexed with&",
-           N, Etype (First (Exprs)));
+         Error_Msg_NE
+           ("container cannot be indexed with&", N, Etype (First (Exprs)));
          Rewrite (N, New_Occurrence_Of (Any_Id, Loc));
       else
          Analyze (N);

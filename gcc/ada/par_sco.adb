@@ -492,13 +492,16 @@ package body Par_SCO is
 
                --  For entry guard, the token sloc is from the N_Entry_Body.
                --  For PRAGMA, we must get the location from the pragma node.
-               --  Argument N is the pragma argument, and we have to go up two
-               --  levels (through the pragma argument association) to get to
-               --  the pragma node itself. For the guard on a select
-               --  alternative, we do not have access to the token location
-               --  for the WHEN, so we use the first sloc of the condition
-               --  itself (note: we use First_Sloc, not Sloc, because this is
-               --  what is referenced by dominance markers).
+               --  Argument N is the pragma argument, and we have to go up
+               --  two levels (through the pragma argument association) to
+               --  get to the pragma node itself. For the guard on a select
+               --  alternative, we do not have access to the token location for
+               --  the WHEN, so we use the first sloc of the condition itself
+               --  (note: we use First_Sloc, not Sloc, because this is what is
+               --  referenced by dominance markers).
+
+               --  Doesn't this requirement of using First_Sloc need to be
+               --  documented in the spec ???
 
                if Nkind_In (Parent (N), N_Accept_Alternative,
                                         N_Delay_Alternative,

@@ -1699,10 +1699,12 @@ package body Ada.Containers.Indefinite_Vectors is
             --  storage available, or because element initialization fails).
 
             declare
-               pragma Unsuppress (Accessibility_Check);
                --  The element allocator may need an accessibility check in the
                --  case actual type is class-wide or has access discriminants
                --  (see RM 4.8(10.1) and AI12-0035).
+
+               pragma Unsuppress (Accessibility_Check);
+
             begin
                Container.Elements.EA (Idx) := new Element_Type'(New_Item);
             end;
@@ -1752,10 +1754,12 @@ package body Ada.Containers.Indefinite_Vectors is
                   --  initialization fails).
 
                   declare
-                     pragma Unsuppress (Accessibility_Check);
                      --  The element allocator may need an accessibility check
                      --  in case the actual type is class-wide or has access
                      --  discriminants (see RM 4.8(10.1) and AI12-0035).
+
+                     pragma Unsuppress (Accessibility_Check);
+
                   begin
                      E (Idx) := new Element_Type'(New_Item);
                   end;
@@ -1794,11 +1798,14 @@ package body Ada.Containers.Indefinite_Vectors is
                --  K always has a value if the exception handler triggers.
 
                K := Before;
+
                declare
-                  pragma Unsuppress (Accessibility_Check);
                   --  The element allocator may need an accessibility check in
                   --  the case the actual type is class-wide or has access
                   --  discriminants (see RM 4.8(10.1) and AI12-0035).
+
+                  pragma Unsuppress (Accessibility_Check);
+
                begin
                   while K < Index loop
                      E (K) := new Element_Type'(New_Item);
@@ -1905,10 +1912,12 @@ package body Ada.Containers.Indefinite_Vectors is
                --  initialization fails).
 
                declare
-                  pragma Unsuppress (Accessibility_Check);
                   --  The element allocator may need an accessibility check in
                   --  the case the actual type is class-wide or has access
                   --  discriminants (see RM 4.8(10.1) and AI12-0035).
+
+                  pragma Unsuppress (Accessibility_Check);
+
                begin
                   Dst.EA (Idx) := new Element_Type'(New_Item);
                end;
@@ -1952,10 +1961,12 @@ package body Ada.Containers.Indefinite_Vectors is
                --  let it propagate.
 
                declare
-                  pragma Unsuppress (Accessibility_Check);
                   --  The element allocator may need an accessibility check in
                   --  the case the actual type is class-wide or has access
                   --  discriminants (see RM 4.8(10.1) and AI12-0035).
+
+                  pragma Unsuppress (Accessibility_Check);
+
                begin
                   Dst.EA (Idx) := new Element_Type'(New_Item);
                end;
@@ -3208,10 +3219,12 @@ package body Ada.Containers.Indefinite_Vectors is
       declare
          X : Element_Access := Container.Elements.EA (Index);
 
-         pragma Unsuppress (Accessibility_Check);
          --  The element allocator may need an accessibility check in the case
          --  where the actual type is class-wide or has access discriminants
          --  (see RM 4.8(10.1) and AI12-0035).
+
+         pragma Unsuppress (Accessibility_Check);
+
       begin
          Container.Elements.EA (Index) := new Element_Type'(New_Item);
          Free (X);
@@ -3244,10 +3257,12 @@ package body Ada.Containers.Indefinite_Vectors is
       declare
          X : Element_Access := Container.Elements.EA (Position.Index);
 
-         pragma Unsuppress (Accessibility_Check);
          --  The element allocator may need an accessibility check in the case
          --  where the actual type is class-wide or has access discriminants
          --  (see RM 4.8(10.1) and AI12-0035).
+
+         pragma Unsuppress (Accessibility_Check);
+
       begin
          Container.Elements.EA (Position.Index) := new Element_Type'(New_Item);
          Free (X);
@@ -3993,10 +4008,12 @@ package body Ada.Containers.Indefinite_Vectors is
       Last := Index_Type'First;
 
       declare
-         pragma Unsuppress (Accessibility_Check);
          --  The element allocator may need an accessibility check in the case
          --  where the actual type is class-wide or has access discriminants
          --  (see RM 4.8(10.1) and AI12-0035).
+
+         pragma Unsuppress (Accessibility_Check);
+
       begin
          loop
             Elements.EA (Last) := new Element_Type'(New_Item);

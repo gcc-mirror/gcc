@@ -1712,9 +1712,7 @@ package body Sem_Dim is
             --  entity when the object is a constant whose type is a
             --  dimensioned type.
 
-            if Constant_Present (N)
-              and then not Exists (Dim_Of_Etyp)
-            then
+            if Constant_Present (N) and then not Exists (Dim_Of_Etyp) then
                Set_Dimensions (Id, Dim_Of_Expr);
 
             --  Otherwise, issue an error message

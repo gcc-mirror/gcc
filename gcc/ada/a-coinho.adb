@@ -223,10 +223,12 @@ package body Ada.Containers.Indefinite_Holders is
       declare
          X : Element_Access := Container.Element;
 
-         pragma Unsuppress (Accessibility_Check);
          --  Element allocator may need an accessibility check in case actual
          --  type is class-wide or has access discriminants (RM 4.8(10.1) and
          --  AI12-0035).
+
+         pragma Unsuppress (Accessibility_Check);
+
       begin
          Container.Element := new Element_Type'(New_Item);
          Free (X);
@@ -238,10 +240,12 @@ package body Ada.Containers.Indefinite_Holders is
    ---------------
 
    function To_Holder (New_Item : Element_Type) return Holder is
-      pragma Unsuppress (Accessibility_Check);
       --  The element allocator may need an accessibility check in the case the
       --  actual type is class-wide or has access discriminants (RM 4.8(10.1)
       --  and AI12-0035).
+
+      pragma Unsuppress (Accessibility_Check);
+
    begin
       return (AF.Controlled with new Element_Type'(New_Item), 0);
    end To_Holder;
