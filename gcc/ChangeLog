@@ -1,3 +1,12 @@
+2012-07-30  Richard Guenther  <rguenther@suse.de>
+
+	* tree-into-ssa.c (mark_def_sites): Also process virtual operands.
+	(rewrite_stmt): Likewise.
+	(rewrite_enter_block): Likewise.
+	(pass_build_ssa): Do not update virtual SSA form during TODO.
+	(mark_symbol_for_renaming): Do nothing if we are not in SSA form.
+	* lto-streamer-in.c (lto_read_body): Set in_ssa_p earlier.
+
 2012-07-30  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/39423
