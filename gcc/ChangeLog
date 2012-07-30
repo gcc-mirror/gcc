@@ -1,3 +1,9 @@
+2012-07-30  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR middle-end/53823
+	* expmed.c (expand_mult): Skip synth_mult for constant double op1 except
+	for special cases.  Don't initialize coeff and is_neg.
+
 2012-07-30  Ulrich Weigand  <ulrich.weigand@linaro.org>
 	    Richard Earnshaw  <rearnsha@arm.com>
 
