@@ -1,3 +1,8 @@
+2012-07-31  DJ Delorie  <dj@redhat.com>
+
+	* config/s390/s390.c (s390_option_override): Disable DWARF 3/4
+	extensions for TPF, unless specifically selected.
+
 2012-08-01  Alan Modra  <amodra@gmail.com>
 
 	PR target/54131
