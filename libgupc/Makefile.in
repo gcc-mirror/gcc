@@ -2022,10 +2022,10 @@ uninstall-am: uninstall-dvi-am uninstall-html-am uninstall-info-am \
 vpath % $(strip $(search_path))
 
 @LIBGUPC_GENERIC_COLLECTIVES_TRUE@@MAINTAINER_MODE_TRUE@$(UPC_COLL_PREFIX_REDUCE_UPC): gen-upc-coll-reduce.pl \
-@LIBGUPC_GENERIC_COLLECTIVES_TRUE@@MAINTAINER_MODE_TRUE@                               upc_coll_prefix_reduce.in 
+@LIBGUPC_GENERIC_COLLECTIVES_TRUE@@MAINTAINER_MODE_TRUE@                               upc_coll_prefix_reduce.in
 @LIBGUPC_GENERIC_COLLECTIVES_TRUE@@MAINTAINER_MODE_TRUE@	$(PERL) $+ > $@
 
-@LIBGUPC_GENERIC_COLLECTIVES_TRUE@@MAINTAINER_MODE_TRUE@$(UPC_COLL_REDUCE_UPC): gen-upc-coll-reduce.pl upc_coll_reduce.in 
+@LIBGUPC_GENERIC_COLLECTIVES_TRUE@@MAINTAINER_MODE_TRUE@$(UPC_COLL_REDUCE_UPC): gen-upc-coll-reduce.pl upc_coll_reduce.in
 @LIBGUPC_GENERIC_COLLECTIVES_TRUE@@MAINTAINER_MODE_TRUE@	$(PERL) $+ > $@
 
 gcc-upc-lib.h: gen-inline-libgupc.pl gcc-upc-lib.in \

@@ -3,7 +3,7 @@
 #
 #   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
 #   2010, 2011, 2012
-#   Free Software Foundation, Inc. 
+#   Free Software Foundation, Inc.
 #   Contributed by Gary Funck <gary@intrepid.com>
 #   Derived from libgomp/configure.ac
 #
@@ -43,11 +43,11 @@ AC_MSG_RESULT($enable_version_specific_runtime_libs)
 # We would like our source tree to be readonly. However when releases or
 # pre-releases are generated, the flex/bison generated files as well as the
 # various formats of manuals need to be included along with the rest of the
-# sources.  Therefore we have --enable-generated-files-in-srcdir to do 
+# sources.  Therefore we have --enable-generated-files-in-srcdir to do
 # just that.
 AC_MSG_CHECKING([for --enable-generated-files-in-srcdir])
 LIBGUPC_ENABLE(generated-files-in-srcdir, no, ,
-   [put copies of generated files in source dir intended for creating source 
+   [put copies of generated files in source dir intended for creating source
     tarballs for users without texinfo bison or flex],
    permit yes|no)
 AC_MSG_RESULT($enable_generated_files_in_srcdir)
@@ -123,10 +123,10 @@ esac
 AC_SUBST(toolexecdir)
 AC_SUBST(toolexeclibdir)
 
-# If the language specific compiler does not exist, but the "gcc" directory 
+# If the language specific compiler does not exist, but the "gcc" directory
 # does, we do not build anything. Note, $r is set by the top-level Makefile.
 # Note that when we look for the compiler, we search both with and without
-# extension to handle cross and canadian cross builds. 
+# extension to handle cross and canadian cross builds.
 compiler_name=cc1upc
 rm -f skip-this-dir
 AC_MSG_CHECKING(if compiler $compiler_name has been built)
@@ -147,7 +147,7 @@ AC_CACHE_VAL(upc_cv_compiler_exists,
 AC_MSG_RESULT($upc_cv_compiler_exists)
 AC_MSG_CHECKING([if UPC driver 'gupc' has been built])
 AC_CACHE_VAL(upc_cv_driver_exists,
-[ 
+[
   upc_cv_driver_exists=yes
   if test -n "$r"; then
     if test -d "$r"/gcc; then
@@ -367,12 +367,12 @@ fi
 
 AC_MSG_CHECKING([for thread model used by GCC])
 target_thread_file=`$CC -v 2>&1 | sed -n 's/^Thread model: //p'`
-AC_MSG_RESULT([$target_thread_file]) 
+AC_MSG_RESULT([$target_thread_file])
 
 if test $target_thread_file != single; then
   AC_DEFINE(HAVE_GTHR_DEFAULT, 1,
         [Define if the compiler has a thread header that is non single.])
-fi 
+fi
 
 AC_MSG_CHECKING([UPC shared pointer representation])
 cat > conftest.upc << _ACEOF
@@ -668,8 +668,8 @@ if test "$upc_runtime_model" = "smp"; then
         [Define path to preferred GDB for backtrace])
     else
       AC_MSG_ERROR(
-        [cannot find gdb. Try the correct --with-upc-backtrace-gdb 
-         option or disable GDB for backtrace with 
+        [cannot find gdb. Try the correct --with-upc-backtrace-gdb
+         option or disable GDB for backtrace with
          --disable-upc-backtrace option)])
     fi
     AC_MSG_RESULT([$PATH_TO_GDB])
@@ -678,7 +678,7 @@ if test "$upc_runtime_model" = "smp"; then
   AC_MSG_CHECKING([for UPC backtrace signal support])
   AC_ARG_ENABLE(upc-backtrace-signal,
   [AS_HELP_STRING([--enable-upc-backtrace-signal],
-	 	  [enable signal support for UPC stack backtrace 
+	 	  [enable signal support for UPC stack backtrace
 		   [default='yes']])],
   [
     case "$enableval" in
@@ -734,7 +734,7 @@ if test "$upc_runtime_model" = "smp"; then
 	#include <bfd.h>
 	bfd_error_type error;
 	void foo () { error = bfd_get_error (); }
-	],[ ], 
+	],[ ],
     [AC_MSG_RESULT([yes])], [AC_MSG_RESULT([no]); have_bfd=no ])
   CFLAGS="$saved_CFLAGS"
   LIBS="$saved_LIBS"

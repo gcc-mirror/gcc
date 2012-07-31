@@ -1,5 +1,11 @@
 2012-07-31  Gary Funck  <gary@intrepid.com>
 
+	* configure.ac: Remove extra white space at end-of-line.
+	* Makefile.am: Ditto.
+	* Makefile.in: Re-generate.
+
+2012-07-31  Gary Funck  <gary@intrepid.com>
+
 	* configure.ac: Improve diagnostics for options
 	that control UPC stack backtrace support.
 	* configure: Re-generate.

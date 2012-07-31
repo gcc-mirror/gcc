@@ -139,10 +139,10 @@ UPC_COLL_REDUCE_UPC = $(LIBGUPC_COLL_SRCDIR)/upc_coll_reduce.upc
 
 if MAINTAINER_MODE
 $(UPC_COLL_PREFIX_REDUCE_UPC): gen-upc-coll-reduce.pl \
-                               upc_coll_prefix_reduce.in 
+                               upc_coll_prefix_reduce.in
 	$(PERL) $+ > $@
 
-$(UPC_COLL_REDUCE_UPC): gen-upc-coll-reduce.pl upc_coll_reduce.in 
+$(UPC_COLL_REDUCE_UPC): gen-upc-coll-reduce.pl upc_coll_reduce.in
 	$(PERL) $+ > $@
 endif
 
