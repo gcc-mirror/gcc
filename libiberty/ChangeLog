@@ -1,3 +1,8 @@
+2012-07-31  Mike Frysinger  <vapier@gentoo.org>
+
+	* md5.c (md5_finish_ctx): Declare swap_bytes.  Assign SWAP() output
+	to swap_bytes, and then call memcpy to move it to ctx->buffer.
+
 2012-07-26  Kazu Hirata  <kazu@codesourcery.com>
 	    Sandra Loosemore  <sandra@codesourcery.com>
 
