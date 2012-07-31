@@ -1,5 +1,14 @@
 2012-07-31  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* pt.c (check_default_tmpl_args): Change is_primary and is_partial
+	parameters to bool type, adjust.
+	(push_template_decl_real): Tidy.
+	* parser.c (cp_parser_init_declarator): Adjust.
+	* decl.c (redeclaration_error_message): Likewise.
+	* cp-tree.h (check_default_tmpl_args): Update prototype.
+
+2012-07-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/53624
 	* pt.c (check_default_tmpl_args): Don't check local types.
 
