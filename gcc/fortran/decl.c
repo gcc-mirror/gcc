@@ -4792,41 +4792,20 @@ match_procedure_interface (gfc_symbol **proc_if)
   gfc_current_ns = old_ns;
   *proc_if = st->n.sym;
 
-  /* Various interface checks.  */
   if (*proc_if)
     {
       (*proc_if)->refs++;
       /* Resolve interface if possible. That way, attr.procedure is only set
 	 if it is declared by a later procedure-declaration-stmt, which is
-	 invalid per C1212.  */
+	 invalid per F08:C1216 (cf. resolve_procedure_interface).  */
       while ((*proc_if)->ts.interface)
 	*proc_if = (*proc_if)->ts.interface;
 
-      if ((*proc_if)->generic)
-	{
-	  gfc_error ("Interface '%s' at %C may not be generic",
-		     (*proc_if)->name);
-	  return MATCH_ERROR;
-	}
-      if ((*proc_if)->attr.proc == PROC_ST_FUNCTION)
-	{
-	  gfc_error ("Interface '%s' at %C may not be a statement function",
-		     (*proc_if)->name);
-	  return MATCH_ERROR;
-	}
-      /* Handle intrinsic procedures.  */
-      if (!((*proc_if)->attr.external || (*proc_if)->attr.use_assoc
-	    || (*proc_if)->attr.if_source == IFSRC_IFBODY)
-	  && (gfc_is_intrinsic ((*proc_if), 0, gfc_current_locus)
-	      || gfc_is_intrinsic ((*proc_if), 1, gfc_current_locus)))
-	(*proc_if)->attr.intrinsic = 1;
-      if ((*proc_if)->attr.intrinsic
-	  && !gfc_intrinsic_actual_ok ((*proc_if)->name, 0))
-	{
-	  gfc_error ("Intrinsic procedure '%s' not allowed "
-		    "in PROCEDURE statement at %C", (*proc_if)->name);
-	  return MATCH_ERROR;
-	}
+      if ((*proc_if)->attr.flavor == FL_UNKNOWN
+	  && (*proc_if)->ts.type == BT_UNKNOWN
+	  && gfc_add_flavor (&(*proc_if)->attr, FL_PROCEDURE,
+			      (*proc_if)->name, NULL) == FAILURE)
+	return MATCH_ERROR;
     }
 
 got_ts:

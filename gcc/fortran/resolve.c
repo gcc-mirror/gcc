@@ -146,24 +146,58 @@ static void resolve_symbol (gfc_symbol *sym);
 static gfc_try
 resolve_procedure_interface (gfc_symbol *sym)
 {
-  if (sym->ts.interface == sym)
+  gfc_symbol *ifc = sym->ts.interface;
+
+  if (!ifc)
+    return SUCCESS;
+
+  /* Several checks for F08:C1216.  */
+  if (ifc == sym)
     {
       gfc_error ("PROCEDURE '%s' at %L may not be used as its own interface",
 		 sym->name, &sym->declared_at);
       return FAILURE;
     }
-  if (sym->ts.interface->attr.procedure)
+  if (ifc->attr.procedure)
     {
       gfc_error ("Interface '%s', used by procedure '%s' at %L, is declared "
-		 "in a later PROCEDURE statement", sym->ts.interface->name,
+		 "in a later PROCEDURE statement", ifc->name,
 		 sym->name, &sym->declared_at);
+      return FAILURE;
+    }
+  if (ifc->generic)
+    {
+      /* For generic interfaces, check if there is
+	 a specific procedure with the same name.  */
+      gfc_interface *gen = ifc->generic;
+      while (gen && strcmp (gen->sym->name, ifc->name) != 0)
+	gen = gen->next;
+      if (!gen)
+	{
+	  gfc_error ("Interface '%s' at %L may not be generic",
+		     ifc->name, &sym->declared_at);
+	  return FAILURE;
+	}
+    }
+  if (ifc->attr.proc == PROC_ST_FUNCTION)
+    {
+      gfc_error ("Interface '%s' at %L may not be a statement function",
+		 ifc->name, &sym->declared_at);
+      return FAILURE;
+    }
+  if (gfc_is_intrinsic (ifc, 0, ifc->declared_at)
+      || gfc_is_intrinsic (ifc, 1, ifc->declared_at))
+    ifc->attr.intrinsic = 1;
+  if (ifc->attr.intrinsic && !gfc_intrinsic_actual_ok (ifc->name, 0))
+    {
+      gfc_error ("Intrinsic procedure '%s' not allowed in "
+		 "PROCEDURE statement at %L", ifc->name, &sym->declared_at);
       return FAILURE;
     }
 
   /* Get the attributes from the interface (now resolved).  */
-  if (sym->ts.interface->attr.if_source || sym->ts.interface->attr.intrinsic)
+  if (ifc->attr.if_source || ifc->attr.intrinsic)
     {
-      gfc_symbol *ifc = sym->ts.interface;
       resolve_symbol (ifc);
 
       if (ifc->attr.intrinsic)
@@ -212,10 +246,10 @@ resolve_procedure_interface (gfc_symbol *sym)
 	    return FAILURE;
 	}
     }
-  else if (sym->ts.interface->name[0] != '\0')
+  else if (ifc->name[0] != '\0')
     {
       gfc_error ("Interface '%s' of procedure '%s' at %L must be explicit",
-		 sym->ts.interface->name, sym->name, &sym->declared_at);
+		 ifc->name, sym->name, &sym->declared_at);
       return FAILURE;
     }
 
@@ -273,9 +307,9 @@ resolve_formal_arglist (gfc_symbol *proc)
 		       &proc->declared_at);
 	  continue;
 	}
-      else if (sym->attr.procedure && sym->ts.interface
-	       && sym->attr.if_source != IFSRC_DECL)
-	resolve_procedure_interface (sym);
+      else if (sym->attr.procedure && sym->attr.if_source != IFSRC_DECL
+	       && resolve_procedure_interface (sym) == FAILURE)
+	return;
 
       if (sym->attr.if_source != IFSRC_UNKNOWN)
 	resolve_formal_arglist (sym);
@@ -1672,10 +1706,7 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
 
 	  /* If a procedure is not already determined to be something else
 	     check if it is intrinsic.  */
-	  if (!sym->attr.intrinsic
-	      && !(sym->attr.external || sym->attr.use_assoc
-		   || sym->attr.if_source == IFSRC_IFBODY)
-	      && gfc_is_intrinsic (sym, sym->attr.subroutine, e->where))
+	  if (gfc_is_intrinsic (sym, sym->attr.subroutine, e->where))
 	    sym->attr.intrinsic = 1;
 
 	  if (sym->attr.proc == PROC_ST_FUNCTION)
@@ -2601,8 +2632,7 @@ static bool
 is_external_proc (gfc_symbol *sym)
 {
   if (!sym->attr.dummy && !sym->attr.contained
-	&& !(sym->attr.intrinsic
-	      || gfc_is_intrinsic (sym, sym->attr.subroutine, sym->declared_at))
+	&& !gfc_is_intrinsic (sym, sym->attr.subroutine, sym->declared_at)
 	&& sym->attr.proc != PROC_ST_FUNCTION
 	&& !sym->attr.proc_pointer
 	&& !sym->attr.use_assoc
@@ -12516,8 +12546,7 @@ resolve_symbol (gfc_symbol *sym)
   if (sym->attr.external && sym->ts.type != BT_UNKNOWN && !sym->attr.function)
     gfc_add_function (&sym->attr, sym->name, &sym->declared_at);
 
-  if (sym->attr.procedure && sym->ts.interface
-      && sym->attr.if_source != IFSRC_DECL
+  if (sym->attr.procedure && sym->attr.if_source != IFSRC_DECL
       && resolve_procedure_interface (sym) == FAILURE)
     return;
 

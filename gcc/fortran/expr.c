@@ -3426,8 +3426,6 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
       	  /* Check for intrinsics.  */
 	  gfc_symbol *sym = rvalue->symtree->n.sym;
 	  if (!sym->attr.intrinsic
-	      && !(sym->attr.contained || sym->attr.use_assoc
-		   || sym->attr.external || sym->attr.if_source == IFSRC_IFBODY)
 	      && (gfc_is_intrinsic (sym, 0, sym->declared_at)
 		  || gfc_is_intrinsic (sym, 1, sym->declared_at)))
 	    {
