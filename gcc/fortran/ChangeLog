@@ -1,3 +1,8 @@
+2012-07-31  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54134
+	* dependency.c (gfc_dep_compare_expr): Check if arguments are NULL.
+
 2012-07-31  Tobias Burnus  <burnus@net-b.de>
 
 	* interface.c (gfc_procedure_use): Return gfc_try instead of void.

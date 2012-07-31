@@ -261,6 +261,9 @@ gfc_dep_compare_expr (gfc_expr *e1, gfc_expr *e2)
   n1 = NULL;
   n2 = NULL;
 
+  if (e1 == NULL && e2 == NULL)
+    return 0;
+
   /* Remove any integer conversion functions to larger types.  */
   if (e1->expr_type == EXPR_FUNCTION && e1->value.function.isym
       && e1->value.function.isym->id == GFC_ISYM_CONVERSION
