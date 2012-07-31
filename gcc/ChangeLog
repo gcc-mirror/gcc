@@ -1,3 +1,14 @@
+2012-07-31  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR tree-optimization/53773
+	* tree-vectorizer.h (struct _loop_vec_info): Add operands_swapped.
+	(LOOP_VINFO_OPERANDS_SWAPPED): New macro.
+	* tree-vect-loop.c (new_loop_vec_info): Initialize
+	LOOP_VINFO_OPERANDS_SWAPPED field.
+	(destroy_loop_vec_info): Restore canonical form.
+	(vect_is_slp_reduction): Set LOOP_VINFO_OPERANDS_SWAPPED field.
+	(vect_is_simple_reduction_1): Likewise.
+
 2012-07-31  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* sched-vis.c (dump_insn_slim): Print print_rtx_head at the

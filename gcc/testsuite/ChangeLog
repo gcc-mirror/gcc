@@ -1,3 +1,8 @@
+2012-07-31  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR tree-optimization/53773
+	* testsuite/gcc.dg/vect/pr53773.c: New test.
+
 2012-07-31  Nick Clifton  <nickc@redhat.com>
 
 	* gcc.dg/stack-usage-1.c (SIZE): Define for FRV.
