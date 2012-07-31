@@ -5070,24 +5070,38 @@ address_offset (rtx op)
 
    Offsetting a lo_sum should not be allowed, except where we know by
    alignment that a 32k boundary is not crossed, but see the ???
-   comment in rs6000_legitimize_reload_address.  */
+   comment in rs6000_legitimize_reload_address.  Note that by
+   "offsetting" here we mean a further offset to access parts of the
+   MEM.  It's fine to have a lo_sum where the inner address is offset
+   from a sym, since the same sym+offset will appear in the high part
+   of the address calculation.  */
 
 bool
 mem_operand_gpr (rtx op, enum machine_mode mode)
 {
   unsigned HOST_WIDE_INT offset;
   int extra;
+  rtx addr = XEXP (op, 0);
 
-  op = address_offset (XEXP (op, 0));
+  op = address_offset (addr);
   if (op == NULL_RTX)
     return true;
 
   offset = INTVAL (op);
-  extra = GET_MODE_SIZE (mode) - UNITS_PER_WORD;
-  if (extra < 0)
-    extra = 0;
-  else if (TARGET_POWERPC64 && (offset & 3) != 0)
+  if (TARGET_POWERPC64 && (offset & 3) != 0)
     return false;
+
+  if (GET_CODE (addr) == LO_SUM)
+    /* We know by alignment that ABI_AIX medium/large model toc refs
+       will not cross a 32k boundary, since all entries in the
+       constant pool are naturally aligned and we check alignment for
+       other medium model toc-relative addresses.  For ABI_V4 and
+       ABI_DARWIN lo_sum addresses, we just check that 64-bit
+       offsets are 4-byte aligned.  */
+    return true;
+
+  extra = GET_MODE_SIZE (mode) - UNITS_PER_WORD;
+  gcc_assert (extra >= 0);
   return offset + 0x8000 < 0x10000u - extra;
 }
 
