@@ -5,7 +5,8 @@
 
 2012-07-31  Nick Clifton  <nickc@redhat.com>
 
-	* gcc.dg/stack-usage-1.c (SIZE): Define for FRV.
+	* gcc.dg/stack-usage-1.c (SIZE): Define for FRV,
+	and for XStormy16.
 
 2012-07-31  Tobias Burnus  <burnus@net-b.de>
 

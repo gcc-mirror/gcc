@@ -30,6 +30,9 @@
 
 2012-07-31  Nick Clifton  <nickc@redhat.com>
 
+	* config/stormy16/stormy16.c (xstormy16_expand_prologue): Add
+	support for reporting stack usage.
+
 	* config/frv/frv.c (QUAD): Fix typo.
 	(frv_expand_prologue): Report stack usage.
 

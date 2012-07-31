@@ -1035,6 +1035,9 @@ xstormy16_expand_prologue (void)
   if (layout.locals_size >= 32768)
     error ("local variable memory requirements exceed capacity");
 
+  if (flag_stack_usage_info)
+    current_function_static_stack_size = layout.frame_size;
+
   /* Save the argument registers if necessary.  */
   if (layout.stdarg_save_size)
     for (regno = FIRST_ARGUMENT_REGISTER;
