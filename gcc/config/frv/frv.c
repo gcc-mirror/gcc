@@ -1761,6 +1761,9 @@ frv_expand_prologue (void)
   if (TARGET_DEBUG_STACK)
     frv_debug_stack (info);
 
+  if (flag_stack_usage_info)
+    current_function_static_stack_size = info->total_size;
+
   if (info->total_size == 0)
     return;
 
