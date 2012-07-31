@@ -1,3 +1,21 @@
+2012-07-31  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR pch/53880
+	* gengtype.c (struct walk_type_data): Add have_this_obj field.
+	(walk_type): For functions that take a this_obj argument and
+	that process fields with a GTY((length)) argument, write the
+	test that write_types_local_process_field will write also at the
+	head of the loop, effectively unswitching the loop.
+	(write_func_for_structure, write_local_func_for_structure): Clear
+	have_this_obj before calling walk_type.
+	(write_local_func_for_structure): Set have_this_obj before walk_type.
+	(write_array): Set have_this_obj for output of local pointer walking
+	functions but not for marker functions.
+	(write_types_local_process_field): Assert have_this_obj is set.
+
+	* rtl.h (simplify_using_condition): Adjust prototype using bitmap
+	from coretypes.h.
+
 2012-07-30  Nathan Froyd  <froydnj@gcc.gnu.org>
 
 

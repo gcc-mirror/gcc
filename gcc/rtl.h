@@ -2620,7 +2620,7 @@ extern rtx compare_and_jump_seq (rtx, rtx, enum rtx_code, rtx, int, rtx);
 
 /* In loop-iv.c  */
 extern rtx canon_condition (rtx);
-extern void simplify_using_condition (rtx, rtx *, struct bitmap_head_def *);
+extern void simplify_using_condition (rtx, rtx *, bitmap);
 
 /* In final.c  */
 extern unsigned int compute_alignments (void);
