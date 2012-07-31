@@ -1,3 +1,21 @@
+2012-07-30  Nathan Froyd  <froydnj@gcc.gnu.org>
+
+	* expmed.h (NUM_MODE_VECTOR_INT): Define.
+	(struct expmed_op_cheap, struct expmed_op_costs): New structures.
+	(struct target_expmed): Convert x_mul_highpart_cost and
+	x_mul_widen_cost fields to be indexed by integer modes.
+	Convert x_sdiv_pow2_cheap and x_smod_pow2_cheap fields to be
+	of type struct expmed_op_cheap.  Convert other cost fields to be
+	of type struct_expmed_op_costs.
+	(mul_widen_cost_ptr, mul_highpart_cost_ptr): Adjust for new
+	indexing of respective fields.
+	(expmed_op_cheap_ptr): New function.
+	(sdiv_pow2_cheap_ptr, smod_pow2_cheap_ptr): Call it.
+	(expmed_op_cost_ptr): New function.
+	(add_cost_ptr, neg_cost_ptr, shift_cost_ptr, shiftadd_cost_ptr,
+	shiftsub0_cost_ptr, shiftsub1_cost_ptr, mul_cost_ptr,
+	sdiv_cost_ptr, udiv_cost_ptr): Call it.
+
 2012-07-30  Sandra Loosemore  <sandra@codesourcery.com>
 	    Julian Brown  <julian@codesourcery.com>
 
