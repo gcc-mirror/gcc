@@ -1,3 +1,7 @@
+2012-07-31  Nick Clifton  <nickc@redhat.com>
+
+	* gcc.dg/stack-usage-1.c (SIZE): Define for FRV.
+
 2012-07-31  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/c_funloc_tests_6.f90: New.

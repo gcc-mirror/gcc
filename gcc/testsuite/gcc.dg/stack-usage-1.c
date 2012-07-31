@@ -62,6 +62,8 @@
 #  define SIZE 254
 #elif defined (__sh__)
 #  define SIZE 252
+#elif defined (__frv__)
+#  define SIZE 248
 #else
 #  define SIZE 256
 #endif
