@@ -853,6 +853,7 @@ new_loop_vec_info (struct loop *loop)
   LOOP_VINFO_PEELING_HTAB (res) = NULL;
   LOOP_VINFO_TARGET_COST_DATA (res) = init_cost (loop);
   LOOP_VINFO_PEELING_FOR_GAPS (res) = false;
+  LOOP_VINFO_OPERANDS_SWAPPED (res) = false;
 
   return res;
 }
@@ -873,6 +874,7 @@ destroy_loop_vec_info (loop_vec_info loop_vinfo, bool clean_stmts)
   int j;
   VEC (slp_instance, heap) *slp_instances;
   slp_instance instance;
+  bool swapped;
 
   if (!loop_vinfo)
     return;
@@ -881,6 +883,7 @@ destroy_loop_vec_info (loop_vec_info loop_vinfo, bool clean_stmts)
 
   bbs = LOOP_VINFO_BBS (loop_vinfo);
   nbbs = loop->num_nodes;
+  swapped = LOOP_VINFO_OPERANDS_SWAPPED (loop_vinfo);
 
   if (!clean_stmts)
     {
@@ -905,6 +908,22 @@ destroy_loop_vec_info (loop_vec_info loop_vinfo, bool clean_stmts)
       for (si = gsi_start_bb (bb); !gsi_end_p (si); )
         {
           gimple stmt = gsi_stmt (si);
+
+	  /* We may have broken canonical form by moving a constant
+	     into RHS1 of a commutative op.  Fix such occurrences.  */
+	  if (swapped && is_gimple_assign (stmt))
+	    {
+	      enum tree_code code = gimple_assign_rhs_code (stmt);
+
+	      if ((code == PLUS_EXPR
+		   || code == POINTER_PLUS_EXPR
+		   || code == MULT_EXPR)
+		  && CONSTANT_CLASS_P (gimple_assign_rhs1 (stmt)))
+		swap_tree_operands (stmt,
+				    gimple_assign_rhs1_ptr (stmt),
+				    gimple_assign_rhs2_ptr (stmt));
+	    }
+
 	  /* Free stmt_vec_info.  */
 	  free_stmt_vec_info (stmt);
           gsi_next (&si);
@@ -1920,6 +1939,9 @@ vect_is_slp_reduction (loop_vec_info loop_info, gimple phi, gimple first_stmt)
 	 		          gimple_assign_rhs1_ptr (next_stmt),
                                   gimple_assign_rhs2_ptr (next_stmt));
 	      update_stmt (next_stmt);
+
+	      if (CONSTANT_CLASS_P (gimple_assign_rhs1 (next_stmt)))
+		LOOP_VINFO_OPERANDS_SWAPPED (loop_info) = true;
 	    }
 	  else
 	    return false;
@@ -2324,6 +2346,9 @@ vect_is_simple_reduction_1 (loop_vec_info loop_info, gimple phi,
 
           swap_tree_operands (def_stmt, gimple_assign_rhs1_ptr (def_stmt),
  			      gimple_assign_rhs2_ptr (def_stmt));
+
+	  if (CONSTANT_CLASS_P (gimple_assign_rhs1 (def_stmt)))
+	    LOOP_VINFO_OPERANDS_SWAPPED (loop_info) = true;
         }
       else
         {
