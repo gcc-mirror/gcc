@@ -311,6 +311,22 @@ __ffshi2 (UHWtype u)
 }
 #endif
 
+#ifdef XSTORMY16_CLRSBHI2
+/* Returns the number of leading redundant sign bits in X.
+   I.e. the number of bits following the most significant bit which are
+   identical to it.  There are no special cases for 0 or other values.  */
+
+int
+__clrsbhi2 (HWtype x)
+{
+  if (x < 0)
+    x = ~x;
+  if (x == 0)
+    return 15;
+  return __builtin_clz (x) - 1;
+}
+#endif
+
 #ifdef XSTORMY16_UCMPSI2
 /* Performs an unsigned comparison of two 32-bit values: A and B.
    If A is less than B, then 0 is returned.  If A is greater than B,

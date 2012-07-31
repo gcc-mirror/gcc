@@ -33,6 +33,7 @@ LIB2ADD = \
 	$(srcdir)/config/stormy16/clzhi2.c \
 	$(srcdir)/config/stormy16/ctzhi2.c \
 	$(srcdir)/config/stormy16/ffshi2.c \
+	$(srcdir)/config/stormy16/clrsbhi2.c \
 	$(srcdir)/config/stormy16/cmpsi2.c \
 	$(srcdir)/config/stormy16/ucmpsi2.c
 

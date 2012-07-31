@@ -1,3 +1,10 @@
+2012-07-31  Nick Clifton  <nickc@redhat.com>
+
+	* config/stormy16/lib2funcs.c (__clrsbhi2): New function.
+	Implements __clrsb for an HImode argument.
+	* config/stormy16/clrsbhi2.c: New file:
+	* config/stormy16/t-stormy16 (LIB2ADD): Add clrsbhi2.c.
+
 2012-07-22  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* libgcov.c (__gcov_ior_profiler): Benign comment fix.
