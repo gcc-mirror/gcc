@@ -1,3 +1,8 @@
+2012-07-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53624
+	* g++.dg/cpp0x/temp_default5.C: New.
+
 2012-07-30  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/51081
