@@ -1,3 +1,8 @@
+2012-07-31  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54134
+	* gfortran.dg/typebound_override_3.f90: New.
+
 2012-07-31  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	PR tree-optimization/53773
