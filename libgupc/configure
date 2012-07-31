@@ -1419,12 +1419,12 @@ Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --enable-version-specific-runtime-libs
-                          Specify that runtime libraries should be installed
+                          specify that runtime libraries should be installed
                           in a compiler-specific directory [default=no]
   --enable-generated-files-in-srcdir
                           put copies of generated files in source dir intended
                           for creating source tarballs for users without
-                          texinfo bison or flex. [default=no]
+                          texinfo bison or flex [default=no]
   --enable-multilib       build many library versions (default)
   --disable-dependency-tracking  speeds up one-time build
   --enable-dependency-tracking   do not reject slow dependency extractors
@@ -1444,12 +1444,12 @@ Optional Features:
                           enable UPC's use of a custom linker script; this
                           will define the UPC shared section as a no load
                           section on targets where this feature is supported
-                          (requires GNU LD).
+                          (requires GNU LD)
   --enable-upc-gum-debug  enable UPC's source level debugging with GDB and GUM
-                          support (requires UPC aware GDB).
+                          support (requires UPC aware GDB)
   --enable-upc-backtrace  enable UPC thread backtrace; enable UPC thread to
                           report its stack frame on the run-time catastrophic
-                          events or per the user request.
+                          events or per the user request
   --enable-upc-backtrace-gdb
                           enable the use of GDB for UPC thread backtrace
                           [default='yes']
@@ -3314,7 +3314,7 @@ case ${enable_version_specific_runtime_libs} in
     esac
     ;;
   *)
-    as_fn_error "'$enable_version_specific_runtime_libs' is not set." "$LINENO" 5
+    as_fn_error "'$enable_version_specific_runtime_libs' is not set" "$LINENO" 5
     ;;
 esac
 
@@ -4365,8 +4365,8 @@ fi
 if echo "$CC" | grep '/xgcc ' >/dev/null 2>&1; then
   UPC=`echo "$CC" | sed -e 's=/xgcc =/gupc ='`
 else
-  as_fn_error "Can't create UPC from CC because it doesn't contain the
-  string '/xgcc '.  The value of CC is: \"$CC\"" "$LINENO" 5
+  as_fn_error "cannot create UPC from CC because it does not contain the
+  string '/xgcc '; the value of CC is: \"$CC\"" "$LINENO" 5
 fi
 if test -n "$ac_tool_prefix"; then
   for ac_prog in upcc upc
@@ -14635,7 +14635,8 @@ GUPCR_PTS_THREAD_SIZE=_STR(__UPC_THREAD_SIZE__)
   GUPCR_PTS_PACKED_REP=1
 #endif
 _ACEOF
-eval `$UPC -fno-upc-pre-include -DNO_GCC_UPC_LIB=1 -E conftest.upc | grep '^ *GUPCR_[A-Z0-9_]*='`
+eval `$UPC -fno-upc-pre-include -DNO_GCC_UPC_LIB=1 -E conftest.upc | \
+  grep '^ *GUPCR_[A-Z0-9_]*='`
 rm -f conftest.upc
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $GUPCR_PTS_REP" >&5
 $as_echo "$GUPCR_PTS_REP" >&6; }
@@ -14730,7 +14731,8 @@ if test "${with_upc_runtime+set}" = set; then :
       upc_runtime_model=smp
       ;;
     *)
-      as_fn_error "$withval is an invalid runtime model for --with-upc-runtime" "$LINENO" 5
+      as_fn_error "$withval is an invalid runtime model for
+      --with-upc-runtime" "$LINENO" 5
       ;;
   esac
 
@@ -14751,7 +14753,7 @@ if test "${enable_upc_link_script+set}" = set; then :
   case $enableval in
   yes | no) ;;
   *)
-    as_fn_error "--enable-upc-link-script accepts only yes or no." "$LINENO" 5
+    as_fn_error "--enable-upc-link-script accepts only yes or no" "$LINENO" 5
   esac
 
 else
@@ -14766,7 +14768,7 @@ if test "$enable_upc_link_script" = yes; then
     if ! ${LD} --verbose | ${PERL} $gen_ld_script 1>/dev/null ; then
       # if gen-upc-ld-script did not accept the output of the linker
       # then disable UPC link script support.
-      as_fn_error "Selected linker does not support linker scripts." "$LINENO" 5
+      as_fn_error "selected linker does not support linker scripts" "$LINENO" 5
     fi
   fi
 fi
@@ -14899,7 +14901,8 @@ fi
 
   if test "x$enable_upc_affinity" = "xyes" &&
     test "x$upc_affinity" = "xno"; then
-      as_fn_error "scheduling affinity enabled but not supported - use --disable-upc-affinity" "$LINENO" 5
+      as_fn_error "scheduling affinity enabled but not supported
+      - use --disable-upc-affinity" "$LINENO" 5
   fi
   if test "x$enable_upc_affinity" = "xno"; then
     upc_affinity=no;
@@ -14952,7 +14955,7 @@ if test "${enable_upc_gum_debug+set}" = set; then :
     case $enableval in
     yes | no) ;;
     *)
-      as_fn_error "--enable-upc-gum-debug accepts only yes or no." "$LINENO" 5
+      as_fn_error "--enable-upc-gum-debug accepts only yes or no" "$LINENO" 5
     esac
     upc_gum_debug=$enableval
 
@@ -14982,7 +14985,7 @@ if test "${enable_upc_backtrace+set}" = set; then :
     case $enableval in
     yes | no) ;;
     *)
-      as_fn_error "--enable-upc-backtrace accepts only yes or no." "$LINENO" 5
+      as_fn_error "--enable-upc-backtrace accepts only yes or no" "$LINENO" 5
     esac
     upc_backtrace=$enableval
 
@@ -15008,7 +15011,7 @@ if test "${enable_upc_backtrace_gdb+set}" = set; then :
     case "$enableval" in
     yes | no) ;;
     *)
-      as_fn_error "--enable-upc-backtrace-gdb accepts only yes or no." "$LINENO" 5
+      as_fn_error "--enable-upc-backtrace-gdb accepts only yes or no" "$LINENO" 5
     esac
 
 else
@@ -15092,9 +15095,9 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
     else
-      as_fn_error "Cannot find gdb. Try the correct --with-upc-backtrace-gdb
+      as_fn_error "cannot find gdb. Try the correct --with-upc-backtrace-gdb
          option or disable GDB for backtrace with
-         --disable-upc-backtrace option)." "$LINENO" 5
+         --disable-upc-backtrace option)" "$LINENO" 5
     fi
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PATH_TO_GDB" >&5
 $as_echo "$PATH_TO_GDB" >&6; }
@@ -15108,7 +15111,7 @@ if test "${enable_upc_backtrace_signal+set}" = set; then :
     case "$enableval" in
     yes | no) ;;
     *)
-      as_fn_error "--enable-upc-backtrace-signal accepts only yes or no." "$LINENO" 5
+      as_fn_error "--enable-upc-backtrace-signal accepts only yes or no" "$LINENO" 5
     esac
 
 else
@@ -15225,7 +15228,8 @@ $as_echo "#define HAVE_LIBBFD 1" >>confdefs.h
 $as_echo_n "checking for -rdynamic... " >&6; }
   if test "x$export_sym_check" != x; then
     echo "int main() {return 0;} int foobar() {return 0;}" > conftest.c
-    ${CC} ${CFLAGS} ${LDFLAGS} -rdynamic conftest.c -o conftest > /dev/null 2>&1
+    ${CC} ${CFLAGS} ${LDFLAGS} -rdynamic conftest.c \
+      -o conftest > /dev/null 2>&1
     if $export_sym_check conftest | grep foobar > /dev/null; then
       have_rdynamic=yes
     fi

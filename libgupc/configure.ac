@@ -35,7 +35,8 @@ AC_CONFIG_HEADERS([config.h])
 
 AC_MSG_CHECKING([for --enable-version-specific-runtime-libs])
 LIBGUPC_ENABLE(version-specific-runtime-libs, no, ,
-   [Specify that runtime libraries should be installed in a compiler-specific directory],
+   [specify that runtime libraries should be installed
+   in a compiler-specific directory],
    permit yes|no)
 AC_MSG_RESULT($enable_version_specific_runtime_libs)
 
@@ -47,7 +48,7 @@ AC_MSG_RESULT($enable_version_specific_runtime_libs)
 AC_MSG_CHECKING([for --enable-generated-files-in-srcdir])
 LIBGUPC_ENABLE(generated-files-in-srcdir, no, ,
    [put copies of generated files in source dir intended for creating source 
-    tarballs for users without texinfo bison or flex.],
+    tarballs for users without texinfo bison or flex],
    permit yes|no)
 AC_MSG_RESULT($enable_generated_files_in_srcdir)
 AM_CONDITIONAL(GENINSRC, test "$enable_generated_files_in_srcdir" = yes)
@@ -116,7 +117,7 @@ case ${enable_version_specific_runtime_libs} in
     esac
     ;;
   *)
-    AC_MSG_ERROR(['$enable_version_specific_runtime_libs' is not set.])
+    AC_MSG_ERROR(['$enable_version_specific_runtime_libs' is not set])
     ;;
 esac
 AC_SUBST(toolexecdir)
@@ -205,8 +206,8 @@ dnl may have been tacked onto the $CC command.
 if echo "$CC" | grep '/xgcc ' >/dev/null 2>&1; then
   UPC=`echo "$CC" | sed -e 's=/xgcc =/gupc ='`
 else
-  AC_MSG_ERROR([Can't create UPC from CC because it doesn't contain the
-  string '/xgcc '.  The value of CC is: "$CC"])
+  AC_MSG_ERROR([cannot create UPC from CC because it does not contain the
+  string '/xgcc '; the value of CC is: "$CC"])
 fi
 AM_PROG_UPC()
 
@@ -399,7 +400,8 @@ GUPCR_PTS_THREAD_SIZE=_STR(__UPC_THREAD_SIZE__)
   GUPCR_PTS_PACKED_REP=1
 #endif
 _ACEOF
-eval `$UPC -fno-upc-pre-include -DNO_GCC_UPC_LIB=1 -E conftest.upc | grep '^ *GUPCR_[[A-Z0-9_]]*='`
+eval `$UPC -fno-upc-pre-include -DNO_GCC_UPC_LIB=1 -E conftest.upc | \
+  grep '^ *GUPCR_[[A-Z0-9_]]*='`
 rm -f conftest.upc
 AC_MSG_RESULT($GUPCR_PTS_REP)
 if test -z "$GUPCR_PTS_REP"; then
@@ -444,7 +446,8 @@ if test "$GUPCR_PTS_REP" = "struct"; then
     [The data type of the 'phase' field in a UPC shared pointer])
   if test -n "$GUPCR_PTS_ALIGN"; then
     AC_DEFINE_UNQUOTED(GUPCR_PTS_ALIGN,[$GUPCR_PTS_ALIGN],
-      [The required alignment for the UPC struct shared pointer representation])
+      [The required alignment for the UPC struct shared pointer
+      representation.])
   fi
 else
   AC_DEFINE(GUPCR_PTS_PACKED_REP,[1],
@@ -472,7 +475,8 @@ changequote(,)dnl
       ;;
 changequote([,])dnl
     *)
-      AC_MSG_ERROR([$withval is an invalid runtime model for --with-upc-runtime])
+      AC_MSG_ERROR([$withval is an invalid runtime model for
+      --with-upc-runtime])
       ;;
   esac
 ],
@@ -487,12 +491,12 @@ AC_ARG_ENABLE(upc-link-script,
                 [enable UPC's use of a custom linker script;
                  this will define the UPC shared section as a
 		 no load section on targets where this feature
-		 is supported (requires GNU LD).])],
+		 is supported (requires GNU LD)])],
 [
   case $enableval in
   yes | no) ;;
   *)
-    AC_MSG_ERROR([--enable-upc-link-script accepts only yes or no.])
+    AC_MSG_ERROR([--enable-upc-link-script accepts only yes or no])
   esac
 ],
 [
@@ -504,7 +508,7 @@ if test "$enable_upc_link_script" = yes; then
     if ! ${LD} --verbose | ${PERL} $gen_ld_script 1>/dev/null ; then
       # if gen-upc-ld-script did not accept the output of the linker
       # then disable UPC link script support.
-      AC_MSG_ERROR([Selected linker does not support linker scripts.])
+      AC_MSG_ERROR([selected linker does not support linker scripts])
     fi
   fi
 fi
@@ -542,7 +546,8 @@ if test "$upc_runtime_model" = "smp"; then
   )
   if test "x$enable_upc_affinity" = "xyes" &&
     test "x$upc_affinity" = "xno"; then
-      AC_MSG_ERROR([scheduling affinity enabled but not supported - use --disable-upc-affinity])
+      AC_MSG_ERROR([scheduling affinity enabled but not supported
+      - use --disable-upc-affinity])
   fi
   if test "x$enable_upc_affinity" = "xno"; then
     upc_affinity=no;
@@ -581,12 +586,12 @@ if test "$upc_runtime_model" = "smp"; then
   AC_ARG_ENABLE(upc-gum-debug,
   [AS_HELP_STRING([--enable-upc-gum-debug],
                   [enable UPC's source level debugging with GDB and GUM
-                   support (requires UPC aware GDB).])],
+                   support (requires UPC aware GDB)])],
   [
     case $enableval in
     yes | no) ;;
     *)
-      AC_MSG_ERROR([--enable-upc-gum-debug accepts only yes or no.])
+      AC_MSG_ERROR([--enable-upc-gum-debug accepts only yes or no])
     esac
     upc_gum_debug=$enableval
   ],
@@ -596,7 +601,7 @@ if test "$upc_runtime_model" = "smp"; then
   AC_MSG_RESULT([$upc_gum_debug])
   if test "x${upc_gum_debug}" = "xyes"; then
     AC_DEFINE_UNQUOTED(GUPCR_HAVE_GUM_DEBUG,[1],
-    [Define if UPC GUM debug server is supported])
+    [Define if UPC GUM debug server is supported.])
   fi
   # Use the generic (reference implementation)
   use_generic_collectives="yes"
@@ -607,12 +612,12 @@ if test "$upc_runtime_model" = "smp"; then
                   [enable UPC thread backtrace;
                    enable UPC thread to report its stack frame
   		   on the run-time catastrophic events or per the
-		   user request.])],
+		   user request])],
   [
     case $enableval in
     yes | no) ;;
     *)
-      AC_MSG_ERROR([--enable-upc-backtrace accepts only yes or no.])
+      AC_MSG_ERROR([--enable-upc-backtrace accepts only yes or no])
     esac
     upc_backtrace=$enableval
   ],
@@ -634,7 +639,7 @@ if test "$upc_runtime_model" = "smp"; then
     case "$enableval" in
     yes | no) ;;
     *)
-      AC_MSG_ERROR([--enable-upc-backtrace-gdb accepts only yes or no.])
+      AC_MSG_ERROR([--enable-upc-backtrace-gdb accepts only yes or no])
     esac
   ],
   [
@@ -660,12 +665,12 @@ if test "$upc_runtime_model" = "smp"; then
     AC_PATH_PROGS(PATH_TO_GDB, $GDB $upc_backtrace_gdb, , /usr/bin:${PATH})
     if test -n "$PATH_TO_GDB"; then
       AC_DEFINE_UNQUOTED(GUPCR_BACKTRACE_GDB, "$PATH_TO_GDB",
-        [Define path to preferred GDB for backtrace.])
+        [Define path to preferred GDB for backtrace])
     else
       AC_MSG_ERROR(
-        [Cannot find gdb. Try the correct --with-upc-backtrace-gdb 
+        [cannot find gdb. Try the correct --with-upc-backtrace-gdb 
          option or disable GDB for backtrace with 
-         --disable-upc-backtrace option).])
+         --disable-upc-backtrace option)])
     fi
     AC_MSG_RESULT([$PATH_TO_GDB])
   fi
@@ -679,7 +684,7 @@ if test "$upc_runtime_model" = "smp"; then
     case "$enableval" in
     yes | no) ;;
     *)
-      AC_MSG_ERROR([--enable-upc-backtrace-signal accepts only yes or no.])
+      AC_MSG_ERROR([--enable-upc-backtrace-signal accepts only yes or no])
     esac
   ],
   [
@@ -763,7 +768,8 @@ if test "$upc_runtime_model" = "smp"; then
   AC_MSG_CHECKING([for -rdynamic])
   if test "x$export_sym_check" != x; then
     echo "int main() {return 0;} int foobar() {return 0;}" > conftest.c
-    ${CC} ${CFLAGS} ${LDFLAGS} -rdynamic conftest.c -o conftest > /dev/null 2>&1
+    ${CC} ${CFLAGS} ${LDFLAGS} -rdynamic conftest.c \
+      -o conftest > /dev/null 2>&1
     if $export_sym_check conftest | grep foobar > /dev/null; then
       have_rdynamic=yes
     fi

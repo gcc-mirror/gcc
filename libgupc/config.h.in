@@ -32,16 +32,16 @@
 
 //begin gupcr_config_h
 
-/* Define path to preferred GDB for backtrace. */
+/* Define path to preferred GDB for backtrace */
 #undef GUPCR_BACKTRACE_GDB
 
 /* Define to preferred signal for UPC backtrace. */
 #undef GUPCR_BACKTRACE_SIGNAL
 
-/* Define if UPC GUM debug server is supported */
+/* Define if UPC GUM debug server is supported. */
 #undef GUPCR_HAVE_GUM_DEBUG
 
-/* The required alignment for the UPC struct shared pointer representation */
+/* The required alignment for the UPC struct shared pointer representation. */
 #undef GUPCR_PTS_ALIGN
 
 /* Whether UPC pointers-to-shared use the 'packed' representation */
@@ -223,7 +223,7 @@
 /* Define to 1 if you have the `strtoull' function. */
 #undef HAVE_STRTOULL
 
-/* Define to 1 if the target supports __sync_*_compare_and_swap */
+/* Define to 1 if the target supports __sync_*_compare_and_swap. */
 #undef HAVE_SYNC_BUILTINS
 
 /* Define to 1 if you have the <sys/loadavg.h> header file. */

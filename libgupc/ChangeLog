@@ -1,3 +1,12 @@
+2012-07-31  Gary Funck  <gary@intrepid.com>
+
+	* configure.ac: Shorten long lines.  Improve the
+	consistency of first letter capitalization and
+	remove periods from all except AC_DEFINE's.
+	* acinclude.m4: Ditto.
+	* configure: Re-generate.
+	* config.h.in: Re-generate.
+
 2012-07-14  Gary Funck  <gary@intrepid.com>
 
 	* acinclude.m4 (LIBGUPC_CHECK_SYNC_BUILTINS): Remove

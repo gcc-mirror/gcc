@@ -100,7 +100,7 @@ AC_DEFUN([LIBGUPC_CHECK_SYNC_BUILTINS], [
 	      libgupc_cv_have_sync_builtins=no)])
   if test $libgupc_cv_have_sync_builtins = yes; then
     AC_DEFINE(HAVE_SYNC_BUILTINS, 1,
-	      [Define to 1 if the target supports __sync_*_compare_and_swap])
+	      [Define to 1 if the target supports __sync_*_compare_and_swap.])
   fi])
 
 dnl Check whether the target supports hidden visibility.
