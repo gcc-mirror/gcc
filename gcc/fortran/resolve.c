@@ -3011,20 +3011,18 @@ gfc_iso_c_func_interface (gfc_symbol *sym, gfc_actual_arglist *args,
             {
               /* TODO: Update this error message to allow for procedure
                  pointers once they are implemented.  */
-              gfc_error_now ("Parameter '%s' to '%s' at %L must be a "
+              gfc_error_now ("Argument '%s' to '%s' at %L must be a "
                              "procedure",
                              args_sym->name, sym->name,
                              &(args->expr->where));
               retval = FAILURE;
             }
-	  else if (args_sym->attr.is_bind_c != 1)
-	    {
-	      gfc_error_now ("Parameter '%s' to '%s' at %L must be "
-			     "BIND(C)",
-			     args_sym->name, sym->name,
-			     &(args->expr->where));
-	      retval = FAILURE;
-	    }
+	  else if (args_sym->attr.is_bind_c != 1
+		   && gfc_notify_std (GFC_STD_F2008_TS, "Noninteroperable "
+				      "argument '%s' to '%s' at %L",
+				      args_sym->name, sym->name,
+				      &(args->expr->where)) == FAILURE)
+	    retval = FAILURE;
         }
       
       /* for c_loc/c_funloc, the new symbol is the same as the old one */
@@ -3479,7 +3477,11 @@ gfc_iso_c_sub_interface (gfc_code *c, gfc_symbol *sym)
 
   /* Make sure the actual arguments are in the necessary order (based on the 
      formal args) before resolving.  */
-  gfc_procedure_use (sym, &c->ext.actual, &(c->loc));
+  if (gfc_procedure_use (sym, &c->ext.actual, &(c->loc)) == FAILURE)
+    {
+      c->resolved_sym = sym;
+      return MATCH_ERROR;
+    }
 
   if ((sym->intmod_sym_id == ISOCBINDING_F_POINTER) ||
       (sym->intmod_sym_id == ISOCBINDING_F_PROCPOINTER))
@@ -3490,6 +3492,15 @@ gfc_iso_c_sub_interface (gfc_code *c, gfc_symbol *sym)
 	{
 	  if (c->ext.actual != NULL && c->ext.actual->next != NULL)
 	    {
+	      if (c->ext.actual->expr->ts.type != BT_DERIVED
+		  || c->ext.actual->expr->ts.u.derived->intmod_sym_id
+		     != ISOCBINDING_PTR)
+		{
+		  gfc_error ("Argument at %L to C_F_POINTER shall have the type"
+			     " C_PTR", &c->ext.actual->expr->where);
+		  m = MATCH_ERROR;
+		}
+
 	      /* Make sure we got a third arg if the second arg has non-zero
 		 rank.	We must also check that the type and rank are
 		 correct since we short-circuit this check in
@@ -3515,7 +3526,26 @@ gfc_iso_c_sub_interface (gfc_code *c, gfc_symbol *sym)
 		}
 	    }
 	}
-      
+      else /* ISOCBINDING_F_PROCPOINTER.  */
+	{
+	  if (c->ext.actual
+	      && (c->ext.actual->expr->ts.type != BT_DERIVED
+		  || c->ext.actual->expr->ts.u.derived->intmod_sym_id
+		     != ISOCBINDING_FUNPTR))
+	    {
+	      gfc_error ("Argument at %L to C_F_FUNPOINTER shall have the type "
+	                 "C_FUNPTR", &c->ext.actual->expr->where);
+              m = MATCH_ERROR;
+	    }
+	  if (c->ext.actual && c->ext.actual->next
+	      && !gfc_expr_attr (c->ext.actual->next->expr).is_bind_c
+	      && gfc_notify_std (GFC_STD_F2008_TS, "Noninteroperable "
+				 "procedure-pointer at %L to C_F_FUNPOINTER",
+				 &c->ext.actual->next->expr->where)
+		   == FAILURE)
+	    m = MATCH_ERROR;
+	}
+
       if (m != MATCH_ERROR)
 	{
 	  /* the 1 means to add the optional arg to formal list */
