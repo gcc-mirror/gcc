@@ -1,3 +1,10 @@
+2012-08-01  Alan Modra  <amodra@gmail.com>
+
+	PR target/54131
+	* config/rs6000/rs6000.c (mem_operand_gpr): Don't limit range
+	of lo_sum offsets.  Comment.  Assert mode at least word size
+	rather than bypassing powerpc64 word offset check.
+
 2012-07-31  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_builtin_vectorization_cost): Revise
