@@ -2927,7 +2927,7 @@ check_intents (gfc_formal_arglist *f, gfc_actual_arglist *a)
    well, the actual argument list will also end up being properly
    sorted.  */
 
-void
+gfc_try
 gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
 {
   /* Warn about calls with an implicit interface.  Special case
@@ -2954,7 +2954,7 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
 	  gfc_error("The pointer object '%s' at %L must have an explicit "
 		    "function interface or be declared as array",
 		    sym->name, where);
-	  return;
+	  return FAILURE;
 	}
 
       if (sym->attr.allocatable && !sym->attr.external)
@@ -2962,14 +2962,14 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
 	  gfc_error("The allocatable object '%s' at %L must have an explicit "
 		    "function interface or be declared as array",
 		    sym->name, where);
-	  return;
+	  return FAILURE;
 	}
 
       if (sym->attr.allocatable)
 	{
 	  gfc_error("Allocatable function '%s' at %L must have an explicit "
 		    "function interface", sym->name, where);
-	  return;
+	  return FAILURE;
 	}
 
       for (a = *ap; a; a = a->next)
@@ -3009,7 +3009,7 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
 	      && a->expr->ts.type == BT_UNKNOWN)
 	    {
 	      gfc_error ("MOLD argument to NULL required at %L", &a->expr->where);
-	      return;
+	      return FAILURE;
 	    }
 
 	  /* TS 29113, C407b.  */
@@ -3018,19 +3018,23 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
 	    {
 	      gfc_error ("Assumed-rank argument requires an explicit interface "
 			 "at %L", &a->expr->where);
-	      return;
+	      return FAILURE;
 	    }
 	}
 
-      return;
+      return SUCCESS;
     }
 
   if (!compare_actual_formal (ap, sym->formal, 0, sym->attr.elemental, where))
-    return;
+    return FAILURE;
 
-  check_intents (sym->formal, *ap);
+  if (check_intents (sym->formal, *ap) == FAILURE)
+    return FAILURE;
+
   if (gfc_option.warn_aliasing)
     check_some_aliasing (sym->formal, *ap);
+
+  return SUCCESS;
 }
 
 

@@ -1,3 +1,12 @@
+2012-07-31  Tobias Burnus  <burnus@net-b.de>
+
+	* interface.c (gfc_procedure_use): Return gfc_try instead of void.
+	* gfortran.h (gfc_procedure_use): Update prototype.
+	* resolve.c (gfc_iso_c_func_interface): Allow noninteroperable
+	procedures for c_funloc for TS29113.
+	* (gfc_iso_c_sub_interface): Ditto for c_f_procpointer. Add
+	diagnostic for c_ptr vs. c_funptr for c_f_(proc)pointer.
+
 2012-07-30  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/51081
