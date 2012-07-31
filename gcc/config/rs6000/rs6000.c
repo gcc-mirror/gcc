@@ -57,6 +57,7 @@
 #include "params.h"
 #include "tm-constrs.h"
 #include "opts.h"
+#include "tree-vectorizer.h"
 #if TARGET_XCOFF
 #include "xcoffout.h"  /* get declarations of xcoff_*_section_name */
 #endif
@@ -3326,13 +3327,13 @@ rs6000_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 
       case vec_perm:
 	if (TARGET_VSX)
-	  return 4;
+	  return 3;
 	else
 	  return 1;
 
       case vec_promote_demote:
         if (TARGET_VSX)
-          return 5;
+          return 4;
         else
           return 1;
 
@@ -3468,14 +3469,71 @@ rs6000_preferred_simd_mode (enum machine_mode mode)
   return word_mode;
 }
 
+typedef struct _rs6000_cost_data
+{
+  struct loop *loop_info;
+  unsigned cost[3];
+} rs6000_cost_data;
+
+/* Test for likely overcommitment of vector hardware resources.  If a
+   loop iteration is relatively large, and too large a percentage of
+   instructions in the loop are vectorized, the cost model may not
+   adequately reflect delays from unavailable vector resources.
+   Penalize the loop body cost for this case.  */
+
+static void
+rs6000_density_test (rs6000_cost_data *data)
+{
+  const int DENSITY_PCT_THRESHOLD = 85;
+  const int DENSITY_SIZE_THRESHOLD = 70;
+  const int DENSITY_PENALTY = 10;
+  struct loop *loop = data->loop_info;
+  basic_block *bbs = get_loop_body (loop);
+  int nbbs = loop->num_nodes;
+  int vec_cost = data->cost[vect_body], not_vec_cost = 0;
+  int i, density_pct;
+
+  for (i = 0; i < nbbs; i++)
+    {
+      basic_block bb = bbs[i];
+      gimple_stmt_iterator gsi;
+
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gimple stmt = gsi_stmt (gsi);
+	  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+
+	  if (!STMT_VINFO_RELEVANT_P (stmt_info)
+	      && !STMT_VINFO_IN_PATTERN_P (stmt_info))
+	    not_vec_cost++;
+	}
+    }
+
+  density_pct = (vec_cost * 100) / (vec_cost + not_vec_cost);
+
+  if (density_pct > DENSITY_PCT_THRESHOLD
+      && vec_cost + not_vec_cost > DENSITY_SIZE_THRESHOLD)
+    {
+      data->cost[vect_body] = vec_cost * (100 + DENSITY_PENALTY) / 100;
+      if (vect_print_dump_info (REPORT_DETAILS))
+	fprintf (vect_dump,
+		 "density %d%%, cost %d exceeds threshold, penalizing "
+		 "loop body cost by %d%%", density_pct, 
+		 vec_cost + not_vec_cost, DENSITY_PENALTY);
+    }
+}
+
 /* Implement targetm.vectorize.init_cost.  */
 
 static void *
-rs6000_init_cost (struct loop *loop_info ATTRIBUTE_UNUSED)
+rs6000_init_cost (struct loop *loop_info)
 {
-  unsigned *cost = XNEWVEC (unsigned, 3);
-  cost[vect_prologue] = cost[vect_body] = cost[vect_epilogue] = 0;
-  return cost;
+  rs6000_cost_data *data = XNEW (struct _rs6000_cost_data);
+  data->loop_info = loop_info;
+  data->cost[vect_prologue] = 0;
+  data->cost[vect_body]     = 0;
+  data->cost[vect_epilogue] = 0;
+  return data;
 }
 
 /* Implement targetm.vectorize.add_stmt_cost.  */
@@ -3485,7 +3543,7 @@ rs6000_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
 		      struct _stmt_vec_info *stmt_info, int misalign,
 		      enum vect_cost_model_location where)
 {
-  unsigned *cost = (unsigned *) data;
+  rs6000_cost_data *cost_data = (rs6000_cost_data*) data;
   unsigned retval = 0;
 
   if (flag_vect_cost_model)
@@ -3500,7 +3558,7 @@ rs6000_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
 	count *= 50;  /* FIXME.  */
 
       retval = (unsigned) (count * stmt_cost);
-      cost[where] += retval;
+      cost_data->cost[where] += retval;
     }
 
   return retval;
@@ -3512,10 +3570,14 @@ static void
 rs6000_finish_cost (void *data, unsigned *prologue_cost,
 		    unsigned *body_cost, unsigned *epilogue_cost)
 {
-  unsigned *cost = (unsigned *) data;
-  *prologue_cost = cost[vect_prologue];
-  *body_cost     = cost[vect_body];
-  *epilogue_cost = cost[vect_epilogue];
+  rs6000_cost_data *cost_data = (rs6000_cost_data*) data;
+
+  if (cost_data->loop_info)
+    rs6000_density_test (cost_data);
+
+  *prologue_cost = cost_data->cost[vect_prologue];
+  *body_cost     = cost_data->cost[vect_body];
+  *epilogue_cost = cost_data->cost[vect_epilogue];
 }
 
 /* Implement targetm.vectorize.destroy_cost_data.  */

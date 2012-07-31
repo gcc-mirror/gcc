@@ -1,3 +1,13 @@
+2012-07-31  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_builtin_vectorization_cost): Revise
+	costs for vec_perm and vec_promote_demote down to more natural values.
+	(struct _rs6000_cost_data): New data structure.
+	(rs6000_density_test): New function.
+	(rs6000_init_cost): Change to use rs6000_cost_data.
+	(rs6000_add_stmt_cost): Likewise.
+	(rs6000_finish_cost): Perform density test when vectorizing a loop.
+
 2012-07-31  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* sched-vis.c (print_exp): Handle FMA explicitly.  Simplify handling
