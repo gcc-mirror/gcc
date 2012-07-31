@@ -1,3 +1,33 @@
+2012-07-31  Richard Guenther  <rguenther@suse.de>
+
+	* tree-flow.h (struct var_ann_d): Remove need_phi_state
+	and current_def members.
+	* tree-into-ssa.c (struct def_blocks_d): Remove var member.
+	(def_blocks): Remove.
+	(struct var_info_d): New.
+	(var_infos): New hashtable.
+	(struct ssa_name_info): Add def_blocks member.
+	(get_ssa_name_ann): Adjust.
+	(get_var_info): New function.
+	(get_phi_state, set_phi_state, get_current_def,
+	set_current_def, get_def_blocks_for, find_def_blocks_for): Adjust.
+	(insert_phi_nodes_compare_def_blocks): Rename to ...
+	(insert_phi_nodes_compare_var_infos): ... this and adjust.
+	(insert_phi_nodes): Adjust.
+	(dump_tree_ssa, dump_tree_ssa_stats): Adjust.
+	(def_blocks_hash, def_blocks_eq, def_blocks_free): Remove.
+	(debug_def_blocks_r): Rename to ...
+	(debug_var_infos_r): ... this and adjust.
+	(var_info_hash): New function.
+	(var_info_eq): Likewise.
+	(rewrite_blocks): Adjust.
+	(init_ssa_renamer): Likewise.
+	(fini_ssa_renamer): Likewise.
+	(delete_update_ssa): Likewise.
+	(update_ssa): Likewise.
+	* tree-ssanames.c (release_dead_ssa_names): Do not clear
+	current defs.
+
 2012-07-31  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	PR tree-optimization/53773

@@ -380,15 +380,8 @@ replace_ssa_name_symbol (tree ssa_name, tree sym)
 static unsigned int
 release_dead_ssa_names (void)
 {
-  tree t;
   unsigned i, j;
   int n = VEC_length (tree, FREE_SSANAMES (cfun));
-  referenced_var_iterator rvi;
-
-  /* Current defs point to various dead SSA names that in turn point to
-     eventually dead variables so a bunch of memory is held live.  */
-  FOR_EACH_REFERENCED_VAR (cfun, t, rvi)
-    set_current_def (t, NULL);
 
   /* Now release the freelist.  */
   VEC_free (tree, gc, FREE_SSANAMES (cfun));

@@ -184,17 +184,8 @@ struct GTY(()) var_ann_d {
      applied.  We set this when translating out of SSA form.  */
   unsigned used : 1;
 
-  /* This field indicates whether or not the variable may need PHI nodes.
-     See the enum's definition for more detailed information about the
-     states.  */
-  ENUM_BITFIELD (need_phi_state) need_phi_state : 2;
-
   /* Used by var_map for the base index of ssa base variables.  */
   unsigned base_index;
-
-  /* During into-ssa and the dominator optimizer, this field holds the
-     current version of this variable (an SSA_NAME).  */
-  tree current_def;
 };
 
 
