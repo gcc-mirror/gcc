@@ -1,3 +1,12 @@
+2012-07-31  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* sched-vis.c (print_exp): Handle FMA explicitly.  Simplify handling
+	of RTX_UNARY function-like operations.  Print unknown expression
+	RTX classes as pseudo-functions.
+	(print_pattern): Simplify return pattern printing.
+	(dump_insn_slim): Print the value of notes as a pattern for proper
+	printing of CFA notes.
+
 2012-07-31  Dehao Chen  <dehao@google.com>
 
 	* predict.c (tree_estimate_probability_driver): Normalize the
