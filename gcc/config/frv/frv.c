@@ -8435,7 +8435,7 @@ frv_init_builtins (void)
   build_function_type_list (RET, T1, T2, T3, NULL_TREE)
 
 #define QUAD(RET, T1, T2, T3, T4) \
-  build_function_type_list (RET, T1, T2, T3, NULL_TREE)
+  build_function_type_list (RET, T1, T2, T3, T4, NULL_TREE)
 
   tree void_ftype_void = build_function_type_list (voidt, NULL_TREE);
 

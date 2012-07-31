@@ -1,3 +1,7 @@
+2012-07-31  Nick Clifton  <nickc@redhat.com>
+
+	* config/frv/frv.c (QUAD): Fix typo.
+
 2012-07-31  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR pch/53880
