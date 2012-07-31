@@ -1,5 +1,26 @@
 2012-07-30  Nathan Froyd  <froydnj@gcc.gnu.org>
 
+
+	* defaults.h (GO_IF_MODE_DEPENDENT_ADDRESS): Delete.
+	* targhooks.c (default_mode_dependent_address_p): Delete code
+	for GO_IF_MODE_DEPENDENT_ADDRESS.
+	* system.h (GO_IF_MODE_DEPENDENT_ADDRESS): Poison.
+	* doc/tm.texi.in (GO_IF_MODE_DEPENDENT_ADDRESS): Delete documention.
+	* doc/tm.texi: Regenerate.
+	* config/alpha.h (GO_IF_MODE_DEPENDENT_ADDRESS): Move code to...
+	* config/alpha.c (alpha_mode_dependent_address_p): ...here.  New
+	function.
+	(TARGET_MODE_DEPENDENT_ADDRESS_P): Define.
+	* config/cr16/cr16.h (GO_IF_MODE_DEPENDENT_ADDRESS): Delete.
+	* config/mep/mep.h (GO_IF_MODE_DEPENDENT_ADDRESS): Delete.
+	* config/vax/vax-protos.h (vax_mode_dependent_address_p): Delete.
+	* config/vax/vax.h (GO_IF_MODE_DEPENDENT_ADDRESS): Delete.
+	* config/vax/vax.c (vax_mode_dependent_address_p): Make static.
+	Take a const_rtx.
+	(TARGET_MODE_DEPENDENT_ADDRESS_P): Define.
+
+2012-07-30  Nathan Froyd  <froydnj@gcc.gnu.org>
+
 	* expmed.h (NUM_MODE_VECTOR_INT): Define.
 	(struct expmed_op_cheap, struct expmed_op_costs): New structures.
 	(struct target_expmed): Convert x_mul_highpart_cost and

@@ -460,10 +460,6 @@ struct cumulative_args
 #define REG_OK_FOR_INDEX_P(X)   1
 #endif /* not REG_OK_STRICT.  */
 
-/* Go to LABEL if ADDR (a legitimate address expression) has 
-   an effect that depends on the machine mode it is used for.  */
-#define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR, LABEL)
-
 /* Assume best case (branch predicted).  */
 #define BRANCH_COST(speed_p, predictable_p)       2
 

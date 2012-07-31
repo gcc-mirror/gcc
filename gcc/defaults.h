@@ -1218,13 +1218,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define ATTRIBUTE_ALIGNED_VALUE BIGGEST_ALIGNMENT
 #endif
 
-/* Many ports have no mode-dependent addresses (except possibly autoincrement
-   and autodecrement addresses, which are handled by target-independent code
-   in recog.c).  */
-#ifndef GO_IF_MODE_DEPENDENT_ADDRESS
-#define GO_IF_MODE_DEPENDENT_ADDRESS(X, WIN)
-#endif
-
 /* For most ports anything that evaluates to a constant symbolic
    or integer value is acceptable as a constant address.  */
 #ifndef CONSTANT_ADDRESS_P

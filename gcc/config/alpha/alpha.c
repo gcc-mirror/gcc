@@ -1038,6 +1038,16 @@ alpha_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
   return new_x ? new_x : x;
 }
 
+/* Return true if ADDR has an effect that depends on the machine mode it
+   is used for.  On the Alpha this is true only for the unaligned modes.
+   We can simplify the test since we know that the address must be valid.  */
+
+static bool
+alpha_mode_dependent_address_p (const_rtx addr)
+{
+  return GET_CODE (addr) == AND;
+}
+
 /* Primarily this is required for TLS symbols, but given that our move
    patterns *ought* to be able to handle any symbol at any time, we
    should never be spilling symbolic operands to the constant pool, ever.  */
@@ -9709,6 +9719,8 @@ alpha_conditional_register_usage (void)
 
 #undef TARGET_LEGITIMIZE_ADDRESS
 #define TARGET_LEGITIMIZE_ADDRESS alpha_legitimize_address
+#undef TARGET_MODE_DEPENDENT_ADDRESS_P
+#define TARGET_MODE_DEPENDENT_ADDRESS_P alpha_mode_dependent_address_p
 
 #undef TARGET_ASM_FILE_START
 #define TARGET_ASM_FILE_START alpha_file_start

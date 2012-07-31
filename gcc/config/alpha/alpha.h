@@ -851,13 +851,6 @@ do {									     \
     }									     \
 } while (0)
 
-/* Go to LABEL if ADDR (a legitimate address expression)
-   has an effect that depends on the machine mode it is used for.
-   On the Alpha this is true only for the unaligned modes.   We can
-   simplify this test since we know that the address must be valid.  */
-
-#define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR,LABEL)  \
-{ if (GET_CODE (ADDR) == AND) goto LABEL; }
 
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.  */

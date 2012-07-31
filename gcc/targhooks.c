@@ -1204,19 +1204,7 @@ default_hard_regno_scratch_ok (unsigned int regno ATTRIBUTE_UNUSED)
 bool
 default_mode_dependent_address_p (const_rtx addr ATTRIBUTE_UNUSED)
 {
-#ifdef GO_IF_MODE_DEPENDENT_ADDRESS
-
-  GO_IF_MODE_DEPENDENT_ADDRESS (CONST_CAST_RTX (addr), win);
   return false;
-  /* Label `win' might (not) be used via GO_IF_MODE_DEPENDENT_ADDRESS.  */
- win: ATTRIBUTE_UNUSED_LABEL
-  return true;
-
-#else
-
-  return false;
-
-#endif
 }
 
 bool
