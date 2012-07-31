@@ -4210,10 +4210,9 @@ process_partial_specialization (tree decl)
 
 /* Check that a template declaration's use of default arguments and
    parameter packs is not invalid.  Here, PARMS are the template
-   parameters.  IS_PRIMARY is nonzero if DECL is the thing declared by
-   a primary template.  IS_PARTIAL is nonzero if DECL is a partial
+   parameters.  IS_PRIMARY is true if DECL is the thing declared by
+   a primary template.  IS_PARTIAL is true if DECL is a partial
    specialization.
-   
 
    IS_FRIEND_DECL is nonzero if DECL is a friend function template
    declaration (but not a definition); 1 indicates a declaration, 2
@@ -4223,8 +4222,8 @@ process_partial_specialization (tree decl)
    Returns TRUE if there were no errors found, FALSE otherwise. */
 
 bool
-check_default_tmpl_args (tree decl, tree parms, int is_primary, 
-                         int is_partial, int is_friend_decl)
+check_default_tmpl_args (tree decl, tree parms, bool is_primary,
+                         bool is_partial, int is_friend_decl)
 {
   const char *msg;
   int last_level_to_check;
@@ -4456,8 +4455,8 @@ push_template_decl_real (tree decl, bool is_friend)
   tree args;
   tree info;
   tree ctx;
-  int primary;
-  int is_partial;
+  bool is_primary;
+  bool is_partial;
   int new_template_p = 0;
   /* True if the template is a member template, in the sense of
      [temp.mem].  */
@@ -4499,11 +4498,11 @@ push_template_decl_real (tree decl, bool is_friend)
     /* A friend template that specifies a class context, i.e.
          template <typename T> friend void A<T>::f();
        is not primary.  */
-    primary = 0;
+    is_primary = false;
   else
-    primary = template_parm_scope_p ();
+    is_primary = template_parm_scope_p ();
 
-  if (primary)
+  if (is_primary)
     {
       if (DECL_CLASS_SCOPE_P (decl))
 	member_template_p = true;
@@ -4556,7 +4555,7 @@ push_template_decl_real (tree decl, bool is_friend)
   /* Check to see that the rules regarding the use of default
      arguments are not being violated.  */
   check_default_tmpl_args (decl, current_template_parms,
-			   primary, is_partial, /*is_friend_decl=*/0);
+			   is_primary, is_partial, /*is_friend_decl=*/0);
 
   /* Ensure that there are no parameter packs in the type of this
      declaration that have not been expanded.  */
@@ -4773,7 +4772,7 @@ template arguments to %qD do not match original template %qD",
 	}
     }
 
-  if (primary)
+  if (is_primary)
     {
       tree parms = DECL_TEMPLATE_PARMS (tmpl);
       int i;
@@ -4815,7 +4814,7 @@ template arguments to %qD do not match original template %qD",
     SET_TYPE_TEMPLATE_INFO (TREE_TYPE (tmpl), info);
   else
     {
-      if (primary && !DECL_LANG_SPECIFIC (decl))
+      if (is_primary && !DECL_LANG_SPECIFIC (decl))
 	retrofit_lang_decl (decl);
       if (DECL_LANG_SPECIFIC (decl))
 	DECL_TEMPLATE_INFO (decl) = info;
