@@ -609,10 +609,10 @@ if test "$upc_runtime_model" = "smp"; then
   AC_MSG_CHECKING([for UPC backtrace support])
   AC_ARG_ENABLE(upc-backtrace,
   [AS_HELP_STRING([--enable-upc-backtrace],
-                  [enable UPC thread backtrace;
-                   enable UPC thread to report its stack frame
-  		   on the run-time catastrophic events or per the
-		   user request])],
+                  [enable UPC backtrace;
+                   enable stack frame backtrace report
+		   when UPC run-time fatal errors occur
+		   or by user request (via signal)])],
   [
     case $enableval in
     yes | no) ;;
@@ -633,7 +633,7 @@ if test "$upc_runtime_model" = "smp"; then
   AC_MSG_CHECKING([for UPC backtrace GDB support])
   AC_ARG_ENABLE(upc-backtrace-gdb,
   [AS_HELP_STRING([--enable-upc-backtrace-gdb],
-	 	  [enable the use of GDB for UPC thread backtrace 
+	 	  [enable the use of GDB for UPC stack backtrace
 		   [default='yes']])],
   [
     case "$enableval" in
@@ -654,7 +654,7 @@ if test "$upc_runtime_model" = "smp"; then
     AC_MSG_CHECKING([for UPC backtrace GDB to use])
     AC_ARG_WITH(upc-backtrace-gdb,
       [AS_HELP_STRING([--with-upc-backtrace-gdb=GDB],
-      [specify which GDB to use for UPC backtrace
+      [specify which GDB to use for UPC backtrace support
       [default='gdb']])],
     [
       upc_backtrace_gdb=$withval
@@ -678,7 +678,7 @@ if test "$upc_runtime_model" = "smp"; then
   AC_MSG_CHECKING([for UPC backtrace signal support])
   AC_ARG_ENABLE(upc-backtrace-signal,
   [AS_HELP_STRING([--enable-upc-backtrace-signal],
-	 	  [enable/disable signal support for backtrace 
+	 	  [enable signal support for UPC stack backtrace 
 		   [default='yes']])],
   [
     case "$enableval" in
@@ -699,7 +699,7 @@ if test "$upc_runtime_model" = "smp"; then
     AC_MSG_CHECKING([for UPC backtrace signal name/number])
     AC_ARG_WITH(upc-backtrace-signal,
       [AS_HELP_STRING([--with-upc-backtrace-signal=SIGNAL],
-      [specify the signal to be used for backtrace
+      [specify the signal to be used for UPC stack backtrace
       [default='SIGUSR1']])],
       [
         upc_backtrace_signal=$withval

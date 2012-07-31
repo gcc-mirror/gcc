@@ -1447,14 +1447,14 @@ Optional Features:
                           (requires GNU LD)
   --enable-upc-gum-debug  enable UPC's source level debugging with GDB and GUM
                           support (requires UPC aware GDB)
-  --enable-upc-backtrace  enable UPC thread backtrace; enable UPC thread to
-                          report its stack frame on the run-time catastrophic
-                          events or per the user request
+  --enable-upc-backtrace  enable UPC backtrace; enable stack frame backtrace
+                          report when UPC run-time fatal errors occur or by
+                          user request (via signal)
   --enable-upc-backtrace-gdb
-                          enable the use of GDB for UPC thread backtrace
+                          enable the use of GDB for UPC stack backtrace
                           [default='yes']
   --enable-upc-backtrace-signal
-                          enable/disable signal support for backtrace
+                          enable signal support for UPC stack backtrace
                           [default='yes']
 
 Optional Packages:
@@ -1469,11 +1469,11 @@ Optional Packages:
                           Multiprocessing) in the current implementation
                           [default='SMP']
   --with-upc-backtrace-gdb=GDB
-                          specify which GDB to use for UPC backtrace
+                          specify which GDB to use for UPC backtrace support
                           [default='gdb']
   --with-upc-backtrace-signal=SIGNAL
-                          specify the signal to be used for backtrace
-                          [default='SIGUSR1']
+                          specify the signal to be used for UPC stack
+                          backtrace [default='SIGUSR1']
 
 Some influential environment variables:
   CC          C compiler command

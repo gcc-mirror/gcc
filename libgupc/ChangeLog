@@ -1,5 +1,11 @@
 2012-07-31  Gary Funck  <gary@intrepid.com>
 
+	* configure.ac: Improve diagnostics for options
+	that control UPC stack backtrace support.
+	* configure: Re-generate.
+
+2012-07-31  Gary Funck  <gary@intrepid.com>
+
 	* configure.ac: Shorten long lines.  Improve the
 	consistency of first letter capitalization and
 	remove periods from all except AC_DEFINE's.
