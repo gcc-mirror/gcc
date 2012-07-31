@@ -1,3 +1,10 @@
+2012-07-31  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* sched-vis.c (dump_insn_slim): Print print_rtx_head at the
+	start of each new line.
+	* final.c (final_scan_insn): If the final dump is requested as
+	slim RTL, dump slim RTL to the assembly file also.
+
 2012-07-31  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR target/53975

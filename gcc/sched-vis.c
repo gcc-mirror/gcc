@@ -767,11 +767,13 @@ dump_insn_slim (FILE *f, const_rtx x)
   rtx note;
 
   print_insn (t, x, 1);
+  fputs (print_rtx_head, f);
   fputs (t, f);
   putc ('\n', f);
   if (INSN_P (x) && REG_NOTES (x))
     for (note = REG_NOTES (x); note; note = XEXP (note, 1))
       {
+	fputs (print_rtx_head, f);
         print_value (t, XEXP (note, 0), 1);
 	fprintf (f, "      %s: %s\n",
 		 GET_REG_NOTE_NAME (REG_NOTE_KIND (note)), t);

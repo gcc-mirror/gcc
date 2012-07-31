@@ -2747,11 +2747,16 @@ final_scan_insn (rtx insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	insn_code_number = recog_memoized (insn);
 	cleanup_subreg_operands (insn);
 
-	/* Dump the insn in the assembly for debugging.  */
+	/* Dump the insn in the assembly for debugging (-dAP).
+	   If the final dump is requested as slim RTL, dump slim
+	   RTL to the assembly file also.  */
 	if (flag_dump_rtl_in_asm)
 	  {
 	    print_rtx_head = ASM_COMMENT_START;
-	    print_rtl_single (asm_out_file, insn);
+	    if (! (dump_flags & TDF_SLIM))
+	      print_rtl_single (asm_out_file, insn);
+	    else
+	      dump_insn_slim (asm_out_file, insn);
 	    print_rtx_head = "";
 	  }
 
