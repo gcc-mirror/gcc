@@ -114,6 +114,15 @@ print_exp (char *buf, const_rtx x, int verbose)
       st[0] = "-";
       op[0] = XEXP (x, 0);
       break;
+    case FMA:
+      st[0] = "{";
+      op[0] = XEXP (x, 0);
+      st[1] = "*";
+      op[1] = XEXP (x, 1);
+      st[2] = "+";
+      op[2] = XEXP (x, 2);
+      st[3] = "}";
+      break;
     case MULT:
       op[0] = XEXP (x, 0);
       st[1] = "*";
@@ -203,46 +212,14 @@ print_exp (char *buf, const_rtx x, int verbose)
       st[1] = ">->";
       op[1] = XEXP (x, 1);
       break;
-    case ABS:
-      fun = "abs";
-      op[0] = XEXP (x, 0);
-      break;
-    case SQRT:
-      fun = "sqrt";
-      op[0] = XEXP (x, 0);
-      break;
-    case FFS:
-      fun = "ffs";
-      op[0] = XEXP (x, 0);
-      break;
-    case EQ:
-      op[0] = XEXP (x, 0);
-      st[1] = "==";
-      op[1] = XEXP (x, 1);
-      break;
     case NE:
       op[0] = XEXP (x, 0);
       st[1] = "!=";
       op[1] = XEXP (x, 1);
       break;
-    case GT:
+    case EQ:
       op[0] = XEXP (x, 0);
-      st[1] = ">";
-      op[1] = XEXP (x, 1);
-      break;
-    case GTU:
-      fun = "gtu";
-      op[0] = XEXP (x, 0);
-      op[1] = XEXP (x, 1);
-      break;
-    case LT:
-      op[0] = XEXP (x, 0);
-      st[1] = "<";
-      op[1] = XEXP (x, 1);
-      break;
-    case LTU:
-      fun = "ltu";
-      op[0] = XEXP (x, 0);
+      st[1] = "==";
       op[1] = XEXP (x, 1);
       break;
     case GE:
@@ -250,9 +227,9 @@ print_exp (char *buf, const_rtx x, int verbose)
       st[1] = ">=";
       op[1] = XEXP (x, 1);
       break;
-    case GEU:
-      fun = "geu";
+    case GT:
       op[0] = XEXP (x, 0);
+      st[1] = ">";
       op[1] = XEXP (x, 1);
       break;
     case LE:
@@ -260,9 +237,9 @@ print_exp (char *buf, const_rtx x, int verbose)
       st[1] = "<=";
       op[1] = XEXP (x, 1);
       break;
-    case LEU:
-      fun = "leu";
+    case LT:
       op[0] = XEXP (x, 0);
+      st[1] = "<";
       op[1] = XEXP (x, 1);
       break;
     case SIGN_EXTRACT:
@@ -390,8 +367,33 @@ print_exp (char *buf, const_rtx x, int verbose)
       }
       break;
     default:
-      /* If (verbose) debug_rtx (x);  */
-      st[0] = GET_RTX_NAME (GET_CODE (x));
+      {
+	/* Most unhandled codes can be printed as pseudo-functions.  */
+        if (GET_RTX_CLASS (GET_CODE (x)) == RTX_UNARY)
+	  {
+	    fun = GET_RTX_NAME (GET_CODE (x));
+	    op[0] = XEXP (x, 0);
+	  }
+        else if (GET_RTX_CLASS (GET_CODE (x)) == RTX_COMPARE
+		 || GET_RTX_CLASS (GET_CODE (x)) == RTX_COMM_COMPARE
+		 || GET_RTX_CLASS (GET_CODE (x)) == RTX_BIN_ARITH
+		 || GET_RTX_CLASS (GET_CODE (x)) == RTX_COMM_ARITH)
+	  {
+	    fun = GET_RTX_NAME (GET_CODE (x));
+	    op[0] = XEXP (x, 0);
+	    op[1] = XEXP (x, 1);
+	  }
+        else if (GET_RTX_CLASS (GET_CODE (x)) == RTX_TERNARY)
+	  {
+	    fun = GET_RTX_NAME (GET_CODE (x));
+	    op[0] = XEXP (x, 0);
+	    op[1] = XEXP (x, 1);
+	    op[2] = XEXP (x, 2);
+	  }
+	else
+	  /* Give up, just print the RTX name.  */
+	  st[0] = GET_RTX_NAME (GET_CODE (x));
+      }
       break;
     }
 
@@ -559,10 +561,9 @@ print_pattern (char *buf, const_rtx x, int verbose)
       sprintf (buf, "%s=%s", t1, t2);
       break;
     case RETURN:
-      sprintf (buf, "return");
-      break;
     case SIMPLE_RETURN:
-      sprintf (buf, "simple_return");
+    case EH_RETURN:
+      sprintf (buf, GET_RTX_NAME (GET_CODE (x)));
       break;
     case CALL:
       print_exp (buf, x, verbose);
@@ -774,7 +775,7 @@ dump_insn_slim (FILE *f, const_rtx x)
     for (note = REG_NOTES (x); note; note = XEXP (note, 1))
       {
 	fputs (print_rtx_head, f);
-        print_value (t, XEXP (note, 0), 1);
+        print_pattern (t, XEXP (note, 0), 1);
 	fprintf (f, "      %s: %s\n",
 		 GET_REG_NOTE_NAME (REG_NOTE_KIND (note)), t);
       }
