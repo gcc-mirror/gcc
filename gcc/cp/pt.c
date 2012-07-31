@@ -4267,7 +4267,8 @@ check_default_tmpl_args (tree decl, tree parms, int is_primary,
 
   /* Core issue 226 (C++0x only): the following only applies to class
      templates.  */
-  if ((cxx_dialect == cxx98) || TREE_CODE (decl) != FUNCTION_DECL)
+  if (is_primary
+      && ((cxx_dialect == cxx98) || TREE_CODE (decl) != FUNCTION_DECL))
     {
       /* [temp.param]
 
@@ -4299,8 +4300,7 @@ check_default_tmpl_args (tree decl, tree parms, int is_primary,
                   TREE_PURPOSE (parm) = error_mark_node;
                   no_errors = false;
                 }
-	      else if (is_primary
-		       && !is_partial
+	      else if (!is_partial
 		       && !is_friend_decl
 		       /* Don't complain about an enclosing partial
 			  specialization.  */

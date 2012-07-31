@@ -1,8 +1,12 @@
+2012-07-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53624
+	* pt.c (check_default_tmpl_args): Don't check local types.
+
 2012-07-25  Sandra Loosemore  <sandra@codesourcery.com>
 	    Paul Brook  <paul@codesourcery.com>
 
 	PR target/53633
-
 	* decl.c (finish_function): Check targetm.warn_func_return.
 
 2012-07-25  Jason Merrill  <jason@redhat.com>
