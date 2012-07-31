@@ -1,5 +1,20 @@
 2012-07-31  Janus Weil  <janus@gcc.gnu.org>
 
+	PR fortran/42418
+	* decl.c (match_procedure_interface): Move some checks to
+	'resolve_procedure_interface'. Set flavor if appropriate.
+	* expr.c (gfc_check_pointer_assign): Cleanup of 'gfc_is_intrinsic'.
+	* intrinsic.c (gfc_is_intrinsic): Additional checks for attributes which
+	identify a procedure as being non-intrinsic.
+	* resolve.c (resolve_procedure_interface): Checks moved here from
+	'match_procedure_interface'. Minor cleanup.
+	(resolve_formal_arglist,resolve_symbol): Cleanup of
+	'resolve_procedure_interface'
+	(resolve_actual_arglist,is_external_proc): Cleanup of
+	'gfc_is_intrinsic'.
+
+2012-07-31  Janus Weil  <janus@gcc.gnu.org>
+
 	PR fortran/54134
 	* dependency.c (gfc_dep_compare_expr): Check if arguments are NULL.
 

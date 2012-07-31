@@ -902,9 +902,9 @@ gfc_intrinsic_actual_ok (const char *name, const bool subroutine_flag)
 }
 
 
-/* Given a symbol, find out if it is (and is to be treated) an intrinsic.  If
-   it's name refers to an intrinsic but this intrinsic is not included in the
-   selected standard, this returns FALSE and sets the symbol's external
+/* Given a symbol, find out if it is (and is to be treated as) an intrinsic.
+   If its name refers to an intrinsic, but this intrinsic is not included in
+   the selected standard, this returns FALSE and sets the symbol's external
    attribute.  */
 
 bool
@@ -913,10 +913,13 @@ gfc_is_intrinsic (gfc_symbol* sym, int subroutine_flag, locus loc)
   gfc_intrinsic_sym* isym;
   const char* symstd;
 
-  /* If INTRINSIC/EXTERNAL state is already known, return.  */
+  /* If INTRINSIC attribute is already known, return.  */
   if (sym->attr.intrinsic)
     return true;
-  if (sym->attr.external)
+
+  /* Check for attributes which prevent the symbol from being INTRINSIC.  */
+  if (sym->attr.external || sym->attr.contained
+      || sym->attr.if_source == IFSRC_IFBODY)
     return false;
 
   if (subroutine_flag)
