@@ -2200,7 +2200,7 @@ tree_estimate_probability_driver (void)
 {
   unsigned nb_loops;
 
-  loop_optimizer_init (0);
+  loop_optimizer_init (LOOPS_NORMAL);
   if (dump_file && (dump_flags & TDF_DETAILS))
     flow_loops_dump (dump_file, NULL, 0);
 
