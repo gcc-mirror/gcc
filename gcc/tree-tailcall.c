@@ -1029,7 +1029,7 @@ tree_optimize_tail_calls_1 (bool opt_tailcalls)
      header of the loop created by tail recursion elimination.  Do so
      by triggering the SSA renamer.  */
   if (phis_constructed)
-    mark_sym_for_renaming (gimple_vop (cfun));
+    mark_virtual_operands_for_renaming (cfun);
 
   if (changed)
     return TODO_cleanup_cfg | TODO_update_ssa_only_virtuals;

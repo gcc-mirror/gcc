@@ -2944,17 +2944,13 @@ register_new_name_mapping (tree new_tree, tree old)
 }
 
 
-/* Register symbol SYM to be renamed by update_ssa.  */
+/* Mark virtual operands of FN for renaming by update_ssa.  */
 
 void
-mark_sym_for_renaming (tree sym)
+mark_virtual_operands_for_renaming (struct function *fn)
 {
-  if (TREE_CODE (sym) == VAR_DECL
-      && VAR_DECL_IS_VIRTUAL_OPERAND (sym))
-    {
-      cfun->gimple_df->ssa_renaming_needed = 1;
-      cfun->gimple_df->rename_vops = 1;
-    }
+  fn->gimple_df->ssa_renaming_needed = 1;
+  fn->gimple_df->rename_vops = 1;
 }
 
 

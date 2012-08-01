@@ -604,7 +604,6 @@ graphite_copy_stmts_from_block (basic_block bb, basic_block new_bb,
 	 operands.  */
       copy = gimple_copy (stmt);
       gsi_insert_after (&gsi_tgt, copy, GSI_NEW_STMT);
-      mark_sym_for_renaming (gimple_vop (cfun));
 
       maybe_duplicate_eh_stmt (copy, stmt);
       gimple_duplicate_stmt_histograms (cfun, copy, cfun, stmt);

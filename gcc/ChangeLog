@@ -1,5 +1,33 @@
 2012-08-01  Richard Guenther  <rguenther@suse.de>
 
+	* graphite-clast-to-gimple.c (translate_clast_user): Rename
+	virtual operands.
+	* sese.c (graphite_copy_stmts_from_block): Do not rename virtual
+	operands here.
+	* tree-call-cdce.c (tree_call_cdce): Use
+	mark_virtual_operands_for_renaming.
+	* tree-eh.c (sink_clobbers): Simplify.
+	* tree-flow.h (mark_sym_for_renaming): Remove.
+	(mark_virtual_operands_for_renaming): New function.
+	* tree-if-conv.c (tree_if_conversion): Use
+	mark_virtual_operands_for_renaming.
+	* tree-inline.c (update_ssa_across_abnormal_edges): Likewise.
+	* tree-into-ssa.c (mark_sym_for_renaming): Remove.
+	(mark_virtual_operands_for_renaming): New function.
+	* tree-loop-distribution.c (tree_loop_distribution): Use
+	mark_virtual_operands_for_renaming.
+	* tree-ssa-dce.c (mark_virtual_operand_for_renaming): Do not
+	update stmts, use mark_virtual_operands_for_renaming.
+	* tree-ssa-tail-merge.c (release_last_vdef): Remove.
+	(replace_block_by): Adjust.
+	(tail_merge_optimize): Use mark_virtual_operands_for_renaming.
+	* tree-tailcall.c (tree_optimize_tail_calls_1): Use
+	mark_virtual_operands_for_renaming.
+	* tree-vect-slp.c (vect_slp_transform_bb): Likewise.
+	* tree-vectorizer.c (vectorize_loops): Likewise.
+
+2012-08-01  Richard Guenther  <rguenther@suse.de>
+
 	* tree-flow.h (struct gimple_df): Remove syms_to_rename member,
 	add ssa_renaming_needed and rename_vops flags.
 	(SYMS_TO_RENAME): Remove.
