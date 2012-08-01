@@ -1,3 +1,7 @@
+2012-08-01  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/tree-ssa/vrp76.c: New test.
+
 2012-08-01  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	PR tree-optimization/46556
