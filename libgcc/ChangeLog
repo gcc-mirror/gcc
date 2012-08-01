@@ -1,3 +1,8 @@
+2012-08-01  Nick Clifton  <nickc@redhat.com>
+
+	* config/m32c/lib2funcs.c (__clrsbhi2): New function.
+	Implements __clrsb for an HImode argument.
+
 2012-07-31  Nick Clifton  <nickc@redhat.com>
 
 	* config/stormy16/lib2funcs.c (__clrsbhi2): New function.
