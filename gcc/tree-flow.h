@@ -565,7 +565,7 @@ bool need_ssa_update_p (struct function *);
 bool name_registered_for_update_p (tree);
 void release_ssa_name_after_update_ssa (tree);
 void compute_global_livein (bitmap, bitmap);
-void mark_sym_for_renaming (tree);
+void mark_virtual_operands_for_renaming (struct function *);
 tree get_current_def (tree);
 void set_current_def (tree, tree);
 

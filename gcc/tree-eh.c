@@ -3250,22 +3250,18 @@ sink_clobbers (basic_block bb)
   for (gsi_prev (&gsi); !gsi_end_p (gsi); gsi_prev (&gsi))
     {
       gimple stmt = gsi_stmt (gsi);
-      tree vdef;
       if (is_gimple_debug (stmt))
 	continue;
       if (gimple_code (stmt) == GIMPLE_LABEL)
 	break;
       unlink_stmt_vdef (stmt);
       gsi_remove (&gsi, false);
-      vdef = gimple_vdef (stmt);
-      if (vdef && TREE_CODE (vdef) == SSA_NAME)
-	{
-	  release_ssa_name (vdef);
-	  vdef = SSA_NAME_VAR (vdef);
-	  mark_sym_for_renaming (vdef);
-	  gimple_set_vdef (stmt, vdef);
-	  gimple_set_vuse (stmt, vdef);
-	}
+      /* Trigger the operand scanner to cause renaming for virtual
+         operands for this statement.
+	 ???  Given the simple structure of this code manually
+	 figuring out the reaching definition should not be too hard.  */
+      if (gimple_vuse (stmt))
+	gimple_set_vuse (stmt, NULL_TREE);
       gsi_insert_before (&dgsi, stmt, GSI_SAME_STMT);
     }
 

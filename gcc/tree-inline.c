@@ -1870,7 +1870,7 @@ update_ssa_across_abnormal_edges (basic_block bb, basic_block ret_bb,
 
 	    if (!is_gimple_reg (PHI_RESULT (phi)))
 	      {
-		mark_sym_for_renaming (SSA_NAME_VAR (PHI_RESULT (phi)));
+		mark_virtual_operands_for_renaming (cfun);
 		continue;
 	      }
 

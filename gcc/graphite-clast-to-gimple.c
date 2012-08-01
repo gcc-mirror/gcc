@@ -1099,6 +1099,7 @@ translate_clast_user (struct clast_user_stmt *stmt, edge next_e,
 
   new_bb = next_e->src;
   mark_bb_with_pbb (pbb, new_bb, bb_pbb_mapping);
+  mark_virtual_operands_for_renaming (cfun);
   update_ssa (TODO_update_ssa);
 
   return next_e;

@@ -1747,7 +1747,7 @@ tree_if_conversion (struct loop *loop)
   combine_blocks (loop);
 
   if (flag_tree_loop_if_convert_stores)
-    mark_sym_for_renaming (gimple_vop (cfun));
+    mark_virtual_operands_for_renaming (cfun);
 
   changed = true;
 

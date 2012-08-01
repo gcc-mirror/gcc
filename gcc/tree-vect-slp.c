@@ -3149,7 +3149,7 @@ vect_slp_transform_bb (basic_block bb)
         }
     }
 
-  mark_sym_for_renaming (gimple_vop (cfun));
+  mark_virtual_operands_for_renaming (cfun);
   /* The memory tags and pointers in vectorized statements need to
      have their SSA forms updated.  FIXME, why can't this be delayed
      until all the loops have been transformed?  */
