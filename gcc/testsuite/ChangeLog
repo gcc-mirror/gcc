@@ -1,3 +1,11 @@
+2012-08-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2012-03-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/52530
+	* gcc.dg/torture/pr52530.c: New test.
+
 2012-07-27  Anna Tikhonova  <anna.tikhonova@intel.com>
 
 	* gcc.dg/20020201-1.c: Remove declarations for exit, abort,
