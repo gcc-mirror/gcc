@@ -1,3 +1,59 @@
+2012-08-01  Michael Matz  <matz@suse.de>
+
+	* tree-complex.c (init_parameter_lattice_values): Don't call var_ann.
+	* tree-dfa.c (struct dfa_stats_d): Remove num_var_anns member.
+	(dump_dfa_stats): Don't dump stats about var anns.
+	(collect_dfa_stats): Don't collect them.
+	(add_referenced_var_1): Don't set var annotation pointers.
+	(remove_referenced_var): Ditto, and only remove it it's in the
+	hash table.
+
+	* tree-flow-inline.h (var_ann): Remove.
+	* tree-flow.h (struct var_ann_d, var_ann_t): Remove.
+
+	* tree-inline.c (remapped_type): Remove.
+	(can_be_nonlocal): Most variable will be considered live here,
+	return false earlier.
+	(remap_decls): Don't call var_ann, all variables will be considered
+	referenced here.
+	(copy_debug_stmt): Ditto, and use is_global_var.
+
+	* tree-into-ssa.c (rewrite_debug_stmt_uses): Use get_current_def to
+	determine if a variable was referred to, not var_ann.
+	* tree-ssa-live.c (remove_unused_scope_block_p): Don't check var_ann.
+	(remove_unused_locals): Ditto.
+	* tree-ssa.c (delete_tree_ssa): Don't free/clear var ann pointers.
+	* tree-tailcall.c (arg_needs_copy_p): Don't check var_ann.
+	* tree.c (copy_node_stat): Don't clear var ann pointer.
+	* tree.h (tree_result_decl, tree_parm_decl, tree_var_decl): Remove
+	ann member.
+	(DECL_VAR_ANN_PTR): Remove.
+
+2012-08-01  Michael Matz  <matz@suse.de>
+
+	* tree-flow.h (struct var_ann_d): Rename used member.
+	(set_is_used): Don't declare.
+	* tree-flow-inline.h (clear_is_used): Remove.
+	(set_is_used, is_used_p): Move to ...
+	* tree-ssa-live.c (set_is_used, is_used_p): ... here, and use
+	on the side bitmap.
+	(usedvars): New bitmap.
+	(dump_scope_block): Don't dump unusedness.
+	(remove_unused_locals): Allocate and free usedvars.
+	* tree-nrv.c (tree_nrv): Don't clear used flags here.
+
+2012-08-01  Michael Matz  <matz@suse.de>
+
+	* tree-flow.h (struct var_ann_d): Remove base_var_processed and
+	base_index members.
+	* tree-ssa-live.h (struct _var_map): Remove basevars member.
+	(VAR_ANN_BASE_INDEX): Remove.
+	* tree-ssa-live.c (var_map_base_init): Use a hash table instead
+	of var annotation to compress index space.  Don't deal with above
+	removed members.
+	(var_map_base_fini): Don't free basevars.
+	(init_var_map): Don't clear basevars.
+
 2012-08-01  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	* gimple-ssa-strength-reduction.c (struct slsr_cand_d): Change

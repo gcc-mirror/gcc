@@ -261,8 +261,6 @@ tree_nrv (void)
   SET_DECL_VALUE_EXPR (found, result);
   DECL_HAS_VALUE_EXPR_P (found) = 1;
 
-  /* FOUND is no longer used.  Ensure it gets removed.  */
-  clear_is_used (found);
   return 0;
 }
 

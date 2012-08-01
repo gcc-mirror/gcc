@@ -177,19 +177,6 @@ enum need_phi_state {
 };
 
 
-struct GTY(()) var_ann_d {
-  /* Used when building base variable structures in a var_map.  */
-  unsigned base_var_processed : 1;
-
-  /* Nonzero if this variable was used after SSA optimizations were
-     applied.  We set this when translating out of SSA form.  */
-  unsigned used : 1;
-
-  /* Used by var_map for the base index of ssa base variables.  */
-  unsigned base_index;
-};
-
-
 /* Immediate use lists are used to directly access all uses for an SSA
    name and get pointers to the statement for each use.
 
@@ -284,9 +271,6 @@ typedef struct immediate_use_iterator_d
 
 
 
-typedef struct var_ann_d *var_ann_t;
-
-static inline var_ann_t var_ann (const_tree);
 static inline void update_stmt (gimple);
 static inline int get_lineno (const_gimple);
 
@@ -747,7 +731,6 @@ extern enum move_pos movement_possibility (gimple);
 char *get_lsm_tmp_name (tree, unsigned);
 
 /* In tree-flow-inline.h  */
-static inline void set_is_used (tree);
 static inline bool unmodifiable_var_p (const_tree);
 static inline bool ref_contains_array_ref (const_tree);
 

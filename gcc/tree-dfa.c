@@ -46,7 +46,6 @@ along with GCC; see the file COPYING3.  If not see
 /* Counters used to display DFA and SSA statistics.  */
 struct dfa_stats_d
 {
-  long num_var_anns;
   long num_defs;
   long num_uses;
   long num_phis;
@@ -303,11 +302,6 @@ dump_dfa_stats (FILE *file)
   fprintf (file, fmt_str_1, "Referenced variables", (unsigned long)num_referenced_vars,
 	   SCALE (size), LABEL (size));
 
-  size = dfa_stats.num_var_anns * sizeof (struct var_ann_d);
-  total += size;
-  fprintf (file, fmt_str_1, "Variables annotated", dfa_stats.num_var_anns,
-	   SCALE (size), LABEL (size));
-
   size = dfa_stats.num_uses * sizeof (tree *);
   total += size;
   fprintf (file, fmt_str_1, "USE operands", dfa_stats.num_uses,
@@ -373,9 +367,6 @@ collect_dfa_stats (struct dfa_stats_d *dfa_stats_p ATTRIBUTE_UNUSED)
   gcc_assert (dfa_stats_p);
 
   memset ((void *)dfa_stats_p, 0, sizeof (struct dfa_stats_d));
-
-  /* Count all the variable annotations.  */
-  dfa_stats_p->num_var_anns = htab_elements (gimple_referenced_vars (cfun));
 
   /* Walk all the statements in the function counting references.  */
   FOR_EACH_BB (bb)
@@ -561,11 +552,7 @@ add_referenced_var_1 (tree var, struct function *fn)
   /* Insert VAR into the referenced_vars hash table if it isn't present
      and allocate its var-annotation.  */
   if (referenced_var_check_and_insert (var, fn))
-    {
-      gcc_checking_assert (!*DECL_VAR_ANN_PTR (var));
-      *DECL_VAR_ANN_PTR (var) = ggc_alloc_cleared_var_ann_d ();
-      return true;
-    }
+    return true;
 
   return false;
 }
@@ -576,7 +563,6 @@ add_referenced_var_1 (tree var, struct function *fn)
 void
 remove_referenced_var (tree var)
 {
-  var_ann_t v_ann;
   struct tree_decl_minimal in;
   void **loc;
   unsigned int uid = DECL_UID (var);
@@ -587,14 +573,11 @@ remove_referenced_var (tree var)
 
   gcc_checking_assert (!is_global_var (var));
 
-  v_ann = var_ann (var);
-  ggc_free (v_ann);
-  *DECL_VAR_ANN_PTR (var) = NULL;
-
   in.uid = uid;
   loc = htab_find_slot_with_hash (gimple_referenced_vars (cfun), &in, uid,
 				  NO_INSERT);
-  htab_clear_slot (gimple_referenced_vars (cfun), loc);
+  if (loc)
+    htab_clear_slot (gimple_referenced_vars (cfun), loc);
 }
 
 

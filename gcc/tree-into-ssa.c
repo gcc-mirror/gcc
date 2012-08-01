@@ -1274,9 +1274,10 @@ rewrite_debug_stmt_uses (gimple stmt)
 
   FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE)
     {
-      tree var = USE_FROM_PTR (use_p), def = NULL_TREE;
+      tree var = USE_FROM_PTR (use_p), def;
       gcc_assert (DECL_P (var));
-      if (var_ann (var) == NULL)
+      def = get_current_def (var);
+      if (!def)
 	{
 	  if (TREE_CODE (var) == PARM_DECL && single_succ_p (ENTRY_BLOCK_PTR))
 	    {
@@ -1318,38 +1319,34 @@ rewrite_debug_stmt_uses (gimple stmt)
 	}
       else
 	{
-	  def = get_current_def (var);
 	  /* Check if get_current_def can be trusted.  */
-	  if (def)
+	  basic_block bb = gimple_bb (stmt);
+	  basic_block def_bb
+	      = SSA_NAME_IS_DEFAULT_DEF (def)
+	      ? NULL : gimple_bb (SSA_NAME_DEF_STMT (def));
+
+	  /* If definition is in current bb, it is fine.  */
+	  if (bb == def_bb)
+	    ;
+	  /* If definition bb doesn't dominate the current bb,
+	     it can't be used.  */
+	  else if (def_bb && !dominated_by_p (CDI_DOMINATORS, bb, def_bb))
+	    def = NULL;
+	  /* If there is just one definition and dominates the current
+	     bb, it is fine.  */
+	  else if (get_phi_state (var) == NEED_PHI_STATE_NO)
+	    ;
+	  else
 	    {
-	      basic_block bb = gimple_bb (stmt);
-	      basic_block def_bb
-		= SSA_NAME_IS_DEFAULT_DEF (def)
-		  ? NULL : gimple_bb (SSA_NAME_DEF_STMT (def));
+	      struct def_blocks_d *db_p = get_def_blocks_for (var);
 
-	      /* If definition is in current bb, it is fine.  */
-	      if (bb == def_bb)
+	      /* If there are some non-debug uses in the current bb,
+		 it is fine.  */
+	      if (bitmap_bit_p (db_p->livein_blocks, bb->index))
 		;
-	      /* If definition bb doesn't dominate the current bb,
-		 it can't be used.  */
-	      else if (def_bb && !dominated_by_p (CDI_DOMINATORS, bb, def_bb))
-		def = NULL;
-	      /* If there is just one definition and dominates the current
-		 bb, it is fine.  */
-	      else if (get_phi_state (var) == NEED_PHI_STATE_NO)
-		;
+	      /* Otherwise give up for now.  */
 	      else
-		{
-		  struct def_blocks_d *db_p = get_def_blocks_for (var);
-
-		  /* If there are some non-debug uses in the current bb,
-		     it is fine.  */
-		  if (bitmap_bit_p (db_p->livein_blocks, bb->index))
-		    ;
-		  /* Otherwise give up for now.  */
-		  else
-		    def = NULL;
-		}
+		def = NULL;
 	    }
 	}
       if (def == NULL)
