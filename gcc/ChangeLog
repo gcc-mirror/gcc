@@ -1,3 +1,10 @@
+2012-08-01  Richard Henderson  <rth@redhat.com>
+
+	* config/m32c/m32c.c (TARGET_INIT_LIBFUNCS): Remove.
+	(m32c_init_libfuncs): Remove.
+	* config/m32c/cond.md (cstore<QHPSI>4_16): Rename from cstore<QHPSI>4.
+	(cstore<QHPSI>4): New expander.
+
 2012-08-01  Richard Guenther  <rguenther@suse.de>
 
 	* tree-flow-inline.h (referenced_var): Remove.

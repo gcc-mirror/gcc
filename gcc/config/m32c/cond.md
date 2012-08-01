@@ -152,14 +152,31 @@
 
 ;; These are the pre-split patterns for the conditional sets.
 
-(define_insn_and_split "cstore<mode>4"
+(define_expand "cstore<mode>4"
+  [(set (match_operand:QI 0 "register_operand")
+	(match_operator:QI 1 "ordered_comparison_operator"
+	 [(match_operand:QHPSI 2 "mra_operand")
+	  (match_operand:QHPSI 3 "mrai_operand")]))]
+  ""
+{
+  if (TARGET_A24)
+    {
+      rtx o = gen_reg_rtx (HImode);
+      emit_insn (gen_cstore<mode>4_24 (o, operands[1],
+				       operands[2], operands[3]));
+      emit_move_insn (operands[0], gen_lowpart (QImode, o));
+      DONE;
+    }
+})
+
+(define_insn_and_split "*cstore<mode>4_16"
   [(set (match_operand:QI 0 "register_operand" "=Rqi")
 	(match_operator:QI 1 "ordered_comparison_operator"
 	 [(match_operand:QHPSI 2 "mra_operand" "RraSd")
 	  (match_operand:QHPSI 3 "mrai_operand" "RraSdi")]))]
   "TARGET_A16"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(set (reg:CC FLG_REGNO)
 	(compare (match_dup 2)
 		 (match_dup 3)))
@@ -176,7 +193,7 @@
 	  (match_operand:QHPSI 3 "mrai_operand" "RraSdi")]))]
   "TARGET_A24"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(set (reg:CC FLG_REGNO)
 	(compare (match_dup 2)
 		 (match_dup 3)))
