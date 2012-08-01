@@ -765,7 +765,7 @@ arg_needs_copy_p (tree param)
 {
   tree def;
 
-  if (!is_gimple_reg (param) || !var_ann (param))
+  if (!is_gimple_reg (param))
     return false;
 
   /* Parameters that are only defined but never used need not be copied.  */

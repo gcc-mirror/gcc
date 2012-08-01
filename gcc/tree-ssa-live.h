@@ -31,13 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Used to create the variable mapping when we go out of SSA form.
 
    Mapping from an ssa_name to a partition number is maintained, as well as
-   partition number to back to ssa_name. A partition can also be represented
-   by a non-ssa_name variable.  This allows ssa_names and their partition to
-   be coalesced with live on entry compiler variables, as well as eventually
-   having real compiler variables assigned to each partition as part of the
-   final stage of going of of ssa.
-
-   Non-ssa_names maintain their partition index in the variable annotation.
+   partition number back to ssa_name.
 
    This data structure also supports "views", which work on a subset of all
    partitions.  This allows the coalescer to decide what partitions are
@@ -72,14 +66,7 @@ typedef struct _var_map
 
   /* Map of partitions numbers to base variable table indexes.  */
   int *partition_to_base_index;
-
-  /* Table of base variable's.  */
-  VEC (tree, heap) *basevars;
 } *var_map;
-
-
-/* Index to the basevar table of a non ssa-name variable.  */
-#define VAR_ANN_BASE_INDEX(ann) (ann->base_index)
 
 
 /* Value used to represent no partition number.  */

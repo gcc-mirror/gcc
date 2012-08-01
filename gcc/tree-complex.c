@@ -176,7 +176,6 @@ init_parameter_lattice_values (void)
 
   for (parm = DECL_ARGUMENTS (cfun->decl); parm ; parm = DECL_CHAIN (parm))
     if (is_complex_reg (parm)
-	&& var_ann (parm) != NULL
 	&& (ssa_name = gimple_default_def (cfun, parm)) != NULL_TREE)
       VEC_replace (complex_lattice_t, complex_lattice_values,
 		   SSA_NAME_VERSION (ssa_name), VARYING);

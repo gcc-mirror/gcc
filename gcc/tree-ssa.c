@@ -1150,15 +1150,7 @@ struct gimple_opt_pass pass_init_datastructures =
 void
 delete_tree_ssa (void)
 {
-  referenced_var_iterator rvi;
-  tree var;
-
   /* Remove annotations from every referenced local variable.  */
-  FOR_EACH_REFERENCED_VAR (cfun, var, rvi)
-    {
-      ggc_free (var_ann (var));
-      *DECL_VAR_ANN_PTR (var) = NULL;
-    }
   htab_delete (gimple_referenced_vars (cfun));
   cfun->gimple_df->referenced_vars = NULL;
 

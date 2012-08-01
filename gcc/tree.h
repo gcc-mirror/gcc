@@ -3116,10 +3116,8 @@ struct GTY(()) tree_label_decl {
   int eh_landing_pad_nr;
 };
 
-struct var_ann_d;
 struct GTY(()) tree_result_decl {
   struct tree_decl_with_rtl common;
-  struct var_ann_d *ann;
 };
 
 struct GTY(()) tree_const_decl {
@@ -3138,7 +3136,6 @@ struct GTY(()) tree_const_decl {
 struct GTY(()) tree_parm_decl {
   struct tree_decl_with_rtl common;
   rtx incoming_rtl;
-  struct var_ann_d *ann;
 };
 
 
@@ -3355,15 +3352,8 @@ extern void decl_fini_priority_insert (tree, priority_type);
 #define VAR_DECL_IS_VIRTUAL_OPERAND(NODE) \
   (VAR_DECL_CHECK (NODE)->base.saturating_flag)
 
-#define DECL_VAR_ANN_PTR(NODE) \
-  (TREE_CODE (NODE) == VAR_DECL ? &(NODE)->var_decl.ann \
-   : TREE_CODE (NODE) == PARM_DECL ? &(NODE)->parm_decl.ann \
-   : TREE_CODE (NODE) == RESULT_DECL ? &(NODE)->result_decl.ann \
-   : NULL)
-
 struct GTY(()) tree_var_decl {
   struct tree_decl_with_vis common;
-  struct var_ann_d *ann;
 };
 
 
