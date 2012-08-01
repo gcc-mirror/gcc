@@ -166,8 +166,8 @@ struct slsr_cand_d
   /* The candidate statement S1.  */
   gimple cand_stmt;
 
-  /* The base SSA name B.  */
-  tree base_name;
+  /* The base expression B:  often an SSA name, but not always.  */
+  tree base_expr;
 
   /* The stride S.  */
   tree stride;
@@ -175,7 +175,7 @@ struct slsr_cand_d
   /* The index constant i.  */
   double_int index;
 
-  /* The type of the candidate.  This is normally the type of base_name,
+  /* The type of the candidate.  This is normally the type of base_expr,
      but casts may have occurred when combining feeding instructions.
      A candidate can only be a basis for candidates of the same final type.
      (For CAND_REFs, this is the type to be used for operand 1 of the
@@ -216,12 +216,13 @@ typedef struct slsr_cand_d slsr_cand, *slsr_cand_t;
 typedef const struct slsr_cand_d *const_slsr_cand_t;
 
 /* Pointers to candidates are chained together as part of a mapping
-   from SSA names to the candidates that use them as a base name.  */
+   from base expressions to the candidates that use them.  */
 
 struct cand_chain_d
 {
-  /* SSA name that serves as a base name for the chain of candidates.  */
-  tree base_name;
+  /* Base expression for the chain of candidates:  often, but not
+     always, an SSA name.  */
+  tree base_expr;
 
   /* Pointer to a candidate.  */
   slsr_cand_t cand;
@@ -253,7 +254,7 @@ static struct pointer_map_t *stmt_cand_map;
 /* Obstack for candidates.  */
 static struct obstack cand_obstack;
 
-/* Hash table embodying a mapping from base names to chains of candidates.  */
+/* Hash table embodying a mapping from base exprs to chains of candidates.  */
 static htab_t base_cand_map;
 
 /* Obstack for candidate chains.  */
@@ -272,7 +273,7 @@ lookup_cand (cand_idx idx)
 static hashval_t
 base_cand_hash (const void *p)
 {
-  tree base_expr = ((const_cand_chain_t) p)->base_name;
+  tree base_expr = ((const_cand_chain_t) p)->base_expr;
   return iterative_hash_expr (base_expr, 0);
 }
 
@@ -291,10 +292,10 @@ base_cand_eq (const void *p1, const void *p2)
 {
   const_cand_chain_t const chain1 = (const_cand_chain_t) p1;
   const_cand_chain_t const chain2 = (const_cand_chain_t) p2;
-  return operand_equal_p (chain1->base_name, chain2->base_name, 0);
+  return operand_equal_p (chain1->base_expr, chain2->base_expr, 0);
 }
 
-/* Use the base name from candidate C to look for possible candidates
+/* Use the base expr from candidate C to look for possible candidates
    that can serve as a basis for C.  Each potential basis must also
    appear in a block that dominates the candidate statement and have
    the same stride and type.  If more than one possible basis exists,
@@ -308,7 +309,7 @@ find_basis_for_candidate (slsr_cand_t c)
   cand_chain_t chain;
   slsr_cand_t basis = NULL;
 
-  mapping_key.base_name = c->base_name;
+  mapping_key.base_expr = c->base_expr;
   chain = (cand_chain_t) htab_find (base_cand_map, &mapping_key);
 
   for (; chain; chain = chain->next)
@@ -337,8 +338,8 @@ find_basis_for_candidate (slsr_cand_t c)
   return 0;
 }
 
-/* Record a mapping from the base name of C to C itself, indicating that
-   C may potentially serve as a basis using that base name.  */
+/* Record a mapping from the base expression of C to C itself, indicating that
+   C may potentially serve as a basis using that base expression.  */
 
 static void
 record_potential_basis (slsr_cand_t c)
@@ -347,7 +348,7 @@ record_potential_basis (slsr_cand_t c)
   void **slot;
 
   node = (cand_chain_t) obstack_alloc (&chain_obstack, sizeof (cand_chain));
-  node->base_name = c->base_name;
+  node->base_expr = c->base_expr;
   node->cand = c;
   node->next = NULL;
   slot = htab_find_slot (base_cand_map, node, INSERT);
@@ -373,7 +374,7 @@ alloc_cand_and_find_basis (enum cand_kind kind, gimple gs, tree base,
   slsr_cand_t c = (slsr_cand_t) obstack_alloc (&cand_obstack,
 					       sizeof (slsr_cand));
   c->cand_stmt = gs;
-  c->base_name = base;
+  c->base_expr = base;
   c->stride = stride;
   c->index = index;
   c->cand_type = ctype;
@@ -617,7 +618,7 @@ create_mul_ssa_cand (gimple gs, tree base_in, tree stride_in, bool speed)
 	     X = Y * Z
 	     ================
 	     X = (B + i') * Z  */
-	  base = base_cand->base_name;
+	  base = base_cand->base_expr;
 	  index = base_cand->index;
 	  stride = stride_in;
 	  ctype = base_cand->cand_type;
@@ -632,7 +633,7 @@ create_mul_ssa_cand (gimple gs, tree base_in, tree stride_in, bool speed)
 	     X = Y * Z
 	     ============================
 	     X = B + ((i' * S) * Z)  */
-	  base = base_cand->base_name;
+	  base = base_cand->base_expr;
 	  index = double_int_mul (base_cand->index,
 				  tree_to_double_int (base_cand->stride));
 	  stride = stride_in;
@@ -688,7 +689,7 @@ create_mul_imm_cand (gimple gs, tree base_in, tree stride_in, bool speed)
 	     X = Y * c
 	     ============================
 	     X = (B + i') * (S * c)  */
-	  base = base_cand->base_name;
+	  base = base_cand->base_expr;
 	  index = base_cand->index;
 	  temp = double_int_mul (tree_to_double_int (base_cand->stride),
 				 tree_to_double_int (stride_in));
@@ -705,7 +706,7 @@ create_mul_imm_cand (gimple gs, tree base_in, tree stride_in, bool speed)
 	     X = Y * c
 	     ===========================
 	     X = (B + i') * c  */
-	  base = base_cand->base_name;
+	  base = base_cand->base_expr;
 	  index = base_cand->index;
 	  stride = stride_in;
 	  ctype = base_cand->cand_type;
@@ -721,7 +722,7 @@ create_mul_imm_cand (gimple gs, tree base_in, tree stride_in, bool speed)
 	     X = Y * c
 	     ===========================
 	     X = (B + S) * c  */
-	  base = base_cand->base_name;
+	  base = base_cand->base_expr;
 	  index = tree_to_double_int (base_cand->stride);
 	  stride = stride_in;
 	  ctype = base_cand->cand_type;
@@ -772,14 +773,14 @@ slsr_process_mul (gimple gs, tree rhs1, tree rhs2, bool speed)
   if (TREE_CODE (rhs2) == SSA_NAME)
     {
       /* Record an interpretation of this statement in the candidate table
-	 assuming RHS1 is the base name and RHS2 is the stride.  */
+	 assuming RHS1 is the base expression and RHS2 is the stride.  */
       c = create_mul_ssa_cand (gs, rhs1, rhs2, speed);
 
       /* Add the first interpretation to the statement-candidate mapping.  */
       add_cand_for_stmt (gs, c);
 
       /* Record another interpretation of this statement assuming RHS1
-	 is the stride and RHS2 is the base name.  */
+	 is the stride and RHS2 is the base expression.  */
       c2 = create_mul_ssa_cand (gs, rhs2, rhs1, speed);
       c->next_interp = c2->cand_num;
     }
@@ -826,7 +827,7 @@ create_add_ssa_cand (gimple gs, tree base_in, tree addend_in,
 	  index = tree_to_double_int (addend_cand->stride);
 	  if (subtract_p)
 	    index = double_int_neg (index);
-	  stride = addend_cand->base_name;
+	  stride = addend_cand->base_expr;
 	  ctype = TREE_TYPE (SSA_NAME_VAR (base_in));
 	  if (has_single_use (addend_in))
 	    savings = (addend_cand->dead_savings
@@ -850,7 +851,7 @@ create_add_ssa_cand (gimple gs, tree base_in, tree addend_in,
 	     X = Y +/- Z
 	     ============================
 	     X = B + (+/-1 * Z)  */
-	  base = base_cand->base_name;
+	  base = base_cand->base_expr;
 	  index = subtract_p ? double_int_minus_one : double_int_one;
 	  stride = addend_in;
 	  ctype = base_cand->cand_type;
@@ -875,7 +876,7 @@ create_add_ssa_cand (gimple gs, tree base_in, tree addend_in,
 		  base = base_in;
 		  index = tree_to_double_int (subtrahend_cand->stride);
 		  index = double_int_neg (index);
-		  stride = subtrahend_cand->base_name;
+		  stride = subtrahend_cand->base_expr;
 		  ctype = TREE_TYPE (SSA_NAME_VAR (base_in));
 		  if (has_single_use (addend_in))
 		    savings = (subtrahend_cand->dead_savings 
@@ -944,7 +945,7 @@ create_add_imm_cand (gimple gs, tree base_in, double_int index_in, bool speed)
 	     ============================
 	     X = (B + (i'+ k)) * S  */
 	  kind = base_cand->kind;
-	  base = base_cand->base_name;
+	  base = base_cand->base_expr;
 	  index = double_int_add (base_cand->index, multiple);
 	  stride = base_cand->stride;
 	  ctype = base_cand->cand_type;
@@ -986,7 +987,7 @@ slsr_process_add (gimple gs, tree rhs1, tree rhs2, bool speed)
 
   if (TREE_CODE (rhs2) == SSA_NAME)
     {
-      /* First record an interpretation assuming RHS1 is the base name
+      /* First record an interpretation assuming RHS1 is the base expression
 	 and RHS2 is the stride.  But it doesn't make sense for the
 	 stride to be a pointer, so don't record a candidate in that case.  */
       if (!POINTER_TYPE_P (TREE_TYPE (SSA_NAME_VAR (rhs2))))
@@ -1004,7 +1005,7 @@ slsr_process_add (gimple gs, tree rhs1, tree rhs2, bool speed)
 	return;
 
       /* Otherwise, record another interpretation assuming RHS2 is the
-	 base name and RHS1 is the stride, again provided that the
+	 base expression and RHS1 is the stride, again provided that the
 	 stride is not a pointer.  */
       if (!POINTER_TYPE_P (TREE_TYPE (SSA_NAME_VAR (rhs1))))
 	{
@@ -1139,7 +1140,7 @@ slsr_process_cast (gimple gs, tree rhs1, bool speed)
 		       + stmt_cost (base_cand->cand_stmt, speed));
 
 	  c = alloc_cand_and_find_basis (base_cand->kind, gs,
-					 base_cand->base_name,
+					 base_cand->base_expr,
 					 base_cand->index, base_cand->stride,
 					 ctype, savings);
 	  if (base_cand->next_interp)
@@ -1196,7 +1197,7 @@ slsr_process_copy (gimple gs, tree rhs1, bool speed)
 		       + stmt_cost (base_cand->cand_stmt, speed));
 
 	  c = alloc_cand_and_find_basis (base_cand->kind, gs,
-					 base_cand->base_name,
+					 base_cand->base_expr,
 					 base_cand->index, base_cand->stride,
 					 base_cand->cand_type, savings);
 	  if (base_cand->next_interp)
@@ -1324,7 +1325,7 @@ dump_candidate (slsr_cand_t c)
     {
     case CAND_MULT:
       fputs ("     MULT : (", dump_file);
-      print_generic_expr (dump_file, c->base_name, 0);
+      print_generic_expr (dump_file, c->base_expr, 0);
       fputs (" + ", dump_file);
       dump_double_int (dump_file, c->index, false);
       fputs (") * ", dump_file);
@@ -1333,7 +1334,7 @@ dump_candidate (slsr_cand_t c)
       break;
     case CAND_ADD:
       fputs ("     ADD  : ", dump_file);
-      print_generic_expr (dump_file, c->base_name, 0);
+      print_generic_expr (dump_file, c->base_expr, 0);
       fputs (" + (", dump_file);
       dump_double_int (dump_file, c->index, false);
       fputs (" * ", dump_file);
@@ -1342,7 +1343,7 @@ dump_candidate (slsr_cand_t c)
       break;
     case CAND_REF:
       fputs ("     REF  : ", dump_file);
-      print_generic_expr (dump_file, c->base_name, 0);
+      print_generic_expr (dump_file, c->base_expr, 0);
       fputs (" + (", dump_file);
       print_generic_expr (dump_file, c->stride, 0);
       fputs (") + ", dump_file);
@@ -1387,7 +1388,7 @@ base_cand_dump_callback (void **slot, void *ignored ATTRIBUTE_UNUSED)
   const_cand_chain_t chain = *((const_cand_chain_t *) slot);
   cand_chain_t p;
 
-  print_generic_expr (dump_file, chain->base_name, 0);
+  print_generic_expr (dump_file, chain->base_expr, 0);
   fprintf (dump_file, " -> %d", chain->cand->cand_num);
 
   for (p = chain->next; p; p = p->next)
@@ -1447,8 +1448,8 @@ unconditional_cands_with_known_stride_p (slsr_cand_t root)
 static void
 replace_ref (tree *expr, slsr_cand_t c)
 {
-  tree add_expr = fold_build2 (POINTER_PLUS_EXPR, TREE_TYPE (c->base_name),
-			       c->base_name, c->stride);
+  tree add_expr = fold_build2 (POINTER_PLUS_EXPR, TREE_TYPE (c->base_expr),
+			       c->base_expr, c->stride);
   tree mem_ref = fold_build2 (MEM_REF, TREE_TYPE (*expr), add_expr,
 			      double_int_to_tree (c->cand_type, c->index));
   
@@ -1503,7 +1504,7 @@ cand_increment (slsr_cand_t c)
     return c->index;
 
   basis = lookup_cand (c->basis);
-  gcc_assert (operand_equal_p (c->base_name, basis->base_name, 0));
+  gcc_assert (operand_equal_p (c->base_expr, basis->base_expr, 0));
   return double_int_sub (c->index, basis->index);
 }
 
@@ -1698,7 +1699,7 @@ execute_strength_reduction (void)
   /* Create the obstack where candidate chains will reside.  */
   gcc_obstack_init (&chain_obstack);
 
-  /* Allocate the mapping from base names to candidate chains.  */
+  /* Allocate the mapping from base expressions to candidate chains.  */
   base_cand_map = htab_create (500, base_cand_hash,
 			       base_cand_eq, base_cand_free);
 

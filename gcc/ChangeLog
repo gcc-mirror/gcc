@@ -1,5 +1,25 @@
 2012-08-01  Bill Schmidt  <wschmidt@linux.ibm.com>
 
+	* gimple-ssa-strength-reduction.c (struct slsr_cand_d): Change
+	base_name to base_expr.
+	(struct cand_chain_d): Likewise.
+	(base_cand_hash): Likewise.
+	(base_cand_eq): Likewise.
+	(record_potential_basis): Likewise.
+	(alloc_cand_and_find_basis): Likewise.
+	(create_mul_ssa_cand): Likewise.
+	(create_mul_imm_cand): Likewise.
+	(create_add_ssa_cand): Likewise.
+	(create_add_imm_cand): Likewise.
+	(slsr_process_cast): Likewise.
+	(slsr_process_copy): Likewise.
+	(dump_candidate): Likewise.
+	(base_cand_dump_callback): Likewise.
+	(unconditional_cands_with_known_stride_p): Likewise.
+	(cand_increment): Likewise.
+
+2012-08-01  Bill Schmidt  <wschmidt@linux.ibm.com>
+
 	PR tree-optimization/46556
 	* gimple-ssa-strength-reduction.c (enum cand_kind): Add CAND_REF.
 	(base_cand_map): Change to hash table.
