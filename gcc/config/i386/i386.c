@@ -11657,6 +11657,10 @@ ix86_address_subreg_operand (rtx op)
   if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
     return false;
 
+  /* simplify_subreg does not handle stack pointer.  */
+  if (REGNO (op) == STACK_POINTER_REGNUM)
+    return false;
+
   /* Allow only SUBREGs of non-eliminable hard registers.  */
   return register_no_elim_operand (op, mode);
 }
@@ -14823,6 +14827,7 @@ ix86_print_operand_address (FILE *file, rtx addr)
       rtx tmp = SUBREG_REG (parts.base);
       parts.base = simplify_subreg (GET_MODE (parts.base),
 				    tmp, GET_MODE (tmp), 0);
+      gcc_assert (parts.base != NULL_RTX);
     }
 
   if (parts.index && GET_CODE (parts.index) == SUBREG)
@@ -14830,6 +14835,7 @@ ix86_print_operand_address (FILE *file, rtx addr)
       rtx tmp = SUBREG_REG (parts.index);
       parts.index = simplify_subreg (GET_MODE (parts.index),
 				     tmp, GET_MODE (tmp), 0);
+      gcc_assert (parts.index != NULL_RTX);
     }
 
   base = parts.base;
