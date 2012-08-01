@@ -1,3 +1,10 @@
+2012-08-01  Thomas König  <tkoenig@gcc.gnu.org>
+
+	PR fortran/54033
+	* scanner.c (add_path_to_list): Emit warning if an error occurs
+	for an include path, if it is not present or if it is not a
+	directory.  Do not add the path in these cases.
+
 2012-07-31  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/42418
