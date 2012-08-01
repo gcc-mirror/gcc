@@ -1,3 +1,10 @@
+2012-08-01  Tom de Vries  <tom@codesourcery.com>
+
+	* tree-vrp.c (find_case_label_ranges): New function.
+	(vrp_visit_switch_stmt, simplify_switch_using_ranges): Use
+	find_case_label_ranges instead of find_case_label_range.  Handle second
+	range.
+
 2012-08-01  Michael Matz  <matz@suse.de>
 
 	* tree-complex.c (init_parameter_lattice_values): Don't call var_ann.
