@@ -1,3 +1,9 @@
+2012-07-31  Nenad Vukicevic  <nenad@intrepid.com>
+
+	* configure.ac: Added help description for --with-bfd,
+	--with-bfd-include, and --with-bfd-lib.
+	* configure: Re-generate.
+
 2012-07-31  Gary Funck  <gary@intrepid.com>
 
 	* configure.ac: Remove extra white space at end-of-line.

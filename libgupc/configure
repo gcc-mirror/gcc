@@ -790,6 +790,9 @@ enable_upc_backtrace_gdb
 with_upc_backtrace_gdb
 enable_upc_backtrace_signal
 with_upc_backtrace_signal
+with_bfd
+with_bfd_include
+with_bfd_lib
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1474,6 +1477,13 @@ Optional Packages:
   --with-upc-backtrace-signal=SIGNAL
                           specify the signal to be used for UPC stack
                           backtrace [default='SIGUSR1']
+  --with-bfd=PATH         specify prefix directory for the installed BFD
+                          library needed to provide extended UPC backtrace
+                          information (source file name and line numbers);
+                          equivalent to --with-bfd-include=PATH/include plus
+                          --with-bfd-lib=PATH/lib
+  --with-bfd-include=PATH specify directory for installed BFD include files
+  --with-bfd-lib=PATH     specify directory for the installed BFD library
 
 Some influential environment variables:
   CC          C compiler command
@@ -11445,7 +11455,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11448 "configure"
+#line 11458 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11551,7 +11561,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11554 "configure"
+#line 11564 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15152,6 +15162,26 @@ $as_echo "$upc_backtrace_signal" >&6; }
   fi
 
   # UPC source file/line backtrace requires BFD library
+  # Specify a location for BFD lib
+
+# Check whether --with-bfd was given.
+if test "${with_bfd+set}" = set; then :
+  withval=$with_bfd;
+fi
+
+
+# Check whether --with-bfd-include was given.
+if test "${with_bfd_include+set}" = set; then :
+  withval=$with_bfd_include;
+fi
+
+
+# Check whether --with-bfd-lib was given.
+if test "${with_bfd_lib+set}" = set; then :
+  withval=$with_bfd_lib;
+fi
+
+
   if test "x$with_bfd" != x; then
     bfdlibs="-L$with_bfd/lib $bfdlibs"
     bfdinc="-I$with_bfd/include $bfdinc"

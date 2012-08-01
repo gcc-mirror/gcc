@@ -713,6 +713,21 @@ if test "$upc_runtime_model" = "smp"; then
   fi
 
   # UPC source file/line backtrace requires BFD library
+  # Specify a location for BFD lib
+  AC_ARG_WITH(bfd,
+  [AS_HELP_STRING([--with-bfd=PATH],
+                [specify prefix directory for the installed BFD library
+                 needed to provide extended UPC backtrace information
+                 (source file name and line numbers); equivalent to
+                 --with-bfd-include=PATH/include
+                 plus --with-bfd-lib=PATH/lib])])
+  AC_ARG_WITH(bfd-include,
+  [AS_HELP_STRING([--with-bfd-include=PATH],
+                [specify directory for installed BFD include files])])
+  AC_ARG_WITH(bfd-lib,
+  [AS_HELP_STRING([--with-bfd-lib=PATH],
+                [specify directory for the installed BFD library])])
+
   if test "x$with_bfd" != x; then
     bfdlibs="-L$with_bfd/lib $bfdlibs"
     bfdinc="-I$with_bfd/include $bfdinc"
