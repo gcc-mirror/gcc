@@ -1,3 +1,13 @@
+2012-08-01  Catherine Moore  <clm@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	gcc/
+	* config/mips/mips-cpus.def (34kn): New.
+	* config/mips/mips.h (MIPS_ARCH_FLOAT_SPEC): Add 34kn.
+	(BASE_DRIVER_SELF_SPECS): Do not imply -mdsp for the 34kn.
+	* config/mips/mips-tables.opt: Regenerate.
+	* doc/invoke.texi (MIPS Options): Document -march=34kn.
+
 2012-08-01  Richard Henderson  <rth@redhat.com>
 
 	PR middle-end/34548
