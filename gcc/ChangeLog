@@ -1,3 +1,20 @@
+2012-08-01  Richard Guenther  <rguenther@suse.de>
+
+	* tree-flow-inline.h (referenced_var): Remove.
+	* tree-ssa-coalesce.c (create_outofssa_var_map): Remove duplicate
+	checking code.
+	* tree-sra.c (candidates): New global hashtable.
+	(candidate): New function.
+	(sra_initialize): Initialize candidates.
+	(sra_deinitialize): Free candidates.
+	(disqualify_candidate): Remove candidate from candidates.
+	(maybe_add_sra_candidate): New function.
+	(find_var_candidates): Walk over all local decls and parameters,
+	add candidates to candidates hashtable.
+	(find_param_candidates): Add candidates to candidates hashtable.
+	(analyze_all_variable_accesses): Use candidate instead of
+	referenced_var.
+
 2012-08-01  Tom de Vries  <tom@codesourcery.com>
 
 	* tree-vrp.c (find_case_label_ranges): New function.
