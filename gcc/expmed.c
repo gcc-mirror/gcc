@@ -101,7 +101,6 @@ struct init_expmed_rtl
   struct rtx_def mult;	rtunion mult_fld1;
   struct rtx_def sdiv;	rtunion sdiv_fld1;
   struct rtx_def udiv;	rtunion udiv_fld1;
-  struct rtx_def zext;
   struct rtx_def sdiv_32;	rtunion sdiv_32_fld1;
   struct rtx_def smod_32;	rtunion smod_32_fld1;
   struct rtx_def wide_mult;	rtunion wide_mult_fld1;
@@ -112,11 +111,34 @@ struct init_expmed_rtl
   struct rtx_def shift_add;	rtunion shift_add_fld1;
   struct rtx_def shift_sub0;	rtunion shift_sub0_fld1;
   struct rtx_def shift_sub1;	rtunion shift_sub1_fld1;
-  struct rtx_def convert;
+  struct rtx_def zext;
+  struct rtx_def trunc;
 
   rtx pow2[MAX_BITS_PER_WORD];
   rtx cint[MAX_BITS_PER_WORD];
 };
+
+static void
+init_expmed_one_conv (struct init_expmed_rtl *all, enum machine_mode to_mode,
+		      enum machine_mode from_mode, bool speed)
+{
+  int to_size, from_size;
+  rtx which;
+
+  /* We're given no information about the true size of a partial integer,
+     only the size of the "full" integer it requires for storage.  For
+     comparison purposes here, reduce the bit size by one in that case.  */
+  to_size = (GET_MODE_BITSIZE (to_mode)
+	     - (GET_MODE_CLASS (to_mode) == MODE_PARTIAL_INT));
+  from_size = (GET_MODE_BITSIZE (from_mode)
+	       - (GET_MODE_CLASS (from_mode) == MODE_PARTIAL_INT));
+  
+  /* Assume cost of zero-extend and sign-extend is the same.  */
+  which = (to_size < from_size ? &all->trunc : &all->zext);
+
+  PUT_MODE (&all->reg, from_mode);
+  set_convert_cost (to_mode, from_mode, speed, set_src_cost (which, speed));
+}
 
 static void
 init_expmed_one_mode (struct init_expmed_rtl *all,
@@ -141,7 +163,8 @@ init_expmed_one_mode (struct init_expmed_rtl *all,
   PUT_MODE (&all->shift_add, mode);
   PUT_MODE (&all->shift_sub0, mode);
   PUT_MODE (&all->shift_sub1, mode);
-  PUT_MODE (&all->convert, mode);
+  PUT_MODE (&all->zext, mode);
+  PUT_MODE (&all->trunc, mode);
 
   set_add_cost (speed, mode, set_src_cost (&all->plus, speed));
   set_neg_cost (speed, mode, set_src_cost (&all->neg, speed));
@@ -176,8 +199,13 @@ init_expmed_one_mode (struct init_expmed_rtl *all,
 
   if (SCALAR_INT_MODE_P (mode))
     {
-      enum machine_mode wider_mode = GET_MODE_WIDER_MODE (mode);
-
+      for (mode_from = MIN_MODE_INT; mode_from <= MAX_MODE_INT;
+	   mode_from = (enum machine_mode)(mode_from + 1))
+	init_expmed_one_conv (all, mode, mode_from, speed);
+    }
+  if (GET_MODE_CLASS (mode) == MODE_INT)
+    {
+      enum machine_mode  wider_mode = GET_MODE_WIDER_MODE (mode);
       if (wider_mode != VOIDmode)
 	{
 	  PUT_MODE (&all->zext, wider_mode);
@@ -185,33 +213,11 @@ init_expmed_one_mode (struct init_expmed_rtl *all,
 	  PUT_MODE (&all->wide_lshr, wider_mode);
 	  XEXP (&all->wide_lshr, 1) = GEN_INT (mode_bitsize);
 
-	  set_mul_widen_cost (speed, wider_mode, set_src_cost (&all->wide_mult, speed));
-	  set_mul_highpart_cost (speed, mode, set_src_cost (&all->wide_trunc, speed));
+	  set_mul_widen_cost (speed, wider_mode,
+			      set_src_cost (&all->wide_mult, speed));
+	  set_mul_highpart_cost (speed, mode,
+				 set_src_cost (&all->wide_trunc, speed));
 	}
-
-      for (mode_from = GET_CLASS_NARROWEST_MODE (MODE_INT);
-	   mode_from != VOIDmode;
-	   mode_from = GET_MODE_WIDER_MODE (mode_from))
-	if (mode != mode_from)
-	  {
-	    unsigned short size_to = GET_MODE_SIZE (mode);
-	    unsigned short size_from = GET_MODE_SIZE (mode_from);
-	    if (size_to < size_from)
-	      {
-		PUT_CODE (&all->convert, TRUNCATE);
-		PUT_MODE (&all->reg, mode_from);
-		set_convert_cost (mode, mode_from, speed,
-				  set_src_cost (&all->convert, speed));
-	      }
-	    else if (size_from < size_to)
-	      {
-		/* Assume cost of zero-extend and sign-extend is the same.  */
-		PUT_CODE (&all->convert, ZERO_EXTEND);
-		PUT_MODE (&all->reg, mode_from);
-		set_convert_cost (mode, mode_from, speed,
-				  set_src_cost (&all->convert, speed));
-	      }
-	  }
     }
 }
 
@@ -291,23 +297,27 @@ init_expmed (void)
   XEXP (&all.shift_sub1, 0) = &all.reg;
   XEXP (&all.shift_sub1, 1) = &all.shift_mult;
 
-  PUT_CODE (&all.convert, TRUNCATE);
-  XEXP (&all.convert, 0) = &all.reg;
+  PUT_CODE (&all.trunc, TRUNCATE);
+  XEXP (&all.trunc, 0) = &all.reg;
 
   for (speed = 0; speed < 2; speed++)
     {
       crtl->maybe_hot_insn_p = speed;
       set_zero_cost (speed, set_src_cost (const0_rtx, speed));
 
-      for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
-	   mode != VOIDmode;
-	   mode = GET_MODE_WIDER_MODE (mode))
+      for (mode = MIN_MODE_INT; mode <= MAX_MODE_INT;
+	   mode = (enum machine_mode)(mode + 1))
 	init_expmed_one_mode (&all, mode, speed);
 
-      for (mode = GET_CLASS_NARROWEST_MODE (MODE_VECTOR_INT);
-	   mode != VOIDmode;
-	   mode = GET_MODE_WIDER_MODE (mode))
-	init_expmed_one_mode (&all, mode, speed);
+      if (MIN_MODE_PARTIAL_INT != VOIDmode)
+	for (mode = MIN_MODE_PARTIAL_INT; mode <= MAX_MODE_PARTIAL_INT;
+	     mode = (enum machine_mode)(mode + 1))
+	  init_expmed_one_mode (&all, mode, speed);
+
+      if (MIN_MODE_VECTOR_INT != VOIDmode)
+	for (mode = MIN_MODE_VECTOR_INT; mode <= MAX_MODE_VECTOR_INT;
+	     mode = (enum machine_mode)(mode + 1))
+	  init_expmed_one_mode (&all, mode, speed);
     }
 
   if (alg_hash_used_p ())

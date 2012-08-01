@@ -1,5 +1,21 @@
 2012-08-01  Richard Henderson  <rth@redhat.com>
 
+	* expmed.h (NUM_MODE_PARTIAL_INT): New.
+	(NUM_MODE_VECTOR_INT, NUM_MODE_IP_INT, NUM_MODE_IPV_INT): New.
+	(struct expmed_op_cheap): Size one array on NUM_MODE_IPV_INT.
+	(struct expmed_op_costs): Likewise.
+	(struct target_expmed): Size x_convert_cost on NUM_MODE_IP_INT.
+	(expmed_mode_index): New.
+	(expmed_op_cheap_ptr, expmed_op_cost_ptr): Use expmed_mode_index.
+	(convert_cost_ptr): Likewise.
+	* expmed.c (struct init_expmed_rtl): Rename convert to trunc.
+	(init_expmed_one_conv): Split out from ...
+	(init_expmed_one_mode): ... here.  Iterate conversions over
+	partial integer modes too.
+	(init_expmed): Iterate over partial integer modes too.
+
+2012-08-01  Richard Henderson  <rth@redhat.com>
+
 	* config/m32c/m32c.c (TARGET_INIT_LIBFUNCS): Remove.
 	(m32c_init_libfuncs): Remove.
 	* config/m32c/cond.md (cstore<QHPSI>4_16): Rename from cstore<QHPSI>4.
