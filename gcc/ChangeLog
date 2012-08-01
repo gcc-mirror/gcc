@@ -1,3 +1,10 @@
+2012-08-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_address_subreg_operand): Reject
+	stack pointer.
+	(ix86_print_operand_address): Assert that parts.base and parts.index
+	are non-NULL after call to simplify_subreg.
+
 2012-08-01  Richard Guenther  <rguenther@suse.de>
 
 	* doc/tree-ssa.texi: Remove pieces mentioning mark_sym_for_renaming.
@@ -61,10 +68,10 @@
 	* tree-ssanames.c (init_ssanames): Adjust.
 	* tree-ssa.c (maybe_rewrite_mem_ref_base, maybe_optimize_var,
 	execute_update_addresses_taken): Add bitmap to keep track of which
-	candidates are suitable for rewriting and later renaming by SSA
-	update.
+	candidates are suitable for rewriting and later renaming by SSA update.
 	* matrix-reorg.c (transform_access_sites): Do not rename all defs.
-	* tree-dfa.c (make_rename_temp): Do not mark real operands for renaming.
+	* tree-dfa.c (make_rename_temp): Do not mark real operands for
+	renaming.
 	* cgraphunit.c (assemble_thunk): Likewise.
 	* gimplify.c (gimple_regimplify_operands): Likewise.
 	(force_gimple_operand_1): Likewise.
@@ -79,8 +86,7 @@
 	(execute_load_motion): Likewise.
 	(remove_stmt): Likewise.
 	(execute_pred_commoning_chain): Likewise.
-	* tree-sra.c (create_access_replacement): Do not rename real
-	operands.
+	* tree-sra.c (create_access_replacement): Do not rename real operands.
 	(get_unrenamed_access_replacement): Unify with ...
 	(get_access_replacement): ... this.
 	(get_repl_default_def_ssa_name): Adjust.
@@ -152,8 +158,7 @@
 	(fini_ssa_renamer): Likewise.
 	(delete_update_ssa): Likewise.
 	(update_ssa): Likewise.
-	* tree-ssanames.c (release_dead_ssa_names): Do not clear
-	current defs.
+	* tree-ssanames.c (release_dead_ssa_names): Do not clear current defs.
 
 2012-07-31  Bill Schmidt  <wschmidt@linux.ibm.com>
 
@@ -176,8 +181,8 @@
 2012-07-31  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR target/53975
-	
-	* sel-sched-ir.c (has_dependence_note_reg_use): Clarify comment. 
+
+	* sel-sched-ir.c (has_dependence_note_reg_use): Clarify comment.
 
 	Revert
 	2011-08-04  Sergey Grechanik  <mouseentity@ispras.ru>
@@ -259,8 +264,7 @@
 
 2012-07-30  Joseph Myers  <joseph@codesourcery.com>
 
-	* doc/sourcebuild.texi (Subdirectories): Document common
-	subdirectory.
+	* doc/sourcebuild.texi (Subdirectories): Document common subdirectory.
 
 2012-07-30  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
@@ -299,8 +303,7 @@
 	* config/i386/driver-i386.c (host_detect_local_cpu): Detect
 	RDSEED support.
 	* config/i386/i386-c.c: Define __RDSEED__ if needed.
-	* config/i386/i386.c (ix86_target_string): Define
-	-mrdseed option.
+	* config/i386/i386.c (ix86_target_string): Define -mrdseed option.
 	(PTA_RDSEED): New.
 	(ix86_option_override_internal): Handle new option.
 	(ix86_valid_target_attribute_inner_p): Add OPT_mrdseed.
@@ -324,7 +327,8 @@
 2012-07-30  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/39423
-	* config/gcc/sh/sh.md (*movsi_index_disp, *movhi_index_disp): New insns.
+	* config/gcc/sh/sh.md (*movsi_index_disp, *movhi_index_disp): New
+	insns.
 
 2012-07-30  Oleg Endo  <olegendo@gcc.gnu.org>
 
@@ -344,16 +348,14 @@
 	    Steven Bosscher  <steven@gcc.gnu.org>
 
 	* gengtype.c (adjust_field_type): Diagnose duplicate "length"
-	option applications and option being applied to arrays of atomic
-	types.
+	option applications and option being applied to arrays of atomic types.
 	(walk_type): Allow "atomic" option on strings too.
 	* dwarf2out.h (struct dw_vec_struct): Use the "atomic" GTY option
 	for the array field.
 	* vec.h: Describe the atomic object "A" type of the macros in
 	the header comment.
 	(VEC_T_GTY_ATOMIC, DEF_VEC_A, DEF_VEC_ALLOC_A): Define.
-	* emit-rtl.c (locations_locators_vals): use the atomic object
-	vector.
+	* emit-rtl.c (locations_locators_vals): use the atomic object vector.
 	* doc/gty.texi: Clarify that GTY option "length" is only for
 	arrays of non-atomic objects.  Fix typo in the description of the
 	"atomic" option.
