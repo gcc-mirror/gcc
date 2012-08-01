@@ -77,9 +77,11 @@ struct GTY(()) gimple_df {
      for this variable with an empty defining statement.  */
   htab_t GTY((param_is (union tree_node))) default_defs;
 
-  /* Symbols whose SSA form needs to be updated or created for the first
-     time.  */
-  bitmap syms_to_rename;
+  /* True if there are any symbols that need to be renamed.  */
+  unsigned int ssa_renaming_needed : 1;
+
+  /* True if all virtual operands need to be renamed.  */
+  unsigned int rename_vops : 1;
 
   /* True if the code is in ssa form.  */
   unsigned int in_ssa_p : 1;
@@ -100,7 +102,6 @@ struct GTY(()) gimple_df {
 #define SSANAMES(fun) (fun)->gimple_df->ssa_names
 #define MODIFIED_NORETURN_CALLS(fun) (fun)->gimple_df->modified_noreturn_calls
 #define DEFAULT_DEFS(fun) (fun)->gimple_df->default_defs
-#define SYMS_TO_RENAME(fun) (fun)->gimple_df->syms_to_rename
 
 typedef struct
 {
@@ -565,7 +566,6 @@ bool name_registered_for_update_p (tree);
 void release_ssa_name_after_update_ssa (tree);
 void compute_global_livein (bitmap, bitmap);
 void mark_sym_for_renaming (tree);
-bool symbol_marked_for_renaming (tree);
 tree get_current_def (tree);
 void set_current_def (tree, tree);
 
@@ -715,7 +715,6 @@ void tree_transform_and_unroll_loop (struct loop *, unsigned,
 				     transform_callback, void *);
 bool contains_abnormal_ssa_name_p (tree);
 bool stmt_dominates_stmt_p (gimple, gimple);
-void mark_virtual_ops_for_renaming (gimple);
 
 /* In tree-ssa-dce.c */
 void mark_virtual_operand_for_renaming (tree);

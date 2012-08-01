@@ -227,6 +227,33 @@ extern void debug_defs_stack (int);
 extern void dump_currdefs (FILE *);
 extern void debug_currdefs (void);
 
+
+/* The set of symbols we ought to re-write into SSA form in update_ssa.  */
+static bitmap symbols_to_rename_set;
+static VEC(tree,heap) *symbols_to_rename;
+
+/* Mark SYM for renaming.  */
+
+static void
+mark_for_renaming (tree sym)
+{
+  if (!symbols_to_rename_set)
+    symbols_to_rename_set = BITMAP_ALLOC (NULL);
+  if (bitmap_set_bit (symbols_to_rename_set, DECL_UID (sym)))
+    VEC_safe_push (tree, heap, symbols_to_rename, sym);
+}
+
+/* Return true if SYM is marked for renaming.  */
+
+static bool
+marked_for_renaming (tree sym)
+{
+  if (!symbols_to_rename_set)
+    return false;
+  return bitmap_bit_p (symbols_to_rename_set, DECL_UID (sym));
+}
+
+
 /* Return true if STMT needs to be rewritten.  When renaming a subset
    of the variables, not all statements will be processed.  This is
    decided in mark_def_sites.  */
@@ -571,15 +598,6 @@ set_livein_block (tree var, basic_block bb)
     }
   else
     set_phi_state (var, NEED_PHI_STATE_MAYBE);
-}
-
-
-/* Return true if symbol SYM is marked for renaming.  */
-
-bool
-symbol_marked_for_renaming (tree sym)
-{
-  return bitmap_bit_p (SYMS_TO_RENAME (cfun), DECL_UID (sym));
 }
 
 
@@ -1636,23 +1654,24 @@ debug_defs_stack (int n)
 void
 dump_currdefs (FILE *file)
 {
-  referenced_var_iterator i;
+  unsigned i;
   tree var;
 
+  if (VEC_empty (tree, symbols_to_rename))
+    return;
+
   fprintf (file, "\n\nCurrent reaching definitions\n\n");
-  FOR_EACH_REFERENCED_VAR (cfun, var, i)
-    if (SYMS_TO_RENAME (cfun) == NULL
-	|| bitmap_bit_p (SYMS_TO_RENAME (cfun), DECL_UID (var)))
-      {
-	fprintf (file, "CURRDEF (");
-	print_generic_expr (file, var, 0);
-	fprintf (file, ") = ");
-	if (get_current_def (var))
-	  print_generic_expr (file, get_current_def (var), 0);
-	else
-	  fprintf (file, "<NIL>");
-	fprintf (file, "\n");
-      }
+  FOR_EACH_VEC_ELT (tree, symbols_to_rename, i, var)
+    {
+      fprintf (file, "CURRDEF (");
+      print_generic_expr (file, var, 0);
+      fprintf (file, ") = ");
+      if (get_current_def (var))
+	print_generic_expr (file, get_current_def (var), 0);
+      else
+	fprintf (file, "<NIL>");
+      fprintf (file, "\n");
+    }
 }
 
 
@@ -1830,7 +1849,7 @@ maybe_replace_use (use_operand_p use_p)
   tree use = USE_FROM_PTR (use_p);
   tree sym = DECL_P (use) ? use : SSA_NAME_VAR (use);
 
-  if (symbol_marked_for_renaming (sym))
+  if (marked_for_renaming (sym))
     rdef = get_reaching_def (sym);
   else if (is_old_name (use))
     rdef = get_reaching_def (use);
@@ -1850,7 +1869,7 @@ maybe_replace_use_in_debug_stmt (use_operand_p use_p)
   tree use = USE_FROM_PTR (use_p);
   tree sym = DECL_P (use) ? use : SSA_NAME_VAR (use);
 
-  if (symbol_marked_for_renaming (sym))
+  if (marked_for_renaming (sym))
     rdef = get_current_def (sym);
   else if (is_old_name (use))
     {
@@ -1886,7 +1905,7 @@ maybe_register_def (def_operand_p def_p, gimple stmt,
 
   /* If DEF is a naked symbol that needs renaming, create a new
      name for it.  */
-  if (symbol_marked_for_renaming (sym))
+  if (marked_for_renaming (sym))
     {
       if (DECL_P (def))
 	{
@@ -2077,7 +2096,7 @@ rewrite_update_phi_arguments (basic_block bb)
 	    {
 	      tree sym = DECL_P (arg) ? arg : SSA_NAME_VAR (arg);
 
-	      if (symbol_marked_for_renaming (sym))
+	      if (marked_for_renaming (sym))
 		reaching_def = get_reaching_def (sym);
 	      else if (is_old_name (arg))
 		reaching_def = get_reaching_def (arg);
@@ -2154,7 +2173,7 @@ rewrite_update_enter_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
       lhs = gimple_phi_result (phi);
       lhs_sym = SSA_NAME_VAR (lhs);
 
-      if (symbol_marked_for_renaming (lhs_sym))
+      if (marked_for_renaming (lhs_sym))
 	register_new_update_single (lhs, lhs_sym);
       else
 	{
@@ -2369,6 +2388,8 @@ fini_ssa_renamer (void)
 
   bitmap_obstack_release (&update_ssa_obstack);
 
+  cfun->gimple_df->ssa_renaming_needed = 0;
+  cfun->gimple_df->rename_vops = 0;
   cfun->gimple_df->in_ssa_p = true;
 }
 
@@ -2526,7 +2547,7 @@ mark_use_interesting (tree var, gimple stmt, basic_block bb, bool insert_phi_p)
 
 
 /* Do a dominator walk starting at BB processing statements that
-   reference symbols in SYMS_TO_RENAME.  This is very similar to
+   reference symbols in SSA operands.  This is very similar to
    mark_def_sites, but the scan handles statements whose operands may
    already be SSA names.
 
@@ -2559,9 +2580,13 @@ prepare_block_for_update (basic_block bb, bool insert_phi_p)
 
       lhs_sym = DECL_P (lhs) ? lhs : SSA_NAME_VAR (lhs);
 
-      if (!symbol_marked_for_renaming (lhs_sym))
+      if (TREE_CODE (lhs) == SSA_NAME
+	  && (TREE_CODE (lhs_sym) != VAR_DECL
+	      || !VAR_DECL_IS_VIRTUAL_OPERAND (lhs_sym)
+	      || !cfun->gimple_df->rename_vops))
 	continue;
 
+      mark_for_renaming (lhs_sym);
       mark_def_interesting (lhs_sym, phi, bb, insert_phi_p);
 
       /* Mark the uses in phi nodes as interesting.  It would be more correct
@@ -2585,20 +2610,40 @@ prepare_block_for_update (basic_block bb, bool insert_phi_p)
 
       stmt = gsi_stmt (si);
 
-      FOR_EACH_SSA_USE_OPERAND (use_p, stmt, i, SSA_OP_ALL_USES)
+      if (cfun->gimple_df->rename_vops
+	  && gimple_vuse (stmt))
 	{
-	  tree use = USE_FROM_PTR (use_p);
+	  tree use = gimple_vuse (stmt);
 	  tree sym = DECL_P (use) ? use : SSA_NAME_VAR (use);
-	  if (symbol_marked_for_renaming (sym))
-	    mark_use_interesting (sym, stmt, bb, insert_phi_p);
+	  mark_for_renaming (sym);
+	  mark_use_interesting (sym, stmt, bb, insert_phi_p);
 	}
 
-      FOR_EACH_SSA_DEF_OPERAND (def_p, stmt, i, SSA_OP_ALL_DEFS)
+      FOR_EACH_SSA_USE_OPERAND (use_p, stmt, i, SSA_OP_USE)
+	{
+	  tree use = USE_FROM_PTR (use_p);
+	  if (!DECL_P (use))
+	    continue;
+	  mark_for_renaming (use);
+	  mark_use_interesting (use, stmt, bb, insert_phi_p);
+	}
+
+      if (cfun->gimple_df->rename_vops
+	  && gimple_vdef (stmt))
+	{
+	  tree def = gimple_vdef (stmt);
+	  tree sym = DECL_P (def) ? def : SSA_NAME_VAR (def);
+	  mark_for_renaming (sym);
+	  mark_def_interesting (sym, stmt, bb, insert_phi_p);
+	}
+
+      FOR_EACH_SSA_DEF_OPERAND (def_p, stmt, i, SSA_OP_DEF)
 	{
 	  tree def = DEF_FROM_PTR (def_p);
-	  tree sym = DECL_P (def) ? def : SSA_NAME_VAR (def);
-	  if (symbol_marked_for_renaming (sym))
-	    mark_def_interesting (sym, stmt, bb, insert_phi_p);
+	  if (!DECL_P (def))
+	    continue;
+	  mark_for_renaming (def);
+	  mark_def_interesting (def, stmt, bb, insert_phi_p);
 	}
     }
 
@@ -2757,10 +2802,10 @@ dump_update_ssa (FILE *file)
 	dump_names_replaced_by (file, ssa_name (i));
     }
 
-  if (!bitmap_empty_p (SYMS_TO_RENAME (cfun)))
+  if (symbols_to_rename_set && !bitmap_empty_p (symbols_to_rename_set))
     {
       fprintf (file, "\nSymbols to be put in SSA form\n");
-      dump_decl_set (file, SYMS_TO_RENAME (cfun));
+      dump_decl_set (file, symbols_to_rename_set);
       fprintf (file, "\n");
     }
 
@@ -2821,7 +2866,9 @@ delete_update_ssa (void)
   sbitmap_free (new_ssa_names);
   new_ssa_names = NULL;
 
-  bitmap_clear (SYMS_TO_RENAME (update_ssa_initialized_fn));
+  BITMAP_FREE (symbols_to_rename_set);
+  symbols_to_rename_set = NULL;
+  VEC_free (tree, heap, symbols_to_rename);
 
   if (names_to_release)
     {
@@ -2902,8 +2949,12 @@ register_new_name_mapping (tree new_tree, tree old)
 void
 mark_sym_for_renaming (tree sym)
 {
-  if (cfun->gimple_df->in_ssa_p)
-    bitmap_set_bit (SYMS_TO_RENAME (cfun), DECL_UID (sym));
+  if (TREE_CODE (sym) == VAR_DECL
+      && VAR_DECL_IS_VIRTUAL_OPERAND (sym))
+    {
+      cfun->gimple_df->ssa_renaming_needed = 1;
+      cfun->gimple_df->rename_vops = 1;
+    }
 }
 
 
@@ -2915,8 +2966,7 @@ need_ssa_update_p (struct function *fn)
 {
   gcc_assert (fn != NULL);
   return (update_ssa_initialized_fn == fn
-	  || (fn->gimple_df
-	      && !bitmap_empty_p (SYMS_TO_RENAME (fn))));
+	  || (fn->gimple_df && fn->gimple_df->ssa_renaming_needed));
 }
 
 /* Return true if name N has been registered in the replacement table.  */
@@ -2983,7 +3033,7 @@ insert_updated_phi_nodes_for (tree var, bitmap_head *dfs, bitmap blocks,
   if (TREE_CODE (var) == SSA_NAME)
     gcc_checking_assert (is_old_name (var));
   else
-    gcc_checking_assert (symbol_marked_for_renaming (var));
+    gcc_checking_assert (marked_for_renaming (var));
 
   /* Get all the definition sites for VAR.  */
   db = find_def_blocks_for (var);
@@ -3127,6 +3177,7 @@ update_ssa (unsigned update_flags)
   unsigned i = 0;
   bool insert_phi_p;
   sbitmap_iterator sbi;
+  tree sym;
 
   if (!need_ssa_update_p (cfun))
     return;
@@ -3176,12 +3227,12 @@ update_ssa (unsigned update_flags)
 	 removal, and there are no symbols to rename, then there's
 	 nothing else to do.  */
       if (sbitmap_first_set_bit (new_ssa_names) < 0
-	  && bitmap_empty_p (SYMS_TO_RENAME (cfun)))
+	  && !cfun->gimple_df->ssa_renaming_needed)
 	goto done;
     }
 
   /* Next, determine the block at which to start the renaming process.  */
-  if (!bitmap_empty_p (SYMS_TO_RENAME (cfun)))
+  if (cfun->gimple_df->ssa_renaming_needed)
     {
       /* If we rename bare symbols initialize the mapping to
          auxiliar info we need to keep track of.  */
@@ -3195,7 +3246,7 @@ update_ssa (unsigned update_flags)
       start_bb = ENTRY_BLOCK_PTR;
 
       /* Traverse the CFG looking for existing definitions and uses of
-	 symbols in SYMS_TO_RENAME.  Mark interesting blocks and
+	 symbols in SSA operands.  Mark interesting blocks and
 	 statements and set local live-in information for the PHI
 	 placement heuristics.  */
       prepare_block_for_update (start_bb, insert_phi_p);
@@ -3210,7 +3261,7 @@ update_ssa (unsigned update_flags)
 
   /* If requested, insert PHI nodes at the iterated dominance frontier
      of every block, creating new definitions for names in OLD_SSA_NAMES
-     and for symbols in SYMS_TO_RENAME.  */
+     and for symbols found.  */
   if (insert_phi_p)
     {
       bitmap_head *dfs;
@@ -3239,8 +3290,8 @@ update_ssa (unsigned update_flags)
 	  sbitmap_free (tmp);
 	}
 
-      EXECUTE_IF_SET_IN_BITMAP (SYMS_TO_RENAME (cfun), 0, i, bi)
-	insert_updated_phi_nodes_for (referenced_var (i), dfs, blocks_to_update,
+      FOR_EACH_VEC_ELT (tree, symbols_to_rename, i, sym)
+	insert_updated_phi_nodes_for (sym, dfs, blocks_to_update,
 	                              update_flags);
 
       FOR_EACH_BB (bb)
@@ -3260,8 +3311,8 @@ update_ssa (unsigned update_flags)
   EXECUTE_IF_SET_IN_SBITMAP (old_ssa_names, 0, i, sbi)
     set_current_def (ssa_name (i), NULL_TREE);
 
-  EXECUTE_IF_SET_IN_BITMAP (SYMS_TO_RENAME (cfun), 0, i, bi)
-    set_current_def (referenced_var (i), NULL_TREE);
+  FOR_EACH_VEC_ELT (tree, symbols_to_rename, i, sym)
+    set_current_def (sym, NULL_TREE);
 
   /* Now start the renaming process at START_BB.  */
   interesting_blocks = sbitmap_alloc (last_basic_block);

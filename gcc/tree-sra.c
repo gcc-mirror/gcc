@@ -1828,15 +1828,12 @@ sort_and_splice_var_accesses (tree var)
    ACCESS->replacement.  */
 
 static tree
-create_access_replacement (struct access *access, bool rename)
+create_access_replacement (struct access *access)
 {
   tree repl;
 
   repl = create_tmp_var (access->type, "SR");
   add_referenced_var (repl);
-  if (!access->grp_partial_lhs
-      && rename)
-    mark_sym_for_renaming (repl);
 
   if (TREE_CODE (access->type) == COMPLEX_TYPE
       || TREE_CODE (access->type) == VECTOR_TYPE)
@@ -1917,23 +1914,8 @@ create_access_replacement (struct access *access, bool rename)
 static inline tree
 get_access_replacement (struct access *access)
 {
-  gcc_assert (access->grp_to_be_replaced);
-
   if (!access->replacement_decl)
-    access->replacement_decl = create_access_replacement (access, true);
-  return access->replacement_decl;
-}
-
-/* Return ACCESS scalar replacement, create it if it does not exist yet but do
-   not mark it for renaming.  */
-
-static inline tree
-get_unrenamed_access_replacement (struct access *access)
-{
-  gcc_assert (!access->grp_to_be_replaced);
-
-  if (!access->replacement_decl)
-    access->replacement_decl = create_access_replacement (access, false);
+    access->replacement_decl = create_access_replacement (access);
   return access->replacement_decl;
 }
 
@@ -2832,7 +2814,7 @@ get_repl_default_def_ssa_name (struct access *racc)
 {
   tree repl, decl;
 
-  decl = get_unrenamed_access_replacement (racc);
+  decl = get_access_replacement (racc);
 
   repl = gimple_default_def (cfun, decl);
   if (!repl)

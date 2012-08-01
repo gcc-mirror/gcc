@@ -1455,13 +1455,9 @@ assemble_thunk (struct cgraph_node *node)
       else
         VEC_quick_push (tree, vargs, a);
       add_referenced_var (a);
-      if (is_gimple_reg (a))
-	mark_sym_for_renaming (a);
       for (i = 1, arg = DECL_CHAIN (a); i < nargs; i++, arg = DECL_CHAIN (arg))
 	{
 	  add_referenced_var (arg);
-	  if (is_gimple_reg (arg))
-	    mark_sym_for_renaming (arg);
 	  VEC_quick_push (tree, vargs, arg);
 	}
       call = gimple_build_call_vec (build_fold_addr_expr_loc (0, alias), vargs);

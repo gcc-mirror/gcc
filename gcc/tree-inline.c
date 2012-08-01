@@ -2969,11 +2969,6 @@ declare_return_variable (copy_body_data *id, tree return_slot, tree modify_dest,
       TREE_ADDRESSABLE (var) = 1;
       var = build_fold_addr_expr (var);
     }
-  else if (gimple_in_ssa_p (cfun)
-	   && is_gimple_reg (var))
-    /* ???  Re-org id->retval and its special handling so that we can
-       record an SSA name directly and not need to invoke the SSA renamer.  */
-    mark_sym_for_renaming (var);
 
  done:
   /* Register the VAR_DECL as the equivalent for the RESULT_DECL; that

@@ -174,8 +174,6 @@ make_rename_temp (tree type, const char *prefix)
 
   if (gimple_referenced_vars (cfun))
     add_referenced_var (t);
-  if (gimple_in_ssa_p (cfun))
-    mark_sym_for_renaming (t);
 
   return t;
 }
