@@ -1,3 +1,25 @@
+2012-08-01  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR tree-optimization/46556
+	* gimple-ssa-strength-reduction.c (enum cand_kind): Add CAND_REF.
+	(base_cand_map): Change to hash table.
+	(base_cand_hash): New function.
+	(base_cand_free): Likewise.
+	(base_cand_eq): Likewise.
+	(lookup_cand): Change base_cand_map to hash table.
+	(find_basis_for_candidate): Likewise.
+	(base_cand_from_table): Exclude CAND_REF.
+	(restructure_reference): New function.
+	(slsr_process_ref): Likewise.
+	(find_candidates_in_block): Call slsr_process_ref.
+	(dump_candidate): Handle CAND_REF.
+	(base_cand_dump_callback): New function.
+	(dump_cand_chains): Change base_cand_map to hash table.
+	(replace_ref): New function.
+	(replace_refs): Likewise.
+	(analyze_candidates_and_replace): Call replace_refs.
+	(execute_strength_reduction): Change base_cand_map to hash table.
+
 2012-08-01  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_address_subreg_operand): Reject
