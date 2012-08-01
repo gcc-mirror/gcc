@@ -1291,6 +1291,8 @@ move_computations_stmt (struct dom_walk_data *dw_data,
 
   for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); )
     {
+      edge e;
+
       stmt = gsi_stmt (bsi);
 
       lim_data = get_lim_data (stmt);
@@ -1323,9 +1325,26 @@ move_computations_stmt (struct dom_walk_data *dw_data,
 		   cost, level->num);
 	}
 
-      mark_virtual_ops_for_renaming (stmt);
+      e = loop_preheader_edge (level);
+      gcc_assert (!gimple_vdef (stmt));
+      if (gimple_vuse (stmt))
+	{
+	  /* The new VUSE is the one from the virtual PHI in the loop
+	     header or the one already present.  */
+	  gimple_stmt_iterator gsi2;
+	  for (gsi2 = gsi_start_phis (e->dest);
+	       !gsi_end_p (gsi2); gsi_next (&gsi2))
+	    {
+	      gimple phi = gsi_stmt (gsi2);
+	      if (!is_gimple_reg (gimple_phi_result (phi)))
+		{
+		  gimple_set_vuse (stmt, PHI_ARG_DEF_FROM_EDGE (phi, e));
+		  break;
+		}
+	    }
+	}
       gsi_remove (&bsi, false);
-      gsi_insert_on_edge (loop_preheader_edge (level), stmt);
+      gsi_insert_on_edge (e, stmt);
     }
 }
 
@@ -1783,7 +1802,6 @@ mem_refs_may_alias_p (tree mem1, tree mem2, struct pointer_map_t **ttae_cache)
 static void
 rewrite_mem_ref_loc (mem_ref_loc_p loc, tree tmp_var)
 {
-  mark_virtual_ops_for_renaming (loc->stmt);
   *loc->ref = tmp_var;
   update_stmt (loc->stmt);
 }

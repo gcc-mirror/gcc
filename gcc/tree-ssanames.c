@@ -85,7 +85,8 @@ init_ssanames (struct function *fn, int size)
   VEC_quick_push (tree, SSANAMES (fn), NULL_TREE);
   FREE_SSANAMES (fn) = NULL;
 
-  SYMS_TO_RENAME (fn) = BITMAP_GGC_ALLOC ();
+  fn->gimple_df->ssa_renaming_needed = 0;
+  fn->gimple_df->rename_vops = 0;
 }
 
 /* Finalize management of SSA_NAMEs.  */

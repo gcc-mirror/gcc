@@ -1204,7 +1204,6 @@ emit_mfence_after_loop (struct loop *loop)
       bsi = gsi_after_labels (exit->dest);
 
       gsi_insert_before (&bsi, call, GSI_NEW_STMT);
-      mark_virtual_ops_for_renaming (call);
     }
 
   VEC_free (edge, heap, exits);

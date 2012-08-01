@@ -1,3 +1,62 @@
+2012-08-01  Richard Guenther  <rguenther@suse.de>
+
+	* tree-flow.h (struct gimple_df): Remove syms_to_rename member,
+	add ssa_renaming_needed and rename_vops flags.
+	(SYMS_TO_RENAME): Remove.
+	(symbol_marked_for_renaming): Likewise.
+	(mark_virtual_ops_for_renaming): Likewise.
+	* tree-into-ssa.c (symbols_to_rename_set, symbols_to_rename):
+	New globals.
+	(mark_for_renaming, marked_for_renaming): New functions.
+	(symbol_marked_for_renaming): Remove.
+	(dump_currdefs): Adjust.
+	(maybe_replace_use): Likewise.
+	(maybe_replace_use_in_debug_stmt): Likewise.
+	(maybe_register_def): Likewise.
+	(rewrite_update_phi_arguments): Likewise.
+	(rewrite_update_enter_block): Likewise.
+	(fini_ssa_renamer): Clear update SSA status here ...
+	(delete_update_ssa): ... not here.  Free rename set.
+	(prepare_block_for_update): Compute which decls need renaming.
+	(dump_update_ssa): Adjust.
+	(mark_sym_for_renaming): Adjust update SSA status for virtuals.
+	(need_ssa_update_p): Adjust.
+	(insert_updated_phi_nodes_for): Likewise.
+	(update_ssa): Likewise.
+	* tree-ssa-operands.c (finalize_ssa_defs): Adjust update SSA status
+	for virtual and real operands.
+	(finalize_ssa_uses): Likewise.
+	* tree-ssanames.c (init_ssanames): Adjust.
+	* tree-ssa.c (maybe_rewrite_mem_ref_base, maybe_optimize_var,
+	execute_update_addresses_taken): Add bitmap to keep track of which
+	candidates are suitable for rewriting and later renaming by SSA
+	update.
+	* matrix-reorg.c (transform_access_sites): Do not rename all defs.
+	* tree-dfa.c (make_rename_temp): Do not mark real operands for renaming.
+	* cgraphunit.c (assemble_thunk): Likewise.
+	* gimplify.c (gimple_regimplify_operands): Likewise.
+	(force_gimple_operand_1): Likewise.
+	* ipa-prop.c (ipa_modify_formal_parameters): Likewise.
+	* tree-inline.c (declare_return_variable): Likewise.
+	* tree-parloops.c (separate_decls_in_region_stmt): Do not call
+	mark_virtual_ops_for_renaming.
+	(create_stores_for_reduction): Likewise.
+	(create_loads_and_stores_for_name): Likewise.
+	* tree-predcom.c (mark_virtual_ops_for_renaming): Remove.
+	(initialize_root_vars_lm): Do not call mark_virtual_ops_for_renaming.
+	(execute_load_motion): Likewise.
+	(remove_stmt): Likewise.
+	(execute_pred_commoning_chain): Likewise.
+	* tree-sra.c (create_access_replacement): Do not rename real
+	operands.
+	(get_unrenamed_access_replacement): Unify with ...
+	(get_access_replacement): ... this.
+	(get_repl_default_def_ssa_name): Adjust.
+	* tree-ssa-loop-im.c (move_computations_stmt): Manually update
+	virtual SSA form.
+	(rewrite_mem_ref_loc): Do not call mark_virtual_ops_for_renaming.
+	* tree-ssa-loop-prefetch.c (emit_mfence_after_loop): Likewise.
+
 2012-07-31  DJ Delorie  <dj@redhat.com>
 
 	* config/s390/s390.c (s390_option_override): Disable DWARF 3/4

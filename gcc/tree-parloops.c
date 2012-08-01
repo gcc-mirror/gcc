@@ -861,8 +861,6 @@ separate_decls_in_region_stmt (edge entry, edge exit, gimple stmt,
   tree name, copy;
   bool copy_name_p;
 
-  mark_virtual_ops_for_renaming (stmt);
-
   FOR_EACH_PHI_OR_STMT_DEF (def, stmt, oi, SSA_OP_DEF)
   {
     name = DEF_FROM_PTR (def);
@@ -1182,7 +1180,6 @@ create_stores_for_reduction (void **slot, void *data)
   gsi = gsi_last_bb (clsn_data->store_bb);
   t = build3 (COMPONENT_REF, type, clsn_data->store, red->field, NULL_TREE);
   stmt = gimple_build_assign (t, red->initial_value);
-  mark_virtual_ops_for_renaming (stmt);
   gsi_insert_after (&gsi, stmt, GSI_NEW_STMT);
 
   return 1;
@@ -1206,7 +1203,6 @@ create_loads_and_stores_for_name (void **slot, void *data)
   gsi = gsi_last_bb (clsn_data->store_bb);
   t = build3 (COMPONENT_REF, type, clsn_data->store, elt->field, NULL_TREE);
   stmt = gimple_build_assign (t, ssa_name (elt->version));
-  mark_virtual_ops_for_renaming (stmt);
   gsi_insert_after (&gsi, stmt, GSI_NEW_STMT);
 
   gsi = gsi_last_bb (clsn_data->load_bb);

@@ -1810,13 +1810,9 @@ transform_access_sites (void **slot, void *data ATTRIBUTE_UNUSED)
 	{
 	  if (acc_info->level >= 0 && gimple_bb (acc_info->stmt))
 	    {
-	      ssa_op_iter iter;
-	      tree def;
 	      gimple stmt = acc_info->stmt;
 	      tree lhs;
 
-	      FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter, SSA_OP_DEF)
-		mark_sym_for_renaming (SSA_NAME_VAR (def));
 	      gsi = gsi_for_stmt (stmt);
 	      gcc_assert (is_gimple_assign (acc_info->stmt));
 	      lhs = gimple_assign_lhs (acc_info->stmt);

@@ -2356,7 +2356,6 @@ ipa_modify_formal_parameters (tree fndecl, ipa_parm_adjustment_vec adjustments,
 	  layout_decl (new_parm, 0);
 
 	  add_referenced_var (new_parm);
-	  mark_sym_for_renaming (new_parm);
 	  adj->base = parm;
 	  adj->reduction = new_parm;
 
