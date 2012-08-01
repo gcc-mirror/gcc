@@ -1,5 +1,14 @@
 2012-08-01  Richard Henderson  <rth@redhat.com>
 
+	PR middle-end/34548
+	* function.h (struct rtl_data): Add max_dynamic_stack_alignment.
+	* cfgexpand.c (gimple_expand_cfg): Initialise it.
+	* explow.c (allocate_dynamic_stack_space): Set it.  Simplify
+	alignment requirements given the known alignment of dynamic_offset.
+	* function.c (instantiate_virtual_regs): Align dtnamic_offset.
+
+2012-08-01  Richard Henderson  <rth@redhat.com>
+
 	* expmed.h (NUM_MODE_PARTIAL_INT): New.
 	(NUM_MODE_VECTOR_INT, NUM_MODE_IP_INT, NUM_MODE_IPV_INT): New.
 	(struct expmed_op_cheap): Size one array on NUM_MODE_IPV_INT.
