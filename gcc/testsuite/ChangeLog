@@ -1,3 +1,10 @@
+2012-08-01  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR tree-optimization/46556
+	* testsuite/gcc.dg/tree-ssa/slsr-27.c: New.
+	* testsuite/gcc.dg/tree-ssa/slsr-28.c: New.
+	* testsuite/gcc.dg/tree-ssa/slsr-29.c: New.
+
 2012-07-31  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/42418
