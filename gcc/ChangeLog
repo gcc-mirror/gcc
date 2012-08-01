@@ -1,5 +1,9 @@
 2012-08-01  Richard Guenther  <rguenther@suse.de>
 
+	* doc/tree-ssa.texi: Remove pieces mentioning mark_sym_for_renaming.
+
+2012-08-01  Richard Guenther  <rguenther@suse.de>
+
 	* graphite-clast-to-gimple.c (translate_clast_user): Rename
 	virtual operands.
 	* sese.c (graphite_copy_stmts_from_block): Do not rename virtual

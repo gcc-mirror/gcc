@@ -628,10 +628,7 @@ introduced to replace existing names in the program, the mapping
 between the old and the new names are registered by calling
 @code{register_new_name_mapping} (note that if your pass creates new
 code by duplicating basic blocks, the call to @code{tree_duplicate_bb}
-will set up the necessary mappings automatically).  On the other hand,
-if your pass exposes a new symbol that should be put in SSA form for
-the first time, the new symbol should be registered with
-@code{mark_sym_for_renaming}.
+will set up the necessary mappings automatically).
 
 After the replacement mappings have been registered and new symbols
 marked for renaming, a call to @code{update_ssa} makes the registered
