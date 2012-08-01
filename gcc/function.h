@@ -347,6 +347,10 @@ struct GTY(()) rtl_data {
         local stack.  */
   unsigned int stack_alignment_estimated;
 
+  /* The (capped) maximum alignment of dynamic stack space, and thus the
+     required alignment of STACK_DYNAMIC_OFFSET.  */
+  unsigned int max_dynamic_stack_alignment;
+
   /* For reorg.  */
 
   /* If some insns can be deferred to the delay slots of the epilogue, the

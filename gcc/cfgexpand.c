@@ -4363,6 +4363,7 @@ gimple_expand_cfg (void)
   crtl->max_used_stack_slot_alignment = STACK_BOUNDARY;
   crtl->stack_alignment_estimated = 0;
   crtl->preferred_stack_boundary = STACK_BOUNDARY;
+  crtl->max_dynamic_stack_alignment = 0;
   cfun->cfg->max_jumptable_ents = 0;
 
   /* Resovle the function section.  Some targets, like ARM EABI rely on knowledge

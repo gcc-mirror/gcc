@@ -1173,7 +1173,6 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
 {
   HOST_WIDE_INT stack_usage_size = -1;
   rtx final_label, final_target, target;
-  unsigned extra_align = 0;
   bool must_align;
 
   /* If we're asking for zero bytes, it doesn't matter what we point
@@ -1237,58 +1236,40 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
   else if (size_align < BITS_PER_UNIT)
     size_align = BITS_PER_UNIT;
 
-  /* We can't attempt to minimize alignment necessary, because we don't
-     know the final value of preferred_stack_boundary yet while executing
-     this code.  */
-  if (crtl->preferred_stack_boundary < PREFERRED_STACK_BOUNDARY)
-    crtl->preferred_stack_boundary = PREFERRED_STACK_BOUNDARY;
-
   /* We will need to ensure that the address we return is aligned to
-     REQUIRED_ALIGN.  If STACK_DYNAMIC_OFFSET is defined, we don't
-     always know its final value at this point in the compilation (it
-     might depend on the size of the outgoing parameter lists, for
-     example), so we must align the value to be returned in that case.
-     (Note that STACK_DYNAMIC_OFFSET will have a default nonzero value if
-     STACK_POINTER_OFFSET or ACCUMULATE_OUTGOING_ARGS are defined).
-     We must also do an alignment operation on the returned value if
-     the stack pointer alignment is less strict than REQUIRED_ALIGN.
-
-     If we have to align, we must leave space in SIZE for the hole
-     that might result from the alignment operation.  */
-
-  must_align = (crtl->preferred_stack_boundary < required_align);
-  if (must_align)
+     REQUIRED_ALIGN.  If that alignment is no larger than
+     PREFERRED_STACK_BOUNDARY, we can handle everything without an
+     explicit alignment.  */
+  if (required_align <= PREFERRED_STACK_BOUNDARY)
     {
-      if (required_align > PREFERRED_STACK_BOUNDARY)
-	extra_align = PREFERRED_STACK_BOUNDARY;
-      else if (required_align > STACK_BOUNDARY)
-	extra_align = STACK_BOUNDARY;
-      else
-	extra_align = BITS_PER_UNIT;
+      if (crtl->preferred_stack_boundary < required_align)
+	crtl->preferred_stack_boundary = required_align;
+      if (crtl->max_dynamic_stack_alignment < required_align)
+	crtl->max_dynamic_stack_alignment = required_align;
+      must_align = false;
     }
-
-  /* ??? STACK_POINTER_OFFSET is always defined now.  */
-#if defined (STACK_DYNAMIC_OFFSET) || defined (STACK_POINTER_OFFSET)
-  must_align = true;
-  extra_align = BITS_PER_UNIT;
-#endif
-
-  if (must_align)
+  else
     {
-      unsigned extra = (required_align - extra_align) / BITS_PER_UNIT;
+      unsigned extra, extra_align;
+
+      crtl->preferred_stack_boundary = PREFERRED_STACK_BOUNDARY;
+      crtl->max_dynamic_stack_alignment = PREFERRED_STACK_BOUNDARY;
+
+      extra_align = PREFERRED_STACK_BOUNDARY;
+      extra = (required_align - extra_align) / BITS_PER_UNIT;
 
       size = plus_constant (Pmode, size, extra);
       size = force_operand (size, NULL_RTX);
 
       if (flag_stack_usage_info)
 	stack_usage_size += extra;
-
       if (extra && size_align > extra_align)
 	size_align = extra_align;
+      must_align = true;
     }
 
   /* Round the size to a multiple of the required stack alignment.
-     Since the stack if presumed to be rounded before this allocation,
+     Since the stack is presumed to be rounded before this allocation,
      this will maintain the required alignment.
 
      If the stack grows downward, we could save an insn by subtracting
