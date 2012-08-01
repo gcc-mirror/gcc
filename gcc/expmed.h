@@ -124,23 +124,24 @@ struct alg_hash_entry {
 #define NUM_ALG_HASH_ENTRIES 307
 #endif
 
-#define NUM_MODE_INT (MAX_MODE_INT - MIN_MODE_INT + 1)
-#define NUM_MODE_VECTOR_INT (MAX_MODE_VECTOR_INT - MIN_MODE_VECTOR_INT + 1)
+#define NUM_MODE_INT \
+  (MAX_MODE_INT - MIN_MODE_INT + 1)
+#define NUM_MODE_PARTIAL_INT \
+  (MIN_MODE_PARTIAL_INT == VOIDmode ? 0 \
+   : MAX_MODE_PARTIAL_INT - MIN_MODE_PARTIAL_INT + 1)
+#define NUM_MODE_VECTOR_INT \
+  (MIN_MODE_VECTOR_INT == VOIDmode ? 0 \
+   : MAX_MODE_VECTOR_INT - MIN_MODE_VECTOR_INT + 1)
+
+#define NUM_MODE_IP_INT (NUM_MODE_INT + NUM_MODE_PARTIAL_INT)
+#define NUM_MODE_IPV_INT (NUM_MODE_IP_INT + NUM_MODE_VECTOR_INT)
 
 struct expmed_op_cheap {
-  /* Whether an operation is cheap in a given integer mode.  */
-  bool cheap_int[2][NUM_MODE_INT];
-
-  /* Whether an operation is cheap in a given vector integer mode.  */
-  bool cheap_vector_int[2][NUM_MODE_VECTOR_INT];
+  bool cheap[2][NUM_MODE_IPV_INT];
 };
 
 struct expmed_op_costs {
-  /* The cost of an operation in a given integer mode.  */
-  int int_cost[2][NUM_MODE_INT];
-
-  /* The cost of an operation in a given vector integer mode.  */
-  int vector_int_cost[2][NUM_MODE_VECTOR_INT];
+  int cost[2][NUM_MODE_IPV_INT];
 };
 
 /* Target-dependent globals.  */
@@ -178,7 +179,7 @@ struct target_expmed {
   /* Conversion costs are only defined between two scalar integer modes
      of different sizes.  The first machine mode is the destination mode,
      and the second is the source mode.  */
-  int x_convert_cost[2][NUM_MODE_INT][NUM_MODE_INT];
+  int x_convert_cost[2][NUM_MODE_IP_INT][NUM_MODE_IP_INT];
 };
 
 extern struct target_expmed default_target_expmed;
@@ -212,6 +213,24 @@ set_alg_hash_used_p (bool usedp)
   this_target_expmed->x_alg_hash_used_p = usedp;
 }
 
+/* Compute an index into the cost arrays by mode class.  */
+
+static inline int
+expmed_mode_index (enum machine_mode mode)
+{
+  switch (GET_MODE_CLASS (mode))
+    {
+    case MODE_INT:
+      return mode - MIN_MODE_INT;
+    case MODE_PARTIAL_INT:
+      return mode - MIN_MODE_PARTIAL_INT + NUM_MODE_INT;
+    case MODE_VECTOR_INT:
+      return mode - MIN_MODE_VECTOR_INT + NUM_MODE_IP_INT;
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* Return a pointer to a boolean contained in EOC indicating whether
    a particular operation performed in MODE is cheap when optimizing
    for SPEED.  */
@@ -220,19 +239,8 @@ static inline bool *
 expmed_op_cheap_ptr (struct expmed_op_cheap *eoc, bool speed,
 		     enum machine_mode mode)
 {
-  gcc_assert (GET_MODE_CLASS (mode) == MODE_INT
-	      || GET_MODE_CLASS (mode) == MODE_VECTOR_INT);
-
-  if (GET_MODE_CLASS (mode) == MODE_INT)
-    {
-      int idx = mode - MIN_MODE_INT;
-      return &eoc->cheap_int[speed][idx];
-    }
-  else
-    {
-      int idx = mode - MIN_MODE_VECTOR_INT;
-      return &eoc->cheap_vector_int[speed][idx];
-    }
+  int idx = expmed_mode_index (mode);
+  return &eoc->cheap[speed][idx];
 }
 
 /* Return a pointer to a cost contained in COSTS when a particular
@@ -242,19 +250,8 @@ static inline int *
 expmed_op_cost_ptr (struct expmed_op_costs *costs, bool speed,
 		    enum machine_mode mode)
 {
-  gcc_assert (GET_MODE_CLASS (mode) == MODE_INT
-	      || GET_MODE_CLASS (mode) == MODE_VECTOR_INT);
-
-  if (GET_MODE_CLASS (mode) == MODE_INT)
-    {
-      int idx = mode - MIN_MODE_INT;
-      return &costs->int_cost[speed][idx];
-    }
-  else
-    {
-      int idx = mode - MIN_MODE_VECTOR_INT;
-      return &costs->vector_int_cost[speed][idx];
-    }
+  int idx = expmed_mode_index (mode);
+  return &costs->cost[speed][idx];
 }
 
 /* Subroutine of {set_,}sdiv_pow2_cheap.  Not to be used otherwise.  */
@@ -631,15 +628,12 @@ static inline int *
 convert_cost_ptr (enum machine_mode to_mode, enum machine_mode from_mode,
 		  bool speed)
 {
-  int to_idx, from_idx;
+  int to_idx = expmed_mode_index (to_mode);
+  int from_idx = expmed_mode_index (from_mode);
 
-  gcc_assert (to_mode >= MIN_MODE_INT
-	      && to_mode <= MAX_MODE_INT
-	      && from_mode >= MIN_MODE_INT
-	      && from_mode <= MAX_MODE_INT);
+  gcc_assert (IN_RANGE (to_idx, 0, NUM_MODE_IP_INT - 1));
+  gcc_assert (IN_RANGE (from_idx, 0, NUM_MODE_IP_INT - 1));
 
-  to_idx = to_mode - MIN_MODE_INT;
-  from_idx = from_mode - MIN_MODE_INT;
   return &this_target_expmed->x_convert_cost[speed][to_idx][from_idx];
 }
 
