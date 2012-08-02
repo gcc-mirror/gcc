@@ -2831,7 +2831,8 @@ split_insn (rtx insn)
 	  if (note && CONSTANT_P (XEXP (note, 0)))
 	    set_unique_reg_note (last, REG_EQUAL, XEXP (note, 0));
 	  else if (CONSTANT_P (SET_SRC (insn_set)))
-	    set_unique_reg_note (last, REG_EQUAL, SET_SRC (insn_set));
+	    set_unique_reg_note (last, REG_EQUAL,
+				 copy_rtx (SET_SRC (insn_set)));
 	}
     }
 
