@@ -1,3 +1,11 @@
+2012-08-02  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54147
+	* resolve.c (check_proc_interface): New routine for PROCEDURE interface
+	checks.
+	(resolve_procedure_interface,resolve_typebound_procedure,
+	resolve_fl_derived0): Call it.
+
 2012-08-01  Thomas König  <tkoenig@gcc.gnu.org>
 
 	PR fortran/54033
