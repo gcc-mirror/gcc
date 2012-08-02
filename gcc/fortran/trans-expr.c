@@ -2806,7 +2806,6 @@ gfc_apply_interface_mapping_to_ref (gfc_interface_mapping * mapping,
 	    gfc_apply_interface_mapping_to_expr (mapping, ref->u.ar.end[n]);
 	    gfc_apply_interface_mapping_to_expr (mapping, ref->u.ar.stride[n]);
 	  }
-	gfc_apply_interface_mapping_to_expr (mapping, ref->u.ar.offset);
 	break;
 
       case REF_COMPONENT:

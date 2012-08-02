@@ -1515,8 +1515,6 @@ typedef struct gfc_array_ref
     *stride[GFC_MAX_DIMENSIONS];
 
   enum gfc_array_ref_dimen_type dimen_type[GFC_MAX_DIMENSIONS];
-
-  struct gfc_expr *offset;
 }
 gfc_array_ref;
 

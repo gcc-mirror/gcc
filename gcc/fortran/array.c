@@ -50,8 +50,6 @@ gfc_copy_array_ref (gfc_array_ref *src)
       dest->stride[i] = gfc_copy_expr (src->stride[i]);
     }
 
-  dest->offset = gfc_copy_expr (src->offset);
-
   return dest;
 }
 
