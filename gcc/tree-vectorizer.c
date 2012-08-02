@@ -223,7 +223,7 @@ vectorize_loops (void)
 
   /*  ----------- Finalize. -----------  */
 
-  mark_sym_for_renaming (gimple_vop (cfun));
+  mark_virtual_operands_for_renaming (cfun);
 
   for (i = 1; i < vect_loops_num; i++)
     {

@@ -6754,6 +6754,84 @@ find_case_label_range (gimple stmt, tree min, tree max, size_t *min_idx,
     }
 }
 
+/* Searches the case label vector VEC for the ranges of CASE_LABELs that are
+   used in range VR.  The indices are placed in MIN_IDX1, MAX_IDX, MIN_IDX2 and
+   MAX_IDX2.  If the ranges of CASE_LABELs are empty then MAX_IDX1 < MIN_IDX1.
+   Returns true if the default label is not needed.  */
+
+static bool
+find_case_label_ranges (gimple stmt, value_range_t *vr, size_t *min_idx1,
+			size_t *max_idx1, size_t *min_idx2,
+			size_t *max_idx2)
+{
+  size_t i, j, k, l;
+  unsigned int n = gimple_switch_num_labels (stmt);
+  bool take_default;
+  tree case_low, case_high;
+  tree min = vr->min, max = vr->max;
+
+  gcc_checking_assert (vr->type == VR_RANGE || vr->type == VR_ANTI_RANGE);
+
+  take_default = !find_case_label_range (stmt, min, max, &i, &j);
+
+  /* Set second range to emtpy.  */
+  *min_idx2 = 1;
+  *max_idx2 = 0;
+
+  if (vr->type == VR_RANGE)
+    {
+      *min_idx1 = i;
+      *max_idx1 = j;
+      return !take_default;
+    }
+
+  /* Set first range to all case labels.  */
+  *min_idx1 = 1;
+  *max_idx1 = n - 1;
+
+  if (i > j)
+    return false;
+
+  /* Make sure all the values of case labels [i , j] are contained in
+     range [MIN, MAX].  */
+  case_low = CASE_LOW (gimple_switch_label (stmt, i));
+  case_high = CASE_HIGH (gimple_switch_label (stmt, j));
+  if (tree_int_cst_compare (case_low, min) < 0)
+    i += 1;
+  if (case_high != NULL_TREE
+      && tree_int_cst_compare (max, case_high) < 0)
+    j -= 1;
+
+  if (i > j)
+    return false;
+
+  /* If the range spans case labels [i, j], the corresponding anti-range spans
+     the labels [1, i - 1] and [j + 1, n -  1].  */
+  k = j + 1;
+  l = n - 1;
+  if (k > l)
+    {
+      k = 1;
+      l = 0;
+    }
+
+  j = i - 1;
+  i = 1;
+  if (i > j)
+    {
+      i = k;
+      j = l;
+      k = 1;
+      l = 0;
+    }
+
+  *min_idx1 = i;
+  *max_idx1 = j;
+  *min_idx2 = k;
+  *max_idx2 = l;
+  return false;
+}
+
 /* Visit switch statement STMT.  If we can determine which edge
    will be taken out of STMT's basic block, record it in
    *TAKEN_EDGE_P and return SSA_PROP_INTERESTING.  Otherwise, return
@@ -6764,7 +6842,7 @@ vrp_visit_switch_stmt (gimple stmt, edge *taken_edge_p)
 {
   tree op, val;
   value_range_t *vr;
-  size_t i = 0, j = 0;
+  size_t i = 0, j = 0, k, l;
   bool take_default;
 
   *taken_edge_p = NULL;
@@ -6782,12 +6860,13 @@ vrp_visit_switch_stmt (gimple stmt, edge *taken_edge_p)
       fprintf (dump_file, "\n");
     }
 
-  if (vr->type != VR_RANGE
+  if ((vr->type != VR_RANGE
+       && vr->type != VR_ANTI_RANGE)
       || symbolic_range_p (vr))
     return SSA_PROP_VARYING;
 
   /* Find the single edge that is taken from the switch expression.  */
-  take_default = !find_case_label_range (stmt, vr->min, vr->max, &i, &j);
+  take_default = !find_case_label_ranges (stmt, vr, &i, &j, &k, &l);
 
   /* Check if the range spans no CASE_LABEL. If so, we only reach the default
      label */
@@ -6814,6 +6893,16 @@ vrp_visit_switch_stmt (gimple stmt, edge *taken_edge_p)
       for (++i; i <= j; ++i)
         {
           if (CASE_LABEL (gimple_switch_label (stmt, i)) != CASE_LABEL (val))
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file, "  not a single destination for this "
+			 "range\n");
+	      return SSA_PROP_VARYING;
+	    }
+        }
+      for (; k <= l; ++k)
+        {
+          if (CASE_LABEL (gimple_switch_label (stmt, k)) != CASE_LABEL (val))
 	    {
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		fprintf (dump_file, "  not a single destination for this "
@@ -8215,18 +8304,20 @@ simplify_switch_using_ranges (gimple stmt)
   size_t i = 0, j = 0, n, n2;
   tree vec2;
   switch_update su;
+  size_t k = 1, l = 0;
 
   if (TREE_CODE (op) == SSA_NAME)
     {
       vr = get_value_range (op);
 
       /* We can only handle integer ranges.  */
-      if (vr->type != VR_RANGE
+      if ((vr->type != VR_RANGE
+	   && vr->type != VR_ANTI_RANGE)
 	  || symbolic_range_p (vr))
 	return false;
 
       /* Find case label for min/max of the value range.  */
-      take_default = !find_case_label_range (stmt, vr->min, vr->max, &i, &j);
+      take_default = !find_case_label_ranges (stmt, vr, &i, &j, &k, &l);
     }
   else if (TREE_CODE (op) == INTEGER_CST)
     {
@@ -8253,7 +8344,7 @@ simplify_switch_using_ranges (gimple stmt)
     return false;
 
   /* Build a new vector of taken case labels.  */
-  vec2 = make_tree_vec (j - i + 1 + (int)take_default);
+  vec2 = make_tree_vec (j - i + 1 + l - k + 1 + (int)take_default);
   n2 = 0;
 
   /* Add the default edge, if necessary.  */
@@ -8262,6 +8353,9 @@ simplify_switch_using_ranges (gimple stmt)
 
   for (; i <= j; ++i, ++n2)
     TREE_VEC_ELT (vec2, n2) = gimple_switch_label (stmt, i);
+
+  for (; k <= l; ++k, ++n2)
+    TREE_VEC_ELT (vec2, n2) = gimple_switch_label (stmt, k);
 
   /* Mark needed edges.  */
   for (i = 0; i < n2; ++i)

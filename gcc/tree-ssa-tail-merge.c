@@ -812,37 +812,6 @@ same_succ_flush_bbs (bitmap bbs)
     same_succ_flush_bb (BASIC_BLOCK (i));
 }
 
-/* Release the last vdef in BB, either normal or phi result.  */
-
-static void
-release_last_vdef (basic_block bb)
-{
-  gimple_stmt_iterator i;
-
-  for (i = gsi_last_bb (bb); !gsi_end_p (i); gsi_prev_nondebug (&i))
-    {
-      gimple stmt = gsi_stmt (i);
-      if (gimple_vdef (stmt) == NULL_TREE)
-	continue;
-
-      mark_virtual_operand_for_renaming (gimple_vdef (stmt));
-      return;
-    }
-
-  for (i = gsi_start_phis (bb); !gsi_end_p (i); gsi_next (&i))
-    {
-      gimple phi = gsi_stmt (i);
-      tree res = gimple_phi_result (phi);
-
-      if (is_gimple_reg (res))
-	continue;
-
-      mark_virtual_phi_result_for_renaming (phi);
-      return;
-    }
-  
-}
-
 /* For deleted_bb_preds, find bbs with same successors.  */
 
 static void
@@ -1477,7 +1446,6 @@ replace_block_by (basic_block bb1, basic_block bb2)
   bb1->frequency = 0;
 
   /* Do updates that use bb1, before deleting bb1.  */
-  release_last_vdef (bb1);
   same_succ_flush_bb (bb1);
 
   delete_basic_block (bb1);
@@ -1654,7 +1622,7 @@ tail_merge_optimize (unsigned int todo)
 	}
 
       todo |= (TODO_verify_ssa | TODO_verify_stmts | TODO_verify_flow);
-      mark_sym_for_renaming (gimple_vop (cfun));
+      mark_virtual_operands_for_renaming (cfun);
     }
 
   delete_worklist ();

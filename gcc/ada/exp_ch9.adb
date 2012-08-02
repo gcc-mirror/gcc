@@ -3260,9 +3260,6 @@ package body Exp_Ch9 is
          begin
             --  Get the type size
 
-            --  Surely this should be Known_Static_Esize if you are about
-            --  to assume you can do UI_To_Int on it! ???
-
             if Known_Esize (Comp_Type) then
                Typ_Size := UI_To_Int (Esize (Comp_Type));
 
@@ -3270,10 +3267,14 @@ package body Exp_Ch9 is
             --  the RM_Size (Value_Size) since it may have been set by an
             --  explicit representation clause.
 
-            --  And how do we know this is statically known???
+            elsif Known_RM_Size (Comp_Type) then
+               Typ_Size := UI_To_Int (RM_Size (Comp_Type));
+
+            --  Should not happen since this has already been checked in
+            --  Allows_Lock_Free_Implementation (see Sem_Ch9).
 
             else
-               Typ_Size := UI_To_Int (RM_Size (Comp_Type));
+               raise Program_Error;
             end if;
 
             --  Retrieve all relevant atomic routines and types
@@ -5485,6 +5486,7 @@ package body Exp_Ch9 is
 
    procedure Ensure_Statement_Present (Loc : Source_Ptr; Alt : Node_Id) is
       Stmt : Node_Id;
+
    begin
       if Opt.Suppress_Control_Flow_Optimizations
         and then Is_Empty_List (Statements (Alt))
@@ -5493,6 +5495,9 @@ package body Exp_Ch9 is
 
          --  Mark NULL statement as coming from source so that it is not
          --  eliminated by GIGI.
+
+         --  Another covert channel! If this is a requirement, it must be
+         --  documented in sinfo/einfo ???
 
          Set_Comes_From_Source (Stmt, True);
 

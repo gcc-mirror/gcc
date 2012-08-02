@@ -416,7 +416,10 @@ finalize_ssa_defs (gimple stmt)
   /* If we have a non-SSA_NAME VDEF, mark it for renaming.  */
   if (gimple_vdef (stmt)
       && TREE_CODE (gimple_vdef (stmt)) != SSA_NAME)
-    mark_sym_for_renaming (gimple_vdef (stmt));
+    {
+      cfun->gimple_df->rename_vops = 1;
+      cfun->gimple_df->ssa_renaming_needed = 1;
+    }
 
   /* Check for the common case of 1 def that hasn't changed.  */
   if (old_ops && old_ops->next == NULL && num == 1
@@ -432,7 +435,12 @@ finalize_ssa_defs (gimple stmt)
 
   /* If there is anything remaining in the build_defs list, simply emit it.  */
   for ( ; new_i < num; new_i++)
-    last = add_def_op ((tree *) VEC_index (tree, build_defs, new_i), last);
+    {
+      tree *op = (tree *) VEC_index (tree, build_defs, new_i);
+      if (DECL_P (*op))
+	cfun->gimple_df->ssa_renaming_needed = 1;
+      last = add_def_op (op, last);
+    }
 
   /* Now set the stmt's operands.  */
   gimple_set_def_ops (stmt, new_list.next);
@@ -487,14 +495,18 @@ finalize_ssa_uses (gimple stmt)
       && gimple_vuse (stmt) == NULL_TREE)
     {
       gimple_set_vuse (stmt, gimple_vop (cfun));
-      mark_sym_for_renaming (gimple_vop (cfun));
+      cfun->gimple_df->rename_vops = 1;
+      cfun->gimple_df->ssa_renaming_needed = 1;
     }
 
   /* Now create nodes for all the new nodes.  */
   for (new_i = 0; new_i < VEC_length (tree, build_uses); new_i++)
-    last = add_use_op (stmt,
-		       (tree *) VEC_index (tree, build_uses, new_i),
-		       last);
+    {
+      tree *op = (tree *) VEC_index (tree, build_uses, new_i);
+      if (DECL_P (*op))
+	cfun->gimple_df->ssa_renaming_needed = 1;
+      last = add_use_op (stmt, op, last);
+    }
 
   /* Now set the stmt's operands.  */
   gimple_set_use_ops (stmt, new_list.next);

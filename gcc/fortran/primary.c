@@ -2843,13 +2843,18 @@ gfc_match_rvalue (gfc_expr **result)
 	    /* Parse functions returning a procptr.  */
 	    goto function0;
 
-	  if (gfc_is_intrinsic (sym, 0, gfc_current_locus)
-	      || gfc_is_intrinsic (sym, 1, gfc_current_locus))
-	    sym->attr.intrinsic = 1;
 	  e = gfc_get_expr ();
 	  e->expr_type = EXPR_VARIABLE;
 	  e->symtree = symtree;
 	  m = gfc_match_varspec (e, 0, false, true);
+	  if (!e->ref && sym->attr.flavor == FL_UNKNOWN
+	      && sym->ts.type == BT_UNKNOWN
+	      && gfc_add_flavor (&sym->attr, FL_PROCEDURE,
+				 sym->name, NULL) == FAILURE)
+	    {
+	      m = MATCH_ERROR;
+	      break;
+	    }
 	  break;
 	}
 

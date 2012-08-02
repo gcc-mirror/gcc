@@ -2303,6 +2303,7 @@ struct walk_type_data
   bool fn_wants_lvalue;
   bool in_record_p;
   int loopcounter;
+  bool have_this_obj;
 };
 
 /* Print a mangled name representing T to OF.  */
@@ -2618,6 +2619,9 @@ walk_type (type_p t, struct walk_type_data *d)
 	      output_escaped_param (d, length, "length");
 	    else
 	      oprintf (d->of, "l%d", loopcounter);
+	    if (d->have_this_obj)
+	      /* Try to unswitch loops (see PR53880).  */
+	      oprintf (d->of, ") && ((void *)%s == this_obj", oldval);
 	    oprintf (d->of, "); i%d++) {\n", loopcounter);
 	    d->indent += 2;
 	    d->val = newval = xasprintf ("%s[i%d]", oldval, loopcounter);
@@ -3105,6 +3109,7 @@ write_func_for_structure (type_p orig_s, type_p s, type_p *param,
   d.prev_val[1] = "not valid postage";	/* Guarantee an error.  */
   d.prev_val[3] = "x";
   d.val = "(*x)";
+  d.have_this_obj = false;
 
   oprintf (d.of, "\n");
   oprintf (d.of, "void\n");
@@ -3400,6 +3405,7 @@ static const struct write_types_data pch_wtd = {
 static void
 write_types_local_process_field (type_p f, const struct walk_type_data *d)
 {
+  gcc_assert (d->have_this_obj);
   switch (f->kind)
     {
     case TYPE_POINTER:
@@ -3458,6 +3464,7 @@ write_local_func_for_structure (const_type_p orig_s, type_p s, type_p *param)
 	   s->kind == TYPE_UNION ? "union" : "struct", s->u.s.tag,
 	   s->kind == TYPE_UNION ? "union" : "struct", s->u.s.tag);
   d.indent = 2;
+  d.have_this_obj = true;
   walk_type (s, &d);
   oprintf (d.of, "}\n");
 }
@@ -3967,6 +3974,7 @@ write_array (outf_p f, pair_p v, const struct write_types_data *wtd)
       oprintf (d.of, "{\n");
       d.prev_val[0] = d.prev_val[1] = d.prev_val[2] = d.val = v->name;
       d.process_field = write_types_local_process_field;
+      d.have_this_obj = true;
       walk_type (v->type, &d);
       oprintf (f, "}\n\n");
     }
@@ -3978,6 +3986,7 @@ write_array (outf_p f, pair_p v, const struct write_types_data *wtd)
   oprintf (f, "{\n");
   d.prev_val[0] = d.prev_val[1] = d.prev_val[2] = d.val = v->name;
   d.process_field = write_types_process_field;
+  d.have_this_obj = false;
   walk_type (v->type, &d);
   free (prevval3);
   oprintf (f, "}\n\n");

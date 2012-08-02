@@ -238,12 +238,7 @@ procedure GNATCmd is
 
    function Configuration_Pragmas_File return Path_Name_Type;
    --  Return an argument, if there is a configuration pragmas file to be
-   --  specified for Project, otherwise return No_Name. Used for gnatstub (GNAT
-   --  STUB), gnatpp (GNAT PRETTY), gnatelim (GNAT ELIM), and gnatmetric (GNAT
-   --  METRIC).
-
-   function Mapping_File return Path_Name_Type;
-   --  Create and return the path name of a mapping file. Used for gnatstub
+   --  specified for Project, otherwise return No_Name. Used for gnatstub
    --  (GNAT STUB), gnatpp (GNAT PRETTY), gnatelim (GNAT ELIM), and gnatmetric
    --  (GNAT METRIC).
 
@@ -251,9 +246,21 @@ procedure GNATCmd is
    --  Delete all temporary config files. The caller is responsible for
    --  ensuring that Keep_Temporary_Files is False.
 
+   procedure Ensure_Absolute_Path
+     (Switch : in out String_Access;
+      Parent : String);
+   --  Test if Switch is a relative search path switch. If it is and it
+   --  includes directory information, prepend the path with Parent. This
+   --  subprogram is only called when using project files.
+
    procedure Get_Closure;
    --  Get the sources in the closure of the ASIS_Main and add them to the
    --  list of arguments.
+
+   function Mapping_File return Path_Name_Type;
+   --  Create and return the path name of a mapping file. Used for gnatstub
+   --  (GNAT STUB), gnatpp (GNAT PRETTY), gnatelim (GNAT ELIM), and gnatmetric
+   --  (GNAT METRIC).
 
    procedure Non_VMS_Usage;
    --  Display usage for platforms other than VMS
@@ -268,17 +275,9 @@ procedure GNATCmd is
    --  If Project is a library project, add the correct -L and -l switches to
    --  the linker invocation.
 
-   procedure Set_Libraries is
-      new For_Every_Project_Imported (Boolean, Set_Library_For);
-   --  Add the -L and -l switches to the linker for all of the library
-   --  projects.
-
-   procedure Test_If_Relative_Path
-     (Switch : in out String_Access;
-      Parent : String);
-   --  Test if Switch is a relative search path switch. If it is and it
-   --  includes directory information, prepend the path with Parent. This
-   --  subprogram is only called when using project files.
+   procedure Set_Libraries is new
+     For_Every_Project_Imported (Boolean, Set_Library_For);
+   --  Add the -L and -l switches to the linker for all the library projects
 
    --------------------------
    -- Add_To_Carg_Switches --
@@ -789,6 +788,22 @@ procedure GNATCmd is
       end if;
    end Delete_Temp_Config_Files;
 
+   ---------------------------
+   -- Ensure_Absolute_Path --
+   ---------------------------
+
+   procedure Ensure_Absolute_Path
+     (Switch : in out String_Access;
+      Parent : String)
+   is
+   begin
+      Makeutl.Ensure_Absolute_Path
+        (Switch, Parent,
+         Do_Fail              => Osint.Fail'Access,
+         Including_Non_Switch => False,
+         Including_RTS        => True);
+   end Ensure_Absolute_Path;
+
    -----------------
    -- Get_Closure --
    -----------------
@@ -962,6 +977,59 @@ procedure GNATCmd is
       return Result;
    end Mapping_File;
 
+   -------------------
+   -- Non_VMS_Usage --
+   -------------------
+
+   procedure Non_VMS_Usage is
+   begin
+      Output_Version;
+      New_Line;
+      Put_Line ("List of available commands");
+      New_Line;
+
+      for C in Command_List'Range loop
+
+         --  No usage for VMS only command or for Sync
+
+         if not Command_List (C).VMS_Only and then C /= Sync then
+            if Targparm.AAMP_On_Target then
+               Put ("gnaampcmd ");
+            else
+               Put ("gnat ");
+            end if;
+
+            Put (To_Lower (Command_List (C).Cname.all));
+            Set_Col (25);
+
+            --  Never call gnatstack with a prefix
+
+            if C = Stack then
+               Put (Command_List (C).Unixcmd.all);
+            else
+               Put (Program_Name (Command_List (C).Unixcmd.all, "gnat").all);
+            end if;
+
+            declare
+               Sws : Argument_List_Access renames Command_List (C).Unixsws;
+            begin
+               if Sws /= null then
+                  for J in Sws'Range loop
+                     Put (' ');
+                     Put (Sws (J).all);
+                  end loop;
+               end if;
+            end;
+
+            New_Line;
+         end if;
+      end loop;
+
+      New_Line;
+      Put_Line ("All commands except chop, krunch and preprocess " &
+                "accept project file switches -vPx, -Pprj and -Xnam=val");
+      New_Line;
+   end Non_VMS_Usage;
    ------------------
    -- Process_Link --
    ------------------
@@ -1301,76 +1369,6 @@ procedure GNATCmd is
          end if;
       end if;
    end Set_Library_For;
-
-   ---------------------------
-   -- Test_If_Relative_Path --
-   ---------------------------
-
-   procedure Test_If_Relative_Path
-     (Switch : in out String_Access;
-      Parent : String)
-   is
-   begin
-      Makeutl.Test_If_Relative_Path
-        (Switch, Parent,
-         Do_Fail              => Osint.Fail'Access,
-         Including_Non_Switch => False,
-         Including_RTS        => True);
-   end Test_If_Relative_Path;
-
-   -------------------
-   -- Non_VMS_Usage --
-   -------------------
-
-   procedure Non_VMS_Usage is
-   begin
-      Output_Version;
-      New_Line;
-      Put_Line ("List of available commands");
-      New_Line;
-
-      for C in Command_List'Range loop
-
-         --  No usage for VMS only command or for Sync
-
-         if not Command_List (C).VMS_Only and then C /= Sync then
-            if Targparm.AAMP_On_Target then
-               Put ("gnaampcmd ");
-            else
-               Put ("gnat ");
-            end if;
-
-            Put (To_Lower (Command_List (C).Cname.all));
-            Set_Col (25);
-
-            --  Never call gnatstack with a prefix
-
-            if C = Stack then
-               Put (Command_List (C).Unixcmd.all);
-            else
-               Put (Program_Name (Command_List (C).Unixcmd.all, "gnat").all);
-            end if;
-
-            declare
-               Sws : Argument_List_Access renames Command_List (C).Unixsws;
-            begin
-               if Sws /= null then
-                  for J in Sws'Range loop
-                     Put (' ');
-                     Put (Sws (J).all);
-                  end loop;
-               end if;
-            end;
-
-            New_Line;
-         end if;
-      end loop;
-
-      New_Line;
-      Put_Line ("All commands except chop, krunch and preprocess " &
-                "accept project file switches -vPx, -Pprj and -Xnam=val");
-      New_Line;
-   end Non_VMS_Usage;
 
 --  Start of processing for GNATCmd
 
@@ -2387,7 +2385,7 @@ begin
             --  arguments.
 
             for J in 1 .. Last_Switches.Last loop
-               GNATCmd.Test_If_Relative_Path
+               GNATCmd.Ensure_Absolute_Path
                  (Last_Switches.Table (J), Current_Work_Dir);
             end loop;
 
@@ -2397,7 +2395,7 @@ begin
                Project_Dir : constant String := Name_Buffer (1 .. Name_Len);
             begin
                for J in 1 .. First_Switches.Last loop
-                  GNATCmd.Test_If_Relative_Path
+                  GNATCmd.Ensure_Absolute_Path
                     (First_Switches.Table (J), Project_Dir);
                end loop;
             end;

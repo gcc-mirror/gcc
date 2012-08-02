@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hashtab.h"
 #include "dumpfile.h"
 #include "cselib.h"
+#include "valtrack.h"
 #include "params.h"
 #include "alloc-pool.h"
 #include "target.h"

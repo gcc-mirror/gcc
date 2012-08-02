@@ -48,10 +48,10 @@ package System.Task_Info is
    pragma Elaborate_Body;
    --  To ensure that a body is allowed
 
-   --  Linux provides a way to define the ideal processor to use for a given
-   --  thread. The ideal processor is not necessarily the one that will be used
-   --  by the OS but the OS will always try to schedule this thread to the
-   --  specified processor if it is available.
+   --  The Linux kernel provides a way to define the ideal processor to use for
+   --  a given thread. The ideal processor is not necessarily the one that will
+   --  be used by the OS but the OS will always try to schedule this thread to
+   --  the specified processor if it is available.
 
    --  The Task_Info pragma:
 

@@ -1515,7 +1515,7 @@ tree_loop_distribution (void)
 
   if (changed)
     {
-      mark_sym_for_renaming (gimple_vop (cfun));
+      mark_virtual_operands_for_renaming (cfun);
       rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
     }
 

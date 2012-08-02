@@ -4568,6 +4568,9 @@ package body Exp_Ch7 is
                --  finalization blocks, and we put everything into a wrapper
                --  block to clearly expose the construct to the back-end.
 
+               --  This requirement for "clearly expose" must be properly
+               --  documented in sinfo/einfo ???
+
                if Present (Prev_Fin) then
                   Insert_Before_And_Analyze (Prev_Fin, Fin_Block);
                else

@@ -532,6 +532,10 @@ mhle
 Target Report Mask(ISA_HLE) Var(ix86_isa_flags) Save
 Support Hardware Lock Elision prefixes
 
+mrdseed
+Target Report Mask(ISA_RDSEED) Var(ix86_isa_flags) Save
+Support RDSEED instruction
+
 mprfchw
 Target Report Mask(ISA_PRFCHW) Var(ix86_isa_flags) Save
 Support PREFETCHW instruction

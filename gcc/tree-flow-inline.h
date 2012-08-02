@@ -98,16 +98,6 @@ next_htab_element (htab_iterator *hti)
   return NULL;
 }
 
-/* Get the variable with uid UID from the list of referenced vars.  */
-
-static inline tree
-referenced_var (unsigned int uid)
-{
-  tree var = referenced_var_lookup (cfun, uid);
-  gcc_assert (var || uid == 0);
-  return var;
-}
-
 /* Initialize ITER to point to the first referenced variable in the
    referenced_vars hashtable, and return that variable.  */
 
@@ -134,15 +124,6 @@ static inline tree
 next_referenced_var (referenced_var_iterator *iter)
 {
   return (tree) next_htab_element (&iter->hti);
-}
-
-/* Return the variable annotation for T, which must be a _DECL node.
-   Return NULL if the variable annotation doesn't already exist.  */
-static inline var_ann_t
-var_ann (const_tree t)
-{
-  const var_ann_t *p = DECL_VAR_ANN_PTR (t);
-  return p ? *p : NULL;
 }
 
 /* Get the number of the next statement uid to be allocated.  */
@@ -556,33 +537,6 @@ phi_arg_index_from_use (use_operand_p use)
 		       && index < gimple_phi_capacity (phi));
 
  return index;
-}
-
-/* Mark VAR as used, so that it'll be preserved during rtl expansion.  */
-
-static inline void
-set_is_used (tree var)
-{
-  var_ann_t ann = var_ann (var);
-  ann->used = true;
-}
-
-/* Clear VAR's used flag.  */
-
-static inline void
-clear_is_used (tree var)
-{
-  var_ann_t ann = var_ann (var);
-  ann->used = false;
-}
-
-/* Return true if VAR is marked as used.  */
-
-static inline bool
-is_used_p (tree var)
-{
-  var_ann_t ann = var_ann (var);
-  return ann->used;
 }
 
 /* Return true if T (assumed to be a DECL) is a global variable.

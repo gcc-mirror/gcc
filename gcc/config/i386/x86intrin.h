@@ -97,6 +97,10 @@
 #include <popcntintrin.h>
 #endif
 
+#ifdef __RDSEED__
+#include <rdseedintrin.h>
+#endif
+
 #ifdef __PRFCHW__
 #include <prfchwintrin.h>
 #endif

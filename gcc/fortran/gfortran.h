@@ -2805,7 +2805,8 @@ int gfc_is_formal_arg (void);
 void gfc_resolve_substring_charlen (gfc_expr *);
 match gfc_iso_c_sub_interface(gfc_code *, gfc_symbol *);
 gfc_expr *gfc_expr_to_initialize (gfc_expr *);
-bool gfc_type_is_extensible (gfc_symbol *sym);
+bool gfc_type_is_extensible (gfc_symbol *);
+gfc_try gfc_resolve_intrinsic (gfc_symbol *, locus *);
 
 
 /* array.c */
@@ -2848,7 +2849,7 @@ int gfc_compare_types (gfc_typespec *, gfc_typespec *);
 int gfc_compare_interfaces (gfc_symbol*, gfc_symbol*, const char *, int, int,
 			    char *, int, const char *, const char *);
 void gfc_check_interfaces (gfc_namespace *);
-void gfc_procedure_use (gfc_symbol *, gfc_actual_arglist **, locus *);
+gfc_try gfc_procedure_use (gfc_symbol *, gfc_actual_arglist **, locus *);
 void gfc_ppc_use (gfc_component *, gfc_actual_arglist **, locus *);
 gfc_symbol *gfc_search_interface (gfc_interface *, int,
 				  gfc_actual_arglist **);

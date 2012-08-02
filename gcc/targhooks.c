@@ -945,6 +945,13 @@ tree default_mangle_decl_assembler_name (tree decl ATTRIBUTE_UNUSED,
    return id;
 }
 
+/* Default to natural alignment for vector types.  */
+HOST_WIDE_INT
+default_vector_alignment (const_tree type)
+{
+  return tree_low_cst (TYPE_SIZE (type), 0);
+}
+
 bool
 default_builtin_vector_alignment_reachable (const_tree type, bool is_packed)
 {
@@ -1197,19 +1204,7 @@ default_hard_regno_scratch_ok (unsigned int regno ATTRIBUTE_UNUSED)
 bool
 default_mode_dependent_address_p (const_rtx addr ATTRIBUTE_UNUSED)
 {
-#ifdef GO_IF_MODE_DEPENDENT_ADDRESS
-
-  GO_IF_MODE_DEPENDENT_ADDRESS (CONST_CAST_RTX (addr), win);
   return false;
-  /* Label `win' might (not) be used via GO_IF_MODE_DEPENDENT_ADDRESS.  */
- win: ATTRIBUTE_UNUSED_LABEL
-  return true;
-
-#else
-
-  return false;
-
-#endif
 }
 
 bool

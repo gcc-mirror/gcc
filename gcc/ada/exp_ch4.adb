@@ -705,8 +705,7 @@ package body Exp_Ch4 is
                or else
                  (Is_Class_Wide_Type (Etype (Exp))
                    and then Scope (PtrT) /= Current_Scope))
-           and then
-             (Tagged_Type_Expansion or else VM_Target /= No_VM)
+           and then (Tagged_Type_Expansion or else VM_Target /= No_VM)
          then
             --  If the allocator was built in place, Ref is already a reference
             --  to the access object initialized to the result of the allocator

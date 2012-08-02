@@ -1,3 +1,9 @@
+2012-07-30  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/c++config (_GLIBCXX_END_NAMESPACE_CONTAINER): Fix
+	order of closures.
+	(_GLIBCXX_END_NAMESPACE_ALGO): Likewise.
+
 2012-07-29  François Dumont  <fdumont@gcc.gnu.org>
 
 	PR libstdc++/54075

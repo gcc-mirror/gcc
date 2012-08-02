@@ -1857,25 +1857,6 @@ m32c_trampoline_init (rtx m_tramp, tree fndecl, rtx chainval)
 #undef A0
 }
 
-/* Implicit Calls to Library Routines */
-
-#undef TARGET_INIT_LIBFUNCS
-#define TARGET_INIT_LIBFUNCS m32c_init_libfuncs
-static void
-m32c_init_libfuncs (void)
-{
-  /* We do this because the M32C has an HImode operand, but the
-     M16C has an 8-bit operand.  Since gcc looks at the match data
-     and not the expanded rtl, we have to reset the optab so that
-     the right modes are found. */
-  if (TARGET_A24)
-    {
-      set_optab_handler (cstore_optab, QImode, CODE_FOR_cstoreqi4_24);
-      set_optab_handler (cstore_optab, HImode, CODE_FOR_cstorehi4_24);
-      set_optab_handler (cstore_optab, PSImode, CODE_FOR_cstorepsi4_24);
-    }
-}
-
 /* Addressing Modes */
 
 /* The r8c/m32c family supports a wide range of non-orthogonal

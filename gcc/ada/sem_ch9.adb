@@ -68,7 +68,7 @@ package body Sem_Ch9 is
    -----------------------
 
    function Allows_Lock_Free_Implementation
-     (N        : Node_Id;
+     (N               : Node_Id;
       Lock_Free_Given : Boolean := False) return Boolean;
    --  This routine returns True iff N satisfies the following list of lock-
    --  free restrictions for protected type declaration and protected body:
@@ -130,9 +130,8 @@ package body Sem_Ch9 is
       --  when Lock_Free_Given is True.
 
    begin
-      pragma Assert (Nkind_In (N,
-                               N_Protected_Type_Declaration,
-                               N_Protected_Body));
+      pragma Assert (Nkind_In (N, N_Protected_Type_Declaration,
+                                  N_Protected_Body));
 
       --  The lock-free implementation is currently enabled through a debug
       --  flag. When Lock_Free_Given is True, an aspect Lock_Free forces the
@@ -411,12 +410,15 @@ package body Sem_Ch9 is
 
                         return Abandon;
 
-                     --  Explicit dereferences restricted (i.e. dereferences of
-                     --  access values).
+                     --  Dereferences of access values restricted
 
-                     elsif Kind = N_Explicit_Dereference then
+                     elsif Kind = N_Explicit_Dereference
+                       or else (Kind = N_Selected_Component
+                                 and then Is_Access_Type (Etype (Prefix (N))))
+                     then
                         if Lock_Free_Given then
-                           Error_Msg_N ("explicit dereference not allowed", N);
+                           Error_Msg_N
+                             ("dereference of access value not allowed", N);
                            return Skip;
                         end if;
 
@@ -428,8 +430,8 @@ package body Sem_Ch9 is
                        and then not Is_Static_Expression (N)
                      then
                         if Lock_Free_Given then
-                           Error_Msg_N ("non-static function call not allowed",
-                                        N);
+                           Error_Msg_N
+                             ("non-static function call not allowed", N);
                            return Skip;
                         end if;
 
@@ -460,10 +462,12 @@ package body Sem_Ch9 is
                            --  outside the protected subprogram scope.
 
                            if Ekind (Id) in Assignable_Kind
-                             and then not Scope_Within_Or_Same (Scope (Id),
-                                            Sub_Id)
-                             and then not Scope_Within_Or_Same (Scope (Id),
-                                            Protected_Body_Subprogram (Sub_Id))
+                             and then not
+                               Scope_Within_Or_Same (Scope (Id), Sub_Id)
+                             and then not
+                               Scope_Within_Or_Same
+                                 (Scope (Id),
+                                  Protected_Body_Subprogram (Sub_Id))
                            then
                               if Lock_Free_Given then
                                  Error_Msg_NE
@@ -526,7 +530,10 @@ package body Sem_Ch9 is
 
                      --  Quantified expression restricted
 
-                     elsif Kind = N_Quantified_Expression then
+                     elsif Kind = N_Quantified_Expression
+                       or else Nkind (Original_Node (N)) =
+                                 N_Quantified_Expression
+                     then
                         if Lock_Free_Given then
                            Error_Msg_N ("quantified expression not allowed",
                                         N);
@@ -548,7 +555,7 @@ package body Sem_Ch9 is
                         Id        : constant Entity_Id := Entity (N);
                         Comp_Decl : Node_Id;
                         Comp_Id   : Entity_Id := Empty;
-                        Comp_Size : Int;
+                        Comp_Size : Int := 0;
                         Comp_Type : Entity_Id;
 
                      begin
@@ -575,6 +582,10 @@ package body Sem_Ch9 is
 
                               Layout_Type (Comp_Type);
 
+                              --  Note that Known_Esize is used and not
+                              --  Known_Static_Esize in order to capture the
+                              --  errors properly at the instantiation point.
+
                               if Known_Esize (Comp_Type) then
                                  Comp_Size := UI_To_Int (Esize (Comp_Type));
 
@@ -583,7 +594,7 @@ package body Sem_Ch9 is
                               --  (Value_Size) since it may have been set by an
                               --  explicit representation clause.
 
-                              else
+                              elsif Known_RM_Size (Comp_Type) then
                                  Comp_Size := UI_To_Int (RM_Size (Comp_Type));
                               end if;
 
@@ -644,7 +655,6 @@ package body Sem_Ch9 is
                  and then (not Lock_Free_Given
                             or else Errors_Count = Serious_Errors_Detected)
                then
-
                   --  Establish a relation between the subprogram body and the
                   --  unique protected component it references.
 

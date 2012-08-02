@@ -713,9 +713,9 @@ struct mips_cpu_info {
    link-compatible.  */
 
 #define MIPS_ARCH_FLOAT_SPEC \
-  "%{mhard-float|msoft-float|march=mips*:; \
+  "%{mhard-float|msoft-float|mno-float|march=mips*:; \
      march=vr41*|march=m4k|march=4k*|march=24kc|march=24kec \
-     |march=34kc|march=74kc|march=1004kc|march=5kc \
+     |march=34kc|march=34kn|march=74kc|march=1004kc|march=5kc \
      |march=octeon|march=xlr: -msoft-float;		  \
      march=*: -mhard-float}"
 
@@ -763,7 +763,7 @@ struct mips_cpu_info {
 /* A spec that infers the -mdsp setting from an -march argument.  */
 #define BASE_DRIVER_SELF_SPECS \
   "%{!mno-dsp: \
-     %{march=24ke*|march=34k*|march=1004k*: -mdsp} \
+     %{march=24ke*|march=34kc*|march=34kf*|march=34kx*|march=1004k*: -mdsp} \
      %{march=74k*:%{!mno-dspr2: -mdspr2 -mdsp}}}"
 
 #define DRIVER_SELF_SPECS BASE_DRIVER_SELF_SPECS

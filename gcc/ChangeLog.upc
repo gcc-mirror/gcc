@@ -1,3 +1,8 @@
+2012-08-01  Gary Funck  <gary@intrepid.com>
+
+	Merge trunk version 190063 into gupc branch.
+	Incorporates fix for build failure on IA64.
+
 2012-07-30  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 189954 into gupc branch.

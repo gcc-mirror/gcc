@@ -894,7 +894,7 @@ tree_call_cdce (void)
       free_dominance_info (CDI_POST_DOMINATORS);
       /* As we introduced new control-flow we need to insert PHI-nodes
          for the call-clobbers of the remaining call.  */
-      mark_sym_for_renaming (gimple_vop (cfun));
+      mark_virtual_operands_for_renaming (cfun);
       return (TODO_update_ssa | TODO_cleanup_cfg | TODO_ggc_collect
               | TODO_remove_unused_locals);
     }

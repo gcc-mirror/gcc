@@ -1167,10 +1167,11 @@ package body Ada.Containers.Indefinite_Ordered_Multisets is
       --------------
 
       function New_Node return Node_Access is
-         pragma Unsuppress (Accessibility_Check);
          --  The element allocator may need an accessibility check in the case
          --  the actual type is class-wide or has access discriminants (see
          --  RM 4.8(10.1) and AI12-0035).
+
+         pragma Unsuppress (Accessibility_Check);
 
          Element : Element_Access := new Element_Type'(New_Item);
 
@@ -1180,6 +1181,7 @@ package body Ada.Containers.Indefinite_Ordered_Multisets is
                                Right   => null,
                                Color   => Red_Black_Trees.Red,
                                Element => Element);
+
       exception
          when others =>
             Free_Element (Element);
@@ -1774,10 +1776,12 @@ package body Ada.Containers.Indefinite_Ordered_Multisets is
          declare
             X : Element_Access := Node.Element;
 
-            pragma Unsuppress (Accessibility_Check);
             --  The element allocator may need an accessibility check in the
             --  case the actual type is class-wide or has access discriminants
             --  (see RM 4.8(10.1) and AI12-0035).
+
+            pragma Unsuppress (Accessibility_Check);
+
          begin
             Node.Element := new Element_Type'(Item);
             Free_Element (X);
@@ -1803,10 +1807,13 @@ package body Ada.Containers.Indefinite_Ordered_Multisets is
          --------------
 
          function New_Node return Node_Access is
-            pragma Unsuppress (Accessibility_Check);
+
             --  The element allocator may need an accessibility check in the
             --  case the actual type is class-wide or has access discriminants
             --  (see RM 4.8(10.1) and AI12-0035).
+
+            pragma Unsuppress (Accessibility_Check);
+
          begin
             Node.Element := new Element_Type'(Item);  -- OK if fails
             Node.Color := Red_Black_Trees.Red;

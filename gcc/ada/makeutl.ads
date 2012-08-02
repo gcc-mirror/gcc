@@ -128,6 +128,20 @@ package Makeutl is
    --  source files are still associated with the same units). Return the name
    --  of the unit if everything is still valid. Return No_Name otherwise.
 
+   procedure Ensure_Absolute_Path
+     (Switch               : in out String_Access;
+      Parent               : String;
+      Do_Fail              : Fail_Proc;
+      For_Gnatbind         : Boolean := False;
+      Including_Non_Switch : Boolean := True;
+      Including_RTS        : Boolean := False);
+   --  Do nothing if Switch is an absolute path switch. If relative, fail if
+   --  Parent is the empty string, otherwise prepend the path with Parent. This
+   --  subprogram is only used when using project files. If For_Gnatbind is
+   --  True, gnatbind switches that are not paths (-L, -A) are left unchaned.
+   --  If Including_RTS is True, process also switches --RTS=. Do_Fail is
+   --  called in case of error. Using Osint.Fail might be appropriate.
+
    function Is_Subunit (Source : Source_Id) return Boolean;
    --  Return True if source is a subunit
 
@@ -150,26 +164,6 @@ package Makeutl is
    --  When this function returns True, the external assignment has been
    --  entered by a call to Prj.Ext.Add, so that in a project file, External
    --  ("name") will return "value".
-
-   procedure Verbose_Msg
-     (N1                : Name_Id;
-      S1                : String;
-      N2                : Name_Id := No_Name;
-      S2                : String  := "";
-      Prefix            : String  := "  -> ";
-      Minimum_Verbosity : Opt.Verbosity_Level_Type := Opt.Low);
-   procedure Verbose_Msg
-     (N1                : File_Name_Type;
-      S1                : String;
-      N2                : File_Name_Type := No_File;
-      S2                : String  := "";
-      Prefix            : String  := "  -> ";
-      Minimum_Verbosity : Opt.Verbosity_Level_Type := Opt.Low);
-   --  If the verbose flag (Verbose_Mode) is set and the verbosity level is at
-   --  least equal to Minimum_Verbosity, then print Prefix to standard output
-   --  followed by N1 and S1. If N2 /= No_Name then N2 is printed after S1. S2
-   --  is printed last. Both N1 and N2 are printed in quotation marks. The two
-   --  forms differ only in taking Name_Id or File_name_Type arguments.
 
    type Name_Ids is array (Positive range <>) of Name_Id;
    No_Names : constant Name_Ids := (1 .. 0 => No_Name);
@@ -231,27 +225,32 @@ package Makeutl is
    --  of project Project, in project tree In_Tree, and in the projects that
    --  it imports directly or indirectly, and returns the result.
 
+   function Path_Or_File_Name (Path : Path_Name_Type) return String;
+   --  Returns a file name if -df is used, otherwise return a path name
+
    function Unit_Index_Of (ALI_File : File_Name_Type) return Int;
    --  Find the index of a unit in a source file. Return zero if the file is
    --  not a multi-unit source file.
 
-   procedure Test_If_Relative_Path
-     (Switch               : in out String_Access;
-      Parent               : String;
-      Do_Fail              : Fail_Proc;
-      Including_L_Switch   : Boolean := True;
-      Including_Non_Switch : Boolean := True;
-      Including_RTS        : Boolean := False);
-   --  Test if Switch is a relative search path switch. If so, fail if Parent
-   --  is the empty string, otherwise prepend the path with Parent. This
-   --  subprogram is only used when using project files. For gnatbind switches,
-   --  Including_L_Switch is False, because the argument of the -L switch is
-   --  not a path. If Including_RTS is True, process also switches --RTS=.
-   --  Do_Fail is called in case of error. Using Osint.Fail might be
-   --  appropriate.
-
-   function Path_Or_File_Name (Path : Path_Name_Type) return String;
-   --  Returns a file name if -df is used, otherwise return a path name
+   procedure Verbose_Msg
+     (N1                : Name_Id;
+      S1                : String;
+      N2                : Name_Id := No_Name;
+      S2                : String  := "";
+      Prefix            : String  := "  -> ";
+      Minimum_Verbosity : Opt.Verbosity_Level_Type := Opt.Low);
+   procedure Verbose_Msg
+     (N1                : File_Name_Type;
+      S1                : String;
+      N2                : File_Name_Type := No_File;
+      S2                : String  := "";
+      Prefix            : String  := "  -> ";
+      Minimum_Verbosity : Opt.Verbosity_Level_Type := Opt.Low);
+   --  If the verbose flag (Verbose_Mode) is set and the verbosity level is at
+   --  least equal to Minimum_Verbosity, then print Prefix to standard output
+   --  followed by N1 and S1. If N2 /= No_Name then N2 is printed after S1. S2
+   --  is printed last. Both N1 and N2 are printed in quotation marks. The two
+   --  forms differ only in taking Name_Id or File_name_Type arguments.
 
    -------------------------
    -- Program termination --
@@ -280,10 +279,11 @@ package Makeutl is
          For_Lang    : Name_Id;
          For_Builder : Boolean;
          Has_Global_Compilation_Switches : Boolean) return Boolean;
-      --  For_Builder is true if we have a builder switch
-      --  This function should return True in case of success (the switch is
-      --  valid), False otherwise. The error message will be displayed by
+      --  For_Builder is true if we have a builder switch. This function
+      --  should return True in case of success (the switch is valid),
+      --  False otherwise. The error message will be displayed by
       --  Compute_Builder_Switches itself.
+      --
       --  Has_Global_Compilation_Switches is True if the attribute
       --  Global_Compilation_Switches is defined in the project.
 
@@ -292,10 +292,10 @@ package Makeutl is
       Root_Environment : in out Prj.Tree.Environment;
       Main_Project     : Project_Id;
       Only_For_Lang    : Name_Id := No_Name);
-   --  Compute the builder switches and global compilation switches.
-   --  Every time a switch is found in the project, it is passed to Add_Switch.
-   --  You can provide a value for Only_For_Lang so that we only look for
-   --  this language when parsing the global compilation switches.
+   --  Compute the builder switches and global compilation switches. Every time
+   --  a switch is found in the project, it is passed to Add_Switch. You can
+   --  provide a value for Only_For_Lang so that we only look for this language
+   --  when parsing the global compilation switches.
 
    -----------------------
    -- Project_Tree data --

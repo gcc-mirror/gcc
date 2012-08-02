@@ -1866,8 +1866,8 @@ package body Sem_Ch13 is
           Chars => Name_Address,
           Expression => Expression (N)));
 
-      --  We preserve Comes_From_Source, since logically the clause still
-      --  comes from the source program even though it is changed in form.
+      --  We preserve Comes_From_Source, since logically the clause still comes
+      --  from the source program even though it is changed in form.
 
       Set_Comes_From_Source (N, CS);
 
@@ -2685,8 +2685,8 @@ package body Sem_Ch13 is
 
                   --  Legality checks on the address clause for initialized
                   --  objects is deferred until the freeze point, because
-                  --  a subsequent pragma might indicate that the object is
-                  --  imported and thus not initialized.
+                  --  a subsequent pragma might indicate that the object
+                  --  is imported and thus not initialized.
 
                   Set_Has_Delayed_Freeze (U_Ent);
 
@@ -3120,8 +3120,8 @@ package body Sem_Ch13 is
 
          when Attribute_Implicit_Dereference =>
 
-            --  Legality checks already performed at the point of
-            --  the type declaration, aspect is not delayed.
+            --  Legality checks already performed at the point of the type
+            --  declaration, aspect is not delayed.
 
             null;
 

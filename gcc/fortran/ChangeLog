@@ -1,3 +1,51 @@
+2012-08-01  Thomas König  <tkoenig@gcc.gnu.org>
+
+	PR fortran/54033
+	* scanner.c (add_path_to_list): Emit warning if an error occurs
+	for an include path, if it is not present or if it is not a
+	directory.  Do not add the path in these cases.
+
+2012-07-31  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/42418
+	* decl.c (match_procedure_interface): Move some checks to
+	'resolve_procedure_interface'. Set flavor if appropriate.
+	* expr.c (gfc_check_pointer_assign): Cleanup of 'gfc_is_intrinsic'.
+	* intrinsic.c (gfc_is_intrinsic): Additional checks for attributes which
+	identify a procedure as being non-intrinsic.
+	* resolve.c (resolve_procedure_interface): Checks moved here from
+	'match_procedure_interface'. Minor cleanup.
+	(resolve_formal_arglist,resolve_symbol): Cleanup of
+	'resolve_procedure_interface'
+	(resolve_actual_arglist,is_external_proc): Cleanup of
+	'gfc_is_intrinsic'.
+
+2012-07-31  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54134
+	* dependency.c (gfc_dep_compare_expr): Check if arguments are NULL.
+
+2012-07-31  Tobias Burnus  <burnus@net-b.de>
+
+	* interface.c (gfc_procedure_use): Return gfc_try instead of void.
+	* gfortran.h (gfc_procedure_use): Update prototype.
+	* resolve.c (gfc_iso_c_func_interface): Allow noninteroperable
+	procedures for c_funloc for TS29113.
+	* (gfc_iso_c_sub_interface): Ditto for c_f_procpointer. Add
+	diagnostic for c_ptr vs. c_funptr for c_f_(proc)pointer.
+
+2012-07-30  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/51081
+	* gfortran.h (gfc_resolve_intrinsic): Add prototype.
+	* expr.c (gfc_check_pointer_assign): Set INTRINSIC attribute if needed.
+	Check for invalid intrinsics.
+	* primary.c (gfc_match_rvalue): Check for intrinsics came too early.
+	Set procedure flavor if appropriate.
+	* resolve.c (resolve_intrinsic): Renamed to gfc_resolve_intrinsic.
+	(resolve_procedure_interface,resolve_procedure_expression,
+	resolve_function,resolve_fl_derived0,resolve_symbol): Ditto.
+
 2012-07-26  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/44354

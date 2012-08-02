@@ -24,3 +24,4 @@ end function
 
 ! { dg-do compile }
 ! { dg-options "-fpreprocessed -g3" }
+! { dg-warning "Nonexistent include directory" "missing directory" { target *-*-* } 0 }

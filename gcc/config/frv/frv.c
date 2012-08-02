@@ -1761,6 +1761,9 @@ frv_expand_prologue (void)
   if (TARGET_DEBUG_STACK)
     frv_debug_stack (info);
 
+  if (flag_stack_usage_info)
+    current_function_static_stack_size = info->total_size;
+
   if (info->total_size == 0)
     return;
 
@@ -8435,7 +8438,7 @@ frv_init_builtins (void)
   build_function_type_list (RET, T1, T2, T3, NULL_TREE)
 
 #define QUAD(RET, T1, T2, T3, T4) \
-  build_function_type_list (RET, T1, T2, T3, NULL_TREE)
+  build_function_type_list (RET, T1, T2, T3, T4, NULL_TREE)
 
   tree void_ftype_void = build_function_type_list (voidt, NULL_TREE);
 

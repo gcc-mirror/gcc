@@ -1,7 +1,537 @@
+2012-08-01  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/52983
+	* valtrack.c (dead_debug_insert_temp): Use cleanup_auto_inc_dec.
+
+2012-08-01  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/52983
+	* valtrack.c (cleanup_auto_inc_dec): Implement unconditionally,
+	falling back to copy_rtx on non-autoinc machines.
+	(propagate_for_debug_subst): Always use cleanup_auto_inc_dec.
+
+2012-08-01  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/52983
+	* valtrack.h, valtrack.c: New.
+	* Makefile.in (VALTRACK_H): New.
+	(OBJS): Add valtrack.o.
+	(valtrack.o): New.
+	(cselib.o, dce.o, df-problems.o, combine.o): Add VALTRACK_H.
+	* combine.c: Include valtrack.h.
+	(make_compound_operation): Publish.
+	(cleanup_auto_inc_dec): Move to valtrack.c.
+	(struct rtx_subst_pair, propagate_for_debug_subst): Likewise.
+	(propagate_for_debug): Likewise.  Add this_basic_block parameter.
+	Adjust all callers.
+	* cselib.c: Include valtrack.h.
+	* dce.c: Likewise.
+	* df-problems.c: Likewise.
+	(dead_debug_init, dead_debug_reset_uses): Move to valtrack.c.
+	(dead_debug_finish, dead_debug_add): Likewise.
+	(dead_debug_insert_temp): Likewise.
+	* df.h (struct dead_debug_use): Move to valtrack.h.
+	(struct dead_debug, enum debug_temp_where): Likewise.
+	(dead_debug_init, dead_debug_reset_uses): Move to valtrack.h.
+	(dead_debug_finish, dead_debug_add): Likewise.
+	(dead_debug_insert_temp): Likewise.
+	* rtl.h (make_compound_operation): Declare.
+
+2012-08-01  Catherine Moore  <clm@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	gcc/
+	* config/mips/mips-cpus.def (34kn): New.
+	* config/mips/mips.h (MIPS_ARCH_FLOAT_SPEC): Add 34kn.
+	(BASE_DRIVER_SELF_SPECS): Do not imply -mdsp for the 34kn.
+	* config/mips/mips-tables.opt: Regenerate.
+	* doc/invoke.texi (MIPS Options): Document -march=34kn.
+
+2012-08-01  Richard Henderson  <rth@redhat.com>
+
+	PR middle-end/34548
+	* function.h (struct rtl_data): Add max_dynamic_stack_alignment.
+	* cfgexpand.c (gimple_expand_cfg): Initialise it.
+	* explow.c (allocate_dynamic_stack_space): Set it.  Simplify
+	alignment requirements given the known alignment of dynamic_offset.
+	* function.c (instantiate_virtual_regs): Align dtnamic_offset.
+
+2012-08-01  Richard Henderson  <rth@redhat.com>
+
+	* expmed.h (NUM_MODE_PARTIAL_INT): New.
+	(NUM_MODE_VECTOR_INT, NUM_MODE_IP_INT, NUM_MODE_IPV_INT): New.
+	(struct expmed_op_cheap): Size one array on NUM_MODE_IPV_INT.
+	(struct expmed_op_costs): Likewise.
+	(struct target_expmed): Size x_convert_cost on NUM_MODE_IP_INT.
+	(expmed_mode_index): New.
+	(expmed_op_cheap_ptr, expmed_op_cost_ptr): Use expmed_mode_index.
+	(convert_cost_ptr): Likewise.
+	* expmed.c (struct init_expmed_rtl): Rename convert to trunc.
+	(init_expmed_one_conv): Split out from ...
+	(init_expmed_one_mode): ... here.  Iterate conversions over
+	partial integer modes too.
+	(init_expmed): Iterate over partial integer modes too.
+
+2012-08-01  Richard Henderson  <rth@redhat.com>
+
+	* config/m32c/m32c.c (TARGET_INIT_LIBFUNCS): Remove.
+	(m32c_init_libfuncs): Remove.
+	* config/m32c/cond.md (cstore<QHPSI>4_16): Rename from cstore<QHPSI>4.
+	(cstore<QHPSI>4): New expander.
+
+2012-08-01  Richard Guenther  <rguenther@suse.de>
+
+	* tree-flow-inline.h (referenced_var): Remove.
+	* tree-ssa-coalesce.c (create_outofssa_var_map): Remove duplicate
+	checking code.
+	* tree-sra.c (candidates): New global hashtable.
+	(candidate): New function.
+	(sra_initialize): Initialize candidates.
+	(sra_deinitialize): Free candidates.
+	(disqualify_candidate): Remove candidate from candidates.
+	(maybe_add_sra_candidate): New function.
+	(find_var_candidates): Walk over all local decls and parameters,
+	add candidates to candidates hashtable.
+	(find_param_candidates): Add candidates to candidates hashtable.
+	(analyze_all_variable_accesses): Use candidate instead of
+	referenced_var.
+
+2012-08-01  Tom de Vries  <tom@codesourcery.com>
+
+	* tree-vrp.c (find_case_label_ranges): New function.
+	(vrp_visit_switch_stmt, simplify_switch_using_ranges): Use
+	find_case_label_ranges instead of find_case_label_range.  Handle second
+	range.
+
+2012-08-01  Michael Matz  <matz@suse.de>
+
+	* tree-complex.c (init_parameter_lattice_values): Don't call var_ann.
+	* tree-dfa.c (struct dfa_stats_d): Remove num_var_anns member.
+	(dump_dfa_stats): Don't dump stats about var anns.
+	(collect_dfa_stats): Don't collect them.
+	(add_referenced_var_1): Don't set var annotation pointers.
+	(remove_referenced_var): Ditto, and only remove it it's in the
+	hash table.
+
+	* tree-flow-inline.h (var_ann): Remove.
+	* tree-flow.h (struct var_ann_d, var_ann_t): Remove.
+
+	* tree-inline.c (remapped_type): Remove.
+	(can_be_nonlocal): Most variable will be considered live here,
+	return false earlier.
+	(remap_decls): Don't call var_ann, all variables will be considered
+	referenced here.
+	(copy_debug_stmt): Ditto, and use is_global_var.
+
+	* tree-into-ssa.c (rewrite_debug_stmt_uses): Use get_current_def to
+	determine if a variable was referred to, not var_ann.
+	* tree-ssa-live.c (remove_unused_scope_block_p): Don't check var_ann.
+	(remove_unused_locals): Ditto.
+	* tree-ssa.c (delete_tree_ssa): Don't free/clear var ann pointers.
+	* tree-tailcall.c (arg_needs_copy_p): Don't check var_ann.
+	* tree.c (copy_node_stat): Don't clear var ann pointer.
+	* tree.h (tree_result_decl, tree_parm_decl, tree_var_decl): Remove
+	ann member.
+	(DECL_VAR_ANN_PTR): Remove.
+
+2012-08-01  Michael Matz  <matz@suse.de>
+
+	* tree-flow.h (struct var_ann_d): Rename used member.
+	(set_is_used): Don't declare.
+	* tree-flow-inline.h (clear_is_used): Remove.
+	(set_is_used, is_used_p): Move to ...
+	* tree-ssa-live.c (set_is_used, is_used_p): ... here, and use
+	on the side bitmap.
+	(usedvars): New bitmap.
+	(dump_scope_block): Don't dump unusedness.
+	(remove_unused_locals): Allocate and free usedvars.
+	* tree-nrv.c (tree_nrv): Don't clear used flags here.
+
+2012-08-01  Michael Matz  <matz@suse.de>
+
+	* tree-flow.h (struct var_ann_d): Remove base_var_processed and
+	base_index members.
+	* tree-ssa-live.h (struct _var_map): Remove basevars member.
+	(VAR_ANN_BASE_INDEX): Remove.
+	* tree-ssa-live.c (var_map_base_init): Use a hash table instead
+	of var annotation to compress index space.  Don't deal with above
+	removed members.
+	(var_map_base_fini): Don't free basevars.
+	(init_var_map): Don't clear basevars.
+
+2012-08-01  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* gimple-ssa-strength-reduction.c (struct slsr_cand_d): Change
+	base_name to base_expr.
+	(struct cand_chain_d): Likewise.
+	(base_cand_hash): Likewise.
+	(base_cand_eq): Likewise.
+	(record_potential_basis): Likewise.
+	(alloc_cand_and_find_basis): Likewise.
+	(create_mul_ssa_cand): Likewise.
+	(create_mul_imm_cand): Likewise.
+	(create_add_ssa_cand): Likewise.
+	(create_add_imm_cand): Likewise.
+	(slsr_process_cast): Likewise.
+	(slsr_process_copy): Likewise.
+	(dump_candidate): Likewise.
+	(base_cand_dump_callback): Likewise.
+	(unconditional_cands_with_known_stride_p): Likewise.
+	(cand_increment): Likewise.
+
+2012-08-01  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR tree-optimization/46556
+	* gimple-ssa-strength-reduction.c (enum cand_kind): Add CAND_REF.
+	(base_cand_map): Change to hash table.
+	(base_cand_hash): New function.
+	(base_cand_free): Likewise.
+	(base_cand_eq): Likewise.
+	(lookup_cand): Change base_cand_map to hash table.
+	(find_basis_for_candidate): Likewise.
+	(base_cand_from_table): Exclude CAND_REF.
+	(restructure_reference): New function.
+	(slsr_process_ref): Likewise.
+	(find_candidates_in_block): Call slsr_process_ref.
+	(dump_candidate): Handle CAND_REF.
+	(base_cand_dump_callback): New function.
+	(dump_cand_chains): Change base_cand_map to hash table.
+	(replace_ref): New function.
+	(replace_refs): Likewise.
+	(analyze_candidates_and_replace): Call replace_refs.
+	(execute_strength_reduction): Change base_cand_map to hash table.
+
+2012-08-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_address_subreg_operand): Reject
+	stack pointer.
+	(ix86_print_operand_address): Assert that parts.base and parts.index
+	are non-NULL after call to simplify_subreg.
+
+2012-08-01  Richard Guenther  <rguenther@suse.de>
+
+	* doc/tree-ssa.texi: Remove pieces mentioning mark_sym_for_renaming.
+
+2012-08-01  Richard Guenther  <rguenther@suse.de>
+
+	* graphite-clast-to-gimple.c (translate_clast_user): Rename
+	virtual operands.
+	* sese.c (graphite_copy_stmts_from_block): Do not rename virtual
+	operands here.
+	* tree-call-cdce.c (tree_call_cdce): Use
+	mark_virtual_operands_for_renaming.
+	* tree-eh.c (sink_clobbers): Simplify.
+	* tree-flow.h (mark_sym_for_renaming): Remove.
+	(mark_virtual_operands_for_renaming): New function.
+	* tree-if-conv.c (tree_if_conversion): Use
+	mark_virtual_operands_for_renaming.
+	* tree-inline.c (update_ssa_across_abnormal_edges): Likewise.
+	* tree-into-ssa.c (mark_sym_for_renaming): Remove.
+	(mark_virtual_operands_for_renaming): New function.
+	* tree-loop-distribution.c (tree_loop_distribution): Use
+	mark_virtual_operands_for_renaming.
+	* tree-ssa-dce.c (mark_virtual_operand_for_renaming): Do not
+	update stmts, use mark_virtual_operands_for_renaming.
+	* tree-ssa-tail-merge.c (release_last_vdef): Remove.
+	(replace_block_by): Adjust.
+	(tail_merge_optimize): Use mark_virtual_operands_for_renaming.
+	* tree-tailcall.c (tree_optimize_tail_calls_1): Use
+	mark_virtual_operands_for_renaming.
+	* tree-vect-slp.c (vect_slp_transform_bb): Likewise.
+	* tree-vectorizer.c (vectorize_loops): Likewise.
+
+2012-08-01  Richard Guenther  <rguenther@suse.de>
+
+	* tree-flow.h (struct gimple_df): Remove syms_to_rename member,
+	add ssa_renaming_needed and rename_vops flags.
+	(SYMS_TO_RENAME): Remove.
+	(symbol_marked_for_renaming): Likewise.
+	(mark_virtual_ops_for_renaming): Likewise.
+	* tree-into-ssa.c (symbols_to_rename_set, symbols_to_rename):
+	New globals.
+	(mark_for_renaming, marked_for_renaming): New functions.
+	(symbol_marked_for_renaming): Remove.
+	(dump_currdefs): Adjust.
+	(maybe_replace_use): Likewise.
+	(maybe_replace_use_in_debug_stmt): Likewise.
+	(maybe_register_def): Likewise.
+	(rewrite_update_phi_arguments): Likewise.
+	(rewrite_update_enter_block): Likewise.
+	(fini_ssa_renamer): Clear update SSA status here ...
+	(delete_update_ssa): ... not here.  Free rename set.
+	(prepare_block_for_update): Compute which decls need renaming.
+	(dump_update_ssa): Adjust.
+	(mark_sym_for_renaming): Adjust update SSA status for virtuals.
+	(need_ssa_update_p): Adjust.
+	(insert_updated_phi_nodes_for): Likewise.
+	(update_ssa): Likewise.
+	* tree-ssa-operands.c (finalize_ssa_defs): Adjust update SSA status
+	for virtual and real operands.
+	(finalize_ssa_uses): Likewise.
+	* tree-ssanames.c (init_ssanames): Adjust.
+	* tree-ssa.c (maybe_rewrite_mem_ref_base, maybe_optimize_var,
+	execute_update_addresses_taken): Add bitmap to keep track of which
+	candidates are suitable for rewriting and later renaming by SSA update.
+	* matrix-reorg.c (transform_access_sites): Do not rename all defs.
+	* tree-dfa.c (make_rename_temp): Do not mark real operands for
+	renaming.
+	* cgraphunit.c (assemble_thunk): Likewise.
+	* gimplify.c (gimple_regimplify_operands): Likewise.
+	(force_gimple_operand_1): Likewise.
+	* ipa-prop.c (ipa_modify_formal_parameters): Likewise.
+	* tree-inline.c (declare_return_variable): Likewise.
+	* tree-parloops.c (separate_decls_in_region_stmt): Do not call
+	mark_virtual_ops_for_renaming.
+	(create_stores_for_reduction): Likewise.
+	(create_loads_and_stores_for_name): Likewise.
+	* tree-predcom.c (mark_virtual_ops_for_renaming): Remove.
+	(initialize_root_vars_lm): Do not call mark_virtual_ops_for_renaming.
+	(execute_load_motion): Likewise.
+	(remove_stmt): Likewise.
+	(execute_pred_commoning_chain): Likewise.
+	* tree-sra.c (create_access_replacement): Do not rename real operands.
+	(get_unrenamed_access_replacement): Unify with ...
+	(get_access_replacement): ... this.
+	(get_repl_default_def_ssa_name): Adjust.
+	* tree-ssa-loop-im.c (move_computations_stmt): Manually update
+	virtual SSA form.
+	(rewrite_mem_ref_loc): Do not call mark_virtual_ops_for_renaming.
+	* tree-ssa-loop-prefetch.c (emit_mfence_after_loop): Likewise.
+
+2012-07-31  DJ Delorie  <dj@redhat.com>
+
+	* config/s390/s390.c (s390_option_override): Disable DWARF 3/4
+	extensions for TPF, unless specifically selected.
+
+2012-08-01  Alan Modra  <amodra@gmail.com>
+
+	PR target/54131
+	* config/rs6000/rs6000.c (mem_operand_gpr): Don't limit range
+	of lo_sum offsets.  Comment.  Assert mode at least word size
+	rather than bypassing powerpc64 word offset check.
+
+2012-07-31  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_builtin_vectorization_cost): Revise
+	costs for vec_perm and vec_promote_demote down to more natural values.
+	(struct _rs6000_cost_data): New data structure.
+	(rs6000_density_test): New function.
+	(rs6000_init_cost): Change to use rs6000_cost_data.
+	(rs6000_add_stmt_cost): Likewise.
+	(rs6000_finish_cost): Perform density test when vectorizing a loop.
+
+2012-07-31  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* sched-vis.c (print_exp): Handle FMA explicitly.  Simplify handling
+	of RTX_UNARY function-like operations.  Print unknown expression
+	RTX classes as pseudo-functions.
+	(print_pattern): Simplify return pattern printing.
+	(dump_insn_slim): Print the value of notes as a pattern for proper
+	printing of CFA notes.
+
+2012-07-31  Dehao Chen  <dehao@google.com>
+
+	* predict.c (tree_estimate_probability_driver): Normalize the
+	loop when initializing the loop optimizer.
+
+2012-07-31  Richard Guenther  <rguenther@suse.de>
+
+	* tree-flow.h (struct var_ann_d): Remove need_phi_state
+	and current_def members.
+	* tree-into-ssa.c (struct def_blocks_d): Remove var member.
+	(def_blocks): Remove.
+	(struct var_info_d): New.
+	(var_infos): New hashtable.
+	(struct ssa_name_info): Add def_blocks member.
+	(get_ssa_name_ann): Adjust.
+	(get_var_info): New function.
+	(get_phi_state, set_phi_state, get_current_def,
+	set_current_def, get_def_blocks_for, find_def_blocks_for): Adjust.
+	(insert_phi_nodes_compare_def_blocks): Rename to ...
+	(insert_phi_nodes_compare_var_infos): ... this and adjust.
+	(insert_phi_nodes): Adjust.
+	(dump_tree_ssa, dump_tree_ssa_stats): Adjust.
+	(def_blocks_hash, def_blocks_eq, def_blocks_free): Remove.
+	(debug_def_blocks_r): Rename to ...
+	(debug_var_infos_r): ... this and adjust.
+	(var_info_hash): New function.
+	(var_info_eq): Likewise.
+	(rewrite_blocks): Adjust.
+	(init_ssa_renamer): Likewise.
+	(fini_ssa_renamer): Likewise.
+	(delete_update_ssa): Likewise.
+	(update_ssa): Likewise.
+	* tree-ssanames.c (release_dead_ssa_names): Do not clear current defs.
+
+2012-07-31  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR tree-optimization/53773
+	* tree-vectorizer.h (struct _loop_vec_info): Add operands_swapped.
+	(LOOP_VINFO_OPERANDS_SWAPPED): New macro.
+	* tree-vect-loop.c (new_loop_vec_info): Initialize
+	LOOP_VINFO_OPERANDS_SWAPPED field.
+	(destroy_loop_vec_info): Restore canonical form.
+	(vect_is_slp_reduction): Set LOOP_VINFO_OPERANDS_SWAPPED field.
+	(vect_is_simple_reduction_1): Likewise.
+
+2012-07-31  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* sched-vis.c (dump_insn_slim): Print print_rtx_head at the
+	start of each new line.
+	* final.c (final_scan_insn): If the final dump is requested as
+	slim RTL, dump slim RTL to the assembly file also.
+
+2012-07-31  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR target/53975
+
+	* sel-sched-ir.c (has_dependence_note_reg_use): Clarify comment.
+
+	Revert
+	2011-08-04  Sergey Grechanik  <mouseentity@ispras.ru>
+
+	* sel-sched-ir.c (has_dependence_note_reg_use): Call ds_full_merge
+	only if producer writes to the register given by regno.
+
+2012-07-31  Nick Clifton  <nickc@redhat.com>
+
+	* config/stormy16/stormy16.c (xstormy16_expand_prologue): Add
+	support for reporting stack usage.
+
+	* config/frv/frv.c (QUAD): Fix typo.
+	(frv_expand_prologue): Report stack usage.
+
+2012-07-31  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR pch/53880
+	* gengtype.c (struct walk_type_data): Add have_this_obj field.
+	(walk_type): For functions that take a this_obj argument and
+	that process fields with a GTY((length)) argument, write the
+	test that write_types_local_process_field will write also at the
+	head of the loop, effectively unswitching the loop.
+	(write_func_for_structure, write_local_func_for_structure): Clear
+	have_this_obj before calling walk_type.
+	(write_local_func_for_structure): Set have_this_obj before walk_type.
+	(write_array): Set have_this_obj for output of local pointer walking
+	functions but not for marker functions.
+	(write_types_local_process_field): Assert have_this_obj is set.
+
+	* rtl.h (simplify_using_condition): Adjust prototype using bitmap
+	from coretypes.h.
+
+2012-07-30  Nathan Froyd  <froydnj@gcc.gnu.org>
+
+
+	* defaults.h (GO_IF_MODE_DEPENDENT_ADDRESS): Delete.
+	* targhooks.c (default_mode_dependent_address_p): Delete code
+	for GO_IF_MODE_DEPENDENT_ADDRESS.
+	* system.h (GO_IF_MODE_DEPENDENT_ADDRESS): Poison.
+	* doc/tm.texi.in (GO_IF_MODE_DEPENDENT_ADDRESS): Delete documention.
+	* doc/tm.texi: Regenerate.
+	* config/alpha.h (GO_IF_MODE_DEPENDENT_ADDRESS): Move code to...
+	* config/alpha.c (alpha_mode_dependent_address_p): ...here.  New
+	function.
+	(TARGET_MODE_DEPENDENT_ADDRESS_P): Define.
+	* config/cr16/cr16.h (GO_IF_MODE_DEPENDENT_ADDRESS): Delete.
+	* config/mep/mep.h (GO_IF_MODE_DEPENDENT_ADDRESS): Delete.
+	* config/vax/vax-protos.h (vax_mode_dependent_address_p): Delete.
+	* config/vax/vax.h (GO_IF_MODE_DEPENDENT_ADDRESS): Delete.
+	* config/vax/vax.c (vax_mode_dependent_address_p): Make static.
+	Take a const_rtx.
+	(TARGET_MODE_DEPENDENT_ADDRESS_P): Define.
+
+2012-07-30  Nathan Froyd  <froydnj@gcc.gnu.org>
+
+	* expmed.h (NUM_MODE_VECTOR_INT): Define.
+	(struct expmed_op_cheap, struct expmed_op_costs): New structures.
+	(struct target_expmed): Convert x_mul_highpart_cost and
+	x_mul_widen_cost fields to be indexed by integer modes.
+	Convert x_sdiv_pow2_cheap and x_smod_pow2_cheap fields to be
+	of type struct expmed_op_cheap.  Convert other cost fields to be
+	of type struct_expmed_op_costs.
+	(mul_widen_cost_ptr, mul_highpart_cost_ptr): Adjust for new
+	indexing of respective fields.
+	(expmed_op_cheap_ptr): New function.
+	(sdiv_pow2_cheap_ptr, smod_pow2_cheap_ptr): Call it.
+	(expmed_op_cost_ptr): New function.
+	(add_cost_ptr, neg_cost_ptr, shift_cost_ptr, shiftadd_cost_ptr,
+	shiftsub0_cost_ptr, shiftsub1_cost_ptr, mul_cost_ptr,
+	sdiv_cost_ptr, udiv_cost_ptr): Call it.
+
+2012-07-30  Sandra Loosemore  <sandra@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+	* doc/invoke.texi (MIPS Options): Document -mno-float.
+	* config/mips/mips.h (MIPS_ARCH_FLOAT_SPEC): Make it know
+	about -mno-float.
+
+2012-07-30  Joseph Myers  <joseph@codesourcery.com>
+
+	* doc/sourcebuild.texi (Subdirectories): Document common subdirectory.
+
+2012-07-30  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR middle-end/53823
+	* expmed.c (expand_mult): Skip synth_mult for constant double op1 except
+	for special cases.  Don't initialize coeff and is_neg.
+
+2012-07-30  Ulrich Weigand  <ulrich.weigand@linaro.org>
+	    Richard Earnshaw  <rearnsha@arm.com>
+
+	* target.def (vector_alignment): New target hook.
+	* doc/tm.texi.in (TARGET_VECTOR_ALIGNMENT): Document new hook.
+	* doc/tm.texi: Regenerate.
+	* targhooks.c (default_vector_alignment): New function.
+	* targhooks.h (default_vector_alignment): Add prototype.
+	* stor-layout.c (layout_type): Use targetm.vector_alignment.
+	* config/arm/arm.c (arm_vector_alignment): New function.
+	(TARGET_VECTOR_ALIGNMENT): Define.
+
+	* tree-vect-data-refs.c (vect_update_misalignment_for_peel): Use
+	vector type alignment instead of size.
+	* tree-vect-loop-manip.c (vect_do_peeling_for_loop_bound): Use
+	element type size directly instead of computing it from alignment.
+	Fix variable naming and comment.
+
+2012-07-30  Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA_RDSEED_SET): New.
+	(OPTION_MASK_ISA_RDSEED_UNSET): Likewise.
+	(ix86_handle_option): Handle mrdseed option.
+	* config.gcc (i[34567]86-*-*): Add rdseedintrin.h.
+	(x86_64-*-*): Likewise.
+	* config/i386/prfchwintrin.h: New header.
+	* config/i386/cpuid.h (bit_RDSEED): New.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect
+	RDSEED support.
+	* config/i386/i386-c.c: Define __RDSEED__ if needed.
+	* config/i386/i386.c (ix86_target_string): Define -mrdseed option.
+	(PTA_RDSEED): New.
+	(ix86_option_override_internal): Handle new option.
+	(ix86_valid_target_attribute_inner_p): Add OPT_mrdseed.
+	(ix86_builtins): Add enum entries for RDSEED* builtins.
+	(ix86_init_mmx_sse_builtins): Define new builtins.
+	(ix86_expand_builtin): Expand RDSEED* builtins.
+	* config/i386/i386.h (TARGET_RDSEED): New.
+	* config/i386/i386.md (rdseed<mode>_1): New.
+	* config/i386/i386.opt (mrdseed): New.
+	* config/i386/x86intrin.h: Include rdseedintrin.h.
+
+2012-07-30  Richard Guenther  <rguenther@suse.de>
+
+	* tree-into-ssa.c (mark_def_sites): Also process virtual operands.
+	(rewrite_stmt): Likewise.
+	(rewrite_enter_block): Likewise.
+	(pass_build_ssa): Do not update virtual SSA form during TODO.
+	(mark_symbol_for_renaming): Do nothing if we are not in SSA form.
+	* lto-streamer-in.c (lto_read_body): Set in_ssa_p earlier.
+
 2012-07-30  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/39423
-	* config/gcc/sh/sh.md (*movsi_index_disp, *movhi_index_disp): New insns.
+	* config/gcc/sh/sh.md (*movsi_index_disp, *movhi_index_disp): New
+	insns.
 
 2012-07-30  Oleg Endo  <olegendo@gcc.gnu.org>
 
@@ -21,16 +551,14 @@
 	    Steven Bosscher  <steven@gcc.gnu.org>
 
 	* gengtype.c (adjust_field_type): Diagnose duplicate "length"
-	option applications and option being applied to arrays of atomic
-	types.
+	option applications and option being applied to arrays of atomic types.
 	(walk_type): Allow "atomic" option on strings too.
 	* dwarf2out.h (struct dw_vec_struct): Use the "atomic" GTY option
 	for the array field.
 	* vec.h: Describe the atomic object "A" type of the macros in
 	the header comment.
 	(VEC_T_GTY_ATOMIC, DEF_VEC_A, DEF_VEC_ALLOC_A): Define.
-	* emit-rtl.c (locations_locators_vals): use the atomic object
-	vector.
+	* emit-rtl.c (locations_locators_vals): use the atomic object vector.
 	* doc/gty.texi: Clarify that GTY option "length" is only for
 	arrays of non-atomic objects.  Fix typo in the description of the
 	"atomic" option.

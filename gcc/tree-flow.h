@@ -77,9 +77,11 @@ struct GTY(()) gimple_df {
      for this variable with an empty defining statement.  */
   htab_t GTY((param_is (union tree_node))) default_defs;
 
-  /* Symbols whose SSA form needs to be updated or created for the first
-     time.  */
-  bitmap syms_to_rename;
+  /* True if there are any symbols that need to be renamed.  */
+  unsigned int ssa_renaming_needed : 1;
+
+  /* True if all virtual operands need to be renamed.  */
+  unsigned int rename_vops : 1;
 
   /* True if the code is in ssa form.  */
   unsigned int in_ssa_p : 1;
@@ -100,7 +102,6 @@ struct GTY(()) gimple_df {
 #define SSANAMES(fun) (fun)->gimple_df->ssa_names
 #define MODIFIED_NORETURN_CALLS(fun) (fun)->gimple_df->modified_noreturn_calls
 #define DEFAULT_DEFS(fun) (fun)->gimple_df->default_defs
-#define SYMS_TO_RENAME(fun) (fun)->gimple_df->syms_to_rename
 
 typedef struct
 {
@@ -173,28 +174,6 @@ enum need_phi_state {
      block that was not dominated by the block containing the set(s) of
      this variable.  This variable is assumed to need PHI nodes.  */
   NEED_PHI_STATE_MAYBE
-};
-
-
-struct GTY(()) var_ann_d {
-  /* Used when building base variable structures in a var_map.  */
-  unsigned base_var_processed : 1;
-
-  /* Nonzero if this variable was used after SSA optimizations were
-     applied.  We set this when translating out of SSA form.  */
-  unsigned used : 1;
-
-  /* This field indicates whether or not the variable may need PHI nodes.
-     See the enum's definition for more detailed information about the
-     states.  */
-  ENUM_BITFIELD (need_phi_state) need_phi_state : 2;
-
-  /* Used by var_map for the base index of ssa base variables.  */
-  unsigned base_index;
-
-  /* During into-ssa and the dominator optimizer, this field holds the
-     current version of this variable (an SSA_NAME).  */
-  tree current_def;
 };
 
 
@@ -292,9 +271,6 @@ typedef struct immediate_use_iterator_d
 
 
 
-typedef struct var_ann_d *var_ann_t;
-
-static inline var_ann_t var_ann (const_tree);
 static inline void update_stmt (gimple);
 static inline int get_lineno (const_gimple);
 
@@ -573,8 +549,7 @@ bool need_ssa_update_p (struct function *);
 bool name_registered_for_update_p (tree);
 void release_ssa_name_after_update_ssa (tree);
 void compute_global_livein (bitmap, bitmap);
-void mark_sym_for_renaming (tree);
-bool symbol_marked_for_renaming (tree);
+void mark_virtual_operands_for_renaming (struct function *);
 tree get_current_def (tree);
 void set_current_def (tree, tree);
 
@@ -724,7 +699,6 @@ void tree_transform_and_unroll_loop (struct loop *, unsigned,
 				     transform_callback, void *);
 bool contains_abnormal_ssa_name_p (tree);
 bool stmt_dominates_stmt_p (gimple, gimple);
-void mark_virtual_ops_for_renaming (gimple);
 
 /* In tree-ssa-dce.c */
 void mark_virtual_operand_for_renaming (tree);
@@ -757,7 +731,6 @@ extern enum move_pos movement_possibility (gimple);
 char *get_lsm_tmp_name (tree, unsigned);
 
 /* In tree-flow-inline.h  */
-static inline void set_is_used (tree);
 static inline bool unmodifiable_var_p (const_tree);
 static inline bool ref_contains_array_ref (const_tree);
 

@@ -507,6 +507,109 @@ package body Makeutl is
       return Name_Find;
    end Create_Name;
 
+   ---------------------------
+   -- Ensure_Absolute_Path --
+   ---------------------------
+
+   procedure Ensure_Absolute_Path
+     (Switch               : in out String_Access;
+      Parent               : String;
+      Do_Fail              : Fail_Proc;
+      For_Gnatbind         : Boolean := False;
+      Including_Non_Switch : Boolean := True;
+      Including_RTS        : Boolean := False)
+   is
+   begin
+      if Switch /= null then
+         declare
+            Sw    : String (1 .. Switch'Length);
+            Start : Positive;
+
+         begin
+            Sw := Switch.all;
+
+            if Sw (1) = '-' then
+               if Sw'Length >= 3
+                 and then (Sw (2) = 'I'
+                            or else (not For_Gnatbind
+                                       and then (Sw (2) = 'L'
+                                         or else Sw (2) = 'A')))
+               then
+                  Start := 3;
+
+                  if Sw = "-I-" then
+                     return;
+                  end if;
+
+               elsif Sw'Length >= 4
+                 and then (Sw (2 .. 3) = "aL"
+                             or else
+                           Sw (2 .. 3) = "aO"
+                             or else
+                           Sw (2 .. 3) = "aI"
+                             or else
+                           (For_Gnatbind and then Sw (2 .. 3) = "A="))
+               then
+                  Start := 4;
+
+               elsif Including_RTS
+                 and then Sw'Length >= 7
+                 and then Sw (2 .. 6) = "-RTS="
+               then
+                  Start := 7;
+
+               else
+                  return;
+               end if;
+
+               --  Because relative path arguments to --RTS= may be relative to
+               --  the search directory prefix, those relative path arguments
+               --  are converted only when they include directory information.
+
+               if not Is_Absolute_Path (Sw (Start .. Sw'Last)) then
+                  if Parent'Length = 0 then
+                     Do_Fail
+                       ("relative search path switches ("""
+                        & Sw
+                        & """) are not allowed");
+
+                  elsif Including_RTS then
+                     for J in Start .. Sw'Last loop
+                        if Sw (J) = Directory_Separator then
+                           Switch :=
+                             new String'
+                               (Sw (1 .. Start - 1) &
+                                Parent &
+                                Directory_Separator &
+                                Sw (Start .. Sw'Last));
+                           return;
+                        end if;
+                     end loop;
+
+                  else
+                     Switch :=
+                       new String'
+                         (Sw (1 .. Start - 1) &
+                          Parent &
+                          Directory_Separator &
+                          Sw (Start .. Sw'Last));
+                  end if;
+               end if;
+
+            elsif Including_Non_Switch then
+               if not Is_Absolute_Path (Sw) then
+                  if Parent'Length = 0 then
+                     Do_Fail
+                       ("relative paths (""" & Sw & """) are not allowed");
+                  else
+                     Switch := new String'(Parent & Directory_Separator & Sw);
+                  end if;
+               end if;
+            end if;
+         end;
+      end if;
+   end Ensure_Absolute_Path;
+
    ----------------------------
    -- Executable_Prefix_Path --
    ----------------------------
@@ -1316,11 +1419,12 @@ package body Makeutl is
                   --  Object files and -L switches specified with relative
                   --  paths must be converted to absolute paths.
 
-                  Test_If_Relative_Path
-                    (Switch  => Linker_Options_Buffer (Last_Linker_Option),
-                     Parent  => Dir_Path,
-                     Do_Fail => Do_Fail,
-                     Including_L_Switch => True);
+                  Ensure_Absolute_Path
+                    (Switch       =>
+                       Linker_Options_Buffer (Last_Linker_Option),
+                     Parent       => Dir_Path,
+                     Do_Fail      => Do_Fail,
+                     For_Gnatbind => False);
                end if;
 
                Options := In_Tree.Shared.String_Elements.Table (Options).Next;
@@ -1934,106 +2038,6 @@ package body Makeutl is
          return Path_Name;
       end if;
    end Path_Or_File_Name;
-
-   ---------------------------
-   -- Test_If_Relative_Path --
-   ---------------------------
-
-   procedure Test_If_Relative_Path
-     (Switch               : in out String_Access;
-      Parent               : String;
-      Do_Fail              : Fail_Proc;
-      Including_L_Switch   : Boolean := True;
-      Including_Non_Switch : Boolean := True;
-      Including_RTS        : Boolean := False)
-   is
-   begin
-      if Switch /= null then
-         declare
-            Sw    : String (1 .. Switch'Length);
-            Start : Positive;
-
-         begin
-            Sw := Switch.all;
-
-            if Sw (1) = '-' then
-               if Sw'Length >= 3
-                 and then (Sw (2) = 'A'
-                            or else Sw (2) = 'I'
-                            or else (Including_L_Switch and then Sw (2) = 'L'))
-               then
-                  Start := 3;
-
-                  if Sw = "-I-" then
-                     return;
-                  end if;
-
-               elsif Sw'Length >= 4
-                 and then (Sw (2 .. 3) = "aL"
-                             or else
-                           Sw (2 .. 3) = "aO"
-                             or else
-                           Sw (2 .. 3) = "aI")
-               then
-                  Start := 4;
-
-               elsif Including_RTS
-                 and then Sw'Length >= 7
-                 and then Sw (2 .. 6) = "-RTS="
-               then
-                  Start := 7;
-
-               else
-                  return;
-               end if;
-
-               --  Because relative path arguments to --RTS= may be relative to
-               --  the search directory prefix, those relative path arguments
-               --  are converted only when they include directory information.
-
-               if not Is_Absolute_Path (Sw (Start .. Sw'Last)) then
-                  if Parent'Length = 0 then
-                     Do_Fail
-                       ("relative search path switches ("""
-                        & Sw
-                        & """) are not allowed");
-
-                  elsif Including_RTS then
-                     for J in Start .. Sw'Last loop
-                        if Sw (J) = Directory_Separator then
-                           Switch :=
-                             new String'
-                               (Sw (1 .. Start - 1) &
-                                Parent &
-                                Directory_Separator &
-                                Sw (Start .. Sw'Last));
-                           return;
-                        end if;
-                     end loop;
-
-                  else
-                     Switch :=
-                       new String'
-                         (Sw (1 .. Start - 1) &
-                          Parent &
-                          Directory_Separator &
-                          Sw (Start .. Sw'Last));
-                  end if;
-               end if;
-
-            elsif Including_Non_Switch then
-               if not Is_Absolute_Path (Sw) then
-                  if Parent'Length = 0 then
-                     Do_Fail
-                       ("relative paths (""" & Sw & """) are not allowed");
-                  else
-                     Switch := new String'(Parent & Directory_Separator & Sw);
-                  end if;
-               end if;
-            end if;
-         end;
-      end if;
-   end Test_If_Relative_Path;
 
    -------------------
    -- Unit_Index_Of --

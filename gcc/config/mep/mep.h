@@ -561,8 +561,6 @@ typedef struct
   if (mep_legitimize_reload_address (&(X), (MODE), (OPNUM), (TYPE), (IND_LEVELS))) \
     goto WIN
 
-#define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR, LABEL)
-
 #define SELECT_CC_MODE(OP, X, Y)  CCmode
 
 

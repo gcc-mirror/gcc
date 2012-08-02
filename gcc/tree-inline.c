@@ -501,26 +501,6 @@ remap_type (tree type, copy_body_data *id)
   return tmp;
 }
 
-/* Return previously remapped type of TYPE in ID.  Return NULL if TYPE
-   is NULL or TYPE has not been remapped before.  */
-
-static tree
-remapped_type (tree type, copy_body_data *id)
-{
-  tree *node;
-
-  if (type == NULL)
-    return type;
-
-  /* See if we have remapped this type.  */
-  node = (tree *) pointer_map_contains (id->decl_map, type);
-  if (node)
-    return *node;
-  else
-    return NULL;
-}
-
-  /* The type only needs remapping if it's variably modified.  */
 /* Decide if DECL can be put into BLOCK_NONLOCAL_VARs.  */
 
 static bool
@@ -536,26 +516,7 @@ can_be_nonlocal (tree decl, copy_body_data *id)
       && !auto_var_in_fn_p (decl, id->src_fn))
     return true;
 
-  /* At the moment dwarf2out can handle only these types of nodes.  We
-     can support more later.  */
-  if (TREE_CODE (decl) != VAR_DECL && TREE_CODE (decl) != PARM_DECL)
-    return false;
-
-  /* We must use global type.  We call remapped_type instead of
-     remap_type since we don't want to remap this type here if it
-     hasn't been remapped before.  */
-  if (TREE_TYPE (decl) != remapped_type (TREE_TYPE (decl), id))
-    return false;
-
-  /* Wihtout SSA we can't tell if variable is used.  */
-  if (!gimple_in_ssa_p (cfun))
-    return false;
-
-  /* Live variables must be copied so we can attach DECL_RTL.  */
-  if (var_ann (decl))
-    return false;
-
-  return true;
+  return false;
 }
 
 static tree
@@ -571,9 +532,10 @@ remap_decls (tree decls, VEC(tree,gc) **nonlocalized_list, copy_body_data *id)
 
       if (can_be_nonlocal (old_var, id))
 	{
+	  /* We need to add this variable to the local decls as otherwise
+	     nothing else will do so.  */
 	  if (TREE_CODE (old_var) == VAR_DECL
-	      && ! DECL_EXTERNAL (old_var)
-	      && (var_ann (old_var) || !gimple_in_ssa_p (cfun)))
+	      && ! DECL_EXTERNAL (old_var))
 	    add_local_decl (cfun, old_var);
 	  if ((!optimize || debug_info_level > DINFO_LEVEL_TERSE)
 	      && !DECL_IGNORED_P (old_var)
@@ -1870,7 +1832,7 @@ update_ssa_across_abnormal_edges (basic_block bb, basic_block ret_bb,
 
 	    if (!is_gimple_reg (PHI_RESULT (phi)))
 	      {
-		mark_sym_for_renaming (SSA_NAME_VAR (PHI_RESULT (phi)));
+		mark_virtual_operands_for_renaming (cfun);
 		continue;
 	      }
 
@@ -2371,10 +2333,8 @@ copy_debug_stmt (gimple stmt, copy_body_data *id)
       t = *n;
     }
   else if (TREE_CODE (t) == VAR_DECL
-	   && !TREE_STATIC (t)
-	   && gimple_in_ssa_p (cfun)
-	   && !pointer_map_contains (id->decl_map, t)
-	   && !var_ann (t))
+	   && !is_global_var (t)
+	   && !pointer_map_contains (id->decl_map, t))
     /* T is a non-localized variable.  */;
   else
     walk_tree (&t, remap_gimple_op_r, &wi, NULL);
@@ -2969,11 +2929,6 @@ declare_return_variable (copy_body_data *id, tree return_slot, tree modify_dest,
       TREE_ADDRESSABLE (var) = 1;
       var = build_fold_addr_expr (var);
     }
-  else if (gimple_in_ssa_p (cfun)
-	   && is_gimple_reg (var))
-    /* ???  Re-org id->retval and its special handling so that we can
-       record an SSA name directly and not need to invoke the SSA renamer.  */
-    mark_sym_for_renaming (var);
 
  done:
   /* Register the VAR_DECL as the equivalent for the RESULT_DECL; that

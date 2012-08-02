@@ -7068,6 +7068,8 @@ package body Sem_Ch12 is
       D2 : Integer := 0;
       P1 : Node_Id := N1;
       P2 : Node_Id := N2;
+      T1 : Source_Ptr;
+      T2 : Source_Ptr;
 
    --  Start of processing for Earlier
 
@@ -7208,19 +7210,21 @@ package body Sem_Ch12 is
       --  At this point either both nodes came from source or we approximated
       --  their source locations through neighbouring source statements.
 
+      T1 := Top_Level_Location (Sloc (P1));
+      T2 := Top_Level_Location (Sloc (P2));
+
       --  When two nodes come from the same instance, they have identical top
       --  level locations. To determine proper relation within the tree, check
       --  their locations within the template.
 
-      if Top_Level_Location (Sloc (P1)) = Top_Level_Location (Sloc (P2)) then
+      if T1 = T2 then
          return Sloc (P1) < Sloc (P2);
 
       --  The two nodes either come from unrelated instances or do not come
       --  from instantiated code at all.
 
       else
-         return Top_Level_Location (Sloc (P1))
-              < Top_Level_Location (Sloc (P2));
+         return T1 < T2;
       end if;
    end Earlier;
 

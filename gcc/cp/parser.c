@@ -15849,8 +15849,8 @@ cp_parser_init_declarator (cp_parser* parser,
     /* Core issue #226 (C++0x only): A default template-argument
        shall not be specified in a friend class template
        declaration. */
-    check_default_tmpl_args (decl, current_template_parms, /*is_primary=*/1, 
-                             /*is_partial=*/0, /*is_friend_decl=*/1);
+    check_default_tmpl_args (decl, current_template_parms, /*is_primary=*/true, 
+                             /*is_partial=*/false, /*is_friend_decl=*/1);
 
   if (!friend_p && pushed_scope)
     pop_scope (pushed_scope);

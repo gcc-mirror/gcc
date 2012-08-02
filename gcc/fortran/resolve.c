@@ -139,7 +139,6 @@ resolve_typespec_used (gfc_typespec* ts, locus* where, const char* name)
 
 
 static void resolve_symbol (gfc_symbol *sym);
-static gfc_try resolve_intrinsic (gfc_symbol *sym, locus *loc);
 
 
 /* Resolve the interface for a PROCEDURE declaration or procedure pointer.  */
@@ -147,28 +146,62 @@ static gfc_try resolve_intrinsic (gfc_symbol *sym, locus *loc);
 static gfc_try
 resolve_procedure_interface (gfc_symbol *sym)
 {
-  if (sym->ts.interface == sym)
+  gfc_symbol *ifc = sym->ts.interface;
+
+  if (!ifc)
+    return SUCCESS;
+
+  /* Several checks for F08:C1216.  */
+  if (ifc == sym)
     {
       gfc_error ("PROCEDURE '%s' at %L may not be used as its own interface",
 		 sym->name, &sym->declared_at);
       return FAILURE;
     }
-  if (sym->ts.interface->attr.procedure)
+  if (ifc->attr.procedure)
     {
       gfc_error ("Interface '%s', used by procedure '%s' at %L, is declared "
-		 "in a later PROCEDURE statement", sym->ts.interface->name,
+		 "in a later PROCEDURE statement", ifc->name,
 		 sym->name, &sym->declared_at);
+      return FAILURE;
+    }
+  if (ifc->generic)
+    {
+      /* For generic interfaces, check if there is
+	 a specific procedure with the same name.  */
+      gfc_interface *gen = ifc->generic;
+      while (gen && strcmp (gen->sym->name, ifc->name) != 0)
+	gen = gen->next;
+      if (!gen)
+	{
+	  gfc_error ("Interface '%s' at %L may not be generic",
+		     ifc->name, &sym->declared_at);
+	  return FAILURE;
+	}
+    }
+  if (ifc->attr.proc == PROC_ST_FUNCTION)
+    {
+      gfc_error ("Interface '%s' at %L may not be a statement function",
+		 ifc->name, &sym->declared_at);
+      return FAILURE;
+    }
+  if (gfc_is_intrinsic (ifc, 0, ifc->declared_at)
+      || gfc_is_intrinsic (ifc, 1, ifc->declared_at))
+    ifc->attr.intrinsic = 1;
+  if (ifc->attr.intrinsic && !gfc_intrinsic_actual_ok (ifc->name, 0))
+    {
+      gfc_error ("Intrinsic procedure '%s' not allowed in "
+		 "PROCEDURE statement at %L", ifc->name, &sym->declared_at);
       return FAILURE;
     }
 
   /* Get the attributes from the interface (now resolved).  */
-  if (sym->ts.interface->attr.if_source || sym->ts.interface->attr.intrinsic)
+  if (ifc->attr.if_source || ifc->attr.intrinsic)
     {
-      gfc_symbol *ifc = sym->ts.interface;
       resolve_symbol (ifc);
 
       if (ifc->attr.intrinsic)
-	resolve_intrinsic (ifc, &ifc->declared_at);
+	gfc_resolve_intrinsic (ifc, &ifc->declared_at);
 
       if (ifc->result)
 	{
@@ -213,10 +246,10 @@ resolve_procedure_interface (gfc_symbol *sym)
 	    return FAILURE;
 	}
     }
-  else if (sym->ts.interface->name[0] != '\0')
+  else if (ifc->name[0] != '\0')
     {
       gfc_error ("Interface '%s' of procedure '%s' at %L must be explicit",
-		 sym->ts.interface->name, sym->name, &sym->declared_at);
+		 ifc->name, sym->name, &sym->declared_at);
       return FAILURE;
     }
 
@@ -274,9 +307,9 @@ resolve_formal_arglist (gfc_symbol *proc)
 		       &proc->declared_at);
 	  continue;
 	}
-      else if (sym->attr.procedure && sym->ts.interface
-	       && sym->attr.if_source != IFSRC_DECL)
-	resolve_procedure_interface (sym);
+      else if (sym->attr.procedure && sym->attr.if_source != IFSRC_DECL
+	       && resolve_procedure_interface (sym) == FAILURE)
+	return;
 
       if (sym->attr.if_source != IFSRC_UNKNOWN)
 	resolve_formal_arglist (sym);
@@ -1499,8 +1532,8 @@ is_illegal_recursion (gfc_symbol* sym, gfc_namespace* context)
 /* Resolve an intrinsic procedure: Set its function/subroutine attribute,
    its typespec and formal argument list.  */
 
-static gfc_try
-resolve_intrinsic (gfc_symbol *sym, locus *loc)
+gfc_try
+gfc_resolve_intrinsic (gfc_symbol *sym, locus *loc)
 {
   gfc_intrinsic_sym* isym = NULL;
   const char* symstd;
@@ -1588,7 +1621,7 @@ resolve_procedure_expression (gfc_expr* expr)
   sym = expr->symtree->n.sym;
 
   if (sym->attr.intrinsic)
-    resolve_intrinsic (sym, &expr->where);
+    gfc_resolve_intrinsic (sym, &expr->where);
 
   if (sym->attr.flavor != FL_PROCEDURE
       || (sym->attr.function && sym->result == sym))
@@ -1673,10 +1706,7 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
 
 	  /* If a procedure is not already determined to be something else
 	     check if it is intrinsic.  */
-	  if (!sym->attr.intrinsic
-	      && !(sym->attr.external || sym->attr.use_assoc
-		   || sym->attr.if_source == IFSRC_IFBODY)
-	      && gfc_is_intrinsic (sym, sym->attr.subroutine, e->where))
+	  if (gfc_is_intrinsic (sym, sym->attr.subroutine, e->where))
 	    sym->attr.intrinsic = 1;
 
 	  if (sym->attr.proc == PROC_ST_FUNCTION)
@@ -2602,8 +2632,7 @@ static bool
 is_external_proc (gfc_symbol *sym)
 {
   if (!sym->attr.dummy && !sym->attr.contained
-	&& !(sym->attr.intrinsic
-	      || gfc_is_intrinsic (sym, sym->attr.subroutine, sym->declared_at))
+	&& !gfc_is_intrinsic (sym, sym->attr.subroutine, sym->declared_at)
 	&& sym->attr.proc != PROC_ST_FUNCTION
 	&& !sym->attr.proc_pointer
 	&& !sym->attr.use_assoc
@@ -3012,20 +3041,18 @@ gfc_iso_c_func_interface (gfc_symbol *sym, gfc_actual_arglist *args,
             {
               /* TODO: Update this error message to allow for procedure
                  pointers once they are implemented.  */
-              gfc_error_now ("Parameter '%s' to '%s' at %L must be a "
+              gfc_error_now ("Argument '%s' to '%s' at %L must be a "
                              "procedure",
                              args_sym->name, sym->name,
                              &(args->expr->where));
               retval = FAILURE;
             }
-	  else if (args_sym->attr.is_bind_c != 1)
-	    {
-	      gfc_error_now ("Parameter '%s' to '%s' at %L must be "
-			     "BIND(C)",
-			     args_sym->name, sym->name,
-			     &(args->expr->where));
-	      retval = FAILURE;
-	    }
+	  else if (args_sym->attr.is_bind_c != 1
+		   && gfc_notify_std (GFC_STD_F2008_TS, "Noninteroperable "
+				      "argument '%s' to '%s' at %L",
+				      args_sym->name, sym->name,
+				      &(args->expr->where)) == FAILURE)
+	    retval = FAILURE;
         }
       
       /* for c_loc/c_funloc, the new symbol is the same as the old one */
@@ -3064,7 +3091,7 @@ resolve_function (gfc_expr *expr)
     return SUCCESS;
   
   if (sym && sym->attr.intrinsic
-      && resolve_intrinsic (sym, &expr->where) == FAILURE)
+      && gfc_resolve_intrinsic (sym, &expr->where) == FAILURE)
     return FAILURE;
 
   if (sym && (sym->attr.flavor == FL_VARIABLE || sym->attr.subroutine))
@@ -3480,7 +3507,11 @@ gfc_iso_c_sub_interface (gfc_code *c, gfc_symbol *sym)
 
   /* Make sure the actual arguments are in the necessary order (based on the 
      formal args) before resolving.  */
-  gfc_procedure_use (sym, &c->ext.actual, &(c->loc));
+  if (gfc_procedure_use (sym, &c->ext.actual, &(c->loc)) == FAILURE)
+    {
+      c->resolved_sym = sym;
+      return MATCH_ERROR;
+    }
 
   if ((sym->intmod_sym_id == ISOCBINDING_F_POINTER) ||
       (sym->intmod_sym_id == ISOCBINDING_F_PROCPOINTER))
@@ -3491,6 +3522,15 @@ gfc_iso_c_sub_interface (gfc_code *c, gfc_symbol *sym)
 	{
 	  if (c->ext.actual != NULL && c->ext.actual->next != NULL)
 	    {
+	      if (c->ext.actual->expr->ts.type != BT_DERIVED
+		  || c->ext.actual->expr->ts.u.derived->intmod_sym_id
+		     != ISOCBINDING_PTR)
+		{
+		  gfc_error ("Argument at %L to C_F_POINTER shall have the type"
+			     " C_PTR", &c->ext.actual->expr->where);
+		  m = MATCH_ERROR;
+		}
+
 	      /* Make sure we got a third arg if the second arg has non-zero
 		 rank.	We must also check that the type and rank are
 		 correct since we short-circuit this check in
@@ -3516,7 +3556,26 @@ gfc_iso_c_sub_interface (gfc_code *c, gfc_symbol *sym)
 		}
 	    }
 	}
-      
+      else /* ISOCBINDING_F_PROCPOINTER.  */
+	{
+	  if (c->ext.actual
+	      && (c->ext.actual->expr->ts.type != BT_DERIVED
+		  || c->ext.actual->expr->ts.u.derived->intmod_sym_id
+		     != ISOCBINDING_FUNPTR))
+	    {
+	      gfc_error ("Argument at %L to C_F_FUNPOINTER shall have the type "
+	                 "C_FUNPTR", &c->ext.actual->expr->where);
+              m = MATCH_ERROR;
+	    }
+	  if (c->ext.actual && c->ext.actual->next
+	      && !gfc_expr_attr (c->ext.actual->next->expr).is_bind_c
+	      && gfc_notify_std (GFC_STD_F2008_TS, "Noninteroperable "
+				 "procedure-pointer at %L to C_F_FUNPOINTER",
+				 &c->ext.actual->next->expr->where)
+		   == FAILURE)
+	    m = MATCH_ERROR;
+	}
+
       if (m != MATCH_ERROR)
 	{
 	  /* the 1 means to add the optional arg to formal list */
@@ -11884,7 +11943,7 @@ resolve_fl_derived0 (gfc_symbol *sym)
 		resolve_symbol (ifc);
 
 	      if (ifc->attr.intrinsic)
-		resolve_intrinsic (ifc, &ifc->declared_at);
+		gfc_resolve_intrinsic (ifc, &ifc->declared_at);
 
 	      if (ifc->result)
 		{
@@ -12487,8 +12546,7 @@ resolve_symbol (gfc_symbol *sym)
   if (sym->attr.external && sym->ts.type != BT_UNKNOWN && !sym->attr.function)
     gfc_add_function (&sym->attr, sym->name, &sym->declared_at);
 
-  if (sym->attr.procedure && sym->ts.interface
-      && sym->attr.if_source != IFSRC_DECL
+  if (sym->attr.procedure && sym->attr.if_source != IFSRC_DECL
       && resolve_procedure_interface (sym) == FAILURE)
     return;
 
@@ -12519,7 +12577,7 @@ resolve_symbol (gfc_symbol *sym)
      representation. This needs to be done before assigning a default 
      type to avoid spurious warnings.  */
   if (sym->attr.flavor != FL_MODULE && sym->attr.intrinsic
-      && resolve_intrinsic (sym, &sym->declared_at) == FAILURE)
+      && gfc_resolve_intrinsic (sym, &sym->declared_at) == FAILURE)
     return;
 
   /* Resolve associate names.  */
