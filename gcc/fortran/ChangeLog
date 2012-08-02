@@ -1,3 +1,11 @@
+2012-08-02  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* array.c (gfc_copy_array_ref): Don't copy the offset field.
+	* expr.c (find_array_section): Ignore the offset field.
+	* trans-expr.c (gfc_find_interface_mapping_to_ref): Don't apply
+	any interface mapping to the offset field.
+	* gfortran.h (struct gfc_array_ref): Remove the offset field.
+
 2012-08-02  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/54147
