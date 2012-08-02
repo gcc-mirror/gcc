@@ -1155,8 +1155,8 @@ expand_complex_div_wide (gimple_stmt_iterator *gsi, tree inner_type,
           set_immediate_dominator (CDI_DOMINATORS, bb_false, bb_cond);
         }
 
-      rr = make_rename_temp (inner_type, NULL);
-      ri = make_rename_temp (inner_type, NULL);
+      rr = create_tmp_reg (inner_type, NULL);
+      ri = create_tmp_reg (inner_type, NULL);
     }
 
   /* In the TRUE branch, we compute

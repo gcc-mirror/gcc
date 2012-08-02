@@ -345,7 +345,7 @@ insert_reciprocals (gimple_stmt_iterator *def_gsi, struct occurrence *occ,
     {
       /* Make a variable with the replacement and substitute it.  */
       type = TREE_TYPE (def);
-      recip_def = make_rename_temp (type, "reciptmp");
+      recip_def = create_tmp_reg (type, "reciptmp");
       new_stmt = gimple_build_assign_with_ops (RDIV_EXPR, recip_def,
 					       build_one_cst (type), def);
 

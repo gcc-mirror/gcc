@@ -1,5 +1,25 @@
 2012-08-02  Richard Guenther  <rguenther@suse.de>
 
+	* tree-flow.h (make_rename_temp): Remove.
+	* tree-dfa.c (make_rename_temp): Likewise.
+	* cgraphunit.c (thunk_adjust, assemble_thunk): Use create_tmp_reg
+	instead of make_rename_temp.
+	* omp-low.c (expand_omp_for_generic, expand_omp_for_static_nochunk,
+	expand_omp_atomic_pipeline): Likewise.
+	* trans-mem.c (tm_log_emit_save_or_restores, build_tm_load,
+	build_tm_store, expand_call_tm, expand_transaction,
+	ipa_tm_insert_gettmclone_call): Likewise.
+	* tree-complex.c (expand_complex_div_wide): Likewise.
+	* tree-mudflap.c (mf_decl_cache_locals, mf_build_check_statement_for):
+	Likewise.
+	* tree-ssa-loop-im.c (execute_sm_if_changed_flag_set, execute_sm):
+	Likewise.
+	* tree-ssa-math-opts.c (insert_reciprocals): Likewise.
+	* value-prof.c (gimple_divmod_fixed_value, gimple_mod_pow2,
+	gimple_mod_subtract): Likewise.
+
+2012-08-02  Richard Guenther  <rguenther@suse.de>
+
 	* tree-flow.h (set_default_def): Rename to ...
 	(set_ssa_default_def): ... this.  Take a struct function argument.
 	(gimple_default_def): Rename to ...
