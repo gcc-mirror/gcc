@@ -1,3 +1,29 @@
+2012-08-02  Richard Guenther  <rguenther@suse.de>
+
+	* tree-into-ssa.c (struct common_info_d): New struct.
+	(struct var_info_d, struct ssa_name_info): Use it.
+	(get_ssa_name_ann): Adjust.
+	(get_phi_state, set_phi_state): Remove.
+	(get_common_info): New function.
+	(get_current_def, set_current_def): Adjust.
+	(get_def_blocks_for): Take a common info as param.
+	(set_def_block): Call get_common_info once.
+	(set_livein_block): Likewise.
+	(find_def_blocks_for): Adjust.
+	(insert_phi_nodes): Likewise.
+	(register_new_def): Call get_common_info once.
+	(get_reaching_def): Likewise.
+	(rewrite_debug_stmt_uses): Likewise.
+	(rewrite_leave_block): Likewise.
+	(dump_currdefs): Likewise.
+	(debug_var_infos_r): Adjust.
+	(register_new_update_single): Call get_common_info once.
+	(maybe_replace_use_in_debug_stmt): Likewise.
+	(rewrite_update_leave_block): Likewise.
+	(mark_use_interesting): Adjust.
+	(create_new_def_for): Likewise.
+	(update_ssa): Likewise.
+
 2012-08-02  Michael Matz  <matz@suse.de>
 
 	* tree-ssa-live.c (set_is_used): Return a bool.
