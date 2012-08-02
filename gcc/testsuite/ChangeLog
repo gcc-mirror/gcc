@@ -1,3 +1,9 @@
+2012-08-02  Jason Merrill  <jason@redhat.com>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51213 (again)
+	* g++.dg/cpp0x/sfinae37.C: Extend.
+
 2012-08-02  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/50672
