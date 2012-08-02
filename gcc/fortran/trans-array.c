@@ -3808,6 +3808,40 @@ done:
 	    /* Fall through to supply start and stride.  */
 	    case GFC_ISYM_LBOUND:
 	    case GFC_ISYM_UBOUND:
+	      {
+		gfc_expr *arg;
+
+		/* This is the variant without DIM=...  */
+		gcc_assert (expr->value.function.actual->next->expr == NULL);
+
+		arg = expr->value.function.actual->expr;
+		if (arg->rank == -1)
+		  {
+		    gfc_se se;
+		    tree rank, tmp;
+
+		    /* The rank (hence the return value's shape) is unknown,
+		       we have to retrieve it.  */
+		    gfc_init_se (&se, NULL);
+		    se.descriptor_only = 1;
+		    gfc_conv_expr (&se, arg);
+		    /* This is a bare variable, so there is no preliminary
+		       or cleanup code.  */
+		    gcc_assert (se.pre.head == NULL_TREE
+				&& se.post.head == NULL_TREE);
+		    rank = gfc_conv_descriptor_rank (se.expr);
+		    tmp = fold_build2_loc (input_location, MINUS_EXPR,
+					   gfc_array_index_type,
+					   fold_convert (gfc_array_index_type,
+							 rank),
+					   gfc_index_one_node);
+		    info->end[0] = gfc_evaluate_now (tmp, &loop->pre);
+		    info->start[0] = gfc_index_zero_node;
+		    info->stride[0] = gfc_index_one_node;
+		    continue;
+		  }
+		  /* Otherwise fall through GFC_SS_FUNCTION.  */
+	      }
 	    case GFC_ISYM_LCOBOUND:
 	    case GFC_ISYM_UCOBOUND:
 	    case GFC_ISYM_THIS_IMAGE:
@@ -4525,6 +4559,20 @@ set_loop_bounds (gfc_loopinfo *loop)
 	      /* The loop bound will be set when we generate the call.  */
 	      gcc_assert (loop->to[n] == NULL_TREE);
 	      break;
+
+	    case GFC_SS_INTRINSIC:
+	      {
+		gfc_expr *expr = loopspec[n]->info->expr;
+
+		/* The {l,u}bound of an assumed rank.  */
+		gcc_assert ((expr->value.function.isym->id == GFC_ISYM_LBOUND
+			     || expr->value.function.isym->id == GFC_ISYM_UBOUND)
+			     && expr->value.function.actual->next->expr == NULL
+			     && expr->value.function.actual->expr->rank == -1);
+
+		loop->to[n] = info->end[dim];
+		break;
+	      }
 
 	    default:
 	      gcc_unreachable ();
