@@ -32,11 +32,11 @@ along with GCC; see the file COPYING3.  If not see
 /* Replace auto-increment addressing modes with explicit operations to access
    the same addresses without modifying the corresponding registers.  */
 
-#ifdef AUTO_INC_DEC
 static rtx
 cleanup_auto_inc_dec (rtx src, enum machine_mode mem_mode ATTRIBUTE_UNUSED)
 {
   rtx x = src;
+#ifdef AUTO_INC_DEC
   const RTX_CODE code = GET_CODE (x);
   int i;
   const char *fmt;
@@ -117,9 +117,12 @@ cleanup_auto_inc_dec (rtx src, enum machine_mode mem_mode ATTRIBUTE_UNUSED)
 	    = cleanup_auto_inc_dec (XVECEXP (src, i, j), mem_mode);
       }
 
+#else /* !AUTO_INC_DEC */
+  x = copy_rtx (x);
+#endif /* !AUTO_INC_DEC */
+
   return x;
 }
-#endif
 
 /* Auxiliary data structure for propagate_for_debug_stmt.  */
 
@@ -142,11 +145,7 @@ propagate_for_debug_subst (rtx from, const_rtx old_rtx, void *data)
   if (!pair->adjusted)
     {
       pair->adjusted = true;
-#ifdef AUTO_INC_DEC
       pair->to = cleanup_auto_inc_dec (pair->to, VOIDmode);
-#else
-      pair->to = copy_rtx (pair->to);
-#endif
       pair->to = make_compound_operation (pair->to, SET);
       return pair->to;
     }

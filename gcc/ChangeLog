@@ -1,6 +1,13 @@
 2012-08-01  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/52983
+	* valtrack.c (cleanup_auto_inc_dec): Implement unconditionally,
+	falling back to copy_rtx on non-autoinc machines.
+	(propagate_for_debug_subst): Always use cleanup_auto_inc_dec.
+
+2012-08-01  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/52983
 	* valtrack.h, valtrack.c: New.
 	* Makefile.in (VALTRACK_H): New.
 	(OBJS): Add valtrack.o.
