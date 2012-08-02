@@ -134,9 +134,12 @@ resolve_bound (gfc_expr *f, gfc_expr *array, gfc_expr *dim, gfc_expr *kind,
   if (dim == NULL)
     {
       f->rank = 1;
-      f->shape = gfc_get_shape (1);
-      mpz_init_set_ui (f->shape[0], coarray ? gfc_get_corank (array)
-					    : array->rank);
+      if (array->rank != -1)
+	{
+	  f->shape = gfc_get_shape (1);
+	  mpz_init_set_ui (f->shape[0], coarray ? gfc_get_corank (array)
+						: array->rank);
+	}
     }
 
   f->value.function.name = xstrdup (name);
@@ -2225,8 +2228,12 @@ gfc_resolve_shape (gfc_expr *f, gfc_expr *array, gfc_expr *kind)
     f->ts.kind = gfc_default_integer_kind;
 
   f->rank = 1;
-  f->shape = gfc_get_shape (1);
-  mpz_init_set_ui (f->shape[0], array->rank);
+  if (array->rank != -1)
+    {
+      f->shape = gfc_get_shape (1);
+      mpz_init_set_ui (f->shape[0], array->rank);
+    }
+
   f->value.function.name = gfc_get_string (PREFIX ("shape_%d"), f->ts.kind);
 }
 
