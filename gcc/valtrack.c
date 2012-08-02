@@ -388,7 +388,7 @@ dead_debug_insert_temp (struct dead_debug *debug, unsigned int uregno,
 	breg = NULL;
       /* Cool, it's the same REG, we can use SRC.  */
       else if (dest == reg)
-	breg = copy_rtx (src);
+	breg = cleanup_auto_inc_dec (src, VOIDmode);
       else if (REG_P (dest))
 	{
 	  /* Hmm...  Something's fishy, we should be setting REG here.  */
@@ -406,7 +406,8 @@ dead_debug_insert_temp (struct dead_debug *debug, unsigned int uregno,
 	  /* Ok, it's the same (hardware) REG, but with a different
 	     mode, so SUBREG it.  */
 	  else
-	    breg = lowpart_subreg (GET_MODE (reg), copy_rtx (src),
+	    breg = lowpart_subreg (GET_MODE (reg),
+				   cleanup_auto_inc_dec (src, VOIDmode),
 				   GET_MODE (dest));
 	}
       else if (GET_CODE (dest) == SUBREG)
@@ -427,7 +428,8 @@ dead_debug_insert_temp (struct dead_debug *debug, unsigned int uregno,
 	    breg = NULL;
 	  /* Yay, we can use SRC, just adjust its mode.  */
 	  else
-	    breg = lowpart_subreg (GET_MODE (reg), copy_rtx (src),
+	    breg = lowpart_subreg (GET_MODE (reg),
+				   cleanup_auto_inc_dec (src, VOIDmode),
 				   GET_MODE (dest));
 	}
       /* Oh well, we're out of luck.  */
