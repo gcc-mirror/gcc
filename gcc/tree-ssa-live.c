@@ -331,12 +331,13 @@ partition_view_bitmap (var_map map, bitmap only, bool want_bases)
 
 static bitmap usedvars;
 
-/* Mark VAR as used, so that it'll be preserved during rtl expansion.  */
+/* Mark VAR as used, so that it'll be preserved during rtl expansion.
+   Returns true if VAR wasn't marked before.  */
 
-static inline void
+static inline bool
 set_is_used (tree var)
 {
-  bitmap_set_bit (usedvars, DECL_UID (var));
+  return bitmap_set_bit (usedvars, DECL_UID (var));
 }
 
 /* Return true if VAR is marked as used.  */
@@ -347,14 +348,13 @@ is_used_p (tree var)
   return bitmap_bit_p (usedvars, DECL_UID (var));
 }
 
-static inline void mark_all_vars_used (tree *, void *data);
+static inline void mark_all_vars_used (tree *);
 
 /* Helper function for mark_all_vars_used, called via walk_tree.  */
 
 static tree
-mark_all_vars_used_1 (tree *tp, int *walk_subtrees, void *data)
+mark_all_vars_used_1 (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 {
-  bitmap global_unused_vars = (bitmap)data;
   tree t = *tp;
   enum tree_code_class c = TREE_CODE_CLASS (TREE_CODE (t));
   tree b;
@@ -370,9 +370,9 @@ mark_all_vars_used_1 (tree *tp, int *walk_subtrees, void *data)
      fields do not contain vars.  */
   if (TREE_CODE (t) == TARGET_MEM_REF)
     {
-      mark_all_vars_used (&TMR_BASE (t), data);
-      mark_all_vars_used (&TMR_INDEX (t), data);
-      mark_all_vars_used (&TMR_INDEX2 (t), data);
+      mark_all_vars_used (&TMR_BASE (t));
+      mark_all_vars_used (&TMR_INDEX (t));
+      mark_all_vars_used (&TMR_INDEX2 (t));
       *walk_subtrees = 0;
       return NULL;
     }
@@ -381,16 +381,10 @@ mark_all_vars_used_1 (tree *tp, int *walk_subtrees, void *data)
      eliminated as unused.  */
   if (TREE_CODE (t) == VAR_DECL)
     {
-      /* Global vars do not have a var-annotation so their use is tracked
-         with the global_unused_vars bitmap.  Also walk their initializer
-	 when they are first recognized as used.  */
-      if (is_global_var (t))
-	{
-	  if (bitmap_clear_bit (global_unused_vars, DECL_UID (t)))
-	    mark_all_vars_used (&DECL_INITIAL (t), data);
-	}
-      else
-	set_is_used (t);
+      /* When a global var becomes used for the first time also walk its
+         initializer (non global ones don't have any).  */
+      if (set_is_used (t) && is_global_var (t))
+	mark_all_vars_used (&DECL_INITIAL (t));
     }
   /* remove_unused_scope_block_p requires information about labels
      which are not DECL_IGNORED_P to tell if they might be used in the IL.  */
@@ -435,7 +429,7 @@ mark_scope_block_unused (tree scope)
    done by the inliner.  */
 
 static bool
-remove_unused_scope_block_p (tree scope, bitmap global_unused_vars)
+remove_unused_scope_block_p (tree scope)
 {
   tree *t, *next;
   bool unused = !TREE_USED (scope);
@@ -475,9 +469,7 @@ remove_unused_scope_block_p (tree scope, bitmap global_unused_vars)
 	 info about optimized-out variables in the scope blocks.
 	 Exception are the scope blocks not containing any instructions
 	 at all so user can't get into the scopes at first place.  */
-      else if ((is_global_var (*t)
-		&& !bitmap_bit_p (global_unused_vars, DECL_UID (*t)))
-	       || is_used_p (*t))
+      else if (is_used_p (*t))
 	unused = false;
       else if (TREE_CODE (*t) == LABEL_DECL && TREE_USED (*t))
 	/* For labels that are still used in the IL, the decision to
@@ -522,7 +514,7 @@ remove_unused_scope_block_p (tree scope, bitmap global_unused_vars)
     }
 
   for (t = &BLOCK_SUBBLOCKS (scope); *t ;)
-    if (remove_unused_scope_block_p (*t, global_unused_vars))
+    if (remove_unused_scope_block_p (*t))
       {
 	if (BLOCK_SUBBLOCKS (*t))
 	  {
@@ -603,9 +595,9 @@ remove_unused_scope_block_p (tree scope, bitmap global_unused_vars)
    eliminated during the tree->rtl conversion process.  */
 
 static inline void
-mark_all_vars_used (tree *expr_p, void *data)
+mark_all_vars_used (tree *expr_p)
 {
-  walk_tree (expr_p, mark_all_vars_used_1, data, NULL);
+  walk_tree (expr_p, mark_all_vars_used_1, NULL, NULL);
 }
 
 
@@ -693,8 +685,7 @@ remove_unused_locals (void)
 {
   basic_block bb;
   tree var;
-  bitmap global_unused_vars = NULL;
-  unsigned srcidx, dstidx, num, ix;
+  unsigned srcidx, dstidx, num;
   bool have_local_clobbers = false;
 
   /* Removing declarations from lexical blocks when not optimizing is
@@ -708,13 +699,6 @@ remove_unused_locals (void)
   mark_scope_block_unused (DECL_INITIAL (current_function_decl));
 
   usedvars = BITMAP_ALLOC (NULL);
-
-  /* Assume all globals in local decls are unused.  */
-  global_unused_vars = BITMAP_ALLOC (NULL);
-  FOR_EACH_LOCAL_DECL (cfun, ix, var)
-    if (TREE_CODE (var) == VAR_DECL
-	&& is_global_var (var))
-      bitmap_set_bit (global_unused_vars, DECL_UID (var));
 
   /* Walk the CFG marking all referenced symbols.  */
   FOR_EACH_BB (bb)
@@ -743,8 +727,7 @@ remove_unused_locals (void)
 	    TREE_USED (b) = true;
 
 	  for (i = 0; i < gimple_num_ops (stmt); i++)
-	    mark_all_vars_used (gimple_op_ptr (gsi_stmt (gsi), i),
-				global_unused_vars);
+	    mark_all_vars_used (gimple_op_ptr (gsi_stmt (gsi), i));
 	}
 
       for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
@@ -758,12 +741,12 @@ remove_unused_locals (void)
 	    continue;
 
 	  def = gimple_phi_result (phi);
-	  mark_all_vars_used (&def, global_unused_vars);
+	  mark_all_vars_used (&def);
 
           FOR_EACH_PHI_ARG (arg_p, phi, i, SSA_OP_ALL_USES)
             {
 	      tree arg = USE_FROM_PTR (arg_p);
-	      mark_all_vars_used (&arg, global_unused_vars);
+	      mark_all_vars_used (&arg);
             }
         }
 
@@ -793,10 +776,7 @@ remove_unused_locals (void)
 		lhs = get_base_address (lhs);
 		if (TREE_CODE (lhs) == SSA_NAME)
 		  lhs = SSA_NAME_VAR (lhs);
-		if (TREE_CODE (lhs) == VAR_DECL
-		    && ((is_global_var (lhs)
-			 && bitmap_bit_p (global_unused_vars, DECL_UID (lhs)))
-			|| (!is_global_var (lhs) && !is_used_p (lhs))))
+		if (TREE_CODE (lhs) == VAR_DECL && !is_used_p (lhs))
 		  {
 		    unlink_stmt_vdef (stmt);
 		    gsi_remove (&gsi, true);
@@ -812,20 +792,14 @@ remove_unused_locals (void)
 
   cfun->has_local_explicit_reg_vars = false;
 
-  /* Remove unmarked local and global vars from local_decls
-     and referenced vars.  */
+  /* Remove unmarked local and global vars from local_decls.  */
   num = VEC_length (tree, cfun->local_decls);
   for (srcidx = 0, dstidx = 0; srcidx < num; srcidx++)
     {
       var = VEC_index (tree, cfun->local_decls, srcidx);
       if (TREE_CODE (var) == VAR_DECL)
 	{
-	  if (is_global_var (var))
-	    {
-	      if (bitmap_bit_p (global_unused_vars, DECL_UID (var)))
-		continue;
-	    }
-	  else if (!is_used_p (var))
+	  if (!is_used_p (var))
 	    {
 	      if (cfun->nonlocal_goto_save_area
 		  && TREE_OPERAND (cfun->nonlocal_goto_save_area, 0) == var)
@@ -845,10 +819,8 @@ remove_unused_locals (void)
   if (dstidx != num)
     VEC_truncate (tree, cfun->local_decls, dstidx);
 
-  remove_unused_scope_block_p (DECL_INITIAL (current_function_decl),
-			       global_unused_vars);
+  remove_unused_scope_block_p (DECL_INITIAL (current_function_decl));
 
-  BITMAP_FREE (global_unused_vars);
   BITMAP_FREE (usedvars);
 
   if (dump_file && (dump_flags & TDF_DETAILS))

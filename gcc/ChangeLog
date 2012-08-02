@@ -1,3 +1,14 @@
+2012-08-02  Michael Matz  <matz@suse.de>
+
+	* tree-ssa-live.c (set_is_used): Return a bool.
+	(mark_all_vars_used): Don't take data argument.
+	(mark_all_vars_used_1): Adjust calls to above, merge handling
+	of local and global vars.
+	(remove_unused_scope_block_p): Don't take global_unused_vars,
+	merge handling of local and global vars.
+	(remove_unused_locals): Don't allocate/fill/pass global_unused_vars,
+	use is_used_p for local and global vars.
+
 2012-08-02  Richard Guenther  <rguenther@suse.de>
 
 	* tree-flow.h (make_rename_temp): Remove.
