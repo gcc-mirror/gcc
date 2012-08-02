@@ -1,3 +1,8 @@
+2012-08-02  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/53805
+	* gcc.dg/fold-notunord.c: New testcase.
+
 2012-08-02  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/48820
