@@ -1,3 +1,37 @@
+2012-08-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2012-07-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/53961
+	* config/i386/i386.c (ix86_legitimate_address_p): Move check for
+	negative constant address for TARGET_X32 ...
+	(ix86_decompose_address): ... here.  Reject constant addresses
+	that don't satisfy x86_64_immediate_operand predicate.
+
+	2012-07-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/53961
+	* config/i386/i386.md (*lea): Add asserts to detect invalid addresses.
+	* config/i386/i386.c (ix86_print_operand_address): Ditto.
+	(ix86_decompose_address): Allow (zero_extend:DI (subreg:SI (...)))
+	addresses.  Prevent zero extensions of CONST_INT operands.
+
+	2012-07-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/53961
+	* config/i386/i386.md (*lea): New insn pattern.
+	(*lea_1): Remove.
+	(*lea<mode>_2): Ditto.
+	(*lea_{3,4,5,6}_zext): Ditto.
+	* config/i386/predicates.md (lea_address_operand): Do not reject
+	zero-extended address operands.
+	* config/i386/constraints.md (j): Remove address constraint.
+	* config/i386/i386.c (ix86_decompose_address): Allow SImode subreg
+	of an address.
+	(ix86_print_operand_address): Handle SImode subreg of an address.
+	(ix86_avoid_lea_for_addr): Reject zero-extended addresses for now.
+
 2012-08-01  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline

@@ -11425,16 +11425,41 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
     {
       if (GET_CODE (addr) == ZERO_EXTEND
 	  && GET_MODE (XEXP (addr, 0)) == SImode)
-	addr = XEXP (addr, 0);
+	{
+	  addr = XEXP (addr, 0);
+	  if (CONST_INT_P (addr))
+	    return 0;
+	}	      
       else if (GET_CODE (addr) == AND
 	       && const_32bit_mask (XEXP (addr, 1), DImode))
 	{
 	  addr = XEXP (addr, 0);
 
-	  /* Strip subreg.  */
+	  /* Adjust SUBREGs.  */
 	  if (GET_CODE (addr) == SUBREG
 	      && GET_MODE (SUBREG_REG (addr)) == SImode)
-	    addr = SUBREG_REG (addr);
+	    {
+	      addr = SUBREG_REG (addr);
+	      if (CONST_INT_P (addr))
+		return 0;
+	    }
+	  else if (GET_MODE (addr) == DImode)
+	    addr = gen_rtx_SUBREG (SImode, addr, 0);
+	  else if (GET_MODE (addr) != VOIDmode)
+	    return 0;
+	}
+    }
+
+  /* Allow SImode subregs of DImode addresses,
+     they will be emitted with addr32 prefix.  */
+  if (TARGET_64BIT && GET_MODE (addr) == SImode)
+    {
+      if (GET_CODE (addr) == SUBREG
+	  && GET_MODE (SUBREG_REG (addr)) == DImode)
+	{
+	  addr = SUBREG_REG (addr);
+	  if (CONST_INT_P (addr))
+	    return 0;
 	}
     }
 
@@ -11544,6 +11569,19 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
 	return 0;
       scale = 1 << scale;
       retval = -1;
+    }
+  else if (CONST_INT_P (addr))
+    {
+      if (!x86_64_immediate_operand (addr, VOIDmode))
+	return 0;
+
+      /* Constant addresses are sign extended to 64bit, we have to
+	 prevent addresses from 0x80000000 to 0xffffffff in x32 mode.  */
+      if (TARGET_X32
+	  && val_signbit_known_set_p (SImode, INTVAL (addr)))
+	return 0;
+
+      disp = addr;
     }
   else
     disp = addr;			/* displacement */
@@ -12047,13 +12085,6 @@ ix86_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
   struct ix86_address parts;
   rtx base, index, disp;
   HOST_WIDE_INT scale;
-
-  /* Since constant address in x32 is signed extended to 64bit,
-     we have to prevent addresses from 0x80000000 to 0xffffffff.  */
-  if (TARGET_X32
-      && CONST_INT_P (addr)
-      && INTVAL (addr) < 0)
-    return false;
 
   if (ix86_decompose_address (addr, &parts) <= 0)
     /* Decomposition failed.  */
@@ -14589,12 +14620,20 @@ ix86_print_operand_address (FILE *file, rtx addr)
     }
   else
     {
-      /* Print SImode register names for zero-extended
-	 addresses to force addr32 prefix.  */
-      if (TARGET_64BIT
-	  && (GET_CODE (addr) == ZERO_EXTEND
-	      || GET_CODE (addr) == AND))
+      /* Print SImode register names to force addr32 prefix.  */
+      if (GET_CODE (addr) == SUBREG)
 	{
+	  gcc_assert (TARGET_64BIT);
+	  gcc_assert (GET_MODE (addr) == SImode);
+	  gcc_assert (GET_MODE (SUBREG_REG (addr)) == DImode);
+	  gcc_assert (!code);
+	  code = 'l';
+	}
+      else if (GET_CODE (addr) == ZERO_EXTEND
+	       || GET_CODE (addr) == AND)
+	{
+	  gcc_assert (TARGET_64BIT);
+	  gcc_assert (GET_MODE (addr) == DImode);
 	  gcc_assert (!code);
 	  code = 'l';
 	}
@@ -16801,6 +16840,11 @@ ix86_avoid_lea_for_addr (rtx insn, rtx operands[])
   unsigned int split_cost = 0;
   struct ix86_address parts;
   int ok;
+
+  /* FIXME: Handle zero-extended addresses.  */
+  if (GET_CODE (operands[1]) == ZERO_EXTEND
+      || GET_CODE (operands[1]) == AND)
+    return false;
 
   /* Check we need to optimize.  */
   if (!TARGET_OPT_AGU || optimize_function_for_size_p (cfun))
