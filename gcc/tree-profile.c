@@ -220,7 +220,6 @@ gimple_gen_edge_profiler (int edgeno, edge e)
   one = build_int_cst (gcov_type_node, 1);
   stmt1 = gimple_build_assign (gcov_type_tmp_var, ref);
   gimple_assign_set_lhs (stmt1, make_ssa_name (gcov_type_tmp_var, stmt1));
-  find_referenced_vars_in (stmt1);
   stmt2 = gimple_build_assign_with_ops (PLUS_EXPR, gcov_type_tmp_var,
 					gimple_assign_lhs (stmt1), one);
   gimple_assign_set_lhs (stmt2, make_ssa_name (gcov_type_tmp_var, stmt2));
@@ -267,7 +266,6 @@ gimple_gen_interval_profiler (histogram_value value, unsigned tag, unsigned base
   val = prepare_instrumented_value (&gsi, value);
   call = gimple_build_call (tree_interval_profiler_fn, 4,
 			    ref_ptr, val, start, steps);
-  find_referenced_vars_in (call);
   gsi_insert_before (&gsi, call, GSI_NEW_STMT);
 }
 
@@ -288,7 +286,6 @@ gimple_gen_pow2_profiler (histogram_value value, unsigned tag, unsigned base)
 				      true, NULL_TREE, true, GSI_SAME_STMT);
   val = prepare_instrumented_value (&gsi, value);
   call = gimple_build_call (tree_pow2_profiler_fn, 2, ref_ptr, val);
-  find_referenced_vars_in (call);
   gsi_insert_before (&gsi, call, GSI_NEW_STMT);
 }
 
@@ -309,7 +306,6 @@ gimple_gen_one_value_profiler (histogram_value value, unsigned tag, unsigned bas
 				      true, NULL_TREE, true, GSI_SAME_STMT);
   val = prepare_instrumented_value (&gsi, value);
   call = gimple_build_call (tree_one_value_profiler_fn, 2, ref_ptr, val);
-  find_referenced_vars_in (call);
   gsi_insert_before (&gsi, call, GSI_NEW_STMT);
 }
 
@@ -341,10 +337,8 @@ gimple_gen_ic_profiler (histogram_value value, unsigned tag, unsigned base)
 
   tmp1 = create_tmp_reg (ptr_void, "PROF");
   stmt1 = gimple_build_assign (ic_gcov_type_ptr_var, ref_ptr);
-  find_referenced_vars_in (stmt1);
   stmt2 = gimple_build_assign (tmp1, unshare_expr (value->hvalue.value));
   gimple_assign_set_lhs (stmt2, make_ssa_name (tmp1, stmt2));
-  find_referenced_vars_in (stmt2);
   stmt3 = gimple_build_assign (ic_void_ptr_var, gimple_assign_lhs (stmt2));
 
   gsi_insert_before (&gsi, stmt1, GSI_SAME_STMT);
@@ -439,7 +433,6 @@ gimple_gen_average_profiler (histogram_value value, unsigned tag, unsigned base)
 				      true, GSI_SAME_STMT);
   val = prepare_instrumented_value (&gsi, value);
   call = gimple_build_call (tree_average_profiler_fn, 2, ref_ptr, val);
-  find_referenced_vars_in (call);
   gsi_insert_before (&gsi, call, GSI_NEW_STMT);
 }
 
@@ -460,7 +453,6 @@ gimple_gen_ior_profiler (histogram_value value, unsigned tag, unsigned base)
 				      true, NULL_TREE, true, GSI_SAME_STMT);
   val = prepare_instrumented_value (&gsi, value);
   call = gimple_build_call (tree_ior_profiler_fn, 2, ref_ptr, val);
-  find_referenced_vars_in (call);
   gsi_insert_before (&gsi, call, GSI_NEW_STMT);
 }
 

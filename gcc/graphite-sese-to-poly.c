@@ -2100,8 +2100,6 @@ create_zero_dim_array (tree var, const char *base_name)
   tree array_type = build_array_type (elt_type, index_type);
   tree base = create_tmp_var (array_type, base_name);
 
-  add_referenced_var (base);
-
   return build4 (ARRAY_REF, elt_type, base, integer_zero_node, NULL_TREE,
 		 NULL_TREE);
 }
@@ -2405,7 +2403,6 @@ handle_scalar_deps_crossing_scop_limits (scop_p scop, tree def, gimple stmt)
       gimple assign = gimple_build_assign (new_name, def);
       gimple_stmt_iterator psi = gsi_after_labels (SESE_EXIT (region)->dest);
 
-      add_referenced_var (var);
       SSA_NAME_DEF_STMT (new_name) = assign;
       update_stmt (assign);
       gsi_insert_before (&psi, assign, GSI_SAME_STMT);

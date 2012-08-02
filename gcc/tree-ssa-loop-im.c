@@ -942,9 +942,7 @@ rewrite_reciprocal (gimple_stmt_iterator *bsi)
   lhs = gimple_assign_lhs (stmt);
   type = TREE_TYPE (lhs);
 
-  var = create_tmp_var (type, "reciptmp");
-  add_referenced_var (var);
-  DECL_GIMPLE_REG_P (var) = 1;
+  var = create_tmp_reg (type, "reciptmp");
 
   real_one = build_one_cst (type);
 
@@ -1024,7 +1022,6 @@ rewrite_bittest (gimple_stmt_iterator *bsi)
 
       /* 1 << B */
       var = create_tmp_var (TREE_TYPE (a), "shifttmp");
-      add_referenced_var (var);
       t = fold_build2 (LSHIFT_EXPR, TREE_TYPE (a),
 		       build_int_cst (TREE_TYPE (a), 1), b);
       stmt1 = gimple_build_assign (var, t);

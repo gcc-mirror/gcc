@@ -22,5 +22,5 @@ foo(int i, int j, int k, int off)
   return *q;
 }
 
-/* { dg-final { scan-tree-dump "q_., points-to vars: { k }" "ealias" } } */
+/* { dg-final { scan-tree-dump "q_. = { k }" "ealias" } } */
 /* { dg-final { cleanup-tree-dump "ealias" } } */

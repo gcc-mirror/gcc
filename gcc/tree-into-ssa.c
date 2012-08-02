@@ -1551,11 +1551,7 @@ dump_decl_set (FILE *file, bitmap set)
 
       EXECUTE_IF_SET_IN_BITMAP (set, 0, i, bi)
 	{
-	  tree var = referenced_var_lookup (cfun, i);
-	  if (var)
-	    print_generic_expr (file, var, 0);
-	  else
-	    fprintf (file, "D.%u", i);
+	  fprintf (file, "D.%u", i);
 	  fprintf (file, " ");
 	}
 
@@ -2467,7 +2463,7 @@ struct gimple_opt_pass pass_build_ssa =
   NULL,					/* next */
   0,					/* static_pass_number */
   TV_TREE_SSA_OTHER,			/* tv_id */
-  PROP_cfg | PROP_referenced_vars,	/* properties_required */
+  PROP_cfg,				/* properties_required */
   PROP_ssa,				/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */

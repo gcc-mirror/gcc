@@ -1285,7 +1285,6 @@ init_optimization_passes (void)
       NEXT_PASS (pass_init_datastructures);
       NEXT_PASS (pass_expand_omp);
 
-      NEXT_PASS (pass_referenced_vars);
       NEXT_PASS (pass_build_ssa);
       NEXT_PASS (pass_lower_vector);
       NEXT_PASS (pass_early_warn_uninitialized);
@@ -2603,8 +2602,6 @@ dump_properties (FILE *dump, unsigned int props)
     fprintf (dump, "PROP_gimple_leh\n");
   if (props & PROP_cfg)
     fprintf (dump, "PROP_cfg\n");
-  if (props & PROP_referenced_vars)
-    fprintf (dump, "PROP_referenced_vars\n");
   if (props & PROP_ssa)
     fprintf (dump, "PROP_ssa\n");
   if (props & PROP_no_crit_edges)

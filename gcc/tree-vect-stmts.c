@@ -1271,7 +1271,6 @@ vect_init_vector (gimple stmt, tree val, tree type, gimple_stmt_iterator *gsi)
 	  else
 	    {
 	      new_var = create_tmp_reg (TREE_TYPE (type), NULL);
-	      add_referenced_var (new_var);
 	      init_stmt = gimple_build_assign_with_ops (NOP_EXPR,
 							new_var, val,
 							NULL_TREE);

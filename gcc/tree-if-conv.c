@@ -227,7 +227,6 @@ ifc_temp_var (tree type, tree expr, gimple_stmt_iterator *gsi)
 
   /* Create new temporary variable.  */
   var = create_tmp_var (type, name);
-  add_referenced_var (var);
 
   /* Build new statement to assign EXPR to new variable.  */
   stmt = gimple_build_assign (var, expr);

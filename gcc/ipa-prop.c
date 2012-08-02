@@ -2355,7 +2355,6 @@ ipa_modify_formal_parameters (tree fndecl, ipa_parm_adjustment_vec adjustments,
 	  DECL_IGNORED_P (new_parm) = 1;
 	  layout_decl (new_parm, 0);
 
-	  add_referenced_var (new_parm);
 	  adj->base = parm;
 	  adj->reduction = new_parm;
 

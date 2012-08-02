@@ -35,15 +35,6 @@ gimple_in_ssa_p (const struct function *fun)
   return fun && fun->gimple_df && fun->gimple_df->in_ssa_p;
 }
 
-/* Array of all variables referenced in the function.  */
-static inline htab_t
-gimple_referenced_vars (const struct function *fun)
-{
-  if (!fun || !fun->gimple_df)
-    return NULL;
-  return fun->gimple_df->referenced_vars;
-}
-
 /* Artificial variable used for the virtual operand FUD chain.  */
 static inline tree
 gimple_vop (const struct function *fun)
@@ -96,34 +87,6 @@ next_htab_element (htab_iterator *hti)
 	return x;
     };
   return NULL;
-}
-
-/* Initialize ITER to point to the first referenced variable in the
-   referenced_vars hashtable, and return that variable.  */
-
-static inline tree
-first_referenced_var (struct function *fn, referenced_var_iterator *iter)
-{
-  return (tree) first_htab_element (&iter->hti,
-				    gimple_referenced_vars (fn));
-}
-
-/* Return true if we have hit the end of the referenced variables ITER is
-   iterating through.  */
-
-static inline bool
-end_referenced_vars_p (const referenced_var_iterator *iter)
-{
-  return end_htab_p (&iter->hti);
-}
-
-/* Make ITER point to the next referenced_var in the referenced_var hashtable,
-   and return that variable.  */
-
-static inline tree
-next_referenced_var (referenced_var_iterator *iter)
-{
-  return (tree) next_htab_element (&iter->hti);
 }
 
 /* Get the number of the next statement uid to be allocated.  */

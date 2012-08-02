@@ -196,7 +196,6 @@ phiprop_insert_phi (basic_block bb, gimple phi, gimple use_stmt,
 						  old_arg,
 						  TREE_OPERAND (rhs, 1)));
 	  gcc_assert (is_gimple_reg (new_var));
-	  add_referenced_var (new_var);
 	  new_var = make_ssa_name (new_var, tmp);
 	  gimple_assign_set_lhs (tmp, new_var);
 	  gimple_set_location (tmp, locus);

@@ -613,8 +613,6 @@ adjust_return_value_with_ops (enum tree_code code, const char *label,
   gimple stmt;
   tree result;
 
-  add_referenced_var (tmp);
-
   if (types_compatible_p (TREE_TYPE (acc), TREE_TYPE (op1)))
     stmt = gimple_build_assign_with_ops (code, tmp, acc, op1);
   else
@@ -912,7 +910,6 @@ create_tailcall_accumulator (const char *label, basic_block bb, tree init)
   tree tmp = create_tmp_reg (ret_type, label);
   gimple phi;
 
-  add_referenced_var (tmp);
   phi = create_phi_node (tmp, bb);
   /* RET_TYPE can be a float when -ffast-maths is enabled.  */
   add_phi_arg (phi, fold_convert (ret_type, init), single_pred_edge (bb),

@@ -45,9 +45,6 @@ struct GTY(()) tm_restart_node {
    gimple_ accessor defined in tree-flow-inline.h, all publicly modifiable
    fields should have gimple_set accessor.  */
 struct GTY(()) gimple_df {
-  /* Array of all variables referenced in the function.  */
-  htab_t GTY((param_is (union tree_node))) referenced_vars;
-
   /* A vector of all the noreturn calls passed to modify_stmt.
      cleanup_control_flow uses it to detect cases where a mid-block
      indirect call has been turned into a noreturn call.  When this
@@ -292,24 +289,6 @@ extern int int_tree_map_eq (const void *, const void *);
 extern unsigned int uid_decl_map_hash (const void *);
 extern int uid_decl_map_eq (const void *, const void *);
 
-typedef struct
-{
-  htab_iterator hti;
-} referenced_var_iterator;
-
-/* This macro loops over all the referenced vars, one at a time, putting the
-   current var in VAR.  Note:  You are not allowed to add referenced variables
-   to the hashtable while using this macro.  Doing so may cause it to behave
-   erratically.  */
-
-#define FOR_EACH_REFERENCED_VAR(FN, VAR, ITER)		\
-  for ((VAR) = first_referenced_var ((FN), &(ITER));	\
-       !end_referenced_vars_p (&(ITER));		\
-       (VAR) = next_referenced_var (&(ITER)))
-
-extern tree referenced_var_lookup (struct function *, unsigned int);
-#define num_referenced_vars htab_elements (gimple_referenced_vars (cfun))
-
 #define num_ssa_names (VEC_length (tree, cfun->gimple_df->ssa_names))
 #define ssa_name(i) (VEC_index (tree, cfun->gimple_df->ssa_names, (i)))
 
@@ -463,19 +442,13 @@ extern void renumber_gimple_stmt_uids (void);
 extern void renumber_gimple_stmt_uids_in_blocks (basic_block *, int);
 extern void dump_dfa_stats (FILE *);
 extern void debug_dfa_stats (void);
-extern void debug_referenced_vars (void);
-extern void dump_referenced_vars (FILE *);
 extern void dump_variable (FILE *, tree);
 extern void debug_variable (tree);
-extern bool add_referenced_var_1 (tree, struct function *);
-#define add_referenced_var(v) add_referenced_var_1 ((v), cfun)
-extern void remove_referenced_var (tree);
 extern tree make_rename_temp (tree, const char *);
 extern void set_default_def (tree, tree);
 extern tree gimple_default_def (struct function *, tree);
 extern bool stmt_references_abnormal_ssa_name (gimple);
 extern tree get_addr_base_and_unit_offset (tree, HOST_WIDE_INT *);
-extern void find_referenced_vars_in (gimple);
 extern void dump_enumerated_decls (FILE *, int);
 
 /* In tree-phinodes.c  */

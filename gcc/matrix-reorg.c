@@ -1833,7 +1833,6 @@ transform_access_sites (void **slot, void *data ATTRIBUTE_UNUSED)
 				== MEM_REF);
 		    /* Emit convert statement to convert to type of use.  */
 		    tmp = create_tmp_var (TREE_TYPE (lhs), "new");
-		    add_referenced_var (tmp);
 		    rhs = gimple_assign_rhs1 (acc_info->stmt);
 		    rhs = fold_convert (TREE_TYPE (tmp),
 					TREE_OPERAND (rhs, 0));

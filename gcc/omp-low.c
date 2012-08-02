@@ -3732,11 +3732,6 @@ expand_omp_for_generic (struct omp_region *region,
   iend0 = create_tmp_var (fd->iter_type, ".iend0");
   TREE_ADDRESSABLE (istart0) = 1;
   TREE_ADDRESSABLE (iend0) = 1;
-  if (gimple_referenced_vars (cfun))
-    {
-      add_referenced_var (istart0);
-      add_referenced_var (iend0);
-    }
 
   /* See if we need to bias by LLONG_MIN.  */
   if (fd->iter_type == long_long_unsigned_type_node
@@ -4458,7 +4453,6 @@ expand_omp_for_static_chunk (struct omp_region *region, struct omp_for_data *fd)
   trip_var = create_tmp_reg (itype, ".trip");
   if (gimple_in_ssa_p (cfun))
     {
-      add_referenced_var (trip_var);
       trip_init = make_ssa_name (trip_var, NULL);
       trip_main = make_ssa_name (trip_var, NULL);
       trip_back = make_ssa_name (trip_var, NULL);
@@ -5305,11 +5299,7 @@ expand_omp_atomic_pipeline (basic_block load_bb, basic_block store_bb,
       gsi_insert_before (&si, stmt, GSI_SAME_STMT);
       loadedi = create_tmp_var (itype, NULL);
       if (gimple_in_ssa_p (cfun))
-	{
-	  add_referenced_var (iaddr);
-	  add_referenced_var (loadedi);
-	  loadedi = make_ssa_name (loadedi, NULL);
-	}
+	loadedi = make_ssa_name (loadedi, NULL);
     }
   else
     {
@@ -5386,8 +5376,6 @@ expand_omp_atomic_pipeline (basic_block load_bb, basic_block store_bb,
   else
     {
       old_vali = create_tmp_var (TREE_TYPE (loadedi), NULL);
-      if (gimple_in_ssa_p (cfun))
-	add_referenced_var (old_vali);
       stmt = gimple_build_assign (old_vali, loadedi);
       gsi_insert_before (&si, stmt, GSI_SAME_STMT);
 

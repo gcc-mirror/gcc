@@ -620,13 +620,6 @@ update_alias_info_with_stack_vars (void)
 	{
 	  tree decl = stack_vars[j].decl;
 	  unsigned int uid = DECL_PT_UID (decl);
-	  /* We should never end up partitioning SSA names (though they
-	     may end up on the stack).  Neither should we allocate stack
-	     space to something that is unused and thus unreferenced, except
-	     for -O0 where we are preserving even unreferenced variables.  */
-	  gcc_assert (DECL_P (decl)
-		      && (!optimize
-			  || referenced_var_lookup (cfun, DECL_UID (decl))));
 	  bitmap_set_bit (part, uid);
 	  *((bitmap *) pointer_map_insert (decls_to_partitions,
 					   (void *)(size_t) uid)) = part;
