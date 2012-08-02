@@ -471,11 +471,11 @@ mf_decl_cache_locals (void)
 
   /* Build the cache vars.  */
   mf_cache_shift_decl_l
-    = mf_mark (make_rename_temp (TREE_TYPE (mf_cache_shift_decl),
+    = mf_mark (create_tmp_reg (TREE_TYPE (mf_cache_shift_decl),
                                "__mf_lookup_shift_l"));
 
   mf_cache_mask_decl_l
-    = mf_mark (make_rename_temp (TREE_TYPE (mf_cache_mask_decl),
+    = mf_mark (create_tmp_reg (TREE_TYPE (mf_cache_mask_decl),
                                "__mf_lookup_mask_l"));
 
   /* Build initialization nodes for the cache vars.  We just load the
@@ -562,9 +562,9 @@ mf_build_check_statement_for (tree base, tree limit,
     add_bb_to_loop (then_bb, cond_bb->loop_father);
 
   /* Build our local variables.  */
-  mf_elem = make_rename_temp (mf_cache_structptr_type, "__mf_elem");
-  mf_base = make_rename_temp (mf_uintptr_type, "__mf_base");
-  mf_limit = make_rename_temp (mf_uintptr_type, "__mf_limit");
+  mf_elem = create_tmp_reg (mf_cache_structptr_type, "__mf_elem");
+  mf_base = create_tmp_reg (mf_uintptr_type, "__mf_base");
+  mf_limit = create_tmp_reg (mf_uintptr_type, "__mf_limit");
 
   /* Build: __mf_base = (uintptr_t) <base address expression>.  */
   seq = NULL;
@@ -645,7 +645,7 @@ mf_build_check_statement_for (tree base, tree limit,
   t = build2 (TRUTH_OR_EXPR, boolean_type_node, t, u);
   t = force_gimple_operand (t, &stmts, false, NULL_TREE);
   gimple_seq_add_seq (&seq, stmts);
-  cond = make_rename_temp (boolean_type_node, "__mf_unlikely_cond");
+  cond = create_tmp_reg (boolean_type_node, "__mf_unlikely_cond");
   g = gimple_build_assign  (cond, t);
   gimple_set_location (g, location);
   gimple_seq_add_stmt (&seq, g);

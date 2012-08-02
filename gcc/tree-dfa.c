@@ -114,14 +114,6 @@ renumber_gimple_stmt_uids_in_blocks (basic_block *blocks, int n_blocks)
     }
 }
 
-/* Build a temporary.  Make sure and register it to be renamed.  */
-
-tree
-make_rename_temp (tree type, const char *prefix)
-{
-  return create_tmp_reg (type, prefix);
-}
-
 
 
 /*---------------------------------------------------------------------------

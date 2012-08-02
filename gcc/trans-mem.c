@@ -1285,7 +1285,7 @@ tm_log_emit_save_or_restores (basic_block entry_block,
   gsi = gsi_last_bb (cond_bb);
 
   /* t1 = status & A_{property}.  */
-  t1 = make_rename_temp (TREE_TYPE (status), NULL);
+  t1 = create_tmp_reg (TREE_TYPE (status), NULL);
   t2 = build_int_cst (TREE_TYPE (status), trxn_prop);
   stmt = gimple_build_assign_with_ops (BIT_AND_EXPR, t1, status, t2);
   gsi_insert_after (&gsi, stmt, GSI_CONTINUE_LINKING);
@@ -2057,7 +2057,7 @@ build_tm_load (location_t loc, tree lhs, tree rhs, gimple_stmt_iterator *gsi)
       gimple g;
       tree temp;
 
-      temp = make_rename_temp (t, NULL);
+      temp = create_tmp_reg (t, NULL);
       gimple_call_set_lhs (gcall, temp);
       gsi_insert_before (gsi, gcall, GSI_SAME_STMT);
 
@@ -2135,7 +2135,7 @@ build_tm_store (location_t loc, tree lhs, tree rhs, gimple_stmt_iterator *gsi)
       gimple g;
       tree temp;
 
-      temp = make_rename_temp (simple_type, NULL);
+      temp = create_tmp_reg (simple_type, NULL);
       t = fold_build1 (VIEW_CONVERT_EXPR, simple_type, rhs);
       g = gimple_build_assign (temp, t);
       gimple_set_location (g, loc);
@@ -2302,7 +2302,7 @@ expand_call_tm (struct tm_region *region,
   if (lhs && requires_barrier (region->entry_block, lhs, stmt)
       && !gimple_call_return_slot_opt_p (stmt))
     {
-      tree tmp = make_rename_temp (TREE_TYPE (lhs), NULL);
+      tree tmp = create_tmp_reg (TREE_TYPE (lhs), NULL);
       location_t loc = gimple_location (stmt);
       edge fallthru_edge = NULL;
 
@@ -2638,7 +2638,7 @@ expand_transaction (struct tm_region *region)
   int flags, subcode;
 
   tm_start = builtin_decl_explicit (BUILT_IN_TM_START);
-  status = make_rename_temp (TREE_TYPE (TREE_TYPE (tm_start)), "tm_state");
+  status = create_tmp_reg (TREE_TYPE (TREE_TYPE (tm_start)), "tm_state");
 
   /* ??? There are plenty of bits here we're not computing.  */
   subcode = gimple_transaction_subcode (region->transaction_stmt);
@@ -2695,7 +2695,7 @@ expand_transaction (struct tm_region *region)
 	region->entry_block = test_bb;
       gsi = gsi_last_bb (test_bb);
 
-      t1 = make_rename_temp (TREE_TYPE (status), NULL);
+      t1 = create_tmp_reg (TREE_TYPE (status), NULL);
       t2 = build_int_cst (TREE_TYPE (status), A_ABORTTRANSACTION);
       g = gimple_build_assign_with_ops (BIT_AND_EXPR, t1, status, t2);
       gsi_insert_after (&gsi, g, GSI_CONTINUE_LINKING);
@@ -4499,7 +4499,7 @@ ipa_tm_insert_gettmclone_call (struct cgraph_node *node,
     {
       tree temp;
 
-      temp = make_rename_temp (rettype, 0);
+      temp = create_tmp_reg (rettype, 0);
       gimple_call_set_lhs (stmt, temp);
 
       g2 = gimple_build_assign (lhs,

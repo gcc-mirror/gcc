@@ -623,7 +623,7 @@ gimple_divmod_fixed_value (gimple stmt, tree value, int prob, gcov_type count,
   gsi_insert_before (&gsi, stmt3, GSI_SAME_STMT);
   bb1end = stmt3;
 
-  tmp2 = make_rename_temp (optype, "PROF");
+  tmp2 = create_tmp_reg (optype, "PROF");
   stmt1 = gimple_build_assign_with_ops (gimple_assign_rhs_code (stmt), tmp2,
 					op1, tmp0);
   gsi_insert_before (&gsi, stmt1, GSI_SAME_STMT);
@@ -767,7 +767,7 @@ gimple_mod_pow2 (gimple stmt, int prob, gcov_type count, gcov_type all)
   bb = gimple_bb (stmt);
   gsi = gsi_for_stmt (stmt);
 
-  result = make_rename_temp (optype, "PROF");
+  result = create_tmp_reg (optype, "PROF");
   tmpv = create_tmp_var (optype, "PROF");
   tmp2 = make_ssa_name (tmpv, NULL);
   tmp3 = make_ssa_name (tmpv, NULL);
@@ -923,7 +923,7 @@ gimple_mod_subtract (gimple stmt, int prob1, int prob2, int ncounts,
   bb = gimple_bb (stmt);
   gsi = gsi_for_stmt (stmt);
 
-  result = make_rename_temp (optype, "PROF");
+  result = create_tmp_reg (optype, "PROF");
   tmp1 = make_ssa_name (create_tmp_var (optype, "PROF"), NULL);
   stmt1 = gimple_build_assign (result, op1);
   stmt2 = gimple_build_assign (tmp1, op2);

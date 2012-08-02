@@ -444,7 +444,6 @@ extern void dump_dfa_stats (FILE *);
 extern void debug_dfa_stats (void);
 extern void dump_variable (FILE *, tree);
 extern void debug_variable (tree);
-extern tree make_rename_temp (tree, const char *);
 extern void set_ssa_default_def (struct function *, tree, tree);
 extern tree ssa_default_def (struct function *, tree);
 extern tree get_or_create_ssa_default_def (struct function *, tree);
