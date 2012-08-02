@@ -1,5 +1,14 @@
 2012-08-02  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans-array.h (gfc_conv_descriptor_rank): New prototype.
+	* trans-array.c (gfc_conv_descriptor_rank): New function moved and
+	renamed ...
+	* trans-intrinsic.c (get_rank_from_desc): ... from this one.
+	(gfc_conv_intrinsic_rank, gfc_conv_intrinsic_bound,
+	gfc_conv_associated): Also rename function calls.
+
+2012-08-02  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* iresolve.c (resolve_bound, gfc_resolve_shape):
 	Don't set the shape for assumed rank arrays.
 	* simplify.c (gfc_simplify_shape): Don't try to simplify if the
