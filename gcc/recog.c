@@ -587,7 +587,7 @@ simplify_while_replacing (rtx *loc, rtx to, rtx object,
       break;
     case MINUS:
       if (CONST_INT_P (XEXP (x, 1))
-	  || GET_CODE (XEXP (x, 1)) == CONST_DOUBLE)
+	  || CONST_DOUBLE_AS_INT_P (XEXP (x, 1)))
 	validate_change (object, loc,
 			 simplify_gen_binary
 			 (PLUS, GET_MODE (x), XEXP (x, 0),
@@ -1158,7 +1158,7 @@ const_double_operand (rtx op, enum machine_mode mode)
       && GET_MODE_CLASS (mode) != MODE_PARTIAL_INT)
     return 0;
 
-  return ((GET_CODE (op) == CONST_DOUBLE || CONST_INT_P (op))
+  return ((CONST_DOUBLE_P (op) || CONST_INT_P (op))
 	  && (mode == VOIDmode || GET_MODE (op) == mode
 	      || GET_MODE (op) == VOIDmode));
 }
@@ -1707,27 +1707,25 @@ asm_operand_ok (rtx op, const char *constraint, const char **constraints)
 
 	case 'E':
 	case 'F':
-	  if (GET_CODE (op) == CONST_DOUBLE
+	  if (CONST_DOUBLE_AS_FLOAT_P (op) 
 	      || (GET_CODE (op) == CONST_VECTOR
 		  && GET_MODE_CLASS (GET_MODE (op)) == MODE_VECTOR_FLOAT))
 	    result = 1;
 	  break;
 
 	case 'G':
-	  if (GET_CODE (op) == CONST_DOUBLE
+	  if (CONST_DOUBLE_AS_FLOAT_P (op)
 	      && CONST_DOUBLE_OK_FOR_CONSTRAINT_P (op, 'G', constraint))
 	    result = 1;
 	  break;
 	case 'H':
-	  if (GET_CODE (op) == CONST_DOUBLE
+	  if (CONST_DOUBLE_AS_FLOAT_P (op)
 	      && CONST_DOUBLE_OK_FOR_CONSTRAINT_P (op, 'H', constraint))
 	    result = 1;
 	  break;
 
 	case 's':
-	  if (CONST_INT_P (op)
-	      || (GET_CODE (op) == CONST_DOUBLE
-		  && GET_MODE (op) == VOIDmode))
+	  if (CONST_INT_P (op) || CONST_DOUBLE_AS_INT_P (op))
 	    break;
 	  /* Fall through.  */
 
@@ -1737,9 +1735,7 @@ asm_operand_ok (rtx op, const char *constraint, const char **constraints)
 	  break;
 
 	case 'n':
-	  if (CONST_INT_P (op)
-	      || (GET_CODE (op) == CONST_DOUBLE
-		  && GET_MODE (op) == VOIDmode))
+	  if (CONST_INT_P (op) || CONST_DOUBLE_AS_INT_P (op))
 	    result = 1;
 	  break;
 
@@ -2578,7 +2574,7 @@ constrain_operands (int strict)
 
 	      case 'E':
 	      case 'F':
-		if (GET_CODE (op) == CONST_DOUBLE
+		if (CONST_DOUBLE_AS_FLOAT_P (op)
 		    || (GET_CODE (op) == CONST_VECTOR
 			&& GET_MODE_CLASS (GET_MODE (op)) == MODE_VECTOR_FLOAT))
 		  win = 1;
@@ -2586,15 +2582,13 @@ constrain_operands (int strict)
 
 	      case 'G':
 	      case 'H':
-		if (GET_CODE (op) == CONST_DOUBLE
+		if (CONST_DOUBLE_AS_FLOAT_P (op)
 		    && CONST_DOUBLE_OK_FOR_CONSTRAINT_P (op, c, p))
 		  win = 1;
 		break;
 
 	      case 's':
-		if (CONST_INT_P (op)
-		    || (GET_CODE (op) == CONST_DOUBLE
-			&& GET_MODE (op) == VOIDmode))
+		if (CONST_INT_P (op) || CONST_DOUBLE_AS_INT_P (op))
 		  break;
 	      case 'i':
 		if (CONSTANT_P (op))
@@ -2602,9 +2596,7 @@ constrain_operands (int strict)
 		break;
 
 	      case 'n':
-		if (CONST_INT_P (op)
-		    || (GET_CODE (op) == CONST_DOUBLE
-			&& GET_MODE (op) == VOIDmode))
+		if (CONST_INT_P (op) || CONST_DOUBLE_AS_INT_P (op))
 		  win = 1;
 		break;
 

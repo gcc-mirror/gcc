@@ -1,3 +1,34 @@
+2012-08-02  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* cfgexpand.c (expand_debug_locations):  Encapsulate test for
+	CONST_DOUBLE in macro.
+	* combine.c (try_combine, gen_lowpart_for_combine): Ditto.
+	* cprop.c (implicit_set_cond_p): Ditto.
+	* cselib.c (rtx_equal_for_cselib_1): Ditto.
+	* expmed.c (expand_mult): Ditto.
+	* expr.c (convert_modes): Ditto.
+	* ira-costs.c (record_reg_classes): Ditto.
+	* ira-lives.c (single_reg_class): Ditto.
+	* optabs.c (expand_copysign_absneg, expand_copysign): Ditto.
+	* print-rtl.c (print_rtx): Ditto.
+	* recog.c (simplify_while_replacing, const_double_operand)
+	(asm_operand_ok, constrain_operands): Ditto.
+	* reg-stack.c (subst_stack_regs_pat): Ditto.
+	* reload.c (find_reloads, find_equiv_reg): Ditto.
+	* rtlanal.c (replace_rtx): Remove test.
+	* rtlanal.c (constant_pool_constant_p, split_double): Encapsulate test for
+	CONST_DOUBLE in macro.
+	* simplify-rtx.c (mode_signbit_p, avoid_constant_pool_reference)
+	(simplify_unary_operation_1, simplify_const_unary_operation)
+	(simplify_binary_operation_1, simplify_const_binary_operation)
+	(simplify_relational_operation_1)
+	(simplify_const_relational_operations)
+	(implify_subreg): Ditto.
+	* varasm.c (output_constant_pool_2): Ditto.
+	* rtl.h (CONST_DOUBLE_AS_INT_P, CONST_DOUBLE_AS_FLOAT_P): New
+	macros.
+	* rtl.def (CONST_DOUBLE):  Updated comments.
+
 2012-08-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR target/51931

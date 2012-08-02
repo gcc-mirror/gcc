@@ -3626,7 +3626,7 @@ output_constant_pool_2 (enum machine_mode mode, rtx x, unsigned int align)
       {
 	REAL_VALUE_TYPE r;
 
-	gcc_assert (GET_CODE (x) == CONST_DOUBLE);
+	gcc_assert (CONST_DOUBLE_AS_FLOAT_P (x));
 	REAL_VALUE_FROM_CONST_DOUBLE (r, x);
 	assemble_real (r, mode, align);
 	break;

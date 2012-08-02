@@ -195,7 +195,7 @@ print_rtx (const_rtx in_rtx)
     }
 
 #ifndef GENERATOR_FILE
-  if (GET_CODE (in_rtx) == CONST_DOUBLE && FLOAT_MODE_P (GET_MODE (in_rtx)))
+  if (CONST_DOUBLE_AS_FLOAT_P (in_rtx))
     i = 5;
 #endif
 

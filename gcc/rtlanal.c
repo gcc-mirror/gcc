@@ -2571,11 +2571,6 @@ replace_rtx (rtx x, rtx from, rtx to)
   int i, j;
   const char *fmt;
 
-  /* The following prevents loops occurrence when we change MEM in
-     CONST_DOUBLE onto the same CONST_DOUBLE.  */
-  if (x != 0 && GET_CODE (x) == CONST_DOUBLE)
-    return x;
-
   if (x == from)
     return to;
 
@@ -5277,7 +5272,7 @@ bool
 constant_pool_constant_p (rtx x)
 {
   x = avoid_constant_pool_reference (x);
-  return GET_CODE (x) == CONST_DOUBLE;
+  return CONST_DOUBLE_P (x);
 }
 
 /* If M is a bitmask that selects a field of low-order bits within an item but
@@ -5391,7 +5386,7 @@ split_double (rtx value, rtx *first, rtx *second)
 	    }
 	}
     }
-  else if (GET_CODE (value) != CONST_DOUBLE)
+  else if (!CONST_DOUBLE_P (value))
     {
       if (WORDS_BIG_ENDIAN)
 	{

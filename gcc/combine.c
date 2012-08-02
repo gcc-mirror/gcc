@@ -2620,10 +2620,10 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
   if (i1 == 0
       && (temp = single_set (i2)) != 0
       && (CONST_INT_P (SET_SRC (temp))
-	  || GET_CODE (SET_SRC (temp)) == CONST_DOUBLE)
+	  || CONST_DOUBLE_AS_INT_P (SET_SRC (temp)))
       && GET_CODE (PATTERN (i3)) == SET
       && (CONST_INT_P (SET_SRC (PATTERN (i3)))
-	  || GET_CODE (SET_SRC (PATTERN (i3))) == CONST_DOUBLE)
+	  || CONST_DOUBLE_AS_INT_P (SET_SRC (PATTERN (i3))))
       && reg_subword_p (SET_DEST (PATTERN (i3)), SET_DEST (temp)))
     {
       rtx dest = SET_DEST (PATTERN (i3));
@@ -5105,8 +5105,7 @@ subst (rtx x, rtx from, rtx to, int in_dest, int in_cond, int unique_copy)
 		return new_rtx;
 
 	      if (GET_CODE (x) == SUBREG
-		  && (CONST_INT_P (new_rtx)
-		      || GET_CODE (new_rtx) == CONST_DOUBLE))
+		  && (CONST_INT_P (new_rtx) || CONST_DOUBLE_AS_INT_P (new_rtx)))
 		{
 		  enum machine_mode mode = GET_MODE (x);
 
@@ -7134,8 +7133,7 @@ make_extraction (enum machine_mode mode, rtx inner, HOST_WIDE_INT pos,
       if (mode == tmode)
 	return new_rtx;
 
-      if (CONST_INT_P (new_rtx)
-	  || GET_CODE (new_rtx) == CONST_DOUBLE)
+      if (CONST_INT_P (new_rtx) || CONST_DOUBLE_AS_INT_P (new_rtx))
 	return simplify_unary_operation (unsignedp ? ZERO_EXTEND : SIGN_EXTEND,
 					 mode, new_rtx, tmode);
 
@@ -10646,9 +10644,7 @@ gen_lowpart_for_combine (enum machine_mode omode, rtx x)
   /* We can only support MODE being wider than a word if X is a
      constant integer or has a mode the same size.  */
   if (GET_MODE_SIZE (omode) > UNITS_PER_WORD
-      && ! ((imode == VOIDmode
-	     && (CONST_INT_P (x)
-		 || GET_CODE (x) == CONST_DOUBLE))
+      && ! ((CONST_INT_P (x) || CONST_DOUBLE_AS_INT_P (x))
 	    || isize == osize))
     goto fail;
 
