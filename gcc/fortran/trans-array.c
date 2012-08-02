@@ -4469,8 +4469,7 @@ set_loop_bounds (gfc_loopinfo *loop)
 	     known lower bound
 	     known upper bound
 	   */
-	  else if ((loopspec[n]->info->type == GFC_SS_CONSTRUCTOR && dynamic[n])
-		   || n >= loop->dimen)
+	  else if (loopspec[n]->info->type == GFC_SS_CONSTRUCTOR && dynamic[n])
 	    loopspec[n] = ss;
 	  else if (integer_onep (info->stride[dim])
 		   && !integer_onep (specinfo->stride[spec_dim]))
@@ -4479,7 +4478,11 @@ set_loop_bounds (gfc_loopinfo *loop)
 		   && !INTEGER_CST_P (specinfo->stride[spec_dim]))
 	    loopspec[n] = ss;
 	  else if (INTEGER_CST_P (info->start[dim])
-		   && !INTEGER_CST_P (specinfo->start[spec_dim]))
+		   && !INTEGER_CST_P (specinfo->start[spec_dim])
+		   && integer_onep (info->stride[dim])
+		      == integer_onep (specinfo->stride[dim])
+		   && INTEGER_CST_P (info->stride[dim])
+		      == INTEGER_CST_P (specinfo->stride[dim]))
 	    loopspec[n] = ss;
 	  /* We don't work out the upper bound.
 	     else if (INTEGER_CST_P (info->finish[n])
