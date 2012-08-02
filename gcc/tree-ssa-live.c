@@ -1269,7 +1269,7 @@ verify_live_on_entry (tree_live_info_p live)
 	  var = partition_to_var (map, i);
 	  stmt = SSA_NAME_DEF_STMT (var);
 	  tmp = gimple_bb (stmt);
-	  d = gimple_default_def (cfun, SSA_NAME_VAR (var));
+	  d = ssa_default_def (cfun, SSA_NAME_VAR (var));
 
 	  loe = live_on_entry (live, e->dest);
 	  if (loe && bitmap_bit_p (loe, i))

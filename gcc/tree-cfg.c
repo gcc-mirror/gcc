@@ -5948,11 +5948,10 @@ replace_ssa_name (tree name, struct pointer_map_t *vars_map,
     {
       replace_by_duplicate_decl (&decl, vars_map, to_context);
 
-      push_cfun (DECL_STRUCT_FUNCTION (to_context));
-      new_name = make_ssa_name (decl, SSA_NAME_DEF_STMT (name));
+      new_name = make_ssa_name_fn (DECL_STRUCT_FUNCTION (to_context),
+				   decl, SSA_NAME_DEF_STMT (name));
       if (SSA_NAME_IS_DEFAULT_DEF (name))
-	set_default_def (decl, new_name);
-      pop_cfun ();
+	set_ssa_default_def (DECL_STRUCT_FUNCTION (to_context), decl, new_name);
 
       loc = pointer_map_insert (vars_map, name);
       *loc = new_name;

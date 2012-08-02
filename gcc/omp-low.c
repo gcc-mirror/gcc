@@ -3499,9 +3499,9 @@ expand_omp_taskreg (struct omp_region *region)
 	      /* If we are in ssa form, we must load the value from the default
 		 definition of the argument.  That should not be defined now,
 		 since the argument is not used uninitialized.  */
-	      gcc_assert (gimple_default_def (cfun, arg) == NULL);
+	      gcc_assert (ssa_default_def (cfun, arg) == NULL);
 	      narg = make_ssa_name (arg, gimple_build_nop ());
-	      set_default_def (arg, narg);
+	      set_ssa_default_def (cfun, arg, narg);
 	      /* ?? Is setting the subcode really necessary ??  */
 	      gimple_omp_set_subcode (parcopy_stmt, TREE_CODE (narg));
 	      gimple_assign_set_rhs1 (parcopy_stmt, narg);

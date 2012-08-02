@@ -247,7 +247,7 @@ remap_ssa_name (tree name, copy_body_data *id)
 	  struct ptr_info_def *new_pi = get_ptr_info (new_tree);
 	  new_pi->pt = pi->pt;
 	}
-      if (gimple_nop_p (SSA_NAME_DEF_STMT (name)))
+      if (SSA_NAME_IS_DEFAULT_DEF (name))
 	{
 	  /* By inlining function having uninitialized variable, we might
 	     extend the lifetime (variable might get reused).  This cause
@@ -259,7 +259,6 @@ remap_ssa_name (tree name, copy_body_data *id)
 	     this for all BBs that are not inside strongly connected
 	     regions of the CFG, but this is expensive to test.  */
 	  if (id->entry_bb
-	      && is_gimple_reg (SSA_NAME_VAR (name))
 	      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name)
 	      && TREE_CODE (SSA_NAME_VAR (name)) != PARM_DECL
 	      && (id->entry_bb != EDGE_SUCC (ENTRY_BLOCK_PTR, 0)->dest
@@ -276,9 +275,7 @@ remap_ssa_name (tree name, copy_body_data *id)
 	  else
 	    {
 	      SSA_NAME_DEF_STMT (new_tree) = gimple_build_nop ();
-	      if (gimple_default_def (id->src_cfun, SSA_NAME_VAR (name))
-		  == name)
-	        set_default_def (SSA_NAME_VAR (new_tree), new_tree);
+	      set_ssa_default_def (cfun, SSA_NAME_VAR (new_tree), new_tree);
 	    }
 	}
     }
@@ -2502,7 +2499,7 @@ setup_one_parameter (copy_body_data *id, tree p, tree value, tree fn,
   tree var;
   tree rhs = value;
   tree def = (gimple_in_ssa_p (cfun)
-	      ? gimple_default_def (id->src_cfun, p) : NULL);
+	      ? ssa_default_def (id->src_cfun, p) : NULL);
 
   if (value
       && value != error_mark_node
@@ -2635,7 +2632,7 @@ setup_one_parameter (copy_body_data *id, tree p, tree value, tree fn,
 	      def = remap_ssa_name (def, id);
 	      init_stmt = gimple_build_assign (def, rhs);
 	      SSA_NAME_IS_DEFAULT_DEF (def) = 0;
-	      set_default_def (var, NULL);
+	      set_ssa_default_def (cfun, var, NULL);
 	    }
 	  else if (!optimize)
 	    {
@@ -2687,7 +2684,7 @@ initialize_inlined_parameters (copy_body_data *id, gimple stmt,
 	  && TREE_CODE (*varp) == VAR_DECL)
 	{
 	  tree def = (gimple_in_ssa_p (cfun) && is_gimple_reg (p)
-		      ? gimple_default_def (id->src_cfun, p) : NULL);
+		      ? ssa_default_def (id->src_cfun, p) : NULL);
 	  tree var = *varp;
 	  TREE_TYPE (var) = remap_type (TREE_TYPE (var), id);
 	  /* Also remap the default definition if it was remapped
@@ -2902,8 +2899,7 @@ declare_return_variable (copy_body_data *id, tree return_slot, tree modify_dest,
 	  && is_gimple_reg (result))
 	{
 	  temp = make_ssa_name (temp, NULL);
-	  insert_decl_map (id, gimple_default_def (id->src_cfun, result),
-			   temp);
+	  insert_decl_map (id, ssa_default_def (id->src_cfun, result), temp);
 	}
       insert_init_stmt (id, entry_bb, gimple_build_assign (temp, var));
     }
@@ -3983,7 +3979,7 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
 	{
 	  tree name = gimple_call_lhs (stmt);
 	  tree var = SSA_NAME_VAR (name);
-	  tree def = gimple_default_def (cfun, var);
+	  tree def = ssa_default_def (cfun, var);
 
 	  if (def)
 	    {
@@ -3996,7 +3992,7 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
 	    {
 	      /* Otherwise make this variable undefined.  */
 	      gsi_remove (&stmt_gsi, true);
-	      set_default_def (var, name);
+	      set_ssa_default_def (cfun, var, name);
 	      SSA_NAME_DEF_STMT (name) = gimple_build_nop ();
 	    }
 	}
@@ -5160,13 +5156,12 @@ tree_function_versioning (tree old_decl, tree new_decl,
       lang_hooks.dup_lang_specific_decl (DECL_RESULT (new_decl));
       if (gimple_in_ssa_p (id.src_cfun)
 	  && DECL_BY_REFERENCE (DECL_RESULT (old_decl))
-	  && (old_name
-	      = gimple_default_def (id.src_cfun, DECL_RESULT (old_decl))))
+	  && (old_name = ssa_default_def (id.src_cfun, DECL_RESULT (old_decl))))
 	{
 	  tree new_name = make_ssa_name (DECL_RESULT (new_decl), NULL);
 	  insert_decl_map (&id, old_name, new_name);
 	  SSA_NAME_DEF_STMT (new_name) = gimple_build_nop ();
-	  set_default_def (DECL_RESULT (new_decl), new_name);
+	  set_ssa_default_def (cfun, DECL_RESULT (new_decl), new_name);
 	}
     }
 

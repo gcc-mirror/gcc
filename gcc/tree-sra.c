@@ -2842,18 +2842,7 @@ sra_modify_constructor_assign (gimple *stmt, gimple_stmt_iterator *gsi)
 static tree
 get_repl_default_def_ssa_name (struct access *racc)
 {
-  tree repl, decl;
-
-  decl = get_access_replacement (racc);
-
-  repl = gimple_default_def (cfun, decl);
-  if (!repl)
-    {
-      repl = make_ssa_name (decl, gimple_build_nop ());
-      set_default_def (decl, repl);
-    }
-
-  return repl;
+  return get_or_create_ssa_default_def (cfun, get_access_replacement (racc));
 }
 
 /* Return true if REF has a COMPONENT_REF with a bit-field field declaration
@@ -3351,7 +3340,7 @@ is_unused_scalar_param (tree parm)
 {
   tree name;
   return (is_gimple_reg (parm)
-	  && (!(name = gimple_default_def (cfun, parm))
+	  && (!(name = ssa_default_def (cfun, parm))
 	      || has_zero_uses (name)));
 }
 
@@ -3365,7 +3354,7 @@ ptr_parm_has_direct_uses (tree parm)
 {
   imm_use_iterator ui;
   gimple stmt;
-  tree name = gimple_default_def (cfun, parm);
+  tree name = ssa_default_def (cfun, parm);
   bool ret = false;
 
   FOR_EACH_IMM_USE_STMT (stmt, ui, name)
@@ -4531,7 +4520,7 @@ sra_ipa_reset_debug_stmts (ipa_parm_adjustment_vec adjustments)
       adj = VEC_index (ipa_parm_adjustment_t, adjustments, i);
       if (adj->copy_param || !is_gimple_reg (adj->base))
 	continue;
-      name = gimple_default_def (cfun, adj->base);
+      name = ssa_default_def (cfun, adj->base);
       vexpr = NULL;
       if (name)
 	FOR_EACH_IMM_USE_STMT (stmt, ui, name)

@@ -164,10 +164,10 @@ dump_variable (FILE *file, tree var)
   if (TREE_THIS_VOLATILE (var))
     fprintf (file, ", is volatile");
 
-  if (cfun && gimple_default_def (cfun, var))
+  if (cfun && ssa_default_def (cfun, var))
     {
       fprintf (file, ", default def: ");
-      print_generic_expr (file, gimple_default_def (cfun, var), dump_flags);
+      print_generic_expr (file, ssa_default_def (cfun, var), dump_flags);
     }
 
   if (DECL_INITIAL (var))
@@ -312,47 +312,66 @@ collect_dfa_stats (struct dfa_stats_d *dfa_stats_p ATTRIBUTE_UNUSED)
    variable.  */
 
 tree
-gimple_default_def (struct function *fn, tree var)
+ssa_default_def (struct function *fn, tree var)
 {
   struct tree_decl_minimal ind;
   struct tree_ssa_name in;
-  gcc_assert (SSA_VAR_P (var));
+  gcc_assert (TREE_CODE (var) == VAR_DECL
+	      || TREE_CODE (var) == PARM_DECL
+	      || TREE_CODE (var) == RESULT_DECL);
   in.var = (tree)&ind;
   ind.uid = DECL_UID (var);
   return (tree) htab_find_with_hash (DEFAULT_DEFS (fn), &in, DECL_UID (var));
 }
 
-/* Insert the pair VAR's UID, DEF into the default_defs hashtable.  */
+/* Insert the pair VAR's UID, DEF into the default_defs hashtable
+   of function FN.  */
 
 void
-set_default_def (tree var, tree def)
+set_ssa_default_def (struct function *fn, tree var, tree def)
 {
   struct tree_decl_minimal ind;
   struct tree_ssa_name in;
   void **loc;
 
-  gcc_assert (SSA_VAR_P (var));
+  gcc_assert (TREE_CODE (var) == VAR_DECL
+	      || TREE_CODE (var) == PARM_DECL
+	      || TREE_CODE (var) == RESULT_DECL);
   in.var = (tree)&ind;
   ind.uid = DECL_UID (var);
   if (!def)
     {
-      loc = htab_find_slot_with_hash (DEFAULT_DEFS (cfun), &in,
-            DECL_UID (var), INSERT);
-      gcc_assert (*loc);
-      htab_remove_elt (DEFAULT_DEFS (cfun), *loc);
+      loc = htab_find_slot_with_hash (DEFAULT_DEFS (fn), &in,
+				      DECL_UID (var), NO_INSERT);
+      if (*loc)
+	htab_clear_slot (DEFAULT_DEFS (fn), loc);
       return;
     }
   gcc_assert (TREE_CODE (def) == SSA_NAME && SSA_NAME_VAR (def) == var);
-  loc = htab_find_slot_with_hash (DEFAULT_DEFS (cfun), &in,
+  loc = htab_find_slot_with_hash (DEFAULT_DEFS (fn), &in,
                                   DECL_UID (var), INSERT);
 
   /* Default definition might be changed by tail call optimization.  */
   if (*loc)
     SSA_NAME_IS_DEFAULT_DEF (*(tree *) loc) = false;
-  *(tree *) loc = def;
 
    /* Mark DEF as the default definition for VAR.  */
+  *(tree *) loc = def;
    SSA_NAME_IS_DEFAULT_DEF (def) = true;
+}
+
+/* Retrieve or create a default definition for VAR.  */
+
+tree
+get_or_create_ssa_default_def (struct function *fn, tree var)
+{
+  tree ddef = ssa_default_def (fn, var);
+  if (ddef == NULL_TREE)
+    {
+      ddef = make_ssa_name (var, gimple_build_nop ());
+      set_ssa_default_def (cfun, var, ddef);
+    }
+  return ddef;
 }
 
 

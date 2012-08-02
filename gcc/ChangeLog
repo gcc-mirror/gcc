@@ -1,5 +1,47 @@
 2012-08-02  Richard Guenther  <rguenther@suse.de>
 
+	* tree-flow.h (set_default_def): Rename to ...
+	(set_ssa_default_def): ... this.  Take a struct function argument.
+	(gimple_default_def): Rename to ...
+	(ssa_default_def): ... this.
+	(get_or_create_ssa_default_def): New function.
+	* tree-dfa.c: Likewise.
+	(dump_variable): Adjust.
+	* ipa-prop.c (ipa_analyze_params_uses): Adjust, properly check
+	for used parameters.
+	* ipa-split.c (consider_split): Adjust, avoid repeated default-def
+	lookups.
+	(split_function): Likewise.
+	* lto-streamer-in.c (input_ssa_names): Adjust.
+	* omp-low.c (expand_omp_taskreg): Likewise.
+	* tree-cfg.c (replace_ssa_name): Adjust, no need to push/pop cfun.
+	* tree-complex.c (init_parameter_lattice_values): Adjust.
+	(get_component_ssa_name): Likewise.
+	(update_parameter_components): Likewise.
+	* tree-inline.c (remap_ssa_name): Likewise.
+	(setup_one_parameter): Likewise.
+	(initialize_inlined_parameters): Likewise.
+	(declare_return_variable): Likewise.
+	(expand_call_inline): Likewise.
+	(tree_function_versioning): Likewise.
+	* tree-into-ssa.c (get_default_def_for): Remove.
+	(get_reaching_def): Use get_or_create_ssa_default_def instead.
+	* tree-predcom.c (replace_ref_with): Adjust.
+	* tree-sra.c (get_repl_default_def_ssa_name): Likewise.
+	(is_unused_scalar_param): Likewise.
+	(ptr_parm_has_direct_uses): Likewise.
+	(sra_ipa_reset_debug_stmts): Likewise.
+	* tree-ssa-coalesce.c (create_outofssa_var_map): Adjust.
+	* tree-ssa-copyrename.c (copy_rename_partition_coalesce): Likewise.
+	* tree-ssa-live.c (verify_live_on_entry): Likewise.
+	* tree-ssa-math-opts.c (execute_cse_reciprocals): Likewise,
+	avoid repeated default def lookups.
+	* tree-ssa-sccvn.c (run_scc_vn): Likewise.
+	* tree-tailcall.c (arg_needs_copy_p): Adjust.
+	(tree_optimize_tail_calls_1): Likewise.
+
+2012-08-02  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/50672
 	Revert
 	2012-08-01  Richard Guenther  <rguenther@suse.de>
