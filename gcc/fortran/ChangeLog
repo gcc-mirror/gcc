@@ -1,5 +1,10 @@
 2012-08-02  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans-array.c (set_loop_bounds): Remove useless dimension check.
+	Don't update loopspec if it would loose the wanted stride criterion.
+
+2012-08-02  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans-array.h (gfc_conv_descriptor_rank): New prototype.
 	* trans-array.c (gfc_conv_descriptor_rank): New function moved and
 	renamed ...
