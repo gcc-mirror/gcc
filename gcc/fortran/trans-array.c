@@ -249,6 +249,20 @@ gfc_conv_descriptor_dtype (tree desc)
 
 
 tree
+gfc_conv_descriptor_rank (tree desc)
+{
+  tree tmp;
+  tree dtype;
+
+  dtype = gfc_conv_descriptor_dtype (desc);
+  tmp = build_int_cst (TREE_TYPE (dtype), GFC_DTYPE_RANK_MASK);
+  tmp = fold_build2_loc (input_location, BIT_AND_EXPR, TREE_TYPE (dtype),
+			 dtype, tmp);
+  return fold_convert (gfc_get_int_type (gfc_default_integer_kind), tmp);
+}
+
+
+tree
 gfc_get_descriptor_dimension (tree desc)
 {
   tree type, field;
