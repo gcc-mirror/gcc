@@ -1101,46 +1101,4 @@ extern void union_defs (df_ref, struct web_entry *,
 			unsigned int *used, struct web_entry *,
 			bool (*fun) (struct web_entry *, struct web_entry *));
 
-/* Debug uses of dead regs.  */
-
-/* Node of a linked list of uses of dead REGs in debug insns.  */
-struct dead_debug_use
-{
-  df_ref use;
-  struct dead_debug_use *next;
-};
-
-/* Linked list of the above, with a bitmap of the REGs in the
-   list.  */
-struct dead_debug
-{
-  struct dead_debug_use *head;
-  bitmap used;
-  bitmap to_rescan;
-};
-
-/* This type controls the behavior of dead_debug_insert_temp WRT
-   UREGNO and INSN.  */
-enum debug_temp_where
-  {
-    /* Bind a newly-created debug temporary to a REG for UREGNO, and
-       insert the debug insn before INSN.  REG is expected to die at
-       INSN.  */
-    DEBUG_TEMP_BEFORE_WITH_REG = -1,
-    /* Bind a newly-created debug temporary to the value INSN stores
-       in REG, and insert the debug insn before INSN.  */
-    DEBUG_TEMP_BEFORE_WITH_VALUE = 0,
-    /* Bind a newly-created debug temporary to a REG for UREGNO, and
-       insert the debug insn after INSN.  REG is expected to be set at
-       INSN.  */
-    DEBUG_TEMP_AFTER_WITH_REG = 1
-  };
-
-extern void dead_debug_init (struct dead_debug *, bitmap);
-extern void dead_debug_finish (struct dead_debug *, bitmap);
-extern void dead_debug_add (struct dead_debug *, df_ref, unsigned int);
-extern int dead_debug_insert_temp (struct dead_debug *,
-				   unsigned int uregno, rtx insn,
-				   enum debug_temp_where);
-
 #endif /* GCC_DF_H */
