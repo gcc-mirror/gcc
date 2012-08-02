@@ -1,3 +1,11 @@
+2012-08-02  Steve Ellcey  <sellcey@mips.com>
+
+	Backport from mainline
+	2012-07-19  Steve Ellcey  <sellcey@mips.com>
+
+	* config/mips/mips.c (mips_set_mips16_mode): Clear SYNCI_MASK in
+	MIPS16 mode.
+
 2012-08-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
