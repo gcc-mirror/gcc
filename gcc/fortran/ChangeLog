@@ -1,5 +1,11 @@
 2012-08-02  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans-array.c (gfc_conv_ss_startstride): Set the intrinsic
+	result's lower and upper bounds according to the rank.
+	(set_loop_bounds): Set the loop upper bound in the intrinsic case.
+
+2012-08-02  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans-array.c (set_loop_bounds): Allow non-array-section to be
 	chosen using the stride and lower bound criteria.
 

@@ -1,3 +1,9 @@
+2012-08-02  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/48820
+	* gfortran.dg/assumed_rank_bounds_1.f90:  New test.
+	* gfortran.dg/assumed_rank_bounds_2.f90:  New test.
+
 2012-08-02  Jason Merrill  <jason@redhat.com>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 
