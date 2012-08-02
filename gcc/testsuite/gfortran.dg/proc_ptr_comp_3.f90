@@ -24,9 +24,12 @@ type :: t
   procedure, pointer, nopass :: ptr6             ! { dg-error "Syntax error" }
   procedure(), nopass :: ptr8                    ! { dg-error "POINTER attribute is required" }
   procedure(pp), pointer, nopass :: ptr9         ! { dg-error "declared in a later PROCEDURE statement" }
-  procedure(aaargh), pointer, nopass :: ptr10    ! { dg-error "must be explicit" }
   real :: y
 end type t
+
+type :: t2
+  procedure(aaargh), pointer, nopass :: ptr10    ! { dg-error "must be explicit" }
+end type
 
 type,bind(c) :: bct                   ! { dg-error "BIND.C. derived type" }
   procedure(), pointer,nopass :: ptr  ! { dg-error "cannot be a member of|may not be C interoperable" }
@@ -47,4 +50,3 @@ print *,x%ptr3()  ! { dg-error "attribute conflicts with" }
 call x%y          ! { dg-error "Expected type-bound procedure or procedure pointer component" }
 
 end
-

@@ -1,3 +1,12 @@
+2012-08-02  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54147
+	* gfortran.dg/abstract_type_6.f03: Modified.
+	* gfortran.dg/proc_ptr_comp_3.f90: Modified.
+	* gfortran.dg/proc_ptr_comp_35.f90: New.
+	* gfortran.dg/typebound_proc_9.f03: Modified.
+	* gfortran.dg/typebound_proc_26.f90: New.
+
 2012-08-02  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/torture/pta-callused-1.c: Adjust.
