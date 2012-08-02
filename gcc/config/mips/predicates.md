@@ -139,9 +139,6 @@
 		(match_operand 0 "hilo_operand")
 		(match_operand 0 "register_operand")))
 
-(define_special_predicate "pc_or_label_operand"
-  (match_code "pc,label_ref"))
-
 (define_predicate "const_call_insn_operand"
   (match_code "const,symbol_ref,label_ref")
 {

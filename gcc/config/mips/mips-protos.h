@@ -190,6 +190,7 @@ extern rtx mips_pic_base_register (rtx);
 extern rtx mips_got_load (rtx, rtx, enum mips_symbol_type);
 extern bool mips_split_symbol (rtx, rtx, enum machine_mode, rtx *);
 extern rtx mips_unspec_address (rtx, enum mips_symbol_type);
+extern rtx mips_strip_unspec_address (rtx);
 extern void mips_move_integer (rtx, rtx, unsigned HOST_WIDE_INT);
 extern bool mips_legitimize_move (enum machine_mode, rtx, rtx);
 
