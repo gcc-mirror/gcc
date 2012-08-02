@@ -2982,6 +2982,31 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode, rtx cond,
       return 1;
     }
 
+  /* On targets with UXTH/UBFX, we can deal with AND (2^N)-1 in a single
+     insn.  */
+  if (code == AND && (i = exact_log2 (remainder + 1)) > 0
+      && (arm_arch_thumb2 || (i == 16 && arm_arch6 && mode == SImode)))
+    {
+      if (generate)
+	{
+	  if (mode == SImode && i == 16)
+	    /* Use UXTH in preference to UBFX, since on Thumb2 it's a 
+	       smaller insn.  */
+	    emit_constant_insn (cond,
+				gen_zero_extendhisi2
+				(target, gen_lowpart (HImode, source)));
+	  else
+	    /* Extz only supports SImode, but we can coerce the operands
+	       into that mode.  */
+	    emit_constant_insn (cond,
+				gen_extzv_t2 (gen_lowpart (mode, target),
+					      gen_lowpart (mode, source),
+					      GEN_INT (i), const0_rtx));
+	}
+
+      return 1;
+    }
+
   /* Calculate a few attributes that may be useful for specific
      optimizations.  */
   /* Count number of leading zeros.  */

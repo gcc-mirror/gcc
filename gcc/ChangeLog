@@ -1,3 +1,8 @@
+2012-08-02  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c (arm_gen_constant): Use UBFX for some AND operations when
+	available.
+
 2012-08-02  Richard Guenther  <rguenther@suse.de>
 
 	* tree-into-ssa.c (struct common_info_d): New struct.
