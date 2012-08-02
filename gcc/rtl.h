@@ -2460,6 +2460,7 @@ extern unsigned int extended_count (const_rtx, enum machine_mode, int);
 extern rtx remove_death (unsigned int, rtx);
 extern void dump_combine_stats (FILE *);
 extern void dump_combine_total_stats (FILE *);
+extern rtx make_compound_operation (rtx, enum rtx_code);
 
 /* In cfgcleanup.c  */
 extern void delete_dead_jumptables (void);

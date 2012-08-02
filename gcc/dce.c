@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 #include "cselib.h"
 #include "dce.h"
+#include "valtrack.h"
 #include "tree-pass.h"
 #include "dbgcnt.h"
 #include "tm_p.h"

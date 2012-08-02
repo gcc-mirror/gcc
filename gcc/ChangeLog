@@ -1,3 +1,30 @@
+2012-08-01  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/52983
+	* valtrack.h, valtrack.c: New.
+	* Makefile.in (VALTRACK_H): New.
+	(OBJS): Add valtrack.o.
+	(valtrack.o): New.
+	(cselib.o, dce.o, df-problems.o, combine.o): Add VALTRACK_H.
+	* combine.c: Include valtrack.h.
+	(make_compound_operation): Publish.
+	(cleanup_auto_inc_dec): Move to valtrack.c.
+	(struct rtx_subst_pair, propagate_for_debug_subst): Likewise.
+	(propagate_for_debug): Likewise.  Add this_basic_block parameter.
+	Adjust all callers.
+	* cselib.c: Include valtrack.h.
+	* dce.c: Likewise.
+	* df-problems.c: Likewise.
+	(dead_debug_init, dead_debug_reset_uses): Move to valtrack.c.
+	(dead_debug_finish, dead_debug_add): Likewise.
+	(dead_debug_insert_temp): Likewise.
+	* df.h (struct dead_debug_use): Move to valtrack.h.
+	(struct dead_debug, enum debug_temp_where): Likewise.
+	(dead_debug_init, dead_debug_reset_uses): Move to valtrack.h.
+	(dead_debug_finish, dead_debug_add): Likewise.
+	(dead_debug_insert_temp): Likewise.
+	* rtl.h (make_compound_operation): Declare.
+
 2012-08-01  Catherine Moore  <clm@codesourcery.com>
 	    Sandra Loosemore  <sandra@codesourcery.com>
 
