@@ -482,7 +482,6 @@ take_address_of (tree obj, tree type, edge entry, htab_t decl_address,
       bvar = create_tmp_var (TREE_TYPE (addr),
 			     get_name (TREE_OPERAND
 				         (TREE_OPERAND (*var_p, 0), 0)));
-      add_referenced_var (bvar);
       stmt = gimple_build_assign (bvar, addr);
       name = make_ssa_name (bvar, stmt);
       gimple_assign_set_lhs (stmt, name);
@@ -540,7 +539,6 @@ initialize_reductions (void **slot, void *data)
   /* Create a new variable to initialize the reduction.  */
   type = TREE_TYPE (PHI_RESULT (reduc->reduc_phi));
   bvar = create_tmp_var (type, "reduction");
-  add_referenced_var (bvar);
 
   c = build_omp_clause (gimple_location (reduc->reduc_stmt),
 			OMP_CLAUSE_REDUCTION);
@@ -805,7 +803,6 @@ separate_decls_in_region_name (tree name,
     {
       var_copy = create_tmp_var (TREE_TYPE (var), get_name (var));
       DECL_GIMPLE_REG_P (var_copy) = DECL_GIMPLE_REG_P (var);
-      add_referenced_var (var_copy);
       nielt = XNEW (struct int_tree_map);
       nielt->uid = uid;
       nielt->to = var_copy;
@@ -1066,7 +1063,6 @@ create_call_for_reduction_1 (void **slot, void *data)
   new_bb = e->dest;
 
   tmp_load = create_tmp_var (TREE_TYPE (TREE_TYPE (addr)), NULL);
-  add_referenced_var (tmp_load);
   tmp_load = make_ssa_name (tmp_load, NULL);
   load = gimple_build_omp_atomic_load (tmp_load, addr);
   SSA_NAME_DEF_STMT (tmp_load) = load;
@@ -1352,9 +1348,7 @@ separate_decls_in_region (edge entry, edge exit, htab_t reduction_list,
 
       /* Create the loads and stores.  */
       *arg_struct = create_tmp_var (type, ".paral_data_store");
-      add_referenced_var (*arg_struct);
       nvar = create_tmp_var (build_pointer_type (type), ".paral_data_load");
-      add_referenced_var (nvar);
       *new_arg_struct = make_ssa_name (nvar, NULL);
 
       ld_st_data->store = *arg_struct;

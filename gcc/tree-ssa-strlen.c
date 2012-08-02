@@ -416,7 +416,6 @@ get_string_length (strinfo si)
 	  fn = builtin_decl_implicit (BUILT_IN_STRLEN);
 	  gcc_assert (lhs == NULL_TREE);
 	  lhs_var = create_tmp_var (TREE_TYPE (TREE_TYPE (fn)), NULL);
-	  add_referenced_var (lhs_var);
 	  tem = unshare_expr (gimple_call_arg (stmt, 0));
 	  lenstmt = gimple_build_call (fn, 1, tem);
 	  lhs = make_ssa_name (lhs_var, lenstmt);
@@ -425,7 +424,6 @@ get_string_length (strinfo si)
 	  gsi_insert_before (&gsi, lenstmt, GSI_SAME_STMT);
 	  lhs_var = create_tmp_var (TREE_TYPE (gimple_call_arg (stmt, 0)),
 				    NULL);
-	  add_referenced_var (lhs_var);
 	  tem = gimple_call_arg (stmt, 0);
           if (!ptrofftype_p (TREE_TYPE (lhs)))
             {
@@ -455,7 +453,6 @@ get_string_length (strinfo si)
 	    }
 	  gimple_call_set_fndecl (stmt, fn);
 	  lhs_var = create_tmp_var (TREE_TYPE (TREE_TYPE (fn)), NULL);
-	  add_referenced_var (lhs_var);
 	  lhs = make_ssa_name (lhs_var, stmt);
 	  gimple_call_set_lhs (stmt, lhs);
 	  update_stmt (stmt);

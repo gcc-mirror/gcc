@@ -1228,8 +1228,7 @@ init_lowered_empty_function (tree decl)
 
   DECL_SAVED_TREE (decl) = error_mark_node;
   cfun->curr_properties |=
-    (PROP_gimple_lcf | PROP_gimple_leh | PROP_cfg | PROP_referenced_vars |
-     PROP_ssa | PROP_gimple_any);
+    (PROP_gimple_lcf | PROP_gimple_leh | PROP_cfg | PROP_ssa | PROP_gimple_any);
 
   /* Create BB for body of the function and connect it properly.  */
   bb = create_basic_block (NULL, (void *) 0, ENTRY_BLOCK_PTR);
@@ -1454,12 +1453,8 @@ assemble_thunk (struct cgraph_node *node)
 				      virtual_offset));
       else
         VEC_quick_push (tree, vargs, a);
-      add_referenced_var (a);
       for (i = 1, arg = DECL_CHAIN (a); i < nargs; i++, arg = DECL_CHAIN (arg))
-	{
-	  add_referenced_var (arg);
-	  VEC_quick_push (tree, vargs, arg);
-	}
+	VEC_quick_push (tree, vargs, arg);
       call = gimple_build_call_vec (build_fold_addr_expr_loc (0, alias), vargs);
       VEC_free (tree, heap, vargs);
       gimple_call_set_from_thunk (call, true);

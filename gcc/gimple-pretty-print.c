@@ -597,21 +597,8 @@ pp_points_to_solution (pretty_printer *buffer, struct pt_solution *pt)
       pp_string (buffer, "{ ");
       EXECUTE_IF_SET_IN_BITMAP (pt->vars, 0, i, bi)
 	{
-	  tree var = referenced_var_lookup (cfun, i);
-	  if (var)
-	    {
-	      dump_generic_node (buffer, var, 0, dump_flags, false);
-	      if (DECL_PT_UID (var) != DECL_UID (var))
-		{
-		  pp_string (buffer, "ptD.");
-		  pp_decimal_int (buffer, DECL_PT_UID (var));
-		}
-	    }
-	  else
-	    {
-	      pp_string (buffer, "D.");
-	      pp_decimal_int (buffer, i);
-	    }
+	  pp_string (buffer, "D.");
+	  pp_decimal_int (buffer, i);
 	  pp_character (buffer, ' ');
 	}
       pp_character (buffer, '}');

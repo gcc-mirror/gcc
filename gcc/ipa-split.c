@@ -1083,7 +1083,6 @@ split_function (struct split_point *split_point)
       {
 	/* This parm might not have been used up to now, but is going to be
 	   used, hence register it.  */
-	add_referenced_var (parm);
 	if (is_gimple_reg (parm))
 	  {
 	    arg = gimple_default_def (cfun, parm);

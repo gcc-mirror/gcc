@@ -425,7 +425,6 @@ emit_case_bit_tests (gimple swtch, tree index_expr,
 
   /* csui = (1 << (word_mode) idx) */
   tmp = create_tmp_var (word_type_node, "csui");
-  add_referenced_var (tmp);
   csui = make_ssa_name (tmp, NULL);
   tmp = fold_build2 (LSHIFT_EXPR, word_type_node, word_mode_one,
 		     fold_convert (word_type_node, idx));
@@ -1109,7 +1108,6 @@ build_arrays (gimple swtch, struct switch_conv_info *info)
 
   arr_index_type = build_index_type (info->range_size);
   tmp = create_tmp_var (utype, "csui");
-  add_referenced_var (tmp);
   tidx = make_ssa_name (tmp, NULL);
   sub = fold_build2_loc (loc, MINUS_EXPR, utype,
 			 fold_convert_loc (loc, utype, info->index_expr),

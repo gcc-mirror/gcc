@@ -1,3 +1,15 @@
+2012-08-02  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/torture/pta-callused-1.c: Adjust.
+	* gcc.dg/torture/pta-ptrarith-3.c: Likewise.
+	* gcc.dg/torture/ssa-pta-fn-1.c: Likewise.
+	* gcc.dg/tree-ssa/alias-19.c: Likewise.
+	* gcc.dg/tree-ssa/pta-escape-1.c: Likewise.
+	* gcc.dg/tree-ssa/pta-escape-2.c: Likewise.
+	* gcc.dg/tree-ssa/pta-escape-3.c: Likewise.
+	* gcc.dg/tree-ssa/pta-ptrarith-1.c: Likewise.
+	* gcc.dg/tree-ssa/pta-ptrarith-2.c: Likewise.
+
 2012-08-01  Thomas König  <tkoenig@gcc.gnu.org>
 
 	PR fortran/54033

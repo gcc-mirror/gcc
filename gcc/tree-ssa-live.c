@@ -692,8 +692,7 @@ void
 remove_unused_locals (void)
 {
   basic_block bb;
-  tree var, t;
-  referenced_var_iterator rvi;
+  tree var;
   bitmap global_unused_vars = NULL;
   unsigned srcidx, dstidx, num, ix;
   bool have_local_clobbers = false;
@@ -828,7 +827,6 @@ remove_unused_locals (void)
 	    }
 	  else if (!is_used_p (var))
 	    {
-	      remove_referenced_var (var);
 	      if (cfun->nonlocal_goto_save_area
 		  && TREE_OPERAND (cfun->nonlocal_goto_save_area, 0) == var)
 		cfun->nonlocal_goto_save_area = NULL;
@@ -846,14 +844,6 @@ remove_unused_locals (void)
     }
   if (dstidx != num)
     VEC_truncate (tree, cfun->local_decls, dstidx);
-
-  /* ???  We end up with decls in referenced-vars that are not in
-     local-decls.  */
-  FOR_EACH_REFERENCED_VAR (cfun, t, rvi)
-    if (TREE_CODE (t) == VAR_DECL
-	&& !VAR_DECL_IS_VIRTUAL_OPERAND (t)
-	&& !is_used_p (t))
-      remove_referenced_var (t);
 
   remove_unused_scope_block_p (DECL_INITIAL (current_function_decl),
 			       global_unused_vars);

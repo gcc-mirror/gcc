@@ -34,5 +34,5 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump "ESCAPED, points-to non-local, points-to NULL, points-to vars: { x }" "alias" } } */
+/* { dg-final { scan-tree-dump "ESCAPED = { NULL ESCAPED NONLOCAL x }" "alias" } } */
 /* { dg-final { cleanup-tree-dump "alias" } } */

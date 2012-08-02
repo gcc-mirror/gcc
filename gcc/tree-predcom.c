@@ -1450,8 +1450,6 @@ predcom_tmp_var (tree ref, unsigned i, bitmap tmp_vars)
   /* We never access the components of the temporary variable in predictive
      commoning.  */
   tree var = create_tmp_reg (type, get_lsm_tmp_name (ref, i));
-
-  add_referenced_var (var);
   bitmap_set_bit (tmp_vars, DECL_UID (var));
   return var;
 }
@@ -2191,12 +2189,10 @@ reassociate_to_the_same_stmt (tree name1, tree name2)
   /* Insert the new statement combining NAME1 and NAME2 before S1, and
      combine it with the rhs of S1.  */
   var = create_tmp_reg (type, "predreastmp");
-  add_referenced_var (var);
   new_name = make_ssa_name (var, NULL);
   new_stmt = gimple_build_assign_with_ops (code, new_name, name1, name2);
 
   var = create_tmp_reg (type, "predreastmp");
-  add_referenced_var (var);
   tmp_name = make_ssa_name (var, NULL);
 
   /* Rhs of S1 may now be either a binary expression with operation

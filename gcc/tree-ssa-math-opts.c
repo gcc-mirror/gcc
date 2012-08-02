@@ -989,8 +989,6 @@ powi_as_mults (gimple_stmt_iterator *gsi, location_t loc,
   cache[1] = arg0;
 
   target = create_tmp_reg (type, "powmult");
-  add_referenced_var (target);
-
   result = powi_as_mults_1 (gsi, loc, type, (n < 0) ? -n : n, cache, target);
 
   if (n >= 0)
@@ -1041,10 +1039,7 @@ build_and_insert_call (gimple_stmt_iterator *gsi, location_t loc,
   tree ssa_target;
 
   if (!*var)
-    {
-      *var = create_tmp_reg (TREE_TYPE (arg), "powroot");
-      add_referenced_var (*var);
-    }
+    *var = create_tmp_reg (TREE_TYPE (arg), "powroot");
 
   call_stmt = gimple_build_call (fn, 1, arg);
   ssa_target = make_ssa_name (*var, NULL);
@@ -1354,8 +1349,6 @@ gimple_expand_builtin_cabs (gimple_stmt_iterator *gsi, location_t loc, tree arg)
     return NULL_TREE;
 
   target = create_tmp_reg (type, "cabs");
-  add_referenced_var (target);
-
   real_part = build_and_insert_ref (gsi, loc, type, target,
 				    REALPART_EXPR, arg);
   addend1 = build_and_insert_binop (gsi, loc, target, MULT_EXPR,
@@ -1900,7 +1893,6 @@ execute_optimize_bswap (void)
 	      gimple convert_stmt;
 
 	      bswap_tmp = create_tmp_var (bswap_type, "bswapsrc");
-	      add_referenced_var (bswap_tmp);
 	      bswap_tmp = make_ssa_name (bswap_tmp, NULL);
 
 	      convert_stmt = gimple_build_assign_with_ops (
@@ -1918,7 +1910,6 @@ execute_optimize_bswap (void)
 	      gimple convert_stmt;
 
 	      bswap_tmp = create_tmp_var (bswap_type, "bswapdst");
-	      add_referenced_var (bswap_tmp);
 	      bswap_tmp = make_ssa_name (bswap_tmp, NULL);
 	      convert_stmt = gimple_build_assign_with_ops (
 		               CONVERT_EXPR, gimple_assign_lhs (stmt), bswap_tmp, NULL);

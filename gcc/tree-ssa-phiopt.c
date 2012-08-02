@@ -691,7 +691,6 @@ conditional_replacement (basic_block cond_bb, basic_block middle_bb,
       source_location locus_0, locus_1;
 
       new_var2 = create_tmp_var (TREE_TYPE (result), NULL);
-      add_referenced_var (new_var2);
       new_stmt = gimple_build_assign_with_ops (CONVERT_EXPR, new_var2,
 					       new_var, NULL);
       new_var2 = make_ssa_name (new_var2, new_stmt);
@@ -1215,7 +1214,6 @@ abs_replacement (basic_block cond_bb, basic_block middle_bb,
   if (negate)
     {
       tree tmp = create_tmp_var (TREE_TYPE (result), NULL);
-      add_referenced_var (tmp);
       lhs = make_ssa_name (tmp, NULL);
     }
   else
@@ -1482,7 +1480,6 @@ cond_store_replacement (basic_block middle_bb, basic_block join_bb,
         of the memory touched by the store, if we need to.  */
   if (!condstoretemp || TREE_TYPE (lhs) != TREE_TYPE (condstoretemp))
     condstoretemp = create_tmp_reg (TREE_TYPE (lhs), "cstore");
-  add_referenced_var (condstoretemp);
 
   /* 3) Insert a load from the memory of the store to the temporary
         on the edge which did not contain the store.  */
@@ -1567,7 +1564,6 @@ cond_if_else_store_replacement_1 (basic_block then_bb, basic_block else_bb,
 	of the memory touched by the store, if we need to.  */
   if (!condstoretemp || TREE_TYPE (lhs) != TREE_TYPE (condstoretemp))
     condstoretemp = create_tmp_reg (TREE_TYPE (lhs), "cstore");
-  add_referenced_var (condstoretemp);
 
   /* 3) Create a PHI node at the join block, with one argument
 	holding the old RHS, and the other holding the temporary

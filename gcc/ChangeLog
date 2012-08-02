@@ -1,3 +1,143 @@
+2012-08-02  Richard Guenther  <rguenther@suse.de>
+
+	* tree-dfa.c (referenced_var_lookup): Remove.
+	(find_referenced_vars): Remove.
+	(pass_referenced_vars): Likewise.
+	(make_rename_temp): Do not add referenced vars.
+	(dump_referenced_vars): Remove.
+	(debug_referenced_vars): Likewise.
+	(dump_dfa_stats): Do not dump referenced var stats.
+	(find_vars_r): Remove.
+	(find_referenced_vars_in): Likewise.
+	(referenced_var_check_and_insert): Likewise.
+	(add_referenced_var_1): Likewise.
+	(remove_referenced_var): Likewise.
+	* tree-flow.h (referenced_var_lookup): Likewise.
+	(struct gimple_df): Remove referenced_vars member.
+	(typedef referenced_var_iterator): Remove.
+	(FOR_EACH_REFERENCED_VAR): Likewise.
+	(num_referenced_vars): Likewise.
+	(debug_referenced_vars, dump_referenced_vars): Likewise.
+	(add_referenced_var_1, add_referenced_var): Likewise.
+	(remove_referenced_var): Likewise.
+	(find_referenced_vars_in): Likewise.
+	* tree-flow-inline.h (gimple_referenced_vars): Remove.
+	(first_referenced_var): Likewise.
+	(end_referenced_vars_p): Likewise.
+	(next_referenced_var): Likewise.
+	* cfgexpand.c (update_alias_info_with_stack_vars): Remove assert.
+	* gimple-pretty-print.c (pp_points_to_solution): Dump UIDs
+	unconditionally.
+	* tree-into-ssa.c (dump_decl_set): Likewise.
+	(pass_build_ssa): Do not require PROP_referenced_vars.
+	* tree-ssa.c (target_for_debug_bind): Virtual operands are
+	not suitable, but all register type vars are.
+	(init_tree_ssa): Do not allocate referenced vars.
+	(delete_tree_ssa): Do not free referenced vars.
+	* cgraphunit.c (init_lowered_empty_function): Do not set
+	PROP_referenced_vars.
+	(assemble_thunk): Do not add referenced vars.
+	* gimple-fold.c (canonicalize_constructor_val): Likewise.
+	(gimplify_and_update_call_from_tree): Likewise.
+	* gimple-streamer-in.c (input_bb): Likewise.
+	* passes.c (init_optimization_passes): Do not run
+	pass_referenced_vars.
+	(dump_properties): Do not dump PROP_referenced_vars.
+	* tree-inline.c (remap_decl): Do not add referenced vars.
+	(remap_gimple_op_r): Likewise.
+	(copy_tree_body_r): Likewise.
+	(copy_bb): Likewise.
+	(setup_one_parameter): Likewise.
+	(declare_return_variable): Likewise.
+	(copy_decl_for_dup_finish): Likewise.
+	(copy_arguments_for_versioning): Likewise.
+	(tree_function_versioning): Likewise.
+	* tree-pass.h (PROP_referenced_vars): Remove.
+	(pass_referenced_vars): Likewise.
+	* tree-profile.c (gimple_gen_edge_profiler): Do not add referenced vars.
+	(gimple_gen_interval_profiler): Likewise.
+	(gimple_gen_pow2_profiler): Likewise.
+	(gimple_gen_one_value_profiler): Likewise.
+	(gimple_gen_ic_profiler): Likewise.
+	(gimple_gen_average_profiler): Likewise.
+	(gimple_gen_ior_profiler): Likewise.
+	* tree-ssa-live.c (remove_unused_locals): Do not touch referenced vars.
+	* tree-cfg.c (replace_ssa_name): Do not add referenced vars.
+	(move_stmt_op): Likewise.
+	* tree-ssa-operands.c (create_vop_var): Likewise.
+	* gimple-low.c (record_vars_into): Likewise.
+	* gimplify.c (gimple_regimplify_operands): Likewise.
+	(force_gimple_operand_1): Likewise.
+	* omp-low.c (expand_omp_for_generic): Likewise.
+	(expand_omp_for_static_chunk): Likewise.
+	(expand_omp_atomic_pipeline): Likewise.
+	* graphite-clast-to-gimple.c (graphite_create_new_loop): Likewise.
+	(translate_clast_assignment): Likewise.
+	* graphite-sese-to-poly.c (create_zero_dim_array): Likewise.
+	(handle_scalar_deps_crossing_scop_limits): Likewise.
+	* ipa-prop.c (ipa_modify_formal_parameters): Likewise.
+	* ipa-split.c (split_function): Likewise.
+	* matrix-reorg.c (transform_access_sites): Likewise.
+	* trans-mem.c (tm_log_add): Likewise.
+	(ipa_tm_insert_gettmclone_call): Likewise.
+	* tree-complex.c (create_one_component_var): Likewise.
+	* tree-if-conv.c (ifc_temp_var): Likewise.
+	* tree-parloops.c (take_address_of): Likewise.
+	(initialize_reductions): Likewise.
+	(separate_decls_in_region_name): Likewise.
+	(create_call_for_reduction_1): Likewise.
+	(separate_decls_in_region): Likewise.
+	* tree-predcom.c (predcom_tmp_var): Likewise.
+	(reassociate_to_the_same_stmt): Likewise.
+	* tree-sra.c (build_ref_for_offset): Likewise.
+	(create_access_replacement): Likewise.
+	(get_replaced_param_substitute): Likewise.
+	(sra_ipa_reset_debug_stmts): Likewise.
+	* tree-ssa-loop-im.c (rewrite_reciprocal): Likewise.
+	(rewrite_bittest): Likewise.
+	* tree-ssa-loop-ivopts.c (create_new_iv): Likewise.
+	* tree-ssa-loop-manip.c (create_iv): Likewise.
+	(tree_transform_and_unroll_loop): Likewise.
+	* tree-ssa-math-opts.c (powi_as_mults): Likewise.
+	(build_and_insert_call): Likewise.
+	(gimple_expand_builtin_cabs): Likewise.
+	(execute_optimize_bswap): Likewise.
+	* tree-ssa-phiopt.c (conditional_replacement): Likewise.
+	(abs_replacement): Likewise.
+	(cond_store_replacement): Likewise.
+	(cond_if_else_store_replacement_1): Likewise.
+	* tree-ssa-phiprop.c (phiprop_insert_phi): Likewise.
+	* tree-ssa-pre.c (get_representative_for): Likewise.
+	(create_expression_by_pieces): Likewise.
+	(insert_into_preds_of_block): Likewise.
+	* tree-ssa-propagate.c (update_call_from_tree): Likewise.
+	* tree-ssa-reassoc.c (undistribute_ops_list): Likewise.
+	(eliminate_redundant_comparison): Likewise.
+	(rewrite_expr_tree_parallel): Likewise.
+	(get_reassoc_pow_ssa_name): Likewise.
+	* tree-ssa-strlen.c (get_string_length): Likewise.
+	* tree-switch-conversion.c (emit_case_bit_tests): Likewise.
+	(build_arrays): Likewise.
+	* tree-tailcall.c (adjust_return_value_with_ops): Likewise.
+	(create_tailcall_accumulator): Likewise.
+	* tree-vect-data-refs.c (vect_get_new_vect_var): Likewise.
+	(vect_create_addr_base_for_vector_ref): Likewise.
+	(vect_permute_store_chain): Likewise.
+	(vect_permute_load_chain): Likewise.
+	* tree-vect-generic.c (expand_vector_divmod): Likewise.
+	* tree-vect-loop-manip.c (set_prologue_iterations): Likewise.
+	(vect_build_loop_niters): Likewise.
+	(vect_generate_tmps_on_preheader): Likewise.
+	(vect_update_ivs_after_vectorizer): Likewise.
+	(vect_gen_niters_for_prolog_loop): Likewise.
+	(vect_do_peeling_for_alignment): Likewise.
+	(vect_create_cond_for_align_checks): Likewise.
+	* tree-vect-patterns.c (vect_recog_temp_ssa_var): Likewise.
+	(vect_handle_widen_op_by_const): Likewise.
+	(vect_operation_fits_smaller_type): Likewise.
+	(vect_recog_over_widening_pattern): Likewise.
+	* tree-vect-stmts.c (vect_init_vector): Likewise.
+
 2012-08-01  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/52983

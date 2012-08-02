@@ -1018,7 +1018,6 @@ tm_log_add (basic_block entry_block, tree addr, gimple stmt)
 	  && !TREE_ADDRESSABLE (type))
 	{
 	  lp->save_var = create_tmp_reg (TREE_TYPE (lp->addr), "tm_save");
-	  add_referenced_var (lp->save_var);
 	  lp->stmts = NULL;
 	  lp->entry_block = entry_block;
 	  /* Save addresses separately in dominator order so we don't
@@ -4455,7 +4454,6 @@ ipa_tm_insert_gettmclone_call (struct cgraph_node *node,
   gettm_fn = builtin_decl_explicit (safe ? BUILT_IN_TM_GETTMCLONE_SAFE
 				    : BUILT_IN_TM_GETTMCLONE_IRR);
   ret = create_tmp_var (ptr_type_node, NULL);
-  add_referenced_var (ret);
 
   if (!safe)
     transaction_subcode_ior (region, GTMA_MAY_ENTER_IRREVOCABLE);
@@ -4477,7 +4475,6 @@ ipa_tm_insert_gettmclone_call (struct cgraph_node *node,
   /* Cast return value from tm_gettmclone* into appropriate function
      pointer.  */
   callfn = create_tmp_var (TREE_TYPE (old_fn), NULL);
-  add_referenced_var (callfn);
   g2 = gimple_build_assign (callfn,
 			    fold_build1 (NOP_EXPR, TREE_TYPE (callfn), ret));
   callfn = make_ssa_name (callfn, g2);
