@@ -176,7 +176,7 @@ init_parameter_lattice_values (void)
 
   for (parm = DECL_ARGUMENTS (cfun->decl); parm ; parm = DECL_CHAIN (parm))
     if (is_complex_reg (parm)
-	&& (ssa_name = gimple_default_def (cfun, parm)) != NULL_TREE)
+	&& (ssa_name = ssa_default_def (cfun, parm)) != NULL_TREE)
       VEC_replace (complex_lattice_t, complex_lattice_values,
 		   SSA_NAME_VERSION (ssa_name), VARYING);
 }
@@ -496,10 +496,10 @@ get_component_ssa_name (tree ssa_name, bool imag_p)
       SSA_NAME_OCCURS_IN_ABNORMAL_PHI (ret)
 	= SSA_NAME_OCCURS_IN_ABNORMAL_PHI (ssa_name);
       if (TREE_CODE (SSA_NAME_VAR (ssa_name)) == VAR_DECL
-	  && gimple_nop_p (SSA_NAME_DEF_STMT (ssa_name)))
+	  && SSA_NAME_IS_DEFAULT_DEF (ssa_name))
 	{
 	  SSA_NAME_DEF_STMT (ret) = SSA_NAME_DEF_STMT (ssa_name);
-	  set_default_def (SSA_NAME_VAR (ret), ret);
+	  set_ssa_default_def (cfun, SSA_NAME_VAR (ret), ret);
 	}
 
       VEC_replace (tree, complex_ssa_name_components, ssa_name_index, ret);
@@ -690,7 +690,7 @@ update_parameter_components (void)
 	continue;
 
       type = TREE_TYPE (type);
-      ssa_name = gimple_default_def (cfun, parm);
+      ssa_name = ssa_default_def (cfun, parm);
       if (!ssa_name)
 	continue;
 

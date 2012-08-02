@@ -767,7 +767,7 @@ arg_needs_copy_p (tree param)
     return false;
 
   /* Parameters that are only defined but never used need not be copied.  */
-  def = gimple_default_def (cfun, param);
+  def = ssa_default_def (cfun, param);
   if (!def)
     return false;
 
@@ -969,11 +969,11 @@ tree_optimize_tail_calls_1 (bool opt_tailcalls)
 	       param = DECL_CHAIN (param))
 	    if (arg_needs_copy_p (param))
 	      {
-		tree name = gimple_default_def (cfun, param);
+		tree name = ssa_default_def (cfun, param);
 		tree new_name = make_ssa_name (param, SSA_NAME_DEF_STMT (name));
 		gimple phi;
 
-		set_default_def (param, new_name);
+		set_ssa_default_def (cfun, param, new_name);
 		phi = create_phi_node (name, first);
 		SSA_NAME_DEF_STMT (name) = phi;
 		add_phi_arg (phi, new_name, single_pred_edge (first),

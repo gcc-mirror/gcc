@@ -3963,11 +3963,9 @@ run_scc_vn (vn_lookup_kind default_vn_walk_kind_)
        param;
        param = DECL_CHAIN (param))
     {
-      if (gimple_default_def (cfun, param) != NULL)
-	{
-	  tree def = gimple_default_def (cfun, param);
-	  VN_INFO (def)->valnum = def;
-	}
+      tree def = ssa_default_def (cfun, param);
+      if (def)
+	VN_INFO (def)->valnum = def;
     }
 
   for (i = 1; i < num_ssa_names; ++i)

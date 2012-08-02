@@ -987,23 +987,6 @@ find_def_blocks_for (tree var)
 }
 
 
-/* Retrieve or create a default definition for symbol SYM.  */
-
-static inline tree
-get_default_def_for (tree sym)
-{
-  tree ddef = gimple_default_def (cfun, sym);
-
-  if (ddef == NULL_TREE)
-    {
-      ddef = make_ssa_name (sym, gimple_build_nop ());
-      set_default_def (sym, ddef);
-    }
-
-  return ddef;
-}
-
-
 /* Marks phi node PHI in basic block BB for rewrite.  */
 
 static void
@@ -1253,7 +1236,7 @@ get_reaching_def (tree var)
   if (currdef == NULL_TREE)
     {
       tree sym = DECL_P (var) ? var : SSA_NAME_VAR (var);
-      currdef = get_default_def_for (sym);
+      currdef = get_or_create_ssa_default_def (cfun, sym);
       set_current_def (var, currdef);
     }
 
