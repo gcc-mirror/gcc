@@ -1,3 +1,12 @@
+2012-08-02  Michael Hope  <michael.hope@linaro.org>
+
+	Backport from mainline r186389:
+	2012-04-12  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* testsuite/Makefile.am (check_DEJAGNUnormal0): Run
+	prettyprinters.exp.
+	* testsuite/Makefile.in: Regenerated.
+
 2012-07-29  François Dumont  <fdumont@gcc.gnu.org>
 
 	PR libstdc++/54075
