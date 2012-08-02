@@ -4444,20 +4444,9 @@ set_loop_bounds (gfc_loopinfo *loop)
 	      continue;
 	    }
 
-	  /* TODO: Pick the best bound if we have a choice between a
-	     function and something else.  */
-	  if (ss_type == GFC_SS_FUNCTION)
-	    {
-	      loopspec[n] = ss;
-	      continue;
-	    }
-
 	  /* Avoid using an allocatable lhs in an assignment, since
 	     there might be a reallocation coming.  */
 	  if (loopspec[n] && ss->is_alloc_lhs)
-	    continue;
-
-	  if (ss_type != GFC_SS_SECTION)
 	    continue;
 
 	  if (!loopspec[n])
