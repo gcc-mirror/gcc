@@ -1,5 +1,12 @@
 2012-08-02  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* iresolve.c (resolve_bound, gfc_resolve_shape):
+	Don't set the shape for assumed rank arrays.
+	* simplify.c (gfc_simplify_shape): Don't try to simplify if the
+	argument is assumed rank.
+
+2012-08-02  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* array.c (gfc_copy_array_ref): Don't copy the offset field.
 	* expr.c (find_array_section): Ignore the offset field.
 	* trans-expr.c (gfc_find_interface_mapping_to_ref): Don't apply

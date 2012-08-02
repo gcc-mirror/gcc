@@ -5470,6 +5470,9 @@ gfc_simplify_shape (gfc_expr *source, gfc_expr *kind)
   gfc_try t;
   int k = get_kind (BT_INTEGER, kind, "SHAPE", gfc_default_integer_kind);
 
+  if (source->rank == -1)
+    return NULL;
+
   result = gfc_get_array_expr (BT_INTEGER, k, &source->where);
 
   if (source->rank == 0)
