@@ -491,7 +491,7 @@ rtx_to_double_int (const_rtx cst)
 
   if (CONST_INT_P (cst))
       r = shwi_to_double_int (INTVAL (cst));
-  else if (CONST_DOUBLE_P (cst) && GET_MODE (cst) == VOIDmode)
+  else if (CONST_DOUBLE_AS_INT_P (cst))
     {
       r.low = CONST_DOUBLE_LOW (cst);
       r.high = CONST_DOUBLE_HIGH (cst);
@@ -1244,7 +1244,7 @@ gen_lowpart_common (enum machine_mode mode, rtx x)
     }
   else if (GET_CODE (x) == SUBREG || REG_P (x)
 	   || GET_CODE (x) == CONCAT || GET_CODE (x) == CONST_VECTOR
-	   || GET_CODE (x) == CONST_DOUBLE || CONST_INT_P (x))
+	   || CONST_DOUBLE_P (x) || CONST_INT_P (x))
     return simplify_gen_subreg (mode, x, innermode, offset);
 
   /* Otherwise, we can't do this.  */

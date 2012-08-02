@@ -322,9 +322,10 @@ DEF_RTL_EXPR(CONST_INT, "const_int", "w", RTX_CONST_OBJ)
 /* fixed-point constant */
 DEF_RTL_EXPR(CONST_FIXED, "const_fixed", "www", RTX_CONST_OBJ)
 
-/* numeric floating point constant.
-   Operands hold the value.  They are all 'w' and there may be from 2 to 6;
-   see real.h.  */
+/* numeric floating point or integer constant.  If the mode is
+   VOIDmode it is an int otherwise it has a floating point mode and a
+   floating point value.  Operands hold the value.  They are all 'w'
+   and there may be from 2 to 6; see real.h.  */
 DEF_RTL_EXPR(CONST_DOUBLE, "const_double", CONST_DOUBLE_FORMAT, RTX_CONST_OBJ)
 
 /* Describes a vector constant.  */

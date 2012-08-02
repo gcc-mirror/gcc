@@ -410,6 +410,14 @@ struct GTY((variable_size)) rtvec_def {
    or floating point constant.  */
 #define CONST_DOUBLE_P(X) (GET_CODE (X) == CONST_DOUBLE)
 
+/* Predicate yielding true iff X is an rtx for a double-int.  */
+#define CONST_DOUBLE_AS_INT_P(X) \
+  (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) == VOIDmode)
+
+/* Predicate yielding true iff X is an rtx for a double-int.  */
+#define CONST_DOUBLE_AS_FLOAT_P(X) \
+  (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) != VOIDmode)
+
 /* Predicate yielding nonzero iff X is a label insn.  */
 #define LABEL_P(X) (GET_CODE (X) == CODE_LABEL)
 

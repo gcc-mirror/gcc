@@ -3627,7 +3627,7 @@ expand_debug_locations (void)
 			|| (GET_MODE (val) == VOIDmode
 			    && (CONST_INT_P (val)
 				|| GET_CODE (val) == CONST_FIXED
-				|| GET_CODE (val) == CONST_DOUBLE
+				|| CONST_DOUBLE_AS_INT_P (val) 
 				|| GET_CODE (val) == LABEL_REF)));
 	  }
 
