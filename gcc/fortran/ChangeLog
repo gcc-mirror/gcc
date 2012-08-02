@@ -1,5 +1,10 @@
 2012-08-02  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans-array.c (set_loop_bounds): Allow non-array-section to be
+	chosen using the stride and lower bound criteria.
+
+2012-08-02  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans-array.c (set_loop_bounds): Remove useless dimension check.
 	Don't update loopspec if it would loose the wanted stride criterion.
 
