@@ -1,3 +1,7 @@
+2012-08-04  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* sched-vis (print_pattern): Handle SEQUENCE also.
+
 2012-08-02  Richard Henderson  <rth@redhat.com>
 
 	Revert:
