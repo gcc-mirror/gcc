@@ -1,3 +1,7 @@
+2012-08-03  Jonathan Yong  <jon_y@users.sourceforge.net>
+
+	* Makefile.in (version): set to BASE-VER file from gcc directory.
+
 2012-08-01  Nick Clifton  <nickc@redhat.com>
 
 	* config/m32c/lib2funcs.c (__clrsbhi2): New function.
