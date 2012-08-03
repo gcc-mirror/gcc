@@ -1,4 +1,12 @@
-2012-08-03 Marc Glisse <marc.glisse@inria.fr>
+2012-08-03  Michael Matz  <matz@suse.de>
+
+	PR tree-optimization/54146
+	* cfgexpand.c (add_scope_conflicts_1): Use bitmap_ior_into.
+	(add_scope_conflicts): Iterate in RPO order.
+	(add_stack_protection_conflicts): Iterate over the other triangle.
+	(fini_vars_expansion): Clear stack_vars_sorted.
+
+2012-08-03  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR tree-optimization/30318
 	* double-int.c (mul_double_wide_with_sign): New function.
