@@ -1,3 +1,19 @@
+2012-08-03  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/memory: Include auto_ptr.h later.
+	* include/bits/shared_ptr.h (shared_ptr(auto_ptr<_Up>&&): Remove
+	definition.
+	* include/bits/shared_ptr_base.h (__shared_ptr(auto_ptr<_Up>&&):
+	Likewise.
+	* include/bits/unique_ptr.h (unique_ptr(auto_ptr<_Up>&&): Likewise.
+	* include/backward/auto_ptr.h (unique_ptr(auto_ptr<_Up>&&): Define.
+	(shared_ptr(auto_ptr<_Up>&&, __shared_ptr(auto_ptr<_Up>&&): Likewise.
+	* include/std/future: Reduce header dependencies.
+	* testsuite/20_util/default_delete/48631_neg.cc: Adjust dg-error line
+	numbers.
+	* testsuite/20_util/shared_ptr/cons/43820_neg.cc: Likewise.
+	* testsuite/20_util/unique_ptr/assign/48635_neg.cc: Likewise.
+
 2012-07-30  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/c++config (_GLIBCXX_END_NAMESPACE_CONTAINER): Fix

@@ -1,6 +1,6 @@
 // shared_ptr and weak_ptr implementation -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+// Copyright (C) 2007-2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -250,8 +250,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if _GLIBCXX_USE_DEPRECATED
       template<typename _Tp1>
-	shared_ptr(std::auto_ptr<_Tp1>&& __r)
-	: __shared_ptr<_Tp>(std::move(__r)) { }
+	shared_ptr(std::auto_ptr<_Tp1>&& __r);
 #endif
 
       template<typename _Tp1, typename _Del>
