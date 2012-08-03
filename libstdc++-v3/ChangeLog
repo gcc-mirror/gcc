@@ -1,3 +1,10 @@
+2012-08-03  Ollie Wild  <aaw@google.com>
+	    Richard Smith  <richardsmith@google.com>
+
+	* include/bits/stl_map.h (operator[](key_type&&)): Replace
+	std::make_pair with value_type.
+	* testsuite/23_containers/map/operators/2.cc: New test.
+
 2012-08-03  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/std/memory: Include auto_ptr.h later.
