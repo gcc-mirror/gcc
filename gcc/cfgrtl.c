@@ -1958,10 +1958,9 @@ print_rtl_with_bb (FILE *outf, const_rtx rtx_first, int flags)
 		  dump_bb_info (outf, bb, 0, dump_flags | TDF_COMMENT, false, true);
 		  if (df && (flags & TDF_DETAILS))
 		    df_dump_bottom (bb, outf);
+		  putc ('\n', outf);
 		}
 	    }
-
-	  putc ('\n', outf);
 	}
 
       free (start);
