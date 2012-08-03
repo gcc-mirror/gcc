@@ -1,3 +1,13 @@
+2012-08-02  Richard Henderson  <rth@redhat.com>
+
+	Revert:
+	PR 34548
+	* function.h (struct rtl_data): Add max_dynamic_stack_alignment.
+	* cfgexpand.c (gimple_expand_cfg): Initialise it.
+	* explow.c (allocate_dynamic_stack_space): Set it.  Simplify
+	alignment requirements given the known alignment of dynamic_offset.
+	* function.c (instantiate_virtual_regs): Align dtnamic_offset.
+
 2012-08-02  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* cfgexpand.c (expand_debug_locations):  Encapsulate test for
@@ -388,15 +398,6 @@
 	(BASE_DRIVER_SELF_SPECS): Do not imply -mdsp for the 34kn.
 	* config/mips/mips-tables.opt: Regenerate.
 	* doc/invoke.texi (MIPS Options): Document -march=34kn.
-
-2012-08-01  Richard Henderson  <rth@redhat.com>
-
-	PR middle-end/34548
-	* function.h (struct rtl_data): Add max_dynamic_stack_alignment.
-	* cfgexpand.c (gimple_expand_cfg): Initialise it.
-	* explow.c (allocate_dynamic_stack_space): Set it.  Simplify
-	alignment requirements given the known alignment of dynamic_offset.
-	* function.c (instantiate_virtual_regs): Align dtnamic_offset.
 
 2012-08-01  Richard Henderson  <rth@redhat.com>
 
