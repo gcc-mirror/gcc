@@ -1862,7 +1862,7 @@ base_names_in_chain_on (struct loop *loop, tree name, tree var)
   gimple stmt, phi;
   imm_use_iterator iter;
 
-  SSA_NAME_VAR (name) = var;
+  replace_ssa_name_symbol (name, var);
 
   while (1)
     {
@@ -1880,7 +1880,7 @@ base_names_in_chain_on (struct loop *loop, tree name, tree var)
 	return;
 
       name = PHI_RESULT (phi);
-      SSA_NAME_VAR (name) = var;
+      replace_ssa_name_symbol (name, var);
     }
 }
 

@@ -837,7 +837,7 @@ separate_decls_in_region_name (tree name,
       copy = name;
     }
 
-  SSA_NAME_VAR (copy) = var_copy;
+  replace_ssa_name_symbol (copy, var_copy);
   return copy;
 }
 

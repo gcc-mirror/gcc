@@ -1,3 +1,31 @@
+2012-08-03  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vect-loop-manip.c (vect_can_advance_ivs_p): Query
+	is_gimple_reg on the SSA name, not its variable.
+	(vect_update_ivs_after_vectorizer): Likewise.
+	* tree-ssa-copyrename.c (rename_ssa_copies): Likewise.
+	* tree-if-conv.c (if_convertible_phi_p): Likewise.
+	(predicate_scalar_phi): Likewise.
+	* tree-vect-loop.c (vect_analyze_scalar_cycles_1): Likewise.
+	(vect_analyze_scalar_cycles_1): Likewise.
+	* tree-ssa-live.c (register_ssa_partition_check): Likewise.
+	* tree-outof-ssa.c (eliminate_useless_phis): Likewise.
+	* tree-ssa-reassoc.c (phi_rank): Likewise.
+	* tree-parloops.c (separate_decls_in_region_name): Use
+	replace_ssa_name_symbol.
+	* tree-predcom.c (base_names_in_chain_on): Likewise.
+	* matrix-reorg.c (update_type_size): Query the type of the SSA name,
+	not its variable.
+	* gimple-ssa-strength-reduction.c (create_mul_ssa_cand): Likewise.
+	(create_mul_imm_cand): Likewise.
+	(create_add_ssa_cand): Likewise.
+	(create_add_imm_cand): Likewise.
+	(slsr_process_add): Likewise.
+	* tree-inline.c (remap_ssa_name): Do not set the type of the
+	new SSA_NAME.
+	* tree-ssa-structalias.c (get_constraint_for_ssa_var): Clarify
+	assert.  Check for default def first.
+
 2012-08-04  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* cfgrtl.c (print_rtl_with_bb): Do not print a newline between insns.

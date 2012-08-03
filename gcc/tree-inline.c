@@ -237,7 +237,6 @@ remap_ssa_name (tree name, copy_body_data *id)
       insert_decl_map (id, name, new_tree);
       SSA_NAME_OCCURS_IN_ABNORMAL_PHI (new_tree)
 	= SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name);
-      TREE_TYPE (new_tree) = TREE_TYPE (SSA_NAME_VAR (new_tree));
       /* At least IPA points-to info can be directly transferred.  */
       if (id->src_cfun->gimple_df
 	  && id->src_cfun->gimple_df->ipa_pta

@@ -976,11 +976,10 @@ update_type_size (struct matrix_info *mi, gimple stmt, tree ssa_var,
     {
       lhs = gimple_assign_lhs (stmt);
       gcc_assert (POINTER_TYPE_P
-		  (TREE_TYPE (SSA_NAME_VAR (TREE_OPERAND (lhs, 0)))));
+		  (TREE_TYPE (TREE_OPERAND (lhs, 0))));
       type_size =
 	int_size_in_bytes (TREE_TYPE
-			   (TREE_TYPE
-			    (SSA_NAME_VAR (TREE_OPERAND (lhs, 0)))));
+			   (TREE_TYPE (TREE_OPERAND (lhs, 0))));
     }
   else
     type_size = int_size_in_bytes (TREE_TYPE (ssa_var));

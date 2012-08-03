@@ -1199,7 +1199,7 @@ void
 register_ssa_partition_check (tree ssa_var)
 {
   gcc_assert (TREE_CODE (ssa_var) == SSA_NAME);
-  if (!is_gimple_reg (SSA_NAME_VAR (ssa_var)))
+  if (!is_gimple_reg (ssa_var))
     {
       fprintf (stderr, "Illegally registering a virtual SSA name :");
       print_generic_expr (stderr, ssa_var, TDF_SLIM);

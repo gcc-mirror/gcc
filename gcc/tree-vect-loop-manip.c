@@ -1658,7 +1658,7 @@ vect_can_advance_ivs_p (loop_vec_info loop_vinfo)
       /* Skip virtual phi's. The data dependences that are associated with
          virtual defs/uses (i.e., memory accesses) are analyzed elsewhere.  */
 
-      if (!is_gimple_reg (SSA_NAME_VAR (PHI_RESULT (phi))))
+      if (!is_gimple_reg (PHI_RESULT (phi)))
 	{
 	  if (vect_print_dump_info (REPORT_DETAILS))
 	    fprintf (vect_dump, "virtual phi. skip.");
@@ -1788,7 +1788,7 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo, tree niters,
         }
 
       /* Skip virtual phi's.  */
-      if (!is_gimple_reg (SSA_NAME_VAR (PHI_RESULT (phi))))
+      if (!is_gimple_reg (PHI_RESULT (phi)))
 	{
 	  if (vect_print_dump_info (REPORT_DETAILS))
 	    fprintf (vect_dump, "virtual phi. skip.");
