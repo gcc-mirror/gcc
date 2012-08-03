@@ -4503,9 +4503,9 @@ set_loop_bounds (gfc_loopinfo *loop)
 	  else if (INTEGER_CST_P (info->start[dim])
 		   && !INTEGER_CST_P (specinfo->start[spec_dim])
 		   && integer_onep (info->stride[dim])
-		      == integer_onep (specinfo->stride[dim])
+		      == integer_onep (specinfo->stride[spec_dim])
 		   && INTEGER_CST_P (info->stride[dim])
-		      == INTEGER_CST_P (specinfo->stride[dim]))
+		      == INTEGER_CST_P (specinfo->stride[spec_dim]))
 	    loopspec[n] = ss;
 	  /* We don't work out the upper bound.
 	     else if (INTEGER_CST_P (info->finish[n])
