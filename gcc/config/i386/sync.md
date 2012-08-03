@@ -495,29 +495,33 @@
 
 (define_insn "*atomic_fetch_add_cmp<mode>"
   [(set (reg:CCZ FLAGS_REG)
-	(compare:CCZ (unspec_volatile:SWI
-		       [(match_operand:SWI 0 "memory_operand" "+m")
-		        (match_operand:SI 3 "const_int_operand")]
-		       UNSPECV_XCHG)
-		     (match_operand:SWI 2 "const_int_operand" "i")))
+	(compare:CCZ
+	  (unspec_volatile:SWI
+	    [(match_operand:SWI 0 "memory_operand" "+m")
+	     (match_operand:SI 3 "const_int_operand")]		;; model
+	    UNSPECV_XCHG)
+	  (match_operand:SWI 2 "const_int_operand" "i")))
    (set (match_dup 0)
 	(plus:SWI (match_dup 0)
 		  (match_operand:SWI 1 "const_int_operand" "i")))]
   "(unsigned HOST_WIDE_INT) INTVAL (operands[1])
    == -(unsigned HOST_WIDE_INT) INTVAL (operands[2])"
 {
-  if (TARGET_USE_INCDEC)
+  if (incdec_operand (operands[1], <MODE>mode))
     {
       if (operands[1] == const1_rtx)
-	return "lock{%;} inc{<imodesuffix>}\t%0";
-      if (operands[1] == constm1_rtx)
-	return "lock{%;} dec{<imodesuffix>}\t%0";
+	return "lock{%;} %K3inc{<imodesuffix>}\t%0";
+      else
+	{
+	  gcc_assert (operands[1] == constm1_rtx);
+	  return "lock{%;} %K3dec{<imodesuffix>}\t%0";
+	}
     }
 
   if (x86_maybe_negate_const_int (&operands[1], <MODE>mode))
-    return "lock{%;} sub{<imodesuffix>}\t{%1, %0|%0, %1}";
+    return "lock{%;} %K3sub{<imodesuffix>}\t{%1, %0|%0, %1}";
 
-  return "lock{%;} add{<imodesuffix>}\t{%1, %0|%0, %1}";
+  return "lock{%;} %K3add{<imodesuffix>}\t{%1, %0|%0, %1}";
 })
 
 ;; Recall that xchg implicitly sets LOCK#, so adding it again wastes space.
@@ -543,12 +547,15 @@
    (clobber (reg:CC FLAGS_REG))]
   ""
 {
-  if (TARGET_USE_INCDEC)
+  if (incdec_operand (operands[1], <MODE>mode))
     {
       if (operands[1] == const1_rtx)
 	return "lock{%;} %K2inc{<imodesuffix>}\t%0";
-      if (operands[1] == constm1_rtx)
-	return "lock{%;} %K2dec{<imodesuffix>}\t%0";
+      else
+	{
+	  gcc_assert (operands[1] == constm1_rtx);
+	  return "lock{%;} %K2dec{<imodesuffix>}\t%0";
+	}
     }
 
   if (x86_maybe_negate_const_int (&operands[1], <MODE>mode))
@@ -567,12 +574,15 @@
    (clobber (reg:CC FLAGS_REG))]
   ""
 {
-  if (TARGET_USE_INCDEC)
+  if (incdec_operand (operands[1], <MODE>mode))
     {
       if (operands[1] == const1_rtx)
 	return "lock{%;} %K2dec{<imodesuffix>}\t%0";
-      if (operands[1] == constm1_rtx)
-	return "lock{%;} %K2inc{<imodesuffix>}\t%0";
+      else
+	{
+	  gcc_assert (operands[1] == constm1_rtx);
+	  return "lock{%;} %K2inc{<imodesuffix>}\t%0";
+	}
     }
 
   if (x86_maybe_negate_const_int (&operands[1], <MODE>mode))
