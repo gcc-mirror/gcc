@@ -332,7 +332,7 @@ rename_ssa_copies (void)
 	  res = gimple_phi_result (phi);
 
 	  /* Do not process virtual SSA_NAMES.  */
-	  if (!is_gimple_reg (SSA_NAME_VAR (res)))
+	  if (!is_gimple_reg (res))
 	    continue;
 
           for (i = 0; i < gimple_phi_num_args (phi); i++)

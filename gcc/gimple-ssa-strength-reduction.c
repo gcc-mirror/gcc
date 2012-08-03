@@ -656,7 +656,7 @@ create_mul_ssa_cand (gimple gs, tree base_in, tree stride_in, bool speed)
       base = base_in;
       index = double_int_zero;
       stride = stride_in;
-      ctype = TREE_TYPE (SSA_NAME_VAR (base_in));
+      ctype = TREE_TYPE (base_in);
     }
 
   c = alloc_cand_and_find_basis (CAND_MULT, gs, base, index, stride,
@@ -744,7 +744,7 @@ create_mul_imm_cand (gimple gs, tree base_in, tree stride_in, bool speed)
       base = base_in;
       index = double_int_zero;
       stride = stride_in;
-      ctype = TREE_TYPE (SSA_NAME_VAR (base_in));
+      ctype = TREE_TYPE (base_in);
     }
 
   c = alloc_cand_and_find_basis (CAND_MULT, gs, base, index, stride,
@@ -828,7 +828,7 @@ create_add_ssa_cand (gimple gs, tree base_in, tree addend_in,
 	  if (subtract_p)
 	    index = double_int_neg (index);
 	  stride = addend_cand->base_expr;
-	  ctype = TREE_TYPE (SSA_NAME_VAR (base_in));
+	  ctype = TREE_TYPE (base_in);
 	  if (has_single_use (addend_in))
 	    savings = (addend_cand->dead_savings
 		       + stmt_cost (addend_cand->cand_stmt, speed));
@@ -877,7 +877,7 @@ create_add_ssa_cand (gimple gs, tree base_in, tree addend_in,
 		  index = tree_to_double_int (subtrahend_cand->stride);
 		  index = double_int_neg (index);
 		  stride = subtrahend_cand->base_expr;
-		  ctype = TREE_TYPE (SSA_NAME_VAR (base_in));
+		  ctype = TREE_TYPE (base_in);
 		  if (has_single_use (addend_in))
 		    savings = (subtrahend_cand->dead_savings 
 			       + stmt_cost (subtrahend_cand->cand_stmt, speed));
@@ -903,7 +903,7 @@ create_add_ssa_cand (gimple gs, tree base_in, tree addend_in,
       base = base_in;
       index = subtract_p ? double_int_minus_one : double_int_one;
       stride = addend_in;
-      ctype = TREE_TYPE (SSA_NAME_VAR (base_in));
+      ctype = TREE_TYPE (base_in);
     }
 
   c = alloc_cand_and_find_basis (CAND_ADD, gs, base, index, stride,
@@ -968,7 +968,7 @@ create_add_imm_cand (gimple gs, tree base_in, double_int index_in, bool speed)
       base = base_in;
       index = index_in;
       stride = integer_one_node;
-      ctype = TREE_TYPE (SSA_NAME_VAR (base_in));
+      ctype = TREE_TYPE (base_in);
     }
 
   c = alloc_cand_and_find_basis (kind, gs, base, index, stride,
@@ -990,7 +990,7 @@ slsr_process_add (gimple gs, tree rhs1, tree rhs2, bool speed)
       /* First record an interpretation assuming RHS1 is the base expression
 	 and RHS2 is the stride.  But it doesn't make sense for the
 	 stride to be a pointer, so don't record a candidate in that case.  */
-      if (!POINTER_TYPE_P (TREE_TYPE (SSA_NAME_VAR (rhs2))))
+      if (!POINTER_TYPE_P (TREE_TYPE (rhs2)))
 	{
 	  c = create_add_ssa_cand (gs, rhs1, rhs2, subtract_p, speed);
 
@@ -1007,7 +1007,7 @@ slsr_process_add (gimple gs, tree rhs1, tree rhs2, bool speed)
       /* Otherwise, record another interpretation assuming RHS2 is the
 	 base expression and RHS1 is the stride, again provided that the
 	 stride is not a pointer.  */
-      if (!POINTER_TYPE_P (TREE_TYPE (SSA_NAME_VAR (rhs1))))
+      if (!POINTER_TYPE_P (TREE_TYPE (rhs1)))
 	{
 	  c2 = create_add_ssa_cand (gs, rhs2, rhs1, false, speed);
 	  if (c)
