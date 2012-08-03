@@ -1,3 +1,12 @@
+2012-08-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sync.md (*atomic_fetch_add_cmp<mode>): Use
+	incdec_operand predicate to return INC or DEC insn mnemonic.
+	Add %K operand modifier.
+	(atomic_add<mode>): Use incdec_operand predicate to
+	return INC or DEC insn mnemonic.
+	(atomic_dec<mode>): Ditto.
+
 2012-08-03  Michael Matz  <matz@suse.de>
 
 	PR tree-optimization/54146
@@ -42,8 +51,8 @@
 	(slsr_process_add): Likewise.
 	* tree-inline.c (remap_ssa_name): Do not set the type of the
 	new SSA_NAME.
-	* tree-ssa-structalias.c (get_constraint_for_ssa_var): Clarify
-	assert.  Check for default def first.
+	* tree-ssa-structalias.c (get_constraint_for_ssa_var): Clarify assert.
+	Check for default def first.
 
 2012-08-04  Steven Bosscher  <steven@gcc.gnu.org>
 
@@ -79,8 +88,8 @@
 	* reg-stack.c (subst_stack_regs_pat): Ditto.
 	* reload.c (find_reloads, find_equiv_reg): Ditto.
 	* rtlanal.c (replace_rtx): Remove test.
-	* rtlanal.c (constant_pool_constant_p, split_double): Encapsulate test for
-	CONST_DOUBLE in macro.
+	* rtlanal.c (constant_pool_constant_p, split_double): Encapsulate
+	test for CONST_DOUBLE in macro.
 	* simplify-rtx.c (mode_signbit_p, avoid_constant_pool_reference)
 	(simplify_unary_operation_1, simplify_const_unary_operation)
 	(simplify_binary_operation_1, simplify_const_binary_operation)
@@ -88,8 +97,7 @@
 	(simplify_const_relational_operations)
 	(implify_subreg): Ditto.
 	* varasm.c (output_constant_pool_2): Ditto.
-	* rtl.h (CONST_DOUBLE_AS_INT_P, CONST_DOUBLE_AS_FLOAT_P): New
-	macros.
+	* rtl.h (CONST_DOUBLE_AS_INT_P, CONST_DOUBLE_AS_FLOAT_P): New macros.
 	* rtl.def (CONST_DOUBLE):  Updated comments.
 
 2012-08-02  Richard Sandiford  <rdsandiford@googlemail.com>
@@ -319,7 +327,8 @@
 	(tree_function_versioning): Likewise.
 	* tree-pass.h (PROP_referenced_vars): Remove.
 	(pass_referenced_vars): Likewise.
-	* tree-profile.c (gimple_gen_edge_profiler): Do not add referenced vars.
+	* tree-profile.c (gimple_gen_edge_profiler): Do not add
+	referenced vars.
 	(gimple_gen_interval_profiler): Likewise.
 	(gimple_gen_pow2_profiler): Likewise.
 	(gimple_gen_one_value_profiler): Likewise.
@@ -445,7 +454,6 @@
 2012-08-01  Catherine Moore  <clm@codesourcery.com>
 	    Sandra Loosemore  <sandra@codesourcery.com>
 
-	gcc/
 	* config/mips/mips-cpus.def (34kn): New.
 	* config/mips/mips.h (MIPS_ARCH_FLOAT_SPEC): Add 34kn.
 	(BASE_DRIVER_SELF_SPECS): Do not imply -mdsp for the 34kn.
