@@ -1,3 +1,8 @@
+2012-08-03  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR target/54156
+	* testsuite/gcc.dg/vect/pr53773.c: Change to use optimized dump.
+
 2012-08-03  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/54166
