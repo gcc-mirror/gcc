@@ -1,3 +1,9 @@
+2012-08-03  Marc Glisse  <marc.glisse@inria.fr>
+
+	* pt.c (tsubst_copy_and_build): Handle VECTOR_TYPE like scalars.
+	* cp-tree.h (scalarish_type_p): Declare.
+	* tree.c (scalarish_type_p): Make non-static.
+
 2012-08-02  Jason Merrill  <jason@redhat.com>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 

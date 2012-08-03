@@ -13851,7 +13851,7 @@ tsubst_copy_and_build (tree t,
 	  /* We can't do much here.  */;
 	else if (!CLASS_TYPE_P (object_type))
 	  {
-	    if (SCALAR_TYPE_P (object_type))
+	    if (scalarish_type_p (object_type))
 	      {
 		tree s = NULL_TREE;
 		tree dtor = member;
