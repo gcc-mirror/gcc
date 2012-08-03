@@ -1,3 +1,14 @@
+2012-08-03 Marc Glisse <marc.glisse@inria.fr>
+
+	PR tree-optimization/30318
+	* double-int.c (mul_double_wide_with_sign): New function.
+	(mul_double_with_sign): Call the new function.
+	* double-int.h (mul_double_wide_with_sign): Declare the new function.
+	* tree-vrp.c (extract_range_from_binary_expr_1) [MULT_EXPR]:
+	Handle integer types that wrap on overflow.
+	(quad_int_cmp): New helper function.
+	(quad_int_pair_sort): Likewise.
+
 2012-08-03  Richard Guenther  <rguenther@suse.de>
 
 	* tree-vect-loop-manip.c (vect_can_advance_ivs_p): Query

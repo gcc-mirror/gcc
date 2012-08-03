@@ -1,3 +1,8 @@
+2012-08-03 Marc Glisse <marc.glisse@inria.fr>
+
+	PR tree-optimization/30318
+	* gcc.dg/tree-ssa/vrp77.c: New testcase.
+
 2012-08-03  Marc Glisse  <marc.glisse@inria.fr>
 
 	* g++.dg/ext/vector17.C: New testcase.

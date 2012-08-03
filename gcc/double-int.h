@@ -307,6 +307,11 @@ extern int mul_double_with_sign (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
 				 unsigned HOST_WIDE_INT, HOST_WIDE_INT,
 				 unsigned HOST_WIDE_INT *, HOST_WIDE_INT *,
 				 bool);
+extern int mul_double_wide_with_sign (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
+				      unsigned HOST_WIDE_INT, HOST_WIDE_INT,
+				      unsigned HOST_WIDE_INT *, HOST_WIDE_INT *,
+				      unsigned HOST_WIDE_INT *, HOST_WIDE_INT *,
+				      bool);
 #define mul_double(l1,h1,l2,h2,lv,hv) \
   mul_double_with_sign (l1, h1, l2, h2, lv, hv, false)
 extern void lshift_double (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
