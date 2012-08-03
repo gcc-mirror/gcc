@@ -2818,7 +2818,7 @@ is_dummy_object (const_tree ob)
 /* Returns 1 iff type T is something we want to treat as a scalar type for
    the purpose of deciding whether it is trivial/POD/standard-layout.  */
 
-static bool
+bool
 scalarish_type_p (const_tree t)
 {
   if (t == error_mark_node)
