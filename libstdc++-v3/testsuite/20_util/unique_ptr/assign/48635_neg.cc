@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++0x" }
 // { dg-do compile }
 
-// Copyright (C) 2011 Free Software Foundation
+// Copyright (C) 2011-2012 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -41,10 +41,10 @@ void f()
   std::unique_ptr<int, B&> ub(nullptr, b);
   std::unique_ptr<int, D&> ud(nullptr, d);
   ub = std::move(ud);
-// { dg-error "use of deleted function" "" { target *-*-* } 189 }
+// { dg-error "use of deleted function" "" { target *-*-* } 192 }
 
   std::unique_ptr<int[], B&> uba(nullptr, b);
   std::unique_ptr<int[], D&> uda(nullptr, d);
   uba = std::move(uda);
-// { dg-error "use of deleted function" "" { target *-*-* } 329 }
+// { dg-error "use of deleted function" "" { target *-*-* } 332 }
 }
