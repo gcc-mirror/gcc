@@ -819,7 +819,6 @@ gfc_handle_option (size_t scode, const char *arg, int value,
       break;
 
     case OPT_fintrinsic_modules_path:
-      gfc_add_include_path (arg, false, false);
       gfc_add_intrinsic_modules_path (arg);
       break;
 
