@@ -475,7 +475,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	iterator __i = lower_bound(__k);
 	// __i->first is greater than or equivalent to __k.
 	if (__i == end() || key_comp()(__k, (*__i).first))
-          __i = insert(__i, value_type(std::move(__k), mapped_type()));
+          __i = insert(__i, std::make_pair(std::move(__k), mapped_type()));
 	return (*__i).second;
       }
 #endif
