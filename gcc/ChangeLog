@@ -1,3 +1,10 @@
+2012-08-04  Catherine Moore  <clm@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config/mips/xlr.md (ir_xlr_alu_clz): New insn_reservation.
+	(ir_xlr_alu): Remove clz.
+	* config/mips/mips-cpus.def (xlr): Set PTF_AVOID_BRANCHLIKELY.
+
 2012-08-04  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (arm_gen_constant): Use SImode when preparing operands for
