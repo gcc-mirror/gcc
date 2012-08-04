@@ -1,3 +1,15 @@
+2012-08-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (QI_REGNO_P): New define.
+	(ANY_QI_REGNO_P): Ditto.
+	(GENERAL_REGNO_P): Use IN_RANGE macro.
+	(QI_REG_P): Use QI_REGNO_P.
+	(ANY_QI_REG_P): Use GENERAL_REGNO_P and QI_REGNO_P.
+	(HARD_REGNO_CALLER_SAVE_MODE): Use QI_REGNO_P.
+	* config/i386/i386.c (ix86_hard_regno_mode_ok): Ditto.
+	(x86_extended_QIreg_mentioned_p): Ditto.  Also check if
+	register is a general register.
+
 2012-08-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sync.md (*atomic_fetch_add_cmp<mode>): Use
