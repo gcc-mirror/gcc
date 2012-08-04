@@ -2,7 +2,7 @@
 /* { dg-options "-O2 -mips32" } */
 /* { dg-final { scan-assembler-not "synci" } } */
 /* { dg-final { scan-assembler-not "jr.hb" } } */
-/* { dg-final { scan-assembler "_flush_cache" } } */
+/* { dg-final { scan-assembler "_flush_cache|mips_sync_icache|_cacheflush" } } */
 
 void f()
 {
