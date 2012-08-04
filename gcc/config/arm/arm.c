@@ -2999,8 +2999,8 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode, rtx cond,
 	    /* Extz only supports SImode, but we can coerce the operands
 	       into that mode.  */
 	    emit_constant_insn (cond,
-				gen_extzv_t2 (gen_lowpart (mode, target),
-					      gen_lowpart (mode, source),
+				gen_extzv_t2 (gen_lowpart (SImode, target),
+					      gen_lowpart (SImode, source),
 					      GEN_INT (i), const0_rtx));
 	}
 
