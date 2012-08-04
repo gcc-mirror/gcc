@@ -307,7 +307,7 @@ gfc_scanner_done_1 (void)
 
 static void
 add_path_to_list (gfc_directorylist **list, const char *path,
-		  bool use_for_modules, bool head)
+		  bool use_for_modules, bool head, bool warn)
 {
   gfc_directorylist *dir;
   const char *p;
@@ -324,8 +324,11 @@ add_path_to_list (gfc_directorylist **list, const char *path,
 	gfc_warning_now ("Include directory \"%s\": %s", path,
 			 xstrerror(errno));
       else
-	/* FIXME:  Also support -Wmissing-include-dirs.  */
-	gfc_warning_now ("Nonexistent include directory \"%s\"", path);
+	{
+	  /* FIXME:  Also support -Wmissing-include-dirs.  */
+	  if (warn)
+	    gfc_warning_now ("Nonexistent include directory \"%s\"", path);
+	}
       return;
     }
   else if (!S_ISDIR (st.st_mode))
@@ -363,7 +366,7 @@ add_path_to_list (gfc_directorylist **list, const char *path,
 void
 gfc_add_include_path (const char *path, bool use_for_modules, bool file_dir)
 {
-  add_path_to_list (&include_dirs, path, use_for_modules, file_dir);
+  add_path_to_list (&include_dirs, path, use_for_modules, file_dir, true);
 
   /* For '#include "..."' these directories are automatically searched.  */
   if (!file_dir)
@@ -374,7 +377,7 @@ gfc_add_include_path (const char *path, bool use_for_modules, bool file_dir)
 void
 gfc_add_intrinsic_modules_path (const char *path)
 {
-  add_path_to_list (&intrinsic_modules_dirs, path, true, false);
+  add_path_to_list (&intrinsic_modules_dirs, path, true, false, false);
 }
 
 

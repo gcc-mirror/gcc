@@ -1,3 +1,14 @@
+2012-08-02  Thomas König  <tkoenig@gcc.gnu.org>
+
+	 PR fortran/54033
+	 * scanner.c (add_path_to_list):  New argument warn.  Don't
+	 warn if it is true.
+	 (gfc_add_include_path):  Warn if directory is missing.
+	 (gfc_add_intrinsic_modules_path):  Do not warn if directory
+	 is missing.
+	 * optinons.c (gfc_handle_option):  Do not add directory
+	 for intrinsic modules to normal include path.
+
 2012-08-03  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/54166
@@ -697,8 +708,8 @@
 
 2012-05-05  Janne Blomqvist  <jb@gcc.gnu.org>
 
-        * gfortran.texi (GFORTRAN_TMPDIR): Rename to TMPDIR, explain
-        algorithm for choosing temp directory.
+	* gfortran.texi (GFORTRAN_TMPDIR): Rename to TMPDIR, explain
+	algorithm for choosing temp directory.
 
 2012-05-04  Tobias Burnus  <burnus@net-b.de>
 
