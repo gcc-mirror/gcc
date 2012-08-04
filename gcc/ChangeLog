@@ -1,3 +1,8 @@
+2012-08-04  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c (arm_gen_constant): Use SImode when preparing operands for
+	gen_extzv_t2.
+
 2012-08-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.h (QI_REGNO_P): New define.
