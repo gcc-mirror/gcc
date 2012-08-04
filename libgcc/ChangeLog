@@ -1,3 +1,8 @@
+2012-08-03  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR driver/54171
+	* Makefile.in (version): Replace top_srcdir with srcdir.
+
 2012-08-03  Jonathan Yong  <jon_y@users.sourceforge.net>
 
 	* Makefile.in (version): set to BASE-VER file from gcc directory.
