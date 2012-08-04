@@ -5402,7 +5402,7 @@ ix86_function_regparm (const_tree type, const_tree decl)
 	     so less registers should be used for argument passing.
 	     This functionality can be overriden by an explicit
 	     regparm value.  */
-	  for (regno = 0; regno <= DI_REG; regno++)
+	  for (regno = AX_REG; regno <= DI_REG; regno++)
 	    if (fixed_regs[regno])
 	      globals++;
 
@@ -32067,7 +32067,7 @@ ix86_hard_regno_mode_ok (int regno, enum machine_mode mode)
     {
       /* Take care for QImode values - they can be in non-QI regs,
 	 but then they do cause partial register stalls.  */
-      if (regno <= BX_REG || TARGET_64BIT)
+      if (TARGET_64BIT || QI_REGNO_P (regno))
 	return true;
       if (!TARGET_PARTIAL_REG_STALL)
 	return true;
@@ -33668,8 +33668,8 @@ x86_extended_QIreg_mentioned_p (rtx insn)
   int i;
   extract_insn_cached (insn);
   for (i = 0; i < recog_data.n_operands; i++)
-    if (REG_P (recog_data.operand[i])
-	&& REGNO (recog_data.operand[i]) > BX_REG)
+    if (GENERAL_REG_P (recog_data.operand[i])
+	&& !QI_REGNO_P (REGNO (recog_data.operand[i])))
        return true;
   return false;
 }
