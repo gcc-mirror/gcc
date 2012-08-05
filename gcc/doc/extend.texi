@@ -9560,6 +9560,9 @@ AMD family 10h Shanghai CPU.
 @item istanbul
 AMD family 10h Istanbul CPU.
 
+@item btver1
+AMD family 14h CPU.
+
 @item amdfam15h
 AMD family 15h CPU.
 
@@ -9568,6 +9571,9 @@ AMD family 15h Bulldozer version 1.
 
 @item bdver2
 AMD family 15h Bulldozer version 2.
+
+@item btver2
+AMD family 16h CPU.
 @end table
 
 Here is an example:

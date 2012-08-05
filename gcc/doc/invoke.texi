@@ -13304,6 +13304,11 @@ CPUs based on AMD Family 14h cores with x86-64 instruction set support.  (This
 supersets MMX, SSE, SSE2, SSE3, SSSE3, SSE4A, CX16, ABM and 64-bit
 instruction set extensions.)
 
+@item btver2
+CPUs based on AMD Family 16h cores with x86-64 instruction set support. This
+includes MOVBE, F16C, BMI, AVX, PCL_MUL, AES, SSE4.2, SSE4.1, CX16, ABM,
+SSE4A, SSSE3, SSE3, SSE2, SSE, MMX and 64-bit instruction set extensions.
+
 @item winchip-c6
 IDT WinChip C6 CPU, dealt in same way as i486 with additional MMX instruction
 set support.
