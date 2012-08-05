@@ -1,4 +1,10 @@
 2012-08-04  Sandra Loosemore  <sandra@codesourcery.com>
+	    Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* g++.dg/opt/enum2.C: Require fpic target.
+	* g++.dg/lto/20090303_0.C: Likewise.
+
+2012-08-04  Sandra Loosemore  <sandra@codesourcery.com>
 	    Catherine Moore  <clm@codesourcery.com>
 
 	* gcc.target/mips/clear-cache-1.c: Test for alternate cache

@@ -16162,6 +16162,16 @@ mips_option_override (void)
       target_flags &= ~MASK_ABICALLS;
     }
 
+  /* PIC requires -mabicalls.  */
+  if (flag_pic)
+    {
+      if (mips_abi == ABI_EABI)
+	error ("cannot generate position-independent code for %qs",
+	       "-mabi=eabi");
+      else if (!TARGET_ABICALLS)
+	error ("position-independent code requires %qs", "-mabicalls");
+    }
+
   if (TARGET_ABICALLS_PIC2)
     /* We need to set flag_pic for executables as well as DSOs
        because we may reference symbols that are not defined in
