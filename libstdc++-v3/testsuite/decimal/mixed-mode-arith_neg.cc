@@ -1,4 +1,4 @@
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009-2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,7 +25,6 @@
 // floating-point type to a generic floating-point type.
 
 #include <decimal/decimal>
-#include <testsuite_hooks.h>
 
 using namespace std::decimal;
 

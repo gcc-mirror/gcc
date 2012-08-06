@@ -1,4 +1,4 @@
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009-2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,8 +32,8 @@
   i = ESIGN EXP;							\
   a = PASTE(make_decimal,32) (sll, i);					\
   b = PASTE(make_decimal,32) (PASTE(COEFF,LL), ESIGN EXP);	\
-  VERIFY ((__builtin_memcmp ((void *)&x, (void *)&a, SIZE) == 0)	\
-          && (__builtin_memcmp ((void *)&x, (void *)&b,SIZE) == 0));
+  VERIFY ((std::memcmp ((void *)&x, (void *)&a, SIZE) == 0)	\
+          && (std::memcmp ((void *)&x, (void *)&b,SIZE) == 0));
 
 #define TESTVAL_NONNEG(COEFF,ESIGN,EXP,SUF,NUM,SIZE)			\
   x = PASTE(PASTE(PASTE(PASTE(PASTE(COEFF,.),E),ESIGN),EXP),SUF);	\
@@ -44,16 +44,17 @@
   b = PASTE(make_decimal,32) (PASTE(COEFF,LL), ESIGN EXP);		\
   c = PASTE(make_decimal,32) (ull, i);					\
   d = PASTE(make_decimal,32) (PASTE(COEFF,ULL), ESIGN EXP);		\
-  VERIFY ((__builtin_memcmp ((void *)&x, (void *)&a, SIZE) == 0)	\
-          && (__builtin_memcmp ((void *)&x, (void *)&b,SIZE) == 0)	\
-          && (__builtin_memcmp ((void *)&x, (void *)&c,SIZE) == 0)	\
-          && (__builtin_memcmp ((void *)&x, (void *)&d,SIZE) == 0));
+  VERIFY ((std::memcmp ((void *)&x, (void *)&a, SIZE) == 0)	\
+          && (std::memcmp ((void *)&x, (void *)&b,SIZE) == 0)	\
+          && (std::memcmp ((void *)&x, (void *)&c,SIZE) == 0)	\
+          && (std::memcmp ((void *)&x, (void *)&d,SIZE) == 0));
 
 using namespace std::decimal;
 
 void
 make_decimal_32 (void)
 {
+  bool test __attribute__((unused)) = true;
   decimal32 a, b, c, d;
   float x __attribute__((mode(SD)));
   int i;
@@ -78,6 +79,7 @@ make_decimal_32 (void)
 void
 make_decimal_64 (void)
 {
+  bool test __attribute__((unused)) = true;
   decimal64 a, b, c, d;
   float x __attribute__((mode(DD)));
   int i;
@@ -102,6 +104,7 @@ make_decimal_64 (void)
 void
 make_decimal_128 (void)
 {
+  bool test __attribute__((unused)) = true;
   decimal128 a, b, c, d;
   float x __attribute__((mode(TD)));
   int i;
