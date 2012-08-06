@@ -4345,9 +4345,13 @@ package body Exp_Ch7 is
    ------------------------------------
 
    procedure Insert_Actions_In_Scope_Around (N : Node_Id) is
-      SE     : Scope_Stack_Entry renames Scope_Stack.Table (Scope_Stack.Last);
-      After  : List_Id renames SE.Actions_To_Be_Wrapped_After;
-      Before : List_Id renames SE.Actions_To_Be_Wrapped_Before;
+      After  : constant List_Id :=
+        Scope_Stack.Table (Scope_Stack.Last).Actions_To_Be_Wrapped_After;
+      Before : constant List_Id :=
+        Scope_Stack.Table (Scope_Stack.Last).Actions_To_Be_Wrapped_Before;
+      --  Note: We used to use renamings of Scope_Stack.Table (Scope_Stack.
+      --  Last), but this was incorrect as Process_Transient_Object may
+      --  introduce new scopes and cause a reallocation of Scope_Stack.Table.
 
       procedure Process_Transient_Objects
         (First_Object : Node_Id;
@@ -4694,11 +4698,13 @@ package body Exp_Ch7 is
          --  Reset the action lists
 
          if Present (Before) then
-            Before := No_List;
+            Scope_Stack.Table (Scope_Stack.Last).
+              Actions_To_Be_Wrapped_Before := No_List;
          end if;
 
          if Present (After) then
-            After := No_List;
+            Scope_Stack.Table (Scope_Stack.Last).
+              Actions_To_Be_Wrapped_After := No_List;
          end if;
       end;
    end Insert_Actions_In_Scope_Around;
