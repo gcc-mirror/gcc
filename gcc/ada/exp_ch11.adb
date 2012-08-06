@@ -1916,7 +1916,7 @@ package body Exp_Ch11 is
                begin
                   if LCN = Statements (P)
                        or else
-                     LCN  = SSE.Actions_To_Be_Wrapped_Before
+                     LCN = SSE.Actions_To_Be_Wrapped_Before
                        or else
                      LCN = SSE.Actions_To_Be_Wrapped_After
                   then

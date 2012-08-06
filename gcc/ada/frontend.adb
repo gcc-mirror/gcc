@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -282,6 +282,7 @@ begin
    --  a context for their semantic processing.
 
    if Config_Pragmas /= Error_List
+     and then not Fatal_Error (Main_Unit)
      and then Operating_Mode /= Check_Syntax
    then
       --  Pragmas that require some semantic activity, such as
