@@ -1,3 +1,10 @@
+2012-08-06  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/35831
+	* interface.c (check_result_characteristics): New function, which checks
+	the characteristics of function results.
+	(gfc_compare_interfaces,gfc_check_typebound_override): Call it.
+
 2012-08-02  Thomas König  <tkoenig@gcc.gnu.org>
 
 	 PR fortran/54033

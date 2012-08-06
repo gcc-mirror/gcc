@@ -15,7 +15,7 @@ program main
   end type
 
   type(u), external :: ufunc
-  call sub(ufunc)            ! { dg-error "Type/rank mismatch in return value" }
+  call sub(ufunc)            ! { dg-error "Type/rank mismatch in function result" }
 
 contains
 
