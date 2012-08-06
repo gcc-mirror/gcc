@@ -267,7 +267,7 @@ C("Target_OS", OS_Type, TARGET_OS, "")
 /*
    pragma Warnings (Off, Target_OS);
    --  Suppress warnings on Target_OS since it is in general tested for
-   --  equality with a constant valueto implement conditional compilation,
+   --  equality with a constant value to implement conditional compilation,
    --  which normally generates a constant condition warning.
 
 */
