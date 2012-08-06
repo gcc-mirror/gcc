@@ -2213,6 +2213,8 @@ package body Uintp is
    ----------------
 
    function UI_To_Int (Input : Uint) return Int is
+      pragma Assert (Input /= No_Uint);
+
    begin
       if Direct (Input) then
          return Direct_Val (Input);

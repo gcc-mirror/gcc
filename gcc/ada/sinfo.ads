@@ -4119,7 +4119,7 @@ package Sinfo is
       --  Then_Statements (List2)
       --  Elsif_Parts (List3) (set to No_List if none present)
       --  Else_Statements (List4) (set to No_List if no else part present)
-      --  End_Span (Uint5) (set to No_Uint if expander generated)
+      --  End_Span (Uint5) (set to Uint_0 if expander generated)
 
       --  N_Elsif_Part
       --  Sloc points to ELSIF
@@ -4151,7 +4151,7 @@ package Sinfo is
       --  Sloc points to CASE
       --  Expression (Node3)
       --  Alternatives (List4)
-      --  End_Span (Uint5) (set to No_Uint if expander generated)
+      --  End_Span (Uint5) (set to Uint_0 if expander generated)
 
       --  Note: Before Ada 2012, a pragma in a statement sequence is always
       --  followed by a statement, and this is true in the tree even in Ada

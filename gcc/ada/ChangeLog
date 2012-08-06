@@ -1,3 +1,45 @@
+2012-08-06  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch6.adb: Remove useless flag Body_Deleted.
+
+2012-08-06  Thomas Quinot  <quinot@adacore.com>
+
+	* sinfo.ads (End_Span): Change default from No_Uint to Uint_0,
+	as this is what all usage occurrences of this attribute are
+	expecting.
+	* uintp.adb (UI_To_Int): Add assertion to guard against calling
+	with No_Uint.
+
+2012-08-06  Vincent Pucci  <pucci@adacore.com>
+
+PR ada/54125
+	* exp_attr.adb (Expand_N_Attribute_Reference): Expand new
+	Atomic_Always_Lock_Free attribute.
+	* sem_attr.adb (Analyze_Attribute): Analyze new
+	Atomic_Always_Lock_Free attribute.
+	(Eval_Attribute): Nothing to do with new Atomic_Always_Lock_Free
+	attribute.
+	* sem_ch9.adb (Allows_Lock_Free_Implementation):
+	Support_Atomic_Primitives check replaces previous erroneous
+	size check.
+	* sem_util.adb, sem_util.ads (Support_Atomic_Primitives):
+	New routine.
+	* snames.ads-tmpl: New name Name_Atomic_Always_Lock_Free and
+	new attribute Attribute_Atomic_Always_Lock_Free defined.
+	* s-atopri.adb: Support_Atomic_Primitives checks replaced by
+	Atomic_Always_Lock_Free queries.
+	* system-aix64.ads, system-aix.ads, system-darwin-ppc.ads,
+	system-hpux.ads, system-linux-alpha.ads, system-linux-hppa.ads,
+	system-linux-ppc.ads, system-linux-s390.ads,
+	system-linux-s390x.ads, system-linux-sh4.ads,
+	system-linux-sparc.ads, system-lynxos178-ppc.ads,
+	system-lynxos-ppc.ads, system-mingw.ads,
+	system-vxworks-arm.ads, system-solaris-sparc.ads,
+	system-solaris-sparcv9.ads, system-vms_64.ads,
+	system-vxworks-m68k.ads, system-vxworks-mips.ads,
+	system-vxworks-ppc.ads, system-vxworks-sparcv9.ads: Flag
+	Support_Atomic_Primitives removed.
+
 2012-08-06  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_mech.adb (Set_Mechanisms): OUT and IN OUT parameters are
