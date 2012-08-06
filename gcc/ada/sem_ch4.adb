@@ -4343,9 +4343,8 @@ package body Sem_Ch4 is
                      --  Emit appropriate message. Gigi will replace the
                      --  node subsequently with the appropriate Raise.
 
-                     --  In Alfa mode, this is an made into an error to
-                     --  simplify the treatment of the formal verification
-                     --  backend.
+                     --  In Alfa mode, this is made into an error to simplify
+                     --  the processing of the formal verification backend.
 
                      if Alfa_Mode then
                         Apply_Compile_Time_Constraint_Error
