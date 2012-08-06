@@ -1,3 +1,28 @@
+2012-08-06  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch4.adb: Minor reformatting.
+
+2012-08-06  Thomas Quinot  <quinot@adacore.com>
+
+	* s-oscons-tmplt.c, xoscons.adb: Per the Single UNIX Specification,
+	types cc_t, speed_t, and tcflag_t defined in <termios.h> all are
+	unsigned types. Add required special handling to have their correct
+	unsigned values in s-oscons.ads.
+
+2012-08-06  Thomas Quinot  <quinot@adacore.com>
+
+	* par-ch13.adb: Minor reformatting.
+
+2012-08-06  Thomas Quinot  <quinot@adacore.com>
+
+	* g-sercom.adb, g-sercom.ads, g-sercom-mingw.adb, g-sercom-linux.adb
+	(Set): Add Local and Flow_Control settings.
+
+2012-08-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_attr.adb: Suppress saving of 'Old if assertions are not
+	enabled.
+
 2012-08-06  Yannick Moy  <moy@adacore.com>
 
 	* sem_ch4.adb (Analyze_Selected_Component): Issue an error in

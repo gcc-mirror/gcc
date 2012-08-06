@@ -3379,6 +3379,13 @@ package body Exp_Attr is
          Asn_Stm : Node_Id;
 
       begin
+         --  If assertions are disabled, no need to create the declaration
+         --  that preserves the value.
+
+         if not Assertions_Enabled then
+            return;
+         end if;
+
          --  Find the nearest subprogram body, ignoring _Preconditions
 
          Subp := N;

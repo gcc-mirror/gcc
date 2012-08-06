@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                    Copyright (C) 2007-2010, AdaCore                      --
+--                    Copyright (C) 2007-2012, AdaCore                      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,10 +38,13 @@ with Ada.Unchecked_Deallocation;
 with System;               use System;
 with System.Communication; use System.Communication;
 with System.CRTL;          use System.CRTL;
+with System.OS_Constants;
 
 with GNAT.OS_Lib; use GNAT.OS_Lib;
 
 package body GNAT.Serial_Communications is
+
+   package OSC renames System.OS_Constants;
 
    use type Interfaces.C.unsigned;
 
@@ -54,43 +57,26 @@ package body GNAT.Serial_Communications is
    function fcntl (fd : int; cmd : int; value : int) return int;
    pragma Import (C, fcntl, "fcntl");
 
-   O_RDWR   : constant := 8#02#;
-   O_NOCTTY : constant := 8#0400#;
-   O_NDELAY : constant := 8#04000#;
-   FNDELAY  : constant := O_NDELAY;
-   F_SETFL  : constant := 4;
-   TCSANOW  : constant := 0;
-   TCIFLUSH : constant := 0;
-   CLOCAL   : constant := 8#04000#;
-   CREAD    : constant := 8#0200#;
-   CSTOPB   : constant := 8#0100#;
-   CRTSCTS  : constant := 8#020000000000#;
-   PARENB   : constant := 8#00400#;
-   PARODD   : constant := 8#01000#;
-
-   --  c_cc indexes
-
-   VTIME : constant := 5;
-   VMIN  : constant := 6;
-
    C_Data_Rate : constant array (Data_Rate) of unsigned :=
-                   (B1200   => 8#000011#,
-                    B2400   => 8#000013#,
-                    B4800   => 8#000014#,
-                    B9600   => 8#000015#,
-                    B19200  => 8#000016#,
-                    B38400  => 8#000017#,
-                    B57600  => 8#010001#,
-                    B115200 => 8#010002#);
+                   (B1200   => OSC.B1200,
+                    B2400   => OSC.B2400,
+                    B4800   => OSC.B4800,
+                    B9600   => OSC.B9600,
+                    B19200  => OSC.B19200,
+                    B38400  => OSC.B38400,
+                    B57600  => OSC.B57600,
+                    B115200 => OSC.B115200);
 
    C_Bits      : constant array (Data_Bits) of unsigned :=
-                   (CS7 => 8#040#, CS8 => 8#060#);
+                   (CS7 => OSC.CS7, CS8 => OSC.CS8);
 
    C_Stop_Bits : constant array (Stop_Bits_Number) of unsigned :=
-                   (One => 0, Two => CSTOPB);
+                   (One => 0, Two => OSC.CSTOPB);
 
    C_Parity    : constant array (Parity_Check) of unsigned :=
-                   (None => 0, Odd => PARENB or PARODD, Even => PARENB);
+                   (None => 0,
+                    Odd  => OSC.PARENB or OSC.PARODD,
+                    Even => OSC.PARENB);
 
    procedure Raise_Error (Message : String; Error : Integer := Errno);
    pragma No_Return (Raise_Error);
@@ -114,6 +100,8 @@ package body GNAT.Serial_Communications is
      (Port : out Serial_Port;
       Name : Port_Name)
    is
+      use OSC;
+
       C_Name : constant String := String (Name) & ASCII.NUL;
       Res    : int;
 
@@ -184,8 +172,12 @@ package body GNAT.Serial_Communications is
       Stop_Bits : Stop_Bits_Number := One;
       Parity    : Parity_Check     := None;
       Block     : Boolean          := True;
+      Local     : Boolean          := True;
+      Flow      : Flow_Control     := None;
       Timeout   : Duration         := 10.0)
    is
+      use OSC;
+
       type termios is record
          c_iflag  : unsigned;
          c_oflag  : unsigned;
@@ -229,12 +221,24 @@ package body GNAT.Serial_Communications is
                                 or C_Bits (Bits)
                                 or C_Stop_Bits (Stop_Bits)
                                 or C_Parity (Parity)
-                                or CLOCAL
-                                or CREAD
-                                or CRTSCTS;
-      Current.c_lflag      := 0;
+                                or CREAD;
       Current.c_iflag      := 0;
+      Current.c_lflag      := 0;
       Current.c_oflag      := 0;
+
+      if Local then
+         Current.c_cflag := Current.c_cflag or CLOCAL;
+      end if;
+
+      case Flow is
+         when None =>
+            null;
+         when RTS_CTS =>
+            Current.c_cflag := Current.c_cflag or CRTSCTS;
+         when Xon_Xoff =>
+            Current.c_iflag := Current.c_iflag or IXON;
+      end case;
+
       Current.c_ispeed     := Data_Rate_Value (Rate);
       Current.c_ospeed     := Data_Rate_Value (Rate);
       Current.c_cc (VMIN)  := char'Val (0);

@@ -467,7 +467,7 @@ package body Ch13 is
                Attr_Name := Token_Name;
 
                --  Note that the parser must complain in case of an internal
-               --  attribute names that comes from source since internal names
+               --  attribute name that comes from source since internal names
                --  are meant to be used only by the compiler.
 
                if not Is_Attribute_Name (Attr_Name)
