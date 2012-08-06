@@ -1556,6 +1556,12 @@ package body Par_SCO is
                   P => Triggering_Statement (N));
 
             when N_Terminate_Alternative =>
+
+               --  It is dubious to emit a statement SCO for a TERMINATE
+               --  alternative, since no code is actually executed if the
+               --  alternative is selected -- the tasking runtime call just
+               --  never returns???
+
                Extend_Statement_Sequence (N, ' ');
                Set_Statement_Entry;
 

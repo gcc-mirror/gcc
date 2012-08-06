@@ -856,10 +856,11 @@ package body Sem_Ch13 is
    --  Start of processing for Analyze_Aspects_At_Freeze_Point
 
    begin
-      --  Must be declared in current scope. This is need for a generic
-      --  context.
+      --  Must be visible in current scope. Note that this is needed for
+      --  entities that creates their own scope such as protected objects,
+      --  tasks, etc.
 
-      if Scope (E) /= Current_Scope then
+      if not Scope_Within_Or_Same (Current_Scope, Scope (E)) then
          return;
       end if;
 
@@ -2434,11 +2435,12 @@ package body Sem_Ch13 is
          return;
 
       --  Must be declared in current scope or in case of an aspect
-      --  specification, must be the current scope.
+      --  specification, must be visible in current scope.
 
       elsif Scope (Ent) /= Current_Scope
-        and then (not From_Aspect_Specification (N)
-                   or else Ent /= Current_Scope)
+        and then
+          not (From_Aspect_Specification (N)
+                and then Scope_Within_Or_Same (Current_Scope, Scope (Ent)))
       then
          Error_Msg_N ("entity must be declared in this scope", Nam);
          return;
