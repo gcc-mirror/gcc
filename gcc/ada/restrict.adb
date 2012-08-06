@@ -1259,8 +1259,7 @@ package body Restrict is
      (N       : Node_Id;
       Warning : Boolean)
    is
-      A_Id : constant Aspect_Id := Get_Aspect_Id (Chars (N));
-      pragma Assert (A_Id /= No_Aspect);
+      A_Id : constant Aspect_Id_Exclude_No_Aspect := Get_Aspect_Id (Chars (N));
 
    begin
       No_Specification_Of_Aspects (A_Id) := Sloc (N);

@@ -187,10 +187,8 @@ package body Ch13 is
 
             --  Check bad spelling
 
-            for J in Aspect_Id loop
-               if J /= No_Aspect and then
-                  Is_Bad_Spelling_Of (Token_Name, Aspect_Names (J))
-               then
+            for J in Aspect_Id_Exclude_No_Aspect loop
+               if Is_Bad_Spelling_Of (Token_Name, Aspect_Names (J)) then
                   Error_Msg_Name_1 := Aspect_Names (J);
                   Error_Msg_SC -- CODEFIX
                     ("\possible misspelling of%");
