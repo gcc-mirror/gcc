@@ -1,3 +1,12 @@
+2012-08-06  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR libstdc++/54036
+	* include/decimal/decimal.h (_DEFINE_DECIMAL_UNARY_OP): Use _Op as
+	a unary operator.
+	* testsuite/decimal/pr54036-1.cc: New test.
+	* testsuite/decimal/pr54036-2.cc: Likewise.
+	* testsuite/decimal/pr54036-3.cc: Likewise.
+
 2012-08-02  Michael Hope  <michael.hope@linaro.org>
 
 	Backport from mainline r186389:
