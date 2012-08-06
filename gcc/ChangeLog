@@ -1,3 +1,457 @@
+2012-08-06  Tom de Vries  <tom@codesourcery.com>
+
+	* tree-switch-conversion.c (emit_case_bit_tests): Generate MINUS_EXPR in
+	unsigned type.
+
+2012-08-05  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
+
+	* doc/invoke.texi: Document AMD btver2.
+	* doc/extend.texi: Document AMD btver1 and btver2.
+
+2012-08-04  Sandra Loosemore  <sandra@codesourcery.com>
+	    Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips.c (mips_option_override): Check -fpic
+	for compatibility with -mabicalls and ABI.
+
+2012-08-04  Catherine Moore  <clm@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config/mips/xlr.md (ir_xlr_alu_clz): New insn_reservation.
+	(ir_xlr_alu): Remove clz.
+	* config/mips/mips-cpus.def (xlr): Set PTF_AVOID_BRANCHLIKELY.
+
+2012-08-04  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c (arm_gen_constant): Use SImode when preparing operands for
+	gen_extzv_t2.
+
+2012-08-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (QI_REGNO_P): New define.
+	(ANY_QI_REGNO_P): Ditto.
+	(GENERAL_REGNO_P): Use IN_RANGE macro.
+	(QI_REG_P): Use QI_REGNO_P.
+	(ANY_QI_REG_P): Use GENERAL_REGNO_P and QI_REGNO_P.
+	(HARD_REGNO_CALLER_SAVE_MODE): Use QI_REGNO_P.
+	* config/i386/i386.c (ix86_hard_regno_mode_ok): Ditto.
+	(x86_extended_QIreg_mentioned_p): Ditto.  Also check if
+	register is a general register.
+
+2012-08-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sync.md (*atomic_fetch_add_cmp<mode>): Use
+	incdec_operand predicate to return INC or DEC insn mnemonic.
+	Add %K operand modifier.
+	(atomic_add<mode>): Use incdec_operand predicate to
+	return INC or DEC insn mnemonic.
+	(atomic_dec<mode>): Ditto.
+
+2012-08-03  Michael Matz  <matz@suse.de>
+
+	PR tree-optimization/54146
+	* cfgexpand.c (add_scope_conflicts_1): Use bitmap_ior_into.
+	(add_scope_conflicts): Iterate in RPO order.
+	(add_stack_protection_conflicts): Iterate over the other triangle.
+	(fini_vars_expansion): Clear stack_vars_sorted.
+
+2012-08-03  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/30318
+	* double-int.c (mul_double_wide_with_sign): New function.
+	(mul_double_with_sign): Call the new function.
+	* double-int.h (mul_double_wide_with_sign): Declare the new function.
+	* tree-vrp.c (extract_range_from_binary_expr_1) [MULT_EXPR]:
+	Handle integer types that wrap on overflow.
+	(quad_int_cmp): New helper function.
+	(quad_int_pair_sort): Likewise.
+
+2012-08-03  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vect-loop-manip.c (vect_can_advance_ivs_p): Query
+	is_gimple_reg on the SSA name, not its variable.
+	(vect_update_ivs_after_vectorizer): Likewise.
+	* tree-ssa-copyrename.c (rename_ssa_copies): Likewise.
+	* tree-if-conv.c (if_convertible_phi_p): Likewise.
+	(predicate_scalar_phi): Likewise.
+	* tree-vect-loop.c (vect_analyze_scalar_cycles_1): Likewise.
+	(vect_analyze_scalar_cycles_1): Likewise.
+	* tree-ssa-live.c (register_ssa_partition_check): Likewise.
+	* tree-outof-ssa.c (eliminate_useless_phis): Likewise.
+	* tree-ssa-reassoc.c (phi_rank): Likewise.
+	* tree-parloops.c (separate_decls_in_region_name): Use
+	replace_ssa_name_symbol.
+	* tree-predcom.c (base_names_in_chain_on): Likewise.
+	* matrix-reorg.c (update_type_size): Query the type of the SSA name,
+	not its variable.
+	* gimple-ssa-strength-reduction.c (create_mul_ssa_cand): Likewise.
+	(create_mul_imm_cand): Likewise.
+	(create_add_ssa_cand): Likewise.
+	(create_add_imm_cand): Likewise.
+	(slsr_process_add): Likewise.
+	* tree-inline.c (remap_ssa_name): Do not set the type of the
+	new SSA_NAME.
+	* tree-ssa-structalias.c (get_constraint_for_ssa_var): Clarify assert.
+	Check for default def first.
+
+2012-08-04  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* cfgrtl.c (print_rtl_with_bb): Do not print a newline between insns.
+
+	* sched-vis.c (print_pattern): Handle SEQUENCE also.
+
+2012-08-02  Richard Henderson  <rth@redhat.com>
+
+	Revert:
+	PR 34548
+	* function.h (struct rtl_data): Add max_dynamic_stack_alignment.
+	* cfgexpand.c (gimple_expand_cfg): Initialise it.
+	* explow.c (allocate_dynamic_stack_space): Set it.  Simplify
+	alignment requirements given the known alignment of dynamic_offset.
+	* function.c (instantiate_virtual_regs): Align dtnamic_offset.
+
+2012-08-02  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* cfgexpand.c (expand_debug_locations):  Encapsulate test for
+	CONST_DOUBLE in macro.
+	* combine.c (try_combine, gen_lowpart_for_combine): Ditto.
+	* cprop.c (implicit_set_cond_p): Ditto.
+	* cselib.c (rtx_equal_for_cselib_1): Ditto.
+	* expmed.c (expand_mult): Ditto.
+	* expr.c (convert_modes): Ditto.
+	* ira-costs.c (record_reg_classes): Ditto.
+	* ira-lives.c (single_reg_class): Ditto.
+	* optabs.c (expand_copysign_absneg, expand_copysign): Ditto.
+	* print-rtl.c (print_rtx): Ditto.
+	* recog.c (simplify_while_replacing, const_double_operand)
+	(asm_operand_ok, constrain_operands): Ditto.
+	* reg-stack.c (subst_stack_regs_pat): Ditto.
+	* reload.c (find_reloads, find_equiv_reg): Ditto.
+	* rtlanal.c (replace_rtx): Remove test.
+	* rtlanal.c (constant_pool_constant_p, split_double): Encapsulate
+	test for CONST_DOUBLE in macro.
+	* simplify-rtx.c (mode_signbit_p, avoid_constant_pool_reference)
+	(simplify_unary_operation_1, simplify_const_unary_operation)
+	(simplify_binary_operation_1, simplify_const_binary_operation)
+	(simplify_relational_operation_1)
+	(simplify_const_relational_operations)
+	(implify_subreg): Ditto.
+	* varasm.c (output_constant_pool_2): Ditto.
+	* rtl.h (CONST_DOUBLE_AS_INT_P, CONST_DOUBLE_AS_FLOAT_P): New macros.
+	* rtl.def (CONST_DOUBLE):  Updated comments.
+
+2012-08-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR target/51931
+	* config/mips/mips-protos.h (mips_strip_unspec_address): Declare.
+	* config/mips/mips.c (mips_strip_unspec_address): Make extern.
+	(mips16_rewrite_pool_constant): Make a copy of the pool constant
+	before adding to a PC-relative table.
+	(mips16_lay_out_constants): Add a SPLIT_P parameter.
+	(mips16_load_branch_target, mips16_split_long_branches): New functions.
+	(mips_reorg): Update call to mips16_lay_out_constants.
+	Call mips16_split_long_branches.
+	* config/mips/predicates.md (pc_or_label_operand): Delete.
+	* config/mips/mips.md (length): Add a calculation for MIPS16 branches.
+	Move the extended_mips16 handling further down.
+	(*branch_equality<mode>_mips16): Replace use pc_or_label_operand
+	with explicit label_ref and pc.  Follow the usual operand numbering.
+	(*branch_equality<mode>_mips16_inverted): New pattern.
+	(*jump_mips16): Add length attribute.
+	(indirect_jump_and_restore_<mode>): New pattern.
+	(consttable_int): Call mips_strip_unspec_address on the operand.
+
+2012-08-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* recog.c (split_insn): Copy the original SET_SRC before using
+	it as a note.
+
+2012-08-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* reorg.c (dbr_schedule): Delete REG_BR_PRED loop.
+
+2012-08-02  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/53805
+	* fold-const.c (invert_tree_comparison): Invert ORDERED_EXPR and
+	UNORDERED_EXPR even for trapping floating point.
+
+2012-08-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/53321
+	PR middle-end/53865
+	* ipa-inline-analysis.c (inline_free_summary): Return if
+	inline_edge_summary_vec is NULL.
+
+	* ipa-split.c (execute_split_functions): Check if a function
+	is inlinable only if inline_edge_summary_vec != NULL.
+
+	* ipa.c (symtab_remove_unreachable_nodes): Restore
+	cgraph_propagate_frequency call when something was changed.
+	(free_inline_summary): New function.
+	(pass_ipa_free_inline_summary): New pass.
+
+	* passes.c (init_optimization_passes): Add
+	pass_ipa_free_inline_summary before pass_ipa_tree_profile.
+
+	* timevar.def (TV_IPA_FREE_INLINE_SUMMARY): New.
+
+	* tree-pass.h (pass_ipa_free_inline_summary): New.
+
+2012-08-02  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c (arm_gen_constant): Use UBFX for some AND operations when
+	available.
+
+2012-08-02  Richard Guenther  <rguenther@suse.de>
+
+	* tree-into-ssa.c (struct common_info_d): New struct.
+	(struct var_info_d, struct ssa_name_info): Use it.
+	(get_ssa_name_ann): Adjust.
+	(get_phi_state, set_phi_state): Remove.
+	(get_common_info): New function.
+	(get_current_def, set_current_def): Adjust.
+	(get_def_blocks_for): Take a common info as param.
+	(set_def_block): Call get_common_info once.
+	(set_livein_block): Likewise.
+	(find_def_blocks_for): Adjust.
+	(insert_phi_nodes): Likewise.
+	(register_new_def): Call get_common_info once.
+	(get_reaching_def): Likewise.
+	(rewrite_debug_stmt_uses): Likewise.
+	(rewrite_leave_block): Likewise.
+	(dump_currdefs): Likewise.
+	(debug_var_infos_r): Adjust.
+	(register_new_update_single): Call get_common_info once.
+	(maybe_replace_use_in_debug_stmt): Likewise.
+	(rewrite_update_leave_block): Likewise.
+	(mark_use_interesting): Adjust.
+	(create_new_def_for): Likewise.
+	(update_ssa): Likewise.
+
+2012-08-02  Michael Matz  <matz@suse.de>
+
+	* tree-ssa-live.c (set_is_used): Return a bool.
+	(mark_all_vars_used): Don't take data argument.
+	(mark_all_vars_used_1): Adjust calls to above, merge handling
+	of local and global vars.
+	(remove_unused_scope_block_p): Don't take global_unused_vars,
+	merge handling of local and global vars.
+	(remove_unused_locals): Don't allocate/fill/pass global_unused_vars,
+	use is_used_p for local and global vars.
+
+2012-08-02  Richard Guenther  <rguenther@suse.de>
+
+	* tree-flow.h (make_rename_temp): Remove.
+	* tree-dfa.c (make_rename_temp): Likewise.
+	* cgraphunit.c (thunk_adjust, assemble_thunk): Use create_tmp_reg
+	instead of make_rename_temp.
+	* omp-low.c (expand_omp_for_generic, expand_omp_for_static_nochunk,
+	expand_omp_atomic_pipeline): Likewise.
+	* trans-mem.c (tm_log_emit_save_or_restores, build_tm_load,
+	build_tm_store, expand_call_tm, expand_transaction,
+	ipa_tm_insert_gettmclone_call): Likewise.
+	* tree-complex.c (expand_complex_div_wide): Likewise.
+	* tree-mudflap.c (mf_decl_cache_locals, mf_build_check_statement_for):
+	Likewise.
+	* tree-ssa-loop-im.c (execute_sm_if_changed_flag_set, execute_sm):
+	Likewise.
+	* tree-ssa-math-opts.c (insert_reciprocals): Likewise.
+	* value-prof.c (gimple_divmod_fixed_value, gimple_mod_pow2,
+	gimple_mod_subtract): Likewise.
+
+2012-08-02  Richard Guenther  <rguenther@suse.de>
+
+	* tree-flow.h (set_default_def): Rename to ...
+	(set_ssa_default_def): ... this.  Take a struct function argument.
+	(gimple_default_def): Rename to ...
+	(ssa_default_def): ... this.
+	(get_or_create_ssa_default_def): New function.
+	* tree-dfa.c: Likewise.
+	(dump_variable): Adjust.
+	* ipa-prop.c (ipa_analyze_params_uses): Adjust, properly check
+	for used parameters.
+	* ipa-split.c (consider_split): Adjust, avoid repeated default-def
+	lookups.
+	(split_function): Likewise.
+	* lto-streamer-in.c (input_ssa_names): Adjust.
+	* omp-low.c (expand_omp_taskreg): Likewise.
+	* tree-cfg.c (replace_ssa_name): Adjust, no need to push/pop cfun.
+	* tree-complex.c (init_parameter_lattice_values): Adjust.
+	(get_component_ssa_name): Likewise.
+	(update_parameter_components): Likewise.
+	* tree-inline.c (remap_ssa_name): Likewise.
+	(setup_one_parameter): Likewise.
+	(initialize_inlined_parameters): Likewise.
+	(declare_return_variable): Likewise.
+	(expand_call_inline): Likewise.
+	(tree_function_versioning): Likewise.
+	* tree-into-ssa.c (get_default_def_for): Remove.
+	(get_reaching_def): Use get_or_create_ssa_default_def instead.
+	* tree-predcom.c (replace_ref_with): Adjust.
+	* tree-sra.c (get_repl_default_def_ssa_name): Likewise.
+	(is_unused_scalar_param): Likewise.
+	(ptr_parm_has_direct_uses): Likewise.
+	(sra_ipa_reset_debug_stmts): Likewise.
+	* tree-ssa-coalesce.c (create_outofssa_var_map): Adjust.
+	* tree-ssa-copyrename.c (copy_rename_partition_coalesce): Likewise.
+	* tree-ssa-live.c (verify_live_on_entry): Likewise.
+	* tree-ssa-math-opts.c (execute_cse_reciprocals): Likewise,
+	avoid repeated default def lookups.
+	* tree-ssa-sccvn.c (run_scc_vn): Likewise.
+	* tree-tailcall.c (arg_needs_copy_p): Adjust.
+	(tree_optimize_tail_calls_1): Likewise.
+
+2012-08-02  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/50672
+	Revert
+	2012-08-01  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-tail-merge.c (release_last_vdef): Remove.
+	(replace_block_by): Adjust.
+
+2012-08-02  Richard Guenther  <rguenther@suse.de>
+
+	* tree-dfa.c (referenced_var_lookup): Remove.
+	(find_referenced_vars): Remove.
+	(pass_referenced_vars): Likewise.
+	(make_rename_temp): Do not add referenced vars.
+	(dump_referenced_vars): Remove.
+	(debug_referenced_vars): Likewise.
+	(dump_dfa_stats): Do not dump referenced var stats.
+	(find_vars_r): Remove.
+	(find_referenced_vars_in): Likewise.
+	(referenced_var_check_and_insert): Likewise.
+	(add_referenced_var_1): Likewise.
+	(remove_referenced_var): Likewise.
+	* tree-flow.h (referenced_var_lookup): Likewise.
+	(struct gimple_df): Remove referenced_vars member.
+	(typedef referenced_var_iterator): Remove.
+	(FOR_EACH_REFERENCED_VAR): Likewise.
+	(num_referenced_vars): Likewise.
+	(debug_referenced_vars, dump_referenced_vars): Likewise.
+	(add_referenced_var_1, add_referenced_var): Likewise.
+	(remove_referenced_var): Likewise.
+	(find_referenced_vars_in): Likewise.
+	* tree-flow-inline.h (gimple_referenced_vars): Remove.
+	(first_referenced_var): Likewise.
+	(end_referenced_vars_p): Likewise.
+	(next_referenced_var): Likewise.
+	* cfgexpand.c (update_alias_info_with_stack_vars): Remove assert.
+	* gimple-pretty-print.c (pp_points_to_solution): Dump UIDs
+	unconditionally.
+	* tree-into-ssa.c (dump_decl_set): Likewise.
+	(pass_build_ssa): Do not require PROP_referenced_vars.
+	* tree-ssa.c (target_for_debug_bind): Virtual operands are
+	not suitable, but all register type vars are.
+	(init_tree_ssa): Do not allocate referenced vars.
+	(delete_tree_ssa): Do not free referenced vars.
+	* cgraphunit.c (init_lowered_empty_function): Do not set
+	PROP_referenced_vars.
+	(assemble_thunk): Do not add referenced vars.
+	* gimple-fold.c (canonicalize_constructor_val): Likewise.
+	(gimplify_and_update_call_from_tree): Likewise.
+	* gimple-streamer-in.c (input_bb): Likewise.
+	* passes.c (init_optimization_passes): Do not run
+	pass_referenced_vars.
+	(dump_properties): Do not dump PROP_referenced_vars.
+	* tree-inline.c (remap_decl): Do not add referenced vars.
+	(remap_gimple_op_r): Likewise.
+	(copy_tree_body_r): Likewise.
+	(copy_bb): Likewise.
+	(setup_one_parameter): Likewise.
+	(declare_return_variable): Likewise.
+	(copy_decl_for_dup_finish): Likewise.
+	(copy_arguments_for_versioning): Likewise.
+	(tree_function_versioning): Likewise.
+	* tree-pass.h (PROP_referenced_vars): Remove.
+	(pass_referenced_vars): Likewise.
+	* tree-profile.c (gimple_gen_edge_profiler): Do not add
+	referenced vars.
+	(gimple_gen_interval_profiler): Likewise.
+	(gimple_gen_pow2_profiler): Likewise.
+	(gimple_gen_one_value_profiler): Likewise.
+	(gimple_gen_ic_profiler): Likewise.
+	(gimple_gen_average_profiler): Likewise.
+	(gimple_gen_ior_profiler): Likewise.
+	* tree-ssa-live.c (remove_unused_locals): Do not touch referenced vars.
+	* tree-cfg.c (replace_ssa_name): Do not add referenced vars.
+	(move_stmt_op): Likewise.
+	* tree-ssa-operands.c (create_vop_var): Likewise.
+	* gimple-low.c (record_vars_into): Likewise.
+	* gimplify.c (gimple_regimplify_operands): Likewise.
+	(force_gimple_operand_1): Likewise.
+	* omp-low.c (expand_omp_for_generic): Likewise.
+	(expand_omp_for_static_chunk): Likewise.
+	(expand_omp_atomic_pipeline): Likewise.
+	* graphite-clast-to-gimple.c (graphite_create_new_loop): Likewise.
+	(translate_clast_assignment): Likewise.
+	* graphite-sese-to-poly.c (create_zero_dim_array): Likewise.
+	(handle_scalar_deps_crossing_scop_limits): Likewise.
+	* ipa-prop.c (ipa_modify_formal_parameters): Likewise.
+	* ipa-split.c (split_function): Likewise.
+	* matrix-reorg.c (transform_access_sites): Likewise.
+	* trans-mem.c (tm_log_add): Likewise.
+	(ipa_tm_insert_gettmclone_call): Likewise.
+	* tree-complex.c (create_one_component_var): Likewise.
+	* tree-if-conv.c (ifc_temp_var): Likewise.
+	* tree-parloops.c (take_address_of): Likewise.
+	(initialize_reductions): Likewise.
+	(separate_decls_in_region_name): Likewise.
+	(create_call_for_reduction_1): Likewise.
+	(separate_decls_in_region): Likewise.
+	* tree-predcom.c (predcom_tmp_var): Likewise.
+	(reassociate_to_the_same_stmt): Likewise.
+	* tree-sra.c (build_ref_for_offset): Likewise.
+	(create_access_replacement): Likewise.
+	(get_replaced_param_substitute): Likewise.
+	(sra_ipa_reset_debug_stmts): Likewise.
+	* tree-ssa-loop-im.c (rewrite_reciprocal): Likewise.
+	(rewrite_bittest): Likewise.
+	* tree-ssa-loop-ivopts.c (create_new_iv): Likewise.
+	* tree-ssa-loop-manip.c (create_iv): Likewise.
+	(tree_transform_and_unroll_loop): Likewise.
+	* tree-ssa-math-opts.c (powi_as_mults): Likewise.
+	(build_and_insert_call): Likewise.
+	(gimple_expand_builtin_cabs): Likewise.
+	(execute_optimize_bswap): Likewise.
+	* tree-ssa-phiopt.c (conditional_replacement): Likewise.
+	(abs_replacement): Likewise.
+	(cond_store_replacement): Likewise.
+	(cond_if_else_store_replacement_1): Likewise.
+	* tree-ssa-phiprop.c (phiprop_insert_phi): Likewise.
+	* tree-ssa-pre.c (get_representative_for): Likewise.
+	(create_expression_by_pieces): Likewise.
+	(insert_into_preds_of_block): Likewise.
+	* tree-ssa-propagate.c (update_call_from_tree): Likewise.
+	* tree-ssa-reassoc.c (undistribute_ops_list): Likewise.
+	(eliminate_redundant_comparison): Likewise.
+	(rewrite_expr_tree_parallel): Likewise.
+	(get_reassoc_pow_ssa_name): Likewise.
+	* tree-ssa-strlen.c (get_string_length): Likewise.
+	* tree-switch-conversion.c (emit_case_bit_tests): Likewise.
+	(build_arrays): Likewise.
+	* tree-tailcall.c (adjust_return_value_with_ops): Likewise.
+	(create_tailcall_accumulator): Likewise.
+	* tree-vect-data-refs.c (vect_get_new_vect_var): Likewise.
+	(vect_create_addr_base_for_vector_ref): Likewise.
+	(vect_permute_store_chain): Likewise.
+	(vect_permute_load_chain): Likewise.
+	* tree-vect-generic.c (expand_vector_divmod): Likewise.
+	* tree-vect-loop-manip.c (set_prologue_iterations): Likewise.
+	(vect_build_loop_niters): Likewise.
+	(vect_generate_tmps_on_preheader): Likewise.
+	(vect_update_ivs_after_vectorizer): Likewise.
+	(vect_gen_niters_for_prolog_loop): Likewise.
+	(vect_do_peeling_for_alignment): Likewise.
+	(vect_create_cond_for_align_checks): Likewise.
+	* tree-vect-patterns.c (vect_recog_temp_ssa_var): Likewise.
+	(vect_handle_widen_op_by_const): Likewise.
+	(vect_operation_fits_smaller_type): Likewise.
+	(vect_recog_over_widening_pattern): Likewise.
+	* tree-vect-stmts.c (vect_init_vector): Likewise.
+
 2012-08-01  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/52983
@@ -40,21 +494,11 @@
 2012-08-01  Catherine Moore  <clm@codesourcery.com>
 	    Sandra Loosemore  <sandra@codesourcery.com>
 
-	gcc/
 	* config/mips/mips-cpus.def (34kn): New.
 	* config/mips/mips.h (MIPS_ARCH_FLOAT_SPEC): Add 34kn.
 	(BASE_DRIVER_SELF_SPECS): Do not imply -mdsp for the 34kn.
 	* config/mips/mips-tables.opt: Regenerate.
 	* doc/invoke.texi (MIPS Options): Document -march=34kn.
-
-2012-08-01  Richard Henderson  <rth@redhat.com>
-
-	PR middle-end/34548
-	* function.h (struct rtl_data): Add max_dynamic_stack_alignment.
-	* cfgexpand.c (gimple_expand_cfg): Initialise it.
-	* explow.c (allocate_dynamic_stack_space): Set it.  Simplify
-	alignment requirements given the known alignment of dynamic_offset.
-	* function.c (instantiate_virtual_regs): Align dtnamic_offset.
 
 2012-08-01  Richard Henderson  <rth@redhat.com>
 

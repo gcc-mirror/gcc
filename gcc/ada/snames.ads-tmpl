@@ -766,6 +766,7 @@ package Snames is
    Name_Asm_Input                      : constant Name_Id := N + $; -- GNAT
    Name_Asm_Output                     : constant Name_Id := N + $; -- GNAT
    Name_AST_Entry                      : constant Name_Id := N + $; -- VMS
+   Name_Atomic_Always_Lock_Free        : constant Name_Id := N + $; -- GNAT
    Name_Bit                            : constant Name_Id := N + $; -- GNAT
    Name_Bit_Order                      : constant Name_Id := N + $;
    Name_Bit_Position                   : constant Name_Id := N + $; -- GNAT
@@ -1363,6 +1364,7 @@ package Snames is
       Attribute_Asm_Input,
       Attribute_Asm_Output,
       Attribute_AST_Entry,
+      Attribute_Atomic_Always_Lock_Free,
       Attribute_Bit,
       Attribute_Bit_Order,
       Attribute_Bit_Position,

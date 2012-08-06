@@ -1411,10 +1411,7 @@ get_representative_for (const pre_expr e)
   /* Build and insert the assignment of the end result to the temporary
      that we will return.  */
   if (!pretemp || exprtype != TREE_TYPE (pretemp))
-    {
-      pretemp = create_tmp_reg (exprtype, "pretmp");
-      add_referenced_var (pretemp);
-    }
+    pretemp = create_tmp_reg (exprtype, "pretmp");
 
   name = make_ssa_name (pretemp, gimple_build_nop ());
   VN_INFO_GET (name)->value_id = value_id;
@@ -3110,7 +3107,6 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
     pretemp = create_tmp_reg (exprtype, "pretmp");
 
   temp = pretemp;
-  add_referenced_var (temp);
 
   newstmt = gimple_build_assign (temp, folded);
   name = make_ssa_name (temp, newstmt);
@@ -3369,7 +3365,6 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
     prephitemp = create_tmp_var (type, "prephitmp");
 
   temp = prephitemp;
-  add_referenced_var (temp);
 
   if (TREE_CODE (type) == COMPLEX_TYPE
       || TREE_CODE (type) == VECTOR_TYPE)

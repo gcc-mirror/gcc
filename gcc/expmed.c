@@ -3217,7 +3217,7 @@ expand_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target,
 	  coeff = INTVAL (scalar_op1);
 	  is_neg = coeff < 0;
 	}
-      else if (CONST_DOUBLE_P (scalar_op1))
+      else if (CONST_DOUBLE_AS_INT_P (scalar_op1))
 	{
 	  /* If we are multiplying in DImode, it may still be a win
 	     to try to work with shifts and adds.  */
@@ -3290,7 +3290,7 @@ expand_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target,
  skip_synth:
 
   /* Expand x*2.0 as x+x.  */
-  if (GET_CODE (scalar_op1) == CONST_DOUBLE && FLOAT_MODE_P (mode))
+  if (CONST_DOUBLE_AS_FLOAT_P (scalar_op1))
     {
       REAL_VALUE_TYPE d;
       REAL_VALUE_FROM_CONST_DOUBLE (d, scalar_op1);

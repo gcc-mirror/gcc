@@ -56,10 +56,7 @@ create_iv (tree base, tree step, tree var, struct loop *loop,
   edge pe = loop_preheader_edge (loop);
 
   if (!var)
-    {
-      var = create_tmp_var (TREE_TYPE (base), "ivtmp");
-      add_referenced_var (var);
-    }
+    var = create_tmp_var (TREE_TYPE (base), "ivtmp");
 
   vb = make_ssa_name (var, NULL);
   if (var_before)
@@ -1009,15 +1006,9 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
 					     TREE_TYPE (next)))
 	var = SSA_NAME_VAR (init);
       else if (useless_type_conversion_p (TREE_TYPE (next), TREE_TYPE (init)))
-	{
-	  var = create_tmp_var (TREE_TYPE (next), "unrinittmp");
-	  add_referenced_var (var);
-	}
+	var = create_tmp_var (TREE_TYPE (next), "unrinittmp");
       else
-	{
-	  var = create_tmp_var (TREE_TYPE (init), "unrinittmp");
-	  add_referenced_var (var);
-	}
+	var = create_tmp_var (TREE_TYPE (init), "unrinittmp");
 
       new_init = make_ssa_name (var, NULL);
       phi_rest = create_phi_node (new_init, rest);

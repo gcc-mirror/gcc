@@ -976,11 +976,10 @@ update_type_size (struct matrix_info *mi, gimple stmt, tree ssa_var,
     {
       lhs = gimple_assign_lhs (stmt);
       gcc_assert (POINTER_TYPE_P
-		  (TREE_TYPE (SSA_NAME_VAR (TREE_OPERAND (lhs, 0)))));
+		  (TREE_TYPE (TREE_OPERAND (lhs, 0))));
       type_size =
 	int_size_in_bytes (TREE_TYPE
-			   (TREE_TYPE
-			    (SSA_NAME_VAR (TREE_OPERAND (lhs, 0)))));
+			   (TREE_TYPE (TREE_OPERAND (lhs, 0))));
     }
   else
     type_size = int_size_in_bytes (TREE_TYPE (ssa_var));
@@ -1833,7 +1832,6 @@ transform_access_sites (void **slot, void *data ATTRIBUTE_UNUSED)
 				== MEM_REF);
 		    /* Emit convert statement to convert to type of use.  */
 		    tmp = create_tmp_var (TREE_TYPE (lhs), "new");
-		    add_referenced_var (tmp);
 		    rhs = gimple_assign_rhs1 (acc_info->stmt);
 		    rhs = fold_convert (TREE_TYPE (tmp),
 					TREE_OPERAND (rhs, 0));

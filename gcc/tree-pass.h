@@ -142,7 +142,6 @@ struct simple_ipa_opt_pass
 #define PROP_gimple_lcf		(1 << 1)	/* lowered control flow */
 #define PROP_gimple_leh		(1 << 2)	/* lowered eh */
 #define PROP_cfg		(1 << 3)
-#define PROP_referenced_vars	(1 << 4)
 #define PROP_ssa		(1 << 5)
 #define PROP_no_crit_edges      (1 << 6)
 #define PROP_rtl		(1 << 7)
@@ -267,7 +266,6 @@ extern struct gimple_opt_pass pass_lower_eh_dispatch;
 extern struct gimple_opt_pass pass_lower_resx;
 extern struct gimple_opt_pass pass_build_cfg;
 extern struct gimple_opt_pass pass_early_tree_profile;
-extern struct gimple_opt_pass pass_referenced_vars;
 extern struct gimple_opt_pass pass_cleanup_eh;
 extern struct gimple_opt_pass pass_sra;
 extern struct gimple_opt_pass pass_sra_early;
@@ -377,6 +375,7 @@ extern struct simple_ipa_opt_pass pass_ipa_increase_alignment;
 extern struct simple_ipa_opt_pass pass_ipa_matrix_reorg;
 extern struct ipa_opt_pass_d pass_ipa_inline;
 extern struct simple_ipa_opt_pass pass_ipa_free_lang_data;
+extern struct simple_ipa_opt_pass pass_ipa_free_inline_summary;
 extern struct ipa_opt_pass_d pass_ipa_cp;
 extern struct ipa_opt_pass_d pass_ipa_reference;
 extern struct ipa_opt_pass_d pass_ipa_pure_const;

@@ -1070,8 +1070,9 @@ package Opt is
 
    Overflow_Checks_Unsuppressed : Boolean := False;
    --  GNAT
-   --  Set to True if at least one occurrence of pragma Unsuppress
-   --  (All_Checks|Overflow_Checks) has been processed.
+   --  This flag is True if there has been at least one pragma with the
+   --  effect of unsuppressing overflow checks, meaning that a more careful
+   --  check of the current mode is required.
 
    Persistent_BSS_Mode : Boolean := False;
    --  GNAT
@@ -1249,7 +1250,7 @@ package Opt is
    --  GNAT
    --  Set to True if -gnatp (suppress all checks) switch present.
 
-   Suppress_Options : Suppress_Array;
+   Suppress_Options : Suppress_Record;
    --  GNAT
    --  Flags set True to suppress corresponding check, i.e. add an implicit
    --  pragma Suppress at the outer level of each unit compiled. Note that

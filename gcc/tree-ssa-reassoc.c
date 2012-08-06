@@ -234,7 +234,7 @@ phi_rank (gimple stmt)
 
   /* Ignore virtual SSA_NAMEs.  */
   res = gimple_phi_result (stmt);
-  if (!is_gimple_reg (SSA_NAME_VAR (res)))
+  if (!is_gimple_reg (res))
     return bb_rank[bb->index];
 
   /* The phi definition must have a single use, and that use must be
@@ -1433,7 +1433,6 @@ undistribute_ops_list (enum tree_code opcode,
 	      print_generic_expr (dump_file, oe1->op, 0);
 	    }
 	  tmpvar = create_tmp_reg (TREE_TYPE (oe1->op), NULL);
-	  add_referenced_var (tmpvar);
 	  zero_one_operation (&oe1->op, c->oecode, c->op);
 	  EXECUTE_IF_SET_IN_SBITMAP (candidates2, first+1, i, sbi0)
 	    {
@@ -1598,7 +1597,6 @@ eliminate_redundant_comparison (enum tree_code opcode,
 	  tree newop2;
 	  gcc_assert (COMPARISON_CLASS_P (t));
 	  tmpvar = create_tmp_var (TREE_TYPE (t), NULL);
-	  add_referenced_var (tmpvar);
 	  extract_ops_from_tree (t, &subcode, &newop1, &newop2);
 	  STRIP_USELESS_TYPE_CONVERSION (newop1);
 	  STRIP_USELESS_TYPE_CONVERSION (newop2);
@@ -2454,7 +2452,6 @@ rewrite_expr_tree_parallel (gimple stmt, int width,
     stmts[i] = SSA_NAME_DEF_STMT (gimple_assign_rhs1 (stmts[i+1]));
 
   lhs_var = create_tmp_reg (TREE_TYPE (last_rhs1), NULL);
-  add_referenced_var (lhs_var);
 
   for (i = 0; i < stmt_num; i++)
     {
@@ -3086,10 +3083,7 @@ static tree
 get_reassoc_pow_ssa_name (tree *target, tree type)
 {
   if (!*target || !types_compatible_p (type, TREE_TYPE (*target)))
-    {
-      *target = create_tmp_reg (type, "reassocpow");
-      add_referenced_var (*target);
-    }
+    *target = create_tmp_reg (type, "reassocpow");
 
   return make_ssa_name (*target, NULL);
 }

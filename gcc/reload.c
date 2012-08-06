@@ -3363,7 +3363,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 
 		  case 'E':
 		  case 'F':
-		    if (GET_CODE (operand) == CONST_DOUBLE
+		    if (CONST_DOUBLE_AS_FLOAT_P (operand)
 			|| (GET_CODE (operand) == CONST_VECTOR
 			    && (GET_MODE_CLASS (GET_MODE (operand))
 				== MODE_VECTOR_FLOAT)))
@@ -3372,15 +3372,13 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 
 		  case 'G':
 		  case 'H':
-		    if (GET_CODE (operand) == CONST_DOUBLE
+		    if (CONST_DOUBLE_AS_FLOAT_P (operand)
 			&& CONST_DOUBLE_OK_FOR_CONSTRAINT_P (operand, c, p))
 		      win = 1;
 		    break;
 
 		  case 's':
-		    if (CONST_INT_P (operand)
-			|| (GET_CODE (operand) == CONST_DOUBLE
-			    && GET_MODE (operand) == VOIDmode))
+		    if (CONST_INT_P (operand) || CONST_DOUBLE_AS_INT_P (operand))
 		      break;
 		  case 'i':
 		    if (CONSTANT_P (operand)
@@ -3389,9 +3387,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 		    break;
 
 		  case 'n':
-		    if (CONST_INT_P (operand)
-			|| (GET_CODE (operand) == CONST_DOUBLE
-			    && GET_MODE (operand) == VOIDmode))
+		    if (CONST_INT_P (operand) || CONST_DOUBLE_AS_INT_P (operand))
 		      win = 1;
 		    break;
 
@@ -6810,7 +6806,7 @@ find_equiv_reg (rtx goal, rtx insn, enum reg_class rclass, int other,
 			   && (valueno
 			       = true_regnum (valtry = SET_DEST (pat))) >= 0)
 			  || (REG_P (SET_DEST (pat))
-			      && GET_CODE (XEXP (tem, 0)) == CONST_DOUBLE
+			      && CONST_DOUBLE_AS_FLOAT_P (XEXP (tem, 0))
 			      && SCALAR_FLOAT_MODE_P (GET_MODE (XEXP (tem, 0)))
 			      && CONST_INT_P (goal)
 			      && 0 != (goaltry
@@ -6824,7 +6820,7 @@ find_equiv_reg (rtx goal, rtx insn, enum reg_class rclass, int other,
 		  || (goal_const && (tem = find_reg_note (p, REG_EQUIV,
 							  NULL_RTX))
 		      && REG_P (SET_DEST (pat))
-		      && GET_CODE (XEXP (tem, 0)) == CONST_DOUBLE
+		      && CONST_DOUBLE_AS_FLOAT_P (XEXP (tem, 0))
 		      && SCALAR_FLOAT_MODE_P (GET_MODE (XEXP (tem, 0)))
 		      && CONST_INT_P (goal)
 		      && 0 != (goaltry = operand_subword (XEXP (tem, 0), 1, 0,

@@ -780,22 +780,21 @@ single_reg_class (const char *constraints, rtx op, rtx equiv_const)
 
 	case 'n':
 	  if (CONST_INT_P (op)
-	      || (GET_CODE (op) == CONST_DOUBLE && GET_MODE (op) == VOIDmode)
+	      || CONST_DOUBLE_AS_INT_P (op)
 	      || (equiv_const != NULL_RTX
 		  && (CONST_INT_P (equiv_const)
-		      || (GET_CODE (equiv_const) == CONST_DOUBLE
-			  && GET_MODE (equiv_const) == VOIDmode))))
+		      || CONST_DOUBLE_AS_INT_P (equiv_const))))
 	    return NO_REGS;
 	  break;
 
 	case 's':
-	  if ((CONSTANT_P (op) && !CONST_INT_P (op)
-	       && (GET_CODE (op) != CONST_DOUBLE || GET_MODE (op) != VOIDmode))
+	  if ((CONSTANT_P (op) 
+	       && !CONST_INT_P (op) 
+	       && !CONST_DOUBLE_AS_INT_P (op))
 	      || (equiv_const != NULL_RTX
 		  && CONSTANT_P (equiv_const)
 		  && !CONST_INT_P (equiv_const)
-		  && (GET_CODE (equiv_const) != CONST_DOUBLE
-		      || GET_MODE (equiv_const) != VOIDmode)))
+		  && !CONST_DOUBLE_AS_INT_P (equiv_const)))
 	    return NO_REGS;
 	  break;
 
@@ -818,11 +817,11 @@ single_reg_class (const char *constraints, rtx op, rtx equiv_const)
 
 	case 'E':
 	case 'F':
-	  if (GET_CODE (op) == CONST_DOUBLE
+	  if (CONST_DOUBLE_AS_FLOAT_P (op) 
 	      || (GET_CODE (op) == CONST_VECTOR
 		  && GET_MODE_CLASS (GET_MODE (op)) == MODE_VECTOR_FLOAT)
 	      || (equiv_const != NULL_RTX
-		  && (GET_CODE (equiv_const) == CONST_DOUBLE
+		  && (CONST_DOUBLE_AS_FLOAT_P (equiv_const)
 		      || (GET_CODE (equiv_const) == CONST_VECTOR
 			  && (GET_MODE_CLASS (GET_MODE (equiv_const))
 			      == MODE_VECTOR_FLOAT)))))
@@ -831,10 +830,10 @@ single_reg_class (const char *constraints, rtx op, rtx equiv_const)
 
 	case 'G':
 	case 'H':
-	  if ((GET_CODE (op) == CONST_DOUBLE
+	  if ((CONST_DOUBLE_AS_FLOAT_P (op) 
 	       && CONST_DOUBLE_OK_FOR_CONSTRAINT_P (op, c, constraints))
 	      || (equiv_const != NULL_RTX
-		  && GET_CODE (equiv_const) == CONST_DOUBLE
+		  && CONST_DOUBLE_AS_FLOAT_P (equiv_const) 
 		  && CONST_DOUBLE_OK_FOR_CONSTRAINT_P (equiv_const,
 						       c, constraints)))
 	    return NO_REGS;

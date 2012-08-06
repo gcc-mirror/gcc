@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-options "-fdump-tree-optimized" } */
 
 int
 foo (int integral, int decimal, int power_ten)
@@ -13,7 +14,7 @@ foo (int integral, int decimal, int power_ten)
   return integral+decimal;
 }
 
-/* Two occurrences in annotations, two in code.  */
-/* { dg-final { scan-tree-dump-times "\\* 10" 4 "vect" } } */
+/* { dg-final { scan-tree-dump-times "\\* 10" 2 "optimized" } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */
 

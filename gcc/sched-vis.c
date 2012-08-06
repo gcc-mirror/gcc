@@ -610,8 +610,19 @@ print_pattern (char *buf, const_rtx x, int verbose)
       }
       break;
     case SEQUENCE:
-      /* Should never see SEQUENCE codes until after reorg.  */
-      gcc_unreachable ();
+      {
+	int i;
+
+	sprintf (t1, "sequence{");
+	for (i = 0; i < XVECLEN (x, 0); i++)
+	  {
+	    print_pattern (t2, XVECEXP (x, 0, i), verbose);
+	    sprintf (t3, "%s%s;", t1, t2);
+	    strcpy (t1, t3);
+	  }
+	sprintf (buf, "%s}", t1);
+      }
+      break;
     case ASM_INPUT:
       sprintf (buf, "asm {%s}", XSTR (x, 0));
       break;

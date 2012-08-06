@@ -1,3 +1,68 @@
+2012-08-02  Thomas König  <tkoenig@gcc.gnu.org>
+
+	 PR fortran/54033
+	 * scanner.c (add_path_to_list):  New argument warn.  Don't
+	 warn if it is true.
+	 (gfc_add_include_path):  Warn if directory is missing.
+	 (gfc_add_intrinsic_modules_path):  Do not warn if directory
+	 is missing.
+	 * optinons.c (gfc_handle_option):  Do not add directory
+	 for intrinsic modules to normal include path.
+
+2012-08-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/54166
+	* trans-array.c (set_loop_bounds): Access specinfo using spec_dim.
+
+2012-08-02  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/48820
+	* trans-array.c (gfc_conv_ss_startstride): Set the intrinsic
+	result's lower and upper bounds according to the rank.
+	(set_loop_bounds): Set the loop upper bound in the intrinsic case.
+
+2012-08-02  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.c (set_loop_bounds): Allow non-array-section to be
+	chosen using the stride and lower bound criteria.
+
+2012-08-02  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.c (set_loop_bounds): Remove useless dimension check.
+	Don't update loopspec if it would loose the wanted stride criterion.
+
+2012-08-02  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.h (gfc_conv_descriptor_rank): New prototype.
+	* trans-array.c (gfc_conv_descriptor_rank): New function moved and
+	renamed ...
+	* trans-intrinsic.c (get_rank_from_desc): ... from this one.
+	(gfc_conv_intrinsic_rank, gfc_conv_intrinsic_bound,
+	gfc_conv_associated): Also rename function calls.
+
+2012-08-02  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* iresolve.c (resolve_bound, gfc_resolve_shape):
+	Don't set the shape for assumed rank arrays.
+	* simplify.c (gfc_simplify_shape): Don't try to simplify if the
+	argument is assumed rank.
+
+2012-08-02  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* array.c (gfc_copy_array_ref): Don't copy the offset field.
+	* expr.c (find_array_section): Ignore the offset field.
+	* trans-expr.c (gfc_find_interface_mapping_to_ref): Don't apply
+	any interface mapping to the offset field.
+	* gfortran.h (struct gfc_array_ref): Remove the offset field.
+
+2012-08-02  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54147
+	* resolve.c (check_proc_interface): New routine for PROCEDURE interface
+	checks.
+	(resolve_procedure_interface,resolve_typebound_procedure,
+	resolve_fl_derived0): Call it.
+
 2012-08-01  Thomas König  <tkoenig@gcc.gnu.org>
 
 	PR fortran/54033
@@ -643,8 +708,8 @@
 
 2012-05-05  Janne Blomqvist  <jb@gcc.gnu.org>
 
-        * gfortran.texi (GFORTRAN_TMPDIR): Rename to TMPDIR, explain
-        algorithm for choosing temp directory.
+	* gfortran.texi (GFORTRAN_TMPDIR): Rename to TMPDIR, explain
+	algorithm for choosing temp directory.
 
 2012-05-04  Tobias Burnus  <burnus@net-b.de>
 

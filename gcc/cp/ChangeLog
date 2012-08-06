@@ -1,3 +1,21 @@
+2012-08-03  Marc Glisse  <marc.glisse@inria.fr>
+
+	* pt.c (tsubst_copy_and_build): Handle VECTOR_TYPE like scalars.
+	* cp-tree.h (scalarish_type_p): Declare.
+	* tree.c (scalarish_type_p): Make non-static.
+
+2012-08-02  Jason Merrill  <jason@redhat.com>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51213 (again)
+	* pt.c (type_unification_real): Call push_deferring_access_checks /
+	pop_deferring_access_checks around the substitution of default
+	template args.
+	(instantiate_template_1): When the specialization returned by
+	retrieve_specialization has FNDECL_HAS_ACCESS_ERRORS set and we
+	are in a SFINAE context, simply return error_mark_node.
+	* cp-tree.h (FNDECL_RECHECK_ACCESS_P): Rename FNDECL_HAS_ACCESS_ERRORS.
+
 2012-07-31  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* pt.c (check_default_tmpl_args): Change is_primary and is_partial

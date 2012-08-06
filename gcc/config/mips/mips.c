@@ -2563,7 +2563,7 @@ mips_unspec_address (rtx address, enum mips_symbol_type symbol_type)
 /* If OP is an UNSPEC address, return the address to which it refers,
    otherwise return OP itself.  */
 
-static rtx
+rtx
 mips_strip_unspec_address (rtx op)
 {
   rtx base, offset;
@@ -14070,7 +14070,7 @@ mips16_rewrite_pool_constant (struct mips16_constant_pool *pool, rtx *x)
   split_const (*x, &base, &offset);
   if (GET_CODE (base) == SYMBOL_REF && CONSTANT_POOL_ADDRESS_P (base))
     {
-      label = mips16_add_constant (pool, get_pool_constant (base),
+      label = mips16_add_constant (pool, copy_rtx (get_pool_constant (base)),
 				   get_pool_mode (base));
       base = gen_rtx_LABEL_REF (Pmode, label);
       *x = mips_unspec_address_offset (base, offset, SYMBOL_PC_RELATIVE);
@@ -14126,10 +14126,11 @@ mips_cfg_in_reorg (void)
 	  || TARGET_RELAX_PIC_CALLS);
 }
 
-/* Build MIPS16 constant pools.  */
+/* Build MIPS16 constant pools.  Split the instructions if SPLIT_P,
+   otherwise assume that they are already split.  */
 
 static void
-mips16_lay_out_constants (void)
+mips16_lay_out_constants (bool split_p)
 {
   struct mips16_constant_pool pool;
   struct mips16_rewrite_pool_refs_info info;
@@ -14138,10 +14139,13 @@ mips16_lay_out_constants (void)
   if (!TARGET_MIPS16_PCREL_LOADS)
     return;
 
-  if (mips_cfg_in_reorg ())
-    split_all_insns ();
-  else
-    split_all_insns_noflow ();
+  if (split_p)
+    {
+      if (mips_cfg_in_reorg ())
+	split_all_insns ();
+      else
+	split_all_insns_noflow ();
+    }
   barrier = 0;
   memset (&pool, 0, sizeof (pool));
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
@@ -15490,6 +15494,110 @@ mips_df_reorg (void)
   df_finish_pass (false);
 }
 
+/* Emit code to load LABEL_REF SRC into MIPS16 register DEST.  This is
+   called very late in mips_reorg, but the caller is required to run
+   mips16_lay_out_constants on the result.  */
+
+static void
+mips16_load_branch_target (rtx dest, rtx src)
+{
+  if (TARGET_ABICALLS && !TARGET_ABSOLUTE_ABICALLS)
+    {
+      rtx page, low;
+
+      if (mips_cfun_has_cprestore_slot_p ())
+	mips_emit_move (dest, mips_cprestore_slot (dest, true));
+      else
+	mips_emit_move (dest, pic_offset_table_rtx);
+      page = mips_unspec_address (src, SYMBOL_GOTOFF_PAGE);
+      low = mips_unspec_address (src, SYMBOL_GOT_PAGE_OFST);
+      emit_insn (gen_rtx_SET (VOIDmode, dest,
+			      PMODE_INSN (gen_unspec_got, (dest, page))));
+      emit_insn (gen_rtx_SET (VOIDmode, dest,
+			      gen_rtx_LO_SUM (Pmode, dest, low)));
+    }
+  else
+    {
+      src = mips_unspec_address (src, SYMBOL_ABSOLUTE);
+      mips_emit_move (dest, src);
+    }
+}
+
+/* If we're compiling a MIPS16 function, look for and split any long branches.
+   This must be called after all other instruction modifications in
+   mips_reorg.  */
+
+static void
+mips16_split_long_branches (void)
+{
+  bool something_changed;
+
+  if (!TARGET_MIPS16)
+    return;
+
+  /* Loop until the alignments for all targets are sufficient.  */
+  do
+    {
+      rtx insn;
+
+      shorten_branches (get_insns ());
+      something_changed = false;
+      for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+	if (JUMP_P (insn)
+	    && USEFUL_INSN_P (insn)
+	    && get_attr_length (insn) > 8)
+	  {
+	    rtx old_label, new_label, temp, saved_temp;
+	    rtx target, jump, jump_sequence;
+
+	    start_sequence ();
+
+	    /* Free up a MIPS16 register by saving it in $1.  */
+	    saved_temp = gen_rtx_REG (Pmode, AT_REGNUM);
+	    temp = gen_rtx_REG (Pmode, GP_REG_FIRST + 2);
+	    emit_move_insn (saved_temp, temp);
+
+	    /* Load the branch target into TEMP.  */
+	    old_label = JUMP_LABEL (insn);
+	    target = gen_rtx_LABEL_REF (Pmode, old_label);
+	    mips16_load_branch_target (temp, target);
+
+	    /* Jump to the target and restore the register's
+	       original value.  */
+	    jump = emit_jump_insn (PMODE_INSN (gen_indirect_jump_and_restore,
+					       (temp, temp, saved_temp)));
+	    JUMP_LABEL (jump) = old_label;
+	    LABEL_NUSES (old_label)++;
+
+	    /* Rewrite any symbolic references that are supposed to use
+	       a PC-relative constant pool.  */
+	    mips16_lay_out_constants (false);
+
+	    if (simplejump_p (insn))
+	      /* We're going to replace INSN with a longer form.  */
+	      new_label = NULL_RTX;
+	    else
+	      {
+		/* Create a branch-around label for the original
+		   instruction.  */
+		new_label = gen_label_rtx ();
+		emit_label (new_label);
+	      }
+
+	    jump_sequence = get_insns ();
+	    end_sequence ();
+
+	    emit_insn_after (jump_sequence, insn);
+	    if (new_label)
+	      invert_jump (insn, new_label, false);
+	    else
+	      delete_insn (insn);
+	    something_changed = true;
+	  }
+    }
+  while (something_changed);
+}
+
 /* Implement TARGET_MACHINE_DEPENDENT_REORG.  */
 
 static void
@@ -15500,7 +15608,7 @@ mips_reorg (void)
      to date if the CFG is available.  */
   if (mips_cfg_in_reorg ())
     compute_bb_for_insn ();
-  mips16_lay_out_constants ();
+  mips16_lay_out_constants (true);
   if (mips_cfg_in_reorg ())
     {
       mips_df_reorg ();
@@ -15519,6 +15627,7 @@ mips_reorg (void)
     /* The expansion could invalidate some of the VR4130 alignment
        optimizations, but this should be an extremely rare case anyhow.  */
     mips_reorg_process_insns ();
+  mips16_split_long_branches ();
 }
 
 /* Implement TARGET_ASM_OUTPUT_MI_THUNK.  Generate rtl rather than asm text
@@ -15639,7 +15748,7 @@ mips_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   insn = get_insns ();
   insn_locators_alloc ();
   split_all_insns_noflow ();
-  mips16_lay_out_constants ();
+  mips16_lay_out_constants (true);
   shorten_branches (insn);
   final_start_function (insn, file, 1);
   final (insn, file, 1);
@@ -16051,6 +16160,16 @@ mips_option_override (void)
     {
       error ("unsupported combination: %s", "-mabicalls -mabi=eabi");
       target_flags &= ~MASK_ABICALLS;
+    }
+
+  /* PIC requires -mabicalls.  */
+  if (flag_pic)
+    {
+      if (mips_abi == ABI_EABI)
+	error ("cannot generate position-independent code for %qs",
+	       "-mabi=eabi");
+      else if (!TARGET_ABICALLS)
+	error ("position-independent code requires %qs", "-mabicalls");
     }
 
   if (TARGET_ABICALLS_PIC2)

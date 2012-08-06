@@ -480,9 +480,7 @@ package body GNAT.Sockets is
       --  no check required. Warnings suppressed because condition
       --  is known at compile time.
 
-      pragma Warnings (Off);
       if Target_OS = Windows then
-         pragma Warnings (On);
 
          return;
 
@@ -1150,10 +1148,7 @@ package body GNAT.Sockets is
             --  struct timeval, but on Windows it is a milliseconds count in
             --  a DWORD.
 
-            pragma Warnings (Off);
             if Target_OS = Windows then
-               pragma Warnings (On);
-
                Len := V4'Size / 8;
                Add := V4'Address;
 
@@ -1217,9 +1212,7 @@ package body GNAT.Sockets is
          when Send_Timeout    |
               Receive_Timeout =>
 
-            pragma Warnings (Off);
             if Target_OS = Windows then
-               pragma Warnings (On);
 
                --  Timeout is in milliseconds, actual value is 500 ms +
                --  returned value (unless it is 0).
@@ -1736,8 +1729,6 @@ package body GNAT.Sockets is
       Item   : out Ada.Streams.Stream_Element_Array;
       Last   : out Ada.Streams.Stream_Element_Offset)
    is
-      pragma Warnings (Off, Stream);
-
       First : Ada.Streams.Stream_Element_Offset          := Item'First;
       Index : Ada.Streams.Stream_Element_Offset          := First - 1;
       Max   : constant Ada.Streams.Stream_Element_Offset := Item'Last;
@@ -2270,9 +2261,7 @@ package body GNAT.Sockets is
          when Send_Timeout    |
               Receive_Timeout =>
 
-            pragma Warnings (Off);
             if Target_OS = Windows then
-               pragma Warnings (On);
 
                --  On Windows, the timeout is a DWORD in milliseconds, and
                --  the actual timeout is 500 ms + the given value (unless it
@@ -2317,16 +2306,11 @@ package body GNAT.Sockets is
       use type C.unsigned_short;
 
    begin
-      --  Big-endian case. No conversion needed. On these platforms,
-      --  htons() defaults to a null procedure.
-
-      pragma Warnings (Off);
-      --  Since the test can generate "always True/False" warning
+      --  Big-endian case. No conversion needed. On these platforms, htons()
+      --  defaults to a null procedure.
 
       if Default_Bit_Order = High_Order_First then
          return S;
-
-         pragma Warnings (On);
 
       --  Little-endian case. We must swap the high and low bytes of this
       --  short to make the port number network compliant.

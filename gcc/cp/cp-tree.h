@@ -729,10 +729,10 @@ DEF_VEC_ALLOC_O (qualified_typedef_usage_t,gc);
 /* Non-zero if this template specialization has access violations that
    should be rechecked when the function is instantiated outside argument
    deduction.  */
-#define TINFO_RECHECK_ACCESS_P(NODE) \
+#define TINFO_HAS_ACCESS_ERRORS(NODE) \
   (TREE_LANG_FLAG_0 (TEMPLATE_INFO_CHECK (NODE)))
-#define FNDECL_RECHECK_ACCESS_P(NODE) \
-  (TINFO_RECHECK_ACCESS_P (DECL_TEMPLATE_INFO (NODE)))
+#define FNDECL_HAS_ACCESS_ERRORS(NODE) \
+  (TINFO_HAS_ACCESS_ERRORS (DECL_TEMPLATE_INFO (NODE)))
 
 struct GTY(()) tree_template_info {
   struct tree_common common;
@@ -5697,6 +5697,7 @@ extern bool layout_pod_type_p			(const_tree);
 extern bool std_layout_type_p			(const_tree);
 extern bool trivial_type_p			(const_tree);
 extern bool trivially_copyable_p		(const_tree);
+extern bool scalarish_type_p			(const_tree);
 extern bool type_has_nontrivial_default_init	(const_tree);
 extern bool type_has_nontrivial_copy_init	(const_tree);
 extern bool class_tmpl_impl_spec_p		(const_tree);

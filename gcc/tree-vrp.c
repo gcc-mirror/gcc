@@ -2188,6 +2188,28 @@ extract_range_from_multiplicative_op_1 (value_range_t *vr,
     set_value_range (vr, type, min, max, NULL);
 }
 
+/* Some quadruple precision helpers.  */
+static int
+quad_int_cmp (double_int l0, double_int h0,
+	      double_int l1, double_int h1, bool uns)
+{
+  int c = double_int_cmp (h0, h1, uns);
+  if (c != 0) return c;
+  return double_int_ucmp (l0, l1);
+}
+
+static void
+quad_int_pair_sort (double_int *l0, double_int *h0,
+		    double_int *l1, double_int *h1, bool uns)
+{
+  if (quad_int_cmp (*l0, *h0, *l1, *h1, uns) > 0)
+    {
+      double_int tmp;
+      tmp = *l0; *l0 = *l1; *l1 = tmp;
+      tmp = *h0; *h0 = *h1; *h1 = tmp;
+    }
+}
+
 /* Extract range information from a binary operation CODE based on
    the ranges of each of its operands, *VR0 and *VR1 with resulting
    type EXPR_TYPE.  The resulting range is stored in *VR.  */
@@ -2569,6 +2591,123 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
     }
   else if (code == MULT_EXPR)
     {
+      /* Fancy code so that with unsigned, [-3,-1]*[-3,-1] does not
+	 drop to varying.  */
+      if (range_int_cst_p (&vr0)
+	  && range_int_cst_p (&vr1)
+	  && TYPE_OVERFLOW_WRAPS (expr_type))
+	{
+	  double_int min0, max0, min1, max1, sizem1, size;
+	  double_int prod0l, prod0h, prod1l, prod1h,
+		     prod2l, prod2h, prod3l, prod3h;
+	  bool uns0, uns1, uns;
+
+	  sizem1 = double_int_max_value (TYPE_PRECISION (expr_type), true);
+	  size = double_int_add (sizem1, double_int_one);
+
+	  min0 = tree_to_double_int (vr0.min);
+	  max0 = tree_to_double_int (vr0.max);
+	  min1 = tree_to_double_int (vr1.min);
+	  max1 = tree_to_double_int (vr1.max);
+
+	  uns0 = TYPE_UNSIGNED (expr_type);
+	  uns1 = uns0;
+
+	  /* Canonicalize the intervals.  */
+	  if (TYPE_UNSIGNED (expr_type))
+	    {
+	      double_int min2 = double_int_sub (size, min0);
+	      if (double_int_cmp (min2, max0, true) < 0)
+		{
+		  min0 = double_int_neg (min2);
+		  max0 = double_int_sub (max0, size);
+		  uns0 = false;
+		}
+
+	      min2 = double_int_sub (size, min1);
+	      if (double_int_cmp (min2, max1, true) < 0)
+		{
+		  min1 = double_int_neg (min2);
+		  max1 = double_int_sub (max1, size);
+		  uns1 = false;
+		}
+	    }
+	  uns = uns0 & uns1;
+
+	  mul_double_wide_with_sign (min0.low, min0.high,
+				     min1.low, min1.high,
+				     &prod0l.low, &prod0l.high,
+				     &prod0h.low, &prod0h.high, true);
+	  if (!uns0 && double_int_negative_p (min0))
+	    prod0h = double_int_sub (prod0h, min1);
+	  if (!uns1 && double_int_negative_p (min1))
+	    prod0h = double_int_sub (prod0h, min0);
+
+	  mul_double_wide_with_sign (min0.low, min0.high,
+				     max1.low, max1.high,
+				     &prod1l.low, &prod1l.high,
+				     &prod1h.low, &prod1h.high, true);
+	  if (!uns0 && double_int_negative_p (min0))
+	    prod1h = double_int_sub (prod1h, max1);
+	  if (!uns1 && double_int_negative_p (max1))
+	    prod1h = double_int_sub (prod1h, min0);
+
+	  mul_double_wide_with_sign (max0.low, max0.high,
+				     min1.low, min1.high,
+				     &prod2l.low, &prod2l.high,
+				     &prod2h.low, &prod2h.high, true);
+	  if (!uns0 && double_int_negative_p (max0))
+	    prod2h = double_int_sub (prod2h, min1);
+	  if (!uns1 && double_int_negative_p (min1))
+	    prod2h = double_int_sub (prod2h, max0);
+
+	  mul_double_wide_with_sign (max0.low, max0.high,
+				     max1.low, max1.high,
+				     &prod3l.low, &prod3l.high,
+				     &prod3h.low, &prod3h.high, true);
+	  if (!uns0 && double_int_negative_p (max0))
+	    prod3h = double_int_sub (prod3h, max1);
+	  if (!uns1 && double_int_negative_p (max1))
+	    prod3h = double_int_sub (prod3h, max0);
+
+	  /* Sort the 4 products.  */
+	  quad_int_pair_sort (&prod0l, &prod0h, &prod3l, &prod3h, uns);
+	  quad_int_pair_sort (&prod1l, &prod1h, &prod2l, &prod2h, uns);
+	  quad_int_pair_sort (&prod0l, &prod0h, &prod1l, &prod1h, uns);
+	  quad_int_pair_sort (&prod2l, &prod2h, &prod3l, &prod3h, uns);
+
+	  /* Max - min.  */
+	  if (double_int_zero_p (prod0l))
+	    {
+	      prod1l = double_int_zero;
+	      prod1h = double_int_neg (prod0h);
+	    }
+	  else
+	    {
+	      prod1l = double_int_neg (prod0l);
+	      prod1h = double_int_not (prod0h);
+	    }
+	  prod2l = double_int_add (prod3l, prod1l);
+	  prod2h = double_int_add (prod3h, prod1h);
+	  if (double_int_ucmp (prod2l, prod3l) < 0)
+	    prod2h = double_int_add (prod2h, double_int_one); /* carry */
+
+	  if (!double_int_zero_p (prod2h)
+	      || double_int_cmp (prod2l, sizem1, true) >= 0)
+	    {
+	      /* the range covers all values.  */
+	      set_value_range_to_varying (vr);
+	      return;
+	    }
+
+	  /* The following should handle the wrapping and selecting
+	     VR_ANTI_RANGE for us.  */
+	  min = double_int_to_tree (expr_type, prod0l);
+	  max = double_int_to_tree (expr_type, prod3l);
+	  set_and_canonicalize_value_range (vr, VR_RANGE, min, max, NULL);
+	  return;
+	}
+
       /* If we have an unsigned MULT_EXPR with two VR_ANTI_RANGEs,
 	 drop to VR_VARYING.  It would take more effort to compute a
 	 precise range for such a case.  For example, if we have

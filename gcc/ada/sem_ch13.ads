@@ -310,4 +310,8 @@ package Sem_Ch13 is
    --  Performs the processing described above at the freeze all point, and
    --  issues appropriate error messages if the visibility has indeed changed.
    --  Again, ASN is the N_Aspect_Specification node for the aspect.
+
+   procedure Inherit_Aspects_At_Freeze_Point (Typ : Entity_Id);
+   --  Given an entity Typ that denotes a derived type or a subtype, this
+   --  routine performs the inheritance of aspects at the freeze point.
 end Sem_Ch13;

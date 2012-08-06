@@ -4343,10 +4343,21 @@ package body Sem_Ch4 is
                      --  Emit appropriate message. Gigi will replace the
                      --  node subsequently with the appropriate Raise.
 
-                     Apply_Compile_Time_Constraint_Error
-                       (N, "component not present in }?",
-                        CE_Discriminant_Check_Failed,
-                        Ent => Prefix_Type, Rep => False);
+                     --  In Alfa mode, this is made into an error to simplify
+                     --  the processing of the formal verification backend.
+
+                     if Alfa_Mode then
+                        Apply_Compile_Time_Constraint_Error
+                          (N, "component not present in }",
+                           CE_Discriminant_Check_Failed,
+                           Ent => Prefix_Type, Rep => False);
+                     else
+                        Apply_Compile_Time_Constraint_Error
+                          (N, "component not present in }?",
+                           CE_Discriminant_Check_Failed,
+                           Ent => Prefix_Type, Rep => False);
+                     end if;
+
                      Set_Raises_Constraint_Error (N);
                      return;
                   end if;

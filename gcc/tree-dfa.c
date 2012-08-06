@@ -63,56 +63,6 @@ static void collect_dfa_stats (struct dfa_stats_d *);
 /*---------------------------------------------------------------------------
 			Dataflow analysis (DFA) routines
 ---------------------------------------------------------------------------*/
-/* Find all the variables referenced in the function.  This function
-   builds the global arrays REFERENCED_VARS and CALL_CLOBBERED_VARS.
-
-   Note that this function does not look for statement operands, it simply
-   determines what variables are referenced in the program and detects
-   various attributes for each variable used by alias analysis and the
-   optimizer.  */
-
-static unsigned int
-find_referenced_vars (void)
-{
-  basic_block bb;
-  gimple_stmt_iterator si;
-
-  FOR_EACH_BB (bb)
-    {
-      for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
-	{
-	  gimple stmt = gsi_stmt (si);
-	  if (is_gimple_debug (stmt))
-	    continue;
-	  find_referenced_vars_in (gsi_stmt (si));
-	}
-
-      for (si = gsi_start_phis (bb); !gsi_end_p (si); gsi_next (&si))
-	find_referenced_vars_in (gsi_stmt (si));
-    }
-
-  return 0;
-}
-
-struct gimple_opt_pass pass_referenced_vars =
-{
- {
-  GIMPLE_PASS,
-  "*referenced_vars",			/* name */
-  NULL,					/* gate */
-  find_referenced_vars,			/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_FIND_REFERENCED_VARS,		/* tv_id */
-  PROP_gimple_leh | PROP_cfg,		/* properties_required */
-  PROP_referenced_vars,			/* properties_provided */
-  0,					/* properties_destroyed */
-  0,                     		/* todo_flags_start */
-  0                                     /* todo_flags_finish */
- }
-};
-
 
 /* Renumber all of the gimple stmt uids.  */
 
@@ -164,54 +114,11 @@ renumber_gimple_stmt_uids_in_blocks (basic_block *blocks, int n_blocks)
     }
 }
 
-/* Build a temporary.  Make sure and register it to be renamed.  */
-
-tree
-make_rename_temp (tree type, const char *prefix)
-{
-  tree t = create_tmp_reg (type, prefix);
-
-  if (gimple_referenced_vars (cfun))
-    add_referenced_var (t);
-
-  return t;
-}
-
 
 
 /*---------------------------------------------------------------------------
 			      Debugging functions
 ---------------------------------------------------------------------------*/
-/* Dump the list of all the referenced variables in the current function to
-   FILE.  */
-
-void
-dump_referenced_vars (FILE *file)
-{
-  tree var;
-  referenced_var_iterator rvi;
-
-  fprintf (file, "\nReferenced variables in %s: %u\n\n",
-	   get_name (current_function_decl), (unsigned) num_referenced_vars);
-
-  FOR_EACH_REFERENCED_VAR (cfun, var, rvi)
-    {
-      fprintf (file, "Variable: ");
-      dump_variable (file, var);
-    }
-
-  fprintf (file, "\n");
-}
-
-
-/* Dump the list of all the referenced variables to stderr.  */
-
-DEBUG_FUNCTION void
-debug_referenced_vars (void)
-{
-  dump_referenced_vars (stderr);
-}
-
 
 /* Dump variable VAR and its may-aliases to FILE.  */
 
@@ -249,10 +156,10 @@ dump_variable (FILE *file, tree var)
   if (TREE_THIS_VOLATILE (var))
     fprintf (file, ", is volatile");
 
-  if (cfun && gimple_default_def (cfun, var))
+  if (cfun && ssa_default_def (cfun, var))
     {
       fprintf (file, ", default def: ");
-      print_generic_expr (file, gimple_default_def (cfun, var), dump_flags);
+      print_generic_expr (file, ssa_default_def (cfun, var), dump_flags);
     }
 
   if (DECL_INITIAL (var))
@@ -296,11 +203,6 @@ dump_dfa_stats (FILE *file)
   fprintf (file, fmt_str, "", "  Number of  ", "Memory");
   fprintf (file, fmt_str, "", "  instances  ", "used ");
   fprintf (file, "---------------------------------------------------------\n");
-
-  size = num_referenced_vars * sizeof (tree);
-  total += size;
-  fprintf (file, fmt_str_1, "Referenced variables", (unsigned long)num_referenced_vars,
-	   SCALE (size), LABEL (size));
 
   size = dfa_stats.num_uses * sizeof (tree *);
   total += size;
@@ -397,187 +299,71 @@ collect_dfa_stats (struct dfa_stats_d *dfa_stats_p ATTRIBUTE_UNUSED)
 /*---------------------------------------------------------------------------
 			     Miscellaneous helpers
 ---------------------------------------------------------------------------*/
-/* Callback for walk_tree.  Used to collect variables referenced in
-   the function.  */
-
-static tree
-find_vars_r (tree *tp, int *walk_subtrees, void *data)
-{
-  struct function *fn = (struct function *) data;
-
-  /* If we are reading the lto info back in, we need to rescan the
-     referenced vars.  */
-  if (TREE_CODE (*tp) == SSA_NAME)
-    add_referenced_var_1 (SSA_NAME_VAR (*tp), fn);
-
-  /* If T is a regular variable that the optimizers are interested
-     in, add it to the list of variables.  */
-  else if ((TREE_CODE (*tp) == VAR_DECL
-	    && !is_global_var (*tp))
-	   || TREE_CODE (*tp) == PARM_DECL
-	   || TREE_CODE (*tp) == RESULT_DECL)
-    add_referenced_var_1 (*tp, fn);
-
-  /* Type, _DECL and constant nodes have no interesting children.
-     Ignore them.  */
-  else if (IS_TYPE_OR_DECL_P (*tp) || CONSTANT_CLASS_P (*tp))
-    *walk_subtrees = 0;
-
-  return NULL_TREE;
-}
-
-/* Find referenced variables in STMT.  */
-
-void
-find_referenced_vars_in (gimple stmt)
-{
-  size_t i;
-
-  if (gimple_code (stmt) != GIMPLE_PHI)
-    {
-      for (i = 0; i < gimple_num_ops (stmt); i++)
-	walk_tree (gimple_op_ptr (stmt, i), find_vars_r, cfun, NULL);
-    }
-  else
-    {
-      walk_tree (gimple_phi_result_ptr (stmt), find_vars_r, cfun, NULL);
-
-      for (i = 0; i < gimple_phi_num_args (stmt); i++)
-	{
-	  tree arg = gimple_phi_arg_def (stmt, i);
-	  walk_tree (&arg, find_vars_r, cfun, NULL);
-	}
-    }
-}
-
-
-/* Lookup UID in the referenced_vars hashtable and return the associated
-   variable.  */
-
-tree
-referenced_var_lookup (struct function *fn, unsigned int uid)
-{
-  tree h;
-  struct tree_decl_minimal in;
-  in.uid = uid;
-  h = (tree) htab_find_with_hash (gimple_referenced_vars (fn), &in, uid);
-  return h;
-}
-
-/* Check if TO is in the referenced_vars hash table and insert it if not.
-   Return true if it required insertion.  */
-
-static bool
-referenced_var_check_and_insert (tree to, struct function *fn)
-{
-  tree *loc;
-  struct tree_decl_minimal in;
-  unsigned int uid = DECL_UID (to);
-
-  in.uid = uid;
-  loc = (tree *) htab_find_slot_with_hash (gimple_referenced_vars (fn),
-					   &in, uid, INSERT);
-  if (*loc)
-    {
-      /* DECL_UID has already been entered in the table.  Verify that it is
-	 the same entry as TO.  See PR 27793.  */
-      gcc_assert (*loc == to);
-      return false;
-    }
-
-  *loc = to;
-  return true;
-}
 
 /* Lookup VAR UID in the default_defs hashtable and return the associated
    variable.  */
 
 tree
-gimple_default_def (struct function *fn, tree var)
+ssa_default_def (struct function *fn, tree var)
 {
   struct tree_decl_minimal ind;
   struct tree_ssa_name in;
-  gcc_assert (SSA_VAR_P (var));
+  gcc_assert (TREE_CODE (var) == VAR_DECL
+	      || TREE_CODE (var) == PARM_DECL
+	      || TREE_CODE (var) == RESULT_DECL);
   in.var = (tree)&ind;
   ind.uid = DECL_UID (var);
   return (tree) htab_find_with_hash (DEFAULT_DEFS (fn), &in, DECL_UID (var));
 }
 
-/* Insert the pair VAR's UID, DEF into the default_defs hashtable.  */
+/* Insert the pair VAR's UID, DEF into the default_defs hashtable
+   of function FN.  */
 
 void
-set_default_def (tree var, tree def)
+set_ssa_default_def (struct function *fn, tree var, tree def)
 {
   struct tree_decl_minimal ind;
   struct tree_ssa_name in;
   void **loc;
 
-  gcc_assert (SSA_VAR_P (var));
+  gcc_assert (TREE_CODE (var) == VAR_DECL
+	      || TREE_CODE (var) == PARM_DECL
+	      || TREE_CODE (var) == RESULT_DECL);
   in.var = (tree)&ind;
   ind.uid = DECL_UID (var);
   if (!def)
     {
-      loc = htab_find_slot_with_hash (DEFAULT_DEFS (cfun), &in,
-            DECL_UID (var), INSERT);
-      gcc_assert (*loc);
-      htab_remove_elt (DEFAULT_DEFS (cfun), *loc);
+      loc = htab_find_slot_with_hash (DEFAULT_DEFS (fn), &in,
+				      DECL_UID (var), NO_INSERT);
+      if (*loc)
+	htab_clear_slot (DEFAULT_DEFS (fn), loc);
       return;
     }
   gcc_assert (TREE_CODE (def) == SSA_NAME && SSA_NAME_VAR (def) == var);
-  loc = htab_find_slot_with_hash (DEFAULT_DEFS (cfun), &in,
+  loc = htab_find_slot_with_hash (DEFAULT_DEFS (fn), &in,
                                   DECL_UID (var), INSERT);
 
   /* Default definition might be changed by tail call optimization.  */
   if (*loc)
     SSA_NAME_IS_DEFAULT_DEF (*(tree *) loc) = false;
-  *(tree *) loc = def;
 
    /* Mark DEF as the default definition for VAR.  */
+  *(tree *) loc = def;
    SSA_NAME_IS_DEFAULT_DEF (def) = true;
 }
 
-/* Add VAR to the list of referenced variables if it isn't already there.  */
+/* Retrieve or create a default definition for VAR.  */
 
-bool
-add_referenced_var_1 (tree var, struct function *fn)
+tree
+get_or_create_ssa_default_def (struct function *fn, tree var)
 {
-  gcc_checking_assert (TREE_CODE (var) == VAR_DECL
-		       || TREE_CODE (var) == PARM_DECL
-		       || TREE_CODE (var) == RESULT_DECL);
-
-  gcc_checking_assert ((TREE_CODE (var) == VAR_DECL
-			&& VAR_DECL_IS_VIRTUAL_OPERAND (var))
-		       || !is_global_var (var));
-
-  /* Insert VAR into the referenced_vars hash table if it isn't present
-     and allocate its var-annotation.  */
-  if (referenced_var_check_and_insert (var, fn))
-    return true;
-
-  return false;
-}
-
-/* Remove VAR from the list of referenced variables and clear its
-   var-annotation.  */
-
-void
-remove_referenced_var (tree var)
-{
-  struct tree_decl_minimal in;
-  void **loc;
-  unsigned int uid = DECL_UID (var);
-
-  gcc_checking_assert (TREE_CODE (var) == VAR_DECL
-		       || TREE_CODE (var) == PARM_DECL
-		       || TREE_CODE (var) == RESULT_DECL);
-
-  gcc_checking_assert (!is_global_var (var));
-
-  in.uid = uid;
-  loc = htab_find_slot_with_hash (gimple_referenced_vars (cfun), &in, uid,
-				  NO_INSERT);
-  if (loc)
-    htab_clear_slot (gimple_referenced_vars (cfun), loc);
+  tree ddef = ssa_default_def (fn, var);
+  if (ddef == NULL_TREE)
+    {
+      ddef = make_ssa_name (var, gimple_build_nop ());
+      set_ssa_default_def (cfun, var, ddef);
+    }
+  return ddef;
 }
 
 

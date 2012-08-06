@@ -1,6 +1,6 @@
 // unique_ptr implementation -*- C++ -*-
 
-// Copyright (C) 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+// Copyright (C) 2008-2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -44,6 +44,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @addtogroup pointer_abstractions
    * @{
    */
+
+#if _GLIBCXX_USE_DEPRECATED
+  template<typename> class auto_ptr;
+#endif
 
   /// Primary template, default_delete.
   template<typename _Tp>
@@ -161,8 +165,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	std::enable_if<std::is_convertible<_Up*, _Tp*>::value
 		       && std::is_same<_Dp,
 				       default_delete<_Tp>>::value>::type>
-	unique_ptr(auto_ptr<_Up>&& __u) noexcept
-	: _M_t(__u.release(), deleter_type()) { }
+	unique_ptr(auto_ptr<_Up>&& __u) noexcept;
 #endif
 
       // Destructor.

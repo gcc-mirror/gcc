@@ -3499,9 +3499,9 @@ expand_omp_taskreg (struct omp_region *region)
 	      /* If we are in ssa form, we must load the value from the default
 		 definition of the argument.  That should not be defined now,
 		 since the argument is not used uninitialized.  */
-	      gcc_assert (gimple_default_def (cfun, arg) == NULL);
+	      gcc_assert (ssa_default_def (cfun, arg) == NULL);
 	      narg = make_ssa_name (arg, gimple_build_nop ());
-	      set_default_def (arg, narg);
+	      set_ssa_default_def (cfun, arg, narg);
 	      /* ?? Is setting the subcode really necessary ??  */
 	      gimple_omp_set_subcode (parcopy_stmt, TREE_CODE (narg));
 	      gimple_assign_set_rhs1 (parcopy_stmt, narg);
@@ -3732,11 +3732,6 @@ expand_omp_for_generic (struct omp_region *region,
   iend0 = create_tmp_var (fd->iter_type, ".iend0");
   TREE_ADDRESSABLE (istart0) = 1;
   TREE_ADDRESSABLE (iend0) = 1;
-  if (gimple_referenced_vars (cfun))
-    {
-      add_referenced_var (istart0);
-      add_referenced_var (iend0);
-    }
 
   /* See if we need to bias by LLONG_MIN.  */
   if (fd->iter_type == long_long_unsigned_type_node
@@ -3816,7 +3811,7 @@ expand_omp_for_generic (struct omp_region *region,
 	    counts[i] = t;
 	  else
 	    {
-	      counts[i] = make_rename_temp (type, ".count");
+	      counts[i] = create_tmp_reg (type, ".count");
 	      t = force_gimple_operand_gsi (&gsi, t, false, NULL_TREE,
 					    true, GSI_SAME_STMT);
 	      stmt = gimple_build_assign (counts[i], t);
@@ -3941,7 +3936,7 @@ expand_omp_for_generic (struct omp_region *region,
 				   false, GSI_CONTINUE_LINKING);
   if (fd->collapse > 1)
     {
-      tree tem = make_rename_temp (type, ".tem");
+      tree tem = create_tmp_reg (type, ".tem");
       stmt = gimple_build_assign (tem, fd->loop.v);
       gsi_insert_after (&gsi, stmt, GSI_CONTINUE_LINKING);
       for (i = fd->collapse - 1; i >= 0; i--)
@@ -4229,12 +4224,12 @@ expand_omp_for_static_nochunk (struct omp_region *region,
   t = fold_convert (itype, t);
   n = force_gimple_operand_gsi (&gsi, t, true, NULL_TREE, true, GSI_SAME_STMT);
 
-  q = make_rename_temp (itype, "q");
+  q = create_tmp_reg (itype, "q");
   t = fold_build2 (TRUNC_DIV_EXPR, itype, n, nthreads);
   t = force_gimple_operand_gsi (&gsi, t, false, NULL_TREE, true, GSI_SAME_STMT);
   gsi_insert_before (&gsi, gimple_build_assign (q, t), GSI_SAME_STMT);
 
-  tt = make_rename_temp (itype, "tt");
+  tt = create_tmp_reg (itype, "tt");
   t = fold_build2 (TRUNC_MOD_EXPR, itype, n, nthreads);
   t = force_gimple_operand_gsi (&gsi, t, false, NULL_TREE, true, GSI_SAME_STMT);
   gsi_insert_before (&gsi, gimple_build_assign (tt, t), GSI_SAME_STMT);
@@ -4458,7 +4453,6 @@ expand_omp_for_static_chunk (struct omp_region *region, struct omp_for_data *fd)
   trip_var = create_tmp_reg (itype, ".trip");
   if (gimple_in_ssa_p (cfun))
     {
-      add_referenced_var (trip_var);
       trip_init = make_ssa_name (trip_var, NULL);
       trip_main = make_ssa_name (trip_var, NULL);
       trip_back = make_ssa_name (trip_var, NULL);
@@ -5295,8 +5289,8 @@ expand_omp_atomic_pipeline (basic_block load_bb, basic_block store_bb,
     {
       tree iaddr_val;
 
-      iaddr = make_rename_temp (build_pointer_type_for_mode (itype, ptr_mode,
-							     true), NULL);
+      iaddr = create_tmp_reg (build_pointer_type_for_mode (itype, ptr_mode,
+							   true), NULL);
       iaddr_val
 	= force_gimple_operand_gsi (&si,
 				    fold_convert (TREE_TYPE (iaddr), addr),
@@ -5305,11 +5299,7 @@ expand_omp_atomic_pipeline (basic_block load_bb, basic_block store_bb,
       gsi_insert_before (&si, stmt, GSI_SAME_STMT);
       loadedi = create_tmp_var (itype, NULL);
       if (gimple_in_ssa_p (cfun))
-	{
-	  add_referenced_var (iaddr);
-	  add_referenced_var (loadedi);
-	  loadedi = make_ssa_name (loadedi, NULL);
-	}
+	loadedi = make_ssa_name (loadedi, NULL);
     }
   else
     {
@@ -5386,8 +5376,6 @@ expand_omp_atomic_pipeline (basic_block load_bb, basic_block store_bb,
   else
     {
       old_vali = create_tmp_var (TREE_TYPE (loadedi), NULL);
-      if (gimple_in_ssa_p (cfun))
-	add_referenced_var (old_vali);
       stmt = gimple_build_assign (old_vali, loadedi);
       gsi_insert_before (&si, stmt, GSI_SAME_STMT);
 

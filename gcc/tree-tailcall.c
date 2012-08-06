@@ -613,8 +613,6 @@ adjust_return_value_with_ops (enum tree_code code, const char *label,
   gimple stmt;
   tree result;
 
-  add_referenced_var (tmp);
-
   if (types_compatible_p (TREE_TYPE (acc), TREE_TYPE (op1)))
     stmt = gimple_build_assign_with_ops (code, tmp, acc, op1);
   else
@@ -769,7 +767,7 @@ arg_needs_copy_p (tree param)
     return false;
 
   /* Parameters that are only defined but never used need not be copied.  */
-  def = gimple_default_def (cfun, param);
+  def = ssa_default_def (cfun, param);
   if (!def)
     return false;
 
@@ -912,7 +910,6 @@ create_tailcall_accumulator (const char *label, basic_block bb, tree init)
   tree tmp = create_tmp_reg (ret_type, label);
   gimple phi;
 
-  add_referenced_var (tmp);
   phi = create_phi_node (tmp, bb);
   /* RET_TYPE can be a float when -ffast-maths is enabled.  */
   add_phi_arg (phi, fold_convert (ret_type, init), single_pred_edge (bb),
@@ -972,11 +969,11 @@ tree_optimize_tail_calls_1 (bool opt_tailcalls)
 	       param = DECL_CHAIN (param))
 	    if (arg_needs_copy_p (param))
 	      {
-		tree name = gimple_default_def (cfun, param);
+		tree name = ssa_default_def (cfun, param);
 		tree new_name = make_ssa_name (param, SSA_NAME_DEF_STMT (name));
 		gimple phi;
 
-		set_default_def (param, new_name);
+		set_ssa_default_def (cfun, param, new_name);
 		phi = create_phi_node (name, first);
 		SSA_NAME_DEF_STMT (name) = phi;
 		add_phi_arg (phi, new_name, single_pred_edge (first),

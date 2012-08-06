@@ -1,3 +1,88 @@
+2012-08-06  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/tree-ssa/vrp78.c: New test.
+
+2012-08-04  Sandra Loosemore  <sandra@codesourcery.com>
+	    Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* g++.dg/opt/enum2.C: Require fpic target.
+	* g++.dg/lto/20090303_0.C: Likewise.
+
+2012-08-04  Sandra Loosemore  <sandra@codesourcery.com>
+	    Catherine Moore  <clm@codesourcery.com>
+
+	* gcc.target/mips/clear-cache-1.c: Test for alternate cache
+	flush function names too.
+	* gcc.target/mips/clear-cache-1.c: Likewise.
+
+2012-08-03  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR target/54156
+	* testsuite/gcc.dg/vect/pr53773.c: Change to use optimized dump.
+
+2012-08-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/54166
+	* gfortran.dg/array_5.f90: New test.
+
+2012-08-03 Marc Glisse <marc.glisse@inria.fr>
+
+	PR tree-optimization/30318
+	* gcc.dg/tree-ssa/vrp77.c: New testcase.
+
+2012-08-03  Marc Glisse  <marc.glisse@inria.fr>
+
+	* g++.dg/ext/vector17.C: New testcase.
+
+2012-08-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR target/51931
+	* gcc.c-torture/compile/20001226-1.c: Remove nomips16 attribute.
+	* g++.dg/opt/longbranch1.C: Likewise.
+
+2012-08-02  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/53805
+	* gcc.dg/fold-notunord.c: New testcase.
+
+2012-08-02  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/48820
+	* gfortran.dg/assumed_rank_bounds_1.f90:  New test.
+	* gfortran.dg/assumed_rank_bounds_2.f90:  New test.
+
+2012-08-02  Jason Merrill  <jason@redhat.com>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51213 (again)
+	* g++.dg/cpp0x/sfinae37.C: Extend.
+
+2012-08-02  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/50672
+	* g++.dg/torture/pr50672.C: New testcase.
+
+2012-08-02  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54147
+	* gfortran.dg/abstract_type_6.f03: Modified.
+	* gfortran.dg/proc_ptr_comp_3.f90: Modified.
+	* gfortran.dg/proc_ptr_comp_35.f90: New.
+	* gfortran.dg/typebound_proc_9.f03: Modified.
+	* gfortran.dg/typebound_proc_26.f90: New.
+
+2012-08-02  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/torture/pta-callused-1.c: Adjust.
+	* gcc.dg/torture/pta-ptrarith-3.c: Likewise.
+	* gcc.dg/torture/ssa-pta-fn-1.c: Likewise.
+	* gcc.dg/tree-ssa/alias-19.c: Likewise.
+	* gcc.dg/tree-ssa/pta-escape-1.c: Likewise.
+	* gcc.dg/tree-ssa/pta-escape-2.c: Likewise.
+	* gcc.dg/tree-ssa/pta-escape-3.c: Likewise.
+	* gcc.dg/tree-ssa/pta-ptrarith-1.c: Likewise.
+	* gcc.dg/tree-ssa/pta-ptrarith-2.c: Likewise.
+
 2012-08-01  Thomas König  <tkoenig@gcc.gnu.org>
 
 	PR fortran/54033

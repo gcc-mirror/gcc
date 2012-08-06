@@ -652,7 +652,7 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 
 		case 'E':
 		case 'F':
-		  if (GET_CODE (op) == CONST_DOUBLE
+		  if (CONST_DOUBLE_AS_FLOAT_P (op) 
 		      || (GET_CODE (op) == CONST_VECTOR
 			  && (GET_MODE_CLASS (GET_MODE (op))
 			      == MODE_VECTOR_FLOAT)))
@@ -661,15 +661,13 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 
 		case 'G':
 		case 'H':
-		  if (GET_CODE (op) == CONST_DOUBLE
+		  if (CONST_DOUBLE_AS_FLOAT_P (op) 
 		      && CONST_DOUBLE_OK_FOR_CONSTRAINT_P (op, c, p))
 		    win = 1;
 		  break;
 
 		case 's':
-		  if (CONST_INT_P (op)
-		      || (GET_CODE (op) == CONST_DOUBLE
-			  && GET_MODE (op) == VOIDmode))
+		  if (CONST_INT_P (op) || CONST_DOUBLE_AS_INT_P (op)) 
 		    break;
 
 		case 'i':
@@ -679,9 +677,7 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 		  break;
 
 		case 'n':
-		  if (CONST_INT_P (op)
-		      || (GET_CODE (op) == CONST_DOUBLE
-			  && GET_MODE (op) == VOIDmode))
+		  if (CONST_INT_P (op) || CONST_DOUBLE_AS_INT_P (op)) 
 		    win = 1;
 		  break;
 

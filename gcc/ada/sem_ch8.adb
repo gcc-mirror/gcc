@@ -7223,7 +7223,7 @@ package body Sem_Ch8 is
       --  If the actions to be wrapped are still there they will get lost
       --  causing incomplete code to be generated. It is better to abort in
       --  this case (and we do the abort even with assertions off since the
-      --  penalty is incorrect code generation)
+      --  penalty is incorrect code generation).
 
       if SST.Actions_To_Be_Wrapped_Before /= No_List
            or else

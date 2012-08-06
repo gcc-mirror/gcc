@@ -33,5 +33,5 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump "q_., points-to vars: { i j k }" "alias" } } */
+/* { dg-final { scan-tree-dump "q_. = { i j k }" "alias" } } */
 /* { dg-final { cleanup-tree-dump "alias" } } */

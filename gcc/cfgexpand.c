@@ -429,10 +429,10 @@ add_scope_conflicts_1 (basic_block bb, bitmap work, bool for_conflict)
 	      unsigned i;
 	      EXECUTE_IF_SET_IN_BITMAP (work, 0, i, bi)
 		{
-		  unsigned j;
-		  bitmap_iterator bj;
-		  EXECUTE_IF_SET_IN_BITMAP (work, i + 1, j, bj)
-		    add_stack_var_conflict (i, j);
+		  struct stack_var *a = &stack_vars[i];
+		  if (!a->conflicts)
+		    a->conflicts = BITMAP_ALLOC (NULL);
+		  bitmap_ior_into (a->conflicts, work);
 		}
 	      visit = visit_conflict;
 	    }
@@ -450,6 +450,8 @@ add_scope_conflicts (void)
   basic_block bb;
   bool changed;
   bitmap work = BITMAP_ALLOC (NULL);
+  int *rpo;
+  int n_bbs;
 
   /* We approximate the live range of a stack variable by taking the first
      mention of its name as starting point(s), and by the end-of-scope
@@ -464,13 +466,19 @@ add_scope_conflicts (void)
   FOR_ALL_BB (bb)
     bb->aux = BITMAP_ALLOC (NULL);
 
+  rpo = XNEWVEC (int, last_basic_block);
+  n_bbs = pre_and_rev_post_order_compute (NULL, rpo, false);
+
   changed = true;
   while (changed)
     {
+      int i;
       changed = false;
-      FOR_EACH_BB (bb)
+      for (i = 0; i < n_bbs; i++)
 	{
-	  bitmap active = (bitmap)bb->aux;
+	  bitmap active;
+	  bb = BASIC_BLOCK (rpo[i]);
+	  active = (bitmap)bb->aux;
 	  add_scope_conflicts_1 (bb, work, false);
 	  if (bitmap_ior_into (active, work))
 	    changed = true;
@@ -480,6 +488,7 @@ add_scope_conflicts (void)
   FOR_EACH_BB (bb)
     add_scope_conflicts_1 (bb, work, true);
 
+  free (rpo);
   BITMAP_FREE (work);
   FOR_ALL_BB (bb)
     BITMAP_FREE (bb->aux);
@@ -620,13 +629,6 @@ update_alias_info_with_stack_vars (void)
 	{
 	  tree decl = stack_vars[j].decl;
 	  unsigned int uid = DECL_PT_UID (decl);
-	  /* We should never end up partitioning SSA names (though they
-	     may end up on the stack).  Neither should we allocate stack
-	     space to something that is unused and thus unreferenced, except
-	     for -O0 where we are preserving even unreferenced variables.  */
-	  gcc_assert (DECL_P (decl)
-		      && (!optimize
-			  || referenced_var_lookup (cfun, DECL_UID (decl))));
 	  bitmap_set_bit (part, uid);
 	  *((bitmap *) pointer_map_insert (decls_to_partitions,
 					   (void *)(size_t) uid)) = part;
@@ -1351,7 +1353,7 @@ add_stack_protection_conflicts (void)
   for (i = 0; i < n; ++i)
     {
       unsigned char ph_i = phase[i];
-      for (j = 0; j < i; ++j)
+      for (j = i + 1; j < n; ++j)
 	if (ph_i != phase[j])
 	  add_stack_var_conflict (i, j);
     }
@@ -1400,6 +1402,7 @@ fini_vars_expansion (void)
   XDELETEVEC (stack_vars);
   XDELETEVEC (stack_vars_sorted);
   stack_vars = NULL;
+  stack_vars_sorted = NULL;
   stack_vars_alloc = stack_vars_num = 0;
   pointer_map_destroy (decl_to_stack_part);
   decl_to_stack_part = NULL;
@@ -3634,7 +3637,7 @@ expand_debug_locations (void)
 			|| (GET_MODE (val) == VOIDmode
 			    && (CONST_INT_P (val)
 				|| GET_CODE (val) == CONST_FIXED
-				|| GET_CODE (val) == CONST_DOUBLE
+				|| CONST_DOUBLE_AS_INT_P (val) 
 				|| GET_CODE (val) == LABEL_REF)));
 	  }
 
@@ -4363,7 +4366,6 @@ gimple_expand_cfg (void)
   crtl->max_used_stack_slot_alignment = STACK_BOUNDARY;
   crtl->stack_alignment_estimated = 0;
   crtl->preferred_stack_boundary = STACK_BOUNDARY;
-  crtl->max_dynamic_stack_alignment = 0;
   cfun->cfg->max_jumptable_ents = 0;
 
   /* Resovle the function section.  Some targets, like ARM EABI rely on knowledge

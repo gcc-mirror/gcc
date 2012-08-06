@@ -443,7 +443,8 @@ package body Switch.C is
                   --  -gnated switch (disable atomic synchronization)
 
                   when 'd' =>
-                     Suppress_Options (Atomic_Synchronization) := True;
+                     Suppress_Options.Suppress (Atomic_Synchronization) :=
+                       True;
 
                   --  -gnateD switch (preprocessing symbol definition)
 
@@ -754,7 +755,9 @@ package body Switch.C is
 
             when 'o' =>
                Ptr := Ptr + 1;
-               Suppress_Options (Overflow_Check) := False;
+               Suppress_Options.Suppress (Overflow_Check) := False;
+               Suppress_Options.Overflow_Checks_General := Check_All;
+               Suppress_Options.Overflow_Checks_Assertions := Check_All;
                Opt.Enable_Overflow_Checks := True;
 
             --  Processing for O switch
@@ -782,12 +785,16 @@ package body Switch.C is
                   --  exclude Atomic_Synchronization, since this is not a real
                   --  check.
 
-                  for J in Suppress_Options'Range loop
+                  for J in Suppress_Options.Suppress'Range loop
                      if J /= Elaboration_Check
-                       and then J /= Atomic_Synchronization
+                          and then
+                        J /= Atomic_Synchronization
                      then
-                        Suppress_Options (J) := True;
+                        Suppress_Options.Suppress (J) := True;
                      end if;
+
+                     Suppress_Options.Overflow_Checks_General    := Suppress;
+                     Suppress_Options.Overflow_Checks_Assertions := Suppress;
                   end loop;
 
                   Validity_Checks_On         := False;

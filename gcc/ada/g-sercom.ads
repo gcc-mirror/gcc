@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                    Copyright (C) 2007-2010, AdaCore                      --
+--                    Copyright (C) 2007-2012, AdaCore                      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -62,6 +62,9 @@ package GNAT.Serial_Communications is
    type Parity_Check is (None, Even, Odd);
    --  Either no parity check or an even or odd parity
 
+   type Flow_Control is (None, RTS_CTS, Xon_Xoff);
+   --  No flow control, hardware flow control, software flow control
+
    type Serial_Port is new Ada.Streams.Root_Stream_Type with private;
 
    procedure Open
@@ -77,12 +80,17 @@ package GNAT.Serial_Communications is
       Stop_Bits : Stop_Bits_Number := One;
       Parity    : Parity_Check     := None;
       Block     : Boolean          := True;
+      Local     : Boolean          := True;
+      Flow      : Flow_Control     := None;
       Timeout   : Duration         := 10.0);
    --  The communication port settings. If Block is set then a read call
    --  will wait for the whole buffer to be filed. If Block is not set then
-   --  the given Timeout (in seconds) is used. Note that the timeout precision
-   --  may be limited on some implementation (e.g. on GNU/Linux the maximum
-   --  precision is a tenth of seconds).
+   --  the given Timeout (in seconds) is used. If Local is set then modem
+   --  control lines (in particular DCD) are ignored (not supported on
+   --  Windows). Flow indicates the flow control type as defined above.
+   --
+   --  Note that the timeout precision may be limited on some implementation
+   --  (e.g. on GNU/Linux the maximum precision is a tenth of seconds).
 
    overriding procedure Read
      (Port   : in out Serial_Port;

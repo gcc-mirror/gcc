@@ -1623,10 +1623,13 @@ ipa_analyze_params_uses (struct cgraph_node *node,
   for (i = 0; i < ipa_get_param_count (info); i++)
     {
       tree parm = ipa_get_param (info, i);
+      tree ddef;
       /* For SSA regs see if parameter is used.  For non-SSA we compute
 	 the flag during modification analysis.  */
       if (is_gimple_reg (parm)
-	  && gimple_default_def (DECL_STRUCT_FUNCTION (node->symbol.decl), parm))
+	  && (ddef = ssa_default_def (DECL_STRUCT_FUNCTION (node->symbol.decl),
+				      parm)) != NULL_TREE
+	  && !has_zero_uses (ddef))
 	ipa_set_param_used (info, i, true);
     }
 
@@ -2355,7 +2358,6 @@ ipa_modify_formal_parameters (tree fndecl, ipa_parm_adjustment_vec adjustments,
 	  DECL_IGNORED_P (new_parm) = 1;
 	  layout_decl (new_parm, 0);
 
-	  add_referenced_var (new_parm);
 	  adj->base = parm;
 	  adj->reduction = new_parm;
 

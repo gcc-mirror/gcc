@@ -793,7 +793,6 @@ update_call_from_tree (gimple_stmt_iterator *si_p, tree expr)
           STRIP_USELESS_TYPE_CONVERSION (expr);
           lhs = create_tmp_var (TREE_TYPE (expr), NULL);
           new_stmt = gimple_build_assign (lhs, expr);
-          add_referenced_var (lhs);
 	  if (gimple_in_ssa_p (cfun))
 	    lhs = make_ssa_name (lhs, new_stmt);
           gimple_assign_set_lhs (new_stmt, lhs);

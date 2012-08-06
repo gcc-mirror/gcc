@@ -1449,7 +1449,6 @@ build_ref_for_offset (location_t loc, tree base, HOST_WIDE_INT offset,
 
       gcc_checking_assert (gsi);
       tmp = create_tmp_reg (build_pointer_type (TREE_TYPE (prev_base)), NULL);
-      add_referenced_var (tmp);
       tmp = make_ssa_name (tmp, NULL);
       addr = build_fold_addr_expr (unshare_expr (prev_base));
       STRIP_USELESS_TYPE_CONVERSION (addr);
@@ -1866,8 +1865,6 @@ create_access_replacement (struct access *access)
   tree repl;
 
   repl = create_tmp_var (access->type, "SR");
-  add_referenced_var (repl);
-
   if (TREE_CODE (access->type) == COMPLEX_TYPE
       || TREE_CODE (access->type) == VECTOR_TYPE)
     {
@@ -2845,18 +2842,7 @@ sra_modify_constructor_assign (gimple *stmt, gimple_stmt_iterator *gsi)
 static tree
 get_repl_default_def_ssa_name (struct access *racc)
 {
-  tree repl, decl;
-
-  decl = get_access_replacement (racc);
-
-  repl = gimple_default_def (cfun, decl);
-  if (!repl)
-    {
-      repl = make_ssa_name (decl, gimple_build_nop ());
-      set_default_def (decl, repl);
-    }
-
-  return repl;
+  return get_or_create_ssa_default_def (cfun, get_access_replacement (racc));
 }
 
 /* Return true if REF has a COMPONENT_REF with a bit-field field declaration
@@ -3354,7 +3340,7 @@ is_unused_scalar_param (tree parm)
 {
   tree name;
   return (is_gimple_reg (parm)
-	  && (!(name = gimple_default_def (cfun, parm))
+	  && (!(name = ssa_default_def (cfun, parm))
 	      || has_zero_uses (name)));
 }
 
@@ -3368,7 +3354,7 @@ ptr_parm_has_direct_uses (tree parm)
 {
   imm_use_iterator ui;
   gimple stmt;
-  tree name = gimple_default_def (cfun, parm);
+  tree name = ssa_default_def (cfun, parm);
   bool ret = false;
 
   FOR_EACH_IMM_USE_STMT (stmt, ui, name)
@@ -4199,7 +4185,6 @@ get_replaced_param_substitute (struct ipa_parm_adjustment *adj)
       DECL_NAME (repl) = get_identifier (pretty_name);
       obstack_free (&name_obstack, pretty_name);
 
-      add_referenced_var (repl);
       adj->new_ssa_base = repl;
     }
   else
@@ -4536,7 +4521,7 @@ sra_ipa_reset_debug_stmts (ipa_parm_adjustment_vec adjustments)
       adj = VEC_index (ipa_parm_adjustment_t, adjustments, i);
       if (adj->copy_param || !is_gimple_reg (adj->base))
 	continue;
-      name = gimple_default_def (cfun, adj->base);
+      name = ssa_default_def (cfun, adj->base);
       vexpr = NULL;
       if (name)
 	FOR_EACH_IMM_USE_STMT (stmt, ui, name)
@@ -4583,7 +4568,6 @@ sra_ipa_reset_debug_stmts (ipa_parm_adjustment_vec adjustments)
 	  SET_DECL_RTL (copy, 0);
 	  TREE_USED (copy) = 1;
 	  DECL_CONTEXT (copy) = current_function_decl;
-	  add_referenced_var (copy);
 	  add_local_decl (cfun, copy);
 	  DECL_CHAIN (copy) =
 	    BLOCK_VARS (DECL_INITIAL (current_function_decl));

@@ -207,7 +207,7 @@ export slibdir
 export toolexecdir
 export toolexeclibdir
 
-version := $(shell $(CC) -dumpversion)
+version := $(shell cat $(srcdir)/../gcc/BASE-VER)
 
 ifeq ($(decimal_float),yes)
 ifeq ($(enable_decimal_float),bid)

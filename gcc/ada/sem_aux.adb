@@ -489,6 +489,40 @@ package body Sem_Aux is
       return Empty;
    end Get_Rep_Item;
 
+   function Get_Rep_Item
+     (E             : Entity_Id;
+      Nam1          : Name_Id;
+      Nam2          : Name_Id;
+      Check_Parents : Boolean := True) return Node_Id
+   is
+      Nam1_Item : constant Node_Id := Get_Rep_Item (E, Nam1, Check_Parents);
+      Nam2_Item : constant Node_Id := Get_Rep_Item (E, Nam2, Check_Parents);
+
+      N : Node_Id;
+
+   begin
+      --  Check both Nam1_Item and Nam2_Item are present
+
+      if No (Nam1_Item) then
+         return Nam2_Item;
+      elsif No (Nam2_Item) then
+         return Nam1_Item;
+      end if;
+
+      --  Return the first node encountered in the list
+
+      N := First_Rep_Item (E);
+      while Present (N) loop
+         if N = Nam1_Item or else N = Nam2_Item then
+            return N;
+         end if;
+
+         Next_Rep_Item (N);
+      end loop;
+
+      return Empty;
+   end Get_Rep_Item;
+
    --------------------
    -- Get_Rep_Pragma --
    --------------------
@@ -501,31 +535,41 @@ package body Sem_Aux is
       N : Node_Id;
 
    begin
+      N := Get_Rep_Item (E, Nam, Check_Parents);
+
+      if Present (N) and then Nkind (N) = N_Pragma then
+         return N;
+      end if;
+
+      return Empty;
+   end Get_Rep_Pragma;
+
+   function Get_Rep_Pragma
+     (E             : Entity_Id;
+      Nam1          : Name_Id;
+      Nam2          : Name_Id;
+      Check_Parents : Boolean := True) return Node_Id
+   is
+      Nam1_Item : constant Node_Id := Get_Rep_Pragma (E, Nam1, Check_Parents);
+      Nam2_Item : constant Node_Id := Get_Rep_Pragma (E, Nam2, Check_Parents);
+
+      N : Node_Id;
+
+   begin
+      --  Check both Nam1_Item and Nam2_Item are present
+
+      if No (Nam1_Item) then
+         return Nam2_Item;
+      elsif No (Nam2_Item) then
+         return Nam1_Item;
+      end if;
+
+      --  Return the first node encountered in the list
+
       N := First_Rep_Item (E);
       while Present (N) loop
-         if Nkind (N) = N_Pragma
-           and then
-             (Pragma_Name (N) = Nam
-               or else (Nam = Name_Interrupt_Priority
-                         and then Pragma_Name (N) = Name_Priority))
-         then
-            if Check_Parents then
-               return N;
-
-            --  If Check_Parents is False, return N if the pragma doesn't
-            --  appear in the Rep_Item chain of the parent.
-
-            else
-               declare
-                  Par : constant Entity_Id := Nearest_Ancestor (E);
-                  --  This node represents the parent type of type E (if any)
-
-               begin
-                  if No (Par) or else not Present_In_Rep_Item (Par, N) then
-                     return N;
-                  end if;
-               end;
-            end if;
+         if N = Nam1_Item or else N = Nam2_Item then
+            return N;
          end if;
 
          Next_Rep_Item (N);
@@ -547,6 +591,16 @@ package body Sem_Aux is
       return Present (Get_Rep_Item (E, Nam, Check_Parents));
    end Has_Rep_Item;
 
+   function Has_Rep_Item
+     (E             : Entity_Id;
+      Nam1          : Name_Id;
+      Nam2          : Name_Id;
+      Check_Parents : Boolean := True) return Boolean
+   is
+   begin
+      return Present (Get_Rep_Item (E, Nam1, Nam2, Check_Parents));
+   end Has_Rep_Item;
+
    --------------------
    -- Has_Rep_Pragma --
    --------------------
@@ -558,6 +612,16 @@ package body Sem_Aux is
    is
    begin
       return Present (Get_Rep_Pragma (E, Nam, Check_Parents));
+   end Has_Rep_Pragma;
+
+   function Has_Rep_Pragma
+     (E             : Entity_Id;
+      Nam1          : Name_Id;
+      Nam2          : Name_Id;
+      Check_Parents : Boolean := True) return Boolean
+   is
+   begin
+      return Present (Get_Rep_Pragma (E, Nam1, Nam2, Check_Parents));
    end Has_Rep_Pragma;
 
    -------------------------------

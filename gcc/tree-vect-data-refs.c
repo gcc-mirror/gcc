@@ -3432,7 +3432,6 @@ vect_get_new_vect_var (tree type, enum vect_var_kind var_kind, const char *name)
     }
   else
     new_vect_var = create_tmp_reg (type, prefix);
-  add_referenced_var (new_vect_var);
 
   return new_vect_var;
 }
@@ -3512,7 +3511,6 @@ vect_create_addr_base_for_vector_ref (gimple stmt,
     }
 
   data_ref_base_var = create_tmp_var (TREE_TYPE (data_ref_base), "batmp");
-  add_referenced_var (data_ref_base_var);
   data_ref_base = force_gimple_operand (data_ref_base, &seq, true,
 					data_ref_base_var);
   gimple_seq_add_seq (new_stmt_list, seq);
@@ -3522,7 +3520,6 @@ vect_create_addr_base_for_vector_ref (gimple stmt,
 			    fold_convert (sizetype, base_offset),
 			    fold_convert (sizetype, init));
   dest = create_tmp_var (sizetype, "base_off");
-  add_referenced_var (dest);
   base_offset = force_gimple_operand (base_offset, &seq, true, dest);
   gimple_seq_add_seq (new_stmt_list, seq);
 
@@ -3530,7 +3527,6 @@ vect_create_addr_base_for_vector_ref (gimple stmt,
     {
       tree tmp = create_tmp_var (sizetype, "offset");
 
-      add_referenced_var (tmp);
       offset = fold_build2 (MULT_EXPR, sizetype,
 			    fold_convert (sizetype, offset), step);
       base_offset = fold_build2 (PLUS_EXPR, sizetype,
@@ -4168,7 +4164,6 @@ vect_permute_store_chain (VEC(tree,heap) *dr_chain,
 	  /* Create interleaving stmt:
 	     high = VEC_PERM_EXPR <vect1, vect2, {0, nelt, 1, nelt+1, ...}>  */
 	  perm_dest = create_tmp_reg (vectype, "vect_inter_high");
-	  add_referenced_var (perm_dest);
 	  high = make_ssa_name (perm_dest, NULL);
 	  perm_stmt
 	    = gimple_build_assign_with_ops3 (VEC_PERM_EXPR, high,
@@ -4180,7 +4175,6 @@ vect_permute_store_chain (VEC(tree,heap) *dr_chain,
 	     low = VEC_PERM_EXPR <vect1, vect2, {nelt/2, nelt*3/2, nelt/2+1,
 						 nelt*3/2+1, ...}>  */
 	  perm_dest = create_tmp_reg (vectype, "vect_inter_low");
-	  add_referenced_var (perm_dest);
 	  low = make_ssa_name (perm_dest, NULL);
 	  perm_stmt
 	    = gimple_build_assign_with_ops3 (VEC_PERM_EXPR, low,
@@ -4623,7 +4617,6 @@ vect_permute_load_chain (VEC(tree,heap) *dr_chain,
 
 	  /* data_ref = permute_even (first_data_ref, second_data_ref);  */
 	  perm_dest = create_tmp_reg (vectype, "vect_perm_even");
-	  add_referenced_var (perm_dest);
 
 	  perm_stmt = gimple_build_assign_with_ops3 (VEC_PERM_EXPR, perm_dest,
 						     first_vect, second_vect,
@@ -4637,7 +4630,6 @@ vect_permute_load_chain (VEC(tree,heap) *dr_chain,
 
 	  /* data_ref = permute_odd (first_data_ref, second_data_ref);  */
 	  perm_dest = create_tmp_reg (vectype, "vect_perm_odd");
-	  add_referenced_var (perm_dest);
 
 	  perm_stmt = gimple_build_assign_with_ops3 (VEC_PERM_EXPR, perm_dest,
 						     first_vect, second_vect,

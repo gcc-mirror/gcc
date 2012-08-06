@@ -438,14 +438,17 @@ consider_split (struct split_point *current, bitmap non_ssa_vars,
 	      return;
 	    }
 	}
-      else if (gimple_default_def (cfun, parm)
-	       && bitmap_bit_p (current->ssa_names_to_pass,
-				SSA_NAME_VERSION (gimple_default_def
-						  (cfun, parm))))
+      else
 	{
-	  if (!VOID_TYPE_P (TREE_TYPE (parm)))
-	    call_overhead += estimate_move_cost (TREE_TYPE (parm));
-	  num_args++;
+	  tree ddef = ssa_default_def (cfun, parm);
+	  if (ddef
+	      && bitmap_bit_p (current->ssa_names_to_pass,
+			       SSA_NAME_VERSION (ddef)))
+	    {
+	      if (!VOID_TYPE_P (TREE_TYPE (parm)))
+		call_overhead += estimate_move_cost (TREE_TYPE (parm));
+	      num_args++;
+	    }
 	}
     }
   if (!VOID_TYPE_P (TREE_TYPE (current_function_decl)))
@@ -1056,7 +1059,7 @@ split_function (struct split_point *split_point)
   bool split_part_return_p = false;
   gimple last_stmt = NULL;
   unsigned int i;
-  tree arg;
+  tree arg, ddef;
 
   if (dump_file)
     {
@@ -1074,25 +1077,16 @@ split_function (struct split_point *split_point)
        parm; parm = DECL_CHAIN (parm), num++)
     if (args_to_skip
 	&& (!is_gimple_reg (parm)
-	    || !gimple_default_def (cfun, parm)
+	    || (ddef = ssa_default_def (cfun, parm)) == NULL_TREE
 	    || !bitmap_bit_p (split_point->ssa_names_to_pass,
-			      SSA_NAME_VERSION (gimple_default_def (cfun,
-								    parm)))))
+			      SSA_NAME_VERSION (ddef))))
       bitmap_set_bit (args_to_skip, num);
     else
       {
 	/* This parm might not have been used up to now, but is going to be
 	   used, hence register it.  */
-	add_referenced_var (parm);
 	if (is_gimple_reg (parm))
-	  {
-	    arg = gimple_default_def (cfun, parm);
-	    if (!arg)
-	      {
-		arg = make_ssa_name (parm, gimple_build_nop ());
-		set_default_def (parm, arg);
-	      }
-	  }
+	  arg = get_or_create_ssa_default_def (cfun, parm);
 	else
 	  arg = parm;
 
@@ -1357,19 +1351,7 @@ split_function (struct split_point *split_point)
 		     assigned to RESULT_DECL (that is pointer to return value).
 		     Look it up or create new one if it is missing.  */
 		  if (DECL_BY_REFERENCE (retval))
-		    {
-		      tree retval_name;
-		      if ((retval_name = gimple_default_def (cfun, retval))
-			  != NULL)
-			retval = retval_name;
-		      else
-			{
-		          retval_name = make_ssa_name (retval,
-						       gimple_build_nop ());
-			  set_default_def (retval, retval_name);
-			  retval = retval_name;
-			}
-		    }
+		    retval = get_or_create_ssa_default_def (cfun, retval);
 		  /* Otherwise produce new SSA name for return value.  */
 		  else
 		    retval = make_ssa_name (retval, call);
@@ -1415,7 +1397,7 @@ execute_split_functions (void)
     }
   /* This can be relaxed; function might become inlinable after splitting
      away the uninlinable part.  */
-  if (!inline_summary (node)->inlinable)
+  if (inline_edge_summary_vec && !inline_summary (node)->inlinable)
     {
       if (dump_file)
 	fprintf (dump_file, "Not splitting: not inlinable.\n");

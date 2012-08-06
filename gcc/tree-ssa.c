@@ -249,7 +249,8 @@ target_for_debug_bind (tree var)
   if (!MAY_HAVE_DEBUG_STMTS)
     return NULL_TREE;
 
-  if (TREE_CODE (var) != VAR_DECL
+  if ((TREE_CODE (var) != VAR_DECL
+       || VAR_DECL_IS_VIRTUAL_OPERAND (var))
       && TREE_CODE (var) != PARM_DECL)
     return NULL_TREE;
 
@@ -259,13 +260,9 @@ target_for_debug_bind (tree var)
   if (DECL_IGNORED_P (var))
     return NULL_TREE;
 
-  if (!is_gimple_reg (var))
-    {
-      if (is_gimple_reg_type (TREE_TYPE (var))
-	  && referenced_var_lookup (cfun, DECL_UID (var)) == NULL_TREE)
-	return var;
-      return NULL_TREE;
-    }
+  /* var-tracking only tracks registers.  */
+  if (!is_gimple_reg_type (TREE_TYPE (var)))
+    return NULL_TREE;
 
   return var;
 }
@@ -1107,8 +1104,6 @@ void
 init_tree_ssa (struct function *fn)
 {
   fn->gimple_df = ggc_alloc_cleared_gimple_df ();
-  fn->gimple_df->referenced_vars = htab_create_ggc (20, uid_decl_map_hash,
-				     		    uid_decl_map_eq, NULL);
   fn->gimple_df->default_defs = htab_create_ggc (20, uid_ssaname_map_hash,
 				                 uid_ssaname_map_eq, NULL);
   pt_solution_reset (&fn->gimple_df->escaped);
@@ -1150,10 +1145,6 @@ struct gimple_opt_pass pass_init_datastructures =
 void
 delete_tree_ssa (void)
 {
-  /* Remove annotations from every referenced local variable.  */
-  htab_delete (gimple_referenced_vars (cfun));
-  cfun->gimple_df->referenced_vars = NULL;
-
   fini_ssanames ();
 
   /* We no longer maintain the SSA operand cache at this point.  */

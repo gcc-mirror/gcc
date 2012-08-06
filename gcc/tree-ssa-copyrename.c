@@ -211,9 +211,9 @@ copy_rename_partition_coalesce (var_map map, tree var1, tree var2, FILE *debug)
 
   /* If both values have default defs, we can't coalesce.  If only one has a
      tag, make sure that variable is the new root partition.  */
-  if (gimple_default_def (cfun, root1))
+  if (ssa_default_def (cfun, root1))
     {
-      if (gimple_default_def (cfun, root2))
+      if (ssa_default_def (cfun, root2))
 	{
 	  if (debug)
 	    fprintf (debug, " : 2 default defs. No coalesce.\n");
@@ -225,7 +225,7 @@ copy_rename_partition_coalesce (var_map map, tree var1, tree var2, FILE *debug)
 	  ign1 = false;
 	}
     }
-  else if (gimple_default_def (cfun, root2))
+  else if (ssa_default_def (cfun, root2))
     {
       ign1 = true;
       ign2 = false;
@@ -332,7 +332,7 @@ rename_ssa_copies (void)
 	  res = gimple_phi_result (phi);
 
 	  /* Do not process virtual SSA_NAMES.  */
-	  if (!is_gimple_reg (SSA_NAME_VAR (res)))
+	  if (!is_gimple_reg (res))
 	    continue;
 
           for (i = 0; i < gimple_phi_num_args (phi); i++)

@@ -1,8 +1,8 @@
 // PR c++/43680
 // Test that we don't make excessively aggressive assumptions about what
 // values an enum variable can have.
+// { dg-do run { target fpic } }
 // { dg-options "-O2 -fPIC" }
-// { dg-do run }
 
 extern "C" void abort ();
 

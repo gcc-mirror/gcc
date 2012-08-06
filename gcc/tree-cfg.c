@@ -5948,14 +5948,10 @@ replace_ssa_name (tree name, struct pointer_map_t *vars_map,
     {
       replace_by_duplicate_decl (&decl, vars_map, to_context);
 
-      push_cfun (DECL_STRUCT_FUNCTION (to_context));
-      if (gimple_in_ssa_p (cfun))
-	add_referenced_var (decl);
-
-      new_name = make_ssa_name (decl, SSA_NAME_DEF_STMT (name));
+      new_name = make_ssa_name_fn (DECL_STRUCT_FUNCTION (to_context),
+				   decl, SSA_NAME_DEF_STMT (name));
       if (SSA_NAME_IS_DEFAULT_DEF (name))
-	set_default_def (decl, new_name);
-      pop_cfun ();
+	set_ssa_default_def (DECL_STRUCT_FUNCTION (to_context), decl, new_name);
 
       loc = pointer_map_insert (vars_map, name);
       *loc = new_name;
@@ -6022,12 +6018,7 @@ move_stmt_op (tree *tp, int *walk_subtrees, void *data)
 	  if ((TREE_CODE (t) == VAR_DECL
 	       && !is_global_var (t))
 	      || TREE_CODE (t) == CONST_DECL)
-	    {
-	      struct function *to_fn = DECL_STRUCT_FUNCTION (p->to_context);
-	      replace_by_duplicate_decl (tp, p->vars_map, p->to_context);
-	      if (gimple_referenced_vars (to_fn))
-		add_referenced_var_1 (*tp, to_fn);
-	    }
+	    replace_by_duplicate_decl (tp, p->vars_map, p->to_context);
 	}
       *walk_subtrees = 0;
     }

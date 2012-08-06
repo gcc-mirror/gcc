@@ -669,8 +669,8 @@ package Sinfo is
    --    Present in N_Aggregate nodes. Set for aggregates which can be fully
    --    evaluated at compile time without raising constraint error. Such
    --    aggregates can be passed as is to Gigi without any expansion. See
-   --    Sem_Aggr for the specific conditions under which an aggregate has this
-   --    flag set. See also the flag Static_Processing_OK.
+   --    Exp_Aggr for the specific conditions under which an aggregate has this
+   --    flag set.
 
    --  Componentwise_Assignment (Flag14-Sem)
    --    Present in N_Assignment_Statement nodes. Set for a record assignment
@@ -1724,17 +1724,6 @@ package Sinfo is
    --    posting errors). For other sections, Split_PPC is set to True.
    --    This flag is set in both the N_Aspect_Specification node itself,
    --    and in the pragma which is generated from this node.
-
-   --  Static_Processing_OK (Flag4-Sem)
-   --    Present in N_Aggregate nodes. When the Compile_Time_Known_Aggregate
-   --    flag is set, the full value of the aggregate can be determined at
-   --    compile time and the aggregate can be passed as is to the back-end.
-   --    In this event it is irrelevant whether this flag is set or not.
-   --    However, if the flag Compile_Time_Known_Aggregate is not set but
-   --    Static_Processing_OK is set, the aggregate can (but need not) be
-   --    converted into a compile time known aggregate by the expander. See
-   --    Sem_Aggr for the specific conditions under which an aggregate has its
-   --    Static_Processing_OK flag set.
 
    --  Storage_Pool (Node1-Sem)
    --    Present in N_Allocator, N_Free_Statement, N_Simple_Return_Statement,
@@ -3391,7 +3380,6 @@ package Sinfo is
       --  Null_Record_Present (Flag17)
       --  Aggregate_Bounds (Node3-Sem)
       --  Associated_Node (Node4-Sem)
-      --  Static_Processing_OK (Flag4-Sem)
       --  Compile_Time_Known_Aggregate (Flag18-Sem)
       --  Expansion_Delayed (Flag11-Sem)
       --  Has_Self_Reference (Flag13-Sem)
@@ -4119,7 +4107,7 @@ package Sinfo is
       --  Then_Statements (List2)
       --  Elsif_Parts (List3) (set to No_List if none present)
       --  Else_Statements (List4) (set to No_List if no else part present)
-      --  End_Span (Uint5) (set to No_Uint if expander generated)
+      --  End_Span (Uint5) (set to Uint_0 if expander generated)
 
       --  N_Elsif_Part
       --  Sloc points to ELSIF
@@ -4151,7 +4139,7 @@ package Sinfo is
       --  Sloc points to CASE
       --  Expression (Node3)
       --  Alternatives (List4)
-      --  End_Span (Uint5) (set to No_Uint if expander generated)
+      --  End_Span (Uint5) (set to Uint_0 if expander generated)
 
       --  Note: Before Ada 2012, a pragma in a statement sequence is always
       --  followed by a statement, and this is true in the tree even in Ada
@@ -8969,9 +8957,6 @@ package Sinfo is
    function Statements
      (N : Node_Id) return List_Id;    -- List3
 
-   function Static_Processing_OK
-     (N : Node_Id) return Boolean;    -- Flag4
-
    function Storage_Pool
      (N : Node_Id) return Node_Id;    -- Node1
 
@@ -9943,9 +9928,6 @@ package Sinfo is
 
    procedure Set_Statements
      (N : Node_Id; Val : List_Id);            -- List3
-
-   procedure Set_Static_Processing_OK
-     (N : Node_Id; Val : Boolean);            -- Flag4
 
    procedure Set_Storage_Pool
      (N : Node_Id; Val : Node_Id);            -- Node1
@@ -12074,7 +12056,6 @@ package Sinfo is
    pragma Inline (Specification);
    pragma Inline (Split_PPC);
    pragma Inline (Statements);
-   pragma Inline (Static_Processing_OK);
    pragma Inline (Storage_Pool);
    pragma Inline (Subpool_Handle_Name);
    pragma Inline (Strval);
@@ -12394,7 +12375,6 @@ package Sinfo is
    pragma Inline (Set_Specification);
    pragma Inline (Set_Split_PPC);
    pragma Inline (Set_Statements);
-   pragma Inline (Set_Static_Processing_OK);
    pragma Inline (Set_Storage_Pool);
    pragma Inline (Set_Subpool_Handle_Name);
    pragma Inline (Set_Strval);

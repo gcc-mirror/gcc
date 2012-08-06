@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                    Copyright (C) 2007-2010, AdaCore                      --
+--                    Copyright (C) 2007-2012, AdaCore                      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,10 +37,13 @@ with Ada.Streams;                use Ada.Streams;
 with System;               use System;
 with System.Communication; use System.Communication;
 with System.CRTL;          use System.CRTL;
+with System.OS_Constants;
 with System.Win32;         use System.Win32;
 with System.Win32.Ext;     use System.Win32.Ext;
 
 package body GNAT.Serial_Communications is
+
+   package OSC renames System.OS_Constants;
 
    --  Common types
 
@@ -175,8 +178,12 @@ package body GNAT.Serial_Communications is
       Stop_Bits : Stop_Bits_Number := One;
       Parity    : Parity_Check     := None;
       Block     : Boolean          := True;
+      Local     : Boolean          := True;
+      Flow      : Flow_Control     := None;
       Timeout   : Duration         := 10.0)
    is
+      pragma Unreferenced (Local);
+
       Success      : BOOL;
       Com_Time_Out : aliased COMMTIMEOUTS;
       Com_Settings : aliased DCB;
@@ -197,13 +204,26 @@ package body GNAT.Serial_Communications is
       Com_Settings.BaudRate        := DWORD (Data_Rate_Value (Rate));
       Com_Settings.fParity         := 1;
       Com_Settings.fBinary         := Bits1 (System.Win32.TRUE);
-      Com_Settings.fOutxCtsFlow    := 0;
       Com_Settings.fOutxDsrFlow    := 0;
       Com_Settings.fDsrSensitivity := 0;
-      Com_Settings.fDtrControl     := DTR_CONTROL_DISABLE;
-      Com_Settings.fOutX           := 0;
+      Com_Settings.fDtrControl     := OSC.DTR_CONTROL_ENABLE;
       Com_Settings.fInX            := 0;
-      Com_Settings.fRtsControl     := RTS_CONTROL_DISABLE;
+      Com_Settings.fRtsControl     := OSC.RTS_CONTROL_ENABLE;
+
+      case Flow is
+         when None =>
+            Com_Settings.fOutX        := 0;
+            Com_Settings.fOutxCtsFlow := 0;
+
+         when RTS_CTS =>
+            Com_Settings.fOutX        := 0;
+            Com_Settings.fOutxCtsFlow := 1;
+
+         when Xon_Xoff =>
+            Com_Settings.fOutX        := 1;
+            Com_Settings.fOutxCtsFlow := 0;
+      end case;
+
       Com_Settings.fAbortOnError   := 0;
       Com_Settings.ByteSize        := BYTE (C_Bits (Bits));
       Com_Settings.Parity          := BYTE (C_Parity (Parity));

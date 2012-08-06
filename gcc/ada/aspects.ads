@@ -184,6 +184,10 @@ package Aspects is
 
       Aspect_Lock_Free);
 
+   subtype Aspect_Id_Exclude_No_Aspect is
+     Aspect_Id range Aspect_Id'Succ (No_Aspect) .. Aspect_Id'Last;
+   --  Aspect_Id's excluding No_Aspect
+
    --  The following array indicates aspects that accept 'Class
 
    Class_Aspect_OK : constant array (Aspect_Id) of Boolean :=

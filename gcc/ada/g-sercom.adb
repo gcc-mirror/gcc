@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2007-2010, AdaCore                     --
+--                     Copyright (C) 2007-2012, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -82,6 +82,8 @@ package body GNAT.Serial_Communications is
       Stop_Bits : Stop_Bits_Number := One;
       Parity    : Parity_Check     := None;
       Block     : Boolean          := True;
+      Local     : Boolean          := True;
+      Flow      : Flow_Control     := None;
       Timeout   : Duration         := 10.0)
    is
    begin

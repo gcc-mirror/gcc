@@ -3078,8 +3078,11 @@ package body Sem_Ch3 is
          --  in the RM is removed) because accessibility checks are sufficient
          --  to make handlers not at the library level illegal.
 
+         --  AI05-0303: the AI is in fact a binding interpretation, and thus
+         --  applies to the '95 version of the language as well.
+
          if Has_Interrupt_Handler (T)
-           and then Ada_Version < Ada_2005
+           and then Ada_Version < Ada_95
          then
             Error_Msg_N
               ("interrupt object can only be declared at library level", Id);
@@ -4045,12 +4048,9 @@ package body Sem_Ch3 is
 
       --  Inherit common attributes
 
-      Set_Is_Generic_Type   (Id, Is_Generic_Type   (Base_Type (T)));
       Set_Is_Volatile       (Id, Is_Volatile       (T));
       Set_Treat_As_Volatile (Id, Treat_As_Volatile (T));
-      Set_Is_Atomic         (Id, Is_Atomic         (T));
-      Set_Is_Ada_2005_Only  (Id, Is_Ada_2005_Only  (T));
-      Set_Is_Ada_2012_Only  (Id, Is_Ada_2012_Only  (T));
+      Set_Is_Generic_Type   (Id, Is_Generic_Type   (Base_Type (T)));
       Set_Convention        (Id, Convention        (T));
 
       --  If ancestor has predicates then so does the subtype, and in addition
@@ -5429,7 +5429,8 @@ package body Sem_Ch3 is
 
       elsif Constraint_Present then
 
-         --  Build constrained subtype and derive from it
+         --  Build constrained subtype, copying the constraint, and derive
+         --  from it to create a derived constrained type.
 
          declare
             Loc  : constant Source_Ptr := Sloc (N);
@@ -5443,7 +5444,7 @@ package body Sem_Ch3 is
               Make_Subtype_Declaration (Loc,
                 Defining_Identifier => Anon,
                 Subtype_Indication =>
-                  Subtype_Indication (Type_Definition (N)));
+                  New_Copy_Tree (Subtype_Indication (Type_Definition (N))));
             Insert_Before (N, Decl);
             Analyze (Decl);
 
@@ -5850,13 +5851,6 @@ package body Sem_Ch3 is
                      Range_Expression => Rang_Expr))));
 
          Analyze (N);
-
-         --  If pragma Discard_Names applies on the first subtype of the parent
-         --  type, then it must be applied on this subtype as well.
-
-         if Einfo.Discard_Names (First_Subtype (Parent_Type)) then
-            Set_Discard_Names (Derived_Type);
-         end if;
 
          --  Apply a range check. Since this range expression doesn't have an
          --  Etype, we have to specifically pass the Source_Typ parameter. Is
@@ -7662,8 +7656,6 @@ package body Sem_Ch3 is
 
       --  Fields inherited from the Parent_Type
 
-      Set_Discard_Names
-        (Derived_Type, Einfo.Discard_Names  (Parent_Type));
       Set_Has_Specified_Layout
         (Derived_Type, Has_Specified_Layout (Parent_Type));
       Set_Is_Limited_Composite
@@ -7707,18 +7699,7 @@ package body Sem_Ch3 is
 
             Set_OK_To_Reorder_Components
               (Derived_Type, OK_To_Reorder_Components (Parent_Full));
-            Set_Reverse_Bit_Order
-              (Derived_Type, Reverse_Bit_Order (Parent_Full));
-            Set_Reverse_Storage_Order
-              (Derived_Type, Reverse_Storage_Order (Parent_Full));
          end;
-      end if;
-
-      --  Direct controlled types do not inherit Finalize_Storage_Only flag
-
-      if not Is_Controlled (Parent_Type) then
-         Set_Finalize_Storage_Only
-           (Derived_Type, Finalize_Storage_Only (Parent_Type));
       end if;
 
       --  Set fields for private derived types
@@ -8038,11 +8019,6 @@ package body Sem_Ch3 is
       --  Propagate invariant information. The new type has invariants if
       --  they are inherited from the parent type, and these invariants can
       --  be further inherited, so both flags are set.
-
-      if Has_Inheritable_Invariants (Parent_Type) then
-         Set_Has_Inheritable_Invariants (Derived_Type);
-         Set_Has_Invariants (Derived_Type);
-      end if;
 
       --  We similarly inherit predicates
 
@@ -12214,7 +12190,6 @@ package body Sem_Ch3 is
       Set_Component_Type           (T1, Component_Type           (T2));
       Set_Component_Size           (T1, Component_Size           (T2));
       Set_Has_Controlled_Component (T1, Has_Controlled_Component (T2));
-      Set_Finalize_Storage_Only    (T1, Finalize_Storage_Only    (T2));
       Set_Has_Non_Standard_Rep     (T1, Has_Non_Standard_Rep     (T2));
       Set_Has_Task                 (T1, Has_Task                 (T2));
       Set_Is_Packed                (T1, Is_Packed                (T2));
@@ -12233,7 +12208,6 @@ package body Sem_Ch3 is
 
       Set_First_Index          (T1, First_Index           (T2));
       Set_Is_Aliased           (T1, Is_Aliased            (T2));
-      Set_Is_Atomic            (T1, Is_Atomic             (T2));
       Set_Is_Volatile          (T1, Is_Volatile           (T2));
       Set_Treat_As_Volatile    (T1, Treat_As_Volatile     (T2));
       Set_Is_Constrained       (T1, Is_Constrained        (T2));

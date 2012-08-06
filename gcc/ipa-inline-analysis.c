@@ -3242,6 +3242,8 @@ void
 inline_free_summary (void)
 {
   struct cgraph_node *node;
+  if (inline_edge_summary_vec == NULL)
+    return;
   FOR_EACH_DEFINED_FUNCTION (node)
     reset_inline_summary (node);
   if (function_insertion_hook_holder)

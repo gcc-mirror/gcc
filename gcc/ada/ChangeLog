@@ -1,3 +1,313 @@
+2012-08-06  Jose Ruiz  <ruiz@adacore.com>
+
+	* gcc-interface/Makefile.in: Add support for 32-bit VxWorks for SPARC
+	in kernel mode.
+
+2012-08-06  Arnaud Charlet  <charlet@adacore.com>
+
+	* prj-attr.adb (Register_New_Package): Add missing blank.
+
+2012-08-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb (Is_Two_Dim_Packed_Array): New predicate,
+	used when computing maximum size allowable to construct static
+	aggregate.
+
+2012-08-06  Vincent Pucci  <pucci@adacore.com>
+
+	* freeze.adb (Freeze_Entity): Inherit_Aspects_At_Freeze_Point
+	calls added for derived types and subtypes.
+	* sem_aux.adb, sem_aux.ads (Get_Rep_Item, Get_Rep_Pragma,
+	Has_Rep_Pragma): New routines.
+	* sem_ch13.ads (Inherit_Aspects_At_Freeze_Point): New routine.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Error message
+	for aspect Lock_Free fixed.
+	(Inherits_Aspects_At_Freeze_Point): New routine.
+	* sem_ch3.adb: Several flag settings removed since inheritance
+	of aspects must be performed at freeze point.
+
+2012-08-06  Thomas Quinot  <quinot@adacore.com>
+
+	* s-oscons-tmplt.c: Fix s-oscons.ads formatting on VxWorks.
+
+2012-08-06  Vincent Pucci  <pucci@adacore.com>
+
+	* sem_dim.adb (Analyze_Dimension_Binary_Op): Issue an error message
+	for unknown exponent at compile-time.
+
+2012-08-06  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_eval.ads (Compile_Time_Known_Value_Or_Aggr): Enhance
+	comment to make it clear that the aggregate's evaluation might
+	still involve run-time checks even though the aggregate is
+	considered known at compile time.
+	* sinfo.ads (Compile_Time_Known_Aggregate): Correct comment to
+	refer to Exp_Aggr instead of Sem_Aggr.
+
+2012-08-06  Robert Dewar  <dewar@adacore.com>
+
+	* xoscons.adb: Minor code reorganization (remove unused variable
+	E at line 331).
+	* g-sercom.ads, exp_attr.adb: Minor reformatting.
+	* sinfo.adb, sinfo.ads: Minor cleanup, remove unused flag
+	Static_Processing_OK.
+
+2012-08-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Build_Derived_Concurrent_Type): Copy discriminant
+	constraint when building a constrained subtype, to prevent
+	undesirable tree sharing betweeb geberated subtype and derived
+	type definition.
+
+2012-08-06  Thomas Quinot  <quinot@adacore.com>
+
+	* g-sercom-mingw.adb, s-oscons-tmplt.c: Add missing constants
+	on Windows.
+
+2012-08-06  Sergey Rybin  <rybin@adacore.com frybin>
+
+	* tree_io.ads: Update ASIS_Version_Number because of the tree fix
+	for discriminant constraints for concurrent types.
+
+2012-08-06  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch4.adb: Minor reformatting.
+
+2012-08-06  Thomas Quinot  <quinot@adacore.com>
+
+	* s-oscons-tmplt.c, xoscons.adb: Per the Single UNIX Specification,
+	types cc_t, speed_t, and tcflag_t defined in <termios.h> all are
+	unsigned types. Add required special handling to have their correct
+	unsigned values in s-oscons.ads.
+
+2012-08-06  Thomas Quinot  <quinot@adacore.com>
+
+	* par-ch13.adb: Minor reformatting.
+
+2012-08-06  Thomas Quinot  <quinot@adacore.com>
+
+	* g-sercom.adb, g-sercom.ads, g-sercom-mingw.adb, g-sercom-linux.adb
+	(Set): Add Local and Flow_Control settings.
+
+2012-08-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_attr.adb: Suppress saving of 'Old if assertions are not
+	enabled.
+
+2012-08-06  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch4.adb (Analyze_Selected_Component): Issue an error in
+	Alfa mode for component not present.
+
+2012-08-06  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch7.adb (Insert_Actions_In_Scope_Around): Do not
+	use a renaming of Scope_Stack.Table (Scope_Stack.Last), as
+	Process_Transient_Object may introduce new scopes and cause
+	Scope_Stack.Table to be reallocated.
+
+2012-08-06  Robert Dewar  <dewar@adacore.com>
+
+	* exp_util.adb, switch-c.adb, inline.ads, sem_ch10.adb, types.ads,
+	checks.adb, sem_prag.adb, sem.adb, sem.ads, sem_res.adb, sem_attr.adb,
+	gnat1drv.adb, exp_ch4.adb, exp_ch6.adb, opt.ads, osint.adb: Implement
+	extended overflow checks (step 1).
+	(Overflow_Check_Type, Suppress_Record, Suppress_All): New types.
+	(Suppress_Array): Extended to include switches to control extended
+	overflow checking (and renamed to Suppress_Record).
+	Update all uses of Suppress_Array.
+
+2012-08-06  Thomas Quinot  <quinot@adacore.com>
+
+	* makeutl.ads: Minor documentation fix.
+
+2012-08-06  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch7.adb: Minor reformatting.
+
+2012-08-06  Geert Bosch  <bosch@adacore.com>
+
+	* a-ngelfu.adb: Change obsolete comment that this is a non-strict
+	implementation.
+
+2012-08-06  Steve Baird  <baird@adacore.com>
+
+	* exp_ch7.adb (Build_Finalizer.Process_Object_Declaration): If
+	CodePeer_Mode = True then omit exception handlers for finalization calls
+
+2012-08-06  Robert Dewar  <dewar@adacore.com>
+
+	* exp_aggr.adb: Minor reformatting.
+
+2012-08-06  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch6.adb: Remove useless flag Body_Deleted.
+
+2012-08-06  Thomas Quinot  <quinot@adacore.com>
+
+	* sinfo.ads (End_Span): Change default from No_Uint to Uint_0,
+	as this is what all usage occurrences of this attribute are
+	expecting.
+	* uintp.adb (UI_To_Int): Add assertion to guard against calling
+	with No_Uint.
+
+2012-08-06  Vincent Pucci  <pucci@adacore.com>
+
+PR ada/54125
+	* exp_attr.adb (Expand_N_Attribute_Reference): Expand new
+	Atomic_Always_Lock_Free attribute.
+	* sem_attr.adb (Analyze_Attribute): Analyze new
+	Atomic_Always_Lock_Free attribute.
+	(Eval_Attribute): Nothing to do with new Atomic_Always_Lock_Free
+	attribute.
+	* sem_ch9.adb (Allows_Lock_Free_Implementation):
+	Support_Atomic_Primitives check replaces previous erroneous
+	size check.
+	* sem_util.adb, sem_util.ads (Support_Atomic_Primitives):
+	New routine.
+	* snames.ads-tmpl: New name Name_Atomic_Always_Lock_Free and
+	new attribute Attribute_Atomic_Always_Lock_Free defined.
+	* s-atopri.adb: Support_Atomic_Primitives checks replaced by
+	Atomic_Always_Lock_Free queries.
+	* system-aix64.ads, system-aix.ads, system-darwin-ppc.ads,
+	system-hpux.ads, system-linux-alpha.ads, system-linux-hppa.ads,
+	system-linux-ppc.ads, system-linux-s390.ads,
+	system-linux-s390x.ads, system-linux-sh4.ads,
+	system-linux-sparc.ads, system-lynxos178-ppc.ads,
+	system-lynxos-ppc.ads, system-mingw.ads,
+	system-vxworks-arm.ads, system-solaris-sparc.ads,
+	system-solaris-sparcv9.ads, system-vms_64.ads,
+	system-vxworks-m68k.ads, system-vxworks-mips.ads,
+	system-vxworks-ppc.ads, system-vxworks-sparcv9.ads: Flag
+	Support_Atomic_Primitives removed.
+
+2012-08-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_mech.adb (Set_Mechanisms): OUT and IN OUT parameters are
+	now unconditionally passed by reference. IN parameters subject
+	to convention C_Pass_By_Copy are passed by copy, otherwise they
+	are passed by reference.
+
+2012-08-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Analyze_Object_Declaration): According to
+	AI95-0303, protected objects with interrupt handlers can be
+	declared in nested scopes. This is a binding interpretation,
+	and thus applies to all versions of the compiler.
+
+2012-08-06  Robert Dewar  <dewar@adacore.com>
+
+	* frontend.adb, exp_aggr.adb: Minor reformatting.
+
+2012-08-06  Thomas Quinot  <quinot@adacore.com>
+
+	* par-endh.adb: Minor reformatting.
+
+2012-08-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb (Process_Transient_Objects): Remove obsolete loop
+	processing related to array initialization. The expansion of
+	loops already contains a mechanism to detect controlled objects
+	generated by expansion and introduce a block around the loop
+	statements for finalization purposes.
+
+2012-08-06  Vincent Pucci  <pucci@adacore.com>
+
+	* sem_ch13.adb: Current scope must be within
+	or same as the scope of the entity while analysing aspect
+	specifications at freeze point.
+
+2012-08-06  Thomas Quinot  <quinot@adacore.com>
+
+	* par_sco.adb: Add note about dubious SCO for TERMINATE
+	alternative.
+	* sem_ch8.adb, exp_ch11.adb: Minor reformatting.
+
+2012-08-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb (Two_Dim_Packed_Array_Handled): New procedure to
+	transform an aggregate for a packed two-dimensional array into
+	a one-dimensional array of constant values, in order to avoid
+	the generation of component-by-component assignments.
+
+2012-08-06  Thomas Quinot  <quinot@adacore.com>
+
+	* frontend.adb: Do not attempt to process deferred configuration
+	pragmas if the main unit failed to load, to avoid cascaded
+	inconsistencies that can lead to a compiler crash.
+
+2012-08-06  Vincent Pucci  <pucci@adacore.com>
+
+	* s-atopri.adb: Minor reformatting.
+
+2012-08-06  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat-style.texi: Clarify that all subprograms should be
+	documented. Minor rewording.
+
+2012-08-06  Robert Dewar  <dewar@adacore.com>
+
+	* aspects.ads: Define Aspect_Id_Exclude_No_Aspect.
+	* par-ch13.adb, restrict.adb: Use Aspect_Id_Exclude_No_Aspect to
+	simplify code.
+
+2012-08-06  Yannick Moy  <moy@adacore.com>
+
+	* gnat-style.texi: Update style guide for declarations.
+
+2012-08-06  Yannick Moy  <moy@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): In the case for 'Old,
+	skip a special expansion which is not needed in Alfa mode.
+
+2012-08-06  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch5.adb (Analyze_Iterator_Specification): Do not perform
+	an expansion of the iterator in Alfa mode.
+
+2012-08-06  Robert Dewar  <dewar@adacore.com>
+
+	* s-oscons-tmplt.c, sem_ch9.adb, osint.adb: Minor reformatting.
+
+2012-08-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch5.adb (Analyze_Loop_Parameter_Specification): Remove obsolete
+	Alfa-specific guard. The code is a leftover from an early
+	implementation of iterators which is no longer in use.
+
+2012-08-06  Vincent Celier  <celier@adacore.com>
+
+	* par-ch13.adb (Get_Aspect_Specifications): Do not consider
+	No_Aspect when checking for a mispelled aspect.
+
+2012-08-06  Robert Dewar  <dewar@adacore.com>
+
+	* s-htable.adb: Minor reformatting.
+
+2012-08-06  Thomas Quinot  <quinot@adacore.com>
+
+	* s-oscons-tmplt.c, g-socket.adb (System.OS_Constants.Target_OS):
+	Suppress warnings so that we don't have to do it at each usage.
+
+2012-08-06  Vincent Pucci  <pucci@adacore.com>
+
+	* exp_ch9.adb (Build_Lock_Free_Unprotected_Subprogram_Body):
+	Use of Known_Static_Esize instead of  Known_Esize and
+	Known_Static_RM_Size instead of Known_RM_Size in order to
+	properly call UI_To_Int. Don't check the size of the component
+	type in case of generic.
+	* sem_ch9.adb (Allows_Lock_Free_Implementation):
+	Use of Known_Static_Esize instead of Known_Esize and
+	Known_Static_RM_Size instead of Known_RM_Size in order to properly
+	call UI_To_Int. Don't check the size of the component type in
+	case of generic.
+
+2012-08-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* checks.adb (Discrete_Range_Cond): Do not try to optimize on
+	the assumption that the type of an expression can always fit in
+	the target type of a conversion.
+
 2012-07-30  Robert Dewar  <dewar@adacore.com>
 
 	* bindusg.adb: Clarify file in -A lines.

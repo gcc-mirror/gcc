@@ -2736,14 +2736,14 @@ get_constraint_for_ssa_var (tree t, VEC(ce_s, heap) **results, bool address_p)
   varinfo_t vi;
 
   /* We allow FUNCTION_DECLs here even though it doesn't make much sense.  */
-  gcc_assert (SSA_VAR_P (t) || DECL_P (t));
+  gcc_assert (TREE_CODE (t) == SSA_NAME || DECL_P (t));
 
   /* For parameters, get at the points-to set for the actual parm
      decl.  */
   if (TREE_CODE (t) == SSA_NAME
+      && SSA_NAME_IS_DEFAULT_DEF (t)
       && (TREE_CODE (SSA_NAME_VAR (t)) == PARM_DECL
-	  || TREE_CODE (SSA_NAME_VAR (t)) == RESULT_DECL)
-      && SSA_NAME_IS_DEFAULT_DEF (t))
+	  || TREE_CODE (SSA_NAME_VAR (t)) == RESULT_DECL))
     {
       get_constraint_for_ssa_var (SSA_NAME_VAR (t), results, address_p);
       return;

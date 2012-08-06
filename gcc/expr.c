@@ -745,7 +745,7 @@ convert_modes (enum machine_mode mode, enum machine_mode oldmode, rtx x, int uns
        && GET_MODE_PRECISION (mode) <= HOST_BITS_PER_WIDE_INT)
       || (GET_MODE_CLASS (mode) == MODE_INT
 	  && GET_MODE_CLASS (oldmode) == MODE_INT
-	  && (GET_CODE (x) == CONST_DOUBLE
+	  && (CONST_DOUBLE_AS_INT_P (x) 
 	      || (GET_MODE_PRECISION (mode) <= GET_MODE_PRECISION (oldmode)
 		  && ((MEM_P (x) && ! MEM_VOLATILE_P (x)
 		       && direct_load[(int) mode])

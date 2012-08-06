@@ -1009,8 +1009,6 @@ record_vars_into (tree vars, tree fn)
 
       /* Record the variable.  */
       add_local_decl (cfun, var);
-      if (gimple_referenced_vars (cfun))
-	add_referenced_var (var);
     }
 
   if (fn != current_function_decl)

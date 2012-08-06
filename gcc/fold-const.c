@@ -2094,12 +2094,14 @@ pedantic_non_lvalue_loc (location_t loc, tree x)
 
 /* Given a tree comparison code, return the code that is the logical inverse.
    It is generally not safe to do this for floating-point comparisons, except
-   for EQ_EXPR and NE_EXPR, so we return ERROR_MARK in this case.  */
+   for EQ_EXPR, NE_EXPR, ORDERED_EXPR and UNORDERED_EXPR, so we return
+   ERROR_MARK in this case.  */
 
 enum tree_code
 invert_tree_comparison (enum tree_code code, bool honor_nans)
 {
-  if (honor_nans && flag_trapping_math && code != EQ_EXPR && code != NE_EXPR)
+  if (honor_nans && flag_trapping_math && code != EQ_EXPR && code != NE_EXPR
+      && code != ORDERED_EXPR && code != UNORDERED_EXPR)
     return ERROR_MARK;
 
   switch (code)

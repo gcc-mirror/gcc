@@ -169,12 +169,7 @@ canonicalize_constructor_val (tree cval, tree from_decl)
 	  && !can_refer_decl_in_current_unit_p (base, from_decl))
 	return NULL_TREE;
       if (TREE_CODE (base) == VAR_DECL)
-	{
-	  TREE_ADDRESSABLE (base) = 1;
-	  if (cfun && gimple_referenced_vars (cfun)
-	      && !is_global_var (base))
-	    add_referenced_var (base);
-	}
+	TREE_ADDRESSABLE (base) = 1;
       else if (TREE_CODE (base) == FUNCTION_DECL)
 	{
 	  /* Make sure we create a cgraph node for functions we'll reference.
@@ -653,9 +648,6 @@ gimplify_and_update_call_from_tree (gimple_stmt_iterator *si_p, tree expr)
   for (i = gsi_start (stmts); !gsi_end_p (i); gsi_next (&i))
     {
       new_stmt = gsi_stmt (i);
-      /* The replacement can expose previously unreferenced variables.  */
-      if (gimple_in_ssa_p (cfun))
-	find_referenced_vars_in (new_stmt);
       /* If the new statement possibly has a VUSE, update it with exact SSA
 	 name we know will reach this one.  */
       if (gimple_has_mem_ops (new_stmt))

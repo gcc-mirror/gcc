@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2008-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2008-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -45,7 +45,7 @@ pragma Warnings (On);
 
 with GNAT.Table;
 
-with XUtil;                   use XUtil;
+with XUtil; use XUtil;
 
 procedure XOSCons is
 
@@ -73,13 +73,18 @@ procedure XOSCons is
 
    type Asm_Info_Kind is
      (CND,     --  Named number (decimal)
+      CNU,     --  Named number (decimal, unsigned)
       CNS,     --  Named number (freeform text)
       C,       --  Constant object
       TXT);    --  Literal text
    --  Recognized markers found in assembly file. These markers are produced by
    --  the same-named macros from the C template.
 
+   subtype Asm_Int_Kind is Asm_Info_Kind range CND .. CNU;
+   --  Asm_Info_Kind values with int values in input
+
    subtype Named_Number is Asm_Info_Kind range CND .. CNS;
+   --  Asm_Info_Kind values with named numbers in output
 
    type Asm_Info (Kind : Asm_Info_Kind := TXT) is record
       Line_Number   : Integer;
@@ -98,7 +103,7 @@ procedure XOSCons is
       --  Value for CNS / C constant
 
       Int_Value     : Int_Value_Type;
-      --  Value for CND constant
+      --  Value for CND / CNU constant
 
       Comment       : String_Access;
       --  Additional descriptive comment for constant, or free-form text (TXT)
@@ -115,6 +120,9 @@ procedure XOSCons is
    Max_Constant_Value_Len : Natural := 0;
    Max_Constant_Type_Len  : Natural := 0;
    --  Lengths of longest name and longest value
+
+   Size_Of_Unsigned_Int : Integer := 0;
+   --  Size of unsigned int on target
 
    type Language is (Lang_Ada, Lang_C);
 
@@ -170,10 +178,12 @@ procedure XOSCons is
          Put (OFile, S);
       end Put;
 
-   begin
-      if Info.Kind /= TXT then
-         --  TXT case is handled by the common code below
+   --  Start of processing for Output_Info
 
+   begin
+      --  Case of non-TXT case (TXT case handled by common code below)
+
+      if Info.Kind /= TXT then
          case Lang is
             when Lang_Ada =>
                Put ("   " & Info.Constant_Name.all);
@@ -195,21 +205,26 @@ procedure XOSCons is
                               - Info.Constant_Name'Length));
          end case;
 
-         if Info.Kind = CND then
+         if Info.Kind in Asm_Int_Kind then
             if not Info.Int_Value.Positive then
                Put ("-");
             end if;
+
             Put (Trim (Info.Int_Value.Abs_Value'Img, Side => Left));
+
          else
             declare
                Is_String : constant Boolean :=
                              Info.Kind = C
                                and then Info.Constant_Type.all = "String";
+
             begin
                if Is_String then
                   Put ("""");
                end if;
+
                Put (Info.Text_Value.all);
+
                if Is_String then
                   Put ("""");
                end if;
@@ -246,7 +261,7 @@ procedure XOSCons is
       procedure Find_Colon (Index : in out Integer);
       --  Increment Index until the next colon in Line
 
-      function Parse_Int (S : String) return Int_Value_Type;
+      function Parse_Int (S : String; K : Asm_Int_Kind) return Int_Value_Type;
       --  Parse a decimal number, preceded by an optional '$' or '#' character,
       --  and return its value.
 
@@ -275,9 +290,13 @@ procedure XOSCons is
       -- Parse_Int --
       ---------------
 
-      function Parse_Int (S : String) return Int_Value_Type is
+      function Parse_Int
+        (S : String;
+         K : Asm_Int_Kind) return Int_Value_Type
+      is
          First    : Integer := S'First;
-         Positive : Boolean;
+         Result   : Int_Value_Type;
+
       begin
          --  On some platforms, immediate integer values are prefixed with
          --  a $ or # character in assembly output.
@@ -287,17 +306,29 @@ procedure XOSCons is
          end if;
 
          if S (First) = '-' then
-            Positive := False;
-            First    := First + 1;
+            Result.Positive := False;
+            First := First + 1;
          else
-            Positive := True;
+            Result.Positive := True;
          end if;
 
-         return (Positive  => Positive,
-                 Abs_Value => Long_Unsigned'Value (S (First .. S'Last)));
+         Result.Abs_Value := Long_Unsigned'Value (S (First .. S'Last));
+
+         if not Result.Positive and then K = CNU then
+
+            --  Negative value, but unsigned expected: take 2's complement
+            --  reciprocical value.
+
+            Result.Abs_Value := ((not Result.Abs_Value) + 1)
+                                  and
+                                (Shift_Left (1, Size_Of_Unsigned_Int) - 1);
+            Result.Positive  := True;
+         end if;
+
+         return Result;
 
       exception
-         when E : others =>
+         when others =>
             Put_Line (Standard_Error, "can't parse decimal value: " & S);
             raise;
       end Parse_Int;
@@ -315,14 +346,15 @@ procedure XOSCons is
          Find_Colon (Index2);
 
          Info.Line_Number :=
-           Integer (Parse_Int (Line (Index1 .. Index2 - 1)).Abs_Value);
+           Integer (Parse_Int (Line (Index1 .. Index2 - 1), CNU).Abs_Value);
 
          case Info.Kind is
-            when CND | CNS | C =>
+            when CND | CNU | CNS | C =>
                Index1 := Index2 + 1;
                Find_Colon (Index2);
 
                Info.Constant_Name := Field_Alloc;
+
                if Info.Constant_Name'Length > Max_Constant_Name_Len then
                   Max_Constant_Name_Len := Info.Constant_Name'Length;
                end if;
@@ -332,6 +364,7 @@ procedure XOSCons is
 
                if Info.Kind = C then
                   Info.Constant_Type := Field_Alloc;
+
                   if Info.Constant_Type'Length > Max_Constant_Type_Len then
                      Max_Constant_Type_Len := Info.Constant_Type'Length;
                   end if;
@@ -340,13 +373,23 @@ procedure XOSCons is
                   Find_Colon (Index2);
                end if;
 
-               if Info.Kind = CND then
-                  Info.Int_Value := Parse_Int (Line (Index1 .. Index2 - 1));
-                  Info.Value_Len := Index2 - Index1 - 1;
+               if Info.Kind = CND or else Info.Kind = CNU then
+                  Info.Int_Value :=
+                    Parse_Int (Line (Index1 .. Index2 - 1), Info.Kind);
+                  Info.Value_Len := Info.Int_Value.Abs_Value'Img'Length - 1;
+
+                  if not Info.Int_Value.Positive then
+                     Info.Value_Len := Info.Value_Len + 1;
+                  end if;
 
                else
                   Info.Text_Value := Field_Alloc;
                   Info.Value_Len  := Info.Text_Value'Length;
+               end if;
+
+               if Info.Constant_Name.all = "sizeof_unsigned_int" then
+                  Size_Of_Unsigned_Int :=
+                    8 * Integer (Info.Int_Value.Abs_Value);
                end if;
 
             when others =>
@@ -371,12 +414,13 @@ procedure XOSCons is
 
          Asm_Infos.Append (Info);
       end;
+
    exception
       when E : others =>
-         Put_Line (Standard_Error,
-           "can't parse " & Line);
-         Put_Line (Standard_Error,
-           "exception raised: " & Exception_Information (E));
+         Put_Line
+           (Standard_Error, "can't parse " & Line);
+         Put_Line
+           (Standard_Error, "exception raised: " & Exception_Information (E));
    end Parse_Asm_Line;
 
    ------------
@@ -401,8 +445,8 @@ procedure XOSCons is
 
    --  Output files
 
-   Ada_File_Name  : constant String := Unit_Name & ".ads";
-   C_File_Name    : constant String := Unit_Name & ".h";
+   Ada_File_Name : constant String := Unit_Name & ".ads";
+   C_File_Name   : constant String := Unit_Name & ".h";
 
    Asm_File  : Ada.Text_IO.File_Type;
    Tmpl_File : Ada.Text_IO.File_Type;
@@ -424,7 +468,6 @@ begin
    --  Load values from assembly file
 
    Open (Asm_File, In_File, Asm_File_Name);
-
    while not End_Of_File (Asm_File) loop
       Get_Line (Asm_File, Line, Last);
       if Last > 2 and then Line (1 .. 2) = "->" then
@@ -450,8 +493,10 @@ begin
 
       if Last >= 2 and then Line (1 .. 2) = "# " then
          declare
-            Index : Integer := 3;
+            Index : Integer;
+
          begin
+            Index := 3;
             while Index <= Last and then Line (Index) in '0' .. '9' loop
                Index := Index + 1;
             end loop;

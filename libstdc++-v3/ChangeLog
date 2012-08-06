@@ -1,3 +1,42 @@
+2012-08-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	Revert:
+	2012-08-03  Ollie Wild  <aaw@google.com>
+		    Richard Smith  <richardsmith@google.com>
+
+	* include/bits/stl_map.h (operator[](key_type&&)): Replace
+	std::make_pair with value_type.
+	* testsuite/23_containers/map/operators/2.cc: New test.
+
+2012-08-03  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/functions.h (__check_partition_lower_aux): Remove
+	redundant comparison with pivot value.
+	(__check_partition_upper_aux): Likewise.
+
+2012-08-03  Ollie Wild  <aaw@google.com>
+	    Richard Smith  <richardsmith@google.com>
+
+	* include/bits/stl_map.h (operator[](key_type&&)): Replace
+	std::make_pair with value_type.
+	* testsuite/23_containers/map/operators/2.cc: New test.
+
+2012-08-03  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/memory: Include auto_ptr.h later.
+	* include/bits/shared_ptr.h (shared_ptr(auto_ptr<_Up>&&): Remove
+	definition.
+	* include/bits/shared_ptr_base.h (__shared_ptr(auto_ptr<_Up>&&):
+	Likewise.
+	* include/bits/unique_ptr.h (unique_ptr(auto_ptr<_Up>&&): Likewise.
+	* include/backward/auto_ptr.h (unique_ptr(auto_ptr<_Up>&&): Define.
+	(shared_ptr(auto_ptr<_Up>&&, __shared_ptr(auto_ptr<_Up>&&): Likewise.
+	* include/std/future: Reduce header dependencies.
+	* testsuite/20_util/default_delete/48631_neg.cc: Adjust dg-error line
+	numbers.
+	* testsuite/20_util/shared_ptr/cons/43820_neg.cc: Likewise.
+	* testsuite/20_util/unique_ptr/assign/48635_neg.cc: Likewise.
+
 2012-07-30  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/c++config (_GLIBCXX_END_NAMESPACE_CONTAINER): Fix

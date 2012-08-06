@@ -709,7 +709,7 @@ input_ssa_names (struct lto_input_block *ib, struct data_in *data_in,
       ssa_name = make_ssa_name_fn (fn, name, gimple_build_nop ());
 
       if (is_default_def)
-	set_default_def (SSA_NAME_VAR (ssa_name), ssa_name);
+	set_ssa_default_def (cfun, SSA_NAME_VAR (ssa_name), ssa_name);
 
       i = streamer_read_uhwi (ib);
     }

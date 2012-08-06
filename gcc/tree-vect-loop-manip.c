@@ -1078,7 +1078,6 @@ set_prologue_iterations (basic_block bb_before_first_loop,
 
   var = create_tmp_var (TREE_TYPE (scalar_loop_iters),
 			"prologue_after_cost_adjust");
-  add_referenced_var (var);
   prologue_after_cost_adjust_name =
     force_gimple_operand (scalar_loop_iters, &stmts, false, var);
 
@@ -1491,7 +1490,6 @@ vect_build_loop_niters (loop_vec_info loop_vinfo, gimple_seq seq)
   tree ni = unshare_expr (LOOP_VINFO_NITERS (loop_vinfo));
 
   var = create_tmp_var (TREE_TYPE (ni), "niters");
-  add_referenced_var (var);
   ni_name = force_gimple_operand (ni, &stmts, false, var);
 
   pe = loop_preheader_edge (loop);
@@ -1558,7 +1556,6 @@ vect_generate_tmps_on_preheader (loop_vec_info loop_vinfo,
       if (!is_gimple_val (ni_minus_gap_name))
 	{
 	  var = create_tmp_var (TREE_TYPE (ni), "ni_gap");
-          add_referenced_var (var);
 
           stmts = NULL;
           ni_minus_gap_name = force_gimple_operand (ni_minus_gap_name, &stmts,
@@ -1583,7 +1580,6 @@ vect_generate_tmps_on_preheader (loop_vec_info loop_vinfo,
   if (!is_gimple_val (ratio_name))
     {
       var = create_tmp_var (TREE_TYPE (ni), "bnd");
-      add_referenced_var (var);
 
       stmts = NULL;
       ratio_name = force_gimple_operand (ratio_name, &stmts, true, var);
@@ -1604,7 +1600,6 @@ vect_generate_tmps_on_preheader (loop_vec_info loop_vinfo,
   if (!is_gimple_val (ratio_mult_vf_name))
     {
       var = create_tmp_var (TREE_TYPE (ni), "ratio_mult_vf");
-      add_referenced_var (var);
 
       stmts = NULL;
       ratio_mult_vf_name = force_gimple_operand (ratio_mult_vf_name, &stmts,
@@ -1663,7 +1658,7 @@ vect_can_advance_ivs_p (loop_vec_info loop_vinfo)
       /* Skip virtual phi's. The data dependences that are associated with
          virtual defs/uses (i.e., memory accesses) are analyzed elsewhere.  */
 
-      if (!is_gimple_reg (SSA_NAME_VAR (PHI_RESULT (phi))))
+      if (!is_gimple_reg (PHI_RESULT (phi)))
 	{
 	  if (vect_print_dump_info (REPORT_DETAILS))
 	    fprintf (vect_dump, "virtual phi. skip.");
@@ -1793,7 +1788,7 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo, tree niters,
         }
 
       /* Skip virtual phi's.  */
-      if (!is_gimple_reg (SSA_NAME_VAR (PHI_RESULT (phi))))
+      if (!is_gimple_reg (PHI_RESULT (phi)))
 	{
 	  if (vect_print_dump_info (REPORT_DETAILS))
 	    fprintf (vect_dump, "virtual phi. skip.");
@@ -1829,7 +1824,6 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo, tree niters,
 			  init_expr, fold_convert (type, off));
 
       var = create_tmp_var (type, "tmp");
-      add_referenced_var (var);
 
       last_gsi = gsi_last_bb (exit_bb);
       ni_name = force_gimple_operand_gsi (&last_gsi, ni, false, var,
@@ -2035,7 +2029,6 @@ vect_gen_niters_for_prolog_loop (loop_vec_info loop_vinfo, tree loop_niters)
     }
 
   var = create_tmp_var (niters_type, "prolog_loop_niters");
-  add_referenced_var (var);
   stmts = NULL;
   iters_name = force_gimple_operand (iters, &stmts, false, var);
 
@@ -2153,7 +2146,6 @@ vect_do_peeling_for_alignment (loop_vec_info loop_vinfo,
       edge pe = loop_preheader_edge (loop);
       tree wide_iters = fold_convert (sizetype, niters_of_prolog_loop);
       tree var = create_tmp_var (sizetype, "prolog_loop_adjusted_niters");
-      add_referenced_var (var);
       wide_prolog_niters = force_gimple_operand (wide_iters, &seq, false,
                                                  var);
       if (seq)
@@ -2251,7 +2243,6 @@ vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
 
       sprintf (tmp_name, "%s%d", "addr2int", i);
       addr_tmp = create_tmp_reg (int_ptrsize_type, tmp_name);
-      add_referenced_var (addr_tmp);
       addr_tmp_name = make_ssa_name (addr_tmp, NULL);
       addr_stmt = gimple_build_assign_with_ops (NOP_EXPR, addr_tmp_name,
 						addr_base, NULL_TREE);
@@ -2265,7 +2256,6 @@ vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
           /* create: or_tmp = or_tmp | addr_tmp */
           sprintf (tmp_name, "%s%d", "orptrs", i);
           or_tmp = create_tmp_reg (int_ptrsize_type, tmp_name);
-          add_referenced_var (or_tmp);
 	  new_or_tmp_name = make_ssa_name (or_tmp, NULL);
 	  or_stmt = gimple_build_assign_with_ops (BIT_IOR_EXPR,
 						  new_or_tmp_name,
@@ -2283,7 +2273,6 @@ vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
 
   /* create: and_tmp = or_tmp & mask  */
   and_tmp = create_tmp_reg (int_ptrsize_type, "andmask" );
-  add_referenced_var (and_tmp);
   and_tmp_name = make_ssa_name (and_tmp, NULL);
 
   and_stmt = gimple_build_assign_with_ops (BIT_AND_EXPR, and_tmp_name,

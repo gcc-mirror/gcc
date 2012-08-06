@@ -1091,7 +1091,7 @@ enum target_cpu_default
    : (MODE) == VOIDmode && (NREGS) != 1 ? VOIDmode			\
    : (MODE) == VOIDmode ? choose_hard_reg_mode ((REGNO), (NREGS), false) \
    : (MODE) == HImode && !TARGET_PARTIAL_REG_STALL ? SImode		\
-   : (MODE) == QImode && (REGNO) > BX_REG && !TARGET_64BIT ? SImode 	\
+   : (MODE) == QImode && !(TARGET_64BIT || QI_REGNO_P (REGNO)) ? SImode	\
    : (MODE))
 
 /* The only ABI that saves SSE registers across calls is Win64 (thus no
@@ -1316,29 +1316,32 @@ enum reg_class
    registers.  */
 #define TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P hook_bool_mode_true
 
-#define QI_REG_P(X) (REG_P (X) && REGNO (X) <= BX_REG)
-
-#define GENERAL_REGNO_P(N) \
-  ((N) <= STACK_POINTER_REGNUM || REX_INT_REGNO_P (N))
+#define QI_REG_P(X) (REG_P (X) && QI_REGNO_P (REGNO (X)))
+#define QI_REGNO_P(N) IN_RANGE ((N), AX_REG, BX_REG)
 
 #define GENERAL_REG_P(X) \
   (REG_P (X) && GENERAL_REGNO_P (REGNO (X)))
+#define GENERAL_REGNO_P(N) \
+  (IN_RANGE ((N), AX_REG, SP_REG) || REX_INT_REGNO_P (N))
 
-#define ANY_QI_REG_P(X) (TARGET_64BIT ? GENERAL_REG_P(X) : QI_REG_P (X))
+#define ANY_QI_REG_P(X) (REG_P (X) && ANY_QI_REGNO_P (REGNO (X)))
+#define ANY_QI_REGNO_P(N) \
+  (TARGET_64BIT ? GENERAL_REGNO_P (N) : QI_REGNO_P (N))
 
+#define REX_INT_REG_P(X) (REG_P (X) && REX_INT_REGNO_P (REGNO (X)))
 #define REX_INT_REGNO_P(N) \
   IN_RANGE ((N), FIRST_REX_INT_REG, LAST_REX_INT_REG)
-#define REX_INT_REG_P(X) (REG_P (X) && REX_INT_REGNO_P (REGNO (X)))
 
 #define FP_REG_P(X) (REG_P (X) && FP_REGNO_P (REGNO (X)))
 #define FP_REGNO_P(N) IN_RANGE ((N), FIRST_STACK_REG, LAST_STACK_REG)
+
 #define ANY_FP_REG_P(X) (REG_P (X) && ANY_FP_REGNO_P (REGNO (X)))
 #define ANY_FP_REGNO_P(N) (FP_REGNO_P (N) || SSE_REGNO_P (N))
 
 #define X87_FLOAT_MODE_P(MODE)	\
   (TARGET_80387 && ((MODE) == SFmode || (MODE) == DFmode || (MODE) == XFmode))
 
-#define SSE_REG_P(N) (REG_P (N) && SSE_REGNO_P (REGNO (N)))
+#define SSE_REG_P(X) (REG_P (X) && SSE_REGNO_P (REGNO (X)))
 #define SSE_REGNO_P(N)						\
   (IN_RANGE ((N), FIRST_SSE_REG, LAST_SSE_REG)			\
    || REX_SSE_REGNO_P (N))
@@ -1356,13 +1359,13 @@ enum reg_class
   (TARGET_FMA4 && ((MODE) == V4SFmode || (MODE) == V2DFmode \
 		  || (MODE) == V8SFmode || (MODE) == V4DFmode))
 
-#define MMX_REG_P(XOP) (REG_P (XOP) && MMX_REGNO_P (REGNO (XOP)))
+#define MMX_REG_P(X) (REG_P (X) && MMX_REGNO_P (REGNO (X)))
 #define MMX_REGNO_P(N) IN_RANGE ((N), FIRST_MMX_REG, LAST_MMX_REG)
 
-#define STACK_REG_P(XOP) (REG_P (XOP) && STACK_REGNO_P (REGNO (XOP)))
+#define STACK_REG_P(X) (REG_P (X) && STACK_REGNO_P (REGNO (X)))
 #define STACK_REGNO_P(N) IN_RANGE ((N), FIRST_STACK_REG, LAST_STACK_REG)
 
-#define STACK_TOP_P(XOP) (REG_P (XOP) && REGNO (XOP) == FIRST_STACK_REG)
+#define STACK_TOP_P(X) (REG_P (X) && REGNO (X) == FIRST_STACK_REG)
 
 #define CC_REG_P(X) (REG_P (X) && CC_REGNO_P (REGNO (X)))
 #define CC_REGNO_P(X) ((X) == FLAGS_REG || (X) == FPSR_REG)

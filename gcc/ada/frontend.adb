@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -283,6 +283,12 @@ begin
 
    if Config_Pragmas /= Error_List
      and then Operating_Mode /= Check_Syntax
+
+     --  Do not attempt to process deferred configuration pragmas if the main
+     --  unit failed to load, to avoid cascaded inconsistencies that can lead
+     --  to a compiler crash.
+
+     and then not Fatal_Error (Main_Unit)
    then
       --  Pragmas that require some semantic activity, such as
       --  Interrupt_State, cannot be processed until the main unit

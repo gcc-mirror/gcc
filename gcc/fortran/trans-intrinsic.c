@@ -1315,20 +1315,6 @@ trans_num_images (gfc_se * se)
 }
 
 
-static tree
-get_rank_from_desc (tree desc)
-{
-  tree tmp;
-  tree dtype;
-
-  dtype = gfc_conv_descriptor_dtype (desc);
-  tmp = build_int_cst (TREE_TYPE (dtype), GFC_DTYPE_RANK_MASK);
-  tmp = fold_build2_loc (input_location, BIT_AND_EXPR, TREE_TYPE (dtype),
-			 dtype, tmp);
-  return fold_convert (gfc_get_int_type (gfc_default_integer_kind), tmp);
-}
-
-
 static void
 gfc_conv_intrinsic_rank (gfc_se *se, gfc_expr *expr)
 {
@@ -1345,7 +1331,7 @@ gfc_conv_intrinsic_rank (gfc_se *se, gfc_expr *expr)
   gfc_add_block_to_block (&se->pre, &argse.pre);
   gfc_add_block_to_block (&se->post, &argse.post);
 
-  se->expr = get_rank_from_desc (argse.expr);
+  se->expr = gfc_conv_descriptor_rank (argse.expr);
 }
 
 
@@ -1434,7 +1420,7 @@ gfc_conv_intrinsic_bound (gfc_se * se, gfc_expr * expr, int upper)
           cond = fold_build2_loc (input_location, LT_EXPR, boolean_type_node,
 				  bound, build_int_cst (TREE_TYPE (bound), 0));
 	  if (as && as->type == AS_ASSUMED_RANK)
-	    tmp = get_rank_from_desc (desc);
+	    tmp = gfc_conv_descriptor_rank (desc);
 	  else
 	    tmp = gfc_rank_cst[GFC_TYPE_ARRAY_RANK (TREE_TYPE (desc))];
           tmp = fold_build2_loc (input_location, GE_EXPR, boolean_type_node,
@@ -5895,7 +5881,7 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
 	  gfc_conv_expr_lhs (&arg1se, arg1->expr);
 	  if (arg1->expr->rank == -1)
 	    {
-	      tmp = get_rank_from_desc (arg1se.expr);
+	      tmp = gfc_conv_descriptor_rank (arg1se.expr);
 	      tmp = fold_build2_loc (input_location, MINUS_EXPR,
 				     TREE_TYPE (tmp), tmp, gfc_index_one_node);
 	    }

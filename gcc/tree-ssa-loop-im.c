@@ -942,9 +942,7 @@ rewrite_reciprocal (gimple_stmt_iterator *bsi)
   lhs = gimple_assign_lhs (stmt);
   type = TREE_TYPE (lhs);
 
-  var = create_tmp_var (type, "reciptmp");
-  add_referenced_var (var);
-  DECL_GIMPLE_REG_P (var) = 1;
+  var = create_tmp_reg (type, "reciptmp");
 
   real_one = build_one_cst (type);
 
@@ -1024,7 +1022,6 @@ rewrite_bittest (gimple_stmt_iterator *bsi)
 
       /* 1 << B */
       var = create_tmp_var (TREE_TYPE (a), "shifttmp");
-      add_referenced_var (var);
       t = fold_build2 (LSHIFT_EXPR, TREE_TYPE (a),
 		       build_int_cst (TREE_TYPE (a), 1), b);
       stmt1 = gimple_build_assign (var, t);
@@ -2123,7 +2120,7 @@ execute_sm_if_changed_flag_set (struct loop *loop, mem_ref_p ref)
   char *str = get_lsm_tmp_name (ref->mem, ~0);
 
   lsm_tmp_name_add ("_flag");
-  flag = make_rename_temp (boolean_type_node, str);
+  flag = create_tmp_reg (boolean_type_node, str);
   get_all_locs_in_loop (loop, ref, &locs);
   FOR_EACH_VEC_ELT (mem_ref_loc_p, locs, i, loc)
     {
@@ -2161,7 +2158,7 @@ execute_sm (struct loop *loop, VEC (edge, heap) *exits, mem_ref_p ref)
       fprintf (dump_file, " from loop %d\n", loop->num);
     }
 
-  tmp_var = make_rename_temp (TREE_TYPE (ref->mem),
+  tmp_var = create_tmp_reg (TREE_TYPE (ref->mem),
 			      get_lsm_tmp_name (ref->mem, ~0));
 
   fmt_data.loop = loop;

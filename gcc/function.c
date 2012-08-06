@@ -1892,14 +1892,7 @@ instantiate_virtual_regs (void)
   /* Compute the offsets to use for this function.  */
   in_arg_offset = FIRST_PARM_OFFSET (current_function_decl);
   var_offset = STARTING_FRAME_OFFSET;
-
   dynamic_offset = STACK_DYNAMIC_OFFSET (current_function_decl);
-  if (crtl->max_dynamic_stack_alignment)
-    {
-      int align = crtl->max_dynamic_stack_alignment / BITS_PER_UNIT;
-      dynamic_offset = (dynamic_offset + align - 1) & -align;
-    }
-
   out_arg_offset = STACK_POINTER_OFFSET;
 #ifdef FRAME_POINTER_CFA_OFFSET
   cfa_offset = FRAME_POINTER_CFA_OFFSET (current_function_decl);

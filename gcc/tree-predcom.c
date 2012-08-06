@@ -1308,15 +1308,7 @@ replace_ref_with (gimple stmt, tree new_tree, bool set, bool in_lhs)
 	  val = gimple_assign_rhs1 (stmt);
 	  gcc_assert (gimple_assign_single_p (stmt));
 	  if (TREE_CLOBBER_P (val))
-	    {
-	      val = gimple_default_def (cfun, SSA_NAME_VAR (new_tree));
-	      if (val == NULL_TREE)
-		{
-		  val = make_ssa_name (SSA_NAME_VAR (new_tree),
-				       gimple_build_nop ());
-		  set_default_def (SSA_NAME_VAR (new_tree), val);
-		}
-	    }
+	    val = get_or_create_ssa_default_def (cfun, SSA_NAME_VAR (new_tree));
 	  else
 	    gcc_assert (gimple_assign_copy_p (stmt));
 	}
@@ -1450,8 +1442,6 @@ predcom_tmp_var (tree ref, unsigned i, bitmap tmp_vars)
   /* We never access the components of the temporary variable in predictive
      commoning.  */
   tree var = create_tmp_reg (type, get_lsm_tmp_name (ref, i));
-
-  add_referenced_var (var);
   bitmap_set_bit (tmp_vars, DECL_UID (var));
   return var;
 }
@@ -1872,7 +1862,7 @@ base_names_in_chain_on (struct loop *loop, tree name, tree var)
   gimple stmt, phi;
   imm_use_iterator iter;
 
-  SSA_NAME_VAR (name) = var;
+  replace_ssa_name_symbol (name, var);
 
   while (1)
     {
@@ -1890,7 +1880,7 @@ base_names_in_chain_on (struct loop *loop, tree name, tree var)
 	return;
 
       name = PHI_RESULT (phi);
-      SSA_NAME_VAR (name) = var;
+      replace_ssa_name_symbol (name, var);
     }
 }
 
@@ -2191,12 +2181,10 @@ reassociate_to_the_same_stmt (tree name1, tree name2)
   /* Insert the new statement combining NAME1 and NAME2 before S1, and
      combine it with the rhs of S1.  */
   var = create_tmp_reg (type, "predreastmp");
-  add_referenced_var (var);
   new_name = make_ssa_name (var, NULL);
   new_stmt = gimple_build_assign_with_ops (code, new_name, name1, name2);
 
   var = create_tmp_reg (type, "predreastmp");
-  add_referenced_var (var);
   tmp_name = make_ssa_name (var, NULL);
 
   /* Rhs of S1 may now be either a binary expression with operation

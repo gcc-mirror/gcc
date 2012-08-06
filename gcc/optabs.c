@@ -3594,7 +3594,7 @@ expand_copysign_absneg (enum machine_mode mode, rtx op0, rtx op1, rtx target,
   label = gen_label_rtx ();
   emit_cmp_and_jump_insns (sign, const0_rtx, EQ, NULL_RTX, imode, 1, label);
 
-  if (GET_CODE (op0) == CONST_DOUBLE)
+  if (CONST_DOUBLE_AS_FLOAT_P (op0))
     op0 = simplify_unary_operation (NEG, mode, op0, mode);
   else
     op0 = expand_unop (mode, neg_optab, op0, target, 0);
@@ -3732,7 +3732,7 @@ expand_copysign (rtx op0, rtx op1, rtx target)
     return NULL_RTX;
 
   op0_is_abs = false;
-  if (GET_CODE (op0) == CONST_DOUBLE)
+  if (CONST_DOUBLE_AS_FLOAT_P (op0))
     {
       if (real_isneg (CONST_DOUBLE_REAL_VALUE (op0)))
 	op0 = simplify_unary_operation (ABS, mode, op0, mode);
@@ -3740,7 +3740,7 @@ expand_copysign (rtx op0, rtx op1, rtx target)
     }
 
   if (fmt->signbit_ro >= 0
-      && (GET_CODE (op0) == CONST_DOUBLE
+      && (CONST_DOUBLE_AS_FLOAT_P (op0) 
 	  || (optab_handler (neg_optab, mode) != CODE_FOR_nothing
 	      && optab_handler (abs_optab, mode) != CODE_FOR_nothing)))
     {

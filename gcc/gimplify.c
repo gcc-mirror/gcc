@@ -8366,7 +8366,7 @@ void
 gimple_regimplify_operands (gimple stmt, gimple_stmt_iterator *gsi_p)
 {
   size_t i, num_ops;
-  tree orig_lhs = NULL_TREE, lhs, t;
+  tree orig_lhs = NULL_TREE, lhs;
   gimple_seq pre = NULL;
   gimple post_stmt = NULL;
   struct gimplify_ctx gctx;
@@ -8525,10 +8525,6 @@ gimple_regimplify_operands (gimple stmt, gimple_stmt_iterator *gsi_p)
       break;
     }
 
-  if (gimple_referenced_vars (cfun))
-    for (t = gimplify_ctxp->temps; t ; t = TREE_CHAIN (t))
-      add_referenced_var (t);
-
   if (!gimple_seq_empty_p (pre))
     gsi_insert_seq_before (gsi_p, pre, GSI_SAME_STMT);
   if (post_stmt)
@@ -8545,7 +8541,6 @@ tree
 force_gimple_operand_1 (tree expr, gimple_seq *stmts,
 			gimple_predicate gimple_test_f, tree var)
 {
-  tree t;
   enum gimplify_status ret;
   struct gimplify_ctx gctx;
 
@@ -8576,10 +8571,6 @@ force_gimple_operand_1 (tree expr, gimple_seq *stmts,
       ret = gimplify_expr (&expr, stmts, NULL, gimple_test_f, fb_rvalue);
       gcc_assert (ret != GS_ERROR);
     }
-
-  if (gimple_referenced_vars (cfun))
-    for (t = gimplify_ctxp->temps; t ; t = DECL_CHAIN (t))
-      add_referenced_var (t);
 
   pop_gimplify_context (NULL);
 
