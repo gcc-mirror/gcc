@@ -1477,6 +1477,10 @@ package Sem_Util is
    function Subprogram_Access_Level (Subp : Entity_Id) return Uint;
    --  Return the accessibility level of the view denoted by Subp
 
+   function Support_Atomic_Primitives (Typ : Entity_Id) return Boolean;
+   --  Return True if Typ supports the GCC built-in atomic operations (i.e. if
+   --  Typ is properly sized and aligned).
+
    procedure Trace_Scope (N : Node_Id; E : Entity_Id; Msg : String);
    --  Print debugging information on entry to each unit being analyzed
 

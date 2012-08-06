@@ -12833,6 +12833,47 @@ package body Sem_Util is
       end if;
    end Subprogram_Access_Level;
 
+   -------------------------------
+   -- Support_Atomic_Primitives --
+   -------------------------------
+
+   function Support_Atomic_Primitives (Typ : Entity_Id) return Boolean is
+      Size : Int;
+
+   begin
+      --  Verify the alignment of Typ is known
+
+      if not Known_Alignment (Typ) then
+         return False;
+      end if;
+
+      if Known_Static_Esize (Typ) then
+         Size := UI_To_Int (Esize (Typ));
+
+      --  If the Esize (Object_Size) is unknown at compile-time, look at the
+      --  RM_Size (Value_Size) since it may have been set by an explicit rep
+      --  item.
+
+      elsif Known_Static_RM_Size (Typ) then
+         Size := UI_To_Int (RM_Size (Typ));
+
+      --  Otherwise, the size is considered to be unknown.
+
+      else
+         return False;
+      end if;
+
+      --  Check that the size of the component is 8, 16, 32 or 64 bits and that
+      --  Typ is properly aligned.
+
+      case Size is
+         when 8 | 16 | 32 | 64 =>
+            return Size = UI_To_Int (Alignment (Typ)) * 8;
+         when others           =>
+            return False;
+      end case;
+   end Support_Atomic_Primitives;
+
    -----------------
    -- Trace_Scope --
    -----------------
