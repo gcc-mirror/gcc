@@ -1,3 +1,13 @@
+2012-08-06  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/51938
+	PR tree-optimization/52005
+	* tree-ssa-ifcombine.c (ifcombine_ifandif): New parameters for
+	inverted conditions.
+	(ifcombine_iforif): Remove, merge code into ifcombine_ifandif.
+	(tree_ssa_ifcombine_bb): Update calls to the above. Detect !a&&b
+	and !a||b patterns.
+
 2012-08-06  Olivier Hainque  <hainque@adacore.com>
 
 	* tree-emutls.c (new_emutls_decl): When a var_section is requested by
