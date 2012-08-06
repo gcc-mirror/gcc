@@ -1,3 +1,8 @@
+2012-08-06  Anna Tikhonova  <anna.m.tikhonova@gmail.com>
+
+	* gcc.dg/20020201-1.c: Remove declarations for exit, abort,
+	rand, srand. Include <stdlib.h>.
+
 2012-07-16  Steven Bosscher  <steven@gcc.gnu.org>
 
 	Backport from trunk:
