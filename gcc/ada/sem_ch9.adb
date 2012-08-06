@@ -557,7 +557,6 @@ package body Sem_Ch9 is
                         Id        : constant Entity_Id := Entity (N);
                         Comp_Decl : Node_Id;
                         Comp_Id   : Entity_Id := Empty;
-                        Comp_Size : Int := 0;
                         Comp_Type : Entity_Id;
 
                      begin
@@ -591,40 +590,19 @@ package body Sem_Ch9 is
 
                                  Layout_Type (Comp_Type);
 
-                                 if Known_Static_Esize (Comp_Type) then
-                                    Comp_Size := UI_To_Int (Esize (Comp_Type));
+                                 if not
+                                   Support_Atomic_Primitives (Comp_Type)
+                                 then
+                                    if Lock_Free_Given then
+                                       Error_Msg_NE
+                                         ("type of& must support atomic " &
+                                          "operations",
+                                          N, Comp_Id);
+                                       return Skip;
+                                    end if;
 
-                                 --  If the Esize (Object_Size) is unknown at
-                                 --  compile-time, look at the RM_Size
-                                 --  (Value_Size) since it may have been set by
-                                 --  an explicit representation clause.
-
-                                 elsif Known_Static_RM_Size (Comp_Type) then
-                                    Comp_Size :=
-                                      UI_To_Int (RM_Size (Comp_Type));
-
-                                    --  Worrisome missing else raise PE???
+                                    return Abandon;
                                  end if;
-
-                                 --  Check that the size of the component is 8,
-                                 --  16, 32 or 64 bits.
-
-                                 --  What about AAMP here???
-
-                                 case Comp_Size is
-                                    when 8 | 16 | 32 | 64 =>
-                                       null;
-                                    when others           =>
-                                       if Lock_Free_Given then
-                                          Error_Msg_NE
-                                            ("type of& must support atomic " &
-                                             "operations",
-                                             N, Comp_Id);
-                                          return Skip;
-                                       end if;
-
-                                       return Abandon;
-                                 end case;
                               end if;
 
                               --  Check if another protected component has
