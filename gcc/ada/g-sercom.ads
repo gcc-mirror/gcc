@@ -87,8 +87,8 @@ package GNAT.Serial_Communications is
    --  will wait for the whole buffer to be filed. If Block is not set then
    --  the given Timeout (in seconds) is used. If Local is set then modem
    --  control lines (in particular DCD) are ignored (not supported on
-   --  Windows).
-
+   --  Windows). Flow indicates the flow control type as defined above.
+   --
    --  Note that the timeout precision may be limited on some implementation
    --  (e.g. on GNU/Linux the maximum precision is a tenth of seconds).
 

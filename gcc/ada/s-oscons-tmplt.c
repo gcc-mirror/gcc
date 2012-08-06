@@ -156,6 +156,10 @@ pragma Style_Checks ("M32766");
 # include <signal.h>
 #endif
 
+#ifdef __MINGW32__
+# include <winbase.h>
+#endif
+
 #ifdef NATIVE
 #include <stdio.h>
 
@@ -621,10 +625,8 @@ CND(E2BIG, "Argument list too long")
 CND(EILSEQ, "Illegal byte sequence")
 
 /**
- **  Terminal I/O constants
+ **  Terminal/serial I/O constants
  **/
-
-#ifdef HAVE_TERMIOS
 
 /*
 
@@ -633,6 +635,8 @@ CND(EILSEQ, "Illegal byte sequence")
    ----------------------
 
 */
+
+#ifdef HAVE_TERMIOS
 
 #ifndef TCSANOW
 # define TCSANOW -1
@@ -948,6 +952,11 @@ CND(VLNEXT, "Literal next")
 CND(VEOL2, "Alternative EOL")
 
 #endif /* HAVE_TERMIOS */
+
+#ifdef __MINGW32__
+CNU(DTR_CONTROL_ENABLE, "Enable DTR flow ctrl")
+CNU(RTS_CONTROL_ENABLE, "Enable RTS flow ctrl")
+#endif
 
 /*
 

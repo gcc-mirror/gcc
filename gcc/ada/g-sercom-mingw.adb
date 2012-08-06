@@ -37,10 +37,13 @@ with Ada.Streams;                use Ada.Streams;
 with System;               use System;
 with System.Communication; use System.Communication;
 with System.CRTL;          use System.CRTL;
+with System.OS_Constants;
 with System.Win32;         use System.Win32;
 with System.Win32.Ext;     use System.Win32.Ext;
 
 package body GNAT.Serial_Communications is
+
+   package OSC renames System.OS_Constants;
 
    --  Common types
 
@@ -203,9 +206,9 @@ package body GNAT.Serial_Communications is
       Com_Settings.fBinary         := Bits1 (System.Win32.TRUE);
       Com_Settings.fOutxDsrFlow    := 0;
       Com_Settings.fDsrSensitivity := 0;
-      Com_Settings.fDtrControl     := DTR_CONTROL_ENABLE;
+      Com_Settings.fDtrControl     := OSC.DTR_CONTROL_ENABLE;
       Com_Settings.fInX            := 0;
-      Com_Settings.fRtsControl     := RTS_CONTROL_ENABLE;
+      Com_Settings.fRtsControl     := OSC.RTS_CONTROL_ENABLE;
 
       case Flow is
          when None =>

@@ -1,3 +1,28 @@
+2012-08-06  Robert Dewar  <dewar@adacore.com>
+
+	* xoscons.adb: Minor code reorganization (remove unused variable
+	E at line 331).
+	* g-sercom.ads, exp_attr.adb: Minor reformatting.
+	* sinfo.adb, sinfo.ads: Minor cleanup, remove unused flag
+	Static_Processing_OK.
+
+2012-08-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Build_Derived_Concurrent_Type): Copy discriminant
+	constraint when building a constrained subtype, to prevent
+	undesirable tree sharing betweeb geberated subtype and derived
+	type definition.
+
+2012-08-06  Thomas Quinot  <quinot@adacore.com>
+
+	* g-sercom-mingw.adb, s-oscons-tmplt.c: Add missing constants
+	on Windows.
+
+2012-08-06  Sergey Rybin  <rybin@adacore.com frybin>
+
+	* tree_io.ads: Update ASIS_Version_Number because of the tree fix
+	for discriminant constraints for concurrent types.
+
 2012-08-06  Thomas Quinot  <quinot@adacore.com>
 
 	* sem_ch4.adb: Minor reformatting.
