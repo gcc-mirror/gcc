@@ -70,7 +70,7 @@ package Inline is
       --  be restored when compiling the body, to insure that internal enti-
       --  ties use the same counter and are unique over spec and body.
 
-      Scope_Suppress           : Suppress_Array;
+      Scope_Suppress           : Suppress_Record;
       Local_Suppress_Stack_Top : Suppress_Stack_Entry_Ptr;
       --  Save suppress information at the point of instantiation. Used to
       --  properly inherit check status active at this point (see RM 11.5

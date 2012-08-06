@@ -1964,7 +1964,7 @@ package body Sem_Ch10 is
       Num_Scopes      : Int := 0;
       Use_Clauses     : array (1 .. Scope_Stack.Last) of Node_Id;
       Enclosing_Child : Entity_Id := Empty;
-      Svg             : constant Suppress_Array := Scope_Suppress;
+      Svg             : constant Suppress_Record := Scope_Suppress;
 
       Save_Cunit_Restrictions : constant Save_Cunit_Boolean_Restrictions :=
                                   Cunit_Boolean_Restrictions_Save;

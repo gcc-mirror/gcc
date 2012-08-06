@@ -646,9 +646,9 @@ package Types is
       TS      : out Time_Stamp_Type);
    --  Given the components of a time stamp, initialize the value
 
-   -----------------------------------------------
-   -- Types used for Pragma Suppress Management --
-   -----------------------------------------------
+   -------------------------------------
+   -- Types used for Check Management --
+   -------------------------------------
 
    type Check_Id is new Nat;
    --  Type used to represent a check id
@@ -702,6 +702,56 @@ package Types is
    --    3.  Add a new function to Checks to handle the new check test
    --    4.  Add a new Do_xxx_Check flag to Sinfo (if required)
    --    5.  Add appropriate checks for the new test
+
+   --  The following provides precise details on the mode used to check
+   --  intermediate overflows in expressions for signed integer arithmetic.
+
+   type Overflow_Check_Type is
+     (Suppress,
+      --  Intermediate overflow suppressed. If an arithmetic operation creates
+      --  an overflow, no exception is raised, and the program is erroneous.
+
+      Check_All,
+      --  All intermediate operations are checked. If the result of any
+      --  arithmetic operation gives a result outside the range of the base
+      --  type, then a Constraint_Error exception is raised.
+
+      Minimize,
+      --  Where appropriate, arithmetic operations are performed with an
+      --  extended range, using Long_Long_Integer if necessary. As long as
+      --  the result fits in this extended range, then no exception is raised
+      --  and computation continues with the extended result. The final value
+      --  of an expression must fit in the base type of the whole expression.
+      --  If an intermediate result is outside the range of Long_Long_Integer
+      --  then a Constraint_Error exception is raised.
+
+      Eliminate);
+      --  In this mode arbitrary precision arithmetic is used as needed to
+      --  ensure that it is impossible for intermediate arithmetic to cause
+      --  an overflow. Again the final value of an expression must fit in
+      --  the base type of the whole expression.
+
+   --  The following structure captures the state of check suppression or
+   --  activation at a particular point in the program execution.
+
+   type Suppress_Record is record
+      Suppress : Suppress_Array;
+      --  Indicates suppression status of each possible check
+
+      Overflow_Checks_General : Overflow_Check_Type;
+      --  This field is relevant only if Suppress (Overflow_Check) is False.
+      --  It indicates the mode of overflow checking to be applied to general
+      --  expressions outside assertions.
+
+      Overflow_Checks_Assertions : Overflow_Check_Type;
+      --  This field is relevant only if Suppress (Overflow_Check) is False.
+      --  It indicates the mode of overflow checking to be applied to any
+      --  expressions occuring inside assertions.
+   end record;
+
+   Suppress_All : constant Suppress_Record :=
+                    ((others => True), Suppress, Suppress);
+   --  Constant used to initialize Suppress_Record value to all suppressed.
 
    -----------------------------------
    -- Global Exception Declarations --

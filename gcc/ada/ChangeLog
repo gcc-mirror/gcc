@@ -1,3 +1,22 @@
+2012-08-06  Robert Dewar  <dewar@adacore.com>
+
+	* exp_util.adb, switch-c.adb, inline.ads, sem_ch10.adb, types.ads,
+	checks.adb, sem_prag.adb, sem.adb, sem.ads, sem_res.adb, sem_attr.adb,
+	gnat1drv.adb, exp_ch4.adb, exp_ch6.adb, opt.ads, osint.adb: Implement
+	extended overflow checks (step 1).
+	(Overflow_Check_Type, Suppress_Record, Suppress_All): New types.
+	(Suppress_Array): Extended to include switches to control extended
+	overflow checking (and renamed to Suppress_Record).
+	Update all uses of Suppress_Array.
+
+2012-08-06  Thomas Quinot  <quinot@adacore.com>
+
+	* makeutl.ads: Minor documentation fix.
+
+2012-08-06  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch7.adb: Minor reformatting.
+
 2012-08-06  Geert Bosch  <bosch@adacore.com>
 
 	* a-ngelfu.adb: Change obsolete comment that this is a non-strict

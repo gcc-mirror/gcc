@@ -722,20 +722,20 @@ package body Sem is
    begin
       if Suppress = All_Checks then
          declare
-            Svg : constant Suppress_Array := Scope_Suppress;
+            Svg : constant Suppress_Record := Scope_Suppress;
          begin
-            Scope_Suppress := (others => True);
+            Scope_Suppress := Suppress_All;
             Analyze (N);
             Scope_Suppress := Svg;
          end;
 
       else
          declare
-            Svg : constant Boolean := Scope_Suppress (Suppress);
+            Svg : constant Boolean := Scope_Suppress.Suppress (Suppress);
          begin
-            Scope_Suppress (Suppress) := True;
+            Scope_Suppress.Suppress (Suppress) := True;
             Analyze (N);
-            Scope_Suppress (Suppress) := Svg;
+            Scope_Suppress.Suppress (Suppress) := Svg;
          end;
       end if;
    end Analyze;
@@ -761,20 +761,20 @@ package body Sem is
    begin
       if Suppress = All_Checks then
          declare
-            Svg : constant Suppress_Array := Scope_Suppress;
+            Svg : constant Suppress_Record := Scope_Suppress;
          begin
-            Scope_Suppress := (others => True);
+            Scope_Suppress := Suppress_All;
             Analyze_List (L);
             Scope_Suppress := Svg;
          end;
 
       else
          declare
-            Svg : constant Boolean := Scope_Suppress (Suppress);
+            Svg : constant Boolean := Scope_Suppress.Suppress (Suppress);
          begin
-            Scope_Suppress (Suppress) := True;
+            Scope_Suppress.Suppress (Suppress) := True;
             Analyze_List (L);
-            Scope_Suppress (Suppress) := Svg;
+            Scope_Suppress.Suppress (Suppress) := Svg;
          end;
       end if;
    end Analyze_List;
@@ -1022,20 +1022,20 @@ package body Sem is
    begin
       if Suppress = All_Checks then
          declare
-            Svg : constant Suppress_Array := Scope_Suppress;
+            Svg : constant Suppress_Record := Scope_Suppress;
          begin
-            Scope_Suppress := (others => True);
+            Scope_Suppress := Suppress_All;
             Insert_After_And_Analyze (N, M);
             Scope_Suppress := Svg;
          end;
 
       else
          declare
-            Svg : constant Boolean := Scope_Suppress (Suppress);
+            Svg : constant Boolean := Scope_Suppress.Suppress (Suppress);
          begin
-            Scope_Suppress (Suppress) := True;
+            Scope_Suppress.Suppress (Suppress) := True;
             Insert_After_And_Analyze (N, M);
-            Scope_Suppress (Suppress) := Svg;
+            Scope_Suppress.Suppress (Suppress) := Svg;
          end;
       end if;
    end Insert_After_And_Analyze;
@@ -1082,20 +1082,20 @@ package body Sem is
    begin
       if Suppress = All_Checks then
          declare
-            Svg : constant Suppress_Array := Scope_Suppress;
+            Svg : constant Suppress_Record := Scope_Suppress;
          begin
-            Scope_Suppress := (others => True);
+            Scope_Suppress := Suppress_All;
             Insert_Before_And_Analyze (N, M);
             Scope_Suppress := Svg;
          end;
 
       else
          declare
-            Svg : constant Boolean := Scope_Suppress (Suppress);
+            Svg : constant Boolean := Scope_Suppress.Suppress (Suppress);
          begin
-            Scope_Suppress (Suppress) := True;
+            Scope_Suppress.Suppress (Suppress) := True;
             Insert_Before_And_Analyze (N, M);
-            Scope_Suppress (Suppress) := Svg;
+            Scope_Suppress.Suppress (Suppress) := Svg;
          end;
       end if;
    end Insert_Before_And_Analyze;
@@ -1141,20 +1141,20 @@ package body Sem is
    begin
       if Suppress = All_Checks then
          declare
-            Svg : constant Suppress_Array := Scope_Suppress;
+            Svg : constant Suppress_Record := Scope_Suppress;
          begin
-            Scope_Suppress := (others => True);
+            Scope_Suppress := Suppress_All;
             Insert_List_After_And_Analyze (N, L);
             Scope_Suppress := Svg;
          end;
 
       else
          declare
-            Svg : constant Boolean := Scope_Suppress (Suppress);
+            Svg : constant Boolean := Scope_Suppress.Suppress (Suppress);
          begin
-            Scope_Suppress (Suppress) := True;
+            Scope_Suppress.Suppress (Suppress) := True;
             Insert_List_After_And_Analyze (N, L);
-            Scope_Suppress (Suppress) := Svg;
+            Scope_Suppress.Suppress (Suppress) := Svg;
          end;
       end if;
    end Insert_List_After_And_Analyze;
@@ -1199,20 +1199,20 @@ package body Sem is
    begin
       if Suppress = All_Checks then
          declare
-            Svg : constant Suppress_Array := Scope_Suppress;
+            Svg : constant Suppress_Record := Scope_Suppress;
          begin
-            Scope_Suppress := (others => True);
+            Scope_Suppress := Suppress_All;
             Insert_List_Before_And_Analyze (N, L);
             Scope_Suppress := Svg;
          end;
 
       else
          declare
-            Svg : constant Boolean := Scope_Suppress (Suppress);
+            Svg : constant Boolean := Scope_Suppress.Suppress (Suppress);
          begin
-            Scope_Suppress (Suppress) := True;
+            Scope_Suppress.Suppress (Suppress) := True;
             Insert_List_Before_And_Analyze (N, L);
-            Scope_Suppress (Suppress) := Svg;
+            Scope_Suppress.Suppress (Suppress) := Svg;
          end;
       end if;
    end Insert_List_Before_And_Analyze;
@@ -1264,9 +1264,9 @@ package body Sem is
       --  the All_Checks flag.
 
       if C in Predefined_Check_Id then
-         return Scope_Suppress (C);
+         return Scope_Suppress.Suppress (C);
       else
-         return Scope_Suppress (All_Checks);
+         return Scope_Suppress.Suppress (All_Checks);
       end if;
    end Is_Check_Suppressed;
 
