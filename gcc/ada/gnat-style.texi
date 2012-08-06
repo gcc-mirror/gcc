@@ -351,8 +351,8 @@ Local names can be shorter, because they are used only within
 one context, where comments explain their purpose.
 
 @item
-When starting a default expression on the line that follows the declaration
-line, use 2 characters for indentation.
+When starting an initialization or default expression on the line that follows
+the declaration line, use 2 characters for indentation.
 
 @smallexample @c adanocomment
         Entity1 : Integer :=
@@ -360,12 +360,12 @@ line, use 2 characters for indentation.
 @end smallexample
 
 @item
-If a default expression needs to be continued on subsequent lines, the
-continuations should be indented from the start of the expression.
+If an initialization or default expression needs to be continued on subsequent
+lines, the continuations should be indented from the start of the expression.
 
 @smallexample @c adanocomment
-        Entity1   : Integer := Long_Function_Name
-                                 (parameters for call);
+        Entity1 : Integer := Long_Function_Name
+                               (parameters for call);
 @end smallexample
 
 @end itemize
@@ -738,7 +738,10 @@ also be used as headers for sections of comments, or collections
 of declarations that are related.
 
 @item
-Every subprogram body must have a preceding @syntax{subprogram_declaration}.
+Every subprogram body must have a preceding @syntax{subprogram_declaration},
+which includes proper client documentation so that you do not need to
+read the subprogram body in order to understand what the subprogram does and
+how to call it. All subprograms should be documented, without exceptions.
 
 @item
 @cindex Blank lines (in subprogram bodies)

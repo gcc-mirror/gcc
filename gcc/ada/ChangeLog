@@ -1,3 +1,12 @@
+2012-08-06  Vincent Pucci  <pucci@adacore.com>
+
+	* s-atopri.adb: Minor reformatting.
+
+2012-08-06  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat-style.texi: Clarify that all subprograms should be
+	documented. Minor rewording.
+
 2012-08-06  Robert Dewar  <dewar@adacore.com>
 
 	* aspects.ads: Define Aspect_Id_Exclude_No_Aspect.
