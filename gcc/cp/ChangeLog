@@ -1,3 +1,10 @@
+2012-08-06  Marc Glisse  <marc.glisse@inria.fr>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54165
+	* typeck.c (build_static_cast_1): Move the conversion to void case
+	before the perform_direct_initialization_if_possible call.
+
 2012-08-03  Marc Glisse  <marc.glisse@inria.fr>
 
 	* pt.c (tsubst_copy_and_build): Handle VECTOR_TYPE like scalars.

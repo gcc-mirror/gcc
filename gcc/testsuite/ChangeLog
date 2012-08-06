@@ -1,3 +1,9 @@
+2012-08-06  Marc Glisse  <marc.glisse@inria.fr>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54165
+	* g++.dg/conversion/void2.C: New.
+
 2012-08-06  Tom de Vries  <tom@codesourcery.com>
 
 	* gcc.dg/tree-ssa/vrp78.c: New test.
