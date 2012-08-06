@@ -1,5 +1,6 @@
 /* PR tree-optimization/46309 */
 /* { dg-do compile } */
+/* { dg-skip-if "branch cost is always one" { "frv-*-*" "m32c-*-*" "mn10300-*-*" "sh-*-*" } "*" { "" } } */
 /* { dg-options "-O2 -fdump-tree-reassoc-details" } */
 /* The transformation depends on BRANCH_COST being greater than 1
    (see the notes in the PR), so try to force that.  */

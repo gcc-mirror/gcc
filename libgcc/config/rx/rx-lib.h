@@ -3,3 +3,5 @@
 #define FLOAT_ONLY
 #endif
 
+#define LIBGCC2_FLOAT_BIT_ORDER_MISMATCH 0
+

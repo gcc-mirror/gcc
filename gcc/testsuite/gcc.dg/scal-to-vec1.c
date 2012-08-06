@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target { int32plus } } } */
 /* { dg-options "-Wno-long-long" } */
 /* { dg-options "-Wno-long-long -mabi=altivec" { target { { powerpc*-*-linux* } && ilp32 } } } */
 

@@ -6,7 +6,7 @@
 --  Open source license information is in the zlib.ads file.  --
 ----------------------------------------------------------------
 
---  $Id: zlib.adb,v 1.31 2004/09/06 06:53:19 vagul Exp $
+--  $Id: zlib.adb,v 1.11 2012/04/18 13:52:44 nickc Exp $
 
 with Ada.Exceptions;
 with Ada.Unchecked_Conversion;

@@ -143,6 +143,7 @@
       int issue_rate;							\
 									\
       builtin_define ("__frv__");					\
+      builtin_assert ("cpu=frv");					\
       builtin_assert ("machine=frv");					\
 									\
       issue_rate = frv_issue_rate ();					\

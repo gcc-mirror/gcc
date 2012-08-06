@@ -93,8 +93,6 @@ proc libstdc++_init { testfile } {
     global target_triplet
     global flags_file
     global tool_timeout
-    global DEFAULT_CXXFLAGS
-    global STATIC_LIBCXXFLAGS
 
     # We set LC_ALL and LANG to C so that we get the same error
     # messages as expected.
@@ -387,16 +385,13 @@ if { [info procs saved-dg-test] == [list] } {
     rename dg-test saved-dg-test
 
     proc dg-test { args } {
-	global additional_prunes
 	global errorInfo
 
 	if { [ catch { eval saved-dg-test $args } errmsg ] } {
 	    set saved_info $errorInfo
-	    set additional_prunes ""
 	    unset_timeout_vars
 	    error $errmsg $saved_info
 	}
-	set additional_prunes ""
 	unset_timeout_vars
     }
 }

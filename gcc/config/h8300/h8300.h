@@ -118,7 +118,7 @@ extern const char * const *h8_reg_names;
 /* Default target_flags if no switches specified.  */
 
 #ifndef TARGET_DEFAULT
-#define TARGET_DEFAULT (MASK_QUICKCALL)
+#define TARGET_DEFAULT (MASK_QUICKCALL | MASK_H8300SX)
 #endif
 
 /* We want dwarf2 info available to gdb.  */
@@ -129,6 +129,7 @@ extern const char * const *h8_reg_names;
 #define INCOMING_FRAME_SP_OFFSET   (POINTER_SIZE / 8)
 
 #define DWARF_CIE_DATA_ALIGNMENT	2
+#define DWARF2_ADDR_SIZE       		4
 
 /* Define this if addresses of constant functions
    shouldn't be put through pseudo regs where they can be cse'd.
@@ -482,7 +483,6 @@ struct cum_arg
 #define EXIT_IGNORE_STACK 0
 
 /* Length in units of the trampoline for entering a nested function.  */
-
 #define TRAMPOLINE_SIZE ((Pmode == HImode) ? 8 : 12)
 
 /* Addressing modes, and classification of registers for them.  */

@@ -7202,6 +7202,7 @@ cxx_fold_indirect_ref (location_t loc, tree type, tree op0, bool *empty_base)
   sub = op0;
   STRIP_NOPS (sub);
   subtype = TREE_TYPE (sub);
+
   if (!POINTER_TYPE_P (subtype))
     return NULL_TREE;
 

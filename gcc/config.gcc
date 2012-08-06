@@ -891,6 +891,16 @@ arm*-*-uclinux*)		# ARM ucLinux
 arm*-*-ecos-elf)
 	tm_file="dbxelf.h elfos.h newlib-stdint.h arm/unknown-elf.h arm/elf.h arm/aout.h arm/arm.h arm/ecos-elf.h"
 	tmake_file="arm/t-arm arm/t-arm-elf"
+	case ${target} in
+	  armv6*)
+	    with_arch=armv6j
+	    tmake_file="arm/t-arm arm/t-arm-elf-no-hardfp"
+	    ;;
+	  armv5*)
+	    with_arch=armv5te
+	    tmake_file="arm/t-arm arm/t-arm-elf-no-hardfp"
+	    ;;
+	esac
 	;;
 arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtemseabi*)
 	# The BPABI long long divmod functions return a 128-bit value in
@@ -940,8 +950,7 @@ avr-*-rtems*)
 	extra_objs="avr-devices.o avr-log.o"
 	;;
 avr-*-*)
-	tm_file="elfos.h avr/elf.h avr/avr.h dbxelf.h avr/avr-stdint.h"
-	tmake_file="avr/t-avr avr/t-multilib"
+	tm_file="avr/avr.h dbxelf.h avr/avr-stdint.h"
 	use_gcc_stdint=wrap
 	extra_gcc_objs="driver-avr.o avr-devices.o"
 	extra_objs="avr-devices.o avr-log.o"
@@ -2193,6 +2202,7 @@ s390x-ibm-tpf*)
         out_file=s390/s390.c
         thread_file='tpf'
 	extra_options="${extra_options} s390/tpf.opt"
+	extra_headers=../../../libgcc/unwind-pe.h
 	;;
 score-*-elf)
 	gas=yes
@@ -2335,7 +2345,7 @@ sh-*-elf* | sh[12346l]*-*-elf* | \
 		sh-superh-*)	sh_multilibs=m4,m4-single,m4-single-only,m4-nofpu ;;
 		sh*-*-linux*)	sh_multilibs=m1,m3e,m4 ;;
 		sh*-*-netbsd*)	sh_multilibs=m3,m3e,m4 ;;
-		*) sh_multilibs=m1,m2,m2e,m4,m4-single,m4-single-only,m2a,m2a-single ;;
+		*) sh_multilibs=m1,m2,m2e,m4,m4-single,m4-single-only,m2a,m2a-single,m2a-single-only ;;
 		esac
 		if test x$with_fp = xno; then
 			sh_multilibs="`echo $sh_multilibs|sed -e s/m4/sh4-nofpu/ -e s/,m4-[^,]*//g -e s/,m[23]e// -e s/m2a,m2a-single/m2a-nofpu/ -e s/m5-..m....,//g`"

@@ -144,6 +144,7 @@ enum alias_set_op
 
 static void relate_alias_sets (tree, tree, enum alias_set_op);
 
+static bool gnat_first_param_is_class (Entity_Id) ATTRIBUTE_UNUSED;
 static bool allocatable_size_p (tree, bool);
 static void prepend_one_attribute_to (struct attrib **,
 				      enum attr_type, tree, tree, Node_Id);

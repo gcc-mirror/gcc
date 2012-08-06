@@ -2,6 +2,7 @@
    division.  */
 /* { dg-do run } */
 /* { dg-options "-std=gnu99" { target c } } */
+/* { dg-add-options ieee } */
 
 #include "complex-sign.h"
 

@@ -1,6 +1,9 @@
 /* { dg-do run } */
 /* { dg-options "-fno-strict-aliasing" } */
 /* { dg-skip-if "unaligned access" { sparc*-*-* sh*-*-* tic6x-*-* } "*" "" } */
+/* { dg-skip-if "unaligned access" { rl78-*-* } "*" "" } */
+/* Warnings about pointer/int not same size */
+/* { dg-skip-if "" { m32c-*-* h8300-*-* xstormy16-*-* } { "*" } { "" } } */
 
 extern void abort (void);
 #if (__SIZEOF_INT__ <= 2)

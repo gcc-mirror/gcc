@@ -1,7 +1,5 @@
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
-/* { dg-final { scan-assembler "bn " } } */
-/* { dg-final { scan-assembler "b\[np\] " } } */
 
 unsigned short   a_below __attribute__((__BELOW100__));
 unsigned short   b_below __attribute__((__BELOW100__));
@@ -28,3 +26,6 @@ bar (void)
   *b_ptr = 0xfeff;
   return foo ();
 }
+
+/* { dg-final { scan-file "below_100.s" "bn " } } */
+/* { dg-final { scan-file "below_100.s" "b\[np\] " } } */

@@ -73,6 +73,32 @@ static GTY(()) section * tdata_section;
 static GTY(()) section * zdata_section;
 static GTY(()) section * zbss_section;
 
+/* We use this to wrap all emitted insns in the prologue.  */
+static rtx
+F (rtx x)
+{
+  RTX_FRAME_RELATED_P (x) = 1;
+  return x;
+}
+
+/* Mark all the subexpressions of the PARALLEL rtx PAR as
+   frame-related.  Return PAR.
+
+   dwarf2out.c:dwarf2out_frame_debug_expr ignores sub-expressions of a
+   PARALLEL rtx other than the first if they do not have the
+   FRAME_RELATED flag set on them.  */
+static rtx
+v850_all_frame_related (rtx par)
+{
+  int len = XVECLEN (par, 0);
+  int i;
+
+  for (i = 0; i < len; i++)
+    F (XVECEXP (par, 0, i));
+
+  return par;
+}
+
 /* Handle the TARGET_PASS_BY_REFERENCE target hook.
    Specify whether to pass the argument by reference.  */
 
@@ -1671,6 +1697,8 @@ expand_prologue (void)
 		  = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, 11));
 	    }
 
+	  v850_all_frame_related (save_all);
+
 	  code = recog (save_all, NULL_RTX, NULL);
 	  if (code >= 0)
 	    {
@@ -1711,26 +1739,26 @@ expand_prologue (void)
 	  offset = init_stack_alloc - 4;
 	  
 	  if (init_stack_alloc)
-	    emit_insn (gen_addsi3 (stack_pointer_rtx,
+	    F (emit_insn (gen_addsi3 (stack_pointer_rtx,
 				   stack_pointer_rtx,
-				   GEN_INT (- (signed) init_stack_alloc)));
+				      GEN_INT (- (signed) init_stack_alloc))));
 	  
 	  /* Save the return pointer first.  */
 	  if (num_save > 0 && REGNO (save_regs[num_save-1]) == LINK_POINTER_REGNUM)
 	    {
-	      emit_move_insn (gen_rtx_MEM (SImode,
+	      F (emit_move_insn (gen_rtx_MEM (SImode,
 					   plus_constant (stack_pointer_rtx,
 							  offset)),
-			      save_regs[--num_save]);
+				 save_regs[--num_save]));
 	      offset -= 4;
 	    }
 	  
 	  for (i = 0; i < num_save; i++)
 	    {
-	      emit_move_insn (gen_rtx_MEM (SImode,
+	      F (emit_move_insn (gen_rtx_MEM (SImode,
 					   plus_constant (stack_pointer_rtx,
 							  offset)),
-			      save_regs[i]);
+				 save_regs[i]));
 	      offset -= 4;
 	    }
 	}
@@ -1743,20 +1771,20 @@ expand_prologue (void)
     {
       int diff = actual_fsize - init_stack_alloc;
       if (CONST_OK_FOR_K (-diff))
-	emit_insn (gen_addsi3 (stack_pointer_rtx,
+	F (emit_insn (gen_addsi3 (stack_pointer_rtx,
 			       stack_pointer_rtx,
-			       GEN_INT (-diff)));
+				  GEN_INT (-diff))));
       else
 	{
 	  rtx reg = gen_rtx_REG (Pmode, 12);
-	  emit_move_insn (reg, GEN_INT (-diff));
-	  emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx, reg));
+	  F (emit_move_insn (reg, GEN_INT (-diff)));
+	  F (emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx, reg)));
 	}
     }
 
   /* If we need a frame pointer, set it up now.  */
   if (frame_pointer_needed)
-    emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx);
+    F (emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx));
 }
 
 

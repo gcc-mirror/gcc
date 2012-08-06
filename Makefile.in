@@ -990,6 +990,7 @@ all:
 .PHONY: all-build
 
 all-build: maybe-all-build-libiberty
+all-build: maybe-all-build-intl
 all-build: maybe-all-build-bison
 all-build: maybe-all-build-flex
 all-build: maybe-all-build-m4
@@ -2578,7 +2579,7 @@ configure-build-libiberty:
 	libsrcdir="$$s/libiberty"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(BUILD_CONFIGARGS) --build=${build_alias} --host=${build_alias} \
+	  $(BUILD_CONFIGARGS) --quiet --build=${build_alias} --host=${build_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif build-libiberty
@@ -2609,6 +2610,62 @@ all-build-libiberty: configure-build-libiberty
 
 
 
+.PHONY: configure-build-intl maybe-configure-build-intl
+maybe-configure-build-intl:
+@if gcc-bootstrap
+configure-build-intl: stage_current
+@endif gcc-bootstrap
+@if build-intl
+maybe-configure-build-intl: configure-build-intl
+configure-build-intl: 
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(BUILD_SUBDIR)/intl/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(BUILD_SUBDIR)/intl ; \
+	$(BUILD_EXPORTS)  \
+	echo Configuring in $(BUILD_SUBDIR)/intl; \
+	cd "$(BUILD_SUBDIR)/intl" || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(BUILD_SUBDIR)/intl/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/intl"; \
+	libsrcdir="$$s/intl"; \
+	rm -f no-such-file || : ; \
+	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	  $(BUILD_CONFIGARGS) --quiet --build=${build_alias} --host=${build_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
+	  || exit 1
+@endif build-intl
+
+
+
+
+
+.PHONY: all-build-intl maybe-all-build-intl
+maybe-all-build-intl:
+@if gcc-bootstrap
+all-build-intl: stage_current
+@endif gcc-bootstrap
+@if build-intl
+TARGET-build-intl=all
+maybe-all-build-intl: all-build-intl
+all-build-intl: configure-build-intl
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(BUILD_EXPORTS)  \
+	(cd $(BUILD_SUBDIR)/intl && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_BUILD_FLAGS)  \
+		$(TARGET-build-intl))
+@endif build-intl
+
+
+
+
+
 .PHONY: configure-build-bison maybe-configure-build-bison
 maybe-configure-build-bison:
 @if gcc-bootstrap
@@ -2634,7 +2691,7 @@ configure-build-bison:
 	libsrcdir="$$s/bison"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(BUILD_CONFIGARGS) --build=${build_alias} --host=${build_alias} \
+	  $(BUILD_CONFIGARGS) --quiet --build=${build_alias} --host=${build_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif build-bison
@@ -2690,8 +2747,8 @@ configure-build-flex:
 	libsrcdir="$$s/flex"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(BUILD_CONFIGARGS) --build=${build_alias} --host=${build_alias} \
-	  --target=${target_alias} $${srcdiroption}  \
+	  $(BUILD_CONFIGARGS) --quiet --build=${build_alias} --host=${build_alias} \
+	  --target=${target_alias} $${srcdiroption} LEX="flex" \
 	  || exit 1
 @endif build-flex
 
@@ -2713,7 +2770,7 @@ all-build-flex: configure-build-flex
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(BUILD_EXPORTS)  \
 	(cd $(BUILD_SUBDIR)/flex && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_BUILD_FLAGS)  \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_BUILD_FLAGS) LEX=flex FLEX=flex \
 		$(TARGET-build-flex))
 @endif build-flex
 
@@ -2746,7 +2803,7 @@ configure-build-m4:
 	libsrcdir="$$s/m4"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(BUILD_CONFIGARGS) --build=${build_alias} --host=${build_alias} \
+	  $(BUILD_CONFIGARGS) --quiet --build=${build_alias} --host=${build_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif build-m4
@@ -2802,7 +2859,7 @@ configure-build-texinfo:
 	libsrcdir="$$s/texinfo"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(BUILD_CONFIGARGS) --build=${build_alias} --host=${build_alias} \
+	  $(BUILD_CONFIGARGS) --quiet --build=${build_alias} --host=${build_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif build-texinfo
@@ -2858,7 +2915,7 @@ configure-build-fixincludes:
 	libsrcdir="$$s/fixincludes"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(BUILD_CONFIGARGS) --build=${build_alias} --host=${build_alias} \
+	  $(BUILD_CONFIGARGS) --quiet --build=${build_alias} --host=${build_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif build-fixincludes
@@ -2917,7 +2974,7 @@ configure-bfd:
 	srcdiroption="--srcdir=$${topdir}/bfd"; \
 	libsrcdir="$$s/bfd"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  $(HOST_CONFIGARGS) --quiet --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif bfd
@@ -3798,7 +3855,7 @@ configure-opcodes:
 	srcdiroption="--srcdir=$${topdir}/opcodes"; \
 	libsrcdir="$$s/opcodes"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  $(HOST_CONFIGARGS) --quiet --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif opcodes
@@ -4679,7 +4736,7 @@ configure-binutils:
 	srcdiroption="--srcdir=$${topdir}/binutils"; \
 	libsrcdir="$$s/binutils"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  $(HOST_CONFIGARGS) --quiet --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif binutils
@@ -5561,7 +5618,7 @@ configure-bison:
 	srcdiroption="--srcdir=$${topdir}/bison"; \
 	libsrcdir="$$s/bison"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  $(HOST_CONFIGARGS) --quiet --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif bison
@@ -6004,7 +6061,7 @@ configure-cgen:
 	srcdiroption="--srcdir=$${topdir}/cgen"; \
 	libsrcdir="$$s/cgen"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  $(HOST_CONFIGARGS) --quiet --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif cgen
@@ -6444,7 +6501,7 @@ configure-dejagnu:
 	srcdiroption="--srcdir=$${topdir}/dejagnu"; \
 	libsrcdir="$$s/dejagnu"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  $(HOST_CONFIGARGS) --quiet --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif dejagnu
@@ -6884,7 +6941,7 @@ configure-etc:
 	srcdiroption="--srcdir=$${topdir}/etc"; \
 	libsrcdir="$$s/etc"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  $(HOST_CONFIGARGS) --quiet --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif etc
@@ -7324,7 +7381,7 @@ configure-fastjar:
 	srcdiroption="--srcdir=$${topdir}/fastjar"; \
 	libsrcdir="$$s/fastjar"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  $(HOST_CONFIGARGS) --quiet --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif fastjar
@@ -7767,7 +7824,7 @@ configure-fixincludes:
 	srcdiroption="--srcdir=$${topdir}/fixincludes"; \
 	libsrcdir="$$s/fixincludes"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  $(HOST_CONFIGARGS) --quiet --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif fixincludes
@@ -8191,7 +8248,7 @@ configure-flex:
 	srcdiroption="--srcdir=$${topdir}/flex"; \
 	libsrcdir="$$s/flex"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  $(HOST_CONFIGARGS) --quiet --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif flex
@@ -8633,7 +8690,7 @@ configure-gas:
 	srcdiroption="--srcdir=$${topdir}/gas"; \
 	libsrcdir="$$s/gas"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  $(HOST_CONFIGARGS) --quiet --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif gas
@@ -9514,7 +9571,7 @@ configure-gcc:
 	srcdiroption="--srcdir=$${topdir}/gcc"; \
 	libsrcdir="$$s/gcc"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  $(HOST_CONFIGARGS) --quiet --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif gcc
@@ -10395,7 +10452,7 @@ configure-gmp:
 	srcdiroption="--srcdir=$${topdir}/gmp"; \
 	libsrcdir="$$s/gmp"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
+	  $(HOST_CONFIGARGS) --quiet --build=${build_alias} --host=none-${host_vendor}-${host_os} \
 	  --target=none-${host_vendor}-${host_os} $${srcdiroption} --disable-shared \
 	  || exit 1
 @endif gmp
@@ -11270,7 +11327,7 @@ configure-mpfr:
 	srcdiroption="--srcdir=$${topdir}/mpfr"; \
 	libsrcdir="$$s/mpfr"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  $(HOST_CONFIGARGS) --quiet --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption} --disable-shared @extra_mpfr_configure_flags@ \
 	  || exit 1
 @endif mpfr
@@ -12145,7 +12202,7 @@ configure-mpc:
 	srcdiroption="--srcdir=$${topdir}/mpc"; \
 	libsrcdir="$$s/mpc"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  $(HOST_CONFIGARGS) --quiet --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption} --disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@ \
 	  || exit 1
 @endif mpc
@@ -13020,7 +13077,7 @@ configure-ppl:
 	srcdiroption="--srcdir=$${topdir}/ppl"; \
 	libsrcdir="$$s/ppl"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  $(HOST_CONFIGARGS) --quiet --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption} --disable-shared --with-libgmp-prefix=$$r/$(HOST_SUBDIR)/gmp/ --with-libgmpxx-prefix=$$r/$(HOST_SUBDIR)/gmp/ \
 	  || exit 1
 @endif ppl
@@ -13895,7 +13952,7 @@ configure-cloog:
 	srcdiroption="--srcdir=$${topdir}/cloog"; \
 	libsrcdir="$$s/cloog"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  $(HOST_CONFIGARGS) --quiet --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption} --disable-shared --with-gmp-library=$$r/$(HOST_SUBDIR)/gmp/.libs --with-gmp-include=$$r/$(HOST_SUBDIR)/gmp --with-bits=gmp --with-ppl \
 	  || exit 1
 @endif cloog
@@ -14770,7 +14827,7 @@ configure-libelf:
 	srcdiroption="--srcdir=$${topdir}/libelf"; \
 	libsrcdir="$$s/libelf"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  $(HOST_CONFIGARGS) --quiet --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption} --disable-shared \
 	  || exit 1
 @endif libelf
@@ -15645,7 +15702,7 @@ configure-gold:
 	srcdiroption="--srcdir=$${topdir}/gold"; \
 	libsrcdir="$$s/gold"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  $(HOST_CONFIGARGS) --quiet --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif gold
@@ -16527,7 +16584,7 @@ configure-gprof:
 	srcdiroption="--srcdir=$${topdir}/gprof"; \
 	libsrcdir="$$s/gprof"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  $(HOST_CONFIGARGS) --quiet --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif gprof
@@ -16966,7 +17023,7 @@ configure-intl:
 	srcdiroption="--srcdir=$${topdir}/intl"; \
 	libsrcdir="$$s/intl"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  $(HOST_CONFIGARGS) --quiet --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif intl
@@ -17848,7 +17905,7 @@ configure-tcl:
 	srcdiroption="--srcdir=$${topdir}/tcl"; \
 	libsrcdir="$$s/tcl"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  $(HOST_CONFIGARGS) --quiet --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif tcl
@@ -18273,7 +18330,7 @@ configure-itcl:
 	srcdiroption="--srcdir=$${topdir}/itcl"; \
 	libsrcdir="$$s/itcl"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  $(HOST_CONFIGARGS) --quiet --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif itcl
@@ -18712,7 +18769,7 @@ configure-ld:
 	srcdiroption="--srcdir=$${topdir}/ld"; \
 	libsrcdir="$$s/ld"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  $(HOST_CONFIGARGS) --quiet --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif ld
@@ -19593,7 +19650,7 @@ configure-libcpp:
 	srcdiroption="--srcdir=$${topdir}/libcpp"; \
 	libsrcdir="$$s/libcpp"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  $(HOST_CONFIGARGS) --quiet --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif libcpp
@@ -20474,7 +20531,7 @@ configure-libdecnumber:
 	srcdiroption="--srcdir=$${topdir}/libdecnumber"; \
 	libsrcdir="$$s/libdecnumber"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  $(HOST_CONFIGARGS) --quiet --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif libdecnumber
@@ -21356,7 +21413,7 @@ configure-libgui:
 	srcdiroption="--srcdir=$${topdir}/libgui"; \
 	libsrcdir="$$s/libgui"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  $(HOST_CONFIGARGS) --quiet --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif libgui
@@ -21795,7 +21852,7 @@ configure-libiberty:
 	srcdiroption="--srcdir=$${topdir}/libiberty"; \
 	libsrcdir="$$s/libiberty"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  $(HOST_CONFIGARGS) --quiet --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption} @extra_host_libiberty_configure_flags@ \
 	  || exit 1
 @endif libiberty
@@ -22683,7 +22740,7 @@ configure-libiconv:
 	srcdiroption="--srcdir=$${topdir}/libiconv"; \
 	libsrcdir="$$s/libiconv"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  $(HOST_CONFIGARGS) --quiet --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption} --disable-shared \
 	  || exit 1
 @endif libiconv
@@ -23060,7 +23117,7 @@ configure-m4:
 	srcdiroption="--srcdir=$${topdir}/m4"; \
 	libsrcdir="$$s/m4"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  $(HOST_CONFIGARGS) --quiet --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif m4
@@ -23500,7 +23557,7 @@ configure-readline:
 	srcdiroption="--srcdir=$${topdir}/readline"; \
 	libsrcdir="$$s/readline"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  $(HOST_CONFIGARGS) --quiet --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif readline
@@ -23940,7 +23997,7 @@ configure-sid:
 	srcdiroption="--srcdir=$${topdir}/sid"; \
 	libsrcdir="$$s/sid"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  $(HOST_CONFIGARGS) --quiet --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif sid
@@ -24380,7 +24437,7 @@ configure-sim:
 	srcdiroption="--srcdir=$${topdir}/sim"; \
 	libsrcdir="$$s/sim"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  $(HOST_CONFIGARGS) --quiet --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif sim
@@ -24820,7 +24877,7 @@ configure-texinfo:
 	srcdiroption="--srcdir=$${topdir}/texinfo"; \
 	libsrcdir="$$s/texinfo"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  $(HOST_CONFIGARGS) --quiet --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif texinfo
@@ -24870,7 +24927,13 @@ maybe-install-texinfo:
 @if texinfo
 maybe-install-texinfo: install-texinfo
 
-install-texinfo:
+install-texinfo: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/texinfo && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif texinfo
 
@@ -24879,7 +24942,13 @@ maybe-install-strip-texinfo:
 @if texinfo
 maybe-install-strip-texinfo: install-strip-texinfo
 
-install-strip-texinfo:
+install-strip-texinfo: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/texinfo && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
 
 @endif texinfo
 
@@ -25247,7 +25316,7 @@ configure-zlib:
 	srcdiroption="--srcdir=$${topdir}/zlib"; \
 	libsrcdir="$$s/zlib"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  $(HOST_CONFIGARGS) --quiet --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif zlib
@@ -26111,7 +26180,7 @@ configure-gdb:
 	srcdiroption="--srcdir=$${topdir}/gdb"; \
 	libsrcdir="$$s/gdb"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  $(HOST_CONFIGARGS) --quiet --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif gdb
@@ -26551,7 +26620,7 @@ configure-expect:
 	srcdiroption="--srcdir=$${topdir}/expect"; \
 	libsrcdir="$$s/expect"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  $(HOST_CONFIGARGS) --quiet --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif expect
@@ -26991,7 +27060,7 @@ configure-guile:
 	srcdiroption="--srcdir=$${topdir}/guile"; \
 	libsrcdir="$$s/guile"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  $(HOST_CONFIGARGS) --quiet --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif guile
@@ -27431,7 +27500,7 @@ configure-tk:
 	srcdiroption="--srcdir=$${topdir}/tk"; \
 	libsrcdir="$$s/tk"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  $(HOST_CONFIGARGS) --quiet --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif tk
@@ -27871,7 +27940,7 @@ configure-libtermcap:
 	srcdiroption="--srcdir=$${topdir}/libtermcap"; \
 	libsrcdir="$$s/libtermcap"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  $(HOST_CONFIGARGS) --quiet --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif libtermcap
@@ -28245,7 +28314,7 @@ configure-utils:
 	srcdiroption="--srcdir=$${topdir}/utils"; \
 	libsrcdir="$$s/utils"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  $(HOST_CONFIGARGS) --quiet --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif utils
@@ -28679,7 +28748,7 @@ configure-gnattools:
 	srcdiroption="--srcdir=$${topdir}/gnattools"; \
 	libsrcdir="$$s/gnattools"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  $(HOST_CONFIGARGS) --quiet --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif gnattools
@@ -29118,7 +29187,7 @@ configure-lto-plugin:
 	srcdiroption="--srcdir=$${topdir}/lto-plugin"; \
 	libsrcdir="$$s/lto-plugin"; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  $(HOST_CONFIGARGS) --quiet --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption} --enable-shared \
 	  || exit 1
 @endif lto-plugin
@@ -30026,7 +30095,7 @@ configure-target-libstdc++-v3:
 	libsrcdir="$$s/libstdc++-v3"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  $(TARGET_CONFIGARGS) --quiet --build=${build_alias} --host=${target_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif target-libstdc++-v3
@@ -31010,7 +31079,7 @@ configure-target-libmudflap:
 	libsrcdir="$$s/libmudflap"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  $(TARGET_CONFIGARGS) --quiet --build=${build_alias} --host=${target_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif target-libmudflap
@@ -31467,7 +31536,7 @@ configure-target-libssp:
 	libsrcdir="$$s/libssp"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  $(TARGET_CONFIGARGS) --quiet --build=${build_alias} --host=${target_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif target-libssp
@@ -31924,7 +31993,7 @@ configure-target-newlib:
 	libsrcdir="$$s/newlib"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  $(TARGET_CONFIGARGS) --quiet --build=${build_alias} --host=${target_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif target-newlib
@@ -32380,7 +32449,7 @@ configure-target-libgcc:
 	libsrcdir="$$s/libgcc"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  $(TARGET_CONFIGARGS) --quiet --build=${build_alias} --host=${target_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif target-libgcc
@@ -33359,7 +33428,7 @@ configure-target-libquadmath:
 	libsrcdir="$$s/libquadmath"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  $(TARGET_CONFIGARGS) --quiet --build=${build_alias} --host=${target_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif target-libquadmath
@@ -33816,7 +33885,7 @@ configure-target-libgfortran:
 	libsrcdir="$$s/libgfortran"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  $(TARGET_CONFIGARGS) --quiet --build=${build_alias} --host=${target_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif target-libgfortran
@@ -34273,7 +34342,7 @@ configure-target-libobjc:
 	libsrcdir="$$s/libobjc"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  $(TARGET_CONFIGARGS) --quiet --build=${build_alias} --host=${target_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif target-libobjc
@@ -34730,7 +34799,7 @@ configure-target-libgo:
 	libsrcdir="$$s/libgo"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  $(TARGET_CONFIGARGS) --quiet --build=${build_alias} --host=${target_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif target-libgo
@@ -35187,7 +35256,7 @@ configure-target-libtermcap:
 	libsrcdir="$$s/libtermcap"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  $(TARGET_CONFIGARGS) --quiet --build=${build_alias} --host=${target_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif target-libtermcap
@@ -35579,7 +35648,7 @@ configure-target-winsup:
 	libsrcdir="$$s/winsup"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  $(TARGET_CONFIGARGS) --quiet --build=${build_alias} --host=${target_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif target-winsup
@@ -36036,7 +36105,7 @@ configure-target-libgloss:
 	libsrcdir="$$s/libgloss"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  $(TARGET_CONFIGARGS) --quiet --build=${build_alias} --host=${target_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif target-libgloss
@@ -36488,7 +36557,7 @@ configure-target-libffi:
 	libsrcdir="$$s/libffi"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  $(TARGET_CONFIGARGS) --quiet --build=${build_alias} --host=${target_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif target-libffi
@@ -36945,7 +37014,7 @@ configure-target-libjava:
 	libsrcdir="$$s/libjava"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  $(TARGET_CONFIGARGS) --quiet --build=${build_alias} --host=${target_alias} \
 	  --target=${target_alias} $${srcdiroption} $(EXTRA_CONFIGARGS_LIBJAVA) \
 	  || exit 1
 @endif target-libjava
@@ -37402,7 +37471,7 @@ configure-target-zlib:
 	libsrcdir="$$s/zlib"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  $(TARGET_CONFIGARGS) --quiet --build=${build_alias} --host=${target_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif target-zlib
@@ -37859,7 +37928,7 @@ configure-target-boehm-gc:
 	libsrcdir="$$s/boehm-gc"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  $(TARGET_CONFIGARGS) --quiet --build=${build_alias} --host=${target_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif target-boehm-gc
@@ -38316,7 +38385,7 @@ configure-target-rda:
 	libsrcdir="$$s/rda"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  $(TARGET_CONFIGARGS) --quiet --build=${build_alias} --host=${target_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif target-rda
@@ -38773,7 +38842,7 @@ configure-target-libada:
 	libsrcdir="$$s/libada"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  $(TARGET_CONFIGARGS) --quiet --build=${build_alias} --host=${target_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif target-libada
@@ -39229,7 +39298,7 @@ configure-target-libgomp:
 	libsrcdir="$$s/libgomp"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  $(TARGET_CONFIGARGS) --quiet --build=${build_alias} --host=${target_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif target-libgomp
@@ -40213,7 +40282,7 @@ configure-target-libitm:
 	libsrcdir="$$s/libitm"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
-	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  $(TARGET_CONFIGARGS) --quiet --build=${build_alias} --host=${target_alias} \
 	  --target=${target_alias} $${srcdiroption}  \
 	  || exit 1
 @endif target-libitm
@@ -42757,8 +42826,8 @@ configure-target-libitm: maybe-all-gcc
 # prebootstrap dependencies, prebootstrap modules are gathered in
 # a hash table.
 all-build-bison: maybe-all-build-texinfo
+all-build-bison: maybe-all-build-intl
 all-build-flex: maybe-all-build-texinfo
-all-build-flex: maybe-all-build-bison
 all-build-flex: maybe-all-build-m4
 all-build-libiberty: maybe-all-build-texinfo
 all-build-m4: maybe-all-build-texinfo
@@ -43148,6 +43217,22 @@ configure-stage3-binutils: maybe-configure-stage3-intl
 configure-stage4-binutils: maybe-configure-stage4-intl
 configure-stageprofile-binutils: maybe-configure-stageprofile-intl
 configure-stagefeedback-binutils: maybe-configure-stagefeedback-intl
+configure-binutils: maybe-all-build-flex
+
+configure-stage1-binutils: maybe-all-build-flex
+configure-stage2-binutils: maybe-all-build-flex
+configure-stage3-binutils: maybe-all-build-flex
+configure-stage4-binutils: maybe-all-build-flex
+configure-stageprofile-binutils: maybe-all-build-flex
+configure-stagefeedback-binutils: maybe-all-build-flex
+configure-binutils: maybe-all-build-flex
+
+configure-stage1-binutils: maybe-all-build-flex
+configure-stage2-binutils: maybe-all-build-flex
+configure-stage3-binutils: maybe-all-build-flex
+configure-stage4-binutils: maybe-all-build-flex
+configure-stageprofile-binutils: maybe-all-build-flex
+configure-stagefeedback-binutils: maybe-all-build-flex
 all-binutils: maybe-all-libiberty
 
 all-stage1-binutils: maybe-all-stage1-libiberty
@@ -43208,6 +43293,22 @@ configure-stage3-gas: maybe-configure-stage3-intl
 configure-stage4-gas: maybe-configure-stage4-intl
 configure-stageprofile-gas: maybe-configure-stageprofile-intl
 configure-stagefeedback-gas: maybe-configure-stagefeedback-intl
+configure-gas: maybe-all-build-flex
+
+configure-stage1-gas: maybe-all-build-flex
+configure-stage2-gas: maybe-all-build-flex
+configure-stage3-gas: maybe-all-build-flex
+configure-stage4-gas: maybe-all-build-flex
+configure-stageprofile-gas: maybe-all-build-flex
+configure-stagefeedback-gas: maybe-all-build-flex
+configure-gas: maybe-all-build-flex
+
+configure-stage1-gas: maybe-all-build-flex
+configure-stage2-gas: maybe-all-build-flex
+configure-stage3-gas: maybe-all-build-flex
+configure-stage4-gas: maybe-all-build-flex
+configure-stageprofile-gas: maybe-all-build-flex
+configure-stagefeedback-gas: maybe-all-build-flex
 all-gas: maybe-all-libiberty
 
 all-stage1-gas: maybe-all-stage1-libiberty

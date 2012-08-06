@@ -121,7 +121,7 @@
   emit_insn (gen_atomic_fetch_<fetchop_name>_bare<mode> (operands[0],
                                                          operands[1],
                                                          operands[2]));
-  tilegx_post_atomic_barrier (model);
+  tilegx_pre_atomic_barrier (model);
   DONE;
 })
 
@@ -160,6 +160,6 @@
   emit_insn (gen_atomic_fetch_add_bare<mode> (operands[0],
                                               operands[1],
                                               operands[2]));
-  tilegx_post_atomic_barrier (model);
+  tilegx_pre_atomic_barrier (model);
   DONE;
 })

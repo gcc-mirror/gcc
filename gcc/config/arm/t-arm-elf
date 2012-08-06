@@ -49,16 +49,16 @@ MULTILIB_EXCEPTIONS    += *mthumb/*mfloat-abi=hard*
 # MULTILIB_DIRNAMES   += ep9312
 # MULTILIB_EXCEPTIONS += *mthumb/*mcpu=ep9312*
 # 	
-# MULTILIB_OPTIONS     += mlittle-endian/mbig-endian
-# MULTILIB_DIRNAMES    += le be
-# MULTILIB_MATCHES     += mbig-endian=mbe mlittle-endian=mle
-# 
-# MULTILIB_OPTIONS    += mfloat-abi=hard/mfloat-abi=soft
-# MULTILIB_DIRNAMES   += fpu soft
-# MULTILIB_EXCEPTIONS += *mthumb/*mfloat-abi=hard*
-# 
-# MULTILIB_OPTIONS    += mno-thumb-interwork/mthumb-interwork
-# MULTILIB_DIRNAMES   += normal interwork
+MULTILIB_OPTIONS     += mlittle-endian/mbig-endian
+MULTILIB_DIRNAMES    += le be
+MULTILIB_MATCHES     += mbig-endian=mbe mlittle-endian=mle
+ 
+MULTILIB_OPTIONS    += mfloat-abi=hard/mfloat-abi=soft
+MULTILIB_DIRNAMES   += fpu soft
+MULTILIB_EXCEPTIONS += *mthumb/*mfloat-abi=hard*
+
+MULTILIB_OPTIONS    += mno-thumb-interwork/mthumb-interwork
+MULTILIB_DIRNAMES   += normal interwork
 # 
 # MULTILIB_OPTIONS    += fno-leading-underscore/fleading-underscore
 # MULTILIB_DIRNAMES   += elf under
@@ -89,3 +89,19 @@ MULTILIB_EXCEPTIONS    += *mthumb/*mfloat-abi=hard*
 # MULTILIB_MATCHES    += mcpu?arm7=mcpu?arm600
 # MULTILIB_MATCHES    += mcpu?arm7=mcpu?arm610
 # MULTILIB_MATCHES    += mcpu?arm7=mcpu?arm620
+
+MULTILIB_OPTIONS      += march=armv5t
+MULTILIB_DIRNAMES     += v5
+MULTILIB_EXCEPTIONS   += *mhard-float/*march?armv5t*
+MULTILIB_MATCHES      += march?armv5t=march?armv5
+MULTILIB_MATCHES      += march?armv5t=march?armv5te
+MULTILIB_MATCHES      += march?armv5t=march?armv6j
+MULTILIB_MATCHES      += march?armv5t=march?iwmmxt
+MULTILIB_MATCHES      += march?armv5t=mcpu?arm10tdmi
+MULTILIB_MATCHES      += march?armv5t=mcpu?arm1020t
+MULTILIB_MATCHES      += march?armv5t=mcpu?arm926ejs
+MULTILIB_MATCHES      += march?armv5t=mcpu?arm1026ejs
+MULTILIB_MATCHES      += march?armv5t=mcpu?xscale
+MULTILIB_MATCHES      += march?armv5t=mcpu?iwmmxt
+MULTILIB_MATCHES      += march?armv5t=mcpu?arm1136js
+MULTILIB_MATCHES      += march?armv5t=mcpu?arm1136jfs

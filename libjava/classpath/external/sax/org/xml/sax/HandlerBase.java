@@ -1,7 +1,7 @@
 // SAX default handler base class.
 // http://www.saxproject.org
 // No warranty; no copyright -- use this as you will.
-// $Id: HandlerBase.java,v 1.1 2004/12/23 22:38:42 mark Exp $
+// $Id: HandlerBase.java,v 1.10 2012/04/18 17:29:03 nickc Exp $
 
 package org.xml.sax;
 

@@ -2,7 +2,7 @@
 /* { dg-do compile } */
 /* { dg-options "-Os -fasynchronous-unwind-tables" } */
 /* { dg-options "-Os -mpreferred-stack-boundary=2 -fasynchronous-unwind-tables" { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
-/* { dg-options "-fno-omit-frame-pointer" { target { avr-*-* } } } */
+/* { dg-options "-fno-omit-frame-pointer" { target { avr-*-* xstormy16-*-* } } } */
 
 void foo (const char *, ...) __attribute__ ((noreturn));
 int bar (const char *, ...);

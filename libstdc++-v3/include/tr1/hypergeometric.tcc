@@ -82,8 +82,8 @@ namespace tr1
 
       _Tp __term = _Tp(1);
       _Tp __Fac = _Tp(1);
-      const unsigned int __max_iter = 100000;
-      unsigned int __i;
+      const unsigned long int __max_iter = 100000L;
+      unsigned long int __i;
       for (__i = 0; __i < __max_iter; ++__i)
         {
           __term *= (__a + _Tp(__i)) * __x

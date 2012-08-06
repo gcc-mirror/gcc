@@ -1411,7 +1411,7 @@ Disable partioning and streaming
 
 ; The initial value of -1 comes from Z_DEFAULT_COMPRESSION in zlib.h.
 flto-compression-level=
-Common Joined RejectNegative UInteger Var(flag_lto_compression_level) Init(-1)
+Common Joined RejectNegative UInteger Var(flag_lto_compression_level) Init(0)
 -flto-compression-level=<number>	Use zlib compression level <number> for IL
 
 flto-report

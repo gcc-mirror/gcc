@@ -517,7 +517,9 @@ proc check_profiling_available { test_what } {
 	     || [istarget cris-*-*]
 	     || [istarget crisv32-*-*]
 	     || [istarget fido-*-elf]
+	     || [istarget frv-*-elf]
 	     || [istarget h8300-*-*]
+	     || [istarget iq2000*-*-*]
 	     || [istarget lm32-*-*]
 	     || [istarget m32c-*-elf]
 	     || [istarget m68k-*-elf]
@@ -530,10 +532,14 @@ proc check_profiling_available { test_what } {
 	     || [istarget picochip-*-*]
 	     || [istarget powerpc-*-eabi*]
 	     || [istarget powerpc-*-elf]
-	     || [istarget rx-*-*]	
+	     || [istarget rx-*-*]
+	     || [istarget sh*-*-*]
 	     || [istarget tic6x-*-elf]
+	     || [istarget v850*-*-*]
 	     || [istarget xstormy16-*]
 	     || [istarget xtensa*-*-elf]
+	     || [istarget *-*-cygwin]
+	     || [istarget *-*-netware*]
 	     || [istarget *-*-rtems*]
 	     || [istarget *-*-vxworks*] } {
 	    set profiling_available_saved 0
@@ -649,6 +655,9 @@ proc check_effective_target_tls_emulated {} {
 # Return 1 if TLS executables can run correctly, 0 otherwise.
 
 proc check_effective_target_tls_runtime {} {
+    if { [istarget sh*-*-*] || [istarget mn10300-*-*] } {
+	return 0
+    }
     return [check_runtime tls_runtime {
 	__thread int thr = 0;
 	int main (void) { return thr; }
@@ -780,6 +789,13 @@ proc check_effective_target_freorder {} {
 # out of scope for this test.
 
 proc check_effective_target_fpic { } {
+
+    # FRV backend supports PIC but the ELF target
+    #  does not build the required multilibs.
+    if { [istarget frv-*-elf] } {
+	return 0
+    }
+
     # Note that M68K has a multilib that supports -fpic but not
     # -fPIC, so we need to check both.  We test with a program that
     # requires GOT references.
@@ -3947,6 +3963,10 @@ proc check_effective_target_dummy_wcsftime {} {
 # supposed on this target.
 
 proc check_effective_target_init_priority {} {
+    # FRV linker maps do not support C init priorities.
+    if [istarget frv-*-*] {
+        return 0
+    }
     return [check_no_compiler_messages init_priority assembly "
 	void f() __attribute__((constructor (1000)));
 	void f() \{\}
@@ -4170,6 +4190,15 @@ proc add_options_for_ieee { flags } {
     }
     if { [istarget rx-*-*] } {
        return "$flags -mnofpu"
+    }
+    if { [istarget powerpc-*-eabispe] } {
+	return "$flags -msoft-float"
+    }
+    if { [istarget mn10300-*-*] || [istarget am3*-*-*] } {
+	# FIXME: This is a hack to avoid spurious warning messages
+	# when compiling the c-c++common/torture/complex-sign-* tests
+	# with LTO enabled...
+	return "$flags -Wno-attributes"
     }
     return $flags
 }

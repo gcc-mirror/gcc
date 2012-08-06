@@ -6,34 +6,213 @@
 
 2012-06-22  Tobias Burnus  <burnus@net-b.de>
 
-	Backport from mainline
-	2012-06-17  Tobias Burnus  <burnus@net-b.de>
+	PR fortran/53597
+	* decl.c (match_attr_spec): Only mark module variables
+	as SAVE_IMPLICIT for Fortran 2008 and later.
 
-	PR fortran/53691
-	PR fortran/53685
-	* check.c (gfc_calculate_transfer_sizes): Return if
-	SIZE= is not constant or source-size cannot be determined.
-
-2012-06-14  Tobias Burnus  <burnus@net-b.de>
-
-	Backport from mainline
-	2012-06-04  Tobias Burnus  <burnus@net-b.de>
+2012-06-05  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/50619
 	* resolve.c (build_default_init_expr): Don't initialize
 	ASSOCIATE names.
 
-2012-06-14  Tobias Burnus  <burnus@net-b.de>
-
-	PR fortran/53597
-	* decl.c (match_attr_spec): Only mark module variables
-	as SAVE_IMPLICIT for Fortran 2008 and later.
-
-2012-06-14  Release Manager
-
-	* GCC 4.7.1 released.
-
 2012-06-01  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/53521
+	* trans.c (gfc_deallocate_scalar_with_status): Properly
+	handle the case size == 0.
+
+2012-05-23  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/53389
+	* trans-array.c (gfc_add_loop_ss_code): Don't evaluate
+	expression, if ss->is_alloc_lhs is set.
+
+2012-05-02  Tobias Burnus  <burnus@net-b.de>
+
+	Backport from mainline
+	2012-04-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52864
+	* expr.c (gfc_check_vardef_context): Fix assignment check for
+	pointer components.
+
+2012-03-10  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52469
+	* trans-types.c (gfc_get_function_type): Handle backend_decl
+	of a procedure pointer.
+
+2012-03-06  Tobias Burnus  <burnus@net-b.de>
+
+	Backport from mainline
+	2012-03-02  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52452
+	* resolve.c (resolve_intrinsic): Don't search for a
+	function if we know that it is a subroutine.
+
+2012-03-01  Release Manager
+
+	* GCC 4.6.3 released.
+
+2012-02-29  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/52386
+	* trans-expr.c (fcncall_realloc_result): Dereference the
+	descriptor if needed.
+
+2012-02-23  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52335
+	* io.c (gfc_match_open): Remove bogus F2003 DELIM= check.
+
+2012-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2011-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/51517
+	* trans-decl.c (gfc_get_symbol_decl): Don't set DECL_INITAL on span.
+	(gfc_trans_deferred_vars): Instead add its runtime initialization
+	here.
+
+2012-02-08  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52151
+	* trans-expr.c (fcncall_realloc_result): Set also the stride.
+
+2012-02-03  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52093
+	* simplify.c (gfc_simplify_size): Handle INTRINSIC_PARENTHESES.
+
+2012-02-03  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/52012
+	* trans-expr.c (fcncall_realloc_result): Correct calculation of
+	result offset. If variable shape is correct, retain the bounds,
+	whatever they are.
+
+2012-01-28  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/52022
+	* trans-expr.c (gfc_conv_procedure_call): Fix passing
+	of functions, which return allocatables.
+
+2012-01-25  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51966
+	* resolve.c (resolve_structure_cons): Only create an
+	array constructors for nonscalars.
+
+2012-01-24  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51948
+	* check.c (variable_check): Fix checking for
+	result variables and deeply nested BLOCKs.
+
+2012-01-21  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51913
+	* interface.c (compare_parameter): Fix CLASS comparison.
+
+2012-01-19  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51904
+	*expr.c (gfc_build_intrinsic_call): Also set the symtree.
+
+2012-01-14  Tobias Burnus  <burnus@net-b.de>
+
+	Backported from mainline
+	2012-01-14  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51800
+	* resolve.c (build_default_init_expr): Also initialize
+	nonconstant-length strings with -finit-character=<n>.
+
+2012-01-01  Thomas König  <tkoenig@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/51502
+	* expr.c (gfc_check_vardef_context):  When determining
+	implicit pure status, also check for variable definition
+	context.  Walk up namespaces until a procedure is
+	found to reset the implict pure attribute.
+	* resolve.c (gfc_implicit_pure):  Walk up namespaces
+	until a procedure is found.
+
+2011-12-22  Toon Moene  <toon@moene.org>
+
+	PR fortran/51310
+	* resolve.c (build_default_init_expr): Allow non-allocatable,
+	non-compile-time-constant-shape arrays to have a default
+	initializer.
+	* invoke.texi: Delete the restriction on automatic arrays not
+	being initialized by -finit-<type>=<constant>.
+
+2011-12-15  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51550
+	PR fortran/47545
+	PR fortran/49050
+	PR fortran/51075
+	* resolve.c (resolve_fl_derived0): Print not-implemented error
+	for deferred-length character components.
+
+2011-12-11  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/50923
+	* trans-decl.c (generate_local_decl): Set TREE_NO_WARNING only
+	if the front end has printed a warning.
+	(gfc_generate_function_code): Fix unset-result warning.
+
+2011-12-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/51338
+	Backport from trunk
+	* dependency.c (are_identical_variables):  Handle case where
+	end fields of substring references are NULL.
+
+2011-12-08  Toon Moene  <toon@moene.org>
+
+	PR fortran/51310
+	* invoke.texi: Itemize the cases for which
+	-finit-<type>=<constant> doesn't work.
+
+2011-12-08  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51448
+	* fortran/trans-array.c (get_std_lbound): Fix handling of
+	conversion functions.
+
+2011-12-06  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51435
+	* expr.c (gfc_has_default_initializer): Fix handling of
+	DT with initialized pointer components.
+
+2011-12-03  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/50684
+	* check.c (variable_check): Fix intent(in) check.
+
+2011-11-25  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/50408
+	* trans-decl.c (gfc_get_module_backend_decl): Also copy
+	ts.u.derived from the gsym if the ts.type is BT_CLASS.
+	(gfc_get_extern_function_decl): Copy also the backend_decl
+	for the symbol's ts.u.{derived,cl} from the gsym.
+	* trans-types.c (gfc_copy_dt_decls_ifequal): Directly
+	return if "from" and "to" are the same.
+
+2011-11-24  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/51218
+	* gfortran.dg/implicit_pure_1.f90: New.
+
+2011-10-26  Release Manager
 
 	PR fortran/53521
 	* trans.c (gfc_deallocate_scalar_with_status): Properly

@@ -8,89 +8,89 @@ f1 (void)
   #pragma omp for
   for (i = 0; i < 3; i++)
     {
-      #pragma omp for		/* { dg-error "may not be closely nested" } */
+      #pragma omp for		/* { dg-warning "may not be closely nested" } */
       for (j = 0; j < 3; j++)
 	;
-      #pragma omp sections	/* { dg-error "may not be closely nested" } */
+      #pragma omp sections	/* { dg-warning "may not be closely nested" } */
       {
 	;
       #pragma omp section
 	;
       }
-      #pragma omp single	/* { dg-error "may not be closely nested" } */
+      #pragma omp single	/* { dg-warning "may not be closely nested" } */
 	;
-    #pragma omp master		/* { dg-error "may not be closely nested" } */
+    #pragma omp master		/* { dg-warning "may not be closely nested" } */
       ;
-      #pragma omp barrier	/* { dg-error "may not be closely nested" } */
+      #pragma omp barrier	/* { dg-warning "may not be closely nested" } */
     }
   #pragma omp sections
   {
-    #pragma omp for		/* { dg-error "may not be closely nested" } */
+    #pragma omp for		/* { dg-warning "may not be closely nested" } */
     for (j = 0; j < 3; j++)
       ;
-    #pragma omp sections	/* { dg-error "may not be closely nested" } */
+    #pragma omp sections	/* { dg-warning "may not be closely nested" } */
     {
       ;
     #pragma omp section
       ;
     }
-    #pragma omp single		/* { dg-error "may not be closely nested" } */
+    #pragma omp single		/* { dg-warning "may not be closely nested" } */
       ;
-    #pragma omp master		/* { dg-error "may not be closely nested" } */
+    #pragma omp master		/* { dg-warning "may not be closely nested" } */
       ;
     #pragma omp section
       ;
   }
   #pragma omp single
   {
-    #pragma omp for		/* { dg-error "may not be closely nested" } */
+    #pragma omp for		/* { dg-warning "may not be closely nested" } */
     for (j = 0; j < 3; j++)
       ;
-    #pragma omp sections	/* { dg-error "may not be closely nested" } */
+    #pragma omp sections	/* { dg-warning "may not be closely nested" } */
     {
       ;
     #pragma omp section
       ;
     }
-    #pragma omp single		/* { dg-error "may not be closely nested" } */
+    #pragma omp single		/* { dg-warning "may not be closely nested" } */
       ;
-    #pragma omp master		/* { dg-error "may not be closely nested" } */
+    #pragma omp master		/* { dg-warning "may not be closely nested" } */
       ;
-    #pragma omp barrier		/* { dg-error "may not be closely nested" } */
+    #pragma omp barrier		/* { dg-warning "may not be closely nested" } */
   }
   #pragma omp master
   {
-    #pragma omp for		/* { dg-error "may not be closely nested" } */
+    #pragma omp for		/* { dg-warning "may not be closely nested" } */
     for (j = 0; j < 3; j++)
       ;
-    #pragma omp sections	/* { dg-error "may not be closely nested" } */
+    #pragma omp sections	/* { dg-warning "may not be closely nested" } */
     {
       ;
     #pragma omp section
       ;
     }
-    #pragma omp single		/* { dg-error "may not be closely nested" } */
+    #pragma omp single		/* { dg-warning "may not be closely nested" } */
       ;
     #pragma omp master
       ;
-    #pragma omp barrier		/* { dg-error "may not be closely nested" } */
+    #pragma omp barrier		/* { dg-warning "may not be closely nested" } */
   }
   #pragma omp task
   {
-    #pragma omp for		/* { dg-error "may not be closely nested" } */
+    #pragma omp for		/* { dg-warning "may not be closely nested" } */
     for (j = 0; j < 3; j++)
       ;
-    #pragma omp sections	/* { dg-error "may not be closely nested" } */
+    #pragma omp sections	/* { dg-warning "may not be closely nested" } */
     {
       ;
     #pragma omp section
       ;
     }
-    #pragma omp single		/* { dg-error "may not be closely nested" } */
+    #pragma omp single		/* { dg-warning "may not be closely nested" } */
       ;
-    #pragma omp master		/* { dg-error "may not be closely nested" } */
+    #pragma omp master		/* { dg-warning "may not be closely nested" } */
       ;
-    #pragma omp barrier		/* { dg-error "may not be closely nested" } */
+    #pragma omp barrier		/* { dg-warning "may not be closely nested" } */
   }
   #pragma omp parallel
   {
@@ -117,20 +117,20 @@ f2 (void)
   int i, j;
   #pragma omp ordered
   {
-    #pragma omp for		/* { dg-error "may not be closely nested" } */
+    #pragma omp for		/* { dg-warning "may not be closely nested" } */
     for (j = 0; j < 3; j++)
       ;
-    #pragma omp sections	/* { dg-error "may not be closely nested" } */
+    #pragma omp sections	/* { dg-warning "may not be closely nested" } */
     {
       ;
     #pragma omp section
       ;
     }
-    #pragma omp single		/* { dg-error "may not be closely nested" } */
+    #pragma omp single		/* { dg-warning "may not be closely nested" } */
       ;
     #pragma omp master
       ;
-    #pragma omp barrier		/* { dg-error "may not be closely nested" } */
+    #pragma omp barrier		/* { dg-warning "may not be closely nested" } */
   }
 }
 
@@ -139,7 +139,7 @@ f3 (void)
 {
   #pragma omp critical
   {
-    #pragma omp ordered		/* { dg-error "may not be closely nested" } */
+    #pragma omp ordered		/* { dg-warning "may not be closely nested" } */
       ;
   }
 }
@@ -149,7 +149,7 @@ f4 (void)
 {
   #pragma omp task
   {
-    #pragma omp ordered		/* { dg-error "may not be closely nested" } */
+    #pragma omp ordered		/* { dg-warning "may not be closely nested" } */
       ;
   }
 }
@@ -161,7 +161,7 @@ f5 (void)
   #pragma omp for
   for (i = 0; i < 10; i++)
     {
-      #pragma omp ordered		/* { dg-error "must be closely nested" } */
+      #pragma omp ordered		/* { dg-warning "must be closely nested" } */
 	;
     }
   #pragma omp for ordered
@@ -190,9 +190,9 @@ f7 (void)
     #pragma omp critical
       ;
   #pragma omp critical (bar)
-    #pragma omp critical (bar)		/* { dg-error "may not be nested" } */
+    #pragma omp critical (bar)		/* { dg-warning "may not be nested" } */
       ;
   #pragma omp critical
-    #pragma omp critical		/* { dg-error "may not be nested" } */
+    #pragma omp critical		/* { dg-warning "may not be nested" } */
       ;
 }

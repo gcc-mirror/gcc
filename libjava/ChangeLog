@@ -1,8 +1,113 @@
-2012-06-14  Release Manager
+2011-06-27  Release Manager
 
-	* GCC 4.7.1 released.
+	* GCC 4.3.6 released.
 
-2012-05-21  Benjamin Kosnik  <bkoz@redhat.com>
+2010-05-22  Release Manager
+
+	* GCC 4.3.5 released.
+
+2010-05-06  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR other/43620
+	* configure.ac (AM_INIT_AUTOMAKE): Add no-dist.
+	* Makefile.in: Regenerate.
+	* gcj/Makefile.in: Regenerate.
+	* include/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
+2010-04-09  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	Backport:
+	2009-12-09  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* include/pa-signal.h: Do not include ucontext.h.
+	(SIGNAL_HANDLER): Add __attribute__ ((unused)) to signal handler
+	arguments.
+	(MAKE_THROW_FRAME): Do not adjust program counter.
+	* include/hppa-signal.h: Do not include sys/types.h, sys/syscall.h and
+	unistd.h.
+	(MAKE_THROW_FRAME): Do not adjust program counter.
+	(HANDLE_FPE): Define.
+	(INIT_SEGV, INIT_FPE): Revise indentation.
+
+2009-08-04  Release Manager
+
+	* GCC 4.3.4 released.
+
+2009-06-25  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
+	2008-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgcj/38396
+	* configure.ac (use_libgcj_bc): Set to no if not enable_shared.
+	(LIBGCJ_SPEC): Use -lgcj instead of -lgcj_bc even for -static
+	or -static-libgcj.
+	* Makefile.am (ecjx_SOURCES): Add ecjx.cc.
+	(ecjx_LDADD): Don't add libgcj.la when
+	NATIVE && USE_LIBBGCJ_BC.
+	* ecjx.cc: New file.
+	* Makefile.in: Regenerated.
+	* configure: Regenerated.
+
+	2009-01-11  Matthias Klose  <doko@ubuntu.com>
+
+	* Makefile.am (ecjx_LDADD): Add $(extra_ldflags).
+	* Makefile.in: Regenerate.
+
+2009-03-13  Andrew Haley  <aph@redhat.com>
+
+	* java/lang/natClassLoader.cc (_Jv_RegisterClassHookDefault): Clear
+	INTERPRETED access modifier.
+
+2009-01-24  Release Manager
+
+	* GCC 4.3.3 released.
+
+2009-01-12  Andrew Haley  <aph@redhat.com>
+
+	PR libgcj/38396:
+	* libgcj_bc.c: Sort lines.
+	*(_Jv_LookupInterfaceMethod, _Jv_MonitorExit,
+	_Jv_RegisterResource, _Jv_JNI_PopSystemFrame): Add.
+
+	* sun/misc/natUnsafe.cc (spinlock contructor): Call sched_yield().
+
+2008-08-27  Release Manager
+
+	* GCC 4.3.2 released.
+
+2008-08-22  Andrew Haley  <aph@redhat.com>
+
+	PR libgcj/8995:
+	
+	* interpret-run.cc (REWRITE_INSN): Null this macro.
+
+	* include/jvm.h (class _Jv_Linker): Declare resolve_mutex, init.
+	(read_cpool_entry, write_cpool_entry): New functions.
+	* link.cc (_Jv_Linker::resolve_mutex): new.
+	(_Jv_Linker::init): New function.
+	(_Jv_Linker::resolve_pool_entry): Use {read,write}_cpool_entry
+	to ensure atomic access to constant pool entries.
+
+2008-08-05  Matthias Klose  <doko@ubuntu.com>
+
+	PR libgcj/31890
+	* gcj/javaprims.h: Regenerate class list.
+	* HACKING: Update instructions how to build gcj/javaprims.h.
+
+2008-07-02  Matthias Klose  <doko@ubuntu.com>
+
+	* configure.ac: Substitute gcjsubdir.
+	* Makefile.am (db_pathtail): Use it.
+	* Makefile.in include/Makefile.in, testsuite/Makefile.in,
+	gcj/Makefile.in, configure: Regenerate.
+
+2008-06-06  Release Manager
+
+	* GCC 4.3.1 released.
+
+2008-05-20  David Daney  <ddaney@avtrex.com>
 
 	PR libstdc++/52700
 	* configure.ac: Allow gnu, gnu-versioned-namespace for

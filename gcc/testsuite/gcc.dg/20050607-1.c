@@ -3,6 +3,7 @@
 /* { dg-options "-Wpadded" }
 /* The struct internally constructed for the nested function should
    not result in a warning from -Wpadded. */
+#ifndef NO_TRAMPOLINES
 extern int baz(int (*) (int));
 int foo(void)
 {
@@ -12,3 +13,6 @@ int foo(void)
   }
   return baz(bar);
 }
+#else
+int x;
+#endif

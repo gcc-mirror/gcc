@@ -7,6 +7,7 @@
 
 /* { dg-do run } */
 /* { dg-options "-ftrapv" } */
+/* { dg-skip-if "no HI mode trapping arith funcs" { xstormy16-*-* } { "*" } { "" } } */
 
 __attribute__((noinline)) int
 mulv(int a, int b)

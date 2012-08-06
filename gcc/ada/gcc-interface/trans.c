@@ -5226,12 +5226,7 @@ gnat_to_gnu (Node_Id gnat_node)
 
 	/* Convert vector inputs to their representative array type, to fit
 	   what the code below expects.  */
-	if (VECTOR_TYPE_P (TREE_TYPE (gnu_array_object)))
-	  {
-	    if (present_in_lhs_or_actual_p (gnat_node))
-	      gnat_mark_addressable (gnu_array_object);
-	    gnu_array_object = maybe_vector_array (gnu_array_object);
-	  }
+	gnu_array_object = maybe_vector_array (gnu_array_object);
 
 	gnu_array_object = maybe_unconstrained_array (gnu_array_object);
 

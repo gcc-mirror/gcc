@@ -65,3 +65,7 @@ Allow gcc to generate LIW instructions
 msetlb
 Target Report Mask(ALLOW_SETLB)
 Allow gcc to generate the SETLB and Lcc instructions
+
+mmem-funcs
+Target Report Mask(MEM_FUNCS)
+Allow gcc to generate calls to memset/memcpy

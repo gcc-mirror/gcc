@@ -3,6 +3,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target trampolines } */
 
+#ifndef NO_TRAMPOLINES
 extern void abort (void);
 
 struct A { char *a, *b, *c, *d; };
@@ -45,3 +46,6 @@ foo (void)
       f->c = f->d;
   }
 }
+#else
+int x;
+#endif

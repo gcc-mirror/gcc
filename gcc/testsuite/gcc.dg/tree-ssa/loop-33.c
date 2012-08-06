@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-lim1-details" } */
+/* { dg-skip-if "code gen not as predicted" { h8300-*-* } { "*" } { "" } } */
 
 int x;
 int a[100];

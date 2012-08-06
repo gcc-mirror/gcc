@@ -2,6 +2,7 @@
 /* Origin: Joseph Myers <joseph@codesourcery.com> */
 /* { dg-do run } */
 /* { dg-options "" } */
+/* { dg-skip-if "double == 32bits" { "rx-*-*" } "*" { "-m64bit-doubles" } } */
 
 #include <float.h>
 #include "fp-int-convert.h"

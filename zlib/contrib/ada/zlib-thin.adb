@@ -6,7 +6,7 @@
 --  Open source license information is in the zlib.ads file.  --
 ----------------------------------------------------------------
 
---  $Id: zlib-thin.adb,v 1.8 2003/12/14 18:27:31 vagul Exp $
+--  $Id: zlib-thin.adb,v 1.11 2012/04/18 13:52:44 nickc Exp $
 
 package body ZLib.Thin is
 

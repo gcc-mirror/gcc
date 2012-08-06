@@ -168,8 +168,6 @@ static unsigned int iq2000_function_arg_boundary (enum machine_mode,
 static void iq2000_va_start	      (tree, rtx);
 static bool iq2000_legitimate_address_p (enum machine_mode, rtx, bool);
 static bool iq2000_can_eliminate      (const int, const int);
-static void iq2000_asm_trampoline_template (FILE *);
-static void iq2000_trampoline_init    (rtx, tree, rtx);
 static rtx iq2000_function_value      (const_tree, const_tree, bool);
 static rtx iq2000_libcall_value       (enum machine_mode, const_rtx);
 static void iq2000_print_operand      (FILE *, rtx, int);
@@ -243,11 +241,6 @@ static bool iq2000_print_operand_punct_valid_p (unsigned char code);
 
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE            iq2000_can_eliminate
-
-#undef  TARGET_ASM_TRAMPOLINE_TEMPLATE
-#define TARGET_ASM_TRAMPOLINE_TEMPLATE	iq2000_asm_trampoline_template
-#undef  TARGET_TRAMPOLINE_INIT
-#define TARGET_TRAMPOLINE_INIT		iq2000_trampoline_init
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1331,7 +1324,7 @@ iq2000_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
 		      && int_bit_position (field) == bitpos
 		      && TREE_CODE (TREE_TYPE (field)) == REAL_TYPE
 		      && TYPE_PRECISION (TREE_TYPE (field)) == BITS_PER_WORD)
-		    reg = gen_rtx_REG (DFmode, regno++);
+		    reg = gen_rtx_REG (SFmode, regno++);
 		  else
 		    reg = gen_rtx_REG (word_mode, regno);
 
@@ -2120,8 +2113,7 @@ iq2000_expand_eh_return (rtx address)
   HOST_WIDE_INT gp_offset = cfun->machine->gp_sp_offset;
   rtx scratch;
 
-  scratch = plus_constant (stack_pointer_rtx, gp_offset);
-  emit_move_insn (gen_rtx_MEM (GET_MODE (address), scratch), address);
+  emit_move_insn (EH_RETURN_HANDLER_RTX, address);
 }
 
 /* Return nonzero if this function is known to have a null epilogue.
@@ -3422,49 +3414,6 @@ iq2000_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED,
       return false;
     }
   return true;
-}
-
-/* Worker for TARGET_ASM_TRAMPOLINE_TEMPLATE.  */
-
-static void
-iq2000_asm_trampoline_template (FILE *f)
-{
-  fprintf (f, "\t.word\t0x03e00821\t\t# move   $1,$31\n");
-  fprintf (f, "\t.word\t0x04110001\t\t# bgezal $0,.+8\n");
-  fprintf (f, "\t.word\t0x00000000\t\t# nop\n");
-  if (Pmode == DImode)
-    {
-      fprintf (f, "\t.word\t0xdfe30014\t\t# ld     $3,20($31)\n");
-      fprintf (f, "\t.word\t0xdfe2001c\t\t# ld     $2,28($31)\n");
-    }
-  else
-    {
-      fprintf (f, "\t.word\t0x8fe30014\t\t# lw     $3,20($31)\n");
-      fprintf (f, "\t.word\t0x8fe20018\t\t# lw     $2,24($31)\n");
-    }
-  fprintf (f, "\t.word\t0x0060c821\t\t# move   $25,$3 (abicalls)\n");
-  fprintf (f, "\t.word\t0x00600008\t\t# jr     $3\n");
-  fprintf (f, "\t.word\t0x0020f821\t\t# move   $31,$1\n");
-  fprintf (f, "\t.word\t0x00000000\t\t# <function address>\n");
-  fprintf (f, "\t.word\t0x00000000\t\t# <static chain value>\n");
-}
-
-/* Worker for TARGET_TRAMPOLINE_INIT.  */
-
-static void
-iq2000_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
-{
-  rtx fnaddr = XEXP (DECL_RTL (fndecl), 0);
-  rtx mem;
-
-  emit_block_move (m_tramp, assemble_trampoline_template (),
-		   GEN_INT (TRAMPOLINE_CODE_SIZE), BLOCK_OP_NORMAL);
-
-  mem = adjust_address (m_tramp, Pmode, TRAMPOLINE_CODE_SIZE);
-  emit_move_insn (mem, fnaddr);
-  mem = adjust_address (m_tramp, Pmode,
-			TRAMPOLINE_CODE_SIZE + GET_MODE_SIZE (Pmode));
-  emit_move_insn (mem, chain_value);
 }
 
 #include "gt-iq2000.h"

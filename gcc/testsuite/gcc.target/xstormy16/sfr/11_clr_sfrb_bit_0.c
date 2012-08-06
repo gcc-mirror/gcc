@@ -1,5 +1,4 @@
 /* { dg-options { -nostartfiles below100.o -Tbelow100.ld -O2 } } */
-/* { dg-final { scan-assembler "clr1 32532,#0" } } */
 
 #define SFR (*((volatile unsigned char*)0x7f14))
 unsigned char *p = (unsigned char *) 0x7f14;
@@ -17,3 +16,6 @@ main (void)
   Do ();
   return (*p == 0xca) ? 0 : 1;
 }
+
+/* { dg-final { scan-file "11_clr_sfrb_bit_0.s" "clr1 32532,#0" } } */
+

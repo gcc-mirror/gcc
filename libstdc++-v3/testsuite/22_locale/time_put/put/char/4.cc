@@ -2,8 +2,7 @@
 
 // 2001-09-17 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-// 2009, 2010
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
 // Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -52,7 +51,7 @@ void test04()
   VERIFY( result4 == "dom" );
 
   oss.str(empty); // "%d/%m/%y"
-  tim_put.put(oss.rdbuf(), oss, '*', &time1, 'x');
+  iterator_type os_it27 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 'x');
   string result27 = oss.str(); // "04/04/71"
   VERIFY( result27 == "04/04/71" );
 
@@ -62,7 +61,7 @@ void test04()
   VERIFY( result28 == "12:00:00" );
 
   oss.str(empty);
-  tim_put.put(oss.rdbuf(), oss, '*', &time1, 'x', 'E');
+  iterator_type os_it37 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 'x', 'E');
   string result37 = oss.str(); // "04/04/71"
   VERIFY( result37 == "04/04/71" );
 

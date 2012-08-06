@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-skip-if "test too big" { avr-*-* m32c-*-* h8300-*-* xstormy16-*-* } { "*" } { "" } } */
 /* { dg-options "-O2 -fdump-tree-vrp1-details" } */
 
 long long

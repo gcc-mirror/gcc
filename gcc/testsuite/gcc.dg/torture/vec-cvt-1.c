@@ -1,4 +1,6 @@
 /* { dg-do run } */
+/* { dg-option "-fno-lto" } */
+/* { dg-skip-if "test too big" { m32c-*-* xstormy16-*-* } { "*" } { "" } } */
 
 #include <stdlib.h>
 

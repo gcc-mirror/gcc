@@ -1,5 +1,4 @@
 /* { dg-options { -nostartfiles below100.o -Tbelow100.ld -O2 } } */
-/* { dg-final { scan-assembler "clr1 32533,#0" } } */
 
 typedef struct
 {
@@ -37,3 +36,6 @@ main (void)
   Do ();
   return (*p == 0xeccb) ? 0 : 1;
 }
+
+/* { dg-final { scan-file "25_clr_sfrw_bitfield_8.s" "clr1 32533,#0" } } */
+

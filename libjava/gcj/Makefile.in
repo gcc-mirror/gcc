@@ -290,7 +290,6 @@ dvidir = @dvidir@
 exec_prefix = @exec_prefix@
 extra_ldflags = @extra_ldflags@
 extra_ldflags_libjava = @extra_ldflags_libjava@
-gcc_suffix = @gcc_suffix@
 gcjsubdir = @gcjsubdir@
 gxx_include_dir = @gxx_include_dir@
 here = @here@
@@ -604,14 +603,13 @@ uninstall-am: uninstall-gcjHEADERS uninstall-toolgcjHEADERS
 	clean-libtool ctags distclean distclean-generic distclean-hdr \
 	distclean-libtool distclean-tags dvi dvi-am html html-am info \
 	info-am install install-am install-data install-data-am \
-	install-dvi install-dvi-am install-exec install-exec-am \
-	install-gcjHEADERS install-html install-html-am install-info \
-	install-info-am install-man install-pdf install-pdf-am \
-	install-ps install-ps-am install-strip install-toolgcjHEADERS \
-	installcheck installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-generic \
-	mostlyclean-libtool pdf pdf-am ps ps-am tags uninstall \
-	uninstall-am uninstall-gcjHEADERS uninstall-toolgcjHEADERS
+	install-exec install-exec-am install-gcjHEADERS install-info \
+	install-info-am install-man install-strip \
+	install-toolgcjHEADERS installcheck installcheck-am \
+	installdirs maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-generic mostlyclean-libtool pdf pdf-am \
+	ps ps-am tags uninstall uninstall-am uninstall-gcjHEADERS \
+	uninstall-info-am uninstall-toolgcjHEADERS
 
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

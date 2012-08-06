@@ -3,6 +3,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target trampolines } */
 
+#ifndef NO_TRAMPOLINES
 struct A { char *a, *b, *c, *d; };
 
 static int
@@ -33,3 +34,6 @@ foo (void)
       f->c = f->d;
   }
 }
+#else
+int x;
+#endif

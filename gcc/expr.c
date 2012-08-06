@@ -1131,6 +1131,7 @@ emit_block_move_hints (rtx x, rtx y, rtx size, enum block_op_methods method,
   switch (method)
     {
     case BLOCK_OP_NORMAL:
+    case BLOCK_OP_BUILTIN:
     case BLOCK_OP_TAILCALL:
       may_use_call = true;
       break;
@@ -1150,6 +1151,11 @@ emit_block_move_hints (rtx x, rtx y, rtx size, enum block_op_methods method,
     default:
       gcc_unreachable ();
     }
+
+#ifdef TARGET_BLOCK_MOVE_MAY_USE_LIBCALL
+  /* Allow the target a chance to override our decision.  */
+  TARGET_BLOCK_MOVE_MAY_USE_LIBCALL (x, y, size, method, & may_use_call);
+#endif
 
   gcc_assert (MEM_P (x) && MEM_P (y));
   align = MIN (MEM_ALIGN (x), MEM_ALIGN (y));

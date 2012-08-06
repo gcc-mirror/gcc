@@ -28,6 +28,7 @@ namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+#ifndef _GLIBCXX_ATOMIC_BUILTINS
 #if ( defined(__mc68020__) || defined(__mc68030__) \
       || defined(__mc68040__) || defined(__mc68060__) ) \
     && !defined(__mcpu32__)
@@ -127,6 +128,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // architecturally guaranteed to be atomic.
     __exchange_and_add(__mem, __val);
   }
+#endif
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

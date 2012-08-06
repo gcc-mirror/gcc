@@ -616,6 +616,8 @@ build_tooldir = $(exec_prefix)/$(target_noncanonical)
 # Directory in which the compiler finds target-independent g++ includes.
 gcc_gxx_include_dir = @gcc_gxx_include_dir@
 gcc_gxx_include_dir_add_sysroot = @gcc_gxx_include_dir_add_sysroot@
+# Directory in which the compiler finds target-independent C includes.
+gcc_c_include_dir = @gcc_c_include_dir@
 # Directory to search for site-specific includes.
 local_includedir = $(local_prefix)/include
 includedir = $(prefix)/include
@@ -3986,7 +3988,7 @@ PREPROCESSOR_DEFINES = \
   -DGPLUSPLUS_BACKWARD_INCLUDE_DIR=\"$(gcc_gxx_include_dir)/backward\" \
   -DLOCAL_INCLUDE_DIR=\"$(local_includedir)\" \
   -DCROSS_INCLUDE_DIR=\"$(CROSS_SYSTEM_HEADER_DIR)\" \
-  -DTOOL_INCLUDE_DIR=\"$(gcc_tooldir)/include\" \
+  -DTOOL_INCLUDE_DIR=\"$(gcc_c_include_dir)\" \
   -DNATIVE_SYSTEM_HEADER_DIR=\"$(NATIVE_SYSTEM_HEADER_DIR)\" \
   -DPREFIX=\"$(prefix)/\" \
   -DSTANDARD_EXEC_PREFIX=\"$(libdir)/gcc/\" \
@@ -5123,6 +5125,60 @@ check-parallel-% : site.exp
 	  done ; \
 	fi ; \
 	$(RUNTEST) --tool $(check_p_tool) $(RUNTESTFLAGS) $$runtestflags)
+
+check-gcc-plumhall: check-gcc-plumhall-07
+
+check-gcc-plumhall-07: testsuite/site.exp
+	-rootme=`${PWD_COMMAND}`; export rootme; \
+	srcdir=`cd ${srcdir}; ${PWD_COMMAND}` ; export srcdir ; \
+	cd testsuite; \
+	EXPECT=${EXPECT} ; export EXPECT ; \
+	if [ -f $${rootme}/../expect/expect ] ; then  \
+	   TCL_LIBRARY=`cd .. ; cd ${srcdir}/../tcl/library ; ${PWD_COMMAND}` ; \
+	   export TCL_LIBRARY ; fi ; \
+	$(RUNTEST) --tool gcc --directory gcc_plumhall.07a $(RUNTESTFLAGS)
+
+check-gcc-plumhall-04: testsuite/site.exp
+	-rootme=`${PWD_COMMAND}`; export rootme; \
+	srcdir=`cd ${srcdir}; ${PWD_COMMAND}` ; export srcdir ; \
+	cd testsuite; \
+	EXPECT=${EXPECT} ; export EXPECT ; \
+	if [ -f $${rootme}/../expect/expect ] ; then  \
+	   TCL_LIBRARY=`cd .. ; cd ${srcdir}/../tcl/library ; ${PWD_COMMAND}` ; \
+	   export TCL_LIBRARY ; fi ; \
+	$(RUNTEST) --tool gcc --directory gcc_plumhall.04a $(RUNTESTFLAGS)
+
+check-gcc-plumhall-03: testsuite/site.exp
+	-rootme=`${PWD_COMMAND}`; export rootme; \
+	srcdir=`cd ${srcdir}; ${PWD_COMMAND}` ; export srcdir ; \
+	cd testsuite; \
+	EXPECT=${EXPECT} ; export EXPECT ; \
+	if [ -f $${rootme}/../expect/expect ] ; then  \
+	   TCL_LIBRARY=`cd .. ; cd ${srcdir}/../tcl/library ; ${PWD_COMMAND}` ; \
+	   export TCL_LIBRARY ; fi ; \
+	$(RUNTEST) --tool gcc --directory gcc_plumhall.03a $(RUNTESTFLAGS)
+
+check-gcc-plumhall-99: testsuite/site.exp
+	-rootme=`${PWD_COMMAND}`; export rootme; \
+	srcdir=`cd ${srcdir}; ${PWD_COMMAND}` ; export srcdir ; \
+	cd testsuite; \
+	EXPECT=${EXPECT} ; export EXPECT ; \
+	if [ -f $${rootme}/../expect/expect ] ; then  \
+	   TCL_LIBRARY=`cd .. ; cd ${srcdir}/../tcl/library ; ${PWD_COMMAND}` ; \
+	   export TCL_LIBRARY ; fi ; \
+	$(RUNTEST) --tool gcc --directory gcc_plumhall.99b $(RUNTESTFLAGS)
+
+check-g++-plumhall: check-g++-plumhall-99
+
+check-g++-plumhall-99: testsuite/site.exp
+	-rootme=`${PWD_COMMAND}`; export rootme; \
+	srcdir=`cd ${srcdir}; ${PWD_COMMAND}` ; export srcdir ; \
+	cd testsuite; \
+	EXPECT=${EXPECT} ; export EXPECT ; \
+	if [ -f $${rootme}/../expect/expect ] ; then  \
+	   TCL_LIBRARY=`cd .. ; cd ${srcdir}/../tcl/library ; ${PWD_COMMAND}` ; \
+	   export TCL_LIBRARY ; fi ; \
+	$(RUNTEST) --tool g++ --directory g++_plumhall.99 $(RUNTESTFLAGS)
 
 # QMTest targets
 

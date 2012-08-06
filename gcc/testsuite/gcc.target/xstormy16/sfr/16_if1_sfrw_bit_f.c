@@ -1,5 +1,4 @@
 /* { dg-options { -nostartfiles below100.o -Tbelow100.ld -O2 } } */
-/* { dg-final { scan-assembler "mov.w r.,32532" } } */
 
 #define SFRA (*((volatile unsigned short*)0x7f14))
 unsigned short *pA = (unsigned short *) 0x7f14;
@@ -27,3 +26,6 @@ main (void)
   *pB = 0x1234;
   return Do ()[0] == 'F';
 }
+
+/* { dg-final { scan-file "16_if1_sfrw_bit_f.s" "mov.w r.,32532" } } */
+

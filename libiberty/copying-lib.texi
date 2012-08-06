@@ -476,12 +476,7 @@ decision will be guided by the two goals of preserving the free status
 of all derivatives of our free software and of promoting the sharing
 and reuse of software generally.
 
-@iftex
-@heading NO WARRANTY
-@end iftex
-@ifinfo
 @center NO WARRANTY
-@end ifinfo
 
 @item
 BECAUSE THE LIBRARY IS LICENSED FREE OF CHARGE, THERE IS NO

@@ -429,6 +429,9 @@ m32c_option_override (void)
   /* FIXME: The right solution is to properly trace the flags register
      values, but that is too much work for stage 4.  */
   flag_combine_stack_adjustments = 0;
+
+  if (flag_exceptions)
+    flag_omit_frame_pointer = 0;
 }
 
 #undef TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE
@@ -4364,6 +4367,10 @@ m32c_emit_prologue (void)
 
   frame_size =
     m32c_initial_elimination_offset (FB_REGNO, SP_REGNO) - reg_save_size;
+  
+  if (flag_stack_usage_info)
+    current_function_static_stack_size = frame_size;
+  
   if (frame_size == 0
       && !m32c_function_needs_enter ())
     cfun->machine->use_rts = 1;

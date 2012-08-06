@@ -1,5 +1,6 @@
 // { dg-do link }
 // { dg-xfail-if "" { "powerpc-ibm-aix*" } { "*" } { "" } }
+// { dg-xfail-if "" { "iq2000-*-*" } { "*" } { "" } }
 // { dg-require-alias "" }
 // { dg-options "-O2 -fno-common" }
 

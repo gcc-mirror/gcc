@@ -355,8 +355,8 @@ namespace tr1
     __psi_series(const _Tp __x)
     {
       _Tp __sum = -__numeric_constants<_Tp>::__gamma_e() - _Tp(1) / __x;
-      const unsigned int __max_iter = 100000;
-      for (unsigned int __k = 1; __k < __max_iter; ++__k)
+      const unsigned long int __max_iter = 100000L;
+      for (unsigned long int __k = 1; __k < __max_iter; ++__k)
         {
           const _Tp __term = __x / (__k * (__k + __x));
           __sum += __term;

@@ -21,7 +21,7 @@ func f(left, right chan int) {
 func main() {
 	var n = 10000
 	if len(os.Args) > 1 {
-		var err error
+		var err os.Error
 		n, err = strconv.Atoi(os.Args[1])
 		if err != nil {
 			print("bad arg\n")

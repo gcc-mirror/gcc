@@ -1,6 +1,7 @@
 /* PR middle-end/38364 */
 /* { dg-do run } */
 /* { dg-options "-O2 -ftrapv" } */
+/* { dg-skip-if "no HI mode trapping arith funcs" { xstormy16-*-* } { "*" } { "" } } */
 
 extern void abort (void);
 

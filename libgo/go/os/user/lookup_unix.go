@@ -73,14 +73,11 @@ func lookup(uid int, username string, lookupByName bool) (*User, error) {
 	const bufSize = 1024
 	buf := make([]byte, bufSize)
 	if lookupByName {
-		p := syscall.StringBytePtr(username)
-		syscall.Entersyscall()
-		rv := libc_getpwnam_r(p,
+		rv := libc_getpwnam_r(syscall.StringBytePtr(username),
 			&pwd,
 			&buf[0],
 			bufSize,
 			&result)
-		syscall.Exitsyscall()
 		if rv != 0 {
 			return nil, fmt.Errorf("user: lookup username %s: %s", username, syscall.GetErrno())
 		}
@@ -88,13 +85,11 @@ func lookup(uid int, username string, lookupByName bool) (*User, error) {
 			return nil, UnknownUserError(username)
 		}
 	} else {
-		syscall.Entersyscall()
 		rv := libc_getpwuid_r(syscall.Uid_t(uid),
 			&pwd,
 			&buf[0],
 			bufSize,
 			&result)
-		syscall.Exitsyscall()
 		if rv != 0 {
 			return nil, fmt.Errorf("user: lookup userid %d: %s", uid, syscall.GetErrno())
 		}

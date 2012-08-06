@@ -154,6 +154,21 @@ if test "${with_sysroot+set}" = set; then
   fi
 fi
 
+# XXX: FIXME: We have a discrepancy: G++ header files are installed
+# relative to PREFIX but newlib header files are installed relative
+# to EXEC_PREFIX.  For now we define gcc_c_include_dir to allow for
+# this behaviour, but really newlib should be changed (which will
+# involve changing the top level configure and makefile to pass down
+# a new variable containing the path for installing headers).  When
+# this is done this patch can be reverted and TOOL_INCLUDE_DIR in
+# gcc/Makefile.in can be restored to its original definition based
+# on $(gcc_tooldir).
+gcc_c_include_dir='include'
+if test x$host != x$target; then
+   gcc_c_include_dir="$target_alias/$gcc_c_include_dir"
+fi
+gcc_c_include_dir="\$(libsubdir)/\$(libsubdir_to_prefix)\$(prefix_to_exec_prefix)$gcc_c_include_dir"
+
 AC_ARG_WITH(cpp_install_dir,
 [AC_HELP_STRING([--with-cpp-install-dir=DIR],
                 [install the user visible C preprocessor in DIR
@@ -804,7 +819,7 @@ AC_ARG_WITH(specs,
 AC_SUBST(CONFIGURE_SPECS)
 
 ACX_PKGVERSION([GCC])
-ACX_BUGURL([http://gcc.gnu.org/bugs.html])
+ACX_BUGURL([https://enterprise.redhat.com/gnupro/])
 
 # Sanity check enable_languages in case someone does not run the toplevel
 # configure # script.
@@ -1215,6 +1230,16 @@ esac
 force_sjlj_exceptions=yes],
 [case $target in
   *-*-hpux10*)
+    force_sjlj_exceptions=yes
+    enableval=yes
+    ;;
+    # On the FRV the unwinding of exceptions is not handled
+    # correctly at the moment so use setjmp/longjmp instead.
+  frv-*-*)
+    force_sjlj_exceptions=yes
+    enableval=yes
+    ;;
+  iq2000-*-*)
     force_sjlj_exceptions=yes
     enableval=yes
     ;;
@@ -2008,6 +2033,17 @@ else
         AC_PATH_PROG(gcc_cv_ld, $LD_FOR_TARGET)
 fi])
 
+gcc_cv_ld_gold_srcdir=`echo $srcdir | sed -e 's,/gcc$,,'`/gold
+
+AS_VAR_SET_IF(gcc_cv_gold,, [
+if test -f $gcc_cv_ld_gold_srcdir/configure.ac \
+     && test -f ../gold/Makefile \
+     && test x$build = x$host; then
+	gcc_cv_gold=../gold/ld-new$build_exeext
+else
+        gcc_cv_gold=''
+fi])
+
 ORIGINAL_PLUGIN_LD_FOR_TARGET=$gcc_cv_ld
 PLUGIN_LD=`basename $gcc_cv_ld`
 AC_ARG_WITH(plugin-ld,
@@ -2036,6 +2072,9 @@ case "$ORIGINAL_LD_FOR_TARGET" in
   ./collect-ld | ./collect-ld$build_exeext) ;;
   *) AC_CONFIG_FILES(collect-ld:exec-tool.in, [chmod +x collect-ld]) ;;
 esac 
+
+ORIGINAL_GOLD_FOR_TARGET=$gcc_cv_gold
+AC_SUBST(ORIGINAL_GOLD_FOR_TARGET)
 
 AC_MSG_CHECKING(what linker to use)
 if test "$gcc_cv_ld" = ../ld/ld-new$build_exeext \
@@ -5000,6 +5039,7 @@ AC_SUBST(float_h_file)
 AC_SUBST(gcc_config_arguments)
 AC_SUBST(gcc_gxx_include_dir)
 AC_SUBST(gcc_gxx_include_dir_add_sysroot)
+AC_SUBST(gcc_c_include_dir)
 AC_SUBST(host_exeext)
 AC_SUBST(host_xm_file_list)
 AC_SUBST(host_xm_include_list)

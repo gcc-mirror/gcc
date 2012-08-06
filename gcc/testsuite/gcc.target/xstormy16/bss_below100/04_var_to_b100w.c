@@ -1,5 +1,4 @@
 /* { dg-options { -nostartfiles below100.o -Tbelow100.ld -O2 } } */
-/* { dg-final { scan-assembler "mov.w B100,r" } } */
 
 char acDummy[0xf0] __attribute__ ((__BELOW100__));
 unsigned short B100 __attribute__ ((__BELOW100__));
@@ -20,3 +19,6 @@ main (void)
   Do ();
   return (*p == 0x1234) ? 0 : 1;
 }
+
+/* { dg-final { scan-file "04_var_to_b100w.s" "mov.w B100,r" } } */
+

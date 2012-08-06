@@ -1032,6 +1032,9 @@ xstormy16_expand_prologue (void)
 
   layout = xstormy16_compute_stack_layout ();
 
+  if (flag_stack_usage_info)
+    current_function_static_stack_size = layout.frame_size;
+
   if (layout.locals_size >= 32768)
     error ("local variable memory requirements exceed capacity");
 
@@ -1327,7 +1330,10 @@ xstormy16_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
   count = build3 (COMPONENT_REF, TREE_TYPE (f_count), valist, f_count,
 		  NULL_TREE);
 
-  must_stack = targetm.calls.must_pass_in_stack (TYPE_MODE (type), type);
+  if (TYPE_MODE (type) == VOIDmode)
+    must_stack = 1;
+  else
+    must_stack = targetm.calls.must_pass_in_stack (TYPE_MODE (type), type);
   size_tree = round_up (size_in_bytes (type), UNITS_PER_WORD);
   gimplify_expr (&size_tree, pre_p, NULL, is_gimple_val, fb_rvalue);
 
@@ -2654,11 +2660,11 @@ xstormy16_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 
 #undef  TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY xstormy16_return_in_memory
-#undef TARGET_FUNCTION_VALUE
+#undef  TARGET_FUNCTION_VALUE
 #define TARGET_FUNCTION_VALUE xstormy16_function_value
-#undef TARGET_LIBCALL_VALUE
+#undef  TARGET_LIBCALL_VALUE
 #define TARGET_LIBCALL_VALUE xstormy16_libcall_value
-#undef TARGET_FUNCTION_VALUE_REGNO_P
+#undef  TARGET_FUNCTION_VALUE_REGNO_P
 #define TARGET_FUNCTION_VALUE_REGNO_P xstormy16_function_value_regno_p
 
 #undef  TARGET_MACHINE_DEPENDENT_REORG
@@ -2669,16 +2675,26 @@ xstormy16_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 #undef  TARGET_PREFERRED_OUTPUT_RELOAD_CLASS
 #define TARGET_PREFERRED_OUTPUT_RELOAD_CLASS xstormy16_preferred_reload_class
 
-#undef TARGET_LEGITIMATE_ADDRESS_P
+#undef  TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P	xstormy16_legitimate_address_p
-#undef TARGET_MODE_DEPENDENT_ADDRESS_P
+#undef  TARGET_MODE_DEPENDENT_ADDRESS_P
 #define TARGET_MODE_DEPENDENT_ADDRESS_P xstormy16_mode_dependent_address_p
 
-#undef TARGET_CAN_ELIMINATE
+#undef  TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE xstormy16_can_eliminate
 
-#undef TARGET_TRAMPOLINE_INIT
+#undef  TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT xstormy16_trampoline_init
+
+static void
+xstormy16_option_override (void)
+{
+  if (flag_exceptions)
+    flag_omit_frame_pointer = 0;
+}
+
+#undef  TARGET_OPTION_OVERRIDE
+#define TARGET_OPTION_OVERRIDE			xstormy16_option_override
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

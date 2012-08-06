@@ -1,6 +1,8 @@
+/* { dg-options "-fno-tree-vrp" } *//* XXX nickc: This test does not compile at -O2 or higher on machines without a large amount of stack space (> 2Mb!) because of the tree-vrp pass.  */
 /* { dg-do assemble } */
 /* { dg-skip-if "too much code for avr" { "avr-*-*" } { "*" } { "" } } */
 /* { dg-skip-if "too much code for pdp11" { "pdp11-*-*" } { "*" } { "" } } */
+/* { dg-skip-if "too much code" { rl78-*-* } { "*" } { "" } } */
 /* { dg-xfail-if "jump beyond 128K not supported" { xtensa*-*-* } { "-O0" } { "" } } */
 /* { dg-xfail-if "PR36698" { spu-*-* } { "-O0" } { "" } } */
 /* { dg-skip-if "" { m32c-*-* } { "*" } { "" } } */
@@ -25,7 +27,7 @@
 /* See PR 51931.  */
 __attribute__((nomips16))
 #endif
-unsigned foo(int x[64], int y[64])
+unsigned long foo(int x[64], int y[64])
 {
   C4096(x,y);
   

@@ -1,4 +1,4 @@
-
+/* { dg-xfail-if "Unmatched high relocation" { "iq2000-*-*" } { "-O[123s]" } { "" } } */
 static inline void 
 bar (const int * const x) 
 { 

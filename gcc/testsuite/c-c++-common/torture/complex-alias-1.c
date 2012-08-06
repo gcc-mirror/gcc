@@ -2,6 +2,7 @@
    sometimes as struct accesses.  */
 /* { dg-do run } */
 /* { dg-options "-std=c99" { target c } } */
+/* { dg-add-options ieee } */
 
 #ifdef __cplusplus
 extern "C" {

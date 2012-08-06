@@ -26,8 +26,8 @@
 #MULTILIB_EXCEPTIONS	= *mcpu=simple/*msoft-float* *mcpu=frv/*msoft-float*
 #MULTILIB_EXTRA_OPTS	= mlibrary-pic
 
-MULTILIB_OPTIONS	= mcpu=fr400/mcpu=fr550 mno-pack mlibrary-pic/mfdpic
-MULTILIB_DIRNAMES	= fr400 fr550 unpacked pic fdpic
+MULTILIB_OPTIONS	= mcpu=fr400/mcpu=fr550/mcpu=frv mno-pack mlibrary-pic/mfdpic
+MULTILIB_DIRNAMES	= fr400 fr550 frv unpacked pic fdpic
 MULTILIB_MATCHES	= mcpu?simple=mcpu?fr300 \
 			  mlibrary-pic=multilib-library-pic \
 			  mcpu?fr400=mcpu?fr405 mcpu?fr400=mcpu?fr450

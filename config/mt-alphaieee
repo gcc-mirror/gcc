@@ -1,3 +1,2 @@
 CFLAGS_FOR_TARGET += -mieee
 CXXFLAGS_FOR_TARGET += -mieee
-GOCFLAGS_FOR_TARGET += -mieee

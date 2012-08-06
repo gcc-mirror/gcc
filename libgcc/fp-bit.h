@@ -129,8 +129,20 @@ typedef unsigned int UTItype __attribute__ ((mode (TI)));
 #define NO_DI_MODE
 #endif
 
+/* Allow the target the chance to specify whether
+   the bit order matches the byte order.  */
+#if defined LIBGCC2_FLOAT_BIT_ORDER_MISMATCH
+/* Evaluate the expression - it might be zero.  */
+#if LIBGCC2_FLOAT_BIT_ORDER_MISMATCH
+#define FLOAT_BIT_ORDER_MISMATCH
+#else
+#undef  FLOAT_BIT_ORDER_MISMATCH
+#endif
+#else
+/* Otherwise assume that the bits within a byte are in big endian order.  */
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 #define FLOAT_BIT_ORDER_MISMATCH
+#endif
 #endif
 
 #if __BYTE_ORDER__ != __FLOAT_WORD_ORDER__

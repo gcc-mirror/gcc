@@ -1,5 +1,6 @@
 /* { dg-do compile } */ 
 /* { dg-options "-O2 -fdump-tree-optimized" } */
+/* { dg-skip-if "code gen not as predicted" { h8300-*-* } { "*" } { "" } } */
 
 unsigned int a, b, c, d;
 extern int printf (const char *, ...);

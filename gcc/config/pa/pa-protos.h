@@ -91,11 +91,21 @@ extern int pa_ldil_cint_p (HOST_WIDE_INT);
 extern int pa_shadd_constant_p (int);
 extern int pa_zdepi_cint_p (unsigned HOST_WIDE_INT);
 
-extern void pa_output_ascii (FILE *, const char *, int);
-extern HOST_WIDE_INT pa_compute_frame_size (HOST_WIDE_INT, int *);
-extern void pa_expand_prologue (void);
-extern void pa_expand_epilogue (void);
+extern void output_ascii (FILE *, const char *, int);
+extern HOST_WIDE_INT compute_frame_size (HOST_WIDE_INT, int *);
+extern int and_mask_p (unsigned HOST_WIDE_INT);
+extern int cint_ok_for_move (HOST_WIDE_INT);
+extern void hppa_expand_prologue (void);
+extern void hppa_expand_epilogue (void);
 extern bool pa_can_use_return_insn (void);
+extern int ior_mask_p (unsigned HOST_WIDE_INT);
+extern void compute_zdepdi_operands (unsigned HOST_WIDE_INT,
+				     unsigned *);
+#ifdef RTX_CODE
+extern const char * output_64bit_and (rtx *);
+extern const char * output_64bit_ior (rtx *);
+extern int cmpib_comparison_operator (rtx, enum machine_mode);
+#endif
 
 /* Miscellaneous functions in pa.c.  */
 #ifdef TREE_CODE

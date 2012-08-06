@@ -7,7 +7,7 @@
 !$OMP DO
           DO I = 1, N
 	       ! incorrect nesting of regions
-!$OMP SINGLE   ! { dg-error "may not be closely nested" }
+!$OMP SINGLE   ! { dg-warning "may not be closely nested" }
                CALL WORK(I, 1)
 !$OMP END SINGLE
           END DO

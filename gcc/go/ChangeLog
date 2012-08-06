@@ -1,8 +1,8 @@
-2012-06-14  Release Manager
+2012-03-01  Release Manager
 
-	* GCC 4.7.1 released.
+	* GCC 4.6.3 released.
 
-2012-05-09  Ian Lance Taylor  <iant@google.com>
+2011-10-26  Release Manager
 
 	* lang.opt: Add -fgo-pkgpath.
 	* go-lang.c (go_pkgpath): New static variable.

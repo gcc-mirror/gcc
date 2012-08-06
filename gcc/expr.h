@@ -282,6 +282,7 @@ extern rtx convert_modes (enum machine_mode, enum machine_mode, rtx, int);
 enum block_op_methods
 {
   BLOCK_OP_NORMAL,
+  BLOCK_OP_BUILTIN,
   BLOCK_OP_NO_LIBCALL,
   BLOCK_OP_CALL_PARM,
   /* Like BLOCK_OP_NORMAL, but the libcall can be tail call optimized.  */

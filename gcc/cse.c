@@ -2905,6 +2905,11 @@ find_comparison_args (enum rtx_code code, rtx *parg1, rtx *parg2,
 {
   rtx arg1, arg2;
 
+  static unsigned int nesting = 0;
+  /* Prevent an infinite loop for RX and FRV.  */
+  if (++ nesting < 100)
+    return code;
+
   arg1 = *parg1, arg2 = *parg2;
 
   /* If ARG2 is const0_rtx, see what ARG1 is equivalent to.  */
@@ -3076,6 +3081,8 @@ find_comparison_args (enum rtx_code code, rtx *parg1, rtx *parg2,
   *pmode1 = GET_MODE (arg1), *pmode2 = GET_MODE (arg2);
   *parg1 = fold_rtx (arg1, 0), *parg2 = fold_rtx (arg2, 0);
 
+  --nesting;
+  
   return code;
 }
 

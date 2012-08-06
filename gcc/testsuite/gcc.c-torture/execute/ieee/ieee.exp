@@ -28,7 +28,7 @@ load_lib c-torture.exp
 # C torture test suite, and other contributors.
 
 # Disable tests on machines with no hardware support for IEEE arithmetic.
-if { [istarget "vax-*-*"] || [ istarget "powerpc-*-*spe"] || [istarget "pdp11-*-*"] } { return }
+if { [istarget "vax-*-*"] || [ istarget "powerpc-*-*spe"] || [istarget "pdp11-*-*"] || [istarget "rx-*-*"] } { return }
 
 if $tracelevel then {
     strace $tracelevel

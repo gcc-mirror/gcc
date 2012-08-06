@@ -771,6 +771,7 @@ Objective-C and Objective-C++ Dialects}.
 -mno-am33 -mam33 -mam33-2 -mam34 @gol
 -mtune=@var{cpu-type} @gol
 -mreturn-pointer-on-d0 @gol
+-mmem-funcs @gol
 -mno-crt0  -mrelax -mliw -msetlb}
 
 @emph{PDP-11 Options}
@@ -7878,7 +7879,7 @@ GIMPLE bytecodes and final object code.  GCC automatically selects
 which files to optimize in LTO mode and which files to link without
 further processing.
 
-There are some code generation flags preserved by GCC when
+There are some code generation flags that GCC preserves when
 generating bytecodes, as they need to be used during the final link
 stage.  Currently, the following options are saved into the GIMPLE
 bytecode files: @option{-fPIC}, @option{-fcommon} and all the
@@ -7895,7 +7896,7 @@ participating in the same link with the same options.
 If LTO encounters objects with C linkage declared with incompatible
 types in separate translation units to be linked together (undefined
 behavior according to ISO C99 6.2.7), a non-fatal diagnostic may be
-issued.  The behavior is still undefined at run time.
+issued.  The behavior is still undefined at runtime.
 
 Another feature of LTO is that it is possible to apply interprocedural
 optimizations on files written in different languages.  This requires
@@ -7996,7 +7997,7 @@ Disabled by default.
 
 @item -fuse-linker-plugin
 Enables the use of a linker plugin during link-time optimization.  This
-option relies on plugin support in the linker, which is available in gold
+option relies on the linker plugin support in linker that is available in gold
 or in GNU ld 2.21 or newer.
 
 This option enables the extraction of object files with GIMPLE bytecode out
@@ -12903,14 +12904,19 @@ Generate code for the H8/300H@.
 @opindex ms
 Generate code for the H8S@.
 
-@item -mn
-@opindex mn
-Generate code for the H8S and H8/300H in the normal mode.  This switch
-must be used either with @option{-mh} or @option{-ms}.
+@item -msx
+@opindex msx
+Generate code for the H8SX@.  This is the default.
 
 @item -ms2600
 @opindex ms2600
-Generate code for the H8S/2600.  This switch must be used with @option{-ms}.
+Generate code for the H8S/2600.  This switch must be used with either
+@option{-ms} or @option{-msx}.
+
+@item -mn
+@opindex mn
+Generate code for the H8S and H8/300H in the normal mode.  This switch
+must be used either with @option{-mh}, @option{-ms} or @option{-msx}.
 
 @item -mint32
 @opindex mint32
@@ -16235,6 +16241,13 @@ default.  This option defines the preprocessor macro @samp{__SETLB__}.
 Do not allow the compiler to generate @emph{SETLB} or @emph{Lcc}
 instructions.  This option defines the preprocessor macro
 @samp{__NO_SETLB__}.
+
+@item -mmem-funcs
+Tell gcc to automatically generate calls to memset() and memcpy()
+when it needs to clear or copy a block of memory.  This is disabled by
+default because it cannot be guaranteed that the runtime environment
+will include a C library.  The default behavior can also be restored
+by the switch @option{--mno-mem-funcs}.
 
 @end table
 
@@ -19786,6 +19799,22 @@ Recognize EUCJP characters.
 If @env{LANG} is not defined, or if it has some other value, then the
 compiler will use mblen and mbtowc as defined by the default locale to
 recognize and translate multibyte characters.
+
+@item GCC_DEFAULT_OPTIONS
+The contents of this variable, if it is defined, will be pre-pended to
+the list of command line options that GCC parses.  The variable can
+contain multiple gcc command line switches provided that they are
+separated by white space.  If a switch is defined both in this
+variable and on the command line, then the command line version (or
+its inverse) will take precedence.
+
+Note - this variable is only examined when the compiler is acting as a
+native compiler.  If the compiler is acting as a cross-compiler a
+different variable, if defined for the particular cross target, will
+be examined.  For example for the AM33 cross compiler the variable
+@env{AM33_GCC_DEFAULT_OPTIONS} will be examined.  Passing the
+@option{--verbose} switch to GCC will display the name of the
+environment variable and, if it is defined, its contents.
 @end table
 
 @noindent

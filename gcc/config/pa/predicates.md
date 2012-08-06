@@ -447,8 +447,9 @@
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "cint_ior_operand")))
 
-;; Return 1 if OP is a CONST_INT with the value 2, 4, or 8.  These are
-;; the valid constants for shadd instructions.
+;; True iff OP is a CONST_INT of the forms 0...0xxxx, 0...01...1xxxx,
+;; or 1...1xxxx. Such values can be the left hand side x in (x << r),
+;; using the zvdepi instruction.
 
 (define_predicate "shadd_operand"
   (and (match_code "const_int")

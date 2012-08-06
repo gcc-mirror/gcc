@@ -31,5 +31,7 @@ void test01()
   test_base io2;
   io1 = io2; // { dg-error "synthesized|deleted" }
 }
-
-// { dg-prune-output "include" }
+// { dg-error "synthesized" "" { target *-*-* } 42 } 
+// { dg-error "within this context" "" { target *-*-* } 35 } 
+// { dg-error "is private" "" { target *-*-* } 785 } 
+// { dg-error "operator=" "" { target *-*-* } 0 } 

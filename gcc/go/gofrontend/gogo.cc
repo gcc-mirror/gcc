@@ -339,14 +339,9 @@ Gogo::set_package_name(const std::string& package_name,
   // symbol names.
   if (!this->pkgpath_set_)
     {
-      if (!this->prefix_from_option_ && package_name == "main")
-	this->pkgpath_ = package_name;
-      else
-	{
-	  if (!this->prefix_from_option_)
-	    this->prefix_ = "go";
-	  this->pkgpath_ = this->prefix_ + '.' + package_name;
-	}
+      if (!this->prefix_from_option_)
+	this->prefix_ = "go";
+      this->pkgpath_ = this->prefix_ + '.' + package_name;
       this->pkgpath_set_ = true;
     }
 

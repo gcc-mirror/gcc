@@ -1,5 +1,5 @@
 /* Test C1X alignment support.  Test invalid code.  */
-/* { dg-do compile } */
+/* { dg-do compile  { target int32plus } } */
 /* { dg-options "-std=c1x -pedantic-errors" } */
 
 int a = _Alignof (void (void)); /* { dg-error "function" } */

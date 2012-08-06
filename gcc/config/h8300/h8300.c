@@ -339,9 +339,15 @@ h8300_option_override (void)
 
   if (TARGET_H8300 && TARGET_NORMAL_MODE)
     {
-      error ("-mn is used without -mh or -ms");
+      error ("-mn is used without -mh or -ms or -msx");
       target_flags ^= MASK_NORMAL_MODE;
     }
+
+  if (TARGET_H8300 && TARGET_INT32)
+   {
+      error ("-mint32 is not supported for H8300 and H8300L targets");
+      target_flags ^= MASK_INT32;
+   }
 
   /* Some of the shifts are optimized for speed by default.
      See http://gcc.gnu.org/ml/gcc-patches/2002-07/msg01858.html
@@ -925,8 +931,13 @@ h8300_expand_epilogue (void)
 int
 h8300_current_function_interrupt_function_p (void)
 {
-  return (h8300_interrupt_function_p (current_function_decl)
-	  || h8300_monitor_function_p (current_function_decl));
+  return (h8300_interrupt_function_p (current_function_decl));
+}
+
+int
+h8300_current_function_monitor_function_p (void)
+{
+  return (h8300_monitor_function_p (current_function_decl));
 }
 
 /* Output assembly code for the start of the file.  */

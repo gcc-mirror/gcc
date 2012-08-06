@@ -1,5 +1,4 @@
 /* { dg-options { -nostartfiles below100.o -Tbelow100.ld -O2 } } */
-/* { dg-final { scan-assembler "set1 32533,#0" } } */
 
 typedef struct
 {
@@ -37,3 +36,6 @@ main (void)
   Do ();
   return (*p == 0x1334) ? 0 : 1;
 }
+
+/* { dg-final { scan-file "24_set_sfrw_bitfield_8.s" "set1 32533,#0" } } */
+

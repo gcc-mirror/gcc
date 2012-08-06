@@ -2233,7 +2233,15 @@ output_loc_operands (dw_loc_descr_ref loc, int for_eh_or_skip)
 		   + HOST_BITS_PER_WIDE_INT / 2 + 2];
 	gcc_assert (val1->val_class == dw_val_class_die_ref);
 	get_ref_die_offset_label (label, val1->v.val_die_ref.die);
-	dw2_asm_output_offset (DWARF_REF_SIZE, label, debug_info_section, NULL);
+	/* For 16-bit targets, we can generate so much debug info that the DIE
+	   offsets will not fit into a DWARF_REF_SIZE'd field.  So check for this
+	   and increase the field size if necessary.  To see this in action build
+	   libgcc for the h8300 target.  */
+	if (DWARF_REF_SIZE < 4
+	    && get_ref_die_offset (val1->v.val_die_ref.die) > (1 << (8 * DWARF_REF_SIZE)))
+	  dw2_asm_output_offset (DWARF_REF_SIZE * 2, label, debug_info_section, NULL);
+	else
+	  dw2_asm_output_offset (DWARF_REF_SIZE, label, debug_info_section, NULL);
 	dw2_asm_output_data_sleb128 (val2->v.val_int, NULL);
       }
       break;
@@ -14109,6 +14117,11 @@ field_byte_offset (const_tree decl)
       type = field_type (decl);
       type_size_in_bits = double_int_type_size_in_bits (type);
       type_align_in_bits = simple_type_align_in_bits (type);
+      /* If the type is bigger than its alignment, the computation to round
+	 up object_offset_in_bits will in fact *reduce* the object offset.
+	 Catch this here by setting the alignment to the size.  */
+      if (((unsigned HOST_WIDE_INT) type_align_in_bits) < double_int_to_uhwi (type_size_in_bits))
+	type_align_in_bits = (unsigned int) double_int_to_uhwi (type_size_in_bits);
 
       field_size_tree = DECL_SIZE (decl);
 
@@ -17053,6 +17066,7 @@ dwarf2out_abstract_function (tree decl)
   decl_loc_table = NULL;
   old_cached_dw_loc_list_table = cached_dw_loc_list_table;
   cached_dw_loc_list_table = NULL;
+
   old_call_arg_locations = call_arg_locations;
   call_arg_locations = NULL;
   old_call_site_count = call_site_count;

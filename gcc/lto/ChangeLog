@@ -1,8 +1,24 @@
-2012-06-14  Release Manager
+2012-04-23  Peter Bergner  <bergner@vnet.ibm.com>
 
-	* GCC 4.7.1 released.
+	Backport from mainline
+	2011-06-11  Jan Hubicka  <jh@suse.cz>
 
-2012-05-04  Richard Guenther  <rguenther@suse.de>
+	PR lto/48246
+	* lto.c (lto_1_to_1_map): Don't create empty partitions.
+	(lto_balanced_map): Likewise.
+
+2012-03-01  Release Manager
+
+	* GCC 4.6.3 released.
+
+2011-12-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* lto.h (lto_parse_hex): Delete.
+	* lto.c (lto_read_decls): Use 'int' for offsets.
+	(lto_parse_hex): Make static and return proper 64-bit host type.
+	(lto_resolution_read): Use proper 64-bit host type.
+
+2011-10-26  Release Manager
 
 	* lang.opt (fwpa): Do not mark as Optimization.
 	(fltrans): Likewise.

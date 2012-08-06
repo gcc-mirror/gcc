@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-skip-if "test too big" { avr-*-* h8300-*-* m32c-*-* xstormy16-*-* } { "*" } { "" } } */
 /* { dg-options "-O -fdump-tree-ccp1" } */
 
 /* Make sure we propagate through POINTER_PLUS_EXPRs.  */

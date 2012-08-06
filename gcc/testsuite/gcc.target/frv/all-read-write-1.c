@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-options "-fno-lto" } */
 extern void abort (void);
 extern void exit (int);
 

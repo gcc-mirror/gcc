@@ -3129,7 +3129,6 @@ write_array_type (const tree type)
 	    }
 	  write_expression (max);
 	}
-
     }
   write_char ('_');
   write_type (TREE_TYPE (type));

@@ -862,7 +862,9 @@ default_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x ATTRIBUTE_UNUSED,
 	= direct_optab_handler (in_p ? reload_in_optab : reload_out_optab,
 				reload_mode);
 
-      if (icode != CODE_FOR_nothing
+      if (icode == 0)
+	icode = CODE_FOR_nothing;      
+      else if (icode != CODE_FOR_nothing
 	  && !insn_operand_matches (icode, in_p, x))
 	icode = CODE_FOR_nothing;
       else if (icode != CODE_FOR_nothing)

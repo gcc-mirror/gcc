@@ -81,8 +81,13 @@ along with GCC; see the file COPYING3.  If not see
 #undef NATIVE_SYSTEM_HEADER_COMPONENT
 #define NATIVE_SYSTEM_HEADER_COMPONENT "MINGW"
 
-#undef CPP_SPEC
+#undef  CPP_SPEC
 #define CPP_SPEC "%{posix:-D_POSIX_SOURCE} %{mthreads:-D_MT} " \
+  "%{mno-win32:%{mno-cygwin: %emno-cygwin and mno-win32 are not compatible}} " \
+  "%{!mno-win32:-D__MSVCRT__ -D__MINGW32__ %{!ansi:%{mthreads:-D_MT}}} " \
+  "%{mno-win32:-D__CYGWIN32__ -D__CYGWIN__ %{!ansi:-Dunix} -D__unix__ -D__unix} " \
+  "%{!mno-cygwin:-DWIN32 -D_WIN32 -D__WIN32 -D__WIN32__ %{!ansi:-DWINNT}} " \
+  "%{!nostdinc:%{!mno-win32|mno-cygwin:-idirafter ../include/w32api%s -idirafter ../../include/w32api%s}} " \
 		 "%{" SPEC_PTHREAD1 ":-D_REENTRANT} " \
 		 "%{" SPEC_PTHREAD2 ": } "
 

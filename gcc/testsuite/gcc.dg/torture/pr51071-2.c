@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target { int32plus } } } */
 /* { dg-options "-fno-delete-null-pointer-checks" } */
 
 extern struct module __this_module;

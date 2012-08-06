@@ -238,3 +238,9 @@
 
   return ((intval & ((unsigned)(intval) - 1)) == 0);
 })
+
+(define_predicate "small_uns_int_operand"
+  (match_code "const_int")
+{
+  return (INTVAL (op) >= 0 && INTVAL (op) <= 31);
+})

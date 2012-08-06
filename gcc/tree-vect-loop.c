@@ -2583,7 +2583,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
 	  /* Skip stmts that are not vectorized inside the loop.  */
 	  if (!STMT_VINFO_RELEVANT_P (stmt_info)
 	      && (!STMT_VINFO_LIVE_P (stmt_info)
-                 || !VECTORIZABLE_CYCLE_DEF (STMT_VINFO_DEF_TYPE (stmt_info))))
+		  || !VECTORIZABLE_CYCLE_DEF (STMT_VINFO_DEF_TYPE (stmt_info))))
 	    continue;
 
 	  vec_inside_cost += STMT_VINFO_INSIDE_OF_LOOP_COST (stmt_info) * factor;

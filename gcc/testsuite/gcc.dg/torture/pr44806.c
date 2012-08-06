@@ -1,4 +1,4 @@
-/* { dg-do run } */
+/* { dg-do run { target { ! "frv-*-*" } } } */
 /* { dg-options "-std=c99" } */
 
 #include <stdint.h>

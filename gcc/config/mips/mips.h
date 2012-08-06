@@ -1146,11 +1146,16 @@ struct mips_cpu_info {
 
 /* Extra switches sometimes passed to the linker.  */
 
+#ifndef SUBTARGET_LINK_SPEC
+#define SUBTARGET_LINK_SPEC ""
+#endif
+
 #ifndef LINK_SPEC
 #define LINK_SPEC "\
 %(endian_spec) \
 %{G*} %{mips1} %{mips2} %{mips3} %{mips4} %{mips32*} %{mips64*} \
-%{shared}"
+%{shared} \
+%(subtarget_link_spec)"
 #endif  /* LINK_SPEC defined */
 
 
@@ -1194,6 +1199,7 @@ struct mips_cpu_info {
   { "subtarget_cpp_spec", SUBTARGET_CPP_SPEC },				\
   { "subtarget_asm_debugging_spec", SUBTARGET_ASM_DEBUGGING_SPEC },	\
   { "subtarget_asm_spec", SUBTARGET_ASM_SPEC },				\
+  { "subtarget_link_spec", SUBTARGET_LINK_SPEC },			\
   { "asm_abi_default_spec", "-" MULTILIB_ABI_DEFAULT },			\
   { "endian_spec", ENDIAN_SPEC },					\
   SUBTARGET_EXTRA_SPECS

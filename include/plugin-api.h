@@ -66,7 +66,8 @@ enum ld_plugin_output_file_type
 {
   LDPO_REL,
   LDPO_EXEC,
-  LDPO_DYN
+  LDPO_DYN,
+  LDPO_PIE
 };
 
 /* An input file managed by the plugin library.  */

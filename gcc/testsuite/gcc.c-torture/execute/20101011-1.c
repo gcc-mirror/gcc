@@ -6,7 +6,7 @@
 #elif defined (__powerpc__) || defined (__PPC__) || defined (__ppc__) || defined (__POWERPC__) || defined (__ppc)
   /* On PPC division by zero does not trap.  */
 # define DO_TEST 0
-#elif defined (__SPU__)
+#elif defined (__SPU__) || defined (__frv__) || defined (xstormy16)
   /* On SPU division by zero does not trap.  */
 # define DO_TEST 0
 #elif defined (__sh__)
@@ -31,6 +31,13 @@
 #elif defined (__epiphany__)
   /* Epiphany does not have hardware division, and the software implementation
      has truly undefined behaviour for division by 0.  */
+# define DO_TEST 0
+#elif defined (__m68k__) && !defined(__linux__)
+  /* Attempting to trap division-by-zero in this way isn't likely to work on 
+     bare-metal m68k systems.  */
+# define DO_TEST 0
+#elif defined (__CRIS__)
+  /* No SIGFPE for CRIS integer division.  */
 # define DO_TEST 0
 #else
 # define DO_TEST 1
