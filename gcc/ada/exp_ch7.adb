@@ -4410,6 +4410,8 @@ package body Exp_Ch7 is
          Stmts     : List_Id;
          Temp_Id   : Entity_Id;
 
+      --  Start of processing for Process_Transient_Objects
+
       begin
          --  Examine all objects in the list First_Object .. Last_Object
 
@@ -4629,10 +4631,10 @@ package body Exp_Ch7 is
       end if;
 
       declare
-         Node_To_Wrap  : constant Node_Id := Node_To_Be_Wrapped;
-         First_Obj  : Node_Id;
-         Last_Obj   : Node_Id;
-         Target     : Node_Id;
+         Node_To_Wrap : constant Node_Id := Node_To_Be_Wrapped;
+         First_Obj    : Node_Id;
+         Last_Obj     : Node_Id;
+         Target       : Node_Id;
 
       begin
          --  If the node to be wrapped is the trigger of an asynchronous

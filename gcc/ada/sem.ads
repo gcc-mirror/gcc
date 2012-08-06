@@ -310,8 +310,8 @@ package Sem is
    --  that are applicable to all entities. A similar search is needed for any
    --  non-predefined check even if no specific entity is involved.
 
-   Scope_Suppress : Suppress_Array := Suppress_Options;
-   --  This array contains the current scope based settings of the suppress
+   Scope_Suppress : Suppress_Record := Suppress_Options;
+   --  This variable contains the current scope based settings of the suppress
    --  switches. It is initialized from the options as shown, and then modified
    --  by pragma Suppress. On entry to each scope, the current setting is saved
    --  the scope stack, and then restored on exit from the scope. This record
@@ -449,7 +449,7 @@ package Sem is
       --  Pointer to name of last subprogram body in this scope. Used for
       --  testing proper alpha ordering of subprogram bodies in scope.
 
-      Save_Scope_Suppress : Suppress_Array;
+      Save_Scope_Suppress : Suppress_Record;
       --  Save contents of Scope_Suppress on entry
 
       Save_Local_Suppress_Stack_Top : Suppress_Stack_Entry_Ptr;

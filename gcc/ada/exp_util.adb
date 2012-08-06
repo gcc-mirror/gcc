@@ -3818,20 +3818,20 @@ package body Exp_Util is
    begin
       if Suppress = All_Checks then
          declare
-            Svg : constant Suppress_Array := Scope_Suppress;
+            Svg : constant Suppress_Record := Scope_Suppress;
          begin
-            Scope_Suppress := (others => True);
+            Scope_Suppress := Suppress_All;
             Insert_Actions (Assoc_Node, Ins_Actions);
             Scope_Suppress := Svg;
          end;
 
       else
          declare
-            Svg : constant Boolean := Scope_Suppress (Suppress);
+            Svg : constant Boolean := Scope_Suppress.Suppress (Suppress);
          begin
-            Scope_Suppress (Suppress) := True;
+            Scope_Suppress.Suppress (Suppress) := True;
             Insert_Actions (Assoc_Node, Ins_Actions);
-            Scope_Suppress (Suppress) := Svg;
+            Scope_Suppress.Suppress (Suppress) := Svg;
          end;
       end if;
    end Insert_Actions;
@@ -6272,9 +6272,9 @@ package body Exp_Util is
       Name_Req     : Boolean := False;
       Variable_Ref : Boolean := False)
    is
-      Loc          : constant Source_Ptr     := Sloc (Exp);
-      Exp_Type     : constant Entity_Id      := Etype (Exp);
-      Svg_Suppress : constant Suppress_Array := Scope_Suppress;
+      Loc          : constant Source_Ptr      := Sloc (Exp);
+      Exp_Type     : constant Entity_Id       := Etype (Exp);
+      Svg_Suppress : constant Suppress_Record := Scope_Suppress;
       Def_Id       : Entity_Id;
       E            : Node_Id;
       New_Exp      : Node_Id;
@@ -6705,7 +6705,7 @@ package body Exp_Util is
 
       --  All this must not have any checks
 
-      Scope_Suppress := (others => True);
+      Scope_Suppress := Suppress_All;
 
       --  If it is a scalar type and we need to capture the value, just make
       --  a copy. Likewise for a function call, an attribute reference, an

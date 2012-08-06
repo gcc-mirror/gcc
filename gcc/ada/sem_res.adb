@@ -334,21 +334,20 @@ package body Sem_Res is
    begin
       if Suppress = All_Checks then
          declare
-            Svg : constant Suppress_Array := Scope_Suppress;
+            Svg : constant Suppress_Record := Scope_Suppress;
          begin
-            Scope_Suppress := (others => True);
+            Scope_Suppress := Suppress_All;
             Analyze_And_Resolve (N, Typ);
             Scope_Suppress := Svg;
          end;
 
       else
          declare
-            Svg : constant Boolean := Scope_Suppress (Suppress);
-
+            Svg : constant Boolean := Scope_Suppress.Suppress (Suppress);
          begin
-            Scope_Suppress (Suppress) := True;
+            Scope_Suppress.Suppress (Suppress) := True;
             Analyze_And_Resolve (N, Typ);
-            Scope_Suppress (Suppress) := Svg;
+            Scope_Suppress.Suppress (Suppress) := Svg;
          end;
       end if;
 
@@ -375,27 +374,24 @@ package body Sem_Res is
    begin
       if Suppress = All_Checks then
          declare
-            Svg : constant Suppress_Array := Scope_Suppress;
+            Svg : constant Suppress_Record := Scope_Suppress;
          begin
-            Scope_Suppress := (others => True);
+            Scope_Suppress := Suppress_All;
             Analyze_And_Resolve (N);
             Scope_Suppress := Svg;
          end;
 
       else
          declare
-            Svg : constant Boolean := Scope_Suppress (Suppress);
-
+            Svg : constant Boolean := Scope_Suppress.Suppress (Suppress);
          begin
-            Scope_Suppress (Suppress) := True;
+            Scope_Suppress.Suppress (Suppress) := True;
             Analyze_And_Resolve (N);
-            Scope_Suppress (Suppress) := Svg;
+            Scope_Suppress.Suppress (Suppress) := Svg;
          end;
       end if;
 
-      if Current_Scope /= Scop
-        and then Scope_Is_Transient
-      then
+      if Current_Scope /= Scop and then Scope_Is_Transient then
          Scope_Stack.Table (Scope_Stack.Last).Save_Scope_Suppress :=
            Scope_Suppress;
       end if;
@@ -2904,20 +2900,20 @@ package body Sem_Res is
    begin
       if Suppress = All_Checks then
          declare
-            Svg : constant Suppress_Array := Scope_Suppress;
+            Svg : constant Suppress_Record := Scope_Suppress;
          begin
-            Scope_Suppress := (others => True);
+            Scope_Suppress := Suppress_All;
             Resolve (N, Typ);
             Scope_Suppress := Svg;
          end;
 
       else
          declare
-            Svg : constant Boolean := Scope_Suppress (Suppress);
+            Svg : constant Boolean := Scope_Suppress.Suppress (Suppress);
          begin
-            Scope_Suppress (Suppress) := True;
+            Scope_Suppress.Suppress (Suppress) := True;
             Resolve (N, Typ);
-            Scope_Suppress (Suppress) := Svg;
+            Scope_Suppress.Suppress (Suppress) := Svg;
          end;
       end if;
    end Resolve;

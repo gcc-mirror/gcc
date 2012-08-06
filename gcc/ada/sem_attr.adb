@@ -5880,7 +5880,7 @@ package body Sem_Attr is
             begin
                if No (E1) then
                   if C in Predefined_Check_Id then
-                     R := Scope_Suppress (C);
+                     R := Scope_Suppress.Suppress (C);
                   else
                      R := Is_Check_Suppressed (Empty, C);
                   end if;

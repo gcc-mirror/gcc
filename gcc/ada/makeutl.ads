@@ -138,7 +138,8 @@ package Makeutl is
    --  Do nothing if Switch is an absolute path switch. If relative, fail if
    --  Parent is the empty string, otherwise prepend the path with Parent. This
    --  subprogram is only used when using project files. If For_Gnatbind is
-   --  True, gnatbind switches that are not paths (-L, -A) are left unchaned.
+   --  True, consider gnatbind specific syntax for -L (not a path, left
+   --  unchanged) and -A (path is optional, preceded with "=" if present).
    --  If Including_RTS is True, process also switches --RTS=. Do_Fail is
    --  called in case of error. Using Osint.Fail might be appropriate.
 

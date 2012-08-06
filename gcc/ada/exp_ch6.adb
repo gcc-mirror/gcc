@@ -7474,7 +7474,7 @@ package body Exp_Ch6 is
       elsif Ada_Version >= Ada_2005
         and then Tagged_Type_Expansion
         and then Is_Class_Wide_Type (R_Type)
-        and then not Scope_Suppress (Accessibility_Check)
+        and then not Scope_Suppress.Suppress (Accessibility_Check)
         and then
           (Is_Class_Wide_Type (Etype (Exp))
             or else Nkind_In (Exp, N_Type_Conversion,

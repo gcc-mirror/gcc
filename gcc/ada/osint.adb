@@ -1659,7 +1659,7 @@ package body Osint is
       --  be reset later (turning some on if -gnato is not specified, and
       --  turning all of them on if -gnatp is specified).
 
-      Suppress_Options := (others => False);
+      Suppress_Options := ((others => False), Check_All, Check_All);
 
       --  Reserve the first slot in the search paths table. This is the
       --  directory of the main source file or main library file and is filled
