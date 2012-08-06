@@ -1,3 +1,9 @@
+2012-08-06  Dodji Seketeli  <dodji@redhat.com>
+
+	Avoid crashing on erroneous static_assert usage
+	* semantics.c (finish_static_assert): Don't crash on erroneous
+	message or condition.
+
 2012-08-06  Marc Glisse  <marc.glisse@inria.fr>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 

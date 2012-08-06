@@ -5099,6 +5099,12 @@ void
 finish_static_assert (tree condition, tree message, location_t location, 
                       bool member_p)
 {
+  if (message == NULL_TREE
+      || message == error_mark_node
+      || condition == NULL_TREE
+      || condition == error_mark_node)
+    return;
+
   if (check_for_bare_parameter_packs (condition))
     condition = error_mark_node;
 
