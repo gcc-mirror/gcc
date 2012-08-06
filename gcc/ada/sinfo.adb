@@ -2844,14 +2844,6 @@ package body Sinfo is
       return List3 (N);
    end Statements;
 
-   function Static_Processing_OK
-      (N : Node_Id) return Boolean is
-   begin
-      pragma Assert (False
-        or else NT (N).Nkind = N_Aggregate);
-      return Flag4 (N);
-   end Static_Processing_OK;
-
    function Storage_Pool
       (N : Node_Id) return Node_Id is
    begin
@@ -5904,14 +5896,6 @@ package body Sinfo is
         or else NT (N).Nkind = N_Triggering_Alternative);
       Set_List3_With_Parent (N, Val);
    end Set_Statements;
-
-   procedure Set_Static_Processing_OK
-      (N : Node_Id; Val : Boolean) is
-   begin
-      pragma Assert (False
-        or else NT (N).Nkind = N_Aggregate);
-      Set_Flag4 (N, Val);
-   end Set_Static_Processing_OK;
 
    procedure Set_Storage_Pool
       (N : Node_Id; Val : Node_Id) is

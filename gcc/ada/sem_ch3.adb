@@ -5432,7 +5432,8 @@ package body Sem_Ch3 is
 
       elsif Constraint_Present then
 
-         --  Build constrained subtype and derive from it
+         --  Build constrained subtype, copying the constraint, and derive
+         --  from it to create a derived constrained type.
 
          declare
             Loc  : constant Source_Ptr := Sloc (N);
@@ -5446,7 +5447,7 @@ package body Sem_Ch3 is
               Make_Subtype_Declaration (Loc,
                 Defining_Identifier => Anon,
                 Subtype_Indication =>
-                  Subtype_Indication (Type_Definition (N)));
+                  New_Copy_Tree (Subtype_Indication (Type_Definition (N))));
             Insert_Before (N, Decl);
             Analyze (Decl);
 

@@ -45,7 +45,7 @@ pragma Warnings (On);
 
 with GNAT.Table;
 
-with XUtil;                   use XUtil;
+with XUtil; use XUtil;
 
 procedure XOSCons is
 
@@ -178,10 +178,12 @@ procedure XOSCons is
          Put (OFile, S);
       end Put;
 
-   begin
-      if Info.Kind /= TXT then
-         --  TXT case is handled by the common code below
+   --  Start of processing for Output_Info
 
+   begin
+      --  Case of non-TXT case (TXT case handled by common code below)
+
+      if Info.Kind /= TXT then
          case Lang is
             when Lang_Ada =>
                Put ("   " & Info.Constant_Name.all);
@@ -207,6 +209,7 @@ procedure XOSCons is
             if not Info.Int_Value.Positive then
                Put ("-");
             end if;
+
             Put (Trim (Info.Int_Value.Abs_Value'Img, Side => Left));
 
          else
@@ -214,11 +217,14 @@ procedure XOSCons is
                Is_String : constant Boolean :=
                              Info.Kind = C
                                and then Info.Constant_Type.all = "String";
+
             begin
                if Is_String then
                   Put ("""");
                end if;
+
                Put (Info.Text_Value.all);
+
                if Is_String then
                   Put ("""");
                end if;
@@ -290,6 +296,7 @@ procedure XOSCons is
       is
          First    : Integer := S'First;
          Result   : Int_Value_Type;
+
       begin
          --  On some platforms, immediate integer values are prefixed with
          --  a $ or # character in assembly output.
@@ -300,7 +307,7 @@ procedure XOSCons is
 
          if S (First) = '-' then
             Result.Positive := False;
-            First    := First + 1;
+            First := First + 1;
          else
             Result.Positive := True;
          end if;
@@ -308,6 +315,7 @@ procedure XOSCons is
          Result.Abs_Value := Long_Unsigned'Value (S (First .. S'Last));
 
          if not Result.Positive and then K = CNU then
+
             --  Negative value, but unsigned expected: take 2's complement
             --  reciprocical value.
 
@@ -320,7 +328,7 @@ procedure XOSCons is
          return Result;
 
       exception
-         when E : others =>
+         when others =>
             Put_Line (Standard_Error, "can't parse decimal value: " & S);
             raise;
       end Parse_Int;
@@ -346,6 +354,7 @@ procedure XOSCons is
                Find_Colon (Index2);
 
                Info.Constant_Name := Field_Alloc;
+
                if Info.Constant_Name'Length > Max_Constant_Name_Len then
                   Max_Constant_Name_Len := Info.Constant_Name'Length;
                end if;
@@ -355,6 +364,7 @@ procedure XOSCons is
 
                if Info.Kind = C then
                   Info.Constant_Type := Field_Alloc;
+
                   if Info.Constant_Type'Length > Max_Constant_Type_Len then
                      Max_Constant_Type_Len := Info.Constant_Type'Length;
                   end if;
@@ -367,6 +377,7 @@ procedure XOSCons is
                   Info.Int_Value :=
                     Parse_Int (Line (Index1 .. Index2 - 1), Info.Kind);
                   Info.Value_Len := Info.Int_Value.Abs_Value'Img'Length - 1;
+
                   if not Info.Int_Value.Positive then
                      Info.Value_Len := Info.Value_Len + 1;
                   end if;
@@ -403,12 +414,13 @@ procedure XOSCons is
 
          Asm_Infos.Append (Info);
       end;
+
    exception
       when E : others =>
-         Put_Line (Standard_Error,
-           "can't parse " & Line);
-         Put_Line (Standard_Error,
-           "exception raised: " & Exception_Information (E));
+         Put_Line
+           (Standard_Error, "can't parse " & Line);
+         Put_Line
+           (Standard_Error, "exception raised: " & Exception_Information (E));
    end Parse_Asm_Line;
 
    ------------
@@ -433,8 +445,8 @@ procedure XOSCons is
 
    --  Output files
 
-   Ada_File_Name  : constant String := Unit_Name & ".ads";
-   C_File_Name    : constant String := Unit_Name & ".h";
+   Ada_File_Name : constant String := Unit_Name & ".ads";
+   C_File_Name   : constant String := Unit_Name & ".h";
 
    Asm_File  : Ada.Text_IO.File_Type;
    Tmpl_File : Ada.Text_IO.File_Type;
@@ -456,7 +468,6 @@ begin
    --  Load values from assembly file
 
    Open (Asm_File, In_File, Asm_File_Name);
-
    while not End_Of_File (Asm_File) loop
       Get_Line (Asm_File, Line, Last);
       if Last > 2 and then Line (1 .. 2) = "->" then
@@ -482,8 +493,10 @@ begin
 
       if Last >= 2 and then Line (1 .. 2) = "# " then
          declare
-            Index : Integer := 3;
+            Index : Integer;
+
          begin
+            Index := 3;
             while Index <= Last and then Line (Index) in '0' .. '9' loop
                Index := Index + 1;
             end loop;

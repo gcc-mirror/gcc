@@ -835,6 +835,11 @@ package body Exp_Attr is
 
       --  Remaining processing depends on specific attribute
 
+      --  Note: individual sections of the following case statement are
+      --  allowed to assume there is no code after the case statement, and
+      --  are legitimately allowed to execute return statements if they have
+      --  nothing more to do.
+
       case Id is
 
       --  Attributes related to Ada 2012 iterators (placeholder ???)
@@ -6073,6 +6078,11 @@ package body Exp_Attr is
            Attribute_Asm_Output                   =>
          null;
       end case;
+
+   --  Note: as mentioned earlier, individual sections of the above case
+   --  statement assume there is no code after the case statement, and are
+   --  legitimately allowed to execute return statements if they have nothing
+   --  more to do, so DO NOT add code at this point.
 
    exception
       when RE_Not_Available =>
