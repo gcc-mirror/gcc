@@ -44,9 +44,9 @@ package body System.Atomic_Primitives is
       end if;
    end Lock_Free_Read_8;
 
-   ----------------------
+   -----------------------
    -- Lock_Free_Read_16 --
-   ----------------------
+   -----------------------
 
    function Lock_Free_Read_16 (Ptr : Address) return uint16 is
    begin
@@ -57,9 +57,9 @@ package body System.Atomic_Primitives is
       end if;
    end Lock_Free_Read_16;
 
-   ----------------------
+   -----------------------
    -- Lock_Free_Read_32 --
-   ----------------------
+   -----------------------
 
    function Lock_Free_Read_32 (Ptr : Address) return uint32 is
    begin
@@ -70,9 +70,9 @@ package body System.Atomic_Primitives is
       end if;
    end Lock_Free_Read_32;
 
-   ----------------------
+   -----------------------
    -- Lock_Free_Read_64 --
-   ----------------------
+   -----------------------
 
    function Lock_Free_Read_64 (Ptr : Address) return uint64 is
    begin
