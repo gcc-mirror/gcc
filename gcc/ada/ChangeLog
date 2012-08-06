@@ -1,3 +1,22 @@
+2012-08-06  Vincent Pucci  <pucci@adacore.com>
+
+	* exp_ch9.adb (Build_Lock_Free_Unprotected_Subprogram_Body):
+	Use of Known_Static_Esize instead of  Known_Esize and
+	Known_Static_RM_Size instead of Known_RM_Size in order to
+	properly call UI_To_Int. Don't check the size of the component
+	type in case of generic.
+	* sem_ch9.adb (Allows_Lock_Free_Implementation):
+	Use of Known_Static_Esize instead of Known_Esize and
+	Known_Static_RM_Size instead of Known_RM_Size in order to properly
+	call UI_To_Int. Don't check the size of the component type in
+	case of generic.
+
+2012-08-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* checks.adb (Discrete_Range_Cond): Do not try to optimize on
+	the assumption that the type of an expression can always fit in
+	the target type of a conversion.
+
 2012-07-30  Robert Dewar  <dewar@adacore.com>
 
 	* bindusg.adb: Clarify file in -A lines.

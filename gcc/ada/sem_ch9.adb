@@ -528,15 +528,17 @@ package body Sem_Ch9 is
 
                         return Abandon;
 
-                     --  Quantified expression restricted
+                     --  Quantified expression restricted. Note that we have
+                     --  to check the original node as well, since at this
+                     --  stage, it may have been rewritten.
 
                      elsif Kind = N_Quantified_Expression
-                       or else Nkind (Original_Node (N)) =
-                                 N_Quantified_Expression
+                       or else
+                         Nkind (Original_Node (N)) = N_Quantified_Expression
                      then
                         if Lock_Free_Given then
-                           Error_Msg_N ("quantified expression not allowed",
-                                        N);
+                           Error_Msg_N
+                             ("quantified expression not allowed", N);
                            return Skip;
                         end if;
 
@@ -576,45 +578,54 @@ package body Sem_Ch9 is
                              and then Is_List_Member (Comp_Decl)
                              and then List_Containing (Comp_Decl) = Priv_Decls
                            then
-                              --  Make sure the protected component type has
-                              --  size and alignment fields set at this point
-                              --  whenever this is possible.
+                              --  Skip generic types since, in that case, we
+                              --  will not build a body anyway (in the generic
+                              --  template), and the size in the template may
+                              --  have a fake value.
 
-                              Layout_Type (Comp_Type);
+                              if not Is_Generic_Type (Comp_Type) then
 
-                              --  Note that Known_Esize is used and not
-                              --  Known_Static_Esize in order to capture the
-                              --  errors properly at the instantiation point.
+                                 --  Make sure the protected component type has
+                                 --  size and alignment fields set at this
+                                 --  point whenever this is possible.
 
-                              if Known_Esize (Comp_Type) then
-                                 Comp_Size := UI_To_Int (Esize (Comp_Type));
+                                 Layout_Type (Comp_Type);
 
-                              --  If the Esize (Object_Size) is unknown at
-                              --  compile-time, look at the RM_Size
-                              --  (Value_Size) since it may have been set by an
-                              --  explicit representation clause.
+                                 if Known_Static_Esize (Comp_Type) then
+                                    Comp_Size := UI_To_Int (Esize (Comp_Type));
 
-                              elsif Known_RM_Size (Comp_Type) then
-                                 Comp_Size := UI_To_Int (RM_Size (Comp_Type));
+                                 --  If the Esize (Object_Size) is unknown at
+                                 --  compile-time, look at the RM_Size
+                                 --  (Value_Size) since it may have been set by
+                                 --  an explicit representation clause.
+
+                                 elsif Known_Static_RM_Size (Comp_Type) then
+                                    Comp_Size :=
+                                      UI_To_Int (RM_Size (Comp_Type));
+
+                                    --  Worrisome missing else raise PE???
+                                 end if;
+
+                                 --  Check that the size of the component is 8,
+                                 --  16, 32 or 64 bits.
+
+                                 --  What about AAMP here???
+
+                                 case Comp_Size is
+                                    when 8 | 16 | 32 | 64 =>
+                                       null;
+                                    when others           =>
+                                       if Lock_Free_Given then
+                                          Error_Msg_NE
+                                            ("type of& must support atomic " &
+                                             "operations",
+                                             N, Comp_Id);
+                                          return Skip;
+                                       end if;
+
+                                       return Abandon;
+                                 end case;
                               end if;
-
-                              --  Check that the size of the component is 8,
-                              --  16, 32 or 64 bits.
-
-                              case Comp_Size is
-                                 when 8 | 16 | 32 | 64 =>
-                                    null;
-                                 when others           =>
-                                    if Lock_Free_Given then
-                                       Error_Msg_NE
-                                         ("type of& must support atomic " &
-                                          "operations",
-                                          N, Comp_Id);
-                                       return Skip;
-                                    end if;
-
-                                    return Abandon;
-                              end case;
 
                               --  Check if another protected component has
                               --  already been accessed by the subprogram body.
