@@ -5981,6 +5981,9 @@ package body Exp_Aggr is
    --    Bounds are within 32-bit Int range
    --    All bounds and values are static
 
+   --  Note: for now, in the 2-D case, we only handle component sizes of
+   --  1, 2, 4 (cases where an integral number of elements occupies a byte).
+
    function Packed_Array_Aggregate_Handled (N : Node_Id) return Boolean is
       Loc  : constant Source_Ptr := Sloc (N);
       Typ  : constant Entity_Id  := Etype (N);
@@ -6302,7 +6305,8 @@ package body Exp_Aggr is
             return False;
          else
             return Expr_Value (L1) /= Expr_Value (L2)
-              or else Expr_Value (H1) /= Expr_Value (H2);
+                     or else
+                   Expr_Value (H1) /= Expr_Value (H2);
          end if;
       end if;
    end Must_Slide;
@@ -6386,39 +6390,36 @@ package body Exp_Aggr is
       --  Expression in original aggregate
 
       One_Dim   : Node_Id;
-      --  one-dimensional subaggregate
+      --  One-dimensional subaggregate
 
    begin
 
-      --  For now, only deal with tight packing. The boolean case is the
-      --  most common.
+      --  For now, only deal with cases where an integral number of elements
+      --  fit in a single byte. This includes the most common boolean case.
 
-      if Comp_Size = 1
-         or else Comp_Size = 2
-         or else Comp_Size = 4
+      if not (Comp_Size = 1 or else
+              Comp_Size = 2 or else
+              Comp_Size = 4)
       then
-         null;
-
-      else
          return False;
       end if;
 
       Convert_To_Positional
         (N, Max_Others_Replicate => 64, Handle_Bit_Packed => True);
 
-      --  Verify that all components are static.
+      --  Verify that all components are static
 
       if Nkind (N) = N_Aggregate
         and then Compile_Time_Known_Aggregate (N)
       then
          null;
 
-      --  The aggregate may have been re-analyzed and converted already.
+      --  The aggregate may have been re-analyzed and converted already
 
       elsif Nkind (N) /= N_Aggregate then
          return True;
 
-      --  If component associations remain, the aggregate is not static.
+      --  If component associations remain, the aggregate is not static
 
       elsif Present (Component_Associations (N)) then
          return False;
@@ -6460,17 +6461,17 @@ package body Exp_Aggr is
          Comp_Val : Uint;
          --  integer value of component
 
-         Incr  : Int;
+         Incr : Int;
          --  Step size for packing
 
          Init_Shift : Int;
-         --  endian-dependent start position for packing
+         --  Endian-dependent start position for packing
 
          Shift : Int;
-         --  current insertion position
+         --  Current insertion position
 
-         Val   : Int;
-         --  component of packed array being assembled.
+         Val : Int;
+         --  Component of packed array being assembled.
 
       begin
          Comps := New_List;
@@ -6485,10 +6486,10 @@ package body Exp_Aggr is
            xor Reverse_Storage_Order (Base_Type (Typ))
          then
             Init_Shift := Byte_Size - Comp_Size;
-            Incr  := -Comp_Size;
+            Incr := -Comp_Size;
          else
             Init_Shift := 0;
-            Incr  := +Comp_Size;
+            Incr := +Comp_Size;
          end if;
 
          Shift := Init_Shift;
@@ -6531,7 +6532,7 @@ package body Exp_Aggr is
 
          if Packed_Num > 0 then
 
-            --  Add final incomplete byte if present.
+            --  Add final incomplete byte if present
 
             Append (Make_Integer_Literal (Sloc (One_Dim), Val), Comps);
          end if;
@@ -6540,8 +6541,8 @@ package body Exp_Aggr is
              Unchecked_Convert_To (Typ,
                Make_Qualified_Expression (Loc,
                  Subtype_Mark => New_Occurrence_Of (Packed_Array, Loc),
-               Expression =>
-                Make_Aggregate (Loc,  Expressions => Comps))));
+                 Expression   =>
+                   Make_Aggregate (Loc,  Expressions => Comps))));
          Analyze_And_Resolve (N);
          return True;
       end;

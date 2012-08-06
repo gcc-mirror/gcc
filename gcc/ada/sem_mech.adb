@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -352,13 +352,13 @@ package body Sem_Mech is
                   --    Access parameters (RM B.3(68))
                   --    Access to subprogram types (RM B.3(71))
 
-                  --  Note: in the case of access parameters, it is the
-                  --  pointer that is passed by value. In GNAT access
-                  --  parameters are treated as IN parameters of an
-                  --  anonymous access type, so this falls out free.
+                  --  Note: in the case of access parameters, it is the pointer
+                  --  that is passed by value. In GNAT access parameters are
+                  --  treated as IN parameters of an anonymous access type, so
+                  --  this falls out free.
 
-                  --  The bottom line is that all IN elementary types
-                  --  are passed by copy in GNAT.
+                  --  The bottom line is that all IN elementary types are
+                  --  passed by copy in GNAT.
 
                   if Is_Elementary_Type (Typ) then
                      if Ekind (Formal) = E_In_Parameter then
@@ -385,10 +385,21 @@ package body Sem_Mech is
                      if Convention (Typ) /= Convention_C then
                         Set_Mechanism (Formal, By_Reference);
 
-                     --  If convention C_Pass_By_Copy was specified for
-                     --  the record type, then we pass by copy.
+                     --  OUT and IN OUT parameters of record types are passed
+                     --  by reference regardless of pragmas (RM B.3 (69/2)).
 
-                     elsif C_Pass_By_Copy (Typ) then
+                     elsif Ekind_In (Formal, E_Out_Parameter,
+                                             E_In_Out_Parameter)
+                     then
+                        Set_Mechanism (Formal, By_Reference);
+
+                     --  IN parameters of record types are passed by copy only
+                     --  when the related type has convention C_Pass_By_Copy
+                     --  (RM B.3 (68.1/2)).
+
+                     elsif Ekind (Formal) = E_In_Parameter
+                       and then C_Pass_By_Copy (Typ)
+                     then
                         Set_Mechanism (Formal, By_Copy);
 
                      --  Otherwise, for a C convention record, we set the

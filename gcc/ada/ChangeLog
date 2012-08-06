@@ -1,5 +1,27 @@
 2012-08-06  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* sem_mech.adb (Set_Mechanisms): OUT and IN OUT parameters are
+	now unconditionally passed by reference. IN parameters subject
+	to convention C_Pass_By_Copy are passed by copy, otherwise they
+	are passed by reference.
+
+2012-08-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Analyze_Object_Declaration): According to
+	AI95-0303, protected objects with interrupt handlers can be
+	declared in nested scopes. This is a binding interpretation,
+	and thus applies to all versions of the compiler.
+
+2012-08-06  Robert Dewar  <dewar@adacore.com>
+
+	* frontend.adb, exp_aggr.adb: Minor reformatting.
+
+2012-08-06  Thomas Quinot  <quinot@adacore.com>
+
+	* par-endh.adb: Minor reformatting.
+
+2012-08-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* exp_ch7.adb (Process_Transient_Objects): Remove obsolete loop
 	processing related to array initialization. The expansion of
 	loops already contains a mechanism to detect controlled objects
