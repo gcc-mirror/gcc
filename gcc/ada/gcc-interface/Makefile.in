@@ -784,15 +784,31 @@ ifeq ($(strip $(filter-out sparc% wrs vx%,$(targ))),)
   s-tasinf.ads<s-tasinf-vxworks.ads \
   s-taspri.ads<s-taspri-vxworks.ads \
   s-tpopsp.adb<s-tpopsp-vxworks.adb \
-  s-vxwork.ads<s-vxwork-sparcv9.ads \
   g-socthi.ads<g-socthi-vxworks.ads \
   g-socthi.adb<g-socthi-vxworks.adb \
-  g-stsifd.adb<g-stsifd-sockets.adb \
-  system.ads<system-vxworks-sparcv9.ads   \
+  g-stsifd.adb<g-stsifd-sockets.adb
 
   TOOLS_TARGET_PAIRS=\
   mlib-tgt-specific.adb<mlib-tgt-specific-vxworks.adb \
   indepsw.adb<indepsw-gnu.adb
+
+  ifeq ($(arch),sparc)
+    # 32-bits
+    LIBGNAT_TARGET_PAIRS += \
+    s-vxwork.ads<s-vxwork-sparc.ads \
+    system.ads<system-vxworks-sparc-kernel.ads
+  else
+    # 64-bits
+    LIBGNAT_TARGET_PAIRS += \
+    s-vxwork.ads<s-vxwork-sparcv9.ads \
+    system.ads<system-vxworks-sparcv9.ads
+  endif
+
+  ifeq ($(strip $(filter-out kernel,$(THREAD_KIND))),)
+    LIBGNAT_TARGET_PAIRS += \
+    s-vxwext.ads<s-vxwext-kernel.ads \
+    s-vxwext.adb<s-vxwext-kernel.adb
+  endif
 
   EXTRA_GNATRTL_NONTASKING_OBJS=i-vxwork.o i-vxwoio.o
   EXTRA_GNATRTL_TASKING_OBJS=s-vxwork.o s-vxwext.o
