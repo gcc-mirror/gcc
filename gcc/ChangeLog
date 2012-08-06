@@ -1,3 +1,8 @@
+2012-08-06  Olivier Hainque  <hainque@adacore.com>
+
+	* tree-emutls.c (new_emutls_decl): When a var_section is requested by
+	the target, attach the new decl to that, not to the template section.
+
 2012-08-06  Tom de Vries  <tom@codesourcery.com>
 
 	* tree-switch-conversion.c (emit_case_bit_tests): Generate MINUS_EXPR in
