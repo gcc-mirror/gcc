@@ -1,5 +1,25 @@
 2012-08-06  Robert Dewar  <dewar@adacore.com>
 
+	* aspects.ads: Define Aspect_Id_Exclude_No_Aspect.
+	* par-ch13.adb, restrict.adb: Use Aspect_Id_Exclude_No_Aspect to
+	simplify code.
+
+2012-08-06  Yannick Moy  <moy@adacore.com>
+
+	* gnat-style.texi: Update style guide for declarations.
+
+2012-08-06  Yannick Moy  <moy@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): In the case for 'Old,
+	skip a special expansion which is not needed in Alfa mode.
+
+2012-08-06  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch5.adb (Analyze_Iterator_Specification): Do not perform
+	an expansion of the iterator in Alfa mode.
+
+2012-08-06  Robert Dewar  <dewar@adacore.com>
+
 	* s-oscons-tmplt.c, sem_ch9.adb, osint.adb: Minor reformatting.
 
 2012-08-06  Hristian Kirtchev  <kirtchev@adacore.com>
