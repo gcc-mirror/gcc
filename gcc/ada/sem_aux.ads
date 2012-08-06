@@ -168,17 +168,46 @@ package Sem_Aux is
    --  otherwise Empty is returned. A special case is that when Nam is
    --  Name_Priority, the call will also find Interrupt_Priority.
 
+   function Get_Rep_Item
+     (E             : Entity_Id;
+      Nam1          : Name_Id;
+      Nam2          : Name_Id;
+      Check_Parents : Boolean := True) return Node_Id;
+   --  Searches the Rep_Item chain for a given entity E, for an instance of a
+   --  rep item (pragma, attribute definition clause, or aspect specification)
+   --  whose name matches one of the given names Nam1 or Nam2. If Check_Parents
+   --  is False then it only returns rep item that has been directly specified
+   --  for E (and not inherited from its parents, if any). If one is found, it
+   --  is returned, otherwise Empty is returned. A special case is that when
+   --  one of the given names is Name_Priority, the call will also find
+   --  Interrupt_Priority.
+
    function Get_Rep_Pragma
      (E             : Entity_Id;
       Nam           : Name_Id;
       Check_Parents : Boolean := True) return Node_Id;
-   --  Searches the Rep_Item chain for a given entity E, for an instance
-   --  of a representation pragma whose name matches the given name Nam. If
+   --  Searches the Rep_Item chain for a given entity E, for an instance of a
+   --  representation pragma whose name matches the given name Nam. If
    --  Check_Parents is False then it only returns representation pragma that
    --  has been directly specified for E (and not inherited from its parents,
-   --  if any). If one is found, it is returned, otherwise Empty is returned. A
-   --  special case is that when Nam is Name_Priority, the call will also find
+   --  if any). If one is found and if it is the first rep item in the list
+   --  that matches Nam, it is returned, otherwise Empty is returned. A special
+   --  case is that when Nam is Name_Priority, the call will also find
    --  Interrupt_Priority.
+
+   function Get_Rep_Pragma
+     (E             : Entity_Id;
+      Nam1          : Name_Id;
+      Nam2          : Name_Id;
+      Check_Parents : Boolean := True) return Node_Id;
+   --  Searches the Rep_Item chain for a given entity E, for an instance of a
+   --  representation pragma whose name matches one of the given names Nam1 or
+   --  Nam2. If Check_Parents is False then it only returns representation
+   --  pragma that has been directly specified for E (and not inherited from
+   --  its parents, if any). If one is found and if it is the first rep item in
+   --  the list that matches one of the given names, it is returned, otherwise
+   --  Empty is returned. A special case is that when one of the given names is
+   --  Name_Priority, the call will also find Interrupt_Priority.
 
    function Has_Rep_Item
      (E             : Entity_Id;
@@ -191,6 +220,18 @@ package Sem_Aux is
    --  from its parents, if any). If found then True is returned, otherwise
    --  False indicates that no matching entry was found.
 
+   function Has_Rep_Item
+     (E             : Entity_Id;
+      Nam1          : Name_Id;
+      Nam2          : Name_Id;
+      Check_Parents : Boolean := True) return Boolean;
+   --  Searches the Rep_Item chain for the given entity E, for an instance of a
+   --  rep item (pragma, attribute definition clause, or aspect specification)
+   --  with the given names Nam1 or Nam2. If Check_Parents is False then it
+   --  only checks for a rep item that has been directly specified for E (and
+   --  not inherited from its parents, if any). If found then True is returned,
+   --  otherwise False indicates that no matching entry was found.
+
    function Has_Rep_Pragma
      (E             : Entity_Id;
       Nam           : Name_Id;
@@ -199,8 +240,21 @@ package Sem_Aux is
    --  representation pragma with the given name Nam. If Check_Parents is False
    --  then it only checks for a representation pragma that has been directly
    --  specified for E (and not inherited from its parents, if any). If found
-   --  then True is returned, otherwise False indicates that no matching entry
-   --  was found.
+   --  and if it is the first rep item in the list that matches Nam then True
+   --  is returned, otherwise False indicates that no matching entry was found.
+
+   function Has_Rep_Pragma
+     (E             : Entity_Id;
+      Nam1          : Name_Id;
+      Nam2          : Name_Id;
+      Check_Parents : Boolean := True) return Boolean;
+   --  Searches the Rep_Item chain for the given entity E, for an instance of a
+   --  representation pragma with the given names Nam1 or Nam2. If
+   --  Check_Parents is False then it only checks for a rep item that has been
+   --  directly specified for E (and not inherited from its parents, if any).
+   --  If found and if it is the first rep item in the list that matches one of
+   --  the given names then True is returned, otherwise False indicates that no
+   --  matching entry was found.
 
    function In_Generic_Body (Id : Entity_Id) return Boolean;
    --  Determine whether entity Id appears inside a generic body

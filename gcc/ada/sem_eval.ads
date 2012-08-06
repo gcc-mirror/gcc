@@ -225,7 +225,7 @@ package Sem_Eval is
    --  are statically matching subtypes (RM 4.9.1(1-2)).
 
    function Compile_Time_Known_Value (Op : Node_Id) return Boolean;
-   --  Returns true if Op is an expression not raising constraint error whose
+   --  Returns true if Op is an expression not raising Constraint_Error whose
    --  value is known at compile time. This is true if Op is a static
    --  expression, but can also be true for expressions which are technically
    --  non-static but which are in fact known at compile time, such as the
@@ -236,9 +236,12 @@ package Sem_Eval is
 
    function Compile_Time_Known_Value_Or_Aggr (Op : Node_Id) return Boolean;
    --  Similar to Compile_Time_Known_Value, but also returns True if the value
-   --  is a compile time known aggregate, i.e. an aggregate all of whose
-   --  constituent expressions are either compile time known values or compile
-   --  time known aggregates.
+   --  is a compile-time-known aggregate, i.e. an aggregate all of whose
+   --  constituent expressions are either compile-time-known values (based on
+   --  calling Compile_Time_Known_Value) or compile-time-known aggregates.
+   --  Note that the aggregate could still involve run-time checks that might
+   --  fail (such as for subtype checks in component associations), but the
+   --  evaluation of the expressions themselves will not raise an exception.
 
    function Compile_Time_Known_Bounds (T : Entity_Id) return Boolean;
    --  If T is an array whose index bounds are all known at compile time, then

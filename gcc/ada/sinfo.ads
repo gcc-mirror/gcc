@@ -669,7 +669,7 @@ package Sinfo is
    --    Present in N_Aggregate nodes. Set for aggregates which can be fully
    --    evaluated at compile time without raising constraint error. Such
    --    aggregates can be passed as is to Gigi without any expansion. See
-   --    Sem_Aggr for the specific conditions under which an aggregate has this
+   --    Exp_Aggr for the specific conditions under which an aggregate has this
    --    flag set.
 
    --  Componentwise_Assignment (Flag14-Sem)

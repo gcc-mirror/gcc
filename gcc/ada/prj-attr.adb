@@ -851,7 +851,7 @@ package body Prj.Attr is
 
       for Index in Package_Attributes.First .. Package_Attributes.Last loop
          if Package_Attributes.Table (Index).Name = Pkg_Name then
-            Fail ("cannot register a package with a non unique name"""
+            Fail ("cannot register a package with a non unique name """
                   & Name
                   & """");
             Id := Empty_Package;
@@ -889,7 +889,7 @@ package body Prj.Attr is
 
       for Index in Package_Attributes.First .. Package_Attributes.Last loop
          if Package_Attributes.Table (Index).Name = Pkg_Name then
-            Fail ("cannot register a package with a non unique name"""
+            Fail ("cannot register a package with a non unique name """
                   & Name
                   & """");
             raise Project_Error;

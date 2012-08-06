@@ -238,6 +238,14 @@ package body Exp_Aggr is
    --  This is the top-level routine to perform array aggregate expansion.
    --  N is the N_Aggregate node to be expanded.
 
+   function Is_Two_Dim_Packed_Array (Typ : Entity_Id) return Boolean;
+
+   --  For two-dimensional packed aggregates with constant bounds and constant
+   --  components, it is preferable to pack the inner aggregates because the
+   --  whole matrix can then be presented to the back-end as a one-dimensional
+   --  list of literals. This is much more efficient than expanding into single
+   --  component assignments.
+
    function Late_Expansion
      (N      : Node_Id;
       Typ    : Entity_Id;
@@ -306,12 +314,19 @@ package body Exp_Aggr is
       --  increase the limit when Static_Elaboration_Desired, given that this
       --  means that objects are intended to be placed in data memory.
 
+      --  We also increase the limit if the aggregate is for a packed two-
+      --  dimensional array, because if components are static it is much more
+      --  efficient to construct a one-dimensional equivalent array with static
+      --  components.
+
       Max_Aggr_Size : constant Nat :=
                         5000 + (2 ** 24 - 5000) *
                           Boolean'Pos
                             (Restriction_Active (No_Elaboration_Code)
                                or else
                              Restriction_Active (No_Implicit_Loops)
+                               or else
+                             Is_Two_Dim_Packed_Array (Typ)
                                or else
                              ((Ekind (Current_Scope) = E_Package
                                and then
@@ -5899,6 +5914,19 @@ package body Exp_Aggr is
                   (RTE_Available (RE_Interface_Data_Element)
                      and then Typ = RTE (RE_Interface_Data_Element)));
    end Is_Static_Dispatch_Table_Aggregate;
+
+   -----------------------------
+   -- Is_Two_Dim_Packed_Array --
+   -----------------------------
+
+   function Is_Two_Dim_Packed_Array (Typ : Entity_Id) return Boolean is
+      C : constant Int := UI_To_Int (Component_Size (Typ));
+   begin
+      return Number_Dimensions (Typ) = 2
+        and then Is_Bit_Packed_Array (Typ)
+        and then
+          (C = 1 or else C = 2 or else C = 4);
+   end Is_Two_Dim_Packed_Array;
 
    --------------------
    -- Late_Expansion --
