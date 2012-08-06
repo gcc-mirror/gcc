@@ -72,7 +72,7 @@ MODULE testmod
     PROCEDURE, NOPASS :: subroutine2 => proc_intfunc ! { dg-error "must also be a SUBROUTINE" }
     PROCEDURE, NOPASS :: intfunction1 => proc_intfunc ! Ok, matching functions.
     PROCEDURE, NOPASS :: intfunction2 => proc_sub ! { dg-error "must also be a FUNCTION" }
-    PROCEDURE, NOPASS :: intfunction3 => proc_realfunc ! { dg-error "matching result types" }
+    PROCEDURE, NOPASS :: intfunction3 => proc_realfunc ! { dg-error "Type/rank mismatch in function result" }
 
     ! For access-based checks.
     PROCEDURE, NOPASS, PUBLIC :: priv => proc_sub ! Ok, increases visibility.

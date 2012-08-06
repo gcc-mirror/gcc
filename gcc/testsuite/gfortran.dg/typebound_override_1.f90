@@ -19,11 +19,11 @@ module m
 
   type, extends(t1) :: t2
    contains
-     procedure, nopass :: a => a2  ! { dg-error "Character length mismatch" }
-     procedure, nopass :: b => b2  ! { dg-error "should have matching result types and ranks" }
-     procedure, nopass :: c => c2  ! { dg-warning "Possible character length mismatch" }
+     procedure, nopass :: a => a2  ! { dg-error "Character length mismatch in function result" }
+     procedure, nopass :: b => b2  ! { dg-error "Type/rank mismatch in function result" }
+     procedure, nopass :: c => c2  ! FIXME: dg-warning "Possible character length mismatch" 
      procedure, nopass :: d => d2  ! valid, check for commutativity (+,*)
-     procedure, nopass :: e => e2  ! { dg-error "Character length mismatch" }
+     procedure, nopass :: e => e2  ! { dg-error "Character length mismatch in function result" }
   end type
 
 contains
@@ -110,7 +110,7 @@ module w2
 
  type, extends(tt1) :: tt2
  contains
-   procedure, nopass :: aa => aa2  ! { dg-warning "Possible character length mismatch" }
+   procedure, nopass :: aa => aa2  ! FIXME: dg-warning "Possible character length mismatch"
  end type
 
 contains

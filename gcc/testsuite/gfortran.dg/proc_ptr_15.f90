@@ -19,10 +19,10 @@ p4 => p3
 p6 => p1
 
 ! invalid
-p1 => iabs   ! { dg-error "Type/rank mismatch in return value" }
-p1 => p2     ! { dg-error "Type/rank mismatch in return value" }
-p1 => p5     ! { dg-error "Type/rank mismatch in return value" }
-p6 => iabs   ! { dg-error "Type/rank mismatch in return value" }
+p1 => iabs   ! { dg-error "Type/rank mismatch in function result" }
+p1 => p2     ! { dg-error "Type/rank mismatch in function result" }
+p1 => p5     ! { dg-error "Type/rank mismatch in function result" }
+p6 => iabs   ! { dg-error "Type/rank mismatch in function result" }
 p4 => p2     ! { dg-error "is not a subroutine" }
 
 contains
