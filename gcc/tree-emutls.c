@@ -312,8 +312,8 @@ new_emutls_decl (tree decl, tree alias_of)
   if (!DECL_COMMON (to) && targetm.emutls.var_section)
     {
       DECL_SECTION_NAME (to)
-        = build_string (strlen (targetm.emutls.tmpl_section),
-			targetm.emutls.tmpl_section);
+        = build_string (strlen (targetm.emutls.var_section),
+			targetm.emutls.var_section);
     }
 
   /* If this variable is defined locally, then we need to initialize the
