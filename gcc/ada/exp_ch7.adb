@@ -2645,7 +2645,18 @@ package body Exp_Ch7 is
                 Obj_Ref => Obj_Ref,
                 Typ     => Obj_Typ);
 
-            if Exceptions_OK then
+            --  For CodePeer, the exception handlers normally generated here
+            --  generate complex flowgraphs which result in capacity problems.
+            --  Omitting these handlers for CodePeer is justified as follows:
+
+            --    If a handler is dead, then omitting it is surely ok
+
+            --    If a handler is live, then CodePeer should flag the
+            --      potentially-exception-raising construct that causes it
+            --      to be live. That is what we are interested in, not what
+            --      happens after the exception is raised.
+
+            if Exceptions_OK and not CodePeer_Mode then
                Fin_Stmts := New_List (
                  Make_Block_Statement (Loc,
                    Handled_Statement_Sequence =>

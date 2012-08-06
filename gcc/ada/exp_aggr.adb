@@ -3737,6 +3737,9 @@ package body Exp_Aggr is
          Analyze_And_Resolve (N, Typ);
       end if;
 
+      --  Is Static_Eaboration_Desired has been specified, diagnose aggregates
+      --  that will still require initialization code.
+
       if (Ekind (Current_Scope) = E_Package
         and then Static_Elaboration_Desired (Current_Scope))
         and then Nkind (Parent (N)) = N_Object_Declaration
@@ -3745,7 +3748,7 @@ package body Exp_Aggr is
             Expr : Node_Id;
 
          begin
-            if Present (Expressions (N)) then
+            if Nkind (N) = N_Aggregate and then Present (Expressions (N)) then
                Expr := First (Expressions (N));
                while Present (Expr) loop
                   if Nkind_In (Expr, N_Integer_Literal, N_Real_Literal)

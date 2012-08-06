@@ -1,3 +1,17 @@
+2012-08-06  Geert Bosch  <bosch@adacore.com>
+
+	* a-ngelfu.adb: Change obsolete comment that this is a non-strict
+	implementation.
+
+2012-08-06  Steve Baird  <baird@adacore.com>
+
+	* exp_ch7.adb (Build_Finalizer.Process_Object_Declaration): If
+	CodePeer_Mode = True then omit exception handlers for finalization calls
+
+2012-08-06  Robert Dewar  <dewar@adacore.com>
+
+	* exp_aggr.adb: Minor reformatting.
+
 2012-08-06  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch6.adb: Remove useless flag Body_Deleted.

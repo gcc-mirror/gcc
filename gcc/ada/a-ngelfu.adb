@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,9 +31,7 @@
 
 --  This body is specifically for using an Ada interface to C math.h to get
 --  the computation engine. Many special cases are handled locally to avoid
---  unnecessary calls. This is not a "strict" implementation, but takes full
---  advantage of the C functions, e.g. in providing interface to hardware
---  provided versions of the elementary functions.
+--  unnecessary calls or to meet Annex G strict mode requirements.
 
 --  Uses functions sqrt, exp, log, pow, sin, asin, cos, acos, tan, atan, sinh,
 --  cosh, tanh from C library via math.h
