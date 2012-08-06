@@ -288,7 +288,7 @@ namespace decimal
   inline _Tp operator _Op(_Tp __rhs)		\
   {						\
     _Tp __tmp;					\
-    __tmp.__setval(0 _Op __rhs.__getval());	\
+    __tmp.__setval(_Op __rhs.__getval());	\
     return __tmp;				\
   }
 

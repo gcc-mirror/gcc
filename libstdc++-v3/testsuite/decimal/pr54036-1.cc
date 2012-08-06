@@ -1,4 +1,4 @@
-// Copyright (C) 2009-2012 Free Software Foundation, Inc.
+// Copyright (C) 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,52 +17,55 @@
 
 // { dg-require-effective-target dfp }
 
-// ISO/IEC TR 24733  3.2.2.1  Construct/copy/destroy (decimal32).
-// ISO/IEC TR 24733  3.2.3.1  Construct/copy/destroy (decimal64).
-// ISO/IEC TR 24733  3.2.4.1  Construct/copy/destroy (decimal128).
-
-// Test the default constructor.
-
 #include <decimal/decimal>
-#include <cstring>
 #include <testsuite_hooks.h>
 
 using namespace std::decimal;
 
-void
-ctor_32 (void)
+decimal32
+__attribute__ ((noinline))
+my_nan32 (void)
 {
-  bool test __attribute__((unused)) = true;
-  decimal32 a;
-  float b __attribute__((mode(SD))) = 0.e-101DF;
-
-  VERIFY (std::memcmp (&a, &b, 4) == 0);
+  decimal32 z = 0;
+  decimal32 v = z/z;
+  return v;
 }
 
-void
-ctor_64 (void)
+decimal32
+__attribute__ ((noinline))
+my_inf32 (void)
 {
-  bool test __attribute__((unused)) = true;
-  decimal64 a;
-  float b __attribute__((mode(DD))) = 0.e-398DD;
-
-  VERIFY (std::memcmp (&a, &b, 8) == 0);
-}
-
-void
-ctor_128 (void)
-{
-  bool test __attribute__((unused)) = true;
-  decimal128 a;
-  float b __attribute__((mode(TD))) = 0.e-6176DL;
-
-  VERIFY (std::memcmp (&a, &b, 16) == 0);
+  decimal32 o = 1;
+  decimal32 z = 0;
+  decimal32 v = o/z;
+  return v;
 }
 
 int
 main ()
 {
-  ctor_32 ();
-  ctor_64 ();
-  ctor_128 ();
+  bool test __attribute__((unused)) = true;
+  decimal32 v;
+
+  v = my_nan32 ();
+
+  VERIFY (__builtin_isnand32 (v.__getval ()));
+  VERIFY (!__builtin_signbitd32 (v.__getval ()));
+
+  v = -v;
+
+  VERIFY (__builtin_isnand32 (v.__getval ()));
+  VERIFY (__builtin_signbitd32 (v.__getval ()));
+
+  v = my_inf32 ();
+
+  VERIFY (__builtin_isinfd32 (v.__getval ()));
+  VERIFY (!__builtin_signbitd32 (v.__getval ()));
+
+  v = -v;
+
+  VERIFY (__builtin_isinfd32 (v.__getval ()));
+  VERIFY (__builtin_signbitd32 (v.__getval ()));
+
+  return 0;
 }

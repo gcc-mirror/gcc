@@ -1,4 +1,4 @@
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009-2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,6 +37,7 @@ unsigned long long ull = 50;
 void
 binary_add_32 (void)
 {
+  bool test __attribute__((unused)) = true;
   decimal32 a (1000), b;
 
   b = si + a;   VERIFY (b == 980);
@@ -63,6 +64,7 @@ binary_add_32 (void)
 void
 binary_subtract_32 (void)
 {
+  bool test __attribute__((unused)) = true;
   decimal32 a (1000), b;
 
   b = a - si;   VERIFY (b == 1020);
@@ -90,6 +92,7 @@ binary_subtract_32 (void)
 void
 binary_multiply_32 (void)
 {
+  bool test __attribute__((unused)) = true;
   decimal32 a (1000), b;
 
   b = a * si;   VERIFY (b == -20000);
@@ -116,6 +119,7 @@ binary_multiply_32 (void)
 void
 binary_divide_32 (void)
 {
+  bool test __attribute__((unused)) = true;
   decimal32 a (1000), b;
 
   b = a / si;   VERIFY (b == -50);
@@ -143,6 +147,7 @@ binary_divide_32 (void)
 void
 binary_add_64 (void)
 {
+  bool test __attribute__((unused)) = true;
   decimal64 a (1000), b;
 
   b = a + si;   VERIFY (b == 980);
@@ -169,6 +174,7 @@ binary_add_64 (void)
 void
 binary_subtract_64 (void)
 {
+  bool test __attribute__((unused)) = true;
   decimal64 a (1000), b;
 
   b = a - si;   VERIFY (b == 1020);
@@ -196,6 +202,7 @@ binary_subtract_64 (void)
 void
 binary_multiply_64 (void)
 {
+  bool test __attribute__((unused)) = true;
   decimal64 a (1000), b;
 
   b = a * si;   VERIFY (b == -20000);
@@ -222,6 +229,7 @@ binary_multiply_64 (void)
 void
 binary_divide_64 (void)
 {
+  bool test __attribute__((unused)) = true;
   decimal64 a (1000), b;
 
   b = a / si;   VERIFY (b == -50);
@@ -249,6 +257,7 @@ binary_divide_64 (void)
 void
 binary_add_128 (void)
 {
+  bool test __attribute__((unused)) = true;
   decimal128 a (1000), b;
 
   b = a + si;   VERIFY (b == 980);
@@ -275,6 +284,7 @@ binary_add_128 (void)
 void
 binary_subtract_128 (void)
 {
+  bool test __attribute__((unused)) = true;
   decimal128 a (1000), b;
 
   b = a - si;   VERIFY (b == 1020);
@@ -302,6 +312,7 @@ binary_subtract_128 (void)
 void
 binary_multiply_128 (void)
 {
+  bool test __attribute__((unused)) = true;
   decimal128 a (1000), b;
 
   b = a * si;   VERIFY (b == -20000);
@@ -328,6 +339,7 @@ binary_multiply_128 (void)
 void
 binary_divide_128 (void)
 {
+  bool test __attribute__((unused)) = true;
   decimal128 a (1000), b;
 
   b = a / si;   VERIFY (b == -50);

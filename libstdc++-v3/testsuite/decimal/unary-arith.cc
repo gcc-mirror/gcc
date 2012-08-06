@@ -1,4 +1,4 @@
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009-2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,6 +31,7 @@ decimal128 a128 (5001), b128 (-5001);
 void
 unary_plus_32 (void)
 {
+  bool test __attribute__((unused)) = true;
   decimal32 a;
 
   a = +a32; VERIFY (a == a32);
@@ -40,6 +41,7 @@ unary_plus_32 (void)
 void
 unary_minus_32 (void)
 {
+  bool test __attribute__((unused)) = true;
   decimal32 a;
 
   a = -a32; VERIFY (a == b32);
@@ -49,6 +51,7 @@ unary_minus_32 (void)
 void
 unary_plus_64 (void)
 {
+  bool test __attribute__((unused)) = true;
   decimal64 a;
 
   a = +a64; VERIFY (a == a64);
@@ -58,6 +61,7 @@ unary_plus_64 (void)
 void
 unary_minus_64 (void)
 {
+  bool test __attribute__((unused)) = true;
   decimal64 a;
 
   a = -a64; VERIFY (a == b64);
@@ -67,6 +71,7 @@ unary_minus_64 (void)
 void
 unary_plus_128 (void)
 {
+  bool test __attribute__((unused)) = true;
   decimal128 a;
 
   a = +a128; VERIFY (a == a128);
@@ -76,6 +81,7 @@ unary_plus_128 (void)
 void
 unary_minus_128 (void)
 {
+  bool test __attribute__((unused)) = true;
   decimal128 a;
 
   a = -a128; VERIFY (a == b128);

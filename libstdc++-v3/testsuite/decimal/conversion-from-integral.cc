@@ -1,4 +1,4 @@
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009-2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,6 +29,7 @@ using namespace std::decimal;
 void
 conversion_from_integral_p32 ()
 {
+  bool test __attribute__((unused)) = true;
   decimal32 d;
   decimal32 from_si (1);
   decimal32 from_ui (2U);
@@ -61,6 +62,7 @@ conversion_from_integral_p32 ()
 void
 conversion_from_integral_m32 ()
 {
+  bool test __attribute__((unused)) = true;
   decimal32 d;
   decimal32 from_si (-1);
   decimal32 from_sl (-2L);
@@ -81,6 +83,7 @@ conversion_from_integral_m32 ()
 void
 conversion_from_integral_p64 ()
 {
+  bool test __attribute__((unused)) = true;
   decimal64 d;
   decimal64 from_si (1);
   decimal64 from_ui (2U);
@@ -113,6 +116,7 @@ conversion_from_integral_p64 ()
 void
 conversion_from_integral_m64 ()
 {
+  bool test __attribute__((unused)) = true;
   decimal64 d;
   decimal64 from_si (-1);
   decimal64 from_sl (-2L);
@@ -133,6 +137,7 @@ conversion_from_integral_m64 ()
 void
 conversion_from_integral_p128 ()
 {
+  bool test __attribute__((unused)) = true;
   decimal128 d;
   decimal128 from_si (1);
   decimal128 from_ui (2U);
@@ -164,6 +169,7 @@ conversion_from_integral_p128 ()
 void
 conversion_from_integral_m128 ()
 {
+  bool test __attribute__((unused)) = true;
   decimal128 d;
   decimal128 from_si (-1);
   decimal128 from_sl (-2L);
