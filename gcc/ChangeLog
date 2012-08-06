@@ -1,3 +1,8 @@
+2012-08-06  Cary Coutant  <ccoutant@google.com>
+
+	* cgraphunit.c (assemble_thunk): Add source line info.
+	* final.c (final): Check for non-null cfg pointer.
+
 2012-08-06  Sandra Loosemore  <sandra@codesourcery.com>
 	    Maxim Kuvyrkov  <maxim@codesourcery.com>
 	    Julian Brown  <julian@codesourcery.com>
