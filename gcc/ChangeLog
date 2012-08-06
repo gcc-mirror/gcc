@@ -1,3 +1,19 @@
+2012-08-06  Sandra Loosemore  <sandra@codesourcery.com>
+	    Maxim Kuvyrkov  <maxim@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+	* config/mips/24k.md (r24k_unknown_store): Delete special handling
+	for cprestore.
+	(r24k_int_load, r24k_int_arith, r24k_int_mul3, r24k_int_mfhilo)
+	(r24k_int_cop, r24k_int_multi)
+	(r24kf2_1_fcvt_f2i, r24kf2_1_fxfer)
+	(r24kf1_1_fcvt_f2i, r24kf1_1_fxfer): Use mips_store_data_bypass_p
+	instead of store_data_bypass_p.
+	* config/mips/74k.md (r74k_int_store): Delete special handling for
+	cprestore.
+	(r74k_int_load, r74k_int_logical, r74k_int_arith, r74k_int_cmove):
+	Use mips_store_data_bypass_p instead of store_data_bypass_p.
+
 2012-08-06  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR tree-optimization/51938
