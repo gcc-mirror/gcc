@@ -6660,12 +6660,6 @@ package body Checks is
             LB := New_Occurrence_Of (Discriminal (Entity (LB)), Loc);
          end if;
 
-         if Nkind (HB) = N_Identifier
-           and then Ekind (Entity (HB)) = E_Discriminant
-         then
-            HB := New_Occurrence_Of (Discriminal (Entity (HB)), Loc);
-         end if;
-
          Left_Opnd :=
            Make_Op_Lt (Loc,
              Left_Opnd  =>
@@ -6677,28 +6671,10 @@ package body Checks is
                  (Base_Type (Typ),
                   Get_E_First_Or_Last (Loc, Typ, 0, Name_First)));
 
-         if Base_Type (Typ) = Typ then
-            return Left_Opnd;
-
-         elsif Compile_Time_Known_Value (High_Bound (Scalar_Range (Typ)))
-            and then
-               Compile_Time_Known_Value (High_Bound (Scalar_Range
-                                                     (Base_Type (Typ))))
+         if Nkind (HB) = N_Identifier
+           and then Ekind (Entity (HB)) = E_Discriminant
          then
-            if Is_Floating_Point_Type (Typ) then
-               if Expr_Value_R (High_Bound (Scalar_Range (Typ))) =
-                  Expr_Value_R (High_Bound (Scalar_Range (Base_Type (Typ))))
-               then
-                  return Left_Opnd;
-               end if;
-
-            else
-               if Expr_Value (High_Bound (Scalar_Range (Typ))) =
-                  Expr_Value (High_Bound (Scalar_Range (Base_Type (Typ))))
-               then
-                  return Left_Opnd;
-               end if;
-            end if;
+            HB := New_Occurrence_Of (Discriminal (Entity (HB)), Loc);
          end if;
 
          Right_Opnd :=

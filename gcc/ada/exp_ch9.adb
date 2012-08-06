@@ -3260,14 +3260,14 @@ package body Exp_Ch9 is
          begin
             --  Get the type size
 
-            if Known_Esize (Comp_Type) then
+            if Known_Static_Esize (Comp_Type) then
                Typ_Size := UI_To_Int (Esize (Comp_Type));
 
             --  If the Esize (Object_Size) is unknown at compile-time, look at
             --  the RM_Size (Value_Size) since it may have been set by an
             --  explicit representation clause.
 
-            elsif Known_RM_Size (Comp_Type) then
+            elsif Known_Static_RM_Size (Comp_Type) then
                Typ_Size := UI_To_Int (RM_Size (Comp_Type));
 
             --  Should not happen since this has already been checked in
