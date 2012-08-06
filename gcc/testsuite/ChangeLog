@@ -1,3 +1,7 @@
+2012-08-06  Cary Coutant  <ccoutant@google.com>
+
+	* g++.dg/debug/dwarf2/non-virtual-thunk.C: New test case.
+
 2012-08-06  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/35831

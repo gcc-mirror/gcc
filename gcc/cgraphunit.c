@@ -1381,6 +1381,10 @@ assemble_thunk (struct cgraph_node *node)
       init_function_start (thunk_fndecl);
       cfun->is_thunk = 1;
       assemble_start_function (thunk_fndecl, fnname);
+      (*debug_hooks->source_line) (DECL_SOURCE_LINE (thunk_fndecl),
+				   DECL_SOURCE_FILE (thunk_fndecl),
+				   /* discriminator */ 0,
+				   /* is_stmt */ 1);
 
       targetm.asm_out.output_mi_thunk (asm_out_file, thunk_fndecl,
 				       fixed_offset, virtual_value, alias);
