@@ -1,7 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -fdump-tree-optimized -fno-inline" } */
 /* { dg-add-options bind_pic_locally } */
-/* { dg-skip-if "code gen not as predicted" { h8300-*-* } { "*" } { "" } } */
 
 int
 very_long_function(int a)

@@ -1,4 +1,5 @@
 /* { dg-options { -nostartfiles below100.o -Tbelow100.ld -O2 } } */
+/* { dg-final { scan-assembler "b\[np\] " } } */
 
 #define SFRA (*((volatile unsigned char*)0x7f14))
 unsigned char *pA = (unsigned char *) 0x7f14;
@@ -26,6 +27,3 @@ main (void)
   *pB = 0xcb;
   return Do ()[0] == 'F';
 }
-
-/* { dg-final { scan-file "13_if0_sfrb_bit_0.s" "b\[np\] " } } */
-

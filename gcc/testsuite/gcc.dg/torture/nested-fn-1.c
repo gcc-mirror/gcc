@@ -3,9 +3,7 @@
 /* { dg-do compile } */
 /* { dg-options "-g0" } */
 /* { dg-require-effective-target trampolines } */
-/* { dg-skip-if "bogus test" { "mips*-*-*" "mn10300-*-*" "powerpc-*-eabispe" "rx-*-*" "sh-*-*" } "*" { "" } } */
 
-#ifndef NO_TRAMPOLINES
 int
 fn1 (int x)
 {
@@ -73,7 +71,4 @@ fn5 (int x)
   return i;
 }
 
-#else
-int x;
-#endif
 /* { dg-final { scan-assembler-not "should_not_appear" } } */

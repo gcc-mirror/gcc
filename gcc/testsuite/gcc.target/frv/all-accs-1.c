@@ -1,7 +1,6 @@
 /* Check that ACCs and ACCGs are treated as global variables even if
    media.h isn't included.  */
 /* { dg-do run } */
-/* { dg-options "-fno-lto" } */
 extern void abort (void);
 extern void exit (int);
 

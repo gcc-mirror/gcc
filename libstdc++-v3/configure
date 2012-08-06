@@ -639,8 +639,6 @@ BUILD_INFO_FALSE
 BUILD_INFO_TRUE
 baseline_subdir_switch
 baseline_dir
-GLIBCXX_USE_LIBM_FALSE
-GLIBCXX_USE_LIBM_TRUE
 GLIBCXX_LDBL_COMPAT_FALSE
 GLIBCXX_LDBL_COMPAT_TRUE
 ENABLE_VISIBILITY_FALSE
@@ -3027,7 +3025,8 @@ test -n "$target_alias" &&
 target_alias=${target_alias-$host_alias}
 
 # Handy for debugging:
-#AC_MSG_NOTICE($build / $host / $target / $host_alias / $target_alias); sleep 5
+{ $as_echo "$as_me:${as_lineno-$LINENO}: $build / $host / $target / $host_alias / $target_alias" >&5
+$as_echo "$as_me: $build / $host / $target / $host_alias / $target_alias" >&6;}; sleep 5
 
 if test "$build" != "$host"; then
   # We are being configured with some form of cross compiler.
@@ -9713,7 +9712,7 @@ if test -z "$aix_libpath"; then aix_libpath="/usr/lib:/lib"; fi
       ;;
 
     # Unfortunately, older versions of FreeBSD 2 do not have this feature.
-    freebsd2*)
+    freebsd2.*)
       archive_cmds='$LD -Bshareable -o $lib $libobjs $deplibs $linker_flags'
       hardcode_direct=yes
       hardcode_minus_L=yes
@@ -10629,7 +10628,7 @@ freebsd* | dragonfly*)
     objformat=`/usr/bin/objformat`
   else
     case $host_os in
-    freebsd[123]*) objformat=aout ;;
+    freebsd[23].*) objformat=aout ;;
     *) objformat=elf ;;
     esac
   fi
@@ -10647,7 +10646,7 @@ freebsd* | dragonfly*)
   esac
   shlibpath_var=LD_LIBRARY_PATH
   case $host_os in
-  freebsd2*)
+  freebsd2.*)
     shlibpath_overrides_runpath=yes
     ;;
   freebsd3.[01]* | freebsdelf3.[01]*)
@@ -11499,7 +11498,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11502 "configure"
+#line 11501 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11605,7 +11604,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11608 "configure"
+#line 11607 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12537,7 +12536,7 @@ if test -z "$aix_libpath"; then aix_libpath="/usr/lib:/lib"; fi
         esac
         ;;
 
-      freebsd[12]*)
+      freebsd2.*)
         # C++ shared libraries reported to be fairly broken before
 	# switch to ELF
         ld_shlibs_CXX=no
@@ -14312,7 +14311,7 @@ freebsd* | dragonfly*)
     objformat=`/usr/bin/objformat`
   else
     case $host_os in
-    freebsd[123]*) objformat=aout ;;
+    freebsd[23].*) objformat=aout ;;
     *) objformat=elf ;;
     esac
   fi
@@ -14330,7 +14329,7 @@ freebsd* | dragonfly*)
   esac
   shlibpath_var=LD_LIBRARY_PATH
   case $host_os in
-  freebsd2*)
+  freebsd2.*)
     shlibpath_overrides_runpath=yes
     ;;
   freebsd3.[01]* | freebsdelf3.[01]*)
@@ -14963,7 +14962,7 @@ fi
     #
     # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
     cat > conftest.$ac_ext << EOF
-#line 14966 "configure"
+#line 14965 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -15298,7 +15297,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15301 "configure"
+#line 15300 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15333,7 +15332,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15336 "configure"
+#line 15335 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15368,7 +15367,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15371 "configure"
+#line 15370 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -15404,7 +15403,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15407 "configure"
+#line 15406 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -15483,7 +15482,7 @@ $as_echo "$as_me: WARNING: Performance of certain classes will degrade as a resu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15486 "configure"
+#line 15485 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -15525,7 +15524,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15528 "configure"
+#line 15527 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -15559,7 +15558,7 @@ $as_echo "$enable_int128" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15562 "configure"
+#line 15561 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -65214,13 +65213,6 @@ $as_echo "#define _GLIBCXX_LONG_DOUBLE_COMPAT 1" >>confdefs.h
 esac
 
 
-ac_use_libm=yes
-case "$target" in
-  s390*-*-tpf)
-    ac_use_libm=no
-esac
-
-
 # This depends on GLIBCXX_ENABLE_SYMVERS and GLIBCXX_IS_NATIVE.
 
   if $GLIBCXX_IS_NATIVE ; then
@@ -66272,15 +66264,6 @@ else
 fi
 
 
-    if test $ac_use_libm = yes; then
-  GLIBCXX_USE_LIBM_TRUE=
-  GLIBCXX_USE_LIBM_FALSE='#'
-else
-  GLIBCXX_USE_LIBM_TRUE='#'
-  GLIBCXX_USE_LIBM_FALSE=
-fi
-
-
 
 
 cat >confcache <<\_ACEOF
@@ -66696,10 +66679,6 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${GLIBCXX_LDBL_COMPAT_TRUE}" && test -z "${GLIBCXX_LDBL_COMPAT_FALSE}"; then
   as_fn_error "conditional \"GLIBCXX_LDBL_COMPAT\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${GLIBCXX_USE_LIBM_TRUE}" && test -z "${GLIBCXX_USE_LIBM_FALSE}"; then
-  as_fn_error "conditional \"GLIBCXX_USE_LIBM\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${BUILD_INFO_TRUE}" && test -z "${BUILD_INFO_FALSE}"; then

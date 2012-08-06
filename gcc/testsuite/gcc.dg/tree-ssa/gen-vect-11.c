@@ -1,5 +1,4 @@
 /* { dg-do run { target vect_cmdline_needed } } */
-/* { dg-skip-if "test too big" { avr-*-* m32c-*-* xstormy16-*-* } { "*" } { "" } } */
 /* { dg-options "-O2 -ftree-vectorize -ftree-vectorizer-verbose=3 -fwrapv -fdump-tree-vect-stats" } */
 /* { dg-options "-O2 -ftree-vectorize -ftree-vectorizer-verbose=3 -fwrapv -fdump-tree-vect-stats -mno-sse" { target { i?86-*-* x86_64-*-* } } } */
 
@@ -31,5 +30,5 @@ int main ()
 }
 
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { ! avr-*-* } } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */

@@ -1966,6 +1966,11 @@ constructor_name_p (tree name, tree type)
   if (TREE_CODE (name) != IDENTIFIER_NODE)
     return false;
 
+  /* These don't have names.  */
+  if (TREE_CODE (type) == DECLTYPE_TYPE
+      || TREE_CODE (type) == TYPEOF_TYPE)
+    return false;
+
   ctor_name = constructor_name_full (type);
   if (name == ctor_name)
     return true;

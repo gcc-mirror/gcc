@@ -3160,7 +3160,7 @@ expand_builtin_memcpy (tree exp, rtx target)
       /* Copy word part most expediently.  */
       dest_addr = emit_block_move_hints (dest_mem, src_mem, len_rtx,
 				         CALL_EXPR_TAILCALL (exp)
-				         ? BLOCK_OP_TAILCALL : BLOCK_OP_BUILTIN,
+				         ? BLOCK_OP_TAILCALL : BLOCK_OP_NORMAL,
 					 expected_align, expected_size);
 
       if (dest_addr == 0)

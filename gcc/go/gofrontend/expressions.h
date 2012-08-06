@@ -1888,6 +1888,10 @@ class Field_reference_expression : public Expression
   do_is_addressable() const
   { return this->expr_->is_addressable(); }
 
+  void
+  do_address_taken(bool escapes)
+  { this->expr_->address_taken(escapes); }
+
   tree
   do_get_tree(Translate_context*);
 

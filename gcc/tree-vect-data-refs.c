@@ -2922,6 +2922,7 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
 	      fprintf (vect_dump, "not vectorized: dr in a call ");
 	      print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
 	    }
+
 	  if (bb_vinfo)
 	    {
 	      STMT_VINFO_VECTORIZABLE (stmt_info) = false;

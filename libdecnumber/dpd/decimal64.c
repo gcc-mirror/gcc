@@ -37,8 +37,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <string.h>	      /* [for memset/memcpy] */
 #include <stdio.h>	      /* [for printf] */
 
-#include "dconfig.h"	      /* GCC definitions */
-#define	 DECNUMDIGITS 16      /* make decNumbers with space for 16 */
+#include "dconfig.h"          /* GCC definitions */
+#define  DECNUMDIGITS 16      /* make decNumbers with space for 16 */
 #include "decNumber.h"	      /* base number library */
 #include "decNumberLocal.h"   /* decNumber local types, etc. */
 #include "decimal64.h"	      /* our primary include */

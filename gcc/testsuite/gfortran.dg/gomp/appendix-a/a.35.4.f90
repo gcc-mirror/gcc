@@ -8,7 +8,7 @@
           DO I = 1, N
              CALL WORK(I, 1)
 ! incorrect nesting of barrier region in a loop region
-!$OMP BARRIER	! { dg-warning "may not be closely nested" }
+!$OMP BARRIER	! { dg-error "may not be closely nested" }
              CALL WORK(I, 2)
           END DO
 !$OMP END PARALLEL

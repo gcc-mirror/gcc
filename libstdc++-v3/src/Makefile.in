@@ -366,11 +366,8 @@ libstdc___la_DEPENDENCIES = \
 	$(top_builddir)/src/c++98/libc++98convenience.la \
 	$(top_builddir)/src/c++11/libc++11convenience.la
 
-@GLIBCXX_USE_LIBM_FALSE@libstdc___la_LDFLAGS = \
-@GLIBCXX_USE_LIBM_FALSE@	-version-info $(libtool_VERSION) ${version_arg} 
-
-@GLIBCXX_USE_LIBM_TRUE@libstdc___la_LDFLAGS = \
-@GLIBCXX_USE_LIBM_TRUE@	-version-info $(libtool_VERSION) ${version_arg} -lm 
+libstdc___la_LDFLAGS = \
+	-version-info $(libtool_VERSION) ${version_arg} -lm
 
 libstdc___la_LINK = $(CXXLINK) $(libstdc___la_LDFLAGS)
 

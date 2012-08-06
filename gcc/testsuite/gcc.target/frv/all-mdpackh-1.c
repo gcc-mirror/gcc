@@ -1,7 +1,5 @@
 /* Test the new (Fujitsu-compatible) __MDPACKH() interface.  */
 /* { dg-do run } */
-/* { dg-options "-fno-lto" } */
-
 extern void exit (int);
 extern void abort (void);
 

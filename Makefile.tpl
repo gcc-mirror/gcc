@@ -1007,7 +1007,7 @@ configure-[+prefix+][+module+]: [+ IF bootstrap +][+ ELSE +]
 	libsrcdir="$$s/[+module+]"; \
 	[+ IF no-config-site +]rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file [+ ENDIF +]$(SHELL) $${libsrcdir}/configure \
-	  [+args+] --quiet --build=${build_alias} --host=[+host_alias+] \
+	  [+args+] --build=${build_alias} --host=[+host_alias+] \
 	  --target=[+target_alias+] $${srcdiroption} [+extra_configure_flags+] \
 	  || exit 1
 @endif [+prefix+][+module+]

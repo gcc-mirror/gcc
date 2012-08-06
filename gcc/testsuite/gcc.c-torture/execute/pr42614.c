@@ -12,7 +12,7 @@ typedef struct STable
   TEntry data[2];
 } TTable;
 
-TTable * Init (void)
+TTable *init ()
 {
   return malloc(sizeof(TTable));
 }
@@ -54,7 +54,7 @@ int
 main ()
 {
   unsigned char index = 0;
-  TTable *table_p = Init ();
+  TTable *table_p = init();
   TEntry work;
 
   inlined_wrong (&(table_p->data[1]), 1);

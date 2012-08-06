@@ -332,13 +332,6 @@ case "$target" in
 esac
 GLIBCXX_CONDITIONAL(GLIBCXX_LDBL_COMPAT, test $ac_ldbl_compat = yes)
 
-ac_use_libm=yes
-case "$target" in
-  s390*-*-tpf)
-    ac_use_libm=no
-esac
-GLIBCXX_CONDITIONAL(GLIBCXX_USE_LIBM, test $ac_use_libm = yes)
-
 # This depends on GLIBCXX_ENABLE_SYMVERS and GLIBCXX_IS_NATIVE.
 GLIBCXX_CONFIGURE_TESTSUITE
 

@@ -7,7 +7,6 @@
 
 /* { dg-do link } */
 /* { dg-options "-fno-finite-math-only" { target sh*-*-* } } */
-/* { dg-skip-if "non-IEEE math" { "rx-*-*" } "*" { "" } } */
 
 extern void link_error(int);
 

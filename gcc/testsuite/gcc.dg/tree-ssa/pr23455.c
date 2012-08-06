@@ -1,5 +1,4 @@
 /* { dg-do compile } */ 
-/* { dg-skip-if "test too big" { avr-*-* m32c-*-* xstormy16-*-* } { "*" } { "" } } */
 /* { dg-options "-O2 -fdump-tree-pre-stats" } */
 #ifdef _WIN64
 #define LONG long long
@@ -26,5 +25,6 @@ bi_windup(unsigned int *outbuf, unsigned int bi_buf)
 /* We should eliminate one load of outcnt, which will in turn let us eliminate
    one multiply of outcnt which will in turn let us eliminate
    one add involving outcnt and outbuf.  */
-/* { dg-final { scan-tree-dump-times "Eliminated: 3" 1 "pre"  } } */
+/* { dg-final { scan-tree-dump-times "Eliminated: 3" 1 "pre" {target { ! avr-*-* } } } } */
+/* { dg-final { scan-tree-dump-times "Eliminated: 4" 1 "pre" {target {   avr-*-* } } } } */
 /* { dg-final { cleanup-tree-dump "pre" } } */

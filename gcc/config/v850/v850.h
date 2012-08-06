@@ -89,7 +89,7 @@ extern GTY(()) rtx v850_compare_op1;
 
 #define TARGET_V850E2_ALL      (TARGET_V850E2 || TARGET_V850E2V3) 
 
-#define ASM_SPEC "%{mv850es:-mv850e1}%{!mv850es:%{mv*:-mv%*}} %{mrelax:-mrelax}"
+#define ASM_SPEC "%{mv850es:-mv850e1}%{!mv850es:%{mv*:-mv%*}}"
 #define CPP_SPEC "\
   %{mv850e2v3:-D__v850e2v3__} \
   %{mv850e2:-D__v850e2__} \
@@ -786,13 +786,8 @@ typedef enum
 #define DEFAULT_GDB_EXTENSIONS 1
 
 /* Use stabs debugging info by default.  */
-#undef  PREFERRED_DEBUGGING_TYPE
-#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
-
-#define DWARF2_FRAME_INFO  1
-#define DWARF2_UNWIND_INFO 0
-#define INCOMING_RETURN_ADDR_RTX   gen_rtx_REG (Pmode, LINK_POINTER_REGNUM)
-#define DWARF_FRAME_RETURN_COLUMN  DWARF_FRAME_REGNUM (LINK_POINTER_REGNUM)
+#undef PREFERRED_DEBUGGING_TYPE
+#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.  */

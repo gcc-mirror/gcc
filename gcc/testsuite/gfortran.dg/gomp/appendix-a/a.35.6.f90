@@ -6,7 +6,7 @@
 !$OMP SINGLE
            CALL WORK(N,1)
 ! incorrect nesting of barrier region in a single region
-!$OMP BARRIER	! { dg-warning "may not be closely nested" }
+!$OMP BARRIER	! { dg-error "may not be closely nested" }
             CALL WORK(N,2)
 !$OMP END SINGLE
 !$OMP END PARALLEL

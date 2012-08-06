@@ -67,10 +67,8 @@ _Unwind_RaiseException_Phase2(struct _Unwind_Exception *exc,
 	    return _URC_FATAL_PHASE2_ERROR;
 	}
 
-#ifndef UNWIND_CFA_NOT_UNIQUE
       /* Don't let us unwind past the handler context.  */
       gcc_assert (!match_handler);
-#endif
 
       uw_update_context (context, &fs);
     }

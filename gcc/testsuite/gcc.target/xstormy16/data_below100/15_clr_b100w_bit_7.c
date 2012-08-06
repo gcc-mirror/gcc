@@ -1,4 +1,5 @@
 /* { dg-options { -nostartfiles below100.o -Tbelow100.ld -O2 } } */
+/* { dg-final { scan-assembler "clr1 B100,#7" } } */
 
 char acDummy[0xf0] __attribute__ ((__BELOW100__));
 unsigned short B100 __attribute__ ((__BELOW100__)) = 0xedcb;
@@ -16,6 +17,3 @@ main (void)
   Do ();
   return (*p == 0xed4b) ? 0 : 1;
 }
-
-/* { dg-final { scan-file "15_clr_b100w_bit_7.s" "clr1 B100,#7" } } */
-

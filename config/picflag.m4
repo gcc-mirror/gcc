@@ -19,7 +19,7 @@ case "${$2}" in
 	;;
     i[[34567]]86-*-cygwin* | i[[34567]]86-*-mingw* | x86_64-*-mingw*)
 	;;
-    i[[34567]]86-*-interix3*)
+    i[[34567]]86-*-interix[[3-9]]*)
 	# Interix 3.x gcc -fpic/-fPIC options generate broken code.
 	# Instead, we relocate shared libraries at runtime.
 	;;
@@ -49,9 +49,6 @@ case "${$2}" in
 	$1=-fpic
 	;;
     m68k-*-*)
-	$1=-fpic
-	;;
-    s390*-*-*)
 	$1=-fpic
 	;;
     # FIXME: Override -fPIC default in libgcc only? 

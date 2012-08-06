@@ -1,55 +1,23 @@
-2012-07-26  Kazu Hirata  <kazu@codesourcery.com>
-	    Sandra Loosemore  <sandra@codesourcery.com>
+2012-06-14  Release Manager
 
-	* pex-win32.c (pex_win32_exec_child): Only close original file
-	descriptors if child is launched successfully.
+	* GCC 4.7.1 released.
 
-2012-07-18  Jason Merrill  <jason@redhat.com>
+2012-03-24  H.J. Lu  <hongjiu.lu@intel.com>
 
-	* cp-demangle.c (cplus_demangle_operators): Add *_cast.
-	(op_is_new_cast): New.
-	(d_expression, d_print_comp): Check it.
+	* testsuite/demangle-expected: Fix a typo.
 
-2012-07-13  Doug Evans  <dje@google.com>
+2012-03-22  Jason Merrill  <jason@redhat.com>
 
-	* filename_cmp.c (filename_hash, filename_eq): New functions.
+	* cp-demangle.c (cplus_demangle_operators): Add li.
+	(d_unqualified_name): Handle it specially.
 
-2012-06-29  Andreas Schwab  <schwab@linux-m68k.org>
+2012-03-22  Release Manager
 
-	* copying-lib.texi (Library Copying): Don't use @heading inside
-	@enumerate.
-
-2012-05-22  Tom Tromey  <tromey@redhat.com>
-
-	http://sourceware.org/bugzilla/show_bug.cgi?id=14065
-	* testsuite/demangle-expected: Add regression test.
-	* cp-demangle.c (d_find_pack): Return NULL for
-	DEMANGLE_COMPONENT_UNNAMED_TYPE.
-
-2012-04-27  Tom Tromey  <tromey@redhat.com>
-
-	* dwarfnames.c: New file.
-	* Makefile.in (CFILES): Add dwarfnames.
-	(REQUIRED_OFILES): Add dwarfnames.
-	(./dwarfnames.$(objext)): New target.
-
-2012-04-04  Tristan Gingold  <gingold@adacore.com>
-
-	* pex-unix.c (to_ptr32): Fix style.
-
-2012-04-02  Tristan Gingold  <gingold@adacore.com>
-
-	* stack-limit.c: Includes ansidecl.h.
-	(stack_limit_increase): Add ATTRIBUTE_UNUSED
+	* GCC 4.7.0 released.
 
 2012-03-20  Jason Merrill  <jason@redhat.com>
 
 	* cp-demangle.c (cplus_demangle_type): Handle 'auto'.
-
-2012-03-07  Jason Merrill  <jason@redhat.com>
-
-	* cp-demangle.c (cplus_demangle_operators): Add li.
-	(d_unqualified_name): Handle it specially.
 
 2012-01-26  Jakub Jelinek  <jakub@redhat.com>
 

@@ -1,6 +1,5 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-vrp1" } */
-/* { dg-skip-if "bogus test" { rx-*-* } { "*" } { "" } } */
 
 
 extern void abort (void) __attribute__ ((__noreturn__));

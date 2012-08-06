@@ -7367,12 +7367,7 @@ avr_file_start (void)
 
   default_file_start ();
 
-  fputs ("__SREG__ = 0x3f\n"
-	 "__SP_H__ = 0x3e\n"
-	 "__SP_L__ = 0x3d\n", asm_out_file);
-  
-  fputs ("__tmp_reg__ = 0\n" 
-         "__zero_reg__ = 1\n", asm_out_file);
+  /* Print I/O addresses of some SFRs used with IN and OUT.  */
 
   if (AVR_HAVE_SPH)
     fprintf (asm_out_file, "__SP_H__ = 0x%02x\n", avr_addr.sp_h - sfr_offset);

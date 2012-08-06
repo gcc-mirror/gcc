@@ -1,3 +1,12 @@
+2012-08-02  Michael Hope  <michael.hope@linaro.org>
+
+	Backport from mainline r186389:
+	2012-04-12  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* testsuite/Makefile.am (check_DEJAGNUnormal0): Run
+	prettyprinters.exp.
+	* testsuite/Makefile.in: Regenerated.
+
 2012-07-29  François Dumont  <fdumont@gcc.gnu.org>
 
 	PR libstdc++/54075
@@ -117,310 +126,25 @@
 
 2012-06-19  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
-	* GCC 4.3.6 released.
+	PR libstdc++/53270
+	* config/os/gnu-linux/os_defines.h: Disable static initializer macros
+	for gthreads types in C++11 mode.
 
-2010-05-22  Release Manager
+2012-06-19  Jörg Sonnenberger <joerg@britannica.bec.de>
+	    Jonathan Wakely  <jwakely.gcc@gmail.com>
 
-	* GCC 4.3.5 released.
+	PR libstdc++/53678
+	* config/os/bsd/netbsd/ctype_base.h: Check for _CTYPE_U.
+	* testsuite/22_locale/ctype_base/53678.cc: New.
 
-2010-05-06  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+2012-06-14  Release Manager
 
-	PR other/43620
-	* configure.ac (AM_INIT_AUTOMAKE): Add no-dist.
-	* configure: Regenerate.
-	* Makefile.in: Regenerate.
-	* doc/Makefile.in: Regenerate.
-	* include/Makefile.in: Regenerate.
-	* libmath/Makefile.in: Regenerate.
-	* libsupc++/Makefile.in: Regenerate.
-	* po/Makefile.in: Regenerate.
-	* src/Makefile.in: Regenerate.
-	* testsuite/Makefile.in: Regenerate.
+	* GCC 4.7.1 released.
 
-2010-04-09  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+2012-05-28  Paolo Carlini  <paolo.carlini@oracle.com>
 
-	PR target/43458
-	* testsuite/26_numerics/headers/cmath/c99_classification_macros_c.cc:
-	Xfail hppa*-*-hpux*.
-
-2010-02-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
-
-	Backport:
-	2010-01-20  Janis Johnson  <janis187@us.ibm.com>
-		    Paolo Carlini  <paolo.carlini@oracle.com>
-
-	PR libstdc++/21769
-	* testsuite/lib/dg-options.exp (add_options_for_no_pch): Add.
-	* testsuite/26_numerics/headers/cmath/c99_classification_macros_c.cc:
-	Use it.
-
-2009-08-04  Release Manager
-
-	* GCC 4.3.4 released.
-
-2009-03-14  Paolo Carlini  <paolo.carlini@oracle.com>
-
-	PR libstdc++/39405
-	* include/std/type_traits (__add_lvalue_reference_helper,
-	__add_rvalue_reference_helper): Avoid is_function.
-	* testsuite/20_util/shared_ptr/cons/39405.cc: New.
-	* testsuite/tr1/2_general_utilities/shared_ptr/cons/39405.cc: Likewise.
-
-2009-02-09  Johannes Singler  <singler@ira.uka.de>
-
-        Backport from mainline:
-        2009-02-03  Johannes Singler  <singler@ira.uka.de>
-
-        * include/parallel/algorithmfwd.h:
-        Add parallelism default for many declarations.
-        * include/parallel/numericfwd.h: Likewise.
-        * include/parallel/iterator.h: Use iterator_traits as usual.
-        * include/parallel/par_loop.h:
-        Include equally_split.h.
-        (for_each_template_random_access_ed):
-        Avoid calling the Result default constructor.
-        * include/parallel/numeric: Replace
-        for_each_template_random_access by
-        for_each_template_random_access_ed in numeric functions.
-
-2009-01-27  Uros Bizjak  <ubizjak@gmail.com>
-
-	Backport from mainline:
-	2009-01-13  Uros Bizjak  <ubizjak@gmail.com>
-
-	* scripts/extract_symvers: Add sed script to remove ' [<other>: xx] '
-	field from readelf output.
-
-2009-01-24  Release Manager
-
-	* GCC 4.3.3 released.
-
-2009-01-12  Benjamin Kosnik  <bkoz@redhat.com>
-	    Jonathan Larmour  <jifl@eCosCentric.com>
-
-	PR libstdc++/36801
-	* config/cpu/generic/atomicity_mutex/atomicity.h (get_atomic_mutex):
-	New.
-	(__gnu_cxx::__exchange_and_add): Use it.
-	* src/debug.cc (get_safe_base_mutex): New.
-	* src/locale.cc (get_locale_cache_mutex): New.
-	* src/mt_allocator.cc (get_freelist): New.
-	(get_freelist_mutex): New.
-	* src/pool_allocator.cc (get_palloc_mutex): New.
-
-2009-01-12  Jonathan Larmour  <jifl@eCosCentric.com>
-
-	* include/ext/concurrence.h: Fix __gthread_cond_t initialisation
-	function macro name.
-
-2009-01-08  Paolo Carlini  <paolo.carlini@oracle.com>
-
-	Backport from mainline:
-	2008-11-13  Paolo Carlini  <paolo.carlini@oracle.com>
-
-	PR libstdc++/38000
-	* include/c_global/csignal: Do not use include_next.
-	* include/c_global/cstdlib: Likewise.
-	* include/c_global/cstdio: Likewise.
-	* include/c_global/cstdarg: Likewise.
-	* include/c_global/cctype: Likewise.
-	* include/c_global/cerrno: Likewise.
-	* include/c_global/cmath: Likewise.
-	* include/c_global/clocale: Likewise.
-	* include/c_global/climits: Likewise.
-	* include/c_global/cassert: Likewise.
-	* include/c_global/csetjmp: Likewise.
-	* include/c_global/cwchar: Likewise.
-	* include/c_global/cfloat: Likewise.
-	* include/c_global/cstdbool: Likewise.
-	* include/c_global/cstring: Likewise.
-	* include/c_global/cstddef: Likewise.
-	* include/c_global/cwctype: Likewise.
-	* include/tr1/cstdbool: Likewise.
-	* include/tr1_impl/cinttypes: Do not include <inttypes.h>.
-	* include/c_global/cinttypes: Do it here.
-	* include/tr1/cinttypes: Likewise.
-	* include/tr1_impl/cfenv: Do not include <fenv.h>.
-	* include/c_global/cfenv: Do it here.
-	* include/tr1/cfenv: Likewise.
-	* include/tr1_impl/cstdint: Do not include <stdint.h>.
-	* include/c_global/cstdint: Do it here.
-	* include/tr1/cstdint: Likewise.
-	* include/c_compatibility/fenv.h: Include <tr1_impl/cfenv>.
-	* include/c_compatibility/stdint.h: Include <tr1_impl/cstdint>.
-	* include/c_compatibility/inttypes.h: Include <tr1_impl/cinttypes>.
-
-	* include/c_compatibility/math.h: Minor tweak, add comment.
-
-2008-12-12  H.J. Lu  <hongjiu.lu@intel.com>
-
-	Backport from mainline:
-	2008-12-12  H.J. Lu  <hongjiu.lu@intel.com>
-
-	PR libstdc++/37144
-	* testsuite/util/regression/trait/assoc/type_trait.hpp
-	(regression_test_type_traits): Add const to pair_type_rebind.
-
-2008-12-11  Jakub Jelinek  <jakub@redhat.com>
-
-	PR c++/37582
-	* include/bits/cpp_type_traits.h (struct __traitand): New.
-	* include/c_global/cmath (std::atan2, std::pow): Use __traitand
-	instead of && as first argument to __enable_if.
-	* include/c_std/cmath (std::atan2): Likewise.
-	* testsuite/26_numerics/headers/cmath/37582.cc: New.
-
-2008-12-04  Janis Johnson  <janis187@us.ibm.com>
-
-	Backport from mainline:
-	2008-10-18  Jakub Jelinek  <jakub@redhat.com>
-		    Janis Johnson  <janis187@us.ibm.com>
-
-	* testsuite/Makefile.am (AUTOMAKE_OPTIONS): Remove dejagnu.
-	(RUNTESTDEFAULTFLAGS, EXPECT, check_DEJAGNU_normal_targets): New
-	variables.
-	(%/site.exp, check-DEJAGNU%): New targets.
-	(check-am): Run $(MAKE) check-DEJAGNU.
-	* testsuite/Makefile.in: Regenerated.
-
-2008-12-02  Janis Johnson  <janis187@us.ibm.com>
-
-	Backport from mainline:
-	2008-11-26  Janis Johnson  <janis187@us.ibm.com>
-
-	PR testsuite/28870
-	* testsuite/lib/libstdc++.exp: Include new timeout library files.
-	(libstdc++_init): Define tool_timeout.
-	(dg-test): Override DejaGnu proc.
-	(v3_target_compile): Set timeout value from new proc.
-	(v3_target_compile_as_c): Ditto.
-
-2008-12-01  Benjamin Kosnik  <bkoz@redhat.com>
-
-	PR libstdc++/38080
-	* include/std/iostream: Correct URL.
-	* include/std/streambuf: Same.
-	* include/std/bitset: Same.
-	* include/std/iosfwd: Same.
-	* include/std/fstream: Same.
-	* include/std/istream: Same.
-	* include/std/ostream: Same.
-	* include/std/sstream: Same.
-	* include/bits/basic_ios.h: Same.
-	* include/bits/stl_map.h: Same.
-	* include/bits/stl_set.h: Same.
-	* include/bits/stl_multimap.h: Same.
-	* include/bits/ios_base.h: Same.
-	* include/bits/stl_multiset.h: Same.
-	* include/bits/char_traits.h: Same.
-	* include/bits/stl_relops.h: Same.
-	* testsuite/27_io/ios_base/cons/assign_neg.cc: Adjust line numbers.
-	* testsuite/27_io/ios_base/cons/copy_neg.cc: Ditto.
-
-2008-08-27  Release Manager
-
-	* GCC 4.3.2 released.
-
-2008-08-12  Paolo Carlini  <paolo.carlini@oracle.com>
-
-	PR libstdc++/37100
-	* include/bits/stl_pair.h: Fix documentation URL in comment.
-
-2008-08-12  Johannes Singler  <singler@ira.uka.de>
-
-	* include/paralle/losertree.h
-	(LoserTreePointerBase<>::~LoserTreePointerBase):
-	Replace delete by appropriate delete[].
-
-2008-07-15  Paolo Carlini  <paolo.carlini@oracle.com>
-
-	PR libstdc++/36832
-	* include/ext/rope (_Destroy_const): Add.
-	(rope<>::copy): Call it.
-	* testsuite/ext/rope/36832.cc: New.
-
-2008-07-10  Johannes Singler  <singler@ira.uka.de>
-
-	* include/parallel/balanced_quicksort.h:
-	(qsb_divide) Replace "*end" by "*(end - 1)" in assertion.
-
-2008-07-09  Andreas Beckmann  <gcc@abeckmann.de>
-
-	PR libstdc++/36552
-	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/
-	null_metadata.hpp: Remove self-include.
-
-2008-07-09  Johannes Singler  <singler@ira.uka.de>
-
-	PR libstdc++/36729
-	* include/parallel/random_shuffle.h:
-	(sequential_random_shuffle) Copy data back.
-	* testsuite/25_algorithms/random_shuffle/1.cc:
-	New. Generic random_shuffle functionality test.
-
-2008-07-07  Bernd Schmidt  <bernd.schmidt@analog.com>
-
-	* configure.ac: Don't check AC_LIBTOOL_DLOPEN if using newlib.
-	* configure: Regenerate.
-
-2008-07-04  Paolo Carlini  <paolo.carlini@oracle.com>
-
-	PR libstdc++/36616
-	* testsuite/22_locale/time_put/put/char/4.cc: Just use es_ES instead.
-	* testsuite/22_locale/time_put/put/wchar_t/4.cc: Likewise.
-
-2008-06-30  Alfred E. Heggestad  <aeh@db.org>
-
-	* include/backward/backward_warning.h: Fix typo.
-
-2008-06-26  Paolo Carlini  <paolo.carlini@oracle.com>
-
-	* include/parallel/base.h (plus, multiplies): Use __typeof__,
-	not typeof.
-
-2008-06-24  Paolo Carlini  <paolo.carlini@oracle.com>
-
-	* include/bits/stl_algo.h (remove_if): Cast __pred result to bool.
-
-2008-06-24  Paolo Carlini  <paolo.carlini@oracle.com>
-
-	PR libstdc++/36616
-	* testsuite/22_locale/money_put/put/char/9780-3.cc: Fix expected
-	results for recent glibcs (2.8 and later).
-	* testsuite/22_locale/time_put/put/wchar_t/4.cc: Likewise.
-	* testsuite/22_locale/time_put/put/char/4.cc: Likewise.
-
-2008-06-24  Paolo Carlini  <paolo.carlini@oracle.com>
-	    Chalathip Thumkanon  <chalathip@gmail.com>
-
-	PR libstdc++/36612
-	* include/ext/pb_ds/exception.hpp (__throw_container_error,
-	__throw_insert_error, __throw_join_error, __throw_resize_error):
-	Mark inline.
-
-2008-06-15  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
-
-	* include/Makefile.am: Remove trailing white space, fix typo.
-	(parallel_headers): Remove duplicate file, sort entries.
-	* include/Makefile.in: Regenerate.
-
-2008-06-06  Release Manager
-
-	* GCC 4.3.1 released.
-
-2008-06-05  Johannes Singler  <singler@ira.uka.de>
-
-	* include/parallel/random_shuffle.h:
-	(parallel_random_shuffle_drs) Get the actual number of
-	threads after entering the parallel region. Indentation.
-	* include/parallel/algo.h: (random_shuffle(begin, end))
-	Add namespace qualification to avoid ambiguity.
-
-2008-05-15  Johannes Singler  <singler@ira.uka.de>
-
-	* doc/xml/manual/parallel_mode.xml:
-	General revision, correct wrong doc and make it more
-	readable.
+	PR c++/53503
+	* testsuite/26_numerics/headers/cmath/53503.cc: New.
 
 2012-05-10  DJ Delorie  <dj@redhat.com>
 
@@ -444,27 +168,19 @@
 	* testsuite/23_containers/unordered_multiset/insert/53115.cc: New.
 	* testsuite/23_containers/unordered_multimap/insert/53115.cc: New.
 
-	* include/parallel/quicksort.h (parallel_sort_qs_conquer):
-	Explicitly request number of threads in the parallel clause.
-	(parallel_sort_qs): Remove setting the number of threads globally.
+2012-04-30  Andreas Tobler  <andreast@fgznet.ch>
 
 	Backport from mainline
 	2012-03-21  Andreas Tobler  <andreast@fgznet.ch>
 
-	* include/parallel/multiway_merge.h (multiway_merge_*_unguarded):
-	Pass sentinel directly, to allow correct determination.
-	(multiway_merge_loser_tree_unguarded): Remove over-cautious assertion.
-	(calls to multiway_merge_*_splitting): Parametrize with type that
-	is correct in all cases.
-	* include/parallel/losertree.h (delete_min_insert (in many classes)):
-	Correct and standardize assertions.
+	* testsuite/23_containers/vector/bool/modifiers/insert/31370.cc:
+	Skip this test on powerpc64-*-freebsd*.
 
 2012-04-25  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
-	* 20_util/make_signed/requirements/typedefs-1.cc: Correct requirements.
-	* 20_util/make_unsigned/requirements/typedefs-1.cc: Same.
-
-2008-04-29  Benjamin Kosnik  <bkoz@redhat.com>
+	* include/std/scoped_allocator (scoped_allocator::__outermost): Do
+	not pass non-POD to varargs function.
+	* testsuite/20_util/scoped_allocator/1.cc: Fix test.
 
 2012-04-23  Chris Jefferson  <chris@bubblescope.net>
 
@@ -487,22 +203,12 @@
 	* testsuite/20_util/pointer_traits/requirements/typedefs.cc: Check
 	rebind works.
 
-	Revert PR libstdc++/35887
-	* configure.ac: Revert.
-	* acinclude.m4: Same.
-	* configure: Regenerate.
-	* include/Makefile.am: Revert.
-	* include/Makefile.in: Regenerate.
+2012-04-21  Alan Modra  <amodra@gmail.com>
 
-2008-04-24  Benjamin Kosnik  <bkoz@redhat.com>
-
-	PR libstdc++/35887
-	* configure.ac: Add default argument to GLIBCXX_ENABLE_PARALLEL.
-	* acinclude.m4 (GLIBCXX_ENABLE_PARALLEL): Check for --disable-libgomp.
+	PR libstdc++/52839
+	* acinclude.m4 (_GLIBCXX_ATOMIC_BUILTINS): Do not depend on
+	glibcxx_cv_atomic_long_long.
 	* configure: Regenerate.
-	* include/Makefile.am (parallel_headers): Make conditional on
-	ENABLE_PARALLEL.
-	* include/Makefile.in: Regenerate.
 
 2012-04-16  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
@@ -513,20 +219,24 @@
 
 2012-04-16  Benjamin Kosnik  <bkoz@redhat.com>
 
-	* include/parallel/multiway_merge.h
-	(multiway_merge_loser_tree):
-	Leave checks to callers, add precondition instead.
-	(multiway_merge_loser_tree_unguarded): Likewise.
-	(multiway_merge_loser_tree_sentinel): Likewise.
-	(sequential_multiway_merge): Added checks for total length 0.
-	(parallel_multiway_merge): Skip empty sequences.
-	(multiway_merge, all variants):
-	Remove temporary variable, return directly.
-	(stable_multiway_merge, all variants): Likewise.
-	(multiway_merge_sentinels, all variants):  Likewise.
-	(stable_multiway_merge_sentinels, all variants): Likewise.
-	* include/parallel/multiseq_selection.h
-	(multiseq_partition): More detailed assertions.
+	PR libstdc++/52689
+	* libsupc++/Makefile.am (LTCXXCOMPILE, CXXLINK): Tweak.
+	* libsupc++/Makefile.in: Regenerated.
+	* src/Makefile.am (LTCXXCOMPILE, CXXLINK): Tweak.
+	(libstdc___la_SOURCES): Add in compatiblity files, with content
+	that varies with -DPIC.
+	* src/Makefile.in: Regenerated.
+	* src/c++11/Makefile.am (LTCXXCOMPILE, CXXLINK): Tweak.
+	* src/c++11/Makefile.in: Regenerated.
+	* src/c++11/compatibility-atomic-c++0x.cc: Guard with PIC.
+	* src/c++11/compatibility-c++0x.cc: Same.
+	* src/c++11/future.cc: Consolidate compatibility bits into..
+	* src/c++11/mutex.cc: Consolidate compatibility bits into..
+	* src/c++11/compatibility-thread-cxx0x.cc: ...here. New.
+	* src/c++98/Makefile.am (LTCXXCOMPILE, CXXLINK): Tweak.
+	* src/c++98/Makefile.in: Regenerated.
+	* src/c++98/compatibility-list-2.cc: Guard with PIC.
+	* src/c++98/compatibility.cc: Tweak comments.
 
 2012-04-16  Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -537,9 +247,11 @@
 
 2012-04-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
-	* doc/html/*: Regenerate.
-
-2008-04-10  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+	PR libstdc++/52699
+	* include/bits/random.tcc (independent_bits_engine<>::operator()())
+	Avoid various overflows; use common_type on result_type and
+	_RandomNumberEngine::result_type; avoid floating point computations;
+	other smaller tweaks.
 
 	* include/bits/random.tcc (uniform_int_distribution<>::operator())
 	Use common_type; assume _UniformRandomNumberGenerator::result_type
@@ -548,10 +260,7 @@
 	* include/bits/stl_algobase.h (__lg(unsigned), __lg(unsigned long),
 	__lg(unsigned long long)): Add.
 
-	* doc/xml/manual/parallel_mode.xml: Remove map/set bulk
-	insertors. Correct omp_set_num_threads example.
-
-2008-04-07  Johannes Singler  <singler@ira.uka.de>
+2012-04-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/debug/safe_iterator.h (_BeforeBeginHelper<>::
 	_S_Is_Beginnest): Add.
@@ -600,65 +309,24 @@
 	* testsuite/23_containers/forward_list/requirements/dr438/
 	constructor_2_neg.cc: Likewise.
 
-	* doc/xml/api.xml: Add gcc-4.3 links.
-	* doc/html/api.html: Regenerate.
+2012-04-12   Jeffrey Yasskin  <jyasskin@google.com>
 
-	* include/debug/debug.h: Document namepaces here.
-	* include/parallel/base.h: Same.
-	* include/ext/typelist.h: Same.
-	* include/ext/pb_ds/tag_and_trait.hpp: Same.
-
-	* include/tr1_impl/random: Adjust line break.
-	* include/tr1_impl/unordered_map: Correct and or add markup.
-	* include/tr1_impl/boost_shared_ptr.h: Correct and or add markup.
-	* include/tr1_impl/functional_hash.h: Same.
-	* include/tr1_impl/cmath: Same.
-	* include/tr1_impl/functional: Same.
-	* include/tr1_impl/unordered_set: Same.
-	* include/tr1_impl/complex: Same.
-	* include/tr1_impl/type_traits: Same.
-	* include/tr1_impl/regex: Same.
-	* include/tr1_impl/array: Same.
-	* include/std/tuple: Same.
-	* include/std/date_time: Same.
-	* include/std/system_error: Same.
-	* include/std/type_traits: Same.
-	* include/ext/enc_filebuf.h: Same.
-	* include/ext/throw_allocator.h: Same.
-	* include/ext/pool_allocator.h: Same.
-	* include/ext/bitmap_allocator.h: Same.
-	* include/ext/concurrence.h: Same.
-	* include/ext/codecvt_specializations.h: Same.
-	* include/ext/stdio_sync_filebuf.h: Same.
-	* include/ext/array_allocator.h: Same.
-	* include/ext/mt_allocator.h: Same.
-	* include/bits/locale_classes.h: Same.
-	* include/bits/locale_facets.h: Same.
-	* include/bits/codecvt.h: Same.
-	* include/bits/char_traits.h: Same.
-	* include/bits/allocator.h: Same.
-	* include/bits/locale_facets_nonio.h: Same.
-	* include/tr1/poly_laguerre.tcc: Same.
-	* include/tr1/riemann_zeta.tcc: Same.
-	* include/tr1/beta_function.tcc: Same.
-	* include/tr1/tuple: Same.
-	* include/tr1/exp_integral.tcc: Same.
-	* include/tr1/gamma.tcc: Same.
-	* include/tr1/hypergeometric.tcc: Same.
-	* include/tr1/modified_bessel_func.tcc: Same.
-	* include/tr1/legendre_function.tcc: Same.
-	* include/tr1/type_traits: Same.
-	* include/tr1/special_function_util.h: Same.
-	* include/tr1/bessel_function.tcc: Same.
-	* include/tr1/cmath: Same.
-	* include/tr1/poly_hermite.tcc: Same.
-	* include/tr1/ell_integral.tcc: Same.
-	* config/abi/compatibility.h: Adjust file name.
-
-	* testsuite/19_diagnostics/error_category/cons/copy_neg.cc: Adjust
-	line numbers.
-	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc: Same.
-	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc: Same.
+	PR libstdc++/52822
+	* include/bits/stl_algo.h (__find_if_not): Expose in C++98 mode.
+	(__find_if_not_n): Like __find_if_not, but works on and updates a
+	counted range instead of a bounded range.
+	(stable_partition): Guarantee !__pred(*__first) in call to
+	__stable_partition_adaptive() or __inplace_stable_partition().
+	(__stable_partition_adaptive): Use new precondition to avoid
+	moving/copying objects onto themselves.  Guarantee new
+	precondition to recursive calls.
+	(__inplace_stable_partition): Use new precondition to simplify
+	base case, remove __last parameter.  Guarantee new precondition to
+	recursive calls.
+	* testsuite/25_algorithms/stable_partition/moveable.cc (test02):
+	Test a sequence that starts with a value matching the predicate.
+	* testsuite/25_algorithms/stable_partition/pr52822.cc: Test
+	vectors, which have a destructive self-move-assignment.
 
 2012-04-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -842,30 +510,20 @@
 
 2012-02-27  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
-	* config/abi/pre/gnu.ver: Remove
-	_ZNKSt3tr14hashIgEclEg@@GLIBCXX_3.4.10 and
-	_ZNKSt4hashIgEclEg@@GLIBCXX_3.4.10 export.
-	* config/os/gnu-linux/ldbl-extra.ver: Export
-	_ZNKSt3tr14hashIgEclEg@@GLIBCXX_LDBL_3.4.10
-	and _ZNKSt4hashIgEclEg@@GLIBCXX_LDBL_3.4.10.
-	* src/hash.cc: Only define long double hash specialization if
-	_GLIBCXX_LONG_DOUBLE_COMPAT_IMPL is defined.
-	* src/compatibility-ldbl.cc: Include "hash.cc".
-	(_GLIBCXX_LONG_DOUBLE_COMPAT_IMPL): Define.
-	(_ZNKSt4hashIeEclEe): New alias.
-	* testsuite/util/testsuite_abi.cc (check_version): Support
-	GLIBCXX_LDBL_3.4.10.
-
-2008-02-29  Jakub Jelinek  <jakub@redhat.com>
-	    Benjamin Kosnik  <bkoz@redhat.com>
-
-	* src/hash_c++0x.cc: Add just C++0x version of TR1 hash.
-	* include/bits/functional_hash.h: Remove error_code bits.
-	* src/Makefile.am: Add hash_c++0x.cc.
+	PR libstdc++/52188
+	* acinclude.m4 (GLIBCXX_ENABLE_SYMVERS): Remove symvers_renaming.
+	Remove ENABLE_SYMVERS_SOL2.
+	* configure: Regenerate.
+	* src/Makefile.am [ENABLE_SYMVERS] (libstdc++-symbols.ver):
+	Postprocess mapfile.
+	[ENABLE_SYMVERS_GNU]: Remove ENABLE_SYMVERS_SOL2 handling.
 	* src/Makefile.in: Regenerate.
-	* config/abi/pre/gnu.ver: Remove hash<error_code> export.
 
-2008-02-28  Benjamin Kosnik  <bkoz@redhat.com>
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.5) [!__sun__ && !__svr4__]:
+	Don't export
+	_ZNSt19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEppEv.
+
+2012-02-25  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR testsuite/52201
 	* testsuite/29_atomics/atomic/operators/pointer_partial_void.cc:
@@ -1055,53 +713,9 @@
 	* src/c++98/Makefile.in: Same.
 	* testsuite/Makefile.in: Same.
 
-	* include/std/system_error: Remove.
-	* include/std/ostream: Remove <system_error> support.
-	* include/precompiled/stdc++.h: Same.
-	* src/system_error.cc: Remove.
-	* src/hash_c++0x.cc: Remove.
-	* config/os/mingw32/error_constants.h: Same.
-	* config/os/generic/error_constants.h: Same.
-	* config/abi/pre/gnu.ver: Adjust exports.
+2012-02-14  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
-	* testsuite/27_io/basic_ostream/inserters_other/wchar_t/error_code.cc:
-	Remove support for <system_error>.
-	* testsuite/27_io/basic_ostream/inserters_other/char/
-	error_code.cc: Same.
-	* testsuite/19_diagnostics/error_code: Same.
-	* testsuite/19_diagnostics/error_code/cons: Same.
-	* testsuite/19_diagnostics/error_code/cons/1.cc: Same.
-	* testsuite/19_diagnostics/error_code/operators: Same.
-	* testsuite/19_diagnostics/error_code/operators/bool.cc: Same.
-	* testsuite/19_diagnostics/error_code/operators/bool_neg.cc: Same.
-	* testsuite/19_diagnostics/error_code/operators/equal.cc: Same.
-	* testsuite/19_diagnostics/error_code/operators/not_equal.cc: Same.
-	* testsuite/19_diagnostics/error_category: Same.
-	* testsuite/19_diagnostics/error_category/cons: Same.
-	* testsuite/19_diagnostics/error_category/cons/copy_neg.cc: Same.
-	* testsuite/19_diagnostics/error_category/cons/default.cc: Same.
-	* testsuite/19_diagnostics/error_category/operators: Same.
-	* testsuite/19_diagnostics/error_category/operators/equal.cc: Same.
-	* testsuite/19_diagnostics/error_category/operators/not_equal.cc: Same.
-	* testsuite/19_diagnostics/headers/system_error: Same.
-	* testsuite/19_diagnostics/headers/system_error/
-	types_std_c++0x.cc: Same.
-	* testsuite/19_diagnostics/headers/system_error/std_c++0x_neg.cc: Same.
-	* testsuite/19_diagnostics/headers/system_error/34538.cc: Same.
-	* testsuite/19_diagnostics/system_error: Same.
-	* testsuite/19_diagnostics/system_error/
-	cons_virtual_derivation.cc: Same.
-	* testsuite/19_diagnostics/system_error/cons-1.cc: Same.
-	* testsuite/19_diagnostics/system_error/what-1.cc: Same.
-	* testsuite/19_diagnostics/system_error/what-2.cc: Same.
-	* testsuite/19_diagnostics/system_error/what-big.cc: Same.
-	* testsuite/19_diagnostics/system_error/what-3.cc: Same.
-	* testsuite/19_diagnostics/system_error/what-4.cc: Same.
-	* testsuite/17_intro/headers/c++200x/all.cc: Same.
-	* testsuite/20_util/hash/requirements/explicit_instantiation.cc: Same.
-	* testsuite/20_util/hash/operators/size_t.cc: Same.
-
-2008-02-25  Jan Beulich  <jbeulich@novell.com>
+	* 30_threads/thread/native_handle/typesizes.cc: Do not run on cygwin.
 
 2012-02-14  Tom Tromey  <tromey@redhat.com>
 
@@ -1130,46 +744,25 @@
 	* include/profile/impl/profiler_state.h (__gnu_profile::__turn): Same.
 	* libsupc++/guard.cc (__cxa_guard_acquire): Same.
 
-	* include/tr1/poly_laguerre.tcc: Doxygen fixes.
-	* include/tr1/exp_integral.tcc: Same.
-	* include/tr1/gamma.tcc: Same.
-	* include/tr1/hypergeometric.tcc: Same.
+2012-02-10  Benjamin Kosnik  <bkoz@redhat.com>
+	    Jonathan Wakely  <jwakely.gcc@gmail.com>
 
-2008-02-17  Benjamin Kosnik  <bkoz@redhat.com>
+	PR libstdc++/51798 continued.
+	* acinclude.m4 (GLIBCXX_ENABLE_ATOMIC_BUILTINS): Use __atomic_*
+	builtins instead of __sync_* builtins for atomic functionality.
+	* include/bits/shared_ptr_base.h: Same.
+	* include/parallel/compatibility.h: Same.
+	* include/profile/impl/profiler_state.h: Same.
+	* include/tr1/shared_ptr.h: Same.
+	* libsupc++/eh_ptr.cc: Same.
+	* libsupc++/eh_throw.cc: Same.
+	* libsupc++/eh_tm.cc: Same.
+	* libsupc++/guard.cc: Same.
+	* configure: Regenerated.
+	* testsuite/20_util/shared_ptr/cons/43820_neg.cc: Adjust line numbers.
+	* testsuite/tr1/2_general_utilities/shared_ptr/cons/43820_neg.cc: Same.
 
-	PR libstdc++/34797
-	* include/parallel/settings.h (_Settings): Reconstruct Settings class
-	here, uglify, remove anonymous namespace and static
-	members. Convert to datum.
-	* include/parallel/types.h: Move Settings:: enumerations here, uglify.
-	* src/parallel_settings.cc: New, definition for _Settings member
-	functions.
-	* include/parallel/multiway_merge.h: Same.
-	* include/parallel/for_each.h: Same.
-	* include/parallel/workstealing.h: Same.
-	* include/parallel/base.h: Same.
-	* include/parallel/numeric
-	* include/parallel/features.h: Same.
-	* include/parallel/quicksort.h: Same.
-	* include/parallel/equally_split.h: Same.
-	* include/parallel/algorithmfwd.h: Same.
-	* include/parallel/omp_loop_static.h: Same.
-	* include/parallel/random_shuffle.h: Same.
-	* include/parallel/balanced_quicksort.h: Same.
-	* include/parallel/tags.h: Same.
-	* include/parallel/multiway_mergesort.h: Same.
-	* include/parallel/numericfwd.h: Same.
-	* include/parallel/partition.h: Same.
-	* include/parallel/partial_sum.h: Same.
-	* include/parallel/find.h: Same.
-	* include/parallel/algo.h: Same.
-	* include/parallel/omp_loop.h: Same.
-	* include/parallel/sort.h: Same.
-
-	* src/Makefile.am (parallel_sources): Add parallel_settings.cc.
-	* src/Makefile.in: Regenerate.
-
-	* config/abi/pre/gnu.ver: Export _Settings::get and _Settings::set.
+2012-02-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR libstdc++/51296
 	* config/os/osf/ctype_base.h,
@@ -1185,30 +778,11 @@
 
 	* config/abi/post/alpha-linux-gnu/baseline_symbols.txt: Regenerated.
 
-	PR libstdc++/35209
-	* config/abi/pre/gnu.ver: Export stdio_sync_filebuf symbols.
-	* testsuite/ext/stdio_sync_filebuf/char/35209.cc: New.
-	* testsuite/ext/stdio_sync_filebuf/wchar_t/35209.cc: Likewise.
+2012-02-09  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
-2008-02-16  Benjamin Kosnik  <bkoz@redhat.com>
+	* doc/xml/manual/documentation_hacking.xml: Fix invalid attribute.
 
-	* include/parallel/random_number.h: Use TR1's mersenne_twister.
-	(random_number::genrand_bits()): Remove.
-	(random_number::set_seed): Remove.
-
-2008-02-15  Benjamin Kosnik  <bkoz@redhat.com>
-
-	* include/parallel/types.h: Remove enum parallelism.
-
-2008-02-15  Benjamin Kosnik  <bkoz@redhat.com>
-
-	* include/parallel/types.h: Move enum parallelism here.  Use
-	tr1/cstdint's int16_t, uint16_t, int32_t, uint32_t, int64_t,
-	uint64_t.
-	* include/parallel/multiseq_selection.h: Adjust for cstdint.
-	* include/parallel/compatibility.h: Same.
-	* include/parallel/tags.h: Just compile-time tags.
-	* include/parallel/base.h: Put namespace bits here.
+2012-02-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* doc/xml/manual/status_cxx2011.xml: Update C++11 status table.
 
@@ -1404,52 +978,6 @@
 	with __ATOMIC_ACQ_REL semantics instead of __sync_fetch_and_add.
 	* include/ext/atomicity.h (__exchange_and_add, __atomic_add):
 	Likewise.
-	* testsuite/22_locale/global_templates/standard_facet_hierarchies.cc:
-	Likewise.
-	* testsuite/tr1/6_containers/hash/operators/size_t.cc: Likewise.
-	* testsuite/tr1/6_containers/tuple/cons/big_tuples.cc: Likewise.
-	* testsuite/tr1/6_containers/tuple/cons/constructor.cc: Likewise.
-	* testsuite/tr1/6_containers/array/cons/aggregate_initialization.cc:
-	Likewise.
-	* testsuite/tr1/6_containers/array/requirements/contiguous.cc:
-	Likewise.
-	* testsuite/tr1/6_containers/array/requirements/member_swap.cc:
-	Likewise.
-	* testsuite/tr1/6_containers/array/requirements/assign.cc: Likewise.
-	* testsuite/tr1/6_containers/array/specialized_algorithms/swap.cc:
-	Likewise.
-	* testsuite/tr1/6_containers/array/comparison_operators/
-	less_or_equal.cc: Likewise.
-	* testsuite/tr1/6_containers/array/comparison_operators/
-	greater_or_equal.cc: Likewise.
-	* testsuite/tr1/6_containers/array/comparison_operators/less.cc:
-	Likewise.
-	* testsuite/tr1/6_containers/array/comparison_operators/equal.cc:
-	Likewise.
-	* testsuite/tr1/6_containers/array/comparison_operators/not_equal.cc:
-	Likewise.
-	* testsuite/tr1/6_containers/array/comparison_operators/greater.cc:
-	Likewise.
-	* testsuite/tr1/6_containers/array/tuple_interface/get.cc: Likewise.
-	* testsuite/tr1/6_containers/array/element_access/at_out_of_range.cc:
-	Likewise.
-	* testsuite/tr1/6_containers/array/element_access/back.cc: Likewise.
-	* testsuite/tr1/6_containers/array/element_access/front.cc: Likewise.
-	* testsuite/tr1/6_containers/array/element_access/data.cc: Likewise.
-	* testsuite/tr1/6_containers/array/iterators/end_is_one_past.cc:
-	Likewise.
-	* testsuite/tr1/6_containers/array/capacity/empty.cc: Likewise.
-	* testsuite/tr1/6_containers/array/capacity/max_size.cc: Likewise.
-	* testsuite/tr1/6_containers/array/capacity/size.cc: Likewise.
-	* testsuite/thread/guard.cc: Likewise.
-	* testsuite/20_util/tuple/cons/big_tuples.cc: Likewise.
-	* testsuite/20_util/tuple/cons/constructor.cc: Likewise.
-	* testsuite/20_util/shared_ptr/creation/dr402.cc: Likewise.
-	* testsuite/20_util/shared_ptr/creation/make.cc: Likewise.
-	* testsuite/20_util/shared_ptr/creation/alloc.cc: Likewise.
-	* testsuite/20_util/shared_ptr/thread/mutex_weaktoshared.cc: Likewise.
-	* testsuite/20_util/shared_ptr/thread/default_weaktoshared.cc:
-	Likewise.
 
 2011-01-27  Rafael Avila de Espindola  <rafael.espindola@gmail.com>
 
@@ -1568,20 +1096,11 @@
 2012-01-18  François Dumont  <fdumont@gcc.gnu.org>
 	    Roman Kononov  <roman@binarylife.net>
 
-	PR libstdc++/34730
-	* include/debug/functions.h (__check_sorted_set,
-	__check_sorted_set_aux): Add.
-	(__check_sorted): Check StrictWeakOrdering.
-	* include/debug/macros.h (__glibcxx_check_strict_weak_ordering,
-	__glibcxx_check_strict_weak_ordering_pred): Remove.
-	(__glibcxx_check_sorted, __glibcxx_check_sorted_pred): Adjust.
-	(__glibcxx_check_sorted_set, __glibcxx_check_sorted_set_pred): Add.
-	* include/debug/debug.h (__glibcxx_requires_sorted_set,
-	__glibcxx_requires_sorted_set_pred): Add.
-	* include/bits/stl_algo.h (merge, includes, set_union,
-	set_intersection, set_difference, set_symmetric_difference):
-	Adjust, use __glibcxx_requires_sorted_set* instead.
-	* testsuite/25_algorithms/set_intersection/34730.cc: New.
+	PR libstdc++/51866
+	* include/bits/hashtable.h (_Hashtable<>::_M_insert(_Arg, false_type)):
+	Do not keep a reference to a potentially moved instance.
+	* testsuite/23_containers/unordered_multiset/insert/51866.cc: New.
+	* testsuite/23_containers/unordered_multimap/insert/51866.cc: New.
 
 2012-01-17  Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -1603,21 +1122,7 @@
 
 	* doc/xml/manual/documentation_hacking.xml: Update.
 
-	* include/parallel/iterator.h: Reformat to 80 columns; adjust some
-	inline specifiers.
-	* include/parallel/find_selectors.h: Likewise.
-	* include/parallel/losertree.h: Likewise.
-	* include/parallel/list_partition.h: Likewise.
-	* include/parallel/for_each.h: Likewise.
-	* include/parallel/multiseq_selection.h: Likewise.
-	* include/parallel/algorithmfwd.h: Likewise.
-	* include/parallel/for_each_selectors.h: Likewise.
-	* include/parallel/balanced_quicksort.h: Likewise.
-	* include/parallel/merge.h: Likewise.
-	* include/parallel/algobase.h: Likewise.
-	* include/parallel/find.h: Likewise.
-	* include/parallel/algo.h: Likewise.
-	* include/parallel/checkers.h: Likewise.
+2012-01-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR target/47852
 	* configure.host (irix6.5*): Add -lpthread to OPT_LDFLAGS.
@@ -1660,21 +1165,7 @@
 	* po/Makefile.in: Same.
 	* python/Makefile.in: Same.
 
-	PR libstdc++/34095
-	* include/parallel/multiway_merge.h (multiway_merge_bubble,
-	parallel_multiway_merge): Together with ::operator new use
-	::operator delete.
-	* include/parallel/losertree.h (LoserTree<>::~LoserTree): Likewise.
-	* include/parallel/quicksort.h (parallel_sort_qs_divide): Likewise.
-	* include/parallel/random_shuffle.h (parallel_random_shuffle_drs_pu,
-	sequential_random_shuffle): Likewise.
-	* include/parallel/tree.h (_M_not_sorted_bulk_insertion_construction):
-	Likewise.
-	* include/parallel/multiway_mergesort.h (parallel_sort_mwms_pu,
-	parallel_sort_mwms): Likewise.
-	* include/parallel/partial_sum.h (parallel_partial_sum_linear):
-	Likewise.
-	* testsuite/25_algorithms/sort/34095.cc: New.
+2012-01-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* python/libstdcxx/v6/printers.py (StdForwardListPrinter): Add.
 	* testsuite/libstdc++-prettyprinters/cxx11.cc: New.

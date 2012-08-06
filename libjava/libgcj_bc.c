@@ -89,6 +89,8 @@ void _Jv_AttachCurrentThreadAsDaemon () {}
 void _Jv_CreateJavaVM () {}
 void _Jv_DetachCurrentThread () {}
 void _Jv_Free () {}
+void _Jv_GetStringUTFLength () {}
+void _Jv_GetStringUTFRegion () {}
 void _Jv_Malloc () {}
 void _Jv_NewString () {}
 void _Jv_NewStringLatin1 () {}

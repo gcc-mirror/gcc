@@ -1100,9 +1100,6 @@ static const char *gcc_libexec_prefix;
 #ifndef STANDARD_STARTFILE_PREFIX_2
 #define STANDARD_STARTFILE_PREFIX_2 "/usr/lib/"
 #endif
-#ifndef STANDARD_STARTFILE_PREFIX_3
-#define STANDARD_STARTFILE_PREFIX_3 "/usr/local/lib/"
-#endif
 
 #ifdef CROSS_DIRECTORY_STRUCTURE  /* Don't use these prefixes for a cross compiler.  */
 #undef MD_EXEC_PREFIX
@@ -1142,8 +1139,6 @@ static const char *const standard_startfile_prefix_1
   = STANDARD_STARTFILE_PREFIX_1;
 static const char *const standard_startfile_prefix_2
   = STANDARD_STARTFILE_PREFIX_2;
-static const char *const standard_startfile_prefix_3
-  = STANDARD_STARTFILE_PREFIX_3;
 
 /* A relative path to be used in finding the location of tools
    relative to the driver.  */
@@ -6385,10 +6380,6 @@ main (int argc, char **argv)
       if (*standard_startfile_prefix_2)
 	add_sysrooted_prefix (&startfile_prefixes,
 			      standard_startfile_prefix_2, "BINUTILS",
-			      PREFIX_PRIORITY_LAST, 0, 1);
-      if (*standard_startfile_prefix_3)
-	add_sysrooted_prefix (&startfile_prefixes,
-			      standard_startfile_prefix_3, "BINUTILS",
 			      PREFIX_PRIORITY_LAST, 0, 1);
     }
 

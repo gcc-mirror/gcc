@@ -5,7 +5,7 @@
    with pre-pushed arguments (e.g. SPARC).  */
 
 /* { dg-do run } */
-/* { dg-skip-if "" { "rx-*-*" } "*" { "" } } */
+   
 
 #define INTEGER_ARG  5
 

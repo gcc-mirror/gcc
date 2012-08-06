@@ -37,7 +37,7 @@ build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
 DIST_COMMON = $(top_srcdir)/fragment.am $(srcdir)/Makefile.in \
-	$(srcdir)/Makefile.am $(glibcxxinstall_HEADERS)
+	$(srcdir)/Makefile.am $(bits_HEADERS) $(std_HEADERS)
 subdir = libsupc++
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
@@ -90,17 +90,18 @@ am__installdirs = "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(bitsdir)" \
 	"$(DESTDIR)$(stddir)"
 LTLIBRARIES = $(noinst_LTLIBRARIES) $(toolexeclib_LTLIBRARIES)
 libsupc___la_LIBADD =
-am__objects_1 = array_type_info.lo atexit_arm.lo bad_cast.lo \
-	bad_typeid.lo class_type_info.lo del_op.lo del_opnt.lo \
-	del_opv.lo del_opvnt.lo dyncast.lo eh_alloc.lo eh_arm.lo \
-	eh_aux_runtime.lo eh_call.lo eh_catch.lo eh_exception.lo \
-	eh_globals.lo eh_personality.lo eh_term_handler.lo \
-	eh_terminate.lo eh_throw.lo eh_type.lo eh_unex_handler.lo \
-	enum_type_info.lo function_type_info.lo \
-	fundamental_type_info.lo guard.lo new_handler.lo new_op.lo \
-	new_opnt.lo new_opv.lo new_opvnt.lo pbase_type_info.lo \
-	pmem_type_info.lo pointer_type_info.lo pure.lo \
-	si_class_type_info.lo tinfo.lo tinfo2.lo vec.lo \
+am__objects_1 = array_type_info.lo atexit_arm.lo bad_alloc.lo \
+	bad_cast.lo bad_typeid.lo class_type_info.lo del_op.lo \
+	del_opnt.lo del_opv.lo del_opvnt.lo dyncast.lo eh_alloc.lo \
+	eh_arm.lo eh_aux_runtime.lo eh_call.lo eh_catch.lo \
+	eh_exception.lo eh_globals.lo eh_personality.lo eh_ptr.lo \
+	eh_term_handler.lo eh_terminate.lo eh_tm.lo eh_throw.lo \
+	eh_type.lo eh_unex_handler.lo enum_type_info.lo \
+	function_type_info.lo fundamental_type_info.lo guard.lo \
+	guard_error.lo hash_bytes.lo nested_exception.lo \
+	new_handler.lo new_op.lo new_opnt.lo new_opv.lo new_opvnt.lo \
+	pbase_type_info.lo pmem_type_info.lo pointer_type_info.lo \
+	pure.lo si_class_type_info.lo tinfo.lo tinfo2.lo vec.lo \
 	vmi_class_type_info.lo vterminate.lo
 @GLIBCXX_HOSTED_TRUE@am__objects_2 = cp-demangle.lo
 am_libsupc___la_OBJECTS = $(am__objects_1) $(am__objects_2)
@@ -122,8 +123,7 @@ CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
 SOURCES = $(libsupc___la_SOURCES) $(libsupc__convenience_la_SOURCES)
-glibcxxinstallHEADERS_INSTALL = $(INSTALL_HEADER)
-HEADERS = $(glibcxxinstall_HEADERS)
+HEADERS = $(bits_HEADERS) $(std_HEADERS)
 ETAGS = etags
 CTAGS = ctags
 ABI_TWEAKS_SRCDIR = @ABI_TWEAKS_SRCDIR@
@@ -751,15 +751,18 @@ uninstall-am: uninstall-bitsHEADERS uninstall-stdHEADERS \
 	clean-libtool clean-noinstLTLIBRARIES \
 	clean-toolexeclibLTLIBRARIES ctags distclean distclean-compile \
 	distclean-generic distclean-libtool distclean-tags dvi dvi-am \
-	html html-am info info-am install install-am install-data \
-	install-data-am install-exec install-exec-am \
-	install-glibcxxinstallHEADERS install-info install-info-am \
-	install-man install-strip install-toolexeclibLTLIBRARIES \
-	installcheck installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	tags uninstall uninstall-am uninstall-glibcxxinstallHEADERS \
-	uninstall-info-am uninstall-toolexeclibLTLIBRARIES
+	html html-am info info-am install install-am \
+	install-bitsHEADERS install-data install-data-am install-dvi \
+	install-dvi-am install-exec install-exec-am install-html \
+	install-html-am install-info install-info-am install-man \
+	install-pdf install-pdf-am install-ps install-ps-am \
+	install-stdHEADERS install-strip \
+	install-toolexeclibLTLIBRARIES installcheck installcheck-am \
+	installdirs maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-compile mostlyclean-generic \
+	mostlyclean-libtool pdf pdf-am ps ps-am tags uninstall \
+	uninstall-am uninstall-bitsHEADERS uninstall-stdHEADERS \
+	uninstall-toolexeclibLTLIBRARIES
 
 
 cp-demangle.c:

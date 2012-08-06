@@ -111,8 +111,8 @@
    (set_attr "length" "12")])
 
 (define_expand "atomic_load<mode>"
-  [(set (match_operand:INT 0 "register_operand" "")		;; output
-	(match_operand:INT 1 "memory_operand" ""))		;; memory
+  [(set (match_operand:INT1 0 "register_operand" "")		;; output
+	(match_operand:INT1 1 "memory_operand" ""))		;; memory
    (use (match_operand:SI 2 "const_int_operand" ""))]		;; model
   ""
 {
@@ -139,8 +139,8 @@
 })
 
 (define_expand "atomic_store<mode>"
-  [(set (match_operand:INT 0 "memory_operand" "")		;; memory
-	(match_operand:INT 1 "register_operand" ""))		;; input
+  [(set (match_operand:INT1 0 "memory_operand" "")		;; memory
+	(match_operand:INT1 1 "register_operand" ""))		;; input
    (use (match_operand:SI 2 "const_int_operand" ""))]		;; model
   ""
 {

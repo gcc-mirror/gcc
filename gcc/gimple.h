@@ -305,11 +305,6 @@ struct GTY(()) gimple_statement_base {
   /* Nonzero if this statement contains volatile operands.  */
   unsigned has_volatile_ops 	: 1;
 
-  /* Nonzero if this statement appears inside a transaction.  This bit
-     is calculated on de-mand and has relevant information only after
-     it has been calculated with compute_transaction_bits.  */
-  unsigned in_transaction	: 1;
-
   /* The SUBCODE field can be used for tuple-specific flags for tuples
      that do not require subcodes.  Note that SUBCODE should be at
      least as wide as tree codes, as several tuples store tree codes
@@ -1587,20 +1582,20 @@ gimple_set_has_volatile_ops (gimple stmt, bool volatilep)
     stmt->gsbase.has_volatile_ops = (unsigned) volatilep;
 }
 
+/* Return true if BB is in a transaction.  */
+
+static inline bool
+block_in_transaction (basic_block bb)
+{
+  return flag_tm && bb->flags & BB_IN_TRANSACTION;
+}
+
 /* Return true if STMT is in a transaction.  */
 
 static inline bool
 gimple_in_transaction (gimple stmt)
 {
-  return stmt->gsbase.in_transaction;
-}
-
-/* Set the IN_TRANSACTION flag to TRANSACTIONP.  */
-
-static inline void
-gimple_set_in_transaction (gimple stmt, bool transactionp)
-{
-  stmt->gsbase.in_transaction = (unsigned) transactionp;
+  return block_in_transaction (gimple_bb (stmt));
 }
 
 /* Return true if statement STMT may access memory.  */

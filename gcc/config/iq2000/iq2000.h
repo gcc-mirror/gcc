@@ -367,8 +367,12 @@ typedef struct iq2000_args
   fprintf (FILE, "\t.set\tat\n");					\
 }
 
-#define TRAMPOLINE_SIZE       0
-#define TRAMPOLINE_ALIGNMENT  1
+
+/* Trampolines for Nested Functions.  */
+
+#define TRAMPOLINE_CODE_SIZE  (8*4)
+#define TRAMPOLINE_SIZE       (TRAMPOLINE_CODE_SIZE + 2*GET_MODE_SIZE (Pmode))
+#define TRAMPOLINE_ALIGNMENT  GET_MODE_ALIGNMENT (Pmode)
 
 
 /* Addressing Modes.  */
@@ -639,7 +643,7 @@ enum delay_type
 
 /* Force right-alignment for small varargs in 32 bit little_endian mode */
 
-#define PAD_VARARGS_DOWN 1
+#define PAD_VARARGS_DOWN !BYTES_BIG_ENDIAN
 
 /* Internal macros to classify a register number as to whether it's a
    general purpose register, a floating point register, a

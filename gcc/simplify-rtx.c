@@ -1465,9 +1465,7 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
 	case ZERO_EXTEND:
 	  /* When zero-extending a CONST_INT, we need to know its
              original mode.  */
- 	  if (op_mode == VOIDmode)
-	    return 0;
-
+	  gcc_assert (op_mode != VOIDmode);
 	  if (op_width == HOST_BITS_PER_WIDE_INT)
 	    {
 	      /* If we were really extending the mode,
@@ -1634,8 +1632,7 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
 	  break;
 
 	case ZERO_EXTEND:
- 	  if (op_mode == VOIDmode)
- 	    return immed_double_const (0, 0, mode);
+	  gcc_assert (op_mode != VOIDmode);
 
 	  if (op_width > HOST_BITS_PER_WIDE_INT)
 	    return 0;

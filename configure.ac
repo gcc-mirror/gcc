@@ -108,20 +108,6 @@ topsrcdir=$srcpwd
 
 extra_host_args=
 
-# This is a hack to get around the mis-configuring of libintl.a
-# support in GNUPro 05r1.  In theory this should not be necessary
-# but test building native toolchains under Solaris and Cygwin
-# before permanently removing it.
-case "$ac_configure_args" in
-  *--with-included-gettext=* )
-      ;;
-  *--disable-nls* )
-      ;;
-  * )
-      ac_configure_args="$ac_configure_args --with-included-gettext"
-      ;;
-esac
-	
 ### To add a new directory to the tree, first choose whether it is a target
 ### or a host dependent tool.  Then put it into the appropriate list
 ### (library or tools, host or target), doing a dependency sort.
@@ -139,7 +125,7 @@ esac
 # these library is used by various programs built for the build
 # environment
 #
-build_libs="build-libiberty build-intl"
+build_libs="build-libiberty"
 
 # these tools are built for the build environment
 build_tools="build-texinfo build-flex build-bison build-m4 build-fixincludes"
@@ -154,7 +140,7 @@ host_libs="intl libiberty opcodes bfd readline tcl tk itcl libgui zlib libcpp li
 # binutils, gas and ld appear in that order because it makes sense to run
 # "make check" in that particular order.
 # If --enable-gold is used, "gold" may replace "ld".
-host_tools="texinfo flex bison binutils gas ld fixincludes gcc cgen sim gdb gprof etc expect dejagnu m4 utils guile fastjar gnattools"
+host_tools="texinfo flex bison binutils gas ld fixincludes gcc cgen sid sim gdb gprof etc expect dejagnu m4 utils guile fastjar gnattools"
 
 # libgcj represents the runtime libraries only used by gcj.
 libgcj="target-libffi \
@@ -320,7 +306,7 @@ AC_ARG_ENABLE(gold,
 ENABLE_GOLD=$enableval,
 ENABLE_GOLD=no)
 case "${ENABLE_GOLD}" in
-  yes|default|both)
+  yes|default)
     # Check for ELF target.
     is_elf=no
     case "${target}" in
@@ -369,7 +355,7 @@ case "${ENABLE_LD}" in
       AC_MSG_ERROR([either gold or ld can be the default ld])
     fi
     ;;
-  yes|both)
+  yes)
     ;;
   no)
     if test x${ENABLE_GOLD} != xyes; then
@@ -538,9 +524,6 @@ case "${target}" in
     # for explicit misaligned loads.
     noconfigdirs="$noconfigdirs target-libssp"
     ;;
-   *-*-tpf*)
-    noconfigdirs="$noconfigdirs target-libssp"
-    ;;
 esac
 
 # Disable libstdc++-v3 for some systems.
@@ -704,9 +687,6 @@ case "${target}" in
   rs6000-*-aix*)
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
-  mep-*-*)
-    configdirs="$configdirs sid"
-    ;;    
   mips*-*-irix6*)
     # Linking libjava exceeds command-line length limits on at least
     # IRIX 6.2, but not on IRIX 6.5.
@@ -714,12 +694,6 @@ case "${target}" in
     # <oldham@codesourcery.com>
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
-  mips*-*-*)
-    noconfigdirs="$noconfigdirs ${libgcj} target-libssp"
-    ;;
-  xstormy16*-*-*)
-    configdirs="$configdirs sid"
-    ;;    
   *-*-lynxos*)
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;; 
@@ -904,9 +878,6 @@ case "${target}" in
     ;;
   tic54x-*-*)
     noconfigdirs="$noconfigdirs target-libgloss gdb"
-    ;;
-  cr16-*-*)
-    noconfigdirs="$noconfigdirs gdb"
     ;;
   d10v-*-*)
     noconfigdirs="$noconfigdirs target-libgloss"
@@ -1102,9 +1073,6 @@ case "${host}" in
     ;;
   *-mingw*)
     host_makefile_frag="config/mh-mingw"
-    ;;
-  *-interix*)
-    host_makefile_frag="config/mh-interix"
     ;;
   hppa*-hp-hpux10*)
     host_makefile_frag="config/mh-pa-hpux10"
@@ -1311,9 +1279,9 @@ if test "x$with_mpfr_lib" != x; then
   gmplibs="-L$with_mpfr_lib $gmplibs"
 fi
 if test "x$with_mpfr$with_mpfr_include$with_mpfr_lib" = x && test -d ${srcdir}/mpfr; then
-  gmplibs='-L$$r/$(HOST_SUBDIR)/mpfr/src/'"$lt_cv_objdir $gmplibs"
-  gmpinc='-I$$r/$(HOST_SUBDIR)/mpfr/src -I$$s/mpfr/src '"$gmpinc"
-  extra_mpc_mpfr_configure_flags='--with-mpfr-include=$$s/mpfr/src --with-mpfr-lib=$$r/$(HOST_SUBDIR)/mpfr/src/'"$lt_cv_objdir"
+  gmplibs='-L$$r/$(HOST_SUBDIR)/mpfr/'"$lt_cv_objdir $gmplibs"
+  gmpinc='-I$$r/$(HOST_SUBDIR)/mpfr -I$$s/mpfr '"$gmpinc"
+  extra_mpc_mpfr_configure_flags='--with-mpfr-include=$$s/mpfr --with-mpfr-lib=$$r/$(HOST_SUBDIR)/mpfr/'"$lt_cv_objdir"
   # Do not test the mpfr version.  Assume that it is sufficient, since
   # it is in the source tree, and the library has not been built yet
   # but it would be included on the link line in the version check below
@@ -2331,10 +2299,6 @@ case "${target}" in
     extra_arflags_for_target=" -X32_64"
     extra_nmflags_for_target=" -B -X32_64"
     ;;
-  *-*-darwin[[3-9]]*)
-    # ranlib before Darwin10 requires the -c flag to look at common symbols.
-    extra_ranlibflags_for_target=" -c"
-    ;;
 esac
 
 alphaieee_frag=/dev/null
@@ -2492,9 +2456,7 @@ INSTALL_GDB_TK=`echo ${GDB_TK} | sed s/-all-/-install-/g`
 # Do not nest @if/@endif pairs, because configure will not warn you at all.
 
 case "$enable_bootstrap:$ENABLE_GOLD: $configdirs :,$stage1_languages," in
-  yes:both:*\ gold\ *:*,c++,* | \
   yes:yes:*\ gold\ *:*,c++,*) ;;
-  yes:both:*\ gold\ *:* | \
   yes:yes:*\ gold\ *:*)
     AC_MSG_ERROR([in a combined tree, bootstrapping with --enable-gold requires c++ in stage1_languages])
     ;;
@@ -3029,14 +2991,30 @@ AC_SUBST(WINDRES_FOR_BUILD)
 MISSING=`cd $ac_aux_dir && ${PWDCMD-pwd}`/missing
 
 AC_CHECK_PROGS([YACC], ['bison -y' byacc yacc], [$MISSING bison -y])
+case " $build_configdirs " in
+  *" bison "*) YACC='$$r/$(BUILD_SUBDIR)/bison/tests/bison -y' ;;
+esac
 
 AC_CHECK_PROGS([BISON], [bison], [$MISSING bison])
+case " $build_configdirs " in
+  *" bison "*) BISON='$$r/$(BUILD_SUBDIR)/bison/tests/bison' ;;
+esac
 
 AC_CHECK_PROGS([M4], [gm4 gnum4 m4], [$MISSING m4])
+case " $build_configdirs " in
+  *" m4 "*) M4='$$r/$(BUILD_SUBDIR)/m4/m4' ;;
+esac
 
 AC_CHECK_PROGS([LEX], [flex lex], [$MISSING flex])
+case " $build_configdirs " in
+  *" flex "*) LEX='$$r/$(BUILD_SUBDIR)/flex/flex' ;;
+  *" lex "*) LEX='$$r/$(BUILD_SUBDIR)/lex/lex' ;;
+esac
 
 AC_CHECK_PROGS([FLEX], [flex], [$MISSING flex])
+case " $build_configdirs " in
+  *" flex "*) FLEX='$$r/$(BUILD_SUBDIR)/flex/flex' ;;
+esac
 
 AC_CHECK_PROGS([MAKEINFO], makeinfo, [$MISSING makeinfo])
 case " $build_configdirs " in

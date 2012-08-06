@@ -1,4 +1,4 @@
-/* Copyright (C) 2005, 2008, 2009, 2011 Free Software Foundation, Inc.
+/* Copyright (C) 2005, 2008, 2009, 2011, 2012 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU OpenMP Library (libgomp).
@@ -175,7 +175,7 @@ static inline int gomp_tid (void)
 void
 gomp_init_nest_lock_25 (omp_nest_lock_25_t *lock)
 {
-  memset (lock, 0, sizeof (lock));
+  memset (lock, 0, sizeof (*lock));
 }
 
 void

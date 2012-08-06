@@ -2405,6 +2405,8 @@ gfc_add_loop_ss_code (gfc_loopinfo * loop, gfc_ss * ss, bool subscript,
   if (ss->is_alloc_lhs)
     return;
 
+  outer_loop = outermost_loop (loop);
+
   /* TODO: This can generate bad code if there are ordering dependencies,
      e.g., a callee allocated function and an unknown size constructor.  */
   gcc_assert (ss != NULL);

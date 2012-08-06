@@ -1,5 +1,5 @@
 /* PR c/25309 */
-/* { dg-do compile { target ilp32 } } */
+/* { dg-do compile } */
 /* { dg-options "-O2" } */
 static char * name[] = {
     [0x80000000]  = "bar"

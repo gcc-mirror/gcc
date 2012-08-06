@@ -98,100 +98,58 @@
 
 2012-06-25  Jakub Jelinek  <jakub@redhat.com>
 
-	Backported from mainline.
-	* decl.c (cxx_init_decl_processing): Use ptr_mode instead of Pmode.
+	PR c++/53594
+	* class.c (check_bases_and_members): Avoid -Wuninitialized
+	diagnostics for non-static const members or references if they
+	use NSDMI.
 
-2012-04-03  Jason Merrill  <jason@redhat.com>
+2012-06-19  Jason Merrill  <jason@redhat.com>
 
-	PR c++/52796
-	* pt.c (tsubst_initializer_list): A pack expansion with no elements
-	means value-initialization.
+	PR c++/53651
+	* name-lookup.c (constructor_name_p): Don't try to look at the
+	name of a DECLTYPE_TYPE.
 
-2012-03-01  Release Manager
+	Reapply:
+	PR c++/53137
+	* pt.c (instantiate_class_template_1): Set LAMBDA_EXPR_THIS_CAPTURE.
+	(instantiate_decl): Don't push_to_top_level for local class methods.
+	(instantiate_class_template_1): Or for local classes.
 
-	* GCC 4.6.3 released.
+	PR c++/53599
+	* pt.c (lookup_template_class_1): Use ts_global.
 
-2012-02-14  Jakub Jelinek  <jakub@redhat.com>
+2012-06-14  Richard Guenther  <rguenther@suse.de>
 
-	Backported from mainline
-	2012-02-14  Jakub Jelinek  <jakub@redhat.com>
+	Backport from mainline
+	2012-06-11  Richard Guenther  <rguenther@suse.de>
 
-	PR c++/52247
-	* pt.c (tsubst_copy_asm_operands): For LABEL_DECL values call
-	lookup_label on label's name and set TREE_USED.
+	PR c++/53616
+	* mangle.c (write_array_type): Use double-ints for array domain
+	arithmetic.
 
-	PR c/52181
-	* decl.c (duplicate_decls): If olddecl has bigger DECL_ALIGN than
-	newdecl, copy DECL_ALIGN to newdecl and or DECL_USER_ALIGN bits.
+2012-06-14  Richard Guenther  <rguenther@suse.de>
 
-2012-02-09  Jakub Jelinek  <jakub@redhat.com>
+	Backport from mainline
+	2012-06-06  Fabien Chêne  <fabien@gcc.gnu.org>
 
-	Backported from mainline
-	2012-01-03  Jakub Jelinek  <jakub@redhat.com>
+	PR c++/52841
+	* parser.c (cp_parser_alias_declaration): Return earlier
+	if an error occured.
 
-	PR c++/51669
-	* semantics.c (finish_omp_clauses): Call fold_build_cleanup_point_expr
-	on OMP_CLAUSE_{IF,NUM_THREADS,SCHEDULE_CHUNK}_EXPR.
+2012-06-14  Release Manager
 
-	2011-12-15  Jakub Jelinek  <jakub@redhat.com>
+	* GCC 4.7.1 released.
 
-	PR c/51360
-	* semantics.c (finish_omp_clauses): For OMP_CLAUSE_NUM_THREADS_EXPR
-	and OMP_CLAUSE_SCHEDULE_CHUNK_EXPR call mark_rvalue_use.
+2012-06-12  Jason Merrill  <jason@redhat.com>
 
-2012-01-19  Kai Tietz  <ktietz@redhat.com>
+	PR c++/53599
+	Revert:
+	PR c++/53137
+	* pt.c (instantiate_class_template_1): Set LAMBDA_EXPR_THIS_CAPTURE.
+	(instantiate_decl): Don't push_to_top_level for local class methods.
+	(instantiate_class_template_1): Or for local classes.
 
-	PR c++/51344
-	* decl2.c (save_template_attributes): Use merge_attributes
-	instead of chaining up via TREE_CHAIN.
-
-2012-01-16  Jakub Jelinek  <jakub@redhat.com>
-
-	PR c++/51854
-	* mangle.c (write_template_arg_literal): Sorry instead of aborting.
-
-2012-01-16  Jason Merrill  <jason@redhat.com>
-
-	PR c++/51868
-	* typeck.c (build_static_cast_1): Handle bit-fields properly.
-
-2011-12-20  Dodji Seketeli  <dodji@redhat.com>
-
-	PR debug/49951
-	* decl.c (cxx_maybe_build_cleanup): Don't set location of the call
-	to the destructor.
-
-2011-12-16  Jason Merrill  <jason@redhat.com>
-
-	PR c++/51416
-	* init.c (build_value_init_noctor): Check for incomplete type.
-
-2011-12-16  Jason Merrill  <jason@redhat.com>
-
-	PR c++/51331
-	* class.c (convert_to_base_statically): Just call
-	build_simple_base_path.
-	(build_simple_base_path): Check field offset.
-
-2011-12-14  Jason Merrill  <jason@redhat.com>
-
-	PR c++/51248
-	* decl.c (copy_type_enum): Also update variants.
-	(finish_enum): Allow variants of complete enums.
-
-2011-12-13  Jason Merrill  <jason@redhat.com>
-
-	PR c++/51406
-	PR c++/51161
-	* typeck.c (build_static_cast_1): Fix cast of lvalue to
-	base rvalue reference.
-
-2011-11-22  Paolo Carlini  <paolo.carlini@oracle.com>
-
-	PR c++/51265
-	* semantics.c (finish_decltype_type): Handle PTRMEM_CST.
-
-2011-11-18  Paolo Carlini  <paolo.carlini@oracle.com>
+2012-06-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/53524
 	* call.c (build_conditional_expr_1): Use OPT_Wenum_compare

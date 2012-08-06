@@ -52,7 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 	 }
      }
 
-   Where COND and INV are is invariants, but evaluating INV may trap or be
+   Where COND and INV are invariants, but evaluating INV may trap or be
    invalid from some other reason if !COND.  This may be transformed to
 
    if (cond)
@@ -1626,6 +1626,7 @@ gather_mem_refs_stmt (struct loop *loop, gimple stmt)
 	  fprintf (dump_file, "\n");
 	}
     }
+
   if (is_stored)
     mark_ref_stored (ref, loop);
 
@@ -1956,6 +1957,173 @@ get_lsm_tmp_name (tree ref, unsigned n)
   return lsm_tmp_name;
 }
 
+struct prev_flag_edges {
+  /* Edge to insert new flag comparison code.  */
+  edge append_cond_position;
+
+  /* Edge for fall through from previous flag comparison.  */
+  edge last_cond_fallthru;
+};
+
+/* Helper function for execute_sm.  Emit code to store TMP_VAR into
+   MEM along edge EX.
+
+   The store is only done if MEM has changed.  We do this so no
+   changes to MEM occur on code paths that did not originally store
+   into it.
+
+   The common case for execute_sm will transform:
+
+     for (...) {
+       if (foo)
+         stuff;
+       else
+         MEM = TMP_VAR;
+     }
+
+   into:
+
+     lsm = MEM;
+     for (...) {
+       if (foo)
+         stuff;
+       else
+         lsm = TMP_VAR;
+     }
+     MEM = lsm;
+
+  This function will generate:
+
+     lsm = MEM;
+
+     lsm_flag = false;
+     ...
+     for (...) {
+       if (foo)
+         stuff;
+       else {
+         lsm = TMP_VAR;
+         lsm_flag = true;
+       }
+     }
+     if (lsm_flag)	<--
+       MEM = lsm;	<--
+*/
+
+static void
+execute_sm_if_changed (edge ex, tree mem, tree tmp_var, tree flag)
+{
+  basic_block new_bb, then_bb, old_dest;
+  bool loop_has_only_one_exit;
+  edge then_old_edge, orig_ex = ex;
+  gimple_stmt_iterator gsi;
+  gimple stmt;
+  struct prev_flag_edges *prev_edges = (struct prev_flag_edges *) ex->aux;
+
+  /* ?? Insert store after previous store if applicable.  See note
+     below.  */
+  if (prev_edges)
+    ex = prev_edges->append_cond_position;
+
+  loop_has_only_one_exit = single_pred_p (ex->dest);
+
+  if (loop_has_only_one_exit)
+    ex = split_block_after_labels (ex->dest);
+
+  old_dest = ex->dest;
+  new_bb = split_edge (ex);
+  then_bb = create_empty_bb (new_bb);
+  if (current_loops && new_bb->loop_father)
+    add_bb_to_loop (then_bb, new_bb->loop_father);
+
+  gsi = gsi_start_bb (new_bb);
+  stmt = gimple_build_cond (NE_EXPR, flag, boolean_false_node,
+			    NULL_TREE, NULL_TREE);
+  gsi_insert_after (&gsi, stmt, GSI_CONTINUE_LINKING);
+
+  gsi = gsi_start_bb (then_bb);
+  /* Insert actual store.  */
+  stmt = gimple_build_assign (unshare_expr (mem), tmp_var);
+  gsi_insert_after (&gsi, stmt, GSI_CONTINUE_LINKING);
+
+  make_edge (new_bb, then_bb, EDGE_TRUE_VALUE);
+  make_edge (new_bb, old_dest, EDGE_FALSE_VALUE);
+  then_old_edge = make_edge (then_bb, old_dest, EDGE_FALLTHRU);
+
+  set_immediate_dominator (CDI_DOMINATORS, then_bb, new_bb);
+
+  if (prev_edges)
+    {
+      basic_block prevbb = prev_edges->last_cond_fallthru->src;
+      redirect_edge_succ (prev_edges->last_cond_fallthru, new_bb);
+      set_immediate_dominator (CDI_DOMINATORS, new_bb, prevbb);
+      set_immediate_dominator (CDI_DOMINATORS, old_dest,
+			       recompute_dominator (CDI_DOMINATORS, old_dest));
+    }
+
+  /* ?? Because stores may alias, they must happen in the exact
+     sequence they originally happened.  Save the position right after
+     the (_lsm) store we just created so we can continue appending after
+     it and maintain the original order.  */
+  {
+    struct prev_flag_edges *p;
+
+    if (orig_ex->aux)
+      orig_ex->aux = NULL;
+    alloc_aux_for_edge (orig_ex, sizeof (struct prev_flag_edges));
+    p = (struct prev_flag_edges *) orig_ex->aux;
+    p->append_cond_position = then_old_edge;
+    p->last_cond_fallthru = find_edge (new_bb, old_dest);
+    orig_ex->aux = (void *) p;
+  }
+
+  if (!loop_has_only_one_exit)
+    for (gsi = gsi_start_phis (old_dest); !gsi_end_p (gsi); gsi_next (&gsi))
+      {
+	gimple phi = gsi_stmt (gsi);
+	unsigned i;
+
+	for (i = 0; i < gimple_phi_num_args (phi); i++)
+	  if (gimple_phi_arg_edge (phi, i)->src == new_bb)
+	    {
+	      tree arg = gimple_phi_arg_def (phi, i);
+	      add_phi_arg (phi, arg, then_old_edge, UNKNOWN_LOCATION);
+	      update_stmt (phi);
+	    }
+      }
+  /* Remove the original fall through edge.  This was the
+     single_succ_edge (new_bb).  */
+  EDGE_SUCC (new_bb, 0)->flags &= ~EDGE_FALLTHRU;
+}
+
+/* Helper function for execute_sm.  On every location where REF is
+   set, set an appropriate flag indicating the store.  */
+
+static tree
+execute_sm_if_changed_flag_set (struct loop *loop, mem_ref_p ref)
+{
+  unsigned i;
+  mem_ref_loc_p loc;
+  tree flag;
+  VEC (mem_ref_loc_p, heap) *locs = NULL;
+  char *str = get_lsm_tmp_name (ref->mem, ~0);
+
+  lsm_tmp_name_add ("_flag");
+  flag = make_rename_temp (boolean_type_node, str);
+  get_all_locs_in_loop (loop, ref, &locs);
+  FOR_EACH_VEC_ELT (mem_ref_loc_p, locs, i, loc)
+    {
+      gimple_stmt_iterator gsi;
+      gimple stmt;
+
+      gsi = gsi_for_stmt (loc->stmt);
+      stmt = gimple_build_assign (flag, boolean_true_node);
+      gsi_insert_after (&gsi, stmt, GSI_CONTINUE_LINKING);
+    }
+  VEC_free (mem_ref_loc_p, heap, locs);
+  return flag;
+}
+
 /* Executes store motion of memory reference REF from LOOP.
    Exits from the LOOP are stored in EXITS.  The initialization of the
    temporary variable is put to the preheader of the loop, and assignments
@@ -1964,12 +2132,13 @@ get_lsm_tmp_name (tree ref, unsigned n)
 static void
 execute_sm (struct loop *loop, VEC (edge, heap) *exits, mem_ref_p ref)
 {
-  tree tmp_var;
+  tree tmp_var, store_flag;
   unsigned i;
-  gimple load, store;
+  gimple load;
   struct fmt_data fmt_data;
-  edge ex;
+  edge ex, latch_edge;
   struct lim_aux_data *lim_data;
+  bool multi_threaded_model_p = false;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -1985,23 +2154,47 @@ execute_sm (struct loop *loop, VEC (edge, heap) *exits, mem_ref_p ref)
   fmt_data.orig_loop = loop;
   for_each_index (&ref->mem, force_move_till, &fmt_data);
 
+  if (block_in_transaction (loop_preheader_edge (loop)->src)
+      || !PARAM_VALUE (PARAM_ALLOW_STORE_DATA_RACES))
+    multi_threaded_model_p = true;
+
+  if (multi_threaded_model_p)
+    store_flag = execute_sm_if_changed_flag_set (loop, ref);
+
   rewrite_mem_refs (loop, ref, tmp_var);
 
-  /* Emit the load & stores.  */
+  /* Emit the load code into the latch, so that we are sure it will
+     be processed after all dependencies.  */
+  latch_edge = loop_latch_edge (loop);
+
+  /* FIXME/TODO: For the multi-threaded variant, we could avoid this
+     load altogether, since the store is predicated by a flag.  We
+     could, do the load only if it was originally in the loop.  */
   load = gimple_build_assign (tmp_var, unshare_expr (ref->mem));
   lim_data = init_lim_data (load);
   lim_data->max_loop = loop;
   lim_data->tgt_loop = loop;
+  gsi_insert_on_edge (latch_edge, load);
 
-  /* Put this into the latch, so that we are sure it will be processed after
-     all dependencies.  */
-  gsi_insert_on_edge (loop_latch_edge (loop), load);
-
-  FOR_EACH_VEC_ELT (edge, exits, i, ex)
+  if (multi_threaded_model_p)
     {
-      store = gimple_build_assign (unshare_expr (ref->mem), tmp_var);
-      gsi_insert_on_edge (ex, store);
+      load = gimple_build_assign (store_flag, boolean_false_node);
+      lim_data = init_lim_data (load);
+      lim_data->max_loop = loop;
+      lim_data->tgt_loop = loop;
+      gsi_insert_on_edge (latch_edge, load);
     }
+
+  /* Sink the store to every exit from the loop.  */
+  FOR_EACH_VEC_ELT (edge, exits, i, ex)
+    if (!multi_threaded_model_p)
+      {
+	gimple store;
+	store = gimple_build_assign (unshare_expr (ref->mem), tmp_var);
+	gsi_insert_on_edge (ex, store);
+      }
+    else
+      execute_sm_if_changed (ex, ref->mem, tmp_var, store_flag);
 }
 
 /* Hoists memory references MEM_REFS out of LOOP.  EXITS is the list of exit
@@ -2410,6 +2603,8 @@ tree_ssa_lim_initialize (void)
 
   if (flag_tm)
     compute_transaction_bits ();
+
+  alloc_aux_for_edges (0);
 }
 
 /* Cleans up after the invariant motion pass.  */
@@ -2420,6 +2615,8 @@ tree_ssa_lim_finalize (void)
   basic_block bb;
   unsigned i;
   bitmap b;
+
+  free_aux_for_edges ();
 
   FOR_EACH_BB (bb)
     SET_ALWAYS_EXECUTED_IN (bb, NULL);

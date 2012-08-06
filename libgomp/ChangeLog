@@ -1,3 +1,27 @@
+2012-06-14  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2012-06-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/53580
+	* testsuite/libgomp.c/pr26943-2.c: Remove #pragma omp barrier,
+	use GOMP_barrier () call instead.
+	* testsuite/libgomp.c/pr26943-3.c: Likewise.
+	* testsuite/libgomp.c/pr26943-4.c: Likewise.
+	* testsuite/libgomp.fortran/vla4.f90: Remove !$omp barrier,
+	call GOMP_barrier instead.
+	* testsuite/libgomp.fortran/vla5.f90: Likewise.
+
+	2012-06-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/52993
+	* config/linux/lock.c (gomp_init_nest_lock_25): Fix up last
+	argument to memset call.
+
+2012-06-14  Release Manager
+
+	* GCC 4.7.1 released.
+
 2012-03-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/52547

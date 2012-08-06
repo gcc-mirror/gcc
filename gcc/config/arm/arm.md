@@ -63,62 +63,61 @@
 ;; Note: sin and cos are no-longer used.
 ;; Unspec enumerators for Neon are defined in neon.md.
 
-(define_constants
-  [(UNSPEC_SIN       0)	; `sin' operation (MODE_FLOAT):
-			;   operand 0 is the result,
-			;   operand 1 the parameter.
-   (UNPSEC_COS	     1)	; `cos' operation (MODE_FLOAT):
-			;   operand 0 is the result,
-			;   operand 1 the parameter.
-   (UNSPEC_PUSH_MULT 2)	; `push multiple' operation:
-			;   operand 0 is the first register,
-			;   subsequent registers are in parallel (use ...)
-			;   expressions.
-   (UNSPEC_PIC_SYM   3) ; A symbol that has been treated properly for pic
-			;   usage, that is, we will add the pic_register
-			;   value to it before trying to dereference it.
-   (UNSPEC_PIC_BASE  4)	; Add PC and all but the last operand together,
-			;   The last operand is the number of a PIC_LABEL
-			;   that points at the containing instruction.
-   (UNSPEC_PRLG_STK  5) ; A special barrier that prevents frame accesses 
-			;   being scheduled before the stack adjustment insn.
-   (UNSPEC_PROLOGUE_USE 6) ; As USE insns are not meaningful after reload,
-   			; this unspec is used to prevent the deletion of
-   			; instructions setting registers for EH handling
-   			; and stack frame generation.  Operand 0 is the
-   			; register to "use".
-   (UNSPEC_CHECK_ARCH 7); Set CCs to indicate 26-bit or 32-bit mode.
-   (UNSPEC_WSHUFH    8) ; Used by the intrinsic form of the iWMMXt WSHUFH instruction.
-   (UNSPEC_WACC      9) ; Used by the intrinsic form of the iWMMXt WACC instruction.
-   (UNSPEC_TMOVMSK  10) ; Used by the intrinsic form of the iWMMXt TMOVMSK instruction.
-   (UNSPEC_WSAD     11) ; Used by the intrinsic form of the iWMMXt WSAD instruction.
-   (UNSPEC_WSADZ    12) ; Used by the intrinsic form of the iWMMXt WSADZ instruction.
-   (UNSPEC_WMACS    13) ; Used by the intrinsic form of the iWMMXt WMACS instruction.
-   (UNSPEC_WMACU    14) ; Used by the intrinsic form of the iWMMXt WMACU instruction.
-   (UNSPEC_WMACSZ   15) ; Used by the intrinsic form of the iWMMXt WMACSZ instruction.
-   (UNSPEC_WMACUZ   16) ; Used by the intrinsic form of the iWMMXt WMACUZ instruction.
-   (UNSPEC_CLRDI    17) ; Used by the intrinsic form of the iWMMXt CLRDI instruction.
-   (UNSPEC_WMADDS   18) ; Used by the intrinsic form of the iWMMXt WMADDS instruction.
-   (UNSPEC_WMADDU   19) ; Used by the intrinsic form of the iWMMXt WMADDU instruction.
-   (UNSPEC_TLS      20) ; A symbol that has been treated properly for TLS usage.
-   (UNSPEC_PIC_LABEL 21) ; A label used for PIC access that does not appear in the
-                         ; instruction stream.
-   (UNSPEC_STACK_ALIGN 22) ; Doubleword aligned stack pointer.  Used to
-			   ; generate correct unwind information.
-   (UNSPEC_PIC_OFFSET 23) ; A symbolic 12-bit OFFSET that has been treated
-			  ; correctly for PIC usage.
-   (UNSPEC_GOTSYM_OFF 24) ; The offset of the start of the the GOT from a
-			  ; a given symbolic address.
-   (UNSPEC_THUMB1_CASESI 25) ; A Thumb1 compressed dispatch-table call.
-   (UNSPEC_RBIT 26)       ; rbit operation.
-   (UNSPEC_SYMBOL_OFFSET 27) ; The offset of the start of the symbol from
-                             ; another symbolic address.
-   (UNSPEC_MEMORY_BARRIER 28) ; Represent a memory barrier.
-   (UNSPEC_PIC_UNIFIED 29)  ; Create a common pic addressing form.
-   (UNSPEC_UNALIGNED_LOAD 30)
-   (UNSPEC_UNALIGNED_STORE 31)
-  ]
-)
+(define_c_enum "unspec" [
+  UNSPEC_SIN            ; `sin' operation (MODE_FLOAT):
+                        ;   operand 0 is the result,
+                        ;   operand 1 the parameter.
+  UNPSEC_COS            ; `cos' operation (MODE_FLOAT):
+                        ;   operand 0 is the result,
+                        ;   operand 1 the parameter.
+  UNSPEC_PUSH_MULT      ; `push multiple' operation:
+                        ;   operand 0 is the first register,
+                        ;   subsequent registers are in parallel (use ...)
+                        ;   expressions.
+  UNSPEC_PIC_SYM        ; A symbol that has been treated properly for pic
+                        ; usage, that is, we will add the pic_register
+                        ; value to it before trying to dereference it.
+  UNSPEC_PIC_BASE       ; Add PC and all but the last operand together,
+                        ; The last operand is the number of a PIC_LABEL
+                        ; that points at the containing instruction.
+  UNSPEC_PRLG_STK       ; A special barrier that prevents frame accesses
+                        ; being scheduled before the stack adjustment insn.
+  UNSPEC_PROLOGUE_USE   ; As USE insns are not meaningful after reload,
+                        ; this unspec is used to prevent the deletion of
+                        ; instructions setting registers for EH handling
+                        ; and stack frame generation.  Operand 0 is the
+                        ; register to "use".
+  UNSPEC_CHECK_ARCH     ; Set CCs to indicate 26-bit or 32-bit mode.
+  UNSPEC_WSHUFH         ; Used by the intrinsic form of the iWMMXt WSHUFH instruction.
+  UNSPEC_WACC           ; Used by the intrinsic form of the iWMMXt WACC instruction.
+  UNSPEC_TMOVMSK        ; Used by the intrinsic form of the iWMMXt TMOVMSK instruction.
+  UNSPEC_WSAD           ; Used by the intrinsic form of the iWMMXt WSAD instruction.
+  UNSPEC_WSADZ          ; Used by the intrinsic form of the iWMMXt WSADZ instruction.
+  UNSPEC_WMACS          ; Used by the intrinsic form of the iWMMXt WMACS instruction.
+  UNSPEC_WMACU          ; Used by the intrinsic form of the iWMMXt WMACU instruction.
+  UNSPEC_WMACSZ         ; Used by the intrinsic form of the iWMMXt WMACSZ instruction.
+  UNSPEC_WMACUZ         ; Used by the intrinsic form of the iWMMXt WMACUZ instruction.
+  UNSPEC_CLRDI          ; Used by the intrinsic form of the iWMMXt CLRDI instruction.
+  UNSPEC_WMADDS         ; Used by the intrinsic form of the iWMMXt WMADDS instruction.
+  UNSPEC_WMADDU         ; Used by the intrinsic form of the iWMMXt WMADDU instruction.
+  UNSPEC_TLS            ; A symbol that has been treated properly for TLS usage.
+  UNSPEC_PIC_LABEL      ; A label used for PIC access that does not appear in the
+                        ; instruction stream.
+  UNSPEC_PIC_OFFSET     ; A symbolic 12-bit OFFSET that has been treated
+                        ; correctly for PIC usage.
+  UNSPEC_GOTSYM_OFF     ; The offset of the start of the GOT from a
+                        ; a given symbolic address.
+  UNSPEC_THUMB1_CASESI  ; A Thumb1 compressed dispatch-table call.
+  UNSPEC_RBIT           ; rbit operation.
+  UNSPEC_SYMBOL_OFFSET  ; The offset of the start of the symbol from
+                        ; another symbolic address.
+  UNSPEC_MEMORY_BARRIER ; Represent a memory barrier.
+  UNSPEC_UNALIGNED_LOAD	; Used to represent ldr/ldrh instructions that access
+			; unaligned locations, on architectures which support
+			; that.
+  UNSPEC_UNALIGNED_STORE ; Same for str/strh.
+  UNSPEC_PIC_UNIFIED    ; Create a common pic addressing form.
+])
 
 ;; UNSPEC_VOLATILE Usage:
 

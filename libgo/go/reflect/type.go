@@ -83,6 +83,9 @@ type Type interface {
 	// compare the Types directly.
 	String() string
 
+	// Used internally by gccgo--the string retaining quoting.
+	rawString() string
+
 	// Kind returns the specific kind of this type.
 	Kind() Kind
 
@@ -432,7 +435,24 @@ func (t *commonType) toType() Type {
 	return canonicalize(t)
 }
 
-func (t *commonType) String() string { return *t.string }
+func (t *commonType) rawString() string { return *t.string }
+
+func (t *commonType) String() string {
+	// For gccgo, strip out quoted strings.
+	s := *t.string
+	var q bool
+	r := make([]byte, len(s))
+	j := 0
+	for i := 0; i < len(s); i++ {
+		if s[i] == '\t' {
+			q = !q
+		} else if !q {
+			r[j] = s[i]
+			j++
+		}
+	}
+	return string(r[:j])
+}
 
 func (t *commonType) Size() uintptr { return t.size }
 
@@ -942,7 +962,7 @@ func canonicalize(t Type) Type {
 	u := t.uncommon()
 	var s string
 	if u == nil || u.PkgPath() == "" {
-		s = t.String()
+		s = t.rawString()
 	} else {
 		s = u.PkgPath() + "." + u.Name()
 	}

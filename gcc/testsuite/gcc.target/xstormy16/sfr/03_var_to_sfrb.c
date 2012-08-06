@@ -1,4 +1,5 @@
 /* { dg-options { -nostartfiles below100.o -Tbelow100.ld -O2 } } */
+/* { dg-final { scan-assembler "mov.b 32532,r" } } */
 
 #define SFR (*((volatile unsigned char*)0x7f14))
 unsigned char *p = (unsigned char *) 0x7f14;
@@ -18,6 +19,3 @@ main (void)
   Do ();
   return (*p == 0x12) ? 0 : 1;
 }
-
-/* { dg-final { scan-file "03_var_to_sfrb.s" "mov.b 32532,r" } } */
-

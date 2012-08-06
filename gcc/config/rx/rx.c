@@ -1606,9 +1606,6 @@ rx_expand_prologue (void)
 
   rx_get_stack_layout (& low, & high, & mask, & frame_size, & stack_size);
 
-  if (flag_stack_usage_info)
-    current_function_static_stack_size = frame_size + stack_size;
-
   /* If we use any of the callee-saved registers, save them now.  */
   if (mask)
     {
@@ -3280,28 +3277,6 @@ rx_adjust_insn_length (rtx insn, int current_length)
 
 #undef  TARGET_LEGITIMIZE_ADDRESS
 #define TARGET_LEGITIMIZE_ADDRESS		rx_legitimize_address
-
-static bool
-rx_ok_to_inline (tree caller, tree callee)
-{
-  /* Issue 2877983: Do not inline functions with local variables
-     into a naked CALLER - naked function have no stack frame and
-     locals need a frame in order to have somewhere to live.
-
-     Unfortunately we have no way to determine the presence of
-     local variables in CALLEE, so we have to be cautious and
-     assume that there might be some there.
-
-     We do allow inlining when CALLEE has the "inline" type
-     modifier or the "always_inline" or "gnu_inline" attributes.  */
-  return lookup_attribute ("naked", DECL_ATTRIBUTES (caller)) == NULL_TREE
-    || DECL_DECLARED_INLINE_P (callee)
-    || lookup_attribute ("always_inline", DECL_ATTRIBUTES (callee)) != NULL_TREE
-    || lookup_attribute ("gnu_inline", DECL_ATTRIBUTES (callee)) != NULL_TREE;
-}
-
-#undef  TARGET_CAN_INLINE_P
-#define TARGET_CAN_INLINE_P		rx_ok_to_inline
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

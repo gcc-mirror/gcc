@@ -8,7 +8,6 @@
 
 /* { dg-do run } */
 /* { dg-options "-ftrapv" } */
-/* { dg-skip-if "no HI mode trapping arith funcs" { xstormy16-*-* } { "*" } { "" } } */
 
 extern void abort(void);
 extern long labs(long);

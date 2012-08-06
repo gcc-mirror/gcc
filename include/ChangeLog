@@ -1,115 +1,10 @@
-2012-07-24  Stephan McCamant  <smcc@cs.berkeley.edu>
-            Dr David Alan Gilbert  <dave@treblig.org>
+2012-06-14  Release Manager
 
-	PR binutils/13135
-	* dis-asm.h (fprintf_ftype): Add ATTRIBUTE_FPTR_PRINTF_2.
+	* GCC 4.7.1 released.
 
-2012-07-13  Doug Evans  <dje@google.com>
+2012-03-22  Release Manager
 
-	* filenames.h: #include "hashtab.h".
-	(filename_hash, filename_eq): Declare.
-
-2012-07-13  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
-
-	* elf/s390.h (START_RELOC_NUMBERS): Define R_390_IRELATIVE reloc.
-
-2012-06-18  Doug Evans  <dje@google.com>
-
-	* dwarf2.def (DW_OP): Add DW_OP_GNU_const_index.
-
-2012-06-12  Rafael Ávila de Espíndola <respindola@mozilla.com>
-
-	* plugin-api.h (ld_plugin_output_file_type): Add LDPO_PIE.
-
-2012-06-08  Jakub Jelinek  <jakub@redhat.com>
-
-	* dwarf2.def (DW_FORM_GNU_ref_alt, DW_FORM_GNU_strp_alt): New
-	forms.
-	* dwarf2.h (enum dwarf_macro_record_type): Add
-	DW_MACRO_GNU_define_indirect_alt, DW_MACRO_GNU_undef_indirect_alt
-	and DW_MACRO_GNU_transparent_include_alt.
-
-2012-05-23  Doug Evans  <dje@google.com>
-
-	* leb128.h: #include stdint.h, inttypes.h.
-	(read_uleb128_to_uint64): Renamed from read_uleb128_to_ull.
-	Change to take a uint64_t * argument instead of unsigned long long.
-	(read_sleb128_to_uint64): Renamed from read_sleb128_to_ll.
-	Change to take an int64_t * argument instead of long long.
-
-2012-05-22  Doug Evans  <dje@google.com>
-
-	* leb128.h: New file.
-
-2012-05-19  Gary Funck  <gary@intrepid.com>
-
-	* dwarf2.def: Update comment re: UPC extensions to reference
-	DWARF4 specification.
-
-2012-05-15  James Murray <jsm@jsm-net.demon.co.uk>
-
-	* dis-asm.h (print_insn_m9s12x): Prototype.
-	(print_insn_m9s12xg): Prototype.
-
-2012-05-03  Sean Keys  <skeys@ipdatasys.com>
-
-	* dis-asm.h (print_insn_xgate): Define.
-	(print_insn_xgate): Ditto.
-	Added new files for XGATE port.
-
-2012-05-02  Cary Coutant  <ccoutant@google.com>
-
-	* dwarf2.def: Remove DW_FORM_GNU_ref_index,
-	replace DW_AT_GNU_ref_base with DW_AT_GNU_ranges_base.
-
-2012-04-28  Doug Evans  <dje@google.com>
-
-	* dwarf2.def (DW_OP): Add DW_OP_GNU_addr_index.
-
-2012-04-27  Tom Tromey  <tromey@redhat.com>
-
-	* dwarf2.h: Wrap function declarations in extern "C".
-
-2012-04-27  Tom Tromey  <tromey@redhat.com>
-
-	* dwarf2.h (enum dwarf_tag, enum dwarf_form, enum dwarf_attribute)
-	(enum dwarf_location_atom, enum dwarf_type, enum
-	dwarf_call_frame_info): Remove.
-	(DW_TAG, DW_TAG_DUP, DW_FORM, DW_AT, DW_AT_DUP, DW_OP)
-	(DW_OP_DUP, DW_ATE, DW_ATE_DUP, DW_CFA): New macros.
-	Include dwarf2.def.
-	(get_DW_TAG_name, get_DW_AT_name, get_DW_FORM_name)
-	(get_DW_OP_name, get_DW_ATE_name): Declare.
-	* dwarf2.def: New file, from dwarf2.h.
-
-2012-04-12  David S. Miller  <davem@davemloft.net>
-
-	* elf/sparc.h (R_SPARC_WDISP10): New reloc.
-	* opcode/sparc.h: Define '=' as generating R_SPARC_WDISP10.
-
-2012-04-10  Tristan Gingold  <gingold@adacore.com>
-
-	* splay-tree.h: Conditionnaly includes stdint.h and inttypes.h
-	(libi_uhostptr_t, libi_shostptr_t): Remove, replaced by uintptr_t.
-
-2012-04-09  Roland McGrath  <mcgrathr@google.com>
-
-	* bfdlink.h (struct bfd_link_info): Add new member user_phdrs.
-
-2012-03-15  Alan Modra  <amodra@gmail.com>
-
-	* dis-asm.h (disassemble_init_powerpc): Declare.
-
-2009-11-06  Jonas Maebe  <jonas.maebe@elis.ugent.be>
-
-	Add DWARF attribute value for the "Borland fastcall" calling
-	convention.
-	* elf/dwarf2.h: Add DW_CC_GNU_borland_fastcall_i386 constant.
-
-2012-01-31  H.J. Lu  <hongjiu.lu@intel.com>
-
-	PR ld/13616
-	* bfdlink.h (bfd_link_order): Update comments on data size.
+	* GCC 4.7.0 released.
 
 2012-01-26  Cary Coutant  <ccoutant@google.com>
 
@@ -125,11 +20,6 @@
 	* demangle.h (enum demangle_component_type): Add
 	DEMANGLE_COMPONENT_INITIALIZER_LIST, DEMANGLE_COMPONENT_NULLARY.
 
-2011-12-14  Iain Sandoe  <iains@gcc.gnu.org>
-
-	* mach-o/loader.h (bfd_mach_o_section_type): define
-	BFD_MACH_O_S_ATTR_NONE to 0.
-
 2011-11-07  Richard Henderson  <rth@redhat.com>
 
 	Merged from transactional-memory.
@@ -139,14 +29,6 @@
 	(DEMANGLE_COMPONENT_TRANSACTION_CLONE): New.
 	(DEMANGLE_COMPONENT_NONTRANSACTION_CLONE): New.
 
-2011-11-01  DJ Delorie  <dj@redhat.com>
-
-	* dis-asm.h (print_insn_rl78): Declare.
-
-2011-10-25  Joern Rennecke  <joern.rennecke@embecosm.com>
-
-	* dis-asm.h (print_insn_epiphany): Declare.
-
 2011-10-21  Ulrich Drepper  <drepper@gmail.com>
 
 	* obstack.h [!GNUC] (obstack_free): Avoid cast to int.
@@ -154,11 +36,6 @@
 2011-10-21  Marc Glisse  <marc.glisse@inria.fr>
 
 	* ansidecl.h (ENUM_BITFIELD): Always use enum in C++
-
-2011-10-19  Alan Modra  <amodra@gmail.com>
-
-	PR ld/13254
-	* bfdlink.h (struct bfd_link_info): Add error_textrel.
 
 2011-09-28  Doug Evans  <dje@google.com>
 
@@ -168,7 +45,7 @@
 
 2011-09-26  Cary Coutant  <ccoutant@google.com>
 
-	gcc PR lto/47247
+	PR lto/47247
 	* plugin-api.h (enum ld_plugin_symbol_resolution): Add
 	LDPR_PREVAILING_DEF_IRONLY_EXP.
 	(enum ld_plugin_tag): Add LDPT_GET_SYMBOLS_V2.
@@ -178,11 +55,6 @@
 	PR 40831
 	* demangle.h (enum demangle_component_type): Add
 	DEMANGLE_COMPONENT_CLONE.
-
-2011-09-15  H.J. Lu  <hongjiu.lu@intel.com>
-
-	PR ld/12975
-	* bfdlink.h (bfd_link_info): Add version_info.
 
 2011-07-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
@@ -197,7 +69,7 @@
 	* libiberty.h (stack_limit_increase): New prototype.
 
 2011-07-13  Sriraman Tallam  <tmsriram@google.com>
-
+	
 	* plugin-api.h
 	(ld_plugin_section): New struct.
 	(ld_plugin_get_section_count): New typedef.
@@ -219,46 +91,6 @@
 	(tv_update_section_order): New struct members.
 	(tv_allow_section_ordering): New struct members.
 
-2011-07-15  Alan Modra  <amodra@gmail.com>
-
-	* bfdlink.h (struct bfd_link_info): Use ENUM_BITFIELD for strip,
-	discard, common_skip_ar_symbols, unresolved_syms_in_objects, and
-	unresolved_syms_in_shared_libs fields.  Move emit_note_gnu_build_id
-	out of bitfields.  Reorder bitfields.
-
-2011-07-13  Sriraman Tallam  <tmsriram@google.com>
-
-	* plugin-api.h (ld_plugin_section): New struct.
-	(ld_plugin_get_section_count): New typedef.
-	(ld_plugin_get_section_type): New typedef.
-	(ld_plugin_get_section_name): New typedef.
-	(ld_plugin_get_section_contents): New typedef.
-	(ld_plugin_update_section_order): New typedef.
-	(ld_plugin_allow_section_ordering): New typedef.
-	(LDPT_GET_SECTION_COUNT): New enum value.
-	(LDPT_GET_SECTION_TYPE): New enum value.
-	(LDPT_GET_SECTION_NAME): New enum value.
-	(LDPT_GET_SECTION_CONTENTS): New enum value.
-	(LDPT_UPDATE_SECTION_ORDER): New enum value.
-	(LDPT_ALLOW_SECTION_ORDERING): New enum value.
-	(tv_get_section_count): New struct members.
-	(tv_get_section_type): New struct members.
-	(tv_get_section_name): New struct members.
-	(tv_get_section_contents): New struct members.
-	(tv_update_section_order): New struct members.
-	(tv_allow_section_ordering): New struct members.
-
-2011-07-11  Catherine Moore  <clm@codesourcery.com>
-
-	* bfdlink.h (flag_type): New enumeration.
-	(flag_info_list): New structure.
-	(flag_info): New structure.
-
-2011-07-09  H.J. Lu  <hongjiu.lu@intel.com>
-
-	PR ld/12942
-	* bfdlink.h (bfd_link_info): Add loading_lto_outputs.
-
 2011-07-01  Joel Brobecker  <brobecker@adacore.com>
 
 	* filenames.h (HAVE_CASE_INSENSITIVE_FILE_SYSTEM): Define
@@ -270,35 +102,10 @@
 	PR debug/47858
 	* dwarf2.h (enum dwarf_location_atom): Add DW_OP_GNU_parameter_ref.
 
-2011-06-22  Jakub Jelinek  <jakub@redhat.com>
-
-	* dwarf2.h (enum dwarf_location_atom): Add DW_OP_GNU_parameter_ref.
-
-2011-06-20  Jakub Jelinek  <jakub@redhat.com>
-
-	PR ld/12570
-	* bfdlink.h (struct bfd_link_info): Add no_ld_generated_unwind_info
-	option.
-
 2011-06-13  Jan Kratochvil  <jan.kratochvil@redhat.com>
 
 	* demangle.h (DMGL_RET_POSTFIX): Extend the comment.
 	(DMGL_RET_DROP): New.
-
-2011-06-13  Walter Lee  <walt@tilera.com>
-
-	* dis-asm.h (print_insn_tilegx): Declare.
-	(print_insn_tilepro): Likewise.
-
-2011-05-17  Alan Modra  <amodra@gmail.com>
-
-	PR ld/12760
-	* bfdlink.h (struct bfd_link_callbacks <notice>): Add "flags" and
-	"string" param.
-
-2011-05-16  Alan Modra  <amodra@gmail.com>
-
-	* bfdlink.h (struct bfd_link_hash_entry): Remove u.undef.weak field.
 
 2011-04-30  Jakub Jelinek  <jakub@redhat.com>
 
@@ -307,27 +114,7 @@
 
 2011-04-25  Jan Kratochvil  <jan.kratochvil@redhat.com>
 
-	* bfdlink.h (ENUM_BITFIELD): Remove.
-
-2011-04-25  Jan Kratochvil  <jan.kratochvil@redhat.com>
-
 	* ansidecl.h (ENUM_BITFIELD): New, from gcc/system.h.
-
-2011-04-24  Alan Modra  <amodra@gmail.com>
-
-	PR ld/12365
-	PR ld/12696
-	* bfdlink.h (ENUM_BITFIELD): Define.
-	(struct bfd_link_hash_entry): Make "type" a bitfield.  Add "non_ir_ref".
-	(struct bfd_link_callbacks <notice>): Pass bfd_link_hash_entry pointer
-	rather than "name".
-
-2011-04-20  Alan Modra  <amodra@gmail.com>
-
-	PR ld/12365
-	* bfdlink.h (struct bfd_link_callbacks): Modify multiple_definition
-	and multiple_common parameters to pass in a bfd_link_hash_entry
-	pointer rather than name,bfd etc. found in the hash entry.
 
 2011-03-31  Tristan Gingold  <gingold@adacore.com>
 
@@ -365,10 +152,6 @@
 	DWARF2_External_CompUnit, DWARF2_Internal_CompUnit,
 	DWARF2_External_ARange, DWARF2_Internal_ARange): Removed.
 
-2011-02-08  Ulrich Weigand  <uweigand@de.ibm.com>
-
-	* dwarf2.h (enum dwarf_calling_convention): Add DW_CC_GDB_IBM_OpenCL.
-
 2011-01-12  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* dwarf2.h: Update value for DW_AT_hi_user.
@@ -386,47 +169,14 @@
 
 	* simple-object.h: New file.
 
-2010-10-15  Dave Korn  <dave.korn.cygwin@gmail.com>
+2010-10-15  Dave Korn  <dave.korn.cygwin@gmail.com> 
 
 	Sync LD plugin patch series (part 1/6) with src/include/.
-	* plugin-api.h (LDPT_GNU_LD_VERSION): New ld_plugin_tag enum member.
-
-2010-10-14  Dave Korn  <dave.korn.cygwin@gmail.com>
-
-	Apply LD plugin patch series (part 6/6).
-	* bfdlink.h (struct_bfd_link_callbacks): Document new argument
-	to add_archive_element callback used to return a replacement bfd which
-	is to be added to the hash table in place of the original element.
-
-2010-10-14  Dave Korn  <dave.korn.cygwin@gmail.com>
-
-	Apply LD plugin patch series (part 1/6).
 	* plugin-api.h (LDPT_GNU_LD_VERSION): New ld_plugin_tag enum member.
 
 2010-10-06  Andi Kleen <ak@linux.intel.com>
 
 	* libiberty.h (setproctitle): Add prototype.
-
-2010-09-29  Bernd Schmidt  <bernds@codesourcery.com>
-
-	* opcode/tic6x-control-registers.h (tscl): Now read_write.
-
-2010-09-27  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
-
-	* opcode/s390.h: Add S390_OPCODE_Z196 to enum s390_opcode_cpu_val.
-
-2010-09-23  Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
-
-	* arm.h (ARM_EXT_V6Z): Remove.
-	(ARM_EXT_SEC): New define.
-	(ARM_AEXT_V6Z): Use Security Extensions.
-	(ARM_AEXT_V6ZK): Likeiwse.
-	(ARM_AEXT_V6ZT2): Likewise.
-	(ARM_AEXT_V6ZKT2): Likewise.
-	(ARM_AEXT_V7_ARM): Base v7 does not have Security Extensions.
-	(ARM_ARCH_V7A_SEC): New define.
-	(ARM_ARCH_V7A_MP): Rename...
-	(ARM_ARCH_V7A_MP_SEC): ...to this and add Security Extensions.
 
 2010-09-09  Jakub Jelinek  <jakub@redhat.com>
 
@@ -436,10 +186,6 @@
 
 	* floatformat.h (floatformat_ieee_half_big): Add declaration.
 	(floatformat_ieee_half_little): Likewise.
-
-2010-06-29  Alan Modra  <amodra@gmail.com>
-
-	* dis-asm.h: Remove references to maxq.
 
 2010-06-21  Rafael Espindola  <espindola@google.com>
 
@@ -456,16 +202,7 @@
 	* plugin.h (ld_plugin_add_input_file, ld_plugin_add_input_library):
 	Make argument const.
 
-2010-06-08  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
-
-	* splay-tree.h: Update copyright years.
-	(splay_tree_s): Document fields.
-	(splay_tree_new_typed_alloc): New.
-
-	* hashtab.h: Update copyright years.
-	(htab_create_typed_alloc): New.
-
-2010-06-10  Tristan Gingold  <gingold@adacore.com>
+2010-06-08  Tristan Gingold  <gingold@adacore.com>
 
 	* dwarf2.h (enum dwarf_tag): Add DW_TAG_HP_Bliss_field and
 	DW_TAG_HP_Bliss_field_set.
@@ -482,6 +219,15 @@
 	(enum dwarf_source_language): Add DW_LANG_HP_Bliss,
 	DW_LANG_HP_Basic91, DW_LANG_HP_Pascal91, DW_LANG_HP_IMacro,
 	DW_LANG_HP_Assembler.
+
+2010-06-08  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
+
+	* splay-tree.h: Update copyright years.
+	(splay_tree_s): Document fields.
+	(splay_tree_new_typed_alloc): New.
+
+	* hashtab.h: Update copyright years.
+	(htab_create_typed_alloc): New.
 
 2010-06-01  Rafael Espindola  <espindola@google.com>
 
@@ -510,59 +256,22 @@
 	(IS_ABSOLUTE_PATH): Reimplement on top of IS_ABSOLUTE_PATH_1.
 	* libiberty.h (dos_lbasename, unix_lbasename): Declare.
 
-2009-05-31  Ian Lance Taylor  <iant@google.com>
-
-	* ansidecl.h: Add extern "C" when compiling with C++.  Treat C++
-	the way we treat an ISO C compiler.  Don't define inline as a
-	macro when compiling with C++.
-	* dyn-string.h: Add header guard DYN_STRING_H.  Add extern "C"
-	when compiling with C++.
-	* fibheap.h: Add extern "C" when compiling with C++.
-
-2010-04-23  Pedro Alves  <pedro@codesourcery.com>
-
-	* filenames.h (IS_DIR_SEPARATOR_1): Rename from IS_DIR_SEPARATOR,
-	always define it independently of host, add `dos_based' parameter,
-	and handle it.
-	(HAS_DRIVE_SPEC_1): Rename from HAS_DRIVE_SPEC, always define it
-	independently of host, add `dos_based' parameter, and handle it.
-	(IS_ABSOLUTE_PATH_1): Rename from IS_ABSOLUTE_PATH, always define
-	it independently of host, add `dos_based' parameter, and handle
-	it.
-	(IS_DOS_DIR_SEPARATOR, IS_DOS_ABSOLUTE_PATH)
-	(IS_UNIX_DIR_SEPARATOR, IS_UNIX_ABSOLUTE_PATH)
-	(HAS_DOS_DRIVE_SPEC): New.
-	(HAS_DRIVE_SPEC): Reimplement on top of HAS_DRIVE_SPEC_1.
-	(IS_DIR_SEPARATOR): Reimplement on top of IS_DIR_SEPARATOR_1.
-	(IS_ABSOLUTE_PATH): Reimplement on top of IS_ABSOLUTE_PATH_1.
-	* libiberty.h (dos_lbasename, unix_lbasename): Declare.
-
 2010-04-20  Nick Clifton  <nickc@redhat.com>
 
 	* sha1.h: Update copyright notice to use GPLv3.
-
-2010-04-15  Nick Clifton  <nickc@redhat.com>
-
-	* bout.h: Update copyright notice to use GPLv3.
-	* hp-symtab.h: Likewise.
-	* oasys.h: Likewise.
-	* progress.h: Likewise.
-	* sha1.h: Likewise.
-	* xtensa-isa-internal.h: Likewise.
-	* xtensa-isa.h: Likewise.
 
 2010-04-14  Doug Evans  <dje@google.com>
 
 	* filenames.h (HAS_DRIVE_SPEC, STRIP_DRIVE_SPEC): New macros.
 
-2010-04-05  Jakub Jelinek  <jakub@redhat.com>
+2010-04-13  Matthias Klose  <doko@ubuntu.com>
+
+	* elf: Remove empty directory.
+
+2010-04-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2.h (DWARF2_Internal_LineInfo): Add li_max_ops_per_insn
 	field.
-
-2010-03-25  Joseph Myers  <joseph@codesourcery.com>
-
-	* dis-asm.h (print_insn_tic6x): Declare.
 
 2010-03-23  Joseph Myers  <joseph@codesourcery.com>
 
@@ -586,23 +295,11 @@
 
 	* dwarf2.h (enum dwarf_attribute): Add DW_AT_GNAT_descriptive_type.
 
-2009-12-14  Doug Kwan  <dougkwan@google.com>
-
-	* bfdlink.h (struct bfd_link_callbacks): Rename function parameters
-	to avoid shadowed variable warnings.
-	* dis-asm.h (struct disassemble_info): Ditto.
-	(disassemble_init_for_target): Ditto.
-	(init_disassemble_info): Ditto.
-
-2009-11-18  Alan Modra  <amodra@bigpond.net.au>
-
-	* alloca-conf.h: Clarify comment.
-
 2009-11-06  Jonas Maebe  <jonas.maebe@elis.ugent.be>
 
 	Add DWARF attribute value for the "Borland fastcall" calling
 	convention.
-	* dwarf2.h: Add DW_CC_GNU_borland_fastcall_i386 constant.
+	* elf/dwarf2.h: Add DW_CC_GNU_borland_fastcall_i386 constant.
 
 2009-10-23  Kai Tietz  <kai.tietz@onevision.com>
 
@@ -620,23 +317,12 @@
 	* include/dwarf2.h (DW_LANG_Python): Add comment that it is
 	a DWARF 4 addition.
 
-2009-10-14  Alan Modra  <amodra@bigpond.net.au>
-
-	* bfdlink.h (enum bfd_link_common_skip_ar_symbols): Rename from
-	bfd_link_common_skip_ar_aymbols.
-	(struct bfd_link_info): Here too.
-
 2009-10-09  Rafael Espindola  <espindola@google.com>
 
 	* plugin-api.h (ld_plugin_add_input_library): Change argument name to
 	libname.
 
-2008-10-03  Rafael Espindola  <espindola@google.com>
-
-	* plugin-api.h: New.
-	* lto-symtab.h: New.
-
-2009-10-05   Rafael Espindola  <espindola@google.com>
+2009-10-05  Rafael Espindola  <espindola@google.com>
 
 	* plugin-api.h (ld_plugin_status): Add LDPS_BAD_HANDLE.
 	(ld_plugin_get_input_file): New.
@@ -652,16 +338,17 @@
 
 	* plugin-api.h: Fix compile.
 
+2009-10-03  Rafael Espindola  <espindola@google.com>
+
+	* plugin-api.h: New.
+	* lto-symtab.h: New.
+
 2009-09-29  Jason Merrill  <jason@redhat.com>
 
 	* demangle.h (enum demangle_component_type): Add
 	DEMANGLE_COMPONENT_LAMBDA, DEMANGLE_COMPONENT_DEFAULT_ARG,
 	DEMANGLE_COMPONENT_UNNAMED_TYPE.
 	(struct demangle_component): Add s_unary_num.
-
-2009-09-29  DJ Delorie  <dj@redhat.com>
-
-	* dis-asm.h: Add prototype for print_insn_rx.
 
 2009-09-25  Dodji Seketeli  <dodji@redhat.com>
 
@@ -683,42 +370,15 @@
 	attributes.
 	(DW_LANG_Python): New language.
 
-2009-09-24  Cary Coutant  <ccoutant@google.com>
-
-	* dwarf2.h (DW_TAG_rvalue_reference_type, DW_TAG_template_alias):
-	New tags.
-	(DW_FORM_ref_sig8): New name for DW_FORM_sig8.
-	(DW_AT_main_subprogram, DW_AT_data_bit_offset, DW_AT_const_expr,
-	DW_AT_enum_class, DW_AT_linkage_name, DW_AT_GNU_guarded_by,
-	DW_AT_GNU_pt_guarded_by, DW_AT_GNU_guarded, DW_AT_GNU_pt_guarded,
-	DW_AT_GNU_locks_excluded, DW_AT_GNU_exclusive_locks_required,
-	DW_AT_GNU_shared_locks_required, DW_AT_GNU_odr_signature): New
-	attributes.
-	(DW_LANG_Python): New language.
-
 2009-09-22  Dodji Seketeli  <dodji@redhat.com>
 
 	* dwarf2.h (enum dwarf_tag): Add
 	DW_TAG_template_parameter_pack and DW_TAG_formal_parameter_pack.
 
-2009-09-09  Martin Thuresson  <martin@mtme.org>
+2009-07-24  Ian Lance Taylor  <iant@google.com>
 
-	* bfdlink.h (struct bfd_link_hash_common_entry): Move to top
-	level.
-
-2009-09-04  Jie Zhang  <jie.zhang@analog.com>
-
-	* opcode/bfin.h (PseudoDbg_Assert): Add bits_grp and mask_grp.
-	(PseudoDbg_Assert_grp_bits, PseudoDbg_Assert_grp_mask): Define.
-	(PseudoDbg_Assert_dbgop_bits, PseudoDbg_Assert_dbgop_mask,
-	PseudoDbg_Assert_dontcare_bits, PseudoDbg_Assert_dontcare_mask):
-	Adjust accordingly.
-	(init_PseudoDbg_Assert): Add PseudoDbg_Assert_grp_bits and
-	PseudoDbg_Assert_grp_mask.
-
-2009-08-06  Michael Eager <eager@eagercon.com>
-
-	* dis-asm.h: Decl print_insn_microblaze().
+	PR bootstrap/40854
+	* libiberty.h (xcrc32): Rename from crc32.
 
 2009-07-24  Ian Lance Taylor  <iant@google.com>
 
@@ -740,10 +400,6 @@
 	(enum demangle_component_type <DEMANGLE_COMPONENT_GLOBAL_DESTRUCTORS>):
 	New.
 
-2009-07-10  Tom Tromey  <tromey@redhat.com>
-
-	* dwarf2.h: New file, moved from elf/.
-
 2009-07-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2.h (enum dwarf_location_atom): Add DW_OP_implicit_value
@@ -758,21 +414,11 @@
 
 	* elf/dwarf2.h: New file.  Merged with gdb.
 
-2009-06-18  Nick Clifton  <nickc@redhat.com>
-
-	* dis-asm.h (USER_SPECIFIED_MACHINE_TYPE): New value for the flags
-	field of struct disassemble_info.
-
 2009-06-09  Ian Lance Taylor  <ian@airs.com>
 
 	* ansidecl.h (ATTRIBUTE_UNUSED_LABEL): Define for C++.
 
-2009-06-15  Nick Clifton  <nickc@redhat.com>
-
-	* dis-asm.h (DISASSEMBLE_DATA): New value for the flags field of
-	struct disassemble_info.
-
-2009-06-02  Ian Lance Taylor  <iant@google.com>
+2009-06-03  Ian Lance Taylor  <iant@google.com>
 
 	* ansidecl.h (EXPORTED_CONST): Define.
 
@@ -780,73 +426,28 @@
 
 	* ansidecl.h: Add extern "C" when compiling with C++.  Treat C++
 	the way we treat an ISO C compiler.  Don't define inline as a
-	macdro when compiling with C++.
+	macro when compiling with C++.
 	* dyn-string.h: Add header guard DYN_STRING_H.  Add extern "C"
 	when compiling with C++.
 	* fibheap.h: Add extern "C" when compiling with C++.
-
-2009-05-25  Tristan Gingold  <gingold@adacore.com>
-
-	* fopen-vms.h (FOPEN_RB, FOPEN_WB, FOPEN_AB, FOPEN_RUB, FOPEN_WUB,
-	FOPEN_AUB): Use "rfm=udf,rat=none" attribute.
 
 2009-04-22  Taras Glek <tglek@mozilla.com>
 
 	* hashtab.h: Update GTY annotations to new syntax.
 	* splay-tree.h: Likewise.
 
-2009-04-08  H.J. Lu  <hongjiu.lu@intel.com>
-
-	* bfdlink.h (bfd_link_info): Add warn_alternate_em.
-
-2009-03-18  Alan Modra  <amodra@bigpond.net.au>
-
-	* alloca-conf.h: Revise based on autoconf-2.61, autoconf-2.13
-	documentation.
-
 2009-03-17  Jason Merrill  <jason@redhat.com>
 
 	* demangle.h (enum demangle_component_type): Add
 	DEMANGLE_COMPONENT_FUNCTION_PARAM.
 
-2008-12-01  Cary Coutant  <ccoutant@google.com>
-
-	* plugin-api.h (LDPS_BAD_HANDLE): New constant.
-	(ld_plugin_get_input_file): New typedef.
-	(ld_plugin_release_input_file): New typedef.
-	(LDPT_GET_INPUT_FILE, LDPT_RELEASE_INPUT_FILE): New constants.
-	(struct ld_plugin_tv): Add two new fields.
-
-2008-12-23  Jon Beniston <jon@beniston.com>
-
-	* dis-asm.h: Add LM32 disassembler function prototype.
-
 2008-12-10  Jason Merrill  <jason@redhat.com>
 
-	* demangle.h (enum demangle_component_type): Add
+	* demangle.h (enum demangle_component_type): Add 
 	DEMANGLE_COMPONENT_FIXED_TYPE.
 
-2008-12-01  Cary Coutant  <ccoutant@google.com>
-
-	* plugin-api.h (ld_plugin_message): Change format parameter to const.
-
-2008-12-01  Cary Coutant  <ccoutant@google.com>
-
-	* plugin-api.h: Fix syntax error when compiling with C++.
-
-2008-11-26  Alan Modra  <amodra@bigpond.net.au>
-
-	PR 7047
-	* bfdlink.h (struct bfd_elf_version_expr): Delete "symbol".
-	Add "literal".
-
-2008-11-21  Sterling Augustine  <sterling@tensilica.com>
-
-	* xtensa-isa-internal.h (XTENSA_STATE_IS_SHARED_OR): New flag.
-	* xtensa-isa.h (xtensa_state_is_shared_or): New prototype.
-
 2008-11-19  Bob Wilson  <bob.wilson@acm.org>
-
+	
 	* xtensa-config.h (XCHAL_HAVE_MUL16, XCHAL_HAVE_MUL32, XCHAL_HAVE_DIV32)
 	(XCHAL_HAVE_MINMAX, XCHAL_HAVE_SEXT, XCHAL_HAVE_THREADPTR)
 	(XCHAL_HAVE_RELEASE_SYNC, XCHAL_HAVE_S32C1I): Change to 1.
@@ -856,17 +457,7 @@
 	(XCHAL_ICACHE_LINEWIDTH, XCHAL_DCACHE_LINEWIDTH): Change to 5.
 	(XCHAL_DCACHE_IS_WRITEBACK): Change to 1.
 	(XCHAL_DEBUGLEVEL): Change to 6.
-
-2008-11-14  Tristan Gingold  <gingold@adacore.com>
-
-	* fopen-vms.h (FOPEN_RB): Use a single string to match the
-	standard prototype.
-	(FOPEN_WB): Ditto.
-	(FOPEN_AB): Ditto.
-	(FOPEN_RUB): Ditto.
-	(FOPEN_WUB): Ditto.
-	(FOPEN_AUB): Ditto.
-
+	
 2008-10-21  Alan Modra  <amodra@bigpond.net.au>
 
 	* obstack.h (obstack_finish <!__GNUC__>): Cast result to void *.
@@ -876,68 +467,10 @@
 	* demangle.h (enum demangle_component_type): Add
 	DEMANGLE_COMPONENT_PACK_EXPANSION.
 
-2008-09-24  Richard Henderson  <rth@redhat.com>
-
-	* elf/dwarf2.h (DW_OP_GNU_encoded_addr): New.
-
-2008-09-22 Rafael Espindola  <espindola@google.com>
-
-	* plugin-api.h (ld_plugin_status): Remove comma from the last item.
-	Use C style comment.
-	(ld_plugin_api_version, ld_plugin_output_file_type,
-	ld_plugin_symbol_kind, ld_plugin_symbol_visibility,
-	ld_plugin_symbol_resolution, ld_plugin_level, ld_plugin_tag): Remove
-	comma from the last item.
-
-2008-09-18  Cary Coutant  <ccoutant@google.com>
-
-	Add plugin functionality for link-time optimization (LTO).
-	* plugin-api.h: New file.
-
 2008-09-09  Jason Merrill  <jason@redhat.com>
 
 	* demangle.h (enum demangle_component_type): Add
 	DEMANGLE_COMPONENT_DECLTYPE.
-
-2008-08-25  Alan Modra  <amodra@bigpond.net.au>
-
-	* binary-io.h: New file, imported from gnulib, but don't
-	#include <fcntl.h> or <stdio.h>.
-
-2008-08-17  Alan Modra  <amodra@bigpond.net.au>
-
-	* bfdlink.h (bfd_generic_link_read_symbols): Declare.
-
-2008-08-08  Anatoly Sokolov  <aesok@post.ru>
-
-	* elf/avr.h (E_AVR_MACH_AVR25, E_AVR_MACH_AVR31,
-	E_AVR_MACH_AVR35, E_AVR_MACH_AVR51): Define.
-	(EF_AVR_MACH): Redefine to 0x7F.
-	* opcode/avr.h (AVR_ISA_TINY3, AVR_ISA_ALL, AVR_ISA_USB162): Remove.
-	(AVR_ISA_AVR3): Redefine.
-	(AVR_ISA_AVR1, AVR_ISA_AVR2, AVR_ISA_AVR31, AVR_ISA_AVR35,
-	AVR_ISA_AVR3_ALL, AVR_ISA_AVR4, AVR_ISA_AVR5, AVR_ISA_AVR51,
-	AVR_ISA_AVR6): Define.
-
-2008-07-12  Jie Zhang  <jie.zhang@analog.com>
-
-	Revert
-	2008-07-12  Jie Zhang  <jie.zhang@analog.com>
-	* bfdlink.h (struct bfd_link_info): Add sep_code member
-	variable.
-	* elf/bfin.h (EF_BFIN_CODE_IN_L1): Define.
-	(EF_BFIN_DATA_IN_L1): Define.
-
-2008-07-12  Jie Zhang  <jie.zhang@analog.com>
-
-	* bfdlink.h (struct bfd_link_info): Add sep_code member
-	variable.
-	* elf/bfin.h (EF_BFIN_CODE_IN_L1): Define.
-	(EF_BFIN_DATA_IN_L1): Define.
-
-2008-07-07  Stan Shebs  <stan@codesourcery.com>
-
-	* dis-asm.h (struct disassemble_info): Add endian_code field.
 
 2008-07-07  Joel Brobecker  <brobecker@adacore.com>
 
@@ -955,33 +488,15 @@
 	* libiberty.h (XALLOCA, XDUP, XALLOCAVEC, XDUPVEC, XALLOCAVAR,
 	XDUPVAR, XOBNEWVEC, XOBNEWVAR): New.
 
-2008-06-06  Alan Modra  <amodra@bigpond.net.au>
-
-	* bfdlink.h (struct bfd_link_info): Add "path_separator".
-
-2008-04-10  Andreas Krebbel  <krebbel1@de.ibm.com>
-
-	* dis-asm.h (print_s390_disassembler_options):
-	Prototype added.
-
 2008-03-24  Ian Lance Taylor  <iant@google.com>
 
 	* sha1.h: New file, from gnulib.
 
 	* md5.h: Add extern "C" when compiled with C++.
 
-2008-03-24  Ian Lance Taylor  <iant@google.com>
-
-	* md5.h: Add extern "C" when compiled with C++.
-
 2008-03-21  Ian Lance Taylor  <iant@google.com>
 
 	* filenames.h: Add extern "C" when compiled with C++.
-
-2008-02-15  Alan Modra  <amodra@bigpond.net.au>
-
-	* bfdlink.h (struct bfd_link_hash_table): Delete creator field.
-	(struct bfd_link_info): Add output_bfd.
 
 2008-02-11  Bob Wilson  <bob.wilson@acm.org>
 
@@ -1007,19 +522,19 @@
 	* libiberty.h (pex_free): Document process killing.
 
 2007-08-31  Douglas Gregor  <doug.gregor@gmail.com>
-
+	
 	* demangle.h (enum demangle_component_type): Add
-	DEMANGLE_COMPONENT_RVALUE_REFERENCE.
+	DEMANGLE_COMPONENT_RVALUE_REFERENCE. 
 
 2007-07-25  Ben Elliston  <bje@au.ibm.com>
 
 	* ternary.h: Remove.
 
 2007-07-18  Bob Wilson  <bob.wilson@acm.org>
-
+	
 	* xtensa-config.h (XCHAL_HAVE_THREADPTR): New.
 	(XCHAL_HAVE_RELEASE_SYNC, XCHAL_HAVE_S32C1I): New.
-
+	
 2007-07-17  Nick Clifton  <nickc@redhat.com>
 
 	* COPYING3: New file.  Contains version 3 of the GNU General
@@ -1027,45 +542,17 @@
 
 2007-07-12  Kai Tietz   <kai.tietz@onevision.com>
 
-	* splay-tree.h (libi_uhostptr_t, libi_shostptr_t): Adjust types
-	work-a-round whitespace problem in gcc gengtype.
-
 	* splay-tree.h (libi_uhostptr_t, libi_shostptr_t): New types,
 	needed for WIN64 when a long is not wide enough for a pointer.
-	(splay_tree_key, splay_tree_value): Use the new types.
-
-2007-07-09  Roland McGrath  <roland@redhat.com>
-
-	* bfdlink.h (struct bfd_link_info): Add member emit_note_gnu_build_id.
-
-2007-07-06  Nick Clifton  <nickc@redhat.com>
-
-	* bfdlink.h: Update copyright notice to refer to GPLv3.
-
-2007-06-29  M R Swami Reddy  <MR.Swami.Reddy@nsc.com>
-
-	* dis-asm.h (print_insn_cr16): New prototype.
-
-2007-06-01  Noah Misch  <noah@cs.caltech.edu>
-	    Alan Modra  <amodra@bigpond.net.au>
-
-	* bfdlink.h (struct bfd_link_info): Add input_bfds_tail.
+        (splay_tree_key, splay_tree_value): Use the new types.
 
 2007-05-07  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* libiberty.h (writeargv): Declare.
 
-2007-04-30  Alan Modra  <amodra@bigpond.net.au>
-
-	* bfdlink.h (struct bfd_link_info): Add "info" and "minfo".
-
 2007-04-25  Mark Mitchell  <mark@codesourcery.com>
 
 	* demangle.h: Change license to LGPL + exception.
-
-2007-04-10  Richard Henderson  <rth@redhat.com>
-
-	* bfdlink.h (struct bfd_link_info): Add relax_trip.
 
 2007-03-29  Joel Brobecker  <brobecker@adacore.com>
 
@@ -1073,38 +560,15 @@
 	regardless of the type of file system.
 
 2007-03-06  Jan Hubicka  <jh@suse.cz>
-
+	
 	* ansidecl.h (ATTRIBUTE_COLD, ATTRIBUTE_HOT): New.
-
-2007-02-21  Nick Clifton  <nickc@redhat.com>
-
-	* bfdlink.h (struct bfd_link_callbacks): Add
-	override_segment_assignment field.
-
-2007-02-17  Mark Mitchell  <mark@codesourcery.com>
-            Nathan Sidwell  <nathan@codesourcery.com>
-            Vladimir Prus  <vladimir@codesourcery.com
-            Joseph Myers  <joseph@codesourcery.com>
-
-	* bin-bugs.h: Remove.
 
 2007-02-09  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* libiberty.h (pex_write_input): Remove prototype.
 
-2007-02-05  Dave Brolley  <brolley@redhat.com>
-
-	* Contribute the following changes:
-	2001-03-26  Ben Elliston  <bje@redhat.com>
-
-	* dis-asm.h (print_insn_mep): Declare.
-
-2007-02-02  H.J. Lu  <hongjiu.lu@intel.com>
-
-	* dis-asm.h (print_i386_disassembler_options): New.
-
 2007-01-31  Vladimir Prus  <vladimir@codesourcery.com>
-
+	
 	* libiberty.h (PEX_STDERR_TO_PIPE): New define.
 	(PEX_BINARY_ERROR): New define.
 	(pex_read_err): New function.
@@ -1115,19 +579,12 @@
 	cplus_demangle_v3_callback, and java_demangle_v3_callback function
 	prototypes, and demangle_callbackref type definition.
 
-2007-01-16  H.J. Lu  <hongjiu.lu@intel.com>
-
-	PR ld/3831
-	* bfdlink.h (bfd_link_info): Rename dynamic to dynamic_list.
-	Add dynamic and dynamic_data.
-
-2006-12-05  Michael Tautschnig  <tautschn@model.in.tum.de>
-	    Nick Clifton  <nickc@redhat.com>
+2006-12-06  Nick Clifton  <nickc@redhat.com>
 
 	* ansidecl.h (ATTRIBUTE_PACKED): Define.
 
 2006-11-30  Andrew Stubbs  <andrew.stubbs@st.com>
-	    J"orn Rennecke <joern.rennecke@st.com>
+            J"orn Rennecke <joern.rennecke@st.com>
 
 	PR driver/29931
 	* libiberty.h (make_relative_prefix_ignore_links): Declare.
@@ -1137,70 +594,13 @@
 	* xtensa-config.h (XSHAL_ABI): New.
 	(XTHAL_ABI_WINDOWED, XTHAL_ABI_CALL0): New.
 
-2006-11-27  Bob Wilson  <bob.wilson@acm.org>
-
-	* xtensa-isa.h (STATIC_LIBISA): Delete.
-
-2006-10-30  Paul Brook  <paul@codesourcery.com>
-
-	* dis-asm.h (disassemble_info): Add symtab, symtab_pos and
-	symtab_size.
-
-2006-10-30  H.J. Lu  <hongjiu.lu@intel.com>
-
-	PR ld/3111
-	* bfdlink.h (bfd_link_info): Add reduce_memory_overheads.
-
-2006-10-25  Trevor Smigiel  <Trevor_Smigiel@playstation.sony.com>
-	    Yukishige Shibata  <shibata@rd.scei.sony.co.jp>
-	    Nobuhisa Fujinami  <fnami@rd.scei.sony.co.jp>
-	    Takeaki Fukuoka  <fukuoka@rd.scei.sony.co.jp>
-	    Alan Modra  <amodra@bigpond.net.au>
-
-	* dis-asm.h (print_insn_spu): Declare.
-
-2006-09-17  Mei Ligang  <ligang@sunnorth.com.cn>
-
-	* dis-asm.h: Add prototypes for Score disassembler routines.
-
-2006-09-07  H.J. Lu  <hongjiu.lu@intel.com>
-
-	* bfdlink.h (bfd_elf_dynamic_list): New.
-	(bfd_link_info): Add a dynamic field.
-
-2006-08-04  Marcelo Tosatti  <marcelo@kvack.org>
-
-	* bfdlink.h (struct bfd_link_info): New field: print_gc_sections.
-
-2006-07-10  Jakub Jelinek  <jakub@redhat.com>
-
-	* bfdlink.h (struct bfd_link_info): Add emit_hash and
-	emit_gnu_hash bitfields.
-
 2006-04-11  Jim Blandy  <jimb@codesourcery.com>
 
 	* libiberty.h (pex_input_file, pex_input_pipe): New declarations.
 
-2006-04-06  H.J. Lu  <hongjiu.lu@intel.com>
-
-	* bfdlink.h (bfd_link_info): Replace need_relax_finalize with
-	relax_pass.
-
-2006-02-17  Shrirang Khisti  <shrirangk@kpitcummins.com>
-            Anil Paranjape   <anilp1@kpitcummins.com>
-            Shilin Shakti    <shilins@kpitcummins.com>
-
-	* dis-asm.h (print_insn_xc16c): New prototype.
-
 2006-01-18  DJ Delorie  <dj@redhat.com>
 
 	* md5.h: Include ansidecl.h
-
-2006-01-17  Andreas Schwab  <schwab@suse.de>
-
-	PR binutils/1486
-	* dis-asm.h (struct disassemble_info): Add
-	disassembler_needs_relocs.
 
 2006-01-09  Bob Wilson  <bob.wilson@acm.org>
 
@@ -1210,20 +610,11 @@
 
 	* xtensa-config.h (XCHAL_HAVE_WIDE_BRANCHES): New.
 
-2005-12-16  Nathan Sidwell  <nathan@codesourcery.com>
-
-	Second part of ms1 to mt renaming.
-	* dis-asm.h (print_insn_mt): Renamed.
-
 2005-12-10  Terry Laurenzo  <tlaurenzo@gmail.com>
 
 	PR java/9861
 	* demangle.h : Add DMGL_RET_POSTFIX define to enable alternative
 	output format for return types
-
-2005-11-03  Alan Modra  <amodra@bigpond.net.au>
-
-	* bfdlink.h (struct bfd_link_order): Tweak comment.
 
 2005-10-31  Mark Kettenis  <kettenis@gnu.org>
 
@@ -1231,30 +622,9 @@
 	floatformat_vax.
 	(floatformat_vax_aingle, floatformat_vax_double): Declare.
 
-2005-10-28  Dave Brolley  <brolley@redhat.com>
-
-	Contribute the following changes:
-	2003-09-29  Dave Brolley  <brolley@redhat.com>
-
-	* dis-asm.h (disassemble_info): insn_sets now (void *) to allow for
-	more exotic underlying types to be used.
-
-2005-10-25  Arnold Metselaar  <arnold.metselaar@planet.nl>
-
-	disasm.h: Add declaration for print_insn_z80
-
-2005-09-30  Catherine Moore  <clm@cm00re.com>
-
-	* dis-asm.h (print_insn_bfin): Declare.
-
 2005-09-26  Mark Mitchell  <mark@codesourcery.com>
 
 	* libiberty.h (expandargv): New function.
-
-2005-08-18  Alan Modra  <amodra@bigpond.net.au>
-
-	* bfdlink.h: Remove mention of a29k.
-	* dis-asm.h: Remove a29k support.
 
 2005-08-17  Mark Kettenis  <kettenis@gnu.org>
 
@@ -1267,18 +637,10 @@
 	(floatformat_is_valid): Change type of last argument to `const
 	void *'.
 
-2005-07-14  Jim Blandy  <jimb@redhat.com>
-
-	* dis-asm.h (print_insn_m32c): New declaration.
-
 2005-07-12  Ben Elliston  <bje@au.ibm.com>
 
 	* xregex2.h (regexec): Qualify this prototype with __extension__
 	when compiling with GNU C.
-
-2005-07-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
-
-	* dis-asm.h (fprintf_ftype): Add format attribute.
 
 2005-07-03  Steve Ellcey  <sje@cup.hp.com>
 
@@ -1288,35 +650,17 @@
 	(md5_ctx): Align buffer field.
 
 2005-06-30  Daniel Berlin  <dberlin@dberlin.org>
-
+	
 	* hashtab.h (HTAB_DELETED_ENTRY): New macro.
 	(HTAB_EMPTY_ENTRY): New macro.
 
 2005-06-20  Geoffrey Keating  <geoffk@apple.com>
 
-	* libiberty.h (strverscmp): Prototype.
-
-2005-06-17  Jakub Jelinek  <jakub@redhat.com>
-
-	* elf/external.h (GRP_ENTRY_SIZE): Define.
-
-2005-06-08  Zack Weinberg  <zack@codesourcery.com>
-
-	* dis-asm.h (get_arm_regnames): Update prototype.
-
-2005-06-07  Aldy Hernandez  <aldyh@redhat.com>
-	    Michael Snyder  <msnyder@redhat.com>
-	    Stan Cox  <scox@redhat.com>
-
-	* dis-asm.h: Externalize print_insn_ms1.
+	* libiberty.h (strverscmp): Prototype. 
 
 2005-06-06  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* libiberty.h (XOBFINISH): New.
-
-2005-06-03  Alan Modra  <amodra@bigpond.net.au>
-
-	* bfdlink.h (struct bfd_link_callbacks): Add einfo.
 
 2005-06-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
@@ -1402,9 +746,20 @@
 
 	* libiberty.h (ffs): Declare, if necessary.
 
+2005-03-27  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* xregex2.h (_RE_ARGS): Remove definition and uses.
+
 2005-03-27  Gabriel Dos Reis  <gdr@integreable-solutions.net>
 
 	* ternary.h: Don't use PARAMS anymore.
+
+2005-03-27  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* partition.h: Remove use of PARAMS.
+	* obstack.h: Remove conditional prototypes __STDC__.
+	* objalloc.h:  Remove use of PARAMS.
+	* splay-tree.h: Likewise.
 
 2005-03-27  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
@@ -1430,14 +785,6 @@
 
 	* libiberty.h (make_relative_prefix): Add ATTRIBUTE_MALLOC.
 
-2005-03-22  Bob Wilson  <bob.wilson@acm.org>
-
-	* xtensa-isa.h: Update a comment and whitespace.
-
-2005-03-16  H.J. Lu  <hongjiu.lu@intel.com>
-
-	* bfdlink.h (bfd_link_info): Add gc_sections.
-
 2005-03-09  Mark Mitchell  <mark@codesourcery.com>
 
 	* libiberty.h (gettimeofday): Declare.
@@ -1446,163 +793,21 @@
 
 	* libiberty.h: Declare unlink_if_ordinary.
 
-2005-02-21  Alan Modra  <amodra@bigpond.net.au>
-
-	* xtensa-isa-internal.h (xtensa_length_decode_fn): Warning fix.
-	* xtensa-isa.h (xtensa_insnbuf_to_chars): Likewise.
-	(xtensa_insnbuf_from_chars, xtensa_isa_length_from_chars): Likewise.
-
 2005-02-14  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR bootstrap/19818
 	* ansidecl.h (PARAMS): Guard from redefinition.
-
-2005-02-03  Alan Modra  <amodra@bigpond.net.au>
-
-	* bfdlink.h (struct bfd_link_hash_entry): Add u.undef.weak.
-
-2005-02-01  Alan Modra  <amodra@bigpond.net.au>
-
-	* bfdlink.h (bfd_link_repair_undef_list): Declare.
-
-2005-01-10  Andreas Schwab  <schwab@suse.de>
-
-	* dis-asm.h (struct disassemble_info): Add skip_zeroes and
-	skip_zeroes_at_end.
 
 2004-12-11  Ben Elliston  <bje@au.ibm.com>
 
 	* fibheap.h (struct fibnode): Only use unsigned long bitfields
 	when __GNUC__ is defined and ints are less than 32-bits wide.
 
-2004-11-04  Paul Brook  <paul@codesourcery.com>
-
-	* bfdlink.h (bfd_link_info): Add default_imported_symver.
-
-2004-11-12  Bob Wilson  <bob.wilson@acm.org>
-
-	* xtensa-isa-internal.h (xtensa_interface_internal): Add class_id.
-	* xtensa-isa.h (xtensa_interface_class_id): New prototype.
-
-2004-11-08  Inderpreet Singh   <inderpreetb@nioda.hcltech.com>
-	    Vineet Sharma      <vineets@noida.hcltech.com>
-
-	* dis-asm.h: Add prototype for print_insn_maxq_little.
-
-2004-10-26  Paul Brook  <paul@codesourcery.com>
-
-	* bfdlink.h (struct bfd_link_info): Add create_default_symver.
-
-2004-10-21  H.J. Lu  <hongjiu.lu@intel.com>
-
-	PR 463
-	* bfdlink.h (bfd_link_callbacks): Add a pointer to struct
-	bfd_link_hash_entry to reloc_overflow.
-
 2004-10-07  Bob Wilson  <bob.wilson@acm.org>
 
 	* xtensa-config.h (XSHAL_USE_ABSOLUTE_LITERALS,
 	XCHAL_HAVE_PREDICTED_BRANCHES, XCHAL_INST_FETCH_WIDTH): New.
 	(XCHAL_EXTRA_SA_SIZE, XCHAL_EXTRA_SA_ALIGN): Delete.
-
-	* xtensa-isa-internal.h (ISA_INTERFACE_VERSION): Delete.
-	(config_sturct struct): Delete.
-	(XTENSA_OPERAND_IS_REGISTER, XTENSA_OPERAND_IS_PCRELATIVE,
-	XTENSA_OPERAND_IS_INVISIBLE, XTENSA_OPERAND_IS_UNKNOWN,
-	XTENSA_OPCODE_IS_BRANCH, XTENSA_OPCODE_IS_JUMP,
-	XTENSA_OPCODE_IS_LOOP, XTENSA_OPCODE_IS_CALL,
-	XTENSA_STATE_IS_EXPORTED, XTENSA_INTERFACE_HAS_SIDE_EFFECT): Define.
-	(xtensa_format_encode_fn, xtensa_get_slot_fn, xtensa_set_slot_fn): New.
-	(xtensa_insn_decode_fn): Rename to ...
-	(xtensa_opcode_decode_fn): ... this.
-	(xtensa_immed_decode_fn, xtensa_immed_encode_fn, xtensa_do_reloc_fn,
-	xtensa_undo_reloc_fn): Update.
-	(xtensa_encoding_template_fn): Delete.
-	(xtensa_opcode_encode_fn, xtensa_format_decode_fn,
-	xtensa_length_decode_fn): New.
-	(xtensa_format_internal, xtensa_slot_internal): New types.
-	(xtensa_operand_internal): Delete operand_kind, inout, isPCRelative,
-	get_field, and set_field fields.  Add name, field_id, regfile,
-	num_regs, and flags fields.
-	(xtensa_arg_internal): New type.
-	(xtensa_iclass_internal): Change operands field to array of
-	xtensa_arg_internal.  Add num_stateOperands, stateOperands,
-	num_interfaceOperands, and interfaceOperands fields.
-	(xtensa_opcode_internal): Delete length, template, and iclass fields.
-	Add iclass_id, flags, encode_fns, num_funcUnit_uses, and funcUnit_uses.
-	(opname_lookup_entry): Delete.
-	(xtensa_regfile_internal, xtensa_interface_internal,
-	xtensa_funcUnit_internal, xtensa_state_internal,
-	xtensa_sysreg_internal, xtensa_lookup_entry): New.
-	(xtensa_isa_internal): Replace opcode_table field with opcodes field.
-	Change type of opname_lookup_table.  Delete num_modules,
-	module_opcode_base, module_decode_fn, config, and has_density fields.
-	Add num_formats, formats, format_decode_fn, length_decode_fn,
-	num_slots, slots, num_fields, num_operands, operands, num_iclasses,
-	iclasses, num_regfiles, regfiles, num_states, states,
-	state_lookup_table, num_sysregs, sysregs, sysreg_lookup_table,
-	max_sysreg_num, sysreg_table, num_interfaces, interfaces,
-	interface_lookup_table, num_funcUnits, funcUnits and
-	funcUnit_lookup_table fields.
-	(xtensa_isa_module, xtensa_isa_modules): Delete.
-	(xtensa_isa_name_compare): New prototype.
-	(xtisa_errno, xtisa_error_msg): New.
-	* xtensa-isa.h (XTENSA_ISA_VERSION): Define.
-	(xtensa_isa): Change type.
-	(xtensa_operand): Delete.
-	(xtensa_format, xtensa_regfile, xtensa_state, xtensa_sysreg,
-	xtensa_interface, xtensa_funcUnit, xtensa_isa_status,
-	xtensa_funcUnit_use): New types.
-	(libisa_module_specifier): Delete.
-	(xtensa_isa_errno, xtensa_isa_error_msg): New prototypes.
-	(xtensa_insnbuf_free, xtensa_insnbuf_to_chars,
-	xtensa_insnbuf_from_chars): Update prototypes.
-	(xtensa_load_isa, xtensa_extend_isa, xtensa_default_isa,
-	xtensa_insn_maxlength, xtensa_num_opcodes, xtensa_decode_insn,
-	xtensa_encode_insn, xtensa_insn_length,
-	xtensa_insn_length_from_first_byte, xtensa_num_operands,
-	xtensa_operand_kind, xtensa_encode_result,
-	xtensa_operand_isPCRelative): Delete.
-	(xtensa_isa_init, xtensa_operand_inout, xtensa_operand_get_field,
-	xtensa_operand_set_field, xtensa_operand_encode,
-	xtensa_operand_decode, xtensa_operand_do_reloc,
-	xtensa_operand_undo_reloc): Update prototypes.
-	(xtensa_isa_maxlength, xtensa_isa_length_from_chars,
-	xtensa_isa_num_pipe_stages, xtensa_isa_num_formats,
-	xtensa_isa_num_opcodes, xtensa_isa_num_regfiles, xtensa_isa_num_states,
-	xtensa_isa_num_sysregs, xtensa_isa_num_interfaces,
-	xtensa_isa_num_funcUnits, xtensa_format_name, xtensa_format_lookup,
-	xtensa_format_decode, xtensa_format_encode, xtensa_format_length,
-	xtensa_format_num_slots, xtensa_format_slot_nop_opcode,
-	xtensa_format_get_slot, xtensa_format_set_slot, xtensa_opcode_decode,
-	xtensa_opcode_encode, xtensa_opcode_is_branch, xtensa_opcode_is_jump,
-	xtensa_opcode_is_loop, xtensa_opcode_is_call,
-	xtensa_opcode_num_operands, xtensa_opcode_num_stateOperands,
-	xtensa_opcode_num_interfaceOperands, xtensa_opcode_num_funcUnit_uses,
-	xtensa_opcode_funcUnit_use, xtensa_operand_name,
-	xtensa_operand_is_visible, xtensa_operand_is_register,
-	xtensa_operand_regfile, xtensa_operand_num_regs,
-	xtensa_operand_is_known_reg, xtensa_operand_is_PCrelative,
-	xtensa_stateOperand_state, xtensa_stateOperand_inout,
-	xtensa_interfaceOperand_interface, xtensa_regfile_lookup,
-	xtensa_regfile_lookup_shortname, xtensa_regfile_name,
-	xtensa_regfile_shortname, xtensa_regfile_view_parent,
-	xtensa_regfile_num_bits, xtensa_regfile_num_entries,
-	xtensa_state_lookup, xtensa_state_name, xtensa_state_num_bits,
-	xtensa_state_is_exported, xtensa_sysreg_lookup,
-	xtensa_sysreg_lookup_name, xtensa_sysreg_name, xtensa_sysreg_number,
-	xtensa_sysreg_is_user, xtensa_interface_lookup, xtensa_interface_name,
-	xtensa_interface_num_bits, xtensa_interface_inout,
-	xtensa_interface_has_side_effect, xtensa_funcUnit_lookup,
-	xtensa_funcUnit_name, xtensa_funcUnit_num_copies): New prototypes.
-2004-10-07  Jeff Baker  <jbaker@qnx.com>
-
-	* bfdlink.h (bfd_link_info): Add bitfield: warn_shared_textrel.
-
-2004-09-17  Alan Modra  <amodra@bigpond.net.au>
-
-	* bfdlink.h (struct bfd_link_hash_entry): Move und_next into elements
-	of union.
 
 2004-09-13  Aaron W. LaFramboise  <aaronavay62@aaronwl.com>
 
@@ -1614,11 +819,6 @@
 	* libiberty.h (concat, reconcat, concat_length, concat_copy,
 	concat_copy2): Use ATTRIBUTE_SENTINEL.
 
-2004-08-13  Alan Modra  <amodra@bigpond.net.au>
-
-	* bfdlink.h (struct bfd_link_callbacks): Remove "error_handler".
-	(LD_DEFINITION_IN_DISCARDED_SECTION): Delete.
-
 2004-08-02  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* libiberty.h (XDELETE, XDELETEVEC, XRESIZEVEC): Remove any
@@ -1628,10 +828,12 @@
 
 	* ansidecl.h (ARG_UNUSED): New Macro.
 
-2004-07-23  H.J. Lu  <hongjiu.lu@intel.com>
+2004-07-24  Bernardo Innocenti  <bernie@develer.com>
 
-	* bin-bugs.h (REPORT_BUGS_TO): Set to
-	"<URL:http://www.sourceware.org/bugzilla/>".
+	* libiberty.h (XNEW, XCNEW, XNEWVEC, XCNEWVEC, XOBNEW): Move here from
+	libcpp/internal.h.
+	(XDELETE, XRESIZEVEC, XDELETEVEC, XNEWVAR, XCNEWVAR, XRESIZEVAR): New
+	macros.
 
 2004-07-21  Paolo Bonzini  <bonzini@gnu.org>
 
@@ -1639,29 +841,9 @@
 
 2004-07-13  Bernardo Innocenti  <bernie@develer.com>
 
-	* libiberty.h (XNEW, XCNEW, XNEWVEC, XCNEWVEC, XOBNEW): Move here from
-	libcpp/internal.h.
-	(XDELETE, XRESIZEVEC, XDELETEVEC, XNEWVAR, XCNEWVAR, XRESIZEVAR): New
-	macros.
-
-2004-07-13  Bernardo Innocenti  <bernie@develer.com>
-
 	* libiberty.h (ASTRDUP): Add casts required for stricter
 	type conversion rules of C++.
 	* obstack.h (obstack_free): Likewise.
-
-2004-07-07  Tomer Levi  <Tomer.Levi@nsc.com>
-
-	* dis-asm.h (print_insn_crx): Declare.
-
-2004-06-24  Alan Modra  <amodra@bigpond.net.au>
-
-	* bfdlink.h (struct bfd_link_order): Update comment.
-
-2004-05-11  Jakub Jelinek  <jakub@redhat.com>
-
-	* bfdlink.h (struct bfd_link_info): Add relro, relro_start and
-	relro_end fields.
 
 2004-05-04  Andreas Jaeger  <aj@suse.de>
 
@@ -1679,20 +861,6 @@
 2004-03-30  Zack Weinberg  <zack@codesourcery.com>
 
 	* hashtab.h, splay-tree.h: Use new shorter form of GTY markers.
-
-2004-03-25  Stan Shebs  <shebs@apple.com>
-
-	* mpw/: Remove subdirectory and everything in it.
-
-2004-03-23  Alan Modra  <amodra@bigpond.net.au>
-
-	PR 51.
-	* bfdlink.h (struct bfd_link_info): Add wrap_char.
-
-2004-03-20  H.J. Lu  <hongjiu.lu@intel.com>
-
-	* bfdlink.h (bfd_link_info): Correct comments for the
-	unresolved_syms_in_objects field.
 
 2004-02-24  Ian Lance Taylor  <ian@wasabisystems.com>
 

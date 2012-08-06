@@ -26,16 +26,8 @@ AutoGen definitions Makefile.tpl;
 // that recursive target in its Makefile.
 
 build_modules= { module= libiberty; };
-build_modules= { module= intl; };
 build_modules= { module= bison; };
-// Flex is weird - in order to build it you need a working flex
-// executable...  The problem here is that the top level makefile
-// will setup the FLEX and LEX environment variables to be the
-// flex executable that we are trying to build (and which has not
-// been created yet).  The solution is to override these two
-// variables when configuring and building flex and to hope that
-// a working alternative is somewhere in the user's PATH.
-build_modules= { module= flex; extra_configure_flags='LEX="flex"'; extra_make_flags='LEX=flex FLEX=flex'; };
+build_modules= { module= flex; };
 build_modules= { module= m4; };
 build_modules= { module= texinfo; };
 build_modules= { module= fixincludes; };
@@ -104,7 +96,7 @@ host_modules= { module= m4; };
 host_modules= { module= readline; };
 host_modules= { module= sid; };
 host_modules= { module= sim; };
-host_modules= { module= texinfo; };
+host_modules= { module= texinfo; no_install= true; };
 host_modules= { module= zlib; no_install=true; no_check=true; bootstrap=true; };
 host_modules= { module= gdb; };
 host_modules= { module= expect; };
@@ -282,8 +274,8 @@ flags_to_pass = { flag= LEAN ; };
 
 // Build modules
 dependencies = { module=all-build-bison; on=all-build-texinfo; };
-dependencies = { module=all-build-bison; on=all-build-intl; };
 dependencies = { module=all-build-flex; on=all-build-texinfo; };
+dependencies = { module=all-build-flex; on=all-build-bison; };
 dependencies = { module=all-build-flex; on=all-build-m4; };
 dependencies = { module=all-build-libiberty; on=all-build-texinfo; };
 dependencies = { module=all-build-m4; on=all-build-texinfo; };
@@ -374,8 +366,6 @@ dependencies = { module=configure-opcodes; on=configure-libiberty; hard=true; };
 dependencies = { module=all-opcodes; on=all-libiberty; };
 
 dependencies = { module=configure-binutils; on=configure-intl; };
-dependencies = { module=configure-binutils; on=all-build-flex; };
-dependencies = { module=configure-binutils; on=all-build-flex; };
 dependencies = { module=all-binutils; on=all-libiberty; };
 dependencies = { module=all-binutils; on=all-opcodes; };
 dependencies = { module=all-binutils; on=all-bfd; };
@@ -394,8 +384,6 @@ dependencies = { module=install-opcodes; on=install-bfd; };
 dependencies = { module=install-strip-opcodes; on=install-strip-bfd; };
 
 dependencies = { module=configure-gas; on=configure-intl; };
-dependencies = { module=configure-gas; on=all-build-flex; };
-dependencies = { module=configure-gas; on=all-build-flex; };
 dependencies = { module=all-gas; on=all-libiberty; };
 dependencies = { module=all-gas; on=all-opcodes; };
 dependencies = { module=all-gas; on=all-bfd; };

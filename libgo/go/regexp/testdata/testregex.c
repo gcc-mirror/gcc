@@ -34,7 +34,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-static const char id[] = "\n@(#)$Id: testregex.c,v 1.1 2012/04/18 13:17:56 nickc Exp $\0\n";
+static const char id[] = "\n@(#)$Id: testregex (AT&T Research) 2010-06-10 $\0\n";
 
 #if _PACKAGE_ast
 #include <ast.h>

@@ -2026,9 +2026,6 @@ arm_option_override (void)
                            global_options.x_param_values,
                            global_options_set.x_param_values);
 
-  /* This doesn't work at the moment.  */
-  flag_stack_protect = 0;
-
   /* Register global variables with the garbage collector.  */
   arm_add_gc_roots ();
 }

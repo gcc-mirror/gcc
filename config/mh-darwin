@@ -1,5 +1,7 @@
 # The -mdynamic-no-pic ensures that the compiler executable is built without
 # position-independent-code -- the usual default on Darwin. This fix speeds
 # compiles by 3-5%.
-
 BOOT_CFLAGS += -mdynamic-no-pic
+
+# Ensure we don't try and use -pie, as it is incompatible with pch.
+BOOT_LDFLAGS += `case ${host} in *-*-darwin[1][1-9]*) echo -Wl,-no_pie ;; esac;`

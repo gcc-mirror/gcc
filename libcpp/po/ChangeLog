@@ -1,3 +1,11 @@
+2012-06-14  Release Manager
+
+	* GCC 4.7.1 released.
+
+2012-06-13  Joseph Myers  <joseph@codesourcery.com>
+
+	* sr.po: New.
+
 2012-04-24  Joseph Myers  <joseph@codesourcery.com>
 
 	* vi.po: Update.

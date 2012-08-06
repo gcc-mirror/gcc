@@ -34,7 +34,6 @@ Attempt to increase stack size limit to @var{pref} bytes if possible.
 */
 
 #include "config.h"
-#include "ansidecl.h"
 
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
@@ -44,7 +43,7 @@ Attempt to increase stack size limit to @var{pref} bytes if possible.
 #endif
 
 void
-stack_limit_increase (unsigned long pref ATTRIBUTE_UNUSED)
+stack_limit_increase (unsigned long pref)
 {
 #if defined(HAVE_SETRLIMIT) && defined(HAVE_GETRLIMIT) \
     && defined(RLIMIT_STACK) && defined(RLIM_INFINITY)

@@ -132,17 +132,3 @@ __umoddi3 (uint32_type a, uint32_type b)
 {
   return udivmodsi4 (a, b, 1);
 }
-
-/* Returns the number of leading redundant sign bits in @var{x}, i.e. the
-   number of bits following the most significant bit which are identical
-   to it.  There are no special cases for 0 or other values.  */
-
-int
-__clrsbhi2 (word_type x)
-{
-  if (x < 0)
-    x = ~x;
-  if (x == 0)
-    return 15;
-  return __builtin_clz (x) - 1;
-}

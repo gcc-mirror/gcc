@@ -1,5 +1,4 @@
 /* { dg-do compile } */
-/* { dg-skip-if "bogus test" { "frv-*-*" "m32c-*-*" "mips*-*-*" "mn10300-*-*" "sh-*-*" } "*" { "" } } */
 /* { dg-options "--param allow-store-data-races=0 -O2 -fdump-tree-lim1" } */
 
 /* Test that g_2 is not written to unless !g_1.  */

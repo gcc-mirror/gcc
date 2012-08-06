@@ -10,7 +10,134 @@
 
 2012-06-14  Release Manager
 
-	* GCC 4.6.3 released.
+	* GCC 4.7.1 released.
+
+2012-06-13  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.pot: Regenerate.
+
+2012-04-24  Joseph Myers  <joseph@codesourcery.com>
+
+	* sv.po: Update.
+
+2012-04-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* es.po: Update.
+
+2012-03-27  Joseph Myers  <joseph@codesourcery.com>
+
+	* be.po, da.po, de.po, el.po, es.po, fi.po, fr.po, id.po, ja.po,
+	nl.po, ru.po, sr.po, sv.po, tr.po, vi.po, zh_CN.po, zh_TW.po:
+	Update.
+
+2012-03-22  Release Manager
+
+	* GCC 4.7.0 released.
+
+2012-03-18  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.pot: Regenerate.
+
+2012-03-15  Joseph Myers  <joseph@codesourcery.com>
+
+	* sv.po: Update.
+
+2012-03-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* sv.po: Update.
+
+2012-03-05  Joseph Myers  <joseph@codesourcery.com>
+
+	* sv.po: Update.
+
+2012-03-03  Joseph Myers  <joseph@codesourcery.com>
+
+	* de.po: Update.
+
+2012-03-03  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.pot: Regenerate.
+
+2012-02-26  Joseph Myers  <joseph@codesourcery.com>
+
+	* sv.po: Update.
+
+2012-02-19  Joseph Myers  <joseph@codesourcery.com>
+
+	* sv.po: Update.
+
+2012-02-16  Joseph Myers  <joseph@codesourcery.com>
+
+	* de.po: Update.
+
+2012-02-15  Joseph Myers  <joseph@codesourcery.com>
+
+	* de.po: Update.
+
+2012-02-13  Joseph Myers  <joseph@codesourcery.com>
+
+	* de.po: Update.
+
+2012-02-13  Joseph Myers  <joseph@codesourcery.com>
+
+	* de.po: Update.
+
+2012-02-13  Joseph Myers  <joseph@codesourcery.com>
+
+	* sv.po: Update.
+
+2012-02-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* de.po: Update.
+
+2012-02-09  Joseph Myers  <joseph@codesourcery.com>
+
+	* de.po: Update.
+
+2012-02-08  Joseph Myers  <joseph@codesourcery.com>
+
+	* de.po: Update.
+
+2012-02-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* de.po: Update.
+
+2012-02-05  Joseph Myers  <joseph@codesourcery.com>
+
+	* de.po: Update.
+
+2012-02-05  Joseph Myers  <joseph@codesourcery.com>
+
+	* sv.po: Update.
+
+2012-01-31  Joseph Myers  <joseph@codesourcery.com>
+
+	* es.po: Update.
+
+2012-01-30  Joseph Myers  <joseph@codesourcery.com>
+
+	* be.po, da.po, de.po, el.po, es.po, fi.po, fr.po, id.po, ja.po,
+	nl.po, ru.po, sr.po, sv.po, tr.po, vi.po, zh_CN.po, zh_TW.po:
+	Update.
+
+2012-01-27  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.pot: Regenerate.
+
+2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* EXCLUDES (gthr-aix.h, gthr-dce.h, gthr-posix.c, gthr-posix.h)
+	(gthr-rtems.h, gthr-single.h, gthr-solaris.h, gthr-vxworks.h)
+	(gthr-win32.h, gthr.h): Remove.
+
+2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* EXCLUDES (config/vxlib.c, gbl-ctors.h, libgcc2.c, libgcc2.h)
+	(longlong.h): Remove.
+
+2011-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* EXCLUDES (crtstuff.c): Remove.
 
 2011-10-30  Joseph Myers  <joseph@codesourcery.com>
 

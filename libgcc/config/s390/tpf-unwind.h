@@ -25,12 +25,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include <dlfcn.h>
 
-/*
-** UNWIND_CFA_NOT_UNIQUE tells the unwinder that it's legitimate to
-** see the same CFA twice.
-*/
-#define UNWIND_CFA_NOT_UNIQUE   1
-
 /* Function Name: __isPATrange
    Parameters passed into it:  address to check
    Return Value: A 1 if address is in pat code "range", 0 if not

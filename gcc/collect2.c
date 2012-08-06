@@ -1258,7 +1258,7 @@ main (int argc, char **argv)
   /* Try to discover a valid linker/nm/strip to use.  */
 
   /* Maybe we know the right file to use (if not cross).  */
-  ld_file_name = NULL;
+  ld_file_name = 0;
 #ifdef DEFAULT_LINKER
   if (access (DEFAULT_LINKER, X_OK) == 0)
     ld_file_name = DEFAULT_LINKER;
@@ -1288,26 +1288,6 @@ main (int argc, char **argv)
 				? full_plugin_ld_suffix
 				: full_ld_suffix);
 
-  if (ld_file_name == NULL)
-    {
-#define LD_NEW_PREFIX "../ld/"
-      struct prefix_list l = { LD_NEW_PREFIX, NULL };
-      struct path_prefix p = { NULL, sizeof LD_NEW_PREFIX, "in-build-tree-linker" };
-
-      p.plist = & l;
-      ld_file_name = find_a_file (& p, "ld-new" );
-    }
-
-  if (ld_file_name == NULL && use_plugin)
-    {
-      /* Configure will set PLUGIN_LD to the in-build-tree name of the plugin
-	 supporting linker.  If we are running from an installed set of binaries
-	 however then we need to search for the built linker, not the in-tree linker.  */
-      ld_file_name = find_a_file (& cpath, ld_suffix);
-      if (ld_file_name == NULL)
-	ld_file_name = find_a_file (& path, full_ld_suffix);
-    }
-  
 #ifdef REAL_NM_FILE_NAME
   nm_file_name = find_a_file (&path, REAL_NM_FILE_NAME);
   if (nm_file_name == 0)

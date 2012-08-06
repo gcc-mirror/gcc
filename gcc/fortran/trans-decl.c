@@ -3594,15 +3594,6 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 				NULL_TREE);
 	}
 
-      if (sym->attr.dimension)
-	{
-	  gfc_init_block (&tmpblock);
-	  gfc_add_modify (&tmpblock, GFC_DECL_SPAN (sym->backend_decl),
-			  build_int_cst (gfc_array_index_type, 0));
-	  gfc_add_init_cleanup (block, gfc_finish_block (&tmpblock),
-				NULL_TREE);
-	}
-
       if (sym->attr.dimension || sym->attr.codimension)
 	{
           /* Assumed-size Cray pointees need to be treated as AS_EXPLICIT.  */

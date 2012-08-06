@@ -16,46 +16,91 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-TPBIT = tp-bit.c
-
-tp-bit.c: $(srcdir)/config/fp-bit.c
-	echo '#ifdef __MIPSEL__' > tp-bit.c
-	echo '# define FLOAT_BIT_ORDER_MISMATCH' >> tp-bit.c
-	echo '#endif' >> tp-bit.c
-	echo '#if __LDBL_MANT_DIG__ == 113' >> tp-bit.c
-	echo '#define QUIET_NAN_NEGATED' >> tp-bit.c
-	echo '# define TFLOAT' >> tp-bit.c
-	cat $(srcdir)/config/fp-bit.c >> tp-bit.c
-	echo '#endif' >> tp-bit.c
-
 # Main multilibs
 # --------------
 #
-# Endianness: EL (default)
-#             EB
+# Endianness: EB or EL
 #
-# ABIs: mabi=eabi (default)
-#       mabi=32
-#       mabi=n32
-#	mabi=64
-#       mgp32
+# ABIs: mabi=32
+#	mabi=o64
+#	mabi=eabi
+#	mabi=eabi/mlong32
+#	mabi=eabi/mgp32
+#	mabi=eabi/mgp32/mlong64
 #
-# Architecture: march=vr4300 (default)
-#               march=vr4130 [with -mfix-vr4130 enabled]
+# Architecture: march=vr4120 with -mfix-vr4120
+#		march=vr4130 with -mfix-vr4130 (default)
+#		march=vr5000
+#		march=vr5400
 #		march=vr5500
 #
-# Total: 2 * 5 * 3 = 30 multilibs.
-
+# Total: 2 * 6 * 5 = 60 multilibs.
+#
+#
+# Extra vr4300 multilibs
+# ----------------------
+#
+# Endianness: EB or EL
+#
+# ABI: o64
+#
+# Architecture: vr4300.
+#
+# Total: 2 * 1 * 2 = 2 multilibs.
+#
+#
+# Extra MIPS16 multilibs
+# ----------------------
+#
+# Endianness: EB or EL
+#
+# ABIs: mabi=o64
+#	mabi=eabi/mlong32
+#	mabi=eabi/mgp32
+#
+# Architecture: march=vr4120 with -mfix-vr4120
+#		march=vr4130 with -mfix-vr4130 (default)
+#
+# Total: 2 * 3 * 2 = 12 multilibs.
 MULTILIB_OPTIONS =			\
 	EL/EB				\
-	mabi=eabi/mabi=32/mabi=n32/mabi=64/mgp32	\
-	march=vr4300/march=vr4130/march=vr5500
+	mabi=32/mabi=o64/mabi=eabi	\
+	mgp32				\
+	mlong64				\
+	mips16				\
+	mfix-vr4120/mfix-vr4130/march=vr4300/march=vr5000/march=vr5400/march=vr5500
 
 MULTILIB_DIRNAMES =	\
 	el eb		\
-	eabi o32 n32 n64 gp32	\
-	vr4300 vr4130 vr5500
+	o32 o64 eabi	\
+	gp32		\
+	long64		\
+	mips16		\
+	vr4120 vr4130 vr4300 vr5000 vr5400 vr5500
 
-MULTILIB_MATCHES = EL=mel EB=meb \
-		   mabi?32=mabi?o32 \
-		   mabi?64=mabi?n64
+MULTILIB_MATCHES = EL=mel EB=meb mfix-vr4120=march?vr4120 \
+		   mfix-vr4130=march?vr4130
+
+# Assume a 41xx-series is the default: we'd need a *mips16 entry if
+# the default processor didn't support mips16.  Also assume the
+# default ABI is EABI64 -mlong32.
+MULTILIB_EXCEPTIONS =				\
+	*mabi=32/mlong64*			\
+	*mabi=32/mgp32*				\
+	*mabi=o64/mgp32*			\
+	*mabi=o64/mlong64*			\
+	*mips16/march=vr5*			\
+	*mips16/march=vr4300			\
+	$(MIPS16_EXCEPTIONS)			\
+	$(VR4300_EXCEPTIONS)
+
+MIPS16_EXCEPTIONS =				\
+	*mabi=32*mips16*			\
+	*mlong64*mips16*
+
+VR4300_EXCEPTIONS =				\
+	*mabi=32*march=vr4300			\
+	*mgp32*march=vr4300			\
+	*mlong64*march=vr4300			\
+	march=vr4300				\
+	E[LB]/march=vr4300

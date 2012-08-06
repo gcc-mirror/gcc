@@ -12,7 +12,7 @@ check (Scf10 x, _Complex double y)
 }
 
 void
-Init (Scf10 *p, _Complex double y)
+init (Scf10 *p, _Complex double y)
 {
   p->a = y;
 }
@@ -20,7 +20,7 @@ Init (Scf10 *p, _Complex double y)
 int
 main ()
 {
-  Init (&g1s, (_Complex double)1);
+  init (&g1s, (_Complex double)1);
   check (g1s, (_Complex double)1);
 
   return 0;

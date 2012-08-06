@@ -1,6 +1,5 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -fdump-tree-strlen" } */
-/* { dg-skip-if "" { m32c-*-* } { "*" } { "" } } */
 
 #include "strlenopt.h"
 

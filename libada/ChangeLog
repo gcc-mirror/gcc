@@ -1,3 +1,11 @@
+2012-06-14  Release Manager
+
+	* GCC 4.7.1 released.
+
+2012-06-11  Olivier Hainque  <hainque@adacore.com>
+
+	* Makefile.in (GNATLIBCFLAGS_FOR_C): Remove $(PICFLAG).
+
 2012-05-06  Pascal Obry  <obry@adacore.com>
 
 	Revert

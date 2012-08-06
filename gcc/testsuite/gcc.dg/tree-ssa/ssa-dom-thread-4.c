@@ -1,5 +1,4 @@
 /* { dg-do compile } */ 
-/* { dg-skip-if "test broken" { *-*-* } { "*" } { "" } } */
 /* { dg-options "-O2 -fdump-tree-dom1-details" } */
 /* { dg-additional-options "-mbranch-cost=2" { target s390*-*-* } } */
 struct bitmap_head_def;

@@ -1,7 +1,6 @@
 /* PR middle-end/46647 */
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-optimized" } */
-/* { dg-skip-if "memset not optimized" { "m32c-*-*" } "*" { "" } } */
 
 int a;
 

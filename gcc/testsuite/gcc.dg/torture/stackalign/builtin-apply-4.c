@@ -1,6 +1,5 @@
 /* PR tree-optimization/20076 */
 /* { dg-do run } */
-/* { dg-skip-if "" { "rx-*-*" } "*" { "" } } */
 
 extern void abort (void);
 

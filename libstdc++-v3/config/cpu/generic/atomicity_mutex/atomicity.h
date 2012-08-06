@@ -1,6 +1,6 @@
 // Low-level functions for atomic operations: Generic version  -*- C++ -*-
 
-// Copyright (C) 1999, 2001, 2002, 2003, 2004, 2005, 2006, 2009
+// Copyright (C) 1999, 2001, 2002, 2003, 2004, 2005, 2006, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -40,7 +40,6 @@ namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-#ifndef _GLIBCXX_ATOMIC_BUILTINS
   _Atomic_word
   __attribute__ ((__unused__))
   __exchange_and_add(volatile _Atomic_word* __mem, int __val) throw ()
@@ -56,7 +55,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   __attribute__ ((__unused__))
   __atomic_add(volatile _Atomic_word* __mem, int __val) throw ()
   { __exchange_and_add(__mem, __val); }
-#endif
-  
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

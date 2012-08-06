@@ -18,4 +18,5 @@ void func()
       count++;
 }
 
+/* { dg-final { scan-tree-dump-times "MEM count_lsm.. count_lsm_flag" 1 "lim1" } } */
 /* { dg-final { cleanup-tree-dump "lim1" } } */

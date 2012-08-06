@@ -168,7 +168,8 @@ Expression::convert_for_assignment(Translate_context* context, Type* lhs_type,
   if (lhs_type_tree == error_mark_node)
     return error_mark_node;
 
-  if (lhs_type != rhs_type && lhs_type->interface_type() != NULL)
+  if (lhs_type->forwarded() != rhs_type->forwarded()
+      && lhs_type->interface_type() != NULL)
     {
       if (rhs_type->interface_type() == NULL)
 	return Expression::convert_type_to_interface(context, lhs_type,
@@ -179,7 +180,8 @@ Expression::convert_for_assignment(Translate_context* context, Type* lhs_type,
 							  rhs_type, rhs_tree,
 							  false, location);
     }
-  else if (lhs_type != rhs_type && rhs_type->interface_type() != NULL)
+  else if (lhs_type->forwarded() != rhs_type->forwarded()
+	   && rhs_type->interface_type() != NULL)
     return Expression::convert_interface_to_type(context, lhs_type, rhs_type,
 						 rhs_tree, location);
   else if (lhs_type->is_slice_type() && rhs_type->is_nil_type())

@@ -585,28 +585,6 @@ do {									     \
    for the MN10300 series, that's our primary concern.  */
 #define MOVE_RATIO(speed) 6
 
-#define TARGET_BLOCK_MOVE_MAY_USE_LIBCALL(X,Y,SIZE,METHOD,RETURN_ANSWER) \
-  do									 \
-    {									 \
-      extern int flag_hosted;						 \
-									 \
-      if ((METHOD) == BLOCK_OP_BUILTIN || (METHOD) == BLOCK_OP_TAILCALL) \
-	* (RETURN_ANSWER) = true;					 \
-      else if (! TARGET_MEM_FUNCS || ! flag_hosted)			 \
-	* (RETURN_ANSWER) = false;					 \
-    }									 \
-  while (0)
-
-/* When TARGET_NO_MEM_FUNCS is in operation we want to disable gcc's
-   generation of calls to memcpy/memset.  The definition of TARGET_BLOCK_
-   MOVE_MAY_USE_LIBCALL above has handled this for memcpy()s but GCC has no
-   equivalent code for handling memset()s, so we use CLEAR_RATIO instead.
-   Unfortunately gcc handles clearing blocks via generating individual
-   instructions for each byte to be cleared, rather than generating a loop
-   so we cannot set too high a value.  */
-#define CLEAR_RATIO(speed)  ((unsigned HOST_WIDE_INT) \
-			     ((! TARGET_MEM_FUNCS) ? 256 : (speed ? 15 : 3)))
-
 #define TEXT_SECTION_ASM_OP "\t.section .text"
 #define DATA_SECTION_ASM_OP "\t.section .data"
 #define BSS_SECTION_ASM_OP  "\t.section .bss"

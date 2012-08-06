@@ -1,5 +1,5 @@
 /* { dg-do assemble } */
-/* { dg-skip-if "The array is too big" { "avr-*-*" "pdp11-*-*" "xstormy16-*-*" } { "*" } { "" } } */ 
+/* { dg-skip-if "The array is too big" { "avr-*-*" "pdp11-*-*" } { "*" } { "" } } */ 
 /* { dg-xfail-if "The array too big" { "h8300-*-*" } { "-mno-h" "-mn" } { "" } } */
 /* { dg-skip-if "" { m32c-*-* } { } { } } */
 

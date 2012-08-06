@@ -3,6 +3,7 @@
 
 extern int omp_set_dynamic (int);
 extern void abort (void);
+extern void GOMP_barrier (void);
 
 int a = 8, b = 12, c = 16, d = 20, j = 0;
 char e[10] = "a", f[10] = "b", g[10] = "c", h[10] = "d";
@@ -20,7 +21,7 @@ main (void)
     {
       if (a != 8 || b != 12 || e[0] != 'a' || f[0] != 'b')
 	j++;
-#pragma omp barrier	/* { dg-warning "may not be closely nested" } */
+      GOMP_barrier ();
 #pragma omp atomic
       a += i;
       b += i;
@@ -31,7 +32,7 @@ main (void)
       f[0] += i;
       g[0] = 'g' + i;
       h[0] = 'h' + i;
-#pragma omp barrier	/* { dg-warning "may not be closely nested" } */
+      GOMP_barrier ();
       if (a != 8 + 6 || b != 12 + i || c != i || d != i)
 	j += 8;
       if (e[0] != 'a' + 6 || f[0] != 'b' + i || g[0] != 'g' + i)

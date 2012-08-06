@@ -1,6 +1,5 @@
 /* GCSE used to reuse the value of __MRDACC.  */
 /* { dg-do run } */
-/* { dg-options "-fno-lto" } */
 extern void abort (void);
 extern void exit (int);
 

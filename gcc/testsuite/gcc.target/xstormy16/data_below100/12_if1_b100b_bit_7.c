@@ -1,4 +1,6 @@
 /* { dg-options { -nostartfiles below100.o -Tbelow100.ld -O2 } } */
+/* { dg-final { scan-assembler "b\[np\] B100A,#7," } } */
+/* { dg-final { scan-assembler "b\[np\] B100B,#7," } } */
 
 char acDummy[0xf0] __attribute__ ((__BELOW100__));
 unsigned char B100A __attribute__ ((__BELOW100__)) = 0xcb;
@@ -25,6 +27,3 @@ main (void)
 {
   return Do ()[0] == 'F';
 }
-
-/* { dg-final { scan-file "12_if1_b100b_bit_7.s" "b\[np\] B100A,#7," } } */
-/* { dg-final { scan-file "12_if1_b100b_bit_7.s" "b\[np\] B100B,#7," } } */

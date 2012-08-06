@@ -85,15 +85,13 @@ to_ptr32 (char **ptr64)
   int argc;
   __char_ptr_char_ptr32 short_argv;
 
-  /* Count number of arguments.  */
-  for (argc = 0; ptr64[argc] != NULL; argc++)
-    ;
+  for (argc=0; ptr64[argc]; argc++);
 
   /* Reallocate argv with 32 bit pointers.  */
   short_argv = (__char_ptr_char_ptr32) decc$malloc
     (sizeof (__char_ptr32) * (argc + 1));
 
-  for (argc = 0; ptr64[argc] != NULL; argc++)
+  for (argc=0; ptr64[argc]; argc++)
     short_argv[argc] = (__char_ptr32) decc$strdup (ptr64[argc]);
 
   short_argv[argc] = (__char_ptr32) 0;

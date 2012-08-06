@@ -19,28 +19,24 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#define DEFAULT_VR_ARCH "march=4300"
-
-#undef  MULTILIB_ABI_DEFAULT
-#define MULTILIB_ABI_DEFAULT "mabi=eabi"
-
+#define DEFAULT_VR_ARCH "mfix-vr4130"
 #undef MULTILIB_DEFAULTS
 #define MULTILIB_DEFAULTS \
 	{ MULTILIB_ENDIAN_DEFAULT,		\
 	  MULTILIB_ABI_DEFAULT,			\
 	  DEFAULT_VR_ARCH }
 
-#undef  SUBTARGET_LINK_SPEC
-#define SUBTARGET_LINK_SPEC \
-  "%{mabi=n32:%{EB:--oformat=elf32-nbigmips} %{!EB:--oformat=elf32-nlittlemips}}\
-   %{mabi=64:%{EB:--oformat=elf64-bigmips} %{!EB:--oformat=elf64-littlemips}}"
-
-#undef  DRIVER_SELF_SPECS
+#undef DRIVER_SELF_SPECS
 #define DRIVER_SELF_SPECS \
 	/* Enforce the default architecture.  This is mostly for	\
 	   the assembler's benefit.  */					\
 	"%{!march=*:%{!mfix-vr4120:%{!mfix-vr4130:"			\
 	"-" DEFAULT_VR_ARCH "}}}",					\
+									\
+	/* Make -mfix-vr4120 imply -march=vr4120.  This cuts down	\
+	   on command-line tautology and makes it easier for t-vr to	\
+	   provide a -mfix-vr4120 multilib.  */				\
+	"%{mfix-vr4120:%{!march=*:-march=vr4120}}",			\
 									\
 	/* Same idea for -mfix-vr4130.  */				\
 	"%{mfix-vr4130:%{!march=*:-march=vr4130}}",			\
@@ -49,7 +45,11 @@ along with GCC; see the file COPYING3.  If not see
 	MIPS_ARCH_FLOAT_SPEC,						\
 									\
 	/* Make -mabi=eabi -mlong32 the default.  */			\
-	"%{!mabi=*:-mabi=eabi}",					\
+	"%{!mabi=*:-mabi=eabi %{!mlong*:-mlong32}}",			\
+									\
+	/* Make sure -mlong64 multilibs are chosen when	64-bit longs	\
+	   are needed.  */						\
+	"%{mabi=eabi:%{!mlong*:%{!mgp32:-mlong64}}}",			\
 									\
 	/* Remove -mgp32 if it is redundant.  */			\
 	"%{mabi=32:%<mgp32}",						\

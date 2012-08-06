@@ -47,41 +47,44 @@
 
 2012-06-15  Eric Botcazou  <ebotcazou@adacore.com>
 
-	* gcc-interface/decl.c (variant_desc): Rename 'record' to 'new_type'.
-	(build_variant_list): Adjust to above renaming.
-	(gnat_to_gnu_entity) <E_Record_Subtype>: Likewise.  Give a unique name
-	to the type of the variant containers.
-	(create_variant_part_from): Likewise.  Give a unique name to the type
-	of the variant part.
+	PR ada/53592
+	* gcc-interface/gigi.h (maybe_vector_array): Make static inline.
+	* gcc-interface/utils.c (maybe_vector_array): Delete.
+	* gcc-interface/trans.c (gnat_to_gnu) <N_Indexed_Component>: Mark the
+	array object as addressable if it has vector type and is on the LHS.
 
-2012-03-01  Release Manager
+2012-06-14  Jakub Jelinek  <jakub@redhat.com>
 
-	* GCC 4.6.3 released.
+	* gcc-interface/Makefile.in (gnatlib-shared-default): Append
+	$(PICFLAG_FOR_TARGET) to GNATLIBCFLAGS_FOR_C passed to submake.
 
-2012-01-21  Eric Botcazou  <ebotcazou@adacore.com>
+2012-06-14  Release Manager
 
-	PR ada/46192
-	* gcc-interface/decl.c (gnat_to_gnu_entity) <object>: In the case of a
-	renaming, preserve the volatileness through the indirection, if any.
+	* GCC 4.7.1 released.
 
-2012-01-09  Eric Botcazou  <ebotcazou@adacore.com>
+2012-06-13  Eric Botcazou  <ebotcazou@adacore.com>
 
-	* gcc-interface/trans.c (addressable_p) <COMPONENT_REF>: Fix thinko.
+	Revert
+	2012-05-19  Eric Botcazou  <ebotcazou@adacore.com>
 
-2012-01-02  Eric Botcazou  <ebotcazou@adacore.com>
+	* gcc-interface/decl.c (Has_Thiscall_Convention): New macro.
+	(gnat_to_gnu_entity) <E_Subprogram_Type>: Test it to set the thiscall
+	calling convention
+	(get_minimal_subprog_decl): Likewise.
+	(gnat_first_param_is_class): New predicate.
 
-	* gnatvsn.ads (Current_Year): Bump to 2011.
+2012-06-12  Olivier Hainque  <hainque@adacore.com>
 
-2011-12-08  Eric Botcazou  <ebotcazou@adacore.com>
+	* gcc-interface/Makefile.in (GNATLIBCFLAGS_FOR_C): Remove
+	$(PIC_FLAG_FOR_TARGET).
+	(gnatlib-shared-default): Add $(PIC_FLAG_FOR_TARGET) to
+	GNATLIBCFLAGS_FOR_C passed to gnatlib.
+	(gnatlib-shared-win32): Likewise.
+	(gnatlib-shared-darwin): Likewise.
+	(gnatlib-shared-dual-win32): Pass PIC_FLAG_FOR_TARGET to
+	gnatlib-shared-win32.
 
-	PR tree-optimization/51315
-	Backport from mainline
-	2011-09-25  Eric Botcazou  <ebotcazou@adacore.com>
-
-	* gcc-interface/decl.c (gnat_to_gnu_entity) <object>: Do not promote
-	the alignment if this doesn't prevent BLKmode access to the object.
-
-2011-11-13  Iain Sandoe  <iains@gcc.gnu.org>
+2012-05-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (variant_desc): Rename 'record' to 'new_type'.
 	(build_variant_list): Adjust to above renaming.

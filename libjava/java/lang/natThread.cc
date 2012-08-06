@@ -429,7 +429,7 @@ java::lang::Thread::yield (void)
 ::java::lang::Thread$State *
 java::lang::Thread::getState()
 {
-  _Jv_InitClass(&::java::lang::Thread$State: Exp $);
+  _Jv_InitClass(&::java::lang::Thread$State::class$);
 
   switch (state)
     {

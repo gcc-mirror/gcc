@@ -1,4 +1,3 @@
-/* { dg-skip-if "too much data" { "avr-*-*" "m32c-*-*" "pdp11-*-*" "xstormy16-*-*" } { "*" } { "" } } */
 /* Inspired by the test case for PR middle-end/52640.  */
 
 typedef struct

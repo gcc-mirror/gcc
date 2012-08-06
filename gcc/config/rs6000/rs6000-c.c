@@ -342,13 +342,6 @@ rs6000_target_modify_macros (bool define_p, int flags, unsigned bu_mask)
     rs6000_define_or_undefine_macro (define_p, "__PAIRED__");
   if ((bu_mask & RS6000_BTM_CELL) != 0)
     rs6000_define_or_undefine_macro (define_p, "__PPU__");
-
-  rs6000_define_or_undefine_macro (false, "__FLT_HAS_QUIET_NAN__");
-  rs6000_define_or_undefine_macro (true, "__FLT_HAS_QUIET_NAN__=0");
-  rs6000_define_or_undefine_macro (false, "__DBL_HAS_QUIET_NAN__");
-  rs6000_define_or_undefine_macro (true, "__DBL_HAS_QUIET_NAN__=0");
-  rs6000_define_or_undefine_macro (false, "__LDBL_HAS_QUIET_NAN__");
-  rs6000_define_or_undefine_macro (true, "__LDBL_HAS_QUIET_NAN__=0");
 }
 
 void

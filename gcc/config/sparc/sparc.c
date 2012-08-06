@@ -4984,8 +4984,7 @@ sparc_expand_prologue (void)
 	  RTX_FRAME_RELATED_P (insn) = 1;
 
 	  /* %sp is still the CFA register.  */
-	  insn
-	    = emit_insn (gen_stack_pointer_inc (GEN_INT (4096 - size)));
+	  insn = emit_insn (gen_stack_pointer_inc (GEN_INT (4096 - size)));
 	}
       else
 	{
@@ -5007,7 +5006,6 @@ sparc_expand_prologue (void)
       else if (size <= 8192)
 	{
 	  emit_window_save (GEN_INT (-4096));
-
 
 	  /* %sp is not the CFA register anymore.  */
 	  emit_insn (gen_stack_pointer_inc (GEN_INT (4096 - size)));

@@ -119,12 +119,3 @@ Set the max size of data eligible for the ZDA area
 
 mzda-
 Target RejectNegative Joined Undocumented Alias(mzda=)
-
-mlong-jumps
-Target Report Mask(LONG_JUMPS)
-Prohibit PC relative jumps
-
-mrelax
-Target Report Mask(RELAX)
-Enable relaxing in the assembler
-

@@ -1,4 +1,5 @@
 /* { dg-options { -nostartfiles below100.o -Tbelow100.ld -O2 } } */
+/* { dg-final { scan-assembler "b\[np\] " } } */
 
 typedef struct
 {
@@ -38,6 +39,3 @@ main (void)
   *pB = 0xcb;
   return Do ()[0] == 'F';
 }
-
-/* { dg-final { scan-file "23_if0_sfrb_bitfield_0.s" "b\[np\] " } } */
-

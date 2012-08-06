@@ -3801,9 +3801,6 @@ rs6000_builtin_vectorized_libmass (tree fndecl, tree type_out, tree type_in)
   else
     return NULL_TREE;
 
-  if (bdecl == NULL_TREE)
-    return bdecl;
-
   gcc_assert (suffix != NULL);
   bname = IDENTIFIER_POINTER (DECL_NAME (bdecl));
   strcpy (name, bname + sizeof ("__builtin_") - 1);
@@ -19709,7 +19706,7 @@ rs6000_emit_prologue (void)
 	}
       /* Need to adjust r11 (r12) if we saved any FPRs.  */
       else if (info->first_fp_reg_save != 64)
-        {
+	{
 	  rtx dest_reg = gen_rtx_REG (Pmode, DEFAULT_ABI == ABI_AIX ? 12 : 11);
 	  int save_off = 8 * (64 - info->first_fp_reg_save);
 	  rtx offset = GEN_INT (sp_offset - save_off);

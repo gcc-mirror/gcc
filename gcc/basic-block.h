@@ -256,7 +256,12 @@ enum bb_flags
      df_set_bb_dirty, but not cleared by df_analyze, so it can be used
      to test whether a block has been modified prior to a df_analyze
      call.  */
-  BB_MODIFIED = 1 << 12
+  BB_MODIFIED = 1 << 12,
+
+  /* Set on blocks that are in a transaction.  This is calculated on
+     demand, and is available after calling
+     compute_transaction_bits().  */
+  BB_IN_TRANSACTION = 1 << 13
 };
 
 /* Dummy flag for convenience in the hot/cold partitioning code.  */
@@ -787,6 +792,7 @@ extern basic_block alloc_block (void);
 extern void alloc_aux_for_blocks (int);
 extern void clear_aux_for_blocks (void);
 extern void free_aux_for_blocks (void);
+extern void alloc_aux_for_edge (edge, int);
 extern void alloc_aux_for_edges (int);
 extern void clear_aux_for_edges (void);
 extern void free_aux_for_edges (void);

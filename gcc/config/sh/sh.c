@@ -773,17 +773,17 @@ sh_option_override (void)
 	flag_schedule_insns = 0;
     }
 
-  /* Unwind info is not correct around the CFG unless either a frame 
-     pointer is present or M_A_O_A is set.  Fixing this requires rewriting 
-     unwind info generation to be aware of the CFG and propagating states 
+  /* Unwind info is not correct around the CFG unless either a frame
+     pointer is present or M_A_O_A is set.  Fixing this requires rewriting
+     unwind info generation to be aware of the CFG and propagating states
      around edges.  */
   if ((flag_unwind_tables || flag_asynchronous_unwind_tables
-       || flag_exceptions || flag_non_call_exceptions)   
+       || flag_exceptions || flag_non_call_exceptions)
       && flag_omit_frame_pointer && !TARGET_ACCUMULATE_OUTGOING_ARGS)
     {
-	warning (0, "unwind tables currently require either a frame pointer "
-		 "or -maccumulate-outgoing-args for correctness");
-	TARGET_ACCUMULATE_OUTGOING_ARGS = 1;
+      warning (0, "unwind tables currently require either a frame pointer "
+	       "or -maccumulate-outgoing-args for correctness");
+      TARGET_ACCUMULATE_OUTGOING_ARGS = 1;
     }
 
   /* Unwinding with -freorder-blocks-and-partition does not work on this
@@ -793,7 +793,7 @@ sh_option_override (void)
     {
       if (flag_exceptions)
 	{
-	  inform (input_location, 
+	  inform (input_location,
 		  "-freorder-blocks-and-partition does not work with "
 		  "exceptions on this architecture");
 	  flag_reorder_blocks_and_partition = 0;

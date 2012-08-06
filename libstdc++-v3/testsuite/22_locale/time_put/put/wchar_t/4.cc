@@ -2,7 +2,8 @@
 
 // 2001-09-17 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
+// 2009, 2010
 // Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -45,13 +46,15 @@ void test04()
   const wstring empty;
   wostringstream oss;
   oss.imbue(loc_es);
-  const time_put<wchar_t>& tim_put = use_facet<time_put<wchar_t> >(oss.getloc()); 
-  iterator_type os_it04 = tim_put.put(oss.rdbuf(), oss, L'*', &time1, 'a');
+  const time_put<wchar_t>& tim_put
+    = use_facet<time_put<wchar_t> >(oss.getloc()); 
+  
+  tim_put.put(oss.rdbuf(), oss, L'*', &time1, 'a');
   wstring result4 = oss.str();
   VERIFY( result4 == L"dom" );
 
   oss.str(empty); // "%d/%m/%y"
-  iterator_type os_it27 = tim_put.put(oss.rdbuf(), oss, L'*', &time1, 'x');
+  tim_put.put(oss.rdbuf(), oss, L'*', &time1, 'x');
   wstring result27 = oss.str(); // "04/04/71"
   VERIFY( result27 == L"04/04/71" );
 
@@ -61,7 +64,7 @@ void test04()
   VERIFY( result28 == L"12:00:00" );
 
   oss.str(empty);
-  iterator_type os_it37 = tim_put.put(oss.rdbuf(), oss, L'*', &time1, 'x', 'E');
+  tim_put.put(oss.rdbuf(), oss, L'*', &time1, 'x', 'E');
   wstring result37 = oss.str(); // "04/04/71"
   VERIFY( result37 == L"04/04/71" );
 
