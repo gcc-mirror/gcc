@@ -282,8 +282,13 @@ begin
    --  a context for their semantic processing.
 
    if Config_Pragmas /= Error_List
-     and then not Fatal_Error (Main_Unit)
      and then Operating_Mode /= Check_Syntax
+
+     --  Do not attempt to process deferred configuration pragmas if the main
+     --  unit failed to load, to avoid cascaded inconsistencies that can lead
+     --  to a compiler crash.
+
+     and then not Fatal_Error (Main_Unit)
    then
       --  Pragmas that require some semantic activity, such as
       --  Interrupt_State, cannot be processed until the main unit

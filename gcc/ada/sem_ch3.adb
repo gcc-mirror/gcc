@@ -3078,8 +3078,11 @@ package body Sem_Ch3 is
          --  in the RM is removed) because accessibility checks are sufficient
          --  to make handlers not at the library level illegal.
 
+         --  AI05-0303: the AI is in fact a binding interpretation, and thus
+         --  applies to the '95 version of the language as well.
+
          if Has_Interrupt_Handler (T)
-           and then Ada_Version < Ada_2005
+           and then Ada_Version < Ada_95
          then
             Error_Msg_N
               ("interrupt object can only be declared at library level", Id);
