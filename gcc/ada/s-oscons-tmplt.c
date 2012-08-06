@@ -264,6 +264,13 @@ package System.OS_Constants is
 # define TARGET_OS "Other_OS"
 #endif
 C("Target_OS", OS_Type, TARGET_OS, "")
+/*
+   pragma Warnings (Off, Target_OS);
+   --  Suppress warnings on Target_OS since it is in general tested for
+   --  equality with a constant valueto implement conditional compilation,
+   --  which normally generates a constant condition warning.
+
+*/
 #define Target_Name TARGET
 CST(Target_Name, "")
 /*

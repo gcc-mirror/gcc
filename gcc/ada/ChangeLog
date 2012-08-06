@@ -1,3 +1,12 @@
+2012-08-06  Robert Dewar  <dewar@adacore.com>
+
+	* s-htable.adb: Minor reformatting.
+
+2012-08-06  Thomas Quinot  <quinot@adacore.com>
+
+	* s-oscons-tmplt.c, g-socket.adb (System.OS_Constants.Target_OS):
+	Suppress warnings so that we don't have to do it at each usage.
+
 2012-08-06  Vincent Pucci  <pucci@adacore.com>
 
 	* exp_ch9.adb (Build_Lock_Free_Unprotected_Subprogram_Body):
