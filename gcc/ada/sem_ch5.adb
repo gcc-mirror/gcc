@@ -2226,17 +2226,7 @@ package body Sem_Ch5 is
          --  Ada 2012: If the domain of iteration is a function call, it is the
          --  new iterator form.
 
-         --  We have also implemented the shorter form : for X in S for Alfa
-         --  use. In this case, 'Old and 'Result must be treated as entity
-         --  names over which iterators are legal.
-
          if Nkind (DS_Copy) = N_Function_Call
-           or else
-             (Alfa_Mode
-               and then (Nkind (DS_Copy) = N_Attribute_Reference
-               and then
-                 (Attribute_Name (DS_Copy) = Name_Result
-                   or else Attribute_Name (DS_Copy) = Name_Old)))
            or else
              (Is_Entity_Name (DS_Copy)
                and then not Is_Type (Entity (DS_Copy)))

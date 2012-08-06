@@ -3103,9 +3103,9 @@ package body Osint is
          return null;
    end To_Canonical_Path_Spec;
 
-   ---------------------------
+   ----------------------
    -- To_Host_Dir_Spec --
-   ---------------------------
+   ----------------------
 
    function To_Host_Dir_Spec
      (Canonical_Dir : String;
@@ -3138,9 +3138,9 @@ package body Osint is
       end if;
    end To_Host_Dir_Spec;
 
-   ----------------------------
+   -----------------------
    -- To_Host_File_Spec --
-   ----------------------------
+   -----------------------
 
    function To_Host_File_Spec
      (Canonical_File : String) return String_Access

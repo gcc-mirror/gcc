@@ -350,9 +350,9 @@ package body Sem_Ch9 is
                                         Get_Aspect_Id (Asp_Name);
 
                         begin
-                           if Asp_Id = Aspect_Address
-                             or else Asp_Id = Aspect_Export
-                             or else Asp_Id = Aspect_Import
+                           if Asp_Id = Aspect_Address or else
+                              Asp_Id = Aspect_Export  or else
+                              Asp_Id = Aspect_Import
                            then
                               Error_Msg_Name_1 := Asp_Name;
 

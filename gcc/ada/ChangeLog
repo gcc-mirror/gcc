@@ -1,5 +1,20 @@
 2012-08-06  Robert Dewar  <dewar@adacore.com>
 
+	* s-oscons-tmplt.c, sem_ch9.adb, osint.adb: Minor reformatting.
+
+2012-08-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch5.adb (Analyze_Loop_Parameter_Specification): Remove obsolete
+	Alfa-specific guard. The code is a leftover from an early
+	implementation of iterators which is no longer in use.
+
+2012-08-06  Vincent Celier  <celier@adacore.com>
+
+	* par-ch13.adb (Get_Aspect_Specifications): Do not consider
+	No_Aspect when checking for a mispelled aspect.
+
+2012-08-06  Robert Dewar  <dewar@adacore.com>
+
 	* s-htable.adb: Minor reformatting.
 
 2012-08-06  Thomas Quinot  <quinot@adacore.com>
