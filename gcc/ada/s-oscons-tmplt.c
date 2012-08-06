@@ -628,6 +628,7 @@ CND(EILSEQ, "Illegal byte sequence")
  **  Terminal/serial I/O constants
  **/
 
+#if defined(HAVE_TERMIOS) || defined(__MINGW32__)
 /*
 
    ----------------------
@@ -635,6 +636,7 @@ CND(EILSEQ, "Illegal byte sequence")
    ----------------------
 
 */
+#endif
 
 #ifdef HAVE_TERMIOS
 
