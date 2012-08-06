@@ -384,10 +384,10 @@ emit_case_bit_tests (gimple swtch, tree index_expr,
 
   gsi = gsi_last_bb (switch_bb);
 
-  /* idx = (unsigned) (x - minval) */
-  idx = fold_build2 (MINUS_EXPR, index_type, index_expr,
-		     fold_convert (index_type, minval));
-  idx = fold_convert (unsigned_index_type, idx);
+  /* idx = (unsigned)x - minval.  */
+  idx = fold_convert (unsigned_index_type, index_expr);
+  idx = fold_build2 (MINUS_EXPR, unsigned_index_type, idx,
+		     fold_convert (unsigned_index_type, minval));
   idx = force_gimple_operand_gsi (&gsi, idx,
 				  /*simple=*/true, NULL_TREE,
 				  /*before=*/true, GSI_SAME_STMT);

@@ -1,3 +1,8 @@
+2012-08-06  Tom de Vries  <tom@codesourcery.com>
+
+	* tree-switch-conversion.c (emit_case_bit_tests): Generate MINUS_EXPR in
+	unsigned type.
+
 2012-08-05  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
 
 	* doc/invoke.texi: Document AMD btver2.
