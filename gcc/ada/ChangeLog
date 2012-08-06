@@ -1,3 +1,15 @@
+2012-08-06  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch4.adb (Analyze_Selected_Component): Issue an error in
+	Alfa mode for component not present.
+
+2012-08-06  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch7.adb (Insert_Actions_In_Scope_Around): Do not
+	use a renaming of Scope_Stack.Table (Scope_Stack.Last), as
+	Process_Transient_Object may introduce new scopes and cause
+	Scope_Stack.Table to be reallocated.
+
 2012-08-06  Robert Dewar  <dewar@adacore.com>
 
 	* exp_util.adb, switch-c.adb, inline.ads, sem_ch10.adb, types.ads,
