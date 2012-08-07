@@ -1,3 +1,10 @@
+2012-08-07  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* error.c (print_instantiation_context): Pretty-print a newline before
+	diagnostic_flush_buffer.
+	* cxx-pretty-print.c (pp_cxx_function_definition): Use
+	pp_newline_and_flush instead of separate pp_newline and pp_flush.
+
 2012-08-06  Dodji Seketeli  <dodji@redhat.com>
 
 	Avoid crashing on erroneous static_assert usage

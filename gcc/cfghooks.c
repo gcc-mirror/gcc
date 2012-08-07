@@ -271,10 +271,12 @@ verify_flow_info (void)
 void
 dump_bb (FILE *outf, basic_block bb, int indent, int flags)
 {
-  dump_bb_info (outf, bb, indent, flags, true, false);
+  if (flags & TDF_BLOCKS)
+    dump_bb_info (outf, bb, indent, flags, true, false);
   if (cfg_hooks->dump_bb)
     cfg_hooks->dump_bb (outf, bb, indent, flags);
-  dump_bb_info (outf, bb, indent, flags, false, true);
+  if (flags & TDF_BLOCKS)
+    dump_bb_info (outf, bb, indent, flags, false, true);
   fputc ('\n', outf);
 }
 

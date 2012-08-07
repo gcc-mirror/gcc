@@ -256,6 +256,12 @@ pp_base_get_prefix (const pretty_printer *pp) { return pp->prefix; }
 #define pp_quote(PP)            pp_character (PP, '\'')
 #define pp_backquote(PP)        pp_character (PP, '`')
 #define pp_doublequote(PP)      pp_character (PP, '"')
+#define pp_newline_and_flush(PP)     \
+  do {                               \
+    pp_newline (PP);                 \
+    pp_flush (PP);                   \
+    pp_needs_newline (PP) = false;   \
+  } while (0)
 #define pp_newline_and_indent(PP, N) \
   do {                               \
     pp_indentation (PP) += N;        \

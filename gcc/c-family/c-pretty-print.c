@@ -846,8 +846,7 @@ pp_c_function_definition (c_pretty_printer *pp, tree t)
   pp_declarator (pp, t);
   pp_needs_newline (pp) = true;
   pp_statement (pp, DECL_SAVED_TREE (t));
-  pp_newline (pp);
-  pp_flush (pp);
+  pp_newline_and_flush (pp);
 }
 
 
@@ -2361,8 +2360,7 @@ print_c_tree (FILE *file, tree t)
 
   pp_statement (pp, t);
 
-  pp_newline (pp);
-  pp_flush (pp);
+  pp_newline_and_flush (pp);
 }
 
 /* Print the tree T in full, on stderr.  */

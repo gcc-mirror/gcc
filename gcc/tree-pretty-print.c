@@ -133,7 +133,7 @@ print_generic_stmt (FILE *file, tree t, int flags)
 {
   maybe_init_pretty_print (file);
   dump_generic_node (&buffer, t, 0, flags, true);
-  pp_flush (&buffer);
+  pp_newline_and_flush (&buffer);
 }
 
 /* Print tree T, and its successors, on file FILE.  FLAGS specifies details
@@ -150,7 +150,7 @@ print_generic_stmt_indented (FILE *file, tree t, int flags, int indent)
   for (i = 0; i < indent; i++)
     pp_space (&buffer);
   dump_generic_node (&buffer, t, indent, flags, true);
-  pp_flush (&buffer);
+  pp_newline_and_flush (&buffer);
 }
 
 /* Print a single expression T on file FILE.  FLAGS specifies details to show

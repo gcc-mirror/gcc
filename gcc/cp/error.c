@@ -3194,6 +3194,7 @@ print_instantiation_context (void)
 {
   print_instantiation_partial_context
     (global_dc, current_instantiation (), input_location);
+  pp_base_newline (global_dc->printer);
   diagnostic_flush_buffer (global_dc);
 }
 

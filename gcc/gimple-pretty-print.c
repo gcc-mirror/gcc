@@ -97,7 +97,7 @@ print_gimple_stmt (FILE *file, gimple g, int spc, int flags)
 {
   maybe_init_pretty_print (file);
   dump_gimple_stmt (&buffer, g, spc, flags);
-  pp_flush (&buffer);
+  pp_newline_and_flush (&buffer);
 }
 
 
@@ -143,7 +143,7 @@ print_gimple_seq (FILE *file, gimple_seq seq, int spc, int flags)
 {
   maybe_init_pretty_print (file);
   dump_gimple_seq (&buffer, seq, spc, flags);
-  pp_flush (&buffer);
+  pp_newline_and_flush (&buffer);
 }
 
 
@@ -2247,7 +2247,7 @@ gimple_dump_bb_buff (pretty_printer *buffer, basic_block bb, int indent,
 
       INDENT (curr_indent);
       dump_gimple_stmt (buffer, stmt, curr_indent, flags);
-      pp_flush (buffer);
+      pp_newline_and_flush (buffer);
       dump_histograms_for_stmt (cfun, buffer->buffer->stream, stmt);
     }
 
