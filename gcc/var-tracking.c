@@ -5086,11 +5086,11 @@ var_lowpart (enum machine_mode mode, rtx loc)
 {
   unsigned int offset, reg_offset, regno;
 
-  if (!REG_P (loc) && !MEM_P (loc))
-    return NULL;
-
   if (GET_MODE (loc) == mode)
     return loc;
+
+  if (!REG_P (loc) && !MEM_P (loc))
+    return NULL;
 
   offset = byte_lowpart_offset (mode, GET_MODE (loc));
 

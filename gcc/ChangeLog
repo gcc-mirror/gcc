@@ -1,3 +1,7 @@
+2012-08-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	* var-tracking.c (var_lowpart): Exit early for matched modes.
+
 2012-08-07  Richard Henderson  <rth@redhat.com>
 
 	* config/s390/s390.c (s390_emit_compare_and_swap): Update for
@@ -2251,7 +2255,7 @@
 
 2012-07-23  Uros Bizjak  <ubizjak@gmail.com>
 
-	* config/i386/i386-protos.c (ix86_lea_outperforms): Remove prototype.
+	* config/i386/i386-protos.h (ix86_lea_outperforms): Remove prototype.
 	* config/i386/i386.c (ix86_lea_outperforms): Make static.  Make
 	split_cost argument signed.
 	(ix86_avoid_lea_for_add): Cleanup.
