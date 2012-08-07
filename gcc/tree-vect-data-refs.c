@@ -4446,7 +4446,6 @@ vect_setup_realignment (gimple stmt, gimple_stmt_iterator *gsi,
   vec_dest = vect_create_destination_var (scalar_dest, vectype);
   msq = make_ssa_name (vec_dest, NULL);
   phi_stmt = create_phi_node (msq, containing_loop->header);
-  SSA_NAME_DEF_STMT (msq) = phi_stmt;
   add_phi_arg (phi_stmt, msq_init, pe, UNKNOWN_LOCATION);
 
   return msq;

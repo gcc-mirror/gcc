@@ -141,7 +141,7 @@ phiprop_insert_phi (basic_block bb, gimple phi, gimple use_stmt,
   /* Build a new PHI node to replace the definition of
      the indirect reference lhs.  */
   res = gimple_assign_lhs (use_stmt);
-  SSA_NAME_DEF_STMT (res) = new_phi = create_phi_node (res, bb);
+  new_phi = create_phi_node (res, bb);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {

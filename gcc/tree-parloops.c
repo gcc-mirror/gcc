@@ -1013,7 +1013,6 @@ create_phi_for_local_result (void **slot, void *data)
 		     NULL);
   locus = gimple_location (reduc->reduc_stmt);
   new_phi = create_phi_node (local_res, store_bb);
-  SSA_NAME_DEF_STMT (local_res) = new_phi;
   add_phi_arg (new_phi, reduc->init, e, locus);
   add_phi_arg (new_phi, gimple_assign_lhs (reduc->reduc_stmt),
 	       FALLTHRU_EDGE (loop->latch), locus);
@@ -1489,7 +1488,6 @@ transform_to_exit_first_loop (struct loop *loop, htab_t reduction_list, tree nit
       t = make_ssa_name (SSA_NAME_VAR (res), phi);
       SET_PHI_RESULT (phi, t);
       nphi = create_phi_node (res, orig_header);
-      SSA_NAME_DEF_STMT (res) = nphi;
       add_phi_arg (nphi, t, hpred, UNKNOWN_LOCATION);
 
       if (res == control)

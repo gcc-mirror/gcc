@@ -1,3 +1,32 @@
+2012-08-07  Richard Guenther  <rguenther@suse.de>
+
+	* gimple.h (gimple_phi_set_result): Adjust SSA_NAME_DEF_STMT.
+	* tree-phinodes.c (make_phi_node): Allow a NULL var.
+	* tree-into-ssa.c (insert_phi_nodes_for): Simplify.
+	* tree-complex.c (update_phi_components): Likewise.
+	* tree-ssa-loop-manip.c (create_iv): Likewise.
+	(add_exit_phis_edge): Likewise.
+	(split_loop_exit_edge): Likewise.
+	(tree_transform_and_unroll_loop): Likewise.
+	* value-prof.c (gimple_ic): Likewise.
+	(gimple_stringop_fixed_value): Likewise.
+	* tree-tailcall.c (tree_optimize_tail_calls_1): Likewise.
+	* omp-low.c (expand_parallel_call): Likewise.
+	(expand_omp_for_static_chunk): Likewise.
+	(expand_omp_atomic_pipeline): Likewise.
+	* tree-parloops.c (create_phi_for_local_result): Likewise.
+	(transform_to_exit_first_loop): Likewise.
+	* tree-vect-data-refs.c (vect_setup_realignment): Likewise.
+	* graphite-scop-detection.c (canonicalize_loop_closed_ssa): Likewise.
+	* tree-predcom.c (initialize_root_vars): Likewise.
+	(initialize_root_vars_lm): Likewise.
+	* sese.c (sese_add_exit_phis_edge): Likewise.
+	* gimple-streamer-in.c (input_phi): Likewise.
+	* tree-inline.c (copy_phis_for_bb): Likewise.
+	* tree-ssa-phiprop.c (phiprop_insert_phi): Likewise.
+	* tree-cfg.c (gimple_make_forwarder_block): Likewise.
+	(gimple_duplicate_bb): Likewise.
+
 2012-08-07  Nick Clifton  <nickc@redhat.com>
 
 	* config/mn10300/mn10300.c (mn10300_expand_prologue): Report

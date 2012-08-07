@@ -1941,8 +1941,7 @@ copy_phis_for_bb (basic_block bb, copy_body_data *id)
       if (is_gimple_reg (res))
 	{
 	  walk_tree (&new_res, copy_tree_body_r, id, NULL);
-	  SSA_NAME_DEF_STMT (new_res)
-	    = new_phi = create_phi_node (new_res, new_bb);
+	  new_phi = create_phi_node (new_res, new_bb);
 	  FOR_EACH_EDGE (new_edge, ei, new_bb->preds)
 	    {
 	      edge old_edge = find_edge ((basic_block) new_edge->src->aux, bb);

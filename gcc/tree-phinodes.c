@@ -189,7 +189,9 @@ make_phi_node (tree var, int len)
   gimple_init_singleton (phi);
   phi->gimple_phi.nargs = len;
   phi->gimple_phi.capacity = capacity;
-  if (TREE_CODE (var) == SSA_NAME)
+  if (!var)
+    ;
+  else if (TREE_CODE (var) == SSA_NAME)
     gimple_phi_set_result (phi, var);
   else
     gimple_phi_set_result (phi, make_ssa_name (var, phi));
