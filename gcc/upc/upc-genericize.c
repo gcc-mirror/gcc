@@ -36,7 +36,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "insn-flags.h"
 #include "expr.h"
-#include "optabs.h"
 #include "c-family/c-common.h"
 #include "c-family/c-pragma.h"
 #include "c-family/c-upc.h"
