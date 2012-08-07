@@ -1625,11 +1625,8 @@ pp_cxx_function_definition (cxx_pretty_printer *pp, tree t)
   if (DECL_SAVED_TREE (t))
     pp_cxx_statement (pp, DECL_SAVED_TREE (t));
   else
-    {
-      pp_cxx_semicolon (pp);
-      pp_needs_newline (pp) = true;
-    }
-  pp_flush (pp);
+    pp_cxx_semicolon (pp);
+  pp_newline_and_flush (pp);
   pp->enclosing_scope = saved_scope;
 }
 

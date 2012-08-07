@@ -575,9 +575,7 @@ pp_base_flush (pretty_printer *pp)
 {
   pp_write_text_to_stream (pp);
   pp_clear_state (pp);
-  fputc ('\n', pp->buffer->stream);
   fflush (pp->buffer->stream);
-  pp_needs_newline (pp) = false;
 }
 
 /* Sets the number of maximum characters per line PRETTY-PRINTER can

@@ -1,3 +1,9 @@
+2012-08-07  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* gcc.dg/tree-prof/update-loopch.c: Ask for dump with blocks info.
+	* gcc.dg/tree-ssa/attr-hotcold-2.c: Likewise.
+	* gcc.dg/tree-ssa/pr18133-1.c: Likewise.
+
 2012-08-06  Cary Coutant  <ccoutant@google.com>
 
 	* g++.dg/debug/dwarf2/non-virtual-thunk.C: New test case.

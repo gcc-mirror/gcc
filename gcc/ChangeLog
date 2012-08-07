@@ -1,3 +1,23 @@
+2012-08-07  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* cfg.c (debug_bb): Do not set TDF_BLOCKS.
+	* cfghooks.c (dump_bb): Honor ~TDF_BLOCKS.
+	* pretty-print.c (pp_base_flush): Do not add a newline, and do not
+	clear pp_needs_newline.
+	* pretty-print.h (pp_newline_and_flush): New macro with the behavior
+	of pp_base_flush before the above change.
+	* langhooks.c (lhd_print_error_function): Use pp_newline_and_flush
+	instead of pp_flush.
+	* diagnostic.c (diagnostic_finish): Likewise.
+	(diagnostic_report_diagnostic): Likewise.
+	(verbatim): Likewise.
+	(error_recursion): Likewise.
+	* tree-pretty-print.c (print_generic_stmt): Likewise.
+	(print_generic_stmt_indented): LIkewise.
+	* gimple-pretty-print.c (print_gimple_stmt): Likewise.
+	(print_gimple_seq): Likewise.
+	(gimple_dump_bb_buff): Likewise.
+
 2012-08-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR debug/54177
