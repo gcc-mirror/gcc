@@ -744,6 +744,9 @@ mn10300_expand_prologue (void)
 {
   HOST_WIDE_INT size = mn10300_frame_size ();
 
+  if (flag_stack_usage_info)
+    current_function_static_stack_size = size;
+
   /* If we use any of the callee-saved registers, save them now.  */
   mn10300_gen_multiple_store (mn10300_get_live_callee_saved_regs (NULL));
 

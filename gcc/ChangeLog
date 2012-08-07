@@ -1,3 +1,8 @@
+2012-08-07  Nick Clifton  <nickc@redhat.com>
+
+	* config/mn10300/mn10300.c (mn10300_expand_prologue): Report
+	stack usage if requested.
+
 2012-08-06  Cary Coutant  <ccoutant@google.com>
 
 	* cgraphunit.c (assemble_thunk): Add source line info.
