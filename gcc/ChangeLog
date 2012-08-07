@@ -1,5 +1,13 @@
 2012-08-07  Richard Guenther  <rguenther@suse.de>
 
+	* tree-dfa.c (set_ssa_default_def): Clear the SSA_NAME_DEFAULT_DEF
+	bit of the old name when we clear the slot.
+	* tree-ssa-live.c (remove_unused_locals): Release any default
+	def associated with an unused var.
+	* tree-ssa-copy.c (may_propagate_copy_into_asm): Always return true.
+
+2012-08-07  Richard Guenther  <rguenther@suse.de>
+
 	* tree-into-ssa.c (rewrite_stmt): Remove clobbers for variables
 	we rewrite into SSA form.
 	(rewrite_enter_block): Adjust.

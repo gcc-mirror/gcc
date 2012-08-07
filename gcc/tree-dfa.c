@@ -336,7 +336,10 @@ set_ssa_default_def (struct function *fn, tree var, tree def)
       loc = htab_find_slot_with_hash (DEFAULT_DEFS (fn), &in,
 				      DECL_UID (var), NO_INSERT);
       if (*loc)
-	htab_clear_slot (DEFAULT_DEFS (fn), loc);
+	{
+	  SSA_NAME_IS_DEFAULT_DEF (*(tree *)loc) = false;
+	  htab_clear_slot (DEFAULT_DEFS (fn), loc);
+	}
       return;
     }
   gcc_assert (TREE_CODE (def) == SSA_NAME && SSA_NAME_VAR (def) == var);
@@ -349,7 +352,7 @@ set_ssa_default_def (struct function *fn, tree var, tree def)
 
    /* Mark DEF as the default definition for VAR.  */
   *(tree *) loc = def;
-   SSA_NAME_IS_DEFAULT_DEF (def) = true;
+  SSA_NAME_IS_DEFAULT_DEF (def) = true;
 }
 
 /* Retrieve or create a default definition for VAR.  */
