@@ -518,3 +518,5 @@ void	__go_register_gc_roots(struct root_list*);
 extern uintptr runtime_stacks_sys;
 
 extern _Bool __go_file_line (uintptr, String*, String*, int *);
+
+int32 getproccount(void);
