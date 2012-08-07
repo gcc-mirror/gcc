@@ -1,5 +1,19 @@
 2012-08-07  Richard Guenther  <rguenther@suse.de>
 
+	* tree-into-ssa.c (rewrite_stmt): Remove clobbers for variables
+	we rewrite into SSA form.
+	(rewrite_enter_block): Adjust.
+	* gimple-iterator.c (gsi_replace): Also allow replacement with
+	a stmt without a lhs.
+	* tree-ssa-live.c (remove_unused_locals): Remove code handling
+	clobbers of SSA names.
+	* tree-nested.c (convert_local_reference_stmt): Remove clobbers
+	for variables we access through the local chain.
+	* tree-cfg.c (verify_gimple_assign_single): Verify clobbers
+	clobber full decls only.
+
+2012-08-07  Richard Guenther  <rguenther@suse.de>
+
 	* gimple.h (gimple_phi_set_result): Adjust SSA_NAME_DEF_STMT.
 	* tree-phinodes.c (make_phi_node): Allow a NULL var.
 	* tree-into-ssa.c (insert_phi_nodes_for): Simplify.

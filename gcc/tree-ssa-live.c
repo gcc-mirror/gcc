@@ -773,9 +773,6 @@ remove_unused_locals (void)
 	    if (gimple_clobber_p (stmt))
 	      {
 		tree lhs = gimple_assign_lhs (stmt);
-		lhs = get_base_address (lhs);
-		if (TREE_CODE (lhs) == SSA_NAME)
-		  lhs = SSA_NAME_VAR (lhs);
 		if (TREE_CODE (lhs) == VAR_DECL && !is_used_p (lhs))
 		  {
 		    unlink_stmt_vdef (stmt);
