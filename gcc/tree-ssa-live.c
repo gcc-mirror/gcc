@@ -798,9 +798,16 @@ remove_unused_locals (void)
 	{
 	  if (!is_used_p (var))
 	    {
+	      tree def;
 	      if (cfun->nonlocal_goto_save_area
 		  && TREE_OPERAND (cfun->nonlocal_goto_save_area, 0) == var)
 		cfun->nonlocal_goto_save_area = NULL;
+	      /* Release any default def associated with var.  */
+	      if ((def = ssa_default_def (cfun, var)) != NULL_TREE)
+		{
+		  set_ssa_default_def (cfun, var, NULL_TREE);
+		  release_ssa_name (def);
+		}
 	      continue;
 	    }
 	}
