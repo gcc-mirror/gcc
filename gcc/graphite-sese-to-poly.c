@@ -2166,7 +2166,6 @@ rewrite_close_phi_out_of_ssa (scop_p scop, gimple_stmt_iterator *psi)
   sese region = SCOP_REGION (scop);
   gimple phi = gsi_stmt (*psi);
   tree res = gimple_phi_result (phi);
-  tree var = SSA_NAME_VAR (res);
   basic_block bb = gimple_bb (phi);
   gimple_stmt_iterator gsi = gsi_after_labels (bb);
   tree arg = gimple_phi_arg_def (phi, 0);
@@ -2222,7 +2221,7 @@ rewrite_close_phi_out_of_ssa (scop_p scop, gimple_stmt_iterator *psi)
     }
   else
     {
-      tree zero_dim_array = create_zero_dim_array (var, "Close_Phi");
+      tree zero_dim_array = create_zero_dim_array (res, "Close_Phi");
 
       stmt = gimple_build_assign (res, zero_dim_array);
 
@@ -2250,8 +2249,8 @@ rewrite_phi_out_of_ssa (scop_p scop, gimple_stmt_iterator *psi)
   gimple phi = gsi_stmt (*psi);
   basic_block bb = gimple_bb (phi);
   tree res = gimple_phi_result (phi);
-  tree var = SSA_NAME_VAR (res);
-  tree zero_dim_array = create_zero_dim_array (var, "phi_out_of_ssa");
+  tree var;
+  tree zero_dim_array = create_zero_dim_array (res, "phi_out_of_ssa");
   gimple stmt;
   gimple_seq stmts;
 
@@ -2349,13 +2348,15 @@ static void
 rewrite_cross_bb_scalar_dependence (scop_p scop, tree zero_dim_array,
 				    tree def, gimple use_stmt)
 {
-  tree var = SSA_NAME_VAR (def);
-  gimple name_stmt = gimple_build_assign (var, zero_dim_array);
-  tree name = make_ssa_name (var, name_stmt);
+  gimple name_stmt;
+  tree name;
   ssa_op_iter iter;
   use_operand_p use_p;
 
   gcc_assert (gimple_code (use_stmt) != GIMPLE_PHI);
+
+  name = copy_ssa_name (def, NULL);
+  name_stmt = gimple_build_assign (name, zero_dim_array);
 
   gimple_assign_set_lhs (name_stmt, name);
   insert_stmts (scop, name_stmt, NULL, gsi_for_stmt (use_stmt));
@@ -2480,7 +2481,7 @@ rewrite_cross_bb_scalar_deps (scop_p scop, gimple_stmt_iterator *gsi)
 	if (!zero_dim_array)
 	  {
 	    zero_dim_array = create_zero_dim_array
-	      (SSA_NAME_VAR (def), "Cross_BB_scalar_dependence");
+	      (def, "Cross_BB_scalar_dependence");
 	    insert_out_of_ssa_copy (scop, zero_dim_array, def,
 				    SSA_NAME_DEF_STMT (def));
 	    gsi_next (gsi);

@@ -2270,7 +2270,7 @@ vect_is_simple_reduction_1 (loop_vec_info loop_info, gimple phi,
   if (orig_code == MINUS_EXPR)
     {
       tree rhs = gimple_assign_rhs2 (def_stmt);
-      tree negrhs = make_ssa_name (SSA_NAME_VAR (rhs), NULL);
+      tree negrhs = copy_ssa_name (rhs, NULL);
       gimple negate_stmt = gimple_build_assign_with_ops (NEGATE_EXPR, negrhs,
 							 rhs, NULL);
       gimple_stmt_iterator gsi = gsi_for_stmt (def_stmt);
@@ -3700,7 +3700,8 @@ vect_create_epilog_for_reduction (VEC (tree, heap) *vect_defs, gimple stmt,
     {
       for (j = 0; j < ncopies; j++)
         {
-          phi = create_phi_node (SSA_NAME_VAR (def), exit_bb);
+	  tree new_def = copy_ssa_name (def, NULL);
+          phi = create_phi_node (new_def, exit_bb);
           set_vinfo_for_stmt (phi, new_stmt_vec_info (phi, loop_vinfo, NULL));
           if (j == 0)
             VEC_quick_push (gimple, new_phis, phi);
@@ -3724,8 +3725,8 @@ vect_create_epilog_for_reduction (VEC (tree, heap) *vect_defs, gimple stmt,
       inner_phis = VEC_alloc (gimple, heap, VEC_length (tree, vect_defs));
       FOR_EACH_VEC_ELT (gimple, new_phis, i, phi)
 	{
-	  gimple outer_phi = create_phi_node (SSA_NAME_VAR (PHI_RESULT (phi)),
-					      exit_bb);
+	  tree new_result = copy_ssa_name (PHI_RESULT (phi), NULL);
+	  gimple outer_phi = create_phi_node (new_result, exit_bb);
 	  SET_PHI_ARG_DEF (outer_phi, single_exit (loop)->dest_idx,
 			   PHI_RESULT (phi));
 	  set_vinfo_for_stmt (outer_phi, new_stmt_vec_info (outer_phi,
@@ -3736,8 +3737,8 @@ vect_create_epilog_for_reduction (VEC (tree, heap) *vect_defs, gimple stmt,
           while (STMT_VINFO_RELATED_STMT (vinfo_for_stmt (phi)))
             {
 	      phi = STMT_VINFO_RELATED_STMT (vinfo_for_stmt (phi));
-	      outer_phi = create_phi_node (SSA_NAME_VAR (PHI_RESULT (phi)),
-					   exit_bb);
+	      new_result = copy_ssa_name (PHI_RESULT (phi), NULL);
+	      outer_phi = create_phi_node (new_result, exit_bb);
 	      SET_PHI_ARG_DEF (outer_phi, single_exit (loop)->dest_idx,
 			       PHI_RESULT (phi));
 	      set_vinfo_for_stmt (outer_phi, new_stmt_vec_info (outer_phi,

@@ -1031,7 +1031,7 @@ build_one_array (gimple swtch, int num, tree arr_index_type, gimple phi,
 
   gcc_assert (info->default_values[num]);
 
-  name = make_ssa_name (SSA_NAME_VAR (PHI_RESULT (phi)), NULL);
+  name = copy_ssa_name (PHI_RESULT (phi), NULL);
   info->target_inbound_names[num] = name;
 
   cst = constructor_contains_same_values_p (info->constructors[num]);
@@ -1077,7 +1077,6 @@ build_one_array (gimple swtch, int num, tree arr_index_type, gimple phi,
       load = gimple_build_assign (name, fetch);
     }
 
-  SSA_NAME_DEF_STMT (name) = load;
   gsi_insert_before (&gsi, load, GSI_SAME_STMT);
   update_stmt (load);
   info->arr_ref_last = load;
@@ -1137,12 +1136,9 @@ gen_def_assigns (gimple_stmt_iterator *gsi, struct switch_conv_info *info)
 
   for (i = 0; i < info->phi_count; i++)
     {
-      tree name
-	= make_ssa_name (SSA_NAME_VAR (info->target_inbound_names[i]), NULL);
-
+      tree name = copy_ssa_name (info->target_inbound_names[i], NULL);
       info->target_outbound_names[i] = name;
       assign = gimple_build_assign (name, info->default_values[i]);
-      SSA_NAME_DEF_STMT (name) = assign;
       gsi_insert_before (gsi, assign, GSI_SAME_STMT);
       update_stmt (assign);
     }

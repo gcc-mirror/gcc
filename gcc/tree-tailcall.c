@@ -644,9 +644,9 @@ update_accumulator_with_ops (enum tree_code code, tree acc, tree op1,
 			     gimple_stmt_iterator gsi)
 {
   gimple stmt;
-  tree var;
+  tree var = copy_ssa_name (acc, NULL);
   if (types_compatible_p (TREE_TYPE (acc), TREE_TYPE (op1)))
-    stmt = gimple_build_assign_with_ops (code, SSA_NAME_VAR (acc), acc, op1);
+    stmt = gimple_build_assign_with_ops (code, var, acc, op1);
   else
     {
       tree rhs = fold_convert (TREE_TYPE (acc),
@@ -656,11 +656,8 @@ update_accumulator_with_ops (enum tree_code code, tree acc, tree op1,
 					    op1));
       rhs = force_gimple_operand_gsi (&gsi, rhs,
 				      false, NULL, false, GSI_CONTINUE_LINKING);
-      stmt = gimple_build_assign (NULL_TREE, rhs);
+      stmt = gimple_build_assign (var, rhs);
     }
-  var = make_ssa_name (SSA_NAME_VAR (acc), stmt);
-  gimple_assign_set_lhs (stmt, var);
-  update_stmt (stmt);
   gsi_insert_after (&gsi, stmt, GSI_NEW_STMT);
   return var;
 }

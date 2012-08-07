@@ -1144,6 +1144,25 @@ make_ssa_name (tree var, gimple stmt)
   return make_ssa_name_fn (cfun, var, stmt);
 }
 
+/* Return an SSA_NAME node using the template SSA name NAME defined in
+   statement STMT in function cfun.  */
+
+static inline tree
+copy_ssa_name (tree var, gimple stmt)
+{
+  return copy_ssa_name_fn (cfun, var, stmt);
+}
+
+/*  Creates a duplicate of a SSA name NAME tobe defined by statement STMT
+    in function cfun.  */
+
+static inline tree
+duplicate_ssa_name (tree var, gimple stmt)
+{
+  return duplicate_ssa_name_fn (cfun, var, stmt);
+}
+
+
 /* Returns the base object and a constant BITS_PER_UNIT offset in *POFFSET that
    denotes the starting address of the memory access EXP.
    Returns NULL_TREE if the offset is not constant or any component

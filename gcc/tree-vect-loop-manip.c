@@ -511,14 +511,15 @@ slpeel_update_phi_nodes_for_guard1 (edge guard_edge, struct loop *loop,
        gsi_next (&gsi_orig), gsi_next (&gsi_update))
     {
       source_location loop_locus, guard_locus;
+      tree new_res;
       orig_phi = gsi_stmt (gsi_orig);
       update_phi = gsi_stmt (gsi_update);
 
       /** 1. Handle new-merge-point phis  **/
 
       /* 1.1. Generate new phi node in NEW_MERGE_BB:  */
-      new_phi = create_phi_node (SSA_NAME_VAR (PHI_RESULT (orig_phi)),
-                                 new_merge_bb);
+      new_res = copy_ssa_name (PHI_RESULT (orig_phi), NULL);
+      new_phi = create_phi_node (new_res, new_merge_bb);
 
       /* 1.2. NEW_MERGE_BB has two incoming edges: GUARD_EDGE and the exit-edge
             of LOOP. Set the two phi args in NEW_PHI for these edges:  */
@@ -547,8 +548,8 @@ slpeel_update_phi_nodes_for_guard1 (edge guard_edge, struct loop *loop,
 	continue;
 
       /* 2.1. Generate new phi node in NEW_EXIT_BB:  */
-      new_phi = create_phi_node (SSA_NAME_VAR (PHI_RESULT (orig_phi)),
-                                 *new_exit_bb);
+      new_res = copy_ssa_name (PHI_RESULT (orig_phi), NULL);
+      new_phi = create_phi_node (new_res, *new_exit_bb);
 
       /* 2.2. NEW_EXIT_BB has one incoming edge: the exit-edge of the loop.  */
       add_phi_arg (new_phi, loop_arg, single_exit (loop), loop_locus);
@@ -636,6 +637,7 @@ slpeel_update_phi_nodes_for_guard2 (edge guard_edge, struct loop *loop,
 
   for (gsi = gsi_start_phis (update_bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
+      tree new_res;
       update_phi = gsi_stmt (gsi);
       orig_phi = update_phi;
       orig_def = PHI_ARG_DEF_FROM_EDGE (orig_phi, e);
@@ -649,8 +651,8 @@ slpeel_update_phi_nodes_for_guard2 (edge guard_edge, struct loop *loop,
       /** 1. Handle new-merge-point phis  **/
 
       /* 1.1. Generate new phi node in NEW_MERGE_BB:  */
-      new_phi = create_phi_node (SSA_NAME_VAR (PHI_RESULT (orig_phi)),
-                                 new_merge_bb);
+      new_res = copy_ssa_name (PHI_RESULT (orig_phi), NULL);
+      new_phi = create_phi_node (new_res, new_merge_bb);
 
       /* 1.2. NEW_MERGE_BB has two incoming edges: GUARD_EDGE and the exit-edge
             of LOOP. Set the two PHI args in NEW_PHI for these edges:  */
@@ -691,8 +693,8 @@ slpeel_update_phi_nodes_for_guard2 (edge guard_edge, struct loop *loop,
       /** 2. Handle loop-closed-ssa-form phis  **/
 
       /* 2.1. Generate new phi node in NEW_EXIT_BB:  */
-      new_phi = create_phi_node (SSA_NAME_VAR (PHI_RESULT (orig_phi)),
-                                 *new_exit_bb);
+      new_res = copy_ssa_name (PHI_RESULT (orig_phi), NULL);
+      new_phi = create_phi_node (new_res, *new_exit_bb);
 
       /* 2.2. NEW_EXIT_BB has one incoming edge: the exit-edge of the loop.  */
       add_phi_arg (new_phi, loop_arg, single_exit (loop), UNKNOWN_LOCATION);
@@ -726,8 +728,8 @@ slpeel_update_phi_nodes_for_guard2 (edge guard_edge, struct loop *loop,
       arg = guard_arg;
 
       /* 3.2. Generate new phi node in GUARD_BB:  */
-      new_phi = create_phi_node (SSA_NAME_VAR (PHI_RESULT (orig_phi)),
-                                 guard_edge->src);
+      new_res = copy_ssa_name (PHI_RESULT (orig_phi), NULL);
+      new_phi = create_phi_node (new_res, guard_edge->src);
 
       /* 3.3. GUARD_BB has one incoming edge:  */
       gcc_assert (EDGE_COUNT (guard_edge->src->preds) == 1);
@@ -1182,13 +1184,11 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop,
 	    break;
 	if (gsi_end_p (gsi))
 	  {
-	    gimple new_phi = create_phi_node (SSA_NAME_VAR (PHI_RESULT (phi)),
-					      exit_e->dest);
+	    tree new_vop = copy_ssa_name (PHI_RESULT (phi), NULL);
+	    gimple new_phi = create_phi_node (new_vop, exit_e->dest);
 	    tree vop = PHI_ARG_DEF_FROM_EDGE (phi, EDGE_SUCC (loop->latch, 0));
 	    imm_use_iterator imm_iter;
 	    gimple stmt;
-	    tree new_vop = make_ssa_name (SSA_NAME_VAR (PHI_RESULT (phi)),
-					  new_phi);
 	    use_operand_p use_p;
 
 	    add_phi_arg (new_phi, vop, exit_e, UNKNOWN_LOCATION);
@@ -2535,9 +2535,10 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
 
   for (gsi = gsi_start_phis (merge_bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
+      tree new_res;
       orig_phi = gsi_stmt (gsi);
-      new_phi = create_phi_node (SSA_NAME_VAR (PHI_RESULT (orig_phi)),
-				  new_exit_bb);
+      new_res = copy_ssa_name (PHI_RESULT (orig_phi), NULL);
+      new_phi = create_phi_node (new_res, new_exit_bb);
       arg = PHI_ARG_DEF_FROM_EDGE (orig_phi, e);
       add_phi_arg (new_phi, arg, new_exit_e,
 		   gimple_phi_arg_location_from_edge (orig_phi, e));
