@@ -2777,11 +2777,16 @@ switch_to_exception_section (const char * ARG_UNUSED (fnname))
 	    flags = SECTION_WRITE;
 
 #ifdef HAVE_LD_EH_GC_SECTIONS
-	  if (flag_function_sections)
+	  if (flag_function_sections
+	      || (DECL_ONE_ONLY (current_function_decl) && HAVE_COMDAT_GROUP))
 	    {
 	      char *section_name = XNEWVEC (char, strlen (fnname) + 32);
+	      /* The EH table must match the code section, so only mark
+		 it linkonce if we have COMDAT groups to tie them together.  */
+	      if (DECL_ONE_ONLY (current_function_decl) && HAVE_COMDAT_GROUP)
+		flags |= SECTION_LINKONCE;
 	      sprintf (section_name, ".gcc_except_table.%s", fnname);
-	      s = get_section (section_name, flags, NULL);
+	      s = get_section (section_name, flags, current_function_decl);
 	      free (section_name);
 	    }
 	  else
