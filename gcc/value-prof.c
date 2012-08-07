@@ -1275,7 +1275,6 @@ gimple_ic (gimple icall_stmt, struct cgraph_node *direct_call,
     {
       tree result = gimple_call_lhs (icall_stmt);
       gimple phi = create_phi_node (result, join_bb);
-      SSA_NAME_DEF_STMT (result) = phi;
       gimple_call_set_lhs (icall_stmt,
 			   make_ssa_name (SSA_NAME_VAR (result), icall_stmt));
       add_phi_arg (phi, gimple_call_lhs (icall_stmt), e_ij, UNKNOWN_LOCATION);
@@ -1507,7 +1506,6 @@ gimple_stringop_fixed_value (gimple vcall_stmt, tree icall_size, int prob,
     {
       tree result = gimple_call_lhs (vcall_stmt);
       gimple phi = create_phi_node (result, join_bb);
-      SSA_NAME_DEF_STMT (result) = phi;
       gimple_call_set_lhs (vcall_stmt,
 			   make_ssa_name (SSA_NAME_VAR (result), vcall_stmt));
       add_phi_arg (phi, gimple_call_lhs (vcall_stmt), e_vj, UNKNOWN_LOCATION);

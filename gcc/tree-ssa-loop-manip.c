@@ -116,7 +116,6 @@ create_iv (tree base, tree step, tree var, struct loop *loop,
     gsi_insert_seq_on_edge_immediate (pe, stmts);
 
   stmt = create_phi_node (vb, loop->header);
-  SSA_NAME_DEF_STMT (vb) = stmt;
   add_phi_arg (stmt, initial, loop_preheader_edge (loop), UNKNOWN_LOCATION);
   add_phi_arg (stmt, va, loop_latch_edge (loop), UNKNOWN_LOCATION);
 }
@@ -144,9 +143,8 @@ add_exit_phis_edge (basic_block exit, tree use)
   if (!e)
     return;
 
-  phi = create_phi_node (use, exit);
-  create_new_def_for (gimple_phi_result (phi), phi,
-		      gimple_phi_result_ptr (phi));
+  phi = create_phi_node (NULL_TREE, exit);
+  create_new_def_for (use, phi, gimple_phi_result_ptr (phi));
   FOR_EACH_EDGE (e, ei, exit->preds)
     add_phi_arg (phi, use, e, UNKNOWN_LOCATION);
 }
@@ -499,7 +497,6 @@ split_loop_exit_edge (edge exit)
 	 of the SSA name out of the loop.  */
       new_name = duplicate_ssa_name (name, NULL);
       new_phi = create_phi_node (new_name, bb);
-      SSA_NAME_DEF_STMT (new_name) = new_phi;
       add_phi_arg (new_phi, name, exit, locus);
       SET_USE (op_p, new_name);
     }
@@ -1012,7 +1009,6 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
 
       new_init = make_ssa_name (var, NULL);
       phi_rest = create_phi_node (new_init, rest);
-      SSA_NAME_DEF_STMT (new_init) = phi_rest;
 
       add_phi_arg (phi_rest, init, precond_edge, UNKNOWN_LOCATION);
       add_phi_arg (phi_rest, next, new_exit, UNKNOWN_LOCATION);

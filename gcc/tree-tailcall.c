@@ -975,7 +975,6 @@ tree_optimize_tail_calls_1 (bool opt_tailcalls)
 
 		set_ssa_default_def (cfun, param, new_name);
 		phi = create_phi_node (name, first);
-		SSA_NAME_DEF_STMT (name) = phi;
 		add_phi_arg (phi, new_name, single_pred_edge (first),
 			     EXPR_LOCATION (param));
 	      }

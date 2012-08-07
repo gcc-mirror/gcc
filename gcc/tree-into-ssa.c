@@ -1039,10 +1039,8 @@ insert_phi_nodes_for (tree var, bitmap phi_insertion_points, bool update_p)
 	  tree new_lhs;
 
 	  gcc_assert (update_p);
-	  phi = create_phi_node (var, bb);
-
-	  new_lhs = duplicate_ssa_name (var, phi);
-	  gimple_phi_set_result (phi, new_lhs);
+	  new_lhs = duplicate_ssa_name (var, NULL);
+	  phi = create_phi_node (new_lhs, bb);
 	  add_new_name_mapping (new_lhs, var);
 
 	  /* Add VAR to every argument slot of PHI.  We need VAR in

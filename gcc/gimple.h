@@ -3494,6 +3494,8 @@ gimple_phi_set_result (gimple gs, tree result)
 {
   GIMPLE_CHECK (gs, GIMPLE_PHI);
   gs->gimple_phi.result = result;
+  if (result && TREE_CODE (result) == SSA_NAME)
+    SSA_NAME_DEF_STMT (result) = gs;
 }
 
 

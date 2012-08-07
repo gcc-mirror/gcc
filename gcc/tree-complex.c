@@ -720,17 +720,11 @@ update_phi_components (basic_block bb)
 
 	  lr = get_component_ssa_name (gimple_phi_result (phi), false);
 	  if (TREE_CODE (lr) == SSA_NAME)
-	    {
-	      pr = create_phi_node (lr, bb);
-	      SSA_NAME_DEF_STMT (lr) = pr;
-	    }
+	    pr = create_phi_node (lr, bb);
 
 	  li = get_component_ssa_name (gimple_phi_result (phi), true);
 	  if (TREE_CODE (li) == SSA_NAME)
-	    {
-	      pi = create_phi_node (li, bb);
-	      SSA_NAME_DEF_STMT (li) = pi;
-	    }
+	    pi = create_phi_node (li, bb);
 
 	  for (i = 0, n = gimple_phi_num_args (phi); i < n; ++i)
 	    {
