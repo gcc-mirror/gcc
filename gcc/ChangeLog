@@ -1,3 +1,9 @@
+2012-08-07  Paul Brook  <paul@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	* except.c (switch_to_exception_section): Place tables for
+	DECL_ONE_ONLY functions in comdat groups.
+
 2012-08-07  Richard Guenther  <rguenther@suse.de>
 
 	* tree-flow.h (copy_ssa_name_fn): New function.
