@@ -312,6 +312,17 @@ get_ptr_info (tree t)
   return pi;
 }
 
+
+/* Creates a new SSA name using the template NAME tobe defined by
+   statement STMT in function FN.  */
+
+tree
+copy_ssa_name_fn (struct function *fn, tree name, gimple stmt)
+{
+  return make_ssa_name_fn (fn, SSA_NAME_VAR (name), stmt);
+}
+
+
 /* Creates a duplicate of the ptr_info_def at PTR_INFO for use by
    the SSA name NAME.  */
 
@@ -333,12 +344,13 @@ duplicate_ssa_name_ptr_info (tree name, struct ptr_info_def *ptr_info)
 }
 
 
-/* Creates a duplicate of a ssa name NAME tobe defined by statement STMT.  */
+/* Creates a duplicate of a ssa name NAME tobe defined by statement STMT
+   in function FN.  */
 
 tree
-duplicate_ssa_name (tree name, gimple stmt)
+duplicate_ssa_name_fn (struct function *fn, tree name, gimple stmt)
 {
-  tree new_name = make_ssa_name (SSA_NAME_VAR (name), stmt);
+  tree new_name = copy_ssa_name_fn (fn, name, stmt);
   struct ptr_info_def *old_ptr_info = SSA_NAME_PTR_INFO (name);
 
   if (old_ptr_info)

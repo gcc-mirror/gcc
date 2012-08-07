@@ -1,5 +1,35 @@
 2012-08-07  Richard Guenther  <rguenther@suse.de>
 
+	* tree-flow.h (copy_ssa_name_fn): New function.
+	(duplicate_ssa_name_fn): Likewise.
+	* tree-flow-inline.h (copy_ssa_name): New function.
+	(duplicate_ssa_name): Likewise.
+	* tree-ssanames.c (copy_ssa_name_fn): New function.
+	(duplicate_ssa_name): Rename to ...
+	(duplicate_ssa_name_fn): ... this and adjust.
+	* tree-tailcall.c (update_accumulator_with_ops): Use copy_ssa_name.
+	* tree-vect-loop-manip.c (slpeel_update_phi_nodes_for_guard1): Likewise.
+	(slpeel_update_phi_nodes_for_guard2): Likewise.
+	(slpeel_tree_peel_loop_to_edge): Likewise.
+	(vect_loop_versioning): Likewise.
+	* tree-parloops.c (transform_to_exit_first_loop): Likewise.
+	(create_parallel_loop): Likewise.
+	* ipa-split.c (split_function): Likewise.
+	* tree-vect-loop.c (vect_is_simple_reduction_1): Likewise.
+	(vect_create_epilog_for_reduction): Likewise.
+	* tree-vect-data-refs.c (bump_vector_ptr): Likewise.
+	(vect_setup_realignment): Likewise.
+	* tree-vect-stmts.c (vectorizable_load): Likewise.
+	* tree-switch-conversion.c (build_one_array): Likewise.
+	(gen_def_assigns): Likewise.
+	* tree-cfg.c (gimple_make_forwarder_block): Likewise.
+	* graphite-sese-to-poly.c (rewrite_close_phi_out_of_ssa): Call
+	create_zero_dim_array with the SSA name.
+	(rewrite_phi_out_of_ssa): Likewise.
+	(rewrite_cross_bb_scalar_dependence): Likewise.  Use copy_ssa_name.
+
+2012-08-07  Richard Guenther  <rguenther@suse.de>
+
 	* tree-dfa.c (set_ssa_default_def): Clear the SSA_NAME_DEFAULT_DEF
 	bit of the old name when we clear the slot.
 	* tree-ssa-live.c (remove_unused_locals): Release any default

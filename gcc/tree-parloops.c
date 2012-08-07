@@ -1485,7 +1485,7 @@ transform_to_exit_first_loop (struct loop *loop, htab_t reduction_list, tree nit
     {
       phi = gsi_stmt (gsi);
       res = PHI_RESULT (phi);
-      t = make_ssa_name (SSA_NAME_VAR (res), phi);
+      t = copy_ssa_name (res, phi);
       SET_PHI_RESULT (phi, t);
       nphi = create_phi_node (res, orig_header);
       add_phi_arg (nphi, t, hpred, UNKNOWN_LOCATION);
@@ -1623,7 +1623,7 @@ create_parallel_loop (struct loop *loop, tree loop_fn, tree data,
   cvar_base = SSA_NAME_VAR (cvar);
   phi = SSA_NAME_DEF_STMT (cvar);
   cvar_init = PHI_ARG_DEF_FROM_EDGE (phi, loop_preheader_edge (loop));
-  initvar = make_ssa_name (cvar_base, NULL);
+  initvar = copy_ssa_name (cvar, NULL);
   SET_USE (PHI_ARG_DEF_PTR_FROM_EDGE (phi, loop_preheader_edge (loop)),
 	   initvar);
   cvar_next = PHI_ARG_DEF_FROM_EDGE (phi, loop_latch_edge (loop));

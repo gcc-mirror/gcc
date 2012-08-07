@@ -1267,7 +1267,7 @@ split_function (struct split_point *split_point)
 	      if (TREE_CODE (retval) == SSA_NAME
 		  && !DECL_BY_REFERENCE (DECL_RESULT (current_function_decl)))
 		{
-		  retval = make_ssa_name (SSA_NAME_VAR (retval), call);
+		  retval = copy_ssa_name (retval, call);
 
 		  /* See if there is PHI defining return value.  */
 		  for (psi = gsi_start_phis (return_bb);

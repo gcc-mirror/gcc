@@ -3941,7 +3941,6 @@ bump_vector_ptr (tree dataref_ptr, gimple ptr_incr, gimple_stmt_iterator *gsi,
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
-  tree ptr_var = SSA_NAME_VAR (dataref_ptr);
   tree update = TYPE_SIZE_UNIT (vectype);
   gimple incr_stmt;
   ssa_op_iter iter;
@@ -3951,10 +3950,9 @@ bump_vector_ptr (tree dataref_ptr, gimple ptr_incr, gimple_stmt_iterator *gsi,
   if (bump)
     update = bump;
 
-  incr_stmt = gimple_build_assign_with_ops (POINTER_PLUS_EXPR, ptr_var,
+  new_dataref_ptr = copy_ssa_name (dataref_ptr, NULL);
+  incr_stmt = gimple_build_assign_with_ops (POINTER_PLUS_EXPR, new_dataref_ptr,
 					    dataref_ptr, update);
-  new_dataref_ptr = make_ssa_name (ptr_var, incr_stmt);
-  gimple_assign_set_lhs (incr_stmt, new_dataref_ptr);
   vect_finish_stmt_generation (stmt, incr_stmt, gsi);
 
   /* Copy the points-to information if it exists. */
@@ -4356,12 +4354,11 @@ vect_setup_realignment (gimple stmt, gimple_stmt_iterator *gsi,
       ptr = vect_create_data_ref_ptr (stmt, vectype, loop_for_initial_load,
 				      NULL_TREE, &init_addr, NULL, &inc,
 				      true, &inv_p);
+      new_temp = copy_ssa_name (ptr, NULL);
       new_stmt = gimple_build_assign_with_ops
-		   (BIT_AND_EXPR, NULL_TREE, ptr,
+		   (BIT_AND_EXPR, new_temp, ptr,
 		    build_int_cst (TREE_TYPE (ptr),
 				   -(HOST_WIDE_INT)TYPE_ALIGN_UNIT (vectype)));
-      new_temp = make_ssa_name (SSA_NAME_VAR (ptr), new_stmt);
-      gimple_assign_set_lhs (new_stmt, new_temp);
       new_bb = gsi_insert_on_edge_immediate (pe, new_stmt);
       gcc_assert (!new_bb);
       data_ref

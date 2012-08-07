@@ -5018,7 +5018,7 @@ gimple_make_forwarder_block (edge fallthru)
       phi = gsi_stmt (gsi);
       var = gimple_phi_result (phi);
       new_phi = create_phi_node (var, bb);
-      gimple_phi_set_result (phi, make_ssa_name (SSA_NAME_VAR (var), phi));
+      gimple_phi_set_result (phi, copy_ssa_name (var, phi));
       add_phi_arg (new_phi, gimple_phi_result (phi), fallthru,
 		   UNKNOWN_LOCATION);
     }
