@@ -422,11 +422,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       bool
       is_lock_free() const noexcept
-      { return __atomic_is_lock_free (sizeof (_M_i), &_M_i); }
+      { return __atomic_always_lock_free(sizeof(_M_i), &_M_i); }
 
       bool
       is_lock_free() const volatile noexcept
-      { return __atomic_is_lock_free (sizeof (_M_i), &_M_i); }
+      { return __atomic_always_lock_free(sizeof(_M_i), &_M_i); }
 
       void
       store(__int_type __i, memory_order __m = memory_order_seq_cst) noexcept
@@ -716,11 +716,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       bool
       is_lock_free() const noexcept
-      { return __atomic_is_lock_free(_M_type_size(1), &_M_p); }
+      { return __atomic_always_lock_free(_M_type_size(1), &_M_p); }
 
       bool
       is_lock_free() const volatile noexcept
-      { return __atomic_is_lock_free(_M_type_size(1), &_M_p); }
+      { return __atomic_always_lock_free(_M_type_size(1), &_M_p); }
 
       void
       store(__pointer_type __p,
