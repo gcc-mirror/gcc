@@ -1,3 +1,37 @@
+2012-08-07  Richard Henderson  <rth@redhat.com>
+
+	* config/s390/s390.c (s390_emit_compare_and_swap): Update for
+	atomic_compare_and_swapsi_internal name change.
+	(s390_expand_insv): Try RISBG last, not requiring operands in
+	registers but forcing them there.  Try a limited form of ICM.
+	(s390_two_part_insv): New.
+	(s390_expand_cs_hqi): Use it.  Update for atomic optabs.
+	* config/s390/s390.md (UNSPEC_MOVA): New.
+	(TDSI): Remove mode iterator.
+	(DGPR, DINT, TDI): New mode iterators.
+	(td): New mode attribute.
+	(mem_signal_fence): New.
+	(mem_thread_fence): Rename from memory_barrier; update for model arg.
+	(mem_thread_fence_1): Rename from *memory_barrier.
+	(atomic_load<DINT>, atomic_store<DINT>): New expanders.
+	(atomic_loaddi_1, atomic_loadti_1): New.
+	(atomic_storedi_1, atomic_storeti_1): New.
+	(sync_compare_and_swap<TDSI>, sync_compare_and_swap<HQI>): Remove.
+	(atomic_compare_and_swap<DGPR>, atomic_compare_and_swap<HQI>): New.
+	(atomic_compare_and_swap<DGPR>_internal): New.
+	(*sync_compare_and_swap<DW>, *sync_compare_and_swap<GPR>): Remove.
+	(*atomic_compare_and_swap<TDI>_1): New.
+	(*atomic_compare_and_swapdi_2, *atomic_compare_and_swapsi_3): New.
+	(sync_<ATOMIC_Z196><GPR>, sync_old_<ATOMIC_Z196><GPR>): Remove.
+	(atomic_fetch_<ATOMIC_Z196><GPR>): New.
+	(atomic_fetch_<ATOMC_Z196><GPR>_iaf): New.
+	(sync_<ATOMIC><HQI>, sync_old_<ATOMIC><HQI>): Remove.
+	(sync_new_<ATOMIC><HQI>): Remove.
+	(atomic_<ATOMIC><HQI>, atomic_fetch_<ATOMIC><HQI>): New.
+	(atomic_<ATOMIC>_fetch<HQI>): New.
+	(sync_lock_test_and_set<HQI>): Remove.
+	(atomic_exchange<HQI>): New.
+
 2012-08-07  Paul Brook  <paul@codesourcery.com>
 	    Sandra Loosemore  <sandra@codesourcery.com>
 
