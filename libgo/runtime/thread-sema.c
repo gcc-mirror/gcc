@@ -138,6 +138,7 @@ runtime_semawakeup (M *mp)
 void
 runtime_osinit (void)
 {
+  runtime_ncpu = getproccount();
 }
 
 void
