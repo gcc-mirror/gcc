@@ -3930,6 +3930,14 @@ verify_gimple_assign_single (gimple stmt)
       return true;
     }
 
+  if (gimple_clobber_p (stmt)
+      && !DECL_P (lhs))
+    {
+      error ("non-decl LHS in clobber statement");
+      debug_generic_expr (lhs);
+      return true;
+    }
+
   if (handled_component_p (lhs))
     res |= verify_types_in_gimple_reference (lhs, true);
 

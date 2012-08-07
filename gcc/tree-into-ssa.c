@@ -1323,12 +1323,12 @@ rewrite_debug_stmt_uses (gimple stmt)
    definition of a variable when a new real or virtual definition is found.  */
 
 static void
-rewrite_stmt (gimple_stmt_iterator si)
+rewrite_stmt (gimple_stmt_iterator *si)
 {
   use_operand_p use_p;
   def_operand_p def_p;
   ssa_op_iter iter;
-  gimple stmt = gsi_stmt (si);
+  gimple stmt = gsi_stmt (*si);
 
   /* If mark_def_sites decided that we don't need to rewrite this
      statement, ignore it.  */
@@ -1362,9 +1362,24 @@ rewrite_stmt (gimple_stmt_iterator si)
     FOR_EACH_SSA_DEF_OPERAND (def_p, stmt, iter, SSA_OP_ALL_DEFS)
       {
 	tree var = DEF_FROM_PTR (def_p);
-	tree name = make_ssa_name (var, stmt);
+	tree name;
 	tree tracked_var;
+
 	gcc_assert (DECL_P (var));
+
+	if (gimple_clobber_p (stmt)
+	    && is_gimple_reg (var))
+	  {
+	    /* If we rewrite a DECL into SSA form then drop its
+	       clobber stmts and replace uses with a new default def.  */
+	    gcc_assert (TREE_CODE (var) == VAR_DECL
+			&& !gimple_vdef (stmt));
+	    gsi_replace (si, gimple_build_nop (), true);
+	    register_new_def (get_or_create_ssa_default_def (cfun, var), var);
+	    break;
+	  }
+
+	name = make_ssa_name (var, stmt);
 	SET_DEF (def_p, name);
 	register_new_def (DEF_FROM_PTR (def_p), var);
 
@@ -1372,7 +1387,7 @@ rewrite_stmt (gimple_stmt_iterator si)
 	if (tracked_var)
 	  {
 	    gimple note = gimple_build_debug_bind (tracked_var, name, stmt);
-	    gsi_insert_after (&si, note, GSI_SAME_STMT);
+	    gsi_insert_after (si, note, GSI_SAME_STMT);
 	  }
       }
 }
@@ -1439,7 +1454,7 @@ rewrite_enter_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
      of a variable when a new real or virtual definition is found.  */
   if (TEST_BIT (interesting_blocks, bb->index))
     for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-      rewrite_stmt (gsi);
+      rewrite_stmt (&gsi);
 
   /* Step 3.  Visit all the successor blocks of BB looking for PHI nodes.
      For every PHI node found, add a new argument containing the current
