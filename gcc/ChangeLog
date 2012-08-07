@@ -1,5 +1,6 @@
 2012-08-07  Uros Bizjak  <ubizjak@gmail.com>
 
+	PR debug/54177
 	* var-tracking.c (var_lowpart): Exit early for matched modes.
 
 2012-08-07  Richard Henderson  <rth@redhat.com>
@@ -52,7 +53,8 @@
 	(duplicate_ssa_name): Rename to ...
 	(duplicate_ssa_name_fn): ... this and adjust.
 	* tree-tailcall.c (update_accumulator_with_ops): Use copy_ssa_name.
-	* tree-vect-loop-manip.c (slpeel_update_phi_nodes_for_guard1): Likewise.
+	* tree-vect-loop-manip.c (slpeel_update_phi_nodes_for_guard1):
+	Likewise.
 	(slpeel_update_phi_nodes_for_guard2): Likewise.
 	(slpeel_tree_peel_loop_to_edge): Likewise.
 	(vect_loop_versioning): Likewise.
