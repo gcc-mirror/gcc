@@ -243,6 +243,18 @@ proc check_effective_target_bmi2 { } {
     } "-mbmi2" ]
 }
 
+# Return 1 if ADX instructions can be compiled.
+proc check_effective_target_adx { } {
+    return [check_no_compiler_messages adx object {
+	unsigned char
+	_adxcarry_u32 (unsigned char __CF, unsigned int __X,
+		   unsigned int __Y, unsigned int *__P)
+	{
+	    return __builtin_ia32_addcarryx_u32 (__CF, __X, __Y, __P);
+	}
+    } "-madx" ]
+}
+
 # Return 1 if rtm instructions can be compiled.
 proc check_effective_target_rtm { } {
     return [check_no_compiler_messages rtm object {

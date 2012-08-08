@@ -2769,6 +2769,7 @@ ix86_target_string (HOST_WIDE_INT isa, int flags, const char *arch,
     { "-mhle",		OPTION_MASK_ISA_HLE },
     { "-mrdseed",	OPTION_MASK_ISA_RDSEED },
     { "-mprfchw",	OPTION_MASK_ISA_PRFCHW },
+    { "-madx",		OPTION_MASK_ISA_ADX },
     { "-mtbm",		OPTION_MASK_ISA_TBM },
     { "-mpopcnt",	OPTION_MASK_ISA_POPCNT },
     { "-mmovbe",	OPTION_MASK_ISA_MOVBE },
@@ -3047,6 +3048,7 @@ ix86_option_override_internal (bool main_args_p)
 #define PTA_HLE			(HOST_WIDE_INT_1 << 33)
 #define PTA_PRFCHW		(HOST_WIDE_INT_1 << 34)
 #define PTA_RDSEED		(HOST_WIDE_INT_1 << 35)
+#define PTA_ADX			(HOST_WIDE_INT_1 << 36)
 /* if this reaches 64, need to widen struct pta flags below */
 
   static struct pta
@@ -3538,6 +3540,9 @@ ix86_option_override_internal (bool main_args_p)
 	if (processor_alias_table[i].flags & PTA_RDSEED
 	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_RDSEED))
 	  ix86_isa_flags |= OPTION_MASK_ISA_RDSEED;
+	if (processor_alias_table[i].flags & PTA_ADX
+	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_ADX))
+	  ix86_isa_flags |= OPTION_MASK_ISA_ADX;
 	if (processor_alias_table[i].flags & (PTA_PREFETCH_SSE | PTA_SSE))
 	  x86_prefetch_sse = true;
 
@@ -4361,6 +4366,7 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
     IX86_ATTR_ISA ("hle",	OPT_mhle),
     IX86_ATTR_ISA ("prfchw",	OPT_mprfchw),
     IX86_ATTR_ISA ("rdseed",	OPT_mrdseed),
+    IX86_ATTR_ISA ("adx",	OPT_madx),
 
     /* enum options */
     IX86_ATTR_ENUM ("fpmath=",	OPT_mfpmath_),
@@ -26107,6 +26113,10 @@ enum ix86_builtins
   IX86_BUILTIN_PEXT32,
   IX86_BUILTIN_PEXT64,
 
+  /* ADX instructions.  */
+  IX86_BUILTIN_ADDCARRYX32,
+  IX86_BUILTIN_ADDCARRYX64,
+
   /* FSGSBASE instructions.  */
   IX86_BUILTIN_RDFSBASE32,
   IX86_BUILTIN_RDFSBASE64,
@@ -27957,6 +27967,14 @@ ix86_init_mmx_sse_builtins (void)
 	       "__builtin_ia32_rdseed_di_step",
 	       INT_FTYPE_PULONGLONG, IX86_BUILTIN_RDSEED64_STEP);
 
+  /* ADCX */
+  def_builtin (OPTION_MASK_ISA_ADX, "__builtin_ia32_addcarryx_u32",
+	       UCHAR_FTYPE_UCHAR_UINT_UINT_PUNSIGNED, IX86_BUILTIN_ADDCARRYX32);
+  def_builtin (OPTION_MASK_ISA_ADX && OPTION_MASK_ISA_64BIT,
+	       "__builtin_ia32_addcarryx_u64",
+	       UCHAR_FTYPE_UCHAR_ULONGLONG_ULONGLONG_PULONGLONG,
+	       IX86_BUILTIN_ADDCARRYX64);
+
   /* Add FMA4 multi-arg argument instructions */
   for (i = 0, d = bdesc_multi_arg; i < ARRAY_SIZE (bdesc_multi_arg); i++, d++)
     {
@@ -29472,6 +29490,10 @@ ix86_expand_args_builtin (const struct builtin_description *d,
       nargs = 4;
       nargs_constant = 2;
       break;
+    case UCHAR_FTYPE_UCHAR_UINT_UINT_PUNSIGNED:
+    case UCHAR_FTYPE_UCHAR_ULONGLONG_ULONGLONG_PULONGLONG:
+      nargs = 4;
+      break;
     default:
       gcc_unreachable ();
     }
@@ -30318,7 +30340,62 @@ rdseed_step:
         target = gen_reg_rtx (SImode);
 
       emit_insn (gen_zero_extendqisi2 (target, op2));
+      return target;
 
+    case IX86_BUILTIN_ADDCARRYX32:
+      icode = CODE_FOR_adcxsi3;
+      mode0 = SImode;
+      goto addcarryx;
+
+    case IX86_BUILTIN_ADDCARRYX64:
+      icode = CODE_FOR_adcxdi3;
+      mode0 = DImode;
+
+addcarryx:
+      arg0 = CALL_EXPR_ARG (exp, 0); /* unsigned char c_in.  */
+      arg1 = CALL_EXPR_ARG (exp, 1); /* unsigned int src1.  */
+      arg2 = CALL_EXPR_ARG (exp, 2); /* unsigned int src2.  */
+      arg3 = CALL_EXPR_ARG (exp, 3); /* unsigned int *sum_out.  */
+
+      op0 = gen_reg_rtx (QImode);
+
+      /* Generate CF from input operand.  */
+      op1 = expand_normal (arg0);
+      if (GET_MODE (op1) != QImode)
+	op1 = convert_to_mode (QImode, op1, 1);
+      op1 = copy_to_mode_reg (QImode, op1);
+      emit_insn (gen_addqi3_cc (op0, op1, constm1_rtx));
+
+      /* Gen ADCX instruction to compute X+Y+CF.  */
+      op2 = expand_normal (arg1);
+      op3 = expand_normal (arg2);
+
+      if (!REG_P (op2))
+	op2 = copy_to_mode_reg (mode0, op2);
+      if (!REG_P (op3))
+	op3 = copy_to_mode_reg (mode0, op3);
+
+      op0 = gen_reg_rtx (mode0);
+
+      op4 = gen_rtx_REG (CCCmode, FLAGS_REG);
+      pat = gen_rtx_LTU (VOIDmode, op4, const0_rtx);
+      emit_insn (GEN_FCN (icode) (op0, op2, op3, op4, pat));
+
+      /* Store the result.  */
+      op4 = expand_normal (arg3);
+      if (!address_operand (op4, VOIDmode))
+	{
+	  op4 = convert_memory_address (Pmode, op4);
+	  op4 = copy_addr_to_reg (op4);
+	}
+      emit_move_insn (gen_rtx_MEM (mode0, op4), op0);
+
+      /* Return current CF value.  */
+      if (target == 0)
+        target = gen_reg_rtx (QImode);
+
+      PUT_MODE (pat, QImode);
+      emit_insn (gen_rtx_SET (VOIDmode, target, pat));
       return target;
 
     case IX86_BUILTIN_GATHERSIV2DF:

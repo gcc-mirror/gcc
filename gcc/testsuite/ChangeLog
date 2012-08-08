@@ -1,3 +1,19 @@
+2012-08-08 Michael Zolotukhin <michael.v.zolotukhin@intel.com>
+
+	* gcc.target/i386/adx-addcarryx32-1.c: New.
+	* gcc.target/i386/adx-addcarryx32-2.c: New.
+	* gcc.target/i386/adx-addcarryx64-1.c: New.
+	* gcc.target/i386/adx-addcarryx64-2.c: New.
+	* gcc.target/i386/adx-check.h: New.
+	* gcc.target/i386/i386.exp (check_effective_target_adx): New.
+	* gcc.target/i386/sse-12.c: Add -madx.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* g++.dg/other/i386-2.C: Ditto.
+	* g++.dg/other/i386-3.C: Ditto.
+
 2012-08-07  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.dg/tree-ssa/slsr-5.c: New.
