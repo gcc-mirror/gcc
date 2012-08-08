@@ -1,3 +1,26 @@
+2012-08-08  Richard Guenther  <rguenther@suse.de>
+
+	* tree-call-cdce.c (check_pow): Simplify.
+	(gen_conditions_for_pow_int_base): Likewise.
+	* tree-ssa-dom.c (propagate_rhs_into_lhs): Do not handle
+	virtual operands here.
+	* tree-ssa-operands.c (get_name_decl): Remove unused function.
+	* gimplify.c (gimple_regimplify_operands): Remove dead code.
+	* tree-vrp.c (get_value_range): Move SSA_NAME_VAR access.
+	* tree-parloops.c (create_phi_for_local_result): Use copy_ssa_name.
+	* value-prof.c (gimple_ic): Use duplicate_ssa_name.
+	(gimple_stringop_fixed_value): Likewise.
+	* tree.c (needs_to_live_in_memory): Remove SSA name handling.
+	* tree-stdarg.c (find_va_list_reference): Store SSA_NAME_VERSIONs
+	in the bitmap alongside shifted DECL_UIDs.
+	(va_list_counter_struct_op): Likewise.
+	(va_list_ptr_read): Likewise.
+	(va_list_ptr_write): Likewise.
+	(check_va_list_escapes): Likewise.
+	(check_all_va_list_escapes): Likewise.
+	(execute_optimize_stdarg): Likewise.
+	* tree-outof-ssa.c (insert_backedge_copies): Use copy_ssa_name.
+
 2012-08-08  Richard Sandiford  <rdsandiford@googlemail.com>
 	    H.J. Lu  <hongjiu.lu@intel.com>
 
