@@ -1,3 +1,13 @@
+2012-08-08  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR middle-end/54146
+	* ifcvt.c: Include pointer-set.h.
+	(cond_move_process_if_block): Change type of then_regs and
+	else_regs from alloca'd array to pointer_sets.
+	(check_cond_move_block): Update for this change.
+	(cond_move_convert_if_block): Likewise.
+	* Makefile.in: Fix dependencies for ifcvt.o.
+
 2012-08-07  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gimple-ssa-strength-reduction.c (struct incr_info_d): New struct.
