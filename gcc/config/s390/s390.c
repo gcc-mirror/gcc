@@ -4825,7 +4825,6 @@ s390_expand_cs_hqi (enum machine_mode mode, rtx btarget, rtx vtarget, rtx mem,
   rtx res = gen_reg_rtx (SImode);
   rtx csloop = NULL, csend = NULL;
 
-  gcc_assert (register_operand (vtarget, VOIDmode));
   gcc_assert (MEM_P (mem));
 
   init_alignment_context (&ac, mem, mode);
