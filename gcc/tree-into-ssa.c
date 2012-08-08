@@ -408,26 +408,28 @@ set_current_def (tree var, tree def)
    for LIVEIN).  */
 
 void
-compute_global_livein (bitmap livein ATTRIBUTE_UNUSED, bitmap def_blocks ATTRIBUTE_UNUSED)
+compute_global_livein (bitmap livein, bitmap def_blocks)
 {
-  basic_block bb, *worklist, *tos;
   unsigned i;
   bitmap_iterator bi;
+  VEC (basic_block, heap) *worklist;
 
-  tos = worklist
-    = (basic_block *) xmalloc (sizeof (basic_block) * (last_basic_block + 1));
+  /* Normally the work list size is bounded by the number of basic
+     blocks in the largest loop.  We don't know this number, but we
+     can be fairly sure that it will be relatively small.  */
+  worklist = VEC_alloc (basic_block, heap, MAX (8, n_basic_blocks / 128));
 
   EXECUTE_IF_SET_IN_BITMAP (livein, 0, i, bi)
-    *tos++ = BASIC_BLOCK (i);
+    VEC_safe_push (basic_block, heap, worklist, BASIC_BLOCK (i));
 
   /* Iterate until the worklist is empty.  */
-  while (tos != worklist)
+  while (! VEC_empty (basic_block, worklist))
     {
       edge e;
       edge_iterator ei;
 
       /* Pull a block off the worklist.  */
-      bb = *--tos;
+      basic_block bb = VEC_pop (basic_block, worklist);
 
       /* For each predecessor block.  */
       FOR_EACH_EDGE (e, ei, bb->preds)
@@ -437,16 +439,15 @@ compute_global_livein (bitmap livein ATTRIBUTE_UNUSED, bitmap def_blocks ATTRIBU
 
 	  /* None of this is necessary for the entry block.  */
 	  if (pred != ENTRY_BLOCK_PTR
-	      && ! bitmap_bit_p (livein, pred_index)
-	      && ! bitmap_bit_p (def_blocks, pred_index))
+	      && ! bitmap_bit_p (def_blocks, pred_index)
+	      && bitmap_set_bit (livein, pred_index))
 	    {
-	      *tos++ = pred;
-	      bitmap_set_bit (livein, pred_index);
+	      VEC_safe_push (basic_block, heap, worklist, pred);
 	    }
 	}
     }
 
-  free (worklist);
+  VEC_free (basic_block, heap, worklist);
 }
 
 

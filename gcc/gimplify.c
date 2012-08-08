@@ -8200,8 +8200,10 @@ gimplify_body (tree fndecl, bool do_parms)
   pop_gimplify_context (outer_bind);
   gcc_assert (gimplify_ctxp == NULL);
 
+#ifdef ENABLE_CHECKING
   if (!seen_error ())
     verify_gimple_in_seq (gimple_bind_body (outer_bind));
+#endif
 
   timevar_pop (TV_TREE_GIMPLIFY);
   input_location = saved_location;

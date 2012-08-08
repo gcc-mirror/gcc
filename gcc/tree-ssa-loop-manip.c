@@ -160,10 +160,8 @@ add_exit_phis_var (tree var, bitmap livein, bitmap exits)
   basic_block def_bb = gimple_bb (SSA_NAME_DEF_STMT (var));
   bitmap_iterator bi;
 
-  if (is_gimple_reg (var))
-    bitmap_clear_bit (livein, def_bb->index);
-  else
-    bitmap_set_bit (livein, def_bb->index);
+  gcc_checking_assert (is_gimple_reg (var));
+  bitmap_clear_bit (livein, def_bb->index);
 
   def = BITMAP_ALLOC (NULL);
   bitmap_set_bit (def, def_bb->index);
@@ -272,7 +270,7 @@ find_uses_to_rename_stmt (gimple stmt, bitmap *use_blocks, bitmap need_phis)
   if (is_gimple_debug (stmt))
     return;
 
-  FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, SSA_OP_ALL_USES)
+  FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, SSA_OP_USE)
     find_uses_to_rename_use (bb, var, use_blocks, need_phis);
 }
 
