@@ -1,3 +1,8 @@
+2012-08-08  Joseph Myers  <joseph@codesourcery.com>
+
+	* simplify-rtx.c (simplify_binary_operation_1): Do not simplify
+	IOR to a constant if one operand has side effects.
+
 2012-08-08  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* builtins.c (expand_builtin_atomic_compare_exchange): Pass old

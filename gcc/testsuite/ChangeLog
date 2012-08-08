@@ -1,3 +1,7 @@
+2012-08-08  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.c-torture/execute/20120808-1.c: New test.
+
 2012-08-08  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR rtl-optimization/54157
