@@ -1,3 +1,33 @@
+2012-08-07  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gimple-ssa-strength-reduction.c (struct incr_info_d): New struct.
+	(incr_vec): New static var.
+	(incr_vec_len): Likewise.
+	(address_arithmetic_p): Likewise.
+	(stmt_cost): Remove dead assignment.
+	(dump_incr_vec): New function.
+	(cand_abs_increment): Likewise.
+	(lazy_create_slsr_reg): Likewise.
+	(incr_vec_index): Likewise.
+	(count_candidates): Likewise.
+	(record_increment): Likewise.
+	(record_increments): Likewise.
+	(unreplaced_cand_in_tree): Likewise.
+	(optimize_cands_for_speed_p): Likewise.
+	(lowest_cost_path): Likewise.
+	(total_savings): Likewise.
+	(analyze_increments): Likewise.
+	(ncd_for_two_cands): Likewise.
+	(nearest_common_dominator_for_cands): Likewise.
+	(profitable_increment_p): Likewise.
+	(insert_initializers): Likewise.
+	(introduce_cast_before_cand): Likewise.
+	(replace_rhs_if_not_dup): Likewise.
+	(replace_one_candidate): Likewise.
+	(replace_profitable_candidates): Likewise.
+	(analyze_candidates_and_replace): Handle candidates with SSA-name
+	strides.
+
 2012-08-07  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* cfg.c (debug_bb): Do not set TDF_BLOCKS.
