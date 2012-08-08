@@ -1,6 +1,12 @@
 2012-08-08  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR middle-end/54146
+	* ira.c (init_live_subregs): Take live_subregs_used as a bitmap.
+	(build_insn_chain): Make live_subregs_used a bitmap.
+	Use SBITMAP_SIZE to ignore the paradoxical bytes of subregs.
+	Use sbitmap_free to free the live_subreg sbitmaps.
+
+	PR middle-end/54146
 	* ifcvt.c: Include pointer-set.h.
 	(cond_move_process_if_block): Change type of then_regs and
 	else_regs from alloca'd array to pointer_sets.
