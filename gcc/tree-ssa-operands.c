@@ -126,17 +126,6 @@ static void get_expr_operands (gimple, tree *, int);
 /* Number of functions with initialized ssa_operands.  */
 static int n_initialized = 0;
 
-/* Return the DECL_UID of the base variable of T.  */
-
-static inline unsigned
-get_name_decl (const_tree t)
-{
-  if (TREE_CODE (t) != SSA_NAME)
-    return DECL_UID (t);
-  else
-    return DECL_UID (SSA_NAME_VAR (t));
-}
-
 
 /*  Return true if the SSA operands cache is active.  */
 

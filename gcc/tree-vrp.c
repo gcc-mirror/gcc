@@ -718,9 +718,9 @@ get_value_range (const_tree var)
 
   /* If VAR is a default definition of a parameter, the variable can
      take any value in VAR's type.  */
-  sym = SSA_NAME_VAR (var);
   if (SSA_NAME_IS_DEFAULT_DEF (var))
     {
+      sym = SSA_NAME_VAR (var);
       if (TREE_CODE (sym) == PARM_DECL)
 	{
 	  /* Try to use the "nonnull" attribute to create ~[0, 0]

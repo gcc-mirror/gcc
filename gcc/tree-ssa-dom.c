@@ -2687,18 +2687,13 @@ propagate_rhs_into_lhs (gimple stmt, tree lhs, tree rhs, bitmap interesting_name
 	  /* Special cases to avoid useless calls into the folding
 	     routines, operand scanning, etc.
 
-	     First, propagation into a PHI may cause the PHI to become
+	     Propagation into a PHI may cause the PHI to become
 	     a degenerate, so mark the PHI as interesting.  No other
-	     actions are necessary.
-
-	     Second, if we're propagating a virtual operand and the
-	     propagation does not change the underlying _DECL node for
-	     the virtual operand, then no further actions are necessary.  */
-	  if (gimple_code (use_stmt) == GIMPLE_PHI
-	      || (! is_gimple_reg (lhs)
-		  && TREE_CODE (rhs) == SSA_NAME
-		  && SSA_NAME_VAR (lhs) == SSA_NAME_VAR (rhs)))
+	     actions are necessary.  */
+	  if (gimple_code (use_stmt) == GIMPLE_PHI)
 	    {
+	      tree result;
+
 	      /* Dump details.  */
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		{
@@ -2706,14 +2701,8 @@ propagate_rhs_into_lhs (gimple stmt, tree lhs, tree rhs, bitmap interesting_name
 		  print_gimple_stmt (dump_file, use_stmt, 0, dump_flags);
 		}
 
-	      /* Propagation into a PHI may expose new degenerate PHIs,
-		 so mark the result of the PHI as interesting.  */
-	      if (gimple_code (use_stmt) == GIMPLE_PHI)
-		{
-		  tree result = get_lhs_or_phi_result (use_stmt);
-		  bitmap_set_bit (interesting_names, SSA_NAME_VERSION (result));
-		}
-
+	      result = get_lhs_or_phi_result (use_stmt);
+	      bitmap_set_bit (interesting_names, SSA_NAME_VERSION (result));
 	      continue;
 	    }
 

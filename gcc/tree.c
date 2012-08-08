@@ -10155,9 +10155,6 @@ range_in_array_bounds_p (tree ref)
 bool
 needs_to_live_in_memory (const_tree t)
 {
-  if (TREE_CODE (t) == SSA_NAME)
-    t = SSA_NAME_VAR (t);
-
   return (TREE_ADDRESSABLE (t)
 	  || is_global_var (t)
 	  || (TREE_CODE (t) == RESULT_DECL

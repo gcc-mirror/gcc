@@ -1030,13 +1030,11 @@ insert_backedge_copies (void)
 	{
 	  gimple phi = gsi_stmt (gsi);
 	  tree result = gimple_phi_result (phi);
-	  tree result_var;
 	  size_t i;
 
 	  if (!is_gimple_reg (result))
 	    continue;
 
-	  result_var = SSA_NAME_VAR (result);
 	  for (i = 0; i < gimple_phi_num_args (phi); i++)
 	    {
 	      tree arg = gimple_phi_arg_def (phi, i);
@@ -1048,7 +1046,7 @@ insert_backedge_copies (void)
 		 needed.  */
 	      if ((e->flags & EDGE_DFS_BACK)
 		  && (TREE_CODE (arg) != SSA_NAME
-		      || SSA_NAME_VAR (arg) != result_var
+		      || SSA_NAME_VAR (arg) != SSA_NAME_VAR (result)
 		      || trivially_conflicts_p (bb, result, arg)))
 		{
 		  tree name;
@@ -1078,10 +1076,9 @@ insert_backedge_copies (void)
 
 		  /* Create a new instance of the underlying variable of the
 		     PHI result.  */
-		  stmt = gimple_build_assign (result_var,
+		  name = copy_ssa_name (result, NULL);
+		  stmt = gimple_build_assign (name,
 					      gimple_phi_arg_def (phi, i));
-		  name = make_ssa_name (result_var, stmt);
-		  gimple_assign_set_lhs (stmt, name);
 
 		  /* copy location if present.  */
 		  if (gimple_phi_arg_has_location (phi, i))
