@@ -361,7 +361,7 @@ i[34567]86-*-*)
 		       ia32intrin.h cross-stdarg.h lwpintrin.h popcntintrin.h
 		       lzcntintrin.h bmiintrin.h bmi2intrin.h tbmintrin.h
 		       avx2intrin.h fmaintrin.h f16cintrin.h rtmintrin.h
-		       xtestintrin.h rdseedintrin.h prfchwintrin.h"
+		       xtestintrin.h rdseedintrin.h prfchwintrin.h adxintrin.h"
 	;;
 x86_64-*-*)
 	cpu_type=i386
@@ -375,7 +375,7 @@ x86_64-*-*)
 		       ia32intrin.h cross-stdarg.h lwpintrin.h popcntintrin.h
 		       lzcntintrin.h bmiintrin.h tbmintrin.h bmi2intrin.h
 		       avx2intrin.h fmaintrin.h f16cintrin.h rtmintrin.h
-		       xtestintrin.h rdseedintrin.h prfchwintrin.h"
+		       xtestintrin.h rdseedintrin.h prfchwintrin.h adxintrin.h"
 	need_64bit_hwint=yes
 	;;
 ia64-*-*)

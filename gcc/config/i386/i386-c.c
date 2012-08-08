@@ -300,6 +300,8 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     def_or_undef (parse_in, "__RDSEED__");
   if (isa_flag & OPTION_MASK_ISA_PRFCHW)
     def_or_undef (parse_in, "__PRFCHW__");
+  if (isa_flag & OPTION_MASK_ISA_ADX)
+    def_or_undef (parse_in, "__ADX__");
   if ((fpmath & FPMATH_SSE) && (isa_flag & OPTION_MASK_ISA_SSE))
     def_or_undef (parse_in, "__SSE_MATH__");
   if ((fpmath & FPMATH_SSE) && (isa_flag & OPTION_MASK_ISA_SSE2))

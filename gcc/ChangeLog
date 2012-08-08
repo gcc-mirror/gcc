@@ -1,3 +1,31 @@
+2012-08-08 Michael Zolotukhin <michael.v.zolotukhin@intel.com>
+
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA_ADX_SET): New.
+	(OPTION_MASK_ISA_ADX_UNSET): Likewise.
+	(ix86_handle_option): Handle madx option.
+	* config.gcc (i[34567]86-*-*): Add adxintrin.h.
+	(x86_64-*-*): Likewise.
+	* config/i386/adxintrin.h: New header.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect ADCX/ADOX
+	support.
+	* config/i386/i386-builtin-types.def
+	(UCHAR_FTYPE_UCHAR_UINT_UINT_PUNSIGNED): New function type.
+	(UCHAR_FTYPE_UCHAR_ULONGLONG_ULONGLONG_PULONGLONG): Likewise.
+	* config/i386/i386-c.c: Define __ADX__ if needed.
+	* config/i386/i386.c (ix86_target_string): Define -madx option.
+	(PTA_ADX): New.
+	(ix86_option_override_internal): Handle new option.
+	(ix86_valid_target_attribute_inner_p): Add OPT_madx.
+	(ix86_builtins): Add IX86_BUILTIN_ADDCARRYX32,
+	IX86_BUILTIN_ADDCARRYX64.
+	(ix86_init_mmx_sse_builtins): Define corresponding built-ins.
+	(ix86_expand_builtin): Handle these built-ins.
+	(ix86_expand_args_builtin): Handle new function types.
+	* config/i386/i386.h (TARGET_ADX): New.
+	* config/i386/i386.md (adcx<mode>3): New define_insn.
+	* config/i386/i386.opt (madx): New.
+	* config/i386/x86intrin.h: Include adxintrin.h.
+
 2012-08-08  Nick Clifton  <nickc@redhat.com>
 
 	* config/rl78/rl78.c: Include tree-pass.h.
