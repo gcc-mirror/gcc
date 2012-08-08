@@ -43,6 +43,7 @@
 #include "tree-pass.h"
 #include "df.h"
 #include "vec.h"
+#include "pointer-set.h"
 #include "vecprim.h"
 #include "dbgcnt.h"
 
@@ -2687,12 +2688,14 @@ noce_process_if_block (struct noce_if_info *if_info)
 
 /* Check whether a block is suitable for conditional move conversion.
    Every insn must be a simple set of a register to a constant or a
-   register.  For each assignment, store the value in the array VALS,
-   indexed by register number, then store the register number in
-   REGS.  COND is the condition we will test.  */
+   register.  For each assignment, store the value in the pointer map
+   VALS, keyed indexed by register pointer, then store the register
+   pointer in REGS.  COND is the condition we will test.  */
 
 static int
-check_cond_move_block (basic_block bb, rtx *vals, VEC (int, heap) **regs,
+check_cond_move_block (basic_block bb,
+		       struct pointer_map_t *vals,
+		       VEC (rtx, heap) **regs,
 		       rtx cond)
 {
   rtx insn;
@@ -2706,6 +2709,7 @@ check_cond_move_block (basic_block bb, rtx *vals, VEC (int, heap) **regs,
   FOR_BB_INSNS (bb, insn)
     {
       rtx set, dest, src;
+      void **slot;
 
       if (!NONDEBUG_INSN_P (insn) || JUMP_P (insn))
 	continue;
@@ -2732,14 +2736,14 @@ check_cond_move_block (basic_block bb, rtx *vals, VEC (int, heap) **regs,
       /* Don't try to handle this if the source register was
 	 modified earlier in the block.  */
       if ((REG_P (src)
-	   && vals[REGNO (src)] != NULL)
+	   && pointer_map_contains (vals, src))
 	  || (GET_CODE (src) == SUBREG && REG_P (SUBREG_REG (src))
-	      && vals[REGNO (SUBREG_REG (src))] != NULL))
+	      && pointer_map_contains (vals, SUBREG_REG (src))))
 	return FALSE;
 
       /* Don't try to handle this if the destination register was
 	 modified earlier in the block.  */
-      if (vals[REGNO (dest)] != NULL)
+      if (pointer_map_contains (vals, dest))
 	return FALSE;
 
       /* Don't try to handle this if the condition uses the
@@ -2753,17 +2757,18 @@ check_cond_move_block (basic_block bb, rtx *vals, VEC (int, heap) **regs,
 	  && modified_between_p (src, insn, NEXT_INSN (BB_END (bb))))
 	return FALSE;
 
-      vals[REGNO (dest)] = src;
+      slot = pointer_map_insert (vals, (void *) dest);
+      *slot = (void *) src;
 
-      VEC_safe_push (int, heap, *regs, REGNO (dest));
+      VEC_safe_push (rtx, heap, *regs, dest);
     }
 
   return TRUE;
 }
 
 /* Given a basic block BB suitable for conditional move conversion,
-   a condition COND, and arrays THEN_VALS and ELSE_VALS containing the
-   register values depending on COND, emit the insns in the block as
+   a condition COND, and pointer maps THEN_VALS and ELSE_VALS containing
+   the register values depending on COND, emit the insns in the block as
    conditional moves.  If ELSE_BLOCK is true, THEN_BB was already
    processed.  The caller has started a sequence for the conversion.
    Return true if successful, false if something goes wrong.  */
@@ -2771,7 +2776,8 @@ check_cond_move_block (basic_block bb, rtx *vals, VEC (int, heap) **regs,
 static bool
 cond_move_convert_if_block (struct noce_if_info *if_infop,
 			    basic_block bb, rtx cond,
-			    rtx *then_vals, rtx *else_vals,
+			    struct pointer_map_t *then_vals,
+			    struct pointer_map_t *else_vals,
 			    bool else_block_p)
 {
   enum rtx_code code;
@@ -2784,7 +2790,7 @@ cond_move_convert_if_block (struct noce_if_info *if_infop,
   FOR_BB_INSNS (bb, insn)
     {
       rtx set, target, dest, t, e;
-      unsigned int regno;
+      void **then_slot, **else_slot;
 
       /* ??? Maybe emit conditional debug insn?  */
       if (!NONDEBUG_INSN_P (insn) || JUMP_P (insn))
@@ -2793,10 +2799,11 @@ cond_move_convert_if_block (struct noce_if_info *if_infop,
       gcc_assert (set && REG_P (SET_DEST (set)));
 
       dest = SET_DEST (set);
-      regno = REGNO (dest);
 
-      t = then_vals[regno];
-      e = else_vals[regno];
+      then_slot = pointer_map_contains (then_vals, dest);
+      else_slot = pointer_map_contains (else_vals, dest);
+      t = then_slot ? (rtx) *then_slot : NULL_RTX;
+      e = else_slot ? (rtx) *else_slot : NULL_RTX;
 
       if (else_block_p)
 	{
@@ -2840,31 +2847,25 @@ cond_move_process_if_block (struct noce_if_info *if_info)
   rtx jump = if_info->jump;
   rtx cond = if_info->cond;
   rtx seq, loc_insn;
-  int max_reg, size, c, reg;
-  rtx *then_vals;
-  rtx *else_vals;
-  VEC (int, heap) *then_regs = NULL;
-  VEC (int, heap) *else_regs = NULL;
+  rtx reg;
+  int c;
+  struct pointer_map_t *then_vals;
+  struct pointer_map_t *else_vals;
+  VEC (rtx, heap) *then_regs = NULL;
+  VEC (rtx, heap) *else_regs = NULL;
   unsigned int i;
+  int success_p = FALSE;
 
   /* Build a mapping for each block to the value used for each
      register.  */
-  max_reg = max_reg_num ();
-  size = (max_reg + 1) * sizeof (rtx);
-  then_vals = (rtx *) alloca (size);
-  else_vals = (rtx *) alloca (size);
-  memset (then_vals, 0, size);
-  memset (else_vals, 0, size);
+  then_vals = pointer_map_create ();
+  else_vals = pointer_map_create ();
 
   /* Make sure the blocks are suitable.  */
   if (!check_cond_move_block (then_bb, then_vals, &then_regs, cond)
       || (else_bb
 	  && !check_cond_move_block (else_bb, else_vals, &else_regs, cond)))
-    {
-      VEC_free (int, heap, then_regs);
-      VEC_free (int, heap, else_regs);
-      return FALSE;
-    }
+    goto done;
 
   /* Make sure the blocks can be used together.  If the same register
      is set in both blocks, and is not set to a constant in both
@@ -2873,41 +2874,38 @@ cond_move_process_if_block (struct noce_if_info *if_info)
      source register does not change after the assignment.  Also count
      the number of registers set in only one of the blocks.  */
   c = 0;
-  FOR_EACH_VEC_ELT (int, then_regs, i, reg)
+  FOR_EACH_VEC_ELT (rtx, then_regs, i, reg)
     {
-      if (!then_vals[reg] && !else_vals[reg])
-	continue;
+      void **then_slot = pointer_map_contains (then_vals, reg);
+      void **else_slot = pointer_map_contains (else_vals, reg);
 
-      if (!else_vals[reg])
+      gcc_checking_assert (then_slot);
+      if (!else_slot)
 	++c;
       else
 	{
-	  if (!CONSTANT_P (then_vals[reg])
-	      && !CONSTANT_P (else_vals[reg])
-	      && !rtx_equal_p (then_vals[reg], else_vals[reg]))
-	    {
-	      VEC_free (int, heap, then_regs);
-	      VEC_free (int, heap, else_regs);
-	      return FALSE;
-	    }
+	  rtx then_val = (rtx) *then_slot;
+	  rtx else_val = (rtx) *else_slot;
+	  if (!CONSTANT_P (then_val) && !CONSTANT_P (else_val)
+	      && !rtx_equal_p (then_val, else_val))
+	    goto done;
 	}
     }
 
   /* Finish off c for MAX_CONDITIONAL_EXECUTE.  */
-  FOR_EACH_VEC_ELT (int, else_regs, i, reg)
-    if (!then_vals[reg])
-      ++c;
+  FOR_EACH_VEC_ELT (rtx, else_regs, i, reg)
+    {
+      gcc_checking_assert (pointer_map_contains (else_vals, reg));
+      if (!pointer_map_contains (then_vals, reg))
+	++c;
+    }
 
   /* Make sure it is reasonable to convert this block.  What matters
      is the number of assignments currently made in only one of the
      branches, since if we convert we are going to always execute
      them.  */
   if (c > MAX_CONDITIONAL_EXECUTE)
-    {
-      VEC_free (int, heap, then_regs);
-      VEC_free (int, heap, else_regs);
-      return FALSE;
-    }
+    goto done;
 
   /* Try to emit the conditional moves.  First do the then block,
      then do anything left in the else blocks.  */
@@ -2919,17 +2917,11 @@ cond_move_process_if_block (struct noce_if_info *if_info)
 					  then_vals, else_vals, true)))
     {
       end_sequence ();
-      VEC_free (int, heap, then_regs);
-      VEC_free (int, heap, else_regs);
-      return FALSE;
+      goto done;
     }
   seq = end_ifcvt_sequence (if_info);
   if (!seq)
-    {
-      VEC_free (int, heap, then_regs);
-      VEC_free (int, heap, else_regs);
-      return FALSE;
-    }
+    goto done;
 
   loc_insn = first_active_insn (then_bb);
   if (!loc_insn)
@@ -2960,9 +2952,14 @@ cond_move_process_if_block (struct noce_if_info *if_info)
 
   num_updated_if_blocks++;
 
-  VEC_free (int, heap, then_regs);
-  VEC_free (int, heap, else_regs);
-  return TRUE;
+  success_p = TRUE;
+
+done:
+  pointer_map_destroy (then_vals);
+  pointer_map_destroy (else_vals);
+  VEC_free (rtx, heap, then_regs);
+  VEC_free (rtx, heap, else_regs);
+  return success_p;
 }
 
 
