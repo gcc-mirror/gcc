@@ -1,3 +1,30 @@
+2012-08-07  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.dg/tree-ssa/slsr-5.c: New.
+	* gcc.dg/tree-ssa/slsr-6.c: New.
+	* gcc.dg/tree-ssa/slsr-7.c: New.
+	* gcc.dg/tree-ssa/slsr-8.c: New.
+	* gcc.dg/tree-ssa/slsr-9.c: New.
+	* gcc.dg/tree-ssa/slsr-10.c: New.
+	* gcc.dg/tree-ssa/slsr-11.c: New.
+	* gcc.dg/tree-ssa/slsr-12.c: New.
+	* gcc.dg/tree-ssa/slsr-13.c: New.
+	* gcc.dg/tree-ssa/slsr-14.c: New.
+	* gcc.dg/tree-ssa/slsr-15.c: New.
+	* gcc.dg/tree-ssa/slsr-16.c: New.
+	* gcc.dg/tree-ssa/slsr-17.c: New.
+	* gcc.dg/tree-ssa/slsr-18.c: New.
+	* gcc.dg/tree-ssa/slsr-19.c: New.
+	* gcc.dg/tree-ssa/slsr-20.c: New.
+	* gcc.dg/tree-ssa/slsr-21.c: New.
+	* gcc.dg/tree-ssa/slsr-22.c: New.
+	* gcc.dg/tree-ssa/slsr-23.c: New.
+	* gcc.dg/tree-ssa/slsr-24.c: New.
+	* gcc.dg/tree-ssa/slsr-25.c: New.
+	* gcc.dg/tree-ssa/slsr-26.c: New.
+	* gcc.dg/tree-ssa/slsr-30.c: New.
+	* gcc.dg/tree-ssa/slsr-31.c: New.
+
 2012-08-07  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* gcc.dg/tree-prof/update-loopch.c: Ask for dump with blocks info.
