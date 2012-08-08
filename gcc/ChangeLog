@@ -1,3 +1,14 @@
+2012-08-08  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR middle-end/54146
+	* gimpify.c (gimplify_body): Only verify_gimple_in_seq with
+	checking enabled.
+	* tree-ssa-loop-manip.c (add_exit_phis_var): Assert that var is
+	a gimple_reg if checking is enabled.
+	(find_uses_to_rename_stmt): Only look at non-virtual USE operands.
+	* tree-into-ssa (compute_global_livein): Change the worklist
+	type from an array to a VEC.
+
 2012-08-08  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-operands.h (virtual_operand_p): Declare.
@@ -36,7 +47,7 @@
 	* combine.c (gen_lowpart_for_combine): Don't return identity
 	for CONST or symbolic reference.
 
-2012-08-08 Michael Zolotukhin <michael.v.zolotukhin@intel.com>
+2012-08-08  Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
 	* common/config/i386/i386-common.c (OPTION_MASK_ISA_ADX_SET): New.
 	(OPTION_MASK_ISA_ADX_UNSET): Likewise.
