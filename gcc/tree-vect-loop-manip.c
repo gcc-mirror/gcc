@@ -205,8 +205,9 @@ adjust_debug_stmts (tree from, tree to, basic_block bb)
 {
   adjust_info ai;
 
-  if (MAY_HAVE_DEBUG_STMTS && TREE_CODE (from) == SSA_NAME
-      && SSA_NAME_VAR (from) != gimple_vop (cfun))
+  if (MAY_HAVE_DEBUG_STMTS
+      && TREE_CODE (from) == SSA_NAME
+      && ! virtual_operand_p (from))
     {
       ai.from = from;
       ai.to = to;

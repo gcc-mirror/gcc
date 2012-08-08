@@ -1,5 +1,13 @@
 2012-08-08  Richard Guenther  <rguenther@suse.de>
 
+	* tree-ssa-operands.h (virtual_operand_p): Declare.
+	* tree-ssa-operands.c (virtual_operand_p): New predicate.
+	* gimple.c (is_gimple_reg): Use virtual_operand_p.
+	* tree-into-ssa.c (prepare_block_for_update): Likewise.
+	* tree-vect-loop-manip.c (adjust_debug_stmts): Likewise.
+
+2012-08-08  Richard Guenther  <rguenther@suse.de>
+
 	* tree-call-cdce.c (check_pow): Simplify.
 	(gen_conditions_for_pow_int_base): Likewise.
 	* tree-ssa-dom.c (propagate_rhs_into_lhs): Do not handle

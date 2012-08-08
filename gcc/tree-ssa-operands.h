@@ -116,6 +116,7 @@ extern void debug_decl_set (bitmap);
 
 extern bool ssa_operands_active (void);
 
+extern bool virtual_operand_p (tree);
 extern void unlink_stmt_vdef (gimple);
 
 enum ssa_op_iter_type {
