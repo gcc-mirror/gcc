@@ -2548,14 +2548,12 @@ prepare_block_for_update (basic_block bb, bool insert_phi_p)
       gimple phi = gsi_stmt (si);
       tree lhs_sym, lhs = gimple_phi_result (phi);
 
-      lhs_sym = DECL_P (lhs) ? lhs : SSA_NAME_VAR (lhs);
-
       if (TREE_CODE (lhs) == SSA_NAME
-	  && (TREE_CODE (lhs_sym) != VAR_DECL
-	      || !VAR_DECL_IS_VIRTUAL_OPERAND (lhs_sym)
-	      || !cfun->gimple_df->rename_vops))
+	  && (! virtual_operand_p (lhs)
+	      || ! cfun->gimple_df->rename_vops))
 	continue;
 
+      lhs_sym = DECL_P (lhs) ? lhs : SSA_NAME_VAR (lhs);
       mark_for_renaming (lhs_sym);
       mark_def_interesting (lhs_sym, phi, bb, insert_phi_p);
 
