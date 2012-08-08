@@ -1,3 +1,7 @@
+2012-08-08  Nick Clifton  <nickc@redhat.com>
+
+	* config/rl78/rl78.c: Include tree-pass.h.
+
 2012-08-08  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR middle-end/54146
