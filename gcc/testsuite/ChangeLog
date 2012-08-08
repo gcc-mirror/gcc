@@ -1,3 +1,8 @@
+2012-08-08  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR rtl-optimization/54157
+	* gcc.target/i386/pr54157.c: New file.
+
 2012-08-08 Michael Zolotukhin <michael.v.zolotukhin@intel.com>
 
 	* gcc.target/i386/adx-addcarryx32-1.c: New.
