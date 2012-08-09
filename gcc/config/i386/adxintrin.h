@@ -25,10 +25,6 @@
 # error "Never use <adxintrin.h> directly; include <x86intrin.h> instead."
 #endif
 
-#ifndef __ADX__
-# error "Flag-preserving add-carry instructions not enabled"
-#endif /* __ADX__ */
-
 #ifndef _ADXINTRIN_H_INCLUDED
 #define _ADXINTRIN_H_INCLUDED
 

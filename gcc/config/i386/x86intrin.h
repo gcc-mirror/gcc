@@ -105,8 +105,6 @@
 #include <prfchwintrin.h>
 #endif
 
-#ifdef __ADX__
 #include <adxintrin.h>
-#endif
 
 #endif /* _X86INTRIN_H_INCLUDED */

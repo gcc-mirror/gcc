@@ -1,3 +1,8 @@
+2012-08-09  Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* gcc.target/i386/adx-addxcarry32-3.c: New.
+	* gcc.target/i386/adx-addxcarry64-3.c: New.
+
 2012-08-09  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/53701

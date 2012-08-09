@@ -1,3 +1,13 @@
+2012-08-09  Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/adxintrin.h: Remove guarding __ADX__ check.
+	* config/i386/x86intrin.h: Likewise.
+	* config/i386/i386.c (ix86_init_mmx_sse_builtins): Remove
+	OPTION_MASK_ISA_ADX from needed options for
+	__builtin_ia32_addcarryx_u32 and __builtin_ia32_addcarryx_u64.
+	(ix86_expand_builtin): Use add<mode>3_carry in expanding of
+	IX86_BUILTIN_ADDCARRYX32 and IX86_BUILTIN_ADDCARRYX64.
+
 2012-08-09  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/53701
