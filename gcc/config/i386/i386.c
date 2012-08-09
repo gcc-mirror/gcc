@@ -27968,9 +27968,9 @@ ix86_init_mmx_sse_builtins (void)
 	       INT_FTYPE_PULONGLONG, IX86_BUILTIN_RDSEED64_STEP);
 
   /* ADCX */
-  def_builtin (OPTION_MASK_ISA_ADX, "__builtin_ia32_addcarryx_u32",
+  def_builtin (0, "__builtin_ia32_addcarryx_u32",
 	       UCHAR_FTYPE_UCHAR_UINT_UINT_PUNSIGNED, IX86_BUILTIN_ADDCARRYX32);
-  def_builtin (OPTION_MASK_ISA_ADX && OPTION_MASK_ISA_64BIT,
+  def_builtin (OPTION_MASK_ISA_64BIT,
 	       "__builtin_ia32_addcarryx_u64",
 	       UCHAR_FTYPE_UCHAR_ULONGLONG_ULONGLONG_PULONGLONG,
 	       IX86_BUILTIN_ADDCARRYX64);
@@ -30343,12 +30343,12 @@ rdseed_step:
       return target;
 
     case IX86_BUILTIN_ADDCARRYX32:
-      icode = CODE_FOR_adcxsi3;
+      icode = TARGET_ADX ? CODE_FOR_adcxsi3 : CODE_FOR_addsi3_carry;
       mode0 = SImode;
       goto addcarryx;
 
     case IX86_BUILTIN_ADDCARRYX64:
-      icode = CODE_FOR_adcxdi3;
+      icode = TARGET_ADX ? CODE_FOR_adcxdi3 : CODE_FOR_adddi3_carry;
       mode0 = DImode;
 
 addcarryx:
