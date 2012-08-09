@@ -1,3 +1,11 @@
+2012-08-09  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2012-08-08  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR rtl-optimization/54157
+	* gcc.target/i386/pr54157.c: New file.
+
 2012-08-01  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
