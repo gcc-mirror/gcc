@@ -1326,11 +1326,14 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
       if (code != ADDR_EXPR && code != REALPART_EXPR && code != IMAGPART_EXPR)
 	op0 = decl_constant_value_for_optimization (op0);
       /* ??? Cope with user tricks that amount to offsetof.  The middle-end is
-	 not prepared to deal with them if they occur in initializers.  */
+	 not prepared to deal with them if they occur in initializers.
+	 Avoid attempts to fold references to UPC shared components
+	 due to the complexities of UPC pointer-to-shared arithmetic.  */
       if (op0 != orig_op0
 	  && code == ADDR_EXPR
 	  && (op1 = get_base_address (op0)) != NULL_TREE
 	  && TREE_CODE (op1) == INDIRECT_REF
+	  && !upc_shared_type_p (TREE_TYPE (op1))
 	  && TREE_CONSTANT (TREE_OPERAND (op1, 0)))
 	ret = fold_convert_loc (loc, TREE_TYPE (expr), fold_offsetof_1 (op0));
       else if (op0 != orig_op0 || in_init)

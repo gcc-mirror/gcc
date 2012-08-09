@@ -1,3 +1,9 @@
+2012-08-09  Gary Funck  <gary@intrepid.com>
+
+	* c-family/c-common.c (c_fully_fold_internal): Do not fold
+	offsetof-like expressions when they are applied to UPC
+	shared types.
+
 2012-08-06  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 190173 into gupc branch.
