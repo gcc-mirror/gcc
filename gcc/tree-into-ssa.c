@@ -588,7 +588,8 @@ is_old_name (tree name)
   unsigned ver = SSA_NAME_VERSION (name);
   if (!new_ssa_names)
     return false;
-  return ver < new_ssa_names->n_bits && TEST_BIT (old_ssa_names, ver);
+  return (ver < SBITMAP_SIZE (new_ssa_names)
+	  && TEST_BIT (old_ssa_names, ver));
 }
 
 
@@ -600,7 +601,8 @@ is_new_name (tree name)
   unsigned ver = SSA_NAME_VERSION (name);
   if (!new_ssa_names)
     return false;
-  return ver < new_ssa_names->n_bits && TEST_BIT (new_ssa_names, ver);
+  return (ver < SBITMAP_SIZE (new_ssa_names)
+	  && TEST_BIT (new_ssa_names, ver));
 }
 
 
@@ -640,7 +642,7 @@ add_new_name_mapping (tree new_tree, tree old)
 
   /* We may need to grow NEW_SSA_NAMES and OLD_SSA_NAMES because our
      caller may have created new names since the set was created.  */
-  if (new_ssa_names->n_bits <= num_ssa_names - 1)
+  if (SBITMAP_SIZE (new_ssa_names) <= num_ssa_names - 1)
     {
       unsigned int new_sz = num_ssa_names + NAME_SETS_GROWTH_FACTOR;
       new_ssa_names = sbitmap_resize (new_ssa_names, new_sz, 0);
@@ -3247,7 +3249,7 @@ update_ssa (unsigned update_flags)
 	     will grow while we are traversing it (but it will not
 	     gain any new members).  Copy OLD_SSA_NAMES to a temporary
 	     for traversal.  */
-	  sbitmap tmp = sbitmap_alloc (old_ssa_names->n_bits);
+	  sbitmap tmp = sbitmap_alloc (SBITMAP_SIZE (old_ssa_names));
 	  sbitmap_copy (tmp, old_ssa_names);
 	  EXECUTE_IF_SET_IN_SBITMAP (tmp, 0, i, sbi)
 	    insert_updated_phi_nodes_for (ssa_name (i), dfs, blocks_to_update,
