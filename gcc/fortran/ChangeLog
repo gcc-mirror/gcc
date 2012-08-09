@@ -1,3 +1,9 @@
+2012-08-09  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54199
+	* intrinsic.c (gfc_warn_intrinsic_shadow): Better warning
+	for internal procedures.
+
 2012-08-06  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/35831
