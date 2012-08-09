@@ -1056,7 +1056,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
 
-  // 20.8.13.2.7 shared_ptr comparisons
+  // 20.7.2.2.7 shared_ptr comparisons
   template<typename _Tp1, typename _Tp2, _Lock_policy _Lp>
     inline bool
     operator==(const __shared_ptr<_Tp1, _Lp>& __a,
@@ -1348,7 +1348,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __weak_count<_Lp>  _M_refcount;    // Reference counter.
     };
 
-  // 20.8.13.3.7 weak_ptr specialized algorithms.
+  // 20.7.2.3.6 weak_ptr specialized algorithms.
   template<typename _Tp, _Lock_policy _Lp>
     inline void
     swap(__weak_ptr<_Tp, _Lp>& __a, __weak_ptr<_Tp, _Lp>& __b) noexcept
