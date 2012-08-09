@@ -3976,9 +3976,9 @@ get_fi_for_callee (gimple call)
   if (!fn || TREE_CODE (fn) != SSA_NAME)
     return get_varinfo (anything_id);
 
-  if ((TREE_CODE (SSA_NAME_VAR (fn)) == PARM_DECL
-       || TREE_CODE (SSA_NAME_VAR (fn)) == RESULT_DECL)
-      && SSA_NAME_IS_DEFAULT_DEF (fn))
+  if (SSA_NAME_IS_DEFAULT_DEF (fn)
+      && (TREE_CODE (SSA_NAME_VAR (fn)) == PARM_DECL
+	  || TREE_CODE (SSA_NAME_VAR (fn)) == RESULT_DECL))
     fn = SSA_NAME_VAR (fn);
 
   return get_vi_for_tree (fn);
@@ -5915,9 +5915,9 @@ find_what_p_points_to (tree p)
   /* For parameters, get at the points-to set for the actual parm
      decl.  */
   if (TREE_CODE (p) == SSA_NAME
+      && SSA_NAME_IS_DEFAULT_DEF (p)
       && (TREE_CODE (SSA_NAME_VAR (p)) == PARM_DECL
-	  || TREE_CODE (SSA_NAME_VAR (p)) == RESULT_DECL)
-      && SSA_NAME_IS_DEFAULT_DEF (p))
+	  || TREE_CODE (SSA_NAME_VAR (p)) == RESULT_DECL))
     lookup_p = SSA_NAME_VAR (p);
 
   vi = lookup_vi_for_tree (lookup_p);
