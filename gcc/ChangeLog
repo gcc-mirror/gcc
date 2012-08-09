@@ -1,9 +1,19 @@
+2012-08-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2012-08-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (alpha_pad_noreturn): Rename to ...
+	(alpha_pad_function_end): ... this.  Also insert NOP between
+	sibling call and GP load.
+	(alpha_reorg): Update call to alpha_pad_function_end.  Expand comment.
+
 2012-07-22  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/33135
 	* config/sh/sh.opt (mieee): Use Var instead of Mask.  Correct
 	description.
-	* config/sh/sh.c (sh_option_override): Do not change 
+	* config/sh/sh.c (sh_option_override): Do not change
 	flag_finite_math_only.  Set TARGET_IEEE to complement of
 	flag_finite_math_only.
 	* doc/invoke.texi (SH options): Add mno-ieee.  Correct
