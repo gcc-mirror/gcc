@@ -1,3 +1,19 @@
+2012-08-09  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54089
+	* config/sh/sh-protos (shift_insns_rtx): Delete.
+	(sh_ashlsi_clobbers_t_reg_p): Add.
+	* config/sh/sh.c (shift_insns, shift_amounts, ext_shift_insns,
+	ext_shift_amounts): Merge arrays of ints to array of structs.
+	Adapt usage of arrays throughout the file.
+	(shift_insns_rtx): Delete unused function.
+	(sh_ashlsi_clobbers_t_reg_p): New function.
+	* config/sh/sh.md (ashlsi3): Emit ashlsi3_n_clobbers_t insn if the
+	final shift sequence will clobber T_REG.
+	(ashlsi3_n): Split only if the final shift sequence will not
+	clobber T_REG.
+	(ashlsi3_n_clobbers_t): New insn_and_split.
+
 2012-08-09  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* calls.c (mem_overlaps_already_clobbered_arg_p): Use SBITMAP_SIZE
