@@ -830,7 +830,7 @@
   /* The result of the test op is the inverse of what we are
      supposed to return.  Thus invert the T bit.  The inversion will be
      potentially optimized away and integrated into surrounding code.  */
-  emit_insn (gen_movnegt (operands[0]));
+  emit_insn (gen_movnegt (operands[0], get_t_reg_rtx ()));
   DONE;
 })
 

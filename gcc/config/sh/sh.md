@@ -9641,7 +9641,7 @@ label:
 
 (define_insn "movrt"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
-	(xor:SI (reg:SI T_REG) (const_int 1)))]
+	(xor:SI (match_operand:SI 1 "t_reg_operand" "") (const_int 1)))]
   "TARGET_SH2A"
   "movrt	%0"
   [(set_attr "type" "arith")])
@@ -9794,27 +9794,65 @@ label:
 
 (define_expand "movnegt"
   [(set (match_operand:SI 0 "arith_reg_dest" "")
-	(xor:SI (reg:SI T_REG) (const_int 1)))]
-  ""
+	(xor:SI (match_operand:SI 1 "t_reg_operand" "") (const_int 1)))]
+  "TARGET_SH1"
 {
   if (TARGET_SH2A)
-    emit_insn (gen_movrt (operands[0]));
+    emit_insn (gen_movrt (operands[0], operands[1]));
   else
     {
       rtx val = force_reg (SImode, gen_int_mode (-1, SImode));
-      emit_insn (gen_movrt_negc (operands[0], val));
+      emit_insn (gen_movrt_negc (operands[0], operands[1], val));
     }
   DONE;
 })
 
 (define_insn "movrt_negc"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
-	(xor:SI (reg:SI T_REG) (const_int 1)))
+	(xor:SI (match_operand:SI 1 "t_reg_operand" "") (const_int 1)))
    (set (reg:SI T_REG) (const_int 1))
-   (use (match_operand:SI 1 "arith_reg_operand" "r"))]
+   (use (match_operand:SI 2 "arith_reg_operand" "r"))]
   "TARGET_SH1"
-  "negc	%1,%0"
+  "negc	%2,%0"
   [(set_attr "type" "arith")])
+
+;; The -1 constant will not be CSE-ed for the *movrt_negc pattern, but the
+;; pattern can be used by the combine pass.  Using a scratch reg for the
+;; -1 constant results in slightly better register allocations compared to
+;; generating a pseudo reg before reload.
+(define_insn_and_split "*movrt_negc"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+	(xor:SI (match_operand:SI 1 "t_reg_operand" "") (const_int 1)))
+   (clobber (match_scratch:SI 2 "=r"))
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH1 && ! TARGET_SH2A"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 2) (const_int -1))
+   (parallel
+       [(set (match_dup 0) (xor:SI (match_dup 1) (const_int 1)))
+	(set (reg:SI T_REG) (const_int 1))
+	(use (match_dup 2))])])
+
+;; In some cases the zero extension does not get combined away and a 
+;; sequence like the following might remain:
+;;	mov	#-1,r2
+;;	tst	r1,r1
+;;	negc	r2,r1
+;;	extu.b	r1,r1
+(define_peephole2
+  [(parallel
+       [(set (match_operand:SI 0 "arith_reg_dest" "")
+	     (xor:SI (match_operand:SI 1 "t_reg_operand" "") (const_int 1)))
+	(set (reg:SI T_REG) (const_int 1))
+	(use (match_operand:SI 2 "arith_reg_operand" ""))])
+   (set (match_dup 0)
+	(zero_extend:SI (match_operand 3 "arith_reg_operand" "")))]
+  "TARGET_SH1 && REGNO (operands[0]) == REGNO (operands[3])"
+  [(parallel
+       [(set (match_dup 0) (xor:SI (match_dup 1) (const_int 1)))
+	(set (reg:SI T_REG) (const_int 1))
+	(use (match_dup 2))])])
 
 ;; The *negnegt pattern helps the combine pass to figure out how to fold 
 ;; an explicit double T bit negation.
@@ -9855,7 +9893,8 @@ label:
   [(const_int 0)])
 
 (define_insn_and_split "nott"
-  [(set (reg:SI T_REG) (xor:SI (reg:SI T_REG) (const_int 1)))]
+  [(set (reg:SI T_REG)
+	(xor:SI (match_operand:SI 0 "t_reg_operand" "") (const_int 1)))]
   "TARGET_SH1"
 {
   gcc_assert (TARGET_SH2A);
