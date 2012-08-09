@@ -1,3 +1,10 @@
+2012-08-09  Dodji Seketeli  <dodji@redhat.com>
+
+	Use accessor functions to manipulate xmlOutputBuffer
+	* native/jni/xmlj/xmlj_io.c (GET_XML_OUTPUT_BUFFER_CONTENT)
+    	(GET_XML_OUTPUT_BUFFER_SIZE): New macros.
+    	(xmljOutputWriteCallback): Use them.
+
 2012-03-08  Andrew John Hughes  <ahughes@redhat.com>
 
 	* NEWS: Set correct release date.
