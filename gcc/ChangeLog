@@ -1,5 +1,17 @@
 2012-08-09  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	PR target/51244
+	* config/sh/sh.md: Add negc extu sequence peephole.
+	(movrt, movnegt, movrt_negc, nott): Use t_reg_operand predicate.
+	(*movrt_negc): New insn.
+	* config/sh/sync.md (atomic_test_and_set): Pass gen_t_reg_rtx to
+	gen_movnegt.
+	* config/sh/sh.c (expand_cbranchsi4, sh_emit_scc_to_t,
+	sh_emit_compare_and_branch, sh_emit_compare_and_set): Use get_t_reg_rtx.
+	(sh_expand_t_scc): Pass gen_t_reg_rtx to gen_movnegt.
+
+2012-08-09  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	PR target/50751
 	* config/sh/sh.md (*extendqisi2_compact_reg, *extendhisi2_compact_reg):
 	Use arith_reg_operand predicate instead of register_operand.

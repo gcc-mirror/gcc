@@ -1893,7 +1893,7 @@ expand_cbranchsi4 (rtx *operands, enum rtx_code comparison, int probability)
       branch_expander = gen_branch_false;
     default: ;
     }
-  emit_insn (gen_rtx_SET (VOIDmode, gen_rtx_REG (SImode, T_REG),
+  emit_insn (gen_rtx_SET (VOIDmode, get_t_reg_rtx (),
                           gen_rtx_fmt_ee (comparison, SImode,
                                           operands[1], operands[2])));
   jump = emit_jump_insn (branch_expander (operands[3], get_t_reg_rtx ()));
@@ -2129,7 +2129,7 @@ sh_emit_set_t_insn (rtx insn, enum machine_mode mode)
 void
 sh_emit_scc_to_t (enum rtx_code code, rtx op0, rtx op1)
 {
-  rtx t_reg = gen_rtx_REG (SImode, T_REG);
+  rtx t_reg = get_t_reg_rtx ();
   enum rtx_code oldcode = code;
   enum machine_mode mode;
 
@@ -2304,7 +2304,7 @@ sh_emit_compare_and_branch (rtx *operands, enum machine_mode mode)
     }
 
   insn = gen_rtx_SET (VOIDmode,
-		      gen_rtx_REG (SImode, T_REG),
+		      get_t_reg_rtx (),
 		      gen_rtx_fmt_ee (branch_code, SImode, op0, op1));
 
   sh_emit_set_t_insn (insn, mode);
@@ -2369,9 +2369,9 @@ sh_emit_compare_and_set (rtx *operands, enum machine_mode mode)
   if (lab)
     emit_label (lab);
   if (invert)
-    emit_insn (gen_movnegt (operands[0]));
+    emit_insn (gen_movnegt (operands[0], get_t_reg_rtx ()));
   else
-    emit_move_insn (operands[0], gen_rtx_REG (SImode, T_REG));
+    emit_move_insn (operands[0], get_t_reg_rtx ());
 }
 
 /* Functions to output assembly code.  */
@@ -12121,7 +12121,7 @@ sh_expand_t_scc (rtx operands[])
   if ((code == EQ && val == 1) || (code == NE && val == 0))
     emit_insn (gen_movt (result, get_t_reg_rtx ()));
   else if ((code == EQ && val == 0) || (code == NE && val == 1))
-    emit_insn (gen_movnegt (result));
+    emit_insn (gen_movnegt (result, get_t_reg_rtx ()));
   else if (code == EQ || code == NE)
     emit_insn (gen_move_insn (result, GEN_INT (code == NE)));
   else
