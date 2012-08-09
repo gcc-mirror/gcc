@@ -2635,16 +2635,13 @@ struct GTY (()) tree_binfo {
 
 /* Define fields and accessors for nodes representing declared names.  */
 
-/* Nonzero if DECL represents a variable for the SSA passes.  */
+/* Nonzero if DECL represents an SSA name or a variable that can possibly
+   have an associated SSA name.  */
 #define SSA_VAR_P(DECL)							\
 	(TREE_CODE (DECL) == VAR_DECL					\
 	 || TREE_CODE (DECL) == PARM_DECL				\
 	 || TREE_CODE (DECL) == RESULT_DECL				\
-	 || (TREE_CODE (DECL) == SSA_NAME				\
-	     && (TREE_CODE (SSA_NAME_VAR (DECL)) == VAR_DECL		\
-		 || TREE_CODE (SSA_NAME_VAR (DECL)) == PARM_DECL	\
-		 || TREE_CODE (SSA_NAME_VAR (DECL)) == RESULT_DECL)))
-
+	 || TREE_CODE (DECL) == SSA_NAME)
 
 
 

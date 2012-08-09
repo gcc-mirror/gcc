@@ -8940,16 +8940,16 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
            && auto_var_in_fn_p (base0, current_function_decl)
            && !indirect_base1
            && TREE_CODE (base1) == SSA_NAME
-           && TREE_CODE (SSA_NAME_VAR (base1)) == PARM_DECL
-           && SSA_NAME_IS_DEFAULT_DEF (base1))
+           && SSA_NAME_IS_DEFAULT_DEF (base1)
+	   && TREE_CODE (SSA_NAME_VAR (base1)) == PARM_DECL)
           || (TREE_CODE (arg1) == ADDR_EXPR
               && indirect_base1
               && TREE_CODE (base1) == VAR_DECL
               && auto_var_in_fn_p (base1, current_function_decl)
               && !indirect_base0
               && TREE_CODE (base0) == SSA_NAME
-              && TREE_CODE (SSA_NAME_VAR (base0)) == PARM_DECL
-              && SSA_NAME_IS_DEFAULT_DEF (base0)))
+              && SSA_NAME_IS_DEFAULT_DEF (base0)
+	      && TREE_CODE (SSA_NAME_VAR (base0)) == PARM_DECL))
         {
           if (code == NE_EXPR)
             return constant_boolean_node (1, type);

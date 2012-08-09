@@ -187,8 +187,8 @@ remap_ssa_name (tree name, copy_body_data *id)
 
   if (processing_debug_stmt)
     {
-      if (TREE_CODE (SSA_NAME_VAR (name)) == PARM_DECL
-	  && SSA_NAME_IS_DEFAULT_DEF (name)
+      if (SSA_NAME_IS_DEFAULT_DEF (name)
+	  && TREE_CODE (SSA_NAME_VAR (name)) == PARM_DECL
 	  && id->entry_bb == NULL
 	  && single_succ_p (ENTRY_BLOCK_PTR))
 	{

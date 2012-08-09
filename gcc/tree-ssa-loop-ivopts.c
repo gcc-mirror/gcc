@@ -4642,8 +4642,8 @@ parm_decl_cost (struct ivopts_data *data, tree bound)
   STRIP_NOPS (sbound);
 
   if (TREE_CODE (sbound) == SSA_NAME
+      && SSA_NAME_IS_DEFAULT_DEF (sbound)
       && TREE_CODE (SSA_NAME_VAR (sbound)) == PARM_DECL
-      && gimple_nop_p (SSA_NAME_DEF_STMT (sbound))
       && data->body_includes_call)
     return COSTS_N_INSNS (1);
 

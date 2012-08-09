@@ -118,7 +118,9 @@ make_ssa_name_fn (struct function *fn, tree var, gimple stmt)
   tree t;
   use_operand_p imm;
 
-  gcc_assert (DECL_P (var));
+  gcc_assert (TREE_CODE (var) == VAR_DECL
+	      || TREE_CODE (var) == PARM_DECL
+	      || TREE_CODE (var) == RESULT_DECL);
 
   /* If our free list has an element, then use it.  */
   if (!VEC_empty (tree, FREE_SSANAMES (fn)))

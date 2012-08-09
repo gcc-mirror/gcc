@@ -615,19 +615,11 @@ add_virtual_operand (gimple stmt ATTRIBUTE_UNUSED, int flags)
 static void
 add_stmt_operand (tree *var_p, gimple stmt, int flags)
 {
-  tree var, sym;
+  tree var = *var_p;
 
   gcc_assert (SSA_VAR_P (*var_p));
 
-  var = *var_p;
-  sym = (TREE_CODE (var) == SSA_NAME ? SSA_NAME_VAR (var) : var);
-
-  /* Mark statements with volatile operands.  */
-  if (!(flags & opf_no_vops)
-      && TREE_THIS_VOLATILE (sym))
-    gimple_set_has_volatile_ops (stmt, true);
-
-  if (is_gimple_reg (sym))
+  if (is_gimple_reg (var))
     {
       /* The variable is a GIMPLE register.  Add it to real operands.  */
       if (flags & opf_def)
@@ -636,7 +628,15 @@ add_stmt_operand (tree *var_p, gimple stmt, int flags)
 	append_use (var_p);
     }
   else
-    add_virtual_operand (stmt, flags);
+    {
+      /* Mark statements with volatile operands.  */
+      if (!(flags & opf_no_vops)
+	  && TREE_THIS_VOLATILE (var))
+	gimple_set_has_volatile_ops (stmt, true);
+
+      /* The variable is a memory access.  Add virtual operands.  */
+      add_virtual_operand (stmt, flags);
+    }
 }
 
 /* Mark the base address of REF as having its address taken.

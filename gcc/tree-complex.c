@@ -495,8 +495,8 @@ get_component_ssa_name (tree ssa_name, bool imag_p)
 	 is used in an abnormal phi, and whether it's uninitialized.  */
       SSA_NAME_OCCURS_IN_ABNORMAL_PHI (ret)
 	= SSA_NAME_OCCURS_IN_ABNORMAL_PHI (ssa_name);
-      if (TREE_CODE (SSA_NAME_VAR (ssa_name)) == VAR_DECL
-	  && SSA_NAME_IS_DEFAULT_DEF (ssa_name))
+      if (SSA_NAME_IS_DEFAULT_DEF (ssa_name)
+	  && TREE_CODE (SSA_NAME_VAR (ssa_name)) == VAR_DECL)
 	{
 	  SSA_NAME_DEF_STMT (ret) = SSA_NAME_DEF_STMT (ssa_name);
 	  set_ssa_default_def (cfun, SSA_NAME_VAR (ret), ret);

@@ -1,3 +1,16 @@
+2012-08-09  Richard Guenther  <rguenther@suse.de>
+
+	* tree.h (SSA_VAR_P): Simplify.
+	* tree-ssanames.c (make_ssa_name_fn): Strengthen assert.
+	* fold-const.c (fold_comparison): Check for default def first
+	before checking for PARM_DECL.
+	* tree-complex.c (get_component_ssa_name): Likewise.
+	* tree-inline.c (remap_ssa_name): Likewise.
+	* tree-ssa-loop-ivopts.c (parm_decl_cost): Likewise.
+	* tree-ssa-structalias.c (get_fi_for_callee): Likewise.
+	(find_what_p_points_to): Likewise.
+	* tree-ssa-operands.c (add_stmt_operand): Simplify.
+
 2012-08-08  Joseph Myers  <joseph@codesourcery.com>
 
 	* simplify-rtx.c (simplify_binary_operation_1): Do not simplify
