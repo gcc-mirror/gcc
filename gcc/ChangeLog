@@ -1,3 +1,13 @@
+2012-08-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2012-08-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (alpha_pad_noreturn): Rename to ...
+	(alpha_pad_function_end): ... this.  Also insert NOP between
+	sibling call and GP load.
+	(alpha_reorg): Update call to alpha_pad_function_end.  Expand comment.
+
 2012-08-09  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline
