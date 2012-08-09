@@ -1,3 +1,7 @@
+2012-08-09  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* gcc.c-torture/compile/20120727-1.c: New test.
+
 2012-08-09  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/54199

@@ -1384,7 +1384,8 @@ enum reg_class
   ((MODE) == QImode && !TARGET_64BIT				\
    && ((CLASS) == ALL_REGS || (CLASS) == GENERAL_REGS		\
        || (CLASS) == LEGACY_REGS || (CLASS) == INDEX_REGS)	\
-   ? Q_REGS : (CLASS))
+   ? Q_REGS							\
+   : (CLASS) == INT_SSE_REGS ? GENERAL_REGS : (CLASS))
 
 /* If we are copying between general and FP registers, we need a memory
    location. The same is true for SSE and MMX registers.  */
