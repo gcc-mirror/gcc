@@ -1,3 +1,15 @@
+2012-08-09  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* reload.c (find_valid_class_1): New static function.
+	(push_reload): Use it when reloading a SYMBOL_REG as the inner
+	of a subreg.  Keep better track of needed classes for the
+	secondary memory case.
+	* config/i386/i386.h (LIMIT_RELOAD_CLASS): Limit INT_SSE_REGS to
+	GENERAL_REGS.
+	* reload1.c (replaced_subreg): New static function.
+	(gen_reload): Use it when deciding whether to use secondary
+	memory.
+
 2012-08-09  Richard Guenther  <rguenther@suse.de>
 
 	* tree.h (SSA_VAR_P): Simplify.

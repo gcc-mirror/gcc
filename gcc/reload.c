@@ -707,6 +707,55 @@ find_valid_class (enum machine_mode outer ATTRIBUTE_UNUSED,
 
   return best_class;
 }
+
+/* We are trying to reload a subreg of something that is not a register.
+   Find the largest class which has at least one register valid in
+   mode MODE.  OUTER is the mode of the subreg, DEST_CLASS the class in
+   which we would eventually like to obtain the object.  */
+
+static enum reg_class
+find_valid_class_1 (enum machine_mode outer ATTRIBUTE_UNUSED,
+		    enum machine_mode mode ATTRIBUTE_UNUSED,
+		    enum reg_class dest_class ATTRIBUTE_UNUSED)
+{
+  int best_cost = -1;
+  int rclass;
+  int regno;
+  enum reg_class best_class = NO_REGS;
+  unsigned int best_size = 0;
+  int cost;
+
+  for (rclass = 1; rclass < N_REG_CLASSES; rclass++)
+    {
+      int bad = 0;
+      for (regno = 0; regno < FIRST_PSEUDO_REGISTER && !bad; regno++)
+	if (TEST_HARD_REG_BIT (reg_class_contents[rclass], regno)
+	    && !HARD_REGNO_MODE_OK (regno, mode))
+	  bad = 1;
+
+      if (bad)
+	continue;
+
+      cost = register_move_cost (outer, (enum reg_class) rclass, dest_class);
+
+      if ((reg_class_size[rclass] > best_size
+	   && (best_cost < 0 || best_cost >= cost))
+	  || best_cost > cost)
+	{
+	  best_class = (enum reg_class) rclass;
+	  best_size = reg_class_size[rclass];
+	  best_cost = register_move_cost (outer, (enum reg_class) rclass,
+					  dest_class);
+	}
+    }
+
+  gcc_assert (best_size != 0);
+
+#ifdef LIMIT_RELOAD_CLASS
+  best_class = LIMIT_RELOAD_CLASS (mode, best_class);
+#endif
+  return best_class;
+}
 
 /* Return the number of a previously made reload that can be combined with
    a new one, or n_reloads if none of the existing reloads can be used.
@@ -925,6 +974,8 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
   int secondary_in_reload = -1, secondary_out_reload = -1;
   enum insn_code secondary_in_icode = CODE_FOR_nothing;
   enum insn_code secondary_out_icode = CODE_FOR_nothing;
+  enum reg_class subreg_in_class ATTRIBUTE_UNUSED;
+  subreg_in_class = NO_REGS;
 
   /* INMODE and/or OUTMODE could be VOIDmode if no mode
      has been specified for the operand.  In that case,
@@ -1091,16 +1142,18 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 
   if (in != 0 && reload_inner_reg_of_subreg (in, inmode, false))
     {
-      enum reg_class in_class = rclass;
-
       if (REG_P (SUBREG_REG (in)))
-	in_class
+	subreg_in_class
 	  = find_valid_class (inmode, GET_MODE (SUBREG_REG (in)),
 			      subreg_regno_offset (REGNO (SUBREG_REG (in)),
 						   GET_MODE (SUBREG_REG (in)),
 						   SUBREG_BYTE (in),
 						   GET_MODE (in)),
 			      REGNO (SUBREG_REG (in)));
+      else if (GET_CODE (SUBREG_REG (in)) == SYMBOL_REF)
+	subreg_in_class = find_valid_class_1 (inmode,
+					      GET_MODE (SUBREG_REG (in)),
+					      rclass);
 
       /* This relies on the fact that emit_reload_insns outputs the
 	 instructions for input reloads of type RELOAD_OTHER in the same
@@ -1108,7 +1161,7 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 	 RELOAD_OTHER, we are guaranteed that this inner reload will be
 	 output before the outer reload.  */
       push_reload (SUBREG_REG (in), NULL_RTX, &SUBREG_REG (in), (rtx *) 0,
-		   in_class, VOIDmode, VOIDmode, 0, 0, opnum, type);
+		   subreg_in_class, VOIDmode, VOIDmode, 0, 0, opnum, type);
       dont_remove_subreg = 1;
     }
 
@@ -1327,13 +1380,15 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 	 So add an additional reload.  */
 
 #ifdef SECONDARY_MEMORY_NEEDED
-      /* If a memory location is needed for the copy, make one.  */
-      if (in != 0
+      if (subreg_in_class == NO_REGS
+	  && in != 0
 	  && (REG_P (in)
 	      || (GET_CODE (in) == SUBREG && REG_P (SUBREG_REG (in))))
-	  && reg_or_subregno (in) < FIRST_PSEUDO_REGISTER
-	  && SECONDARY_MEMORY_NEEDED (REGNO_REG_CLASS (reg_or_subregno (in)),
-				      rclass, inmode))
+	  && reg_or_subregno (in) < FIRST_PSEUDO_REGISTER)
+	subreg_in_class = REGNO_REG_CLASS (reg_or_subregno (in));
+      /* If a memory location is needed for the copy, make one.  */
+      if (subreg_in_class != NO_REGS
+	  && SECONDARY_MEMORY_NEEDED (subreg_in_class, rclass, inmode))
 	get_secondary_mem (in, inmode, opnum, type);
 #endif
 
