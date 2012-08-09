@@ -5119,114 +5119,116 @@ label:
 ;; FIXME: Combine never tries this kind of patterns for DImode.
 (define_insn_and_split "*movsi_index_disp"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
-	(mem:SI
-	  (plus:SI
-	    (plus:SI (mult:SI (match_operand:SI 1 "arith_reg_operand" "r")
-			      (match_operand:SI 2 "const_int_operand"))
-		     (match_operand:SI 3 "arith_reg_operand" "r"))
-	    (match_operand:SI 4 "const_int_operand"))))]
-  "TARGET_SH1 && sh_legitimate_index_p (SImode, operands[4], TARGET_SH2A, true)
-   && exact_log2 (INTVAL (operands[2])) > 0"
+	(match_operand:SI 1 "mem_index_disp_operand" "m"))]
+  "TARGET_SH1"
   "#"
   "&& can_create_pseudo_p ()"
   [(set (match_dup 5) (ashift:SI (match_dup 1) (match_dup 2)))
    (set (match_dup 6) (plus:SI (match_dup 5) (match_dup 3)))
-   (set (match_dup 0) (mem:SI (plus:SI (match_dup 6) (match_dup 4))))]
+   (set (match_dup 0) (match_dup 7))]
 {
+  rtx mem = operands[1];
+  rtx plus0_rtx = XEXP (mem, 0);
+  rtx plus1_rtx = XEXP (plus0_rtx, 0);
+  rtx mult_rtx = XEXP (plus1_rtx, 0);
+
+  operands[1] = XEXP (mult_rtx, 0);
+  operands[2] = GEN_INT (exact_log2 (INTVAL (XEXP (mult_rtx, 1))));
+  operands[3] = XEXP (plus1_rtx, 1);
+  operands[4] = XEXP (plus0_rtx, 1);
   operands[5] = gen_reg_rtx (SImode);
   operands[6] = gen_reg_rtx (SImode);
-  operands[2] = GEN_INT (exact_log2 (INTVAL (operands[2])));
+  operands[7] =
+    replace_equiv_address (mem,
+			   gen_rtx_PLUS (SImode, operands[6], operands[4]));
 })
 
 (define_insn_and_split "*movhi_index_disp"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
-	(sign_extend:SI
-	  (mem:HI
-	    (plus:SI
-	      (plus:SI (mult:SI (match_operand:SI 1 "arith_reg_operand" "r")
-				(match_operand:SI 2 "const_int_operand"))
-		       (match_operand:SI 3 "arith_reg_operand" "r"))
-	      (match_operand:SI 4 "const_int_operand")))))]
-  "TARGET_SH1 && sh_legitimate_index_p (HImode, operands[4], TARGET_SH2A, true)
-   && exact_log2 (INTVAL (operands[2])) > 0"
+	(sign_extend:SI (match_operand:HI 1 "mem_index_disp_operand" "m")))]
+  "TARGET_SH1"
   "#"
   "&& can_create_pseudo_p ()"
   [(set (match_dup 5) (ashift:SI (match_dup 1) (match_dup 2)))
    (set (match_dup 6) (plus:SI (match_dup 5) (match_dup 3)))
-   (set (match_dup 0)
-	(sign_extend:SI (mem:HI (plus:SI (match_dup 6) (match_dup 4)))))]
+   (set (match_dup 0) (sign_extend:SI (match_dup 7)))]
 {
+  rtx mem = operands[1];
+  rtx plus0_rtx = XEXP (mem, 0);
+  rtx plus1_rtx = XEXP (plus0_rtx, 0);
+  rtx mult_rtx = XEXP (plus1_rtx, 0);
+
+  operands[1] = XEXP (mult_rtx, 0);
+  operands[2] = GEN_INT (exact_log2 (INTVAL (XEXP (mult_rtx, 1))));
+  operands[3] = XEXP (plus1_rtx, 1);
+  operands[4] = XEXP (plus0_rtx, 1);
   operands[5] = gen_reg_rtx (SImode);
   operands[6] = gen_reg_rtx (SImode);
-  operands[2] = GEN_INT (exact_log2 (INTVAL (operands[2])));
+  operands[7] =
+    replace_equiv_address (mem,
+			   gen_rtx_PLUS (SImode, operands[6], operands[4]));
 })
 
-(define_insn_and_split "*movhi_index_disp"
-  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
-	(zero_extend:SI
-	  (mem:HI
-	    (plus:SI
-	      (plus:SI (mult:SI (match_operand:SI 1 "arith_reg_operand" "r")
-				(match_operand:SI 2 "const_int_operand"))
-		       (match_operand:SI 3 "arith_reg_operand" "r"))
-	      (match_operand:SI 4 "const_int_operand")))))]
-  "TARGET_SH1 && sh_legitimate_index_p (HImode, operands[4], TARGET_SH2A, true)
-   && exact_log2 (INTVAL (operands[2])) > 0"
-  "#"
-  "&& can_create_pseudo_p ()"
-  [(set (match_dup 5) (ashift:SI (match_dup 1) (match_dup 2)))
-   (set (match_dup 6) (plus:SI (match_dup 5) (match_dup 3)))
-   (set (match_dup 7)
-	(sign_extend:SI (mem:HI (plus:SI (match_dup 6) (match_dup 4)))))
-   (set (match_dup 0) (zero_extend:SI (match_dup 8)))]
+(define_split
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(zero_extend:SI (match_operand:HI 1 "mem_index_disp_operand")))]
+  "TARGET_SH1"
+  [(set (match_dup 0) (sign_extend:SI (match_dup 1)))
+   (set (match_dup 0) (zero_extend:SI (match_dup 2)))]
 {
-  operands[5] = gen_reg_rtx (SImode);
-  operands[6] = gen_reg_rtx (SImode);
-  operands[7] = gen_reg_rtx (SImode);
-  operands[8] = gen_lowpart (HImode, operands[7]);
-  operands[2] = GEN_INT (exact_log2 (INTVAL (operands[2])));
+  operands[2] = gen_lowpart (HImode, operands[0]);
 })
 
 (define_insn_and_split "*movsi_index_disp"
-  [(set (mem:SI
-	  (plus:SI
-	    (plus:SI (mult:SI (match_operand:SI 1 "arith_reg_operand" "r")
-			      (match_operand:SI 2 "const_int_operand"))
-		     (match_operand:SI 3 "arith_reg_operand" "r"))
-	  (match_operand:SI 4 "const_int_operand")))
-	(match_operand:SI 0 "arith_reg_operand" "r"))]
-  "TARGET_SH1 && sh_legitimate_index_p (SImode, operands[4], TARGET_SH2A, true)
-   && exact_log2 (INTVAL (operands[2])) > 0"
+  [(set (match_operand:SI 0 "mem_index_disp_operand" "=m")
+	(match_operand:SI 1 "arith_reg_operand" "r"))]
+  "TARGET_SH1"
   "#"
   "&& can_create_pseudo_p ()"
-  [(set (match_dup 5) (ashift:SI (match_dup 1) (match_dup 2)))
+  [(set (match_dup 5) (ashift:SI (match_dup 0) (match_dup 2)))
    (set (match_dup 6) (plus:SI (match_dup 5) (match_dup 3)))
-   (set (mem:SI (plus:SI (match_dup 6) (match_dup 4))) (match_dup 0))]
+   (set (match_dup 7) (match_dup 1))]
 {
+  rtx mem = operands[0];
+  rtx plus0_rtx = XEXP (mem, 0);
+  rtx plus1_rtx = XEXP (plus0_rtx, 0);
+  rtx mult_rtx = XEXP (plus1_rtx, 0);
+
+  operands[0] = XEXP (mult_rtx, 0);
+  operands[2] = GEN_INT (exact_log2 (INTVAL (XEXP (mult_rtx, 1))));
+  operands[3] = XEXP (plus1_rtx, 1);
+  operands[4] = XEXP (plus0_rtx, 1);
   operands[5] = gen_reg_rtx (SImode);
   operands[6] = gen_reg_rtx (SImode);
-  operands[2] = GEN_INT (exact_log2 (INTVAL (operands[2])));
+  operands[7] =
+    replace_equiv_address (mem,
+			   gen_rtx_PLUS (SImode, operands[6], operands[4]));
 })
 
-(define_insn_and_split "*movhi_index_disp"
-  [(set (mem:HI
-	  (plus:SI
-	    (plus:SI (mult:SI (match_operand:SI 1 "arith_reg_operand" "r")
-			      (match_operand:SI 2 "const_int_operand"))
-		     (match_operand:SI 3 "arith_reg_operand" "r"))
-	  (match_operand:SI 4 "const_int_operand")))
-	(match_operand:HI 0 "arith_reg_operand" "r"))]
-  "TARGET_SH1 && sh_legitimate_index_p (HImode, operands[4], TARGET_SH2A, true)
-   && exact_log2 (INTVAL (operands[2])) > 0"
+(define_insn_and_split "*movsi_index_disp"
+  [(set (match_operand:HI 0 "mem_index_disp_operand" "=m")
+	(match_operand:HI 1 "arith_reg_operand" "r"))]
+  "TARGET_SH1"
   "#"
   "&& can_create_pseudo_p ()"
-  [(set (match_dup 5) (ashift:SI (match_dup 1) (match_dup 2)))
+  [(set (match_dup 5) (ashift:SI (match_dup 0) (match_dup 2)))
    (set (match_dup 6) (plus:SI (match_dup 5) (match_dup 3)))
-   (set (mem:HI (plus:SI (match_dup 6) (match_dup 4))) (match_dup 0))]
+   (set (match_dup 7) (match_dup 1))]
 {
+  rtx mem = operands[0];
+  rtx plus0_rtx = XEXP (mem, 0);
+  rtx plus1_rtx = XEXP (plus0_rtx, 0);
+  rtx mult_rtx = XEXP (plus1_rtx, 0);
+
+  operands[0] = XEXP (mult_rtx, 0);
+  operands[2] = GEN_INT (exact_log2 (INTVAL (XEXP (mult_rtx, 1))));
+  operands[3] = XEXP (plus1_rtx, 1);
+  operands[4] = XEXP (plus0_rtx, 1);
   operands[5] = gen_reg_rtx (SImode);
   operands[6] = gen_reg_rtx (SImode);
-  operands[2] = GEN_INT (exact_log2 (INTVAL (operands[2])));
+  operands[7] =
+    replace_equiv_address (mem,
+			   gen_rtx_PLUS (SImode, operands[6], operands[4]));
 })
 
 ;; Define additional pop for SH1 and SH2 so it does not get 
