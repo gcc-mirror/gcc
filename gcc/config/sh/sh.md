@@ -3496,6 +3496,17 @@ label:
   if (TARGET_DYNSHIFT
       && CONST_INT_P (operands[2]) && sh_dynamicalize_shift_p (operands[2]))
       operands[2] = force_reg (SImode, operands[2]);
+
+  /*  If the ashlsi3_* insn is going to clobber the T_REG it must be
+      expanded here.  */
+  if (CONST_INT_P (operands[2])
+      && sh_ashlsi_clobbers_t_reg_p (operands[2])
+      && ! sh_dynamicalize_shift_p (operands[2]))
+    {
+      emit_insn (gen_ashlsi3_n_clobbers_t (operands[0], operands[1],
+					   operands[2]));
+      DONE;
+    }
 })
 
 (define_insn "ashlsi3_k"
@@ -3522,7 +3533,7 @@ label:
       emit_insn (gen_ashlsi3_k (operands[0], operands[1], operands[2]));
       DONE;
     }
-  else if (!satisfies_constraint_P27 (operands[2]))
+  else if (! satisfies_constraint_P27 (operands[2]))
     {
       /* This must happen before reload, otherwise the constant will be moved
 	 into a register due to the "r" constraint, after which this split
@@ -3541,7 +3552,32 @@ label:
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
 	(ashift:SI (match_operand:SI 1 "arith_reg_operand" "0")
 		   (match_operand:SI 2 "not_p27_shift_count_operand" "")))]
-  "TARGET_SH1"
+  "TARGET_SH1 && ! sh_ashlsi_clobbers_t_reg_p (operands[2])"
+  "#"
+  "&& (reload_completed
+       || (sh_dynamicalize_shift_p (operands[2]) && can_create_pseudo_p ()))"
+  [(const_int 0)]
+{
+  if (sh_dynamicalize_shift_p (operands[2]) && can_create_pseudo_p ())
+    {
+      /* If this pattern was picked and dynamic shifts are supported, switch
+	 to dynamic shift pattern before reload.  However, we must not
+	 create a shift sequence that clobbers the T_REG.  */
+      operands[2] = force_reg (SImode, operands[2]);
+      emit_insn (gen_ashlsi3_d (operands[0], operands[1], operands[2]));
+    }
+  else
+    gen_shifty_op (ASHIFT, operands);
+
+  DONE;
+})
+
+(define_insn_and_split "ashlsi3_n_clobbers_t"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+	(ashift:SI (match_operand:SI 1 "arith_reg_operand" "0")
+		   (match_operand:SI 2 "not_p27_shift_count_operand" "")))
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH1 && sh_ashlsi_clobbers_t_reg_p (operands[2])"
   "#"
   "&& (reload_completed || INTVAL (operands[2]) == 31
        || (sh_dynamicalize_shift_p (operands[2]) && can_create_pseudo_p ()))"
