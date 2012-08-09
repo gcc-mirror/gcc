@@ -1,3 +1,12 @@
+2012-08-09  Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.dg/ipa/iinline-4.c: New test.
+	* gcc.dg/ipa/iinline-5.c: Likewise.
+	* gcc.dg/ipa/iinline-6.c: Likewise.
+	* gcc.dg/ipa/iinline-7.c: Likewise.
+	* gcc.dg/lto/20120723_0.c: Likewise.
+	* gcc.dg/lto/20120723_1.c: Likewise.
+
 2012-08-09  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/39423
