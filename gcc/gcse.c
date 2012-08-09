@@ -2982,7 +2982,7 @@ hoist_code (void)
 
       /* Examine each expression that is very busy at the exit of this
 	 block.  These are the potentially hoistable expressions.  */
-      for (i = 0; i < hoist_vbeout[bb->index]->n_bits; i++)
+      for (i = 0; i < SBITMAP_SIZE (hoist_vbeout[bb->index]); i++)
 	{
 	  if (TEST_BIT (hoist_vbeout[bb->index], i))
 	    {
