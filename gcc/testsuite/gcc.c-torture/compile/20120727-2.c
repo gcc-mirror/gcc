@@ -2,12 +2,12 @@
 
 union {
   char *p;
-  float f;
+  double d;
 } u;
 
 void
 f (void)
 {
   u.p = "";
-  u.f += 1.1f;
+  u.d += 1.1;
 }
