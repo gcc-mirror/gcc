@@ -1,3 +1,69 @@
+2012-08-09  Martin Jambor  <mjambor@suse.cz>
+
+	* cgraph.h (cgraph_indirect_call_info): Field anc_offse renamd to
+	offset, updated all users.  New field agg_contents.
+	* ipa-prop.h (jump_func_type): Removed IPA_JF_CONST_MEMBER_PTR.
+	(ipa_pass_through_data): New field agg_preserved.
+	(ipa_ancestor_jf_data): Likewise.
+	(ipa_member_ptr_cst): Removed.
+	(ipa_agg_jf_item): New type.
+	(ipa_agg_jump_function): Likewise.
+	(ipa_jump_func): New field agg.  Removed field member_cst.
+	(ipa_get_jf_pass_through_agg_preserved): New function.
+	(ipa_get_jf_ancestor_agg_preserved): Likewise.
+	(ipa_get_jf_member_ptr_pfn): Removed.
+	(ipa_find_agg_cst_for_param): Declare.
+	(ipa_load_from_parm_agg): Likewise.
+	* ipa-prop.c (param_analysis_info): Fields modified and
+	visited_statements rename to parm_modified and parm_visited_statements
+	respectively, added fields ref_modified, ref_visited_statements,
+	pt_modified and pt_visited_statements.
+	(ipa_print_node_jump_functions_for_edge): Do not dump const member
+	functions.  Dump agg_preserved flags and aggregate jump functions.
+	(ipa_set_jf_simple_pass_through): Set also agg_preserved.
+	(ipa_set_ancestor_jf): Likewise.
+	(ipa_set_jf_arith_pass_through): Clear agg_preserved.
+	(ipa_set_jf_member_ptr_cst): Removed.
+	(is_parm_modified_before_stmt): Logic reversed, renamed to
+	parm_preserved_before_stmt_p.  Cache visited bitmap only for
+	naked DECL parameters.  All callers updated.
+	(load_from_unmodified_param): Allow NULL parms_ainfo.
+	(parm_ref_data_preserved_p): New function.
+	(parm_ref_data_pass_through_p): Likewise.
+	(ipa_load_from_parm_agg_1): Likewise.
+	(ipa_load_from_parm_agg): Likewise.
+	(compute_complex_assign_jump_func): Check if aggregate contents are
+	preserved.
+	(compute_complex_ancestor_jump_func): Likewise.
+	(compute_scalar_jump_functions): Removed.
+	(type_like_member_ptr_p): Also check field position are known and
+	sane.
+	(compute_pass_through_member_ptrs): Removed.
+	(determine_cst_member_ptr): Likewise.
+	(ipa_known_agg_contents_list): New type.
+	(determine_known_aggregate_parts): New function.
+	(compute_cst_member_ptr_arguments): Removed.
+	(ipa_compute_jump_functions_for_edge): Compute all kinds of jump
+	functions (scalar, aggregate and member pointer).
+	(ipa_get_member_ptr_load_param): Incorporate into
+	ipa_get_stmt_member_ptr_load_param, also pass back an offset.
+	(ipa_note_param_call): Clear agg_contents.
+	(ipa_analyze_indirect_call_uses): Also look for simple pointers loaded
+	from aggregates.  In such cases, store offset of the called field.
+	(ipa_analyze_node): Initialize new fields of param_analysis_info.
+	(update_jump_functions_after_inlining): Handle aggregate contents.
+	(ipa_find_agg_cst_for_param): New function.
+	(try_make_edge_direct_simple_call): Handle called aggregate values.
+	(update_indirect_edges_after_inlining): Make sure aggregate preserving
+	jump functions comply with type compatibility requirements.
+	(ipa_edge_duplication_hook): Copy also aggregate jump functions.
+	(ipa_write_jump_function): Stream agg_preserved flags and aggregate
+	jump functions.  Do not stream member pointer constant jump functions.
+	(ipa_read_jump_function): Likewise.
+	(ipa_write_indirect_edge_info): Stream new cgraph_indirect_call_info
+	fields.
+	(ipa_read_indirect_edge_info): Likewise.
+
 2012-08-09  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/39423

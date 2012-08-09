@@ -1107,7 +1107,7 @@ ipa_get_indirect_edge_target (struct cgraph_edge *ie,
     }
 
   token = ie->indirect_info->otr_token;
-  anc_offset = ie->indirect_info->anc_offset;
+  anc_offset = ie->indirect_info->offset;
   otr_type = ie->indirect_info->otr_type;
 
   t = VEC_index (tree, known_vals, param_index);
