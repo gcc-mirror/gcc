@@ -102,6 +102,19 @@ xmljFreeOutputStreamContext (OutputStreamContext * outContext);
 xmlCharEncoding
 xmljDetectCharEncoding (JNIEnv * env, jbyteArray buffer);
 
+
+#ifdef LIBXML2_NEW_BUFFER
+#define GET_XML_OUTPUT_BUFFER_CONTENT(buf) (gchar *) \
+  (char *) xmlOutputBufferGetContent(buf)
+#define GET_XML_OUTPUT_BUFFER_SIZE(buf) \
+  xmlOutputBufferGetSize(buf)
+#else
+#define GET_XML_OUTPUT_BUFFER_CONTENT(buf) \
+ (buf)->buffer->content
+#define GET_XML_OUTPUT_BUFFER_SIZE(buf) \
+  (buf)->buffer->use
+#endif
+
 int
 xmljOutputWriteCallback (void *context, const char *buffer, int len)
 {
@@ -752,9 +765,10 @@ xmljLoadExternalEntity (const char *URL, const char *ID,
       inputStream->directory = NULL;
       inputStream->buf = inputBuffer;
 
-      inputStream->base = inputStream->buf->buffer->content;
-      inputStream->cur = inputStream->buf->buffer->content;
-      inputStream->end = &inputStream->base[inputStream->buf->buffer->use];
+      inputStream->base = GET_XML_OUTPUT_BUFFER_CONTENT (inputStream->buf);
+      inputStream->cur = GET_XML_OUTPUT_BUFFER_CONTENT (inputStream->buf);
+      inputStream->end =
+      &inputStream->base[GET_XML_OUTPUT_BUFFER_SIZE (inputStream->buf)];
       if ((ctxt->directory == NULL) && (inputStream->directory != NULL))
         ctxt->directory =
           (char *) xmlStrdup ((const xmlChar *) inputStream->directory);
