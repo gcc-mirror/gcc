@@ -4819,14 +4819,14 @@ label:
 
 (define_insn "*extendqisi2_compact_reg"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
-	(sign_extend:SI (match_operand:QI 1 "register_operand" "r")))]
+	(sign_extend:SI (match_operand:QI 1 "arith_reg_operand" "r")))]
   "TARGET_SH1"
   "exts.b	%1,%0"
   [(set_attr "type" "arith")])
 
 (define_insn "*extendhisi2_compact_reg"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
-	(sign_extend:SI (match_operand:HI 1 "register_operand" "r")))]
+	(sign_extend:SI (match_operand:HI 1 "arith_reg_operand" "r")))]
   "TARGET_SH1"
   "exts.w	%1,%0"
   [(set_attr "type" "arith")])
