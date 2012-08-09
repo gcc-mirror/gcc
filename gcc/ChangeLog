@@ -1,3 +1,11 @@
+2012-08-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (LIMIT_RELOAD_CLASS): Return preferred
+	single unit register class for classes that contain registers form
+	multiple units.
+	(REG_CLASS_CONTENTS): Add missing "frame" register to FLOAT_INT_REGS,
+	INT_SSE_REGS and FLOAT_INT_SSE_REGS register classes.
+
 2012-08-09  Martin Jambor  <mjambor@suse.cz>
 
 	* cgraph.h (cgraph_indirect_call_info): Field anc_offse renamd to
@@ -36,8 +44,7 @@
 	preserved.
 	(compute_complex_ancestor_jump_func): Likewise.
 	(compute_scalar_jump_functions): Removed.
-	(type_like_member_ptr_p): Also check field position are known and
-	sane.
+	(type_like_member_ptr_p): Also check field position are known and sane.
 	(compute_pass_through_member_ptrs): Removed.
 	(determine_cst_member_ptr): Likewise.
 	(ipa_known_agg_contents_list): New type.
@@ -80,7 +87,8 @@
 	* config/sh/sync.md (atomic_test_and_set): Pass gen_t_reg_rtx to
 	gen_movnegt.
 	* config/sh/sh.c (expand_cbranchsi4, sh_emit_scc_to_t,
-	sh_emit_compare_and_branch, sh_emit_compare_and_set): Use get_t_reg_rtx.
+	sh_emit_compare_and_branch, sh_emit_compare_and_set): Use
+	get_t_reg_rtx.
 	(sh_expand_t_scc): Pass gen_t_reg_rtx to gen_movnegt.
 
 2012-08-09  Oleg Endo  <olegendo@gcc.gnu.org>

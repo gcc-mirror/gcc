@@ -1,3 +1,9 @@
+2012-08-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.c-torture/compile/20120727-1.c (dg-options): Add -mfpmath=387
+	for x86 targets.
+	* gcc.c-torture/compile/20120727-2.c: New test.
+
 2012-08-09  Martin Jambor  <mjambor@suse.cz>
 
 	* gcc.dg/ipa/iinline-4.c: New test.
@@ -26,7 +32,7 @@
 2012-08-09  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/53701
-	* gcc.dg/pr53701.c: New test. 
+	* gcc.dg/pr53701.c: New test.
 
 2012-08-09  Bernd Schmidt  <bernds@codesourcery.com>
 
@@ -39,8 +45,7 @@
 
 2012-08-08  H.J. Lu  <hongjiu.lu@intel.com>
 
-	* gcc.dg/tree-ssa/slsr-30.c: Require non-ilp32.  Remove
-	dg-skip-if.
+	* gcc.dg/tree-ssa/slsr-30.c: Require non-ilp32.  Remove dg-skip-if.
 
 2012-08-08  Joseph Myers  <joseph@codesourcery.com>
 
