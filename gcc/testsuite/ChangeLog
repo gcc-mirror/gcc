@@ -1,5 +1,10 @@
 2012-08-10  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
+	PR middle-end/54211
+	* gcc.dg/tree-ssa/pr54211.c: New test.
+
+2012-08-10  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
 	* lib/target-supports.exp (check_effective_target_long_neq_int): New.
 	* gcc.dg/tree-ssa/slsr-30.c: Check for long_neq_int effective target.
 
