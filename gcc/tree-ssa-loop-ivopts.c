@@ -2819,6 +2819,9 @@ prepare_decl_rtl (tree *expr_p, int *ws, void *data)
     case SSA_NAME:
       *ws = 0;
       obj = SSA_NAME_VAR (*expr_p);
+      /* Defer handling of anonymous SSA_NAMEs to the expander.  */
+      if (!obj)
+	return NULL_TREE;
       if (!DECL_RTL_SET_P (obj))
 	x = gen_raw_REG (DECL_MODE (obj), (*regno)++);
       break;
@@ -4966,6 +4969,7 @@ determine_iv_cost (struct ivopts_data *data, struct iv_cand *cand)
      The reason is to make debugging simpler; so this is not relevant for
      artificial ivs created by other optimization passes.  */
   if (cand->pos != IP_ORIGINAL
+      || !SSA_NAME_VAR (cand->var_before)
       || DECL_ARTIFICIAL (SSA_NAME_VAR (cand->var_before)))
     cost++;
 

@@ -1,3 +1,25 @@
+2012-08-10  Richard Guenther  <rguenther@suse.de>
+
+	* g++.dg/plugin/selfassign.c: Adjust.
+	* gcc.dg/plugin/selfassign.c: Likewise.
+	* gcc.dg/strlenopt-11.c: Likewise.
+	* gcc.dg/strlenopt-13.c: Likewise.
+	* gcc.dg/no-strict-overflow-4.c: Likewise.
+	* gcc.dg/strict-overflow-4.c: Likewise.
+	* gcc.dg/tree-ssa/alias-11.c: Likewise.
+	* gcc.dg/tree-ssa/alias-6.c: Likewise.
+	* gcc.dg/tree-ssa/asm-3.c: Likewise.
+	* gcc.dg/tree-ssa/pr18908.c: Likewise.
+	* gcc.dg/tree-ssa/pr19431.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-pre-21.c: Likewise.
+	* gcc.dg/tree-ssa/phi-opt-10.c: Likewise.
+	* gcc.dg/tree-ssa/phi-opt-7.c: Likewise.
+	* gcc.dg/tree-ssa/slsr-27.c: Likewise.
+	* gcc.dg/tree-ssa/slsr-28.c: Likewise.
+	* gcc.dg/tree-ssa/slsr-29.c: Likewise.
+	* gcc.dg/pr46309.c: Likewise.
+	* gcc.dg/tree-ssa/loop-5.c: Likewise.
+
 2012-08-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.c-torture/compile/20120727-1.c (dg-options): Add -mfpmath=387

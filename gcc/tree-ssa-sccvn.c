@@ -2746,7 +2746,8 @@ visit_reference_op_load (tree lhs, tree op, gimple stmt)
 	 a new SSA_NAME we create.  */
       if (!result)
         {
-	  result = make_ssa_name (SSA_NAME_VAR (lhs), gimple_build_nop ());
+	  result = make_temp_ssa_name (TREE_TYPE (lhs), gimple_build_nop (),
+				       "vntemp");
 	  /* Initialize value-number information properly.  */
 	  VN_INFO_GET (result)->valnum = result;
 	  VN_INFO (result)->value_id = get_next_value_id ();

@@ -1394,9 +1394,9 @@ eliminated_by_inlining_prob (gimple stmt)
 	        || (TREE_CODE(inner_lhs) == MEM_REF
 		     && (unmodified_parm (stmt, TREE_OPERAND (inner_lhs, 0))
 			 || (TREE_CODE (TREE_OPERAND (inner_lhs, 0)) == SSA_NAME
-			     && TREE_CODE (SSA_NAME_VAR
-					    (TREE_OPERAND (inner_lhs, 0)))
-			     == RESULT_DECL))))
+			     && SSA_NAME_VAR (TREE_OPERAND (inner_lhs, 0))
+			     && TREE_CODE (SSA_NAME_VAR (TREE_OPERAND
+				  (inner_lhs, 0))) == RESULT_DECL))))
 	      lhs_free = true;
 	    if (lhs_free
 		&& (is_gimple_reg (rhs) || is_gimple_min_invariant (rhs)))

@@ -2659,37 +2659,48 @@ lookup_vi_for_tree (tree t)
 static const char *
 alias_get_name (tree decl)
 {
-  const char *res;
+  const char *res = NULL;
   char *temp;
   int num_printed = 0;
 
-  if (DECL_ASSEMBLER_NAME_SET_P (decl))
-    res = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-  else
-    res= get_name (decl);
-  if (res != NULL)
-    return res;
-
-  res = "NULL";
   if (!dump_file)
-    return res;
+    return "NULL";
 
   if (TREE_CODE (decl) == SSA_NAME)
     {
-      num_printed = asprintf (&temp, "%s_%u",
-			      alias_get_name (SSA_NAME_VAR (decl)),
-			      SSA_NAME_VERSION (decl));
+      res = get_name (decl);
+      if (res)
+	num_printed = asprintf (&temp, "%s_%u", res, SSA_NAME_VERSION (decl));
+      else
+	num_printed = asprintf (&temp, "_%u", SSA_NAME_VERSION (decl));
+      if (num_printed > 0)
+	{
+	  res = ggc_strdup (temp);
+	  free (temp);
+	}
     }
   else if (DECL_P (decl))
     {
-      num_printed = asprintf (&temp, "D.%u", DECL_UID (decl));
+      if (DECL_ASSEMBLER_NAME_SET_P (decl))
+	res = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+      else
+	{
+	  res = get_name (decl);
+	  if (!res)
+	    {
+	      num_printed = asprintf (&temp, "D.%u", DECL_UID (decl));
+	      if (num_printed > 0)
+		{
+		  res = ggc_strdup (temp);
+		  free (temp);
+		}
+	    }
+	}
     }
-  if (num_printed > 0)
-    {
-      res = ggc_strdup (temp);
-      free (temp);
-    }
-  return res;
+  if (res != NULL)
+    return res;
+
+  return "NULL";
 }
 
 /* Find the variable id for tree T in the map.

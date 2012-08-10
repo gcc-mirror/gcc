@@ -619,7 +619,11 @@ output_ssa_names (struct output_block *ob, struct function *fn)
       streamer_write_uhwi (ob, i);
       streamer_write_char_stream (ob->main_stream,
 				  SSA_NAME_IS_DEFAULT_DEF (ptr));
-      stream_write_tree (ob, SSA_NAME_VAR (ptr), true);
+      if (SSA_NAME_VAR (ptr))
+	stream_write_tree (ob, SSA_NAME_VAR (ptr), true);
+      else
+	/* ???  This drops SSA_NAME_IDENTIFIER on the floor.  */
+	stream_write_tree (ob, TREE_TYPE (ptr), true);
     }
 
   streamer_write_zero (ob);

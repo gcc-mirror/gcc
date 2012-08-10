@@ -1,3 +1,87 @@
+2012-08-10  Richard Guenther  <rguenther@suse.de>
+
+	* tree.h (SSA_NAME_VAR): Return NULL_TREE if an IDENTIFIER_NODE
+	is recorded as var.
+	(SSA_NAME_IDENTIFIER): Return the IDENTIFIER_NODE of the SSA_NAME
+	or its SSA_NAME_VAR.
+	(SET_SSA_NAME_VAR_OR_IDENTIFIER): New setter.
+	* tree-ssanames.c (make_ssa_name_fn): Handle creating anonymous
+	SSA names by passing a type instead of a variable decl.
+	(release_ssa_name): Use SET_SSA_NAME_VAR_OR_IDENTIFIER.
+	(copy_ssa_name_fn): Handle anonymous SSA names.
+	(replace_ssa_name_symbol): Use SET_SSA_NAME_VAR_OR_IDENTIFIER.
+	* tree-flow-inline.h (make_temp_ssa_name): New inline function.
+	* tree-pretty-print.c (dump_generic_node): Use SSA_NAME_IDENTIFIER,
+	dump SSA names without a name as <anon>.
+	* cfgexpand.c (expand_used_vars): Assing anonymous SSA names we are
+	going to expand a decl.
+	(gimple_expand_cfg): Assign all SSA names of a partition the
+	decl we created for its leader.
+	* tree-ssa.c (target_for_debug_bind): Handle SSA_NAMEs.
+	(verify_ssa_name): Handle anonymous SSA names.
+	(verify_def): Likewise.
+	* tree-predcom.c (eliminate_temp_copies): Likewise.
+	* tree-ssa-copyrename.c (copy_rename_partition_coalesce): Likewise.
+	* tree-ssa-live.c (var_map_base_init): Compute conflicts for
+	anonymous SSA names with the same type.
+	(mark_all_vars_used_1): Handle anonymous SSA names.
+	(verify_live_on_entry): Likewise.
+	* tree-ssa-coalesce.c (abnormal_corrupt): Remove.
+	(create_outofssa_var_map): Adjust with respect to conflicts we
+	compute for anonymous SSA names.  Do not restrict abnormal
+	coalescing.
+	(coalesce_partitions): Do not restrict abnormal coalescing.
+	Assert we only ever coalesce variables we computed conflicts for.
+	* tree-ssa-ter.c (process_replaceable): Do not restrict TER
+	of anonymous names.
+	* expr.c (expand_expr_real_1): Handle anonymous SSA names
+	expanded from IVOPTs by creating a raw REG here.
+	* tree-cfg.c (replace_ssa_name): Handle anonymous SSA names.
+	(dump_function_to_file): Dump anonymous SSA names alongside
+	with their types in the variable list.
+	(verify_gimple_return): Guard use of SSA_NAME_VAR.
+	* tree-into-ssa.c (mark_for_renaming): Handle a NULL symbol.
+	(rewrite_into_ssa): Make SSA names anonymous.
+	* tree-ssa-structalias.c (alias_get_name): Rewrite.
+	* tree-ssa-uninit.c (ssa_undefined_value_p): Handle anonymous
+	SSA names.
+	(warn_uninitialized_phi): Likewise.
+	* tree-ssa-loop-ivopts.c (prepare_decl_rtl): Defer expanding
+	anonymous SSA names to the expander.
+	(determine_iv_cost): Anonymous SSA names are artificial.
+	* tree-ssa-loop-manip.c (tree_transform_and_unroll_loop):
+	Handle anonymous SSA names.
+	* lto-streamer-out.c (output_ssa_names): Stream SSA_NAME_VAR
+	or if NULL, the type of the SSA name.
+	* tree-inline.c (remap_ssa_name): Handle anonymous SSA names,
+	remap names as anonymous where appropriate.
+	(insert_init_stmt): Pass SSA names down to insert_init_debug_bind.
+	* tree-ssa-uncprop.c (uncprop_into_successor_phis): Adjust
+	according to what we create conflicts for in out-of-SSA
+	coalescing.
+	* tree-parloops.c (separate_decls_in_region_name): Handle
+	anonymous SSA names.
+	(add_field_for_name): Likewise.
+	* tree.c (get_name): Handle SSA names.
+	* tree-ssa-loop-im.c (gen_lsm_tmp_name): Defer to get_name for
+	SSA_NAMEs.
+	* tree-vect-loop-manip.c (adjust_debug_stmts): Use
+	virtual_operand_p.
+	* tree-sra.c (create_access_replacement): Give up generating
+	a DECL_DEBUG_EXPR for SSA names in the memory reference.
+	(replace_removed_params_ssa_names): Guard use of SSA_NAME_VAR.
+	* tree-complex.c (get_component_ssa_name): Handle anonymous
+	SSA names.
+	(set_component_ssa_name): Likewise.
+	* tree-ssa-sccvn.c (visit_reference_op_load): Likewise.
+	* tree-object-size.c (collect_object_sizes_for): Handle
+	uninitialized SSA names properly.
+	* ipa-inline-analysis.c (eliminated_by_inlining_prob): Guard use of
+	SSA_NAME_VAR.
+	* ipa-split.c (test_nonssa_use): Likewise.
+	(consider_split): Likewise.
+	(mark_nonssa_use): Likewise.
+
 2012-08-09  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/54146

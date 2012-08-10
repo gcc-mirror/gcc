@@ -498,10 +498,11 @@ process_replaceable (temp_expr_table_p tab, gimple stmt, int call_cnt)
 
   def = SINGLE_SSA_TREE_OPERAND (stmt, SSA_OP_DEF);
   version = SSA_NAME_VERSION (def);
-  basevar = SSA_NAME_VAR (def);
   def_vars = BITMAP_ALLOC (NULL);
 
-  bitmap_set_bit (def_vars, DECL_UID (basevar));
+  basevar = SSA_NAME_VAR (def);
+  if (basevar)
+    bitmap_set_bit (def_vars, DECL_UID (basevar));
 
   /* Add this expression to the dependency list for each use partition.  */
   FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, SSA_OP_USE)
@@ -515,7 +516,7 @@ process_replaceable (temp_expr_table_p tab, gimple stmt, int call_cnt)
 	  bitmap_ior_into (def_vars, use_vars);
 	  BITMAP_FREE (tab->expr_decl_uids[var_version]);
 	}
-      else
+      else if (SSA_NAME_VAR (var))
 	bitmap_set_bit (def_vars, DECL_UID (SSA_NAME_VAR (var)));
     }
   tab->expr_decl_uids[version] = def_vars;
@@ -626,7 +627,8 @@ find_replaceable_in_bb (temp_expr_table_p tab, basic_block bb)
 	      if (!bitmap_empty_p (vars))
 		FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter2, SSA_OP_DEF)
 		  {
-		    if (bitmap_bit_p (vars, DECL_UID (SSA_NAME_VAR (def))))
+		    if (SSA_NAME_VAR (def)
+			&& bitmap_bit_p (vars, DECL_UID (SSA_NAME_VAR (def))))
 		      {
 			same_root_var = true;
 			break;

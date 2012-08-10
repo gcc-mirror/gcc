@@ -1901,7 +1901,7 @@ eliminate_temp_copies (struct loop *loop, bitmap tmp_vars)
       phi = gsi_stmt (psi);
       name = PHI_RESULT (phi);
       var = SSA_NAME_VAR (name);
-      if (!bitmap_bit_p (tmp_vars, DECL_UID (var)))
+      if (!var || !bitmap_bit_p (tmp_vars, DECL_UID (var)))
 	continue;
       use = PHI_ARG_DEF_FROM_EDGE (phi, e);
       gcc_assert (TREE_CODE (use) == SSA_NAME);

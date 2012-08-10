@@ -1803,7 +1803,8 @@ dump_expr (tree t, int flags)
       break;
 
     case SSA_NAME:
-      if (!DECL_ARTIFICIAL (SSA_NAME_VAR (t)))
+      if (SSA_NAME_VAR (t)
+	  && !DECL_ARTIFICIAL (SSA_NAME_VAR (t)))
 	dump_expr (SSA_NAME_VAR (t), flags);
       else
 	pp_cxx_ws_string (cxx_pp, M_("<unknown>"));

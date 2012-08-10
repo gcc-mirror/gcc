@@ -15,7 +15,7 @@ int bar(void)
 }
 
 /* We need to have both: a load from "a[0]" and a load from "*p.a",
-   the latter can be an ssa temporary.  */
+   the latter is an ssa temporary.  */
 /* { dg-final { scan-tree-dump "= a.0.;" "optimized" } } */
-/* { dg-final { scan-tree-dump "= \\*\[pD\]" "optimized" } } */
+/* { dg-final { scan-tree-dump "= \\*\[^\r\n\]*_.;" "optimized" } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */

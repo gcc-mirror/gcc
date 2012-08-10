@@ -1,3 +1,7 @@
+2012-08-10  Richard Guenther  <rguenther@suse.de>
+
+	* error.c (dump_expr): Handle anonymous SSA names.
+
 2012-08-07  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* error.c (print_instantiation_context): Pretty-print a newline before
