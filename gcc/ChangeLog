@@ -1,3 +1,8 @@
+2012-08-10  Richard Guenther  <rguenther@suse.de>
+
+	* tree-cfg.c (dump_function_to_file): Make sure to dump
+	anonymous SSA names when there are no local decls.
+
 2012-08-10  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* tree-ssa-pre.c (alloc_expression_id): Fix use of VEC_reserve.
