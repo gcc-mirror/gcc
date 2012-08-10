@@ -2,46 +2,35 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-#include <string.h>
-#include <sys/types.h>
-#include <fcntl.h>
-#include <unistd.h>
+#include <features.h>
+#include <sched.h>
+
+// CPU_COUNT is only provided by glibc 2.6 or higher
+#if !defined(__GLIBC_PREREQ) || !__GLIBC_PREREQ(2, 6)
+#define CPU_COUNT(set) _CPU_COUNT((unsigned int *)(set), sizeof(*(set))/sizeof(unsigned int))
+static int _CPU_COUNT(unsigned int *set, size_t len) {
+	int cnt;
+
+	cnt = 0;
+	while (len--)
+		cnt += __builtin_popcount(*set++);
+	return cnt;
+}
+#endif
 
 #include "runtime.h"
 #include "defs.h"
 
-#ifndef O_CLOEXEC
-#define O_CLOEXEC 0
-#endif
-
 int32
 getproccount(void)
 {
-	int32 fd, rd, cnt, cpustrlen;
-	const char *cpustr;
-	const byte *pos;
-	byte *bufpos;
-	byte buf[256];
+	cpu_set_t set;
+	int32 r, cnt;
 
-	fd = open("/proc/stat", O_RDONLY|O_CLOEXEC, 0);
-	if(fd == -1)
-		return 1;
 	cnt = 0;
-	bufpos = buf;
-	cpustr = "\ncpu";
-	cpustrlen = strlen(cpustr);
-	for(;;) {
-		rd = read(fd, bufpos, sizeof(buf)-cpustrlen);
-		if(rd == -1)
-			break;
-		bufpos[rd] = 0;
-		for(pos=buf; (pos=(const byte*)strstr((const char*)pos, cpustr)) != nil; cnt++, pos++) {
-		}
-		if(rd < cpustrlen)
-			break;
-		memmove(buf, bufpos+rd-cpustrlen+1, cpustrlen-1);
-		bufpos = buf+cpustrlen-1;
-	}
-	close(fd);
+	r = sched_getaffinity(0, sizeof(set), &set);
+	if(r == 0)
+		cnt += CPU_COUNT(&set);
+
 	return cnt ? cnt : 1;
 }
