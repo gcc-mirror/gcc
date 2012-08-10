@@ -1,5 +1,11 @@
 2012-08-10  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/sse.md (*fma_fmadd_<mode>, *fma_fmsub_<mode>,
+	*fma_fnmadd_<mode>, *fma_fnmsub_<mode>, *fma_fmaddsub_<mode>,
+	*fma_fmsubadd_<mode>): Move FMA3 insn patterns before FMA4 patterns.
+
+2012-08-10  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/i386.md (simple LEA peephole2s): Add zero-extend
 	variants of PLUS and MULT simple LEA patterns.  Disable PLUS
 	patterns for TARGET_OPT_AGU.
