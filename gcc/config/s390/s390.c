@@ -4821,7 +4821,7 @@ s390_expand_cs_hqi (enum machine_mode mode, rtx btarget, rtx vtarget, rtx mem,
 		    rtx cmp, rtx new_rtx, bool is_weak)
 {
   struct alignment_context ac;
-  rtx cmpv, newv, val, resv, cc, seq0, seq1, seq2, seq3;
+  rtx cmpv, newv, val, cc, seq0, seq1, seq2, seq3;
   rtx res = gen_reg_rtx (SImode);
   rtx csloop = NULL, csend = NULL;
 
@@ -4868,14 +4868,18 @@ s390_expand_cs_hqi (enum machine_mode mode, rtx btarget, rtx vtarget, rtx mem,
     emit_insn (gen_cstorecc4 (btarget, cc, XEXP (cc, 0), XEXP (cc, 1)));
   else
     {
+      rtx tmp;
+
       /* Jump to end if we're done (likely?).  */
       s390_emit_jump (csend, cc);
 
-      /* Check for changes outside mode, and loop internal if so.  */
-      resv = expand_simple_binop (SImode, AND, res, ac.modemaski,
-			          NULL_RTX, 1, OPTAB_DIRECT);
-      cc = s390_emit_compare (NE, resv, val);
-      emit_move_insn (val, resv);
+      /* Check for changes outside mode, and loop internal if so.
+	 Arrange the moves so that the compare is adjacent to the
+	 branch so that we can generate CRJ.  */
+      tmp = copy_to_reg (val);
+      force_expand_binop (SImode, and_optab, res, ac.modemaski, val,
+			  1, OPTAB_DIRECT);
+      cc = s390_emit_compare (NE, val, tmp);
       s390_emit_jump (csloop, cc);
 
       /* Failed.  */
