@@ -4684,9 +4684,8 @@ s390_expand_insv (rtx dest, rtx op1, rtx op2, rtx src)
 	  src = gen_lowpart (mode, src);
 	}
 
-      op = gen_rtx_SET (mode,
-			gen_rtx_ZERO_EXTRACT (mode, dest, op1, op2),
-			src);
+      op = gen_rtx_ZERO_EXTRACT (mode, dest, op1, op2),
+      op = gen_rtx_SET (VOIDmode, op, src);
       clobber = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCmode, CC_REGNUM));
       emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, op, clobber)));
 

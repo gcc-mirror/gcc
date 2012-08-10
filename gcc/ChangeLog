@@ -1,5 +1,7 @@
 2012-08-09  Richard Henderson  <rth@redhat.com>
 
+	* config/s390/s390.c (s390_expand_insv): Use VOIDmode in gen_rtx_SET.
+
 	* config/s390/s390.c (s390_expand_cs_hqi): Copy val to a temp before
 	performing the compare for the restart loop.
 
