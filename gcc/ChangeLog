@@ -1,5 +1,11 @@
 2012-08-10  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
+	PR middle-end/54211
+	* gimple-ssa-strength-reduction.c (analyze_candidates_and_replace):
+	Use cand_type to determine whether pointer arithmetic will be generated.
+
+2012-08-10  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
 	* doc/sourcebuild.texi: Document long_neq_int effective target.
 
 2012-08-10  Richard Guenther  <rguenther@suse.de>

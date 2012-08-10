@@ -2534,7 +2534,7 @@ analyze_candidates_and_replace (void)
 	  /* Determine whether we'll be generating pointer arithmetic
 	     when replacing candidates.  */
 	  address_arithmetic_p = (c->kind == CAND_ADD
-				  && POINTER_TYPE_P (TREE_TYPE (c->base_expr)));
+				  && POINTER_TYPE_P (c->cand_type));
 
 	  /* If all candidates have already been replaced under other
 	     interpretations, nothing remains to be done.  */
