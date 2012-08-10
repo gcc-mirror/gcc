@@ -1,3 +1,8 @@
+2012-08-10  Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/i386.c (ix86_init_mmx_sse_builtins): Fix builtin
+	target mask of __builtin_ia32_rdseed_di_step.
+
 2012-08-10  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/54027

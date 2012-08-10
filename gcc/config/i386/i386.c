@@ -27963,7 +27963,7 @@ ix86_init_mmx_sse_builtins (void)
 	       INT_FTYPE_PUSHORT, IX86_BUILTIN_RDSEED16_STEP);
   def_builtin (OPTION_MASK_ISA_RDSEED, "__builtin_ia32_rdseed_si_step",
 	       INT_FTYPE_PUNSIGNED, IX86_BUILTIN_RDSEED32_STEP);
-  def_builtin (OPTION_MASK_ISA_RDSEED && OPTION_MASK_ISA_64BIT,
+  def_builtin (OPTION_MASK_ISA_RDSEED | OPTION_MASK_ISA_64BIT,
 	       "__builtin_ia32_rdseed_di_step",
 	       INT_FTYPE_PULONGLONG, IX86_BUILTIN_RDSEED64_STEP);
 
