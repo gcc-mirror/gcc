@@ -1,3 +1,8 @@
+2012-08-10  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/54219
+	* gcc.dg/torture/vector-shuffle1.c: New testcase.
+
 2012-08-10  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR middle-end/54211

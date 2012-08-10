@@ -14189,7 +14189,7 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 	      tree *tsel = XALLOCAVEC (tree, nelts);
 	      tree eltype = TREE_TYPE (TREE_TYPE (arg2));
 	      for (i = 0; i < nelts; i++)
-		tsel[i] = build_int_cst (eltype, sel[nelts - i - 1]);
+		tsel[i] = build_int_cst (eltype, sel[i]);
 	      t = build_vector (TREE_TYPE (arg2), tsel);
 	      return build3_loc (loc, VEC_PERM_EXPR, type, op0, op1, t);
 	    }
