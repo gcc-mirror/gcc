@@ -1,3 +1,9 @@
+2012-08-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (simple LEA peephole2s): Add zero-extend
+	variants of PLUS and MULT simple LEA patterns.  Disable PLUS
+	patterns for TARGET_OPT_AGU.
+
 2012-08-10  Richard Guenther  <rguenther@suse.de>
 
 	* Makefile.in (OBJS): Remove matrix-reorg.o.
@@ -124,8 +130,8 @@
 
 2012-08-10  Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
-	* config/i386/i386.c (ix86_init_mmx_sse_builtins): Fix builtin
-	target mask of __builtin_ia32_rdseed_di_step.
+	* config/i386/i386.c (ix86_init_mmx_sse_builtins): Fix
+	target mask of __builtin_ia32_rdseed_di_step builtin.
 
 2012-08-10  Richard Guenther  <rguenther@suse.de>
 
@@ -377,10 +383,10 @@
 
 2012-08-09  Uros Bizjak  <ubizjak@gmail.com>
 
-        * config/alpha/alpha.c (alpha_pad_noreturn): Rename to ...
-        (alpha_pad_function_end): ... this.  Also insert NOP between
-        sibling call and GP load.
-        (alpha_reorg): Update call to alpha_pad_function_end.  Expand comment.
+	* config/alpha/alpha.c (alpha_pad_noreturn): Rename to ...
+	(alpha_pad_function_end): ... this.  Also insert NOP between
+	sibling call and GP load.
+	(alpha_reorg): Update call to alpha_pad_function_end.  Expand comment.
 
 2012-08-09  Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
@@ -1843,25 +1849,25 @@
 
 2012-07-27  Segher Boessenkool  <segher@kernel.crashing.org>
 
-        * config/rs6000/constraints.md: Delete "q" constraint.
-        * config/rs6000/dfp.md (movsd_hardfloat, movsd_softfloat):
-        Delete the "q" alternative.
-        * config/rs6000/predicates.md (gpc_reg_operand): Adjust.
-        * config/rs6000/rs6000.c (rs6000_debug_reg_global,
-        rs6000_init_hard_regno_mode_ok, rs6000_dbx_register_number):
-        Adjust to MQ_REGNO removal.
-        * config/rs6000/rs6000.h (FIRST_PSEUDO_REGISTER): Adjust
-        comment.
-        (REG_ALLOC_ORDER): Adjust comment.  Remove MQ from alloc order.
-        (enum reg_class): Adjust comment.  Delete MQ_REGS.
-        (REG_CLASS_CONTENTS): Adjust.
-        (REGISTER_NAMES, ADDITIONAL_REGISTER_NAMES): Adjust comment.
-        * config/rs6000/rs6000.md: Delete MQ_REGNO.
-        (movsi_internal1, movsi_internal1_single, movhi_internal,
-        movqi_internal, movcc_internal1, movsf_hardfloat,
-        movsf_softfloat): Delete the "q" alternative.
-        (ctr<mode>_internal1, ctr<mode>_internal2, ctr<mode>_internal5,
-        ctr<mode>_internal6): Delete "q" constraint.
+	* config/rs6000/constraints.md: Delete "q" constraint.
+	* config/rs6000/dfp.md (movsd_hardfloat, movsd_softfloat):
+	Delete the "q" alternative.
+	* config/rs6000/predicates.md (gpc_reg_operand): Adjust.
+	* config/rs6000/rs6000.c (rs6000_debug_reg_global)
+	(rs6000_init_hard_regno_mode_ok, rs6000_dbx_register_number):
+	adjust to MQ_REGNO removal.
+	* config/rs6000/rs6000.h (FIRST_PSEUDO_REGISTER): Adjust
+	comment.
+	(REG_ALLOC_ORDER): Adjust comment.  Remove MQ from alloc order.
+	(enum reg_class): Adjust comment.  Delete MQ_REGS.
+	(REG_CLASS_CONTENTS): Adjust.
+	(REGISTER_NAMES, ADDITIONAL_REGISTER_NAMES): Adjust comment.
+	* config/rs6000/rs6000.md: Delete MQ_REGNO.
+	(movsi_internal1, movsi_internal1_single, movhi_internal,
+	movqi_internal, movcc_internal1, movsf_hardfloat,
+	movsf_softfloat): Delete the "q" alternative.
+	(ctr<mode>_internal1, ctr<mode>_internal2, ctr<mode>_internal5,
+	ctr<mode>_internal6): Delete "q" constraint.
 
 2012-07-27  Richard Guenther  <rguenther@suse.de>
 
