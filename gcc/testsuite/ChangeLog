@@ -1,5 +1,12 @@
 2012-08-10  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/54109
+	* gcc.dg/torture/pr54109.c: New testcase.
+	* gcc.dg/tree-ssa/forwprop-1.c: Adjust.
+	* gcc.dg/tree-ssa/forwprop-2.c: Likewise.
+
+2012-08-10  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/54027
 	* gcc.dg/torture/pr54027.c: New testcase.
 
