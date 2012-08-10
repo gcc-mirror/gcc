@@ -1,3 +1,6 @@
+/* { dg-do run } */
+/* { dg-options "-fwhole-program" } */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -6,9 +9,9 @@
 void mem_init (void);
 int ARCHnodes, ARCHnodes1;
 int ***vel;
-
-/* The whole matrix VEL is flattened (3 dimensions).  
-   The dimensions are NOT transposed.  */
+/* The inner most dimension escapes. 
+   The two external dimensions are flattened 
+   after being transposed.  */
 /*--------------------------------------------------------------------------*/
 
 int
@@ -23,21 +26,26 @@ main (int argc, char **argv)
 
   mem_init ();
 
-  for (j = 0; j < 3; j++)
+  for (j = 0; j < 4; j++)
     {
-      for (i = 0; i < 2; i++)
+      for (i = 0; i < 3; i++)
 	{
-	  for (k = 0; k < 3; k++)
-	{
-	    printf ("[%d][%d][%d]=%d ", i, j, k, vel[i][k][k]);
-	}
+	  for (k = 0; k < 2; k++)
+	   {
+ 	    printf ("[%d][%d][%d]=%d ", i, j, k, vel[k][i][j]);
+           }
 	  printf ("\n");
 	}
       printf ("\n");
     }
+  vel[0][0]=vel[1][1];
+
   for (i = 0; i < 2; i++)
     for (j = 0; j < 3; j++)
-      free (vel[i][j]);
+      if (i==1 && j==1)
+        continue;
+      else
+        free (vel[i][j]);
 
   for (i = 0; i < 2; i++)
     free (vel[i]);
@@ -91,6 +99,3 @@ mem_init (void)
 }
 
 /*--------------------------------------------------------------------------*/
-/* { dg-final-use { scan-ipa-dump-times "Flattened 3 dimensions" 1 "matrix-reorg"  } } */
-/* { dg-final-use { scan-ipa-dump-times "Transposed" 0 "matrix-reorg"  } } */
-/* { dg-final-use { cleanup-ipa-dump "matrix-reorg" } } */

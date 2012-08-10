@@ -367,7 +367,7 @@ Objective-C and Objective-C++ Dialects}.
 -fgcse-sm -fhoist-adjacent-loads -fif-conversion @gol
 -fif-conversion2 -findirect-inlining @gol
 -finline-functions -finline-functions-called-once -finline-limit=@var{n} @gol
--finline-small-functions -fipa-cp -fipa-cp-clone -fipa-matrix-reorg @gol
+-finline-small-functions -fipa-cp -fipa-cp-clone @gol
 -fipa-pta -fipa-profile -fipa-pure-const -fipa-reference @gol
 -fira-algorithm=@var{algorithm} @gol
 -fira-region=@var{region} @gol
@@ -7194,18 +7194,6 @@ Because this optimization can create multiple copies of functions,
 it may significantly increase code size
 (see @option{--param ipcp-unit-growth=@var{value}}).
 This flag is enabled by default at @option{-O3}.
-
-@item -fipa-matrix-reorg
-@opindex fipa-matrix-reorg
-Perform matrix flattening and transposing.
-Matrix flattening tries to replace an @math{m}-dimensional matrix
-with its equivalent @math{n}-dimensional matrix, where @math{n < m}.
-This reduces the level of indirection needed for accessing the elements
-of the matrix. The second optimization is matrix transposing, which
-attempts to change the order of the matrix's dimensions in order to
-improve cache locality.
-Both optimizations need the @option{-fwhole-program} flag.
-Transposing is enabled only if profiling information is available.
 
 @item -ftree-sink
 @opindex ftree-sink

@@ -1,5 +1,17 @@
 2012-08-10  Richard Guenther  <rguenther@suse.de>
 
+	* Makefile.in (OBJS): Remove matrix-reorg.o.
+	(matrix-reorg.o): Remove dependence rule.
+	(GTFILES): Remove matrix-reorg.c.
+	* matrix-reorg.c: Remove.
+	* passes.c (init_optimization_passes): Do not schedule
+	pass_ipa_matrix_reorg.
+	* tree-pass.h (pass_ipa_matrix_reorg): Remove.
+	* common.opt (fipa-matrix-reorg): Stub out.
+	* doc/invoke.texi (fipa-matrix-reorg): Remove documentation.
+
+2012-08-10  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/54219
 	* fold-const.c (fold_ternary_loc): Do not reverse the mask
 	when canonicalizing it when folding VEC_PERM_EXPR.

@@ -1301,7 +1301,6 @@ OBJS = \
 	lto-symtab.o \
 	lto-opts.o \
 	lto-compress.o \
-	matrix-reorg.o \
 	mcf.o \
 	mode-switching.o \
 	modulo-sched.o \
@@ -2893,13 +2892,6 @@ ipa-split.o : ipa-split.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TREE_H) $(TARGET_H) $(CGRAPH_H) $(IPA_PROP_H) $(TREE_FLOW_H) \
    $(TREE_PASS_H) $(FLAGS_H) $(DIAGNOSTIC_H) $(TREE_DUMP_H) \
    $(TREE_INLINE_H) $(PARAMS_H) $(GIMPLE_PRETTY_PRINT_H) ipa-inline.h
-matrix-reorg.o : matrix-reorg.c $(CONFIG_H) $(SYSTEM_H) coretypes.h  \
-   $(TM_H) $(TREE_H) $(RTL_H) $(TREE_INLINE_H) $(TREE_FLOW_H) \
-   tree-flow-inline.h langhooks.h $(HASHTAB_H) $(DIAGNOSTIC_CORE_H) $(FLAGS_H) $(GGC_H) \
-   debug.h $(TARGET_H) $(CGRAPH_H) $(DIAGNOSTIC_CORE_H) \
-   $(PARAMS_H) intl.h $(FUNCTION_H) $(BASIC_BLOCK_H) \
-   $(CFGLOOP_H) tree-iterator.h $(TREE_PASS_H) $(OPTS_H) $(TREE_DATA_REF_H) \
-   tree-ssa-sccvn.h
 ipa-inline.o : ipa-inline.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) langhooks.h $(TREE_INLINE_H) $(FLAGS_H) $(CGRAPH_H) intl.h \
    $(DIAGNOSTIC_H) $(FIBHEAP_H) $(PARAMS_H) $(TREE_PASS_H) \
@@ -3657,7 +3649,7 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/cselib.h $(srcdir)/basic-block.h  $(srcdir)/ipa-ref.h $(srcdir)/cgraph.h \
   $(srcdir)/reload.h $(srcdir)/caller-save.c $(srcdir)/symtab.c \
   $(srcdir)/alias.c $(srcdir)/bitmap.c $(srcdir)/cselib.c $(srcdir)/cgraph.c \
-  $(srcdir)/ipa-prop.c $(srcdir)/ipa-cp.c $(srcdir)/matrix-reorg.c \
+  $(srcdir)/ipa-prop.c $(srcdir)/ipa-cp.c \
   $(srcdir)/dbxout.c \
   $(srcdir)/dwarf2out.h \
   $(srcdir)/dwarf2asm.c \

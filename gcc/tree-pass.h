@@ -372,7 +372,6 @@ extern struct simple_ipa_opt_pass pass_early_local_passes;
 extern struct ipa_opt_pass_d pass_ipa_whole_program_visibility;
 extern struct ipa_opt_pass_d pass_ipa_lto_gimple_out;
 extern struct simple_ipa_opt_pass pass_ipa_increase_alignment;
-extern struct simple_ipa_opt_pass pass_ipa_matrix_reorg;
 extern struct ipa_opt_pass_d pass_ipa_inline;
 extern struct simple_ipa_opt_pass pass_ipa_free_lang_data;
 extern struct simple_ipa_opt_pass pass_ipa_free_inline_summary;

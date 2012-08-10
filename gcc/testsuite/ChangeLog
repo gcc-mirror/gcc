@@ -1,5 +1,11 @@
 2012-08-10  Richard Guenther  <rguenther@suse.de>
 
+	* gcc.dg/matrix/*.c: Adjust and move ...
+	* gcc.dg/torture/: ... here.
+	* gcc.dg/matrix: Remove directory.
+
+2012-08-10  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/54219
 	* gcc.dg/torture/vector-shuffle1.c: New testcase.
 
