@@ -1,3 +1,9 @@
+2012-08-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/torture/vector-shuffle1.c (f): Pass vectors indirectly
+	to avoid warnings.
+	(main): Adjust caller.
+
 2012-08-10  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/matrix/*.c: Adjust and move ...
