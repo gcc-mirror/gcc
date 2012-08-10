@@ -1,3 +1,9 @@
+2012-08-09  DJ Delorie  <dj@redhat.com>
+
+	* config/rl78/rl78.c (rl78_alloc_physical_registers): Check for
+	SET before extracting SET_SRC.
+	(rl78_remove_unused_sets): Check for REG before extractnig REGNO.
+
 2012-08-09  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/54089

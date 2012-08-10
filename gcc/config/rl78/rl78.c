@@ -2217,7 +2217,8 @@ rl78_alloc_physical_registers (void)
 	  && GET_CODE (PATTERN (insn)) != CALL)
 	  continue;
 
-      if (GET_CODE (SET_SRC (PATTERN (insn))) == ASM_OPERANDS)
+      if (GET_CODE (PATTERN (insn)) == SET
+	  && GET_CODE (SET_SRC (PATTERN (insn))) == ASM_OPERANDS)
 	continue;
 
       valloc_method = get_attr_valloc (insn);
@@ -2644,7 +2645,7 @@ rl78_remove_unused_sets (void)
 
       dest = SET_DEST (insn);
 
-      if (REGNO (dest) > 23)
+      if (GET_CODE (dest) != REG || REGNO (dest) > 23)
 	continue;
 
       if (find_regno_note (insn, REG_UNUSED, REGNO (dest)))
