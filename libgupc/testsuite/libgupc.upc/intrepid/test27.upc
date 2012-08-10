@@ -29,8 +29,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef shared[] int *sintptr;
-shared[] int bupc_206_A[10];
+typedef shared [] int *sintptr;
+shared [] int bupc_206_A[10];
 sintptr bupc_206_S;
 
 typedef struct point_name
@@ -43,10 +43,10 @@ typedef struct point_name
 typedef struct
 {
   int n;
-  shared[] point_t *points;
+  shared [] point_t *points;
 } hullinfo_t;
 
-shared[] hullinfo_t *bupc_bug275a_hull;
+shared [] hullinfo_t *bupc_bug275a_hull;
 
 int *shared bupc_bug53_p;
 
@@ -60,7 +60,19 @@ typedef struct heap_struct
 } heap_t;
 typedef shared heap_t *heap_p;
 
+struct barrier_block
+{
+  int notify;
+  int wait;
+  int id[2];
+};
+
+typedef struct barrier_block barrier_block_t;
+shared barrier_block_t btree[THREADS];
+volatile int zero;
+
 shared heap_p global_heap;
+
 
 void
 bupc_bug53_test ()
@@ -106,7 +118,8 @@ bupc_bug275a_test ()
   int i = 0;
   point_t *lpoints;
   /* Allocate hull struct on this thread */
-  bupc_bug275a_hull = (shared[]hullinfo_t *) upc_alloc (sizeof (hullinfo_t));
+  bupc_bug275a_hull =
+    (shared [] hullinfo_t *) upc_alloc (sizeof (hullinfo_t));
   if (!bupc_bug275a_hull)
     {
       fprintf (stderr, "%d: Error: can't allocate hull struct"
@@ -116,7 +129,7 @@ bupc_bug275a_test ()
   /* Allocate 10 points in each hull structure.  */
   bupc_bug275a_hull->n = 10;
   bupc_bug275a_hull->points =
-    (shared[]point_t *) upc_alloc (10 * sizeof (point_t));
+    (shared [] point_t *) upc_alloc (10 * sizeof (point_t));
   if (!bupc_bug275a_hull->points)
     {
       fprintf (stderr, "%d: Error: can't allocate points struct"
@@ -156,9 +169,8 @@ bupc_bug645_f (struct point_name x)
 {
   if (x.x != 5.0 || x.y != 6.0 || x.gid != 100)
     fprintf (stderr, "%d: Error: point_name mismatch"
-            " got: (%0.3lg,%0.3lg,%i) expected: (5,6.100)"
-	    " - BUPC bug645 test failed.\n",
-            MYTHREAD, x.x, x.y, x.gid);
+	     " got: (%0.3lg,%0.3lg,%i) expected: (5,6.100)"
+	     " - BUPC bug645 test failed.\n", MYTHREAD, x.x, x.y, x.gid);
 }
 
 void
@@ -170,7 +182,7 @@ bupc_bug645_test ()
       if (!bupc_bug645_p)
 	{
 	  fprintf (stderr, "Error: upc_global_alloc() call returned NULL"
-	                   " - BUPC bug645 test failed.\n");
+		   " - BUPC bug645 test failed.\n");
 	  abort ();
 	}
       bupc_bug645_p->x = 5.0;
@@ -193,7 +205,7 @@ bupc_bug979_test ()
   shared struct bupc_bug979_struct *G;
   int got, expected;
   G = (shared struct bupc_bug979_struct *)
-      upc_alloc (sizeof (struct bupc_bug979_struct));
+    upc_alloc (sizeof (struct bupc_bug979_struct));
   G->curid = 1;
   G->last = 90;
   upc_fence;
@@ -213,7 +225,7 @@ void
 heap_init (shared void *heap_base, size_t heap_size)
 {
   heap_p heap;
-  heap = (heap_p)heap_base;
+  heap = (heap_p) heap_base;
   upc_memset (heap, '\0', sizeof (heap_t));
   /* the size of each free list entry includes its overhead. */
   heap->size = heap_size;
@@ -230,10 +242,10 @@ heap_merge (heap_p ptr)
      on reference to ptr->next->alloc_seq.  */
   if (ptr->next)
     {
-      const shared void * const next_block =
-	(shared void *)((shared [] char *)ptr + ptr->size);
+      const shared void *const next_block =
+	(shared void *) ((shared [] char *) ptr + ptr->size);
       if ((ptr->next == next_block)
-	   && (ptr->alloc_seq == ptr->next->alloc_seq))
+	  && (ptr->alloc_seq == ptr->next->alloc_seq))
 	{
 	  /* adjacent, merge this block with the next */
 	  ptr->size += ptr->next->size;
@@ -254,45 +266,65 @@ heap_test ()
       const size_t sz2 = round_up (sizeof (heap_t) + 311, 64);
       const size_t alloc_size = sz1 + sz2;
       heap_p heap_base;
-      heap_base = (heap_p)upc_alloc (alloc_size);
+      heap_base = (heap_p) upc_alloc (alloc_size);
       if (!heap_base)
-        {
+	{
 	  fprintf (stderr, "Error: can't allocate heap memory"
-	                   " - heap_test failed.\n");
+		   " - heap_test failed.\n");
 	  abort ();
 	}
       heap_init (heap_base, alloc_size);
       if (heap_base != global_heap)
-        {
-	  fprintf (stderr, "Error: heap_base != global_heap" 
-	                   " - heap_test failed.\n");
+	{
+	  fprintf (stderr, "Error: heap_base != global_heap"
+		   " - heap_test failed.\n");
 	  abort ();
 	}
       /* Fake allocations of 195 and 311.  */
       heap_base->size = sz1;
       heap_base->alloc_seq = 2;
-      heap_base->next = (heap_p)((shared [] char *)heap_base + sz1);
+      heap_base->next = (heap_p) ((shared [] char *) heap_base + sz1);
       heap_base->next->size = sz2;
       heap_base->next->alloc_seq = heap_base->alloc_seq;
       heap_base->next->next = NULL;
       heap_merge (heap_base);
       upc_fence;
       if (global_heap->size != alloc_size)
-        {
+	{
 	  fprintf (stderr, "Error: unexpected heap size after merge,"
-	                   "got %ld expected %ld"
-			   " - heap_test failed.\n",
-			   (long)global_heap->size, (long)alloc_size);
+		   "got %ld expected %ld"
+		   " - heap_test failed.\n",
+		   (long) global_heap->size, (long) alloc_size);
 	  abort ();
 	}
       if (global_heap->alloc_seq != 2)
-        {
-	  fprintf (stderr, "Error: unexpected heap alloc sequence id after merge,"
-	                   "got %d expected %d"
-			   " - heap_test failed.\n",
-			   global_heap->alloc_seq, 2);
-	  abort ();
+	{
+	  fprintf (stderr,
+		   "Error: unexpected heap alloc sequence id after merge,"
+		   "got %d expected %d" " - heap_test failed.\n",
+		   global_heap->alloc_seq, 2);
+          abort ();
 	}
+    }
+}
+
+void
+fold_address_of_test ()
+{
+  shared int *ptr1, *ptr2;
+  zero = 0;
+  ptr1 = (shared int *) &btree[0].wait;
+  ptr2 = (shared int *) &btree[zero].wait;
+  if ((MYTHREAD == 0) && (ptr1 != ptr2))
+    {
+      fprintf (stderr, "&__upc_btreex = (%llx,%d)\n",
+	       (long long) upc_addrfield (btree), (int) upc_threadof (btree));
+      fprintf (stderr, "ptr1 = (%llx,%d)\n",
+	       (long long) upc_addrfield (ptr1), (int) upc_threadof (ptr1));
+      fprintf (stderr, "ptr2 = (%llx,%d)\n",
+	       (long long) upc_addrfield (ptr2), (int) upc_threadof (ptr2));
+      fprintf (stderr, "ptr1 != ptr2; fold_address_of test failed\n");
+      abort ();
     }
 }
 
@@ -310,6 +342,9 @@ test27 ()
   bupc_bug979_test ();
   upc_barrier;
   heap_test ();
+  upc_barrier;
+  fold_address_of_test ();
+  upc_barrier;
 }
 
 int

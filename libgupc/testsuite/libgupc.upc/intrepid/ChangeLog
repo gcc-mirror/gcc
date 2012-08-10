@@ -1,3 +1,10 @@
+2012-08-09  Gary Funck  <gary@intrepid.com>
+
+	* test27.upc (fold_address_of_test): New.
+	Implement test for correct handling of &array[0].field
+	where 'array' is a UPC shared array.
+	Improve formatting and indentation.
+
 2012-07-25  Gary Funck  <gary@intrepid.com>
 
 	* test26.upc: Implement check for 6.4.2p6 conformance
