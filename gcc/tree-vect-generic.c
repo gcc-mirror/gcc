@@ -667,8 +667,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 					((unsigned HOST_WIDE_INT) 1
 					 << shifts[i]) - 1);
 	      cst = build_vector (type, vec);
-	      addend = create_tmp_reg (type, NULL);
-	      addend = make_ssa_name (addend, NULL);
+	      addend = make_ssa_name (type, NULL);
 	      stmt = gimple_build_assign_with_ops3 (VEC_COND_EXPR, addend,
 						    cond, cst, zero);
 	      gsi_insert_before (gsi, stmt, GSI_SAME_STMT);

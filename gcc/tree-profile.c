@@ -44,7 +44,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 
 static GTY(()) tree gcov_type_node;
-static GTY(()) tree gcov_type_tmp_var;
 static GTY(()) tree tree_interval_profiler_fn;
 static GTY(()) tree tree_pow2_profiler_fn;
 static GTY(()) tree tree_one_value_profiler_fn;
@@ -209,20 +208,18 @@ gimple_init_edge_profiler (void)
 void
 gimple_gen_edge_profiler (int edgeno, edge e)
 {
-  tree ref, one;
+  tree ref, one, gcov_type_tmp_var;
   gimple stmt1, stmt2, stmt3;
 
-  /* We share one temporary variable declaration per function.  This
-     gets re-set in tree_profiling.  */
-  if (gcov_type_tmp_var == NULL_TREE)
-    gcov_type_tmp_var = create_tmp_reg (gcov_type_node, "PROF_edge_counter");
   ref = tree_coverage_counter_ref (GCOV_COUNTER_ARCS, edgeno);
   one = build_int_cst (gcov_type_node, 1);
+  gcov_type_tmp_var = make_temp_ssa_name (gcov_type_node,
+					  NULL, "PROF_edge_counter");
   stmt1 = gimple_build_assign (gcov_type_tmp_var, ref);
-  gimple_assign_set_lhs (stmt1, make_ssa_name (gcov_type_tmp_var, stmt1));
+  gcov_type_tmp_var = make_temp_ssa_name (gcov_type_node,
+					  NULL, "PROF_edge_counter");
   stmt2 = gimple_build_assign_with_ops (PLUS_EXPR, gcov_type_tmp_var,
 					gimple_assign_lhs (stmt1), one);
-  gimple_assign_set_lhs (stmt2, make_ssa_name (gcov_type_tmp_var, stmt2));
   stmt3 = gimple_build_assign (unshare_expr (ref), gimple_assign_lhs (stmt2));
   gsi_insert_on_edge (e, stmt1);
   gsi_insert_on_edge (e, stmt2);
@@ -335,10 +332,9 @@ gimple_gen_ic_profiler (histogram_value value, unsigned tag, unsigned base)
     stmt3: __gcov_indirect_call_callee = tmp1;
    */
 
-  tmp1 = create_tmp_reg (ptr_void, "PROF");
   stmt1 = gimple_build_assign (ic_gcov_type_ptr_var, ref_ptr);
+  tmp1 = make_temp_ssa_name (ptr_void, NULL, "PROF");
   stmt2 = gimple_build_assign (tmp1, unshare_expr (value->hvalue.value));
-  gimple_assign_set_lhs (stmt2, make_ssa_name (tmp1, stmt2));
   stmt3 = gimple_build_assign (ic_void_ptr_var, gimple_assign_lhs (stmt2));
 
   gsi_insert_before (&gsi, stmt1, GSI_SAME_STMT);
@@ -480,9 +476,6 @@ tree_profiling (void)
 
       push_cfun (DECL_STRUCT_FUNCTION (node->symbol.decl));
       current_function_decl = node->symbol.decl;
-
-      /* Re-set global shared temporary variable for edge-counters.  */
-      gcov_type_tmp_var = NULL_TREE;
 
       /* Local pure-const may imply need to fixup the cfg.  */
       if (execute_fixup_cfg () & TODO_cleanup_cfg)

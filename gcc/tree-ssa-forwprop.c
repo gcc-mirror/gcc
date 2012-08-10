@@ -1941,14 +1941,12 @@ simplify_bitwise_binary (gimple_stmt_iterator *gsi)
       && int_fits_type_p (arg2, TREE_TYPE (def1_arg1)))
     {
       gimple newop;
-      tree tem = create_tmp_reg (TREE_TYPE (def1_arg1), NULL);
+      tree tem = make_ssa_name (TREE_TYPE (def1_arg1), NULL);
       newop =
         gimple_build_assign_with_ops (code, tem, def1_arg1,
 				      fold_convert_loc (gimple_location (stmt),
 							TREE_TYPE (def1_arg1),
 							arg2));
-      tem = make_ssa_name (tem, newop);
-      gimple_assign_set_lhs (newop, tem);
       gimple_set_location (newop, gimple_location (stmt));
       gsi_insert_before (gsi, newop, GSI_SAME_STMT);
       gimple_assign_set_rhs_with_ops_1 (gsi, NOP_EXPR,
@@ -1974,11 +1972,8 @@ simplify_bitwise_binary (gimple_stmt_iterator *gsi)
 	      != GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (arg1))))))
     {
       gimple newop;
-      tree tem = create_tmp_reg (TREE_TYPE (def1_arg1),
-				 NULL);
+      tree tem = make_ssa_name (TREE_TYPE (def1_arg1), NULL);
       newop = gimple_build_assign_with_ops (code, tem, def1_arg1, def2_arg1);
-      tem = make_ssa_name (tem, newop);
-      gimple_assign_set_lhs (newop, tem);
       gimple_set_location (newop, gimple_location (stmt));
       gsi_insert_before (gsi, newop, GSI_SAME_STMT);
       gimple_assign_set_rhs_with_ops_1 (gsi, NOP_EXPR,
@@ -2020,10 +2015,8 @@ simplify_bitwise_binary (gimple_stmt_iterator *gsi)
 	{
 	  gimple newop;
 	  tree tem;
-	  tem = create_tmp_reg (TREE_TYPE (arg2), NULL);
+	  tem = make_ssa_name (TREE_TYPE (arg2), NULL);
 	  newop = gimple_build_assign_with_ops (code, tem, a, c);
-	  tem = make_ssa_name (tem, newop);
-	  gimple_assign_set_lhs (newop, tem);
 	  gimple_set_location (newop, gimple_location (stmt));
 	  /* Make sure to re-process the new stmt as it's walking upwards.  */
 	  gsi_insert_before (gsi, newop, GSI_NEW_STMT);
@@ -2051,11 +2044,9 @@ simplify_bitwise_binary (gimple_stmt_iterator *gsi)
 	  update_stmt (stmt);
 	  return true;
 	}
-      tem = create_tmp_reg (TREE_TYPE (arg2), NULL);
+      tem = make_ssa_name (TREE_TYPE (arg2), NULL);
       newop = gimple_build_assign_with_ops (BIT_AND_EXPR,
 					    tem, def1_arg1, arg2);
-      tem = make_ssa_name (tem, newop);
-      gimple_assign_set_lhs (newop, tem);
       gimple_set_location (newop, gimple_location (stmt));
       /* Make sure to re-process the new stmt as it's walking upwards.  */
       gsi_insert_before (gsi, newop, GSI_NEW_STMT);

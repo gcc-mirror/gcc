@@ -1,3 +1,76 @@
+2012-08-10  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-pre.c (pretemp, storetemp, prephitemp): Remove.
+	(need_creation): Remove.
+	(get_representative_for): Use anonymous named SSA names.
+	(create_expression_by_pieces): Likewise.
+	(insert_into_preds_of_block): Likewise.
+	(init_pre): Do not init removed vars.
+	(fini_pre): Do not free need_creation.
+	* tree-ssa-forwprop.c (simplify_bitwise_binary): Use anonymous
+	SSA names.
+	* tree-ssa-loop-manip.c (create_iv): Likewise.
+	* value-prof.c (gimple_divmod_fixed_value): Likewise.
+	(gimple_mod_pow2): Likewise.
+	(gimple_mod_subtract): Likewise.
+	(gimple_ic): Likewise.
+	(gimple_stringop_fixed_value): Likewise.
+	* tree-ssa-phiopt.c (condstoretemp): Remove.
+	(tree_ssa_phiopt_worker): Use anonymous named SSA names.
+	(conditional_replacement): Likewise.
+	(abs_replacement): Likewise.
+	(cond_store_replacement): Likewise.
+	(cond_if_else_store_replacement_1): Likewise.
+	* tree-ssa-loop-im.c (rewrite_reciprocal): Likewise.
+	(rewrite_bittest): Likewise.
+	* tree-ssa-reassoc.c (build_and_add_sum): Get type from callers
+	and build anonymous SSA names.
+	(undistribute_ops_list): Adjust.
+	(eliminate_redundant_comparison): Use anonymous SSA names.
+	(rewrite_expr_tree_parallel): Likewise.
+	(get_reassoc_pow_ssa_name): Remove.
+	(attempt_builtin_powi): Adjust.
+	(reassociate_bb): Likewise.
+	* tree-ssa-strlen.c (get_string_length): Use anonymous SSA names.
+	* tree-switch-conversion.c (emit_case_bit_tests): Likewise.
+	(build_arrays): Likewise.
+	* tree-tailcall.c (adjust_return_value_with_ops): Likewise.
+	(create_tailcall_accumulator): Likewise.
+	* tree-vect-generic.c (expand_vector_divmod): Likewise.
+	* tree-profile.c (gcov_type_tmp_var): Remove.
+	(gimple_init_edge_profiler): Do not initialize it and use anonymous
+	SSA names.
+	(gimple_gen_ic_profiler): Likewise.
+	(tree_profiling): Adjust.
+	* tree-sra.c (build_ref_for_offset): Use anonymous SSA names.
+	* tree-ssa-math-opts.c (execute_cse_sincos_1): Likewise.
+	(powi_as_mults_1): Likewise.
+	(powi_as_mults): Likewise.
+	(build_and_insert_call): Adjust.
+	(build_and_insert_binop): Likewise.
+	(build_and_insert_ref): Likewise.
+	(build_and_insert_cast): Likewise.
+	(gimple_expand_builtin_pow): Likewise.
+	(gimple_expand_builtin_cabs): Likewise.
+	(execute_optimize_bswap): Use anonymous SSA names.
+	(convert_mult_to_widen): Likewise.
+	(convert_plusminus_to_widen): Likewise.
+	* tree-ssa-phiprop.c (phiprop_insert_phi): Likewise.
+	* tree-ssa-propagate.c (update_call_from_tree): Likewise.
+	* tree-if-conv.c (ifc_temp_var): Likewise.
+	* tree-loop-distribution.c (generate_memset_builtin): Likewise.
+	* tree-parloops.c (take_address_of): Likewise.
+	* tree-vect-data-refs.c (vect_permute_store_chain): Likewise.
+	(vect_permute_load_chain): Likewise.
+	* tree-vect-loop-manip.c (vect_create_cond_for_align_checks): Likewise.
+	* tree-vect-patterns.c (vect_recog_temp_ssa_var): Likewise.
+	(vect_handle_widen_op_by_const): Likewise.
+	(vect_operation_fits_smaller_type): Likewise.
+	(vect_recog_over_widening_pattern): Likewise.
+	* tree-vect-stmts.c (vect_init_vector): Likewise.
+	* tree-vrp.c (simplify_truth_ops_using_ranges): Likewise.
+	(simplify_float_conversion_using_ranges): Likewise.
+
 2012-08-10  Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
 	* config/i386/i386.c (ix86_init_mmx_sse_builtins): Fix builtin

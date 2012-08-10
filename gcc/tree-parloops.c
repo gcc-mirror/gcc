@@ -452,7 +452,7 @@ take_address_of (tree obj, tree type, edge entry, htab_t decl_address,
   int uid;
   void **dslot;
   struct int_tree_map ielt, *nielt;
-  tree *var_p, name, bvar, addr;
+  tree *var_p, name, addr;
   gimple stmt;
   gimple_seq stmts;
 
@@ -479,12 +479,10 @@ take_address_of (tree obj, tree type, edge entry, htab_t decl_address,
       if (gsi == NULL)
 	return NULL;
       addr = TREE_OPERAND (*var_p, 0);
-      bvar = create_tmp_var (TREE_TYPE (addr),
-			     get_name (TREE_OPERAND
-				         (TREE_OPERAND (*var_p, 0), 0)));
-      stmt = gimple_build_assign (bvar, addr);
-      name = make_ssa_name (bvar, stmt);
-      gimple_assign_set_lhs (stmt, name);
+      name = make_temp_ssa_name (TREE_TYPE (addr), NULL,
+				 get_name (TREE_OPERAND
+					   (TREE_OPERAND (*var_p, 0), 0)));
+      stmt = gimple_build_assign (name, addr);
       gsi_insert_on_edge_immediate (entry, stmt);
 
       nielt = XNEW (struct int_tree_map);

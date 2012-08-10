@@ -424,15 +424,13 @@ emit_case_bit_tests (gimple swtch, tree index_expr,
     }
 
   /* csui = (1 << (word_mode) idx) */
-  tmp = create_tmp_var (word_type_node, "csui");
-  csui = make_ssa_name (tmp, NULL);
+  csui = make_ssa_name (word_type_node, NULL);
   tmp = fold_build2 (LSHIFT_EXPR, word_type_node, word_mode_one,
 		     fold_convert (word_type_node, idx));
   tmp = force_gimple_operand_gsi (&gsi, tmp,
 				  /*simple=*/false, NULL_TREE,
 				  /*before=*/true, GSI_SAME_STMT);
   shift_stmt = gimple_build_assign (csui, tmp);
-  SSA_NAME_DEF_STMT (csui) = shift_stmt;
   gsi_insert_before (&gsi, shift_stmt, GSI_SAME_STMT);
   update_stmt (shift_stmt);
 
@@ -1090,7 +1088,7 @@ static void
 build_arrays (gimple swtch, struct switch_conv_info *info)
 {
   tree arr_index_type;
-  tree tidx, sub, tmp, utype;
+  tree tidx, sub, utype;
   gimple stmt;
   gimple_stmt_iterator gsi;
   int i;
@@ -1106,15 +1104,13 @@ build_arrays (gimple swtch, struct switch_conv_info *info)
     utype = lang_hooks.types.type_for_mode (TYPE_MODE (utype), 1);
 
   arr_index_type = build_index_type (info->range_size);
-  tmp = create_tmp_var (utype, "csui");
-  tidx = make_ssa_name (tmp, NULL);
+  tidx = make_ssa_name (utype, NULL);
   sub = fold_build2_loc (loc, MINUS_EXPR, utype,
 			 fold_convert_loc (loc, utype, info->index_expr),
 			 fold_convert_loc (loc, utype, info->range_min));
   sub = force_gimple_operand_gsi (&gsi, sub,
 				  false, NULL, true, GSI_SAME_STMT);
   stmt = gimple_build_assign (tidx, sub);
-  SSA_NAME_DEF_STMT (tidx) = stmt;
 
   gsi_insert_before (&gsi, stmt, GSI_SAME_STMT);
   update_stmt (stmt);

@@ -8042,13 +8042,9 @@ simplify_truth_ops_using_ranges (gimple_stmt_iterator *gsi, gimple stmt)
   /* For A != B we substitute A ^ B.  Either with conversion.  */
   else if (need_conversion)
     {
-      gimple newop;
-      tree tem = create_tmp_reg (TREE_TYPE (op0), NULL);
-      newop = gimple_build_assign_with_ops (BIT_XOR_EXPR, tem, op0, op1);
-      tem = make_ssa_name (tem, newop);
-      gimple_assign_set_lhs (newop, tem);
+      tree tem = make_ssa_name (TREE_TYPE (op0), NULL);
+      gimple newop = gimple_build_assign_with_ops (BIT_XOR_EXPR, tem, op0, op1);
       gsi_insert_before (gsi, newop, GSI_SAME_STMT);
-      update_stmt (newop);
       gimple_assign_set_rhs_with_ops (gsi, NOP_EXPR, tem, NULL_TREE);
     }
   /* Or without.  */
@@ -8707,11 +8703,9 @@ simplify_float_conversion_using_ranges (gimple_stmt_iterator *gsi, gimple stmt)
 
   /* It works, insert a truncation or sign-change before the
      float conversion.  */
-  tem = create_tmp_var (build_nonstandard_integer_type
+  tem = make_ssa_name (build_nonstandard_integer_type
 			  (GET_MODE_PRECISION (mode), 0), NULL);
   conv = gimple_build_assign_with_ops (NOP_EXPR, tem, rhs1, NULL_TREE);
-  tem = make_ssa_name (tem, conv);
-  gimple_assign_set_lhs (conv, tem);
   gsi_insert_before (gsi, conv, GSI_SAME_STMT);
   gimple_assign_set_rhs1 (stmt, tem);
   update_stmt (stmt);
