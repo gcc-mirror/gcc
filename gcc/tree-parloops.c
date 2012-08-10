@@ -795,7 +795,25 @@ separate_decls_in_region_name (tree name,
   if (slot && *slot)
     return ((struct name_to_copy_elt *) *slot)->new_name;
 
+  if (copy_name_p)
+    {
+      copy = duplicate_ssa_name (name, NULL);
+      nelt = XNEW (struct name_to_copy_elt);
+      nelt->version = idx;
+      nelt->new_name = copy;
+      nelt->field = NULL_TREE;
+      *slot = nelt;
+    }
+  else
+    {
+      gcc_assert (!slot);
+      copy = name;
+    }
+
   var = SSA_NAME_VAR (name);
+  if (!var)
+    return copy;
+
   uid = DECL_UID (var);
   ielt.uid = uid;
   dslot = htab_find_slot_with_hash (decl_copies, &ielt, uid, INSERT);
@@ -821,21 +839,6 @@ separate_decls_in_region_name (tree name,
     }
   else
     var_copy = ((struct int_tree_map *) *dslot)->to;
-
-  if (copy_name_p)
-    {
-      copy = duplicate_ssa_name (name, NULL);
-      nelt = XNEW (struct name_to_copy_elt);
-      nelt->version = idx;
-      nelt->new_name = copy;
-      nelt->field = NULL_TREE;
-      *slot = nelt;
-    }
-  else
-    {
-      gcc_assert (!slot);
-      copy = name;
-    }
 
   replace_ssa_name_symbol (copy, var_copy);
   return copy;
@@ -966,9 +969,9 @@ add_field_for_name (void **slot, void *data)
   struct name_to_copy_elt *const elt = (struct name_to_copy_elt *) *slot;
   tree type = (tree) data;
   tree name = ssa_name (elt->version);
-  tree var = SSA_NAME_VAR (name);
-  tree field = build_decl (DECL_SOURCE_LOCATION (var),
-			   FIELD_DECL, DECL_NAME (var), TREE_TYPE (var));
+  tree field = build_decl (UNKNOWN_LOCATION,
+			   FIELD_DECL, SSA_NAME_IDENTIFIER (name),
+			   TREE_TYPE (name));
 
   insert_field_into_struct (type, field);
   elt->field = field;

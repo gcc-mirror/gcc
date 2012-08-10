@@ -83,18 +83,17 @@ ssa_undefined_value_p (tree t)
 {
   tree var = SSA_NAME_VAR (t);
 
+  if (!var)
+    ;
   /* Parameters get their initial value from the function entry.  */
-  if (TREE_CODE (var) == PARM_DECL)
+  else if (TREE_CODE (var) == PARM_DECL)
     return false;
-
   /* When returning by reference the return address is actually a hidden
      parameter.  */
-  if (TREE_CODE (SSA_NAME_VAR (t)) == RESULT_DECL
-      && DECL_BY_REFERENCE (SSA_NAME_VAR (t)))
+  else if (TREE_CODE (var) == RESULT_DECL && DECL_BY_REFERENCE (var))
     return false;
-
   /* Hard register variables get their initial value from the ether.  */
-  if (TREE_CODE (var) == VAR_DECL && DECL_HARD_REGISTER (var))
+  else if (TREE_CODE (var) == VAR_DECL && DECL_HARD_REGISTER (var))
     return false;
 
   /* The value is undefined iff its definition statement is empty.  */
@@ -1948,6 +1947,8 @@ warn_uninitialized_phi (gimple phi, VEC(gimple, heap) **worklist,
     return;
 
   uninit_op = gimple_phi_arg_def (phi, MASK_FIRST_SET_BIT (uninit_opnds));
+  if (SSA_NAME_VAR (uninit_op) == NULL_TREE)
+    return;
   warn_uninit (OPT_Wmaybe_uninitialized, uninit_op, SSA_NAME_VAR (uninit_op),
 	       SSA_NAME_VAR (uninit_op),
                "%qD may be used uninitialized in this function",

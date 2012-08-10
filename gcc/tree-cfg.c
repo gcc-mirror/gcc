@@ -4085,6 +4085,7 @@ verify_gimple_return (gimple stmt)
   if ((TREE_CODE (op) == RESULT_DECL
        && DECL_BY_REFERENCE (op))
       || (TREE_CODE (op) == SSA_NAME
+	  && SSA_NAME_VAR (op)
 	  && TREE_CODE (SSA_NAME_VAR (op)) == RESULT_DECL
 	  && DECL_BY_REFERENCE (SSA_NAME_VAR (op))))
     op = TREE_TYPE (op);
@@ -5945,7 +5946,7 @@ replace_ssa_name (tree name, struct pointer_map_t *vars_map,
 		  tree to_context)
 {
   void **loc;
-  tree new_name, decl = SSA_NAME_VAR (name);
+  tree new_name;
 
   gcc_assert (is_gimple_reg (name));
 
@@ -5953,12 +5954,19 @@ replace_ssa_name (tree name, struct pointer_map_t *vars_map,
 
   if (!loc)
     {
-      replace_by_duplicate_decl (&decl, vars_map, to_context);
-
-      new_name = make_ssa_name_fn (DECL_STRUCT_FUNCTION (to_context),
-				   decl, SSA_NAME_DEF_STMT (name));
-      if (SSA_NAME_IS_DEFAULT_DEF (name))
-	set_ssa_default_def (DECL_STRUCT_FUNCTION (to_context), decl, new_name);
+      tree decl = SSA_NAME_VAR (name);
+      if (decl)
+	{
+	  replace_by_duplicate_decl (&decl, vars_map, to_context);
+	  new_name = make_ssa_name_fn (DECL_STRUCT_FUNCTION (to_context),
+				       decl, SSA_NAME_DEF_STMT (name));
+	  if (SSA_NAME_IS_DEFAULT_DEF (name))
+	    set_ssa_default_def (DECL_STRUCT_FUNCTION (to_context),
+				 decl, new_name);
+	}
+      else
+	new_name = copy_ssa_name_fn (DECL_STRUCT_FUNCTION (to_context),
+				     name, SSA_NAME_DEF_STMT (name));
 
       loc = pointer_map_insert (vars_map, name);
       *loc = new_name;
@@ -6684,6 +6692,19 @@ dump_function_to_file (tree fn, FILE *file, int flags)
 
 	  any_var = true;
 	}
+      if (gimple_in_ssa_p (cfun))
+	for (ix = 1; ix < num_ssa_names; ++ix)
+	  {
+	    tree name = ssa_name (ix);
+	    if (name && !SSA_NAME_VAR (name))
+	      {
+		fprintf (file, "  ");
+		print_generic_expr (file, TREE_TYPE (name), flags);
+		fprintf (file, " ");
+		print_generic_expr (file, name, flags);
+		fprintf (file, ";\n");
+	      }
+	  }
     }
 
   if (cfun && cfun->decl == fn && cfun->cfg && basic_block_info)

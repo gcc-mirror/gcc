@@ -1980,9 +1980,25 @@ struct GTY(()) tree_exp {
 
 /* SSA_NAME accessors.  */
 
-/* Returns the variable being referenced.  Once released, this is the
-   only field that can be relied upon.  */
-#define SSA_NAME_VAR(NODE)	SSA_NAME_CHECK (NODE)->ssa_name.var
+/* Returns the IDENTIFIER_NODE giving the SSA name a name or NULL_TREE
+   if there is no name associated with it.  */
+#define SSA_NAME_IDENTIFIER(NODE)				\
+  (SSA_NAME_CHECK (NODE)->ssa_name.var != NULL_TREE		\
+   ? (TREE_CODE ((NODE)->ssa_name.var) == IDENTIFIER_NODE	\
+      ? (NODE)->ssa_name.var					\
+      : DECL_NAME ((NODE)->ssa_name.var))			\
+   : NULL_TREE)
+
+/* Returns the variable being referenced.  This can be NULL_TREE for
+   temporaries not associated with any user variable.
+   Once released, this is the only field that can be relied upon.  */
+#define SSA_NAME_VAR(NODE)					\
+  (SSA_NAME_CHECK (NODE)->ssa_name.var == NULL_TREE		\
+   || TREE_CODE ((NODE)->ssa_name.var) == IDENTIFIER_NODE	\
+   ? NULL_TREE : (NODE)->ssa_name.var)
+
+#define SET_SSA_NAME_VAR_OR_IDENTIFIER(NODE,VAR) \
+  do { SSA_NAME_CHECK (NODE)->ssa_name.var = (VAR); } while (0)
 
 /* Returns the statement which defines this SSA name.  */
 #define SSA_NAME_DEF_STMT(NODE)	SSA_NAME_CHECK (NODE)->ssa_name.def_stmt

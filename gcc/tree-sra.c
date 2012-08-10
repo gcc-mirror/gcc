@@ -1885,6 +1885,7 @@ create_access_replacement (struct access *access)
     {
       char *pretty_name = make_fancy_name (access->expr);
       tree debug_expr = unshare_expr (access->expr), d;
+      bool fail = false;
 
       DECL_NAME (repl) = get_identifier (pretty_name);
       obstack_free (&name_obstack, pretty_name);
@@ -1894,29 +1895,34 @@ create_access_replacement (struct access *access)
 	 used SSA_NAMEs and thus they could be freed.  All debug info
 	 generation cares is whether something is constant or variable
 	 and that get_ref_base_and_extent works properly on the
-	 expression.  */
-      for (d = debug_expr; handled_component_p (d); d = TREE_OPERAND (d, 0))
+	 expression.  It cannot handle accesses at a non-constant offset
+	 though, so just give up in those cases.  */
+      for (d = debug_expr; !fail && handled_component_p (d);
+	   d = TREE_OPERAND (d, 0))
 	switch (TREE_CODE (d))
 	  {
 	  case ARRAY_REF:
 	  case ARRAY_RANGE_REF:
 	    if (TREE_OPERAND (d, 1)
-		&& TREE_CODE (TREE_OPERAND (d, 1)) == SSA_NAME)
-	      TREE_OPERAND (d, 1) = SSA_NAME_VAR (TREE_OPERAND (d, 1));
+		&& TREE_CODE (TREE_OPERAND (d, 1)) != INTEGER_CST)
+	      fail = true;
 	    if (TREE_OPERAND (d, 3)
-		&& TREE_CODE (TREE_OPERAND (d, 3)) == SSA_NAME)
-	      TREE_OPERAND (d, 3) = SSA_NAME_VAR (TREE_OPERAND (d, 3));
+		&& TREE_CODE (TREE_OPERAND (d, 3)) != INTEGER_CST)
+	      fail = true;
 	    /* FALLTHRU */
 	  case COMPONENT_REF:
 	    if (TREE_OPERAND (d, 2)
-		&& TREE_CODE (TREE_OPERAND (d, 2)) == SSA_NAME)
-	      TREE_OPERAND (d, 2) = SSA_NAME_VAR (TREE_OPERAND (d, 2));
+		&& TREE_CODE (TREE_OPERAND (d, 2)) != INTEGER_CST)
+	      fail = true;
 	    break;
 	  default:
 	    break;
 	  }
-      SET_DECL_DEBUG_EXPR (repl, debug_expr);
-      DECL_DEBUG_EXPR_IS_FROM (repl) = 1;
+      if (!fail)
+	{
+	  SET_DECL_DEBUG_EXPR (repl, debug_expr);
+	  DECL_DEBUG_EXPR_IS_FROM (repl) = 1;
+	}
       if (access->grp_no_warning)
 	TREE_NO_WARNING (repl) = 1;
       else
@@ -4236,8 +4242,10 @@ replace_removed_params_ssa_names (gimple stmt,
 
   if (TREE_CODE (lhs) != SSA_NAME)
     return false;
+
   decl = SSA_NAME_VAR (lhs);
-  if (TREE_CODE (decl) != PARM_DECL)
+  if (decl == NULL_TREE
+      || TREE_CODE (decl) != PARM_DECL)
     return false;
 
   adj = get_adjustment_for_base (adjustments, decl);

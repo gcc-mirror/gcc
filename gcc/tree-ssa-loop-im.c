@@ -1919,9 +1919,6 @@ gen_lsm_tmp_name (tree ref)
       break;
 
     case SSA_NAME:
-      ref = SSA_NAME_VAR (ref);
-      /* Fallthru.  */
-
     case VAR_DECL:
     case PARM_DECL:
       name = get_name (ref);

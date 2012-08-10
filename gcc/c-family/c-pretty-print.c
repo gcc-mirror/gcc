@@ -2141,7 +2141,8 @@ pp_c_expression (c_pretty_printer *pp, tree e)
       break;
 
     case SSA_NAME:
-      if (!DECL_ARTIFICIAL (SSA_NAME_VAR (e)))
+      if (SSA_NAME_VAR (e)
+	  && !DECL_ARTIFICIAL (SSA_NAME_VAR (e)))
 	pp_c_expression (pp, SSA_NAME_VAR (e));
       else
 	pp_c_ws_string (pp, M_("<unknown>"));

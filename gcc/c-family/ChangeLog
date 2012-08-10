@@ -1,3 +1,7 @@
+2012-08-10  Richard Guenther  <rguenther@suse.de>
+
+	* c-pretty-print.c (pp_c_expression): Handle anonymous SSA names.
+
 2012-08-07  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* c-pretty-print.c (pp_c_function_definition): Use pp_newline_and_flush

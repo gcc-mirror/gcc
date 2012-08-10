@@ -249,7 +249,7 @@ mark_for_renaming (tree sym)
 static bool
 marked_for_renaming (tree sym)
 {
-  if (!symbols_to_rename_set)
+  if (!symbols_to_rename_set || sym == NULL_TREE)
     return false;
   return bitmap_bit_p (symbols_to_rename_set, DECL_UID (sym));
 }
@@ -2388,6 +2388,7 @@ rewrite_into_ssa (void)
 {
   bitmap_head *dfs;
   basic_block bb;
+  unsigned i;
 
   /* Initialize operand data structures.  */
   init_ssa_operands (cfun);
@@ -2427,6 +2428,25 @@ rewrite_into_ssa (void)
   sbitmap_free (interesting_blocks);
 
   fini_ssa_renamer ();
+
+  /* Try to get rid of all gimplifier generated temporaries by making
+     its SSA names anonymous.  This way we can garbage collect them
+     all after removing unused locals which we do in our TODO.  */
+  for (i = 1; i < num_ssa_names; ++i)
+    {
+      tree decl, name = ssa_name (i);
+      if (!name
+	  || SSA_NAME_IS_DEFAULT_DEF (name))
+	continue;
+      decl = SSA_NAME_VAR (name);
+      if (decl
+	  && TREE_CODE (decl) == VAR_DECL
+	  && !VAR_DECL_IS_VIRTUAL_OPERAND (decl)
+	  && DECL_ARTIFICIAL (decl)
+	  && DECL_IGNORED_P (decl)
+	  && !DECL_NAME (decl))
+	SET_SSA_NAME_VAR_OR_IDENTIFIER (name, NULL_TREE);
+    }
 
   return 0;
 }

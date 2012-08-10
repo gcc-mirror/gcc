@@ -875,7 +875,7 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
   enum tree_code exit_cmp;
   gimple phi_old_loop, phi_new_loop, phi_rest;
   gimple_stmt_iterator psi_old_loop, psi_new_loop;
-  tree init, next, new_init, var;
+  tree init, next, new_init;
   struct loop *new_loop;
   basic_block rest, exit_bb;
   edge old_entry, new_entry, old_latch, precond_edge, new_exit;
@@ -995,17 +995,16 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
       if (TREE_CODE (next) == SSA_NAME
 	  && useless_type_conversion_p (TREE_TYPE (next),
 					TREE_TYPE (init)))
-	var = SSA_NAME_VAR (next);
+	new_init = copy_ssa_name (next, NULL);
       else if (TREE_CODE (init) == SSA_NAME
 	       && useless_type_conversion_p (TREE_TYPE (init),
 					     TREE_TYPE (next)))
-	var = SSA_NAME_VAR (init);
+	new_init = copy_ssa_name (init, NULL);
       else if (useless_type_conversion_p (TREE_TYPE (next), TREE_TYPE (init)))
-	var = create_tmp_var (TREE_TYPE (next), "unrinittmp");
+	new_init = make_temp_ssa_name (TREE_TYPE (next), NULL, "unrinittmp");
       else
-	var = create_tmp_var (TREE_TYPE (init), "unrinittmp");
+	new_init = make_temp_ssa_name (TREE_TYPE (init), NULL, "unrinittmp");
 
-      new_init = make_ssa_name (var, NULL);
       phi_rest = create_phi_node (new_init, rest);
 
       add_phi_arg (phi_rest, init, precond_edge, UNKNOWN_LOCATION);
