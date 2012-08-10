@@ -1,3 +1,33 @@
+2012-08-10  Ulrich Weigand  <ulrich.weigand@linaro.org>
+
+	Backport from mainline
+	2012-07-30  Ulrich Weigand  <ulrich.weigand@linaro.org>
+
+	* lib/target-supports.exp
+	(check_effective_target_vect_natural_alignment): New function.
+	* gcc.dg/align-2.c: Only run on targets with natural alignment
+	of vector types.
+	* gcc.dg/vect/slp-25.c: Adjust tests for targets without natural
+	alignment of vector types.
+
+	2011-12-21  Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* gcc.dg/vect/vect-peel-1.c: Adjust test diag-scans to fix fail on AVX.
+	* gcc.dg/vect/vect-peel-2.c: Ditto.
+
+	2011-06-21  Ira Rosen  <ira.rosen@linaro.org>
+
+	PR testsuite/49443
+	* gcc.dg/vect/vect-peel-3.c: Expect to fail on vect_no_align
+	targets.
+	* gcc.dg/vect/vect-peel-4.c: Likewise.
+
+	2011-06-14  Ira Rosen  <ira.rosen@linaro.org>
+
+	* gcc.dg/vect/vect-peel-3.c: Adjust misalignment values
+	for double-word vectors.
+	* gcc.dg/vect/vect-peel-4.c: Likewise.
+
 2012-08-06  Anna Tikhonova  <anna.m.tikhonova@gmail.com>
 
 	* gcc.dg/20020201-1.c: Remove declarations for exit, abort,

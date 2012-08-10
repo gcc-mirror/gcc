@@ -243,6 +243,7 @@ static bool xscale_sched_adjust_cost (rtx, rtx, rtx, int *);
 static bool fa726te_sched_adjust_cost (rtx, rtx, rtx, int *);
 static enum machine_mode arm_preferred_simd_mode (enum machine_mode);
 static bool arm_class_likely_spilled_p (reg_class_t);
+static HOST_WIDE_INT arm_vector_alignment (const_tree type);
 static bool arm_vector_alignment_reachable (const_tree type, bool is_packed);
 static bool arm_builtin_support_vector_misalignment (enum machine_mode mode,
 						     const_tree type,
@@ -578,6 +579,9 @@ static const struct default_options arm_option_optimization_table[] =
 
 #undef TARGET_CLASS_LIKELY_SPILLED_P
 #define TARGET_CLASS_LIKELY_SPILLED_P arm_class_likely_spilled_p
+
+#undef TARGET_VECTOR_ALIGNMENT
+#define TARGET_VECTOR_ALIGNMENT arm_vector_alignment
 
 #undef TARGET_VECTORIZE_VECTOR_ALIGNMENT_REACHABLE
 #define TARGET_VECTORIZE_VECTOR_ALIGNMENT_REACHABLE \
@@ -4691,6 +4695,18 @@ arm_function_arg (CUMULATIVE_ARGS *pcum, enum machine_mode mode,
     return NULL_RTX;
 
   return gen_rtx_REG (mode, pcum->nregs);
+}
+
+/* The AAPCS sets the maximum alignment of a vector to 64 bits.  */
+static HOST_WIDE_INT
+arm_vector_alignment (const_tree type)
+{
+  HOST_WIDE_INT align = tree_low_cst (TYPE_SIZE (type), 0);
+
+  if (TARGET_AAPCS_BASED)
+    align = MIN (align, 64);
+
+  return align;
 }
 
 static unsigned int
