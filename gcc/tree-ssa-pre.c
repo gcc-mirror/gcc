@@ -249,7 +249,8 @@ alloc_expression_id (pre_expr expr)
       /* VEC_safe_grow_cleared allocates no headroom.  Avoid frequent
 	 re-allocations by using VEC_reserve upfront.  There is no
 	 VEC_quick_grow_cleared unfortunately.  */
-      VEC_reserve (unsigned, heap, name_to_id, num_ssa_names);
+      unsigned old_len = VEC_length (unsigned, name_to_id);
+      VEC_reserve (unsigned, heap, name_to_id, num_ssa_names - old_len);
       VEC_safe_grow_cleared (unsigned, heap, name_to_id, num_ssa_names);
       gcc_assert (VEC_index (unsigned, name_to_id, version) == 0);
       VEC_replace (unsigned, name_to_id, version, expr->id);

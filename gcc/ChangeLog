@@ -1,3 +1,14 @@
+2012-08-10  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* tree-ssa-pre.c (alloc_expression_id): Fix use of VEC_reserve.
+	* tree-into-ssa.c (get_ssa_name_ann): Likewise.
+	(mark_phi_for_rewrite): Likewise.
+	(compute_global_livein): Use VEC_reserve outside the innermost
+	loop and VEC_quick_push instead of VEC_safe_push in that loop.
+	(update_ssa): Re-organize to avoid unnecessary sbitmap_zero'ing
+	of new_ssa_names and old_ssa_names.  Allocate phis_to_rewrite to
+	the correct initial size.
+
 2012-08-10  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-pre.c (pretemp, storetemp, prephitemp): Remove.
