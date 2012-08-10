@@ -101,6 +101,9 @@ sbitmap interesting_blocks;
    released after we finish updating the SSA web.  */
 static bitmap names_to_release;
 
+/* VEC of VECs of PHIs to rewrite in a basic block.  Element I corresponds
+   the to basic block with index I.  Allocated once per compilation, *not*
+   released between different functions.  */
 static VEC(gimple_vec, heap) *phis_to_rewrite;
 
 /* The bitmap of non-NULL elements of PHIS_TO_REWRITE.  */
@@ -310,9 +313,11 @@ get_ssa_name_ann (tree name)
 
   if (ver >= len)
     {
+      unsigned old_len = VEC_length (ssa_name_info_p, info_for_ssa_name);
       unsigned new_len = num_ssa_names;
 
-      VEC_reserve (ssa_name_info_p, heap, info_for_ssa_name, new_len);
+      VEC_reserve (ssa_name_info_p, heap, info_for_ssa_name,
+		   new_len - old_len);
       while (len++ < new_len)
 	{
 	  struct ssa_name_info *info = XCNEW (struct ssa_name_info);
@@ -431,6 +436,10 @@ compute_global_livein (bitmap livein, bitmap def_blocks)
       /* Pull a block off the worklist.  */
       basic_block bb = VEC_pop (basic_block, worklist);
 
+      /* Make sure we have at least enough room in the work list
+	 for all predecessors of this block.  */
+      VEC_reserve (basic_block, heap, worklist, EDGE_COUNT (bb->preds));
+
       /* For each predecessor block.  */
       FOR_EACH_EDGE (e, ei, bb->preds)
 	{
@@ -442,7 +451,7 @@ compute_global_livein (bitmap livein, bitmap def_blocks)
 	      && ! bitmap_bit_p (def_blocks, pred_index)
 	      && bitmap_set_bit (livein, pred_index))
 	    {
-	      VEC_safe_push (basic_block, heap, worklist, pred);
+	      VEC_quick_push (basic_block, worklist, pred);
 	    }
 	}
     }
@@ -970,7 +979,7 @@ static void
 mark_phi_for_rewrite (basic_block bb, gimple phi)
 {
   gimple_vec phis;
-  unsigned i, idx = bb->index;
+  unsigned n, idx = bb->index;
 
   if (rewrite_uses_p (phi))
     return;
@@ -981,9 +990,10 @@ mark_phi_for_rewrite (basic_block bb, gimple phi)
     return;
 
   bitmap_set_bit (blocks_with_phis_to_rewrite, idx);
-  VEC_reserve (gimple_vec, heap, phis_to_rewrite, last_basic_block + 1);
-  for (i = VEC_length (gimple_vec, phis_to_rewrite); i <= idx; i++)
-    VEC_quick_push (gimple_vec, phis_to_rewrite, NULL);
+
+  n = (unsigned) last_basic_block + 1;
+  if (VEC_length (gimple_vec, phis_to_rewrite) < n)
+    VEC_safe_grow_cleared (gimple_vec, heap, phis_to_rewrite, n);
 
   phis = VEC_index (gimple_vec, phis_to_rewrite, idx);
   if (!phis)
@@ -3166,6 +3176,12 @@ update_ssa (unsigned update_flags)
   sbitmap_iterator sbi;
   tree sym;
 
+  /* Only one update flag should be set.  */
+  gcc_assert (update_flags == TODO_update_ssa
+              || update_flags == TODO_update_ssa_no_phi
+	      || update_flags == TODO_update_ssa_full_phi
+	      || update_flags == TODO_update_ssa_only_virtuals);
+
   if (!need_ssa_update_p (cfun))
     return;
 
@@ -3176,30 +3192,24 @@ update_ssa (unsigned update_flags)
 
   if (!update_ssa_initialized_fn)
     init_update_ssa (cfun);
+  else if (update_flags == TODO_update_ssa_only_virtuals)
+    {
+      /* If we only need to update virtuals, remove all the mappings for
+	 real names before proceeding.  The caller is responsible for
+	 having dealt with the name mappings before calling update_ssa.  */
+      sbitmap_zero (old_ssa_names);
+      sbitmap_zero (new_ssa_names);
+    }
+
   gcc_assert (update_ssa_initialized_fn == cfun);
 
   blocks_with_phis_to_rewrite = BITMAP_ALLOC (NULL);
   if (!phis_to_rewrite)
-    phis_to_rewrite = VEC_alloc (gimple_vec, heap, last_basic_block);
+    phis_to_rewrite = VEC_alloc (gimple_vec, heap, last_basic_block + 1);
   blocks_to_update = BITMAP_ALLOC (NULL);
 
   /* Ensure that the dominance information is up-to-date.  */
   calculate_dominance_info (CDI_DOMINATORS);
-
-  /* Only one update flag should be set.  */
-  gcc_assert (update_flags == TODO_update_ssa
-              || update_flags == TODO_update_ssa_no_phi
-	      || update_flags == TODO_update_ssa_full_phi
-	      || update_flags == TODO_update_ssa_only_virtuals);
-
-  /* If we only need to update virtuals, remove all the mappings for
-     real names before proceeding.  The caller is responsible for
-     having dealt with the name mappings before calling update_ssa.  */
-  if (update_flags == TODO_update_ssa_only_virtuals)
-    {
-      sbitmap_zero (old_ssa_names);
-      sbitmap_zero (new_ssa_names);
-    }
 
   insert_phi_p = (update_flags != TODO_update_ssa_no_phi);
 
