@@ -1,3 +1,14 @@
+2012-08-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (isa): Add fma and fma4.
+	(enabled): Handle fma and fma4.
+	* config/i386/sse.md (*fma_fmadd_<mode>): Merge *fma4_fmadd_<mode>.
+	(*fma_fmsub_<mode>): Merge *fma4_fmsub_<mode>.
+	(*fma_fnmadd_<mode>): Merge *fma4_fnmadd_<mode>.
+	(*fma_fnmsub_<mode>): Merge *fma4_fnmsub_<mode>.
+	(*fma_fmaddsub_<mode>): Merge *fma4_fmaddsub_<mode>.
+	(*fma_fmsubadd_<mode>): Merge *fma4_fmsubadd_<mode>.
+
 2012-08-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (*fma_fmadd_<mode>, *fma_fmsub_<mode>,
