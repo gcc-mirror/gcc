@@ -1,3 +1,7 @@
+2012-08-10  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* doc/sourcebuild.texi: Document long_neq_int effective target.
+
 2012-08-10  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/54109
