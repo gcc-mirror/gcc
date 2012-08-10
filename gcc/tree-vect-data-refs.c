@@ -1023,7 +1023,7 @@ vect_update_misalignment_for_peel (struct data_reference *dr,
       int misal = DR_MISALIGNMENT (dr);
       tree vectype = STMT_VINFO_VECTYPE (stmt_info);
       misal += negative ? -npeel * dr_size : npeel * dr_size;
-      misal &= GET_MODE_SIZE (TYPE_MODE (vectype)) - 1;
+      misal &= (TYPE_ALIGN (vectype) / BITS_PER_UNIT) - 1;
       SET_DR_MISALIGNMENT (dr, misal);
       return;
     }

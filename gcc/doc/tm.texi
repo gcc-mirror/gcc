@@ -1105,6 +1105,14 @@ make it all fit in fewer cache lines.
 If the value of this macro has a type, it should be an unsigned type.
 @end defmac
 
+@deftypefn {Target Hook} HOST_WIDE_INT TARGET_VECTOR_ALIGNMENT (const_tree @var{type})
+This hook can be used to define the alignment for a vector of type
+@var{type}, in order to comply with a platform ABI.  The default is to
+require natural alignment for vector types.  The alignment returned by
+this hook must be a power-of-two multiple of the default alignment of
+the vector element type.
+@end deftypefn
+
 @defmac STACK_SLOT_ALIGNMENT (@var{type}, @var{mode}, @var{basic-align})
 If defined, a C expression to compute the alignment for stack slot.
 @var{type} is the data type, @var{mode} is the widest mode available,

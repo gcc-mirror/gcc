@@ -1093,6 +1093,8 @@ make it all fit in fewer cache lines.
 If the value of this macro has a type, it should be an unsigned type.
 @end defmac
 
+@hook TARGET_VECTOR_ALIGNMENT
+
 @defmac STACK_SLOT_ALIGNMENT (@var{type}, @var{mode}, @var{basic-align})
 If defined, a C expression to compute the alignment for stack slot.
 @var{type} is the data type, @var{mode} is the widest mode available,

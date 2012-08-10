@@ -1993,7 +1993,7 @@ vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo, tree *ratio,
    If the misalignment of DR is known at compile time:
      addr_mis = int mis = DR_MISALIGNMENT (dr);
    Else, compute address misalignment in bytes:
-     addr_mis = addr & (vectype_size - 1)
+     addr_mis = addr & (vectype_align - 1)
 
    prolog_niters = min (LOOP_NITERS, ((VF - addr_mis/elem_size)&(VF-1))/step)
 
@@ -2049,9 +2049,10 @@ vect_gen_niters_for_prolog_loop (loop_vec_info loop_vinfo, tree loop_niters)
       tree ptr_type = TREE_TYPE (start_addr);
       tree size = TYPE_SIZE (ptr_type);
       tree type = lang_hooks.types.type_for_size (tree_low_cst (size, 1), 1);
-      tree vectype_size_minus_1 = build_int_cst (type, vectype_align - 1);
-      tree elem_size_log =
-        build_int_cst (type, exact_log2 (vectype_align/nelements));
+      tree vectype_align_minus_1 = build_int_cst (type, vectype_align - 1);
+      HOST_WIDE_INT elem_size =
+		int_cst_value (TYPE_SIZE_UNIT (TREE_TYPE (vectype)));
+      tree elem_size_log = build_int_cst (type, exact_log2 (elem_size));
       tree nelements_minus_1 = build_int_cst (type, nelements - 1);
       tree nelements_tree = build_int_cst (type, nelements);
       tree byte_misalign;
@@ -2060,10 +2061,10 @@ vect_gen_niters_for_prolog_loop (loop_vec_info loop_vinfo, tree loop_niters)
       new_bb = gsi_insert_seq_on_edge_immediate (pe, new_stmts);
       gcc_assert (!new_bb);
 
-      /* Create:  byte_misalign = addr & (vectype_size - 1)  */
+      /* Create:  byte_misalign = addr & (vectype_align - 1)  */
       byte_misalign =
         fold_build2 (BIT_AND_EXPR, type, fold_convert (type, start_addr), 
-                     vectype_size_minus_1);
+                     vectype_align_minus_1);
 
       /* Create:  elem_misalign = byte_misalign / element_size  */
       elem_misalign =
