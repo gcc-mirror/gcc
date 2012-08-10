@@ -8,10 +8,12 @@
 void mem_init (void);
 int ARCHnodes, ARCHnodes1;
 int ***vel;
-void just_a_call (int ****);
+void just_a_call (int *);
 
-/* Address of VEL is taken.
-   It is not flattened.  */
+/* The last dimension of VEL escapes because it was sent
+   as argumet to just_a_call(). (external function)
+   Only the two external dimensions are flattened.
+   Run with -c.  */
 
 
 /*--------------------------------------------------------------------------*/
@@ -89,9 +91,7 @@ mem_init (void)
 	    }
 	}
     }
-  just_a_call (&vel);
+  just_a_call (vel[1][1]);
 }
 
 /*--------------------------------------------------------------------------*/
-/* { dg-final { scan-ipa-dump-times "Flattened" 0 "matrix-reorg"  } } */
-/* { dg-final { cleanup-ipa-dump "matrix-reorg" } } */

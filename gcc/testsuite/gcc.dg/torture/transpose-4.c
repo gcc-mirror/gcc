@@ -1,5 +1,5 @@
-/* { dg-do compile } */
-
+/* { dg-do run } */
+/* { dg-options "-fwhole-program" } */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,10 +10,11 @@ void mem_init (void);
 int ARCHnodes, ARCHnodes1;
 int ***vel;
 
-/* The last dimension of VEL escapes because of
-   the assignment : *vel[1] =...
-   Only the two external dimensions are flattened.  */
-
+/* The whole matrix VEL is flattened (3 dimensions).  
+   The two inner dimensions are transposed.  
+                                    dim 1 -> dim 2
+                                    dim 2 -> dim 1
+*/
 /*--------------------------------------------------------------------------*/
 
 int
@@ -28,21 +29,23 @@ main (int argc, char **argv)
 
   mem_init ();
 
-  for (i = 0; i < ARCHnodes; i++)
+  for (j = 0; j < 4; j++)
     {
-      for (j = 0; j < 3; j++)
+      for (i = 0; i < 2; i++)
 	{
-	  for (k = 0; k < ARCHnodes1; k++)
-	    printf ("[%d][%d][%d]=%d ", i, j, k, vel[i][j][k]);
+	  for (k = 0; k < 3; k++)
+	{
+	    printf ("[%d][%d][%d]=%d ", i, j, k, vel[i][k][j]);
+	}
 	  printf ("\n");
 	}
       printf ("\n");
     }
-  for (i = 0; i < ARCHnodes; i++)
+  for (i = 0; i < 2; i++)
     for (j = 0; j < 3; j++)
       free (vel[i][j]);
 
-  for (i = 0; i < ARCHnodes; i++)
+  for (i = 0; i < 2; i++)
     free (vel[i]);
 
   free (vel);
@@ -56,7 +59,7 @@ void
 mem_init (void)
 {
 
-  int i, j, k,d;
+  signed int i, j, k,d;
  
   d = 0;
   vel = (int ***) malloc (ARCHnodes * sizeof (int **));
@@ -84,14 +87,14 @@ mem_init (void)
 	{
 	  for (k = 0; k < ARCHnodes1; k++)
 	    {
+              printf ("acc to dim2 ");
 	      vel[i][j][k] = d;
 	      d++;
 	    }
 	}
     }
-  *vel[1] = &d;
+  printf ("\n");
+
 }
 
 /*--------------------------------------------------------------------------*/
-/* { dg-final { scan-ipa-dump-times "Flattened 2 dimensions" 1 "matrix-reorg"  } } */
-/* { dg-final { cleanup-ipa-dump "matrix-reorg" } } */
