@@ -609,12 +609,11 @@ adjust_return_value_with_ops (enum tree_code code, const char *label,
 {
 
   tree ret_type = TREE_TYPE (DECL_RESULT (current_function_decl));
-  tree tmp = create_tmp_reg (ret_type, label);
+  tree result = make_temp_ssa_name (ret_type, NULL, label);
   gimple stmt;
-  tree result;
 
   if (types_compatible_p (TREE_TYPE (acc), TREE_TYPE (op1)))
-    stmt = gimple_build_assign_with_ops (code, tmp, acc, op1);
+    stmt = gimple_build_assign_with_ops (code, result, acc, op1);
   else
     {
       tree rhs = fold_convert (TREE_TYPE (acc),
@@ -624,12 +623,9 @@ adjust_return_value_with_ops (enum tree_code code, const char *label,
 					    op1));
       rhs = force_gimple_operand_gsi (&gsi, rhs,
 				      false, NULL, true, GSI_CONTINUE_LINKING);
-      stmt = gimple_build_assign (NULL_TREE, rhs);
+      stmt = gimple_build_assign (result, rhs);
     }
 
-  result = make_ssa_name (tmp, stmt);
-  gimple_assign_set_lhs (stmt, result);
-  update_stmt (stmt);
   gsi_insert_before (&gsi, stmt, GSI_NEW_STMT);
   return result;
 }
@@ -904,7 +900,7 @@ static tree
 create_tailcall_accumulator (const char *label, basic_block bb, tree init)
 {
   tree ret_type = TREE_TYPE (DECL_RESULT (current_function_decl));
-  tree tmp = create_tmp_reg (ret_type, label);
+  tree tmp = make_temp_ssa_name (ret_type, NULL, label);
   gimple phi;
 
   phi = create_phi_node (tmp, bb);

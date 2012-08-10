@@ -55,13 +55,18 @@ create_iv (tree base, tree step, tree var, struct loop *loop,
   enum tree_code incr_op = PLUS_EXPR;
   edge pe = loop_preheader_edge (loop);
 
-  if (!var)
-    var = create_tmp_var (TREE_TYPE (base), "ivtmp");
-
-  vb = make_ssa_name (var, NULL);
+  if (var != NULL_TREE)
+    {
+      vb = make_ssa_name (var, NULL);
+      va = make_ssa_name (var, NULL);
+    }
+  else
+    {
+      vb = make_temp_ssa_name (TREE_TYPE (base), NULL, "ivtmp");
+      va = make_temp_ssa_name (TREE_TYPE (base), NULL, "ivtmp");
+    }
   if (var_before)
     *var_before = vb;
-  va = make_ssa_name (var, NULL);
   if (var_after)
     *var_after = va;
 

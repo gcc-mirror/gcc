@@ -1448,18 +1448,15 @@ build_ref_for_offset (location_t loc, tree base, HOST_WIDE_INT offset,
       tree tmp, addr;
 
       gcc_checking_assert (gsi);
-      tmp = create_tmp_reg (build_pointer_type (TREE_TYPE (prev_base)), NULL);
-      tmp = make_ssa_name (tmp, NULL);
+      tmp = make_ssa_name (build_pointer_type (TREE_TYPE (prev_base)), NULL);
       addr = build_fold_addr_expr (unshare_expr (prev_base));
       STRIP_USELESS_TYPE_CONVERSION (addr);
       stmt = gimple_build_assign (tmp, addr);
       gimple_set_location (stmt, loc);
-      SSA_NAME_DEF_STMT (tmp) = stmt;
       if (insert_after)
 	gsi_insert_after (gsi, stmt, GSI_NEW_STMT);
       else
 	gsi_insert_before (gsi, stmt, GSI_SAME_STMT);
-      update_stmt (stmt);
 
       off = build_int_cst (reference_alias_ptr_type (prev_base),
 			   offset / BITS_PER_UNIT);

@@ -1270,12 +1270,10 @@ vect_init_vector (gimple stmt, tree val, tree type, gimple_stmt_iterator *gsi)
 	    val = fold_unary (VIEW_CONVERT_EXPR, TREE_TYPE (type), val);
 	  else
 	    {
-	      new_var = create_tmp_reg (TREE_TYPE (type), NULL);
+	      new_temp = make_ssa_name (TREE_TYPE (type), NULL);
 	      init_stmt = gimple_build_assign_with_ops (NOP_EXPR,
-							new_var, val,
+							new_temp, val,
 							NULL_TREE);
-	      new_temp = make_ssa_name (new_var, init_stmt);
-	      gimple_assign_set_lhs (init_stmt, new_temp);
 	      vect_init_vector_1 (stmt, init_stmt, gsi);
 	      val = new_temp;
 	    }
