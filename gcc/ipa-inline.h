@@ -173,6 +173,7 @@ void estimate_ipcp_clone_size_and_time (struct cgraph_node *,
 					int *, int *);
 int do_estimate_growth (struct cgraph_node *);
 void inline_merge_summary (struct cgraph_edge *edge);
+void inline_update_overall_summary (struct cgraph_node *node);
 int do_estimate_edge_growth (struct cgraph_edge *edge);
 int do_estimate_edge_time (struct cgraph_edge *edge);
 void initialize_growth_caches (void);
@@ -180,7 +181,7 @@ void free_growth_caches (void);
 void compute_inline_parameters (struct cgraph_node *, bool);
 
 /* In ipa-inline-transform.c  */
-bool inline_call (struct cgraph_edge *, bool, VEC (cgraph_edge_p, heap) **, int *);
+bool inline_call (struct cgraph_edge *, bool, VEC (cgraph_edge_p, heap) **, int *, bool);
 unsigned int inline_transform (struct cgraph_node *);
 void clone_inlined_nodes (struct cgraph_edge *e, bool, bool, int *);
 
