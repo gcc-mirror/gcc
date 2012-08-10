@@ -193,13 +193,17 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
 /* Mark edge E as inlined and update callgraph accordingly.  UPDATE_ORIGINAL
    specify whether profile of original function should be updated.  If any new
    indirect edges are discovered in the process, add them to NEW_EDGES, unless
-   it is NULL.  Return true iff any new callgraph edges were discovered as a
+   it is NULL. If UPDATE_OVERALL_SUMMARY is false, do not bother to recompute overall
+   size of caller after inlining. Caller is required to eventually do it via
+   inline_update_overall_summary.
+
+   Return true iff any new callgraph edges were discovered as a
    result of inlining.  */
 
 bool
 inline_call (struct cgraph_edge *e, bool update_original,
 	     VEC (cgraph_edge_p, heap) **new_edges,
-	     int *overall_size)
+	     int *overall_size, bool update_overall_summary)
 {
   int old_size = 0, new_size = 0;
   struct cgraph_node *to = NULL;
@@ -244,6 +248,8 @@ inline_call (struct cgraph_edge *e, bool update_original,
 
   old_size = inline_summary (to)->size;
   inline_merge_summary (e);
+  if (update_overall_summary)
+   inline_update_overall_summary (to);
   new_size = inline_summary (to)->size;
   if (overall_size)
     *overall_size += new_size - old_size;

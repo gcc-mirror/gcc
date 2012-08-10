@@ -1,3 +1,21 @@
+2012-08-09  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/54146
+	* ipa-inline-transform.c (inline_call): Add UPDATE_OVERALL_SUMMARY
+	parameter; honnor it.
+	* ipa-inline.c (recursive_inlining): Update call
+	of inline_call.
+	(inline_small_functions): Likewise.
+	(ipa_inline): Likewise.
+	(inline_always_inline_functions): Likewise.
+	(early_inline_small_functions): Likewise.
+	(flatten_function): Do separate update of summary info.
+	* ipa-inline.h (inline_update_overall_summary): Declare.
+	(inline_call): Update.
+	* ipa-inline-analysis.c (inline_merge_summary): Break out
+	updating code to ...
+	(inline_update_overall_summary): Likewise.
+
 2012-08-09  Richard Henderson  <rth@redhat.com>
 
 	* config/s390/s390.c (s390_expand_insv): Use VOIDmode in gen_rtx_SET.

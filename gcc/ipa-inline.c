@@ -1209,7 +1209,7 @@ recursive_inlining (struct cgraph_edge *edge,
 	}
 
       cgraph_redirect_edge_callee (curr, master_clone);
-      inline_call (curr, false, new_edges, &overall_size);
+      inline_call (curr, false, new_edges, &overall_size, true);
       lookup_recursive_calls (node, curr->callee, heap);
       n++;
     }
@@ -1480,7 +1480,7 @@ inline_small_functions (void)
 	    fprintf (dump_file, " Peeling recursion with depth %i\n", depth);
 
 	  gcc_checking_assert (!callee->global.inlined_to);
-	  inline_call (edge, true, &new_indirect_edges, &overall_size);
+	  inline_call (edge, true, &new_indirect_edges, &overall_size, true);
 	  if (flag_indirect_inlining)
 	    add_new_edges_to_heap (heap, new_indirect_edges);
 
@@ -1602,7 +1602,7 @@ flatten_function (struct cgraph_node *node, bool early)
 		 xstrdup (cgraph_node_name (callee)),
 		 xstrdup (cgraph_node_name (e->caller)));
       orig_callee = callee;
-      inline_call (e, true, NULL, NULL);
+      inline_call (e, true, NULL, NULL, false);
       if (e->callee != orig_callee)
 	orig_callee->symbol.aux = (void *) node;
       flatten_function (e->callee, early);
@@ -1611,6 +1611,8 @@ flatten_function (struct cgraph_node *node, bool early)
     }
 
   node->symbol.aux = NULL;
+  if (!node->global.inlined_to)
+    inline_update_overall_summary (node);
 }
 
 /* Decide on the inlining.  We do so in the topological order to avoid
@@ -1710,7 +1712,7 @@ ipa_inline (void)
 			       inline_summary (node->callers->caller)->size);
 		    }
 
-		  inline_call (node->callers, true, NULL, NULL);
+		  inline_call (node->callers, true, NULL, NULL, true);
 		  if (dump_file)
 		    fprintf (dump_file,
 			     " Inlined into %s which now has %i size\n",
@@ -1768,9 +1770,11 @@ inline_always_inline_functions (struct cgraph_node *node)
 	fprintf (dump_file, "  Inlining %s into %s (always_inline).\n",
 		 xstrdup (cgraph_node_name (e->callee)),
 		 xstrdup (cgraph_node_name (e->caller)));
-      inline_call (e, true, NULL, NULL);
+      inline_call (e, true, NULL, NULL, false);
       inlined = true;
     }
+  if (inlined)
+    inline_update_overall_summary (node);
 
   return inlined;
 }
@@ -1818,7 +1822,7 @@ early_inline_small_functions (struct cgraph_node *node)
 	fprintf (dump_file, " Inlining %s into %s.\n",
 		 xstrdup (cgraph_node_name (callee)),
 		 xstrdup (cgraph_node_name (e->caller)));
-      inline_call (e, true, NULL, NULL);
+      inline_call (e, true, NULL, NULL, true);
       inlined = true;
     }
 
