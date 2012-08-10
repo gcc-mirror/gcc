@@ -1689,6 +1689,15 @@ proc check_effective_target_llp64 { } {
     }]
 }
 
+# Return 1 if long and int have different sizes,
+# 0 otherwise.
+
+proc check_effective_target_long_neq_int { } {
+    return [check_no_compiler_messages long_ne_int object {
+	int dummy[sizeof (int) != sizeof (long) ? 1 : -1];
+    }]
+}
+
 # Return 1 if the target supports long double larger than double,
 # 0 otherwise.
 

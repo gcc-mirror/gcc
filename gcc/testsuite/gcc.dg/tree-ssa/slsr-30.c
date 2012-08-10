@@ -1,7 +1,7 @@
 /* Verify straight-line strength reduction fails for simple integer addition
    with casts thrown in when -fwrapv is used.  */
 
-/* { dg-do compile { target { ! { ilp32 } } } } */
+/* { dg-do compile { target { long_neq_int } } } */
 /* { dg-options "-O3 -fdump-tree-dom2 -fwrapv" } */
 
 long

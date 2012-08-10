@@ -1303,6 +1303,9 @@ Target has @code{int} that is at 32 bits or longer.
 @item int16
 Target has @code{int} that is 16 bits or shorter.
 
+@item long_neq_int
+Target has @code{int} and @code{long} with different sizes.
+
 @item large_double
 Target supports @code{double} that is longer than @code{float}.
 
