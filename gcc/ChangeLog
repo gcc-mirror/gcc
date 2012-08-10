@@ -1,5 +1,12 @@
 2012-08-10  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/54027
+	* tree-vrp.c (extract_range_from_binary_expr_1): Merge RSHIFT_EXPR
+	and LSHIFT_EXPR handling, force -fwrapv for the multiplication used
+	to handle LSHIFT_EXPR with a constant.
+
+2012-08-10  Richard Guenther  <rguenther@suse.de>
+
 	* tree.h (SSA_NAME_VAR): Return NULL_TREE if an IDENTIFIER_NODE
 	is recorded as var.
 	(SSA_NAME_IDENTIFIER): Return the IDENTIFIER_NODE of the SSA_NAME

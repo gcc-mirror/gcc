@@ -2726,57 +2726,48 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
       extract_range_from_multiplicative_op_1 (vr, code, &vr0, &vr1);
       return;
     }
-  else if (code == RSHIFT_EXPR)
+  else if (code == RSHIFT_EXPR
+	   || code == LSHIFT_EXPR)
     {
       /* If we have a RSHIFT_EXPR with any shift values outside [0..prec-1],
 	 then drop to VR_VARYING.  Outside of this range we get undefined
 	 behavior from the shift operation.  We cannot even trust
 	 SHIFT_COUNT_TRUNCATED at this stage, because that applies to rtl
 	 shifts, and the operation at the tree level may be widened.  */
-      if (vr1.type != VR_RANGE
-	  || !value_range_nonnegative_p (&vr1)
-	  || TREE_CODE (vr1.max) != INTEGER_CST
-	  || compare_tree_int (vr1.max, TYPE_PRECISION (expr_type) - 1) == 1)
+      if (range_int_cst_p (&vr1)
+	  && compare_tree_int (vr1.min, 0) >= 0
+	  && compare_tree_int (vr1.max, TYPE_PRECISION (expr_type)) == -1)
 	{
-	  set_value_range_to_varying (vr);
-	  return;
+	  if (code == RSHIFT_EXPR)
+	    {
+	      extract_range_from_multiplicative_op_1 (vr, code, &vr0, &vr1);
+	      return;
+	    }
+	  /* We can map lshifts by constants to MULT_EXPR handling.  */
+	  else if (code == LSHIFT_EXPR
+		   && range_int_cst_singleton_p (&vr1))
+	    {
+	      bool saved_flag_wrapv;
+	      value_range_t vr1p = VR_INITIALIZER;
+	      vr1p.type = VR_RANGE;
+	      vr1p.min
+		= double_int_to_tree (expr_type,
+				      double_int_lshift
+				        (double_int_one,
+					 TREE_INT_CST_LOW (vr1.min),
+					 TYPE_PRECISION (expr_type),
+					 false));
+	      vr1p.max = vr1p.min;
+	      /* We have to use a wrapping multiply though as signed overflow
+		 on lshifts is implementation defined in C89.  */
+	      saved_flag_wrapv = flag_wrapv;
+	      flag_wrapv = 1;
+	      extract_range_from_binary_expr_1 (vr, MULT_EXPR, expr_type,
+						&vr0, &vr1p);
+	      flag_wrapv = saved_flag_wrapv;
+	      return;
+	    }
 	}
-
-      extract_range_from_multiplicative_op_1 (vr, code, &vr0, &vr1);
-      return;
-    }
-  else if (code == LSHIFT_EXPR)
-    {
-      /* If we have a LSHIFT_EXPR with any shift values outside [0..prec-1],
-	 then drop to VR_VARYING.  Outside of this range we get undefined
-	 behavior from the shift operation.  We cannot even trust
-	 SHIFT_COUNT_TRUNCATED at this stage, because that applies to rtl
-	 shifts, and the operation at the tree level may be widened.  */
-      if (vr1.type != VR_RANGE
-	  || !value_range_nonnegative_p (&vr1)
-	  || TREE_CODE (vr1.max) != INTEGER_CST
-	  || compare_tree_int (vr1.max, TYPE_PRECISION (expr_type) - 1) == 1)
-	{
-	  set_value_range_to_varying (vr);
-	  return;
-	}
-
-      /* We can map shifts by constants to MULT_EXPR handling.  */
-      if (range_int_cst_singleton_p (&vr1))
-	{
-	  value_range_t vr1p = VR_INITIALIZER;
-	  vr1p.type = VR_RANGE;
-	  vr1p.min
-	    = double_int_to_tree (expr_type,
-				  double_int_lshift (double_int_one,
-						     TREE_INT_CST_LOW (vr1.min),
-						     TYPE_PRECISION (expr_type),
-						     false));
-	  vr1p.max = vr1p.min;
-	  extract_range_from_multiplicative_op_1 (vr, MULT_EXPR, &vr0, &vr1p);
-	  return;
-	}
-
       set_value_range_to_varying (vr);
       return;
     }
