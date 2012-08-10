@@ -6677,21 +6677,22 @@ dump_function_to_file (tree fn, FILE *file, int flags)
 
   /* When GIMPLE is lowered, the variables are no longer available in
      BIND_EXPRs, so display them separately.  */
-  if (cfun && cfun->decl == fn && !VEC_empty (tree, cfun->local_decls))
+  if (cfun && cfun->decl == fn && (cfun->curr_properties & PROP_gimple_lcf))
     {
       unsigned ix;
       ignore_topmost_bind = true;
 
       fprintf (file, "{\n");
-      FOR_EACH_LOCAL_DECL (cfun, ix, var)
-	{
-	  print_generic_decl (file, var, flags);
-	  if (flags & TDF_VERBOSE)
-	    print_node (file, "", var, 4);
-	  fprintf (file, "\n");
+      if (!VEC_empty (tree, cfun->local_decls))
+	FOR_EACH_LOCAL_DECL (cfun, ix, var)
+	  {
+	    print_generic_decl (file, var, flags);
+	    if (flags & TDF_VERBOSE)
+	      print_node (file, "", var, 4);
+	    fprintf (file, "\n");
 
-	  any_var = true;
-	}
+	    any_var = true;
+	  }
       if (gimple_in_ssa_p (cfun))
 	for (ix = 1; ix < num_ssa_names; ++ix)
 	  {
@@ -6703,6 +6704,8 @@ dump_function_to_file (tree fn, FILE *file, int flags)
 		fprintf (file, " ");
 		print_generic_expr (file, name, flags);
 		fprintf (file, ";\n");
+
+		any_var = true;
 	      }
 	  }
     }
