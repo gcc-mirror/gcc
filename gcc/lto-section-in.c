@@ -55,7 +55,7 @@ const char *lto_section_name[LTO_N_SECTION_TYPES] =
   "jmpfuncs",
   "pureconst",
   "reference",
-  "symtab_nodes",
+  "symbol_nodes",
   "opts",
   "cgraphopt",
   "inline"
