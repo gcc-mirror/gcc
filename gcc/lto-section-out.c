@@ -412,7 +412,6 @@ lto_destroy_simple_output_block (struct lto_simple_output_block *ob)
   memset (&header, 0, sizeof (struct lto_simple_header));
   header.lto_header.major_version = LTO_major_version;
   header.lto_header.minor_version = LTO_minor_version;
-  header.lto_header.section_type = LTO_section_cgraph;
 
   header.compressed_size = 0;
 

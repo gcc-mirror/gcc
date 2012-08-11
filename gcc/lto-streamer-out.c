@@ -707,7 +707,6 @@ produce_asm (struct output_block *ob, tree fn)
   /* Write the header.  */
   header.lto_header.major_version = LTO_major_version;
   header.lto_header.minor_version = LTO_minor_version;
-  header.lto_header.section_type = section_type;
 
   header.compressed_size = 0;
 
@@ -893,7 +892,6 @@ lto_output_toplevel_asms (void)
   /* Write the header.  */
   header.lto_header.major_version = LTO_major_version;
   header.lto_header.minor_version = LTO_minor_version;
-  header.lto_header.section_type = LTO_section_asm;
 
   header.main_size = ob->main_stream->total_size;
   header.string_size = ob->string_stream->total_size;
@@ -1020,7 +1018,7 @@ lto_output (cgraph_node_set set, varpool_node_set vset)
      be done now to make sure that all the statements in every function
      have been renumbered so that edges can be associated with call
      statements using the statement UIDs.  */
-  output_cgraph (set, vset);
+  output_symtab (set, vset);
 
 #ifdef ENABLE_CHECKING
   lto_bitmap_free (output);
@@ -1430,7 +1428,6 @@ produce_asm_for_decls (cgraph_node_set set ATTRIBUTE_UNUSED,
 
   header.lto_header.major_version = LTO_major_version;
   header.lto_header.minor_version = LTO_minor_version;
-  header.lto_header.section_type = LTO_section_decls;
 
   /* Currently not used.  This field would allow us to preallocate
      the globals vector, so that it need not be resized as it is extended.  */
@@ -1457,8 +1454,7 @@ produce_asm_for_decls (cgraph_node_set set ATTRIBUTE_UNUSED,
 
   /* Write the main out-decl state, followed by out-decl states of
      functions. */
-  decl_state_stream = ((struct lto_output_stream *)
-		       xcalloc (1, sizeof (struct lto_output_stream)));
+  decl_state_stream = XCNEW (struct lto_output_stream);
   num_decl_states = num_fns + 1;
   lto_output_data_stream (decl_state_stream, &num_decl_states,
 			  sizeof (num_decl_states));

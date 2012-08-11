@@ -1,5 +1,23 @@
 2012-08-11  Jan Hubicka  <jh@suse.cz>
 
+	* lto-cgraph.c (output_cgraph): Rename to ...
+	(output_symtab): ... this one. Update for LTO_section_symtab_nodes.
+	(input_cgraph): Rename to ...
+	(input_symtab): ... this one. Update for LTO_section_symtab_nodes.
+	* lto-streamer-out.c (create_output_block): Do not set
+	section_type.
+	(produce_asm): Likewise.
+	(lto_output_toplevel_asms): Likewise.
+	(produce_asm_for_decls): Likewise.
+	(lto_output): Use output_symtab.
+	* lto-section-in.c (lto_section_name): Update.
+	* lto-section-out.c (lto_destroy_simple_output_block): Remove section_type.
+	* lto-streamer.h (enum lto_section_type): Remove LTO_section_varpool;
+	rename LTO_section_cgraph to LTO_section_symtab_nodes.
+	(struct lto_header): Remove section_type.
+
+2012-08-11  Jan Hubicka  <jh@suse.cz>
+
 	* cgraph.h (vector types for symtab_node): Add.
 	* ipa-reference.c (ipa_reference_write_optimization_summary): Update
 	for new symtab encoder.
