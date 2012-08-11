@@ -5942,7 +5942,7 @@ alpha_stdarg_optimize_hook (struct stdarg_info *si, const_gimple stmt)
 
   base = get_base_address (base);
   if (TREE_CODE (base) != VAR_DECL
-      || !bitmap_bit_p (si->va_list_vars, DECL_UID (base)))
+      || !bitmap_bit_p (si->va_list_vars, DECL_UID (base) + num_ssa_names))
     return false;
 
   offset = gimple_op (stmt, 1 + offset_arg);
