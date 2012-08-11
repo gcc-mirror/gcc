@@ -1,3 +1,8 @@
+2012-08-11  Jan Hubicka  <jh@suse.cz>
+
+	* lto-section-in.c (lto_section_name): Do not use "symtab" as part of
+	symtab_node sectoin name; it confuses plugin.
+
 2012-08-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.c (alpha_stdarg_optimize_hook): Shift DECL_UID
