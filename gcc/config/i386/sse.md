@@ -9547,9 +9547,6 @@
 (define_code_attr madcs [(plus "madcs") (ss_plus "madcss")])
 
 ;; XOP parallel integer multiply/add instructions.
-;; Note the XOP multiply/add instructions
-;;     a[i] = b[i] * c[i] + d[i];
-;; do not allow the value being added to be a memory operation.
 
 (define_insn "xop_p<macs><ssemodesuffix><ssemodesuffix>"
   [(set (match_operand:VI24_128 0 "register_operand" "=x")
@@ -9557,7 +9554,7 @@
 	 (mult:VI24_128
 	  (match_operand:VI24_128 1 "nonimmediate_operand" "%x")
 	  (match_operand:VI24_128 2 "nonimmediate_operand" "xm"))
-	 (match_operand:VI24_128 3 "nonimmediate_operand" "x")))]
+	 (match_operand:VI24_128 3 "register_operand" "x")))]
   "TARGET_XOP"
   "vp<macs><ssemodesuffix><ssemodesuffix>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
@@ -9575,7 +9572,7 @@
 	   (vec_select:V2SI
 	    (match_operand:V4SI 2 "nonimmediate_operand" "xm")
 	    (parallel [(const_int 0) (const_int 2)]))))
-	 (match_operand:V2DI 3 "nonimmediate_operand" "x")))]
+	 (match_operand:V2DI 3 "register_operand" "x")))]
   "TARGET_XOP"
   "vp<macs>dql\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
@@ -9593,7 +9590,7 @@
 	   (vec_select:V2SI
 	    (match_operand:V4SI 2 "nonimmediate_operand" "xm")
 	    (parallel [(const_int 1) (const_int 3)]))))
-	 (match_operand:V2DI 3 "nonimmediate_operand" "x")))]
+	 (match_operand:V2DI 3 "register_operand" "x")))]
   "TARGET_XOP"
   "vp<macs>dqh\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
@@ -9614,7 +9611,7 @@
 	    (match_operand:V8HI 2 "nonimmediate_operand" "xm")
 	    (parallel [(const_int 1) (const_int 3)
 		       (const_int 5) (const_int 7)]))))
-	 (match_operand:V4SI 3 "nonimmediate_operand" "x")))]
+	 (match_operand:V4SI 3 "register_operand" "x")))]
   "TARGET_XOP"
   "vp<macs>wd\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
@@ -9646,7 +9643,7 @@
 	     (match_dup 2)
 	     (parallel [(const_int 1) (const_int 3)
 			(const_int 5) (const_int 7)])))))
-	 (match_operand:V4SI 3 "nonimmediate_operand" "x")))]
+	 (match_operand:V4SI 3 "register_operand" "x")))]
   "TARGET_XOP"
   "vp<madcs>wd\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
@@ -9722,39 +9719,39 @@
 	   (any_extend:V2DI
 	    (vec_select:V2QI
 	     (match_operand:V16QI 1 "nonimmediate_operand" "xm")
-	     (parallel [(const_int 0) (const_int 4)])))
+	     (parallel [(const_int 0) (const_int 8)])))
 	   (any_extend:V2DI
 	    (vec_select:V2QI
 	     (match_dup 1)
-	     (parallel [(const_int 1) (const_int 5)]))))
+	     (parallel [(const_int 1) (const_int 9)]))))
 	  (plus:V2DI
 	   (any_extend:V2DI
 	    (vec_select:V2QI
 	     (match_dup 1)
-	     (parallel [(const_int 2) (const_int 6)])))
+	     (parallel [(const_int 2) (const_int 10)])))
 	   (any_extend:V2DI
 	    (vec_select:V2QI
 	     (match_dup 1)
-	     (parallel [(const_int 3) (const_int 7)])))))
+	     (parallel [(const_int 3) (const_int 11)])))))
 	 (plus:V2DI
 	  (plus:V2DI
 	   (any_extend:V2DI
 	    (vec_select:V2QI
 	     (match_dup 1)
-	     (parallel [(const_int 8) (const_int 12)])))
+	     (parallel [(const_int 4) (const_int 12)])))
 	   (any_extend:V2DI
 	    (vec_select:V2QI
 	     (match_dup 1)
-	     (parallel [(const_int 9) (const_int 13)]))))
+	     (parallel [(const_int 5) (const_int 13)]))))
 	  (plus:V2DI
 	   (any_extend:V2DI
 	    (vec_select:V2QI
 	     (match_dup 1)
-	     (parallel [(const_int 10) (const_int 14)])))
+	     (parallel [(const_int 6) (const_int 14)])))
 	   (any_extend:V2DI
 	    (vec_select:V2QI
 	     (match_dup 1)
-	     (parallel [(const_int 11) (const_int 15)])))))))]
+	     (parallel [(const_int 7) (const_int 15)])))))))]
   "TARGET_XOP"
   "vphadd<u>bq\t{%1, %0|%0, %1}"
   [(set_attr "type" "sseiadd1")])
