@@ -3303,14 +3303,14 @@ static void
 ipa_write_node_info (struct output_block *ob, struct cgraph_node *node)
 {
   int node_ref;
-  lto_cgraph_encoder_t encoder;
+  lto_symtab_encoder_t encoder;
   struct ipa_node_params *info = IPA_NODE_REF (node);
   int j;
   struct cgraph_edge *e;
   struct bitpack_d bp;
 
-  encoder = ob->decl_state->cgraph_node_encoder;
-  node_ref = lto_cgraph_encoder_encode (encoder, node);
+  encoder = ob->decl_state->symtab_node_encoder;
+  node_ref = lto_symtab_encoder_encode (encoder, (symtab_node) node);
   streamer_write_uhwi (ob, node_ref);
 
   bp = bitpack_create (ob->main_stream);
@@ -3454,11 +3454,11 @@ ipa_prop_read_section (struct lto_file_decl_data *file_data, const char *data,
     {
       unsigned int index;
       struct cgraph_node *node;
-      lto_cgraph_encoder_t encoder;
+      lto_symtab_encoder_t encoder;
 
       index = streamer_read_uhwi (&ib_main);
-      encoder = file_data->cgraph_node_encoder;
-      node = lto_cgraph_encoder_deref (encoder, index);
+      encoder = file_data->symtab_node_encoder;
+      node = cgraph (lto_symtab_encoder_deref (encoder, index));
       gcc_assert (node->analyzed);
       ipa_read_node_info (&ib_main, node, data_in);
     }

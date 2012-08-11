@@ -348,13 +348,13 @@ lto_write_tree (struct output_block *ob, tree expr, bool ref_p)
 	  && (TREE_STATIC (expr) || DECL_EXTERNAL (expr))
 	  && initial)
 	{
-	  lto_varpool_encoder_t varpool_encoder;
+	  lto_symtab_encoder_t encoder;
 	  struct varpool_node *vnode;
 
-	  varpool_encoder = ob->decl_state->varpool_node_encoder;
+	  encoder = ob->decl_state->symtab_node_encoder;
 	  vnode = varpool_get_node (expr);
 	  if (!vnode
-	      || !lto_varpool_encoder_encode_initializer_p (varpool_encoder,
+	      || !lto_symtab_encoder_encode_initializer_p (encoder,
 							    vnode))
 	    initial = error_mark_node;
 	}
@@ -983,17 +983,20 @@ lto_output (cgraph_node_set set, varpool_node_set vset)
   bitmap output = lto_bitmap_alloc ();
 #endif
   int i, n_nodes;
-  lto_cgraph_encoder_t encoder = lto_get_out_decl_state ()->cgraph_node_encoder;
+  lto_symtab_encoder_t encoder = lto_get_out_decl_state ()->symtab_node_encoder;
 
   /* Initialize the streamer.  */
   lto_streamer_init ();
 
-  n_nodes = lto_cgraph_encoder_size (encoder);
+  n_nodes = lto_symtab_encoder_size (encoder);
   /* Process only the functions with bodies.  */
   for (i = 0; i < n_nodes; i++)
     {
-      node = lto_cgraph_encoder_deref (encoder, i);
-      if (lto_cgraph_encoder_encode_body_p (encoder, node)
+      symtab_node snode = lto_symtab_encoder_deref (encoder, i);
+      if (!symtab_function_p (snode))
+	continue;
+      node = cgraph (snode);
+      if (lto_symtab_encoder_encode_body_p (encoder, node)
 	  && !node->alias
 	  && !node->thunk.thunk_p)
 	{
@@ -1290,8 +1293,7 @@ produce_symtab (struct output_block *ob)
   struct cgraph_node *node;
   struct varpool_node *vnode;
   struct lto_output_stream stream;
-  lto_varpool_encoder_t varpool_encoder = ob->decl_state->varpool_node_encoder;
-  lto_cgraph_encoder_t encoder = ob->decl_state->cgraph_node_encoder;
+  lto_symtab_encoder_t encoder = ob->decl_state->symtab_node_encoder;
   int i;
 
   lto_begin_section (section_name, false);
@@ -1303,9 +1305,11 @@ produce_symtab (struct output_block *ob)
   /* Write all functions. 
      First write all defined functions and then write all used functions.
      This is done so only to handle duplicated symbols in cgraph.  */
-  for (i = 0; i < lto_cgraph_encoder_size (encoder); i++)
+  for (i = 0; i < lto_symtab_encoder_size (encoder); i++)
     {
-      node = lto_cgraph_encoder_deref (encoder, i);
+      if (!symtab_function_p (lto_symtab_encoder_deref (encoder, i)))
+	continue;
+      node = cgraph (lto_symtab_encoder_deref (encoder, i));
       if (DECL_EXTERNAL (node->symbol.decl))
 	continue;
       if (DECL_COMDAT (node->symbol.decl)
@@ -1315,9 +1319,11 @@ produce_symtab (struct output_block *ob)
 	continue;
       write_symbol (cache, &stream, node->symbol.decl, seen, false);
     }
-  for (i = 0; i < lto_cgraph_encoder_size (encoder); i++)
+  for (i = 0; i < lto_symtab_encoder_size (encoder); i++)
     {
-      node = lto_cgraph_encoder_deref (encoder, i);
+      if (!symtab_function_p (lto_symtab_encoder_deref (encoder, i)))
+	continue;
+      node = cgraph (lto_symtab_encoder_deref (encoder, i));
       if (!DECL_EXTERNAL (node->symbol.decl))
 	continue;
       /* We keep around unused extern inlines in order to be able to inline
@@ -1334,9 +1340,11 @@ produce_symtab (struct output_block *ob)
     }
 
   /* Write all variables.  */
-  for (i = 0; i < lto_varpool_encoder_size (varpool_encoder); i++)
+  for (i = 0; i < lto_symtab_encoder_size (encoder); i++)
     {
-      vnode = lto_varpool_encoder_deref (varpool_encoder, i);
+      if (!symtab_variable_p (lto_symtab_encoder_deref (encoder, i)))
+	continue;
+      vnode = varpool (lto_symtab_encoder_deref (encoder, i));
       if (DECL_EXTERNAL (vnode->symbol.decl))
 	continue;
       /* COMDAT virtual tables can be unshared.  Do not declare them
@@ -1351,9 +1359,11 @@ produce_symtab (struct output_block *ob)
 	continue;
       write_symbol (cache, &stream, vnode->symbol.decl, seen, false);
     }
-  for (i = 0; i < lto_varpool_encoder_size (varpool_encoder); i++)
+  for (i = 0; i < lto_symtab_encoder_size (encoder); i++)
     {
-      vnode = lto_varpool_encoder_deref (varpool_encoder, i);
+      if (!symtab_variable_p (lto_symtab_encoder_deref (encoder, i)))
+	continue;
+      vnode = varpool (lto_symtab_encoder_deref (encoder, i));
       if (!DECL_EXTERNAL (vnode->symbol.decl))
 	continue;
       if (DECL_COMDAT (vnode->symbol.decl)
@@ -1482,8 +1492,7 @@ produce_asm_for_decls (cgraph_node_set set ATTRIBUTE_UNUSED,
 	VEC_index (lto_out_decl_state_ptr, lto_function_decl_states, idx);
       lto_delete_out_decl_state (fn_out_state);
     }
-  lto_cgraph_encoder_delete (ob->decl_state->cgraph_node_encoder);
-  lto_varpool_encoder_delete (ob->decl_state->varpool_node_encoder);
+  lto_symtab_encoder_delete (ob->decl_state->symtab_node_encoder);
   VEC_free (lto_out_decl_state_ptr, heap, lto_function_decl_states);
   lto_function_decl_states = NULL;
   destroy_output_block (ob);

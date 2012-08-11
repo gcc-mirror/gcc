@@ -962,12 +962,12 @@ pure_const_write_summary (cgraph_node_set set,
 	  struct bitpack_d bp;
 	  funct_state fs;
 	  int node_ref;
-	  lto_cgraph_encoder_t encoder;
+	  lto_symtab_encoder_t encoder;
 
 	  fs = get_function_state (node);
 
-	  encoder = ob->decl_state->cgraph_node_encoder;
-	  node_ref = lto_cgraph_encoder_encode (encoder, node);
+	  encoder = ob->decl_state->symtab_node_encoder;
+	  node_ref = lto_symtab_encoder_encode (encoder, (symtab_node)node);
 	  streamer_write_uhwi_stream (ob->main_stream, node_ref);
 
 	  /* Note that flags will need to be read in the opposite
@@ -1015,12 +1015,12 @@ pure_const_read_summary (void)
 	      struct cgraph_node *node;
 	      struct bitpack_d bp;
 	      funct_state fs;
-	      lto_cgraph_encoder_t encoder;
+	      lto_symtab_encoder_t encoder;
 
 	      fs = XCNEW (struct funct_state_d);
 	      index = streamer_read_uhwi (ib);
-	      encoder = file_data->cgraph_node_encoder;
-	      node = lto_cgraph_encoder_deref (encoder, index);
+	      encoder = file_data->symtab_node_encoder;
+	      node = cgraph (lto_symtab_encoder_deref (encoder, index));
 	      set_function_state (node, fs);
 
 	      /* Note that the flags must be read in the opposite

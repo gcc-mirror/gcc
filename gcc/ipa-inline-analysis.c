@@ -3053,13 +3053,13 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
       unsigned int index;
       struct cgraph_node *node;
       struct inline_summary *info;
-      lto_cgraph_encoder_t encoder;
+      lto_symtab_encoder_t encoder;
       struct bitpack_d bp;
       struct cgraph_edge *e;
 
       index = streamer_read_uhwi (&ib);
-      encoder = file_data->cgraph_node_encoder;
-      node = lto_cgraph_encoder_deref (encoder, index);
+      encoder = file_data->symtab_node_encoder;
+      node = cgraph (lto_symtab_encoder_deref (encoder, index));
       info = inline_summary (node);
 
       info->estimated_stack_size
@@ -3186,20 +3186,22 @@ inline_write_summary (cgraph_node_set set,
 		      varpool_node_set vset ATTRIBUTE_UNUSED)
 {
   struct cgraph_node *node;
+  symtab_node snode;
   struct output_block *ob = create_output_block (LTO_section_inline_summary);
-  lto_cgraph_encoder_t encoder = ob->decl_state->cgraph_node_encoder;
+  lto_symtab_encoder_t encoder = ob->decl_state->symtab_node_encoder;
   unsigned int count = 0;
   int i;
 
-  for (i = 0; i < lto_cgraph_encoder_size (encoder); i++)
-    if (lto_cgraph_encoder_deref (encoder, i)->analyzed)
+  for (i = 0; i < lto_symtab_encoder_size (encoder); i++)
+    if (symtab_function_p (snode = lto_symtab_encoder_deref (encoder, i))
+	&& cgraph (snode)->analyzed)
       count++;
   streamer_write_uhwi (ob, count);
 
-  for (i = 0; i < lto_cgraph_encoder_size (encoder); i++)
+  for (i = 0; i < lto_symtab_encoder_size (encoder); i++)
     {
-      node = lto_cgraph_encoder_deref (encoder, i);
-      if (node->analyzed)
+      if (symtab_function_p (snode = lto_symtab_encoder_deref (encoder, i))
+	  && (node = cgraph (snode))->analyzed)
 	{
 	  struct inline_summary *info = inline_summary (node);
 	  struct bitpack_d bp;
@@ -3208,7 +3210,7 @@ inline_write_summary (cgraph_node_set set,
 	  size_time_entry *e;
 	  struct condition *c;
 
-	  streamer_write_uhwi (ob, lto_cgraph_encoder_encode (encoder, node));
+	  streamer_write_uhwi (ob, lto_symtab_encoder_encode (encoder, (symtab_node)node));
 	  streamer_write_hwi (ob, info->estimated_self_stack_size);
 	  streamer_write_hwi (ob, info->self_size);
 	  streamer_write_hwi (ob, info->self_time);

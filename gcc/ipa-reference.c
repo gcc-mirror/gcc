@@ -1029,21 +1029,25 @@ ipa_reference_write_optimization_summary (cgraph_node_set set,
 					  varpool_node_set vset)
 {
   struct cgraph_node *node;
+  symtab_node snode;
   struct lto_simple_output_block *ob
     = lto_create_simple_output_block (LTO_section_ipa_reference);
   unsigned int count = 0;
   int ltrans_statics_bitcount = 0;
-  lto_cgraph_encoder_t encoder = ob->decl_state->cgraph_node_encoder;
-  lto_varpool_encoder_t varpool_encoder = ob->decl_state->varpool_node_encoder;
+  lto_symtab_encoder_t encoder = ob->decl_state->symtab_node_encoder;
   bitmap ltrans_statics = BITMAP_ALLOC (NULL);
   int i;
 
   reference_vars_to_consider = splay_tree_new (splay_tree_compare_ints, 0, 0);
 
   /* See what variables we are interested in.  */
-  for (i = 0; i < lto_varpool_encoder_size (varpool_encoder); i++)
+  for (i = 0; i < lto_symtab_encoder_size (encoder); i++)
     {
-      struct varpool_node *vnode = lto_varpool_encoder_deref (varpool_encoder, i);
+      struct varpool_node *vnode;
+      snode = lto_symtab_encoder_deref (encoder, i);
+      if (!symtab_variable_p (snode))
+	continue;
+      vnode = varpool (snode);
       if (bitmap_bit_p (all_module_statics, DECL_UID (vnode->symbol.decl))
 	  && referenced_from_this_partition_p (&vnode->symbol.ref_list, set, vset))
 	{
@@ -1057,8 +1061,9 @@ ipa_reference_write_optimization_summary (cgraph_node_set set,
 
 
   if (ltrans_statics_bitcount)
-    for (i = 0; i < lto_cgraph_encoder_size (encoder); i++)
-      if (write_node_summary_p (lto_cgraph_encoder_deref (encoder, i),
+    for (i = 0; i < lto_symtab_encoder_size (encoder); i++)
+      if (symtab_function_p (snode = lto_symtab_encoder_deref (encoder, i))
+	  && write_node_summary_p (cgraph (snode),
 				set, vset, ltrans_statics))
 	  count++;
 
@@ -1069,16 +1074,19 @@ ipa_reference_write_optimization_summary (cgraph_node_set set,
 
   /* Process all of the functions.  */
   if (ltrans_statics_bitcount)
-    for (i = 0; i < lto_cgraph_encoder_size (encoder); i++)
+    for (i = 0; i < lto_symtab_encoder_size (encoder); i++)
       {
-	node = lto_cgraph_encoder_deref (encoder, i);
+	snode = lto_symtab_encoder_deref (encoder, i);
+	if (!symtab_function_p (snode))
+	  continue;
+	node = cgraph (snode);
 	if (write_node_summary_p (node, set, vset, ltrans_statics))
 	  {
 	    ipa_reference_optimization_summary_t info;
 	    int node_ref;
 
 	    info = get_reference_optimization_summary (node);
-	    node_ref = lto_cgraph_encoder_encode (encoder, node);
+	    node_ref = lto_symtab_encoder_encode (encoder, (symtab_node) node);
 	    streamer_write_uhwi_stream (ob->main_stream, node_ref);
 
 	    stream_out_bitmap (ob, info->statics_not_read, ltrans_statics,
@@ -1144,11 +1152,11 @@ ipa_reference_read_optimization_summary (void)
 	      struct cgraph_node *node;
 	      ipa_reference_optimization_summary_t info;
 	      int v_count;
-	      lto_cgraph_encoder_t encoder;
+	      lto_symtab_encoder_t encoder;
 
 	      index = streamer_read_uhwi (ib);
-	      encoder = file_data->cgraph_node_encoder;
-	      node = lto_cgraph_encoder_deref (encoder, index);
+	      encoder = file_data->symtab_node_encoder;
+	      node = cgraph (lto_symtab_encoder_deref (encoder, index));
 	      info = XCNEW (struct ipa_reference_optimization_summary_d);
 	      set_reference_optimization_summary (node, info);
 	      info->statics_not_read = BITMAP_ALLOC (&optimization_summary_obstack);
