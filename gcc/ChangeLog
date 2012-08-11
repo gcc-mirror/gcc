@@ -1,3 +1,8 @@
+2012-08-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (xop_phaddbq):  Fix vec_select selectors.
+	(xop_phaddubq): Ditto.
+
 2012-08-10  Ulrich Weigand  <ulrich.weigand@linaro.org>
 
 	Backport from mainline

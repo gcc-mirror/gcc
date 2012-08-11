@@ -10718,45 +10718,45 @@
 	    (vec_select:V2QI
 	     (match_operand:V16QI 1 "nonimmediate_operand" "xm")
 	     (parallel [(const_int 0)
-			(const_int 4)])))
+			(const_int 8)])))
 	   (sign_extend:V2DI
 	    (vec_select:V2QI
 	     (match_dup 1)
 	     (parallel [(const_int 1)
-			(const_int 5)]))))
+			(const_int 9)]))))
 	  (plus:V2DI
 	   (sign_extend:V2DI
 	    (vec_select:V2QI
 	     (match_dup 1)
 	     (parallel [(const_int 2)
-			(const_int 6)])))
+			(const_int 10)])))
 	   (sign_extend:V2DI
 	    (vec_select:V2QI
 	     (match_dup 1)
 	     (parallel [(const_int 3)
-			(const_int 7)])))))
+			(const_int 11)])))))
 	 (plus:V2DI
 	  (plus:V2DI
 	   (sign_extend:V2DI
 	    (vec_select:V2QI
 	     (match_dup 1)
-	     (parallel [(const_int 8)
+	     (parallel [(const_int 4)
 			(const_int 12)])))
 	   (sign_extend:V2DI
 	    (vec_select:V2QI
 	     (match_dup 1)
-	     (parallel [(const_int 9)
+	     (parallel [(const_int 5)
 			(const_int 13)]))))
 	  (plus:V2DI
 	   (sign_extend:V2DI
 	    (vec_select:V2QI
 	     (match_dup 1)
-	     (parallel [(const_int 10)
+	     (parallel [(const_int 6)
 			(const_int 14)])))
 	   (sign_extend:V2DI
 	    (vec_select:V2QI
 	     (match_dup 1)
-	     (parallel [(const_int 11)
+	     (parallel [(const_int 7)
 			(const_int 15)])))))))]
   "TARGET_XOP"
   "vphaddbq\t{%1, %0|%0, %1}"
@@ -10904,45 +10904,45 @@
 	    (vec_select:V2QI
 	     (match_operand:V16QI 1 "nonimmediate_operand" "xm")
 	     (parallel [(const_int 0)
-			(const_int 4)])))
+			(const_int 8)])))
 	   (sign_extend:V2DI
 	    (vec_select:V2QI
 	     (match_dup 1)
 	     (parallel [(const_int 1)
-			(const_int 5)]))))
+			(const_int 9)]))))
 	  (plus:V2DI
 	   (zero_extend:V2DI
 	    (vec_select:V2QI
 	     (match_dup 1)
 	     (parallel [(const_int 2)
-			(const_int 6)])))
+			(const_int 10)])))
 	   (zero_extend:V2DI
 	    (vec_select:V2QI
 	     (match_dup 1)
 	     (parallel [(const_int 3)
-			(const_int 7)])))))
+			(const_int 11)])))))
 	 (plus:V2DI
 	  (plus:V2DI
 	   (zero_extend:V2DI
 	    (vec_select:V2QI
 	     (match_dup 1)
-	     (parallel [(const_int 8)
+	     (parallel [(const_int 4)
 			(const_int 12)])))
 	   (sign_extend:V2DI
 	    (vec_select:V2QI
 	     (match_dup 1)
-	     (parallel [(const_int 9)
+	     (parallel [(const_int 5)
 			(const_int 13)]))))
 	  (plus:V2DI
 	   (zero_extend:V2DI
 	    (vec_select:V2QI
 	     (match_dup 1)
-	     (parallel [(const_int 10)
+	     (parallel [(const_int 6)
 			(const_int 14)])))
 	   (zero_extend:V2DI
 	    (vec_select:V2QI
 	     (match_dup 1)
-	     (parallel [(const_int 11)
+	     (parallel [(const_int 7)
 			(const_int 15)])))))))]
   "TARGET_XOP"
   "vphaddubq\t{%1, %0|%0, %1}"
