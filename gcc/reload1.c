@@ -8469,6 +8469,7 @@ emit_insn_if_valid_for_reload (rtx insn)
   return NULL;
 }
 
+#ifdef SECONDARY_MEMORY_NEEDED
 /* If X is not a subreg, return it unmodified.  If it is a subreg,
    look up whether we made a replacement for the SUBREG_REG.  Return
    either the replacement or the SUBREG_REG.  */
@@ -8480,6 +8481,7 @@ replaced_subreg (rtx x)
     return find_replacement (&SUBREG_REG (x));
   return x;
 }
+#endif
 
 /* Emit code to perform a reload from IN (which may be a reload register) to
    OUT (which may also be a reload register).  IN or OUT is from operand
@@ -8491,7 +8493,10 @@ static rtx
 gen_reload (rtx out, rtx in, int opnum, enum reload_type type)
 {
   rtx last = get_last_insn ();
-  rtx tem, tem1, tem2;
+  rtx tem;
+#ifdef SECONDARY_MEMORY_NEEDED
+  rtx tem1, tem2;
+#endif
 
   /* If IN is a paradoxical SUBREG, remove it and try to put the
      opposite SUBREG on OUT.  Likewise for a paradoxical SUBREG on OUT.  */
