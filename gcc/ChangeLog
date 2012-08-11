@@ -1,3 +1,9 @@
+2012-08-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (xop integer multiply/add insns): Use
+	register_operand for operand 3 predicate.
+	(xop_phadd<u>bq):  Fix vec_select selectors.
+
 2012-08-11  Martin Jambor  <mjambor@suse.cz>
 
 	PR fortran/48636
@@ -48,7 +54,8 @@
 	(produce_asm_for_decls): Likewise.
 	(lto_output): Use output_symtab.
 	* lto-section-in.c (lto_section_name): Update.
-	* lto-section-out.c (lto_destroy_simple_output_block): Remove section_type.
+	* lto-section-out.c (lto_destroy_simple_output_block): Remove
+	section_type.
 	* lto-streamer.h (enum lto_section_type): Remove LTO_section_varpool;
 	rename LTO_section_cgraph to LTO_section_symtab_nodes.
 	(struct lto_header): Remove section_type.
@@ -87,7 +94,7 @@
 	(add_node_to): Update.
 	(add_references): Update.
 	(output_outgoing_cgraph_edges): Update.
-	(output_refs): Update.	
+	(output_refs): Update.
 	(compute_ltrans_boundary): Update.
 	(output_cgraph): Update; output varpools too.
 	(input_overwrite_node): Update.
@@ -124,15 +131,16 @@
 	add symtab_node_encoder.
 	(lto_file_decl_data): Likewise.
 	(lto_cgraph_encoder_deref, lto_cgraph_encoder_lookup,
-	lto_cgraph_encoder_new, lto_cgraph_encoder_encode, lto_cgraph_encoder_delete,
-	lto_cgraph_encoder_encode_body_p, lto_varpool_encoder_encode_body_p,
-	lto_varpool_encoder_deref, lto_varpool_encoder_lookup, lto_varpool_encoder_new,
+	lto_cgraph_encoder_new, lto_cgraph_encoder_encode,
+	lto_cgraph_encoder_delete, lto_cgraph_encoder_encode_body_p,
+	lto_varpool_encoder_encode_body_p, lto_varpool_encoder_deref,
+	lto_varpool_encoder_lookup, lto_varpool_encoder_new,
 	lto_varpool_encoder_encode, lto_varpool_encoder_delete,
 	lto_varpool_encoder_encode_initializer_p): Remove.
 	(lto_symtab_encoder_deref, lto_symtab_encoder_lookup,
-	lto_symtab_encoder_t, lto_symtab_encoder_encode, lto_symtab_encoder_delete,
-	lto_symtab_encoder_encode_body_p, lto_symtab_encoder_encode_initializer_p):
-	New.
+	lto_symtab_encoder_t, lto_symtab_encoder_encode,
+	lto_symtab_encoder_delete, lto_symtab_encoder_encode_body_p,
+	lto_symtab_encoder_encode_initializer_p): New.
 
 2012-08-11  Uros Bizjak  <ubizjak@gmail.com>
 
