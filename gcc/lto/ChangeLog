@@ -1,3 +1,7 @@
+2012-07-24  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (read_cgraph_and_symbols): Use input_symtab.
+
 2012-07-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	* lto-tree.h (lang_decl): Add variable_size GTY option.

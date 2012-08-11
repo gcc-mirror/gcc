@@ -747,10 +747,10 @@ compute_ltrans_boundary (struct lto_out_decl_state *state,
     }
 }
 
-/* Output the part of the cgraph in SET.  */
+/* Output the part of the symtab in SET and VSET.  */
 
 void
-output_cgraph (cgraph_node_set set, varpool_node_set vset)
+output_symtab (cgraph_node_set set, varpool_node_set vset)
 {
   struct cgraph_node *node;
   struct lto_simple_output_block *ob;
@@ -762,7 +762,7 @@ output_cgraph (cgraph_node_set set, varpool_node_set vset)
   if (flag_wpa)
     output_cgraph_opt_summary (set);
 
-  ob = lto_create_simple_output_block (LTO_section_cgraph);
+  ob = lto_create_simple_output_block (LTO_section_symtab_nodes);
 
   output_profile_summary (ob);
 
@@ -1301,11 +1301,11 @@ merge_profile_summaries (struct lto_file_decl_data **file_data_vec)
       }
 }
 
-/* Input and merge the cgraph from each of the .o files passed to
+/* Input and merge the symtab from each of the .o files passed to
    lto1.  */
 
 void
-input_cgraph (void)
+input_symtab (void)
 {
   struct lto_file_decl_data **file_data_vec = lto_get_file_decl_data ();
   struct lto_file_decl_data *file_data;
@@ -1321,14 +1321,14 @@ input_cgraph (void)
       struct lto_input_block *ib;
       VEC(symtab_node, heap) *nodes;
 
-      ib = lto_create_simple_input_block (file_data, LTO_section_cgraph,
+      ib = lto_create_simple_input_block (file_data, LTO_section_symtab_nodes,
 					  &data, &len);
       if (!ib) 
 	fatal_error ("cannot find LTO cgraph in %s", file_data->file_name);
       input_profile_summary (ib, file_data);
       file_data->symtab_node_encoder = lto_symtab_encoder_new ();
       nodes = input_cgraph_1 (file_data, ib);
-      lto_destroy_simple_input_block (file_data, LTO_section_cgraph,
+      lto_destroy_simple_input_block (file_data, LTO_section_symtab_nodes,
 				      ib, data, len);
 
       ib = lto_create_simple_input_block (file_data, LTO_section_refs,

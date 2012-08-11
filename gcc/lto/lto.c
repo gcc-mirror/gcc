@@ -1807,8 +1807,8 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
     fprintf (stderr, "\nReading the callgraph\n");
 
   timevar_push (TV_IPA_LTO_CGRAPH_IO);
-  /* Read the callgraph.  */
-  input_cgraph ();
+  /* Read the symtab.  */
+  input_symtab ();
   timevar_pop (TV_IPA_LTO_CGRAPH_IO);
 
   if (!quiet_flag)

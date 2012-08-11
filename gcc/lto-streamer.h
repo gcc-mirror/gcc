@@ -235,14 +235,13 @@ enum lto_section_type
   LTO_section_decls = 0,
   LTO_section_function_body,
   LTO_section_static_initializer,
-  LTO_section_cgraph,
-  LTO_section_varpool,
+  LTO_section_symtab,
   LTO_section_refs,
   LTO_section_asm,
   LTO_section_jump_functions,
   LTO_section_ipa_pure_const,
   LTO_section_ipa_reference,
-  LTO_section_symtab,
+  LTO_section_symtab_nodes,
   LTO_section_opts,
   LTO_section_cgraph_opt_sum,
   LTO_section_inline_summary,
@@ -336,7 +335,6 @@ struct lto_header
 {
   int16_t major_version;
   int16_t minor_version;
-  enum lto_section_type section_type;
 };
 
 /* The header for a function body.  */
@@ -820,8 +818,8 @@ bool lto_symtab_encoder_encode_body_p (lto_symtab_encoder_t,
 
 bool lto_symtab_encoder_encode_initializer_p (lto_symtab_encoder_t,
 					      struct varpool_node *);
-void output_cgraph (cgraph_node_set, varpool_node_set);
-void input_cgraph (void);
+void output_symtab (cgraph_node_set, varpool_node_set);
+void input_symtab (void);
 bool referenced_from_other_partition_p (struct ipa_ref_list *,
 				        cgraph_node_set,
 				        varpool_node_set vset);
