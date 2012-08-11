@@ -494,8 +494,9 @@ bool ipa_propagate_indirect_call_infos (struct cgraph_edge *cs,
 
 /* Indirect edge and binfo processing.  */
 tree ipa_get_indirect_edge_target (struct cgraph_edge *ie,
-				   VEC (tree, heap) *known_csts,
-				   VEC (tree, heap) *known_binfs);
+				   VEC (tree, heap) *,
+				   VEC (tree, heap) *,
+				   VEC (ipa_agg_jump_function_p, heap) *);
 struct cgraph_edge *ipa_make_edge_direct_to_target (struct cgraph_edge *, tree);
 
 /* Functions related to both.  */
