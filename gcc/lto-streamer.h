@@ -423,49 +423,28 @@ struct lto_stats_d
 };
 
 /* Encoder data structure used to stream callgraph nodes.  */
-struct lto_cgraph_encoder_d
+struct lto_symtab_encoder_d
 {
   /* Map nodes to reference number. */
   struct pointer_map_t *map;
 
   /* Map reference number to node. */
-  VEC(cgraph_node_ptr,heap) *nodes;
+  VEC(symtab_node,heap) *nodes;
 
   /* Map of nodes where we want to output body.  */
   struct pointer_set_t *body;
-};
-
-typedef struct lto_cgraph_encoder_d *lto_cgraph_encoder_t;
-
-/* Return number of encoded nodes in ENCODER.  */
-
-static inline int
-lto_cgraph_encoder_size (lto_cgraph_encoder_t encoder)
-{
-  return VEC_length (cgraph_node_ptr, encoder->nodes);
-}
-
-
-/* Encoder data structure used to stream callgraph nodes.  */
-struct lto_varpool_encoder_d
-{
-  /* Map nodes to reference number. */
-  struct pointer_map_t *map;
-
-  /* Map reference number to node. */
-  VEC(varpool_node_ptr,heap) *nodes;
-
   /* Map of nodes where we want to output initializer.  */
   struct pointer_set_t *initializer;
 };
-typedef struct lto_varpool_encoder_d *lto_varpool_encoder_t;
+
+typedef struct lto_symtab_encoder_d *lto_symtab_encoder_t;
 
 /* Return number of encoded nodes in ENCODER.  */
 
 static inline int
-lto_varpool_encoder_size (lto_varpool_encoder_t encoder)
+lto_symtab_encoder_size (lto_symtab_encoder_t encoder)
 {
-  return VEC_length (varpool_node_ptr, encoder->nodes);
+  return VEC_length (symtab_node, encoder->nodes);
 }
 
 /* Mapping from indices to trees.  */
@@ -520,10 +499,7 @@ struct lto_out_decl_state
   struct lto_tree_ref_encoder streams[LTO_N_DECL_STREAMS];
 
   /* Encoder for cgraph nodes.  */
-  lto_cgraph_encoder_t cgraph_node_encoder;
-
-  /* Encoder for varpool nodes.  */
-  lto_varpool_encoder_t varpool_node_encoder;
+  lto_symtab_encoder_t symtab_node_encoder;
 
   /* If this out-decl state belongs to a function, fn_decl points to that
      function.  Otherwise, it is NULL. */
@@ -549,10 +525,7 @@ struct GTY(()) lto_file_decl_data
   struct lto_in_decl_state *global_decl_state;
 
   /* Table of cgraph nodes present in this file.  */
-  lto_cgraph_encoder_t GTY((skip)) cgraph_node_encoder;
-
-  /* Table of varpool nodes present in this file.  */
-  lto_varpool_encoder_t GTY((skip)) varpool_node_encoder;
+  lto_symtab_encoder_t GTY((skip)) symtab_node_encoder;
 
   /* Hash table maps lto-related section names to location in file.  */
   htab_t GTY((param_is (struct lto_in_decl_state))) function_decl_states;
@@ -837,23 +810,16 @@ void lto_output_location (struct output_block *, location_t);
 
 
 /* In lto-cgraph.c  */
-struct cgraph_node *lto_cgraph_encoder_deref (lto_cgraph_encoder_t, int);
-int lto_cgraph_encoder_lookup (lto_cgraph_encoder_t, struct cgraph_node *);
-lto_cgraph_encoder_t lto_cgraph_encoder_new (void);
-int lto_cgraph_encoder_encode (lto_cgraph_encoder_t, struct cgraph_node *);
-void lto_cgraph_encoder_delete (lto_cgraph_encoder_t);
-bool lto_cgraph_encoder_encode_body_p (lto_cgraph_encoder_t,
+symtab_node lto_symtab_encoder_deref (lto_symtab_encoder_t, int);
+int lto_symtab_encoder_lookup (lto_symtab_encoder_t, symtab_node);
+lto_symtab_encoder_t lto_symtab_encoder_new (void);
+int lto_symtab_encoder_encode (lto_symtab_encoder_t, symtab_node);
+void lto_symtab_encoder_delete (lto_symtab_encoder_t);
+bool lto_symtab_encoder_encode_body_p (lto_symtab_encoder_t,
 				       struct cgraph_node *);
 
-bool lto_varpool_encoder_encode_body_p (lto_varpool_encoder_t,
-				        struct varpool_node *);
-struct varpool_node *lto_varpool_encoder_deref (lto_varpool_encoder_t, int);
-int lto_varpool_encoder_lookup (lto_varpool_encoder_t, struct varpool_node *);
-lto_varpool_encoder_t lto_varpool_encoder_new (void);
-int lto_varpool_encoder_encode (lto_varpool_encoder_t, struct varpool_node *);
-void lto_varpool_encoder_delete (lto_varpool_encoder_t);
-bool lto_varpool_encoder_encode_initializer_p (lto_varpool_encoder_t,
-					       struct varpool_node *);
+bool lto_symtab_encoder_encode_initializer_p (lto_symtab_encoder_t,
+					      struct varpool_node *);
 void output_cgraph (cgraph_node_set, varpool_node_set);
 void input_cgraph (void);
 bool referenced_from_other_partition_p (struct ipa_ref_list *,

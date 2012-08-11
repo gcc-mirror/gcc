@@ -273,6 +273,10 @@ struct GTY(()) cgraph_node {
   unsigned tm_clone : 1;
 };
 
+DEF_VEC_P(symtab_node);
+DEF_VEC_ALLOC_P(symtab_node,heap);
+DEF_VEC_ALLOC_P(symtab_node,gc);
+
 typedef struct cgraph_node *cgraph_node_ptr;
 
 DEF_VEC_P(cgraph_node_ptr);

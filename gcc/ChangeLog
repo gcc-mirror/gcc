@@ -1,3 +1,84 @@
+2012-08-11  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.h (vector types for symtab_node): Add.
+	* ipa-reference.c (ipa_reference_write_optimization_summary): Update
+	for new symtab encoder.
+	(ipa_reference_read_optimization_summary): Likewise.
+	* lto-cgraph.c (output_varpool): Remove.
+	(input_cgraph_opt_summary): Take symtab nodes vector as argument.
+	(LTO_cgraph_tags): Rename to ...
+	(LTO_symtab_tags): ... this one; add LTO_symtab_variable.
+	(lto_cgraph_encoder_new): Rename to ...
+	(lto_symtab_encoder_new): ... this on.
+	(lto_cgraph_encoder_encode): Rename to ...
+	(lto_symtab_encoder_encode): ... this one.
+	(lto_cgraph_encoder_delete): Rename to ...
+	(lto_symtab_encoder_delete): ... this one.
+	(lto_cgraph_encoder_deref): Rename to ...
+	(lto_symtab_encoder_deref): ... this one.
+	(lto_cgraph_encoder_encode_body_p): Rename to ...
+	(lto_symtab_encoder_encode_body_p): ... this one.
+	(lto_varpool_encoder_new, lto_varpool_encoder_delete,
+	lto_varpool_encoder_encode, lto_varpool_encoder_lookup,
+	lto_varpool_encoder_deref): Remove.
+	(lto_varpool_encoder_encode_initializer_p): Rename to ...
+	(lto_symtab_encoder_encode_initializer_p): ... this one.
+	(lto_set_varpool_encoder_encode_initializer): Rename to ...
+	(lto_set_symtab_encoder_encode_initializer): ... this one.
+	(lto_output_edge): Update.
+	(lto_output_node): Update.
+	(lto_output_varpool_node): Update; stream out LTO_symtab_variable tag.
+	(lto_output_ref): Drop varpool_encoder; update.
+	(add_node_to): Update.
+	(add_references): Update.
+	(output_outgoing_cgraph_edges): Update.
+	(output_refs): Update.	
+	(compute_ltrans_boundary): Update.
+	(output_cgraph): Update; output varpools too.
+	(input_overwrite_node): Update.
+	(output_varpool): Remove.
+	(input_node): Update.
+	(input_ref): Update.
+	(input_edge): Update.
+	(input_cgraph_1): Update; input varpool too; unify fixup code.
+	(input_varpool_1): Remove.
+	(input_refs): Update.
+	(input_cgraph): Update.
+	(output_node_opt_summary): Update.
+	(input_cgraph_opt_section): Update.
+	(input_cgraph_opt_summary): Update.
+	* ipa-pure-const.c (pure_const_write_summary): Update.
+	(pure_const_read_summary): Update.
+	* lto-streamer-out.c (lto_write_tree): Update.
+	(lto_output): Likewise.
+	(produce_symtab): Update.
+	(produce_asm_for_decls): Update.
+	* ipa-inline-analysis.c (inline_read_section): Update.
+	(inline_write_summary): Update.
+	* ipa-prop.c (ipa_write_node_info): Update.
+	(ipa_prop_read_section): Update.
+	* lto-streamer.h (lto_cgraph_encoder_d): Rename to ...
+	(lto_symtab_encoder_d): ... this one;  add initializer.
+	(lto_cgraph_encoder_t): Rename to ...
+	(lto_symtab_encoder_t): ... this one.
+	(lto_cgraph_encoder_size): Rename to ...
+	(lto_symtab_encoder_size): ... this one.
+	(lto_varpool_encoder_d): ... remove.
+	(lto_varpool_encoder_t): Remove.
+	(lto_out_decl_state): Remove cgraph_node_encoder, varpool_node_encoder
+	add symtab_node_encoder.
+	(lto_file_decl_data): Likewise.
+	(lto_cgraph_encoder_deref, lto_cgraph_encoder_lookup,
+	lto_cgraph_encoder_new, lto_cgraph_encoder_encode, lto_cgraph_encoder_delete,
+	lto_cgraph_encoder_encode_body_p, lto_varpool_encoder_encode_body_p,
+	lto_varpool_encoder_deref, lto_varpool_encoder_lookup, lto_varpool_encoder_new,
+	lto_varpool_encoder_encode, lto_varpool_encoder_delete,
+	lto_varpool_encoder_encode_initializer_p): Remove.
+	(lto_symtab_encoder_deref, lto_symtab_encoder_lookup,
+	lto_symtab_encoder_t, lto_symtab_encoder_encode, lto_symtab_encoder_delete,
+	lto_symtab_encoder_encode_body_p, lto_symtab_encoder_encode_initializer_p):
+	New.
+
 2012-08-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (isa): Add fma and fma4.
