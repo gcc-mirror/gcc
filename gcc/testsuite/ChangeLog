@@ -1,3 +1,8 @@
+2012-08-11  Martin Jambor  <mjambor@suse.cz>
+
+	PR fortran/48636
+	* gfortran.dg/pr48636.f90: New test.
+
 2012-08-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/torture/vector-shuffle1.c (f): Pass vectors indirectly

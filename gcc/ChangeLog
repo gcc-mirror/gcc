@@ -1,3 +1,40 @@
+2012-08-11  Martin Jambor  <mjambor@suse.cz>
+
+	PR fortran/48636
+	* ipa-inline.h (condition): New fields offset, agg_contents and by_ref.
+	* ipa-inline-analysis.c (agg_position_info): New type.
+	(add_condition): New parameter aggpos, also store agg_contents, by_ref
+	and offset.
+	(dump_condition): Also dump aggregate conditions.
+	(evaluate_conditions_for_known_args): Also handle aggregate
+	conditions.  New parameter known_aggs.
+	(evaluate_properties_for_edge): Gather known aggregate contents.
+	(inline_node_duplication_hook): Pass NULL known_aggs to
+	evaluate_conditions_for_known_args.
+	(unmodified_parm): Split into unmodified_parm and unmodified_parm_1.
+	(unmodified_parm_or_parm_agg_item): New function.
+	(set_cond_stmt_execution_predicate): Handle values passed in
+	aggregates.
+	(set_switch_stmt_execution_predicate): Likewise.
+	(will_be_nonconstant_predicate): Likewise.
+	(estimate_edge_devirt_benefit): Pass new parameter known_aggs to
+	ipa_get_indirect_edge_target.
+	(estimate_calls_size_and_time): New parameter known_aggs, pass it
+	recrsively to itself and to estimate_edge_devirt_benefit.
+	(estimate_node_size_and_time): New vector known_aggs, pass it o
+	functions which need it.
+	(remap_predicate): New parameter offset_map, use it to remap aggregate
+	conditions.
+	(remap_edge_summaries): New parameter offset_map, pass it recursively
+	to itself and to remap_predicate.
+	(inline_merge_summary): Also create and populate vector offset_map.
+	(do_estimate_edge_time): New vector of known aggregate contents,
+	passed to functions which need it.
+	(inline_read_section): Stream new fields of condition.
+	(inline_write_summary): Likewise.
+	* ipa-cp.c (ipa_get_indirect_edge_target): Also examine the aggregate
+	contents.  Let all local callers pass NULL for known_aggs.
+
 2012-08-11  Jan Hubicka  <jh@suse.cz>
 
 	* lto-cgraph.c (output_cgraph): Rename to ...
