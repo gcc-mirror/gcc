@@ -1,3 +1,9 @@
+2012-08-12  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/52681
+	* src/c++11/thread.cc (thread::_M_start_thread): Improve error text
+	when threads are not enabled.
+
 2012-08-09  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* acinclude.m4: Update references to final C++11 standard.
