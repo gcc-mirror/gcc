@@ -1,5 +1,13 @@
 2012-08-12  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	PR target/51244
+	* gcc.target/sh/pr51244-7.c: New.
+	* gcc.target/sh/pr51244-8.c: New.
+	* gcc.target/sh/pr51244-9.c: New.
+	* gcc.target/sh/pr51244-10.c: New.
+
+2012-08-12  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	* gcc.target/sh/pr50749-sf-postinc-1.c: Skip for -m3.  Don't skip for
 	-m2e or -m2a.
 	* gcc.target/sh/pr50749-sf-postinc-3.c: Likewise.

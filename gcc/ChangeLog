@@ -1,3 +1,14 @@
+2012-08-12  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/51244
+	* config/sh/sh.md: Add splits for inverted compare and branch
+	opportunities.
+	(*cmpeqsi_t): New insn.
+	(cmpgtsi_t, cmpgesi_t): Swap r and N alternatives.
+	(cmpgeusi_t): Use satisfies_constraint_Z.  Emit sett insn in
+	replacement insn list and not in the preparation statements.
+	(clrt, sett): Add mt_group attribute.
+
 2012-08-12 Marc Glisse <marc.glisse@inria.fr>
 
 	PR middle-end/54193
