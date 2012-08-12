@@ -13868,6 +13868,24 @@ label:
   "byterev	%1, %0"
   [(set_attr "type" "arith_media")])
 
+;; In user mode, the "pref" instruction will raise a RADDERR exception
+;; for accesses to [0x80000000,0xffffffff].  This makes it an unsuitable
+;; implementation of __builtin_prefetch for VxWorks RTPs.
+(define_expand "prefetch"
+  [(prefetch (match_operand 0 "address_operand" "")
+             (match_operand:SI 1 "const_int_operand" "")
+             (match_operand:SI 2 "const_int_operand" ""))]
+  "(TARGET_SH2A || TARGET_SH3 || TARGET_SH5)
+   && (TARGET_SHMEDIA || ! TARGET_VXWORKS_RTP)")
+
+(define_insn "*prefetch"
+  [(prefetch (match_operand:SI 0 "register_operand" "r")
+	     (match_operand:SI 1 "const_int_operand" "n")
+	     (match_operand:SI 2 "const_int_operand" "n"))]
+  "(TARGET_SH2A || TARGET_SH3 || TARGET_SHCOMPACT) && ! TARGET_VXWORKS_RTP"
+  "pref	@%0"
+  [(set_attr "type" "other")])
+
 (define_insn "*prefetch_media"
   [(prefetch (match_operand:QI 0 "address_operand" "p")
              (match_operand:SI 1 "const_int_operand" "n")
@@ -13878,32 +13896,6 @@ label:
   output_asm_insn ("ld%M0.b    %m0,r63", operands);
   return "";
 }
-  [(set_attr "type" "other")])
-
-;; In user mode, the "pref" instruction will raise a RADDERR exception
-;; for accesses to [0x80000000,0xffffffff].  This makes it an unsuitable
-;; implementation of __builtin_prefetch for VxWorks RTPs.
-(define_expand "prefetch"
-  [(prefetch (match_operand 0 "address_operand" "p")
-             (match_operand:SI 1 "const_int_operand" "n")
-             (match_operand:SI 2 "const_int_operand" "n"))]
-  "TARGET_SH2A || ((TARGET_HARD_SH4 || TARGET_SH5)
-   && (TARGET_SHMEDIA || !TARGET_VXWORKS_RTP))"
-{
-  if (GET_MODE (operands[0]) != Pmode
-      || !CONST_INT_P (operands[1])
-      || !CONST_INT_P (operands[2]))
-    FAIL;
-  if (! TARGET_SHMEDIA)
-    operands[0] = force_reg (Pmode, operands[0]);
-})
-
-(define_insn "*prefetch"
-  [(prefetch (match_operand:SI 0 "register_operand" "r")
-	     (match_operand:SI 1 "const_int_operand" "n")
-	     (match_operand:SI 2 "const_int_operand" "n"))]
-  "(TARGET_SH2A || TARGET_HARD_SH4 || TARGET_SHCOMPACT) && !TARGET_VXWORKS_RTP"
-  "pref	@%0"
   [(set_attr "type" "other")])
 
 (define_insn "alloco_i"

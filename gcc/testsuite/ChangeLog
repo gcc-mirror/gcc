@@ -1,5 +1,9 @@
 2012-08-12  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	* gcc.target/sh/prefetch.c: Add -m3* to inclusion list.
+
+2012-08-12  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	PR target/51244
 	* gcc.target/sh/pr51244-7.c: New.
 	* gcc.target/sh/pr51244-8.c: New.
