@@ -1,3 +1,9 @@
+2012-08-12  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/39423
+	* config/sh/predicates.md (mem_index_disp_operand): Check for
+	arith_reg_operand instead of REG_P.
+
 2012-08-11  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* reload1.c (replaced_subreg, gen_reload): Add
