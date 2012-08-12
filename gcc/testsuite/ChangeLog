@@ -1,3 +1,10 @@
+2012-08-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54221
+	* vect/vect-gems.f90: Don't mark module vars as PRIVATE as
+	they appear uninitialized on the RHS.
+	* gfortran.dg/public_private_module_6.f90: New.
+
 2012-08-11  Martin Jambor  <mjambor@suse.cz>
 
 	PR fortran/48636

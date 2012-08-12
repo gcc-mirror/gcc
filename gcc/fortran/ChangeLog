@@ -1,3 +1,9 @@
+2012-08-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54221
+	* trans-decl.c (gfc_finish_var_decl, build_function_decl):
+	Fix setting private module vars/procs as TREE_PUBLIC(...) = 0.
+
 2012-08-09  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/54199
