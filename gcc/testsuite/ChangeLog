@@ -1,5 +1,17 @@
 2012-08-12  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	* gcc.target/sh/pr50749-sf-postinc-1.c: Skip for -m3.  Don't skip for
+	-m2e or -m2a.
+	* gcc.target/sh/pr50749-sf-postinc-3.c: Likewise.
+	* gcc.target/sh/pr53511-1.c: Likewise.
+	* gcc.target/sh/pr50749-sf-predec-1.c: Likewise.
+	* gcc.target/sh/pr50749-sf-predec-3.c: Likewise.
+	* gcc.target/sh/pr53512-1.c: Skip for -m3*.
+	* gcc.target/sh/pr53512-3.c: Likewise.
+	* gcc.target/sh/pr21255-3.c: Skip for single precision FPU targets.
+
+2012-08-12  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	PR target/39423
 	* gcc.c-torture/compile/pr39423-1.c: New.
 	* gcc.c-torture/compile/pr39423-2.c: New.
