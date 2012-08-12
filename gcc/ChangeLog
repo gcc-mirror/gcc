@@ -1,5 +1,12 @@
 2012-08-12  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	* config/sh/sh.md (prefetch): Simplify expander.  Fix condition to
+	allow SH3.
+	(*prefetch_media): Move insn below expander.
+	(*prefetch): Fix condition to allow SH3.
+
+2012-08-12  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	PR target/51244
 	* config/sh/sh.md: Add splits for inverted compare and branch
 	opportunities.
