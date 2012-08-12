@@ -1,3 +1,9 @@
+2012-08-12  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/39423
+	* gcc.c-torture/compile/pr39423-1.c: New.
+	* gcc.c-torture/compile/pr39423-2.c: New.
+
 2012-08-12  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/54221

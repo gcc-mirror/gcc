@@ -521,14 +521,17 @@
   plus1_rtx = XEXP (plus0_rtx, 0);
   if (GET_CODE (plus1_rtx) != PLUS)
     return 0;
+  if (! arith_reg_operand (XEXP (plus1_rtx, 1), GET_MODE (XEXP (plus1_rtx, 1))))
+    return 0;
 
   mult_rtx = XEXP (plus1_rtx, 0);
   if (GET_CODE (mult_rtx) != MULT)
     return 0;
- 
-  return REG_P (XEXP (mult_rtx, 0)) && CONST_INT_P (XEXP (mult_rtx, 1))
-	 && exact_log2 (INTVAL (XEXP (mult_rtx, 1))) > 0
-	 && REG_P (XEXP (plus1_rtx, 1))
+  if (! arith_reg_operand (XEXP (mult_rtx, 0), GET_MODE (XEXP (mult_rtx, 0)))
+      || ! CONST_INT_P (XEXP (mult_rtx, 1)))
+    return 0;
+
+  return exact_log2 (INTVAL (XEXP (mult_rtx, 1))) > 0
 	 && sh_legitimate_index_p (mode, XEXP (plus0_rtx, 1), TARGET_SH2A, true);
 })
 
