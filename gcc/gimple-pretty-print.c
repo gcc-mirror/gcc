@@ -477,17 +477,25 @@ dump_gimple_assign (pretty_printer *buffer, gimple gs, int spc, int flags)
 {
   if (flags & TDF_RAW)
     {
-      tree last;
-      if (gimple_num_ops (gs) == 2)
-        last = NULL_TREE;
-      else if (gimple_num_ops (gs) == 3)
-        last = gimple_assign_rhs2 (gs);
-      else
-        gcc_unreachable ();
+      tree arg1 = NULL;
+      tree arg2 = NULL;
+      tree arg3 = NULL;
+      switch (gimple_num_ops (gs))
+	{
+	case 4:
+	  arg3 = gimple_assign_rhs3 (gs);
+	case 3:
+	  arg2 = gimple_assign_rhs2 (gs);
+	case 2:
+	  arg1 = gimple_assign_rhs1 (gs);
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
 
-      dump_gimple_fmt (buffer, spc, flags, "%G <%s, %T, %T, %T>", gs,
+      dump_gimple_fmt (buffer, spc, flags, "%G <%s, %T, %T, %T, %T>", gs,
                        tree_code_name[gimple_assign_rhs_code (gs)],
-                       gimple_assign_lhs (gs), gimple_assign_rhs1 (gs), last);
+                       gimple_assign_lhs (gs), arg1, arg2, arg3);
     }
   else
     {

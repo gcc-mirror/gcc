@@ -1,3 +1,8 @@
+2012-08-12 Marc Glisse <marc.glisse@inria.fr>
+
+	PR middle-end/54193
+	* gimple-pretty-print.c (dump_ternary_rhs): Handle 4 arguments.
+
 2012-08-12  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/39423
