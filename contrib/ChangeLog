@@ -1,5 +1,10 @@
 2012-08-13  Diego Novillo  <dnovillo@google.com>
 
+	* testsuite-management/validate_failures.py (ExpirationDate): Tidy
+	comment.
+
+2012-08-13  Diego Novillo  <dnovillo@google.com>
+
 	* testsuite-management/validate_failures.py (ParseSummary): Fix
 	comment.
 
