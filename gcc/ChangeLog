@@ -1,3 +1,10 @@
+2012-08-13  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/54200
+	* tree-ssa-copyrename.c (rename_ssa_copies): Do not add
+	PHI results to another partition if not all PHI arguments
+	have the same partition.
+
 2012-08-12  Jan Hubicka  <jh@suse.cz>
 
 	* tree-pass.h (write_summary, write_optimization_summary): Remove
