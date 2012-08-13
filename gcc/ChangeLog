@@ -1,3 +1,8 @@
+2012-08-13  Richard Guenther  <rguenther@suse.de>
+
+	* tree-cfg.c (print_loop): Avoid ICEing for loops marked for
+	removal and loops with multiple latches.
+
 2012-08-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/53968
