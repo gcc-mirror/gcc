@@ -1,3 +1,12 @@
+2012-08-13  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR libstdc++/54112
+	* include/c_compatibility/complex.h: Undefine complex, always
+	include system's complex.h if present.
+	* testsuite/26_numerics/complex/c99.cc: New testcase.
+	* testsuite/17_intro/headers/c++1998/complex.cc: Likewise.
+	* doc/xml/manual/numerics.xml: Document it.
+
 2012-08-12  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/52681
