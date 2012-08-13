@@ -1,3 +1,10 @@
+2012-08-13  David Adler  <d.adler.s@gmail.com>
+
+	PR libstdc++/54185
+	* src/c++11/condition_variable.cc (condition_variable): Always
+	destroy native type in destructor.
+	* testsuite/30_threads/condition_variable/54185.cc: New.
+
 2012-08-13  François Dumont  <fdumont@gcc.gnu.org>
 	    Ollie Wild  <aaw@google.com>
 
