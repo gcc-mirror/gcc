@@ -1019,7 +1019,7 @@ dfs_enumerate_from (basic_block bb, int reverse,
       v_size = size;
     }
 
-  st = XCNEWVEC (basic_block, rslt_max);
+  st = XNEWVEC (basic_block, rslt_max);
   rslt[tv++] = st[sp++] = bb;
   MARK_VISITED (bb);
   while (sp)

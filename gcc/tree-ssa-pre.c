@@ -3442,6 +3442,9 @@ do_regular_insertion (basic_block block, basic_block dom)
 	      continue;
 	    }
 
+	  /* FIXME: This costs N_EXPR*N_BASIC_BLOCKS.  Should use
+	     a less costly data structure for avail (e.g. a VEC
+	     indexed by edge index).  */
 	  avail = XCNEWVEC (pre_expr, last_basic_block);
 	  FOR_EACH_EDGE (pred, ei, block->preds)
 	    {
@@ -3602,6 +3605,9 @@ do_partial_partial_insertion (basic_block block, basic_block dom)
 	  if (bitmap_set_contains_value (AVAIL_OUT (dom), val))
 	    continue;
 
+	  /* FIXME: This costs N_EXPR*N_BASIC_BLOCKS.  Should use
+	     a less costly data structure for avail (e.g. a VEC
+	     indexed by edge index).  */
 	  avail = XCNEWVEC (pre_expr, last_basic_block);
 	  FOR_EACH_EDGE (pred, ei, block->preds)
 	    {

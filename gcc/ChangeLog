@@ -1,3 +1,43 @@
+2012-08-13  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* tree-ssa-pre.c (do_regular_insertion): Add FIXME markers at points
+	of potentially huge memset overhead.
+	(do_partial_partial_insertion): Likewise.
+	* cfgexpand.c (gimple_expand_cfg): Use XCNEWVEC instead of xcalloc.
+	* tree-vrp.c (find_assert_locations): Use XNEWVEC instead of XCNEWVEC
+	for arrays to be filled by pre_and_rev_post_order_compute.  Allocate
+	the right number of slots, not that number plus NUM_FIXED_BLOCKS.
+	* tree-ssa-reassoc.c (init_reassoc): Likewise.
+	* cfganal.c (dfs_enumerate_from): Use XNEWVEC instead of XCNEWVEC for
+	array used as stack.
+	* tree-ssa-sccvn.c (init_scc_vn): Use XNEWVEC instead of XCNEWVEC for
+	arrays to be filled by pre_and_rev_post_order_compute.
+	* cfgloopmanip.c (find_path): Use XNEWVEC instead of XCNEWVEC for
+	array to be filled by dfs_enumerate_from.
+	(remove_path): Likewise.
+	(duplicate_loop_to_header_edge): Use XNEWVEC instead of XCNEWVEC for
+	array of loops that is filled on the next lines.
+	* cfgloop.c (get_loop_body): Use XNEWVEC instead of XCNEWVEC for
+	array of basic blocks to be returned.
+	(get_loop_body_in_dom_order): Likewise.
+	(get_loop_body_in_bfs_order): Likewise.
+	* tree-ssa-loop-manip.c (loop_renamer_obstack): New static obstack
+	for all bitmaps used for rewriting into loop-closed SSA form.
+	(add_exit_phis_var): Allocate the def bitmap on it.  Clear the livein
+	bitmap at the end to release a lot of memory.
+	(add_exit_phis): Allocate the exits bitmap on the new obstack.
+	(get_loops_exits): Allocate the exits bitmap on the new obstack.
+	(find_uses_to_rename_use): Allocate a use_blocks bitmap if ver is
+	seen for the first time.
+	(find_uses_to_rename): Add "???" for why the whole function must
+	be re-scanned if changed_bbs is empty.
+	(rewrite_into_loop_closed_ssa): Allocate bitmaps on the new obstack.
+	Use XNEWVEC to allocate the use_blocks array.  Initialize the new
+	obstack, and free it at the end.  Remove loop over all SSA names.
+	(check_loop_closed_ssa_stmt): Look only at SSA_OP_USE operands.
+	* tree-cfg.c (move_sese_region_to_fn): Use XNEWVEC instead of
+	xcalloc to allocate edge_pred and edge_flag arrays.
+
 2012-08-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.h (FIXED_REGISTERS): Do not mark REX registers here.
