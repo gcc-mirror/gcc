@@ -1,5 +1,10 @@
 2012-08-13  Diego Novillo  <dnovillo@google.com>
 
+	* testsuite-management/validate_failures.py (ParseSummary): Fix
+	comment.
+
+2012-08-13  Diego Novillo  <dnovillo@google.com>
+
 	* testsuite-management/validate_failures.py: Import datetime.
 	(TestResult.ExpirationDate): New.
 	(TestResult.HasExpired): New.
