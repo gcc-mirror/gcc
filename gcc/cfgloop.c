@@ -805,7 +805,7 @@ get_loop_body (const struct loop *loop)
 
   gcc_assert (loop->num_nodes);
 
-  body = XCNEWVEC (basic_block, loop->num_nodes);
+  body = XNEWVEC (basic_block, loop->num_nodes);
 
   if (loop->latch == EXIT_BLOCK_PTR)
     {
@@ -865,7 +865,7 @@ get_loop_body_in_dom_order (const struct loop *loop)
 
   gcc_assert (loop->num_nodes);
 
-  tovisit = XCNEWVEC (basic_block, loop->num_nodes);
+  tovisit = XNEWVEC (basic_block, loop->num_nodes);
 
   gcc_assert (loop->latch != EXIT_BLOCK_PTR);
 
@@ -904,7 +904,7 @@ get_loop_body_in_bfs_order (const struct loop *loop)
   gcc_assert (loop->num_nodes);
   gcc_assert (loop->latch != EXIT_BLOCK_PTR);
 
-  blocks = XCNEWVEC (basic_block, loop->num_nodes);
+  blocks = XNEWVEC (basic_block, loop->num_nodes);
   visited = BITMAP_ALLOC (NULL);
 
   bb = loop->header;
