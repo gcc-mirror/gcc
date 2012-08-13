@@ -1391,7 +1391,7 @@ loop_depth_of_name (tree x)
   if (!defbb)
     return 0;
 
-  return defbb->loop_depth;
+  return bb_loop_depth (defbb);
 }
 
 /* Record that X is equal to Y in const_and_copies.  Record undo

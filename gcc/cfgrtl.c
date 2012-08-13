@@ -1438,7 +1438,6 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
       jump_block = create_basic_block (note, NULL, e->src);
       jump_block->count = count;
       jump_block->frequency = EDGE_FREQUENCY (e);
-      jump_block->loop_depth = target->loop_depth;
 
       /* Make sure new block ends up in correct hot/cold section.  */
 

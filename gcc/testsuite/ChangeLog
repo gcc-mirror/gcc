@@ -1,5 +1,9 @@
 2012-08-13  Richard Guenther  <rguenther@suse.de>
 
+	* gcc.dg/tree-prof/update-loopch.c: Adjust.
+
+2012-08-13  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/54200
 	* gcc.dg/guality/pr54200.c: New testcase.
 	* gcc.dg/tree-ssa/slsr-8.c: Adjust.

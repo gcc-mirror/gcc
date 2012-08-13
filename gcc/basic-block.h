@@ -160,14 +160,14 @@ struct GTY((chain_next ("%h.next_bb"), chain_prev ("%h.prev_bb"))) basic_block_d
       } GTY ((tag ("1"))) x;
     } GTY ((desc ("((%1.flags & BB_RTL) != 0)"))) il;
 
-  /* Expected number of executions: calculated in profile.c.  */
-  gcov_type count;
+  /* Various flags.  See cfg-flags.def.  */
+  int flags;
 
   /* The index of this block.  */
   int index;
 
-  /* The loop depth of this block.  */
-  int loop_depth;
+  /* Expected number of executions: calculated in profile.c.  */
+  gcov_type count;
 
   /* Expected frequency.  Normalized to be in range 0 to BB_FREQ_MAX.  */
   int frequency;
@@ -176,9 +176,6 @@ struct GTY((chain_next ("%h.next_bb"), chain_prev ("%h.prev_bb"))) basic_block_d
      among several basic blocks that share a common locus, allowing for
      more accurate sample-based profiling.  */
   int discriminator;
-
-  /* Various flags.  See cfg-flags.def.  */
-  int flags;
 };
 
 /* This ensures that struct gimple_bb_info is smaller than

@@ -87,6 +87,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-streamer.h"
 #include "ipa-inline.h"
 #include "alloc-pool.h"
+#include "cfgloop.h"
 
 /* Estimate runtime of function can easilly run into huge numbers with many
    nested loops.  Be sure we can compute time * INLINE_SIZE_SCALE * 2 in an
@@ -2088,7 +2089,7 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 
 	      es->call_stmt_size = this_size;
 	      es->call_stmt_time = this_time;
-	      es->loop_depth = bb->loop_depth;
+	      es->loop_depth = bb_loop_depth (bb);
 	      edge_set_predicate (edge, &bb_predicate);
 	    }
 

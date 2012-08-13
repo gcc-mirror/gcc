@@ -296,7 +296,6 @@ input_bb (struct lto_input_block *ib, enum LTO_tags tag,
 
   bb->count = (streamer_read_hwi (ib) * count_materialization_scale
 	       + REG_BR_PROB_BASE / 2) / REG_BR_PROB_BASE;
-  bb->loop_depth = streamer_read_hwi (ib);
   bb->frequency = streamer_read_hwi (ib);
   bb->flags = streamer_read_hwi (ib);
 
