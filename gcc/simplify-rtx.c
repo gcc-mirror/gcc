@@ -66,7 +66,7 @@ static rtx simplify_binary_operation_1 (enum rtx_code, enum machine_mode,
 static rtx
 neg_const_int (enum machine_mode mode, const_rtx i)
 {
-  return gen_int_mode (- INTVAL (i), mode);
+  return gen_int_mode (-(unsigned HOST_WIDE_INT) INTVAL (i), mode);
 }
 
 /* Test whether expression, X, is an immediate constant that represents

@@ -1,3 +1,14 @@
+2012-08-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/53968
+	* tree.c (integer_pow2p): Avoid undefined signed overflows.
+	* simplify-rtx.c (neg_const_int): Likewise.
+	* expr.c (fixup_args_size_notes): Likewise.
+	* stor-layout.c (set_min_and_max_values_for_integral_type): Likewise.
+	* double-int.c (mul_double_wide_with_sign): Likewise.
+	(double_int_mask): Likewise.
+	* tree-ssa-loop-ivopts.c (get_address_cost): Likewise.
+
 2012-08-13  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/54200

@@ -170,7 +170,7 @@ mul_double_wide_with_sign (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
 	{
 	  k = i + j;
 	  /* This product is <= 0xFFFE0001, the sum <= 0xFFFF0000.  */
-	  carry += arg1[i] * arg2[j];
+	  carry += (unsigned HOST_WIDE_INT) arg1[i] * arg2[j];
 	  /* Since prod[p] < 0xFFFF, this sum <= 0xFFFFFFFF.  */
 	  carry += prod[k];
 	  prod[k] = LOWPART (carry);
@@ -625,7 +625,7 @@ double_int_mask (unsigned prec)
   else
     {
       mask.high = 0;
-      mask.low = ((unsigned HOST_WIDE_INT) 2 << (prec - 1)) - 1;
+      mask.low = prec ? ((unsigned HOST_WIDE_INT) 2 << (prec - 1)) - 1 : 0;
     }
 
   return mask;

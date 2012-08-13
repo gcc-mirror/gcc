@@ -1,5 +1,5 @@
 /* Induction variable optimizations.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -3173,7 +3173,7 @@ get_address_cost (bool symbol_present, bool var_present,
 
       for (i = width; i >= 0; i--)
 	{
-	  off = -((HOST_WIDE_INT) 1 << i);
+	  off = -((unsigned HOST_WIDE_INT) 1 << i);
 	  XEXP (addr, 1) = gen_int_mode (off, address_mode);
 	  if (memory_address_addr_space_p (mem_mode, addr, as))
 	    break;
@@ -3182,7 +3182,7 @@ get_address_cost (bool symbol_present, bool var_present,
 
       for (i = width; i >= 0; i--)
 	{
-	  off = ((HOST_WIDE_INT) 1 << i) - 1;
+	  off = ((unsigned HOST_WIDE_INT) 1 << i) - 1;
 	  XEXP (addr, 1) = gen_int_mode (off, address_mode);
 	  if (memory_address_addr_space_p (mem_mode, addr, as))
 	    break;
