@@ -584,10 +584,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __node_base*
       _M_get_previous_node(size_type __bkt, __node_base* __n);
 
-      template<typename _Arg>
-	iterator
-	_M_insert_bucket(_Arg&&, size_type, __hash_code);
+      // Insert node with hash code __code, in bucket bkt if no rehash (assumes
+      // no element with its key already present). Take ownership of the node,
+      // deallocate it on exception.
+      iterator
+      _M_insert_unique_node(size_type __bkt, __hash_code __code,
+			    __node_type* __n);
 
+      // Insert node with hash code __code. Take ownership of the node,
+      // deallocate it on exception.
+      iterator
+      _M_insert_multi_node(__hash_code __code, __node_type* __n);
 
       template<typename... _Args>
 	std::pair<iterator, bool>
@@ -1214,42 +1221,29 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	// First build the node to get access to the hash code
 	__node_type* __node = _M_allocate_node(std::forward<_Args>(__args)...);
+	const key_type& __k = this->_M_extract()(__node->_M_v);
+	__hash_code __code;
 	__try
 	  {
-	    const key_type& __k = this->_M_extract()(__node->_M_v);
-	    __hash_code __code = this->_M_hash_code(__k);
-	    size_type __bkt = _M_bucket_index(__k, __code);
-
-	    if (__node_type* __p = _M_find_node(__bkt, __k, __code))
-	      {
-		// There is already an equivalent node, no insertion
-		_M_deallocate_node(__node);
-		return std::make_pair(iterator(__p), false);
-	      }
-
-	    // We are going to insert this node
-	    this->_M_store_code(__node, __code);
-	    const __rehash_state& __saved_state
-	      = _M_rehash_policy._M_state();
-	    std::pair<bool, std::size_t> __do_rehash
-	      = _M_rehash_policy._M_need_rehash(_M_bucket_count,
-						_M_element_count, 1);
-
-	    if (__do_rehash.first)
-	      {
-		_M_rehash(__do_rehash.second, __saved_state);
-		__bkt = _M_bucket_index(__k, __code);
-	      }
-
-	    _M_insert_bucket_begin(__bkt, __node);
-	    ++_M_element_count;
-	    return std::make_pair(iterator(__node), true);
+	    __code = this->_M_hash_code(__k);
 	  }
 	__catch(...)
 	  {
 	    _M_deallocate_node(__node);
 	    __throw_exception_again;
 	  }
+
+	size_type __bkt = _M_bucket_index(__k, __code);
+	if (__node_type* __p = _M_find_node(__bkt, __k, __code))
+	  {
+	    // There is already an equivalent node, no insertion
+	    _M_deallocate_node(__node);
+	    return std::make_pair(iterator(__p), false);
+	  }
+
+	// Insert the node
+	return std::make_pair(_M_insert_unique_node(__bkt, __code, __node),
+			      true);
       }
 
   template<typename _Key, typename _Value,
@@ -1264,97 +1258,110 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		 _H1, _H2, _Hash, _RehashPolicy, _Traits>::
       _M_emplace(std::false_type, _Args&&... __args)
       {
-	const __rehash_state& __saved_state = _M_rehash_policy._M_state();
-	std::pair<bool, std::size_t> __do_rehash
-	  = _M_rehash_policy._M_need_rehash(_M_bucket_count,
-					    _M_element_count, 1);
-
 	// First build the node to get its hash code.
 	__node_type* __node = _M_allocate_node(std::forward<_Args>(__args)...);
+
+	__hash_code __code;
 	__try
 	  {
-	    const key_type& __k = this->_M_extract()(__node->_M_v);
-	    __hash_code __code = this->_M_hash_code(__k);
-	    this->_M_store_code(__node, __code);
-
-	    // Second, do rehash if necessary.
-	    if (__do_rehash.first)
-		_M_rehash(__do_rehash.second, __saved_state);
-
-	    // Third, find the node before an equivalent one.
-	    size_type __bkt = _M_bucket_index(__k, __code);
-	    __node_base* __prev = _M_find_before_node(__bkt, __k, __code);
-
-	    if (__prev)
-	      {
-		// Insert after the node before the equivalent one.
-		__node->_M_nxt = __prev->_M_nxt;
-		__prev->_M_nxt = __node;
-	      }
-	    else
-	      // The inserted node has no equivalent in the
-	      // hashtable. We must insert the new node at the
-	      // beginning of the bucket to preserve equivalent
-	      // elements relative positions.
-	      _M_insert_bucket_begin(__bkt, __node);
-	    ++_M_element_count;
-	    return iterator(__node);
+	    __code = this->_M_hash_code(this->_M_extract()(__node->_M_v));
 	  }
 	__catch(...)
 	  {
 	    _M_deallocate_node(__node);
 	    __throw_exception_again;
 	  }
+
+	return _M_insert_multi_node(__code, __node);
       }
 
-  // Insert v in bucket n (assumes no element with its key already present).
   template<typename _Key, typename _Value,
 	   typename _Alloc, typename _ExtractKey, typename _Equal,
 	   typename _H1, typename _H2, typename _Hash, typename _RehashPolicy,
 	   typename _Traits>
-    template<typename _Arg>
-      typename _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
-			  _H1, _H2, _Hash, _RehashPolicy,
-			  _Traits>::iterator
-      _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
-		 _H1, _H2, _Hash, _RehashPolicy, _Traits>::
-      _M_insert_bucket(_Arg&& __v, size_type __n, __hash_code __code)
-      {
-	const __rehash_state& __saved_state = _M_rehash_policy._M_state();
-	std::pair<bool, std::size_t> __do_rehash
-	  = _M_rehash_policy._M_need_rehash(_M_bucket_count,
-					    _M_element_count, 1);
+    typename _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
+			_H1, _H2, _Hash, _RehashPolicy,
+			_Traits>::iterator
+    _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
+	       _H1, _H2, _Hash, _RehashPolicy, _Traits>::
+    _M_insert_unique_node(size_type __bkt, __hash_code __code,
+			  __node_type* __node)
+    {
+      const __rehash_state& __saved_state = _M_rehash_policy._M_state();
+      std::pair<bool, std::size_t> __do_rehash
+	= _M_rehash_policy._M_need_rehash(_M_bucket_count, _M_element_count, 1);
 
-	if (__do_rehash.first)
-	  {
-	    const key_type& __k = this->_M_extract()(__v);
-	    __n = __hash_code_base::_M_bucket_index(__k, __code,
-						    __do_rehash.second);
-	  }
-
-	__node_type* __node = nullptr;
-	__try
-	  {
-	    // Allocate the new node before doing the rehash so that we
-	    // don't do a rehash if the allocation throws.
-	    __node = _M_allocate_node(std::forward<_Arg>(__v));
-	    this->_M_store_code(__node, __code);
-	    if (__do_rehash.first)
+      __try
+	{
+	  if (__do_rehash.first)
+	    {
 	      _M_rehash(__do_rehash.second, __saved_state);
+	      __bkt = _M_bucket_index(this->_M_extract()(__node->_M_v), __code);
+	    }
 
-	    _M_insert_bucket_begin(__n, __node);
-	    ++_M_element_count;
-	    return iterator(__node);
-	  }
-	__catch(...)
-	  {
-	    if (!__node)
-	      _M_rehash_policy._M_reset(__saved_state);
-	    else
-	      _M_deallocate_node(__node);
-	    __throw_exception_again;
-	  }
-      }
+	  this->_M_store_code(__node, __code);
+
+	  // Always insert at the begining of the bucket.
+	  _M_insert_bucket_begin(__bkt, __node);
+	  ++_M_element_count;
+	  return iterator(__node);
+	}
+      __catch(...)
+	{
+	  _M_deallocate_node(__node);
+	  __throw_exception_again;
+	}
+    }
+
+  // Insert node, in bucket bkt if no rehash (assumes no element with its key
+  // already present). Take ownership of the node, deallocate it on exception.
+  template<typename _Key, typename _Value,
+	   typename _Alloc, typename _ExtractKey, typename _Equal,
+	   typename _H1, typename _H2, typename _Hash, typename _RehashPolicy,
+	   typename _Traits>
+    typename _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
+			_H1, _H2, _Hash, _RehashPolicy,
+			_Traits>::iterator
+    _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
+	       _H1, _H2, _Hash, _RehashPolicy, _Traits>::
+    _M_insert_multi_node(__hash_code __code, __node_type* __node)
+    {
+      const __rehash_state& __saved_state = _M_rehash_policy._M_state();
+      std::pair<bool, std::size_t> __do_rehash
+	= _M_rehash_policy._M_need_rehash(_M_bucket_count, _M_element_count, 1);
+
+      __try
+	{
+	  if (__do_rehash.first)
+	    _M_rehash(__do_rehash.second, __saved_state);
+
+	  this->_M_store_code(__node, __code);
+	  const key_type& __k = this->_M_extract()(__node->_M_v);
+	  size_type __bkt = _M_bucket_index(__k, __code);
+
+	  // Find the node before an equivalent one.
+	  __node_base* __prev = _M_find_before_node(__bkt, __k, __code);
+	  if (__prev)
+	    {
+	      // Insert after the node before the equivalent one.
+	      __node->_M_nxt = __prev->_M_nxt;
+	      __prev->_M_nxt = __node;
+	    }
+	  else
+	    // The inserted node has no equivalent in the
+	    // hashtable. We must insert the new node at the
+	    // beginning of the bucket to preserve equivalent
+	    // elements relative positions.
+	    _M_insert_bucket_begin(__bkt, __node);
+	  ++_M_element_count;
+	  return iterator(__node);
+	}
+      __catch(...)
+	{
+	  _M_deallocate_node(__node);
+	  __throw_exception_again;
+	}
+    }
 
   // Insert v if no element with its key is already present.
   template<typename _Key, typename _Value,
@@ -1372,12 +1379,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	const key_type& __k = this->_M_extract()(__v);
 	__hash_code __code = this->_M_hash_code(__k);
-	size_type __n = _M_bucket_index(__k, __code);
+	size_type __bkt = _M_bucket_index(__k, __code);
 
-	if (__node_type* __p = _M_find_node(__n, __k, __code))
-	  return std::make_pair(iterator(__p), false);
-	return std::make_pair(_M_insert_bucket(std::forward<_Arg>(__v),
-			      __n, __code), true);
+	__node_type* __n = _M_find_node(__bkt, __k, __code);
+	if (__n)
+	  return std::make_pair(iterator(__n), false);
+
+	__n = _M_allocate_node(std::forward<_Arg>(__v));
+	return std::make_pair(_M_insert_unique_node(__bkt, __code, __n), true);
       }
 
   // Insert v unconditionally.
@@ -1393,54 +1402,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		 _H1, _H2, _Hash, _RehashPolicy, _Traits>::
       _M_insert(_Arg&& __v, std::false_type)
       {
-	const __rehash_state& __saved_state = _M_rehash_policy._M_state();
-	std::pair<bool, std::size_t> __do_rehash
-	  = _M_rehash_policy._M_need_rehash(_M_bucket_count,
-					    _M_element_count, 1);
-
-	// First compute the hash code so that we don't do anything if
-	// it throws.
+	// First compute the hash code so that we don't do anything if it
+	// throws.
 	__hash_code __code = this->_M_hash_code(this->_M_extract()(__v));
 
-	__node_type* __node = nullptr;
-	__try
-	  {
-	    // Second allocate new node so that we don't rehash if it throws.
-	    __node = _M_allocate_node(std::forward<_Arg>(__v));
-	    this->_M_store_code(__node, __code);
-	    if (__do_rehash.first)
-		_M_rehash(__do_rehash.second, __saved_state);
+	// Second allocate new node so that we don't rehash if it throws.
+	__node_type* __node = _M_allocate_node(std::forward<_Arg>(__v));
 
-	    // Third, find the node before an equivalent one.
-	    size_type __bkt = _M_bucket_index(__node);
-	    __node_base* __prev
-	      = _M_find_before_node(__bkt, this->_M_extract()(__node->_M_v),
-				    __code);
-	    if (__prev)
-	      {
-		// Insert after the node before the equivalent one.
-		__node->_M_nxt = __prev->_M_nxt;
-		__prev->_M_nxt = __node;
-	      }
-	    else
-	      // The inserted node has no equivalent in the
-	      // hashtable. We must insert the new node at the
-	      // beginning of the bucket to preserve equivalent
-	      // elements relative positions.
-	      _M_insert_bucket_begin(__bkt, __node);
-	    ++_M_element_count;
-	    return iterator(__node);
-	  }
-	__catch(...)
-	  {
-	    if (!__node)
-	      _M_rehash_policy._M_reset(__saved_state);
-	    else
-	      _M_deallocate_node(__node);
-	    __throw_exception_again;
-	  }
+	return _M_insert_multi_node(__code, __node);
       }
-
 
   template<typename _Key, typename _Value,
 	   typename _Alloc, typename _ExtractKey, typename _Equal,
