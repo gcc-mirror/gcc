@@ -1,5 +1,6 @@
 /* Subroutines for the gcc driver.
-   Copyright (C) 2006, 2007, 2008, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007, 2008, 2010, 2011, 2012
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -467,7 +468,6 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       has_bmi2 = ebx & bit_BMI2;
       has_fsgsbase = ebx & bit_FSGSBASE;
       has_rdseed = ebx & bit_RDSEED;
-      has_prfchw = ecx & bit_PRFCHW;
       has_adx = ebx & bit_ADX;
     }
 
@@ -488,6 +488,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       has_xop = ecx & bit_XOP;
       has_tbm = ecx & bit_TBM;
       has_lzcnt = ecx & bit_LZCNT;
+      has_prfchw = ecx & bit_PRFCHW;
 
       has_longmode = edx & bit_LM;
       has_3dnowp = edx & bit_3DNOWP;

@@ -1,3 +1,12 @@
+2012-08-13  Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR driver/54210
+	* config/i386/driver-i386.c (host_detect_local_cpu): Test bit_PRFCHW
+	bit of CPUID 0x80000001 %ecx instead of CPUID 7 %ecx.
+	* config/i386/cpuid.h (bits_PRFCHW): Move definition to CPUID
+	0x80000001 %ecx flags.
+
 2012-08-13  Richard Guenther  <rguenther@suse.de>
 
 	* tree-cfg.c (print_loop): Avoid ICEing for loops marked for
