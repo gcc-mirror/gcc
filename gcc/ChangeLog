@@ -1,3 +1,17 @@
+2012-08-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (FIXED_REGISTERS): Do not mark REX registers here.
+	(CALL_USED_REGISTERS): Use bitmaps to mark call-used registers
+	for different ABIs.
+	(enum reg_class): Move CLOBBERED_REGS just before GENERAL_REGS.
+	(REG_CLASS_NAMES): Update.
+	(REG_CLASS_CONTENTS): Update.  Clear CLOBBERED_REGS members.
+	* config/i386/i386.c (ix86_conditional_register_usage): Disable
+	REX registers on 32bit targets.  Handle bitmaps from
+	CALL_USED_REGISTERS initializer.  Calculate CLOBBERED_REGS register
+	set from GENERAL_REGS also for 32bit targets.  Do not change call
+	used register set for TARGET_64BIT_MS_ABI separately.
+
 2012-08-13  Richard Guenther  <rguenther@suse.de>
 
 	* basic-block.h (struct basic_block): Remove loop_depth
@@ -110,8 +124,8 @@
 	(output_symtab, referenced_from_other_partition_p,
 	reachable_from_other_partition_p, referenced_from_this_partition_p,
 	reachable_from_this_partition_p): Update.
-	(lsei_end_p, lsei_next, lsei_node, lsei_cgraph_node, lsei_varpool_node): New
-	inline functions.
+	(lsei_end_p, lsei_next, lsei_node, lsei_cgraph_node,
+	lsei_varpool_node): New inline functions.
 	(LCC_NOT_FOUND): New macro.
 	(lto_symtab_encoder_deref, lsei_start, lsei_next_in_partition,
 	lsei_start_in_partition, lsei_next_function_in_partition,
@@ -160,7 +174,7 @@
 2012-08-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.c (alpha_stdarg_optimize_hook): Shift DECL_UID
-	in the va_list_vars bitmap by num_ssa_names.
+	index in the va_list_vars bitmap by num_ssa_names.
 
 2012-08-11  Uros Bizjak  <ubizjak@gmail.com>
 
