@@ -3391,21 +3391,25 @@ ipa_read_node_info (struct lto_input_block *ib, struct cgraph_node *node,
 /* Write jump functions for nodes in SET.  */
 
 void
-ipa_prop_write_jump_functions (cgraph_node_set set)
+ipa_prop_write_jump_functions (void)
 {
   struct cgraph_node *node;
   struct output_block *ob;
   unsigned int count = 0;
-  cgraph_node_set_iterator csi;
+  lto_symtab_encoder_iterator lsei;
+  lto_symtab_encoder_t encoder;
+
 
   if (!ipa_node_params_vector)
     return;
 
   ob = create_output_block (LTO_section_jump_functions);
+  encoder = ob->decl_state->symtab_node_encoder;
   ob->cgraph_node = NULL;
-  for (csi = csi_start (set); !csi_end_p (csi); csi_next (&csi))
+  for (lsei = lsei_start_function_in_partition (encoder); !lsei_end_p (lsei);
+       lsei_next_function_in_partition (&lsei))
     {
-      node = csi_node (csi);
+      node = lsei_cgraph_node (lsei);
       if (cgraph_function_with_gimple_body_p (node)
 	  && IPA_NODE_REF (node) != NULL)
 	count++;
@@ -3414,9 +3418,10 @@ ipa_prop_write_jump_functions (cgraph_node_set set)
   streamer_write_uhwi (ob, count);
 
   /* Process all of the functions.  */
-  for (csi = csi_start (set); !csi_end_p (csi); csi_next (&csi))
+  for (lsei = lsei_start_function_in_partition (encoder); !lsei_end_p (lsei);
+       lsei_next_function_in_partition (&lsei))
     {
-      node = csi_node (csi);
+      node = lsei_cgraph_node (lsei);
       if (cgraph_function_with_gimple_body_p (node)
 	  && IPA_NODE_REF (node) != NULL)
         ipa_write_node_info (ob, node);

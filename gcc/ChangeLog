@@ -1,3 +1,60 @@
+2012-08-12  Jan Hubicka  <jh@suse.cz>
+
+	* tree-pass.h (write_summary, write_optimization_summary): Remove
+	set and vset arguments.
+	* ipa-cp.c (ipcp_write_summary): Remove set and vset arugments.
+	(write_node_summary_p): Likewise; use the encoder.
+	(ipa_reference_write_optimization_summary): Likewise.
+	* lto-cgraph.c (output_cgraph_opt_summary): Use encoder.
+	(lto_symtab_encoder_new): Initialize in_partition field.
+	(lto_symtab_encoder_delete): Destroy in_partition field.
+	(LCC_NOT_FOUND): Move to lto-streamer.h
+	(lto_symtab_encoder_deref): Likewise.
+	(lto_symtab_encoder_in_partition_p,
+	lto_set_symtab_encoder_in_partition): New functions.
+	(referenced_from_other_partition_p): Rewrite to use encoder.
+	(reachable_from_other_partition_p): Likewise.
+	(referenced_from_this_partition_p): Likewise.
+	(reachable_from_this_partition_p): Likewise.
+	(lto_output_node): Likewise.
+	(lto_output_varpool_node): Likewise.
+	(output_refs): Likewise.
+	(compute_ltrans_boundary): Initialize in_partition fileds of
+	the encoder.
+	(output_symtab): Likewise.
+	(input_refs): Match the changes in output_refs.
+	(output_cgraph_opt_summary_p): Remove set argument.
+	(output_node_opt_summary): Replace set by encoder.
+	(output_cgraph_opt_summary): Remove set argument; use
+	the encoder.
+	* ipa-pure-const.c (pure_const_write_summary): Remove set and vset
+	arguments; use the encoder.
+	* lto-streamer-out.c (lto_output): Remove set and vset argument; use
+	the encoder.
+	(produce_symtab): Likewise.
+	* ipa-inline.h (inline_write_summary): Remove set and vset arguments.
+	* ipa-inline-analysis.c (inline_write_summary): Likewise.
+	* ipa-prop.c (ipa_prop_write_jump_functions): Remove set argument;
+	use encoder.
+	* ipa-prop.h (ipa_prop_write_jump_functions): Likewise.
+	* passes.c (ipa_write_summaries_2): Remove set and vset arguments.
+	(ipa_write_summaries_1): Update.
+	(ipa_write_optimization_summaries_1): Likewise.
+	(ipa_write_optimization_summaries): Likewise.
+	* lto-streamer.h (lto_symtab_encoder_t): Add in_partition.
+	(lto_symtab_encoder_iterator): New type.
+	(lto_symtab_encoder_deref): Make inline.
+	(output_symtab, referenced_from_other_partition_p,
+	reachable_from_other_partition_p, referenced_from_this_partition_p,
+	reachable_from_this_partition_p): Update.
+	(lsei_end_p, lsei_next, lsei_node, lsei_cgraph_node, lsei_varpool_node): New
+	inline functions.
+	(LCC_NOT_FOUND): New macro.
+	(lto_symtab_encoder_deref, lsei_start, lsei_next_in_partition,
+	lsei_start_in_partition, lsei_next_function_in_partition,
+	lsei_start_function_in_partition, lsei_next_variable_in_partition,
+	lsei_start_variable_in_partition): New inline functions.
+
 2012-08-12  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/sh.md (prefetch): Simplify expander.  Fix condition to

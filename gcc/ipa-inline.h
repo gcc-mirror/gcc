@@ -171,7 +171,7 @@ void dump_inline_summaries (FILE *f);
 void dump_inline_summary (FILE * f, struct cgraph_node *node);
 void inline_generate_summary (void);
 void inline_read_summary (void);
-void inline_write_summary (cgraph_node_set, varpool_node_set);
+void inline_write_summary (void);
 void inline_free_summary (void);
 void initialize_inline_failed (struct cgraph_edge *);
 int estimate_time_after_inlining (struct cgraph_node *, struct cgraph_edge *);
