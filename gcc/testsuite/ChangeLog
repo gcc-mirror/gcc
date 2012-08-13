@@ -1,3 +1,11 @@
+2012-08-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from trunk
+	2012-07-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/53942
+	* gcc.dg/pr53942.c: New test.
+
 2012-08-10  Ulrich Weigand  <ulrich.weigand@linaro.org>
 
 	Backport from mainline

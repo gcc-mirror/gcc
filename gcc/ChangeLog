@@ -1,3 +1,13 @@
+2012-08-13  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from trunk
+	2012-07-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/53942
+	* function.c (assign_parm_setup_reg): Avoid zero/sign extension
+	directly from likely spilled non-fixed hard registers, move them
+	to pseudo first.
+
 2012-08-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (xop_phaddbq):  Fix vec_select selectors.
