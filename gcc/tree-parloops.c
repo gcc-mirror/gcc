@@ -452,7 +452,7 @@ take_address_of (tree obj, tree type, edge entry, htab_t decl_address,
   int uid;
   void **dslot;
   struct int_tree_map ielt, *nielt;
-  tree *var_p, name, bvar, addr;
+  tree *var_p, name, addr;
   gimple stmt;
   gimple_seq stmts;
 
@@ -479,12 +479,10 @@ take_address_of (tree obj, tree type, edge entry, htab_t decl_address,
       if (gsi == NULL)
 	return NULL;
       addr = TREE_OPERAND (*var_p, 0);
-      bvar = create_tmp_var (TREE_TYPE (addr),
-			     get_name (TREE_OPERAND
-				         (TREE_OPERAND (*var_p, 0), 0)));
-      stmt = gimple_build_assign (bvar, addr);
-      name = make_ssa_name (bvar, stmt);
-      gimple_assign_set_lhs (stmt, name);
+      name = make_temp_ssa_name (TREE_TYPE (addr), NULL,
+				 get_name (TREE_OPERAND
+					   (TREE_OPERAND (*var_p, 0), 0)));
+      stmt = gimple_build_assign (name, addr);
       gsi_insert_on_edge_immediate (entry, stmt);
 
       nielt = XNEW (struct int_tree_map);
@@ -795,7 +793,25 @@ separate_decls_in_region_name (tree name,
   if (slot && *slot)
     return ((struct name_to_copy_elt *) *slot)->new_name;
 
+  if (copy_name_p)
+    {
+      copy = duplicate_ssa_name (name, NULL);
+      nelt = XNEW (struct name_to_copy_elt);
+      nelt->version = idx;
+      nelt->new_name = copy;
+      nelt->field = NULL_TREE;
+      *slot = nelt;
+    }
+  else
+    {
+      gcc_assert (!slot);
+      copy = name;
+    }
+
   var = SSA_NAME_VAR (name);
+  if (!var)
+    return copy;
+
   uid = DECL_UID (var);
   ielt.uid = uid;
   dslot = htab_find_slot_with_hash (decl_copies, &ielt, uid, INSERT);
@@ -821,21 +837,6 @@ separate_decls_in_region_name (tree name,
     }
   else
     var_copy = ((struct int_tree_map *) *dslot)->to;
-
-  if (copy_name_p)
-    {
-      copy = duplicate_ssa_name (name, NULL);
-      nelt = XNEW (struct name_to_copy_elt);
-      nelt->version = idx;
-      nelt->new_name = copy;
-      nelt->field = NULL_TREE;
-      *slot = nelt;
-    }
-  else
-    {
-      gcc_assert (!slot);
-      copy = name;
-    }
 
   replace_ssa_name_symbol (copy, var_copy);
   return copy;
@@ -966,9 +967,9 @@ add_field_for_name (void **slot, void *data)
   struct name_to_copy_elt *const elt = (struct name_to_copy_elt *) *slot;
   tree type = (tree) data;
   tree name = ssa_name (elt->version);
-  tree var = SSA_NAME_VAR (name);
-  tree field = build_decl (DECL_SOURCE_LOCATION (var),
-			   FIELD_DECL, DECL_NAME (var), TREE_TYPE (var));
+  tree field = build_decl (UNKNOWN_LOCATION,
+			   FIELD_DECL, SSA_NAME_IDENTIFIER (name),
+			   TREE_TYPE (name));
 
   insert_field_into_struct (type, field);
   elt->field = field;
@@ -1008,12 +1009,9 @@ create_phi_for_local_result (void **slot, void *data)
     e = EDGE_PRED (store_bb, 1);
   else
     e = EDGE_PRED (store_bb, 0);
-  local_res
-    = make_ssa_name (SSA_NAME_VAR (gimple_assign_lhs (reduc->reduc_stmt)),
-		     NULL);
+  local_res = copy_ssa_name (gimple_assign_lhs (reduc->reduc_stmt), NULL);
   locus = gimple_location (reduc->reduc_stmt);
   new_phi = create_phi_node (local_res, store_bb);
-  SSA_NAME_DEF_STMT (local_res) = new_phi;
   add_phi_arg (new_phi, reduc->init, e, locus);
   add_phi_arg (new_phi, gimple_assign_lhs (reduc->reduc_stmt),
 	       FALLTHRU_EDGE (loop->latch), locus);
@@ -1486,10 +1484,9 @@ transform_to_exit_first_loop (struct loop *loop, htab_t reduction_list, tree nit
     {
       phi = gsi_stmt (gsi);
       res = PHI_RESULT (phi);
-      t = make_ssa_name (SSA_NAME_VAR (res), phi);
+      t = copy_ssa_name (res, phi);
       SET_PHI_RESULT (phi, t);
       nphi = create_phi_node (res, orig_header);
-      SSA_NAME_DEF_STMT (res) = nphi;
       add_phi_arg (nphi, t, hpred, UNKNOWN_LOCATION);
 
       if (res == control)
@@ -1625,7 +1622,7 @@ create_parallel_loop (struct loop *loop, tree loop_fn, tree data,
   cvar_base = SSA_NAME_VAR (cvar);
   phi = SSA_NAME_DEF_STMT (cvar);
   cvar_init = PHI_ARG_DEF_FROM_EDGE (phi, loop_preheader_edge (loop));
-  initvar = make_ssa_name (cvar_base, NULL);
+  initvar = copy_ssa_name (cvar, NULL);
   SET_USE (PHI_ARG_DEF_PTR_FROM_EDGE (phi, loop_preheader_edge (loop)),
 	   initvar);
   cvar_next = PHI_ARG_DEF_FROM_EDGE (phi, loop_latch_edge (loop));

@@ -1325,9 +1325,8 @@ canonicalize_loop_closed_ssa (loop_p loop)
 		if (TREE_CODE (arg) != SSA_NAME)
 		  continue;
 
-		close_phi = create_phi_node (arg, close);
-		res = create_new_def_for (gimple_phi_result (close_phi),
-					  close_phi,
+		close_phi = create_phi_node (NULL_TREE, close);
+		res = create_new_def_for (arg, close_phi,
 					  gimple_phi_result_ptr (close_phi));
 		add_phi_arg (close_phi, arg,
 			     gimple_phi_arg_edge (close_phi, 0),

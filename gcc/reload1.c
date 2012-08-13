@@ -8469,6 +8469,20 @@ emit_insn_if_valid_for_reload (rtx insn)
   return NULL;
 }
 
+#ifdef SECONDARY_MEMORY_NEEDED
+/* If X is not a subreg, return it unmodified.  If it is a subreg,
+   look up whether we made a replacement for the SUBREG_REG.  Return
+   either the replacement or the SUBREG_REG.  */
+
+static rtx
+replaced_subreg (rtx x)
+{
+  if (GET_CODE (x) == SUBREG)
+    return find_replacement (&SUBREG_REG (x));
+  return x;
+}
+#endif
+
 /* Emit code to perform a reload from IN (which may be a reload register) to
    OUT (which may also be a reload register).  IN or OUT is from operand
    OPNUM with reload type TYPE.
@@ -8480,6 +8494,9 @@ gen_reload (rtx out, rtx in, int opnum, enum reload_type type)
 {
   rtx last = get_last_insn ();
   rtx tem;
+#ifdef SECONDARY_MEMORY_NEEDED
+  rtx tem1, tem2;
+#endif
 
   /* If IN is a paradoxical SUBREG, remove it and try to put the
      opposite SUBREG on OUT.  Likewise for a paradoxical SUBREG on OUT.  */
@@ -8616,14 +8633,12 @@ gen_reload (rtx out, rtx in, int opnum, enum reload_type type)
 
 #ifdef SECONDARY_MEMORY_NEEDED
   /* If we need a memory location to do the move, do it that way.  */
-  else if ((REG_P (in)
-            || (GET_CODE (in) == SUBREG && REG_P (SUBREG_REG (in))))
-	   && reg_or_subregno (in) < FIRST_PSEUDO_REGISTER
-	   && (REG_P (out)
-	       || (GET_CODE (out) == SUBREG && REG_P (SUBREG_REG (out))))
-	   && reg_or_subregno (out) < FIRST_PSEUDO_REGISTER
-	   && SECONDARY_MEMORY_NEEDED (REGNO_REG_CLASS (reg_or_subregno (in)),
-				       REGNO_REG_CLASS (reg_or_subregno (out)),
+  else if ((tem1 = replaced_subreg (in), tem2 = replaced_subreg (out),
+	    (REG_P (tem1) && REG_P (tem2)))
+	   && REGNO (tem1) < FIRST_PSEUDO_REGISTER
+	   && REGNO (tem2) < FIRST_PSEUDO_REGISTER
+	   && SECONDARY_MEMORY_NEEDED (REGNO_REG_CLASS (REGNO (tem1)),
+				       REGNO_REG_CLASS (REGNO (tem2)),
 				       GET_MODE (out)))
     {
       /* Get the memory to use and rewrite both registers to its mode.  */

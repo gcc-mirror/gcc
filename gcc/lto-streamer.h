@@ -235,14 +235,13 @@ enum lto_section_type
   LTO_section_decls = 0,
   LTO_section_function_body,
   LTO_section_static_initializer,
-  LTO_section_cgraph,
-  LTO_section_varpool,
+  LTO_section_symtab,
   LTO_section_refs,
   LTO_section_asm,
   LTO_section_jump_functions,
   LTO_section_ipa_pure_const,
   LTO_section_ipa_reference,
-  LTO_section_symtab,
+  LTO_section_symtab_nodes,
   LTO_section_opts,
   LTO_section_cgraph_opt_sum,
   LTO_section_inline_summary,
@@ -336,7 +335,6 @@ struct lto_header
 {
   int16_t major_version;
   int16_t minor_version;
-  enum lto_section_type section_type;
 };
 
 /* The header for a function body.  */
@@ -423,50 +421,33 @@ struct lto_stats_d
 };
 
 /* Encoder data structure used to stream callgraph nodes.  */
-struct lto_cgraph_encoder_d
+struct lto_symtab_encoder_d
 {
   /* Map nodes to reference number. */
   struct pointer_map_t *map;
 
   /* Map reference number to node. */
-  VEC(cgraph_node_ptr,heap) *nodes;
+  VEC(symtab_node,heap) *nodes;
 
   /* Map of nodes where we want to output body.  */
   struct pointer_set_t *body;
-};
-
-typedef struct lto_cgraph_encoder_d *lto_cgraph_encoder_t;
-
-/* Return number of encoded nodes in ENCODER.  */
-
-static inline int
-lto_cgraph_encoder_size (lto_cgraph_encoder_t encoder)
-{
-  return VEC_length (cgraph_node_ptr, encoder->nodes);
-}
-
-
-/* Encoder data structure used to stream callgraph nodes.  */
-struct lto_varpool_encoder_d
-{
-  /* Map nodes to reference number. */
-  struct pointer_map_t *map;
-
-  /* Map reference number to node. */
-  VEC(varpool_node_ptr,heap) *nodes;
-
   /* Map of nodes where we want to output initializer.  */
   struct pointer_set_t *initializer;
+  /* Map of nodes in this partition.  */
+  struct pointer_set_t *in_partition;
 };
-typedef struct lto_varpool_encoder_d *lto_varpool_encoder_t;
 
-/* Return number of encoded nodes in ENCODER.  */
+typedef struct lto_symtab_encoder_d *lto_symtab_encoder_t;
 
-static inline int
-lto_varpool_encoder_size (lto_varpool_encoder_t encoder)
+/* Iterator structure for cgraph node sets.  */
+typedef struct
 {
-  return VEC_length (varpool_node_ptr, encoder->nodes);
-}
+  lto_symtab_encoder_t encoder;
+  unsigned index;
+} lto_symtab_encoder_iterator;
+
+
+
 
 /* Mapping from indices to trees.  */
 struct GTY(()) lto_tree_ref_table
@@ -520,10 +501,7 @@ struct lto_out_decl_state
   struct lto_tree_ref_encoder streams[LTO_N_DECL_STREAMS];
 
   /* Encoder for cgraph nodes.  */
-  lto_cgraph_encoder_t cgraph_node_encoder;
-
-  /* Encoder for varpool nodes.  */
-  lto_varpool_encoder_t varpool_node_encoder;
+  lto_symtab_encoder_t symtab_node_encoder;
 
   /* If this out-decl state belongs to a function, fn_decl points to that
      function.  Otherwise, it is NULL. */
@@ -549,10 +527,7 @@ struct GTY(()) lto_file_decl_data
   struct lto_in_decl_state *global_decl_state;
 
   /* Table of cgraph nodes present in this file.  */
-  lto_cgraph_encoder_t GTY((skip)) cgraph_node_encoder;
-
-  /* Table of varpool nodes present in this file.  */
-  lto_varpool_encoder_t GTY((skip)) varpool_node_encoder;
+  lto_symtab_encoder_t GTY((skip)) symtab_node_encoder;
 
   /* Hash table maps lto-related section names to location in file.  */
   htab_t GTY((param_is (struct lto_in_decl_state))) function_decl_states;
@@ -837,35 +812,29 @@ void lto_output_location (struct output_block *, location_t);
 
 
 /* In lto-cgraph.c  */
-struct cgraph_node *lto_cgraph_encoder_deref (lto_cgraph_encoder_t, int);
-int lto_cgraph_encoder_lookup (lto_cgraph_encoder_t, struct cgraph_node *);
-lto_cgraph_encoder_t lto_cgraph_encoder_new (void);
-int lto_cgraph_encoder_encode (lto_cgraph_encoder_t, struct cgraph_node *);
-void lto_cgraph_encoder_delete (lto_cgraph_encoder_t);
-bool lto_cgraph_encoder_encode_body_p (lto_cgraph_encoder_t,
+int lto_symtab_encoder_lookup (lto_symtab_encoder_t, symtab_node);
+lto_symtab_encoder_t lto_symtab_encoder_new (void);
+int lto_symtab_encoder_encode (lto_symtab_encoder_t, symtab_node);
+void lto_symtab_encoder_delete (lto_symtab_encoder_t);
+bool lto_symtab_encoder_encode_body_p (lto_symtab_encoder_t,
 				       struct cgraph_node *);
+bool lto_symtab_encoder_in_partition_p (lto_symtab_encoder_t,
+					symtab_node);
+void lto_set_symtab_encoder_in_partition (lto_symtab_encoder_t,
+					  symtab_node);
 
-bool lto_varpool_encoder_encode_body_p (lto_varpool_encoder_t,
-				        struct varpool_node *);
-struct varpool_node *lto_varpool_encoder_deref (lto_varpool_encoder_t, int);
-int lto_varpool_encoder_lookup (lto_varpool_encoder_t, struct varpool_node *);
-lto_varpool_encoder_t lto_varpool_encoder_new (void);
-int lto_varpool_encoder_encode (lto_varpool_encoder_t, struct varpool_node *);
-void lto_varpool_encoder_delete (lto_varpool_encoder_t);
-bool lto_varpool_encoder_encode_initializer_p (lto_varpool_encoder_t,
-					       struct varpool_node *);
-void output_cgraph (cgraph_node_set, varpool_node_set);
-void input_cgraph (void);
+bool lto_symtab_encoder_encode_initializer_p (lto_symtab_encoder_t,
+					      struct varpool_node *);
+void output_symtab (void);
+void input_symtab (void);
 bool referenced_from_other_partition_p (struct ipa_ref_list *,
-				        cgraph_node_set,
-				        varpool_node_set vset);
+				        lto_symtab_encoder_t);
 bool reachable_from_other_partition_p (struct cgraph_node *,
-				       cgraph_node_set);
+				       lto_symtab_encoder_t);
 bool referenced_from_this_partition_p (struct ipa_ref_list *,
-				        cgraph_node_set,
-				        varpool_node_set vset);
+					lto_symtab_encoder_t);
 bool reachable_from_this_partition_p (struct cgraph_node *,
-				       cgraph_node_set);
+				      lto_symtab_encoder_t);
 void compute_ltrans_boundary (struct lto_out_decl_state *state,
 			      cgraph_node_set, varpool_node_set);
 
@@ -1019,6 +988,149 @@ static inline bool
 emit_label_in_global_context_p (tree label)
 {
   return DECL_NONLOCAL (label) || FORCED_LABEL (label);
+}
+
+/* Return number of encoded nodes in ENCODER.  */
+static inline int
+lto_symtab_encoder_size (lto_symtab_encoder_t encoder)
+{
+  return VEC_length (symtab_node, encoder->nodes);
+}
+
+/* Return true if iterator LSE points to nothing.  */
+static inline bool
+lsei_end_p (lto_symtab_encoder_iterator lsei)
+{
+  return lsei.index >= (unsigned)lto_symtab_encoder_size (lsei.encoder);
+}
+
+/* Advance iterator LSE.  */
+static inline void
+lsei_next (lto_symtab_encoder_iterator *lsei)
+{
+  lsei->index++;
+}
+
+/* Return the node pointed to by LSI.  */
+static inline symtab_node
+lsei_node (lto_symtab_encoder_iterator lsei)
+{
+  return VEC_index (symtab_node, lsei.encoder->nodes, lsei.index);
+}
+
+/* Return the node pointed to by LSI.  */
+static inline struct cgraph_node *
+lsei_cgraph_node (lto_symtab_encoder_iterator lsei)
+{
+  return cgraph (VEC_index (symtab_node, lsei.encoder->nodes, lsei.index));
+}
+
+/* Return the node pointed to by LSI.  */
+static inline struct varpool_node *
+lsei_varpool_node (lto_symtab_encoder_iterator lsei)
+{
+  return varpool (VEC_index (symtab_node, lsei.encoder->nodes, lsei.index));
+}
+
+/* Value used to represent failure of lto_symtab_encoder_lookup.  */
+#define LCC_NOT_FOUND	(-1)
+
+/* Return the cgraph node corresponding to REF using ENCODER.  */
+
+static inline symtab_node
+lto_symtab_encoder_deref (lto_symtab_encoder_t encoder, int ref)
+{
+  if (ref == LCC_NOT_FOUND)
+    return NULL;
+
+  return VEC_index (symtab_node, encoder->nodes, ref);
+}
+
+/* Return an iterator to the first node in LSI.  */
+static inline lto_symtab_encoder_iterator
+lsei_start (lto_symtab_encoder_t encoder)
+{
+  lto_symtab_encoder_iterator lsei;
+
+  lsei.encoder = encoder;
+  lsei.index = 0;
+  return lsei;
+}
+
+/* Advance iterator LSE.  */
+static inline void
+lsei_next_in_partition (lto_symtab_encoder_iterator *lsei)
+{
+  lsei_next (lsei);
+  while (!lsei_end_p (*lsei)
+	 && !lto_symtab_encoder_in_partition_p (lsei->encoder, lsei_node (*lsei)))
+    lsei_next (lsei);
+}
+
+/* Return an iterator to the first node in LSI.  */
+static inline lto_symtab_encoder_iterator
+lsei_start_in_partition (lto_symtab_encoder_t encoder)
+{
+  lto_symtab_encoder_iterator lsei = lsei_start (encoder);
+
+  if (lsei_end_p (lsei))
+    return lsei;
+  if (!lto_symtab_encoder_in_partition_p (encoder, lsei_node (lsei)))
+    lsei_next_in_partition (&lsei);
+
+  return lsei;
+}
+
+/* Advance iterator LSE.  */
+static inline void
+lsei_next_function_in_partition (lto_symtab_encoder_iterator *lsei)
+{
+  lsei_next (lsei);
+  while (!lsei_end_p (*lsei)
+	 && (!symtab_function_p (lsei_node (*lsei))
+	     || !lto_symtab_encoder_in_partition_p (lsei->encoder, lsei_node (*lsei))))
+    lsei_next (lsei);
+}
+
+/* Return an iterator to the first node in LSI.  */
+static inline lto_symtab_encoder_iterator
+lsei_start_function_in_partition (lto_symtab_encoder_t encoder)
+{
+  lto_symtab_encoder_iterator lsei = lsei_start (encoder);
+
+  if (lsei_end_p (lsei))
+    return lsei;
+  if (!symtab_function_p (lsei_node (lsei))
+      || !lto_symtab_encoder_in_partition_p (encoder, lsei_node (lsei)))
+    lsei_next_function_in_partition (&lsei);
+
+  return lsei;
+}
+
+/* Advance iterator LSE.  */
+static inline void
+lsei_next_variable_in_partition (lto_symtab_encoder_iterator *lsei)
+{
+  lsei_next (lsei);
+  while (!lsei_end_p (*lsei)
+	 && (!symtab_variable_p (lsei_node (*lsei))
+	     || !lto_symtab_encoder_in_partition_p (lsei->encoder, lsei_node (*lsei))))
+    lsei_next (lsei);
+}
+
+/* Return an iterator to the first node in LSI.  */
+static inline lto_symtab_encoder_iterator
+lsei_start_variable_in_partition (lto_symtab_encoder_t encoder)
+{
+  lto_symtab_encoder_iterator lsei = lsei_start (encoder);
+
+  if (lsei_end_p (lsei))
+    return lsei;
+  if (!symtab_variable_p (lsei_node (lsei))
+      || !lto_symtab_encoder_in_partition_p (encoder, lsei_node (lsei)))
+    lsei_next_variable_in_partition (&lsei);
+
+  return lsei;
 }
 
 DEFINE_DECL_STREAM_FUNCS (TYPE, type)

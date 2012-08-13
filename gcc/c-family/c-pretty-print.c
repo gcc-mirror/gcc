@@ -872,8 +872,7 @@ pp_c_function_definition (c_pretty_printer *pp, tree t)
   pp_declarator (pp, t);
   pp_needs_newline (pp) = true;
   pp_statement (pp, DECL_SAVED_TREE (t));
-  pp_newline (pp);
-  pp_flush (pp);
+  pp_newline_and_flush (pp);
 }
 
 
@@ -2168,7 +2167,8 @@ pp_c_expression (c_pretty_printer *pp, tree e)
       break;
 
     case SSA_NAME:
-      if (!DECL_ARTIFICIAL (SSA_NAME_VAR (e)))
+      if (SSA_NAME_VAR (e)
+	  && !DECL_ARTIFICIAL (SSA_NAME_VAR (e)))
 	pp_c_expression (pp, SSA_NAME_VAR (e));
       else
 	pp_c_ws_string (pp, M_("<unknown>"));
@@ -2387,8 +2387,7 @@ print_c_tree (FILE *file, tree t)
 
   pp_statement (pp, t);
 
-  pp_newline (pp);
-  pp_flush (pp);
+  pp_newline_and_flush (pp);
 }
 
 /* Print the tree T in full, on stderr.  */

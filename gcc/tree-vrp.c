@@ -718,9 +718,9 @@ get_value_range (const_tree var)
 
   /* If VAR is a default definition of a parameter, the variable can
      take any value in VAR's type.  */
-  sym = SSA_NAME_VAR (var);
   if (SSA_NAME_IS_DEFAULT_DEF (var))
     {
+      sym = SSA_NAME_VAR (var);
       if (TREE_CODE (sym) == PARM_DECL)
 	{
 	  /* Try to use the "nonnull" attribute to create ~[0, 0]
@@ -2726,57 +2726,48 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
       extract_range_from_multiplicative_op_1 (vr, code, &vr0, &vr1);
       return;
     }
-  else if (code == RSHIFT_EXPR)
+  else if (code == RSHIFT_EXPR
+	   || code == LSHIFT_EXPR)
     {
       /* If we have a RSHIFT_EXPR with any shift values outside [0..prec-1],
 	 then drop to VR_VARYING.  Outside of this range we get undefined
 	 behavior from the shift operation.  We cannot even trust
 	 SHIFT_COUNT_TRUNCATED at this stage, because that applies to rtl
 	 shifts, and the operation at the tree level may be widened.  */
-      if (vr1.type != VR_RANGE
-	  || !value_range_nonnegative_p (&vr1)
-	  || TREE_CODE (vr1.max) != INTEGER_CST
-	  || compare_tree_int (vr1.max, TYPE_PRECISION (expr_type) - 1) == 1)
+      if (range_int_cst_p (&vr1)
+	  && compare_tree_int (vr1.min, 0) >= 0
+	  && compare_tree_int (vr1.max, TYPE_PRECISION (expr_type)) == -1)
 	{
-	  set_value_range_to_varying (vr);
-	  return;
+	  if (code == RSHIFT_EXPR)
+	    {
+	      extract_range_from_multiplicative_op_1 (vr, code, &vr0, &vr1);
+	      return;
+	    }
+	  /* We can map lshifts by constants to MULT_EXPR handling.  */
+	  else if (code == LSHIFT_EXPR
+		   && range_int_cst_singleton_p (&vr1))
+	    {
+	      bool saved_flag_wrapv;
+	      value_range_t vr1p = VR_INITIALIZER;
+	      vr1p.type = VR_RANGE;
+	      vr1p.min
+		= double_int_to_tree (expr_type,
+				      double_int_lshift
+				        (double_int_one,
+					 TREE_INT_CST_LOW (vr1.min),
+					 TYPE_PRECISION (expr_type),
+					 false));
+	      vr1p.max = vr1p.min;
+	      /* We have to use a wrapping multiply though as signed overflow
+		 on lshifts is implementation defined in C89.  */
+	      saved_flag_wrapv = flag_wrapv;
+	      flag_wrapv = 1;
+	      extract_range_from_binary_expr_1 (vr, MULT_EXPR, expr_type,
+						&vr0, &vr1p);
+	      flag_wrapv = saved_flag_wrapv;
+	      return;
+	    }
 	}
-
-      extract_range_from_multiplicative_op_1 (vr, code, &vr0, &vr1);
-      return;
-    }
-  else if (code == LSHIFT_EXPR)
-    {
-      /* If we have a LSHIFT_EXPR with any shift values outside [0..prec-1],
-	 then drop to VR_VARYING.  Outside of this range we get undefined
-	 behavior from the shift operation.  We cannot even trust
-	 SHIFT_COUNT_TRUNCATED at this stage, because that applies to rtl
-	 shifts, and the operation at the tree level may be widened.  */
-      if (vr1.type != VR_RANGE
-	  || !value_range_nonnegative_p (&vr1)
-	  || TREE_CODE (vr1.max) != INTEGER_CST
-	  || compare_tree_int (vr1.max, TYPE_PRECISION (expr_type) - 1) == 1)
-	{
-	  set_value_range_to_varying (vr);
-	  return;
-	}
-
-      /* We can map shifts by constants to MULT_EXPR handling.  */
-      if (range_int_cst_singleton_p (&vr1))
-	{
-	  value_range_t vr1p = VR_INITIALIZER;
-	  vr1p.type = VR_RANGE;
-	  vr1p.min
-	    = double_int_to_tree (expr_type,
-				  double_int_lshift (double_int_one,
-						     TREE_INT_CST_LOW (vr1.min),
-						     TYPE_PRECISION (expr_type),
-						     false));
-	  vr1p.max = vr1p.min;
-	  extract_range_from_multiplicative_op_1 (vr, MULT_EXPR, &vr0, &vr1p);
-	  return;
-	}
-
       set_value_range_to_varying (vr);
       return;
     }
@@ -8051,13 +8042,9 @@ simplify_truth_ops_using_ranges (gimple_stmt_iterator *gsi, gimple stmt)
   /* For A != B we substitute A ^ B.  Either with conversion.  */
   else if (need_conversion)
     {
-      gimple newop;
-      tree tem = create_tmp_reg (TREE_TYPE (op0), NULL);
-      newop = gimple_build_assign_with_ops (BIT_XOR_EXPR, tem, op0, op1);
-      tem = make_ssa_name (tem, newop);
-      gimple_assign_set_lhs (newop, tem);
+      tree tem = make_ssa_name (TREE_TYPE (op0), NULL);
+      gimple newop = gimple_build_assign_with_ops (BIT_XOR_EXPR, tem, op0, op1);
       gsi_insert_before (gsi, newop, GSI_SAME_STMT);
-      update_stmt (newop);
       gimple_assign_set_rhs_with_ops (gsi, NOP_EXPR, tem, NULL_TREE);
     }
   /* Or without.  */
@@ -8716,11 +8703,9 @@ simplify_float_conversion_using_ranges (gimple_stmt_iterator *gsi, gimple stmt)
 
   /* It works, insert a truncation or sign-change before the
      float conversion.  */
-  tem = create_tmp_var (build_nonstandard_integer_type
+  tem = make_ssa_name (build_nonstandard_integer_type
 			  (GET_MODE_PRECISION (mode), 0), NULL);
   conv = gimple_build_assign_with_ops (NOP_EXPR, tem, rhs1, NULL_TREE);
-  tem = make_ssa_name (tem, conv);
-  gimple_assign_set_lhs (conv, tem);
   gsi_insert_before (gsi, conv, GSI_SAME_STMT);
   gimple_assign_set_rhs1 (stmt, tem);
   update_stmt (stmt);

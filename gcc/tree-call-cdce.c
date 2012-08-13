@@ -203,7 +203,7 @@ check_pow (gimple pow_call)
     }
   else if (bc == SSA_NAME)
     {
-      tree base_val0, base_var, type;
+      tree base_val0, type;
       gimple base_def;
       int bit_sz;
 
@@ -217,11 +217,7 @@ check_pow (gimple pow_call)
         return false;
       base_val0 = gimple_assign_rhs1 (base_def);
 
-      base_var = SSA_NAME_VAR (base_val0);
-      if (!DECL_P  (base_var))
-        return false;
-
-      type = TREE_TYPE (base_var);
+      type = TREE_TYPE (base_val0);
       if (TREE_CODE (type) != INTEGER_TYPE)
         return false;
       bit_sz = TYPE_PRECISION (type);
@@ -448,7 +444,7 @@ gen_conditions_for_pow_int_base (tree base, tree expn,
 {
   gimple base_def;
   tree base_val0;
-  tree base_var, int_type;
+  tree int_type;
   tree temp, tempn;
   tree cst0;
   gimple stmt1, stmt2;
@@ -457,8 +453,7 @@ gen_conditions_for_pow_int_base (tree base, tree expn,
 
   base_def = SSA_NAME_DEF_STMT (base);
   base_val0 = gimple_assign_rhs1 (base_def);
-  base_var = SSA_NAME_VAR (base_val0);
-  int_type = TREE_TYPE (base_var);
+  int_type = TREE_TYPE (base_val0);
   bit_sz = TYPE_PRECISION (int_type);
   gcc_assert (bit_sz > 0
               && bit_sz <= MAX_BASE_INT_BIT_SIZE);

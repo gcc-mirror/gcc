@@ -1,6 +1,6 @@
 // <chrono> -*- C++ -*-
 
-// Copyright (C) 2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
+// Copyright (C) 2008-2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -53,7 +53,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
    */
 
   /** @namespace std::chrono
-   *  @brief ISO C++ 0x entities sub namespace for time and date.
+   *  @brief ISO C++ 2011 entities sub-namespace for time and date.
    */
   namespace chrono
   {
@@ -69,7 +69,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
   }
 
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
-  // 20.8.2.3 specialization of common_type (for duration)
+  // 20.11.4.3 specialization of common_type (for duration)
   template<typename _Rep1, typename _Period1, typename _Rep2, typename _Period2>
     struct common_type<chrono::duration<_Rep1, _Period1>,
 		       chrono::duration<_Rep2, _Period2>>
@@ -85,7 +85,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef chrono::duration<__cr, __r> 			type;
     };
 
-  // 20.8.2.3 specialization of common_type (for time_point)
+  // 20.11.4.3 specialization of common_type (for time_point)
   template<typename _Clock, typename _Dur1, typename _Dur2>
     struct common_type<chrono::time_point<_Clock, _Dur1>,
 		       chrono::time_point<_Clock, _Dur2>>
@@ -227,7 +227,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
 		      "period must be a specialization of ratio");
 	static_assert(_Period::num > 0, "period must be positive");
 
-	// 20.8.3.1 construction / copy / destroy
+	// 20.11.5.1 construction / copy / destroy
 	constexpr duration() = default;
 
 	constexpr duration(const duration&) = default;
@@ -249,12 +249,12 @@ _GLIBCXX_END_NAMESPACE_VERSION
 	~duration() = default;
 	duration& operator=(const duration&) = default;
 
-	// 20.8.3.2 observer
+	// 20.11.5.2 observer
 	constexpr rep
 	count() const
 	{ return __r; }
 
-	// 20.8.3.3 arithmetic
+	// 20.11.5.3 arithmetic
 	constexpr duration
 	operator+() const
 	{ return *this; }
@@ -332,7 +332,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
 	    return *this;
 	  }
 
-	// 20.8.3.4 special values
+	// 20.11.5.4 special values
 	static constexpr duration
 	zero()
 	{ return duration(duration_values<rep>::zero()); }

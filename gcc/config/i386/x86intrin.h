@@ -105,4 +105,6 @@
 #include <prfchwintrin.h>
 #endif
 
+#include <adxintrin.h>
+
 #endif /* _X86INTRIN_H_INCLUDED */

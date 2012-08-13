@@ -141,7 +141,7 @@ phiprop_insert_phi (basic_block bb, gimple phi, gimple use_stmt,
   /* Build a new PHI node to replace the definition of
      the indirect reference lhs.  */
   res = gimple_assign_lhs (use_stmt);
-  SSA_NAME_DEF_STMT (res) = new_phi = create_phi_node (res, bb);
+  new_phi = create_phi_node (res, bb);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -186,7 +186,7 @@ phiprop_insert_phi (basic_block bb, gimple phi, gimple use_stmt,
 	{
 	  tree rhs = gimple_assign_rhs1 (use_stmt);
 	  gcc_assert (TREE_CODE (old_arg) == ADDR_EXPR);
-	  new_var = create_tmp_reg (TREE_TYPE (rhs), NULL);
+	  new_var = make_ssa_name (TREE_TYPE (rhs), NULL);
 	  if (!is_gimple_min_invariant (old_arg))
 	    old_arg = PHI_ARG_DEF_FROM_EDGE (phi, e);
 	  else
@@ -195,9 +195,6 @@ phiprop_insert_phi (basic_block bb, gimple phi, gimple use_stmt,
 				     fold_build2 (MEM_REF, TREE_TYPE (rhs),
 						  old_arg,
 						  TREE_OPERAND (rhs, 1)));
-	  gcc_assert (is_gimple_reg (new_var));
-	  new_var = make_ssa_name (new_var, tmp);
-	  gimple_assign_set_lhs (tmp, new_var);
 	  gimple_set_location (tmp, locus);
 
 	  gsi_insert_on_edge (e, tmp);

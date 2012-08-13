@@ -1850,7 +1850,7 @@ mem_overlaps_already_clobbered_arg_p (rtx addr, unsigned HOST_WIDE_INT size)
       unsigned HOST_WIDE_INT k;
 
       for (k = 0; k < size; k++)
-	if (i + k < stored_args_map->n_bits
+	if (i + k < SBITMAP_SIZE (stored_args_map)
 	    && TEST_BIT (stored_args_map, i + k))
 	  return true;
     }

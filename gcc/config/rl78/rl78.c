@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on Renesas RL78 processors.
-   Copyright (C) 2011 Free Software Foundation, Inc.
+   Copyright (C) 2011, 2012 Free Software Foundation, Inc.
    Contributed by Red Hat.
 
    This file is part of GCC.
@@ -48,6 +48,7 @@
 #include "langhooks.h"
 #include "rl78-protos.h"
 #include "dumpfile.h"
+#include "tree-pass.h"
 
 static inline bool is_interrupt_func (const_tree decl);
 static inline bool is_brk_interrupt_func (const_tree decl);
@@ -2216,7 +2217,8 @@ rl78_alloc_physical_registers (void)
 	  && GET_CODE (PATTERN (insn)) != CALL)
 	  continue;
 
-      if (GET_CODE (SET_SRC (PATTERN (insn))) == ASM_OPERANDS)
+      if (GET_CODE (PATTERN (insn)) == SET
+	  && GET_CODE (SET_SRC (PATTERN (insn))) == ASM_OPERANDS)
 	continue;
 
       valloc_method = get_attr_valloc (insn);
@@ -2643,7 +2645,7 @@ rl78_remove_unused_sets (void)
 
       dest = SET_DEST (insn);
 
-      if (REGNO (dest) > 23)
+      if (GET_CODE (dest) != REG || REGNO (dest) > 23)
 	continue;
 
       if (find_regno_note (insn, REG_UNUSED, REGNO (dest)))

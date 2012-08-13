@@ -172,7 +172,7 @@ diagnostic_finish (diagnostic_context *context)
 	pp_verbatim (context->printer,
 		     _("%s: some warnings being treated as errors"),
 		     progname);
-      pp_flush (context->printer);
+      pp_newline_and_flush (context->printer);
     }
 }
 
@@ -530,7 +530,7 @@ diagnostic_report_diagnostic (diagnostic_context *context,
 	 try to flush out the previous error, then let this one
 	 through.  Don't do this more than once.  */
       if (diagnostic->kind == DK_ICE && context->lock == 1)
-	pp_flush (context->printer);
+	pp_newline_and_flush (context->printer);
       else
 	error_recursion (context);
     }
@@ -650,7 +650,7 @@ diagnostic_report_diagnostic (diagnostic_context *context,
   pp_output_formatted_text (context->printer);
   diagnostic_show_locus (context, diagnostic);
   (*diagnostic_finalizer (context)) (context, diagnostic);
-  pp_flush (context->printer);
+  pp_newline_and_flush (context->printer);
   diagnostic_action_after_output (context, diagnostic);
   diagnostic->message.format_spec = saved_format_spec;
   diagnostic->x_data = NULL;
@@ -708,7 +708,7 @@ verbatim (const char *gmsgid, ...)
   text.locus = NULL;
   text.x_data = NULL;
   pp_format_verbatim (global_dc->printer, &text);
-  pp_flush (global_dc->printer);
+  pp_newline_and_flush (global_dc->printer);
   va_end (ap);
 }
 
@@ -986,7 +986,7 @@ error_recursion (diagnostic_context *context)
   diagnostic_info diagnostic;
 
   if (context->lock < 3)
-    pp_flush (context->printer);
+    pp_newline_and_flush (context->printer);
 
   fnotice (stderr,
 	   "Internal compiler error: Error reporting routines re-entered.\n");

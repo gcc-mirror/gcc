@@ -427,7 +427,7 @@ gsi_replace (gimple_stmt_iterator *gsi, gimple stmt, bool update_eh_info)
   if (stmt == orig_stmt)
     return;
 
-  gcc_assert (!gimple_has_lhs (orig_stmt)
+  gcc_assert (!gimple_has_lhs (orig_stmt) || !gimple_has_lhs (stmt)
 	      || gimple_get_lhs (orig_stmt) == gimple_get_lhs (stmt));
 
   gimple_set_location (stmt, gimple_location (orig_stmt));

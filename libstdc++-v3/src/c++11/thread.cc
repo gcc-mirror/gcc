@@ -115,7 +115,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   thread::_M_start_thread(__shared_base_type __b)
   {
     if (!__gthread_active_p())
+#if __EXCEPTIONS
+      throw system_error(make_error_code(errc::operation_not_permitted),
+			 "Enable multithreading to use std::thread");
+#else
       __throw_system_error(int(errc::operation_not_permitted));
+#endif
 
     __b->_M_this_ptr = __b;
     int __e = __gthread_create(&_M_id._M_thread,

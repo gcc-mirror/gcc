@@ -1,4 +1,4 @@
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009-2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,8 +32,9 @@ using namespace std::decimal;
 void
 incdec32 (void)
 {
+  bool test __attribute__((unused)) = true;
   int ival;
-  std::decimal::decimal32 a(11), b, c;
+  decimal32 a(11), b, c;
 
   // Verify that we get the expected value of b after assignment.
   b = a;
@@ -79,8 +80,9 @@ incdec32 (void)
 void
 incdec64 (void)
 {
+  bool test __attribute__((unused)) = true;
   int ival;
-  std::decimal::decimal64 a(11), b, c;
+  decimal64 a(11), b, c;
 
   // Verify that we get the expected value of b after assignment.
   b = a;
@@ -126,8 +128,9 @@ incdec64 (void)
 void
 incdec128 (void)
 {
+  bool test __attribute__((unused)) = true;
   int ival;
-  std::decimal::decimal128 a(11), b, c;
+  decimal128 a(11), b, c;
 
   // Verify that we get the expected value of b after assignment.
   b = a;

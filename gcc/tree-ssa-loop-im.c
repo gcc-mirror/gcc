@@ -934,7 +934,7 @@ static gimple
 rewrite_reciprocal (gimple_stmt_iterator *bsi)
 {
   gimple stmt, stmt1, stmt2;
-  tree var, name, lhs, type;
+  tree name, lhs, type;
   tree real_one;
   gimple_stmt_iterator gsi;
 
@@ -942,14 +942,11 @@ rewrite_reciprocal (gimple_stmt_iterator *bsi)
   lhs = gimple_assign_lhs (stmt);
   type = TREE_TYPE (lhs);
 
-  var = create_tmp_reg (type, "reciptmp");
-
   real_one = build_one_cst (type);
 
-  stmt1 = gimple_build_assign_with_ops (RDIV_EXPR,
-		var, real_one, gimple_assign_rhs2 (stmt));
-  name = make_ssa_name (var, stmt1);
-  gimple_assign_set_lhs (stmt1, name);
+  name = make_temp_ssa_name (type, NULL, "reciptmp");
+  stmt1 = gimple_build_assign_with_ops (RDIV_EXPR, name, real_one,
+					gimple_assign_rhs2 (stmt));
 
   stmt2 = gimple_build_assign_with_ops (MULT_EXPR, lhs, name,
 					gimple_assign_rhs1 (stmt));
@@ -972,7 +969,7 @@ static gimple
 rewrite_bittest (gimple_stmt_iterator *bsi)
 {
   gimple stmt, use_stmt, stmt1, stmt2;
-  tree lhs, var, name, t, a, b;
+  tree lhs, name, t, a, b;
   use_operand_p use;
 
   stmt = gsi_stmt (*bsi);
@@ -1021,18 +1018,15 @@ rewrite_bittest (gimple_stmt_iterator *bsi)
       gimple_stmt_iterator rsi;
 
       /* 1 << B */
-      var = create_tmp_var (TREE_TYPE (a), "shifttmp");
       t = fold_build2 (LSHIFT_EXPR, TREE_TYPE (a),
 		       build_int_cst (TREE_TYPE (a), 1), b);
-      stmt1 = gimple_build_assign (var, t);
-      name = make_ssa_name (var, stmt1);
-      gimple_assign_set_lhs (stmt1, name);
+      name = make_temp_ssa_name (TREE_TYPE (a), NULL, "shifttmp");
+      stmt1 = gimple_build_assign (name, t);
 
       /* A & (1 << B) */
       t = fold_build2 (BIT_AND_EXPR, TREE_TYPE (a), a, name);
-      stmt2 = gimple_build_assign (var, t);
-      name = make_ssa_name (var, stmt2);
-      gimple_assign_set_lhs (stmt2, name);
+      name = make_temp_ssa_name (TREE_TYPE (a), NULL, "shifttmp");
+      stmt2 = gimple_build_assign (name, t);
 
       /* Replace the SSA_NAME we compare against zero.  Adjust
 	 the type of zero accordingly.  */
@@ -1919,9 +1913,6 @@ gen_lsm_tmp_name (tree ref)
       break;
 
     case SSA_NAME:
-      ref = SSA_NAME_VAR (ref);
-      /* Fallthru.  */
-
     case VAR_DECL:
     case PARM_DECL:
       name = get_name (ref);

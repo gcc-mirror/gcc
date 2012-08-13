@@ -2075,9 +2075,25 @@ struct GTY(()) tree_exp {
 
 /* SSA_NAME accessors.  */
 
-/* Returns the variable being referenced.  Once released, this is the
-   only field that can be relied upon.  */
-#define SSA_NAME_VAR(NODE)	SSA_NAME_CHECK (NODE)->ssa_name.var
+/* Returns the IDENTIFIER_NODE giving the SSA name a name or NULL_TREE
+   if there is no name associated with it.  */
+#define SSA_NAME_IDENTIFIER(NODE)				\
+  (SSA_NAME_CHECK (NODE)->ssa_name.var != NULL_TREE		\
+   ? (TREE_CODE ((NODE)->ssa_name.var) == IDENTIFIER_NODE	\
+      ? (NODE)->ssa_name.var					\
+      : DECL_NAME ((NODE)->ssa_name.var))			\
+   : NULL_TREE)
+
+/* Returns the variable being referenced.  This can be NULL_TREE for
+   temporaries not associated with any user variable.
+   Once released, this is the only field that can be relied upon.  */
+#define SSA_NAME_VAR(NODE)					\
+  (SSA_NAME_CHECK (NODE)->ssa_name.var == NULL_TREE		\
+   || TREE_CODE ((NODE)->ssa_name.var) == IDENTIFIER_NODE	\
+   ? NULL_TREE : (NODE)->ssa_name.var)
+
+#define SET_SSA_NAME_VAR_OR_IDENTIFIER(NODE,VAR) \
+  do { SSA_NAME_CHECK (NODE)->ssa_name.var = (VAR); } while (0)
 
 /* Returns the statement which defines this SSA name.  */
 #define SSA_NAME_DEF_STMT(NODE)	SSA_NAME_CHECK (NODE)->ssa_name.def_stmt
@@ -2754,16 +2770,13 @@ struct GTY (()) tree_binfo {
 
 /* Define fields and accessors for nodes representing declared names.  */
 
-/* Nonzero if DECL represents a variable for the SSA passes.  */
+/* Nonzero if DECL represents an SSA name or a variable that can possibly
+   have an associated SSA name.  */
 #define SSA_VAR_P(DECL)							\
 	((TREE_CODE (DECL) == VAR_DECL && !TREE_SHARED (DECL))          \
 	 || TREE_CODE (DECL) == PARM_DECL				\
 	 || TREE_CODE (DECL) == RESULT_DECL				\
-	 || (TREE_CODE (DECL) == SSA_NAME				\
-	     && (TREE_CODE (SSA_NAME_VAR (DECL)) == VAR_DECL		\
-		 || TREE_CODE (SSA_NAME_VAR (DECL)) == PARM_DECL	\
-		 || TREE_CODE (SSA_NAME_VAR (DECL)) == RESULT_DECL)))
-
+	 || TREE_CODE (DECL) == SSA_NAME)
 
 
 

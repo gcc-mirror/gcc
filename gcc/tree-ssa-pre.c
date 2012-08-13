@@ -249,7 +249,8 @@ alloc_expression_id (pre_expr expr)
       /* VEC_safe_grow_cleared allocates no headroom.  Avoid frequent
 	 re-allocations by using VEC_reserve upfront.  There is no
 	 VEC_quick_grow_cleared unfortunately.  */
-      VEC_reserve (unsigned, heap, name_to_id, num_ssa_names);
+      unsigned old_len = VEC_length (unsigned, name_to_id);
+      VEC_reserve (unsigned, heap, name_to_id, num_ssa_names - old_len);
       VEC_safe_grow_cleared (unsigned, heap, name_to_id, num_ssa_names);
       gcc_assert (VEC_index (unsigned, name_to_id, version) == 0);
       VEC_replace (unsigned, name_to_id, version, expr->id);
@@ -471,14 +472,6 @@ static unsigned int get_expr_value_id (pre_expr);
 
 static alloc_pool bitmap_set_pool;
 static bitmap_obstack grand_bitmap_obstack;
-
-/* To avoid adding 300 temporary variables when we only need one, we
-   only create one temporary variable, on demand, and build ssa names
-   off that.  We do have to change the variable if the types don't
-   match the current variable's type.  */
-static tree pretemp;
-static tree storetemp;
-static tree prephitemp;
 
 /* Set of blocks with statements that have had their EH properties changed.  */
 static bitmap need_eh_cleanup;
@@ -1366,7 +1359,6 @@ get_expr_type (const pre_expr e)
 static tree
 get_representative_for (const pre_expr e)
 {
-  tree exprtype;
   tree name;
   unsigned int value_id = get_expr_value_id (e);
 
@@ -1406,14 +1398,9 @@ get_representative_for (const pre_expr e)
       fprintf (dump_file, "\n");
     }
 
-  exprtype = get_expr_type (e);
-
   /* Build and insert the assignment of the end result to the temporary
      that we will return.  */
-  if (!pretemp || exprtype != TREE_TYPE (pretemp))
-    pretemp = create_tmp_reg (exprtype, "pretmp");
-
-  name = make_ssa_name (pretemp, gimple_build_nop ());
+  name = make_temp_ssa_name (get_expr_type (e), gimple_build_nop (), "pretmp");
   VN_INFO_GET (name)->value_id = value_id;
   if (e->kind == CONSTANT)
     VN_INFO (name)->valnum = PRE_EXPR_CONSTANT (e);
@@ -2602,11 +2589,6 @@ can_PRE_operation (tree op)
    that didn't turn out to be necessary.   */
 static bitmap inserted_exprs;
 
-/* Pool allocated fake store expressions are placed onto this
-   worklist, which, after performing dead code elimination, is walked
-   to see which expressions need to be put into GC'able memory  */
-static VEC(gimple, heap) *need_creation;
-
 /* The actual worker for create_component_ref_by_pieces.  */
 
 static tree
@@ -2983,7 +2965,7 @@ static tree
 create_expression_by_pieces (basic_block block, pre_expr expr,
 			     gimple_seq *stmts, gimple domstmt, tree type)
 {
-  tree temp, name;
+  tree name;
   tree folded;
   gimple_seq forced_stmts = NULL;
   unsigned int value_id;
@@ -3101,16 +3083,8 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
       gimple_seq_add_seq (stmts, forced_stmts);
     }
 
-  /* Build and insert the assignment of the end result to the temporary
-     that we will return.  */
-  if (!pretemp || exprtype != TREE_TYPE (pretemp))
-    pretemp = create_tmp_reg (exprtype, "pretmp");
-
-  temp = pretemp;
-
-  newstmt = gimple_build_assign (temp, folded);
-  name = make_ssa_name (temp, newstmt);
-  gimple_assign_set_lhs (newstmt, name);
+  name = make_temp_ssa_name (exprtype, NULL, "pretmp");
+  newstmt = gimple_build_assign (name, folded);
   gimple_set_plf (newstmt, NECESSARY, false);
 
   gimple_seq_add_stmt (stmts, newstmt);
@@ -3361,14 +3335,7 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
     return false;
 
   /* Now build a phi for the new variable.  */
-  if (!prephitemp || TREE_TYPE (prephitemp) != type)
-    prephitemp = create_tmp_var (type, "prephitmp");
-
-  temp = prephitemp;
-
-  if (TREE_CODE (type) == COMPLEX_TYPE
-      || TREE_CODE (type) == VECTOR_TYPE)
-    DECL_GIMPLE_REG_P (temp) = 1;
+  temp = make_temp_ssa_name (type, NULL, "prephitmp");
   phi = create_phi_node (temp, block);
 
   gimple_set_plf (phi, NECESSARY, false);
@@ -4809,10 +4776,6 @@ init_pre (bool do_fre)
   in_fre = do_fre;
 
   inserted_exprs = BITMAP_ALLOC (NULL);
-  need_creation = NULL;
-  pretemp = NULL_TREE;
-  storetemp = NULL_TREE;
-  prephitemp = NULL_TREE;
 
   connect_infinite_loops_to_exit ();
   memset (&pre_stats, 0, sizeof (pre_stats));
@@ -4860,7 +4823,6 @@ fini_pre (bool do_fre)
   free (postorder);
   VEC_free (bitmap_set_t, heap, value_expressions);
   BITMAP_FREE (inserted_exprs);
-  VEC_free (gimple, heap, need_creation);
   bitmap_obstack_release (&grand_bitmap_obstack);
   free_alloc_pool (bitmap_set_pool);
   free_alloc_pool (pre_expr_pool);

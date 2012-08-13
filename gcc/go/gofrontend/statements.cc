@@ -4192,55 +4192,41 @@ Type_switch_statement::do_lower(Gogo*, Named_object*, Block* enclosing,
 		    ? this->var_->var_value()->type()
 		    : this->expr_->type());
 
+  if (val_type->interface_type() == NULL)
+    {
+      if (!val_type->is_error())
+	this->report_error(_("cannot type switch on non-interface value"));
+      return Statement::make_error_statement(loc);
+    }
+
   // var descriptor_temp DESCRIPTOR_TYPE
   Type* descriptor_type = Type::make_type_descriptor_ptr_type();
   Temporary_statement* descriptor_temp =
     Statement::make_temporary(descriptor_type, NULL, loc);
   b->add_statement(descriptor_temp);
 
-  if (val_type->interface_type() == NULL)
-    {
-      // Doing a type switch on a non-interface type.  Should we issue
-      // a warning for this case?
-      Expression* lhs = Expression::make_temporary_reference(descriptor_temp,
-							     loc);
-      Expression* rhs;
-      if (val_type->is_nil_type())
-	rhs = Expression::make_nil(loc);
-      else
-	{
-	  if (val_type->is_abstract())
-	    val_type = val_type->make_non_abstract_type();
-	  rhs = Expression::make_type_descriptor(val_type, loc);
-	}
-      Statement* s = Statement::make_assignment(lhs, rhs, loc);
-      b->add_statement(s);
-    }
+  // descriptor_temp = ifacetype(val_temp) FIXME: This should be
+  // inlined.
+  bool is_empty = val_type->interface_type()->is_empty();
+  Expression* ref;
+  if (this->var_ == NULL)
+    ref = this->expr_;
   else
-    {
-      // descriptor_temp = ifacetype(val_temp)
-      // FIXME: This should be inlined.
-      bool is_empty = val_type->interface_type()->is_empty();
-      Expression* ref;
-      if (this->var_ == NULL)
-	ref = this->expr_;
-      else
-	ref = Expression::make_var_reference(this->var_, loc);
-      Expression* call = Runtime::make_call((is_empty
-					     ? Runtime::EFACETYPE
-					     : Runtime::IFACETYPE),
-					    loc, 1, ref);
-      Temporary_reference_expression* lhs =
-	Expression::make_temporary_reference(descriptor_temp, loc);
-      lhs->set_is_lvalue();
-      Statement* s = Statement::make_assignment(lhs, call, loc);
-      b->add_statement(s);
-    }
+    ref = Expression::make_var_reference(this->var_, loc);
+  Expression* call = Runtime::make_call((is_empty
+					 ? Runtime::EFACETYPE
+					 : Runtime::IFACETYPE),
+					loc, 1, ref);
+  Temporary_reference_expression* lhs =
+    Expression::make_temporary_reference(descriptor_temp, loc);
+  lhs->set_is_lvalue();
+  Statement* s = Statement::make_assignment(lhs, call, loc);
+  b->add_statement(s);
 
   if (this->clauses_ != NULL)
     this->clauses_->lower(val_type, b, descriptor_temp, this->break_label());
 
-  Statement* s = Statement::make_unnamed_label_statement(this->break_label_);
+  s = Statement::make_unnamed_label_statement(this->break_label_);
   b->add_statement(s);
 
   return Statement::make_block_statement(b, loc);

@@ -321,7 +321,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	allocate_shared(const _Alloc& __a, _Args&&... __args);
     };
 
-  // 20.8.13.2.7 shared_ptr comparisons
+  // 20.7.2.2.7 shared_ptr comparisons
   template<typename _Tp1, typename _Tp2>
     inline bool
     operator==(const shared_ptr<_Tp1>& __a,
@@ -425,13 +425,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct less<shared_ptr<_Tp>> : public _Sp_less<shared_ptr<_Tp>>
     { };
 
-  // 20.8.13.2.9 shared_ptr specialized algorithms.
+  // 20.7.2.2.8 shared_ptr specialized algorithms.
   template<typename _Tp>
     inline void
     swap(shared_ptr<_Tp>& __a, shared_ptr<_Tp>& __b) noexcept
     { __a.swap(__b); }
 
-  // 20.8.13.2.10 shared_ptr casts.
+  // 20.7.2.2.9 shared_ptr casts.
   template<typename _Tp, typename _Tp1>
     inline shared_ptr<_Tp>
     static_pointer_cast(const shared_ptr<_Tp1>& __r) noexcept
@@ -511,7 +511,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
     };
 
-  // 20.8.13.3.7 weak_ptr specialized algorithms.
+  // 20.7.2.3.6 weak_ptr specialized algorithms.
   template<typename _Tp>
     inline void
     swap(weak_ptr<_Tp>& __a, weak_ptr<_Tp>& __b) noexcept

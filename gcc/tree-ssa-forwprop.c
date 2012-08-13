@@ -697,128 +697,6 @@ tidy_after_forward_propagate_addr (gimple stmt)
      recompute_tree_invariant_for_addr_expr (gimple_assign_rhs1 (stmt));
 }
 
-/* DEF_RHS contains the address of the 0th element in an array.
-   USE_STMT uses type of DEF_RHS to compute the address of an
-   arbitrary element within the array.  The (variable) byte offset
-   of the element is contained in OFFSET.
-
-   We walk back through the use-def chains of OFFSET to verify that
-   it is indeed computing the offset of an element within the array
-   and extract the index corresponding to the given byte offset.
-
-   We then try to fold the entire address expression into a form
-   &array[index].
-
-   If we are successful, we replace the right hand side of USE_STMT
-   with the new address computation.  */
-
-static bool
-forward_propagate_addr_into_variable_array_index (tree offset,
-						  tree def_rhs,
-						  gimple_stmt_iterator *use_stmt_gsi)
-{
-  tree index, tunit;
-  gimple offset_def, use_stmt = gsi_stmt (*use_stmt_gsi);
-  tree new_rhs, tmp;
-
-  if (TREE_CODE (TREE_OPERAND (def_rhs, 0)) == ARRAY_REF)
-    tunit = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (def_rhs)));
-  else if (TREE_CODE (TREE_TYPE (TREE_OPERAND (def_rhs, 0))) == ARRAY_TYPE)
-    tunit = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (TREE_TYPE (def_rhs))));
-  else
-    return false;
-  if (!host_integerp (tunit, 1))
-    return false;
-
-  /* Get the offset's defining statement.  */
-  offset_def = SSA_NAME_DEF_STMT (offset);
-
-  /* Try to find an expression for a proper index.  This is either a
-     multiplication expression by the element size or just the ssa name we came
-     along in case the element size is one. In that case, however, we do not
-     allow multiplications because they can be computing index to a higher
-     level dimension (PR 37861). */
-  if (integer_onep (tunit))
-    {
-      if (is_gimple_assign (offset_def)
-	  && gimple_assign_rhs_code (offset_def) == MULT_EXPR)
-	return false;
-
-      index = offset;
-    }
-  else
-    {
-      /* The statement which defines OFFSET before type conversion
-         must be a simple GIMPLE_ASSIGN.  */
-      if (!is_gimple_assign (offset_def))
-	return false;
-
-      /* The RHS of the statement which defines OFFSET must be a
-	 multiplication of an object by the size of the array elements.
-	 This implicitly verifies that the size of the array elements
-	 is constant.  */
-     if (gimple_assign_rhs_code (offset_def) == MULT_EXPR
-	 && TREE_CODE (gimple_assign_rhs2 (offset_def)) == INTEGER_CST
-	 && tree_int_cst_equal (gimple_assign_rhs2 (offset_def), tunit))
-       {
-	 /* The first operand to the MULT_EXPR is the desired index.  */
-	 index = gimple_assign_rhs1 (offset_def);
-       }
-     /* If we have idx * tunit + CST * tunit re-associate that.  */
-     else if ((gimple_assign_rhs_code (offset_def) == PLUS_EXPR
-	       || gimple_assign_rhs_code (offset_def) == MINUS_EXPR)
-	      && TREE_CODE (gimple_assign_rhs1 (offset_def)) == SSA_NAME
-	      && TREE_CODE (gimple_assign_rhs2 (offset_def)) == INTEGER_CST
-	      && (tmp = div_if_zero_remainder (EXACT_DIV_EXPR,
-					       gimple_assign_rhs2 (offset_def),
-					       tunit)) != NULL_TREE)
-       {
-	 gimple offset_def2 = SSA_NAME_DEF_STMT (gimple_assign_rhs1 (offset_def));
-	 if (is_gimple_assign (offset_def2)
-	     && gimple_assign_rhs_code (offset_def2) == MULT_EXPR
-	     && TREE_CODE (gimple_assign_rhs2 (offset_def2)) == INTEGER_CST
-	     && tree_int_cst_equal (gimple_assign_rhs2 (offset_def2), tunit))
-	   {
-	     index = fold_build2 (gimple_assign_rhs_code (offset_def),
-				  TREE_TYPE (offset),
-				  gimple_assign_rhs1 (offset_def2), tmp);
-	   }
-	 else
-	   return false;
-       }
-     else
-	return false;
-    }
-
-  /* Replace the pointer addition with array indexing.  */
-  index = force_gimple_operand_gsi (use_stmt_gsi, index, true, NULL_TREE,
-				    true, GSI_SAME_STMT);
-  if (TREE_CODE (TREE_OPERAND (def_rhs, 0)) == ARRAY_REF)
-    {
-      new_rhs = unshare_expr (def_rhs);
-      TREE_OPERAND (TREE_OPERAND (new_rhs, 0), 1) = index;
-    }
-  else
-    {
-      new_rhs = build4 (ARRAY_REF, TREE_TYPE (TREE_TYPE (TREE_TYPE (def_rhs))),
-			unshare_expr (TREE_OPERAND (def_rhs, 0)),
-			index, integer_zero_node, NULL_TREE);
-      new_rhs = build_fold_addr_expr (new_rhs);
-      if (!useless_type_conversion_p (TREE_TYPE (gimple_assign_lhs (use_stmt)),
-				      TREE_TYPE (new_rhs)))
-	{
-	  new_rhs = force_gimple_operand_gsi (use_stmt_gsi, new_rhs, true,
-					      NULL_TREE, true, GSI_SAME_STMT);
-	  new_rhs = fold_convert (TREE_TYPE (gimple_assign_lhs (use_stmt)),
-				  new_rhs);
-	}
-    }
-  gimple_assign_set_rhs_from_tree (use_stmt_gsi, new_rhs);
-  fold_stmt (use_stmt_gsi);
-  tidy_after_forward_propagate_addr (gsi_stmt (*use_stmt_gsi));
-  return true;
-}
-
 /* NAME is a SSA_NAME representing DEF_RHS which is of the form
    ADDR_EXPR <whatever>.
 
@@ -1111,19 +989,6 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
       return true;
     }
 
-  /* Try to optimize &x[0] p+ OFFSET where OFFSET is defined by
-     converting a multiplication of an index by the size of the
-     array elements, then the result is converted into the proper
-     type for the arithmetic.  */
-  if (TREE_CODE (rhs2) == SSA_NAME
-      && (TREE_CODE (array_ref) != ARRAY_REF
-	  || integer_zerop (TREE_OPERAND (array_ref, 1)))
-      && useless_type_conversion_p (TREE_TYPE (name), TREE_TYPE (def_rhs))
-      /* Avoid problems with IVopts creating PLUS_EXPRs with a
-	 different type than their operands.  */
-      && useless_type_conversion_p (TREE_TYPE (lhs), TREE_TYPE (def_rhs)))
-    return forward_propagate_addr_into_variable_array_index (rhs2, def_rhs,
-							     use_stmt_gsi);
   return false;
 }
 
@@ -1941,14 +1806,12 @@ simplify_bitwise_binary (gimple_stmt_iterator *gsi)
       && int_fits_type_p (arg2, TREE_TYPE (def1_arg1)))
     {
       gimple newop;
-      tree tem = create_tmp_reg (TREE_TYPE (def1_arg1), NULL);
+      tree tem = make_ssa_name (TREE_TYPE (def1_arg1), NULL);
       newop =
         gimple_build_assign_with_ops (code, tem, def1_arg1,
 				      fold_convert_loc (gimple_location (stmt),
 							TREE_TYPE (def1_arg1),
 							arg2));
-      tem = make_ssa_name (tem, newop);
-      gimple_assign_set_lhs (newop, tem);
       gimple_set_location (newop, gimple_location (stmt));
       gsi_insert_before (gsi, newop, GSI_SAME_STMT);
       gimple_assign_set_rhs_with_ops_1 (gsi, NOP_EXPR,
@@ -1974,11 +1837,8 @@ simplify_bitwise_binary (gimple_stmt_iterator *gsi)
 	      != GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (arg1))))))
     {
       gimple newop;
-      tree tem = create_tmp_reg (TREE_TYPE (def1_arg1),
-				 NULL);
+      tree tem = make_ssa_name (TREE_TYPE (def1_arg1), NULL);
       newop = gimple_build_assign_with_ops (code, tem, def1_arg1, def2_arg1);
-      tem = make_ssa_name (tem, newop);
-      gimple_assign_set_lhs (newop, tem);
       gimple_set_location (newop, gimple_location (stmt));
       gsi_insert_before (gsi, newop, GSI_SAME_STMT);
       gimple_assign_set_rhs_with_ops_1 (gsi, NOP_EXPR,
@@ -2020,10 +1880,8 @@ simplify_bitwise_binary (gimple_stmt_iterator *gsi)
 	{
 	  gimple newop;
 	  tree tem;
-	  tem = create_tmp_reg (TREE_TYPE (arg2), NULL);
+	  tem = make_ssa_name (TREE_TYPE (arg2), NULL);
 	  newop = gimple_build_assign_with_ops (code, tem, a, c);
-	  tem = make_ssa_name (tem, newop);
-	  gimple_assign_set_lhs (newop, tem);
 	  gimple_set_location (newop, gimple_location (stmt));
 	  /* Make sure to re-process the new stmt as it's walking upwards.  */
 	  gsi_insert_before (gsi, newop, GSI_NEW_STMT);
@@ -2051,11 +1909,9 @@ simplify_bitwise_binary (gimple_stmt_iterator *gsi)
 	  update_stmt (stmt);
 	  return true;
 	}
-      tem = create_tmp_reg (TREE_TYPE (arg2), NULL);
+      tem = make_ssa_name (TREE_TYPE (arg2), NULL);
       newop = gimple_build_assign_with_ops (BIT_AND_EXPR,
 					    tem, def1_arg1, arg2);
-      tem = make_ssa_name (tem, newop);
-      gimple_assign_set_lhs (newop, tem);
       gimple_set_location (newop, gimple_location (stmt));
       /* Make sure to re-process the new stmt as it's walking upwards.  */
       gsi_insert_before (gsi, newop, GSI_NEW_STMT);

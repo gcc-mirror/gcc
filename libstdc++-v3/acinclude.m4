@@ -1115,16 +1115,16 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
 
 dnl
 dnl Check for clock_gettime, nanosleep and sched_yield, used in the
-dnl implementation of 20.8.5 [time.clock], and 30.2.2 [thread.thread.this]
-dnl in the current C++0x working draft.
+dnl implementation of 20.11.7 [time.clock], and 30.3.2 [thread.thread.this]
+dnl in the C++11 standard.
 dnl
 dnl --enable-libstdcxx-time
 dnl --enable-libstdcxx-time=yes
 dnl        checks for the availability of monotonic and realtime clocks,
-dnl        nanosleep and sched_yield in libc and libposix4 and, in case, links
-dnl       the latter
+dnl        nanosleep and sched_yield in libc and libposix4 and, if needed,
+dnl        links in the latter.
 dnl --enable-libstdcxx-time=rt
-dnl        also searches (and, in case, links) librt.  Note that this is
+dnl        also searches (and, if needed, links) librt.  Note that this is
 dnl        not always desirable because, in glibc, for example, in turn it
 dnl        triggers the linking of libpthread too, which activates locking,
 dnl        a large overhead for single-thread programs.
@@ -1256,8 +1256,8 @@ AC_DEFUN([GLIBCXX_ENABLE_LIBSTDCXX_TIME], [
 ])
 
 dnl
-dnl Check for gettimeofday, used in the implementation of 20.8.5
-dnl [time.clock] in the current C++0x working draft.
+dnl Check for gettimeofday, used in the implementation of 20.11.7
+dnl [time.clock] in the C++11 standard.
 dnl
 AC_DEFUN([GLIBCXX_CHECK_GETTIMEOFDAY], [
 

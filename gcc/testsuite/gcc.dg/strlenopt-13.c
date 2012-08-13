@@ -61,8 +61,8 @@ main ()
 /* { dg-final { scan-tree-dump-times "strcat \\(" 0 "strlen" } } */
 /* { dg-final { scan-tree-dump-times "strchr \\(" 0 "strlen" } } */
 /* { dg-final { scan-tree-dump-times "stpcpy \\(" 0 "strlen" } } */
-/* { dg-final { scan-tree-dump-times "  D\.\[0-9_\]* = strlen \\(\[^\n\r\]*;\[\n\r\]*  l.0. = " 1 "strlen" } } */
-/* { dg-final { scan-tree-dump-times "  D\.\[0-9_\]* = strlen \\(\[^\n\r\]*;\[\n\r\]*  l.1. = " 1 "strlen" } } */
-/* { dg-final { scan-tree-dump-times "  D\.\[0-9_\]* = strlen \\(\[^\n\r\]*;\[\n\r\]*  l.5. = " 1 "strlen" } } */
-/* { dg-final { scan-tree-dump-times "  D\.\[0-9_\]* = strlen \\(\[^\n\r\]*;\[\n\r\]*  l.6. = " 1 "strlen" } } */
+/* { dg-final { scan-tree-dump-times "  _\[0-9\]* = strlen \\(\[^\n\r\]*;\[\n\r\]*  l.0. = " 1 "strlen" } } */
+/* { dg-final { scan-tree-dump-times "  _\[0-9\]* = strlen \\(\[^\n\r\]*;\[\n\r\]*  l.1. = " 1 "strlen" } } */
+/* { dg-final { scan-tree-dump-times "  _\[0-9\]* = strlen \\(\[^\n\r\]*;\[\n\r\]*  l.5. = " 1 "strlen" } } */
+/* { dg-final { scan-tree-dump-times "  _\[0-9\]* = strlen \\(\[^\n\r\]*;\[\n\r\]*  l.6. = " 1 "strlen" } } */
 /* { dg-final { cleanup-tree-dump "strlen" } } */

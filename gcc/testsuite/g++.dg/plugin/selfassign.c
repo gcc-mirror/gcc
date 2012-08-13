@@ -46,7 +46,7 @@ get_real_ref_rhs (tree expr)
              e.g. D.1797_14, we need to grab the rhs of its SSA def
              statement (i.e. foo.x).  */
           tree vdecl = SSA_NAME_VAR (expr);
-          if (DECL_ARTIFICIAL (vdecl)
+          if ((!vdecl || DECL_ARTIFICIAL (vdecl))
               && !gimple_nop_p (SSA_NAME_DEF_STMT (expr)))
             {
               gimple def_stmt = SSA_NAME_DEF_STMT (expr);
@@ -86,6 +86,8 @@ get_real_ref_rhs (tree expr)
 static tree
 get_non_ssa_expr (tree expr)
 {
+  if (!expr)
+    return NULL_TREE;
   switch (TREE_CODE (expr))
     {
       case VAR_DECL:
@@ -149,7 +151,7 @@ get_non_ssa_expr (tree expr)
       case SSA_NAME:
         {
           tree vdecl = SSA_NAME_VAR (expr);
-          if (DECL_ARTIFICIAL (vdecl)
+          if ((!vdecl || DECL_ARTIFICIAL (vdecl))
               && !gimple_nop_p (SSA_NAME_DEF_STMT (expr)))
             {
               gimple def_stmt = SSA_NAME_DEF_STMT (expr);
@@ -209,7 +211,7 @@ warn_self_assign (gimple stmt)
       if (TREE_CODE (lhs) == SSA_NAME)
         {
           lhs = SSA_NAME_VAR (lhs);
-          if (DECL_ARTIFICIAL (lhs))
+          if (!lhs || DECL_ARTIFICIAL (lhs))
             return;
         }
 

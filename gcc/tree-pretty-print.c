@@ -133,7 +133,7 @@ print_generic_stmt (FILE *file, tree t, int flags)
 {
   maybe_init_pretty_print (file);
   dump_generic_node (&buffer, t, 0, flags, true);
-  pp_flush (&buffer);
+  pp_newline_and_flush (&buffer);
 }
 
 /* Print tree T, and its successors, on file FILE.  FLAGS specifies details
@@ -150,7 +150,7 @@ print_generic_stmt_indented (FILE *file, tree t, int flags, int indent)
   for (i = 0; i < indent; i++)
     pp_space (&buffer);
   dump_generic_node (&buffer, t, indent, flags, true);
-  pp_flush (&buffer);
+  pp_newline_and_flush (&buffer);
 }
 
 /* Print a single expression T on file FILE.  FLAGS specifies details to show
@@ -2079,7 +2079,9 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       break;
 
     case SSA_NAME:
-      dump_generic_node (buffer, SSA_NAME_VAR (node), spc, flags, false);
+      if (SSA_NAME_IDENTIFIER (node))
+	dump_generic_node (buffer, SSA_NAME_IDENTIFIER (node),
+			   spc, flags, false);
       pp_string (buffer, "_");
       pp_decimal_int (buffer, SSA_NAME_VERSION (node));
       if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (node))

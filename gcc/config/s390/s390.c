@@ -896,10 +896,12 @@ s390_emit_compare (enum rtx_code code, rtx op0, rtx op1)
    conditional branch testing the result.  */
 
 static rtx
-s390_emit_compare_and_swap (enum rtx_code code, rtx old, rtx mem, rtx cmp, rtx new_rtx)
+s390_emit_compare_and_swap (enum rtx_code code, rtx old, rtx mem,
+			    rtx cmp, rtx new_rtx)
 {
-  emit_insn (gen_sync_compare_and_swapsi (old, mem, cmp, new_rtx));
-  return s390_emit_compare (code, gen_rtx_REG (CCZ1mode, CC_REGNUM), const0_rtx);
+  emit_insn (gen_atomic_compare_and_swapsi_internal (old, mem, cmp, new_rtx));
+  return s390_emit_compare (code, gen_rtx_REG (CCZ1mode, CC_REGNUM),
+			    const0_rtx);
 }
 
 /* Emit a jump instruction to TARGET.  If COND is NULL_RTX, emit an
@@ -4548,77 +4550,12 @@ s390_expand_insv (rtx dest, rtx op1, rtx op2, rtx src)
 {
   int bitsize = INTVAL (op1);
   int bitpos = INTVAL (op2);
+  enum machine_mode mode = GET_MODE (dest);
+  enum machine_mode smode;
+  int smode_bsize, mode_bsize;
+  rtx op, clobber;
 
-  /* On z10 we can use the risbg instruction to implement insv.  */
-  if (TARGET_Z10
-      && ((GET_MODE (dest) == DImode && GET_MODE (src) == DImode)
-	  || (GET_MODE (dest) == SImode && GET_MODE (src) == SImode)))
-    {
-      rtx op;
-      rtx clobber;
-
-      op = gen_rtx_SET (GET_MODE(src),
-			gen_rtx_ZERO_EXTRACT (GET_MODE (dest), dest, op1, op2),
-			src);
-      clobber = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCmode, CC_REGNUM));
-      emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, op, clobber)));
-
-      return true;
-    }
-
-  /* We need byte alignment.  */
-  if (bitsize % BITS_PER_UNIT)
-    return false;
-
-  if (bitpos == 0
-      && memory_operand (dest, VOIDmode)
-      && (register_operand (src, word_mode)
-	  || const_int_operand (src, VOIDmode)))
-    {
-      /* Emit standard pattern if possible.  */
-      enum machine_mode mode = smallest_mode_for_size (bitsize, MODE_INT);
-      if (GET_MODE_BITSIZE (mode) == bitsize)
-	emit_move_insn (adjust_address (dest, mode, 0), gen_lowpart (mode, src));
-
-      /* (set (ze (mem)) (const_int)).  */
-      else if (const_int_operand (src, VOIDmode))
-	{
-	  int size = bitsize / BITS_PER_UNIT;
-	  rtx src_mem = adjust_address (force_const_mem (word_mode, src), BLKmode,
-					GET_MODE_SIZE (word_mode) - size);
-
-	  dest = adjust_address (dest, BLKmode, 0);
-	  set_mem_size (dest, size);
-	  s390_expand_movmem (dest, src_mem, GEN_INT (size));
-	}
-
-      /* (set (ze (mem)) (reg)).  */
-      else if (register_operand (src, word_mode))
-	{
-	  if (bitsize <= GET_MODE_BITSIZE (SImode))
-	    emit_move_insn (gen_rtx_ZERO_EXTRACT (word_mode, dest, op1,
-						  const0_rtx), src);
-	  else
-	    {
-	      /* Emit st,stcmh sequence.  */
-	      int stcmh_width = bitsize - GET_MODE_BITSIZE (SImode);
-	      int size = stcmh_width / BITS_PER_UNIT;
-
-	      emit_move_insn (adjust_address (dest, SImode, size),
-			      gen_lowpart (SImode, src));
-	      set_mem_size (dest, size);
-	      emit_move_insn (gen_rtx_ZERO_EXTRACT (word_mode, dest, GEN_INT
-						    (stcmh_width), const0_rtx),
-			      gen_rtx_LSHIFTRT (word_mode, src, GEN_INT
-						(GET_MODE_BITSIZE (SImode))));
-	    }
-	}
-      else
-	return false;
-
-      return true;
-    }
-
+  /* Generate INSERT IMMEDIATE (IILL et al).  */
   /* (set (ze (reg)) (const_int)).  */
   if (TARGET_ZARCH
       && register_operand (dest, word_mode)
@@ -4648,6 +4585,110 @@ s390_expand_insv (rtx dest, rtx op1, rtx op2, rtx src)
 	  val >>= putsize;
 	}
       gcc_assert (regpos == bitpos);
+      return true;
+    }
+
+  smode = smallest_mode_for_size (bitsize, MODE_INT);
+  smode_bsize = GET_MODE_BITSIZE (smode);
+  mode_bsize = GET_MODE_BITSIZE (mode);
+
+  /* Generate STORE CHARACTERS UNDER MASK (STCM et al).  */
+  if (bitpos == 0
+      && (bitsize % BITS_PER_UNIT) == 0
+      && MEM_P (dest)
+      && (register_operand (src, word_mode)
+	  || const_int_operand (src, VOIDmode)))
+    {
+      /* Emit standard pattern if possible.  */
+      if (smode_bsize == bitsize)
+	{
+	  emit_move_insn (adjust_address (dest, smode, 0),
+			  gen_lowpart (smode, src));
+	  return true;
+	}
+
+      /* (set (ze (mem)) (const_int)).  */
+      else if (const_int_operand (src, VOIDmode))
+	{
+	  int size = bitsize / BITS_PER_UNIT;
+	  rtx src_mem = adjust_address (force_const_mem (word_mode, src),
+					BLKmode,
+					UNITS_PER_WORD - size);
+
+	  dest = adjust_address (dest, BLKmode, 0);
+	  set_mem_size (dest, size);
+	  s390_expand_movmem (dest, src_mem, GEN_INT (size));
+	  return true;
+	}
+
+      /* (set (ze (mem)) (reg)).  */
+      else if (register_operand (src, word_mode))
+	{
+	  if (bitsize <= 32)
+	    emit_move_insn (gen_rtx_ZERO_EXTRACT (word_mode, dest, op1,
+						  const0_rtx), src);
+	  else
+	    {
+	      /* Emit st,stcmh sequence.  */
+	      int stcmh_width = bitsize - 32;
+	      int size = stcmh_width / BITS_PER_UNIT;
+
+	      emit_move_insn (adjust_address (dest, SImode, size),
+			      gen_lowpart (SImode, src));
+	      set_mem_size (dest, size);
+	      emit_move_insn (gen_rtx_ZERO_EXTRACT (word_mode, dest,
+						    GEN_INT (stcmh_width),
+						    const0_rtx),
+			      gen_rtx_LSHIFTRT (word_mode, src, GEN_INT (32)));
+	    }
+	  return true;
+	}
+    }
+
+  /* Generate INSERT CHARACTERS UNDER MASK (IC, ICM et al).  */
+  if ((bitpos % BITS_PER_UNIT) == 0
+      && (bitsize % BITS_PER_UNIT) == 0
+      && (bitpos & 32) == ((bitpos + bitsize - 1) & 32)
+      && MEM_P (src)
+      && (mode == DImode || mode == SImode)
+      && register_operand (dest, mode))
+    {
+      /* Emit a strict_low_part pattern if possible.  */
+      if (smode_bsize == bitsize && bitpos == mode_bsize - smode_bsize)
+	{
+	  op = gen_rtx_STRICT_LOW_PART (VOIDmode, gen_lowpart (smode, dest));
+	  op = gen_rtx_SET (VOIDmode, op, gen_lowpart (smode, src));
+	  clobber = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCmode, CC_REGNUM));
+	  emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, op, clobber)));
+	  return true;
+	}
+
+      /* ??? There are more powerful versions of ICM that are not
+	 completely represented in the md file.  */
+    }
+
+  /* For z10, generate ROTATE THEN INSERT SELECTED BITS (RISBG et al).  */
+  if (TARGET_Z10 && (mode == DImode || mode == SImode))
+    {
+      enum machine_mode mode_s = GET_MODE (src);
+
+      if (mode_s == VOIDmode)
+	{
+	  /* Assume const_int etc already in the proper mode.  */
+	  src = force_reg (mode, src);
+	}
+      else if (mode_s != mode)
+	{
+	  gcc_assert (GET_MODE_BITSIZE (mode_s) >= bitsize);
+	  src = force_reg (mode_s, src);
+	  src = gen_lowpart (mode, src);
+	}
+
+      op = gen_rtx_ZERO_EXTRACT (mode, dest, op1, op2),
+      op = gen_rtx_SET (VOIDmode, op, src);
+      clobber = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCmode, CC_REGNUM));
+      emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, op, clobber)));
+
       return true;
     }
 
@@ -4717,92 +4758,137 @@ init_alignment_context (struct alignment_context *ac, rtx mem,
       /* As we already have some offset, evaluate the remaining distance.  */
       ac->shift = expand_simple_binop (SImode, MINUS, ac->shift, byteoffset,
 				      NULL_RTX, 1, OPTAB_DIRECT);
-
     }
+
   /* Shift is the byte count, but we need the bitcount.  */
-  ac->shift = expand_simple_binop (SImode, MULT, ac->shift, GEN_INT (BITS_PER_UNIT),
-				  NULL_RTX, 1, OPTAB_DIRECT);
+  ac->shift = expand_simple_binop (SImode, ASHIFT, ac->shift, GEN_INT (3),
+				   NULL_RTX, 1, OPTAB_DIRECT);
+
   /* Calculate masks.  */
   ac->modemask = expand_simple_binop (SImode, ASHIFT,
-				     GEN_INT (GET_MODE_MASK (mode)), ac->shift,
-				     NULL_RTX, 1, OPTAB_DIRECT);
-  ac->modemaski = expand_simple_unop (SImode, NOT, ac->modemask, NULL_RTX, 1);
+				      GEN_INT (GET_MODE_MASK (mode)),
+				      ac->shift, NULL_RTX, 1, OPTAB_DIRECT);
+  ac->modemaski = expand_simple_unop (SImode, NOT, ac->modemask,
+				      NULL_RTX, 1);
+}
+
+/* A subroutine of s390_expand_cs_hqi.  Insert INS into VAL.  If possible,
+   use a single insv insn into SEQ2.  Otherwise, put prep insns in SEQ1 and
+   perform the merge in SEQ2.  */
+
+static rtx
+s390_two_part_insv (struct alignment_context *ac, rtx *seq1, rtx *seq2,
+		    enum machine_mode mode, rtx val, rtx ins)
+{
+  rtx tmp;
+
+  if (ac->aligned)
+    {
+      start_sequence ();
+      tmp = copy_to_mode_reg (SImode, val);
+      if (s390_expand_insv (tmp, GEN_INT (GET_MODE_BITSIZE (mode)),
+			    const0_rtx, ins))
+	{
+	  *seq1 = NULL;
+	  *seq2 = get_insns ();
+	  end_sequence ();
+	  return tmp;
+	}
+      end_sequence ();
+    }
+
+  /* Failed to use insv.  Generate a two part shift and mask.  */
+  start_sequence ();
+  tmp = s390_expand_mask_and_shift (ins, mode, ac->shift);
+  *seq1 = get_insns ();
+  end_sequence ();
+
+  start_sequence ();
+  tmp = expand_simple_binop (SImode, IOR, tmp, val, NULL_RTX, 1, OPTAB_DIRECT);
+  *seq2 = get_insns ();
+  end_sequence ();
+
+  return tmp;
 }
 
 /* Expand an atomic compare and swap operation for HImode and QImode.  MEM is
-   the memory location, CMP the old value to compare MEM with and NEW_RTX the value
-   to set if CMP == MEM.
-   CMP is never in memory for compare_and_swap_cc because
-   expand_bool_compare_and_swap puts it into a register for later compare.  */
+   the memory location, CMP the old value to compare MEM with and NEW_RTX the
+   value to set if CMP == MEM.  */
 
 void
-s390_expand_cs_hqi (enum machine_mode mode, rtx target, rtx mem, rtx cmp, rtx new_rtx)
+s390_expand_cs_hqi (enum machine_mode mode, rtx btarget, rtx vtarget, rtx mem,
+		    rtx cmp, rtx new_rtx, bool is_weak)
 {
   struct alignment_context ac;
-  rtx cmpv, newv, val, resv, cc;
+  rtx cmpv, newv, val, cc, seq0, seq1, seq2, seq3;
   rtx res = gen_reg_rtx (SImode);
-  rtx csloop = gen_label_rtx ();
-  rtx csend = gen_label_rtx ();
+  rtx csloop = NULL, csend = NULL;
 
-  gcc_assert (register_operand (target, VOIDmode));
   gcc_assert (MEM_P (mem));
 
   init_alignment_context (&ac, mem, mode);
-
-  /* Shift the values to the correct bit positions.  */
-  if (!(ac.aligned && MEM_P (cmp)))
-    cmp = s390_expand_mask_and_shift (cmp, mode, ac.shift);
-  if (!(ac.aligned && MEM_P (new_rtx)))
-    new_rtx = s390_expand_mask_and_shift (new_rtx, mode, ac.shift);
 
   /* Load full word.  Subsequent loads are performed by CS.  */
   val = expand_simple_binop (SImode, AND, ac.memsi, ac.modemaski,
 			     NULL_RTX, 1, OPTAB_DIRECT);
 
+  /* Prepare insertions of cmp and new_rtx into the loaded value.  When
+     possible, we try to use insv to make this happen efficiently.  If
+     that fails we'll generate code both inside and outside the loop.  */
+  cmpv = s390_two_part_insv (&ac, &seq0, &seq2, mode, val, cmp);
+  newv = s390_two_part_insv (&ac, &seq1, &seq3, mode, val, new_rtx);
+
+  if (seq0)
+    emit_insn (seq0);
+  if (seq1)
+    emit_insn (seq1);
+
   /* Start CS loop.  */
-  emit_label (csloop);
+  if (!is_weak)
+    {
+      /* Begin assuming success.  */
+      emit_move_insn (btarget, const1_rtx);
+
+      csloop = gen_label_rtx ();
+      csend = gen_label_rtx ();
+      emit_label (csloop);
+    }
+
   /* val = "<mem>00..0<mem>"
    * cmp = "00..0<cmp>00..0"
    * new = "00..0<new>00..0"
    */
 
-  /* Patch cmp and new with val at correct position.  */
-  if (ac.aligned && MEM_P (cmp))
-    {
-      cmpv = force_reg (SImode, val);
-      store_bit_field (cmpv, GET_MODE_BITSIZE (mode), 0,
-		       0, 0, SImode, cmp);
-    }
+  emit_insn (seq2);
+  emit_insn (seq3);
+
+  cc = s390_emit_compare_and_swap (EQ, res, ac.memsi, cmpv, newv);
+  if (is_weak)
+    emit_insn (gen_cstorecc4 (btarget, cc, XEXP (cc, 0), XEXP (cc, 1)));
   else
-    cmpv = force_reg (SImode, expand_simple_binop (SImode, IOR, cmp, val,
-						   NULL_RTX, 1, OPTAB_DIRECT));
-  if (ac.aligned && MEM_P (new_rtx))
     {
-      newv = force_reg (SImode, val);
-      store_bit_field (newv, GET_MODE_BITSIZE (mode), 0,
-		       0, 0, SImode, new_rtx);
+      rtx tmp;
+
+      /* Jump to end if we're done (likely?).  */
+      s390_emit_jump (csend, cc);
+
+      /* Check for changes outside mode, and loop internal if so.
+	 Arrange the moves so that the compare is adjacent to the
+	 branch so that we can generate CRJ.  */
+      tmp = copy_to_reg (val);
+      force_expand_binop (SImode, and_optab, res, ac.modemaski, val,
+			  1, OPTAB_DIRECT);
+      cc = s390_emit_compare (NE, val, tmp);
+      s390_emit_jump (csloop, cc);
+
+      /* Failed.  */
+      emit_move_insn (btarget, const0_rtx);
+      emit_label (csend);
     }
-  else
-    newv = force_reg (SImode, expand_simple_binop (SImode, IOR, new_rtx, val,
-						   NULL_RTX, 1, OPTAB_DIRECT));
-
-  /* Jump to end if we're done (likely?).  */
-  s390_emit_jump (csend, s390_emit_compare_and_swap (EQ, res, ac.memsi,
-						     cmpv, newv));
-
-  /* Check for changes outside mode.  */
-  resv = expand_simple_binop (SImode, AND, res, ac.modemaski,
-			      NULL_RTX, 1, OPTAB_DIRECT);
-  cc = s390_emit_compare (NE, resv, val);
-  emit_move_insn (val, resv);
-  /* Loop internal if so.  */
-  s390_emit_jump (csloop, cc);
-
-  emit_label (csend);
 
   /* Return the correct part of the bitfield.  */
-  convert_move (target, expand_simple_binop (SImode, LSHIFTRT, res, ac.shift,
-					     NULL_RTX, 1, OPTAB_DIRECT), 1);
+  convert_move (vtarget, expand_simple_binop (SImode, LSHIFTRT, res, ac.shift,
+					      NULL_RTX, 1, OPTAB_DIRECT), 1);
 }
 
 /* Expand an atomic operation CODE of mode MODE.  MEM is the memory location

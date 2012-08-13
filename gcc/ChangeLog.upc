@@ -1,3 +1,7 @@
+2012-08-13  Gary Funck  <gary@intrepid.com>
+
+	Merge trunk version 190336 into gupc branch.
+
 2012-08-09  Gary Funck  <gary@intrepid.com>
 
 	* c-family/c-common.c (c_fully_fold_internal): Do not fold

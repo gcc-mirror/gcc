@@ -101,6 +101,9 @@ sbitmap interesting_blocks;
    released after we finish updating the SSA web.  */
 static bitmap names_to_release;
 
+/* VEC of VECs of PHIs to rewrite in a basic block.  Element I corresponds
+   the to basic block with index I.  Allocated once per compilation, *not*
+   released between different functions.  */
 static VEC(gimple_vec, heap) *phis_to_rewrite;
 
 /* The bitmap of non-NULL elements of PHIS_TO_REWRITE.  */
@@ -249,7 +252,7 @@ mark_for_renaming (tree sym)
 static bool
 marked_for_renaming (tree sym)
 {
-  if (!symbols_to_rename_set)
+  if (!symbols_to_rename_set || sym == NULL_TREE)
     return false;
   return bitmap_bit_p (symbols_to_rename_set, DECL_UID (sym));
 }
@@ -310,9 +313,11 @@ get_ssa_name_ann (tree name)
 
   if (ver >= len)
     {
+      unsigned old_len = VEC_length (ssa_name_info_p, info_for_ssa_name);
       unsigned new_len = num_ssa_names;
 
-      VEC_reserve (ssa_name_info_p, heap, info_for_ssa_name, new_len);
+      VEC_reserve (ssa_name_info_p, heap, info_for_ssa_name,
+		   new_len - old_len);
       while (len++ < new_len)
 	{
 	  struct ssa_name_info *info = XCNEW (struct ssa_name_info);
@@ -408,26 +413,32 @@ set_current_def (tree var, tree def)
    for LIVEIN).  */
 
 void
-compute_global_livein (bitmap livein ATTRIBUTE_UNUSED, bitmap def_blocks ATTRIBUTE_UNUSED)
+compute_global_livein (bitmap livein, bitmap def_blocks)
 {
-  basic_block bb, *worklist, *tos;
   unsigned i;
   bitmap_iterator bi;
+  VEC (basic_block, heap) *worklist;
 
-  tos = worklist
-    = (basic_block *) xmalloc (sizeof (basic_block) * (last_basic_block + 1));
+  /* Normally the work list size is bounded by the number of basic
+     blocks in the largest loop.  We don't know this number, but we
+     can be fairly sure that it will be relatively small.  */
+  worklist = VEC_alloc (basic_block, heap, MAX (8, n_basic_blocks / 128));
 
   EXECUTE_IF_SET_IN_BITMAP (livein, 0, i, bi)
-    *tos++ = BASIC_BLOCK (i);
+    VEC_safe_push (basic_block, heap, worklist, BASIC_BLOCK (i));
 
   /* Iterate until the worklist is empty.  */
-  while (tos != worklist)
+  while (! VEC_empty (basic_block, worklist))
     {
       edge e;
       edge_iterator ei;
 
       /* Pull a block off the worklist.  */
-      bb = *--tos;
+      basic_block bb = VEC_pop (basic_block, worklist);
+
+      /* Make sure we have at least enough room in the work list
+	 for all predecessors of this block.  */
+      VEC_reserve (basic_block, heap, worklist, EDGE_COUNT (bb->preds));
 
       /* For each predecessor block.  */
       FOR_EACH_EDGE (e, ei, bb->preds)
@@ -437,16 +448,15 @@ compute_global_livein (bitmap livein ATTRIBUTE_UNUSED, bitmap def_blocks ATTRIBU
 
 	  /* None of this is necessary for the entry block.  */
 	  if (pred != ENTRY_BLOCK_PTR
-	      && ! bitmap_bit_p (livein, pred_index)
-	      && ! bitmap_bit_p (def_blocks, pred_index))
+	      && ! bitmap_bit_p (def_blocks, pred_index)
+	      && bitmap_set_bit (livein, pred_index))
 	    {
-	      *tos++ = pred;
-	      bitmap_set_bit (livein, pred_index);
+	      VEC_quick_push (basic_block, worklist, pred);
 	    }
 	}
     }
 
-  free (worklist);
+  VEC_free (basic_block, heap, worklist);
 }
 
 
@@ -587,7 +597,8 @@ is_old_name (tree name)
   unsigned ver = SSA_NAME_VERSION (name);
   if (!new_ssa_names)
     return false;
-  return ver < new_ssa_names->n_bits && TEST_BIT (old_ssa_names, ver);
+  return (ver < SBITMAP_SIZE (new_ssa_names)
+	  && TEST_BIT (old_ssa_names, ver));
 }
 
 
@@ -599,7 +610,8 @@ is_new_name (tree name)
   unsigned ver = SSA_NAME_VERSION (name);
   if (!new_ssa_names)
     return false;
-  return ver < new_ssa_names->n_bits && TEST_BIT (new_ssa_names, ver);
+  return (ver < SBITMAP_SIZE (new_ssa_names)
+	  && TEST_BIT (new_ssa_names, ver));
 }
 
 
@@ -639,7 +651,7 @@ add_new_name_mapping (tree new_tree, tree old)
 
   /* We may need to grow NEW_SSA_NAMES and OLD_SSA_NAMES because our
      caller may have created new names since the set was created.  */
-  if (new_ssa_names->n_bits <= num_ssa_names - 1)
+  if (SBITMAP_SIZE (new_ssa_names) <= num_ssa_names - 1)
     {
       unsigned int new_sz = num_ssa_names + NAME_SETS_GROWTH_FACTOR;
       new_ssa_names = sbitmap_resize (new_ssa_names, new_sz, 0);
@@ -967,7 +979,7 @@ static void
 mark_phi_for_rewrite (basic_block bb, gimple phi)
 {
   gimple_vec phis;
-  unsigned i, idx = bb->index;
+  unsigned n, idx = bb->index;
 
   if (rewrite_uses_p (phi))
     return;
@@ -978,9 +990,10 @@ mark_phi_for_rewrite (basic_block bb, gimple phi)
     return;
 
   bitmap_set_bit (blocks_with_phis_to_rewrite, idx);
-  VEC_reserve (gimple_vec, heap, phis_to_rewrite, last_basic_block + 1);
-  for (i = VEC_length (gimple_vec, phis_to_rewrite); i <= idx; i++)
-    VEC_quick_push (gimple_vec, phis_to_rewrite, NULL);
+
+  n = (unsigned) last_basic_block + 1;
+  if (VEC_length (gimple_vec, phis_to_rewrite) < n)
+    VEC_safe_grow_cleared (gimple_vec, heap, phis_to_rewrite, n);
 
   phis = VEC_index (gimple_vec, phis_to_rewrite, idx);
   if (!phis)
@@ -1039,10 +1052,8 @@ insert_phi_nodes_for (tree var, bitmap phi_insertion_points, bool update_p)
 	  tree new_lhs;
 
 	  gcc_assert (update_p);
-	  phi = create_phi_node (var, bb);
-
-	  new_lhs = duplicate_ssa_name (var, phi);
-	  gimple_phi_set_result (phi, new_lhs);
+	  new_lhs = duplicate_ssa_name (var, NULL);
+	  phi = create_phi_node (new_lhs, bb);
 	  add_new_name_mapping (new_lhs, var);
 
 	  /* Add VAR to every argument slot of PHI.  We need VAR in
@@ -1325,12 +1336,12 @@ rewrite_debug_stmt_uses (gimple stmt)
    definition of a variable when a new real or virtual definition is found.  */
 
 static void
-rewrite_stmt (gimple_stmt_iterator si)
+rewrite_stmt (gimple_stmt_iterator *si)
 {
   use_operand_p use_p;
   def_operand_p def_p;
   ssa_op_iter iter;
-  gimple stmt = gsi_stmt (si);
+  gimple stmt = gsi_stmt (*si);
 
   /* If mark_def_sites decided that we don't need to rewrite this
      statement, ignore it.  */
@@ -1364,9 +1375,24 @@ rewrite_stmt (gimple_stmt_iterator si)
     FOR_EACH_SSA_DEF_OPERAND (def_p, stmt, iter, SSA_OP_ALL_DEFS)
       {
 	tree var = DEF_FROM_PTR (def_p);
-	tree name = make_ssa_name (var, stmt);
+	tree name;
 	tree tracked_var;
+
 	gcc_assert (DECL_P (var));
+
+	if (gimple_clobber_p (stmt)
+	    && is_gimple_reg (var))
+	  {
+	    /* If we rewrite a DECL into SSA form then drop its
+	       clobber stmts and replace uses with a new default def.  */
+	    gcc_assert (TREE_CODE (var) == VAR_DECL
+			&& !gimple_vdef (stmt));
+	    gsi_replace (si, gimple_build_nop (), true);
+	    register_new_def (get_or_create_ssa_default_def (cfun, var), var);
+	    break;
+	  }
+
+	name = make_ssa_name (var, stmt);
 	SET_DEF (def_p, name);
 	register_new_def (DEF_FROM_PTR (def_p), var);
 
@@ -1374,7 +1400,7 @@ rewrite_stmt (gimple_stmt_iterator si)
 	if (tracked_var)
 	  {
 	    gimple note = gimple_build_debug_bind (tracked_var, name, stmt);
-	    gsi_insert_after (&si, note, GSI_SAME_STMT);
+	    gsi_insert_after (si, note, GSI_SAME_STMT);
 	  }
       }
 }
@@ -1441,7 +1467,7 @@ rewrite_enter_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
      of a variable when a new real or virtual definition is found.  */
   if (TEST_BIT (interesting_blocks, bb->index))
     for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-      rewrite_stmt (gsi);
+      rewrite_stmt (&gsi);
 
   /* Step 3.  Visit all the successor blocks of BB looking for PHI nodes.
      For every PHI node found, add a new argument containing the current
@@ -2372,6 +2398,7 @@ rewrite_into_ssa (void)
 {
   bitmap_head *dfs;
   basic_block bb;
+  unsigned i;
 
   /* Initialize operand data structures.  */
   init_ssa_operands (cfun);
@@ -2411,6 +2438,25 @@ rewrite_into_ssa (void)
   sbitmap_free (interesting_blocks);
 
   fini_ssa_renamer ();
+
+  /* Try to get rid of all gimplifier generated temporaries by making
+     its SSA names anonymous.  This way we can garbage collect them
+     all after removing unused locals which we do in our TODO.  */
+  for (i = 1; i < num_ssa_names; ++i)
+    {
+      tree decl, name = ssa_name (i);
+      if (!name
+	  || SSA_NAME_IS_DEFAULT_DEF (name))
+	continue;
+      decl = SSA_NAME_VAR (name);
+      if (decl
+	  && TREE_CODE (decl) == VAR_DECL
+	  && !VAR_DECL_IS_VIRTUAL_OPERAND (decl)
+	  && DECL_ARTIFICIAL (decl)
+	  && DECL_IGNORED_P (decl)
+	  && !DECL_NAME (decl))
+	SET_SSA_NAME_VAR_OR_IDENTIFIER (name, NULL_TREE);
+    }
 
   return 0;
 }
@@ -2535,14 +2581,12 @@ prepare_block_for_update (basic_block bb, bool insert_phi_p)
       gimple phi = gsi_stmt (si);
       tree lhs_sym, lhs = gimple_phi_result (phi);
 
-      lhs_sym = DECL_P (lhs) ? lhs : SSA_NAME_VAR (lhs);
-
       if (TREE_CODE (lhs) == SSA_NAME
-	  && (TREE_CODE (lhs_sym) != VAR_DECL
-	      || !VAR_DECL_IS_VIRTUAL_OPERAND (lhs_sym)
-	      || !cfun->gimple_df->rename_vops))
+	  && (! virtual_operand_p (lhs)
+	      || ! cfun->gimple_df->rename_vops))
 	continue;
 
+      lhs_sym = DECL_P (lhs) ? lhs : SSA_NAME_VAR (lhs);
       mark_for_renaming (lhs_sym);
       mark_def_interesting (lhs_sym, phi, bb, insert_phi_p);
 
@@ -3132,6 +3176,12 @@ update_ssa (unsigned update_flags)
   sbitmap_iterator sbi;
   tree sym;
 
+  /* Only one update flag should be set.  */
+  gcc_assert (update_flags == TODO_update_ssa
+              || update_flags == TODO_update_ssa_no_phi
+	      || update_flags == TODO_update_ssa_full_phi
+	      || update_flags == TODO_update_ssa_only_virtuals);
+
   if (!need_ssa_update_p (cfun))
     return;
 
@@ -3142,30 +3192,24 @@ update_ssa (unsigned update_flags)
 
   if (!update_ssa_initialized_fn)
     init_update_ssa (cfun);
+  else if (update_flags == TODO_update_ssa_only_virtuals)
+    {
+      /* If we only need to update virtuals, remove all the mappings for
+	 real names before proceeding.  The caller is responsible for
+	 having dealt with the name mappings before calling update_ssa.  */
+      sbitmap_zero (old_ssa_names);
+      sbitmap_zero (new_ssa_names);
+    }
+
   gcc_assert (update_ssa_initialized_fn == cfun);
 
   blocks_with_phis_to_rewrite = BITMAP_ALLOC (NULL);
   if (!phis_to_rewrite)
-    phis_to_rewrite = VEC_alloc (gimple_vec, heap, last_basic_block);
+    phis_to_rewrite = VEC_alloc (gimple_vec, heap, last_basic_block + 1);
   blocks_to_update = BITMAP_ALLOC (NULL);
 
   /* Ensure that the dominance information is up-to-date.  */
   calculate_dominance_info (CDI_DOMINATORS);
-
-  /* Only one update flag should be set.  */
-  gcc_assert (update_flags == TODO_update_ssa
-              || update_flags == TODO_update_ssa_no_phi
-	      || update_flags == TODO_update_ssa_full_phi
-	      || update_flags == TODO_update_ssa_only_virtuals);
-
-  /* If we only need to update virtuals, remove all the mappings for
-     real names before proceeding.  The caller is responsible for
-     having dealt with the name mappings before calling update_ssa.  */
-  if (update_flags == TODO_update_ssa_only_virtuals)
-    {
-      sbitmap_zero (old_ssa_names);
-      sbitmap_zero (new_ssa_names);
-    }
 
   insert_phi_p = (update_flags != TODO_update_ssa_no_phi);
 
@@ -3235,7 +3279,7 @@ update_ssa (unsigned update_flags)
 	     will grow while we are traversing it (but it will not
 	     gain any new members).  Copy OLD_SSA_NAMES to a temporary
 	     for traversal.  */
-	  sbitmap tmp = sbitmap_alloc (old_ssa_names->n_bits);
+	  sbitmap tmp = sbitmap_alloc (SBITMAP_SIZE (old_ssa_names));
 	  sbitmap_copy (tmp, old_ssa_names);
 	  EXECUTE_IF_SET_IN_SBITMAP (tmp, 0, i, sbi)
 	    insert_updated_phi_nodes_for (ssa_name (i), dfs, blocks_to_update,

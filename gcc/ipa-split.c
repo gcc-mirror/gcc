@@ -157,6 +157,7 @@ test_nonssa_use (gimple stmt ATTRIBUTE_UNUSED, tree t, void *data)
      to pretend that the value pointed to is actual result decl.  */
   if ((TREE_CODE (t) == MEM_REF || INDIRECT_REF_P (t))
       && TREE_CODE (TREE_OPERAND (t, 0)) == SSA_NAME
+      && SSA_NAME_VAR (TREE_OPERAND (t, 0))
       && TREE_CODE (SSA_NAME_VAR (TREE_OPERAND (t, 0))) == RESULT_DECL
       && DECL_BY_REFERENCE (DECL_RESULT (current_function_decl)))
     return
@@ -525,6 +526,7 @@ consider_split (struct split_point *current, bitmap non_ssa_vars,
   /* Special case is value returned by reference we record as if it was non-ssa
      set to result_decl.  */
   else if (TREE_CODE (retval) == SSA_NAME
+	   && SSA_NAME_VAR (retval)
 	   && TREE_CODE (SSA_NAME_VAR (retval)) == RESULT_DECL
 	   && DECL_BY_REFERENCE (DECL_RESULT (current_function_decl)))
     current->split_part_set_retval
@@ -698,6 +700,7 @@ mark_nonssa_use (gimple stmt ATTRIBUTE_UNUSED, tree t, void *data)
      to pretend that the value pointed to is actual result decl.  */
   if ((TREE_CODE (t) == MEM_REF || INDIRECT_REF_P (t))
       && TREE_CODE (TREE_OPERAND (t, 0)) == SSA_NAME
+      && SSA_NAME_VAR (TREE_OPERAND (t, 0))
       && TREE_CODE (SSA_NAME_VAR (TREE_OPERAND (t, 0))) == RESULT_DECL
       && DECL_BY_REFERENCE (DECL_RESULT (current_function_decl)))
     return
@@ -1267,7 +1270,7 @@ split_function (struct split_point *split_point)
 	      if (TREE_CODE (retval) == SSA_NAME
 		  && !DECL_BY_REFERENCE (DECL_RESULT (current_function_decl)))
 		{
-		  retval = make_ssa_name (SSA_NAME_VAR (retval), call);
+		  retval = copy_ssa_name (retval, call);
 
 		  /* See if there is PHI defining return value.  */
 		  for (psi = gsi_start_phis (return_bb);

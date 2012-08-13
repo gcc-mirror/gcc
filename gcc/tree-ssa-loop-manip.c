@@ -55,13 +55,18 @@ create_iv (tree base, tree step, tree var, struct loop *loop,
   enum tree_code incr_op = PLUS_EXPR;
   edge pe = loop_preheader_edge (loop);
 
-  if (!var)
-    var = create_tmp_var (TREE_TYPE (base), "ivtmp");
-
-  vb = make_ssa_name (var, NULL);
+  if (var != NULL_TREE)
+    {
+      vb = make_ssa_name (var, NULL);
+      va = make_ssa_name (var, NULL);
+    }
+  else
+    {
+      vb = make_temp_ssa_name (TREE_TYPE (base), NULL, "ivtmp");
+      va = make_temp_ssa_name (TREE_TYPE (base), NULL, "ivtmp");
+    }
   if (var_before)
     *var_before = vb;
-  va = make_ssa_name (var, NULL);
   if (var_after)
     *var_after = va;
 
@@ -116,7 +121,6 @@ create_iv (tree base, tree step, tree var, struct loop *loop,
     gsi_insert_seq_on_edge_immediate (pe, stmts);
 
   stmt = create_phi_node (vb, loop->header);
-  SSA_NAME_DEF_STMT (vb) = stmt;
   add_phi_arg (stmt, initial, loop_preheader_edge (loop), UNKNOWN_LOCATION);
   add_phi_arg (stmt, va, loop_latch_edge (loop), UNKNOWN_LOCATION);
 }
@@ -144,9 +148,8 @@ add_exit_phis_edge (basic_block exit, tree use)
   if (!e)
     return;
 
-  phi = create_phi_node (use, exit);
-  create_new_def_for (gimple_phi_result (phi), phi,
-		      gimple_phi_result_ptr (phi));
+  phi = create_phi_node (NULL_TREE, exit);
+  create_new_def_for (use, phi, gimple_phi_result_ptr (phi));
   FOR_EACH_EDGE (e, ei, exit->preds)
     add_phi_arg (phi, use, e, UNKNOWN_LOCATION);
 }
@@ -162,10 +165,8 @@ add_exit_phis_var (tree var, bitmap livein, bitmap exits)
   basic_block def_bb = gimple_bb (SSA_NAME_DEF_STMT (var));
   bitmap_iterator bi;
 
-  if (is_gimple_reg (var))
-    bitmap_clear_bit (livein, def_bb->index);
-  else
-    bitmap_set_bit (livein, def_bb->index);
+  gcc_checking_assert (is_gimple_reg (var));
+  bitmap_clear_bit (livein, def_bb->index);
 
   def = BITMAP_ALLOC (NULL);
   bitmap_set_bit (def, def_bb->index);
@@ -274,7 +275,7 @@ find_uses_to_rename_stmt (gimple stmt, bitmap *use_blocks, bitmap need_phis)
   if (is_gimple_debug (stmt))
     return;
 
-  FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, SSA_OP_ALL_USES)
+  FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, SSA_OP_USE)
     find_uses_to_rename_use (bb, var, use_blocks, need_phis);
 }
 
@@ -499,7 +500,6 @@ split_loop_exit_edge (edge exit)
 	 of the SSA name out of the loop.  */
       new_name = duplicate_ssa_name (name, NULL);
       new_phi = create_phi_node (new_name, bb);
-      SSA_NAME_DEF_STMT (new_name) = new_phi;
       add_phi_arg (new_phi, name, exit, locus);
       SET_USE (op_p, new_name);
     }
@@ -880,7 +880,7 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
   enum tree_code exit_cmp;
   gimple phi_old_loop, phi_new_loop, phi_rest;
   gimple_stmt_iterator psi_old_loop, psi_new_loop;
-  tree init, next, new_init, var;
+  tree init, next, new_init;
   struct loop *new_loop;
   basic_block rest, exit_bb;
   edge old_entry, new_entry, old_latch, precond_edge, new_exit;
@@ -1000,19 +1000,17 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
       if (TREE_CODE (next) == SSA_NAME
 	  && useless_type_conversion_p (TREE_TYPE (next),
 					TREE_TYPE (init)))
-	var = SSA_NAME_VAR (next);
+	new_init = copy_ssa_name (next, NULL);
       else if (TREE_CODE (init) == SSA_NAME
 	       && useless_type_conversion_p (TREE_TYPE (init),
 					     TREE_TYPE (next)))
-	var = SSA_NAME_VAR (init);
+	new_init = copy_ssa_name (init, NULL);
       else if (useless_type_conversion_p (TREE_TYPE (next), TREE_TYPE (init)))
-	var = create_tmp_var (TREE_TYPE (next), "unrinittmp");
+	new_init = make_temp_ssa_name (TREE_TYPE (next), NULL, "unrinittmp");
       else
-	var = create_tmp_var (TREE_TYPE (init), "unrinittmp");
+	new_init = make_temp_ssa_name (TREE_TYPE (init), NULL, "unrinittmp");
 
-      new_init = make_ssa_name (var, NULL);
       phi_rest = create_phi_node (new_init, rest);
-      SSA_NAME_DEF_STMT (new_init) = phi_rest;
 
       add_phi_arg (phi_rest, init, precond_edge, UNKNOWN_LOCATION);
       add_phi_arg (phi_rest, next, new_exit, UNKNOWN_LOCATION);

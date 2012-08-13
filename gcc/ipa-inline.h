@@ -28,9 +28,18 @@ along with GCC; see the file COPYING3.  If not see
 
 typedef struct GTY(()) condition
   {
+    /* If agg_contents is set, this is the offset from which the used data was
+       loaded.  */
+    HOST_WIDE_INT offset;
     tree val;
     int operand_num;
-    enum tree_code code;
+    ENUM_BITFIELD(tree_code) code : 16;
+    /* Set if the used data were loaded from an aggregate parameter or from
+       data received by reference.  */
+    unsigned agg_contents : 1;
+    /* If agg_contents is set, this differentiates between loads from data
+       passed by reference and by value.  */
+    unsigned by_ref : 1;
   } condition;
 
 DEF_VEC_O (condition);
@@ -162,7 +171,7 @@ void dump_inline_summaries (FILE *f);
 void dump_inline_summary (FILE * f, struct cgraph_node *node);
 void inline_generate_summary (void);
 void inline_read_summary (void);
-void inline_write_summary (cgraph_node_set, varpool_node_set);
+void inline_write_summary (void);
 void inline_free_summary (void);
 void initialize_inline_failed (struct cgraph_edge *);
 int estimate_time_after_inlining (struct cgraph_node *, struct cgraph_edge *);
@@ -173,6 +182,7 @@ void estimate_ipcp_clone_size_and_time (struct cgraph_node *,
 					int *, int *);
 int do_estimate_growth (struct cgraph_node *);
 void inline_merge_summary (struct cgraph_edge *edge);
+void inline_update_overall_summary (struct cgraph_node *node);
 int do_estimate_edge_growth (struct cgraph_edge *edge);
 int do_estimate_edge_time (struct cgraph_edge *edge);
 void initialize_growth_caches (void);
@@ -180,7 +190,7 @@ void free_growth_caches (void);
 void compute_inline_parameters (struct cgraph_node *, bool);
 
 /* In ipa-inline-transform.c  */
-bool inline_call (struct cgraph_edge *, bool, VEC (cgraph_edge_p, heap) **, int *);
+bool inline_call (struct cgraph_edge *, bool, VEC (cgraph_edge_p, heap) **, int *, bool);
 unsigned int inline_transform (struct cgraph_node *);
 void clone_inlined_nodes (struct cgraph_edge *e, bool, bool, int *);
 

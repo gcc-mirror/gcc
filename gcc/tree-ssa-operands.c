@@ -126,17 +126,6 @@ static void get_expr_operands (gimple, tree *, int);
 /* Number of functions with initialized ssa_operands.  */
 static int n_initialized = 0;
 
-/* Return the DECL_UID of the base variable of T.  */
-
-static inline unsigned
-get_name_decl (const_tree t)
-{
-  if (TREE_CODE (t) != SSA_NAME)
-    return DECL_UID (t);
-  else
-    return DECL_UID (SSA_NAME_VAR (t));
-}
-
 
 /*  Return true if the SSA operands cache is active.  */
 
@@ -626,19 +615,11 @@ add_virtual_operand (gimple stmt ATTRIBUTE_UNUSED, int flags)
 static void
 add_stmt_operand (tree *var_p, gimple stmt, int flags)
 {
-  tree var, sym;
+  tree var = *var_p;
 
   gcc_assert (SSA_VAR_P (*var_p));
 
-  var = *var_p;
-  sym = (TREE_CODE (var) == SSA_NAME ? SSA_NAME_VAR (var) : var);
-
-  /* Mark statements with volatile operands.  */
-  if (!(flags & opf_no_vops)
-      && TREE_THIS_VOLATILE (sym))
-    gimple_set_has_volatile_ops (stmt, true);
-
-  if (is_gimple_reg (sym))
+  if (is_gimple_reg (var))
     {
       /* The variable is a GIMPLE register.  Add it to real operands.  */
       if (flags & opf_def)
@@ -647,7 +628,15 @@ add_stmt_operand (tree *var_p, gimple stmt, int flags)
 	append_use (var_p);
     }
   else
-    add_virtual_operand (stmt, flags);
+    {
+      /* Mark statements with volatile operands.  */
+      if (!(flags & opf_no_vops)
+	  && TREE_THIS_VOLATILE (var))
+	gimple_set_has_volatile_ops (stmt, true);
+
+      /* The variable is a memory access.  Add virtual operands.  */
+      add_virtual_operand (stmt, flags);
+    }
 }
 
 /* Mark the base address of REF as having its address taken.
@@ -1431,6 +1420,24 @@ debug_immediate_uses_for (tree var)
   dump_immediate_uses_for (stderr, var);
 }
 
+
+/* Return true if OP, an SSA name or a DECL is a virtual operand.  */
+
+bool
+virtual_operand_p (tree op)
+{
+  if (TREE_CODE (op) == SSA_NAME)
+    {
+      op = SSA_NAME_VAR (op);
+      if (!op)
+	return false;
+    }
+
+  if (TREE_CODE (op) == VAR_DECL)
+    return VAR_DECL_IS_VIRTUAL_OPERAND (op);
+
+  return false;
+}
 
 /* Unlink STMTs virtual definition from the IL by propagating its use.  */
 

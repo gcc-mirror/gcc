@@ -273,6 +273,10 @@ struct GTY(()) cgraph_node {
   unsigned tm_clone : 1;
 };
 
+DEF_VEC_P(symtab_node);
+DEF_VEC_ALLOC_P(symtab_node,heap);
+DEF_VEC_ALLOC_P(symtab_node,gc);
+
 typedef struct cgraph_node *cgraph_node_ptr;
 
 DEF_VEC_P(cgraph_node_ptr);
@@ -338,9 +342,11 @@ typedef enum cgraph_inline_failed_enum {
 
 struct GTY(()) cgraph_indirect_call_info
 {
-  /* Offset accumulated from ancestor jump functions of inlined call graph
-     edges.  */
-  HOST_WIDE_INT anc_offset;
+  /* When polymorphic is set, this field contains offset where the object which
+     was actually used in the polymorphic resides within a larger structure.
+     If agg_contents is set, the field contains the offset within the aggregate
+     from which the address to call was loaded.  */
+  HOST_WIDE_INT offset;
   /* OBJ_TYPE_REF_TOKEN of a polymorphic call (if polymorphic is set).  */
   HOST_WIDE_INT otr_token;
   /* Type of the object from OBJ_TYPE_REF_OBJECT. */
@@ -353,6 +359,12 @@ struct GTY(()) cgraph_indirect_call_info
   /* Set when the call is a virtual call with the parameter being the
      associated object pointer rather than a simple direct call.  */
   unsigned polymorphic : 1;
+  /* Set when the call is a call of a pointer loaded from contents of an
+     aggregate at offset.  */
+  unsigned agg_contents : 1;
+  /* When the previous bit is set, this one determines whether the destination
+     is loaded from a parameter passed by reference. */
+  unsigned by_ref : 1;
 };
 
 struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"))) cgraph_edge {

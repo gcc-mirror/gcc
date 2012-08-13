@@ -652,7 +652,7 @@ free_aux_for_edges (void)
 DEBUG_FUNCTION void
 debug_bb (basic_block bb)
 {
-  dump_bb (stderr, bb, 0, dump_flags | TDF_BLOCKS);
+  dump_bb (stderr, bb, 0, dump_flags);
 }
 
 DEBUG_FUNCTION basic_block

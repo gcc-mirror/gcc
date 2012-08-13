@@ -391,8 +391,7 @@ generate_memset_builtin (struct loop *loop, partition_t partition)
       else if (!useless_type_conversion_p (integer_type_node, TREE_TYPE (val)))
 	{
 	  gimple cstmt;
-	  tree tem = create_tmp_reg (integer_type_node, NULL);
-	  tem = make_ssa_name (tem, NULL);
+	  tree tem = make_ssa_name (integer_type_node, NULL);
 	  cstmt = gimple_build_assign_with_ops (NOP_EXPR, tem, val, NULL_TREE);
 	  gsi_insert_after (&gsi, cstmt, GSI_CONTINUE_LINKING);
 	  val = tem;

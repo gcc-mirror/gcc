@@ -3941,7 +3941,6 @@ bump_vector_ptr (tree dataref_ptr, gimple ptr_incr, gimple_stmt_iterator *gsi,
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
-  tree ptr_var = SSA_NAME_VAR (dataref_ptr);
   tree update = TYPE_SIZE_UNIT (vectype);
   gimple incr_stmt;
   ssa_op_iter iter;
@@ -3951,10 +3950,9 @@ bump_vector_ptr (tree dataref_ptr, gimple ptr_incr, gimple_stmt_iterator *gsi,
   if (bump)
     update = bump;
 
-  incr_stmt = gimple_build_assign_with_ops (POINTER_PLUS_EXPR, ptr_var,
+  new_dataref_ptr = copy_ssa_name (dataref_ptr, NULL);
+  incr_stmt = gimple_build_assign_with_ops (POINTER_PLUS_EXPR, new_dataref_ptr,
 					    dataref_ptr, update);
-  new_dataref_ptr = make_ssa_name (ptr_var, incr_stmt);
-  gimple_assign_set_lhs (incr_stmt, new_dataref_ptr);
   vect_finish_stmt_generation (stmt, incr_stmt, gsi);
 
   /* Copy the points-to information if it exists. */
@@ -4131,7 +4129,7 @@ vect_permute_store_chain (VEC(tree,heap) *dr_chain,
 			  gimple_stmt_iterator *gsi,
 			  VEC(tree,heap) **result_chain)
 {
-  tree perm_dest, vect1, vect2, high, low;
+  tree vect1, vect2, high, low;
   gimple perm_stmt;
   tree vectype = STMT_VINFO_VECTYPE (vinfo_for_stmt (stmt));
   tree perm_mask_low, perm_mask_high;
@@ -4163,8 +4161,7 @@ vect_permute_store_chain (VEC(tree,heap) *dr_chain,
 
 	  /* Create interleaving stmt:
 	     high = VEC_PERM_EXPR <vect1, vect2, {0, nelt, 1, nelt+1, ...}>  */
-	  perm_dest = create_tmp_reg (vectype, "vect_inter_high");
-	  high = make_ssa_name (perm_dest, NULL);
+	  high = make_temp_ssa_name (vectype, NULL, "vect_inter_high");
 	  perm_stmt
 	    = gimple_build_assign_with_ops3 (VEC_PERM_EXPR, high,
 					     vect1, vect2, perm_mask_high);
@@ -4174,8 +4171,7 @@ vect_permute_store_chain (VEC(tree,heap) *dr_chain,
 	  /* Create interleaving stmt:
 	     low = VEC_PERM_EXPR <vect1, vect2, {nelt/2, nelt*3/2, nelt/2+1,
 						 nelt*3/2+1, ...}>  */
-	  perm_dest = create_tmp_reg (vectype, "vect_inter_low");
-	  low = make_ssa_name (perm_dest, NULL);
+	  low = make_temp_ssa_name (vectype, NULL, "vect_inter_low");
 	  perm_stmt
 	    = gimple_build_assign_with_ops3 (VEC_PERM_EXPR, low,
 					     vect1, vect2, perm_mask_low);
@@ -4356,12 +4352,11 @@ vect_setup_realignment (gimple stmt, gimple_stmt_iterator *gsi,
       ptr = vect_create_data_ref_ptr (stmt, vectype, loop_for_initial_load,
 				      NULL_TREE, &init_addr, NULL, &inc,
 				      true, &inv_p);
+      new_temp = copy_ssa_name (ptr, NULL);
       new_stmt = gimple_build_assign_with_ops
-		   (BIT_AND_EXPR, NULL_TREE, ptr,
+		   (BIT_AND_EXPR, new_temp, ptr,
 		    build_int_cst (TREE_TYPE (ptr),
 				   -(HOST_WIDE_INT)TYPE_ALIGN_UNIT (vectype)));
-      new_temp = make_ssa_name (SSA_NAME_VAR (ptr), new_stmt);
-      gimple_assign_set_lhs (new_stmt, new_temp);
       new_bb = gsi_insert_on_edge_immediate (pe, new_stmt);
       gcc_assert (!new_bb);
       data_ref
@@ -4446,7 +4441,6 @@ vect_setup_realignment (gimple stmt, gimple_stmt_iterator *gsi,
   vec_dest = vect_create_destination_var (scalar_dest, vectype);
   msq = make_ssa_name (vec_dest, NULL);
   phi_stmt = create_phi_node (msq, containing_loop->header);
-  SSA_NAME_DEF_STMT (msq) = phi_stmt;
   add_phi_arg (phi_stmt, msq_init, pe, UNKNOWN_LOCATION);
 
   return msq;
@@ -4588,7 +4582,7 @@ vect_permute_load_chain (VEC(tree,heap) *dr_chain,
 			 gimple_stmt_iterator *gsi,
 			 VEC(tree,heap) **result_chain)
 {
-  tree perm_dest, data_ref, first_vect, second_vect;
+  tree data_ref, first_vect, second_vect;
   tree perm_mask_even, perm_mask_odd;
   gimple perm_stmt;
   tree vectype = STMT_VINFO_VECTYPE (vinfo_for_stmt (stmt));
@@ -4616,29 +4610,19 @@ vect_permute_load_chain (VEC(tree,heap) *dr_chain,
 	  second_vect = VEC_index (tree, dr_chain, j+1);
 
 	  /* data_ref = permute_even (first_data_ref, second_data_ref);  */
-	  perm_dest = create_tmp_reg (vectype, "vect_perm_even");
-
-	  perm_stmt = gimple_build_assign_with_ops3 (VEC_PERM_EXPR, perm_dest,
+	  data_ref = make_temp_ssa_name (vectype, NULL, "vect_perm_even");
+	  perm_stmt = gimple_build_assign_with_ops3 (VEC_PERM_EXPR, data_ref,
 						     first_vect, second_vect,
 						     perm_mask_even);
-
-	  data_ref = make_ssa_name (perm_dest, perm_stmt);
-	  gimple_assign_set_lhs (perm_stmt, data_ref);
 	  vect_finish_stmt_generation (stmt, perm_stmt, gsi);
-
 	  VEC_replace (tree, *result_chain, j/2, data_ref);
 
 	  /* data_ref = permute_odd (first_data_ref, second_data_ref);  */
-	  perm_dest = create_tmp_reg (vectype, "vect_perm_odd");
-
-	  perm_stmt = gimple_build_assign_with_ops3 (VEC_PERM_EXPR, perm_dest,
+	  data_ref = make_temp_ssa_name (vectype, NULL, "vect_perm_odd");
+	  perm_stmt = gimple_build_assign_with_ops3 (VEC_PERM_EXPR, data_ref,
 						     first_vect, second_vect,
 						     perm_mask_odd);
-
-	  data_ref = make_ssa_name (perm_dest, perm_stmt);
-	  gimple_assign_set_lhs (perm_stmt, data_ref);
 	  vect_finish_stmt_generation (stmt, perm_stmt, gsi);
-
 	  VEC_replace (tree, *result_chain, j/2+length/2, data_ref);
 	}
       dr_chain = VEC_copy (tree, heap, *result_chain);

@@ -249,6 +249,13 @@ target_for_debug_bind (tree var)
   if (!MAY_HAVE_DEBUG_STMTS)
     return NULL_TREE;
 
+  if (TREE_CODE (var) == SSA_NAME)
+    {
+      var = SSA_NAME_VAR (var);
+      if (var == NULL_TREE)
+	return NULL_TREE;
+    }
+
   if ((TREE_CODE (var) != VAR_DECL
        || VAR_DECL_IS_VIRTUAL_OPERAND (var))
       && TREE_CODE (var) != PARM_DECL)
@@ -622,7 +629,8 @@ verify_ssa_name (tree ssa_name, bool is_virtual)
       return true;
     }
 
-  if (TREE_TYPE (ssa_name) != TREE_TYPE (SSA_NAME_VAR (ssa_name)))
+  if (SSA_NAME_VAR (ssa_name) != NULL_TREE
+      && TREE_TYPE (ssa_name) != TREE_TYPE (ssa_name))
     {
       error ("type mismatch between an SSA_NAME and its symbol");
       return true;
@@ -681,7 +689,8 @@ verify_def (basic_block bb, basic_block *definition_block, tree ssa_name,
   if (verify_ssa_name (ssa_name, is_virtual))
     goto err;
 
-  if (TREE_CODE (SSA_NAME_VAR (ssa_name)) == RESULT_DECL
+  if (SSA_NAME_VAR (ssa_name)
+      && TREE_CODE (SSA_NAME_VAR (ssa_name)) == RESULT_DECL
       && DECL_BY_REFERENCE (SSA_NAME_VAR (ssa_name)))
     {
       error ("RESULT_DECL should be read only when DECL_BY_REFERENCE is set");

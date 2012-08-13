@@ -1,3 +1,22 @@
+2012-08-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54221
+	* trans-decl.c (gfc_finish_var_decl, build_function_decl):
+	Fix setting private module vars/procs as TREE_PUBLIC(...) = 0.
+
+2012-08-09  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54199
+	* intrinsic.c (gfc_warn_intrinsic_shadow): Better warning
+	for internal procedures.
+
+2012-08-06  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/35831
+	* interface.c (check_result_characteristics): New function, which checks
+	the characteristics of function results.
+	(gfc_compare_interfaces,gfc_check_typebound_override): Call it.
+
 2012-08-02  Thomas König  <tkoenig@gcc.gnu.org>
 
 	 PR fortran/54033

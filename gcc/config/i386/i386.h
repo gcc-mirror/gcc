@@ -78,6 +78,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_HLE	OPTION_ISA_HLE
 #define TARGET_RDSEED	OPTION_ISA_RDSEED
 #define TARGET_PRFCHW	OPTION_ISA_PRFCHW
+#define TARGET_ADX	OPTION_ISA_ADX
 
 #define TARGET_LP64	OPTION_ABI_64
 #define TARGET_X32	OPTION_ABI_X32
@@ -1297,9 +1298,9 @@ enum reg_class
 { 0x1fe00100,0x1fe000 },		/* FP_TOP_SSE_REG */		\
 { 0x1fe00200,0x1fe000 },		/* FP_SECOND_SSE_REG */		\
 { 0x1fe0ff00,0x1fe000 },		/* FLOAT_SSE_REGS */		\
-   { 0x1ffff,  0x1fe0 },		/* FLOAT_INT_REGS */		\
-{ 0x1fe100ff,0x1fffe0 },		/* INT_SSE_REGS */		\
-{ 0x1fe1ffff,0x1fffe0 },		/* FLOAT_INT_SSE_REGS */	\
+  { 0x11ffff,  0x1fe0 },		/* FLOAT_INT_REGS */		\
+{ 0x1ff100ff,0x1fffe0 },		/* INT_SSE_REGS */		\
+{ 0x1ff1ffff,0x1fffe0 },		/* FLOAT_INT_SSE_REGS */	\
 { 0xffffffff,0x1fffff }							\
 }
 
@@ -1377,13 +1378,27 @@ enum reg_class
 
 /* Place additional restrictions on the register class to use when it
    is necessary to be able to hold a value of mode MODE in a reload
-   register for which class CLASS would ordinarily be used.  */
+   register for which class CLASS would ordinarily be used.
 
-#define LIMIT_RELOAD_CLASS(MODE, CLASS) 			\
-  ((MODE) == QImode && !TARGET_64BIT				\
-   && ((CLASS) == ALL_REGS || (CLASS) == GENERAL_REGS		\
-       || (CLASS) == LEGACY_REGS || (CLASS) == INDEX_REGS)	\
-   ? Q_REGS : (CLASS))
+   We avoid classes containing registers from multiple units due to
+   the limitation in ix86_secondary_memory_needed.  We limit these
+   classes to their "natural mode" single unit register class, depending
+   on the unit availability.
+
+   Please note that reg_class_subset_p is not commutative, so these
+   conditions mean "... if (CLASS) includes ALL registers from the
+   register set."  */
+
+#define LIMIT_RELOAD_CLASS(MODE, CLASS)					\
+  (((MODE) == QImode && !TARGET_64BIT					\
+    && reg_class_subset_p (Q_REGS, (CLASS))) ? Q_REGS			\
+   : (((MODE) == SImode || (MODE) == DImode)				\
+      && reg_class_subset_p (GENERAL_REGS, (CLASS))) ? GENERAL_REGS	\
+   : (SSE_FLOAT_MODE_P (MODE) && TARGET_SSE_MATH			\
+      && reg_class_subset_p (SSE_REGS, (CLASS))) ? SSE_REGS		\
+   : (X87_FLOAT_MODE_P (MODE)						\
+      && reg_class_subset_p (FLOAT_REGS, (CLASS))) ? FLOAT_REGS		\
+   : (CLASS))
 
 /* If we are copying between general and FP registers, we need a memory
    location. The same is true for SSE and MMX registers.  */

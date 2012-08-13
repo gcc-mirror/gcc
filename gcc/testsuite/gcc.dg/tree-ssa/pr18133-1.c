@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-optimized-details" } */
+/* { dg-options "-O1 -fdump-tree-optimized-blocks-details" } */
 
 void foo (void)
 {

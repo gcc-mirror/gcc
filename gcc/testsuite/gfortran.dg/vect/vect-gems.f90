@@ -5,9 +5,9 @@ MODULE UPML_mod
 
 IMPLICIT NONE
 
-PUBLIC UPMLupdateE
-
-PRIVATE
+!PUBLIC UPMLupdateE
+!
+!PRIVATE
 
 real(kind=8), dimension(:,:,:), allocatable :: Dx_ilow
 

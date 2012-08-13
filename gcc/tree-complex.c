@@ -488,15 +488,18 @@ get_component_ssa_name (tree ssa_name, bool imag_p)
   ret = VEC_index (tree, complex_ssa_name_components, ssa_name_index);
   if (ret == NULL)
     {
-      ret = get_component_var (SSA_NAME_VAR (ssa_name), imag_p);
+      if (SSA_NAME_VAR (ssa_name))
+	ret = get_component_var (SSA_NAME_VAR (ssa_name), imag_p);
+      else
+	ret = TREE_TYPE (TREE_TYPE (ssa_name));
       ret = make_ssa_name (ret, NULL);
 
       /* Copy some properties from the original.  In particular, whether it
 	 is used in an abnormal phi, and whether it's uninitialized.  */
       SSA_NAME_OCCURS_IN_ABNORMAL_PHI (ret)
 	= SSA_NAME_OCCURS_IN_ABNORMAL_PHI (ssa_name);
-      if (TREE_CODE (SSA_NAME_VAR (ssa_name)) == VAR_DECL
-	  && SSA_NAME_IS_DEFAULT_DEF (ssa_name))
+      if (SSA_NAME_IS_DEFAULT_DEF (ssa_name)
+	  && TREE_CODE (SSA_NAME_VAR (ssa_name)) == VAR_DECL)
 	{
 	  SSA_NAME_DEF_STMT (ret) = SSA_NAME_DEF_STMT (ssa_name);
 	  set_ssa_default_def (cfun, SSA_NAME_VAR (ret), ret);
@@ -549,7 +552,8 @@ set_component_ssa_name (tree ssa_name, bool imag_p, tree value)
     {
       /* Replace an anonymous base value with the variable from cvc_lookup.
 	 This should result in better debug info.  */
-      if (DECL_IGNORED_P (SSA_NAME_VAR (value))
+      if (SSA_NAME_VAR (ssa_name)
+	  && (!SSA_NAME_VAR (value) || DECL_IGNORED_P (SSA_NAME_VAR (value)))
 	  && !DECL_IGNORED_P (SSA_NAME_VAR (ssa_name)))
 	{
 	  comp = get_component_var (SSA_NAME_VAR (ssa_name), imag_p);
@@ -720,17 +724,11 @@ update_phi_components (basic_block bb)
 
 	  lr = get_component_ssa_name (gimple_phi_result (phi), false);
 	  if (TREE_CODE (lr) == SSA_NAME)
-	    {
-	      pr = create_phi_node (lr, bb);
-	      SSA_NAME_DEF_STMT (lr) = pr;
-	    }
+	    pr = create_phi_node (lr, bb);
 
 	  li = get_component_ssa_name (gimple_phi_result (phi), true);
 	  if (TREE_CODE (li) == SSA_NAME)
-	    {
-	      pi = create_phi_node (li, bb);
-	      SSA_NAME_DEF_STMT (li) = pi;
-	    }
+	    pi = create_phi_node (li, bb);
 
 	  for (i = 0, n = gimple_phi_num_args (phi); i < n; ++i)
 	    {

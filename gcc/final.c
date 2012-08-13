@@ -1863,11 +1863,13 @@ final (rtx first, FILE *file, int optimize_p)
       start_to_bb = XCNEWVEC (basic_block, bb_map_size);
       end_to_bb = XCNEWVEC (basic_block, bb_map_size);
 
-      FOR_EACH_BB_REVERSE (bb)
-	{
-	  start_to_bb[INSN_UID (BB_HEAD (bb))] = bb;
-	  end_to_bb[INSN_UID (BB_END (bb))] = bb;
-	}
+      /* There is no cfg for a thunk.  */
+      if (!cfun->is_thunk)
+	FOR_EACH_BB_REVERSE (bb)
+	  {
+	    start_to_bb[INSN_UID (BB_HEAD (bb))] = bb;
+	    end_to_bb[INSN_UID (BB_END (bb))] = bb;
+	  }
     }
 
   /* Output the insns.  */

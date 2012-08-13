@@ -1495,7 +1495,6 @@ initialize_root_vars (struct loop *loop, chain_p chain, bitmap tmp_vars)
 	gsi_insert_seq_on_edge_immediate (entry, stmts);
 
       phi = create_phi_node (var, loop->header);
-      SSA_NAME_DEF_STMT (var) = phi;
       add_phi_arg (phi, init, entry, UNKNOWN_LOCATION);
       add_phi_arg (phi, next, latch, UNKNOWN_LOCATION);
     }
@@ -1559,7 +1558,6 @@ initialize_root_vars_lm (struct loop *loop, dref root, bool written,
     {
       next = VEC_index (tree, *vars, 1);
       phi = create_phi_node (var, loop->header);
-      SSA_NAME_DEF_STMT (var) = phi;
       add_phi_arg (phi, init, entry, UNKNOWN_LOCATION);
       add_phi_arg (phi, next, latch, UNKNOWN_LOCATION);
     }
@@ -1903,7 +1901,7 @@ eliminate_temp_copies (struct loop *loop, bitmap tmp_vars)
       phi = gsi_stmt (psi);
       name = PHI_RESULT (phi);
       var = SSA_NAME_VAR (name);
-      if (!bitmap_bit_p (tmp_vars, DECL_UID (var)))
+      if (!var || !bitmap_bit_p (tmp_vars, DECL_UID (var)))
 	continue;
       use = PHI_ARG_DEF_FROM_EDGE (phi, e);
       gcc_assert (TREE_CODE (use) == SSA_NAME);

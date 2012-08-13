@@ -1453,6 +1453,7 @@ expand_used_vars (void)
 {
   tree var, outer_block = DECL_INITIAL (current_function_decl);
   VEC(tree,heap) *maybe_local_decls = NULL;
+  struct pointer_map_t *ssa_name_decls;
   unsigned i;
   unsigned len;
 
@@ -1465,11 +1466,23 @@ expand_used_vars (void)
 
   init_vars_expansion ();
 
+  ssa_name_decls = pointer_map_create ();
   for (i = 0; i < SA.map->num_partitions; i++)
     {
       tree var = partition_to_var (SA.map, i);
 
       gcc_assert (is_gimple_reg (var));
+
+      /* Assign decls to each SSA name partition, share decls for partitions
+         we could have coalesced (those with the same type).  */
+      if (SSA_NAME_VAR (var) == NULL_TREE)
+	{
+	  void **slot = pointer_map_insert (ssa_name_decls, TREE_TYPE (var));
+	  if (!*slot)
+	    *slot = (void *) create_tmp_reg (TREE_TYPE (var), NULL);
+	  replace_ssa_name_symbol (var, (tree) *slot);
+	}
+
       if (TREE_CODE (SSA_NAME_VAR (var)) == VAR_DECL)
 	expand_one_var (var, true, true);
       else
@@ -1486,6 +1499,7 @@ expand_used_vars (void)
 	    }
 	}
     }
+  pointer_map_destroy (ssa_name_decls);
 
   /* At this point all variables on the local_decls with TREE_USED
      set are not associated with any block scope.  Lay them out.  */
@@ -4450,7 +4464,6 @@ gimple_expand_cfg (void)
       rtx r;
 
       if (!name
-	  || !POINTER_TYPE_P (TREE_TYPE (name))
 	  /* We might have generated new SSA names in
 	     update_alias_info_with_stack_vars.  They will have a NULL
 	     defining statements, and won't be part of the partitioning,
@@ -4460,6 +4473,18 @@ gimple_expand_cfg (void)
       part = var_to_partition (SA.map, name);
       if (part == NO_PARTITION)
 	continue;
+
+      /* Adjust all partition members to get the underlying decl of
+	 the representative which we might have created in expand_one_var.  */
+      if (SSA_NAME_VAR (name) == NULL_TREE)
+	{
+	  tree leader = partition_to_var (SA.map, part);
+	  gcc_assert (SSA_NAME_VAR (leader) != NULL_TREE);
+	  replace_ssa_name_symbol (name, SSA_NAME_VAR (leader));
+	}
+      if (!POINTER_TYPE_P (TREE_TYPE (name)))
+	continue;
+
       r = SA.partition_to_pseudo[part];
       if (REG_P (r))
 	mark_reg_pointer (r, get_pointer_alignment (name));

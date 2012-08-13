@@ -428,28 +428,12 @@
   return general_operand (op, mode);
 })
 
-;; Same as movsrc_operand, but rejects displacement addressing.
+;; Returns 1 if OP is a MEM that does not use displacement addressing.
 
 (define_predicate "movsrc_no_disp_mem_operand"
-  (match_code "subreg,reg,const_int,const_double,mem,symbol_ref,label_ref,const,const_vector")
+  (match_code "mem")
 {
-  if (!general_movsrc_operand (op, mode))
-    return 0;
-
-  if ((mode == QImode || mode == HImode)
-      && mode == GET_MODE (op)
-      && (MEM_P (op)
-	  || (GET_CODE (op) == SUBREG && MEM_P (SUBREG_REG (op)))))
-    {
-      rtx x = XEXP ((MEM_P (op) ? op : SUBREG_REG (op)), 0);
-
-      if (GET_CODE (x) == PLUS
-	  && REG_P (XEXP (x, 0))
-	  && CONST_INT_P (XEXP (x, 1)))
-	return 0;
-    }
-
-  return 1;
+  return general_movsrc_operand (op, mode) && satisfies_constraint_Snd (op);
 })
 
 ;; Returns 1 if OP can be a destination of a move. Same as
@@ -521,6 +505,34 @@
     return 1;
 
   return 0;
+})
+
+;; Returns 1 if OP is a MEM that can be used in "index_disp" combiner
+;; patterns.
+(define_predicate "mem_index_disp_operand"
+  (match_code "mem")
+{
+  rtx plus0_rtx, plus1_rtx, mult_rtx;
+
+  plus0_rtx = XEXP (op, 0);
+  if (GET_CODE (plus0_rtx) != PLUS)
+    return 0;
+
+  plus1_rtx = XEXP (plus0_rtx, 0);
+  if (GET_CODE (plus1_rtx) != PLUS)
+    return 0;
+  if (! arith_reg_operand (XEXP (plus1_rtx, 1), GET_MODE (XEXP (plus1_rtx, 1))))
+    return 0;
+
+  mult_rtx = XEXP (plus1_rtx, 0);
+  if (GET_CODE (mult_rtx) != MULT)
+    return 0;
+  if (! arith_reg_operand (XEXP (mult_rtx, 0), GET_MODE (XEXP (mult_rtx, 0)))
+      || ! CONST_INT_P (XEXP (mult_rtx, 1)))
+    return 0;
+
+  return exact_log2 (INTVAL (XEXP (mult_rtx, 1))) > 0
+	 && sh_legitimate_index_p (mode, XEXP (plus0_rtx, 1), TARGET_SH2A, true);
 })
 
 ;; TODO: Add a comment here.

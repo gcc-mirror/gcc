@@ -1,3 +1,27 @@
+2012-08-10  Richard Guenther  <rguenther@suse.de>
+
+	* error.c (dump_expr): Handle anonymous SSA names.
+
+2012-08-07  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* error.c (print_instantiation_context): Pretty-print a newline before
+	diagnostic_flush_buffer.
+	* cxx-pretty-print.c (pp_cxx_function_definition): Use
+	pp_newline_and_flush instead of separate pp_newline and pp_flush.
+
+2012-08-06  Dodji Seketeli  <dodji@redhat.com>
+
+	Avoid crashing on erroneous static_assert usage
+	* semantics.c (finish_static_assert): Don't crash on erroneous
+	message or condition.
+
+2012-08-06  Marc Glisse  <marc.glisse@inria.fr>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54165
+	* typeck.c (build_static_cast_1): Move the conversion to void case
+	before the perform_direct_initialization_if_possible call.
+
 2012-08-03  Marc Glisse  <marc.glisse@inria.fr>
 
 	* pt.c (tsubst_copy_and_build): Handle VECTOR_TYPE like scalars.

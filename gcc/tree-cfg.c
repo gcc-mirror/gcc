@@ -3930,6 +3930,14 @@ verify_gimple_assign_single (gimple stmt)
       return true;
     }
 
+  if (gimple_clobber_p (stmt)
+      && !DECL_P (lhs))
+    {
+      error ("non-decl LHS in clobber statement");
+      debug_generic_expr (lhs);
+      return true;
+    }
+
   if (handled_component_p (lhs))
     res |= verify_types_in_gimple_reference (lhs, true);
 
@@ -4077,6 +4085,7 @@ verify_gimple_return (gimple stmt)
   if ((TREE_CODE (op) == RESULT_DECL
        && DECL_BY_REFERENCE (op))
       || (TREE_CODE (op) == SSA_NAME
+	  && SSA_NAME_VAR (op)
 	  && TREE_CODE (SSA_NAME_VAR (op)) == RESULT_DECL
 	  && DECL_BY_REFERENCE (SSA_NAME_VAR (op))))
     op = TREE_TYPE (op);
@@ -5010,8 +5019,7 @@ gimple_make_forwarder_block (edge fallthru)
       phi = gsi_stmt (gsi);
       var = gimple_phi_result (phi);
       new_phi = create_phi_node (var, bb);
-      SSA_NAME_DEF_STMT (var) = new_phi;
-      gimple_phi_set_result (phi, make_ssa_name (SSA_NAME_VAR (var), phi));
+      gimple_phi_set_result (phi, copy_ssa_name (var, phi));
       add_phi_arg (new_phi, gimple_phi_result (phi), fallthru,
 		   UNKNOWN_LOCATION);
     }
@@ -5370,8 +5378,8 @@ gimple_duplicate_bb (basic_block bb)
   for (gsi = gsi_start (phis); !gsi_end_p (gsi); gsi_next (&gsi))
     {
       phi = gsi_stmt (gsi);
-      copy = create_phi_node (gimple_phi_result (phi), new_bb);
-      create_new_def_for (gimple_phi_result (copy), copy,
+      copy = create_phi_node (NULL_TREE, new_bb);
+      create_new_def_for (gimple_phi_result (phi), copy,
 			  gimple_phi_result_ptr (copy));
     }
 
@@ -5938,7 +5946,7 @@ replace_ssa_name (tree name, struct pointer_map_t *vars_map,
 		  tree to_context)
 {
   void **loc;
-  tree new_name, decl = SSA_NAME_VAR (name);
+  tree new_name;
 
   gcc_assert (is_gimple_reg (name));
 
@@ -5946,12 +5954,19 @@ replace_ssa_name (tree name, struct pointer_map_t *vars_map,
 
   if (!loc)
     {
-      replace_by_duplicate_decl (&decl, vars_map, to_context);
-
-      new_name = make_ssa_name_fn (DECL_STRUCT_FUNCTION (to_context),
-				   decl, SSA_NAME_DEF_STMT (name));
-      if (SSA_NAME_IS_DEFAULT_DEF (name))
-	set_ssa_default_def (DECL_STRUCT_FUNCTION (to_context), decl, new_name);
+      tree decl = SSA_NAME_VAR (name);
+      if (decl)
+	{
+	  replace_by_duplicate_decl (&decl, vars_map, to_context);
+	  new_name = make_ssa_name_fn (DECL_STRUCT_FUNCTION (to_context),
+				       decl, SSA_NAME_DEF_STMT (name));
+	  if (SSA_NAME_IS_DEFAULT_DEF (name))
+	    set_ssa_default_def (DECL_STRUCT_FUNCTION (to_context),
+				 decl, new_name);
+	}
+      else
+	new_name = copy_ssa_name_fn (DECL_STRUCT_FUNCTION (to_context),
+				     name, SSA_NAME_DEF_STMT (name));
 
       loc = pointer_map_insert (vars_map, name);
       *loc = new_name;
@@ -6662,21 +6677,37 @@ dump_function_to_file (tree fn, FILE *file, int flags)
 
   /* When GIMPLE is lowered, the variables are no longer available in
      BIND_EXPRs, so display them separately.  */
-  if (cfun && cfun->decl == fn && !VEC_empty (tree, cfun->local_decls))
+  if (cfun && cfun->decl == fn && (cfun->curr_properties & PROP_gimple_lcf))
     {
       unsigned ix;
       ignore_topmost_bind = true;
 
       fprintf (file, "{\n");
-      FOR_EACH_LOCAL_DECL (cfun, ix, var)
-	{
-	  print_generic_decl (file, var, flags);
-	  if (flags & TDF_VERBOSE)
-	    print_node (file, "", var, 4);
-	  fprintf (file, "\n");
+      if (!VEC_empty (tree, cfun->local_decls))
+	FOR_EACH_LOCAL_DECL (cfun, ix, var)
+	  {
+	    print_generic_decl (file, var, flags);
+	    if (flags & TDF_VERBOSE)
+	      print_node (file, "", var, 4);
+	    fprintf (file, "\n");
 
-	  any_var = true;
-	}
+	    any_var = true;
+	  }
+      if (gimple_in_ssa_p (cfun))
+	for (ix = 1; ix < num_ssa_names; ++ix)
+	  {
+	    tree name = ssa_name (ix);
+	    if (name && !SSA_NAME_VAR (name))
+	      {
+		fprintf (file, "  ");
+		print_generic_expr (file, TREE_TYPE (name), flags);
+		fprintf (file, " ");
+		print_generic_expr (file, name, flags);
+		fprintf (file, ";\n");
+
+		any_var = true;
+	      }
+	  }
     }
 
   if (cfun && cfun->decl == fn && cfun->cfg && basic_block_info)

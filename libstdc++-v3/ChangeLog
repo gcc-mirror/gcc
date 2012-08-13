@@ -1,3 +1,53 @@
+2012-08-12  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/52681
+	* src/c++11/thread.cc (thread::_M_start_thread): Improve error text
+	when threads are not enabled.
+
+2012-08-09  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* acinclude.m4: Update references to final C++11 standard.
+	* include/bits/shared_ptr.h: Likewise.
+	* include/bits/shared_ptr_base.h: Likewise.
+	* include/bits/unique_ptr.h: Likewise.
+	* include/std/chrono: Likewise.
+	* include/std/thread: Likewise.
+
+2012-08-07  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/54005
+	* include/std/atomic: Use __atomic_always_lock_free.
+	* include/bits/atomic_base.h: Same.
+
+2012-08-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/decimal/mixed-mode-cmp_neg.cc: Add test variable; minor
+	tweaks.
+	* testsuite/decimal/unary-arith.cc: Likewise.
+	* testsuite/decimal/ctor.cc: Likewise.
+	* testsuite/decimal/conversion-to-integral.cc: Likewise.
+	* testsuite/decimal/make-decimal.cc: Likewise.
+	* testsuite/decimal/comparison.cc: Likewise.
+	* testsuite/decimal/incdec-memfunc.cc: Likewise.
+	* testsuite/decimal/conversion-to-generic-float.cc: Likewise.
+	* testsuite/decimal/compound-assignment-memfunc.cc: Likewise.
+	* testsuite/decimal/cast_neg.cc: Likewise.
+	* testsuite/decimal/incdec.cc: Likewise.
+	* testsuite/decimal/mixed-mode-arith_neg.cc: Likewise.
+	* testsuite/decimal/binary-arith.cc: Likewise.
+	* testsuite/decimal/conversion-from-float.cc: Likewise.
+	* testsuite/decimal/conversion-from-integral.cc: Likewise.
+	* testsuite/decimal/compound-assignment.cc: Likewise.
+
+2012-08-06  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR libstdc++/54036
+	* include/decimal/decimal.h (_DEFINE_DECIMAL_UNARY_OP): Use _Op as
+	a unary operator.
+	* testsuite/decimal/pr54036-1.cc: New test.
+	* testsuite/decimal/pr54036-2.cc: Likewise.
+	* testsuite/decimal/pr54036-3.cc: Likewise.
+
 2012-08-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	Revert:

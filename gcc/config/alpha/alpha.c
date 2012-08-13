@@ -5942,7 +5942,7 @@ alpha_stdarg_optimize_hook (struct stdarg_info *si, const_gimple stmt)
 
   base = get_base_address (base);
   if (TREE_CODE (base) != VAR_DECL
-      || !bitmap_bit_p (si->va_list_vars, DECL_UID (base)))
+      || !bitmap_bit_p (si->va_list_vars, DECL_UID (base) + num_ssa_names))
     return false;
 
   offset = gimple_op (stmt, 1 + offset_arg);
@@ -9258,17 +9258,18 @@ alpha_align_insns (unsigned int max_align,
     }
 }
 
-/* Insert an unop between a noreturn function call and GP load.  */
+/* Insert an unop between sibcall or noreturn function call and GP load.  */
 
 static void
-alpha_pad_noreturn (void)
+alpha_pad_function_end (void)
 {
   rtx insn, next;
 
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
       if (! (CALL_P (insn)
-	     && find_reg_note (insn, REG_NORETURN, NULL_RTX)))
+	     && (SIBLING_CALL_P (insn)
+		 || find_reg_note (insn, REG_NORETURN, NULL_RTX))))
         continue;
 
       /* Make sure we do not split a call and its corresponding
@@ -9300,8 +9301,28 @@ alpha_pad_noreturn (void)
 static void
 alpha_reorg (void)
 {
-  /* Workaround for a linker error that triggers when an
-     exception handler immediatelly follows a noreturn function.
+  /* Workaround for a linker error that triggers when an exception
+     handler immediatelly follows a sibcall or a noreturn function.
+
+In the sibcall case:
+
+     The instruction stream from an object file:
+
+ 1d8:   00 00 fb 6b     jmp     (t12)
+ 1dc:   00 00 ba 27     ldah    gp,0(ra)
+ 1e0:   00 00 bd 23     lda     gp,0(gp)
+ 1e4:   00 00 7d a7     ldq     t12,0(gp)
+ 1e8:   00 40 5b 6b     jsr     ra,(t12),1ec <__funcZ+0x1ec>
+
+     was converted in the final link pass to:
+
+   12003aa88:   67 fa ff c3     br      120039428 <...>
+   12003aa8c:   00 00 fe 2f     unop
+   12003aa90:   00 00 fe 2f     unop
+   12003aa94:   48 83 7d a7     ldq     t12,-31928(gp)
+   12003aa98:   00 40 5b 6b     jsr     ra,(t12),12003aa9c <__func+0x1ec>
+
+And in the noreturn case:
 
      The instruction stream from an object file:
 
@@ -9321,11 +9342,11 @@ alpha_reorg (void)
 
      GP load instructions were wrongly cleared by the linker relaxation
      pass.  This workaround prevents removal of GP loads by inserting
-     an unop instruction between a noreturn function call and
+     an unop instruction between a sibcall or noreturn function call and
      exception handler prologue.  */
 
   if (current_function_has_exception_handlers ())
-    alpha_pad_noreturn ();
+    alpha_pad_function_end ();
 
   if (alpha_tp != ALPHA_TP_PROG || flag_exceptions)
     alpha_handle_trap_shadows ();

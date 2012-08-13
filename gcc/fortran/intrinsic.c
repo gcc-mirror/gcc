@@ -4503,7 +4503,7 @@ gfc_warn_intrinsic_shadow (const gfc_symbol* sym, bool in_module, bool func)
     return;
 
   /* Emit the warning.  */
-  if (in_module)
+  if (in_module || sym->ns->proc_name)
     gfc_warning ("'%s' declared at %L may shadow the intrinsic of the same"
 		 " name.  In order to call the intrinsic, explicit INTRINSIC"
 		 " declarations may be required.",

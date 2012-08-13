@@ -393,7 +393,7 @@ get_string_length (strinfo si)
   if (si->stmt)
     {
       gimple stmt = si->stmt, lenstmt;
-      tree callee, lhs, lhs_var, fn, tem;
+      tree callee, lhs, fn, tem;
       location_t loc;
       gimple_stmt_iterator gsi;
 
@@ -415,15 +415,12 @@ get_string_length (strinfo si)
 	  gsi = gsi_for_stmt (stmt);
 	  fn = builtin_decl_implicit (BUILT_IN_STRLEN);
 	  gcc_assert (lhs == NULL_TREE);
-	  lhs_var = create_tmp_var (TREE_TYPE (TREE_TYPE (fn)), NULL);
 	  tem = unshare_expr (gimple_call_arg (stmt, 0));
 	  lenstmt = gimple_build_call (fn, 1, tem);
-	  lhs = make_ssa_name (lhs_var, lenstmt);
+	  lhs = make_ssa_name (TREE_TYPE (TREE_TYPE (fn)), lenstmt);
 	  gimple_call_set_lhs (lenstmt, lhs);
 	  gimple_set_vuse (lenstmt, gimple_vuse (stmt));
 	  gsi_insert_before (&gsi, lenstmt, GSI_SAME_STMT);
-	  lhs_var = create_tmp_var (TREE_TYPE (gimple_call_arg (stmt, 0)),
-				    NULL);
 	  tem = gimple_call_arg (stmt, 0);
           if (!ptrofftype_p (TREE_TYPE (lhs)))
             {
@@ -432,9 +429,10 @@ get_string_length (strinfo si)
                                               true, GSI_SAME_STMT);
             }
 	  lenstmt
-	    = gimple_build_assign_with_ops (POINTER_PLUS_EXPR,
-					    make_ssa_name (lhs_var, NULL),
-					    tem, lhs);
+	    = gimple_build_assign_with_ops
+	        (POINTER_PLUS_EXPR,
+		 make_ssa_name (TREE_TYPE (gimple_call_arg (stmt, 0)), NULL),
+		 tem, lhs);
 	  gsi_insert_before (&gsi, lenstmt, GSI_SAME_STMT);
 	  gimple_call_set_arg (stmt, 0, gimple_assign_lhs (lenstmt));
 	  lhs = NULL_TREE;
@@ -452,8 +450,7 @@ get_string_length (strinfo si)
 	      print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
 	    }
 	  gimple_call_set_fndecl (stmt, fn);
-	  lhs_var = create_tmp_var (TREE_TYPE (TREE_TYPE (fn)), NULL);
-	  lhs = make_ssa_name (lhs_var, stmt);
+	  lhs = make_ssa_name (TREE_TYPE (TREE_TYPE (fn)), stmt);
 	  gimple_call_set_lhs (stmt, lhs);
 	  update_stmt (stmt);
 	  if (dump_file && (dump_flags & TDF_DETAILS) != 0)

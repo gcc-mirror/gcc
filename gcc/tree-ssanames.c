@@ -118,7 +118,10 @@ make_ssa_name_fn (struct function *fn, tree var, gimple stmt)
   tree t;
   use_operand_p imm;
 
-  gcc_assert (DECL_P (var));
+  gcc_assert (TREE_CODE (var) == VAR_DECL
+	      || TREE_CODE (var) == PARM_DECL
+	      || TREE_CODE (var) == RESULT_DECL
+	      || (TYPE_P (var) && is_gimple_reg_type (var)));
 
   /* If our free list has an element, then use it.  */
   if (!VEC_empty (tree, FREE_SSANAMES (fn)))
@@ -141,8 +144,16 @@ make_ssa_name_fn (struct function *fn, tree var, gimple stmt)
 	ssa_name_nodes_created++;
     }
 
-  TREE_TYPE (t) = TREE_TYPE (var);
-  SSA_NAME_VAR (t) = var;
+  if (TYPE_P (var))
+    {
+      TREE_TYPE (t) = var;
+      SET_SSA_NAME_VAR_OR_IDENTIFIER (t, NULL_TREE);
+    }
+  else
+    {
+      TREE_TYPE (t) = TREE_TYPE (var);
+      SET_SSA_NAME_VAR_OR_IDENTIFIER (t, var);
+    }
   SSA_NAME_DEF_STMT (t) = stmt;
   SSA_NAME_PTR_INFO (t) = NULL;
   SSA_NAME_IN_FREE_LIST (t) = 0;
@@ -223,7 +234,7 @@ release_ssa_name (tree var)
 
       /* Hopefully this can go away once we have the new incremental
          SSA updating code installed.  */
-      SSA_NAME_VAR (var) = saved_ssa_name_var;
+      SET_SSA_NAME_VAR_OR_IDENTIFIER (var, saved_ssa_name_var);
 
       /* Note this SSA_NAME is now in the first list.  */
       SSA_NAME_IN_FREE_LIST (var) = 1;
@@ -312,6 +323,27 @@ get_ptr_info (tree t)
   return pi;
 }
 
+
+/* Creates a new SSA name using the template NAME tobe defined by
+   statement STMT in function FN.  */
+
+tree
+copy_ssa_name_fn (struct function *fn, tree name, gimple stmt)
+{
+  tree new_name;
+
+  if (SSA_NAME_VAR (name))
+    new_name = make_ssa_name_fn (fn, SSA_NAME_VAR (name), stmt);
+  else
+    {
+      new_name = make_ssa_name_fn (fn, TREE_TYPE (name), stmt);
+      SET_SSA_NAME_VAR_OR_IDENTIFIER (new_name, SSA_NAME_IDENTIFIER (name));
+    }
+
+  return new_name;
+}
+
+
 /* Creates a duplicate of the ptr_info_def at PTR_INFO for use by
    the SSA name NAME.  */
 
@@ -333,12 +365,13 @@ duplicate_ssa_name_ptr_info (tree name, struct ptr_info_def *ptr_info)
 }
 
 
-/* Creates a duplicate of a ssa name NAME tobe defined by statement STMT.  */
+/* Creates a duplicate of a ssa name NAME tobe defined by statement STMT
+   in function FN.  */
 
 tree
-duplicate_ssa_name (tree name, gimple stmt)
+duplicate_ssa_name_fn (struct function *fn, tree name, gimple stmt)
 {
-  tree new_name = make_ssa_name (SSA_NAME_VAR (name), stmt);
+  tree new_name = copy_ssa_name_fn (fn, name, stmt);
   struct ptr_info_def *old_ptr_info = SSA_NAME_PTR_INFO (name);
 
   if (old_ptr_info)
@@ -371,7 +404,7 @@ release_defs (gimple stmt)
 void
 replace_ssa_name_symbol (tree ssa_name, tree sym)
 {
-  SSA_NAME_VAR (ssa_name) = sym;
+  SET_SSA_NAME_VAR_OR_IDENTIFIER (ssa_name, sym);
   TREE_TYPE (ssa_name) = TREE_TYPE (sym);
 }
 

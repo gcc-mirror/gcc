@@ -221,25 +221,10 @@ reset_bb_predicate (basic_block bb)
 static tree
 ifc_temp_var (tree type, tree expr, gimple_stmt_iterator *gsi)
 {
-  const char *name = "_ifc_";
-  tree var, new_name;
-  gimple stmt;
-
-  /* Create new temporary variable.  */
-  var = create_tmp_var (type, name);
-
-  /* Build new statement to assign EXPR to new variable.  */
-  stmt = gimple_build_assign (var, expr);
-
-  /* Get SSA name for the new variable and set make new statement
-     its definition statement.  */
-  new_name = make_ssa_name (var, stmt);
-  gimple_assign_set_lhs (stmt, new_name);
-  SSA_NAME_DEF_STMT (new_name) = stmt;
-  update_stmt (stmt);
-
+  tree new_name = make_temp_ssa_name (type, NULL, "_ifc_");
+  gimple stmt = gimple_build_assign (new_name, expr);
   gsi_insert_before (gsi, stmt, GSI_SAME_STMT);
-  return gimple_assign_lhs (stmt);
+  return new_name;
 }
 
 /* Return true when COND is a true predicate.  */

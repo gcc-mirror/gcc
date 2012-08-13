@@ -85,7 +85,8 @@ extern void s390_expand_setmem (rtx, rtx, rtx);
 extern bool s390_expand_cmpmem (rtx, rtx, rtx, rtx);
 extern bool s390_expand_addcc (enum rtx_code, rtx, rtx, rtx, rtx, rtx);
 extern bool s390_expand_insv (rtx, rtx, rtx, rtx);
-extern void s390_expand_cs_hqi (enum machine_mode, rtx, rtx, rtx, rtx);
+extern void s390_expand_cs_hqi (enum machine_mode, rtx, rtx, rtx,
+				rtx, rtx, bool);
 extern void s390_expand_atomic (enum machine_mode, enum rtx_code,
 				rtx, rtx, rtx, bool);
 extern rtx s390_return_addr_rtx (int, rtx);

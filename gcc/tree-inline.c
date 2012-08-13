@@ -176,7 +176,7 @@ static int processing_debug_stmt = 0;
 static tree
 remap_ssa_name (tree name, copy_body_data *id)
 {
-  tree new_tree;
+  tree new_tree, var;
   tree *n;
 
   gcc_assert (TREE_CODE (name) == SSA_NAME);
@@ -187,8 +187,8 @@ remap_ssa_name (tree name, copy_body_data *id)
 
   if (processing_debug_stmt)
     {
-      if (TREE_CODE (SSA_NAME_VAR (name)) == PARM_DECL
-	  && SSA_NAME_IS_DEFAULT_DEF (name)
+      if (SSA_NAME_IS_DEFAULT_DEF (name)
+	  && TREE_CODE (SSA_NAME_VAR (name)) == PARM_DECL
 	  && id->entry_bb == NULL
 	  && single_succ_p (ENTRY_BLOCK_PTR))
 	{
@@ -218,9 +218,38 @@ remap_ssa_name (tree name, copy_body_data *id)
       return name;
     }
 
+  /* Remap anonymous SSA names or SSA names of anonymous decls.  */
+  var = SSA_NAME_VAR (name);
+  if (!var
+      || (!SSA_NAME_IS_DEFAULT_DEF (name)
+	  && TREE_CODE (var) == VAR_DECL
+	  && !VAR_DECL_IS_VIRTUAL_OPERAND (var)
+	  && DECL_ARTIFICIAL (var)
+	  && DECL_IGNORED_P (var)
+	  && !DECL_NAME (var)))
+    {
+      struct ptr_info_def *pi;
+      new_tree = make_ssa_name (remap_type (TREE_TYPE (name), id), NULL);
+      if (!var && SSA_NAME_IDENTIFIER (name))
+	SET_SSA_NAME_VAR_OR_IDENTIFIER (new_tree, SSA_NAME_IDENTIFIER (name));
+      insert_decl_map (id, name, new_tree);
+      SSA_NAME_OCCURS_IN_ABNORMAL_PHI (new_tree)
+	= SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name);
+      /* At least IPA points-to info can be directly transferred.  */
+      if (id->src_cfun->gimple_df
+	  && id->src_cfun->gimple_df->ipa_pta
+	  && (pi = SSA_NAME_PTR_INFO (name))
+	  && !pi->pt.anything)
+	{
+	  struct ptr_info_def *new_pi = get_ptr_info (new_tree);
+	  new_pi->pt = pi->pt;
+	}
+      return new_tree;
+    }
+
   /* Do not set DEF_STMT yet as statement is not copied yet. We do that
      in copy_bb.  */
-  new_tree = remap_decl (SSA_NAME_VAR (name), id);
+  new_tree = remap_decl (var, id);
 
   /* We might've substituted constant or another SSA_NAME for
      the variable.
@@ -229,7 +258,8 @@ remap_ssa_name (tree name, copy_body_data *id)
      inlining:  this saves us from need to introduce PHI node in a case
      return value is just partly initialized.  */
   if ((TREE_CODE (new_tree) == VAR_DECL || TREE_CODE (new_tree) == PARM_DECL)
-      && (TREE_CODE (SSA_NAME_VAR (name)) != RESULT_DECL
+      && (!SSA_NAME_VAR (name)
+	  || TREE_CODE (SSA_NAME_VAR (name)) != RESULT_DECL
 	  || !id->transform_return_to_modify))
     {
       struct ptr_info_def *pi;
@@ -259,7 +289,8 @@ remap_ssa_name (tree name, copy_body_data *id)
 	     regions of the CFG, but this is expensive to test.  */
 	  if (id->entry_bb
 	      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name)
-	      && TREE_CODE (SSA_NAME_VAR (name)) != PARM_DECL
+	      && (!SSA_NAME_VAR (name)
+		  || TREE_CODE (SSA_NAME_VAR (name)) != PARM_DECL)
 	      && (id->entry_bb != EDGE_SUCC (ENTRY_BLOCK_PTR, 0)->dest
 		  || EDGE_COUNT (id->entry_bb->preds) != 1))
 	    {
@@ -1184,6 +1215,7 @@ remap_gimple_stmt (gimple stmt, copy_body_data *id)
       if (retval
 	  && (TREE_CODE (retval) != RESULT_DECL
 	      && (TREE_CODE (retval) != SSA_NAME
+		  || ! SSA_NAME_VAR (retval)
 		  || TREE_CODE (SSA_NAME_VAR (retval)) != RESULT_DECL)))
         {
 	  copy = gimple_build_assign (id->retvar, retval);
@@ -1941,8 +1973,7 @@ copy_phis_for_bb (basic_block bb, copy_body_data *id)
       if (is_gimple_reg (res))
 	{
 	  walk_tree (&new_res, copy_tree_body_r, id, NULL);
-	  SSA_NAME_DEF_STMT (new_res)
-	    = new_phi = create_phi_node (new_res, new_bb);
+	  new_phi = create_phi_node (new_res, new_bb);
 	  FOR_EACH_EDGE (new_edge, ei, new_bb->preds)
 	    {
 	      edge old_edge = find_edge ((basic_block) new_edge->src->aux, bb);
@@ -2475,14 +2506,8 @@ insert_init_stmt (copy_body_data *id, basic_block bb, gimple init_stmt)
 
       if (!is_gimple_debug (init_stmt) && MAY_HAVE_DEBUG_STMTS)
 	{
-	  tree var, def = gimple_assign_lhs (init_stmt);
-
-	  if (TREE_CODE (def) == SSA_NAME)
-	    var = SSA_NAME_VAR (def);
-	  else
-	    var = def;
-
-	  insert_init_debug_bind (id, bb, var, def, init_stmt);
+	  tree def = gimple_assign_lhs (init_stmt);
+	  insert_init_debug_bind (id, bb, def, def, init_stmt);
 	}
     }
 }

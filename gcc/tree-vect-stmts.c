@@ -1270,12 +1270,10 @@ vect_init_vector (gimple stmt, tree val, tree type, gimple_stmt_iterator *gsi)
 	    val = fold_unary (VIEW_CONVERT_EXPR, TREE_TYPE (type), val);
 	  else
 	    {
-	      new_var = create_tmp_reg (TREE_TYPE (type), NULL);
+	      new_temp = make_ssa_name (TREE_TYPE (type), NULL);
 	      init_stmt = gimple_build_assign_with_ops (NOP_EXPR,
-							new_var, val,
+							new_temp, val,
 							NULL_TREE);
-	      new_temp = make_ssa_name (new_var, init_stmt);
-	      gimple_assign_set_lhs (init_stmt, new_temp);
 	      vect_init_vector_1 (stmt, init_stmt, gsi);
 	      val = new_temp;
 	    }
@@ -4668,15 +4666,13 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 						 NULL_TREE, true,
 						 GSI_SAME_STMT);
 	      CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, newref);
-	      newoff = SSA_NAME_VAR (running_off);
+	      newoff = copy_ssa_name (running_off, NULL);
 	      if (POINTER_TYPE_P (TREE_TYPE (newoff)))
 		incr = gimple_build_assign_with_ops (POINTER_PLUS_EXPR, newoff,
 						     running_off, stride_step);
 	      else
 		incr = gimple_build_assign_with_ops (PLUS_EXPR, newoff,
 						     running_off, stride_step);
-	      newoff = make_ssa_name (newoff, incr);
-	      gimple_assign_set_lhs (incr, newoff);
 	      vect_finish_stmt_generation (stmt, incr, gsi);
 
 	      running_off = newoff;
@@ -4970,13 +4966,12 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 						    dr_explicit_realign,
 						    dataref_ptr, NULL);
 
+		    ptr = copy_ssa_name (dataref_ptr, NULL);
 		    new_stmt = gimple_build_assign_with_ops
-				 (BIT_AND_EXPR, NULL_TREE, dataref_ptr,
+				 (BIT_AND_EXPR, ptr, dataref_ptr,
 				  build_int_cst
 				  (TREE_TYPE (dataref_ptr),
 				   -(HOST_WIDE_INT)TYPE_ALIGN_UNIT (vectype)));
-		    ptr = make_ssa_name (SSA_NAME_VAR (dataref_ptr), new_stmt);
-		    gimple_assign_set_lhs (new_stmt, ptr);
 		    vect_finish_stmt_generation (stmt, new_stmt, gsi);
 		    data_ref
 		      = build2 (MEM_REF, vectype, ptr,
@@ -5000,7 +4995,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 				  build_int_cst
 				  (TREE_TYPE (ptr),
 				   -(HOST_WIDE_INT)TYPE_ALIGN_UNIT (vectype)));
-		    ptr = make_ssa_name (SSA_NAME_VAR (dataref_ptr), new_stmt);
+		    ptr = copy_ssa_name (dataref_ptr, new_stmt);
 		    gimple_assign_set_lhs (new_stmt, ptr);
 		    vect_finish_stmt_generation (stmt, new_stmt, gsi);
 		    data_ref
@@ -5010,14 +5005,12 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 		    break;
 		  }
 		case dr_explicit_realign_optimized:
+		  new_temp = copy_ssa_name (dataref_ptr, NULL);
 		  new_stmt = gimple_build_assign_with_ops
-			       (BIT_AND_EXPR, NULL_TREE, dataref_ptr,
+			       (BIT_AND_EXPR, new_temp, dataref_ptr,
 				build_int_cst
 				  (TREE_TYPE (dataref_ptr),
 				   -(HOST_WIDE_INT)TYPE_ALIGN_UNIT (vectype)));
-		  new_temp = make_ssa_name (SSA_NAME_VAR (dataref_ptr),
-					    new_stmt);
-		  gimple_assign_set_lhs (new_stmt, new_temp);
 		  vect_finish_stmt_generation (stmt, new_stmt, gsi);
 		  data_ref
 		    = build2 (MEM_REF, vectype, new_temp,

@@ -1084,7 +1084,8 @@ propagate_constants_accross_call (struct cgraph_edge *cs)
 tree
 ipa_get_indirect_edge_target (struct cgraph_edge *ie,
 			      VEC (tree, heap) *known_vals,
-			      VEC (tree, heap) *known_binfos)
+			      VEC (tree, heap) *known_binfos,
+			      VEC (ipa_agg_jump_function_p, heap) *known_aggs)
 {
   int param_index = ie->indirect_info->param_index;
   HOST_WIDE_INT token, anc_offset;
@@ -1096,8 +1097,26 @@ ipa_get_indirect_edge_target (struct cgraph_edge *ie,
 
   if (!ie->indirect_info->polymorphic)
     {
-      tree t = (VEC_length (tree, known_vals) > (unsigned int) param_index
-	        ? VEC_index (tree, known_vals, param_index) : NULL);
+      tree t;
+
+      if (ie->indirect_info->agg_contents)
+	{
+	  if (VEC_length (ipa_agg_jump_function_p, known_aggs)
+	      > (unsigned int) param_index)
+	    {
+	      struct ipa_agg_jump_function *agg;
+	      agg = VEC_index (ipa_agg_jump_function_p, known_aggs,
+			       param_index);
+	      t = ipa_find_agg_cst_for_param (agg, ie->indirect_info->offset,
+					      ie->indirect_info->by_ref);
+	    }
+	  else
+	    t = NULL;
+	}
+      else
+	t = (VEC_length (tree, known_vals) > (unsigned int) param_index
+	     ? VEC_index (tree, known_vals, param_index) : NULL);
+
       if (t &&
 	  TREE_CODE (t) == ADDR_EXPR
 	  && TREE_CODE (TREE_OPERAND (t, 0)) == FUNCTION_DECL)
@@ -1106,8 +1125,9 @@ ipa_get_indirect_edge_target (struct cgraph_edge *ie,
 	return NULL_TREE;
     }
 
+  gcc_assert (!ie->indirect_info->agg_contents);
   token = ie->indirect_info->otr_token;
-  anc_offset = ie->indirect_info->anc_offset;
+  anc_offset = ie->indirect_info->offset;
   otr_type = ie->indirect_info->otr_type;
 
   t = VEC_index (tree, known_vals, param_index);
@@ -1156,7 +1176,8 @@ devirtualization_time_bonus (struct cgraph_node *node,
       struct inline_summary *isummary;
       tree target;
 
-      target = ipa_get_indirect_edge_target (ie, known_csts, known_binfos);
+      target = ipa_get_indirect_edge_target (ie, known_csts, known_binfos,
+					     NULL);
       if (!target)
 	continue;
 
@@ -1673,7 +1694,7 @@ ipcp_discover_new_direct_edges (struct cgraph_node *node,
       tree target;
 
       next_ie = ie->next_callee;
-      target = ipa_get_indirect_edge_target (ie, known_vals, NULL);
+      target = ipa_get_indirect_edge_target (ie, known_vals, NULL, NULL);
       if (target)
 	ipa_make_edge_direct_to_target (ie, target);
     }
@@ -2487,10 +2508,9 @@ ipcp_generate_summary (void)
 /* Write ipcp summary for nodes in SET.  */
 
 static void
-ipcp_write_summary (cgraph_node_set set,
-		    varpool_node_set vset ATTRIBUTE_UNUSED)
+ipcp_write_summary (void)
 {
-  ipa_prop_write_jump_functions (set);
+  ipa_prop_write_jump_functions ();
 }
 
 /* Read ipcp summary.  */

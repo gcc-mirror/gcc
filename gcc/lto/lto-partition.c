@@ -797,6 +797,79 @@ promote_fn (struct cgraph_node *node)
   return true;
 }
 
+/* Return if LIST contain references from other partitions.  
+   TODO: remove this once lto partitioning is using encoders.  */
+
+static bool
+set_referenced_from_other_partition_p (struct ipa_ref_list *list, cgraph_node_set set,
+				       varpool_node_set vset)
+{
+  int i;
+  struct ipa_ref *ref;
+  for (i = 0; ipa_ref_list_referring_iterate (list, i, ref); i++)
+    {
+      if (symtab_function_p (ref->referring))
+	{
+	  if (ipa_ref_referring_node (ref)->symbol.in_other_partition
+	      || !cgraph_node_in_set_p (ipa_ref_referring_node (ref), set))
+	    return true;
+	}
+      else
+	{
+	  if (ipa_ref_referring_varpool_node (ref)->symbol.in_other_partition
+	      || !varpool_node_in_set_p (ipa_ref_referring_varpool_node (ref),
+				         vset))
+	    return true;
+	}
+    }
+  return false;
+}
+
+/* Return true when node is reachable from other partition. 
+   TODO: remove this once lto partitioning is using encoders.  */
+
+static bool
+set_reachable_from_other_partition_p (struct cgraph_node *node, cgraph_node_set set)
+{
+  struct cgraph_edge *e;
+  if (!node->analyzed)
+    return false;
+  if (node->global.inlined_to)
+    return false;
+  for (e = node->callers; e; e = e->next_caller)
+    if (e->caller->symbol.in_other_partition
+	|| !cgraph_node_in_set_p (e->caller, set))
+      return true;
+  return false;
+}
+
+
+/* Return if LIST contain references from other partitions. 
+   TODO: remove this once lto partitioning is using encoders.  */
+
+static bool
+set_referenced_from_this_partition_p (struct ipa_ref_list *list, cgraph_node_set set,
+				  varpool_node_set vset)
+{
+  int i;
+  struct ipa_ref *ref;
+  for (i = 0; ipa_ref_list_referring_iterate (list, i, ref); i++)
+    {
+      if (symtab_function_p (ref->referring))
+	{
+	  if (cgraph_node_in_set_p (ipa_ref_referring_node (ref), set))
+	    return true;
+	}
+      else
+	{
+	  if (varpool_node_in_set_p (ipa_ref_referring_varpool_node (ref),
+				     vset))
+	    return true;
+	}
+    }
+  return false;
+}
+
 /* Find out all static decls that need to be promoted to global because
    of cross file sharing.  This function must be run in the WPA mode after
    all inlinees are added.  */
@@ -834,8 +907,8 @@ lto_promote_cross_file_statics (void)
 	    continue;
 	  if ((!DECL_EXTERNAL (node->symbol.decl)
 	       && !DECL_COMDAT (node->symbol.decl))
-	      && (referenced_from_other_partition_p (&node->symbol.ref_list, set, vset)
-		  || reachable_from_other_partition_p (node, set)))
+	      && (set_referenced_from_other_partition_p (&node->symbol.ref_list, set, vset)
+		  || set_reachable_from_other_partition_p (node, set)))
 	    promote_fn (node);
 	}
       for (vsi = vsi_start (vset); !vsi_end_p (vsi); vsi_next (&vsi))
@@ -848,7 +921,7 @@ lto_promote_cross_file_statics (void)
 	      && !DECL_EXTERNAL (vnode->symbol.decl)
 	      && !DECL_COMDAT (vnode->symbol.decl)
 	      && !vnode->symbol.externally_visible && vnode->analyzed
-	      && referenced_from_other_partition_p (&vnode->symbol.ref_list,
+	      && set_referenced_from_other_partition_p (&vnode->symbol.ref_list,
 						    set, vset))
 	    promote_var (vnode);
 	}
@@ -866,7 +939,7 @@ lto_promote_cross_file_statics (void)
 	if (const_value_known_p (vnode->symbol.decl)
 	    && DECL_INITIAL (vnode->symbol.decl)
 	    && !varpool_node_in_set_p (vnode, vset)
-	    && referenced_from_this_partition_p (&vnode->symbol.ref_list, set, vset)
+	    && set_referenced_from_this_partition_p (&vnode->symbol.ref_list, set, vset)
 	    && !pointer_set_insert (inserted, vnode))
 	VEC_safe_push (varpool_node_ptr, heap, promoted_initializers, vnode);
 
