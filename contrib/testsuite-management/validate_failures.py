@@ -138,7 +138,7 @@ class TestResult(object):
 
   def ExpirationDate(self):
     # Return a datetime.date object with the expiration date for this
-    # test result expires.  Return None, if no expiration # has been set.
+    # test result.  Return None, if no expiration has been set.
     if re.search(r'expire=', self.attrs):
       expiration = re.search(r'expire=(\d\d\d\d)(\d\d)(\d\d)', self.attrs)
       if not expiration:
