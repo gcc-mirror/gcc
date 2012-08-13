@@ -1,3 +1,22 @@
+2012-08-13  François Dumont  <fdumont@gcc.gnu.org>
+	    Ollie Wild  <aaw@google.com>
+
+	* include/bits/hashtable.h
+	(_Hashtable<>_M_insert_multi_node(hash_code, node_type*)): New.
+	(_Hashtable<>_M_insert(_Args&&, false_type)): Use latter.
+	(_Hashtable<>::_M_emplace(false_type, _Args&&...)): Likewise.
+	(_Hashtable<>::_M_insert_bucket): Replace by ...
+	(_Hashtable<>::_M_insert_unique_node(size_type, hash_code, node_type*)):
+	... this, new.
+	(_Hashtable<>::_M_insert(_Args&&, true_type)): Use latter.
+	(_Hashtable<>::_M_emplace(true_type, _Args&&...)): Likewise.
+	* include/bits/hashtable_policy.h (_Map_base<>::operator[]): Use
+	latter, emplace the value_type rather than insert.
+	* include/std/unordered_map: Include tuple.
+	* include/std/unordered_set: Likewise.
+	* testsuite/util/testsuite_counter_type.h: New.
+	* testsuite/23_containers/unordered_map/operators/2.cc: New.
+
 2012-08-13  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR libstdc++/54112
