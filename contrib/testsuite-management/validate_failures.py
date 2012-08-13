@@ -201,8 +201,9 @@ def ParseSummary(sum_fname):
     if IsInterestingResult(line):
       result = TestResult(line)
       if result.HasExpired():
-        # Tests that had an expiration set are not added to the
-        # set of expected results.
+        # Tests that have expired are not added to the set of expected
+        # results. If they are still present in the set of actual results,
+        # they will cause an error to be reported.
         print 'WARNING: Expected failure "%s" has expired.' % line.strip()
         continue
       result_set.add(result)
