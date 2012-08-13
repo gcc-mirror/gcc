@@ -1,6 +1,6 @@
 // condition_variable -*- C++ -*-
 
-// Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009, 2010, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,12 +32,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #ifdef __GTHREAD_COND_INIT
   condition_variable::condition_variable() noexcept = default;
-  condition_variable::~condition_variable() noexcept = default;
 #else
   condition_variable::condition_variable() noexcept
   {
     __GTHREAD_COND_INIT_FUNCTION(&_M_cond);
   }
+#endif
 
   condition_variable::~condition_variable() noexcept
   {
@@ -45,7 +45,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     /* int __e = */ __gthread_cond_destroy(&_M_cond);
     // if __e == EBUSY then blocked
   }
-#endif
 
   void
   condition_variable::wait(unique_lock<mutex>& __lock)
