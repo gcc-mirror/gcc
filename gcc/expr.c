@@ -3828,7 +3828,7 @@ fixup_args_size_notes (rtx prev, rtx last, int end_args_size)
 
       add_reg_note (insn, REG_ARGS_SIZE, GEN_INT (args_size));
 #ifdef STACK_GROWS_DOWNWARD
-      this_delta = -this_delta;
+      this_delta = -(unsigned HOST_WIDE_INT) this_delta;
 #endif
       args_size -= this_delta;
     }

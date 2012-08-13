@@ -1,7 +1,7 @@
 /* C-compiler utilities for types and variables storage layout
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1996, 1998,
    1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-   2011 Free Software Foundation, Inc.
+   2011, 2012 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2568,10 +2568,14 @@ set_min_and_max_values_for_integral_type (tree type,
 	= build_int_cst_wide (type,
 			      (precision - HOST_BITS_PER_WIDE_INT > 0
 			       ? -1
-			       : ((HOST_WIDE_INT) 1 << (precision - 1)) - 1),
+			       : (HOST_WIDE_INT)
+				 (((unsigned HOST_WIDE_INT) 1
+				   << (precision - 1)) - 1)),
 			      (precision - HOST_BITS_PER_WIDE_INT - 1 > 0
-			       ? (((HOST_WIDE_INT) 1
-				   << (precision - HOST_BITS_PER_WIDE_INT - 1))) - 1
+			       ? (HOST_WIDE_INT)
+				 ((((unsigned HOST_WIDE_INT) 1
+				    << (precision - HOST_BITS_PER_WIDE_INT
+					- 1))) - 1)
 			       : 0));
     }
 
