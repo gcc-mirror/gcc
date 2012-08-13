@@ -44,6 +44,11 @@
       prints <code>(u,v)</code> and <code>op&gt;&gt;</code> can read <code>u</code>,
       <code>(u)</code>, and <code>(u,v)</code>.
    </para>
+   <para>As an extension to C++11 and for increased compatibility with C,
+      <code>&lt;complex.h&gt;</code> includes both <code>&lt;complex&gt;</code>
+      and the C99 <code>&lt;complex.h&gt;</code> (if the C library provides
+      it).
+   </para>
 
   </section>
 </section>
