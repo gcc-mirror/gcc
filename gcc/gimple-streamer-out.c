@@ -176,7 +176,6 @@ output_bb (struct output_block *ob, basic_block bb, struct function *fn)
 
   streamer_write_uhwi (ob, bb->index);
   streamer_write_hwi (ob, bb->count);
-  streamer_write_hwi (ob, bb->loop_depth);
   streamer_write_hwi (ob, bb->frequency);
   streamer_write_hwi (ob, bb->flags);
 

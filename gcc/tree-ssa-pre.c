@@ -3204,7 +3204,7 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
   gimple phi;
 
   /* Make sure we aren't creating an induction variable.  */
-  if (block->loop_depth > 0 && EDGE_COUNT (block->preds) == 2)
+  if (bb_loop_depth (block) > 0 && EDGE_COUNT (block->preds) == 2)
     {
       bool firstinsideloop = false;
       bool secondinsideloop = false;

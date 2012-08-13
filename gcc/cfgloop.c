@@ -229,10 +229,8 @@ flow_loop_nodes_find (basic_block header, struct loop *loop)
   int num_nodes = 1;
   edge latch;
   edge_iterator latch_ei;
-  unsigned depth = loop_depth (loop);
 
   header->loop_father = loop;
-  header->loop_depth = depth;
 
   FOR_EACH_EDGE (latch, latch_ei, loop->header->preds)
     {
@@ -243,7 +241,6 @@ flow_loop_nodes_find (basic_block header, struct loop *loop)
       num_nodes++;
       VEC_safe_push (basic_block, heap, stack, latch->src);
       latch->src->loop_father = loop;
-      latch->src->loop_depth = depth;
 
       while (!VEC_empty (basic_block, stack))
 	{
@@ -260,7 +257,6 @@ flow_loop_nodes_find (basic_block header, struct loop *loop)
 	      if (ancestor->loop_father != loop)
 		{
 		  ancestor->loop_father = loop;
-		  ancestor->loop_depth = depth;
 		  num_nodes++;
 		  VEC_safe_push (basic_block, heap, stack, ancestor);
 		}
@@ -365,7 +361,7 @@ init_loops_structure (struct loops *loops, unsigned num_loops)
 }
 
 /* Find all the natural loops in the function and save in LOOPS structure and
-   recalculate loop_depth information in basic block structures.
+   recalculate loop_father information in basic block structures.
    Return the number of natural loops found.  */
 
 int
@@ -403,8 +399,6 @@ flow_loops_find (struct loops *loops)
   FOR_EACH_BB (header)
     {
       edge_iterator ei;
-
-      header->loop_depth = 0;
 
       /* If we have an abnormal predecessor, do not consider the
 	 loop (not worth the problems).  */
@@ -1185,7 +1179,6 @@ add_bb_to_loop (basic_block bb, struct loop *loop)
 
   gcc_assert (bb->loop_father == NULL);
   bb->loop_father = loop;
-  bb->loop_depth = loop_depth (loop);
   loop->num_nodes++;
   FOR_EACH_VEC_ELT (loop_p, loop->superloops, i, ploop)
     ploop->num_nodes++;
@@ -1215,7 +1208,6 @@ remove_bb_from_loops (basic_block bb)
   FOR_EACH_VEC_ELT (loop_p, loop->superloops, i, ploop)
     ploop->num_nodes--;
   bb->loop_father = NULL;
-  bb->loop_depth = 0;
 
   FOR_EACH_EDGE (e, ei, bb->succs)
     {

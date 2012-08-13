@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "recog.h"
 #include "df.h"
+#include "cfgloop.h"
 
 /* Target register optimizations - these are performed after reload.  */
 
@@ -1408,7 +1409,7 @@ migrate_btr_defs (enum reg_class btr_class, int allow_callee_save)
 	  fprintf(dump_file,
 	    "Basic block %d: count = " HOST_WIDEST_INT_PRINT_DEC
 	    " loop-depth = %d idom = %d\n",
-	    i, (HOST_WIDEST_INT) bb->count, bb->loop_depth,
+	    i, (HOST_WIDEST_INT) bb->count, bb_loop_depth (bb),
 	    get_immediate_dominator (CDI_DOMINATORS, bb)->index);
 	}
     }

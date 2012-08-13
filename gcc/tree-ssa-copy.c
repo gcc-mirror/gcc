@@ -670,7 +670,7 @@ init_copy_prop (void)
   FOR_EACH_BB (bb)
     {
       gimple_stmt_iterator si;
-      int depth = bb->loop_depth;
+      int depth = bb_loop_depth (bb);
 
       for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
 	{

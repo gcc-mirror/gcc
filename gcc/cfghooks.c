@@ -462,7 +462,6 @@ split_block (basic_block bb, void *i)
 
   new_bb->count = bb->count;
   new_bb->frequency = bb->frequency;
-  new_bb->loop_depth = bb->loop_depth;
   new_bb->discriminator = bb->discriminator;
 
   if (dom_info_available_p (CDI_DOMINATORS))
@@ -985,7 +984,6 @@ duplicate_block (basic_block bb, edge e, basic_block after)
   if (after)
     move_block_after (new_bb, after);
 
-  new_bb->loop_depth = bb->loop_depth;
   new_bb->flags = bb->flags;
   FOR_EACH_EDGE (s, ei, bb->succs)
     {
