@@ -4135,43 +4135,42 @@ ix86_option_override (void)
 static void
 ix86_conditional_register_usage (void)
 {
-  int i;
+  int i, c_mask;
   unsigned int j;
-
-  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-    {
-      if (fixed_regs[i] > 1)
-	fixed_regs[i] = (fixed_regs[i] == (TARGET_64BIT ? 3 : 2));
-      if (call_used_regs[i] > 1)
-	call_used_regs[i] = (call_used_regs[i] == (TARGET_64BIT ? 3 : 2));
-    }
 
   /* The PIC register, if it exists, is fixed.  */
   j = PIC_OFFSET_TABLE_REGNUM;
   if (j != INVALID_REGNUM)
     fixed_regs[j] = call_used_regs[j] = 1;
 
-  /* The 64-bit MS_ABI changes the set of call-used registers.  */
-  if (TARGET_64BIT_MS_ABI)
+  /* For 32-bit targets, squash the REX registers.  */
+  if (! TARGET_64BIT)
     {
-      call_used_regs[SI_REG] = 0;
-      call_used_regs[DI_REG] = 0;
-      call_used_regs[XMM6_REG] = 0;
-      call_used_regs[XMM7_REG] = 0;
+      for (i = FIRST_REX_INT_REG; i <= LAST_REX_INT_REG; i++)
+	fixed_regs[i] = call_used_regs[i] = 1, reg_names[i] = "";
       for (i = FIRST_REX_SSE_REG; i <= LAST_REX_SSE_REG; i++)
-	call_used_regs[i] = 0;
+	fixed_regs[i] = call_used_regs[i] = 1, reg_names[i] = "";
     }
 
-  /* The default setting of CLOBBERED_REGS is for 32-bit; add in the
-     other call-clobbered regs for 64-bit.  */
-  if (TARGET_64BIT)
-    {
-      CLEAR_HARD_REG_SET (reg_class_contents[(int)CLOBBERED_REGS]);
+  /*  See the definition of CALL_USED_REGISTERS in i386.h.  */
+  c_mask = (TARGET_64BIT_MS_ABI ? (1 << 3)
+	    : TARGET_64BIT ? (1 << 2)
+	    : (1 << 1));
+  
+  CLEAR_HARD_REG_SET (reg_class_contents[(int)CLOBBERED_REGS]);
 
-      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	if (TEST_HARD_REG_BIT (reg_class_contents[(int)GENERAL_REGS], i)
-	    && call_used_regs[i])
-	  SET_HARD_REG_BIT (reg_class_contents[(int)CLOBBERED_REGS], i);
+  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+    {
+      /* Set/reset conditionally defined registers from
+	 CALL_USED_REGISTERS initializer.  */
+      if (call_used_regs[i] > 1)
+	call_used_regs[i] = !!(call_used_regs[i] & c_mask);
+
+      /* Calculate registers of CLOBBERED_REGS register set
+	 as call used registers from GENERAL_REGS register set.  */
+      if (TEST_HARD_REG_BIT (reg_class_contents[(int)GENERAL_REGS], i)
+	  && call_used_regs[i])
+	SET_HARD_REG_BIT (reg_class_contents[(int)CLOBBERED_REGS], i);
     }
 
   /* If MMX is disabled, squash the registers.  */
@@ -4191,15 +4190,6 @@ ix86_conditional_register_usage (void)
     for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
       if (TEST_HARD_REG_BIT (reg_class_contents[(int)FLOAT_REGS], i))
 	fixed_regs[i] = call_used_regs[i] = 1, reg_names[i] = "";
-
-  /* If 32-bit, squash the 64-bit registers.  */
-  if (! TARGET_64BIT)
-    {
-      for (i = FIRST_REX_INT_REG; i <= LAST_REX_INT_REG; i++)
-	reg_names[i] = "";
-      for (i = FIRST_REX_SSE_REG; i <= LAST_REX_SSE_REG; i++)
-	reg_names[i] = "";
-    }
 }
 
 
