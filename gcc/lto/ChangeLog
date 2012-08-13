@@ -1,3 +1,10 @@
+2012-08-12  Jan Hubicka  <jh@suse.cz>
+
+	* lto-partition.c (set_referenced_from_other_partition_p,
+	set_reachable_from_other_partition_p, set_referenced_from_this_partition_p):
+	New functions.
+	(lto_promote_cross_file_statics): Use them.
+
 2012-07-24  Jan Hubicka  <jh@suse.cz>
 
 	* lto.c (read_cgraph_and_symbols): Use input_symtab.

@@ -956,8 +956,7 @@ propagate (void)
 
 static bool
 write_node_summary_p (struct cgraph_node *node,
-		      cgraph_node_set set,
-		      varpool_node_set vset,
+		      lto_symtab_encoder_t encoder,
 		      bitmap ltrans_statics)
 {
   ipa_reference_optimization_summary_t info;
@@ -976,8 +975,8 @@ write_node_summary_p (struct cgraph_node *node,
 
      In future we might also want to include summaries of functions references
      by initializers of constant variables references in current unit.  */
-  if (!reachable_from_this_partition_p (node, set)
-      && !referenced_from_this_partition_p (&node->symbol.ref_list, set, vset))
+  if (!reachable_from_this_partition_p (node, encoder)
+      && !referenced_from_this_partition_p (&node->symbol.ref_list, encoder))
     return false;
 
   /* See if the info has non-empty intersections with vars we want to encode.  */
@@ -1025,8 +1024,7 @@ stream_out_bitmap (struct lto_simple_output_block *ob,
 /* Serialize the ipa info for lto.  */
 
 static void
-ipa_reference_write_optimization_summary (cgraph_node_set set,
-					  varpool_node_set vset)
+ipa_reference_write_optimization_summary (void)
 {
   struct cgraph_node *node;
   symtab_node snode;
@@ -1049,7 +1047,7 @@ ipa_reference_write_optimization_summary (cgraph_node_set set,
 	continue;
       vnode = varpool (snode);
       if (bitmap_bit_p (all_module_statics, DECL_UID (vnode->symbol.decl))
-	  && referenced_from_this_partition_p (&vnode->symbol.ref_list, set, vset))
+	  && referenced_from_this_partition_p (&vnode->symbol.ref_list, encoder))
 	{
 	  tree decl = vnode->symbol.decl;
 	  bitmap_set_bit (ltrans_statics, DECL_UID (decl));
@@ -1064,7 +1062,7 @@ ipa_reference_write_optimization_summary (cgraph_node_set set,
     for (i = 0; i < lto_symtab_encoder_size (encoder); i++)
       if (symtab_function_p (snode = lto_symtab_encoder_deref (encoder, i))
 	  && write_node_summary_p (cgraph (snode),
-				set, vset, ltrans_statics))
+				   encoder, ltrans_statics))
 	  count++;
 
   streamer_write_uhwi_stream (ob->main_stream, count);
@@ -1080,7 +1078,7 @@ ipa_reference_write_optimization_summary (cgraph_node_set set,
 	if (!symtab_function_p (snode))
 	  continue;
 	node = cgraph (snode);
-	if (write_node_summary_p (node, set, vset, ltrans_statics))
+	if (write_node_summary_p (node, encoder, ltrans_statics))
 	  {
 	    ipa_reference_optimization_summary_t info;
 	    int node_ref;

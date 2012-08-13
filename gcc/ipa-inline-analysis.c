@@ -3358,8 +3358,7 @@ write_inline_edge_summary (struct output_block *ob, struct cgraph_edge *e)
    active, we don't need to write them twice.  */
 
 void
-inline_write_summary (cgraph_node_set set,
-		      varpool_node_set vset ATTRIBUTE_UNUSED)
+inline_write_summary (void)
 {
   struct cgraph_node *node;
   symtab_node snode;
@@ -3426,7 +3425,7 @@ inline_write_summary (cgraph_node_set set,
   destroy_output_block (ob);
 
   if (optimize && !flag_ipa_cp)
-    ipa_prop_write_jump_functions (set);
+    ipa_prop_write_jump_functions ();
 }
 
 
