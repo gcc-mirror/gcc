@@ -392,7 +392,7 @@ rewrite_into_loop_closed_ssa (bitmap changed_bbs, unsigned update_flag)
   /* Uses of names to rename.  We don't have to initialize this array,
      because we know that we will only have entries for the SSA names
      in NAMES_TO_RENAME.  */
-  use_blocks = XCNEWVEC (bitmap, num_ssa_names);
+  use_blocks = XNEWVEC (bitmap, num_ssa_names);
 
   /* Find the uses outside loops.  */
   find_uses_to_rename (changed_bbs, use_blocks, names_to_rename);
