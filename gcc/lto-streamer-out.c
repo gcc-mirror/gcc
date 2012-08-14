@@ -613,7 +613,7 @@ output_ssa_names (struct output_block *ob, struct function *fn)
 
       if (ptr == NULL_TREE
 	  || SSA_NAME_IN_FREE_LIST (ptr)
-	  || !is_gimple_reg (ptr))
+	  || virtual_operand_p (ptr))
 	continue;
 
       streamer_write_uhwi (ob, i);

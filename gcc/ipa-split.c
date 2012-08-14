@@ -258,7 +258,7 @@ verify_non_ssa_vars (struct split_point *current, bitmap non_ssa_vars,
 	      gimple stmt = gsi_stmt (bsi);
 	      tree op = gimple_phi_arg_def (stmt, e->dest_idx);
 
-	      if (!is_gimple_reg (gimple_phi_result (stmt)))
+	      if (virtual_operand_p (gimple_phi_result (stmt)))
 		continue;
 	      if (TREE_CODE (op) != SSA_NAME
 		  && test_nonssa_use (stmt, op, non_ssa_vars))
@@ -402,7 +402,7 @@ consider_split (struct split_point *current, bitmap non_ssa_vars,
       gimple stmt = gsi_stmt (bsi);
       tree val = NULL;
 
-      if (!is_gimple_reg (gimple_phi_result (stmt)))
+      if (virtual_operand_p (gimple_phi_result (stmt)))
 	continue;
       for (i = 0; i < gimple_phi_num_args (stmt); i++)
 	{
@@ -553,7 +553,7 @@ consider_split (struct split_point *current, bitmap non_ssa_vars,
       gimple_stmt_iterator psi;
 
       for (psi = gsi_start_phis (return_bb); !gsi_end_p (psi); gsi_next (&psi))
-	if (is_gimple_reg (gimple_phi_result (gsi_stmt (psi)))
+	if (!virtual_operand_p (gimple_phi_result (gsi_stmt (psi)))
 	    && !(retval
 		 && current->split_part_set_retval
 		 && TREE_CODE (retval) == SSA_NAME
@@ -804,9 +804,7 @@ visit_bb (basic_block bb, basic_block return_bb,
       gimple stmt = gsi_stmt (bsi);
       unsigned int i;
 
-      if (is_gimple_debug (stmt))
-	continue;
-      if (!is_gimple_reg (gimple_phi_result (stmt)))
+      if (virtual_operand_p (gimple_phi_result (stmt)))
 	continue;
       bitmap_set_bit (set_ssa_names,
 		      SSA_NAME_VERSION (gimple_phi_result (stmt)));
@@ -830,9 +828,7 @@ visit_bb (basic_block bb, basic_block return_bb,
 	    gimple stmt = gsi_stmt (bsi);
 	    tree op = gimple_phi_arg_def (stmt, e->dest_idx);
 
-	    if (is_gimple_debug (stmt))
-	      continue;
-	    if (!is_gimple_reg (gimple_phi_result (stmt)))
+	    if (virtual_operand_p (gimple_phi_result (stmt)))
 	      continue;
 	    if (TREE_CODE (op) == SSA_NAME)
 	      bitmap_set_bit (used_ssa_names, SSA_NAME_VERSION (op));
@@ -1158,7 +1154,7 @@ split_function (struct split_point *split_point)
       for (gsi = gsi_start_phis (return_bb); !gsi_end_p (gsi);)
 	{
 	  gimple stmt = gsi_stmt (gsi);
-	  if (is_gimple_reg (gimple_phi_result (stmt)))
+	  if (!virtual_operand_p (gimple_phi_result (stmt)))
 	    {
 	      gsi_next (&gsi);
 	      continue;
@@ -1275,7 +1271,7 @@ split_function (struct split_point *split_point)
 		  /* See if there is PHI defining return value.  */
 		  for (psi = gsi_start_phis (return_bb);
 		       !gsi_end_p (psi); gsi_next (&psi))
-		    if (is_gimple_reg (gimple_phi_result (gsi_stmt (psi))))
+		    if (!virtual_operand_p (gimple_phi_result (gsi_stmt (psi))))
 		      break;
 
 		  /* When there is PHI, just update its value.  */

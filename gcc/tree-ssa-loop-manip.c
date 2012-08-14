@@ -169,7 +169,7 @@ add_exit_phis_var (tree var, bitmap livein, bitmap exits)
   basic_block def_bb = gimple_bb (SSA_NAME_DEF_STMT (var));
   bitmap_iterator bi;
 
-  gcc_checking_assert (is_gimple_reg (var));
+  gcc_checking_assert (! virtual_operand_p (var));
   bitmap_clear_bit (livein, def_bb->index);
 
   def = BITMAP_ALLOC (&loop_renamer_obstack);
@@ -243,7 +243,7 @@ find_uses_to_rename_use (basic_block bb, tree use, bitmap *use_blocks,
     return;
 
   /* We don't need to keep virtual operands in loop-closed form.  */
-  if (!is_gimple_reg (use))
+  if (virtual_operand_p (use))
     return;
 
   ver = SSA_NAME_VERSION (use);
@@ -417,7 +417,7 @@ check_loop_closed_ssa_use (basic_block bb, tree use)
   gimple def;
   basic_block def_bb;
 
-  if (TREE_CODE (use) != SSA_NAME || !is_gimple_reg (use))
+  if (TREE_CODE (use) != SSA_NAME || virtual_operand_p (use))
     return;
 
   def = SSA_NAME_DEF_STMT (use);
@@ -1121,7 +1121,7 @@ rewrite_phi_with_iv (loop_p loop,
   gimple stmt, phi = gsi_stmt (*psi);
   tree atype, mtype, val, res = PHI_RESULT (phi);
 
-  if (!is_gimple_reg (res) || res == main_iv)
+  if (virtual_operand_p (res) || res == main_iv)
     {
       gsi_next (psi);
       return;
@@ -1205,7 +1205,7 @@ canonicalize_loop_ivs (struct loop *loop, tree *nit, bool bump_in_latch)
       bool uns;
 
       type = TREE_TYPE (res);
-      if (!is_gimple_reg (res)
+      if (virtual_operand_p (res)
 	  || (!INTEGRAL_TYPE_P (type)
 	      && !POINTER_TYPE_P (type))
 	  || TYPE_PRECISION (type) < precision)

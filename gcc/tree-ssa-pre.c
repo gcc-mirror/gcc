@@ -3803,7 +3803,7 @@ make_values_for_phi (gimple phi, basic_block block)
 
   /* We have no need for virtual phis, as they don't represent
      actual computations.  */
-  if (is_gimple_reg (result))
+  if (!virtual_operand_p (result))
     {
       pre_expr e = get_or_alloc_expr_for_name (result);
       add_to_value (get_expr_value_id (e), e);
@@ -3853,7 +3853,7 @@ compute_avail (void)
       if (!name
 	  || !SSA_NAME_IS_DEFAULT_DEF (name)
 	  || has_zero_uses (name)
-	  || !is_gimple_reg (name))
+	  || virtual_operand_p (name))
 	continue;
 
       e = get_or_alloc_expr_for_name (name);
@@ -4456,7 +4456,7 @@ eliminate (void)
 	     replacing the PHI with a single copy if possible.
 	     Do not touch inserted, single-argument or virtual PHIs.  */
 	  if (gimple_phi_num_args (phi) == 1
-	      || !is_gimple_reg (res))
+	      || virtual_operand_p (res))
 	    {
 	      gsi_next (&gsi);
 	      continue;

@@ -555,7 +555,7 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, struct loop *loop)
 
       /* Skip virtual phi's.  The data dependences that are associated with
          virtual defs/uses (i.e., memory accesses) are analyzed elsewhere.  */
-      if (!is_gimple_reg (def))
+      if (virtual_operand_p (def))
 	continue;
 
       STMT_VINFO_DEF_TYPE (stmt_vinfo) = vect_unknown_def_type;
@@ -604,8 +604,8 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, struct loop *loop)
           print_gimple_stmt (vect_dump, phi, 0, TDF_SLIM);
         }
 
-      gcc_assert (is_gimple_reg (def));
-      gcc_assert (STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_unknown_def_type);
+      gcc_assert (!virtual_operand_p (def)
+		  && STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_unknown_def_type);
 
       nested_cycle = (loop != LOOP_VINFO_LOOP (loop_vinfo));
       reduc_stmt = vect_force_simple_reduction (loop_vinfo, phi, !nested_cycle,

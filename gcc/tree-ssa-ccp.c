@@ -236,7 +236,6 @@ debug_lattice_value (prop_value_t val)
 static prop_value_t
 get_default_value (tree var)
 {
-  tree sym = SSA_NAME_VAR (var);
   prop_value_t val = { UNINITIALIZED, NULL_TREE, { 0, 0 } };
   gimple stmt;
 
@@ -248,8 +247,8 @@ get_default_value (tree var)
 	 before being initialized.  If VAR is a local variable, we
 	 can assume initially that it is UNDEFINED, otherwise we must
 	 consider it VARYING.  */
-      if (is_gimple_reg (sym)
-	  && TREE_CODE (sym) == VAR_DECL)
+      if (!virtual_operand_p (var)
+	  && TREE_CODE (SSA_NAME_VAR (var)) == VAR_DECL)
 	val.lattice_val = UNDEFINED;
       else
 	{
@@ -762,7 +761,7 @@ ccp_initialize (void)
         {
           gimple phi = gsi_stmt (i);
 
-	  if (!is_gimple_reg (gimple_phi_result (phi)))
+	  if (virtual_operand_p (gimple_phi_result (phi)))
             prop_set_simulate_again (phi, false);
 	  else
             prop_set_simulate_again (phi, true);

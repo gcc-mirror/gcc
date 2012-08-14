@@ -410,7 +410,7 @@ if_convertible_phi_p (struct loop *loop, basic_block bb, gimple phi)
   /* When the flag_tree_loop_if_convert_stores is not set, check
      that there are no memory writes in the branches of the loop to be
      if-converted.  */
-  if (!is_gimple_reg (gimple_phi_result (phi)))
+  if (virtual_operand_p (gimple_phi_result (phi)))
     {
       imm_use_iterator imm_iter;
       use_operand_p use_p;
@@ -1262,7 +1262,7 @@ predicate_scalar_phi (gimple phi, tree cond,
 
   res = gimple_phi_result (phi);
   /* Do not handle virtual phi nodes.  */
-  if (!is_gimple_reg (res))
+  if (virtual_operand_p (res))
     return;
 
   bb = gimple_bb (phi);

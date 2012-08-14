@@ -6589,7 +6589,7 @@ compute_points_to_sets (void)
 	{
 	  gimple phi = gsi_stmt (gsi);
 
-	  if (is_gimple_reg (gimple_phi_result (phi)))
+	  if (! virtual_operand_p (gimple_phi_result (phi)))
 	    find_func_aliases (phi);
 	}
 
@@ -6966,7 +6966,7 @@ ipa_pta_execute (void)
 	    {
 	      gimple phi = gsi_stmt (gsi);
 
-	      if (is_gimple_reg (gimple_phi_result (phi)))
+	      if (! virtual_operand_p (gimple_phi_result (phi)))
 		find_func_aliases (phi);
 	    }
 

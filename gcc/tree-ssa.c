@@ -642,7 +642,7 @@ verify_ssa_name (tree ssa_name, bool is_virtual)
       return true;
     }
 
-  if (is_virtual && is_gimple_reg (ssa_name))
+  if (is_virtual && !virtual_operand_p (ssa_name))
     {
       error ("found a virtual definition for a GIMPLE register");
       return true;
@@ -654,7 +654,7 @@ verify_ssa_name (tree ssa_name, bool is_virtual)
       return true;
     }
 
-  if (!is_virtual && !is_gimple_reg (ssa_name))
+  if (!is_virtual && virtual_operand_p (ssa_name))
     {
       error ("found a real definition for a non-register");
       return true;
@@ -864,7 +864,7 @@ verify_phi_args (gimple phi, basic_block bb, basic_block *definition_block)
 
       if (TREE_CODE (op) == SSA_NAME)
 	{
-	  err = verify_ssa_name (op, !is_gimple_reg (gimple_phi_result (phi)));
+	  err = verify_ssa_name (op, virtual_operand_p (gimple_phi_result (phi)));
 	  err |= verify_use (e->src, definition_block[SSA_NAME_VERSION (op)],
 			     op_p, phi, e->flags & EDGE_ABNORMAL, NULL);
 	}
@@ -938,14 +938,14 @@ verify_ssa (bool check_modified_stmt)
 	  gimple stmt;
 	  TREE_VISITED (name) = 0;
 
-	  verify_ssa_name (name, !is_gimple_reg (name));
+	  verify_ssa_name (name, virtual_operand_p (name));
 
 	  stmt = SSA_NAME_DEF_STMT (name);
 	  if (!gimple_nop_p (stmt))
 	    {
 	      basic_block bb = gimple_bb (stmt);
 	      verify_def (bb, definition_block,
-			  name, stmt, !is_gimple_reg (name));
+			  name, stmt, virtual_operand_p (name));
 
 	    }
 	}

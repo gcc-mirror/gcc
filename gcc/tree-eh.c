@@ -3857,7 +3857,7 @@ cleanup_empty_eh_merge_phis (basic_block new_bb, basic_block old_bb,
 	}
       /* If we didn't find the PHI, but it's a VOP, remember to rename
 	 it later, assuming all other tests succeed.  */
-      else if (!is_gimple_reg (nresult))
+      else if (virtual_operand_p (nresult))
 	bitmap_set_bit (rename_virts, SSA_NAME_VERSION (nresult));
       /* If we didn't find the PHI, and it's a real variable, we know
 	 from the fact that OLD_BB is tree_empty_eh_handler_p that the

@@ -1923,8 +1923,8 @@ warn_uninitialized_phi (gimple phi, VEC(gimple, heap) **worklist,
   gimple uninit_use_stmt = 0;
   tree uninit_op;
 
-  /* Don't look at memory tags.  */
-  if (!is_gimple_reg (gimple_phi_result (phi)))
+  /* Don't look at virtual operands.  */
+  if (virtual_operand_p (gimple_phi_result (phi)))
     return;
 
   uninit_opnds = compute_uninit_opnds_pos (phi);
@@ -1988,8 +1988,8 @@ execute_late_warn_uninitialized (void)
 
         n = gimple_phi_num_args (phi);
 
-        /* Don't look at memory tags.  */
-        if (!is_gimple_reg (gimple_phi_result (phi)))
+        /* Don't look at virtual operands.  */
+        if (virtual_operand_p (gimple_phi_result (phi)))
           continue;
 
         for (i = 0; i < n; ++i)

@@ -2128,7 +2128,7 @@ dump_phi_nodes (pretty_printer *buffer, basic_block bb, int indent, int flags)
   for (i = gsi_start_phis (bb); !gsi_end_p (i); gsi_next (&i))
     {
       gimple phi = gsi_stmt (i);
-      if (is_gimple_reg (gimple_phi_result (phi)) || (flags & TDF_VOPS))
+      if (!virtual_operand_p (gimple_phi_result (phi)) || (flags & TDF_VOPS))
         {
           INDENT (indent);
           pp_string (buffer, "# ");

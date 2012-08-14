@@ -234,7 +234,7 @@ phi_rank (gimple stmt)
 
   /* Ignore virtual SSA_NAMEs.  */
   res = gimple_phi_result (stmt);
-  if (!is_gimple_reg (res))
+  if (virtual_operand_p (res))
     return bb_rank[bb->index];
 
   /* The phi definition must have a single use, and that use must be
