@@ -1,3 +1,8 @@
+2012-08-14  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54234
+	* gfortran.dg/warn_conversion_4.f90: New.
+
 2012-08-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/53411
