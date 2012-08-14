@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "domwalk.h"
 #include "params.h"
 #include "vecprim.h"
+#include "diagnostic-core.h"
 
 
 /* This file builds the SSA form for a function as described in:
