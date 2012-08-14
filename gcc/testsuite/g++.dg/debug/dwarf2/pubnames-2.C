@@ -1,6 +1,6 @@
 // { dg-do compile }
 // { dg-options "-gpubnames -gdwarf-4 -std=c++0x -dA" }
-// { dg-final { scan-assembler ".section\t.debug_pubnames" } }
+// { dg-final { scan-assembler-times "\.section\[\t \]\[^\n\]*debug_pubnames" 1 } }
 // { dg-final { scan-assembler "\"\\(anonymous namespace\\)\\\\0\"+\[ \t\]+\[#;/|@!]+\[ \t\]+external name" } }
 // { dg-final { scan-assembler "\"one\\\\0\"+\[ \t\]+\[#;/|@!]+\[ \t\]+external name" } }
 // { dg-final { scan-assembler "\"one::G_A\\\\0\"+\[ \t\]+\[#;/|@!]+\[ \t\]+external name" } }
@@ -31,7 +31,6 @@
 // { dg-final { scan-assembler "\"two::c2<int>::~c2\\\\0\"+\[ \t\]+\[#;/|@!]+\[ \t\]+external name" } }
 // { dg-final { scan-assembler "\"two::c2<double>::~c2\\\\0\"+\[ \t\]+\[#;/|@!]+\[ \t\]+external name" } }
 // { dg-final { scan-assembler "\"two::c2<int const\\\*>::~c2\\\\0\"+\[ \t\]+\[#;/|@!]+\[ \t\]+external name" } }
-// { dg-final { scan-assembler "\"_GLOBAL__sub_I__ZN3one3c1vE\\\\0\"+\[ \t\]+\[#;/|@!]+\[ \t\]+external name" } }
 // { dg-final { scan-assembler "\"anonymous_union_var\\\\0\"+\[ \t\]+\[#;/|@!]+\[ \t\]+external name" } }
 // { dg-final { scan-assembler "\"two::ci\\\\0\"+\[ \t\]+\[#;/|@!]+\[ \t\]+external name" } }
 // { dg-final { scan-assembler "\"two::c2v1\\\\0\"+\[ \t\]+\[#;/|@!]+\[ \t\]+external name" } }
@@ -43,7 +42,7 @@
 // { dg-final { scan-assembler "\"\\(anonymous namespace\\)::c2_count\\\\0\"+\[ \t\]+\[#;/|@!]+\[ \t\]+external name" } }
 // { dg-final { scan-assembler "\"\\(anonymous namespace\\)::three\\\\0\"+\[ \t\]+\[#;/|@!]+\[ \t\]+external name" } }
 // { dg-final { scan-assembler "\"\\(anonymous namespace\\)::three::anonymous_three_var\\\\0\"+\[ \t\]+\[#;/|@!]+\[ \t\]+external name" } }
-// { dg-final { scan-assembler ".section\t.debug_pubtypes" } }
+// { dg-final { scan-assembler-times "\.section\[\t \]\[^\n\]*debug_pubtypes" 1 } }
 // { dg-final { scan-assembler "\"one::G\\\\0\"+\[ \t\]+\[#;/|@!]+\[ \t\]+external name" } }
 // { dg-final { scan-assembler "\"one::c1\\\\0\"+\[ \t\]+\[#;/|@!]+\[ \t\]+external name" } }
 // { dg-final { scan-assembler "\"int\\\\0\"+\[ \t\]+\[#;/|@!]+\[ \t\]+external name" } }

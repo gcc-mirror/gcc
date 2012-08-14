@@ -1,3 +1,7 @@
+2012-08-14  Sterling Augustine  <saugustine@google.com>
+
+	* g++.dg/debug/dwarf2/pubnames-2.C: Adjust.
+
 2012-08-14  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/40881
