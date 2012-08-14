@@ -737,6 +737,8 @@ repair_loop_structures (void)
 {
   bitmap changed_bbs;
 
+  calculate_dominance_info (CDI_DOMINATORS);
+
   timevar_push (TV_REPAIR_LOOPS);
   changed_bbs = BITMAP_ALLOC (NULL);
   fix_loop_structure (changed_bbs);

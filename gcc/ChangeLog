@@ -1,5 +1,11 @@
 2012-08-14  Steven Bosscher  <steven@gcc.gnu.org>
 
+	* graphite-scop-detection.c (create_sese_edges): Compute dominance
+	info before trying to fix loop structure.
+	* cfgloopmanip.c (fix_loop_structure): Require fast DOM queries.
+	* tree-cfgcleanup.c (repair_loop_structures): Likewise.
+	* cfgloop.c (verify_loop_structure): Verify loop fathers.
+
 	* dominance.c (init_dom_info): Use gcc_checking_assert, not gcc_assert.
 	(dom_convert_dir_to_idx, compute_dom_fast_query,
 	get_immediate_dominator, set_immediate_dominator, get_dominated_by,
