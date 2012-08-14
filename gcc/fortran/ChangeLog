@@ -1,3 +1,10 @@
+2012-08-14  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54234
+	* check.c (gfc_check_cmplx): Add -Wconversion warning
+	when converting higher-precision REAL to default-precision
+	CMPLX without kind= parameter.
+
 2012-08-12  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/54221
