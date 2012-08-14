@@ -504,11 +504,10 @@ rename_uses (gimple copy, htab_t rename_map, gimple_stmt_iterator *gsi_tgt,
 	    {
 	      tree var = create_tmp_var (type_old_name, "var");
 
-	      if (type_old_name != type_new_expr)
+	      if (!useless_type_conversion_p (type_old_name, type_new_expr))
 		new_expr = fold_convert (type_old_name, new_expr);
 
-	      new_expr = build2 (MODIFY_EXPR, type_old_name, var, new_expr);
-	      new_expr = force_gimple_operand (new_expr, &stmts, true, NULL);
+	      new_expr = force_gimple_operand (new_expr, &stmts, true, var);
 	      gsi_insert_seq_before (gsi_tgt, stmts, GSI_SAME_STMT);
 	    }
 

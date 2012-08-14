@@ -1,5 +1,16 @@
 2012-08-14  Richard Guenther  <rguenther@suse.de>
 
+	* gimplify.c (create_tmp_from_val): Mark temporary with
+	DECL_GIMPLE_REG_P here ...
+	(internal_get_tmp_var): ... instead of here.  If we go into
+	SSA create an SSA name instead of a VAR_DECL.
+	(gimplify_modify_expr): Do not create SSA names here, assert
+	we already got them.
+	(force_gimple_operand_1): Create an SSA name if we go into SSA.
+	* sese.c (rename_uses): Simplify.
+
+2012-08-14  Richard Guenther  <rguenther@suse.de>
+
 	* tree-into-ssa.c: Include diagnostic-core.h.
 	* Makefile.in (tree-into-ssa.o): Adjust.
 
