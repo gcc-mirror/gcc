@@ -1,5 +1,10 @@
 2012-08-14  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans-expr.c (gfc_trans_scalar_assign): Rename argument,
+	extend comment.
+
+2012-08-14  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* gfortran.h (gfc_get_proc_ptr_comp): New prototype.
 	(gfc_is_proc_ptr_comp): Update prototype.
 	* expr.c (gfc_get_proc_ptr_comp): New function based on the old
