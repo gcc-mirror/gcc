@@ -488,58 +488,6 @@ create_tmp_reg (tree type, const char *prefix)
   return tmp;
 }
 
-/* Create a temporary with a name derived from VAL.  Subroutine of
-   lookup_tmp_var; nobody else should call this function.  */
-
-static inline tree
-create_tmp_from_val (tree val)
-{
-  /* Drop all qualifiers and address-space information from the value type.  */
-  return create_tmp_var (TYPE_MAIN_VARIANT (TREE_TYPE (val)), get_name (val));
-}
-
-/* Create a temporary to hold the value of VAL.  If IS_FORMAL, try to reuse
-   an existing expression temporary.  */
-
-static tree
-lookup_tmp_var (tree val, bool is_formal)
-{
-  tree ret;
-
-  /* If not optimizing, never really reuse a temporary.  local-alloc
-     won't allocate any variable that is used in more than one basic
-     block, which means it will go into memory, causing much extra
-     work in reload and final and poorer code generation, outweighing
-     the extra memory allocation here.  */
-  if (!optimize || !is_formal || TREE_SIDE_EFFECTS (val))
-    ret = create_tmp_from_val (val);
-  else
-    {
-      elt_t elt, *elt_p;
-      void **slot;
-
-      elt.val = val;
-      if (gimplify_ctxp->temp_htab == NULL)
-        gimplify_ctxp->temp_htab
-	  = htab_create (1000, gimple_tree_hash, gimple_tree_eq, free);
-      slot = htab_find_slot (gimplify_ctxp->temp_htab, (void *)&elt, INSERT);
-      if (*slot == NULL)
-	{
-	  elt_p = XNEW (elt_t);
-	  elt_p->val = val;
-	  elt_p->temp = ret = create_tmp_from_val (val);
-	  *slot = (void *) elt_p;
-	}
-      else
-	{
-	  elt_p = (elt_t *) *slot;
-          ret = elt_p->temp;
-	}
-    }
-
-  return ret;
-}
-
 /* Returns true iff T is a valid RHS for an assignment to a renamed
    user -- or front-end generated artificial -- variable.  */
 
@@ -591,6 +539,64 @@ is_gimple_mem_rhs_or_call (tree t)
 	    || TREE_CODE (t) == CALL_EXPR);
 }
 
+/* Create a temporary with a name derived from VAL.  Subroutine of
+   lookup_tmp_var; nobody else should call this function.  */
+
+static inline tree
+create_tmp_from_val (tree val, bool is_formal)
+{
+  /* Drop all qualifiers and address-space information from the value type.  */
+  tree type = TYPE_MAIN_VARIANT (TREE_TYPE (val));
+  tree var = create_tmp_var (type, get_name (val));
+  if (is_formal
+      && (TREE_CODE (TREE_TYPE (var)) == COMPLEX_TYPE
+	  || TREE_CODE (TREE_TYPE (var)) == VECTOR_TYPE))
+    DECL_GIMPLE_REG_P (var) = 1;
+  return var;
+}
+
+/* Create a temporary to hold the value of VAL.  If IS_FORMAL, try to reuse
+   an existing expression temporary.  */
+
+static tree
+lookup_tmp_var (tree val, bool is_formal)
+{
+  tree ret;
+
+  /* If not optimizing, never really reuse a temporary.  local-alloc
+     won't allocate any variable that is used in more than one basic
+     block, which means it will go into memory, causing much extra
+     work in reload and final and poorer code generation, outweighing
+     the extra memory allocation here.  */
+  if (!optimize || !is_formal || TREE_SIDE_EFFECTS (val))
+    ret = create_tmp_from_val (val, is_formal);
+  else
+    {
+      elt_t elt, *elt_p;
+      void **slot;
+
+      elt.val = val;
+      if (gimplify_ctxp->temp_htab == NULL)
+        gimplify_ctxp->temp_htab
+	  = htab_create (1000, gimple_tree_hash, gimple_tree_eq, free);
+      slot = htab_find_slot (gimplify_ctxp->temp_htab, (void *)&elt, INSERT);
+      if (*slot == NULL)
+	{
+	  elt_p = XNEW (elt_t);
+	  elt_p->val = val;
+	  elt_p->temp = ret = create_tmp_from_val (val, is_formal);
+	  *slot = (void *) elt_p;
+	}
+      else
+	{
+	  elt_p = (elt_t *) *slot;
+          ret = elt_p->temp;
+	}
+    }
+
+  return ret;
+}
+
 /* Helper for get_formal_tmp_var and get_initialized_tmp_var.  */
 
 static tree
@@ -604,12 +610,11 @@ internal_get_tmp_var (tree val, gimple_seq *pre_p, gimple_seq *post_p,
   gimplify_expr (&val, pre_p, post_p, is_gimple_reg_rhs_or_call,
 		 fb_rvalue);
 
-  t = lookup_tmp_var (val, is_formal);
-
-  if (is_formal
-      && (TREE_CODE (TREE_TYPE (t)) == COMPLEX_TYPE
-	  || TREE_CODE (TREE_TYPE (t)) == VECTOR_TYPE))
-    DECL_GIMPLE_REG_P (t) = 1;
+  if (gimplify_ctxp->into_ssa
+      && is_gimple_reg_type (TREE_TYPE (val)))
+    t = make_ssa_name (TYPE_MAIN_VARIANT (TREE_TYPE (val)), NULL);
+  else
+    t = lookup_tmp_var (val, is_formal);
 
   mod = build2 (INIT_EXPR, TREE_TYPE (t), t, unshare_expr (val));
 
@@ -618,14 +623,6 @@ internal_get_tmp_var (tree val, gimple_seq *pre_p, gimple_seq *post_p,
   /* gimplify_modify_expr might want to reduce this further.  */
   gimplify_and_add (mod, pre_p);
   ggc_free (mod);
-
-  /* If we're gimplifying into ssa, gimplify_modify_expr will have
-     given our temporary an SSA name.  Find and return it.  */
-  if (gimplify_ctxp->into_ssa)
-    {
-      gimple last = gimple_seq_last_stmt (*pre_p);
-      t = gimple_get_lhs (last);
-    }
 
   return t;
 }
@@ -4919,11 +4916,8 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 
   if (gimplify_ctxp->into_ssa && is_gimple_reg (*to_p))
     {
-      /* If we've somehow already got an SSA_NAME on the LHS, then
-	 we've probably modified it twice.  Not good.  */
-      gcc_assert (TREE_CODE (*to_p) != SSA_NAME);
-      *to_p = make_ssa_name (*to_p, assign);
-      gimple_set_lhs (assign, *to_p);
+      /* We should have got an SSA name from the start.  */
+      gcc_assert (TREE_CODE (*to_p) == SSA_NAME);
     }
 
   gimplify_seq_add_stmt (pre_p, assign);
@@ -8552,7 +8546,12 @@ force_gimple_operand_1 (tree expr, gimple_seq *stmts,
   gimplify_ctxp->allow_rhs_cond_expr = true;
 
   if (var)
-    expr = build2 (MODIFY_EXPR, TREE_TYPE (var), var, expr);
+    {
+      if (gimplify_ctxp->into_ssa
+	  && is_gimple_reg (var))
+	var = make_ssa_name (var, NULL);
+      expr = build2 (MODIFY_EXPR, TREE_TYPE (var), var, expr);
+    }
 
   if (TREE_CODE (expr) != MODIFY_EXPR
       && TREE_TYPE (expr) == void_type_node)
