@@ -49,6 +49,7 @@
 ;;  Sbw: QImode address with 12 bit displacement
 ;;  Snd: address without displacement
 ;;  Sdd: address with displacement
+;;  Sra: simple register address
 ;; W: vector
 ;; Z: zero in any mode
 ;;
@@ -306,4 +307,9 @@
   (and (match_test "satisfies_constraint_Sdd (op)")
        (match_test "GET_MODE (op) == QImode")
        (match_test "satisfies_constraint_K12 (XEXP (XEXP (op, 0), 1))")))
+
+(define_memory_constraint "Sra"
+  "A memory reference that uses a simple register addressing."
+  (and (match_test "MEM_P (op)")
+       (match_test "REG_P (XEXP (op, 0))")))
 
