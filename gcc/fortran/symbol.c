@@ -2204,7 +2204,8 @@ gfc_define_st_label (gfc_st_label *lp, gfc_sl_type type, locus *label_locus)
       switch (type)
 	{
 	case ST_LABEL_FORMAT:
-	  if (lp->referenced == ST_LABEL_TARGET)
+	  if (lp->referenced == ST_LABEL_TARGET
+	      || lp->referenced == ST_LABEL_DO_TARGET)
 	    gfc_error ("Label %d at %C already referenced as branch target",
 		       labelno);
 	  else
@@ -2213,12 +2214,18 @@ gfc_define_st_label (gfc_st_label *lp, gfc_sl_type type, locus *label_locus)
 	  break;
 
 	case ST_LABEL_TARGET:
+	case ST_LABEL_DO_TARGET:
 	  if (lp->referenced == ST_LABEL_FORMAT)
 	    gfc_error ("Label %d at %C already referenced as a format label",
 		       labelno);
 	  else
-	    lp->defined = ST_LABEL_TARGET;
+	    lp->defined = type;
 
+	  if (lp->referenced == ST_LABEL_DO_TARGET && type != ST_LABEL_DO_TARGET
+      	      && gfc_notify_std (GFC_STD_F95_OBS, "DO termination statement "
+				 "which is not END DO or CONTINUE with label "
+				 "%d at %C", labelno) == FAILURE)
+	    return;
 	  break;
 
 	default:
@@ -2254,14 +2261,16 @@ gfc_reference_st_label (gfc_st_label *lp, gfc_sl_type type)
       lp->where = gfc_current_locus;
     }
 
-  if (label_type == ST_LABEL_FORMAT && type == ST_LABEL_TARGET)
+  if (label_type == ST_LABEL_FORMAT
+      && (type == ST_LABEL_TARGET || type == ST_LABEL_DO_TARGET))
     {
       gfc_error ("Label %d at %C previously used as a FORMAT label", labelno);
       rc = FAILURE;
       goto done;
     }
 
-  if ((label_type == ST_LABEL_TARGET || label_type == ST_LABEL_BAD_TARGET)
+  if ((label_type == ST_LABEL_TARGET || label_type == ST_LABEL_DO_TARGET
+       || label_type == ST_LABEL_BAD_TARGET)
       && type == ST_LABEL_FORMAT)
     {
       gfc_error ("Label %d at %C previously used as branch target", labelno);
@@ -2269,7 +2278,13 @@ gfc_reference_st_label (gfc_st_label *lp, gfc_sl_type type)
       goto done;
     }
 
-  lp->referenced = type;
+  if (lp->referenced == ST_LABEL_DO_TARGET && type == ST_LABEL_DO_TARGET
+      && gfc_notify_std (GFC_STD_F95_OBS, "Shared DO termination label %d "
+			 "at %C", labelno) == FAILURE)
+    return FAILURE;
+
+  if (lp->referenced != ST_LABEL_DO_TARGET)
+    lp->referenced = type;
   rc = SUCCESS;
 
 done:

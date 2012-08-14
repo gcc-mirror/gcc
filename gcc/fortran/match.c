@@ -2400,7 +2400,7 @@ gfc_match_do (void)
 	goto concurr_cleanup;
 
       if (label != NULL
-	   && gfc_reference_st_label (label, ST_LABEL_TARGET) == FAILURE)
+	   && gfc_reference_st_label (label, ST_LABEL_DO_TARGET) == FAILURE)
 	goto concurr_cleanup;
 
       new_st.label1 = label;
@@ -2454,7 +2454,7 @@ concurr_cleanup:
 
 done:
   if (label != NULL
-      && gfc_reference_st_label (label, ST_LABEL_TARGET) == FAILURE)
+      && gfc_reference_st_label (label, ST_LABEL_DO_TARGET) == FAILURE)
     goto cleanup;
 
   new_st.label1 = label;

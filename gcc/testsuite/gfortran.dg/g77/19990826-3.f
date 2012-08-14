@@ -64,7 +64,7 @@ C
       IF(M2.LT.64)INDE=5
       IF(M2.LT.32)INDE=4
       DO 3 NUN =3,INUN
-      DO 3 NDE=3,INDE
+      DO 3 NDE=3,INDE ! { dg-warning "Obsolescent feature: Shared DO termination" }
       N10=2**NUN
       N20=2**NDE
       NDIF=(N10-N20)

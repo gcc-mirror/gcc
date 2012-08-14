@@ -875,6 +875,7 @@ gfc_notify_std (int std, const char *gmsgid, ...)
 	warnings++;
       else
 	gfc_increment_error_count();
+      cur_error_buffer->flag = 0;
     }
 
   return (warning && !warnings_are_errors) ? SUCCESS : FAILURE;

@@ -1,4 +1,5 @@
 ! { dg-do compile }
+! { dg-options "" }
 ! Tests standard indepedendent constraints for variables in a data statement
 !
 ! Contributed by Paul Thomas <pault@gcc.gnu.org>
