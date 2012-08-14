@@ -1,3 +1,9 @@
+2012-08-14  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/47586
+	* gfortran.dg/typebound_proc_20.f90: Enable runtime test.
+	* gfortran.dg/typebound_proc_27.f03: New test.
+
 2012-08-14  Sterling Augustine  <saugustine@google.com>
 
 	* g++.dg/debug/dwarf2/pubnames-2.C: Adjust.

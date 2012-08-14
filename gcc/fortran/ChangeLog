@@ -1,5 +1,11 @@
 2012-08-14  Mikael Morin  <mikael@gcc.gnu.org>
 
+	PR fortran/47586
+	* trans-expr.c (expr_is_variable): Handle regular, procedure pointer,
+	and typebound functions returning a data pointer.
+
+2012-08-14  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* decl.c (match_ppc_decl): Copy the procedure interface's symbol
 	as procedure interface's result.
 
