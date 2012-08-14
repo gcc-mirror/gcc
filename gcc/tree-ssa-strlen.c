@@ -1890,7 +1890,7 @@ strlen_enter_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
 	  for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	    {
 	      gimple phi = gsi_stmt (gsi);
-	      if (!is_gimple_reg (gimple_phi_result (phi)))
+	      if (virtual_operand_p (gimple_phi_result (phi)))
 		{
 		  bitmap visited = BITMAP_ALLOC (NULL);
 		  int count_vdef = 100;
@@ -1908,7 +1908,7 @@ strlen_enter_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
     {
       gimple phi = gsi_stmt (gsi);
       tree result = gimple_phi_result (phi);
-      if (is_gimple_reg (result) && POINTER_TYPE_P (TREE_TYPE (result)))
+      if (!virtual_operand_p (result) && POINTER_TYPE_P (TREE_TYPE (result)))
 	{
 	  int idx = get_stridx (gimple_phi_arg_def (phi, 0));
 	  if (idx != 0)

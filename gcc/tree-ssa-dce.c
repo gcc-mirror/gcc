@@ -720,7 +720,7 @@ propagate_necessity (struct edge_list *el)
       if (gimple_code (stmt) == GIMPLE_PHI
 	  /* We do not process virtual PHI nodes nor do we track their
 	     necessity.  */
-	  && is_gimple_reg (gimple_phi_result (stmt)))
+	  && !virtual_operand_p (gimple_phi_result (stmt)))
 	{
 	  /* PHI nodes are somewhat special in that each PHI alternative has
 	     data and control dependencies.  All the statements feeding the
@@ -1052,7 +1052,7 @@ remove_dead_phis (basic_block bb)
 
       /* We do not track necessity of virtual PHI nodes.  Instead do
          very simple dead PHI removal here.  */
-      if (!is_gimple_reg (gimple_phi_result (phi)))
+      if (virtual_operand_p (gimple_phi_result (phi)))
 	{
 	  /* Virtual PHI nodes with one or identical arguments
 	     can be removed.  */
@@ -1130,7 +1130,7 @@ forward_edge_to_pdom (edge e, basic_block post_dom_bb)
 
 	  /* PHIs for virtuals have no control dependency relation on them.
 	     We are lost here and must force renaming of the symbol.  */
-	  if (!is_gimple_reg (gimple_phi_result (phi)))
+	  if (virtual_operand_p (gimple_phi_result (phi)))
 	    {
 	      mark_virtual_phi_result_for_renaming (phi);
 	      remove_phi_node (&gsi, true);
@@ -1391,7 +1391,7 @@ eliminate_unnecessary_stmts (void)
 	      || !(bb->flags & BB_REACHABLE))
 	    {
 	      for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-		if (!is_gimple_reg (gimple_phi_result (gsi_stmt (gsi))))
+		if (virtual_operand_p (gimple_phi_result (gsi_stmt (gsi))))
 		  {
 		    bool found = false;
 		    imm_use_iterator iter;

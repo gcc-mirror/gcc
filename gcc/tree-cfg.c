@@ -1589,7 +1589,7 @@ replace_uses_by (tree name, tree val)
 		  /* This can only occur for virtual operands, since
 		     for the real ones SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name))
 		     would prevent replacement.  */
-		  gcc_checking_assert (!is_gimple_reg (name));
+		  gcc_checking_assert (virtual_operand_p (name));
 		  SSA_NAME_OCCURS_IN_ABNORMAL_PHI (val) = 1;
 		}
 	    }
@@ -1664,21 +1664,21 @@ gimple_merge_blocks (basic_block a, basic_block b)
       gimple phi = gsi_stmt (psi);
       tree def = gimple_phi_result (phi), use = gimple_phi_arg_def (phi, 0);
       gimple copy;
-      bool may_replace_uses = !is_gimple_reg (def)
-			      || may_propagate_copy (def, use);
+      bool may_replace_uses = (virtual_operand_p (def)
+			       || may_propagate_copy (def, use));
 
       /* In case we maintain loop closed ssa form, do not propagate arguments
 	 of loop exit phi nodes.  */
       if (current_loops
 	  && loops_state_satisfies_p (LOOP_CLOSED_SSA)
-	  && is_gimple_reg (def)
+	  && !virtual_operand_p (def)
 	  && TREE_CODE (use) == SSA_NAME
 	  && a->loop_father != b->loop_father)
 	may_replace_uses = false;
 
       if (!may_replace_uses)
 	{
-	  gcc_assert (is_gimple_reg (def));
+	  gcc_assert (!virtual_operand_p (def));
 
 	  /* Note that just emitting the copies is fine -- there is no problem
 	     with ordering of phi nodes.  This is because A is the single
@@ -1693,7 +1693,7 @@ gimple_merge_blocks (basic_block a, basic_block b)
 	  /* If we deal with a PHI for virtual operands, we can simply
 	     propagate these without fussing with folding or updating
 	     the stmt.  */
-	  if (!is_gimple_reg (def))
+	  if (virtual_operand_p (def))
 	    {
 	      imm_use_iterator iter;
 	      use_operand_p use_p;
@@ -4357,7 +4357,7 @@ verify_gimple_phi (gimple phi)
       return true;
     }
 
-  virtual_p = !is_gimple_reg (phi_result);
+  virtual_p = virtual_operand_p (phi_result);
   if (TREE_CODE (phi_result) != SSA_NAME
       || (virtual_p
 	  && SSA_NAME_VAR (phi_result) != gimple_vop (cfun)))
@@ -4379,7 +4379,7 @@ verify_gimple_phi (gimple phi)
       /* Addressable variables do have SSA_NAMEs but they
 	 are not considered gimple values.  */
       else if ((TREE_CODE (t) == SSA_NAME
-		&& virtual_p != !is_gimple_reg (t))
+		&& virtual_p != virtual_operand_p (t))
 	       || (virtual_p
 		   && (TREE_CODE (t) != SSA_NAME
 		       || SSA_NAME_VAR (t) != gimple_vop (cfun)))
@@ -5948,7 +5948,7 @@ replace_ssa_name (tree name, struct pointer_map_t *vars_map,
   void **loc;
   tree new_name;
 
-  gcc_assert (is_gimple_reg (name));
+  gcc_assert (!virtual_operand_p (name));
 
   loc = pointer_map_contains (vars_map, name);
 
@@ -6235,7 +6235,7 @@ move_block_to_fn (struct function *dest_cfun, basic_block bb,
       tree op = PHI_RESULT (phi);
       ssa_op_iter oi;
 
-      if (!is_gimple_reg (op))
+      if (virtual_operand_p (op))
 	{
 	  /* Remove the phi nodes for virtual operands (alias analysis will be
 	     run for the new function, anyway).  */

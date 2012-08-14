@@ -356,7 +356,7 @@ movement_possibility (gimple stmt)
 
   if (gimple_code (stmt) == GIMPLE_PHI
       && gimple_phi_num_args (stmt) <= 2
-      && is_gimple_reg (gimple_phi_result (stmt))
+      && !virtual_operand_p (gimple_phi_result (stmt))
       && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (gimple_phi_result (stmt)))
     return MOVE_POSSIBLE;
 
@@ -1327,7 +1327,7 @@ move_computations_stmt (struct dom_walk_data *dw_data,
 	       !gsi_end_p (gsi2); gsi_next (&gsi2))
 	    {
 	      gimple phi = gsi_stmt (gsi2);
-	      if (!is_gimple_reg (gimple_phi_result (phi)))
+	      if (virtual_operand_p (gimple_phi_result (phi)))
 		{
 		  gimple_set_vuse (stmt, PHI_ARG_DEF_FROM_EDGE (phi, e));
 		  break;

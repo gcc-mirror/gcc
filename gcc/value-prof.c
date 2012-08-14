@@ -1669,7 +1669,7 @@ gimple_divmod_values_to_profile (gimple stmt, histogram_values *values)
 
       VEC_reserve (histogram_value, heap, *values, 3);
 
-      if (is_gimple_reg (divisor))
+      if (TREE_CODE (divisor) == SSA_NAME)
 	/* Check for the case where the divisor is the same value most
 	   of the time.  */
 	VEC_quick_push (histogram_value, *values,

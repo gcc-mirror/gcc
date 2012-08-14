@@ -1,5 +1,95 @@
 2012-08-14  Richard Guenther  <rguenther@suse.de>
 
+	* cfgexpand.c (expand_used_vars): Use virtual_operand_p.
+	* gimple-pretty-print.c (dump_phi_nodes): Likewise.
+	* gimple-streamer-out.c (output_bb): Likewise.
+	* graphite-sese-to-poly.c (scalar_close_phi_node_p): Likewise.
+	(rewrite_reductions_out_of_ssa): Likewise.
+	(rewrite_commutative_reductions_out_of_ss): Likewise.
+	* ipa-split.c (verify_non_ssa_vars): Likewise.
+	(consider_split): Likewise.
+	(visit_bb): Likewise.
+	(split_function): Likewise.
+	* lto-streamer-out.c (output_ssa_names): Likewise.
+	* sese.c (rename_uses): Likewise.
+	* tree-cfg.c (replace_uses_by): Likewise.
+	(gimple_merge_blocks): Likewise.
+	(gimple_cfg2dot): Likewise.
+	(verify_gimple_phi): Likewise.
+	(replace_ssa_name): Likewise.
+	(move_block_to_fn): Likewise.
+	* tree-eh.c (cleanup_empty_eh_merge_phis): Likewise.
+	* tree-if-conv.c (if_convertible_phi_p): Likewise.
+	(predicate_scalar_phi): Likewise.
+	* tree-inline.c (update_ssa_across_abnormal_edges): Likewise.
+	(copy_phis_for_bb): Likewise.
+	* tree-loop-distribution.c (generate_loops_for_partition): Likewise.
+	(destroy_loop): Likewise.
+	* tree-outof-ssa.c (eliminate_useless_phis): Likewise.
+	(insert_backedge_copies): Likewise.
+	* tree-parloops.c (transform_to_exit_first_loop): Likewise.
+	(gather_scalar_reductions): Likewise.
+	(try_create_reduction_list): Likewise.
+	* tree-scalar-evolution.c (analyze_scalar_evolution_for_all_loop_ph):
+	Likewise.
+	(scev_const_prop): Likewise.
+	* tree-ssa-ccp.c (debug_lattice_value): Likewise.
+	(get_default_value): Likewise.
+	(ccp_initialize): Likewise.
+	* tree-ssa-coalesce.c (create_outofssa_var_map): Likewise.
+	* tree-ssa-copy.c (may_propagate_copy): Likewise.
+	(init_copy_prop): Likewise.
+	* tree-ssa-dce.c (propagate_necessity): Likewise.
+	(remove_dead_phis): Likewise.
+	(forward_edge_to_pdom): Likewise.
+	(eliminate_unnecessary_stmts): Likewise.
+	* tree-ssa-live.c (partition_view_init): Likewise.
+	(remove_unused_locals): Likewise.
+	(register_ssa_partition_check): Likewise.
+	* tree-ssa-loop-im.c (movement_possibility): Likewise.
+	(move_computations_stmt): Likewise.
+	* tree-ssa-loop-ivopts.c (determine_biv_step): Likewise.
+	(record_invariant): Likewise.
+	(find_interesting_uses_outside): Likewise.
+	(determine_set_costs): Likewise.
+	* tree-ssa-loop-manip.c (add_exit_phis_var): Likewise.
+	(find_uses_to_rename_use): Likewise.
+	(check_loop_closed_ssa_use): Likewise.
+	(rewrite_phi_with_iv): Likewise.
+	(canonicalize_loop_ivs): Likewise.
+	* tree-ssa-math-opts.c (execute_cse_reciprocals): Likewise.
+	* tree-ssa-phiopt.c (hoist_adjacent_loads): Likewise.
+	* tree-ssa-pre.c (make_values_for_phi): Likewise.
+	(compute_avail): Likewise.
+	(eliminate): Likewise.
+	* tree-ssa-propagate.c (substitute_and_fold): Likewise.
+	* tree-ssa-reassoc.c (phi_rank): Likewise.
+	* tree-ssa-strlen.c (strlen_enter_block): Likewise.
+	* tree-ssa-structalias.c (compute_points_to_sets): Likewise.
+	(ipa_pta_execute): Likewise.
+	* tree-ssa-tail-merge.c (same_succ_hash): Likewise.
+	(release_last_vdef): Likewise.
+	(same_phi_alternatives_1): Likewise.
+	(bb_has_non_vop_phi): Likewise.
+	(vop_phi): Likewise.
+	* tree-ssa-threadedge.c (record_temporary_equivalences_from_phis):
+	Likewise.
+	* tree-ssa-uninit.c (warn_uninitialized_phi): Likewise.
+	(execute_late_warn_uninitialized): Likewise.
+	* tree-ssa.c (verify_ssa_name): Likewise.
+	(verify_phi_args): Likewise.
+	(verify_ssa): Likewise.
+	* tree-stdarg.c (execute_optimize_stdarg): Likewise.
+	* tree-vect-loop-manip.c (slpeel_update_phi_nodes_for_guard1): Likewise.
+	(slpeel_tree_peel_loop_to_edge): Likewise.
+	(vect_can_advance_ivs_p): Likewise.
+	(vect_update_ivs_after_vectorizer): Likewise.
+	* tree-vect-loop.c (vect_analyze_scalar_cycles_1): Likewise.
+	* tree-vrp.c (remove_range_assertions): Likewise.
+	* value-prof.c (gimple_divmod_values_to_profile): Likewise.
+
+2012-08-14  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/54146
 	* tree-ssa-pre.c (do_regular_insertion): Use a VEC
 	indexed by pred edge index for avail.

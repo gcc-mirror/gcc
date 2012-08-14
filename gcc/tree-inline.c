@@ -1830,7 +1830,7 @@ update_ssa_across_abnormal_edges (basic_block bb, basic_block ret_bb,
 	    gcc_assert ((e->flags & EDGE_EH)
 			|| SSA_NAME_OCCURS_IN_ABNORMAL_PHI (PHI_RESULT (phi)));
 
-	    if (!is_gimple_reg (PHI_RESULT (phi)))
+	    if (virtual_operand_p (PHI_RESULT (phi)))
 	      {
 		mark_virtual_operands_for_renaming (cfun);
 		continue;
@@ -1970,7 +1970,7 @@ copy_phis_for_bb (basic_block bb, copy_body_data *id)
       phi = gsi_stmt (si);
       res = PHI_RESULT (phi);
       new_res = res;
-      if (is_gimple_reg (res))
+      if (!virtual_operand_p (res))
 	{
 	  walk_tree (&new_res, copy_tree_body_r, id, NULL);
 	  new_phi = create_phi_node (new_res, new_bb);

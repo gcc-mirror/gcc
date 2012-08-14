@@ -6142,11 +6142,13 @@ remove_range_assertions (void)
 static bool
 stmt_interesting_for_vrp (gimple stmt)
 {
-  if (gimple_code (stmt) == GIMPLE_PHI
-      && is_gimple_reg (gimple_phi_result (stmt))
-      && (INTEGRAL_TYPE_P (TREE_TYPE (gimple_phi_result (stmt)))
-	  || POINTER_TYPE_P (TREE_TYPE (gimple_phi_result (stmt)))))
-    return true;
+  if (gimple_code (stmt) == GIMPLE_PHI)
+    {
+      tree res = gimple_phi_result (stmt);
+      return (!virtual_operand_p (res)
+	      && (INTEGRAL_TYPE_P (TREE_TYPE (res))
+		  || POINTER_TYPE_P (TREE_TYPE (res))));
+    }
   else if (is_gimple_assign (stmt) || is_gimple_call (stmt))
     {
       tree lhs = gimple_get_lhs (stmt);

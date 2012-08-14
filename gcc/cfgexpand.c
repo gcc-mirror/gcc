@@ -1471,7 +1471,7 @@ expand_used_vars (void)
     {
       tree var = partition_to_var (SA.map, i);
 
-      gcc_assert (is_gimple_reg (var));
+      gcc_assert (!virtual_operand_p (var));
 
       /* Assign decls to each SSA name partition, share decls for partitions
          we could have coalesced (those with the same type).  */

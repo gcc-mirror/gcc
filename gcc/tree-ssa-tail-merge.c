@@ -480,7 +480,7 @@ same_succ_hash (const void *ve)
 	  tree lhs = gimple_phi_result (phi);
 	  tree val = gimple_phi_arg_def (phi, n);
 
-	  if (!is_gimple_reg (lhs))
+	  if (virtual_operand_p (lhs))
 	    continue;
 	  update_dep_bb (bb, val);
 	}
@@ -834,7 +834,7 @@ release_last_vdef (basic_block bb)
       gimple phi = gsi_stmt (i);
       tree res = gimple_phi_result (phi);
 
-      if (is_gimple_reg (res))
+      if (!virtual_operand_p (res))
 	continue;
 
       mark_virtual_phi_result_for_renaming (phi);
@@ -1252,7 +1252,7 @@ same_phi_alternatives_1 (basic_block dest, edge e1, edge e2)
       tree val1 = gimple_phi_arg_def (phi, n1);
       tree val2 = gimple_phi_arg_def (phi, n2);
 
-      if (!is_gimple_reg (lhs))
+      if (virtual_operand_p (lhs))
 	continue;
 
       if (operand_equal_for_phi_arg_p (val1, val2))
@@ -1310,7 +1310,7 @@ bb_has_non_vop_phi (basic_block bb)
     return true;
 
   phi = gimple_seq_first_stmt (phis);
-  return is_gimple_reg (gimple_phi_result (phi));
+  return !virtual_operand_p (gimple_phi_result (phi));
 }
 
 /* Returns true if redirecting the incoming edges of FROM to TO maintains the
@@ -1432,7 +1432,7 @@ vop_phi (basic_block bb)
   for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
       stmt = gsi_stmt (gsi);
-      if (is_gimple_reg (gimple_phi_result (stmt)))
+      if (! virtual_operand_p (gimple_phi_result (stmt)))
 	continue;
       return stmt;
     }

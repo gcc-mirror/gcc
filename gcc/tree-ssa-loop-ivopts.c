@@ -980,7 +980,7 @@ determine_biv_step (gimple phi)
   tree name = PHI_RESULT (phi);
   affine_iv iv;
 
-  if (!is_gimple_reg (name))
+  if (virtual_operand_p (name))
     return NULL_TREE;
 
   if (!simple_iv (loop, loop, name, &iv, true))
@@ -1225,7 +1225,7 @@ record_invariant (struct ivopts_data *data, tree op, bool nonlinear_use)
   struct version_info *info;
 
   if (TREE_CODE (op) != SSA_NAME
-      || !is_gimple_reg (op))
+      || virtual_operand_p (op))
     return;
 
   bb = gimple_bb (SSA_NAME_DEF_STMT (op));
@@ -1927,7 +1927,7 @@ find_interesting_uses_outside (struct ivopts_data *data, edge exit)
     {
       phi = gsi_stmt (psi);
       def = PHI_ARG_DEF_FROM_EDGE (phi, exit);
-      if (is_gimple_reg (def))
+      if (!virtual_operand_p (def))
         find_interesting_uses_op (data, def);
     }
 }
@@ -5048,7 +5048,7 @@ determine_set_costs (struct ivopts_data *data)
       phi = gsi_stmt (psi);
       op = PHI_RESULT (phi);
 
-      if (!is_gimple_reg (op))
+      if (virtual_operand_p (op))
 	continue;
 
       if (get_iv (data, op))

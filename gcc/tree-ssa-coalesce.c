@@ -1101,7 +1101,7 @@ create_outofssa_var_map (coalesce_list_p cl, bitmap used_in_copy)
   for (i = 1; i < num_ssa_names; i++)
     {
       var = ssa_name (i);
-      if (var != NULL_TREE && is_gimple_reg (var))
+      if (var != NULL_TREE && !virtual_operand_p (var))
         {
 	  /* Add coalesces between all the result decls.  */
 	  if (SSA_NAME_VAR (var)
