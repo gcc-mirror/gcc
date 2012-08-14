@@ -1,3 +1,8 @@
+2012-08-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (enabled): Add comment with explanation
+	why fma4 instructions are disabled for generic code.
+
 2012-08-14  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/52933
@@ -114,7 +119,8 @@
 	(verify_phi_args): Likewise.
 	(verify_ssa): Likewise.
 	* tree-stdarg.c (execute_optimize_stdarg): Likewise.
-	* tree-vect-loop-manip.c (slpeel_update_phi_nodes_for_guard1): Likewise.
+	* tree-vect-loop-manip.c (slpeel_update_phi_nodes_for_guard1):
+	Likewise.
 	(slpeel_tree_peel_loop_to_edge): Likewise.
 	(vect_can_advance_ivs_p): Likewise.
 	(vect_update_ivs_after_vectorizer): Likewise.
