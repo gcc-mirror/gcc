@@ -1,5 +1,10 @@
 2012-08-14  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* decl.c (match_ppc_decl): Copy the procedure interface's symbol
+	as procedure interface's result.
+
+2012-08-14  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans-expr.c (gfc_trans_scalar_assign): Rename argument,
 	extend comment.
 
