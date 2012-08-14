@@ -2962,12 +2962,12 @@ gfc_specification_expr (gfc_expr *e)
       return FAILURE;
     }
 
+  comp = gfc_get_proc_ptr_comp (e);
   if (e->expr_type == EXPR_FUNCTION
-	  && !e->value.function.isym
-	  && !e->value.function.esym
-	  && !gfc_pure (e->symtree->n.sym)
-	  && (!gfc_is_proc_ptr_comp (e, &comp)
-	      || !comp->attr.pure))
+      && !e->value.function.isym
+      && !e->value.function.esym
+      && !gfc_pure (e->symtree->n.sym)
+      && (!comp || !comp->attr.pure))
     {
       gfc_error ("Function '%s' at %L must be PURE",
 		 e->symtree->n.sym->name, &e->where);
@@ -3495,12 +3495,14 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 	    }
 	}
 
-      if (gfc_is_proc_ptr_comp (lvalue, &comp))
+      comp = gfc_get_proc_ptr_comp (lvalue);
+      if (comp)
 	s1 = comp->ts.interface;
       else
 	s1 = lvalue->symtree->n.sym;
 
-      if (gfc_is_proc_ptr_comp (rvalue, &comp))
+      comp = gfc_get_proc_ptr_comp (rvalue);
+      if (comp)
 	{
 	  s2 = comp->ts.interface;
 	  name = comp->name;
@@ -4075,31 +4077,35 @@ gfc_expr_set_symbols_referenced (gfc_expr *expr)
 }
 
 
-/* Determine if an expression is a procedure pointer component. If yes, the
-   argument 'comp' will point to the component (provided that 'comp' was
-   provided).  */
+/* Determine if an expression is a procedure pointer component and return
+   the component in that case.  Otherwise return NULL.  */
 
-bool
-gfc_is_proc_ptr_comp (gfc_expr *expr, gfc_component **comp)
+gfc_component *
+gfc_get_proc_ptr_comp (gfc_expr *expr)
 {
   gfc_ref *ref;
-  bool ppc = false;
 
   if (!expr || !expr->ref)
-    return false;
+    return NULL;
 
   ref = expr->ref;
   while (ref->next)
     ref = ref->next;
 
-  if (ref->type == REF_COMPONENT)
-    {
-      ppc = ref->u.c.component->attr.proc_pointer;
-      if (ppc && comp)
-	*comp = ref->u.c.component;
-    }
+  if (ref->type == REF_COMPONENT
+      && ref->u.c.component->attr.proc_pointer)
+    return ref->u.c.component;
 
-  return ppc;
+  return NULL;
+}
+
+
+/* Determine if an expression is a procedure pointer component.  */
+
+bool
+gfc_is_proc_ptr_comp (gfc_expr *expr)
+{
+  return (gfc_get_proc_ptr_comp (expr) != NULL);
 }
 
 

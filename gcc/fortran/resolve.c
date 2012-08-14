@@ -1195,7 +1195,8 @@ resolve_structure_cons (gfc_expr *expr, int init)
 	  const char *name;
 	  char err[200];
 
-	  if (gfc_is_proc_ptr_comp (cons->expr, &c2))
+	  c2 = gfc_get_proc_ptr_comp (cons->expr);
+	  if (c2)
 	    {
 	      s2 = c2->ts.interface;
 	      name = c2->name;
@@ -3093,9 +3094,9 @@ resolve_function (gfc_expr *expr)
     sym = expr->symtree->n.sym;
 
   /* If this is a procedure pointer component, it has already been resolved.  */
-  if (gfc_is_proc_ptr_comp (expr, NULL))
+  if (gfc_is_proc_ptr_comp (expr))
     return SUCCESS;
-  
+
   if (sym && sym->attr.intrinsic
       && gfc_resolve_intrinsic (sym, &expr->where) == FAILURE)
     return FAILURE;
@@ -5740,7 +5741,8 @@ update_ppc_arglist (gfc_expr* e)
   gfc_component *ppc;
   gfc_typebound_proc* tb;
 
-  if (!gfc_is_proc_ptr_comp (e, &ppc))
+  ppc = gfc_get_proc_ptr_comp (e);
+  if (!ppc)
     return FAILURE;
 
   tb = ppc->tb;
@@ -6363,10 +6365,9 @@ static gfc_try
 resolve_ppc_call (gfc_code* c)
 {
   gfc_component *comp;
-  bool b;
 
-  b = gfc_is_proc_ptr_comp (c->expr1, &comp);
-  gcc_assert (b);
+  comp = gfc_get_proc_ptr_comp (c->expr1);
+  gcc_assert (comp != NULL);
 
   c->resolved_sym = c->expr1->symtree->n.sym;
   c->expr1->expr_type = EXPR_VARIABLE;
@@ -6398,10 +6399,9 @@ static gfc_try
 resolve_expr_ppc (gfc_expr* e)
 {
   gfc_component *comp;
-  bool b;
 
-  b = gfc_is_proc_ptr_comp (e, &comp);
-  gcc_assert (b);
+  comp = gfc_get_proc_ptr_comp (e);
+  gcc_assert (comp != NULL);
 
   /* Convert to EXPR_FUNCTION.  */
   e->expr_type = EXPR_FUNCTION;

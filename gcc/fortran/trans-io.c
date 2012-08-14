@@ -2252,7 +2252,7 @@ gfc_trans_transfer (gfc_code * code)
       /* Transfer an array. If it is an array of an intrinsic
 	 type, pass the descriptor to the library.  Otherwise
 	 scalarize the transfer.  */
-      if (expr->ref && !gfc_is_proc_ptr_comp (expr, NULL))
+      if (expr->ref && !gfc_is_proc_ptr_comp (expr))
 	{
 	  for (ref = expr->ref; ref && ref->type != REF_ARRAY;
 		 ref = ref->next);
