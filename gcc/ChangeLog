@@ -1,5 +1,13 @@
 2012-08-14  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/54146
+	* tree-ssa-pre.c (do_regular_insertion): Use a VEC
+	indexed by pred edge index for avail.
+	(do_partial_partial_insertion): Likewise.
+	(insert_into_preds_of_block): Adjust.
+
+2012-08-14  Richard Guenther  <rguenther@suse.de>
+
 	* gimplify.c (create_tmp_from_val): Mark temporary with
 	DECL_GIMPLE_REG_P here ...
 	(internal_get_tmp_var): ... instead of here.  If we go into
