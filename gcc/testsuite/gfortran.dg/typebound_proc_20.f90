@@ -1,5 +1,4 @@
-! { dg-do compile }
-! TODO: make runtime testcase once bug is fixed
+! { dg-do run }
 !
 ! PR fortran/47455
 !

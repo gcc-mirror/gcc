@@ -6961,6 +6961,8 @@ static bool
 expr_is_variable (gfc_expr *expr)
 {
   gfc_expr *arg;
+  gfc_component *comp;
+  gfc_symbol *func_ifc;
 
   if (expr->expr_type == EXPR_VARIABLE)
     return true;
@@ -6972,7 +6974,50 @@ expr_is_variable (gfc_expr *expr)
       return expr_is_variable (arg);
     }
 
+  /* A data-pointer-returning function should be considered as a variable
+     too.  */
+  if (expr->expr_type == EXPR_FUNCTION
+      && expr->ref == NULL)
+    {
+      if (expr->value.function.isym != NULL)
+	return false;
+
+      if (expr->value.function.esym != NULL)
+	{
+	  func_ifc = expr->value.function.esym;
+	  goto found_ifc;
+	}
+      else
+	{
+	  gcc_assert (expr->symtree);
+	  func_ifc = expr->symtree->n.sym;
+	  goto found_ifc;
+	}
+
+      gcc_unreachable ();
+    }
+
+  comp = gfc_get_proc_ptr_comp (expr);
+  if ((expr->expr_type == EXPR_PPC || expr->expr_type == EXPR_FUNCTION)
+      && comp)
+    {
+      func_ifc = comp->ts.interface;
+      goto found_ifc;
+    }
+
+  if (expr->expr_type == EXPR_COMPCALL)
+    {
+      gcc_assert (!expr->value.compcall.tbp->is_generic);
+      func_ifc = expr->value.compcall.tbp->u.specific->n.sym;
+      goto found_ifc;
+    }
+
   return false;
+
+found_ifc:
+  gcc_assert (func_ifc->attr.function
+	      && func_ifc->result != NULL);
+  return func_ifc->result->attr.pointer;
 }
 
 
