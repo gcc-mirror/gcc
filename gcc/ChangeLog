@@ -1,5 +1,12 @@
 2012-08-14  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	PR target/52933
+	* config/sh/sh.md (cmp_div0s_0, cmp_div0s_1, *cmp_div0s_0,
+	*cmp_div0s_1, *cbranch_div0s, *movsicc_div0s): New insns.
+	* config/sh/sh.c (sh_rtx_costs): Handle div0s patterns.
+
+2012-08-14  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	PR target/50751
 	* config/sh/constraints.md (Sra): New constraint.
 	* config/sh/predicates.md (simple_mem_operand,
