@@ -1,3 +1,13 @@
+2012-08-14  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* dominance.c (init_dom_info): Use gcc_checking_assert, not gcc_assert.
+	(dom_convert_dir_to_idx, compute_dom_fast_query,
+	get_immediate_dominator, set_immediate_dominator, get_dominated_by,
+	redirect_immediate_dominators, nearest_common_dominator,
+	(dominated_by_p, bb_dom_dfs_in, bb_dom_dfs_out, recompute_dominator,
+	iterate_fix_dominators, add_to_dominance_info,
+	delete_from_dominance_info): Likewise.
+
 2012-08-14  Richard Guenther  <rguenther@suse.de>
 
 	* cfgexpand.c (expand_used_vars): Use virtual_operand_p.
