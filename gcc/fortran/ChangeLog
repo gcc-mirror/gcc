@@ -1,5 +1,19 @@
 2012-08-14  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/40881
+	* error.c (gfc_notify_std): Reset cur_error_buffer->flag flag
+	when the error/warning has been printed.
+	* gfortran.h (gfc_sl_type): Add ST_LABEL_DO_TARGET.
+	* match.c (gfc_match_do): Use ST_LABEL_DO_TARGET.
+	* parse.c (check_statement_label): Use ST_LABEL_DO_TARGET.
+	(parse_executable): Add obsolescence check for DATA.
+	* resolve.c (resolve_branch): Handle ST_LABEL_DO_TARGET.
+	* symbol.c (gfc_define_st_label, gfc_reference_st_label):
+	Add obsolescence diagnostics.
+	* trans-stmt.c (gfc_trans_label_assign): Handle ST_LABEL_DO_TARGET.
+
+2012-08-14  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/54234
 	* check.c (gfc_check_cmplx): Add -Wconversion warning
 	when converting higher-precision REAL to default-precision

@@ -6,7 +6,7 @@ c { dg-do compile }
       DIMENSION BNORM(MAXVEC),BINV(MAXVEC),WT(MAXVEC),W0(MAXVEC)
       DIMENSION C1(MAXVEC),C2(MAXVEC),R1(MAXVEC),R2(MAXVEC)
       DO 200 ILAT=1,2**IDIM
-      DO 200 I1=1,IDIM
+      DO 200 I1=1,IDIM  ! { dg-warning "Obsolescent feature: Shared DO termination" }
       DO 220 I2=1,IDIM
       CALL INTACT(ILAT,I1,I1,W1)
 220   CONTINUE

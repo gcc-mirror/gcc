@@ -13,10 +13,10 @@
       DO 160 I = 1,M
       DUMI = ZERO
       DO 100 K = 1,N
-  100 DUMI = DUMI+V(K,I)*V(K,I)
+  100 DUMI = DUMI+V(K,I)*V(K,I) ! { dg-warning "Obsolescent feature: DO termination statement which is not END DO or CONTINUE" }
       DUMI = ONE/ SQRT(DUMI)
       DO 120 K = 1,N
-  120 V(K,I) = V(K,I)*DUMI
+  120 V(K,I) = V(K,I)*DUMI ! { dg-warning "Obsolescent feature: DO termination statement which is not END DO or CONTINUE" }
       IF (I .EQ. M) GO TO 160
       I1 = I+1
       DO 140 J = I1,M
@@ -34,15 +34,15 @@
   220 J = J+1
       IF (J .GT. N) GO TO 320
       DO 240 K = 1,N
-  240 V(K,I) = ZERO
+  240 V(K,I) = ZERO ! { dg-warning "Obsolescent feature: DO termination statement which is not END DO or CONTINUE" }
       CALL DAXPY(N,DUM,V(1,I),1,V(1,I),1)
   260 CONTINUE
       DUMI = ZERO
       DO 280 K = 1,N
-  280 DUMI = DUMI+V(K,I)*V(K,I)
+  280 DUMI = DUMI+V(K,I)*V(K,I) ! { dg-warning "Obsolescent feature: DO termination statement which is not END DO or CONTINUE" }
       IF ( ABS(DUMI) .LT. TOL) GO TO 220
       DO 300 K = 1,N
-  300 V(K,I) = V(K,I)*DUMI
+  300 V(K,I) = V(K,I)*DUMI ! { dg-warning "Obsolescent feature: DO termination statement which is not END DO or CONTINUE" }
       GO TO 200
   320 END
       program main

@@ -1,5 +1,16 @@
 2012-08-14  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/40881
+	* gfortran.dg/data_constraints_3.f90: New.
+	* gfortran.dg/data_constraints_1.f90: Add dg-options ""
+	to disable -pedantic compilation.
+	* gfortran.dg/pr37243.f: Ditto.
+	* gfortran.dg/g77/19990826-3.f: Ditto.
+	* gfortran.dg/g77/20020307-1.f : Ditto.
+	* gfortran.dg/g77/980310-3.f: Ditto.
+
+2012-08-14  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/54234
 	* gfortran.dg/warn_conversion_4.f90: New.
 

@@ -1168,7 +1168,10 @@ check_statement_label (gfc_statement st)
     case ST_END_ASSOCIATE:
     case_executable:
     case_exec_markers:
-      type = ST_LABEL_TARGET;
+      if (st == ST_ENDDO || st == ST_CONTINUE)
+	type = ST_LABEL_DO_TARGET;
+      else
+	type = ST_LABEL_TARGET;
       break;
 
     case ST_FORMAT:
@@ -3825,8 +3828,12 @@ parse_executable (gfc_statement st)
 	case ST_NONE:
 	  unexpected_eof ();
 
-	case ST_FORMAT:
 	case ST_DATA:
+	  gfc_notify_std (GFC_STD_F95_OBS, "DATA statement at %C after the "
+			  "first executable statement");
+	  /* Fall through.  */
+
+	case ST_FORMAT:
 	case ST_ENTRY:
 	case_executable:
 	  accept_statement (st);

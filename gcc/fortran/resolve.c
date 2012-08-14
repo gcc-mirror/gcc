@@ -8767,7 +8767,7 @@ resolve_branch (gfc_st_label *label, gfc_code *code)
       return;
     }
 
-  if (label->defined != ST_LABEL_TARGET)
+  if (label->defined != ST_LABEL_TARGET && label->defined != ST_LABEL_DO_TARGET)
     {
       gfc_error ("Statement at %L is not a valid branch target statement "
 		 "for the branch statement at %L", &label->where, &code->loc);
