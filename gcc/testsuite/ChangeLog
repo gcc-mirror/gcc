@@ -1,5 +1,11 @@
 2012-08-14  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	PR target/52933
+	* gcc.target/sh/pr52933-1.c: New.
+	* gcc.target/sh/pr52933-2.c: New.
+
+2012-08-14  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	PR target/50751
 	* gcc.target/sh/pr50751-8.c: New.
 
