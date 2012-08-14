@@ -65,6 +65,8 @@ strict shared int pass_fail = 1;
     abort (); \
   }
 
+#define MSG_LEN 80
+
 void
 test29 ()
 {
@@ -113,13 +115,17 @@ test29 ()
       /* This comparison should be exact. */
       if (got != expected)
 	{
-	  char msg[1000];
+	  char msg[MSG_LEN];
+	  int n_chars;
 	  xdouble rel_err;
 	  rel_err = got / expected - 1.0L;
 	  if (rel_err < 0.0)
 	    rel_err = -rel_err;
-	  sprintf (msg, "A[%d] is: %0.15Lf expected: %0.15Lf error: %0.2Le\n",
-		   i, got, expected, rel_err);
+	  n_chars = snprintf (msg, MSG_LEN,
+	             "A[%d] is: %0.15Lf expected: %0.15Lf error: %0.2Le\n",
+		     i, got, expected, rel_err);
+	  if (n_chars >= MSG_LEN)
+	    sprintf (msg, "A[%d] got != expected: output overflow\n", i);
 	  FAIL (msg);
 	}
     }
@@ -134,9 +140,13 @@ test29 ()
       /* This comparison should be within 18 (ie, 3+15) digits. */
       if (rel_err > 1.0e-18)
 	{
-	  char msg[1000];
-	  sprintf (msg, "B[%d] is: %0.15Lf expected: %0.15Lf error: %0.2Le\n",
-		   i, got, expected, rel_err);
+	  char msg[MSG_LEN];
+	  int n_chars;
+	  n_chars = snprintf (msg, MSG_LEN,
+	    "B[%d] is: %0.15Lf expected: %0.15Lf error: %0.2Le\n",
+	    i, got, expected, rel_err);
+	  if (n_chars >= MSG_LEN)
+	    sprintf (msg, "B[%d] got != expected: output overflow\n", i);
 	  FAIL (msg);
 	}
     }
