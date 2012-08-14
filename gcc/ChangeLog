@@ -1,3 +1,26 @@
+2012-08-08 Pavel Chupin <pavel.v.chupin@intel.com>
+
+	Backport from mainline r189840 and r187586:
+	2012-07-25 Sergey Melnikov <sergey.melnikov@intel.com>
+
+	* config/i386/i386.md (stack_protect_set): Disable the pattern
+	for Android since Android libc (bionic) does not provide random
+	value for stack protection guard at gs:0x14. Guard value
+	will be provided from external symbol (default implementation).
+	(stack_protect_set_<mode>): Likewise.
+	(stack_protect_test): Likewise.
+	(stack_protect_test_<mode>): Likewise.
+	* gcc/defaults.h: Define macro TARGET_HAS_BIONIC to 0 - target does
+	not have Bionic by default
+	* config/linux.h: Redefine macro TARGET_HAS_BIONIC to (OPTION_BIONIC)
+	Macro OPTION_BIONIC is defined in this file and provides Bionic
+	accessibility status
+
+	2012-05-16  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	* configure.ac: Stack protector enabling for Android targets.
+	* configure: Regenerate.
+
 2012-08-13  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from trunk

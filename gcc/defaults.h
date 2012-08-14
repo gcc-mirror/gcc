@@ -1063,6 +1063,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_HAS_SINCOS 0
 #endif
 
+/* Determin whether the target runtime library is Bionic */
+#ifndef TARGET_HAS_BIONIC
+#define TARGET_HAS_BIONIC 0
+#endif
+
 /* Indicate that CLZ and CTZ are undefined at zero.  */
 #ifndef CLZ_DEFINED_VALUE_AT_ZERO
 #define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)  0
