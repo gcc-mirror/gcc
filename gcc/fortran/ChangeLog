@@ -1,3 +1,27 @@
+2012-08-14  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* gfortran.h (gfc_get_proc_ptr_comp): New prototype.
+	(gfc_is_proc_ptr_comp): Update prototype.
+	* expr.c (gfc_get_proc_ptr_comp): New function based on the old
+	gfc_is_proc_ptr_comp.
+	(gfc_is_proc_ptr_comp): Call gfc_get_proc_ptr_comp.
+	(gfc_specification_expr, gfc_check_pointer_assign): Use
+	gfc_get_proc_ptr_comp.
+	* trans-array.c (gfc_walk_function_expr): Likewise.
+	* resolve.c (resolve_structure_cons, update_ppc_arglist,
+	resolve_ppc_call, resolve_expr_ppc): Likewise.
+	(resolve_function): Update call to gfc_is_proc_ptr_comp.
+	* dump-parse-tree.c (show_expr): Likewise.
+	* interface.c (compare_actual_formal): Likewise.
+	* match.c (gfc_match_pointer_assignment): Likewise.
+	* primary.c (gfc_match_varspec): Likewise.
+	* trans-io.c (gfc_trans_transfer): Likewise.
+	* trans-expr.c (gfc_conv_variable, conv_function_val,
+	conv_isocbinding_procedure, gfc_conv_procedure_call,
+	gfc_trans_pointer_assignment): Likewise.
+	(gfc_conv_procedure_call, gfc_trans_array_func_assign):
+	Use gfc_get_proc_ptr_comp.
+
 2012-08-14  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/40881

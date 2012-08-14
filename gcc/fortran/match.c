@@ -1344,7 +1344,7 @@ gfc_match_pointer_assignment (void)
     }
 
   if (lvalue->symtree->n.sym->attr.proc_pointer
-      || gfc_is_proc_ptr_comp (lvalue, NULL))
+      || gfc_is_proc_ptr_comp (lvalue))
     gfc_matching_procptr_assignment = 1;
   else
     gfc_matching_ptr_assignment = 1;
