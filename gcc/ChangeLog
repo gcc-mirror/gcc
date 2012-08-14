@@ -1,3 +1,10 @@
+2012-08-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/53411
+	PR rtl-optimization/53495
+	* ira.c (ira): Move delete_trivially_dead_insns call before
+	find_moveable_pseudos call.
+
 2012-08-13  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* tree-ssa-pre.c (do_regular_insertion): Add FIXME markers at points

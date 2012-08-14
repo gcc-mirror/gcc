@@ -4206,6 +4206,9 @@ ira (FILE *f)
 
   allocated_reg_info_size = max_reg_num ();
 
+  if (delete_trivially_dead_insns (get_insns (), max_reg_num ()))
+    df_analyze ();
+
   /* It is not worth to do such improvement when we use a simple
      allocation because of -O0 usage or because the function is too
      big.  */
@@ -4287,9 +4290,6 @@ ira (FILE *f)
   if (ira_conflicts_p)
     check_allocation ();
 #endif
-
-  if (delete_trivially_dead_insns (get_insns (), max_reg_num ()))
-    df_analyze ();
 
   if (max_regno != max_regno_before_ira)
     {
