@@ -1640,6 +1640,9 @@ fix_loop_structure (bitmap changed_bbs)
   bool record_exits = false;
   struct loop **superloop = XNEWVEC (struct loop *, number_of_loops ());
 
+  /* We need exact and fast dominance info to be available.  */
+  gcc_assert (dom_info_state (CDI_DOMINATORS) == DOM_OK);
+
   /* Remove the old bb -> loop mapping.  Remember the depth of the blocks in
      the loop hierarchy, so that we can recognize blocks whose loop nesting
      relationship has changed.  */

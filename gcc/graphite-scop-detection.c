@@ -1029,6 +1029,7 @@ create_sese_edges (VEC (sd_region, heap) *regions)
 
   unmark_exit_edges (regions);
 
+  calculate_dominance_info (CDI_DOMINATORS);
   fix_loop_structure (NULL);
 
 #ifdef ENABLE_CHECKING
