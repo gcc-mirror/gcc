@@ -1,3 +1,8 @@
+2012-08-14  Richard Guenther  <rguenther@suse.de>
+
+	* tree-into-ssa.c (update_ssa): Verify we do not rename
+	symbols that are already partly in SSA form.
+
 2012-08-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/53411
