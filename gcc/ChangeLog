@@ -1,3 +1,14 @@
+2012-08-14  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/50751
+	* config/sh/constraints.md (Sra): New constraint.
+	* config/sh/predicates.md (simple_mem_operand,
+	displacement_mem_operand, zero_extend_movu_operand): New predicates.
+	(zero_extend_operand): Check zero_extend_movu_operand for SH2A.
+	* config/sh/sh.md (*zero_extendqisi2_disp_mem,
+	*zero_extendhisi2_disp_mem): Add new insns and two new related
+	peephole2 patterns.
+
 2012-08-14  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* graphite-scop-detection.c (create_sese_edges): Compute dominance
