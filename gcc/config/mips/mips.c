@@ -12372,25 +12372,24 @@ mips_output_division (const char *division, rtx *operands)
 bool
 mips_linked_madd_p (rtx out_insn, rtx in_insn)
 {
-  rtx x;
+  enum attr_accum_in accum_in;
+  int accum_in_opnum;
+  rtx accum_in_op;
 
-  x = single_set (in_insn);
-  if (x == 0)
+  if (recog_memoized (in_insn) < 0)
     return false;
 
-  x = SET_SRC (x);
+  accum_in = get_attr_accum_in (in_insn);
+  if (accum_in == ACCUM_IN_NONE)
+    return false;
 
-  if (GET_CODE (x) == PLUS
-      && GET_CODE (XEXP (x, 0)) == MULT
-      && reg_set_p (XEXP (x, 1), out_insn))
-    return true;
+  accum_in_opnum = accum_in - ACCUM_IN_0;
 
-  if (GET_CODE (x) == MINUS
-      && GET_CODE (XEXP (x, 1)) == MULT
-      && reg_set_p (XEXP (x, 0), out_insn))
-    return true;
+  extract_insn (in_insn);
+  gcc_assert (accum_in_opnum < recog_data.n_operands);
+  accum_in_op = recog_data.operand[accum_in_opnum];
 
-  return false;
+  return reg_set_p (accum_in_op, out_insn);
 }
 
 /* True if the dependency between OUT_INSN and IN_INSN is on the store
