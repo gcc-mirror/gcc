@@ -23,7 +23,7 @@ spu.o: $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   real.h insn-config.h conditions.h insn-attr.h flags.h $(RECOG_H) \
   $(OBSTACK_H) $(TREE_H) $(EXPR_H) $(OPTABS_H) except.h function.h \
   output.h $(BASIC_BLOCK_H) $(GGC_H) $(HASHTAB_H) \
-  $(TM_P_H) $(TARGET_H) $(TARGET_DEF_H) langhooks.h reload.h \
+  $(TM_P_H) $(TARGET_H) $(TARGET_DEF_H) langhooks.h reload.h $(CFGLOOP_H) \
   $(srcdir)/config/spu/spu-protos.h \
   $(srcdir)/config/spu/spu-builtins.def 
 

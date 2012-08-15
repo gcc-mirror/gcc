@@ -1,3 +1,11 @@
+2012-08-15  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/spu/spu.c: Include "cfgloop.h".
+	(spu_machine_dependent_reorg): Call loop_optimizer_init and
+	loop_optimizer_finalize.  Use bb_loop_depth instead of loop_depth.
+	Directly compare loop_father values where appropriate.
+	* config/spu/t-spu-elf (spu.o): Update dependencies.
+
 2012-08-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* Makefile.in (tree-cfg.o): Also depend on $(TARGET_H).
