@@ -1,3 +1,16 @@
+2012-08-15  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+	PR target/54212
+	* config/arm/neon.md (vec_set<mode>_internal VD,VQ): Do not
+	mark as predicable. Adjust asm template.
+	(vec_setv2di_internal): Likewise.
+	(vec_extract<mode> VD, VQ): Likewise.
+	(vec_extractv2di): Likewise.
+	(neon_vget_lane<mode>_sext_internal VD, VQ): Likewise.
+	(neon_vset_lane<mode>_sext_internal VD, VQ): Likewise.
+	(neon_vdup_n<mode> VX, V32): Likewise.
+	(neon_vdup_nv2di): Likewise.
+
 2012-08-14   Diego Novillo  <dnovillo@google.com>
 
 	Merge from cxx-conversion branch.  Configury.
