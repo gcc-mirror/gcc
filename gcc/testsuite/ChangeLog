@@ -1,3 +1,9 @@
+2012-08-15  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54243
+	PR fortran/54244
+	* gfortran.dg/typebound_call_24.f03: New.
+
 2012-08-15  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/54245

@@ -237,6 +237,7 @@ resolve_procedure_interface (gfc_symbol *sym)
       sym->attr.always_explicit = ifc->attr.always_explicit;
       sym->attr.ext_attr |= ifc->attr.ext_attr;
       sym->attr.is_bind_c = ifc->attr.is_bind_c;
+      sym->attr.class_ok = ifc->attr.class_ok;
       /* Copy array spec.  */
       sym->as = gfc_copy_array_spec (ifc->as);
       if (sym->as)
@@ -5794,6 +5795,9 @@ check_typebound_baseobject (gfc_expr* e)
     return FAILURE;
 
   gcc_assert (base->ts.type == BT_DERIVED || base->ts.type == BT_CLASS);
+
+  if (base->ts.type == BT_CLASS && !gfc_expr_attr (base).class_ok)
+    return FAILURE;
 
   /* F08:C611.  */
   if (base->ts.type == BT_DERIVED && base->ts.u.derived->attr.abstract)
@@ -11982,6 +11986,7 @@ resolve_fl_derived0 (gfc_symbol *sym)
 	      c->attr.recursive = ifc->attr.recursive;
 	      c->attr.always_explicit = ifc->attr.always_explicit;
 	      c->attr.ext_attr |= ifc->attr.ext_attr;
+	      c->attr.class_ok = ifc->attr.class_ok;
 	      /* Replace symbols in array spec.  */
 	      if (c->as)
 		{

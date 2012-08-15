@@ -1,3 +1,11 @@
+2012-08-15  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54243
+	PR fortran/54244
+	* resolve.c (check_typebound_baseobject): Check for class_ok attribute.
+	(resolve_procedure_interface,resolve_fl_derived0): Copy class_ok
+	attribute.
+
 2012-08-14  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/47586
