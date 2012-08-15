@@ -1,3 +1,23 @@
+2012-08-15  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* timevar.def (TV_VARPOOL, TV_WHOPR_WPA_LTRANS_EXEC, TV_LIFE,
+	TV_LIFE_UPDATE, TV_DF_UREC, TV_INLINE_HEURISTICS,
+	TV_TREE_LINEAR_TRANSFORM, TV_TREE_LOOP_INIT, TV_TREE_LOOP_FINI,
+	TV_VPT, TV_LOCAL_ALLOC, TV_GLOBAL_ALLOC, TV_SEQABSTR): Remove.
+	(TV_IPA_INLINING, TV_FLATTEN_INLINING, TV_EARLY_INLINING,
+	TV_INLINE_PARAMETERS, TV_LOOP_INIT, TV_LOOP_FINI): New.
+	* timevar.c (timevar_print): Make printing width of timevar names
+	more flexible, but enforce maximum length.
+	* ipa-inline.c (pass_early_inline): Use TV_EARLY_INLINING.
+	(pass_ipa_inline): Use TV_IPA_INLINING.
+	* ipa-inline-analysis.c (pass_inline_parameters): Use
+	TV_INLINE_HEURISTICS.
+	* tree-ssa-loop.c (pass_tree_loop_init): No timevar for wrapper pass.
+	(pass_tree_loop_done): Likewise.
+	* final.c (pass_shorten_branches): Use TV_SHORTEN_BRANCH.
+	* loop-init.c (loop_optimizer_init): Push/pop TV_LOOP_INIT.
+	(loop_optimizer_finalize): Push/pop TV_LOOP_FINI.
+
 2012-08-15  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
 	* config/arm/neon.md (neon_vaba<mode> VDQIW): Canonicalize

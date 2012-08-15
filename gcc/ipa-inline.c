@@ -1941,7 +1941,7 @@ struct gimple_opt_pass pass_early_inline =
   NULL,					/* sub */
   NULL,					/* next */
   0,					/* static_pass_number */
-  TV_INLINE_HEURISTICS,			/* tv_id */
+  TV_EARLY_INLINING,			/* tv_id */
   PROP_ssa,                             /* properties_required */
   0,					/* properties_provided */
   0,					/* properties_destroyed */
@@ -1973,7 +1973,7 @@ struct ipa_opt_pass_d pass_ipa_inline =
   NULL,					/* sub */
   NULL,					/* next */
   0,					/* static_pass_number */
-  TV_INLINE_HEURISTICS,			/* tv_id */
+  TV_IPA_INLINING,      		/* tv_id */
   0,	                                /* properties_required */
   0,					/* properties_provided */
   0,					/* properties_destroyed */
