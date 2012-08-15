@@ -2331,11 +2331,11 @@
 
 (define_insn "neon_vaba<mode>"
   [(set (match_operand:VDQIW 0 "s_register_operand" "=w")
-        (plus:VDQIW (match_operand:VDQIW 1 "s_register_operand" "0")
-                    (unspec:VDQIW [(match_operand:VDQIW 2 "s_register_operand" "w")
+        (plus:VDQIW (unspec:VDQIW [(match_operand:VDQIW 2 "s_register_operand" "w")
 		                   (match_operand:VDQIW 3 "s_register_operand" "w")
                                    (match_operand:SI 4 "immediate_operand" "i")]
-		                  UNSPEC_VABD)))]
+		                  UNSPEC_VABD)
+		    (match_operand:VDQIW 1 "s_register_operand" "0")))]
   "TARGET_NEON"
   "vaba.%T4%#<V_sz_elem>\t%<V_reg>0, %<V_reg>2, %<V_reg>3"
   [(set (attr "neon_type")
@@ -2345,11 +2345,11 @@
 
 (define_insn "neon_vabal<mode>"
   [(set (match_operand:<V_widen> 0 "s_register_operand" "=w")
-        (plus:<V_widen> (match_operand:<V_widen> 1 "s_register_operand" "0")
-                        (unspec:<V_widen> [(match_operand:VW 2 "s_register_operand" "w")
+        (plus:<V_widen> (unspec:<V_widen> [(match_operand:VW 2 "s_register_operand" "w")
                                            (match_operand:VW 3 "s_register_operand" "w")
                                            (match_operand:SI 4 "immediate_operand" "i")]
-                          UNSPEC_VABDL)))]
+					   UNSPEC_VABDL)
+			 (match_operand:<V_widen> 1 "s_register_operand" "0")))]
   "TARGET_NEON"
   "vabal.%T4%#<V_sz_elem>\t%q0, %P2, %P3"
   [(set_attr "neon_type" "neon_vaba")]
