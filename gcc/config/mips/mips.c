@@ -8307,6 +8307,36 @@ mips_dwarf_register_span (rtx reg)
   return NULL_RTX;
 }
 
+/* DSP ALU can bypass data with no delays for the following pairs. */
+enum insn_code dspalu_bypass_table[][2] =
+{
+  {CODE_FOR_mips_addsc, CODE_FOR_mips_addwc},
+  {CODE_FOR_mips_cmpu_eq_qb, CODE_FOR_mips_pick_qb},
+  {CODE_FOR_mips_cmpu_lt_qb, CODE_FOR_mips_pick_qb},
+  {CODE_FOR_mips_cmpu_le_qb, CODE_FOR_mips_pick_qb},
+  {CODE_FOR_mips_cmp_eq_ph, CODE_FOR_mips_pick_ph},
+  {CODE_FOR_mips_cmp_lt_ph, CODE_FOR_mips_pick_ph},
+  {CODE_FOR_mips_cmp_le_ph, CODE_FOR_mips_pick_ph},
+  {CODE_FOR_mips_wrdsp, CODE_FOR_mips_insv}
+};
+
+int
+mips_dspalu_bypass_p (rtx out_insn, rtx in_insn)
+{
+  int i;
+  int num_bypass = ARRAY_SIZE (dspalu_bypass_table);
+  enum insn_code out_icode = (enum insn_code) INSN_CODE (out_insn);
+  enum insn_code in_icode = (enum insn_code) INSN_CODE (in_insn);
+
+  for (i = 0; i < num_bypass; i++)
+    {
+      if (out_icode == dspalu_bypass_table[i][0]
+	  && in_icode == dspalu_bypass_table[i][1])
+       return true;
+    }
+
+  return false;
+}
 /* Implement ASM_OUTPUT_ASCII.  */
 
 void
