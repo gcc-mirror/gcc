@@ -1842,7 +1842,8 @@ hoist_adjacent_loads (basic_block bb0, basic_block bb1,
 
       /* Check the mode of the arguments to be sure a conditional move
 	 can be generated for it.  */
-      if (!optab_handler (cmov_optab, TYPE_MODE (TREE_TYPE (arg1))))
+      if (optab_handler (movcc_optab, TYPE_MODE (TREE_TYPE (arg1)))
+	  == CODE_FOR_nothing)
 	continue;
 
       /* Both statements must be assignments whose RHS is a COMPONENT_REF.  */

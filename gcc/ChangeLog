@@ -1,3 +1,9 @@
+2012-08-15  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/54240
+	* tree-ssa-phiopt.c (hoist_adjacent_loads): Correct test for
+	existence of conditional move with given mode.
+
 2012-08-15  Richard Guenther  <rguenther@suse.de>
 
 	* double-int.h (double_int::from_unsigned): Rename to ...
