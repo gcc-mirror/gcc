@@ -1287,7 +1287,7 @@ inline_small_functions (void)
 {
   struct cgraph_node *node;
   struct cgraph_edge *edge;
-  fibheap_t heap = fibheap_new ();
+  fibheap_t edge_heap = fibheap_new ();
   bitmap updated_nodes = BITMAP_ALLOC (NULL);
   int min_size, max_size;
   VEC (cgraph_edge_p, heap) *new_indirect_edges = NULL;
@@ -1344,7 +1344,7 @@ inline_small_functions (void)
 	      && edge->inline_failed)
 	    {
 	      gcc_assert (!edge->aux);
-	      update_edge_key (heap, edge);
+	      update_edge_key (edge_heap, edge);
 	    }
       }
 
@@ -1352,16 +1352,16 @@ inline_small_functions (void)
 	      || !max_count
 	      || (profile_info && flag_branch_probabilities));
 
-  while (!fibheap_empty (heap))
+  while (!fibheap_empty (edge_heap))
     {
       int old_size = overall_size;
       struct cgraph_node *where, *callee;
-      int badness = fibheap_min_key (heap);
+      int badness = fibheap_min_key (edge_heap);
       int current_badness;
       int cached_badness;
       int growth;
 
-      edge = (struct cgraph_edge *) fibheap_extract_min (heap);
+      edge = (struct cgraph_edge *) fibheap_extract_min (edge_heap);
       gcc_assert (edge->aux);
       edge->aux = NULL;
       if (!edge->inline_failed)
@@ -1382,7 +1382,7 @@ inline_small_functions (void)
       gcc_assert (current_badness >= badness);
       if (current_badness != badness)
 	{
-	  edge->aux = fibheap_insert (heap, current_badness, edge);
+	  edge->aux = fibheap_insert (edge_heap, current_badness, edge);
 	  continue;
 	}
 
@@ -1447,8 +1447,8 @@ inline_small_functions (void)
 	  /* Recursive inliner inlines all recursive calls of the function
 	     at once. Consequently we need to update all callee keys.  */
 	  if (flag_indirect_inlining)
-	    add_new_edges_to_heap (heap, new_indirect_edges);
-          update_callee_keys (heap, where, updated_nodes);
+	    add_new_edges_to_heap (edge_heap, new_indirect_edges);
+          update_callee_keys (edge_heap, where, updated_nodes);
 	}
       else
 	{
@@ -1482,12 +1482,12 @@ inline_small_functions (void)
 	  gcc_checking_assert (!callee->global.inlined_to);
 	  inline_call (edge, true, &new_indirect_edges, &overall_size, true);
 	  if (flag_indirect_inlining)
-	    add_new_edges_to_heap (heap, new_indirect_edges);
+	    add_new_edges_to_heap (edge_heap, new_indirect_edges);
 
 	  reset_edge_caches (edge->callee);
           reset_node_growth_cache (callee);
 
-	  update_callee_keys (heap, edge->callee, updated_nodes);
+	  update_callee_keys (edge_heap, edge->callee, updated_nodes);
 	}
       where = edge->caller;
       if (where->global.inlined_to)
@@ -1499,7 +1499,7 @@ inline_small_functions (void)
 	 inlined into (since it's body size changed) and for the functions
 	 called by function we inlined (since number of it inlinable callers
 	 might change).  */
-      update_caller_keys (heap, where, updated_nodes, NULL);
+      update_caller_keys (edge_heap, where, updated_nodes, NULL);
       bitmap_clear (updated_nodes);
 
       if (dump_file)
@@ -1525,7 +1525,7 @@ inline_small_functions (void)
   free_growth_caches ();
   if (new_indirect_edges)
     VEC_free (cgraph_edge_p, heap, new_indirect_edges);
-  fibheap_delete (heap);
+  fibheap_delete (edge_heap);
   if (dump_file)
     fprintf (dump_file,
 	     "Unit growth for small function inlining: %i->%i (%i%%)\n",

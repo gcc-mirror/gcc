@@ -873,7 +873,7 @@ DEF_VEC_ALLOC_O (haifa_insn_data_def, heap);
 
 extern VEC(haifa_insn_data_def, heap) *h_i_d;
 
-#define HID(INSN) (VEC_index (haifa_insn_data_def, h_i_d, INSN_UID (INSN)))
+#define HID(INSN) (&VEC_index (haifa_insn_data_def, h_i_d, INSN_UID (INSN)))
 
 /* Accessor macros for h_i_d.  There are more in haifa-sched.c and
    sched-rgn.c.  */
@@ -895,7 +895,7 @@ DEF_VEC_ALLOC_O (haifa_deps_insn_data_def, heap);
 
 extern VEC(haifa_deps_insn_data_def, heap) *h_d_i_d;
 
-#define HDID(INSN) (VEC_index (haifa_deps_insn_data_def, h_d_i_d,	\
+#define HDID(INSN) (&VEC_index (haifa_deps_insn_data_def, h_d_i_d,	\
 			       INSN_LUID (INSN)))
 #define INSN_DEP_COUNT(INSN)	(HDID (INSN)->dep_count)
 #define HAS_INTERNAL_DEP(INSN)  (HDID (INSN)->has_internal_dep)
@@ -909,7 +909,7 @@ extern VEC(haifa_deps_insn_data_def, heap) *h_d_i_d;
 #define INSN_COND_DEPS(INSN)	(HDID (INSN)->cond_deps)
 #define CANT_MOVE(INSN)	(HDID (INSN)->cant_move)
 #define CANT_MOVE_BY_LUID(LUID)	(VEC_index (haifa_deps_insn_data_def, h_d_i_d, \
-                                            LUID)->cant_move)
+                                            LUID).cant_move)
 
 
 #define INSN_PRIORITY(INSN)	(HID (INSN)->priority)

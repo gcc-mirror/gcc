@@ -30,7 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "tree-flow.h"
 #include "gimple.h"
-#include "hashtab.h"
+#include "hash-table.h"
 #include "tree-iterator.h"
 #include "alloc-pool.h"
 #include "obstack.h"
@@ -177,12 +177,11 @@ typedef struct pre_expr_d
 #define PRE_EXPR_REFERENCE(e) (e)->u.reference
 #define PRE_EXPR_CONSTANT(e) (e)->u.constant
 
-static int
-pre_expr_eq (const void *p1, const void *p2)
-{
-  const struct pre_expr_d *e1 = (const struct pre_expr_d *) p1;
-  const struct pre_expr_d *e2 = (const struct pre_expr_d *) p2;
+/* Compare E1 and E1 for equality.  */
 
+inline int
+ssa_pre_expr_eq (const struct pre_expr_d *e1, const struct pre_expr_d *e2)
+{
   if (e1->kind != e2->kind)
     return false;
 
@@ -203,10 +202,11 @@ pre_expr_eq (const void *p1, const void *p2)
     }
 }
 
-static hashval_t
-pre_expr_hash (const void *p1)
+/* Hash E.  */
+
+inline hashval_t
+ssa_pre_expr_hash (const struct pre_expr_d *e)
 {
-  const struct pre_expr_d *e = (const struct pre_expr_d *) p1;
   switch (e->kind)
     {
     case CONSTANT:
@@ -222,7 +222,6 @@ pre_expr_hash (const void *p1)
     }
 }
 
-
 /* Next global expression id number.  */
 static unsigned int next_expression_id;
 
@@ -230,7 +229,9 @@ static unsigned int next_expression_id;
 DEF_VEC_P (pre_expr);
 DEF_VEC_ALLOC_P (pre_expr, heap);
 static VEC(pre_expr, heap) *expressions;
-static htab_t expression_to_id;
+static hash_table <pre_expr_d, ssa_pre_expr_hash, ssa_pre_expr_eq,
+		   typed_null_remove <pre_expr_d> >
+		  expression_to_id;
 static VEC(unsigned, heap) *name_to_id;
 
 /* Allocate an expression id for EXPR.  */
@@ -238,7 +239,7 @@ static VEC(unsigned, heap) *name_to_id;
 static inline unsigned int
 alloc_expression_id (pre_expr expr)
 {
-  void **slot;
+  struct pre_expr_d **slot;
   /* Make sure we won't overflow. */
   gcc_assert (next_expression_id + 1 > next_expression_id);
   expr->id = next_expression_id++;
@@ -257,7 +258,7 @@ alloc_expression_id (pre_expr expr)
     }
   else
     {
-      slot = htab_find_slot (expression_to_id, expr, INSERT);
+      slot = expression_to_id.find_slot (expr, INSERT);
       gcc_assert (!*slot);
       *slot = expr;
     }
@@ -275,7 +276,7 @@ get_expression_id (const pre_expr expr)
 static inline unsigned int
 lookup_expression_id (const pre_expr expr)
 {
-  void **slot;
+  struct pre_expr_d **slot;
 
   if (expr->kind == NAME)
     {
@@ -286,7 +287,7 @@ lookup_expression_id (const pre_expr expr)
     }
   else
     {
-      slot = htab_find_slot (expression_to_id, expr, NO_INSERT);
+      slot = expression_to_id.find_slot (expr, NO_INSERT);
       if (!slot)
 	return 0;
       return ((pre_expr)*slot)->id;
@@ -479,11 +480,6 @@ static bitmap need_eh_cleanup;
 /* Set of blocks with statements that have had their AB properties changed.  */
 static bitmap need_ab_cleanup;
 
-/* The phi_translate_table caches phi translations for a given
-   expression and predecessor.  */
-
-static htab_t phi_translate_table;
-
 /* A three tuple {e, pred, v} used to cache phi translations in the
    phi_translate_table.  */
 
@@ -506,21 +502,19 @@ typedef const struct expr_pred_trans_d *const_expr_pred_trans_t;
 
 /* Return the hash value for a phi translation table entry.  */
 
-static hashval_t
-expr_pred_trans_hash (const void *p)
+inline hashval_t
+ssa_expr_pred_trans_hash (const expr_pred_trans_d *ve)
 {
-  const_expr_pred_trans_t const ve = (const_expr_pred_trans_t) p;
   return ve->hashcode;
 }
 
 /* Return true if two phi translation table entries are the same.
    P1 and P2 should point to the expr_pred_trans_t's to be compared.*/
 
-static int
-expr_pred_trans_eq (const void *p1, const void *p2)
+inline int
+ssa_expr_pred_trans_eq (const expr_pred_trans_d *ve1,
+			const expr_pred_trans_d *ve2)
 {
-  const_expr_pred_trans_t const ve1 = (const_expr_pred_trans_t) p1;
-  const_expr_pred_trans_t const ve2 = (const_expr_pred_trans_t) p2;
   basic_block b1 = ve1->pred;
   basic_block b2 = ve2->pred;
 
@@ -528,8 +522,16 @@ expr_pred_trans_eq (const void *p1, const void *p2)
      be equal.  */
   if (b1 != b2)
     return false;
-  return pre_expr_eq (ve1->e, ve2->e);
+  return ssa_pre_expr_eq (ve1->e, ve2->e);
 }
+
+/* The phi_translate_table caches phi translations for a given
+   expression and predecessor.  */
+
+static hash_table <expr_pred_trans_d, ssa_expr_pred_trans_hash,
+		   ssa_expr_pred_trans_eq,
+		   typed_free_remove <expr_pred_trans_d> >
+		  phi_translate_table;
 
 /* Search in the phi translation table for the translation of
    expression E in basic block PRED.
@@ -538,18 +540,18 @@ expr_pred_trans_eq (const void *p1, const void *p2)
 static inline pre_expr
 phi_trans_lookup (pre_expr e, basic_block pred)
 {
-  void **slot;
+  expr_pred_trans_t *slot;
   struct expr_pred_trans_d ept;
 
   ept.e = e;
   ept.pred = pred;
-  ept.hashcode = iterative_hash_hashval_t (pre_expr_hash (e), pred->index);
-  slot = htab_find_slot_with_hash (phi_translate_table, &ept, ept.hashcode,
+  ept.hashcode = iterative_hash_hashval_t (ssa_pre_expr_hash (e), pred->index);
+  slot = phi_translate_table.find_slot_with_hash (&ept, ept.hashcode,
 				   NO_INSERT);
   if (!slot)
     return NULL;
   else
-    return ((expr_pred_trans_t) *slot)->v;
+    return (*slot)->v;
 }
 
 
@@ -559,18 +561,18 @@ phi_trans_lookup (pre_expr e, basic_block pred)
 static inline void
 phi_trans_add (pre_expr e, pre_expr v, basic_block pred)
 {
-  void **slot;
+  expr_pred_trans_t *slot;
   expr_pred_trans_t new_pair = XNEW (struct expr_pred_trans_d);
   new_pair->e = e;
   new_pair->pred = pred;
   new_pair->v = v;
-  new_pair->hashcode = iterative_hash_hashval_t (pre_expr_hash (e),
+  new_pair->hashcode = iterative_hash_hashval_t (ssa_pre_expr_hash (e),
 						 pred->index);
 
-  slot = htab_find_slot_with_hash (phi_translate_table, new_pair,
+  slot = phi_translate_table.find_slot_with_hash (new_pair,
 				   new_pair->hashcode, INSERT);
   free (*slot);
-  *slot = (void *) new_pair;
+  *slot = new_pair;
 }
 
 
@@ -1607,12 +1609,12 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 		if (double_int_fits_in_shwi_p (off))
 		  newop.off = off.low;
 	      }
-	    VEC_replace (vn_reference_op_s, newoperands, j, &newop);
+	    VEC_replace (vn_reference_op_s, newoperands, j, newop);
 	    /* If it transforms from an SSA_NAME to an address, fold with
 	       a preceding indirect reference.  */
 	    if (j > 0 && op[0] && TREE_CODE (op[0]) == ADDR_EXPR
 		&& VEC_index (vn_reference_op_s,
-			      newoperands, j - 1)->opcode == MEM_REF)
+			      newoperands, j - 1).opcode == MEM_REF)
 	      vn_reference_fold_indirect (&newoperands, &j);
 	  }
 	if (i != VEC_length (vn_reference_op_s, operands))
@@ -2596,8 +2598,8 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
 				  unsigned int *operand, gimple_seq *stmts,
 				  gimple domstmt)
 {
-  vn_reference_op_t currop = VEC_index (vn_reference_op_s, ref->operands,
-					*operand);
+  vn_reference_op_t currop = &VEC_index (vn_reference_op_s, ref->operands,
+					 *operand);
   tree genop;
   ++*operand;
   switch (currop->opcode)
@@ -2674,8 +2676,8 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
       {
 	pre_expr op0expr, op1expr;
 	tree genop0 = NULL_TREE, genop1 = NULL_TREE;
-	vn_reference_op_t nextop = VEC_index (vn_reference_op_s, ref->operands,
-					      ++*operand);
+	vn_reference_op_t nextop = &VEC_index (vn_reference_op_s, ref->operands,
+					       ++*operand);
 	tree baseop = create_component_ref_by_pieces_1 (block, ref, operand,
 							stmts, domstmt);
 	if (!baseop)
@@ -3493,7 +3495,7 @@ do_regular_insertion (basic_block block, basic_block dom)
 		    do_insertion = true;
 		  if (first_s == NULL)
 		    first_s = edoubleprime;
-		  else if (!pre_expr_eq (first_s, edoubleprime))
+		  else if (!ssa_pre_expr_eq (first_s, edoubleprime))
 		    all_same = false;
 		}
 	    }
@@ -4774,7 +4776,7 @@ init_pre (bool do_fre)
 
   next_expression_id = 1;
   expressions = NULL;
-  VEC_safe_push (pre_expr, heap, expressions, NULL);
+  VEC_safe_push (pre_expr, heap, expressions, (pre_expr)NULL);
   value_expressions = VEC_alloc (bitmap_set_t, heap, get_max_value_id () + 1);
   VEC_safe_grow_cleared (bitmap_set_t, heap, value_expressions,
 			 get_max_value_id() + 1);
@@ -4797,11 +4799,8 @@ init_pre (bool do_fre)
   calculate_dominance_info (CDI_DOMINATORS);
 
   bitmap_obstack_initialize (&grand_bitmap_obstack);
-  phi_translate_table = htab_create (5110, expr_pred_trans_hash,
-				     expr_pred_trans_eq, free);
-  expression_to_id = htab_create (num_ssa_names * 3,
-				  pre_expr_hash,
-				  pre_expr_eq, NULL);
+  phi_translate_table.create (5110);
+  expression_to_id.create (num_ssa_names * 3);
   bitmap_set_pool = create_alloc_pool ("Bitmap sets",
 				       sizeof (struct bitmap_set), 30);
   pre_expr_pool = create_alloc_pool ("pre_expr nodes",
@@ -4833,8 +4832,8 @@ fini_pre (bool do_fre)
   bitmap_obstack_release (&grand_bitmap_obstack);
   free_alloc_pool (bitmap_set_pool);
   free_alloc_pool (pre_expr_pool);
-  htab_delete (phi_translate_table);
-  htab_delete (expression_to_id);
+  phi_translate_table.dispose ();
+  expression_to_id.dispose ();
   VEC_free (unsigned, heap, name_to_id);
 
   free_aux_for_blocks ();

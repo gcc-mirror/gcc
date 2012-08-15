@@ -215,7 +215,8 @@ addr_for_mem_ref (struct mem_address *addr, addr_space_t as,
 			       templ_index + 1);
 
       /* Reuse the templates for addresses, so that we do not waste memory.  */
-      templ = VEC_index (mem_addr_template, mem_addr_template_list, templ_index);
+      templ = &VEC_index (mem_addr_template, mem_addr_template_list,
+			  templ_index);
       if (!templ->ref)
 	{
 	  sym = (addr->symbol ?

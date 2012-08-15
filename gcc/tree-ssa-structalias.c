@@ -2927,7 +2927,7 @@ get_constraint_for_ptr_offset (tree ptr, tree offset,
   for (j = 0; j < n; j++)
     {
       varinfo_t curr;
-      c = *VEC_index (ce_s, *results, j);
+      c = VEC_index (ce_s, *results, j);
       curr = get_varinfo (c.var);
 
       if (c.type == ADDRESSOF
@@ -2989,7 +2989,7 @@ get_constraint_for_ptr_offset (tree ptr, tree offset,
       else
 	c.offset = rhsoffset;
 
-      VEC_replace (ce_s, *results, j, &c);
+      VEC_replace (ce_s, *results, j, c);
     }
 }
 
@@ -3058,7 +3058,7 @@ get_constraint_for_component_ref (tree t, VEC(ce_s, heap) **results,
      adding the required subset of sub-fields below.  */
   get_constraint_for_1 (t, results, true, lhs_p);
   gcc_assert (VEC_length (ce_s, *results) == 1);
-  result = VEC_last (ce_s, *results);
+  result = &VEC_last (ce_s, *results);
 
   if (result->type == SCALAR
       && get_varinfo (result->var)->is_full_var)
@@ -3284,13 +3284,13 @@ get_constraint_for_1 (tree t, VEC (ce_s, heap) **results, bool address_p,
 	      if (address_p)
 		return;
 
-	      cs = *VEC_last (ce_s, *results);
+	      cs = VEC_last (ce_s, *results);
 	      if (cs.type == DEREF
 		  && type_can_have_subvars (TREE_TYPE (t)))
 		{
 		  /* For dereferences this means we have to defer it
 		     to solving time.  */
-		  VEC_last (ce_s, *results)->offset = UNKNOWN_OFFSET;
+		  VEC_last (ce_s, *results).offset = UNKNOWN_OFFSET;
 		  return;
 		}
 	      if (cs.type != SCALAR)
@@ -3451,8 +3451,8 @@ do_structure_copy (tree lhsop, tree rhsop)
 
   get_constraint_for (lhsop, &lhsc);
   get_constraint_for_rhs (rhsop, &rhsc);
-  lhsp = VEC_index (ce_s, lhsc, 0);
-  rhsp = VEC_index (ce_s, rhsc, 0);
+  lhsp = &VEC_index (ce_s, lhsc, 0);
+  rhsp = &VEC_index (ce_s, rhsc, 0);
   if (lhsp->type == DEREF
       || (lhsp->type == ADDRESSOF && lhsp->var == anything_id)
       || rhsp->type == DEREF)
@@ -3481,7 +3481,7 @@ do_structure_copy (tree lhsop, tree rhsop)
       for (j = 0; VEC_iterate (ce_s, lhsc, j, lhsp);)
 	{
 	  varinfo_t lhsv, rhsv;
-	  rhsp = VEC_index (ce_s, rhsc, k);
+	  rhsp = &VEC_index (ce_s, rhsc, k);
 	  lhsv = get_varinfo (lhsp->var);
 	  rhsv = get_varinfo (rhsp->var);
 	  if (lhsv->may_have_pointers
@@ -4377,7 +4377,7 @@ find_func_aliases_for_call (gimple t)
 	  lhs = get_function_part_constraint (fi, fi_parm_base + j);
 	  while (VEC_length (ce_s, rhsc) != 0)
 	    {
-	      rhsp = VEC_last (ce_s, rhsc);
+	      rhsp = &VEC_last (ce_s, rhsc);
 	      process_constraint (new_constraint (lhs, *rhsp));
 	      VEC_pop (ce_s, rhsc);
 	    }
@@ -4399,7 +4399,7 @@ find_func_aliases_for_call (gimple t)
 	      VEC(ce_s, heap) *tem = NULL;
 	      VEC_safe_push (ce_s, heap, tem, &rhs);
 	      do_deref (&tem);
-	      rhs = *VEC_index (ce_s, tem, 0);
+	      rhs = VEC_index (ce_s, tem, 0);
 	      VEC_free(ce_s, heap, tem);
 	    }
 	  FOR_EACH_VEC_ELT (ce_s, lhsc, j, lhsp)
@@ -4471,7 +4471,7 @@ find_func_aliases (gimple origt)
 	      struct constraint_expr *c2;
 	      while (VEC_length (ce_s, rhsc) > 0)
 		{
-		  c2 = VEC_last (ce_s, rhsc);
+		  c2 = &VEC_last (ce_s, rhsc);
 		  process_constraint (new_constraint (*c, *c2));
 		  VEC_pop (ce_s, rhsc);
 		}
@@ -5158,7 +5158,7 @@ push_fields_onto_fieldstack (tree type, VEC(fieldoff_s,heap) **fieldstack,
 	    bool must_have_pointers_p;
 
 	    if (!VEC_empty (fieldoff_s, *fieldstack))
-	      pair = VEC_last (fieldoff_s, *fieldstack);
+	      pair = &VEC_last (fieldoff_s, *fieldstack);
 
 	    /* If there isn't anything at offset zero, create sth.  */
 	    if (!pair

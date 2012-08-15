@@ -223,13 +223,6 @@ RANLIB_FLAGS = @ranlib_flags@
 HOST_LIBS = @HOST_LIBS@
 
 # The name of the compiler to use.
-ENABLE_BUILD_WITH_CXX = @ENABLE_BUILD_WITH_CXX@
-ifneq ($(ENABLE_BUILD_WITH_CXX),yes)
-COMPILER = $(CC)
-COMPILER_FLAGS = $(CFLAGS)
-LINKER = $(CC)
-LINKER_FLAGS = $(CFLAGS)
-else
 COMPILER = $(CXX)
 COMPILER_FLAGS = $(CXXFLAGS)
 # If HOST_LIBS is set, then the user is controlling the libraries to
@@ -242,7 +235,6 @@ LINKER_FLAGS = $(CXXFLAGS)
 else
 LINKER = $(CC)
 LINKER_FLAGS = $(CFLAGS)
-endif
 endif
 
 # -------------------------------------------
@@ -336,13 +328,8 @@ CLOOGINC = @CLOOGINC@
 enable_lto = @enable_lto@
 
 # Compiler and flags needed for plugin support
-ifneq ($(ENABLE_BUILD_WITH_CXX),yes)
-PLUGINCC = @CC@
-PLUGINCFLAGS = @CFLAGS@
-else
 PLUGINCC = @CXX@
 PLUGINCFLAGS = @CXXFLAGS@
-endif
 
 # Libs and linker options needed for plugin support
 PLUGINLIBS = @pluginlibs@
@@ -732,22 +719,12 @@ BUILD_CFLAGS= @BUILD_CFLAGS@ -DGENERATOR_FILE
 BUILD_CXXFLAGS = @BUILD_CXXFLAGS@ -DGENERATOR_FILE
 
 # Native compiler that we use.  This may be C++ some day.
-ifneq ($(ENABLE_BUILD_WITH_CXX),yes)
-COMPILER_FOR_BUILD = $(CC_FOR_BUILD)
-BUILD_COMPILERFLAGS = $(BUILD_CFLAGS)
-else
 COMPILER_FOR_BUILD = $(CXX_FOR_BUILD)
 BUILD_COMPILERFLAGS = $(BUILD_CXXFLAGS)
-endif
 
 # Native linker that we use.
-ifneq ($(ENABLE_BUILD_WITH_CXX),yes)
-LINKER_FOR_BUILD = $(CC_FOR_BUILD)
-BUILD_LINKERFLAGS = $(BUILD_CFLAGS)
-else
 LINKER_FOR_BUILD = $(CXX_FOR_BUILD)
 BUILD_LINKERFLAGS = $(BUILD_CXXFLAGS)
-endif
 
 # Native linker and preprocessor flags.  For x-fragment overrides.
 BUILD_LDFLAGS=@BUILD_LDFLAGS@
@@ -839,6 +816,7 @@ endif
 
 # Shorthand variables for dependency lists.
 VEC_H = vec.h statistics.h
+HASH_TABLE_H = $(HASHTAB_H) hash-table.h
 EXCEPT_H = except.h $(HASHTAB_H) vecprim.h vecir.h
 TARGET_DEF = target.def target-hooks-macros.h
 C_TARGET_DEF = c-family/c-target.def target-hooks-macros.h
@@ -998,18 +976,10 @@ ALL_CXXFLAGS = $(T_CFLAGS) $(CFLAGS-$@) $(CXXFLAGS) $(INTERNAL_CFLAGS) \
 ALL_CPPFLAGS = $(INCLUDES) $(CPPFLAGS)
 
 # This is the variable to use when using $(COMPILER).
-ifneq ($(ENABLE_BUILD_WITH_CXX),yes)
-ALL_COMPILERFLAGS = $(ALL_CFLAGS)
-else
 ALL_COMPILERFLAGS = $(ALL_CXXFLAGS)
-endif
 
 # This is the variable to use when using $(LINKER).
-ifneq ($(ENABLE_BUILD_WITH_CXX),yes)
-ALL_LINKERFLAGS = $(ALL_CFLAGS)
-else
 ALL_LINKERFLAGS = $(ALL_CXXFLAGS)
-endif
 
 # Build and host support libraries.
 LIBIBERTY = ../libiberty/libiberty.a
@@ -1466,7 +1436,8 @@ OBJS-libcommon = diagnostic.o pretty-print.o intl.o input.o version.o
 # Objects in libcommon-target.a, used by drivers and by the core
 # compiler and containing target-dependent code.
 OBJS-libcommon-target = $(common_out_object_file) prefix.o params.o \
-	opts.o opts-common.o options.o vec.o hooks.o common/common-targhooks.o
+	opts.o opts-common.o options.o vec.o hooks.o common/common-targhooks.o \
+	hash-table.o
 
 # This lists all host objects for the front ends.
 ALL_HOST_FRONTEND_OBJS = $(foreach v,$(CONFIG_LANGUAGES),$($(v)_OBJS))
@@ -2224,7 +2195,7 @@ stor-layout.o : stor-layout.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 tree-ssa-tail-merge.o: tree-ssa-tail-merge.c \
    $(SYSTEM_H) $(CONFIG_H) coretypes.h $(TM_H) $(BITMAP_H) \
    $(FLAGS_H) $(TM_P_H) $(BASIC_BLOCK_H) \
-   $(TREE_H) $(TREE_FLOW_H) $(TREE_INLINE_H) $(TREE_DUMP_H) \
+   $(TREE_H) $(TREE_FLOW_H) $(TREE_INLINE_H) $(TREE_DUMP_H) $(HASH_TABLE_H) \
    $(GIMPLE_H) $(FUNCTION_H) tree-ssa-sccvn.h \
    $(CGRAPH_H) $(GIMPLE_PRETTY_PRINT_H) $(PARAMS_H)
 tree-ssa-structalias.o: tree-ssa-structalias.c \
@@ -2260,7 +2231,7 @@ tree-ssa-ter.o : tree-ssa-ter.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(GIMPLE_PRETTY_PRINT_H)
 tree-ssa-coalesce.o : tree-ssa-coalesce.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(SYSTEM_H) $(TREE_H) $(DIAGNOSTIC_H) $(TM_H) coretypes.h dumpfile.h \
-   $(TREE_SSA_LIVE_H) $(BITMAP_H) $(FLAGS_H) $(HASHTAB_H) \
+   $(TREE_SSA_LIVE_H) $(BITMAP_H) $(FLAGS_H) $(HASH_TABLE_H) \
    $(TREE_PRETTY_PRINT_H)
 tree-outof-ssa.o : tree-outof-ssa.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(TREE_H) $(DIAGNOSTIC_H) $(TM_H) coretypes.h dumpfile.h \
@@ -2321,7 +2292,7 @@ tree-ssa-threadedge.o : tree-ssa-threadedge.c $(TREE_FLOW_H) $(CONFIG_H) \
    tree-ssa-propagate.h langhooks.h \
    $(PARAMS_H)
 tree-ssa-threadupdate.o : tree-ssa-threadupdate.c $(TREE_FLOW_H) $(CONFIG_H) \
-   $(SYSTEM_H) $(TREE_H) $(TM_P_H) \
+   $(SYSTEM_H) $(TREE_H) $(TM_P_H) $(HASH_TABLE_H) \
    $(DIAGNOSTIC_H) $(FUNCTION_H) $(TM_H) coretypes.h dumpfile.h \
    $(BASIC_BLOCK_H) $(FLAGS_H) $(CFGLOOP_H)
 tree-ssanames.o : tree-ssanames.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
@@ -2343,7 +2314,7 @@ tree-ssa-copyrename.o : tree-ssa-copyrename.c $(TREE_FLOW_H) $(CONFIG_H) \
 tree-ssa-pre.o : tree-ssa-pre.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(SYSTEM_H) $(TREE_H) $(DIAGNOSTIC_H) \
    $(TM_H) coretypes.h $(TREE_PASS_H) $(FLAGS_H) langhooks.h \
-   $(CFGLOOP_H) alloc-pool.h $(BASIC_BLOCK_H) $(BITMAP_H) $(HASHTAB_H) \
+   $(CFGLOOP_H) alloc-pool.h $(BASIC_BLOCK_H) $(BITMAP_H) $(HASH_TABLE_H) \
    $(GIMPLE_H) $(TREE_INLINE_H) tree-iterator.h tree-ssa-sccvn.h $(PARAMS_H) \
    $(DBGCNT_H) tree-scalar-evolution.h $(GIMPLE_PRETTY_PRINT_H)
 tree-ssa-sccvn.o : tree-ssa-sccvn.c $(TREE_FLOW_H) $(CONFIG_H) \
@@ -2927,8 +2898,8 @@ ipa-pure-const.o : ipa-pure-const.c $(CONFIG_H) $(SYSTEM_H) \
 coverage.o : coverage.c $(GCOV_IO_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h dumpfile.h \
    $(TM_H) $(RTL_H) $(TREE_H) $(FLAGS_H) output.h $(REGS_H) $(EXPR_H) \
    $(FUNCTION_H) $(BASIC_BLOCK_H) toplev.h $(DIAGNOSTIC_CORE_H) $(GGC_H) langhooks.h $(COVERAGE_H) \
-   $(HASHTAB_H) tree-iterator.h $(CGRAPH_H) gcov-io.c $(TM_P_H) \
-   $(DIAGNOSTIC_CORE_H) intl.h gt-coverage.h $(TARGET_H)
+   tree-iterator.h $(CGRAPH_H) gcov-io.c $(TM_P_H) \
+   $(DIAGNOSTIC_CORE_H) intl.h gt-coverage.h $(TARGET_H) $(HASH_TABLE_H)
 cselib.o : cselib.c $(CONFIG_H) $(SYSTEM_H) coretypes.h dumpfile.h $(TM_H) $(RTL_H) \
    $(REGS_H) hard-reg-set.h $(FLAGS_H) insn-config.h $(RECOG_H) \
    $(EMIT_RTL_H) $(DIAGNOSTIC_CORE_H) $(FUNCTION_H) \
@@ -2999,7 +2970,8 @@ tree-ssa-ccp.o : tree-ssa-ccp.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(SYSTEM_H) $(TREE_H) $(TM_P_H) \
    $(DIAGNOSTIC_H) $(FUNCTION_H) $(TM_H) coretypes.h \
    $(BASIC_BLOCK_H) $(TREE_PASS_H) langhooks.h  $(PARAMS_H) \
-   tree-ssa-propagate.h value-prof.h $(FLAGS_H) $(TARGET_H) $(DIAGNOSTIC_CORE_H) \
+   tree-ssa-propagate.h value-prof.h $(FLAGS_H) $(TARGET_H) \
+   $(DIAGNOSTIC_CORE_H) $(HASH_TABLE_H) \
    $(DBGCNT_H) $(GIMPLE_PRETTY_PRINT_H) gimple-fold.h
 tree-ssa-strlen.o : tree-ssa-strlen.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TREE_FLOW_H) $(TREE_PASS_H) domwalk.h alloc-pool.h tree-ssa-propagate.h \
@@ -3153,6 +3125,8 @@ bitmap.o : bitmap.c $(CONFIG_H) $(SYSTEM_H)  coretypes.h \
    $(GGC_H) gt-bitmap.h $(BITMAP_H) $(OBSTACK_H) $(HASHTAB_H)
 vec.o : vec.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(VEC_H) $(GGC_H) \
    $(DIAGNOSTIC_CORE_H) $(HASHTAB_H)
+hash-table.o : hash-table.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+   $(HASHTAB_H)
 reload.o : reload.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_ERROR_H) \
    $(FLAGS_H) $(EXPR_H) $(OPTABS_H) reload.h $(RECOG_H) \
    hard-reg-set.h insn-config.h $(REGS_H) $(FUNCTION_H) real.h \

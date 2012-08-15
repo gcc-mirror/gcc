@@ -775,7 +775,7 @@ ao_ref_init_from_vn_reference (ao_ref *ref,
   alias_set_type base_alias_set = -1;
 
   /* First get the final access size from just the outermost expression.  */
-  op = VEC_index (vn_reference_op_s, ops, 0);
+  op = &VEC_index (vn_reference_op_s, ops, 0);
   if (op->opcode == COMPONENT_REF)
     size_tree = DECL_SIZE (op->op0);
   else if (op->opcode == BIT_FIELD_REF)
@@ -815,7 +815,7 @@ ao_ref_init_from_vn_reference (ao_ref *ref,
 	      && op->op0
 	      && DECL_P (TREE_OPERAND (op->op0, 0)))
 	    {
-	      vn_reference_op_t pop = VEC_index (vn_reference_op_s, ops, i-1);
+	      vn_reference_op_t pop = &VEC_index (vn_reference_op_s, ops, i-1);
 	      base = TREE_OPERAND (op->op0, 0);
 	      if (pop->off == -1)
 		{
@@ -1004,8 +1004,8 @@ vn_reference_fold_indirect (VEC (vn_reference_op_s, heap) **ops,
 			    unsigned int *i_p)
 {
   unsigned int i = *i_p;
-  vn_reference_op_t op = VEC_index (vn_reference_op_s, *ops, i);
-  vn_reference_op_t mem_op = VEC_index (vn_reference_op_s, *ops, i - 1);
+  vn_reference_op_t op = &VEC_index (vn_reference_op_s, *ops, i);
+  vn_reference_op_t mem_op = &VEC_index (vn_reference_op_s, *ops, i - 1);
   tree addr_base;
   HOST_WIDE_INT addr_offset;
 
@@ -1036,8 +1036,8 @@ vn_reference_maybe_forwprop_address (VEC (vn_reference_op_s, heap) **ops,
 				     unsigned int *i_p)
 {
   unsigned int i = *i_p;
-  vn_reference_op_t op = VEC_index (vn_reference_op_s, *ops, i);
-  vn_reference_op_t mem_op = VEC_index (vn_reference_op_s, *ops, i - 1);
+  vn_reference_op_t op = &VEC_index (vn_reference_op_s, *ops, i);
+  vn_reference_op_t mem_op = &VEC_index (vn_reference_op_s, *ops, i - 1);
   gimple def_stmt;
   enum tree_code code;
   double_int off;
@@ -1114,7 +1114,7 @@ fully_constant_vn_reference_p (vn_reference_t ref)
 
   /* Try to simplify the translated expression if it is
      a call to a builtin function with at most two arguments.  */
-  op = VEC_index (vn_reference_op_s, operands, 0);
+  op = &VEC_index (vn_reference_op_s, operands, 0);
   if (op->opcode == CALL_EXPR
       && TREE_CODE (op->op0) == ADDR_EXPR
       && TREE_CODE (TREE_OPERAND (op->op0, 0)) == FUNCTION_DECL
@@ -1124,9 +1124,9 @@ fully_constant_vn_reference_p (vn_reference_t ref)
     {
       vn_reference_op_t arg0, arg1 = NULL;
       bool anyconst = false;
-      arg0 = VEC_index (vn_reference_op_s, operands, 1);
+      arg0 = &VEC_index (vn_reference_op_s, operands, 1);
       if (VEC_length (vn_reference_op_s, operands) > 2)
-	arg1 = VEC_index (vn_reference_op_s, operands, 2);
+	arg1 = &VEC_index (vn_reference_op_s, operands, 2);
       if (TREE_CODE_CLASS (arg0->opcode) == tcc_constant
 	  || (arg0->opcode == ADDR_EXPR
 	      && is_gimple_min_invariant (arg0->op0)))
@@ -1158,7 +1158,7 @@ fully_constant_vn_reference_p (vn_reference_t ref)
 	   && VEC_length (vn_reference_op_s, operands) == 2)
     {
       vn_reference_op_t arg0;
-      arg0 = VEC_index (vn_reference_op_s, operands, 1);
+      arg0 = &VEC_index (vn_reference_op_s, operands, 1);
       if (arg0->opcode == STRING_CST
 	  && (TYPE_MODE (op->type)
 	      == TYPE_MODE (TREE_TYPE (TREE_TYPE (arg0->op0))))
@@ -1226,12 +1226,12 @@ valueize_refs_1 (VEC (vn_reference_op_s, heap) *orig, bool *valueized_anything)
 	  && vro->op0
 	  && TREE_CODE (vro->op0) == ADDR_EXPR
 	  && VEC_index (vn_reference_op_s,
-			orig, i - 1)->opcode == MEM_REF)
+			orig, i - 1).opcode == MEM_REF)
 	vn_reference_fold_indirect (&orig, &i);
       else if (i > 0
 	       && vro->opcode == SSA_NAME
 	       && VEC_index (vn_reference_op_s,
-			     orig, i - 1)->opcode == MEM_REF)
+			     orig, i - 1).opcode == MEM_REF)
 	vn_reference_maybe_forwprop_address (&orig, &i);
       /* If it transforms a non-constant ARRAY_REF into a constant
 	 one, adjust the constant offset.  */
@@ -1624,9 +1624,9 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
       i = VEC_length (vn_reference_op_s, vr->operands) - 1;
       j = VEC_length (vn_reference_op_s, lhs_ops) - 1;
       while (j >= 0 && i >= 0
-	     && vn_reference_op_eq (VEC_index (vn_reference_op_s,
-					       vr->operands, i),
-				    VEC_index (vn_reference_op_s, lhs_ops, j)))
+	     && vn_reference_op_eq (&VEC_index (vn_reference_op_s,
+					        vr->operands, i),
+				    &VEC_index (vn_reference_op_s, lhs_ops, j)))
 	{
 	  i--;
 	  j--;
@@ -1639,10 +1639,10 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
 	 don't care here - further lookups with the rewritten operands
 	 will simply fail if we messed up types too badly.  */
       if (j == 0 && i >= 0
-	  && VEC_index (vn_reference_op_s, lhs_ops, 0)->opcode == MEM_REF
-	  && VEC_index (vn_reference_op_s, lhs_ops, 0)->off != -1
-	  && (VEC_index (vn_reference_op_s, lhs_ops, 0)->off
-	      == VEC_index (vn_reference_op_s, vr->operands, i)->off))
+	  && VEC_index (vn_reference_op_s, lhs_ops, 0).opcode == MEM_REF
+	  && VEC_index (vn_reference_op_s, lhs_ops, 0).off != -1
+	  && (VEC_index (vn_reference_op_s, lhs_ops, 0).off
+	      == VEC_index (vn_reference_op_s, vr->operands, i).off))
 	i--, j--;
 
       /* i now points to the first additional op.
@@ -1669,7 +1669,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
 	VEC_truncate (vn_reference_op_s, vr->operands,
 		      i + 1 + VEC_length (vn_reference_op_s, rhs));
       FOR_EACH_VEC_ELT (vn_reference_op_s, rhs, j, vro)
-	VEC_replace (vn_reference_op_s, vr->operands, i + 1 + j, vro);
+	VEC_replace (vn_reference_op_s, vr->operands, i + 1 + j, *vro);
       VEC_free (vn_reference_op_s, heap, rhs);
       vr->operands = valueize_refs (vr->operands);
       vr->hashcode = vn_reference_compute_hash (vr);
@@ -1807,12 +1807,12 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
       op.opcode = MEM_REF;
       op.op0 = build_int_cst (ptr_type_node, at - rhs_offset);
       op.off = at - lhs_offset + rhs_offset;
-      VEC_replace (vn_reference_op_s, vr->operands, 0, &op);
+      VEC_replace (vn_reference_op_s, vr->operands, 0, op);
       op.type = TREE_TYPE (rhs);
       op.opcode = TREE_CODE (rhs);
       op.op0 = rhs;
       op.off = -1;
-      VEC_replace (vn_reference_op_s, vr->operands, 1, &op);
+      VEC_replace (vn_reference_op_s, vr->operands, 1, op);
       vr->hashcode = vn_reference_compute_hash (vr);
 
       /* Adjust *ref from the new operands.  */
@@ -3746,7 +3746,7 @@ start_over:
 	  /* Restore the last use walker and continue walking there.  */
 	  use = name;
 	  name = VEC_pop (tree, namevec);
-	  memcpy (&iter, VEC_last (ssa_op_iter, itervec),
+	  memcpy (&iter, &VEC_last (ssa_op_iter, itervec),
 		  sizeof (ssa_op_iter));
 	  VEC_pop (ssa_op_iter, itervec);
 	  goto continue_walking;

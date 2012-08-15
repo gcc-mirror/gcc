@@ -134,11 +134,6 @@ struct hash<T*>
 // later.
 #include <cstdio>
 
-#ifndef ENABLE_BUILD_WITH_CXX
-extern "C"
-{
-#endif
-
 #include "system.h"
 #include "ansidecl.h"
 #include "coretypes.h"
@@ -146,10 +141,6 @@ extern "C"
 #include "diagnostic-core.h"	/* For error_at and friends.  */
 #include "input.h"		/* For source_location.  */
 #include "intl.h"		/* For _().  */
-
-#ifndef ENABLE_BUILD_WITH_CXX
-} // End extern "C"
-#endif
 
 // When using gcc, go_assert is just gcc_assert.
 #define go_assert(EXPR) gcc_assert(EXPR)

@@ -8392,7 +8392,7 @@ parse_optimize_options (tree args, bool attr_p)
   /* Build up argv vector.  Just in case the string is stored away, use garbage
      collected strings.  */
   VEC_truncate (const_char_p, optimize_args, 0);
-  VEC_safe_push (const_char_p, gc, optimize_args, NULL);
+  VEC_safe_push (const_char_p, gc, optimize_args, (const_char_p)NULL);
 
   for (ap = args; ap != NULL_TREE; ap = TREE_CHAIN (ap))
     {
@@ -9390,10 +9390,10 @@ complete_array_type (tree *ptype, tree initial_value, bool do_default)
 	      constructor_elt *ce;
 	      bool fold_p = false;
 
-	      if (VEC_index (constructor_elt, v, 0)->index)
+	      if (VEC_index (constructor_elt, v, 0).index)
 		maxindex = fold_convert_loc (input_location, sizetype,
 					     VEC_index (constructor_elt,
-							v, 0)->index);
+							v, 0).index);
 	      curindex = maxindex;
 
 	      for (cnt = 1;

@@ -7872,3 +7872,54 @@ struct gimple_opt_pass pass_warn_unused_result =
     0,					/* todo_flags_finish */
   }
 };
+
+
+/* Garbage collection support for edge_def.  */
+
+extern void gt_ggc_mx (tree&);
+extern void gt_ggc_mx (gimple&);
+extern void gt_ggc_mx (rtx&);
+extern void gt_ggc_mx (basic_block&);
+
+void
+gt_ggc_mx (edge_def *e)
+{
+  gt_ggc_mx (e->src);
+  gt_ggc_mx (e->dest);
+  if (current_ir_type () == IR_GIMPLE)
+    gt_ggc_mx (e->insns.g);
+  else
+    gt_ggc_mx (e->insns.r);
+  gt_ggc_mx (e->goto_block);
+}
+
+/* PCH support for edge_def.  */
+
+extern void gt_pch_nx (tree&);
+extern void gt_pch_nx (gimple&);
+extern void gt_pch_nx (rtx&);
+extern void gt_pch_nx (basic_block&);
+
+void
+gt_pch_nx (edge_def *e)
+{
+  gt_pch_nx (e->src);
+  gt_pch_nx (e->dest);
+  if (current_ir_type () == IR_GIMPLE)
+    gt_pch_nx (e->insns.g);
+  else
+    gt_pch_nx (e->insns.r);
+  gt_pch_nx (e->goto_block);
+}
+
+void
+gt_pch_nx (edge_def *e, gt_pointer_operator op, void *cookie)
+{
+  op (&(e->src), cookie);
+  op (&(e->dest), cookie);
+  if (current_ir_type () == IR_GIMPLE)
+    op (&(e->insns.g), cookie);
+  else
+    op (&(e->insns.r), cookie);
+  op (&(e->goto_block), cookie);
+}

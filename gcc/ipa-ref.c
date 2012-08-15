@@ -49,7 +49,7 @@ ipa_record_reference (symtab_node referring_node,
   old_references = list->references;
   VEC_safe_grow (ipa_ref_t, gc, list->references,
 		 VEC_length (ipa_ref_t, list->references) + 1);
-  ref = VEC_last (ipa_ref_t, list->references);
+  ref = &VEC_last (ipa_ref_t, list->references);
 
   list2 = &referred_node->symbol.ref_list;
   VEC_safe_push (ipa_ref_ptr, heap, list2->referring, ref);
@@ -93,7 +93,7 @@ ipa_remove_reference (struct ipa_ref *ref)
     }
   VEC_pop (ipa_ref_ptr, list->referring);
 
-  last = VEC_last (ipa_ref_t, list2->references);
+  last = &VEC_last (ipa_ref_t, list2->references);
   if (ref != last)
     {
       *ref = *last;
@@ -111,7 +111,7 @@ void
 ipa_remove_all_references (struct ipa_ref_list *list)
 {
   while (VEC_length (ipa_ref_t, list->references))
-    ipa_remove_reference (VEC_last (ipa_ref_t, list->references));
+    ipa_remove_reference (&VEC_last (ipa_ref_t, list->references));
   VEC_free (ipa_ref_t, gc, list->references);
   list->references = NULL;
 }

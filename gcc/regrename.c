@@ -728,8 +728,8 @@ regrename_analyze (bitmap bb_mask)
 	      rtx insn;
 	      FOR_BB_INSNS (bb1, insn)
 		{
-		  insn_rr_info *p = VEC_index (insn_rr_info, insn_rr,
-					       INSN_UID (insn));
+		  insn_rr_info *p = &VEC_index (insn_rr_info, insn_rr,
+					        INSN_UID (insn));
 		  p->op_info = NULL;
 		}
 	    }
@@ -1583,7 +1583,7 @@ build_def_use (basic_block bb)
 
 	  if (insn_rr != NULL)
 	    {
-	      insn_info = VEC_index (insn_rr_info, insn_rr, INSN_UID (insn));
+	      insn_info = &VEC_index (insn_rr_info, insn_rr, INSN_UID (insn));
 	      insn_info->op_info = XOBNEWVEC (&rename_obstack, operand_rr_info,
 					      recog_data.n_operands);
 	      memset (insn_info->op_info, 0,

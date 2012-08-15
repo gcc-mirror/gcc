@@ -201,7 +201,7 @@ VEC_safe_set_locstr (VEC(locstr,heap) **vp, unsigned int ix, char *str)
   else
     {
       while (ix > VEC_length (locstr, *vp))
-	VEC_safe_push (locstr, heap, *vp, 0);
+	VEC_safe_push (locstr, heap, *vp, (locstr) NULL);
       VEC_safe_push (locstr, heap, *vp, str);
     }
 }

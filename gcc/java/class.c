@@ -1533,7 +1533,7 @@ make_method_value (tree mdecl)
 	v = VEC_alloc (constructor_elt, gc, length);
 	VEC_safe_grow_cleared (constructor_elt, gc, v, length);
 
-	e = VEC_index (constructor_elt, v, idx--);
+	e = &VEC_index (constructor_elt, v, idx--);
 	e->value = null_pointer_node;
 
 	FOR_EACH_VEC_ELT (tree, DECL_FUNCTION_THROWS (mdecl), ix, t)
@@ -1542,7 +1542,7 @@ make_method_value (tree mdecl)
 	    tree utf8
 	      = build_utf8_ref (unmangle_classname (IDENTIFIER_POINTER (sig),
 						    IDENTIFIER_LENGTH (sig)));
-	    e = VEC_index (constructor_elt, v, idx--);
+	    e = &VEC_index (constructor_elt, v, idx--);
 	    e->value = utf8;
 	  }
 	gcc_assert (idx == -1);
@@ -1621,7 +1621,7 @@ get_dispatch_table (tree type, tree this_class_addr)
   arraysize += 2;
 
   VEC_safe_grow_cleared (constructor_elt, gc, v, arraysize);
-  e = VEC_index (constructor_elt, v, arraysize - 1);
+  e = &VEC_index (constructor_elt, v, arraysize - 1);
 
 #define CONSTRUCTOR_PREPEND_VALUE(E, V) E->value = V, E--
   for (i = nvirtuals;  --i >= 0; )
@@ -3007,7 +3007,7 @@ emit_catch_table (tree this_class)
   int n_catch_classes;
   constructor_elt *e;
   /* Fill in the dummy entry that make_class created.  */
-  e = VEC_index (constructor_elt, TYPE_CATCH_CLASSES (this_class), 0);
+  e = &VEC_index (constructor_elt, TYPE_CATCH_CLASSES (this_class), 0);
   e->value = make_catch_class_record (null_pointer_node, null_pointer_node);
   CONSTRUCTOR_APPEND_ELT (TYPE_CATCH_CLASSES (this_class), NULL_TREE,
 			  make_catch_class_record (null_pointer_node,

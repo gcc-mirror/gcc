@@ -1,5 +1,5 @@
 /* Process source files and output type information.
-   Copyright (C) 2006, 2007, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007, 2010, 2012 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -77,9 +77,6 @@ static const char *const token_names[] = {
   "struct",
   "enum",
   "VEC",
-  "DEF_VEC_[OP]",
-  "DEF_VEC_I",
-  "DEF_VEC_ALLOC_[IOP]",
   "...",
   "ptr_alias",
   "nested_ptr",
@@ -212,28 +209,70 @@ string_seq (void)
   return s1;
 }
 
-/* typedef_name: either an ID, or VEC(x,y) which is translated to VEC_x_y.
-   Use only where VEC(x,y) is legitimate, i.e. in positions where a
-   typedef name may appear.  */
+
+/* The caller has detected a template declaration that starts
+   with TMPL_NAME.  Parse up to the closing '>'.  This recognizes
+   simple template declarations of the form ID<ID1,ID2,...,IDn>.
+   It does not try to parse anything more sophisticated than that.
+
+   Returns the template declaration string "ID<ID1,ID2,...,IDn>".  */
+
+static const char *
+require_template_declaration (const char *tmpl_name)
+{
+  char *str;
+
+  /* Recognize the opening '<'.  */
+  require ('<');
+  str = concat (tmpl_name, "<", (char *) 0);
+
+  /* Read the comma-separated list of identifiers.  */
+  while (token () != '>')
+    {
+      const char *id = require2 (ID, ',');
+      if (id == NULL)
+	id = ",";
+      str = concat (str, id, (char *) 0);
+    }
+
+  /* Recognize the closing '>'.  */
+  require ('>');
+  str = concat (str, ">", (char *) 0);
+
+  return str;
+}
+
+
+/* typedef_name: either an ID, or VEC(x,y), or a template type
+   specification of the form ID<t1,t2,...,tn>.
+
+   FIXME cxx-conversion.  VEC(x,y) is currently translated to the
+   template 'vec_t<x>'.  This is to support the transition to C++ and
+   avoid re-writing all the 'VEC(x,y)' declarations in the code.  This
+   needs to be fixed when the branch is merged into trunk.  */
+
 static const char *
 typedef_name (void)
 {
   if (token () == VEC_TOKEN)
     {
-      const char *c1, *c2, *r;
+      const char *c1, *r;
       advance ();
       require ('(');
       c1 = require2 (ID, SCALAR);
       require (',');
-      c2 = require (ID);
+      require (ID);
       require (')');
-      r = concat ("VEC_", c1, "_", c2, (char *) 0);
+      r = concat ("vec_t<", c1, ">", (char *) 0);
       free (CONST_CAST (char *, c1));
-      free (CONST_CAST (char *, c2));
       return r;
     }
+
+  const char *id = require (ID);
+  if (token () == '<')
+    return require_template_declaration (id);
   else
-    return require (ID);
+    return id;
 }
 
 /* Absorb a sequence of tokens delimited by balanced ()[]{}.  */
@@ -459,6 +498,10 @@ option (options_p prev)
     case NESTED_PTR:
       advance ();
       return nestedptr_optvalue (prev);
+
+    case USER_GTY:
+      advance ();
+      return create_string_option (prev, "user", "");
 
     default:
       parse_error ("expected an option keyword, have %s", print_cur_token ());
@@ -694,6 +737,18 @@ struct_field_seq (void)
   return nreverse_pairs (f);
 }
 
+/* Return true if OPTS contain the option named STR.  */
+
+static bool
+opts_have (options_p opts, const char *str)
+{
+  for (options_p opt = opts; opt; opt = opt->next)
+    if (strcmp (opt->name, str) == 0)
+      return true;
+  return false;
+}
+
+
 /* This is called type(), but what it parses (sort of) is what C calls
    declaration-specifiers and specifier-qualifier-list:
 
@@ -735,7 +790,7 @@ type (options_p *optsp, bool nested)
 	  GTY_BEFORE_ID,
 	  GTY_AFTER_ID
 	} is_gty = NO_GTY;
-	bool is_union = (token () == UNION);
+	enum typekind kind = (token () == UNION) ? TYPE_UNION : TYPE_STRUCT;
 	advance ();
 
 	/* Top-level structures that are not explicitly tagged GTY(())
@@ -766,6 +821,7 @@ type (options_p *optsp, bool nested)
 
 	if (is_gty)
 	  {
+	    bool is_user_gty = opts_have (opts, "user");
 	    if (token () == '{')
 	      {
 		pair_p fields;
@@ -773,17 +829,28 @@ type (options_p *optsp, bool nested)
 		if (is_gty == GTY_AFTER_ID)
 		  parse_error ("GTY must be specified before identifier");
 
-		advance ();
-		fields = struct_field_seq ();
-		require ('}');
-		return new_structure (s, is_union, &lexer_line, fields, opts);
+		if (!is_user_gty)
+		  {
+		    advance ();
+		    fields = struct_field_seq ();
+		    require ('}');
+		  }
+		else
+		  {
+		    /* Do not look inside user defined structures.  */
+		    fields = NULL;
+		    kind = TYPE_USER_STRUCT;
+		    consume_balanced ('{', '}');
+		  }
+
+		return new_structure (s, kind, &lexer_line, fields, opts);
 	      }
 	  }
 	else if (token () == '{')
 	  consume_balanced ('{', '}');
 	if (opts)
 	  *optsp = opts;
-	return find_structure (s, is_union);
+	return find_structure (s, kind);
       }
 
     case ENUM:
@@ -891,55 +958,6 @@ extern_or_static (void)
     }
 }
 
-/* Definition of a generic VEC structure:
-
-   'DEF_VEC_[IPO]' '(' id ')' ';'
-
-   Scalar VECs require slightly different treatment than otherwise -
-   that's handled in note_def_vec, we just pass it along.*/
-static void
-def_vec (void)
-{
-  bool is_scalar = (token () == DEFVEC_I);
-  const char *type;
-
-  require2 (DEFVEC_OP, DEFVEC_I);
-  require ('(');
-  type = require2 (ID, SCALAR);
-  require (')');
-  require (';');
-
-  if (!type)
-    return;
-
-  note_def_vec (type, is_scalar, &lexer_line);
-  note_def_vec_alloc (type, "none", &lexer_line);
-}
-
-/* Definition of an allocation strategy for a VEC structure:
-
-   'DEF_VEC_ALLOC_[IPO]' '(' id ',' id ')' ';'
-
-   For purposes of gengtype, this just declares a wrapper structure.  */
-static void
-def_vec_alloc (void)
-{
-  const char *type, *astrat;
-
-  require (DEFVEC_ALLOC);
-  require ('(');
-  type = require2 (ID, SCALAR);
-  require (',');
-  astrat = require (ID);
-  require (')');
-  require (';');
-
-  if (!type || !astrat)
-    return;
-
-  note_def_vec_alloc (type, astrat, &lexer_line);
-}
-
 /* Parse the file FNAME for GC-relevant declarations and definitions.
    This is the only entry point to this file.  */
 void
@@ -962,15 +980,6 @@ parse_file (const char *fname)
 
 	case TYPEDEF:
 	  typedef_decl ();
-	  break;
-
-	case DEFVEC_OP:
-	case DEFVEC_I:
-	  def_vec ();
-	  break;
-
-	case DEFVEC_ALLOC:
-	  def_vec_alloc ();
 	  break;
 
 	case EOF_TOKEN:

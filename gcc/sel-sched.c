@@ -1938,9 +1938,9 @@ undo_transformations (av_set_t *av_ptr, rtx insn)
         {
           expr_history_def *phist;
 
-          phist = VEC_index (expr_history_def,
-                             EXPR_HISTORY_OF_CHANGES (expr),
-                             index);
+          phist = &VEC_index (expr_history_def,
+                              EXPR_HISTORY_OF_CHANGES (expr),
+                              index);
 
           switch (phist->type)
             {
@@ -3581,7 +3581,7 @@ vinsn_vec_has_expr_p (vinsn_vec_t vinsn_vec, expr_t expr)
 				     EXPR_HISTORY_OF_CHANGES (expr))
 		     ? VEC_index (expr_history_def,
 				  EXPR_HISTORY_OF_CHANGES (expr),
-				  i++)->old_expr_vinsn
+				  i++).old_expr_vinsn
 		     : NULL))
     FOR_EACH_VEC_ELT (vinsn_t, vinsn_vec, n, vinsn)
       if (VINSN_SEPARABLE_P (vinsn))

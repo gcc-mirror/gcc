@@ -2116,7 +2116,7 @@ gimplify_compound_lval (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 			fallback_t fallback)
 {
   tree *p;
-  VEC(tree,heap) *stack;
+  VEC(tree,heap) *expr_stack;
   enum gimplify_status ret = GS_ALL_DONE, tret;
   int i;
   location_t loc = EXPR_LOCATION (*expr_p);
@@ -2124,7 +2124,7 @@ gimplify_compound_lval (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 
   /* Create a stack of the subexpressions so later we can walk them in
      order from inner to outer.  */
-  stack = VEC_alloc (tree, heap, 10);
+  expr_stack = VEC_alloc (tree, heap, 10);
 
   /* We can handle anything that get_inner_reference can deal with.  */
   for (p = expr_p; ; p = &TREE_OPERAND (*p, 0))
@@ -2144,13 +2144,13 @@ gimplify_compound_lval (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
       else
 	break;
 
-      VEC_safe_push (tree, heap, stack, *p);
+      VEC_safe_push (tree, heap, expr_stack, *p);
     }
 
-  gcc_assert (VEC_length (tree, stack));
+  gcc_assert (VEC_length (tree, expr_stack));
 
-  /* Now STACK is a stack of pointers to all the refs we've walked through
-     and P points to the innermost expression.
+  /* Now EXPR_STACK is a stack of pointers to all the refs we've
+     walked through and P points to the innermost expression.
 
      Java requires that we elaborated nodes in source order.  That
      means we must gimplify the inner expression followed by each of
@@ -2161,9 +2161,9 @@ gimplify_compound_lval (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
      So we do this in three steps.  First we deal with the annotations
      for any variables in the components, then we gimplify the base,
      then we gimplify any indices, from left to right.  */
-  for (i = VEC_length (tree, stack) - 1; i >= 0; i--)
+  for (i = VEC_length (tree, expr_stack) - 1; i >= 0; i--)
     {
-      tree t = VEC_index (tree, stack, i);
+      tree t = VEC_index (tree, expr_stack, i);
 
       if (TREE_CODE (t) == ARRAY_REF || TREE_CODE (t) == ARRAY_RANGE_REF)
 	{
@@ -2256,9 +2256,9 @@ gimplify_compound_lval (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 
   /* And finally, the indices and operands of ARRAY_REF.  During this
      loop we also remove any useless conversions.  */
-  for (; VEC_length (tree, stack) > 0; )
+  for (; VEC_length (tree, expr_stack) > 0; )
     {
-      tree t = VEC_pop (tree, stack);
+      tree t = VEC_pop (tree, expr_stack);
 
       if (TREE_CODE (t) == ARRAY_REF || TREE_CODE (t) == ARRAY_RANGE_REF)
 	{
@@ -2286,7 +2286,7 @@ gimplify_compound_lval (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
       canonicalize_component_ref (expr_p);
     }
 
-  VEC_free (tree, heap, stack);
+  VEC_free (tree, heap, expr_stack);
 
   gcc_assert (*expr_p == expr || ret != GS_ALL_DONE);
 
@@ -3845,7 +3845,7 @@ optimize_compound_literals_in_ctor (tree orig_ctor)
 
   for (idx = 0; idx < num; idx++)
     {
-      tree value = VEC_index (constructor_elt, elts, idx)->value;
+      tree value = VEC_index (constructor_elt, elts, idx).value;
       tree newval = value;
       if (TREE_CODE (value) == CONSTRUCTOR)
 	newval = optimize_compound_literals_in_ctor (value);
@@ -3869,7 +3869,7 @@ optimize_compound_literals_in_ctor (tree orig_ctor)
 	  CONSTRUCTOR_ELTS (ctor) = VEC_copy (constructor_elt, gc, elts);
 	  elts = CONSTRUCTOR_ELTS (ctor);
 	}
-      VEC_index (constructor_elt, elts, idx)->value = newval;
+      VEC_index (constructor_elt, elts, idx).value = newval;
     }
   return ctor;
 }
@@ -4120,8 +4120,8 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 
 	/* Extract the real and imaginary parts out of the ctor.  */
 	gcc_assert (VEC_length (constructor_elt, elts) == 2);
-	r = VEC_index (constructor_elt, elts, 0)->value;
-	i = VEC_index (constructor_elt, elts, 1)->value;
+	r = VEC_index (constructor_elt, elts, 0).value;
+	i = VEC_index (constructor_elt, elts, 1).value;
 	if (r == NULL || i == NULL)
 	  {
 	    tree zero = build_zero_cst (TREE_TYPE (type));

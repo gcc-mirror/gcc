@@ -1,5 +1,5 @@
 /* Process source files and output type information.
-   Copyright (C) 2002, 2003, 2004, 2007, 2008, 2010, 2011 
+   Copyright (C) 2002, 2003, 2004, 2007, 2008, 2010, 2011, 2012
    Free Software Foundation, Inc.
 
    This file is part of GCC.
@@ -143,11 +143,14 @@ enum typekind {
   TYPE_LANG_STRUCT,     /* GCC front-end language specific structs.
                            Various languages may have homonymous but
                            different structs.  */
-  TYPE_PARAM_STRUCT     /* Type for parametrized structs, e.g. hash_t
+  TYPE_PARAM_STRUCT,    /* Type for parametrized structs, e.g. hash_t
                            hash-tables, ...  See (param_is, use_param,
                            param1_is, param2_is,... use_param1,
                            use_param_2,... use_params) GTY
                            options.  */
+  TYPE_USER_STRUCT	/* User defined type.  Walkers and markers for
+			   this type are assumed to be provided by the
+			   user.  */
 };
 
 /* Discriminating kind for options.  */
@@ -319,19 +322,27 @@ extern struct type scalar_char;
 
 /* Test if a type is a union, either a plain one or a language
    specific one.  */
-#define UNION_P(x)                                      \
-    ((x)->kind == TYPE_UNION ||                         \
-     ((x)->kind == TYPE_LANG_STRUCT                     \
-      && (x)->u.s.lang_struct->kind == TYPE_UNION))
+#define UNION_P(x)					\
+    ((x)->kind == TYPE_UNION				\
+     || ((x)->kind == TYPE_LANG_STRUCT			\
+         && (x)->u.s.lang_struct->kind == TYPE_UNION))
 
 /* Test if a type is a union or a structure, perhaps a language
    specific one.  */
-#define UNION_OR_STRUCT_P(x)			\
-    ((x)->kind == TYPE_UNION 			\
-     || (x)->kind == TYPE_STRUCT		\
-     || (x)->kind == TYPE_LANG_STRUCT)
+static inline bool
+union_or_struct_p (enum typekind kind)
+{
+  return (kind == TYPE_UNION
+	  || kind == TYPE_STRUCT
+          || kind == TYPE_LANG_STRUCT
+	  || kind == TYPE_USER_STRUCT);
+}
 
-
+static inline bool
+union_or_struct_p (const_type_p x)
+{
+  return union_or_struct_p (x->kind);
+}
 
 /* Give the file location of a type, if any. */
 static inline struct fileloc* 
@@ -339,7 +350,7 @@ type_fileloc (type_p t)
 {
   if (!t) 
     return NULL;
-  if (UNION_OR_STRUCT_P(t))
+  if (union_or_struct_p (t))
     return &t->u.s.line;
   if  (t->kind == TYPE_PARAM_STRUCT)
     return &t->u.param_struct.line;
@@ -410,10 +421,10 @@ extern char *xasprintf (const char *, ...) ATTRIBUTE_PRINTF_1;
 extern void do_typedef (const char *s, type_p t, struct fileloc *pos);
 extern void do_scalar_typedef (const char *s, struct fileloc *pos);
 extern type_p resolve_typedef (const char *s, struct fileloc *pos);
-extern type_p new_structure (const char *name, int isunion,
+extern type_p new_structure (const char *name, enum typekind kind,
 			     struct fileloc *pos, pair_p fields,
 			     options_p o);
-extern type_p find_structure (const char *s, int isunion);
+extern type_p find_structure (const char *s, enum typekind kind);
 extern type_p create_scalar_type (const char *name);
 extern type_p create_pointer (type_p t);
 extern type_p create_array (type_p t, const char *len);
@@ -424,10 +435,6 @@ extern pair_p nreverse_pairs (pair_p list);
 extern type_p adjust_field_type (type_p, options_p);
 extern void note_variable (const char *s, type_p t, options_p o,
 			   struct fileloc *pos);
-extern void note_def_vec (const char *type_name, bool is_scalar,
-			  struct fileloc *pos);
-extern void note_def_vec_alloc (const char *type, const char *astrat,
-				struct fileloc *pos);
 
 /* Lexer and parser routines.  */
 extern int yylex (const char **yylval);
@@ -453,12 +460,10 @@ enum
     STRUCT,
     ENUM,
     VEC_TOKEN,
-    DEFVEC_OP,
-    DEFVEC_I,
-    DEFVEC_ALLOC,
     ELLIPSIS,
     PTR_ALIAS,
     NESTED_PTR,
+    USER_GTY,
     PARAM_IS,
     NUM,
     SCALAR,

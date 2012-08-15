@@ -3932,7 +3932,7 @@ add_flexible_array_elts_to_size (tree decl, tree init)
   if (VEC_empty (constructor_elt, CONSTRUCTOR_ELTS (init)))
     return;
 
-  elt = VEC_last (constructor_elt, CONSTRUCTOR_ELTS (init))->value;
+  elt = VEC_last (constructor_elt, CONSTRUCTOR_ELTS (init)).value;
   type = TREE_TYPE (elt);
   if (TREE_CODE (type) == ARRAY_TYPE
       && TYPE_SIZE (type) == NULL_TREE

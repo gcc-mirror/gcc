@@ -1,3 +1,18 @@
+2012-08-14   Diego Novillo  <dnovillo@google.com>
+
+	Merge from cxx-conversion branch.  Configury.
+
+	* Makefile.in: Remove all handlers of ENABLE_BUILD_WITH_CXX.
+	* configure.ac: Likewise.
+	* configure: Regenerate.
+
+2012-08-14   Lawrence Crowl  <crowl@google.com>
+
+	Merge from cxx-conversion branch.  New C++ hash table.
+
+	* include/symtab.h (typedef struct ht hash_table): Change the typedef
+	name to cpp_hash_table.  Update all users of the typedef.
+
 2012-07-30  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
 
 	* include/line-map.h (line_map_macro): Use the "atomic" GTY option

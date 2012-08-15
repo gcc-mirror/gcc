@@ -31,7 +31,7 @@ along with this program; see the file COPYING3.  If not see
    existing entry with a potential new one.  */
 
 static unsigned int calc_hash (const unsigned char *, size_t);
-static void ht_expand (hash_table *);
+static void ht_expand (cpp_hash_table *);
 static double approx_sqrt (double);
 
 /* A deleted entry.  */
@@ -53,13 +53,13 @@ calc_hash (const unsigned char *str, size_t len)
 
 /* Initialize an identifier hashtable.  */
 
-hash_table *
+cpp_hash_table *
 ht_create (unsigned int order)
 {
   unsigned int nslots = 1 << order;
-  hash_table *table;
+  cpp_hash_table *table;
 
-  table = XCNEW (hash_table);
+  table = XCNEW (cpp_hash_table);
 
   /* Strings need no alignment.  */
   _obstack_begin (&table->stack, 0, 0,
@@ -77,7 +77,7 @@ ht_create (unsigned int order)
 /* Frees all memory associated with a hash table.  */
 
 void
-ht_destroy (hash_table *table)
+ht_destroy (cpp_hash_table *table)
 {
   obstack_free (&table->stack, NULL);
   if (table->entries_owned)
@@ -91,7 +91,7 @@ ht_destroy (hash_table *table)
    returns NULL.  Otherwise insert and returns a new entry.  A new
    string is allocated.  */
 hashnode
-ht_lookup (hash_table *table, const unsigned char *str, size_t len,
+ht_lookup (cpp_hash_table *table, const unsigned char *str, size_t len,
 	   enum ht_lookup_option insert)
 {
   return ht_lookup_with_hash (table, str, len, calc_hash (str, len),
@@ -99,7 +99,7 @@ ht_lookup (hash_table *table, const unsigned char *str, size_t len,
 }
 
 hashnode
-ht_lookup_with_hash (hash_table *table, const unsigned char *str,
+ht_lookup_with_hash (cpp_hash_table *table, const unsigned char *str,
 		     size_t len, unsigned int hash,
 		     enum ht_lookup_option insert)
 {
@@ -182,7 +182,7 @@ ht_lookup_with_hash (hash_table *table, const unsigned char *str,
 /* Double the size of a hash table, re-hashing existing entries.  */
 
 static void
-ht_expand (hash_table *table)
+ht_expand (cpp_hash_table *table)
 {
   hashnode *nentries, *p, *limit;
   unsigned int size, sizemask;
@@ -224,7 +224,7 @@ ht_expand (hash_table *table)
 /* For all nodes in TABLE, callback CB with parameters TABLE->PFILE,
    the node, and V.  */
 void
-ht_forall (hash_table *table, ht_cb cb, const void *v)
+ht_forall (cpp_hash_table *table, ht_cb cb, const void *v)
 {
   hashnode *p, *limit;
 
@@ -242,7 +242,7 @@ ht_forall (hash_table *table, ht_cb cb, const void *v)
 /* Like ht_forall, but a nonzero return from the callback means that
    the entry should be removed from the table.  */
 void
-ht_purge (hash_table *table, ht_cb cb, const void *v)
+ht_purge (cpp_hash_table *table, ht_cb cb, const void *v)
 {
   hashnode *p, *limit;
 
@@ -259,7 +259,7 @@ ht_purge (hash_table *table, ht_cb cb, const void *v)
 
 /* Restore the hash table.  */
 void
-ht_load (hash_table *ht, hashnode *entries,
+ht_load (cpp_hash_table *ht, hashnode *entries,
 	 unsigned int nslots, unsigned int nelements,
 	 bool own)
 {
@@ -274,7 +274,7 @@ ht_load (hash_table *ht, hashnode *entries,
 /* Dump allocation statistics to stderr.  */
 
 void
-ht_dump_statistics (hash_table *table)
+ht_dump_statistics (cpp_hash_table *table)
 {
   size_t nelts, nids, overhead, headers;
   size_t total_bytes, longest, deleted = 0;

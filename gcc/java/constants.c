@@ -514,8 +514,8 @@ build_constants_constructor (void)
       int c = outgoing_cpool->count;
       VEC_safe_grow_cleared (constructor_elt, gc, tags, c);
       VEC_safe_grow_cleared (constructor_elt, gc, data, c);
-      t = VEC_index (constructor_elt, tags, c-1);
-      d = VEC_index (constructor_elt, data, c-1);
+      t = &VEC_index (constructor_elt, tags, c-1);
+      d = &VEC_index (constructor_elt, data, c-1);
     }
 
 #define CONSTRUCTOR_PREPEND_VALUE(E, V) E->value = V, E--

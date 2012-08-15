@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-flow.h"
 #include "dumpfile.h"
 #include "cfgloop.h"
+#include "hash-table.h"
 
 /* Given a block B, update the CFG and SSA graph to reflect redirecting
    one or more in-edges to B to instead reach the destination of an
@@ -126,11 +127,8 @@ struct redirection_data
   struct el *incoming_edges;
 };
 
-/* Main data structure to hold information for duplicates of BB.  */
-static htab_t redirection_data;
-
 /* Data structure of information to pass to hash table traversal routines.  */
-struct local_info
+struct ssa_local_info_t
 {
   /* The current block we are working on.  */
   basic_block bb;
@@ -220,23 +218,31 @@ create_block_for_threading (basic_block bb, struct redirection_data *rd)
 }
 
 /* Hashing and equality routines for our hash table.  */
-static hashval_t
-redirection_data_hash (const void *p)
+inline hashval_t
+ssa_redirection_data_hash (const struct redirection_data *p)
 {
-  edge e = ((const struct redirection_data *)p)->outgoing_edge;
+  edge e = p->outgoing_edge;
   return e->dest->index;
 }
 
-static int
-redirection_data_eq (const void *p1, const void *p2)
+inline int
+ssa_redirection_data_eq (const struct redirection_data *p1,
+			 const struct redirection_data *p2)
 {
-  edge e1 = ((const struct redirection_data *)p1)->outgoing_edge;
-  edge e2 = ((const struct redirection_data *)p2)->outgoing_edge;
-  edge e3 = ((const struct redirection_data *)p1)->intermediate_edge;
-  edge e4 = ((const struct redirection_data *)p2)->intermediate_edge;
+  edge e1 = p1->outgoing_edge;
+  edge e2 = p2->outgoing_edge;
+  edge e3 = p1->intermediate_edge;
+  edge e4 = p2->intermediate_edge;
 
   return e1 == e2 && e3 == e4;
 }
+
+/* Main data structure to hold information for duplicates of BB.  */
+
+static hash_table <struct redirection_data, ssa_redirection_data_hash,
+		   ssa_redirection_data_eq,
+		   typed_free_remove<struct redirection_data> >
+		  redirection_data;
 
 /* Given an outgoing edge E lookup and return its entry in our hash table.
 
@@ -247,7 +253,7 @@ redirection_data_eq (const void *p1, const void *p2)
 static struct redirection_data *
 lookup_redirection_data (edge e, enum insert_option insert)
 {
-  void **slot;
+  struct redirection_data **slot;
   struct redirection_data *elt;
 
  /* Build a hash table element so we can see if E is already
@@ -259,7 +265,7 @@ lookup_redirection_data (edge e, enum insert_option insert)
   elt->dup_block = NULL;
   elt->incoming_edges = NULL;
 
-  slot = htab_find_slot (redirection_data, elt, insert);
+  slot = redirection_data.find_slot (elt, insert);
 
   /* This will only happen if INSERT is false and the entry is not
      in the hash table.  */
@@ -273,7 +279,7 @@ lookup_redirection_data (edge e, enum insert_option insert)
      INSERT is true.  */
   if (*slot == NULL)
     {
-      *slot = (void *)elt;
+      *slot = elt;
       elt->incoming_edges = XNEW (struct el);
       elt->incoming_edges->e = e;
       elt->incoming_edges->next = NULL;
@@ -287,7 +293,7 @@ lookup_redirection_data (edge e, enum insert_option insert)
       free (elt);
 
       /* Get the entry stored in the hash table.  */
-      elt = (struct redirection_data *) *slot;
+      elt = *slot;
 
       /* If insertion was requested, then we need to add INCOMING_EDGE
 	 to the list of incoming edges associated with E.  */
@@ -375,9 +381,9 @@ create_edge_and_update_destination_phis (struct redirection_data *rd,
 
 /* Wire up the outgoing edges from the duplicate block and
    update any PHIs as needed.  */
-static void
-fix_duplicate_block_edges (struct redirection_data *rd,
-			   struct local_info *local_info)
+void
+ssa_fix_duplicate_block_edges (struct redirection_data *rd,
+			       ssa_local_info_t *local_info)
 {
   /* If we were threading through an joiner block, then we want
      to keep its control statement and redirect an outgoing edge.
@@ -412,11 +418,11 @@ fix_duplicate_block_edges (struct redirection_data *rd,
 }
 /* Hash table traversal callback routine to create duplicate blocks.  */
 
-static int
-create_duplicates (void **slot, void *data)
+int
+ssa_create_duplicates (struct redirection_data **slot,
+		       ssa_local_info_t *local_info)
 {
-  struct redirection_data *rd = (struct redirection_data *) *slot;
-  struct local_info *local_info = (struct local_info *)data;
+  struct redirection_data *rd = *slot;
 
   /* Create a template block if we have not done so already.  Otherwise
      use the template to create a new block.  */
@@ -435,7 +441,7 @@ create_duplicates (void **slot, void *data)
 
       /* Go ahead and wire up outgoing edges and update PHIs for the duplicate
 	 block.   */
-      fix_duplicate_block_edges (rd, local_info);
+      ssa_fix_duplicate_block_edges (rd, local_info);
     }
 
   /* Keep walking the hash table.  */
@@ -446,11 +452,11 @@ create_duplicates (void **slot, void *data)
    block creation.  This hash table traversal callback creates the
    outgoing edge for the template block.  */
 
-static int
-fixup_template_block (void **slot, void *data)
+inline int
+ssa_fixup_template_block (struct redirection_data **slot,
+			  ssa_local_info_t *local_info)
 {
-  struct redirection_data *rd = (struct redirection_data *) *slot;
-  struct local_info *local_info = (struct local_info *)data;
+  struct redirection_data *rd = *slot;
 
   /* If this is the template block halt the traversal after updating
      it appropriately.
@@ -461,7 +467,7 @@ fixup_template_block (void **slot, void *data)
      a new outgoing edge.  In both cases we may need to update PHIs.  */
   if (rd->dup_block && rd->dup_block == local_info->template_block)
     {
-      fix_duplicate_block_edges (rd, local_info);
+      ssa_fix_duplicate_block_edges (rd, local_info);
       return 0;
     }
 
@@ -471,11 +477,11 @@ fixup_template_block (void **slot, void *data)
 /* Hash table traversal callback to redirect each incoming edge
    associated with this hash table element to its new destination.  */
 
-static int
-redirect_edges (void **slot, void *data)
+int
+ssa_redirect_edges (struct redirection_data **slot,
+		    ssa_local_info_t *local_info)
 {
-  struct redirection_data *rd = (struct redirection_data *) *slot;
-  struct local_info *local_info = (struct local_info *)data;
+  struct redirection_data *rd = *slot;
   struct el *next, *el;
 
   /* Walk over all the incoming edges associated associated with this
@@ -594,17 +600,14 @@ thread_block (basic_block bb, bool noloop_only)
      redirect to a duplicate of BB.  */
   edge e, e2;
   edge_iterator ei;
-  struct local_info local_info;
+  ssa_local_info_t local_info;
   struct loop *loop = bb->loop_father;
 
   /* To avoid scanning a linear array for the element we need we instead
      use a hash table.  For normal code there should be no noticeable
      difference.  However, if we have a block with a large number of
      incoming and outgoing edges such linear searches can get expensive.  */
-  redirection_data = htab_create (EDGE_COUNT (bb->succs),
-				  redirection_data_hash,
-				  redirection_data_eq,
-				  free);
+  redirection_data.create (EDGE_COUNT (bb->succs));
 
   /* If we thread the latch of the loop to its exit, the loop ceases to
      exist.  Make sure we do not restrict ourselves in order to preserve
@@ -678,24 +681,26 @@ thread_block (basic_block bb, bool noloop_only)
   local_info.template_block = NULL;
   local_info.bb = bb;
   local_info.jumps_threaded = false;
-  htab_traverse (redirection_data, create_duplicates, &local_info);
+  redirection_data.traverse <ssa_local_info_t *, ssa_create_duplicates>
+			    (&local_info);
 
   /* The template does not have an outgoing edge.  Create that outgoing
      edge and update PHI nodes as the edge's target as necessary.
 
      We do this after creating all the duplicates to avoid creating
      unnecessary edges.  */
-  htab_traverse (redirection_data, fixup_template_block, &local_info);
+  redirection_data.traverse <ssa_local_info_t *, ssa_fixup_template_block>
+			    (&local_info);
 
   /* The hash table traversals above created the duplicate blocks (and the
      statements within the duplicate blocks).  This loop creates PHI nodes for
      the duplicated blocks and redirects the incoming edges into BB to reach
      the duplicates of BB.  */
-  htab_traverse (redirection_data, redirect_edges, &local_info);
+  redirection_data.traverse <ssa_local_info_t *, ssa_redirect_edges>
+			    (&local_info);
 
   /* Done with this block.  Clear REDIRECTION_DATA.  */
-  htab_delete (redirection_data);
-  redirection_data = NULL;
+  redirection_data.dispose ();
 
   if (noloop_only
       && bb == bb->loop_father->header)

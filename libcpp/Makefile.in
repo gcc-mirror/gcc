@@ -77,16 +77,9 @@ ALL_CXXFLAGS = $(CXXFLAGS) $(WARN_CXXFLAGS) $(NOEXCEPTION_FLAGS) $(INCLUDES) \
 	$(CPPFLAGS)
 
 # The name of the compiler to use.
-ENABLE_BUILD_WITH_CXX = @ENABLE_BUILD_WITH_CXX@
-ifneq ($(ENABLE_BUILD_WITH_CXX),yes)
-COMPILER = $(CC)
-COMPILER_FLAGS = $(ALL_CFLAGS)
-DEPMODE = $(CCDEPMODE)
-else
 COMPILER = $(CXX)
 COMPILER_FLAGS = $(ALL_CXXFLAGS)
 DEPMODE = $(CXXDEPMODE)
-endif
 
 
 libcpp_a_OBJS = charset.o directives.o directives-only.o errors.o \

@@ -6950,7 +6950,7 @@ pop_init_level (int implicit, struct obstack * braced_init_obstack)
 	bool constructor_zeroinit =
 	 (VEC_length (constructor_elt, constructor_elements) == 1
 	  && integer_zerop
-	      (VEC_index (constructor_elt, constructor_elements, 0)->value));
+	      (VEC_index (constructor_elt, constructor_elements, 0).value));
 
 	/* Do not warn for flexible array members or zero-length arrays.  */
 	while (constructor_unfilled_fields
@@ -6997,10 +6997,10 @@ pop_init_level (int implicit, struct obstack * braced_init_obstack)
       else if (VEC_length (constructor_elt,constructor_elements) != 1)
 	{
 	  error_init ("extra elements in scalar initializer");
-	  ret.value = VEC_index (constructor_elt,constructor_elements,0)->value;
+	  ret.value = VEC_index (constructor_elt,constructor_elements,0).value;
 	}
       else
-	ret.value = VEC_index (constructor_elt,constructor_elements,0)->value;
+	ret.value = VEC_index (constructor_elt,constructor_elements,0).value;
     }
   else
     {
@@ -7671,9 +7671,9 @@ find_init_member (tree field, struct obstack * braced_init_obstack)
   else if (TREE_CODE (constructor_type) == UNION_TYPE)
     {
       if (!VEC_empty (constructor_elt, constructor_elements)
-	  && (VEC_last (constructor_elt, constructor_elements)->index
+	  && (VEC_last (constructor_elt, constructor_elements).index
 	      == field))
-	return VEC_last (constructor_elt, constructor_elements)->value;
+	return VEC_last (constructor_elt, constructor_elements).value;
     }
   return 0;
 }
@@ -7856,7 +7856,7 @@ output_init_element (tree value, tree origtype, bool strict_string, tree type,
       if (!implicit)
 	{
 	  if (TREE_SIDE_EFFECTS (VEC_last (constructor_elt,
-					   constructor_elements)->value))
+					   constructor_elements).value))
 	    warning_init (0,
 			  "initialized field with side-effects overwritten");
 	  else if (warn_override_init)

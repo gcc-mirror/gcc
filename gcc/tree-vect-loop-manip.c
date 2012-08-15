@@ -188,7 +188,7 @@ adjust_vec_debug_stmts (void)
 
   while (!VEC_empty (adjust_info, adjust_vec))
     {
-      adjust_debug_stmts_now (VEC_last (adjust_info, adjust_vec));
+      adjust_debug_stmts_now (&VEC_last (adjust_info, adjust_vec));
       VEC_pop (adjust_info, adjust_vec);
     }
 
@@ -2550,4 +2550,3 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
 			     GSI_SAME_STMT);
     }
 }
-

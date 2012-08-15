@@ -420,7 +420,6 @@ TFLAGS =
 STAGE_CFLAGS = $(BOOT_CFLAGS)
 STAGE_TFLAGS = $(TFLAGS)
 STAGE_CONFIGURE_FLAGS=@stage2_werror_flag@
-POSTSTAGE1_CONFIGURE_FLAGS = @POSTSTAGE1_CONFIGURE_FLAGS@
 
 
 # Defaults for stage 1; some are overridden below.
@@ -431,10 +430,7 @@ STAGE1_CXXFLAGS = $(CXXFLAGS)
 STAGE1_CXXFLAGS = $(STAGE1_CFLAGS)
 @endif target-libstdc++-v3-bootstrap
 STAGE1_TFLAGS = $(STAGE_TFLAGS)
-# STAGE1_CONFIGURE_FLAGS overridden below, so we can use
-# POSTSTAGE1_CONFIGURE_FLAGS here.
-STAGE1_CONFIGURE_FLAGS = \
-	$(STAGE_CONFIGURE_FLAGS) $(POSTSTAGE1_CONFIGURE_FLAGS)
+STAGE1_CONFIGURE_FLAGS = $(STAGE_CONFIGURE_FLAGS)
 
 # Defaults for stage 2; some are overridden below.
 STAGE2_CFLAGS = $(STAGE_CFLAGS)
@@ -444,10 +440,7 @@ STAGE2_CXXFLAGS = $(CXXFLAGS)
 STAGE2_CXXFLAGS = $(STAGE2_CFLAGS)
 @endif target-libstdc++-v3-bootstrap
 STAGE2_TFLAGS = $(STAGE_TFLAGS)
-# STAGE1_CONFIGURE_FLAGS overridden below, so we can use
-# POSTSTAGE1_CONFIGURE_FLAGS here.
-STAGE2_CONFIGURE_FLAGS = \
-	$(STAGE_CONFIGURE_FLAGS) $(POSTSTAGE1_CONFIGURE_FLAGS)
+STAGE2_CONFIGURE_FLAGS = $(STAGE_CONFIGURE_FLAGS)
 
 # Defaults for stage 3; some are overridden below.
 STAGE3_CFLAGS = $(STAGE_CFLAGS)
@@ -457,10 +450,7 @@ STAGE3_CXXFLAGS = $(CXXFLAGS)
 STAGE3_CXXFLAGS = $(STAGE3_CFLAGS)
 @endif target-libstdc++-v3-bootstrap
 STAGE3_TFLAGS = $(STAGE_TFLAGS)
-# STAGE1_CONFIGURE_FLAGS overridden below, so we can use
-# POSTSTAGE1_CONFIGURE_FLAGS here.
-STAGE3_CONFIGURE_FLAGS = \
-	$(STAGE_CONFIGURE_FLAGS) $(POSTSTAGE1_CONFIGURE_FLAGS)
+STAGE3_CONFIGURE_FLAGS = $(STAGE_CONFIGURE_FLAGS)
 
 # Defaults for stage 4; some are overridden below.
 STAGE4_CFLAGS = $(STAGE_CFLAGS)
@@ -470,10 +460,7 @@ STAGE4_CXXFLAGS = $(CXXFLAGS)
 STAGE4_CXXFLAGS = $(STAGE4_CFLAGS)
 @endif target-libstdc++-v3-bootstrap
 STAGE4_TFLAGS = $(STAGE_TFLAGS)
-# STAGE1_CONFIGURE_FLAGS overridden below, so we can use
-# POSTSTAGE1_CONFIGURE_FLAGS here.
-STAGE4_CONFIGURE_FLAGS = \
-	$(STAGE_CONFIGURE_FLAGS) $(POSTSTAGE1_CONFIGURE_FLAGS)
+STAGE4_CONFIGURE_FLAGS = $(STAGE_CONFIGURE_FLAGS)
 
 # Defaults for stage profile; some are overridden below.
 STAGEprofile_CFLAGS = $(STAGE_CFLAGS)
@@ -483,10 +470,7 @@ STAGEprofile_CXXFLAGS = $(CXXFLAGS)
 STAGEprofile_CXXFLAGS = $(STAGEprofile_CFLAGS)
 @endif target-libstdc++-v3-bootstrap
 STAGEprofile_TFLAGS = $(STAGE_TFLAGS)
-# STAGE1_CONFIGURE_FLAGS overridden below, so we can use
-# POSTSTAGE1_CONFIGURE_FLAGS here.
-STAGEprofile_CONFIGURE_FLAGS = \
-	$(STAGE_CONFIGURE_FLAGS) $(POSTSTAGE1_CONFIGURE_FLAGS)
+STAGEprofile_CONFIGURE_FLAGS = $(STAGE_CONFIGURE_FLAGS)
 
 # Defaults for stage feedback; some are overridden below.
 STAGEfeedback_CFLAGS = $(STAGE_CFLAGS)
@@ -496,10 +480,7 @@ STAGEfeedback_CXXFLAGS = $(CXXFLAGS)
 STAGEfeedback_CXXFLAGS = $(STAGEfeedback_CFLAGS)
 @endif target-libstdc++-v3-bootstrap
 STAGEfeedback_TFLAGS = $(STAGE_TFLAGS)
-# STAGE1_CONFIGURE_FLAGS overridden below, so we can use
-# POSTSTAGE1_CONFIGURE_FLAGS here.
-STAGEfeedback_CONFIGURE_FLAGS = \
-	$(STAGE_CONFIGURE_FLAGS) $(POSTSTAGE1_CONFIGURE_FLAGS)
+STAGEfeedback_CONFIGURE_FLAGS = $(STAGE_CONFIGURE_FLAGS)
 
 
 # Only build the C compiler for stage1, because that is the only one that
@@ -517,9 +498,6 @@ STAGE1_LANGUAGES = @stage1_languages@
 #   the last argument when conflicting --enable arguments are passed.
 # * Likewise, we force-disable coverage flags, since the installed
 #   compiler probably has never heard of them.
-# * Don't remove this, because above we added
-#   POSTSTAGE1_CONFIGURE_FLAGS to STAGE_CONFIGURE_FLAGS, which
-#   we don't want for STAGE1_CONFIGURE_FLAGS.
 STAGE1_CONFIGURE_FLAGS = --disable-intermodule $(STAGE1_CHECKING) \
 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)"
 

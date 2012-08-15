@@ -149,7 +149,7 @@ init_library (void)
 
 /* Initialize a cpp_reader structure.  */
 cpp_reader *
-cpp_create_reader (enum c_lang lang, hash_table *table,
+cpp_create_reader (enum c_lang lang, cpp_hash_table *table,
 		   struct line_maps *line_table)
 {
   cpp_reader *pfile;

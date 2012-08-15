@@ -359,7 +359,7 @@ ipa_get_param_count (struct ipa_node_params *info)
 static inline tree
 ipa_get_param (struct ipa_node_params *info, int i)
 {
-  return VEC_index (ipa_param_descriptor_t, info->descriptors, i)->decl;
+  return VEC_index (ipa_param_descriptor_t, info->descriptors, i).decl;
 }
 
 /* Set the used flag corresponding to the Ith formal parameter of the function
@@ -368,7 +368,7 @@ ipa_get_param (struct ipa_node_params *info, int i)
 static inline void
 ipa_set_param_used (struct ipa_node_params *info, int i, bool val)
 {
-  VEC_index (ipa_param_descriptor_t, info->descriptors, i)->used = val;
+  VEC_index (ipa_param_descriptor_t, info->descriptors, i).used = val;
 }
 
 /* Return the used flag corresponding to the Ith formal parameter of the
@@ -377,7 +377,7 @@ ipa_set_param_used (struct ipa_node_params *info, int i, bool val)
 static inline bool
 ipa_is_param_used (struct ipa_node_params *info, int i)
 {
-  return VEC_index (ipa_param_descriptor_t, info->descriptors, i)->used;
+  return VEC_index (ipa_param_descriptor_t, info->descriptors, i).used;
 }
 
 /* ipa_edge_args stores information related to a callsite and particularly its
@@ -406,7 +406,7 @@ ipa_get_cs_argument_count (struct ipa_edge_args *args)
 static inline struct ipa_jump_func *
 ipa_get_ith_jump_func (struct ipa_edge_args *args, int i)
 {
-  return VEC_index (ipa_jump_func_t, args->jump_functions, i);
+  return &VEC_index (ipa_jump_func_t, args->jump_functions, i);
 }
 
 /* Vectors need to have typedefs of structures.  */
@@ -425,10 +425,10 @@ extern GTY(()) VEC (ipa_edge_args_t, gc) *ipa_edge_args_vector;
 
 /* Return the associated parameter/argument info corresponding to the given
    node/edge.  */
-#define IPA_NODE_REF(NODE) (VEC_index (ipa_node_params_t, \
-				       ipa_node_params_vector, (NODE)->uid))
-#define IPA_EDGE_REF(EDGE) (VEC_index (ipa_edge_args_t, \
-				       ipa_edge_args_vector, (EDGE)->uid))
+#define IPA_NODE_REF(NODE) (&VEC_index (ipa_node_params_t, \
+				        ipa_node_params_vector, (NODE)->uid))
+#define IPA_EDGE_REF(EDGE) (&VEC_index (ipa_edge_args_t, \
+				        ipa_edge_args_vector, (EDGE)->uid))
 /* This macro checks validity of index returned by
    ipa_get_param_decl_index function.  */
 #define IS_VALID_JUMP_FUNC_INDEX(I) ((I) != -1)

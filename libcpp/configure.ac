@@ -17,14 +17,6 @@ AC_PROG_RANLIB
 AC_USE_SYSTEM_EXTENSIONS
 AC_SYS_LARGEFILE
 
-# See if we are building gcc with C++.
-# Do this early so setting lang to C++ affects following tests
-AC_ARG_ENABLE(build-with-cxx,
-[  --enable-build-with-cxx build with C++ compiler instead of C compiler],
-ENABLE_BUILD_WITH_CXX=$enableval,
-ENABLE_BUILD_WITH_CXX=no)
-AC_SUBST(ENABLE_BUILD_WITH_CXX)
-
 MISSING=`cd $ac_aux_dir && ${PWDCMD-pwd}`/missing
 AC_CHECK_PROGS([ACLOCAL], [aclocal], [$MISSING aclocal])
 AC_CHECK_PROGS([AUTOCONF], [autoconf], [$MISSING autoconf])
@@ -49,15 +41,11 @@ ACX_PROG_CC_WARNINGS_ARE_ERRORS([manual])
 
 # Dependency checking.
 ZW_CREATE_DEPDIR
-if test "$ENABLE_BUILD_WITH_CXX" = "no"; then
-ZW_PROG_COMPILER_DEPENDENCIES([CC])
-else
 AC_LANG_PUSH([C++])
 AC_COMPILE_IFELSE([[int i;]], [],
 		  [AC_MSG_ERROR([C++ compiler missing or inoperational])])
 AC_LANG_POP([C++])
 ZW_PROG_COMPILER_DEPENDENCIES([CXX])
-fi
 
 # Checks for header files.
 AC_HEADER_TIME
@@ -108,11 +96,9 @@ fi
 
 # g++ on Solaris 10+ defines _XOPEN_SOURCE=600, which exposes a different
 # iconv() prototype.
-AS_IF([test "$ENABLE_BUILD_WITH_CXX" = "yes"],
-  [AC_LANG_PUSH([C++])
-   AM_ICONV
-   AC_LANG_POP([C++])],
-  [AM_ICONV])
+AC_LANG_PUSH([C++])
+AM_ICONV
+AC_LANG_POP([C++])
 
 # More defines and substitutions.
 PACKAGE="$PACKAGE_TARNAME"

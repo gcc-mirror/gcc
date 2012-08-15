@@ -917,7 +917,7 @@ find_split_points (int overall_time, int overall_size)
 
   while (!VEC_empty (stack_entry, stack))
     {
-      stack_entry *entry = VEC_last (stack_entry, stack);
+      stack_entry *entry = &VEC_last (stack_entry, stack);
 
       /* We are walking an acyclic graph, so edge_num counts
 	 succ and pred edges together.  However when considering
@@ -984,9 +984,9 @@ find_split_points (int overall_time, int overall_size)
 	      new_entry.bb = dest;
 	      new_entry.edge_num = 0;
 	      new_entry.overall_time
-		 = VEC_index (bb_info, bb_info_vec, dest->index)->time;
+		 = VEC_index (bb_info, bb_info_vec, dest->index).time;
 	      new_entry.overall_size
-		 = VEC_index (bb_info, bb_info_vec, dest->index)->size;
+		 = VEC_index (bb_info, bb_info_vec, dest->index).size;
 	      new_entry.earliest = INT_MAX;
 	      new_entry.set_ssa_names = BITMAP_ALLOC (NULL);
 	      new_entry.used_ssa_names = BITMAP_ALLOC (NULL);
@@ -1006,8 +1006,8 @@ find_split_points (int overall_time, int overall_size)
 	 and merge stuff we accumulate during the walk.  */
       else if (entry->bb != ENTRY_BLOCK_PTR)
 	{
-	  stack_entry *prev = VEC_index (stack_entry, stack,
-					 VEC_length (stack_entry, stack) - 2);
+	  stack_entry *prev = &VEC_index (stack_entry, stack,
+					  VEC_length (stack_entry, stack) - 2);
 
 	  entry->bb->aux = (void *)(intptr_t)-1;
 	  prev->can_split &= entry->can_split;
@@ -1489,8 +1489,8 @@ execute_split_functions (void)
 	}
       overall_time += time;
       overall_size += size;
-      VEC_index (bb_info, bb_info_vec, bb->index)->time = time;
-      VEC_index (bb_info, bb_info_vec, bb->index)->size = size;
+      VEC_index (bb_info, bb_info_vec, bb->index).time = time;
+      VEC_index (bb_info, bb_info_vec, bb->index).size = size;
     }
   find_split_points (overall_time, overall_size);
   if (best_split_point.split_bbs)

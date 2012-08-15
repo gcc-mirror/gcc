@@ -556,7 +556,6 @@ enable_option_checking=no
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
 compare_exclusions
-POSTSTAGE1_CONFIGURE_FLAGS
 stage2_werror_flag
 stage1_checking
 stage1_cflags
@@ -753,8 +752,6 @@ enable_libada
 enable_libssp
 enable_static_libjava
 enable_bootstrap
-enable_build_with_cxx
-enable_build_poststage1_with_cxx
 with_mpc
 with_mpc_include
 with_mpc_lib
@@ -1471,9 +1468,6 @@ Optional Features:
   --enable-static-libjava[=ARG]
                           build static libjava [default=no]
   --enable-bootstrap      enable bootstrapping [yes if native build]
-  --enable-build-with-cxx build with C++ compiler instead of C compiler
-  --enable-build-poststage1-with-cxx
-                          build stages 2 and 3 with C++, not C
   --disable-isl-version-check
                           disable check for ISL version
   --disable-cloog-version-check
@@ -5109,24 +5103,6 @@ $as_echo "$as_me: WARNING: trying to bootstrap a cross compiler" >&2;}
     ;;
 esac
 
-# See if we are building gcc with C++.
-# Check whether --enable-build-with-cxx was given.
-if test "${enable_build_with_cxx+set}" = set; then :
-  enableval=$enable_build_with_cxx; ENABLE_BUILD_WITH_CXX=$enableval
-else
-  ENABLE_BUILD_WITH_CXX=no
-fi
-
-
-# Build stage1 with C and build stages 2 and 3 with C++.
-# Check whether --enable-build-poststage1-with-cxx was given.
-if test "${enable_build_poststage1_with_cxx+set}" = set; then :
-  enableval=$enable_build_poststage1_with_cxx; ENABLE_BUILD_POSTSTAGE1_WITH_CXX=$enableval
-else
-  ENABLE_BUILD_POSTSTAGE1_WITH_CXX=yes
-fi
-
-
 # Used for setting $lt_cv_objdir
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for objdir" >&5
 $as_echo_n "checking for objdir... " >&6; }
@@ -5980,7 +5956,7 @@ fi
 
 
 
-# By default, C is the only stage 1 language.
+# By default, C and C++ are the only stage 1 languages.
 stage1_languages=,c,
 
 # Target libraries that we bootstrap.
@@ -6018,15 +5994,14 @@ if test -d ${srcdir}/gcc; then
       ;;
   esac
 
-  # If bootstrapping, then using --enable-build-with-cxx or
-  # --enable-build-poststage1-with-cxx requires enabling C++.
-  case ",$enable_languages,:,$ENABLE_BUILD_WITH_CXX,$ENABLE_BUILD_POSTSTAGE1_WITH_CXX,:$enable_bootstrap" in
-    *,c++,*:*:*) ;;
-    *:*,yes,*:yes)
+  # If bootstrapping, C++ must be enabled.
+  case ",$enable_languages,:$enable_bootstrap" in
+    *,c++,*:*) ;;
+    *:yes)
       if test -f ${srcdir}/gcc/cp/config-lang.in; then
         enable_languages="${enable_languages},c++"
       else
-        as_fn_error "bootstrapping with --enable-build-with-cxx or --enable-build-poststage1-with-cxx requires c++ sources" "$LINENO" 5
+        as_fn_error "bootstrapping requires c++ sources" "$LINENO" 5
       fi
       ;;
   esac
@@ -6121,10 +6096,7 @@ if test -d ${srcdir}/gcc; then
         fi
 
 	if test "$language" = "c++"; then
-	  if test "$ENABLE_BUILD_WITH_CXX" = "yes" \
-	     || test "$ENABLE_BUILD_POSTSTAGE1_WITH_CXX" = "yes"; then
-	    boot_language=yes
-	  fi
+	  boot_language=yes
 	fi
 
         case ,${enable_languages}, in
@@ -14215,43 +14187,6 @@ case $build in
     esac ;;
 esac
 
-# This is aimed to mimic bootstrap with a non-GCC compiler to catch problems.
-if test "$GCC" = yes -a "$ENABLE_BUILD_WITH_CXX" != yes; then
-  saved_CFLAGS="$CFLAGS"
-
-  # Pass -fkeep-inline-functions for stage 1 if the GCC version supports it.
-  CFLAGS="$CFLAGS -fkeep-inline-functions"
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether -fkeep-inline-functions is supported" >&5
-$as_echo_n "checking whether -fkeep-inline-functions is supported... " >&6; }
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-#if (__GNUC__ < 3) \
-    || (__GNUC__ == 3 && (__GNUC_MINOR__ < 3 \
-			  || (__GNUC_MINOR__ == 3 && __GNUC_PATCHLEVEL__ < 1)))
-#error http://gcc.gnu.org/PR29382
-#endif
-
-int
-main ()
-{
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }; stage1_cflags="$stage1_cflags -fkeep-inline-functions"
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-
-  CFLAGS="$saved_CFLAGS"
-fi
-
 
 
 # Enable --enable-checking in stage1 of the compiler.
@@ -14284,15 +14219,6 @@ case ${enable_werror} in
   yes) stage2_werror_flag="--enable-werror-always" ;;
   *) stage2_werror_flag="" ;;
 esac
-
-
-# If using ENABLE_BUILD_POSTSTAGE1_WITH_CXX, pass
-# --enable-build-with-cxx after stage1.
-if test "$ENABLE_BUILD_POSTSTAGE1_WITH_CXX" = "yes"; then
-  POSTSTAGE1_CONFIGURE_FLAGS=--enable-build-with-cxx
-else
-  POSTSTAGE1_CONFIGURE_FLAGS=
-fi
 
 
 # Specify what files to not compare during bootstrap.

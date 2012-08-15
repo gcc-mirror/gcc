@@ -5821,7 +5821,7 @@ same_die_p (dw_die_ref die1, dw_die_ref die2, int *mark)
     return 0;
 
   FOR_EACH_VEC_ELT (dw_attr_node, die1->die_attr, ix, a1)
-    if (!same_attr_p (a1, VEC_index (dw_attr_node, die2->die_attr, ix), mark))
+    if (!same_attr_p (a1, &VEC_index (dw_attr_node, die2->die_attr, ix), mark))
       return 0;
 
   c1 = die1->die_child;
@@ -7072,7 +7072,7 @@ build_abbrev_table (dw_die_ref die, htab_t extern_map)
 
       FOR_EACH_VEC_ELT (dw_attr_node, die->die_attr, ix, die_a)
 	{
-	  abbrev_a = VEC_index (dw_attr_node, abbrev->die_attr, ix);
+	  abbrev_a = &VEC_index (dw_attr_node, abbrev->die_attr, ix);
 	  if ((abbrev_a->dw_attr != die_a->dw_attr)
 	      || (value_format (abbrev_a) != value_format (die_a)))
 	    {
@@ -20532,8 +20532,8 @@ optimize_macinfo_range (unsigned int idx, VEC (macinfo_entry, gc) *files,
   unsigned int i, count, encoded_filename_len, linebuf_len;
   void **slot;
 
-  first = VEC_index (macinfo_entry, macinfo_table, idx);
-  second = VEC_index (macinfo_entry, macinfo_table, idx + 1);
+  first = &VEC_index (macinfo_entry, macinfo_table, idx);
+  second = &VEC_index (macinfo_entry, macinfo_table, idx + 1);
 
   /* Optimize only if there are at least two consecutive define/undef ops,
      and either all of them are before first DW_MACINFO_start_file
@@ -20573,7 +20573,7 @@ optimize_macinfo_range (unsigned int idx, VEC (macinfo_entry, gc) *files,
   if (VEC_empty (macinfo_entry, files))
     base = "";
   else
-    base = lbasename (VEC_last (macinfo_entry, files)->info);
+    base = lbasename (VEC_last (macinfo_entry, files).info);
   for (encoded_filename_len = 0, i = 0; base[i]; i++)
     if (ISIDNUM (base[i]) || base[i] == '.')
       encoded_filename_len++;
@@ -20604,7 +20604,7 @@ optimize_macinfo_range (unsigned int idx, VEC (macinfo_entry, gc) *files,
 
   /* Construct a macinfo_entry for DW_MACRO_GNU_transparent_include
      in the empty vector entry before the first define/undef.  */
-  inc = VEC_index (macinfo_entry, macinfo_table, idx - 1);
+  inc = &VEC_index (macinfo_entry, macinfo_table, idx - 1);
   inc->code = DW_MACRO_GNU_transparent_include;
   inc->lineno = 0;
   inc->info = ggc_strdup (grp_name);
@@ -20697,7 +20697,7 @@ output_macinfo (void)
 	      && VEC_length (macinfo_entry, files) != 1
 	      && i > 0
 	      && i + 1 < length
-	      && VEC_index (macinfo_entry, macinfo_table, i - 1)->code == 0)
+	      && VEC_index (macinfo_entry, macinfo_table, i - 1).code == 0)
 	    {
 	      unsigned count = optimize_macinfo_range (i, files, &macinfo_htab);
 	      if (count)
@@ -21307,14 +21307,14 @@ static inline void
 move_linkage_attr (dw_die_ref die)
 {
   unsigned ix = VEC_length (dw_attr_node, die->die_attr);
-  dw_attr_node linkage = *VEC_index (dw_attr_node, die->die_attr, ix - 1);
+  dw_attr_node linkage = VEC_index (dw_attr_node, die->die_attr, ix - 1);
 
   gcc_assert (linkage.dw_attr == DW_AT_linkage_name
 	      || linkage.dw_attr == DW_AT_MIPS_linkage_name);
 
   while (--ix > 0)
     {
-      dw_attr_node *prev = VEC_index (dw_attr_node, die->die_attr, ix - 1);
+      dw_attr_node *prev = &VEC_index (dw_attr_node, die->die_attr, ix - 1);
 
       if (prev->dw_attr == DW_AT_decl_line || prev->dw_attr == DW_AT_name)
 	break;
@@ -22226,8 +22226,8 @@ dwarf2out_finish (const char *filename)
   for (i = 0; i < VEC_length (deferred_locations, deferred_locations_list); i++)
     {
       add_location_or_const_value_attribute (
-        VEC_index (deferred_locations, deferred_locations_list, i)->die,
-        VEC_index (deferred_locations, deferred_locations_list, i)->variable,
+        VEC_index (deferred_locations, deferred_locations_list, i).die,
+        VEC_index (deferred_locations, deferred_locations_list, i).variable,
 	false,
 	DW_AT_location);
     }

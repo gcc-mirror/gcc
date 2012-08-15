@@ -1441,6 +1441,26 @@ gt_ggc_m_S (const void *p)
   return;
 }
 
+
+/* User-callable entry points for marking string X.  */
+
+void
+gt_ggc_mx (const char *& x)
+{
+  gt_ggc_m_S (x);
+}
+
+void
+gt_ggc_mx (unsigned char *& x)
+{
+  gt_ggc_m_S (x);
+}
+
+void
+gt_ggc_mx (unsigned char& x ATTRIBUTE_UNUSED)
+{
+}
+
 /* If P is not marked, marks it and return false.  Otherwise return true.
    P must have been allocated by the GC allocator; it mustn't point to
    static objects, stack variables, or memory allocated with malloc.  */

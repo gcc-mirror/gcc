@@ -1,3 +1,604 @@
+2012-08-14   Diego Novillo  <dnovillo@google.com>
+
+	Merge from cxx-conversion branch.  Configury.
+
+	* configure.ac (CXX_FOR_BUILD): Define and substitute.
+	(BUILD_CXXFLAGS): Define.
+	Remove all handlers of ENABLE_BUILD_WITH_CXX.
+	Force all build to be with C++.
+	* Makefile.in (BUILD_CXXFLAGS): Use it.
+	Remove all handlers of ENABLE_BUILD_WITH_CXX.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* doc/install.texi: Remove documentation for --enable-build-with-cxx
+	and --enable-build-poststage1-with-cxx.
+
+2012-08-14   Diego Novillo  <dnovillo@google.com>
+
+	Merge from cxx-conversion branch.  Re-implement VEC in C++.
+
+	* vec.c (vec_heap_free): Convert into a template function.
+	(vec_gc_o_reserve_1): Make extern.
+	(vec_gc_p_reserve): Remove.
+	(vec_gc_p_reserve_exact): Remove.
+	(vec_gc_o_reserve): Remove.
+	(vec_gc_o_reserve_exact): Remove.
+	(vec_heap_o_reserve_1): Make extern.
+	(vec_heap_p_reserve): Remove.
+	(vec_heap_p_reserve_exact): Remove.
+	(vec_heap_o_reserve): Remove.
+	(vec_heap_o_reserve_exact): Remove.
+	(vec_stack_p_reserve): Remove.
+	(vec_stack_p_reserve_exact): Remove.
+	* vec.h (VEC_CHECK_INFO, VEC_CHECK_DECL, VEC_CHECK_PASS,
+	VEC_ASSERT, VEC_ASSERT_FAIL, vec_assert_fail): Move earlier
+	in the file.
+	(VEC): Define to vec_t<T>.
+	(vec_allocation_t): Define.
+	(struct vec_prefix): Move earlier in the file.
+	(vec_t<T>): New template.
+	(DEF_VEC_I, DEF_VECL_ALLOC_I, DEF_VEC_P, DEF_VEC_ALLOC_P,
+	DEF_VEC_O, DEF_VEC_ALLOC_P, DEF_VEC_O, DEF_VEC_ALLOC_O,
+	DEF_VEC_ALLOC_P_STACK, DEF_VEC_ALLOC_O_STACK,
+	DEF_VEC_ALLOC_I_STACK): Expand to 'struct vec_swallow_trailing_semi'.
+	(DEF_VEC_A): Provide template instantiations for
+	GC/PCH markers that do not traverse the vector.
+	(vec_stack_p_reserve): Remove.
+	(vec_stack_p_reserve_exact): Remove.
+	(vec_stack_p_reserve_exact_1): Remove.
+	(vec_stack_o_reserve): Remove.
+	(vec_stack_o_reserve_exact): Remove.
+	(vec_stack_free): Re-write as a template function.
+	(vec_reserve): New template function.
+	(vec_reserve_exact): New template function.
+	(vec_heap_free): New template function if GATHER_STATISTICS is
+	defined.  Otherwise, macro that expands to free().
+	(VEC_length_1): New template function.
+	(VEC_length): Call it.
+	(VEC_empty_1): New template function.
+	(VEC_empty): Call it.
+	(VEC_address_1): New template function.
+	(VEC_address): Call it.
+	(VEC_last_1): New template function.
+	(VEC_last): Call it.  Change return type to T&.
+	Change all users that used VEC_Os.
+	(VEC_index_1): New template function.
+	(VEC_index): Call it.  Return a T& instead of a T*.
+	Update all callers that were using VEC_O before.
+	(VEC_iterate_1): New template function.
+	(VEC_iterate): Call it.
+	(VEC_embedded_size_1): New template function.
+	(VEC_embedded_size): Call it.
+	(VEC_embedded_init_1): New template function.
+	(VEC_embedded_init): Call it.
+	(VEC_alloc_1): New template function.
+	(VEC_alloc): Call it.  If A is 'stack', call XALLOCAVAR to
+	do the allocation.
+	(VEC_free_1): New template function.
+	(VEC_free): Call it.
+	(VEC_copy_1): New template function.
+	(VEC_copy): Call it.
+	(VEC_space_1): New template function
+	(VEC_space): Call it.
+	(VEC_reserve_1): New template function.
+	(VEC_reserve): Call it.
+	(VEC_reserve_exact_1): New template function.
+	(VEC_reserve_exact): Call it.
+	(VEC_splice_1): New template function.
+	(VEC_splice): Call it.
+	(VEC_safe_splice_1): New template function.
+	(VEC_safe_splice): Call it.
+	(VEC_quick_push_1): New template function.  Create two overloads, one
+	accepting T, the other accepting T *.  Update all callers
+	where T and T * are ambiguous.
+	(VEC_quick_push): Call it.
+	(VEC_safe_push_1): New template function. Create two overloads, one
+	accepting T, the other accepting T *.  Update all callers
+	where T and T * are ambiguous.
+	(VEC_safe_push): Call it.
+	(VEC_pop_1): New template function.
+	(VEC_pop): Call it.
+	(VEC_truncate_1): New template function.
+	(VEC_truncate): Call it.
+	(VEC_safe_grow_1): New template function.
+	(VEC_safe_grow): Call it.
+	(VEC_safe_grow_cleared_1): New template function.
+	(VEC_safe_grow_cleared): Call it.
+	(VEC_replace_1): New template function.
+	(VEC_replace): Call it.  Always accept T instead of T*.
+	Update all callers that used VEC_Os.
+	(VEC_quick_insert_1): New template function.
+	(VEC_quick_insert): Call it.
+	(VEC_safe_insert_1): New template function.
+	(VEC_safe_insert): Call it.
+	(VEC_ordered_remove_1): New template function.
+	(VEC_ordered_remove): Call it.
+	(VEC_unordered_remove_1): New template function.
+	(VEC_unordered_remove): Call it.
+	(VEC_block_remove_1): New template function.
+	(VEC_block_remove): Call it.
+	(VEC_lower_bound_1): New template function.
+	(VEC_lower_bound): Call it.
+	(VEC_OP): Remove.
+	(DEF_VEC_FUNC_P): Remove.
+	(DEF_VEC_ALLOC_FUNC_P): Remove.
+	(DEF_VEC_NONALLOC_FUNCS_P): Remove.
+	(DEF_VEC_FUNC_O): Remove.
+	(DEF_VEC_ALLOC_FUNC_O): Remove.
+	(DEF_VEC_NONALLOC_FUNCS_O): Remove.
+	(DEF_VEC_ALLOC_FUNC_I): Remove.
+	(DEF_VEC_NONALLOC_FUNCS_I): Remove.
+	(DEF_VEC_ALLOC_FUNC_P_STACK): Remove.
+	(DEF_VEC_ALLOC_FUNC_O_STACK): Remove.
+	(DEF_VEC_ALLOC_FUNC_I_STACK): Remove.
+	(vec_reserve_exact): New template function.
+
+	* gengtype-lex.l (DEF_VEC_ALLOC_[IOP]/{EOID}): Remove.
+	* gengtype-parse.c (token_names): Remove DEF_VEC_ALLOC_[IOP].
+	(typedef_name): Emit vec_t<C1> instead of VEC_C1_C2.
+	(def_vec_alloc): Remove.  Update all callers.
+	* gengtype.c (filter_type_name): New.
+	(output_mangled_typename): Call it.
+	(write_func_for_structure): Likewise.
+	(write_types): Likewise.
+	(write_root): Likewise.
+	(write_typed_alloc_def): Likewise.
+	(note_def_vec): Emit vec_t<TYPE_NAME> instead of VEC_TYPE_NAME_base.
+	(note_def_vec_alloc): Remove.
+	* gengtype.h (note_def_vec_alloc): Remove.
+	(DEFVEC_ALLOC): Remove token code.
+
+	* df-scan.c (df_bb_verify): Remove call to df_free_collection_rec
+	inside the insn traversal loop.
+	* gimplify.c (gimplify_compound_lval): Rename STACK to EXPR_STACK.
+	* ipa-inline.c (inline_small_functions): Rename HEAP to EDGE_HEAP.
+	* reg-stack.c (stack): Rename to STACK_PTR.  Update all users.
+	* tree-vrp.c (stack): Rename to EQUIV_STACK.  Update all users.
+
+	* config/bfin/bfin.c (hwloop_optimize): Update some calls to
+	VEC_* for vectors of non-pointers.
+	* config/c6x/c6x.c (try_rename_operands): Likewise.
+	(reshuffle_units): Likewise.
+	* config/mips/mips.c (mips_multi_start): Likewise.
+	(mips_multi_add): Likewise.
+	(mips_multi_copy_insn): Likewise.
+	(mips_multi_set_operand): Likewise.
+	* hw-doloop.c (discover_loop): Likewise.
+	(discover_loops): Likewise.
+	(reorg_loops): Likewise.
+
+2012-08-14   Diego Novillo  <dnovillo@google.com>
+
+	Merge from cxx-conversion branch.  C++ support in gengtype.
+
+	* coretypes.h (gt_pointer_operator): Move from ...
+	* ggc.h: ... here.
+	* doc/gty.texi: Document support for C++ templates and
+	user-provided markers.
+	* gcc/gengtype-lex.l: Update copyright year.
+	Remove support for recognizing DEF_VEC_O, DEF_VEC_P and
+	DEFVEC_I.
+	* gengtype-parse.c: Update copyright year.
+	(token_names): Remove DEF_VEC_O, DEF_VEC_P and DEF_VEC_I.
+	(require_template_declaration): New.
+	(typedef_name): Call it.
+	(type): Replace IS_UNION with KIND. Replace all users.
+	(def_vec): Remove.  Update all users.
+	* gengtype-state.c (type_lineloc): Handle TYPE_USER_STRUCT.
+	(write_state_user_struct_type): New.
+	(write_state_type): Call it.
+	(read_state_user_struct_type): New.
+	(read_state_type): Call it.
+	* gengtype.c: Update copyright year.
+	(dump_pair): Move declaration to the top.
+	(dump_type): Likewise.
+	(dump_type_list): Likewise.
+	(dbgprint_count_type_at): Handle TYPE_USER_STRUCT.
+	(create_user_defined_type): New.
+	(resolve_typedef): Call it.
+	(new_structure): Replace argument ISUNION with KIND.
+	Change users to refer to KIND directly.
+	Update all callers.
+	(find_structure): Likewise.
+	(set_gc_used_type): Handle TYPE_USER_STRUCT.
+	(create_file): Update HDR to include new copyright year.
+	(struct walk_type_data): Add field IN_PTR_FIELD.
+	(output_mangled_typename): Handle TYPE_USER_STRUCT.
+	(walk_type): Set D->IN_PTR_FIELD when walking a TYPE_POINTER.
+	Clear it afterwards.
+	Handle TYPE_USER_STRUCT.
+	(write_types_process_field): Handle TYPE_USER_STRUCT.
+	(get_type_specifier): Move earlier in the file.
+	(write_type_decl): New.
+	(write_marker_function_name): New.
+	(write_user_func_for_structure_ptr): New.
+	(write_user_func_for_structure_body): New.
+	(write_user_marking_functions): New.
+	(write_func_for_structure): Call write_marker_function_name
+	and write_type_decl.
+	Do not call walk_type for TYPE_USER_STRUCT. Emit a call to the user
+	function directly.
+	Call write_user_marking_functions on TYPE_USER_STRUCTs.
+	(write_types_local_user_process_field): New.
+	(write_pch_user_walking_for_structure_body): New.
+	(write_pch_user_walking_functions): New.
+	(write_types_local_process_field): Handle TYPE_USER_STRUCT.
+	(write_local_func_for_structure): Do not call walk_type for
+	TYPE_USER_STRUCT. Instead, emit the call to gt_pch_nx directly.
+	Call write_pch_user_walking_functions for TYPE_USER_STRUCTs.
+	(write_root): Handle TYPE_USER_STRUCT.
+	(vec_prefix_type): Remove.  Update all users.
+	(note_def_vec): Remove.  Update all users.
+	(dump_typekind): Handle TYPE_USER_STRUCT.
+	(dump_type): Initialize SEEN_TYPES, if needed.
+	Handle TYPE_USER_STRUCT.
+	(dump_everything): Do not initialize SEEN_TYPES.
+	* gengtype.h: Update copyright year.
+	(enum typekind): Add TYPE_USER_STRUCT.
+	(union_or_struct_p): Rename from UNION_OR_STRUCT_P.
+	Convert into function.
+	Add an overload taking const_type_p.
+	Update all callers.
+	(new_structure): Change second field to type enum typekind.
+	Update all users.
+	(find_structure): Likewise.
+	(note_def_vec): Remove.
+	(DEFVEC_OP): Remove.
+	(DEFVEC_I): Remove.
+	* ggc-page.c (gt_ggc_mx): Add entry points for marking
+	'const char *&', 'unsigned char *&' and 'unsigned char&'.
+	* ggc-zone.c (gt_ggc_mx): Add entry points for marking
+	'const char *&' and 'unsigned char *&'.
+	* stringpool.c (gt_pch_nx): Add entry points for marking
+	'const char *&', 'unsigned char *&' and 'unsigned char&'.
+	Add an entry point for the overload taking arguments 'unsigned char
+	*', 'gt_pointer_operator' and 'void *'.
+	* vec.h (struct vec_prefix): Remove GTY marker.
+	(struct vec_t): Remove GTY((length)) attribute from field 'vec'.
+	(gt_ggc_mx (vec_t<T> *)): New template function.
+	(gt_pch_nx (vec_t<T> *)): New template function.
+	(gt_pch_nx (vec_t<T *> *, gt_pointer_operator, void *)): New template
+	function.
+	(gt_pch_nx (vec_t<T> *, gt_pointer_operator, void *)): New template
+	function.
+
+	* basic-block.h (struct edge_def): Mark GTY((user)).
+	Remove all GTY markers from fields.
+	(gt_ggc_mx): Declare.
+	(gt_pch_nx): Declare.
+	* tree-cfg.c (gt_ggc_mx): New.
+	(gt_pch_nx): New.
+
+	* gengtype-lex.l (USER_GTY): Add pattern for "user".
+	* gengtype-parse.c (option): Handle USER_GTY.
+	(opts_have): New.
+	(type): Call it.
+	If the keyword 'user' is used, do not walk the fields
+	of the structure.
+	* gengtype.h (USER_GTY): Add.
+	* doc/gty.texi: Update.
+
+2012-08-14   Lawrence Crowl  <crowl@google.com>
+
+	Merge cxx-conversion branch.  Implement C++ hash table.
+
+	* hash-table.h: New. Implementation borrowed from libiberty/hashtab.c.
+	* hash-table.c: Likewise.
+	* tree-ssa-tail-merge.c: Include hash-table.h instead of hashtab.h.
+	(static htab_t same_succ_htab): Change type to hash_table;
+	move specification of helper functions from create call to declaration.
+	Change users to invoke member functions.
+	(same_succ_print_traverse): Make extern ssa_.... Change callers.
+	Remove void* casting.
+	(same_succ_hash): Likewise.
+	(same_succ_equal): Likewise.
+	(same_succ_delete): Likewise.
+	* tree-ssa-threadupdate.c: Include hash-table.h.
+	(struct local_info): Rename to ssa_local_info_t to avoid overloading
+	the type name local_info with the variable name local_info.
+	(static htab_t redirection_data): Change type to hash_table.
+	Move specification of helper functions from create call to declaration.
+	Change users to invoke member functions.
+	(redirection_data_hash): Make extern ssa_.... Change callers.
+	Remove void* casting.
+	(redirection_data_eq): Likewise.
+	(fix_duplicate_block_edges): Likewise.
+	(create_duplicates): Likewise.
+	(fixup_template_block): Likewise.
+	(redirect_edges): Likewise.
+	(lookup_redirection_data): Change types associated with the hash table
+	from void* to their actual type. Remove unnecessary casts.
+	* tree-ssa-ccp.c: Include hash-table.h.
+	(typedef gimple_htab): New.  Uses hash_table.  Replace specific uses
+	of htab_t with gimple_htab.  Change users to invoke member functions.
+	Move specification of helper functions from create call to declaration.
+	* tree-ssa-coalesce.c: Include hash-table.h instead of hashtab.h.
+	(hash_ssa_name_by_var): Make extern. Remove void* casting.
+	(eq_ssa_name_by_var): Likewise.
+	(coalesce_ssa_name): Change type of local static htab_t ssa_name_hash
+	to hash_table. Change users to invoke member functions.
+	Move specification of helper functions from create call to declaration.
+	* coverage.c: Include hash-table.h instead of hashtab.h.
+	(static htab_t counts_hash): Change type to hash_table;
+	move specification of helper functions from create call to declaration.
+	Change users to invoke member functions.
+	(htab_counts_entry_hash): Make extern. Rename with coverage_... instead
+	of htab_... Remove void* casting.
+	(htab_counts_entry_eq): Likewise.
+	(htab_counts_entry_del): Likewise.
+	* tree-ssa-pre.c: Include hash-table.h instead of hashtab.h.
+	(static htab_t expression_to_id): Change type to hash_table.
+	Move specification of helper functions from create call to declaration.
+	Change users to invoke member functions.
+	(static htab_t phi_translate_table): Likewise.
+	(pre_expr_eq): Make extern ssa_.... Change callers.
+	Remove void* casting.
+	(pre_expr_hash): Likewise.
+	(expr_pred_trans_hash): Likewise.
+	(expr_pred_trans_eq): Likewise.
+	(alloc_expression_id): Change types associated with the hash table
+	from void* to their actual type. Remove unnecessary casts.
+	(lookup_expression_id): Likewise.
+	(phi_trans_lookup): Likewise.
+	(phi_trans_add): Likewise.
+	* stringpool.c: Rename uses of libcpp typedef hash_table to
+	cpp_hash_table.
+	* Makefile.in: Add hash-table.o to OBJS-libcommon-target.
+	Add $(HASH_TABLE_H). Add new dependences on $(HASH_TABLE_H).
+
+2012-08-14   Lawrence Crowl  <crowl@google.com>
+
+	Merge from cxx-conversion branch.  Re-write double_int in C++.
+
+	* hash-table.h
+	(typedef double_int): Change to struct (POD).
+	(double_int::make): New overloads for int to double-int conversion.
+	(double_int::mask): New.
+	(double_int::max_value): New.
+	(double_int::min_value): New.
+	(double_int::operator ++): New.
+	(double_int::operator --): New.
+	(double_int::operator *=): New.
+	(double_int::operator +=): New.
+	(double_int::operator -=): New.
+	(double_int::to_signed): New.
+	(double_int::to_unsigned): New.
+	(double_int::fits_unsigned): New.
+	(double_int::fits_signed): New.
+	(double_int::fits): New.
+	(double_int::trailing_zeros): New.
+	(double_int::popcount): New.
+	(double_int::multiple_of): New.
+	(double_int::set_bit): New.
+	(double_int::mul_with_sign): New.
+	(double_int::operator * (binary)): New.
+	(double_int::operator + (binary)): New.
+	(double_int::operator - (binary)): New.
+	(double_int::operator - (unary)): New.
+	(double_int::operator ~ (unary)): New.
+	(double_int::operator & (binary)): New.
+	(double_int::operator | (binary)): New.
+	(double_int::operator ^ (binary)): New.
+	(double_int::and_not): New.
+	(double_int::lshift): New.
+	(double_int::rshift): New.
+	(double_int::alshift): New.
+	(double_int::arshift): New.
+	(double_int::llshift): New.
+	(double_int::lrshift): New.
+	(double_int::lrotate): New.
+	(double_int::rrotate): New.
+	(double_int::div): New.
+	(double_int::sdiv): New.
+	(double_int::udiv): New.
+	(double_int::mod): New.
+	(double_int::smod): New.
+	(double_int::umod): New.
+	(double_int::divmod): New.
+	(double_int::sdivmod): New.
+	(double_int::udivmod): New.
+	(double_int::ext): New.
+	(double_int::zext): New.
+	(double_int::sext): New.
+	(double_int::is_zero): New.
+	(double_int::is_one): New.
+	(double_int::is_minus_one): New.
+	(double_int::is_negative): New.
+	(double_int::cmp): New.
+	(double_int::ucmp): New.
+	(double_int::scmp): New.
+	(double_int::ult): New.
+	(double_int::ugt): New.
+	(double_int::slt): New.
+	(double_int::sgt): New.
+	(double_int::max): New.
+	(double_int::smax): New.
+	(double_int::umax): New.
+	(double_int::min): New.
+	(double_int::smin): New.
+	(double_int::umin): New.
+	(double_int::operator ==): New.
+	(double_int::operator !=): New.
+	(shwi_to_double_int): Change implementation to use member function.
+	(double_int_minus_one): Likewise.
+	(double_int_zero): Likewise.
+	(double_int_one): Likewise.
+	(double_int_two): Likewise.
+	(double_int_ten): Likewise.
+	(uhwi_to_double_int): Likewise.
+	(double_int_to_shwi): Likewise.
+	(double_int_to_uhwi): Likewise.
+	(double_int_fits_in_uhwi_p): Likewise.
+	(double_int_fits_in_shwi_p): Likewise.
+	(double_int_fits_in_hwi_p): Likewise.
+	(double_int_mul): Likewise.
+	(double_int_mul_with_sign): Likewise.
+	(double_int_add): Likewise.
+	(double_int_sub): Likewise.
+	(double_int_neg): Likewise.
+	(double_int_div): Likewise.
+	(double_int_sdiv): Likewise.
+	(double_int_udiv): Likewise.
+	(double_int_mod): Likewise.
+	(double_int_smod): Likewise.
+	(double_int_umod): Likewise.
+	(double_int_divmod): Likewise.
+	(double_int_sdivmod): Likewise.
+	(double_int_udivmod): Likewise.
+	(double_int_multiple_of): Likewise.
+	(double_int_setbit): Likewise.
+	(double_int_ctz): Likewise.
+	(double_int_not): Likewise.
+	(double_int_ior): Likewise.
+	(double_int_and): Likewise.
+	(double_int_and_not): Likewise.
+	(double_int_xor): Likewise.
+	(double_int_lshift): Likewise.
+	(double_int_rshift): Likewise.
+	(double_int_lrotate): Likewise.
+	(double_int_rrotate): Likewise.
+	(double_int_cmp): Likewise.
+	(double_int_scmp): Likewise.
+	(double_int_ucmp): Likewise.
+	(double_int_max): Likewise.
+	(double_int_smax): Likewise.
+	(double_int_umax): Likewise.
+	(double_int_min): Likewise.
+	(double_int_smin): Likewise.
+	(double_int_umin): Likewise.
+	(double_int_ext): Likewise.
+	(double_int_sext): Likewise.
+	(double_int_zext): Likewise.
+	(double_int_mask): Likewise.
+	(double_int_max_value): Likewise.
+	(double_int_min_value): Likewise.
+	(double_int_zero_p): Likewise.
+	(double_int_one_p): Likewise.
+	(double_int_minus_one_p): Likewise.
+	(double_int_equal_p): Likewise.
+	(double_int_popcount): Likewise.
+	* hash-table.c
+	(double_int_mask): Reuse implementation for double_int::mask.
+	(double_int_max_value): Likewise.
+	(double_int_min_value): Likewise.
+	(double_int_ext): Likewise.
+	(double_int_zext): Likewise.
+	(double_int_sext): Likewise.
+	(double_int_mul_with_sign): Likewise.
+	(double_int_divmod): Likewise.
+	(double_int_sdivmod): Likewise.
+	(double_int_udivmod): Likewise.
+	(double_int_div): Likewise.
+	(double_int_sdiv): Likewise.
+	(double_int_udiv): Likewise.
+	(double_int_mod): Likewise.
+	(double_int_smod): Likewise.
+	(double_int_umod): Likewise.
+	(double_int_multiple_of): Likewise.
+	(double_int_lshift): Likewise.
+	(double_int_rshift): Likewise.
+	(double_int_lrotate): Likewise.
+	(double_int_rrotate): Likewise.
+	(double_int_cmp): Likewise.
+	(double_int_ucmp): Likewise.
+	(double_int_scmp): Likewise.
+	(double_int_max): Likewise.
+	(double_int_smax): Likewise.
+	(double_int_umax): Likewise.
+	(double_int_min): Likewise.
+	(double_int_smin): Likewise.
+	(double_int_umin): Likewise.
+	(double_int_min): Likewise.
+	(double_int_min): Likewise.
+	(double_int_min): Likewise.
+	(double_int_min): Likewise.
+	(double_int_min): Likewise.
+	(double_int_min): Likewise.
+	(double_int::alshift): New.
+	(double_int::arshift): New.
+	(double_int::llshift): New.
+	(double_int::lrshift): New.
+	(double_int::ult): New.
+	(double_int::ugt): New.
+	(double_int::slt): New.
+	(double_int::sgt): New.
+	(double_int_setbit): Reuse implementation for double_int::set_bit,
+	which avoids a name conflict with a macro.
+	(double_int_double_int_ctz): Reuse implementation for
+	double_int::trailing_zeros.
+	(double_int_fits_in_shwi_p): Reuse implementation for
+	double_int::fits_signed.
+	(double_int_fits_in_hwi_p): Reuse implementation for double_int::fits.
+	(double_int_mul): Reuse implementation for binary
+	double_int::operator *.
+	(double_int_add): Likewise.
+	(double_int_sub): Likewise.
+	(double_int_neg): Reuse implementation for unary
+	double_int::operator -.
+	(double_int_max_value): Likewise.
+	* fixed-value.c: Change to use member functions introduced above.
+
+2012-08-14   Lawrence Crowl  <crowl@google.com>
+
+	Merge cxx-conversion branch.  Support tree macro calling
+	from gdb.
+
+	* tree.h (tree_check): New.
+	(TREE_CHECK): Use inline function above instead of __extension__.
+	(tree_not_check): New.
+	(TREE_NOT_CHECK): Use inline function above instead of __extension__.
+	(tree_check2): New.
+	(TREE_CHECK2): Use inline function above instead of __extension__.
+	(tree_not_check2): New.
+	(TREE_NOT_CHECK2): Use inline function above instead of __extension__.
+	(tree_check3): New.
+	(TREE_CHECK3): Use inline function above instead of __extension__.
+	(tree_not_check3): New.
+	(TREE_NOT_CHECK3): Use inline function above instead of __extension__.
+	(tree_check4): New.
+	(TREE_CHECK4): Use inline function above instead of __extension__.
+	(tree_not_check4): New.
+	(TREE_NOT_CHECK4): Use inline function above instead of __extension__.
+	(tree_check5): New.
+	(TREE_CHECK5): Use inline function above instead of __extension__.
+	(tree_not_check5): New.
+	(TREE_NOT_CHECK5): Use inline function above instead of __extension__.
+	(contains_struct_check): New.
+	(CONTAINS_STRUCT_CHECK): Use inline function above instead of
+	__extension__.
+	(tree_class_check): New.
+	(TREE_CLASS_CHECK): Use inline function above instead of __extension__.
+	(tree_range_check): New.
+	(TREE_RANGE_CHECK): Use inline function above instead of __extension__.
+	(omp_clause_subcode_check): New.
+	(OMP_CLAUSE_SUBCODE_CHECK): Use inline function above instead of
+	__extension__.
+	(omp_clause_range_check): New.
+	(OMP_CLAUSE_RANGE_CHECK): Use inline function above instead of
+	__extension__.
+	(expr_check): New.
+	(EXPR_CHECK): Use inline function above instead of __extension__.
+	(non_type_check): New.
+	(NON_TYPE_CHECK): Use inline function above instead of __extension__.
+	(tree_vec_elt_check): New.
+	(TREE_VEC_ELT_CHECK): Use inline function above instead of
+	__extension__.
+	(omp_clause_elt_check): New.
+	(OMP_CLAUSE_ELT_CHECK): Use inline function above instead of
+	__extension__.
+	(tree_operand_check): New.
+	(TREE_OPERAND_CHECK): Use inline function above instead of
+	__extension__.
+	(tree_operand_check_code): New.
+	(TREE_OPERAND_CHECK_CODE): Use inline function above instead of
+	__extension__.
+	(TREE_CHAIN): Simplify implementation.
+	(TREE_TYPE): Simplify implementation.
+	(tree_operand_length): Move for compilation dependences.
+	* gdbinit.in: (macro define __FILE__): New.
+	(macro define __LINE__): New.
+	(skip "tree.h"): New.
+
 2012-08-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (enabled): Add comment with explanation

@@ -1,3 +1,10 @@
+2012-08-14   Diego Novillo  <dnovillo@google.com>
+
+	Merge from cxx-conversion branch.  Re-write VEC in C++.
+
+	* call.c (add_function_candidate): Remove const qualifier
+	from call to VEC_index.
+
 2012-08-10  Richard Guenther  <rguenther@suse.de>
 
 	* error.c (dump_expr): Handle anonymous SSA names.

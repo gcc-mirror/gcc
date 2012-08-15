@@ -161,7 +161,7 @@ resume_deferring_access_checks (void)
 {
   if (!deferred_access_no_check)
     VEC_last (deferred_access, deferred_access_stack)
-      ->deferring_access_checks_kind = dk_deferred;
+      .deferring_access_checks_kind = dk_deferred;
 }
 
 /* Stop deferring access checks.  */
@@ -171,7 +171,7 @@ stop_deferring_access_checks (void)
 {
   if (!deferred_access_no_check)
     VEC_last (deferred_access, deferred_access_stack)
-      ->deferring_access_checks_kind = dk_no_deferred;
+      .deferring_access_checks_kind = dk_no_deferred;
 }
 
 /* Discard the current deferred access checks and restore the
@@ -198,7 +198,7 @@ get_deferred_access_checks (void)
     return NULL;
   else
     return (VEC_last (deferred_access, deferred_access_stack)
-	    ->deferred_access_checks);
+	    .deferred_access_checks);
 }
 
 /* Take current deferred checks and combine with the
@@ -216,10 +216,10 @@ pop_to_parent_deferring_access_checks (void)
       deferred_access *ptr;
 
       checks = (VEC_last (deferred_access, deferred_access_stack)
-		->deferred_access_checks);
+		.deferred_access_checks);
 
       VEC_pop (deferred_access, deferred_access_stack);
-      ptr = VEC_last (deferred_access, deferred_access_stack);
+      ptr = &VEC_last (deferred_access, deferred_access_stack);
       if (ptr->deferring_access_checks_kind == dk_no_deferred)
 	{
 	  /* Check access.  */
@@ -321,7 +321,7 @@ perform_or_defer_access_check (tree binfo, tree decl, tree diag_decl,
 
   gcc_assert (TREE_CODE (binfo) == TREE_BINFO);
 
-  ptr = VEC_last (deferred_access, deferred_access_stack);
+  ptr = &VEC_last (deferred_access, deferred_access_stack);
 
   /* If we are not supposed to defer access checks, just check now.  */
   if (ptr->deferring_access_checks_kind == dk_no_deferred)
@@ -5948,7 +5948,7 @@ build_constexpr_constructor_member_initializers (tree type, tree body)
       if (VEC_length (constructor_elt, vec) > 0)
 	{
 	  /* In a delegating constructor, return the target.  */
-	  constructor_elt *ce = VEC_index (constructor_elt, vec, 0);
+	  constructor_elt *ce = &VEC_index (constructor_elt, vec, 0);
 	  if (ce->index == current_class_ptr)
 	    {
 	      body = ce->value;
@@ -6820,7 +6820,7 @@ cxx_eval_array_reference (const constexpr_call *call, tree t,
     }
   i = tree_low_cst (index, 0);
   if (TREE_CODE (ary) == CONSTRUCTOR)
-    return VEC_index (constructor_elt, CONSTRUCTOR_ELTS (ary), i)->value;
+    return VEC_index (constructor_elt, CONSTRUCTOR_ELTS (ary), i).value;
   else if (elem_nchars == 1)
     return build_int_cst (cv_unqualified (TREE_TYPE (TREE_TYPE (ary))),
 			  TREE_STRING_POINTER (ary)[i]);
