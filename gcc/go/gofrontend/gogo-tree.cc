@@ -8,11 +8,6 @@
 
 #include <gmp.h>
 
-#ifndef ENABLE_BUILD_WITH_CXX
-extern "C"
-{
-#endif
-
 #include "toplev.h"
 #include "tree.h"
 #include "gimple.h"
@@ -22,12 +17,8 @@ extern "C"
 #include "convert.h"
 #include "output.h"
 #include "diagnostic.h"
-
-#ifndef ENABLE_BUILD_WITH_CXX
-}
-#endif
-
 #include "go-c.h"
+
 #include "types.h"
 #include "expressions.h"
 #include "statements.h"
