@@ -1,5 +1,12 @@
 2012-08-15  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
+	PR tree-optimization/54245
+	* gimple-ssa-strength-reduction.c (legal_cast_p_1): New function.
+	(legal_cast_p): Split out logic to legal_cast_p_1.
+	(analyze_increments): Avoid introducing multiplies in smaller types.
+
+2012-08-15  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
 	PR tree-optimization/54240
 	* tree-ssa-phiopt.c (hoist_adjacent_loads): Correct test for
 	existence of conditional move with given mode.
