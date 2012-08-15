@@ -2334,7 +2334,7 @@ tree-vrp.o : tree-vrp.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    $(CFGLOOP_H) $(SCEV_H) intl.h \
    $(GIMPLE_PRETTY_PRINT_H) gimple-fold.h $(OPTABS_H) $(EXPR_H)
 tree-cfg.o : tree-cfg.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
-   $(TREE_H) $(TM_P_H) $(GGC_H) $(FLAGS_H) \
+   $(TREE_H) $(TM_P_H) $(GGC_H) $(FLAGS_H) $(TARGET_H) \
    $(DIAGNOSTIC_CORE_H) $(FUNCTION_H) $(TM_H) coretypes.h \
    $(TREE_DUMP_H) $(EXCEPT_H) $(CFGLOOP_H) $(TREE_PASS_H) \
    $(BASIC_BLOCK_H) \

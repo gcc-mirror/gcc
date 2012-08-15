@@ -1,3 +1,7 @@
+2012-08-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* Makefile.in (tree-cfg.o): Also depend on $(TARGET_H).
+
 2012-08-15  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/54245
