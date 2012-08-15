@@ -1337,7 +1337,7 @@ strip_typedefs_expr (tree t)
 	type = strip_typedefs (TREE_TYPE (t));
 	for (i = 0; i < n; ++i)
 	  {
-	    constructor_elt *e = VEC_index (constructor_elt, vec, i);
+	    constructor_elt *e = &VEC_index (constructor_elt, vec, i);
 	    tree op = strip_typedefs_expr (e->value);
 	    if (op != e->value)
 	      {

@@ -6529,9 +6529,9 @@ c_parser_postfix_expression (c_parser *parser)
 		break;
 	      }
 
-	    e1_p = VEC_index (c_expr_t, cexpr_list, 0);
-	    e2_p = VEC_index (c_expr_t, cexpr_list, 1);
-	    e3_p = VEC_index (c_expr_t, cexpr_list, 2);
+	    e1_p = &VEC_index (c_expr_t, cexpr_list, 0);
+	    e2_p = &VEC_index (c_expr_t, cexpr_list, 1);
+	    e3_p = &VEC_index (c_expr_t, cexpr_list, 2);
 
 	    c = e1_p->value;
 	    mark_exp_read (e2_p->value);
@@ -6611,8 +6611,8 @@ c_parser_postfix_expression (c_parser *parser)
 		break;
 	      }
 
-	    e1_p = VEC_index (c_expr_t, cexpr_list, 0);
-	    e2_p = VEC_index (c_expr_t, cexpr_list, 1);
+	    e1_p = &VEC_index (c_expr_t, cexpr_list, 0);
+	    e2_p = &VEC_index (c_expr_t, cexpr_list, 1);
 
 	    mark_exp_read (e1_p->value);
 	    if (TREE_CODE (e1_p->value) == EXCESS_PRECISION_EXPR)
@@ -6671,15 +6671,15 @@ c_parser_postfix_expression (c_parser *parser)
 	    if (VEC_length (c_expr_t, cexpr_list) == 2)
 	      expr.value =
 		c_build_vec_perm_expr
-		  (loc, VEC_index (c_expr_t, cexpr_list, 0)->value,
-		   NULL_TREE, VEC_index (c_expr_t, cexpr_list, 1)->value);
+		  (loc, VEC_index (c_expr_t, cexpr_list, 0).value,
+		   NULL_TREE, VEC_index (c_expr_t, cexpr_list, 1).value);
 
 	    else if (VEC_length (c_expr_t, cexpr_list) == 3)
 	      expr.value =
 		c_build_vec_perm_expr
-		  (loc, VEC_index (c_expr_t, cexpr_list, 0)->value,
-		   VEC_index (c_expr_t, cexpr_list, 1)->value,
-		   VEC_index (c_expr_t, cexpr_list, 2)->value);
+		  (loc, VEC_index (c_expr_t, cexpr_list, 0).value,
+		   VEC_index (c_expr_t, cexpr_list, 1).value,
+		   VEC_index (c_expr_t, cexpr_list, 2).value);
 	    else
 	      {
 		error_at (loc, "wrong number of arguments to "

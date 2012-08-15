@@ -1204,20 +1204,6 @@ case "$have_compiler:$host:$target:$enable_bootstrap" in
     ;;
 esac
 
-# See if we are building gcc with C++.
-AC_ARG_ENABLE(build-with-cxx,
-[AS_HELP_STRING([--enable-build-with-cxx],
-		[build with C++ compiler instead of C compiler])],
-ENABLE_BUILD_WITH_CXX=$enableval,
-ENABLE_BUILD_WITH_CXX=no)
-
-# Build stage1 with C and build stages 2 and 3 with C++.
-AC_ARG_ENABLE(build-poststage1-with-cxx,
-[AS_HELP_STRING([--enable-build-poststage1-with-cxx],
-		[build stages 2 and 3 with C++, not C])],
-ENABLE_BUILD_POSTSTAGE1_WITH_CXX=$enableval,
-ENABLE_BUILD_POSTSTAGE1_WITH_CXX=yes)
-
 # Used for setting $lt_cv_objdir
 _LT_CHECK_OBJDIR
 
@@ -1595,7 +1581,7 @@ ACX_ELF_TARGET_IFELSE([# ELF platforms build the lto-plugin always.
 ])
 
 
-# By default, C is the only stage 1 language.
+# By default, C and C++ are the only stage 1 languages.
 stage1_languages=,c,
 
 # Target libraries that we bootstrap.
@@ -1633,15 +1619,14 @@ if test -d ${srcdir}/gcc; then
       ;;
   esac
 
-  # If bootstrapping, then using --enable-build-with-cxx or
-  # --enable-build-poststage1-with-cxx requires enabling C++.
-  case ",$enable_languages,:,$ENABLE_BUILD_WITH_CXX,$ENABLE_BUILD_POSTSTAGE1_WITH_CXX,:$enable_bootstrap" in
-    *,c++,*:*:*) ;;
-    *:*,yes,*:yes)
+  # If bootstrapping, C++ must be enabled.
+  case ",$enable_languages,:$enable_bootstrap" in
+    *,c++,*:*) ;;
+    *:yes)
       if test -f ${srcdir}/gcc/cp/config-lang.in; then
         enable_languages="${enable_languages},c++"
       else
-        AC_MSG_ERROR([bootstrapping with --enable-build-with-cxx or --enable-build-poststage1-with-cxx requires c++ sources])
+        AC_MSG_ERROR([bootstrapping requires c++ sources])
       fi
       ;;
   esac
@@ -1736,10 +1721,7 @@ if test -d ${srcdir}/gcc; then
         fi
 
 	if test "$language" = "c++"; then
-	  if test "$ENABLE_BUILD_WITH_CXX" = "yes" \
-	     || test "$ENABLE_BUILD_POSTSTAGE1_WITH_CXX" = "yes"; then
-	    boot_language=yes
-	  fi
+	  boot_language=yes
 	fi
 
         case ,${enable_languages}, in
@@ -3129,26 +3111,6 @@ case $build in
     esac ;;
 esac
 
-# This is aimed to mimic bootstrap with a non-GCC compiler to catch problems.
-if test "$GCC" = yes -a "$ENABLE_BUILD_WITH_CXX" != yes; then
-  saved_CFLAGS="$CFLAGS"
-
-  # Pass -fkeep-inline-functions for stage 1 if the GCC version supports it.
-  CFLAGS="$CFLAGS -fkeep-inline-functions"
-  AC_MSG_CHECKING([whether -fkeep-inline-functions is supported])
-  AC_TRY_COMPILE([
-#if (__GNUC__ < 3) \
-    || (__GNUC__ == 3 && (__GNUC_MINOR__ < 3 \
-			  || (__GNUC_MINOR__ == 3 && __GNUC_PATCHLEVEL__ < 1)))
-#error http://gcc.gnu.org/PR29382
-#endif
-    ],,
-    [AC_MSG_RESULT([yes]); stage1_cflags="$stage1_cflags -fkeep-inline-functions"],
-    [AC_MSG_RESULT([no])])
-
-  CFLAGS="$saved_CFLAGS"
-fi
-
 AC_SUBST(stage1_cflags)
 
 # Enable --enable-checking in stage1 of the compiler.
@@ -3177,15 +3139,6 @@ case ${enable_werror} in
   *) stage2_werror_flag="" ;;
 esac
 AC_SUBST(stage2_werror_flag)
-
-# If using ENABLE_BUILD_POSTSTAGE1_WITH_CXX, pass
-# --enable-build-with-cxx after stage1.
-if test "$ENABLE_BUILD_POSTSTAGE1_WITH_CXX" = "yes"; then
-  POSTSTAGE1_CONFIGURE_FLAGS=--enable-build-with-cxx
-else
-  POSTSTAGE1_CONFIGURE_FLAGS=
-fi
-AC_SUBST(POSTSTAGE1_CONFIGURE_FLAGS)
 
 # Specify what files to not compare during bootstrap.
 

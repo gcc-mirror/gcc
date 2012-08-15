@@ -73,7 +73,7 @@ ipa_ref_list_first_reference (struct ipa_ref_list *list)
 {
   if (!VEC_length (ipa_ref_t, list->references))
     return NULL;
-  return VEC_index (ipa_ref_t, list->references, 0);
+  return &VEC_index (ipa_ref_t, list->references, 0);
 }
 
 /* Return first referring ref in LIST or NULL if empty.  */

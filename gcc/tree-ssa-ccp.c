@@ -130,6 +130,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbgcnt.h"
 #include "gimple-fold.h"
 #include "params.h"
+#include "hash-table.h"
 
 
 /* Possible lattice values.  */
@@ -1687,11 +1688,17 @@ evaluate_stmt (gimple stmt)
   return val;
 }
 
+typedef hash_table <gimple_statement_d, typed_pointer_hash<gimple_statement_d>,
+		    typed_pointer_equal<gimple_statement_d>,
+		    typed_null_remove<gimple_statement_d> >
+		   gimple_htab;
+
 /* Given a BUILT_IN_STACK_SAVE value SAVED_VAL, insert a clobber of VAR before
    each matching BUILT_IN_STACK_RESTORE.  Mark visited phis in VISITED.  */
 
 static void
-insert_clobber_before_stack_restore (tree saved_val, tree var, htab_t *visited)
+insert_clobber_before_stack_restore (tree saved_val, tree var,
+				     gimple_htab *visited)
 {
   gimple stmt, clobber_stmt;
   tree clobber;
@@ -1711,10 +1718,10 @@ insert_clobber_before_stack_restore (tree saved_val, tree var, htab_t *visited)
       }
     else if (gimple_code (stmt) == GIMPLE_PHI)
       {
-	if (*visited == NULL)
-	  *visited = htab_create (10, htab_hash_pointer, htab_eq_pointer, NULL);
+	if (!visited->is_created ())
+	  visited->create (10);
 
-	slot = (gimple *)htab_find_slot (*visited, stmt, INSERT);
+	slot = visited->find_slot (stmt, INSERT);
 	if (*slot != NULL)
 	  continue;
 
@@ -1757,7 +1764,7 @@ insert_clobbers_for_var (gimple_stmt_iterator i, tree var)
 {
   gimple stmt;
   tree saved_val;
-  htab_t visited = NULL;
+  gimple_htab visited;
 
   for (; !gsi_end_p (i); gsi_prev_dom_bb_nondebug (&i))
     {
@@ -1774,8 +1781,8 @@ insert_clobbers_for_var (gimple_stmt_iterator i, tree var)
       break;
     }
 
-  if (visited != NULL)
-    htab_delete (visited);
+  if (visited.is_created ())
+    visited.dispose ();
 }
 
 /* Detects a __builtin_alloca_with_align with constant size argument.  Declares

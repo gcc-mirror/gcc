@@ -29,7 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "bitmap.h"
 #include "dumpfile.h"
 #include "tree-flow.h"
-#include "hashtab.h"
+#include "hash-table.h"
 #include "tree-ssa-live.h"
 #include "diagnostic-core.h"
 
@@ -1258,22 +1258,19 @@ coalesce_partitions (var_map map, ssa_conflicts_p graph, coalesce_list_p cl,
     }
 }
 
-/* Returns a hash code for P.  */
+/* Returns a hash code for N.  */
 
-static hashval_t
-hash_ssa_name_by_var (const void *p)
+inline hashval_t
+hash_ssa_name_by_var (const_tree n)
 {
-  const_tree n = (const_tree) p;
   return (hashval_t) htab_hash_pointer (SSA_NAME_VAR (n));
 }
 
-/* Returns nonzero if P1 and P2 are equal.  */
+/* Returns nonzero if N1 and N2 are equal.  */
 
-static int
-eq_ssa_name_by_var (const void *p1, const void *p2)
+inline int
+eq_ssa_name_by_var (const_tree n1, const_tree n2)
 {
-  const_tree n1 = (const_tree) p1;
-  const_tree n2 = (const_tree) p2;
   return SSA_NAME_VAR (n1) == SSA_NAME_VAR (n2);
 }
 
@@ -1289,7 +1286,9 @@ coalesce_ssa_name (void)
   bitmap used_in_copies = BITMAP_ALLOC (NULL);
   var_map map;
   unsigned int i;
-  static htab_t ssa_name_hash;
+  static hash_table <tree_node, hash_ssa_name_by_var, eq_ssa_name_by_var,
+		     typed_null_remove<tree_node> >
+		    ssa_name_hash;
 
   cl = create_coalesce_list ();
   map = create_outofssa_var_map (cl, used_in_copies);
@@ -1298,8 +1297,7 @@ coalesce_ssa_name (void)
      so debug info remains undisturbed.  */
   if (!optimize)
     {
-      ssa_name_hash = htab_create (10, hash_ssa_name_by_var,
-      				   eq_ssa_name_by_var, NULL);
+      ssa_name_hash.create (10);
       for (i = 1; i < num_ssa_names; i++)
 	{
 	  tree a = ssa_name (i);
@@ -1309,7 +1307,7 @@ coalesce_ssa_name (void)
 	      && !DECL_IGNORED_P (SSA_NAME_VAR (a))
 	      && (!has_zero_uses (a) || !SSA_NAME_IS_DEFAULT_DEF (a)))
 	    {
-	      tree *slot = (tree *) htab_find_slot (ssa_name_hash, a, INSERT);
+	      tree *slot = ssa_name_hash.find_slot (a, INSERT);
 
 	      if (!*slot)
 		*slot = a;
@@ -1322,7 +1320,7 @@ coalesce_ssa_name (void)
 		}
 	    }
 	}
-      htab_delete (ssa_name_hash);
+      ssa_name_hash.dispose ();
     }
   if (dump_file && (dump_flags & TDF_DETAILS))
     dump_var_map (dump_file, map);

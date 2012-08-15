@@ -200,13 +200,13 @@ extern int nfunctions_inlined;
 static inline struct inline_summary *
 inline_summary (struct cgraph_node *node)
 {
-  return VEC_index (inline_summary_t, inline_summary_vec, node->uid);
+  return &VEC_index (inline_summary_t, inline_summary_vec, node->uid);
 }
 
 static inline struct inline_edge_summary *
 inline_edge_summary (struct cgraph_edge *edge)
 {
-  return VEC_index (inline_edge_summary_t,
+  return &VEC_index (inline_edge_summary_t,
 		    inline_edge_summary_vec, edge->uid);
 }
 
@@ -235,7 +235,7 @@ estimate_edge_growth (struct cgraph_edge *edge)
   if ((int)VEC_length (edge_growth_cache_entry, edge_growth_cache) <= edge->uid
       || !(ret = VEC_index (edge_growth_cache_entry,
 			    edge_growth_cache,
-			    edge->uid)->size))
+			    edge->uid).size))
     return do_estimate_edge_growth (edge);
   return ret - (ret > 0);
 }
@@ -251,7 +251,7 @@ estimate_edge_time (struct cgraph_edge *edge)
   if ((int)VEC_length (edge_growth_cache_entry, edge_growth_cache) <= edge->uid
       || !(ret = VEC_index (edge_growth_cache_entry,
 			    edge_growth_cache,
-			    edge->uid)->time))
+			    edge->uid).time))
     return do_estimate_edge_time (edge);
   return ret - (ret > 0);
 }
@@ -274,6 +274,6 @@ reset_edge_growth_cache (struct cgraph_edge *edge)
   if ((int)VEC_length (edge_growth_cache_entry, edge_growth_cache) > edge->uid)
     {
       struct edge_growth_cache_entry zero = {0, 0};
-      VEC_replace (edge_growth_cache_entry, edge_growth_cache, edge->uid, &zero);
+      VEC_replace (edge_growth_cache_entry, edge_growth_cache, edge->uid, zero);
     }
 }

@@ -802,7 +802,7 @@ add_removable_extension (const_rtx expr, rtx insn,
 	 different extension.  FIXME: this obviously can be improved.  */
       for (def = defs; def; def = def->next)
 	if ((idx = def_map[INSN_UID(DF_REF_INSN (def->ref))])
-	    && (cand = VEC_index (ext_cand, *insn_list, idx - 1))
+	    && (cand = &VEC_index (ext_cand, *insn_list, idx - 1))
 	    && (cand->code != code || cand->mode != mode))
 	  {
 	    if (dump_file)

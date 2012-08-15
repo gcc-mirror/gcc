@@ -8403,12 +8403,12 @@ build_vtbl_initializer (tree binfo,
 	  int new_position = (TARGET_VTABLE_DATA_ENTRY_DISTANCE * ix
 			      + (TARGET_VTABLE_DATA_ENTRY_DISTANCE - 1));
 
-	  VEC_replace (constructor_elt, vid.inits, new_position, e);
+	  VEC_replace (constructor_elt, vid.inits, new_position, *e);
 
 	  for (j = 1; j < TARGET_VTABLE_DATA_ENTRY_DISTANCE; ++j)
 	    {
-	      constructor_elt *f = VEC_index (constructor_elt, vid.inits,
-					      new_position - j);
+	      constructor_elt *f = &VEC_index (constructor_elt, vid.inits,
+					       new_position - j);
 	      f->index = NULL_TREE;
 	      f->value = build1 (NOP_EXPR, vtable_entry_type,
 				 null_pointer_node);
@@ -8429,7 +8429,7 @@ build_vtbl_initializer (tree binfo,
   for (ix = VEC_length (constructor_elt, vid.inits) - 1;
        VEC_iterate (constructor_elt, vid.inits, ix, e);
        ix--, jx++)
-    VEC_replace (constructor_elt, *inits, jx, e);
+    VEC_replace (constructor_elt, *inits, jx, *e);
 
   /* Go through all the ordinary virtual functions, building up
      initializers.  */

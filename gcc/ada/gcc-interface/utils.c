@@ -4491,10 +4491,10 @@ convert (tree type, tree expr)
 	 inner expression.  */
       if (TREE_CODE (expr) == CONSTRUCTOR
 	  && !VEC_empty (constructor_elt, CONSTRUCTOR_ELTS (expr))
-	  && VEC_index (constructor_elt, CONSTRUCTOR_ELTS (expr), 0)->index
+	  && VEC_index (constructor_elt, CONSTRUCTOR_ELTS (expr), 0).index
 	     == TYPE_FIELDS (etype))
 	unpadded
-	  = VEC_index (constructor_elt, CONSTRUCTOR_ELTS (expr), 0)->value;
+	  = VEC_index (constructor_elt, CONSTRUCTOR_ELTS (expr), 0).value;
 
       /* Otherwise, build an explicit component reference.  */
       else
@@ -5047,7 +5047,7 @@ remove_conversions (tree exp, bool true_address)
 	  && TYPE_JUSTIFIED_MODULAR_P (TREE_TYPE (exp)))
 	return
 	  remove_conversions (VEC_index (constructor_elt,
-					 CONSTRUCTOR_ELTS (exp), 0)->value,
+					 CONSTRUCTOR_ELTS (exp), 0).value,
 			      true);
       break;
 

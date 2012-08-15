@@ -2921,7 +2921,7 @@ finalize_nrv_unc_r (tree *tp, int *walk_subtrees, void *data)
 	      = VEC_index (constructor_elt,
 			   CONSTRUCTOR_ELTS
 			   (TREE_OPERAND (TREE_OPERAND (ret_val, 0), 1)),
-			    1)->value;
+			    1).value;
 	  else
 	    ret_val = TREE_OPERAND (TREE_OPERAND (ret_val, 0), 1);
 	}
@@ -2980,7 +2980,7 @@ finalize_nrv_unc_r (tree *tp, int *walk_subtrees, void *data)
 		      TREE_OPERAND (alloc, 0),
 		      VEC_index (constructor_elt,
 				 CONSTRUCTOR_ELTS (TREE_OPERAND (alloc, 1)),
-						   0)->value);
+						   0).value);
 
 	  /* Build a modified CONSTRUCTOR that references NEW_VAR.  */
 	  p_array = TYPE_FIELDS (TREE_TYPE (alloc));
@@ -2990,7 +2990,7 @@ finalize_nrv_unc_r (tree *tp, int *walk_subtrees, void *data)
 				  VEC_index (constructor_elt,
 					     CONSTRUCTOR_ELTS
 					     (TREE_OPERAND (alloc, 1)),
-					      1)->value);
+					      1).value);
 	  new_ret = build_constructor (TREE_TYPE (alloc), v);
 	}
       else

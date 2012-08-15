@@ -2550,7 +2550,7 @@ create_cfi_notes (void)
   gcc_checking_assert (trace_work_list == NULL);
 
   /* Always begin at the entry trace.  */
-  ti = VEC_index (dw_trace_info, trace_info, 0);
+  ti = &VEC_index (dw_trace_info, trace_info, 0);
   scan_trace (ti);
 
   while (!VEC_empty (dw_trace_info_ref, trace_work_list))
@@ -2597,7 +2597,7 @@ connect_traces (void)
   /* Remove all unprocessed traces from the list.  */
   for (i = n - 1; i > 0; --i)
     {
-      ti = VEC_index (dw_trace_info, trace_info, i);
+      ti = &VEC_index (dw_trace_info, trace_info, i);
       if (ti->beg_row == NULL)
 	{
 	  VEC_ordered_remove (dw_trace_info, trace_info, i);
@@ -2609,13 +2609,13 @@ connect_traces (void)
 
   /* Work from the end back to the beginning.  This lets us easily insert
      remember/restore_state notes in the correct order wrt other notes.  */
-  prev_ti = VEC_index (dw_trace_info, trace_info, n - 1);
+  prev_ti = &VEC_index (dw_trace_info, trace_info, n - 1);
   for (i = n - 1; i > 0; --i)
     {
       dw_cfi_row *old_row;
 
       ti = prev_ti;
-      prev_ti = VEC_index (dw_trace_info, trace_info, i - 1);
+      prev_ti = &VEC_index (dw_trace_info, trace_info, i - 1);
 
       add_cfi_insn = ti->head;
 
@@ -2686,7 +2686,7 @@ connect_traces (void)
 
       for (i = 0; i < n; ++i)
 	{
-	  ti = VEC_index (dw_trace_info, trace_info, i);
+	  ti = &VEC_index (dw_trace_info, trace_info, i);
 
 	  if (ti->switch_sections)
 	    prev_args_size = 0;
@@ -2884,8 +2884,8 @@ create_cie_data (void)
 	  break;
 	case 1:
 	  cie_return_save = ggc_alloc_reg_saved_in_data ();
-	  *cie_return_save = *VEC_index (reg_saved_in_data,
-					 cie_trace.regs_saved_in_regs, 0);
+	  *cie_return_save = VEC_index (reg_saved_in_data,
+					cie_trace.regs_saved_in_regs, 0);
 	  VEC_free (reg_saved_in_data, heap, cie_trace.regs_saved_in_regs);
 	  break;
 	default:

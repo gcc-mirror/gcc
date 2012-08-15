@@ -273,7 +273,7 @@ cp_lexer_dump_tokens (FILE *file, VEC(cp_token,gc) *buffer,
 
   if (start_token > VEC_address (cp_token, buffer))
     {
-      cp_lexer_print_token (file, VEC_index (cp_token, buffer, 0));
+      cp_lexer_print_token (file, &VEC_index (cp_token, buffer, 0));
       fprintf (file, " ... ");
     }
 
@@ -313,8 +313,7 @@ cp_lexer_dump_tokens (FILE *file, VEC(cp_token,gc) *buffer,
   if (i == num && i < VEC_length (cp_token, buffer))
     {
       fprintf (file, " ... ");
-      cp_lexer_print_token (file, VEC_index (cp_token, buffer,
-			    VEC_length (cp_token, buffer) - 1));
+      cp_lexer_print_token (file, &VEC_last (cp_token, buffer));
     }
 
   fprintf (file, "\n");
@@ -1723,11 +1722,11 @@ cp_parser_context_new (cp_parser_context* next)
 /* Managing the unparsed function queues.  */
 
 #define unparsed_funs_with_default_args \
-  VEC_last (cp_unparsed_functions_entry, parser->unparsed_queues)->funs_with_default_args
+  VEC_last (cp_unparsed_functions_entry, parser->unparsed_queues).funs_with_default_args
 #define unparsed_funs_with_definitions \
-  VEC_last (cp_unparsed_functions_entry, parser->unparsed_queues)->funs_with_definitions
+  VEC_last (cp_unparsed_functions_entry, parser->unparsed_queues).funs_with_definitions
 #define unparsed_nsdmis \
-  VEC_last (cp_unparsed_functions_entry, parser->unparsed_queues)->nsdmis
+  VEC_last (cp_unparsed_functions_entry, parser->unparsed_queues).nsdmis
 
 static void
 push_unparsed_function_queues (cp_parser *parser)
@@ -8048,7 +8047,7 @@ record_lambda_scope (tree lambda)
 static void
 finish_lambda_scope (void)
 {
-  tree_int *p = VEC_last (tree_int, lambda_scope_stack);
+  tree_int *p = &VEC_last (tree_int, lambda_scope_stack);
   if (lambda_scope != p->t)
     {
       lambda_scope = p->t;

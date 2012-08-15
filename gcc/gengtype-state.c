@@ -51,6 +51,7 @@ type_lineloc (const_type_p ty)
     case TYPE_STRUCT:
     case TYPE_UNION:
     case TYPE_LANG_STRUCT:
+    case TYPE_USER_STRUCT:
       return CONST_CAST (struct fileloc*, &ty->u.s.line);
     case TYPE_PARAM_STRUCT:
       return CONST_CAST (struct fileloc*, &ty->u.param_struct.line);
@@ -798,6 +799,22 @@ write_state_struct_type (type_p current)
   write_state_type (current->u.s.lang_struct);
 }
 
+/* Write a GTY user-defined struct type.  */
+static void
+write_state_user_struct_type (type_p current)
+{
+  DBGPRINTF ("user_struct type @ %p #%d '%s'", (void *) current,
+	     current->state_number, current->u.s.tag);
+  fprintf (state_file, "user_struct ");
+  write_state_common_type_content (current);
+  if (current->u.s.tag != NULL)
+    write_state_a_string (current->u.s.tag);
+  else
+    fprintf (state_file, "nil");
+  write_state_fileloc (type_lineloc (current));
+  write_state_fields (current->u.s.fields);
+}
+
 /* write a GTY union type.  */
 static void
 write_state_union_type (type_p current)
@@ -828,7 +845,7 @@ write_state_lang_struct_type (type_p current)
       DBGPRINTF ("homonymous #%d hty @ %p #%d '%s'", nbhomontype,
 		 (void *) hty, hty->state_number, hty->u.s.tag);
       /* Every member of the homonymous list should have the same tag.  */
-      gcc_assert (UNION_OR_STRUCT_P (hty));
+      gcc_assert (union_or_struct_p (hty));
       gcc_assert (hty->u.s.lang_struct == current);
       if (!homoname)
 	homoname = hty->u.s.tag;
@@ -946,6 +963,9 @@ write_state_type (type_p current)
 	{
 	case TYPE_STRUCT:
 	  write_state_struct_type (current);
+	  break;
+	case TYPE_USER_STRUCT:
+	  write_state_user_struct_type (current);
 	  break;
 	case TYPE_UNION:
 	  write_state_union_type (current);
@@ -1365,6 +1385,42 @@ read_state_struct_type (type_p type)
 }
 
 
+/* Read a GTY-ed user-provided struct TYPE.  */
+
+static void
+read_state_user_struct_type (type_p type)
+{
+  struct state_token_st *t0;
+
+  type->kind = TYPE_USER_STRUCT;
+  read_state_common_type_content (type);
+  t0 = peek_state_token (0);
+  if (state_token_kind (t0) == STOK_STRING)
+    {
+      if (state_token_is_name (t0, "nil"))
+	{
+	  type->u.s.tag = NULL;
+	  DBGPRINTF ("read anonymous struct type @%p #%d",
+		     (void *) type, type->state_number);
+	}
+      else
+	{
+	  type->u.s.tag = xstrdup (t0->stok_un.stok_string);
+	  DBGPRINTF ("read struct type @%p #%d '%s'",
+		     (void *) type, type->state_number, type->u.s.tag);
+	}
+
+      next_state_tokens (1);
+      read_state_fileloc (&(type->u.s.line));
+      read_state_fields (&(type->u.s.fields));
+    }
+  else
+    {
+      fatal_reading_state (t0, "Bad tag in user-struct type");
+    }
+}
+
+
 /* Read a GTY-ed union type.  */
 static void
 read_state_union_type (type_p type)
@@ -1654,6 +1710,12 @@ read_state_type (type_p *current)
 	      *current = XCNEW (struct type);
 	      next_state_tokens (1);
 	      read_state_array_type (*current);
+	    }
+	  else if (state_token_is_name (t0, "user_struct"))
+	    {
+	      *current = XCNEW (struct type);
+	      next_state_tokens (1);
+	      read_state_user_struct_type (*current);
 	    }
 	  else
 	    fatal_reading_state (t0, "bad type in (!type");

@@ -243,19 +243,19 @@ typedef struct reg_equivs
 } reg_equivs_t;
 
 #define reg_equiv_constant(ELT) \
-  VEC_index (reg_equivs_t, reg_equivs, (ELT))->constant
+  VEC_index (reg_equivs_t, reg_equivs, (ELT)).constant
 #define reg_equiv_invariant(ELT) \
-  VEC_index (reg_equivs_t, reg_equivs, (ELT))->invariant
+  VEC_index (reg_equivs_t, reg_equivs, (ELT)).invariant
 #define reg_equiv_memory_loc(ELT) \
-  VEC_index (reg_equivs_t, reg_equivs, (ELT))->memory_loc
+  VEC_index (reg_equivs_t, reg_equivs, (ELT)).memory_loc
 #define reg_equiv_address(ELT) \
-  VEC_index (reg_equivs_t, reg_equivs, (ELT))->address
+  VEC_index (reg_equivs_t, reg_equivs, (ELT)).address
 #define reg_equiv_mem(ELT) \
-  VEC_index (reg_equivs_t, reg_equivs, (ELT))->mem
+  VEC_index (reg_equivs_t, reg_equivs, (ELT)).mem
 #define reg_equiv_alt_mem_list(ELT) \
-  VEC_index (reg_equivs_t, reg_equivs, (ELT))->alt_mem_list
+  VEC_index (reg_equivs_t, reg_equivs, (ELT)).alt_mem_list
 #define reg_equiv_init(ELT) \
-  VEC_index (reg_equivs_t, reg_equivs, (ELT))->init
+  VEC_index (reg_equivs_t, reg_equivs, (ELT)).init
 
 DEF_VEC_O(reg_equivs_t);
 DEF_VEC_ALLOC_O(reg_equivs_t, gc);

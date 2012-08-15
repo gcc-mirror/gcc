@@ -1178,7 +1178,7 @@ process_init_constructor_record (tree type, tree init,
 
       if (idx < VEC_length (constructor_elt, CONSTRUCTOR_ELTS (init)))
 	{
-	  constructor_elt *ce = VEC_index (constructor_elt,
+	  constructor_elt *ce = &VEC_index (constructor_elt,
 					   CONSTRUCTOR_ELTS (init), idx);
 	  if (ce->index)
 	    {
@@ -1305,7 +1305,7 @@ process_init_constructor_union (tree type, tree init,
       VEC_block_remove (constructor_elt, CONSTRUCTOR_ELTS (init), 1, len-1);
     }
 
-  ce = VEC_index (constructor_elt, CONSTRUCTOR_ELTS (init), 0);
+  ce = &VEC_index (constructor_elt, CONSTRUCTOR_ELTS (init), 0);
 
   /* If this element specifies a field, initialize via that field.  */
   if (ce->index)

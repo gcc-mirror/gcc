@@ -1209,9 +1209,9 @@ c_pp_lookup_pragma (unsigned int id, const char **space, const char **name)
 	  + VEC_length (pragma_ns_name, registered_pp_pragmas)))
     {
       *space = VEC_index (pragma_ns_name, registered_pp_pragmas,
-			  id - PRAGMA_FIRST_EXTERNAL)->space;
+			  id - PRAGMA_FIRST_EXTERNAL).space;
       *name = VEC_index (pragma_ns_name, registered_pp_pragmas,
-			 id - PRAGMA_FIRST_EXTERNAL)->name;
+			 id - PRAGMA_FIRST_EXTERNAL).name;
       return;
     }
 
@@ -1334,7 +1334,7 @@ c_invoke_pragma_handler (unsigned int id)
   pragma_handler_2arg handler_2arg;
 
   id -= PRAGMA_FIRST_EXTERNAL;
-  ihandler = VEC_index (internal_pragma_handler, registered_pragmas, id);
+  ihandler = &VEC_index (internal_pragma_handler, registered_pragmas, id);
   if (ihandler->extra_data)
     {
       handler_2arg = ihandler->handler.handler_2arg;

@@ -441,7 +441,7 @@ compare_fat_pointers (location_t loc, tree result_type, tree p1, tree p2)
 
   /* The constant folder doesn't fold fat pointer types so we do it here.  */
   if (TREE_CODE (p1) == CONSTRUCTOR)
-    p1_array = VEC_index (constructor_elt, CONSTRUCTOR_ELTS (p1), 0)->value;
+    p1_array = VEC_index (constructor_elt, CONSTRUCTOR_ELTS (p1), 0).value;
   else
     p1_array = build_component_ref (p1, NULL_TREE,
 				    TYPE_FIELDS (TREE_TYPE (p1)), true);
@@ -452,7 +452,7 @@ compare_fat_pointers (location_t loc, tree result_type, tree p1, tree p2)
 					 null_pointer_node));
 
   if (TREE_CODE (p2) == CONSTRUCTOR)
-    p2_array = VEC_index (constructor_elt, CONSTRUCTOR_ELTS (p2), 0)->value;
+    p2_array = VEC_index (constructor_elt, CONSTRUCTOR_ELTS (p2), 0).value;
   else
     p2_array = build_component_ref (p2, NULL_TREE,
 				    TYPE_FIELDS (TREE_TYPE (p2)), true);
@@ -473,14 +473,14 @@ compare_fat_pointers (location_t loc, tree result_type, tree p1, tree p2)
     = fold_build2_loc (loc, EQ_EXPR, result_type, p1_array, p2_array);
 
   if (TREE_CODE (p1) == CONSTRUCTOR)
-    p1_bounds = VEC_index (constructor_elt, CONSTRUCTOR_ELTS (p1), 1)->value;
+    p1_bounds = VEC_index (constructor_elt, CONSTRUCTOR_ELTS (p1), 1).value;
   else
     p1_bounds
       = build_component_ref (p1, NULL_TREE,
 			     DECL_CHAIN (TYPE_FIELDS (TREE_TYPE (p1))), true);
 
   if (TREE_CODE (p2) == CONSTRUCTOR)
-    p2_bounds = VEC_index (constructor_elt, CONSTRUCTOR_ELTS (p2), 1)->value;
+    p2_bounds = VEC_index (constructor_elt, CONSTRUCTOR_ELTS (p2), 1).value;
   else
     p2_bounds
       = build_component_ref (p2, NULL_TREE,
@@ -1336,7 +1336,7 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 	    {
 	      result = VEC_index (constructor_elt,
 				  CONSTRUCTOR_ELTS (operand),
-				  0)->value;
+				  0).value;
 	      result = convert (build_pointer_type (TREE_TYPE (operand)),
 				build_unary_op (ADDR_EXPR, NULL_TREE, result));
 	      break;
@@ -2676,9 +2676,9 @@ gnat_stabilize_reference (tree ref, bool force, bool *success)
 	  && VEC_length (constructor_elt, CONSTRUCTOR_ELTS (ref)) == 1)
 	{
 	  tree index
-	    = VEC_index (constructor_elt, CONSTRUCTOR_ELTS (ref), 0)->index;
+	    = VEC_index (constructor_elt, CONSTRUCTOR_ELTS (ref), 0).index;
 	  tree value
-	    = VEC_index (constructor_elt, CONSTRUCTOR_ELTS (ref), 0)->value;
+	    = VEC_index (constructor_elt, CONSTRUCTOR_ELTS (ref), 0).value;
 	  result
 	    = build_constructor_single (type, index,
 					gnat_stabilize_reference_1 (value,

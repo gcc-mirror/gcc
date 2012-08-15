@@ -766,7 +766,6 @@ enable_shared
 enable_fixed_point
 enable_decimal_float
 enable_multilib
-ENABLE_BUILD_WITH_CXX
 coverage_flags
 valgrind_command
 valgrind_path_defines
@@ -873,7 +872,6 @@ enable_werror_always
 enable_checking
 enable_coverage
 enable_gather_detailed_mem_stats
-enable_build_with_cxx
 with_stabs
 enable_multilib
 enable___cxa_atexit
@@ -1575,7 +1573,6 @@ Optional Features:
                           Values are opt, noopt, default is noopt
   --enable-gather-detailed-mem-stats
                           enable detailed memory allocation stats gathering
-  --enable-build-with-cxx build with C++ compiler instead of C compiler
   --enable-multilib       enable library support for multiple ABIs
   --enable-__cxa_atexit   enable __cxa_atexit for C++
   --enable-decimal-float={no,yes,bid,dpd}
@@ -6997,21 +6994,6 @@ _ACEOF
 # Miscenalleous configure options
 # -------------------------------
 
-# See if we are building gcc with C++.
-# Check whether --enable-build-with-cxx was given.
-if test "${enable_build_with_cxx+set}" = set; then :
-  enableval=$enable_build_with_cxx; ENABLE_BUILD_WITH_CXX=$enableval
-else
-  ENABLE_BUILD_WITH_CXX=no
-fi
-
-
-if test "$ENABLE_BUILD_WITH_CXX" = "yes"; then
-
-$as_echo "#define ENABLE_BUILD_WITH_CXX 1" >>confdefs.h
-
-fi
-
 # With stabs
 
 # Check whether --with-stabs was given.
@@ -9516,6 +9498,12 @@ fi
 
 # g++ on Solaris 10+ defines _XOPEN_SOURCE=600, which exposes a different
 # iconv() prototype.
+ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
 
       if test "X$prefix" = "XNONE"; then
     acl_final_prefix="$ac_default_prefix"
@@ -10057,13 +10045,6 @@ fi
   fi
 
 
-if test "$ENABLE_BUILD_WITH_CXX" = "yes"; then :
-  ac_ext=cpp
-ac_cpp='$CXXCPP $CPPFLAGS'
-ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
-
 
 
 
@@ -10219,169 +10200,12 @@ _ACEOF
 
   fi
 
-   ac_ext=c
+ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
-else
-
-
-
-
-
-          am_save_CPPFLAGS="$CPPFLAGS"
-
-  for element in $INCICONV; do
-    haveit=
-    for x in $CPPFLAGS; do
-
-  acl_save_prefix="$prefix"
-  prefix="$acl_final_prefix"
-  acl_save_exec_prefix="$exec_prefix"
-  exec_prefix="$acl_final_exec_prefix"
-  eval x=\"$x\"
-  exec_prefix="$acl_save_exec_prefix"
-  prefix="$acl_save_prefix"
-
-      if test "X$x" = "X$element"; then
-        haveit=yes
-        break
-      fi
-    done
-    if test -z "$haveit"; then
-      CPPFLAGS="${CPPFLAGS}${CPPFLAGS:+ }$element"
-    fi
-  done
-
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for iconv" >&5
-$as_echo_n "checking for iconv... " >&6; }
-if test "${am_cv_func_iconv+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-
-    am_cv_func_iconv="no, consider installing GNU libiconv"
-    am_cv_lib_iconv=no
-    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <stdlib.h>
-#include <iconv.h>
-int
-main ()
-{
-iconv_t cd = iconv_open("","");
-       iconv(cd,NULL,NULL,NULL,NULL);
-       iconv_close(cd);
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  am_cv_func_iconv=yes
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-    if test "$am_cv_func_iconv" != yes; then
-      am_save_LIBS="$LIBS"
-      LIBS="$LIBS $LIBICONV"
-      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <stdlib.h>
-#include <iconv.h>
-int
-main ()
-{
-iconv_t cd = iconv_open("","");
-         iconv(cd,NULL,NULL,NULL,NULL);
-         iconv_close(cd);
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  am_cv_lib_iconv=yes
-        am_cv_func_iconv=yes
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-      LIBS="$am_save_LIBS"
-    fi
-
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $am_cv_func_iconv" >&5
-$as_echo "$am_cv_func_iconv" >&6; }
-  if test "$am_cv_func_iconv" = yes; then
-
-$as_echo "#define HAVE_ICONV 1" >>confdefs.h
-
-  fi
-  if test "$am_cv_lib_iconv" = yes; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking how to link with libiconv" >&5
-$as_echo_n "checking how to link with libiconv... " >&6; }
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $LIBICONV" >&5
-$as_echo "$LIBICONV" >&6; }
-  else
-            CPPFLAGS="$am_save_CPPFLAGS"
-    LIBICONV=
-    LTLIBICONV=
-  fi
-
-
-
-  if test "$am_cv_func_iconv" = yes; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for iconv declaration" >&5
-$as_echo_n "checking for iconv declaration... " >&6; }
-    if test "${am_cv_proto_iconv+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-
-      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-#include <stdlib.h>
-#include <iconv.h>
-extern
-#ifdef __cplusplus
-"C"
-#endif
-#if defined(__STDC__) || defined(__cplusplus)
-size_t iconv (iconv_t cd, char * *inbuf, size_t *inbytesleft, char * *outbuf, size_t *outbytesleft);
-#else
-size_t iconv();
-#endif
-
-int
-main ()
-{
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  am_cv_proto_iconv_arg1=""
-else
-  am_cv_proto_iconv_arg1="const"
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-      am_cv_proto_iconv="extern size_t iconv (iconv_t cd, $am_cv_proto_iconv_arg1 char * *inbuf, size_t *inbytesleft, char * *outbuf, size_t *outbytesleft);"
-fi
-
-    am_cv_proto_iconv=`echo "$am_cv_proto_iconv" | tr -s ' ' | sed -e 's/( /(/'`
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: ${ac_t:-
-         }$am_cv_proto_iconv" >&5
-$as_echo "${ac_t:-
-         }$am_cv_proto_iconv" >&6; }
-
-cat >>confdefs.h <<_ACEOF
-#define ICONV_CONST $am_cv_proto_iconv_arg1
-_ACEOF
-
-  fi
-
-fi
 
 # Until we have in-tree GNU iconv:
 LIBICONV_DEP=
@@ -10767,14 +10591,13 @@ done
 
 # g++ on Solaris 10+ defines _XOPEN_SOURCE=600, which hides the madvise()
 # prototype.
-if test "$ENABLE_BUILD_WITH_CXX" = "yes"; then :
-  ac_ext=cpp
+ac_ext=cpp
 ac_cpp='$CXXCPP $CPPFLAGS'
 ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
-   for ac_func in madvise
+for ac_func in madvise
 do
   ac_tr_decl=`$as_echo "HAVE_DECL_$ac_func" | $as_tr_cpp`
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $ac_func is declared" >&5
@@ -10787,8 +10610,8 @@ else
 #undef $ac_tr_decl
 #define $ac_tr_decl 1
 
-     #include "ansidecl.h"
-     #include "system.h"
+  #include "ansidecl.h"
+  #include "system.h"
 
 
 int
@@ -10825,66 +10648,12 @@ fi
 
 done
 
-   ac_ext=c
+ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
-else
-  for ac_func in madvise
-do
-  ac_tr_decl=`$as_echo "HAVE_DECL_$ac_func" | $as_tr_cpp`
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $ac_func is declared" >&5
-$as_echo_n "checking whether $ac_func is declared... " >&6; }
-if { as_var=gcc_cv_have_decl_$ac_func; eval "test \"\${$as_var+set}\" = set"; }; then :
-  $as_echo_n "(cached) " >&6
-else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#undef $ac_tr_decl
-#define $ac_tr_decl 1
-
-     #include "ansidecl.h"
-     #include "system.h"
-
-
-int
-main ()
-{
-#ifndef $ac_func
-char *(*pfn) = (char *(*)) $ac_func ;
-#endif
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  eval "gcc_cv_have_decl_$ac_func=yes"
-else
-  eval "gcc_cv_have_decl_$ac_func=no"
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-fi
-
-if eval "test \"`echo '$gcc_cv_have_decl_'$ac_func`\" = yes"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; } ; cat >>confdefs.h <<_ACEOF
-#define $ac_tr_decl 1
-_ACEOF
-
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; } ; cat >>confdefs.h <<_ACEOF
-#define $ac_tr_decl 0
-_ACEOF
-
-fi
-
-done
-
-
-fi
 
 # More time-related stuff.
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for struct tms" >&5
@@ -17973,7 +17742,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17975 "configure"
+#line 17744 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18079,7 +17848,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18081 "configure"
+#line 17850 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

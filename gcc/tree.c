@@ -6704,8 +6704,8 @@ simple_cst_equal (const_tree t1, const_tree t2)
 
         for (idx = 0; idx < VEC_length (constructor_elt, v1); ++idx)
 	  /* ??? Should we handle also fields here? */
-	  if (!simple_cst_equal (VEC_index (constructor_elt, v1, idx)->value,
-				 VEC_index (constructor_elt, v2, idx)->value))
+	  if (!simple_cst_equal (VEC_index (constructor_elt, v1, idx).value,
+				 VEC_index (constructor_elt, v2, idx).value))
 	    return false;
 	return true;
       }

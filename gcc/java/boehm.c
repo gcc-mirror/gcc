@@ -233,6 +233,6 @@ uses_jv_markobj_p (tree dtable)
      this function is only used with flag_reduced_reflection.  No
      point in asserting unless we hit the bad case.  */
   gcc_assert (!flag_reduced_reflection || TARGET_VTABLE_USES_DESCRIPTORS == 0);
-  v = VEC_index (constructor_elt, CONSTRUCTOR_ELTS (dtable), 3)->value;
+  v = VEC_index (constructor_elt, CONSTRUCTOR_ELTS (dtable), 3).value;
   return (PROCEDURE_OBJECT_DESCRIPTOR == TREE_INT_CST_LOW (v));
 }

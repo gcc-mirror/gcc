@@ -182,6 +182,13 @@ document pbm
 Dump the bitmap that is in $ as a comma-separated list of numbers.
 end
 
+# Define some macros helpful to gdb when it is expanding macros.
+macro define __FILE__ "gdb"
+macro define __LINE__ 1
+
+# Gracefully handle aborts in functions used from gdb.
+set unwindonsignal on
+
 # Put breakpoints at exit and fancy_abort in case abort is mapped
 # to either fprintf/exit or fancy_abort.
 b fancy_abort
@@ -196,3 +203,9 @@ set complaints 0
 # USE_SYSTEM_ABORT is defined, so gdb may complain and bail out.
 b exit
 b abort
+
+# Skip all inline functions in tree.h.
+# These are used in accessor macros.
+# Note that this is added at the end because older gdb versions
+# do not understand the 'skip' command.
+skip "tree.h"

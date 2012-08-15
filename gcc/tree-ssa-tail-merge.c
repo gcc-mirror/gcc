@@ -193,7 +193,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "bitmap.h"
 #include "tree-ssa-alias.h"
 #include "params.h"
-#include "hashtab.h"
+#include "hash-table.h"
 #include "gimple-pretty-print.h"
 #include "tree-ssa-sccvn.h"
 #include "tree-dump.h"
@@ -368,11 +368,10 @@ same_succ_print (FILE *file, const same_succ e)
 
 /* Prints same_succ VE to VFILE.  */
 
-static int
-same_succ_print_traverse (void **ve, void *vfile)
+inline int
+ssa_same_succ_print_traverse (same_succ *pe, FILE *file)
 {
-  const same_succ e = *((const same_succ *)ve);
-  FILE *file = ((FILE*)vfile);
+  const same_succ e = *pe;
   same_succ_print (file, e);
   return 1;
 }
@@ -416,10 +415,9 @@ stmt_update_dep_bb (gimple stmt)
 
 /* Calculates hash value for same_succ VE.  */
 
-static hashval_t
-same_succ_hash (const void *ve)
+hashval_t
+ssa_same_succ_hash (const_same_succ e)
 {
-  const_same_succ e = (const_same_succ)ve;
   hashval_t hashval = bitmap_hash (e->succs);
   int flags;
   unsigned int i;
@@ -515,11 +513,9 @@ inverse_flags (const_same_succ e1, const_same_succ e2)
 
 /* Compares SAME_SUCCs VE1 and VE2.  */
 
-static int
-same_succ_equal (const void *ve1, const void *ve2)
+int
+ssa_same_succ_equal (const_same_succ e1, const_same_succ e2)
 {
-  const_same_succ e1 = (const_same_succ)ve1;
-  const_same_succ e2 = (const_same_succ)ve2;
   unsigned int i, first1, first2;
   gimple_stmt_iterator gsi1, gsi2;
   gimple s1, s2;
@@ -590,17 +586,15 @@ same_succ_alloc (void)
 
 /* Delete same_succ VE.  */
 
-static void
-same_succ_delete (void *ve)
+inline void
+ssa_same_succ_delete (same_succ e)
 {
-  same_succ e = (same_succ)ve;
-
   BITMAP_FREE (e->bbs);
   BITMAP_FREE (e->succs);
   BITMAP_FREE (e->inverse);
   VEC_free (int, heap, e->succ_flags);
 
-  XDELETE (ve);
+  XDELETE (e);
 }
 
 /* Reset same_succ SAME.  */
@@ -616,7 +610,9 @@ same_succ_reset (same_succ same)
 
 /* Hash table with all same_succ entries.  */
 
-static htab_t same_succ_htab;
+static hash_table <struct same_succ_def, ssa_same_succ_hash,
+		   ssa_same_succ_equal, ssa_same_succ_delete>
+		  same_succ_htab;
 
 /* Array that is used to store the edge flags for a successor.  */
 
@@ -637,7 +633,7 @@ extern void debug_same_succ (void);
 DEBUG_FUNCTION void
 debug_same_succ ( void)
 {
-  htab_traverse (same_succ_htab, same_succ_print_traverse, stderr);
+  same_succ_htab.traverse <FILE *, ssa_same_succ_print_traverse> (stderr);
 }
 
 DEF_VEC_P (same_succ);
@@ -696,10 +692,9 @@ find_same_succ_bb (basic_block bb, same_succ *same_p)
   EXECUTE_IF_SET_IN_BITMAP (same->succs, 0, j, bj)
     VEC_safe_push (int, heap, same->succ_flags, same_succ_edge_flags[j]);
 
-  same->hashval = same_succ_hash (same);
+  same->hashval = ssa_same_succ_hash (same);
 
-  slot = (same_succ *) htab_find_slot_with_hash (same_succ_htab, same,
-						   same->hashval, INSERT);
+  slot = same_succ_htab.find_slot_with_hash (same, same->hashval, INSERT);
   if (*slot == NULL)
     {
       *slot = same;
@@ -733,7 +728,7 @@ find_same_succ (void)
 	same = same_succ_alloc ();
     }
 
-  same_succ_delete (same);
+  ssa_same_succ_delete (same);
 }
 
 /* Initializes worklist administration.  */
@@ -742,9 +737,7 @@ static void
 init_worklist (void)
 {
   alloc_aux_for_blocks (sizeof (struct aux_bb_info));
-  same_succ_htab
-    = htab_create (n_basic_blocks, same_succ_hash, same_succ_equal,
-		   same_succ_delete);
+  same_succ_htab.create (n_basic_blocks);
   same_succ_edge_flags = XCNEWVEC (int, last_basic_block);
   deleted_bbs = BITMAP_ALLOC (NULL);
   deleted_bb_preds = BITMAP_ALLOC (NULL);
@@ -764,8 +757,7 @@ static void
 delete_worklist (void)
 {
   free_aux_for_blocks ();
-  htab_delete (same_succ_htab);
-  same_succ_htab = NULL;
+  same_succ_htab.dispose ();
   XDELETEVEC (same_succ_edge_flags);
   same_succ_edge_flags = NULL;
   BITMAP_FREE (deleted_bbs);
@@ -795,7 +787,7 @@ same_succ_flush_bb (basic_block bb)
   same_succ same = BB_SAME_SUCC (bb);
   BB_SAME_SUCC (bb) = NULL;
   if (bitmap_single_bit_set_p (same->bbs))
-    htab_remove_elt_with_hash (same_succ_htab, same, same->hashval);
+    same_succ_htab.remove_elt_with_hash (same, same->hashval);
   else
     bitmap_clear_bit (same->bbs, bb->index);
 }
@@ -868,7 +860,7 @@ update_worklist (void)
       if (same == NULL)
 	same = same_succ_alloc ();
     }
-  same_succ_delete (same);
+  ssa_same_succ_delete (same);
   bitmap_clear (deleted_bb_preds);
 }
 
@@ -1637,7 +1629,7 @@ tail_merge_optimize (unsigned int todo)
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "htab collision / search: %f\n",
-	     htab_collisions (same_succ_htab));
+	     same_succ_htab.collisions ());
 
   if (nr_bbs_removed_total > 0)
     {

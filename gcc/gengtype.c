@@ -1,5 +1,6 @@
 /* Process source files and output type information.
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011,
+   2012
    Free Software Foundation, Inc.
 
    This file is part of GCC.
@@ -89,6 +90,10 @@ static const char *get_file_realbasename (const input_file *);
 
 static int get_prefix_langdir_index (const char *);
 static const char *get_file_langdir (const input_file *);
+
+static void dump_pair (int indent, pair_p p);
+static void dump_type (int indent, type_p p);
+static void dump_type_list (int indent, type_p p);
 
 
 /* Nonzero iff an error has occurred.  */
@@ -166,6 +171,7 @@ dbgprint_count_type_at (const char *fil, int lin, const char *msg, type_p t)
   int nb_types = 0, nb_scalar = 0, nb_string = 0;
   int nb_struct = 0, nb_union = 0, nb_array = 0, nb_pointer = 0;
   int nb_lang_struct = 0, nb_param_struct = 0;
+  int nb_user_struct = 0;
   type_p p = NULL;
   for (p = t; p; p = p->next)
     {
@@ -180,6 +186,9 @@ dbgprint_count_type_at (const char *fil, int lin, const char *msg, type_p t)
 	  break;
 	case TYPE_STRUCT:
 	  nb_struct++;
+	  break;
+	case TYPE_USER_STRUCT:
+	  nb_user_struct++;
 	  break;
 	case TYPE_UNION:
 	  nb_union++;
@@ -211,6 +220,8 @@ dbgprint_count_type_at (const char *fil, int lin, const char *msg, type_p t)
   if (nb_lang_struct > 0 || nb_param_struct > 0)
     fprintf (stderr, "@@%%@@ %d lang_structs, %d param_structs\n",
 	     nb_lang_struct, nb_param_struct);
+  if (nb_user_struct > 0)
+    fprintf (stderr, "@@%%@@ %d user_structs\n", nb_user_struct);
   fprintf (stderr, "\n");
 }
 #endif /* ENABLE_CHECKING */
@@ -539,6 +550,51 @@ do_scalar_typedef (const char *s, struct fileloc *pos)
   do_typedef (s, &scalar_nonchar, pos);
 }
 
+
+/* Define TYPE_NAME to be a user defined type at location POS.  */
+
+static type_p
+create_user_defined_type (const char *type_name, struct fileloc *pos)
+{
+  type_p ty = find_structure (type_name, TYPE_USER_STRUCT);
+  ty->u.s.line = *pos;
+  ty->u.s.bitmap = get_lang_bitmap (pos->file);
+  do_typedef (type_name, ty, pos);
+
+  /* If TYPE_NAME specifies a template, create references to the types
+     in the template by pretending that each type is a field of TY.
+     This is needed to make sure that the types referenced by the
+     template are marked as used.  */
+  char *str = xstrdup (type_name);
+  char *open_bracket = strchr (str, '<');
+  if (open_bracket)
+    {
+      /* We only accept simple template declarations (see
+	 require_template_declaration), so we only need to parse a
+	 comma-separated list of strings, implicitly assumed to
+	 be type names.  */
+      char *arg = open_bracket + 1;
+      char *type_id = strtok (arg, ",>");
+      pair_p fields = 0;
+      while (type_id)
+	{
+	  /* Create a new field for every type found inside the template
+	     parameter list.  */
+	  const char *field_name = xstrdup (type_id);
+	  type_p arg_type = resolve_typedef (field_name, pos);
+	  fields = create_field_at (fields, arg_type, field_name, 0, pos);
+	  type_id = strtok (0, ",>");
+	}
+
+      /* Associate the field list to TY.  */
+      ty->u.s.fields = fields;
+    }
+  free (str);
+
+  return ty;
+}
+
+
 /* Return the type previously defined for S.  Use POS to report errors.  */
 
 type_p
@@ -548,20 +604,27 @@ resolve_typedef (const char *s, struct fileloc *pos)
   for (p = typedefs; p != NULL; p = p->next)
     if (strcmp (p->name, s) == 0)
       return p->type;
-  error_at_line (pos, "unidentified type `%s'", s);
-  return &scalar_nonchar;	/* treat as "int" */
+
+  /* If we did not find a typedef registered, assume this is a name
+     for a user-defined type which will need to provide its own
+     marking functions.  */
+  return create_user_defined_type (s, pos);
 }
 
-/* Create and return a new structure with tag NAME (or a union iff
-   ISUNION is nonzero), at POS with fields FIELDS and options O.  */
+/* Create and return a new structure with tag NAME at POS with fields
+   FIELDS and options O.  The KIND of structure must be one of
+   TYPE_STRUCT, TYPE_UNION or TYPE_USER_STRUCT.  */
 
 type_p
-new_structure (const char *name, int isunion, struct fileloc *pos,
+new_structure (const char *name, enum typekind kind, struct fileloc *pos,
 	       pair_p fields, options_p o)
 {
   type_p si;
   type_p s = NULL;
   lang_bitmap bitmap = get_lang_bitmap (pos->file);
+  bool isunion = (kind == TYPE_UNION);
+
+  gcc_assert (union_or_struct_p (kind));
 
   for (si = structures; si != NULL; si = si->next)
     if (strcmp (name, si->u.s.tag) == 0 && UNION_P (si) == isunion)
@@ -621,7 +684,7 @@ new_structure (const char *name, int isunion, struct fileloc *pos,
       error_at_line (&s->u.s.line, "previous definition here");
     }
 
-  s->kind = isunion ? TYPE_UNION : TYPE_STRUCT;
+  s->kind = kind;
   s->u.s.tag = name;
   s->u.s.line = *pos;
   s->u.s.fields = fields;
@@ -633,14 +696,18 @@ new_structure (const char *name, int isunion, struct fileloc *pos,
   return s;
 }
 
-/* Return the previously-defined structure with tag NAME (or a union
-   iff ISUNION is nonzero), or a new empty structure or union if none
-   was defined previously.  */
+/* Return the previously-defined structure or union with tag NAME,
+   or a new empty structure or union if none was defined previously.
+   The KIND of structure must be one of TYPE_STRUCT, TYPE_UNION or
+   TYPE_USER_STRUCT.  */
 
 type_p
-find_structure (const char *name, int isunion)
+find_structure (const char *name, enum typekind kind)
 {
   type_p s;
+  bool isunion = (kind == TYPE_UNION);
+
+  gcc_assert (union_or_struct_p (kind));
 
   for (s = structures; s != NULL; s = s->next)
     if (strcmp (name, s->u.s.tag) == 0 && UNION_P (s) == isunion)
@@ -651,7 +718,7 @@ find_structure (const char *name, int isunion)
   s->next = structures;
   s->state_number = -type_count;
   structures = s;
-  s->kind = isunion ? TYPE_UNION : TYPE_STRUCT;
+  s->kind = kind;
   s->u.s.tag = name;
   structures = s;
   return s;
@@ -851,7 +918,7 @@ create_optional_field_ (pair_p next, type_p type, const char *name,
   union_fields->opt = 
     create_string_option (union_fields->opt, "tag", "1");
   union_type = 
-    new_structure (xasprintf ("%s_%d", "fake_union", id++), 1,
+    new_structure (xasprintf ("%s_%d", "fake_union", id++), TYPE_UNION,
                    &lexer_line, union_fields, NULL);
 
   /* Create the field and give it the new fake union type.  Add a "desc"
@@ -993,16 +1060,16 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 
   nodot = create_string_option (NULL, "dot", "");
 
-  rtx_tp = create_pointer (find_structure ("rtx_def", 0));
-  rtvec_tp = create_pointer (find_structure ("rtvec_def", 0));
-  tree_tp = create_pointer (find_structure ("tree_node", 1));
-  mem_attrs_tp = create_pointer (find_structure ("mem_attrs", 0));
+  rtx_tp = create_pointer (find_structure ("rtx_def", TYPE_STRUCT));
+  rtvec_tp = create_pointer (find_structure ("rtvec_def", TYPE_STRUCT));
+  tree_tp = create_pointer (find_structure ("tree_node", TYPE_UNION));
+  mem_attrs_tp = create_pointer (find_structure ("mem_attrs", TYPE_STRUCT));
   reg_attrs_tp = 
-    create_pointer (find_structure ("reg_attrs", 0));
+    create_pointer (find_structure ("reg_attrs", TYPE_STRUCT));
   basic_block_tp = 
-    create_pointer (find_structure ("basic_block_def", 0));
+    create_pointer (find_structure ("basic_block_def", TYPE_STRUCT));
   constant_tp =
-    create_pointer (find_structure ("constant_descriptor_rtx", 0));
+    create_pointer (find_structure ("constant_descriptor_rtx", TYPE_STRUCT));
   scalar_tp = &scalar_nonchar;	/* rtunion int */
 
   {
@@ -1042,7 +1109,7 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 	  note_flds->opt = 
 	    create_string_option (nodot, "tag", note_insn_name[c]);
       }
-    note_union_tp = new_structure ("rtx_def_note_subunion", 1,
+    note_union_tp = new_structure ("rtx_def_note_subunion", TYPE_UNION,
 				   &lexer_line, note_flds, NULL);
   }
   /* Create a type to represent the various forms of SYMBOL_REF_DATA.  */
@@ -1052,7 +1119,7 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
     sym_flds->opt = create_string_option (nodot, "default", "");
     sym_flds = create_field (sym_flds, constant_tp, "rt_constant");
     sym_flds->opt = create_string_option (nodot, "tag", "1");
-    symbol_union_tp = new_structure ("rtx_def_symbol_subunion", 1,
+    symbol_union_tp = new_structure ("rtx_def_symbol_subunion", TYPE_UNION,
 				     &lexer_line, sym_flds, NULL);
   }
   for (i = 0; i < NUM_RTX_CODE; i++)
@@ -1185,14 +1252,15 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 	{
 	  /* Add the "block_sym" field if SYMBOL_REF_HAS_BLOCK_INFO_P
 	     holds.  */
-	  type_p field_tp = find_structure ("block_symbol", 0);
+	  type_p field_tp = find_structure ("block_symbol", TYPE_STRUCT);
 	  subfields
 	    = create_optional_field (subfields, field_tp, "block_sym",
 				     "SYMBOL_REF_HAS_BLOCK_INFO_P (&%0)");
 	}
 
       sname = xasprintf ("rtx_def_%s", rtx_name[i]);
-      substruct = new_structure (sname, 0, &lexer_line, subfields, NULL);
+      substruct = new_structure (sname, TYPE_STRUCT, &lexer_line, subfields,
+				 NULL);
 
       ftag = xstrdup (rtx_name[i]);
       for (nmindex = 0; nmindex < strlen (ftag); nmindex++)
@@ -1200,7 +1268,8 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
       flds = create_field (flds, substruct, "");
       flds->opt = create_string_option (nodot, "tag", ftag);
     }
-  return new_structure ("rtx_def_subunion", 1, &lexer_line, flds, nodot);
+  return new_structure ("rtx_def_subunion", TYPE_UNION, &lexer_line, flds,
+			nodot);
 }
 
 /* Handle `special("tree_exp")'.  This is a special case for
@@ -1229,7 +1298,8 @@ adjust_field_tree_exp (type_p t, options_p opt ATTRIBUTE_UNUSED)
 				    "TREE_OPERAND_LENGTH ((tree) &%0)");
   flds->opt = create_string_option (flds->opt, "default", "");
 
-  return new_structure ("tree_exp_subunion", 1, &lexer_line, flds, nodot);
+  return new_structure ("tree_exp_subunion", TYPE_UNION, &lexer_line, flds,
+			nodot);
 }
 
 /* Perform any special processing on a type T, about to become the type
@@ -1275,8 +1345,8 @@ adjust_field_type (type_p t, options_p opt)
       {
 	int num = ISDIGIT (opt->name[5]) ? opt->name[5] - '0' : 0;
 
-	if (!UNION_OR_STRUCT_P (t)
-	    && (t->kind != TYPE_POINTER || !UNION_OR_STRUCT_P (t->u.p)))
+	if (!union_or_struct_p (t)
+	    && (t->kind != TYPE_POINTER || !union_or_struct_p (t->u.p)))
 	  {
 	    error_at_line (&lexer_line,
 			   "option `%s' may only be applied to structures or structure pointers",
@@ -1369,6 +1439,7 @@ set_gc_used_type (type_p t, enum gc_used_enum level, type_p param[NUM_PARAM])
     {
     case TYPE_STRUCT:
     case TYPE_UNION:
+    case TYPE_USER_STRUCT:
       {
 	pair_p f;
 	int dummy;
@@ -1468,7 +1539,7 @@ static outf_p
 create_file (const char *name, const char *oname)
 {
   static const char *const hdr[] = {
-    "   Copyright (C) 2004, 2007, 2009 Free Software Foundation, Inc.\n",
+    "   Copyright (C) 2004, 2007, 2009, 2012 Free Software Foundation, Inc.\n",
     "\n",
     "This file is part of GCC.\n",
     "\n",
@@ -2176,7 +2247,6 @@ close_output_files (void)
 
   for (of = output_files; of; of = of->next)
     {
-
       if (!is_file_equal (of))
 	{
 	  FILE *newfile = NULL;
@@ -2303,8 +2373,37 @@ struct walk_type_data
   bool fn_wants_lvalue;
   bool in_record_p;
   int loopcounter;
+  bool in_ptr_field;
   bool have_this_obj;
 };
+
+
+/* Given a string TYPE_NAME, representing a C++ typename, return a valid
+   pre-processor identifier to use in a #define directive.  This replaces
+   special characters used in C++ identifiers like '>', '<' and ':' with
+   '_'.
+
+   If no C++ special characters are found in TYPE_NAME, return
+   TYPE_NAME.  Otherwise, return a copy of TYPE_NAME with the special
+   characters replaced with '_'.  In this case, the caller is
+   responsible for freeing the allocated string.  */
+
+static const char *
+filter_type_name (const char *type_name)
+{
+  if (strchr (type_name, '<') || strchr (type_name, ':'))
+    {
+      size_t i;
+      char *s = xstrdup (type_name);
+      for (i = 0; i < strlen (s); i++)
+	if (s[i] == '<' || s[i] == '>' || s[i] == ':')
+	  s[i] = '_';
+      return s;
+    }
+  else
+    return type_name;
+}
+
 
 /* Print a mangled name representing T to OF.  */
 
@@ -2332,8 +2431,14 @@ output_mangled_typename (outf_p of, const_type_p t)
       case TYPE_STRUCT:
       case TYPE_UNION:
       case TYPE_LANG_STRUCT:
-	oprintf (of, "%lu%s", (unsigned long) strlen (t->u.s.tag),
-		 t->u.s.tag);
+      case TYPE_USER_STRUCT:
+	{
+	  const char *id_for_tag = filter_type_name (t->u.s.tag);
+	  oprintf (of, "%lu%s", (unsigned long) strlen (id_for_tag),
+		   id_for_tag);
+	  if (id_for_tag != t->u.s.tag)
+	    free (CONST_CAST(char *, id_for_tag));
+	}
 	break;
       case TYPE_PARAM_STRUCT:
 	{
@@ -2389,6 +2494,7 @@ output_escaped_param (struct walk_type_data *d, const char *param,
 			 oname, '%', *p);
 	}
 }
+
 
 /* Call D->PROCESS_FIELD for every field (or subfield) of D->VAL,
    which is of type T.  Write code to D->OF to constrain execution (at
@@ -2470,7 +2576,7 @@ walk_type (type_p t, struct walk_type_data *d)
 
       if (pointer_p)
 	t = t->u.p;
-      if (!UNION_OR_STRUCT_P (t))
+      if (!union_or_struct_p (t))
 	error_at_line (d->line, "`use_params' option on unimplemented type");
       else
 	t = find_param_structure (t, d->param);
@@ -2498,7 +2604,7 @@ walk_type (type_p t, struct walk_type_data *d)
     }
 
   if (maybe_undef_p
-      && (t->kind != TYPE_POINTER || !UNION_OR_STRUCT_P (t->u.p)))
+      && (t->kind != TYPE_POINTER || !union_or_struct_p (t->u.p)))
     {
       error_at_line (d->line,
 		     "field `%s' has invalid option `maybe_undef_p'\n",
@@ -2521,6 +2627,7 @@ walk_type (type_p t, struct walk_type_data *d)
 
     case TYPE_POINTER:
       {
+	d->in_ptr_field = true;
 	if (maybe_undef_p && t->u.p->u.s.line.file == NULL)
 	  {
 	    oprintf (d->of, "%*sgcc_assert (!%s);\n", d->indent, "", d->val);
@@ -2548,7 +2655,7 @@ walk_type (type_p t, struct walk_type_data *d)
 
 	if (!length)
 	  {
-	    if (!UNION_OR_STRUCT_P (t->u.p)
+	    if (!union_or_struct_p (t->u.p)
 		&& t->u.p->kind != TYPE_PARAM_STRUCT)
 	      {
 		error_at_line (d->line,
@@ -2561,7 +2668,7 @@ walk_type (type_p t, struct walk_type_data *d)
 	      {
 		const char *oldprevval2 = d->prev_val[2];
 
-		if (!UNION_OR_STRUCT_P (nested_ptr_d->type))
+		if (!union_or_struct_p (nested_ptr_d->type))
 		  {
 		    error_at_line (d->line,
 				   "field `%s' has invalid "
@@ -2638,6 +2745,7 @@ walk_type (type_p t, struct walk_type_data *d)
 	    d->indent -= 2;
 	    oprintf (d->of, "%*s}\n", d->indent, "");
 	  }
+	d->in_ptr_field = false;
       }
       break;
 
@@ -2921,6 +3029,10 @@ walk_type (type_p t, struct walk_type_data *d)
       }
       break;
 
+    case TYPE_USER_STRUCT:
+      d->process_field (t, d);
+      break;
+
     default:
       gcc_unreachable ();
     }
@@ -2978,7 +3090,7 @@ write_types_process_field (type_p f, const struct walk_type_data *d)
 	      oprintf (d->of, ", gt_e_");
 	      output_mangled_typename (d->of, f);
 	    }
-	  else if (UNION_OR_STRUCT_P (f) && f->u.p->u.s.line.file != NULL)
+	  else if (union_or_struct_p (f) && f->u.p->u.s.line.file != NULL)
 	    {
 	      oprintf (d->of, ", gt_ggc_e_");
 	      output_mangled_typename (d->of, f);
@@ -2998,13 +3110,27 @@ write_types_process_field (type_p f, const struct walk_type_data *d)
     case TYPE_UNION:
     case TYPE_LANG_STRUCT:
     case TYPE_PARAM_STRUCT:
-      oprintf (d->of, "%*sgt_%s_", d->indent, "", wtd->prefix);
-      output_mangled_typename (d->of, f);
-      oprintf (d->of, " (%s%s);\n", cast, d->val);
-      if (d->reorder_fn && wtd->reorder_note_routine)
-	oprintf (d->of, "%*s%s (%s%s, %s%s, %s);\n", d->indent, "",
-		 wtd->reorder_note_routine, cast, d->val, cast, d->val,
-		 d->reorder_fn);
+    case TYPE_USER_STRUCT:
+      if (f->kind == TYPE_USER_STRUCT && !d->in_ptr_field)
+	{
+	  /* If F is a user-defined type and the field is not a
+	     pointer to the type, then we should not generate the
+	     standard pointer-marking code.  All we need to do is call
+	     the user-provided marking function to process the fields
+	     of F.  */
+	  oprintf (d->of, "%*sgt_%sx (&(%s));\n", d->indent, "", wtd->prefix,
+		   d->val);
+	}
+      else
+	{
+	  oprintf (d->of, "%*sgt_%s_", d->indent, "", wtd->prefix);
+	  output_mangled_typename (d->of, f);
+	  oprintf (d->of, " (%s%s);\n", cast, d->val);
+	  if (d->reorder_fn && wtd->reorder_note_routine)
+	    oprintf (d->of, "%*s%s (%s%s, %s%s, %s);\n", d->indent, "",
+		     wtd->reorder_note_routine, cast, d->val, cast, d->val,
+		     d->reorder_fn);
+	}
       break;
 
     case TYPE_SCALAR:
@@ -3025,7 +3151,7 @@ output_type_enum (outf_p of, type_p s)
       oprintf (of, ", gt_e_");
       output_mangled_typename (of, s);
     }
-  else if (UNION_OR_STRUCT_P (s) && s->u.s.line.file != NULL)
+  else if (union_or_struct_p (s) && s->u.s.line.file != NULL)
     {
       oprintf (of, ", gt_ggc_e_");
       output_mangled_typename (of, s);
@@ -3043,13 +3169,13 @@ get_output_file_for_structure (const_type_p s, type_p *param)
   const input_file *fn;
   int i;
 
-  gcc_assert (UNION_OR_STRUCT_P (s));
+  gcc_assert (union_or_struct_p (s));
   fn = s->u.s.line.file;
 
   /* This is a hack, and not the good kind either.  */
   for (i = NUM_PARAM - 1; i >= 0; i--)
     if (param && param[i] && param[i]->kind == TYPE_POINTER
-	&& UNION_OR_STRUCT_P (param[i]->u.p))
+	&& union_or_struct_p (param[i]->u.p))
       fn = param[i]->u.p->u.s.line.file;
 
   /* The call to get_output_file_with_visibility may update fn by
@@ -3057,13 +3183,185 @@ get_output_file_for_structure (const_type_p s, type_p *param)
   return get_output_file_with_visibility (CONST_CAST (input_file*, fn));
 }
 
+
+/* Returns the specifier keyword for a string or union type S, empty string
+   otherwise.  */
+
+static const char *
+get_type_specifier (const type_p s)
+{
+  if (s->kind == TYPE_STRUCT)
+    return "struct ";
+  else if (s->kind == TYPE_LANG_STRUCT)
+    return get_type_specifier (s->u.s.lang_struct);
+  else if (s->kind == TYPE_UNION)
+    return "union ";
+  return "";
+}
+
+
+/* Emits a declaration for type TY (assumed to be a union or a
+   structure) on stream OUT.  */
+
+static void
+write_type_decl (outf_p out, type_p ty)
+{
+  if (union_or_struct_p (ty))
+    oprintf (out, "%s%s", get_type_specifier (ty), ty->u.s.tag);
+  else if (ty->kind == TYPE_SCALAR)
+    {
+      if (ty->u.scalar_is_char)
+	oprintf (out, "const char");
+      else
+	oprintf (out, "void");
+    }
+  else if (ty->kind == TYPE_POINTER)
+    {
+      write_type_decl (out, ty->u.p);
+      oprintf (out, " *");
+    }
+  else if (ty->kind == TYPE_ARRAY)
+    {
+      write_type_decl (out, ty->u.a.p);
+      oprintf (out, " *");
+    }
+  else if (ty->kind == TYPE_STRING)
+    {
+      oprintf (out, "const char *");
+    }
+  else
+    gcc_unreachable ();
+}
+
+
+/* Write on OF the name of the marker function for structure S. PREFIX
+   is the prefix to use (to distinguish ggc from pch markers).  */
+
+static void
+write_marker_function_name (outf_p of, type_p s, const char *prefix)
+{
+  if (union_or_struct_p (s))
+    {
+      const char *id_for_tag = filter_type_name (s->u.s.tag);
+      oprintf (of, "gt_%sx_%s", prefix, id_for_tag);
+      if (id_for_tag != s->u.s.tag)
+	free (CONST_CAST(char *, id_for_tag));
+    }
+  else if (s->kind == TYPE_PARAM_STRUCT)
+    {
+      oprintf (of, "gt_%s_", prefix);
+      output_mangled_typename (of, s);
+    }
+  else
+    gcc_unreachable ();
+}
+
+
+/* Write on OF a user-callable routine to act as an entry point for
+   the marking routine for S, generated by write_func_for_structure.
+   PREFIX is the prefix to use to distinguish ggc and pch markers.  */
+
+static void
+write_user_func_for_structure_ptr (outf_p of, type_p s, const char *prefix)
+{
+  /* Parameterized structures are not supported in user markers. There
+     is no way for the marker function to know which specific type
+     to use to generate the call to the void * entry point.  For
+     instance, a marker for struct htab may need to call different
+     routines to mark the fields, depending on the paramN_is attributes.
+
+     A user-defined marker that accepts 'struct htab' as its argument
+     would not know which variant to call. Generating several entry
+     points accepting 'struct htab' would cause multiply-defined
+     errors during compilation.  */
+  gcc_assert (union_or_struct_p (s));
+
+  type_p alias_of = NULL;
+  for (options_p opt = s->u.s.opt; opt; opt = opt->next)
+    if (strcmp (opt->name, "ptr_alias") == 0)
+      {
+	/* ALIAS_OF is set if ORIG_S is marked "ptr_alias". This means that
+	   we do not generate marking code for ORIG_S here. Instead, a
+	   forwarder #define in gtype-desc.h will cause every call to its
+	   marker to call the target of this alias.
+
+	   However, we still want to create a user entry code for the
+	   aliased type. So, if ALIAS_OF is set, we only generate the
+	   user-callable marker function.  */
+	alias_of = opt->info.type;
+	break;
+      }
+
+  oprintf (of, "\nvoid\n");
+  oprintf (of, "gt_%sx (", prefix);
+  write_type_decl (of, s);
+  oprintf (of, " *& x)\n");
+  oprintf (of, "{\n");
+  oprintf (of, "  if (x)\n    ");
+  write_marker_function_name (of, alias_of ? alias_of : s, prefix);
+  oprintf (of, " ((void *) x);\n");
+  oprintf (of, "}\n");
+}
+
+
+/* Write a function to mark all the fields of type S on OF.  PREFIX
+   and D are as in write_user_marking_functions.  */
+
+static void
+write_user_func_for_structure_body (type_p s, const char *prefix,
+				    struct walk_type_data *d)
+{
+  oprintf (d->of, "\nvoid\n");
+  oprintf (d->of, "gt_%sx (", prefix);
+  write_type_decl (d->of, s);
+  oprintf (d->of, "& x_r ATTRIBUTE_UNUSED)\n");
+  oprintf (d->of, "{\n");
+  oprintf (d->of, "  ");
+  write_type_decl (d->of, s);
+  oprintf (d->of, " * ATTRIBUTE_UNUSED x = &x_r;\n");
+  d->val = "(*x)";
+  d->indent = 2;
+  walk_type (s, d);
+  oprintf (d->of, "}\n");
+}
+
+
+/* Emit the user-callable functions needed to mark all the types used
+   by the user structure S.  PREFIX is the prefix to use to
+   distinguish ggc and pch markers.  D contains data needed to pass to
+   walk_type when traversing the fields of a type.
+
+   For every type T referenced by S, two routines are generated: one
+   that takes 'T *', marks the pointer and calls the second routine,
+   which just marks the fields of T.  */
+
+static void
+write_user_marking_functions (type_p s, const char *prefix,
+			      struct walk_type_data *d)
+{
+  gcc_assert (s->kind == TYPE_USER_STRUCT);
+
+  for (pair_p fld = s->u.s.fields; fld; fld = fld->next)
+    {
+      type_p fld_type = fld->type;
+      if (fld_type->kind == TYPE_POINTER)
+	{
+	  type_p pointed_to_type = fld_type->u.p;
+	  if (union_or_struct_p (pointed_to_type))
+	    write_user_func_for_structure_ptr (d->of, pointed_to_type, prefix);
+	}
+      else if (union_or_struct_p (fld_type))
+	write_user_func_for_structure_body (fld_type, prefix, d);
+    }
+}
+
+
 /* For S, a structure that's part of ORIG_S, and using parameters
    PARAM, write out a routine that:
    - Takes a parameter, a void * but actually of type *S
    - If SEEN_ROUTINE returns nonzero, calls write_types_process_field on each
    field of S or its substructures and (in some cases) things
-   that are pointed to by S.
-*/
+   that are pointed to by S.  */
 
 static void
 write_func_for_structure (type_p orig_s, type_p s, type_p *param,
@@ -3113,22 +3411,19 @@ write_func_for_structure (type_p orig_s, type_p s, type_p *param,
 
   oprintf (d.of, "\n");
   oprintf (d.of, "void\n");
-  if (param == NULL)
-    oprintf (d.of, "gt_%sx_%s", wtd->prefix, orig_s->u.s.tag);
-  else
-    {
-      oprintf (d.of, "gt_%s_", wtd->prefix);
-      output_mangled_typename (d.of, orig_s);
-    }
+  write_marker_function_name (d.of, orig_s, wtd->prefix);
   oprintf (d.of, " (void *x_p)\n");
-  oprintf (d.of, "{\n");
-  oprintf (d.of, "  %s %s * %sx = (%s %s *)x_p;\n",
-	   s->kind == TYPE_UNION ? "union" : "struct", s->u.s.tag,
-	   chain_next == NULL ? "const " : "",
-	   s->kind == TYPE_UNION ? "union" : "struct", s->u.s.tag);
+  oprintf (d.of, "{\n  ");
+  write_type_decl (d.of, s);
+  oprintf (d.of, " * %sx = (", chain_next == NULL ? "const " : "");
+  write_type_decl (d.of, s);
+  oprintf (d.of, " *)x_p;\n");
   if (chain_next != NULL)
-    oprintf (d.of, "  %s %s * xlimit = x;\n",
-	     s->kind == TYPE_UNION ? "union" : "struct", s->u.s.tag);
+    {
+      oprintf (d.of, "  ");
+      write_type_decl (d.of, s);
+      oprintf (d.of, " * xlimit = x;\n");
+    }
   if (chain_next == NULL)
     {
       oprintf (d.of, "  if (%s (x", wtd->marker_routine);
@@ -3211,9 +3506,17 @@ write_func_for_structure (type_p orig_s, type_p s, type_p *param,
     {
       oprintf (d.of, "      %s (x);\n", mark_hook_name);
     }
+  
   d.prev_val[2] = "*x";
   d.indent = 6;
-  walk_type (s, &d);
+  if (orig_s->kind != TYPE_USER_STRUCT)
+    walk_type (s, &d);
+  else
+    {
+      /* User structures have no fields to walk. Simply generate a call
+	 to the user-provided structure marker.  */
+      oprintf (d.of, "%*sgt_%sx (x);\n", d.indent, "", wtd->prefix);
+    }
 
   if (chain_next != NULL)
     {
@@ -3226,7 +3529,11 @@ write_func_for_structure (type_p orig_s, type_p s, type_p *param,
   if (chain_circular != NULL)
     oprintf (d.of, "  while (x != xlimit);\n");
   oprintf (d.of, "}\n");
+
+  if (orig_s->kind == TYPE_USER_STRUCT)
+    write_user_marking_functions (orig_s, wtd->prefix, &d);
 }
+
 
 /* Write out marker routines for STRUCTURES and PARAM_STRUCTS.  */
 
@@ -3238,9 +3545,10 @@ write_types (outf_p output_header, type_p structures, type_p param_structs,
   type_p s;
 
   oprintf (output_header, "\n/* %s*/\n", wtd->comment);
+
   /* We first emit the macros and the declarations. Functions' code is
      emitted afterwards.  This is needed in plugin mode.  */
-  oprintf (output_header, "/* macros and declarations */\n");
+  oprintf (output_header, "/* Macros and declarations.  */\n");
   for (s = structures; s; s = s->next)
     if (s->gc_used == GC_POINTED_TO || s->gc_used == GC_MAYBE_POINTED_TO)
       {
@@ -3249,12 +3557,14 @@ write_types (outf_p output_header, type_p structures, type_p param_structs,
 	if (s->gc_used == GC_MAYBE_POINTED_TO && s->u.s.line.file == NULL)
 	  continue;
 
+	const char *s_id_for_tag = filter_type_name (s->u.s.tag);
+
 	oprintf (output_header, "#define gt_%s_", wtd->prefix);
 	output_mangled_typename (output_header, s);
 	oprintf (output_header, "(X) do { \\\n");
 	oprintf (output_header,
 		 "  if (X != NULL) gt_%sx_%s (X);\\\n", wtd->prefix,
-		 s->u.s.tag);
+		 s_id_for_tag);
 	oprintf (output_header, "  } while (0)\n");
 
 	for (opt = s->u.s.opt; opt; opt = opt->next)
@@ -3264,9 +3574,14 @@ write_types (outf_p output_header, type_p structures, type_p param_structs,
 	      const_type_p const t = (const_type_p) opt->info.type;
 	      if (t->kind == TYPE_STRUCT
 		  || t->kind == TYPE_UNION || t->kind == TYPE_LANG_STRUCT)
-		oprintf (output_header,
-			 "#define gt_%sx_%s gt_%sx_%s\n",
-			 wtd->prefix, s->u.s.tag, wtd->prefix, t->u.s.tag);
+		{
+		  const char *t_id_for_tag = filter_type_name (t->u.s.tag);
+		  oprintf (output_header,
+			   "#define gt_%sx_%s gt_%sx_%s\n",
+			   wtd->prefix, s->u.s.tag, wtd->prefix, t_id_for_tag);
+		  if (t_id_for_tag != t->u.s.tag)
+		    free (CONST_CAST(char *, t_id_for_tag));
+		}
 	      else
 		error_at_line (&s->u.s.line,
 			       "structure alias is not a structure");
@@ -3278,7 +3593,10 @@ write_types (outf_p output_header, type_p structures, type_p param_structs,
 	/* Declare the marker procedure only once.  */
 	oprintf (output_header,
 		 "extern void gt_%sx_%s (void *);\n",
-		 wtd->prefix, s->u.s.tag);
+		 wtd->prefix, s_id_for_tag);
+
+	if (s_id_for_tag != s->u.s.tag)
+	  free (CONST_CAST(char *, s_id_for_tag));
 
 	if (s->u.s.line.file == NULL)
 	  {
@@ -3400,6 +3718,90 @@ static const struct write_types_data pch_wtd = {
 
 /* Write out the local pointer-walking routines.  */
 
+/* process_field routine for local pointer-walking for user-callable
+   routines.  The difference between this and
+   write_types_local_process_field is that, in this case, we do not
+   need to check whether the given pointer matches the address of the
+   parent structure.  This check was already generated by the call
+   to gt_pch_nx in the main gt_pch_p_*() function that is calling
+   this code.  */
+
+static void
+write_types_local_user_process_field (type_p f, const struct walk_type_data *d)
+{
+  switch (f->kind)
+    {
+    case TYPE_POINTER:
+    case TYPE_STRUCT:
+    case TYPE_UNION:
+    case TYPE_LANG_STRUCT:
+    case TYPE_PARAM_STRUCT:
+    case TYPE_STRING:
+      oprintf (d->of, "%*s  op (&(%s), cookie);\n", d->indent, "", d->val);
+      break;
+
+    case TYPE_USER_STRUCT:
+      if (d->in_ptr_field)
+	oprintf (d->of, "%*s  op (&(%s), cookie);\n", d->indent, "", d->val);
+      else
+	oprintf (d->of, "%*s  gt_pch_nx (&(%s), op, cookie);\n",
+		 d->indent, "", d->val);
+      break;
+
+    case TYPE_SCALAR:
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
+
+/* Write a function to PCH walk all the fields of type S on OF.
+   D contains data needed by walk_type to recurse into the fields of S.  */
+
+static void
+write_pch_user_walking_for_structure_body (type_p s, struct walk_type_data *d)
+{
+  oprintf (d->of, "\nvoid\n");
+  oprintf (d->of, "gt_pch_nx (");
+  write_type_decl (d->of, s);
+  oprintf (d->of, "* x ATTRIBUTE_UNUSED,\n"
+	   "\tATTRIBUTE_UNUSED gt_pointer_operator op,\n"
+	   "\tATTRIBUTE_UNUSED void *cookie)\n");
+  oprintf (d->of, "{\n");
+  d->val = "(*x)";
+  d->indent = 2;
+  d->process_field = write_types_local_user_process_field;
+  walk_type (s, d);
+  oprintf (d->of, "}\n");
+}
+
+
+/* Emit the user-callable functions needed to mark all the types used
+   by the user structure S.  PREFIX is the prefix to use to
+   distinguish ggc and pch markers. CHAIN_NEXT is set if S has the
+   chain_next option defined.  D contains data needed to pass to
+   walk_type when traversing the fields of a type.
+
+   For every type T referenced by S, two routines are generated: one
+   that takes 'T *', marks the pointer and calls the second routine,
+   which just marks the fields of T.  */
+
+static void
+write_pch_user_walking_functions (type_p s, struct walk_type_data *d)
+{
+  gcc_assert (s->kind == TYPE_USER_STRUCT);
+
+  for (pair_p fld = s->u.s.fields; fld; fld = fld->next)
+    {
+      type_p fld_type = fld->type;
+      if (union_or_struct_p (fld_type))
+	write_pch_user_walking_for_structure_body (fld_type, d);
+    }
+}
+
+
 /* process_field routine for local pointer-walking.  */
 
 static void
@@ -3419,6 +3821,16 @@ write_types_local_process_field (type_p f, const struct walk_type_data *d)
       oprintf (d->of, "%*s  op (&(%s), cookie);\n", d->indent, "", d->val);
       break;
 
+    case TYPE_USER_STRUCT:
+      oprintf (d->of, "%*sif ((void *)(%s) == this_obj)\n", d->indent, "",
+	       d->prev_val[3]);
+      if (d->in_ptr_field)
+	oprintf (d->of, "%*s  op (&(%s), cookie);\n", d->indent, "", d->val);
+      else
+	oprintf (d->of, "%*s  gt_pch_nx (&(%s), op, cookie);\n",
+		 d->indent, "", d->val);
+      break;
+
     case TYPE_SCALAR:
       break;
 
@@ -3426,6 +3838,7 @@ write_types_local_process_field (type_p f, const struct walk_type_data *d)
       gcc_unreachable ();
     }
 }
+
 
 /* For S, a structure that's part of ORIG_S, and using parameters
    PARAM, write out a routine that:
@@ -3460,13 +3873,29 @@ write_local_func_for_structure (const_type_p orig_s, type_p s, type_p *param)
 	   "\tATTRIBUTE_UNUSED gt_pointer_operator op,\n"
 	   "\tATTRIBUTE_UNUSED void *cookie)\n");
   oprintf (d.of, "{\n");
-  oprintf (d.of, "  %s %s * const x ATTRIBUTE_UNUSED = (%s %s *)x_p;\n",
+  oprintf (d.of, "  %s %s * x ATTRIBUTE_UNUSED = (%s %s *)x_p;\n",
 	   s->kind == TYPE_UNION ? "union" : "struct", s->u.s.tag,
 	   s->kind == TYPE_UNION ? "union" : "struct", s->u.s.tag);
   d.indent = 2;
   d.have_this_obj = true;
-  walk_type (s, &d);
+
+  if (s->kind != TYPE_USER_STRUCT)
+    walk_type (s, &d);
+  else
+    {
+      /* User structures have no fields to walk. Simply generate a
+	 call to the user-provided PCH walker.  */
+      oprintf (d.of, "%*sif ((void *)(%s) == this_obj)\n", d.indent, "",
+	       d.prev_val[3]);
+      oprintf (d.of, "%*s  gt_pch_nx (&(%s), op, cookie);\n",
+	       d.indent, "", d.val);
+    }
+
   oprintf (d.of, "}\n");
+
+  /* Write user-callable entry points for the PCH walking routines.  */
+  if (orig_s->kind == TYPE_USER_STRUCT)
+    write_pch_user_walking_functions (s, &d);
 }
 
 /* Write out local marker routines for STRUCTURES and PARAM_STRUCTS.  */
@@ -3478,6 +3907,7 @@ write_local (outf_p output_header, type_p structures, type_p param_structs)
 
   if (!output_header)
     return;
+
   oprintf (output_header, "\n/* Local pointer-walking routines.  */\n");
   for (s = structures; s; s = s->next)
     if (s->gc_used == GC_POINTED_TO || s->gc_used == GC_MAYBE_POINTED_TO)
@@ -3557,15 +3987,15 @@ write_local (outf_p output_header, type_p structures, type_p param_structs)
 /* Nonzero if S is a type for which typed GC allocators should be output.  */
 
 #define USED_BY_TYPED_GC_P(s)						\
-  (((s->kind == TYPE_POINTER)						\
-    && ((s->u.p->gc_used == GC_POINTED_TO)				\
-	|| (s->u.p->gc_used == GC_USED)))				\
-   || (UNION_OR_STRUCT_P (s) &&						\
-       (((s)->gc_used == GC_POINTED_TO)					\
-	|| ((s)->gc_used == GC_MAYBE_POINTED_TO				\
-	    && s->u.s.line.file != NULL)				\
-	|| ((s)->gc_used == GC_USED					\
-	    && strncmp (s->u.s.tag, "anonymous", strlen ("anonymous"))))))
+  ((s->kind == TYPE_POINTER						\
+    && (s->u.p->gc_used == GC_POINTED_TO				\
+	|| s->u.p->gc_used == GC_USED))					\
+   || (union_or_struct_p (s)   						\
+       && ((s)->gc_used == GC_POINTED_TO				\
+	   || ((s)->gc_used == GC_MAYBE_POINTED_TO			\
+	       && s->u.s.line.file != NULL)				\
+	   || ((s)->gc_used == GC_USED					\
+	       && strncmp (s->u.s.tag, "anonymous", strlen ("anonymous"))))))
 
 
 /* Write out the 'enum' definition for gt_types_enum.  */
@@ -3587,7 +4017,7 @@ write_enum_defn (type_p structures, type_p param_structs)
 	nbstruct++;
 	DBGPRINTF ("write_enum_defn s @ %p nbstruct %d",
 		   (void*) s, nbstruct);
-	if (UNION_OR_STRUCT_P (s))
+	if (union_or_struct_p (s))
 	  DBGPRINTF ("write_enum_defn s %p #%d is unionorstruct tagged %s",
 		     (void*) s, nbstruct, s->u.s.tag);
 	oprintf (header_file, " gt_ggc_e_");
@@ -3873,6 +4303,11 @@ write_root (outf_p f, pair_p v, type_p type, const char *name, int has_length,
       }
       break;
 
+    case TYPE_USER_STRUCT:
+      write_root (f, v, type->u.a.p, name, has_length, line, if_marked,
+		  emit_pch);
+      break;
+
     case TYPE_POINTER:
       {
 	type_p tp;
@@ -3882,13 +4317,16 @@ write_root (outf_p f, pair_p v, type_p type, const char *name, int has_length,
 
 	tp = type->u.p;
 
-	if (!has_length && UNION_OR_STRUCT_P (tp))
+	if (!has_length && union_or_struct_p (tp))
 	  {
-	    oprintf (f, "    &gt_ggc_mx_%s,\n", tp->u.s.tag);
+	    const char *id_for_tag = filter_type_name (tp->u.s.tag);
+	    oprintf (f, "    &gt_ggc_mx_%s,\n", id_for_tag);
 	    if (emit_pch)
-	      oprintf (f, "    &gt_pch_nx_%s", tp->u.s.tag);
+	      oprintf (f, "    &gt_pch_nx_%s", id_for_tag);
 	    else
 	      oprintf (f, "    NULL");
+	    if (id_for_tag != tp->u.s.tag)
+	      free (CONST_CAST(char *, id_for_tag));
 	  }
 	else if (!has_length && tp->kind == TYPE_PARAM_STRUCT)
 	  {
@@ -3903,7 +4341,7 @@ write_root (outf_p f, pair_p v, type_p type, const char *name, int has_length,
 	      oprintf (f, ",\n    NULL");
 	  }
 	else if (has_length
-		 && (tp->kind == TYPE_POINTER || UNION_OR_STRUCT_P (tp)))
+		 && (tp->kind == TYPE_POINTER || union_or_struct_p (tp)))
 	  {
 	    oprintf (f, "    &gt_ggc_ma_%s,\n", name);
 	    if (emit_pch)
@@ -4146,7 +4584,8 @@ write_roots (pair_p variables, bool emit_pch)
 	continue;
       if (v->type->kind != TYPE_POINTER
 	  || v->type->u.p->kind != TYPE_PARAM_STRUCT
-	  || v->type->u.p->u.param_struct.stru != find_structure ("htab", 0))
+	  || v->type->u.p->u.param_struct.stru != find_structure ("htab",
+	                                                          TYPE_STRUCT))
 	{
 	  error_at_line (&v->line,
 			 "if_marked option used but not hash table");
@@ -4249,96 +4688,6 @@ write_roots (pair_p variables, bool emit_pch)
   finish_root_table (flp, "pch_rs", "LAST_GGC_ROOT_TAB", "ggc_root_tab",
 		     "gt_pch_scalar_rtab");
 }
-/* Record the definition of the vec_prefix structure, as defined in vec.h:
-
-   struct vec_prefix GTY(()) {
-   unsigned num;
-   unsigned alloc;
-   };  */
-static type_p
-vec_prefix_type (void)
-{
-  static type_p prefix_type = NULL;
-  if (prefix_type == NULL)
-    {
-      pair_p fields;
-      static struct fileloc pos = { NULL, 0 };
-      type_p len_ty = create_scalar_type ("unsigned");
-      pos.file = input_file_by_name (__FILE__); pos.line = __LINE__;
-      fields = create_field_at (0, len_ty, "alloc", 0, &pos);
-      fields = create_field_at (fields, len_ty, "num", 0, &pos);
-      prefix_type = new_structure ("vec_prefix", 0, &pos, fields, 0);
-      prefix_type->u.s.bitmap = -1;
-    }
-  return prefix_type;
-}
-
-/* Record the definition of a generic VEC structure, as if we had expanded
-   the macros in vec.h:
-
-   typedef struct VEC_<type>_base GTY(()) {
-   struct vec_prefix prefix;
-   <type> GTY((length ("%h.prefix.num"))) vec[1];
-   } VEC_<type>_base
-
-   where the GTY(()) tags are only present if is_scalar is _false_.  */
-
-void
-note_def_vec (const char *type_name, bool is_scalar, struct fileloc *pos)
-{
-  pair_p fields;
-  type_p t;
-  options_p o;
-  const char *name = concat ("VEC_", type_name, "_base", (char *) 0);
-
-  if (is_scalar)
-    {
-      t = create_scalar_type (type_name);
-      o = 0;
-    }
-  else
-    {
-      t = resolve_typedef (type_name, pos);
-      o = create_string_option (0, "length", "%h.prefix.num");
-    }
-  /* We assemble the field list in reverse order.  */
-  fields = create_field_at (0, create_array (t, "1"), "vec", o, pos);
-  fields = create_field_at (fields, vec_prefix_type (), "prefix", 0, pos);
-
-  do_typedef (name, new_structure (name, 0, pos, fields, 0), pos);
-}
-
-/* Record the definition of an allocation-specific VEC structure, as if
-   we had expanded the macros in vec.h:
-
-   typedef struct VEC_<type>_<astrat> {
-     VEC_<type>_base base;
-   } VEC_<type>_<astrat>;
-*/
-void
-note_def_vec_alloc (const char *type, const char *astrat, struct fileloc *pos)
-{
-  const char *astratname = concat ("VEC_", type, "_", astrat, (char *) 0);
-  const char *basename = concat ("VEC_", type, "_base", (char *) 0);
-
-  pair_p field = create_field_at (0, resolve_typedef (basename, pos),
-				  "base", 0, pos);
-
-  do_typedef (astratname, new_structure (astratname, 0, pos, field, 0), pos);
-}
-
-/* Returns the specifier keyword for a string or union type S, empty string
-   otherwise.  */
-
-static const char *
-get_type_specifier (const type_p s)
-{
-  if (s->kind == TYPE_STRUCT || s->kind == TYPE_LANG_STRUCT)
-    return "struct ";
-  if (s->kind == TYPE_UNION)
-    return "union ";
-  return "";
-}
 
 /* TRUE if type S has the GTY variable_size annotation.  */
 
@@ -4375,7 +4724,8 @@ write_typed_alloc_def (outf_p f,
   bool third_arg = ((zone == specific_zone)
 		    && (variable_size || (quantity == vector)));
   gcc_assert (f != NULL);
-  oprintf (f, "#define ggc_alloc_%s%s", allocator_type, type_name);
+  const char *type_name_as_id = filter_type_name (type_name);
+  oprintf (f, "#define ggc_alloc_%s%s", allocator_type, type_name_as_id);
   oprintf (f, "(%s%s%s%s%s) ",
 	   (variable_size ? "SIZE" : ""),
 	   (two_args ? ", " : ""),
@@ -4392,6 +4742,8 @@ write_typed_alloc_def (outf_p f,
   if (quantity == vector)
     oprintf (f, ", n");
   oprintf (f, " MEM_STAT_INFO)))\n");
+  if (type_name_as_id != type_name)
+    free (CONST_CAST(char *, type_name_as_id));
 }
 
 /* Writes a typed allocator definition into output F for a struct or
@@ -4403,7 +4755,7 @@ write_typed_struct_alloc_def (outf_p f,
 			      enum alloc_quantity quantity,
 			      enum alloc_zone zone)
 {
-  gcc_assert (UNION_OR_STRUCT_P (s));
+  gcc_assert (union_or_struct_p (s));
   write_typed_alloc_def (f, variable_size_p (s), get_type_specifier (s),
                          s->u.s.tag, allocator_type, quantity, zone);
 }
@@ -4438,7 +4790,7 @@ write_typed_alloc_defns (outf_p f,
     {
       if (!USED_BY_TYPED_GC_P (s))
 	continue;
-      gcc_assert (UNION_OR_STRUCT_P (s));
+      gcc_assert (union_or_struct_p (s));
       /* In plugin mode onput output ggc_alloc macro definitions
 	 relevant to plugin input files.  */
       if (nb_plugin_files > 0 
@@ -4502,6 +4854,7 @@ output_typename (outf_p of, const_type_p t)
       output_typename (of, t->u.p);
       break;
     case TYPE_STRUCT:
+    case TYPE_USER_STRUCT:
     case TYPE_UNION:
     case TYPE_LANG_STRUCT:
       oprintf (of, "%s", t->u.s.tag);
@@ -4560,10 +4913,6 @@ write_splay_tree_allocators (const_type_p param_structs)
       }
 }
 
-static void dump_pair (int indent, pair_p p);
-static void dump_type (int indent, type_p p);
-static void dump_type_list (int indent, type_p p);
-
 #define INDENT 2
 
 /* Dumps the value of typekind KIND.  */
@@ -4582,6 +4931,9 @@ dump_typekind (int indent, enum typekind kind)
       break;
     case TYPE_STRUCT:
       printf ("TYPE_STRUCT");
+      break;
+    case TYPE_USER_STRUCT:
+      printf ("TYPE_USER_STRUCT");
       break;
     case TYPE_UNION:
       printf ("TYPE_UNION");
@@ -4678,8 +5030,7 @@ dump_type_u_s (int indent, type_p t)
 {
   pair_p fields;
 
-  gcc_assert (t->kind == TYPE_STRUCT || t->kind == TYPE_UNION
-	      || t->kind == TYPE_LANG_STRUCT);
+  gcc_assert (union_or_struct_p (t));
   printf ("%*cu.s.tag = %s\n", indent, ' ', t->u.s.tag);
   dump_fileloc (indent, t->u.s.line);
   printf ("%*cu.s.fields =\n", indent, ' ');
@@ -4750,6 +5101,9 @@ dump_type (int indent, type_p t)
 {
   PTR *slot;
 
+  if (seen_types == NULL)
+    seen_types = htab_create (100, htab_hash_pointer, htab_eq_pointer, NULL);
+
   printf ("%*cType at %p: ", indent, ' ', (void *) t);
   slot = htab_find_slot (seen_types, t, INSERT);
   if (*slot != NULL)
@@ -4775,6 +5129,7 @@ dump_type (int indent, type_p t)
     case TYPE_STRUCT:
     case TYPE_UNION:
     case TYPE_LANG_STRUCT:
+    case TYPE_USER_STRUCT:
       dump_type_u_s (indent + INDENT, t);
       break;
     case TYPE_POINTER:
@@ -4834,11 +5189,12 @@ dump_structures (const char *name, type_p structures)
 static void
 dump_everything (void)
 {
-  seen_types = htab_create (100, htab_hash_pointer, htab_eq_pointer, NULL);
   dump_pair_list ("typedefs", typedefs);
   dump_structures ("structures", structures);
   dump_structures ("param_structs", param_structs);
   dump_pair_list ("variables", variables);
+
+  /* Allocated with the first call to dump_type.  */
   htab_delete (seen_types);
 }
 

@@ -295,7 +295,7 @@ typeid_ok_p (void)
     }
 
   pseudo_type_info
-    = VEC_index (tinfo_s, tinfo_descs, TK_TYPE_INFO_TYPE)->type;
+    = VEC_index (tinfo_s, tinfo_descs, TK_TYPE_INFO_TYPE).type;
   type_info_type = TYPE_MAIN_VARIANT (const_type_info_type_node);
 
   /* Make sure abi::__type_info_pseudo has the same alias set
@@ -422,7 +422,7 @@ get_tinfo_decl (tree type)
   if (!d)
     {
       int ix = get_pseudo_ti_index (type);
-      tinfo_s *ti = VEC_index (tinfo_s, tinfo_descs, ix);
+      tinfo_s *ti = &VEC_index (tinfo_s, tinfo_descs, ix);
 
       d = build_lang_decl (VAR_DECL, name, ti->type);
       SET_DECL_ASSEMBLER_NAME (d, name);
@@ -1079,7 +1079,7 @@ typeinfo_in_lib_p (tree type)
 static tree
 get_pseudo_ti_init (tree type, unsigned tk_index)
 {
-  tinfo_s *ti = VEC_index (tinfo_s, tinfo_descs, tk_index);
+  tinfo_s *ti = &VEC_index (tinfo_s, tinfo_descs, tk_index);
 
   gcc_assert (at_eof);
   switch (tk_index)
@@ -1105,7 +1105,7 @@ get_pseudo_ti_init (tree type, unsigned tk_index)
 	tree tinfo = get_tinfo_ptr (BINFO_TYPE (base_binfo));
 
 	/* get_tinfo_ptr might have reallocated the tinfo_descs vector.  */
-	ti = VEC_index (tinfo_s, tinfo_descs, tk_index);
+	ti = &VEC_index (tinfo_s, tinfo_descs, tk_index);
 	return class_initializer (ti, type, 1, tinfo);
       }
 
@@ -1160,14 +1160,14 @@ get_pseudo_ti_init (tree type, unsigned tk_index)
 	    CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, tinfo);
 	    CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, offset);
 	    base_init = build_constructor (init_list_type_node, v);
-	    e = VEC_index (constructor_elt, init_vec, ix);
+	    e = &VEC_index (constructor_elt, init_vec, ix);
 	    e->index = NULL_TREE;
 	    e->value = base_init;
 	  }
 	base_inits = build_constructor (init_list_type_node, init_vec);
 
 	/* get_tinfo_ptr might have reallocated the tinfo_descs vector.  */
-	ti = VEC_index (tinfo_s, tinfo_descs, tk_index);
+	ti = &VEC_index (tinfo_s, tinfo_descs, tk_index);
 	return class_initializer (ti, type, 3,
 				  build_int_cst (NULL_TREE, hint),
 				  build_int_cst (NULL_TREE, nbases),
@@ -1214,7 +1214,7 @@ create_pseudo_type_info (int tk, const char *real_name, ...)
   fields = build_decl (input_location,
 		       FIELD_DECL, NULL_TREE,
 		       VEC_index (tinfo_s, tinfo_descs,
-				  TK_TYPE_INFO_TYPE)->type);
+				  TK_TYPE_INFO_TYPE).type);
 
   /* Now add the derived fields.  */
   while ((field_decl = va_arg (ap, tree)))
@@ -1228,7 +1228,7 @@ create_pseudo_type_info (int tk, const char *real_name, ...)
   finish_builtin_struct (pseudo_type, pseudo_name, fields, NULL_TREE);
   CLASSTYPE_AS_BASE (pseudo_type) = pseudo_type;
 
-  ti = VEC_index (tinfo_s, tinfo_descs, tk);
+  ti = &VEC_index (tinfo_s, tinfo_descs, tk);
   ti->type = cp_build_qualified_type (pseudo_type, TYPE_QUAL_CONST);
   ti->name = get_identifier (real_name);
   ti->vtable = NULL_TREE;
@@ -1321,7 +1321,7 @@ get_pseudo_ti_index (tree type)
 		  while (VEC_iterate (tinfo_s, tinfo_descs, len++, ti))
 		    ti->type = ti->vtable = ti->name = NULL_TREE;
 		}
-	      else if (VEC_index (tinfo_s, tinfo_descs, ix)->type)
+	      else if (VEC_index (tinfo_s, tinfo_descs, ix).type)
 		/* already created.  */
 		break;
 
@@ -1335,7 +1335,7 @@ get_pseudo_ti_index (tree type)
 		array_domain = build_index_type (size_int (num_bases));
 	      base_array =
 		build_array_type (VEC_index (tinfo_s, tinfo_descs,
-					     TK_BASE_TYPE)->type,
+					     TK_BASE_TYPE).type,
 				  array_domain);
 
 	      push_abi_namespace ();
@@ -1387,7 +1387,7 @@ create_tinfo_types (void)
     DECL_CHAIN (field) = fields;
     fields = field;
 
-    ti = VEC_index (tinfo_s, tinfo_descs, TK_TYPE_INFO_TYPE);
+    ti = &VEC_index (tinfo_s, tinfo_descs, TK_TYPE_INFO_TYPE);
     ti->type = make_class_type (RECORD_TYPE);
     ti->vtable = NULL_TREE;
     ti->name = NULL_TREE;
@@ -1427,7 +1427,7 @@ create_tinfo_types (void)
     DECL_CHAIN (field) = fields;
     fields = field;
 
-    ti = VEC_index (tinfo_s, tinfo_descs, TK_BASE_TYPE);
+    ti = &VEC_index (tinfo_s, tinfo_descs, TK_BASE_TYPE);
 
     ti->type = make_class_type (RECORD_TYPE);
     ti->vtable = NULL_TREE;

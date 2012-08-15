@@ -765,8 +765,8 @@ DEF_VEC_ALLOC_O (sel_insn_data_def, heap);
 extern VEC (sel_insn_data_def, heap) *s_i_d;
 
 /* Accessor macros for s_i_d.  */
-#define SID(INSN) (VEC_index (sel_insn_data_def, s_i_d,	INSN_LUID (INSN)))
-#define SID_BY_UID(UID) (VEC_index (sel_insn_data_def, s_i_d,	LUID_BY_UID (UID)))
+#define SID(INSN) (&VEC_index (sel_insn_data_def, s_i_d,	INSN_LUID (INSN)))
+#define SID_BY_UID(UID) (&VEC_index (sel_insn_data_def, s_i_d,	LUID_BY_UID (UID)))
 
 extern sel_insn_data_def insn_sid (insn_t);
 
@@ -897,7 +897,7 @@ extern void sel_finish_global_bb_info (void);
 
 /* Get data for BB.  */
 #define SEL_GLOBAL_BB_INFO(BB)					\
-  (VEC_index (sel_global_bb_info_def, sel_global_bb_info, (BB)->index))
+  (&VEC_index (sel_global_bb_info_def, sel_global_bb_info, (BB)->index))
 
 /* Access macros.  */
 #define BB_LV_SET(BB) (SEL_GLOBAL_BB_INFO (BB)->lv_set)
@@ -927,8 +927,8 @@ DEF_VEC_ALLOC_O (sel_region_bb_info_def, heap);
 extern VEC (sel_region_bb_info_def, heap) *sel_region_bb_info;
 
 /* Get data for BB.  */
-#define SEL_REGION_BB_INFO(BB) (VEC_index (sel_region_bb_info_def,	\
-					   sel_region_bb_info, (BB)->index))
+#define SEL_REGION_BB_INFO(BB) (&VEC_index (sel_region_bb_info_def,	\
+					    sel_region_bb_info, (BB)->index))
 
 /* Get BB's note_list.
    A note_list is a list of various notes that was scattered across BB
