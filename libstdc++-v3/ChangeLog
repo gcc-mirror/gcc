@@ -1,3 +1,13 @@
+2012-08-15  Tom Tromey  <tromey@redhat.com>
+
+	* testsuite/libstdc++-prettyprinters/cxx11.cc (struct datum):
+	New.
+	(global): New global.
+	(main): Add test for unique_ptr.
+	* python/libstdcxx/v6/printers.py
+	(UniquePointerPrinter.to_string): Extract the pointer and also
+	print its type.
+
 2012-08-13  David Adler  <d.adler.s@gmail.com>
 
 	PR libstdc++/54185

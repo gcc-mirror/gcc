@@ -48,6 +48,14 @@ use(const T &container)
     placeholder(*i);
 }
 
+struct datum
+{
+  std::string s;
+  int i;
+};
+
+std::unique_ptr<datum> global;
+
 int
 main()
 {
@@ -86,6 +94,11 @@ main()
   uoms.insert(5);
 // { dg-final { note-test uoms {std::unordered_multiset with 1 elements = {[0] = 5}} } }
 
+  std::unique_ptr<datum> uptr (new datum);
+  uptr->s = "hi bob";
+  uptr->i = 23;
+// { dg-final { regexp-test uptr {std::unique_ptr.datum. containing 0x.*} } }
+
   placeholder(""); // Mark SPOT
   use(efl);
   use(fl);
@@ -93,6 +106,8 @@ main()
   use(eumm);
   use(eus);
   use(eums);
+  use(uoms);
+  use(uptr->s);
 
   return 0;
 }
