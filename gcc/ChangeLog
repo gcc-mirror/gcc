@@ -1,5 +1,11 @@
 2012-08-15  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
+	* config/arm/neon.md (neon_vaba<mode> VDQIW): Canonicalize
+	operands.
+	(neon_vabal<mode> VDQIW): Likewise.
+
+2012-08-15  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
 	PR target/54212
 	* config/arm/neon.md (vec_set<mode>_internal VD,VQ): Do not
 	mark as predicable. Adjust asm template.
