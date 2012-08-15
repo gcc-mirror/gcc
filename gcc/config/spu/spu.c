@@ -53,6 +53,7 @@
 #include "timevar.h"
 #include "df.h"
 #include "dumpfile.h"
+#include "cfgloop.h"
 
 /* Builtin types, data and prototypes. */
 
@@ -2458,6 +2459,10 @@ spu_machine_dependent_reorg (void)
   in_spu_reorg = 1;
   compute_bb_for_insn ();
 
+  /* (Re-)discover loops so that bb->loop_father can be used
+     in the analysis below.  */
+  loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
+
   compact_blocks ();
 
   spu_bb_info =
@@ -2562,14 +2567,13 @@ spu_machine_dependent_reorg (void)
 	     fallthru block. This catches the cases when it is a simple
 	     loop or when there is an initial branch into the loop. */
 	  if (prev && (loop_exit || simple_loop)
-	      && prev->loop_depth <= bb->loop_depth)
+	      && bb_loop_depth (prev) <= bb_loop_depth (bb))
 	    prop = prev;
 
 	  /* If there is only one adjacent predecessor.  Don't propagate
-	     outside this loop.  This loop_depth test isn't perfect, but
-	     I'm not sure the loop_father member is valid at this point.  */
+	     outside this loop.  */
 	  else if (prev && single_pred_p (bb)
-		   && prev->loop_depth == bb->loop_depth)
+		   && prev->loop_father == bb->loop_father)
 	    prop = prev;
 
 	  /* If this is the JOIN block of a simple IF-THEN then
@@ -2578,7 +2582,7 @@ spu_machine_dependent_reorg (void)
 		   && EDGE_COUNT (bb->preds) == 2
 		   && EDGE_COUNT (prev->preds) == 1
 		   && EDGE_PRED (prev, 0)->src == prev2
-		   && prev2->loop_depth == bb->loop_depth
+		   && prev2->loop_father == bb->loop_father
 		   && GET_CODE (branch_target) != REG)
 	    prop = prev;
 
@@ -2600,7 +2604,7 @@ spu_machine_dependent_reorg (void)
 	      if (dump_file)
 		fprintf (dump_file, "propagate from %i to %i (loop depth %i) "
 			 "for %i (loop_exit %i simple_loop %i dist %i)\n",
-			 bb->index, prop->index, bb->loop_depth,
+			 bb->index, prop->index, bb_loop_depth (bb),
 			 INSN_UID (branch), loop_exit, simple_loop,
 			 branch_addr - INSN_ADDRESSES (INSN_UID (bbend)));
 
@@ -2656,6 +2660,8 @@ spu_machine_dependent_reorg (void)
       }
 
   spu_var_tracking ();
+
+  loop_optimizer_finalize ();
 
   free_bb_for_insn ();
 
