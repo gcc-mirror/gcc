@@ -716,7 +716,7 @@ double_int::sext (unsigned prec) const
 /* Returns true if CST fits in signed HOST_WIDE_INT.  */
 
 bool
-double_int::fits_signed () const
+double_int::fits_shwi () const
 {
   const double_int &cst = *this;
   if (cst.high == 0)
@@ -731,12 +731,12 @@ double_int::fits_signed () const
    unsigned HOST_WIDE_INT if UNS is true.  */
 
 bool
-double_int::fits (bool uns) const
+double_int::fits_hwi (bool uns) const
 {
   if (uns)
-    return this->fits_unsigned ();
+    return this->fits_uhwi ();
   else
-    return this->fits_signed ();
+    return this->fits_shwi ();
 }
 
 /* Returns A * B.  */

@@ -60,8 +60,8 @@ public:
      Second, the GCC conding conventions prefer explicit conversion,
      and explicit conversion operators are not available until C++11.  */
 
-  static double_int from_unsigned (unsigned HOST_WIDE_INT cst);
-  static double_int from_signed (HOST_WIDE_INT cst);
+  static double_int from_uhwi (unsigned HOST_WIDE_INT cst);
+  static double_int from_shwi (HOST_WIDE_INT cst);
 
   /* No copy assignment operator or destructor to keep the type a POD.  */
 
@@ -83,14 +83,14 @@ public:
 
   /* Conversion functions.  */
 
-  HOST_WIDE_INT to_signed () const;
-  unsigned HOST_WIDE_INT to_unsigned () const;
+  HOST_WIDE_INT to_shwi () const;
+  unsigned HOST_WIDE_INT to_uhwi () const;
 
   /* Conversion query functions.  */
 
-  bool fits_unsigned () const;
-  bool fits_signed () const;
-  bool fits (bool uns) const;
+  bool fits_uhwi () const;
+  bool fits_shwi () const;
+  bool fits_hwi (bool uns) const;
 
   /* Attribute query functions.  */
 
@@ -186,7 +186,7 @@ public:
    HOST_WIDE_INT are filled with the sign bit.  */
 
 inline
-double_int double_int::from_signed (HOST_WIDE_INT cst)
+double_int double_int::from_shwi (HOST_WIDE_INT cst)
 {
   double_int r;
   r.low = (unsigned HOST_WIDE_INT) cst;
@@ -198,7 +198,7 @@ double_int double_int::from_signed (HOST_WIDE_INT cst)
 static inline double_int
 shwi_to_double_int (HOST_WIDE_INT cst)
 {
-  return double_int::from_signed (cst);
+  return double_int::from_shwi (cst);
 }
 
 /* Some useful constants.  */
@@ -206,17 +206,17 @@ shwi_to_double_int (HOST_WIDE_INT cst)
    The problem is that a named constant would not be as optimizable,
    while the functional syntax is more verbose.  */
 
-#define double_int_minus_one (double_int::from_signed (-1))
-#define double_int_zero (double_int::from_signed (0))
-#define double_int_one (double_int::from_signed (1))
-#define double_int_two (double_int::from_signed (2))
-#define double_int_ten (double_int::from_signed (10))
+#define double_int_minus_one (double_int::from_shwi (-1))
+#define double_int_zero (double_int::from_shwi (0))
+#define double_int_one (double_int::from_shwi (1))
+#define double_int_two (double_int::from_shwi (2))
+#define double_int_ten (double_int::from_shwi (10))
 
 /* Constructs double_int from unsigned integer CST.  The bits over the
    precision of HOST_WIDE_INT are filled with zeros.  */
 
 inline
-double_int double_int::from_unsigned (unsigned HOST_WIDE_INT cst)
+double_int double_int::from_uhwi (unsigned HOST_WIDE_INT cst)
 {
   double_int r;
   r.low = cst;
@@ -228,7 +228,7 @@ double_int double_int::from_unsigned (unsigned HOST_WIDE_INT cst)
 static inline double_int
 uhwi_to_double_int (unsigned HOST_WIDE_INT cst)
 {
-  return double_int::from_unsigned (cst);
+  return double_int::from_uhwi (cst);
 }
 
 inline double_int &
@@ -270,7 +270,7 @@ double_int::operator -= (double_int b)
    double_int::fits_signed.  */
 
 inline HOST_WIDE_INT
-double_int::to_signed () const
+double_int::to_shwi () const
 {
   return (HOST_WIDE_INT) low;
 }
@@ -279,14 +279,14 @@ double_int::to_signed () const
 static inline HOST_WIDE_INT
 double_int_to_shwi (double_int cst)
 {
-  return cst.to_signed ();
+  return cst.to_shwi ();
 }
 
 /* Returns value of CST as an unsigned number.  CST must satisfy
    double_int::fits_unsigned.  */
 
 inline unsigned HOST_WIDE_INT
-double_int::to_unsigned () const
+double_int::to_uhwi () const
 {
   return low;
 }
@@ -295,13 +295,13 @@ double_int::to_unsigned () const
 static inline unsigned HOST_WIDE_INT
 double_int_to_uhwi (double_int cst)
 {
-  return cst.to_unsigned ();
+  return cst.to_uhwi ();
 }
 
 /* Returns true if CST fits in unsigned HOST_WIDE_INT.  */
 
 inline bool
-double_int::fits_unsigned () const
+double_int::fits_uhwi () const
 {
   return high == 0;
 }
@@ -310,7 +310,7 @@ double_int::fits_unsigned () const
 static inline bool
 double_int_fits_in_uhwi_p (double_int cst)
 {
-  return cst.fits_unsigned ();
+  return cst.fits_uhwi ();
 }
 
 /* Returns true if CST fits in signed HOST_WIDE_INT.  */
@@ -319,14 +319,14 @@ double_int_fits_in_uhwi_p (double_int cst)
 inline bool
 double_int_fits_in_shwi_p (double_int cst)
 {
-  return cst.fits_signed ();
+  return cst.fits_shwi ();
 }
 
 /* FIXME(crowl): Remove after converting callers.  */
 inline bool
 double_int_fits_in_hwi_p (double_int cst, bool uns)
 {
-  return cst.fits (uns);
+  return cst.fits_hwi (uns);
 }
 
 /* The following operations perform arithmetics modulo 2^precision,
