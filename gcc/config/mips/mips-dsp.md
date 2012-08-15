@@ -135,7 +135,7 @@
 	  (unspec:CCDSP [(match_dup 1) (match_dup 2)] UNSPEC_ADDQ))])]
   "ISA_HAS_DSP"
   "add<DSPV:dspfmt1>.<DSPV:dspfmt2>\t%0,%1,%2"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"dspalu")
    (set_attr "mode"	"SI")])
 
 (define_insn "mips_add<DSP:dspfmt1>_s_<DSP:dspfmt2>"
@@ -148,7 +148,7 @@
 	  (unspec:CCDSP [(match_dup 1) (match_dup 2)] UNSPEC_ADDQ_S))])]
   "ISA_HAS_DSP"
   "add<DSP:dspfmt1>_s.<DSP:dspfmt2>\t%0,%1,%2"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"dspalusat")
    (set_attr "mode"	"SI")])
 
 ;; SUBQ*
@@ -161,7 +161,7 @@
 	  (unspec:CCDSP [(match_dup 1) (match_dup 2)] UNSPEC_SUBQ))])]
   "ISA_HAS_DSP"
   "sub<DSPV:dspfmt1>.<DSPV:dspfmt2>\t%0,%1,%2"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"dspalu")
    (set_attr "mode"	"SI")])
 
 (define_insn "mips_sub<DSP:dspfmt1>_s_<DSP:dspfmt2>"
@@ -174,7 +174,7 @@
 	  (unspec:CCDSP [(match_dup 1) (match_dup 2)] UNSPEC_SUBQ_S))])]
   "ISA_HAS_DSP"
   "sub<DSP:dspfmt1>_s.<DSP:dspfmt2>\t%0,%1,%2"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"dspalusat")
    (set_attr "mode"	"SI")])
 
 ;; ADDSC
@@ -188,7 +188,7 @@
 	  (unspec:CCDSP [(match_dup 1) (match_dup 2)] UNSPEC_ADDSC))])]
   "ISA_HAS_DSP"
   "addsc\t%0,%1,%2"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"dspalu")
    (set_attr "mode"	"SI")])
 
 ;; ADDWC
@@ -203,7 +203,7 @@
 	  (unspec:CCDSP [(match_dup 1) (match_dup 2)] UNSPEC_ADDWC))])]
   "ISA_HAS_DSP"
   "addwc\t%0,%1,%2"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"dspalu")
    (set_attr "mode"	"SI")])
 
 ;; MODSUB
@@ -214,7 +214,7 @@
 		   UNSPEC_MODSUB))]
   "ISA_HAS_DSP"
   "modsub\t%0,%1,%2"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"dspalu")
    (set_attr "mode"	"SI")])
 
 ;; RADDU*
@@ -224,7 +224,7 @@
 		   UNSPEC_RADDU_W_QB))]
   "ISA_HAS_DSP"
   "raddu.w.qb\t%0,%1"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"dspalu")
    (set_attr "mode"	"SI")])
 
 ;; ABSQ*
@@ -237,7 +237,7 @@
 	  (unspec:CCDSP [(match_dup 1)] UNSPEC_ABSQ_S))])]
   "ISA_HAS_DSP"
   "absq_s.<DSPQ:dspfmt2>\t%0,%1"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"dspalusat")
    (set_attr "mode"	"SI")])
 
 ;; PRECRQ*
@@ -248,7 +248,7 @@
 		     UNSPEC_PRECRQ_QB_PH))]
   "ISA_HAS_DSP"
   "precrq.qb.ph\t%0,%1,%2"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"dspalu")
    (set_attr "mode"	"SI")])
 
 (define_insn "mips_precrq_ph_w"
@@ -258,7 +258,7 @@
 		     UNSPEC_PRECRQ_PH_W))]
   "ISA_HAS_DSP"
   "precrq.ph.w\t%0,%1,%2"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"dspalu")
    (set_attr "mode"	"SI")])
 
 (define_insn "mips_precrq_rs_ph_w"
@@ -272,7 +272,7 @@
 			UNSPEC_PRECRQ_RS_PH_W))])]
   "ISA_HAS_DSP"
   "precrq_rs.ph.w\t%0,%1,%2"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"dspalu")
    (set_attr "mode"	"SI")])
 
 ;; PRECRQU*
@@ -287,7 +287,7 @@
 			UNSPEC_PRECRQU_S_QB_PH))])]
   "ISA_HAS_DSP"
   "precrqu_s.qb.ph\t%0,%1,%2"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"dspalusat")
    (set_attr "mode"	"SI")])
 
 ;; PRECEQ*
@@ -297,7 +297,7 @@
 		   UNSPEC_PRECEQ_W_PHL))]
   "ISA_HAS_DSP"
   "preceq.w.phl\t%0,%1"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"dspalu")
    (set_attr "mode"	"SI")])
 
 (define_insn "mips_preceq_w_phr"
@@ -306,7 +306,7 @@
 		   UNSPEC_PRECEQ_W_PHR))]
   "ISA_HAS_DSP"
   "preceq.w.phr\t%0,%1"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"dspalu")
    (set_attr "mode"	"SI")])
 
 ;; PRECEQU*
@@ -316,7 +316,7 @@
 		     UNSPEC_PRECEQU_PH_QBL))]
   "ISA_HAS_DSP"
   "precequ.ph.qbl\t%0,%1"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"dspalu")
    (set_attr "mode"	"SI")])
 
 (define_insn "mips_precequ_ph_qbr"
@@ -325,7 +325,7 @@
 		     UNSPEC_PRECEQU_PH_QBR))]
   "ISA_HAS_DSP"
   "precequ.ph.qbr\t%0,%1"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"dspalu")
    (set_attr "mode"	"SI")])
 
 (define_insn "mips_precequ_ph_qbla"
@@ -334,7 +334,7 @@
 		     UNSPEC_PRECEQU_PH_QBLA))]
   "ISA_HAS_DSP"
   "precequ.ph.qbla\t%0,%1"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"dspalu")
    (set_attr "mode"	"SI")])
 
 (define_insn "mips_precequ_ph_qbra"
@@ -343,7 +343,7 @@
 		     UNSPEC_PRECEQU_PH_QBRA))]
   "ISA_HAS_DSP"
   "precequ.ph.qbra\t%0,%1"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"dspalu")
    (set_attr "mode"	"SI")])
 
 ;; PRECEU*
@@ -353,7 +353,7 @@
 		     UNSPEC_PRECEU_PH_QBL))]
   "ISA_HAS_DSP"
   "preceu.ph.qbl\t%0,%1"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"dspalu")
    (set_attr "mode"	"SI")])
 
 (define_insn "mips_preceu_ph_qbr"
@@ -362,7 +362,7 @@
 		     UNSPEC_PRECEU_PH_QBR))]
   "ISA_HAS_DSP"
   "preceu.ph.qbr\t%0,%1"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"dspalu")
    (set_attr "mode"	"SI")])
 
 (define_insn "mips_preceu_ph_qbla"
@@ -371,7 +371,7 @@
 		     UNSPEC_PRECEU_PH_QBLA))]
   "ISA_HAS_DSP"
   "preceu.ph.qbla\t%0,%1"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"dspalu")
    (set_attr "mode"	"SI")])
 
 (define_insn "mips_preceu_ph_qbra"
@@ -380,7 +380,7 @@
 		     UNSPEC_PRECEU_PH_QBRA))]
   "ISA_HAS_DSP"
   "preceu.ph.qbra\t%0,%1"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"dspalu")
    (set_attr "mode"	"SI")])
 
 ;; Table 2-2. MIPS DSP ASE Instructions: Shift
@@ -404,7 +404,7 @@
     }
   return "shllv.<DSPV:dspfmt2>\t%0,%1,%2";
 }
-  [(set_attr "type"	"shift")
+  [(set_attr "type"	"dspalu")
    (set_attr "mode"	"SI")])
 
 (define_insn "mips_shll_s_<DSPQ:dspfmt2>"
@@ -426,7 +426,7 @@
     }
   return "shllv_s.<DSPQ:dspfmt2>\t%0,%1,%2";
 }
-  [(set_attr "type"	"shift")
+  [(set_attr "type"	"dspalusat")
    (set_attr "mode"	"SI")])
 
 ;; SHRL*
@@ -445,7 +445,7 @@
     }
   return "shrlv.qb\t%0,%1,%2";
 }
-  [(set_attr "type"	"shift")
+  [(set_attr "type"	"dspalu")
    (set_attr "mode"	"SI")])
 
 ;; SHRA*
@@ -464,7 +464,7 @@
     }
   return "shrav.ph\t%0,%1,%2";
 }
-  [(set_attr "type"	"shift")
+  [(set_attr "type"	"dspalu")
    (set_attr "mode"	"SI")])
 
 (define_insn "mips_shra_r_<DSPQ:dspfmt2>"
@@ -483,7 +483,7 @@
     }
   return "shrav_r.<DSPQ:dspfmt2>\t%0,%1,%2";
 }
-  [(set_attr "type"	"shift")
+  [(set_attr "type"	"dspalu")
    (set_attr "mode"	"SI")])
 
 ;; Table 2-3. MIPS DSP ASE Instructions: Multiply
@@ -569,7 +569,7 @@
 		   UNSPEC_DPAU_H_QBL))]
   "ISA_HAS_DSP && !TARGET_64BIT"
   "dpau.h.qbl\t%q0,%2,%3"
-  [(set_attr "type"	"imadd")
+  [(set_attr "type"	"dspmac")
    (set_attr "mode"	"SI")])
 
 (define_insn "mips_dpau_h_qbr"
@@ -580,7 +580,7 @@
 		   UNSPEC_DPAU_H_QBR))]
   "ISA_HAS_DSP && !TARGET_64BIT"
   "dpau.h.qbr\t%q0,%2,%3"
-  [(set_attr "type"	"imadd")
+  [(set_attr "type"	"dspmac")
    (set_attr "mode"	"SI")])
 
 ;; DPSU*
@@ -592,7 +592,7 @@
 		   UNSPEC_DPSU_H_QBL))]
   "ISA_HAS_DSP && !TARGET_64BIT"
   "dpsu.h.qbl\t%q0,%2,%3"
-  [(set_attr "type"	"imadd")
+  [(set_attr "type"	"dspmac")
    (set_attr "mode"	"SI")])
 
 (define_insn "mips_dpsu_h_qbr"
@@ -603,7 +603,7 @@
 		   UNSPEC_DPSU_H_QBR))]
   "ISA_HAS_DSP && !TARGET_64BIT"
   "dpsu.h.qbr\t%q0,%2,%3"
-  [(set_attr "type"	"imadd")
+  [(set_attr "type"	"dspmac")
    (set_attr "mode"	"SI")])
 
 ;; DPAQ*
@@ -619,7 +619,7 @@
 			UNSPEC_DPAQ_S_W_PH))])]
   "ISA_HAS_DSP && !TARGET_64BIT"
   "dpaq_s.w.ph\t%q0,%2,%3"
-  [(set_attr "type"	"imadd")
+  [(set_attr "type"	"dspmac")
    (set_attr "mode"	"SI")])
 
 ;; DPSQ*
@@ -635,7 +635,7 @@
 			UNSPEC_DPSQ_S_W_PH))])]
   "ISA_HAS_DSP && !TARGET_64BIT"
   "dpsq_s.w.ph\t%q0,%2,%3"
-  [(set_attr "type"	"imadd")
+  [(set_attr "type"	"dspmac")
    (set_attr "mode"	"SI")])
 
 ;; MULSAQ*
@@ -651,7 +651,7 @@
 			UNSPEC_MULSAQ_S_W_PH))])]
   "ISA_HAS_DSP && !TARGET_64BIT"
   "mulsaq_s.w.ph\t%q0,%2,%3"
-  [(set_attr "type"	"imadd")
+  [(set_attr "type"	"dspmac")
    (set_attr "mode"	"SI")])
 
 ;; DPAQ*
@@ -667,7 +667,7 @@
 			UNSPEC_DPAQ_SA_L_W))])]
   "ISA_HAS_DSP && !TARGET_64BIT"
   "dpaq_sa.l.w\t%q0,%2,%3"
-  [(set_attr "type"	"imadd")
+  [(set_attr "type"	"dspmacsat")
    (set_attr "mode"	"SI")])
 
 ;; DPSQ*
@@ -683,7 +683,7 @@
 			UNSPEC_DPSQ_SA_L_W))])]
   "ISA_HAS_DSP && !TARGET_64BIT"
   "dpsq_sa.l.w\t%q0,%2,%3"
-  [(set_attr "type"	"imadd")
+  [(set_attr "type"	"dspmacsat")
    (set_attr "mode"	"SI")])
 
 ;; MAQ*
@@ -699,7 +699,7 @@
 			UNSPEC_MAQ_S_W_PHL))])]
   "ISA_HAS_DSP && !TARGET_64BIT"
   "maq_s.w.phl\t%q0,%2,%3"
-  [(set_attr "type"	"imadd")
+  [(set_attr "type"	"dspmac")
    (set_attr "mode"	"SI")])
 
 (define_insn "mips_maq_s_w_phr"
@@ -714,7 +714,7 @@
 			UNSPEC_MAQ_S_W_PHR))])]
   "ISA_HAS_DSP && !TARGET_64BIT"
   "maq_s.w.phr\t%q0,%2,%3"
-  [(set_attr "type"	"imadd")
+  [(set_attr "type"	"dspmac")
    (set_attr "mode"	"SI")])
 
 ;; MAQ_SA*
@@ -730,7 +730,7 @@
 			UNSPEC_MAQ_SA_W_PHL))])]
   "ISA_HAS_DSP && !TARGET_64BIT"
   "maq_sa.w.phl\t%q0,%2,%3"
-  [(set_attr "type"	"imadd")
+  [(set_attr "type"	"dspmacsat")
    (set_attr "mode"	"SI")])
 
 (define_insn "mips_maq_sa_w_phr"
@@ -745,7 +745,7 @@
 			UNSPEC_MAQ_SA_W_PHR))])]
   "ISA_HAS_DSP && !TARGET_64BIT"
   "maq_sa.w.phr\t%q0,%2,%3"
-  [(set_attr "type"	"imadd")
+  [(set_attr "type"	"dspmacsat")
    (set_attr "mode"	"SI")])
 
 ;; Table 2-4. MIPS DSP ASE Instructions: General Bit/Manipulation
@@ -756,7 +756,7 @@
 		   UNSPEC_BITREV))]
   "ISA_HAS_DSP"
   "bitrev\t%0,%1"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"dspalu")
    (set_attr "mode"	"SI")])
 
 ;; INSV
@@ -769,7 +769,7 @@
 		   UNSPEC_INSV))]
   "ISA_HAS_DSP"
   "insv\t%0,%2"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"dspalu")
    (set_attr "mode"	"SI")])
 
 ;; REPL*
@@ -787,7 +787,7 @@
     }
   return "replv.qb\t%0,%1";
 }
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"dspalu")
    (set_attr "mode"	"SI")])
 
 (define_insn "mips_repl_ph"
@@ -798,7 +798,7 @@
   "@
    repl.ph\t%0,%1
    replv.ph\t%0,%1"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"dspalu")
    (set_attr "mode"	"SI")])
 
 ;; Table 2-5. MIPS DSP ASE Instructions: Compare-Pick
@@ -811,7 +811,7 @@
 		      UNSPEC_CMP_EQ))]
   "ISA_HAS_DSP"
   "cmp<DSPV:dspfmt1_1>.eq.<DSPV:dspfmt2>\t%0,%1"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"dspalu")
    (set_attr "mode"	"SI")])
 
 (define_insn "mips_cmp<DSPV:dspfmt1_1>_lt_<DSPV:dspfmt2>"
@@ -822,7 +822,7 @@
 		      UNSPEC_CMP_LT))]
   "ISA_HAS_DSP"
   "cmp<DSPV:dspfmt1_1>.lt.<DSPV:dspfmt2>\t%0,%1"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"dspalu")
    (set_attr "mode"	"SI")])
 
 (define_insn "mips_cmp<DSPV:dspfmt1_1>_le_<DSPV:dspfmt2>"
@@ -833,7 +833,7 @@
 		      UNSPEC_CMP_LE))]
   "ISA_HAS_DSP"
   "cmp<DSPV:dspfmt1_1>.le.<DSPV:dspfmt2>\t%0,%1"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"dspalu")
    (set_attr "mode"	"SI")])
 
 (define_insn "mips_cmpgu_eq_qb"
@@ -843,7 +843,7 @@
 		   UNSPEC_CMPGU_EQ_QB))]
   "ISA_HAS_DSP"
   "cmpgu.eq.qb\t%0,%1,%2"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"dspalu")
    (set_attr "mode"	"SI")])
 
 (define_insn "mips_cmpgu_lt_qb"
@@ -853,7 +853,7 @@
 		   UNSPEC_CMPGU_LT_QB))]
   "ISA_HAS_DSP"
   "cmpgu.lt.qb\t%0,%1,%2"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"dspalu")
    (set_attr "mode"	"SI")])
 
 (define_insn "mips_cmpgu_le_qb"
@@ -863,7 +863,7 @@
 		   UNSPEC_CMPGU_LE_QB))]
   "ISA_HAS_DSP"
   "cmpgu.le.qb\t%0,%1,%2"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"dspalu")
    (set_attr "mode"	"SI")])
 
 ;; PICK*
@@ -875,7 +875,7 @@
 		     UNSPEC_PICK))]
   "ISA_HAS_DSP"
   "pick.<DSPV:dspfmt2>\t%0,%1,%2"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"dspalu")
    (set_attr "mode"	"SI")])
 
 ;; PACKRL*
@@ -886,7 +886,7 @@
 		     UNSPEC_PACKRL_PH))]
   "ISA_HAS_DSP"
   "packrl.ph\t%0,%1,%2"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"dspalu")
    (set_attr "mode"	"SI")])
 
 ;; Table 2-6. MIPS DSP ASE Instructions: Accumulator and DSPControl Access
@@ -909,7 +909,7 @@
     }
   return "extrv.w\t%0,%q1,%2";
 }
-  [(set_attr "type"	"mflo")
+  [(set_attr "type"	"accext")
    (set_attr "mode"	"SI")])
 
 (define_insn "mips_extr_r_w"
@@ -930,7 +930,7 @@
     }
   return "extrv_r.w\t%0,%q1,%2";
 }
-  [(set_attr "type"	"mflo")
+  [(set_attr "type"	"accext")
    (set_attr "mode"	"SI")])
 
 (define_insn "mips_extr_rs_w"
@@ -951,7 +951,7 @@
     }
   return "extrv_rs.w\t%0,%q1,%2";
 }
-  [(set_attr "type"	"mflo")
+  [(set_attr "type"	"accext")
    (set_attr "mode"	"SI")])
 
 ;; EXTR*_S.H
@@ -973,7 +973,7 @@
     }
   return "extrv_s.h\t%0,%q1,%2";
 }
-  [(set_attr "type"	"mflo")
+  [(set_attr "type"	"accext")
    (set_attr "mode"	"SI")])
 
 ;; EXTP*
@@ -996,7 +996,7 @@
     }
   return "extpv\t%0,%q1,%2";
 }
-  [(set_attr "type"	"mflo")
+  [(set_attr "type"	"accext")
    (set_attr "mode"	"SI")])
 
 (define_insn "mips_extpdp"
@@ -1021,7 +1021,7 @@
     }
   return "extpdpv\t%0,%q1,%2";
 }
-  [(set_attr "type"	"mflo")
+  [(set_attr "type"	"accext")
    (set_attr "mode"	"SI")])
 
 ;; SHILO*
@@ -1040,7 +1040,7 @@
     }
   return "shilov\t%q0,%2";
 }
-  [(set_attr "type"	"mflo")
+  [(set_attr "type"	"accmod")
    (set_attr "mode"	"SI")])
 
 ;; MTHLIP*
@@ -1056,7 +1056,7 @@
 			 (reg:CCDSP CCDSP_PO_REGNUM)] UNSPEC_MTHLIP))])]
   "ISA_HAS_DSP && !TARGET_64BIT"
   "mthlip\t%2,%q0"
-  [(set_attr "type"	"mflo")
+  [(set_attr "type"	"accmod")
    (set_attr "mode"	"SI")])
 
 ;; WRDSP
@@ -1078,7 +1078,7 @@
 	  (unspec:CCDSP [(match_dup 0) (match_dup 1)] UNSPEC_WRDSP))])]
   "ISA_HAS_DSP"
   "wrdsp\t%0,%1"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"dspalu")
    (set_attr "mode"	"SI")])
 
 ;; RDDSP
@@ -1094,7 +1094,7 @@
 		   UNSPEC_RDDSP))]
   "ISA_HAS_DSP"
   "rddsp\t%0,%1"
-  [(set_attr "type"	"arith")
+  [(set_attr "type"	"dspalu")
    (set_attr "mode"	"SI")])
 
 ;; Table 2-7. MIPS DSP ASE Instructions: Indexed-Load

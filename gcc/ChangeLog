@@ -1,3 +1,65 @@
+2012-08-15  Sandra Loosemore  <sandra@codesourcery.com>
+	    Maxim Kuvyrkov  <maxim@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    MIPS Technologies, Inc.
+
+	gcc/
+	* config/mips/mips.md (dspmac, dspmacsat, accext, accmod, dspalu)
+	(dspalusat): Add insn types.
+	* config/mips/mips-dsp.md (add<DSPV:mode>3)
+	(mips_add<DSP:dspfmt1>_s_<DSP:dspfmt2>)
+	(sub<DSPV:mode>3, mips_sub<DSP:dspfmt1>_s_<DSP:dspfmt2>, mips_addsc)
+	(mips_addwc, mips_modsub, mips_raddu_w_qb, mips_absq_s_<DSPQ:dspfmt2>)
+	(mips_precrq_qb_ph, mips_precrq_ph_w, mips_precrq_rs_ph_w)
+	(mips_precrqu_s_qb_ph, mips_preceq_w_phl, mips_preceq_w_phr)
+	(mips_precequ_ph_qbl, mips_precequ_ph_qbr, mips_precequ_ph_qbla)
+	(mips_precequ_ph_qbra, mips_preceu_ph_qbl, mips_preceu_ph_qbr)
+	(mips_preceu_ph_qbla, mips_preceu_ph_qbra, mips_shll_<DSPV:dspfmt2>)
+	(mips_shll_s_<DSPQ:dspfmt2>, mips_shll_s_<DSPQ:dspfmt2>, mips_shrl_qb)
+	(mips_shra_ph, mips_shra_r_<DSPQ:dspfmt2>, mips_bitrev, mips_insv)
+	(mips_repl_qb, mips_repl_ph)
+	(mips_cmp<DSPV:dspfmt1_1>_eq_<DSPV:dspfmt2>)
+	(mips_cmp<DSPV:dspfmt1_1>_lt_<DSPV:dspfmt2>)
+	(mips_cmp<DSPV:dspfmt1_1>_le_<DSPV:dspfmt2>, mips_cmpgu_eq_qb)
+	(mips_cmpgu_lt_qb, mips_cmpgu_le_qb, mips_pick_<DSPV:dspfmt2>)
+	(mips_packrl_ph, mips_wrdsp, mips_rddsp): Change type to dspalu.
+	(mips_dpau_h_qbl, mips_dpau_h_qbr, mips_dpsu_h_qbl, mips_dpsu_h_qbr)
+	(mips_dpaq_s_w_ph, mips_dpsq_s_w_ph, mips_mulsaq_s_w_ph)
+	(mips_maq_s_w_phl, mips_maq_s_w_phr, mips_maq_sa_w_phr): Set type to
+	dspmac.
+	(mips_dpaq_sa_l_w, mips_dpsq_sa_l_w, mips_maq_sa_w_phl): Set type to
+	dspmacsat.
+	(mips_extr_w, mips_extr_r_w, mips_extr_rs_w, mips_extp, mips_extpdp):
+	Set type to accext.
+	(mips_shilo, mips_mthlip): Set type to accmod.
+	* config/mips/mips-dspr2.md (mips_absq_s_qb, mips_addu_s_ph)
+	(mips_adduh_r_qb): Set type to dspalusat.
+	(mips_addu_ph, mips_adduh_qb, mips_append, mips_balign)
+	(mips_cmpgdu_eq_qb, mips_cmpgdu_lt_qb, mips_cmpgdu_le_qb)
+	(mips_precr_qb_ph, mips_precr_sra_ph_w, mips_precr_sra_r_ph_w)
+	(mips_prepend, mips_shra_qb, mips_shra_r_qb, mips_shrl_ph)
+	(mips_subu_ph, mips_subuh_qb, mips_subuh_r_qb, mips_addqh_ph)
+	(mips_addqh_r_ph, mips_addqh_w, mips_addqh_r_w, mips_subqh_ph)
+	(mips_subqh_r_ph, mips_subqh_w, mips_subqh_r_w): Set type to dspalu.
+	(mips_dpa_w_ph, mips_dps_w_ph, mips_mulsa_w_ph, mips_dpax_w_ph)
+	(mips_dpsx_w_ph, mips_dpaqx_s_w_ph, mips_dpsqx_s_w_ph): Set type to
+	dspmac.  Set accum_in attribute.
+	(mips_subu_s_ph): Set type to dspalusat. 
+	(mips_dpaqx_sa_w_ph, mips_dpsqx_sa_w_ph): Set type to dspmacsat.
+	Set accum_in attribute.
+	* config/mips/mips-protos.h (mips_dspalu_bypass_p): Add prototype.
+	* config/mips/mips.c (dspalu_bypass_table): New.
+	(mips_dspalu_bypass_p): New.
+	* config/mips/24k.md (r24k_dsp_alu, r24k_dsp_mac, r24k_dsp_mac_sat)
+	(r24k_dsp_acc_ext, r24k_dsp_acc_mod): New insn reservations.
+	(r24k_int_mult, r24k_int_mthilo, r24k_dsp_mac, r24k_dsp_mac_sat)
+	(r24k_dsp_acc_ext, r24k_dsp_acc_mod, r24k_dsp_alu): New bypasses.
+	* config/mips/74k.md (r74k_dsp_alu, r74k_dsp_alu_sat, r74k_dsp_mac)
+	(r74k_dsp_mac_sat, r74k_dsp_acc_ext, r74k_dsp_acc_mod): New insn
+	reservations.
+	(r74k_dsp_mac, r74k_dsp_mac_sat, r74k_int_mult, r74k_int_mul3)
+	(r74k_dsp_mac, r74k_dsp_mac_sat): New bypasses.
+
 2012-08-15  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/spu/spu.c: Include "cfgloop.h".

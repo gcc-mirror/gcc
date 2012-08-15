@@ -328,6 +328,12 @@
 ;; frsqrt       floating point reciprocal square root
 ;; frsqrt1      floating point reciprocal square root step1
 ;; frsqrt2      floating point reciprocal square root step2
+;; dspmac       DSP MAC instructions not saturating the accumulator
+;; dspmacsat    DSP MAC instructions that saturate the accumulator
+;; accext       DSP accumulator extract instructions
+;; accmod       DSP accumulator modify instructions
+;; dspalu       DSP ALU instructions not saturating the result
+;; dspalusat    DSP ALU instructions that saturate the result
 ;; multi	multiword sequence (or user asm statements)
 ;; atomic	atomic memory update instruction
 ;; syncloop	memory atomic operation implemented as a sync loop
@@ -338,7 +344,8 @@
    prefetch,prefetchx,condmove,mtc,mfc,mthi,mtlo,mfhi,mflo,const,arith,logical,
    shift,slt,signext,clz,pop,trap,imul,imul3,imul3nc,imadd,idiv,idiv3,move,
    fmove,fadd,fmul,fmadd,fdiv,frdiv,frdiv1,frdiv2,fabs,fneg,fcmp,fcvt,fsqrt,
-   frsqrt,frsqrt1,frsqrt2,multi,atomic,syncloop,nop,ghost"
+   frsqrt,frsqrt1,frsqrt2,dspmac,dspmacsat,accext,accmod,dspalu,dspalusat,
+   multi,atomic,syncloop,nop,ghost"
   (cond [(eq_attr "jal" "!unset") (const_string "call")
 	 (eq_attr "got" "load") (const_string "load")
 
