@@ -1,3 +1,8 @@
+2012-08-17  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR middle-end/54261
+	* gcc.dg/torture/pr54261-1.c: New test.
+
 2012-08-15  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/54243
