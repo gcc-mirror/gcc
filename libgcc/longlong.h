@@ -850,8 +850,6 @@ UDItype __umulsidi3 (USItype, USItype);
    FIXME: What's needed for gcc PowerPC VxWorks?  __vxworks__ is not good
    enough, since that hits ARM and m68k too.  */
 #if (defined (_ARCH_PPC)	/* AIX */				\
-     || defined (_ARCH_PWR)	/* AIX */				\
-     || defined (_ARCH_COM)	/* AIX */				\
      || defined (__powerpc__)	/* gcc */				\
      || defined (__POWERPC__)	/* BEOS */				\
      || defined (__ppc__)	/* Darwin */				\
@@ -914,14 +912,6 @@ UDItype __umulsidi3 (USItype, USItype);
   } while (0)
 #define SMUL_TIME 14
 #define UDIV_TIME 120
-#elif defined (_ARCH_PWR)
-#define UMUL_TIME 8
-#define smul_ppmm(xh, xl, m0, m1) \
-  __asm__ ("mul %0,%2,%3" : "=r" (xh), "=q" (xl) : "r" (m0), "r" (m1))
-#define SMUL_TIME 4
-#define sdiv_qrnnd(q, r, nh, nl, d) \
-  __asm__ ("div %0,%2,%4" : "=r" (q), "=q" (r) : "r" (nh), "1" (nl), "r" (d))
-#define UDIV_TIME 100
 #endif
 #endif /* 32-bit POWER architecture variants.  */
 
