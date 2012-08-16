@@ -22,7 +22,10 @@
 #ifndef GCC_REALGMP_H
 #define GCC_REALGMP_H
 
-#include <gmp.h>
+/* Note that we do not include gmp.h.  It is included in system.h
+   because it wrecks intl.h when compiling in C++ mode.
+   See http://gcc.gnu.org/bugzilla/show_bug.cgi?id=54281 for details.  */
+
 #include <mpfr.h>
 #include <mpc.h>
 #include "real.h"

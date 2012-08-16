@@ -1,3 +1,11 @@
+2012-08-16  Diego Novillo  <dnovillo@google.com>
+
+	PR bootstrap/54281
+	* double-int.h: Move including of gmp.h ...
+	* system.h: ... here.
+	* realmpfr.h: Do not include gmp.h.
+	* tree-ssa-loop-niter.c: Do not include gmp.h.
+
 2012-08-16  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR middle-end/54146
