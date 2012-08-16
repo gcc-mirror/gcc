@@ -81,12 +81,6 @@ rs6000_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
 
   switch (code)
     {
-    case OPT_mno_powerpc:
-      opts->x_target_flags &= ~(MASK_POWERPC | MASK_PPC_GPOPT
-				| MASK_PPC_GFXOPT | MASK_POWERPC64);
-      opts_set->x_target_flags |= (MASK_POWERPC | MASK_PPC_GPOPT
-				   | MASK_PPC_GFXOPT | MASK_POWERPC64);
-      break;
     case OPT_mfull_toc:
       opts->x_target_flags &= ~MASK_MINIMAL_TOC;
       opts->x_TARGET_NO_FP_IN_TOC = 0;
@@ -113,9 +107,9 @@ rs6000_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
 #else
     case OPT_m64:
 #endif
-      opts->x_target_flags |= MASK_POWERPC64 | MASK_POWERPC;
+      opts->x_target_flags |= MASK_POWERPC64;
       opts->x_target_flags |= ~opts_set->x_target_flags & MASK_PPC_GFXOPT;
-      opts_set->x_target_flags |= MASK_POWERPC64 | MASK_POWERPC;
+      opts_set->x_target_flags |= MASK_POWERPC64;
       break;
 
 #ifdef TARGET_USES_AIX64_OPT
@@ -137,11 +131,6 @@ rs6000_handle_option (struct gcc_options *opts, struct gcc_options *opts_set,
 
     case OPT_mpowerpc_gpopt:
     case OPT_mpowerpc_gfxopt:
-      if (value == 1)
-	{
-	  opts->x_target_flags |= MASK_POWERPC;
-	  opts_set->x_target_flags |= MASK_POWERPC;
-	}
       break;
 
     case OPT_mdebug_:

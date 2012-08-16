@@ -220,7 +220,7 @@ do {									\
 
 /* Override rs6000.h definition.  */
 #undef	TARGET_DEFAULT
-#define	TARGET_DEFAULT (MASK_POWERPC | MASK_NEW_MNEMONICS)
+#define	TARGET_DEFAULT MASK_NEW_MNEMONICS
 
 /* Override rs6000.h definition.  */
 #undef	PROCESSOR_DEFAULT

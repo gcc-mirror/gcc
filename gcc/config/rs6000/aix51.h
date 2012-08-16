@@ -43,10 +43,8 @@ do {									\
 #undef ASM_CPU_SPEC
 #define ASM_CPU_SPEC \
 "%{!mcpu*: %{!maix64: \
-  %{mpowerpc*: %{!mpowerpc64: -mppc}} \
-  %{mpowerpc64: -mppc64} \
-  %{!mpower*: %{!mpowerpc*: %(asm_default)}}}} \
-%{mcpu=common: -mcom} \
+  %{!mpowerpc64: -mppc} \
+  %{mpowerpc64: -mppc64}}} \
 %{mcpu=power3: -m620} \
 %{mcpu=power4: -m620} \
 %{mcpu=powerpc: -mppc} \
@@ -63,7 +61,7 @@ do {									\
 %{mcpu=G5: -m620}"
 
 #undef	ASM_DEFAULT_SPEC
-#define ASM_DEFAULT_SPEC "-mcom"
+#define ASM_DEFAULT_SPEC "-mppc"
 
 #undef TARGET_OS_CPP_BUILTINS
 #define TARGET_OS_CPP_BUILTINS()     \

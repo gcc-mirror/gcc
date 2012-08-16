@@ -797,7 +797,7 @@ See RS/6000 and PowerPC Options.
 @gccoptlist{-mcpu=@var{cpu-type} @gol
 -mtune=@var{cpu-type} @gol
 -mcmodel=@var{code-model} @gol
--mpowerpc  -mpowerpc64  -mno-powerpc @gol
+-mpowerpc64 @gol
 -maltivec  -mno-altivec @gol
 -mpowerpc-gpopt  -mno-powerpc-gpopt @gol
 -mpowerpc-gfxopt  -mno-powerpc-gfxopt @gol
@@ -16555,9 +16555,7 @@ standard hardware multiplication defined in the RL78 software manual.
 
 These @samp{-m} options are defined for the IBM RS/6000 and PowerPC:
 @table @gcctabopt
-@item -mpowerpc
-@itemx -mno-powerpc
-@itemx -mpowerpc-gpopt
+@item -mpowerpc-gpopt
 @itemx -mno-powerpc-gpopt
 @itemx -mpowerpc-gfxopt
 @itemx -mno-powerpc-gfxopt
@@ -16579,8 +16577,6 @@ These @samp{-m} options are defined for the IBM RS/6000 and PowerPC:
 @itemx -mno-mfpgpr
 @itemx -mhard-dfp
 @itemx -mno-hard-dfp
-@opindex mpowerpc
-@opindex mno-powerpc
 @opindex mpowerpc-gpopt
 @opindex mno-powerpc-gpopt
 @opindex mpowerpc-gfxopt
@@ -16601,17 +16597,6 @@ These @samp{-m} options are defined for the IBM RS/6000 and PowerPC:
 @opindex mno-mfpgpr
 @opindex mhard-dfp
 @opindex mno-hard-dfp
-GCC supports two related instruction set architectures for the
-RS/6000 and PowerPC@.  The @dfn{POWER} instruction set are those
-instructions supported by the @samp{rios} chip set used in the original
-RS/6000 systems and the @dfn{PowerPC} instruction set is the
-architecture of the Freescale MPC5xx, MPC6xx, MPC8xx microprocessors, and
-the IBM 4xx, 6xx, and follow-on microprocessors.
-
-Neither architecture is a subset of the other.  However there is a
-large common subset of instructions supported by both.  An MQ
-register is included in processors supporting the POWER architecture.
-
 You use these options to specify which instructions are available on the
 processor you are using.  The default value of these options is
 determined when configuring GCC@.  Specifying the
@@ -16619,12 +16604,10 @@ determined when configuring GCC@.  Specifying the
 options.  We recommend you use the @option{-mcpu=@var{cpu_type}} option
 rather than the options listed above.
 
-The @option{-mpowerpc} option allows GCC to generate instructions that
-are found only in the 32-bit subset of the PowerPC architecture.
-Specifying @option{-mpowerpc-gpopt} implies @option{-mpowerpc} and also allows
+Specifying @option{-mpowerpc-gpopt} allows
 GCC to use the optional PowerPC architecture instructions in the
 General Purpose group, including floating-point square root.  Specifying
-@option{-mpowerpc-gfxopt} implies @option{-mpowerpc} and also allows GCC to
+@option{-mpowerpc-gfxopt} allows GCC to
 use the optional PowerPC architecture instructions in the Graphics
 group, including floating-point select.
 
@@ -16657,10 +16640,6 @@ The @option{-mpowerpc64} option allows GCC to generate the additional
 and to treat GPRs as 64-bit, doubleword quantities.  GCC defaults to
 @option{-mno-powerpc64}.
 
-If you specify @option{-mno-powerpc}, GCC uses only the instructions
-in the common subset of both the POWER and PowerPC
-architectures plus some special AIX common-mode calls.
-
 @item -mnew-mnemonics
 @itemx -mold-mnemonics
 @opindex mnew-mnemonics
@@ -16691,17 +16670,11 @@ Supported values for @var{cpu_type} are @samp{401}, @samp{403},
 @samp{e300c3}, @samp{e500mc}, @samp{e500mc64}, @samp{e5500},
 @samp{e6500}, @samp{ec603e}, @samp{G3}, @samp{G4}, @samp{G5},
 @samp{titan}, @samp{power3}, @samp{power4}, @samp{power5}, @samp{power5+},
-@samp{power6}, @samp{power6x}, @samp{power7}, @samp{common}, @samp{powerpc},
+@samp{power6}, @samp{power6x}, @samp{power7}, @samp{powerpc},
 @samp{powerpc64}, and @samp{rs64}.
 
-@option{-mcpu=common} selects a completely generic processor.  Code
-generated under this option runs on any POWER or PowerPC processor.
-GCC uses only the instructions in the common subset of both
-architectures, and does not use the MQ register.  GCC assumes a generic
-processor model for scheduling purposes.
-
 @option{-mcpu=powerpc}, and @option{-mcpu=powerpc64} specify pure 32-bit
-PowerPC (i.e., not MPC601) and 64-bit PowerPC architecture machine
+PowerPC and 64-bit PowerPC architecture machine
 types, with an appropriate, generic processor model assumed for
 scheduling purposes.
 
@@ -16900,8 +16873,8 @@ only on files that contain less frequently-executed code.
 @opindex maix32
 Enable 64-bit AIX ABI and calling convention: 64-bit pointers, 64-bit
 @code{long} type, and the infrastructure needed to support them.
-Specifying @option{-maix64} implies @option{-mpowerpc64} and
-@option{-mpowerpc}, while @option{-maix32} disables the 64-bit ABI and
+Specifying @option{-maix64} implies @option{-mpowerpc64},
+while @option{-maix32} disables the 64-bit ABI and
 implies @option{-mno-powerpc64}.  GCC defaults to @option{-maix32}.
 
 @item -mxl-compat
