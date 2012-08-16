@@ -1,5 +1,12 @@
 2012-08-16  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	PR target/39423
+	* config/sh/sh.md (*movsi_index_disp, *movhi_index_disp): Handle
+	potential T_REG clobber.  Convert zero extending split to
+	insn_and_split.
+
+2012-08-16  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	PR target/54089
 	* config/sh/sh.md (ashlsi3_d): Do not split if it would result
 	in a T_REG clobber.  Correct comment.
