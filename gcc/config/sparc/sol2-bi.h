@@ -1,6 +1,6 @@
 /* Definitions of target machine for GCC, for bi-arch SPARC
    running Solaris 2 using the system assembler and linker.
-   Copyright (C) 2002, 2003, 2004, 2006, 2007, 2009, 2010, 2011
+   Copyright (C) 2002, 2003, 2004, 2006, 2007, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -191,12 +191,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    %{YP,*} \
    %{R*} \
    %{compat-bsd: \
-     %{!YP,*:%{p|pg:-Y P,%R/usr/ucblib/sparcv9:%R/usr/lib/libp/sparcv9:%R/usr/lib/sparcv9} \
-       %{!p:%{!pg:-Y P,%R/usr/ucblib/sparcv9:%R/usr/lib/sparcv9}}} \
+     %{!YP,*:%{p|pg:-Y P,%R/usr/ucblib/sparcv9:%R/usr/lib/libp/sparcv9:%R/usr/lib/sparcv9:%R/lib/sparcv9} \
+       %{!p:%{!pg:-Y P,%R/usr/ucblib/sparcv9:%R/usr/lib/sparcv9:%R/lib/sparcv9}}} \
      -R %R/usr/ucblib/sparcv9} \
    %{!compat-bsd: \
-     %{!YP,*:%{p|pg:-Y P,%R/usr/lib/libp/sparcv9:%R/usr/lib/sparcv9} \
-       %{!p:%{!pg:-Y P,%R/usr/lib/sparcv9}}}}"
+     %{!YP,*:%{p|pg:-Y P,%R/usr/lib/libp/sparcv9:%R/usr/lib/sparcv9:%R/lib/sparcv9} \
+       %{!p:%{!pg:-Y P,%R/usr/lib/sparcv9:%R/lib/sparcv9}}}}"
 
 #define LINK_ARCH64_SPEC LINK_ARCH64_SPEC_BASE
 

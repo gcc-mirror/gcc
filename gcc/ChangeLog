@@ -1,3 +1,10 @@
+2012-08-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/sol2.h (LINK_ARCH32_SPEC_BASE): Add /lib to default
+	linker search path.
+	* config/sparc/sol2-bi.h (LINK_ARCH64_SPEC_BASE): Likewise for
+	/lib/sparcv9.
+
 2012-08-10  Ulrich Weigand  <ulrich.weigand@linaro.org>
 
 	Backport from mainline

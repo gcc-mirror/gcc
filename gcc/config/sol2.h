@@ -1,6 +1,6 @@
 /* Operating system specific defines to be used when targeting GCC for any
    Solaris 2 system.
-   Copyright 2002, 2003, 2004, 2007, 2008, 2009, 2010, 2011
+   Copyright 2002, 2003, 2004, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -163,12 +163,12 @@ along with GCC; see the file COPYING3.  If not see
    %{YP,*} \
    %{R*} \
    %{compat-bsd: \
-     %{!YP,*:%{p|pg:-Y P,%R/usr/ucblib:%R/usr/ccs/lib/libp:%R/usr/lib/libp:%R/usr/ccs/lib:%R/usr/lib} \
-             %{!p:%{!pg:-Y P,%R/usr/ucblib:%R/usr/ccs/lib:%R/usr/lib}}} \
+     %{!YP,*:%{p|pg:-Y P,%R/usr/ucblib:%R/usr/ccs/lib/libp:%R/usr/lib/libp:%R/usr/ccs/lib:%R/usr/lib:%R/lib} \
+             %{!p:%{!pg:-Y P,%R/usr/ucblib:%R/usr/ccs/lib:%R/usr/lib:%R/lib}}} \
              -R %R/usr/ucblib} \
    %{!compat-bsd: \
-     %{!YP,*:%{p|pg:-Y P,%R/usr/ccs/lib/libp:%R/usr/lib/libp:%R/usr/ccs/lib:%R/usr/lib} \
-             %{!p:%{!pg:-Y P,%R/usr/ccs/lib:%R/usr/lib}}}}"
+     %{!YP,*:%{p|pg:-Y P,%R/usr/ccs/lib/libp:%R/usr/lib/libp:%R/usr/ccs/lib:%R/usr/lib:%R/lib} \
+             %{!p:%{!pg:-Y P,%R/usr/ccs/lib:%R/usr/lib:%R/lib}}}}"
 
 #undef LINK_ARCH32_SPEC
 #define LINK_ARCH32_SPEC LINK_ARCH32_SPEC_BASE
