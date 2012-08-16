@@ -368,7 +368,7 @@ static const struct asm_name asm_names[] = {
 %{!maix64: \
 %{mpowerpc64: -mppc64} \
 %{maltivec: -m970} \
-%{!maltivec: %{!mpower64: %(asm_default)}}}" },
+%{!maltivec: %{!mpowerpc64: %(asm_default)}}}" },
 
 #else
   { "common",	"-mcom" },

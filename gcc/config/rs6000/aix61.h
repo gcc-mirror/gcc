@@ -53,7 +53,7 @@ do {									\
 "%{!mcpu*: %{!maix64: \
   %{mpowerpc64: -mppc64} \
   %{maltivec: -m970} \
-  %{!maltivec: %{!mpower64: %(asm_default)}}}} \
+  %{!maltivec: %{!mpowerpc64: %(asm_default)}}}} \
 %{mcpu=native: %(asm_cpu_native)} \
 %{mcpu=power3: -m620} \
 %{mcpu=power4: -mpwr4} \
