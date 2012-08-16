@@ -1,3 +1,7 @@
+2012-08-16  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/darwin.h (TARGET_IEEE_QUAD): Fix comment.
+
 2012-08-16  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/54146
