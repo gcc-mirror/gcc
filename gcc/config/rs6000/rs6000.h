@@ -103,7 +103,7 @@
 "%{!mcpu*: \
   %{mpowerpc64*: -mppc64} \
   %{!mpowerpc64*: %{mpowerpc*: -mppc}} \
-  %{!mpowerpc*: -mcom}} \
+  %{!mpowerpc*: %(asm_default)}} \
 %{mcpu=native: %(asm_cpu_native)} \
 %{mcpu=common: -mcom} \
 %{mcpu=cell: -mcell} \
