@@ -1,4 +1,89 @@
-2012-08-15  Segher Boessenkool <segher@kernel.crashing.org>
+2012-08-15  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* common/config/rs6000/rs6000-common.c (rs6000_handle_option):
+	Delete handling for -mno-powerpc and -mpowerpc.
+	* config/rs6000/aix43.h (ASM_CPU_SPEC): Similar.
+	(ASM_DEFAULT_SPEC): Use -mppc instead of -mcom.
+	* config/rs6000/aix51.h (ASM_CPU_SPEC, ASM_DEFAULT_SPEC): Ditto.
+	* config/rs6000/aix52.h (TARGET_DEFAULT): Delete MASK_POWERPC.
+	* config/rs6000/aix53.h (TARGET_DEFAULT): Ditto.
+	* config/rs6000/aix61.h (TARGET_DEFAULT): Ditto.
+	* config/rs6000/darwin.h (TARGET_DEFAULT): Ditto.
+	* config/rs6000/darwin64.h (TARGET_DEFAULT): Ditto.
+	* config/rs6000/default64.h (TARGET_DEFAULT): Ditto.
+	* config/rs6000/driver-rs6000.c (asm_names): Delete handling
+	for -mcpu=common and -mpowerpc.
+	* config/rs6000/eabi.h (TARGET_DEFAULT): Delete MASK_POWERPC.
+	* config/rs6000/eabialtivec.h (TARGET_DEFAULT): Ditto.
+	* config/rs6000/eabispe.h (TARGET_DEFAULT): Ditto.
+	* config/rs6000/linuxaltivec.h (TARGET_DEFAULT): Ditto.
+	* config/rs6000/linuxspe.h (TARGET_DEFAULT): Ditto.
+	* config/rs6000/rs6000-builtin.def (RS6000_BUILTIN_CFSTRING):
+	Use RS6000_BTM_ALWAYS instead of RS6000_BTM_POWERPC.
+	* config/rs6000/rs6000-c.c (rs6000_target_modify_macros):
+	Adjust.
+	(rs6000_cpu_cpp_builtins): Adjust.
+	* config/rs6000/rs6000.c (POWERPC_BASE_MASK): Delete MASK_POWERPC.
+	(rs6000_builtin_mask_calculate): Adjust.
+	(rs6000_emit_move): Delete code for ! TARGET_POWERPC.
+	(rs6000_init_libfuncs): Ditto.
+	(rs6000_output_function_prologue): Ditto.
+	(rs6000_opt_masks): Delete MASK_POWERPC.
+	(rs6000_builtin_mask_names): Delete RS6000_BTM_POWERPC.
+	* config/rs6000/rs6000.h (ASM_CPU_SPEC): Delete handling for
+	-mpowerpc.
+	(RS6000_BTM_POWERPC): Delete.
+	(RS6000_BTM_COMMON): Delete RS6000_BTM_POWERPC.
+	* config/rs6000/rs6000.md (extendqisi2 patterns): Adjust for
+	TARGET_POWERPC always on.
+	(extendqihi2 patterns): Similar.
+	(various unnamed subtract patterns): Similar.
+	(bswaphi2 patterns): Similar.
+	(divmodsi4): Similar.
+	(udiv<GPR:mode>3): Similar.
+	(div<GPR:mode>3 patterns): Similar.
+	(udivmodsi4): Similar.
+	(mulhcall): Delete.
+	(mullcall): Delete.
+	(divss_call): Delete.
+	(divus_call): Delete.
+	(quoss_call): Delete.
+	(quous_call): Delete.
+	(insvsi patterns): Adjust.
+	(addsf3 patterns): Adjust.
+	(subsf3 patterns): Adjust.
+	(mulsf3 patterns): Adjust.
+	(divsf3 patterns): Adjust.
+	(*fmasf4_fpr): Adjust.
+	(*fmssf4_fpr): Adjust.
+	(*nfmasf4_fpr): Adjust.
+	(*nfmssf4_fpr): Adjust.
+	(*floatunssidf2_internal): Adjust.
+	(fix_trunc<SFDF:mode>si2_internal): Adjust.
+	(fctiwz_<SFDF:mode>): Adjust.
+	(mulsidi3 patterns): Adjust.
+	(smulsi3_highpart patterns): Adjust.
+	(umulsi3_highpart patterns): Adjust.
+	(fix_trunctfsi2 patterns): Adjust.
+	(prefetch): Adjust.
+	* config/rs6000/rs6000.opt (mpowerpc): Replace by stub option.
+	(mno-powerpc): Delete.
+	* config/rs6000/sync.md (load_locked<ATOMIC:mode>): Adjust.
+	(store_conditional<ATOMIC:mode>): Adjust.
+	(atomic_compare_and_swap<ATOMIC:mode>): Adjust.
+	(atomic_exchange<ATOMIC:mode>): Adjust.
+	(atomic_<fetchop_name><ATOMIC:mode>): Adjust.
+	(atomic_nand<ATOMIC:mode>): Adjust.
+	(atomic_fetch_<fetchop_name><ATOMIC:mode>): Adjust.
+	(atomic_fetch_nand<ATOMIC:mode>): Adjust.
+	(atomic_<fetchop_name>_fetch<ATOMIC:mode>): Adjust.
+	(atomic_nand_fetch<ATOMIC:mode>): Adjust.
+	* config/rs6000/sysv4.h (TARGET_DEFAULT): Delete MASK_POWERPC.
+	* config/rs6000/sysv4le.h (TARGET_DEFAULT): Ditto.
+	* config/rs6000/vxworks.h (TARGET_DEFAULT): Ditto.
+	* doc/invoke.texi: Adjust documentation.
+
+2012-08-15  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.h (RS6000_BTM_ALWAYS): New.
 

@@ -280,8 +280,7 @@ extern int darwin_emit_branch_islands;
    default as well.  */
 
 #undef  TARGET_DEFAULT
-#define TARGET_DEFAULT (MASK_POWERPC | MASK_MULTIPLE | MASK_NEW_MNEMONICS \
-                      | MASK_PPC_GFXOPT)
+#define TARGET_DEFAULT (MASK_MULTIPLE | MASK_NEW_MNEMONICS | MASK_PPC_GFXOPT)
 
 /* Darwin only runs on PowerPC, so short-circuit POWER patterns.  */
 #undef  TARGET_IEEEQUAD

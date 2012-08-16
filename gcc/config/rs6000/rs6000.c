@@ -1457,7 +1457,7 @@ static const struct attribute_spec rs6000_attribute_table[] =
 /* Simplifications for entries below.  */
 
 enum {
-  POWERPC_BASE_MASK = MASK_POWERPC | MASK_NEW_MNEMONICS,
+  POWERPC_BASE_MASK = MASK_NEW_MNEMONICS,
   POWERPC_7400_MASK = POWERPC_BASE_MASK | MASK_PPC_GFXOPT | MASK_ALTIVEC
 };
 
@@ -2362,7 +2362,6 @@ rs6000_builtin_mask_calculate (void)
 	  | ((TARGET_FRSQRTE)		    ? RS6000_BTM_FRSQRTE  : 0)
 	  | ((TARGET_FRSQRTES)		    ? RS6000_BTM_FRSQRTES : 0)
 	  | ((TARGET_POPCNTD)		    ? RS6000_BTM_POPCNTD  : 0)
-	  | ((TARGET_POWERPC)		    ? RS6000_BTM_POWERPC  : 0)
 	  | ((rs6000_cpu == PROCESSOR_CELL) ? RS6000_BTM_CELL     : 0));
 }
 
@@ -6952,32 +6951,6 @@ rs6000_emit_move (rtx dest, rtx source, enum machine_mode mode)
   if (can_create_pseudo_p () && GET_CODE (operands[0]) == MEM
       && !gpc_reg_operand (operands[1], mode))
     operands[1] = force_reg (mode, operands[1]);
-
-  if (mode == SFmode && ! TARGET_POWERPC
-      && TARGET_HARD_FLOAT && TARGET_FPRS && TARGET_DOUBLE_FLOAT 
-      && GET_CODE (operands[0]) == MEM)
-    {
-      int regnum;
-
-      if (reload_in_progress || reload_completed)
-	regnum = true_regnum (operands[1]);
-      else if (GET_CODE (operands[1]) == REG)
-	regnum = REGNO (operands[1]);
-      else
-	regnum = -1;
-
-      /* If operands[1] is a register, on POWER it may have
-	 double-precision data in it, so truncate it to single
-	 precision.  */
-      if (FP_REGNO_P (regnum) || regnum >= FIRST_PSEUDO_REGISTER)
-	{
-	  rtx newreg;
-	  newreg = (!can_create_pseudo_p () ? copy_rtx (operands[1])
-		    : gen_reg_rtx (mode));
-	  emit_insn (gen_aux_truncdfsf2 (newreg, operands[1]));
-	  operands[1] = newreg;
-	}
-    }
 
   /* Recognize the case where operand[1] is a reference to thread-local
      data and load its address to a register.  */
@@ -12685,15 +12658,6 @@ rs6000_common_init_builtins (void)
 static void
 rs6000_init_libfuncs (void)
 {
-  if (DEFAULT_ABI != ABI_V4 && TARGET_XCOFF && !TARGET_POWERPC)
-    {
-      /* AIX library routines for float->int conversion.  */
-      set_conv_libfunc (sfix_optab, SImode, DFmode, "__itrunc");
-      set_conv_libfunc (ufix_optab, SImode, DFmode, "__uitrunc");
-      set_conv_libfunc (sfix_optab, SImode, TFmode, "_qitrunc");
-      set_conv_libfunc (ufix_optab, SImode, TFmode, "_quitrunc");
-    }
-
   if (!TARGET_IEEEQUAD)
       /* AIX/Darwin/64-bit Linux quad floating point routines.  */
     if (!TARGET_XL_COMPAT)
@@ -20305,18 +20269,6 @@ rs6000_output_function_prologue (FILE *file,
 	}
     }
 
-  /* Write .extern for AIX common mode routines, if needed.  */
-  if (! TARGET_POWERPC && ! common_mode_defined)
-    {
-      fputs ("\t.extern __mulh\n", file);
-      fputs ("\t.extern __mull\n", file);
-      fputs ("\t.extern __divss\n", file);
-      fputs ("\t.extern __divus\n", file);
-      fputs ("\t.extern __quoss\n", file);
-      fputs ("\t.extern __quous\n", file);
-      common_mode_defined = 1;
-    }
-
   rs6000_pic_labelno++;
 }
 
@@ -27419,7 +27371,6 @@ static struct rs6000_opt_mask const rs6000_opt_masks[] =
 #ifdef MASK_STRICT_ALIGN
   { "strict-align",	MASK_STRICT_ALIGN,	false, false },
 #endif
-  { "powerpc",		MASK_POWERPC,		false, false },
   { "soft-float",	MASK_SOFT_FLOAT,	false, false },
   { "string",		MASK_STRING,		false, false },
 };
@@ -27436,7 +27387,6 @@ static struct rs6000_opt_mask const rs6000_builtin_mask_names[] =
   { "frsqrte",		 RS6000_BTM_FRSQRTE,	false, false },
   { "frsqrtes",		 RS6000_BTM_FRSQRTES,	false, false },
   { "popcntd",		 RS6000_BTM_POPCNTD,	false, false },
-  { "powerpc",		 RS6000_BTM_POWERPC,	false, false },
   { "cell",		 RS6000_BTM_CELL,	false, false },
 };
 

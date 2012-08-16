@@ -293,8 +293,7 @@ rs6000_target_modify_macros (bool define_p, int flags, unsigned bu_mask)
 	     (unsigned) flags, bu_mask);
 
   /* target_flags based options.  */
-  if ((flags & MASK_POWERPC) != 0)
-    rs6000_define_or_undefine_macro (define_p, "_ARCH_PPC");
+  rs6000_define_or_undefine_macro (define_p, "_ARCH_PPC");
   if ((flags & MASK_PPC_GPOPT) != 0)
     rs6000_define_or_undefine_macro (define_p, "_ARCH_PPCSQ");
   if ((flags & MASK_PPC_GFXOPT) != 0)
@@ -346,10 +345,6 @@ rs6000_cpu_cpp_builtins (cpp_reader *pfile)
   rs6000_target_modify_macros (true, target_flags,
 			       rs6000_builtin_mask_calculate ());
 
-  /* _ARCH_COM does not fit in the framework of target_modify_macros, so handle
-     it specially.  */
-  if (! TARGET_POWERPC)
-    builtin_define ("_ARCH_COM");
   if (TARGET_FRE)
     builtin_define ("__RECIP__");
   if (TARGET_FRES)
