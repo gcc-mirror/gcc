@@ -1,5 +1,9 @@
 2012-08-17  Hans-Peter Nilsson  <hp@axis.com>
 
+	* lib/target-supports.exp (check_effective_target_sync_int_long)
+	(check_effective_target_sync_char_short): Enable for crisv32-*
+	and cris-*.
+
 	PR middle-end/54261
 	* gcc.dg/torture/pr54261-1.c: New test.
 
