@@ -1741,7 +1741,7 @@ avr_legitimize_reload_address (rtx *px, enum machine_mode mode,
               
               push_reload (XEXP (mem, 0), NULL_RTX, &XEXP (mem, 0), NULL,
                            POINTER_REGS, Pmode, VOIDmode, 0, 0,
-                           1, addr_type);
+                           1, (enum reload_type) addr_type);
               
               if (avr_log.legitimize_reload_address)
                 avr_edump (" RCLASS.2 = %R\n IN = %r\n OUT = %r\n",
@@ -1749,7 +1749,7 @@ avr_legitimize_reload_address (rtx *px, enum machine_mode mode,
               
               push_reload (mem, NULL_RTX, &XEXP (x, 0), NULL,
                            BASE_POINTER_REGS, GET_MODE (x), VOIDmode, 0, 0,
-                           opnum, type);
+                           opnum, (enum reload_type) type);
               
               if (avr_log.legitimize_reload_address)
                 avr_edump (" RCLASS.2 = %R\n IN = %r\n OUT = %r\n",
@@ -1763,7 +1763,7 @@ avr_legitimize_reload_address (rtx *px, enum machine_mode mode,
         {
           push_reload (x, NULL_RTX, px, NULL,
                        POINTER_REGS, GET_MODE (x), VOIDmode, 0, 0,
-                       opnum, type);
+                       opnum, (enum reload_type) type);
           
           if (avr_log.legitimize_reload_address)
             avr_edump (" RCLASS.3 = %R\n IN = %r\n OUT = %r\n",
@@ -10338,7 +10338,7 @@ avr_bdesc[AVR_BUILTIN_COUNT] =
   {
 
 #define DEF_BUILTIN(NAME, N_ARGS, ID, TYPE, ICODE)      \
-    { ICODE, NAME, N_ARGS, NULL_TREE },
+    { (enum insn_code) ICODE, NAME, N_ARGS, NULL_TREE },
 #include "builtins.def"  
 #undef DEF_BUILTIN
   };
