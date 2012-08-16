@@ -804,7 +804,6 @@ See RS/6000 and PowerPC Options.
 -mmfcrf  -mno-mfcrf  -mpopcntb  -mno-popcntb -mpopcntd -mno-popcntd @gol
 -mfprnd  -mno-fprnd @gol
 -mcmpb -mno-cmpb -mmfpgpr -mno-mfpgpr -mhard-dfp -mno-hard-dfp @gol
--mnew-mnemonics  -mold-mnemonics @gol
 -mfull-toc   -mminimal-toc  -mno-fp-in-toc  -mno-sum-in-toc @gol
 -m64  -m32  -mxl-compat  -mno-xl-compat  -mpe @gol
 -malign-power  -malign-natural @gol
@@ -16640,26 +16639,9 @@ The @option{-mpowerpc64} option allows GCC to generate the additional
 and to treat GPRs as 64-bit, doubleword quantities.  GCC defaults to
 @option{-mno-powerpc64}.
 
-@item -mnew-mnemonics
-@itemx -mold-mnemonics
-@opindex mnew-mnemonics
-@opindex mold-mnemonics
-Select which mnemonics to use in the generated assembler code.  With
-@option{-mnew-mnemonics}, GCC uses the assembler mnemonics defined for
-the PowerPC architecture.  With @option{-mold-mnemonics} it uses the
-assembler mnemonics defined for the POWER architecture.  Instructions
-defined in only one architecture have only one mnemonic; GCC uses that
-mnemonic irrespective of which of these options is specified.
-
-GCC defaults to the mnemonics appropriate for the architecture in
-use.  Specifying @option{-mcpu=@var{cpu_type}} sometimes overrides the
-value of these option.  Unless you are building a cross-compiler, you
-should normally not specify either @option{-mnew-mnemonics} or
-@option{-mold-mnemonics}, but should instead accept the default.
-
 @item -mcpu=@var{cpu_type}
 @opindex mcpu
-Set architecture type, register usage, choice of mnemonics, and
+Set architecture type, register usage, and
 instruction scheduling parameters for machine type @var{cpu_type}.
 Supported values for @var{cpu_type} are @samp{401}, @samp{403},
 @samp{405}, @samp{405fp}, @samp{440}, @samp{440fp}, @samp{464}, @samp{464fp},
@@ -16686,7 +16668,7 @@ The @option{-mcpu} options automatically enable or disable the
 following options:
 
 @gccoptlist{-maltivec  -mfprnd  -mhard-float  -mmfcrf  -mmultiple @gol
--mnew-mnemonics  -mpopcntb -mpopcntd  -mpowerpc64 @gol
+-mpopcntb -mpopcntd  -mpowerpc64 @gol
 -mpowerpc-gpopt  -mpowerpc-gfxopt  -msingle-float -mdouble-float @gol
 -msimple-fpu -mstring  -mmulhw  -mdlmzb  -mmfpgpr -mvsx}
 
@@ -16706,11 +16688,11 @@ environment.
 @item -mtune=@var{cpu_type}
 @opindex mtune
 Set the instruction scheduling parameters for machine type
-@var{cpu_type}, but do not set the architecture type, register usage, or
-choice of mnemonics, as @option{-mcpu=@var{cpu_type}} does.  The same
+@var{cpu_type}, but do not set the architecture type or register usage,
+as @option{-mcpu=@var{cpu_type}} does.  The same
 values for @var{cpu_type} are used for @option{-mtune} as for
 @option{-mcpu}.  If both are specified, the code generated uses the
-architecture, registers, and mnemonics set by @option{-mcpu}, but the
+architecture and registers set by @option{-mcpu}, but the
 scheduling parameters set by @option{-mtune}.
 
 @item -mcmodel=small

@@ -20,7 +20,7 @@
    <http://www.gnu.org/licenses/>.  */
 
 #undef  TARGET_DEFAULT
-#define TARGET_DEFAULT (MASK_NEW_MNEMONICS | MASK_LITTLE_ENDIAN)
+#define TARGET_DEFAULT MASK_LITTLE_ENDIAN
 
 #undef	CC1_ENDIAN_DEFAULT_SPEC
 #define	CC1_ENDIAN_DEFAULT_SPEC "%(cc1_endian_little)"

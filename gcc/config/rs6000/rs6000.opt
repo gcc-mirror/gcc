@@ -150,14 +150,6 @@ mstring
 Target Report Mask(STRING) Save
 Generate string instructions for block moves
 
-mnew-mnemonics
-Target Report RejectNegative Mask(NEW_MNEMONICS)
-Use new mnemonics for PowerPC architecture
-
-mold-mnemonics
-Target Report RejectNegative InverseMask(NEW_MNEMONICS)
-Use old mnemonics for PowerPC architecture
-
 msoft-float
 Target Report RejectNegative Mask(SOFT_FLOAT)
 Do not use hardware floating point

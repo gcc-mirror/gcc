@@ -545,7 +545,7 @@
    xsmaddmdp %x0,%x1,%x3
    xsmaddadp %x0,%x1,%x2
    xsmaddmdp %x0,%x1,%x3
-   {fma|fmadd} %0,%1,%2,%3"
+   fmadd %0,%1,%2,%3"
   [(set_attr "type" "fp")
    (set_attr "fp_type" "fp_maddsub_d")])
 
@@ -591,7 +591,7 @@
    xsmsubmdp %x0,%x1,%x3
    xsmsubadp %x0,%x1,%x2
    xsmsubmdp %x0,%x1,%x3
-   {fms|fmsub} %0,%1,%2,%3"
+   fmsub %0,%1,%2,%3"
   [(set_attr "type" "fp")
    (set_attr "fp_type" "fp_maddsub_d")])
 
@@ -623,7 +623,7 @@
    xsnmaddmdp %x0,%x1,%x3
    xsnmaddadp %x0,%x1,%x2
    xsnmaddmdp %x0,%x1,%x3
-   {fnma|fnmadd} %0,%1,%2,%3"
+   fnmadd %0,%1,%2,%3"
   [(set_attr "type" "fp")
    (set_attr "fp_type" "fp_maddsub_d")])
 
@@ -657,7 +657,7 @@
    xsnmsubmdp %x0,%x1,%x3
    xsnmsubadp %x0,%x1,%x2
    xsnmsubmdp %x0,%x1,%x3
-   {fnms|fnmsub} %0,%1,%2,%3"
+   fnmsub %0,%1,%2,%3"
   [(set_attr "type" "fp")
    (set_attr "fp_type" "fp_maddsub_d")])
 

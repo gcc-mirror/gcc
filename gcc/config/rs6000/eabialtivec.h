@@ -21,7 +21,7 @@
 
 /* Add -meabi and -maltivec to target flags.  */
 #undef  TARGET_DEFAULT
-#define TARGET_DEFAULT (MASK_NEW_MNEMONICS | MASK_EABI | MASK_ALTIVEC)
+#define TARGET_DEFAULT (MASK_EABI | MASK_ALTIVEC)
 
 #undef  SUBSUBTARGET_OVERRIDE_OPTIONS
 #define SUBSUBTARGET_OVERRIDE_OPTIONS	rs6000_altivec_abi = 1

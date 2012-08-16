@@ -19,5 +19,4 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #undef TARGET_DEFAULT
-#define TARGET_DEFAULT \
-  (MASK_PPC_GFXOPT | MASK_POWERPC64 | MASK_64BIT | MASK_NEW_MNEMONICS)
+#define TARGET_DEFAULT (MASK_PPC_GFXOPT | MASK_POWERPC64 | MASK_64BIT)
