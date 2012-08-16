@@ -1,3 +1,13 @@
+2012-08-16  Walter Lee  <walt@tilera.com>
+
+	Backport from mainline
+	2012-08-16  Walter Lee  <walt@tilera.com>
+
+	* config.gcc (tilegx-*-linux*): Add feedback.h.
+	(tilepro-*-linux*): Likewise.
+	* config/tilegx/feedback.h: New file.
+	* config/tilepro/feedback.h: New file.
+
 2012-08-08 Pavel Chupin <pavel.v.chupin@intel.com>
 
 	Backport from mainline r189840 and r187586:
