@@ -1,3 +1,74 @@
+2012-08-15  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54243
+	PR fortran/54244
+	* gfortran.dg/typebound_call_24.f03: New.
+
+2012-08-15  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/54245
+	* gcc.dg/tree-ssa/pr54245.c: New test.
+
+2012-08-15  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/54240
+	* gcc.target/powerpc/pr54240.c: New test.
+	* gcc.target/mips/pr54240.c: Likewise.
+
+2012-08-14  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/52933
+	* gcc.target/sh/pr52933-1.c: New.
+	* gcc.target/sh/pr52933-2.c: New.
+
+2012-08-14  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/50751
+	* gcc.target/sh/pr50751-8.c: New.
+
+2012-08-14  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/47586
+	* gfortran.dg/typebound_proc_20.f90: Enable runtime test.
+	* gfortran.dg/typebound_proc_27.f03: New test.
+
+2012-08-14  Sterling Augustine  <saugustine@google.com>
+
+	* g++.dg/debug/dwarf2/pubnames-2.C: Adjust.
+
+2012-08-14  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/40881
+	* gfortran.dg/data_constraints_3.f90: New.
+	* gfortran.dg/data_constraints_1.f90: Add dg-options ""
+	to disable -pedantic compilation.
+	* gfortran.dg/pr37243.f: Ditto.
+	* gfortran.dg/g77/19990826-3.f: Ditto.
+	* gfortran.dg/g77/20020307-1.f : Ditto.
+	* gfortran.dg/g77/980310-3.f: Ditto.
+
+2012-08-14  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54234
+	* gfortran.dg/warn_conversion_4.f90: New.
+
+2012-08-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/53411
+	PR rtl-optimization/53495
+	* gcc.c-torture/compile/pr53411.c: New test.
+	* gcc.c-torture/compile/pr53495.c: New test.
+
+2012-08-13  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/tree-prof/update-loopch.c: Adjust.
+
+2012-08-13  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/54200
+	* gcc.dg/guality/pr54200.c: New testcase.
+	* gcc.dg/tree-ssa/slsr-8.c: Adjust.
+
 2012-08-12  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* gcc.target/sh/prefetch.c: Add -m3* to inclusion list.

@@ -46,6 +46,7 @@ executed it will:
    with exit code 0.  Otherwise, it exits with error code 1.
 """
 
+import datetime
 import optparse
 import os
 import re
@@ -135,6 +136,26 @@ class TestResult(object):
       attrs = '%s | ' % self.attrs
     return '%s%s: %s %s' % (attrs, self.state, self.name, self.description)
 
+  def ExpirationDate(self):
+    # Return a datetime.date object with the expiration date for this
+    # test result.  Return None, if no expiration has been set.
+    if re.search(r'expire=', self.attrs):
+      expiration = re.search(r'expire=(\d\d\d\d)(\d\d)(\d\d)', self.attrs)
+      if not expiration:
+        Error('Invalid expire= format in "%s".  Must be of the form '
+              '"expire=YYYYMMDD"' % self)
+      return datetime.date(int(expiration.group(1)),
+                           int(expiration.group(2)),
+                           int(expiration.group(3)))
+    return None
+
+  def HasExpired(self):
+    # Return True if the expiration date of this result has passed.
+    expiration_date = self.ExpirationDate()
+    if expiration_date:
+      now = datetime.date.today()
+      return now > expiration_date
+
 
 def GetMakefileValue(makefile_name, value_name):
   if os.path.exists(makefile_name):
@@ -178,7 +199,14 @@ def ParseSummary(sum_fname):
   sum_file = open(sum_fname)
   for line in sum_file:
     if IsInterestingResult(line):
-      result_set.add(TestResult(line))
+      result = TestResult(line)
+      if result.HasExpired():
+        # Tests that have expired are not added to the set of expected
+        # results. If they are still present in the set of actual results,
+        # they will cause an error to be reported.
+        print 'WARNING: Expected failure "%s" has expired.' % line.strip()
+        continue
+      result_set.add(result)
   sum_file.close()
   return result_set
 
@@ -220,16 +248,20 @@ def GetResults(sum_files):
 
 def CompareResults(manifest, actual):
   """Compare sets of results and return two lists:
-     - List of results present in MANIFEST but missing from ACTUAL.
      - List of results present in ACTUAL but missing from MANIFEST.
+     - List of results present in MANIFEST but missing from ACTUAL.
   """
-  # Report all the actual results not present in the manifest.
+  # Collect all the actual results not present in the manifest.
+  # Results in this set will be reported as errors.
   actual_vs_manifest = set()
   for actual_result in actual:
     if actual_result not in manifest:
       actual_vs_manifest.add(actual_result)
 
-  # Simlarly for all the tests in the manifest.
+  # Collect all the tests in the manifest that were not found
+  # in the actual results.
+  # Results in this set will be reported as warnings (since
+  # they are expected failures that are not failing anymore).
   manifest_vs_actual = set()
   for expected_result in manifest:
     # Ignore tests marked flaky.

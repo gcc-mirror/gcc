@@ -188,7 +188,7 @@ adjust_vec_debug_stmts (void)
 
   while (!VEC_empty (adjust_info, adjust_vec))
     {
-      adjust_debug_stmts_now (VEC_last (adjust_info, adjust_vec));
+      adjust_debug_stmts_now (&VEC_last (adjust_info, adjust_vec));
       VEC_pop (adjust_info, adjust_vec);
     }
 
@@ -545,7 +545,7 @@ slpeel_update_phi_nodes_for_guard1 (edge guard_edge, struct loop *loop,
 
       /** 2. Handle loop-closed-ssa-form phis  **/
 
-      if (!is_gimple_reg (PHI_RESULT (orig_phi)))
+      if (virtual_operand_p (PHI_RESULT (orig_phi)))
 	continue;
 
       /* 2.1. Generate new phi node in NEW_EXIT_BB:  */
@@ -1176,12 +1176,12 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop,
      in the same form).  Doing this early simplifies the checking what
      uses should be renamed.  */
   for (gsi = gsi_start_phis (loop->header); !gsi_end_p (gsi); gsi_next (&gsi))
-    if (!is_gimple_reg (gimple_phi_result (gsi_stmt (gsi))))
+    if (virtual_operand_p (gimple_phi_result (gsi_stmt (gsi))))
       {
 	gimple phi = gsi_stmt (gsi);
 	for (gsi = gsi_start_phis (exit_e->dest);
 	     !gsi_end_p (gsi); gsi_next (&gsi))
-	  if (!is_gimple_reg (gimple_phi_result (gsi_stmt (gsi))))
+	  if (virtual_operand_p (gimple_phi_result (gsi_stmt (gsi))))
 	    break;
 	if (gsi_end_p (gsi))
 	  {
@@ -1659,7 +1659,7 @@ vect_can_advance_ivs_p (loop_vec_info loop_vinfo)
       /* Skip virtual phi's. The data dependences that are associated with
          virtual defs/uses (i.e., memory accesses) are analyzed elsewhere.  */
 
-      if (!is_gimple_reg (PHI_RESULT (phi)))
+      if (virtual_operand_p (PHI_RESULT (phi)))
 	{
 	  if (vect_print_dump_info (REPORT_DETAILS))
 	    fprintf (vect_dump, "virtual phi. skip.");
@@ -1789,7 +1789,7 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo, tree niters,
         }
 
       /* Skip virtual phi's.  */
-      if (!is_gimple_reg (PHI_RESULT (phi)))
+      if (virtual_operand_p (PHI_RESULT (phi)))
 	{
 	  if (vect_print_dump_info (REPORT_DETAILS))
 	    fprintf (vect_dump, "virtual phi. skip.");
@@ -2550,4 +2550,3 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
 			     GSI_SAME_STMT);
     }
 }
-

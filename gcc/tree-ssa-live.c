@@ -240,7 +240,7 @@ partition_view_init (var_map map)
   for (x = 0; x < map->partition_size; x++)
     {
       tmp = partition_find (map->var_partition, x);
-      if (ssa_name (tmp) != NULL_TREE && is_gimple_reg (ssa_name (tmp))
+      if (ssa_name (tmp) != NULL_TREE && !virtual_operand_p (ssa_name (tmp))
 	  && (!has_zero_uses (ssa_name (tmp))
 	      || !SSA_NAME_IS_DEFAULT_DEF (ssa_name (tmp))))
 	bitmap_set_bit (used, tmp);
@@ -750,7 +750,7 @@ remove_unused_locals (void)
 	  tree def;
 	  gimple phi = gsi_stmt (gsi);
 
-	  if (!is_gimple_reg (gimple_phi_result (phi)))
+	  if (virtual_operand_p (gimple_phi_result (phi)))
 	    continue;
 
 	  def = gimple_phi_result (phi);
@@ -1216,7 +1216,7 @@ void
 register_ssa_partition_check (tree ssa_var)
 {
   gcc_assert (TREE_CODE (ssa_var) == SSA_NAME);
-  if (!is_gimple_reg (ssa_var))
+  if (virtual_operand_p (ssa_var))
     {
       fprintf (stderr, "Illegally registering a virtual SSA name :");
       print_generic_expr (stderr, ssa_var, TDF_SLIM);

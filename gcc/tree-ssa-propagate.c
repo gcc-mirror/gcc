@@ -1028,7 +1028,7 @@ substitute_and_fold (ssa_prop_get_value_fn get_value_fn,
 	gimple_stmt_iterator gsi;
 
 	if (!name
-	    || !is_gimple_reg (name))
+	    || virtual_operand_p (name))
 	  continue;
 
 	def_stmt = SSA_NAME_DEF_STMT (name);

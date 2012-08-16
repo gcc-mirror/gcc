@@ -1089,6 +1089,32 @@ slsr_process_neg (gimple gs, tree rhs1, bool speed)
   add_cand_for_stmt (gs, c);
 }
 
+/* Help function for legal_cast_p, operating on two trees.  Checks
+   whether it's allowable to cast from RHS to LHS.  See legal_cast_p
+   for more details.  */
+
+static bool
+legal_cast_p_1 (tree lhs, tree rhs)
+{
+  tree lhs_type, rhs_type;
+  unsigned lhs_size, rhs_size;
+  bool lhs_wraps, rhs_wraps;
+
+  lhs_type = TREE_TYPE (lhs);
+  rhs_type = TREE_TYPE (rhs);
+  lhs_size = TYPE_PRECISION (lhs_type);
+  rhs_size = TYPE_PRECISION (rhs_type);
+  lhs_wraps = TYPE_OVERFLOW_WRAPS (lhs_type);
+  rhs_wraps = TYPE_OVERFLOW_WRAPS (rhs_type);
+
+  if (lhs_size < rhs_size
+      || (rhs_wraps && !lhs_wraps)
+      || (rhs_wraps && lhs_wraps && rhs_size != lhs_size))
+    return false;
+
+  return true;
+}
+
 /* Return TRUE if GS is a statement that defines an SSA name from
    a conversion and is legal for us to combine with an add and multiply
    in the candidate table.  For example, suppose we have:
@@ -1129,28 +1155,11 @@ slsr_process_neg (gimple gs, tree rhs1, bool speed)
 static bool
 legal_cast_p (gimple gs, tree rhs)
 {
-  tree lhs, lhs_type, rhs_type;
-  unsigned lhs_size, rhs_size;
-  bool lhs_wraps, rhs_wraps;
-
   if (!is_gimple_assign (gs)
       || !CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (gs)))
     return false;
 
-  lhs = gimple_assign_lhs (gs);
-  lhs_type = TREE_TYPE (lhs);
-  rhs_type = TREE_TYPE (rhs);
-  lhs_size = TYPE_PRECISION (lhs_type);
-  rhs_size = TYPE_PRECISION (rhs_type);
-  lhs_wraps = TYPE_OVERFLOW_WRAPS (lhs_type);
-  rhs_wraps = TYPE_OVERFLOW_WRAPS (rhs_type);
-
-  if (lhs_size < rhs_size
-      || (rhs_wraps && !lhs_wraps)
-      || (rhs_wraps && lhs_wraps && rhs_size != lhs_size))
-    return false;
-
-  return true;
+  return legal_cast_p_1 (gimple_assign_lhs (gs), rhs);
 }
 
 /* Given GS which is a cast to a scalar integer type, determine whether
@@ -1996,6 +2005,31 @@ analyze_increments (slsr_cand_t first_dep, enum machine_mode mode, bool speed)
 		       != POINTER_PLUS_EXPR)))
 	incr_vec[i].cost = COST_NEUTRAL;
       
+      /* FORNOW: If we need to add an initializer, give up if a cast from
+	 the candidate's type to its stride's type can lose precision.
+	 This could eventually be handled better by expressly retaining the
+	 result of a cast to a wider type in the stride.  Example:
+
+           short int _1;
+	   _2 = (int) _1;
+	   _3 = _2 * 10;
+	   _4 = x + _3;    ADD: x + (10 * _1) : int
+	   _5 = _2 * 15;
+	   _6 = x + _3;    ADD: x + (15 * _1) : int
+
+         Right now replacing _6 would cause insertion of an initializer
+	 of the form "short int T = _1 * 5;" followed by a cast to 
+	 int, which could overflow incorrectly.  Had we recorded _2 or
+	 (int)_1 as the stride, this wouldn't happen.  However, doing
+         this breaks other opportunities, so this will require some
+	 care.  */
+      else if (!incr_vec[i].initializer
+	       && TREE_CODE (first_dep->stride) != INTEGER_CST
+	       && !legal_cast_p_1 (first_dep->stride,
+				   gimple_assign_lhs (first_dep->cand_stmt)))
+
+	incr_vec[i].cost = COST_INFINITE;
+
       /* For any other increment, if this is a multiply candidate, we
 	 must introduce a temporary T and initialize it with
 	 T_0 = stride * increment.  When optimizing for speed, walk the

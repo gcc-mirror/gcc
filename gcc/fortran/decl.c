@@ -5050,6 +5050,7 @@ match_ppc_decl (void)
 	{
 	  c->ts = ts;
 	  c->ts.interface = gfc_new_symbol ("", gfc_current_ns);
+	  c->ts.interface->result = c->ts.interface;
 	  c->ts.interface->ts = ts;
 	  c->ts.interface->attr.flavor = FL_PROCEDURE;
 	  c->ts.interface->attr.function = 1;

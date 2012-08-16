@@ -1589,7 +1589,7 @@ replace_uses_by (tree name, tree val)
 		  /* This can only occur for virtual operands, since
 		     for the real ones SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name))
 		     would prevent replacement.  */
-		  gcc_checking_assert (!is_gimple_reg (name));
+		  gcc_checking_assert (virtual_operand_p (name));
 		  SSA_NAME_OCCURS_IN_ABNORMAL_PHI (val) = 1;
 		}
 	    }
@@ -1664,21 +1664,21 @@ gimple_merge_blocks (basic_block a, basic_block b)
       gimple phi = gsi_stmt (psi);
       tree def = gimple_phi_result (phi), use = gimple_phi_arg_def (phi, 0);
       gimple copy;
-      bool may_replace_uses = !is_gimple_reg (def)
-			      || may_propagate_copy (def, use);
+      bool may_replace_uses = (virtual_operand_p (def)
+			       || may_propagate_copy (def, use));
 
       /* In case we maintain loop closed ssa form, do not propagate arguments
 	 of loop exit phi nodes.  */
       if (current_loops
 	  && loops_state_satisfies_p (LOOP_CLOSED_SSA)
-	  && is_gimple_reg (def)
+	  && !virtual_operand_p (def)
 	  && TREE_CODE (use) == SSA_NAME
 	  && a->loop_father != b->loop_father)
 	may_replace_uses = false;
 
       if (!may_replace_uses)
 	{
-	  gcc_assert (is_gimple_reg (def));
+	  gcc_assert (!virtual_operand_p (def));
 
 	  /* Note that just emitting the copies is fine -- there is no problem
 	     with ordering of phi nodes.  This is because A is the single
@@ -1693,7 +1693,7 @@ gimple_merge_blocks (basic_block a, basic_block b)
 	  /* If we deal with a PHI for virtual operands, we can simply
 	     propagate these without fussing with folding or updating
 	     the stmt.  */
-	  if (!is_gimple_reg (def))
+	  if (virtual_operand_p (def))
 	    {
 	      imm_use_iterator iter;
 	      use_operand_p use_p;
@@ -4357,7 +4357,7 @@ verify_gimple_phi (gimple phi)
       return true;
     }
 
-  virtual_p = !is_gimple_reg (phi_result);
+  virtual_p = virtual_operand_p (phi_result);
   if (TREE_CODE (phi_result) != SSA_NAME
       || (virtual_p
 	  && SSA_NAME_VAR (phi_result) != gimple_vop (cfun)))
@@ -4379,7 +4379,7 @@ verify_gimple_phi (gimple phi)
       /* Addressable variables do have SSA_NAMEs but they
 	 are not considered gimple values.  */
       else if ((TREE_CODE (t) == SSA_NAME
-		&& virtual_p != !is_gimple_reg (t))
+		&& virtual_p != virtual_operand_p (t))
 	       || (virtual_p
 		   && (TREE_CODE (t) != SSA_NAME
 		       || SSA_NAME_VAR (t) != gimple_vop (cfun)))
@@ -5948,7 +5948,7 @@ replace_ssa_name (tree name, struct pointer_map_t *vars_map,
   void **loc;
   tree new_name;
 
-  gcc_assert (is_gimple_reg (name));
+  gcc_assert (!virtual_operand_p (name));
 
   loc = pointer_map_contains (vars_map, name);
 
@@ -6235,7 +6235,7 @@ move_block_to_fn (struct function *dest_cfun, basic_block bb,
       tree op = PHI_RESULT (phi);
       ssa_op_iter oi;
 
-      if (!is_gimple_reg (op))
+      if (virtual_operand_p (op))
 	{
 	  /* Remove the phi nodes for virtual operands (alias analysis will be
 	     run for the new function, anyway).  */
@@ -6467,8 +6467,8 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
      EXIT_BB so that we can re-attach them to the new basic block that
      will replace the region.  */
   num_entry_edges = EDGE_COUNT (entry_bb->preds);
-  entry_pred = (basic_block *) xcalloc (num_entry_edges, sizeof (basic_block));
-  entry_flag = (int *) xcalloc (num_entry_edges, sizeof (int));
+  entry_pred = XNEWVEC (basic_block, num_entry_edges);
+  entry_flag = XNEWVEC (int, num_entry_edges);
   entry_prob = XNEWVEC (unsigned, num_entry_edges);
   i = 0;
   for (ei = ei_start (entry_bb->preds); (e = ei_safe_edge (ei)) != NULL;)
@@ -6482,9 +6482,8 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
   if (exit_bb)
     {
       num_exit_edges = EDGE_COUNT (exit_bb->succs);
-      exit_succ = (basic_block *) xcalloc (num_exit_edges,
-					   sizeof (basic_block));
-      exit_flag = (int *) xcalloc (num_exit_edges, sizeof (int));
+      exit_succ = XNEWVEC (basic_block, num_exit_edges);
+      exit_flag = XNEWVEC (int, num_exit_edges);
       exit_prob = XNEWVEC (unsigned, num_exit_edges);
       i = 0;
       for (ei = ei_start (exit_bb->succs); (e = ei_safe_edge (ei)) != NULL;)
@@ -6870,8 +6869,18 @@ print_loop (FILE *file, struct loop *loop, int indent, int verbosity)
   s_indent[indent] = '\0';
 
   /* Print loop's header.  */
-  fprintf (file, "%sloop_%d (header = %d, latch = %d", s_indent,
-	   loop->num, loop->header->index, loop->latch->index);
+  fprintf (file, "%sloop_%d (", s_indent, loop->num);
+  if (loop->header)
+    fprintf (file, "header = %d", loop->header->index);
+  else
+    {
+      fprintf (file, "deleted)\n");
+      return;
+    }
+  if (loop->latch)
+    fprintf (file, ", latch = %d", loop->latch->index);
+  else
+    fprintf (file, ", multiple latches");
   fprintf (file, ", niter = ");
   print_generic_expr (file, loop->nb_iterations, 0);
 
@@ -7863,3 +7872,54 @@ struct gimple_opt_pass pass_warn_unused_result =
     0,					/* todo_flags_finish */
   }
 };
+
+
+/* Garbage collection support for edge_def.  */
+
+extern void gt_ggc_mx (tree&);
+extern void gt_ggc_mx (gimple&);
+extern void gt_ggc_mx (rtx&);
+extern void gt_ggc_mx (basic_block&);
+
+void
+gt_ggc_mx (edge_def *e)
+{
+  gt_ggc_mx (e->src);
+  gt_ggc_mx (e->dest);
+  if (current_ir_type () == IR_GIMPLE)
+    gt_ggc_mx (e->insns.g);
+  else
+    gt_ggc_mx (e->insns.r);
+  gt_ggc_mx (e->goto_block);
+}
+
+/* PCH support for edge_def.  */
+
+extern void gt_pch_nx (tree&);
+extern void gt_pch_nx (gimple&);
+extern void gt_pch_nx (rtx&);
+extern void gt_pch_nx (basic_block&);
+
+void
+gt_pch_nx (edge_def *e)
+{
+  gt_pch_nx (e->src);
+  gt_pch_nx (e->dest);
+  if (current_ir_type () == IR_GIMPLE)
+    gt_pch_nx (e->insns.g);
+  else
+    gt_pch_nx (e->insns.r);
+  gt_pch_nx (e->goto_block);
+}
+
+void
+gt_pch_nx (edge_def *e, gt_pointer_operator op, void *cookie)
+{
+  op (&(e->src), cookie);
+  op (&(e->dest), cookie);
+  if (current_ir_type () == IR_GIMPLE)
+    op (&(e->insns.g), cookie);
+  else
+    op (&(e->insns.r), cookie);
+  op (&(e->goto_block), cookie);
+}

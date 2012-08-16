@@ -45,12 +45,6 @@
 #endif
 
 
-/* Define if building with C++. */
-#ifndef USED_FOR_TARGET
-#undef ENABLE_BUILD_WITH_CXX
-#endif
-
-
 /* Define if you want more run-time sanity checks. This one gets a grab bag of
    miscellaneous but relatively cheap checks. */
 #ifndef USED_FOR_TARGET

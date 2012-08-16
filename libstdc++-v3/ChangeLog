@@ -1,3 +1,48 @@
+2012-08-15  Tom Tromey  <tromey@redhat.com>
+
+	* testsuite/libstdc++-prettyprinters/cxx11.cc (struct datum):
+	New.
+	(global): New global.
+	(main): Add test for unique_ptr.
+	* python/libstdcxx/v6/printers.py
+	(UniquePointerPrinter.to_string): Extract the pointer and also
+	print its type.
+
+2012-08-13  David Adler  <d.adler.s@gmail.com>
+
+	PR libstdc++/54185
+	* src/c++11/condition_variable.cc (condition_variable): Always
+	destroy native type in destructor.
+	* testsuite/30_threads/condition_variable/54185.cc: New.
+
+2012-08-13  François Dumont  <fdumont@gcc.gnu.org>
+	    Ollie Wild  <aaw@google.com>
+
+	* include/bits/hashtable.h
+	(_Hashtable<>_M_insert_multi_node(hash_code, node_type*)): New.
+	(_Hashtable<>_M_insert(_Args&&, false_type)): Use latter.
+	(_Hashtable<>::_M_emplace(false_type, _Args&&...)): Likewise.
+	(_Hashtable<>::_M_insert_bucket): Replace by ...
+	(_Hashtable<>::_M_insert_unique_node(size_type, hash_code, node_type*)):
+	... this, new.
+	(_Hashtable<>::_M_insert(_Args&&, true_type)): Use latter.
+	(_Hashtable<>::_M_emplace(true_type, _Args&&...)): Likewise.
+	* include/bits/hashtable_policy.h (_Map_base<>::operator[]): Use
+	latter, emplace the value_type rather than insert.
+	* include/std/unordered_map: Include tuple.
+	* include/std/unordered_set: Likewise.
+	* testsuite/util/testsuite_counter_type.h: New.
+	* testsuite/23_containers/unordered_map/operators/2.cc: New.
+
+2012-08-13  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR libstdc++/54112
+	* include/c_compatibility/complex.h: Undefine complex, always
+	include system's complex.h if present.
+	* testsuite/26_numerics/complex/c99.cc: New testcase.
+	* testsuite/17_intro/headers/c++1998/complex.cc: Likewise.
+	* doc/xml/manual/numerics.xml: Document it.
+
 2012-08-12  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/52681

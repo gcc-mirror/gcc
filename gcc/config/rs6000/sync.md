@@ -1,6 +1,5 @@
 ;; Machine description for PowerPC synchronization instructions.
-;; Copyright (C) 2005, 2007, 2008, 2009, 2011
-;; Free Software Foundation, Inc.
+;; Copyright (C) 2005-2012 Free Software Foundation, Inc.
 ;; Contributed by Geoffrey Keating.
 
 ;; This file is part of GCC.
@@ -66,7 +65,7 @@
   [(set (match_operand:BLK 0 "" "")
 	(unspec:BLK [(match_dup 0)] UNSPEC_SYNC))]
   ""
-  "{dcs|sync}"
+  "sync"
   [(set_attr "type" "sync")])
 
 (define_expand "lwsync"
@@ -96,7 +95,7 @@
 (define_insn "isync"
   [(unspec_volatile:BLK [(const_int 0)] UNSPECV_ISYNC)]
   ""
-  "{ics|isync}"
+  "isync"
   [(set_attr "type" "isync")])
 
 ;; The control dependency used for load dependency described
@@ -172,7 +171,7 @@
   [(set (match_operand:ATOMIC 0 "gpc_reg_operand" "=r")
 	(unspec_volatile:ATOMIC
          [(match_operand:ATOMIC 1 "memory_operand" "Z")] UNSPECV_LL))]
-  "TARGET_POWERPC"
+  ""
   "<larx> %0,%y1"
   [(set_attr "type" "load_l")])
 
@@ -181,7 +180,7 @@
 	(unspec_volatile:CC [(const_int 0)] UNSPECV_SC))
    (set (match_operand:ATOMIC 1 "memory_operand" "=Z")
 	(match_operand:ATOMIC 2 "gpc_reg_operand" "r"))]
-  "TARGET_POWERPC"
+  ""
   "<stcx> %2,%y1"
   [(set_attr "type" "store_c")])
 
@@ -194,7 +193,7 @@
    (match_operand:SI 5 "const_int_operand" "")		;; is_weak
    (match_operand:SI 6 "const_int_operand" "")		;; model succ
    (match_operand:SI 7 "const_int_operand" "")]		;; model fail
-  "TARGET_POWERPC"
+  ""
 {
   rs6000_expand_atomic_compare_and_swap (operands);
   DONE;
@@ -205,7 +204,7 @@
    (match_operand:INT1 1 "memory_operand" "")		;; memory
    (match_operand:INT1 2 "gpc_reg_operand" "")		;; input
    (match_operand:SI 3 "const_int_operand" "")]		;; model
-  "TARGET_POWERPC"
+  ""
 {
   rs6000_expand_atomic_exchange (operands);
   DONE;
@@ -216,7 +215,7 @@
    (FETCHOP:INT1 (match_dup 0)
      (match_operand:INT1 1 "<fetchop_pred>" ""))	;; operand
    (match_operand:SI 2 "const_int_operand" "")]		;; model
-  "TARGET_POWERPC"
+  ""
 {
   rs6000_expand_atomic_op (<CODE>, operands[0], operands[1],
 			   NULL_RTX, NULL_RTX, operands[2]);
@@ -227,7 +226,7 @@
   [(match_operand:INT1 0 "memory_operand" "")		;; memory
    (match_operand:INT1 1 "gpc_reg_operand" "")		;; operand
    (match_operand:SI 2 "const_int_operand" "")]		;; model
-  "TARGET_POWERPC"
+  ""
 {
   rs6000_expand_atomic_op (NOT, operands[0], operands[1],
 			   NULL_RTX, NULL_RTX, operands[2]);
@@ -240,7 +239,7 @@
    (FETCHOP:INT1 (match_dup 1)
      (match_operand:INT1 2 "<fetchop_pred>" ""))	;; operand
    (match_operand:SI 3 "const_int_operand" "")]		;; model
-  "TARGET_POWERPC"
+  ""
 { 
   rs6000_expand_atomic_op (<CODE>, operands[1], operands[2],
 			   operands[0], NULL_RTX, operands[3]);
@@ -252,7 +251,7 @@
    (match_operand:INT1 1 "memory_operand" "")		;; memory
    (match_operand:INT1 2 "gpc_reg_operand" "")		;; operand
    (match_operand:SI 3 "const_int_operand" "")]		;; model
-  "TARGET_POWERPC"
+  ""
 {
   rs6000_expand_atomic_op (NOT, operands[1], operands[2],
 			   operands[0], NULL_RTX, operands[3]);
@@ -265,7 +264,7 @@
    (FETCHOP:INT1 (match_dup 1)
      (match_operand:INT1 2 "<fetchop_pred>" ""))	;; operand
    (match_operand:SI 3 "const_int_operand" "")]		;; model
-  "TARGET_POWERPC"
+  ""
 {
   rs6000_expand_atomic_op (<CODE>, operands[1], operands[2],
 			   NULL_RTX, operands[0], operands[3]);
@@ -277,7 +276,7 @@
    (match_operand:INT1 1 "memory_operand" "")		;; memory
    (match_operand:INT1 2 "gpc_reg_operand" "")		;; operand
    (match_operand:SI 3 "const_int_operand" "")]		;; model
-  "TARGET_POWERPC"
+  ""
 {
   rs6000_expand_atomic_op (NOT, operands[1], operands[2],
 			   NULL_RTX, operands[0], operands[3]);

@@ -791,7 +791,7 @@ execute_optimize_stdarg (void)
 	      gimple phi = gsi_stmt (i);
 	      lhs = PHI_RESULT (phi);
 
-	      if (!is_gimple_reg (lhs))
+	      if (virtual_operand_p (lhs))
 		continue;
 
 	      FOR_EACH_PHI_ARG (uop, phi, soi, SSA_OP_USE)

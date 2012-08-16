@@ -220,7 +220,7 @@ do {									\
 
 /* Override rs6000.h definition.  */
 #undef	TARGET_DEFAULT
-#define	TARGET_DEFAULT (MASK_POWERPC | MASK_NEW_MNEMONICS)
+#define	TARGET_DEFAULT 0
 
 /* Override rs6000.h definition.  */
 #undef	PROCESSOR_DEFAULT
@@ -450,7 +450,7 @@ do {									\
 do {									\
   if (DEFAULT_ABI == ABI_V4)						\
     asm_fprintf (FILE,							\
-		 "\t{stu|stwu} %s,-16(%s)\n\t{st|stw} %s,12(%s)\n",	\
+		 "\tstwu %s,-16(%s)\n\tstw %s,12(%s)\n",	\
 		 reg_names[1], reg_names[1], reg_names[REGNO],		\
 		 reg_names[1]);						\
 } while (0)
@@ -462,7 +462,7 @@ do {									\
 do {									\
   if (DEFAULT_ABI == ABI_V4)						\
     asm_fprintf (FILE,							\
-		 "\t{l|lwz} %s,12(%s)\n\t{ai|addic} %s,%s,16\n",	\
+		 "\tlwz %s,12(%s)\n\taddic %s,%s,16\n",	\
 		 reg_names[REGNO], reg_names[1], reg_names[1],		\
 		 reg_names[1]);						\
 } while (0)

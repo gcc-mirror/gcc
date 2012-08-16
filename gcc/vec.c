@@ -1,7 +1,8 @@
 /* Vector API for GNU compiler.
-   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2010
+   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Nathan Sidwell <nathan@codesourcery.com>
+   Re-implemented in C++ by Diego Novillo <dnovillo@google.com>
 
 This file is part of GCC.
 
@@ -213,7 +214,7 @@ calculate_allocation (const struct vec_prefix *pfx, int reserve, bool exact)
    trailing array is at VEC_OFFSET offset and consists of ELT_SIZE
    sized elements.  */
 
-static void *
+void *
 vec_gc_o_reserve_1 (void *vec, int reserve, size_t vec_offset, size_t elt_size,
 		    bool exact MEM_STAT_DECL)
 {
@@ -246,61 +247,10 @@ vec_gc_o_reserve_1 (void *vec, int reserve, size_t vec_offset, size_t elt_size,
   return vec;
 }
 
-/* Ensure there are at least RESERVE free slots in VEC, growing
-   exponentially.  If RESERVE < 0 grow exactly, else grow
-   exponentially.  As a special case, if VEC is NULL, and RESERVE is
-   0, no vector will be created. */
-
-void *
-vec_gc_p_reserve (void *vec, int reserve MEM_STAT_DECL)
-{
-  return vec_gc_o_reserve_1 (vec, reserve,
-			     sizeof (struct vec_prefix),
-			     sizeof (void *), false
-			     PASS_MEM_STAT);
-}
-
-/* Ensure there are at least RESERVE free slots in VEC, growing
-   exactly.  If RESERVE < 0 grow exactly, else grow exponentially.  As
-   a special case, if VEC is NULL, and RESERVE is 0, no vector will be
-   created. */
-
-void *
-vec_gc_p_reserve_exact (void *vec, int reserve MEM_STAT_DECL)
-{
-  return vec_gc_o_reserve_1 (vec, reserve,
-			     sizeof (struct vec_prefix),
-			     sizeof (void *), true
-			     PASS_MEM_STAT);
-}
-
-/* As for vec_gc_p_reserve, but for object vectors.  The vector's
-   trailing array is at VEC_OFFSET offset and consists of ELT_SIZE
-   sized elements.  */
-
-void *
-vec_gc_o_reserve (void *vec, int reserve, size_t vec_offset, size_t elt_size
-		  MEM_STAT_DECL)
-{
-  return vec_gc_o_reserve_1 (vec, reserve, vec_offset, elt_size, false
-			     PASS_MEM_STAT);
-}
-
-/* As for vec_gc_p_reserve_exact, but for object vectors.  The
-   vector's trailing array is at VEC_OFFSET offset and consists of
-   ELT_SIZE sized elements.  */
-
-void *
-vec_gc_o_reserve_exact (void *vec, int reserve, size_t vec_offset,
-			size_t elt_size MEM_STAT_DECL)
-{
-  return vec_gc_o_reserve_1 (vec, reserve, vec_offset, elt_size, true
-			     PASS_MEM_STAT);
-}
 
 /* As for vec_gc_o_reserve_1, but for heap allocated vectors.  */
 
-static void *
+void *
 vec_heap_o_reserve_1 (void *vec, int reserve, size_t vec_offset,
 		      size_t elt_size, bool exact MEM_STAT_DECL)
 {
@@ -328,47 +278,6 @@ vec_heap_o_reserve_1 (void *vec, int reserve, size_t vec_offset,
   return vec;
 }
 
-/* As for vec_gc_p_reserve, but for heap allocated vectors.  */
-
-void *
-vec_heap_p_reserve (void *vec, int reserve MEM_STAT_DECL)
-{
-  return vec_heap_o_reserve_1 (vec, reserve,
-			       sizeof (struct vec_prefix),
-			       sizeof (void *), false
-			       PASS_MEM_STAT);
-}
-
-/* As for vec_gc_p_reserve_exact, but for heap allocated vectors.  */
-
-void *
-vec_heap_p_reserve_exact (void *vec, int reserve MEM_STAT_DECL)
-{
-  return vec_heap_o_reserve_1 (vec, reserve,
-			       sizeof (struct vec_prefix),
-			       sizeof (void *), true
-			       PASS_MEM_STAT);
-}
-
-/* As for vec_gc_o_reserve, but for heap allocated vectors.  */
-
-void *
-vec_heap_o_reserve (void *vec, int reserve, size_t vec_offset, size_t elt_size
-		    MEM_STAT_DECL)
-{
-  return vec_heap_o_reserve_1 (vec, reserve, vec_offset, elt_size, false
-			       PASS_MEM_STAT);
-}
-
-/* As for vec_gc_o_reserve_exact, but for heap allocated vectors.  */
-
-void *
-vec_heap_o_reserve_exact (void *vec, int reserve, size_t vec_offset,
-			  size_t elt_size MEM_STAT_DECL)
-{
-  return vec_heap_o_reserve_1 (vec, reserve, vec_offset, elt_size, true
-			       PASS_MEM_STAT);
-}
 
 /* Stack vectors are a little different.  VEC_alloc turns into a call
    to vec_stack_p_reserve_exact1 and passes in space allocated via a
@@ -450,28 +359,6 @@ vec_stack_o_reserve_1 (void *vec, int reserve, size_t vec_offset,
 /* Grow a vector allocated on the stack.  */
 
 void *
-vec_stack_p_reserve (void *vec, int reserve MEM_STAT_DECL)
-{
-  return vec_stack_o_reserve_1 (vec, reserve,
-				sizeof (struct vec_prefix),
-				sizeof (void *), false
-				PASS_MEM_STAT);
-}
-
-/* Exact version of vec_stack_p_reserve.  */
-
-void *
-vec_stack_p_reserve_exact (void *vec, int reserve MEM_STAT_DECL)
-{
-  return vec_stack_o_reserve_1 (vec, reserve,
-				sizeof (struct vec_prefix),
-				sizeof (void *), true
-				PASS_MEM_STAT);
-}
-
-/* Like vec_stack_p_reserve, but for objects.  */
-
-void *
 vec_stack_o_reserve (void *vec, int reserve, size_t vec_offset,
 		     size_t elt_size MEM_STAT_DECL)
 {
@@ -479,7 +366,7 @@ vec_stack_o_reserve (void *vec, int reserve, size_t vec_offset,
 				PASS_MEM_STAT);
 }
 
-/* Like vec_stack_p_reserve_exact, but for objects.  */
+/* Exact version of vec_stack_o_reserve.  */
 
 void *
 vec_stack_o_reserve_exact (void *vec, int reserve, size_t vec_offset,

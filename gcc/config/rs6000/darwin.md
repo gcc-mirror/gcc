@@ -1,5 +1,5 @@
 /* Machine description patterns for PowerPC running Darwin (Mac OS X).
-   Copyright (C) 2004, 2005, 2007, 2010, 2011 Free Software Foundation, Inc.
+   Copyright (C) 2004-2012 Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
 This file is part of GCC.
@@ -23,7 +23,7 @@ You should have received a copy of the GNU General Public License
         (plus:DI (match_operand:DI 1 "gpc_reg_operand" "b")
                  (high:DI (match_operand 2 "" ""))))]
   "TARGET_MACHO && TARGET_64BIT"
-  "{cau|addis} %0,%1,ha16(%2)"
+  "addis %0,%1,ha16(%2)"
   [(set_attr "length" "4")])
 
 (define_insn "movdf_low_si"
@@ -44,9 +44,9 @@ You should have received a copy of the GNU General Public License
 	    return \"ld %0,lo16(%2)(%1)\";
 	  else
 	    {
-	      output_asm_insn (\"{cal|la} %0,lo16(%2)(%1)\", operands);
-	      output_asm_insn (\"{l|lwz} %L0,4(%0)\", operands);
-	      return (\"{l|lwz} %0,0(%0)\");
+	      output_asm_insn (\"la %0,lo16(%2)(%1)\", operands);
+	      output_asm_insn (\"lwz %L0,4(%0)\", operands);
+	      return (\"lwz %0,0(%0)\");
 	    }
 	}
       default:
@@ -102,7 +102,7 @@ You should have received a copy of the GNU General Public License
   "TARGET_MACHO && TARGET_HARD_FLOAT && TARGET_FPRS && ! TARGET_64BIT"
   "@
    lfs %0,lo16(%2)(%1)
-   {l|lwz} %0,lo16(%2)(%1)"
+   lwz %0,lo16(%2)(%1)"
   [(set_attr "type" "load")
    (set_attr "length" "4")])
 
@@ -113,7 +113,7 @@ You should have received a copy of the GNU General Public License
   "TARGET_MACHO && TARGET_HARD_FLOAT && TARGET_FPRS && TARGET_64BIT"
   "@
    lfs %0,lo16(%2)(%1)
-   {l|lwz} %0,lo16(%2)(%1)"
+   lwz %0,lo16(%2)(%1)"
   [(set_attr "type" "load")
    (set_attr "length" "4")])
 
@@ -124,7 +124,7 @@ You should have received a copy of the GNU General Public License
   "TARGET_MACHO && TARGET_HARD_FLOAT && TARGET_FPRS && ! TARGET_64BIT"
   "@
    stfs %0,lo16(%2)(%1)
-   {st|stw} %0,lo16(%2)(%1)"
+   stw %0,lo16(%2)(%1)"
   [(set_attr "type" "store")
    (set_attr "length" "4")])
 
@@ -135,7 +135,7 @@ You should have received a copy of the GNU General Public License
   "TARGET_MACHO && TARGET_HARD_FLOAT && TARGET_FPRS && TARGET_64BIT"
   "@
    stfs %0,lo16(%2)(%1)
-   {st|stw} %0,lo16(%2)(%1)"
+   stw %0,lo16(%2)(%1)"
   [(set_attr "type" "store")
    (set_attr "length" "4")])
 
@@ -146,7 +146,7 @@ You should have received a copy of the GNU General Public License
                            (match_operand 2 "" ""))))]
   "TARGET_MACHO && TARGET_64BIT"
   "@
-   {l|ld} %0,lo16(%2)(%1)
+   ld %0,lo16(%2)(%1)
    lfd %0,lo16(%2)(%1)"
   [(set_attr "type" "load")
    (set_attr "length" "4")])
@@ -156,7 +156,7 @@ You should have received a copy of the GNU General Public License
                            (match_operand 2 "" "")))
 	(match_operand:SI 0 "gpc_reg_operand" "r"))]
   "TARGET_MACHO && ! TARGET_64BIT"
-  "{st|stw} %0,lo16(%2)(%1)"
+  "stw %0,lo16(%2)(%1)"
   [(set_attr "type" "store")
    (set_attr "length" "4")])
 
@@ -166,7 +166,7 @@ You should have received a copy of the GNU General Public License
 	(match_operand:DI 0 "gpc_reg_operand" "r,*!d"))]
   "TARGET_MACHO && TARGET_64BIT"
   "@
-   {st|std} %0,lo16(%2)(%1)
+   std %0,lo16(%2)(%1)
    stfd %0,lo16(%2)(%1)"
   [(set_attr "type" "store")
    (set_attr "length" "4")])
@@ -189,14 +189,14 @@ You should have received a copy of the GNU General Public License
   [(set (match_operand:SI 0 "gpc_reg_operand" "=b*r")
 	(high:SI (match_operand 1 "" "")))]
   "TARGET_MACHO && ! TARGET_64BIT"
-  "{liu|lis} %0,ha16(%1)")
+  "lis %0,ha16(%1)")
   
 
 (define_insn "macho_high_di"
   [(set (match_operand:DI 0 "gpc_reg_operand" "=b*r")
 	(high:DI (match_operand 1 "" "")))]
   "TARGET_MACHO && TARGET_64BIT"
-  "{liu|lis} %0,ha16(%1)")
+  "lis %0,ha16(%1)")
 
 (define_expand "macho_low"
   [(set (match_operand 0 "" "")
@@ -218,8 +218,8 @@ You should have received a copy of the GNU General Public License
 		   (match_operand 2 "" "")))]
    "TARGET_MACHO && ! TARGET_64BIT"
    "@
-    {cal %0,%a2@l(%1)|la %0,lo16(%2)(%1)}
-    {cal %0,%a2@l(%1)|addic %0,%1,lo16(%2)}")
+    la %0,lo16(%2)(%1)
+    addic %0,%1,lo16(%2)")
 
 (define_insn "macho_low_di"
   [(set (match_operand:DI 0 "gpc_reg_operand" "=r,r")
@@ -227,8 +227,8 @@ You should have received a copy of the GNU General Public License
 		   (match_operand 2 "" "")))]
    "TARGET_MACHO && TARGET_64BIT"
    "@
-    {cal %0,%a2@l(%1)|la %0,lo16(%2)(%1)}
-    {cal %0,%a2@l(%1)|addic %0,%1,lo16(%2)}")
+    la %0,lo16(%2)(%1)
+    addic %0,%1,lo16(%2)")
 
 (define_split
   [(set (mem:V4SI (plus:DI (match_operand:DI 0 "gpc_reg_operand" "")

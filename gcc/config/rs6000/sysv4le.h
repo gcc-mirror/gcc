@@ -1,6 +1,6 @@
 /* Target definitions for GCC for a little endian PowerPC
    running System V.4
-   Copyright (C) 1995, 2000, 2003, 2007 Free Software Foundation, Inc.
+   Copyright (C) 1995-2012 Free Software Foundation, Inc.
    Contributed by Cygnus Support.
 
    This file is part of GCC.
@@ -20,7 +20,7 @@
    <http://www.gnu.org/licenses/>.  */
 
 #undef  TARGET_DEFAULT
-#define TARGET_DEFAULT (MASK_POWERPC | MASK_NEW_MNEMONICS | MASK_LITTLE_ENDIAN)
+#define TARGET_DEFAULT MASK_LITTLE_ENDIAN
 
 #undef	CC1_ENDIAN_DEFAULT_SPEC
 #define	CC1_ENDIAN_DEFAULT_SPEC "%(cc1_endian_little)"

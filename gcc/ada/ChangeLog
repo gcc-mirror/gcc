@@ -1,3 +1,14 @@
+2012-08-14   Diego Novillo  <dnovillo@google.com>
+
+	Merge from cxx-conversion branch.  Re-implement VEC in C++.
+
+	* gcc-interface/trans.c (finalize_nrv_unc_r): Adjust VEC_index usage.
+	* gcc-interface/utils.c (convert): Likewise.
+	(remove_conversions): Likewise.
+	* gcc-interface/utils2.c (compare_fat_pointers): Likewise.
+	(build_unary_op): Likewise.
+	(gnat_stabilize_reference): Likewise.
+
 2012-08-06  Jose Ruiz  <ruiz@adacore.com>
 
 	* gcc-interface/Makefile.in: Add support for 32-bit VxWorks for SPARC
@@ -153,7 +164,7 @@
 
 2012-08-06  Vincent Pucci  <pucci@adacore.com>
 
-PR ada/54125
+	PR ada/54125
 	* exp_attr.adb (Expand_N_Attribute_Reference): Expand new
 	Atomic_Always_Lock_Free attribute.
 	* sem_attr.adb (Analyze_Attribute): Analyze new

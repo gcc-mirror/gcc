@@ -1,3 +1,72 @@
+2012-08-15  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54243
+	PR fortran/54244
+	* resolve.c (check_typebound_baseobject): Check for class_ok attribute.
+	(resolve_procedure_interface,resolve_fl_derived0): Copy class_ok
+	attribute.
+
+2012-08-14  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/47586
+	* trans-expr.c (expr_is_variable): Handle regular, procedure pointer,
+	and typebound functions returning a data pointer.
+
+2012-08-14  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* decl.c (match_ppc_decl): Copy the procedure interface's symbol
+	as procedure interface's result.
+
+2012-08-14  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-expr.c (gfc_trans_scalar_assign): Rename argument,
+	extend comment.
+
+2012-08-14  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* gfortran.h (gfc_get_proc_ptr_comp): New prototype.
+	(gfc_is_proc_ptr_comp): Update prototype.
+	* expr.c (gfc_get_proc_ptr_comp): New function based on the old
+	gfc_is_proc_ptr_comp.
+	(gfc_is_proc_ptr_comp): Call gfc_get_proc_ptr_comp.
+	(gfc_specification_expr, gfc_check_pointer_assign): Use
+	gfc_get_proc_ptr_comp.
+	* trans-array.c (gfc_walk_function_expr): Likewise.
+	* resolve.c (resolve_structure_cons, update_ppc_arglist,
+	resolve_ppc_call, resolve_expr_ppc): Likewise.
+	(resolve_function): Update call to gfc_is_proc_ptr_comp.
+	* dump-parse-tree.c (show_expr): Likewise.
+	* interface.c (compare_actual_formal): Likewise.
+	* match.c (gfc_match_pointer_assignment): Likewise.
+	* primary.c (gfc_match_varspec): Likewise.
+	* trans-io.c (gfc_trans_transfer): Likewise.
+	* trans-expr.c (gfc_conv_variable, conv_function_val,
+	conv_isocbinding_procedure, gfc_conv_procedure_call,
+	gfc_trans_pointer_assignment): Likewise.
+	(gfc_conv_procedure_call, gfc_trans_array_func_assign):
+	Use gfc_get_proc_ptr_comp.
+
+2012-08-14  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/40881
+	* error.c (gfc_notify_std): Reset cur_error_buffer->flag flag
+	when the error/warning has been printed.
+	* gfortran.h (gfc_sl_type): Add ST_LABEL_DO_TARGET.
+	* match.c (gfc_match_do): Use ST_LABEL_DO_TARGET.
+	* parse.c (check_statement_label): Use ST_LABEL_DO_TARGET.
+	(parse_executable): Add obsolescence check for DATA.
+	* resolve.c (resolve_branch): Handle ST_LABEL_DO_TARGET.
+	* symbol.c (gfc_define_st_label, gfc_reference_st_label):
+	Add obsolescence diagnostics.
+	* trans-stmt.c (gfc_trans_label_assign): Handle ST_LABEL_DO_TARGET.
+
+2012-08-14  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54234
+	* check.c (gfc_check_cmplx): Add -Wconversion warning
+	when converting higher-precision REAL to default-precision
+	CMPLX without kind= parameter.
+
 2012-08-12  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/54221

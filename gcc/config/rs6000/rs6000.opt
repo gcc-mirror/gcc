@@ -90,13 +90,9 @@ unsigned int rs6000_debug
 TargetSave
 int rs6000_target_flags_explicit
 
+;; This option existed in the past, but now is always on.
 mpowerpc
-Target Report RejectNegative Mask(POWERPC)
-Use PowerPC instruction set
-
-mno-powerpc
-Target Report RejectNegative
-Do not use PowerPC instruction set
+Target RejectNegative Undocumented Ignore
 
 mpowerpc64
 Target Report Mask(POWERPC64)
@@ -153,14 +149,6 @@ Generate load/store multiple instructions
 mstring
 Target Report Mask(STRING) Save
 Generate string instructions for block moves
-
-mnew-mnemonics
-Target Report RejectNegative Mask(NEW_MNEMONICS)
-Use new mnemonics for PowerPC architecture
-
-mold-mnemonics
-Target Report RejectNegative InverseMask(NEW_MNEMONICS)
-Use old mnemonics for PowerPC architecture
 
 msoft-float
 Target Report RejectNegative Mask(SOFT_FLOAT)

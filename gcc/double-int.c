@@ -170,7 +170,7 @@ mul_double_wide_with_sign (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
 	{
 	  k = i + j;
 	  /* This product is <= 0xFFFE0001, the sum <= 0xFFFF0000.  */
-	  carry += arg1[i] * arg2[j];
+	  carry += (unsigned HOST_WIDE_INT) arg1[i] * arg2[j];
 	  /* Since prod[p] < 0xFFFF, this sum <= 0xFFFFFFFF.  */
 	  carry += prod[k];
 	  prod[k] = LOWPART (carry);
@@ -610,7 +610,7 @@ div_and_round_double (unsigned code, int uns,
 /* Returns mask for PREC bits.  */
 
 double_int
-double_int_mask (unsigned prec)
+double_int::mask (unsigned prec)
 {
   unsigned HOST_WIDE_INT m;
   double_int mask;
@@ -625,7 +625,7 @@ double_int_mask (unsigned prec)
   else
     {
       mask.high = 0;
-      mask.low = ((unsigned HOST_WIDE_INT) 2 << (prec - 1)) - 1;
+      mask.low = prec ? ((unsigned HOST_WIDE_INT) 2 << (prec - 1)) - 1 : 0;
     }
 
   return mask;
@@ -635,20 +635,20 @@ double_int_mask (unsigned prec)
    of precision PREC.  */
 
 double_int
-double_int_max_value (unsigned int prec, bool uns)
+double_int::max_value (unsigned int prec, bool uns)
 {
-  return double_int_mask (prec - (uns ? 0 : 1));
+  return double_int::mask (prec - (uns ? 0 : 1));
 }
 
 /* Returns a minimum value for signed or unsigned integer
    of precision PREC.  */
 
 double_int
-double_int_min_value (unsigned int prec, bool uns)
+double_int::min_value (unsigned int prec, bool uns)
 {
   if (uns)
     return double_int_zero;
-  return double_int_lshift (double_int_one, prec - 1, prec, false);
+  return double_int_one.lshift (prec - 1, prec, false);
 }
 
 /* Clears the bits of CST over the precision PREC.  If UNS is false, the bits
@@ -659,20 +659,21 @@ double_int_min_value (unsigned int prec, bool uns)
    of CST, with the given signedness.  */
 
 double_int
-double_int_ext (double_int cst, unsigned prec, bool uns)
+double_int::ext (unsigned prec, bool uns) const
 {
   if (uns)
-    return double_int_zext (cst, prec);
+    return this->zext (prec);
   else
-    return double_int_sext (cst, prec);
+    return this->sext (prec);
 }
 
-/* The same as double_int_ext with UNS = true.  */
+/* The same as double_int::ext with UNS = true.  */
 
 double_int
-double_int_zext (double_int cst, unsigned prec)
+double_int::zext (unsigned prec) const
 {
-  double_int mask = double_int_mask (prec);
+  const double_int &cst = *this;
+  double_int mask = double_int::mask (prec);
   double_int r;
 
   r.low = cst.low & mask.low;
@@ -681,12 +682,13 @@ double_int_zext (double_int cst, unsigned prec)
   return r;
 }
 
-/* The same as double_int_ext with UNS = false.  */
+/* The same as double_int::ext with UNS = false.  */
 
 double_int
-double_int_sext (double_int cst, unsigned prec)
+double_int::sext (unsigned prec) const
 {
-  double_int mask = double_int_mask (prec);
+  const double_int &cst = *this;
+  double_int mask = double_int::mask (prec);
   double_int r;
   unsigned HOST_WIDE_INT snum;
 
@@ -714,8 +716,9 @@ double_int_sext (double_int cst, unsigned prec)
 /* Returns true if CST fits in signed HOST_WIDE_INT.  */
 
 bool
-double_int_fits_in_shwi_p (double_int cst)
+double_int::fits_shwi () const
 {
+  const double_int &cst = *this;
   if (cst.high == 0)
     return (HOST_WIDE_INT) cst.low >= 0;
   else if (cst.high == -1)
@@ -728,19 +731,20 @@ double_int_fits_in_shwi_p (double_int cst)
    unsigned HOST_WIDE_INT if UNS is true.  */
 
 bool
-double_int_fits_in_hwi_p (double_int cst, bool uns)
+double_int::fits_hwi (bool uns) const
 {
   if (uns)
-    return double_int_fits_in_uhwi_p (cst);
+    return this->fits_uhwi ();
   else
-    return double_int_fits_in_shwi_p (cst);
+    return this->fits_shwi ();
 }
 
 /* Returns A * B.  */
 
 double_int
-double_int_mul (double_int a, double_int b)
+double_int::operator * (double_int b) const
 {
+  const double_int &a = *this;
   double_int ret;
   mul_double (a.low, a.high, b.low, b.high, &ret.low, &ret.high);
   return ret;
@@ -750,9 +754,9 @@ double_int_mul (double_int a, double_int b)
    *OVERFLOW is set to nonzero.  */
 
 double_int
-double_int_mul_with_sign (double_int a, double_int b,
-                          bool unsigned_p, int *overflow)
+double_int::mul_with_sign (double_int b, bool unsigned_p, int *overflow) const
 {
+  const double_int &a = *this;
   double_int ret;
   *overflow = mul_double_with_sign (a.low, a.high, b.low, b.high,
                                     &ret.low, &ret.high, unsigned_p);
@@ -762,8 +766,9 @@ double_int_mul_with_sign (double_int a, double_int b,
 /* Returns A + B.  */
 
 double_int
-double_int_add (double_int a, double_int b)
+double_int::operator + (double_int b) const
 {
+  const double_int &a = *this;
   double_int ret;
   add_double (a.low, a.high, b.low, b.high, &ret.low, &ret.high);
   return ret;
@@ -772,8 +777,9 @@ double_int_add (double_int a, double_int b)
 /* Returns A - B.  */
 
 double_int
-double_int_sub (double_int a, double_int b)
+double_int::operator - (double_int b) const
 {
+  const double_int &a = *this;
   double_int ret;
   neg_double (b.low, b.high, &b.low, &b.high);
   add_double (a.low, a.high, b.low, b.high, &ret.low, &ret.high);
@@ -783,8 +789,9 @@ double_int_sub (double_int a, double_int b)
 /* Returns -A.  */
 
 double_int
-double_int_neg (double_int a)
+double_int::operator - () const
 {
+  const double_int &a = *this;
   double_int ret;
   neg_double (a.low, a.high, &ret.low, &ret.high);
   return ret;
@@ -796,9 +803,10 @@ double_int_neg (double_int a)
    stored to MOD.  */
 
 double_int
-double_int_divmod (double_int a, double_int b, bool uns, unsigned code,
-		   double_int *mod)
+double_int::divmod (double_int b, bool uns, unsigned code,
+		    double_int *mod) const
 {
+  const double_int &a = *this;
   double_int ret;
 
   div_and_round_double (code, uns, a.low, a.high,
@@ -807,20 +815,20 @@ double_int_divmod (double_int a, double_int b, bool uns, unsigned code,
   return ret;
 }
 
-/* The same as double_int_divmod with UNS = false.  */
+/* The same as double_int::divmod with UNS = false.  */
 
 double_int
-double_int_sdivmod (double_int a, double_int b, unsigned code, double_int *mod)
+double_int::sdivmod (double_int b, unsigned code, double_int *mod) const
 {
-  return double_int_divmod (a, b, false, code, mod);
+  return this->divmod (b, false, code, mod);
 }
 
-/* The same as double_int_divmod with UNS = true.  */
+/* The same as double_int::divmod with UNS = true.  */
 
 double_int
-double_int_udivmod (double_int a, double_int b, unsigned code, double_int *mod)
+double_int::udivmod (double_int b, unsigned code, double_int *mod) const
 {
-  return double_int_divmod (a, b, true, code, mod);
+  return this->divmod (b, true, code, mod);
 }
 
 /* Returns A / B (computed as unsigned depending on UNS, and rounded as
@@ -828,27 +836,27 @@ double_int_udivmod (double_int a, double_int b, unsigned code, double_int *mod)
    must be included before tree.h.  */
 
 double_int
-double_int_div (double_int a, double_int b, bool uns, unsigned code)
+double_int::div (double_int b, bool uns, unsigned code) const
 {
   double_int mod;
 
-  return double_int_divmod (a, b, uns, code, &mod);
+  return this->divmod (b, uns, code, &mod);
 }
 
-/* The same as double_int_div with UNS = false.  */
+/* The same as double_int::div with UNS = false.  */
 
 double_int
-double_int_sdiv (double_int a, double_int b, unsigned code)
+double_int::sdiv (double_int b, unsigned code) const
 {
-  return double_int_div (a, b, false, code);
+  return this->div (b, false, code);
 }
 
-/* The same as double_int_div with UNS = true.  */
+/* The same as double_int::div with UNS = true.  */
 
 double_int
-double_int_udiv (double_int a, double_int b, unsigned code)
+double_int::udiv (double_int b, unsigned code) const
 {
-  return double_int_div (a, b, true, code);
+  return this->div (b, true, code);
 }
 
 /* Returns A % B (computed as unsigned depending on UNS, and rounded as
@@ -856,28 +864,28 @@ double_int_udiv (double_int a, double_int b, unsigned code)
    must be included before tree.h.  */
 
 double_int
-double_int_mod (double_int a, double_int b, bool uns, unsigned code)
+double_int::mod (double_int b, bool uns, unsigned code) const
 {
   double_int mod;
 
-  double_int_divmod (a, b, uns, code, &mod);
+  this->divmod (b, uns, code, &mod);
   return mod;
 }
 
-/* The same as double_int_mod with UNS = false.  */
+/* The same as double_int::mod with UNS = false.  */
 
 double_int
-double_int_smod (double_int a, double_int b, unsigned code)
+double_int::smod (double_int b, unsigned code) const
 {
-  return double_int_mod (a, b, false, code);
+  return this->mod (b, false, code);
 }
 
-/* The same as double_int_mod with UNS = true.  */
+/* The same as double_int::mod with UNS = true.  */
 
 double_int
-double_int_umod (double_int a, double_int b, unsigned code)
+double_int::umod (double_int b, unsigned code) const
 {
-  return double_int_mod (a, b, true, code);
+  return this->mod (b, true, code);
 }
 
 /* Return TRUE iff PRODUCT is an integral multiple of FACTOR, and return
@@ -885,13 +893,13 @@ double_int_umod (double_int a, double_int b, unsigned code)
    unchanged.  */
 
 bool
-double_int_multiple_of (double_int product, double_int factor,
-			bool unsigned_p, double_int *multiple)
+double_int::multiple_of (double_int factor,
+			 bool unsigned_p, double_int *multiple) const
 {
   double_int remainder;
-  double_int quotient = double_int_divmod (product, factor, unsigned_p,
+  double_int quotient = this->divmod (factor, unsigned_p,
 					   TRUNC_DIV_EXPR, &remainder);
-  if (double_int_zero_p (remainder))
+  if (remainder.is_zero ())
     {
       *multiple = quotient;
       return true;
@@ -902,8 +910,9 @@ double_int_multiple_of (double_int product, double_int factor,
 
 /* Set BITPOS bit in A.  */
 double_int
-double_int_setbit (double_int a, unsigned bitpos)
+double_int::set_bit (unsigned bitpos) const
 {
+  double_int a = *this;
   if (bitpos < HOST_BITS_PER_WIDE_INT)
     a.low |= (unsigned HOST_WIDE_INT) 1 << bitpos;
   else
@@ -914,8 +923,9 @@ double_int_setbit (double_int a, unsigned bitpos)
 
 /* Count trailing zeros in A.  */
 int
-double_int_ctz (double_int a)
+double_int::trailing_zeros () const
 {
+  const double_int &a = *this;
   unsigned HOST_WIDE_INT w = a.low ? a.low : (unsigned HOST_WIDE_INT) a.high;
   unsigned bits = a.low ? 0 : HOST_BITS_PER_WIDE_INT;
   if (!w)
@@ -929,30 +939,76 @@ double_int_ctz (double_int a)
    otherwise use logical shift.  */
 
 double_int
-double_int_lshift (double_int a, HOST_WIDE_INT count, unsigned int prec, bool arith)
+double_int::lshift (HOST_WIDE_INT count, unsigned int prec, bool arith) const
 {
+  const double_int &a = *this;
   double_int ret;
   lshift_double (a.low, a.high, count, prec, &ret.low, &ret.high, arith);
   return ret;
 }
 
-/* Shift A rigth by COUNT places keeping only PREC bits of result.  Shift
+/* Shift A right by COUNT places keeping only PREC bits of result.  Shift
    left if COUNT is negative.  ARITH true specifies arithmetic shifting;
    otherwise use logical shift.  */
 
 double_int
-double_int_rshift (double_int a, HOST_WIDE_INT count, unsigned int prec, bool arith)
+double_int::rshift (HOST_WIDE_INT count, unsigned int prec, bool arith) const
 {
+  const double_int &a = *this;
   double_int ret;
   lshift_double (a.low, a.high, -count, prec, &ret.low, &ret.high, arith);
   return ret;
+}
+
+/* Arithmetic shift A left by COUNT places keeping only PREC bits of result.
+   Shift right if COUNT is negative.  */
+
+double_int
+double_int::alshift (HOST_WIDE_INT count, unsigned int prec) const
+{
+  double_int r;
+  lshift_double (low, high, count, prec, &r.low, &r.high, true);
+  return r;
+}
+
+/* Arithmetic shift A right by COUNT places keeping only PREC bits of result.
+   Shift left if COUNT is negative.  */
+
+double_int
+double_int::arshift (HOST_WIDE_INT count, unsigned int prec) const
+{
+  double_int r;
+  lshift_double (low, high, -count, prec, &r.low, &r.high, true);
+  return r;
+}
+
+/* Logical shift A left by COUNT places keeping only PREC bits of result.
+   Shift right if COUNT is negative.  */
+
+double_int
+double_int::llshift (HOST_WIDE_INT count, unsigned int prec) const
+{
+  double_int r;
+  lshift_double (low, high, count, prec, &r.low, &r.high, false);
+  return r;
+}
+
+/* Logical shift A right by COUNT places keeping only PREC bits of result.
+   Shift left if COUNT is negative.  */
+
+double_int
+double_int::lrshift (HOST_WIDE_INT count, unsigned int prec) const
+{
+  double_int r;
+  lshift_double (low, high, -count, prec, &r.low, &r.high, false);
+  return r;
 }
 
 /* Rotate  A left by COUNT places keeping only PREC bits of result.
    Rotate right if COUNT is negative.  */
 
 double_int
-double_int_lrotate (double_int a, HOST_WIDE_INT count, unsigned int prec)
+double_int::lrotate (HOST_WIDE_INT count, unsigned int prec) const
 {
   double_int t1, t2;
 
@@ -960,17 +1016,17 @@ double_int_lrotate (double_int a, HOST_WIDE_INT count, unsigned int prec)
   if (count < 0)
     count += prec;
 
-  t1 = double_int_lshift (a, count, prec, false);
-  t2 = double_int_rshift (a, prec - count, prec, false);
+  t1 = this->lshift (count, prec, false);
+  t2 = this->rshift (prec - count, prec, false);
 
-  return double_int_ior (t1, t2);
+  return t1 | t2;
 }
 
 /* Rotate A rigth by COUNT places keeping only PREC bits of result.
    Rotate right if COUNT is negative.  */
 
 double_int
-double_int_rrotate (double_int a, HOST_WIDE_INT count, unsigned int prec)
+double_int::rrotate (HOST_WIDE_INT count, unsigned int prec) const
 {
   double_int t1, t2;
 
@@ -978,30 +1034,31 @@ double_int_rrotate (double_int a, HOST_WIDE_INT count, unsigned int prec)
   if (count < 0)
     count += prec;
 
-  t1 = double_int_rshift (a, count, prec, false);
-  t2 = double_int_lshift (a, prec - count, prec, false);
+  t1 = this->rshift (count, prec, false);
+  t2 = this->lshift (prec - count, prec, false);
 
-  return double_int_ior (t1, t2);
+  return t1 | t2;
 }
 
 /* Returns -1 if A < B, 0 if A == B and 1 if A > B.  Signedness of the
    comparison is given by UNS.  */
 
 int
-double_int_cmp (double_int a, double_int b, bool uns)
+double_int::cmp (double_int b, bool uns) const
 {
   if (uns)
-    return double_int_ucmp (a, b);
+    return this->ucmp (b);
   else
-    return double_int_scmp (a, b);
+    return this->scmp (b);
 }
 
 /* Compares two unsigned values A and B.  Returns -1 if A < B, 0 if A == B,
    and 1 if A > B.  */
 
 int
-double_int_ucmp (double_int a, double_int b)
+double_int::ucmp (double_int b) const
 {
+  const double_int &a = *this;
   if ((unsigned HOST_WIDE_INT) a.high < (unsigned HOST_WIDE_INT) b.high)
     return -1;
   if ((unsigned HOST_WIDE_INT) a.high > (unsigned HOST_WIDE_INT) b.high)
@@ -1018,8 +1075,9 @@ double_int_ucmp (double_int a, double_int b)
    and 1 if A > B.  */
 
 int
-double_int_scmp (double_int a, double_int b)
+double_int::scmp (double_int b) const
 {
+  const double_int &a = *this;
   if (a.high < b.high)
     return -1;
   if (a.high > b.high)
@@ -1032,49 +1090,111 @@ double_int_scmp (double_int a, double_int b)
   return 0;
 }
 
+/* Compares two unsigned values A and B for less-than.  */
+
+bool
+double_int::ult (double_int b) const
+{
+  if ((unsigned HOST_WIDE_INT) high < (unsigned HOST_WIDE_INT) b.high)
+    return true;
+  if ((unsigned HOST_WIDE_INT) high > (unsigned HOST_WIDE_INT) b.high)
+    return false;
+  if (low < b.low)
+    return true;
+  return false;
+}
+
+/* Compares two unsigned values A and B for greater-than.  */
+
+bool
+double_int::ugt (double_int b) const
+{
+  if ((unsigned HOST_WIDE_INT) high > (unsigned HOST_WIDE_INT) b.high)
+    return true;
+  if ((unsigned HOST_WIDE_INT) high < (unsigned HOST_WIDE_INT) b.high)
+    return false;
+  if (low > b.low)
+    return true;
+  return false;
+}
+
+/* Compares two signed values A and B for less-than.  */
+
+bool
+double_int::slt (double_int b) const
+{
+  if (high < b.high)
+    return true;
+  if (high > b.high)
+    return false;
+  if (low < b.low)
+    return true;
+  return false;
+}
+
+/* Compares two signed values A and B for greater-than.  */
+
+bool
+double_int::sgt (double_int b) const
+{
+  if (high > b.high)
+    return true;
+  if (high < b.high)
+    return false;
+  if (low > b.low)
+    return true;
+  return false;
+}
+
+
 /* Compares two values A and B.  Returns max value.  Signedness of the
    comparison is given by UNS.  */
 
 double_int
-double_int_max (double_int a, double_int b, bool uns)
+double_int::max (double_int b, bool uns)
 {
-  return (double_int_cmp (a, b, uns) == 1) ? a : b;
+  return (this->cmp (b, uns) == 1) ? *this : b;
 }
 
 /* Compares two signed values A and B.  Returns max value.  */
 
-double_int double_int_smax (double_int a, double_int b)
+double_int
+double_int::smax (double_int b)
 {
-  return (double_int_scmp (a, b) == 1) ? a : b;
+  return (this->scmp (b) == 1) ? *this : b;
 }
 
 /* Compares two unsigned values A and B.  Returns max value.  */
 
-double_int double_int_umax (double_int a, double_int b)
+double_int
+double_int::umax (double_int b)
 {
-  return (double_int_ucmp (a, b) == 1) ? a : b;
+  return (this->ucmp (b) == 1) ? *this : b;
 }
 
 /* Compares two values A and B.  Returns mix value.  Signedness of the
    comparison is given by UNS.  */
 
-double_int double_int_min (double_int a, double_int b, bool uns)
+double_int
+double_int::min (double_int b, bool uns)
 {
-  return (double_int_cmp (a, b, uns) == -1) ? a : b;
+  return (this->cmp (b, uns) == -1) ? *this : b;
 }
 
 /* Compares two signed values A and B.  Returns min value.  */
 
-double_int double_int_smin (double_int a, double_int b)
+double_int
+double_int::smin (double_int b)
 {
-  return (double_int_scmp (a, b) == -1) ? a : b;
+  return (this->scmp (b) == -1) ? *this : b;
 }
 
 /* Compares two unsigned values A and B.  Returns min value.  */
 
-double_int double_int_umin (double_int a, double_int b)
+double_int
+double_int::umin (double_int b)
 {
-  return (double_int_ucmp (a, b) == -1) ? a : b;
+  return (this->ucmp (b) == -1) ? *this : b;
 }
 
 /* Splits last digit of *CST (taken as unsigned) in BASE and returns it.  */
@@ -1102,19 +1222,19 @@ dump_double_int (FILE *file, double_int cst, bool uns)
   unsigned digits[100], n;
   int i;
 
-  if (double_int_zero_p (cst))
+  if (cst.is_zero ())
     {
       fprintf (file, "0");
       return;
     }
 
-  if (!uns && double_int_negative_p (cst))
+  if (!uns && cst.is_negative ())
     {
       fprintf (file, "-");
-      cst = double_int_neg (cst);
+      cst = -cst;
     }
 
-  for (n = 0; !double_int_zero_p (cst); n++)
+  for (n = 0; !cst.is_zero (); n++)
     digits[n] = double_int_split_digit (&cst, 10);
   for (i = n - 1; i >= 0; i--)
     fprintf (file, "%u", digits[i]);
@@ -1130,10 +1250,10 @@ mpz_set_double_int (mpz_t result, double_int val, bool uns)
   bool negate = false;
   unsigned HOST_WIDE_INT vp[2];
 
-  if (!uns && double_int_negative_p (val))
+  if (!uns && val.is_negative ())
     {
       negate = true;
-      val = double_int_neg (val);
+      val = -val;
     }
 
   vp[0] = val.low;
@@ -1191,9 +1311,9 @@ mpz_get_double_int (const_tree type, mpz_t val, bool wrap)
   res.low = vp[0];
   res.high = (HOST_WIDE_INT) vp[1];
 
-  res = double_int_ext (res, TYPE_PRECISION (type), TYPE_UNSIGNED (type));
+  res = res.ext (TYPE_PRECISION (type), TYPE_UNSIGNED (type));
   if (mpz_sgn (val) < 0)
-    res = double_int_neg (res);
+    res = -res;
 
   return res;
 }

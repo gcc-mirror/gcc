@@ -237,6 +237,7 @@ resolve_procedure_interface (gfc_symbol *sym)
       sym->attr.always_explicit = ifc->attr.always_explicit;
       sym->attr.ext_attr |= ifc->attr.ext_attr;
       sym->attr.is_bind_c = ifc->attr.is_bind_c;
+      sym->attr.class_ok = ifc->attr.class_ok;
       /* Copy array spec.  */
       sym->as = gfc_copy_array_spec (ifc->as);
       if (sym->as)
@@ -1195,7 +1196,8 @@ resolve_structure_cons (gfc_expr *expr, int init)
 	  const char *name;
 	  char err[200];
 
-	  if (gfc_is_proc_ptr_comp (cons->expr, &c2))
+	  c2 = gfc_get_proc_ptr_comp (cons->expr);
+	  if (c2)
 	    {
 	      s2 = c2->ts.interface;
 	      name = c2->name;
@@ -3093,9 +3095,9 @@ resolve_function (gfc_expr *expr)
     sym = expr->symtree->n.sym;
 
   /* If this is a procedure pointer component, it has already been resolved.  */
-  if (gfc_is_proc_ptr_comp (expr, NULL))
+  if (gfc_is_proc_ptr_comp (expr))
     return SUCCESS;
-  
+
   if (sym && sym->attr.intrinsic
       && gfc_resolve_intrinsic (sym, &expr->where) == FAILURE)
     return FAILURE;
@@ -5740,7 +5742,8 @@ update_ppc_arglist (gfc_expr* e)
   gfc_component *ppc;
   gfc_typebound_proc* tb;
 
-  if (!gfc_is_proc_ptr_comp (e, &ppc))
+  ppc = gfc_get_proc_ptr_comp (e);
+  if (!ppc)
     return FAILURE;
 
   tb = ppc->tb;
@@ -5792,6 +5795,9 @@ check_typebound_baseobject (gfc_expr* e)
     return FAILURE;
 
   gcc_assert (base->ts.type == BT_DERIVED || base->ts.type == BT_CLASS);
+
+  if (base->ts.type == BT_CLASS && !gfc_expr_attr (base).class_ok)
+    return FAILURE;
 
   /* F08:C611.  */
   if (base->ts.type == BT_DERIVED && base->ts.u.derived->attr.abstract)
@@ -6363,10 +6369,9 @@ static gfc_try
 resolve_ppc_call (gfc_code* c)
 {
   gfc_component *comp;
-  bool b;
 
-  b = gfc_is_proc_ptr_comp (c->expr1, &comp);
-  gcc_assert (b);
+  comp = gfc_get_proc_ptr_comp (c->expr1);
+  gcc_assert (comp != NULL);
 
   c->resolved_sym = c->expr1->symtree->n.sym;
   c->expr1->expr_type = EXPR_VARIABLE;
@@ -6398,10 +6403,9 @@ static gfc_try
 resolve_expr_ppc (gfc_expr* e)
 {
   gfc_component *comp;
-  bool b;
 
-  b = gfc_is_proc_ptr_comp (e, &comp);
-  gcc_assert (b);
+  comp = gfc_get_proc_ptr_comp (e);
+  gcc_assert (comp != NULL);
 
   /* Convert to EXPR_FUNCTION.  */
   e->expr_type = EXPR_FUNCTION;
@@ -8767,7 +8771,7 @@ resolve_branch (gfc_st_label *label, gfc_code *code)
       return;
     }
 
-  if (label->defined != ST_LABEL_TARGET)
+  if (label->defined != ST_LABEL_TARGET && label->defined != ST_LABEL_DO_TARGET)
     {
       gfc_error ("Statement at %L is not a valid branch target statement "
 		 "for the branch statement at %L", &label->where, &code->loc);
@@ -11982,6 +11986,7 @@ resolve_fl_derived0 (gfc_symbol *sym)
 	      c->attr.recursive = ifc->attr.recursive;
 	      c->attr.always_explicit = ifc->attr.always_explicit;
 	      c->attr.ext_attr |= ifc->attr.ext_attr;
+	      c->attr.class_ok = ifc->attr.class_ok;
 	      /* Replace symbols in array spec.  */
 	      if (c->as)
 		{

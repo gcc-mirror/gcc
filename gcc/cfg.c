@@ -698,7 +698,7 @@ dump_bb_info (FILE *outf, basic_block bb, int indent, int flags,
       if (flags & TDF_COMMENT)
 	fputs (";; ", outf);
       fprintf (outf, "%sbasic block %d, loop depth %d",
-	       s_indent, bb->index, bb->loop_depth);
+	       s_indent, bb->index, bb_loop_depth (bb));
       if (flags & TDF_DETAILS)
 	{
 	  fprintf (outf, ", count " HOST_WIDEST_INT_PRINT_DEC,

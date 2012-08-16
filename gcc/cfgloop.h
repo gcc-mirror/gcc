@@ -445,6 +445,14 @@ loop_depth (const struct loop *loop)
   return VEC_length (loop_p, loop->superloops);
 }
 
+/* Returns the loop depth of the loop BB belongs to.  */
+
+static inline int
+bb_loop_depth (const_basic_block bb)
+{
+  return bb->loop_father ? loop_depth (bb->loop_father) : 0;
+}
+
 /* Returns the immediate superloop of LOOP, or NULL if LOOP is the outermost
    loop.  */
 

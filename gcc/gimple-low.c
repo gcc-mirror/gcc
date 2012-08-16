@@ -121,7 +121,7 @@ lower_function_body (void)
   if (gimple_seq_may_fallthru (lowered_body)
       && (VEC_empty (return_statements_t, data.return_statements)
 	  || gimple_return_retval (VEC_last (return_statements_t,
-			           data.return_statements)->stmt) != NULL))
+			           data.return_statements).stmt) != NULL))
     {
       x = gimple_build_return (NULL);
       gimple_set_location (x, cfun->function_end_locus);
@@ -137,7 +137,7 @@ lower_function_body (void)
 
       /* Unfortunately, we can't use VEC_pop because it returns void for
 	 objects.  */
-      t = *VEC_last (return_statements_t, data.return_statements);
+      t = VEC_last (return_statements_t, data.return_statements);
       VEC_truncate (return_statements_t,
 	  	    data.return_statements,
 	  	    VEC_length (return_statements_t,
@@ -835,7 +835,7 @@ lower_gimple_return (gimple_stmt_iterator *gsi, struct lower_data *data)
   for (i = VEC_length (return_statements_t, data->return_statements) - 1;
        i >= 0; i--)
     {
-      tmp_rs = *VEC_index (return_statements_t, data->return_statements, i);
+      tmp_rs = VEC_index (return_statements_t, data->return_statements, i);
 
       if (gimple_return_retval (stmt) == gimple_return_retval (tmp_rs.stmt))
 	{

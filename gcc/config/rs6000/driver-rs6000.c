@@ -368,10 +368,9 @@ static const struct asm_name asm_names[] = {
 %{!maix64: \
 %{mpowerpc64: -mppc64} \
 %{maltivec: -m970} \
-%{!maltivec: %{!mpower64: %(asm_default)}}}" },
+%{!maltivec: %{!mpowerpc64: %(asm_default)}}}" },
 
 #else
-  { "common",	"-mcom" },
   { "cell",	"-mcell" },
   { "power3",	"-mppc64" },
   { "power4",	"-mpower4" },
@@ -419,8 +418,7 @@ static const struct asm_name asm_names[] = {
   { "e500mc",	"-me500mc" },
   { NULL,	"\
 %{mpowerpc64*: -mppc64} \
-%{!mpowerpc64*: %{mpowerpc*: -mppc}} \
-%{!mpowerpc*: -mcom}" },
+%{!mpowerpc64*: %(asm_default)}" },
 #endif
 };
 

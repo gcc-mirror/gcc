@@ -1524,7 +1524,7 @@ insert_in_history_vect (VEC (expr_history_def, heap) **pvect,
 
   if (res)
     {
-      expr_history_def *phist = VEC_index (expr_history_def, vect, ind);
+      expr_history_def *phist = &VEC_index (expr_history_def, vect, ind);
 
       /* It is possible that speculation types of expressions that were
          propagated through different paths will be different here.  In this
@@ -4159,7 +4159,7 @@ finish_insns (void)
      removed during the scheduling.  */
   for (i = 0; i < VEC_length (sel_insn_data_def, s_i_d); i++)
     {
-      sel_insn_data_def *sid_entry = VEC_index (sel_insn_data_def, s_i_d, i);
+      sel_insn_data_def *sid_entry = &VEC_index (sel_insn_data_def, s_i_d, i);
 
       if (sid_entry->live)
         return_regset_to_pool (sid_entry->live);

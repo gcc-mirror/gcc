@@ -1,3 +1,10 @@
+2012-08-16  Gary Funck  <gary@intrepid.com>
+
+	* upc-pts-struct.c (upc_pts_struct_is_null_p):
+	Adjust VEC_index() calls to use C++ syntax.
+	This is required as part of the move to compile
+	GCC with the C++ compiler.
+
 2012-08-07  Gary Funck  <gary@intrepid.com>
 
 	* upc-genericize.c: Delete un-used include of optabs.h.

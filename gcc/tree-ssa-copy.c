@@ -74,10 +74,10 @@ may_propagate_copy (tree dest, tree orig)
     return false;
 
   /* Propagating virtual operands is always ok.  */
-  if (TREE_CODE (dest) == SSA_NAME && !is_gimple_reg (dest))
+  if (TREE_CODE (dest) == SSA_NAME && virtual_operand_p (dest))
     {
       /* But only between virtual operands.  */
-      gcc_assert (TREE_CODE (orig) == SSA_NAME && !is_gimple_reg (orig));
+      gcc_assert (TREE_CODE (orig) == SSA_NAME && virtual_operand_p (orig));
 
       return true;
     }
@@ -670,7 +670,7 @@ init_copy_prop (void)
   FOR_EACH_BB (bb)
     {
       gimple_stmt_iterator si;
-      int depth = bb->loop_depth;
+      int depth = bb_loop_depth (bb);
 
       for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
 	{
@@ -713,7 +713,7 @@ init_copy_prop (void)
           tree def;
 
 	  def = gimple_phi_result (phi);
-	  if (!is_gimple_reg (def))
+	  if (virtual_operand_p (def))
             prop_set_simulate_again (phi, false);
 	  else
             prop_set_simulate_again (phi, true);

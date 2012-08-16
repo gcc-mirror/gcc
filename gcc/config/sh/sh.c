@@ -3186,9 +3186,33 @@ sh_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
       *total = COSTS_N_INSNS (multcosts (x));
       return true;
 
+    case LT:
+    case GE:
+      /* div0s sign comparison.  */
+      if (GET_CODE (XEXP (x, 0)) == XOR
+	  && REG_P ((XEXP (XEXP (x, 0), 0)))
+	  && REG_P ((XEXP (XEXP (x, 0), 1)))
+	  && satisfies_constraint_Z (XEXP (x, 1)))
+	{
+	  *total = COSTS_N_INSNS (1);
+	  return true;
+	}
+      else
+	return false;
+
+    case LSHIFTRT:
+      /* div0s sign comparison.  */
+      if (GET_CODE (XEXP (x, 0)) == XOR
+	  && REG_P ((XEXP (XEXP (x, 0), 0)))
+	  && REG_P ((XEXP (XEXP (x, 0), 1)))
+	  && CONST_INT_P (XEXP (x, 1)) && INTVAL (XEXP (x, 1)) == 31)
+	{
+	  *total = COSTS_N_INSNS (1);
+	  return true;
+	}
+      /* Fall through to shiftcosts.  */
     case ASHIFT:
     case ASHIFTRT:
-    case LSHIFTRT:
       {
 	int cost = shiftcosts (x);
 	if (cost < 0)

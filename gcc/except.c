@@ -304,8 +304,8 @@ init_eh_for_function (void)
   cfun->eh = ggc_alloc_cleared_eh_status ();
 
   /* Make sure zero'th entries are used.  */
-  VEC_safe_push (eh_region, gc, cfun->eh->region_array, NULL);
-  VEC_safe_push (eh_landing_pad, gc, cfun->eh->lp_array, NULL);
+  VEC_safe_push (eh_region, gc, cfun->eh->region_array, (eh_region) NULL);
+  VEC_safe_push (eh_landing_pad, gc, cfun->eh->lp_array, (eh_landing_pad) NULL);
 }
 
 /* Routines to generate the exception tree somewhat directly.
@@ -806,7 +806,7 @@ add_ehspec_entry (htab_t ehspec_hash, htab_t ttypes_hash, tree list)
       if (targetm.arm_eabi_unwinder)
 	VEC_safe_push (tree, gc, cfun->eh->ehspec_data.arm_eabi, NULL_TREE);
       else
-	VEC_safe_push (uchar, gc, cfun->eh->ehspec_data.other, 0);
+	VEC_safe_push (uchar, gc, cfun->eh->ehspec_data.other, (uchar) 0);
     }
 
   return n->filter;
@@ -2395,10 +2395,10 @@ add_call_site (rtx landing_pad, int action, int section)
   record->action = action;
 
   VEC_safe_push (call_site_record, gc,
-		 crtl->eh.call_site_record[section], record);
+		 crtl->eh.call_site_record_v[section], record);
 
   return call_site_base + VEC_length (call_site_record,
-				      crtl->eh.call_site_record[section]) - 1;
+				      crtl->eh.call_site_record_v[section]) - 1;
 }
 
 /* Turn REG_EH_REGION notes back into NOTE_INSN_EH_REGION notes.
@@ -2546,10 +2546,10 @@ convert_to_eh_region_ranges (void)
 	else if (last_action != -3)
 	  last_landing_pad = pc_rtx;
 	call_site_base += VEC_length (call_site_record,
-				      crtl->eh.call_site_record[cur_sec]);
+				      crtl->eh.call_site_record_v[cur_sec]);
 	cur_sec++;
-	gcc_assert (crtl->eh.call_site_record[cur_sec] == NULL);
-	crtl->eh.call_site_record[cur_sec]
+	gcc_assert (crtl->eh.call_site_record_v[cur_sec] == NULL);
+	crtl->eh.call_site_record_v[cur_sec]
 	  = VEC_alloc (call_site_record, gc, 10);
       }
 
@@ -2633,14 +2633,14 @@ push_sleb128 (VEC (uchar, gc) **data_area, int value)
 static int
 dw2_size_of_call_site_table (int section)
 {
-  int n = VEC_length (call_site_record, crtl->eh.call_site_record[section]);
+  int n = VEC_length (call_site_record, crtl->eh.call_site_record_v[section]);
   int size = n * (4 + 4 + 4);
   int i;
 
   for (i = 0; i < n; ++i)
     {
       struct call_site_record_d *cs =
-	VEC_index (call_site_record, crtl->eh.call_site_record[section], i);
+	VEC_index (call_site_record, crtl->eh.call_site_record_v[section], i);
       size += size_of_uleb128 (cs->action);
     }
 
@@ -2650,14 +2650,14 @@ dw2_size_of_call_site_table (int section)
 static int
 sjlj_size_of_call_site_table (void)
 {
-  int n = VEC_length (call_site_record, crtl->eh.call_site_record[0]);
+  int n = VEC_length (call_site_record, crtl->eh.call_site_record_v[0]);
   int size = 0;
   int i;
 
   for (i = 0; i < n; ++i)
     {
       struct call_site_record_d *cs =
-	VEC_index (call_site_record, crtl->eh.call_site_record[0], i);
+	VEC_index (call_site_record, crtl->eh.call_site_record_v[0], i);
       size += size_of_uleb128 (INTVAL (cs->landing_pad));
       size += size_of_uleb128 (cs->action);
     }
@@ -2669,7 +2669,7 @@ sjlj_size_of_call_site_table (void)
 static void
 dw2_output_call_site_table (int cs_format, int section)
 {
-  int n = VEC_length (call_site_record, crtl->eh.call_site_record[section]);
+  int n = VEC_length (call_site_record, crtl->eh.call_site_record_v[section]);
   int i;
   const char *begin;
 
@@ -2683,7 +2683,7 @@ dw2_output_call_site_table (int cs_format, int section)
   for (i = 0; i < n; ++i)
     {
       struct call_site_record_d *cs =
-	VEC_index (call_site_record, crtl->eh.call_site_record[section], i);
+	VEC_index (call_site_record, crtl->eh.call_site_record_v[section], i);
       char reg_start_lab[32];
       char reg_end_lab[32];
       char landing_pad_lab[32];
@@ -2731,13 +2731,13 @@ dw2_output_call_site_table (int cs_format, int section)
 static void
 sjlj_output_call_site_table (void)
 {
-  int n = VEC_length (call_site_record, crtl->eh.call_site_record[0]);
+  int n = VEC_length (call_site_record, crtl->eh.call_site_record_v[0]);
   int i;
 
   for (i = 0; i < n; ++i)
     {
       struct call_site_record_d *cs =
-	VEC_index (call_site_record, crtl->eh.call_site_record[0], i);
+	VEC_index (call_site_record, crtl->eh.call_site_record_v[0], i);
 
       dw2_asm_output_data_uleb128 (INTVAL (cs->landing_pad),
 				   "region %d landing pad", i);
@@ -3051,7 +3051,7 @@ output_function_exception_table (const char *fnname)
   targetm.asm_out.emit_except_table_label (asm_out_file);
 
   output_one_function_exception_table (0);
-  if (crtl->eh.call_site_record[1] != NULL)
+  if (crtl->eh.call_site_record_v[1] != NULL)
     output_one_function_exception_table (1);
 
   switch_to_section (current_function_section ());

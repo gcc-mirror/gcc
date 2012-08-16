@@ -196,5 +196,9 @@ enum memmodel
 /* Suppose that higher bits are target dependant. */
 #define MEMMODEL_MASK ((1<<16)-1)
 
+/* Support for user-provided GGC and PCH markers.  The first parameter
+   is a pointer to a pointer, the second a cookie.  */
+typedef void (*gt_pointer_operator) (void *, void *);
+
 #endif /* coretypes.h */
 

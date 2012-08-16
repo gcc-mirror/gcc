@@ -1,6 +1,5 @@
 /* Builtin functions for rs6000/powerpc.
-   Copyright (C) 2009, 2010, 2011
-   Free Software Foundation, Inc.
+   Copyright (C) 2009-2012 Free Software Foundation, Inc.
    Contributed by Michael Meissner (meissner@linux.vnet.ibm.com)
 
    This file is part of GCC.
@@ -1431,5 +1430,5 @@ BU_SPECIAL_X (RS6000_BUILTIN_RSQRTF, "__builtin_rsqrtf", RS6000_BTM_FRSQRTES,
 	      RS6000_BTC_FP)
 
 /* Darwin CfString builtin.  */
-BU_SPECIAL_X (RS6000_BUILTIN_CFSTRING, "__builtin_cfstring", RS6000_BTM_POWERPC,
+BU_SPECIAL_X (RS6000_BUILTIN_CFSTRING, "__builtin_cfstring", RS6000_BTM_ALWAYS,
 	      RS6000_BTC_MISC)

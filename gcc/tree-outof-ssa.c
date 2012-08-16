@@ -762,7 +762,7 @@ eliminate_useless_phis (void)
         {
 	  gimple phi = gsi_stmt (gsi);
 	  result = gimple_phi_result (phi);
-	  if (!is_gimple_reg (result))
+	  if (virtual_operand_p (result))
 	    {
 #ifdef ENABLE_CHECKING
 	      size_t i;
@@ -772,7 +772,7 @@ eliminate_useless_phis (void)
 	        {
 		  tree arg = PHI_ARG_DEF (phi, i);
 		  if (TREE_CODE (arg) == SSA_NAME
-		      && is_gimple_reg (arg))
+		      && !virtual_operand_p (arg))
 		    {
 		      fprintf (stderr, "Argument of PHI is not virtual (");
 		      print_generic_expr (stderr, arg, TDF_SLIM);
@@ -1032,7 +1032,7 @@ insert_backedge_copies (void)
 	  tree result = gimple_phi_result (phi);
 	  size_t i;
 
-	  if (!is_gimple_reg (result))
+	  if (virtual_operand_p (result))
 	    continue;
 
 	  for (i = 0; i < gimple_phi_num_args (phi); i++)

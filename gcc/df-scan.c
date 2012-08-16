@@ -4448,7 +4448,6 @@ df_bb_verify (basic_block bb)
       if (!INSN_P (insn))
         continue;
       df_insn_refs_verify (&collection_rec, bb, insn, true);
-      df_free_collection_rec (&collection_rec);
     }
 
   /* Do the artificial defs and uses.  */

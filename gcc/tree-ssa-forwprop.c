@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "gimple.h"
 #include "expr.h"
+#include "cfgloop.h"
 
 /* This pass propagates the RHS of assignment statements into use
    sites of the LHS of the assignment.  It's basically a specialized
@@ -1002,7 +1003,7 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
 static bool
 forward_propagate_addr_expr (tree name, tree rhs)
 {
-  int stmt_loop_depth = gimple_bb (SSA_NAME_DEF_STMT (name))->loop_depth;
+  int stmt_loop_depth = bb_loop_depth (gimple_bb (SSA_NAME_DEF_STMT (name)));
   imm_use_iterator iter;
   gimple use_stmt;
   bool all = true;
@@ -1025,7 +1026,7 @@ forward_propagate_addr_expr (tree name, tree rhs)
       /* If the use is in a deeper loop nest, then we do not want
 	 to propagate non-invariant ADDR_EXPRs into the loop as that
 	 is likely adding expression evaluations into the loop.  */
-      if (gimple_bb (use_stmt)->loop_depth > stmt_loop_depth
+      if (bb_loop_depth (gimple_bb (use_stmt)) > stmt_loop_depth
 	  && !is_gimple_min_invariant (rhs))
 	{
 	  all = false;

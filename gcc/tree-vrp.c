@@ -5574,19 +5574,19 @@ find_assert_locations_1 (basic_block bb, sbitmap live)
 static bool
 find_assert_locations (void)
 {
-  int *rpo = XCNEWVEC (int, last_basic_block + NUM_FIXED_BLOCKS);
-  int *bb_rpo = XCNEWVEC (int, last_basic_block + NUM_FIXED_BLOCKS);
-  int *last_rpo = XCNEWVEC (int, last_basic_block + NUM_FIXED_BLOCKS);
+  int *rpo = XNEWVEC (int, last_basic_block);
+  int *bb_rpo = XNEWVEC (int, last_basic_block);
+  int *last_rpo = XCNEWVEC (int, last_basic_block);
   int rpo_cnt, i;
   bool need_asserts;
 
-  live = XCNEWVEC (sbitmap, last_basic_block + NUM_FIXED_BLOCKS);
+  live = XCNEWVEC (sbitmap, last_basic_block);
   rpo_cnt = pre_and_rev_post_order_compute (NULL, rpo, false);
   for (i = 0; i < rpo_cnt; ++i)
     bb_rpo[rpo[i]] = i;
 
   need_asserts = false;
-  for (i = rpo_cnt-1; i >= 0; --i)
+  for (i = rpo_cnt - 1; i >= 0; --i)
     {
       basic_block bb = BASIC_BLOCK (rpo[i]);
       edge e;
@@ -5647,7 +5647,7 @@ find_assert_locations (void)
   XDELETEVEC (rpo);
   XDELETEVEC (bb_rpo);
   XDELETEVEC (last_rpo);
-  for (i = 0; i < last_basic_block + NUM_FIXED_BLOCKS; ++i)
+  for (i = 0; i < last_basic_block; ++i)
     if (live[i])
       sbitmap_free (live[i]);
   XDELETEVEC (live);
@@ -6142,11 +6142,13 @@ remove_range_assertions (void)
 static bool
 stmt_interesting_for_vrp (gimple stmt)
 {
-  if (gimple_code (stmt) == GIMPLE_PHI
-      && is_gimple_reg (gimple_phi_result (stmt))
-      && (INTEGRAL_TYPE_P (TREE_TYPE (gimple_phi_result (stmt)))
-	  || POINTER_TYPE_P (TREE_TYPE (gimple_phi_result (stmt)))))
-    return true;
+  if (gimple_code (stmt) == GIMPLE_PHI)
+    {
+      tree res = gimple_phi_result (stmt);
+      return (!virtual_operand_p (res)
+	      && (INTEGRAL_TYPE_P (TREE_TYPE (res))
+		  || POINTER_TYPE_P (TREE_TYPE (res))));
+    }
   else if (is_gimple_assign (stmt) || is_gimple_call (stmt))
     {
       tree lhs = gimple_get_lhs (stmt);
@@ -8862,7 +8864,7 @@ vrp_fold_stmt (gimple_stmt_iterator *si)
 
    A NULL entry is used to mark the end of pairs which need to be
    restored.  */
-static VEC(tree,heap) *stack;
+static VEC(tree,heap) *equiv_stack;
 
 /* A trivial wrapper so that we can present the generic jump threading
    code with a simple API for simplifying statements.  STMT is the
@@ -8930,7 +8932,7 @@ identify_jump_threads (void)
 
   /* Allocate our unwinder stack to unwind any temporary equivalences
      that might be recorded.  */
-  stack = VEC_alloc (tree, heap, 20);
+  equiv_stack = VEC_alloc (tree, heap, 20);
 
   /* To avoid lots of silly node creation, we create a single
      conditional and just modify it in-place when attempting to
@@ -8984,7 +8986,7 @@ identify_jump_threads (void)
 	      if (e->flags & (EDGE_DFS_BACK | EDGE_COMPLEX))
 		continue;
 
-	      thread_across_edge (dummy, e, true, &stack,
+	      thread_across_edge (dummy, e, true, &equiv_stack,
 				  simplify_stmt_for_jump_threading);
 	    }
 	}
@@ -9005,7 +9007,7 @@ static void
 finalize_jump_threads (void)
 {
   thread_through_all_blocks (false);
-  VEC_free (tree, heap, stack);
+  VEC_free (tree, heap, equiv_stack);
 }
 
 

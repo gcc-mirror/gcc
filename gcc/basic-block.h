@@ -33,19 +33,19 @@ along with GCC; see the file COPYING3.  If not see
 typedef HOST_WIDEST_INT gcov_type;
 
 /* Control flow edge information.  */
-struct GTY(()) edge_def {
+struct GTY((user)) edge_def {
   /* The two blocks at the ends of the edge.  */
   basic_block src;
   basic_block dest;
 
   /* Instructions queued on the edge.  */
   union edge_def_insns {
-    gimple_seq GTY ((tag ("true"))) g;
-    rtx GTY ((tag ("false"))) r;
-  } GTY ((desc ("current_ir_type () == IR_GIMPLE"))) insns;
+    gimple_seq g;
+    rtx r;
+  } insns;
 
   /* Auxiliary info specific to a pass.  */
-  PTR GTY ((skip (""))) aux;
+  PTR aux;
 
   /* Location of any goto implicit in the edge and associated BLOCK.  */
   tree goto_block;
@@ -64,6 +64,11 @@ struct GTY(()) edge_def {
 DEF_VEC_P(edge);
 DEF_VEC_ALLOC_P(edge,gc);
 DEF_VEC_ALLOC_P(edge,heap);
+
+/* Garbage collection and PCH support for edge_def.  */
+extern void gt_ggc_mx (edge_def *e);
+extern void gt_pch_nx (edge_def *e);
+extern void gt_pch_nx (edge_def *e, gt_pointer_operator, void *);
 
 /* Masks for edge.flags.  */
 #define DEF_EDGE_FLAG(NAME,IDX) EDGE_##NAME = 1 << IDX ,
@@ -160,14 +165,14 @@ struct GTY((chain_next ("%h.next_bb"), chain_prev ("%h.prev_bb"))) basic_block_d
       } GTY ((tag ("1"))) x;
     } GTY ((desc ("((%1.flags & BB_RTL) != 0)"))) il;
 
-  /* Expected number of executions: calculated in profile.c.  */
-  gcov_type count;
+  /* Various flags.  See cfg-flags.def.  */
+  int flags;
 
   /* The index of this block.  */
   int index;
 
-  /* The loop depth of this block.  */
-  int loop_depth;
+  /* Expected number of executions: calculated in profile.c.  */
+  gcov_type count;
 
   /* Expected frequency.  Normalized to be in range 0 to BB_FREQ_MAX.  */
   int frequency;
@@ -176,9 +181,6 @@ struct GTY((chain_next ("%h.next_bb"), chain_prev ("%h.prev_bb"))) basic_block_d
      among several basic blocks that share a common locus, allowing for
      more accurate sample-based profiling.  */
   int discriminator;
-
-  /* Various flags.  See cfg-flags.def.  */
-  int flags;
 };
 
 /* This ensures that struct gimple_bb_info is smaller than

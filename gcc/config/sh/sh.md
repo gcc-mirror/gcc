@@ -801,6 +801,70 @@
   "cmp/pl	%0"
    [(set_attr "type" "mt_group")])
 
+;; Some integer sign comparison patterns can be realized with the div0s insn.
+;;	div0s	Rm,Rn		T = (Rm >> 31) ^ (Rn >> 31)
+(define_insn "cmp_div0s_0"
+  [(set (reg:SI T_REG)
+	(lshiftrt:SI (xor:SI (match_operand:SI 0 "arith_reg_operand" "%r")
+			     (match_operand:SI 1 "arith_reg_operand" "r"))
+		     (const_int 31)))]
+  "TARGET_SH1"
+  "div0s	%0,%1"
+  [(set_attr "type" "arith")])
+
+(define_insn "cmp_div0s_1"
+  [(set (reg:SI T_REG)
+	(lt:SI (xor:SI (match_operand:SI 0 "arith_reg_operand" "%r")
+		       (match_operand:SI 1 "arith_reg_operand" "r"))
+	       (const_int 0)))]
+  "TARGET_SH1"
+  "div0s	%0,%1"
+  [(set_attr "type" "arith")])
+
+(define_insn_and_split "*cmp_div0s_0"
+  [(set (match_operand:SI 0 "arith_reg_dest" "")
+	(lshiftrt:SI (xor:SI (match_operand:SI 1 "arith_reg_operand" "")
+			     (match_operand:SI 2 "arith_reg_operand" ""))
+		     (const_int 31)))
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH1"
+  "#"
+  "&& 1"
+  [(set (reg:SI T_REG)
+	(lshiftrt:SI (xor:SI (match_dup 1) (match_dup 2)) (const_int 31)))
+   (set (match_dup 0) (reg:SI T_REG))])
+
+(define_insn_and_split "*cmp_div0s_1"
+  [(set (match_operand:SI 0 "arith_reg_dest" "")
+	(ge:SI (xor:SI (match_operand:SI 1 "arith_reg_operand" "")
+		       (match_operand:SI 2 "arith_reg_operand" ""))
+	       (const_int 0)))
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH1"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(const_int 0)]
+;; We have to go through the movnegt expander here which will handle the
+;; SH2A vs non-SH2A cases.
+{
+  emit_insn (gen_cmp_div0s_1 (operands[1], operands[2]));
+  emit_insn (gen_movnegt (operands[0], get_t_reg_rtx ()));
+  DONE;
+})
+
+(define_insn_and_split "*cmp_div0s_1"
+  [(set (reg:SI T_REG)
+	(ge:SI (xor:SI (match_operand:SI 0 "arith_reg_operand" "")
+		       (match_operand:SI 1 "arith_reg_operand" ""))
+	       (const_int 0)))]
+  "TARGET_SH1"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(set (reg:SI T_REG) (lt:SI (xor:SI (match_dup 0) (match_dup 1))
+			      (const_int 0)))
+   (set (reg:SI T_REG) (xor:SI (reg:SI T_REG) (const_int 1)))])
+
+
 ;; -------------------------------------------------------------------------
 ;; SImode compare and branch
 ;; -------------------------------------------------------------------------
@@ -917,6 +981,63 @@
    (set (pc) (if_then_else (eq (reg:SI T_REG) (const_int 0))
 			   (label_ref (match_dup 2))
 			   (pc)))])
+
+;; Compare and branch combine patterns for div0s comparisons.
+(define_insn_and_split "*cbranch_div0s"
+  [(set (pc)
+	(if_then_else (lt (xor:SI (match_operand:SI 0 "arith_reg_operand" "")
+				  (match_operand:SI 1 "arith_reg_operand" ""))
+			  (const_int 0))
+		      (label_ref (match_operand 2))
+		      (pc)))
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH1"
+  "#"
+  "&& 1"
+  [(set (reg:SI T_REG)
+	(lt:SI (xor:SI (match_dup 0) (match_dup 1)) (const_int 0)))
+   (set (pc)
+	(if_then_else (ne (reg:SI T_REG) (const_int 0))
+		      (label_ref (match_dup 2))
+		      (pc)))])
+
+(define_insn_and_split "*cbranch_div0s"
+  [(set (pc)
+	(if_then_else (ge (xor:SI (match_operand:SI 0 "arith_reg_operand" "")
+				  (match_operand:SI 1 "arith_reg_operand" ""))
+			  (const_int 0))
+		      (label_ref (match_operand 2))
+		      (pc)))
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH1"
+  "#"
+  "&& 1"
+  [(set (reg:SI T_REG)
+	(lt:SI (xor:SI (match_dup 0) (match_dup 1)) (const_int 0)))
+   (set (pc)
+	(if_then_else (eq (reg:SI T_REG) (const_int 0))
+		      (label_ref (match_dup 2))
+		      (pc)))])
+
+;; Conditional move combine pattern for div0s comparisons.
+;; This is used when TARGET_PRETEND_CMOVE is in effect.
+(define_insn_and_split "*movsicc_div0s"
+  [(set (match_operand:SI 0 "arith_reg_dest" "")
+	(if_then_else:SI (ge (xor:SI (match_operand:SI 1 "arith_reg_operand" "")
+				     (match_operand:SI 2 "arith_reg_operand" ""))
+			     (const_int 0))
+			 (match_operand:SI 3 "arith_reg_operand" "")
+			 (match_operand:SI 4 "general_movsrc_operand" "")))
+   (clobber (reg:SI T_REG))]
+  "TARGET_PRETEND_CMOVE"
+  "#"
+  "&& 1"
+  [(set (reg:SI T_REG) (lt:SI (xor:SI (match_dup 1) (match_dup 2))
+			      (const_int 0)))
+   (set (match_dup 0)
+	(if_then_else (ne (reg:SI T_REG) (const_int 0))
+		      (match_dup 4)
+		      (match_dup 3)))])
 
 ;; -------------------------------------------------------------------------
 ;; SImode unsigned integer comparisons
@@ -4841,6 +4962,88 @@ label:
   "TARGET_SH1"
   "extu.b	%1,%0"
   [(set_attr "type" "arith")])
+
+;; SH2A supports two zero extending load instructions: movu.b and movu.w.
+;; They could also be used for simple memory addresses like @Rn by setting
+;; the displacement value to zero.  However, doing so too early results in
+;; missed opportunities for other optimizations such as post-inc or index
+;; addressing loads.
+;; Although the 'zero_extend_movu_operand' predicate does not allow simple
+;; register addresses (an address without a displacement, index, post-inc),
+;; zero-displacement addresses might be generated during reload, wich are
+;; simplified to simple register addresses in turn.  Thus, we have to
+;; provide the Sdd and Sra alternatives in the patterns.
+(define_insn "*zero_extendqisi2_disp_mem"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r,r")
+	(zero_extend:SI
+	  (match_operand:QI 1 "zero_extend_movu_operand" "Sdd,Sra")))]
+  "TARGET_SH2A"
+  "@
+	movu.b	%1,%0
+	movu.b	@(0,%t1),%0"
+  [(set_attr "type" "load")
+   (set_attr "length" "4")])
+
+(define_insn "*zero_extendhisi2_disp_mem"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r,r")
+	(zero_extend:SI
+	  (match_operand:HI 1 "zero_extend_movu_operand" "Sdd,Sra")))]
+  "TARGET_SH2A"
+  "@
+	movu.w	%1,%0
+	movu.w	@(0,%t1),%0"
+  [(set_attr "type" "load")
+   (set_attr "length" "4")])
+
+;; Convert the zero extending loads in sequences such as:
+;;	movu.b	@(1,r5),r0	movu.w	@(2,r5),r0
+;;	mov.b	r0,@(1,r4)	mov.b	r0,@(1,r4)
+;;
+;; back to sign extending loads like:
+;;	mov.b	@(1,r5),r0	mov.w	@(2,r5),r0
+;;	mov.b	r0,@(1,r4)	mov.b	r0,@(1,r4)
+;;
+;; if the extension type is irrelevant.  The sign extending mov.{b|w} insn
+;; is only 2 bytes in size if the displacement is {K04|K05}.
+;; If the displacement is greater it doesn't matter, so we convert anyways.
+(define_peephole2
+  [(set (match_operand:SI 0 "arith_reg_dest" "")
+	(zero_extend:SI (match_operand 1 "displacement_mem_operand" "")))
+   (set (match_operand 2 "general_operand" "")
+	(match_operand 3 "arith_reg_operand" ""))]
+  "TARGET_SH2A
+   && REGNO (operands[0]) == REGNO (operands[3])
+   && peep2_reg_dead_p (2, operands[0])
+   && GET_MODE_SIZE (GET_MODE (operands[2]))
+      <= GET_MODE_SIZE (GET_MODE (operands[1]))"
+  [(set (match_dup 0) (sign_extend:SI (match_dup 1)))
+   (set (match_dup 2) (match_dup 3))])
+
+;; Fold sequences such as
+;;	mov.b	@r3,r7
+;;	extu.b	r7,r7
+;; into
+;;	movu.b	@(0,r3),r7
+;; This does not reduce the code size but the number of instructions is
+;; halved, which results in faster code.
+(define_peephole2
+  [(set (match_operand:SI 0 "arith_reg_dest" "")
+	(sign_extend:SI (match_operand 1 "simple_mem_operand" "")))
+   (set (match_operand:SI 2 "arith_reg_dest" "")
+	(zero_extend:SI (match_operand 3 "arith_reg_operand" "")))]
+  "TARGET_SH2A
+   && GET_MODE (operands[1]) == GET_MODE (operands[3])
+   && (GET_MODE (operands[1]) == QImode || GET_MODE (operands[1]) == HImode)
+   && REGNO (operands[0]) == REGNO (operands[3])
+   && (REGNO (operands[2]) == REGNO (operands[0])
+       || peep2_reg_dead_p (2, operands[0]))"
+  [(set (match_dup 2) (zero_extend:SI (match_dup 4)))]
+{
+  operands[4]
+    = replace_equiv_address (operands[1],
+			     gen_rtx_PLUS (SImode, XEXP (operands[1], 0),
+					   const0_rtx));
+})
 
 ;; -------------------------------------------------------------------------
 ;; Sign extension instructions

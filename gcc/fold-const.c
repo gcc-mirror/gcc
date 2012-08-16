@@ -14333,7 +14333,7 @@ fold (tree expr)
 	    while (begin != end)
 	      {
 		unsigned HOST_WIDE_INT middle = (begin + end) / 2;
-		tree index = VEC_index (constructor_elt, elts, middle)->index;
+		tree index = VEC_index (constructor_elt, elts, middle).index;
 
 		if (TREE_CODE (index) == INTEGER_CST
 		    && tree_int_cst_lt (index, op1))
@@ -14348,7 +14348,7 @@ fold (tree expr)
 			 && tree_int_cst_lt (op1, TREE_OPERAND (index, 0)))
 		  end = middle;
 		else
-		  return VEC_index (constructor_elt, elts, middle)->value;
+		  return VEC_index (constructor_elt, elts, middle).value;
 	      }
 	  }
 

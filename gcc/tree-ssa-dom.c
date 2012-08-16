@@ -1391,7 +1391,7 @@ loop_depth_of_name (tree x)
   if (!defbb)
     return 0;
 
-  return defbb->loop_depth;
+  return bb_loop_depth (defbb);
 }
 
 /* Record that X is equal to Y in const_and_copies.  Record undo
@@ -1734,7 +1734,8 @@ dom_opt_enter_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
 
   /* Push a marker on the stacks of local information so that we know how
      far to unwind when we finalize this block.  */
-  VEC_safe_push (expr_hash_elt_t, heap, avail_exprs_stack, NULL);
+  VEC_safe_push (expr_hash_elt_t, heap, avail_exprs_stack,
+		 (expr_hash_elt_t)NULL);
   VEC_safe_push (tree, heap, const_and_copies_stack, NULL_TREE);
 
   record_equivalences_from_incoming_edge (bb);
@@ -1745,7 +1746,8 @@ dom_opt_enter_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
   /* Create equivalences from redundant PHIs.  PHIs are only truly
      redundant when they exist in the same block, so push another
      marker and unwind right afterwards.  */
-  VEC_safe_push (expr_hash_elt_t, heap, avail_exprs_stack, NULL);
+  VEC_safe_push (expr_hash_elt_t, heap, avail_exprs_stack,
+		 (expr_hash_elt_t)NULL);
   for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     eliminate_redundant_computations (&gsi);
   remove_local_expressions_from_table ();
@@ -1800,7 +1802,8 @@ dom_opt_leave_block (struct dom_walk_data *walk_data, basic_block bb)
 	  /* Push a marker onto the available expression stack so that we
 	     unwind any expressions related to the TRUE arm before processing
 	     the false arm below.  */
-          VEC_safe_push (expr_hash_elt_t, heap, avail_exprs_stack, NULL);
+          VEC_safe_push (expr_hash_elt_t, heap, avail_exprs_stack,
+			 (expr_hash_elt_t)NULL);
 	  VEC_safe_push (tree, heap, const_and_copies_stack, NULL_TREE);
 
 	  edge_info = (struct edge_info *) true_edge->aux;

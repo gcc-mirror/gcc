@@ -1471,7 +1471,7 @@ expand_used_vars (void)
     {
       tree var = partition_to_var (SA.map, i);
 
-      gcc_assert (is_gimple_reg (var));
+      gcc_assert (!virtual_operand_p (var));
 
       /* Assign decls to each SSA name partition, share decls for partitions
          we could have coalesced (those with the same type).  */
@@ -4334,8 +4334,7 @@ gimple_expand_cfg (void)
   timevar_push (TV_OUT_OF_SSA);
   rewrite_out_of_ssa (&SA);
   timevar_pop (TV_OUT_OF_SSA);
-  SA.partition_to_pseudo = (rtx *)xcalloc (SA.map->num_partitions,
-					   sizeof (rtx));
+  SA.partition_to_pseudo = XCNEWVEC (rtx, SA.map->num_partitions);
 
   /* Make sure all values used by the optimization passes have sane
      defaults.  */

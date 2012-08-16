@@ -1820,7 +1820,8 @@ hoist_adjacent_loads (basic_block bb0, basic_block bb1,
       gimple_stmt_iterator gsi2;
       basic_block bb_for_def1, bb_for_def2;
 
-      if (gimple_phi_num_args (phi_stmt) != 2)
+      if (gimple_phi_num_args (phi_stmt) != 2
+	  || virtual_operand_p (gimple_phi_result (phi_stmt)))
 	continue;
 
       arg1 = gimple_phi_arg_def (phi_stmt, 0);
@@ -1829,9 +1830,7 @@ hoist_adjacent_loads (basic_block bb0, basic_block bb1,
       if (TREE_CODE (arg1) != SSA_NAME
 	  || TREE_CODE (arg2) != SSA_NAME
 	  || SSA_NAME_IS_DEFAULT_DEF (arg1)
-	  || SSA_NAME_IS_DEFAULT_DEF (arg2)
-	  || !is_gimple_reg (arg1)
-	  || !is_gimple_reg (arg2))
+	  || SSA_NAME_IS_DEFAULT_DEF (arg2))
 	continue;
 
       def1 = SSA_NAME_DEF_STMT (arg1);
@@ -1843,7 +1842,8 @@ hoist_adjacent_loads (basic_block bb0, basic_block bb1,
 
       /* Check the mode of the arguments to be sure a conditional move
 	 can be generated for it.  */
-      if (!optab_handler (cmov_optab, TYPE_MODE (TREE_TYPE (arg1))))
+      if (optab_handler (movcc_optab, TYPE_MODE (TREE_TYPE (arg1)))
+	  == CODE_FOR_nothing)
 	continue;
 
       /* Both statements must be assignments whose RHS is a COMPONENT_REF.  */

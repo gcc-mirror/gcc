@@ -2777,7 +2777,7 @@ update_equiv_regs (void)
      a register can be set below its use.  */
   FOR_EACH_BB (bb)
     {
-      loop_depth = bb->loop_depth;
+      loop_depth = bb_loop_depth (bb);
 
       for (insn = BB_HEAD (bb);
 	   insn != NEXT_INSN (BB_END (bb));
@@ -3053,7 +3053,7 @@ update_equiv_regs (void)
      basic block.  */
   FOR_EACH_BB_REVERSE (bb)
     {
-      loop_depth = bb->loop_depth;
+      loop_depth = bb_loop_depth (bb);
       for (insn = BB_END (bb);
 	   insn != PREV_INSN (BB_HEAD (bb));
 	   insn = PREV_INSN (insn))
@@ -4206,6 +4206,9 @@ ira (FILE *f)
 
   allocated_reg_info_size = max_reg_num ();
 
+  if (delete_trivially_dead_insns (get_insns (), max_reg_num ()))
+    df_analyze ();
+
   /* It is not worth to do such improvement when we use a simple
      allocation because of -O0 usage or because the function is too
      big.  */
@@ -4287,9 +4290,6 @@ ira (FILE *f)
   if (ira_conflicts_p)
     check_allocation ();
 #endif
-
-  if (delete_trivially_dead_insns (get_insns (), max_reg_num ()))
-    df_analyze ();
 
   if (max_regno != max_regno_before_ira)
     {

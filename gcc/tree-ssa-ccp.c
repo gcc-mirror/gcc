@@ -130,6 +130,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbgcnt.h"
 #include "gimple-fold.h"
 #include "params.h"
+#include "hash-table.h"
 
 
 /* Possible lattice values.  */
@@ -236,7 +237,6 @@ debug_lattice_value (prop_value_t val)
 static prop_value_t
 get_default_value (tree var)
 {
-  tree sym = SSA_NAME_VAR (var);
   prop_value_t val = { UNINITIALIZED, NULL_TREE, { 0, 0 } };
   gimple stmt;
 
@@ -248,8 +248,8 @@ get_default_value (tree var)
 	 before being initialized.  If VAR is a local variable, we
 	 can assume initially that it is UNDEFINED, otherwise we must
 	 consider it VARYING.  */
-      if (is_gimple_reg (sym)
-	  && TREE_CODE (sym) == VAR_DECL)
+      if (!virtual_operand_p (var)
+	  && TREE_CODE (SSA_NAME_VAR (var)) == VAR_DECL)
 	val.lattice_val = UNDEFINED;
       else
 	{
@@ -762,7 +762,7 @@ ccp_initialize (void)
         {
           gimple phi = gsi_stmt (i);
 
-	  if (!is_gimple_reg (gimple_phi_result (phi)))
+	  if (virtual_operand_p (gimple_phi_result (phi)))
             prop_set_simulate_again (phi, false);
 	  else
             prop_set_simulate_again (phi, true);
@@ -1688,11 +1688,17 @@ evaluate_stmt (gimple stmt)
   return val;
 }
 
+typedef hash_table <gimple_statement_d, typed_pointer_hash<gimple_statement_d>,
+		    typed_pointer_equal<gimple_statement_d>,
+		    typed_null_remove<gimple_statement_d> >
+		   gimple_htab;
+
 /* Given a BUILT_IN_STACK_SAVE value SAVED_VAL, insert a clobber of VAR before
    each matching BUILT_IN_STACK_RESTORE.  Mark visited phis in VISITED.  */
 
 static void
-insert_clobber_before_stack_restore (tree saved_val, tree var, htab_t *visited)
+insert_clobber_before_stack_restore (tree saved_val, tree var,
+				     gimple_htab *visited)
 {
   gimple stmt, clobber_stmt;
   tree clobber;
@@ -1712,10 +1718,10 @@ insert_clobber_before_stack_restore (tree saved_val, tree var, htab_t *visited)
       }
     else if (gimple_code (stmt) == GIMPLE_PHI)
       {
-	if (*visited == NULL)
-	  *visited = htab_create (10, htab_hash_pointer, htab_eq_pointer, NULL);
+	if (!visited->is_created ())
+	  visited->create (10);
 
-	slot = (gimple *)htab_find_slot (*visited, stmt, INSERT);
+	slot = visited->find_slot (stmt, INSERT);
 	if (*slot != NULL)
 	  continue;
 
@@ -1758,7 +1764,7 @@ insert_clobbers_for_var (gimple_stmt_iterator i, tree var)
 {
   gimple stmt;
   tree saved_val;
-  htab_t visited = NULL;
+  gimple_htab visited;
 
   for (; !gsi_end_p (i); gsi_prev_dom_bb_nondebug (&i))
     {
@@ -1775,8 +1781,8 @@ insert_clobbers_for_var (gimple_stmt_iterator i, tree var)
       break;
     }
 
-  if (visited != NULL)
-    htab_delete (visited);
+  if (visited.is_created ())
+    visited.dispose ();
 }
 
 /* Detects a __builtin_alloca_with_align with constant size argument.  Declares

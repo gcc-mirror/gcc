@@ -531,8 +531,8 @@ execute_cse_reciprocals (void)
 	{
 	  phi = gsi_stmt (gsi);
 	  def = PHI_RESULT (phi);
-	  if (FLOAT_TYPE_P (TREE_TYPE (def))
-	      && is_gimple_reg (def))
+	  if (! virtual_operand_p (def)
+	      && FLOAT_TYPE_P (TREE_TYPE (def)))
 	    execute_cse_reciprocals_1 (NULL, def);
 	}
 

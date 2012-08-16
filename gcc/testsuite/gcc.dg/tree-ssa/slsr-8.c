@@ -17,7 +17,7 @@ f (int s, int *c)
   return x1 ? x2 : x3;
 }
 
-/* There are 2 ' * ' instances in the decls (since "int * x3;" is
-   optimized out), 1 parm, 2 in the code.  */
-/* { dg-final { scan-tree-dump-times " \\* " 5 "optimized" } } */
+/* There are 4 ' * ' instances in the decls (since "int * iftmp.0;" is
+   added), 1 parm, 2 in the code.  */
+/* { dg-final { scan-tree-dump-times " \\* " 7 "optimized" } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */

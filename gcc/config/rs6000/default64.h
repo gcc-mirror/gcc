@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for 64 bit powerpc linux defaulting to -m64.
-   Copyright (C) 2003, 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2003-2012 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -19,6 +19,4 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #undef TARGET_DEFAULT
-#define TARGET_DEFAULT \
-  (MASK_POWERPC | MASK_PPC_GFXOPT | \
-   MASK_POWERPC64 | MASK_64BIT | MASK_NEW_MNEMONICS)
+#define TARGET_DEFAULT (MASK_PPC_GFXOPT | MASK_POWERPC64 | MASK_64BIT)

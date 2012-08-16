@@ -28,12 +28,12 @@ along with this program; see the file COPYING3.  If not see
 #include "cpplib.h"
 #include "internal.h"
 
-static hashnode alloc_node (hash_table *);
+static hashnode alloc_node (cpp_hash_table *);
 
 /* Return an identifier node for hashtable.c.  Used by cpplib except
    when integrated with the C front ends.  */
 static hashnode
-alloc_node (hash_table *table)
+alloc_node (cpp_hash_table *table)
 {
   cpp_hashnode *node;
 
@@ -45,7 +45,7 @@ alloc_node (hash_table *table)
 /* Set up the identifier hash table.  Use TABLE if non-null, otherwise
    create our own.  */
 void
-_cpp_init_hashtable (cpp_reader *pfile, hash_table *table)
+_cpp_init_hashtable (cpp_reader *pfile, cpp_hash_table *table)
 {
   struct spec_nodes *s;
 

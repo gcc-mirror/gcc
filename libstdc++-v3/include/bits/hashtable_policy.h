@@ -577,8 +577,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __node_type* __p = __h->_M_find_node(__n, __k, __code);
 
       if (!__p)
-	return __h->_M_insert_bucket(std::make_pair(__k, mapped_type()),
-				     __n, __code)->second;
+	{
+	  __p = __h->_M_allocate_node(std::piecewise_construct,
+				      std::tuple<const key_type&>(__k),
+				      std::tuple<>());
+	  return __h->_M_insert_unique_node(__n, __code, __p)->second;
+	}
+
       return (__p->_M_v).second;
     }
 
@@ -598,9 +603,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __node_type* __p = __h->_M_find_node(__n, __k, __code);
 
       if (!__p)
-	return __h->_M_insert_bucket(std::make_pair(std::move(__k),
-						    mapped_type()),
-				     __n, __code)->second;
+	{
+	  __p = __h->_M_allocate_node(std::piecewise_construct,
+				      std::forward_as_tuple(std::move(__k)),
+				      std::tuple<>());
+	  return __h->_M_insert_unique_node(__n, __code, __p)->second;
+	}
+
       return (__p->_M_v).second;
     }
 

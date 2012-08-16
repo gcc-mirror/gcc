@@ -157,7 +157,7 @@ struct GTY(()) rtl_eh {
 
   VEC(uchar,gc) *action_record_data;
 
-  VEC(call_site_record,gc) *call_site_record[2];
+  VEC(call_site_record,gc) *call_site_record_v[2];
 };
 
 #define pending_stack_adjust (crtl->expr.x_pending_stack_adjust)

@@ -126,7 +126,7 @@ DEF_VEC_ALLOC_O(c6x_sched_insn_info, heap);
 static VEC(c6x_sched_insn_info, heap) *insn_info;
 
 #define INSN_INFO_LENGTH (VEC_length (c6x_sched_insn_info, insn_info))
-#define INSN_INFO_ENTRY(N) (*VEC_index (c6x_sched_insn_info, insn_info, (N)))
+#define INSN_INFO_ENTRY(N) (VEC_index (c6x_sched_insn_info, insn_info, (N)))
 
 static bool done_cfi_sections;
 
@@ -3448,8 +3448,8 @@ try_rename_operands (rtx head, rtx tail, unit_req_table reqs, rtx insn,
     {
       unsigned int mask1, mask2, mask_changed;
       int count, side1, side2, req1, req2;
-      insn_rr_info *this_rr = VEC_index (insn_rr_info, insn_rr,
-					 INSN_UID (chain->insn));
+      insn_rr_info *this_rr = &VEC_index (insn_rr_info, insn_rr,
+					  INSN_UID (chain->insn));
 
       count = get_unit_reqs (chain->insn, &req1, &side1, &req2, &side2);
 
@@ -3555,7 +3555,7 @@ reshuffle_units (basic_block loop)
       if (!get_unit_operand_masks (insn, &mask1, &mask2))
 	continue;
 
-      info = VEC_index (insn_rr_info, insn_rr, INSN_UID (insn));
+      info = &VEC_index (insn_rr_info, insn_rr, INSN_UID (insn));
       if (info->op_info == NULL)
 	continue;
 

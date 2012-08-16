@@ -191,7 +191,7 @@ init_dom_info (struct dom_info *di, enum cdi_direction dir)
 static unsigned int
 dom_convert_dir_to_idx (enum cdi_direction dir)
 {
-  gcc_assert (dir == CDI_DOMINATORS || dir == CDI_POST_DOMINATORS);
+  gcc_checking_assert (dir == CDI_DOMINATORS || dir == CDI_POST_DOMINATORS);
   return dir - 1;
 }
 
@@ -613,7 +613,7 @@ compute_dom_fast_query (enum cdi_direction dir)
   basic_block bb;
   unsigned int dir_index = dom_convert_dir_to_idx (dir);
 
-  gcc_assert (dom_info_available_p (dir));
+  gcc_checking_assert (dom_info_available_p (dir));
 
   if (dom_computed[dir_index] == DOM_OK)
     return;
@@ -702,7 +702,7 @@ get_immediate_dominator (enum cdi_direction dir, basic_block bb)
   unsigned int dir_index = dom_convert_dir_to_idx (dir);
   struct et_node *node = bb->dom[dir_index];
 
-  gcc_assert (dom_computed[dir_index]);
+  gcc_checking_assert (dom_computed[dir_index]);
 
   if (!node->father)
     return NULL;
@@ -719,7 +719,7 @@ set_immediate_dominator (enum cdi_direction dir, basic_block bb,
   unsigned int dir_index = dom_convert_dir_to_idx (dir);
   struct et_node *node = bb->dom[dir_index];
 
-  gcc_assert (dom_computed[dir_index]);
+  gcc_checking_assert (dom_computed[dir_index]);
 
   if (node->father)
     {
@@ -744,7 +744,7 @@ get_dominated_by (enum cdi_direction dir, basic_block bb)
   struct et_node *node = bb->dom[dir_index], *son = node->son, *ason;
   VEC (basic_block, heap) *bbs = NULL;
 
-  gcc_assert (dom_computed[dir_index]);
+  gcc_checking_assert (dom_computed[dir_index]);
 
   if (!son)
     return NULL;
@@ -836,7 +836,7 @@ redirect_immediate_dominators (enum cdi_direction dir, basic_block bb,
   bb_node = bb->dom[dir_index];
   to_node = to->dom[dir_index];
 
-  gcc_assert (dom_computed[dir_index]);
+  gcc_checking_assert (dom_computed[dir_index]);
 
   if (!bb_node->son)
     return;
@@ -859,7 +859,7 @@ nearest_common_dominator (enum cdi_direction dir, basic_block bb1, basic_block b
 {
   unsigned int dir_index = dom_convert_dir_to_idx (dir);
 
-  gcc_assert (dom_computed[dir_index]);
+  gcc_checking_assert (dom_computed[dir_index]);
 
   if (!bb1)
     return bb2;
@@ -971,7 +971,7 @@ dominated_by_p (enum cdi_direction dir, const_basic_block bb1, const_basic_block
   unsigned int dir_index = dom_convert_dir_to_idx (dir);
   struct et_node *n1 = bb1->dom[dir_index], *n2 = bb2->dom[dir_index];
 
-  gcc_assert (dom_computed[dir_index]);
+  gcc_checking_assert (dom_computed[dir_index]);
 
   if (dom_computed[dir_index] == DOM_OK)
     return (n1->dfs_num_in >= n2->dfs_num_in
@@ -988,7 +988,7 @@ bb_dom_dfs_in (enum cdi_direction dir, basic_block bb)
   unsigned int dir_index = dom_convert_dir_to_idx (dir);
   struct et_node *n = bb->dom[dir_index];
 
-  gcc_assert (dom_computed[dir_index] == DOM_OK);
+  gcc_checking_assert (dom_computed[dir_index] == DOM_OK);
   return n->dfs_num_in;
 }
 
@@ -1000,7 +1000,7 @@ bb_dom_dfs_out (enum cdi_direction dir, basic_block bb)
   unsigned int dir_index = dom_convert_dir_to_idx (dir);
   struct et_node *n = bb->dom[dir_index];
 
-  gcc_assert (dom_computed[dir_index] == DOM_OK);
+  gcc_checking_assert (dom_computed[dir_index] == DOM_OK);
   return n->dfs_num_out;
 }
 
@@ -1054,7 +1054,7 @@ recompute_dominator (enum cdi_direction dir, basic_block bb)
   edge e;
   edge_iterator ei;
 
-  gcc_assert (dom_computed[dir_index]);
+  gcc_checking_assert (dom_computed[dir_index]);
 
   if (dir == CDI_DOMINATORS)
     {
@@ -1254,8 +1254,7 @@ iterate_fix_dominators (enum cdi_direction dir, VEC (basic_block, heap) *bbs,
      problems would be unused, untested, and almost surely buggy.  We keep
      the DIR argument for consistency with the rest of the dominator analysis
      interface.  */
-  gcc_assert (dir == CDI_DOMINATORS);
-  gcc_assert (dom_computed[dir_index]);
+  gcc_checking_assert (dir == CDI_DOMINATORS && dom_computed[dir_index]);
 
   /* The algorithm we use takes inspiration from the following papers, although
      the details are quite different from any of them:
@@ -1401,8 +1400,7 @@ add_to_dominance_info (enum cdi_direction dir, basic_block bb)
 {
   unsigned int dir_index = dom_convert_dir_to_idx (dir);
 
-  gcc_assert (dom_computed[dir_index]);
-  gcc_assert (!bb->dom[dir_index]);
+  gcc_checking_assert (dom_computed[dir_index] && !bb->dom[dir_index]);
 
   n_bbs_in_dom_tree[dir_index]++;
 
@@ -1417,7 +1415,7 @@ delete_from_dominance_info (enum cdi_direction dir, basic_block bb)
 {
   unsigned int dir_index = dom_convert_dir_to_idx (dir);
 
-  gcc_assert (dom_computed[dir_index]);
+  gcc_checking_assert (dom_computed[dir_index]);
 
   et_free_tree (bb->dom[dir_index]);
   bb->dom[dir_index] = NULL;

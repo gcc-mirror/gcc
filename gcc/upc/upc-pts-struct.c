@@ -244,9 +244,9 @@ upc_pts_struct_is_null_p (tree exp)
 	  VEC (constructor_elt, gc) *c = CONSTRUCTOR_ELTS (value);
 	  /* Check that all the fields are zero, independent
 	     of whether vaddr comes first/last.  */
-	  const tree phase_or_vaddr = VEC_index (constructor_elt, c, 0)->value;
-	  const tree thread = VEC_index (constructor_elt, c, 1)->value;
-	  const tree vaddr_or_phase = VEC_index (constructor_elt, c, 2)->value;
+	  const tree phase_or_vaddr = VEC_index (constructor_elt, c, 0).value;
+	  const tree thread = VEC_index (constructor_elt, c, 1).value;
+	  const tree vaddr_or_phase = VEC_index (constructor_elt, c, 2).value;
 	  result = integer_zerop (phase_or_vaddr) && integer_zerop (thread)
 	           && integer_zerop (vaddr_or_phase);
 	}

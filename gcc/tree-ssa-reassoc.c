@@ -234,7 +234,7 @@ phi_rank (gimple stmt)
 
   /* Ignore virtual SSA_NAMEs.  */
   res = gimple_phi_result (stmt);
-  if (!is_gimple_reg (res))
+  if (virtual_operand_p (res))
     return bb_rank[bb->index];
 
   /* The phi definition must have a single use, and that use must be
@@ -962,7 +962,7 @@ static VEC (oecount, heap) *cvec;
 static hashval_t
 oecount_hash (const void *p)
 {
-  const oecount *c = VEC_index (oecount, cvec, (size_t)p - 42);
+  const oecount *c = &VEC_index (oecount, cvec, (size_t)p - 42);
   return htab_hash_pointer (c->op) ^ (hashval_t)c->oecode;
 }
 
@@ -971,8 +971,8 @@ oecount_hash (const void *p)
 static int
 oecount_eq (const void *p1, const void *p2)
 {
-  const oecount *c1 = VEC_index (oecount, cvec, (size_t)p1 - 42);
-  const oecount *c2 = VEC_index (oecount, cvec, (size_t)p2 - 42);
+  const oecount *c1 = &VEC_index (oecount, cvec, (size_t)p1 - 42);
+  const oecount *c2 = &VEC_index (oecount, cvec, (size_t)p2 - 42);
   return (c1->oecode == c2->oecode
 	  && c1->op == c2->op);
 }
@@ -1354,7 +1354,7 @@ undistribute_ops_list (enum tree_code opcode,
 	  else
 	    {
 	      VEC_pop (oecount, cvec);
-	      VEC_index (oecount, cvec, (size_t)*slot - 42)->cnt++;
+	      VEC_index (oecount, cvec, (size_t)*slot - 42).cnt++;
 	    }
 	}
     }
@@ -1381,7 +1381,7 @@ undistribute_ops_list (enum tree_code opcode,
   candidates2 = sbitmap_alloc (length);
   while (!VEC_empty (oecount, cvec))
     {
-      oecount *c = VEC_last (oecount, cvec);
+      oecount *c = &VEC_last (oecount, cvec);
       if (c->cnt < 2)
 	break;
 
@@ -3190,7 +3190,7 @@ attempt_builtin_powi (gimple stmt, VEC(operand_entry_t, heap) **ops)
 		  fputs ("Multiplying by cached product ", dump_file);
 		  for (elt = j; elt < vec_len; elt++)
 		    {
-		      rf = VEC_index (repeat_factor, repeat_factor_vec, elt);
+		      rf = &VEC_index (repeat_factor, repeat_factor_vec, elt);
 		      print_generic_expr (dump_file, rf->factor, 0);
 		      if (elt < vec_len - 1)
 			fputs (" * ", dump_file);
@@ -3216,7 +3216,7 @@ attempt_builtin_powi (gimple stmt, VEC(operand_entry_t, heap) **ops)
 			 dump_file);
 		  for (elt = j; elt < vec_len; elt++)
 		    {
-		      rf = VEC_index (repeat_factor, repeat_factor_vec, elt);
+		      rf = &VEC_index (repeat_factor, repeat_factor_vec, elt);
 		      print_generic_expr (dump_file, rf->factor, 0);
 		      if (elt < vec_len - 1)
 			fputs (" * ", dump_file);
@@ -3250,7 +3250,7 @@ attempt_builtin_powi (gimple stmt, VEC(operand_entry_t, heap) **ops)
 	      fputs ("Building __builtin_pow call for (", dump_file);
 	      for (elt = j; elt < vec_len; elt++)
 		{
-		  rf = VEC_index (repeat_factor, repeat_factor_vec, elt);
+		  rf = &VEC_index (repeat_factor, repeat_factor_vec, elt);
 		  print_generic_expr (dump_file, rf->factor, 0);
 		  if (elt < vec_len - 1)
 		    fputs (" * ", dump_file);
@@ -3275,8 +3275,8 @@ attempt_builtin_powi (gimple stmt, VEC(operand_entry_t, heap) **ops)
 		{
 		  tree op1, op2;
 
-		  rf1 = VEC_index (repeat_factor, repeat_factor_vec, ii);
-		  rf2 = VEC_index (repeat_factor, repeat_factor_vec, ii + 1);
+		  rf1 = &VEC_index (repeat_factor, repeat_factor_vec, ii);
+		  rf2 = &VEC_index (repeat_factor, repeat_factor_vec, ii + 1);
 
 		  /* Init the last factor's representative to be itself.  */
 		  if (!rf2->repr)
@@ -3300,7 +3300,7 @@ attempt_builtin_powi (gimple stmt, VEC(operand_entry_t, heap) **ops)
 
 	  /* Form a call to __builtin_powi for the maximum product
 	     just formed, raised to the power obtained earlier.  */
-	  rf1 = VEC_index (repeat_factor, repeat_factor_vec, j);
+	  rf1 = &VEC_index (repeat_factor, repeat_factor_vec, j);
 	  iter_result = make_temp_ssa_name (type, NULL, "reassocpow");
 	  pow_stmt = gimple_build_call (powi_fndecl, 2, rf1->repr, 
 					build_int_cst (integer_type_node,
@@ -3333,7 +3333,7 @@ attempt_builtin_powi (gimple stmt, VEC(operand_entry_t, heap) **ops)
 	  unsigned k = power;
 	  unsigned n;
 
-	  rf1 = VEC_index (repeat_factor, repeat_factor_vec, i);
+	  rf1 = &VEC_index (repeat_factor, repeat_factor_vec, i);
 	  rf1->count -= power;
 	  
 	  FOR_EACH_VEC_ELT_REVERSE (operand_entry_t, *ops, n, oe)
@@ -3613,7 +3613,7 @@ init_reassoc (void)
 {
   int i;
   long rank = 2;
-  int *bbs = XNEWVEC (int, last_basic_block + 1);
+  int *bbs = XNEWVEC (int, n_basic_blocks - NUM_FIXED_BLOCKS);
 
   /* Find the loops, so that we can prevent moving calculations in
      them.  */
@@ -3628,7 +3628,7 @@ init_reassoc (void)
   /* Reverse RPO (Reverse Post Order) will give us something where
      deeper loops come later.  */
   pre_and_rev_post_order_compute (NULL, bbs, false);
-  bb_rank = XCNEWVEC (long, last_basic_block + 1);
+  bb_rank = XCNEWVEC (long, last_basic_block);
   operand_rank = pointer_map_create ();
 
   /* Give each default definition a distinct rank.  This includes

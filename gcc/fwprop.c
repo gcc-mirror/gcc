@@ -223,7 +223,7 @@ single_def_use_enter_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
   bitmap_copy (local_lr, &lr_bb_info->in);
 
   /* Push a marker for the leave_block callback.  */
-  VEC_safe_push (df_ref, heap, reg_defs_stack, NULL);
+  VEC_safe_push (df_ref, heap, reg_defs_stack, (df_ref) NULL);
 
   process_uses (df_get_artificial_uses (bb_index), DF_REF_AT_TOP);
   process_defs (df_get_artificial_defs (bb_index), DF_REF_AT_TOP);

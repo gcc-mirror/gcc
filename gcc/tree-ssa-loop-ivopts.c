@@ -1,5 +1,5 @@
 /* Induction variable optimizations.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -980,7 +980,7 @@ determine_biv_step (gimple phi)
   tree name = PHI_RESULT (phi);
   affine_iv iv;
 
-  if (!is_gimple_reg (name))
+  if (virtual_operand_p (name))
     return NULL_TREE;
 
   if (!simple_iv (loop, loop, name, &iv, true))
@@ -1225,7 +1225,7 @@ record_invariant (struct ivopts_data *data, tree op, bool nonlinear_use)
   struct version_info *info;
 
   if (TREE_CODE (op) != SSA_NAME
-      || !is_gimple_reg (op))
+      || virtual_operand_p (op))
     return;
 
   bb = gimple_bb (SSA_NAME_DEF_STMT (op));
@@ -1927,7 +1927,7 @@ find_interesting_uses_outside (struct ivopts_data *data, edge exit)
     {
       phi = gsi_stmt (psi);
       def = PHI_ARG_DEF_FROM_EDGE (phi, exit);
-      if (is_gimple_reg (def))
+      if (!virtual_operand_p (def))
         find_interesting_uses_op (data, def);
     }
 }
@@ -3120,7 +3120,7 @@ multiplier_allowed_in_address_p (HOST_WIDE_INT ratio, enum machine_mode mode,
 
    TODO -- there must be some better way.  This all is quite crude.  */
 
-typedef struct
+typedef struct address_cost_data_s
 {
   HOST_WIDE_INT min_offset, max_offset;
   unsigned costs[2][2][2][2];
@@ -3173,7 +3173,7 @@ get_address_cost (bool symbol_present, bool var_present,
 
       for (i = width; i >= 0; i--)
 	{
-	  off = -((HOST_WIDE_INT) 1 << i);
+	  off = -((unsigned HOST_WIDE_INT) 1 << i);
 	  XEXP (addr, 1) = gen_int_mode (off, address_mode);
 	  if (memory_address_addr_space_p (mem_mode, addr, as))
 	    break;
@@ -3182,7 +3182,7 @@ get_address_cost (bool symbol_present, bool var_present,
 
       for (i = width; i >= 0; i--)
 	{
-	  off = ((HOST_WIDE_INT) 1 << i) - 1;
+	  off = ((unsigned HOST_WIDE_INT) 1 << i) - 1;
 	  XEXP (addr, 1) = gen_int_mode (off, address_mode);
 	  if (memory_address_addr_space_p (mem_mode, addr, as))
 	    break;
@@ -5048,7 +5048,7 @@ determine_set_costs (struct ivopts_data *data)
       phi = gsi_stmt (psi);
       op = PHI_RESULT (phi);
 
-      if (!is_gimple_reg (op))
+      if (virtual_operand_p (op))
 	continue;
 
       if (get_iv (data, op))

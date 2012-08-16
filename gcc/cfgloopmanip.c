@@ -71,7 +71,7 @@ find_path (edge e, basic_block **bbs)
   gcc_assert (EDGE_COUNT (e->dest->preds) <= 1);
 
   /* Find bbs in the path.  */
-  *bbs = XCNEWVEC (basic_block, n_basic_blocks);
+  *bbs = XNEWVEC (basic_block, n_basic_blocks);
   return dfs_enumerate_from (e->dest, 0, rpe_enum_p, *bbs,
 			     n_basic_blocks, e->dest);
 }
@@ -322,7 +322,7 @@ remove_path (edge e)
   nrem = find_path (e, &rem_bbs);
 
   n_bord_bbs = 0;
-  bord_bbs = XCNEWVEC (basic_block, n_basic_blocks);
+  bord_bbs = XNEWVEC (basic_block, n_basic_blocks);
   seen = sbitmap_alloc (last_basic_block);
   sbitmap_zero (seen);
 
@@ -1135,7 +1135,7 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e,
   n_orig_loops = 0;
   for (aloop = loop->inner; aloop; aloop = aloop->next)
     n_orig_loops++;
-  orig_loops = XCNEWVEC (struct loop *, n_orig_loops);
+  orig_loops = XNEWVEC (struct loop *, n_orig_loops);
   for (aloop = loop->inner, i = 0; aloop; aloop = aloop->next, i++)
     orig_loops[i] = aloop;
 
@@ -1639,6 +1639,9 @@ fix_loop_structure (bitmap changed_bbs)
   loop_iterator li;
   bool record_exits = false;
   struct loop **superloop = XNEWVEC (struct loop *, number_of_loops ());
+
+  /* We need exact and fast dominance info to be available.  */
+  gcc_assert (dom_info_state (CDI_DOMINATORS) == DOM_OK);
 
   /* Remove the old bb -> loop mapping.  Remember the depth of the blocks in
      the loop hierarchy, so that we can recognize blocks whose loop nesting

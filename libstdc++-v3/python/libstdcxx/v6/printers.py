@@ -71,7 +71,9 @@ class UniquePointerPrinter:
         self.val = val
 
     def to_string (self):
-        return self.val['_M_t']
+        v = self.val['_M_t']['_M_head_impl']
+        return ('std::unique_ptr<%s> containing %s' % (str(v.type.target()),
+                                                       str(v)))
 
 class StdListPrinter:
     "Print a std::list"

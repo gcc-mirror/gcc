@@ -1,3 +1,11 @@
+2012-08-16  Gary Funck  <gary@intrepid.com>
+
+	Merge trunk version 190437 into gupc branch.
+	Incorporates a fix for a build failure on the PPC
+	due to passing incorrect switches to the assembler.
+	Also, first merged trunk revision that compiles GCC
+	with the C++ compiler in the first stage.
+
 2012-08-13  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 190336 into gupc branch.

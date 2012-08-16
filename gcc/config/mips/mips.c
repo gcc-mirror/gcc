@@ -3971,7 +3971,8 @@ mips_multi_start (void)
 static struct mips_multi_member *
 mips_multi_add (void)
 {
-  return VEC_safe_push (mips_multi_member, heap, mips_multi_members, 0);
+  return VEC_safe_push (mips_multi_member, heap, mips_multi_members,
+			(struct mips_multi_member *) 0);
 }
 
 /* Add a normal insn with the given asm format to the current multi-insn
@@ -4026,7 +4027,7 @@ mips_multi_copy_insn (unsigned int i)
   struct mips_multi_member *member;
 
   member = mips_multi_add ();
-  memcpy (member, VEC_index (mips_multi_member, mips_multi_members, i),
+  memcpy (member, &VEC_index (mips_multi_member, mips_multi_members, i),
 	  sizeof (*member));
   gcc_assert (!member->is_label_p);
 }
@@ -4038,7 +4039,7 @@ mips_multi_copy_insn (unsigned int i)
 static void
 mips_multi_set_operand (unsigned int i, unsigned int op, rtx x)
 {
-  VEC_index (mips_multi_member, mips_multi_members, i)->operands[op] = x;
+  VEC_index (mips_multi_member, mips_multi_members, i).operands[op] = x;
 }
 
 /* Write out the asm code for the current multi-insn sequence.  */
@@ -8306,6 +8307,36 @@ mips_dwarf_register_span (rtx reg)
   return NULL_RTX;
 }
 
+/* DSP ALU can bypass data with no delays for the following pairs. */
+enum insn_code dspalu_bypass_table[][2] =
+{
+  {CODE_FOR_mips_addsc, CODE_FOR_mips_addwc},
+  {CODE_FOR_mips_cmpu_eq_qb, CODE_FOR_mips_pick_qb},
+  {CODE_FOR_mips_cmpu_lt_qb, CODE_FOR_mips_pick_qb},
+  {CODE_FOR_mips_cmpu_le_qb, CODE_FOR_mips_pick_qb},
+  {CODE_FOR_mips_cmp_eq_ph, CODE_FOR_mips_pick_ph},
+  {CODE_FOR_mips_cmp_lt_ph, CODE_FOR_mips_pick_ph},
+  {CODE_FOR_mips_cmp_le_ph, CODE_FOR_mips_pick_ph},
+  {CODE_FOR_mips_wrdsp, CODE_FOR_mips_insv}
+};
+
+int
+mips_dspalu_bypass_p (rtx out_insn, rtx in_insn)
+{
+  int i;
+  int num_bypass = ARRAY_SIZE (dspalu_bypass_table);
+  enum insn_code out_icode = (enum insn_code) INSN_CODE (out_insn);
+  enum insn_code in_icode = (enum insn_code) INSN_CODE (in_insn);
+
+  for (i = 0; i < num_bypass; i++)
+    {
+      if (out_icode == dspalu_bypass_table[i][0]
+	  && in_icode == dspalu_bypass_table[i][1])
+       return true;
+    }
+
+  return false;
+}
 /* Implement ASM_OUTPUT_ASCII.  */
 
 void
@@ -12371,25 +12402,24 @@ mips_output_division (const char *division, rtx *operands)
 bool
 mips_linked_madd_p (rtx out_insn, rtx in_insn)
 {
-  rtx x;
+  enum attr_accum_in accum_in;
+  int accum_in_opnum;
+  rtx accum_in_op;
 
-  x = single_set (in_insn);
-  if (x == 0)
+  if (recog_memoized (in_insn) < 0)
     return false;
 
-  x = SET_SRC (x);
+  accum_in = get_attr_accum_in (in_insn);
+  if (accum_in == ACCUM_IN_NONE)
+    return false;
 
-  if (GET_CODE (x) == PLUS
-      && GET_CODE (XEXP (x, 0)) == MULT
-      && reg_set_p (XEXP (x, 1), out_insn))
-    return true;
+  accum_in_opnum = accum_in - ACCUM_IN_0;
 
-  if (GET_CODE (x) == MINUS
-      && GET_CODE (XEXP (x, 1)) == MULT
-      && reg_set_p (XEXP (x, 0), out_insn))
-    return true;
+  extract_insn (in_insn);
+  gcc_assert (accum_in_opnum < recog_data.n_operands);
+  accum_in_op = recog_data.operand[accum_in_opnum];
 
-  return false;
+  return reg_set_p (accum_in_op, out_insn);
 }
 
 /* True if the dependency between OUT_INSN and IN_INSN is on the store

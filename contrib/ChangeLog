@@ -1,3 +1,27 @@
+2012-08-14   Diego Novillo  <dnovillo@google.com>
+
+	* testsuite-management/x86_64-unknown-linux-gnu.xfail: New.
+
+2012-08-13  Diego Novillo  <dnovillo@google.com>
+
+	* testsuite-management/validate_failures.py (ExpirationDate): Tidy
+	comment.
+
+2012-08-13  Diego Novillo  <dnovillo@google.com>
+
+	* testsuite-management/validate_failures.py (ParseSummary): Fix
+	comment.
+
+2012-08-13  Diego Novillo  <dnovillo@google.com>
+
+	* testsuite-management/validate_failures.py: Import datetime.
+	(TestResult.ExpirationDate): New.
+	(TestResult.HasExpired): New.
+	(ParseSummary): Call it.  If it returns True, warn that the
+	expected failure has expired and do not add it to the set of
+	expected results.
+	(GetResults): Clarify documentation.
+
 2012-07-26   Diego Novillo  <dnovillo@google.com>
 
 	* testsuite-management/validate_failures.py: Do not use

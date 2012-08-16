@@ -204,7 +204,7 @@ record_temporary_equivalences_from_phis (edge e, VEC(tree, heap) **stack)
 
       /* We consider any non-virtual PHI as a statement since it
 	 count result in a constant assignment or copy operation.  */
-      if (is_gimple_reg (dst))
+      if (!virtual_operand_p (dst))
 	stmt_count++;
 
       record_temporary_equivalence (dst, src, stack);

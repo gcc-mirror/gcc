@@ -345,12 +345,12 @@ discover_loop (hwloop_info loop, basic_block tail_bb, rtx tail_insn, rtx reg)
 }
 
 /* Analyze the structure of the loops in the current function.  Use
-   STACK for bitmap allocations.  Returns all the valid candidates for
+   LOOP_STACK for bitmap allocations.  Returns all the valid candidates for
    hardware loops found in this function.  HOOKS is the argument
    passed to reorg_loops, used here to find the iteration registers
    from a loop_end pattern.  */
 static hwloop_info
-discover_loops (bitmap_obstack *stack, struct hw_doloop_hooks *hooks)
+discover_loops (bitmap_obstack *loop_stack, struct hw_doloop_hooks *hooks)
 {
   hwloop_info loops = NULL;
   hwloop_info loop;
@@ -406,7 +406,7 @@ discover_loops (bitmap_obstack *stack, struct hw_doloop_hooks *hooks)
       loops = loop;
       loop->loop_no = nloops++;
       loop->blocks = VEC_alloc (basic_block, heap, 20);
-      loop->block_bitmap = BITMAP_ALLOC (stack);
+      loop->block_bitmap = BITMAP_ALLOC (loop_stack);
 
       if (dump_file)
 	{
@@ -626,18 +626,18 @@ reorg_loops (bool do_reorder, struct hw_doloop_hooks *hooks)
 {
   hwloop_info loops = NULL;
   hwloop_info loop;
-  bitmap_obstack stack;
+  bitmap_obstack loop_stack;
 
   df_live_add_problem ();
   df_live_set_all_dirty ();
   df_analyze ();
 
-  bitmap_obstack_initialize (&stack);
+  bitmap_obstack_initialize (&loop_stack);
 
   if (dump_file)
     fprintf (dump_file, ";; Find loops, first pass\n\n");
 
-  loops = discover_loops (&stack, hooks);
+  loops = discover_loops (&loop_stack, hooks);
 
   if (do_reorder)
     {
@@ -647,7 +647,7 @@ reorg_loops (bool do_reorder, struct hw_doloop_hooks *hooks)
       if (dump_file)
 	fprintf (dump_file, ";; Find loops, second pass\n\n");
 
-      loops = discover_loops (&stack, hooks);
+      loops = discover_loops (&loop_stack, hooks);
     }
 
   for (loop = loops; loop; loop = loop->next)

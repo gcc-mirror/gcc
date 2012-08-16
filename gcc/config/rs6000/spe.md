@@ -2289,9 +2289,9 @@
 	known to be dead.  */
       if (refers_to_regno_p (REGNO (operands[0]), REGNO (operands[0]) + 1,
 			     operands[1], 0))
-	return \"{l|lwz} %L0,%L1\;{l|lwz} %0,%1\";
+	return \"lwz %L0,%L1\;lwz %0,%1\";
       else
-        return \"{l%U1%X1|lwz%U1%X1} %0,%1\;{l|lwz} %L0,%L1\";
+        return \"lwz%U1%X1 %0,%1\;lwz %L0,%L1\";
     }
 }"
   [(set_attr "length" "8,8")])
@@ -2315,9 +2315,9 @@
 	return \"evldd%X1 %Z0,%y1\;evmergehi %Y0,%Z0,%Z0\";
       if (refers_to_regno_p (REGNO (operands[0]), REGNO (operands[0]) + 1,
 			     operands[1], 0))
-	return \"{l|lwz} %Z0,%L1\;{l|lwz} %Y0,%1\";
+	return \"lwz %Z0,%L1\;lwz %Y0,%1\";
       else
-        return \"{l%U1%X1|lwz%U1%X1} %Y0,%1\;{l|lwz} %Z0,%L1\";
+        return \"lwz%U1%X1 %Y0,%1\;lwz %Z0,%L1\";
     }
 }"
   [(set_attr "length" "8,8")])
@@ -2336,7 +2336,7 @@
    || (TARGET_SPE && <MODE>mode != DFmode && <MODE>mode != TFmode)"
   "@
    evmergelo %0,%1,%0
-   evmergelohi %0,%0,%0\;{l%U1%X1|lwz%U1%X1} %0,%1\;evmergelohi %0,%0,%0"
+   evmergelohi %0,%0,%0\;lwz%U1%X1 %0,%1\;evmergelohi %0,%0,%0"
   [(set_attr "length" "4,12")])
 
 (define_insn_and_split "*mov_si<mode>_e500_subreg0_elf_low"
@@ -2366,7 +2366,7 @@
    || (TARGET_SPE && <MODE>mode != DFmode && <MODE>mode != TFmode)"
   "@
    evmergehi %0,%0,%1
-   evmergelohi %1,%1,%1\;{st%U0%X0|stw%U0%X0} %1,%0"
+   evmergelohi %1,%1,%1\;stw%U0%X0 %1,%0"
   [(set_attr "length" "4,8")])
 
 (define_insn "*mov_si<mode>_e500_subreg4"
@@ -2376,7 +2376,7 @@
    || (TARGET_SPE && <MODE>mode != DFmode && <MODE>mode != TFmode)"
   "@
    mr %0,%1
-   {l%U1%X1|lwz%U1%X1} %0,%1")
+   lwz%U1%X1 %0,%1")
 
 (define_insn "*mov_si<mode>_e500_subreg4_elf_low"
   [(set (subreg:SI (match_operand:SPE64TF 0 "register_operand" "+r") 4)
@@ -2385,7 +2385,7 @@
   "((TARGET_E500_DOUBLE && (<MODE>mode == DFmode || <MODE>mode == TFmode))
     || (TARGET_SPE && <MODE>mode != DFmode && <MODE>mode != TFmode))
    && TARGET_ELF && !TARGET_64BIT"
-  "{ai|addic} %0,%1,%K2")
+  "addic %0,%1,%K2")
 
 (define_insn "*mov_si<mode>_e500_subreg4_2"
   [(set (match_operand:SI 0 "rs6000_nonimmediate_operand" "+r,m")
@@ -2394,7 +2394,7 @@
    || (TARGET_SPE && <MODE>mode != DFmode && <MODE>mode != TFmode)"
   "@
    mr %0,%1
-   {st%U0%X0|stw%U0%X0} %1,%0")
+   stw%U0%X0 %1,%0")
 
 (define_insn "*mov_sitf_e500_subreg8"
   [(set (subreg:SI (match_operand:TF 0 "register_operand" "+r,&r") 8)
@@ -2402,7 +2402,7 @@
   "TARGET_E500_DOUBLE"
   "@
    evmergelo %L0,%1,%L0
-   evmergelohi %L0,%L0,%L0\;{l%U1%X1|lwz%U1%X1} %L0,%1\;evmergelohi %L0,%L0,%L0"
+   evmergelohi %L0,%L0,%L0\;lwz%U1%X1 %L0,%1\;evmergelohi %L0,%L0,%L0"
   [(set_attr "length" "4,12")])
 
 (define_insn "*mov_sitf_e500_subreg8_2"
@@ -2411,7 +2411,7 @@
   "TARGET_E500_DOUBLE"
   "@
    evmergehi %0,%0,%L1
-   evmergelohi %L1,%L1,%L1\;{st%U0%X0|stw%U0%X0} %L1,%0"
+   evmergelohi %L1,%L1,%L1\;stw%U0%X0 %L1,%0"
   [(set_attr "length" "4,8")])
 
 (define_insn "*mov_sitf_e500_subreg12"
@@ -2420,7 +2420,7 @@
   "TARGET_E500_DOUBLE"
   "@
    mr %L0,%1
-   {l%U1%X1|lwz%U1%X1} %L0,%1")
+   lwz%U1%X1 %L0,%1")
 
 (define_insn "*mov_sitf_e500_subreg12_2"
   [(set (match_operand:SI 0 "rs6000_nonimmediate_operand" "+r,m")
@@ -2428,7 +2428,7 @@
   "TARGET_E500_DOUBLE"
   "@
    mr %0,%L1
-   {st%U0%X0|stw%U0%X0} %L1,%0")
+   stw%U0%X0 %L1,%0")
 
 ;; FIXME: Allow r=CONST0.
 (define_insn "*movdf_e500_double"

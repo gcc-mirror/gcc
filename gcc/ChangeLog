@@ -1,3 +1,1202 @@
+2012-08-15  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/aix43.h (ASM_CPU_SPEC): Use %(asm_default)
+	instead of -mppc.
+	* config/rs6000/aix51.h (ASM_CPU_SPEC): Ditto.
+
+2012-08-15  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/aix43.h (TARGET_DEFAULT): Delete MASK_NEW_MNEMONICS.
+	(RS6000_CALL_GLUE): Adjust for single assembler syntax.
+	* config/rs6000/aix51.h (TARGET_DEFAULT, RS6000_CALL_GLUE):
+	Ditto.
+	* config/rs6000/aix52.h (TARGET_DEFAULT, RS6000_CALL_GLUE):
+	Ditto.
+	* config/rs6000/aix53.h (TARGET_DEFAULT, RS6000_CALL_GLUE):
+	Ditto.
+	* config/rs6000/aix61.h (TARGET_DEFAULT, RS6000_CALL_GLUE):
+	Ditto.
+	* config/rs6000/darwin.h (TARGET_DEFAULT): Ditto.
+	* config/rs6000/darwin.md (whole file): Adjust to single
+	assembler syntax.
+	* config/rs6000/darwin64.h (TARGET_DEFAULT): Delete
+	MASK_NEW_MNEMONICS.
+	* config/rs6000/default64.h (TARGET_DEFAULT): Ditto.
+	* config/rs6000/dfp.md: (whole file): Adjust to single
+	assembler syntax.
+	* config/rs6000/eabi.h (TARGET_DEFAULT): Delete
+	MASK_NEW_MNEMONICS.
+	* config/rs6000/eabialtivec.h (TARGET_DEFAULT): Ditto.
+	* config/rs6000/eabispe.h (TARGET_DEFAULT): Ditto.
+	* config/rs6000/linuxaltivec.h (TARGET_DEFAULT): Ditto.
+	* config/rs6000/linuxspe.h (TARGET_DEFAULT): Ditto.
+	* config/rs6000/rs6000-cpus.def (whole file): Delete
+	POWERPC_BASE_MASK.
+	* config/rs6000/rs6000-tables.opt: Regenerate.
+	* config/rs6000/rs6000.c (POWERPC_BASE_MASK): Delete.
+	(num_insns_constant_wide): Adjust comments.
+	(whole file): Adjust to single assembler syntax.
+	(output_cbranch): Adjust comment.
+	* config/rs6000/rs6000.h (ASSEMBLER_DIALECT): Delete.
+	* config/rs6000/rs6000.md: (whole file): Adjust to single
+	assembler syntax.
+	* config/rs6000/rs6000.opt (mnew-mnemonics): Delete.
+	(mold-mnemonics): Delete.
+	* config/rs6000/spe.md: (whole file): Adjust to single
+	assembler syntax.
+	* config/rs6000/sync.md: (whole file): Adjust to single
+	assembler syntax.
+	* config/rs6000/sysv4.h (TARGET_DEFAULT): Delete
+	MASK_NEW_MNEMONICS.
+	(ASM_OUTPUT_REG_PUSH): Adjust.
+	(ASM_OUTPUT_REG_POP): Adjust.
+	* config/rs6000/sysv4le.h (TARGET_DEFAULT): Delete
+	MASK_NEW_MNEMONICS.
+	* config/rs6000/vsx.md: (whole file): Adjust to single
+	assembler syntax.
+	* config/rs6000/vxworks.h (TARGET_DEFAULT): Delete
+	MASK_NEW_MNEMONICS.
+	* doc/invoke.texi: Adjust documentation to reflect the
+	removal of -mnew-mnemonics and -mold-mnemonics.
+
+2012-08-15  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* common/config/rs6000/rs6000-common.c (rs6000_handle_option):
+	Delete handling for -mno-powerpc and -mpowerpc.
+	* config/rs6000/aix43.h (ASM_CPU_SPEC): Similar.
+	(ASM_DEFAULT_SPEC): Use -mppc instead of -mcom.
+	* config/rs6000/aix51.h (ASM_CPU_SPEC, ASM_DEFAULT_SPEC): Ditto.
+	* config/rs6000/aix52.h (TARGET_DEFAULT): Delete MASK_POWERPC.
+	* config/rs6000/aix53.h (TARGET_DEFAULT): Ditto.
+	* config/rs6000/aix61.h (TARGET_DEFAULT): Ditto.
+	* config/rs6000/darwin.h (TARGET_DEFAULT): Ditto.
+	* config/rs6000/darwin64.h (TARGET_DEFAULT): Ditto.
+	* config/rs6000/default64.h (TARGET_DEFAULT): Ditto.
+	* config/rs6000/driver-rs6000.c (asm_names): Delete handling
+	for -mcpu=common and -mpowerpc.
+	* config/rs6000/eabi.h (TARGET_DEFAULT): Delete MASK_POWERPC.
+	* config/rs6000/eabialtivec.h (TARGET_DEFAULT): Ditto.
+	* config/rs6000/eabispe.h (TARGET_DEFAULT): Ditto.
+	* config/rs6000/linuxaltivec.h (TARGET_DEFAULT): Ditto.
+	* config/rs6000/linuxspe.h (TARGET_DEFAULT): Ditto.
+	* config/rs6000/rs6000-builtin.def (RS6000_BUILTIN_CFSTRING):
+	Use RS6000_BTM_ALWAYS instead of RS6000_BTM_POWERPC.
+	* config/rs6000/rs6000-c.c (rs6000_target_modify_macros):
+	Adjust.
+	(rs6000_cpu_cpp_builtins): Adjust.
+	* config/rs6000/rs6000.c (POWERPC_BASE_MASK): Delete MASK_POWERPC.
+	(rs6000_builtin_mask_calculate): Adjust.
+	(rs6000_emit_move): Delete code for ! TARGET_POWERPC.
+	(rs6000_init_libfuncs): Ditto.
+	(rs6000_output_function_prologue): Ditto.
+	(rs6000_opt_masks): Delete MASK_POWERPC.
+	(rs6000_builtin_mask_names): Delete RS6000_BTM_POWERPC.
+	* config/rs6000/rs6000.h (ASM_CPU_SPEC): Delete handling for
+	-mpowerpc.
+	(RS6000_BTM_POWERPC): Delete.
+	(RS6000_BTM_COMMON): Delete RS6000_BTM_POWERPC.
+	* config/rs6000/rs6000.md (extendqisi2 patterns): Adjust for
+	TARGET_POWERPC always on.
+	(extendqihi2 patterns): Similar.
+	(various unnamed subtract patterns): Similar.
+	(bswaphi2 patterns): Similar.
+	(divmodsi4): Similar.
+	(udiv<GPR:mode>3): Similar.
+	(div<GPR:mode>3 patterns): Similar.
+	(udivmodsi4): Similar.
+	(mulhcall): Delete.
+	(mullcall): Delete.
+	(divss_call): Delete.
+	(divus_call): Delete.
+	(quoss_call): Delete.
+	(quous_call): Delete.
+	(insvsi patterns): Adjust.
+	(addsf3 patterns): Adjust.
+	(subsf3 patterns): Adjust.
+	(mulsf3 patterns): Adjust.
+	(divsf3 patterns): Adjust.
+	(*fmasf4_fpr): Adjust.
+	(*fmssf4_fpr): Adjust.
+	(*nfmasf4_fpr): Adjust.
+	(*nfmssf4_fpr): Adjust.
+	(*floatunssidf2_internal): Adjust.
+	(fix_trunc<SFDF:mode>si2_internal): Adjust.
+	(fctiwz_<SFDF:mode>): Adjust.
+	(mulsidi3 patterns): Adjust.
+	(smulsi3_highpart patterns): Adjust.
+	(umulsi3_highpart patterns): Adjust.
+	(fix_trunctfsi2 patterns): Adjust.
+	(prefetch): Adjust.
+	* config/rs6000/rs6000.opt (mpowerpc): Replace by stub option.
+	(mno-powerpc): Delete.
+	* config/rs6000/sync.md (load_locked<ATOMIC:mode>): Adjust.
+	(store_conditional<ATOMIC:mode>): Adjust.
+	(atomic_compare_and_swap<ATOMIC:mode>): Adjust.
+	(atomic_exchange<ATOMIC:mode>): Adjust.
+	(atomic_<fetchop_name><ATOMIC:mode>): Adjust.
+	(atomic_nand<ATOMIC:mode>): Adjust.
+	(atomic_fetch_<fetchop_name><ATOMIC:mode>): Adjust.
+	(atomic_fetch_nand<ATOMIC:mode>): Adjust.
+	(atomic_<fetchop_name>_fetch<ATOMIC:mode>): Adjust.
+	(atomic_nand_fetch<ATOMIC:mode>): Adjust.
+	* config/rs6000/sysv4.h (TARGET_DEFAULT): Delete MASK_POWERPC.
+	* config/rs6000/sysv4le.h (TARGET_DEFAULT): Ditto.
+	* config/rs6000/vxworks.h (TARGET_DEFAULT): Ditto.
+	* doc/invoke.texi: Adjust documentation.
+
+2012-08-15  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.h (RS6000_BTM_ALWAYS): New.
+
+2012-08-15  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/aix52.h (ASM_CPU_SPEC): Fix typo.
+	* config/rs6000/aix53.h (ASM_CPU_SPEC): Ditto.
+	* config/rs6000/aix61.h (ASM_CPU_SPEC): Ditto.
+	* config/rs6000/driver-rs6000.c (asm_names): Ditto.
+
+2012-08-15  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/54142
+	* config/rs6000/driver-rs6000.c (asm_names): Use %(asm_default)
+	instead of -mcom.
+	* config/rs6000/rs6000.h (ASM_CPU_SPEC): Ditto.
+
+2012-08-15  Sandra Loosemore  <sandra@codesourcery.com>
+	    Maxim Kuvyrkov  <maxim@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    MIPS Technologies, Inc.
+
+	gcc/
+	* config/mips/mips.md (dspmac, dspmacsat, accext, accmod, dspalu)
+	(dspalusat): Add insn types.
+	* config/mips/mips-dsp.md (add<DSPV:mode>3)
+	(mips_add<DSP:dspfmt1>_s_<DSP:dspfmt2>)
+	(sub<DSPV:mode>3, mips_sub<DSP:dspfmt1>_s_<DSP:dspfmt2>, mips_addsc)
+	(mips_addwc, mips_modsub, mips_raddu_w_qb, mips_absq_s_<DSPQ:dspfmt2>)
+	(mips_precrq_qb_ph, mips_precrq_ph_w, mips_precrq_rs_ph_w)
+	(mips_precrqu_s_qb_ph, mips_preceq_w_phl, mips_preceq_w_phr)
+	(mips_precequ_ph_qbl, mips_precequ_ph_qbr, mips_precequ_ph_qbla)
+	(mips_precequ_ph_qbra, mips_preceu_ph_qbl, mips_preceu_ph_qbr)
+	(mips_preceu_ph_qbla, mips_preceu_ph_qbra, mips_shll_<DSPV:dspfmt2>)
+	(mips_shll_s_<DSPQ:dspfmt2>, mips_shll_s_<DSPQ:dspfmt2>, mips_shrl_qb)
+	(mips_shra_ph, mips_shra_r_<DSPQ:dspfmt2>, mips_bitrev, mips_insv)
+	(mips_repl_qb, mips_repl_ph)
+	(mips_cmp<DSPV:dspfmt1_1>_eq_<DSPV:dspfmt2>)
+	(mips_cmp<DSPV:dspfmt1_1>_lt_<DSPV:dspfmt2>)
+	(mips_cmp<DSPV:dspfmt1_1>_le_<DSPV:dspfmt2>, mips_cmpgu_eq_qb)
+	(mips_cmpgu_lt_qb, mips_cmpgu_le_qb, mips_pick_<DSPV:dspfmt2>)
+	(mips_packrl_ph, mips_wrdsp, mips_rddsp): Change type to dspalu.
+	(mips_dpau_h_qbl, mips_dpau_h_qbr, mips_dpsu_h_qbl, mips_dpsu_h_qbr)
+	(mips_dpaq_s_w_ph, mips_dpsq_s_w_ph, mips_mulsaq_s_w_ph)
+	(mips_maq_s_w_phl, mips_maq_s_w_phr, mips_maq_sa_w_phr): Set type to
+	dspmac.
+	(mips_dpaq_sa_l_w, mips_dpsq_sa_l_w, mips_maq_sa_w_phl): Set type to
+	dspmacsat.
+	(mips_extr_w, mips_extr_r_w, mips_extr_rs_w, mips_extp, mips_extpdp):
+	Set type to accext.
+	(mips_shilo, mips_mthlip): Set type to accmod.
+	* config/mips/mips-dspr2.md (mips_absq_s_qb, mips_addu_s_ph)
+	(mips_adduh_r_qb): Set type to dspalusat.
+	(mips_addu_ph, mips_adduh_qb, mips_append, mips_balign)
+	(mips_cmpgdu_eq_qb, mips_cmpgdu_lt_qb, mips_cmpgdu_le_qb)
+	(mips_precr_qb_ph, mips_precr_sra_ph_w, mips_precr_sra_r_ph_w)
+	(mips_prepend, mips_shra_qb, mips_shra_r_qb, mips_shrl_ph)
+	(mips_subu_ph, mips_subuh_qb, mips_subuh_r_qb, mips_addqh_ph)
+	(mips_addqh_r_ph, mips_addqh_w, mips_addqh_r_w, mips_subqh_ph)
+	(mips_subqh_r_ph, mips_subqh_w, mips_subqh_r_w): Set type to dspalu.
+	(mips_dpa_w_ph, mips_dps_w_ph, mips_mulsa_w_ph, mips_dpax_w_ph)
+	(mips_dpsx_w_ph, mips_dpaqx_s_w_ph, mips_dpsqx_s_w_ph): Set type to
+	dspmac.  Set accum_in attribute.
+	(mips_subu_s_ph): Set type to dspalusat. 
+	(mips_dpaqx_sa_w_ph, mips_dpsqx_sa_w_ph): Set type to dspmacsat.
+	Set accum_in attribute.
+	* config/mips/mips-protos.h (mips_dspalu_bypass_p): Add prototype.
+	* config/mips/mips.c (dspalu_bypass_table): New.
+	(mips_dspalu_bypass_p): New.
+	* config/mips/24k.md (r24k_dsp_alu, r24k_dsp_mac, r24k_dsp_mac_sat)
+	(r24k_dsp_acc_ext, r24k_dsp_acc_mod): New insn reservations.
+	(r24k_int_mult, r24k_int_mthilo, r24k_dsp_mac, r24k_dsp_mac_sat)
+	(r24k_dsp_acc_ext, r24k_dsp_acc_mod, r24k_dsp_alu): New bypasses.
+	* config/mips/74k.md (r74k_dsp_alu, r74k_dsp_alu_sat, r74k_dsp_mac)
+	(r74k_dsp_mac_sat, r74k_dsp_acc_ext, r74k_dsp_acc_mod): New insn
+	reservations.
+	(r74k_dsp_mac, r74k_dsp_mac_sat, r74k_int_mult, r74k_int_mul3)
+	(r74k_dsp_mac, r74k_dsp_mac_sat): New bypasses.
+
+2012-08-15  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/spu/spu.c: Include "cfgloop.h".
+	(spu_machine_dependent_reorg): Call loop_optimizer_init and
+	loop_optimizer_finalize.  Use bb_loop_depth instead of loop_depth.
+	Directly compare loop_father values where appropriate.
+	* config/spu/t-spu-elf (spu.o): Update dependencies.
+
+2012-08-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* Makefile.in (tree-cfg.o): Also depend on $(TARGET_H).
+
+2012-08-15  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/54245
+	* gimple-ssa-strength-reduction.c (legal_cast_p_1): New function.
+	(legal_cast_p): Split out logic to legal_cast_p_1.
+	(analyze_increments): Avoid introducing multiplies in smaller types.
+
+2012-08-15  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/54240
+	* tree-ssa-phiopt.c (hoist_adjacent_loads): Correct test for
+	existence of conditional move with given mode.
+
+2012-08-15  Richard Guenther  <rguenther@suse.de>
+
+	* double-int.h (double_int::from_unsigned): Rename to ...
+	(double_int::from_uhwi): ... this.
+	(double_int::from_signed): Rename to ...
+	(double_int::from_shwi): ... this.
+	(double_int::to_signed): Rename to ...
+	(double_int::to_shwi): ... this.
+	(double_int::to_unsigned): Rename to ...
+	(double_int::to_uhwi): ... this.
+	(double_int::fits_unsigned): Rename to ...
+	(double_int::fits_uhwi): ... this.
+	(double_int::fits_signed): Rename to ...
+	(double_int::fits_shwi): ... this.
+	(double_int::fits): Rename to ...
+	(double_int::fits_hwi): ... this.
+	* double-int.c: Likewise.
+
+2012-08-15  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* timevar.def (TV_VARPOOL, TV_WHOPR_WPA_LTRANS_EXEC, TV_LIFE,
+	TV_LIFE_UPDATE, TV_DF_UREC, TV_INLINE_HEURISTICS,
+	TV_TREE_LINEAR_TRANSFORM, TV_TREE_LOOP_INIT, TV_TREE_LOOP_FINI,
+	TV_VPT, TV_LOCAL_ALLOC, TV_GLOBAL_ALLOC, TV_SEQABSTR): Remove.
+	(TV_IPA_INLINING, TV_FLATTEN_INLINING, TV_EARLY_INLINING,
+	TV_INLINE_PARAMETERS, TV_LOOP_INIT, TV_LOOP_FINI): New.
+	* timevar.c (timevar_print): Make printing width of timevar names
+	more flexible, but enforce maximum length.
+	* ipa-inline.c (pass_early_inline): Use TV_EARLY_INLINING.
+	(pass_ipa_inline): Use TV_IPA_INLINING.
+	* ipa-inline-analysis.c (pass_inline_parameters): Use
+	TV_INLINE_HEURISTICS.
+	* tree-ssa-loop.c (pass_tree_loop_init): No timevar for wrapper pass.
+	(pass_tree_loop_done): Likewise.
+	* final.c (pass_shorten_branches): Use TV_SHORTEN_BRANCH.
+	* loop-init.c (loop_optimizer_init): Push/pop TV_LOOP_INIT.
+	(loop_optimizer_finalize): Push/pop TV_LOOP_FINI.
+
+2012-08-15  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+	* config/arm/neon.md (neon_vaba<mode> VDQIW): Canonicalize
+	operands.
+	(neon_vabal<mode> VDQIW): Likewise.
+
+2012-08-15  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+	PR target/54212
+	* config/arm/neon.md (vec_set<mode>_internal VD,VQ): Do not
+	mark as predicable. Adjust asm template.
+	(vec_setv2di_internal): Likewise.
+	(vec_extract<mode> VD, VQ): Likewise.
+	(vec_extractv2di): Likewise.
+	(neon_vget_lane<mode>_sext_internal VD, VQ): Likewise.
+	(neon_vset_lane<mode>_sext_internal VD, VQ): Likewise.
+	(neon_vdup_n<mode> VX, V32): Likewise.
+	(neon_vdup_nv2di): Likewise.
+
+2012-08-14  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* config/mips/mips.md (define_attr accum_in): New instruction
+	attribute.  Set it for imadd and fmadd patterns.
+	* config/mips/mips.c (mips_linked_madd_p): Use accum_in to extract
+	accumulator register.
+
+2012-08-14   Diego Novillo  <dnovillo@google.com>
+
+	Merge from cxx-conversion branch.  Configury.
+
+	* configure.ac (CXX_FOR_BUILD): Define and substitute.
+	(BUILD_CXXFLAGS): Define.
+	Remove all handlers of ENABLE_BUILD_WITH_CXX.
+	Force all build to be with C++.
+	* Makefile.in (BUILD_CXXFLAGS): Use it.
+	Remove all handlers of ENABLE_BUILD_WITH_CXX.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* doc/install.texi: Remove documentation for --enable-build-with-cxx
+	and --enable-build-poststage1-with-cxx.
+
+2012-08-14   Diego Novillo  <dnovillo@google.com>
+
+	Merge from cxx-conversion branch.  Re-implement VEC in C++.
+
+	* vec.c (vec_heap_free): Convert into a template function.
+	(vec_gc_o_reserve_1): Make extern.
+	(vec_gc_p_reserve): Remove.
+	(vec_gc_p_reserve_exact): Remove.
+	(vec_gc_o_reserve): Remove.
+	(vec_gc_o_reserve_exact): Remove.
+	(vec_heap_o_reserve_1): Make extern.
+	(vec_heap_p_reserve): Remove.
+	(vec_heap_p_reserve_exact): Remove.
+	(vec_heap_o_reserve): Remove.
+	(vec_heap_o_reserve_exact): Remove.
+	(vec_stack_p_reserve): Remove.
+	(vec_stack_p_reserve_exact): Remove.
+	* vec.h (VEC_CHECK_INFO, VEC_CHECK_DECL, VEC_CHECK_PASS,
+	VEC_ASSERT, VEC_ASSERT_FAIL, vec_assert_fail): Move earlier
+	in the file.
+	(VEC): Define to vec_t<T>.
+	(vec_allocation_t): Define.
+	(struct vec_prefix): Move earlier in the file.
+	(vec_t<T>): New template.
+	(DEF_VEC_I, DEF_VECL_ALLOC_I, DEF_VEC_P, DEF_VEC_ALLOC_P,
+	DEF_VEC_O, DEF_VEC_ALLOC_P, DEF_VEC_O, DEF_VEC_ALLOC_O,
+	DEF_VEC_ALLOC_P_STACK, DEF_VEC_ALLOC_O_STACK,
+	DEF_VEC_ALLOC_I_STACK): Expand to 'struct vec_swallow_trailing_semi'.
+	(DEF_VEC_A): Provide template instantiations for
+	GC/PCH markers that do not traverse the vector.
+	(vec_stack_p_reserve): Remove.
+	(vec_stack_p_reserve_exact): Remove.
+	(vec_stack_p_reserve_exact_1): Remove.
+	(vec_stack_o_reserve): Remove.
+	(vec_stack_o_reserve_exact): Remove.
+	(vec_stack_free): Re-write as a template function.
+	(vec_reserve): New template function.
+	(vec_reserve_exact): New template function.
+	(vec_heap_free): New template function if GATHER_STATISTICS is
+	defined.  Otherwise, macro that expands to free().
+	(VEC_length_1): New template function.
+	(VEC_length): Call it.
+	(VEC_empty_1): New template function.
+	(VEC_empty): Call it.
+	(VEC_address_1): New template function.
+	(VEC_address): Call it.
+	(VEC_last_1): New template function.
+	(VEC_last): Call it.  Change return type to T&.
+	Change all users that used VEC_Os.
+	(VEC_index_1): New template function.
+	(VEC_index): Call it.  Return a T& instead of a T*.
+	Update all callers that were using VEC_O before.
+	(VEC_iterate_1): New template function.
+	(VEC_iterate): Call it.
+	(VEC_embedded_size_1): New template function.
+	(VEC_embedded_size): Call it.
+	(VEC_embedded_init_1): New template function.
+	(VEC_embedded_init): Call it.
+	(VEC_alloc_1): New template function.
+	(VEC_alloc): Call it.  If A is 'stack', call XALLOCAVAR to
+	do the allocation.
+	(VEC_free_1): New template function.
+	(VEC_free): Call it.
+	(VEC_copy_1): New template function.
+	(VEC_copy): Call it.
+	(VEC_space_1): New template function
+	(VEC_space): Call it.
+	(VEC_reserve_1): New template function.
+	(VEC_reserve): Call it.
+	(VEC_reserve_exact_1): New template function.
+	(VEC_reserve_exact): Call it.
+	(VEC_splice_1): New template function.
+	(VEC_splice): Call it.
+	(VEC_safe_splice_1): New template function.
+	(VEC_safe_splice): Call it.
+	(VEC_quick_push_1): New template function.  Create two overloads, one
+	accepting T, the other accepting T *.  Update all callers
+	where T and T * are ambiguous.
+	(VEC_quick_push): Call it.
+	(VEC_safe_push_1): New template function. Create two overloads, one
+	accepting T, the other accepting T *.  Update all callers
+	where T and T * are ambiguous.
+	(VEC_safe_push): Call it.
+	(VEC_pop_1): New template function.
+	(VEC_pop): Call it.
+	(VEC_truncate_1): New template function.
+	(VEC_truncate): Call it.
+	(VEC_safe_grow_1): New template function.
+	(VEC_safe_grow): Call it.
+	(VEC_safe_grow_cleared_1): New template function.
+	(VEC_safe_grow_cleared): Call it.
+	(VEC_replace_1): New template function.
+	(VEC_replace): Call it.  Always accept T instead of T*.
+	Update all callers that used VEC_Os.
+	(VEC_quick_insert_1): New template function.
+	(VEC_quick_insert): Call it.
+	(VEC_safe_insert_1): New template function.
+	(VEC_safe_insert): Call it.
+	(VEC_ordered_remove_1): New template function.
+	(VEC_ordered_remove): Call it.
+	(VEC_unordered_remove_1): New template function.
+	(VEC_unordered_remove): Call it.
+	(VEC_block_remove_1): New template function.
+	(VEC_block_remove): Call it.
+	(VEC_lower_bound_1): New template function.
+	(VEC_lower_bound): Call it.
+	(VEC_OP): Remove.
+	(DEF_VEC_FUNC_P): Remove.
+	(DEF_VEC_ALLOC_FUNC_P): Remove.
+	(DEF_VEC_NONALLOC_FUNCS_P): Remove.
+	(DEF_VEC_FUNC_O): Remove.
+	(DEF_VEC_ALLOC_FUNC_O): Remove.
+	(DEF_VEC_NONALLOC_FUNCS_O): Remove.
+	(DEF_VEC_ALLOC_FUNC_I): Remove.
+	(DEF_VEC_NONALLOC_FUNCS_I): Remove.
+	(DEF_VEC_ALLOC_FUNC_P_STACK): Remove.
+	(DEF_VEC_ALLOC_FUNC_O_STACK): Remove.
+	(DEF_VEC_ALLOC_FUNC_I_STACK): Remove.
+	(vec_reserve_exact): New template function.
+
+	* gengtype-lex.l (DEF_VEC_ALLOC_[IOP]/{EOID}): Remove.
+	* gengtype-parse.c (token_names): Remove DEF_VEC_ALLOC_[IOP].
+	(typedef_name): Emit vec_t<C1> instead of VEC_C1_C2.
+	(def_vec_alloc): Remove.  Update all callers.
+	* gengtype.c (filter_type_name): New.
+	(output_mangled_typename): Call it.
+	(write_func_for_structure): Likewise.
+	(write_types): Likewise.
+	(write_root): Likewise.
+	(write_typed_alloc_def): Likewise.
+	(note_def_vec): Emit vec_t<TYPE_NAME> instead of VEC_TYPE_NAME_base.
+	(note_def_vec_alloc): Remove.
+	* gengtype.h (note_def_vec_alloc): Remove.
+	(DEFVEC_ALLOC): Remove token code.
+
+	* df-scan.c (df_bb_verify): Remove call to df_free_collection_rec
+	inside the insn traversal loop.
+	* gimplify.c (gimplify_compound_lval): Rename STACK to EXPR_STACK.
+	* ipa-inline.c (inline_small_functions): Rename HEAP to EDGE_HEAP.
+	* reg-stack.c (stack): Rename to STACK_PTR.  Update all users.
+	* tree-vrp.c (stack): Rename to EQUIV_STACK.  Update all users.
+
+	* config/bfin/bfin.c (hwloop_optimize): Update some calls to
+	VEC_* for vectors of non-pointers.
+	* config/c6x/c6x.c (try_rename_operands): Likewise.
+	(reshuffle_units): Likewise.
+	* config/mips/mips.c (mips_multi_start): Likewise.
+	(mips_multi_add): Likewise.
+	(mips_multi_copy_insn): Likewise.
+	(mips_multi_set_operand): Likewise.
+	* hw-doloop.c (discover_loop): Likewise.
+	(discover_loops): Likewise.
+	(reorg_loops): Likewise.
+
+2012-08-14   Diego Novillo  <dnovillo@google.com>
+
+	Merge from cxx-conversion branch.  C++ support in gengtype.
+
+	* coretypes.h (gt_pointer_operator): Move from ...
+	* ggc.h: ... here.
+	* doc/gty.texi: Document support for C++ templates and
+	user-provided markers.
+	* gcc/gengtype-lex.l: Update copyright year.
+	Remove support for recognizing DEF_VEC_O, DEF_VEC_P and
+	DEFVEC_I.
+	* gengtype-parse.c: Update copyright year.
+	(token_names): Remove DEF_VEC_O, DEF_VEC_P and DEF_VEC_I.
+	(require_template_declaration): New.
+	(typedef_name): Call it.
+	(type): Replace IS_UNION with KIND. Replace all users.
+	(def_vec): Remove.  Update all users.
+	* gengtype-state.c (type_lineloc): Handle TYPE_USER_STRUCT.
+	(write_state_user_struct_type): New.
+	(write_state_type): Call it.
+	(read_state_user_struct_type): New.
+	(read_state_type): Call it.
+	* gengtype.c: Update copyright year.
+	(dump_pair): Move declaration to the top.
+	(dump_type): Likewise.
+	(dump_type_list): Likewise.
+	(dbgprint_count_type_at): Handle TYPE_USER_STRUCT.
+	(create_user_defined_type): New.
+	(resolve_typedef): Call it.
+	(new_structure): Replace argument ISUNION with KIND.
+	Change users to refer to KIND directly.
+	Update all callers.
+	(find_structure): Likewise.
+	(set_gc_used_type): Handle TYPE_USER_STRUCT.
+	(create_file): Update HDR to include new copyright year.
+	(struct walk_type_data): Add field IN_PTR_FIELD.
+	(output_mangled_typename): Handle TYPE_USER_STRUCT.
+	(walk_type): Set D->IN_PTR_FIELD when walking a TYPE_POINTER.
+	Clear it afterwards.
+	Handle TYPE_USER_STRUCT.
+	(write_types_process_field): Handle TYPE_USER_STRUCT.
+	(get_type_specifier): Move earlier in the file.
+	(write_type_decl): New.
+	(write_marker_function_name): New.
+	(write_user_func_for_structure_ptr): New.
+	(write_user_func_for_structure_body): New.
+	(write_user_marking_functions): New.
+	(write_func_for_structure): Call write_marker_function_name
+	and write_type_decl.
+	Do not call walk_type for TYPE_USER_STRUCT. Emit a call to the user
+	function directly.
+	Call write_user_marking_functions on TYPE_USER_STRUCTs.
+	(write_types_local_user_process_field): New.
+	(write_pch_user_walking_for_structure_body): New.
+	(write_pch_user_walking_functions): New.
+	(write_types_local_process_field): Handle TYPE_USER_STRUCT.
+	(write_local_func_for_structure): Do not call walk_type for
+	TYPE_USER_STRUCT. Instead, emit the call to gt_pch_nx directly.
+	Call write_pch_user_walking_functions for TYPE_USER_STRUCTs.
+	(write_root): Handle TYPE_USER_STRUCT.
+	(vec_prefix_type): Remove.  Update all users.
+	(note_def_vec): Remove.  Update all users.
+	(dump_typekind): Handle TYPE_USER_STRUCT.
+	(dump_type): Initialize SEEN_TYPES, if needed.
+	Handle TYPE_USER_STRUCT.
+	(dump_everything): Do not initialize SEEN_TYPES.
+	* gengtype.h: Update copyright year.
+	(enum typekind): Add TYPE_USER_STRUCT.
+	(union_or_struct_p): Rename from UNION_OR_STRUCT_P.
+	Convert into function.
+	Add an overload taking const_type_p.
+	Update all callers.
+	(new_structure): Change second field to type enum typekind.
+	Update all users.
+	(find_structure): Likewise.
+	(note_def_vec): Remove.
+	(DEFVEC_OP): Remove.
+	(DEFVEC_I): Remove.
+	* ggc-page.c (gt_ggc_mx): Add entry points for marking
+	'const char *&', 'unsigned char *&' and 'unsigned char&'.
+	* ggc-zone.c (gt_ggc_mx): Add entry points for marking
+	'const char *&' and 'unsigned char *&'.
+	* stringpool.c (gt_pch_nx): Add entry points for marking
+	'const char *&', 'unsigned char *&' and 'unsigned char&'.
+	Add an entry point for the overload taking arguments 'unsigned char
+	*', 'gt_pointer_operator' and 'void *'.
+	* vec.h (struct vec_prefix): Remove GTY marker.
+	(struct vec_t): Remove GTY((length)) attribute from field 'vec'.
+	(gt_ggc_mx (vec_t<T> *)): New template function.
+	(gt_pch_nx (vec_t<T> *)): New template function.
+	(gt_pch_nx (vec_t<T *> *, gt_pointer_operator, void *)): New template
+	function.
+	(gt_pch_nx (vec_t<T> *, gt_pointer_operator, void *)): New template
+	function.
+
+	* basic-block.h (struct edge_def): Mark GTY((user)).
+	Remove all GTY markers from fields.
+	(gt_ggc_mx): Declare.
+	(gt_pch_nx): Declare.
+	* tree-cfg.c (gt_ggc_mx): New.
+	(gt_pch_nx): New.
+
+	* gengtype-lex.l (USER_GTY): Add pattern for "user".
+	* gengtype-parse.c (option): Handle USER_GTY.
+	(opts_have): New.
+	(type): Call it.
+	If the keyword 'user' is used, do not walk the fields
+	of the structure.
+	* gengtype.h (USER_GTY): Add.
+	* doc/gty.texi: Update.
+
+2012-08-14   Lawrence Crowl  <crowl@google.com>
+
+	Merge cxx-conversion branch.  Implement C++ hash table.
+
+	* hash-table.h: New. Implementation borrowed from libiberty/hashtab.c.
+	* hash-table.c: Likewise.
+	* tree-ssa-tail-merge.c: Include hash-table.h instead of hashtab.h.
+	(static htab_t same_succ_htab): Change type to hash_table;
+	move specification of helper functions from create call to declaration.
+	Change users to invoke member functions.
+	(same_succ_print_traverse): Make extern ssa_.... Change callers.
+	Remove void* casting.
+	(same_succ_hash): Likewise.
+	(same_succ_equal): Likewise.
+	(same_succ_delete): Likewise.
+	* tree-ssa-threadupdate.c: Include hash-table.h.
+	(struct local_info): Rename to ssa_local_info_t to avoid overloading
+	the type name local_info with the variable name local_info.
+	(static htab_t redirection_data): Change type to hash_table.
+	Move specification of helper functions from create call to declaration.
+	Change users to invoke member functions.
+	(redirection_data_hash): Make extern ssa_.... Change callers.
+	Remove void* casting.
+	(redirection_data_eq): Likewise.
+	(fix_duplicate_block_edges): Likewise.
+	(create_duplicates): Likewise.
+	(fixup_template_block): Likewise.
+	(redirect_edges): Likewise.
+	(lookup_redirection_data): Change types associated with the hash table
+	from void* to their actual type. Remove unnecessary casts.
+	* tree-ssa-ccp.c: Include hash-table.h.
+	(typedef gimple_htab): New.  Uses hash_table.  Replace specific uses
+	of htab_t with gimple_htab.  Change users to invoke member functions.
+	Move specification of helper functions from create call to declaration.
+	* tree-ssa-coalesce.c: Include hash-table.h instead of hashtab.h.
+	(hash_ssa_name_by_var): Make extern. Remove void* casting.
+	(eq_ssa_name_by_var): Likewise.
+	(coalesce_ssa_name): Change type of local static htab_t ssa_name_hash
+	to hash_table. Change users to invoke member functions.
+	Move specification of helper functions from create call to declaration.
+	* coverage.c: Include hash-table.h instead of hashtab.h.
+	(static htab_t counts_hash): Change type to hash_table;
+	move specification of helper functions from create call to declaration.
+	Change users to invoke member functions.
+	(htab_counts_entry_hash): Make extern. Rename with coverage_... instead
+	of htab_... Remove void* casting.
+	(htab_counts_entry_eq): Likewise.
+	(htab_counts_entry_del): Likewise.
+	* tree-ssa-pre.c: Include hash-table.h instead of hashtab.h.
+	(static htab_t expression_to_id): Change type to hash_table.
+	Move specification of helper functions from create call to declaration.
+	Change users to invoke member functions.
+	(static htab_t phi_translate_table): Likewise.
+	(pre_expr_eq): Make extern ssa_.... Change callers.
+	Remove void* casting.
+	(pre_expr_hash): Likewise.
+	(expr_pred_trans_hash): Likewise.
+	(expr_pred_trans_eq): Likewise.
+	(alloc_expression_id): Change types associated with the hash table
+	from void* to their actual type. Remove unnecessary casts.
+	(lookup_expression_id): Likewise.
+	(phi_trans_lookup): Likewise.
+	(phi_trans_add): Likewise.
+	* stringpool.c: Rename uses of libcpp typedef hash_table to
+	cpp_hash_table.
+	* Makefile.in: Add hash-table.o to OBJS-libcommon-target.
+	Add $(HASH_TABLE_H). Add new dependences on $(HASH_TABLE_H).
+
+2012-08-14   Lawrence Crowl  <crowl@google.com>
+
+	Merge from cxx-conversion branch.  Re-write double_int in C++.
+
+	* hash-table.h
+	(typedef double_int): Change to struct (POD).
+	(double_int::make): New overloads for int to double-int conversion.
+	(double_int::mask): New.
+	(double_int::max_value): New.
+	(double_int::min_value): New.
+	(double_int::operator ++): New.
+	(double_int::operator --): New.
+	(double_int::operator *=): New.
+	(double_int::operator +=): New.
+	(double_int::operator -=): New.
+	(double_int::to_signed): New.
+	(double_int::to_unsigned): New.
+	(double_int::fits_unsigned): New.
+	(double_int::fits_signed): New.
+	(double_int::fits): New.
+	(double_int::trailing_zeros): New.
+	(double_int::popcount): New.
+	(double_int::multiple_of): New.
+	(double_int::set_bit): New.
+	(double_int::mul_with_sign): New.
+	(double_int::operator * (binary)): New.
+	(double_int::operator + (binary)): New.
+	(double_int::operator - (binary)): New.
+	(double_int::operator - (unary)): New.
+	(double_int::operator ~ (unary)): New.
+	(double_int::operator & (binary)): New.
+	(double_int::operator | (binary)): New.
+	(double_int::operator ^ (binary)): New.
+	(double_int::and_not): New.
+	(double_int::lshift): New.
+	(double_int::rshift): New.
+	(double_int::alshift): New.
+	(double_int::arshift): New.
+	(double_int::llshift): New.
+	(double_int::lrshift): New.
+	(double_int::lrotate): New.
+	(double_int::rrotate): New.
+	(double_int::div): New.
+	(double_int::sdiv): New.
+	(double_int::udiv): New.
+	(double_int::mod): New.
+	(double_int::smod): New.
+	(double_int::umod): New.
+	(double_int::divmod): New.
+	(double_int::sdivmod): New.
+	(double_int::udivmod): New.
+	(double_int::ext): New.
+	(double_int::zext): New.
+	(double_int::sext): New.
+	(double_int::is_zero): New.
+	(double_int::is_one): New.
+	(double_int::is_minus_one): New.
+	(double_int::is_negative): New.
+	(double_int::cmp): New.
+	(double_int::ucmp): New.
+	(double_int::scmp): New.
+	(double_int::ult): New.
+	(double_int::ugt): New.
+	(double_int::slt): New.
+	(double_int::sgt): New.
+	(double_int::max): New.
+	(double_int::smax): New.
+	(double_int::umax): New.
+	(double_int::min): New.
+	(double_int::smin): New.
+	(double_int::umin): New.
+	(double_int::operator ==): New.
+	(double_int::operator !=): New.
+	(shwi_to_double_int): Change implementation to use member function.
+	(double_int_minus_one): Likewise.
+	(double_int_zero): Likewise.
+	(double_int_one): Likewise.
+	(double_int_two): Likewise.
+	(double_int_ten): Likewise.
+	(uhwi_to_double_int): Likewise.
+	(double_int_to_shwi): Likewise.
+	(double_int_to_uhwi): Likewise.
+	(double_int_fits_in_uhwi_p): Likewise.
+	(double_int_fits_in_shwi_p): Likewise.
+	(double_int_fits_in_hwi_p): Likewise.
+	(double_int_mul): Likewise.
+	(double_int_mul_with_sign): Likewise.
+	(double_int_add): Likewise.
+	(double_int_sub): Likewise.
+	(double_int_neg): Likewise.
+	(double_int_div): Likewise.
+	(double_int_sdiv): Likewise.
+	(double_int_udiv): Likewise.
+	(double_int_mod): Likewise.
+	(double_int_smod): Likewise.
+	(double_int_umod): Likewise.
+	(double_int_divmod): Likewise.
+	(double_int_sdivmod): Likewise.
+	(double_int_udivmod): Likewise.
+	(double_int_multiple_of): Likewise.
+	(double_int_setbit): Likewise.
+	(double_int_ctz): Likewise.
+	(double_int_not): Likewise.
+	(double_int_ior): Likewise.
+	(double_int_and): Likewise.
+	(double_int_and_not): Likewise.
+	(double_int_xor): Likewise.
+	(double_int_lshift): Likewise.
+	(double_int_rshift): Likewise.
+	(double_int_lrotate): Likewise.
+	(double_int_rrotate): Likewise.
+	(double_int_cmp): Likewise.
+	(double_int_scmp): Likewise.
+	(double_int_ucmp): Likewise.
+	(double_int_max): Likewise.
+	(double_int_smax): Likewise.
+	(double_int_umax): Likewise.
+	(double_int_min): Likewise.
+	(double_int_smin): Likewise.
+	(double_int_umin): Likewise.
+	(double_int_ext): Likewise.
+	(double_int_sext): Likewise.
+	(double_int_zext): Likewise.
+	(double_int_mask): Likewise.
+	(double_int_max_value): Likewise.
+	(double_int_min_value): Likewise.
+	(double_int_zero_p): Likewise.
+	(double_int_one_p): Likewise.
+	(double_int_minus_one_p): Likewise.
+	(double_int_equal_p): Likewise.
+	(double_int_popcount): Likewise.
+	* hash-table.c
+	(double_int_mask): Reuse implementation for double_int::mask.
+	(double_int_max_value): Likewise.
+	(double_int_min_value): Likewise.
+	(double_int_ext): Likewise.
+	(double_int_zext): Likewise.
+	(double_int_sext): Likewise.
+	(double_int_mul_with_sign): Likewise.
+	(double_int_divmod): Likewise.
+	(double_int_sdivmod): Likewise.
+	(double_int_udivmod): Likewise.
+	(double_int_div): Likewise.
+	(double_int_sdiv): Likewise.
+	(double_int_udiv): Likewise.
+	(double_int_mod): Likewise.
+	(double_int_smod): Likewise.
+	(double_int_umod): Likewise.
+	(double_int_multiple_of): Likewise.
+	(double_int_lshift): Likewise.
+	(double_int_rshift): Likewise.
+	(double_int_lrotate): Likewise.
+	(double_int_rrotate): Likewise.
+	(double_int_cmp): Likewise.
+	(double_int_ucmp): Likewise.
+	(double_int_scmp): Likewise.
+	(double_int_max): Likewise.
+	(double_int_smax): Likewise.
+	(double_int_umax): Likewise.
+	(double_int_min): Likewise.
+	(double_int_smin): Likewise.
+	(double_int_umin): Likewise.
+	(double_int_min): Likewise.
+	(double_int_min): Likewise.
+	(double_int_min): Likewise.
+	(double_int_min): Likewise.
+	(double_int_min): Likewise.
+	(double_int_min): Likewise.
+	(double_int::alshift): New.
+	(double_int::arshift): New.
+	(double_int::llshift): New.
+	(double_int::lrshift): New.
+	(double_int::ult): New.
+	(double_int::ugt): New.
+	(double_int::slt): New.
+	(double_int::sgt): New.
+	(double_int_setbit): Reuse implementation for double_int::set_bit,
+	which avoids a name conflict with a macro.
+	(double_int_double_int_ctz): Reuse implementation for
+	double_int::trailing_zeros.
+	(double_int_fits_in_shwi_p): Reuse implementation for
+	double_int::fits_signed.
+	(double_int_fits_in_hwi_p): Reuse implementation for double_int::fits.
+	(double_int_mul): Reuse implementation for binary
+	double_int::operator *.
+	(double_int_add): Likewise.
+	(double_int_sub): Likewise.
+	(double_int_neg): Reuse implementation for unary
+	double_int::operator -.
+	(double_int_max_value): Likewise.
+	* fixed-value.c: Change to use member functions introduced above.
+
+2012-08-14   Lawrence Crowl  <crowl@google.com>
+
+	Merge cxx-conversion branch.  Support tree macro calling
+	from gdb.
+
+	* tree.h (tree_check): New.
+	(TREE_CHECK): Use inline function above instead of __extension__.
+	(tree_not_check): New.
+	(TREE_NOT_CHECK): Use inline function above instead of __extension__.
+	(tree_check2): New.
+	(TREE_CHECK2): Use inline function above instead of __extension__.
+	(tree_not_check2): New.
+	(TREE_NOT_CHECK2): Use inline function above instead of __extension__.
+	(tree_check3): New.
+	(TREE_CHECK3): Use inline function above instead of __extension__.
+	(tree_not_check3): New.
+	(TREE_NOT_CHECK3): Use inline function above instead of __extension__.
+	(tree_check4): New.
+	(TREE_CHECK4): Use inline function above instead of __extension__.
+	(tree_not_check4): New.
+	(TREE_NOT_CHECK4): Use inline function above instead of __extension__.
+	(tree_check5): New.
+	(TREE_CHECK5): Use inline function above instead of __extension__.
+	(tree_not_check5): New.
+	(TREE_NOT_CHECK5): Use inline function above instead of __extension__.
+	(contains_struct_check): New.
+	(CONTAINS_STRUCT_CHECK): Use inline function above instead of
+	__extension__.
+	(tree_class_check): New.
+	(TREE_CLASS_CHECK): Use inline function above instead of __extension__.
+	(tree_range_check): New.
+	(TREE_RANGE_CHECK): Use inline function above instead of __extension__.
+	(omp_clause_subcode_check): New.
+	(OMP_CLAUSE_SUBCODE_CHECK): Use inline function above instead of
+	__extension__.
+	(omp_clause_range_check): New.
+	(OMP_CLAUSE_RANGE_CHECK): Use inline function above instead of
+	__extension__.
+	(expr_check): New.
+	(EXPR_CHECK): Use inline function above instead of __extension__.
+	(non_type_check): New.
+	(NON_TYPE_CHECK): Use inline function above instead of __extension__.
+	(tree_vec_elt_check): New.
+	(TREE_VEC_ELT_CHECK): Use inline function above instead of
+	__extension__.
+	(omp_clause_elt_check): New.
+	(OMP_CLAUSE_ELT_CHECK): Use inline function above instead of
+	__extension__.
+	(tree_operand_check): New.
+	(TREE_OPERAND_CHECK): Use inline function above instead of
+	__extension__.
+	(tree_operand_check_code): New.
+	(TREE_OPERAND_CHECK_CODE): Use inline function above instead of
+	__extension__.
+	(TREE_CHAIN): Simplify implementation.
+	(TREE_TYPE): Simplify implementation.
+	(tree_operand_length): Move for compilation dependences.
+	* gdbinit.in: (macro define __FILE__): New.
+	(macro define __LINE__): New.
+	(skip "tree.h"): New.
+
+2012-08-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (enabled): Add comment with explanation
+	why fma4 instructions are disabled for generic code.
+
+2012-08-14  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/52933
+	* config/sh/sh.md (cmp_div0s_0, cmp_div0s_1, *cmp_div0s_0,
+	*cmp_div0s_1, *cbranch_div0s, *movsicc_div0s): New insns.
+	* config/sh/sh.c (sh_rtx_costs): Handle div0s patterns.
+
+2012-08-14  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/50751
+	* config/sh/constraints.md (Sra): New constraint.
+	* config/sh/predicates.md (simple_mem_operand,
+	displacement_mem_operand, zero_extend_movu_operand): New predicates.
+	(zero_extend_operand): Check zero_extend_movu_operand for SH2A.
+	* config/sh/sh.md (*zero_extendqisi2_disp_mem,
+	*zero_extendhisi2_disp_mem): Add new insns and two new related
+	peephole2 patterns.
+
+2012-08-14  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* graphite-scop-detection.c (create_sese_edges): Compute dominance
+	info before trying to fix loop structure.
+	* cfgloopmanip.c (fix_loop_structure): Require fast DOM queries.
+	* tree-cfgcleanup.c (repair_loop_structures): Likewise.
+	* cfgloop.c (verify_loop_structure): Verify loop fathers.
+
+	* dominance.c (init_dom_info): Use gcc_checking_assert, not gcc_assert.
+	(dom_convert_dir_to_idx, compute_dom_fast_query,
+	get_immediate_dominator, set_immediate_dominator, get_dominated_by,
+	redirect_immediate_dominators, nearest_common_dominator,
+	(dominated_by_p, bb_dom_dfs_in, bb_dom_dfs_out, recompute_dominator,
+	iterate_fix_dominators, add_to_dominance_info,
+	delete_from_dominance_info): Likewise.
+
+2012-08-14  Richard Guenther  <rguenther@suse.de>
+
+	* cfgexpand.c (expand_used_vars): Use virtual_operand_p.
+	* gimple-pretty-print.c (dump_phi_nodes): Likewise.
+	* gimple-streamer-out.c (output_bb): Likewise.
+	* graphite-sese-to-poly.c (scalar_close_phi_node_p): Likewise.
+	(rewrite_reductions_out_of_ssa): Likewise.
+	(rewrite_commutative_reductions_out_of_ss): Likewise.
+	* ipa-split.c (verify_non_ssa_vars): Likewise.
+	(consider_split): Likewise.
+	(visit_bb): Likewise.
+	(split_function): Likewise.
+	* lto-streamer-out.c (output_ssa_names): Likewise.
+	* sese.c (rename_uses): Likewise.
+	* tree-cfg.c (replace_uses_by): Likewise.
+	(gimple_merge_blocks): Likewise.
+	(gimple_cfg2dot): Likewise.
+	(verify_gimple_phi): Likewise.
+	(replace_ssa_name): Likewise.
+	(move_block_to_fn): Likewise.
+	* tree-eh.c (cleanup_empty_eh_merge_phis): Likewise.
+	* tree-if-conv.c (if_convertible_phi_p): Likewise.
+	(predicate_scalar_phi): Likewise.
+	* tree-inline.c (update_ssa_across_abnormal_edges): Likewise.
+	(copy_phis_for_bb): Likewise.
+	* tree-loop-distribution.c (generate_loops_for_partition): Likewise.
+	(destroy_loop): Likewise.
+	* tree-outof-ssa.c (eliminate_useless_phis): Likewise.
+	(insert_backedge_copies): Likewise.
+	* tree-parloops.c (transform_to_exit_first_loop): Likewise.
+	(gather_scalar_reductions): Likewise.
+	(try_create_reduction_list): Likewise.
+	* tree-scalar-evolution.c (analyze_scalar_evolution_for_all_loop_ph):
+	Likewise.
+	(scev_const_prop): Likewise.
+	* tree-ssa-ccp.c (debug_lattice_value): Likewise.
+	(get_default_value): Likewise.
+	(ccp_initialize): Likewise.
+	* tree-ssa-coalesce.c (create_outofssa_var_map): Likewise.
+	* tree-ssa-copy.c (may_propagate_copy): Likewise.
+	(init_copy_prop): Likewise.
+	* tree-ssa-dce.c (propagate_necessity): Likewise.
+	(remove_dead_phis): Likewise.
+	(forward_edge_to_pdom): Likewise.
+	(eliminate_unnecessary_stmts): Likewise.
+	* tree-ssa-live.c (partition_view_init): Likewise.
+	(remove_unused_locals): Likewise.
+	(register_ssa_partition_check): Likewise.
+	* tree-ssa-loop-im.c (movement_possibility): Likewise.
+	(move_computations_stmt): Likewise.
+	* tree-ssa-loop-ivopts.c (determine_biv_step): Likewise.
+	(record_invariant): Likewise.
+	(find_interesting_uses_outside): Likewise.
+	(determine_set_costs): Likewise.
+	* tree-ssa-loop-manip.c (add_exit_phis_var): Likewise.
+	(find_uses_to_rename_use): Likewise.
+	(check_loop_closed_ssa_use): Likewise.
+	(rewrite_phi_with_iv): Likewise.
+	(canonicalize_loop_ivs): Likewise.
+	* tree-ssa-math-opts.c (execute_cse_reciprocals): Likewise.
+	* tree-ssa-phiopt.c (hoist_adjacent_loads): Likewise.
+	* tree-ssa-pre.c (make_values_for_phi): Likewise.
+	(compute_avail): Likewise.
+	(eliminate): Likewise.
+	* tree-ssa-propagate.c (substitute_and_fold): Likewise.
+	* tree-ssa-reassoc.c (phi_rank): Likewise.
+	* tree-ssa-strlen.c (strlen_enter_block): Likewise.
+	* tree-ssa-structalias.c (compute_points_to_sets): Likewise.
+	(ipa_pta_execute): Likewise.
+	* tree-ssa-tail-merge.c (same_succ_hash): Likewise.
+	(release_last_vdef): Likewise.
+	(same_phi_alternatives_1): Likewise.
+	(bb_has_non_vop_phi): Likewise.
+	(vop_phi): Likewise.
+	* tree-ssa-threadedge.c (record_temporary_equivalences_from_phis):
+	Likewise.
+	* tree-ssa-uninit.c (warn_uninitialized_phi): Likewise.
+	(execute_late_warn_uninitialized): Likewise.
+	* tree-ssa.c (verify_ssa_name): Likewise.
+	(verify_phi_args): Likewise.
+	(verify_ssa): Likewise.
+	* tree-stdarg.c (execute_optimize_stdarg): Likewise.
+	* tree-vect-loop-manip.c (slpeel_update_phi_nodes_for_guard1):
+	Likewise.
+	(slpeel_tree_peel_loop_to_edge): Likewise.
+	(vect_can_advance_ivs_p): Likewise.
+	(vect_update_ivs_after_vectorizer): Likewise.
+	* tree-vect-loop.c (vect_analyze_scalar_cycles_1): Likewise.
+	* tree-vrp.c (remove_range_assertions): Likewise.
+	* value-prof.c (gimple_divmod_values_to_profile): Likewise.
+
+2012-08-14  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/54146
+	* tree-ssa-pre.c (do_regular_insertion): Use a VEC
+	indexed by pred edge index for avail.
+	(do_partial_partial_insertion): Likewise.
+	(insert_into_preds_of_block): Adjust.
+
+2012-08-14  Richard Guenther  <rguenther@suse.de>
+
+	* gimplify.c (create_tmp_from_val): Mark temporary with
+	DECL_GIMPLE_REG_P here ...
+	(internal_get_tmp_var): ... instead of here.  If we go into
+	SSA create an SSA name instead of a VAR_DECL.
+	(gimplify_modify_expr): Do not create SSA names here, assert
+	we already got them.
+	(force_gimple_operand_1): Create an SSA name if we go into SSA.
+	* sese.c (rename_uses): Simplify.
+
+2012-08-14  Richard Guenther  <rguenther@suse.de>
+
+	* tree-into-ssa.c: Include diagnostic-core.h.
+	* Makefile.in (tree-into-ssa.o): Adjust.
+
+2012-08-14  Richard Guenther  <rguenther@suse.de>
+
+	* tree-into-ssa.c (update_ssa): Verify we do not rename
+	symbols that are already partly in SSA form.
+
+2012-08-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/53411
+	PR rtl-optimization/53495
+	* ira.c (ira): Move delete_trivially_dead_insns call before
+	find_moveable_pseudos call.
+
+2012-08-13  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* tree-ssa-pre.c (do_regular_insertion): Add FIXME markers at points
+	of potentially huge memset overhead.
+	(do_partial_partial_insertion): Likewise.
+	* cfgexpand.c (gimple_expand_cfg): Use XCNEWVEC instead of xcalloc.
+	* tree-vrp.c (find_assert_locations): Use XNEWVEC instead of XCNEWVEC
+	for arrays to be filled by pre_and_rev_post_order_compute.  Allocate
+	the right number of slots, not that number plus NUM_FIXED_BLOCKS.
+	* tree-ssa-reassoc.c (init_reassoc): Likewise.
+	* cfganal.c (dfs_enumerate_from): Use XNEWVEC instead of XCNEWVEC for
+	array used as stack.
+	* tree-ssa-sccvn.c (init_scc_vn): Use XNEWVEC instead of XCNEWVEC for
+	arrays to be filled by pre_and_rev_post_order_compute.
+	* cfgloopmanip.c (find_path): Use XNEWVEC instead of XCNEWVEC for
+	array to be filled by dfs_enumerate_from.
+	(remove_path): Likewise.
+	(duplicate_loop_to_header_edge): Use XNEWVEC instead of XCNEWVEC for
+	array of loops that is filled on the next lines.
+	* cfgloop.c (get_loop_body): Use XNEWVEC instead of XCNEWVEC for
+	array of basic blocks to be returned.
+	(get_loop_body_in_dom_order): Likewise.
+	(get_loop_body_in_bfs_order): Likewise.
+	* tree-ssa-loop-manip.c (loop_renamer_obstack): New static obstack
+	for all bitmaps used for rewriting into loop-closed SSA form.
+	(add_exit_phis_var): Allocate the def bitmap on it.  Clear the livein
+	bitmap at the end to release a lot of memory.
+	(add_exit_phis): Allocate the exits bitmap on the new obstack.
+	(get_loops_exits): Allocate the exits bitmap on the new obstack.
+	(find_uses_to_rename_use): Allocate a use_blocks bitmap if ver is
+	seen for the first time.
+	(find_uses_to_rename): Add "???" for why the whole function must
+	be re-scanned if changed_bbs is empty.
+	(rewrite_into_loop_closed_ssa): Allocate bitmaps on the new obstack.
+	Use XNEWVEC to allocate the use_blocks array.  Initialize the new
+	obstack, and free it at the end.  Remove loop over all SSA names.
+	(check_loop_closed_ssa_stmt): Look only at SSA_OP_USE operands.
+	* tree-cfg.c (move_sese_region_to_fn): Use XNEWVEC instead of
+	xcalloc to allocate edge_pred and edge_flag arrays.
+
+2012-08-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (FIXED_REGISTERS): Do not mark REX registers here.
+	(CALL_USED_REGISTERS): Use bitmaps to mark call-used registers
+	for different ABIs.
+	(enum reg_class): Move CLOBBERED_REGS just before GENERAL_REGS.
+	(REG_CLASS_NAMES): Update.
+	(REG_CLASS_CONTENTS): Update.  Clear CLOBBERED_REGS members.
+	* config/i386/i386.c (ix86_conditional_register_usage): Disable
+	REX registers on 32bit targets.  Handle bitmaps from
+	CALL_USED_REGISTERS initializer.  Calculate CLOBBERED_REGS register
+	set from GENERAL_REGS also for 32bit targets.  Do not change call
+	used register set for TARGET_64BIT_MS_ABI separately.
+
+2012-08-13  Richard Guenther  <rguenther@suse.de>
+
+	* basic-block.h (struct basic_block): Remove loop_depth
+	member, move flags and index members next to each other.
+	* cfgloop.h (bb_loop_depth): New inline function.
+	* cfghooks.c (split_block): Do not set loop_depth.
+	(duplicate_block): Likewise.
+	* cfgloop.c (flow_loop_nodes_find): Likewise.
+	(flow_loops_find): Likewise.
+	(add_bb_to_loop): Likewise.
+	(remove_bb_from_loops): Likewise.
+	* cfgrtl.c (force_nonfallthru_and_redirect): Likewise.
+	* gimple-streamer-in.c (input_bb): Do not stream loop_depth.
+	* gimple-streamer-out.c (output_bb): Likewise.
+	* bt-load.c: Include cfgloop.h.
+	(migrate_btr_defs): Use bb_loop_depth.
+	* cfg.c (dump_bb_info): Likewise.
+	* final.c (compute_alignments): Likewise.
+	* ira.c (update_equiv_regs): Likewise.
+	* tree-ssa-copy.c (init_copy_prop): Likewise.
+	* tree-ssa-dom.c (loop_depth_of_name): Likewise.
+	* tree-ssa-forwprop.c: Include cfgloop.h.
+	(forward_propagate_addr_expr): Use bb_loop_depth.
+	* tree-ssa-pre.c (insert_into_preds_of_block): Likewise.
+	* tree-ssa-sink.c (select_best_block): Likewise.
+	* ipa-inline-analysis.c: Include cfgloop.h.
+	(estimate_function_body_sizes): Use bb_loop_depth.
+	* Makefile.in (tree-ssa-forwprop.o): Depend on $(CFGLOOP_H).
+	(ipa-inline-analysis.o): Likewise.
+	(bt-load.o): Likewise.
+
+2012-08-13  Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR driver/54210
+	* config/i386/driver-i386.c (host_detect_local_cpu): Test bit_PRFCHW
+	bit of CPUID 0x80000001 %ecx instead of CPUID 7 %ecx.
+	* config/i386/cpuid.h (bits_PRFCHW): Move definition to CPUID
+	0x80000001 %ecx flags.
+
+2012-08-13  Richard Guenther  <rguenther@suse.de>
+
+	* tree-cfg.c (print_loop): Avoid ICEing for loops marked for
+	removal and loops with multiple latches.
+
+2012-08-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/53968
+	* tree.c (integer_pow2p): Avoid undefined signed overflows.
+	* simplify-rtx.c (neg_const_int): Likewise.
+	* expr.c (fixup_args_size_notes): Likewise.
+	* stor-layout.c (set_min_and_max_values_for_integral_type): Likewise.
+	* double-int.c (mul_double_wide_with_sign): Likewise.
+	(double_int_mask): Likewise.
+	* tree-ssa-loop-ivopts.c (get_address_cost): Likewise.
+
+2012-08-13  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/54200
+	* tree-ssa-copyrename.c (rename_ssa_copies): Do not add
+	PHI results to another partition if not all PHI arguments
+	have the same partition.
+
 2012-08-12  Jan Hubicka  <jh@suse.cz>
 
 	* tree-pass.h (write_summary, write_optimization_summary): Remove
@@ -47,8 +1246,8 @@
 	(output_symtab, referenced_from_other_partition_p,
 	reachable_from_other_partition_p, referenced_from_this_partition_p,
 	reachable_from_this_partition_p): Update.
-	(lsei_end_p, lsei_next, lsei_node, lsei_cgraph_node, lsei_varpool_node): New
-	inline functions.
+	(lsei_end_p, lsei_next, lsei_node, lsei_cgraph_node,
+	lsei_varpool_node): New inline functions.
 	(LCC_NOT_FOUND): New macro.
 	(lto_symtab_encoder_deref, lsei_start, lsei_next_in_partition,
 	lsei_start_in_partition, lsei_next_function_in_partition,
@@ -97,7 +1296,7 @@
 2012-08-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.c (alpha_stdarg_optimize_hook): Shift DECL_UID
-	in the va_list_vars bitmap by num_ssa_names.
+	index in the va_list_vars bitmap by num_ssa_names.
 
 2012-08-11  Uros Bizjak  <ubizjak@gmail.com>
 

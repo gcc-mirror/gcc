@@ -229,7 +229,7 @@ static void remove_node_from_ps (partial_schedule_ptr, ps_insn_ptr);
 
 #define NODE_ASAP(node) ((node)->aux.count)
 
-#define SCHED_PARAMS(x) VEC_index (node_sched_params, node_sched_param_vec, x)
+#define SCHED_PARAMS(x) (&VEC_index (node_sched_params, node_sched_param_vec, x))
 #define SCHED_TIME(x) (SCHED_PARAMS (x)->time)
 #define SCHED_ROW(x) (SCHED_PARAMS (x)->row)
 #define SCHED_STAGE(x) (SCHED_PARAMS (x)->stage)
@@ -305,7 +305,7 @@ static struct ps_reg_move_info *
 ps_reg_move (partial_schedule_ptr ps, int id)
 {
   gcc_checking_assert (id >= ps->g->num_nodes);
-  return VEC_index (ps_reg_move_info, ps->reg_moves, id - ps->g->num_nodes);
+  return &VEC_index (ps_reg_move_info, ps->reg_moves, id - ps->g->num_nodes);
 }
 
 /* Return the rtl instruction that is being scheduled by partial schedule

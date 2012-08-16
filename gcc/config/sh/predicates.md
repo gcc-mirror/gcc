@@ -368,12 +368,33 @@
 	  : nonimmediate_operand) (op, mode);
 })
 
+;; Returns 1 if OP is a simple register address.
+(define_predicate "simple_mem_operand"
+  (and (match_code "mem")
+       (match_test "arith_reg_operand (XEXP (op, 0), SImode)")))
+
+;; Returns 1 if OP is a valid displacement address.
+(define_predicate "displacement_mem_operand"
+  (and (match_code "mem")
+       (match_test "GET_CODE (XEXP (op, 0)) == PLUS")
+       (match_test "arith_reg_operand (XEXP (XEXP (op, 0), 0), SImode)")
+       (match_test "sh_legitimate_index_p (GET_MODE (op),
+					   XEXP (XEXP (op, 0), 1),
+					   TARGET_SH2A, true)")))
+
+;; Returns 1 if the operand can be used in an SH2A movu.{b|w} insn.
+(define_predicate "zero_extend_movu_operand"
+  (and (match_operand 0 "displacement_mem_operand")
+       (match_test "GET_MODE (op) == QImode || GET_MODE (op) == HImode")))
+
 ;; Returns 1 if the operand can be used in a zero_extend.
 (define_predicate "zero_extend_operand"
   (ior (and (match_test "TARGET_SHMEDIA")
 	    (match_operand 0 "general_extend_operand"))
        (and (match_test "! TARGET_SHMEDIA")
-	    (match_operand 0 "arith_reg_operand"))))
+	    (match_operand 0 "arith_reg_operand"))
+       (and (match_test "TARGET_SH2A")
+	    (match_operand 0 "zero_extend_movu_operand"))))
 
 ;; Returns 1 if OP can be source of a simple move operation. Same as
 ;; general_operand, but a LABEL_REF is valid, PRE_DEC is invalid as

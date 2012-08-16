@@ -348,15 +348,53 @@ rename_ssa_copies (void)
 	  res = gimple_phi_result (phi);
 
 	  /* Do not process virtual SSA_NAMES.  */
-	  if (!is_gimple_reg (res))
+	  if (virtual_operand_p (res))
 	    continue;
 
-          for (i = 0; i < gimple_phi_num_args (phi); i++)
-            {
-              tree arg = gimple_phi_arg (phi, i)->def;
-              if (TREE_CODE (arg) == SSA_NAME)
-		updated |= copy_rename_partition_coalesce (map, res, arg, debug);
-            }
+	  /* Make sure to only use the same partition for an argument
+	     as the result but never the other way around.  */
+	  if (SSA_NAME_VAR (res)
+	      && !DECL_IGNORED_P (SSA_NAME_VAR (res)))
+	    for (i = 0; i < gimple_phi_num_args (phi); i++)
+	      {
+		tree arg = PHI_ARG_DEF (phi, i);
+		if (TREE_CODE (arg) == SSA_NAME)
+		  updated |= copy_rename_partition_coalesce (map, res, arg,
+							     debug);
+	      }
+	  /* Else if all arguments are in the same partition try to merge
+	     it with the result.  */
+	  else
+	    {
+	      int all_p_same = -1;
+	      int p = -1;
+	      for (i = 0; i < gimple_phi_num_args (phi); i++)
+		{
+		  tree arg = PHI_ARG_DEF (phi, i);
+		  if (TREE_CODE (arg) != SSA_NAME)
+		    {
+		      all_p_same = 0;
+		      break;
+		    }
+		  else if (all_p_same == -1)
+		    {
+		      p = partition_find (map->var_partition,
+					  SSA_NAME_VERSION (arg));
+		      all_p_same = 1;
+		    }
+		  else if (all_p_same == 1
+			   && p != partition_find (map->var_partition,
+						   SSA_NAME_VERSION (arg)))
+		    {
+		      all_p_same = 0;
+		      break;
+		    }
+		}
+	      if (all_p_same == 1)
+		updated |= copy_rename_partition_coalesce (map, res,
+							   PHI_ARG_DEF (phi, 0),
+							   debug);
+	    }
         }
     }
 

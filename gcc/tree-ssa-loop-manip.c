@@ -34,6 +34,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "langhooks.h"
 
+/* All bitmaps for rewriting into loop-closed SSA go on this obstack,
+   so that we can free them all at once.  */
+static bitmap_obstack loop_renamer_obstack;
+
 /* Creates an induction variable with value BASE + STEP * iteration in LOOP.
    It is expected that neither BASE nor STEP are shared with other expressions
    (unless the sharing rules allow this).  Use VAR as a base var_decl for it
@@ -165,10 +169,10 @@ add_exit_phis_var (tree var, bitmap livein, bitmap exits)
   basic_block def_bb = gimple_bb (SSA_NAME_DEF_STMT (var));
   bitmap_iterator bi;
 
-  gcc_checking_assert (is_gimple_reg (var));
+  gcc_checking_assert (! virtual_operand_p (var));
   bitmap_clear_bit (livein, def_bb->index);
 
-  def = BITMAP_ALLOC (NULL);
+  def = BITMAP_ALLOC (&loop_renamer_obstack);
   bitmap_set_bit (def, def_bb->index);
   compute_global_livein (livein, def);
   BITMAP_FREE (def);
@@ -177,6 +181,10 @@ add_exit_phis_var (tree var, bitmap livein, bitmap exits)
     {
       add_exit_phis_edge (BASIC_BLOCK (index), var);
     }
+
+  /* Free the livein bitmap.  We'll not be needing it anymore, and
+     it may have grown quite large.  No reason to hold on to it.  */
+  bitmap_clear (livein);
 }
 
 /* Add exit phis for the names marked in NAMES_TO_RENAME.
@@ -200,7 +208,7 @@ add_exit_phis (bitmap names_to_rename, bitmap *use_blocks, bitmap loop_exits)
 static bitmap
 get_loops_exits (void)
 {
-  bitmap exits = BITMAP_ALLOC (NULL);
+  bitmap exits = BITMAP_ALLOC (&loop_renamer_obstack);
   basic_block bb;
   edge e;
   edge_iterator ei;
@@ -235,7 +243,7 @@ find_uses_to_rename_use (basic_block bb, tree use, bitmap *use_blocks,
     return;
 
   /* We don't need to keep virtual operands in loop-closed form.  */
-  if (!is_gimple_reg (use))
+  if (virtual_operand_p (use))
     return;
 
   ver = SSA_NAME_VERSION (use);
@@ -253,11 +261,11 @@ find_uses_to_rename_use (basic_block bb, tree use, bitmap *use_blocks,
   if (flow_bb_inside_loop_p (def_loop, bb))
     return;
 
-  if (!use_blocks[ver])
-    use_blocks[ver] = BITMAP_ALLOC (NULL);
+  /* If we're seeing VER for the first time, we still have to allocate
+     a bitmap for its uses.  */
+  if (bitmap_set_bit (need_phis, ver))
+    use_blocks[ver] = BITMAP_ALLOC (&loop_renamer_obstack);
   bitmap_set_bit (use_blocks[ver], bb->index);
-
-  bitmap_set_bit (need_phis, ver);
 }
 
 /* For uses in STMT, mark names that are used outside of the loop they are
@@ -312,6 +320,7 @@ find_uses_to_rename (bitmap changed_bbs, bitmap *use_blocks, bitmap need_phis)
   unsigned index;
   bitmap_iterator bi;
 
+  /* ??? If CHANGED_BBS is empty we rewrite the whole function -- why?  */
   if (changed_bbs && !bitmap_empty_p (changed_bbs))
     {
       EXECUTE_IF_SET_IN_BITMAP (changed_bbs, 0, index, bi)
@@ -365,22 +374,25 @@ rewrite_into_loop_closed_ssa (bitmap changed_bbs, unsigned update_flag)
 {
   bitmap loop_exits;
   bitmap *use_blocks;
-  unsigned i, old_num_ssa_names;
   bitmap names_to_rename;
 
   loops_state_set (LOOP_CLOSED_SSA);
   if (number_of_loops () <= 1)
     return;
 
+  bitmap_obstack_initialize (&loop_renamer_obstack);
+
   loop_exits = get_loops_exits ();
-  names_to_rename = BITMAP_ALLOC (NULL);
+  names_to_rename = BITMAP_ALLOC (&loop_renamer_obstack);
 
   /* If the pass has caused the SSA form to be out-of-date, update it
      now.  */
   update_ssa (update_flag);
 
-  old_num_ssa_names = num_ssa_names;
-  use_blocks = XCNEWVEC (bitmap, old_num_ssa_names);
+  /* Uses of names to rename.  We don't have to initialize this array,
+     because we know that we will only have entries for the SSA names
+     in NAMES_TO_RENAME.  */
+  use_blocks = XNEWVEC (bitmap, num_ssa_names);
 
   /* Find the uses outside loops.  */
   find_uses_to_rename (changed_bbs, use_blocks, names_to_rename);
@@ -389,11 +401,8 @@ rewrite_into_loop_closed_ssa (bitmap changed_bbs, unsigned update_flag)
      rewrite.  */
   add_exit_phis (names_to_rename, use_blocks, loop_exits);
 
-  for (i = 0; i < old_num_ssa_names; i++)
-    BITMAP_FREE (use_blocks[i]);
+  bitmap_obstack_release (&loop_renamer_obstack);
   free (use_blocks);
-  BITMAP_FREE (loop_exits);
-  BITMAP_FREE (names_to_rename);
 
   /* Fix up all the names found to be used outside their original
      loops.  */
@@ -408,7 +417,7 @@ check_loop_closed_ssa_use (basic_block bb, tree use)
   gimple def;
   basic_block def_bb;
 
-  if (TREE_CODE (use) != SSA_NAME || !is_gimple_reg (use))
+  if (TREE_CODE (use) != SSA_NAME || virtual_operand_p (use))
     return;
 
   def = SSA_NAME_DEF_STMT (use);
@@ -428,7 +437,7 @@ check_loop_closed_ssa_stmt (basic_block bb, gimple stmt)
   if (is_gimple_debug (stmt))
     return;
 
-  FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, SSA_OP_ALL_USES)
+  FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, SSA_OP_USE)
     check_loop_closed_ssa_use (bb, var);
 }
 
@@ -1112,7 +1121,7 @@ rewrite_phi_with_iv (loop_p loop,
   gimple stmt, phi = gsi_stmt (*psi);
   tree atype, mtype, val, res = PHI_RESULT (phi);
 
-  if (!is_gimple_reg (res) || res == main_iv)
+  if (virtual_operand_p (res) || res == main_iv)
     {
       gsi_next (psi);
       return;
@@ -1196,7 +1205,7 @@ canonicalize_loop_ivs (struct loop *loop, tree *nit, bool bump_in_latch)
       bool uns;
 
       type = TREE_TYPE (res);
-      if (!is_gimple_reg (res)
+      if (virtual_operand_p (res)
 	  || (!INTEGRAL_TYPE_P (type)
 	      && !POINTER_TYPE_P (type))
 	  || TYPE_PRECISION (type) < precision)

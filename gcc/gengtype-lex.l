@@ -1,6 +1,6 @@
 /* -*- indented-text -*- */
 /* Process source files and output type information.
-   Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
+   Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2012
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -91,19 +91,6 @@ EOID	[^[:alnum:]_]
   BEGIN(in_struct);
   return STATIC;
 }
-
-^{HWS}DEF_VEC_[OP]/{EOID} {
-  BEGIN(in_struct);
-  return DEFVEC_OP;
-}
-^{HWS}DEF_VEC_I/{EOID} {
-  BEGIN(in_struct);
-  return DEFVEC_I;
-}
-^{HWS}DEF_VEC_ALLOC_[IOP]/{EOID} {
-  BEGIN(in_struct);
-  return DEFVEC_ALLOC;
-}
 }
 
 <in_struct>{
@@ -121,6 +108,7 @@ EOID	[^[:alnum:]_]
 "enum"/{EOID}			{ return ENUM; }
 "ptr_alias"/{EOID}	  	{ return PTR_ALIAS; }
 "nested_ptr"/{EOID}		{ return NESTED_PTR; }
+"user"/{EOID}			{ return USER_GTY; }
 [0-9]+				{ return NUM; }
 "param"[0-9]*"_is"/{EOID}		{
   *yylval = XDUPVAR (const char, yytext, yyleng, yyleng+1);

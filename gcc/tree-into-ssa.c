@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "domwalk.h"
 #include "params.h"
 #include "vecprim.h"
+#include "diagnostic-core.h"
 
 
 /* This file builds the SSA form for a function as described in:
@@ -3247,6 +3248,30 @@ update_ssa (unsigned update_flags)
 	 statements and set local live-in information for the PHI
 	 placement heuristics.  */
       prepare_block_for_update (start_bb, insert_phi_p);
+
+#ifdef ENABLE_CHECKING
+      for (i = 1; i < num_ssa_names; ++i)
+	{
+	  tree name = ssa_name (i);
+	  if (!name
+	      || virtual_operand_p (name))
+	    continue;
+
+	  /* For all but virtual operands, which do not have SSA names
+	     with overlapping life ranges, ensure that symbols marked
+	     for renaming do not have existing SSA names associated with
+	     them as we do not re-write them out-of-SSA before going
+	     into SSA for the remaining symbol uses.  */
+	  if (marked_for_renaming (SSA_NAME_VAR (name)))
+	    {
+	      fprintf (stderr, "Existing SSA name for symbol marked for "
+		       "renaming: ");
+	      print_generic_expr (stderr, name, TDF_SLIM);
+	      fprintf (stderr, "\n");
+	      internal_error ("SSA corruption");
+	    }
+	}
+#endif
     }
   else
     {

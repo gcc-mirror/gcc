@@ -480,14 +480,13 @@ rename_uses (gimple copy, htab_t rename_map, gimple_stmt_iterator *gsi_tgt,
       return false;
     }
 
-  FOR_EACH_SSA_USE_OPERAND (use_p, copy, op_iter, SSA_OP_ALL_USES)
+  FOR_EACH_SSA_USE_OPERAND (use_p, copy, op_iter, SSA_OP_USE)
     {
       tree old_name = USE_FROM_PTR (use_p);
       tree new_expr, scev;
       gimple_seq stmts;
 
       if (TREE_CODE (old_name) != SSA_NAME
-	  || !is_gimple_reg (old_name)
 	  || SSA_NAME_IS_DEFAULT_DEF (old_name))
 	continue;
 
@@ -499,16 +498,14 @@ rename_uses (gimple copy, htab_t rename_map, gimple_stmt_iterator *gsi_tgt,
 	  tree type_new_expr = TREE_TYPE (new_expr);
 
 	  if (type_old_name != type_new_expr
-	      || (TREE_CODE (new_expr) != SSA_NAME
-		  && is_gimple_reg (old_name)))
+	      || TREE_CODE (new_expr) != SSA_NAME)
 	    {
 	      tree var = create_tmp_var (type_old_name, "var");
 
-	      if (type_old_name != type_new_expr)
+	      if (!useless_type_conversion_p (type_old_name, type_new_expr))
 		new_expr = fold_convert (type_old_name, new_expr);
 
-	      new_expr = build2 (MODIFY_EXPR, type_old_name, var, new_expr);
-	      new_expr = force_gimple_operand (new_expr, &stmts, true, NULL);
+	      new_expr = force_gimple_operand (new_expr, &stmts, true, var);
 	      gsi_insert_seq_before (gsi_tgt, stmts, GSI_SAME_STMT);
 	    }
 

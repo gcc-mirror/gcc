@@ -109,7 +109,8 @@ gfc_trans_label_assign (gfc_code * code)
 
   label_tree = gfc_get_label_decl (code->label1);
 
-  if (code->label1->defined == ST_LABEL_TARGET)
+  if (code->label1->defined == ST_LABEL_TARGET
+      || code->label1->defined == ST_LABEL_DO_TARGET)
     {
       label_tree = gfc_build_addr_expr (pvoid_type_node, label_tree);
       len_tree = integer_minus_one_node;

@@ -1430,7 +1430,7 @@ extern tree *type_map;
 #define PUSH_SUPER_VALUE(V, VALUE) \
   do \
     { \
-      constructor_elt *_elt___ = VEC_last (constructor_elt, V); \
+      constructor_elt *_elt___ = &VEC_last (constructor_elt, V); \
       tree _next___ = DECL_CHAIN (_elt___->index); \
       gcc_assert (!DECL_NAME (_elt___->index)); \
       _elt___->value = VALUE; \
@@ -1444,7 +1444,7 @@ extern tree *type_map;
 #define PUSH_FIELD_VALUE(V, NAME, VALUE) 				\
   do \
     { \
-      constructor_elt *_elt___ = VEC_last (constructor_elt, V); \
+      constructor_elt *_elt___ = &VEC_last (constructor_elt, V); \
       tree _next___ = DECL_CHAIN (_elt___->index); \
       gcc_assert (strcmp (IDENTIFIER_POINTER (DECL_NAME (_elt___->index)), \
 			  NAME) == 0); \

@@ -212,7 +212,7 @@ select_best_block (basic_block early_bb,
     {
       /* If we've moved into a lower loop nest, then that becomes
 	 our best block.  */
-      if (temp_bb->loop_depth < best_bb->loop_depth)
+      if (bb_loop_depth (temp_bb) < bb_loop_depth (best_bb))
 	best_bb = temp_bb;
 
       /* Walk up the dominator tree, hopefully we'll find a shallower
@@ -223,7 +223,7 @@ select_best_block (basic_block early_bb,
   /* If we found a shallower loop nest, then we always consider that
      a win.  This will always give us the most control dependent block
      within that loop nest.  */
-  if (best_bb->loop_depth < early_bb->loop_depth)
+  if (bb_loop_depth (best_bb) < bb_loop_depth (early_bb))
     return best_bb;
 
   /* Get the sinking threshold.  If the statement to be moved has memory
@@ -239,7 +239,7 @@ select_best_block (basic_block early_bb,
 
   /* If BEST_BB is at the same nesting level, then require it to have
      significantly lower execution frequency to avoid gratutious movement.  */
-  if (best_bb->loop_depth == early_bb->loop_depth
+  if (bb_loop_depth (best_bb) == bb_loop_depth (early_bb)
       && best_bb->frequency < (early_bb->frequency * threshold / 100.0))
     return best_bb;
 

@@ -32,9 +32,6 @@ extern const char empty_string[];	/* empty string */
 /* Internal functions and data structures used by the GTY
    machinery, including the generated gt*.[hc] files.  */
 
-/* The first parameter is a pointer to a pointer, the second a cookie.  */
-typedef void (*gt_pointer_operator) (void *, void *);
-
 #include "gtype-desc.h"
 
 /* One of these applies its third parameter (with cookie in the fourth

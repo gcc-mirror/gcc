@@ -1,3 +1,11 @@
+2012-08-14   Diego Novillo  <dnovillo@google.com>
+
+	Merge from cxx-conversion branch.  Configury.
+
+	* go-c.h: Remove all handlers of ENABLE_BUILD_WITH_CXX.
+	* go-gcc.cc: Likewise.
+	* go-system.h: Likewise.
+
 2012-07-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	* go-lang.c (lang_decl): Add variable_size GTY option.

@@ -6091,7 +6091,7 @@ locator_location (int loc)
 	  break;
 	}
     }
-  return *VEC_index (location_t, locations_locators_vals, min);
+  return VEC_index (location_t, locations_locators_vals, min);
 }
 
 /* Return source line of the statement that produced this insn.  */
