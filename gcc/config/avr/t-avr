@@ -19,20 +19,20 @@
 
 driver-avr.o: $(srcdir)/config/avr/driver-avr.c \
   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H)
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
+	$(COMPILER) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
 
 avr-devices.o: $(srcdir)/config/avr/avr-devices.c \
   $(srcdir)/config/avr/avr-mcus.def \
   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H)
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
+	$(COMPILER) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
 
 avr-c.o: $(srcdir)/config/avr/avr-c.c \
   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(C_COMMON_H)
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
+	$(COMPILER) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
 
 avr-log.o: $(srcdir)/config/avr/avr-log.c \
   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(INPUT_H) dumpfile.h
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
+	$(COMPILER) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
 
 avr.o avr-c.o: $(srcdir)/config/avr/builtins.def
 
@@ -45,7 +45,7 @@ $(srcdir)/config/avr/avr-tables.opt: $(srcdir)/config/avr/genopt.sh $(AVR_MCUS)
 
 gen-avr-mmcu-texi$(build_exeext): $(srcdir)/config/avr/gen-avr-mmcu-texi.c \
   $(TM_H) $(AVR_MCUS) $(srcdir)/config/avr/avr-devices.c
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $< -o $@
+	$(COMPILER) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $< -o $@
 
 # Make sure that the -mmcu= documentation is in sync with the compiler.
 $(srcdir)/doc/avr-mmcu.texi: s-avr-mmcu-texi; @true
