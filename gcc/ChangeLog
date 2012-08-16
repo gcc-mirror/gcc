@@ -1,5 +1,11 @@
 2012-08-16  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	PR target/54236
+	* config/sh/sh.md (addc): Add commutative modifier.
+	(*addc, *minus_plus_one, *subc, *negc): New insns and splits.
+
+2012-08-16  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	PR target/39423
 	* config/sh/sh.md (*movsi_index_disp, *movhi_index_disp): Handle
 	potential T_REG clobber.  Convert zero extending split to

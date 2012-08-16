@@ -1,4 +1,9 @@
-2012-08-17  Hans-Peter Nilsson  <hp@axis.com>
+2012-08-16  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54236
+	* gcc.target/sh/pr54236-1.c: New.
+
+2012-08-16  Hans-Peter Nilsson  <hp@axis.com>
 
 	* lib/target-supports.exp (check_effective_target_sync_int_long)
 	(check_effective_target_sync_char_short): Enable for crisv32-*
