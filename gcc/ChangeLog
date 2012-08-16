@@ -1,5 +1,8 @@
 2012-08-16  Nick Clifton  <nickc@redhat.com>
 
+	* config/i386/i386elf.h (ASM_OUTPUT_ASCII): Cast _ascii_bytes
+	before passing it to ASM_OUTPUT_LIMITED_STRING.
+
 	* config/bfin/bfin.c (hwloop_optimize): Fix use of VEC_last macro.
 
 	* config/avr/t-avr: Replace occurrences of $(CC) with $(COMPILER).

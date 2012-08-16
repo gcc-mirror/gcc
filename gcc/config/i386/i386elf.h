@@ -73,7 +73,7 @@ along with GCC; see the file COPYING3.  If not see
 		  fputc ('\n', (FILE));					\
 		  bytes_in_chunk = 0;					\
 		}							\
-	      ASM_OUTPUT_LIMITED_STRING ((FILE), _ascii_bytes);		\
+	      ASM_OUTPUT_LIMITED_STRING ((FILE), (const char *) _ascii_bytes); \
 	      _ascii_bytes = p;						\
 	    }								\
 	  else								\
