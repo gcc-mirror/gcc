@@ -1,3 +1,10 @@
+2012-08-16  Walter Lee  <walt@tilera.com>
+
+	* config.gcc (tilegx-*-linux*): Add feedback.h.
+	(tilepro-*-linux*): Likewise.
+	* config/tilegx/feedback.h: New file.
+	* config/tilepro/feedback.h: New file.
+
 2012-08-16   Diego Novillo  <dnovillo@google.com>
 
 	Revert
