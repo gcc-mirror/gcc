@@ -1,5 +1,12 @@
 2012-08-15  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/aix52.h (ASM_CPU_SPEC): Fix typo.
+	* config/rs6000/aix53.h (ASM_CPU_SPEC): Ditto.
+	* config/rs6000/aix61.h (ASM_CPU_SPEC): Ditto.
+	* config/rs6000/driver-rs6000.c (asm_names): Ditto.
+
+2012-08-15  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	PR target/54142
 	* config/rs6000/driver-rs6000.c (asm_names): Use %(asm_default)
 	instead of -mcom.

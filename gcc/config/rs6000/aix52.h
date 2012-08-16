@@ -50,7 +50,7 @@ do {									\
 #define ASM_CPU_SPEC \
 "%{!mcpu*: %{!maix64: \
   %{mpowerpc64: -mppc64} \
-  %{!mpower64: %(asm_default)}}} \
+  %{!mpowerpc64: %(asm_default)}}} \
 %{mcpu=power3: -m620} \
 %{mcpu=power4: -m620} \
 %{mcpu=power5: -m620} \
