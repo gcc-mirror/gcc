@@ -1,5 +1,7 @@
 2012-08-16  Nick Clifton  <nickc@redhat.com>
 
+	* config/bfin/bfin.c (hwloop_optimize): Fix use of VEC_last macro.
+
 	* config/avr/t-avr: Replace occurrences of $(CC) with $(COMPILER).
 	* config/avr/avr.c (avr_legitimize_reload_address): Add casts
 	for reload_type enums.
