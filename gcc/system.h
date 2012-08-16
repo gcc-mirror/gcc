@@ -1037,8 +1037,4 @@ helper_const_non_const_cast (const char *p)
 #define DEBUG_VARIABLE
 #endif
 
-#ifndef GENERATOR_FILE
-#include <gmp.h>
-#endif
-
 #endif /* ! GCC_SYSTEM_H */

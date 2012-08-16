@@ -1681,6 +1681,7 @@ gfc_intrinsic_sym;
    EXPR_COMPCALL   Function (or subroutine) call of a procedure pointer
 		   component or type-bound procedure.  */
 
+#include <gmp.h>
 #include <mpfr.h>
 #include <mpc.h>
 #define GFC_RND_MODE GMP_RNDN

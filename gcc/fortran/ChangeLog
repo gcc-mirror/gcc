@@ -1,5 +1,12 @@
 2012-08-16   Diego Novillo  <dnovillo@google.com>
 
+	Revert
+
+	PR bootstrap/54281
+	* gfortran.h: Do not include gmp.h.
+
+2012-08-16   Diego Novillo  <dnovillo@google.com>
+
 	PR bootstrap/54281
 	* gfortran.h: Do not include gmp.h.
 
