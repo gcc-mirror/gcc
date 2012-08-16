@@ -306,6 +306,13 @@
 	(neon_vdup_n<mode> VX, V32): Likewise.
 	(neon_vdup_nv2di): Likewise.
 
+2012-08-14  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* config/mips/mips.md (define_attr accum_in): New instruction
+	attribute.  Set it for imadd and fmadd patterns.
+	* config/mips/mips.c (mips_linked_madd_p): Use accum_in to extract
+	accumulator register.
+
 2012-08-14   Diego Novillo  <dnovillo@google.com>
 
 	Merge from cxx-conversion branch.  Configury.
