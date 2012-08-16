@@ -5457,16 +5457,22 @@ label:
 ;;	mov.l	@(4,r5),r0
 ;;
 ;; See also PR 39423.
+;; Notice that these patterns have a T_REG clobber, because the shift
+;; sequence that will be split out might clobber the T_REG.  Ideally, the
+;; clobber would be added conditionally, depending on the result of
+;; sh_ashlsi_clobbers_t_reg_p.  When splitting out the shifts we must go
+;; through the ashlsi3 expander in order to get the right shift insn --
+;; a T_REG clobbering or non-clobbering shift sequence or dynamic shift.
 ;; FIXME: Fold copy pasted patterns somehow.
 ;; FIXME: Combine never tries this kind of patterns for DImode.
 (define_insn_and_split "*movsi_index_disp"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
-	(match_operand:SI 1 "mem_index_disp_operand" "m"))]
+	(match_operand:SI 1 "mem_index_disp_operand" "m"))
+   (clobber (reg:SI T_REG))]
   "TARGET_SH1"
   "#"
   "&& can_create_pseudo_p ()"
-  [(set (match_dup 5) (ashift:SI (match_dup 1) (match_dup 2)))
-   (set (match_dup 6) (plus:SI (match_dup 5) (match_dup 3)))
+  [(set (match_dup 6) (plus:SI (match_dup 5) (match_dup 3)))
    (set (match_dup 0) (match_dup 7))]
 {
   rtx mem = operands[1];
@@ -5483,16 +5489,18 @@ label:
   operands[7] =
     replace_equiv_address (mem,
 			   gen_rtx_PLUS (SImode, operands[6], operands[4]));
+
+  emit_insn (gen_ashlsi3 (operands[5], operands[1], operands[2]));
 })
 
 (define_insn_and_split "*movhi_index_disp"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
-	(sign_extend:SI (match_operand:HI 1 "mem_index_disp_operand" "m")))]
+	(sign_extend:SI (match_operand:HI 1 "mem_index_disp_operand" "m")))
+   (clobber (reg:SI T_REG))]
   "TARGET_SH1"
   "#"
   "&& can_create_pseudo_p ()"
-  [(set (match_dup 5) (ashift:SI (match_dup 1) (match_dup 2)))
-   (set (match_dup 6) (plus:SI (match_dup 5) (match_dup 3)))
+  [(set (match_dup 6) (plus:SI (match_dup 5) (match_dup 3)))
    (set (match_dup 0) (sign_extend:SI (match_dup 7)))]
 {
   rtx mem = operands[1];
@@ -5509,13 +5517,19 @@ label:
   operands[7] =
     replace_equiv_address (mem,
 			   gen_rtx_PLUS (SImode, operands[6], operands[4]));
+
+  emit_insn (gen_ashlsi3 (operands[5], operands[1], operands[2]));
 })
 
-(define_split
+(define_insn_and_split "*movhi_index_disp"
   [(set (match_operand:SI 0 "arith_reg_dest")
-	(zero_extend:SI (match_operand:HI 1 "mem_index_disp_operand")))]
+	(zero_extend:SI (match_operand:HI 1 "mem_index_disp_operand")))
+   (clobber (reg:SI T_REG))]
   "TARGET_SH1"
-  [(set (match_dup 0) (sign_extend:SI (match_dup 1)))
+  "#"
+  "&& 1"
+  [(parallel [(set (match_dup 0) (sign_extend:SI (match_dup 1)))
+	      (clobber (reg:SI T_REG))])
    (set (match_dup 0) (zero_extend:SI (match_dup 2)))]
 {
   operands[2] = gen_lowpart (HImode, operands[0]);
@@ -5523,12 +5537,12 @@ label:
 
 (define_insn_and_split "*movsi_index_disp"
   [(set (match_operand:SI 0 "mem_index_disp_operand" "=m")
-	(match_operand:SI 1 "arith_reg_operand" "r"))]
+	(match_operand:SI 1 "arith_reg_operand" "r"))
+   (clobber (reg:SI T_REG))]
   "TARGET_SH1"
   "#"
   "&& can_create_pseudo_p ()"
-  [(set (match_dup 5) (ashift:SI (match_dup 0) (match_dup 2)))
-   (set (match_dup 6) (plus:SI (match_dup 5) (match_dup 3)))
+ [(set (match_dup 6) (plus:SI (match_dup 5) (match_dup 3)))
    (set (match_dup 7) (match_dup 1))]
 {
   rtx mem = operands[0];
@@ -5545,16 +5559,18 @@ label:
   operands[7] =
     replace_equiv_address (mem,
 			   gen_rtx_PLUS (SImode, operands[6], operands[4]));
+
+  emit_insn (gen_ashlsi3 (operands[5], operands[0], operands[2]));
 })
 
 (define_insn_and_split "*movsi_index_disp"
   [(set (match_operand:HI 0 "mem_index_disp_operand" "=m")
-	(match_operand:HI 1 "arith_reg_operand" "r"))]
+	(match_operand:HI 1 "arith_reg_operand" "r"))
+   (clobber (reg:SI T_REG))]
   "TARGET_SH1"
   "#"
   "&& can_create_pseudo_p ()"
-  [(set (match_dup 5) (ashift:SI (match_dup 0) (match_dup 2)))
-   (set (match_dup 6) (plus:SI (match_dup 5) (match_dup 3)))
+  [(set (match_dup 6) (plus:SI (match_dup 5) (match_dup 3)))
    (set (match_dup 7) (match_dup 1))]
 {
   rtx mem = operands[0];
@@ -5571,6 +5587,8 @@ label:
   operands[7] =
     replace_equiv_address (mem,
 			   gen_rtx_PLUS (SImode, operands[6], operands[4]));
+
+  emit_insn (gen_ashlsi3 (operands[5], operands[0], operands[2]));
 })
 
 ;; Define additional pop for SH1 and SH2 so it does not get 
