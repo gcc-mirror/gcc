@@ -404,63 +404,6 @@ set_current_def (tree var, tree def)
   get_common_info (var)->current_def = def;
 }
 
-
-/* Compute global livein information given the set of blocks where
-   an object is locally live at the start of the block (LIVEIN)
-   and the set of blocks where the object is defined (DEF_BLOCKS).
-
-   Note: This routine augments the existing local livein information
-   to include global livein (i.e., it modifies the underlying bitmap
-   for LIVEIN).  */
-
-void
-compute_global_livein (bitmap livein, bitmap def_blocks)
-{
-  unsigned i;
-  bitmap_iterator bi;
-  VEC (basic_block, heap) *worklist;
-
-  /* Normally the work list size is bounded by the number of basic
-     blocks in the largest loop.  We don't know this number, but we
-     can be fairly sure that it will be relatively small.  */
-  worklist = VEC_alloc (basic_block, heap, MAX (8, n_basic_blocks / 128));
-
-  EXECUTE_IF_SET_IN_BITMAP (livein, 0, i, bi)
-    VEC_safe_push (basic_block, heap, worklist, BASIC_BLOCK (i));
-
-  /* Iterate until the worklist is empty.  */
-  while (! VEC_empty (basic_block, worklist))
-    {
-      edge e;
-      edge_iterator ei;
-
-      /* Pull a block off the worklist.  */
-      basic_block bb = VEC_pop (basic_block, worklist);
-
-      /* Make sure we have at least enough room in the work list
-	 for all predecessors of this block.  */
-      VEC_reserve (basic_block, heap, worklist, EDGE_COUNT (bb->preds));
-
-      /* For each predecessor block.  */
-      FOR_EACH_EDGE (e, ei, bb->preds)
-	{
-	  basic_block pred = e->src;
-	  int pred_index = pred->index;
-
-	  /* None of this is necessary for the entry block.  */
-	  if (pred != ENTRY_BLOCK_PTR
-	      && ! bitmap_bit_p (def_blocks, pred_index)
-	      && bitmap_set_bit (livein, pred_index))
-	    {
-	      VEC_quick_push (basic_block, worklist, pred);
-	    }
-	}
-    }
-
-  VEC_free (basic_block, heap, worklist);
-}
-
-
 /* Cleans up the REWRITE_THIS_STMT and REGISTER_DEFS_IN_THIS_STMT flags for
    all statements in basic block BB.  */
 

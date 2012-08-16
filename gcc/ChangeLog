@@ -1,3 +1,21 @@
+2012-08-16  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR middle-end/54146
+	* tree-flow.h (compute_global_livein): Remove prototype.
+	* tree-into-ssa.c (compute_global_livein): Remove function.
+	* tree-ssa-loop-manip.c: Include gimple-pretty-print.h.
+	(find_sibling_superloop): New function.
+	(compute_live_loop_exits): New function.
+	(add_exit_phis_edge): Rename to add_exit_phi.  Do not allow
+	inserting a PHI in a block that is not a loop exit for VAR.
+	Add dumping if TDF_DETAILS.
+	(add_exit_phis_var): Rewrite.
+	(add_exit_phis): Update.
+	(get_loops_exits): Rewrite to return an array of per-loop exits
+	rather than one bitmap with all loop exits.
+	(find_uses_to_rename_bb): Ignore virtual PHI nodes.
+	(rewrite_into_loop_closed_ssa): Update.
+
 2012-08-16  Nick Clifton  <nickc@redhat.com>
 
 	* config/i386/i386elf.h (ASM_OUTPUT_ASCII): Cast _ascii_bytes
