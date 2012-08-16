@@ -68,7 +68,6 @@
   UNSPEC_DPAQX_SA_W_PH
   UNSPEC_DPSQX_S_W_PH
   UNSPEC_DPSQX_SA_W_PH
-  UNSPEC_ACC_INIT
 ])
 
 (define_insn "mips_absq_s_qb"
@@ -630,34 +629,4 @@
   "dpsqx_sa.w.ph\t%q0,%z2,%z3"
   [(set_attr "type"	"dspmacsat")
    (set_attr "accum_in" "1")
-   (set_attr "mode"	"SI")])
-
-;; Convert  mtlo $ac[1-3],$0  =>  mult $ac[1-3],$0,$0
-;;          mthi $ac[1-3],$0
-(define_peephole2
-  [(set (match_operand:SI 0 "register_operand" "")
-	(const_int 0))
-   (set (match_operand:SI 1 "register_operand" "")
-	(const_int 0))]
-  "ISA_HAS_DSPR2
-   && !TARGET_MIPS16
-   && !TARGET_64BIT
-   && true_regnum (operands[0]) >= DSP_ACC_REG_FIRST
-   && true_regnum (operands[0]) <= DSP_ACC_REG_LAST
-   && true_regnum (operands[0]) / 2 == true_regnum (operands[1]) / 2"
-  [(parallel [(set (match_dup 0) (const_int 0))
-	      (set (match_dup 1) (const_int 0))
-	      (unspec [(const_int 0)] UNSPEC_ACC_INIT)])]
-)
-
-(define_insn "*mips_acc_init"
-  [(parallel
-    [(set (match_operand:SI 0 "register_operand" "=a") (const_int 0))
-     (set (match_operand:SI 1 "register_operand" "=a") (const_int 0))
-     (unspec [(const_int 0)] UNSPEC_ACC_INIT)])]
-  "ISA_HAS_DSPR2
-   && !TARGET_MIPS16
-   && !TARGET_64BIT"
-  "mult\t%q0,$0,$0\t\t# Clear ACC HI/LO"
-  [(set_attr "type"	"imul")
    (set_attr "mode"	"SI")])
