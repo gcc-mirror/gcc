@@ -1,3 +1,35 @@
+2012-08-15  Nenad Vukicevic  <nenad@intrepid.com>
+
+	Add tree based barrier implementation for SMP-based UPC run-time.
+	* configure.ac: Add configuration for the barrier tree fanout.
+	Add checking for __sync_fetch_and_add built-in function.
+	* configure: Re-generate.
+	* config.h.in: Re-generate.
+	* Makefile.am (AM_UPCFLAGS): Added -fno-strict-aliasing
+	to prevent alias warning when converting from pointer-to-shared
+	into its internal representation.
+	(UPC_RUNTIME_SRC): Remove upc_barrier.c.
+	(UPC_RUNTIME_SRC): Add upc_barrier.upc.
+	* Makefile.in: Re-generate.
+	* smp/gcc-upc-lib.in: Add inclusion of atomic/spin_until code when
+	compiling inside the target library.  Replace lib_atomic_cas name
+	to lib_atomic to cover more then CAS atomic.
+	* smp/upc_barrier.c: Delete.
+	* smp/upc_barrier.upc: Add. A new tree based barrier implementation.
+	* smp/upc_config.h (INT_MIN): Make it available for inlined code
+	under int_min_max.
+	* smp/upc_main.c (__upc_per_thread_init): Add call to initialize
+	barrier implementation.
+	* smp/upc_sync.h (__upc_atomic_cas): Move from upc_sysdep.h.
+	(__upc_sync_fetch_and_add): New.
+	(__upc_spin_until): Move from upc_sysdep.h.
+	(__upc_num_cpus): Move from upc_sysdep.h.
+	* smp/upc_sysdep.h (__upc_atomic_cas): Delete.
+	(__upc_spin_until): Delete.
+	(__upc_num_cpus): Delete.
+	* smp/upc_sup.h (__upc_barrier_init): Add external definition.
+	(__upc_map_to_local): New.  Map shared pointer into local address.
+
 2012-07-31  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* configure.ac: Added help description for --with-bfd,

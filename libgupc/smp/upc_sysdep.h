@@ -60,51 +60,7 @@ typedef os_atomic_t os_lock_t;
 #endif
 typedef os_lock_t *os_lock_p;
 
-/* Number of cpu's available */
-extern int __upc_num_cpus;
-
-/* Max. number of iterations to poll waiting for a
- * spinlock loop condition to be satisfied.
- */
-#define OS_MAX_SPIN_COUNT (__upc_num_cpus > 1 ? 500 : 0)
-
-/* Give up control of the cpu for a small time interval. */
-#ifdef __sgi__
-#define __upc_yield_cpu() do { sginap(0); } while (0)
-#else
-# ifdef _POSIX_PRIORITY_SCHEDULING
-# define __upc_yield_cpu() do { sched_yield(); } while (0)
-# else
-# define __upc_yield_cpu() do { usleep(1000L); } while (0)
-# endif
-#endif
-
-/* Keep spinning until PREDICATE is true,
- * (this needs to be a macro, to ensure that
- * PREDICATE is re-evaluated on each iteration. */
-#define __upc_spin_until(PREDICATE) \
-    { \
-      int i = 0; \
-      while (!(PREDICATE)) \
-	{ \
-	  if (++i >= OS_MAX_SPIN_COUNT) \
-	    { \
-	      __upc_yield_cpu (); \
-	      i = 0; \
-	    } \
-	} \
-    }
-
 extern void __upc_sys_init (void);
-
-#if defined (__GCC_HAVE_SYNC_COMPARE_AND_SWAP_8) \
-    || defined (__GCC_HAVE_SYNC_COMPARE_AND_SWAP_4)
-  /* Use GCC's builtin implementation, if available.  */
-  #define __upc_atomic_cas(PTR, OLD_VAL, NEW_VAL) \
-    __sync_bool_compare_and_swap (PTR, OLD_VAL, NEW_VAL)
-#else
-  extern int __upc_atomic_cas (os_atomic_p, os_atomic_t, os_atomic_t);
-#endif
 
 extern int __upc_atomic_get_bit (os_atomic_p, int);
 extern void __upc_atomic_set_bit (os_atomic_p, int);

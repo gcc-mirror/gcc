@@ -784,6 +784,7 @@ enable_tls
 enable_symvers
 with_upc_runtime
 enable_upc_link_script
+with_upc_runtime_tree_fanout
 enable_upc_gum_debug
 enable_upc_backtrace
 enable_upc_backtrace_gdb
@@ -1471,6 +1472,10 @@ Optional Packages:
                           where MODEL may only be: 'SMP' (Symmetric
                           Multiprocessing) in the current implementation
                           [default='SMP']
+  --with-upc-runtime-tree-fanout=WIDTH
+                          specify the maximum number of children in each
+                          sub-tree used to implement UPC collectives
+                          operations (e. g. upc_barrier) [default=4]
   --with-upc-backtrace-gdb=GDB
                           specify which GDB to use for UPC backtrace support
                           [default='gdb']
@@ -11455,7 +11460,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11458 "configure"
+#line 11463 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11561,7 +11566,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11564 "configure"
+#line 11569 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14520,6 +14525,65 @@ $as_echo "#define HAVE_SYNC_BUILTINS 1" >>confdefs.h
 
   fi
 
+# Check for __sync_fetch_and_add
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for __sync_fetch_and_add_4" >&5
+$as_echo_n "checking for __sync_fetch_and_add_4... " >&6; }
+if test "${upc_cv_sync_fetch_and_add_4+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+typedef unsigned int uint32  __attribute__ ((mode (SI)));
+uint32 i;
+int main() { return __sync_fetch_and_add (&i, 1); }
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  upc_cv_sync_fetch_and_add_4=yes
+else
+  upc_cv_sync_fetch_and_add_4=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $upc_cv_sync_fetch_and_add_4" >&5
+$as_echo "$upc_cv_sync_fetch_and_add_4" >&6; }
+if test "$upc_cv_sync_fetch_and_add_4" = "yes"; then
+
+$as_echo "#define HAVE_SYNC_FETCH_AND_ADD_4 1" >>confdefs.h
+
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for __sync_fetch_and_add_8" >&5
+$as_echo_n "checking for __sync_fetch_and_add_8... " >&6; }
+if test "${upc_cv_sync_fetch_and_add_8+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+typedef unsigned int uint64  __attribute__ ((mode (DI)));
+uint64 i;
+int main() { return __sync_fetch_and_add (&i, 1); }
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  upc_cv_sync_fetch_and_add_8=yes
+else
+  upc_cv_sync_fetch_and_add_8=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $upc_cv_sync_fetch_and_add_8" >&5
+$as_echo "$upc_cv_sync_fetch_and_add_8" >&6; }
+if test "$upc_cv_sync_fetch_and_add_8" = "yes"; then
+
+$as_echo "#define HAVE_SYNC_FETCH_AND_ADD_8 1" >>confdefs.h
+
+fi
+
 XCFLAGS="$XCFLAGS"
 
 
@@ -14789,6 +14853,33 @@ if test "$enable_upc_link_script" = yes; then
 $as_echo "#define HAVE_UPC_LINK_SCRIPT 1" >>confdefs.h
 
 fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for UPC runtime tree fanout" >&5
+$as_echo_n "checking for UPC runtime tree fanout... " >&6; }
+
+# Check whether --with-upc-runtime-tree-fanout was given.
+if test "${with_upc_runtime_tree_fanout+set}" = set; then :
+  withval=$with_upc_runtime_tree_fanout;
+  # $withval must be a decimal integer
+  if ! echo "$withval" | grep '^[0-9][0-9]*$' >/dev/null 2>&1; then
+    as_fn_error "$withval is an invalid option to
+    --with-upc-runtime-tree-fanout" "$LINENO" 5
+  fi
+  upc_runtime_tree_fanout="$withval"
+
+else
+
+  upc_runtime_tree_fanout=4
+
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $upc_runtime_tree_fanout" >&5
+$as_echo "$upc_runtime_tree_fanout" >&6; }
+
+cat >>confdefs.h <<_ACEOF
+#define GUPCR_TREE_FANOUT $upc_runtime_tree_fanout
+_ACEOF
+
 
 if test "$upc_runtime_model" = "smp"; then
   targ_runtime_pthreads=

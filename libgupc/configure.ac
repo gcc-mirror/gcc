@@ -352,6 +352,37 @@ CFLAGS="$save_CFLAGS $XCFLAGS"
 # had a chance to set XCFLAGS.
 LIBGUPC_CHECK_SYNC_BUILTINS
 
+# Check for __sync_fetch_and_add
+AC_CACHE_CHECK([for __sync_fetch_and_add_4],
+[upc_cv_sync_fetch_and_add_4],
+[AC_LINK_IFELSE([
+typedef unsigned int uint32  __attribute__ ((mode (SI)));
+uint32 i;
+int main() { return __sync_fetch_and_add (&i, 1); }
+],
+[upc_cv_sync_fetch_and_add_4=yes],
+[upc_cv_sync_fetch_and_add_4=no])])
+if test "$upc_cv_sync_fetch_and_add_4" = "yes"; then
+  AC_DEFINE(HAVE_SYNC_FETCH_AND_ADD_4, 1,
+    [Define to 1 if the compiler provides the
+    __sync_fetch_and_add function for uint32])
+fi
+
+AC_CACHE_CHECK([for __sync_fetch_and_add_8],
+[upc_cv_sync_fetch_and_add_8],
+[AC_LINK_IFELSE([
+typedef unsigned int uint64  __attribute__ ((mode (DI)));
+uint64 i;
+int main() { return __sync_fetch_and_add (&i, 1); }
+],
+[upc_cv_sync_fetch_and_add_8=yes],
+[upc_cv_sync_fetch_and_add_8=no])])
+if test "$upc_cv_sync_fetch_and_add_8" = "yes"; then
+  AC_DEFINE(HAVE_SYNC_FETCH_AND_ADD_8, 1,
+    [Define to 1 if the compiler provides the
+    __sync_fetch_and_add function for uint64])
+fi
+
 XCFLAGS="$XCFLAGS"
 
 
@@ -517,6 +548,28 @@ if test "$enable_upc_link_script" = yes; then
   AC_DEFINE(HAVE_UPC_LINK_SCRIPT, 1,
     [Define to 1 if UPC link script is supported.])
 fi
+
+AC_MSG_CHECKING([for UPC runtime tree fanout])
+AC_ARG_WITH(upc-runtime-tree-fanout,
+[AS_HELP_STRING([--with-upc-runtime-tree-fanout=WIDTH],
+		[specify the maximum number of children in each
+		 sub-tree used to implement UPC collectives operations
+		 (e. g. upc_barrier)
+		 [default=4]])],
+[
+  # $withval must be a decimal integer
+  if ! echo "$withval" | grep '^[[0-9]][[0-9]]*$' >/dev/null 2>&1; then
+    AC_MSG_ERROR([$withval is an invalid option to
+    --with-upc-runtime-tree-fanout])
+  fi
+  upc_runtime_tree_fanout="$withval"
+],
+[
+  upc_runtime_tree_fanout=4
+])
+AC_MSG_RESULT([$upc_runtime_tree_fanout])
+AC_DEFINE_UNQUOTED(GUPCR_TREE_FANOUT, [$upc_runtime_tree_fanout],
+  [Maximum number of children at each level of a collective operation tree.])
 
 if test "$upc_runtime_model" = "smp"; then
   targ_runtime_pthreads=

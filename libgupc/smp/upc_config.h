@@ -77,10 +77,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define KILOBYTE 1024
 #define C64K (64*KILOBYTE)
 #define MEGABYTE (KILOBYTE*KILOBYTE)
-#ifndef INT_MIN
-/* __INT_MAX__ is predefined by the gcc compiler */
-#  define INT_MIN (-__INT_MAX__ - 1)
-#endif
 
 //begin detect_target64
 #if (defined(_LP64) && _LP64) \
@@ -152,6 +148,10 @@ typedef unsigned int upc_page_num_t;
 //end lib_config_vm
 
 //begin lib_min_max
+#ifndef INT_MIN
+/* __INT_MAX__ is predefined by the gcc compiler */
+#  define INT_MIN (-__INT_MAX__ - 1)
+#endif
 
 /* helper functions */
 #define GUPCR_MIN(x,y) (((x) < (y)) ? (x): (y))

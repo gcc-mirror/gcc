@@ -72,6 +72,7 @@ extern int __upc_start (int argc, char *argv[]);
 extern void __upc_validate_pgm_info (char *);
 extern void __upc_vm_init_per_thread (void);
 extern void __upc_vm_init (upc_page_num_t);
+extern void __upc_barrier_init (void);
 
 //begin lib_sptr_to_addr
 
@@ -101,6 +102,13 @@ __upc_sptr_to_addr (upc_shared_ptr_t p)
     addr = __upc_vm_map_addr (p);
   return addr;
 }
+
+#ifdef __UPC__
+  typedef upc_shared_ptr_t
+          __attribute__((__may_alias__)) upc_shared_ptr_alias_t;
+  #define __upc_map_to_local(P)(__upc_sptr_to_addr(*(upc_shared_ptr_alias_t *)&(P)))
+#endif
+
 //end lib_sptr_to_addr
 
 #endif /* _UPC_SUP_H_ */

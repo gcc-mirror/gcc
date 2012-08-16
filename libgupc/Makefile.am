@@ -37,7 +37,7 @@ nodist_libsubinclude_HEADERS =
 IN_LIB_CPPFLAGS  = -DIN_GCC -DIN_TARGET_LIBS
 AM_CPPFLAGS = $(IN_LIB_CPPFLAGS)
 AM_CFLAGS = $(WARN_CFLAGS)
-AM_UPCFLAGS = $(WARN_CFLAGS)
+AM_UPCFLAGS = $(WARN_CFLAGS) -fno-strict-aliasing
 
 
 SUBDIRS = testsuite
@@ -114,7 +114,7 @@ endif
 
 UPC_RUNTIME_SRC += smp/upc_access.c smp/upc_accessg.c smp/upc_access.h \
 	smp/upc_addr.c smp/upc_affinity.h $(UPC_AFFINITY_SUP) \
-	smp/upc_allocg.upc smp/upc_alloc.upc smp/upc_barrier.c \
+	smp/upc_allocg.upc smp/upc_alloc.upc smp/upc_barrier.upc \
 	$(UPC_BACKTRACE_SUP) smp/upc_config.h \
 	smp/upc_debug.h \
 	smp/upc_defs.h smp/upc_gasp.c $(UPC_GUM_SUP) smp/upc_libg.c \

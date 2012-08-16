@@ -71,6 +71,9 @@
 /* The data type of the 'vaddr' field in a UPC shared pointer */
 #undef GUPCR_PTS_VADDR_TYPE
 
+/* Maximum number of children at each level of a collective operation tree. */
+#undef GUPCR_TREE_FANOUT
+
 //end gupcr_config_h
 
 /* Define to 1 if the target assembler supports .symver directive. */
@@ -225,6 +228,14 @@
 
 /* Define to 1 if the target supports __sync_*_compare_and_swap. */
 #undef HAVE_SYNC_BUILTINS
+
+/* Define to 1 if the compiler provides the __sync_fetch_and_add function for
+   uint32 */
+#undef HAVE_SYNC_FETCH_AND_ADD_4
+
+/* Define to 1 if the compiler provides the __sync_fetch_and_add function for
+   uint64 */
+#undef HAVE_SYNC_FETCH_AND_ADD_8
 
 /* Define to 1 if you have the <sys/loadavg.h> header file. */
 #undef HAVE_SYS_LOADAVG_H

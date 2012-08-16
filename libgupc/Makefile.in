@@ -48,7 +48,7 @@ target_triplet = @target@
 @LIBGUPC_BACKTRACE_SUP_TRUE@@LIBGUPC_BACKTRACE_TRUE@@LIBGUPC_SMP_RUNTIME_TRUE@am__append_4 = smp/upc_backtrace_sup.c
 @LIBGUPC_SMP_RUNTIME_TRUE@am__append_5 = smp/upc_access.c smp/upc_accessg.c smp/upc_access.h \
 @LIBGUPC_SMP_RUNTIME_TRUE@	smp/upc_addr.c smp/upc_affinity.h $(UPC_AFFINITY_SUP) \
-@LIBGUPC_SMP_RUNTIME_TRUE@	smp/upc_allocg.upc smp/upc_alloc.upc smp/upc_barrier.c \
+@LIBGUPC_SMP_RUNTIME_TRUE@	smp/upc_allocg.upc smp/upc_alloc.upc smp/upc_barrier.upc \
 @LIBGUPC_SMP_RUNTIME_TRUE@	$(UPC_BACKTRACE_SUP) smp/upc_config.h \
 @LIBGUPC_SMP_RUNTIME_TRUE@	smp/upc_debug.h \
 @LIBGUPC_SMP_RUNTIME_TRUE@	smp/upc_defs.h smp/upc_gasp.c $(UPC_GUM_SUP) smp/upc_libg.c \
@@ -122,7 +122,7 @@ LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 am__libgupc_la_SOURCES_DIST = smp/upc_access.c smp/upc_accessg.c \
 	smp/upc_access.h smp/upc_addr.c smp/upc_affinity.h \
 	smp/upc_affinity_stub.c smp/upc_affinity.c smp/upc_allocg.upc \
-	smp/upc_alloc.upc smp/upc_barrier.c smp/upc_backtrace.h \
+	smp/upc_alloc.upc smp/upc_barrier.upc smp/upc_backtrace.h \
 	smp/upc_backtrace.c smp/upc_backtrace_sup.c smp/upc_config.h \
 	smp/upc_debug.h smp/upc_defs.h smp/upc_gasp.c smp/upc_gum.c \
 	smp/upc_libg.c smp/upc_lib.h smp/upc_lock.c smp/upc_main.c \
@@ -480,7 +480,7 @@ IN_LIB_CPPFLAGS = -DIN_GCC -DIN_TARGET_LIBS
 AM_CPPFLAGS = $(IN_LIB_CPPFLAGS) $(addprefix -I, $(search_path)) \
 	$(addprefix -isystem, '.') @bfdinc@
 AM_CFLAGS = $(WARN_CFLAGS) $(XCFLAGS)
-AM_UPCFLAGS = $(WARN_CFLAGS) $(XCFLAGS)
+AM_UPCFLAGS = $(WARN_CFLAGS) -fno-strict-aliasing $(XCFLAGS)
 SUBDIRS = testsuite
 @LIBGUPC_GENERIC_COLLECTIVES_FALSE@collectives_dir = 
 @LIBGUPC_GENERIC_COLLECTIVES_TRUE@collectives_dir = $(addprefix $(top_srcdir)/, collectives)
@@ -797,13 +797,6 @@ upc_affinity.lo: smp/upc_affinity.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o upc_affinity.lo `test -f 'smp/upc_affinity.c' || echo '$(srcdir)/'`smp/upc_affinity.c
 
-upc_barrier.lo: smp/upc_barrier.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT upc_barrier.lo -MD -MP -MF $(DEPDIR)/upc_barrier.Tpo -c -o upc_barrier.lo `test -f 'smp/upc_barrier.c' || echo '$(srcdir)/'`smp/upc_barrier.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/upc_barrier.Tpo $(DEPDIR)/upc_barrier.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='smp/upc_barrier.c' object='upc_barrier.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o upc_barrier.lo `test -f 'smp/upc_barrier.c' || echo '$(srcdir)/'`smp/upc_barrier.c
-
 upc_backtrace.lo: smp/upc_backtrace.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT upc_backtrace.lo -MD -MP -MF $(DEPDIR)/upc_backtrace.Tpo -c -o upc_backtrace.lo `test -f 'smp/upc_backtrace.c' || echo '$(srcdir)/'`smp/upc_backtrace.c
 @am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/upc_backtrace.Tpo $(DEPDIR)/upc_backtrace.Plo
@@ -936,13 +929,6 @@ libgupc_pt_la-upc_affinity.lo: smp/upc_affinity.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='smp/upc_affinity.c' object='libgupc_pt_la-upc_affinity.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgupc_pt_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgupc_pt_la-upc_affinity.lo `test -f 'smp/upc_affinity.c' || echo '$(srcdir)/'`smp/upc_affinity.c
-
-libgupc_pt_la-upc_barrier.lo: smp/upc_barrier.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgupc_pt_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgupc_pt_la-upc_barrier.lo -MD -MP -MF $(DEPDIR)/libgupc_pt_la-upc_barrier.Tpo -c -o libgupc_pt_la-upc_barrier.lo `test -f 'smp/upc_barrier.c' || echo '$(srcdir)/'`smp/upc_barrier.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libgupc_pt_la-upc_barrier.Tpo $(DEPDIR)/libgupc_pt_la-upc_barrier.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='smp/upc_barrier.c' object='libgupc_pt_la-upc_barrier.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgupc_pt_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgupc_pt_la-upc_barrier.lo `test -f 'smp/upc_barrier.c' || echo '$(srcdir)/'`smp/upc_barrier.c
 
 libgupc_pt_la-upc_backtrace.lo: smp/upc_backtrace.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgupc_pt_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgupc_pt_la-upc_backtrace.lo -MD -MP -MF $(DEPDIR)/libgupc_pt_la-upc_backtrace.Tpo -c -o libgupc_pt_la-upc_backtrace.lo `test -f 'smp/upc_backtrace.c' || echo '$(srcdir)/'`smp/upc_backtrace.c
@@ -1077,6 +1063,13 @@ upc_alloc.lo: smp/upc_alloc.upc
 @AMDEP_TRUE@@am__fastdepUPC_FALSE@	DEPDIR=$(DEPDIR) $(UPCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepUPC_FALSE@	$(LIBTOOL)  $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(UPC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_UPCFLAGS) $(UPCFLAGS) -c -o upc_alloc.lo `test -f 'smp/upc_alloc.upc' || echo '$(srcdir)/'`smp/upc_alloc.upc
 
+upc_barrier.lo: smp/upc_barrier.upc
+@am__fastdepUPC_TRUE@	$(LIBTOOL)  $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(UPC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_UPCFLAGS) $(UPCFLAGS) -MT upc_barrier.lo -MD -MP -MF $(DEPDIR)/upc_barrier.Tpo -c -o upc_barrier.lo `test -f 'smp/upc_barrier.upc' || echo '$(srcdir)/'`smp/upc_barrier.upc
+@am__fastdepUPC_TRUE@	$(am__mv) $(DEPDIR)/upc_barrier.Tpo $(DEPDIR)/upc_barrier.Plo
+@AMDEP_TRUE@@am__fastdepUPC_FALSE@	source='smp/upc_barrier.upc' object='upc_barrier.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepUPC_FALSE@	DEPDIR=$(DEPDIR) $(UPCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepUPC_FALSE@	$(LIBTOOL)  $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(UPC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_UPCFLAGS) $(UPCFLAGS) -c -o upc_barrier.lo `test -f 'smp/upc_barrier.upc' || echo '$(srcdir)/'`smp/upc_barrier.upc
+
 upc_coll_broadcast.lo: collectives/upc_coll_broadcast.upc
 @am__fastdepUPC_TRUE@	$(LIBTOOL)  $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(UPC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_UPCFLAGS) $(UPCFLAGS) -MT upc_coll_broadcast.lo -MD -MP -MF $(DEPDIR)/upc_coll_broadcast.Tpo -c -o upc_coll_broadcast.lo `test -f 'collectives/upc_coll_broadcast.upc' || echo '$(srcdir)/'`collectives/upc_coll_broadcast.upc
 @am__fastdepUPC_TRUE@	$(am__mv) $(DEPDIR)/upc_coll_broadcast.Tpo $(DEPDIR)/upc_coll_broadcast.Plo
@@ -1167,6 +1160,13 @@ libgupc_pt_la-upc_alloc.lo: smp/upc_alloc.upc
 @AMDEP_TRUE@@am__fastdepUPC_FALSE@	source='smp/upc_alloc.upc' object='libgupc_pt_la-upc_alloc.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepUPC_FALSE@	DEPDIR=$(DEPDIR) $(UPCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepUPC_FALSE@	$(LIBTOOL)  $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(UPC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgupc_pt_la_CPPFLAGS) $(CPPFLAGS) $(libgupc_pt_la_UPCFLAGS) $(UPCFLAGS) -c -o libgupc_pt_la-upc_alloc.lo `test -f 'smp/upc_alloc.upc' || echo '$(srcdir)/'`smp/upc_alloc.upc
+
+libgupc_pt_la-upc_barrier.lo: smp/upc_barrier.upc
+@am__fastdepUPC_TRUE@	$(LIBTOOL)  $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(UPC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgupc_pt_la_CPPFLAGS) $(CPPFLAGS) $(libgupc_pt_la_UPCFLAGS) $(UPCFLAGS) -MT libgupc_pt_la-upc_barrier.lo -MD -MP -MF $(DEPDIR)/libgupc_pt_la-upc_barrier.Tpo -c -o libgupc_pt_la-upc_barrier.lo `test -f 'smp/upc_barrier.upc' || echo '$(srcdir)/'`smp/upc_barrier.upc
+@am__fastdepUPC_TRUE@	$(am__mv) $(DEPDIR)/libgupc_pt_la-upc_barrier.Tpo $(DEPDIR)/libgupc_pt_la-upc_barrier.Plo
+@AMDEP_TRUE@@am__fastdepUPC_FALSE@	source='smp/upc_barrier.upc' object='libgupc_pt_la-upc_barrier.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepUPC_FALSE@	DEPDIR=$(DEPDIR) $(UPCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepUPC_FALSE@	$(LIBTOOL)  $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(UPC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgupc_pt_la_CPPFLAGS) $(CPPFLAGS) $(libgupc_pt_la_UPCFLAGS) $(UPCFLAGS) -c -o libgupc_pt_la-upc_barrier.lo `test -f 'smp/upc_barrier.upc' || echo '$(srcdir)/'`smp/upc_barrier.upc
 
 libgupc_pt_la-upc_coll_broadcast.lo: collectives/upc_coll_broadcast.upc
 @am__fastdepUPC_TRUE@	$(LIBTOOL)  $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(UPC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgupc_pt_la_CPPFLAGS) $(CPPFLAGS) $(libgupc_pt_la_UPCFLAGS) $(UPCFLAGS) -MT libgupc_pt_la-upc_coll_broadcast.lo -MD -MP -MF $(DEPDIR)/libgupc_pt_la-upc_coll_broadcast.Tpo -c -o libgupc_pt_la-upc_coll_broadcast.lo `test -f 'collectives/upc_coll_broadcast.upc' || echo '$(srcdir)/'`collectives/upc_coll_broadcast.upc

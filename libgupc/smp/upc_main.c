@@ -30,6 +30,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "upc_sysdep.h"
 #include "upc_defs.h"
 #include "upc_sup.h"
+#include "upc_sync.h"
 #include "upc_affinity.h"
 #include "upc_numa.h"
 #include "upc_debug.h"
@@ -595,6 +596,7 @@ __upc_per_thread_init (upc_info_p u)
   int i;
   __upc_vm_init_per_thread ();
   __upc_heap_init (u->init_heap_base, u->init_heap_size);
+  __upc_barrier_init ();
   for (i = 0; i < n_init; ++i)
     {
       func_ptr_t init_func = GUPCR_INIT_ARRAY_START[i];

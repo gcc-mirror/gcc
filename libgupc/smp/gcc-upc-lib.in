@@ -33,6 +33,15 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #pragma pupc off
 #endif /* __UPC_PUPC_INST__ */
 
+#ifdef IN_TARGET_LIBS
+#include "config.h"
+#include <unistd.h>
+/* required, for Posix sched_yield() */
+#ifdef _POSIX_PRIORITY_SCHEDULING
+#include <sched.h>
+#endif
+#endif /* IN_TARGET_LIBS */
+
 /* required, for size_t definition */
 #include <sys/types.h>
 
@@ -147,7 +156,7 @@ extern unsigned long const __upc_global_base;
 
 #if defined(__UPC_INLINE_LIB__) || defined(IN_TARGET_LIBS)
 
-/* Library routines have access to runtime intenrals.  */
+/* Library routines have access to runtime internals.  */
 
 //include gupcr_config_h
 //include lib_min_max
@@ -157,14 +166,21 @@ extern unsigned long const __upc_global_base;
 //include lib_heap_api
 //include lib_config_shared_section
 //include lib_pts_defs
+//include lib_max_threads_def
+//include lib_sptr_to_addr
 
 #endif /* __UPC_INLINE_LIB__ || IN_TARGET_LIBS */
 
+#ifdef IN_TARGET_LIBS
+
+//include lib_atomic
+//include lib_spin_until
+
+#endif /* IN_TARGET_LIBS */
+
 #ifdef __UPC_INLINE_LIB__
 
-//include lib_max_threads_def
 //include lib_fence_defs
-//include lib_sptr_to_addr
 /* We need to include <string.h> to define memcpy() */
 #include <string.h>
 //include lib_inline_mem_sup
