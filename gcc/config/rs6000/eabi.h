@@ -21,7 +21,7 @@
 
 /* Add -meabi to target flags.  */
 #undef TARGET_DEFAULT
-#define TARGET_DEFAULT (MASK_NEW_MNEMONICS | MASK_EABI)
+#define TARGET_DEFAULT MASK_EABI
 
 /* Invoke an initializer function to set up the GOT.  */
 #define NAME__MAIN "__eabi"

@@ -1,3 +1,7 @@
+2012-08-15  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* longlong.h: (whole file, powerpc): Adjust to single assembler syntax.
+
 2012-08-03  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR driver/54171

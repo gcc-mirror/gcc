@@ -1,5 +1,60 @@
 2012-08-15  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/aix43.h (TARGET_DEFAULT): Delete MASK_NEW_MNEMONICS.
+	(RS6000_CALL_GLUE): Adjust for single assembler syntax.
+	* config/rs6000/aix51.h (TARGET_DEFAULT, RS6000_CALL_GLUE):
+	Ditto.
+	* config/rs6000/aix52.h (TARGET_DEFAULT, RS6000_CALL_GLUE):
+	Ditto.
+	* config/rs6000/aix53.h (TARGET_DEFAULT, RS6000_CALL_GLUE):
+	Ditto.
+	* config/rs6000/aix61.h (TARGET_DEFAULT, RS6000_CALL_GLUE):
+	Ditto.
+	* config/rs6000/darwin.h (TARGET_DEFAULT): Ditto.
+	* config/rs6000/darwin.md (whole file): Adjust to single
+	assembler syntax.
+	* config/rs6000/darwin64.h (TARGET_DEFAULT): Delete
+	MASK_NEW_MNEMONICS.
+	* config/rs6000/default64.h (TARGET_DEFAULT): Ditto.
+	* config/rs6000/dfp.md: (whole file): Adjust to single
+	assembler syntax.
+	* config/rs6000/eabi.h (TARGET_DEFAULT): Delete
+	MASK_NEW_MNEMONICS.
+	* config/rs6000/eabialtivec.h (TARGET_DEFAULT): Ditto.
+	* config/rs6000/eabispe.h (TARGET_DEFAULT): Ditto.
+	* config/rs6000/linuxaltivec.h (TARGET_DEFAULT): Ditto.
+	* config/rs6000/linuxspe.h (TARGET_DEFAULT): Ditto.
+	* config/rs6000/rs6000-cpus.def (whole file): Delete
+	POWERPC_BASE_MASK.
+	* config/rs6000/rs6000-tables.opt: Regenerate.
+	* config/rs6000/rs6000.c (POWERPC_BASE_MASK): Delete.
+	(num_insns_constant_wide): Adjust comments.
+	(whole file): Adjust to single assembler syntax.
+	(output_cbranch): Adjust comment.
+	* config/rs6000/rs6000.h (ASSEMBLER_DIALECT): Delete.
+	* config/rs6000/rs6000.md: (whole file): Adjust to single
+	assembler syntax.
+	* config/rs6000/rs6000.opt (mnew-mnemonics): Delete.
+	(mold-mnemonics): Delete.
+	* config/rs6000/spe.md: (whole file): Adjust to single
+	assembler syntax.
+	* config/rs6000/sync.md: (whole file): Adjust to single
+	assembler syntax.
+	* config/rs6000/sysv4.h (TARGET_DEFAULT): Delete
+	MASK_NEW_MNEMONICS.
+	(ASM_OUTPUT_REG_PUSH): Adjust.
+	(ASM_OUTPUT_REG_POP): Adjust.
+	* config/rs6000/sysv4le.h (TARGET_DEFAULT): Delete
+	MASK_NEW_MNEMONICS.
+	* config/rs6000/vsx.md: (whole file): Adjust to single
+	assembler syntax.
+	* config/rs6000/vxworks.h (TARGET_DEFAULT): Delete
+	MASK_NEW_MNEMONICS.
+	* doc/invoke.texi: Adjust documentation to reflect the
+	removal of -mnew-mnemonics and -mold-mnemonics.
+
+2012-08-15  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* common/config/rs6000/rs6000-common.c (rs6000_handle_option):
 	Delete handling for -mno-powerpc and -mpowerpc.
 	* config/rs6000/aix43.h (ASM_CPU_SPEC): Similar.

@@ -93,7 +93,7 @@ do {									\
    %{pthread: -D_THREAD_SAFE}"
 
 #undef TARGET_DEFAULT
-#define TARGET_DEFAULT MASK_NEW_MNEMONICS
+#define TARGET_DEFAULT 0
 
 #undef PROCESSOR_DEFAULT
 #define PROCESSOR_DEFAULT PROCESSOR_PPC604e
@@ -146,7 +146,7 @@ do {									\
    and "cror 31,31,31" for POWER architecture.  */
 
 #undef RS6000_CALL_GLUE
-#define RS6000_CALL_GLUE "{cror 31,31,31|nop}"
+#define RS6000_CALL_GLUE "nop"
 
 /* AIX 4.2 and above provides initialization and finalization function
    support from linker command line.  */

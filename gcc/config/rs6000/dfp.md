@@ -68,12 +68,12 @@
    && (TARGET_HARD_FLOAT && TARGET_FPRS)"
   "@
    mr %0,%1
-   {l%U1%X1|lwz%U1%X1} %0,%1
-   {st%U0%X0|stw%U0%X0} %1,%0
+   lwz%U1%X1 %0,%1
+   stw%U0%X0 %1,%0
    fmr %0,%1
    mt%0 %1
    mf%1 %0
-   {cror 0,0,0|nop}
+   nop
    #
    #"
   [(set_attr "type" "*,load,store,fp,mtjmpr,mfjmpr,*,*,*")
@@ -89,14 +89,14 @@
    mr %0,%1
    mt%0 %1
    mf%1 %0
-   {l%U1%X1|lwz%U1%X1} %0,%1
-   {st%U0%X0|stw%U0%X0} %1,%0
-   {lil|li} %0,%1
-   {liu|lis} %0,%v1
-   {cal|la} %0,%a1
+   lwz%U1%X1 %0,%1
+   stw%U0%X0 %1,%0
+   li %0,%1
+   lis %0,%v1
+   la %0,%a1
    #
    #
-   {cror 0,0,0|nop}"
+   nop"
   [(set_attr "type" "*,mtjmpr,mfjmpr,load,store,*,*,*,*,*,*")
    (set_attr "length" "4,4,4,4,4,4,4,4,4,8,4")])
 
@@ -335,7 +335,7 @@
    stfd%U0%X0 %1,%0
    mt%0 %1
    mf%1 %0
-   {cror 0,0,0|nop}
+   nop
    #
    #
    #
@@ -361,7 +361,7 @@
    stfd%U0%X0 %1,%0
    mt%0 %1
    mf%1 %0
-   {cror 0,0,0|nop}
+   nop
    #
    #
    #"
@@ -383,7 +383,7 @@
    #
    #
    #
-   {cror 0,0,0|nop}"
+   nop"
   [(set_attr "type" "load,store,*,mtjmpr,mfjmpr,*,*,*,*")
    (set_attr "length" "4,4,4,4,4,8,12,16,4")])
 

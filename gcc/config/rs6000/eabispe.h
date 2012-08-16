@@ -20,7 +20,7 @@
    <http://www.gnu.org/licenses/>.  */
 
 #undef  TARGET_DEFAULT
-#define TARGET_DEFAULT (MASK_NEW_MNEMONICS | MASK_STRICT_ALIGN | MASK_EABI)
+#define TARGET_DEFAULT (MASK_STRICT_ALIGN | MASK_EABI)
 
 #undef  ASM_DEFAULT_SPEC
 #define	ASM_DEFAULT_SPEC "-mppc -mspe -me500"

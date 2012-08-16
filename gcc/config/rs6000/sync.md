@@ -65,7 +65,7 @@
   [(set (match_operand:BLK 0 "" "")
 	(unspec:BLK [(match_dup 0)] UNSPEC_SYNC))]
   ""
-  "{dcs|sync}"
+  "sync"
   [(set_attr "type" "sync")])
 
 (define_expand "lwsync"
@@ -95,7 +95,7 @@
 (define_insn "isync"
   [(unspec_volatile:BLK [(const_int 0)] UNSPECV_ISYNC)]
   ""
-  "{ics|isync}"
+  "isync"
   [(set_attr "type" "isync")])
 
 ;; The control dependency used for load dependency described

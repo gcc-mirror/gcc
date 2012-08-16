@@ -21,7 +21,7 @@
 
 /* Override rs6000.h and sysv4.h definition.  */
 #undef	TARGET_DEFAULT
-#define TARGET_DEFAULT (MASK_NEW_MNEMONICS | MASK_STRICT_ALIGN)
+#define TARGET_DEFAULT MASK_STRICT_ALIGN
 
 #undef  ASM_DEFAULT_SPEC
 #define	ASM_DEFAULT_SPEC "-mppc -mspe -me500"
