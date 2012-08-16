@@ -2440,6 +2440,7 @@ tilegx-*-linux*)
 	extra_objs="mul-tables.o"
 	c_target_objs="tilegx-c.o"
 	cxx_target_objs="tilegx-c.o"
+	extra_headers="feedback.h"
 	;;
 tilepro-*-linux*)
 	tm_file="elfos.h gnu-user.h linux.h glibc-stdint.h tilepro/linux.h ${tm_file}"
@@ -2447,6 +2448,7 @@ tilepro-*-linux*)
 	extra_objs="mul-tables.o"
 	c_target_objs="tilepro-c.o"
 	cxx_target_objs="tilepro-c.o"
+	extra_headers="feedback.h"
 	;;
 v850-*-rtems*)
 	target_cpu_default="TARGET_CPU_generic"
