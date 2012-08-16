@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "tree-flow.h"
 #include "dumpfile.h"
+#include "gimple-pretty-print.h"
 #include "cfgloop.h"
 #include "tree-pass.h"	/* ??? for TODO_update_ssa but this isn't a pass.  */
 #include "tree-scalar-evolution.h"
@@ -129,62 +130,190 @@ create_iv (tree base, tree step, tree var, struct loop *loop,
   add_phi_arg (stmt, va, loop_latch_edge (loop), UNKNOWN_LOCATION);
 }
 
-/* Add exit phis for the USE on EXIT.  */
+/* Return the outermost superloop LOOP of USE_LOOP that is a superloop of
+   both DEF_LOOP and USE_LOOP.  */
+
+static inline struct loop *
+find_sibling_superloop (struct loop *use_loop, struct loop *def_loop)
+{
+  unsigned ud = loop_depth (use_loop);
+  unsigned dd = loop_depth (def_loop);
+  gcc_assert (ud > 0 && dd > 0);
+  if (ud > dd)
+    use_loop = superloop_at_depth (use_loop, dd);
+  if (ud < dd)
+    def_loop = superloop_at_depth (def_loop, ud);
+  while (loop_outer (use_loop) != loop_outer (def_loop))
+    {
+      use_loop = loop_outer (use_loop);
+      def_loop = loop_outer (def_loop);
+      gcc_assert (use_loop && def_loop);
+    }
+  return use_loop;
+}
+
+/* DEF_BB is a basic block containing a DEF that needs rewriting into
+   loop-closed SSA form.  USE_BLOCKS is the set of basic blocks containing
+   uses of DEF that "escape" from the loop containing DEF_BB (i.e. blocks in
+   USE_BLOCKS are dominated by DEF_BB but not in the loop father of DEF_B).
+   ALL_EXITS[I] is the set of all basic blocks that exit loop I.
+
+   Compute the subset of LOOP_EXITS that exit the loop containing DEF_BB
+   or one of its loop fathers, in which DEF is live.  This set is returned
+   in the bitmap LIVE_EXITS.
+
+   Instead of computing the complete livein set of the def, we use the loop
+   nesting tree as a form of poor man's structure analysis.  This greatly
+   speeds up the analysis, which is important because this function may be
+   called on all SSA names that need rewriting, one at a time.  */
 
 static void
-add_exit_phis_edge (basic_block exit, tree use)
+compute_live_loop_exits (bitmap live_exits, bitmap use_blocks,
+			 bitmap *loop_exits, basic_block def_bb)
 {
-  gimple phi, def_stmt = SSA_NAME_DEF_STMT (use);
-  basic_block def_bb = gimple_bb (def_stmt);
-  struct loop *def_loop;
+  unsigned i;
+  bitmap_iterator bi;
+  VEC (basic_block, heap) *worklist;
+  struct loop *def_loop = def_bb->loop_father;
+  unsigned def_loop_depth = loop_depth (def_loop);
+  bitmap def_loop_exits;
+
+  /* Normally the work list size is bounded by the number of basic
+     blocks in the largest loop.  We don't know this number, but we
+     can be fairly sure that it will be relatively small.  */
+  worklist = VEC_alloc (basic_block, heap, MAX (8, n_basic_blocks / 128));
+
+  EXECUTE_IF_SET_IN_BITMAP (use_blocks, 0, i, bi)
+    {
+      basic_block use_bb = BASIC_BLOCK (i);
+      struct loop *use_loop = use_bb->loop_father;
+      gcc_checking_assert (def_loop != use_loop
+			   && ! flow_loop_nested_p (def_loop, use_loop));
+      if (! flow_loop_nested_p (use_loop, def_loop))
+	use_bb = find_sibling_superloop (use_loop, def_loop)->header;
+      if (bitmap_set_bit (live_exits, use_bb->index))
+	VEC_safe_push (basic_block, heap, worklist, use_bb);
+    }
+
+  /* Iterate until the worklist is empty.  */
+  while (! VEC_empty (basic_block, worklist))
+    {
+      edge e;
+      edge_iterator ei;
+
+      /* Pull a block off the worklist.  */
+      basic_block bb = VEC_pop (basic_block, worklist);
+
+      /* Make sure we have at least enough room in the work list
+	 for all predecessors of this block.  */
+      VEC_reserve (basic_block, heap, worklist, EDGE_COUNT (bb->preds));
+
+      /* For each predecessor block.  */
+      FOR_EACH_EDGE (e, ei, bb->preds)
+	{
+	  basic_block pred = e->src;
+	  struct loop *pred_loop = pred->loop_father;
+	  unsigned pred_loop_depth = loop_depth (pred_loop);
+	  bool pred_visited;
+
+	  /* We should have met DEF_BB along the way.  */
+	  gcc_assert (pred != ENTRY_BLOCK_PTR);
+
+	  if (pred_loop_depth >= def_loop_depth)
+	    {
+	      if (pred_loop_depth > def_loop_depth)
+		pred_loop = superloop_at_depth (pred_loop, def_loop_depth);
+	      /* If we've reached DEF_LOOP, our train ends here.  */
+	      if (pred_loop == def_loop)
+		continue;
+	    }
+	  else if (! flow_loop_nested_p (pred_loop, def_loop))
+	    pred = find_sibling_superloop (pred_loop, def_loop)->header;
+
+	  /* Add PRED to the LIVEIN set.  PRED_VISITED is true if
+	     we had already added PRED to LIVEIN before.  */
+	  pred_visited = !bitmap_set_bit (live_exits, pred->index);
+
+	  /* If we have visited PRED before, don't add it to the worklist.
+	     If BB dominates PRED, then we're probably looking at a loop.
+	     We're only interested in looking up in the dominance tree
+	     because DEF_BB dominates all the uses.  */
+	  if (pred_visited || dominated_by_p (CDI_DOMINATORS, pred, bb))
+	    continue;
+
+	  VEC_quick_push (basic_block, worklist, pred);
+	}
+    }
+  VEC_free (basic_block, heap, worklist);
+
+  def_loop_exits = BITMAP_ALLOC (&loop_renamer_obstack);
+  for (struct loop *loop = def_loop;
+       loop != current_loops->tree_root;
+       loop = loop_outer (loop))
+    bitmap_ior_into (def_loop_exits, loop_exits[loop->num]);
+  bitmap_and_into (live_exits, def_loop_exits);
+  BITMAP_FREE (def_loop_exits);
+}
+
+/* Add a loop-closing PHI for VAR in basic block EXIT.  */
+
+static void
+add_exit_phi (basic_block exit, tree var)
+{
+  gimple phi;
   edge e;
   edge_iterator ei;
 
-  /* Check that some of the edges entering the EXIT block exits a loop in
-     that USE is defined.  */
+#ifdef ENABLE_CHECKING
+  /* Check that at least one of the edges entering the EXIT block exits
+     the loop, or a superloop of that loop, that VAR is defined in.  */
+  gimple def_stmt = SSA_NAME_DEF_STMT (var);
+  basic_block def_bb = gimple_bb (def_stmt);
   FOR_EACH_EDGE (e, ei, exit->preds)
     {
-      def_loop = find_common_loop (def_bb->loop_father, e->src->loop_father);
-      if (!flow_bb_inside_loop_p (def_loop, e->dest))
+      struct loop *aloop = find_common_loop (def_bb->loop_father,
+					     e->src->loop_father);
+      if (!flow_bb_inside_loop_p (aloop, e->dest))
 	break;
     }
 
-  if (!e)
-    return;
+  gcc_checking_assert (e);
+#endif
 
   phi = create_phi_node (NULL_TREE, exit);
-  create_new_def_for (use, phi, gimple_phi_result_ptr (phi));
+  create_new_def_for (var, phi, gimple_phi_result_ptr (phi));
   FOR_EACH_EDGE (e, ei, exit->preds)
-    add_phi_arg (phi, use, e, UNKNOWN_LOCATION);
+    add_phi_arg (phi, var, e, UNKNOWN_LOCATION);
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, ";; Created LCSSA PHI: ");
+      print_gimple_stmt (dump_file, phi, 0, dump_flags);
+    }
 }
 
 /* Add exit phis for VAR that is used in LIVEIN.
-   Exits of the loops are stored in EXITS.  */
+   Exits of the loops are stored in LOOP_EXITS.  */
 
 static void
-add_exit_phis_var (tree var, bitmap livein, bitmap exits)
+add_exit_phis_var (tree var, bitmap use_blocks, bitmap *loop_exits)
 {
-  bitmap def;
   unsigned index;
-  basic_block def_bb = gimple_bb (SSA_NAME_DEF_STMT (var));
   bitmap_iterator bi;
+  basic_block def_bb = gimple_bb (SSA_NAME_DEF_STMT (var));
+  bitmap live_exits = BITMAP_ALLOC (&loop_renamer_obstack);
 
   gcc_checking_assert (! virtual_operand_p (var));
-  bitmap_clear_bit (livein, def_bb->index);
+  gcc_assert (! bitmap_bit_p (use_blocks, def_bb->index));
 
-  def = BITMAP_ALLOC (&loop_renamer_obstack);
-  bitmap_set_bit (def, def_bb->index);
-  compute_global_livein (livein, def);
-  BITMAP_FREE (def);
+  compute_live_loop_exits (live_exits, use_blocks, loop_exits, def_bb);
 
-  EXECUTE_IF_AND_IN_BITMAP (exits, livein, 0, index, bi)
+  EXECUTE_IF_SET_IN_BITMAP (live_exits, 0, index, bi)
     {
-      add_exit_phis_edge (BASIC_BLOCK (index), var);
+      add_exit_phi (BASIC_BLOCK (index), var);
     }
 
-  /* Free the livein bitmap.  We'll not be needing it anymore, and
-     it may have grown quite large.  No reason to hold on to it.  */
-  bitmap_clear (livein);
+  BITMAP_FREE (live_exits);
 }
 
 /* Add exit phis for the names marked in NAMES_TO_RENAME.
@@ -192,7 +321,7 @@ add_exit_phis_var (tree var, bitmap livein, bitmap exits)
    names are used are stored in USE_BLOCKS.  */
 
 static void
-add_exit_phis (bitmap names_to_rename, bitmap *use_blocks, bitmap loop_exits)
+add_exit_phis (bitmap names_to_rename, bitmap *use_blocks, bitmap *loop_exits)
 {
   unsigned i;
   bitmap_iterator bi;
@@ -203,28 +332,24 @@ add_exit_phis (bitmap names_to_rename, bitmap *use_blocks, bitmap loop_exits)
     }
 }
 
-/* Returns a bitmap of all loop exit edge targets.  */
+/* Fill the array of bitmaps LOOP_EXITS with all loop exit edge targets.  */
 
-static bitmap
-get_loops_exits (void)
+static void
+get_loops_exits (bitmap *loop_exits)
 {
-  bitmap exits = BITMAP_ALLOC (&loop_renamer_obstack);
-  basic_block bb;
+  loop_iterator li;
+  struct loop *loop;
+  unsigned j;
   edge e;
-  edge_iterator ei;
 
-  FOR_EACH_BB (bb)
+  FOR_EACH_LOOP (li, loop, 0)
     {
-      FOR_EACH_EDGE (e, ei, bb->preds)
-	if (e->src != ENTRY_BLOCK_PTR
-	    && !flow_bb_inside_loop_p (e->src->loop_father, bb))
-	  {
-	    bitmap_set_bit (exits, bb->index);
-	    break;
-	  }
+      VEC(edge, heap) *exit_edges = get_loop_exit_edges (loop);
+      loop_exits[loop->num] = BITMAP_ALLOC (&loop_renamer_obstack);
+      FOR_EACH_VEC_ELT (edge, exit_edges, j, e)
+        bitmap_set_bit (loop_exits[loop->num], e->dest->index);
+      VEC_free (edge, heap, exit_edges);
     }
-
-  return exits;
 }
 
 /* For USE in BB, if it is used outside of the loop it is defined in,
@@ -301,8 +426,12 @@ find_uses_to_rename_bb (basic_block bb, bitmap *use_blocks, bitmap need_phis)
 
   FOR_EACH_EDGE (e, ei, bb->succs)
     for (bsi = gsi_start_phis (e->dest); !gsi_end_p (bsi); gsi_next (&bsi))
-      find_uses_to_rename_use (bb, PHI_ARG_DEF_FROM_EDGE (gsi_stmt (bsi), e),
-			       use_blocks, need_phis);
+      {
+        gimple phi = gsi_stmt (bsi);
+	if (! virtual_operand_p (gimple_phi_result (phi)))
+	  find_uses_to_rename_use (bb, PHI_ARG_DEF_FROM_EDGE (phi, e),
+				   use_blocks, need_phis);
+      }
 
   for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
     find_uses_to_rename_stmt (gsi_stmt (bsi), use_blocks, need_phis);
@@ -372,7 +501,7 @@ find_uses_to_rename (bitmap changed_bbs, bitmap *use_blocks, bitmap need_phis)
 void
 rewrite_into_loop_closed_ssa (bitmap changed_bbs, unsigned update_flag)
 {
-  bitmap loop_exits;
+  bitmap *loop_exits;
   bitmap *use_blocks;
   bitmap names_to_rename;
 
@@ -380,14 +509,18 @@ rewrite_into_loop_closed_ssa (bitmap changed_bbs, unsigned update_flag)
   if (number_of_loops () <= 1)
     return;
 
-  bitmap_obstack_initialize (&loop_renamer_obstack);
-
-  loop_exits = get_loops_exits ();
-  names_to_rename = BITMAP_ALLOC (&loop_renamer_obstack);
-
   /* If the pass has caused the SSA form to be out-of-date, update it
      now.  */
   update_ssa (update_flag);
+
+  bitmap_obstack_initialize (&loop_renamer_obstack);
+
+  names_to_rename = BITMAP_ALLOC (&loop_renamer_obstack);
+
+  /* An array of bitmaps where LOOP_EXITS[I] is the set of basic blocks
+     that are the destination of an edge exiting loop number I.  */
+  loop_exits = XNEWVEC (bitmap, number_of_loops ());
+  get_loops_exits (loop_exits);
 
   /* Uses of names to rename.  We don't have to initialize this array,
      because we know that we will only have entries for the SSA names
@@ -403,6 +536,7 @@ rewrite_into_loop_closed_ssa (bitmap changed_bbs, unsigned update_flag)
 
   bitmap_obstack_release (&loop_renamer_obstack);
   free (use_blocks);
+  free (loop_exits);
 
   /* Fix up all the names found to be used outside their original
      loops.  */
