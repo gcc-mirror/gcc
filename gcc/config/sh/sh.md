@@ -3746,7 +3746,8 @@ label:
 		   (match_operand:SI 2 "shift_count_operand" "r")))]
   "TARGET_DYNSHIFT"
   "shld	%2,%0"
-  "&& (CONST_INT_P (operands[2]) && ! sh_dynamicalize_shift_p (operands[2]))"
+  "&& CONST_INT_P (operands[2]) && ! sh_dynamicalize_shift_p (operands[2])
+   && ! sh_ashlsi_clobbers_t_reg_p (operands[2])"
   [(const_int 0)]
 {
   if (satisfies_constraint_P27 (operands[2]))
@@ -3759,7 +3760,9 @@ label:
       /* This must happen before reload, otherwise the constant will be moved
 	 into a register due to the "r" constraint, after which this split
 	 cannot be done anymore.
-	 Unfortunately the move insn will not always be eliminated.  */
+	 Unfortunately the move insn will not always be eliminated.
+	 Also, here we must not create a shift sequence that clobbers the
+	 T_REG.  */
       emit_move_insn (operands[0], operands[1]);
       gen_shifty_op (ASHIFT, operands);
       DONE;
@@ -3782,8 +3785,7 @@ label:
   if (sh_dynamicalize_shift_p (operands[2]) && can_create_pseudo_p ())
     {
       /* If this pattern was picked and dynamic shifts are supported, switch
-	 to dynamic shift pattern before reload.  However, we must not
-	 create a shift sequence that clobbers the T_REG.  */
+	 to dynamic shift pattern before reload.  */
       operands[2] = force_reg (SImode, operands[2]);
       emit_insn (gen_ashlsi3_d (operands[0], operands[1], operands[2]));
     }
