@@ -1,5 +1,11 @@
 2012-08-15  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/aix43.h (ASM_CPU_SPEC): Use %(asm_default)
+	instead of -mppc.
+	* config/rs6000/aix51.h (ASM_CPU_SPEC): Ditto.
+
+2012-08-15  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/aix43.h (TARGET_DEFAULT): Delete MASK_NEW_MNEMONICS.
 	(RS6000_CALL_GLUE): Adjust for single assembler syntax.
 	* config/rs6000/aix51.h (TARGET_DEFAULT, RS6000_CALL_GLUE):

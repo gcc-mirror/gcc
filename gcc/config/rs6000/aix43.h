@@ -49,7 +49,7 @@ do {									\
 #undef ASM_CPU_SPEC
 #define ASM_CPU_SPEC \
 "%{!mcpu*: %{!maix64: \
-  %{!mpowerpc64: -mppc} \
+  %{!mpowerpc64: %(asm_default)} \
   %{mpowerpc64: -mppc64}}} \
 %{mcpu=power3: -m620} \
 %{mcpu=power4: -m620} \
