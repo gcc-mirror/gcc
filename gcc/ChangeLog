@@ -1,3 +1,9 @@
+2012-08-17  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR middle-end/54261
+	* optabs.c (expand_atomic_fetch_op): Save and restore code when
+	retrying after failed attempt.
+
 2012-08-16  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	* config/i386/i386-protos.h (ix86_split_lea_for_addr) : Add
