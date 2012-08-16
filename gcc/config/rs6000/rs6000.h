@@ -2302,6 +2302,7 @@ extern int frame_pointer_needed;
 /* Builtin targets.  For now, we reuse the masks for those options that are in
    target flags, and pick two random bits for SPE and paired which aren't in
    target_flags.  */
+#define RS6000_BTM_ALWAYS	0		/* Always enabled.  */
 #define RS6000_BTM_ALTIVEC	MASK_ALTIVEC	/* VMX/altivec vectors.  */
 #define RS6000_BTM_VSX		MASK_VSX	/* VSX (vector/scalar).  */
 #define RS6000_BTM_SPE		MASK_STRING	/* E500 */

@@ -1,3 +1,7 @@
+2012-08-15  Segher Boessenkool <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.h (RS6000_BTM_ALWAYS): New.
+
 2012-08-15  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/aix52.h (ASM_CPU_SPEC): Fix typo.
