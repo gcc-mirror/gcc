@@ -312,22 +312,21 @@ get_ssa_name_ann (tree name)
   unsigned len = VEC_length (ssa_name_info_p, info_for_ssa_name);
   struct ssa_name_info *info;
 
+  /* Re-allocate the vector at most once per update/into-SSA.  */
   if (ver >= len)
-    {
-      unsigned old_len = VEC_length (ssa_name_info_p, info_for_ssa_name);
-      unsigned new_len = num_ssa_names;
+    VEC_safe_grow_cleared (ssa_name_info_p, heap,
+			   info_for_ssa_name, num_ssa_names);
 
-      VEC_reserve (ssa_name_info_p, heap, info_for_ssa_name,
-		   new_len - old_len);
-      while (len++ < new_len)
-	{
-	  struct ssa_name_info *info = XCNEW (struct ssa_name_info);
-	  info->age = current_info_for_ssa_name_age;
-	  VEC_quick_push (ssa_name_info_p, info_for_ssa_name, info);
-	}
+  /* But allocate infos lazily.  */
+  info = VEC_index (ssa_name_info_p, info_for_ssa_name, ver);
+  if (!info)
+    {
+      info = XCNEW (struct ssa_name_info);
+      info->age = current_info_for_ssa_name_age;
+      info->info.need_phi_state = NEED_PHI_STATE_UNKNOWN;
+      VEC_replace (ssa_name_info_p, info_for_ssa_name, ver, info);
     }
 
-  info = VEC_index (ssa_name_info_p, info_for_ssa_name, ver);
   if (info->age < current_info_for_ssa_name_age)
     {
       info->age = current_info_for_ssa_name_age;

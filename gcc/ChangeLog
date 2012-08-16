@@ -1,3 +1,22 @@
+2012-08-16  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/54146
+	* tree-ssa-loop-niter.c (find_loop_niter_by_eval): Free the
+	exit vector.
+	* ipa-pure-const.c (analyze_function): Use FOR_EACH_LOOP_BREAK.
+	* cfgloop.h (FOR_EACH_LOOP_BREAK): Fix.
+	* tree-ssa-structalias.c (handle_lhs_call): Properly free rhsc.
+	* tree-into-ssa.c (get_ssa_name_ann): Allocate info only when
+	needed.
+	* tree-ssa-loop-im.c (analyze_memory_references): Adjust.
+	(tree_ssa_lim_finalize): Free all mem_refs.
+	* tree-ssa-sccvn.c (extract_and_process_scc_for_name): Free
+	scc when bailing out.
+	* modulo-sched.c (sms_schedule): Use FOR_EACH_LOOP_BREAK.
+	* ira-build.c (loop_with_complex_edge_p): Free loop exit vector.
+	* graphite-sese-to-poly.c (scop_ivs_can_be_represented): Use
+	FOR_EACH_LOOP_BREAK.
+
 2012-08-16  Diego Novillo  <dnovillo@google.com>
 
 	PR bootstrap/54281
