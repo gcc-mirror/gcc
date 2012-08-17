@@ -1258,21 +1258,28 @@ coalesce_partitions (var_map map, ssa_conflicts_p graph, coalesce_list_p cl,
     }
 }
 
-/* Returns a hash code for N.  */
+
+/* Hashtable support for storing SSA names hashed by their SSA_NAME_VAR.  */
+
+struct ssa_name_var_hash : typed_noop_remove <union tree_node>
+{
+  typedef union tree_node T;
+  static inline hashval_t hash (const_tree);
+  static inline int equal (const_tree, const_tree);
+};
 
 inline hashval_t
-hash_ssa_name_by_var (const_tree n)
+ssa_name_var_hash::hash (const_tree n)
 {
-  return (hashval_t) htab_hash_pointer (SSA_NAME_VAR (n));
+  return DECL_UID (SSA_NAME_VAR (n));
 }
 
-/* Returns nonzero if N1 and N2 are equal.  */
-
 inline int
-eq_ssa_name_by_var (const_tree n1, const_tree n2)
+ssa_name_var_hash::equal (const_tree n1, const_tree n2)
 {
   return SSA_NAME_VAR (n1) == SSA_NAME_VAR (n2);
 }
+
 
 /* Reduce the number of copies by coalescing variables in the function.  Return
    a partition map with the resulting coalesces.  */
@@ -1286,9 +1293,7 @@ coalesce_ssa_name (void)
   bitmap used_in_copies = BITMAP_ALLOC (NULL);
   var_map map;
   unsigned int i;
-  static hash_table <tree_node, hash_ssa_name_by_var, eq_ssa_name_by_var,
-		     typed_null_remove<tree_node> >
-		    ssa_name_hash;
+  static hash_table <ssa_name_var_hash> ssa_name_hash;
 
   cl = create_coalesce_list ();
   map = create_outofssa_var_map (cl, used_in_copies);

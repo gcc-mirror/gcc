@@ -1,5 +1,36 @@
 2012-08-17  Richard Guenther  <rguenther@suse.de>
 
+	* hash-table.h (class hash_table): Use a descriptor template
+	argument instead of decomposed element type and support
+	functions.
+	(struct pointer_hash): New generic typed pointer-hash.
+	(struct typed_free_remove, struct typed_noop_remove): Generic
+	hash_table support pieces.
+	* coverage.c (struct counts_entry): Add hash_table support
+	members.
+	* tree-ssa-ccp.c (gimple_htab): Use pointer_hash.
+	* tree-ssa-coalesce.c (struct ssa_name_var_hash): New generic
+	SSA name by SSA_NAME_VAR hash.
+	(coalesce_ssa_name): Use it.
+	* tree-ssa-pre.c (struct pre_expr_d): Add hash_table support.
+	(expression_to_id): Adjust.
+	(struct expr_pred_trans_d): Add hash_table support.
+	(phi_translate_table): Adjust.
+	(phi_trans_lookup): Likewise.
+	(phi_trans_add): Likewise.
+	(do_regular_insertion): Likewise.
+	* tree-ssa-tail-merge.c (struct same_succ_def): Add hash_table
+	support.
+	(same_succ_htab): Adjust.
+	(find_same_succ_bb): Likewise.
+	(find_same_succ): Likewise.
+	(update_worklist): Likewise.
+	* tree-ssa-threadupdate.c (struct redirection_data): Add hash_table
+	support.
+	(redirection_data): Adjust.
+
+2012-08-17  Richard Guenther  <rguenther@suse.de>
+
 	* params.def (integer-share-limit): Decrease from 256 to 251,
 	add rationale.
 

@@ -77,6 +77,12 @@ typedef struct counts_entry
   unsigned cfg_checksum;
   gcov_type *counts;
   struct gcov_ctr_summary summary;
+
+  /* hash_table support.  */
+  typedef counts_entry T;
+  static inline hashval_t hash (const counts_entry *);
+  static int equal (const counts_entry *, const counts_entry *);
+  static void remove (counts_entry *);
 } counts_entry_t;
 
 static GTY(()) struct coverage_data *functions_head = 0;
@@ -144,29 +150,27 @@ get_gcov_unsigned_t (void)
 }
 
 inline hashval_t
-coverage_counts_entry_hash (const counts_entry_t *entry)
+counts_entry::hash (const counts_entry_t *entry)
 {
   return entry->ident * GCOV_COUNTERS + entry->ctr;
 }
 
 inline int
-coverage_counts_entry_eq (const counts_entry_t *entry1,
-                          const counts_entry_t *entry2)
+counts_entry::equal (const counts_entry_t *entry1,
+		     const counts_entry_t *entry2)
 {
   return entry1->ident == entry2->ident && entry1->ctr == entry2->ctr;
 }
 
 inline void
-coverage_counts_entry_del (counts_entry_t *entry)
+counts_entry::remove (counts_entry_t *entry)
 {
   free (entry->counts);
   free (entry);
 }
 
 /* Hash table of count data.  */
-static hash_table <counts_entry_t, coverage_counts_entry_hash,
-		   coverage_counts_entry_eq, coverage_counts_entry_del>
-		  counts_hash;
+static hash_table <counts_entry> counts_hash;
 
 /* Read in the counts file, if available.  */
 

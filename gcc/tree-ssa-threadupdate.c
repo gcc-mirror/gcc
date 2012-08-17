@@ -110,7 +110,7 @@ struct el
    may have many incoming edges threaded to the same outgoing edge.  This
    can be naturally implemented with a hash table.  */
 
-struct redirection_data
+struct redirection_data : typed_free_remove<redirection_data>
 {
   /* A duplicate of B with the trailing control statement removed and which
      targets a single successor of B.  */
@@ -125,7 +125,29 @@ struct redirection_data
   /* A list of incoming edges which we want to thread to
      OUTGOING_EDGE->dest.  */
   struct el *incoming_edges;
+
+  /* hash_table support.  */
+  typedef redirection_data T;
+  static inline hashval_t hash (const redirection_data *);
+  static inline int equal (const redirection_data *, const redirection_data *);
 };
+
+inline hashval_t
+redirection_data::hash (const redirection_data *p)
+{
+  edge e = p->outgoing_edge;
+  return e->dest->index;
+}
+
+inline int
+redirection_data::equal (const redirection_data *p1, const redirection_data *p2)
+{
+  edge e1 = p1->outgoing_edge;
+  edge e2 = p2->outgoing_edge;
+  edge e3 = p1->intermediate_edge;
+  edge e4 = p2->intermediate_edge;
+  return e1 == e2 && e3 == e4;
+}
 
 /* Data structure of information to pass to hash table traversal routines.  */
 struct ssa_local_info_t
@@ -217,32 +239,9 @@ create_block_for_threading (basic_block bb, struct redirection_data *rd)
   rd->dup_block->count = 0;
 }
 
-/* Hashing and equality routines for our hash table.  */
-inline hashval_t
-ssa_redirection_data_hash (const struct redirection_data *p)
-{
-  edge e = p->outgoing_edge;
-  return e->dest->index;
-}
-
-inline int
-ssa_redirection_data_eq (const struct redirection_data *p1,
-			 const struct redirection_data *p2)
-{
-  edge e1 = p1->outgoing_edge;
-  edge e2 = p2->outgoing_edge;
-  edge e3 = p1->intermediate_edge;
-  edge e4 = p2->intermediate_edge;
-
-  return e1 == e2 && e3 == e4;
-}
-
 /* Main data structure to hold information for duplicates of BB.  */
 
-static hash_table <struct redirection_data, ssa_redirection_data_hash,
-		   ssa_redirection_data_eq,
-		   typed_free_remove<struct redirection_data> >
-		  redirection_data;
+static hash_table <redirection_data> redirection_data;
 
 /* Given an outgoing edge E lookup and return its entry in our hash table.
 

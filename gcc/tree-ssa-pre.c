@@ -165,11 +165,16 @@ typedef union pre_expr_union_d
   vn_reference_t reference;
 } pre_expr_union;
 
-typedef struct pre_expr_d
+typedef struct pre_expr_d : typed_noop_remove <pre_expr_d>
 {
   enum pre_expr_kind kind;
   unsigned int id;
   pre_expr_union u;
+
+  /* hash_table support.  */
+  typedef pre_expr_d T;
+  static inline hashval_t hash (const pre_expr_d *);
+  static inline int equal (const pre_expr_d *, const pre_expr_d *);
 } *pre_expr;
 
 #define PRE_EXPR_NAME(e) (e)->u.name
@@ -180,7 +185,7 @@ typedef struct pre_expr_d
 /* Compare E1 and E1 for equality.  */
 
 inline int
-ssa_pre_expr_eq (const struct pre_expr_d *e1, const struct pre_expr_d *e2)
+pre_expr_d::equal (const struct pre_expr_d *e1, const struct pre_expr_d *e2)
 {
   if (e1->kind != e2->kind)
     return false;
@@ -205,7 +210,7 @@ ssa_pre_expr_eq (const struct pre_expr_d *e1, const struct pre_expr_d *e2)
 /* Hash E.  */
 
 inline hashval_t
-ssa_pre_expr_hash (const struct pre_expr_d *e)
+pre_expr_d::hash (const struct pre_expr_d *e)
 {
   switch (e->kind)
     {
@@ -229,9 +234,7 @@ static unsigned int next_expression_id;
 DEF_VEC_P (pre_expr);
 DEF_VEC_ALLOC_P (pre_expr, heap);
 static VEC(pre_expr, heap) *expressions;
-static hash_table <pre_expr_d, ssa_pre_expr_hash, ssa_pre_expr_eq,
-		   typed_null_remove <pre_expr_d> >
-		  expression_to_id;
+static hash_table <pre_expr_d> expression_to_id;
 static VEC(unsigned, heap) *name_to_id;
 
 /* Allocate an expression id for EXPR.  */
@@ -483,7 +486,7 @@ static bitmap need_ab_cleanup;
 /* A three tuple {e, pred, v} used to cache phi translations in the
    phi_translate_table.  */
 
-typedef struct expr_pred_trans_d
+typedef struct expr_pred_trans_d : typed_free_remove<expr_pred_trans_d>
 {
   /* The expression.  */
   pre_expr e;
@@ -497,23 +500,23 @@ typedef struct expr_pred_trans_d
   /* The hashcode for the expression, pred pair. This is cached for
      speed reasons.  */
   hashval_t hashcode;
+
+  /* hash_table support.  */
+  typedef expr_pred_trans_d T;
+  static inline hashval_t hash (const expr_pred_trans_d *);
+  static inline int equal (const expr_pred_trans_d *, const expr_pred_trans_d *);
 } *expr_pred_trans_t;
 typedef const struct expr_pred_trans_d *const_expr_pred_trans_t;
 
-/* Return the hash value for a phi translation table entry.  */
-
 inline hashval_t
-ssa_expr_pred_trans_hash (const expr_pred_trans_d *ve)
+expr_pred_trans_d::hash (const expr_pred_trans_d *e)
 {
-  return ve->hashcode;
+  return e->hashcode;
 }
 
-/* Return true if two phi translation table entries are the same.
-   P1 and P2 should point to the expr_pred_trans_t's to be compared.*/
-
 inline int
-ssa_expr_pred_trans_eq (const expr_pred_trans_d *ve1,
-			const expr_pred_trans_d *ve2)
+expr_pred_trans_d::equal (const expr_pred_trans_d *ve1,
+			  const expr_pred_trans_d *ve2)
 {
   basic_block b1 = ve1->pred;
   basic_block b2 = ve2->pred;
@@ -522,16 +525,12 @@ ssa_expr_pred_trans_eq (const expr_pred_trans_d *ve1,
      be equal.  */
   if (b1 != b2)
     return false;
-  return ssa_pre_expr_eq (ve1->e, ve2->e);
+  return pre_expr_d::equal (ve1->e, ve2->e);
 }
 
 /* The phi_translate_table caches phi translations for a given
    expression and predecessor.  */
-
-static hash_table <expr_pred_trans_d, ssa_expr_pred_trans_hash,
-		   ssa_expr_pred_trans_eq,
-		   typed_free_remove <expr_pred_trans_d> >
-		  phi_translate_table;
+static hash_table <expr_pred_trans_d> phi_translate_table;
 
 /* Search in the phi translation table for the translation of
    expression E in basic block PRED.
@@ -545,7 +544,7 @@ phi_trans_lookup (pre_expr e, basic_block pred)
 
   ept.e = e;
   ept.pred = pred;
-  ept.hashcode = iterative_hash_hashval_t (ssa_pre_expr_hash (e), pred->index);
+  ept.hashcode = iterative_hash_hashval_t (pre_expr_d::hash (e), pred->index);
   slot = phi_translate_table.find_slot_with_hash (&ept, ept.hashcode,
 				   NO_INSERT);
   if (!slot)
@@ -566,7 +565,7 @@ phi_trans_add (pre_expr e, pre_expr v, basic_block pred)
   new_pair->e = e;
   new_pair->pred = pred;
   new_pair->v = v;
-  new_pair->hashcode = iterative_hash_hashval_t (ssa_pre_expr_hash (e),
+  new_pair->hashcode = iterative_hash_hashval_t (pre_expr_d::hash (e),
 						 pred->index);
 
   slot = phi_translate_table.find_slot_with_hash (new_pair,
@@ -3495,7 +3494,7 @@ do_regular_insertion (basic_block block, basic_block dom)
 		    do_insertion = true;
 		  if (first_s == NULL)
 		    first_s = edoubleprime;
-		  else if (!ssa_pre_expr_eq (first_s, edoubleprime))
+		  else if (!pre_expr_d::equal (first_s, edoubleprime))
 		    all_same = false;
 		}
 	    }
