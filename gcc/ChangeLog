@@ -1,3 +1,8 @@
+2012-08-17  Nick Clifton  <nickc@redhat.com>
+
+	* config/mep/t-mep (mep-pragma.o): Use $(COMPILER) to compile
+	mep-pragma.c.
+
 2012-08-17  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/t-avr (gen-avr-mmcu-texi): Use $(CC) to compile
