@@ -293,7 +293,7 @@ partition_view_fini (var_map map, bitmap selected)
 /* Create a partition view which includes all the used partitions in MAP.  If
    WANT_BASES is true, create the base variable map as well.  */
 
-extern void
+void
 partition_view_normal (var_map map, bool want_bases)
 {
   bitmap used;
@@ -312,7 +312,7 @@ partition_view_normal (var_map map, bool want_bases)
    the bitmap ONLY. If WANT_BASES is true, create the base variable map
    as well.  */
 
-extern void
+void
 partition_view_bitmap (var_map map, bitmap only, bool want_bases)
 {
   bitmap used;
@@ -329,7 +329,6 @@ partition_view_bitmap (var_map map, bitmap only, bool want_bases)
     }
   partition_view_fini (map, new_partitions);
 
-  BITMAP_FREE (used);
   if (want_bases)
     var_map_base_init (map);
   else
@@ -849,6 +848,12 @@ remove_unused_locals (void)
   timevar_pop (TV_REMOVE_UNUSED);
 }
 
+/* Obstack for globale liveness info bitmaps.  We don't want to put these
+   on the default obstack because these bitmaps can grow quite large and
+   we'll hold on to all that memory until the end of the compiler run.
+   As a bonus, delete_tree_live_info can destroy all the bitmaps by just
+   releasing the whole obstack.  */
+static bitmap_obstack liveness_bitmap_obstack;
 
 /* Allocate and return a new live range information object base on MAP.  */
 
@@ -856,24 +861,24 @@ static tree_live_info_p
 new_tree_live_info (var_map map)
 {
   tree_live_info_p live;
-  unsigned x;
+  basic_block bb;
 
-  live = (tree_live_info_p) xmalloc (sizeof (struct tree_live_info_d));
+  live = XNEW (struct tree_live_info_d);
   live->map = map;
   live->num_blocks = last_basic_block;
 
-  live->livein = (bitmap *)xmalloc (last_basic_block * sizeof (bitmap));
-  for (x = 0; x < (unsigned)last_basic_block; x++)
-    live->livein[x] = BITMAP_ALLOC (NULL);
+  live->livein = XNEWVEC (bitmap_head, last_basic_block);
+  FOR_EACH_BB (bb)
+    bitmap_initialize (&live->livein[bb->index], &liveness_bitmap_obstack);
 
-  live->liveout = (bitmap *)xmalloc (last_basic_block * sizeof (bitmap));
-  for (x = 0; x < (unsigned)last_basic_block; x++)
-    live->liveout[x] = BITMAP_ALLOC (NULL);
+  live->liveout = XNEWVEC (bitmap_head, last_basic_block);
+  FOR_EACH_BB (bb)
+    bitmap_initialize (&live->liveout[bb->index], &liveness_bitmap_obstack);
 
   live->work_stack = XNEWVEC (int, last_basic_block);
   live->stack_top = live->work_stack;
 
-  live->global = BITMAP_ALLOC (NULL);
+  live->global = BITMAP_ALLOC (&liveness_bitmap_obstack);
   return live;
 }
 
@@ -883,19 +888,10 @@ new_tree_live_info (var_map map)
 void
 delete_tree_live_info (tree_live_info_p live)
 {
-  int x;
-
-  BITMAP_FREE (live->global);
+  bitmap_obstack_release (&liveness_bitmap_obstack);
   free (live->work_stack);
-
-  for (x = live->num_blocks - 1; x >= 0; x--)
-    BITMAP_FREE (live->liveout[x]);
   free (live->liveout);
-
-  for (x = live->num_blocks - 1; x >= 0; x--)
-    BITMAP_FREE (live->livein[x]);
   free (live->livein);
-
   free (live);
 }
 
@@ -928,7 +924,7 @@ loe_visit_block (tree_live_info_p live, basic_block bb, sbitmap visited,
 	 predecessor block.  This should be the live on entry vars to pred.
 	 Note that liveout is the DEFs in a block while live on entry is
 	 being calculated.  */
-      bitmap_and_compl (tmp, loe, live->liveout[pred_bb->index]);
+      bitmap_and_compl (tmp, loe, &live->liveout[pred_bb->index]);
 
       /* Add these bits to live-on-entry for the pred. if there are any
 	 changes, and pred_bb has been visited already, add it to the
@@ -952,7 +948,7 @@ live_worklist (tree_live_info_p live)
   unsigned b;
   basic_block bb;
   sbitmap visited = sbitmap_alloc (last_basic_block + 1);
-  bitmap tmp = BITMAP_ALLOC (NULL);
+  bitmap tmp = BITMAP_ALLOC (&liveness_bitmap_obstack);
 
   sbitmap_zero (visited);
 
@@ -997,7 +993,7 @@ set_var_live_on_entry (tree ssa_name, tree_live_info_p live)
       def_bb = gimple_bb (stmt);
       /* Mark defs in liveout bitmap temporarily.  */
       if (def_bb)
-	bitmap_set_bit (live->liveout[def_bb->index], p);
+	bitmap_set_bit (&live->liveout[def_bb->index], p);
     }
   else
     def_bb = ENTRY_BLOCK_PTR;
@@ -1036,7 +1032,7 @@ set_var_live_on_entry (tree ssa_name, tree_live_info_p live)
       if (add_block)
         {
 	  global = true;
-	  bitmap_set_bit (live->livein[add_block->index], p);
+	  bitmap_set_bit (&live->livein[add_block->index], p);
 	}
     }
 
@@ -1058,7 +1054,7 @@ calculate_live_on_exit (tree_live_info_p liveinfo)
 
   /* live on entry calculations used liveout vectors for defs, clear them.  */
   FOR_EACH_BB (bb)
-    bitmap_clear (liveinfo->liveout[bb->index]);
+    bitmap_clear (&liveinfo->liveout[bb->index]);
 
   /* Set all the live-on-exit bits for uses in PHIs.  */
   FOR_EACH_BB (bb)
@@ -1083,14 +1079,14 @@ calculate_live_on_exit (tree_live_info_p liveinfo)
 		continue;
 	      e = gimple_phi_arg_edge (phi, i);
 	      if (e->src != ENTRY_BLOCK_PTR)
-		bitmap_set_bit (liveinfo->liveout[e->src->index], p);
+		bitmap_set_bit (&liveinfo->liveout[e->src->index], p);
 	    }
 	}
 
       /* Add each successors live on entry to this bock live on exit.  */
       FOR_EACH_EDGE (e, ei, bb->succs)
         if (e->dest != EXIT_BLOCK_PTR)
-	  bitmap_ior_into (liveinfo->liveout[bb->index],
+	  bitmap_ior_into (&liveinfo->liveout[bb->index],
 			   live_on_entry (liveinfo, e->dest));
     }
 }
@@ -1106,6 +1102,7 @@ calculate_live_ranges (var_map map)
   unsigned i;
   tree_live_info_p live;
 
+  bitmap_obstack_initialize (&liveness_bitmap_obstack);
   live = new_tree_live_info (map);
   for (i = 0; i < num_var_partitions (map); i++)
     {
@@ -1185,7 +1182,7 @@ dump_live_info (FILE *f, tree_live_info_p live, int flag)
       FOR_EACH_BB (bb)
 	{
 	  fprintf (f, "\nLive on entry to BB%d : ", bb->index);
-	  EXECUTE_IF_SET_IN_BITMAP (live->livein[bb->index], 0, i, bi)
+	  EXECUTE_IF_SET_IN_BITMAP (&live->livein[bb->index], 0, i, bi)
 	    {
 	      print_generic_expr (f, partition_to_var (map, i), TDF_SLIM);
 	      fprintf (f, "  ");
@@ -1199,7 +1196,7 @@ dump_live_info (FILE *f, tree_live_info_p live, int flag)
       FOR_EACH_BB (bb)
 	{
 	  fprintf (f, "\nLive on exit from BB%d : ", bb->index);
-	  EXECUTE_IF_SET_IN_BITMAP (live->liveout[bb->index], 0, i, bi)
+	  EXECUTE_IF_SET_IN_BITMAP (&live->liveout[bb->index], 0, i, bi)
 	    {
 	      print_generic_expr (f, partition_to_var (map, i), TDF_SLIM);
 	      fprintf (f, "  ");

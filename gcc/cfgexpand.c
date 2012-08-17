@@ -185,6 +185,10 @@ static size_t stack_vars_alloc;
 static size_t stack_vars_num;
 static struct pointer_map_t *decl_to_stack_part;
 
+/* Conflict bitmaps go on this obstack.  This allows us to destroy
+   all of them in one big sweep.  */
+static bitmap_obstack stack_var_bitmap_obstack;
+
 /* An array of indices such that stack_vars[stack_vars_sorted[i]].size
    is non-decreasing.  */
 static size_t *stack_vars_sorted;
@@ -299,9 +303,9 @@ add_stack_var_conflict (size_t x, size_t y)
   struct stack_var *a = &stack_vars[x];
   struct stack_var *b = &stack_vars[y];
   if (!a->conflicts)
-    a->conflicts = BITMAP_ALLOC (NULL);
+    a->conflicts = BITMAP_ALLOC (&stack_var_bitmap_obstack);
   if (!b->conflicts)
-    b->conflicts = BITMAP_ALLOC (NULL);
+    b->conflicts = BITMAP_ALLOC (&stack_var_bitmap_obstack);
   bitmap_set_bit (a->conflicts, y);
   bitmap_set_bit (b->conflicts, x);
 }
@@ -431,7 +435,7 @@ add_scope_conflicts_1 (basic_block bb, bitmap work, bool for_conflict)
 		{
 		  struct stack_var *a = &stack_vars[i];
 		  if (!a->conflicts)
-		    a->conflicts = BITMAP_ALLOC (NULL);
+		    a->conflicts = BITMAP_ALLOC (&stack_var_bitmap_obstack);
 		  bitmap_ior_into (a->conflicts, work);
 		}
 	      visit = visit_conflict;
@@ -464,7 +468,7 @@ add_scope_conflicts (void)
      We then do a mostly classical bitmap liveness algorithm.  */
 
   FOR_ALL_BB (bb)
-    bb->aux = BITMAP_ALLOC (NULL);
+    bb->aux = BITMAP_ALLOC (&stack_var_bitmap_obstack);
 
   rpo = XNEWVEC (int, last_basic_block);
   n_bbs = pre_and_rev_post_order_compute (NULL, rpo, false);
@@ -647,7 +651,7 @@ update_alias_info_with_stack_vars (void)
     {
       unsigned i;
       struct pointer_set_t *visited = pointer_set_create ();
-      bitmap temp = BITMAP_ALLOC (NULL);
+      bitmap temp = BITMAP_ALLOC (&stack_var_bitmap_obstack);
 
       for (i = 1; i < num_ssa_names; i++)
 	{
@@ -1378,14 +1382,11 @@ create_stack_guard (void)
 static void
 init_vars_expansion (void)
 {
-  tree t;
-  unsigned ix;
-  /* Set TREE_USED on all variables in the local_decls.  */
-  FOR_EACH_LOCAL_DECL (cfun, ix, t)
-    TREE_USED (t) = 1;
+  /* Conflict bitmaps, and a few related temporary bitmaps, go here.  */
+  bitmap_obstack_initialize (&stack_var_bitmap_obstack);
 
-  /* Clear TREE_USED on all variables associated with a block scope.  */
-  clear_tree_used (DECL_INITIAL (current_function_decl));
+  /* A map from decl to stack partition.  */
+  decl_to_stack_part = pointer_map_create ();
 
   /* Initialize local stack smashing state.  */
   has_protected_decls = false;
@@ -1396,11 +1397,11 @@ init_vars_expansion (void)
 static void
 fini_vars_expansion (void)
 {
-  size_t i, n = stack_vars_num;
-  for (i = 0; i < n; i++)
-    BITMAP_FREE (stack_vars[i].conflicts);
-  XDELETEVEC (stack_vars);
-  XDELETEVEC (stack_vars_sorted);
+  bitmap_obstack_release (&stack_var_bitmap_obstack);
+  if (stack_vars)
+    XDELETEVEC (stack_vars);
+  if (stack_vars_sorted)
+    XDELETEVEC (stack_vars_sorted);
   stack_vars = NULL;
   stack_vars_sorted = NULL;
   stack_vars_alloc = stack_vars_num = 0;
@@ -1428,6 +1429,8 @@ estimated_stack_frame_size (struct cgraph_node *node)
   current_function_decl = node->symbol.decl;
   push_cfun (fn);
 
+  init_vars_expansion ();
+
   FOR_EACH_LOCAL_DECL (fn, i, var)
     if (auto_var_in_fn_p (var, fn->decl))
       size += expand_one_var (var, true, false);
@@ -1439,8 +1442,9 @@ estimated_stack_frame_size (struct cgraph_node *node)
       for (i = 0; i < stack_vars_num; ++i)
 	stack_vars_sorted[i] = i;
       size += account_stack_vars ();
-      fini_vars_expansion ();
     }
+
+  fini_vars_expansion ();
   pop_cfun ();
   current_function_decl = old_cur_fun_decl;
   return size;
@@ -1463,6 +1467,12 @@ expand_used_vars (void)
     int off = STARTING_FRAME_OFFSET % align;
     frame_phase = off ? align - off : 0;
   }
+
+  /* Set TREE_USED on all variables in the local_decls.  */
+  FOR_EACH_LOCAL_DECL (cfun, i, var)
+    TREE_USED (var) = 1;
+  /* Clear TREE_USED on all variables associated with a block scope.  */
+  clear_tree_used (DECL_INITIAL (current_function_decl));
 
   init_vars_expansion ();
 
@@ -1613,9 +1623,9 @@ expand_used_vars (void)
 	}
 
       expand_stack_vars (NULL);
-
-      fini_vars_expansion ();
     }
+
+  fini_vars_expansion ();
 
   /* If there were any artificial non-ignored vars without rtl
      found earlier, see if deferred stack allocation hasn't assigned

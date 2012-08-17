@@ -130,7 +130,7 @@ create_iv (tree base, tree step, tree var, struct loop *loop,
   add_phi_arg (stmt, va, loop_latch_edge (loop), UNKNOWN_LOCATION);
 }
 
-/* Return the outermost superloop LOOP of USE_LOOP that is a superloop of
+/* Return the innermost superloop LOOP of USE_LOOP that is a superloop of
    both DEF_LOOP and USE_LOOP.  */
 
 static inline struct loop *

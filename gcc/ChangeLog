@@ -1,3 +1,64 @@
+2012-08-17  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR middle-end/54146
+	* tree-ssa-loop-im.c (lim_bitmap_obstack): New bitmap_obstack.
+	(memref_free): Don't free the bitmaps individually here.
+	(mem_ref_alloc): Allocate the bitmaps on the new bitmap obstack.
+	(analyze_memory_references): Likewise.
+	(tree_ssa_lim_initialize): Initialize the new bitmap obstack.
+	(tree_ssa_lim_finalize): Release it.
+	* dse.c (dse_bitmap_obstack): New bitmap obstack.
+	(dse_obstack): New obstack.
+	(get_group_info): Allocate the bitmaps on the new bitmap obstack.
+	(dse_step0): Allocate the scratch bitmap on reg_obstack.  Initialize
+	the new bitmap obstack and normal obstack.  Use XNEWVEC for bb_table.
+	(record_store): Allocate regs_set on reg_obstack.
+	(dse_step1): Allocate regs_live on reg_obstack.
+	(dse_step2_init): Allocate offset_map_n and offset_map_p on the new
+	obstack.
+	(dse_step3_scan): Allocate bitmaps on the new bitmap obstack.
+	(dse_step3): Likewise.
+	(dse_confluence_0): Likewise.
+	(dse_confluence_n): Likewise.
+	(dse_transfer_function): Likewise.
+	(dse_step7): Destroy the new obstacks, and everything allocated on
+	them, in one big sweep.
+	(rest_of_handle_dse): Update.
+	* cfgexpand.c (stack_var_bitmap_obstack): New bitmap obstack.
+	(add_stack_var_conflict): Allocate bitmaps on it.
+	(add_scope_conflicts_1): Likewise.
+	(add_scope_conflicts): Likewise.
+	(update_alias_info_with_stack_vars): Likewise.
+	(init_vars_expansion): Move TREE_USED fiddling expand_used_vars.
+	Initialize the new bitmap obstack.
+	(fini_vars_expansion): Release it.
+	(estimated_stack_frame_size): Use init_vars_expansion to set things up
+	and always clean up at the end.
+	(expand_used_vars): Do the TREE_USED trickery here.  Always call
+	fini_vars_expansion.
+	* tree-ssa-live.h (struct tree_live_info_d): Make livein and liveout
+	arrays of bitmap_head to avoid one indirection per bitmap access.
+	(live_on_entry, live_on_exit, live_var_map, live_merge_and_clear,
+	make_live_on_entry): Update.
+	* tree-ssa-live.c (partition_view_bitmap): Don't double-free 'used'.
+	(liveness_bitmap_obstack): New bitmap obstack.
+	(remove_unused_locals): Use it to allocate all bitmaps on.  Update
+	for livein/liveout changes in tree-ssa-live.h.
+	(delete_tree_live_info): Release the bitmap obstack.
+	(loe_visit_block, live_worklist, set_var_live_on_entry,
+	calculate_live_on_exit, dump_live_info): Update.
+	(calculate_live_ranges): Initialize the bitmap.
+	* tree-ssa-ter.c (ter_bitmap_obstack): New bitmap obstack.
+	(new_temp_expr_table): Allocate bitmap on it.
+	(make_dependent_on_partition, add_to_partition_kill_list,
+	add_dependence, process_replaceable): Likewise.
+	(find_replaceable_exprs): Initialize and release the new obstack here.
+	* df-problems.c (df_lr_add_problem): Allocate persistent bitmap
+	for out_of_date_transfer_functions on df_bitmap_obstack.
+	(df_live_add_problem): Likewise.
+	(df_chain_add_problem): Likewise.
+	(df_word_lr_add_problem): Likewise.
+
 2012-08-17  Nick Clifton  <nickc@redhat.com>
 
 	* config/mep/t-mep (mep-pragma.o): Use $(COMPILER) to compile
