@@ -13,3 +13,8 @@ LIB2ADDEH = $(srcdir)/config/arm/unwind-arm.c \
 
 # Add the BPABI names.
 SHLIB_MAPFILES += $(srcdir)/config/arm/libgcc-bpabi.ver
+
+# On ARM, specifying -fnon-call-exceptions will needlessly pull in
+# the unwinder in simple programs which use 64-bit division.  Omitting
+# the option is safe.
+LIB2_DIVMOD_EXCEPTION_FLAGS := -fexceptions
