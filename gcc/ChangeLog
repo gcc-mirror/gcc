@@ -1,3 +1,17 @@
+2012-08-17  Richard Guenther  <rguenther@suse.de>
+
+	* tree-sra.c (modify_function): Free redirect_callers vector.
+	* ipa-split.c (split_function): Free args_to_pass vector.
+	* tree-vect-data-refs.c (vect_peeling_hash_get_lowest_cost): Free
+	body_cost_vec properly.
+	(vect_enhance_data_refs_alignment): Likewise.
+	* tree-vect-stmts.c (vectorizable_operation): Do not pre-allocate
+	vec_oprnds.
+	(new_stmt_vec_info): Do not pre-allocate STMT_VINFO_SAME_ALIGN_REFS.
+	* tree-vect-slp.c (vect_free_slp_instance): Free the instance.
+	(vect_analyze_slp_instance): Free everything.
+	(destroy_bb_vec_info): Free the SLP instances.
+
 2012-08-17  Iain Sandoe  <iain@codesourcery.com>
 
 	* config/rs6000/rs6000.c (macho_branch_islands): Adjust for changes
