@@ -570,6 +570,7 @@
   "ISA_HAS_DSP && !TARGET_64BIT"
   "dpau.h.qbl\t%q0,%2,%3"
   [(set_attr "type"	"dspmac")
+   (set_attr "accum_in" "1")
    (set_attr "mode"	"SI")])
 
 (define_insn "mips_dpau_h_qbr"
@@ -581,6 +582,7 @@
   "ISA_HAS_DSP && !TARGET_64BIT"
   "dpau.h.qbr\t%q0,%2,%3"
   [(set_attr "type"	"dspmac")
+   (set_attr "accum_in" "1")
    (set_attr "mode"	"SI")])
 
 ;; DPSU*
@@ -593,6 +595,7 @@
   "ISA_HAS_DSP && !TARGET_64BIT"
   "dpsu.h.qbl\t%q0,%2,%3"
   [(set_attr "type"	"dspmac")
+   (set_attr "accum_in" "1")
    (set_attr "mode"	"SI")])
 
 (define_insn "mips_dpsu_h_qbr"
@@ -604,6 +607,7 @@
   "ISA_HAS_DSP && !TARGET_64BIT"
   "dpsu.h.qbr\t%q0,%2,%3"
   [(set_attr "type"	"dspmac")
+   (set_attr "accum_in" "1")
    (set_attr "mode"	"SI")])
 
 ;; DPAQ*
@@ -620,6 +624,7 @@
   "ISA_HAS_DSP && !TARGET_64BIT"
   "dpaq_s.w.ph\t%q0,%2,%3"
   [(set_attr "type"	"dspmac")
+   (set_attr "accum_in" "1")
    (set_attr "mode"	"SI")])
 
 ;; DPSQ*
@@ -636,6 +641,7 @@
   "ISA_HAS_DSP && !TARGET_64BIT"
   "dpsq_s.w.ph\t%q0,%2,%3"
   [(set_attr "type"	"dspmac")
+   (set_attr "accum_in" "1")
    (set_attr "mode"	"SI")])
 
 ;; MULSAQ*
@@ -652,6 +658,7 @@
   "ISA_HAS_DSP && !TARGET_64BIT"
   "mulsaq_s.w.ph\t%q0,%2,%3"
   [(set_attr "type"	"dspmac")
+   (set_attr "accum_in" "1")
    (set_attr "mode"	"SI")])
 
 ;; DPAQ*
@@ -668,6 +675,7 @@
   "ISA_HAS_DSP && !TARGET_64BIT"
   "dpaq_sa.l.w\t%q0,%2,%3"
   [(set_attr "type"	"dspmacsat")
+   (set_attr "accum_in" "1")
    (set_attr "mode"	"SI")])
 
 ;; DPSQ*
@@ -684,6 +692,7 @@
   "ISA_HAS_DSP && !TARGET_64BIT"
   "dpsq_sa.l.w\t%q0,%2,%3"
   [(set_attr "type"	"dspmacsat")
+   (set_attr "accum_in" "1")
    (set_attr "mode"	"SI")])
 
 ;; MAQ*
@@ -700,6 +709,7 @@
   "ISA_HAS_DSP && !TARGET_64BIT"
   "maq_s.w.phl\t%q0,%2,%3"
   [(set_attr "type"	"dspmac")
+   (set_attr "accum_in" "1")
    (set_attr "mode"	"SI")])
 
 (define_insn "mips_maq_s_w_phr"
@@ -715,6 +725,7 @@
   "ISA_HAS_DSP && !TARGET_64BIT"
   "maq_s.w.phr\t%q0,%2,%3"
   [(set_attr "type"	"dspmac")
+   (set_attr "accum_in" "1")
    (set_attr "mode"	"SI")])
 
 ;; MAQ_SA*
@@ -731,6 +742,7 @@
   "ISA_HAS_DSP && !TARGET_64BIT"
   "maq_sa.w.phl\t%q0,%2,%3"
   [(set_attr "type"	"dspmacsat")
+   (set_attr "accum_in" "1")
    (set_attr "mode"	"SI")])
 
 (define_insn "mips_maq_sa_w_phr"
@@ -746,6 +758,7 @@
   "ISA_HAS_DSP && !TARGET_64BIT"
   "maq_sa.w.phr\t%q0,%2,%3"
   [(set_attr "type"	"dspmacsat")
+   (set_attr "accum_in" "1")
    (set_attr "mode"	"SI")])
 
 ;; Table 2-4. MIPS DSP ASE Instructions: General Bit/Manipulation

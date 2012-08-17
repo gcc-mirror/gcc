@@ -1,3 +1,11 @@
+2012-08-16  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config/mips/mips-dsp.md (mips_dpau_h_qbl, mips_dpau_h_qbr)
+	(mips_dpsu_h_qbl, mips_dpsu_h_qbr, mips_dpaq_s_w_ph)
+	(mips_dpsq_s_w_ph, mips_mulsaq_s_w_ph, mips_dpaq_sa_l_w)
+	(mips_dpsq_sa_l_w, mips_maq_s_w_phl, mips_maq_s_w_phr)
+	(mips_maq_sa_w_phl, mips_maq_sa_w_phr): Add accum_in attribute.
+
 2012-08-16  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/54236
