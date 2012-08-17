@@ -1513,4 +1513,12 @@ default_pch_valid_p (const void *data_p, size_t len)
   return NULL;
 }
 
+/* Default version of member_type_forces_blk.  */
+
+bool
+default_member_type_forces_blk (const_tree, enum machine_mode)
+{
+  return false;
+}
+
 #include "gt-targhooks.h"

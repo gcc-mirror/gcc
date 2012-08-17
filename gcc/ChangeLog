@@ -1,3 +1,38 @@
+2012-08-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* stor-layout.c (compute_record_mode): Replace
+	MEMBER_TYPE_FORCES_BLK with targetm.member_type_forces_blk.
+	(layout_type): Likewise.
+
+	* system.h: Poison MEMBER_TYPE_FORCES_BLK.
+
+	* target.def (member_type_forces_blk): New target hook.
+
+	* targhooks.c (default_member_type_forces_blk): New.
+	* targhooks.h (default_member_type_forces_blk): Likewise.
+
+	* doc/tm.texi.in (MEMBER_TYPE_FORCES_BLK): Removed.
+	(TARGET_MEMBER_TYPE_FORCES_BLK): New hook.
+	* doc/tm.texi: Regenerated.
+
+	* config/ia64/hpux.h (MEMBER_TYPE_FORCES_BLK): Removed.
+
+	* config/ia64/ia64.c (ia64_member_type_forces_blk): New
+	function.
+	(TARGET_MEMBER_TYPE_FORCES_BLK): New macro.
+
+	* config/rs6000/rs6000.c (TARGET_MEMBER_TYPE_FORCES_BLK): New
+	macro.
+	(rs6000_member_type_forces_blk): New function.
+
+	* config/rs6000/rs6000.h (MEMBER_TYPE_FORCES_BLK): Removed.
+
+	* config/xtensa/xtensa.c (xtensa_member_type_forces_blk): New
+	function.
+	(TARGET_MEMBER_TYPE_FORCES_BLK): New macro.
+
+	* config/xtensa/xtensa.h (MEMBER_TYPE_FORCES_BLK): Removed.
+
 2012-08-17  Diego Novillo  <dnovillo@google.com>
 
 	PR bootstrap/54281
