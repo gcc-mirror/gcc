@@ -61,6 +61,9 @@
 
 2012-08-17  Nick Clifton  <nickc@redhat.com>
 
+	* config/mcore/mcore.md (cbranchsi4): Remove mode from
+	comparison.
+
 	* config/iq2000/iq2000.md (cbranchsi4): Remove mode from
 	comparison and label.
 	(branch_zero): Likewise.
