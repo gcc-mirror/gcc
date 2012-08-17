@@ -7826,6 +7826,7 @@ expand_atomic_fetch_op (rtx target, rtx mem, rtx val, enum rtx_code code,
     {
       rtx libfunc;
       bool fixup = false;
+      enum rtx_code orig_code = code;
 
       libfunc = optab_libfunc (after ? optab.fetch_after
 			       : optab.fetch_before, mode);
@@ -7849,6 +7850,9 @@ expand_atomic_fetch_op (rtx target, rtx mem, rtx val, enum rtx_code code,
 					  true, OPTAB_LIB_WIDEN);
 	  return result;
 	}
+
+      /* We need the original code for any further attempts.  */
+      code = orig_code;
     }
 
   /* If nothing else has succeeded, default to a compare and swap loop.  */
