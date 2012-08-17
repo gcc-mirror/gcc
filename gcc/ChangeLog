@@ -1,3 +1,9 @@
+2012-08-17  Marc Glisse  <marc.glisse@inria.fr>
+
+	* simplify-rtx.c (simplify_binary_operation_1): Optimize shuffle of
+	a concatenation.
+
+
 2012-08-17  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* stor-layout.c (compute_record_mode): Replace
