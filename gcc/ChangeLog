@@ -1,3 +1,8 @@
+2012-08-17  Richard Guenther  <rguenther@suse.de>
+
+	* bitmap.h (struct bitmap_element_def): GTY annotate next/prev.
+	(struct bitmap_head_def): GTY skip current field.
+
 2012-08-17  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR middle-end/54146

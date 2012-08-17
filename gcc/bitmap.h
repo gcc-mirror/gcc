@@ -167,9 +167,9 @@ typedef struct GTY (()) bitmap_obstack {
    bitmap_elt_clear_from to be implemented in unit time rather than
    linear in the number of elements to be freed.  */
 
-typedef struct GTY(()) bitmap_element_def {
-  struct bitmap_element_def *next;		/* Next element.  */
-  struct bitmap_element_def *prev;		/* Previous element.  */
+typedef struct GTY((chain_next ("%h.next"), chain_prev ("%h.prev"))) bitmap_element_def {
+  struct bitmap_element_def *next;	/* Next element.  */
+  struct bitmap_element_def *prev;	/* Previous element.  */
   unsigned int indx;			/* regno/BITMAP_ELEMENT_ALL_BITS.  */
   BITMAP_WORD bits[BITMAP_ELEMENT_WORDS]; /* Bits that are set.  */
 } bitmap_element;
@@ -177,15 +177,17 @@ typedef struct GTY(()) bitmap_element_def {
 struct bitmap_descriptor;
 /* Head of bitmap linked list.  gengtype ignores ifdefs, but for
    statistics we need to add a bitmap descriptor pointer.  As it is
-   not collected, we can just GTY((skip)) it.   */
+   not collected, we can just GTY((skip(""))) it.  Likewise current
+   points to something already pointed to by the chain started by first,
+   no need to walk it again.  */
 
 typedef struct GTY(()) bitmap_head_def {
-  bitmap_element *first;	/* First element in linked list.  */
-  bitmap_element *current;	/* Last element looked at.  */
-  unsigned int indx;		/* Index of last element looked at.  */
-  bitmap_obstack *obstack;	/* Obstack to allocate elements from.
-				   If NULL, then use GGC allocation.  */
-  struct bitmap_descriptor GTY((skip)) *desc;
+  bitmap_element *first;		/* First element in linked list.  */
+  bitmap_element * GTY((skip(""))) current; /* Last element looked at.  */
+  unsigned int indx;			/* Index of last element looked at.  */
+  bitmap_obstack *obstack;		/* Obstack to allocate elements from.
+					   If NULL, then use GGC allocation.  */
+  struct bitmap_descriptor GTY((skip(""))) *desc;
 } bitmap_head;
 
 /* Global data */
