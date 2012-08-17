@@ -1,3 +1,10 @@
+2012-08-17  Julian Brown  <julian@codesourcery.com>
+
+	* Makefile.in (LIB2_DIVMOD_EXCEPTION_FLAGS): Default to
+	-fexceptions -fnon-call-exceptions if not defined.
+	($(lib2-divmod-o), $(lib2-divmod-s-o)): Use above.
+	* config/arm/t-bpabi (LIB2_DIVMOD_EXCEPTION_FLAGS): Define.
+
 2012-08-17  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* config/m68k/linux-atomic.c (__sync_lock_test_and_set_1): Fix

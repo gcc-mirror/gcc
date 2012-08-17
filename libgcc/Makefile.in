@@ -497,18 +497,24 @@ libgcc-s-objects += $(patsubst %,%_s$(objext),$(sifuncs) $(difuncs) $(tifuncs))
 endif
 endif
 
+ifeq ($(LIB2_DIVMOD_EXCEPTION_FLAGS),)
+# Provide default flags for compiling divmod functions, if they haven't been
+# set already by a target-specific Makefile fragment.
+LIB2_DIVMOD_EXCEPTION_FLAGS := -fexceptions -fnon-call-exceptions
+endif
+
 # Build LIB2_DIVMOD_FUNCS.
 lib2-divmod-o = $(patsubst %,%$(objext),$(LIB2_DIVMOD_FUNCS))
 $(lib2-divmod-o): %$(objext): $(srcdir)/libgcc2.c
 	$(gcc_compile) -DL$* -c $< \
-	  -fexceptions -fnon-call-exceptions $(vis_hide)
+	  $(LIB2_DIVMOD_EXCEPTION_FLAGS) $(vis_hide)
 libgcc-objects += $(lib2-divmod-o)
 
 ifeq ($(enable_shared),yes)
 lib2-divmod-s-o = $(patsubst %,%_s$(objext),$(LIB2_DIVMOD_FUNCS))
 $(lib2-divmod-s-o): %_s$(objext): $(srcdir)/libgcc2.c
 	$(gcc_s_compile) -DL$* -c $< \
-	  -fexceptions -fnon-call-exceptions
+	  $(LIB2_DIVMOD_EXCEPTION_FLAGS)
 libgcc-s-objects += $(lib2-divmod-s-o)
 endif
 
