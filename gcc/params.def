@@ -638,11 +638,12 @@ DEFPARAM(PARAM_MAX_LAST_VALUE_RTL,
 
 /* INTEGER_CST nodes are shared for values [{-1,0} .. N) for
    {signed,unsigned} integral types.  This determines N.
-   Experimentation shows 256 to be a good value.  */
+   Experimentation shows 251 to be a good value that generates the
+   least amount of garbage for allocating the TREE_VEC storage.  */
 DEFPARAM (PARAM_INTEGER_SHARE_LIMIT,
 	  "integer-share-limit",
 	  "The upper bound for sharing integer constants",
-	  256, 2, 2)
+	  251, 2, 2)
 
 DEFPARAM (PARAM_SSP_BUFFER_SIZE,
 	  "ssp-buffer-size",

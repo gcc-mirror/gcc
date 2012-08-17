@@ -1,5 +1,10 @@
 2012-08-17  Richard Guenther  <rguenther@suse.de>
 
+	* params.def (integer-share-limit): Decrease from 256 to 251,
+	add rationale.
+
+2012-08-17  Richard Guenther  <rguenther@suse.de>
+
 	* tree-sra.c (modify_function): Free redirect_callers vector.
 	* ipa-split.c (split_function): Free args_to_pass vector.
 	* tree-vect-data-refs.c (vect_peeling_hash_get_lowest_cost): Free
