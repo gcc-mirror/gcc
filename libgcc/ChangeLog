@@ -1,3 +1,8 @@
+2012-08-17  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* config/m68k/linux-atomic.c (__sync_lock_test_and_set_1): Fix
+	type.
+
 2012-08-16  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config.host (*-*-aix*): Move rs6000/t-ibm-ldouble after
