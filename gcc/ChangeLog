@@ -1,3 +1,8 @@
+2012-08-17  Iain Sandoe  <iain@codesourcery.com>
+
+	* config/rs6000/rs6000.c (macho_branch_islands): Adjust for changes
+	to vec.h.
+
 2012-08-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* doc/invoke.texi (-Wsizeof-pointer-memaccess): Document.

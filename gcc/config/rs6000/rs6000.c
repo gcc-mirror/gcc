@@ -24902,7 +24902,7 @@ macho_branch_islands (void)
 
   while (!VEC_empty (branch_island, branch_islands))
     {
-      branch_island *bi = VEC_last (branch_island, branch_islands);
+      branch_island *bi = &VEC_last (branch_island, branch_islands);
       const char *label = IDENTIFIER_POINTER (bi->label_name);
       const char *name = IDENTIFIER_POINTER (bi->function_name);
       char name_buf[512];
