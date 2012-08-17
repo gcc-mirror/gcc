@@ -1,3 +1,11 @@
+2012-08-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.c (sizeof_pointer_memaccess_warning): New function.
+	* c.opt (-Wsizeof-pointer-memaccess): Add new option.
+	* c-opts.c (c_common_handle_option): Enable it for -Wall.
+	* c-common.h (sizeof_pointer_memaccess_warning): Add prototype.
+	* c-common.def (SIZEOF_EXPR): Moved here from cp-tree.def.
+
 2012-08-10  Richard Guenther  <rguenther@suse.de>
 
 	* c-pretty-print.c (pp_c_expression): Handle anonymous SSA names.

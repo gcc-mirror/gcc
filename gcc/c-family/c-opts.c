@@ -1,6 +1,6 @@
 /* C/ObjC/C++ command line option handling.
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
-   Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011,
+   2012 Free Software Foundation, Inc.
    Contributed by Neil Booth.
 
 This file is part of GCC.
@@ -374,6 +374,7 @@ c_common_handle_option (size_t scode, const char *arg, int value,
       warn_return_type = value;
       warn_sequence_point = value;	/* Was C only.  */
       warn_switch = value;
+      warn_sizeof_pointer_memaccess = value;
       if (warn_strict_aliasing == -1)
 	set_Wstrict_aliasing (&global_options, value);
       warn_address = value;

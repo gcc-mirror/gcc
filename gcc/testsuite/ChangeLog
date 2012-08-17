@@ -1,3 +1,7 @@
+2012-08-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/torture/Wsizeof-pointer-memaccess1.c: New test.
+
 2012-08-16  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/54236

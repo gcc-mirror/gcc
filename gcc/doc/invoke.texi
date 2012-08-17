@@ -263,9 +263,9 @@ Objective-C and Objective-C++ Dialects}.
 -Wpointer-arith  -Wno-pointer-to-int-cast @gol
 -Wredundant-decls @gol
 -Wreturn-type  -Wsequence-point  -Wshadow @gol
--Wsign-compare  -Wsign-conversion  -Wstack-protector @gol
--Wstack-usage=@var{len} -Wstrict-aliasing -Wstrict-aliasing=n @gol
--Wstrict-overflow -Wstrict-overflow=@var{n} @gol
+-Wsign-compare  -Wsign-conversion  -Wsizeof-pointer-memaccess @gol
+-Wstack-protector -Wstack-usage=@var{len} -Wstrict-aliasing @gol
+-Wstrict-aliasing=n @gol -Wstrict-overflow -Wstrict-overflow=@var{n} @gol
 -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{]} @gol
 -Wmissing-format-attribute @gol
 -Wswitch  -Wswitch-default  -Wswitch-enum -Wsync-nand @gol
@@ -4326,6 +4326,16 @@ Warn for implicit conversions that may change the sign of an integer
 value, like assigning a signed integer expression to an unsigned
 integer variable. An explicit cast silences the warning. In C, this
 option is enabled also by @option{-Wconversion}.
+
+@item -Wsizeof-pointer-memaccess
+@opindex Wsizeof-pointer-memaccess
+@opindex Wno-sizeof-pointer-memaccess
+Warn for suspicious length parameters to certain string and memory built-in
+functions if the argument uses @code{sizeof}.  This warning warns e.g.@:
+about @code{memset (ptr, 0, sizeof (ptr));} if @code{ptr} is not an array,
+but a pointer, and suggests a possible fix, or about
+@code{memcpy (&foo, ptr, sizeof (&foo));}.  This warning is enabled by
+@option{-Wall}.
 
 @item -Waddress
 @opindex Waddress

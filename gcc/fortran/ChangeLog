@@ -1,3 +1,7 @@
+2012-08-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* array.c (gfc_match_array_ref): Fix up memset arguments.
+
 2012-08-16   Diego Novillo  <dnovillo@google.com>
 
 	Revert

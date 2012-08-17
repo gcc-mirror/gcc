@@ -1,3 +1,7 @@
+2012-08-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/invoke.texi (-Wsizeof-pointer-memaccess): Document.
+
 2012-08-16  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* config/mips/mips-dsp.md (mips_dpau_h_qbl, mips_dpau_h_qbr)
