@@ -61,6 +61,11 @@
 
 2012-08-17  Nick Clifton  <nickc@redhat.com>
 
+	* config/fr30/fr30.md  (cbranchsi4): Remove mode from
+	comparison.
+	(branch_true): Likewise.
+	(branch_false): Likewise.
+
 	* config/mcore/mcore.md (cbranchsi4): Remove mode from
 	comparison.
 
