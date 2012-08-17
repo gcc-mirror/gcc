@@ -1502,7 +1502,7 @@
 
 (define_expand "cbranchsi4"
   [(set (pc)
-	(if_then_else (match_operator:SI 0 "ordered_comparison_operator"
+	(if_then_else (match_operator 0 "ordered_comparison_operator"
 		       [(match_operand:SI 1 "mcore_compare_operand")
 			(match_operand:SI 2 "nonmemory_operand")])
 		      (label_ref (match_operand 3 ""))
