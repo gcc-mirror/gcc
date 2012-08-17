@@ -1,3 +1,7 @@
+2012-08-17  Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.target/i386/perm-concat.c: New test.
+
 2012-08-17  Julian Brown  <julian@codesourcery.com>
 
 	* gcc.target/arm/div64-unwinding.c: New test.
