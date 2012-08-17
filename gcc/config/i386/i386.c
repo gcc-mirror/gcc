@@ -7545,6 +7545,18 @@ ix86_promote_function_mode (const_tree type, enum machine_mode mode,
 					for_return);
 }
 
+/* Return true if a structure, union or array with MODE containing FIELD
+   should be accessed using BLKmode.  */
+
+static bool
+ix86_member_type_forces_blk (const_tree field, enum machine_mode mode)
+{
+  /* Union with XFmode must be in BLKmode.  */
+  return (mode == XFmode
+	  && (TREE_CODE (DECL_FIELD_CONTEXT (field)) == UNION_TYPE
+	      || TREE_CODE (DECL_FIELD_CONTEXT (field)) == QUAL_UNION_TYPE));
+}
+
 rtx
 ix86_libcall_value (enum machine_mode mode)
 {
@@ -40724,6 +40736,9 @@ ix86_memmodel_check (unsigned HOST_WIDE_INT val)
 
 #undef TARGET_PROMOTE_FUNCTION_MODE
 #define TARGET_PROMOTE_FUNCTION_MODE ix86_promote_function_mode
+
+#undef TARGET_MEMBER_TYPE_FORCES_BLK
+#define TARGET_MEMBER_TYPE_FORCES_BLK ix86_member_type_forces_blk
 
 #undef TARGET_SECONDARY_RELOAD
 #define TARGET_SECONDARY_RELOAD ix86_secondary_reload

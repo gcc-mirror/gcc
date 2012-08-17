@@ -1,3 +1,11 @@
+2012-08-17  H.J. Lu  <hongjiu.lu@intel.com>
+	    Gary Funck <gary@intrepid.com>
+
+	PR target/20020
+	* gcc.target/i386/pr20020-1.c: New test.
+	* gcc.target/i386/pr20020-2.c: Likewise.
+	* gcc.target/i386/pr20020-3.c: Likewise.
+
 2012-08-17  Marc Glisse  <marc.glisse@inria.fr>
 
 	* gcc.target/i386/perm-concat.c: New test.

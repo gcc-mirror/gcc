@@ -1,3 +1,12 @@
+2012-08-17  H.J. Lu  <hongjiu.lu@intel.com>
+	    Gary Funck <gary@intrepid.com>
+
+	PR target/20020
+	* config/i386/i386.c (ix86_member_type_forces_blk): New function.
+	(TARGET_MEMBER_TYPE_FORCES_BLK): New macro.
+
+	* config/i386/i386.h (MAX_FIXED_MODE_SIZE): New macro.
+
 2012-08-17  Marc Glisse  <marc.glisse@inria.fr>
 
 	* simplify-rtx.c (simplify_binary_operation_1): Optimize shuffle of
