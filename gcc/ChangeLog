@@ -61,6 +61,18 @@
 
 2012-08-17  Nick Clifton  <nickc@redhat.com>
 
+	* config/iq2000/iq2000.md (cbranchsi4): Remove mode from
+	comparison and label.
+	(branch_zero): Likewise.
+	(branch_zero_inverted): Likewise.
+	(branch_equality): Likewise.
+	(branch_equality_inverted): Likewise.
+	(extend-and-compare): Disable until reload issues can be
+	resolved.
+	* config/iq2000/iq2000.c (gen_conditional_branch): Use VOIDmode
+	for comparison.
+	(iq2000_function_arg_advance): Remove CONST_CAST2.
+
 	* config/mep/t-mep (mep-pragma.o): Use $(COMPILER) to compile
 	mep-pragma.c.
 
