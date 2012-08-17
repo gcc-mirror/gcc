@@ -1302,6 +1302,9 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #undef TARGET_INIT_DWARF_REG_SIZES_EXTRA
 #define TARGET_INIT_DWARF_REG_SIZES_EXTRA rs6000_init_dwarf_reg_sizes_extra
 
+#undef TARGET_MEMBER_TYPE_FORCES_BLK
+#define TARGET_MEMBER_TYPE_FORCES_BLK rs6000_member_type_forces_blk
+
 /* On rs6000, function arguments are promoted, as are function return
    values.  */
 #undef TARGET_PROMOTE_FUNCTION_MODE
@@ -7258,6 +7261,26 @@ rs6000_emit_move (rtx dest, rtx source, enum machine_mode mode)
 
  emit_set:
   emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
+}
+
+/* Return true if a structure, union or array containing FIELD should be
+   accessed using `BLKMODE'.
+
+   For the SPE, simd types are V2SI, and gcc can be tempted to put the
+   entire thing in a DI and use subregs to access the internals.
+   store_bit_field() will force (subreg:DI (reg:V2SI x))'s to the
+   back-end.  Because a single GPR can hold a V2SI, but not a DI, the
+   best thing to do is set structs to BLKmode and avoid Severe Tire
+   Damage.
+
+   On e500 v2, DF and DI modes suffer from the same anomaly.  DF can
+   fit into 1, whereas DI still needs two.  */
+
+static bool
+rs6000_member_type_forces_blk (const_tree field, enum machine_mode mode)
+{
+  return ((TARGET_SPE && TREE_CODE (TREE_TYPE (field)) == VECTOR_TYPE)
+	  || (TARGET_E500_DOUBLE && mode == DFmode));
 }
 
 /* Nonzero if we can use a floating-point register to pass this arg.  */

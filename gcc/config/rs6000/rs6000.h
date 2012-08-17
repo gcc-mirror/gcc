@@ -695,22 +695,6 @@ extern unsigned rs6000_pointer_size;
 /* Every structure's size must be a multiple of this.  */
 #define STRUCTURE_SIZE_BOUNDARY 8
 
-/* Return 1 if a structure or array containing FIELD should be
-   accessed using `BLKMODE'.
-
-   For the SPE, simd types are V2SI, and gcc can be tempted to put the
-   entire thing in a DI and use subregs to access the internals.
-   store_bit_field() will force (subreg:DI (reg:V2SI x))'s to the
-   back-end.  Because a single GPR can hold a V2SI, but not a DI, the
-   best thing to do is set structs to BLKmode and avoid Severe Tire
-   Damage.
-
-   On e500 v2, DF and DI modes suffer from the same anomaly.  DF can
-   fit into 1, whereas DI still needs two.  */
-#define MEMBER_TYPE_FORCES_BLK(FIELD, MODE) \
-  ((TARGET_SPE && TREE_CODE (TREE_TYPE (FIELD)) == VECTOR_TYPE) \
-   || (TARGET_E500_DOUBLE && (MODE) == DFmode))
-
 /* A bit-field declared as `int' forces `int' alignment for the struct.  */
 #define PCC_BITFIELD_TYPE_MATTERS 1
 

@@ -1262,9 +1262,9 @@ these accesses should use the bitfield container type.
 The default is @code{!TARGET_STRICT_ALIGN}.
 @end deftypefn
 
-@defmac MEMBER_TYPE_FORCES_BLK (@var{field}, @var{mode})
-Return 1 if a structure or array containing @var{field} should be accessed using
-@code{BLKMODE}.
+@deftypefn {Target Hook} bool TARGET_MEMBER_TYPE_FORCES_BLK (const_tree @var{field}, enum machine_mode @var{mode})
+Return true if a structure, union or array containing @var{field} should
+be accessed using @code{BLKMODE}.
 
 If @var{field} is the only field in the structure, @var{mode} is its
 mode, otherwise @var{mode} is VOIDmode.  @var{mode} is provided in the
@@ -1272,7 +1272,7 @@ case where structures of one field would require the structure's mode to
 retain the field's mode.
 
 Normally, this is not needed.
-@end defmac
+@end deftypefn
 
 @defmac ROUND_TYPE_ALIGN (@var{type}, @var{computed}, @var{specified})
 Define this macro as an expression for the alignment of a type (given
