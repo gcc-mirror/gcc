@@ -1,3 +1,8 @@
+2012-08-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/t-avr (gen-avr-mmcu-texi): Use $(CC) to compile
+	gen-avr-mmcu-texi.c.
+
 2012-08-17  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.md (arm_addsi3): New variant for Thumb2 16-bit ADD instruction.
@@ -117,7 +122,7 @@
 	* config/tilegx/feedback.h: New file.
 	* config/tilepro/feedback.h: New file.
 
-2012-08-16   Diego Novillo  <dnovillo@google.com>
+2012-08-16  Diego Novillo  <dnovillo@google.com>
 
 	Revert
 
