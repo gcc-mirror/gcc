@@ -172,6 +172,9 @@ typedef struct temp_expr_table_d
 /* Used to indicate a dependency on VDEFs.  */
 #define VIRTUAL_PARTITION(table)	(table->virtual_partition)
 
+/* A place for the many, many bitmaps we create.  */
+static bitmap_obstack ter_bitmap_obstack;
+
 #ifdef ENABLE_CHECKING
 extern void debug_ter (FILE *, temp_expr_table_p);
 #endif
@@ -192,10 +195,10 @@ new_temp_expr_table (var_map map)
   t->expr_decl_uids = XCNEWVEC (bitmap, num_ssa_names + 1);
   t->kill_list = XCNEWVEC (bitmap, num_var_partitions (map) + 1);
 
-  t->partition_in_use = BITMAP_ALLOC (NULL);
+  t->partition_in_use = BITMAP_ALLOC (&ter_bitmap_obstack);
 
   t->virtual_partition = num_var_partitions (map);
-  t->new_replaceable_dependencies = BITMAP_ALLOC (NULL);
+  t->new_replaceable_dependencies = BITMAP_ALLOC (&ter_bitmap_obstack);
 
   t->replaceable_expressions = NULL;
   t->num_in_part = XCNEWVEC (int, num_var_partitions (map));
@@ -269,7 +272,7 @@ static inline void
 make_dependent_on_partition (temp_expr_table_p tab, int version, int p)
 {
   if (!tab->partition_dependencies[version])
-    tab->partition_dependencies[version] = BITMAP_ALLOC (NULL);
+    tab->partition_dependencies[version] = BITMAP_ALLOC (&ter_bitmap_obstack);
 
   bitmap_set_bit (tab->partition_dependencies[version], p);
 }
@@ -282,7 +285,7 @@ add_to_partition_kill_list (temp_expr_table_p tab, int p, int ver)
 {
   if (!tab->kill_list[p])
     {
-      tab->kill_list[p] = BITMAP_ALLOC (NULL);
+      tab->kill_list[p] = BITMAP_ALLOC (&ter_bitmap_obstack);
       bitmap_set_bit (tab->partition_in_use, p);
     }
   bitmap_set_bit (tab->kill_list[p], ver);
@@ -330,7 +333,8 @@ add_dependence (temp_expr_table_p tab, int version, tree var)
 	  /* Rather than set partition_dependencies and in_use lists bit by
 	     bit, simply OR in the new_replaceable_dependencies bits.  */
 	  if (!tab->partition_dependencies[version])
-	    tab->partition_dependencies[version] = BITMAP_ALLOC (NULL);
+	    tab->partition_dependencies[version] =
+	      BITMAP_ALLOC (&ter_bitmap_obstack);
 	  bitmap_ior_into (tab->partition_dependencies[version],
 			   tab->new_replaceable_dependencies);
 	  bitmap_ior_into (tab->partition_in_use,
@@ -498,7 +502,7 @@ process_replaceable (temp_expr_table_p tab, gimple stmt, int call_cnt)
 
   def = SINGLE_SSA_TREE_OPERAND (stmt, SSA_OP_DEF);
   version = SSA_NAME_VERSION (def);
-  def_vars = BITMAP_ALLOC (NULL);
+  def_vars = BITMAP_ALLOC (&ter_bitmap_obstack);
 
   basevar = SSA_NAME_VAR (def);
   if (basevar)
@@ -578,7 +582,9 @@ mark_replaceable (temp_expr_table_p tab, tree var, bool more_replacing)
 
   finished_with_expr (tab, version, !more_replacing);
 
-  /* Set the replaceable expression.  */
+  /* Set the replaceable expression.
+     The bitmap for this "escapes" from this file so it's allocated
+     on the default obstack.  */
   if (!tab->replaceable_expressions)
     tab->replaceable_expressions = BITMAP_ALLOC (NULL);
   bitmap_set_bit (tab->replaceable_expressions, version);
@@ -706,21 +712,22 @@ find_replaceable_in_bb (temp_expr_table_p tab, basic_block bb)
    NULL is returned by the function, otherwise an expression vector indexed
    by SSA_NAME version numbers.  */
 
-extern bitmap
+bitmap
 find_replaceable_exprs (var_map map)
 {
   basic_block bb;
   temp_expr_table_p table;
   bitmap ret;
 
+  bitmap_obstack_initialize (&ter_bitmap_obstack);
   table = new_temp_expr_table (map);
   FOR_EACH_BB (bb)
     {
       find_replaceable_in_bb (table, bb);
       gcc_checking_assert (bitmap_empty_p (table->partition_in_use));
     }
-
   ret = free_temp_expr_table (table);
+  bitmap_obstack_release (&ter_bitmap_obstack);
   return ret;
 }
 
