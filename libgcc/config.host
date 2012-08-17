@@ -916,15 +916,15 @@ powerpcle-*-eabi*)
 	;;
 rs6000-ibm-aix4.[3456789]* | powerpc-ibm-aix4.[3456789]*)
 	md_unwind_header=rs6000/aix-unwind.h
-	tmake_file="t-fdpbit rs6000/t-ppc64-fp rs6000/t-ibm-ldouble rs6000/t-slibgcc-aix"
+	tmake_file="t-fdpbit rs6000/t-ppc64-fp rs6000/t-slibgcc-aix rs6000/t-ibm-ldouble"
 	;;
 rs6000-ibm-aix5.1.* | powerpc-ibm-aix5.1.*)
 	md_unwind_header=rs6000/aix-unwind.h
-	tmake_file="t-fdpbit rs6000/t-ppc64-fp rs6000/t-ibm-ldouble rs6000/t-slibgcc-aix"
+	tmake_file="t-fdpbit rs6000/t-ppc64-fp rs6000/t-slibgcc-aix rs6000/t-ibm-ldouble"
 	;;
 rs6000-ibm-aix[56789].* | powerpc-ibm-aix[56789].*)
 	md_unwind_header=rs6000/aix-unwind.h
-	tmake_file="t-fdpbit rs6000/t-ppc64-fp rs6000/t-ibm-ldouble rs6000/t-slibgcc-aix"
+	tmake_file="t-fdpbit rs6000/t-ppc64-fp rs6000/t-slibgcc-aix rs6000/t-ibm-ldouble"
 	;;
 rl78-*-elf)
 	tmake_file="$tm_file t-fdpbit rl78/t-rl78"
