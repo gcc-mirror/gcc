@@ -224,9 +224,23 @@ struct same_succ_def
   bool in_worklist;
   /* The hash value of the struct.  */
   hashval_t hashval;
+
+  /* hash_table support.  */
+  typedef same_succ_def T;
+  static inline hashval_t hash (const same_succ_def *);
+  static int equal (const same_succ_def *, const same_succ_def *);
+  static void remove (same_succ_def *);
 };
 typedef struct same_succ_def *same_succ;
 typedef const struct same_succ_def *const_same_succ;
+
+/* hash routine for hash_table support, returns hashval of E.  */
+
+inline hashval_t
+same_succ_def::hash (const same_succ_def *e)
+{
+  return e->hashval;
+}
 
 /* A group of bbs where 1 bb from bbs can replace the other bbs.  */
 
@@ -415,8 +429,8 @@ stmt_update_dep_bb (gimple stmt)
 
 /* Calculates hash value for same_succ VE.  */
 
-hashval_t
-ssa_same_succ_hash (const_same_succ e)
+static hashval_t
+same_succ_hash (const_same_succ e)
 {
   hashval_t hashval = bitmap_hash (e->succs);
   int flags;
@@ -511,10 +525,10 @@ inverse_flags (const_same_succ e1, const_same_succ e2)
   return (f1a & mask) == (f2a & mask) && (f1b & mask) == (f2b & mask);
 }
 
-/* Compares SAME_SUCCs VE1 and VE2.  */
+/* Compares SAME_SUCCs E1 and E2.  */
 
 int
-ssa_same_succ_equal (const_same_succ e1, const_same_succ e2)
+same_succ_def::equal (const_same_succ e1, const_same_succ e2)
 {
   unsigned int i, first1, first2;
   gimple_stmt_iterator gsi1, gsi2;
@@ -584,10 +598,10 @@ same_succ_alloc (void)
   return same;
 }
 
-/* Delete same_succ VE.  */
+/* Delete same_succ E.  */
 
-inline void
-ssa_same_succ_delete (same_succ e)
+void
+same_succ_def::remove (same_succ e)
 {
   BITMAP_FREE (e->bbs);
   BITMAP_FREE (e->succs);
@@ -608,11 +622,7 @@ same_succ_reset (same_succ same)
   VEC_truncate (int, same->succ_flags, 0);
 }
 
-/* Hash table with all same_succ entries.  */
-
-static hash_table <struct same_succ_def, ssa_same_succ_hash,
-		   ssa_same_succ_equal, ssa_same_succ_delete>
-		  same_succ_htab;
+static hash_table <same_succ_def> same_succ_htab;
 
 /* Array that is used to store the edge flags for a successor.  */
 
@@ -692,7 +702,7 @@ find_same_succ_bb (basic_block bb, same_succ *same_p)
   EXECUTE_IF_SET_IN_BITMAP (same->succs, 0, j, bj)
     VEC_safe_push (int, heap, same->succ_flags, same_succ_edge_flags[j]);
 
-  same->hashval = ssa_same_succ_hash (same);
+  same->hashval = same_succ_hash (same);
 
   slot = same_succ_htab.find_slot_with_hash (same, same->hashval, INSERT);
   if (*slot == NULL)
@@ -728,7 +738,7 @@ find_same_succ (void)
 	same = same_succ_alloc ();
     }
 
-  ssa_same_succ_delete (same);
+  same_succ_def::remove (same);
 }
 
 /* Initializes worklist administration.  */
@@ -860,7 +870,7 @@ update_worklist (void)
       if (same == NULL)
 	same = same_succ_alloc ();
     }
-  ssa_same_succ_delete (same);
+  same_succ_def::remove (same);
   bitmap_clear (deleted_bb_preds);
 }
 

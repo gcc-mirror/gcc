@@ -1688,10 +1688,7 @@ evaluate_stmt (gimple stmt)
   return val;
 }
 
-typedef hash_table <gimple_statement_d, typed_pointer_hash<gimple_statement_d>,
-		    typed_pointer_equal<gimple_statement_d>,
-		    typed_null_remove<gimple_statement_d> >
-		   gimple_htab;
+typedef hash_table <pointer_hash <gimple_statement_d> > gimple_htab;
 
 /* Given a BUILT_IN_STACK_SAVE value SAVED_VAL, insert a clobber of VAR before
    each matching BUILT_IN_STACK_RESTORE.  Mark visited phis in VISITED.  */

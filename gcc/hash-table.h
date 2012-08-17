@@ -83,45 +83,52 @@ xcallocator <Type>::data_free (Type *memory)
 }
 
 
-/* A common function for hashing a CANDIDATE typed pointer.  */
+/* Remove method dispatching to free.  */
+
+template <typename Element>
+struct typed_free_remove
+{
+  static inline void remove (Element *p) { free (p); }
+};
+
+/* No-op remove method.  */
+
+template <typename Element>
+struct typed_noop_remove
+{
+  static inline void remove (Element *) {}
+};
+
+
+/* Pointer hash with a no-op remove method.  */
+
+template <typename Element>
+struct pointer_hash : typed_noop_remove <Element>
+{
+  typedef Element T;
+
+  static inline hashval_t
+  hash (const T *);
+
+  static inline int
+  equal (const T *existing, const T * candidate);
+};
 
 template <typename Element>
 inline hashval_t
-typed_pointer_hash (const Element *candidate)
+pointer_hash<Element>::hash (const T *candidate)
 {
   /* This is a really poor hash function, but it is what the current code uses,
      so I am reusing it to avoid an additional axis in testing.  */
   return (hashval_t) ((intptr_t)candidate >> 3);
 }
 
-
-/* A common function for comparing an EXISTING and CANDIDATE typed pointers
-   for equality. */
-
 template <typename Element>
 inline int
-typed_pointer_equal (const Element *existing, const Element * candidate)
+pointer_hash<Element>::equal (const T *existing,
+			      const T *candidate)
 {
   return existing == candidate;
-}
-
-
-/* A common function for doing nothing on removing a RETIRED slot.  */
-
-template <typename Element>
-inline void
-typed_null_remove (Element *retired ATTRIBUTE_UNUSED)
-{
-}
-
-
-/* A common function for using free on removing a RETIRED slot.  */
-
-template <typename Element>
-inline void
-typed_free_remove (Element *retired)
-{
-  free (retired);
 }
 
 
@@ -147,11 +154,11 @@ extern hashval_t hash_table_mod2 (hashval_t hash, unsigned int index);
 
 /* Internal implementation type.  */
 
-template <typename Element>
+template <typename T>
 struct hash_table_control
 {
   /* Table itself.  */
-  Element **entries;
+  T **entries;
 
   /* Current size (in entries) of the hash table.  */
   size_t size;
@@ -180,15 +187,15 @@ struct hash_table_control
 
    The table stores elements of type Element.
 
-   It hashes elements with the Hash function.
+   It hashes elements with the hash function.
      The table currently works with relatively weak hash functions.
      Use typed_pointer_hash <Element> when hashing pointers instead of objects.
 
-   It compares elements with the Equal function.
+   It compares elements with the equal function.
      Two elements with the same hash may not be equal.
      Use typed_pointer_equal <Element> when hashing pointers instead of objects.
 
-   It removes elements with the Remove function.
+   It removes elements with the remove function.
      This feature is useful for freeing memory.
      Use typed_null_remove <Element> when not freeing objects.
      Use typed_free_remove <Element> when doing a simple object free.
@@ -198,59 +205,53 @@ struct hash_table_control
 
 */
 
-template <typename Element,
-	  hashval_t (*Hash) (const Element *candidate),
-	  int (*Equal) (const Element *existing, const Element * candidate),
-	  void (*Remove) (Element *retired),
+template <typename Descr,
 	  template <typename Type> class Allocator = xcallocator>
 class hash_table
 {
+public:
+  typedef typename Descr::T T;
 
 private:
+  hash_table_control <T> *htab;
 
-  hash_table_control <Element> *htab;
-
-  Element **find_empty_slot_for_expand (hashval_t hash);
+  T **find_empty_slot_for_expand (hashval_t hash);
   void expand ();
 
 public:
-
   hash_table ();
   void create (size_t initial_slots);
   bool is_created ();
   void dispose ();
-  Element *find (Element *comparable);
-  Element *find_with_hash (Element *comparable, hashval_t hash);
-  Element **find_slot (Element *comparable, enum insert_option insert);
-  Element **find_slot_with_hash (Element *comparable, hashval_t hash,
-				 enum insert_option insert);
+  T *find (T *comparable);
+  T *find_with_hash (T *comparable, hashval_t hash);
+  T **find_slot (T *comparable, enum insert_option insert);
+  T **find_slot_with_hash (T *comparable, hashval_t hash,
+				   enum insert_option insert);
   void empty ();
-  void clear_slot (Element **slot);
-  void remove_elt (Element *comparable);
-  void remove_elt_with_hash (Element *comparable, hashval_t hash);
+  void clear_slot (T **slot);
+  void remove_elt (T *comparable);
+  void remove_elt_with_hash (T *comparable, hashval_t hash);
   size_t size();
   size_t elements();
   double collisions();
 
   template <typename Argument,
-	    int (*Callback) (Element **slot, Argument argument)>
+	    int (*Callback) (T **slot, Argument argument)>
   void traverse_noresize (Argument argument);
 
   template <typename Argument,
-	    int (*Callback) (Element **slot, Argument argument)>
+	    int (*Callback) (T **slot, Argument argument)>
   void traverse (Argument argument);
 };
 
 
 /* Construct the hash table.  The only useful operation next is create.  */
 
-template <typename Element,
-	  hashval_t (*Hash) (const Element *candidate),
-	  int (*Equal) (const Element *existing, const Element * candidate),
-	  void (*Remove) (Element *retired),
+template <typename Descr,
 	  template <typename Type> class Allocator>
 inline
-hash_table <Element, Hash, Equal, Remove, Allocator>::hash_table ()
+hash_table <Descr, Allocator>::hash_table ()
 : htab (NULL)
 {
 }
@@ -258,13 +259,10 @@ hash_table <Element, Hash, Equal, Remove, Allocator>::hash_table ()
 
 /* See if the table has been created, as opposed to constructed.  */
 
-template <typename Element,
-	  hashval_t (*Hash) (const Element *candidate),
-	  int (*Equal) (const Element *existing, const Element * candidate),
-	  void (*Remove) (Element *retired),
+template <typename Descr,
 	  template <typename Type> class Allocator>
 inline bool
-hash_table <Element, Hash, Equal, Remove, Allocator>::is_created ()
+hash_table <Descr, Allocator>::is_created ()
 {
   return htab != NULL;
 }
@@ -272,57 +270,45 @@ hash_table <Element, Hash, Equal, Remove, Allocator>::is_created ()
 
 /* Like find_with_hash, but compute the hash value from the element.  */
 
-template <typename Element,
-	  hashval_t (*Hash) (const Element *candidate),
-	  int (*Equal) (const Element *existing, const Element * candidate),
-	  void (*Remove) (Element *retired),
+template <typename Descr,
 	  template <typename Type> class Allocator>
-inline Element *
-hash_table <Element, Hash, Equal, Remove, Allocator>::find (Element *comparable)
+inline typename Descr::T *
+hash_table <Descr, Allocator>::find (T *comparable)
 {
-  return find_with_hash (comparable, Hash (comparable));
+  return find_with_hash (comparable, Descr::hash (comparable));
 }
 
 
 /* Like find_slot_with_hash, but compute the hash value from the element.  */
 
-template <typename Element,
-	  hashval_t (*Hash) (const Element *candidate),
-	  int (*Equal) (const Element *existing, const Element * candidate),
-	  void (*Remove) (Element *retired),
+template <typename Descr,
 	  template <typename Type> class Allocator>
-inline Element **
-hash_table <Element, Hash, Equal, Remove, Allocator>
-::find_slot (Element *comparable, enum insert_option insert)
+inline typename Descr::T **
+hash_table <Descr, Allocator>
+::find_slot (T *comparable, enum insert_option insert)
 {
-  return find_slot_with_hash (comparable, Hash (comparable), insert);
+  return find_slot_with_hash (comparable, Descr::hash (comparable), insert);
 }
 
 
 /* Like remove_elt_with_hash, but compute the hash value from the element.  */
 
-template <typename Element,
-	  hashval_t (*Hash) (const Element *candidate),
-	  int (*Equal) (const Element *existing, const Element * candidate),
-	  void (*Remove) (Element *retired),
+template <typename Descr,
 	  template <typename Type> class Allocator>
 inline void
-hash_table <Element, Hash, Equal, Remove, Allocator>
-::remove_elt (Element *comparable)
+hash_table <Descr, Allocator>
+::remove_elt (T *comparable)
 {
-  remove_elt_with_hash (comparable, Hash (comparable));
+  remove_elt_with_hash (comparable, Descr::hash (comparable));
 }
 
 
 /* Return the current size of this hash table.  */
 
-template <typename Element,
-	  hashval_t (*Hash) (const Element *candidate),
-	  int (*Equal) (const Element *existing, const Element * candidate),
-	  void (*Remove) (Element *retired),
+template <typename Descr,
 	  template <typename Type> class Allocator>
 inline size_t
-hash_table <Element, Hash, Equal, Remove, Allocator>::size()
+hash_table <Descr, Allocator>::size()
 {
   return htab->size;
 }
@@ -330,13 +316,10 @@ hash_table <Element, Hash, Equal, Remove, Allocator>::size()
 
 /* Return the current number of elements in this hash table. */
 
-template <typename Element,
-	  hashval_t (*Hash) (const Element *candidate),
-	  int (*Equal) (const Element *existing, const Element * candidate),
-	  void (*Remove) (Element *retired),
+template <typename Descr,
 	  template <typename Type> class Allocator>
 inline size_t
-hash_table <Element, Hash, Equal, Remove, Allocator>::elements()
+hash_table <Descr, Allocator>::elements()
 {
   return htab->n_elements - htab->n_deleted;
 }
@@ -345,13 +328,10 @@ hash_table <Element, Hash, Equal, Remove, Allocator>::elements()
   /* Return the fraction of fixed collisions during all work with given
      hash table. */
 
-template <typename Element,
-	  hashval_t (*Hash) (const Element *candidate),
-	  int (*Equal) (const Element *existing, const Element * candidate),
-	  void (*Remove) (Element *retired),
+template <typename Descr,
 	  template <typename Type> class Allocator>
 inline double
-hash_table <Element, Hash, Equal, Remove, Allocator>::collisions()
+hash_table <Descr, Allocator>::collisions()
 {
   if (htab->searches == 0)
     return 0.0;
@@ -362,22 +342,19 @@ hash_table <Element, Hash, Equal, Remove, Allocator>::collisions()
 
 /* Create a hash table with at least the given number of INITIAL_SLOTS.  */
 
-template <typename Element,
-	  hashval_t (*Hash) (const Element *candidate),
-	  int (*Equal) (const Element *existing, const Element * candidate),
-	  void (*Remove) (Element *retired),
+template <typename Descr,
 	  template <typename Type> class Allocator>
 void
-hash_table <Element, Hash, Equal, Remove, Allocator>::create (size_t size)
+hash_table <Descr, Allocator>::create (size_t size)
 {
   unsigned int size_prime_index;
 
   size_prime_index = hash_table_higher_prime_index (size);
   size = prime_tab[size_prime_index].prime;
 
-  htab = Allocator <hash_table_control <Element> > ::control_alloc (1);
+  htab = Allocator <hash_table_control <T> > ::control_alloc (1);
   gcc_assert (htab != NULL);
-  htab->entries = Allocator <Element*> ::data_alloc (size);
+  htab->entries = Allocator <T*> ::data_alloc (size);
   gcc_assert (htab->entries != NULL);
   htab->size = size;
   htab->size_prime_index = size_prime_index;
@@ -387,46 +364,40 @@ hash_table <Element, Hash, Equal, Remove, Allocator>::create (size_t size)
 /* Dispose of a hash table.  Free all memory and return this hash table to
    the non-created state.  Naturally the hash table must already exist.  */
 
-template <typename Element,
-	  hashval_t (*Hash) (const Element *candidate),
-	  int (*Equal) (const Element *existing, const Element * candidate),
-	  void (*Remove) (Element *retired),
+template <typename Descr,
 	  template <typename Type> class Allocator>
 void
-hash_table <Element, Hash, Equal, Remove, Allocator>::dispose ()
+hash_table <Descr, Allocator>::dispose ()
 {
   size_t size = htab->size;
-  Element **entries = htab->entries;
+  T **entries = htab->entries;
 
   for (int i = size - 1; i >= 0; i--)
     if (entries[i] != HTAB_EMPTY_ENTRY && entries[i] != HTAB_DELETED_ENTRY)
-      Remove (entries[i]);
+      Descr::remove (entries[i]);
 
-  Allocator <Element *> ::data_free (entries);
-  Allocator <hash_table_control <Element> > ::control_free (htab);
+  Allocator <T *> ::data_free (entries);
+  Allocator <hash_table_control <T> > ::control_free (htab);
   htab = NULL;
 }
 
 
 /* Similar to find_slot, but without several unwanted side effects:
-    - Does not call Equal when it finds an existing entry.
+    - Does not call equal when it finds an existing entry.
     - Does not change the count of elements/searches/collisions in the
       hash table.
    This function also assumes there are no deleted entries in the table.
    HASH is the hash value for the element to be inserted.  */
 
-template <typename Element,
-	  hashval_t (*Hash) (const Element *candidate),
-	  int (*Equal) (const Element *existing, const Element * candidate),
-	  void (*Remove) (Element *retired),
+template <typename Descr,
 	  template <typename Type> class Allocator>
-Element **
-hash_table <Element, Hash, Equal, Remove, Allocator>
+typename Descr::T **
+hash_table <Descr, Allocator>
 ::find_empty_slot_for_expand (hashval_t hash)
 {
   hashval_t index = hash_table_mod1 (hash, htab->size_prime_index);
   size_t size = htab->size;
-  Element **slot = htab->entries + index;
+  T **slot = htab->entries + index;
   hashval_t hash2;
 
   if (*slot == HTAB_EMPTY_ENTRY)
@@ -457,18 +428,15 @@ hash_table <Element, Hash, Equal, Remove, Allocator>
    table entries is changed.  If memory allocation fails, this function
    will abort.  */
 
-template <typename Element,
-	  hashval_t (*Hash) (const Element *candidate),
-	  int (*Equal) (const Element *existing, const Element * candidate),
-	  void (*Remove) (Element *retired),
+template <typename Descr,
 	  template <typename Type> class Allocator>
 void
-hash_table <Element, Hash, Equal, Remove, Allocator>::expand ()
+hash_table <Descr, Allocator>::expand ()
 {
-  Element **oentries;
-  Element **olimit;
-  Element **p;
-  Element **nentries;
+  T **oentries;
+  T **olimit;
+  T **p;
+  T **nentries;
   size_t nsize, osize, elts;
   unsigned int oindex, nindex;
 
@@ -491,7 +459,7 @@ hash_table <Element, Hash, Equal, Remove, Allocator>::expand ()
       nsize = osize;
     }
 
-  nentries = Allocator <Element *> ::data_alloc (nsize);
+  nentries = Allocator <T *> ::data_alloc (nsize);
   gcc_assert (nentries != NULL);
   htab->entries = nentries;
   htab->size = nsize;
@@ -502,11 +470,11 @@ hash_table <Element, Hash, Equal, Remove, Allocator>::expand ()
   p = oentries;
   do
     {
-      Element *x = *p;
+      T *x = *p;
 
       if (x != HTAB_EMPTY_ENTRY && x != HTAB_DELETED_ENTRY)
         {
-          Element **q = find_empty_slot_for_expand (Hash (x));
+          T **q = find_empty_slot_for_expand (Descr::hash (x));
 
           *q = x;
         }
@@ -515,7 +483,7 @@ hash_table <Element, Hash, Equal, Remove, Allocator>::expand ()
     }
   while (p < olimit);
 
-  Allocator <Element *> ::data_free (oentries);
+  Allocator <T *> ::data_free (oentries);
 }
 
 
@@ -523,18 +491,15 @@ hash_table <Element, Hash, Equal, Remove, Allocator>::expand ()
    COMPARABLE element starting with the given HASH value.  It cannot
    be used to insert or delete an element. */
 
-template <typename Element,
-	  hashval_t (*Hash) (const Element *candidate),
-	  int (*Equal) (const Element *existing, const Element * candidate),
-	  void (*Remove) (Element *retired),
+template <typename Descr,
 	  template <typename Type> class Allocator>
-Element *
-hash_table <Element, Hash, Equal, Remove, Allocator>
-::find_with_hash (Element *comparable, hashval_t hash)
+typename Descr::T *
+hash_table <Descr, Allocator>
+::find_with_hash (T *comparable, hashval_t hash)
 {
   hashval_t index, hash2;
   size_t size;
-  Element *entry;
+  T *entry;
 
   htab->searches++;
   size = htab->size;
@@ -542,7 +507,7 @@ hash_table <Element, Hash, Equal, Remove, Allocator>
 
   entry = htab->entries[index];
   if (entry == HTAB_EMPTY_ENTRY
-      || (entry != HTAB_DELETED_ENTRY && Equal (entry, comparable)))
+      || (entry != HTAB_DELETED_ENTRY && Descr::equal (entry, comparable)))
     return entry;
 
   hash2 = hash_table_mod2 (hash, htab->size_prime_index);
@@ -555,7 +520,7 @@ hash_table <Element, Hash, Equal, Remove, Allocator>
 
       entry = htab->entries[index];
       if (entry == HTAB_EMPTY_ENTRY
-          || (entry != HTAB_DELETED_ENTRY && Equal (entry, comparable)))
+          || (entry != HTAB_DELETED_ENTRY && Descr::equal (entry, comparable)))
         return entry;
     }
 }
@@ -569,20 +534,17 @@ hash_table <Element, Hash, Equal, Remove, Allocator>
    write the value you want into the returned slot.  When inserting an
    entry, NULL may be returned if memory allocation fails. */
 
-template <typename Element,
-	  hashval_t (*Hash) (const Element *candidate),
-	  int (*Equal) (const Element *existing, const Element * candidate),
-	  void (*Remove) (Element *retired),
+template <typename Descr,
 	  template <typename Type> class Allocator>
-Element **
-hash_table <Element, Hash, Equal, Remove, Allocator>
-::find_slot_with_hash (Element *comparable, hashval_t hash,
+typename Descr::T **
+hash_table <Descr, Allocator>
+::find_slot_with_hash (T *comparable, hashval_t hash,
 		       enum insert_option insert)
 {
-  Element **first_deleted_slot;
+  T **first_deleted_slot;
   hashval_t index, hash2;
   size_t size;
-  Element *entry;
+  T *entry;
 
   size = htab->size;
   if (insert == INSERT && size * 3 <= htab->n_elements * 4)
@@ -601,7 +563,7 @@ hash_table <Element, Hash, Equal, Remove, Allocator>
     goto empty_entry;
   else if (entry == HTAB_DELETED_ENTRY)
     first_deleted_slot = &htab->entries[index];
-  else if (Equal (entry, comparable))
+  else if (Descr::equal (entry, comparable))
     return &htab->entries[index];
       
   hash2 = hash_table_mod2 (hash, htab->size_prime_index);
@@ -620,7 +582,7 @@ hash_table <Element, Hash, Equal, Remove, Allocator>
 	  if (!first_deleted_slot)
 	    first_deleted_slot = &htab->entries[index];
 	}
-      else if (Equal (entry, comparable))
+      else if (Descr::equal (entry, comparable))
 	return &htab->entries[index];
     }
 
@@ -631,7 +593,7 @@ hash_table <Element, Hash, Equal, Remove, Allocator>
   if (first_deleted_slot)
     {
       htab->n_deleted--;
-      *first_deleted_slot = static_cast <Element *> (HTAB_EMPTY_ENTRY);
+      *first_deleted_slot = static_cast <T *> (HTAB_EMPTY_ENTRY);
       return first_deleted_slot;
     }
 
@@ -642,21 +604,18 @@ hash_table <Element, Hash, Equal, Remove, Allocator>
 
 /* This function clears all entries in the given hash table.  */
 
-template <typename Element,
-	  hashval_t (*Hash) (const Element *candidate),
-	  int (*Equal) (const Element *existing, const Element * candidate),
-	  void (*Remove) (Element *retired),
+template <typename Descr,
 	  template <typename Type> class Allocator>
 void
-hash_table <Element, Hash, Equal, Remove, Allocator>::empty ()
+hash_table <Descr, Allocator>::empty ()
 {
   size_t size = htab_size (htab);
-  Element **entries = htab->entries;
+  T **entries = htab->entries;
   int i;
 
   for (i = size - 1; i >= 0; i--)
     if (entries[i] != HTAB_EMPTY_ENTRY && entries[i] != HTAB_DELETED_ENTRY)
-      Remove (entries[i]);
+      Descr::remove (entries[i]);
 
   /* Instead of clearing megabyte, downsize the table.  */
   if (size > 1024*1024 / sizeof (PTR))
@@ -664,13 +623,13 @@ hash_table <Element, Hash, Equal, Remove, Allocator>::empty ()
       int nindex = hash_table_higher_prime_index (1024 / sizeof (PTR));
       int nsize = prime_tab[nindex].prime;
 
-      Allocator <Element *> ::data_free (htab->entries);
-      htab->entries = Allocator <Element *> ::data_alloc (nsize);
+      Allocator <T *> ::data_free (htab->entries);
+      htab->entries = Allocator <T *> ::data_alloc (nsize);
       htab->size = nsize;
       htab->size_prime_index = nindex;
     }
   else
-    memset (entries, 0, size * sizeof (Element *));
+    memset (entries, 0, size * sizeof (T *));
   htab->n_deleted = 0;
   htab->n_elements = 0;
 }
@@ -680,20 +639,17 @@ hash_table <Element, Hash, Equal, Remove, Allocator>::empty ()
    useful when you've already done the lookup and don't want to do it
    again. */
 
-template <typename Element,
-	  hashval_t (*Hash) (const Element *candidate),
-	  int (*Equal) (const Element *existing, const Element * candidate),
-	  void (*Remove) (Element *retired),
+template <typename Descr,
 	  template <typename Type> class Allocator>
 void
-hash_table <Element, Hash, Equal, Remove, Allocator>
-::clear_slot (Element **slot)
+hash_table <Descr, Allocator>
+::clear_slot (T **slot)
 {
   if (slot < htab->entries || slot >= htab->entries + htab->size
       || *slot == HTAB_EMPTY_ENTRY || *slot == HTAB_DELETED_ENTRY)
     abort ();
 
-  Remove (*slot);
+  Descr::remove (*slot);
 
   *slot = HTAB_DELETED_ENTRY;
   htab->n_deleted++;
@@ -704,24 +660,21 @@ hash_table <Element, Hash, Equal, Remove, Allocator>
    from hash table starting with the given HASH.  If there is no
    matching element in the hash table, this function does nothing. */
 
-template <typename Element,
-	  hashval_t (*Hash) (const Element *candidate),
-	  int (*Equal) (const Element *existing, const Element * candidate),
-	  void (*Remove) (Element *retired),
+template <typename Descr,
 	  template <typename Type> class Allocator>
 void
-hash_table <Element, Hash, Equal, Remove, Allocator>
-::remove_elt_with_hash (Element *comparable, hashval_t hash)
+hash_table <Descr, Allocator>
+::remove_elt_with_hash (T *comparable, hashval_t hash)
 {
-  Element **slot;
+  T **slot;
 
   slot = find_slot_with_hash (comparable, hash, NO_INSERT);
   if (*slot == HTAB_EMPTY_ENTRY)
     return;
 
-  Remove (*slot);
+  Descr::remove (*slot);
 
-  *slot = static_cast <Element *> (HTAB_DELETED_ENTRY);
+  *slot = static_cast <T *> (HTAB_DELETED_ENTRY);
   htab->n_deleted++;
 }
 
@@ -730,26 +683,23 @@ hash_table <Element, Hash, Equal, Remove, Allocator>
    each live entry.  If CALLBACK returns false, the iteration stops.
    ARGUMENT is passed as CALLBACK's second argument. */
 
-template <typename Element,
-	  hashval_t (*Hash) (const Element *candidate),
-	  int (*Equal) (const Element *existing, const Element * candidate),
-	  void (*Remove) (Element *retired),
+template <typename Descr,
 	  template <typename Type> class Allocator>
 template <typename Argument,
-	  int (*Callback) (Element **slot, Argument argument)>
+	  int (*Callback) (typename Descr::T **slot, Argument argument)>
 void
-hash_table <Element, Hash, Equal, Remove, Allocator>
+hash_table <Descr, Allocator>
 ::traverse_noresize (Argument argument)
 {
-  Element **slot;
-  Element **limit;
+  T **slot;
+  T **limit;
 
   slot = htab->entries;
   limit = slot + htab->size;
 
   do
     {
-      Element *x = *slot;
+      T *x = *slot;
 
       if (x != HTAB_EMPTY_ENTRY && x != HTAB_DELETED_ENTRY)
         if (! Callback (slot, argument))
@@ -762,15 +712,12 @@ hash_table <Element, Hash, Equal, Remove, Allocator>
 /* Like traverse_noresize, but does resize the table when it is too empty
    to improve effectivity of subsequent calls.  */
 
-template <typename Element,
-	  hashval_t (*Hash) (const Element *candidate),
-	  int (*Equal) (const Element *existing, const Element * candidate),
-	  void (*Remove) (Element *retired),
+template <typename Descr,
 	  template <typename Type> class Allocator>
 template <typename Argument,
-	  int (*Callback) (Element **slot, Argument argument)>
+	  int (*Callback) (typename Descr::T **slot, Argument argument)>
 void
-hash_table <Element, Hash, Equal, Remove, Allocator>
+hash_table <Descr, Allocator>
 ::traverse (Argument argument)
 {
   size_t size = htab->size;
