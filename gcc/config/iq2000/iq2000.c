@@ -1076,7 +1076,7 @@ gen_conditional_branch (rtx operands[], enum machine_mode mode)
   emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx,
 			       gen_rtx_IF_THEN_ELSE (VOIDmode,
 						     gen_rtx_fmt_ee (test_code,
-								     mode,
+								     VOIDmode,
 								     cmp0, cmp1),
 						     label1, label2)));
 }
@@ -1140,7 +1140,7 @@ iq2000_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode,
 	       "function_adv({gp reg found = %d, arg # = %2d, words = %2d}, %4s, ",
 	       cum->gp_reg_found, cum->arg_number, cum->arg_words,
 	       GET_MODE_NAME (mode));
-      fprintf (stderr, "%p", CONST_CAST2 (void *, const_tree,  type));
+      fprintf (stderr, "%p", type);
       fprintf (stderr, ", %d )\n\n", named);
     }
 
