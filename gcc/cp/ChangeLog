@@ -1,3 +1,7 @@
+2012-08-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.def (SIZEOF_EXPR): Move to c-common.def.
+
 2012-08-14   Diego Novillo  <dnovillo@google.com>
 
 	Merge from cxx-conversion branch.  Re-write VEC in C++.

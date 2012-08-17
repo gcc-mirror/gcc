@@ -2,7 +2,7 @@
    additional tree codes used in the GNU C compiler (see tree.def
    for the standard codes).
    Copyright (C) 1987, 1988, 1990, 1993, 1997, 1998,
-   1999, 2000, 2001, 2004, 2005, 2007, 2009, 2010
+   1999, 2000, 2001, 2004, 2005, 2007, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Written by Benjamin Chelf <chelf@codesourcery.com>
 
@@ -52,6 +52,10 @@ DEFTREECODE (EXCESS_PRECISION_EXPR, "excess_precision_expr", tcc_expression, 1)
    and for numeric literals the original string representation of the
    number.  */
 DEFTREECODE (USERDEF_LITERAL, "userdef_literal", tcc_exceptional, 3)
+
+/* Represents a 'sizeof' expression during C++ template expansion,
+   or for the purpose of -Wsizeof-pointer-memaccess warning.  */
+DEFTREECODE (SIZEOF_EXPR, "sizeof_expr", tcc_expression, 1)
 
 /*
 Local variables:

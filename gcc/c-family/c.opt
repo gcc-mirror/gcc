@@ -474,6 +474,9 @@ Wmissing-field-initializers
 C ObjC C++ ObjC++ Var(warn_missing_field_initializers) Warning EnabledBy(Wextra)
 Warn about missing fields in struct initializers
 
+Wsizeof-pointer-memaccess
+C ObjC C++ ObjC++ Var(warn_sizeof_pointer_memaccess) Warning
+
 Wsuggest-attribute=format
 C ObjC C++ ObjC++ Var(warn_suggest_attribute_format) Warning
 Warn about functions which might be candidates for format attributes

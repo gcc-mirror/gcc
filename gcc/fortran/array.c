@@ -1,6 +1,6 @@
 /* Array things
-   Copyright (C) 2000, 2001, 2002, 2004, 2005, 2006, 2007, 2008, 2009, 2010
-   Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+   2011, 2012 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -159,7 +159,7 @@ gfc_match_array_ref (gfc_array_ref *ar, gfc_array_spec *as, int init,
   match m;
   bool matched_bracket = false;
 
-  memset (ar, '\0', sizeof (ar));
+  memset (ar, '\0', sizeof (*ar));
 
   ar->where = gfc_current_locus;
   ar->as = as;

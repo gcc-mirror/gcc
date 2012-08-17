@@ -2,7 +2,7 @@
    additional tree codes used in the GNU C++ compiler (see tree.def
    for the standard codes).
    Copyright (C) 1987, 1988, 1990, 1993, 1997, 1998, 2003, 2004, 2005,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2010, 2011
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
@@ -332,9 +332,6 @@ DEFTREECODE (TAG_DEFN, "tag_defn", tcc_expression, 0)
 
 /* Represents an 'offsetof' expression during template expansion.  */
 DEFTREECODE (OFFSETOF_EXPR, "offsetof_expr", tcc_expression, 1)
-
-/* Represents a 'sizeof' expression during template expansion.  */
-DEFTREECODE (SIZEOF_EXPR, "sizeof_expr", tcc_expression, 1)
 
 /* Represents the -> operator during template expansion.  */
 DEFTREECODE (ARROW_EXPR, "arrow_expr", tcc_expression, 1)
