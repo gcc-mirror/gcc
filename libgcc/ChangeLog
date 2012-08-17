@@ -1,3 +1,8 @@
+2012-08-16  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config.host (*-*-aix*): Move rs6000/t-ibm-ldouble after
+	rs6000/t-slibgcc-aix.
+
 2012-08-15  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* longlong.h: (powerpc): Delete _ARCH_PWR and _ARCH_COM handling.
