@@ -1,3 +1,9 @@
+2012-08-17  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.md (arm_addsi3): New variant for Thumb2 16-bit ADD instruction.
+	* arm.c (thumb2_reorg): Don't convert an ADD instruction that's
+	already 16 bits.
+
 2012-08-17  Richard Guenther  <rguenther@suse.de>
 
 	* hash-table.h (class hash_table): Use a descriptor template
