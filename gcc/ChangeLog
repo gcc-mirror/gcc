@@ -1,3 +1,9 @@
+2012-08-18  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR middle-end/54313
+	* dse.c (dse_step7): Don't free kill_on_calls bitmap, it is
+	freed when its obstack is release.
+
 2012-08-18  Andrew Pinski  <pinskia@gmail.com>
 
 	* alloc-pool.c (pool_alloc): Add valgrind markers.
