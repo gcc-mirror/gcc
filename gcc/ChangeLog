@@ -1,3 +1,8 @@
+2012-08-18  Andrew Pinski  <pinskia@gmail.com>
+
+	* alloc-pool.c (pool_alloc): Add valgrind markers.
+	(pool_free): Likewise.
+
 2012-08-17  Walter Lee  <walt@tilera.com>
 
 	* config/tilegx/feedback.h (FEEDBACK_ENTER_EXPLICIT): Define.

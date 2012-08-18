@@ -247,6 +247,7 @@ void *
 pool_alloc (alloc_pool pool)
 {
   alloc_pool_list header;
+  VALGRIND_DISCARD (int size);
 
   if (GATHER_STATISTICS)
     {
@@ -259,6 +260,7 @@ pool_alloc (alloc_pool pool)
     }
 
   gcc_checking_assert (pool);
+  VALGRIND_DISCARD (size = pool->elt_size - offsetof (allocation_object, u.data));
 
   /* If there are no more free elements, make some more!.  */
   if (!pool->returned_free_list)
@@ -298,6 +300,7 @@ pool_alloc (alloc_pool pool)
       /* Mark the element to be free.  */
       ((allocation_object *) block)->id = 0;
 #endif
+      VALGRIND_DISCARD (VALGRIND_MAKE_MEM_NOACCESS (header,size));
       pool->returned_free_list = header;
       pool->virgin_free_list += pool->elt_size;
       pool->virgin_elts_remaining--;
@@ -306,6 +309,7 @@ pool_alloc (alloc_pool pool)
 
   /* Pull the first free element from the free list, and return it.  */
   header = pool->returned_free_list;
+  VALGRIND_DISCARD (VALGRIND_MAKE_MEM_DEFINED (header, sizeof(*header)));
   pool->returned_free_list = header->next;
   pool->elts_free--;
 
@@ -313,6 +317,7 @@ pool_alloc (alloc_pool pool)
   /* Set the ID for element.  */
   ALLOCATION_OBJECT_PTR_FROM_USER_PTR (header)->id = pool->id;
 #endif
+  VALGRIND_DISCARD (VALGRIND_MAKE_MEM_UNDEFINED (header, size));
 
   return ((void *) header);
 }
@@ -322,6 +327,10 @@ void
 pool_free (alloc_pool pool, void *ptr)
 {
   alloc_pool_list header;
+#if defined(ENABLE_VALGRIND_CHECKING) || defined(ENABLE_CHECKING)
+  int size;
+  size = pool->elt_size - offsetof (allocation_object, u.data);
+#endif
 
 #ifdef ENABLE_CHECKING
   gcc_assert (ptr
@@ -330,7 +339,7 @@ pool_free (alloc_pool pool, void *ptr)
 	      /* Check whether the PTR was allocated from POOL.  */
 	      && pool->id == ALLOCATION_OBJECT_PTR_FROM_USER_PTR (ptr)->id);
 
-  memset (ptr, 0xaf, pool->elt_size - offsetof (allocation_object, u.data));
+  memset (ptr, 0xaf, size);
 
   /* Mark the element to be free.  */
   ALLOCATION_OBJECT_PTR_FROM_USER_PTR (ptr)->id = 0;
@@ -339,6 +348,7 @@ pool_free (alloc_pool pool, void *ptr)
   header = (alloc_pool_list) ptr;
   header->next = pool->returned_free_list;
   pool->returned_free_list = header;
+  VALGRIND_DISCARD (VALGRIND_MAKE_MEM_NOACCESS (ptr, size));
   pool->elts_free++;
 
   if (GATHER_STATISTICS)
