@@ -30,12 +30,14 @@ sparseset_alloc (SPARSESET_ELT_TYPE n_elms)
   unsigned int n_bytes = sizeof (struct sparseset_def)
 			 + ((n_elms - 1) * 2 * sizeof (SPARSESET_ELT_TYPE));
 
-  /* We use xcalloc rather than xmalloc to silence some valgrind uninitialized
+  sparseset set = XNEWVAR(struct sparseset_def, n_bytes);
+
+  /* Mark the sparseset as defined to silence some valgrind uninitialized
      read errors when accessing set->sparse[n] when "n" is not, and never has
      been, in the set.  These uninitialized reads are expected, by design and
-     harmless.  If this turns into a performance problem due to some future
-     additional users of sparseset, we can revisit this decision.  */
-  sparseset set = (sparseset) xcalloc (1, n_bytes);
+     harmless.  */
+  VALGRIND_DISCARD (VALGRIND_MAKE_MEM_DEFINED (set, n_bytes));
+
   set->dense = &(set->elms[0]);
   set->sparse = &(set->elms[n_elms]);
   set->size = n_elms;
