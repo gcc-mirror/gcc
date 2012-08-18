@@ -3261,7 +3261,6 @@ expand_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target,
       /* Attempt to handle multiplication of DImode values by negative
 	 coefficients, by performing the multiplication by a positive
 	 multiplier and then inverting the result.  */
-      /* ??? How is this not slightly redundant with the neg variant?  */
       if (is_neg && mode_bitsize > HOST_BITS_PER_WIDE_INT)
 	{
 	  /* Its safe to use -coeff even for INT_MIN, as the
@@ -3278,6 +3277,7 @@ expand_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target,
 					    &algorithm, variant);
 	      return expand_unop (mode, neg_optab, temp, target, 0);
 	    }
+	  goto skip_synth;
 	}
 
       /* Exclude cost of op0 from max_cost to match the cost
