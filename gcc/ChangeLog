@@ -1,3 +1,10 @@
+2012-08-18  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR middle-end/53823
+	* expmed.c (expand_mult): Skip synth_mult for negative coefficients
+	if the mode is larger than a wide int and it is too costly to multiply
+	by a positive multiplier and negate the result.
+
 2012-08-18  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* sparseset.c (sparseset_alloc): Use non-clearing allocation.  Tell
