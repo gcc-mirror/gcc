@@ -1,3 +1,14 @@
+2012-08-17  Walter Lee  <walt@tilera.com>
+
+	* config/tilegx/feedback.h (FEEDBACK_ENTER_EXPLICIT): Define.
+	(FEEDBACK_ENTER): Define.
+	(FEEDBACK_REENTER): Define.
+	(FEEDBACK_ENTRY): Define.
+	* config/tilepro/feedback.h: (FEEDBACK_ENTER_EXPLICIT): Define.
+	(FEEDBACK_ENTER): Define.
+	(FEEDBACK_REENTER): Define.
+	(FEEDBACK_ENTRY): Define.
+
 2012-08-17  H.J. Lu  <hongjiu.lu@intel.com>
 	    Gary Funck <gary@intrepid.com>
 
