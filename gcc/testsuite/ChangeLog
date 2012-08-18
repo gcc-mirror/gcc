@@ -1,3 +1,8 @@
+2012-08-18  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/39290
+	* gfortran.dg/interface_37.f90: New test.
+
 2012-08-17  H.J. Lu  <hongjiu.lu@intel.com>
 	    Gary Funck <gary@intrepid.com>
 
