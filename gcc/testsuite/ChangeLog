@@ -1,3 +1,7 @@
+2012-08-18  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/ipa/iinline-1.c: Update testcase to test inline hints.
+
 2012-08-18  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/39290

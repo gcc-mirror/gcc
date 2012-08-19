@@ -472,11 +472,15 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
   else
     {
       int growth = estimate_edge_growth (e);
+      inline_hints hints = estimate_edge_hints (e);
 
       if (growth <= 0)
 	;
+      /* Apply MAX_INLINE_INSNS_SINGLE limit.  Do not do so when
+	 hints suggests that inlining given function is very profitable.  */
       else if (DECL_DECLARED_INLINE_P (callee->symbol.decl)
-	       && growth >= MAX_INLINE_INSNS_SINGLE)
+	       && growth >= MAX_INLINE_INSNS_SINGLE
+	       && !(hints & INLINE_HINT_indirect_call))
 	{
           e->inline_failed = CIF_MAX_INLINE_INSNS_SINGLE_LIMIT;
 	  want_inline = false;
@@ -523,8 +527,14 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
           e->inline_failed = CIF_NOT_DECLARED_INLINED;
 	  want_inline = false;
 	}
+      /* Apply MAX_INLINE_INSNS_AUTO limit for functions not declared inline
+	 Upgrade it to MAX_INLINE_INSNS_SINGLE when hints suggests that
+	 inlining given function is very profitable.  */
       else if (!DECL_DECLARED_INLINE_P (callee->symbol.decl)
-	       && growth >= MAX_INLINE_INSNS_AUTO)
+	       && growth >= ((hints & INLINE_HINT_indirect_call)
+			     ? MAX (MAX_INLINE_INSNS_AUTO,
+				    MAX_INLINE_INSNS_SINGLE)
+			     : MAX_INLINE_INSNS_AUTO))
 	{
           e->inline_failed = CIF_MAX_INLINE_INSNS_AUTO_LIMIT;
 	  want_inline = false;
@@ -743,21 +753,25 @@ edge_badness (struct cgraph_edge *edge, bool dump)
   struct cgraph_node *callee = cgraph_function_or_thunk_node (edge->callee,
 							      NULL);
   struct inline_summary *callee_info = inline_summary (callee);
+  inline_hints hints;
 
   if (DECL_DISREGARD_INLINE_LIMITS (callee->symbol.decl))
     return INT_MIN;
 
   growth = estimate_edge_growth (edge);
   time_growth = estimate_edge_time (edge);
+  hints = estimate_edge_hints (edge);
 
   if (dump)
     {
       fprintf (dump_file, "    Badness calculation for %s -> %s\n",
 	       xstrdup (cgraph_node_name (edge->caller)),
 	       xstrdup (cgraph_node_name (callee)));
-      fprintf (dump_file, "      size growth %i, time growth %i\n",
+      fprintf (dump_file, "      size growth %i, time growth %i ",
 	       growth,
 	       time_growth);
+      dump_inline_hints (dump_file, hints);
+      fprintf (dump_file, "\n");
     }
 
   /* Always prefer inlining saving code size.  */
@@ -849,6 +863,8 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 	  if (dump)
 	    fprintf (dump_file, "Badness overflow\n");
 	}
+      if (hints & INLINE_HINT_indirect_call)
+	badness /= 8;
       if (dump)
 	{
 	  fprintf (dump_file,
