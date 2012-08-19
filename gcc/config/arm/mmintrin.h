@@ -1670,7 +1670,7 @@ _mm_torvscw ()
 {
   __asm __volatile ("torvscw r15");
 }
-#endif
+#endif /* __IWMMXT2__ */
 
 static __inline __m64
 _mm_tbcst_pi8 (int value)
@@ -1832,5 +1832,5 @@ _mm_tbcst_pi32 (int value)
 #if defined __cplusplus
 }; /* End "C" */
 #endif /* __cplusplus */
-#endif /* __IWMMXT__ */
+
 #endif /* _MMINTRIN_H_INCLUDED */

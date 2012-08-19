@@ -1,3 +1,8 @@
+2012-08-19  Nick Clifton  <nickc@redhat.com>
+
+	PR target/54306
+	* config/arm/mmintrin.h: Remove spurious #endif.
+
 2012-08-18  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
         * config/avr/avr-log.c (avr_log_vadump): Properly use
