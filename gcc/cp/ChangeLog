@@ -1,3 +1,7 @@
+2012-08-19  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* Make-lang.in: Fix typo.
+
 2012-08-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* cp-tree.def (SIZEOF_EXPR): Move to c-common.def.
