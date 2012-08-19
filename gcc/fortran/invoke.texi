@@ -726,10 +726,11 @@ warnings.
 @cindex warnings, all
 Enables commonly used warning options pertaining to usage that
 we recommend avoiding and that we believe are easy to avoid.
-This currently includes @option{-Waliasing}, @option{-Wampersand}, 
-@option{-Wconversion}, @option{-Wsurprising}, @option{-Wintrinsics-std},
-@option{-Wno-tabs}, @option{-Wintrinsic-shadow}, @option{-Wline-truncation},
-@option{-Wreal-q-constant} and @option{-Wunused}.
+This currently includes @option{-Waliasing}, @option{-Wampersand},
+@option{-Wconversion}, @option{-Wcompare-reals}, @option{-Wsurprising},
+@option{-Wintrinsics-std}, @option{-Wno-tabs}, @option{-Wintrinsic-shadow},
+@option{-Wline-truncation}, @option{-Wreal-q-constant} and
+@option{-Wunused}.
 
 @item -Waliasing
 @opindex @code{Waliasing}
@@ -934,6 +935,11 @@ a scalar.  See also @option{-frealloc-lhs}.
 @opindex @code{Wrealloc-lhs-all}
 Warn when the compiler inserts code to for allocation or reallocation of an
 allocatable variable; this includes scalars and derived types.
+
+@item -Wcompare-reals
+@opindex @code{Wcompare-reals}
+Warn when comparing real or complex types for equality or inequality.
+Enabled by @option{-Wall}.
 
 @item -Werror
 @opindex @code{Werror}

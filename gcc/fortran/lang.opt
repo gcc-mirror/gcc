@@ -218,6 +218,10 @@ Wcharacter-truncation
 Fortran Warning
 Warn about truncated character expressions
 
+Wcompare-reals
+Fortran Warning
+Warn about equality comparisons involving REAL or COMPLEX expressions
+
 Wconversion
 Fortran Warning
 ; Documented in C
