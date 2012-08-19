@@ -1,3 +1,9 @@
+2012-08-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Record_Type>: Use proper
+	dummy type for the temporary COMPONENT_REF built for a derived tagged
+	type with discriminant.
+
 2012-08-14   Diego Novillo  <dnovillo@google.com>
 
 	Merge from cxx-conversion branch.  Re-implement VEC in C++.
