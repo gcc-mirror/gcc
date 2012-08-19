@@ -284,15 +284,15 @@ avr_log_vadump (FILE *file, const char *fmt, va_list ap)
               break;
                         
             case 'm':
-              fputs (GET_MODE_NAME (va_arg (ap, enum machine_mode)), file);
+              fputs (GET_MODE_NAME ((enum machine_mode) va_arg (ap, int)), file);
               break;
               
             case 'C':
-              fputs (rtx_name[va_arg (ap, enum rtx_code)], file);
+              fputs (rtx_name[va_arg (ap, int)], file);
               break;
               
             case 'R':
-              fputs (reg_class_names[va_arg (ap, enum reg_class)], file);
+              fputs (reg_class_names[va_arg (ap, int)], file);
               break;
               
             case 'F':
