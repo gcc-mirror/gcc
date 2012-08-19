@@ -1,3 +1,28 @@
+2012-08-18  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/45375
+	* ipa-inline.c (want_inline_small_function_p): Bypass
+	inline limits for hinted functions.
+	(edge_badness): Dump hints; decrease badness for hinted funcitons.
+	* ipa-inline.h (enum inline_hints_vals): New enum.
+	(inline_hints): New type.
+	(edge_growth_cache_entry): Add hints.
+	(dump_inline_summary): Update.
+	(dump_inline_hints): Declare.
+	(do_estimate_edge_hints): Declare.
+	(estimate_edge_hints): New inline function.
+	(reset_edge_growth_cache): Update.
+	* predict.c (cgraph_maybe_hot_edge_p): Do not ice on indirect edges.
+	* ipa-inline-analysis.c (dump_inline_hints): New function.
+	(estimate_edge_devirt_benefit): Return true when function should be
+	hinted.
+	(estimate_calls_size_and_time): New hints argument; set it when
+	devritualization happens.
+	(estimate_node_size_and_time): New hints argument.
+	(do_estimate_edge_time): Cache hints.
+	(do_estimate_edge_growth): Update.	
+	(do_estimate_edge_hints): New function
+
 2012-08-18  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR middle-end/53823

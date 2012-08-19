@@ -165,10 +165,12 @@ cgraph_maybe_hot_edge_p (struct cgraph_edge *edge)
 	  <= profile_info->sum_max / PARAM_VALUE (HOT_BB_COUNT_FRACTION)))
     return false;
   if (edge->caller->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED
-      || edge->callee->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED)
+      || (edge->callee
+	  && edge->callee->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED))
     return false;
   if (edge->caller->frequency > NODE_FREQUENCY_UNLIKELY_EXECUTED
-      && edge->callee->frequency <= NODE_FREQUENCY_EXECUTED_ONCE)
+      && (edge->callee
+	  && edge->callee->frequency <= NODE_FREQUENCY_EXECUTED_ONCE))
     return false;
   if (optimize_size)
     return false;
