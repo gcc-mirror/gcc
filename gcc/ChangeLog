@@ -1,3 +1,7 @@
+2012-08-19  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* ChangeLog: Fix whitespace.
+
 2012-08-19  Nick Clifton  <nickc@redhat.com>
 
 	PR target/54306
@@ -5,11 +9,11 @@
 
 2012-08-18  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
-        * config/avr/avr-log.c (avr_log_vadump): Properly use
-        int-promoted enum values.
-        * config/avr/avr.h (struct mcu_type_s): Change `arch' from
-        int to enum avr_arch.
-        * config/avr/gen-avr-mmcu-texi.c (main): Use correct initializer.
+	* config/avr/avr-log.c (avr_log_vadump): Properly use
+	int-promoted enum values.
+	* config/avr/avr.h (struct mcu_type_s): Change `arch' from
+	int to enum avr_arch.
+	* config/avr/gen-avr-mmcu-texi.c (main): Use correct initializer.
 
 2012-08-18  Jan Hubicka  <jh@suse.cz>
 
