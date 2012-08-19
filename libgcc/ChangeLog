@@ -1,3 +1,8 @@
+2012-08-19  Joseph Myers  <joseph@codesourcery.com>
+
+	* crtstuff.c (USE_PT_GNU_EH_FRAME): Define for systems using glibc
+	even if inhibit_libc.
+
 2012-08-17  Julian Brown  <julian@codesourcery.com>
 
 	* Makefile.in (LIB2_DIVMOD_EXCEPTION_FLAGS): Default to
