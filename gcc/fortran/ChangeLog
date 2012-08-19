@@ -1,3 +1,15 @@
+2012-08-19  Thomas König  <tkoenig@gcc.gnu.org>
+
+	PR fortran/54298
+	* gfortran.h (struct gfc_option_t): Add warn_compare_reals.
+	* lang.opt:  Add Wcompare-reals.
+	* invoke.texi:  Document -Wcompare-reals.
+	* resolve.c (resolve_operator):  If -Wcompare-reals is in effect,
+	warn about equality/inequality comparisions for REAL and COMPLEX.
+	* options.c (gfc_init_options):  Set warn_compare_reals.
+	(set_Wall):  Include warn_compare_reals in Wall.
+	(gfc_handle_option):  Handle Wcompare_reals.
+
 2012-08-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* array.c (gfc_match_array_ref): Fix up memset arguments.

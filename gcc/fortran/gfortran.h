@@ -2225,6 +2225,7 @@ typedef struct
   int warn_unused_dummy_argument;
   int warn_realloc_lhs;
   int warn_realloc_lhs_all;
+  int warn_compare_reals;
   int max_errors;
 
   int flag_all_intrinsics;
