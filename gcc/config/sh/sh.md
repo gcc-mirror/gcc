@@ -10409,6 +10409,41 @@ label:
   operands[0] = gen_reg_rtx (SImode);
 })
 
+;; The *cset_zero patterns convert optimizations such as
+;;	"if (test) x = 0;" to "x &= -(test == 0);"
+;; back to conditional branch sequences if zero-displacement branches
+;; are enabled.
+;; FIXME: These patterns can be removed when conditional execution patterns
+;; are implemented, since ifcvt will not perform these optimizations if
+;; conditional execution is supported.
+(define_insn "*cset_zero"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+	(and:SI (plus:SI (match_operand:SI 1 "t_reg_operand")
+			 (const_int -1))
+		(match_operand:SI 2 "arith_reg_operand" "0")))]
+  "TARGET_SH1 && TARGET_ZDCBRANCH"
+{
+  return       "bf	0f"	"\n"
+	 "	mov	#0,%0"	"\n"
+	 "0:";
+}
+  [(set_attr "type" "arith") ;; poor approximation
+   (set_attr "length" "4")])
+
+(define_insn "*cset_zero"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+	(if_then_else:SI (match_operand:SI 1 "t_reg_operand")
+			 (match_operand:SI 2 "arith_reg_operand" "0")
+			 (const_int 0)))]
+  "TARGET_SH1 && TARGET_ZDCBRANCH"
+{
+  return       "bt	0f"	"\n"
+	 "	mov	#0,%0"	"\n"
+	 "0:";
+}
+  [(set_attr "type" "arith") ;; poor approximation
+   (set_attr "length" "4")])
+
 (define_expand "cstoresf4"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(match_operator:SI 1 "sh_float_comparison_operator"
