@@ -1,5 +1,5 @@
 /* Linux-specific atomic operations for m68k Linux.
-   Copyright (C) 2011 Free Software Foundation, Inc.
+   Copyright (C) 2011, 2012 Free Software Foundation, Inc.
    Based on code contributed by CodeSourcery for ARM EABI Linux.
 
 This file is part of GCC.
@@ -207,5 +207,5 @@ SUBWORD_BOOL_CAS (unsigned char,  1)
 #define COMMA ,
 
 WORD_SYNC_OP (test_and_set, , COMMA, oldval)
-SUBWORD_SYNC_OP (test_and_set, , COMMA, unsigned short, 1, oldval)
+SUBWORD_SYNC_OP (test_and_set, , COMMA, unsigned char, 1, oldval)
 SUBWORD_SYNC_OP (test_and_set, , COMMA, unsigned short, 2, oldval)

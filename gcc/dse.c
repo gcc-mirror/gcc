@@ -200,8 +200,21 @@ along with GCC; see the file COPYING3.  If not see
    that really have constant offsets this size.  */
 #define MAX_OFFSET (64 * 1024)
 
+/* Obstack for the DSE dataflow bitmaps.  We don't want to put these
+   on the default obstack because these bitmaps can grow quite large
+   (~2GB for the small (!) test case of PR54146) and we'll hold on to
+   all that memory until the end of the compiler run.
+   As a bonus, delete_tree_live_info can destroy all the bitmaps by just
+   releasing the whole obstack.  */
+static bitmap_obstack dse_bitmap_obstack;
 
+/* Obstack for other data.  As for above: Kinda nice to be able to
+   throw it all away at the end in one big sweep.  */
+static struct obstack dse_obstack;
+
+/* Scratch bitmap for cselib's cselib_expand_value_rtx.  */
 static bitmap scratch = NULL;
+
 struct insn_info;
 
 /* This structure holds information about a candidate store.  */
@@ -685,13 +698,13 @@ get_group_info (rtx base)
 	    (group_info_t) pool_alloc (rtx_group_info_pool);
 	  memset (gi, 0, sizeof (struct group_info));
 	  gi->id = rtx_group_next_id++;
-	  gi->store1_n = BITMAP_ALLOC (NULL);
-	  gi->store1_p = BITMAP_ALLOC (NULL);
-	  gi->store2_n = BITMAP_ALLOC (NULL);
-	  gi->store2_p = BITMAP_ALLOC (NULL);
-	  gi->escaped_p = BITMAP_ALLOC (NULL);
-	  gi->escaped_n = BITMAP_ALLOC (NULL);
-	  gi->group_kill = BITMAP_ALLOC (NULL);
+	  gi->store1_n = BITMAP_ALLOC (&dse_bitmap_obstack);
+	  gi->store1_p = BITMAP_ALLOC (&dse_bitmap_obstack);
+	  gi->store2_n = BITMAP_ALLOC (&dse_bitmap_obstack);
+	  gi->store2_p = BITMAP_ALLOC (&dse_bitmap_obstack);
+	  gi->escaped_p = BITMAP_ALLOC (&dse_bitmap_obstack);
+	  gi->escaped_n = BITMAP_ALLOC (&dse_bitmap_obstack);
+	  gi->group_kill = BITMAP_ALLOC (&dse_bitmap_obstack);
 	  gi->process_globally = false;
 	  gi->offset_map_size_n = 0;
 	  gi->offset_map_size_p = 0;
@@ -709,13 +722,13 @@ get_group_info (rtx base)
       gi->id = rtx_group_next_id++;
       gi->base_mem = gen_rtx_MEM (BLKmode, base);
       gi->canon_base_addr = canon_rtx (base);
-      gi->store1_n = BITMAP_ALLOC (NULL);
-      gi->store1_p = BITMAP_ALLOC (NULL);
-      gi->store2_n = BITMAP_ALLOC (NULL);
-      gi->store2_p = BITMAP_ALLOC (NULL);
-      gi->escaped_p = BITMAP_ALLOC (NULL);
-      gi->escaped_n = BITMAP_ALLOC (NULL);
-      gi->group_kill = BITMAP_ALLOC (NULL);
+      gi->store1_n = BITMAP_ALLOC (&dse_bitmap_obstack);
+      gi->store1_p = BITMAP_ALLOC (&dse_bitmap_obstack);
+      gi->store2_n = BITMAP_ALLOC (&dse_bitmap_obstack);
+      gi->store2_p = BITMAP_ALLOC (&dse_bitmap_obstack);
+      gi->escaped_p = BITMAP_ALLOC (&dse_bitmap_obstack);
+      gi->escaped_n = BITMAP_ALLOC (&dse_bitmap_obstack);
+      gi->group_kill = BITMAP_ALLOC (&dse_bitmap_obstack);
       gi->process_globally = false;
       gi->frame_related =
 	(base == frame_pointer_rtx) || (base == hard_frame_pointer_rtx);
@@ -739,8 +752,11 @@ dse_step0 (void)
   globally_deleted = 0;
   spill_deleted = 0;
 
-  scratch = BITMAP_ALLOC (NULL);
-  kill_on_calls = BITMAP_ALLOC (NULL);
+  bitmap_obstack_initialize (&dse_bitmap_obstack);
+  gcc_obstack_init (&dse_obstack);
+
+  scratch = BITMAP_ALLOC (&reg_obstack);
+  kill_on_calls = BITMAP_ALLOC (&dse_bitmap_obstack);
 
   rtx_store_info_pool
     = create_alloc_pool ("rtx_store_info_pool",
@@ -764,7 +780,7 @@ dse_step0 (void)
   rtx_group_table = htab_create (11, invariant_group_base_hash,
 				 invariant_group_base_eq, NULL);
 
-  bb_table = XCNEWVEC (bb_info_t, last_basic_block);
+  bb_table = XNEWVEC (bb_info_t, last_basic_block);
   rtx_group_next_id = 0;
 
   stores_off_frame_dead_at_return = !cfun->stdarg;
@@ -1694,7 +1710,7 @@ record_store (rtx body, bb_info_t bb_info)
     {
       store_info->is_large = true;
       store_info->positions_needed.large.count = 0;
-      store_info->positions_needed.large.bmap = BITMAP_ALLOC (NULL);
+      store_info->positions_needed.large.bmap = BITMAP_ALLOC (&dse_bitmap_obstack);
     }
   else
     {
@@ -2020,7 +2036,7 @@ replace_read (store_info_t store_info, insn_info_t store_insn,
 	 live at this point.  For instance, this can happen if one of
 	 the insns sets the CC and the CC happened to be live at that
 	 point.  This does occasionally happen, see PR 37922.  */
-      bitmap regs_set = BITMAP_ALLOC (NULL);
+      bitmap regs_set = BITMAP_ALLOC (&reg_obstack);
 
       for (this_insn = insns; this_insn != NULL_RTX; this_insn = NEXT_INSN (this_insn))
 	note_stores (PATTERN (this_insn), look_for_hardregs, regs_set);
@@ -2718,7 +2734,7 @@ static void
 dse_step1 (void)
 {
   basic_block bb;
-  bitmap regs_live = BITMAP_ALLOC (NULL);
+  bitmap regs_live = BITMAP_ALLOC (&reg_obstack);
 
   cselib_init (0);
   all_blocks = BITMAP_ALLOC (NULL);
@@ -2906,9 +2922,11 @@ dse_step2_init (void)
 	}
 
       group->offset_map_size_n++;
-      group->offset_map_n = XNEWVEC (int, group->offset_map_size_n);
+      group->offset_map_n = XOBNEWVEC (&dse_obstack, int,
+				       group->offset_map_size_n);
       group->offset_map_size_p++;
-      group->offset_map_p = XNEWVEC (int, group->offset_map_size_p);
+      group->offset_map_p = XOBNEWVEC (&dse_obstack, int,
+				       group->offset_map_size_p);
       group->process_globally = false;
       if (dump_file)
 	{
@@ -3261,7 +3279,7 @@ dse_step3_scan (bool for_spills, basic_block bb)
       if (bb_info->kill)
 	bitmap_clear (bb_info->kill);
       else
-	bb_info->kill = BITMAP_ALLOC (NULL);
+	bb_info->kill = BITMAP_ALLOC (&dse_bitmap_obstack);
     }
   else
     if (bb_info->kill)
@@ -3354,7 +3372,7 @@ dse_step3 (bool for_spills)
       if (bb_info->gen)
 	bitmap_clear (bb_info->gen);
       else
-	bb_info->gen = BITMAP_ALLOC (NULL);
+	bb_info->gen = BITMAP_ALLOC (&dse_bitmap_obstack);
 
       if (bb->index == ENTRY_BLOCK)
 	;
@@ -3386,13 +3404,13 @@ dse_step3 (bool for_spills)
 	      unsigned int j;
 	      group_info_t group;
 
-	      all_ones = BITMAP_ALLOC (NULL);
+	      all_ones = BITMAP_ALLOC (&dse_bitmap_obstack);
 	      FOR_EACH_VEC_ELT (group_info_t, rtx_group_vec, j, group)
 		bitmap_ior_into (all_ones, group->group_kill);
 	    }
 	  if (!bb_info->out)
 	    {
-	      bb_info->out = BITMAP_ALLOC (NULL);
+	      bb_info->out = BITMAP_ALLOC (&dse_bitmap_obstack);
 	      bitmap_copy (bb_info->out, all_ones);
 	    }
 	}
@@ -3428,7 +3446,7 @@ dse_confluence_0 (basic_block bb)
 
   if (!bb_info->out)
     {
-      bb_info->out = BITMAP_ALLOC (NULL);
+      bb_info->out = BITMAP_ALLOC (&dse_bitmap_obstack);
       bitmap_copy (bb_info->out, bb_table[EXIT_BLOCK]->gen);
     }
 }
@@ -3449,7 +3467,7 @@ dse_confluence_n (edge e)
 	bitmap_and_into (src_info->out, dest_info->in);
       else
 	{
-	  src_info->out = BITMAP_ALLOC (NULL);
+	  src_info->out = BITMAP_ALLOC (&dse_bitmap_obstack);
 	  bitmap_copy (src_info->out, dest_info->in);
 	}
     }
@@ -3488,7 +3506,7 @@ dse_transfer_function (int bb_index)
 					 bb_info->out, bb_info->kill);
 	  else
 	    {
-	      bb_info->in = BITMAP_ALLOC (NULL);
+	      bb_info->in = BITMAP_ALLOC (&dse_bitmap_obstack);
 	      bitmap_ior_and_compl (bb_info->in, bb_info->gen,
 				    bb_info->out, bb_info->kill);
 	      return true;
@@ -3506,7 +3524,7 @@ dse_transfer_function (int bb_index)
 	return false;
       else
 	{
-	  bb_info->in = BITMAP_ALLOC (NULL);
+	  bb_info->in = BITMAP_ALLOC (&dse_bitmap_obstack);
 	  bitmap_copy (bb_info->in, bb_info->gen);
 	  return true;
 	}
@@ -3786,37 +3804,10 @@ dse_step6 (void)
 ----------------------------------------------------------------------------*/
 
 static void
-dse_step7 (bool global_done)
+dse_step7 (void)
 {
-  unsigned int i;
-  group_info_t group;
-  basic_block bb;
-
-  FOR_EACH_VEC_ELT (group_info_t, rtx_group_vec, i, group)
-    {
-      free (group->offset_map_n);
-      free (group->offset_map_p);
-      BITMAP_FREE (group->store1_n);
-      BITMAP_FREE (group->store1_p);
-      BITMAP_FREE (group->store2_n);
-      BITMAP_FREE (group->store2_p);
-      BITMAP_FREE (group->escaped_n);
-      BITMAP_FREE (group->escaped_p);
-      BITMAP_FREE (group->group_kill);
-    }
-
-  if (global_done)
-    FOR_ALL_BB (bb)
-      {
-	bb_info_t bb_info = bb_table[bb->index];
-	BITMAP_FREE (bb_info->gen);
-	if (bb_info->kill)
-	  BITMAP_FREE (bb_info->kill);
-	if (bb_info->in)
-	  BITMAP_FREE (bb_info->in);
-	if (bb_info->out)
-	  BITMAP_FREE (bb_info->out);
-      }
+  bitmap_obstack_release (&dse_bitmap_obstack);
+  obstack_free (&dse_obstack, NULL);
 
   if (clear_alias_sets)
     {
@@ -3832,7 +3823,6 @@ dse_step7 (bool global_done)
   VEC_free (group_info_t, heap, rtx_group_vec);
   BITMAP_FREE (all_blocks);
   BITMAP_FREE (scratch);
-  BITMAP_FREE (kill_on_calls);
 
   free_alloc_pool (rtx_store_info_pool);
   free_alloc_pool (read_info_pool);
@@ -3897,7 +3887,7 @@ rest_of_handle_dse (void)
     }
 
   dse_step6 ();
-  dse_step7 (did_global);
+  dse_step7 ();
 
   if (dump_file)
     fprintf (dump_file, "dse: local deletions = %d, global deletions = %d, spill deletions = %d\n",

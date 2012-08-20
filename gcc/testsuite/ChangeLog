@@ -1,3 +1,57 @@
+2012-08-20  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54301
+	* gfortran.dg/warn_target_lifetime_1.f90: New.
+
+2012-08-19  Thomas König  <tkoenig@gcc.gnu.org>
+
+	PR fortran/54298
+	* gfortran.dg/real_compare_1.f90:  New test case.
+	* gfortran.dg/bessel_5.f90  Add -Wno-compare-reals to options.
+
+2012-08-18  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/ipa/iinline-1.c: Update testcase to test inline hints.
+
+2012-08-18  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/39290
+	* gfortran.dg/interface_37.f90: New test.
+
+2012-08-17  H.J. Lu  <hongjiu.lu@intel.com>
+	    Gary Funck <gary@intrepid.com>
+
+	PR target/20020
+	* gcc.target/i386/pr20020-1.c: New test.
+	* gcc.target/i386/pr20020-2.c: Likewise.
+	* gcc.target/i386/pr20020-3.c: Likewise.
+
+2012-08-17  Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.target/i386/perm-concat.c: New test.
+
+2012-08-17  Julian Brown  <julian@codesourcery.com>
+
+	* gcc.target/arm/div64-unwinding.c: New test.
+
+2012-08-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/torture/Wsizeof-pointer-memaccess1.c: New test.
+
+2012-08-16  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54236
+	* gcc.target/sh/pr54236-1.c: New.
+
+2012-08-16  Hans-Peter Nilsson  <hp@axis.com>
+
+	* lib/target-supports.exp (check_effective_target_sync_int_long)
+	(check_effective_target_sync_char_short): Enable for crisv32-*
+	and cris-*.
+
+	PR middle-end/54261
+	* gcc.dg/torture/pr54261-1.c: New test.
+
 2012-08-15  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/54243

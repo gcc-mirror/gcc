@@ -95,7 +95,7 @@ struct mcu_type_s {
   const char *const name;
   
   /* Index in avr_arch_types[].  */
-  int arch; 
+  enum avr_arch arch; 
   
   /* Must lie outside user's namespace.  NULL == no macro.  */
   const char *const macro;

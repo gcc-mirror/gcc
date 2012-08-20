@@ -3255,6 +3255,23 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 
 	      return simplify_gen_binary (VEC_CONCAT, mode, subop0, subop1);
 	    }
+
+	  if (XVECLEN (trueop1, 0) == 2
+	      && CONST_INT_P (XVECEXP (trueop1, 0, 0))
+	      && CONST_INT_P (XVECEXP (trueop1, 0, 1))
+	      && GET_CODE (trueop0) == VEC_CONCAT
+	      && GET_MODE (trueop0) == mode)
+	    {
+	      unsigned int i0 = INTVAL (XVECEXP (trueop1, 0, 0));
+	      unsigned int i1 = INTVAL (XVECEXP (trueop1, 0, 1));
+	      rtx subop0, subop1;
+
+	      gcc_assert (i0 < 2 && i1 < 2);
+	      subop0 = XEXP (trueop0, i0);
+	      subop1 = XEXP (trueop0, i1);
+
+	      return simplify_gen_binary (VEC_CONCAT, mode, subop0, subop1);
+	    }
 	}
 
       if (XVECLEN (trueop1, 0) == 1

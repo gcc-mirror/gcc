@@ -1369,7 +1369,8 @@ void
 finish_fat_pointer_type (tree record_type, tree field_list)
 {
   /* Make sure we can put it into a register.  */
-  TYPE_ALIGN (record_type) = MIN (BIGGEST_ALIGNMENT, 2 * POINTER_SIZE);
+  if (STRICT_ALIGNMENT)
+    TYPE_ALIGN (record_type) = MIN (BIGGEST_ALIGNMENT, 2 * POINTER_SIZE);
 
   /* Show what it really is.  */
   TYPE_FAT_POINTER_P (record_type) = 1;

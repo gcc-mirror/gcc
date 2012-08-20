@@ -3118,6 +3118,19 @@ package body Layout is
 
          if Esize (E) / SSU > Ttypes.Maximum_Alignment then
             S := Ttypes.Maximum_Alignment;
+
+         --  If this is an access type and the target doesn't have strict
+         --  alignment and we are not doing front end layout, then cap the
+         --  alignment to that of a regular access type. This will avoid
+         --  giving fat pointers twice the usual alignment for no practical
+         --  benefit since the misalignment doesn't really matter.
+
+         elsif Is_Access_Type (E)
+           and then not Target_Strict_Alignment
+           and then not Frontend_Layout_On_Target
+         then
+            S := System_Address_Size / SSU;
+
          else
             S := UI_To_Int (Esize (E)) / SSU;
          end if;

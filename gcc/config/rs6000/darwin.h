@@ -282,7 +282,7 @@ extern int darwin_emit_branch_islands;
 #undef  TARGET_DEFAULT
 #define TARGET_DEFAULT (MASK_MULTIPLE | MASK_PPC_GFXOPT)
 
-/* Darwin only runs on PowerPC, so short-circuit POWER patterns.  */
+/* Darwin always uses IBM long double, never IEEE long double.  */
 #undef  TARGET_IEEEQUAD
 #define TARGET_IEEEQUAD 0
 

@@ -183,6 +183,9 @@ static struct
   struct pointer_map_t *ttae_cache;
 } memory_accesses;
 
+/* Obstack for the bitmaps in the above data structures.  */
+static bitmap_obstack lim_bitmap_obstack;
+
 static bool ref_indep_loop_p (struct loop *, mem_ref_p);
 
 /* Minimum cost of an expensive expression.  */
@@ -1486,17 +1489,10 @@ free_mem_ref_locs (mem_ref_locs_p accs)
 /* A function to free the mem_ref object OBJ.  */
 
 static void
-memref_free (void *obj)
+memref_free (struct mem_ref *mem)
 {
-  struct mem_ref *const mem = (struct mem_ref *) obj;
   unsigned i;
   mem_ref_locs_p accs;
-
-  BITMAP_FREE (mem->stored);
-  BITMAP_FREE (mem->indep_loop);
-  BITMAP_FREE (mem->dep_loop);
-  BITMAP_FREE (mem->indep_ref);
-  BITMAP_FREE (mem->dep_ref);
 
   FOR_EACH_VEC_ELT (mem_ref_locs_p, mem->accesses_in_loop, i, accs)
     free_mem_ref_locs (accs);
@@ -1515,11 +1511,11 @@ mem_ref_alloc (tree mem, unsigned hash, unsigned id)
   ref->mem = mem;
   ref->id = id;
   ref->hash = hash;
-  ref->stored = BITMAP_ALLOC (NULL);
-  ref->indep_loop = BITMAP_ALLOC (NULL);
-  ref->dep_loop = BITMAP_ALLOC (NULL);
-  ref->indep_ref = BITMAP_ALLOC (NULL);
-  ref->dep_ref = BITMAP_ALLOC (NULL);
+  ref->stored = BITMAP_ALLOC (&lim_bitmap_obstack);
+  ref->indep_loop = BITMAP_ALLOC (&lim_bitmap_obstack);
+  ref->dep_loop = BITMAP_ALLOC (&lim_bitmap_obstack);
+  ref->indep_ref = BITMAP_ALLOC (&lim_bitmap_obstack);
+  ref->dep_ref = BITMAP_ALLOC (&lim_bitmap_obstack);
   ref->accesses_in_loop = NULL;
 
   return ref;
@@ -1728,8 +1724,7 @@ analyze_memory_references (void)
   unsigned i;
   bitmap empty;
 
-  memory_accesses.refs
-	  = htab_create (100, memref_hash, memref_eq, memref_free);
+  memory_accesses.refs = htab_create (100, memref_hash, memref_eq, NULL);
   memory_accesses.refs_list = NULL;
   memory_accesses.refs_in_loop = VEC_alloc (bitmap, heap,
 					    number_of_loops ());
@@ -1740,11 +1735,11 @@ analyze_memory_references (void)
 
   for (i = 0; i < number_of_loops (); i++)
     {
-      empty = BITMAP_ALLOC (NULL);
+      empty = BITMAP_ALLOC (&lim_bitmap_obstack);
       VEC_quick_push (bitmap, memory_accesses.refs_in_loop, empty);
-      empty = BITMAP_ALLOC (NULL);
+      empty = BITMAP_ALLOC (&lim_bitmap_obstack);
       VEC_quick_push (bitmap, memory_accesses.all_refs_in_loop, empty);
-      empty = BITMAP_ALLOC (NULL);
+      empty = BITMAP_ALLOC (&lim_bitmap_obstack);
       VEC_quick_push (bitmap, memory_accesses.all_refs_stored_in_loop, empty);
     }
 
@@ -2583,6 +2578,8 @@ tree_ssa_lim_initialize (void)
   struct loop *loop;
   basic_block bb;
 
+  bitmap_obstack_initialize (&lim_bitmap_obstack);
+
   sbitmap_zero (contains_call);
   FOR_EACH_BB (bb)
     {
@@ -2616,28 +2613,24 @@ tree_ssa_lim_finalize (void)
 {
   basic_block bb;
   unsigned i;
-  bitmap b;
+  mem_ref_p ref;
 
   free_aux_for_edges ();
 
   FOR_EACH_BB (bb)
     SET_ALWAYS_EXECUTED_IN (bb, NULL);
 
+  bitmap_obstack_release (&lim_bitmap_obstack);
   pointer_map_destroy (lim_aux_data_map);
 
-  VEC_free (mem_ref_p, heap, memory_accesses.refs_list);
   htab_delete (memory_accesses.refs);
 
-  FOR_EACH_VEC_ELT (bitmap, memory_accesses.refs_in_loop, i, b)
-    BITMAP_FREE (b);
+  FOR_EACH_VEC_ELT (mem_ref_p, memory_accesses.refs_list, i, ref)
+    memref_free (ref);
+  VEC_free (mem_ref_p, heap, memory_accesses.refs_list);
+
   VEC_free (bitmap, heap, memory_accesses.refs_in_loop);
-
-  FOR_EACH_VEC_ELT (bitmap, memory_accesses.all_refs_in_loop, i, b)
-    BITMAP_FREE (b);
   VEC_free (bitmap, heap, memory_accesses.all_refs_in_loop);
-
-  FOR_EACH_VEC_ELT (bitmap, memory_accesses.all_refs_stored_in_loop, i, b)
-    BITMAP_FREE (b);
   VEC_free (bitmap, heap, memory_accesses.all_refs_stored_in_loop);
 
   if (memory_accesses.ttae_cache)

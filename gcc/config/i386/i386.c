@@ -7560,6 +7560,18 @@ ix86_promote_function_mode (const_tree type, enum machine_mode mode,
 					for_return);
 }
 
+/* Return true if a structure, union or array with MODE containing FIELD
+   should be accessed using BLKmode.  */
+
+static bool
+ix86_member_type_forces_blk (const_tree field, enum machine_mode mode)
+{
+  /* Union with XFmode must be in BLKmode.  */
+  return (mode == XFmode
+	  && (TREE_CODE (DECL_FIELD_CONTEXT (field)) == UNION_TYPE
+	      || TREE_CODE (DECL_FIELD_CONTEXT (field)) == QUAL_UNION_TYPE));
+}
+
 rtx
 ix86_libcall_value (enum machine_mode mode)
 {
@@ -16957,9 +16969,9 @@ ix86_lea_outperforms (rtx insn, unsigned int regno0, unsigned int regno1,
   dist_define += split_cost + IX86_LEA_PRIORITY;
 
   /* If there is no use in memory addess then we just check
-     that split cost does not exceed AGU stall.  */
+     that split cost exceeds AGU stall.  */
   if (dist_use < 0)
-    return dist_define >= LEA_MAX_STALL;
+    return dist_define > LEA_MAX_STALL;
 
   /* If this insn has both backward non-agu dependence and forward
      agu dependence, the one with short distance takes effect.  */
@@ -17142,13 +17154,41 @@ ix86_emit_binop (enum rtx_code code, enum machine_mode mode,
   emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, op, clob)));
 }
 
+/* Return true if regno1 def is nearest to the insn.  */
+
+static bool
+find_nearest_reg_def (rtx insn, int regno1, int regno2)
+{
+  rtx prev = insn;
+  rtx start = BB_HEAD (BLOCK_FOR_INSN (insn));
+
+  if (insn == start)
+    return false;
+  while (prev && prev != start)
+    {
+      if (!INSN_P (prev) || !NONDEBUG_INSN_P (prev))
+	{
+	  prev = PREV_INSN (prev);
+	  continue;
+	}
+      if (insn_defines_reg (regno1, INVALID_REGNUM, prev))
+	return true;
+      else if (insn_defines_reg (regno2, INVALID_REGNUM, prev))
+	return false;
+      prev = PREV_INSN (prev);
+    }
+
+  /* None of the regs is defined in the bb.  */
+  return false;
+}
+
 /* Split lea instructions into a sequence of instructions
    which are executed on ALU to avoid AGU stalls.
    It is assumed that it is allowed to clobber flags register
    at lea position.  */
 
 void
-ix86_split_lea_for_addr (rtx operands[], enum machine_mode mode)
+ix86_split_lea_for_addr (rtx insn, rtx operands[], enum machine_mode mode)
 {
   unsigned int regno0, regno1, regno2;
   struct ix86_address parts;
@@ -17235,8 +17275,22 @@ ix86_split_lea_for_addr (rtx operands[], enum machine_mode mode)
 	    tmp = parts.base;
 	  else
 	    {
-	      emit_insn (gen_rtx_SET (VOIDmode, target, parts.base));
-	      tmp = parts.index;
+	      rtx tmp1;
+
+	      /* Find better operand for SET instruction, depending
+		 on which definition is farther from the insn.  */
+	      if (find_nearest_reg_def (insn, regno1, regno2))
+		tmp = parts.index, tmp1 = parts.base;
+	      else
+		tmp = parts.base, tmp1 = parts.index;
+
+	      emit_insn (gen_rtx_SET (VOIDmode, target, tmp));
+
+	      if (parts.disp && parts.disp != const0_rtx)
+		ix86_emit_binop (PLUS, mode, target, parts.disp);
+
+	      ix86_emit_binop (PLUS, mode, target, tmp1);
+	      return;
 	    }
 
 	  ix86_emit_binop (PLUS, mode, target, tmp);
@@ -40697,6 +40751,9 @@ ix86_memmodel_check (unsigned HOST_WIDE_INT val)
 
 #undef TARGET_PROMOTE_FUNCTION_MODE
 #define TARGET_PROMOTE_FUNCTION_MODE ix86_promote_function_mode
+
+#undef TARGET_MEMBER_TYPE_FORCES_BLK
+#define TARGET_MEMBER_TYPE_FORCES_BLK ix86_member_type_forces_blk
 
 #undef TARGET_SECONDARY_RELOAD
 #define TARGET_SECONDARY_RELOAD ix86_secondary_reload

@@ -50,7 +50,7 @@ print_mcus (size_t n_mcus)
 
 int main (void)
 {
-  enum avr_arch arch = 0;
+  enum avr_arch arch = ARCH_UNKNOWN;
   size_t i, n_mcus = 0;
   const struct mcu_type_s *mcu;
 

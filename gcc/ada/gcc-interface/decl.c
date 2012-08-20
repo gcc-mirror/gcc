@@ -2988,6 +2988,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	if (Present (Parent_Subtype (gnat_entity)))
 	  {
 	    Entity_Id gnat_parent = Parent_Subtype (gnat_entity);
+	    tree gnu_dummy_parent_type = make_node (RECORD_TYPE);
 	    tree gnu_parent;
 
 	    /* A major complexity here is that the parent subtype will
@@ -2999,11 +3000,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	       each of those discriminants to a COMPONENT_REF of the above
 	       dummy parent referencing the corresponding discriminant of the
 	       base type of the parent subtype.  */
-	    gnu_get_parent = build3 (COMPONENT_REF, void_type_node,
+	    gnu_get_parent = build3 (COMPONENT_REF, gnu_dummy_parent_type,
 				     build0 (PLACEHOLDER_EXPR, gnu_type),
 				     build_decl (input_location,
 						 FIELD_DECL, NULL_TREE,
-						 void_type_node),
+						 gnu_dummy_parent_type),
 				     NULL_TREE);
 
 	    if (has_discr)

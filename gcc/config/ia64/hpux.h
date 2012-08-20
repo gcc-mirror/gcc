@@ -115,9 +115,6 @@ do {							\
 #define TARGET_DEFAULT \
   (MASK_DWARF2_ASM | MASK_BIG_ENDIAN | MASK_ILP32)
 
-/* ??? Might not be needed anymore.  */
-#define MEMBER_TYPE_FORCES_BLK(FIELD, MODE) ((MODE) == TFmode)
-
 /* ASM_OUTPUT_EXTERNAL_LIBCALL defaults to just a globalize_label call,
    but that doesn't put out the @function type information which causes
    shared library problems.  */

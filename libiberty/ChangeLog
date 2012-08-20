@@ -1,3 +1,9 @@
+2012-08-17  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* floatformat.c (floatformat_to_double): Correctly handle numbers
+	between 1 and 2.  Simplify handling of denormal number.
+	(main): Test with 1.1.
+
 2012-07-31  Mike Frysinger  <vapier@gentoo.org>
 
 	* md5.c (md5_finish_ctx): Declare swap_bytes.  Assign SWAP() output

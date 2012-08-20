@@ -1,3 +1,425 @@
+2012-08-20  Richard Guenther  <rguenther@suse.de>
+
+	PR bootstrap/54326
+	* genoutput.c (note_constraint): Properly use CONST_CAST.
+
+2012-08-19  Nick Clifton  <nickc@redhat.com>
+
+	PR target/54306
+	* config/arm/mmintrin.h: Remove spurious #endif.
+
+2012-08-18  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config/avr/avr-log.c (avr_log_vadump): Properly use
+	int-promoted enum values.
+	* config/avr/avr.h (struct mcu_type_s): Change `arch' from
+	int to enum avr_arch.
+	* config/avr/gen-avr-mmcu-texi.c (main): Use correct initializer.
+
+2012-08-18  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/45375
+	* ipa-inline.c (want_inline_small_function_p): Bypass
+	inline limits for hinted functions.
+	(edge_badness): Dump hints; decrease badness for hinted funcitons.
+	* ipa-inline.h (enum inline_hints_vals): New enum.
+	(inline_hints): New type.
+	(edge_growth_cache_entry): Add hints.
+	(dump_inline_summary): Update.
+	(dump_inline_hints): Declare.
+	(do_estimate_edge_hints): Declare.
+	(estimate_edge_hints): New inline function.
+	(reset_edge_growth_cache): Update.
+	* predict.c (cgraph_maybe_hot_edge_p): Do not ice on indirect edges.
+	* ipa-inline-analysis.c (dump_inline_hints): New function.
+	(estimate_edge_devirt_benefit): Return true when function should be
+	hinted.
+	(estimate_calls_size_and_time): New hints argument; set it when
+	devritualization happens.
+	(estimate_node_size_and_time): New hints argument.
+	(do_estimate_edge_time): Cache hints.
+	(do_estimate_edge_growth): Update.	
+	(do_estimate_edge_hints): New function
+
+2012-08-18  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR middle-end/53823
+	* expmed.c (expand_mult): Skip synth_mult for negative coefficients
+	if the mode is larger than a wide int and it is too costly to multiply
+	by a positive multiplier and negate the result.
+
+2012-08-18  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* sparseset.c (sparseset_alloc): Use non-clearing allocation.  Tell
+	valgrind not to worry about reading from unitialized memory.
+
+2012-08-18  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR middle-end/54313
+	* dse.c (dse_step7): Don't free kill_on_calls bitmap, it is
+	freed when its obstack is release.
+
+2012-08-18  Andrew Pinski  <pinskia@gmail.com>
+
+	* alloc-pool.c (pool_alloc): Add valgrind markers.
+	(pool_free): Likewise.
+
+2012-08-17  Walter Lee  <walt@tilera.com>
+
+	* config/tilegx/feedback.h (FEEDBACK_ENTER_EXPLICIT): Define.
+	(FEEDBACK_ENTER): Define.
+	(FEEDBACK_REENTER): Define.
+	(FEEDBACK_ENTRY): Define.
+	* config/tilepro/feedback.h: (FEEDBACK_ENTER_EXPLICIT): Define.
+	(FEEDBACK_ENTER): Define.
+	(FEEDBACK_REENTER): Define.
+	(FEEDBACK_ENTRY): Define.
+
+2012-08-17  H.J. Lu  <hongjiu.lu@intel.com>
+	    Gary Funck <gary@intrepid.com>
+
+	PR target/20020
+	* config/i386/i386.c (ix86_member_type_forces_blk): New function.
+	(TARGET_MEMBER_TYPE_FORCES_BLK): New macro.
+
+	* config/i386/i386.h (MAX_FIXED_MODE_SIZE): New macro.
+
+2012-08-17  Marc Glisse  <marc.glisse@inria.fr>
+
+	* simplify-rtx.c (simplify_binary_operation_1): Optimize shuffle of
+	a concatenation.
+
+
+2012-08-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* stor-layout.c (compute_record_mode): Replace
+	MEMBER_TYPE_FORCES_BLK with targetm.member_type_forces_blk.
+	(layout_type): Likewise.
+
+	* system.h: Poison MEMBER_TYPE_FORCES_BLK.
+
+	* target.def (member_type_forces_blk): New target hook.
+
+	* targhooks.c (default_member_type_forces_blk): New.
+	* targhooks.h (default_member_type_forces_blk): Likewise.
+
+	* doc/tm.texi.in (MEMBER_TYPE_FORCES_BLK): Removed.
+	(TARGET_MEMBER_TYPE_FORCES_BLK): New hook.
+	* doc/tm.texi: Regenerated.
+
+	* config/ia64/hpux.h (MEMBER_TYPE_FORCES_BLK): Removed.
+
+	* config/ia64/ia64.c (ia64_member_type_forces_blk): New
+	function.
+	(TARGET_MEMBER_TYPE_FORCES_BLK): New macro.
+
+	* config/rs6000/rs6000.c (TARGET_MEMBER_TYPE_FORCES_BLK): New
+	macro.
+	(rs6000_member_type_forces_blk): New function.
+
+	* config/rs6000/rs6000.h (MEMBER_TYPE_FORCES_BLK): Removed.
+
+	* config/xtensa/xtensa.c (xtensa_member_type_forces_blk): New
+	function.
+	(TARGET_MEMBER_TYPE_FORCES_BLK): New macro.
+
+	* config/xtensa/xtensa.h (MEMBER_TYPE_FORCES_BLK): Removed.
+
+2012-08-17  Diego Novillo  <dnovillo@google.com>
+
+	PR bootstrap/54281
+	* configure.ac: Add libintl.h to AC_CHECK_HEADERS list.
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* intl.h: Always include libintl.h if HAVE_LIBINTL_H is
+	set.
+
+2012-08-17  Richard Guenther  <rguenther@suse.de>
+
+	* bitmap.h (struct bitmap_element_def): GTY annotate next/prev.
+	(struct bitmap_head_def): GTY skip current field.
+
+2012-08-17  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR middle-end/54146
+	* tree-ssa-loop-im.c (lim_bitmap_obstack): New bitmap_obstack.
+	(memref_free): Don't free the bitmaps individually here.
+	(mem_ref_alloc): Allocate the bitmaps on the new bitmap obstack.
+	(analyze_memory_references): Likewise.
+	(tree_ssa_lim_initialize): Initialize the new bitmap obstack.
+	(tree_ssa_lim_finalize): Release it.
+	* dse.c (dse_bitmap_obstack): New bitmap obstack.
+	(dse_obstack): New obstack.
+	(get_group_info): Allocate the bitmaps on the new bitmap obstack.
+	(dse_step0): Allocate the scratch bitmap on reg_obstack.  Initialize
+	the new bitmap obstack and normal obstack.  Use XNEWVEC for bb_table.
+	(record_store): Allocate regs_set on reg_obstack.
+	(dse_step1): Allocate regs_live on reg_obstack.
+	(dse_step2_init): Allocate offset_map_n and offset_map_p on the new
+	obstack.
+	(dse_step3_scan): Allocate bitmaps on the new bitmap obstack.
+	(dse_step3): Likewise.
+	(dse_confluence_0): Likewise.
+	(dse_confluence_n): Likewise.
+	(dse_transfer_function): Likewise.
+	(dse_step7): Destroy the new obstacks, and everything allocated on
+	them, in one big sweep.
+	(rest_of_handle_dse): Update.
+	* cfgexpand.c (stack_var_bitmap_obstack): New bitmap obstack.
+	(add_stack_var_conflict): Allocate bitmaps on it.
+	(add_scope_conflicts_1): Likewise.
+	(add_scope_conflicts): Likewise.
+	(update_alias_info_with_stack_vars): Likewise.
+	(init_vars_expansion): Move TREE_USED fiddling expand_used_vars.
+	Initialize the new bitmap obstack.
+	(fini_vars_expansion): Release it.
+	(estimated_stack_frame_size): Use init_vars_expansion to set things up
+	and always clean up at the end.
+	(expand_used_vars): Do the TREE_USED trickery here.  Always call
+	fini_vars_expansion.
+	* tree-ssa-live.h (struct tree_live_info_d): Make livein and liveout
+	arrays of bitmap_head to avoid one indirection per bitmap access.
+	(live_on_entry, live_on_exit, live_var_map, live_merge_and_clear,
+	make_live_on_entry): Update.
+	* tree-ssa-live.c (partition_view_bitmap): Don't double-free 'used'.
+	(liveness_bitmap_obstack): New bitmap obstack.
+	(remove_unused_locals): Use it to allocate all bitmaps on.  Update
+	for livein/liveout changes in tree-ssa-live.h.
+	(delete_tree_live_info): Release the bitmap obstack.
+	(loe_visit_block, live_worklist, set_var_live_on_entry,
+	calculate_live_on_exit, dump_live_info): Update.
+	(calculate_live_ranges): Initialize the bitmap.
+	* tree-ssa-ter.c (ter_bitmap_obstack): New bitmap obstack.
+	(new_temp_expr_table): Allocate bitmap on it.
+	(make_dependent_on_partition, add_to_partition_kill_list,
+	add_dependence, process_replaceable): Likewise.
+	(find_replaceable_exprs): Initialize and release the new obstack here.
+	* df-problems.c (df_lr_add_problem): Allocate persistent bitmap
+	for out_of_date_transfer_functions on df_bitmap_obstack.
+	(df_live_add_problem): Likewise.
+	(df_chain_add_problem): Likewise.
+	(df_word_lr_add_problem): Likewise.
+
+2012-08-17  Nick Clifton  <nickc@redhat.com>
+
+	* config/fr30/fr30.md  (cbranchsi4): Remove mode from
+	comparison.
+	(branch_true): Likewise.
+	(branch_false): Likewise.
+
+	* config/mcore/mcore.md (cbranchsi4): Remove mode from
+	comparison.
+
+	* config/iq2000/iq2000.md (cbranchsi4): Remove mode from
+	comparison and label.
+	(branch_zero): Likewise.
+	(branch_zero_inverted): Likewise.
+	(branch_equality): Likewise.
+	(branch_equality_inverted): Likewise.
+	(extend-and-compare): Disable until reload issues can be
+	resolved.
+	* config/iq2000/iq2000.c (gen_conditional_branch): Use VOIDmode
+	for comparison.
+	(iq2000_function_arg_advance): Remove CONST_CAST2.
+
+	* config/mep/t-mep (mep-pragma.o): Use $(COMPILER) to compile
+	mep-pragma.c.
+
+2012-08-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/t-avr (gen-avr-mmcu-texi): Use $(CC) to compile
+	gen-avr-mmcu-texi.c.
+
+2012-08-17  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.md (arm_addsi3): New variant for Thumb2 16-bit ADD instruction.
+	* arm.c (thumb2_reorg): Don't convert an ADD instruction that's
+	already 16 bits.
+
+2012-08-17  Richard Guenther  <rguenther@suse.de>
+
+	* hash-table.h (class hash_table): Use a descriptor template
+	argument instead of decomposed element type and support
+	functions.
+	(struct pointer_hash): New generic typed pointer-hash.
+	(struct typed_free_remove, struct typed_noop_remove): Generic
+	hash_table support pieces.
+	* coverage.c (struct counts_entry): Add hash_table support
+	members.
+	* tree-ssa-ccp.c (gimple_htab): Use pointer_hash.
+	* tree-ssa-coalesce.c (struct ssa_name_var_hash): New generic
+	SSA name by SSA_NAME_VAR hash.
+	(coalesce_ssa_name): Use it.
+	* tree-ssa-pre.c (struct pre_expr_d): Add hash_table support.
+	(expression_to_id): Adjust.
+	(struct expr_pred_trans_d): Add hash_table support.
+	(phi_translate_table): Adjust.
+	(phi_trans_lookup): Likewise.
+	(phi_trans_add): Likewise.
+	(do_regular_insertion): Likewise.
+	* tree-ssa-tail-merge.c (struct same_succ_def): Add hash_table
+	support.
+	(same_succ_htab): Adjust.
+	(find_same_succ_bb): Likewise.
+	(find_same_succ): Likewise.
+	(update_worklist): Likewise.
+	* tree-ssa-threadupdate.c (struct redirection_data): Add hash_table
+	support.
+	(redirection_data): Adjust.
+
+2012-08-17  Richard Guenther  <rguenther@suse.de>
+
+	* params.def (integer-share-limit): Decrease from 256 to 251,
+	add rationale.
+
+2012-08-17  Richard Guenther  <rguenther@suse.de>
+
+	* tree-sra.c (modify_function): Free redirect_callers vector.
+	* ipa-split.c (split_function): Free args_to_pass vector.
+	* tree-vect-data-refs.c (vect_peeling_hash_get_lowest_cost): Free
+	body_cost_vec properly.
+	(vect_enhance_data_refs_alignment): Likewise.
+	* tree-vect-stmts.c (vectorizable_operation): Do not pre-allocate
+	vec_oprnds.
+	(new_stmt_vec_info): Do not pre-allocate STMT_VINFO_SAME_ALIGN_REFS.
+	* tree-vect-slp.c (vect_free_slp_instance): Free the instance.
+	(vect_analyze_slp_instance): Free everything.
+	(destroy_bb_vec_info): Free the SLP instances.
+
+2012-08-17  Iain Sandoe  <iain@codesourcery.com>
+
+	* config/rs6000/rs6000.c (macho_branch_islands): Adjust for changes
+	to vec.h.
+
+2012-08-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/invoke.texi (-Wsizeof-pointer-memaccess): Document.
+
+2012-08-16  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config/mips/mips-dsp.md (mips_dpau_h_qbl, mips_dpau_h_qbr)
+	(mips_dpsu_h_qbl, mips_dpsu_h_qbr, mips_dpaq_s_w_ph)
+	(mips_dpsq_s_w_ph, mips_mulsaq_s_w_ph, mips_dpaq_sa_l_w)
+	(mips_dpsq_sa_l_w, mips_maq_s_w_phl, mips_maq_s_w_phr)
+	(mips_maq_sa_w_phl, mips_maq_sa_w_phr): Add accum_in attribute.
+
+2012-08-16  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54236
+	* config/sh/sh.md (addc): Add commutative modifier.
+	(*addc, *minus_plus_one, *subc, *negc): New insns and splits.
+
+2012-08-16  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/39423
+	* config/sh/sh.md (*movsi_index_disp, *movhi_index_disp): Handle
+	potential T_REG clobber.  Convert zero extending split to
+	insn_and_split.
+
+2012-08-16  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54089
+	* config/sh/sh.md (ashlsi3_d): Do not split if it would result
+	in a T_REG clobber.  Correct comment.
+	(ashlsi3_n): Correct comment.
+
+2012-08-16  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR middle-end/54261
+	* optabs.c (expand_atomic_fetch_op): Save and restore code when
+	retrying after failed attempt.
+
+2012-08-16  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	* config/i386/i386-protos.h (ix86_split_lea_for_addr) : Add
+	additional argument.
+	* config/i386/i386.md (ix86_split_lea_for_addr) : Add
+	additional argument curr_insn.
+	* config/i386/i386.c (ix86_split_lea_for_addr): Load base or index
+	register first, depending on their defintion distances.
+	(ix86_lea_outperforms): Prefer LEA only if split cost exceeds
+	AGU stall.
+	(find_nearest_reg-def): New function. Find register with
+	nearest definition.
+
+2012-08-16  Walter Lee  <walt@tilera.com>
+
+	* config.gcc (tilegx-*-linux*): Add feedback.h.
+	(tilepro-*-linux*): Likewise.
+	* config/tilegx/feedback.h: New file.
+	* config/tilepro/feedback.h: New file.
+
+2012-08-16  Diego Novillo  <dnovillo@google.com>
+
+	Revert
+
+	PR bootstrap/54281
+	* double-int.h: Move including of gmp.h ...
+	* system.h: ... here.
+	* realmpfr.h: Do not include gmp.h.
+	* tree-ssa-loop-niter.c: Do not include gmp.h.
+
+2012-08-16  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/darwin.h (TARGET_IEEE_QUAD): Fix comment.
+
+2012-08-16  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/54146
+	* tree-ssa-loop-niter.c (find_loop_niter_by_eval): Free the
+	exit vector.
+	* ipa-pure-const.c (analyze_function): Use FOR_EACH_LOOP_BREAK.
+	* cfgloop.h (FOR_EACH_LOOP_BREAK): Fix.
+	* tree-ssa-structalias.c (handle_lhs_call): Properly free rhsc.
+	* tree-into-ssa.c (get_ssa_name_ann): Allocate info only when
+	needed.
+	* tree-ssa-loop-im.c (analyze_memory_references): Adjust.
+	(tree_ssa_lim_finalize): Free all mem_refs.
+	* tree-ssa-sccvn.c (extract_and_process_scc_for_name): Free
+	scc when bailing out.
+	* modulo-sched.c (sms_schedule): Use FOR_EACH_LOOP_BREAK.
+	* ira-build.c (loop_with_complex_edge_p): Free loop exit vector.
+	* graphite-sese-to-poly.c (scop_ivs_can_be_represented): Use
+	FOR_EACH_LOOP_BREAK.
+
+2012-08-16  Diego Novillo  <dnovillo@google.com>
+
+	PR bootstrap/54281
+	* double-int.h: Move including of gmp.h ...
+	* system.h: ... here.
+	* realmpfr.h: Do not include gmp.h.
+	* tree-ssa-loop-niter.c: Do not include gmp.h.
+
+2012-08-16  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR middle-end/54146
+	* tree-flow.h (compute_global_livein): Remove prototype.
+	* tree-into-ssa.c (compute_global_livein): Remove function.
+	* tree-ssa-loop-manip.c: Include gimple-pretty-print.h.
+	(find_sibling_superloop): New function.
+	(compute_live_loop_exits): New function.
+	(add_exit_phis_edge): Rename to add_exit_phi.  Do not allow
+	inserting a PHI in a block that is not a loop exit for VAR.
+	Add dumping if TDF_DETAILS.
+	(add_exit_phis_var): Rewrite.
+	(add_exit_phis): Update.
+	(get_loops_exits): Rewrite to return an array of per-loop exits
+	rather than one bitmap with all loop exits.
+	(find_uses_to_rename_bb): Ignore virtual PHI nodes.
+	(rewrite_into_loop_closed_ssa): Update.
+
+2012-08-16  Nick Clifton  <nickc@redhat.com>
+
+	* config/i386/i386elf.h (ASM_OUTPUT_ASCII): Cast _ascii_bytes
+	before passing it to ASM_OUTPUT_LIMITED_STRING.
+
+	* config/bfin/bfin.c (hwloop_optimize): Fix use of VEC_last macro.
+
+	* config/avr/t-avr: Replace occurrences of $(CC) with $(COMPILER).
+	* config/avr/avr.c (avr_legitimize_reload_address): Add casts
+	for reload_type enums.
+	(DEF_BUILTIN): Cast the icode to enum insn_code.
+
 2012-08-15  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/aix43.h (ASM_CPU_SPEC): Use %(asm_default)

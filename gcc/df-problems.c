@@ -1228,7 +1228,7 @@ df_lr_add_problem (void)
   df_add_problem (&problem_LR);
   /* These will be initialized when df_scan_blocks processes each
      block.  */
-  df_lr->out_of_date_transfer_functions = BITMAP_ALLOC (NULL);
+  df_lr->out_of_date_transfer_functions = BITMAP_ALLOC (&df_bitmap_obstack);
 }
 
 
@@ -1757,7 +1757,7 @@ df_live_add_problem (void)
   df_add_problem (&problem_LIVE);
   /* These will be initialized when df_scan_blocks processes each
      block.  */
-  df_live->out_of_date_transfer_functions = BITMAP_ALLOC (NULL);
+  df_live->out_of_date_transfer_functions = BITMAP_ALLOC (&df_bitmap_obstack);
 }
 
 
@@ -2283,7 +2283,7 @@ df_chain_add_problem (unsigned int chain_flags)
 {
   df_add_problem (&problem_CHAIN);
   df_chain->local_flags = chain_flags;
-  df_chain->out_of_date_transfer_functions = BITMAP_ALLOC (NULL);
+  df_chain->out_of_date_transfer_functions = BITMAP_ALLOC (&df_bitmap_obstack);
 }
 
 #undef df_chain_problem_p
@@ -2662,7 +2662,7 @@ df_word_lr_add_problem (void)
   df_add_problem (&problem_WORD_LR);
   /* These will be initialized when df_scan_blocks processes each
      block.  */
-  df_word_lr->out_of_date_transfer_functions = BITMAP_ALLOC (NULL);
+  df_word_lr->out_of_date_transfer_functions = BITMAP_ALLOC (&df_bitmap_obstack);
 }
 
 

@@ -4034,6 +4034,28 @@ resolve_operator (gfc_expr *e)
 
 	  e->ts.type = BT_LOGICAL;
 	  e->ts.kind = gfc_default_logical_kind;
+
+	  if (gfc_option.warn_compare_reals)
+	    {
+	      gfc_intrinsic_op op = e->value.op.op;
+
+	      /* Type conversion has made sure that the types of op1 and op2
+		 agree, so it is only necessary to check the first one.   */
+	      if ((op1->ts.type == BT_REAL || op1->ts.type == BT_COMPLEX)
+		  && (op == INTRINSIC_EQ || op == INTRINSIC_EQ_OS
+		      || op == INTRINSIC_NE || op == INTRINSIC_NE_OS))
+		{
+		  const char *msg;
+
+		  if (op == INTRINSIC_EQ || op == INTRINSIC_EQ_OS)
+		    msg = "Equality comparison for %s at %L";
+		  else
+		    msg = "Inequality comparison for %s at %L";
+		  
+		  gfc_warning (msg, gfc_typename (&op1->ts), &op1->where);
+		}
+	    }
+
 	  break;
 	}
 

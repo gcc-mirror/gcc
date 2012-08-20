@@ -1,3 +1,10 @@
+2012-08-20  Gary Funck  <gary@intrepid.com>
+
+	Merge trunk version 190524 into gupc branch.
+	Incorporates a fix in genoutput.c (to properly use
+	CONST_CAST) that led to build failures with
+	older versions of g++.
+
 2012-08-16  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 190437 into gupc branch.

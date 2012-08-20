@@ -218,6 +218,10 @@ Wcharacter-truncation
 Fortran Warning
 Warn about truncated character expressions
 
+Wcompare-reals
+Fortran Warning
+Warn about equality comparisons involving REAL or COMPLEX expressions
+
 Wconversion
 Fortran Warning
 ; Documented in C
@@ -257,6 +261,10 @@ Warn when a left-hand-side array variable is reallocated
 Wrealloc-lhs-all
 Fortran Warning
 Warn when a left-hand-side variable is reallocated
+
+Wtarget-lifetime
+Fortran Warning
+Warn if the pointer in a pointer assignment might outlive its target
 
 Wreturn-type
 Fortran Warning

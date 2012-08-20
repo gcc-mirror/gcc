@@ -1368,6 +1368,7 @@ vect_peeling_hash_get_lowest_cost (void **slot, void *data)
     {
       min->inside_cost = inside_cost;
       min->outside_cost = outside_cost;
+      VEC_free (stmt_info_for_cost, heap, min->body_cost_vec);
       min->body_cost_vec = body_cost_vec;
       min->peel_info.dr = elem->dr;
       min->peel_info.npeel = elem->npeel;
@@ -1880,7 +1881,10 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
           if (!stat)
             do_peeling = false;
           else
-            return stat;
+	    {
+	      VEC_free (stmt_info_for_cost, heap, body_cost_vec);
+	      return stat;
+	    }
         }
 
       if (do_peeling)
@@ -1930,6 +1934,8 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 	  gcc_assert (stat);
           return stat;
         }
+      else
+	VEC_free (stmt_info_for_cost, heap, body_cost_vec);
     }
 
 

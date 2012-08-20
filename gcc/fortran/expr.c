@@ -3659,6 +3659,38 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 	  }
     }
 
+  /* Warn if it is the LHS pointer may lives longer than the RHS target.  */
+  if (gfc_option.warn_target_lifetime
+      && rvalue->expr_type == EXPR_VARIABLE
+      && !rvalue->symtree->n.sym->attr.save
+      && !attr.pointer && !rvalue->symtree->n.sym->attr.host_assoc
+      && !rvalue->symtree->n.sym->attr.in_common
+      && !rvalue->symtree->n.sym->attr.use_assoc
+      && !rvalue->symtree->n.sym->attr.dummy)
+    {
+      bool warn;
+      gfc_namespace *ns;
+
+      warn = lvalue->symtree->n.sym->attr.dummy
+	     || lvalue->symtree->n.sym->attr.result
+	     || lvalue->symtree->n.sym->attr.host_assoc
+	     || lvalue->symtree->n.sym->attr.use_assoc
+	     || lvalue->symtree->n.sym->attr.in_common;
+
+      if (rvalue->symtree->n.sym->ns->proc_name
+	  && rvalue->symtree->n.sym->ns->proc_name->attr.flavor != FL_PROCEDURE
+	  && rvalue->symtree->n.sym->ns->proc_name->attr.flavor != FL_PROGRAM)
+       for (ns = rvalue->symtree->n.sym->ns;
+	    ns->proc_name && ns->proc_name->attr.flavor != FL_PROCEDURE;
+	    ns = ns->parent)
+	if (ns->parent == lvalue->symtree->n.sym->ns)
+	  warn = true;
+
+      if (warn)
+	gfc_warning ("Pointer at %L in pointer assignment might outlive the "
+		     "pointer target", &lvalue->where);
+    }
+
   return SUCCESS;
 }
 

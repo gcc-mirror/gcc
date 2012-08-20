@@ -13309,6 +13309,13 @@ thumb2_reorg (void)
 		  switch (GET_CODE (src))
 		    {
 		    case PLUS:
+		      /* Adding two registers and storing the result
+			 in the first source is already a 16-bit
+			 operation.  */
+		      if (rtx_equal_p (dst, op0)
+			  && register_operand (op1, SImode))
+			break;
+
 		      if (low_register_operand (op0, SImode))
 			{
 			  /* ADDS <Rd>,<Rn>,<Rm>  */

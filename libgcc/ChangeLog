@@ -1,3 +1,25 @@
+2012-08-19  Joseph Myers  <joseph@codesourcery.com>
+
+	* crtstuff.c (USE_PT_GNU_EH_FRAME): Define for systems using glibc
+	even if inhibit_libc.
+
+2012-08-17  Julian Brown  <julian@codesourcery.com>
+
+	* Makefile.in (LIB2_DIVMOD_EXCEPTION_FLAGS): Default to
+	-fexceptions -fnon-call-exceptions if not defined.
+	($(lib2-divmod-o), $(lib2-divmod-s-o)): Use above.
+	* config/arm/t-bpabi (LIB2_DIVMOD_EXCEPTION_FLAGS): Define.
+
+2012-08-17  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* config/m68k/linux-atomic.c (__sync_lock_test_and_set_1): Fix
+	type.
+
+2012-08-16  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config.host (*-*-aix*): Move rs6000/t-ibm-ldouble after
+	rs6000/t-slibgcc-aix.
+
 2012-08-15  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* longlong.h: (powerpc): Delete _ARCH_PWR and _ARCH_COM handling.

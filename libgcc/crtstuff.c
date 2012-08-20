@@ -1,7 +1,7 @@
 /* Specialized bits of code needed to support construction and
    destruction of file-scope objects in C++ code.
    Copyright (C) 1991, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001
-   2002, 2003, 2004, 2005, 2006, 2007, 2009, 2010, 2011
+   2002, 2003, 2004, 2005, 2006, 2007, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com).
 
@@ -113,6 +113,20 @@ call_ ## FUNC (void)					\
 #  define USE_PT_GNU_EH_FRAME
 # endif
 #endif
+
+#if defined(OBJECT_FORMAT_ELF) \
+    && !defined(OBJECT_FORMAT_FLAT) \
+    && defined(HAVE_LD_EH_FRAME_HDR) \
+    && !defined(CRTSTUFFT_O) \
+    && defined(inhibit_libc) \
+    && (defined(__GLIBC__) || defined(__gnu_linux__) || defined(__GNU__))
+/* On systems using glibc, an inhibit_libc build of libgcc is only
+   part of a bootstrap process.  Build the same crt*.o as would be
+   built with headers present, so that it is not necessary to build
+   glibc more than once for the bootstrap to converge.  */
+# define USE_PT_GNU_EH_FRAME
+#endif
+
 #if defined(EH_FRAME_SECTION_NAME) && !defined(USE_PT_GNU_EH_FRAME)
 # define USE_EH_FRAME_REGISTRY
 #endif

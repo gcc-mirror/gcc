@@ -2332,6 +2332,14 @@ DEFHOOK
  tree, (tree type, tree expr),
  hook_tree_tree_tree_null)
 
+/* True if a structure, union or array with MODE containing FIELD should
+   be accessed using BLKmode.  */
+DEFHOOK
+(member_type_forces_blk,
+ "",
+ bool, (const_tree field, enum machine_mode mode),
+ default_member_type_forces_blk)
+
 /* Return the class for a secondary reload, and fill in extra information.  */
 DEFHOOK
 (secondary_reload,
