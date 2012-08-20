@@ -1,3 +1,7 @@
+2012-08-20  Diego Novillo  <dnovillo@google.com>
+
+	* decl.c (poplevel): Start TV_NAME_LOOKUP conditionally.
+
 2012-08-20  Richard Guenther  <rguenther@suse.de>
 
 	* name-lookup.c (store_binding_p): New predicate, split out from ...
