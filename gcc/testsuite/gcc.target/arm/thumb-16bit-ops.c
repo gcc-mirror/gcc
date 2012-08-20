@@ -4,13 +4,20 @@
 /* { dg-options "-Os -fno-builtin -mthumb" } */
 
 int
-f (int a, int b )
+f (int a, int b)
 {
   return a + b;
 }
 
-/* { dg-final { scan-assembler "adds	r0, r0, r1" } } */
+/* { dg-final { scan-assembler "add	r0, r0, r1" } } */
 
+int
+f2 (int a, int b, int c)
+{
+  return b + c;
+}
+
+/* { dg-final { scan-assembler "adds	r0, r1, r2" } } */
 int
 g1 (int a)
 {
