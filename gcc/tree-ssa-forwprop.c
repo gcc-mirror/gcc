@@ -1554,7 +1554,7 @@ simplify_builtin_call (gimple_stmt_iterator *gsi_p, tree callee2)
 	  else
 	    src_buf[0] = tree_low_cst (src1, 0);
 	  memset (src_buf + tree_low_cst (diff, 1),
-		  tree_low_cst (val2, 1), tree_low_cst (len2, 1));
+		  tree_low_cst (val2, 0), tree_low_cst (len2, 1));
 	  src_buf[src_len] = '\0';
 	  /* Neither builtin_strncpy_read_str nor builtin_memcpy_read_str
 	     handle embedded '\0's.  */
