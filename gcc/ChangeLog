@@ -1,3 +1,11 @@
+2012-08-20  Patrick Marlier  <patrick.marlier@gmail.com>
+
+	Backported from trunk
+	2012-08-20  Patrick Marlier  <patrick.marlier@gmail.com>
+
+	PR middle-end/53992
+	* omp-low.c (lower_omp_1): Handle GIMPLE_TRANSACTION.
+
 2012-08-20  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
 	Backport from mainline.
