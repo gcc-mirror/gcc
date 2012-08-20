@@ -1,3 +1,7 @@
+2012-08-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc.h (MAX_FIXED_MODE_SIZE): Define.
+
 2012-08-20  Patrick Marlier  <patrick.marlier@gmail.com>
 
 	PR middle-end/53992
@@ -137,7 +141,6 @@
 	* simplify-rtx.c (simplify_binary_operation_1): Optimize shuffle of
 	a concatenation.
 
-
 2012-08-17  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* stor-layout.c (compute_record_mode): Replace
@@ -179,8 +182,7 @@
 	* configure.ac: Add libintl.h to AC_CHECK_HEADERS list.
 	* config.in: Regenerate.
 	* configure: Regenerate.
-	* intl.h: Always include libintl.h if HAVE_LIBINTL_H is
-	set.
+	* intl.h: Always include libintl.h if HAVE_LIBINTL_H is set.
 
 2012-08-17  Richard Guenther  <rguenther@suse.de>
 
@@ -637,7 +639,6 @@
 	    Julian Brown  <julian@codesourcery.com>
 	    MIPS Technologies, Inc.
 
-	gcc/
 	* config/mips/mips.md (dspmac, dspmacsat, accext, accmod, dspalu)
 	(dspalusat): Add insn types.
 	* config/mips/mips-dsp.md (add<DSPV:mode>3)

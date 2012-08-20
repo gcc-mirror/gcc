@@ -475,7 +475,6 @@ extern enum cmodel sparc_cmodel;
 #endif
 
 /* Now define the sizes of the C data types.  */
-
 #define SHORT_TYPE_SIZE		16
 #define INT_TYPE_SIZE		32
 #define LONG_TYPE_SIZE		(TARGET_ARCH64 ? 64 : 32)
@@ -512,7 +511,6 @@ extern enum cmodel sparc_cmodel;
 #define SPARC_STACK_BOUNDARY_HACK (TARGET_ARCH64 && TARGET_STACK_BIAS)
 
 /* ALIGN FRAMES on double word boundaries */
-
 #define SPARC_STACK_ALIGN(LOC) \
   (TARGET_ARCH64 ? (((LOC)+15) & ~15) : (((LOC)+7) & ~7))
 
@@ -550,6 +548,10 @@ extern enum cmodel sparc_cmodel;
      ? MAX (MAX ((COMPUTED), (SPECIFIED)), BIGGEST_ALIGNMENT) \
      : MAX ((COMPUTED), (SPECIFIED)))			\
    :  MAX ((COMPUTED), (SPECIFIED)))
+
+/* An integer expression for the size in bits of the largest integer machine
+   mode that should actually be used.  We allow pairs of registers.  */
+#define MAX_FIXED_MODE_SIZE GET_MODE_BITSIZE (TARGET_ARCH64 ? TImode : DImode)
 
 /* We need 2 words, so we can save the stack pointer and the return register
    of the function containing a non-local goto target.  */
