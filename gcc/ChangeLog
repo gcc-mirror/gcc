@@ -1,3 +1,10 @@
+2012-08-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/54294
+	* fwprop.c (all_uses_available_at): Ignore debug insns in between
+	def_insn and target_insn when checking whether the shortcut is
+	possible.
+
 2012-08-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc.h (MAX_FIXED_MODE_SIZE): Define.
