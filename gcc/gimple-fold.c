@@ -736,6 +736,11 @@ get_maxval_strlen (tree arg, tree *length, bitmap visited, int type)
       return true;
     }
 
+  /* If ARG is registered for SSA update we cannot look at its defining
+     statement.  */
+  if (name_registered_for_update_p (arg))
+    return false;
+
   /* If we were already here, break the infinite cycle.  */
   if (!bitmap_set_bit (visited, SSA_NAME_VERSION (arg)))
     return true;
