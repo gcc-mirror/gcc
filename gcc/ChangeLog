@@ -1,6 +1,12 @@
 2012-08-20  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR tree-ssa/54295
+	* tree-ssa-math-opts.c (is_widening_mult_rhs_p): Delete rhs_code
+	declaration and setter.
+
+2012-08-20  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR tree-ssa/54295
 	* tree-ssa-math-opts.c (widening_mult_conversion_strippable_p):
 	New function.
 	(is_widening_mult_rhs_p): Use it.
