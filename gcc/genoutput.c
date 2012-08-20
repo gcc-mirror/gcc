@@ -1175,7 +1175,7 @@ note_constraint (rtx exp, int lineno)
 	}
     }
   new_cdata = XNEWVAR (struct constraint_data, sizeof (struct constraint_data) + namelen);
-  strcpy ((char *)new_cdata + offsetof(struct constraint_data, name), name);
+  strcpy (CONST_CAST(char *, new_cdata->name), name);
   new_cdata->namelen = namelen;
   new_cdata->lineno = lineno;
   new_cdata->next_this_letter = *slot;
