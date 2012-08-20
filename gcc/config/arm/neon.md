@@ -435,10 +435,9 @@
     elt = GET_MODE_NUNITS (<MODE>mode) - 1 - elt;
   operands[2] = GEN_INT (elt);
   
-  return "vmov%?.<V_sz_elem>\t%P0[%c2], %1";
+  return "vmov.<V_sz_elem>\t%P0[%c2], %1";
 }
-  [(set_attr "predicable" "yes")
-   (set_attr "neon_type" "neon_mcr")])
+  [(set_attr "neon_type" "neon_mcr")])
 
 (define_insn "vec_set<mode>_internal"
   [(set (match_operand:VQ 0 "s_register_operand" "=w")
@@ -461,10 +460,9 @@
   operands[0] = gen_rtx_REG (<V_HALF>mode, regno + hi);
   operands[2] = GEN_INT (elt);
 
-  return "vmov%?.<V_sz_elem>\t%P0[%c2], %1";
+  return "vmov.<V_sz_elem>\t%P0[%c2], %1";
 }
-  [(set_attr "predicable" "yes")
-   (set_attr "neon_type" "neon_mcr")]
+  [(set_attr "neon_type" "neon_mcr")]
 )
 
 (define_insn "vec_setv2di_internal"
@@ -481,10 +479,9 @@
 
   operands[0] = gen_rtx_REG (DImode, regno);
 
-  return "vmov%?\t%P0, %Q1, %R1";
+  return "vmov\t%P0, %Q1, %R1";
 }
-  [(set_attr "predicable" "yes")
-   (set_attr "neon_type" "neon_mcr_2_mcrr")]
+  [(set_attr "neon_type" "neon_mcr_2_mcrr")]
 )
 
 (define_expand "vec_set<mode>"
@@ -512,10 +509,9 @@
       elt = GET_MODE_NUNITS (<MODE>mode) - 1 - elt;
       operands[2] = GEN_INT (elt);
     }
-  return "vmov%?.<V_uf_sclr>\t%0, %P1[%c2]";
+  return "vmov.<V_uf_sclr>\t%0, %P1[%c2]";
 }
-  [(set_attr "predicable" "yes")
-   (set_attr "neon_type" "neon_bp_simple")]
+  [(set_attr "neon_type" "neon_bp_simple")]
 )
 
 (define_insn "vec_extract<mode>"
@@ -536,10 +532,9 @@
   operands[1] = gen_rtx_REG (<V_HALF>mode, regno + hi);
   operands[2] = GEN_INT (elt);
 
-  return "vmov%?.<V_uf_sclr>\t%0, %P1[%c2]";
+  return "vmov.<V_uf_sclr>\t%0, %P1[%c2]";
 }
-  [(set_attr "predicable" "yes")
-   (set_attr "neon_type" "neon_bp_simple")]
+  [(set_attr "neon_type" "neon_bp_simple")]
 )
 
 (define_insn "vec_extractv2di"
@@ -553,10 +548,9 @@
 
   operands[1] = gen_rtx_REG (DImode, regno);
 
-  return "vmov%?\t%Q0, %R0, %P1  @ v2di";
+  return "vmov\t%Q0, %R0, %P1  @ v2di";
 }
-  [(set_attr "predicable" "yes")
-   (set_attr "neon_type" "neon_int_1")]
+  [(set_attr "neon_type" "neon_int_1")]
 )
 
 (define_expand "vec_init<mode>"
@@ -2581,10 +2575,9 @@
       elt = GET_MODE_NUNITS (<MODE>mode) - 1 - elt;
       operands[2] = GEN_INT (elt);
     }
-  return "vmov%?.s<V_sz_elem>\t%0, %P1[%c2]";
+  return "vmov.s<V_sz_elem>\t%0, %P1[%c2]";
 }
-  [(set_attr "predicable" "yes")
-   (set_attr "neon_type" "neon_bp_simple")]
+  [(set_attr "neon_type" "neon_bp_simple")]
 )
 
 (define_insn "neon_vget_lane<mode>_zext_internal"
@@ -2601,10 +2594,9 @@
       elt = GET_MODE_NUNITS (<MODE>mode) - 1 - elt;
       operands[2] = GEN_INT (elt);
     }
-  return "vmov%?.u<V_sz_elem>\t%0, %P1[%c2]";
+  return "vmov.u<V_sz_elem>\t%0, %P1[%c2]";
 }
-  [(set_attr "predicable" "yes")
-   (set_attr "neon_type" "neon_bp_simple")]
+  [(set_attr "neon_type" "neon_bp_simple")]
 )
 
 (define_insn "neon_vget_lane<mode>_sext_internal"
@@ -2627,12 +2619,11 @@
   ops[0] = operands[0];
   ops[1] = gen_rtx_REG (<V_HALF>mode, regno + 2 * (elt / halfelts));
   ops[2] = GEN_INT (elt_adj);
-  output_asm_insn ("vmov%?.s<V_sz_elem>\t%0, %P1[%c2]", ops);
+  output_asm_insn ("vmov.s<V_sz_elem>\t%0, %P1[%c2]", ops);
 
   return "";
 }
-  [(set_attr "predicable" "yes")
-   (set_attr "neon_type" "neon_bp_simple")]
+  [(set_attr "neon_type" "neon_bp_simple")]
 )
 
 (define_insn "neon_vget_lane<mode>_zext_internal"
@@ -2655,12 +2646,11 @@
   ops[0] = operands[0];
   ops[1] = gen_rtx_REG (<V_HALF>mode, regno + 2 * (elt / halfelts));
   ops[2] = GEN_INT (elt_adj);
-  output_asm_insn ("vmov%?.u<V_sz_elem>\t%0, %P1[%c2]", ops);
+  output_asm_insn ("vmov.u<V_sz_elem>\t%0, %P1[%c2]", ops);
 
   return "";
 }
-  [(set_attr "predicable" "yes")
-   (set_attr "neon_type" "neon_bp_simple")]
+  [(set_attr "neon_type" "neon_bp_simple")]
 )
 
 (define_expand "neon_vget_lane<mode>"
@@ -2781,10 +2771,9 @@
   [(set (match_operand:VX 0 "s_register_operand" "=w")
         (vec_duplicate:VX (match_operand:<V_elem> 1 "s_register_operand" "r")))]
   "TARGET_NEON"
-  "vdup%?.<V_sz_elem>\t%<V_reg>0, %1"
+  "vdup.<V_sz_elem>\t%<V_reg>0, %1"
   ;; Assume this schedules like vmov.
-  [(set_attr "predicable" "yes")
-   (set_attr "neon_type" "neon_bp_simple")]
+  [(set_attr "neon_type" "neon_bp_simple")]
 )
 
 (define_insn "neon_vdup_n<mode>"
@@ -2792,11 +2781,10 @@
         (vec_duplicate:V32 (match_operand:<V_elem> 1 "s_register_operand" "r,t")))]
   "TARGET_NEON"
   "@
-  vdup%?.<V_sz_elem>\t%<V_reg>0, %1
-  vdup%?.<V_sz_elem>\t%<V_reg>0, %y1"
+  vdup.<V_sz_elem>\t%<V_reg>0, %1
+  vdup.<V_sz_elem>\t%<V_reg>0, %y1"
   ;; Assume this schedules like vmov.
-  [(set_attr "predicable" "yes")
-   (set_attr "neon_type" "neon_bp_simple")]
+  [(set_attr "neon_type" "neon_bp_simple")]
 )
 
 (define_expand "neon_vdup_ndi"
@@ -2814,10 +2802,9 @@
         (vec_duplicate:V2DI (match_operand:DI 1 "s_register_operand" "r,w")))]
   "TARGET_NEON"
   "@
-  vmov%?\t%e0, %Q1, %R1\;vmov%?\t%f0, %Q1, %R1
-  vmov%?\t%e0, %P1\;vmov%?\t%f0, %P1"
-  [(set_attr "predicable" "yes")
-   (set_attr "length" "8")
+  vmov\t%e0, %Q1, %R1\;vmov\t%f0, %Q1, %R1
+  vmov\t%e0, %P1\;vmov\t%f0, %P1"
+  [(set_attr "length" "8")
    (set_attr "neon_type" "neon_bp_simple")]
 )
 
