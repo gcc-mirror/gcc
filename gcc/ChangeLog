@@ -1,3 +1,10 @@
+2012-08-20  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR tree-ssa/54295
+	* tree-ssa-math-opts.c (widening_mult_conversion_strippable_p):
+	New function.
+	(is_widening_mult_rhs_p): Use it.
+
 2012-08-20  Joseph Myers  <joseph@codesourcery.com>
 
 	* configure.ac (ffs): Check for declaration.
