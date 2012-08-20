@@ -4886,7 +4886,7 @@ extern tree build_user_type_conversion		(tree, tree, int,
 extern tree build_new_function_call		(tree, VEC(tree,gc) **, bool, 
 						 tsubst_flags_t);
 extern tree build_operator_new_call		(tree, VEC(tree,gc) **, tree *,
-						 tree *, tree *,
+						 tree *, tree, tree *,
 						 tsubst_flags_t);
 extern tree build_new_method_call		(tree, tree, VEC(tree,gc) **,
 						 tree, int, tree *,
