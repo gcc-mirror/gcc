@@ -621,16 +621,16 @@ poplevel (int keep, int reverse, int functionbody)
       if (TREE_CODE (decl) == VAR_DECL
 	  && (! TREE_USED (decl) || !DECL_READ_P (decl))
 	  && ! DECL_IN_SYSTEM_HEADER (decl)
-	  && DECL_NAME (decl) && ! DECL_ARTIFICIAL (decl))
+	  && DECL_NAME (decl) && ! DECL_ARTIFICIAL (decl)
+	  && TREE_TYPE (decl) != error_mark_node
+	  && (!CLASS_TYPE_P (TREE_TYPE (decl))
+	      || !TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (decl))))
 	{
 	  if (! TREE_USED (decl))
 	    warning (OPT_Wunused_variable, "unused variable %q+D", decl);
 	  else if (DECL_CONTEXT (decl) == current_function_decl
-		   && TREE_TYPE (decl) != error_mark_node
 		   && TREE_CODE (TREE_TYPE (decl)) != REFERENCE_TYPE
-		   && errorcount == unused_but_set_errorcount
-		   && (!CLASS_TYPE_P (TREE_TYPE (decl))
-		       || !TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (decl))))
+		   && errorcount == unused_but_set_errorcount)
 	    {
 	      warning (OPT_Wunused_but_set_variable,
 		       "variable %q+D set but not used", decl); 

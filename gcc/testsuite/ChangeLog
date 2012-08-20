@@ -1,3 +1,8 @@
+2012-08-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/10416
+	* g++.dg/warn/Wunused-var-17.C: New.
+
 2012-08-20  Patrick Marlier  <patrick.marlier@gmail.com>
 
 	PR middle-end/53992
