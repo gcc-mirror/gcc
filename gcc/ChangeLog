@@ -1,5 +1,13 @@
 2012-08-20  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	PR target/50489
+	* config/sh/sh.md (rotcr, *rotcr, shar, shlr): New insns and splits.
+	(ashrdi3_k, lshrdi3_k): Rewrite as insn_and_split.
+	* config/sh/sh.c (sh_lshrsi_clobbers_t_reg_p): New function.
+	* config/sh/sh-protos.h (sh_lshrsi_clobbers_t_reg_p): Declare it.
+
+2012-08-20  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	PR target/51244
 	* config/sh/sh.md (*cset_zero): New insns.
 

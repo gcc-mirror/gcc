@@ -2892,6 +2892,14 @@ sh_ashlsi_clobbers_t_reg_p (rtx shift_amount)
 	  & ASHL_CLOBBERS_T) != 0;
 }
 
+bool
+sh_lshrsi_clobbers_t_reg_p (rtx shift_amount)
+{
+  gcc_assert (CONST_INT_P (shift_amount));
+  return (ashl_lshr_seq[INTVAL (shift_amount) & 31].clobbers_t
+	  & LSHR_CLOBBERS_T) != 0;
+}
+
 /* Assuming we have a value that has been sign-extended by at least one bit,
    can we use the ext_shift_amounts with the last shift turned to an arithmetic shift
    to shift it by N without data loss, and quicker than by other means?  */
