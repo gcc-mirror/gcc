@@ -262,6 +262,10 @@ Wrealloc-lhs-all
 Fortran Warning
 Warn when a left-hand-side variable is reallocated
 
+Wtarget-lifetime
+Fortran Warning
+Warn if the pointer in a pointer assignment might outlive its target
+
 Wreturn-type
 Fortran Warning
 ; Documented in C
