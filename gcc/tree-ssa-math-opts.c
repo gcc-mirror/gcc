@@ -2011,14 +2011,12 @@ is_widening_mult_rhs_p (tree type, tree rhs, tree *type_out,
 {
   gimple stmt;
   tree type1, rhs1;
-  enum tree_code rhs_code;
 
   if (TREE_CODE (rhs) == SSA_NAME)
     {
       stmt = SSA_NAME_DEF_STMT (rhs);
       if (is_gimple_assign (stmt))
 	{
-	  rhs_code = gimple_assign_rhs_code (stmt);
 	  if (! widening_mult_conversion_strippable_p (type, stmt))
 	    rhs1 = rhs;
 	  else
