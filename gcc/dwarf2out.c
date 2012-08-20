@@ -1312,6 +1312,7 @@ dw_val_equal_p (dw_val_node *a, dw_val_node *b)
     case dw_val_class_fde_ref:
       return a->v.val_fde_index == b->v.val_fde_index;
     case dw_val_class_lbl_id:
+    case dw_val_class_high_pc:
       return strcmp (a->v.val_lbl_id, b->v.val_lbl_id) == 0;
     case dw_val_class_str:
       return a->v.val_str == b->v.val_str;
@@ -3598,6 +3599,26 @@ add_AT_data8 (dw_die_ref die, enum dwarf_attribute attr_kind,
   add_dwarf_attr (die, &attr);
 }
 
+/* Add DW_AT_low_pc and DW_AT_high_pc to a DIE.  */
+static inline void
+add_AT_low_high_pc (dw_die_ref die, const char *lbl_low, const char *lbl_high)
+{
+  dw_attr_node attr;
+
+  attr.dw_attr = DW_AT_low_pc;
+  attr.dw_attr_val.val_class = dw_val_class_lbl_id;
+  attr.dw_attr_val.v.val_lbl_id = xstrdup (lbl_low);
+  add_dwarf_attr (die, &attr);
+
+  attr.dw_attr = DW_AT_high_pc;
+  if (dwarf_version < 4)
+    attr.dw_attr_val.val_class = dw_val_class_lbl_id;
+  else
+    attr.dw_attr_val.val_class = dw_val_class_high_pc;
+  attr.dw_attr_val.v.val_lbl_id = xstrdup (lbl_high);
+  add_dwarf_attr (die, &attr);
+}
+
 /* Hash and equality functions for debug_str_hash.  */
 
 static hashval_t
@@ -3981,7 +4002,8 @@ AT_lbl (dw_attr_ref a)
 {
   gcc_assert (a && (AT_class (a) == dw_val_class_lbl_id
 		    || AT_class (a) == dw_val_class_lineptr
-		    || AT_class (a) == dw_val_class_macptr));
+		    || AT_class (a) == dw_val_class_macptr
+		    || AT_class (a) == dw_val_class_high_pc));
   return a->dw_attr_val.v.val_lbl_id;
 }
 
@@ -4877,6 +4899,7 @@ print_die (dw_die_ref die, FILE *outfile)
 	case dw_val_class_lbl_id:
 	case dw_val_class_lineptr:
 	case dw_val_class_macptr:
+	case dw_val_class_high_pc:
 	  fprintf (outfile, "label: %s", AT_lbl (a));
 	  break;
 	case dw_val_class_str:
@@ -5033,6 +5056,7 @@ attr_checksum (dw_attr_ref at, struct md5_ctx *ctx, int *mark)
     case dw_val_class_lbl_id:
     case dw_val_class_lineptr:
     case dw_val_class_macptr:
+    case dw_val_class_high_pc:
       break;
 
     case dw_val_class_file:
@@ -5305,6 +5329,7 @@ attr_checksum_ordered (enum dwarf_tag tag, dw_attr_ref at,
     case dw_val_class_lbl_id:
     case dw_val_class_lineptr:
     case dw_val_class_macptr:
+    case dw_val_class_high_pc:
       break;
 
     case dw_val_class_file:
@@ -5770,6 +5795,7 @@ same_dw_val_p (const dw_val_node *v1, const dw_val_node *v2, int *mark)
     case dw_val_class_lbl_id:
     case dw_val_class_lineptr:
     case dw_val_class_macptr:
+    case dw_val_class_high_pc:
       return 1;
 
     case dw_val_class_file:
@@ -7241,6 +7267,9 @@ size_of_die (dw_die_ref die)
 	case dw_val_class_vms_delta:
 	  size += DWARF_OFFSET_SIZE;
 	  break;
+	case dw_val_class_high_pc:
+	  size += DWARF2_ADDR_SIZE;
+	  break;
 	default:
 	  gcc_unreachable ();
 	}
@@ -7557,6 +7586,17 @@ value_format (dw_attr_ref a)
 
     case dw_val_class_data8:
       return DW_FORM_data8;
+
+    case dw_val_class_high_pc:
+      switch (DWARF2_ADDR_SIZE)
+	{
+	  case 4:
+	    return DW_FORM_data4;
+	  case 8:
+	    return DW_FORM_data8;
+	  default:
+	    gcc_unreachable ();
+	}
 
     default:
       gcc_unreachable ();
@@ -7983,6 +8023,11 @@ output_die (dw_die_ref die)
 				   i == 0 ? "%s" : NULL, name);
 	    break;
 	  }
+
+	case dw_val_class_high_pc:
+	  dw2_asm_output_delta (DWARF2_ADDR_SIZE, AT_lbl (a),
+				get_AT_low_pc (die), "DW_AT_high_pc");
+	  break;
 
 	default:
 	  gcc_unreachable ();
@@ -17028,19 +17073,18 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	  if (fde->dw_fde_begin)
 	    {
 	      /* We have already generated the labels.  */
-	      add_AT_lbl_id (subr_die, DW_AT_low_pc, fde->dw_fde_begin);
-	      add_AT_lbl_id (subr_die, DW_AT_high_pc, fde->dw_fde_end);
+	      add_AT_low_high_pc (subr_die, fde->dw_fde_begin, fde->dw_fde_end);
 	    }
 	  else
 	    {
 	      /* Create start/end labels and add the range.  */
-	      char label_id[MAX_ARTIFICIAL_LABEL_BYTES];
-	      ASM_GENERATE_INTERNAL_LABEL (label_id, FUNC_BEGIN_LABEL,
+	      char label_id_low[MAX_ARTIFICIAL_LABEL_BYTES];
+	      char label_id_high[MAX_ARTIFICIAL_LABEL_BYTES];
+	      ASM_GENERATE_INTERNAL_LABEL (label_id_low, FUNC_BEGIN_LABEL,
 					   current_function_funcdef_no);
-	      add_AT_lbl_id (subr_die, DW_AT_low_pc, label_id);
-	      ASM_GENERATE_INTERNAL_LABEL (label_id, FUNC_END_LABEL,
+	      ASM_GENERATE_INTERNAL_LABEL (label_id_high, FUNC_END_LABEL,
 					   current_function_funcdef_no);
-	      add_AT_lbl_id (subr_die, DW_AT_high_pc, label_id);
+	      add_AT_low_high_pc (subr_die, label_id_low, label_id_high);
 	    }
 
 #if VMS_DEBUGGING_INFO
@@ -17104,10 +17148,8 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 		  dw_die_ref seg_die;
 
 		  /* Do the 'primary' section.   */
-		  add_AT_lbl_id (subr_die, DW_AT_low_pc,
-				 fde->dw_fde_begin);
-		  add_AT_lbl_id (subr_die, DW_AT_high_pc,
-				 fde->dw_fde_end);
+		  add_AT_low_high_pc (subr_die, fde->dw_fde_begin,
+				      fde->dw_fde_end);
 
 		  /* Build a minimal DIE for the secondary section.  */
 		  seg_die = new_die (DW_TAG_subprogram,
@@ -17131,20 +17173,15 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 		    add_AT_flag (seg_die, DW_AT_artificial, 1);
 
 		  name = concat ("__second_sect_of_", name, NULL); 
-		  add_AT_lbl_id (seg_die, DW_AT_low_pc,
-				 fde->dw_fde_second_begin);
-		  add_AT_lbl_id (seg_die, DW_AT_high_pc,
-				 fde->dw_fde_second_end);
+		  add_AT_low_high_pc (seg_die, fde->dw_fde_second_begin,
+				      fde->dw_fde_second_end);
 		  add_name_attribute (seg_die, name);
 		  if (want_pubnames ())
 		    add_pubname_string (name, seg_die);
 		}
 	    }
 	  else
-	    {
-	      add_AT_lbl_id (subr_die, DW_AT_low_pc, fde->dw_fde_begin);
-	      add_AT_lbl_id (subr_die, DW_AT_high_pc, fde->dw_fde_end);
-	    }
+	    add_AT_low_high_pc (subr_die, fde->dw_fde_begin, fde->dw_fde_end);
 	}
 
       cfa_fb_offset = CFA_FRAME_BASE_OFFSET (decl);
@@ -17887,12 +17924,12 @@ add_high_low_attributes (tree stmt, dw_die_ref die)
     }
   else
     {
+      char label_high[MAX_ARTIFICIAL_LABEL_BYTES];
       ASM_GENERATE_INTERNAL_LABEL (label, BLOCK_BEGIN_LABEL,
 				   BLOCK_NUMBER (stmt));
-      add_AT_lbl_id (die, DW_AT_low_pc, label);
-      ASM_GENERATE_INTERNAL_LABEL (label, BLOCK_END_LABEL,
+      ASM_GENERATE_INTERNAL_LABEL (label_high, BLOCK_END_LABEL,
 				   BLOCK_NUMBER (stmt));
-      add_AT_lbl_id (die, DW_AT_high_pc, label);
+      add_AT_low_high_pc (die, label, label_high);
     }
 }
 
@@ -22365,10 +22402,8 @@ dwarf2out_finish (const char *filename)
     {
       /* Don't add if the CU has no associated code.  */
       if (text_section_used)
-	{
-	  add_AT_lbl_id (comp_unit_die (), DW_AT_low_pc, text_section_label);
-	  add_AT_lbl_id (comp_unit_die (), DW_AT_high_pc, text_end_label);
-	}
+	add_AT_low_high_pc (comp_unit_die (), text_section_label,
+			    text_end_label);
     }
   else
     {
