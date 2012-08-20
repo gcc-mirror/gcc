@@ -1,3 +1,12 @@
+2012-08-20  Richard Guenther  <rguenther@suse.de>
+
+	* name-lookup.c (store_binding_p): New predicate, split out from ...
+	(store_binding): ... here.  Always store binding and require
+	target vector with enough space.
+	(store_bindings): Collect to store bindings and reserve space
+	for them, then store them.
+	(store_class_bindings): Likewise.
+
 2012-08-19  Mikael Morin  <mikael@gcc.gnu.org>
 
 	* Make-lang.in: Fix typo.
