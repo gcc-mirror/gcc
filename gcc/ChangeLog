@@ -1,3 +1,8 @@
+2012-08-20  Patrick Marlier  <patrick.marlier@gmail.com>
+
+	PR middle-end/53992
+	* omp-low.c (lower_omp_1): Handle GIMPLE_TRANSACTION.
+
 2012-08-20  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR tree-ssa/54295

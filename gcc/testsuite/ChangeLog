@@ -1,3 +1,8 @@
+2012-08-20  Patrick Marlier  <patrick.marlier@gmail.com>
+
+	PR middle-end/53992
+	* gcc.dg/gomp/pr53992.c: New test.
+
 2012-08-20  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR tree-ssa/54295
