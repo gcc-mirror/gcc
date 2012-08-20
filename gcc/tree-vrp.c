@@ -4152,33 +4152,20 @@ debug_all_value_ranges (void)
 static gimple
 build_assert_expr_for (tree cond, tree v)
 {
-  tree n;
+  tree a;
   gimple assertion;
 
-  gcc_assert (TREE_CODE (v) == SSA_NAME);
-  n = duplicate_ssa_name (v, NULL);
+  gcc_assert (TREE_CODE (v) == SSA_NAME
+	      && COMPARISON_CLASS_P (cond));
 
-  if (COMPARISON_CLASS_P (cond))
-    {
-      tree a = build2 (ASSERT_EXPR, TREE_TYPE (v), v, cond);
-      assertion = gimple_build_assign (n, a);
-    }
-  else if (TREE_CODE (cond) == SSA_NAME)
-    {
-      /* Given V, build the assignment N = true.  */
-      gcc_assert (v == cond);
-      assertion = gimple_build_assign (n, boolean_true_node);
-    }
-  else
-    gcc_unreachable ();
-
-  SSA_NAME_DEF_STMT (n) = assertion;
+  a = build2 (ASSERT_EXPR, TREE_TYPE (v), v, cond);
+  assertion = gimple_build_assign (NULL_TREE, a);
 
   /* The new ASSERT_EXPR, creates a new SSA name that replaces the
-     operand of the ASSERT_EXPR. Register the new name and the old one
-     in the replacement table so that we can fix the SSA web after
-     adding all the ASSERT_EXPRs.  */
-  register_new_name_mapping (n, v);
+     operand of the ASSERT_EXPR.  Create it so the new name and the old one
+     are registered in the replacement table so that we can fix the SSA web
+     after adding all the ASSERT_EXPRs.  */
+  create_new_def_for (v, assertion, NULL);
 
   return assertion;
 }

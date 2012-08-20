@@ -111,15 +111,15 @@ static VEC(gimple_vec, heap) *phis_to_rewrite;
 static bitmap blocks_with_phis_to_rewrite;
 
 /* Growth factor for NEW_SSA_NAMES and OLD_SSA_NAMES.  These sets need
-   to grow as the callers to register_new_name_mapping will typically
-   create new names on the fly.  FIXME.  Currently set to 1/3 to avoid
-   frequent reallocations but still need to find a reasonable growth
-   strategy.  */
+   to grow as the callers to create_new_def_for will create new names on
+   the fly.
+   FIXME.  Currently set to 1/3 to avoid frequent reallocations but still
+   need to find a reasonable growth strategy.  */
 #define NAME_SETS_GROWTH_FACTOR	(MAX (3, num_ssa_names / 3))
 
 
 /* The function the SSA updating data structures have been initialized for.
-   NULL if they need to be initialized by register_new_name_mapping.  */
+   NULL if they need to be initialized by create_new_def_for.  */
 static struct function *update_ssa_initialized_fn = NULL;
 
 /* Global data to attach to the main dominator walk structure.  */
@@ -587,8 +587,6 @@ add_to_repl_tbl (tree new_tree, tree old)
 static void
 add_new_name_mapping (tree new_tree, tree old)
 {
-  timevar_push (TV_TREE_SSA_INCREMENTAL);
-
   /* OLD and NEW_TREE must be different SSA names for the same symbol.  */
   gcc_assert (new_tree != old && SSA_NAME_VAR (new_tree) == SSA_NAME_VAR (old));
 
@@ -613,8 +611,6 @@ add_new_name_mapping (tree new_tree, tree old)
      respectively.  */
   SET_BIT (new_ssa_names, SSA_NAME_VERSION (new_tree));
   SET_BIT (old_ssa_names, SSA_NAME_VERSION (old));
-
-  timevar_pop (TV_TREE_SSA_INCREMENTAL);
 }
 
 
@@ -2842,16 +2838,28 @@ delete_update_ssa (void)
 
 
 /* Create a new name for OLD_NAME in statement STMT and replace the
-   operand pointed to by DEF_P with the newly created name.  Return
-   the new name and register the replacement mapping <NEW, OLD> in
+   operand pointed to by DEF_P with the newly created name.  If DEF_P
+   is NULL then STMT should be a GIMPLE assignment.
+   Return the new name and register the replacement mapping <NEW, OLD> in
    update_ssa's tables.  */
 
 tree
 create_new_def_for (tree old_name, gimple stmt, def_operand_p def)
 {
-  tree new_name = duplicate_ssa_name (old_name, stmt);
+  tree new_name;
 
-  SET_DEF (def, new_name);
+  timevar_push (TV_TREE_SSA_INCREMENTAL);
+
+  if (!update_ssa_initialized_fn)
+    init_update_ssa (cfun);
+
+  gcc_assert (update_ssa_initialized_fn == cfun);
+
+  new_name = duplicate_ssa_name (old_name, stmt);
+  if (def)
+    SET_DEF (def, new_name);
+  else
+    gimple_assign_set_lhs (stmt, new_name);
 
   if (gimple_code (stmt) == GIMPLE_PHI)
     {
@@ -2861,30 +2869,16 @@ create_new_def_for (tree old_name, gimple stmt, def_operand_p def)
       SSA_NAME_OCCURS_IN_ABNORMAL_PHI (new_name) = bb_has_abnormal_pred (bb);
     }
 
-  register_new_name_mapping (new_name, old_name);
+  add_new_name_mapping (new_name, old_name);
 
   /* For the benefit of passes that will be updating the SSA form on
      their own, set the current reaching definition of OLD_NAME to be
      NEW_NAME.  */
   get_ssa_name_ann (old_name)->info.current_def = new_name;
 
+  timevar_pop (TV_TREE_SSA_INCREMENTAL);
+
   return new_name;
-}
-
-
-/* Register name NEW to be a replacement for name OLD.  This function
-   must be called for every replacement that should be performed by
-   update_ssa.  */
-
-void
-register_new_name_mapping (tree new_tree, tree old)
-{
-  if (!update_ssa_initialized_fn)
-    init_update_ssa (cfun);
-
-  gcc_assert (update_ssa_initialized_fn == cfun);
-
-  add_new_name_mapping (new_tree, old);
 }
 
 
@@ -3056,13 +3050,13 @@ insert_updated_phi_nodes_for (tree var, bitmap_head *dfs, bitmap blocks,
       frontier of the blocks where each of NEW_SSA_NAMES are defined.
 
    The mapping between OLD_SSA_NAMES and NEW_SSA_NAMES is setup by
-   calling register_new_name_mapping for every pair of names that the
+   calling create_new_def_for to create new defs for names that the
    caller wants to replace.
 
-   The caller identifies the new names that have been inserted and the
-   names that need to be replaced by calling register_new_name_mapping
-   for every pair <NEW, OLD>.  Note that the function assumes that the
-   new names have already been inserted in the IL.
+   The caller cretaes the new names to be inserted and the names that need
+   to be replaced by calling create_new_def_for for each old definition
+   to be replaced.  Note that the function assumes that the
+   new defining statement has already been inserted in the IL.
 
    For instance, given the following code:
 
