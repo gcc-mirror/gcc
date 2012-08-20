@@ -3827,6 +3827,100 @@ label:
     FAIL;
 })
 
+;; The rotcr insn is used primarily in DImode right shifts (arithmetic
+;; and logical).  It can also be used to implement things like
+;;	bool t = a == b;
+;;	int x = (y >> 1) | (t << 31);
+(define_insn "rotcr"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+	(ior:SI (lshiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
+			     (const_int 1))
+		(ashift:SI (match_operand:SI 2 "t_reg_operand")
+			   (const_int 31))))
+   (set (reg:SI T_REG)
+	(and:SI (match_dup 1) (const_int 1)))]
+  "TARGET_SH1"
+  "rotcr	%0"
+  [(set_attr "type" "arith")])
+
+;; Simplified rotcr version for combine, which allows arbitrary shift
+;; amounts for the reg.  If the shift amount is '1' rotcr can be used
+;; directly.  Otherwise we have to insert a shift in between.
+(define_insn_and_split "*rotcr"
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(ior:SI (lshiftrt:SI (match_operand:SI 1 "arith_reg_operand")
+			     (match_operand:SI 2 "const_int_operand"))
+		(ashift:SI (match_operand:SI 3 "t_reg_operand")
+			   (const_int 31))))
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH1"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(const_int 0)]
+{
+  if (INTVAL (operands[2]) > 1)
+    {
+      /* use plus_constant function ?? */
+      const int shift_count = INTVAL (operands[2]) - 1;
+      const rtx shift_count_rtx = GEN_INT (shift_count);
+      rtx shift_res = gen_reg_rtx (SImode);
+
+      rtx prev_set_t_insn = NULL_RTX;
+      rtx tmp_t_reg = NULL_RTX;
+
+      /* If we're going to emit a shift sequence that clobbers the T_REG,
+	 try to find the previous insn that sets the T_REG and emit the 
+	 shift insn before that insn, to remove the T_REG dependency.
+	 If the insn that sets the T_REG cannot be found, store the T_REG
+	 in a temporary reg and restore it after the shift.  */
+      if (sh_lshrsi_clobbers_t_reg_p (shift_count_rtx)
+	  && ! sh_dynamicalize_shift_p (shift_count_rtx))
+	{
+	  prev_set_t_insn = prev_nonnote_insn_bb (curr_insn);
+	  if (! (prev_set_t_insn != NULL_RTX
+		 && reg_set_p (get_t_reg_rtx (), prev_set_t_insn)
+		 && ! reg_referenced_p (get_t_reg_rtx (),
+					PATTERN (prev_set_t_insn))))
+	    {
+	      prev_set_t_insn = NULL_RTX;
+	      tmp_t_reg = gen_reg_rtx (SImode);
+	      emit_insn (gen_move_insn (tmp_t_reg, get_t_reg_rtx ()));
+	    } 
+	}
+
+      rtx shift_rtx = gen_lshrsi3 (shift_res, operands[1], shift_count_rtx);
+      operands[1] = shift_res;
+
+      /* Emit the shift insn before the insn that sets T_REG, if possible.  */
+      if (prev_set_t_insn != NULL_RTX)
+	emit_insn_before (shift_rtx, prev_set_t_insn);
+      else
+	emit_insn (shift_rtx);
+
+      /* Restore T_REG if it has been saved before.  */
+      if (tmp_t_reg != NULL_RTX)
+	emit_insn (gen_cmpgtsi_t (tmp_t_reg, const0_rtx));
+    }
+
+  emit_insn (gen_rotcr (operands[0], operands[1], operands[3]));
+  DONE;
+})
+
+;; rotcr combine bridge pattern which will make combine try out more
+;; complex patterns.
+(define_insn_and_split "*rotcr"
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(ashift:SI (match_operand:SI 1 "t_reg_operand") (const_int 31)))]
+  "TARGET_SH1"
+  "#"
+  "&& 1"
+  [(set (match_dup 0) (match_dup 1))
+   (parallel [(set (match_dup 0)
+		   (ior:SI (lshiftrt:SI (match_dup 0) (const_int 1))
+			   (ashift:SI (match_dup 1) (const_int 31))))
+	      (set (reg:SI T_REG)
+		   (and:SI (match_dup 0) (const_int 1)))])])
+
 ;; . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 ;; SImode shift left
 
@@ -4146,6 +4240,16 @@ label:
     FAIL;
 })
 
+(define_insn "shar"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+	(ashiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
+		     (const_int 1)))
+   (set (reg:SI T_REG)
+	(and:SI (match_dup 1) (const_int 1)))]
+  "TARGET_SH1"
+  "shar	%0"
+  [(set_attr "type" "arith")])
+
 (define_insn "ashrsi3_k"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
 	(ashiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
@@ -4233,16 +4337,22 @@ label:
     FAIL;
 })
 
-;; This should be a define_insn_and_split
-(define_insn "ashrdi3_k"
+(define_insn_and_split "ashrdi3_k"
   [(set (match_operand:DI 0 "arith_reg_dest" "=r")
 	(ashiftrt:DI (match_operand:DI 1 "arith_reg_operand" "0")
 		     (const_int 1)))
    (clobber (reg:SI T_REG))]
   "TARGET_SH1"
-  "shar	%S0\;rotcr	%R0"
-  [(set_attr "length" "4")
-   (set_attr "type" "arith")])
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  rtx high = gen_highpart (SImode, operands[0]);
+  rtx low = gen_lowpart (SImode, operands[0]);
+  emit_insn (gen_shar (high, high));
+  emit_insn (gen_rotcr (low, low, get_t_reg_rtx ()));
+  DONE;
+})
 
 (define_insn "ashrdi3_media"
   [(set (match_operand:DI 0 "ext_dest_operand" "=r,r")
@@ -4322,6 +4432,16 @@ label:
   "shld	%2,%0"
   [(set_attr "type" "dyn_shift")])
 
+(define_insn "shlr"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+	(lshiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
+		     (const_int 1)))
+   (set (reg:SI T_REG)
+	(and:SI (match_dup 1) (const_int 1)))]
+  "TARGET_SH1"
+  "shlr	%0"
+  [(set_attr "type" "arith")])
+
 (define_insn "lshrsi3_m"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
 	(lshiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
@@ -4384,16 +4504,22 @@ label:
     FAIL;
 })
 
-;; This should be a define_insn_and_split
-(define_insn "lshrdi3_k"
+(define_insn_and_split "lshrdi3_k"
   [(set (match_operand:DI 0 "arith_reg_dest" "=r")
 	(lshiftrt:DI (match_operand:DI 1 "arith_reg_operand" "0")
 		     (const_int 1)))
    (clobber (reg:SI T_REG))]
   "TARGET_SH1"
-  "shlr	%S0\;rotcr	%R0"
-  [(set_attr "length" "4")
-   (set_attr "type" "arith")])
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  rtx high = gen_highpart (SImode, operands[0]);
+  rtx low = gen_lowpart (SImode, operands[0]);
+  emit_insn (gen_shlr (high, high));
+  emit_insn (gen_rotcr (low, low, get_t_reg_rtx ()));
+  DONE;
+})
 
 (define_insn "lshrdi3_media"
   [(set (match_operand:DI 0 "ext_dest_operand" "=r,r")
