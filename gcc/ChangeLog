@@ -1,3 +1,8 @@
+2012-08-21  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/39423
+	* config/sh/sh.md (*movhi_index_disp): Add support for SH2A movu.w insn.
+
 2012-08-21  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR middle-end/54332

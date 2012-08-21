@@ -1,3 +1,8 @@
+2012-08-21  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/39423
+	* gcc.target/sh/pr39423-2.c: New.
+
 2012-08-21  Marc Glisse  <marc.glisse@inria.fr>
 
 	* gcc.dg/tree-ssa/forwprop-19.c: New testcase.

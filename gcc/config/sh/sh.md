@@ -5793,12 +5793,35 @@ label:
    (clobber (reg:SI T_REG))]
   "TARGET_SH1"
   "#"
-  "&& 1"
-  [(parallel [(set (match_dup 0) (sign_extend:SI (match_dup 1)))
-	      (clobber (reg:SI T_REG))])
-   (set (match_dup 0) (zero_extend:SI (match_dup 2)))]
+  "&& can_create_pseudo_p ()"
+  [(const_int 0)]
 {
-  operands[2] = gen_lowpart (HImode, operands[0]);
+  rtx mem = operands[1];
+  rtx plus0_rtx = XEXP (mem, 0);
+  rtx plus1_rtx = XEXP (plus0_rtx, 0);
+  rtx mult_rtx = XEXP (plus1_rtx, 0);
+
+  rtx op_1 = XEXP (mult_rtx, 0);
+  rtx op_2 = GEN_INT (exact_log2 (INTVAL (XEXP (mult_rtx, 1))));
+  rtx op_3 = XEXP (plus1_rtx, 1);
+  rtx op_4 = XEXP (plus0_rtx, 1);
+  rtx op_5 = gen_reg_rtx (SImode);
+  rtx op_6 = gen_reg_rtx (SImode);
+  rtx op_7 = replace_equiv_address (mem, gen_rtx_PLUS (SImode, op_6, op_4));
+
+  emit_insn (gen_ashlsi3 (op_5, op_1, op_2));
+  emit_insn (gen_addsi3 (op_6, op_5, op_3));
+
+  /* On SH2A the movu.w insn can be used for zero extending loads.  */
+  if (TARGET_SH2A)
+    emit_insn (gen_zero_extendhisi2 (operands[0], op_7));
+  else
+    {
+      emit_insn (gen_extendhisi2 (operands[0], op_7));
+      emit_insn (gen_zero_extendhisi2 (operands[0],
+				       gen_lowpart (HImode, operands[0])));
+    }
+  DONE;
 })
 
 (define_insn_and_split "*movsi_index_disp"
