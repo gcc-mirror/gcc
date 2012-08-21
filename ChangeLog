@@ -1,3 +1,8 @@
+2012-08-21  Hariharan Sandanagobalane <hariharan.gcc@gmail.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+	(Picochip port): Remove myself.
+
 2012-08-14   Diego Novillo  <dnovillo@google.com>
 
 	Merge from cxx-conversion branch.
