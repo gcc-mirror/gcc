@@ -417,7 +417,8 @@ enum omp_clause_code
    so all nodes have these fields.
 
    See the accessor macros, defined below, for documentation of the
-   fields.  */
+   fields, and the table below which connects the fileds and the
+   accessor macros.  */
 
 struct GTY(()) tree_base {
   ENUM_BITFIELD(tree_code) code : 16;
@@ -427,9 +428,9 @@ struct GTY(()) tree_base {
   unsigned addressable_flag : 1;
   unsigned volatile_flag : 1;
   unsigned readonly_flag : 1;
-  unsigned unsigned_flag : 1;
   unsigned asm_written_flag: 1;
   unsigned nowarning_flag : 1;
+  unsigned visited : 1;
 
   unsigned used_flag : 1;
   unsigned nothrow_flag : 1;
@@ -438,38 +439,42 @@ struct GTY(()) tree_base {
   unsigned private_flag : 1;
   unsigned protected_flag : 1;
   unsigned deprecated_flag : 1;
-  unsigned saturating_flag : 1;
-
   unsigned default_def_flag : 1;
-  unsigned lang_flag_0 : 1;
-  unsigned lang_flag_1 : 1;
-  unsigned lang_flag_2 : 1;
-  unsigned lang_flag_3 : 1;
-  unsigned lang_flag_4 : 1;
-  unsigned lang_flag_5 : 1;
-  unsigned lang_flag_6 : 1;
 
-  unsigned visited : 1;
-  unsigned packed_flag : 1;
-  unsigned user_align : 1;
-  unsigned nameless_flag : 1;
+  union {
+    /* The bits in the following structure should only be used with
+       accessor macros that constrain inputs with tree checking.  */
+    struct {
+      unsigned lang_flag_0 : 1;
+      unsigned lang_flag_1 : 1;
+      unsigned lang_flag_2 : 1;
+      unsigned lang_flag_3 : 1;
+      unsigned lang_flag_4 : 1;
+      unsigned lang_flag_5 : 1;
+      unsigned lang_flag_6 : 1;
+      unsigned saturating_flag : 1;
 
-  unsigned spare : 12;
+      unsigned unsigned_flag : 1;
+      unsigned packed_flag : 1;
+      unsigned user_align : 1;
+      unsigned nameless_flag : 1;
+      unsigned spare0 : 4;
 
-  /* This field is only used with type nodes; the only reason it is present
-     in tree_base instead of tree_type is to save space.  The size of the
-     field must be large enough to hold addr_space_t values.  */
-  unsigned address_space : 8;
-};
+      unsigned spare1 : 8;
 
-struct GTY(()) tree_typed {
-  struct tree_base base;
-  tree type;
-};
-
-struct GTY(()) tree_common {
-  struct tree_typed typed;
-  tree chain;
+      /* This field is only used with TREE_TYPE nodes; the only reason it is
+	 present in tree_base instead of tree_type is to save space.  The size
+	 of the field must be large enough to hold addr_space_t values.  */
+      unsigned address_space : 8;
+    } bits;
+    /* The following fields are present in tree_base to save space.  The
+       nodes using them do not require any of the flags above and so can
+       make better use of the 4-byte sized word.  */
+    /* VEC length.  This field is only used with TREE_VEC.  */
+    int length;
+    /* SSA version number.  This field is only used with SSA_NAME.  */
+    unsigned int version;
+  } GTY((skip(""))) u;
 };
 
 /* The following table lists the uses of each of the above flags and
@@ -638,7 +643,10 @@ struct GTY(()) tree_common {
        TREE_ASM_WRITTEN in
            VAR_DECL, FUNCTION_DECL, TYPE_DECL
            RECORD_TYPE, UNION_TYPE, QUAL_UNION_TYPE
-           BLOCK, SSA_NAME, STRING_CST
+           BLOCK, STRING_CST
+
+       SSA_NAME_OCCURS_IN_ABNORMAL_PHI in
+           SSA_NAME
 
    used_flag:
 
@@ -658,6 +666,9 @@ struct GTY(()) tree_common {
 
        TREE_THIS_NOTRAP in
           INDIRECT_REF, MEM_REF, TARGET_MEM_REF, ARRAY_REF, ARRAY_RANGE_REF
+
+       SSA_NAME_IN_FREELIST in
+          SSA_NAME
 
    deprecated_flag:
 
@@ -698,6 +709,16 @@ struct GTY(()) tree_common {
        SSA_NAME_IS_DEFAULT_DEF in
            SSA_NAME
 */
+
+struct GTY(()) tree_typed {
+  struct tree_base base;
+  tree type;
+};
+
+struct GTY(()) tree_common {
+  struct tree_typed typed;
+  tree chain;
+};
 
 #undef DEFTREESTRUCT
 #define DEFTREESTRUCT(ENUM, NAME) ENUM,
@@ -1226,10 +1247,10 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 
 /* In a decl (most significantly a FIELD_DECL), means an unsigned field.  */
 #define DECL_UNSIGNED(NODE) \
-  (DECL_COMMON_CHECK (NODE)->base.unsigned_flag)
+  (DECL_COMMON_CHECK (NODE)->base.u.bits.unsigned_flag)
 
 /* In integral and pointer types, means an unsigned type.  */
-#define TYPE_UNSIGNED(NODE) (TYPE_CHECK (NODE)->base.unsigned_flag)
+#define TYPE_UNSIGNED(NODE) (TYPE_CHECK (NODE)->base.u.bits.unsigned_flag)
 
 /* True if overflow wraps around for the given integral type.  That
    is, TYPE_MAX + 1 == TYPE_MIN.  */
@@ -1277,7 +1298,7 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
    throw an exception.  In a CALL_EXPR, nonzero means the call cannot
    throw.  We can't easily check the node type here as the C++
    frontend also uses this flag (for AGGR_INIT_EXPR).  */
-#define TREE_NOTHROW(NODE) ((NODE)->base.nothrow_flag)
+#define TREE_NOTHROW(NODE) (TREE_NOT_CHECK (NODE, TREE_VEC)->base.nothrow_flag)
 
 /* In a CALL_EXPR, means that it's safe to use the target of the call
    expansion as the return slot for a call that returns in memory.  */
@@ -1347,16 +1368,23 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
   (IDENTIFIER_NODE_CHECK (NODE)->base.deprecated_flag)
 
 /* In fixed-point types, means a saturating type.  */
-#define TYPE_SATURATING(NODE) ((NODE)->base.saturating_flag)
+#define TYPE_SATURATING(NODE) (TYPE_CHECK (NODE)->base.u.bits.saturating_flag)
 
 /* These flags are available for each language front end to use internally.  */
-#define TREE_LANG_FLAG_0(NODE) ((NODE)->base.lang_flag_0)
-#define TREE_LANG_FLAG_1(NODE) ((NODE)->base.lang_flag_1)
-#define TREE_LANG_FLAG_2(NODE) ((NODE)->base.lang_flag_2)
-#define TREE_LANG_FLAG_3(NODE) ((NODE)->base.lang_flag_3)
-#define TREE_LANG_FLAG_4(NODE) ((NODE)->base.lang_flag_4)
-#define TREE_LANG_FLAG_5(NODE) ((NODE)->base.lang_flag_5)
-#define TREE_LANG_FLAG_6(NODE) ((NODE)->base.lang_flag_6)
+#define TREE_LANG_FLAG_0(NODE) \
+  (TREE_NOT_CHECK2(NODE, TREE_VEC, SSA_NAME)->base.u.bits.lang_flag_0)
+#define TREE_LANG_FLAG_1(NODE) \
+  (TREE_NOT_CHECK2(NODE, TREE_VEC, SSA_NAME)->base.u.bits.lang_flag_1)
+#define TREE_LANG_FLAG_2(NODE) \
+  (TREE_NOT_CHECK2(NODE, TREE_VEC, SSA_NAME)->base.u.bits.lang_flag_2)
+#define TREE_LANG_FLAG_3(NODE) \
+  (TREE_NOT_CHECK2(NODE, TREE_VEC, SSA_NAME)->base.u.bits.lang_flag_3)
+#define TREE_LANG_FLAG_4(NODE) \
+  (TREE_NOT_CHECK2(NODE, TREE_VEC, SSA_NAME)->base.u.bits.lang_flag_4)
+#define TREE_LANG_FLAG_5(NODE) \
+  (TREE_NOT_CHECK2(NODE, TREE_VEC, SSA_NAME)->base.u.bits.lang_flag_5)
+#define TREE_LANG_FLAG_6(NODE) \
+  (TREE_NOT_CHECK2(NODE, TREE_VEC, SSA_NAME)->base.u.bits.lang_flag_6)
 
 /* Define additional fields and accessors for nodes representing constants.  */
 
@@ -1476,15 +1504,14 @@ struct GTY(()) tree_list {
 };
 
 /* In a TREE_VEC node.  */
-#define TREE_VEC_LENGTH(NODE) (TREE_VEC_CHECK (NODE)->vec.length)
+#define TREE_VEC_LENGTH(NODE) (TREE_VEC_CHECK (NODE)->base.u.length)
 #define TREE_VEC_END(NODE) \
-  ((void) TREE_VEC_CHECK (NODE), &((NODE)->vec.a[(NODE)->vec.length]))
+  ((void) TREE_VEC_CHECK (NODE), &((NODE)->vec.a[(NODE)->vec.base.u.length]))
 
 #define TREE_VEC_ELT(NODE,I) TREE_VEC_ELT_CHECK (NODE, I)
 
 struct GTY(()) tree_vec {
   struct tree_common common;
-  int length;
   tree GTY ((length ("TREE_VEC_LENGTH ((tree)&%h)"))) a[1];
 };
 
@@ -1888,7 +1915,7 @@ struct GTY(()) tree_exp {
 
 /* Returns the SSA version number of this SSA name.  Note that in
    tree SSA, version numbers are not per variable and may be recycled.  */
-#define SSA_NAME_VERSION(NODE)	SSA_NAME_CHECK (NODE)->ssa_name.version
+#define SSA_NAME_VERSION(NODE)	SSA_NAME_CHECK (NODE)->base.u.version
 
 /* Nonzero if this SSA name occurs in an abnormal PHI.  SSA_NAMES are
    never output, so we can safely use the ASM_WRITTEN_FLAG for this
@@ -1942,9 +1969,6 @@ struct GTY(()) tree_ssa_name {
 
   /* Statement that defines this SSA name.  */
   gimple def_stmt;
-
-  /* SSA version number.  */
-  unsigned int version;
 
   /* Pointer attributes used for alias analysis.  */
   struct ptr_info_def *ptr_info;
@@ -2008,7 +2032,7 @@ struct GTY(()) tree_omp_clause {
 #define BLOCK_ABSTRACT(NODE) (BLOCK_CHECK (NODE)->block.abstract_flag)
 
 /* True if BLOCK has the same ranges as its BLOCK_SUPERCONTEXT.  */
-#define BLOCK_SAME_RANGE(NODE) (BLOCK_CHECK (NODE)->base.nameless_flag)
+#define BLOCK_SAME_RANGE(NODE) (BLOCK_CHECK (NODE)->base.u.bits.nameless_flag)
 
 /* An index number for this block.  These values are not guaranteed to
    be unique across functions -- whether or not they are depends on
@@ -2148,7 +2172,7 @@ extern enum machine_mode vector_type_mode (const_tree);
 
 /* 1 if the alignment for this type was requested by "aligned" attribute,
    0 if it is the default for this type.  */
-#define TYPE_USER_ALIGN(NODE) (TYPE_CHECK (NODE)->base.user_align)
+#define TYPE_USER_ALIGN(NODE) (TYPE_CHECK (NODE)->base.u.bits.user_align)
 
 /* The alignment for NODE, in bytes.  */
 #define TYPE_ALIGN_UNIT(NODE) (TYPE_ALIGN (NODE) / BITS_PER_UNIT)
@@ -2179,10 +2203,10 @@ extern enum machine_mode vector_type_mode (const_tree);
 #define TYPE_RESTRICT(NODE) (TYPE_CHECK (NODE)->type_common.restrict_flag)
 
 /* If nonzero, type's name shouldn't be emitted into debug info.  */
-#define TYPE_NAMELESS(NODE) (TYPE_CHECK (NODE)->base.nameless_flag)
+#define TYPE_NAMELESS(NODE) (TYPE_CHECK (NODE)->base.u.bits.nameless_flag)
 
 /* The address space the type is in.  */
-#define TYPE_ADDR_SPACE(NODE) (TYPE_CHECK (NODE)->base.address_space)
+#define TYPE_ADDR_SPACE(NODE) (TYPE_CHECK (NODE)->base.u.bits.address_space)
 
 /* There is a TYPE_QUAL value for each type qualifier.  They can be
    combined by bitwise-or to form the complete set of qualifiers for a
@@ -2272,7 +2296,7 @@ enum cv_qualifier
 
 /* Indicated that objects of this type should be laid out in as
    compact a way as possible.  */
-#define TYPE_PACKED(NODE) (TYPE_CHECK (NODE)->base.packed_flag)
+#define TYPE_PACKED(NODE) (TYPE_CHECK (NODE)->base.u.bits.packed_flag)
 
 /* Used by type_contains_placeholder_p to avoid recomputation.
    Values are: 0 (unknown), 1 (false), 2 (true).  Never access
@@ -2610,7 +2634,7 @@ struct function;
   (FIELD_DECL_CHECK (NODE)->decl_minimal.context)
 
 /* If nonzero, decl's name shouldn't be emitted into debug info.  */
-#define DECL_NAMELESS(NODE) (DECL_MINIMAL_CHECK (NODE)->base.nameless_flag)
+#define DECL_NAMELESS(NODE) (DECL_MINIMAL_CHECK (NODE)->base.u.bits.nameless_flag)
 
 struct GTY(()) tree_decl_minimal {
   struct tree_common common;
@@ -2671,7 +2695,7 @@ struct GTY(()) tree_decl_minimal {
 /* Set if the alignment of this DECL has been set by the user, for
    example with an 'aligned' attribute.  */
 #define DECL_USER_ALIGN(NODE) \
-  (DECL_COMMON_CHECK (NODE)->base.user_align)
+  (DECL_COMMON_CHECK (NODE)->base.u.bits.user_align)
 /* Holds the machine mode corresponding to the declaration of a variable or
    field.  Always equal to TYPE_MODE (TREE_TYPE (decl)) except for a
    FIELD_DECL.  */
@@ -2956,7 +2980,7 @@ struct GTY(()) tree_decl_with_rtl {
 #define DECL_FCONTEXT(NODE) (FIELD_DECL_CHECK (NODE)->field_decl.fcontext)
 
 /* In a FIELD_DECL, indicates this field should be bit-packed.  */
-#define DECL_PACKED(NODE) (FIELD_DECL_CHECK (NODE)->base.packed_flag)
+#define DECL_PACKED(NODE) (FIELD_DECL_CHECK (NODE)->base.u.bits.packed_flag)
 
 /* Nonzero in a FIELD_DECL means it is a bit field, and must be accessed
    specially.  */
@@ -3246,7 +3270,7 @@ extern void decl_fini_priority_insert (tree, priority_type);
 #define MAX_RESERVED_INIT_PRIORITY 100
 
 #define VAR_DECL_IS_VIRTUAL_OPERAND(NODE) \
-  (VAR_DECL_CHECK (NODE)->base.saturating_flag)
+  (VAR_DECL_CHECK (NODE)->base.u.bits.saturating_flag)
 
 struct GTY(()) tree_var_decl {
   struct tree_decl_with_vis common;
@@ -3822,8 +3846,8 @@ tree_vec_elt_check (tree __t, int __i,
 {
   if (TREE_CODE (__t) != TREE_VEC)
     tree_check_failed (__t, __f, __l, __g, TREE_VEC, 0);
-  if (__i < 0 || __i >= __t->vec.length)
-    tree_vec_elt_check_failed (__i, __t->vec.length, __f, __l, __g);
+  if (__i < 0 || __i >= __t->base.u.length)
+    tree_vec_elt_check_failed (__i, __t->base.u.length, __f, __l, __g);
   return &CONST_CAST_TREE (__t)->vec.a[__i];
 }
 
@@ -4028,8 +4052,8 @@ tree_vec_elt_check (const_tree __t, int __i,
 {
   if (TREE_CODE (__t) != TREE_VEC)
     tree_check_failed (__t, __f, __l, __g, TREE_VEC, 0);
-  if (__i < 0 || __i >= __t->vec.length)
-    tree_vec_elt_check_failed (__i, __t->vec.length, __f, __l, __g);
+  if (__i < 0 || __i >= __t->base.u.length)
+    tree_vec_elt_check_failed (__i, __t->base.u.length, __f, __l, __g);
   return CONST_CAST (const_tree *, &__t->vec.a[__i]);
   //return &__t->vec.a[__i];
 }
