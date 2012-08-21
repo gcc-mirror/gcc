@@ -83,6 +83,9 @@
 #endif
 
 
+# The amount of space we ask for when calling non-split-stack code.
+#define NON_SPLIT_STACK 0x100000
+
 # This entry point is for split-stack code which calls non-split-stack
 # code.  When the linker sees this case, it converts the call to
 # __morestack to call __morestack_non_split instead.  We just bump the
@@ -109,7 +112,7 @@ __morestack_non_split:
 
 	movl	%esp,%eax		# Current stack,
 	subl	8(%esp),%eax		# less required stack frame size,
-	subl	$0x4000,%eax		# less space for non-split code.
+	subl	$NON_SPLIT_STACK,%eax	# less space for non-split code.
 	cmpl	%gs:0x30,%eax		# See if we have enough space.
 	jb	2f			# Get more space if we need it.
 
@@ -171,7 +174,8 @@ __morestack_non_split:
 
 	.cfi_adjust_cfa_offset -4	# Account for popped register.
 
-	addl	$0x5000+BACKOFF,4(%esp)	# Increment space we request.
+	# Increment space we request.
+	addl	$NON_SPLIT_STACK+0x1000+BACKOFF,4(%esp)
 
 	# Fall through into morestack.
 
@@ -186,7 +190,7 @@ __morestack_non_split:
 
 	movq	%rsp,%rax		# Current stack,
 	subq	%r10,%rax		# less required stack frame size,
-	subq	$0x4000,%rax		# less space for non-split code.
+	subq	$NON_SPLIT_STACK,%rax	# less space for non-split code.
 
 #ifdef __LP64__
 	cmpq	%fs:0x70,%rax		# See if we have enough space.
@@ -219,7 +223,8 @@ __morestack_non_split:
 
 	.cfi_adjust_cfa_offset -8	# Adjust for popped register.
 
-	addq	$0x5000+BACKOFF,%r10	# Increment space we request.
+	# Increment space we request.
+	addq	$NON_SPLIT_STACK+0x1000+BACKOFF,%r10
 
 	# Fall through into morestack.
 
