@@ -1,5 +1,28 @@
 2012-08-21  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	* config/sh/sh.md (cmpeqdi_t, cmpgtdi_t, cmpgedi_t, cmpgeudi_t,
+	cmpgtudi_t, *movsicc_t_false, *movsicc_t_true, divsi_inv20, negsi_cond,
+	truncdihi2, ic_invalidate_line_i, ic_invalidate_line_sh4a,
+	ic_invalidate_line_media, movdf_i4, calli_pcrel, call_valuei,
+	call_valuei_pcrel, sibcalli_pcrel, sibcall_compact,
+	sibcall_valuei_pcrel, sibcall_value_compact, casesi_worker_1,
+	casesi_worker_2, bandreg_m2a, borreg_m2a, bxorreg_m2a, sp_switch_1,
+	sp_switch_2, stack_protect_set_si, stack_protect_set_si_media,
+	stack_protect_set_di_media, stack_protect_test_si,
+	stack_protect_test_si_media, stack_protect_test_di_media): Convert to
+	multi-line asm output strings.
+	(divsi_inv_qitable, divsi_inv_hitable): Use single-alternative asm
+	output.
+	(*andsi3_bclr, rotldi3_mextr, rotrdi3_mextr, calli, call_valuei_tbr_rel,
+	movml_push_banked, movml_pop_banked, bclr_m2a, bclrmem_m2a, bset_m2a,
+	bsetmem_m2a, bst_m2a, bld_m2a, bldsign_m2a, bld_reg, *bld_regqi,
+	band_m2a, bor_m2a, bxor_m2a, mextr_rl, *mextr_lr, ): Use tab char
+	instead of '\\t'.
+	(iordi3): Use braced string.
+	(*movsi_pop): Use tab chars instead of spaces.
+
+2012-08-21  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	PR target/39423
 	* config/sh/sh.md (*movhi_index_disp): Add support for SH2A movu.w insn.
 
