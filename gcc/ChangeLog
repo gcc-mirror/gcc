@@ -1,3 +1,11 @@
+2012-08-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/54332
+	* df-scan.c (df_bb_verify): Restore df_free_collection_rec call
+	inside the insn traversal loop.
+
+	* vec.h (vec_reserve): Remove the stack allocation check.
+
 2012-08-21  Marc Glisse  <marc.glisse@inria.fr>
 
 	* fold-const.c (fold_ternary_loc): Detect identity permutations.
