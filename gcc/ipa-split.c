@@ -1239,6 +1239,7 @@ split_function (struct split_point *split_point)
       }
   call = gimple_build_call_vec (node->decl, args_to_pass);
   gimple_set_block (call, DECL_INITIAL (current_function_decl));
+  VEC_free (tree, heap, args_to_pass);
 
   /* We avoid address being taken on any variable used by split part,
      so return slot optimization is always possible.  Moreover this is

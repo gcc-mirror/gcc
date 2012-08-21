@@ -1416,7 +1416,7 @@ sms_schedule (void)
           if (dump_file)
             fprintf (dump_file, "SMS reached max limit... \n");
 
-          break;
+	  FOR_EACH_LOOP_BREAK (li);
         }
 
       if (dump_file)

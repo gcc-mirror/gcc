@@ -3590,6 +3590,8 @@ extract_and_process_scc_for_name (tree name)
 	fprintf (dump_file, "WARNING: Giving up with SCCVN due to "
 		 "SCC size %u exceeding %u\n", VEC_length (tree, scc),
 		 (unsigned)PARAM_VALUE (PARAM_SCCVN_MAX_SCC_SIZE));
+
+      VEC_free (tree, heap, scc);
       return false;
     }
 

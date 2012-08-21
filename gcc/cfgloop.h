@@ -629,7 +629,7 @@ fel_init (loop_iterator *li, loop_p *loop, unsigned flags)
 
 #define FOR_EACH_LOOP_BREAK(LI) \
   { \
-    VEC_free (int, heap, (LI)->to_visit); \
+    VEC_free (int, heap, (LI).to_visit); \
     break; \
   }
 

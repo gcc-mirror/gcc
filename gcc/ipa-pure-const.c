@@ -803,7 +803,7 @@ end:
 		    if (dump_file)
 		      fprintf (dump_file, "    can not prove finiteness of loop %i\n", loop->num);
 		    l->looping =true;
-		    break;
+		    FOR_EACH_LOOP_BREAK (li);
 		  }
 	      scev_finalize ();
 	    }

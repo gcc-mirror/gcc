@@ -1480,9 +1480,8 @@ free_mem_ref_locs (mem_ref_locs_p accs)
 /* A function to free the mem_ref object OBJ.  */
 
 static void
-memref_free (void *obj)
+memref_free (struct mem_ref *mem)
 {
-  struct mem_ref *const mem = (struct mem_ref *) obj;
   unsigned i;
   mem_ref_locs_p accs;
 
@@ -1722,8 +1721,7 @@ analyze_memory_references (void)
   unsigned i;
   bitmap empty;
 
-  memory_accesses.refs
-	  = htab_create (100, memref_hash, memref_eq, memref_free);
+  memory_accesses.refs = htab_create (100, memref_hash, memref_eq, NULL);
   memory_accesses.refs_list = NULL;
   memory_accesses.refs_in_loop = VEC_alloc (bitmap, heap,
 					    number_of_loops ());
@@ -2615,6 +2613,7 @@ tree_ssa_lim_finalize (void)
   basic_block bb;
   unsigned i;
   bitmap b;
+  mem_ref_p ref;
 
   free_aux_for_edges ();
 
@@ -2623,8 +2622,11 @@ tree_ssa_lim_finalize (void)
 
   pointer_map_destroy (lim_aux_data_map);
 
-  VEC_free (mem_ref_p, heap, memory_accesses.refs_list);
   htab_delete (memory_accesses.refs);
+
+  FOR_EACH_VEC_ELT (mem_ref_p, memory_accesses.refs_list, i, ref)
+    memref_free (ref);
+  VEC_free (mem_ref_p, heap, memory_accesses.refs_list);
 
   FOR_EACH_VEC_ELT (bitmap, memory_accesses.refs_in_loop, i, b)
     BITMAP_FREE (b);
@@ -2639,7 +2641,7 @@ tree_ssa_lim_finalize (void)
   VEC_free (bitmap, heap, memory_accesses.all_refs_stored_in_loop);
 
   if (memory_accesses.ttae_cache)
-    pointer_map_destroy (memory_accesses.ttae_cache);
+    free_affine_expand_cache (&memory_accesses.ttae_cache);
 }
 
 /* Moves invariants from loops.  Only "expensive" invariants are moved out --

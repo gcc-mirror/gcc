@@ -4777,6 +4777,8 @@ modify_function (struct cgraph_node *node, ipa_parm_adjustment_vec adjustments)
 
   new_node = cgraph_function_versioning (node, redirect_callers, NULL, NULL,
 					 false, NULL, NULL, "isra");
+  VEC_free (cgraph_edge_p, heap, redirect_callers);
+
   current_function_decl = new_node->decl;
   push_cfun (DECL_STRUCT_FUNCTION (new_node->decl));
 

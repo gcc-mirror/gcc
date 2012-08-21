@@ -3229,6 +3229,7 @@ scop_ivs_can_be_represented (scop_p scop)
   loop_iterator li;
   loop_p loop;
   gimple_stmt_iterator psi;
+  bool result = true;
 
   FOR_EACH_LOOP (li, loop, 0)
     {
@@ -3244,11 +3245,16 @@ scop_ivs_can_be_represented (scop_p scop)
 
 	  if (TYPE_UNSIGNED (type)
 	      && TYPE_PRECISION (type) >= TYPE_PRECISION (long_long_integer_type_node))
-	    return false;
+	    {
+	      result = false;
+	      break;
+	    }
 	}
+      if (!result)
+	FOR_EACH_LOOP_BREAK (li);
     }
 
-  return true;
+  return result;
 }
 
 /* Builds the polyhedral representation for a SESE region.  */

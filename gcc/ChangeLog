@@ -1,3 +1,44 @@
+2012-08-21  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
+	2012-08-16  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/54146
+	* tree-ssa-loop-niter.c (find_loop_niter_by_eval): Free the
+	exit vector.
+	* ipa-pure-const.c (analyze_function): Use FOR_EACH_LOOP_BREAK.
+	* cfgloop.h (FOR_EACH_LOOP_BREAK): Fix.
+	* tree-ssa-structalias.c (handle_lhs_call): Properly free rhsc.
+	* tree-ssa-loop-im.c (analyze_memory_references): Adjust.
+	(tree_ssa_lim_finalize): Free all mem_refs.
+	* tree-ssa-sccvn.c (extract_and_process_scc_for_name): Free
+	scc when bailing out.
+	* modulo-sched.c (sms_schedule): Use FOR_EACH_LOOP_BREAK.
+	* ira-build.c (loop_with_complex_edge_p): Free loop exit vector.
+	* graphite-sese-to-poly.c (scop_ivs_can_be_represented): Use
+	FOR_EACH_LOOP_BREAK.
+
+	2012-08-17  Richard Guenther  <rguenther@suse.de>
+
+	* tree-sra.c (modify_function): Free redirect_callers vector.
+	* ipa-split.c (split_function): Free args_to_pass vector.
+	* tree-vect-stmts.c (vectorizable_operation): Do not pre-allocate
+	vec_oprnds.
+	(new_stmt_vec_info): Do not pre-allocate STMT_VINFO_SAME_ALIGN_REFS.
+	* tree-vect-slp.c (vect_free_slp_instance): Free the instance.
+	(vect_analyze_slp_instance): Free everything.
+	(destroy_bb_vec_info): Free the SLP instances.
+
+	2012-08-17  Richard Guenther  <rguenther@suse.de>
+ 
+	* params.def (integer-share-limit): Decrease from 256 to 251,
+	add rationale.
+
+	2012-08-21  Richard Guenther  <rguenther@suse.de>
+ 
+	* tree-ssa-loop-im.c (tree_ssa_lim_finalize): Properly free
+	the affine expansion cache.
+
 2012-08-20  Patrick Marlier  <patrick.marlier@gmail.com>
 
 	Backported from trunk

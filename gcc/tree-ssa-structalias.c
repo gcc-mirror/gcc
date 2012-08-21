@@ -3859,9 +3859,11 @@ handle_lhs_call (gimple stmt, tree lhs, int flags, VEC(ce_s, heap) *rhsc,
       tmpc.offset = 0;
       tmpc.type = ADDRESSOF;
       VEC_safe_push (ce_s, heap, rhsc, &tmpc);
+      process_all_all_constraints (lhsc, rhsc);
+      VEC_free (ce_s, heap, rhsc);
     }
-
-  process_all_all_constraints (lhsc, rhsc);
+  else
+    process_all_all_constraints (lhsc, rhsc);
 
   VEC_free (ce_s, heap, lhsc);
 }

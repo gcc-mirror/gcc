@@ -3507,22 +3507,6 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
   /* Handle def.  */
   vec_dest = vect_create_destination_var (scalar_dest, vectype);
 
-  /* Allocate VECs for vector operands.  In case of SLP, vector operands are
-     created in the previous stages of the recursion, so no allocation is
-     needed, except for the case of shift with scalar shift argument.  In that
-     case we store the scalar operand in VEC_OPRNDS1 for every vector stmt to
-     be created to vectorize the SLP group, i.e., SLP_NODE->VEC_STMTS_SIZE.
-     In case of loop-based vectorization we allocate VECs of size 1.  We
-     allocate VEC_OPRNDS1 only in case of binary operation.  */
-  if (!slp_node)
-    {
-      vec_oprnds0 = VEC_alloc (tree, heap, 1);
-      if (op_type == binary_op || op_type == ternary_op)
-        vec_oprnds1 = VEC_alloc (tree, heap, 1);
-      if (op_type == ternary_op)
-        vec_oprnds2 = VEC_alloc (tree, heap, 1);
-    }
-
   /* In case the vectorization factor (VF) is bigger than the number
      of elements that we can fit in a vectype (nunits), we have to generate
      more than one vector stmt - i.e - we need to "unroll" the
@@ -5695,7 +5679,7 @@ new_stmt_vec_info (gimple stmt, loop_vec_info loop_vinfo,
   else
     STMT_VINFO_DEF_TYPE (res) = vect_internal_def;
 
-  STMT_VINFO_SAME_ALIGN_REFS (res) = VEC_alloc (dr_p, heap, 5);
+  STMT_VINFO_SAME_ALIGN_REFS (res) = NULL;
   STMT_VINFO_INSIDE_OF_LOOP_COST (res) = 0;
   STMT_VINFO_OUTSIDE_OF_LOOP_COST (res) = 0;
   STMT_SLP_TYPE (res) = loop_vect;

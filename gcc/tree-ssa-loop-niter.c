@@ -2290,7 +2290,10 @@ find_loop_niter_by_eval (struct loop *loop, edge *exit)
   /* Loops with multiple exits are expensive to handle and less important.  */
   if (!flag_expensive_optimizations
       && VEC_length (edge, exits) > 1)
-    return chrec_dont_know;
+    {
+      VEC_free (edge, heap, exits);
+      return chrec_dont_know;
+    }
 
   FOR_EACH_VEC_ELT (edge, exits, i, ex)
     {
