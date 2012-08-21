@@ -2291,7 +2291,7 @@ init_ssa_renamer (void)
   /* Allocate memory for the DEF_BLOCKS hash table.  */
   gcc_assert (var_infos == NULL);
   var_infos = htab_create (VEC_length (tree, cfun->local_decls),
-			   var_info_hash, var_info_eq, NULL);
+			   var_info_hash, var_info_eq, free);
 
   bitmap_obstack_initialize (&update_ssa_obstack);
 }
@@ -3170,7 +3170,7 @@ update_ssa (unsigned update_flags)
     {
       /* If we rename bare symbols initialize the mapping to
          auxiliar info we need to keep track of.  */
-      var_infos = htab_create (47, var_info_hash, var_info_eq, NULL);
+      var_infos = htab_create (47, var_info_hash, var_info_eq, free);
 
       /* If we have to rename some symbols from scratch, we need to
 	 start the process at the root of the CFG.  FIXME, it should

@@ -1,5 +1,18 @@
 2012-08-21  Richard Guenther  <rguenther@suse.de>
 
+	* tree-ssa-loop-im.c (tree_ssa_lim_finalize): Properly free
+	the affine expansion cache.
+	* tree-ssa-dom.c (free_expr_hash_elt_contents): New function,
+	split out from ...
+	(free_expr_hash_elt): ... this one.
+	(record_cond): Properly free a not needed hashtable element.
+	(lookup_avail_expr): Likewise.
+	* tree-into-ssa.c (init_ssa_renamer): Specify a free function
+	for the var_infos hashtable.
+	(update_ssa): Likewise.
+
+2012-08-21  Richard Guenther  <rguenther@suse.de>
+
 	* alloc-pool.c (pool_alloc): Fix valgrind annotation.
 	* tree.h: Fix typo and complete flags documentation.
 
