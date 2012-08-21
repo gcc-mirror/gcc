@@ -1,3 +1,8 @@
+2012-08-21  Tobias Burnus  <burnus@net-b.de>
+
+	* parse.c (parse_contained): Include EXEC_END_PROCEDURE
+	in ns->code to make sure the gfc_code is freed.
+
 2012-08-20  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/54301

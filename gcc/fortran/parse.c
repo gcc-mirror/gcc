@@ -4075,6 +4075,7 @@ parse_contained (int module)
 	case ST_END_PROGRAM:
 	case ST_END_SUBROUTINE:
 	  accept_statement (st);
+	  gfc_current_ns->code = s1.head;
 	  break;
 
 	default:
