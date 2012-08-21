@@ -1,3 +1,11 @@
+2012-08-21  Marc Glisse  <marc.glisse@inria.fr>
+
+	* fold-const.c (fold_ternary_loc): Detect identity permutations.
+	Canonicalize permutations more.
+	* tree-ssa-forwprop.c (is_combined_permutation_identity): New function.
+	(simplify_permutation): Likewise.
+	(ssa_forward_propagate_and_combine): Call it.
+
 2012-08-21  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-loop-im.c (tree_ssa_lim_finalize): Properly free
