@@ -417,7 +417,7 @@ enum omp_clause_code
    so all nodes have these fields.
 
    See the accessor macros, defined below, for documentation of the
-   fields, and the table below which connects the fileds and the
+   fields, and the table below which connects the fields and the
    accessor macros.  */
 
 struct GTY(()) tree_base {
@@ -493,6 +493,9 @@ struct GTY(()) tree_base {
 
        CASE_LOW_SEEN in
            CASE_LABEL_EXPR
+
+       PREDICT_EXPR_OUTCOME in
+	   PREDICT_EXPR
 
    static_flag:
 
@@ -576,11 +579,15 @@ struct GTY(()) tree_base {
 
        OMP_PARALLEL_COMBINED in
            OMP_PARALLEL
+
        OMP_CLAUSE_PRIVATE_OUTER_REF in
 	   OMP_CLAUSE_PRIVATE
 
        TYPE_REF_IS_RVALUE in
 	   REFERENCE_TYPE
+
+       ENUM_IS_OPAQUE in
+	   ENUMERAL_TYPE
 
    protected_flag:
 

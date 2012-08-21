@@ -1,5 +1,10 @@
 2012-08-21  Richard Guenther  <rguenther@suse.de>
 
+	* alloc-pool.c (pool_alloc): Fix valgrind annotation.
+	* tree.h: Fix typo and complete flags documentation.
+
+2012-08-21  Richard Guenther  <rguenther@suse.de>
+
 	* tree.h (struct tree_base): Add union to make it possible to
 	re-use the upper 4 bytes for tree codes that do not need as
 	many flags as others.  Move visited and default_def_flag to
