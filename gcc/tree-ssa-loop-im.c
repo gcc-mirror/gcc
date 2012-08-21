@@ -2634,7 +2634,7 @@ tree_ssa_lim_finalize (void)
   VEC_free (bitmap, heap, memory_accesses.all_refs_stored_in_loop);
 
   if (memory_accesses.ttae_cache)
-    pointer_map_destroy (memory_accesses.ttae_cache);
+    free_affine_expand_cache (&memory_accesses.ttae_cache);
 }
 
 /* Moves invariants from loops.  Only "expensive" invariants are moved out --
