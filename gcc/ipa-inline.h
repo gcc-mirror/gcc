@@ -45,7 +45,8 @@ typedef struct GTY(()) condition
 /* Inline hints are reasons why inline heuristics should preffer inlining given function.
    They are represtented as bitmap of the following values.  */
 enum inline_hints_vals {
-  INLINE_HINT_indirect_call = 1
+  INLINE_HINT_indirect_call = 1,
+  INLINE_HINT_loop_iterations = 2
 };
 typedef int inline_hints;
 
@@ -118,6 +119,10 @@ struct GTY(()) inline_summary
      merged during inlining.  */
   conditions conds;
   VEC(size_time_entry,gc) *entry;
+
+  /* Predicate on when some loop in the function sbecomes to have known
+     bounds.   */
+  struct predicate * GTY((skip)) loop_iterations;
 };
 
 

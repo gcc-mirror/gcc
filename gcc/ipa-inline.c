@@ -480,7 +480,8 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
 	 hints suggests that inlining given function is very profitable.  */
       else if (DECL_DECLARED_INLINE_P (callee->symbol.decl)
 	       && growth >= MAX_INLINE_INSNS_SINGLE
-	       && !(hints & INLINE_HINT_indirect_call))
+	       && !(hints & (INLINE_HINT_indirect_call
+			     | INLINE_HINT_loop_iterations)))
 	{
           e->inline_failed = CIF_MAX_INLINE_INSNS_SINGLE_LIMIT;
 	  want_inline = false;
@@ -863,7 +864,8 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 	  if (dump)
 	    fprintf (dump_file, "Badness overflow\n");
 	}
-      if (hints & INLINE_HINT_indirect_call)
+      if (hints & (INLINE_HINT_indirect_call
+		   | INLINE_HINT_loop_iterations))
 	badness /= 8;
       if (dump)
 	{

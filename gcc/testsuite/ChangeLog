@@ -1,3 +1,8 @@
+2012-08-20  Jan Hubicka  <jh@suse.cz>
+
+	PR fortran/48636
+	* gcc.dg/ipa/inlinehint-1.c: New.
+
 2012-08-20  Florian Weimer  <fweimer@redhat.com>
 
 	PR c++/19351
