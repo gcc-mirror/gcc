@@ -247,7 +247,9 @@ void *
 pool_alloc (alloc_pool pool)
 {
   alloc_pool_list header;
-  VALGRIND_DISCARD (int size);
+#ifdef ENABLE_VALGRIND_CHECKING
+  int size;
+#endif
 
   if (GATHER_STATISTICS)
     {
@@ -260,7 +262,9 @@ pool_alloc (alloc_pool pool)
     }
 
   gcc_checking_assert (pool);
-  VALGRIND_DISCARD (size = pool->elt_size - offsetof (allocation_object, u.data));
+#ifdef ENABLE_VALGRIND_CHECKING
+  size = pool->elt_size - offsetof (allocation_object, u.data);
+#endif
 
   /* If there are no more free elements, make some more!.  */
   if (!pool->returned_free_list)
