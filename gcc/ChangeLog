@@ -1,3 +1,7 @@
+2012-08-22  Dodji Seketeli  <dodji@redhat.com>
+
+	* tree.h (TREE_NOTHROW): Use the base.nothrow_flag.
+
 2012-08-22  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/46590
