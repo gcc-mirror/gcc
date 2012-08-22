@@ -4058,7 +4058,7 @@ label:
 
   FAIL;
 }
-  [(set_attr "type" "arith")])
+  [(set_attr "type" "dyn_shift")])
 
 (define_insn_and_split "ashlsi3_n"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
@@ -4116,7 +4116,7 @@ label:
   DONE;
 })
 
-(define_insn "ashlsi_c"
+(define_insn "shll"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
 	(ashift:SI (match_operand:SI 1 "arith_reg_operand" "0") (const_int 1)))
    (set (reg:SI T_REG)
@@ -4142,7 +4142,7 @@ label:
    && peep2_reg_dead_p (2, operands[1])"
   [(const_int 0)]
 {
-  emit_insn (gen_ashlsi_c (operands[1], operands[1]));
+  emit_insn (gen_shll (operands[1], operands[1]));
   DONE;
 })
 
@@ -4349,7 +4349,7 @@ label:
   "&& 1"
   [(const_int 0)]
 {
-  emit_insn (gen_ashlsi_c (operands[0], operands[1]));
+  emit_insn (gen_shll (operands[0], operands[1]));
   emit_insn (gen_mov_neg_si_t (operands[0], get_t_reg_rtx ()));
   DONE;
 })
@@ -4463,12 +4463,10 @@ label:
 ;; . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 ;; SImode logical shift right
 
-;; Only the single bit shift clobbers the T bit.
 (define_expand "lshrsi3"
-  [(parallel [(set (match_operand:SI 0 "arith_reg_dest" "")
-		   (lshiftrt:SI (match_operand:SI 1 "arith_reg_operand" "")
-				(match_operand:SI 2 "nonmemory_operand" "")))
-	      (clobber (reg:SI T_REG))])]
+  [(set (match_operand:SI 0 "arith_reg_dest" "")
+	(lshiftrt:SI (match_operand:SI 1 "arith_reg_operand" "")
+		     (match_operand:SI 2 "shift_count_operand" "")))]
   ""
 {
   if (TARGET_SHMEDIA)
@@ -4476,28 +4474,136 @@ label:
       emit_insn (gen_lshrsi3_media (operands[0], operands[1], operands[2]));
       DONE;
     }
-  if (CONST_INT_P (operands[2])
-      && sh_dynamicalize_shift_p (operands[2]))
-    operands[2] = force_reg (SImode, operands[2]);
+
+  /* If a dynamic shift is supposed to be used, expand the lshrsi3_d insn
+     here, otherwise the pattern will never match due to the shift amount reg
+     negation.  */
   if (TARGET_DYNSHIFT
-      && arith_reg_operand (operands[2], GET_MODE (operands[2])))
+      && CONST_INT_P (operands[2]) && sh_dynamicalize_shift_p (operands[2]))
     {
-      rtx count = copy_to_mode_reg (SImode, operands[2]);
-      emit_insn (gen_negsi2 (count, count));
-      emit_insn (gen_lshrsi3_d (operands[0], operands[1], count));
+      rtx neg_count = force_reg (SImode,
+			         gen_int_mode (- INTVAL (operands[2]), SImode));
+      emit_insn (gen_lshrsi3_d (operands[0], operands[1], neg_count));
       DONE;
     }
-  if (! immediate_operand (operands[2], GET_MODE (operands[2])))
-    FAIL;
+
+  if (TARGET_DYNSHIFT && ! CONST_INT_P (operands[2]))
+    {
+      rtx neg_count = gen_reg_rtx (SImode);
+      emit_insn (gen_negsi2 (neg_count, operands[2]));
+      emit_insn (gen_lshrsi3_d (operands[0], operands[1], neg_count));
+      DONE;
+    }
+
+  /* If the lshrsi3_* insn is going to clobber the T_REG it must be
+     expanded here.  */
+  if (CONST_INT_P (operands[2])
+      && sh_lshrsi_clobbers_t_reg_p (operands[2])
+      && ! sh_dynamicalize_shift_p (operands[2]))
+    {
+      emit_insn (gen_lshrsi3_n_clobbers_t (operands[0], operands[1],
+		 operands[2]));
+      DONE;
+    }
 })
 
-(define_insn "lshrsi3_d"
+(define_insn "lshrsi3_k"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
 	(lshiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
-		     (neg:SI (match_operand:SI 2 "arith_reg_operand" "r"))))]
+		     (match_operand:SI 2 "p27_rshift_count_operand" "P27")))]
+  "TARGET_SH1"
+  "shlr%O2	%0"
+  [(set_attr "type" "arith")])
+
+(define_insn_and_split "lshrsi3_d"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+	(lshiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
+		     (neg:SI (match_operand:SI 2 "shift_count_operand" "r"))))]
   "TARGET_DYNSHIFT"
   "shld	%2,%0"
+  "&& CONST_INT_P (operands[2]) && ! sh_dynamicalize_shift_p (operands[2])
+   && ! sh_lshrsi_clobbers_t_reg_p (operands[2])"
+  [(const_int 0)]
+{
+  if (satisfies_constraint_P27 (operands[2]))
+    {
+      /* This will not be done for a shift amount of 1, because it would
+	 clobber the T_REG.  */
+      emit_insn (gen_lshrsi3_k (operands[0], operands[1], operands[2]));
+      DONE;
+    }
+  else if (! satisfies_constraint_P27 (operands[2]))
+    {
+      /* This must happen before reload, otherwise the constant will be moved
+	 into a register due to the "r" constraint, after which this split
+	 cannot be done anymore.
+	 Unfortunately the move insn will not always be eliminated.
+	 Also, here we must not create a shift sequence that clobbers the
+	 T_REG.  */
+      emit_move_insn (operands[0], operands[1]);
+      gen_shifty_op (LSHIFTRT, operands);
+      DONE;
+    }
+
+  FAIL;
+}
   [(set_attr "type" "dyn_shift")])
+
+(define_insn_and_split "lshrsi3_n"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+	(lshiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
+		     (match_operand:SI 2 "not_p27_rshift_count_operand")))]
+  "TARGET_SH1 && ! sh_lshrsi_clobbers_t_reg_p (operands[2])"
+  "#"
+  "&& (reload_completed
+       || (sh_dynamicalize_shift_p (operands[2]) && can_create_pseudo_p ()))"
+  [(const_int 0)]
+{
+  if (sh_dynamicalize_shift_p (operands[2]) && can_create_pseudo_p ())
+    {
+      /* If this pattern was picked and dynamic shifts are supported, switch
+	 to dynamic shift pattern before reload.  */
+      operands[2] = force_reg (SImode,
+			       gen_int_mode (- INTVAL (operands[2]), SImode));
+      emit_insn (gen_lshrsi3_d (operands[0], operands[1], operands[2]));
+    }
+  else
+    gen_shifty_op (LSHIFTRT, operands);
+
+  DONE;
+})
+
+;; The lshrsi3_n_clobbers_t pattern also works as a simplified version of
+;; the shlr pattern.
+(define_insn_and_split "lshrsi3_n_clobbers_t"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+	(lshiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
+		     (match_operand:SI 2 "not_p27_rshift_count_operand")))
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH1 && sh_lshrsi_clobbers_t_reg_p (operands[2])"
+  "#"
+  "&& (reload_completed || INTVAL (operands[2]) == 31
+       || (sh_dynamicalize_shift_p (operands[2]) && can_create_pseudo_p ()))"
+  [(const_int 0)]
+{
+  if (INTVAL (operands[2]) == 31)
+    {
+      emit_insn (gen_shll (operands[0], operands[1]));
+      emit_insn (gen_movt (operands[0], get_t_reg_rtx ()));
+    }
+  else if (sh_dynamicalize_shift_p (operands[2]) && can_create_pseudo_p ())
+    {
+      /* If this pattern was picked and dynamic shifts are supported, switch
+	 to dynamic shift pattern before reload.  */
+      operands[2] = force_reg (SImode,
+			       gen_int_mode (- INTVAL (operands[2]), SImode));
+      emit_insn (gen_lshrsi3_d (operands[0], operands[1], operands[2]));
+    }
+  else
+    gen_shifty_op (LSHIFTRT, operands);
+
+  DONE;
+})
 
 (define_insn "shlr"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
@@ -4508,38 +4614,6 @@ label:
   "TARGET_SH1"
   "shlr	%0"
   [(set_attr "type" "arith")])
-
-(define_insn "lshrsi3_m"
-  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
-	(lshiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
-		     (match_operand:SI 2 "const_int_operand" "M")))
-   (clobber (reg:SI T_REG))]
-  "TARGET_SH1 && satisfies_constraint_M (operands[2])"
-  "shlr	%0"
-  [(set_attr "type" "arith")])
-
-(define_insn "lshrsi3_k"
-  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
-	(lshiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
-		     (match_operand:SI 2 "const_int_operand" "P27")))]
-  "TARGET_SH1 && satisfies_constraint_P27 (operands[2])
-   && ! satisfies_constraint_M (operands[2])"
-  "shlr%O2	%0"
-  [(set_attr "type" "arith")])
-
-(define_insn_and_split "lshrsi3_n"
-  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
-	(lshiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
-		     (match_operand:SI 2 "const_int_operand" "n")))
-   (clobber (reg:SI T_REG))]
-  "TARGET_SH1 && ! sh_dynamicalize_shift_p (operands[2])"
-  "#"
-  "TARGET_SH1 && reload_completed"
-  [(use (reg:SI R0_REG))]
-{
-  gen_shifty_op (LSHIFTRT, operands);
-  DONE;
-})
 
 (define_insn "lshrsi3_media"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r,r")

@@ -1,3 +1,27 @@
+2012-08-22  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54089
+	* config/sh/predicates (p27_rshift_count_operand,
+	not_p27_rshift_count_operand): New predicates.
+	* config/sh/sh.c (sh_ashlsi_clobbers_t_reg_p,
+	sh_lshrsi_clobbers_t_reg_p, sh_dynamicalize_shift_p): Handle special
+	case when shift amount is 31.
+	(gen_ashift): Emit gen_shlr instead of gen_lshrsi3_m.
+	* config/sh/sh.md (ashlsi3_d): Set type to 'dyn_shift' instead
+	of 'arith'.
+	(ashlsi_c): Rename to shll.  Adapt calls to gen_ashlsi_c throughout
+	the file.
+	(lshrsi3): Remove clobber from expander.  Use shift_count_operand
+	instead of nonmemory_operand predicate for second operand.  Add
+	handling of case lshrsi3_n_clobbers_t.
+	(lshrsi3_k): Use p27_rshift_count_operand for second operand.
+	(lshrsi3_d): Make insn_and_split.  Split dynamic shift to constant
+	shift sequences if beneficial.
+	(lshrsi3_n): Make insn_and_split.  Split constant shift sequence to
+	dynamic shift if beneficial.
+	(lshrsi3_n_clobbers_t): New insn_and_split.
+	(lshrsi3_m): Delete.
+
 2012-08-22  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* tracer.c (mark_bb_seen): Use SBITMAP_SIZE.
