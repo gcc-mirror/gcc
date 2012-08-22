@@ -1328,6 +1328,7 @@ gfc_conv_intrinsic_rank (gfc_se *se, gfc_expr *expr)
   argse.descriptor_only = 1;
 
   gfc_conv_expr_descriptor (&argse, expr->value.function.actual->expr, ss);
+  gfc_free_ss (ss);
   gfc_add_block_to_block (&se->pre, &argse.pre);
   gfc_add_block_to_block (&se->post, &argse.post);
 

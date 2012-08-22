@@ -533,6 +533,7 @@ gfc_copy_class_to_class (tree from, tree to, tree nelems)
       loop.to[0] = nelems;
       gfc_trans_scalarizing_loops (&loop, &loopbody);
       gfc_add_block_to_block (&body, &loop.pre);
+      gfc_cleanup_loop (&loop);
       tmp = gfc_finish_block (&body);
     }
   else
@@ -6770,6 +6771,7 @@ gfc_trans_arrayfunc_assign (gfc_expr * expr1, gfc_expr * expr2)
       if (!expr2->value.function.isym)
 	{
 	  realloc_lhs_loop_for_fcn_call (&se, &expr1->where, &ss, &loop);
+	  gfc_cleanup_loop (&loop);
 	  ss->is_alloc_lhs = 1;
 	}
       else
@@ -6778,6 +6780,7 @@ gfc_trans_arrayfunc_assign (gfc_expr * expr1, gfc_expr * expr2)
 
   gfc_conv_function_expr (&se, expr2);
   gfc_add_block_to_block (&se.pre, &se.post);
+  gfc_free_ss (se.ss);
 
   return gfc_finish_block (&se.pre);
 }
