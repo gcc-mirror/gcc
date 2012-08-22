@@ -426,7 +426,7 @@ initialize_flags_in_bb (basic_block bb)
       /* We are going to use the operand cache API, such as
 	 SET_USE, SET_DEF, and FOR_EACH_IMM_USE_FAST.  The operand
 	 cache for each statement should be up-to-date.  */
-      gcc_assert (!gimple_modified_p (stmt));
+      gcc_checking_assert (!gimple_modified_p (stmt));
       set_rewrite_uses (stmt, false);
       set_register_defs (stmt, false);
     }
@@ -437,7 +437,7 @@ initialize_flags_in_bb (basic_block bb)
 static void
 mark_block_for_update (basic_block bb)
 {
-  gcc_assert (blocks_to_update != NULL);
+  gcc_checking_assert (blocks_to_update != NULL);
   if (!bitmap_set_bit (blocks_to_update, bb->index))
     return;
   initialize_flags_in_bb (bb);
@@ -588,7 +588,8 @@ static void
 add_new_name_mapping (tree new_tree, tree old)
 {
   /* OLD and NEW_TREE must be different SSA names for the same symbol.  */
-  gcc_assert (new_tree != old && SSA_NAME_VAR (new_tree) == SSA_NAME_VAR (old));
+  gcc_checking_assert (new_tree != old
+		       && SSA_NAME_VAR (new_tree) == SSA_NAME_VAR (old));
 
   /* We may need to grow NEW_SSA_NAMES and OLD_SSA_NAMES because our
      caller may have created new names since the set was created.  */
@@ -639,7 +640,7 @@ mark_def_sites (basic_block bb, gimple stmt, bitmap kills)
      form, force an operand scan on every statement.  */
   update_stmt (stmt);
 
-  gcc_assert (blocks_to_update == NULL);
+  gcc_checking_assert (blocks_to_update == NULL);
   set_register_defs (stmt, false);
   set_rewrite_uses (stmt, false);
 
@@ -648,7 +649,7 @@ mark_def_sites (basic_block bb, gimple stmt, bitmap kills)
       FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE)
 	{
 	  tree sym = USE_FROM_PTR (use_p);
-	  gcc_assert (DECL_P (sym));
+	  gcc_checking_assert (DECL_P (sym));
 	  set_rewrite_uses (stmt, true);
 	}
       if (rewrite_uses_p (stmt))
@@ -661,7 +662,7 @@ mark_def_sites (basic_block bb, gimple stmt, bitmap kills)
   FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_ALL_USES)
     {
       tree sym = USE_FROM_PTR (use_p);
-      gcc_assert (DECL_P (sym));
+      gcc_checking_assert (DECL_P (sym));
       if (!bitmap_bit_p (kills, DECL_UID (sym)))
 	set_livein_block (sym, bb);
       set_rewrite_uses (stmt, true);
@@ -671,7 +672,7 @@ mark_def_sites (basic_block bb, gimple stmt, bitmap kills)
      each def to the set of killed symbols.  */
   FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter, SSA_OP_ALL_DEFS)
     {
-      gcc_assert (DECL_P (def));
+      gcc_checking_assert (DECL_P (def));
       set_def_block (def, bb, false);
       bitmap_set_bit (kills, DECL_UID (def));
       set_register_defs (stmt, true);
@@ -960,10 +961,7 @@ insert_phi_nodes_for (tree var, bitmap phi_insertion_points, bool update_p)
   gimple phi;
   basic_block bb;
   bitmap_iterator bi;
-  struct def_blocks_d *def_map;
-
-  def_map = find_def_blocks_for (var);
-  gcc_assert (def_map);
+  struct def_blocks_d *def_map = find_def_blocks_for (var);
 
   /* Remove the blocks where we already have PHI nodes for VAR.  */
   bitmap_and_compl_into (phi_insertion_points, def_map->phi_blocks);
@@ -990,7 +988,7 @@ insert_phi_nodes_for (tree var, bitmap phi_insertion_points, bool update_p)
 	  edge_iterator ei;
 	  tree new_lhs;
 
-	  gcc_assert (update_p);
+	  gcc_checking_assert (update_p);
 	  new_lhs = duplicate_ssa_name (var, NULL);
 	  phi = create_phi_node (new_lhs, bb);
 	  add_new_name_mapping (new_lhs, var);
@@ -1008,7 +1006,7 @@ insert_phi_nodes_for (tree var, bitmap phi_insertion_points, bool update_p)
 	{
 	  tree tracked_var;
 
-	  gcc_assert (DECL_P (var));
+	  gcc_checking_assert (DECL_P (var));
 	  phi = create_phi_node (var, bb);
 
 	  tracked_var = target_for_debug_bind (var);
@@ -1184,7 +1182,7 @@ rewrite_debug_stmt_uses (gimple stmt)
     {
       tree var = USE_FROM_PTR (use_p), def;
       common_info_p info = get_common_info (var);
-      gcc_assert (DECL_P (var));
+      gcc_checking_assert (DECL_P (var));
       def = info->current_def;
       if (!def)
 	{
@@ -1304,7 +1302,7 @@ rewrite_stmt (gimple_stmt_iterator *si)
 	FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_ALL_USES)
 	  {
 	    tree var = USE_FROM_PTR (use_p);
-	    gcc_assert (DECL_P (var));
+	    gcc_checking_assert (DECL_P (var));
 	    SET_USE (use_p, get_reaching_def (var));
 	  }
     }
@@ -1317,15 +1315,15 @@ rewrite_stmt (gimple_stmt_iterator *si)
 	tree name;
 	tree tracked_var;
 
-	gcc_assert (DECL_P (var));
+	gcc_checking_assert (DECL_P (var));
 
 	if (gimple_clobber_p (stmt)
 	    && is_gimple_reg (var))
 	  {
 	    /* If we rewrite a DECL into SSA form then drop its
 	       clobber stmts and replace uses with a new default def.  */
-	    gcc_assert (TREE_CODE (var) == VAR_DECL
-			&& !gimple_vdef (stmt));
+	    gcc_checking_assert (TREE_CODE (var) == VAR_DECL
+				 && !gimple_vdef (stmt));
 	    gsi_replace (si, gimple_build_nop (), true);
 	    register_new_def (get_or_create_ssa_default_def (cfun, var), var);
 	    break;
@@ -1850,7 +1848,7 @@ maybe_register_def (def_operand_p def_p, gimple stmt,
 		  FOR_EACH_EDGE (e, ei, bb->succs)
 		    if (!(e->flags & EDGE_EH))
 		      {
-			gcc_assert (!ef);
+			gcc_checking_assert (!ef);
 			ef = e;
 		      }
 		  /* If there are other predecessors to ef->dest, then
@@ -1996,7 +1994,7 @@ rewrite_update_phi_arguments (basic_block bb)
 	  tree arg, lhs_sym, reaching_def = NULL;
 	  use_operand_p arg_p;
 
-  	  gcc_assert (rewrite_uses_p (phi));
+  	  gcc_checking_assert (rewrite_uses_p (phi));
 
 	  arg_p = PHI_ARG_DEF_PTR_FROM_EDGE (phi, e);
 	  arg = USE_FROM_PTR (arg_p);
@@ -2118,7 +2116,7 @@ rewrite_update_enter_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
   /* Step 2.  Rewrite every variable used in each statement in the block.  */
   if (TEST_BIT (interesting_blocks, bb->index))
     {
-      gcc_assert (bitmap_bit_p (blocks_to_update, bb->index));
+      gcc_checking_assert (bitmap_bit_p (blocks_to_update, bb->index));
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
         rewrite_update_stmt (gsi_stmt (gsi), gsi);
     }
@@ -2428,7 +2426,7 @@ struct gimple_opt_pass pass_build_ssa =
 static void
 mark_def_interesting (tree var, gimple stmt, basic_block bb, bool insert_phi_p)
 {
-  gcc_assert (bitmap_bit_p (blocks_to_update, bb->index));
+  gcc_checking_assert (bitmap_bit_p (blocks_to_update, bb->index));
   set_register_defs (stmt, true);
 
   if (insert_phi_p)
@@ -2636,14 +2634,15 @@ prepare_def_site_for (tree name, bool insert_phi_p)
   gimple stmt;
   basic_block bb;
 
-  gcc_assert (names_to_release == NULL
-	      || !bitmap_bit_p (names_to_release, SSA_NAME_VERSION (name)));
+  gcc_checking_assert (names_to_release == NULL
+		       || !bitmap_bit_p (names_to_release,
+					 SSA_NAME_VERSION (name)));
 
   stmt = SSA_NAME_DEF_STMT (name);
   bb = gimple_bb (stmt);
   if (bb)
     {
-      gcc_assert (bb->index < last_basic_block);
+      gcc_checking_assert (bb->index < last_basic_block);
       mark_block_for_update (bb);
       mark_def_interesting (name, stmt, bb, insert_phi_p);
     }
@@ -2998,7 +2997,7 @@ insert_updated_phi_nodes_for (tree var, bitmap_head *dfs, bitmap blocks,
       else
 	{
 	  /* Otherwise, do not prune the IDF for VAR.  */
-	  gcc_assert (update_flags == TODO_update_ssa_full_phi);
+	  gcc_checking_assert (update_flags == TODO_update_ssa_full_phi);
 	  bitmap_copy (pruned_idf, idf);
 	}
     }

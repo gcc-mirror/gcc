@@ -1,3 +1,21 @@
+2012-08-22  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-loop-ch.c (copy_loop_headers): Remove redundant checking.
+	* tree-into-ssa.c (initialize_flags_in_bb): Use gcc_checking_assert
+	instead of gcc_assert.
+	(mark_block_for_update): Likewise.
+	(add_new_name_mapping): Likewise.
+	(mark_def_sites): Likewise.
+	(insert_phi_nodes_for): Likewise.
+	(rewrite_debug_stmt_uses): Likewise.
+	(rewrite_stmt): Likewise.
+	(maybe_register_def): Likewise.
+	(rewrite_update_phi_arguments): Likewise.
+	(rewrite_update_enter_block): Likewise.
+	(mark_def_interesting): Likewise.
+	(prepare_def_site_for): Likewise.
+	(insert_updated_phi_nodes_for): Likewise.
+
 2012-08-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-vect-loop.c (vect_transform_loop): Initialize
