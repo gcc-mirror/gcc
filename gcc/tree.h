@@ -1305,7 +1305,7 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
    throw an exception.  In a CALL_EXPR, nonzero means the call cannot
    throw.  We can't easily check the node type here as the C++
    frontend also uses this flag (for AGGR_INIT_EXPR).  */
-#define TREE_NOTHROW(NODE) (TREE_NOT_CHECK (NODE, TREE_VEC)->base.nothrow_flag)
+#define TREE_NOTHROW(NODE) ((NODE)->base.nothrow_flag)
 
 /* In a CALL_EXPR, means that it's safe to use the target of the call
    expansion as the return slot for a call that returns in memory.  */
