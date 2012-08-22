@@ -1,3 +1,7 @@
+2012-08-22  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/t-linux (HOST_LIBGCC2_CFLAGS): New.
+
 2012-08-22  Joseph Myers  <joseph@codesourcery.com>
 
 	* Makefile.in (vis_hide, gen-hide-list): Do not make definitions

@@ -1,3 +1,17 @@
+2012-08-22  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/long-double-64-1.c: New file.
+	* gcc.target/i386/long-double-64-2.c: Likewise.
+	* gcc.target/i386/long-double-64-3.c: Likewise.
+	* gcc.target/i386/long-double-64-4.c: Likewise.
+	* gcc.target/i386/long-double-80-1.c: Likewise.
+	* gcc.target/i386/long-double-80-2.c: Likewise.
+	* gcc.target/i386/long-double-80-3.c: Likewise.
+	* gcc.target/i386/long-double-80-4.c: Likewise.
+	* gcc.target/i386/long-double-80-5.c: Likewise.
+	* gcc.target/i386/long-double-80-6.c: Likewise.
+	* gcc.target/i386/long-double-80-7.c: Likewise.
+
 2012-08-22  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR tree-optimization/54317
