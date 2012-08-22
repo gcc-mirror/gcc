@@ -2331,6 +2331,8 @@ try_combine_chains (VEC (chain_p, heap) **chains)
 	    }
 	}
     }
+
+  VEC_free (chain_p, heap, worklist);
 }
 
 /* Prepare initializers for CHAIN in LOOP.  Returns false if this is

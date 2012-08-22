@@ -5277,7 +5277,7 @@ vect_transform_loop (loop_vec_info loop_vinfo)
   gimple_seq pattern_def_seq = NULL;
   gimple_stmt_iterator pattern_def_si = gsi_none ();
   bool transform_pattern_stmt = false;
-  bool check_profitability;
+  bool check_profitability = false;
   int th;
 
   if (vect_print_dump_info (REPORT_DETAILS))

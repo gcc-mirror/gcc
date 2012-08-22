@@ -1,3 +1,11 @@
+2012-08-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-vect-loop.c (vect_transform_loop): Initialize
+	check_profitability to false.
+
+	* tree-predcom.c (try_combine_chains): Free the worklist vector
+	at the end.
+
 2012-08-22  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR tree-optimization/54317
