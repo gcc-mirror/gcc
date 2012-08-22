@@ -1,3 +1,13 @@
+2012-08-22  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* tracer.c (mark_bb_seen): Use SBITMAP_SIZE.
+
+	* alias.c (MAX_ALIAS_LOOP_PASSES): Update comment with rationale,
+	or rather a lack thereof.
+	(init_alias_analysis): Propagate the latest information across
+	the CFG in topological order to propagate as far as possible in
+	each iteration.  Ignore debug insns.
+
 2012-08-22  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* doc/invoke.texi: Document -mlong-double-64/-mlong-double-80.
