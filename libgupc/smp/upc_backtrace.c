@@ -81,10 +81,8 @@ __upc_backtrace (void)
       /* Extra info for the barrier. */
       if ( strstr( strace_str[i], "__upc_wait"))
 	{
-	  upc_barrier_info_p b;
-	  b = &__upc_info->barrier;
           fprintf (stderr, "[t: %4d]       BARRIER ID: %d\n", MYTHREAD, 
-	           b->barrier_id[MYTHREAD]);
+	           __upc_barrier_id);
 	}
     }
 }

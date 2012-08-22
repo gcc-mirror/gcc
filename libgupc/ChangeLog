@@ -1,3 +1,16 @@
+2012-08-22  Nenad Vukicevic  <nenad@intrepid.com>
+
+	* upc_defs.h: Additianl clean-up related to the new barrier
+	implementation.
+	(upc_barrier_id_t): Delete.
+	(upc_barrier_info_t): Delete.
+	(upc_barrier_info_p): Delete.
+	(upc_info_t): Remove barrier from the upc info structure.
+	(__upc_barrier_id): New.
+	* upc_barrier.upc (__upc_barrier_id): Make it global.
+	* upc_backtrace.c (__upc_backtrace): Print barrier ID from the
+	new implementation.
+
 2012-08-15  Nenad Vukicevic  <nenad@intrepid.com>
 
 	Add tree based barrier implementation for SMP-based UPC run-time.

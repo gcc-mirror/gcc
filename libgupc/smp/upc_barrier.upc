@@ -139,7 +139,7 @@ static int __upc_bphase = 0;
 static GUPCR_THREAD_LOCAL int __upc_barrier_active = 0;
 
 /* Per-thread active barrier ID.  */
-static GUPCR_THREAD_LOCAL int __upc_barrier_id = 0;
+GUPCR_THREAD_LOCAL int __upc_barrier_id = 0;
 
 /*
  * Shared integer atomic increment.

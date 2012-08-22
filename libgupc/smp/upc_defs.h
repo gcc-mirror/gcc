@@ -63,14 +63,8 @@ typedef upc_thread_info_t *upc_thread_info_p;
 /* Bit vector used to manage processes */
 typedef os_atomic_t upc_procbits_vec_t[GUPCR_NUM_PROCBIT_WORDS];
 
-typedef int upc_barrier_id_t;
-
-typedef struct barrier_info_struct
-  {
-    upc_procbits_vec_t	wait;
-    upc_barrier_id_t	barrier_id[GUPCR_THREADS_MAX];
-  } upc_barrier_info_t;
-typedef upc_barrier_info_t *upc_barrier_info_p;
+/* UPC thread barrier ID  */
+extern GUPCR_THREAD_LOCAL int __upc_barrier_id;
 
 typedef union upc_lock_struct
   {
@@ -125,7 +119,6 @@ typedef struct upc_info_struct
     upc_pte_p gpt;
     upc_page_num_t cur_page_alloc;
     upc_shared_ptr_t all_lock;
-    upc_barrier_info_t barrier;
     upc_thread_info_t thread_info[GUPCR_THREADS_MAX];
     int num_cpus;
     int num_nodes;
