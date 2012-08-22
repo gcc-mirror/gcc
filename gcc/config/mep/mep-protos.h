@@ -20,9 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 extern int mep_regno_reg_class (int);
-extern int mep_reg_class_from_constraint (int, const char *);
-extern bool mep_const_ok_for_letter_p (HOST_WIDE_INT, int);
-extern bool mep_extra_constraint (rtx, int);
 extern rtx mep_mulr_source (rtx, rtx, rtx, rtx);
 extern bool mep_reuse_lo_p (rtx, rtx, rtx, bool);
 extern bool mep_use_post_modify_p (rtx, rtx, rtx);

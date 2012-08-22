@@ -1,3 +1,13 @@
+2012-08-21  Nathan Froyd  <froydnj@gcc.gnu.org>
+
+	* config/mep/mep.h (REG_CLASS_FROM_CONSTRAINT): Delete.
+	(CONST_OK_FOR_LETTER_P, CONST_DOUBLE_OK_FOR_LETTER_P): Delete.
+	(CONSTRAINT_LEN, EXTRA_CONSTRAINT): Delete.
+	* config/mep/mep.c (mep_reg_class_from_constraint): Delete.
+	(mep_const_ok_for_letter_p, mep_extra_constraint): Delete.
+	* config/mep/mep-protos.h (mep_reg_class_from_constraint): Delete.
+	(mep_const_ok_for_letter_p, mep_extra_constraint): Delete.
+
 2012-08-21  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/sh.md (cmpeqdi_t, cmpgtdi_t, cmpgedi_t, cmpgeudi_t,
