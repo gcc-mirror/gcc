@@ -1330,11 +1330,18 @@ static vn_lookup_kind default_vn_walk_kind;
    with the current VUSE and performs the expression lookup.  */
 
 static void *
-vn_reference_lookup_2 (ao_ref *op ATTRIBUTE_UNUSED, tree vuse, void *vr_)
+vn_reference_lookup_2 (ao_ref *op ATTRIBUTE_UNUSED, tree vuse,
+		       unsigned int cnt, void *vr_)
 {
   vn_reference_t vr = (vn_reference_t)vr_;
   void **slot;
   hashval_t hash;
+
+  /* This bounds the stmt walks we perform on reference lookups
+     to O(1) instead of O(N) where N is the number of dominating
+     stores.  */
+  if (cnt > (unsigned) PARAM_VALUE (PARAM_SCCVN_MAX_ALIAS_QUERIES_PER_ACCESS))
+    return (void *)-1;
 
   if (last_vuse_ptr)
     *last_vuse_ptr = vuse;
