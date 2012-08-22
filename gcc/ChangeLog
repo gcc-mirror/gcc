@@ -1,5 +1,37 @@
 2012-08-21  Nathan Froyd  <froydnj@gcc.gnu.org>
 
+	* config/m32c/constraints.md: New file.
+	* config/m32c/t-m32c (MD_FILES): Add constraints.
+	* config/m32c/m32c-protos.h (m32c_const_ok_for_constraint_p): Delete.
+	(m32c_extra_address_constraint, m32c_extra_memory_constraint): Delete.
+	(m32c_reg_class_from_constraint): Delete.
+	(m32c_extra_constraint_p, m32c_extra_constraint_p2): Delete.
+	(m32c_matches_constraint_p): Declare.
+	* config/m32c/m32c.h (CONSTRAINT_LEN): Delete.
+	(REG_CLASS_FROM_CONSTRAINT): Delete.
+	(CONST_OK_FOR_CONSTRAINT_P): Delete.
+	(CONST_DOUBLE_OK_FOR_CONSTRAINT_P): Delete.
+	(EXTRA_CONSTRAINT_STR): Delete.
+	(EXTRA_MEMORY_CONSTRAINT, EXTRA_ADDRESS_CONSTRAINT): Delete.
+	* config/m32c/m32c.c: Include tm-constrs.h
+	(m32c_reg_class_from_constraint): Delete.
+	(m32c_const_ok_for_constraint_p): Delete.
+	(m32c_extra_constraint_p2): Rename to...
+	(m32c_matches_constraint_p): ...this.  Make it return bool.  Tweak
+	formatting.
+	(m32c_extra_constraint_p): Delete.
+	(m32c_extra_address_constraint, m32c_extra_memory_constraint): Delete.
+	(m32c_split_move): Use satisfies_constraint_Ss.
+	* config/m32c/predicates.md (memsym_operand): Use 
+	satisfies_constraint_Si.
+	(memimmed_operand): Use satisfies_constraint_Sp.
+	(m32c_psi_scale, m32c_1bit8_operand): Use satisfies_constraint_Ilb.
+	(m32c_1bit16_operand): Use satisfies_constraint_Ilw.
+	(m32c_1mask8_operand): Use satisfies_constraint_ImB.
+	(m32c_1mask16_operand): Use satisfies_constraint_Imw.
+
+2012-08-21  Nathan Froyd  <froydnj@gcc.gnu.org>
+
 	* config/mep/mep.h (REG_CLASS_FROM_CONSTRAINT): Delete.
 	(CONST_OK_FOR_LETTER_P, CONST_DOUBLE_OK_FOR_LETTER_P): Delete.
 	(CONSTRAINT_LEN, EXTRA_CONSTRAINT): Delete.

@@ -405,15 +405,6 @@ enum reg_class
    A - addresses (currently unused)
 */
 
-#define CONSTRAINT_LEN(CHAR,STR) \
-	((CHAR) == 'I' ? 3 \
-	 : (CHAR) == 'R' ? 3 \
-	 : (CHAR) == 'S' ? 2 \
-	 : (CHAR) == 'A' ? 2 \
-	 : DEFAULT_CONSTRAINT_LEN(CHAR,STR))
-#define REG_CLASS_FROM_CONSTRAINT(CHAR,STR) \
-	(enum reg_class) m32c_reg_class_from_constraint (CHAR, STR)
-
 #define REGNO_OK_FOR_BASE_P(NUM) m32c_regno_ok_for_base_p (NUM)
 #define REGNO_OK_FOR_INDEX_P(NUM) 0
 
@@ -426,16 +417,6 @@ enum reg_class
 #define TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P hook_bool_mode_true
 
 #define CANNOT_CHANGE_MODE_CLASS(F,T,C) m32c_cannot_change_mode_class(F,T,C)
-
-#define CONST_OK_FOR_CONSTRAINT_P(VALUE,C,STR) \
-	m32c_const_ok_for_constraint_p (VALUE, C, STR)
-#define CONST_DOUBLE_OK_FOR_CONSTRAINT_P(VALUE,C,STR) 0
-#define EXTRA_CONSTRAINT_STR(VALUE,C,STR) \
-	m32c_extra_constraint_p (VALUE, C, STR)
-#define EXTRA_MEMORY_CONSTRAINT(C,STR) \
-	m32c_extra_memory_constraint (C, STR)
-#define EXTRA_ADDRESS_CONSTRAINT(C,STR) \
-	m32c_extra_address_constraint (C, STR)
 
 /* STACK AND CALLING */
 
