@@ -69,7 +69,7 @@ sbitmap bb_seen;
 static inline void
 mark_bb_seen (basic_block bb)
 {
-  unsigned int size = SBITMAP_SIZE_BYTES (bb_seen) * 8;
+  unsigned int size = SBITMAP_SIZE (bb_seen);
 
   if ((unsigned int)bb->index >= size)
     bb_seen = sbitmap_resize (bb_seen, size * 2, 0);
