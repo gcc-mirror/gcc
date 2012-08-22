@@ -1,3 +1,8 @@
+2012-08-22  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54089
+	* gcc.target/sh/pr54089-2.c: New.
+
 2012-08-22  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/i386/long-double-64-1.c: New file.
