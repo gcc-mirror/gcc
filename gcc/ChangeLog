@@ -1,5 +1,26 @@
 2012-08-22  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/46590
+	* tree-ssa-alias.h (get_continuation_for_phi): Add alias query
+	counter output argument.
+	(walk_non_aliased_vuses): Add alias query counter argument
+	to the walker callback.
+	* tree-ssa-alias.c (maybe_skip_until): Add alias query counter
+	output argument and count alias queries.
+	(get_continuation_for_phi_1): Likewise.
+	(get_continuation_for_phi): Likewise.
+	(walk_non_aliased_vuses): Add alias query counter argument
+	to the walker callback and allow it to abort the walk by
+	returning -1.
+	* tree-ssa-pre.c (translate_vuse_through_block): Adjust.
+	* tree-ssa-sccvn.c (vn_reference_lookup_2): Add alias query
+	counter parmeter, abort walk if that is bigger than
+	--param sccvn-max-alias-queries-per-access.
+	* params.def (sccvn-max-alias-queries-per-access): New param.
+	* doc/invoke.texi (sccvn-max-alias-queries-per-access): Document.
+
+2012-08-22  Richard Guenther  <rguenther@suse.de>
+
 	* tree-ssa-loop-ch.c (copy_loop_headers): Remove redundant checking.
 	* tree-into-ssa.c (initialize_flags_in_bb): Use gcc_checking_assert
 	instead of gcc_assert.

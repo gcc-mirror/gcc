@@ -9221,6 +9221,14 @@ processing.  If this limit is hit, SCCVN processing for the whole
 function is not done and optimizations depending on it are
 disabled.  The default maximum SCC size is 10000.
 
+@item sccvn-max-alias-queries-per-access
+Maximum number of alias-oracle queries we perform when looking for
+redundancies for loads and stores.  If this limit is hit the search
+is aborted and the load or store is not considered redundant.  The
+number of queries is algorithmically limited to the number of
+stores on all paths from the load to the function entry.
+The default maxmimum number of queries is 1000.
+
 @item ira-max-loops-num
 IRA uses regional register allocation by default.  If a function
 contains more loops than the number given by this parameter, only at most
