@@ -504,10 +504,9 @@ dump_coalesce_list (FILE *f, coalesce_list_p cl)
 
 typedef struct ssa_conflicts_d
 {
-  unsigned size;
-  bitmap *conflicts;
+  bitmap_obstack obstack;	/* A place to allocate our bitmaps.  */
+  VEC(bitmap, heap)* conflicts;
 } * ssa_conflicts_p;
-
 
 /* Return an empty new conflict graph for SIZE elements.  */
 
@@ -517,8 +516,9 @@ ssa_conflicts_new (unsigned size)
   ssa_conflicts_p ptr;
 
   ptr = XNEW (struct ssa_conflicts_d);
-  ptr->conflicts = XCNEWVEC (bitmap, size);
-  ptr->size = size;
+  bitmap_obstack_initialize (&ptr->obstack);
+  ptr->conflicts = VEC_alloc (bitmap, heap, size);
+  VEC_safe_grow_cleared (bitmap, heap, ptr->conflicts, size);
   return ptr;
 }
 
@@ -528,12 +528,8 @@ ssa_conflicts_new (unsigned size)
 static inline void
 ssa_conflicts_delete (ssa_conflicts_p ptr)
 {
-  unsigned x;
-  for (x = 0; x < ptr->size; x++)
-    if (ptr->conflicts[x])
-      BITMAP_FREE (ptr->conflicts[x]);
-
-  free (ptr->conflicts);
+  bitmap_obstack_release (&ptr->obstack);
+  VEC_free (bitmap, heap, ptr->conflicts);
   free (ptr);
 }
 
@@ -543,16 +539,14 @@ ssa_conflicts_delete (ssa_conflicts_p ptr)
 static inline bool
 ssa_conflicts_test_p (ssa_conflicts_p ptr, unsigned x, unsigned y)
 {
-  bitmap b;
+  bitmap bx = VEC_index (bitmap, ptr->conflicts, x);
+  bitmap by = VEC_index (bitmap, ptr->conflicts, y);
 
-  gcc_checking_assert (x < ptr->size);
-  gcc_checking_assert (y < ptr->size);
   gcc_checking_assert (x != y);
 
-  b = ptr->conflicts[x];
-  if (b)
+  if (bx)
     /* Avoid the lookup if Y has no conflicts.  */
-    return ptr->conflicts[y] ? bitmap_bit_p (b, y) : false;
+    return by ? bitmap_bit_p (bx, y) : false;
   else
     return false;
 }
@@ -563,10 +557,11 @@ ssa_conflicts_test_p (ssa_conflicts_p ptr, unsigned x, unsigned y)
 static inline void
 ssa_conflicts_add_one (ssa_conflicts_p ptr, unsigned x, unsigned y)
 {
+  bitmap bx = VEC_index (bitmap, ptr->conflicts, x);
   /* If there are no conflicts yet, allocate the bitmap and set bit.  */
-  if (!ptr->conflicts[x])
-    ptr->conflicts[x] = BITMAP_ALLOC (NULL);
-  bitmap_set_bit (ptr->conflicts[x], y);
+  if (! bx)
+    bx = VEC_index (bitmap, ptr->conflicts, x) = BITMAP_ALLOC (&ptr->obstack);
+  bitmap_set_bit (bx, y);
 }
 
 
@@ -575,8 +570,6 @@ ssa_conflicts_add_one (ssa_conflicts_p ptr, unsigned x, unsigned y)
 static inline void
 ssa_conflicts_add (ssa_conflicts_p ptr, unsigned x, unsigned y)
 {
-  gcc_checking_assert (x < ptr->size);
-  gcc_checking_assert (y < ptr->size);
   gcc_checking_assert (x != y);
   ssa_conflicts_add_one (ptr, x, y);
   ssa_conflicts_add_one (ptr, y, x);
@@ -590,29 +583,35 @@ ssa_conflicts_merge (ssa_conflicts_p ptr, unsigned x, unsigned y)
 {
   unsigned z;
   bitmap_iterator bi;
+  bitmap bx = VEC_index (bitmap, ptr->conflicts, x);
+  bitmap by = VEC_index (bitmap, ptr->conflicts, y);
 
-  gcc_assert (x != y);
-  if (!(ptr->conflicts[y]))
+  gcc_checking_assert (x != y);
+  if (! by)
     return;
 
   /* Add a conflict between X and every one Y has.  If the bitmap doesn't
      exist, then it has already been coalesced, and we don't need to add a
      conflict.  */
-  EXECUTE_IF_SET_IN_BITMAP (ptr->conflicts[y], 0, z, bi)
-    if (ptr->conflicts[z])
-      bitmap_set_bit (ptr->conflicts[z], x);
+  EXECUTE_IF_SET_IN_BITMAP (by, 0, z, bi)
+    {
+      bitmap bz = VEC_index (bitmap, ptr->conflicts, z);
+      if (bz)
+	bitmap_set_bit (bz, x);
+    }
 
-  if (ptr->conflicts[x])
+  if (bx)
     {
       /* If X has conflicts, add Y's to X.  */
-      bitmap_ior_into (ptr->conflicts[x], ptr->conflicts[y]);
-      BITMAP_FREE (ptr->conflicts[y]);
+      bitmap_ior_into (bx, by);
+      BITMAP_FREE (by);
+      VEC_replace (bitmap, ptr->conflicts, y, NULL);
     }
   else
     {
       /* If X has no conflicts, simply use Y's.  */
-      ptr->conflicts[x] = ptr->conflicts[y];
-      ptr->conflicts[y] = NULL;
+      VEC_replace (bitmap, ptr->conflicts, x, by);
+      VEC_replace (bitmap, ptr->conflicts, y, NULL);
     }
 }
 
@@ -623,14 +622,15 @@ static void
 ssa_conflicts_dump (FILE *file, ssa_conflicts_p ptr)
 {
   unsigned x;
+  bitmap b;
 
   fprintf (file, "\nConflict graph:\n");
 
-  for (x = 0; x < ptr->size; x++)
-    if (ptr->conflicts[x])
+  FOR_EACH_VEC_ELT (bitmap, ptr->conflicts, x, b);
+    if (b)
       {
 	fprintf (dump_file, "%d: ", x);
-	dump_bitmap (file, ptr->conflicts[x]);
+	dump_bitmap (file, b);
       }
 }
 
@@ -649,6 +649,7 @@ ssa_conflicts_dump (FILE *file, ssa_conflicts_p ptr)
 
 typedef struct live_track_d
 {
+  bitmap_obstack obstack;	/* A place to allocate our bitmaps.  */
   bitmap live_base_var;		/* Indicates if a basevar is live.  */
   bitmap *live_base_partitions;	/* Live partitions for each basevar.  */
   var_map map;			/* Var_map being used for partition mapping.  */
@@ -670,10 +671,11 @@ new_live_track (var_map map)
   ptr = (live_track_p) xmalloc (sizeof (struct live_track_d));
   ptr->map = map;
   lim = num_basevars (map);
+  bitmap_obstack_initialize (&ptr->obstack);
   ptr->live_base_partitions = (bitmap *) xmalloc(sizeof (bitmap *) * lim);
-  ptr->live_base_var = BITMAP_ALLOC (NULL);
+  ptr->live_base_var = BITMAP_ALLOC (&ptr->obstack);
   for (x = 0; x < lim; x++)
-    ptr->live_base_partitions[x] = BITMAP_ALLOC (NULL);
+    ptr->live_base_partitions[x] = BITMAP_ALLOC (&ptr->obstack);
   return ptr;
 }
 
@@ -683,12 +685,7 @@ new_live_track (var_map map)
 static void
 delete_live_track (live_track_p ptr)
 {
-  int x, lim;
-
-  lim = num_basevars (ptr->map);
-  for (x = 0; x < lim; x++)
-    BITMAP_FREE (ptr->live_base_partitions[x]);
-  BITMAP_FREE (ptr->live_base_var);
+  bitmap_obstack_release (&ptr->obstack);
   free (ptr->live_base_partitions);
   free (ptr);
 }
@@ -1046,10 +1043,11 @@ create_outofssa_var_map (coalesce_list_p cl, bitmap used_in_copy)
 		noutputs = gimple_asm_noutputs (stmt);
 		ninputs = gimple_asm_ninputs (stmt);
 		outputs = (tree *) alloca (noutputs * sizeof (tree));
-		for (i = 0; i < noutputs; ++i) {
-		  link = gimple_asm_output_op (stmt, i);
-		  outputs[i] = TREE_VALUE (link);
-                }
+		for (i = 0; i < noutputs; ++i)
+		  {
+		    link = gimple_asm_output_op (stmt, i);
+		    outputs[i] = TREE_VALUE (link);
+		  }
 
 		for (i = 0; i < ninputs; ++i)
 		  {

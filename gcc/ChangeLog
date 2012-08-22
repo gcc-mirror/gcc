@@ -1,3 +1,18 @@
+2012-08-22  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* tree-ssa-coalesce.c (struct ssa_conflicts_d): Make contents
+	of this a VEC and add a bitmap obstack.
+	(ssa_conflicts_new): Allocate the obstack and grow the VEC cleared
+	to the right size.
+	(ssa_conflicts_delete): Free the VEC and release the obstack.
+	(ssa_conflicts_test_p, ssa_conflicts_test_p, ssa_conflicts_add_one,
+	ssa_conflicts_merge, ssa_conflicts_dump): Update for above changes.
+	(truct live_track_d): Add another bitmap obstack here.
+	(new_live_track): Initialize it and use it for all bitmaps.
+	(delete_live_track): Don't free the bitmaps one at a time, just
+	release the obstack.
+	(create_outofssa_var_map): Fix to conform to GCC code style rules.
+
 2012-08-21  Nathan Froyd  <froydnj@gcc.gnu.org>
 
 	* config/m32c/constraints.md: New file.
