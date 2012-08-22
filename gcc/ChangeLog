@@ -1,3 +1,10 @@
+2012-08-22  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vectorizer.c (vectorize_loops): Do not call
+	mark_virtual_operands_for_renaming.
+	* tree-vect-slp.c (vect_slp_transform_bb): Likewise.
+	Do not update SSA form here.
+
 2012-08-22  Dodji Seketeli  <dodji@redhat.com>
 
 	* tree.h (TREE_NOTHROW): Use the base.nothrow_flag.
