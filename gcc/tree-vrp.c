@@ -5596,7 +5596,7 @@ find_assert_locations (void)
 	  FOR_EACH_EDGE (e, ei, bb->preds)
 	    {
 	      int pred = e->src->index;
-	      if (e->flags & EDGE_DFS_BACK)
+	      if ((e->flags & EDGE_DFS_BACK) || pred == ENTRY_BLOCK)
 		continue;
 
 	      if (!live[pred])
