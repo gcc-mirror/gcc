@@ -2474,18 +2474,21 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 		{
 		  /* Min underflow or max overflow.  The range kind
 		     changes to VR_ANTI_RANGE.  */
+		  bool covers = false;
 		  double_int tem = tmin;
 		  gcc_assert ((min_ovf == -1 && max_ovf == 0)
 			      || (max_ovf == 1 && min_ovf == 0));
 		  type = VR_ANTI_RANGE;
 		  tmin = double_int_add (tmax, double_int_one);
+		  if (double_int_cmp (tmin, tmax, uns) < 0)
+		    covers = true;
 		  tmax = double_int_add (tem, double_int_minus_one);
+		  if (double_int_cmp (tmax, tem, uns) > 0)
+		    covers = true;
 		  /* If the anti-range would cover nothing, drop to varying.
 		     Likewise if the anti-range bounds are outside of the
 		     types values.  */
-		  if (double_int_cmp (tmin, tmax, uns) > 0
-		      || double_int_cmp (tmin, type_min, uns) < 0
-		      || double_int_cmp (tmax, type_max, uns) > 0)
+		  if (covers || double_int_cmp (tmin, tmax, uns) > 0)
 		    {
 		      set_value_range_to_varying (vr);
 		      return;

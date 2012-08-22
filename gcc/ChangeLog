@@ -1,3 +1,10 @@
+2012-08-22  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/54317
+	* tree-vrp.c (extract_range_from_binary_expr_1): Test for
+	double_int overflow.
+	Remove dead tests.
+
 2012-08-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-vrp.c (find_assert_locations): Skip also edges
