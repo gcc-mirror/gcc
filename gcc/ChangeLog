@@ -1,3 +1,9 @@
+2012-08-22  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/54347
+	* config/i386/i386.c (ix86_split_to_parts): Replace
+	REAL_VALUE_TO_TARGET_LONG_DOUBLE with real_to_target.
+
 2012-08-22  Richard Guenther  <rguenther@suse.de>
 
 	* tree-vectorizer.c (vectorize_loops): Do not call

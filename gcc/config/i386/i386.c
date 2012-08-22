@@ -20743,7 +20743,9 @@ ix86_split_to_parts (rtx operand, rtx *parts, enum machine_mode mode)
 		  parts[2] = gen_int_mode (l[2], SImode);
 		  break;
 		case XFmode:
-		  REAL_VALUE_TO_TARGET_LONG_DOUBLE (r, l);
+		  /* We can't use REAL_VALUE_TO_TARGET_LONG_DOUBLE since
+		     long double may not be 80-bit.  */
+		  real_to_target (l, &r, mode);
 		  parts[2] = gen_int_mode (l[2], SImode);
 		  break;
 		case DFmode:
