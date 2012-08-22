@@ -1,5 +1,23 @@
 2012-08-22  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* doc/invoke.texi: Document -mlong-double-64/-mlong-double-80.
+
+	* config/i386/i386.c (flag_opts): Add -mlong-double-64.
+	(TARGET_HAS_BIONIC): Default long double to 64-bit for Bionic.
+
+	* config/i386/i386.h (LONG_DOUBLE_TYPE_SIZE): Use 64 if
+	TARGET_LONG_DOUBLE_64 is true.
+	(LIBGCC2_LONG_DOUBLE_TYPE_SIZE): New macro.
+	(WIDEST_HARDWARE_FP_SIZE): Defined to 80.
+
+	* config/i386/i386.opt (mlong-double-80): New option.
+	(mlong-double-64): Likewise.
+
+	* config/i386/i386-c.c (ix86_target_macros): Define
+	__LONG_DOUBLE_64__ for TARGET_LONG_DOUBLE_64.
+
+2012-08-22  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR target/54347
 	* config/i386/i386.c (ix86_split_to_parts): Replace
 	REAL_VALUE_TO_TARGET_LONG_DOUBLE with real_to_target.

@@ -409,6 +409,9 @@ ix86_target_macros (void)
       builtin_define_std ("i386");
     }
 
+  if (TARGET_LONG_DOUBLE_64)
+    cpp_define (parse_in, "__LONG_DOUBLE_64__");
+
   cpp_define_formatted (parse_in, "__ATOMIC_HLE_ACQUIRE=%d", IX86_HLE_ACQUIRE);
   cpp_define_formatted (parse_in, "__ATOMIC_HLE_RELEASE=%d", IX86_HLE_RELEASE);
 

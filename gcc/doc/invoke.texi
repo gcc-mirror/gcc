@@ -636,7 +636,8 @@ Objective-C and Objective-C++ Dialects}.
 -mno-align-stringops  -minline-all-stringops @gol
 -minline-stringops-dynamically -mstringop-strategy=@var{alg} @gol
 -mpush-args  -maccumulate-outgoing-args  -m128bit-long-double @gol
--m96bit-long-double  -mregparm=@var{num}  -msseregparm @gol
+-m96bit-long-double -mlong-double-64 -mlong-double-80 @gol
+-mregparm=@var{num}  -msseregparm @gol
 -mveclibabi=@var{type} -mvect8-ret-in-mem @gol
 -mpc32 -mpc64 -mpc80 -mstackrealign @gol
 -momit-leaf-frame-pointer  -mno-red-zone -mno-tls-direct-seg-refs @gol
@@ -13512,6 +13513,21 @@ standard of 80 bits for a @code{long double}.
 
 @strong{Warning:} if you override the default value for your target ABI, this
 changes the size of 
+structures and arrays containing @code{long double} variables,
+as well as modifying the function calling convention for functions taking
+@code{long double}.  Hence they are not binary-compatible
+with code compiled without that switch.
+
+@item -mlong-double-64
+@itemx -mlong-double-80
+@opindex mlong-double-64
+@opindex mlong-double-80
+These switches control the size of @code{long double} type. A size
+of 64 bits makes the @code{long double} type equivalent to the @code{double}
+type. This is the default for Bionic C library.
+
+@strong{Warning:} if you override the default value for your target ABI, this
+changes the size of
 structures and arrays containing @code{long double} variables,
 as well as modifying the function calling convention for functions taking
 @code{long double}.  Hence they are not binary-compatible
