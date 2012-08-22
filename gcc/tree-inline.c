@@ -5089,6 +5089,7 @@ tree_function_versioning (tree old_decl, tree new_decl,
 		       VEC_index (ipa_opt_pass,
 		       		  old_transforms_to_apply,
 				  i));
+      VEC_free (ipa_opt_pass, heap, old_transforms_to_apply);
     }
 
   id.copy_decl = copy_decl_no_change;
