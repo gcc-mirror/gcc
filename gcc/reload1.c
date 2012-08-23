@@ -2566,10 +2566,7 @@ eliminate_regs_1 (rtx x, enum machine_mode mem_mode, rtx insn,
 
   switch (code)
     {
-    case CONST_INT:
-    case CONST_DOUBLE:
-    case CONST_FIXED:
-    case CONST_VECTOR:
+    CASE_CONST_ANY:
     case CONST:
     case SYMBOL_REF:
     case CODE_LABEL:
@@ -2983,10 +2980,7 @@ elimination_effects (rtx x, enum machine_mode mem_mode)
 
   switch (code)
     {
-    case CONST_INT:
-    case CONST_DOUBLE:
-    case CONST_FIXED:
-    case CONST_VECTOR:
+    CASE_CONST_ANY:
     case CONST:
     case SYMBOL_REF:
     case CODE_LABEL:
@@ -4454,13 +4448,10 @@ scan_paradoxical_subregs (rtx x)
   switch (code)
     {
     case REG:
-    case CONST_INT:
     case CONST:
     case SYMBOL_REF:
     case LABEL_REF:
-    case CONST_DOUBLE:
-    case CONST_FIXED:
-    case CONST_VECTOR: /* shouldn't happen, but just in case.  */
+    CASE_CONST_ANY:
     case CC0:
     case PC:
     case USE:

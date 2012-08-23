@@ -97,10 +97,7 @@ rtx_unstable_p (const_rtx x)
       return !MEM_READONLY_P (x) || rtx_unstable_p (XEXP (x, 0));
 
     case CONST:
-    case CONST_INT:
-    case CONST_DOUBLE:
-    case CONST_FIXED:
-    case CONST_VECTOR:
+    CASE_CONST_ANY:
     case SYMBOL_REF:
     case LABEL_REF:
       return 0;
@@ -170,10 +167,7 @@ rtx_varies_p (const_rtx x, bool for_alias)
       return !MEM_READONLY_P (x) || rtx_varies_p (XEXP (x, 0), for_alias);
 
     case CONST:
-    case CONST_INT:
-    case CONST_DOUBLE:
-    case CONST_FIXED:
-    case CONST_VECTOR:
+    CASE_CONST_ANY:
     case SYMBOL_REF:
     case LABEL_REF:
       return 0;
@@ -585,10 +579,7 @@ count_occurrences (const_rtx x, const_rtx find, int count_dest)
   switch (code)
     {
     case REG:
-    case CONST_INT:
-    case CONST_DOUBLE:
-    case CONST_FIXED:
-    case CONST_VECTOR:
+    CASE_CONST_ANY:
     case SYMBOL_REF:
     case CODE_LABEL:
     case PC:
@@ -690,10 +681,7 @@ reg_mentioned_p (const_rtx reg, const_rtx in)
     case PC:
       return 0;
 
-    case CONST_INT:
-    case CONST_VECTOR:
-    case CONST_DOUBLE:
-    case CONST_FIXED:
+    CASE_CONST_ANY:
       /* These are kept unique for a given value.  */
       return 0;
 
@@ -887,10 +875,7 @@ modified_between_p (const_rtx x, const_rtx start, const_rtx end)
 
   switch (code)
     {
-    case CONST_INT:
-    case CONST_DOUBLE:
-    case CONST_FIXED:
-    case CONST_VECTOR:
+    CASE_CONST_ANY:
     case CONST:
     case SYMBOL_REF:
     case LABEL_REF:
@@ -946,10 +931,7 @@ modified_in_p (const_rtx x, const_rtx insn)
 
   switch (code)
     {
-    case CONST_INT:
-    case CONST_DOUBLE:
-    case CONST_FIXED:
-    case CONST_VECTOR:
+    CASE_CONST_ANY:
     case CONST:
     case SYMBOL_REF:
     case LABEL_REF:
@@ -2095,11 +2077,8 @@ volatile_insn_p (const_rtx x)
     {
     case LABEL_REF:
     case SYMBOL_REF:
-    case CONST_INT:
     case CONST:
-    case CONST_DOUBLE:
-    case CONST_FIXED:
-    case CONST_VECTOR:
+    CASE_CONST_ANY:
     case CC0:
     case PC:
     case REG:
@@ -2160,11 +2139,8 @@ volatile_refs_p (const_rtx x)
     {
     case LABEL_REF:
     case SYMBOL_REF:
-    case CONST_INT:
     case CONST:
-    case CONST_DOUBLE:
-    case CONST_FIXED:
-    case CONST_VECTOR:
+    CASE_CONST_ANY:
     case CC0:
     case PC:
     case REG:
@@ -2223,11 +2199,8 @@ side_effects_p (const_rtx x)
     {
     case LABEL_REF:
     case SYMBOL_REF:
-    case CONST_INT:
     case CONST:
-    case CONST_DOUBLE:
-    case CONST_FIXED:
-    case CONST_VECTOR:
+    CASE_CONST_ANY:
     case CC0:
     case PC:
     case REG:
@@ -2312,10 +2285,7 @@ may_trap_p_1 (const_rtx x, unsigned flags)
   switch (code)
     {
       /* Handle these cases quickly.  */
-    case CONST_INT:
-    case CONST_DOUBLE:
-    case CONST_FIXED:
-    case CONST_VECTOR:
+    CASE_CONST_ANY:
     case SYMBOL_REF:
     case LABEL_REF:
     case CONST:
@@ -2514,10 +2484,7 @@ inequality_comparisons_p (const_rtx x)
     case SCRATCH:
     case PC:
     case CC0:
-    case CONST_INT:
-    case CONST_DOUBLE:
-    case CONST_FIXED:
-    case CONST_VECTOR:
+    CASE_CONST_ANY:
     case CONST:
     case LABEL_REF:
     case SYMBOL_REF:
@@ -2760,10 +2727,7 @@ computed_jump_p_1 (const_rtx x)
       return 0;
 
     case CONST:
-    case CONST_INT:
-    case CONST_DOUBLE:
-    case CONST_FIXED:
-    case CONST_VECTOR:
+    CASE_CONST_ANY:
     case SYMBOL_REF:
     case REG:
       return 1;

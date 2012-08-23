@@ -1109,17 +1109,11 @@ add_non_frame_wild_read (bb_info_t bb_info)
 static bool
 const_or_frame_p (rtx x)
 {
-  switch (GET_CODE (x))
-    {
-    case CONST:
-    case CONST_INT:
-    case CONST_DOUBLE:
-    case CONST_VECTOR:
-    case SYMBOL_REF:
-    case LABEL_REF:
-      return true;
+  if (CONSTANT_P (x))
+    return true;
 
-    case REG:
+  if (GET_CODE (x) == REG)
+    {
       /* Note that we have to test for the actual rtx used for the frame
 	 and arg pointers and not just the register number in case we have
 	 eliminated the frame and/or arg pointer and are using it
@@ -1130,10 +1124,9 @@ const_or_frame_p (rtx x)
 	  || x == pic_offset_table_rtx)
 	return true;
       return false;
-
-    default:
-      return false;
     }
+  
+  return false;
 }
 
 /* Take all reasonable action to put the address of MEM into the form

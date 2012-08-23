@@ -248,10 +248,7 @@ copy_rtx (rtx orig)
     case REG:
     case DEBUG_EXPR:
     case VALUE:
-    case CONST_INT:
-    case CONST_DOUBLE:
-    case CONST_FIXED:
-    case CONST_VECTOR:
+    CASE_CONST_ANY:
     case SYMBOL_REF:
     case CODE_LABEL:
     case PC:
@@ -400,9 +397,7 @@ rtx_equal_p_cb (const_rtx x, const_rtx y, rtx_equal_p_callback_function cb)
     case DEBUG_EXPR:
     case VALUE:
     case SCRATCH:
-    case CONST_DOUBLE:
-    case CONST_INT:
-    case CONST_FIXED:
+    CASE_CONST_UNIQUE:
       return 0;
 
     case DEBUG_IMPLICIT_PTR:
@@ -539,9 +534,7 @@ rtx_equal_p (const_rtx x, const_rtx y)
     case DEBUG_EXPR:
     case VALUE:
     case SCRATCH:
-    case CONST_DOUBLE:
-    case CONST_INT:
-    case CONST_FIXED:
+    CASE_CONST_UNIQUE:
       return 0;
 
     case DEBUG_IMPLICIT_PTR:

@@ -1489,9 +1489,7 @@ rtx_equal_for_memref_p (const_rtx x, const_rtx y)
       return XSTR (x, 0) == XSTR (y, 0);
 
     case VALUE:
-    case CONST_INT:
-    case CONST_DOUBLE:
-    case CONST_FIXED:
+    CASE_CONST_UNIQUE:
       /* There's no need to compare the contents of CONST_DOUBLEs or
 	 CONST_INTs because pointer equality is a good enough
 	 comparison for these nodes.  */

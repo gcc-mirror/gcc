@@ -1,3 +1,43 @@
+2012-08-23  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* alias.c (rtx_equal_for_memref_p): Convert constant cases.
+	* combine.c (find_single_use_1, mark_used_regs_combine): Convert
+	to CASE_CONST_ANY.
+ 	* cse.c (exp_equiv_p, canon_reg, fold_rtx, cse_process_notes_1,
+	count_reg_usage): Convert constant cases.
+	* cselib.c (cselib_expand_value_rtx_1): Convert to
+	CASE_CONST_ANY.
+	(cselib_subst_to_values): Convert constant cases.
+	* df-scan.c (df_uses_record): Ditto.
+	* dse.c (const_or_frame_p): Convert case statements to explicit
+	if-then-else using mode classes.
+	* emit-rtl.c (verify_rtx_sharing, copy_insn_1): Convert constant cases.
+	* explow.c (convert_memory_address_addr_space): Ditto.
+	* gcse.c (want_to_gcse_p, oprs_unchanged_p, compute_transp): Ditto.
+	* genattrtab.c (attr_copy_rtx, clear_struct_flag): Ditto.
+	* ira.c (equiv_init_varies_p, contains_replace_regs,
+	memref_referenced_p, rtx_moveable_p): Ditto.
+	* jump.c (mark_jump_label_1): Remove constant cases.
+	(rtx_renumbered_equal_p): Convert to CASE_CONST_UNIQUE.
+	* loop-invariant.c (check_maybe_invariant, hash_invariant_expr_1,
+	invariant_expr_equal_p): Convert to CASE_CONST_ANY.
+	* postreload-gcse.c (oprs_unchanged_p): Convert constant cases.
+	* reginfo.c (reg_scan_mark_refs): Ditto.
+	* regrename.c (scan_rtx): Ditto.
+	* reload1.c (eliminate_regs_1, elimination_effects,
+	scan_paradoxical_subregs): Ditto.
+	* reload.c (operands_match_p, subst_reg_equivs):  Ditto.
+	* resource.c (mark_referenced_resources, mark_set_resources): Ditto.
+	* rtlanal.c (rtx_unstable_p, rtx_varies_p, count_occurrences)
+	(reg_mentioned_p, modified_between_p, modified_in_p)
+	(volatile_insn_p, volatile_refs_p, side_effects_p, may_trap_p_1,
+	inequality_comparisons_p, computed_jump_p_1): Ditto.
+	* rtl.c (copy_rtx, rtx_equal_p_cb, rtx_equal_p): Ditto.
+	* sched-deps.c (sched_analyze_2): Ditto.
+	* valtrack.c (cleanup_auto_inc_dec): Ditto.
+	* rtl.h: (CASE_CONST_SCALAR_INT, CASE_CONST_UNIQUE, 
+	CASE_CONST_ANY): New macros.
+
 2012-08-23  Julian Brown  <julian@codesourcery.com>
 	    Sandra Loosemore  <sandra@codesourcery.com>
 

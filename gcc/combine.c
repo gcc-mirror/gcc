@@ -531,12 +531,10 @@ find_single_use_1 (rtx dest, rtx *loc)
 
   switch (code)
     {
-    case CONST_INT:
     case CONST:
     case LABEL_REF:
     case SYMBOL_REF:
-    case CONST_DOUBLE:
-    case CONST_VECTOR:
+    CASE_CONST_ANY:
     case CLOBBER:
       return 0;
 
@@ -12788,10 +12786,8 @@ mark_used_regs_combine (rtx x)
     {
     case LABEL_REF:
     case SYMBOL_REF:
-    case CONST_INT:
     case CONST:
-    case CONST_DOUBLE:
-    case CONST_VECTOR:
+    CASE_CONST_ANY:
     case PC:
     case ADDR_VEC:
     case ADDR_DIFF_VEC:

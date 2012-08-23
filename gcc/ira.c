@@ -2445,10 +2445,7 @@ equiv_init_varies_p (rtx x)
       return !MEM_READONLY_P (x) || equiv_init_varies_p (XEXP (x, 0));
 
     case CONST:
-    case CONST_INT:
-    case CONST_DOUBLE:
-    case CONST_FIXED:
-    case CONST_VECTOR:
+    CASE_CONST_ANY:
     case SYMBOL_REF:
     case LABEL_REF:
       return 0;
@@ -2560,13 +2557,10 @@ contains_replace_regs (rtx x)
 
   switch (code)
     {
-    case CONST_INT:
     case CONST:
     case LABEL_REF:
     case SYMBOL_REF:
-    case CONST_DOUBLE:
-    case CONST_FIXED:
-    case CONST_VECTOR:
+    CASE_CONST_ANY:
     case PC:
     case CC0:
     case HIGH:
@@ -2608,13 +2602,10 @@ memref_referenced_p (rtx memref, rtx x)
 
   switch (code)
     {
-    case CONST_INT:
     case CONST:
     case LABEL_REF:
     case SYMBOL_REF:
-    case CONST_DOUBLE:
-    case CONST_FIXED:
-    case CONST_VECTOR:
+    CASE_CONST_ANY:
     case PC:
     case CC0:
     case HIGH:
@@ -3566,10 +3557,7 @@ rtx_moveable_p (rtx *loc, enum op_type type)
   switch (code)
     {
     case CONST:
-    case CONST_INT:
-    case CONST_DOUBLE:
-    case CONST_FIXED:
-    case CONST_VECTOR:
+    CASE_CONST_ANY:
     case SYMBOL_REF:
     case LABEL_REF:
       return true;

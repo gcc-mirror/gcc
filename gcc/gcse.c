@@ -742,10 +742,7 @@ want_to_gcse_p (rtx x, int *max_distance_ptr)
     case CALL:
       return 0;
 
-    case CONST_INT:
-    case CONST_DOUBLE:
-    case CONST_FIXED:
-    case CONST_VECTOR:
+    CASE_CONST_ANY:
       if (!doing_code_hoisting_p)
 	/* Do not PRE constants.  */
 	return 0;
@@ -887,10 +884,7 @@ oprs_unchanged_p (const_rtx x, const_rtx insn, int avail_p)
     case PC:
     case CC0: /*FIXME*/
     case CONST:
-    case CONST_INT:
-    case CONST_DOUBLE:
-    case CONST_FIXED:
-    case CONST_VECTOR:
+    CASE_CONST_ANY:
     case SYMBOL_REF:
     case LABEL_REF:
     case ADDR_VEC:
@@ -1693,10 +1687,7 @@ compute_transp (const_rtx x, int indx, sbitmap *bmap)
     case PC:
     case CC0: /*FIXME*/
     case CONST:
-    case CONST_INT:
-    case CONST_DOUBLE:
-    case CONST_FIXED:
-    case CONST_VECTOR:
+    CASE_CONST_ANY:
     case SYMBOL_REF:
     case LABEL_REF:
     case ADDR_VEC:
