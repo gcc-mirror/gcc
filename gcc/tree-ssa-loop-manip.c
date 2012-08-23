@@ -303,8 +303,7 @@ add_exit_phis_var (tree var, bitmap use_blocks, bitmap *loop_exits)
   basic_block def_bb = gimple_bb (SSA_NAME_DEF_STMT (var));
   bitmap live_exits = BITMAP_ALLOC (&loop_renamer_obstack);
 
-  gcc_checking_assert (! virtual_operand_p (var));
-  gcc_assert (! bitmap_bit_p (use_blocks, def_bb->index));
+  gcc_checking_assert (! bitmap_bit_p (use_blocks, def_bb->index));
 
   compute_live_loop_exits (live_exits, use_blocks, loop_exits, def_bb);
 
@@ -367,10 +366,6 @@ find_uses_to_rename_use (basic_block bb, tree use, bitmap *use_blocks,
   if (TREE_CODE (use) != SSA_NAME)
     return;
 
-  /* We don't need to keep virtual operands in loop-closed form.  */
-  if (virtual_operand_p (use))
-    return;
-
   ver = SSA_NAME_VERSION (use);
   def_bb = gimple_bb (SSA_NAME_DEF_STMT (use));
   if (!def_bb)
@@ -408,7 +403,7 @@ find_uses_to_rename_stmt (gimple stmt, bitmap *use_blocks, bitmap need_phis)
   if (is_gimple_debug (stmt))
     return;
 
-  FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, SSA_OP_USE)
+  FOR_EACH_SSA_TREE_OPERAND (var, stmt, iter, SSA_OP_ALL_USES)
     find_uses_to_rename_use (bb, var, use_blocks, need_phis);
 }
 
@@ -428,9 +423,8 @@ find_uses_to_rename_bb (basic_block bb, bitmap *use_blocks, bitmap need_phis)
     for (bsi = gsi_start_phis (e->dest); !gsi_end_p (bsi); gsi_next (&bsi))
       {
         gimple phi = gsi_stmt (bsi);
-	if (! virtual_operand_p (gimple_phi_result (phi)))
-	  find_uses_to_rename_use (bb, PHI_ARG_DEF_FROM_EDGE (phi, e),
-				   use_blocks, need_phis);
+	find_uses_to_rename_use (bb, PHI_ARG_DEF_FROM_EDGE (phi, e),
+				 use_blocks, need_phis);
       }
 
   for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
@@ -474,6 +468,9 @@ find_uses_to_rename (bitmap changed_bbs, bitmap *use_blocks, bitmap need_phis)
 
    1) Updating it during unrolling/peeling/versioning is trivial, since
       we do not need to care about the uses outside of the loop.
+      The same applies to virtual operands which are also rewritten into
+      loop closed SSA form.  Note that virtual operands are always live
+      until function exit.
    2) The behavior of all uses of an induction variable is the same.
       Without this, you need to distinguish the case when the variable
       is used outside of the loop it is defined in, for example
