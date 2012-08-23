@@ -12914,26 +12914,8 @@ Type_guard_expression::do_traverse(Traverse* traverse)
 void
 Type_guard_expression::do_check_types(Gogo*)
 {
-  // 6g permits using a type guard with unsafe.pointer; we are
-  // compatible.
   Type* expr_type = this->expr_->type();
-  if (expr_type->is_unsafe_pointer_type())
-    {
-      if (this->type_->points_to() == NULL
-	  && (this->type_->integer_type() == NULL
-	      || (this->type_->forwarded()
-		  != Type::lookup_integer_type("uintptr"))))
-	this->report_error(_("invalid unsafe.Pointer conversion"));
-    }
-  else if (this->type_->is_unsafe_pointer_type())
-    {
-      if (expr_type->points_to() == NULL
-	  && (expr_type->integer_type() == NULL
-	      || (expr_type->forwarded()
-		  != Type::lookup_integer_type("uintptr"))))
-	this->report_error(_("invalid unsafe.Pointer conversion"));
-    }
-  else if (expr_type->interface_type() == NULL)
+  if (expr_type->interface_type() == NULL)
     {
       if (!expr_type->is_error() && !this->type_->is_error())
 	this->report_error(_("type assertion only valid for interface types"));
@@ -12966,23 +12948,10 @@ Type_guard_expression::do_check_types(Gogo*)
 tree
 Type_guard_expression::do_get_tree(Translate_context* context)
 {
-  Gogo* gogo = context->gogo();
   tree expr_tree = this->expr_->get_tree(context);
   if (expr_tree == error_mark_node)
     return error_mark_node;
-  Type* expr_type = this->expr_->type();
-  if ((this->type_->is_unsafe_pointer_type()
-       && (expr_type->points_to() != NULL
-	   || expr_type->integer_type() != NULL))
-      || (expr_type->is_unsafe_pointer_type()
-	  && this->type_->points_to() != NULL))
-    return convert_to_pointer(type_to_tree(this->type_->get_backend(gogo)),
-			      expr_tree);
-  else if (expr_type->is_unsafe_pointer_type()
-	   && this->type_->integer_type() != NULL)
-    return convert_to_integer(type_to_tree(this->type_->get_backend(gogo)),
-			      expr_tree);
-  else if (this->type_->interface_type() != NULL)
+  if (this->type_->interface_type() != NULL)
     return Expression::convert_interface_to_interface(context, this->type_,
 						      this->expr_->type(),
 						      expr_tree, true,
