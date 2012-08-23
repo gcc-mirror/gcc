@@ -33,18 +33,19 @@
   Collection (GCC) for a complete list.
 </p></div><div class="section" title="Debug Versions of Library Binary Files"><div class="titlepage"><div><div><h3 class="title"><a id="debug.req"/>Debug Versions of Library Binary Files</h3></div></div></div><p>
   If you would like debug symbols in libstdc++, there are two ways to
-  build libstdc++ with debug flags. The first is to run make from the
-  toplevel in a freshly-configured tree with
+  build libstdc++ with debug flags. The first is to create a separate
+  debug build by running make from the top-level of a tree
+  freshly-configured with
 </p><pre class="programlisting">
      --enable-libstdcxx-debug
 </pre><p>and perhaps</p><pre class="programlisting">
      --enable-libstdcxx-debug-flags='...'
 </pre><p>
-  to create a separate debug build. Both the normal build and the
-  debug build will persist, without having to specify
-  <code class="code">CXXFLAGS</code>, and the debug library will be installed in a
-  separate directory tree, in <code class="code">(prefix)/lib/debug</code>. For
-  more information, look at the <a class="link" href="configure.html" title="Configure">configuration</a> section.
+  Both the normal build and the debug build will persist, without
+  having to specify <code class="code">CXXFLAGS</code>, and the debug library will
+  be installed in a separate directory tree, in <code class="code">(prefix)/lib/debug</code>.
+  For more information, look at the
+  <a class="link" href="configure.html" title="Configure">configuration</a> section.
 </p><p>
   A second approach is to use the configuration flags
 </p><pre class="programlisting">
@@ -67,11 +68,11 @@
   thing of great importance to keep in mind when debugging C++ code
   that uses <code class="code">new</code> and <code class="code">delete</code>: there are
   different kinds of allocation schemes that can be used by <code class="code">
-  std::allocator </code>. For implementation details, see the <a class="link" href="mt_allocator.html" title="Chapter 20. The mt_allocator">mt allocator</a> documentation and
+  std::allocator</code>. For implementation details, see the <a class="link" href="mt_allocator.html" title="Chapter 20. The mt_allocator">mt allocator</a> documentation and
   look specifically for <code class="code">GLIBCXX_FORCE_NEW</code>.
 </p><p>
-  In a nutshell, the default allocator used by <code class="code">
-  std::allocator</code> is a high-performance pool allocator, and can
+  In a nutshell, the optional <code class="classname">mt_allocator</code>
+  is a high-performance pool allocator, and can
   give the mistaken impression that in a suspect executable, memory is
   being leaked, when in reality the memory "leak" is a pool being used
   by the library's allocator and is reclaimed after program
