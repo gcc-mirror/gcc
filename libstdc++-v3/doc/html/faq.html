@@ -4,7 +4,7 @@
       2008, 2010
      
       <a class="link" href="http://www.fsf.org">FSF</a>
-    </p></div></div><hr/></div><div class="qandaset" title="Frequently Asked Questions"><a id="id373797"/><dl><dt/><dd><dl><dt>1.1. <a href="faq.html#faq.what">
+    </p></div></div><hr/></div><div class="qandaset" title="Frequently Asked Questions"><a id="id392575"/><dl><dt/><dd><dl><dt>1.1. <a href="faq.html#faq.what">
       What is libstdc++?
     </a></dt><dt>1.2. <a href="faq.html#faq.why">
       Why should I use libstdc++?
@@ -307,9 +307,8 @@
     </pre><p>
     The exact environment variable to use will depend on your
     platform, e.g. DYLD_LIBRARY_PATH for Darwin,
-    LD_LIBRARY_PATH_32/LD_LIBRARY_PATH_64 for Solaris 32-/64-bit,
-    LD_LIBRARYN32_PATH/LD_LIBRARY64_PATH for Irix N32/64-bit ABIs and
-    SHLIB_PATH for HP-UX.
+    LD_LIBRARY_PATH_32/LD_LIBRARY_PATH_64 for Solaris 32-/64-bit
+    and SHLIB_PATH for HP-UX.
     </p><p>
     See the man pages for <span class="command"><strong>ld</strong></span>, <span class="command"><strong>ldd</strong></span>
     and <span class="command"><strong>ldconfig</strong></span> for more information. The dynamic
@@ -672,8 +671,8 @@
     A few people have reported that the standard containers appear
     to leak memory when tested with memory checkers such as
     <a class="link" href="http://valgrind.org/">valgrind</a>.
-    The library's default allocators keep free memory in a pool
-    for later reuse, rather than returning it to the OS.  Although
+    Under some configurations the library's allocators keep free memory in a
+    pool for later reuse, rather than returning it to the OS.  Although
     this memory is always reachable by the library and is never
     lost, memory debugging tools can report it as a leak.  If you
     want to test the library for memory leaks please read

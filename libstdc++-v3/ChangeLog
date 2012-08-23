@@ -1,3 +1,9 @@
+2012-08-23  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/54354
+	* doc/xml/manual/status_cxx2011.xml: Note missing manipulators.
+	* doc/html/*: Regenerate.
+
 2012-08-15  Tom Tromey  <tromey@redhat.com>
 
 	* testsuite/libstdc++-prettyprinters/cxx11.cc (struct datum):
