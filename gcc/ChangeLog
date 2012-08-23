@@ -1,3 +1,10 @@
+2012-08-23  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-loop-manip.c (add_exit_phis_var): Allow virtual operands.
+	(find_uses_to_rename_use): Likewise.
+	(find_uses_to_rename_bb): Likewise.
+	(find_uses_to_rename_stmt): Walk over all operands.
+
 2012-08-22  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/54089
