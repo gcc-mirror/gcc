@@ -666,7 +666,7 @@ The GCC build tree is needed to be present in that mode.
 The GCC garbage collector GGC is only invoked explicitly. In contrast
 with many other garbage collectors, it is not implicitly invoked by
 allocation routines when a lot of memory has been consumed. So the
-only way to have GGC reclaim storage it to call the @code{ggc_collect}
+only way to have GGC reclaim storage is to call the @code{ggc_collect}
 function explicitly.  This call is an expensive operation, as it may
 have to scan the entire heap.  Beware that local variables (on the GCC
 call stack) are not followed by such an invocation (as many other
