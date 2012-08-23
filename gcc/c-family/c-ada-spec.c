@@ -1947,7 +1947,12 @@ dump_generic_ada_node (pretty_printer *buffer, tree node, tree type,
 
     case POINTER_TYPE:
     case REFERENCE_TYPE:
-      if (TREE_CODE (TREE_TYPE (node)) == FUNCTION_TYPE)
+      if (name_only && TYPE_NAME (node))
+	dump_generic_ada_node
+	  (buffer, TYPE_NAME (node), node, cpp_check,
+	   spc, limited_access, true);
+
+      else if (TREE_CODE (TREE_TYPE (node)) == FUNCTION_TYPE)
 	{
 	  tree fnode = TREE_TYPE (node);
 	  bool is_function;
@@ -1975,17 +1980,25 @@ dump_generic_ada_node (pretty_printer *buffer, tree node, tree type,
 	      dump_generic_ada_node
 		(buffer, TREE_TYPE (fnode), type, cpp_check, spc, 0, true);
 	    }
+
+	    /* If we are dumping the full type, it means we are part of a
+	       type definition and need also a Convention C pragma.  */
+	    if (!name_only)
+	      {
+		pp_semicolon (buffer);
+		newline_and_indent (buffer, spc);
+		pp_string (buffer, "pragma Convention (C, ");
+		dump_generic_ada_node
+		  (buffer, type, 0, cpp_check, spc, false, true);
+		pp_string (buffer, ")");
+	      }
 	}
       else
 	{
 	  int is_access = false;
 	  unsigned int quals = TYPE_QUALS (TREE_TYPE (node));
 
-	  if (name_only && TYPE_NAME (node))
-	    dump_generic_ada_node
-	      (buffer, TYPE_NAME (node), node, cpp_check,
-	       spc, limited_access, true);
-	  else if (VOID_TYPE_P (TREE_TYPE (node)))
+	  if (VOID_TYPE_P (TREE_TYPE (node)))
 	    {
 	      if (!name_only)
 		pp_string (buffer, "new ");
@@ -3087,10 +3100,10 @@ print_ada_struct_decl (pretty_printer *buffer, tree node, tree type,
 		      INDENT (field_spc);
 
 		      if (field_num == 0)
-			pp_string (buffer, "parent : ");
+			pp_string (buffer, "parent : aliased ");
 		      else
 			{
-			  sprintf (buf, "field_%d : ", field_num + 1);
+			  sprintf (buf, "field_%d : aliased ", field_num + 1);
 			  pp_string (buffer, buf);
 			}
 		      dump_ada_decl_name
@@ -3261,6 +3274,10 @@ dump_ads (const char *source_file,
 
       /* Dump all references.  */
       dump_ada_nodes (&pp, source_file, cpp_check);
+
+      /* Requires Ada 2005 syntax, so generate corresponding pragma.
+         Also, disable style checks since this file is auto-generated.  */
+      fprintf (f, "pragma Ada_2005;\npragma Style_Checks (Off);\n\n");
 
       /* Dump withs.  */
       dump_ada_withs (f);

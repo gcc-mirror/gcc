@@ -1,3 +1,10 @@
+2012-08-23  Arnaud Charlet  <charlet@adacore.com>
+
+	* c-ada-spec.c (dump_generic_ada_node): Fix handling of name_only
+	for pointers, and add missing Convention C pragma.
+	(print_ada_struct_decl): Add missing aliased keyword.
+	(dump_ads): Add pragma Ada_2005 and Style_Checks (Off).
+
 2012-08-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-common.c (sizeof_pointer_memaccess_warning): New function.
