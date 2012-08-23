@@ -1,3 +1,11 @@
+2012-08-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/20420
+	* name-lookup.c (supplement_binding_1): Handle specially enums
+	only in class templates.
+	(validate_nonmember_using_decl): Enforce 7.3.3/10 about duplicate
+	using declarations at function scope.
+
 2012-08-21  Richard Guenther  <rguenther@suse.de>
 
 	* cp-tree.h (TREE_INDIRECT_USING): Use TREE_LANG_FLAG_0 accessor.
