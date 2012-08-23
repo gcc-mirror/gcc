@@ -1342,10 +1342,7 @@ scan_rtx (rtx insn, rtx *loc, enum reg_class cl, enum scan_actions action,
   switch (code)
     {
     case CONST:
-    case CONST_INT:
-    case CONST_DOUBLE:
-    case CONST_FIXED:
-    case CONST_VECTOR:
+    CASE_CONST_ANY:
     case SYMBOL_REF:
     case LABEL_REF:
     case CC0:

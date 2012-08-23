@@ -347,8 +347,7 @@ convert_memory_address_addr_space (enum machine_mode to_mode ATTRIBUTE_UNUSED,
      to the default case.  */
   switch (GET_CODE (x))
     {
-    case CONST_INT:
-    case CONST_DOUBLE:
+    CASE_CONST_SCALAR_INT:
       if (GET_MODE_SIZE (to_mode) < GET_MODE_SIZE (from_mode))
 	code = TRUNCATE;
       else if (POINTERS_EXTEND_UNSIGNED < 0)
