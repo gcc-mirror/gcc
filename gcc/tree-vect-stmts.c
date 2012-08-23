@@ -1600,6 +1600,32 @@ vect_finish_stmt_generation (gimple stmt, gimple vec_stmt,
 
   gcc_assert (gimple_code (stmt) != GIMPLE_LABEL);
 
+  if (!gsi_end_p (*gsi)
+      && gimple_has_mem_ops (vec_stmt))
+    {
+      gimple at_stmt = gsi_stmt (*gsi);
+      tree vuse = gimple_vuse (at_stmt);
+      if (vuse && TREE_CODE (vuse) == SSA_NAME)
+	{
+	  tree vdef = gimple_vdef (at_stmt);
+	  gimple_set_vuse (vec_stmt, gimple_vuse (at_stmt));
+	  /* If we have an SSA vuse and insert a store, update virtual
+	     SSA form to avoid triggering the renamer.  Do so only
+	     if we can easily see all uses - which is what almost always
+	     happens with the way vectorized stmts are inserted.  */
+	  if ((vdef && TREE_CODE (vdef) == SSA_NAME)
+	      && ((is_gimple_assign (vec_stmt)
+		   && !is_gimple_reg (gimple_assign_lhs (vec_stmt)))
+		  || (is_gimple_call (vec_stmt)
+		      && !(gimple_call_flags (vec_stmt)
+			   & (ECF_CONST|ECF_PURE|ECF_NOVOPS)))))
+	    {
+	      tree new_vdef = copy_ssa_name (vuse, vec_stmt);
+	      gimple_set_vdef (vec_stmt, new_vdef);
+	      SET_USE (gimple_vuse_op (at_stmt), new_vdef);
+	    }
+	}
+    }
   gsi_insert_before (gsi, vec_stmt, GSI_SAME_STMT);
 
   set_vinfo_for_stmt (vec_stmt, new_stmt_vec_info (vec_stmt, loop_vinfo,
