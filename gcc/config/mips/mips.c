@@ -15575,7 +15575,8 @@ mips16_split_long_branches (void)
       for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
 	if (JUMP_P (insn)
 	    && USEFUL_INSN_P (insn)
-	    && get_attr_length (insn) > 8)
+	    && get_attr_length (insn) > 8
+	    && (any_condjump_p (insn) || any_uncondjump_p (insn)))
 	  {
 	    rtx old_label, new_label, temp, saved_temp;
 	    rtx target, jump, jump_sequence;

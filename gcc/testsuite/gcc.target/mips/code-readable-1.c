@@ -1,4 +1,4 @@
-/* { dg-options "(-mips16) -mcode-readable=yes -mgp32 addressing=absolute" } */
+/* { dg-options "(-mips16) -mcode-readable=yes -mgp32 addressing=absolute -O" } */
 
 MIPS16 int
 foo (int i)
