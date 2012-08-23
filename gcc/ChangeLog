@@ -1,3 +1,7 @@
+2012-08-23  Mingjie Xing  <mingjie.xing@gmail.com>
+
+	* doc/gty.texi: Fix typo.
+
 2012-08-23  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-loop-manip.c (add_exit_phis_var): Allow virtual operands.
