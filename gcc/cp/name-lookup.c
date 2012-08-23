@@ -441,7 +441,8 @@ supplement_binding_1 (cxx_binding *binding, tree decl)
 	     template in order to handle late matching of underlying
 	     type on an opaque-enum-declaration followed by an
 	     enum-specifier.  */
-	  || (TREE_CODE (TREE_TYPE (target_decl)) == ENUMERAL_TYPE
+	  || (processing_template_decl
+	      && TREE_CODE (TREE_TYPE (target_decl)) == ENUMERAL_TYPE
 	      && TREE_CODE (TREE_TYPE (target_bval)) == ENUMERAL_TYPE
 	      && (dependent_type_p (ENUM_UNDERLYING_TYPE
 				    (TREE_TYPE (target_decl)))
@@ -2420,7 +2421,15 @@ validate_nonmember_using_decl (tree decl, tree scope, tree name)
   gcc_assert (DECL_P (decl));
 
   /* Make a USING_DECL.  */
-  return push_using_decl (scope, name);
+  tree using_decl = push_using_decl (scope, name);
+
+  if (using_decl == NULL_TREE
+      && at_function_scope_p ()
+      && TREE_CODE (decl) == VAR_DECL)
+    /* C++11 7.3.3/10.  */
+    error ("%qD is already declared in this scope", name);
+  
+  return using_decl;
 }
 
 /* Process local and global using-declarations.  */
