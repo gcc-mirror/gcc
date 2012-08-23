@@ -1,3 +1,7 @@
+2012-08-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.c (copy_node_stat): Clear DECL_STRUCT_FUNCTION.
+
 2012-08-23  Mingjie Xing  <mingjie.xing@gmail.com>
 
 	* doc/gty.texi: Fix typo.

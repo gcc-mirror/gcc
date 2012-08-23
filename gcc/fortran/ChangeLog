@@ -1,3 +1,9 @@
+2012-08-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* trans-decl.c (trans_function_start, generate_coarray_init,
+	create_main_function, gfc_generate_constructors): Call
+	allocate_struct_function instead of init_function_start.
+
 2012-08-22  Tobias Burnus  <burnus@net-b.de>
 
 	* trans-expr.c (gfc_copy_class_to_class,
