@@ -1,3 +1,21 @@
+2012-08-23  Julian Brown  <julian@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config/mips/mips.md
+	(UNSPEC_CASESI_DISPATCH): New.
+	(MIPS16_T_REGNUM): New constant.
+	(tablejump): Don't use for MIPS16_SHORT_JUMP_TABLES.
+	(casesi): New.
+	(casesi_internal_mips16_<mode>): New.
+	* config/mips/mips.c (mips16_split_long_branches): Adjust test
+	to ignore casesi jump tables.
+	* config/mips/mips.h (TARGET_MIPS16_SHORT_JUMP_TABLES): Update
+	comment.
+	(CASE_VECTOR_MODE): Use SImode unconditionally.
+	(CASE_VECTOR_SHORTEN_MODE): Define.
+	(ASM_OUTPUT_ADDR_DIFF_ELT): Output word-sized addr_diff_elts
+	when necessary for MIPS16_SHORT_JUMP_TABLES.
+
 2012-08-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_density_test): Free loop body.

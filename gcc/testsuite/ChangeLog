@@ -1,3 +1,8 @@
+2012-08-23  Julian Brown  <julian@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gcc.target/mips/code-readable-1.c: Add -O to options.
+
 2012-08-23  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/20420

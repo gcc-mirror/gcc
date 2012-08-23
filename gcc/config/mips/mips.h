@@ -2330,13 +2330,18 @@ typedef struct mips_args {
 /* True if we're generating a form of MIPS16 code in which jump tables
    are stored in the text section and encoded as 16-bit PC-relative
    offsets.  This is only possible when general text loads are allowed,
-   since the table access itself will be an "lh" instruction.  */
-/* ??? 16-bit offsets can overflow in large functions.  */
+   since the table access itself will be an "lh" instruction.  If the
+   PC-relative offsets grow too large, 32-bit offsets are used instead.  */
 #define TARGET_MIPS16_SHORT_JUMP_TABLES TARGET_MIPS16_TEXT_LOADS
 
 #define JUMP_TABLES_IN_TEXT_SECTION TARGET_MIPS16_SHORT_JUMP_TABLES
 
-#define CASE_VECTOR_MODE (TARGET_MIPS16_SHORT_JUMP_TABLES ? HImode : ptr_mode)
+#define CASE_VECTOR_MODE SImode
+
+/* Only use short offsets if their range will not overflow.  */
+#define CASE_VECTOR_SHORTEN_MODE(MIN, MAX, BODY) \
+  (TARGET_MIPS16_SHORT_JUMP_TABLES && ((MIN) >= -32768 && (MAX) < 32768) \
+   ? HImode : SImode)
 
 #define CASE_VECTOR_PC_RELATIVE TARGET_MIPS16_SHORT_JUMP_TABLES
 
@@ -2636,8 +2641,14 @@ while (0)
 #define ASM_OUTPUT_ADDR_DIFF_ELT(STREAM, BODY, VALUE, REL)		\
 do {									\
   if (TARGET_MIPS16_SHORT_JUMP_TABLES)					\
-    fprintf (STREAM, "\t.half\t%sL%d-%sL%d\n",				\
-	     LOCAL_LABEL_PREFIX, VALUE, LOCAL_LABEL_PREFIX, REL);	\
+    {									\
+      if (GET_MODE (BODY) == HImode)					\
+	fprintf (STREAM, "\t.half\t%sL%d-%sL%d\n",			\
+		 LOCAL_LABEL_PREFIX, VALUE, LOCAL_LABEL_PREFIX, REL);	\
+      else								\
+	fprintf (STREAM, "\t.word\t%sL%d-%sL%d\n",			\
+		 LOCAL_LABEL_PREFIX, VALUE, LOCAL_LABEL_PREFIX, REL);	\
+    }									\
   else if (TARGET_GPWORD)						\
     fprintf (STREAM, "\t%s\t%sL%d\n",					\
 	     ptr_mode == DImode ? ".gpdword" : ".gpword",		\
