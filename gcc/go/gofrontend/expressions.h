@@ -623,9 +623,9 @@ class Expression
   // Return a tree implementing the comparison LHS_TREE OP RHS_TREE.
   // TYPE is the type of both sides.
   static tree
-  comparison_tree(Translate_context*, Operator op, Type* left_type,
-		  tree left_tree, Type* right_type, tree right_tree,
-		  Location);
+  comparison_tree(Translate_context*, Type* result_type, Operator op,
+		  Type* left_type, tree left_tree, Type* right_type,
+		  tree right_tree, Location);
 
   // Return a tree for the multi-precision integer VAL in TYPE.
   static tree
@@ -1149,7 +1149,7 @@ class Binary_expression : public Expression
   Binary_expression(Operator op, Expression* left, Expression* right,
 		    Location location)
     : Expression(EXPRESSION_BINARY, location),
-      op_(op), left_(left), right_(right)
+      op_(op), left_(left), right_(right), type_(NULL)
   { }
 
   // Return the operator.
@@ -1280,6 +1280,8 @@ class Binary_expression : public Expression
   Expression* left_;
   // The right hand side operand.
   Expression* right_;
+  // The type of a comparison operation.
+  Type* type_;
 };
 
 // A call expression.  The go statement needs to dig inside this.
