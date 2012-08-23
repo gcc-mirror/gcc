@@ -1,3 +1,11 @@
+2012-08-22  Georg-Johann Lay  <avr@gjlay.de>
+
+	* Makefile.in (fixed-funcs,fixed-conv-funcs): filter-out
+	LIB2FUNCS_EXCLUDE before adding them to libgcc-objects,
+	libgcc-s-objects.
+	* fixed-obj.mk: Only expand dependency if $o is not in
+	LIB2FUNCS_EXCLUDE.
+
 2012-08-22  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/t-linux (HOST_LIBGCC2_CFLAGS): New.

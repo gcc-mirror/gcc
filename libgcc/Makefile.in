@@ -763,9 +763,9 @@ iter-to := $(fixed-modes)
 include $(srcdir)/empty.mk $(patsubst %,$(srcdir)/fixed-obj.mk,$(iter-items))
 
 # Add arithmetic functions to list of objects to be built
-libgcc-objects += $(patsubst %,%$(objext),$(fixed-funcs))
+libgcc-objects += $(patsubst %,%$(objext),$(filter-out $(LIB2FUNCS_EXCLUDE),$(fixed-funcs)))
 ifeq ($(enable_shared),yes)
-libgcc-s-objects += $(patsubst %,%_s$(objext),$(fixed-funcs))
+libgcc-s-objects += $(patsubst %,%_s$(objext),$(filter-out $(LIB2FUNCS_EXCLUDE),$(fixed-funcs)))
 endif
 
 # Convert from or to fractional
@@ -782,9 +782,9 @@ iter-to := $(fixed-conv-to)
 include $(srcdir)/empty.mk $(patsubst %,$(srcdir)/fixed-obj.mk,$(iter-items))
 
 # Add conversion functions to list of objects to be built
-libgcc-objects += $(patsubst %,%$(objext),$(fixed-conv-funcs))
+libgcc-objects += $(patsubst %,%$(objext),$(filter-out $(LIB2FUNCS_EXCLUDE),$(fixed-conv-funcs)))
 ifeq ($(enable_shared),yes)
-libgcc-s-objects += $(patsubst %,%_s$(objext),$(fixed-conv-funcs))
+libgcc-s-objects += $(patsubst %,%_s$(objext),$(filter-out $(LIB2FUNCS_EXCLUDE),$(fixed-conv-funcs)))
 endif
 
 endif
