@@ -2265,7 +2265,7 @@ trans_function_start (gfc_symbol * sym)
   /* Create RTL for function definition.  */
   make_decl_rtl (fndecl);
 
-  init_function_start (fndecl);
+  allocate_struct_function (fndecl, false);
 
   /* function.c requires a push at the start of the function.  */
   pushlevel ();
@@ -4408,7 +4408,7 @@ generate_coarray_init (gfc_namespace * ns __attribute((unused)))
 
   rest_of_decl_compilation (fndecl, 0, 0);
   make_decl_rtl (fndecl);
-  init_function_start (fndecl);
+  allocate_struct_function (fndecl, false);
 
   pushlevel ();
   gfc_init_block (&caf_init_block);
@@ -4982,7 +4982,7 @@ create_main_function (tree fndecl)
 
   rest_of_decl_compilation (ftn_main, 1, 0);
   make_decl_rtl (ftn_main);
-  init_function_start (ftn_main);
+  allocate_struct_function (ftn_main, false);
   pushlevel ();
 
   gfc_init_block (&body);
@@ -5537,7 +5537,7 @@ gfc_generate_constructors (void)
 
   make_decl_rtl (fndecl);
 
-  init_function_start (fndecl);
+  allocate_struct_function (fndecl, false);
 
   pushlevel ();
 
