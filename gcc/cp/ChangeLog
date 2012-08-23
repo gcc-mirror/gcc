@@ -1,3 +1,7 @@
+2012-08-23  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (compute_array_index_type): Use type_dependent_expression_p.
+
 2012-08-23  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/20420
