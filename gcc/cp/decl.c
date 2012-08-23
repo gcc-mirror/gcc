@@ -7916,7 +7916,6 @@ stabilize_vla_size (tree size)
 tree
 compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
 {
-  tree type;
   tree itype;
   tree osize = size;
   tree abi_1_itype = NULL_TREE;
@@ -7924,10 +7923,10 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
   if (error_operand_p (size))
     return error_mark_node;
 
-  type = TREE_TYPE (size);
-  /* type_dependent_expression_p? */
-  if (!dependent_type_p (type))
+  if (!type_dependent_expression_p (size))
     {
+      tree type = TREE_TYPE (size);
+
       mark_rvalue_use (size);
 
       if (cxx_dialect < cxx0x && TREE_CODE (size) == NOP_EXPR
@@ -7989,7 +7988,7 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
   /* We can only call value_dependent_expression_p on integral constant
      expressions; treat non-constant expressions as dependent, too.  */
   if (processing_template_decl
-      && (dependent_type_p (type)
+      && (type_dependent_expression_p (size)
 	  || !TREE_CONSTANT (size) || value_dependent_expression_p (size)))
     {
       /* We cannot do any checking for a SIZE that isn't known to be
