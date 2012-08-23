@@ -1,3 +1,18 @@
+2012-08-23  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.dg/fixed-point/convert.c: Split into manageable parts:
+	* gcc.dg/fixed-point/convert-1.c: New.
+	* gcc.dg/fixed-point/convert-2.c: New.
+	* gcc.dg/fixed-point/convert-3.c: New.
+	* gcc.dg/fixed-point/convert-4.c: New.
+	* gcc.dg/fixed-point/convert-float-1.c: New.
+	* gcc.dg/fixed-point/convert-float-2.c: New.
+	* gcc.dg/fixed-point/convert-float-3.c: New.
+	* gcc.dg/fixed-point/convert-float-4.c: New.
+	* gcc.dg/fixed-point/convert-accum-neg.c: New.
+	* gcc.dg/fixed-point/convert-sat.c: New.
+	* gcc.dg/fixed-point/convert.h: New.
+
 2012-08-22  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/54089
