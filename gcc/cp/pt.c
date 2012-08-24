@@ -15246,10 +15246,12 @@ resolve_overloaded_unification (tree tparms,
 	  if (TREE_CODE (fn) != TEMPLATE_DECL)
 	    continue;
 
-	  ++processing_template_decl;
-	  subargs = get_bindings (fn, DECL_TEMPLATE_RESULT (fn),
-				  expl_subargs, /*check_ret=*/false);
-	  if (subargs && !any_dependent_template_arguments_p (subargs))
+	  subargs = coerce_template_parms (DECL_INNERMOST_TEMPLATE_PARMS (fn),
+					   expl_subargs, NULL_TREE, tf_none,
+					   /*require_all_args=*/true,
+					   /*use_default_args=*/true);
+	  if (subargs != error_mark_node
+	      && !any_dependent_template_arguments_p (subargs))
 	    {
 	      elem = tsubst (TREE_TYPE (fn), subargs, tf_none, NULL_TREE);
 	      if (try_one_overload (tparms, targs, tempargs, parm,
@@ -15262,7 +15264,6 @@ resolve_overloaded_unification (tree tparms,
 	    }
 	  else if (subargs)
 	    ++ok;
-	  --processing_template_decl;
 	}
       /* If no templates (or more than one) are fully resolved by the
 	 explicit arguments, this template-id is a non-deduced context; it
@@ -15367,10 +15368,12 @@ resolve_nondeduced_context (tree orig_expr)
 	  if (TREE_CODE (fn) != TEMPLATE_DECL)
 	    continue;
 
-	  ++processing_template_decl;
-	  subargs = get_bindings (fn, DECL_TEMPLATE_RESULT (fn),
-				  expl_subargs, /*check_ret=*/false);
-	  if (subargs && !any_dependent_template_arguments_p (subargs))
+	  subargs = coerce_template_parms (DECL_INNERMOST_TEMPLATE_PARMS (fn),
+					   expl_subargs, NULL_TREE, tf_none,
+					   /*require_all_args=*/true,
+					   /*use_default_args=*/true);
+	  if (subargs != error_mark_node
+	      && !any_dependent_template_arguments_p (subargs))
 	    {
 	      elem = instantiate_template (fn, subargs, tf_none);
 	      if (elem == error_mark_node)
@@ -15384,7 +15387,6 @@ resolve_nondeduced_context (tree orig_expr)
 		  ++good;
 		}
 	    }
-	  --processing_template_decl;
 	}
       if (good == 1)
 	{
@@ -15434,6 +15436,9 @@ try_one_overload (tree tparms,
   int nargs;
   tree tempargs;
   int i;
+
+  if (arg == error_mark_node)
+    return 0;
 
   /* [temp.deduct.type] A template-argument can be deduced from a pointer
      to function or pointer to member function argument if the set of
@@ -17129,40 +17134,13 @@ get_bindings (tree fn, tree decl, tree explicit_args, bool check_rettype)
 {
   int ntparms = DECL_NTPARMS (fn);
   tree targs = make_tree_vec (ntparms);
-  tree decl_type;
+  tree decl_type = TREE_TYPE (decl);
   tree decl_arg_types;
   tree *args;
   unsigned int nargs, ix;
   tree arg;
 
-  /* Substitute the explicit template arguments into the type of DECL.
-     The call to fn_type_unification will handle substitution into the
-     FN.  */
-  decl_type = TREE_TYPE (decl);
-  if (explicit_args && decl == DECL_TEMPLATE_RESULT (fn))
-    {
-      tree tmpl;
-      tree converted_args;
-
-      if (DECL_TEMPLATE_INFO (decl))
-	tmpl = DECL_TI_TEMPLATE (decl);
-      else
-	/* We can get here for some invalid specializations.  */
-	return NULL_TREE;
-
-      converted_args
-	= coerce_template_parms (DECL_INNERMOST_TEMPLATE_PARMS (tmpl),
-				 explicit_args, NULL_TREE,
-				 tf_none,
-				 /*require_all_args=*/false,
-				 /*use_default_args=*/false);
-      if (converted_args == error_mark_node)
-	return NULL_TREE;
-
-      decl_type = tsubst (decl_type, converted_args, tf_none, NULL_TREE);
-      if (decl_type == error_mark_node)
-	return NULL_TREE;
-    }
+  gcc_assert (decl != DECL_TEMPLATE_RESULT (fn));
 
   /* Never do unification on the 'this' parameter.  */
   decl_arg_types = skip_artificial_parms_for (decl, 
