@@ -105,7 +105,7 @@ endif
 # Filter out supported conversions from fixed-bit.c
 
 conv_XY=$(conv)$(mode1)$(mode2)
-conv_X=$(conv)$(mode)
+func_X=$(func)$(mode)
 
 # Conversions supported by the compiler
 
@@ -140,9 +140,9 @@ LIB2FUNCS_EXCLUDE += \
 allfix_modes = QQ UQQ HQ UHQ HA UHA SQ USQ SA USA DA UDA DQ UDQ TQ UTQ TA UTA
 
 LIB2FUNCS_EXCLUDE += \
-	$(foreach conv,_add _sub,\
-	$(foreach mode,$(allfix_modes),$(conv_X)3))
+	$(foreach func,_add _sub,\
+	$(foreach mode,$(allfix_modes),$(func_X)3))
 
 LIB2FUNCS_EXCLUDE += \
-	$(foreach conv,_lshr _ashl _ashr _cmp,\
-	$(foreach mode,$(allfix_modes),$(conv_X)))
+	$(foreach func,_lshr _ashl _ashr _cmp,\
+	$(foreach mode,$(allfix_modes),$(func_X)))
