@@ -1,3 +1,9 @@
+2012-08-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR debug/52857
+	* dwarf2out.c (mem_loc_descriptor): Allow arg_pointer_rtx and
+	frame_pointer_rtx for based_loc_descr.
+
 2012-08-24  Martin Jambor  <mjambor@suse.cz>
 
 	* predict.c (maybe_hot_frequency_p): New parameter fun.  Use its decl
