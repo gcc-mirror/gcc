@@ -130,16 +130,12 @@ static int n_initialized = 0;
 /*  Return true if the SSA operands cache is active.  */
 
 bool
-ssa_operands_active (void)
+ssa_operands_active (struct function *fun)
 {
-  /* This function may be invoked from contexts where CFUN is NULL
-     (IPA passes), return false for now.  FIXME: operands may be
-     active in each individual function, maybe this function should
-     take CFUN as a parameter.  */
-  if (cfun == NULL)
+  if (fun == NULL)
     return false;
 
-  return cfun->gimple_df && gimple_ssa_operands (cfun)->ops_active;
+  return fun->gimple_df && gimple_ssa_operands (fun)->ops_active;
 }
 
 
@@ -1211,7 +1207,7 @@ update_stmt_operands (gimple stmt)
 {
   /* If update_stmt_operands is called before SSA is initialized, do
      nothing.  */
-  if (!ssa_operands_active ())
+  if (!ssa_operands_active (cfun))
     return;
 
   timevar_push (TV_TREE_OPS);
@@ -1244,7 +1240,7 @@ swap_tree_operands (gimple stmt, tree *exp0, tree *exp1)
      positions of these two operands in their respective immediate use
      lists by adjusting their use pointer to point to the new
      operand position.  */
-  if (ssa_operands_active () && op0 != op1)
+  if (ssa_operands_active (cfun) && op0 != op1)
     {
       use_optype_p use0, use1, ptr;
       use0 = use1 = NULL;

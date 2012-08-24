@@ -114,7 +114,7 @@ extern void debug_immediate_uses_for (tree var);
 extern void dump_decl_set (FILE *, bitmap);
 extern void debug_decl_set (bitmap);
 
-extern bool ssa_operands_active (void);
+extern bool ssa_operands_active (struct function *);
 
 extern bool virtual_operand_p (tree);
 extern void unlink_stmt_vdef (gimple);

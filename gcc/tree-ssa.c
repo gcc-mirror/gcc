@@ -1157,7 +1157,7 @@ delete_tree_ssa (void)
   fini_ssanames ();
 
   /* We no longer maintain the SSA operand cache at this point.  */
-  if (ssa_operands_active ())
+  if (ssa_operands_active (cfun))
     fini_ssa_operands ();
 
   htab_delete (cfun->gimple_df->default_defs);
