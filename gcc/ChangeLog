@@ -1,3 +1,8 @@
+2012-08-24  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	* config/i386/i386.c (ia32_multipass_dfa_lookahead) : Add
+	case for Atom processor.
+
 2012-08-24  Simon Baldwin  <simonb@google.com>
 
 	* dwarf2out.c (gen_producer_string): Omit command line switch if
