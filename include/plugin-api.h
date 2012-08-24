@@ -318,6 +318,33 @@ typedef
 enum ld_plugin_status
 (*ld_plugin_allow_section_ordering) (void);
 
+/* The linker's interface for specifying that a subset of sections is
+   to be mapped to a unique segment.  If the plugin wants to call
+   unique_segment_for_sections, it must call this function from a
+   claim_file_handler or when it is first loaded.  */
+
+typedef
+enum ld_plugin_status
+(*ld_plugin_allow_unique_segment_for_sections) (void);
+
+/* The linker's interface for specifying that a specific set of sections
+   must be mapped to a unique segment.  ELF segments do not have names
+   and the NAME is used as the name of the newly created output section
+   that is then placed in the unique PT_LOAD segment.  FLAGS is used to
+   specify if any additional segment flags need to be set.  For instance,
+   a specific segment flag can be set to identify this segment.  Unsetting
+   segment flags that would be set by default is not possible.  The
+   parameter SEGMENT_ALIGNMENT when non-zero will override the default.  */
+
+typedef
+enum ld_plugin_status
+(*ld_plugin_unique_segment_for_sections) (
+    const char* segment_name,
+    uint64_t segment_flags,
+    uint64_t segment_alignment,
+    const struct ld_plugin_section * section_list,
+    unsigned int num_sections);
+
 enum ld_plugin_level
 {
   LDPL_INFO,
@@ -355,7 +382,9 @@ enum ld_plugin_tag
   LDPT_GET_INPUT_SECTION_CONTENTS,
   LDPT_UPDATE_SECTION_ORDER,
   LDPT_ALLOW_SECTION_ORDERING,
-  LDPT_GET_SYMBOLS_V2
+  LDPT_GET_SYMBOLS_V2,
+  LDPT_ALLOW_UNIQUE_SEGMENT_FOR_SECTIONS,
+  LDPT_UNIQUE_SEGMENT_FOR_SECTIONS
 };
 
 /* The plugin transfer vector.  */
@@ -385,6 +414,8 @@ struct ld_plugin_tv
     ld_plugin_get_input_section_contents tv_get_input_section_contents;
     ld_plugin_update_section_order tv_update_section_order;
     ld_plugin_allow_section_ordering tv_allow_section_ordering;
+    ld_plugin_allow_unique_segment_for_sections tv_allow_unique_segment_for_sections; 
+    ld_plugin_unique_segment_for_sections tv_unique_segment_for_sections;
   } tv_u;
 };
 
