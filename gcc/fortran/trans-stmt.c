@@ -274,7 +274,7 @@ gfc_conv_elemental_dependencies (gfc_se * se, gfc_se * loopse,
 	  /* Obtain the argument descriptor for unpacking.  */
 	  gfc_init_se (&parmse, NULL);
 	  parmse.want_pointer = 1;
-	  gfc_conv_expr_descriptor (&parmse, e, gfc_walk_expr (e));
+	  gfc_conv_expr_descriptor (&parmse, e);
 	  gfc_add_block_to_block (&se->pre, &parmse.pre);
 
 	  /* If we've got INTENT(INOUT) or a derived type with INTENT(OUT),
@@ -864,9 +864,7 @@ gfc_trans_sync (gfc_code *code, gfc_exec_op type)
 			     "implemented for image-set at %L",
 			     gfc_c_int_kind, &code->expr1->where);
 
-	  gfc_conv_array_parameter (&se, code->expr1,
-				    gfc_walk_expr (code->expr1), true, NULL,
-				    NULL, &len);
+	  gfc_conv_array_parameter (&se, code->expr1, true, NULL, NULL, &len);
 	  images = se.expr;
 
 	  tmp = gfc_typenode_for_spec (&code->expr1->ts);
@@ -1160,7 +1158,6 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
       && (sym->as->type == AS_DEFERRED || sym->assoc->variable))
     {
       gfc_se se;
-      gfc_ss *ss;
       tree desc;
 
       desc = sym->backend_decl;
@@ -1168,13 +1165,12 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
       /* If association is to an expression, evaluate it and create temporary.
 	 Otherwise, get descriptor of target for pointer assignment.  */
       gfc_init_se (&se, NULL);
-      ss = gfc_walk_expr (e);
       if (sym->assoc->variable)
 	{
 	  se.direct_byref = 1;
 	  se.expr = desc;
 	}
-      gfc_conv_expr_descriptor (&se, e, ss);
+      gfc_conv_expr_descriptor (&se, e);
 
       /* If we didn't already do the pointer assignment, set associate-name
 	 descriptor to the one generated for the temporary.  */
@@ -1229,7 +1225,7 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
       if (sym->ts.type == BT_CLASS && CLASS_DATA (sym)->attr.dimension)
 	{
 	  /* For a class array we need a descriptor for the selector.  */
-	  gfc_conv_expr_descriptor (&se, e, gfc_walk_expr (e));
+	  gfc_conv_expr_descriptor (&se, e);
 
 	  /* Obtain a temporary class container for the result.  */ 
 	  gfc_conv_class_to_class (&se, e, sym->ts, false);
@@ -3502,8 +3498,7 @@ gfc_trans_pointer_assign_need_temp (gfc_expr * expr1, gfc_expr * expr2,
       gfc_init_se (&lse, NULL);
       lse.expr = gfc_build_array_ref (tmp1, count, NULL);
       lse.direct_byref = 1;
-      rss = gfc_walk_expr (expr2);
-      gfc_conv_expr_descriptor (&lse, expr2, rss);
+      gfc_conv_expr_descriptor (&lse, expr2);
 
       gfc_add_block_to_block (&body, &lse.pre);
       gfc_add_block_to_block (&body, &lse.post);
@@ -3524,9 +3519,8 @@ gfc_trans_pointer_assign_need_temp (gfc_expr * expr1, gfc_expr * expr2,
       gfc_add_modify (block, count, gfc_index_zero_node);
 
       parm = gfc_build_array_ref (tmp1, count, NULL);
-      lss = gfc_walk_expr (expr1);
       gfc_init_se (&lse, NULL);
-      gfc_conv_expr_descriptor (&lse, expr1, lss);
+      gfc_conv_expr_descriptor (&lse, expr1);
       gfc_add_modify (&lse.pre, lse.expr, parm);
       gfc_start_block (&body);
       gfc_add_block_to_block (&body, &lse.pre);
