@@ -1,5 +1,8 @@
 2012-08-24  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/54363
+	* gcc.dg/pr54363.c: New test.
+
 	PR c/54355
 	* gcc.dg/pr54355.c: New test.
 
