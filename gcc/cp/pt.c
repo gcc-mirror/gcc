@@ -735,7 +735,7 @@ end_explicit_instantiation (void)
   processing_explicit_instantiation = false;
 }
 
-/* An explicit specialization or partial specialization TMPL is being
+/* An explicit specialization or partial specialization of TMPL is being
    declared.  Check that the namespace in which the specialization is
    occurring is permissible.  Returns false iff it is invalid to
    specialize TMPL in the current namespace.  */
@@ -1407,7 +1407,7 @@ register_specialization (tree spec, tree tmpl, tree args, bool is_friend,
 		  DECL_SOURCE_LOCATION (clone)
 		    = DECL_SOURCE_LOCATION (fn);
 		}
-	      check_specialization_namespace (fn);
+	      check_specialization_namespace (tmpl);
 
 	      return fn;
 	    }
@@ -1803,6 +1803,16 @@ determine_specialization (tree template_id,
 
   if (template_id == error_mark_node || decl == error_mark_node)
     return error_mark_node;
+
+  /* We shouldn't be specializing a member template of an
+     unspecialized class template; we already gave an error in
+     check_specialization_scope, now avoid crashing.  */
+  if (template_count && DECL_CLASS_SCOPE_P (decl)
+      && template_class_depth (DECL_CONTEXT (decl)) > 0)
+    {
+      gcc_assert (errorcount);
+      return error_mark_node;
+    }
 
   fns = TREE_OPERAND (template_id, 0);
   explicit_targs = TREE_OPERAND (template_id, 1);
