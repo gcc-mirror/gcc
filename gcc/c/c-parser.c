@@ -4327,7 +4327,7 @@ c_parser_label (c_parser *parser)
 		    "a declaration is not a statement");
 	  c_parser_declaration_or_fndef (parser, /*fndef_ok*/ false,
 					 /*static_assert_ok*/ true,
-					 /*nested*/ true, /*empty_ok*/ false,
+					 /*empty_ok*/ true, /*nested*/ true,
 					 /*start_attr_ok*/ true, NULL);
 	}
     }
