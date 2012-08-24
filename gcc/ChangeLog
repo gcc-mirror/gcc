@@ -1,3 +1,48 @@
+2012-08-24  Martin Jambor  <mjambor@suse.cz>
+
+	* predict.c (maybe_hot_frequency_p): New parameter fun.  Use its decl
+	instead of current_function_decl, use profile_status_for_function and
+	ENTRY_BLOCK_PTR_FOR_FUNCTION with fun instead of their cfun variants.
+	(maybe_hot_count_p): New parameter fun, use
+	profile_status_for_function instead of its cfun_variant.
+	(maybe_hot_bb_p): New parameter fun, checking-assert it, pass it to
+	all callees.
+	(maybe_hot_edge_p): Pass cfun to maybe_hot_count_p and
+	maybe_hot_frequency_p.
+	(probably_never_executed_bb_p): New parameter fun, use its decl
+	instead of current_function_decl.
+	(optimize_bb_for_size_p): Pass cfun to maybe_hot_bb_p.
+	(rtl_profile_for_bb): Likewise.
+	(compute_function_frequency): Pass cfun to maybe_hot_bb_p and
+	probably_never_executed_bb_p.
+	* tree-ssa-operands.c (ssa_operands_active): New operator fun.  Use it
+	instead of cfun.
+	(update_stmt_operands): Pass cfun as an argument of
+	ssa_operands_active.
+	(swap_tree_operands): Likewise.
+	* gimple-iterator.c (update_modified_stmt): Likewise.
+	(update_modified_stmts): Likewise.
+	* tree-flow-inline.h (delink_stmt_imm_use): Likewise.
+	* tree-ssa.c (delete_tree_ssa): Likewise.
+	* bb-reorder.c (bb_to_key): Pass cfun to probably_never_executed_bb_p.
+	(push_to_next_round_p): Likewise.
+	(find_rarely_executed_basic_blocks_and_crossing_edges ): Likewise.
+	* cfg.c: Inlude tree.h.
+	(check_bb_profile): Use profile_status_for_function,
+	EXIT_BLOCK_PTR_FOR_FUNCTION and ENTRY_BLOCK_PTR_FOR_FUNCTION with
+	DECL_STRUCT_FUNCTION (current_function_decl) instead of their cfun
+	variants.
+	(dump_bb_info): Pass DECL_STRUCT_FUNCTION (current_function_decl) to
+	maybe_hot_bb_p and probably_never_executed_bb_p.
+	* gimple-pretty-print.c (gimple_dump_bb_buff): Checking-assert that
+	DECL_STRUCT_FUNCTION (current_function_decl) is not NULL.  Pass it to
+	dump_histograms_for_stmt.
+	(dump_gimple_mem_ops): Pass DECL_STRUCT_FUNCTION (current_function_decl)
+	as an argument to dump_gimple_mem_ops.
+	* tree-cfg.c (dump_function_to_file): Rename parameter fn to fndecl.
+	Do not change cfun.  Change and restore current_function_decl.
+	* Makefile.in (cfg.o): Include TREE_H in dependencies.
+
 2012-08-24  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/54222

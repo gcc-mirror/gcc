@@ -798,7 +798,7 @@ delink_stmt_imm_use (gimple stmt)
    ssa_op_iter iter;
    use_operand_p use_p;
 
-   if (ssa_operands_active ())
+   if (ssa_operands_active (cfun))
      FOR_EACH_PHI_OR_STMT_USE (use_p, stmt, iter, SSA_OP_ALL_USES)
        delink_imm_use (use_p);
 }

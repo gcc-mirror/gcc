@@ -226,7 +226,7 @@ push_to_next_round_p (const_basic_block bb, int round, int number_of_rounds,
 
   block_not_hot_enough = (bb->frequency < exec_th
 			  || bb->count < count_th
-			  || probably_never_executed_bb_p (bb));
+			  || probably_never_executed_bb_p (cfun, bb));
 
   if (there_exists_another_round
       && block_not_hot_enough)
@@ -823,7 +823,7 @@ bb_to_key (basic_block bb)
   /* Do not start in probably never executed blocks.  */
 
   if (BB_PARTITION (bb) == BB_COLD_PARTITION
-      || probably_never_executed_bb_p (bb))
+      || probably_never_executed_bb_p (cfun, bb))
     return BB_FREQ_MAX;
 
   /* Prefer blocks whose predecessor is an end of some trace
@@ -1308,7 +1308,7 @@ find_rarely_executed_basic_blocks_and_crossing_edges (void)
   /* Mark which partition (hot/cold) each basic block belongs in.  */
   FOR_EACH_BB (bb)
     {
-      if (probably_never_executed_bb_p (bb))
+      if (probably_never_executed_bb_p (cfun, bb))
 	BB_SET_PARTITION (bb, BB_COLD_PARTITION);
       else
 	BB_SET_PARTITION (bb, BB_HOT_PARTITION);

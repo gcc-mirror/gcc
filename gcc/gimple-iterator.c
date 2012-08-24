@@ -33,7 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 static inline void
 update_modified_stmt (gimple stmt)
 {
-  if (!ssa_operands_active ())
+  if (!ssa_operands_active (cfun))
     return;
   update_stmt_if_modified (stmt);
 }
@@ -46,7 +46,7 @@ update_modified_stmts (gimple_seq seq)
 {
   gimple_stmt_iterator gsi;
 
-  if (!ssa_operands_active ())
+  if (!ssa_operands_active (cfun))
     return;
   for (gsi = gsi_start (seq); !gsi_end_p (gsi); gsi_next (&gsi))
     update_stmt_if_modified (gsi_stmt (gsi));

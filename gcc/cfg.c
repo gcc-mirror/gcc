@@ -55,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ggc.h"
 #include "hashtab.h"
 #include "alloc-pool.h"
+#include "tree.h"
 #include "basic-block.h"
 #include "df.h"
 #include "cfgloop.h" /* FIXME: For struct loop.  */
@@ -404,14 +405,15 @@ check_bb_profile (basic_block bb, FILE * file, int indent, int flags)
   int sum = 0;
   gcov_type lsum;
   edge_iterator ei;
+  struct function *fun = DECL_STRUCT_FUNCTION (current_function_decl);
   char *s_indent = (char *) alloca ((size_t) indent + 1);
   memset ((void *) s_indent, ' ', (size_t) indent);
   s_indent[indent] = '\0';
 
-  if (profile_status == PROFILE_ABSENT)
+  if (profile_status_for_function (fun) == PROFILE_ABSENT)
     return;
 
-  if (bb != EXIT_BLOCK_PTR)
+  if (bb != EXIT_BLOCK_PTR_FOR_FUNCTION (fun))
     {
       FOR_EACH_EDGE (e, ei, bb->succs)
 	sum += e->probability;
@@ -428,7 +430,7 @@ check_bb_profile (basic_block bb, FILE * file, int indent, int flags)
 		 (flags & TDF_COMMENT) ? ";; " : "", s_indent,
 		 (int) lsum, (int) bb->count);
     }
-  if (bb != ENTRY_BLOCK_PTR)
+    if (bb != ENTRY_BLOCK_PTR_FOR_FUNCTION (fun))
     {
       sum = 0;
       FOR_EACH_EDGE (e, ei, bb->preds)
@@ -701,12 +703,13 @@ dump_bb_info (FILE *outf, basic_block bb, int indent, int flags,
 	       s_indent, bb->index, bb_loop_depth (bb));
       if (flags & TDF_DETAILS)
 	{
+	  struct function *fun = DECL_STRUCT_FUNCTION (current_function_decl);
 	  fprintf (outf, ", count " HOST_WIDEST_INT_PRINT_DEC,
 		   (HOST_WIDEST_INT) bb->count);
 	  fprintf (outf, ", freq %i", bb->frequency);
-	  if (maybe_hot_bb_p (bb))
+	  if (maybe_hot_bb_p (fun, bb))
 	    fputs (", maybe hot", outf);
-	  if (probably_never_executed_bb_p (bb))
+	  if (probably_never_executed_bb_p (fun, bb))
 	    fputs (", probably never executed", outf);
 	}
       fputc ('\n', outf);
