@@ -79,6 +79,9 @@ extern const char* avr_load_lpm (rtx, rtx*, int*);
 
 extern bool avr_rotate_bytes (rtx operands[]);
 
+extern const char* avr_out_fract (rtx, rtx[], bool, int*);
+extern rtx avr_to_int_mode (rtx);
+
 extern void expand_prologue (void);
 extern void expand_epilogue (bool);
 extern bool avr_emit_movmemhi (rtx*);
@@ -92,6 +95,8 @@ extern const char* avr_out_plus (rtx*, int*, int*);
 extern const char* avr_out_plus_noclobber (rtx*, int*, int*);
 extern const char* avr_out_plus64 (rtx, int*);
 extern const char* avr_out_addto_sp (rtx*, int*);
+extern const char* avr_out_minus (rtx*, int*, int*);
+extern const char* avr_out_minus64 (rtx, int*);
 extern const char* avr_out_xload (rtx, rtx*, int*);
 extern const char* avr_out_movmem (rtx, rtx*, int*);
 extern const char* avr_out_insert_bits (rtx*, int*);

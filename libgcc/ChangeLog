@@ -1,3 +1,23 @@
+2012-08-24  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/54222
+	* config/avr/lib1funcs-fixed.S: New file.
+	* config/avr/lib1funcs.S: Include it.  Undefine some divmodsi
+	after they are used.
+	(neg2, neg4): New macros.
+	(__mulqihi3,__umulqihi3,__mulhi3): Rewrite non-MUL variants.
+	(__mulhisi3,__umulhisi3,__mulsi3): Rewrite non-MUL variants.
+	(__umulhisi3): Speed up MUL variant if there is enough flash.
+	* config/avr/avr-lib.h (TA, UTA): Adjust according to gcc's
+	avr-modes.def.
+	* config/avr/t-avr (LIB1ASMFUNCS): Add: _fractqqsf, _fractuqqsf,
+	_fracthqsf, _fractuhqsf, _fracthasf, _fractuhasf, _fractsasf,
+	_fractusasf, _fractsfqq, _fractsfuqq, _fractsfhq, _fractsfuhq,
+	_fractsfha, _fractsfsa, _mulqq3, _muluqq3, _mulhq3, _muluhq3,
+	_mulha3, _muluha3, _mulsa3, _mulusa3, _divqq3, _udivuqq3, _divhq3,
+	_udivuhq3, _divha3, _udivuha3, _divsa3, _udivusa3.
+	(LIB2FUNCS_EXCLUDE): Add supported functions.
+
 2012-08-22  Georg-Johann Lay  <avr@gjlay.de>
 
 	* Makefile.in (fixed-funcs,fixed-conv-funcs): filter-out

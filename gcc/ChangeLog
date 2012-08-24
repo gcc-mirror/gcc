@@ -1,3 +1,62 @@
+2012-08-24  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/54222
+	* avr-modes.def (HA, SA, DA, TA, UTA): Adjust modes.
+	* avr/avr-fixed.md: New file.
+	* avr/avr.md: Include it.
+	(cc): Add: minus.
+	(adjust_len): Add: minus, minus64, ufract, sfract.
+	(ALL1, ALL2, ALL4, ORDERED234): New mode iterators.
+	(MOVMODE): Add: QQ, UQQ, HQ, UHQ, HA, UHA, SQ, USQ, SA, USA.
+	(MPUSH): Add: HQ, UHQ, HA, UHA, SQ, USQ, SA, USA.
+	(pushqi1, xload8_A, xload_8, movqi_insn, *reload_inqi, addqi3,
+	subqi3, ashlqi3, *ashlqi3, ashrqi3, lshrqi3, *lshrqi3, *cmpqi, 
+	cbranchqi4, *cpse.eq): Generalize to handle all 8-bit modes in ALL1.
+	(*movhi, reload_inhi, addhi3, *addhi3, addhi3_clobber, subhi3,
+	ashlhi3, *ashlhi3_const, ashrhi3, *ashirhi3_const, lshrhi3,
+	*lshrhi3_const, *cmphi, cbranchhi4): Generalize to handle all
+	16-bit modes in ALL2.
+	(subhi3, casesi, strlenhi): Add clobber when expanding minus:HI.
+	(*movsi, *reload_insi, addsi3, subsi3, ashlsi3, *ashlsi3_const,
+	ashrsi3, *ashrhi3_const, *ashrsi3_const, lshrsi3, *lshrsi3_const,
+	*reversed_tstsi, *cmpsi, cbranchsi4): Generalize to handle all
+	32-bit modes in ALL4.
+	* avr-dimode.md (ALL8): New mode iterator.
+	(adddi3, adddi3_insn, adddi3_const_insn, subdi3, subdi3_insn,
+	subdi3_const_insn, cbranchdi4, compare_di2,
+	compare_const_di2, ashrdi3, lshrdi3, rotldi3, ashldi3_insn,
+	ashrdi3_insn, lshrdi3_insn, rotldi3_insn): Generalize to handle
+	all 64-bit modes in ALL8.
+	* config/avr/avr-protos.h (avr_to_int_mode): New prototype.
+	(avr_out_fract, avr_out_minus, avr_out_minus64): New prototypes.
+	* config/avr/avr.c (TARGET_FIXED_POINT_SUPPORTED_P): Define to...
+	(avr_fixed_point_supported_p): ...this new static function.
+	(TARGET_BUILD_BUILTIN_VA_LIST): Define to...
+	(avr_build_builtin_va_list): ...this new static function.
+	(avr_adjust_type_node): New static function.
+	(avr_scalar_mode_supported_p): Allow if ALL_FIXED_POINT_MODE_P.
+	(avr_builtin_setjmp_frame_value): Use gen_subhi3 and return new
+	pseudo instead of gen_rtx_MINUS.
+	(avr_print_operand, avr_operand_rtx_cost): Handle: CONST_FIXED.
+	(notice_update_cc): Handle: CC_MINUS.
+	(output_movqi): Generalize to handle respective fixed-point modes.
+	(output_movhi, output_movsisf, avr_2word_insn_p): Ditto.
+	(avr_out_compare, avr_out_plus_1): Also handle fixed-point modes.
+	(avr_assemble_integer): Ditto.
+	(output_reload_in_const, output_reload_insisf): Ditto.
+	(avr_compare_pattern): Skip all modes > 4 bytes.
+	(avr_2word_insn_p): Skip movuqq_insn, movqq_insn.
+	(avr_out_fract, avr_out_minus, avr_out_minus64): New functions.
+	(avr_to_int_mode): New function.
+	(adjust_insn_length): Handle: ADJUST_LEN_SFRACT,
+	ADJUST_LEN_UFRACT, ADJUST_LEN_MINUS, ADJUST_LEN_MINUS64.
+	* config/avr/predicates.md (const0_operand): Allow const_fixed.
+	(const_operand, const_or_immediate_operand): New.
+	(nonmemory_or_const_operand): New.
+	* config/avr/constraints.md (Ynn, Y00, Y01, Y02, Ym1, Ym2, YIJ):
+	New constraints.
+	* config/avr/avr.h (LONG_LONG_ACCUM_TYPE_SIZE): Define.
+
 2012-08-23  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* alias.c (rtx_equal_for_memref_p): Convert constant cases.
