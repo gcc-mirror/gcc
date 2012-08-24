@@ -1,5 +1,9 @@
 2012-08-24  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (resolve_overloaded_unification): Use coerce_template_parms
+	instead of get_bindings.
+	(resolve_nondeduced_context): Likewise.
+
 	* pt.c (register_specialization): Correct argument to
 	check_specialization_namespace.
 	(determine_specialization): Don't consider members of
