@@ -47,44 +47,58 @@
   [(ACC_A	18)
    (ACC_B	10)])
 
+;; Supported modes that are 8 bytes wide
+(define_mode_iterator ALL8 [(DI "")
+                            (DQ "") (UDQ "")
+                            (DA "") (UDA "")
+                            (TA "") (UTA "")])
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Addition
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define_expand "adddi3"
-  [(parallel [(match_operand:DI 0 "general_operand" "")
-              (match_operand:DI 1 "general_operand" "")
-              (match_operand:DI 2 "general_operand" "")])]
+;; "adddi3"
+;; "adddq3" "addudq3"
+;; "addda3" "adduda3"
+;; "addta3" "adduta3"
+(define_expand "add<mode>3"
+  [(parallel [(match_operand:ALL8 0 "general_operand" "")
+              (match_operand:ALL8 1 "general_operand" "")
+              (match_operand:ALL8 2 "general_operand" "")])]
   "avr_have_dimode"
   {
-    rtx acc_a = gen_rtx_REG (DImode, ACC_A);
+    rtx acc_a = gen_rtx_REG (<MODE>mode, ACC_A);
 
     emit_move_insn (acc_a, operands[1]);
 
-    if (s8_operand (operands[2], VOIDmode))
+    if (DImode == <MODE>mode
+        && s8_operand (operands[2], VOIDmode))
       {
         emit_move_insn (gen_rtx_REG (QImode, REG_X), operands[2]);
         emit_insn (gen_adddi3_const8_insn ());
       }        
-    else if (CONST_INT_P (operands[2])
-             || CONST_DOUBLE_P (operands[2]))
+    else if (const_operand (operands[2], GET_MODE (operands[2])))
       {
-        emit_insn (gen_adddi3_const_insn (operands[2]));
+        emit_insn (gen_add<mode>3_const_insn (operands[2]));
       }
     else
       {
-        emit_move_insn (gen_rtx_REG (DImode, ACC_B), operands[2]);
-        emit_insn (gen_adddi3_insn ());
+        emit_move_insn (gen_rtx_REG (<MODE>mode, ACC_B), operands[2]);
+        emit_insn (gen_add<mode>3_insn ());
       }
 
     emit_move_insn (operands[0], acc_a);
     DONE;
   })
 
-(define_insn "adddi3_insn"
-  [(set (reg:DI ACC_A)
-        (plus:DI (reg:DI ACC_A)
-                 (reg:DI ACC_B)))]
+;; "adddi3_insn"
+;; "adddq3_insn" "addudq3_insn"
+;; "addda3_insn" "adduda3_insn"
+;; "addta3_insn" "adduta3_insn"
+(define_insn "add<mode>3_insn"
+  [(set (reg:ALL8 ACC_A)
+        (plus:ALL8 (reg:ALL8 ACC_A)
+                   (reg:ALL8 ACC_B)))]
   "avr_have_dimode"
   "%~call __adddi3"
   [(set_attr "adjust_len" "call")
@@ -99,10 +113,14 @@
   [(set_attr "adjust_len" "call")
    (set_attr "cc" "clobber")])
 
-(define_insn "adddi3_const_insn"
-  [(set (reg:DI ACC_A)
-        (plus:DI (reg:DI ACC_A)
-                 (match_operand:DI 0 "const_double_operand" "n")))]
+;; "adddi3_const_insn"
+;; "adddq3_const_insn" "addudq3_const_insn"
+;; "addda3_const_insn" "adduda3_const_insn"
+;; "addta3_const_insn" "adduta3_const_insn"
+(define_insn "add<mode>3_const_insn"
+  [(set (reg:ALL8 ACC_A)
+        (plus:ALL8 (reg:ALL8 ACC_A)
+                   (match_operand:ALL8 0 "const_operand" "n Ynn")))]
   "avr_have_dimode
    && !s8_operand (operands[0], VOIDmode)"
   {
@@ -116,29 +134,61 @@
 ;; Subtraction
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define_expand "subdi3"
-  [(parallel [(match_operand:DI 0 "general_operand" "")
-              (match_operand:DI 1 "general_operand" "")
-              (match_operand:DI 2 "general_operand" "")])]
+;; "subdi3"
+;; "subdq3" "subudq3"
+;; "subda3" "subuda3"
+;; "subta3" "subuta3"
+(define_expand "sub<mode>3"
+  [(parallel [(match_operand:ALL8 0 "general_operand" "")
+              (match_operand:ALL8 1 "general_operand" "")
+              (match_operand:ALL8 2 "general_operand" "")])]
   "avr_have_dimode"
   {
-    rtx acc_a = gen_rtx_REG (DImode, ACC_A);
+    rtx acc_a = gen_rtx_REG (<MODE>mode, ACC_A);
 
     emit_move_insn (acc_a, operands[1]);
-    emit_move_insn (gen_rtx_REG (DImode, ACC_B), operands[2]);
-    emit_insn (gen_subdi3_insn ());
+
+    if (const_operand (operands[2], GET_MODE (operands[2])))
+      {
+        emit_insn (gen_sub<mode>3_const_insn (operands[2]));
+      }
+    else
+     {
+       emit_move_insn (gen_rtx_REG (<MODE>mode, ACC_B), operands[2]);
+       emit_insn (gen_sub<mode>3_insn ());
+     }
+
     emit_move_insn (operands[0], acc_a);
     DONE;
   })
 
-(define_insn "subdi3_insn"
-  [(set (reg:DI ACC_A)
-        (minus:DI (reg:DI ACC_A)
-                  (reg:DI ACC_B)))]
+;; "subdi3_insn"
+;; "subdq3_insn" "subudq3_insn"
+;; "subda3_insn" "subuda3_insn"
+;; "subta3_insn" "subuta3_insn"
+(define_insn "sub<mode>3_insn"
+  [(set (reg:ALL8 ACC_A)
+        (minus:ALL8 (reg:ALL8 ACC_A)
+                    (reg:ALL8 ACC_B)))]
   "avr_have_dimode"
   "%~call __subdi3"
   [(set_attr "adjust_len" "call")
    (set_attr "cc" "set_czn")])
+
+;; "subdi3_const_insn"
+;; "subdq3_const_insn" "subudq3_const_insn"
+;; "subda3_const_insn" "subuda3_const_insn"
+;; "subta3_const_insn" "subuta3_const_insn"
+(define_insn "sub<mode>3_const_insn"
+  [(set (reg:ALL8 ACC_A)
+        (minus:ALL8 (reg:ALL8 ACC_A)
+                    (match_operand:ALL8 0 "const_operand" "n Ynn")))]
+  "avr_have_dimode"
+  {
+    return avr_out_minus64 (operands[0], NULL);
+  }
+  [(set_attr "adjust_len" "minus64")
+   (set_attr "cc" "clobber")])
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -180,15 +230,19 @@
          (pc)))]
   "avr_have_dimode")
 
-(define_expand "cbranchdi4"
-  [(parallel [(match_operand:DI 1 "register_operand" "")
-              (match_operand:DI 2 "nonmemory_operand" "")
+;; "cbranchdi4"
+;; "cbranchdq4" "cbranchudq4"
+;; "cbranchda4" "cbranchuda4"
+;; "cbranchta4" "cbranchuta4"
+(define_expand "cbranch<mode>4"
+  [(parallel [(match_operand:ALL8 1 "register_operand" "")
+              (match_operand:ALL8 2 "nonmemory_operand" "")
               (match_operator 0 "ordered_comparison_operator" [(cc0)
                                                                (const_int 0)])
               (label_ref (match_operand 3 "" ""))])]
   "avr_have_dimode"
   {
-    rtx acc_a = gen_rtx_REG (DImode, ACC_A);
+    rtx acc_a = gen_rtx_REG (<MODE>mode, ACC_A);
 
     emit_move_insn (acc_a, operands[1]);
 
@@ -197,25 +251,28 @@
         emit_move_insn (gen_rtx_REG (QImode, REG_X), operands[2]);
         emit_insn (gen_compare_const8_di2 ());
       }        
-    else if (CONST_INT_P (operands[2])
-             || CONST_DOUBLE_P (operands[2]))
+    else if (const_operand (operands[2], GET_MODE (operands[2])))
       {
-        emit_insn (gen_compare_const_di2 (operands[2]));
+        emit_insn (gen_compare_const_<mode>2 (operands[2]));
       }
     else
       {
-        emit_move_insn (gen_rtx_REG (DImode, ACC_B), operands[2]);
-        emit_insn (gen_compare_di2 ());
+        emit_move_insn (gen_rtx_REG (<MODE>mode, ACC_B), operands[2]);
+        emit_insn (gen_compare_<mode>2 ());
       }
 
     emit_jump_insn (gen_conditional_jump (operands[0], operands[3]));
     DONE;
   })
 
-(define_insn "compare_di2"
+;; "compare_di2"
+;; "compare_dq2" "compare_udq2"
+;; "compare_da2" "compare_uda2"
+;; "compare_ta2" "compare_uta2"
+(define_insn "compare_<mode>2"
   [(set (cc0)
-        (compare (reg:DI ACC_A)
-                 (reg:DI ACC_B)))]
+        (compare (reg:ALL8 ACC_A)
+                 (reg:ALL8 ACC_B)))]
   "avr_have_dimode"
   "%~call __cmpdi2"
   [(set_attr "adjust_len" "call")
@@ -230,10 +287,14 @@
   [(set_attr "adjust_len" "call")
    (set_attr "cc" "compare")])
 
-(define_insn "compare_const_di2"
+;; "compare_const_di2"
+;; "compare_const_dq2" "compare_const_udq2"
+;; "compare_const_da2" "compare_const_uda2"
+;; "compare_const_ta2" "compare_const_uta2"
+(define_insn "compare_const_<mode>2"
   [(set (cc0)
-        (compare (reg:DI ACC_A)
-                 (match_operand:DI 0 "const_double_operand" "n")))
+        (compare (reg:ALL8 ACC_A)
+                 (match_operand:ALL8 0 "const_operand" "n Ynn")))
    (clobber (match_scratch:QI 1 "=&d"))]
   "avr_have_dimode
    && !s8_operand (operands[0], VOIDmode)"
@@ -254,29 +315,39 @@
 ;; Shift functions from libgcc are called without defining these insns,
 ;; but with them we can describe their reduced register footprint.
 
-;; "ashldi3"
-;; "ashrdi3"
-;; "lshrdi3"
-;; "rotldi3"
-(define_expand "<code_stdname>di3"
-  [(parallel [(match_operand:DI 0 "general_operand" "")
-              (di_shifts:DI (match_operand:DI 1 "general_operand" "")
-                            (match_operand:QI 2 "general_operand" ""))])]
+;; "ashldi3"   "ashrdi3"   "lshrdi3"   "rotldi3"
+;; "ashldq3"   "ashrdq3"   "lshrdq3"   "rotldq3"
+;; "ashlda3"   "ashrda3"   "lshrda3"   "rotlda3"
+;; "ashlta3"   "ashrta3"   "lshrta3"   "rotlta3"
+;; "ashludq3"  "ashrudq3"  "lshrudq3"  "rotludq3"
+;; "ashluda3"  "ashruda3"  "lshruda3"  "rotluda3"
+;; "ashluta3"  "ashruta3"  "lshruta3"  "rotluta3"
+(define_expand "<code_stdname><mode>3"
+  [(parallel [(match_operand:ALL8 0 "general_operand" "")
+              (di_shifts:ALL8 (match_operand:ALL8 1 "general_operand" "")
+                              (match_operand:QI 2 "general_operand" ""))])]
   "avr_have_dimode"
   {
-    rtx acc_a = gen_rtx_REG (DImode, ACC_A);
+    rtx acc_a = gen_rtx_REG (<MODE>mode, ACC_A);
 
     emit_move_insn (acc_a, operands[1]);
     emit_move_insn (gen_rtx_REG (QImode, 16), operands[2]);
-    emit_insn (gen_<code_stdname>di3_insn ());
+    emit_insn (gen_<code_stdname><mode>3_insn ());
     emit_move_insn (operands[0], acc_a);
     DONE;
   })
 
-(define_insn "<code_stdname>di3_insn"
-  [(set (reg:DI ACC_A)
-        (di_shifts:DI (reg:DI ACC_A)
-                      (reg:QI 16)))]
+;; "ashldi3_insn"   "ashrdi3_insn"   "lshrdi3_insn"   "rotldi3_insn"
+;; "ashldq3_insn"   "ashrdq3_insn"   "lshrdq3_insn"   "rotldq3_insn"
+;; "ashlda3_insn"   "ashrda3_insn"   "lshrda3_insn"   "rotlda3_insn"
+;; "ashlta3_insn"   "ashrta3_insn"   "lshrta3_insn"   "rotlta3_insn"
+;; "ashludq3_insn"  "ashrudq3_insn"  "lshrudq3_insn"  "rotludq3_insn"
+;; "ashluda3_insn"  "ashruda3_insn"  "lshruda3_insn"  "rotluda3_insn"
+;; "ashluta3_insn"  "ashruta3_insn"  "lshruta3_insn"  "rotluta3_insn"
+(define_insn "<code_stdname><mode>3_insn"
+  [(set (reg:ALL8 ACC_A)
+        (di_shifts:ALL8 (reg:ALL8 ACC_A)
+                        (reg:QI 16)))]
   "avr_have_dimode"
   "%~call __<code_stdname>di3"
   [(set_attr "adjust_len" "call")

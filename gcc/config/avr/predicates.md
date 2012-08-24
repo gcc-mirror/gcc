@@ -74,7 +74,7 @@
 
 ;; Return 1 if OP is the zero constant for MODE.
 (define_predicate "const0_operand"
-  (and (match_code "const_int,const_double")
+  (and (match_code "const_int,const_fixed,const_double")
        (match_test "op == CONST0_RTX (mode)")))
 
 ;; Return 1 if OP is the one constant integer for MODE.
@@ -248,3 +248,21 @@
 (define_predicate "o16_operand"
   (and (match_code "const_int")
        (match_test "IN_RANGE (INTVAL (op), -(1<<16), -1)")))
+
+;; Const int, fixed, or double operand
+(define_predicate "const_operand"
+  (ior (match_code "const_fixed")
+       (match_code "const_double")
+       (match_operand 0 "const_int_operand")))
+
+;; Const int, const fixed, or const double operand
+(define_predicate "nonmemory_or_const_operand"
+  (ior (match_code "const_fixed")
+       (match_code "const_double")
+       (match_operand 0 "nonmemory_operand")))
+
+;; Immediate, const fixed, or const double operand
+(define_predicate "const_or_immediate_operand"
+  (ior (match_code "const_fixed")
+       (match_code "const_double")
+       (match_operand 0 "immediate_operand")))
