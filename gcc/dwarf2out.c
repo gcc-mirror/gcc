@@ -18142,6 +18142,9 @@ gen_producer_string (void)
 	/* Ignore these.  */
 	continue;
       default:
+        if (cl_options[save_decoded_options[j].opt_index].flags
+	    & CL_NO_DWARF_RECORD)
+	  continue;
         gcc_checking_assert (save_decoded_options[j].canonical_option[0][0]
 			     == '-');
         switch (save_decoded_options[j].canonical_option[0][1])

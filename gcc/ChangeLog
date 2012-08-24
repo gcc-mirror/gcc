@@ -1,3 +1,11 @@
+2012-08-24  Simon Baldwin  <simonb@google.com>
+
+	* dwarf2out.c (gen_producer_string): Omit command line switch if
+	CL_NO_DWARF_RECORD flag set.
+	* opts.h (CL_NO_DWARF_RECORD): New.
+	* opt-functions.awk (switch_flags): Add NoDWARFRecord.
+	* doc/options.texi: Document NoDWARFRecord option flag.
+
 2012-08-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR debug/52857

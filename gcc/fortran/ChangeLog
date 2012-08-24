@@ -1,3 +1,7 @@
+2012-08-24  Simon Baldwin  <simonb@google.com>
+
+	* lang.opt (-cpp=): Mark flag NoDWARFRecord.
+
 2012-08-23  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/54350
