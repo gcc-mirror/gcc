@@ -1,3 +1,9 @@
+2012-08-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/54363
+	* gimplify.c (optimize_compound_literals_in_ctor): Only recurse
+	if init is a CONSTRUCTOR.
+
 2012-08-24  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* tree-ssa-live.c (dump_var_map): Do not dump the partition
