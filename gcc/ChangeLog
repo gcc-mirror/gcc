@@ -1,3 +1,8 @@
+2012-08-24  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* tree-ssa-live.c (dump_var_map): Do not dump the partition
+	map of virtual operands.
+
 2012-08-24  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	* config/i386/i386.c (ia32_multipass_dfa_lookahead) : Add
