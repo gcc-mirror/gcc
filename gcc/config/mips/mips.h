@@ -2336,12 +2336,13 @@ typedef struct mips_args {
 
 #define JUMP_TABLES_IN_TEXT_SECTION TARGET_MIPS16_SHORT_JUMP_TABLES
 
-#define CASE_VECTOR_MODE SImode
+#define CASE_VECTOR_MODE (TARGET_MIPS16_SHORT_JUMP_TABLES ? SImode : ptr_mode)
 
 /* Only use short offsets if their range will not overflow.  */
 #define CASE_VECTOR_SHORTEN_MODE(MIN, MAX, BODY) \
-  (TARGET_MIPS16_SHORT_JUMP_TABLES && ((MIN) >= -32768 && (MAX) < 32768) \
-   ? HImode : SImode)
+  (!TARGET_MIPS16_SHORT_JUMP_TABLES ? ptr_mode \
+   : ((MIN) >= -32768 && (MAX) < 32768) ? HImode \
+   : SImode)
 
 #define CASE_VECTOR_PC_RELATIVE TARGET_MIPS16_SHORT_JUMP_TABLES
 
