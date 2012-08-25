@@ -22,6 +22,8 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
+#define _GLIBCXX_ABI_COMPAT_ASYNC
+
 #include <future>
 
 namespace
@@ -86,6 +88,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   __future_base::_State_base::~_State_base() = default;
 
 #ifdef _GLIBCXX_HAVE_TLS
+  // Exported for compatibility with ABI version 3.4.17
   __future_base::_Async_state_common::~_Async_state_common() { _M_join(); }
 
   // Explicit instantiation due to -fno-implicit-instantiation.

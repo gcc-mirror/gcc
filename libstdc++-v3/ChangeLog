@@ -1,5 +1,15 @@
 2012-08-25  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	PR libstdc++/54297
+	* include/std/future (~_Async_state_impl): Join thread before
+	derived class members are destroyed.
+	(~_Async_state_common): Only define non-trivial destructor when
+	included from future.cc for ABI compatibility reasons.
+	* src/c++11/future.cc (_GLIBCXX_ABI_COMPAT_ASYNC): Define.
+	* testsuite/30_threads/async/54297.cc: New.
+
+2012-08-25  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	PR libstdc++/54248
 	* include/bits/concept_check.h: Replace references to boost
 	namespace.
