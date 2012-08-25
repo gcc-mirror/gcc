@@ -1,4 +1,9 @@
-2012-08-26  Ricardo Catalinas Jiménez <jimenezrick@gmail.com>
+2012-08-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/54088
+	* jump.c (delete_related_insns): Robustify latest change.
+
+2012-08-25  Ricardo Catalinas Jiménez  <jimenezrick@gmail.com>
 
 	* doc/extend.texi (__atomic Builtins): Remove space before comma.
 
