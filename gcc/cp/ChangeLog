@@ -1,3 +1,11 @@
+2012-08-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51421
+	* decl2.c (mark_used): Consistently return false after errors
+	about uses before deduction of auto.
+	* semantics.c (finish_id_expression): Check mark_used return
+	value and return error_mark_node in case of failure.
+
 2012-08-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/51213 (again)

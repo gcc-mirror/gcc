@@ -3221,11 +3221,12 @@ finish_id_expression (tree id_expression,
 
       /* Mark variable-like entities as used.  Functions are similarly
 	 marked either below or after overload resolution.  */
-      if (TREE_CODE (decl) == VAR_DECL
-	  || TREE_CODE (decl) == PARM_DECL
-	  || TREE_CODE (decl) == CONST_DECL
-	  || TREE_CODE (decl) == RESULT_DECL)
-	mark_used (decl);
+      if ((TREE_CODE (decl) == VAR_DECL
+	   || TREE_CODE (decl) == PARM_DECL
+	   || TREE_CODE (decl) == CONST_DECL
+	   || TREE_CODE (decl) == RESULT_DECL)
+	  && !mark_used (decl))
+	return error_mark_node;
 
       /* Only certain kinds of names are allowed in constant
 	 expression.  Template parameters have already
