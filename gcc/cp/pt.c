@@ -80,6 +80,9 @@ static tree cur_stmt_expr;
    local variables.  */
 static struct pointer_map_t *local_specializations;
 
+/* True if we've recursed into fn_type_unification too many times.  */
+static bool excessive_deduction_depth;
+
 typedef struct GTY(()) spec_entry
 {
   tree tmpl;
@@ -1920,8 +1923,12 @@ determine_specialization (tree template_id,
 	    }
 
 	  /* See whether this function might be a specialization of this
-	     template.  */
+	     template.  Suppress access control because we might be trying
+	     to make this specialization a friend, and we have already done
+	     access control for the declaration of the specialization.  */
+	  push_deferring_access_checks (dk_no_check);
 	  targs = get_bindings (fn, decl, explicit_targs, /*check_ret=*/true);
+	  pop_deferring_access_checks ();
 
 	  if (!targs)
 	    /* We cannot deduce template arguments that when used to
@@ -9963,6 +9970,11 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	if (type == error_mark_node)
 	  RETURN (error_mark_node);
 
+	/* If we hit excessive deduction depth, the type is bogus even if
+	   it isn't error_mark_node, so don't build a decl.  */
+	if (excessive_deduction_depth)
+	  RETURN (error_mark_node);
+
 	/* We do NOT check for matching decls pushed separately at this
 	   point, as they may not represent instantiations of this
 	   template, and in any case are considered separate under the
@@ -14260,66 +14272,6 @@ check_instantiated_args (tree tmpl, tree args, tsubst_flags_t complain)
   return result;
 }
 
-/* In C++0x, it's possible to have a function template whose type depends
-   on itself recursively.  This is most obvious with decltype, but can also
-   occur with enumeration scope (c++/48969).  So we need to catch infinite
-   recursion and reject the substitution at deduction time; this function
-   will return error_mark_node for any repeated substitution.
-
-   This also catches excessive recursion such as when f<N> depends on
-   f<N-1> across all integers, and returns error_mark_node for all the
-   substitutions back up to the initial one.
-
-   This is, of course, not reentrant.  */
-
-static tree
-deduction_tsubst_fntype (tree fn, tree targs, tsubst_flags_t complain)
-{
-  static bool excessive_deduction_depth;
-  static int deduction_depth;
-  struct pending_template *old_last_pend = last_pending_template;
-  struct tinst_level *old_error_tinst = last_error_tinst_level;
-
-  tree fntype = TREE_TYPE (fn);
-  tree tinst;
-  tree r;
-
-  if (excessive_deduction_depth)
-    return error_mark_node;
-
-  tinst = build_tree_list (fn, targs);
-  if (!push_tinst_level (tinst))
-    {
-      excessive_deduction_depth = true;
-      ggc_free (tinst);
-      return error_mark_node;
-    }
-
-  input_location = DECL_SOURCE_LOCATION (fn);
-  ++deduction_depth;
-  /* We will do access checks in instantiate_template.  */
-  push_deferring_access_checks (dk_deferred);
-  r = tsubst (fntype, targs, complain, NULL_TREE);
-  pop_deferring_access_checks ();
-  --deduction_depth;
-
-  if (excessive_deduction_depth)
-    {
-      r = error_mark_node;
-      if (deduction_depth == 0)
-	/* Reset once we're all the way out.  */
-	excessive_deduction_depth = false;
-    }
-
-  pop_tinst_level ();
-  /* We can't free this if a pending_template entry or last_error_tinst_level
-     is pointing at it.  */
-  if (last_pending_template == old_last_pend
-      && last_error_tinst_level == old_error_tinst)
-    ggc_free (tinst);
-  return r;
-}
-
 /* We're out of SFINAE context now, so generate diagnostics for the access
    errors we saw earlier when instantiating D from TMPL and ARGS.  */
 
@@ -14331,9 +14283,11 @@ recheck_decl_substitution (tree d, tree tmpl, tree args)
   location_t loc = input_location;
 
   push_access_scope (d);
+  push_deferring_access_checks (dk_no_deferred);
   input_location = DECL_SOURCE_LOCATION (pattern);
   tsubst (type, args, tf_warning_or_error, d);
   input_location = loc;
+  pop_deferring_access_checks ();
   pop_access_scope (d);
 }
 
@@ -14547,7 +14501,7 @@ pack_deducible_p (tree parm, tree fn)
      as in [temp.expl.spec], or when taking the address of a function
      template, as in [temp.deduct.funcaddr].  */
 
-int
+tree
 fn_type_unification (tree fn,
 		     tree explicit_targs,
 		     tree targs,
@@ -14560,7 +14514,38 @@ fn_type_unification (tree fn,
 {
   tree parms;
   tree fntype;
-  int result;
+  tree decl = NULL_TREE;
+  tsubst_flags_t complain = (explain_p ? tf_warning_or_error : tf_none);
+  bool ok;
+  static int deduction_depth;
+  struct pending_template *old_last_pend = last_pending_template;
+  struct tinst_level *old_error_tinst = last_error_tinst_level;
+  tree tinst;
+  tree r = error_mark_node;
+
+  if (excessive_deduction_depth)
+    return error_mark_node;
+
+  /* In C++0x, it's possible to have a function template whose type depends
+     on itself recursively.  This is most obvious with decltype, but can also
+     occur with enumeration scope (c++/48969).  So we need to catch infinite
+     recursion and reject the substitution at deduction time; this function
+     will return error_mark_node for any repeated substitution.
+
+     This also catches excessive recursion such as when f<N> depends on
+     f<N-1> across all integers, and returns error_mark_node for all the
+     substitutions back up to the initial one.
+
+     This is, of course, not reentrant.  */
+  tinst = build_tree_list (fn, targs);
+  if (!push_tinst_level (tinst))
+    {
+      excessive_deduction_depth = true;
+      ggc_free (tinst);
+      return error_mark_node;
+    }
+  ++deduction_depth;
+  push_deferring_access_checks (dk_deferred);
 
   gcc_assert (TREE_CODE (fn) == TEMPLATE_DECL);
 
@@ -14586,21 +14571,20 @@ fn_type_unification (tree fn,
 	 template results in an invalid type, type deduction fails.  */
       tree tparms = DECL_INNERMOST_TEMPLATE_PARMS (fn);
       int i, len = TREE_VEC_LENGTH (tparms);
+      location_t loc = input_location;
       tree converted_args;
       bool incomplete = false;
 
       if (explicit_targs == error_mark_node)
-	return unify_invalid (explain_p);
+	goto fail;
 
       converted_args
 	= (coerce_template_parms (tparms, explicit_targs, NULL_TREE,
-				  (explain_p
-				   ? tf_warning_or_error
-				   : tf_none),
+				  complain,
 				   /*require_all_args=*/false,
 				   /*use_default_args=*/false));
       if (converted_args == error_mark_node)
-	return 1;
+	goto fail;
 
       /* Substitute the explicit args into the function type.  This is
 	 necessary so that, for instance, explicitly declared function
@@ -14649,14 +14633,14 @@ fn_type_unification (tree fn,
         }
 
       processing_template_decl += incomplete;
-      fntype = deduction_tsubst_fntype (fn, converted_args,
-					(explain_p
-					 ? tf_warning_or_error
-					 : tf_none) | tf_partial);
+      input_location = DECL_SOURCE_LOCATION (fn);
+      fntype = tsubst (TREE_TYPE (fn), converted_args,
+		       complain | tf_partial, NULL_TREE);
+      input_location = loc;
       processing_template_decl -= incomplete;
 
       if (fntype == error_mark_node)
-	return 1;
+	goto fail;
 
       /* Place the explicitly specified arguments in TARGS.  */
       for (i = NUM_TMPL_ARGS (converted_args); i--;)
@@ -14682,9 +14666,14 @@ fn_type_unification (tree fn,
      because the standard doesn't seem to explicitly prohibit it.  Our
      callers must be ready to deal with unification failures in any
      event.  */
-  result = type_unification_real (DECL_INNERMOST_TEMPLATE_PARMS (fn),
-				  targs, parms, args, nargs, /*subr=*/0,
-				  strict, flags, explain_p);
+
+  pop_tinst_level ();
+  ok = !type_unification_real (DECL_INNERMOST_TEMPLATE_PARMS (fn),
+			       targs, parms, args, nargs, /*subr=*/0,
+			       strict, flags, explain_p);
+  push_tinst_level (tinst);
+  if (!ok)
+    goto fail;
 
   /* Now that we have bindings for all of the template arguments,
      ensure that the arguments deduced for the template template
@@ -14707,48 +14696,75 @@ fn_type_unification (tree fn,
      parameter 'T', but 'C' is deduced to 'X' before 'T' is deduced to
      'long'.  Thus, we can't check that 'C' cannot bind to 'X' at the
      time that we deduce 'C'.  */
-  if (result == 0
-      && !template_template_parm_bindings_ok_p 
+  if (!template_template_parm_bindings_ok_p
            (DECL_INNERMOST_TEMPLATE_PARMS (fn), targs))
-    return unify_inconsistent_template_template_parameters (explain_p);
-
-  if (result == 0)
-    /* All is well so far.  Now, check:
-
-       [temp.deduct]
-
-       When all template arguments have been deduced, all uses of
-       template parameters in nondeduced contexts are replaced with
-       the corresponding deduced argument values.  If the
-       substitution results in an invalid type, as described above,
-       type deduction fails.  */
     {
-      tree substed = deduction_tsubst_fntype (fn, targs,
-					      (explain_p
-					       ? tf_warning_or_error
-					       : tf_none));
-      if (substed == error_mark_node)
-	return 1;
-
-      /* If we're looking for an exact match, check that what we got
-	 is indeed an exact match.  It might not be if some template
-	 parameters are used in non-deduced contexts.  */
-      if (strict == DEDUCE_EXACT)
-	{
-	  unsigned int i;
-
-	  tree sarg
-	    = skip_artificial_parms_for (fn, TYPE_ARG_TYPES (substed));
-	  if (return_type)
-	    sarg = tree_cons (NULL_TREE, TREE_TYPE (substed), sarg);
-	  for (i = 0; i < nargs && sarg; ++i, sarg = TREE_CHAIN (sarg))
-	    if (!same_type_p (args[i], TREE_VALUE (sarg)))
-	      return unify_type_mismatch (explain_p, args[i],
-					  TREE_VALUE (sarg));
-	}
+      unify_inconsistent_template_template_parameters (explain_p);
+      goto fail;
     }
 
-  return result;
+  /* All is well so far.  Now, check:
+
+     [temp.deduct]
+
+     When all template arguments have been deduced, all uses of
+     template parameters in nondeduced contexts are replaced with
+     the corresponding deduced argument values.  If the
+     substitution results in an invalid type, as described above,
+     type deduction fails.  */
+  decl = instantiate_template (fn, targs, complain);
+  if (decl == error_mark_node)
+    goto fail;
+
+  /* Now perform any access checks encountered during deduction, such as
+     for default template arguments.  */
+  push_access_scope (decl);
+  ok = perform_deferred_access_checks (complain);
+  pop_access_scope (decl);
+  if (!ok)
+    goto fail;
+
+  /* If we're looking for an exact match, check that what we got
+     is indeed an exact match.  It might not be if some template
+     parameters are used in non-deduced contexts.  */
+  if (strict == DEDUCE_EXACT)
+    {
+      tree substed = TREE_TYPE (decl);
+      unsigned int i;
+
+      tree sarg
+	= skip_artificial_parms_for (decl, TYPE_ARG_TYPES (substed));
+      if (return_type)
+	sarg = tree_cons (NULL_TREE, TREE_TYPE (substed), sarg);
+      for (i = 0; i < nargs && sarg; ++i, sarg = TREE_CHAIN (sarg))
+	if (!same_type_p (args[i], TREE_VALUE (sarg)))
+	  {
+	    unify_type_mismatch (explain_p, args[i],
+				 TREE_VALUE (sarg));
+	    goto fail;
+	  }
+    }
+
+  r = decl;
+
+ fail:
+  pop_deferring_access_checks ();
+  --deduction_depth;
+  if (excessive_deduction_depth)
+    {
+      if (deduction_depth == 0)
+	/* Reset once we're all the way out.  */
+	excessive_deduction_depth = false;
+    }
+
+  pop_tinst_level ();
+  /* We can't free this if a pending_template entry or last_error_tinst_level
+     is pointing at it.  */
+  if (last_pending_template == old_last_pend
+      && last_error_tinst_level == old_error_tinst)
+    ggc_free (tinst);
+
+  return r;
 }
 
 /* Adjust types before performing type deduction, as described in
@@ -15159,11 +15175,9 @@ type_unification_real (tree tparms,
 	      location_t save_loc = input_location;
 	      if (DECL_P (parm))
 		input_location = DECL_SOURCE_LOCATION (parm);
-	      push_deferring_access_checks (dk_no_deferred);
 	      arg = tsubst_template_arg (arg, targs, complain, NULL_TREE);
 	      arg = convert_template_argument (parm, arg, targs, complain,
 					       i, NULL_TREE);
-	      pop_deferring_access_checks ();
 	      input_location = save_loc;
 	      if (arg == error_mark_node)
 		return 1;
@@ -17180,7 +17194,8 @@ get_bindings (tree fn, tree decl, tree explicit_args, bool check_rettype)
 			   args, ix,
 			   (check_rettype || DECL_CONV_FN_P (fn)
 			    ? TREE_TYPE (decl_type) : NULL_TREE),
-			   DEDUCE_EXACT, LOOKUP_NORMAL, /*explain_p=*/false))
+			   DEDUCE_EXACT, LOOKUP_NORMAL, /*explain_p=*/false)
+      == error_mark_node)
     return NULL_TREE;
 
   return targs;
