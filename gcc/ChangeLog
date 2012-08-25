@@ -1,3 +1,10 @@
+2012-08-25  Richard Sandiford  <rdsandiford@googlemail.com>
+            Andrew Pinski  <apinski@cavium.com>
+
+	* config/mips/mips.h (CASE_VECTOR_MODE): For not
+	TARGET_MIPS16_SHORT_JUMP_TABLES use ptr_mode.
+	(CASE_VECTOR_SHORTEN_MODE): Likewise.
+
 2012-08-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.h (FP_REG_P): Remove macro.
