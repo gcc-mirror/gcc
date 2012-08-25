@@ -72,7 +72,8 @@
 	* gimple-pretty-print.c (gimple_dump_bb_buff): Checking-assert that
 	DECL_STRUCT_FUNCTION (current_function_decl) is not NULL.  Pass it to
 	dump_histograms_for_stmt.
-	(dump_gimple_mem_ops): Pass DECL_STRUCT_FUNCTION (current_function_decl)
+	(dump_gimple_mem_ops): Pass
+	DECL_STRUCT_FUNCTION (current_function_decl)
 	as an argument to dump_gimple_mem_ops.
 	* tree-cfg.c (dump_function_to_file): Rename parameter fn to fndecl.
 	Do not change cfun.  Change and restore current_function_decl.
@@ -90,7 +91,7 @@
 	(MOVMODE): Add: QQ, UQQ, HQ, UHQ, HA, UHA, SQ, USQ, SA, USA.
 	(MPUSH): Add: HQ, UHQ, HA, UHA, SQ, USQ, SA, USA.
 	(pushqi1, xload8_A, xload_8, movqi_insn, *reload_inqi, addqi3,
-	subqi3, ashlqi3, *ashlqi3, ashrqi3, lshrqi3, *lshrqi3, *cmpqi, 
+	subqi3, ashlqi3, *ashlqi3, ashrqi3, lshrqi3, *lshrqi3, *cmpqi,
 	cbranchqi4, *cpse.eq): Generalize to handle all 8-bit modes in ALL1.
 	(*movhi, reload_inhi, addhi3, *addhi3, addhi3_clobber, subhi3,
 	ashlhi3, *ashlhi3_const, ashrhi3, *ashirhi3_const, lshrhi3,
@@ -144,8 +145,7 @@
 	to CASE_CONST_ANY.
  	* cse.c (exp_equiv_p, canon_reg, fold_rtx, cse_process_notes_1,
 	count_reg_usage): Convert constant cases.
-	* cselib.c (cselib_expand_value_rtx_1): Convert to
-	CASE_CONST_ANY.
+	* cselib.c (cselib_expand_value_rtx_1): Convert to CASE_CONST_ANY.
 	(cselib_subst_to_values): Convert constant cases.
 	* df-scan.c (df_uses_record): Ditto.
 	* dse.c (const_or_frame_p): Convert case statements to explicit
@@ -174,7 +174,7 @@
 	* rtl.c (copy_rtx, rtx_equal_p_cb, rtx_equal_p): Ditto.
 	* sched-deps.c (sched_analyze_2): Ditto.
 	* valtrack.c (cleanup_auto_inc_dec): Ditto.
-	* rtl.h: (CASE_CONST_SCALAR_INT, CASE_CONST_UNIQUE, 
+	* rtl.h: (CASE_CONST_SCALAR_INT, CASE_CONST_UNIQUE,
 	CASE_CONST_ANY): New macros.
 
 2012-08-23  Julian Brown  <julian@codesourcery.com>
@@ -400,7 +400,7 @@
 	(m32c_extra_constraint_p): Delete.
 	(m32c_extra_address_constraint, m32c_extra_memory_constraint): Delete.
 	(m32c_split_move): Use satisfies_constraint_Ss.
-	* config/m32c/predicates.md (memsym_operand): Use 
+	* config/m32c/predicates.md (memsym_operand): Use
 	satisfies_constraint_Si.
 	(memimmed_operand): Use satisfies_constraint_Sp.
 	(m32c_psi_scale, m32c_1bit8_operand): Use satisfies_constraint_Ilb.
@@ -433,18 +433,19 @@
 	multi-line asm output strings.
 	(divsi_inv_qitable, divsi_inv_hitable): Use single-alternative asm
 	output.
-	(*andsi3_bclr, rotldi3_mextr, rotrdi3_mextr, calli, call_valuei_tbr_rel,
-	movml_push_banked, movml_pop_banked, bclr_m2a, bclrmem_m2a, bset_m2a,
-	bsetmem_m2a, bst_m2a, bld_m2a, bldsign_m2a, bld_reg, *bld_regqi,
-	band_m2a, bor_m2a, bxor_m2a, mextr_rl, *mextr_lr, ): Use tab char
-	instead of '\\t'.
+	(*andsi3_bclr, rotldi3_mextr, rotrdi3_mextr, calli,
+	call_valuei_tbr_rel, movml_push_banked, movml_pop_banked, bclr_m2a,
+	bclrmem_m2a, bset_m2a, bsetmem_m2a, bst_m2a, bld_m2a, bldsign_m2a,
+	bld_reg, *bld_regqi, band_m2a, bor_m2a, bxor_m2a, mextr_rl, *mextr_lr):
+	Use tab char instead of '\\t'.
 	(iordi3): Use braced string.
 	(*movsi_pop): Use tab chars instead of spaces.
 
 2012-08-21  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/39423
-	* config/sh/sh.md (*movhi_index_disp): Add support for SH2A movu.w insn.
+	* config/sh/sh.md (*movhi_index_disp): Add support for SH2A
+	movu.w insn.
 
 2012-08-21  H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -648,7 +649,7 @@
 	devritualization happens.
 	(estimate_node_size_and_time): New hints argument.
 	(do_estimate_edge_time): Cache hints.
-	(do_estimate_edge_growth): Update.	
+	(do_estimate_edge_growth): Update.
 	(do_estimate_edge_hints): New function
 
 2012-08-18  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
@@ -718,18 +719,15 @@
 
 	* config/ia64/hpux.h (MEMBER_TYPE_FORCES_BLK): Removed.
 
-	* config/ia64/ia64.c (ia64_member_type_forces_blk): New
-	function.
+	* config/ia64/ia64.c (ia64_member_type_forces_blk): New function.
 	(TARGET_MEMBER_TYPE_FORCES_BLK): New macro.
 
-	* config/rs6000/rs6000.c (TARGET_MEMBER_TYPE_FORCES_BLK): New
-	macro.
+	* config/rs6000/rs6000.c (TARGET_MEMBER_TYPE_FORCES_BLK): New macro.
 	(rs6000_member_type_forces_blk): New function.
 
 	* config/rs6000/rs6000.h (MEMBER_TYPE_FORCES_BLK): Removed.
 
-	* config/xtensa/xtensa.c (xtensa_member_type_forces_blk): New
-	function.
+	* config/xtensa/xtensa.c (xtensa_member_type_forces_blk): New function.
 	(TARGET_MEMBER_TYPE_FORCES_BLK): New macro.
 
 	* config/xtensa/xtensa.h (MEMBER_TYPE_FORCES_BLK): Removed.
@@ -810,13 +808,11 @@
 
 2012-08-17  Nick Clifton  <nickc@redhat.com>
 
-	* config/fr30/fr30.md  (cbranchsi4): Remove mode from
-	comparison.
+	* config/fr30/fr30.md  (cbranchsi4): Remove mode from comparison.
 	(branch_true): Likewise.
 	(branch_false): Likewise.
 
-	* config/mcore/mcore.md (cbranchsi4): Remove mode from
-	comparison.
+	* config/mcore/mcore.md (cbranchsi4): Remove mode from comparison.
 
 	* config/iq2000/iq2000.md (cbranchsi4): Remove mode from
 	comparison and label.
@@ -824,8 +820,7 @@
 	(branch_zero_inverted): Likewise.
 	(branch_equality): Likewise.
 	(branch_equality_inverted): Likewise.
-	(extend-and-compare): Disable until reload issues can be
-	resolved.
+	(extend-and-compare): Disable until reload issues can be resolved.
 	* config/iq2000/iq2000.c (gen_conditional_branch): Use VOIDmode
 	for comparison.
 	(iq2000_function_arg_advance): Remove CONST_CAST2.
@@ -847,13 +842,11 @@
 2012-08-17  Richard Guenther  <rguenther@suse.de>
 
 	* hash-table.h (class hash_table): Use a descriptor template
-	argument instead of decomposed element type and support
-	functions.
+	argument instead of decomposed element type and support functions.
 	(struct pointer_hash): New generic typed pointer-hash.
 	(struct typed_free_remove, struct typed_noop_remove): Generic
 	hash_table support pieces.
-	* coverage.c (struct counts_entry): Add hash_table support
-	members.
+	* coverage.c (struct counts_entry): Add hash_table support members.
 	* tree-ssa-ccp.c (gimple_htab): Use pointer_hash.
 	* tree-ssa-coalesce.c (struct ssa_name_var_hash): New generic
 	SSA name by SSA_NAME_VAR hash.
@@ -865,8 +858,7 @@
 	(phi_trans_lookup): Likewise.
 	(phi_trans_add): Likewise.
 	(do_regular_insertion): Likewise.
-	* tree-ssa-tail-merge.c (struct same_succ_def): Add hash_table
-	support.
+	* tree-ssa-tail-merge.c (struct same_succ_def): Add hash_table support.
 	(same_succ_htab): Adjust.
 	(find_same_succ_bb): Likewise.
 	(find_same_succ): Likewise.
@@ -979,8 +971,7 @@
 	* ipa-pure-const.c (analyze_function): Use FOR_EACH_LOOP_BREAK.
 	* cfgloop.h (FOR_EACH_LOOP_BREAK): Fix.
 	* tree-ssa-structalias.c (handle_lhs_call): Properly free rhsc.
-	* tree-into-ssa.c (get_ssa_name_ann): Allocate info only when
-	needed.
+	* tree-into-ssa.c (get_ssa_name_ann): Allocate info only when needed.
 	* tree-ssa-loop-im.c (analyze_memory_references): Adjust.
 	(tree_ssa_lim_finalize): Free all mem_refs.
 	* tree-ssa-sccvn.c (extract_and_process_scc_for_name): Free
@@ -1038,30 +1029,23 @@
 
 	* config/rs6000/aix43.h (TARGET_DEFAULT): Delete MASK_NEW_MNEMONICS.
 	(RS6000_CALL_GLUE): Adjust for single assembler syntax.
-	* config/rs6000/aix51.h (TARGET_DEFAULT, RS6000_CALL_GLUE):
-	Ditto.
-	* config/rs6000/aix52.h (TARGET_DEFAULT, RS6000_CALL_GLUE):
-	Ditto.
-	* config/rs6000/aix53.h (TARGET_DEFAULT, RS6000_CALL_GLUE):
-	Ditto.
-	* config/rs6000/aix61.h (TARGET_DEFAULT, RS6000_CALL_GLUE):
-	Ditto.
+	* config/rs6000/aix51.h (TARGET_DEFAULT, RS6000_CALL_GLUE): Ditto.
+	* config/rs6000/aix52.h (TARGET_DEFAULT, RS6000_CALL_GLUE): Ditto.
+	* config/rs6000/aix53.h (TARGET_DEFAULT, RS6000_CALL_GLUE): Ditto.
+	* config/rs6000/aix61.h (TARGET_DEFAULT, RS6000_CALL_GLUE): Ditto.
 	* config/rs6000/darwin.h (TARGET_DEFAULT): Ditto.
 	* config/rs6000/darwin.md (whole file): Adjust to single
 	assembler syntax.
-	* config/rs6000/darwin64.h (TARGET_DEFAULT): Delete
-	MASK_NEW_MNEMONICS.
+	* config/rs6000/darwin64.h (TARGET_DEFAULT): Delete MASK_NEW_MNEMONICS.
 	* config/rs6000/default64.h (TARGET_DEFAULT): Ditto.
 	* config/rs6000/dfp.md: (whole file): Adjust to single
 	assembler syntax.
-	* config/rs6000/eabi.h (TARGET_DEFAULT): Delete
-	MASK_NEW_MNEMONICS.
+	* config/rs6000/eabi.h (TARGET_DEFAULT): Delete MASK_NEW_MNEMONICS.
 	* config/rs6000/eabialtivec.h (TARGET_DEFAULT): Ditto.
 	* config/rs6000/eabispe.h (TARGET_DEFAULT): Ditto.
 	* config/rs6000/linuxaltivec.h (TARGET_DEFAULT): Ditto.
 	* config/rs6000/linuxspe.h (TARGET_DEFAULT): Ditto.
-	* config/rs6000/rs6000-cpus.def (whole file): Delete
-	POWERPC_BASE_MASK.
+	* config/rs6000/rs6000-cpus.def (whole file): Delete POWERPC_BASE_MASK.
 	* config/rs6000/rs6000-tables.opt: Regenerate.
 	* config/rs6000/rs6000.c (POWERPC_BASE_MASK): Delete.
 	(num_insns_constant_wide): Adjust comments.
@@ -1076,16 +1060,13 @@
 	assembler syntax.
 	* config/rs6000/sync.md: (whole file): Adjust to single
 	assembler syntax.
-	* config/rs6000/sysv4.h (TARGET_DEFAULT): Delete
-	MASK_NEW_MNEMONICS.
+	* config/rs6000/sysv4.h (TARGET_DEFAULT): Delete MASK_NEW_MNEMONICS.
 	(ASM_OUTPUT_REG_PUSH): Adjust.
 	(ASM_OUTPUT_REG_POP): Adjust.
-	* config/rs6000/sysv4le.h (TARGET_DEFAULT): Delete
-	MASK_NEW_MNEMONICS.
+	* config/rs6000/sysv4le.h (TARGET_DEFAULT): Delete MASK_NEW_MNEMONICS.
 	* config/rs6000/vsx.md: (whole file): Adjust to single
 	assembler syntax.
-	* config/rs6000/vxworks.h (TARGET_DEFAULT): Delete
-	MASK_NEW_MNEMONICS.
+	* config/rs6000/vxworks.h (TARGET_DEFAULT): Delete MASK_NEW_MNEMONICS.
 	* doc/invoke.texi: Adjust documentation to reflect the
 	removal of -mnew-mnemonics and -mold-mnemonics.
 
@@ -1111,8 +1092,7 @@
 	* config/rs6000/linuxspe.h (TARGET_DEFAULT): Ditto.
 	* config/rs6000/rs6000-builtin.def (RS6000_BUILTIN_CFSTRING):
 	Use RS6000_BTM_ALWAYS instead of RS6000_BTM_POWERPC.
-	* config/rs6000/rs6000-c.c (rs6000_target_modify_macros):
-	Adjust.
+	* config/rs6000/rs6000-c.c (rs6000_target_modify_macros): Adjust.
 	(rs6000_cpu_cpp_builtins): Adjust.
 	* config/rs6000/rs6000.c (POWERPC_BASE_MASK): Delete MASK_POWERPC.
 	(rs6000_builtin_mask_calculate): Adjust.
@@ -1121,8 +1101,7 @@
 	(rs6000_output_function_prologue): Ditto.
 	(rs6000_opt_masks): Delete MASK_POWERPC.
 	(rs6000_builtin_mask_names): Delete RS6000_BTM_POWERPC.
-	* config/rs6000/rs6000.h (ASM_CPU_SPEC): Delete handling for
-	-mpowerpc.
+	* config/rs6000/rs6000.h (ASM_CPU_SPEC): Delete handling for -mpowerpc.
 	(RS6000_BTM_POWERPC): Delete.
 	(RS6000_BTM_COMMON): Delete RS6000_BTM_POWERPC.
 	* config/rs6000/rs6000.md (extendqisi2 patterns): Adjust for
@@ -1237,7 +1216,7 @@
 	(mips_dpa_w_ph, mips_dps_w_ph, mips_mulsa_w_ph, mips_dpax_w_ph)
 	(mips_dpsx_w_ph, mips_dpaqx_s_w_ph, mips_dpsqx_s_w_ph): Set type to
 	dspmac.  Set accum_in attribute.
-	(mips_subu_s_ph): Set type to dspalusat. 
+	(mips_subu_s_ph): Set type to dspalusat.
 	(mips_dpaqx_sa_w_ph, mips_dpsqx_sa_w_ph): Set type to dspmacsat.
 	Set accum_in attribute.
 	* config/mips/mips-protos.h (mips_dspalu_bypass_p): Add prototype.
@@ -1318,8 +1297,7 @@
 
 2012-08-15  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
-	* config/arm/neon.md (neon_vaba<mode> VDQIW): Canonicalize
-	operands.
+	* config/arm/neon.md (neon_vaba<mode> VDQIW): Canonicalize operands.
 	(neon_vabal<mode> VDQIW): Likewise.
 
 2012-08-15  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
@@ -1342,7 +1320,7 @@
 	* config/mips/mips.c (mips_linked_madd_p): Use accum_in to extract
 	accumulator register.
 
-2012-08-14   Diego Novillo  <dnovillo@google.com>
+2012-08-14  Diego Novillo  <dnovillo@google.com>
 
 	Merge from cxx-conversion branch.  Configury.
 
@@ -1357,7 +1335,7 @@
 	* doc/install.texi: Remove documentation for --enable-build-with-cxx
 	and --enable-build-poststage1-with-cxx.
 
-2012-08-14   Diego Novillo  <dnovillo@google.com>
+2012-08-14  Diego Novillo  <dnovillo@google.com>
 
 	Merge from cxx-conversion branch.  Re-implement VEC in C++.
 
@@ -1374,9 +1352,8 @@
 	(vec_heap_o_reserve_exact): Remove.
 	(vec_stack_p_reserve): Remove.
 	(vec_stack_p_reserve_exact): Remove.
-	* vec.h (VEC_CHECK_INFO, VEC_CHECK_DECL, VEC_CHECK_PASS,
-	VEC_ASSERT, VEC_ASSERT_FAIL, vec_assert_fail): Move earlier
-	in the file.
+	* vec.h (VEC_CHECK_INFO, VEC_CHECK_DECL, VEC_CHECK_PASS, VEC_ASSERT,
+	VEC_ASSERT_FAIL, vec_assert_fail): Move earlier in the file.
 	(VEC): Define to vec_t<T>.
 	(vec_allocation_t): Define.
 	(struct vec_prefix): Move earlier in the file.
@@ -1511,7 +1488,7 @@
 	(discover_loops): Likewise.
 	(reorg_loops): Likewise.
 
-2012-08-14   Diego Novillo  <dnovillo@google.com>
+2012-08-14  Diego Novillo  <dnovillo@google.com>
 
 	Merge from cxx-conversion branch.  C++ support in gengtype.
 
@@ -1520,8 +1497,7 @@
 	* doc/gty.texi: Document support for C++ templates and
 	user-provided markers.
 	* gcc/gengtype-lex.l: Update copyright year.
-	Remove support for recognizing DEF_VEC_O, DEF_VEC_P and
-	DEFVEC_I.
+	Remove support for recognizing DEF_VEC_O, DEF_VEC_P and DEFVEC_I.
 	* gengtype-parse.c: Update copyright year.
 	(token_names): Remove DEF_VEC_O, DEF_VEC_P and DEF_VEC_I.
 	(require_template_declaration): New.
@@ -1622,7 +1598,7 @@
 	* gengtype.h (USER_GTY): Add.
 	* doc/gty.texi: Update.
 
-2012-08-14   Lawrence Crowl  <crowl@google.com>
+2012-08-14  Lawrence Crowl  <crowl@google.com>
 
 	Merge cxx-conversion branch.  Implement C++ hash table.
 
@@ -1690,7 +1666,7 @@
 	* Makefile.in: Add hash-table.o to OBJS-libcommon-target.
 	Add $(HASH_TABLE_H). Add new dependences on $(HASH_TABLE_H).
 
-2012-08-14   Lawrence Crowl  <crowl@google.com>
+2012-08-14  Lawrence Crowl  <crowl@google.com>
 
 	Merge from cxx-conversion branch.  Re-write double_int in C++.
 
@@ -1882,10 +1858,9 @@
 	(double_int_max_value): Likewise.
 	* fixed-value.c: Change to use member functions introduced above.
 
-2012-08-14   Lawrence Crowl  <crowl@google.com>
+2012-08-14  Lawrence Crowl  <crowl@google.com>
 
-	Merge cxx-conversion branch.  Support tree macro calling
-	from gdb.
+	Merge cxx-conversion branch.  Support tree macro calling from gdb.
 
 	* tree.h (tree_check): New.
 	(TREE_CHECK): Use inline function above instead of __extension__.
