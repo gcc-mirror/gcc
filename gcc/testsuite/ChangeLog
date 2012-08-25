@@ -1,3 +1,8 @@
+2012-08-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51421
+	* g++.dg/cpp0x/auto34.C: New.
+
 2012-08-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/54363
