@@ -1260,9 +1260,9 @@ delete_related_insns (rtx insn)
 	  && GET_CODE (PATTERN (insn)) == SEQUENCE
 	  && CALL_P (XVECEXP (PATTERN (insn), 0, 0))))
     {
-      rtx p = insn;
+      rtx p;
 
-      for (p = NEXT_INSN (p);
+      for (p = next && INSN_DELETED_P (next) ? NEXT_INSN (next) : next;
 	   p && NOTE_P (p);
 	   p = NEXT_INSN (p))
 	if (NOTE_KIND (p) == NOTE_INSN_CALL_ARG_LOCATION)
