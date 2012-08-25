@@ -4,3 +4,4 @@ For releases the installation documentation is generated from
 gcc/doc/install.texi and copied into this directory.
 
 To read this documentation, please point your HTML browser to "index.html".
+The latest version is always available at http://gcc.gnu.org/install/ .
