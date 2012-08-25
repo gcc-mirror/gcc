@@ -1,3 +1,8 @@
+2012-08-24  Jason Merrill  <jason@redhat.com>
+
+	* print-tree.c (print_node): Don't check TREE_LANG_FLAG_*
+	on TREE_VEC or SSA_NAME.
+
 2012-08-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/54363
