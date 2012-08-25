@@ -9609,6 +9609,7 @@ tsubst_default_argument (tree fn, tree type, tree arg)
 {
   tree saved_class_ptr = NULL_TREE;
   tree saved_class_ref = NULL_TREE;
+  int errs = errorcount + sorrycount;
 
   /* This can happen in invalid code.  */
   if (TREE_CODE (arg) == DEFAULT_ARG)
@@ -9655,6 +9656,10 @@ tsubst_default_argument (tree fn, tree type, tree arg)
       cp_function_chain->x_current_class_ptr = saved_class_ptr;
       cp_function_chain->x_current_class_ref = saved_class_ref;
     }
+
+  if (errorcount+sorrycount > errs)
+    inform (input_location,
+	    "  when instantiating default argument for call to %D", fn);
 
   /* Make sure the default argument is reasonable.  */
   arg = check_default_argument (type, arg);
@@ -12496,15 +12501,19 @@ static tree
 tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	     bool integral_constant_expression_p)
 {
+#define RETURN(EXP) do { r = (EXP); goto out; } while(0)
 #define RECUR(NODE)				\
   tsubst_expr ((NODE), args, complain, in_decl,	\
 	       integral_constant_expression_p)
 
   tree stmt, tmp;
+  tree r;
+  location_t loc;
 
   if (t == NULL_TREE || t == error_mark_node)
     return t;
 
+  loc = input_location;
   if (EXPR_HAS_LOCATION (t))
     input_location = EXPR_LOCATION (t);
   if (STATEMENT_CODE_P (TREE_CODE (t)))
@@ -13016,42 +13025,46 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
             stmt = build_transaction_expr (EXPR_LOCATION (t),
 					   RECUR (TRANSACTION_EXPR_BODY (t)),
 					   flags, NULL_TREE);
-            return stmt;
+            RETURN (stmt);
           }
       }
       break;
 
     case MUST_NOT_THROW_EXPR:
-      return build_must_not_throw_expr (RECUR (TREE_OPERAND (t, 0)),
-					RECUR (MUST_NOT_THROW_COND (t)));
+      RETURN (build_must_not_throw_expr (RECUR (TREE_OPERAND (t, 0)),
+					RECUR (MUST_NOT_THROW_COND (t))));
 
     case EXPR_PACK_EXPANSION:
       error ("invalid use of pack expansion expression");
-      return error_mark_node;
+      RETURN (error_mark_node);
 
     case NONTYPE_ARGUMENT_PACK:
       error ("use %<...%> to expand argument pack");
-      return error_mark_node;
+      RETURN (error_mark_node);
 
     case COMPOUND_EXPR:
       tmp = RECUR (TREE_OPERAND (t, 0));
       if (tmp == NULL_TREE)
 	/* If the first operand was a statement, we're done with it.  */
-	return RECUR (TREE_OPERAND (t, 1));
-      return build_x_compound_expr (EXPR_LOCATION (t), tmp,
+	RETURN (RECUR (TREE_OPERAND (t, 1)));
+      RETURN (build_x_compound_expr (EXPR_LOCATION (t), tmp,
 				    RECUR (TREE_OPERAND (t, 1)),
-				    complain);
+				    complain));
 
     default:
       gcc_assert (!STATEMENT_CODE_P (TREE_CODE (t)));
 
-      return tsubst_copy_and_build (t, args, complain, in_decl,
+      RETURN (tsubst_copy_and_build (t, args, complain, in_decl,
 				    /*function_p=*/false,
-				    integral_constant_expression_p);
+				    integral_constant_expression_p));
     }
 
-  return NULL_TREE;
+  RETURN (NULL_TREE);
+ out:
+  input_location = loc;
+  return r;
 #undef RECUR
+#undef RETURN
 }
 
 /* T is a postfix-expression that is not being used in a function
@@ -13084,15 +13097,21 @@ tsubst_copy_and_build (tree t,
 		       bool function_p,
 		       bool integral_constant_expression_p)
 {
+#define RETURN(EXP) do { retval = (EXP); goto out; } while(0)
 #define RECUR(NODE)						\
   tsubst_copy_and_build (NODE, args, complain, in_decl, 	\
 			 /*function_p=*/false,			\
 			 integral_constant_expression_p)
 
-  tree op1;
+  tree retval, op1;
+  location_t loc;
 
   if (t == NULL_TREE || t == error_mark_node)
     return t;
+
+  loc = input_location;
+  if (EXPR_HAS_LOCATION (t))
+    input_location = EXPR_LOCATION (t);
 
   switch (TREE_CODE (t))
     {
@@ -13139,7 +13158,7 @@ tsubst_copy_and_build (tree t,
 	      unqualified_name_lookup_error (decl);
 	    decl = error_mark_node;
 	  }
-	return decl;
+	RETURN (decl);
       }
 
     case TEMPLATE_ID_EXPR:
@@ -13161,10 +13180,10 @@ tsubst_copy_and_build (tree t,
 	templ = lookup_template_function (templ, targs);
 
 	if (object)
-	  return build3 (COMPONENT_REF, TREE_TYPE (templ),
-			 object, templ, NULL_TREE);
+	  RETURN (build3 (COMPONENT_REF, TREE_TYPE (templ),
+			 object, templ, NULL_TREE));
 	else
-	  return baselink_for_fns (templ);
+	  RETURN (baselink_for_fns (templ));
       }
 
     case INDIRECT_REF:
@@ -13181,13 +13200,13 @@ tsubst_copy_and_build (tree t,
 	  }
 	else
 	  r = build_x_indirect_ref (input_location, r, RO_UNARY_STAR, complain);
-	return r;
+	RETURN (r);
       }
 
     case NOP_EXPR:
-      return build_nop
+      RETURN (build_nop
 	(tsubst (TREE_TYPE (t), args, complain, in_decl),
-	 RECUR (TREE_OPERAND (t, 0)));
+	 RECUR (TREE_OPERAND (t, 0))));
 
     case IMPLICIT_CONV_EXPR:
       {
@@ -13196,15 +13215,15 @@ tsubst_copy_and_build (tree t,
 	int flags = LOOKUP_IMPLICIT;
 	if (IMPLICIT_CONV_EXPR_DIRECT_INIT (t))
 	  flags = LOOKUP_NORMAL;
-	return perform_implicit_conversion_flags (type, expr, complain,
-						  flags);
+	RETURN (perform_implicit_conversion_flags (type, expr, complain,
+						  flags));
       }
 
     case CONVERT_EXPR:
-      return build1
+      RETURN (build1
 	(CONVERT_EXPR,
 	 tsubst (TREE_TYPE (t), args, complain, in_decl),
-	 RECUR (TREE_OPERAND (t, 0)));
+	 RECUR (TREE_OPERAND (t, 0))));
 
     case CAST_EXPR:
     case REINTERPRET_CAST_EXPR:
@@ -13222,7 +13241,7 @@ tsubst_copy_and_build (tree t,
             if (complain & tf_error)
               error ("a cast to a type other than an integral or "
                      "enumeration type cannot appear in a constant-expression");
-	    return error_mark_node; 
+	    RETURN (error_mark_node);
 	  }
 
 	op = RECUR (TREE_OPERAND (t, 0));
@@ -13250,14 +13269,14 @@ tsubst_copy_and_build (tree t,
 	  }
 	--c_inhibit_evaluation_warnings;
 
-	return r;
+	RETURN (r);
       }
 
     case POSTDECREMENT_EXPR:
     case POSTINCREMENT_EXPR:
       op1 = tsubst_non_call_postfix_expression (TREE_OPERAND (t, 0),
 						args, complain, in_decl);
-      return build_x_unary_op (input_location, TREE_CODE (t), op1, complain);
+      RETURN (build_x_unary_op (input_location, TREE_CODE (t), op1, complain));
 
     case PREDECREMENT_EXPR:
     case PREINCREMENT_EXPR:
@@ -13268,25 +13287,25 @@ tsubst_copy_and_build (tree t,
     case UNARY_PLUS_EXPR:  /* Unary + */
     case REALPART_EXPR:
     case IMAGPART_EXPR:
-      return build_x_unary_op (input_location, TREE_CODE (t),
-			       RECUR (TREE_OPERAND (t, 0)), complain);
+      RETURN (build_x_unary_op (input_location, TREE_CODE (t),
+			       RECUR (TREE_OPERAND (t, 0)), complain));
 
     case FIX_TRUNC_EXPR:
-      return cp_build_unary_op (FIX_TRUNC_EXPR, RECUR (TREE_OPERAND (t, 0)),
-				0, complain);
+      RETURN (cp_build_unary_op (FIX_TRUNC_EXPR, RECUR (TREE_OPERAND (t, 0)),
+				0, complain));
 
     case ADDR_EXPR:
       op1 = TREE_OPERAND (t, 0);
       if (TREE_CODE (op1) == LABEL_DECL)
-	return finish_label_address_expr (DECL_NAME (op1),
-					  EXPR_LOCATION (op1));
+	RETURN (finish_label_address_expr (DECL_NAME (op1),
+					  EXPR_LOCATION (op1)));
       if (TREE_CODE (op1) == SCOPE_REF)
 	op1 = tsubst_qualified_id (op1, args, complain, in_decl,
 				   /*done=*/true, /*address_p=*/true);
       else
 	op1 = tsubst_non_call_postfix_expression (op1, args, complain,
 						  in_decl);
-      return build_x_unary_op (input_location, ADDR_EXPR, op1, complain);
+      RETURN (build_x_unary_op (input_location, ADDR_EXPR, op1, complain));
 
     case PLUS_EXPR:
     case MINUS_EXPR:
@@ -13341,21 +13360,21 @@ tsubst_copy_and_build (tree t,
 
 	--c_inhibit_evaluation_warnings;
 
-	return r;
+	RETURN (r);
       }
 
     case SCOPE_REF:
-      return tsubst_qualified_id (t, args, complain, in_decl, /*done=*/true,
-				  /*address_p=*/false);
+      RETURN (tsubst_qualified_id (t, args, complain, in_decl, /*done=*/true,
+				  /*address_p=*/false));
     case ARRAY_REF:
       op1 = tsubst_non_call_postfix_expression (TREE_OPERAND (t, 0),
 						args, complain, in_decl);
-      return build_x_array_ref (EXPR_LOCATION (t), op1,
-				RECUR (TREE_OPERAND (t, 1)), complain);
+      RETURN (build_x_array_ref (EXPR_LOCATION (t), op1,
+				RECUR (TREE_OPERAND (t, 1)), complain));
 
     case SIZEOF_EXPR:
       if (PACK_EXPANSION_P (TREE_OPERAND (t, 0)))
-	return tsubst_copy (t, args, complain, in_decl);
+	RETURN (tsubst_copy (t, args, complain, in_decl));
       /* Fall through */
       
     case ALIGNOF_EXPR:
@@ -13379,11 +13398,11 @@ tsubst_copy_and_build (tree t,
 	  --c_inhibit_evaluation_warnings;
 	}
       if (TYPE_P (op1))
-	return cxx_sizeof_or_alignof_type (op1, TREE_CODE (t), 
-                                           complain & tf_error);
+	RETURN (cxx_sizeof_or_alignof_type (op1, TREE_CODE (t),
+                                           complain & tf_error));
       else
-	return cxx_sizeof_or_alignof_expr (op1, TREE_CODE (t), 
-                                           complain & tf_error);
+	RETURN (cxx_sizeof_or_alignof_expr (op1, TREE_CODE (t),
+                                           complain & tf_error));
 
     case AT_ENCODE_EXPR:
       {
@@ -13395,7 +13414,7 @@ tsubst_copy_and_build (tree t,
 				     /*integral_constant_expression_p=*/false);
 	--cp_unevaluated_operand;
 	--c_inhibit_evaluation_warnings;
-	return objc_build_encode_expr (op1);
+	RETURN (objc_build_encode_expr (op1));
       }
 
     case NOEXCEPT_EXPR:
@@ -13407,7 +13426,7 @@ tsubst_copy_and_build (tree t,
 				   /*integral_constant_expression_p=*/false);
       --cp_unevaluated_operand;
       --c_inhibit_evaluation_warnings;
-      return finish_noexcept_expr (op1, complain);
+      RETURN (finish_noexcept_expr (op1, complain));
 
     case MODOP_EXPR:
       {
@@ -13425,7 +13444,7 @@ tsubst_copy_and_build (tree t,
 	   here.  */
 	if (TREE_NO_WARNING (t))
 	  TREE_NO_WARNING (r) = TREE_NO_WARNING (t);
-	return r;
+	RETURN (r);
       }
 
     case ARROW_EXPR:
@@ -13434,7 +13453,7 @@ tsubst_copy_and_build (tree t,
       /* Remember that there was a reference to this entity.  */
       if (DECL_P (op1))
 	mark_used (op1);
-      return build_x_arrow (input_location, op1, complain);
+      RETURN (build_x_arrow (input_location, op1, complain));
 
     case NEW_EXPR:
       {
@@ -13485,22 +13504,22 @@ tsubst_copy_and_build (tree t,
 	if (init_vec != NULL)
 	  release_tree_vector (init_vec);
 
-	return ret;
+	RETURN (ret);
       }
 
     case DELETE_EXPR:
-     return delete_sanity
+     RETURN (delete_sanity
        (RECUR (TREE_OPERAND (t, 0)),
 	RECUR (TREE_OPERAND (t, 1)),
 	DELETE_EXPR_USE_VEC (t),
 	DELETE_EXPR_USE_GLOBAL (t),
-	complain);
+	complain));
 
     case COMPOUND_EXPR:
-      return build_x_compound_expr (EXPR_LOCATION (t),
+      RETURN (build_x_compound_expr (EXPR_LOCATION (t),
 				    RECUR (TREE_OPERAND (t, 0)),
 				    RECUR (TREE_OPERAND (t, 1)),
-                                    complain);
+                                    complain));
 
     case CALL_EXPR:
       {
@@ -13622,7 +13641,7 @@ tsubst_copy_and_build (tree t,
 			    (function, args, complain, in_decl, true,
 			     integral_constant_expression_p));
 		if (unq == error_mark_node)
-		  return error_mark_node;
+		  RETURN (error_mark_node);
 
 		if (unq != function)
 		  {
@@ -13664,7 +13683,7 @@ tsubst_copy_and_build (tree t,
 	      {
 		unqualified_name_lookup_error (function);
 		release_tree_vector (call_args);
-		return error_mark_node;
+		RETURN (error_mark_node);
 	      }
 	  }
 
@@ -13707,7 +13726,7 @@ tsubst_copy_and_build (tree t,
 
 	release_tree_vector (call_args);
 
-	return ret;
+	RETURN (ret);
       }
 
     case COND_EXPR:
@@ -13738,22 +13757,22 @@ tsubst_copy_and_build (tree t,
 	    exp2 = RECUR (TREE_OPERAND (t, 2));
 	  }
 
-	return build_x_conditional_expr (EXPR_LOCATION (t),
-					 cond, exp1, exp2, complain);
+	RETURN (build_x_conditional_expr (EXPR_LOCATION (t),
+					 cond, exp1, exp2, complain));
       }
 
     case PSEUDO_DTOR_EXPR:
-      return finish_pseudo_destructor_expr
+      RETURN (finish_pseudo_destructor_expr
 	(RECUR (TREE_OPERAND (t, 0)),
 	 RECUR (TREE_OPERAND (t, 1)),
-	 tsubst (TREE_OPERAND (t, 2), args, complain, in_decl));
+	 tsubst (TREE_OPERAND (t, 2), args, complain, in_decl)));
 
     case TREE_LIST:
       {
 	tree purpose, value, chain;
 
 	if (t == void_list_node)
-	  return t;
+	  RETURN (t);
 
         if ((TREE_PURPOSE (t) && PACK_EXPANSION_P (TREE_PURPOSE (t)))
             || (TREE_VALUE (t) && PACK_EXPANSION_P (TREE_VALUE (t))))
@@ -13789,14 +13808,14 @@ tsubst_copy_and_build (tree t,
             else
               {
                 /* Since we only performed a partial substitution into
-                   the argument pack, we only return a single list
+                   the argument pack, we only RETURN (a single list
                    node.  */
                 if (purposevec == TREE_PURPOSE (t)
                     && valuevec == TREE_VALUE (t)
                     && chain == TREE_CHAIN (t))
-                  return t;
+                  RETURN (t);
 
-                return tree_cons (purposevec, valuevec, chain);
+                RETURN (tree_cons (purposevec, valuevec, chain));
               }
             
             /* Convert the argument vectors into a TREE_LIST */
@@ -13815,7 +13834,7 @@ tsubst_copy_and_build (tree t,
                 chain = tree_cons (purpose, value, chain);
               }
 
-            return chain;
+            RETURN (chain);
           }
 
 	purpose = TREE_PURPOSE (t);
@@ -13830,8 +13849,8 @@ tsubst_copy_and_build (tree t,
 	if (purpose == TREE_PURPOSE (t)
 	    && value == TREE_VALUE (t)
 	    && chain == TREE_CHAIN (t))
-	  return t;
-	return tree_cons (purpose, value, chain);
+	  RETURN (t);
+	RETURN (tree_cons (purpose, value, chain));
       }
 
     case COMPONENT_REF:
@@ -13855,7 +13874,7 @@ tsubst_copy_and_build (tree t,
 	else
 	  member = tsubst_copy (member, args, complain, in_decl);
 	if (member == error_mark_node)
-	  return error_mark_node;
+	  RETURN (error_mark_node);
 
 	if (type_dependent_expression_p (object))
 	  /* We can't do much here.  */;
@@ -13875,7 +13894,7 @@ tsubst_copy_and_build (tree t,
 		  {
 		    dtor = TREE_OPERAND (dtor, 0);
 		    if (TYPE_P (dtor))
-		      return finish_pseudo_destructor_expr (object, s, dtor);
+		      RETURN (finish_pseudo_destructor_expr (object, s, dtor));
 		  }
 	      }
 	  }
@@ -13903,7 +13922,7 @@ tsubst_copy_and_build (tree t,
 	      {
 		qualified_name_lookup_error (scope, tmpl, member,
 					     input_location);
-		return error_mark_node;
+		RETURN (error_mark_node);
 	      }
 	  }
 	else if (TREE_CODE (member) == SCOPE_REF
@@ -13919,19 +13938,19 @@ tsubst_copy_and_build (tree t,
 		  error ("%qD is not a class or namespace",
 			 TREE_OPERAND (member, 0));
 	      }
-	    return error_mark_node;
+	    RETURN (error_mark_node);
 	  }
 	else if (TREE_CODE (member) == FIELD_DECL)
-	  return finish_non_static_data_member (member, object, NULL_TREE);
+	  RETURN (finish_non_static_data_member (member, object, NULL_TREE));
 
-	return finish_class_member_access_expr (object, member,
+	RETURN (finish_class_member_access_expr (object, member,
 						/*template_p=*/false,
-						complain);
+						complain));
       }
 
     case THROW_EXPR:
-      return build_throw
-	(RECUR (TREE_OPERAND (t, 0)));
+      RETURN (build_throw
+	(RECUR (TREE_OPERAND (t, 0))));
 
     case CONSTRUCTOR:
       {
@@ -13945,11 +13964,11 @@ tsubst_copy_and_build (tree t,
 	tree r;
 
 	if (type == error_mark_node)
-	  return error_mark_node;
+	  RETURN (error_mark_node);
 
 	/* digest_init will do the wrong thing if we let it.  */
 	if (type && TYPE_PTRMEMFUNC_P (type))
-	  return t;
+	  RETURN (t);
 
 	/* We do not want to process the index of aggregate
 	   initializers as they are identifier nodes which will be
@@ -14011,10 +14030,10 @@ tsubst_copy_and_build (tree t,
 	CONSTRUCTOR_IS_DIRECT_INIT (r) = CONSTRUCTOR_IS_DIRECT_INIT (t);
 
 	if (TREE_HAS_CONSTRUCTOR (t))
-	  return finish_compound_literal (type, r, complain);
+	  RETURN (finish_compound_literal (type, r, complain));
 
 	TREE_TYPE (r) = type;
-	return r;
+	RETURN (r);
       }
 
     case TYPEID_EXPR:
@@ -14023,18 +14042,18 @@ tsubst_copy_and_build (tree t,
 	if (TYPE_P (operand_0))
 	  {
 	    operand_0 = tsubst (operand_0, args, complain, in_decl);
-	    return get_typeid (operand_0);
+	    RETURN (get_typeid (operand_0));
 	  }
 	else
 	  {
 	    operand_0 = RECUR (operand_0);
-	    return build_typeid (operand_0);
+	    RETURN (build_typeid (operand_0));
 	  }
       }
 
     case VAR_DECL:
       if (!args)
-	return t;
+	RETURN (t);
       /* Fall through */
 
     case PARM_DECL:
@@ -14045,16 +14064,16 @@ tsubst_copy_and_build (tree t,
 	  /* If the original type was a reference, we'll be wrapped in
 	     the appropriate INDIRECT_REF.  */
 	  r = convert_from_reference (r);
-	return r;
+	RETURN (r);
       }
 
     case VA_ARG_EXPR:
-      return build_x_va_arg (EXPR_LOCATION (t),
+      RETURN (build_x_va_arg (EXPR_LOCATION (t),
 			     RECUR (TREE_OPERAND (t, 0)),
-			     tsubst (TREE_TYPE (t), args, complain, in_decl));
+			     tsubst (TREE_TYPE (t), args, complain, in_decl)));
 
     case OFFSETOF_EXPR:
-      return finish_offsetof (RECUR (TREE_OPERAND (t, 0)));
+      RETURN (finish_offsetof (RECUR (TREE_OPERAND (t, 0))));
 
     case TRAIT_EXPR:
       {
@@ -14065,7 +14084,7 @@ tsubst_copy_and_build (tree t,
 	if (type2)
 	  type2 = tsubst_copy (type2, args, complain, in_decl);
 	
-	return finish_trait_expr (TRAIT_EXPR_KIND (t), type1, type2);
+	RETURN (finish_trait_expr (TRAIT_EXPR_KIND (t), type1, type2));
       }
 
     case STMT_EXPR:
@@ -14084,7 +14103,7 @@ tsubst_copy_and_build (tree t,
 	if (empty_expr_stmt_p (stmt_expr))
 	  stmt_expr = void_zero_node;
 
-	return stmt_expr;
+	RETURN (stmt_expr);
       }
 
     case LAMBDA_EXPR:
@@ -14121,7 +14140,7 @@ tsubst_copy_and_build (tree t,
 	LAMBDA_EXPR_CAPTURE_LIST (r)
 	  = RECUR (LAMBDA_EXPR_CAPTURE_LIST (t));
 
-	return build_lambda_object (r);
+	RETURN (build_lambda_object (r));
       }
 
     case TARGET_EXPR:
@@ -14131,12 +14150,12 @@ tsubst_copy_and_build (tree t,
       {
 	tree r = get_target_expr (RECUR (TARGET_EXPR_INITIAL (t)));
 	TREE_CONSTANT (r) = true;
-	return r;
+	RETURN (r);
       }
 
     case TRANSACTION_EXPR:
-      return tsubst_expr(t, args, complain, in_decl,
-	     integral_constant_expression_p);
+      RETURN (tsubst_expr(t, args, complain, in_decl,
+	     integral_constant_expression_p));
 
     default:
       /* Handle Objective-C++ constructs, if appropriate.  */
@@ -14145,12 +14164,16 @@ tsubst_copy_and_build (tree t,
 	  = objcp_tsubst_copy_and_build (t, args, complain,
 					 in_decl, /*function_p=*/false);
 	if (subst)
-	  return subst;
+	  RETURN (subst);
       }
-      return tsubst_copy (t, args, complain, in_decl);
+      RETURN (tsubst_copy (t, args, complain, in_decl));
     }
 
 #undef RECUR
+#undef RETURN
+ out:
+  input_location = loc;
+  return retval;
 }
 
 /* Verify that the instantiated ARGS are valid. For type arguments,

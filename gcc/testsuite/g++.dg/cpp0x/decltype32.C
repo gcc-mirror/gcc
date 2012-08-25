@@ -2,8 +2,8 @@
 // { dg-options -std=c++0x }
 
 template <typename T>
-auto make_array(const T& il) ->	// { dg-error "not declared" }
-decltype(make_array(il))
+auto make_array(const T& il) ->
+decltype(make_array(il))	// { dg-error "not declared" }
 { }
 
 int main()

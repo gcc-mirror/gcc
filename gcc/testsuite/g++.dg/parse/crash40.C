@@ -26,7 +26,7 @@ template<bool> struct S {
   S(unsigned int = BBB::foo()->AAA::get()); /* { dg-error "is not a base of" } */
 };
 template<bool> struct SS {
-  SS(unsigned int = BBB::foo()->get());
+  SS(unsigned int = BBB::foo()->get()); /* { dg-error "within this context" } */
 };
 
 void bar()
@@ -38,5 +38,5 @@ void bar()
   i.C::foo<0>(); /* { dg-error "which is of non-class type" } */
 
   S<false> s; /* { dg-error "default argument" } */
-  SS<false> ss; /* { dg-error "within this context" } */
+  SS<false> ss;
 }
