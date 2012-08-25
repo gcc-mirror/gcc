@@ -2062,6 +2062,7 @@ finish_call_expr (tree fn, VEC(tree,gc) **args, bool disallow_virtual,
 	      && type_dependent_expression_p (current_class_ref)))
 	{
 	  result = build_nt_call_vec (fn, *args);
+	  SET_EXPR_LOCATION (result, EXPR_LOC_OR_HERE (fn));
 	  KOENIG_LOOKUP_P (result) = koenig_p;
 	  if (cfun)
 	    {

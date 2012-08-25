@@ -26603,6 +26603,8 @@ cp_parser_omp_for_loop (cp_parser *parser, tree clauses, tree *par_clauses)
 	    incr = cp_parser_omp_for_incr (parser, real_decl);
 	  else
 	    incr = cp_parser_expression (parser, false, NULL);
+	  if (CAN_HAVE_LOCATION_P (incr) && !EXPR_HAS_LOCATION (incr))
+	    SET_EXPR_LOCATION (incr, input_location);
 	}
 
       if (!cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN))

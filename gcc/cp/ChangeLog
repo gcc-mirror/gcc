@@ -1,5 +1,14 @@
 2012-08-24  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (tsubst_default_argument): Indicate where the default
+	argument is being instantiated for.
+	(tsubst_expr): Restore previous location.
+	(tsubst_copy_and_build): Set and restore location.
+	* call.c (build_new_method_call_1): Remember location of call.
+	* semantics.c (finish_call_expr): Here too.
+	* parser.c (cp_parser_omp_for_loop): Remember the location of the
+	increment expression.
+
 	* pt.c (resolve_overloaded_unification): Use coerce_template_parms
 	instead of get_bindings.
 	(resolve_nondeduced_context): Likewise.

@@ -19,8 +19,8 @@ struct Bind
     R f();
 
     template<typename R
-      = decltype( val<const F>()( ) )>
-    R f() const;		// { dg-error "no match" }
+      = decltype( val<const F>()( ) )> // { dg-error "no match" }
+    R f() const;
 };
 
 int main()
