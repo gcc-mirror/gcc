@@ -363,20 +363,24 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
     fputs (" deprecated", file);
   if (TREE_VISITED (node))
     fputs (" visited", file);
-  if (TREE_LANG_FLAG_0 (node))
-    fputs (" tree_0", file);
-  if (TREE_LANG_FLAG_1 (node))
-    fputs (" tree_1", file);
-  if (TREE_LANG_FLAG_2 (node))
-    fputs (" tree_2", file);
-  if (TREE_LANG_FLAG_3 (node))
-    fputs (" tree_3", file);
-  if (TREE_LANG_FLAG_4 (node))
-    fputs (" tree_4", file);
-  if (TREE_LANG_FLAG_5 (node))
-    fputs (" tree_5", file);
-  if (TREE_LANG_FLAG_6 (node))
-    fputs (" tree_6", file);
+
+  if (code != TREE_VEC && code != SSA_NAME)
+    {
+      if (TREE_LANG_FLAG_0 (node))
+	fputs (" tree_0", file);
+      if (TREE_LANG_FLAG_1 (node))
+	fputs (" tree_1", file);
+      if (TREE_LANG_FLAG_2 (node))
+	fputs (" tree_2", file);
+      if (TREE_LANG_FLAG_3 (node))
+	fputs (" tree_3", file);
+      if (TREE_LANG_FLAG_4 (node))
+	fputs (" tree_4", file);
+      if (TREE_LANG_FLAG_5 (node))
+	fputs (" tree_5", file);
+      if (TREE_LANG_FLAG_6 (node))
+	fputs (" tree_6", file);
+    }
 
   /* DECL_ nodes have additional attributes.  */
 
