@@ -1008,7 +1008,7 @@ enum target_cpu_default
    applied to them.  */
 
 #define HARD_REGNO_NREGS(REGNO, MODE)					\
-  (FP_REGNO_P (REGNO) || SSE_REGNO_P (REGNO) || MMX_REGNO_P (REGNO)	\
+  (STACK_REGNO_P (REGNO) || SSE_REGNO_P (REGNO) || MMX_REGNO_P (REGNO)	\
    ? (COMPLEX_MODE_P (MODE) ? 2 : 1)					\
    : ((MODE) == XFmode							\
       ? (TARGET_64BIT ? 2 : 3)						\
@@ -1018,7 +1018,7 @@ enum target_cpu_default
 
 #define HARD_REGNO_NREGS_HAS_PADDING(REGNO, MODE)			\
   ((TARGET_128BIT_LONG_DOUBLE && !TARGET_64BIT)				\
-   ? (FP_REGNO_P (REGNO) || SSE_REGNO_P (REGNO) || MMX_REGNO_P (REGNO)	\
+   ? (STACK_REGNO_P (REGNO) || SSE_REGNO_P (REGNO) || MMX_REGNO_P (REGNO) \
       ? 0								\
       : ((MODE) == XFmode || (MODE) == XCmode))				\
    : 0)
@@ -1337,11 +1337,11 @@ enum reg_class
 #define REX_INT_REGNO_P(N) \
   IN_RANGE ((N), FIRST_REX_INT_REG, LAST_REX_INT_REG)
 
-#define FP_REG_P(X) (REG_P (X) && FP_REGNO_P (REGNO (X)))
-#define FP_REGNO_P(N) IN_RANGE ((N), FIRST_STACK_REG, LAST_STACK_REG)
+#define STACK_REG_P(X) (REG_P (X) && STACK_REGNO_P (REGNO (X)))
+#define STACK_REGNO_P(N) IN_RANGE ((N), FIRST_STACK_REG, LAST_STACK_REG)
 
 #define ANY_FP_REG_P(X) (REG_P (X) && ANY_FP_REGNO_P (REGNO (X)))
-#define ANY_FP_REGNO_P(N) (FP_REGNO_P (N) || SSE_REGNO_P (N))
+#define ANY_FP_REGNO_P(N) (STACK_REGNO_P (N) || SSE_REGNO_P (N))
 
 #define X87_FLOAT_MODE_P(MODE)	\
   (TARGET_80387 && ((MODE) == SFmode || (MODE) == DFmode || (MODE) == XFmode))
@@ -1366,9 +1366,6 @@ enum reg_class
 
 #define MMX_REG_P(X) (REG_P (X) && MMX_REGNO_P (REGNO (X)))
 #define MMX_REGNO_P(N) IN_RANGE ((N), FIRST_MMX_REG, LAST_MMX_REG)
-
-#define STACK_REG_P(X) (REG_P (X) && STACK_REGNO_P (REGNO (X)))
-#define STACK_REGNO_P(N) IN_RANGE ((N), FIRST_STACK_REG, LAST_STACK_REG)
 
 #define STACK_TOP_P(X) (REG_P (X) && REGNO (X) == FIRST_STACK_REG)
 
@@ -2204,8 +2201,7 @@ enum ix86_stack_slot
 
    ??? Maybe Pentium chips benefits from renaming, someone can try....  */
 
-#define HARD_REGNO_RENAME_OK(SRC, TARGET)  \
-  (! IN_RANGE ((SRC), FIRST_STACK_REG, LAST_STACK_REG))
+#define HARD_REGNO_RENAME_OK(SRC, TARGET) !STACK_REGNO_P (SRC)
 
 
 #define FASTCALL_PREFIX '@'

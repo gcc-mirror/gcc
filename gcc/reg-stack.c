@@ -413,7 +413,7 @@ get_true_reg (rtx *pat)
 	   actual FP register in use.  */
 	{
 	  rtx subreg;
-	  if (FP_REG_P (subreg = SUBREG_REG (*pat)))
+	  if (STACK_REG_P (subreg = SUBREG_REG (*pat)))
 	    {
 	      int regno_off = subreg_regno_offset (REGNO (subreg),
 						   GET_MODE (subreg),
