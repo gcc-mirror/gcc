@@ -15554,7 +15554,7 @@ output_387_ffreep (rtx *operands ATTRIBUTE_UNUSED, int opno)
       static char retval[32];
       int regno = REGNO (operands[opno]);
 
-      gcc_assert (FP_REGNO_P (regno));
+      gcc_assert (STACK_REGNO_P (regno));
 
       regno -= FIRST_STACK_REG;
 
@@ -32169,7 +32169,7 @@ ix86_hard_regno_mode_ok (int regno, enum machine_mode mode)
       || GET_MODE_CLASS (mode) == MODE_RANDOM
       || GET_MODE_CLASS (mode) == MODE_PARTIAL_INT)
     return false;
-  if (FP_REGNO_P (regno))
+  if (STACK_REGNO_P (regno))
     return VALID_FP_MODE_P (mode);
   if (SSE_REGNO_P (regno))
     {

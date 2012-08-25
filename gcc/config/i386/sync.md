@@ -181,7 +181,7 @@
       if (MEM_P (dst))
 	mem = dst;
 
-      if (FP_REG_P (tmp))
+      if (STACK_REG_P (tmp))
         {
 	  emit_insn (gen_loaddi_via_fpu (tmp, src));
 	  emit_insn (gen_storedi_via_fpu (mem, tmp));
@@ -261,7 +261,7 @@
 	  src = mem;
 	}
 
-      if (FP_REG_P (tmp))
+      if (STACK_REG_P (tmp))
 	{
 	  emit_insn (gen_loaddi_via_fpu (tmp, src));
 	  emit_insn (gen_storedi_via_fpu (dst, tmp));

@@ -1,3 +1,21 @@
+2012-08-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (FP_REG_P): Remove macro.
+	(FP_REGNO_P): Ditto.
+	(HARD_REGNO_NREGS): Use STACK_REGNO_P instead of FP_REGNO_P.
+	(HARD_REGNO_NREGS_HAS_PADDING): Ditto.
+	(ANY_FP_REGNO_P): Ditto.
+	(HARD_REGNO_RENAME_OK): Use STACK_REGNO_P.
+	* config/i386/i386.c (output_387_ffreep): Use STACK_REGNO_P
+	instead of FP_REGNO_P.
+	(ix86_hard_regno_mode_ok): Ditto.
+	* config/i386/predicates.md (fp_register_operand): Ditto.
+	(register_and_not_fp_reg_operand): Ditto.
+	* config/i386/sync.md (atomic_loaddi_fpu): Use STACK_REG_P instead
+	of FP_REG_P.
+
+	* reg-stack.c (get_true_reg): Use STACK_REG_P instead of FP_REG_P.
+
 2012-08-24  Jason Merrill  <jason@redhat.com>
 
 	* print-tree.c (print_node): Don't check TREE_LANG_FLAG_*
