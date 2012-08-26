@@ -2313,7 +2313,7 @@ struct B : public A @{ int f2 : 1; @};
 
 @noindent
 In this case, G++ places @code{B::f2} into the same byte
-as@code{A::f1}; other compilers do not.  You can avoid this problem
+as @code{A::f1}; other compilers do not.  You can avoid this problem
 by explicitly padding @code{A} so that its size is a multiple of the
 byte size on your platform; that causes G++ and other compilers to
 lay out @code{B} identically.

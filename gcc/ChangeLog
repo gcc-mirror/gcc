@@ -1,3 +1,7 @@
+2012-08-26  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/invoke.texi (C++ Dialect Options): Add missing space.
+
 2012-08-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/54088
