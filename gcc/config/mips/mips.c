@@ -14398,17 +14398,18 @@ r10k_safe_address_p (rtx x, rtx insn)
 static bool
 r10k_safe_mem_expr_p (tree expr, HOST_WIDE_INT offset)
 {
-  if (offset < 0 || offset >= int_size_in_bytes (TREE_TYPE (expr)))
+  HOST_WIDE_INT bitoffset, bitsize;
+  tree inner, var_offset;
+  enum machine_mode mode;
+  int unsigned_p, volatile_p;
+
+  inner = get_inner_reference (expr, &bitsize, &bitoffset, &var_offset, &mode,
+			       &unsigned_p, &volatile_p, false);
+  if (!DECL_P (inner) || !DECL_SIZE_UNIT (inner) || var_offset)
     return false;
 
-  while (TREE_CODE (expr) == COMPONENT_REF)
-    {
-      expr = TREE_OPERAND (expr, 0);
-      if (expr == NULL_TREE)
-	return false;
-    }
-
-  return DECL_P (expr);
+  offset += bitoffset / BITS_PER_UNIT;
+  return offset >= 0 && offset < tree_low_cst (DECL_SIZE_UNIT (inner), 1);
 }
 
 /* A for_each_rtx callback for which DATA points to the instruction
