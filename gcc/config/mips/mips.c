@@ -3677,6 +3677,18 @@ mips_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
 		    + set_src_cost (XEXP (x, 0), speed));
 	  return true;
 	}
+      if (ISA_HAS_CINS && CONST_INT_P (XEXP (x, 1)))
+	{
+	  rtx op = XEXP (x, 0);
+	  if (GET_CODE (op) == ASHIFT
+	      && CONST_INT_P (XEXP (op, 1))
+	      && mask_low_and_shift_p (mode, XEXP (x, 1), XEXP (op, 1), 32))
+	    {
+	      *total = COSTS_N_INSNS (1) + set_src_cost (XEXP (op, 0), speed);
+	      return true;
+	    }
+	}
+	    
       /* Fall through.  */
 
     case IOR:
