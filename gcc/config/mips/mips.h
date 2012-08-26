@@ -2395,12 +2395,8 @@ typedef struct mips_args {
 #define FUNCTION_MODE SImode
 
 
-
-/* Define if copies to/from condition code registers should be avoided.
-
-   This is needed for the MIPS because reload_outcc is not complete;
-   it needs to handle cases where the source is a general or another
-   condition code register.  */
+/* We allocate $fcc registers by hand and can't cope with moves of
+   CCmode registers to and from pseudos (or memory).  */
 #define AVOID_CCMODE_COPIES
 
 /* A C expression for the cost of a branch instruction.  A value of

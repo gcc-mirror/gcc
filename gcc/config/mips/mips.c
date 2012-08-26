@@ -321,6 +321,10 @@ struct GTY(())  mips_frame_info {
 };
 
 struct GTY(())  machine_function {
+  /* The next floating-point condition-code register to allocate
+     for ISA_HAS_8CC targets, relative to ST_REG_FIRST.  */
+  unsigned int next_fcc;
+
   /* The register returned by mips16_gp_pseudo_reg; see there for details.  */
   rtx mips16_gp_pseudo_rtx;
 
@@ -4284,9 +4288,6 @@ mips_output_move (rtx dest, rtx src)
 	      retval[4] = COPNUM_AS_CHAR_FROM_REGNUM (REGNO (src));
 	      return dbl_p ? retval : retval + 1;
 	    }
-
-	  if (ST_REG_P (REGNO (src)) && ISA_HAS_8CC)
-	    return "lui\t%0,0x3f80\n\tmovf\t%0,%.,%1";
 	}
 
       if (src_code == MEM)
@@ -4527,6 +4528,63 @@ mips_reversed_fp_cond (enum rtx_code *code)
     }
 }
 
+/* Allocate a floating-point condition-code register of mode MODE.
+
+   These condition code registers are used for certain kinds
+   of compound operation, such as compare and branches, vconds,
+   and built-in functions.  At expand time, their use is entirely
+   controlled by MIPS-specific code and is entirely internal
+   to these compound operations.
+
+   We could (and did in the past) expose condition-code values
+   as pseudo registers and leave the register allocator to pick
+   appropriate registers.  The problem is that it is not practically
+   possible for the rtl optimizers to guarantee that no spills will
+   be needed, even when AVOID_CCMODE_COPIES is defined.  We would
+   therefore need spill and reload sequences to handle the worst case.
+
+   Although such sequences do exist, they are very expensive and are
+   not something we'd want to use.  This is especially true of CCV2 and
+   CCV4, where all the shuffling would greatly outweigh whatever benefit
+   the vectorization itself provides.
+
+   The main benefit of having more than one condition-code register
+   is to allow the pipelining of operations, especially those involving
+   comparisons and conditional moves.  We don't really expect the
+   registers to be live for long periods, and certainly never want
+   them to be live across calls.
+
+   Also, there should be no penalty attached to using all the available
+   registers.  They are simply bits in the same underlying FPU control
+   register.
+
+   We therefore expose the hardware registers from the outset and use
+   a simple round-robin allocation scheme.  */
+
+static rtx
+mips_allocate_fcc (enum machine_mode mode)
+{
+  unsigned int regno, count;
+
+  gcc_assert (TARGET_HARD_FLOAT && ISA_HAS_8CC);
+
+  if (mode == CCmode)
+    count = 1;
+  else if (mode == CCV2mode)
+    count = 2;
+  else if (mode == CCV4mode)
+    count = 4;
+  else
+    gcc_unreachable ();
+
+  cfun->machine->next_fcc += -cfun->machine->next_fcc & (count - 1);
+  if (cfun->machine->next_fcc > ST_REG_LAST - ST_REG_FIRST)
+    cfun->machine->next_fcc = 0;
+  regno = ST_REG_FIRST + cfun->machine->next_fcc;
+  cfun->machine->next_fcc += count;
+  return gen_rtx_REG (mode, regno);
+}
+
 /* Convert a comparison into something that can be used in a branch or
    conditional move.  On entry, *OP0 and *OP1 are the values being
    compared and *CODE is the code used to compare them.
@@ -4590,7 +4648,7 @@ mips_emit_compare (enum rtx_code *code, rtx *op0, rtx *op1, bool need_eq_ne_p)
       cmp_code = *code;
       *code = mips_reversed_fp_cond (&cmp_code) ? EQ : NE;
       *op0 = (ISA_HAS_8CC
-	      ? gen_reg_rtx (CCmode)
+	      ? mips_allocate_fcc (CCmode)
 	      : gen_rtx_REG (CCmode, FPSW_REGNUM));
       *op1 = const0_rtx;
       mips_emit_binary (cmp_code, *op0, cmp_op0, cmp_op1);
@@ -4657,7 +4715,7 @@ mips_expand_vcondv2sf (rtx dest, rtx true_src, rtx false_src,
   bool reversed_p;
 
   reversed_p = mips_reversed_fp_cond (&cond);
-  cmp_result = gen_reg_rtx (CCV2mode);
+  cmp_result = mips_allocate_fcc (CCV2mode);
   emit_insn (gen_scc_ps (cmp_result,
 			 gen_rtx_fmt_ee (cond, VOIDmode, cmp_op0, cmp_op1)));
   if (reversed_p)
@@ -11098,14 +11156,7 @@ mips_hard_regno_mode_ok_p (unsigned int regno, enum machine_mode mode)
 	    && (regno - ST_REG_FIRST) % 4 == 0);
 
   if (mode == CCmode)
-    {
-      if (!ISA_HAS_8CC)
-	return regno == FPSW_REGNUM;
-
-      return (ST_REG_P (regno)
-	      || GP_REG_P (regno)
-	      || FP_REG_P (regno));
-    }
+    return ISA_HAS_8CC ? ST_REG_P (regno) : regno == FPSW_REGNUM;
 
   size = GET_MODE_SIZE (mode);
   mclass = GET_MODE_CLASS (mode);
@@ -11117,10 +11168,6 @@ mips_hard_regno_mode_ok_p (unsigned int regno, enum machine_mode mode)
       && (((regno - FP_REG_FIRST) % MAX_FPRS_PER_FMT) == 0
 	  || (MIN_FPRS_PER_FMT == 1 && size <= UNITS_PER_FPREG)))
     {
-      /* Allow TFmode for CCmode reloads.  */
-      if (mode == TFmode && ISA_HAS_8CC)
-	return true;
-
       /* Allow 64-bit vector modes for Loongson-2E/2F.  */
       if (TARGET_LOONGSON_VECTORS
 	  && (mode == V2SImode
@@ -13738,15 +13785,16 @@ mips_expand_builtin_compare_1 (enum insn_code icode,
 			       tree exp, int nargs)
 {
   struct expand_operand ops[MAX_RECOG_OPERANDS];
+  rtx output;
   int opno, argno;
 
   /* The instruction should have a target operand, an operand for each
      argument, and an operand for COND.  */
   gcc_assert (nargs + 2 == insn_data[(int) icode].n_generator_args);
 
+  output = mips_allocate_fcc (insn_data[(int) icode].operand[0].mode);
   opno = 0;
-  create_output_operand (&ops[opno++], NULL_RTX,
-			 insn_data[(int) icode].operand[0].mode);
+  create_fixed_operand (&ops[opno++], output);
   for (argno = 0; argno < nargs; argno++)
     mips_prepare_builtin_arg (&ops[opno++], exp, argno);
   create_integer_operand (&ops[opno++], (int) cond);
