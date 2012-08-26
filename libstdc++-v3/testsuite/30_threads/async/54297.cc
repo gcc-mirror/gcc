@@ -5,6 +5,7 @@
 // { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
 // { dg-require-atomic-builtins "" }
+// { dg-require-nanosleep "" }
 
 // Copyright (C) 2012 Free Software Foundation, Inc.
 //
