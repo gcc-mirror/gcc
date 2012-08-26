@@ -1,3 +1,13 @@
+2012-08-26  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/54351
+	* include/bits/unique_ptr.h (unique_ptr<T>::~unique_ptr): Do not use
+	reset().
+	(unique_ptr<T[]>::~unique_ptr()): Likewise.
+	* testsuite/20_util/unique_ptr/54351.cc: New.
+	* testsuite/20_util/unique_ptr/assign/48635_neg.cc: Adjust dg-error
+	line numbers.
+
 2012-08-25  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/54297
