@@ -65,7 +65,7 @@ AC_DEFUN([CLOOG_INIT_FLAGS],
   fi
   dnl If no --with-cloog flag was specified and there is in-tree ClooG
   dnl source, set up flags to use that.
-  if test "x${clooginc}" == x && test "x${clooglibs}" == x \
+  if test "x${clooginc}" = x && test "x${clooglibs}" = x \
      && test -d ${srcdir}/cloog; then
      clooglibs='-L$$r/$(HOST_SUBDIR)/cloog/'"$lt_cv_objdir"' '
      clooginc='-I$$r/$(HOST_SUBDIR)/cloog/include -I$$s/cloog/include -I'${srcdir}'/cloog/include '
