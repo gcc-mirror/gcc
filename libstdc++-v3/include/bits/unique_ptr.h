@@ -169,7 +169,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
       // Destructor.
-      ~unique_ptr() noexcept { reset(); }
+      ~unique_ptr() noexcept
+      {
+	auto& __ptr = std::get<0>(_M_t);
+	if (__ptr != nullptr)
+	  get_deleter()(__ptr);
+	__ptr = pointer();
+      }
 
       // Assignment.
       unique_ptr&
@@ -313,7 +319,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{ }
 
       // Destructor.
-      ~unique_ptr() { reset(); }
+      ~unique_ptr()
+      {
+	auto& __ptr = std::get<0>(_M_t);
+	if (__ptr != nullptr)
+	  get_deleter()(__ptr);
+	__ptr = pointer();
+      }
 
       // Assignment.
       unique_ptr&
