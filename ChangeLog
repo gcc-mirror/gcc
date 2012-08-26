@@ -97,19 +97,19 @@
 
 	Merge from graphite branch
 	2011-07-21  Tobias Grosser  <tobias@grosser.es>
-    
+
 	* configure: Regenerated.
 	* config/cloog.m4: Remove support for CLooG-ppl and CLooG-parma,
 	both cloog.org and legacy versions. The only supported version will
 	be CLooG with the isl backend.
 
 	2011-07-21  Tobias Grosser  <tobias@grosser.es>
-    
+
 	* configure: Regenerated.
 	* configure.ac: Require cloog isl 0.17.0
 
 	2011-07-21  Tobias Grosser  <tobias@grosser.es>
-    
+
 	* configure: Regenerated.
 	* config/cloog.m4: Do not define CLOOG_ORG
 
@@ -177,10 +177,6 @@
 
 	* configure.ac: Bump minimum MPFR version to 2.4.0.
 	* configure: Regenerated.
-
-2012-05-03  Olivier Hainque  <hainque@adacore.com>
-
-	* config/mh-ppc-aix (LDFLAGS): Quote $(CC).
 
 2012-05-01  Richard Henderson  <rth@redhat.com>
 

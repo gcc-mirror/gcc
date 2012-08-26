@@ -34,6 +34,10 @@
 	* stdint.m4: Fix typos.
 	* tcl.m4: Fix typos.
 
+2012-05-03  Olivier Hainque  <hainque@adacore.com>
+
+	* mh-ppc-aix (LDFLAGS): Quote $(CC).
+
 2012-04-03  Tristan Gingold  <gingold@adacore.com>
 
 	* mmap.m4: Use *vms* instead of vms*.
