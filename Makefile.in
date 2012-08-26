@@ -605,23 +605,13 @@ TARGET_LIB_PATH_libatomic = $$r/$(TARGET_SUBDIR)/libatomic/.libs:
 
 # This is the list of directories that may be needed in RPATH_ENVVAR
 # so that programs built for the host machine work.
-HOST_LIB_PATH = $(HOST_LIB_PATH_bfd)$(HOST_LIB_PATH_opcodes)$(HOST_LIB_PATH_gmp)$(HOST_LIB_PATH_mpfr)$(HOST_LIB_PATH_mpc)$(HOST_LIB_PATH_isl)$(HOST_LIB_PATH_cloog)$(HOST_LIB_PATH_libelf)
+HOST_LIB_PATH = $(HOST_LIB_PATH_gmp)$(HOST_LIB_PATH_mpfr)$(HOST_LIB_PATH_mpc)$(HOST_LIB_PATH_isl)$(HOST_LIB_PATH_cloog)$(HOST_LIB_PATH_libelf)
 
 # Define HOST_LIB_PATH_gcc here, for the sake of TARGET_LIB_PATH, ouch
 @if gcc
 HOST_LIB_PATH_gcc = $$r/$(HOST_SUBDIR)/gcc$(GCC_SHLIB_SUBDIR):$$r/$(HOST_SUBDIR)/prev-gcc$(GCC_SHLIB_SUBDIR):
 @endif gcc
 
-
-@if bfd
-HOST_LIB_PATH_bfd = \
-  $$r/$(HOST_SUBDIR)/bfd/.libs:$$r/$(HOST_SUBDIR)/prev-bfd/.libs:
-@endif bfd
-
-@if opcodes
-HOST_LIB_PATH_opcodes = \
-  $$r/$(HOST_SUBDIR)/opcodes/.libs:$$r/$(HOST_SUBDIR)/prev-opcodes/.libs:
-@endif opcodes
 
 @if gmp
 HOST_LIB_PATH_gmp = \
