@@ -198,7 +198,6 @@
 ;; loadpool	move a constant into a MIPS16 register by loading it
 ;;		from the pool
 ;; shift_shift	a shift left followed by a shift right
-;; lui_movf	an LUI followed by a MOVF (for d<-z CC moves)
 ;;
 ;; This attribute is used to determine the instruction's length and
 ;; scheduling type.  For doubleword moves, the attribute always describes
@@ -207,7 +206,7 @@
 (define_attr "move_type"
   "unknown,load,fpload,store,fpstore,mtc,mfc,mtlo,mflo,move,fmove,
    const,constN,signext,ext_ins,logical,arith,sll0,andi,loadpool,
-   shift_shift,lui_movf"
+   shift_shift"
   (const_string "unknown"))
 
 (define_attr "alu_type" "unknown,add,sub,not,nor,and,or,xor"
@@ -390,8 +389,6 @@
 	 (eq_attr "move_type" "move") (const_string "move")
 	 (eq_attr "move_type" "const") (const_string "const")
 	 (eq_attr "sync_mem" "!none") (const_string "syncloop")]
-	;; We classify "lui_movf" as "unknown" rather than "multi"
-	;; because we don't split it.  FIXME: we should split instead.
 	(const_string "unknown")))
 
 ;; Mode for conversion types (fcvt)
@@ -576,10 +573,6 @@
 
 	  ;; In general, constant-pool loads are extended instructions.
 	  (eq_attr "move_type" "loadpool")
-	  (const_int 8)
-
-	  ;; LUI_MOVFs are decomposed into two separate instructions.
-	  (eq_attr "move_type" "lui_movf")
 	  (const_int 8)
 
 	  ;; SHIFT_SHIFTs are decomposed into two separate instructions.
@@ -4434,53 +4427,6 @@
 
   operands[1] = GEN_INT (0xff);
   operands[2] = GEN_INT (val - 0xff);
-})
-
-;; This insn handles moving CCmode values.  It's really just a
-;; slightly simplified copy of movsi_internal2, with additional cases
-;; to move a condition register to a general register and to move
-;; between the general registers and the floating point registers.
-
-(define_insn "movcc"
-  [(set (match_operand:CC 0 "nonimmediate_operand" "=d,*d,*d,*m,*d,*f,*f,*f,*m")
-	(match_operand:CC 1 "general_operand" "z,*d,*m,*d,*f,*d,*f,*m,*f"))]
-  "ISA_HAS_8CC && TARGET_HARD_FLOAT"
-  { return mips_output_move (operands[0], operands[1]); }
-  [(set_attr "move_type" "lui_movf,move,load,store,mfc,mtc,fmove,fpload,fpstore")
-   (set_attr "mode" "SI")])
-
-;; Reload condition code registers.  reload_incc and reload_outcc
-;; both handle moves from arbitrary operands into condition code
-;; registers.  reload_incc handles the more common case in which
-;; a source operand is constrained to be in a condition-code
-;; register, but has not been allocated to one.
-;;
-;; Sometimes, such as in movcc, we have a CCmode destination whose
-;; constraints do not include 'z'.  reload_outcc handles the case
-;; when such an operand is allocated to a condition-code register.
-;;
-;; Note that reloads from a condition code register to some
-;; other location can be done using ordinary moves.  Moving
-;; into a GPR takes a single movcc, moving elsewhere takes
-;; two.  We can leave these cases to the generic reload code.
-(define_expand "reload_incc"
-  [(set (match_operand:CC 0 "fcc_reload_operand" "=z")
-	(match_operand:CC 1 "general_operand" ""))
-   (clobber (match_operand:TF 2 "register_operand" "=&f"))]
-  "ISA_HAS_8CC && TARGET_HARD_FLOAT"
-{
-  mips_expand_fcc_reload (operands[0], operands[1], operands[2]);
-  DONE;
-})
-
-(define_expand "reload_outcc"
-  [(set (match_operand:CC 0 "fcc_reload_operand" "=z")
-	(match_operand:CC 1 "register_operand" ""))
-   (clobber (match_operand:TF 2 "register_operand" "=&f"))]
-  "ISA_HAS_8CC && TARGET_HARD_FLOAT"
-{
-  mips_expand_fcc_reload (operands[0], operands[1], operands[2]);
-  DONE;
 })
 
 ;; MIPS4 supports loading and storing a floating point register from

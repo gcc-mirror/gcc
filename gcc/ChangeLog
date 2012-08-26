@@ -1,5 +1,21 @@
 2012-08-26  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* config/mips/mips.h (AVOID_CCMODE_COPIES): Update rationale for
+	definition.
+	* config/mips/mips.c (machine_function): Add next_fcc.
+	(mips_output_move): Remove handling of fcc moves.
+	(mips_allocate_fcc): New function.
+	(mips_emit_compare, mips_expand_vcondv2sf): Use it.
+	(mips_hard_regno_mode_ok_p): Restrict CCmode to ST registers.
+	Remove special case for CCmode reloads.
+	(mips_expand_builtin_compare_1): Use mips_allocate_fcc and treat
+	the result a fixed operand.
+	* config/mips/mips.md (move_type): Remove lui_movf.
+	(type, length): Remove references to it.
+	(movcc, reload_incc, reload_outcc): Delete.
+
+2012-08-26  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* config/mips/mips.c (mips_has_long_branch_p): New function,
 	split out from...
 	(mips_expand_ghost_gp_insns): ...here.  Look inside sequences.
