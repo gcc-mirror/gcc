@@ -15478,23 +15478,15 @@ mips_reorg_process_insns (void)
   htab_delete (htab);
 }
 
-/* If we are using a GOT, but have not decided to use a global pointer yet,
-   see whether we need one to implement long branches.  Convert the ghost
-   global-pointer instructions into real ones if so.  */
+/* Return true if the function has a long branch instruction.  */
 
 static bool
-mips_expand_ghost_gp_insns (void)
+mips_has_long_branch_p (void)
 {
-  rtx insn;
+  rtx insn, subinsn;
   int normal_length;
 
-  /* Quick exit if we already know that we will or won't need a
-     global pointer.  */
-  if (!TARGET_USE_GOT
-      || cfun->machine->global_pointer == INVALID_REGNUM
-      || mips_must_initialize_gp_p ())
-    return false;
-
+  /* We need up-to-date instruction lengths.  */
   shorten_branches (get_insns ());
 
   /* Look for a branch that is longer than normal.  The normal length for
@@ -15503,12 +15495,32 @@ mips_expand_ghost_gp_insns (void)
      but they have no delay slot.  */
   normal_length = (TARGET_MIPS16 ? 4 : 8);
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-    if (JUMP_P (insn)
-	&& USEFUL_INSN_P (insn)
-	&& get_attr_length (insn) > normal_length)
-      break;
+    FOR_EACH_SUBINSN (subinsn, insn)
+      if (JUMP_P (subinsn)
+	  && USEFUL_INSN_P (subinsn)
+	  && get_attr_length (subinsn) > normal_length
+	  && (any_condjump_p (subinsn) || any_uncondjump_p (subinsn)))
+	return true;
 
-  if (insn == NULL_RTX)
+  return false;
+}
+
+/* If we are using a GOT, but have not decided to use a global pointer yet,
+   see whether we need one to implement long branches.  Convert the ghost
+   global-pointer instructions into real ones if so.  */
+
+static bool
+mips_expand_ghost_gp_insns (void)
+{
+  /* Quick exit if we already know that we will or won't need a
+     global pointer.  */
+  if (!TARGET_USE_GOT
+      || cfun->machine->global_pointer == INVALID_REGNUM
+      || mips_must_initialize_gp_p ())
+    return false;
+
+  /* Run a full check for long branches.  */
+  if (!mips_has_long_branch_p ())
     return false;
 
   /* We've now established that we need $gp.  */
