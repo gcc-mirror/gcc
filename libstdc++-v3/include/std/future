@@ -1427,7 +1427,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   class __future_base::_Async_state_common : public __future_base::_State_base
   {
   protected:
-#if defined(_GLIBCXX_HAVE_TLS) && defined(_GLIBCXX_ABI_COMPAT_ASYNC)
+#ifdef _GLIBCXX_ASYNC_ABI_COMPAT
     ~_Async_state_common();
 #else
     ~_Async_state_common() = default;
