@@ -1,5 +1,12 @@
 2012-08-26  Gerald Pfeifer  <gerald@pfeifer.com>
 
+	* doc/tm.texi.in (Misc): Move descriptions of NO_DOLLAR_IN_LABEL
+	and NO_DOT_IN_LABEL from here...
+	(Label Output): ...to here.
+	* doc/tm.texi: Regenerate.
+			
+2012-08-26  Gerald Pfeifer  <gerald@pfeifer.com>
+
 	* doc/invoke.texi (C++ Dialect Options): Add missing space.
 
 2012-08-25  Eric Botcazou  <ebotcazou@adacore.com>

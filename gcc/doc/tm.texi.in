@@ -7709,6 +7709,20 @@ not recognize @samp{.} or cannot do calculations with it, you will need
 to redefine @code{ASM_OUTPUT_MEASURED_SIZE} to use some other technique.
 @end defmac
 
+@defmac NO_DOLLAR_IN_LABEL
+Define this macro if the assembler does not accept the character
+@samp{$} in label names.  By default constructors and destructors in
+G++ have @samp{$} in the identifiers.  If this macro is defined,
+@samp{.} is used instead.
+@end defmac
+
+@defmac NO_DOT_IN_LABEL
+Define this macro if the assembler does not accept the character
+@samp{.} in label names.  By default constructors and destructors in G++
+have names that use @samp{.}.  If this macro is defined, these names
+are rewritten to avoid @samp{.}.
+@end defmac
+
 @defmac TYPE_ASM_OP
 A C string containing the appropriate assembler directive to specify the
 type of a symbol, without any arguments.  On systems that use ELF, the
@@ -10567,20 +10581,6 @@ Define this macro to control use of the character @samp{$} in
 identifier names for the C family of languages.  0 means @samp{$} is
 not allowed by default; 1 means it is allowed.  1 is the default;
 there is no need to define this macro in that case.
-@end defmac
-
-@defmac NO_DOLLAR_IN_LABEL
-Define this macro if the assembler does not accept the character
-@samp{$} in label names.  By default constructors and destructors in
-G++ have @samp{$} in the identifiers.  If this macro is defined,
-@samp{.} is used instead.
-@end defmac
-
-@defmac NO_DOT_IN_LABEL
-Define this macro if the assembler does not accept the character
-@samp{.} in label names.  By default constructors and destructors in G++
-have names that use @samp{.}.  If this macro is defined, these names
-are rewritten to avoid @samp{.}.
 @end defmac
 
 @defmac INSN_SETS_ARE_DELAYED (@var{insn})
