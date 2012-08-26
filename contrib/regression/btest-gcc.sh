@@ -117,7 +117,6 @@ H_REAL_TARGET=`$SOURCE/config.sub $H_TARGET || exit 1`
 # look at.
 TESTLOGS="gcc/testsuite/gcc/gcc.sum
 gcc/testsuite/g++/g++.sum
-gcc/testsuite/gfortran/gfortran.sum
 gcc/testsuite/objc/objc.sum"
 
 # Build.
@@ -143,6 +142,10 @@ echo error > $RESULT || exit 1
 
 # Test GCC against its internal testsuite.
 make $dashj -k check
+
+if [ -f gcc/testsuite/gfortran/gfortran.sum ] ; then
+  TESTLOGS="$TESTLOGS gcc/testsuite/gfortran/gfortran.sum"
+fi
 
 if [ -f $BUILD/$H_TARGET/libstdc++-v3/testsuite/libstdc++.sum ] ; then
   TESTLOGS="$TESTLOGS $H_TARGET/libstdc++-v3/testsuite/libstdc++.sum"
