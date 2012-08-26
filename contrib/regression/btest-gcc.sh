@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #  Test GCC.
-#  Copyright (C) 1999, 2000, 2001, 2002, 2005, 2006, 2009
+#  Copyright (C) 1999, 2000, 2001, 2002, 2005, 2006, 2009, 2012
 #  Free Software Foundation, Inc.
 
 #  This program is free software; you can redistribute it and/or modify
@@ -158,6 +158,10 @@ fi
 
 if [ -f $BUILD/$H_TARGET/libgomp/testsuite/libgomp.sum ] ; then
   TESTLOGS="$TESTLOGS $H_TARGET/libgomp/testsuite/libgomp.sum"
+fi
+
+if [ -f $BUILD/$H_TARGET/libmudflap/testsuite/libmudflap.sum ] ; then
+  TESTLOGS="$TESTLOGS $H_TARGET/libmudflap/testsuite/libmudflap.sum"
 fi
 
 # Test the just-built GCC with the GDB testsuite.
