@@ -22,11 +22,16 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
+#include <bits/c++config.h>
+#if defined(_GLIBCXX_HAVE_TLS) && defined(PIC)
+#define _GLIBCXX_ASYNC_ABI_COMPAT
+#endif
+
 #include <future>
 #include <mutex>
 
 #ifndef __GXX_EXPERIMENTAL_CXX0X__
-# error "compatibility-c++0x.cc must be compiled with -std=gnu++0x"
+# error "compatibility-thread-c++0x.cc must be compiled with -std=gnu++0x"
 #endif
 
 #define _GLIBCXX_ASM_SYMVER(cur, old, version) \
@@ -68,5 +73,25 @@ _GLIBCXX_ASM_SYMVER(_ZN9__gnu_cxx10defer_lockE, _ZSt10defer_lock, GLIBCXX_3.4.11
 _GLIBCXX_ASM_SYMVER(_ZN9__gnu_cxx11try_to_lockE, _ZSt11try_to_lock, GLIBCXX_3.4.11)
 
 
+#endif
+#endif // _GLIBCXX_HAS_GTHREADS && _GLIBCXX_USE_C99_STDINT_TR1
+
+
+// XXX GLIBCXX_ABI Deprecated
+// gcc-4.7.0
+// <future> export changes
+#if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1) \
+  && (ATOMIC_INT_LOCK_FREE > 1)
+#if defined(_GLIBCXX_HAVE_TLS) && defined(PIC)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+  __future_base::_Async_state_common::~_Async_state_common() { _M_join(); }
+
+  // Explicit instantiation due to -fno-implicit-instantiation.
+  template void call_once(once_flag&, void (thread::*&&)(), reference_wrapper<thread>&&);
+  template _Bind_simple_helper<void (thread::*)(), reference_wrapper<thread>>::__type __bind_simple(void (thread::*&&)(), reference_wrapper<thread>&&);
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace std
 #endif
 #endif // _GLIBCXX_HAS_GTHREADS && _GLIBCXX_USE_C99_STDINT_TR1

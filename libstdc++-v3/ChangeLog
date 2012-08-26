@@ -1,4 +1,13 @@
 2012-08-26  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/54297
+	* src/c++11/future.cc (~_Async_state_common): Move to...
+	* src/c++11/compatibility-thread-c++0x.cc (~_Async_state_common):
+	Here.
+	(_GLIBCXX_ABI_COMPAT_ASYNC): Rename to _GLIBCXX_ASYNC_ABI_COMPAT.
+	* include/std/future (_GLIBCXX_ABI_COMPAT_ASYNC): Likewise.
+
+2012-08-26  Jonathan Wakely  <jwakely.gcc@gmail.com>
 	    Geoff Romer  <gromer@google.com>
 
 	PR libstdc++/54351
