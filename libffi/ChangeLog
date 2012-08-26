@@ -1,3 +1,9 @@
+2012-08-26  Andrew Pinski  <apinski@cavium.com>
+
+	PR libffi/53014
+	* src/mips/ffi.c (ffi_prep_closure_loc): Allow n32 with soft-float and n64 with
+	soft-float.
+
 2012-08-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	* src/s390/ffi.c (ffi_prep_closure_loc): Don't ASSERT ABI test,
