@@ -2966,7 +2966,7 @@ GNU Compiler Collection on your machine.
 Note that this list of install notes is @emph{not} a list of supported
 hosts or targets.  Not all supported hosts and targets are listed
 here, only the ones that require host-specific or target-specific
-information are.
+information have to. 
 
 @ifhtml
 @itemize
