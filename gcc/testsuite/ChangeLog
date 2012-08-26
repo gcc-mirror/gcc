@@ -1,3 +1,7 @@
+2012-08-25  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/fntmpdefarg3.C: New.
+
 2012-08-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51421
