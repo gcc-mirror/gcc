@@ -3588,7 +3588,7 @@ Register B14 (aka DP).
 @itemx R07
 @itemx R08
 @itemx R09
-@itemx R010
+@itemx R10
 Each of these represents a register constraint for an individual
 register, from r0 to r10.
 
@@ -3666,7 +3666,7 @@ The integer constant 0xffffffff00000000.
 @itemx R07
 @itemx R08
 @itemx R09
-@itemx R010
+@itemx R10
 Each of these represents a register constraint for an individual
 register, from r0 to r10.
 
