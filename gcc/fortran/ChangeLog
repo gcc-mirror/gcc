@@ -1,6 +1,13 @@
 2012-08-27  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/54384
+	* resolve.c (gfc_resolve_character_operator): Free temporary
+	variables.
+	* trans-expr.c (gfc_conv_statement_function): Ditto.
+
+2012-08-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54384
 	* dependency.c (check_section_vs_section): Use gfc_free_expr
 	instead of free.
 	* trans-intrinsic.c (conv_generic_with_optional_char_arg): Use
