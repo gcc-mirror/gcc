@@ -1,3 +1,16 @@
+2012-08-27  Walter Lee  <walt@tilera.com>
+
+	* config/tilegx/sync.md (atomic_compare_and_swap_bare<mode>,
+	atomic_exchange_bare<mode>,
+	atomic_fetch_<fetchop_name>_bare<mode>): Set type to X1_remote.
+	* config/tilegx/tilegx-generic.md (X1_remote): New
+	insn_reservation.
+	* config/tilegx/tilegx.md (type): Add X1_remove.
+	(insn_cmpexch<four_if_si>, insn_exch<four_if_si>,
+	insn_fetchadd<four_if_si>, insn_fetchaddgez<four_if_si>,
+	insn_fetchand<four_if_si>, insn_fetchor<four_if_si>): Set type to
+	X1_remote.
+
 2012-08-27  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* gdbinit.in: Fix syntax of skip command.

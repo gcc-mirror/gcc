@@ -250,7 +250,7 @@
 
 ;; Define an insn type attribute.  This defines what pipes things can go in.
 (define_attr "type"
-  "X0,X0_2cycle,X1,X1_branch,X1_2cycle,X1_L2,X1_miss,X01,Y0,Y0_2cycle,Y1,Y2,Y2_2cycle,Y2_L2,Y2_miss,Y01,cannot_bundle,cannot_bundle_3cycle,cannot_bundle_4cycle,nothing"
+  "X0,X0_2cycle,X1,X1_branch,X1_2cycle,X1_L2,X1_remote,X1_miss,X01,Y0,Y0_2cycle,Y1,Y2,Y2_2cycle,Y2_L2,Y2_miss,Y01,cannot_bundle,cannot_bundle_3cycle,cannot_bundle_4cycle,nothing"
   (const_string "Y01"))
 
 (define_attr "length" ""
@@ -2679,7 +2679,7 @@
 	 UNSPEC_INSN_CMPEXCH))]
   ""
   "cmpexch<four_if_si>\t%0, %r1, %r2"
-  [(set_attr "type" "X1_L2")])
+  [(set_attr "type" "X1_remote")])
 
 (define_insn "insn_cmul"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -2817,7 +2817,7 @@
 	 UNSPEC_INSN_EXCH))]
   ""
   "exch<four_if_si>\t%0, %r1, %r2"
-  [(set_attr "type" "X1_2cycle")])
+  [(set_attr "type" "X1_remote")])
 
 (define_insn "insn_fdouble_add_flags"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -2903,7 +2903,7 @@
                       (match_operand:I48MODE 2 "reg_or_0_operand" "rO")))]
   ""
   "fetchadd<four_if_si>\t%0, %r1, %r2"
-  [(set_attr "type" "X1_2cycle")])
+  [(set_attr "type" "X1_remote")])
 
 (define_insn "insn_fetchaddgez<four_if_si>"
   [(set (match_operand:I48MODE 0 "register_operand" "=r")
@@ -2916,7 +2916,7 @@
                         UNSPEC_INSN_FETCHADDGEZ))]
   ""
   "fetchaddgez<four_if_si>\t%0, %r1, %r2"
-  [(set_attr "type" "X1_2cycle")])
+  [(set_attr "type" "X1_remote")])
 
 (define_insn "insn_fetchand<four_if_si>"
   [(set (match_operand:I48MODE 0 "register_operand" "=r")
@@ -2928,7 +2928,7 @@
                      (match_operand:I48MODE 2 "reg_or_0_operand" "rO")))]
   ""
   "fetchand<four_if_si>\t%0, %r1, %r2"
-  [(set_attr "type" "X1_2cycle")])
+  [(set_attr "type" "X1_remote")])
 
 (define_insn "insn_fetchor<four_if_si>"
   [(set (match_operand:I48MODE 0 "register_operand" "=r")
@@ -2940,7 +2940,7 @@
                      (match_operand:I48MODE 2 "reg_or_0_operand" "rO")))]
   ""
   "fetchor<four_if_si>\t%0, %r1, %r2"
-  [(set_attr "type" "X1_2cycle")])
+  [(set_attr "type" "X1_remote")])
 
 (define_insn "insn_finv"
   [(unspec_volatile:VOID [(match_operand 0 "pointer_operand" "rO")]
