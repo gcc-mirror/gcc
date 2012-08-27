@@ -2511,7 +2511,8 @@ gfc_free_symbol (gfc_symbol *sym)
 
   gfc_free_namelist (sym->namelist);
 
-  gfc_free_namespace (sym->formal_ns);
+  if (sym->ns != sym->formal_ns)
+    gfc_free_namespace (sym->formal_ns);
 
   if (!sym->attr.generic_copy)
     gfc_free_interface (sym->generic);
@@ -2519,6 +2520,13 @@ gfc_free_symbol (gfc_symbol *sym)
   gfc_free_formal_arglist (sym->formal);
 
   gfc_free_namespace (sym->f2k_derived);
+
+  if (sym->common_block && sym->common_block->name[0] != '\0')
+    { 
+      sym->common_block->refs--; 
+      if (sym->common_block->refs == 0)
+	free (sym->common_block);
+    }
 
   free (sym);
 }
@@ -2532,7 +2540,8 @@ gfc_release_symbol (gfc_symbol *sym)
   if (sym == NULL)
     return;
 
-  if (sym->formal_ns != NULL && sym->refs == 2)
+  if (sym->formal_ns != NULL && sym->refs == 2 && sym->formal_ns != sym->ns
+      && (!sym->attr.entry || !sym->module))
     {
       /* As formal_ns contains a reference to sym, delete formal_ns just
 	 before the deletion of sym.  */

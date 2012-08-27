@@ -1266,6 +1266,7 @@ typedef struct gfc_common_head
   struct gfc_symbol *head;
   const char* binding_label;
   int is_bind_c;
+  int refs;
 }
 gfc_common_head;
 

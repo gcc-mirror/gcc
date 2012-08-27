@@ -1,5 +1,22 @@
 2012-08-27  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/41093
+	* gfortran.h (gfc_common_head): Add "int refs".
+	* match.c (gfc_match_common): Increment refs.
+	* resolve.c (resolve_symbol): Only increment formal_ns->refs
+	if formal_ns is not sym->ns.
+	* symbol.c (gfc_free_symbol): Only free formal_ns if
+	if formal_ns is not sym->ns. Free common_block if refs is one.
+	(gfc_release_symbol): Release formal_ns only if the
+	symbol is not ENTRY of a module.
+	* decl.c (get_proc_name): Don't increment gfc_current_ns->refs.
+	* parse.c (parse_interface): Incement proc_unit->refs++ for
+	proc-pointer result variables.
+	* module.c (mio_symbol): Don't increase sym->refs for its
+	use in sym->formal_ns->proc_name.
+
+2012-08-27  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/54370
 	* trans-stmt.c (gfc_trans_do_while): Don't change the logical
 	kind for negation of the condition.
