@@ -1,3 +1,7 @@
+2012-08-27  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* gdbinit.in: Fix syntax of skip command.
+
 2012-08-27  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/mips.c (mips_pic_call_symbol_from_set): Check for

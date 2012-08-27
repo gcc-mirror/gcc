@@ -1,5 +1,5 @@
 # Copyright (C) 2001, 2002, 2003, 2004, 2006,
-# 2008, 2010 Free Software Foundation, Inc.
+# 2008, 2010, 2012 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -208,4 +208,4 @@ b abort
 # These are used in accessor macros.
 # Note that this is added at the end because older gdb versions
 # do not understand the 'skip' command.
-skip "tree.h"
+skip file tree.h
