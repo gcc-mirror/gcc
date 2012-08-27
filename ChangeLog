@@ -1,3 +1,7 @@
+2012-08-27  Ulrich Drepper  <drepper@gmail.com>
+
+	* MAINTAINERS: Fix my email address.
+
 2012-08-26  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR binutils/4970
