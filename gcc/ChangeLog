@@ -1,3 +1,28 @@
+2012-08-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/46254
+	* config/i386/predicates.md (cmpxchg8b_pic_memory_operand): Return
+	true for TARGET_64BIT or !flag_pic.
+	* config/i386/sync.md (*atomic_compare_and_swap_doubledi_pic): Remove.
+	(atomic_compare_and_swap_double<mode>): Change operand 2 predicate
+	to cmpxchg8b_pic_memory_operand.  Use DWIH mode iterator.
+	Add insn constraint.  Conditionally emit xchg asm insns.
+	(atomic_compare_and_swap<mode>): Update calls.  Check only
+	cmpxchg8b_pic_memory_operand in memory address fixup.
+	(DCASMODE): Remove.
+	(CASHMODE): Rename from DCASHMODE.
+	(doublemodesuffix): Update modes.
+	(regprefix): New mode attribute.
+
+	(unspecv) <UNSPECV_CMPXCHG_{1,2,3,4}>: Remove.
+	<UNSPECV_CMPXCHG>: New constant.
+	(atomic_compare_and_swap<mode>_1): Rename from
+	atomic_compare_and_swap_single<mode>.  Update calls and
+	unspec_volatile constants.
+	(atomic_compare_and_swap<mode>_doubleword): Rename from
+	atomic_compare_and_swap_double<mode>.  Update calls and
+	unspec_volatile constants.
+
 2012-08-27  Walter Lee  <walt@tilera.com>
 
 	* doc/md.texi (TILE-Gx): Fix typo.
@@ -6,9 +31,9 @@
 
 	* config/tilegx/tilegx.c (tilegx_function_profiler): Fix typo.
 	config/tilepro/tilepro.c (tilepro_function_profiler): Ditto.
-	
+
 2012-08-27  Walter Lee  <walt@tilera.com>
-	
+
 	* config/tilegx/tilegx.md (*bfins): Rename to insn_bfins.
 	(insn_bfins): Delete.
 
@@ -80,12 +105,12 @@
 	this section.
 
 2012-08-26  Gerald Pfeifer  <gerald@pfeifer.com>
-	
+
 	* doc/tm.texi.in (Misc): Move descriptions of NO_DOLLAR_IN_LABEL
 	and NO_DOT_IN_LABEL from here...
 	(Label Output): ...to here.
 	* doc/tm.texi: Regenerate.
-			
+
 2012-08-26  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/invoke.texi (C++ Dialect Options): Add missing space.
@@ -100,7 +125,7 @@
 	* doc/extend.texi (__atomic Builtins): Remove space before comma.
 
 2012-08-25  Richard Sandiford  <rdsandiford@googlemail.com>
-            Andrew Pinski  <apinski@cavium.com>
+	    Andrew Pinski  <apinski@cavium.com>
 
 	* config/mips/mips.h (CASE_VECTOR_MODE): For not
 	TARGET_MIPS16_SHORT_JUMP_TABLES use ptr_mode.
