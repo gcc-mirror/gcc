@@ -1,5 +1,11 @@
 2012-08-27  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/54384
+	* trans-expr.c (gfc_trans_arrayfunc_assign): Free se.ss
+	and loop.
+
+2012-08-27  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/41093
 	* gfortran.h (gfc_common_head): Add "int refs".
 	* match.c (gfc_match_common): Increment refs.
