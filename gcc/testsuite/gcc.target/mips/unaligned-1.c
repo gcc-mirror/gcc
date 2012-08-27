@@ -20,25 +20,25 @@ struct s
   long long l;
 } __attribute__ ((packed)) s __attribute__((aligned(1) ));
 
-void
+NOMIPS16 void
 sd (long long l)
 {
   s.l = l;
 }
 
-long long
+NOMIPS16 long long
 ld ()
 {
   return s.l;
 }
 
-void
+NOMIPS16 void
 sw (int i)
 {
   s.i = i;
 }
 
-int
+NOMIPS16 int
 lw ()
 {
   return s.i;

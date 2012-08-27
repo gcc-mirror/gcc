@@ -1,5 +1,11 @@
 2012-08-27  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* gcc.target/mips/ext_ins.c, gcc.target/mips/octeon-pop-2.c,
+	gcc.target/mips/pr54240.c, gcc.target/mips/stack-1.c,
+	gcc.target/mips/unaligned-1.c: Add NOMIPS16.
+
+2012-08-27  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* gcc.target/mips/20020620-1.c, gcc.target/mips/atomic-memory-2.c,
 	gcc.target/mips/branch-2.c, gcc.target/mips/branch-3.c,
 	gcc.target/mips/clear-cache-1.c, gcc.target/mips/const-anchor-1.c,

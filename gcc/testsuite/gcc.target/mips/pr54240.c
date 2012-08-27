@@ -9,8 +9,8 @@ typedef struct s {
   struct s *r;
 } S;
 
-
-int foo(S *s)
+/* Test requires conditional moves.  */
+NOMIPS16 int foo(S *s)
 {
   S *this;
   S *next;
