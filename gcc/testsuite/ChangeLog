@@ -1,5 +1,29 @@
 2012-08-27  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* gcc.target/mips/20020620-1.c, gcc.target/mips/atomic-memory-2.c,
+	gcc.target/mips/branch-2.c, gcc.target/mips/branch-3.c,
+	gcc.target/mips/clear-cache-1.c, gcc.target/mips/const-anchor-1.c,
+	gcc.target/mips/const-anchor-2.c, gcc.target/mips/dspr2-MULT.c,
+	gcc.target/mips/dspr2-MULTU.c, gcc.target/mips/ext-1.c,
+	gcc.target/mips/ext-2.c, gcc.target/mips/ext-3.c,
+	gcc.target/mips/ext-4.c, gcc.target/mips/ext_ins.c,
+	gcc.target/mips/fpcmp-1.c, gcc.target/mips/fpcmp-2.c,
+	gcc.target/mips/mips16e-extends.c, gcc.target/mips/mips32-dsp.c,
+	gcc.target/mips/mips32-dsp-type.c, gcc.target/mips/mips32r2-mxhc1.c,
+	gcc.target/mips/mips-ps-5.c, gcc.target/mips/mips-ps-7.c,
+	gcc.target/mips/mips-ps-type-2.c, gcc.target/mips/mips-ps-type.c,
+	gcc.target/mips/movcc-1.c, gcc.target/mips/movcc-2.c,
+	gcc.target/mips/movcc-3.c, gcc.target/mips/neg-abs-1.c,
+	gcc.target/mips/neg-abs-2.c, gcc.target/mips/nmadd-1.c,
+	gcc.target/mips/nmadd-2.c, gcc.target/mips/nmadd-3.c,
+	gcc.target/mips/octeon-exts-7.c, gcc.target/mips/octeon-seq-4.c,
+	gcc.target/mips/rsqrt-1.c, gcc.target/mips/rsqrt-2.c,
+	gcc.target/mips/rsqrt-3.c, gcc.target/mips/sb1-1.c,
+	gcc.target/mips/scc-4.c, gcc.target/mips/stack-1.c,
+	gcc.target/mips/unaligned-1.c: Tighten regexps.
+
+2012-08-27  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* gcc.target/mips/mips.exp: Use gcc-dg-runtest rather than dg-runtest.
 	(mips_option_groups): Remove optimization.  Add various -f options.
 	(mips-dg-options): Make -funroll-loops imply -funroll-all-loops

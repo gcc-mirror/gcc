@@ -2,10 +2,10 @@
    matter.  */
 /* { dg-do compile } */
 /* { dg-options "-mhard-float -ffinite-math-only" } */
-/* { dg-final { scan-assembler "neg.s" } } */
-/* { dg-final { scan-assembler "neg.d" } } */
-/* { dg-final { scan-assembler "abs.s" } } */
-/* { dg-final { scan-assembler "abs.d" } } */
+/* { dg-final { scan-assembler "\tneg.s\t" } } */
+/* { dg-final { scan-assembler "\tneg.d\t" } } */
+/* { dg-final { scan-assembler "\tabs.s\t" } } */
+/* { dg-final { scan-assembler "\tabs.d\t" } } */
 
 NOMIPS16 float f1 (float f) { return -f; }
 NOMIPS16 float f2 (float f) { return __builtin_fabsf (f); }

@@ -6,8 +6,8 @@
 
 /* See PR target/51729 for the reason behind the XFAILs.  */
 /* { dg-final { scan-assembler "\tmultu\t" } } */
-/* { dg-final { scan-assembler "ac1" { xfail *-*-* } } } */
-/* { dg-final { scan-assembler "ac2" { xfail *-*-* } } } */
+/* { dg-final { scan-assembler "\\\$ac1" { xfail *-*-* } } } */
+/* { dg-final { scan-assembler "\\\$ac2" { xfail *-*-* } } } */
 
 typedef unsigned long long a64;
 

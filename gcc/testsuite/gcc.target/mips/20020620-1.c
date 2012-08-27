@@ -5,4 +5,4 @@ int foo (int *x, int i)
 {
   return x[i] + i;
 }
-/* { dg-final { scan-assembler-not "move" } } */
+/* { dg-final { scan-assembler-not "\tmove" } } */
