@@ -13,12 +13,12 @@ struct A
 
 void func (struct A);
 
-unsigned int f1 (struct A a)
+NOMIPS16 unsigned int f1 (struct A a)
 {
   return a.j;
 }
 
-void f2 (int i)
+NOMIPS16 void f2 (int i)
 {
   struct A c;
   c.j = i;
