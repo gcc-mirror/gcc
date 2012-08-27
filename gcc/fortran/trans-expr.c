@@ -5080,6 +5080,7 @@ gfc_conv_statement_function (gfc_se * se, gfc_expr * expr)
   /* Restore the original variables.  */
   for (fargs = sym->formal, n = 0; fargs; fargs = fargs->next, n++)
     gfc_restore_sym (fargs->sym, &saved_vars[n]);
+  free (temp_vars);
   free (saved_vars);
 }
 
