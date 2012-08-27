@@ -14706,19 +14706,25 @@ mips_pic_call_symbol_from_set (df_ref def, rtx reg, bool recurse_p)
     {
       rtx note, src, symbol;
 
-      /* First, look at REG_EQUAL/EQUIV notes.  */
-      note = find_reg_equal_equiv_note (def_insn);
-      if (note && GET_CODE (XEXP (note, 0)) == SYMBOL_REF)
-	return XEXP (note, 0);
-
-      /* For %call16 references we don't have REG_EQUAL.  */
+      /* First see whether the source is a plain symbol.  This is used
+	 when calling symbols that are not lazily bound.  */
       src = SET_SRC (set);
+      if (GET_CODE (src) == SYMBOL_REF)
+	return src;
+
+      /* Handle %call16 references.  */
       symbol = mips_strip_unspec_call (src);
       if (symbol)
 	{
 	  gcc_assert (GET_CODE (symbol) == SYMBOL_REF);
 	  return symbol;
 	}
+
+      /* If we have something more complicated, look for a
+	 REG_EQUAL or REG_EQUIV note.  */
+      note = find_reg_equal_equiv_note (def_insn);
+      if (note && GET_CODE (XEXP (note, 0)) == SYMBOL_REF)
+	return XEXP (note, 0);
 
       /* Follow at most one simple register copy.  Such copies are
 	 interesting in cases like:
