@@ -1,6 +1,14 @@
 2012-08-27  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/54384
+	* dependency.c (check_section_vs_section): Use gfc_free_expr
+	instead of free.
+	* trans-intrinsic.c (conv_generic_with_optional_char_arg): Use
+	gfc_free_symbol instead of free.
+
+2012-08-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54384
 	* trans-expr.c (gfc_trans_arrayfunc_assign): Free se.ss
 	and loop.
 

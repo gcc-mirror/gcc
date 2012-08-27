@@ -1220,7 +1220,7 @@ check_section_vs_section (gfc_array_ref *l_ar, gfc_array_ref *r_ar, int n)
   else
     start_comparison = -2;
       
-  free (one_expr);
+  gfc_free_expr (one_expr);
 
   /* Determine LHS upper and lower bounds.  */
   if (l_dir == 1)
