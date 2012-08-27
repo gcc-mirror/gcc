@@ -1347,13 +1347,15 @@ static void
 do_pragma (cpp_reader *pfile)
 {
   const struct pragma_entry *p = NULL;
-  const cpp_token *token, *pragma_token = pfile->cur_token;
+  const cpp_token *token, *pragma_token;
+  source_location pragma_token_virt_loc = 0;
   cpp_token ns_token;
   unsigned int count = 1;
 
   pfile->state.prevent_expansion++;
 
-  token = cpp_get_token (pfile);
+  pragma_token = token = cpp_get_token_with_location (pfile,
+						      &pragma_token_virt_loc);
   ns_token = *token;
   if (token->type == CPP_NAME)
     {
@@ -1379,7 +1381,7 @@ do_pragma (cpp_reader *pfile)
     {
       if (p->is_deferred)
 	{
-	  pfile->directive_result.src_loc = pragma_token->src_loc;
+	  pfile->directive_result.src_loc = pragma_token_virt_loc;
 	  pfile->directive_result.type = CPP_PRAGMA;
 	  pfile->directive_result.flags = pragma_token->flags;
 	  pfile->directive_result.val.pragma = p->u.ident;
