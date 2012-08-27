@@ -530,11 +530,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        * @brief Discard a sequence of random numbers.
        */
       void
-      discard(unsigned long long __z)
-      {
-	for (; __z != 0ULL; --__z)
-	  (*this)();
-      }
+      discard(unsigned long long __z);
 
       result_type
       operator()();
@@ -610,6 +606,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		   __l1, __f1>& __x);
 
     private:
+      void _M_gen_rand();
+
       _UIntType _M_x[state_size];
       size_t    _M_p;
     };
