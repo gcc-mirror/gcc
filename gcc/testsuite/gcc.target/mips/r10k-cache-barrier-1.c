@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -mabi=64 -mr10k-cache-barrier=store" } */
+/* { dg-options "-mabi=64 -mr10k-cache-barrier=store" } */
 
 /* Test that stores to uncached addresses do not get unnecessary
    cache barriers.  */

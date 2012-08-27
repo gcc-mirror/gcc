@@ -1,4 +1,5 @@
-/* { dg-options "-O2 -mgp64" } */
+/* { dg-options "-mgp64" } */
+/* { dg-skip-if "code quality test" { *-*-* } { "-O0" } { "" } } */
 /* { dg-final { scan-assembler-times "sdl\t" 1 } } */
 /* { dg-final { scan-assembler-times "sdr\t" 1 } } */
 /* { dg-final { scan-assembler-times "ldl\t" 1 } } */

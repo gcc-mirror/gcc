@@ -1,7 +1,8 @@
 /* Test for case where another independent multiply insn may interfere
    with a macc chain.  */
 /* { dg-do compile } */
-/* { dg-options "-Os -march=24kf" } */
+/* { dg-options "-march=24kf" } */
+/* { dg-skip-if "code quality test" { *-*-* } { "-O0" } { "" } } */
 
 NOMIPS16 int foo (int a, int b, int c, int d, int e, int f, int g)
 {

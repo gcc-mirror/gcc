@@ -1,5 +1,6 @@
 /* Remove redundant operations in truncate's operand.  */
-/* { dg-options "-O -mgp64" } */
+/* { dg-options "-mgp64" } */
+/* { dg-skip-if "code quality test" { *-*-* } { "-O0" } { "" } } */
 /* { dg-final { scan-assembler-not "\tandi?\t" } } */
 
 f (long long d)

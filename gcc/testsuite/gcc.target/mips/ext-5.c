@@ -1,6 +1,7 @@
 /* For MIPS32r2 use EXT when ANDing with low-order bitmasks.  */
 /* { dg-do compile } */
-/* { dg-options "-O isa_rev>=2" } */
+/* { dg-options "isa_rev>=2" } */
+/* { dg-skip-if "code quality test" { *-*-* } { "-O0" } { "" } } */
 /* { dg-final { scan-assembler "\text\t" } } */
 /* { dg-final { scan-assembler-not "\tandi?\t" } } */
 

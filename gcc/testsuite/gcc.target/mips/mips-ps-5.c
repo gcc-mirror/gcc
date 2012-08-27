@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mpaired-single -mgp64 -ftree-vectorize" } */
+/* { dg-options "-mpaired-single -mgp64 -ftree-vectorize" } */
+/* { dg-skip-if "requires vectorization" { *-*-* } { "-O0" "-Os" } { "" } } */
 
 extern float a[], b[], c[];
 

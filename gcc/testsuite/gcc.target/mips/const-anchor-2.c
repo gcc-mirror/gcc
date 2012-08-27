@@ -1,5 +1,5 @@
 /* Derive a constant (0x30001) from another constant.  */
-/* { dg-options "-O" } */
+/* { dg-skip-if "code quality test" { *-*-* } { "-O0" } { "" } } */
 /* { dg-final { scan-assembler-not "0x300000|196608" } } */
 /* { dg-final { scan-assembler "addiu\t\\\$5,\\\$\[0-9\]*,32763" } } */
 

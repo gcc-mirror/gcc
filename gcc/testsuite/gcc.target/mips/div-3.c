@@ -1,4 +1,4 @@
-/* { dg-options "-O -mgp64 (-mips16)" } */
+/* { dg-options "-mgp64 (-mips16)" } */
 /* { dg-final { scan-assembler "\tddiv\t" } } */
 /* { dg-final { scan-assembler-not "\tmflo\t" } } */
 /* { dg-final { scan-assembler "\tmfhi\t" } } */

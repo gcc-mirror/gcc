@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -mpaired-single" } */
+/* { dg-options "-mpaired-single" } */
 
 /* Test MIPS paired-single conditional move */
 #include <stdlib.h>

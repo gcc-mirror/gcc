@@ -1,4 +1,5 @@
-/* { dg-options "-mabi=64 -mhard-float -O2 -EB" } */
+/* { dg-options "-mabi=64 -mhard-float -EB" } */
+/* { dg-skip-if "code quality test" { *-*-* } { "-O0" } { "" } } */
 /* { dg-require-effective-target mips_newabi_large_long_double } */
 
 NOMIPS16 void

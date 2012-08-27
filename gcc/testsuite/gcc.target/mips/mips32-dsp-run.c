@@ -1,6 +1,6 @@
 /* Test MIPS32 DSP instructions */
 /* { dg-do run } */
-/* { dg-options "-mdsp -O2" } */
+/* { dg-options "-mdsp" } */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -59,8 +59,10 @@ NOMIPS16 void test_MIPS_DSP ()
   v4i8 v4i8_a,v4i8_b,v4i8_c,v4i8_r,v4i8_s;
   v2q15 v2q15_a,v2q15_b,v2q15_c,v2q15_r,v2q15_s;
   q31 q31_a,q31_b,q31_c,q31_r,q31_s;
-  i32 i32_a,i32_b,i32_c,i32_r,i32_s;
-  ui32 ui32_a,ui32_b,ui32_c;
+  /* To protect the multiplication-related tests from being optimized
+     at compile time.  */
+  volatile i32 i32_a,i32_b,i32_c,i32_r,i32_s;
+  volatile ui32 ui32_a,ui32_b,ui32_c;
   a64 a64_a,a64_b,a64_c,a64_r,a64_s;
 
   void *ptr_a;

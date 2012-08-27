@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -mabi=64 -mr10k-cache-barrier=store" } */
+/* { dg-options "-mabi=64 -mr10k-cache-barrier=store" } */
 
 /* Test that stores to constant cached addresses are protected
    by cache barriers.  */

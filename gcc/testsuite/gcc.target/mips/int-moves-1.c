@@ -1,4 +1,4 @@
-/* { dg-options "(-mips16) -mgp64 -O2 -EL" } */
+/* { dg-options "(-mips16) -mgp64 -EL" } */
 
 typedef unsigned uint128_t __attribute__((mode(TI)));
 

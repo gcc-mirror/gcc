@@ -1,4 +1,5 @@
-/* { dg-options "-O -mgp32 (-mips16)" } */
+/* { dg-options "-mgp32 (-mips16)" } */
+/* { dg-skip-if "code quality test" { *-*-* } { "-O0" } { "" } } */
 /* { dg-final { scan-assembler "\tmultu\t" } } */
 /* { dg-final { scan-assembler "\tmflo\t" } } */
 /* { dg-final { scan-assembler "\tmfhi\t" } } */

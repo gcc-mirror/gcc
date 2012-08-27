@@ -1,5 +1,6 @@
 /* Check that we save non-MIPS16 GPRs if they are explicitly clobbered.  */
-/* { dg-options "(-mips16) isa_rev=0 -O2" } */
+/* { dg-options "(-mips16) isa_rev=0" } */
+/* { dg-skip-if "naming registers makes this a code quality test" { *-*-* } { "-O0" } { "" } } */
 
 MIPS16 void
 foo (void)

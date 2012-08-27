@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -mdsp -mgp32" } */
+/* { dg-options "-mdsp -mgp32" } */
 
 extern void abort (void);
 extern void exit (int);

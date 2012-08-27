@@ -1,3 +1,3 @@
-/* { dg-options "-mabi=n32 -mlong64 -mabicalls -mno-shared -mno-plt -O2" } */
+/* { dg-options "-mabi=n32 -mlong64 -mabicalls -mno-shared -mno-plt" } */
 /* { dg-error "is incompatible with" "" { target *-*-* } 0 } */
 #include "abi-main.h"

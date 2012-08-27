@@ -1,14 +1,8 @@
 /* See through some simple data-flow.  */
-/* { dg-options "-O2 -mrelax-pic-calls" } */
-/* { dg-final { scan-assembler-times "\\.reloc\t1f,R_MIPS_JALR,g\n1:\tjalr\t" 3 } } */
+/* { dg-options "-mrelax-pic-calls" } */
+/* { dg-final { scan-assembler-times "\\.reloc\t1f,R_MIPS_JALR,g\n1:\tjalr\t" 2 } } */
 
-NOMIPS16 f (int i)
-{
-  while (i--)
-    g ();
-}
-
-NOMIPS16 ff ()
+NOMIPS16 f ()
 {
   g ();
   g ();

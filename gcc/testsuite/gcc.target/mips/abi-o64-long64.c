@@ -1,2 +1,2 @@
-/* { dg-options "-mabi=o64 -mlong64 -mno-abicalls -O2" } */
+/* { dg-options "-mabi=o64 -mlong64 -mno-abicalls" } */
 #include "abi-main.h"

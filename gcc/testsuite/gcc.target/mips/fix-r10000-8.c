@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mfix-r10000" } */
+/* { dg-options "-mfix-r10000" } */
 /* { dg-final { scan-assembler-times "\tbeql\t" 3 } } */
 
 NOMIPS16 int

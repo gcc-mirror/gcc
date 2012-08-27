@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 isa>=4 -mhard-float" } */
+/* { dg-options "isa>=4 -mhard-float" } */
+/* { dg-skip-if "code quality test" { *-*-* } { "-O0" } { "" } } */
 /* { dg-final { scan-assembler "movt" } } */
 /* { dg-final { scan-assembler "movf" } } */
 /* { dg-final { scan-assembler "movz.s" } } */

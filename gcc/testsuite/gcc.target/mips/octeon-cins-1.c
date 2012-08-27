@@ -1,7 +1,8 @@
 /* { dg-do compile } */
 /* The tests also work with -mgp32.  For long long tests, only one of
    the 32-bit parts is used.  */
-/* { dg-options "-O -march=octeon" } */
+/* { dg-options "-march=octeon" } */
+/* { dg-skip-if "code quality test" { *-*-* } { "-O0" } { "" } } */
 /* { dg-final { scan-assembler-times "\tcins\t" 3 } } */
 /* { dg-final { scan-assembler-not "\tandi\t|sll\t" } } */
 

@@ -1,3 +1,355 @@
+2012-08-27  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc.target/mips/mips.exp: Use gcc-dg-runtest rather than dg-runtest.
+	(mips_option_groups): Remove optimization.  Add various -f options.
+	(mips-dg-options): Make -funroll-loops imply -funroll-all-loops
+	and -pg imply -fno-omit-frame-pointer.
+	* gcc.target/mips/abi-eabi32-long32.c: Remove optimization flag.
+	* gcc.target/mips/abi-eabi32-long64.c: Likewise.
+	* gcc.target/mips/abi-eabi64-long32.c: Likewise.
+	* gcc.target/mips/abi-eabi64-long64.c: Likewise.
+	* gcc.target/mips/abi-n32-long32-no-shared.c: Likewise.
+	* gcc.target/mips/abi-n32-long32-pic.c: Likewise.
+	* gcc.target/mips/abi-n32-long32.c: Likewise.
+	* gcc.target/mips/abi-n32-long64-no-shared.c: Likewise.
+	* gcc.target/mips/abi-n32-long64-pic.c: Likewise.
+	* gcc.target/mips/abi-n32-long64.c: Likewise.
+	* gcc.target/mips/abi-n64-long32-no-shared.c: Likewise.
+	* gcc.target/mips/abi-n64-long32-pic.c: Likewise.
+	* gcc.target/mips/abi-n64-long32.c: Likewise.
+	* gcc.target/mips/abi-n64-long64-no-shared.c: Likewise.
+	* gcc.target/mips/abi-n64-long64-pic.c: Likewise.
+	* gcc.target/mips/abi-n64-long64.c: Likewise.
+	* gcc.target/mips/abi-o32-long32-no-shared.c: Likewise.
+	* gcc.target/mips/abi-o32-long32-pic.c: Likewise.
+	* gcc.target/mips/abi-o32-long32.c: Likewise.
+	* gcc.target/mips/abi-o32-long64-no-shared.c: Likewise.
+	* gcc.target/mips/abi-o32-long64-pic.c: Likewise.
+	* gcc.target/mips/abi-o32-long64.c: Likewise.
+	* gcc.target/mips/abi-o64-long32-no-shared.c: Likewise.
+	* gcc.target/mips/abi-o64-long32-pic.c: Likewise.
+	* gcc.target/mips/abi-o64-long32.c: Likewise.
+	* gcc.target/mips/abi-o64-long64-no-shared.c: Likewise.
+	* gcc.target/mips/abi-o64-long64-pic.c: Likewise.
+	* gcc.target/mips/abi-o64-long64.c: Likewise.
+	* gcc.target/mips/asm-1.c: Likewise.
+	* gcc.target/mips/branch-1.c: Likewise.
+	* gcc.target/mips/call-3.c: Likewise.
+	* gcc.target/mips/call-saved-3.c: Likewise.
+	* gcc.target/mips/clear-cache-1.c: Likewise.
+	* gcc.target/mips/div-1.c: Likewise.
+	* gcc.target/mips/div-2.c: Likewise.
+	* gcc.target/mips/div-3.c: Likewise.
+	* gcc.target/mips/div-4.c: Likewise.
+	* gcc.target/mips/div-5.c: Likewise.
+	* gcc.target/mips/div-6.c: Likewise.
+	* gcc.target/mips/div-7.c: Likewise.
+	* gcc.target/mips/div-8.c: Likewise.
+	* gcc.target/mips/div-9.c: Likewise.
+	* gcc.target/mips/div-10.c: Likewise.
+	* gcc.target/mips/div-11.c: Likewise.
+	* gcc.target/mips/div-12.c: Likewise.
+	* gcc.target/mips/dsp-ctrl.c: Likewise.
+	* gcc.target/mips/dsp-no-lhx.c: Likewise.
+	* gcc.target/mips/ext-8.c: Likewise.
+	* gcc.target/mips/extend-2.c: Likewise.
+	* gcc.target/mips/fix-r10000-1.c: Likewise.
+	* gcc.target/mips/fix-r10000-2.c: Likewise.
+	* gcc.target/mips/fix-r10000-3.c: Likewise.
+	* gcc.target/mips/fix-r10000-4.c: Likewise.
+	* gcc.target/mips/fix-r10000-5.c: Likewise.
+	* gcc.target/mips/fix-r10000-6.c: Likewise.
+	* gcc.target/mips/fix-r10000-7.c: Likewise.
+	* gcc.target/mips/fix-r10000-8.c: Likewise.
+	* gcc.target/mips/fix-r10000-9.c: Likewise.
+	* gcc.target/mips/fix-r10000-10.c: Likewise.
+	* gcc.target/mips/fix-r10000-11.c: Likewise.
+	* gcc.target/mips/fix-r10000-12.c: Likewise.
+	* gcc.target/mips/fix-r10000-13.c: Likewise.
+	* gcc.target/mips/fix-r10000-14.c: Likewise.
+	* gcc.target/mips/fix-r10000-15.c: Likewise.
+	* gcc.target/mips/fpcmp-1.c: Likewise.
+	* gcc.target/mips/fpcmp-2.c: Likewise.
+	* gcc.target/mips/fpr-moves-7.c: Likewise.
+	* gcc.target/mips/fpr-moves-8.c: Likewise.
+	* gcc.target/mips/int-moves-1.c: Likewise.
+	* gcc.target/mips/int-moves-2.c: Likewise.
+	* gcc.target/mips/long-calls-pg.c: Likewise.
+	* gcc.target/mips/loongson-muldiv-1.c: Likewise.
+	* gcc.target/mips/loongson-muldiv-2.c: Likewise.
+	* gcc.target/mips/loongson-shift-count-truncated-1.c: Likewise.
+	* gcc.target/mips/loongson3a-muldiv-1.c: Likewise.
+	* gcc.target/mips/loongson3a-muldiv-2.c: Likewise.
+	* gcc.target/mips/mips-3d-1.c: Likewise.
+	* gcc.target/mips/mips-3d-2.c: Likewise.
+	* gcc.target/mips/mips-3d-3.c: Likewise.
+	* gcc.target/mips/mips-3d-4.c: Likewise.
+	* gcc.target/mips/mips-3d-5.c: Likewise.
+	* gcc.target/mips/mips-3d-6.c: Likewise.
+	* gcc.target/mips/mips-3d-7.c: Likewise.
+	* gcc.target/mips/mips-3d-8.c: Likewise.
+	* gcc.target/mips/mips-3d-9.c: Likewise.
+	* gcc.target/mips/mips-ps-1.c: Likewise.
+	* gcc.target/mips/mips-ps-2.c: Likewise.
+	* gcc.target/mips/mips-ps-3.c: Likewise.
+	* gcc.target/mips/mips-ps-4.c: Likewise.
+	* gcc.target/mips/mips-ps-6.c: Likewise.
+	* gcc.target/mips/mips32-dspr2.c: Likewise.
+	* gcc.target/mips/mmcount-ra-address-1.c: Likewise.
+	* gcc.target/mips/neg-abs-1.c: Likewise.
+	* gcc.target/mips/neg-abs-2.c: Likewise.
+	* gcc.target/mips/nmadd-3.c: Likewise.
+	* gcc.target/mips/no-smartmips-lwxs.c: Likewise.
+	* gcc.target/mips/no-smartmips-ror-1.c: Likewise.
+	* gcc.target/mips/octeon-pop-1.c: Likewise.
+	* gcc.target/mips/pr26765.c: Likewise.
+	* gcc.target/mips/pr33256.c: Likewise.
+	* gcc.target/mips/pr33635-1.c: Likewise.
+	* gcc.target/mips/pr33755.c: Likewise.
+	* gcc.target/mips/pr35802.c: Likewise.
+	* gcc.target/mips/pr45074.c: Likewise.
+	* gcc.target/mips/r10k-cache-barrier-1.c: Likewise.
+	* gcc.target/mips/r10k-cache-barrier-2.c: Likewise.
+	* gcc.target/mips/r10k-cache-barrier-3.c: Likewise.
+	* gcc.target/mips/r10k-cache-barrier-4.c: Likewise.
+	* gcc.target/mips/r10k-cache-barrier-5.c: Likewise.
+	* gcc.target/mips/r10k-cache-barrier-6.c: Likewise.
+	* gcc.target/mips/r10k-cache-barrier-7.c: Likewise.
+	* gcc.target/mips/r10k-cache-barrier-8.c: Likewise.
+	* gcc.target/mips/r10k-cache-barrier-9.c: Likewise.
+	* gcc.target/mips/r10k-cache-barrier-11.c: Likewise.
+	* gcc.target/mips/r10k-cache-barrier-12.c: Likewise.
+	* gcc.target/mips/r10k-cache-barrier-13.c: Likewise.
+	* gcc.target/mips/r10k-cache-barrier-14.c: Likewise.
+	* gcc.target/mips/r10k-cache-barrier-15.c: Likewise.
+	* gcc.target/mips/save-restore-1.c: Likewise.
+	* gcc.target/mips/save-restore-3.c: Likewise.
+	* gcc.target/mips/save-restore-5.c: Likewise.
+	* gcc.target/mips/smartmips-ror-1.c: Likewise.
+	* gcc.target/mips/smartmips-ror-2.c: Likewise.
+	* gcc.target/mips/smartmips-ror-3.c: Likewise.
+	* gcc.target/mips/smartmips-ror-4.c: Likewise.
+	* gcc.target/mips/stack-1.c: Likewise.
+
+	* gcc.target/mips/clear-cache-2.c: Remove optimization flag.
+	Tighten regexps.
+
+	* gcc.target/mips/branch-8.c: Arrange for the delay slot of the
+	branch under test to be filled with preceding rather than
+	following instructions.
+	* gcc.target/mips/branch-10.c: Likewise.
+	* gcc.target/mips/branch-11.c: Likewise.
+	* gcc.target/mips/branch-12.c: Likewise.
+	* gcc.target/mips/branch-13.c: Likewise.
+	* gcc.target/mips/branch-9.c: Likewise.  Allow the frame pointer
+	to be eliminated.  Tighten $28 scan-assembler-not test.
+
+	* gcc.target/mips/call-2.c: Remove optimization flag.  Move second
+	function to...
+	* gcc.target/mips/call-4.c: ...this new test.
+
+	* gcc.target/mips/code-readable-2.c: Rework to make a jump table
+	more likely.
+	* gcc.target/mips/code-readable-3.c: Likewise.
+	* gcc.target/mips/code-readable-1.c: Likewise.  Remove optimization
+	flag but skip for -O0.
+	* gcc.target/mips/code-readable-4.c: Likewise.
+
+	* gcc.target/mips/mips32-dsp-run.c: Prevent compile-time reduction
+	of operations under test.
+	* gcc.target/mips/mips32-dsp.c: Likewise.  Remove optimization flag.
+
+	* gcc.target/mips/near-far-3.c: Remove optimization flag.
+	Don't require sibling-call optimization.
+	* gcc.target/mips/near-far-4.c: Likewise.
+
+	* gcc.target/mips/no-dsp-1.c: Require -ffat-lto-objects.
+	Make sure that the register variable is used.
+	* gcc.target/mips/soft-float-1.c: Likewise.
+
+	* gcc.target/mips/sdata-1.c: Make static data volatile.
+	* gcc.target/mips/sdata-2.c: Likewise.
+	* gcc.target/mips/sdata-3.c: Likewise.
+	* gcc.target/mips/sdata-4.c: Likewise.
+
+	* gcc.target/mips/20020620-1.c: Remove optimization flag but
+	skip for -O0.
+	* gcc.target/mips/atomic-memory-2.c: Likewise.
+	* gcc.target/mips/branch-cost-1.c: Likewise.
+	* gcc.target/mips/branch-cost-2.c: Likewise.
+	* gcc.target/mips/cache-1.c: Likewise.
+	* gcc.target/mips/call-1.c: Likewise.
+	* gcc.target/mips/call-saved-2.c: Likewise.
+	* gcc.target/mips/const-anchor-1.c: Likewise.
+	* gcc.target/mips/const-anchor-2.c: Likewise.
+	* gcc.target/mips/dse-1.c: Likewise.
+	* gcc.target/mips/dsp-lhx.c: Likewise.
+	* gcc.target/mips/dspr2-MULTU.c: Likewise.
+	* gcc.target/mips/ext-1.c: Likewise.
+	* gcc.target/mips/ext-2.c: Likewise.
+	* gcc.target/mips/ext-3.c: Likewise.
+	* gcc.target/mips/ext-4.c: Likewise.
+	* gcc.target/mips/ext-5.c: Likewise.
+	* gcc.target/mips/ext-6.c: Likewise.
+	* gcc.target/mips/ext-7.c: Likewise.
+	* gcc.target/mips/extend-1.c: Likewise.
+	* gcc.target/mips/fix-r4000-1.c: Likewise.
+	* gcc.target/mips/fix-r4000-3.c: Likewise.
+	* gcc.target/mips/fix-r4000-5.c: Likewise.
+	* gcc.target/mips/fix-r4000-6.c: Likewise.
+	* gcc.target/mips/fix-r4000-8.c: Likewise.
+	* gcc.target/mips/fix-r4000-10.c: Likewise.
+	* gcc.target/mips/fixed-scalar-type.c: Likewise.
+	* gcc.target/mips/fixed-vector-type.c: Likewise.
+	* gcc.target/mips/fpr-moves-1.c: Likewise.
+	* gcc.target/mips/fpr-moves-2.c: Likewise.
+	* gcc.target/mips/fpr-moves-3.c: Likewise.
+	* gcc.target/mips/fpr-moves-4.c: Likewise.
+	* gcc.target/mips/fpr-moves-5.c: Likewise.
+	* gcc.target/mips/fpr-moves-6.c: Likewise.
+	* gcc.target/mips/ins-1.c: Likewise.
+	* gcc.target/mips/ins-2.c: Likewise.
+	* gcc.target/mips/interrupt_handler-2.c: Likewise.
+	* gcc.target/mips/interrupt_handler-3.c: Likewise.
+	* gcc.target/mips/lazy-binding-1.c: Likewise.
+	* gcc.target/mips/madd-3.c: Likewise.
+	* gcc.target/mips/madd-5.c: Likewise.
+	* gcc.target/mips/madd-6.c: Likewise.
+	* gcc.target/mips/madd-8.c: Likewise.
+	* gcc.target/mips/madd-9.c: Likewise.
+	* gcc.target/mips/memcpy-1.c: Likewise.
+	* gcc.target/mips/mips-ps-type.c: Likewise.
+	* gcc.target/mips/mips-ps-type-2.c: Likewise.
+	* gcc.target/mips/mips-sched-madd.c: Likewise.
+	* gcc.target/mips/mips16e-extends.c: Likewise.
+	* gcc.target/mips/mips32r2-mxhc1.c: Likewise.
+	* gcc.target/mips/mips64-dsp-ldx.c: Likewise.
+	* gcc.target/mips/movcc-1.c: Likewise.
+	* gcc.target/mips/movcc-2.c: Likewise.
+	* gcc.target/mips/movcc-3.c: Likewise.
+	* gcc.target/mips/msub-5.c: Likewise.
+	* gcc.target/mips/msub-6.c: Likewise.
+	* gcc.target/mips/msub-8.c: Likewise.
+	* gcc.target/mips/mult-2.c: Likewise.
+	* gcc.target/mips/mult-3.c: Likewise.
+	* gcc.target/mips/mult-5.c: Likewise.
+	* gcc.target/mips/mult-6.c: Likewise.
+	* gcc.target/mips/mult-7.c: Likewise.
+	* gcc.target/mips/mult-12.c: Likewise.
+	* gcc.target/mips/mult-13.c: Likewise.
+	* gcc.target/mips/mult-14.c: Likewise.
+	* gcc.target/mips/mult-15.c: Likewise.
+	* gcc.target/mips/mult-17.c: Likewise.
+	* gcc.target/mips/mult-18.c: Likewise.
+	* gcc.target/mips/mult-19.c: Likewise.
+	* gcc.target/mips/nmadd-1.c: Likewise.
+	* gcc.target/mips/nmadd-2.c: Likewise.
+	* gcc.target/mips/octeon-baddu-1.c: Likewise.
+	* gcc.target/mips/octeon-cins-1.c: Likewise.
+	* gcc.target/mips/octeon-cins-2.c: Likewise.
+	* gcc.target/mips/octeon-dmul-3.c: Likewise.
+	* gcc.target/mips/octeon-exts-2.c: Likewise.
+	* gcc.target/mips/octeon-exts-3.c: Likewise.
+	* gcc.target/mips/octeon-exts-4.c: Likewise.
+	* gcc.target/mips/octeon-exts-5.c: Likewise.
+	* gcc.target/mips/octeon-exts-6.c: Likewise.
+	* gcc.target/mips/octeon-exts-7.c: Likewise.
+	* gcc.target/mips/octeon-pop-2.c: Likewise.
+	* gcc.target/mips/octeon-seq-3.c: Likewise.
+	* gcc.target/mips/octeon-seq-4.c: Likewise.
+	* gcc.target/mips/octeon2-lx-1.c: Likewise.
+	* gcc.target/mips/octeon2-lx-2.c: Likewise.
+	* gcc.target/mips/octeon2-lx-3.c: Likewise.
+	* gcc.target/mips/pr54240.c: Likewise.
+	* gcc.target/mips/rsqrt-1.c: Likewise.
+	* gcc.target/mips/rsqrt-2.c: Likewise.
+	* gcc.target/mips/rsqrt-3.c: Likewise.
+	* gcc.target/mips/rsqrt-4.c: Likewise.
+	* gcc.target/mips/save-restore-2.c: Likewise.
+	* gcc.target/mips/save-restore-4.c: Likewise.
+	* gcc.target/mips/sb1-1.c: Likewise.
+	* gcc.target/mips/scc-1.c: Likewise.
+	* gcc.target/mips/scc-2.c: Likewise.
+	* gcc.target/mips/scc-3.c: Likewise.
+	* gcc.target/mips/scc-4.c: Likewise.
+	* gcc.target/mips/smartmips-lwxs.c: Likewise.
+	* gcc.target/mips/truncate-1.c: Likewise.
+	* gcc.target/mips/truncate-2.c: Likewise.
+	* gcc.target/mips/truncate-3.c: Likewise.
+	* gcc.target/mips/truncate-4.c: Likewise.
+	* gcc.target/mips/truncate-5.c: Likewise.
+	* gcc.target/mips/truncate-6.c: Likewise.
+	* gcc.target/mips/unaligned-1.c: Likewise.
+
+	* gcc.target/mips/dpaq_sa_l_w.c: Remove optimization flag but
+	skip for -O0.  Require -fexpensive-optimizations.
+	* gcc.target/mips/dpsq_sa_l_w.c: Likewise.
+	* gcc.target/mips/dspr2-MULT.c: Likewise.
+	* gcc.target/mips/fix-r4000-2.c: Likewise.
+	* gcc.target/mips/fix-r4000-4.c: Likewise.
+	* gcc.target/mips/fix-r4000-7.c: Likewise.
+	* gcc.target/mips/fix-r4000-9.c: Likewise.
+	* gcc.target/mips/madd-1.c: Likewise.
+	* gcc.target/mips/madd-2.c: Likewise.
+	* gcc.target/mips/madd-4.c: Likewise.
+	* gcc.target/mips/maddu-1.c: Likewise.
+	* gcc.target/mips/maddu-2.c: Likewise.
+	* gcc.target/mips/maddu-3.c: Likewise.
+	* gcc.target/mips/maddu-4.c: Likewise.
+	* gcc.target/mips/msub-1.c: Likewise.
+	* gcc.target/mips/msub-2.c: Likewise.
+	* gcc.target/mips/msub-3.c: Likewise.
+	* gcc.target/mips/msub-4.c: Likewise.
+	* gcc.target/mips/msubu-1.c: Likewise.
+	* gcc.target/mips/msubu-2.c: Likewise.
+	* gcc.target/mips/msubu-3.c: Likewise.
+	* gcc.target/mips/msubu-4.c: Likewise.
+	* gcc.target/mips/mult-1.c: Likewise.
+	* gcc.target/mips/mult-4.c: Likewise.
+	* gcc.target/mips/mult-8.c: Likewise.
+	* gcc.target/mips/mult-9.c: Likewise.
+	* gcc.target/mips/mult-10.c: Likewise.
+	* gcc.target/mips/mult-11.c: Likewise.
+	* gcc.target/mips/mult-16.c: Likewise.
+
+	* gcc.target/mips/fix-r4000-11.c: Remove optimization flag but
+	skip for -O0 and -Os.
+	* gcc.target/mips/fix-r4000-12.c: Likewise.
+	* gcc.target/mips/madd-7.c: Likewise.
+	* gcc.target/mips/mips-ps-5.c: Likewise.
+	* gcc.target/mips/mips-ps-7.c: Likewise.
+	* gcc.target/mips/msub-7.c: Likewise.
+
+	* gcc.target/mips/mmcount-ra-address-2.c: Remove optimization flag but
+	skip for -O0.  Require -mno-abicalls.
+	* gcc.target/mips/mmcount-ra-address-3.c: Likewise.
+
+	* gcc.target/mips/octeon-bbit-1.c: Remove optimization flag but
+	skip for -O0.  Require a total number of BBIT instructions and
+	at least one of each kind.
+
+	* gcc.target/mips/octeon-bbit-2.c: Remove optimization flag but
+	skip for -O0.  Require -fno-unroll-loops.
+
+	* gcc.target/mips/octeon-bbit-3.c: Remove optimization flag but
+	skip for -O0.  Allow BLTZ as well as BGEZ.
+
+	* gcc.target/mips/octeon-dmul-2.c: Skip for -Os.
+
+	* gcc.target/mips/octeon-pipe-1.c: Remove optimization flag but
+	skip for -O0.  Require -fschedule-insns2.
+	* gcc.target/mips/octeon2-pipe-1.c: Likewise.
+
+	* gcc.target/mips/r10k-cache-barrier-10.c: Remove optimization flag
+	but skip for -O0.  Make a branch-likely more likely.
+
+	* gcc.target/mips/timode-2.c: Split each test into its own function.
+	* gcc.target/mips/timode-1.c: Likewise.  Skip for -Os.
+
+	* gcc.target/mips/vr-mult-1.c: Remove optimization flag but
+	skip for -O0.  Require -fpeephole2.
+	* gcc.target/mips/vr-mult-2.c: Likewise.
+
 2012-05-25  Dodji Seketeli  <dodji@redhat.com>
 
 	PR preprocessor/53469

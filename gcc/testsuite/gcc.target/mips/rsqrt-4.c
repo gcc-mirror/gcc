@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ffast-math -mips64 -mhard-float -mgp32" } */
+/* { dg-options "-ffast-math -mips64 -mhard-float -mgp32" } */
+/* { dg-skip-if "code quality test" { *-*-* } { "-O0" } { "" } } */
 /* { dg-final { scan-assembler-not "\trsqrt.d\t" } } */
 /* { dg-final { scan-assembler-times "\trsqrt.s\t" 2 } } */
 

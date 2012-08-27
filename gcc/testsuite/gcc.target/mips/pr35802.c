@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -march=74kc -mgp32" } */
+/* { dg-options "-march=74kc -mgp32" } */
 __thread int x __attribute__((tls_model("initial-exec")));
 __thread int y __attribute__((tls_model("initial-exec")));
 
