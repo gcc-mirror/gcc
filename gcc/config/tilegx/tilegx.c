@@ -5313,7 +5313,7 @@ tilegx_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
       fprintf (file,
 	       "\t{\n"
 	       "\tmove\tr10, lr\n"
-	       "\tjal\t%s@plt\n"
+	       "\tjal\tplt(%s)\n"
 	       "\t}\n", MCOUNT_NAME);
     }
   else
