@@ -2627,7 +2627,7 @@
   "bfextu\t%0, %r1, %2, %3"
   [(set_attr "type" "X0")])
 
-(define_insn "*bfins"
+(define_insn "insn_bfins"
   [(set (match_operand:DI 0 "register_operand" "=r")
         (unspec:DI [(match_operand:DI 1 "reg_or_0_operand" "0")
                     (match_operand:DI 2 "reg_or_0_operand" "rO")
@@ -2637,36 +2637,6 @@
    ""
    "bfins\t%0, %r2, %3, %4"
    [(set_attr "type" "X0")])
-
-(define_expand "insn_bfins"
-  [(set (match_operand:DI 0 "register_operand" "")
-        (unspec:DI [(match_operand:DI 1 "reg_or_0_operand" "")
-                    (match_operand:DI 2 "reg_or_0_operand" "")
-                    (match_operand:DI 3 "u6bit_cint_operand" "")
-                    (match_operand:DI 4 "u6bit_cint_operand" "")]
-                   UNSPEC_INSN_BFINS))]
-  "INTVAL (operands[3]) != 64"
-{
-  HOST_WIDE_INT first = INTVAL (operands[3]);
-  HOST_WIDE_INT last = INTVAL (operands[4]);
-
-  if (last >= first)
-    {
-      /* This is not a wacky wraparound case, so we can express this
-         as a standard insv. */
-      if (operands[0] != operands[1])
-        {
-	  operands[2] = make_safe_from (operands[2], operands[0]);
-	  emit_move_insn (operands[0], operands[1]);
-	}
-
-      emit_insn (gen_insv (operands[0],
-			   GEN_INT (last - first + 1), operands[3],
-			   operands[2]));
-
-      DONE;
-    }
-})
 
 (define_insn "insn_cmpexch<four_if_si>"
   [(set (match_operand:I48MODE 0 "register_operand" "=r")
