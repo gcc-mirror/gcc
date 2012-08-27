@@ -1564,24 +1564,15 @@ static void
 add_dependence_list_and_free (struct deps_desc *deps, rtx insn, rtx *listp,
                               int uncond, enum reg_note dep_type)
 {
-  rtx list, next;
+  add_dependence_list (insn, *listp, uncond, dep_type);
 
   /* We don't want to short-circuit dependencies involving debug
      insns, because they may cause actual dependencies to be
      disregarded.  */
   if (deps->readonly || DEBUG_INSN_P (insn))
-    {
-      add_dependence_list (insn, *listp, uncond, dep_type);
-      return;
-    }
+    return;
 
-  for (list = *listp, *listp = NULL; list ; list = next)
-    {
-      next = XEXP (list, 1);
-      if (uncond || ! sched_insns_conditions_mutex_p (insn, XEXP (list, 0)))
-	add_dependence (insn, XEXP (list, 0), dep_type);
-      free_INSN_LIST_node (list);
-    }
+  free_INSN_LIST_list (listp);
 }
 
 /* Remove all occurrences of INSN from LIST.  Return the number of
@@ -1764,6 +1755,15 @@ flush_pending_lists (struct deps_desc *deps, rtx insn, int for_read,
 
   add_dependence_list_and_free (deps, insn, &deps->pending_jump_insns, 1,
 				REG_DEP_ANTI);
+
+  if (DEBUG_INSN_P (insn))
+    {
+      if (for_write)
+	free_INSN_LIST_list (&deps->pending_read_insns);
+      free_INSN_LIST_list (&deps->pending_write_insns);
+      free_INSN_LIST_list (&deps->last_pending_memory_flush);
+      free_INSN_LIST_list (&deps->pending_jump_insns);
+    }
 
   if (!deps->readonly)
     {
