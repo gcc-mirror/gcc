@@ -1,4 +1,4 @@
-/* { dg-options "-O2 isa=loongson -mgp64" } */
+/* { dg-options "isa=loongson -mgp64" } */
 
 typedef long long st;
 typedef unsigned long long ut;

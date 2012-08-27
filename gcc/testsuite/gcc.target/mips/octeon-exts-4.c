@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O -march=octeon -mgp64" } */
+/* { dg-options "-march=octeon -mgp64" } */
+/* { dg-skip-if "code quality test" { *-*-* } { "-O0" } { "" } } */
 /* { dg-final { scan-assembler-not "\tsll\t\[^\n\]*,0" } } */
 /* { dg-final { scan-assembler-times "\texts\t" 6 } } */
 

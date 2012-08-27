@@ -1,7 +1,8 @@
 /* Test v2sf calculations.  The nmadd and nmsub patterns need
    -ffinite-math-only.  */
 /* { dg-do compile } */
-/* { dg-options "isa_rev>=2 -mgp32 -O2 -mpaired-single -ffinite-math-only" } */
+/* { dg-options "isa_rev>=2 -mgp32 -mpaired-single -ffinite-math-only" } */
+/* { dg-skip-if "nmadd and nmsub need combine" { *-*-* } { "-O0" } { "" } } */
 /* { dg-final { scan-assembler "cvt.ps.s" } } */
 /* { dg-final { scan-assembler "mov.ps" } } */
 /* { dg-final { scan-assembler "ldc1" } } */

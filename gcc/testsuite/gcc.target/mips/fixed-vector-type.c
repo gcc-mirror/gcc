@@ -1,6 +1,7 @@
 /* Test vector fixed-point instructions */
 /* { dg-do compile { target { fixed_point } } } */
-/* { dg-options "-mdspr2 -O2" } */
+/* { dg-options "-mdspr2" } */
+/* { dg-skip-if "code quality test" { *-*-* } { "-O0" } { "" } } */
 /* { dg-final { scan-assembler-times "\taddq_s.ph\t" 2 } } */
 /* { dg-final { scan-assembler-times "\tsubq_s.ph\t" 2 } } */
 /* { dg-final { scan-assembler-times "\taddu_s.qb\t" 1 } } */

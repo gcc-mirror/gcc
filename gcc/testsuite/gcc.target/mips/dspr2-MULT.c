@@ -1,7 +1,9 @@
 /* Test MIPS32 DSP REV 2 MULT instruction.  Tune for a CPU that has
    pipelined mult.  */
 /* { dg-do compile } */
-/* { dg-options "-mgp32 -mdspr2 -O2 -mtune=74kc" } */
+/* This test requires widening_mul */
+/* { dg-options "-mgp32 -mdspr2 -mtune=74kc -fexpensive-optimizations" } */
+/* { dg-skip-if "code quality test" { *-*-* } { "-O0" } { "" } } */
 
 /* See PR target/51729 for the reason behind the XFAILs.  */
 /* { dg-final { scan-assembler "\tmult\t" } } */

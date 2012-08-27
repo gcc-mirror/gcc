@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -mr10k-cache-barrier=store" } */
+/* { dg-options "-mr10k-cache-barrier=store" } */
 
 /* Test that indirect calls are protected.  */
 

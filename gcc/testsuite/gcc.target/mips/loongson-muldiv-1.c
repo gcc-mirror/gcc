@@ -1,4 +1,4 @@
-/* { dg-options "-O2 isa=loongson" } */
+/* { dg-options "isa=loongson" } */
 
 typedef int st;
 typedef unsigned int ut;

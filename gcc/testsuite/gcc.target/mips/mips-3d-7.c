@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -mips3d" } */
+/* { dg-options "-mips3d" } */
 
 /* Test MIPS-3D absolute compare (doubles) builtin functions */
 #include <stdlib.h>

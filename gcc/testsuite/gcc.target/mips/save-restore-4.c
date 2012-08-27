@@ -1,5 +1,6 @@
 /* Check that we can use the save instruction to save $16, $17 and $31.  */
-/* { dg-options "(-mips16) isa_rev>=1 -mabi=32 -O2" } */
+/* { dg-options "(-mips16) isa_rev>=1 -mabi=32" } */
+/* { dg-skip-if "code quality test" { *-*-* } { "-O0" } { "" } } */
 
 void bar (void);
 

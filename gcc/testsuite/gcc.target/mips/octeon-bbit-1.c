@@ -1,7 +1,9 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -march=octeon" } */
-/* { dg-final { scan-assembler-times "\tbbit1\t" 4 } } */
-/* { dg-final { scan-assembler-times "\tbbit0\t" 2 } } */
+/* { dg-options "-march=octeon" } */
+/* { dg-skip-if "code quality test" { *-*-* } { "-O0" } { "" } } */
+/* { dg-final { scan-assembler "\tbbit1\t" } } */
+/* { dg-final { scan-assembler "\tbbit0\t" } } */
+/* { dg-final { scan-assembler-times "\tbbit.\t" 6 } } */
 /* { dg-final { scan-assembler-not "andi\t" } } */
 
 NOMIPS16 void foo (void);

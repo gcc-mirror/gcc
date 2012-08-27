@@ -1,17 +1,26 @@
-/* { dg-options "(-mips16) -mcode-readable=yes -mabi=eabi -mgp64 -O" } */
+/* { dg-options "(-mips16) -mcode-readable=yes -mabi=eabi -mgp64" } */
+/* { dg-skip-if ".half requires -O" { *-*-* } { "-O0" } { "" } } */
+
+volatile int x1;
+volatile int x2;
+volatile int x3;
+volatile int x4;
+volatile int x5;
+volatile int x6;
+volatile int x7;
 
 MIPS16 int
-foo (int i)
+foo (int i, volatile *x)
 {
   switch (i)
     {
-    case 1: return 40;
-    case 2: return 11;
-    case 3: return 29;
-    case 4: return 10;
-    case 5: return 12;
-    case 6: return 35;
-    case 7: return 23;
+    case 1: return x1 + x[0];
+    case 2: return x2 + x[1];
+    case 3: return x3 + x[2];
+    case 4: return x4 + x[3];
+    case 5: return x5 + x[4];
+    case 6: return x6 + x[5];
+    case 7: return x7 + x[6];
     default: return 0;
     }
 }

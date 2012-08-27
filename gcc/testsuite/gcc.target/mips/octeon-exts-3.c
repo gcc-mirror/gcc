@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O -march=octeon -mgp64" } */
+/* { dg-options "-march=octeon -mgp64" } */
+/* { dg-skip-if "code quality test" { *-*-* } { "-O0" } { "" } } */
 /* { dg-final { scan-assembler-times "\texts\t" 3 } } */
 
 struct foo

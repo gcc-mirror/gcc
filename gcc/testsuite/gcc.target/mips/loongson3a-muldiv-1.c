@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -march=loongson3a" } */
+/* { dg-options "-march=loongson3a" } */
 
 typedef int st;
 typedef unsigned int ut;

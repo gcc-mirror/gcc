@@ -1,7 +1,6 @@
 /* PR target/17565.  GCC used to put the asm into the delay slot
    of the call.  */
 /* { dg-do assemble } */
-/* { dg-options "-O" } */
 
 NOMIPS16 int foo (int n)
 {

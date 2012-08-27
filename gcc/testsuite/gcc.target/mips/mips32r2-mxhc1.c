@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O -mabi=32 -mfp64" } */
+/* { dg-options "-mabi=32 -mfp64" } */
+/* { dg-skip-if "code quality test" { *-*-* } { "-O0" } { "" } } */
 /* { dg-final { scan-assembler "mthc1" } } */
 /* { dg-final { scan-assembler "mfhc1" } } */
 

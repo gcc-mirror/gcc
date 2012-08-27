@@ -1,4 +1,5 @@
-/* { dg-options "-mabi=32 -mfp64 -O2 -EL" } */
+/* { dg-options "-mabi=32 -mfp64 -EL" } */
+/* { dg-skip-if "code quality test" { *-*-* } { "-O0" } { "" } } */
 
 NOMIPS16 double
 foo (double d)

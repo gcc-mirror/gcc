@@ -1,6 +1,6 @@
 /* Test MIPS32 DSP REV 2 instructions */
 /* { dg-do run } */
-/* { dg-options "-mdspr2 -O2" } */
+/* { dg-options "-mdspr2" } */
 
 typedef signed char v4q7 __attribute__ ((vector_size(4)));
 typedef signed char v4i8 __attribute__ ((vector_size(4)));

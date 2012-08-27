@@ -1,4 +1,5 @@
-/* { dg-options "(-mips16) -O isa_rev>=1" } */
+/* { dg-options "(-mips16) isa_rev>=1" } */
+/* { dg-skip-if "code quality test" { *-*-* } { "-O0" } { "" } } */
 
 /* { dg-final { scan-assembler-times {slt	\$2,\$5,\$4} 1 } } */
 /* { dg-final { scan-assembler-times {sltu	\$2,\$5,\$4} 1 } } */

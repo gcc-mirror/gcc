@@ -1,4 +1,5 @@
-/* { dg-options "-O -mgp64" } */
+/* { dg-options "-mgp64" } */
+/* { dg-skip-if "code quality test" { *-*-* } { "-O0" } { "" } } */
 
 #define TEST(ID, TYPE, SHIFT)				\
   int __attribute__((nomips16))				\

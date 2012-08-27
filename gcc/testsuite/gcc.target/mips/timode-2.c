@@ -23,43 +23,96 @@ volatile int amount = 4;
 volatile uint128_t result;
 
 int
-main (void)
+test1 (void)
 {
   result = a * b;
   if (result != c)
     return 1;
+  return 0;
+}
 
+int
+test2 (void)
+{
   result = c + d;
   if (result != e)
     return 1;
+  return 0;
+}
 
+int
+test3 (void)
+{
   result = e - d;
   if (result != c)
     return 1;
+  return 0;
+}
 
+int
+test4 (void)
+{
   result = d & e;
   if (result != f)
     return 1;
+  return 0;
+}
 
+int
+test5 (void)
+{
   result = d ^ e;
   if (result != g)
     return 1;
+  return 0;
+}
 
+int
+test6 (void)
+{
   result = d | e;
   if (result != h)
     return 1;
+  return 0;
+}
 
+int
+test7 (void)
+{
   result = g << amount;
   if (result != i)
     return 1;
+  return 0;
+}
 
+int
+test8 (void)
+{
   result = g >> amount;
   if (result != j)
     return 1;
+  return 0;
+}
 
+int
+test9 (void)
+{
   result = (int128_t) g >> amount;
   if (result != k)
     return 1;
-
   return 0;
+}
+
+int
+main (void)
+{
+  return (test1 ()
+	  | test2 ()
+	  | test3 ()
+	  | test4 ()
+	  | test5 ()
+	  | test6 ()
+	  | test7 ()
+	  | test8 ()
+	  | test9 ());
 }

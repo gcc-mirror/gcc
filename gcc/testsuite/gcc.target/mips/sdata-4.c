@@ -3,9 +3,9 @@
 /* { dg-final { scan-assembler-not "%gp_?rel" } } */
 /* { dg-final { scan-assembler-not "\\\$gp" } } */
 
-static int l4a;
-static int l4b = 1;
-static int __attribute__((section(".sdata"))) l4c;
+static volatile int l4a;
+static volatile int l4b = 1;
+static volatile int __attribute__((section(".sdata"))) l4c;
 extern int e4a;
 extern int __attribute__((section(".sdata"))) e4b;
 int __attribute__((common)) c4;
@@ -13,9 +13,9 @@ int __attribute__((nocommon)) g4a;
 int g4b = 1;
 int __attribute__((section(".sdata"))) g4c = 2;
 
-static int l8a[2];
-static int l8b[2] = { 1, 2 };
-static int __attribute__((section(".sdata"))) l8c[2];
+static volatile int l8a[2];
+static volatile int l8b[2] = { 1, 2 };
+static volatile int __attribute__((section(".sdata"))) l8c[2];
 extern int e8a[2];
 extern int __attribute__((section(".sdata"))) e8b[2];
 int __attribute__((common)) c8[2];
