@@ -51,6 +51,10 @@
   (eq_attr "type" "X1_L2")
   "X1")
 
+(define_insn_reservation "X1_remote" 50
+  (eq_attr "type" "X1_remote")
+  "X1")
+
 (define_insn_reservation "X1_miss" 80
   (eq_attr "type" "X1_miss")
   "X1")
