@@ -3,7 +3,7 @@
 /* { dg-options "isa_rev>=2 -mgp64" } */
 /* { dg-skip-if "code quality test" { *-*-* } { "-O0" } { "" } } */
 /* { dg-final { scan-assembler "\tdext\t" } } */
-/* { dg-final { scan-assembler-not "sll" } } */
+/* { dg-final { scan-assembler-not "\td?sll" } } */
 
 NOMIPS16 unsigned long long
 f (unsigned *i)

@@ -16,7 +16,7 @@ MIPS16 signed char cksum8 (unsigned long n)
   return l;
 }
 
-/* { dg-final { scan-assembler "zeh" } } */
-/* { dg-final { scan-assembler "seh" } } */
-/* { dg-final { scan-assembler "zeb" } } */
-/* { dg-final { scan-assembler "seb" } } */
+/* { dg-final { scan-assembler "\tzeh\t" } } */
+/* { dg-final { scan-assembler "\tseh\t" } } */
+/* { dg-final { scan-assembler "\tzeb\t" } } */
+/* { dg-final { scan-assembler "\tseb\t" } } */

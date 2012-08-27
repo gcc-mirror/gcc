@@ -1,10 +1,10 @@
 /* Test MIPS32 DSP instructions */
 /* { dg-do compile } */
 /* { dg-options "-mdsp" } */
-/* { dg-final { scan-assembler "addq.ph" } } */
-/* { dg-final { scan-assembler "addu.qb" } } */
-/* { dg-final { scan-assembler "subq.ph" } } */
-/* { dg-final { scan-assembler "subu.qb" } } */
+/* { dg-final { scan-assembler "\taddq.ph\t" } } */
+/* { dg-final { scan-assembler "\taddu.qb\t" } } */
+/* { dg-final { scan-assembler "\tsubq.ph\t" } } */
+/* { dg-final { scan-assembler "\tsubu.qb\t" } } */
 
 typedef char v4qi __attribute__ ((vector_size(4)));
 typedef short v2hi __attribute__ ((vector_size(4)));

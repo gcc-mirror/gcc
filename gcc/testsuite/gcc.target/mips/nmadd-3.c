@@ -2,10 +2,8 @@
    We can't use nmadd and nmsub in that case.  */
 /* { dg-do compile } */
 /* { dg-options "-fno-fast-math -fno-finite-math-only isa=4 -mhard-float" } */
-/* { dg-final { scan-assembler-not "nmadd.s" } } */
-/* { dg-final { scan-assembler-not "nmadd.d" } } */
-/* { dg-final { scan-assembler-not "nmsub.s" } } */
-/* { dg-final { scan-assembler-not "nmsub.d" } } */
+/* { dg-final { scan-assembler-not "\tnmadd" } } */
+/* { dg-final { scan-assembler-not "\tnmsub" } } */
 
 float
 sub1 (float f, float g, float h)

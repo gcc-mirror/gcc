@@ -3,7 +3,7 @@
 /* { dg-options "-march=octeon -mgp64" } */
 /* { dg-skip-if "code quality test" { *-*-* } { "-O0" } { "" } } */
 /* { dg-final { scan-assembler-times "\texts\t" 1 } } */
-/* { dg-final { scan-assembler-not "sll|sra" } } */
+/* { dg-final { scan-assembler-not "\td?(sll|sra)" } } */
 
 struct bar
 {

@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "isa_rev>=2" } */
-/* { dg-final { scan-assembler "ext" } } */
-/* { dg-final { scan-assembler "ins" } } */
+/* { dg-final { scan-assembler "\td?ext\t" } } */
+/* { dg-final { scan-assembler "\td?ins\t" } } */
 
 struct A 
 {
