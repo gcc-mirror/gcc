@@ -4398,6 +4398,7 @@ gfc_match_common (void)
 
           /* Store a ref to the common block for error checking.  */
           sym->common_block = t;
+          sym->common_block->refs++;
           
           /* See if we know the current common block is bind(c), and if
              so, then see if we can check if the symbol is (which it'll

@@ -891,7 +891,6 @@ get_proc_name (const char *name, gfc_symbol **result, bool module_fcn_entry)
     return rc;
 
   sym = *result;
-  gfc_current_ns->refs++;
 
   if (sym && !sym->gfc_new && gfc_current_state () != COMP_INTERFACE)
     {
