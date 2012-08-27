@@ -392,6 +392,60 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	   _UIntType __a, size_t __u, _UIntType __d, size_t __s,
 	   _UIntType __b, size_t __t, _UIntType __c, size_t __l,
 	   _UIntType __f>
+    void
+    mersenne_twister_engine<_UIntType, __w, __n, __m, __r, __a, __u, __d,
+			    __s, __b, __t, __c, __l, __f>::
+    _M_gen_rand(void)
+    {
+      const _UIntType __upper_mask = (~_UIntType()) << __r;
+      const _UIntType __lower_mask = ~__upper_mask;
+
+      for (size_t __k = 0; __k < (__n - __m); ++__k)
+        {
+	  _UIntType __y = ((_M_x[__k] & __upper_mask)
+			   | (_M_x[__k + 1] & __lower_mask));
+	  _M_x[__k] = (_M_x[__k + __m] ^ (__y >> 1)
+		       ^ ((__y & 0x01) ? __a : 0));
+        }
+
+      for (size_t __k = (__n - __m); __k < (__n - 1); ++__k)
+	{
+	  _UIntType __y = ((_M_x[__k] & __upper_mask)
+			   | (_M_x[__k + 1] & __lower_mask));
+	  _M_x[__k] = (_M_x[__k + (__m - __n)] ^ (__y >> 1)
+		       ^ ((__y & 0x01) ? __a : 0));
+	}
+
+      _UIntType __y = ((_M_x[__n - 1] & __upper_mask)
+		       | (_M_x[0] & __lower_mask));
+      _M_x[__n - 1] = (_M_x[__m - 1] ^ (__y >> 1)
+		       ^ ((__y & 0x01) ? __a : 0));
+      _M_p = 0;
+    }
+
+  template<typename _UIntType, size_t __w,
+	   size_t __n, size_t __m, size_t __r,
+	   _UIntType __a, size_t __u, _UIntType __d, size_t __s,
+	   _UIntType __b, size_t __t, _UIntType __c, size_t __l,
+	   _UIntType __f>
+    void
+    mersenne_twister_engine<_UIntType, __w, __n, __m, __r, __a, __u, __d,
+			    __s, __b, __t, __c, __l, __f>::
+    discard(unsigned long long __z)
+    {
+      while (__z > state_size - _M_p)
+	{
+	  __z -= state_size - _M_p;
+	  _M_gen_rand();
+	}
+      _M_p += __z;
+    }
+
+  template<typename _UIntType, size_t __w,
+	   size_t __n, size_t __m, size_t __r,
+	   _UIntType __a, size_t __u, _UIntType __d, size_t __s,
+	   _UIntType __b, size_t __t, _UIntType __c, size_t __l,
+	   _UIntType __f>
     typename
     mersenne_twister_engine<_UIntType, __w, __n, __m, __r, __a, __u, __d,
 			    __s, __b, __t, __c, __l, __f>::result_type
@@ -401,32 +455,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       // Reload the vector - cost is O(n) amortized over n calls.
       if (_M_p >= state_size)
-	{
-	  const _UIntType __upper_mask = (~_UIntType()) << __r;
-	  const _UIntType __lower_mask = ~__upper_mask;
-
-	  for (size_t __k = 0; __k < (__n - __m); ++__k)
-	    {
-	      _UIntType __y = ((_M_x[__k] & __upper_mask)
-			       | (_M_x[__k + 1] & __lower_mask));
-	      _M_x[__k] = (_M_x[__k + __m] ^ (__y >> 1)
-			   ^ ((__y & 0x01) ? __a : 0));
-	    }
-
-	  for (size_t __k = (__n - __m); __k < (__n - 1); ++__k)
-	    {
-	      _UIntType __y = ((_M_x[__k] & __upper_mask)
-			       | (_M_x[__k + 1] & __lower_mask));
-	      _M_x[__k] = (_M_x[__k + (__m - __n)] ^ (__y >> 1)
-			   ^ ((__y & 0x01) ? __a : 0));
-	    }
-
-	  _UIntType __y = ((_M_x[__n - 1] & __upper_mask)
-			   | (_M_x[0] & __lower_mask));
-	  _M_x[__n - 1] = (_M_x[__m - 1] ^ (__y >> 1)
-			   ^ ((__y & 0x01) ? __a : 0));
-	  _M_p = 0;
-	}
+	_M_gen_rand();
 
       // Calculate o(x(i)).
       result_type __z = _M_x[_M_p++];

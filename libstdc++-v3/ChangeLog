@@ -1,3 +1,13 @@
+012-08-22  Ulrich Drepper  <drepper@gmail.com>
+
+	* include/bits/random.h (mersenne_twister_engine): Don't inline
+	discard here.  New member function _M_gen_rand.
+	* include/bits/random.tcc (mersenne_twister_engine<>::_M_gen_rand):
+	New function.  Extracted from operator().
+	(mersenne_twister_engine<>::discard): New implementation which
+	skips in large steps.
+	(mersenne_twister_engine<>::operator()): Use _M_gen_rand.
+							
 2012-08-26  Marc Glisse  <marc.glisse@inria.fr>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 
