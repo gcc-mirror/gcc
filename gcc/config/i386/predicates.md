@@ -971,6 +971,9 @@
   struct ix86_address parts;
   int ok;
 
+  if (TARGET_64BIT || !flag_pic)
+    return true;
+
   ok = ix86_decompose_address (XEXP (op, 0), &parts);
   gcc_assert (ok);
 
