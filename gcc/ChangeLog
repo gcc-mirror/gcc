@@ -1,3 +1,8 @@
+2012-08-27  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips.c (vr4130_align_insns): Don't simulate
+	ghost instructions.  Assert that the required instructions exist.
+
 2012-08-26  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/mips.h (AVOID_CCMODE_COPIES): Update rationale for

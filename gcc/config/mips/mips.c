@@ -15145,7 +15145,8 @@ vr4130_align_insns (void)
 	 the fly to avoid a separate instruction walk.  */
       vr4130_avoid_branch_rt_conflict (insn);
 
-      if (USEFUL_INSN_P (insn))
+      length = get_attr_length (insn);
+      if (length > 0 && USEFUL_INSN_P (insn))
 	FOR_EACH_SUBINSN (subinsn, insn)
 	  {
 	    mips_sim_wait_insn (&state, subinsn);
@@ -15180,6 +15181,7 @@ vr4130_align_insns (void)
 		       issuing at the same time as the branch.  We therefore
 		       insert a nop before the branch in order to align its
 		       delay slot.  */
+		    gcc_assert (last2);
 		    emit_insn_after (gen_nop (), last2);
 		    aligned_p = false;
 		  }
@@ -15188,6 +15190,7 @@ vr4130_align_insns (void)
 		    /* SUBINSN is the delay slot of INSN, but INSN is
 		       currently unaligned.  Insert a nop between
 		       LAST and INSN to align it.  */
+		    gcc_assert (last);
 		    emit_insn_after (gen_nop (), last);
 		    aligned_p = true;
 		  }
