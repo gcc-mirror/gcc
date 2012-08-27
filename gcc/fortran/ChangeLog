@@ -1,3 +1,9 @@
+2012-08-27  Tobias Burnus  <burnus@net-b.de>
+
+	* options.c (set_Wall): Don't set for -Wcompare-reals.
+	* invoke.texi (-Wall, -Wcompare-reals): -Wall no longer
+	implies -Wcompare-reals.
+
 2012-08-24  Simon Baldwin  <simonb@google.com>
 
 	* lang.opt (-cpp=): Mark flag NoDWARFRecord.
