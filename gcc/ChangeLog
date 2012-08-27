@@ -1,4 +1,9 @@
 2012-08-27  Walter Lee  <walt@tilera.com>
+	
+	* config/tilegx/tilegx.md (*bfins): Rename to insn_bfins.
+	(insn_bfins): Delete.
+
+2012-08-27  Walter Lee  <walt@tilera.com>
 
 	* config/tilegx/sync.md (atomic_compare_and_swap_bare<mode>,
 	atomic_exchange_bare<mode>,
