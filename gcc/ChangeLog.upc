@@ -1,3 +1,10 @@
+2012-08-27  Gary Funck  <gary@intrepid.com>
+
+	Merge trunk version 190707 into gupc branch.
+	* tree.h (struct tree_base): Adjust various
+	UPC tree and type flags to refer to the
+	newly introduced u.bits field.
+
 2012-08-20  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 190524 into gupc branch.

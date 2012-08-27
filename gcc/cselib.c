@@ -1603,9 +1603,7 @@ cselib_expand_value_rtx_1 (rtx orig, struct expand_value_data *evd,
 	    }
       }
 
-    case CONST_INT:
-    case CONST_DOUBLE:
-    case CONST_VECTOR:
+    CASE_CONST_ANY:
     case SYMBOL_REF:
     case CODE_LABEL:
     case PC:
@@ -1856,10 +1854,7 @@ cselib_subst_to_values (rtx x, enum machine_mode memmode)
 	break;
       return e->val_rtx;
 
-    case CONST_DOUBLE:
-    case CONST_VECTOR:
-    case CONST_INT:
-    case CONST_FIXED:
+    CASE_CONST_ANY:
       return x;
 
     case PRE_DEC:

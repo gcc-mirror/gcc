@@ -9,8 +9,8 @@ typename enable_if<x==0,int>::type
 ft() {}
 
 template<class F, int N>
-decltype (ft<F> (F()))
-ft() {}				// { dg-error "depth" }
+decltype (ft<F> (F()))		// { dg-error "depth" }
+ft() {}
 
 int main() {
     ft<struct a*, 0>();		// { dg-error "no match|wrong number" }

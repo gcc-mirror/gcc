@@ -923,43 +923,6 @@ gfc_conv_intrinsic_exponent (gfc_se *se, gfc_expr *expr)
 }
 
 
-/* Convert the last ref of a scalar coarray from an AR_ELEMENT to an
-   AR_FULL, suitable for the scalarizer.  */
-
-static gfc_ss *
-walk_coarray (gfc_expr *e)
-{
-  gfc_ss *ss;
-
-  gcc_assert (gfc_get_corank (e) > 0);
-
-  ss = gfc_walk_expr (e);
-
-  /* Fix scalar coarray.  */
-  if (ss == gfc_ss_terminator)
-    {
-      gfc_ref *ref;
-
-      ref = e->ref;
-      while (ref)
-	{
-	  if (ref->type == REF_ARRAY
-	      && ref->u.ar.codimen > 0)
-	    break;
-
-	  ref = ref->next;
-	}
-
-      gcc_assert (ref != NULL);
-      if (ref->u.ar.type == AR_ELEMENT)
-	ref->u.ar.type = AR_SECTION;
-      ss = gfc_reverse_ss (gfc_walk_array_ref (ss, e, ref));
-    }
-
-  return ss;
-}
-
-
 static void
 trans_this_image (gfc_se * se, gfc_expr *expr)
 {
@@ -967,7 +930,6 @@ trans_this_image (gfc_se * se, gfc_expr *expr)
   tree type, desc, dim_arg, cond, tmp, m, loop_var, exit_label, min_var,
        lbound, ubound, extent, ml;
   gfc_se argse;
-  gfc_ss *ss;
   int rank, corank;
 
   /* The case -fcoarray=single is handled elsewhere.  */
@@ -991,10 +953,8 @@ trans_this_image (gfc_se * se, gfc_expr *expr)
 
   /* Obtain the descriptor of the COARRAY.  */
   gfc_init_se (&argse, NULL);
-  ss = walk_coarray (expr->value.function.actual->expr);
-  gcc_assert (ss != gfc_ss_terminator);
   argse.want_coarray = 1;
-  gfc_conv_expr_descriptor (&argse, expr->value.function.actual->expr, ss);
+  gfc_conv_expr_descriptor (&argse, expr->value.function.actual->expr);
   gfc_add_block_to_block (&se->pre, &argse.pre);
   gfc_add_block_to_block (&se->post, &argse.post);
   desc = argse.expr;
@@ -1186,7 +1146,6 @@ trans_image_index (gfc_se * se, gfc_expr *expr)
   tree num_images, cond, coindex, type, lbound, ubound, desc, subdesc,
        tmp, invalid_bound;
   gfc_se argse, subse;
-  gfc_ss *ss, *subss;
   int rank, corank, codim;
 
   type = gfc_get_int_type (gfc_default_integer_kind);
@@ -1195,20 +1154,15 @@ trans_image_index (gfc_se * se, gfc_expr *expr)
 
   /* Obtain the descriptor of the COARRAY.  */
   gfc_init_se (&argse, NULL);
-  ss = walk_coarray (expr->value.function.actual->expr);
-  gcc_assert (ss != gfc_ss_terminator);
   argse.want_coarray = 1;
-  gfc_conv_expr_descriptor (&argse, expr->value.function.actual->expr, ss);
+  gfc_conv_expr_descriptor (&argse, expr->value.function.actual->expr);
   gfc_add_block_to_block (&se->pre, &argse.pre);
   gfc_add_block_to_block (&se->post, &argse.post);
   desc = argse.expr;
 
   /* Obtain a handle to the SUB argument.  */
   gfc_init_se (&subse, NULL);
-  subss = gfc_walk_expr (expr->value.function.actual->next->expr);
-  gcc_assert (subss != gfc_ss_terminator);
-  gfc_conv_expr_descriptor (&subse, expr->value.function.actual->next->expr,
-			    subss);
+  gfc_conv_expr_descriptor (&subse, expr->value.function.actual->next->expr);
   gfc_add_block_to_block (&se->pre, &subse.pre);
   gfc_add_block_to_block (&se->post, &subse.post);
   subdesc = build_fold_indirect_ref_loc (input_location,
@@ -1319,15 +1273,12 @@ static void
 gfc_conv_intrinsic_rank (gfc_se *se, gfc_expr *expr)
 {
   gfc_se argse;
-  gfc_ss *ss;
 
-  ss = gfc_walk_expr (expr->value.function.actual->expr);
-  gcc_assert (ss != gfc_ss_terminator);
   gfc_init_se (&argse, NULL);
   argse.data_not_needed = 1;
   argse.descriptor_only = 1;
 
-  gfc_conv_expr_descriptor (&argse, expr->value.function.actual->expr, ss);
+  gfc_conv_expr_descriptor (&argse, expr->value.function.actual->expr);
   gfc_add_block_to_block (&se->pre, &argse.pre);
   gfc_add_block_to_block (&se->post, &argse.post);
 
@@ -1351,7 +1302,6 @@ gfc_conv_intrinsic_bound (gfc_se * se, gfc_expr * expr, int upper)
   tree ubound;
   tree lbound;
   gfc_se argse;
-  gfc_ss *ss;
   gfc_array_spec * as;
   bool assumed_rank_lb_one;
 
@@ -1386,10 +1336,8 @@ gfc_conv_intrinsic_bound (gfc_se * se, gfc_expr * expr, int upper)
 
   /* TODO: don't re-evaluate the descriptor on each iteration.  */
   /* Get a descriptor for the first parameter.  */
-  ss = gfc_walk_expr (arg->expr);
-  gcc_assert (ss != gfc_ss_terminator);
   gfc_init_se (&argse, NULL);
-  gfc_conv_expr_descriptor (&argse, arg->expr, ss);
+  gfc_conv_expr_descriptor (&argse, arg->expr);
   gfc_add_block_to_block (&se->pre, &argse.pre);
   gfc_add_block_to_block (&se->post, &argse.post);
 
@@ -1555,7 +1503,6 @@ conv_intrinsic_cobound (gfc_se * se, gfc_expr * expr)
   gfc_actual_arglist *arg;
   gfc_actual_arglist *arg2;
   gfc_se argse;
-  gfc_ss *ss;
   tree bound, resbound, resbound2, desc, cond, tmp;
   tree type;
   int corank;
@@ -1570,12 +1517,10 @@ conv_intrinsic_cobound (gfc_se * se, gfc_expr * expr)
   gcc_assert (arg->expr->expr_type == EXPR_VARIABLE);
   corank = gfc_get_corank (arg->expr);
 
-  ss = walk_coarray (arg->expr);
-  gcc_assert (ss != gfc_ss_terminator);
   gfc_init_se (&argse, NULL);
   argse.want_coarray = 1;
 
-  gfc_conv_expr_descriptor (&argse, arg->expr, ss);
+  gfc_conv_expr_descriptor (&argse, arg->expr);
   gfc_add_block_to_block (&se->pre, &argse.pre);
   gfc_add_block_to_block (&se->post, &argse.post);
   desc = argse.expr;
@@ -4594,7 +4539,6 @@ gfc_conv_intrinsic_len (gfc_se * se, gfc_expr * expr)
   gfc_symbol *sym;
   gfc_se argse;
   gfc_expr *arg;
-  gfc_ss *ss;
 
   gcc_assert (!se->ss);
 
@@ -4636,12 +4580,11 @@ gfc_conv_intrinsic_len (gfc_se * se, gfc_expr * expr)
 
     default:
       /* Anybody stupid enough to do this deserves inefficient code.  */
-      ss = gfc_walk_expr (arg);
       gfc_init_se (&argse, se);
-      if (ss == gfc_ss_terminator)
+      if (arg->rank == 0)
 	gfc_conv_expr (&argse, arg);
       else
-	gfc_conv_expr_descriptor (&argse, arg, ss);
+	gfc_conv_expr_descriptor (&argse, arg);
       gfc_add_block_to_block (&se->pre, &argse.pre);
       gfc_add_block_to_block (&se->post, &argse.post);
       len = argse.string_length;
@@ -5098,7 +5041,6 @@ gfc_conv_intrinsic_size (gfc_se * se, gfc_expr * expr)
   tree fncall0;
   tree fncall1;
   gfc_se argse;
-  gfc_ss *ss;
 
   gfc_init_se (&argse, NULL);
   actual = expr->value.function.actual;
@@ -5106,11 +5048,9 @@ gfc_conv_intrinsic_size (gfc_se * se, gfc_expr * expr)
   if (actual->expr->ts.type == BT_CLASS)
     gfc_add_class_array_ref (actual->expr);
 
-  ss = gfc_walk_expr (actual->expr);
-  gcc_assert (ss != gfc_ss_terminator);
   argse.want_pointer = 1;
   argse.data_not_needed = 1;
-  gfc_conv_expr_descriptor (&argse, actual->expr, ss);
+  gfc_conv_expr_descriptor (&argse, actual->expr);
   gfc_add_block_to_block (&se->pre, &argse.pre);
   gfc_add_block_to_block (&se->post, &argse.post);
   arg1 = gfc_evaluate_now (argse.expr, &se->pre);
@@ -5213,7 +5153,6 @@ static void
 gfc_conv_intrinsic_sizeof (gfc_se *se, gfc_expr *expr)
 {
   gfc_expr *arg;
-  gfc_ss *ss;
   gfc_se argse;
   tree source_bytes;
   tree type;
@@ -5225,9 +5164,8 @@ gfc_conv_intrinsic_sizeof (gfc_se *se, gfc_expr *expr)
   arg = expr->value.function.actual->expr;
 
   gfc_init_se (&argse, NULL);
-  ss = gfc_walk_expr (arg);
 
-  if (ss == gfc_ss_terminator)
+  if (arg->rank == 0)
     {
       if (arg->ts.type == BT_CLASS)
 	gfc_add_data_component (arg);
@@ -5248,7 +5186,7 @@ gfc_conv_intrinsic_sizeof (gfc_se *se, gfc_expr *expr)
     {
       source_bytes = gfc_create_var (gfc_array_index_type, "bytes");
       argse.want_pointer = 0;
-      gfc_conv_expr_descriptor (&argse, arg, ss);
+      gfc_conv_expr_descriptor (&argse, arg);
       type = gfc_get_element_type (TREE_TYPE (argse.expr));
 
       /* Obtain the argument's word length.  */
@@ -5285,7 +5223,6 @@ static void
 gfc_conv_intrinsic_storage_size (gfc_se *se, gfc_expr *expr)
 {
   gfc_expr *arg;
-  gfc_ss *ss;
   gfc_se argse,eight;
   tree type, result_type, tmp;
 
@@ -5294,10 +5231,9 @@ gfc_conv_intrinsic_storage_size (gfc_se *se, gfc_expr *expr)
   gfc_conv_expr (&eight, gfc_get_int_expr (expr->ts.kind, NULL, 8));
   
   gfc_init_se (&argse, NULL);
-  ss = gfc_walk_expr (arg);
   result_type = gfc_get_int_type (expr->ts.kind);
 
-  if (ss == gfc_ss_terminator)
+  if (arg->rank == 0)
     {
       if (arg->ts.type == BT_CLASS)
       {
@@ -5315,7 +5251,7 @@ gfc_conv_intrinsic_storage_size (gfc_se *se, gfc_expr *expr)
   else
     {
       argse.want_pointer = 0;
-      gfc_conv_expr_descriptor (&argse, arg, ss);
+      gfc_conv_expr_descriptor (&argse, arg);
       type = gfc_get_element_type (TREE_TYPE (argse.expr));
     }
     
@@ -5409,7 +5345,6 @@ gfc_conv_intrinsic_transfer (gfc_se * se, gfc_expr * expr)
   tree stmt;
   gfc_actual_arglist *arg;
   gfc_se argse;
-  gfc_ss *ss;
   gfc_array_info *info;
   stmtblock_t block;
   int n;
@@ -5435,12 +5370,11 @@ gfc_conv_intrinsic_transfer (gfc_se * se, gfc_expr * expr)
     arg->expr->value.function.name = "__transfer_in_transfer";
 
   gfc_init_se (&argse, NULL);
-  ss = gfc_walk_expr (arg->expr);
 
   source_bytes = gfc_create_var (gfc_array_index_type, NULL);
 
   /* Obtain the pointer to source and the length of source in bytes.  */
-  if (ss == gfc_ss_terminator)
+  if (arg->expr->rank == 0)
     {
       gfc_conv_expr_reference (&argse, arg->expr);
       source = argse.expr;
@@ -5459,7 +5393,7 @@ gfc_conv_intrinsic_transfer (gfc_se * se, gfc_expr * expr)
   else
     {
       argse.want_pointer = 0;
-      gfc_conv_expr_descriptor (&argse, arg->expr, ss);
+      gfc_conv_expr_descriptor (&argse, arg->expr);
       source = gfc_conv_descriptor_data_get (argse.expr);
       source_type = gfc_get_element_type (TREE_TYPE (argse.expr));
 
@@ -5533,11 +5467,10 @@ gfc_conv_intrinsic_transfer (gfc_se * se, gfc_expr * expr)
   arg = arg->next;
 
   gfc_init_se (&argse, NULL);
-  ss = gfc_walk_expr (arg->expr);
 
   scalar_mold = arg->expr->rank == 0;
 
-  if (ss == gfc_ss_terminator)
+  if (arg->expr->rank == 0)
     {
       gfc_conv_expr_reference (&argse, arg->expr);
       mold_type = TREE_TYPE (build_fold_indirect_ref_loc (input_location,
@@ -5547,7 +5480,7 @@ gfc_conv_intrinsic_transfer (gfc_se * se, gfc_expr * expr)
     {
       gfc_init_se (&argse, NULL);
       argse.want_pointer = 0;
-      gfc_conv_expr_descriptor (&argse, arg->expr, ss);
+      gfc_conv_expr_descriptor (&argse, arg->expr);
       mold_type = gfc_get_element_type (TREE_TYPE (argse.expr));
     }
 
@@ -5740,7 +5673,6 @@ gfc_conv_allocated (gfc_se *se, gfc_expr *expr)
 {
   gfc_actual_arglist *arg1;
   gfc_se arg1se;
-  gfc_ss *ss1;
   tree tmp;
 
   gfc_init_se (&arg1se, NULL);
@@ -5757,9 +5689,7 @@ gfc_conv_allocated (gfc_se *se, gfc_expr *expr)
 	gfc_add_data_component (arg1->expr);
     }
 
-  ss1 = gfc_walk_expr (arg1->expr);
-
-  if (ss1 == gfc_ss_terminator)
+  if (arg1->expr->rank == 0)
     {
       /* Allocatable scalar.  */
       arg1se.want_pointer = 1;
@@ -5770,7 +5700,7 @@ gfc_conv_allocated (gfc_se *se, gfc_expr *expr)
     {
       /* Allocatable array.  */
       arg1se.descriptor_only = 1;
-      gfc_conv_expr_descriptor (&arg1se, arg1->expr, ss1);
+      gfc_conv_expr_descriptor (&arg1se, arg1->expr);
       tmp = gfc_conv_descriptor_data_get (arg1se.expr);
     }
 
@@ -5797,7 +5727,8 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
   tree tmp;
   tree nonzero_charlen;
   tree nonzero_arraylen;
-  gfc_ss *ss1, *ss2;
+  gfc_ss *ss;
+  bool scalar;
 
   gfc_init_se (&arg1se, NULL);
   gfc_init_se (&arg2se, NULL);
@@ -5805,12 +5736,18 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
   if (arg1->expr->ts.type == BT_CLASS)
     gfc_add_data_component (arg1->expr);
   arg2 = arg1->next;
-  ss1 = gfc_walk_expr (arg1->expr);
+
+  /* Check whether the expression is a scalar or not; we cannot use
+     arg1->expr->rank as it can be nonzero for proc pointers.  */
+  ss = gfc_walk_expr (arg1->expr);
+  scalar = ss == gfc_ss_terminator;
+  if (!scalar)
+    gfc_free_ss_chain (ss);
 
   if (!arg2->expr)
     {
       /* No optional target.  */
-      if (ss1 == gfc_ss_terminator)
+      if (scalar)
         {
 	  /* A pointer to a scalar.  */
 	  arg1se.want_pointer = 1;
@@ -5824,7 +5761,7 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
       else
         {
           /* A pointer to an array.  */
-          gfc_conv_expr_descriptor (&arg1se, arg1->expr, ss1);
+          gfc_conv_expr_descriptor (&arg1se, arg1->expr);
           tmp2 = gfc_conv_descriptor_data_get (arg1se.expr);
         }
       gfc_add_block_to_block (&se->pre, &arg1se.pre);
@@ -5838,7 +5775,6 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
       /* An optional target.  */
       if (arg2->expr->ts.type == BT_CLASS)
 	gfc_add_data_component (arg2->expr);
-      ss2 = gfc_walk_expr (arg2->expr);
 
       nonzero_charlen = NULL_TREE;
       if (arg1->expr->ts.type == BT_CHARACTER)
@@ -5846,11 +5782,9 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
 					   boolean_type_node,
 					   arg1->expr->ts.u.cl->backend_decl,
 					   integer_zero_node);
-
-      if (ss1 == gfc_ss_terminator)
+      if (scalar)
         {
 	  /* A pointer to a scalar.  */
-	  gcc_assert (ss2 == gfc_ss_terminator);
 	  arg1se.want_pointer = 1;
 	  gfc_conv_expr (&arg1se, arg1->expr);
 	  if (arg1->expr->symtree->n.sym->attr.proc_pointer
@@ -5893,12 +5827,11 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
 					      build_int_cst (TREE_TYPE (tmp), 0));
 
           /* A pointer to an array, call library function _gfor_associated.  */
-          gcc_assert (ss2 != gfc_ss_terminator);
           arg1se.want_pointer = 1;
-          gfc_conv_expr_descriptor (&arg1se, arg1->expr, ss1);
+          gfc_conv_expr_descriptor (&arg1se, arg1->expr);
 
           arg2se.want_pointer = 1;
-          gfc_conv_expr_descriptor (&arg2se, arg2->expr, ss2);
+          gfc_conv_expr_descriptor (&arg2se, arg2->expr);
           gfc_add_block_to_block (&se->pre, &arg2se.pre);
           gfc_add_block_to_block (&se->post, &arg2se.post);
           se->expr = build_call_expr_loc (input_location,
@@ -6253,16 +6186,14 @@ gfc_conv_intrinsic_loc (gfc_se * se, gfc_expr * expr)
 {
   tree temp_var;
   gfc_expr *arg_expr;
-  gfc_ss *ss;
 
   gcc_assert (!se->ss);
 
   arg_expr = expr->value.function.actual->expr;
-  ss = gfc_walk_expr (arg_expr);
-  if (ss == gfc_ss_terminator)
+  if (arg_expr->rank == 0)
     gfc_conv_expr_reference (se, arg_expr);
   else
-    gfc_conv_array_parameter (se, arg_expr, ss, true, NULL, NULL, NULL);
+    gfc_conv_array_parameter (se, arg_expr, true, NULL, NULL, NULL);
   se->expr= convert (gfc_get_int_type (gfc_index_integer_kind), se->expr);
    
   /* Create a temporary variable for loc return value.  Without this, 
@@ -7301,7 +7232,6 @@ conv_intrinsic_move_alloc (gfc_code *code)
   gfc_expr *from_expr, *to_expr;
   gfc_expr *to_expr2, *from_expr2 = NULL;
   gfc_se from_se, to_se;
-  gfc_ss *from_ss, *to_ss;
   tree tmp;
   bool coarray;
 
@@ -7427,19 +7357,15 @@ conv_intrinsic_move_alloc (gfc_code *code)
 	}
     }
 
+
   /* Deallocate "to".  */
-  if (from_expr->rank != 0)
+  if (from_expr->rank == 0)
     {
-      to_ss = gfc_walk_expr (to_expr);
-      from_ss = gfc_walk_expr (from_expr);
+      to_se.want_coarray = 1;
+      from_se.want_coarray = 1;
     }
-  else
-    {
-      to_ss = walk_coarray (to_expr);
-      from_ss = walk_coarray (from_expr);
-    }
-  gfc_conv_expr_descriptor (&to_se, to_expr, to_ss);
-  gfc_conv_expr_descriptor (&from_se, from_expr, from_ss);
+  gfc_conv_expr_descriptor (&to_se, to_expr);
+  gfc_conv_expr_descriptor (&from_se, from_expr);
 
   /* For coarrays, call SYNC ALL if TO is already deallocated as MOVE_ALLOC
      is an image control "statement", cf. IR F08/0040 in 12-006A.  */

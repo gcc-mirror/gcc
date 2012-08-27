@@ -1022,10 +1022,7 @@ reg_scan_mark_refs (rtx x, rtx insn)
   switch (code)
     {
     case CONST:
-    case CONST_INT:
-    case CONST_DOUBLE:
-    case CONST_FIXED:
-    case CONST_VECTOR:
+    CASE_CONST_ANY:
     case CC0:
     case PC:
     case SYMBOL_REF:

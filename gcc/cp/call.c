@@ -451,7 +451,6 @@ enum rejection_reason_code {
   rr_arg_conversion,
   rr_bad_arg_conversion,
   rr_template_unification,
-  rr_template_instantiation,
   rr_invalid_copy
 };
 
@@ -485,7 +484,7 @@ struct rejection_reason {
     struct {
       tree tmpl;
       tree explicit_targs;
-      tree targs;
+      int num_targs;
       const tree *args;
       unsigned int nargs;
       tree return_type;
@@ -688,7 +687,7 @@ template_unification_rejection (tree tmpl, tree explicit_targs, tree targs,
   struct rejection_reason *r = alloc_rejection (rr_template_unification);
   r->u.template_unification.tmpl = tmpl;
   r->u.template_unification.explicit_targs = explicit_targs;
-  r->u.template_unification.targs = targs;
+  r->u.template_unification.num_targs = TREE_VEC_LENGTH (targs);
   /* Copy args to our own storage.  */
   memcpy (args1, args, args_n_bytes);
   r->u.template_unification.args = args1;
@@ -703,15 +702,6 @@ static struct rejection_reason *
 template_unification_error_rejection (void)
 {
   return alloc_rejection (rr_template_unification);
-}
-
-static struct rejection_reason *
-template_instantiation_rejection (tree tmpl, tree targs)
-{
-  struct rejection_reason *r = alloc_rejection (rr_template_instantiation);
-  r->u.template_instantiation.tmpl = tmpl;
-  r->u.template_instantiation.targs = targs;
-  return r;
 }
 
 static struct rejection_reason *
@@ -2873,7 +2863,6 @@ add_template_candidate_real (struct z_candidate **candidates, tree tmpl,
   unsigned int ia, ix;
   tree arg;
   struct z_candidate *cand;
-  int i;
   tree fn;
   struct rejection_reason *reason = NULL;
   int errs;
@@ -2920,12 +2909,12 @@ add_template_candidate_real (struct z_candidate **candidates, tree tmpl,
   gcc_assert (ia == nargs_without_in_chrg);
 
   errs = errorcount+sorrycount;
-  i = fn_type_unification (tmpl, explicit_targs, targs,
-			   args_without_in_chrg,
-			   nargs_without_in_chrg,
-			   return_type, strict, flags, false);
+  fn = fn_type_unification (tmpl, explicit_targs, targs,
+			    args_without_in_chrg,
+			    nargs_without_in_chrg,
+			    return_type, strict, flags, false);
 
-  if (i != 0)
+  if (fn == error_mark_node)
     {
       /* Don't repeat unification later if it already resulted in errors.  */
       if (errorcount+sorrycount == errs)
@@ -2935,13 +2924,6 @@ add_template_candidate_real (struct z_candidate **candidates, tree tmpl,
 						 return_type, strict, flags);
       else
 	reason = template_unification_error_rejection ();
-      goto fail;
-    }
-
-  fn = instantiate_template (tmpl, targs, tf_none);
-  if (fn == error_mark_node)
-    {
-      reason = template_instantiation_rejection (tmpl, targs);
       goto fail;
     }
 
@@ -3239,19 +3221,14 @@ print_z_candidate (location_t loc, const char *msgstr,
 	  inform (cloc, "  template argument deduction/substitution failed:");
 	  fn_type_unification (r->u.template_unification.tmpl,
 			       r->u.template_unification.explicit_targs,
-			       r->u.template_unification.targs,
+			       (make_tree_vec
+				(r->u.template_unification.num_targs)),
 			       r->u.template_unification.args,
 			       r->u.template_unification.nargs,
 			       r->u.template_unification.return_type,
 			       r->u.template_unification.strict,
 			       r->u.template_unification.flags,
 			       true);
-	  break;
-	case rr_template_instantiation:
-	  /* Re-run template instantiation with diagnostics.  */
-	  instantiate_template (r->u.template_instantiation.tmpl,
-				r->u.template_instantiation.targs,
-				tf_warning_or_error);
 	  break;
 	case rr_invalid_copy:
 	  inform (cloc,
@@ -3943,15 +3920,19 @@ build_new_function_call (tree fn, VEC(tree,gc) **args, bool koenig_p,
    total number of bytes required by the allocation, and is updated if
    that is changed here.  *COOKIE_SIZE is non-NULL if a cookie should
    be used.  If this function determines that no cookie should be
-   used, after all, *COOKIE_SIZE is set to NULL_TREE.  If FN is
-   non-NULL, it will be set, upon return, to the allocation function
-   called.  */
+   used, after all, *COOKIE_SIZE is set to NULL_TREE.  If SIZE_CHECK
+   is not NULL_TREE, it is evaluated before calculating the final
+   array size, and if it fails, the array size is replaced with
+   (size_t)-1 (usually triggering a std::bad_alloc exception).  If FN
+   is non-NULL, it will be set, upon return, to the allocation
+   function called.  */
 
 tree
 build_operator_new_call (tree fnname, VEC(tree,gc) **args,
-			 tree *size, tree *cookie_size,
+			 tree *size, tree *cookie_size, tree size_check,
 			 tree *fn, tsubst_flags_t complain)
 {
+  tree original_size = *size;
   tree fns;
   struct z_candidate *candidates;
   struct z_candidate *cand;
@@ -3959,6 +3940,10 @@ build_operator_new_call (tree fnname, VEC(tree,gc) **args,
 
   if (fn)
     *fn = NULL_TREE;
+  /* Set to (size_t)-1 if the size check fails.  */
+  if (size_check != NULL_TREE)
+    *size = fold_build3 (COND_EXPR, sizetype, size_check,
+			 original_size, TYPE_MAX_VALUE (sizetype));
   VEC_safe_insert (tree, gc, *args, 0, *size);
   *args = resolve_args (*args, complain);
   if (*args == NULL)
@@ -4022,7 +4007,11 @@ build_operator_new_call (tree fnname, VEC(tree,gc) **args,
        if (use_cookie)
 	 {
 	   /* Update the total size.  */
-	   *size = size_binop (PLUS_EXPR, *size, *cookie_size);
+	   *size = size_binop (PLUS_EXPR, original_size, *cookie_size);
+	   /* Set to (size_t)-1 if the size check fails.  */
+	   gcc_assert (size_check != NULL_TREE);
+	   *size = fold_build3 (COND_EXPR, sizetype, size_check,
+				*size, TYPE_MAX_VALUE (sizetype));
 	   /* Update the argument list to reflect the adjusted size.  */
 	   VEC_replace (tree, *args, 0, *size);
 	 }
@@ -7525,6 +7514,7 @@ build_new_method_call_1 (tree instance, tree fns, VEC(tree,gc) **args,
 	       build_min (COMPONENT_REF, TREE_TYPE (CALL_EXPR_FN (call)),
 			  orig_instance, orig_fns, NULL_TREE),
 	       orig_args));
+      SET_EXPR_LOCATION (call, input_location);
       call = convert_from_reference (call);
       if (cast_to_void)
 	call = build_nop (void_type_node, call);

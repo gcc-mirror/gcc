@@ -1958,6 +1958,43 @@ struct gimple_opt_pass pass_optimize_bswap =
  }
 };
 
+/* Return true if stmt is a type conversion operation that can be stripped
+   when used in a widening multiply operation.  */
+static bool
+widening_mult_conversion_strippable_p (tree result_type, gimple stmt)
+{
+  enum tree_code rhs_code = gimple_assign_rhs_code (stmt);
+
+  if (TREE_CODE (result_type) == INTEGER_TYPE)
+    {
+      tree op_type;
+      tree inner_op_type;
+
+      if (!CONVERT_EXPR_CODE_P (rhs_code))
+	return false;
+
+      op_type = TREE_TYPE (gimple_assign_lhs (stmt));
+
+      /* If the type of OP has the same precision as the result, then
+	 we can strip this conversion.  The multiply operation will be
+	 selected to create the correct extension as a by-product.  */
+      if (TYPE_PRECISION (result_type) == TYPE_PRECISION (op_type))
+	return true;
+
+      /* We can also strip a conversion if it preserves the signed-ness of
+	 the operation and doesn't narrow the range.  */
+      inner_op_type = TREE_TYPE (gimple_assign_rhs1 (stmt));
+
+      if (TYPE_UNSIGNED (op_type) == TYPE_UNSIGNED (inner_op_type)
+	  && TYPE_PRECISION (op_type) > TYPE_PRECISION (inner_op_type))
+	return true;
+
+      return false;
+    }
+
+  return rhs_code == FIXED_CONVERT_EXPR;
+}
+
 /* Return true if RHS is a suitable operand for a widening multiplication,
    assuming a target type of TYPE.
    There are two cases:
@@ -1974,17 +2011,13 @@ is_widening_mult_rhs_p (tree type, tree rhs, tree *type_out,
 {
   gimple stmt;
   tree type1, rhs1;
-  enum tree_code rhs_code;
 
   if (TREE_CODE (rhs) == SSA_NAME)
     {
       stmt = SSA_NAME_DEF_STMT (rhs);
       if (is_gimple_assign (stmt))
 	{
-	  rhs_code = gimple_assign_rhs_code (stmt);
-	  if (TREE_CODE (type) == INTEGER_TYPE
-	      ? !CONVERT_EXPR_CODE_P (rhs_code)
-	      : rhs_code != FIXED_CONVERT_EXPR)
+	  if (! widening_mult_conversion_strippable_p (type, stmt))
 	    rhs1 = rhs;
 	  else
 	    {

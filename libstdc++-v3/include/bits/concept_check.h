@@ -56,12 +56,12 @@
 
 // Note that the obvious and elegant approach of
 //
-//#define glibcxx_function_requires(C) boost::function_requires< boost::C >()
+//#define glibcxx_function_requires(C) debug::function_requires< debug::C >()
 //
 // won't work due to concept templates with more than one parameter, e.g.,
 // BinaryPredicateConcept.  The preprocessor tries to split things up on
 // the commas in the template argument list.  We can't use an inner pair of
-// parenthesis to hide the commas, because "boost::(Temp<Foo,Bar>)" isn't
+// parenthesis to hide the commas, because "debug::(Temp<Foo,Bar>)" isn't
 // a valid instantiation pattern.  Thus, we steal a feature from C99.
 
 #define __glibcxx_function_requires(...)                                 \

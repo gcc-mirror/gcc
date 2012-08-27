@@ -1,11 +1,6 @@
-/* { dg-do run } */
-/* { dg-options "-std=gnu99 -O0" } */
-
-/* C99 6.3 Conversions.
-
-   Check conversions involving fixed-point.  */
-
-extern void abort (void);
+/* Check conversions involving fixed-point.
+ * Break up use-site into into manageable parts so that even embedded
+ * targets with restrictive resources can run them.  */
 
 /* Fixed-point to fixed-point.  */
 #define CONV(TYPE1,POSTFIX1,TYPE2,POSTFIX2) \
@@ -131,7 +126,7 @@ extern void abort (void);
   CONV(_Sat TYPE, POSTFIX, unsigned _Accum, uk) \
   CONV(_Sat TYPE, POSTFIX, unsigned long _Accum, ulk) \
   CONV(_Sat TYPE, POSTFIX, unsigned long long _Accum, ullk) \
-  CONV(TYPE, POSTFIX, _Sat short _Fract, hr) \
+  CONV(TYPE, POSTFIX, _Sat short _Fract, hr)                \
   CONV(TYPE, POSTFIX, _Sat _Fract, r) \
   CONV(TYPE, POSTFIX, _Sat long _Fract, lr) \
   CONV(TYPE, POSTFIX, _Sat long long _Fract, llr) \
@@ -147,7 +142,7 @@ extern void abort (void);
   CONV(TYPE, POSTFIX, _Sat unsigned _Accum, uk) \
   CONV(TYPE, POSTFIX, _Sat unsigned long _Accum, ulk) \
   CONV(TYPE, POSTFIX, _Sat unsigned long long _Accum, ullk) \
-  CONV_INT(TYPE, POSTFIX, signed char) \
+  CONV_INT(TYPE, POSTFIX, signed char)                      \
   CONV_INT(TYPE, POSTFIX, short) \
   CONV_INT(TYPE, POSTFIX, int) \
   CONV_INT(TYPE, POSTFIX, long) \
@@ -166,8 +161,10 @@ extern void abort (void);
   CONV_INT(_Sat TYPE, POSTFIX, unsigned short) \
   CONV_INT(_Sat TYPE, POSTFIX, unsigned int) \
   CONV_INT(_Sat TYPE, POSTFIX, unsigned long) \
-  CONV_INT(_Sat TYPE, POSTFIX, unsigned long long) \
-  CONV_FLOAT(TYPE, POSTFIX, float) \
+  CONV_INT(_Sat TYPE, POSTFIX, unsigned long long)
+
+#define ALL_CONV_FLOAT(TYPE,POSTFIX) \
+  CONV_FLOAT(TYPE, POSTFIX, float)    \
   CONV_FLOAT(TYPE, POSTFIX, double) \
   CONV_FLOAT(_Sat TYPE, POSTFIX, float) \
   CONV_FLOAT(_Sat TYPE, POSTFIX, double)
@@ -360,73 +357,3 @@ extern void abort (void);
   CONV2(TYPE, -1.0, _Sat unsigned long _Fract, 0.0ulr) \
   CONV2(TYPE, 1.0, _Sat unsigned long long _Fract, 1.0ullr) \
   CONV2(TYPE, -1.0, _Sat unsigned long long _Fract, 0.0ullr)
-
-int main ()
-{
-  ALL_CONV (short _Fract, hr);
-  ALL_CONV (_Fract, r);
-  ALL_CONV (long _Fract, lr);
-  ALL_CONV (long long _Fract, llr);
-  ALL_CONV (unsigned short _Fract, uhr);
-  ALL_CONV (unsigned _Fract, ur);
-  ALL_CONV (unsigned long _Fract, ulr);
-  ALL_CONV (unsigned long long _Fract, ullr);
-  ALL_CONV (short _Accum, hk);
-  ALL_CONV (_Accum, k);
-  ALL_CONV (long _Accum, lk);
-  ALL_CONV (long long _Accum, llk);
-  ALL_CONV (unsigned short _Accum, uhk);
-  ALL_CONV (unsigned _Accum, uk);
-  ALL_CONV (unsigned long _Accum, ulk);
-  ALL_CONV (unsigned long long _Accum, ullk);
-
-  ALL_ACCUM_CONV (short _Accum, hk);
-  ALL_ACCUM_CONV (_Accum, k);
-  ALL_ACCUM_CONV (long _Accum, lk);
-  ALL_ACCUM_CONV (long long _Accum, llk);
-  ALL_ACCUM_CONV (unsigned short _Accum, uhk);
-  ALL_ACCUM_CONV (unsigned _Accum, uk);
-  ALL_ACCUM_CONV (unsigned long _Accum, ulk);
-  ALL_ACCUM_CONV (unsigned long long _Accum, ullk);
-
-  NEG_CONV (short _Fract, hr);
-  NEG_CONV (_Fract, r);
-  NEG_CONV (long _Fract, lr);
-  NEG_CONV (long long _Fract, llr);
-  NEG_CONV (short _Accum, hk);
-  NEG_CONV (_Accum, k);
-  NEG_CONV (long _Accum, lk);
-  NEG_CONV (long long _Accum, llk);
-
-  SAT_CONV1 (short _Accum, hk);
-  SAT_CONV1 (_Accum, k);
-  SAT_CONV1 (long _Accum, lk);
-  SAT_CONV1 (long long _Accum, llk);
-
-  SAT_CONV2 (unsigned short _Accum, uhk);
-  SAT_CONV2 (unsigned _Accum, uk);
-  SAT_CONV2 (unsigned long _Accum, ulk);
-  SAT_CONV2 (unsigned long long _Accum, ullk);
-
-  SAT_CONV3 (short _Fract, hr);
-  SAT_CONV3 (_Fract, r);
-  SAT_CONV3 (long _Fract, lr);
-  SAT_CONV3 (long long _Fract, llr);
-
-  SAT_CONV4 (signed char);
-  SAT_CONV4 (short);
-  SAT_CONV4 (int);
-  SAT_CONV4 (long);
-  SAT_CONV4 (long long);
-
-  SAT_CONV5 (unsigned char);
-  SAT_CONV5 (unsigned short);
-  SAT_CONV5 (unsigned int);
-  SAT_CONV5 (unsigned long);
-  SAT_CONV5 (unsigned long long);
-
-  SAT_CONV6 (float);
-  SAT_CONV6 (double);
-
-  return 0;
-}

@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-options "-Wall -fno-range-check -Wno-compare-reals" }
+! { dg-options "-Wall -fno-range-check" }
 !
 ! PR fortran/36158 - Transformational BESSEL_JN/YN
 ! PR fortran/33197 - F2008 math functions

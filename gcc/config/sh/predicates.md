@@ -825,6 +825,8 @@
   return arith_reg_operand (op, mode);
 })
 
+;; Predicates for matching operands that are constant shift
+;; amounts 1, 2, 8, 16.
 (define_predicate "p27_shift_count_operand"
   (and (match_code "const_int")
        (match_test "satisfies_constraint_P27 (op)")))
@@ -832,6 +834,19 @@
 (define_predicate "not_p27_shift_count_operand"
   (and (match_code "const_int")
        (match_test "! satisfies_constraint_P27 (op)")))
+
+;; For right shifts the constant 1 is a special case because the shlr insn
+;; clobbers the T_REG and is handled by the T_REG clobbering version of the
+;; insn, which is also used for non-P27 shift sequences.
+(define_predicate "p27_rshift_count_operand"
+  (and (match_code "const_int")
+       (match_test "satisfies_constraint_P27 (op)")
+       (match_test "! satisfies_constraint_M (op)")))
+
+(define_predicate "not_p27_rshift_count_operand"
+  (and (match_code "const_int")
+       (ior (match_test "! satisfies_constraint_P27 (op)")
+	    (match_test "satisfies_constraint_M (op)"))))
 
 ;; TODO: Add a comment here.
 

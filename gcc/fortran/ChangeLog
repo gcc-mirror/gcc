@@ -1,3 +1,68 @@
+2012-08-27  Tobias Burnus  <burnus@net-b.de>
+
+	* options.c (set_Wall): Don't set for -Wcompare-reals.
+	* invoke.texi (-Wall, -Wcompare-reals): -Wall no longer
+	implies -Wcompare-reals.
+
+2012-08-24  Simon Baldwin  <simonb@google.com>
+
+	* lang.opt (-cpp=): Mark flag NoDWARFRecord.
+
+2012-08-23  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54350
+	* trans-array.c (free_ss_info): Free data.array.subscript.
+	(gfc_free_ss): No longer free data.array.subscript.
+	(walk_coarray): New function, moved from trans-intrinsic.c
+	(gfc_conv_expr_descriptor): Walk array descriptor instead
+	of taking passed "ss".
+	(get_array_ctor_all_strlen, gfc_add_loop_ss_code,
+	gfc_conv_array_parameter): Update call and cleanup ss handling.
+	* trans-array.h (gfc_conv_expr_descriptor,
+	gfc_conv_array_parameter): Update prototype.
+	* trans-expr.c (gfc_conv_derived_to_class,
+	conv_isocbinding_procedure, gfc_conv_procedure_call,
+	gfc_trans_alloc_subarray_assign, gfc_trans_subcomponent_assign,
+	gfc_trans_pointer_assignment, gfc_trans_arrayfunc_assign): Update
+	call to gfc_conv_expr_descriptor and gfc_conv_array_parameter, and
+	clean up.
+	* trans-intrinsic.c (walk_coarray): Moved to trans-array.c
+	(trans_this_image, trans_image_index, gfc_conv_intrinsic_rank
+	gfc_conv_intrinsic_bound, gfc_conv_intrinsic_cobound,
+	gfc_conv_intrinsic_len, gfc_conv_intrinsic_size,
+	gfc_conv_intrinsic_sizeof, gfc_conv_intrinsic_storage_size,
+	gfc_conv_intrinsic_transfer, gfc_conv_allocated,
+	gfc_conv_associated, gfc_conv_intrinsic_loc,
+	conv_intrinsic_move_alloc): Update calls.
+	* trans-io.c (gfc_convert_array_to_string, set_internal_unit,
+	gfc_trans_transfer): Ditto.
+	* trans-stmt.c (gfc_conv_elemental_dependencies,
+	gfc_trans_sync, trans_associate_var,
+	gfc_trans_pointer_assign_need_temp): Ditto.
+
+2012-08-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* trans-decl.c (trans_function_start, generate_coarray_init,
+	create_main_function, gfc_generate_constructors): Call
+	allocate_struct_function instead of init_function_start.
+
+2012-08-22  Tobias Burnus  <burnus@net-b.de>
+
+	* trans-expr.c (gfc_copy_class_to_class,
+	gfc_trans_arrayfunc_assign): Free loop and ss data.
+	* trans-intrinsic.c (gfc_trans_arrayfunc_assign): Free ss data.
+
+2012-08-21  Tobias Burnus  <burnus@net-b.de>
+
+	* parse.c (parse_contained): Include EXEC_END_PROCEDURE
+	in ns->code to make sure the gfc_code is freed.
+
+2012-08-20  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54301
+	* expr.c (gfc_check_pointer_assign): Warn when a pointer,
+	which is a function result, might outlive its target.
+
 2012-08-20  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/54301

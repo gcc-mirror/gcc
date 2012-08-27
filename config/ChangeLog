@@ -1,3 +1,7 @@
+2012-08-26  Art Haas <ahaas@impactweather.com>
+
+	* cloog.m4 (CLOOG_INIT_FLAGS): Use = instead of == in test.
+
 2012-07-04  Tristan Gingold  <gingold@adacore.com>
 
 	* isl.m4 (ISL_CHECK_VERSION): Set to yes if cross-compiling.
@@ -29,6 +33,10 @@
 	* mt-sde: Fix typos.
 	* stdint.m4: Fix typos.
 	* tcl.m4: Fix typos.
+
+2012-05-03  Olivier Hainque  <hainque@adacore.com>
+
+	* mh-ppc-aix (LDFLAGS): Quote $(CC).
 
 2012-04-03  Tristan Gingold  <gingold@adacore.com>
 

@@ -693,9 +693,9 @@ extern struct edge_list *pre_edge_rev_lcm (int, sbitmap *,
 extern void compute_available (sbitmap *, sbitmap *, sbitmap *, sbitmap *);
 
 /* In predict.c */
-extern bool maybe_hot_bb_p (const_basic_block);
+extern bool maybe_hot_bb_p (struct function *, const_basic_block);
 extern bool maybe_hot_edge_p (edge);
-extern bool probably_never_executed_bb_p (const_basic_block);
+extern bool probably_never_executed_bb_p (struct function *, const_basic_block);
 extern bool optimize_bb_for_size_p (const_basic_block);
 extern bool optimize_bb_for_speed_p (const_basic_block);
 extern bool optimize_edge_for_size_p (edge);

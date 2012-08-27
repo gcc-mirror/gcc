@@ -1554,7 +1554,7 @@ simplify_builtin_call (gimple_stmt_iterator *gsi_p, tree callee2)
 	  else
 	    src_buf[0] = tree_low_cst (src1, 0);
 	  memset (src_buf + tree_low_cst (diff, 1),
-		  tree_low_cst (val2, 1), tree_low_cst (len2, 1));
+		  tree_low_cst (val2, 0), tree_low_cst (len2, 1));
 	  src_buf[src_len] = '\0';
 	  /* Neither builtin_strncpy_read_str nor builtin_memcpy_read_str
 	     handle embedded '\0's.  */
@@ -2577,6 +2577,95 @@ combine_conversions (gimple_stmt_iterator *gsi)
   return 0;
 }
 
+/* Determine whether applying the 2 permutations (mask1 then mask2)
+   gives back one of the input.  */
+
+static int
+is_combined_permutation_identity (tree mask1, tree mask2)
+{
+  tree mask;
+  unsigned int nelts, i, j;
+  bool maybe_identity1 = true;
+  bool maybe_identity2 = true;
+
+  gcc_checking_assert (TREE_CODE (mask1) == VECTOR_CST
+		       && TREE_CODE (mask2) == VECTOR_CST);
+  mask = fold_ternary (VEC_PERM_EXPR, TREE_TYPE (mask1), mask1, mask1, mask2);
+  gcc_assert (TREE_CODE (mask) == VECTOR_CST);
+
+  nelts = VECTOR_CST_NELTS (mask);
+  for (i = 0; i < nelts; i++)
+    {
+      tree val = VECTOR_CST_ELT (mask, i);
+      gcc_assert (TREE_CODE (val) == INTEGER_CST);
+      j = TREE_INT_CST_LOW (val) & (2 * nelts - 1);
+      if (j == i)
+	maybe_identity2 = false;
+      else if (j == i + nelts)
+	maybe_identity1 = false;
+      else
+	return 0;
+    }
+  return maybe_identity1 ? 1 : maybe_identity2 ? 2 : 0;
+}
+
+/* Combine two shuffles in a row.  Returns 1 if there were any changes
+   made, 2 if cfg-cleanup needs to run.  Else it returns 0.  */
+ 
+static int
+simplify_permutation (gimple_stmt_iterator *gsi)
+{
+  gimple stmt = gsi_stmt (*gsi);
+  gimple def_stmt;
+  tree op0, op1, op2, op3;
+  enum tree_code code = gimple_assign_rhs_code (stmt);
+  enum tree_code code2;
+
+  gcc_checking_assert (code == VEC_PERM_EXPR);
+
+  op0 = gimple_assign_rhs1 (stmt);
+  op1 = gimple_assign_rhs2 (stmt);
+  op2 = gimple_assign_rhs3 (stmt);
+
+  if (TREE_CODE (op0) != SSA_NAME)
+    return 0;
+
+  if (TREE_CODE (op2) != VECTOR_CST)
+    return 0;
+
+  if (op0 != op1)
+    return 0;
+
+  def_stmt = SSA_NAME_DEF_STMT (op0);
+  if (!def_stmt || !is_gimple_assign (def_stmt)
+      || !can_propagate_from (def_stmt))
+    return 0;
+
+  code2 = gimple_assign_rhs_code (def_stmt);
+
+  /* Two consecutive shuffles.  */
+  if (code2 == VEC_PERM_EXPR)
+    {
+      tree orig;
+      int ident;
+      op3 = gimple_assign_rhs3 (def_stmt);
+      if (TREE_CODE (op3) != VECTOR_CST)
+	return 0;
+      ident = is_combined_permutation_identity (op3, op2);
+      if (!ident)
+	return 0;
+      orig = (ident == 1) ? gimple_assign_rhs1 (def_stmt)
+			  : gimple_assign_rhs2 (def_stmt);
+      gimple_assign_set_rhs1 (stmt, unshare_expr (orig));
+      gimple_assign_set_rhs_code (stmt, TREE_CODE (orig));
+      gimple_set_num_ops (stmt, 2);
+      update_stmt (stmt);
+      return remove_prop_source_from_use (op0) ? 2 : 1;
+    }
+
+  return false;
+}
+
 /* Main entry point for the forward propagation and statement combine
    optimizer.  */
 
@@ -2735,6 +2824,13 @@ ssa_forward_propagate_and_combine (void)
 			 || code == FIX_TRUNC_EXPR)
 		  {
 		    int did_something = combine_conversions (&gsi);
+		    if (did_something == 2)
+		      cfg_changed = true;
+		    changed = did_something != 0;
+		  }
+		else if (code == VEC_PERM_EXPR)
+		  {
+		    int did_something = simplify_permutation (&gsi);
 		    if (did_something == 2)
 		      cfg_changed = true;
 		    changed = did_something != 0;

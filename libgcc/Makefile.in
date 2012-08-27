@@ -363,6 +363,7 @@ ifeq ($(enable_shared),yes)
   ifneq ($(LIBUNWIND),)
     install-libunwind = install-libunwind
   endif
+endif
 
 # For -fvisibility=hidden.  We need both a -fvisibility=hidden on
 # the command line, and a #define to prevent libgcc2.h etc from
@@ -386,11 +387,8 @@ else
 gen-hide-list = echo > $@
 endif
 
-else
-# Not enable_shared.
+ifneq ($(enable_shared),yes)
 iterator = $(srcdir)/empty.mk $(patsubst %,$(srcdir)/static-object.mk,$(iter-items))
-vis_hide =
-gen-hide-list = echo > \$@
 endif
 
 LIB2ADD += enable-execute-stack.c
@@ -439,7 +437,6 @@ LIB2_DIVMOD_FUNCS := $(filter-out $(LIB2FUNCS_EXCLUDE) $(LIB1ASMFUNCS), \
 		       $(LIB2_DIVMOD_FUNCS))
 
 # Build "libgcc1" (assembly) components.
-ifeq ($(enable_shared),yes)
 
 lib1asmfuncs-o = $(patsubst %,%$(objext),$(LIB1ASMFUNCS))
 $(lib1asmfuncs-o): %$(objext): $(srcdir)/config/$(LIB1ASMSRC) %.vis
@@ -451,14 +448,9 @@ libgcc-objects += $(lib1asmfuncs-o)
 lib1asmfuncs-s-o = $(patsubst %,%_s$(objext),$(LIB1ASMFUNCS))
 $(lib1asmfuncs-s-o): %_s$(objext): $(srcdir)/config/$(LIB1ASMSRC)
 	$(gcc_s_compile) -DL$* -xassembler-with-cpp -c $<
+ifeq ($(enable_shared),yes)
+
 libgcc-s-objects += $(lib1asmfuncs-s-o)
-
-else
-
-lib1asmfuncs-o = $(patsubst %,%$(objext),$(LIB1ASMFUNCS))
-$(lib1asmfuncs-o): %$(objext): $(srcdir)/config/$(LIB1ASMSRC)
-	$(gcc_compile) -DL$* -xassembler-with-cpp -c $<
-libgcc-objects += $(lib1asmfuncs-o)
 
 endif
 
@@ -771,9 +763,9 @@ iter-to := $(fixed-modes)
 include $(srcdir)/empty.mk $(patsubst %,$(srcdir)/fixed-obj.mk,$(iter-items))
 
 # Add arithmetic functions to list of objects to be built
-libgcc-objects += $(patsubst %,%$(objext),$(fixed-funcs))
+libgcc-objects += $(patsubst %,%$(objext),$(filter-out $(LIB2FUNCS_EXCLUDE),$(fixed-funcs)))
 ifeq ($(enable_shared),yes)
-libgcc-s-objects += $(patsubst %,%_s$(objext),$(fixed-funcs))
+libgcc-s-objects += $(patsubst %,%_s$(objext),$(filter-out $(LIB2FUNCS_EXCLUDE),$(fixed-funcs)))
 endif
 
 # Convert from or to fractional
@@ -790,9 +782,9 @@ iter-to := $(fixed-conv-to)
 include $(srcdir)/empty.mk $(patsubst %,$(srcdir)/fixed-obj.mk,$(iter-items))
 
 # Add conversion functions to list of objects to be built
-libgcc-objects += $(patsubst %,%$(objext),$(fixed-conv-funcs))
+libgcc-objects += $(patsubst %,%$(objext),$(filter-out $(LIB2FUNCS_EXCLUDE),$(fixed-conv-funcs)))
 ifeq ($(enable_shared),yes)
-libgcc-s-objects += $(patsubst %,%_s$(objext),$(fixed-conv-funcs))
+libgcc-s-objects += $(patsubst %,%_s$(objext),$(filter-out $(LIB2FUNCS_EXCLUDE),$(fixed-conv-funcs)))
 endif
 
 endif

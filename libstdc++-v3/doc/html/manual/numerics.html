@@ -7,7 +7,7 @@
     Standard Contents
   </th><td align="right"> <a accesskey="n" href="generalized_numeric_operations.html">Next</a></td></tr></table><hr/></div><div class="chapter" title="Chapter 12.  Numerics"><div class="titlepage"><div><div><h2 class="title"><a id="std.numerics"/>Chapter 12. 
   Numerics
-  <a id="id504587" class="indexterm"/>
+  <a id="id515397" class="indexterm"/>
 </h2></div></div></div><div class="toc"><p><strong>Table of Contents</strong></p><dl><dt><span class="section"><a href="numerics.html#std.numerics.complex">Complex</a></span></dt><dd><dl><dt><span class="section"><a href="numerics.html#numerics.complex.processing">complex Processing</a></span></dt></dl></dd><dt><span class="section"><a href="generalized_numeric_operations.html">Generalized Operations</a></span></dt><dt><span class="section"><a href="numerics_and_c.html">Interacting with C</a></span></dt><dd><dl><dt><span class="section"><a href="numerics_and_c.html#numerics.c.array">Numerics vs. Arrays</a></span></dt><dt><span class="section"><a href="numerics_and_c.html#numerics.c.c99">C99</a></span></dt></dl></dd></dl></div><div class="section" title="Complex"><div class="titlepage"><div><div><h2 class="title"><a id="std.numerics.complex"/>Complex</h2></div></div></div><p>
   </p><div class="section" title="complex Processing"><div class="titlepage"><div><div><h3 class="title"><a id="numerics.complex.processing"/>complex Processing</h3></div></div></div><p>
     </p><p>Using <code class="code">complex&lt;&gt;</code> becomes even more comple- er, sorry,
@@ -24,6 +24,10 @@
       and <code class="code">op&gt;&gt;</code> that work with iostreams: <code class="code">op&lt;&lt;</code>
       prints <code class="code">(u,v)</code> and <code class="code">op&gt;&gt;</code> can read <code class="code">u</code>,
       <code class="code">(u)</code>, and <code class="code">(u,v)</code>.
+   </p><p>As an extension to C++11 and for increased compatibility with C,
+      <code class="code">&lt;complex.h&gt;</code> includes both <code class="code">&lt;complex&gt;</code>
+      and the C99 <code class="code">&lt;complex.h&gt;</code> (if the C library provides
+      it).
    </p></div></div></div><div class="navfooter"><hr/><table width="100%" summary="Navigation footer"><tr><td align="left"><a accesskey="p" href="algorithms.html">Prev</a> </td><td align="center"><a accesskey="u" href="bk01pt02.html">Up</a></td><td align="right"> <a accesskey="n" href="generalized_numeric_operations.html">Next</a></td></tr><tr><td align="left" valign="top">Chapter 11. 
   Algorithms
   

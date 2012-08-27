@@ -228,6 +228,11 @@ proc scan-assembler-times { args } {
     }
 }
 
+proc scan-assembler-times_required_options { args } {
+    global gcc_force_conventional_output
+    return $gcc_force_conventional_output
+}
+
 # Utility for scanning demangled compiler result, invoked via dg-final.
 # Call pass if pattern is present, otherwise fail.
 proc scan-assembler-dem { args } {

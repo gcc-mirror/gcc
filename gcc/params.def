@@ -752,6 +752,17 @@ DEFPARAM (PARAM_SCCVN_MAX_SCC_SIZE,
 	  "Maximum size of a SCC before SCCVN stops processing a function",
 	  10000, 10, 0)
 
+/* The following is used as a stop-gap limit for cases where really huge
+   functions blow up compile-time use too much.  It limits the number of
+   alias-queries we do for finding common subexpressions for memory loads and
+   stores.  The number of alias-queries is otherwise limited by the number of
+   stores on paths to function entry.  */
+
+DEFPARAM (PARAM_SCCVN_MAX_ALIAS_QUERIES_PER_ACCESS,
+	  "sccvn-max-alias-queries-per-access",
+	  "Maximum number of disambiguations to perform per memory access",
+	  1000, 0, 0)
+
 DEFPARAM (PARAM_IRA_MAX_LOOPS_NUM,
 	  "ira-max-loops-num",
 	  "Max loops number for regional RA",

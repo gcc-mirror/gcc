@@ -1,3 +1,9 @@
+2012-08-26  Hans-Peter Nilsson  <hp@axis.com>
+
+	* btest-gcc.sh (TESTLOGS): Make gfortran.sum optional.
+
+	* btest-gcc.sh (TESTLOGS): Add libmudflap.sum, if it exists.
+
 2009-09-02  Geoff Keating  <geoffk@apple.com>
 
 	* btest-gcc.sh: Continue after bootstrap comparison failure.

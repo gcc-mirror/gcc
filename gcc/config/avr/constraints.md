@@ -192,3 +192,47 @@
   "32-bit integer constant where no nibble equals 0xf."
   (and (match_code "const_int")
        (match_test "!avr_has_nibble_0xf (op)")))
+
+;; CONST_FIXED is no element of 'n' so cook our own.
+;; "i" or "s" would match but because the insn uses iterators that cover
+;; INT_MODE, "i" or "s" is not always possible.
+
+(define_constraint "Ynn"
+  "Fixed-point constant known at compile time."
+  (match_code "const_fixed"))
+
+(define_constraint "Y00"
+  "Fixed-point or integer constant with bit representation 0x0"
+  (and (match_code "const_fixed,const_int")
+       (match_test "op == CONST0_RTX (GET_MODE (op))")))
+
+(define_constraint "Y01"
+  "Fixed-point or integer constant with bit representation 0x1"
+  (ior (and (match_code "const_fixed")
+            (match_test "1 == INTVAL (avr_to_int_mode (op))"))
+       (match_test "satisfies_constraint_P (op)")))
+
+(define_constraint "Ym1"
+  "Fixed-point or integer constant with bit representation -0x1"
+  (ior (and (match_code "const_fixed")
+            (match_test "-1 == INTVAL (avr_to_int_mode (op))"))
+       (match_test "satisfies_constraint_N (op)")))
+
+(define_constraint "Y02"
+  "Fixed-point or integer constant with bit representation 0x2"
+  (ior (and (match_code "const_fixed")
+            (match_test "2 == INTVAL (avr_to_int_mode (op))"))
+       (match_test "satisfies_constraint_K (op)")))
+
+(define_constraint "Ym2"
+  "Fixed-point or integer constant with bit representation -0x2"
+  (ior (and (match_code "const_fixed")
+            (match_test "-2 == INTVAL (avr_to_int_mode (op))"))
+       (match_test "satisfies_constraint_Cm2 (op)")))
+
+;; Similar to "IJ" used with ADIW/SBIW, but for CONST_FIXED.
+
+(define_constraint "YIJ"
+  "Fixed-point constant from @minus{}0x003f to 0x003f."
+  (and (match_code "const_fixed")
+       (match_test "IN_RANGE (INTVAL (avr_to_int_mode (op)), -63, 63)")))

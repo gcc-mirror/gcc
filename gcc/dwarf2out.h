@@ -154,7 +154,8 @@ enum dw_val_class
   dw_val_class_file,
   dw_val_class_data8,
   dw_val_class_decl_ref,
-  dw_val_class_vms_delta
+  dw_val_class_vms_delta,
+  dw_val_class_high_pc
 };
 
 /* Describe a floating point constant value, or a vector constant value.  */

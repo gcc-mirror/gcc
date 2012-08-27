@@ -2520,11 +2520,11 @@ struct GTY((variable_size)) lang_decl {
 
 /* In a TREE_LIST concatenating using directives, indicate indirect
    directives  */
-#define TREE_INDIRECT_USING(NODE) (TREE_LIST_CHECK (NODE)->base.lang_flag_0)
+#define TREE_INDIRECT_USING(NODE) TREE_LANG_FLAG_0 (TREE_LIST_CHECK (NODE))
 
 /* In a TREE_LIST in an attribute list, indicates that the attribute
    must be applied at instantiation time.  */
-#define ATTR_IS_DEPENDENT(NODE) (TREE_LIST_CHECK (NODE)->base.lang_flag_0)
+#define ATTR_IS_DEPENDENT(NODE) TREE_LANG_FLAG_0 (TREE_LIST_CHECK (NODE))
 
 extern tree decl_shadowed_for_var_lookup (tree);
 extern void decl_shadowed_for_var_insert (tree, tree);
@@ -2881,7 +2881,7 @@ extern void decl_shadowed_for_var_insert (tree, tree);
    arguments will be placed into the beginning of the argument pack,
    but additional arguments might still be deduced.  */
 #define ARGUMENT_PACK_INCOMPLETE_P(NODE)        \
-  TREE_LANG_FLAG_0 (ARGUMENT_PACK_ARGS (NODE))
+  TREE_ADDRESSABLE (ARGUMENT_PACK_ARGS (NODE))
 
 /* When ARGUMENT_PACK_INCOMPLETE_P, stores the explicit template
    arguments used to fill this pack.  */
@@ -4886,7 +4886,7 @@ extern tree build_user_type_conversion		(tree, tree, int,
 extern tree build_new_function_call		(tree, VEC(tree,gc) **, bool, 
 						 tsubst_flags_t);
 extern tree build_operator_new_call		(tree, VEC(tree,gc) **, tree *,
-						 tree *, tree *,
+						 tree *, tree, tree *,
 						 tsubst_flags_t);
 extern tree build_new_method_call		(tree, tree, VEC(tree,gc) **,
 						 tree, int, tree *,
@@ -5340,7 +5340,7 @@ extern int uses_template_parms_level		(tree, int);
 extern bool in_template_function		(void);
 extern tree instantiate_class_template		(tree);
 extern tree instantiate_template		(tree, tree, tsubst_flags_t);
-extern int fn_type_unification			(tree, tree, tree,
+extern tree fn_type_unification			(tree, tree, tree,
 						 const tree *, unsigned int,
 						 tree, unification_kind_t, int,
 						 bool);
@@ -5775,10 +5775,10 @@ extern linkage_kind decl_linkage		(tree);
 extern duration_kind decl_storage_duration	(tree);
 extern tree cp_walk_subtrees (tree*, int*, walk_tree_fn,
 			      void*, struct pointer_set_t*);
-#define cp_walk_tree(a,b,c,d) \
-	walk_tree_1 (a, b, c, d, cp_walk_subtrees)
-#define cp_walk_tree_without_duplicates(a,b,c) \
-	walk_tree_without_duplicates_1 (a, b, c, cp_walk_subtrees)
+#define cp_walk_tree(tp,func,data,pset) \
+	walk_tree_1 (tp, func, data, pset, cp_walk_subtrees)
+#define cp_walk_tree_without_duplicates(tp,func,data) \
+	walk_tree_without_duplicates_1 (tp, func, data, cp_walk_subtrees)
 extern tree fold_if_not_in_template		(tree);
 extern tree rvalue				(tree);
 extern tree convert_bitfield_to_declared_type   (tree);

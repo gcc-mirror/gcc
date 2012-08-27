@@ -1,5 +1,5 @@
 /* Data References Analysis and Manipulation Utilities for Vectorization.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com>
    and Ira Rosen <irar@il.ibm.com>
@@ -1934,10 +1934,9 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 	  gcc_assert (stat);
           return stat;
         }
-      else
-	VEC_free (stmt_info_for_cost, heap, body_cost_vec);
     }
 
+  VEC_free (stmt_info_for_cost, heap, body_cost_vec);
 
   /* (2) Versioning to force alignment.  */
 
@@ -3313,6 +3312,8 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
 	    gather = false;
 	  if (!gather)
 	    {
+	      STMT_VINFO_DATA_REF (stmt_info) = NULL;
+	      free_data_ref (dr);
 	      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
 		{
 		  fprintf (vect_dump,

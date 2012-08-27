@@ -2,6 +2,7 @@ LIB1ASMSRC = avr/lib1funcs.S
 LIB1ASMFUNCS = \
 	_mulqi3 \
 	_mulhi3 \
+	_mulqihi3 _umulqihi3 \
 	_mulpsi3 _mulsqipsi3 \
 	_mulhisi3 \
 	_umulhisi3 \
@@ -55,6 +56,24 @@ LIB1ASMFUNCS = \
 	_cmpdi2 _cmpdi2_s8 \
 	_fmul _fmuls _fmulsu
 
+# Fixed point routines in avr/lib1funcs-fixed.S
+LIB1ASMFUNCS += \
+	_fractqqsf _fractuqqsf \
+	_fracthqsf _fractuhqsf _fracthasf _fractuhasf \
+	_fractsasf _fractusasf _fractsqsf _fractusqsf \
+	\
+	_fractsfqq _fractsfuqq \
+	_fractsfhq _fractsfuhq _fractsfha _fractsfuha \
+	_fractsfsa _fractsfusa \
+	_mulqq3 \
+	_mulhq3 _muluhq3 \
+	_mulha3 _muluha3 _muluha3_round \
+	_mulsa3 _mulusa3 \
+	_divqq3 _udivuqq3 \
+	_divhq3 _udivuhq3 \
+	_divha3 _udivuha3 \
+	_divsa3 _udivusa3
+
 LIB2FUNCS_EXCLUDE = \
 	_moddi3 _umoddi3 \
 	_clz
@@ -81,3 +100,49 @@ libgcc-objects += $(patsubst %,%$(objext),$(hiintfuncs16))
 ifeq ($(enable_shared),yes)
 libgcc-s-objects += $(patsubst %,%_s$(objext),$(hiintfuncs16))
 endif
+
+
+# Filter out supported conversions from fixed-bit.c
+
+conv_XY=$(conv)$(mode1)$(mode2)
+func_X=$(func)$(mode)
+
+# Conversions supported by the compiler
+
+convf_modes =	 QI UQI QQ UQQ \
+		 HI UHI HQ UHQ HA UHA \
+		 SI USI SQ USQ SA USA \
+		 DI UDI DQ UDQ DA UDA \
+		 TI UTI TQ UTQ TA UTA
+
+LIB2FUNCS_EXCLUDE += \
+	$(foreach conv,_fract _fractuns,\
+	$(foreach mode1,$(convf_modes),\
+	$(foreach mode2,$(convf_modes),$(conv_XY))))
+
+# Conversions supported by lib1funcs-fixed.S
+
+conv_to_sf_modes   = QQ UQQ HQ UHQ HA UHA SQ USQ SA USA
+conv_from_sf_modes = QQ UQQ HQ UHQ HA UHA        SA USA
+
+LIB2FUNCS_EXCLUDE += \
+	$(foreach conv,_fract, \
+	$(foreach mode1,$(conv_to_sf_modes), \
+	$(foreach mode2,SF,$(conv_XY))))
+
+LIB2FUNCS_EXCLUDE += \
+	$(foreach conv,_fract,\
+	$(foreach mode1,SF,\
+	$(foreach mode2,$(conv_from_sf_modes),$(conv_XY))))
+
+# Arithmetik supported by the compiler
+
+allfix_modes = QQ UQQ HQ UHQ HA UHA SQ USQ SA USA DA UDA DQ UDQ TQ UTQ TA UTA
+
+LIB2FUNCS_EXCLUDE += \
+	$(foreach func,_add _sub,\
+	$(foreach mode,$(allfix_modes),$(func_X)3))
+
+LIB2FUNCS_EXCLUDE += \
+	$(foreach func,_lshr _ashl _ashr _cmp,\
+	$(foreach mode,$(allfix_modes),$(func_X)))

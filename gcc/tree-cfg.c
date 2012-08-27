@@ -6632,19 +6632,21 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
    */
 
 void
-dump_function_to_file (tree fn, FILE *file, int flags)
+dump_function_to_file (tree fndecl, FILE *file, int flags)
 {
-  tree arg, var;
+  tree arg, var, old_current_fndecl = current_function_decl;
   struct function *dsf;
   bool ignore_topmost_bind = false, any_var = false;
   basic_block bb;
   tree chain;
-  bool tmclone = TREE_CODE (fn) == FUNCTION_DECL && decl_is_tm_clone (fn);
+  bool tmclone = (TREE_CODE (fndecl) == FUNCTION_DECL
+		  && decl_is_tm_clone (fndecl));
+  struct function *fun = DECL_STRUCT_FUNCTION (fndecl);
 
-  fprintf (file, "%s %s(", current_function_name (),
-	   tmclone ? "[tm-clone] " : "");
+  current_function_decl = fndecl;
+  fprintf (file, "%s %s(", function_name (fun), tmclone ? "[tm-clone] " : "");
 
-  arg = DECL_ARGUMENTS (fn);
+  arg = DECL_ARGUMENTS (fndecl);
   while (arg)
     {
       print_generic_expr (file, TREE_TYPE (arg), dump_flags);
@@ -6659,31 +6661,29 @@ dump_function_to_file (tree fn, FILE *file, int flags)
   fprintf (file, ")\n");
 
   if (flags & TDF_VERBOSE)
-    print_node (file, "", fn, 2);
+    print_node (file, "", fndecl, 2);
 
-  dsf = DECL_STRUCT_FUNCTION (fn);
+  dsf = DECL_STRUCT_FUNCTION (fndecl);
   if (dsf && (flags & TDF_EH))
     dump_eh_tree (file, dsf);
 
-  if (flags & TDF_RAW && !gimple_has_body_p (fn))
+  if (flags & TDF_RAW && !gimple_has_body_p (fndecl))
     {
-      dump_node (fn, TDF_SLIM | flags, file);
+      dump_node (fndecl, TDF_SLIM | flags, file);
+      current_function_decl = old_current_fndecl;
       return;
     }
 
-  /* Switch CFUN to point to FN.  */
-  push_cfun (DECL_STRUCT_FUNCTION (fn));
-
   /* When GIMPLE is lowered, the variables are no longer available in
      BIND_EXPRs, so display them separately.  */
-  if (cfun && cfun->decl == fn && (cfun->curr_properties & PROP_gimple_lcf))
+  if (fun && fun->decl == fndecl && (fun->curr_properties & PROP_gimple_lcf))
     {
       unsigned ix;
       ignore_topmost_bind = true;
 
       fprintf (file, "{\n");
-      if (!VEC_empty (tree, cfun->local_decls))
-	FOR_EACH_LOCAL_DECL (cfun, ix, var)
+      if (!VEC_empty (tree, fun->local_decls))
+	FOR_EACH_LOCAL_DECL (fun, ix, var)
 	  {
 	    print_generic_decl (file, var, flags);
 	    if (flags & TDF_VERBOSE)
@@ -6709,26 +6709,27 @@ dump_function_to_file (tree fn, FILE *file, int flags)
 	  }
     }
 
-  if (cfun && cfun->decl == fn && cfun->cfg && basic_block_info)
+  if (fun && fun->decl == fndecl && fun->cfg
+      && basic_block_info_for_function (fun))
     {
       /* If the CFG has been built, emit a CFG-based dump.  */
       if (!ignore_topmost_bind)
 	fprintf (file, "{\n");
 
-      if (any_var && n_basic_blocks)
+      if (any_var && n_basic_blocks_for_function (fun))
 	fprintf (file, "\n");
 
-      FOR_EACH_BB (bb)
+      FOR_EACH_BB_FN (bb, fun)
 	dump_bb (file, bb, 2, flags | TDF_COMMENT);
 
       fprintf (file, "}\n");
     }
-  else if (DECL_SAVED_TREE (fn) == NULL)
+  else if (DECL_SAVED_TREE (fndecl) == NULL)
     {
       /* The function is now in GIMPLE form but the CFG has not been
 	 built yet.  Emit the single sequence of GIMPLE statements
 	 that make up its body.  */
-      gimple_seq body = gimple_body (fn);
+      gimple_seq body = gimple_body (fndecl);
 
       if (gimple_seq_first_stmt (body)
 	  && gimple_seq_first_stmt (body) == gimple_seq_last_stmt (body)
@@ -6751,8 +6752,7 @@ dump_function_to_file (tree fn, FILE *file, int flags)
       int indent;
 
       /* Make a tree based dump.  */
-      chain = DECL_SAVED_TREE (fn);
-
+      chain = DECL_SAVED_TREE (fndecl);
       if (chain && TREE_CODE (chain) == BIND_EXPR)
 	{
 	  if (ignore_topmost_bind)
@@ -6782,10 +6782,8 @@ dump_function_to_file (tree fn, FILE *file, int flags)
     dump_enumerated_decls (file, flags);
   fprintf (file, "\n\n");
 
-  /* Restore CFUN.  */
-  pop_cfun ();
+  current_function_decl = old_current_fndecl;
 }
-
 
 /* Dump FUNCTION_DECL FN to stderr using FLAGS (see TDF_* in tree.h)  */
 

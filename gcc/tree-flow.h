@@ -516,7 +516,6 @@ void release_defs_bitset (bitmap toremove);
 /* In tree-into-ssa.c  */
 void update_ssa (unsigned);
 void delete_update_ssa (void);
-void register_new_name_mapping (tree, tree);
 tree create_new_def_for (tree, gimple, def_operand_p);
 bool need_ssa_update_p (struct function *);
 bool name_registered_for_update_p (tree);

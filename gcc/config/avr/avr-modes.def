@@ -1,1 +1,28 @@
 FRACTIONAL_INT_MODE (PSI, 24, 3);
+
+/* On 8 bit machines it requires fewer instructions for fixed point
+   routines if the decimal place is on a byte boundary which is not
+   the default for signed accum types.  */
+
+ADJUST_IBIT (HA, 7);
+ADJUST_FBIT (HA, 8);
+
+ADJUST_IBIT (SA, 15);
+ADJUST_FBIT (SA, 16);
+
+ADJUST_IBIT (DA, 31);
+ADJUST_FBIT (DA, 32);
+
+/* Make TA and UTA 64 bits wide.
+   128 bit wide modes would be insane on a 8-bit machine.
+   This needs special treatment in avr.c and avr-lib.h.  */
+
+ADJUST_BYTESIZE  (TA, 8);
+ADJUST_ALIGNMENT (TA, 1);
+ADJUST_IBIT (TA, 15);
+ADJUST_FBIT (TA, 48);
+
+ADJUST_BYTESIZE  (UTA, 8);
+ADJUST_ALIGNMENT (UTA, 1);
+ADJUST_IBIT (UTA, 16);
+ADJUST_FBIT (UTA, 48);

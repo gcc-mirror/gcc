@@ -2318,9 +2318,7 @@ operands_match_p (rtx x, rtx y)
 
   switch (code)
     {
-    case CONST_INT:
-    case CONST_DOUBLE:
-    case CONST_FIXED:
+    CASE_CONST_UNIQUE:
       return 0;
 
     case LABEL_REF:
@@ -5341,11 +5339,8 @@ subst_reg_equivs (rtx ad, rtx insn)
   switch (code)
     {
     case HIGH:
-    case CONST_INT:
     case CONST:
-    case CONST_DOUBLE:
-    case CONST_FIXED:
-    case CONST_VECTOR:
+    CASE_CONST_ANY:
     case SYMBOL_REF:
     case LABEL_REF:
     case PC:

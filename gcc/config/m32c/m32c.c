@@ -48,6 +48,7 @@
 #include "langhooks.h"
 #include "gimple.h"
 #include "df.h"
+#include "tm-constrs.h"
 
 /* Prototypes */
 
@@ -629,94 +630,6 @@ m32c_regno_reg_class (int regno)
     }
 }
 
-/* Implements REG_CLASS_FROM_CONSTRAINT.  Note that some constraints only match
-   for certain chip families.  */
-int
-m32c_reg_class_from_constraint (char c ATTRIBUTE_UNUSED, const char *s)
-{
-  if (memcmp (s, "Rsp", 3) == 0)
-    return SP_REGS;
-  if (memcmp (s, "Rfb", 3) == 0)
-    return FB_REGS;
-  if (memcmp (s, "Rsb", 3) == 0)
-    return SB_REGS;
-  if (memcmp (s, "Rcr", 3) == 0)
-    return TARGET_A16 ? CR_REGS : NO_REGS;
-  if (memcmp (s, "Rcl", 3) == 0)
-    return TARGET_A24 ? CR_REGS : NO_REGS;
-  if (memcmp (s, "R0w", 3) == 0)
-    return R0_REGS;
-  if (memcmp (s, "R1w", 3) == 0)
-    return R1_REGS;
-  if (memcmp (s, "R2w", 3) == 0)
-    return R2_REGS;
-  if (memcmp (s, "R3w", 3) == 0)
-    return R3_REGS;
-  if (memcmp (s, "R02", 3) == 0)
-    return R02_REGS;
-  if (memcmp (s, "R13", 3) == 0)
-    return R13_REGS;
-  if (memcmp (s, "R03", 3) == 0)
-    return R03_REGS;
-  if (memcmp (s, "Rdi", 3) == 0)
-    return DI_REGS;
-  if (memcmp (s, "Rhl", 3) == 0)
-    return HL_REGS;
-  if (memcmp (s, "R23", 3) == 0)
-    return R23_REGS;
-  if (memcmp (s, "Ra0", 3) == 0)
-    return A0_REGS;
-  if (memcmp (s, "Ra1", 3) == 0)
-    return A1_REGS;
-  if (memcmp (s, "Raa", 3) == 0)
-    return A_REGS;
-  if (memcmp (s, "Raw", 3) == 0)
-    return TARGET_A16 ? A_REGS : NO_REGS;
-  if (memcmp (s, "Ral", 3) == 0)
-    return TARGET_A24 ? A_REGS : NO_REGS;
-  if (memcmp (s, "Rqi", 3) == 0)
-    return QI_REGS;
-  if (memcmp (s, "Rad", 3) == 0)
-    return AD_REGS;
-  if (memcmp (s, "Rsi", 3) == 0)
-    return SI_REGS;
-  if (memcmp (s, "Rhi", 3) == 0)
-    return HI_REGS;
-  if (memcmp (s, "Rhc", 3) == 0)
-    return HC_REGS;
-  if (memcmp (s, "Rra", 3) == 0)
-    return RA_REGS;
-  if (memcmp (s, "Rfl", 3) == 0)
-    return FLG_REGS;
-  if (memcmp (s, "Rmm", 3) == 0)
-    {
-      if (fixed_regs[MEM0_REGNO])
-	return NO_REGS;
-      return MEM_REGS;
-    }
-
-  /* PSImode registers - i.e. whatever can hold a pointer.  */
-  if (memcmp (s, "Rpi", 3) == 0)
-    {
-      if (TARGET_A16)
-	return HI_REGS;
-      else
-	return RA_REGS; /* r2r0 and r3r1 can hold pointers.  */
-    }
-
-  /* We handle this one as an EXTRA_CONSTRAINT.  */
-  if (memcmp (s, "Rpa", 3) == 0)
-    return NO_REGS;
-
-  if (*s == 'R')
-    {
-      fprintf(stderr, "unrecognized R constraint: %.3s\n", s);
-      gcc_unreachable();
-    }
-
-  return NO_REGS;
-}
-
 /* Implements REGNO_OK_FOR_BASE_P.  */
 int
 m32c_regno_ok_for_base_p (int regno)
@@ -926,141 +839,57 @@ m32c_cannot_change_mode_class (enum machine_mode from,
 			       && (REGNO (rtx) == AP_REGNO \
 				   || REGNO (rtx) >= FIRST_PSEUDO_REGISTER))
 
-/* Implements CONST_OK_FOR_CONSTRAINT_P.  Currently, all constant
-   constraints start with 'I', with the next two characters indicating
-   the type and size of the range allowed.  */
-int
-m32c_const_ok_for_constraint_p (HOST_WIDE_INT value,
-				char c ATTRIBUTE_UNUSED, const char *str)
-{
-  /* s=signed u=unsigned n=nonzero m=minus l=log2able,
-     [sun] bits [SUN] bytes, p=pointer size
-     I[-0-9][0-9] matches that number */
-  if (memcmp (str, "Is3", 3) == 0)
-    {
-      return (-8 <= value && value <= 7);
-    }
-  if (memcmp (str, "IS1", 3) == 0)
-    {
-      return (-128 <= value && value <= 127);
-    }
-  if (memcmp (str, "IS2", 3) == 0)
-    {
-      return (-32768 <= value && value <= 32767);
-    }
-  if (memcmp (str, "IU2", 3) == 0)
-    {
-      return (0 <= value && value <= 65535);
-    }
-  if (memcmp (str, "IU3", 3) == 0)
-    {
-      return (0 <= value && value <= 0x00ffffff);
-    }
-  if (memcmp (str, "In4", 3) == 0)
-    {
-      return (-8 <= value && value && value <= 8);
-    }
-  if (memcmp (str, "In5", 3) == 0)
-    {
-      return (-16 <= value && value && value <= 16);
-    }
-  if (memcmp (str, "In6", 3) == 0)
-    {
-      return (-32 <= value && value && value <= 32);
-    }
-  if (memcmp (str, "IM2", 3) == 0)
-    {
-      return (-65536 <= value && value && value <= -1);
-    }
-  if (memcmp (str, "Ilb", 3) == 0)
-    {
-      int b = exact_log2 (value);
-      return (b >= 0 && b <= 7);
-    }
-  if (memcmp (str, "Imb", 3) == 0)
-    {
-      int b = exact_log2 ((value ^ 0xff) & 0xff);
-      return (b >= 0 && b <= 7);
-    }
-  if (memcmp (str, "ImB", 3) == 0)
-    {
-      int b = exact_log2 ((value ^ 0xffff) & 0xffff);
-      return (b >= 0 && b <= 7);
-    }
-  if (memcmp (str, "Ilw", 3) == 0)
-    {
-      int b = exact_log2 (value);
-      return (b >= 0 && b <= 15);
-    }
-  if (memcmp (str, "Imw", 3) == 0)
-    {
-      int b = exact_log2 ((value ^ 0xffff) & 0xffff);
-      return (b >= 0 && b <= 15);
-    }
-  if (memcmp (str, "I00", 3) == 0)
-    {
-      return (value == 0);
-    }
-  return 0;
-}
-
 #define A0_OR_PSEUDO(x) (IS_REG(x, A0_REGNO) || REGNO (x) >= FIRST_PSEUDO_REGISTER)
 
 /* Implements EXTRA_CONSTRAINT_STR (see next function too).  'S' is
    for memory constraints, plus "Rpa" for PARALLEL rtx's we use for
    call return values.  */
-int
-m32c_extra_constraint_p2 (rtx value, char c ATTRIBUTE_UNUSED, const char *str)
+bool
+m32c_matches_constraint_p (rtx value, int constraint)
 {
   encode_pattern (value);
 
-  if (far_addr_space_p (value))
-    {
-      if (memcmp (str, "SF", 2) == 0)
-	{
-	  return (   (RTX_IS ("mr")
-		      && A0_OR_PSEUDO (patternr[1])
-		      && GET_MODE (patternr[1]) == SImode)
-		     || (RTX_IS ("m+^Sri")
-			 && A0_OR_PSEUDO (patternr[4])
-			 && GET_MODE (patternr[4]) == HImode)
-		     || (RTX_IS ("m+^Srs")
-			 && A0_OR_PSEUDO (patternr[4])
-			 && GET_MODE (patternr[4]) == HImode)
-		     || (RTX_IS ("m+^S+ris")
-			 && A0_OR_PSEUDO (patternr[5])
-			 && GET_MODE (patternr[5]) == HImode)
-		     || RTX_IS ("ms")
-		     );
-	}
-      return 0;
-    }
-
-  if (memcmp (str, "Sd", 2) == 0)
+  switch (constraint) {
+  case CONSTRAINT_SF:
+    return (far_addr_space_p (value)
+	    && ((RTX_IS ("mr")
+		 && A0_OR_PSEUDO (patternr[1])
+		 && GET_MODE (patternr[1]) == SImode)
+		|| (RTX_IS ("m+^Sri")
+		    && A0_OR_PSEUDO (patternr[4])
+		    && GET_MODE (patternr[4]) == HImode)
+		|| (RTX_IS ("m+^Srs")
+		    && A0_OR_PSEUDO (patternr[4])
+		    && GET_MODE (patternr[4]) == HImode)
+		|| (RTX_IS ("m+^S+ris")
+		    && A0_OR_PSEUDO (patternr[5])
+		    && GET_MODE (patternr[5]) == HImode)
+		|| RTX_IS ("ms")));
+  case CONSTRAINT_Sd:    
     {
       /* This is the common "src/dest" address */
       rtx r;
       if (GET_CODE (value) == MEM && CONSTANT_P (XEXP (value, 0)))
-	return 1;
+	return true;
       if (RTX_IS ("ms") || RTX_IS ("m+si"))
-	return 1;
+	return true;
       if (RTX_IS ("m++rii"))
 	{
 	  if (REGNO (patternr[3]) == FB_REGNO
 	      && INTVAL (patternr[4]) == 0)
-	    return 1;
+	    return true;
 	}
       if (RTX_IS ("mr"))
 	r = patternr[1];
       else if (RTX_IS ("m+ri") || RTX_IS ("m+rs") || RTX_IS ("m+r+si"))
 	r = patternr[2];
       else
-	return 0;
+	return false;
       if (REGNO (r) == SP_REGNO)
-	return 0;
+	return false;
       return m32c_legitimate_address_p (GET_MODE (value), XEXP (value, 0), 1);
     }
-  else if (memcmp (str, "Sa", 2) == 0)
+  case CONSTRAINT_Sa:
     {
       rtx r;
       if (RTX_IS ("mr"))
@@ -1068,81 +897,34 @@ m32c_extra_constraint_p2 (rtx value, char c ATTRIBUTE_UNUSED, const char *str)
       else if (RTX_IS ("m+ri"))
 	r = patternr[2];
       else
-	return 0;
+	return false;
       return (IS_REG (r, A0_REGNO) || IS_REG (r, A1_REGNO));
     }
-  else if (memcmp (str, "Si", 2) == 0)
-    {
-      return (RTX_IS ("mi") || RTX_IS ("ms") || RTX_IS ("m+si"));
-    }
-  else if (memcmp (str, "Ss", 2) == 0)
-    {
-      return ((RTX_IS ("mr")
-	       && (IS_REG (patternr[1], SP_REGNO)))
-	      || (RTX_IS ("m+ri") && (IS_REG (patternr[2], SP_REGNO))));
-    }
-  else if (memcmp (str, "Sf", 2) == 0)
-    {
-      return ((RTX_IS ("mr")
-	       && (IS_REG (patternr[1], FB_REGNO)))
-	      || (RTX_IS ("m+ri") && (IS_REG (patternr[2], FB_REGNO))));
-    }
-  else if (memcmp (str, "Sb", 2) == 0)
-    {
-      return ((RTX_IS ("mr")
-	       && (IS_REG (patternr[1], SB_REGNO)))
-	      || (RTX_IS ("m+ri") && (IS_REG (patternr[2], SB_REGNO))));
-    }
-  else if (memcmp (str, "Sp", 2) == 0)
-    {
-      /* Absolute addresses 0..0x1fff used for bit addressing (I/O ports) */
-      return (RTX_IS ("mi")
-	      && !(INTVAL (patternr[1]) & ~0x1fff));
-    }
-  else if (memcmp (str, "S1", 2) == 0)
-    {
-      return r1h_operand (value, QImode);
-    }
-  else if (memcmp (str, "SF", 2) == 0)
-    {
-      return 0;
-    }
-
-  gcc_assert (str[0] != 'S');
-
-  if (memcmp (str, "Rpa", 2) == 0)
+  case CONSTRAINT_Si:
+    return (RTX_IS ("mi") || RTX_IS ("ms") || RTX_IS ("m+si"));
+  case CONSTRAINT_Ss:
+    return ((RTX_IS ("mr")
+	     && (IS_REG (patternr[1], SP_REGNO)))
+	    || (RTX_IS ("m+ri") && (IS_REG (patternr[2], SP_REGNO))));
+  case CONSTRAINT_Sf:
+    return ((RTX_IS ("mr")
+	     && (IS_REG (patternr[1], FB_REGNO)))
+	    || (RTX_IS ("m+ri") && (IS_REG (patternr[2], FB_REGNO))));
+  case CONSTRAINT_Sb:
+    return ((RTX_IS ("mr")
+	     && (IS_REG (patternr[1], SB_REGNO)))
+	    || (RTX_IS ("m+ri") && (IS_REG (patternr[2], SB_REGNO))));
+  case CONSTRAINT_Sp:
+    /* Absolute addresses 0..0x1fff used for bit addressing (I/O ports) */
+    return (RTX_IS ("mi")
+	    && !(INTVAL (patternr[1]) & ~0x1fff));
+  case CONSTRAINT_S1:
+    return r1h_operand (value, QImode);
+  case CONSTRAINT_Rpa:
     return GET_CODE (value) == PARALLEL;
-
-  return 0;
-}
-
-/* This is for when we're debugging the above.  */
-int
-m32c_extra_constraint_p (rtx value, char c, const char *str)
-{
-  int rv = m32c_extra_constraint_p2 (value, c, str);
-#if DEBUG0
-  fprintf (stderr, "\nconstraint %.*s: %d\n", CONSTRAINT_LEN (c, str), str,
-	   rv);
-  debug_rtx (value);
-#endif
-  return rv;
-}
-
-/* Implements EXTRA_MEMORY_CONSTRAINT.  Currently, we only use strings
-   starting with 'S'.  */
-int
-m32c_extra_memory_constraint (char c, const char *str ATTRIBUTE_UNUSED)
-{
-  return c == 'S';
-}
-
-/* Implements EXTRA_ADDRESS_CONSTRAINT.  We reserve 'A' strings for these,
-   but don't currently define any.  */
-int
-m32c_extra_address_constraint (char c, const char *str ATTRIBUTE_UNUSED)
-{
-  return c == 'A';
+  default:
+    return false;
+  }
 }
 
 /* STACK AND CALLING */
@@ -3667,7 +3449,7 @@ m32c_split_move (rtx * operands, enum machine_mode mode, int split_all)
      point, so it's safe to set it to 3 even with define_insn.  */
   /* None of the chips can move SI operands to sp-relative addresses,
      so we always split those.  */
-  if (m32c_extra_constraint_p (operands[0], 'S', "Ss"))
+  if (satisfies_constraint_Ss (operands[0]))
     split_all = 3;
 
   if (TARGET_A16

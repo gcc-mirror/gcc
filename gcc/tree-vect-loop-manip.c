@@ -788,6 +788,7 @@ slpeel_make_loop_iterate_ntimes (struct loop *loop, tree niters)
 
   /* Remove old loop exit test:  */
   gsi_remove (&loop_cond_gsi, true);
+  free_stmt_vec_info (orig_cond);
 
   loop_loc = find_loop_location (loop);
   if (dump_file && (dump_flags & TDF_DETAILS))

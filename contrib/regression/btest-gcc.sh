@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #  Test GCC.
-#  Copyright (C) 1999, 2000, 2001, 2002, 2005, 2006, 2009
+#  Copyright (C) 1999, 2000, 2001, 2002, 2005, 2006, 2009, 2012
 #  Free Software Foundation, Inc.
 
 #  This program is free software; you can redistribute it and/or modify
@@ -117,7 +117,6 @@ H_REAL_TARGET=`$SOURCE/config.sub $H_TARGET || exit 1`
 # look at.
 TESTLOGS="gcc/testsuite/gcc/gcc.sum
 gcc/testsuite/g++/g++.sum
-gcc/testsuite/gfortran/gfortran.sum
 gcc/testsuite/objc/objc.sum"
 
 # Build.
@@ -144,6 +143,10 @@ echo error > $RESULT || exit 1
 # Test GCC against its internal testsuite.
 make $dashj -k check
 
+if [ -f gcc/testsuite/gfortran/gfortran.sum ] ; then
+  TESTLOGS="$TESTLOGS gcc/testsuite/gfortran/gfortran.sum"
+fi
+
 if [ -f $BUILD/$H_TARGET/libstdc++-v3/testsuite/libstdc++.sum ] ; then
   TESTLOGS="$TESTLOGS $H_TARGET/libstdc++-v3/testsuite/libstdc++.sum"
 fi
@@ -158,6 +161,10 @@ fi
 
 if [ -f $BUILD/$H_TARGET/libgomp/testsuite/libgomp.sum ] ; then
   TESTLOGS="$TESTLOGS $H_TARGET/libgomp/testsuite/libgomp.sum"
+fi
+
+if [ -f $BUILD/$H_TARGET/libmudflap/testsuite/libmudflap.sum ] ; then
+  TESTLOGS="$TESTLOGS $H_TARGET/libmudflap/testsuite/libmudflap.sum"
 fi
 
 # Test the just-built GCC with the GDB testsuite.

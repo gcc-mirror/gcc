@@ -1,3 +1,24 @@
+2012-08-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR binutils/4970
+	* Makefile.def (host_modules): Rmove lib_path=.libs from bfd
+	and opcodes.
+	* Makefile.in: Regenerated.
+
+2012-08-26  Art Haas <ahaas@impactweather.com>
+
+	* configure: Regenerate.
+
+2012-08-25  Křištof Želechovski <giecrilj@stegny.2a.pl>
+
+	* INSTALL/README: Also refer to the online installation
+	instructions.
+
+2012-08-21  Hariharan Sandanagobalane <hariharan.gcc@gmail.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+	(Picochip port): Remove myself.
+
 2012-08-14   Diego Novillo  <dnovillo@google.com>
 
 	Merge from cxx-conversion branch.
@@ -83,19 +104,19 @@
 
 	Merge from graphite branch
 	2011-07-21  Tobias Grosser  <tobias@grosser.es>
-    
+
 	* configure: Regenerated.
 	* config/cloog.m4: Remove support for CLooG-ppl and CLooG-parma,
 	both cloog.org and legacy versions. The only supported version will
 	be CLooG with the isl backend.
 
 	2011-07-21  Tobias Grosser  <tobias@grosser.es>
-    
+
 	* configure: Regenerated.
 	* configure.ac: Require cloog isl 0.17.0
 
 	2011-07-21  Tobias Grosser  <tobias@grosser.es>
-    
+
 	* configure: Regenerated.
 	* config/cloog.m4: Do not define CLOOG_ORG
 
@@ -163,10 +184,6 @@
 
 	* configure.ac: Bump minimum MPFR version to 2.4.0.
 	* configure: Regenerated.
-
-2012-05-03  Olivier Hainque  <hainque@adacore.com>
-
-	* config/mh-ppc-aix (LDFLAGS): Quote $(CC).
 
 2012-05-01  Richard Henderson  <rth@redhat.com>
 
@@ -317,7 +334,7 @@
 
 2011-11-21  Andreas Tobler  <andreast@fgznet.ch>
 
-	* libtool.m4: dditional FreeBSD 10 fixes.
+	* libtool.m4: Additional FreeBSD 10 fixes.
 
 2011-11-21  Joern Rennecke  <joern.rennecke@embecosm.com>
 

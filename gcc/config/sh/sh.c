@@ -2840,6 +2840,11 @@ static const struct ashl_lshr_sequence ashl_lshr_seq[32] =
   { 4, { 16, 8, 2, 2 },	    0 },
   { 4, { 16, -1, -2, 16 },  ASHL_CLOBBERS_T },
   { 3, { 16, -2, 16 },	    0 },
+
+  /* For a right shift by 31 a 2 insn shll-movt sequence can be used.
+     For a left shift by 31 a 2 insn and-rotl sequences can be used.
+     However, the shift-and combiner code needs this entry here to be in
+     terms of real shift insns.  */
   { 3, { 16, -1, 16 },	    ASHL_CLOBBERS_T }
 };
 
@@ -2888,8 +2893,52 @@ bool
 sh_ashlsi_clobbers_t_reg_p (rtx shift_amount)
 {
   gcc_assert (CONST_INT_P (shift_amount));
-  return (ashl_lshr_seq[INTVAL (shift_amount) & 31].clobbers_t
+  
+  const int shift_amount_i = INTVAL (shift_amount) & 31;
+
+  /* Special case for shift count of 31: use and-rotl sequence.  */
+  if (shift_amount_i == 31)
+    return true;
+
+  return (ashl_lshr_seq[shift_amount_i].clobbers_t
 	  & ASHL_CLOBBERS_T) != 0;
+}
+
+bool
+sh_lshrsi_clobbers_t_reg_p (rtx shift_amount)
+{
+  gcc_assert (CONST_INT_P (shift_amount));
+
+  const int shift_amount_i = INTVAL (shift_amount) & 31;
+ 
+  /* Special case for shift count of 31: use shll-movt sequence.  */
+  if (shift_amount_i == 31)
+    return true;
+
+  return (ashl_lshr_seq[shift_amount_i].clobbers_t
+	  & LSHR_CLOBBERS_T) != 0;
+}
+
+/* Return true if it is potentially beneficial to use a dynamic shift
+   instruction (shad / shar) instead of a combination of 1/2/8/16 
+   shift instructions for the specified shift count.
+   If dynamic shifts are not available, always return false.  */
+bool
+sh_dynamicalize_shift_p (rtx count)
+{
+  gcc_assert (CONST_INT_P (count));
+
+  const int shift_amount_i = INTVAL (count) & 31;
+  int insn_count;
+
+  /* For left and right shifts, there are shorter 2 insn sequences for
+     shift amounts of 31.  */
+  if (shift_amount_i == 31)
+    insn_count = 2;
+  else
+    insn_count = ashl_lshr_seq[shift_amount_i].insn_count;
+
+  return TARGET_DYNSHIFT && (insn_count > 1 + SH_DYNAMIC_SHIFT_COST);
 }
 
 /* Assuming we have a value that has been sign-extended by at least one bit,
@@ -3377,7 +3426,7 @@ gen_ashift (int type, int n, rtx reg)
       break;
     case LSHIFTRT:
       if (n == 1)
-	emit_insn (gen_lshrsi3_m (reg, reg, n_rtx));
+        emit_insn (gen_shlr (reg, reg));
       else
 	emit_insn (gen_lshrsi3_k (reg, reg, n_rtx));
       break;
@@ -3586,19 +3635,6 @@ expand_ashiftrt (rtx *operands)
   emit_insn (gen_ashrsi3_n (GEN_INT (value), wrk));
   emit_move_insn (operands[0], gen_rtx_REG (SImode, 4));
   return true;
-}
-
-/* Return true if it is potentially beneficial to use a dynamic shift
-   instruction (shad / shar) instead of a combination of 1/2/8/16 
-   shift instructions for the specified shift count.
-   If dynamic shifts are not available, always return false.  */
-bool
-sh_dynamicalize_shift_p (rtx count)
-{
-  int insn_count;
-  gcc_assert (CONST_INT_P (count));
-  insn_count = ashl_lshr_seq[INTVAL (count) & 31].insn_count;
-  return TARGET_DYNSHIFT && (insn_count > 1 + SH_DYNAMIC_SHIFT_COST);
 }
 
 /* Try to find a good way to implement the combiner pattern

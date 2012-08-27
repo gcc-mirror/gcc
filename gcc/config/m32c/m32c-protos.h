@@ -20,21 +20,17 @@
    <http://www.gnu.org/licenses/>.  */
 
 void m32c_conditional_register_usage (void);
-int  m32c_const_ok_for_constraint_p (HOST_WIDE_INT, char, const char *);
 unsigned int m32c_dwarf_frame_regnum (int);
 int  m32c_eh_return_data_regno (int);
 void m32c_emit_epilogue (void);
 void m32c_emit_prologue (void);
 int  m32c_epilogue_uses (int);
-int  m32c_extra_address_constraint (char, const char *);
-int  m32c_extra_memory_constraint (char, const char *);
 int  m32c_function_arg_regno_p (int);
 void m32c_init_expanders (void);
 int  m32c_initial_elimination_offset (int, int);
 void m32c_output_reg_pop (FILE *, int);
 void m32c_output_reg_push (FILE *, int);
 unsigned int  m32c_push_rounding (int);
-int  m32c_reg_class_from_constraint (char, const char *);
 void m32c_register_pragmas (void);
 void m32c_note_pragma_address (const char *, unsigned);
 int  m32c_regno_ok_for_base_p (int);
@@ -53,8 +49,7 @@ int  m32c_expand_movmemhi (rtx *);
 int  m32c_expand_movstr (rtx *);
 void m32c_expand_neg_mulpsi3 (rtx *);
 int  m32c_expand_setmemhi (rtx *);
-int  m32c_extra_constraint_p (rtx, char, const char *);
-int  m32c_extra_constraint_p2 (rtx, char, const char *);
+bool m32c_matches_constraint_p (rtx, int);
 int  m32c_hard_regno_nregs (int, enum machine_mode);
 int  m32c_hard_regno_ok (int, enum machine_mode);
 bool m32c_illegal_subreg_p (rtx);

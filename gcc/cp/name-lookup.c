@@ -441,7 +441,8 @@ supplement_binding_1 (cxx_binding *binding, tree decl)
 	     template in order to handle late matching of underlying
 	     type on an opaque-enum-declaration followed by an
 	     enum-specifier.  */
-	  || (TREE_CODE (TREE_TYPE (target_decl)) == ENUMERAL_TYPE
+	  || (processing_template_decl
+	      && TREE_CODE (TREE_TYPE (target_decl)) == ENUMERAL_TYPE
 	      && TREE_CODE (TREE_TYPE (target_bval)) == ENUMERAL_TYPE
 	      && (dependent_type_p (ENUM_UNDERLYING_TYPE
 				    (TREE_TYPE (target_decl)))
@@ -2420,7 +2421,15 @@ validate_nonmember_using_decl (tree decl, tree scope, tree name)
   gcc_assert (DECL_P (decl));
 
   /* Make a USING_DECL.  */
-  return push_using_decl (scope, name);
+  tree using_decl = push_using_decl (scope, name);
+
+  if (using_decl == NULL_TREE
+      && at_function_scope_p ()
+      && TREE_CODE (decl) == VAR_DECL)
+    /* C++11 7.3.3/10.  */
+    error ("%qD is already declared in this scope", name);
+  
+  return using_decl;
 }
 
 /* Process local and global using-declarations.  */
@@ -5855,23 +5864,33 @@ pushtag (tree name, tree type, tag_scope scope)
    scope isn't enough, because more binding levels may be pushed.  */
 struct saved_scope *scope_chain;
 
-/* If ID has not already been marked, add an appropriate binding to
-   *OLD_BINDINGS.  */
+/* Return true if ID has not already been marked.  */
+
+static inline bool
+store_binding_p (tree id)
+{
+  if (!id || !IDENTIFIER_BINDING (id))
+    return false;
+
+  if (IDENTIFIER_MARKED (id))
+    return false;
+
+  return true;
+}
+
+/* Add an appropriate binding to *OLD_BINDINGS which needs to already
+   have enough space reserved.  */
 
 static void
 store_binding (tree id, VEC(cxx_saved_binding,gc) **old_bindings)
 {
   cxx_saved_binding *saved;
 
-  if (!id || !IDENTIFIER_BINDING (id))
-    return;
-
-  if (IDENTIFIER_MARKED (id))
-    return;
+  gcc_checking_assert (store_binding_p (id));
 
   IDENTIFIER_MARKED (id) = 1;
 
-  saved = VEC_safe_push (cxx_saved_binding, gc, *old_bindings, NULL);
+  saved = VEC_quick_push (cxx_saved_binding, *old_bindings, NULL);
   saved->identifier = id;
   saved->binding = IDENTIFIER_BINDING (id);
   saved->real_type_value = REAL_IDENTIFIER_TYPE_VALUE (id);
@@ -5881,19 +5900,32 @@ store_binding (tree id, VEC(cxx_saved_binding,gc) **old_bindings)
 static void
 store_bindings (tree names, VEC(cxx_saved_binding,gc) **old_bindings)
 {
-  tree t;
+  static VEC(tree,heap) *bindings_need_stored = NULL;
+  tree t, id;
+  size_t i;
 
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
   for (t = names; t; t = TREE_CHAIN (t))
     {
-      tree id;
-
       if (TREE_CODE (t) == TREE_LIST)
 	id = TREE_PURPOSE (t);
       else
 	id = DECL_NAME (t);
 
-      store_binding (id, old_bindings);
+      if (store_binding_p (id))
+	VEC_safe_push(tree, heap, bindings_need_stored, id);
+    }
+  if (!VEC_empty (tree, bindings_need_stored))
+    {
+      VEC_reserve_exact (cxx_saved_binding, gc, *old_bindings,
+			 VEC_length (tree, bindings_need_stored));
+      for (i = 0; VEC_iterate(tree, bindings_need_stored, i, id); ++i)
+	{
+	  /* We can appearantly have duplicates in NAMES.  */
+	  if (store_binding_p (id))
+	    store_binding (id, old_bindings);
+	}
+      VEC_truncate (tree, bindings_need_stored, 0);
     }
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
 }
@@ -5905,12 +5937,23 @@ static void
 store_class_bindings (VEC(cp_class_binding,gc) *names,
 		      VEC(cxx_saved_binding,gc) **old_bindings)
 {
+  static VEC(tree,heap) *bindings_need_stored = NULL;
   size_t i;
   cp_class_binding *cb;
 
   bool subtime = timevar_cond_start (TV_NAME_LOOKUP);
   for (i = 0; VEC_iterate(cp_class_binding, names, i, cb); ++i)
-    store_binding (cb->identifier, old_bindings);
+    if (store_binding_p (cb->identifier))
+      VEC_safe_push (tree, heap, bindings_need_stored, cb->identifier);
+  if (!VEC_empty (tree, bindings_need_stored))
+    {
+      tree id;
+      VEC_reserve_exact (cxx_saved_binding, gc, *old_bindings,
+			 VEC_length (tree, bindings_need_stored));
+      for (i = 0; VEC_iterate(tree, bindings_need_stored, i, id); ++i)
+	store_binding (id, old_bindings);
+      VEC_truncate (tree, bindings_need_stored, 0);
+    }
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
 }
 

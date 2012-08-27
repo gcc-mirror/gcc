@@ -5075,7 +5075,7 @@ Binary_expression::do_lower(Gogo* gogo, Named_object*,
 						     &right_nc, location,
 						     &result))
 	      return this;
-	    return Expression::make_cast(Type::lookup_bool_type(),
+	    return Expression::make_cast(Type::make_boolean_type(),
 					 Expression::make_boolean(result,
 								  location),
 					 location);
@@ -5106,10 +5106,7 @@ Binary_expression::do_lower(Gogo* gogo, Named_object*,
 	    {
 	      int cmp = left_string.compare(right_string);
 	      bool r = Binary_expression::cmp_to_bool(op, cmp);
-	      return Expression::make_cast(Type::lookup_bool_type(),
-					   Expression::make_boolean(r,
-								    location),
-					   location);
+	      return Expression::make_boolean(r, location);
 	    }
 	}
     }
@@ -5327,15 +5324,15 @@ Binary_expression::do_type()
 
   switch (this->op_)
     {
-    case OPERATOR_OROR:
-    case OPERATOR_ANDAND:
     case OPERATOR_EQEQ:
     case OPERATOR_NOTEQ:
     case OPERATOR_LT:
     case OPERATOR_LE:
     case OPERATOR_GT:
     case OPERATOR_GE:
-      return Type::lookup_bool_type();
+      if (this->type_ == NULL)
+	this->type_ = Type::make_boolean_type();
+      return this->type_;
 
     case OPERATOR_PLUS:
     case OPERATOR_MINUS:
@@ -5346,6 +5343,8 @@ Binary_expression::do_type()
     case OPERATOR_MOD:
     case OPERATOR_AND:
     case OPERATOR_BITCLEAR:
+    case OPERATOR_OROR:
+    case OPERATOR_ANDAND:
       {
 	Type* type;
 	if (!Binary_expression::operation_type(this->op_,
@@ -5453,6 +5452,16 @@ Binary_expression::do_determine_type(const Type_context* context)
     }
 
   this->right_->determine_type(&subcontext);
+
+  if (is_comparison)
+    {
+      if (this->type_ != NULL && !this->type_->is_abstract())
+	;
+      else if (context->type != NULL && context->type->is_boolean_type())
+	this->type_ = context->type;
+      else if (!context->may_be_abstract)
+	this->type_ = Type::lookup_bool_type();
+    }
 }
 
 // Report an error if the binary operator OP does not support TYPE.
@@ -5664,7 +5673,7 @@ Binary_expression::do_get_tree(Translate_context* context)
     case OPERATOR_LE:
     case OPERATOR_GT:
     case OPERATOR_GE:
-      return Expression::comparison_tree(context, this->op_,
+      return Expression::comparison_tree(context, this->type_, this->op_,
 					 this->left_->type(), left,
 					 this->right_->type(), right,
 					 this->location());
@@ -6125,8 +6134,8 @@ Expression::make_binary(Operator op, Expression* left, Expression* right,
 // Implement a comparison.
 
 tree
-Expression::comparison_tree(Translate_context* context, Operator op,
-			    Type* left_type, tree left_tree,
+Expression::comparison_tree(Translate_context* context, Type* result_type,
+			    Operator op, Type* left_type, tree left_tree,
 			    Type* right_type, tree right_tree,
 			    Location location)
 {
@@ -6367,7 +6376,13 @@ Expression::comparison_tree(Translate_context* context, Operator op,
   if (left_tree == error_mark_node || right_tree == error_mark_node)
     return error_mark_node;
 
-  tree ret = fold_build2(code, boolean_type_node, left_tree, right_tree);
+  tree result_type_tree;
+  if (result_type == NULL)
+    result_type_tree = boolean_type_node;
+  else
+    result_type_tree = type_to_tree(result_type->get_backend(context->gogo()));
+
+  tree ret = fold_build2(code, result_type_tree, left_tree, right_tree);
   if (CAN_HAVE_LOCATION_P(ret))
     SET_EXPR_LOCATION(ret, location.gcc_location());
   return ret;
@@ -12914,26 +12929,8 @@ Type_guard_expression::do_traverse(Traverse* traverse)
 void
 Type_guard_expression::do_check_types(Gogo*)
 {
-  // 6g permits using a type guard with unsafe.pointer; we are
-  // compatible.
   Type* expr_type = this->expr_->type();
-  if (expr_type->is_unsafe_pointer_type())
-    {
-      if (this->type_->points_to() == NULL
-	  && (this->type_->integer_type() == NULL
-	      || (this->type_->forwarded()
-		  != Type::lookup_integer_type("uintptr"))))
-	this->report_error(_("invalid unsafe.Pointer conversion"));
-    }
-  else if (this->type_->is_unsafe_pointer_type())
-    {
-      if (expr_type->points_to() == NULL
-	  && (expr_type->integer_type() == NULL
-	      || (expr_type->forwarded()
-		  != Type::lookup_integer_type("uintptr"))))
-	this->report_error(_("invalid unsafe.Pointer conversion"));
-    }
-  else if (expr_type->interface_type() == NULL)
+  if (expr_type->interface_type() == NULL)
     {
       if (!expr_type->is_error() && !this->type_->is_error())
 	this->report_error(_("type assertion only valid for interface types"));
@@ -12966,23 +12963,10 @@ Type_guard_expression::do_check_types(Gogo*)
 tree
 Type_guard_expression::do_get_tree(Translate_context* context)
 {
-  Gogo* gogo = context->gogo();
   tree expr_tree = this->expr_->get_tree(context);
   if (expr_tree == error_mark_node)
     return error_mark_node;
-  Type* expr_type = this->expr_->type();
-  if ((this->type_->is_unsafe_pointer_type()
-       && (expr_type->points_to() != NULL
-	   || expr_type->integer_type() != NULL))
-      || (expr_type->is_unsafe_pointer_type()
-	  && this->type_->points_to() != NULL))
-    return convert_to_pointer(type_to_tree(this->type_->get_backend(gogo)),
-			      expr_tree);
-  else if (expr_type->is_unsafe_pointer_type()
-	   && this->type_->integer_type() != NULL)
-    return convert_to_integer(type_to_tree(this->type_->get_backend(gogo)),
-			      expr_tree);
-  else if (this->type_->interface_type() != NULL)
+  if (this->type_->interface_type() != NULL)
     return Expression::convert_interface_to_interface(context, this->type_,
 						      this->expr_->type(),
 						      expr_tree, true,

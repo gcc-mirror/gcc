@@ -7175,7 +7175,7 @@ Full barrier in both directions and synchronizes with acquire loads and
 release stores in all threads.
 @end table
 
-When implementing patterns for these built-in functions , the memory model
+When implementing patterns for these built-in functions, the memory model
 parameter can be ignored as long as the pattern implements the most
 restrictive @code{__ATOMIC_SEQ_CST} model.  Any of the other memory models
 will execute correctly with this memory model but they may not execute as

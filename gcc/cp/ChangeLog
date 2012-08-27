@@ -1,3 +1,86 @@
+2012-08-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51421
+	* decl2.c (mark_used): Consistently return false after errors
+	about uses before deduction of auto.
+	* semantics.c (finish_id_expression): Check mark_used return
+	value and return error_mark_node in case of failure.
+
+2012-08-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51213 (again)
+	* pt.c (deduction_tsubst_fntype): Remove.
+	(fn_type_unification): Check deduction depth and call
+	instantiate_template here.  Handle default argument access checks.
+	(determine_specialization): Suppress access control.
+	(tsubst_decl): Check for excessive deduction depth.
+	(recheck_decl_substitution): Make sure access control is on.
+	(type_unification_real): Don't mess with access deferring here.
+	(get_bindings): Adjust for fn_type_unification return type.
+	* call.c (enum rejection_reason_code): Drop rr_template_instantiation.
+	(template_instantiation_rejection): Remove.
+	(struct rejection_reason): Change targs to num_targs.
+	(template_unification_rejection, print_z_candidate): Adjust.
+	(add_template_candidate_real): Adjust for fn_type_unification change.
+	* class.c (resolve_address_of_overloaded_function): Likewise.
+	* cp-tree.h: Adjust declaration.
+
+	* pt.c (tsubst_default_argument): Indicate where the default
+	argument is being instantiated for.
+	(tsubst_expr): Restore previous location.
+	(tsubst_copy_and_build): Set and restore location.
+	* call.c (build_new_method_call_1): Remember location of call.
+	* semantics.c (finish_call_expr): Here too.
+	* parser.c (cp_parser_omp_for_loop): Remember the location of the
+	increment expression.
+
+	* pt.c (resolve_overloaded_unification): Use coerce_template_parms
+	instead of get_bindings.
+	(resolve_nondeduced_context): Likewise.
+
+	* pt.c (register_specialization): Correct argument to
+	check_specialization_namespace.
+	(determine_specialization): Don't consider members of
+	unspecialized types.
+
+2012-08-23  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (compute_array_index_type): Use type_dependent_expression_p.
+
+2012-08-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/20420
+	* name-lookup.c (supplement_binding_1): Handle specially enums
+	only in class templates.
+	(validate_nonmember_using_decl): Enforce 7.3.3/10 about duplicate
+	using declarations at function scope.
+
+2012-08-21  Richard Guenther  <rguenther@suse.de>
+
+	* cp-tree.h (TREE_INDIRECT_USING): Use TREE_LANG_FLAG_0 accessor.
+	(ATTR_IS_DEPENDENT): Likewise.
+	(ARGUMENT_PACK_INCOMPLETE_P): Use TREE_ADDRESSABLE instead of
+	TREE_LANG_FLAG_0 on TREE_VECs.
+
+2012-08-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/10416
+	* decl.c (poplevel): Check TYPE_HAS_NONTRIVIAL_DESTRUCTOR for
+	Wunused_variable too.
+
+2012-08-20  Diego Novillo  <dnovillo@google.com>
+
+	* decl.c (poplevel): Start TV_NAME_LOOKUP conditionally.
+
+2012-08-20  Richard Guenther  <rguenther@suse.de>
+
+	* name-lookup.c (store_binding_p): New predicate, split out from ...
+	(store_binding): ... here.  Always store binding and require
+	target vector with enough space.
+	(store_bindings): Collect to store bindings and reserve space
+	for them, then store them.
+	(store_class_bindings): Likewise.
+
 2012-08-19  Mikael Morin  <mikael@gcc.gnu.org>
 
 	* Make-lang.in: Fix typo.

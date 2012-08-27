@@ -3107,11 +3107,8 @@ df_uses_record (struct df_collection_rec *collection_rec,
     {
     case LABEL_REF:
     case SYMBOL_REF:
-    case CONST_INT:
     case CONST:
-    case CONST_DOUBLE:
-    case CONST_FIXED:
-    case CONST_VECTOR:
+    CASE_CONST_ANY:
     case PC:
     case CC0:
     case ADDR_VEC:
@@ -4448,6 +4445,7 @@ df_bb_verify (basic_block bb)
       if (!INSN_P (insn))
         continue;
       df_insn_refs_verify (&collection_rec, bb, insn, true);
+      df_free_collection_rec (&collection_rec);
     }
 
   /* Do the artificial defs and uses.  */

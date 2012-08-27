@@ -2786,6 +2786,7 @@ ix86_target_string (HOST_WIDE_INT isa, int flags, const char *arch,
   static struct ix86_target_opts flag_opts[] =
   {
     { "-m128bit-long-double",		MASK_128BIT_LONG_DOUBLE },
+    { "-mlong-double-64",		MASK_LONG_DOUBLE_64 },
     { "-m80387",			MASK_80387 },
     { "-maccumulate-outgoing-args",	MASK_ACCUMULATE_OUTGOING_ARGS },
     { "-malign-double",			MASK_ALIGN_DOUBLE },
@@ -4083,6 +4084,11 @@ ix86_option_override_internal (bool main_args_p)
     recip_mask |= RECIP_MASK_ALL & ~recip_mask_explicit;
   else if (target_flags_explicit & MASK_RECIP)
     recip_mask &= ~(RECIP_MASK_ALL & ~recip_mask_explicit);
+
+  /* Default long double to 64-bit for Bionic.  */
+  if (TARGET_HAS_BIONIC
+      && !(target_flags_explicit & MASK_LONG_DOUBLE_64))
+    target_flags |= MASK_LONG_DOUBLE_64;
 
   /* Save the initial options in case the user does function specific
      options.  */
@@ -15563,7 +15569,7 @@ output_387_ffreep (rtx *operands ATTRIBUTE_UNUSED, int opno)
       static char retval[32];
       int regno = REGNO (operands[opno]);
 
-      gcc_assert (FP_REGNO_P (regno));
+      gcc_assert (STACK_REGNO_P (regno));
 
       regno -= FIRST_STACK_REG;
 
@@ -20758,7 +20764,9 @@ ix86_split_to_parts (rtx operand, rtx *parts, enum machine_mode mode)
 		  parts[2] = gen_int_mode (l[2], SImode);
 		  break;
 		case XFmode:
-		  REAL_VALUE_TO_TARGET_LONG_DOUBLE (r, l);
+		  /* We can't use REAL_VALUE_TO_TARGET_LONG_DOUBLE since
+		     long double may not be 80-bit.  */
+		  real_to_target (l, &r, mode);
 		  parts[2] = gen_int_mode (l[2], SImode);
 		  break;
 		case DFmode:
@@ -24130,6 +24138,7 @@ ia32_multipass_dfa_lookahead (void)
     case PROCESSOR_CORE2_64:
     case PROCESSOR_COREI7_32:
     case PROCESSOR_COREI7_64:
+    case PROCESSOR_ATOM:
       /* Generally, we want haifa-sched:max_issue() to look ahead as far
 	 as many instructions can be executed on a cycle, i.e.,
 	 issue_rate.  I wonder why tuning for many CPUs does not do this.  */
@@ -32175,7 +32184,7 @@ ix86_hard_regno_mode_ok (int regno, enum machine_mode mode)
       || GET_MODE_CLASS (mode) == MODE_RANDOM
       || GET_MODE_CLASS (mode) == MODE_PARTIAL_INT)
     return false;
-  if (FP_REGNO_P (regno))
+  if (STACK_REGNO_P (regno))
     return VALID_FP_MODE_P (mode);
   if (SSE_REGNO_P (regno))
     {

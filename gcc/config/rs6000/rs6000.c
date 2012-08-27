@@ -3510,6 +3510,7 @@ rs6000_density_test (rs6000_cost_data *data)
 	}
     }
 
+  free (bbs);
   density_pct = (vec_cost * 100) / (vec_cost + not_vec_cost);
 
   if (density_pct > DENSITY_PCT_THRESHOLD

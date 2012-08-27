@@ -108,9 +108,9 @@ static const struct predictor_info predictor_info[]= {
 /* Return TRUE if frequency FREQ is considered to be hot.  */
 
 static inline bool
-maybe_hot_frequency_p (int freq)
+maybe_hot_frequency_p (struct function *fun, int freq)
 {
-  struct cgraph_node *node = cgraph_get_node (current_function_decl);
+  struct cgraph_node *node = cgraph_get_node (fun->decl);
   if (!profile_info || !flag_branch_probabilities)
     {
       if (node->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED)
@@ -118,12 +118,13 @@ maybe_hot_frequency_p (int freq)
       if (node->frequency == NODE_FREQUENCY_HOT)
         return true;
     }
-  if (profile_status == PROFILE_ABSENT)
+  if (profile_status_for_function (fun) == PROFILE_ABSENT)
     return true;
   if (node->frequency == NODE_FREQUENCY_EXECUTED_ONCE
-      && freq < (ENTRY_BLOCK_PTR->frequency * 2 / 3))
+      && freq < (ENTRY_BLOCK_PTR_FOR_FUNCTION (fun)->frequency * 2 / 3))
     return false;
-  if (freq < ENTRY_BLOCK_PTR->frequency / PARAM_VALUE (HOT_BB_FREQUENCY_FRACTION))
+  if (freq < (ENTRY_BLOCK_PTR_FOR_FUNCTION (fun)->frequency
+	      / PARAM_VALUE (HOT_BB_FREQUENCY_FRACTION)))
     return false;
   return true;
 }
@@ -131,9 +132,9 @@ maybe_hot_frequency_p (int freq)
 /* Return TRUE if frequency FREQ is considered to be hot.  */
 
 static inline bool
-maybe_hot_count_p (gcov_type count)
+maybe_hot_count_p (struct function *fun, gcov_type count)
 {
-  if (profile_status != PROFILE_READ)
+  if (profile_status_for_function (fun) != PROFILE_READ)
     return true;
   /* Code executed at most once is not hot.  */
   if (profile_info->runs >= count)
@@ -146,13 +147,12 @@ maybe_hot_count_p (gcov_type count)
    for maximal performance.  */
 
 bool
-maybe_hot_bb_p (const_basic_block bb)
+maybe_hot_bb_p (struct function *fun, const_basic_block bb)
 {
-  /* Make sure CFUN exists, for dump_bb_info.  */
-  gcc_assert (cfun);
-  if (profile_status == PROFILE_READ)
-    return maybe_hot_count_p (bb->count);
-  return maybe_hot_frequency_p (bb->frequency);
+  gcc_checking_assert (fun);
+  if (profile_status_for_function (fun) == PROFILE_READ)
+    return maybe_hot_count_p (fun, bb->count);
+  return maybe_hot_frequency_p (fun, bb->frequency);
 }
 
 /* Return true if the call can be hot.  */
@@ -193,22 +193,21 @@ bool
 maybe_hot_edge_p (edge e)
 {
   if (profile_status == PROFILE_READ)
-    return maybe_hot_count_p (e->count);
-  return maybe_hot_frequency_p (EDGE_FREQUENCY (e));
+    return maybe_hot_count_p (cfun, e->count);
+  return maybe_hot_frequency_p (cfun, EDGE_FREQUENCY (e));
 }
 
 
 /* Return true in case BB is probably never executed.  */
 
 bool
-probably_never_executed_bb_p (const_basic_block bb)
+probably_never_executed_bb_p (struct function *fun, const_basic_block bb)
 {
-  /* Make sure CFUN exists, for dump_bb_info.  */
-  gcc_assert (cfun);
+  gcc_checking_assert (fun);
   if (profile_info && flag_branch_probabilities)
     return ((bb->count + profile_info->runs / 2) / profile_info->runs) == 0;
   if ((!profile_info || !flag_branch_probabilities)
-      && (cgraph_get_node (current_function_decl)->frequency
+      && (cgraph_get_node (fun->decl)->frequency
 	  == NODE_FREQUENCY_UNLIKELY_EXECUTED))
     return true;
   return false;
@@ -252,7 +251,7 @@ optimize_function_for_speed_p (struct function *fun)
 bool
 optimize_bb_for_size_p (const_basic_block bb)
 {
-  return optimize_function_for_size_p (cfun) || !maybe_hot_bb_p (bb);
+  return optimize_function_for_size_p (cfun) || !maybe_hot_bb_p (cfun, bb);
 }
 
 /* Return TRUE when BB should be optimized for speed.  */
@@ -369,7 +368,7 @@ predictable_edge_p (edge e)
 void
 rtl_profile_for_bb (basic_block bb)
 {
-  crtl->maybe_hot_insn_p = maybe_hot_bb_p (bb);
+  crtl->maybe_hot_insn_p = maybe_hot_bb_p (cfun, bb);
 }
 
 /* Set RTL expansion for edge profile.  */
@@ -2705,12 +2704,12 @@ compute_function_frequency (void)
   node->frequency = NODE_FREQUENCY_UNLIKELY_EXECUTED;
   FOR_EACH_BB (bb)
     {
-      if (maybe_hot_bb_p (bb))
+      if (maybe_hot_bb_p (cfun, bb))
 	{
 	  node->frequency = NODE_FREQUENCY_HOT;
 	  return;
 	}
-      if (!probably_never_executed_bb_p (bb))
+      if (!probably_never_executed_bb_p (cfun, bb))
 	node->frequency = NODE_FREQUENCY_NORMAL;
     }
 }

@@ -468,4 +468,8 @@ of @option{-@var{opt}}, if not explicitly set. It is possible to
 specify several different languages.  Each @var{language} must have
 been declared by an earlier @code{Language} record.  @xref{Option file
 format}.
+
+@item NoDWARFRecord
+The option is omitted from the producer string written by
+@option{-grecord-gcc-switches}.
 @end table

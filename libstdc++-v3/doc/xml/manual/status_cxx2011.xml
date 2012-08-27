@@ -2151,7 +2151,10 @@ particular release.
       <entry>27.7</entry>
       <entry>Formatting and manipulators</entry>
       <entry>Partial</entry>
-      <entry>Missing move and swap operations</entry>
+      <entry>
+        Missing move and swap operations
+        Missing <code>get_time</code> and <code>put_time</code> manipulators.
+      </entry>
     </row>
     <row>
       <?dbhtml bgcolor="#B0B0B0" ?>

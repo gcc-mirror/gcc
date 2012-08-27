@@ -1427,10 +1427,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   class __future_base::_Async_state_common : public __future_base::_State_base
   {
   protected:
-#ifdef _GLIBCXX_HAVE_TLS
+#ifdef _GLIBCXX_ASYNC_ABI_COMPAT
     ~_Async_state_common();
 #else
-    ~_Async_state_common() { _M_join(); }
+    ~_Async_state_common() = default;
 #endif
 
     // Allow non-timed waiting functions to block until the thread completes,
@@ -1456,6 +1456,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_set_result(_S_task_setter(_M_result, _M_fn));
         } };
       }
+
+      ~_Async_state_impl() { _M_join(); }
 
     private:
       typedef __future_base::_Ptr<_Result<_Res>> _Ptr_type;

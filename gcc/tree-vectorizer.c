@@ -223,8 +223,6 @@ vectorize_loops (void)
 
   /*  ----------- Finalize. -----------  */
 
-  mark_virtual_operands_for_renaming (cfun);
-
   for (i = 1; i < vect_loops_num; i++)
     {
       loop_vec_info loop_vinfo;

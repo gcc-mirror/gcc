@@ -1140,7 +1140,8 @@ dump_var_map (FILE *f, var_map map)
       else
 	p = x;
 
-      if (ssa_name (p) == NULL_TREE)
+      if (ssa_name (p) == NULL_TREE
+	  || virtual_operand_p (ssa_name (p)))
         continue;
 
       t = 0;

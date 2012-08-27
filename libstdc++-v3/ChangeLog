@@ -1,3 +1,101 @@
+2012-08-26  Marc Glisse  <marc.glisse@inria.fr>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/54376
+	* include/bits/random.h (lognormal_distribution<>::operator==,
+	gamma_distribution<>::operator==,
+	chi_squared_distribution<>::operator==,
+	fisher_f_distribution<>::operator==,
+	student_t_distribution<>::operator==,
+	binomial_distribution<>::operator==,
+	negative_binomial_distribution<>::operator==,
+	poisson_distribution<>::operator==): Change inline friend definition
+	to non-template.
+	* testsuite/26_numerics/random/binomial_distribution/requirements/
+	explicit_instantiation/1.cc: New.
+	* testsuite/26_numerics/random/cauchy_distribution/requirements/
+	explicit_instantiation/1.cc: Likewise.
+	* testsuite/26_numerics/random/chi_squared_distribution/
+	requirements/explicit_instantiation/1.cc: Likewise.
+	* testsuite/26_numerics/random/discrete_distribution/requirements/
+	explicit_instantiation/1.cc: Likewise.
+	* testsuite/26_numerics/random/exponential_distribution/
+	requirements/explicit_instantiation/1.cc: Likewise.
+	* testsuite/26_numerics/random/extreme_value_distribution/
+	requirements/explicit_instantiation/1.cc: Likewise.
+	* testsuite/26_numerics/random/fisher_f_distribution/requirements/
+	explicit_instantiation/1.cc: Likewise.
+	* testsuite/26_numerics/random/gamma_distribution/requirements/
+	explicit_instantiation/1.cc: Likewise.
+	* testsuite/26_numerics/random/geometric_distribution/requirements/
+	explicit_instantiation/1.cc: Likewise.
+	* testsuite/26_numerics/random/lognormal_distribution/requirements/
+	explicit_instantiation/1.cc: Likewise.
+	* testsuite/26_numerics/random/negative_binomial_distribution/
+	requirements/explicit_instantiation/1.cc: Likewise.
+	* testsuite/26_numerics/random/normal_distribution/requirements/
+	explicit_instantiation/1.cc: Likewise.
+	* testsuite/26_numerics/random/piecewise_constant_distribution/
+	requirements/explicit_instantiation/1.cc: Likewise.
+	* testsuite/26_numerics/random/piecewise_linear_distribution/
+	requirements/explicit_instantiation/1.cc: Likewise.
+	* testsuite/26_numerics/random/poisson_distribution/requirements/
+	explicit_instantiation/1.cc: Likewise.
+	* testsuite/26_numerics/random/student_t_distribution/requirements/
+	explicit_instantiation/1.cc: Likewise.
+	* testsuite/26_numerics/random/uniform_int_distribution/
+	requirements/explicit_instantiation/1.cc: Likewise.
+	* testsuite/26_numerics/random/uniform_real_distribution/
+	requirements/explicit_instantiation/1.cc: Likewise.
+	* testsuite/26_numerics/random/weibull_distribution/requirements/
+	explicit_instantiation/1.cc: Likewise.
+
+2012-08-26  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* testsuite/30_threads/async/54297.cc: Add dg-require-nanosleep.
+
+2012-08-26  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/54297
+	* src/c++11/future.cc (~_Async_state_common): Move to...
+	* src/c++11/compatibility-thread-c++0x.cc (~_Async_state_common):
+	Here.
+	(_GLIBCXX_ABI_COMPAT_ASYNC): Rename to _GLIBCXX_ASYNC_ABI_COMPAT.
+	* include/std/future (_GLIBCXX_ABI_COMPAT_ASYNC): Likewise.
+
+2012-08-26  Jonathan Wakely  <jwakely.gcc@gmail.com>
+	    Geoff Romer  <gromer@google.com>
+
+	PR libstdc++/54351
+	* include/bits/unique_ptr.h (unique_ptr<T>::~unique_ptr): Do not use
+	reset().
+	(unique_ptr<T[]>::~unique_ptr()): Likewise.
+	* testsuite/20_util/unique_ptr/54351.cc: New.
+	* testsuite/20_util/unique_ptr/assign/48635_neg.cc: Adjust dg-error
+	line numbers.
+
+2012-08-25  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/54297
+	* include/std/future (~_Async_state_impl): Join thread before
+	derived class members are destroyed.
+	(~_Async_state_common): Only define non-trivial destructor when
+	included from future.cc for ABI compatibility reasons.
+	* src/c++11/future.cc (_GLIBCXX_ABI_COMPAT_ASYNC): Define.
+	* testsuite/30_threads/async/54297.cc: New.
+
+2012-08-25  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/54248
+	* include/bits/concept_check.h: Replace references to boost
+	namespace.
+
+2012-08-23  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/54354
+	* doc/xml/manual/status_cxx2011.xml: Note missing manipulators.
+	* doc/html/*: Regenerate.
+
 2012-08-15  Tom Tromey  <tromey@redhat.com>
 
 	* testsuite/libstdc++-prettyprinters/cxx11.cc (struct datum):

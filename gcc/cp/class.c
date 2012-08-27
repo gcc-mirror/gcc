@@ -7033,14 +7033,10 @@ resolve_address_of_overloaded_function (tree target_type,
 
 	  /* Try to do argument deduction.  */
 	  targs = make_tree_vec (DECL_NTPARMS (fn));
-	  if (fn_type_unification (fn, explicit_targs, targs, args, nargs,
-				   target_ret_type, DEDUCE_EXACT,
-				   LOOKUP_NORMAL, false))
-	    /* Argument deduction failed.  */
-	    continue;
-
-	  /* Instantiate the template.  */
-	  instantiation = instantiate_template (fn, targs, flags);
+	  instantiation = fn_type_unification (fn, explicit_targs, targs, args,
+					      nargs, target_ret_type,
+					      DEDUCE_EXACT, LOOKUP_NORMAL,
+					       false);
 	  if (instantiation == error_mark_node)
 	    /* Instantiation failed.  */
 	    continue;

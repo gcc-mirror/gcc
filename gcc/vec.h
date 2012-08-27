@@ -1099,21 +1099,9 @@ vec_reserve (vec_t<T> *vec_, int reserve MEM_STAT_DECL)
 					      sizeof (T), false
 					      PASS_MEM_STAT);
   else
-    {
-      /* Only allow stack vectors when re-growing them.  The initial
-	 allocation of stack vectors must be done with the
-	 VEC_stack_alloc macro, because it uses alloca() for the
-	 allocation.  */
-      if (vec_ == NULL)
-	{
-	  fprintf (stderr, "Stack vectors must be initially allocated "
-		   "with VEC_stack_alloc.\n");
-	  gcc_unreachable ();
-	}
-      return (vec_t<T> *) vec_stack_o_reserve (vec_, reserve,
-					       offsetof (vec_t<T>, vec),
-					       sizeof (T) PASS_MEM_STAT);
-    }
+    return (vec_t<T> *) vec_stack_o_reserve (vec_, reserve,
+					     offsetof (vec_t<T>, vec),
+					     sizeof (T) PASS_MEM_STAT);
 }
 
 

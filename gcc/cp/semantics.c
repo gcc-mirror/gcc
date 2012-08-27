@@ -2062,6 +2062,7 @@ finish_call_expr (tree fn, VEC(tree,gc) **args, bool disallow_virtual,
 	      && type_dependent_expression_p (current_class_ref)))
 	{
 	  result = build_nt_call_vec (fn, *args);
+	  SET_EXPR_LOCATION (result, EXPR_LOC_OR_HERE (fn));
 	  KOENIG_LOOKUP_P (result) = koenig_p;
 	  if (cfun)
 	    {
@@ -3220,11 +3221,12 @@ finish_id_expression (tree id_expression,
 
       /* Mark variable-like entities as used.  Functions are similarly
 	 marked either below or after overload resolution.  */
-      if (TREE_CODE (decl) == VAR_DECL
-	  || TREE_CODE (decl) == PARM_DECL
-	  || TREE_CODE (decl) == CONST_DECL
-	  || TREE_CODE (decl) == RESULT_DECL)
-	mark_used (decl);
+      if ((TREE_CODE (decl) == VAR_DECL
+	   || TREE_CODE (decl) == PARM_DECL
+	   || TREE_CODE (decl) == CONST_DECL
+	   || TREE_CODE (decl) == RESULT_DECL)
+	  && !mark_used (decl))
+	return error_mark_node;
 
       /* Only certain kinds of names are allowed in constant
 	 expression.  Template parameters have already

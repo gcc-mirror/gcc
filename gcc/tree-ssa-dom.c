@@ -649,19 +649,24 @@ print_expr_hash_elt (FILE * stream, const struct expr_hash_elt *element)
     }
 }
 
+/* Delete variable sized pieces of the expr_hash_elt ELEMENT.  */
+
+static void
+free_expr_hash_elt_contents (struct expr_hash_elt *element)
+{
+  if (element->expr.kind == EXPR_CALL)
+    free (element->expr.ops.call.args);
+  else if (element->expr.kind == EXPR_PHI)
+    free (element->expr.ops.phi.args);
+}
+
 /* Delete an expr_hash_elt and reclaim its storage.  */
 
 static void
 free_expr_hash_elt (void *elt)
 {
   struct expr_hash_elt *element = ((struct expr_hash_elt *)elt);
-
-  if (element->expr.kind == EXPR_CALL)
-    free (element->expr.ops.call.args);
-
-  if (element->expr.kind == EXPR_PHI)
-    free (element->expr.ops.phi.args);
-
+  free_expr_hash_elt_contents (element);
   free (element);
 }
 
@@ -1203,7 +1208,7 @@ record_cond (cond_equivalence *p)
       VEC_safe_push (expr_hash_elt_t, heap, avail_exprs_stack, element);
     }
   else
-    free (element);
+    free_expr_hash_elt (element);
 }
 
 /* Build a cond_equivalence record indicating that the comparison
@@ -2404,9 +2409,11 @@ lookup_avail_expr (gimple stmt, bool insert)
   slot = htab_find_slot_with_hash (avail_exprs, &element, element.hash,
 				   (insert ? INSERT : NO_INSERT));
   if (slot == NULL)
-    return NULL_TREE;
-
-  if (*slot == NULL)
+    {
+      free_expr_hash_elt_contents (&element);
+      return NULL_TREE;
+    }
+  else if (*slot == NULL)
     {
       struct expr_hash_elt *element2 = XNEW (struct expr_hash_elt);
       *element2 = element;
@@ -2422,6 +2429,8 @@ lookup_avail_expr (gimple stmt, bool insert)
       VEC_safe_push (expr_hash_elt_t, heap, avail_exprs_stack, element2);
       return NULL_TREE;
     }
+  else
+    free_expr_hash_elt_contents (&element);
 
   /* Extract the LHS of the assignment so that it can be used as the current
      definition of another variable.  */

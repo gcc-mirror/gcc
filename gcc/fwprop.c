@@ -1,5 +1,5 @@
 /* RTL-based forward propagation pass for GNU compiler.
-   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Paolo Bonzini and Steven Bosscher.
 
@@ -799,13 +799,17 @@ all_uses_available_at (rtx def_insn, rtx target_insn)
   df_ref *use_rec;
   struct df_insn_info *insn_info = DF_INSN_INFO_GET (def_insn);
   rtx def_set = single_set (def_insn);
+  rtx next;
 
   gcc_assert (def_set);
 
   /* If target_insn comes right after def_insn, which is very common
-     for addresses, we can use a quicker test.  */
-  if (NEXT_INSN (def_insn) == target_insn
-      && REG_P (SET_DEST (def_set)))
+     for addresses, we can use a quicker test.  Ignore debug insns
+     other than target insns for this.  */
+  next = NEXT_INSN (def_insn);
+  while (next && next != target_insn && DEBUG_INSN_P (next))
+    next = NEXT_INSN (next);
+  if (next == target_insn && REG_P (SET_DEST (def_set)))
     {
       rtx def_reg = SET_DEST (def_set);
 

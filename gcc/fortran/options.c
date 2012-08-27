@@ -475,7 +475,6 @@ set_Wall (int setting)
   gfc_option.warn_character_truncation = setting;
   gfc_option.warn_real_q_constant = setting;
   gfc_option.warn_unused_dummy_argument = setting;
-  gfc_option.warn_compare_reals = setting;
   gfc_option.warn_target_lifetime = setting;
 
   warn_return_type = setting;
