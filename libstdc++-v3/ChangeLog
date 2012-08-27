@@ -1,4 +1,48 @@
-012-08-22  Ulrich Drepper  <drepper@gmail.com>
+2012-08-27  Ulrich Drepper  <drepper@gmail.com>
+
+	Add interfaces to retrieve random numbers in bulk.
+	* include/bits/random.h (uniform_int_distribution<>): Add __generate
+	and __generate_impl functions.
+	(uniform_real_distribution<>): Likewise.
+	(bernoulli_distribution): Likewise.
+	(geometric_distribution<>): Likewise.
+	(negative_binomial_distribution<>): Likewise.
+	(poisson_distribution<>): Likewise.
+	(exponential_distribution<>): Likewise.
+	(normal_distribution<>): Likewise.
+	(lognormal_distribution<>): Likewise.
+	(chi_squared_distribution<>): Likewise.
+	(cauchy_distribution<>): Likewise.
+	(fisher_f_distribution<>): Likewise.
+	(student_t_distribution<>): Likewise.
+	(gamma_distribution<>): Likewise.
+	(weibull_distribution<>): Likewise.
+	(extreme_value_distribution<>): Likewise.
+	(discrete_distribution<>): Likewise.
+	(piecewise_constant_distribution<>): Likewise.
+	(piecewise_linear_distribution<>): Likewise.
+	* include/bits/random.tcc (__detail::_Power_of_2): New function.
+	(uniform_int_distribution<>::__generate_impl): New function.
+	(uniform_real_distribution<>::__generate_impl): New function.
+	(bernoulli_distribution::__generate_impl): New function.
+	(geometric_distribution<>::__generate_impl): New function.
+	(negative_binomial_distribution<>::__generate_impl): New function.
+	(poisson_distribution<>::__generate_impl): New function.
+	(exponential_distribution<>::__generate_impl): New function.
+	(normal_distribution<>::__generate_impl): New function.
+	(lognormal_distribution<>::__generate_impl): New function.
+	(chi_squared_distribution<>::__generate_impl): New function.
+	(cauchy_distribution<>::__generate_impl): New function.
+	(fisher_f_distribution<>::__generate_impl): New function.
+	(student_t_distribution<>::__generate_impl): New function.
+	(gamma_distribution<>::__generate_impl): New function.
+	(weibull_distribution<>::__generate_impl): New function.
+	(extreme_value_distribution<>::__generate_impl): New function.
+	(discrete_distribution<>::__generate_impl): New function.
+	(piecewise_constant_distribution<>::__generate_impl): New function.
+	(piecewise_linear_distribution<>::__generate_impl): New function.
+
+2012-08-22  Ulrich Drepper  <drepper@gmail.com>
 
 	* include/bits/random.h (mersenne_twister_engine): Don't inline
 	discard here.  New member function _M_gen_rand.
@@ -7,7 +51,7 @@
 	(mersenne_twister_engine<>::discard): New implementation which
 	skips in large steps.
 	(mersenne_twister_engine<>::operator()): Use _M_gen_rand.
-							
+
 2012-08-26  Marc Glisse  <marc.glisse@inria.fr>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -489,8 +533,8 @@
 
 	PR c++/53322
 	* include/bits/stl_algobase.h (lower_bound)
-    	(lexicographical_compare): Do not declare unused local typedefs
-    	here when Concepts are turned off.
+	(lexicographical_compare): Do not declare unused local typedefs
+	here when Concepts are turned off.
 
 2012-05-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -2006,7 +2050,7 @@
 
 	PR libstdc++/52309
 	* include/bits/hashtable_policy.h (_Equality_base<, true,>::
-    	_M_equal(const _Hashtable&)): Compare values with operator==.
+	_M_equal(const _Hashtable&)): Compare values with operator==.
 	* testsuite/23_containers/unordered_set/operators/52309.cc: New.
 
 2012-02-17  Benjamin Kosnik  <bkoz@redhat.com>
