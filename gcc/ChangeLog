@@ -1,3 +1,57 @@
+2012-08-28  Walter Lee  <walt@tilera.com>
+
+	* doc/invoke.texi: Document -mcmodel=small, -mcmodel=large.
+	* config/tilegx/tilegx.h: Include config/tilegx/tilegx-opts.h.
+	(CRT_CALL_STATIC_FUNCTION): Define.
+	* config/tilegx/predicates.md (const_last_symbolic_operand):
+	Handle UNSPEC_HW2_LAST_PCREL, UNSPEC_HW1_LAST_PLT_PCREL, and
+	UNSPEC_HW2_LAST_PLT_PCREL.
+	(const_symbolic_operand): Handle UNSPEC_HW1_PCREL,
+	UNSPEC_HW0_PLT_PCREL, and UNSPEC_HW1_PLT_PCREL.
+	* config/tilegx/tilegx.md (UNSPEC_MOV_LARGE_PCREL_STEP4): Define,
+	and renumber the constants that follow.
+	(UNSPEC_HW1_PCREL): Ditto.
+	(UNSPEC_HW2_LAST_PCREL): Ditto.
+	(UNSPEC_HW0_PLT_PCREL): Define.
+	(UNSPEC_HW1_PLT_PCREL): Define.
+	(UNSPEC_HW1_LAST_PLT_PCREL): Define.
+	(UNSPEC_HW2_LAST_PLT_PCREL): Define.
+	(mov_large_pcrel_step1): Define.
+	(mov_large_pcrel_step2): Define.
+	(mov_large_pcrel_step3): Define.
+	(mov_large_pcrel_step4): Define.
+	(mov_plt_pcrel_step1): Define.
+	(mov_plt_pcrel_step2): Define.
+	(mov_plt_pcrel_step3): Define.
+	(mov_plt_pcrel_step1_32bit): Define.
+	(mov_plt_pcrel_step2_32bit): Define.
+	(call): Handle tilegx_cmodel == CM_LARGE, CM_LARGE_PIC.
+	(call_value): Ditto.
+	* config/tilegx/tilegx.opt: Include config/tilegx/tilegx-opts.h.
+	(mcmodel): New option.
+	(enum cmodel): Define.
+	(CM_SMALL): Define.
+	(CM_LARGE): Define.
+	* config/tilegx/tilegx-opts.h: New file.
+	* config/tilegx/tilegx-protos.h (tilegx_compute_pcrel_address):
+	Declare.
+	(tilegx_compute_pcrel_plt_address): Declare.
+	* config/tilegx/tilegx.c (tilegx_option_override): Handle
+	tilegx_cmodel.
+	(tilegx_function_ok_for_sibcall): Ditto.
+	(compute_pcrel_address): Rename to tilegx_compute_pcrel_address,
+	and don't declare static.  Handle tilegx_cmodel.
+	(tilegx_compute_pcrel_plt_address): Define.
+	(tilegx_legitimize_pic_address): Rename calls to
+	compute_pcrel_address.
+	(tilegx_delegitimize_address): Handle UNSPEC_HW1_PCREL,
+	UNSPEC_HW2_LAST_PCREL, UNSPEC_HW0_PLT_PCREL, UNSPEC_HW1_PLT_PCREL,
+	UNSPEC_HW1_LAST_PLT_PCREL, UNSPEC_HW2_LAST_PLT_PCREL.
+	(load_pic_register): Rename call to compute_pcrel_address.
+	(tilegx_print_operand): Handle UNSPEC_HW1_PCREL,
+	UNSPEC_HW2_LAST_PCREL, UNSPEC_HW0_PLT_PCREL, UNSPEC_HW1_PLT_PCREL,
+	UNSPEC_HW1_LAST_PLT_PCREL, UNSPEC_HW2_LAST_PLT_PCREL.
+
 2012-08-27  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	* sched-deps.c (add_dependence_list_and_free): Simplify.

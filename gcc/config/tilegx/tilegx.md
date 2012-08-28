@@ -150,42 +150,43 @@
 
   ;; Insns generating difference of two labels
   (UNSPEC_MOV_PCREL_STEP3              204)
+  (UNSPEC_MOV_LARGE_PCREL_STEP4        205)
 
   ;; Latency specifying loads.
-  (UNSPEC_LATENCY_L2                   205)
-  (UNSPEC_LATENCY_MISS                 206)
+  (UNSPEC_LATENCY_L2                   206)
+  (UNSPEC_LATENCY_MISS                 207)
 
   ;; A pseudo-op that prevents network operations from being ordered.
-  (UNSPEC_NETWORK_BARRIER              207)
+  (UNSPEC_NETWORK_BARRIER              208)
 
   ;; Operations that access network registers.
-  (UNSPEC_NETWORK_RECEIVE              208)
-  (UNSPEC_NETWORK_SEND                 209)
+  (UNSPEC_NETWORK_RECEIVE              209)
+  (UNSPEC_NETWORK_SEND                 210)
 
   ;; Stack protector operations
-  (UNSPEC_SP_SET                       210)
-  (UNSPEC_SP_TEST                      211)
+  (UNSPEC_SP_SET                       211)
+  (UNSPEC_SP_TEST                      212)
 
   ;; This is used to move a value to a SPR.
-  (UNSPEC_SPR_MOVE                     212)
+  (UNSPEC_SPR_MOVE                     213)
 
   ;; A call to __tls_get_addr
-  (UNSPEC_TLS_GD_CALL                  213)
+  (UNSPEC_TLS_GD_CALL                  214)
 
   ;; An opaque TLS "add" operation for TLS general dynamic model
   ;; access.
-  (UNSPEC_TLS_GD_ADD                   214)
+  (UNSPEC_TLS_GD_ADD                   215)
 
   ;; An opaque TLS "load" operation for TLS initial exec model access.
-  (UNSPEC_TLS_IE_LOAD                  215)
+  (UNSPEC_TLS_IE_LOAD                  216)
 
   ;; An opaque TLS "add" operation for TLS access.
-  (UNSPEC_TLS_ADD                      216)
+  (UNSPEC_TLS_ADD                      217)
 
   ;; Atomics
-  (UNSPEC_ATOMIC                       217)
-  (UNSPEC_CMPXCHG                      218)
-  (UNSPEC_XCHG                         219)
+  (UNSPEC_ATOMIC                       218)
+  (UNSPEC_CMPXCHG                      219)
+  (UNSPEC_XCHG                         220)
 
   ;;
   ;; The following are operands.
@@ -199,24 +200,32 @@
   (UNSPEC_HW2_LAST                     306)
 
   (UNSPEC_HW0_PCREL                    307)
-  (UNSPEC_HW1_LAST_PCREL               308)
+  (UNSPEC_HW1_PCREL                    308)
+  (UNSPEC_HW1_LAST_PCREL               309)
+  (UNSPEC_HW2_LAST_PCREL               310)
 
-  (UNSPEC_HW0_GOT                      309)
-  (UNSPEC_HW0_LAST_GOT                 310)
-  (UNSPEC_HW1_LAST_GOT                 311)
+  (UNSPEC_HW0_GOT                      311)
+  (UNSPEC_HW0_LAST_GOT                 312)
+  (UNSPEC_HW1_LAST_GOT                 313)
 
-  (UNSPEC_HW0_TLS_GD                   312)
-  (UNSPEC_HW1_LAST_TLS_GD              313)
+  (UNSPEC_HW0_TLS_GD                   314)
+  (UNSPEC_HW1_LAST_TLS_GD              315)
 
-  (UNSPEC_HW0_TLS_IE                   314)
-  (UNSPEC_HW1_LAST_TLS_IE              315)
+  (UNSPEC_HW0_TLS_IE                   316)
+  (UNSPEC_HW1_LAST_TLS_IE              317)
 
-  (UNSPEC_HW0_TLS_LE                   316)
-  (UNSPEC_HW1_LAST_TLS_LE              317)
+  (UNSPEC_HW0_TLS_LE                   318)
+  (UNSPEC_HW1_LAST_TLS_LE              319)
+
+  (UNSPEC_HW0_PLT_PCREL                320)
+  (UNSPEC_HW1_PLT_PCREL                321)
+
+  (UNSPEC_HW1_LAST_PLT_PCREL           322)
+  (UNSPEC_HW2_LAST_PLT_PCREL           323)
 
   ;; This is used to wrap around the addresses of non-temporal load/store
   ;; intrinsics.
-  (UNSPEC_NON_TEMPORAL                 318)
+  (UNSPEC_NON_TEMPORAL                 324)
 ])
 
 ;; Mark the last instruction of various latencies, used to
@@ -885,15 +894,15 @@
 ;; Addresses
 ;;
 
-;; First step of the 3-insn sequence to materialize a symbolic
-;; address.
+;; The next three patterns are used to to materialize a position
+;; independent address by adding the difference of two labels to a base
+;; label in the text segment, assuming that the difference fits in 32
+;; signed bits.
 (define_expand "mov_address_step1"
   [(set (match_operand:DI 0 "register_operand" "")
 	(const:DI (unspec:DI [(match_operand:DI 1 "symbolic_operand" "")]
 			     UNSPEC_HW2_LAST)))])
   
-;; Second step of the 3-insn sequence to materialize a symbolic
-;; address.
 (define_expand "mov_address_step2"
   [(set (match_operand:DI 0 "register_operand" "")
 	(unspec:DI
@@ -902,8 +911,6 @@
 			       UNSPEC_HW1))]
 	 UNSPEC_INSN_ADDR_SHL16INSLI))])
   
-;; Third step of the 3-insn sequence to materialize a symbolic
-;; address.
 (define_expand "mov_address_step3"
   [(set (match_operand:DI 0 "register_operand" "")
 	(unspec:DI
@@ -987,6 +994,106 @@
                         UNSPEC_MOV_PCREL_STEP3))]
   "flag_pic"
   "add<x>\t%0, %r1, %r2")
+
+;; The next three patterns are used to to materialize a position
+;; independent 64-bit address by adding the difference of two labels to
+;; a base label in the text segment, without any limitation on the size
+;; of the difference.
+(define_expand "mov_large_pcrel_step1"
+  [(set (match_operand:DI 0 "register_operand" "")
+	(const:DI (unspec:DI
+		   [(match_operand:DI 1 "symbolic_operand" "")
+		    (match_operand:DI 2 "symbolic_operand" "")]
+		   UNSPEC_HW2_LAST_PCREL)))]
+  "flag_pic")
+  
+(define_expand "mov_large_pcrel_step2"
+  [(set (match_operand:DI 0 "register_operand" "")
+	(unspec:DI
+	 [(match_operand:DI 1 "reg_or_0_operand" "")
+	  (const:DI
+	   (unspec:DI [(match_operand:DI 2 "symbolic_operand" "")
+		       (match_operand:DI 3 "symbolic_operand" "")]
+		      UNSPEC_HW1_PCREL))]
+	 UNSPEC_INSN_ADDR_SHL16INSLI))]
+  "flag_pic")
+
+;; Note: step 3 is same as move_pcrel_step2.
+(define_expand "mov_large_pcrel_step3"
+  [(set (match_operand:DI 0 "register_operand" "")
+	(unspec:DI
+	 [(match_operand:DI 1 "reg_or_0_operand" "")
+	  (const:DI
+	   (unspec:DI [(match_operand:DI 2 "symbolic_operand" "")
+		       (match_operand:DI 3 "symbolic_operand" "")]
+		      UNSPEC_HW0_PCREL))]
+	 UNSPEC_INSN_ADDR_SHL16INSLI))]
+  "flag_pic")
+
+(define_insn "mov_large_pcrel_step4"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+        (unspec:DI [(match_operand:DI 1 "reg_or_0_operand" "rO")
+		    (match_operand:DI 2 "reg_or_0_operand" "rO")
+			 (match_operand:DI 3 "symbolic_operand" "in")
+			 (match_operand:DI 4 "symbolic_operand" "in")]
+		   UNSPEC_MOV_LARGE_PCREL_STEP4))]
+  "flag_pic"
+  "add\t%0, %r1, %r2")
+
+;; The next three patterns are used to materialize a position
+;; independent 64-bit plt address by adding the difference of two
+;; labels to a base label in the text segment.
+(define_expand "mov_plt_pcrel_step1"
+  [(set (match_operand:DI 0 "register_operand" "")
+	(const:DI (unspec:DI
+			[(match_operand:DI 1 "symbolic_operand" "")
+			 (match_operand:DI 2 "symbolic_operand" "")]
+                        UNSPEC_HW2_LAST_PLT_PCREL)))]
+  "flag_pic")
+  
+(define_expand "mov_plt_pcrel_step2"
+  [(set (match_operand:DI 0 "register_operand" "")
+	(unspec:DI
+	 [(match_operand:DI 1 "reg_or_0_operand" "")
+	  (const:DI
+	   (unspec:DI [(match_operand:DI 2 "symbolic_operand" "")
+			    (match_operand:DI 3 "symbolic_operand" "")]
+		      UNSPEC_HW1_PLT_PCREL))]
+	 UNSPEC_INSN_ADDR_SHL16INSLI))]
+  "flag_pic")
+
+(define_expand "mov_plt_pcrel_step3"
+  [(set (match_operand:DI 0 "register_operand" "")
+	(unspec:DI
+	 [(match_operand:DI 1 "reg_or_0_operand" "")
+	  (const:DI
+	   (unspec:DI [(match_operand:DI 2 "symbolic_operand" "")
+			    (match_operand:DI 3 "symbolic_operand" "")]
+		      UNSPEC_HW0_PLT_PCREL))]
+	 UNSPEC_INSN_ADDR_SHL16INSLI))]
+  "flag_pic")
+
+;; The next two patterns are used to materialize a position independent
+;; 32-bit plt address by adding the difference of two labels to a base
+;; label in the text segment.
+(define_expand "mov_plt_pcrel_step1_32bit"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(const:SI (unspec:SI
+			[(match_operand:SI 1 "symbolic_operand" "")
+			 (match_operand:SI 2 "symbolic_operand" "")]
+                        UNSPEC_HW1_LAST_PLT_PCREL)))]
+  "flag_pic")
+  
+(define_expand "mov_plt_pcrel_step2_32bit"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(unspec:SI
+	 [(match_operand:SI 1 "reg_or_0_operand" "")
+	  (const:SI
+	   (unspec:SI [(match_operand:SI 2 "symbolic_operand" "")
+			    (match_operand:SI 3 "symbolic_operand" "")]
+		      UNSPEC_HW0_PLT_PCREL))]
+	 UNSPEC_INSN_ADDR_SHL16INSLI))]
+  "flag_pic")
 
 (define_expand "add_got16<bitsuffix>"
   [(set (match_operand:I48MODE 0 "register_operand" "")
@@ -2300,7 +2407,29 @@
               (use (reg:DI 54))
 	      (clobber (reg:DI 55))])]
   ""
-  "")
+{
+  rtx orig_addr = XEXP (operands[0], 0);
+  rtx addr;
+  if (GET_CODE (orig_addr) == SYMBOL_REF)
+    {
+      if (tilegx_cmodel == CM_LARGE)
+        {
+          addr = gen_reg_rtx (Pmode);
+          tilegx_expand_set_const64 (addr, orig_addr);
+          operands[0] = gen_rtx_MEM (DImode, addr);
+        }
+      else if (tilegx_cmodel == CM_LARGE_PIC)
+        {
+          crtl->uses_pic_offset_table = 1;
+          addr = gen_reg_rtx (Pmode);
+	  if (SYMBOL_REF_LOCAL_P (orig_addr))
+	    tilegx_compute_pcrel_address (addr, orig_addr);
+	  else
+	    tilegx_compute_pcrel_plt_address (addr, orig_addr);
+          operands[0] = gen_rtx_MEM (DImode, addr);
+        }
+    }
+})
 
 (define_insn "*call_insn"
   [(call (mem:DI (match_operand:I48MODE 0 "call_address_operand" "rO,i"))
@@ -2319,7 +2448,30 @@
 			 (match_operand 2 "" "")))
               (use (reg:DI 54))
 	      (clobber (reg:DI 55))])]
-  "")
+  ""
+{
+  rtx orig_addr = XEXP (operands[1], 0);
+  rtx addr;
+  if (GET_CODE (orig_addr) == SYMBOL_REF)
+    {
+      if (tilegx_cmodel == CM_LARGE)
+        {
+          addr = gen_reg_rtx (Pmode);
+          tilegx_expand_set_const64 (addr, orig_addr);
+          operands[1] = gen_rtx_MEM (DImode, addr);
+        }
+      else if (tilegx_cmodel == CM_LARGE_PIC)
+        {
+          crtl->uses_pic_offset_table = 1;
+          addr = gen_reg_rtx (Pmode);
+	  if (SYMBOL_REF_LOCAL_P (orig_addr))
+	    tilegx_compute_pcrel_address (addr, orig_addr);
+	  else
+	    tilegx_compute_pcrel_plt_address (addr, orig_addr);
+          operands[1] = gen_rtx_MEM (DImode, addr);
+        }
+      }
+})
 
 (define_insn "*call_value_insn"
   [(set (match_operand 0 "register_operand" "=r,r")

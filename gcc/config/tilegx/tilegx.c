@@ -67,6 +67,29 @@ static bool output_memory_autoinc_first;
 static void
 tilegx_option_override (void)
 {
+  if (global_options_set.x_tilegx_cmodel)
+    {
+      switch (tilegx_cmodel)
+	{
+	case CM_SMALL:
+	case CM_SMALL_PIC:
+	  if (flag_pic)
+	    tilegx_cmodel = CM_SMALL_PIC;
+	  break;
+
+	case CM_LARGE:
+	case CM_LARGE_PIC:
+	  if (flag_pic)
+	    tilegx_cmodel = CM_LARGE_PIC;
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
+    }
+  else
+    tilegx_cmodel = flag_pic ? CM_SMALL_PIC : CM_SMALL;
+
   /* When modulo scheduling is enabled, we still rely on regular
      scheduler for bundling.  */
   if (flag_modulo_sched)
@@ -119,7 +142,8 @@ tilegx_cannot_force_const_mem (enum machine_mode mode ATTRIBUTE_UNUSED,
 static bool
 tilegx_function_ok_for_sibcall (tree decl, tree exp ATTRIBUTE_UNUSED)
 {
-  return decl != NULL;
+  return (tilegx_cmodel != CM_LARGE && tilegx_cmodel != CM_LARGE_PIC
+	  && (decl != NULL));
 }
 
 
@@ -1024,12 +1048,12 @@ tilegx_legitimize_tls_address (rtx addr)
 
 /* Returns a register that points to ADDR, a symbolic address, by
    computing its address relative to tilegx_text_label_symbol.  */
-static void
-compute_pcrel_address (rtx result, rtx addr)
+void
+tilegx_compute_pcrel_address (rtx result, rtx addr)
 {
   rtx text_label_symbol = tilegx_text_label_symbol ();
   rtx text_label_rtx = tilegx_text_label_rtx ();
-  rtx temp, temp2;
+  rtx temp, temp2, temp3;
 
   temp = create_temp_reg_if_possible (Pmode, result);
   temp2 = create_temp_reg_if_possible (Pmode, result);
@@ -1043,6 +1067,18 @@ compute_pcrel_address (rtx result, rtx addr)
 					    text_label_rtx,
 					    addr, text_label_symbol));
     }
+  else if (tilegx_cmodel == CM_LARGE_PIC)
+    {
+      temp3 = create_temp_reg_if_possible (Pmode, result);
+      emit_insn (gen_mov_large_pcrel_step1 (temp, addr, text_label_symbol));
+      emit_insn (gen_mov_large_pcrel_step2 (temp2, temp, addr,
+					    text_label_symbol));
+      emit_insn (gen_mov_large_pcrel_step3 (temp3, temp2, addr,
+					    text_label_symbol));
+      emit_insn (gen_mov_large_pcrel_step4 (result, temp3,
+					    text_label_rtx,
+					    addr, text_label_symbol));
+    }
   else
     {
       emit_insn (gen_mov_pcrel_step1 (temp, addr, text_label_symbol));
@@ -1050,6 +1086,41 @@ compute_pcrel_address (rtx result, rtx addr)
       emit_insn (gen_mov_pcrel_step3 (result, temp2,
 				      text_label_rtx,
 				      addr, text_label_symbol));
+    }
+}
+
+
+/* Returns a register that points to the plt entry of ADDR, a symbolic
+   address, by computing its address relative to
+   tilegx_text_label_symbol. */
+void
+tilegx_compute_pcrel_plt_address (rtx result, rtx addr)
+{
+  rtx text_label_symbol = tilegx_text_label_symbol ();
+  rtx text_label_rtx = tilegx_text_label_rtx ();
+  rtx temp, temp2, temp3;
+
+  temp = create_temp_reg_if_possible (Pmode, result);
+  temp2 = create_temp_reg_if_possible (Pmode, result);
+
+  if (TARGET_32BIT)
+    {
+      emit_insn (gen_mov_plt_pcrel_step1_32bit (temp, addr,
+						text_label_symbol));
+      emit_insn (gen_mov_plt_pcrel_step2_32bit (temp2, temp, addr,
+						text_label_symbol));
+      emit_move_insn (result, gen_rtx_PLUS (Pmode, temp2, text_label_rtx));
+    }
+  else
+    {
+      temp3 = create_temp_reg_if_possible (Pmode, result);
+
+      emit_insn (gen_mov_plt_pcrel_step1 (temp, addr, text_label_symbol));
+      emit_insn (gen_mov_plt_pcrel_step2 (temp2, temp, addr,
+					  text_label_symbol));
+      emit_insn (gen_mov_plt_pcrel_step3 (temp3, temp2, addr,
+					  text_label_symbol));
+      emit_move_insn (result, gen_rtx_PLUS (Pmode, temp3, text_label_rtx));
     }
 }
 
@@ -1079,7 +1150,7 @@ tilegx_legitimize_pic_address (rtx orig,
 	     loading in the address, so that these instructions can be
 	     optimized properly.  */
 	  rtx temp_reg = create_temp_reg_if_possible (Pmode, reg);
-	  compute_pcrel_address (temp_reg, orig);
+	  tilegx_compute_pcrel_address (temp_reg, orig);
 
 	  /* Note: this is conservative.  We use the text_label but we
 	     don't use the pic_offset_table.  However, in some cases
@@ -1196,7 +1267,7 @@ tilegx_legitimize_pic_address (rtx orig,
          loading in the address, so that these instructions can be
          optimized properly.  */
       temp_reg = create_temp_reg_if_possible (Pmode, reg);
-      compute_pcrel_address (temp_reg, orig);
+      tilegx_compute_pcrel_address (temp_reg, orig);
 
       /* Note: this is conservative.  We use the text_label but we
          don't use the pic_offset_table.  */
@@ -1250,7 +1321,13 @@ tilegx_delegitimize_address (rtx x)
 	  case UNSPEC_HW1_LAST:
 	  case UNSPEC_HW2_LAST:
 	  case UNSPEC_HW0_PCREL:
+	  case UNSPEC_HW1_PCREL:
 	  case UNSPEC_HW1_LAST_PCREL:
+	  case UNSPEC_HW2_LAST_PCREL:
+	  case UNSPEC_HW0_PLT_PCREL:
+	  case UNSPEC_HW1_PLT_PCREL:
+	  case UNSPEC_HW1_LAST_PLT_PCREL:
+	  case UNSPEC_HW2_LAST_PLT_PCREL:
 	  case UNSPEC_HW0_GOT:
 	  case UNSPEC_HW0_LAST_GOT:
   	  case UNSPEC_HW1_LAST_GOT:
@@ -1290,7 +1367,7 @@ load_pic_register (bool delay_pic_helper ATTRIBUTE_UNUSED)
       emit_insn (gen_insn_lnk_and_label (text_label_rtx, text_label_symbol));
     }
 
-  compute_pcrel_address (tilegx_got_rtx (), got_symbol);
+  tilegx_compute_pcrel_address (tilegx_got_rtx (), got_symbol);
 
   flag_pic = orig_flag_pic;
 
@@ -2577,7 +2654,7 @@ tilegx_expand_tablejump (rtx op0, rtx op1)
       rtx temp = gen_reg_rtx (Pmode);
       rtx temp2 = gen_reg_rtx (Pmode);
 
-      compute_pcrel_address (temp, gen_rtx_LABEL_REF (Pmode, op1));
+      tilegx_compute_pcrel_address (temp, gen_rtx_LABEL_REF (Pmode, op1));
       emit_move_insn (temp2,
 		      gen_rtx_PLUS (Pmode,
 				    convert_to_mode (Pmode, op0, false),
@@ -4961,6 +5038,7 @@ tilegx_print_operand (FILE *file, rtx x, int code)
 	      opstr = "hw0";
 	      break;
 	    case UNSPEC_HW1:
+	    case UNSPEC_HW1_PCREL:
 	      opstr = "hw1";
 	      break;
 	    case UNSPEC_HW2:
@@ -4977,6 +5055,7 @@ tilegx_print_operand (FILE *file, rtx x, int code)
 	      opstr = "hw1_last";
 	      break;
 	    case UNSPEC_HW2_LAST:
+	    case UNSPEC_HW2_LAST_PCREL:
 	      opstr = "hw2_last";
 	      break;
 	    case UNSPEC_HW0_GOT:
@@ -5006,6 +5085,18 @@ tilegx_print_operand (FILE *file, rtx x, int code)
 	    case UNSPEC_HW1_LAST_TLS_LE:
 	      opstr = "hw1_last_tls_le";
 	      break;
+	    case UNSPEC_HW0_PLT_PCREL:
+	      opstr = "hw0_plt";
+	      break;
+	    case UNSPEC_HW1_PLT_PCREL:
+	      opstr = "hw1_plt";
+	      break;
+	    case UNSPEC_HW1_LAST_PLT_PCREL:
+	      opstr = "hw1_last_plt";
+	      break;
+	    case UNSPEC_HW2_LAST_PLT_PCREL:
+	      opstr = "hw2_last_plt";
+	      break;
 	    default:
 	      output_operand_lossage ("invalid %%H specifier");
 	    }
@@ -5015,7 +5106,13 @@ tilegx_print_operand (FILE *file, rtx x, int code)
 	  output_addr_const (file, addr);
 
 	  if (unspec == UNSPEC_HW0_PCREL
-	      || unspec == UNSPEC_HW1_LAST_PCREL)
+	      || unspec == UNSPEC_HW1_PCREL
+	      || unspec == UNSPEC_HW1_LAST_PCREL
+	      || unspec == UNSPEC_HW2_LAST_PCREL
+	      || unspec == UNSPEC_HW0_PLT_PCREL
+	      || unspec == UNSPEC_HW1_PLT_PCREL
+	      || unspec == UNSPEC_HW1_LAST_PLT_PCREL
+	      || unspec == UNSPEC_HW2_LAST_PLT_PCREL)
 	    {
 	      rtx addr2 = XVECEXP (XEXP (x, 0), 0, 1);
 	      fputs (" - " , file);

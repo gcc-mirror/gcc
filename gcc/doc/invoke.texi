@@ -929,7 +929,7 @@ See RS/6000 and PowerPC Options.
 @gccoptlist{-Qy  -Qn  -YP,@var{paths}  -Ym,@var{dir}}
 
 @emph{TILE-Gx Options}
-@gccoptlist{-mcpu=CPU -m32 -m64}
+@gccoptlist{-mcpu=CPU -m32 -m64 -mcmodel=@var{code-model}}
 
 @emph{TILEPro Options}
 @gccoptlist{-mcpu=CPU -m32}
@@ -18937,6 +18937,17 @@ The assembler uses this option.
 These @samp{-m} options are supported on the TILE-Gx:
 
 @table @gcctabopt
+@item -mcmodel=small
+@opindex mcmodel=small
+Generate code for the small model.  Distance for direct calls is
+limited to 500M in either direction.  PC-relative addresses are 32
+bits.  Absolute addresses support the full address range.
+
+@item -mcmodel=large
+@opindex mcmodel=large
+Generate code for the large model.  There is no limiation on call
+distance, pc-relative addresses, or absolute addresses.
+
 @item -mcpu=@var{name}
 @opindex mcpu
 Selects the type of CPU to be targeted.  Currently the only supported
