@@ -361,6 +361,8 @@ match_data_constant (gfc_expr **result)
 	m = MATCH_ERROR;
       return m;
     }
+  else if (m == MATCH_YES)
+    gfc_free_expr (*result);
 
   gfc_current_locus = old_loc;
 
@@ -451,8 +453,7 @@ top_val_list (gfc_data *data)
 	}
       else
 	{
-	  if (expr->ts.type == BT_INTEGER)
-	    mpz_set (tail->repeat, expr->value.integer);
+	  mpz_set (tail->repeat, expr->value.integer);
 	  gfc_free_expr (expr);
 
 	  m = match_data_constant (&tail->expr);
