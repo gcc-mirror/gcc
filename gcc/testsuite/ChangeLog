@@ -1,3 +1,7 @@
+2012-08-28  Joey Ye  <joey.ye@arm.com>
+
+	* gcc.dg/tree-ssa/ssa-dom-thread-3.c: Add -fno-short-enums.
+
 2012-08-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/46254
