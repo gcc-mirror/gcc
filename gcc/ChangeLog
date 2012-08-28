@@ -1,4 +1,10 @@
 2012-08-28  Walter Lee  <walt@tilera.com>
+	* confg/tilegx/tilegx.md: Fix code style.
+	(*zero_extendsidi_truncdisi): Fix typo.
+	* config/tilegx/tilegx.c: Fix code style.
+	(tilegx_function_profiler): Fix typo.
+
+2012-08-28  Walter Lee  <walt@tilera.com>
 
 	* doc/invoke.texi: Document -mcmodel=small, -mcmodel=large.
 	* config/tilegx/tilegx.h: Include config/tilegx/tilegx-opts.h.
