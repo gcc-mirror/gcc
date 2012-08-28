@@ -1783,7 +1783,7 @@ gfc_get_extern_function_decl (gfc_symbol * sym)
   /* Set attributes for PURE functions. A call to PURE function in the
      Fortran 95 sense is both pure and without side effects in the C
      sense.  */
-  if (sym->attr.pure || sym->attr.elemental)
+  if (sym->attr.pure || sym->attr.implicit_pure)
     {
       if (sym->attr.function && !gfc_return_by_reference (sym))
 	DECL_PURE_P (fndecl) = 1;
@@ -1912,7 +1912,7 @@ build_function_decl (gfc_symbol * sym, bool global)
   /* Set attributes for PURE functions. A call to a PURE function in the
      Fortran 95 sense is both pure and without side effects in the C
      sense.  */
-  if (attr.pure || attr.elemental)
+  if (attr.pure || attr.implicit_pure)
     {
       /* TODO: check if a pure SUBROUTINE has no INTENT(OUT) arguments
 	 including an alternate return. In that case it can also be
