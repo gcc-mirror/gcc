@@ -129,6 +129,9 @@ extern int main () __asm__("upc_main");
    implementation of exit instead. */
 #define exit __upc_exit
 
+/* Implementation of upc_fence.  */
+#define upc_fence __upc_fence()
+
 /* upc_shared_ptr_t is predefined as the representation of
    a shared pointer type. */
 

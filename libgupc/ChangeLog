@@ -1,3 +1,14 @@
+2012-08-28  Nenad Vukicevic  <nenad@intrepid.com>
+
+	* include/gcc-upc.h (upc_fence): Delete. Replaced with the
+	library specific definition in gcc-upc-lib.h
+	(__BERKELEY_UPC_RUNTIME__): Delete. Remove conditional compile
+	for upc_fence and upc_poll if compiled with the Berkeley
+	runtime as they are already provided in gcc-upc-lib.h.
+	* smp/gcc-upc-lib.in (upc_fence): Add.
+	* smp/upc_access.h (__upc_fence): Add prototype.
+	* smp/upc_access.c (__upc_fence): Add SMP upc_fence implementation.
+
 2012-08-22  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* upc_defs.h: Additianl clean-up related to the new barrier

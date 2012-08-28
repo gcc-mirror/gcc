@@ -163,6 +163,9 @@ extern void __putsgblk5 (upc_shared_ptr_t, void *, size_t, const char *file,
 extern void __copysgblk5 (upc_shared_ptr_t, upc_shared_ptr_t, size_t,
 			  const char *file, int line);
 
+/* Miscellaneous access related prototypes.  */
+extern void __upc_fence (void);
+
 //end lib_access_prototypes
 
 /* memory-to-memory operations (profiled) */

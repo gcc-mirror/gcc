@@ -39,20 +39,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* upc_lock_t is an opaque shared type */
 typedef shared struct upc_lock_struct upc_lock_t;
 
-#ifndef upc_fence
-#define upc_fence { static strict shared int x; x = x; }
-#endif
-
 #ifndef upc_poll
 /* for now upc_poll is a no-op */
 #define upc_poll()
-#endif
-
-#ifdef __BERKELEY_UPC_RUNTIME__
-#undef upc_fence
-#undef upc_poll
-#define upc_fence upcr_poll()
-#define upc_poll() upcr_poll()
 #endif
 
 #ifdef __UPC_USES_PTHREADS__

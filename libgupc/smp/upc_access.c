@@ -447,4 +447,11 @@ __copysblk3 (upc_shared_ptr_t dest, upc_shared_ptr_t src, size_t len)
   __copyblk3 (dest, src, len);
   GUPCR_FENCE ();
 }
+
+//inline
+void
+__upc_fence (void)
+{
+  GUPCR_FENCE ();
+}
 //end lib_inline_access
