@@ -4103,6 +4103,7 @@ gfc_copy_formal_args (gfc_symbol *dest, gfc_symbol *src, ifsrc if_src)
      of the formal args).  */
   gfc_current_ns = gfc_get_namespace (parent_ns, 0);
   gfc_current_ns->proc_name = dest;
+  dest->formal_ns = gfc_current_ns;
 
   for (curr_arg = src->formal; curr_arg; curr_arg = curr_arg->next)
     {

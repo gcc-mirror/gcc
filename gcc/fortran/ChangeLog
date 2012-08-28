@@ -1,3 +1,8 @@
+2012-08-28  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54384
+	* symbol.c (gfc_copy_formal_args): Set also sym->formal_ns.
+
 2012-08-27  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/54384
