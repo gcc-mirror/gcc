@@ -96,7 +96,7 @@
 2012-08-27  Walter Lee  <walt@tilera.com>
 
 	* config/tilegx/tilegx.c (tilegx_function_profiler): Fix typo.
-	config/tilepro/tilepro.c (tilepro_function_profiler): Ditto.
+	* config/tilepro/tilepro.c (tilepro_function_profiler): Ditto.
 
 2012-08-27  Walter Lee  <walt@tilera.com>
 
