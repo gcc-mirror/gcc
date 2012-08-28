@@ -1,5 +1,10 @@
 2012-08-28  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/54382
+	* error.c (show_locus): Avoid out of bound access.
+
+2012-08-28  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/54384
 	* decl.c (match_data_constant): Add missing gfc_free_expr.
 	(top_val_list): Remove always-true condition.
