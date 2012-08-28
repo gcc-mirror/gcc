@@ -1,3 +1,11 @@
+2012-08-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2012-08-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/46254
+	* gcc.target/i386/pr46254.c: New test.
+
 2012-08-20  Patrick Marlier  <patrick.marlier@gmail.com>
 
 	Backported from trunk

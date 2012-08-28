@@ -28,10 +28,7 @@
 ])
 
 (define_c_enum "unspecv" [
-  UNSPECV_CMPXCHG_1
-  UNSPECV_CMPXCHG_2
-  UNSPECV_CMPXCHG_3
-  UNSPECV_CMPXCHG_4
+  UNSPECV_CMPXCHG
   UNSPECV_XCHG
   UNSPECV_LOCK
 ])
@@ -315,8 +312,9 @@
    (match_operand:SI 7 "const_int_operand" "")]		;; failure model
   "TARGET_CMPXCHG"
 {
-  emit_insn (gen_atomic_compare_and_swap_single<mode>
-	     (operands[1], operands[2], operands[3], operands[4]));
+  emit_insn
+   (gen_atomic_compare_and_swap<mode>_1
+    (operands[1], operands[2], operands[3], operands[4]));
   ix86_expand_setcc (operands[0], EQ, gen_rtx_REG (CCZmode, FLAGS_REG),
 		     const0_rtx);
   DONE;
@@ -325,11 +323,7 @@
 (define_mode_iterator CASMODE
   [(DI "TARGET_64BIT || TARGET_CMPXCHG8B")
    (TI "TARGET_64BIT && TARGET_CMPXCHG16B")])
-(define_mode_iterator DCASMODE
-  [(DI "!TARGET_64BIT && TARGET_CMPXCHG8B && !flag_pic")
-   (TI "TARGET_64BIT && TARGET_CMPXCHG16B")])
-(define_mode_attr doublemodesuffix [(DI "8") (TI "16")])
-(define_mode_attr DCASHMODE [(DI "SI") (TI "DI")])
+(define_mode_attr CASHMODE [(DI "SI") (TI "DI")])
 
 (define_expand "atomic_compare_and_swap<mode>"
   [(match_operand:QI 0 "register_operand" "")		;; bool success output
@@ -344,12 +338,13 @@
 {
   if (<MODE>mode == DImode && TARGET_64BIT)
     {
-      emit_insn (gen_atomic_compare_and_swap_singledi
-		 (operands[1], operands[2], operands[3], operands[4]));
+      emit_insn
+       (gen_atomic_compare_and_swapdi_1
+	(operands[1], operands[2], operands[3], operands[4]));
     }
   else
     {
-      enum machine_mode hmode = <DCASHMODE>mode;
+      enum machine_mode hmode = <CASHMODE>mode;
       rtx lo_o, lo_e, lo_n, hi_o, hi_e, hi_n, mem;
 
       lo_o = operands[1];
@@ -363,31 +358,30 @@
       lo_e = gen_lowpart (hmode, lo_e);
       lo_n = gen_lowpart (hmode, lo_n);
 
-      if (<MODE>mode == DImode
-	  && !TARGET_64BIT
-	  && flag_pic
-	  && !cmpxchg8b_pic_memory_operand (mem, DImode))
-	mem = replace_equiv_address (mem, force_reg (Pmode, XEXP (mem, 0)));
+      if (!cmpxchg8b_pic_memory_operand (mem, <MODE>mode))
+ 	mem = replace_equiv_address (mem, force_reg (Pmode, XEXP (mem, 0)));
 
-      emit_insn (gen_atomic_compare_and_swap_double<mode>
-		 (lo_o, hi_o, mem, lo_e, hi_e, lo_n, hi_n));
+      emit_insn
+       (gen_atomic_compare_and_swap<mode>_doubleword
+        (lo_o, hi_o, mem, lo_e, hi_e, lo_n, hi_n));
     }
+
   ix86_expand_setcc (operands[0], EQ, gen_rtx_REG (CCZmode, FLAGS_REG),
 		     const0_rtx);
   DONE;
 })
 
-(define_insn "atomic_compare_and_swap_single<mode>"
+(define_insn "atomic_compare_and_swap<mode>_1"
   [(set (match_operand:SWI 0 "register_operand" "=a")
 	(unspec_volatile:SWI
 	  [(match_operand:SWI 1 "memory_operand" "+m")
 	   (match_operand:SWI 2 "register_operand" "0")
 	   (match_operand:SWI 3 "register_operand" "<r>")]
-	  UNSPECV_CMPXCHG_1))
+	  UNSPECV_CMPXCHG))
    (set (match_dup 1)
-	(unspec_volatile:SWI [(const_int 0)] UNSPECV_CMPXCHG_2))
+	(unspec_volatile:SWI [(const_int 0)] UNSPECV_CMPXCHG))
    (set (reg:CCZ FLAGS_REG)
-        (unspec_volatile:CCZ [(const_int 0)] UNSPECV_CMPXCHG_3))]
+        (unspec_volatile:CCZ [(const_int 0)] UNSPECV_CMPXCHG))]
   "TARGET_CMPXCHG"
   "lock{%;} cmpxchg{<imodesuffix>}\t{%3, %1|%1, %3}")
 
@@ -396,50 +390,46 @@
 ;; not match the gcc register numbering, so the pair must be CX:BX.
 ;; That said, in order to take advantage of possible lower-subreg opts,
 ;; treat all of the integral operands in the same way.
-(define_insn "atomic_compare_and_swap_double<mode>"
-  [(set (match_operand:<DCASHMODE> 0 "register_operand" "=a")
-	(unspec_volatile:<DCASHMODE>
-	  [(match_operand:DCASMODE 2 "memory_operand" "+m")
-	   (match_operand:<DCASHMODE> 3 "register_operand" "0")
-	   (match_operand:<DCASHMODE> 4 "register_operand" "1")
-	   (match_operand:<DCASHMODE> 5 "register_operand" "b")
-	   (match_operand:<DCASHMODE> 6 "register_operand" "c")]
-	  UNSPECV_CMPXCHG_1))
-   (set (match_operand:<DCASHMODE> 1 "register_operand" "=d")
-	(unspec_volatile:<DCASHMODE> [(const_int 0)] UNSPECV_CMPXCHG_2))
-   (set (match_dup 2)
-	(unspec_volatile:DCASMODE [(const_int 0)] UNSPECV_CMPXCHG_3))
-   (set (reg:CCZ FLAGS_REG)
-        (unspec_volatile:CCZ [(const_int 0)] UNSPECV_CMPXCHG_4))]
-  ""
-  "lock{%;} cmpxchg<doublemodesuffix>b\t%2")
 
-;; Theoretically we'd like to use constraint "r" (any reg) for op5,
-;; but that includes ecx.  If op5 and op6 are the same (like when
-;; the input is -1LL) GCC might chose to allocate op5 to ecx, like
-;; op6.  This breaks, as the xchg will move the PIC register contents
-;; to %ecx then --> boom.  Operands 5 and 6 really need to be different
-;; registers, which in this case means op5 must not be ecx.  Instead
-;; of playing tricks with fake early clobbers or the like we just
-;; enumerate all regs possible here, which (as this is !TARGET_64BIT)
-;; are just esi and edi.
-(define_insn "*atomic_compare_and_swap_doubledi_pic"
-  [(set (match_operand:SI 0 "register_operand" "=a")
-	(unspec_volatile:SI
-	  [(match_operand:DI 2 "cmpxchg8b_pic_memory_operand" "+m")
-	   (match_operand:SI 3 "register_operand" "0")
-	   (match_operand:SI 4 "register_operand" "1")
-	   (match_operand:SI 5 "register_operand" "SD")
-	   (match_operand:SI 6 "register_operand" "c")]
-	  UNSPECV_CMPXCHG_1))
-   (set (match_operand:SI 1 "register_operand" "=d")
-	(unspec_volatile:SI [(const_int 0)] UNSPECV_CMPXCHG_2))
+;; Operands 5 and 6 really need to be different registers, which in
+;; this case means op5 must not be ecx.  If op5 and op6 are the same
+;; (like when the input is -1LL) GCC might chose to allocate op5 to ecx,
+;; like op6.  This breaks, as the xchg will move the PIC register
+;; contents to %ecx then --> boom.
+
+(define_mode_attr doublemodesuffix [(SI "8") (DI "16")])
+(define_mode_attr regprefix [(SI "e") (DI "r")])
+
+(define_insn "atomic_compare_and_swap<dwi>_doubleword"
+  [(set (match_operand:DWIH 0 "register_operand" "=a,a")
+	(unspec_volatile:DWIH
+	  [(match_operand:<DWI> 2 "cmpxchg8b_pic_memory_operand" "+m,m")
+	   (match_operand:DWIH 3 "register_operand" "0,0")
+	   (match_operand:DWIH 4 "register_operand" "1,1")
+	   (match_operand:DWIH 5 "register_operand" "b,!*r")
+	   (match_operand:DWIH 6 "register_operand" "c,c")]
+	  UNSPECV_CMPXCHG))
+   (set (match_operand:DWIH 1 "register_operand" "=d,d")
+	(unspec_volatile:DWIH [(const_int 0)] UNSPECV_CMPXCHG))
    (set (match_dup 2)
-	(unspec_volatile:DI [(const_int 0)] UNSPECV_CMPXCHG_3))
+	(unspec_volatile:<DWI> [(const_int 0)] UNSPECV_CMPXCHG))
    (set (reg:CCZ FLAGS_REG)
-        (unspec_volatile:CCZ [(const_int 0)] UNSPECV_CMPXCHG_4))]
-  "!TARGET_64BIT && TARGET_CMPXCHG8B && flag_pic"
-  "xchg{l}\t%%ebx, %5\;lock{%;} cmpxchg8b\t%2\;xchg{l}\t%%ebx, %5")
+        (unspec_volatile:CCZ [(const_int 0)] UNSPECV_CMPXCHG))
+   (clobber (match_scratch:DWIH 7 "=X,&5"))]
+  "TARGET_CMPXCHG<doublemodesuffix>B"
+{
+  bool swap = REGNO (operands[5]) != BX_REG;
+
+  if (swap)
+    output_asm_insn ("xchg{<imodesuffix>}\t%%<regprefix>bx, %5", operands);
+
+  output_asm_insn ("lock{%;} cmpxchg<doublemodesuffix>b\t%2", operands);
+
+  if (swap)
+    output_asm_insn ("xchg{<imodesuffix>}\t%%<regprefix>bx, %5", operands);
+
+  return "";
+})
 
 ;; For operand 2 nonmemory_operand predicate is used instead of
 ;; register_operand to allow combiner to better optimize atomic
