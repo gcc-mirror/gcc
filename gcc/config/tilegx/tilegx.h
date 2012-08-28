@@ -31,6 +31,8 @@
     }						\
   while (0)
 
+#include "config/tilegx/tilegx-opts.h"
+
 
 /* Target CPU builtins.  */
 #define TARGET_CPU_CPP_BUILTINS() \
@@ -479,6 +481,19 @@ enum reg_class
   ( fputs (".lcomm ", (FILE)),				\
     assemble_name ((FILE), (NAME)),			\
     fprintf ((FILE), ",%u\n", (unsigned int)(ROUNDED)))
+
+#define CRT_CALL_STATIC_FUNCTION(SECTION_OP, FUNC)		\
+static void __attribute__((__used__))				\
+call_ ## FUNC (void)						\
+{								\
+  asm (SECTION_OP);						\
+  asm ("{ moveli r0, hw2_last(" #FUNC " - . - 8); lnk r1 }\n");	\
+  asm ("shl16insli r0, r0, hw1(" #FUNC " - .)\n");		\
+  asm ("shl16insli r0, r0, hw0(" #FUNC " - . + 8)\n");		\
+  asm ("add r0, r1, r0\n");					\
+  asm ("jalr r0\n");						\
+  asm (TEXT_SECTION_ASM_OP);					\
+}
 
 
 
