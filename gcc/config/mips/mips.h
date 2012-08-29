@@ -517,6 +517,9 @@ struct mips_cpu_info {
       if (TARGET_OCTEON)						\
 	builtin_define ("__OCTEON__");					\
 									\
+      if (TARGET_SYNCI)							\
+	builtin_define ("__mips_synci");				\
+									\
       /* Macros dependent on the C dialect.  */				\
       if (preprocessing_asm_p ())					\
 	{								\

@@ -1,3 +1,7 @@
+2012-08-29  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc.target/mips/mips.exp: Work out default -msynci setting.
+
 2012-08-28  Joey Ye  <joey.ye@arm.com>
 
 	* gcc.dg/tree-ssa/ssa-dom-thread-3.c: Add -fno-short-enums.

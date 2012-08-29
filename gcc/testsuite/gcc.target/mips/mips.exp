@@ -767,6 +767,12 @@ proc mips-dg-init {} {
 	    "-mno-smartmips",
 	    #endif
 
+	    #ifdef __mips_synci
+	    "-msynci",
+	    #else
+	    "-mno-synci",
+	    #endif
+
 	    0
 	};
     }]
