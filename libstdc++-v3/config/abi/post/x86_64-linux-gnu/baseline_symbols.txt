@@ -1485,6 +1485,10 @@ FUNC:_ZNSt13basic_ostreamIwSt11char_traitsIwEElsEs@@GLIBCXX_3.4
 FUNC:_ZNSt13basic_ostreamIwSt11char_traitsIwEElsEt@@GLIBCXX_3.4
 FUNC:_ZNSt13basic_ostreamIwSt11char_traitsIwEElsEx@@GLIBCXX_3.4
 FUNC:_ZNSt13basic_ostreamIwSt11char_traitsIwEElsEy@@GLIBCXX_3.4
+FUNC:_ZNSt13random_device14_M_init_pretr1ERKSs@@GLIBCXX_3.4.18
+FUNC:_ZNSt13random_device16_M_getval_pretr1Ev@@GLIBCXX_3.4.18
+FUNC:_ZNSt13random_device7_M_initERKSs@@GLIBCXX_3.4.18
+FUNC:_ZNSt13random_device9_M_getvalEv@@GLIBCXX_3.4.18
 FUNC:_ZNSt13runtime_errorC1ERKSs@@GLIBCXX_3.4
 FUNC:_ZNSt13runtime_errorC2ERKSs@@GLIBCXX_3.4
 FUNC:_ZNSt13runtime_errorD0Ev@@GLIBCXX_3.4
@@ -2502,6 +2506,7 @@ OBJECT:0:GLIBCXX_3.4.14
 OBJECT:0:GLIBCXX_3.4.15
 OBJECT:0:GLIBCXX_3.4.16
 OBJECT:0:GLIBCXX_3.4.17
+OBJECT:0:GLIBCXX_3.4.18
 OBJECT:0:GLIBCXX_3.4.2
 OBJECT:0:GLIBCXX_3.4.3
 OBJECT:0:GLIBCXX_3.4.4
@@ -3683,3 +3688,5 @@ OBJECT:96:_ZTVSt12ctype_bynameIcE@@GLIBCXX_3.4
 OBJECT:96:_ZTVSt5ctypeIcE@@GLIBCXX_3.4
 OBJECT:96:_ZTVSt7num_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE@@GLIBCXX_3.4
 OBJECT:96:_ZTVSt7num_putIwSt19ostreambuf_iteratorIwSt11char_traitsIwEEE@@GLIBCXX_3.4
+TLS:8:_ZSt11__once_call@@GLIBCXX_3.4.11
+TLS:8:_ZSt15__once_callable@@GLIBCXX_3.4.11

@@ -1575,39 +1575,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #ifdef _GLIBCXX_USE_RANDOM_TR1
 
     explicit
-    random_device(const std::string& __token = "/dev/urandom")
+    random_device(const std::string& __token = "default")
     {
-      if ((__token != "/dev/urandom" && __token != "/dev/random")
-	  || !(_M_file = std::fopen(__token.c_str(), "rb")))
-	std::__throw_runtime_error(__N("random_device::"
-				       "random_device(const std::string&)"));
+      _M_init(__token);
     }
 
     ~random_device()
-    { std::fclose(_M_file); }
+    { _M_fini(); }
 
 #else
 
     explicit
     random_device(const std::string& __token = "mt19937")
-    : _M_mt(_M_strtoul(__token)) { }
-
-  private:
-    static unsigned long
-    _M_strtoul(const std::string& __str)
-    {
-      unsigned long __ret = 5489UL;
-      if (__str != "mt19937")
-	{
-	  const char* __nptr = __str.c_str();
-	  char* __endptr;
-	  __ret = std::strtoul(__nptr, &__endptr, 0);
-	  if (*__nptr == '\0' || *__endptr != '\0')
-	    std::__throw_runtime_error(__N("random_device::_M_strtoul"
-					   "(const std::string&)"));
-	}
-      return __ret;
-    }
+    { return _M_init_pretr1(__token); }
 
   public:
 
@@ -1629,12 +1609,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator()()
     {
 #ifdef _GLIBCXX_USE_RANDOM_TR1
-      result_type __ret;
-      std::fread(reinterpret_cast<void*>(&__ret), sizeof(result_type),
-		 1, _M_file);
-      return __ret;
+      return this->_M_getval();
 #else
-      return _M_mt();
+      return this->_M_getval_pretr1();
 #endif
     }
 
@@ -1644,11 +1621,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   private:
 
-#ifdef _GLIBCXX_USE_RANDOM_TR1
+    void _M_init(const std::string& __token);
+    void _M_init_pretr1(const std::string& __token);
+    void _M_fini();
+
+    result_type _M_getval();
+    result_type _M_getval_pretr1();
+
+    union
+    {
     FILE*        _M_file;
-#else
     mt19937      _M_mt;
-#endif
+  };
   };
 
   /* @} */ // group random_generators
