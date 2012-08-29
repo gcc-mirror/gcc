@@ -764,6 +764,8 @@ dump_bb_info (FILE *outf, basic_block bb, int indent, int flags,
 	  dump_edge_info (outf, e, flags, 0);
 	  fputc ('\n', outf);
 	}
+      if (first)
+	fputc ('\n', outf);
     }
 
   if (do_footer)
@@ -784,6 +786,8 @@ dump_bb_info (FILE *outf, basic_block bb, int indent, int flags,
 	  dump_edge_info (outf, e, flags, 1);
 	  fputc ('\n', outf);
 	}
+      if (first)
+	fputc ('\n', outf);
     }
 }
 

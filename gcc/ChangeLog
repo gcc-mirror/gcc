@@ -1,3 +1,7 @@
+2012-08-29  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* cfg.c (dump_bb_info): Print a newline if there were no edges to dump.
+
 2012-08-29  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	Revert:
