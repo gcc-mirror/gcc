@@ -1,5 +1,12 @@
 2011-08-28  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* argv.c (dupargv): Replace malloc with xmalloc.  Don't check
+	xmalloc return.
+	(buildargv): Likewise.  Also replace strdup with xstrdup.
+	(expandargv): Don't check dupargv return.
+
+2011-08-28  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR binutils/14526
 	* argv.c (buildargv): Replace alloca with xmalloc/free.
 
