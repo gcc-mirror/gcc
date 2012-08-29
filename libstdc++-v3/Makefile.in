@@ -39,7 +39,8 @@ DIST_COMMON = $(top_srcdir)/fragment.am README ChangeLog \
 	$(top_srcdir)/configure $(am__configure_deps) \
 	$(srcdir)/config.h.in $(srcdir)/../mkinstalldirs \
 	$(top_srcdir)/scripts/testsuite_flags.in \
-	$(top_srcdir)/scripts/extract_symvers.in
+	$(top_srcdir)/scripts/extract_symvers.in \
+	$(top_srcdir)/doc/xsl/customization.xsl.in
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
@@ -67,7 +68,8 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
 CONFIG_HEADER = config.h
-CONFIG_CLEAN_FILES = scripts/testsuite_flags scripts/extract_symvers
+CONFIG_CLEAN_FILES = scripts/testsuite_flags scripts/extract_symvers \
+	doc/xsl/customization.xsl
 CONFIG_CLEAN_VPATH_FILES =
 depcomp =
 am__depfiles_maybe =
@@ -433,6 +435,8 @@ distclean-hdr:
 scripts/testsuite_flags: $(top_builddir)/config.status $(top_srcdir)/scripts/testsuite_flags.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 scripts/extract_symvers: $(top_builddir)/config.status $(top_srcdir)/scripts/extract_symvers.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+doc/xsl/customization.xsl: $(top_builddir)/config.status $(top_srcdir)/doc/xsl/customization.xsl.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 
 mostlyclean-libtool:
