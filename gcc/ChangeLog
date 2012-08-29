@@ -1,3 +1,32 @@
+2012-08-29  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/iterators.md: New file.
+	* config/sh/sync.md (I124, I12, i124suffix): Delete.  Replace usage with
+	new iterators QIHISI, QIHI, bw, bwl respectively throughout the file.
+	* config/sh/sh.md: Include new file iterators.md.
+	(zero_extendhisi2, zero_extendqisi2): Fold into zero_extend<mode>si2.
+	(*zero_extendhisi2_compact, *zero_extendqisi2_compact): Fold into
+	*zero_extend<mode>si2_compact.
+	(*zero_extendqisi2_disp_mem, zero_extendhisi2_disp_mem): Fold into
+	*zero_extend<mode>si2_disp_mem.
+	(extendhisi2, extendqisi2): Fold into extend<mode>si2.
+	(*extendqisi2_compact_reg, *extendhisi2_compact_reg): Fold into
+	*extend<mode>si2_compact_reg.
+	(*extendqisi2_compact_mem_disp, *extendhisi2_compact_mem_disp): Fold
+	into *extend<mode>si2_compact_mem_disp.
+	(*extendqisi2_compact_snd, *extendhisi2_compact_snd): Fold into
+	*extend<mode>si2_compact_snd.
+	(*movsi_index_disp, *movhi_index_disp): Fold with iterators and rename
+	to *movsi_index_disp_load, *movhi_index_disp_load,
+	*mov<mode>_index_disp_store.
+	(*movqi_reg_reg, *movhi_reg_reg): Fold into *mov<mode>_reg_reg.
+	(*movqi_store_mem_disp04, *movhi_store_mem_disp05): Fold into
+	*mov<mode>_store_mem_disp04.
+	(*movqi_store_mem_disp12, *movhi_store_mem_disp13): Fold into
+	*mov<mode>_store_mem_disp12.
+	(*movqi_load_mem_disp, *movhi_load_mem_disp): Fold into
+	*mov<mode>_load_mem_disp04 and *mov<mode>_load_mem_disp12.
+
 2012-08-29  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-inline.h (estimate_edge_hints): Call do_estimate_edge_hints, not
