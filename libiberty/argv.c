@@ -191,7 +191,7 @@ char **buildargv (const char *input)
 
   if (input != NULL)
     {
-      copybuf = (char *) alloca (strlen (input) + 1);
+      copybuf = (char *) xmalloc (strlen (input) + 1);
       /* Is a do{}while to always execute the loop once.  Always return an
 	 argv, even for null strings.  See NOTES above, test case below. */
       do
@@ -297,6 +297,8 @@ char **buildargv (const char *input)
 	  consume_whitespace (&input);
 	}
       while (*input != EOS);
+
+      free (copybuf);
     }
   return (argv);
 }
