@@ -1321,6 +1321,17 @@ GLIBCXX_3.4.17 {
 
 } GLIBCXX_3.4.16;
 
+GLIBCXX_3.4.18 {
+  global:
+
+    # Names inside the 'extern' block are demangled names.
+    extern "C++"
+    {
+      std::random_device::*;
+    };
+
+} GLIBCXX_3.4.17;
+
 # Symbols in the support library (libsupc++) have their own tag.
 CXXABI_1.3 {
 
