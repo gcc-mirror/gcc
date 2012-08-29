@@ -26,11 +26,11 @@
 ;; In addition to that all SH CPUs support the 'tas.b' instruction, which
 ;; can be optionally used to implement the 'atomic_test_and_set' builtin.
 ;;
-;; tas.b atomic_test_and_set (-menable-tas)
+;; tas.b atomic_test_and_set (-mtas)
 ;;
 ;; Depending on the particular hardware configuration, usage of the 'tas.b'
 ;; instruction might be undesired or even unsafe.  Thus, it has to be
-;; enabled by the user explicitely.  If it is not enabled, the
+;; enabled by the user explicitly.  If it is not enabled, the
 ;; 'atomic_test_and_set' builtin is implemented either with hardware or with
 ;; software atomics, depending on which is enabled.  It is also possible to
 ;; enable the 'tas.b' instruction only, without enabling support for the 

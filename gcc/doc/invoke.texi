@@ -891,7 +891,7 @@ See RS/6000 and PowerPC Options.
 -maccumulate-outgoing-args -minvalid-symbols -msoft-atomic -mhard-atomic @gol
 -mbranch-cost=@var{num} -mzdcbranch -mno-zdcbranch -mcbranchdi -mcmpeqdi @gol
 -mfused-madd -mno-fused-madd -mfsca -mno-fsca -mfsrra -mno-fsrra @gol
--mpretend-cmove -menable-tas}
+-mpretend-cmove -mtas}
 
 @emph{Solaris 2 Options}
 @gccoptlist{-mimpure-text  -mno-impure-text @gol
@@ -18156,8 +18156,8 @@ interrupt / exception handling systems.  In contrast to the
 @option{-msoft-atomic} option this will only use the instructions
 @code{movli.l} and @code{movco.l} to create atomic sequences.
 
-@item -menable-tas
-@opindex menable-tas
+@item -mtas
+@opindex mtas
 Generate the @code{tas.b} opcode for @code{__atomic_test_and_set}.
 Notice that depending on the particular hardware and software configuration
 this can degrade overall performance due to the operand cache line flushes

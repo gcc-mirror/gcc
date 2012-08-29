@@ -1,5 +1,11 @@
 2012-08-29  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	* config/sh/sh.opt (menable-tas): Rename to mtas.
+	* doc/invoke.texi (SH options): Likewise.
+	* config/sh/sync.md: Update comments.
+
+2012-08-29  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	* config/sh/iterators.md: New file.
 	* config/sh/sync.md (I124, I12, i124suffix): Delete.  Replace usage with
 	new iterators QIHISI, QIHI, bw, bwl respectively throughout the file.
