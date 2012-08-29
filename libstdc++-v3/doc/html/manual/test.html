@@ -1,34 +1,12 @@
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Test</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.76.1"><meta name="keywords" content="
-      ISO C++
-    , 
-      test
-    , 
-      testsuite
-    , 
-      performance
-    , 
-      conformance
-    , 
-      ABI
-    , 
-      exception safety
-    "><meta name="keywords" content="
-      ISO C++
-    , 
-      library
-    "><meta name="keywords" content="
-      ISO C++
-    , 
-      runtime
-    , 
-      library
-    "><link rel="home" href="../index.html" title="The GNU C++ Library"><link rel="up" href="appendix_porting.html" title="Appendix B.  Porting and Maintenance"><link rel="prev" href="internals.html" title="Porting to New Hardware or Operating Systems"><link rel="next" href="abi.html" title="ABI Policy and Guidelines"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Test</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="internals.html">Prev</a> </td><th width="60%" align="center">Appendix B. 
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Test</title><meta name="generator" content="DocBook XSL-NS Stylesheets V1.76.1" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      test&#10;    , &#10;      testsuite&#10;    , &#10;      performance&#10;    , &#10;      conformance&#10;    , &#10;      ABI&#10;    , &#10;      exception safety&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      runtime&#10;    , &#10;      library&#10;    " /><link rel="home" href="../index.html" title="The GNU C++ Library" /><link rel="up" href="appendix_porting.html" title="Appendix B.  Porting and Maintenance" /><link rel="prev" href="internals.html" title="Porting to New Hardware or Operating Systems" /><link rel="next" href="abi.html" title="ABI Policy and Guidelines" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Test</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="internals.html">Prev</a> </td><th width="60%" align="center">Appendix B. 
   Porting and Maintenance
   
-</th><td width="20%" align="right"> <a accesskey="n" href="abi.html">Next</a></td></tr></table><hr></div><div class="section" title="Test"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="manual.intro.setup.test"></a>Test</h2></div></div></div><p>
+</th><td width="20%" align="right"> <a accesskey="n" href="abi.html">Next</a></td></tr></table><hr /></div><div class="section" title="Test"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.intro.setup.test"></a>Test</h2></div></div></div><p>
 The libstdc++ testsuite includes testing for standard conformance,
 regressions, ABI, and performance.
-</p><div class="section" title="Organization"><div class="titlepage"><div><div><h3 class="title"><a name="test.organization"></a>Organization</h3></div></div></div><div class="section" title="Directory Layout"><div class="titlepage"><div><div><h4 class="title"><a name="test.organization.layout"></a>Directory Layout</h4></div></div></div><p>
+</p><div class="section" title="Organization"><div class="titlepage"><div><div><h3 class="title"><a id="test.organization"></a>Organization</h3></div></div></div><div class="section" title="Directory Layout"><div class="titlepage"><div><div><h4 class="title"><a id="test.organization.layout"></a>Directory Layout</h4></div></div></div><p>
   The directory <span class="emphasis"><em>libsrcdir/testsuite</em></span> contains the
   individual test cases organized in sub-directories corresponding to
   chapters of the C++ standard (detailed below), the dejagnu test
@@ -99,7 +77,7 @@ util		  Files for libtestc++, utilities and testing routines.
    </pre><p>
       All new tests should be written with the policy of one test
       case, one file in mind.
-   </p></div><div class="section" title="Naming Conventions"><div class="titlepage"><div><div><h4 class="title"><a name="test.organization.naming"></a>Naming Conventions</h4></div></div></div><p>
+   </p></div><div class="section" title="Naming Conventions"><div class="titlepage"><div><div><h4 class="title"><a id="test.organization.naming"></a>Naming Conventions</h4></div></div></div><p>
       In addition, there are some special names and suffixes that are
       used within the testsuite to designate particular kinds of
       tests.
@@ -153,7 +131,7 @@ cat 27_io/objects/char/3_xin.in | a.out
       analyze runtime performance, for performance regression testing,
       or for other optimization related analysis. At the moment, these
       test cases are not run by default.
-   </p></li></ul></div></div></div><div class="section" title="Running the Testsuite"><div class="titlepage"><div><div><h3 class="title"><a name="test.run"></a>Running the Testsuite</h3></div></div></div><div class="section" title="Basic"><div class="titlepage"><div><div><h4 class="title"><a name="test.run.basic"></a>Basic</h4></div></div></div><p>
+   </p></li></ul></div></div></div><div class="section" title="Running the Testsuite"><div class="titlepage"><div><div><h3 class="title"><a id="test.run"></a>Running the Testsuite</h3></div></div></div><div class="section" title="Basic"><div class="titlepage"><div><div><h4 class="title"><a id="test.run.basic"></a>Basic</h4></div></div></div><p>
       You can check the status of the build without installing it
       using the dejagnu harness, much like the rest of the gcc
       tools.</p><pre class="programlisting"> make check</pre><p>in the <span class="emphasis"><em>libbuilddir</em></span> directory.</p><p>or</p><pre class="programlisting"> make check-target-libstdc++-v3</pre><p>in the <span class="emphasis"><em>gccbuilddir</em></span> directory.
@@ -173,7 +151,7 @@ cat 27_io/objects/char/3_xin.in | a.out
        archived on a daily basis on the <a class="link" href="http://gcc.gnu.org/ml/gcc-testresults/current" target="_top">gcc-testresults</a>
        mailing list. Please check either of these places for a similar
        combination of source version, operating system, and host CPU.
-     </p></div><div class="section" title="Variations"><div class="titlepage"><div><div><h4 class="title"><a name="test.run.variations"></a>Variations</h4></div></div></div><p>
+     </p></div><div class="section" title="Variations"><div class="titlepage"><div><div><h4 class="title"><a id="test.run.variations"></a>Variations</h4></div></div></div><p>
       There are several options for running tests, including testing
       the regression tests, testing a subset of the regression tests,
       testing the performance tests, testing just compilation, testing
@@ -299,7 +277,7 @@ runtest --tool libstdc++ --srcdir=/path/to/gcc/libstdc++-v3/testsuite
       We are interested in any strange failures of the testsuite;
       please email the main libstdc++ mailing list if you see
       something odd or have questions.
-   </p></div><div class="section" title="Permutations"><div class="titlepage"><div><div><h4 class="title"><a name="test.run.permutations"></a>Permutations</h4></div></div></div><p>
+   </p></div><div class="section" title="Permutations"><div class="titlepage"><div><div><h4 class="title"><a id="test.run.permutations"></a>Permutations</h4></div></div></div><p>
       To run the libstdc++ test suite under the <a class="link" href="debug_mode.html" title="Chapter 17. Debug Mode">debug mode</a>, edit
       <code class="filename">libstdc++-v3/scripts/testsuite_flags</code> to add the
       compile-time flag <code class="constant">-D_GLIBCXX_DEBUG</code> to the
@@ -319,7 +297,7 @@ runtest --tool libstdc++ --srcdir=/path/to/gcc/libstdc++-v3/testsuite
       Or, just run the testsuites with <code class="constant">CXXFLAGS</code>
       set to <code class="constant">-D_GLIBCXX_DEBUG</code> or
       <code class="constant">-D_GLIBCXX_PARALLEL</code>.
-    </p></div></div><div class="section" title="Writing a new test case"><div class="titlepage"><div><div><h3 class="title"><a name="test.new_tests"></a>Writing a new test case</h3></div></div></div><p>
+    </p></div></div><div class="section" title="Writing a new test case"><div class="titlepage"><div><div><h3 class="title"><a id="test.new_tests"></a>Writing a new test case</h3></div></div></div><p>
     The first step in making a new test case is to choose the correct
     directory and file name, given the organization as previously
     described.
@@ -430,7 +408,7 @@ up in the normal.exp file.
 // { dg-options "-O0" { target *-*-* } }
 </pre><p>
     More examples can be found in the libstdc++-v3/testsuite/*/*.cc files.
-   </p></div><div class="section" title="Test Harness and Utilities"><div class="titlepage"><div><div><h3 class="title"><a name="test.harness"></a>Test Harness and Utilities</h3></div></div></div><div class="section" title="Dejagnu Harness Details"><div class="titlepage"><div><div><h4 class="title"><a name="test.harness.dejagnu"></a>Dejagnu Harness Details</h4></div></div></div><p>
+   </p></div><div class="section" title="Test Harness and Utilities"><div class="titlepage"><div><div><h3 class="title"><a id="test.harness"></a>Test Harness and Utilities</h3></div></div></div><div class="section" title="Dejagnu Harness Details"><div class="titlepage"><div><div><h4 class="title"><a id="test.harness.dejagnu"></a>Dejagnu Harness Details</h4></div></div></div><p>
     Underlying details of testing for conformance and regressions are
     abstracted via the GNU Dejagnu package. This is similar to the
     rest of GCC.
@@ -457,7 +435,7 @@ callbacks loaded from the support library.
 </p><p>The <code class="code">config</code> directory is searched for any particular "target
 board" information unique to this library.  This is currently unused and sets
 only default variables.
-</p></div><div class="section" title="Utilities"><div class="titlepage"><div><div><h4 class="title"><a name="test.harness.utils"></a>Utilities</h4></div></div></div><p>
+</p></div><div class="section" title="Utilities"><div class="titlepage"><div><div><h4 class="title"><a id="test.harness.utils"></a>Utilities</h4></div></div></div><p>
   </p><p>
    The testsuite directory also contains some files that implement
    functionality that is intended to make writing test cases easier,
@@ -513,10 +491,10 @@ only default variables.
        </p><p>
        A number of class abstractions for performance counters, and
        reporting functions including:
-       </p><div class="itemizedlist"><ul class="itemizedlist" type="circle"><li class="listitem"><p>time_counter</p></li><li class="listitem"><p>resource_counter</p></li><li class="listitem"><p>report_performance</p></li></ul></div></li></ul></div></div></div><div class="section" title="Special Topics"><div class="titlepage"><div><div><h3 class="title"><a name="test.special"></a>Special Topics</h3></div></div></div><div class="section" title="Qualifying Exception Safety Guarantees"><div class="titlepage"><div><div><h4 class="title"><a name="test.exception.safety"></a>
+       </p><div class="itemizedlist"><ul class="itemizedlist" type="circle"><li class="listitem"><p>time_counter</p></li><li class="listitem"><p>resource_counter</p></li><li class="listitem"><p>report_performance</p></li></ul></div></li></ul></div></div></div><div class="section" title="Special Topics"><div class="titlepage"><div><div><h3 class="title"><a id="test.special"></a>Special Topics</h3></div></div></div><div class="section" title="Qualifying Exception Safety Guarantees"><div class="titlepage"><div><div><h4 class="title"><a id="test.exception.safety"></a>
   Qualifying Exception Safety Guarantees
-  <a class="indexterm" name="id681679"></a>
-</h4></div></div></div><div class="section" title="Overview"><div class="titlepage"><div><div><h5 class="title"><a name="test.exception.safety.overview"></a>Overview</h5></div></div></div><p>
+  <a id="id655751" class="indexterm"></a>
+</h4></div></div></div><div class="section" title="Overview"><div class="titlepage"><div><div><h5 class="title"><a id="test.exception.safety.overview"></a>Overview</h5></div></div></div><p>
 	 Testing is composed of running a particular test sequence,
 	 and looking at what happens to the surrounding code when
 	 exceptions are thrown. Each test is composed of measuring
@@ -546,7 +524,7 @@ only default variables.
 	 completes without an exception being thrown, assume all
 	 potential error paths have been exercised in a sequential
 	 manner.
-       </p></div><div class="section" title="Existing tests"><div class="titlepage"><div><div><h5 class="title"><a name="test.exception.safety.status"></a>
+       </p></div><div class="section" title="Existing tests"><div class="titlepage"><div><div><h5 class="title"><a id="test.exception.safety.status"></a>
     Existing tests
 </h5></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
 	 Ad Hoc
@@ -585,7 +563,7 @@ as the allocator type.
 	 instrumentation to <code class="classname">iterator</code>
 	 and <code class="classname">const_iterator</code> types that throw
 	 conditionally on iterator operations.
-       </p></li></ul></div></div><div class="section" title="C++11 Requirements Test Sequence Descriptions"><div class="titlepage"><div><div><h5 class="title"><a name="test.exception.safety.containers"></a>
+       </p></li></ul></div></div><div class="section" title="C++11 Requirements Test Sequence Descriptions"><div class="titlepage"><div><div><h5 class="title"><a id="test.exception.safety.containers"></a>
 C++11 Requirements Test Sequence Descriptions
 </h5></div></div></div><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
 	 Basic
@@ -658,4 +636,4 @@ C++11 Requirements Test Sequence Descriptions
 	 The general form demonstrated in
 	 <code class="filename">testsuite/23_containers/list/requirements/exception/propagation_coherent.cc
 	 </code>. The instantiating test object is <code class="classname">__gnu_test::propagation_coherent</code> and is detailed in <code class="filename">testsuite/util/exception/safety.h</code>.
-       </p></li></ul></div></div></div></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="internals.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="appendix_porting.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="abi.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Porting to New Hardware or Operating Systems </td><td width="20%" align="center"><a accesskey="h" href="../index.html">Home</a></td><td width="40%" align="right" valign="top"> ABI Policy and Guidelines</td></tr></table></div></body></html>
+       </p></li></ul></div></div></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="internals.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="appendix_porting.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="abi.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Porting to New Hardware or Operating Systems </td><td width="20%" align="center"><a accesskey="h" href="../index.html">Home</a></td><td width="40%" align="right" valign="top"> ABI Policy and Guidelines</td></tr></table></div></body></html>
