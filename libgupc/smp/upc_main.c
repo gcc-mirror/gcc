@@ -1065,6 +1065,7 @@ __upc_fatal (const char *msg)
   fflush (0);
   __upc_notify_debugger_of_abort (msg);
 #if HAVE_UPC_BACKTRACE
+  __upc_backtrace_restore_handlers ();
   __upc_fatal_backtrace ();
 #endif
   abort ();

@@ -40,15 +40,15 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <limits.h>
 #endif
 
-/** Skip over frames belonging to the backtrace code itself. */
+/** Skip over frames belonging to the backtrace code itself.  */
 #define GUPCR_BT_SKIP_FRAME_CNT 3
-/** Maximum number of stack frames to display. */
+/** Maximum number of stack frames to display.  */
 #define GUPCR_BT_DEPTH_CNT 128
 
 #ifndef PATH_MAX
 #define PATH_MAX 1024
 #endif
-/** Full path of the executable prorgam. */
+/** Full path of the executable program.  */
 static char __upc_abs_execname[PATH_MAX];
 
 /** 
@@ -213,14 +213,34 @@ __upc_backtrace_handler (int sig __attribute__ ((unused)),
 }
 
 /**
- * Segmentation fault handler.
+ * Backtrace fault handler.
  */
 static void
-__upc_fault_handler (int sig __attribute__ ((unused)),
+__upc_fault_handler (int sig,
 	  	     siginfo_t *siginfo __attribute__ ((unused)),
 		     void *context __attribute__ ((unused)))
 {
-    __upc_fatal ("Segmentation fault.");
+   
+    switch (sig)
+      {
+	case SIGABRT:
+	  __upc_fatal ("Abort signal.");
+	  break;
+	case SIGILL:
+	  __upc_fatal ("Illegal instruction.");
+	  break;
+	case SIGSEGV:
+	  __upc_fatal ("Segmentation fault.");
+	  break;
+	case SIGBUS:
+	  __upc_fatal ("BUS error.");
+	  break;
+	case SIGFPE:
+	  __upc_fatal ("FP exception.");
+	  break;
+	default:
+	  __upc_fatal ("Unknown signal.");
+      }
 }
 
 /**
@@ -255,13 +275,43 @@ __upc_backtrace_init (const char *execname)
   }
 #endif
   {
-    /* Install SEGV handler. */
+    /* Install signal handlers. */
     struct sigaction act;
     memset (&act, '\0', sizeof(act));
     act.sa_sigaction = &__upc_fault_handler;
     act.sa_flags = SA_SIGINFO;
+    if (sigaction(SIGABRT, &act, NULL) < 0) {
+      perror ("unable to install SIGABRT handler");
+    }
+    if (sigaction(SIGILL, &act, NULL) < 0) {
+      perror ("unable to install SIGILL handler");
+    }
     if (sigaction(SIGSEGV, &act, NULL) < 0) {
-      perror ("was not able to install SIGSEGV handler");
+      perror ("unable to install SIGSEGV handler");
+    }
+    if (sigaction(SIGBUS, &act, NULL) < 0) {
+      perror ("unable to install SIGBUS handler");
+    }
+    if (sigaction(SIGFPE, &act, NULL) < 0) {
+      perror ("unable to install SIGFPE handler");
     }
   }
+}
+
+/**
+ * Restore default handlers.
+ *
+ * Has to be called once the run-time discovered
+ * a fatal error.
+ */ 
+void
+__upc_backtrace_restore_handlers (void)
+{
+  /* Don't handle any signals with backtrace code. Install
+     default handlers.  */
+  signal (SIGABRT, SIG_DFL);
+  signal (SIGILL, SIG_DFL);
+  signal (SIGSEGV, SIG_DFL);
+  signal (SIGBUS, SIG_DFL);
+  signal (SIGFPE, SIG_DFL);
 }

@@ -39,6 +39,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 extern void __upc_backtrace (void);
 extern void __upc_fatal_backtrace (void);
 extern void __upc_backtrace_init (const char *execname);
+extern void __upc_backtrace_restore_handlers (void);
 
 #if HAVE_LIBBFD
 extern char **backtrace_src_symbols(void *const *buffer, int size,

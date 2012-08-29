@@ -1,3 +1,15 @@
+2012-08-29  Nenad Vukicevic  <nenad@intrepid.com>
+
+	* upc_backtrace.h (__upc_backtrace_restore_handlers): New.
+	Prototype. 
+	* upc_backtrace.c (__upc_backtrace_restore_handlers): New.
+	Restore default signal handlers.
+	(__upc_backtrace_init): Install handlers for additional signals:
+	SIGABRT, SIGILL, SIGFPE, and SIGBUS.
+	(__upc_fault_handlers): Add handling of additional signals.
+	* upc_main.c (__upc_fatal): Restore default handlers before calling
+	backtrace and abort.
+
 2012-08-28  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* include/gcc-upc.h (upc_fence): Delete. Replaced with the
