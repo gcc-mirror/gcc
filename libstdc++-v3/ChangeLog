@@ -1,5 +1,12 @@
 2012-08-28  Benjamin Kosnik  <bkoz@redhat.com>
 
+	PR libstdc++/54102, part 2
+	* doc/Makefile.am (XSL_HTML_STYLE): use xhtml, not html.
+	* doc/Makefile.in: Regenerate.
+	* doc/html/*: Same.
+
+2012-08-28  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* doc/html/*: Regenerate.
 
 2012-08-28  Benjamin Kosnik  <bkoz@redhat.com>
