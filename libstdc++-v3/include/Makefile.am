@@ -518,6 +518,8 @@ ext_headers = \
 	${ext_srcdir}/pointer.h \
 	${ext_srcdir}/pool_allocator.h \
 	${ext_srcdir}/rb_tree \
+	${ext_srcdir}/random \
+	${ext_srcdir}/random.tcc \
 	${ext_srcdir}/rope \
 	${ext_srcdir}/ropeimpl.h \
 	${ext_srcdir}/slist \
@@ -1099,7 +1101,7 @@ ${host_builddir}/c++config.h: ${CONFIG_HEADER} \
 	visibility=`cat stamp-visibility` ;\
 	externtemplate=`cat stamp-extern-template` ;\
 	ldbl_compat='s,g,g,' ;\
-	grep "^[ 	]*#[ 	]*define[ 	][ 	]*_GLIBCXX_LONG_DOUBLE_COMPAT[ 	][ 	]*1[ 	]*$$" \
+	grep "^[	]*#[	]*define[	][	]*_GLIBCXX_LONG_DOUBLE_COMPAT[	][	]*1[	]*$$" \
 	${CONFIG_HEADER} > /dev/null 2>&1 \
 	&& ldbl_compat='s,^#undef _GLIBCXX_LONG_DOUBLE_COMPAT$$,#define _GLIBCXX_LONG_DOUBLE_COMPAT 1,' ;\
 	sed -e "s,define __GLIBCXX__,define __GLIBCXX__ $$date," \
@@ -1113,7 +1115,7 @@ ${host_builddir}/c++config.h: ${CONFIG_HEADER} \
 	    -e 's/VERSION/_GLIBCXX_VERSION/g' \
 	    -e 's/WORDS_/_GLIBCXX_WORDS_/g' \
 	    -e 's/ICONV_CONST/_GLIBCXX_ICONV_CONST/g' \
-	    -e '/[ 	]_GLIBCXX_LONG_DOUBLE_COMPAT[ 	]/d' \
+	    -e '/[	]_GLIBCXX_LONG_DOUBLE_COMPAT[	]/d' \
 	    < ${CONFIG_HEADER} >> $@ ;\
 	echo "" >> $@ ;\
 	echo "#endif // _GLIBCXX_CXX_CONFIG_H" >> $@
