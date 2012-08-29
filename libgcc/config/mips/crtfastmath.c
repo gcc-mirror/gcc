@@ -39,7 +39,7 @@
 #define _FPU_GETCW(cw) __asm__ ("cfc1 %0,$31" : "=r" (cw))
 #define _FPU_SETCW(cw) __asm__ ("ctc1 %0,$31" : : "r" (cw))
 
-static void __attribute__((constructor))
+static void __attribute__((constructor,nomips16))
 set_fast_math (void)
 {
   unsigned int fcr;
