@@ -1,3 +1,14 @@
+2012-08-28  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/54102
+	* doc/xsl/customization.xsl.in: New.
+	* configure.ac: Output local copy of customization xsl.
+	* doc/Makefile.am (stamp-html-single-docbook): Use XSL_LOCAL_STYLE.
+	(stamp-html-docbook): Set stringparam to UTF-8.
+	* Makefile.in: Regenerated.
+	* configure: Same.
+	* doc/Makefile.in: Same.
+
 2012-08-27  Ulrich Drepper  <drepper@gmail.com>
 
 	Add interfaces to retrieve random numbers in bulk.
