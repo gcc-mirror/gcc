@@ -1,3 +1,8 @@
+2012-08-29  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-inline.h (estimate_edge_hints): Call do_estimate_edge_hints, not
+	do_estimate_edge_time.
+
 2012-08-29  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* config/mips/mips.h (CRT_CALL_STATIC_FUNCTION): Add nomips16 asm

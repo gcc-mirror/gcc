@@ -283,7 +283,7 @@ estimate_edge_hints (struct cgraph_edge *edge)
       || !(ret = VEC_index (edge_growth_cache_entry,
 			    edge_growth_cache,
 			    edge->uid).hints))
-    return do_estimate_edge_time (edge);
+    return do_estimate_edge_hints (edge);
   return ret - 1;
 }
 
