@@ -327,7 +327,7 @@ mhard-atomic
 Target Report Var(TARGET_HARD_ATOMIC)
 Use hardware atomic sequences
 
-menable-tas
+mtas
 Target Report RejectNegative Var(TARGET_ENABLE_TAS)
 Use tas.b instruction for __atomic_test_and_set
 
