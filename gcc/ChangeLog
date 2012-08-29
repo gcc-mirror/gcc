@@ -1,3 +1,12 @@
+2012-08-29  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* config/mips/mips.h (CRT_CALL_STATIC_FUNCTION): Add nomips16 asm
+	directives, remove #ifndef __mips16 guards.
+	* config/mips/t-linux64 (MULTILIB_OSDIRNAMES): Change to use
+	mapping style, add ../lib/mips16.
+	(MULTILIB_OPTIONS,MULTILIB_DIRNAMES): Add mips16.
+	(MULTILIB_EXCLUSIONS): Exclude mips16 when not -mabi=32.
+
 2012-08-28  Walter Lee  <walt@tilera.com>
 	* confg/tilegx/tilegx.md: Fix code style.
 	(*zero_extendsidi_truncdisi): Fix typo.

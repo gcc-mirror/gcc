@@ -18,4 +18,12 @@
 
 MULTILIB_OPTIONS = mabi=n32/mabi=32/mabi=64
 MULTILIB_DIRNAMES = n32 32 64
-MULTILIB_OSDIRNAMES = ../lib32 ../lib ../lib64
+MULTILIB_OSDIRNAMES  = mabi.n32=../lib32
+MULTILIB_OSDIRNAMES += mabi.32=../lib
+MULTILIB_OSDIRNAMES += mabi.64=../lib64
+
+# MIPS16 is currently only supported under O32
+MULTILIB_OPTIONS += mips16
+MULTILIB_DIRNAMES += mips16
+MULTILIB_OSDIRNAMES += mabi.32/mips16=../lib/mips16
+MULTILIB_EXCLUSIONS = !mabi=32/mips16
