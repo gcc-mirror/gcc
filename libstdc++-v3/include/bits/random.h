@@ -1587,7 +1587,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     explicit
     random_device(const std::string& __token = "mt19937")
-    { return _M_init_pretr1(__token); }
+    { _M_init_pretr1(__token); }
 
   public:
 
