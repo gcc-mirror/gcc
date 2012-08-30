@@ -1,3 +1,17 @@
+2012-08-30  Nenad Vukicevic  <nenad@intrepid.com>
+
+	* upc_defs.h (upc_info_struct): Added host name and
+	flag for MPIR partial attach support.
+	* upc_main.c: Add MPIR_partial_attach_ok support.
+	(__upc_init): Set start flag for all threads based on
+	the debugging mode.  Initialize hostname in the info
+	structure.
+	(__upc_run_this_thread): Wait on start flag if necessary.
+	(__upc_run_threads): Release threads after MPIR_Breakpoint().
+	Set host_name and executable_name in the info structure.
+	(__upc_print_help_and_exit): Removed help for unused flag
+	-fupc-pthreads-per-process-N.
+
 2012-08-29  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* upc_backtrace.h (__upc_backtrace_restore_handlers): New.

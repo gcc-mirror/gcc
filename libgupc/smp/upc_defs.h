@@ -107,7 +107,9 @@ typedef upc_cpu_avoid_t *upc_cpu_avoid_p;
 typedef struct upc_info_struct
   {
     char *program_name;
+    char *host_name;
     pid_t monitor_pid;
+    int partial_attach_start;
     os_heap_p runtime_heap;
     os_lock_t lock;
     os_lock_t alloc_lock;

@@ -82,14 +82,27 @@ GUPCR_THREAD_LOCAL const char *__upc_err_filename;
    debug-enabled ('g') UPC runtime library routines.  */
 GUPCR_THREAD_LOCAL unsigned int __upc_err_linenum;
 
-/* Interface to the debugger */
+/* MPIR Interface support for debugging.
+   http://www.mpi-forum.org/docs/mpir-specification-10-11-2010.pdf
+
+   MPIR_being_debugged is being set by the debugger to 1.
+   As we support MPIR_partial_attach_ok (section 9.13), all
+   threads are in the hold mode and continue to run only after the
+   debugger continues the monitor thread from the MPRI_breakpoint().
+   If debugger wants to attach to any of the threads, thread's gate
+   must be lowered by the debugger.  */
+   
 MPIR_PROCDESC *MPIR_proctable = 0;
 int MPIR_proctable_size = 0;
 const char *MPIR_debug_abort_string = 0;
-
 volatile int MPIR_debug_state;
-volatile int MPIR_debug_gate;
-int MPIR_being_debugged;	/* Set by the debugger */
+volatile int MPIR_debug_gate = 1; /* Threads continue to run by default.  */
+int MPIR_being_debugged;	  /* Set by the debugger.  */
+int MPIR_partial_attach_ok;	  /* OK to attach to subset of threads.  */
+
+/* Local host name.  */
+#define HOST_NAME_LEN 256
+static char host_name[HOST_NAME_LEN];
 
 /* per-thread initial heap size */
 static size_t __upc_init_heap_size = GUPCR_DEFAULT_PER_THREAD_HEAP_SIZE;
@@ -197,10 +210,6 @@ __upc_print_help_and_exit (char *pgm)
   fprintf (stderr,
 	   "						(N must be in the range 1..%d)\n",
 	   GUPCR_THREADS_MAX);
-#ifdef GUPCR_USE_PTHREADS
-  fprintf (stderr,
-	   "	-fupc-pthreads-per-process-N		map UPC threads to POSIX threads using TLS capability\n");
-#endif /* GUPCR_USE_PTHREADS */
   fprintf (stderr,
 	   "	-fupc-heap-N or -heap N			N is the maximum per-thread memory\n");
   fprintf (stderr,
@@ -543,6 +552,17 @@ __upc_init (char *pgm, const char **err_msg)
   u->sched_policy = __upc_sched_policy;
   u->mem_policy = __upc_mem_policy;
 
+  /* MPIR_partial_attach_ok support.  */
+  if (MPIR_being_debugged)
+    u->partial_attach_start = 0; /* Stop the threads until MPIR_berakpint.  */
+  else
+    u->partial_attach_start = 1; /* No debugging, threads can proceed.  */
+  /* Find host name for MPIR interface.  */
+  if (!gethostname (host_name, HOST_NAME_LEN))
+    u->host_name = host_name;
+  else
+    perror ("unable to find hostname");
+
   /* Calculate per-thread contribution to global shared memory region. */
   alloc_data_size = GUPCR_SHARED_SECTION_END - GUPCR_SHARED_SECTION_START;
   alloc_data_size = GUPCR_ROUND (alloc_data_size, C64K);
@@ -634,7 +654,11 @@ __upc_run_this_thread (upc_info_p u, int argc, char *argv[],
     }
   else if (MPIR_being_debugged)
     {
-      /* Wait for the debugger to acquire us */
+      /* Wait for partial attach flag.  */
+      while (!u->partial_attach_start)
+	__upc_yield_cpu ();
+    
+      /* Wait for the debugger to acquire us.  */
       while (!MPIR_debug_gate)
 	__upc_yield_cpu ();
     }
@@ -688,8 +712,8 @@ __upc_run_threads (upc_info_p u, int argc, char *argv[])
 	  u->thread_info[thread_id].pid = pid;
 	  if (MPIR_being_debugged)
 	    {
-	      MPIR_proctable[thread_id].host_name = 0;
-	      MPIR_proctable[thread_id].executable_name = 0;
+	      MPIR_proctable[thread_id].host_name = u->host_name;
+	      MPIR_proctable[thread_id].executable_name = u->program_name;
 	      MPIR_proctable[thread_id].pid = pid;
 	    }
 	}
@@ -709,6 +733,8 @@ __upc_run_threads (upc_info_p u, int argc, char *argv[])
       MPIR_debug_state = MPIR_DEBUG_SPAWNED;
       /* The debugger will have set a breakpoint there... */
       MPIR_Breakpoint ();
+      /* Release threads.  */
+      u->partial_attach_start = 1;
     }
   if (unlink (u->mmap_file_name) < 0)
     {
