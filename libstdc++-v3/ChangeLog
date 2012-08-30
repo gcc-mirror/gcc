@@ -5,6 +5,12 @@
 
 2012-08-30  Benjamin Kosnik  <bkoz@redhat.com>
 
+	PR libstdc++/54005 continued
+	* include/std/atomic: Use __atomic_lock_free with
+	* include/bits/atomic_base.h: Same.
+
+2012-08-30  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* testsuite/util/testsuite_abi.cc (check_version): Add GLIBCXX_3.4.18.
 
 2012-08-29  Ulrich Drepper  <drepper@gmail.com>
