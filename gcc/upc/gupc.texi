@@ -222,6 +222,10 @@ when compiled with optimization and the @option{-fno-upc-inline-lib} option
 must be specified to turn it off. In general, inlining of run-time 
 library calls produces larger code. Turn it off if more 
 condensed code is required.
+
+@item -fupc-pre-include
+@cindex @option{-fupc-pre-include}
+Pre-include UPC runtime header files. This option is turned on by default.
 @end table
 
 @subsection Debugging Options
