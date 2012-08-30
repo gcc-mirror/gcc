@@ -1,5 +1,13 @@
 2012-08-29  Ulrich Drepper  <drepper@gmail.com>
 
+	* include/bits/random.h (random_device): Move implementation to...
+	* src/c++11/random.cc: ...here.  New file.
+	* config/abi/pre/gnu.ver: Add new version GLIBCXX_3.4.18.  Export
+	std::random_device::* symbols.
+	* config/abi/post/x86_64-linux-gnu/baseline_symbols.txt: Generated.
+	* src/c++11/Makefile.am (sources): Add random.cc.
+	* src/c++11/Makefile.in: Regenerated.
+
 	Add simd_fast_mersenne_twister_engine class.
 	* include/ext/random: New file.
 	* include/ext/random.tcc: New file.
