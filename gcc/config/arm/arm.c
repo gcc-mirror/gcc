@@ -20351,12 +20351,13 @@ typedef enum {
    and return an expression for the accessed memory.
 
    The intrinsic function operates on a block of registers that has
-   mode REG_MODE.  This block contains vectors of type TYPE_MODE.
-   The function references the memory at EXP in mode MEM_MODE;
-   this mode may be BLKmode if no more suitable mode is available.  */
+   mode REG_MODE.  This block contains vectors of type TYPE_MODE.  The
+   function references the memory at EXP of type TYPE and in mode
+   MEM_MODE; this mode may be BLKmode if no more suitable mode is
+   available.  */
 
 static tree
-neon_dereference_pointer (tree exp, enum machine_mode mem_mode,
+neon_dereference_pointer (tree exp, tree type, enum machine_mode mem_mode,
 			  enum machine_mode reg_mode,
 			  neon_builtin_type_mode type_mode)
 {
@@ -20374,17 +20375,17 @@ neon_dereference_pointer (tree exp, enum machine_mode mem_mode,
   gcc_assert (reg_size % vector_size == 0);
   nvectors = reg_size / vector_size;
 
+  /* Work out the type of each element.  */
+  gcc_assert (POINTER_TYPE_P (type));
+  elem_type = TREE_TYPE (type);
+
   /* Work out how many elements are being loaded or stored.
      MEM_MODE == REG_MODE implies a one-to-one mapping between register
      and memory elements; anything else implies a lane load or store.  */
   if (mem_mode == reg_mode)
-    nelems = vector_size * nvectors;
+    nelems = vector_size * nvectors / int_size_in_bytes (elem_type);
   else
     nelems = nvectors;
-
-  /* Work out the type of each element.  */
-  gcc_assert (POINTER_TYPE_P (TREE_TYPE (exp)));
-  elem_type = TREE_TYPE (TREE_TYPE (exp));
 
   /* Create a type that describes the full access.  */
   upper_bound = build_int_cst (size_type_node, nelems - 1);
@@ -20399,12 +20400,14 @@ neon_dereference_pointer (tree exp, enum machine_mode mem_mode,
 static rtx
 arm_expand_neon_args (rtx target, int icode, int have_retval,
 		      neon_builtin_type_mode type_mode,
-		      tree exp, ...)
+		      tree exp, int fcode, ...)
 {
   va_list ap;
   rtx pat;
   tree arg[NEON_MAX_BUILTIN_ARGS];
   rtx op[NEON_MAX_BUILTIN_ARGS];
+  tree arg_type;
+  tree formals;
   enum machine_mode tmode = insn_data[icode].operand[0].mode;
   enum machine_mode mode[NEON_MAX_BUILTIN_ARGS];
   enum machine_mode other_mode;
@@ -20417,7 +20420,9 @@ arm_expand_neon_args (rtx target, int icode, int have_retval,
 	  || !(*insn_data[icode].operand[0].predicate) (target, tmode)))
     target = gen_reg_rtx (tmode);
 
-  va_start (ap, exp);
+  va_start (ap, fcode);
+
+  formals = TYPE_ARG_TYPES (TREE_TYPE (arm_builtin_decls[fcode]));
 
   for (;;)
     {
@@ -20430,12 +20435,15 @@ arm_expand_neon_args (rtx target, int icode, int have_retval,
           opno = argc + have_retval;
           mode[argc] = insn_data[icode].operand[opno].mode;
           arg[argc] = CALL_EXPR_ARG (exp, argc);
+	  arg_type = TREE_VALUE (formals);
           if (thisarg == NEON_ARG_MEMORY)
             {
               other_mode = insn_data[icode].operand[1 - opno].mode;
-              arg[argc] = neon_dereference_pointer (arg[argc], mode[argc],
-                                                    other_mode, type_mode);
+              arg[argc] = neon_dereference_pointer (arg[argc], arg_type,
+						    mode[argc], other_mode,
+						    type_mode);
             }
+
           op[argc] = expand_normal (arg[argc]);
 
           switch (thisarg)
@@ -20472,6 +20480,7 @@ arm_expand_neon_args (rtx target, int icode, int have_retval,
             }
 
           argc++;
+	  formals = TREE_CHAIN (formals);
         }
     }
 
@@ -20554,7 +20563,7 @@ arm_expand_neon_builtin (int fcode, tree exp, rtx target)
     case NEON_UNOP:
     case NEON_CONVERT:
     case NEON_DUPLANE:
-      return arm_expand_neon_args (target, icode, 1, type_mode, exp,
+      return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
         NEON_ARG_COPY_TO_REG, NEON_ARG_CONSTANT, NEON_ARG_STOP);
 
     case NEON_BINOP:
@@ -20564,89 +20573,89 @@ arm_expand_neon_builtin (int fcode, tree exp, rtx target)
     case NEON_SCALARMULH:
     case NEON_SHIFTINSERT:
     case NEON_LOGICBINOP:
-      return arm_expand_neon_args (target, icode, 1, type_mode, exp,
+      return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
         NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_CONSTANT,
         NEON_ARG_STOP);
 
     case NEON_TERNOP:
-      return arm_expand_neon_args (target, icode, 1, type_mode, exp,
+      return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
         NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG,
         NEON_ARG_CONSTANT, NEON_ARG_STOP);
 
     case NEON_GETLANE:
     case NEON_FIXCONV:
     case NEON_SHIFTIMM:
-      return arm_expand_neon_args (target, icode, 1, type_mode, exp,
+      return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
         NEON_ARG_COPY_TO_REG, NEON_ARG_CONSTANT, NEON_ARG_CONSTANT,
         NEON_ARG_STOP);
 
     case NEON_CREATE:
-      return arm_expand_neon_args (target, icode, 1, type_mode, exp,
+      return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
         NEON_ARG_COPY_TO_REG, NEON_ARG_STOP);
 
     case NEON_DUP:
     case NEON_SPLIT:
     case NEON_REINTERP:
-      return arm_expand_neon_args (target, icode, 1, type_mode, exp,
+      return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
         NEON_ARG_COPY_TO_REG, NEON_ARG_STOP);
 
     case NEON_COMBINE:
     case NEON_VTBL:
-      return arm_expand_neon_args (target, icode, 1, type_mode, exp,
+      return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
         NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_STOP);
 
     case NEON_RESULTPAIR:
-      return arm_expand_neon_args (target, icode, 0, type_mode, exp,
+      return arm_expand_neon_args (target, icode, 0, type_mode, exp, fcode,
         NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG,
         NEON_ARG_STOP);
 
     case NEON_LANEMUL:
     case NEON_LANEMULL:
     case NEON_LANEMULH:
-      return arm_expand_neon_args (target, icode, 1, type_mode, exp,
+      return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
         NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_CONSTANT,
         NEON_ARG_CONSTANT, NEON_ARG_STOP);
 
     case NEON_LANEMAC:
-      return arm_expand_neon_args (target, icode, 1, type_mode, exp,
+      return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
         NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG,
         NEON_ARG_CONSTANT, NEON_ARG_CONSTANT, NEON_ARG_STOP);
 
     case NEON_SHIFTACC:
-      return arm_expand_neon_args (target, icode, 1, type_mode, exp,
+      return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
         NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_CONSTANT,
         NEON_ARG_CONSTANT, NEON_ARG_STOP);
 
     case NEON_SCALARMAC:
-      return arm_expand_neon_args (target, icode, 1, type_mode, exp,
+      return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
 	NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG,
         NEON_ARG_CONSTANT, NEON_ARG_STOP);
 
     case NEON_SELECT:
     case NEON_VTBX:
-      return arm_expand_neon_args (target, icode, 1, type_mode, exp,
+      return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
 	NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG, NEON_ARG_COPY_TO_REG,
         NEON_ARG_STOP);
 
     case NEON_LOAD1:
     case NEON_LOADSTRUCT:
-      return arm_expand_neon_args (target, icode, 1, type_mode, exp,
+      return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
 	NEON_ARG_MEMORY, NEON_ARG_STOP);
 
     case NEON_LOAD1LANE:
     case NEON_LOADSTRUCTLANE:
-      return arm_expand_neon_args (target, icode, 1, type_mode, exp,
+      return arm_expand_neon_args (target, icode, 1, type_mode, exp, fcode,
 	NEON_ARG_MEMORY, NEON_ARG_COPY_TO_REG, NEON_ARG_CONSTANT,
 	NEON_ARG_STOP);
 
     case NEON_STORE1:
     case NEON_STORESTRUCT:
-      return arm_expand_neon_args (target, icode, 0, type_mode, exp,
+      return arm_expand_neon_args (target, icode, 0, type_mode, exp, fcode,
 	NEON_ARG_MEMORY, NEON_ARG_COPY_TO_REG, NEON_ARG_STOP);
 
     case NEON_STORE1LANE:
     case NEON_STORESTRUCTLANE:
-      return arm_expand_neon_args (target, icode, 0, type_mode, exp,
+      return arm_expand_neon_args (target, icode, 0, type_mode, exp, fcode,
 	NEON_ARG_MEMORY, NEON_ARG_COPY_TO_REG, NEON_ARG_CONSTANT,
 	NEON_ARG_STOP);
     }

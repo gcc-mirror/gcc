@@ -1,3 +1,12 @@
+2012-08-29  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+	    Richard Earnshaw  <richard.earnshaw@arm.com>
+
+	PR target/54252
+	* config/arm/arm.c (neon_dereference_pointer): Adjust nelems by
+	element size. Use elem_type from the formal parameter. New parameter
+	fcode.
+	(neon_expand_args): Adjust call to neon_dereference_pointer.
+
 2012-08-29  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* cfg.c (dump_bb_info): Print a newline if there were no edges to dump.
