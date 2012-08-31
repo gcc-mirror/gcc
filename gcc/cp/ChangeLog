@@ -1,3 +1,8 @@
+2012-08-31  Ollie Wild  <aaw@google.com>
+
+	PR c++/54197
+	* call.c (extend_ref_init_temps_1): Handle COMPOUND_EXPR trees.
+
 2012-08-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/50545

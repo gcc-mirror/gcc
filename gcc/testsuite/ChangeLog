@@ -1,3 +1,8 @@
+2012-08-31  Ollie Wild  <aaw@google.com>
+
+	PR c++/54197
+	* g++.dg/init/lifetime3.C: New test.
+
 2012-08-31  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/54409
