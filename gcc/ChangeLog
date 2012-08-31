@@ -1,5 +1,11 @@
 2012-08-31  Martin Jambor  <mjambor@suse.cz>
 
+	PR middle-end/54409
+	* ipa-inline-analysis.c (remap_predicate): Fix the offset_map
+	checking condition.
+
+2012-08-31  Martin Jambor  <mjambor@suse.cz>
+
 	* ipa-inline-analysis.c (phi_result_unknown_predicate): New function.
 	(predicate_for_phi_result): Likewise.
 	(estimate_function_body_sizes): Use the above two functions.
