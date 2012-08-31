@@ -1,3 +1,9 @@
+2012-08-31  Paolo Carlini  <paolo.carlini@oracle.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/18747
+	* g++.dg/parse/error50.C: New.
+
 2012-08-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/54428
