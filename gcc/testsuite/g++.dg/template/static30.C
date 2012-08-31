@@ -7,4 +7,4 @@ template <int> struct A
 };
 
 template <int N> const int A<N>::i1(A<N>::i);
-template <int N> const int A<N>::i2(3, A<N>::i);
+template <int N> const int A<N>::i2(3, A<N>::i); // { dg-error "expression list" }
