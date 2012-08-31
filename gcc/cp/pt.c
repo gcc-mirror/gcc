@@ -19100,20 +19100,7 @@ dependent_scope_p (tree scope)
 
 /* Note that this predicate is not appropriate for general expressions;
    only constant expressions (that satisfy potential_constant_expression)
-   can be tested for value dependence.
-
-   We should really also have a predicate for "instantiation-dependent".
-
-   fold_non_dependent_expr: fold if constant and not type-dependent and not value-dependent.
-     (what about instantiation-dependent constant-expressions?)
-   is_late_template_attribute: defer if instantiation-dependent.
-   compute_array_index_type: proceed if constant and not t- or v-dependent
-     if instantiation-dependent, need to remember full expression
-   uses_template_parms: FIXME - need to audit callers
-   tsubst_decl [function_decl]: Why is this using value_dependent_expression_p?
-   dependent_type_p [array_type]: dependent if index type is dependent
-     (or non-constant?)
-   static_assert - instantiation-dependent */
+   can be tested for value dependence.  */
 
 bool
 value_dependent_expression_p (tree expression)
@@ -19193,7 +19180,7 @@ value_dependent_expression_p (tree expression)
         return true;
       else if (TYPE_P (expression))
 	return dependent_type_p (expression);
-      return type_dependent_expression_p (expression);
+      return instantiation_dependent_expression_p (expression);
 
     case AT_ENCODE_EXPR:
       /* An 'encode' expression is value-dependent if the operand is
@@ -19203,13 +19190,13 @@ value_dependent_expression_p (tree expression)
 
     case NOEXCEPT_EXPR:
       expression = TREE_OPERAND (expression, 0);
-      return type_dependent_expression_p (expression);
+      return instantiation_dependent_expression_p (expression);
 
     case SCOPE_REF:
-      {
-	tree name = TREE_OPERAND (expression, 1);
-	return value_dependent_expression_p (name);
-      }
+      /* instantiation_dependent_r treats this as dependent so that we
+	 check access at instantiation time, and all instantiation-dependent
+	 expressions should also be considered value-dependent.  */
+      return true;
 
     case COMPONENT_REF:
       return (value_dependent_expression_p (TREE_OPERAND (expression, 0))
@@ -19486,6 +19473,104 @@ type_dependent_expression_p (tree expression)
   gcc_assert (TREE_CODE (expression) != TYPE_DECL);
 
   return (dependent_type_p (TREE_TYPE (expression)));
+}
+
+/* walk_tree callback function for instantiation_dependent_expression_p,
+   below.  Returns non-zero if a dependent subexpression is found.  */
+
+static tree
+instantiation_dependent_r (tree *tp, int *walk_subtrees,
+			   void *data ATTRIBUTE_UNUSED)
+{
+  if (TYPE_P (*tp))
+    {
+      /* We don't have to worry about decltype currently because decltype
+	 of an instantiation-dependent expr is a dependent type.  This
+	 might change depending on the resolution of DR 1172.  */
+      *walk_subtrees = false;
+      return NULL_TREE;
+    }
+  enum tree_code code = TREE_CODE (*tp);
+  switch (code)
+    {
+      /* Don't treat an argument list as dependent just because it has no
+	 TREE_TYPE.  */
+    case TREE_LIST:
+    case TREE_VEC:
+      return NULL_TREE;
+
+    case TEMPLATE_PARM_INDEX:
+      return *tp;
+
+      /* Handle expressions with type operands.  */
+    case SIZEOF_EXPR:
+    case ALIGNOF_EXPR:
+    case TYPEID_EXPR:
+    case AT_ENCODE_EXPR:
+    case TRAIT_EXPR:
+      {
+	tree op = TREE_OPERAND (*tp, 0);
+	if (TYPE_P (op))
+	  {
+	    if (dependent_type_p (op)
+		|| (code == TRAIT_EXPR
+		    && dependent_type_p (TREE_OPERAND (*tp, 1))))
+	      return *tp;
+	    else
+	      {
+		*walk_subtrees = false;
+		return NULL_TREE;
+	      }
+	  }
+	break;
+      }
+
+    case COMPONENT_REF:
+      if (TREE_CODE (TREE_OPERAND (*tp, 1)) == IDENTIFIER_NODE)
+	/* In a template, finish_class_member_access_expr creates a
+	   COMPONENT_REF with an IDENTIFIER_NODE for op1 even if it isn't
+	   type-dependent, so that we can check access control at
+	   instantiation time (PR 42277).  See also Core issue 1273.  */
+	return *tp;
+      break;
+
+    case SCOPE_REF:
+      /* Similarly, finish_qualified_id_expr builds up a SCOPE_REF in a
+	 template so that we can check access at instantiation time even
+	 though we know which member it resolves to.  */
+      return *tp;
+
+    default:
+      break;
+    }
+
+  if (type_dependent_expression_p (*tp))
+    return *tp;
+  else
+    return NULL_TREE;
+}
+
+/* Returns TRUE if the EXPRESSION is instantiation-dependent, in the
+   sense defined by the ABI:
+
+   "An expression is instantiation-dependent if it is type-dependent
+   or value-dependent, or it has a subexpression that is type-dependent
+   or value-dependent."  */
+
+bool
+instantiation_dependent_expression_p (tree expression)
+{
+  tree result;
+
+  if (!processing_template_decl)
+    return false;
+
+  if (expression == error_mark_node)
+    return false;
+
+  result = cp_walk_tree_without_duplicates (&expression,
+					    instantiation_dependent_r, NULL);
+  return result != NULL_TREE;
 }
 
 /* Like type_dependent_expression_p, but it also works while not processing
