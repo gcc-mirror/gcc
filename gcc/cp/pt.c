@@ -2208,6 +2208,66 @@ copy_default_args_to_explicit_spec (tree decl)
   TREE_TYPE (decl) = new_type;
 }
 
+/* Return the number of template headers we expect to see for a definition
+   or specialization of CTYPE or one of its non-template members.  */
+
+int
+num_template_headers_for_class (tree ctype)
+{
+  int template_count = 0;
+  tree t = ctype;
+  while (t != NULL_TREE && CLASS_TYPE_P (t))
+    {
+      /* You're supposed to have one `template <...>' for every
+	 template class, but you don't need one for a full
+	 specialization.  For example:
+
+	 template <class T> struct S{};
+	 template <> struct S<int> { void f(); };
+	 void S<int>::f () {}
+
+	 is correct; there shouldn't be a `template <>' for the
+	 definition of `S<int>::f'.  */
+      if (CLASSTYPE_TEMPLATE_SPECIALIZATION (t)
+	  && !any_dependent_template_arguments_p (CLASSTYPE_TI_ARGS (t)))
+	/* T is an explicit (not partial) specialization.  All
+	   containing classes must therefore also be explicitly
+	   specialized.  */
+	break;
+      if ((CLASSTYPE_USE_TEMPLATE (t) || CLASSTYPE_IS_TEMPLATE (t))
+	  && PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (t)))
+	template_count += 1;
+
+      t = TYPE_MAIN_DECL (t);
+      t = DECL_CONTEXT (t);
+    }
+
+  return template_count;
+}
+
+/* Do a simple sanity check on the template headers that precede the
+   variable declaration DECL.  */
+
+void
+check_template_variable (tree decl)
+{
+  tree ctx = CP_DECL_CONTEXT (decl);
+  int wanted = num_template_headers_for_class (ctx);
+  if (!TYPE_P (ctx) || !CLASSTYPE_TEMPLATE_INFO (ctx))
+    permerror (DECL_SOURCE_LOCATION (decl),
+	       "%qD is not a static data member of a class template", decl);
+  else if (template_header_count > wanted)
+    {
+      pedwarn (DECL_SOURCE_LOCATION (decl), 0,
+	       "too many template headers for %D (should be %d)",
+	       decl, wanted);
+      if (CLASSTYPE_TEMPLATE_SPECIALIZATION (ctx))
+	inform (DECL_SOURCE_LOCATION (decl),
+		"members of an explicitly specialized class are defined "
+		"without a template header");
+    }
+}
+
 /* Check to see if the function just declared, as indicated in
    DECLARATOR, and in DECL, is a specialization of a function
    template.  We may also discover that the declaration is an explicit

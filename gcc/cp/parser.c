@@ -21310,8 +21310,8 @@ cp_parser_perform_template_parameter_access_checks (VEC (deferred_access_check,g
 }
 
 /* Parse a `decl-specifier-seq [opt] init-declarator [opt] ;' or
-   `function-definition' sequence.  MEMBER_P is true, this declaration
-   appears in a class scope.
+   `function-definition' sequence that follows a template header.
+   If MEMBER_P is true, this declaration appears in a class scope.
 
    Returns the DECL for the declared entity.  If FRIEND_P is non-NULL,
    *FRIEND_P is set to TRUE iff the declaration is a friend.  */
@@ -21431,6 +21431,9 @@ cp_parser_single_declaration (cp_parser* parser,
 		  "explicit template specialization cannot have a storage class");
         decl = error_mark_node;
       }
+
+    if (decl && TREE_CODE (decl) == VAR_DECL)
+      check_template_variable (decl);
     }
 
   /* Look for a trailing `;' after the declaration.  */
