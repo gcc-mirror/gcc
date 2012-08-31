@@ -1,3 +1,11 @@
+2012-08-31  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	Backport from mainline
+	2012-08-23  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	* config/i386/i386.c (ia32_multipass_dfa_lookahead) : Add
+	case for Atom processor.
+
 2012-08-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
