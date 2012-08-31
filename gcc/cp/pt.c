@@ -8152,6 +8152,12 @@ tsubst_friend_class (tree friend_tmpl, tree args)
   tree tmpl;
   tree context;
 
+  if (DECL_TEMPLATE_TEMPLATE_PARM_P (friend_tmpl))
+    {
+      tree t = tsubst (TREE_TYPE (friend_tmpl), args, tf_none, NULL_TREE);
+      return TREE_TYPE (t);
+    }
+
   context = CP_DECL_CONTEXT (friend_tmpl);
 
   if (context != global_namespace)
@@ -8736,7 +8742,8 @@ instantiate_class_template_1 (tree type)
 	}
       else
 	{
-	  if (TYPE_P (t) || DECL_CLASS_TEMPLATE_P (t))
+	  if (TYPE_P (t) || DECL_CLASS_TEMPLATE_P (t)
+	      || DECL_TEMPLATE_TEMPLATE_PARM_P (t))
 	    {
 	      /* Build new CLASSTYPE_FRIEND_CLASSES.  */
 

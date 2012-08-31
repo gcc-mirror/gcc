@@ -21240,7 +21240,9 @@ cp_parser_template_declaration_after_export (cp_parser* parser, bool member_p)
 
 	  decl = finish_member_template_decl (decl);
 	}
-      else if (friend_p && decl && TREE_CODE (decl) == TYPE_DECL)
+      else if (friend_p && decl
+	       && (TREE_CODE (decl) == TYPE_DECL
+		   || DECL_TYPE_TEMPLATE_P (decl)))
 	make_friend_class (current_class_type, TREE_TYPE (decl),
 			   /*complain=*/true);
     }
