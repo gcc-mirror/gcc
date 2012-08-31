@@ -1,3 +1,9 @@
+2012-08-31  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-inline-analysis.c (estimate_function_body_sizes): Allocate
+	nonconstant_names after calculate_dominance_info and
+	loop_optimizer_init.
+
 2012-08-31  Greta Yorsh  <Greta.Yorsh@arm.com>
 
 	* config/arm/arm.c (arm_expand_epilogue): Remove unused variable

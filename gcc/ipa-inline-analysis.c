@@ -2185,13 +2185,6 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
   struct ipa_node_params *parms_info = NULL;
   VEC (predicate_t, heap) *nonconstant_names = NULL;
 
-  if (ipa_node_params_vector && !early && optimize)
-    {
-      parms_info = IPA_NODE_REF (node);
-      VEC_safe_grow_cleared (predicate_t, heap, nonconstant_names,
-			     VEC_length (tree, SSANAMES (my_function)));
-    }
-
   info->conds = 0;
   info->entry = 0;
 
@@ -2199,6 +2192,13 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
     {
       calculate_dominance_info (CDI_DOMINATORS);
       loop_optimizer_init (LOOPS_NORMAL | LOOPS_HAVE_RECORDED_EXITS);
+
+      if (ipa_node_params_vector)
+	{
+	  parms_info = IPA_NODE_REF (node);
+	  VEC_safe_grow_cleared (predicate_t, heap, nonconstant_names,
+				 VEC_length (tree, SSANAMES (my_function)));
+	}
     }
 
   if (dump_file)
