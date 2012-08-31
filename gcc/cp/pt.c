@@ -128,7 +128,7 @@ static int unify (tree, tree, tree, tree, int, bool);
 static void add_pending_template (tree);
 static tree reopen_tinst_level (struct tinst_level *);
 static tree tsubst_initializer_list (tree, tree);
-static tree get_class_bindings (tree, tree, tree);
+static tree get_class_bindings (tree, tree, tree, tree);
 static tree coerce_template_parms (tree, tree, tree, tsubst_flags_t,
 				   bool, bool);
 static void tsubst_enum	(tree, tree, tree);
@@ -17087,7 +17087,8 @@ more_specialized_fn (tree pat1, tree pat2, int len)
     return -1;
 }
 
-/* Determine which of two partial specializations is more specialized.
+/* Determine which of two partial specializations of MAIN_TMPL is more
+   specialized.
 
    PAT1 is a TREE_LIST whose TREE_TYPE is the _TYPE node corresponding
    to the first partial specialization.  The TREE_VALUE is the
@@ -17102,7 +17103,7 @@ more_specialized_fn (tree pat1, tree pat2, int len)
    two templates is more specialized.  */
 
 static int
-more_specialized_class (tree pat1, tree pat2)
+more_specialized_class (tree main_tmpl, tree pat1, tree pat2)
 {
   tree targs;
   tree tmpl1, tmpl2;
@@ -17117,7 +17118,7 @@ more_specialized_class (tree pat1, tree pat2)
      types in the arguments, and we need our dependency check functions
      to behave correctly.  */
   ++processing_template_decl;
-  targs = get_class_bindings (TREE_VALUE (pat1),
+  targs = get_class_bindings (main_tmpl, TREE_VALUE (pat1),
 			      CLASSTYPE_TI_ARGS (tmpl1),
 			      CLASSTYPE_TI_ARGS (tmpl2));
   if (targs)
@@ -17126,7 +17127,7 @@ more_specialized_class (tree pat1, tree pat2)
       any_deductions = true;
     }
 
-  targs = get_class_bindings (TREE_VALUE (pat2),
+  targs = get_class_bindings (main_tmpl, TREE_VALUE (pat2),
 			      CLASSTYPE_TI_ARGS (tmpl2),
 			      CLASSTYPE_TI_ARGS (tmpl1));
   if (targs)
@@ -17205,8 +17206,8 @@ get_bindings (tree fn, tree decl, tree explicit_args, bool check_rettype)
   return targs;
 }
 
-/* Return the innermost template arguments that, when applied to a
-   template specialization whose innermost template parameters are
+/* Return the innermost template arguments that, when applied to a partial
+   specialization of MAIN_TMPL whose innermost template parameters are
    TPARMS, and whose specialization arguments are SPEC_ARGS, yield the
    ARGS.
 
@@ -17221,7 +17222,7 @@ get_bindings (tree fn, tree decl, tree explicit_args, bool check_rettype)
    is bound to `double'.  */
 
 static tree
-get_class_bindings (tree tparms, tree spec_args, tree args)
+get_class_bindings (tree main_tmpl, tree tparms, tree spec_args, tree args)
 {
   int i, ntparms = TREE_VEC_LENGTH (tparms);
   tree deduced_args;
@@ -17261,6 +17262,9 @@ get_class_bindings (tree tparms, tree spec_args, tree args)
      `T' is `A' but unify () does not check whether `typename T::X'
      is `int'.  */
   spec_args = tsubst (spec_args, deduced_args, tf_none, NULL_TREE);
+  spec_args = coerce_template_parms (DECL_INNERMOST_TEMPLATE_PARMS (main_tmpl),
+				     spec_args, main_tmpl,
+				     tf_none, false, false);
   if (spec_args == error_mark_node
       /* We only need to check the innermost arguments; the other
 	 arguments will always agree.  */
@@ -17485,7 +17489,7 @@ most_specialized_class (tree type, tree tmpl, tsubst_flags_t complain)
       if (partial_spec_args == error_mark_node)
 	return error_mark_node;
 
-      spec_args = get_class_bindings (parms,
+      spec_args = get_class_bindings (tmpl, parms,
 				      partial_spec_args,
 				      args);
       if (spec_args)
@@ -17506,7 +17510,7 @@ most_specialized_class (tree type, tree tmpl, tsubst_flags_t complain)
   t = TREE_CHAIN (t);
   for (; t; t = TREE_CHAIN (t))
     {
-      fate = more_specialized_class (champ, t);
+      fate = more_specialized_class (tmpl, champ, t);
       if (fate == 1)
 	;
       else
@@ -17527,7 +17531,7 @@ most_specialized_class (tree type, tree tmpl, tsubst_flags_t complain)
   if (!ambiguous_p)
     for (t = list; t && t != champ; t = TREE_CHAIN (t))
       {
-	fate = more_specialized_class (champ, t);
+	fate = more_specialized_class (tmpl, champ, t);
 	if (fate != 1)
 	  {
 	    ambiguous_p = true;
