@@ -1,5 +1,13 @@
 2012-08-30  Jason Merrill  <jason@redhat.com>
 
+	PR c++/50545
+	PR c++/51222
+	* pt.c (instantiation_dependent_r): New.
+	(instantiation_dependent_expression_p): New.
+	(value_dependent_expression_p): Use it.  SCOPE_REF is always dependent.
+	* semantics.c (finish_decltype_type): Use it.
+	* cp-tree.h: Declare it.
+
 	* semantics.c (finish_qualified_id_expr): Handle building up a
 	non-dependent SCOPE_REF here.
 	(finish_id_expression): Not here.
