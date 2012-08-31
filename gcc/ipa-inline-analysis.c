@@ -2811,8 +2811,11 @@ remap_predicate (struct inline_summary *info,
 		 if (!operand_map
 		     || (int)VEC_length (int, operand_map) <= c->operand_num
 		     || VEC_index (int, operand_map, c->operand_num) == -1
-		     || (!c->agg_contents
-			 && VEC_index (int, offset_map, c->operand_num) != 0)
+		     /* TODO: For non-aggregate conditions, adding an offset is
+			basically an arithmetic jump function processing which
+			we should support in future.  */
+		     || ((!c->agg_contents || !c->by_ref)
+			 && VEC_index (int, offset_map, c->operand_num) > 0)
 		     || (c->agg_contents && c->by_ref
 			 && VEC_index (int, offset_map, c->operand_num) < 0))
 		   cond_predicate = true_predicate ();
