@@ -1,3 +1,8 @@
+2012-08-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/54428
+	* gcc.c-torture/compile/pr54428.c: New test.
+
 2012-08-31  Ollie Wild  <aaw@google.com>
 
 	PR c++/54197

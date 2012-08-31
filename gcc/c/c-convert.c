@@ -1,6 +1,6 @@
 /* Language-level data type conversion for GNU C.
    Copyright (C) 1987, 1988, 1991, 1998, 2002, 2003, 2004, 2005, 2007, 2008,
-   2009, 2010 Free Software Foundation, Inc.
+   2009, 2010, 2011, 2012 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -92,7 +92,9 @@ convert (tree type, tree expr)
 
   STRIP_TYPE_NOPS (e);
 
-  if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (TREE_TYPE (expr)))
+  if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (TREE_TYPE (expr))
+      && (TREE_CODE (TREE_TYPE (expr)) != COMPLEX_TYPE
+	  || TREE_CODE (e) == COMPLEX_EXPR))
     return fold_convert_loc (loc, type, expr);
   if (TREE_CODE (TREE_TYPE (expr)) == ERROR_MARK)
     return error_mark_node;
@@ -135,24 +137,23 @@ convert (tree type, tree expr)
 	 but for the C FE c_save_expr needs to be called instead.  */
       if (TREE_CODE (TREE_TYPE (e)) == COMPLEX_TYPE)
 	{
-	  tree subtype = TREE_TYPE (type);
-	  tree elt_type = TREE_TYPE (TREE_TYPE (e));
-
-	  if (TYPE_MAIN_VARIANT (elt_type) != TYPE_MAIN_VARIANT (subtype)
-	      && TREE_CODE (e) != COMPLEX_EXPR)
+	  if (TREE_CODE (e) != COMPLEX_EXPR)
 	    {
+	      tree subtype = TREE_TYPE (type);
+	      tree elt_type = TREE_TYPE (TREE_TYPE (e));
+
 	      if (in_late_binary_op)
 		e = save_expr (e);
 	      else
 		e = c_save_expr (e);
 	      ret
-		= fold_build2 (COMPLEX_EXPR, type,
-			       convert (subtype,
-					fold_build1 (REALPART_EXPR,
-						     elt_type, e)),
-			       convert (subtype,
-					fold_build1 (IMAGPART_EXPR,
-						     elt_type, e)));
+		= fold_build2_loc (loc, COMPLEX_EXPR, type,
+				   convert (subtype,
+					    fold_build1 (REALPART_EXPR,
+							 elt_type, e)),
+				   convert (subtype,
+					    fold_build1 (IMAGPART_EXPR,
+							 elt_type, e)));
 	      goto maybe_fold;
 	    }
 	}

@@ -1,3 +1,11 @@
+2012-08-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/54428
+	* c-convert.c (convert): Don't call fold_convert_loc if
+	TYPE_MAIN_VARIANT of a COMPLEX_TYPE is the same, unless e
+	is a COMPLEX_EXPR.  Remove TYPE_MAIN_VARIANT check from
+	COMPLEX_TYPE -> COMPLEX_TYPE conversion.
+
 2012-08-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/54355
