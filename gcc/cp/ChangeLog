@@ -1,5 +1,10 @@
 2012-08-30  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (get_class_bindings): Call coerce_template_parms.  Add
+	main_tmpl parameter.
+	(more_specialized_class): Add main_tmpl parameter.
+	(most_specialized_class): Adjust calls.
+
 	* decl.c (cp_finish_decl): Check for invalid multiple initializers
 	even if the initializer is dependent.
 
