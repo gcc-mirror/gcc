@@ -1042,7 +1042,7 @@ dump_decl (tree t, int flags)
     case SCOPE_REF:
       dump_type (TREE_OPERAND (t, 0), flags);
       pp_string (cxx_pp, "::");
-      dump_decl (TREE_OPERAND (t, 1), flags|TFF_UNQUALIFIED_NAME);
+      dump_decl (TREE_OPERAND (t, 1), TFF_UNQUALIFIED_NAME);
       break;
 
     case ARRAY_REF:
