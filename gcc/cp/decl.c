@@ -11484,9 +11484,10 @@ check_elaborated_type_specifier (enum tag_types tag_code,
 	     type, tag_name (tag_code));
       return error_mark_node;
     }
-  /* Accept bound template template parameters.  */
+  /* Accept template template parameters.  */
   else if (allow_template_p
-	   && TREE_CODE (type) == BOUND_TEMPLATE_TEMPLATE_PARM)
+	   && (TREE_CODE (type) == BOUND_TEMPLATE_TEMPLATE_PARM
+	       || TREE_CODE (type) == TEMPLATE_TEMPLATE_PARM))
     ;
   /*   [dcl.type.elab]
 
@@ -11574,7 +11575,9 @@ lookup_and_check_tag (enum tag_types tag_code, tree name,
   else
     decl = lookup_type_scope (name, scope);
 
-  if (decl && DECL_CLASS_TEMPLATE_P (decl))
+  if (decl
+      && (DECL_CLASS_TEMPLATE_P (decl)
+	  || DECL_TEMPLATE_TEMPLATE_PARM_P (decl)))
     decl = DECL_TEMPLATE_RESULT (decl);
 
   if (decl && TREE_CODE (decl) == TYPE_DECL)
@@ -11679,6 +11682,9 @@ xref_tag_1 (enum tag_types tag_code, tree name,
       && template_class_depth (current_class_type)
       && template_header_p)
     {
+      if (TREE_CODE (t) == TEMPLATE_TEMPLATE_PARM)
+	return t;
+
       /* Since SCOPE is not TS_CURRENT, we are not looking at a
 	 definition of this tag.  Since, in addition, we are currently
 	 processing a (member) template declaration of a template

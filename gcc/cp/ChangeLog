@@ -1,5 +1,12 @@
 2012-08-30  Jason Merrill  <jason@redhat.com>
 
+	* friend.c (make_friend_class): Handle template template parameters.
+	* parser.c (cp_parser_template_declaration_after_export): Likewise.
+	* pt.c (tsubst_friend_class): Likewise.
+	(instantiate_class_template_1): Likewise
+	* decl.c (check_elaborated_type_specifier): Likewise.
+	(lookup_and_check_tag): Likewise.
+
 	* pt.c (get_class_bindings): Call coerce_template_parms.  Add
 	main_tmpl parameter.
 	(more_specialized_class): Add main_tmpl parameter.
