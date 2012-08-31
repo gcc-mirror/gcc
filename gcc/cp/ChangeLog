@@ -1,5 +1,10 @@
 2012-08-30  Jason Merrill  <jason@redhat.com>
 
+	* semantics.c (finish_qualified_id_expr): Handle building up a
+	non-dependent SCOPE_REF here.
+	(finish_id_expression): Not here.
+	* error.c (dump_decl) [SCOPE_REF]: Only pass TFF_UNQUALIFIED_NAME.
+
 	* friend.c (make_friend_class): Handle template template parameters.
 	* parser.c (cp_parser_template_declaration_after_export): Likewise.
 	* pt.c (tsubst_friend_class): Likewise.
