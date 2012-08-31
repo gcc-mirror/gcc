@@ -22760,7 +22760,6 @@ arm_expand_epilogue (bool really_return)
   int num_regs = 0;
   int i;
   int amount;
-  int floats_from_frame = 0;
   arm_stack_offsets *offsets;
 
   func_type = arm_current_func_type ();
@@ -22787,18 +22786,7 @@ arm_expand_epilogue (bool really_return)
   /* Get frame offsets for ARM.  */
   offsets = arm_get_frame_offsets ();
   saved_regs_mask = offsets->saved_regs_mask;
-
-  /* Find offset of floating point register from frame pointer.
-     The initialization is done in this way to take care of frame pointer
-     and static-chain register, if stored.  */
-  floats_from_frame = offsets->saved_args - offsets->frame;
-  /* Compute how many registers saved and how far away the floats will be.  */
-  for (i = 0; i <= LAST_ARM_REGNUM; i++)
-    if (saved_regs_mask & (1 << i))
-      {
-        num_regs++;
-        floats_from_frame += 4;
-      }
+  num_regs = bit_count (saved_regs_mask);
 
   if (frame_pointer_needed)
     {
