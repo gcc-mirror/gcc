@@ -1,3 +1,9 @@
+2012-08-31  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/54394
+	* ipa-inline-analysis.c (estimate_function_body_sizes): Compute
+	dominance info and loops whenever optimizing.
+
 2012-08-29  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 	    Richard Earnshaw  <richard.earnshaw@arm.com>
 
