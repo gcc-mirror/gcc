@@ -2102,6 +2102,11 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
   info->conds = 0;
   info->entry = 0;
 
+  if (optimize && !early)
+    {
+      calculate_dominance_info (CDI_DOMINATORS);
+      loop_optimizer_init (LOOPS_NORMAL | LOOPS_HAVE_RECORDED_EXITS);
+    }
 
   if (dump_file)
     fprintf (dump_file, "\nAnalyzing function body size: %s\n",
@@ -2270,9 +2275,6 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
       loop_iterator li;
       predicate loop_iterations = true_predicate ();
 
-      calculate_dominance_info (CDI_DOMINATORS);
-      loop_optimizer_init (LOOPS_NORMAL
-			   | LOOPS_HAVE_RECORDED_EXITS);
       if (dump_file && (dump_flags & TDF_DETAILS))
 	flow_loops_dump (dump_file, NULL, 0);
       scev_initialize ();
@@ -2305,12 +2307,15 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
           *inline_summary (node)->loop_iterations = loop_iterations;
 	}
       scev_finalize ();
-      loop_optimizer_finalize ();
-      free_dominance_info (CDI_DOMINATORS);
     }
   inline_summary (node)->self_time = time;
   inline_summary (node)->self_size = size;
   VEC_free (predicate_t, heap, nonconstant_names);
+  if (optimize && !early)
+    {
+      loop_optimizer_finalize ();
+      free_dominance_info (CDI_DOMINATORS);
+    }
   if (dump_file)
     {
       fprintf (dump_file, "\n");
