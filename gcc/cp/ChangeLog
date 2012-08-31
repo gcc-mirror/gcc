@@ -1,5 +1,8 @@
 2012-08-30  Jason Merrill  <jason@redhat.com>
 
+	* decl.c (cp_finish_decl): Check for invalid multiple initializers
+	even if the initializer is dependent.
+
 	* pt.c (instantiate_template_1): Keep processing_template_decl set
 	if there are dependent args.
 

@@ -6123,8 +6123,15 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	  release_tree_vector (cleanups);
 	}
       else if (!DECL_PRETTY_FUNCTION_P (decl))
-	/* Deduce array size even if the initializer is dependent.  */
-	maybe_deduce_size_from_array_init (decl, init);
+	{
+	  /* Deduce array size even if the initializer is dependent.  */
+	  maybe_deduce_size_from_array_init (decl, init);
+	  /* And complain about multiple initializers.  */
+	  if (init && TREE_CODE (init) == TREE_LIST && TREE_CHAIN (init)
+	      && !MAYBE_CLASS_TYPE_P (type))
+	    init = build_x_compound_expr_from_list (init, ELK_INIT,
+						    tf_warning_or_error);
+	}
 
       if (init)
 	DECL_INITIAL (decl) = init;
