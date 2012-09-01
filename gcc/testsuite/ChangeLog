@@ -1,3 +1,10 @@
+2012-09-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/46829
+	PR target/46843
+	* gcc.target/i386/pr46829.c: New test.
+	* gcc.target/i386/pr46843.c: Ditto.
+
 2012-08-31  Paolo Carlini  <paolo.carlini@oracle.com>
 	    Jason Merrill  <jason@redhat.com>
 
