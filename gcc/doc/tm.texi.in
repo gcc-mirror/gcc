@@ -10796,6 +10796,8 @@ By default, the RTL loop optimizer does not use a present doloop pattern for
 loops containing function calls or branch on table instructions.
 @end deftypefn
 
+@hook TARGET_LEGITIMATE_COMBINED_INSN
+
 @defmac MD_CAN_REDIRECT_BRANCH (@var{branch1}, @var{branch2})
 
 Take a branch insn in @var{branch1} and another in @var{branch2}.

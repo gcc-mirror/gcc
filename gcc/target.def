@@ -1984,6 +1984,15 @@ DEFHOOK
  const char *, (const_rtx insn),
  default_invalid_within_doloop)
 
+/* Returns true for a legitimate combined insn.  */
+DEFHOOK
+(legitimate_combined_insn,
+"Take an instruction in @var{insn} and return @code{false} if the instruction\
+ is not appropriate as a combination of two or more instructions.  The\
+ default is to accept all instructions.",
+ bool, (rtx insn),
+ hook_bool_rtx_true)
+
 DEFHOOK
 (valid_dllimport_attribute_p,
 "@var{decl} is a variable or function with @code{__attribute__((dllimport))}\

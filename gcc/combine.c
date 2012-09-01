@@ -10500,11 +10500,13 @@ static int
 recog_for_combine (rtx *pnewpat, rtx insn, rtx *pnotes)
 {
   rtx pat = *pnewpat;
+  rtx pat_without_clobbers;
   int insn_code_number;
   int num_clobbers_to_add = 0;
   int i;
-  rtx notes = 0;
+  rtx notes = NULL_RTX;
   rtx old_notes, old_pat;
+  int old_icode;
 
   /* If PAT is a PARALLEL, check to see if it contains the CLOBBER
      we use to indicate that something didn't match.  If we find such a
@@ -10518,7 +10520,7 @@ recog_for_combine (rtx *pnewpat, rtx insn, rtx *pnotes)
   old_pat = PATTERN (insn);
   old_notes = REG_NOTES (insn);
   PATTERN (insn) = pat;
-  REG_NOTES (insn) = 0;
+  REG_NOTES (insn) = NULL_RTX;
 
   insn_code_number = recog (pat, insn, &num_clobbers_to_add);
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -10564,6 +10566,9 @@ recog_for_combine (rtx *pnewpat, rtx insn, rtx *pnotes)
 	  print_rtl_single (dump_file, pat);
 	}
     }
+
+  pat_without_clobbers = pat;
+
   PATTERN (insn) = old_pat;
   REG_NOTES (insn) = old_notes;
 
@@ -10603,6 +10608,35 @@ recog_for_combine (rtx *pnewpat, rtx insn, rtx *pnotes)
 	    }
 	}
       pat = newpat;
+    }
+
+  if (insn_code_number >= 0
+      && insn_code_number != NOOP_MOVE_INSN_CODE)
+    {
+      old_pat = PATTERN (insn);
+      old_notes = REG_NOTES (insn);
+      old_icode = INSN_CODE (insn);
+      PATTERN (insn) = pat;
+      REG_NOTES (insn) = notes;
+
+      /* Allow targets to reject combined insn.  */
+      if (!targetm.legitimate_combined_insn (insn))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fputs ("Instruction not appropriate for target.",
+		   dump_file);
+
+	  /* Callers expect recog_for_combine to strip
+	     clobbers from the pattern on failure.  */
+	  pat = pat_without_clobbers;
+	  notes = NULL_RTX;
+
+	  insn_code_number = -1;
+	}
+
+      PATTERN (insn) = old_pat;
+      REG_NOTES (insn) = old_notes;
+      INSN_CODE (insn) = old_icode;
     }
 
   *pnewpat = pat;
