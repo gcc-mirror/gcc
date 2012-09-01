@@ -1,3 +1,8 @@
+2012-09-01  Andrew Pinski  <apinski@cavium.com>
+
+	* simplify-rtx.c (simplify_unary_operation_1 <case TRUNCATE>):
+	A truncate of a memory is just loading the low part of the memory.
+
 2012-09-01  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/46829
