@@ -1,3 +1,9 @@
+2012-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/54436
+	* config/i386/i386.md (*mov<mode>_insv_1_rex64, *movsi_insv_1): If
+	operands[1] is CONST_INT_P, convert it to QImode before printing.
+
 2012-09-01  Andrew Pinski  <apinski@cavium.com>
 
 	* simplify-rtx.c (simplify_unary_operation_1 <case TRUNCATE>):
