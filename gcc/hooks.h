@@ -50,6 +50,7 @@ extern bool hook_bool_const_tree_hwi_hwi_const_tree_true (const_tree,
 							  HOST_WIDE_INT,
 							  HOST_WIDE_INT,
 							  const_tree);
+extern bool hook_bool_rtx_true (rtx);
 extern bool hook_bool_rtx_false (rtx);
 extern bool hook_bool_rtx_int_false (rtx, int);
 extern bool hook_bool_uintp_uintp_false (unsigned int *, unsigned int *);

@@ -1,3 +1,13 @@
+2012-09-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	* target.def (legitimate_combined_insn): New target hook.
+	* doc/tm.texi.in (TARGET_LEGITIMATE_COMBINED_INSN): New hook.
+	* doc/tm.texi: Regenerated.
+	* combine.c (recog_for_combine): Call targetm.legitimate_combined_insn
+	to allow targets to reject combined insn.
+	* hooks.h (hook_bool_rtx_true): New.
+	* hooks.c (hook_bool_rtx_true): Ditto.
+
 2012-08-31  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-inline-analysis.c (estimate_function_body_sizes): Allocate
@@ -62,8 +72,9 @@
 2012-08-29  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/iterators.md: New file.
-	* config/sh/sync.md (I124, I12, i124suffix): Delete.  Replace usage with
-	new iterators QIHISI, QIHI, bw, bwl respectively throughout the file.
+	* config/sh/sync.md (I124, I12, i124suffix): Delete.  Replace usage
+	with new iterators QIHISI, QIHI, bw, bwl respectively throughout
+	the file.
 	* config/sh/sh.md: Include new file iterators.md.
 	(zero_extendhisi2, zero_extendqisi2): Fold into zero_extend<mode>si2.
 	(*zero_extendhisi2_compact, *zero_extendqisi2_compact): Fold into
