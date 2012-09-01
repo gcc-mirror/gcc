@@ -1,5 +1,12 @@
 2012-09-01  Uros Bizjak  <ubizjak@gmail.com>
 
+	PR target/46829
+	PR target/46843
+	* config/i386/i386.c (ix86_legitimate_combined_insn): New function.
+	(TARGET_LEGITIMATE_COMBINED_INSN): New macro.
+
+2012-09-01  Uros Bizjak  <ubizjak@gmail.com>
+
 	* target.def (legitimate_combined_insn): New target hook.
 	* doc/tm.texi.in (TARGET_LEGITIMATE_COMBINED_INSN): New hook.
 	* doc/tm.texi: Regenerated.

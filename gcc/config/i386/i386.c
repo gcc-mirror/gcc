@@ -5545,6 +5545,78 @@ ix86_return_pops_args (tree fundecl, tree funtype, int size)
 
   return 0;
 }
+
+/* Implement the TARGET_LEGITIMATE_COMBINED_INSN hook.  */
+
+static bool
+ix86_legitimate_combined_insn (rtx insn)
+{
+  /* Check operand constraints in case hard registers were propagated
+     into insn pattern.  This check prevents combine pass from
+     generating insn patterns with invalid hard register operands.
+     These invalid insns can eventually confuse reload to error out
+     with a spill failure.  See also PRs 46829 and 46843.  */
+  if ((INSN_CODE (insn) = recog (PATTERN (insn), insn, 0)) >= 0)
+    {
+      int i;
+
+      extract_insn (insn);
+      preprocess_constraints ();
+
+      for (i = 0; i < recog_data.n_operands; i++)
+	{
+	  rtx op = recog_data.operand[i];
+	  enum machine_mode mode = GET_MODE (op);
+	  struct operand_alternative *op_alt;
+	  int offset = 0;
+	  bool win;
+	  int j;
+
+	  /* A unary operator may be accepted by the predicate, but it
+	     is irrelevant for matching constraints.  */
+	  if (UNARY_P (op))
+	    op = XEXP (op, 0);
+
+	  if (GET_CODE (op) == SUBREG)
+	    {
+	      if (REG_P (SUBREG_REG (op))
+		  && REGNO (SUBREG_REG (op)) < FIRST_PSEUDO_REGISTER)
+		offset = subreg_regno_offset (REGNO (SUBREG_REG (op)),
+					      GET_MODE (SUBREG_REG (op)),
+					      SUBREG_BYTE (op),
+					      GET_MODE (op));
+	      op = SUBREG_REG (op);
+	    }
+
+	  if (!(REG_P (op) && HARD_REGISTER_P (op)))
+	    continue;
+
+	  op_alt = recog_op_alt[i];
+
+	  /* Operand has no constraints, anything is OK.  */
+ 	  win = !recog_data.n_alternatives;
+
+	  for (j = 0; j < recog_data.n_alternatives; j++)
+	    {
+	      if (op_alt[j].anything_ok
+		  || (op_alt[j].matches != -1
+		      && operands_match_p
+			  (recog_data.operand[i],
+			   recog_data.operand[op_alt[j].matches]))
+		  || reg_fits_class_p (op, op_alt[j].cl, offset, mode))
+		{
+		  win = true;
+		  break;
+		}
+	    }
+
+	  if (!win)
+	    return false;
+	}
+    }
+
+  return true;
+}
 
 /* Argument support functions.  */
 
@@ -40706,6 +40778,9 @@ ix86_memmodel_check (unsigned HOST_WIDE_INT val)
 #define TARGET_TRAMPOLINE_INIT ix86_trampoline_init
 #undef TARGET_RETURN_POPS_ARGS
 #define TARGET_RETURN_POPS_ARGS ix86_return_pops_args
+
+#undef TARGET_LEGITIMATE_COMBINED_INSN
+#define TARGET_LEGITIMATE_COMBINED_INSN ix86_legitimate_combined_insn
 
 #undef TARGET_GIMPLIFY_VA_ARG_EXPR
 #define TARGET_GIMPLIFY_VA_ARG_EXPR ix86_gimplify_va_arg
