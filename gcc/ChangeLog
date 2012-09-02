@@ -1,3 +1,10 @@
+2012-09-02  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54418
+	* config/sh/sh.md (cmpgeusi_t): Remove N alternative.
+	Check operands[1] in split condition instead of operands[0].
+	Add comments.
+
 2012-09-02  Mark Kettenis  <kettenis@openbsd.org>
 
 	* config.gcc (x86_64-*-openbsd*): New target.

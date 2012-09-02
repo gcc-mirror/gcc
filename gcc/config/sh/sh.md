@@ -1043,13 +1043,19 @@
 ;; SImode unsigned integer comparisons
 ;; -------------------------------------------------------------------------
 
+;; Usually comparisons of 'unsigned int >= 0' are optimized away completely.
+;; However, especially when optimizations are off (e.g. -O0) such comparisons
+;; might remain and we have to handle them.  If the '>= 0' case wasn't
+;; handled here, something else would just load a '0' into the second operand
+;; and do the comparison.  We can do slightly better by just setting the
+;; T bit to '1'.
 (define_insn_and_split "cmpgeusi_t"
   [(set (reg:SI T_REG)
 	(geu:SI (match_operand:SI 0 "arith_reg_operand" "r")
-		(match_operand:SI 1 "arith_reg_or_0_operand" "rN")))]
+		(match_operand:SI 1 "arith_reg_or_0_operand" "r")))]
   "TARGET_SH1"
   "cmp/hs	%1,%0"
-  "&& satisfies_constraint_Z (operands[0])"
+  "&& satisfies_constraint_Z (operands[1])"
   [(set (reg:SI T_REG) (const_int 1))]
   ""
   [(set_attr "type" "mt_group")])
