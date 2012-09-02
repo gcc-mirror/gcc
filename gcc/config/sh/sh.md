@@ -5576,7 +5576,7 @@ label:
 	    (plus:SI
 	      (match_operand:SI 1 "arith_reg_operand" "%r,r,r")
 	      (match_operand:SI 2 "const_int_operand" "<disp04>,N,<disp12>")))))]
-  "TARGET_SH2A && sh_legitimate_index_p (QImode, operands[2], true, true)"
+  "TARGET_SH2A && sh_legitimate_index_p (<MODE>mode, operands[2], true, true)"
   "@
 	mov.<bw>	@(%O2,%1),%0
 	mov.<bw>	@%1,%0
