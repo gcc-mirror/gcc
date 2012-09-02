@@ -1,6 +1,6 @@
 /* Common hooks for Renesas / SuperH SH.
    Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
-   2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -186,17 +186,6 @@ sh_handle_option (struct gcc_options *opts,
     }
 }
 
-/* Implement TARGET_OPTION_INIT_STRUCT.  */
-static void
-sh_option_init_struct (struct gcc_options *opts)
-{
-  /* We can't meaningfully test TARGET_SH2E / TARGET_IEEE
-     here, so leave it to TARGET_OPTION_OVERRIDE to set
-     flag_finite_math_only.  We set it to 2 here so we know if the user
-     explicitly requested this to be on or off.  */
-  opts->x_flag_finite_math_only = 2;
-}
-
 /* Implement TARGET_OPTION_DEFAULT_PARAMS.  */
 static void
 sh_option_default_params (void)
@@ -206,8 +195,6 @@ sh_option_default_params (void)
 
 #undef TARGET_OPTION_OPTIMIZATION_TABLE
 #define TARGET_OPTION_OPTIMIZATION_TABLE sh_option_optimization_table
-#undef TARGET_OPTION_INIT_STRUCT
-#define TARGET_OPTION_INIT_STRUCT sh_option_init_struct
 #undef TARGET_OPTION_DEFAULT_PARAMS
 #define TARGET_OPTION_DEFAULT_PARAMS sh_option_default_params
 #undef TARGET_DEFAULT_TARGET_FLAGS
