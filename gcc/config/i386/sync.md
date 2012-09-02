@@ -421,14 +421,13 @@
   "TARGET_CMPXCHG<doublemodesuffix>B"
 {
   bool swap = REGNO (operands[5]) != BX_REG;
+  const char *xchg = "xchg{<imodesuffix>}\t%%<regprefix>bx, %5";
 
   if (swap)
-    output_asm_insn ("xchg{<imodesuffix>}\t%%<regprefix>bx, %5", operands);
-
+    output_asm_insn (xchg, operands);
   output_asm_insn ("lock{%;} %K7cmpxchg<doublemodesuffix>b\t%2", operands);
-
   if (swap)
-    output_asm_insn ("xchg{<imodesuffix>}\t%%<regprefix>bx, %5", operands);
+    output_asm_insn (xchg, operands);
 
   return "";
 })
