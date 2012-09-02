@@ -1,3 +1,9 @@
+2012-09-02  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54426
+	* symbol.c (find_common_symtree): New function.
+	(gfc_undo_symbols): Use it; free common_head if needed.
+
 2012-08-28  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/54389

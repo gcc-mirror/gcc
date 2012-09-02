@@ -2867,6 +2867,30 @@ gfc_get_ha_symbol (const char *name, gfc_symbol **result)
   return i;
 }
 
+
+/* Search for the symtree belonging to a gfc_common_head; we cannot use
+   head->name as the common_root symtree's name might be mangled.  */
+
+static gfc_symtree *
+find_common_symtree (gfc_symtree *st, gfc_common_head *head)
+{
+
+  gfc_symtree *result;
+
+  if (st == NULL)
+    return NULL;
+
+  if (st->n.common == head)
+    return st;
+
+  result = find_common_symtree (st->left, head);
+  if (!result)  
+    result = find_common_symtree (st->right, head);
+
+  return result;
+}
+
+
 /* Undoes all the changes made to symbols in the current statement.
    This subroutine is made simpler due to the fact that attributes are
    never removed once added.  */
@@ -2889,6 +2913,17 @@ gfc_undo_symbols (void)
 	      /* If the symbol was added to any common block, it
 		 needs to be removed to stop the resolver looking
 		 for a (possibly) dead symbol.  */
+
+	      if (p->common_block->head == p && !p->common_next)
+		{
+		  gfc_symtree st, *st0;
+		  st0 = find_common_symtree (p->ns->common_root,
+					     p->common_block);
+
+		  st.name = st0->name;
+		  gfc_delete_bbt (&p->ns->common_root, &st, compare_symtree);
+		  free (st0);
+		}
 
 	      if (p->common_block->head == p)
 	        p->common_block->head = p->common_next;
