@@ -1,3 +1,8 @@
+2012-09-02  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/sh.md (*extend<mode>si2_compact_mem_disp): Pass iterated
+	mode to sh_legitimate_index_p instead of QImode.
+
 2012-09-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/54369
