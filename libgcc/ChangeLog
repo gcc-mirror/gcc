@@ -1,3 +1,7 @@
+2012-09-01  Mark Kettenis  <kettenis@openbsd.org>
+
+	* config.host (x86_64-*-openbsd*): New target.
+	
 2012-08-29  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* config/mips/crtfastmath.c (set_fast_math): Add 'nomips16'

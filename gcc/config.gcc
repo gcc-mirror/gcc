@@ -1183,6 +1183,13 @@ i[34567]86-*-openbsd*)
 	gas=yes
 	gnu_ld=yes
 	;;
+x86_64-*-openbsd*)
+	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h"
+	tm_file="${tm_file} openbsd.h openbsd-stdint.h openbsd-libpthread.h i386/x86-64.h i386/openbsdelf.h"
+	extra_options="${extra_options} openbsd.opt"
+	gas=yes
+	gnu_ld=yes
+	;;
 i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-knetbsd*-gnu | i[34567]86-*-gnu* | i[34567]86-*-kopensolaris*-gnu)
 			# Intel 80386's running GNU/*
 			# with ELF format using glibc 2

@@ -1,3 +1,24 @@
+2012-09-02  Mark Kettenis  <kettenis@openbsd.org>
+
+	* config.gcc (x86_64-*-openbsd*): New target.
+	* config.host (*-*-openbsd*): New target.
+	* config/openbsd.h (TARGET_C99_FUNCTIONS): Define.
+	* config/i386/openbsdelf.h: Remove some superfluous defines and
+	group things together in a more logical fashion.
+	(DBX_REGISTER_NUMBER): Provide a
+	definition that works on both 32-bit and 64-bit targets.
+	(WCHAR_TYPE_SIZE): Hardcode as 32.
+	(NO_DOLLAR_IN_LABEL): Remove undef.
+	(TARGET_DEFAULT): Remove.
+	(SET_ASM_OP): Remove.
+	(DEFAULT_PCC_STRUCT_RETURN): Undef first to prevent warning.
+	(ASM_OUTPUT_MAX_SKIP_ALIGN): Synch with x86-64.h
+	(DWARF2_UNWIND_INFO): Remove define.
+	(HAVE_ENABLE_EXECUTE_STACK): Define.
+	* config/host-openbsd.c: New file.
+	* config/t-openbsd (USER_H): Add EXTRA_HEADERS.
+	* config/x-openbsd: New file.
+
 2012-09-02  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/sh.md (*extend<mode>si2_compact_mem_disp): Pass iterated
