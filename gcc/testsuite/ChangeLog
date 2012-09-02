@@ -1,8 +1,13 @@
+2012-09-02  Dominique Dhumieres  <dominiq@lps.ens.fr>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/36680
+	* gfortran.dg/pr36680.f90: New test.
+
 2012-09-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/42295
 	* g++.dg/opt/pr42295.C: New test.
-
 
 2012-09-01  Jakub Jelinek  <jakub@redhat.com>
 
