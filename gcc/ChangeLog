@@ -1,5 +1,12 @@
 2012-09-02  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	PR target/33135
+	* common/config/sh/sh-common.c: Update copyright years.
+	(sh_option_init_struct): Delete.
+	(TARGET_OPTION_INIT_STRUCT): Likewise.
+
+2012-09-02  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	PR target/54418
 	* config/sh/sh.md (cmpgeusi_t): Remove N alternative.
 	Check operands[1] in split condition instead of operands[0].
