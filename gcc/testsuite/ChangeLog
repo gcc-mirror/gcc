@@ -1,3 +1,8 @@
+2012-09-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/49206
+	* gcc.c-torture/compile/pr49206.c: New test.
+
 2012-09-02  Dominique Dhumieres  <dominiq@lps.ens.fr>
 	    Uros Bizjak  <ubizjak@gmail.com>
 
