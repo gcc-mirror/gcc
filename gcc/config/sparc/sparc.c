@@ -10691,7 +10691,10 @@ sparc_reorg (void)
   /* We need to have the (essentially) final form of the insn stream in order
      to properly detect the various hazards.  Run delay slot scheduling.  */
   if (optimize > 0 && flag_delayed_branch)
-    dbr_schedule (get_insns ());
+    {
+      cleanup_barriers ();
+      dbr_schedule (get_insns ());
+    }
 
   /* Now look for specific patterns in the insn stream.  */
   for (insn = get_insns (); insn; insn = next)
