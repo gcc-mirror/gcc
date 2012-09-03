@@ -1,5 +1,11 @@
 2012-09-03  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/54467
+	* class.c (gfc_find_derived_vtab): Fix disabling of _final
+	by continuing to generate normal type-bound procedures.
+
+2012-09-03  Tobias Burnus  <burnus@net-b.de>
+
 	* class.c (gfc_find_derived_vtab): Disable ABI-breaking
 	generation of the "_final" subroutine for now.
 
