@@ -1,3 +1,11 @@
+2012-09-03  Joseph Myers  <joseph@codesourcery.com>
+
+	* common.opt (--no-sysroot-suffix): New driver option.
+	* doc/invoke.texi (--no-sysroot-suffix): Document.
+	* gcc.c (driver_handle_option): Handle --no-sysroot-suffix as not
+	needing spec processing.
+	(main): Do not process sysroot suffixes if no_sysroot_suffix.
+
 2012-09-02  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/33135
