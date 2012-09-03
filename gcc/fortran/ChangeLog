@@ -1,5 +1,10 @@
 2012-09-03  Tobias Burnus  <burnus@net-b.de>
 
+	* class.c (gfc_find_derived_vtab): Disable ABI-breaking
+	generation of the "_final" subroutine for now.
+
+2012-09-03  Tobias Burnus  <burnus@net-b.de>
+
 	* class.c (finalize_component): Fixes to the comment.
 
 2012-09-03  Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
