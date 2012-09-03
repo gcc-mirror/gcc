@@ -613,6 +613,8 @@ show_attr (symbol_attribute *attr, const char * module)
   if (attr->save != SAVE_NONE)
     fprintf (dumpfile, "%s", gfc_code2string (save_status, attr->save));
 
+  if (attr->artificial)
+    fputs (" ARTIFICIAL", dumpfile);
   if (attr->allocatable)
     fputs (" ALLOCATABLE", dumpfile);
   if (attr->asynchronous)
@@ -788,7 +790,7 @@ show_f2k_derived (gfc_namespace* f2k)
   for (f = f2k->finalizers; f; f = f->next)
     {
       show_indent ();
-      fprintf (dumpfile, "FINAL %s", f->proc_sym->name);
+      fprintf (dumpfile, "FINAL %s", f->proc_tree->n.sym->name);
     }
 
   /* Type-bound procedures.  */
