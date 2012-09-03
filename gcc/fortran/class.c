@@ -720,8 +720,8 @@ has_finalizer_component (gfc_symbol *derived)
 
 /* Call DEALLOCATE for the passed component if it is allocatable, if it is
    neither allocatable nor a pointer but has a finalizer, call it. If it
-   is a nonpointer component with allocatable or finalizes components, walk
-   them. Either of the is required; other nonallocatables and pointers aren't
+   is a nonpointer component with allocatable components or has finalizers, walk
+   them. Either of them is required; other nonallocatables and pointers aren't
    handled gracefully.
    Note: If the component is allocatable, the DEALLOCATE handling takes care
    of calling the appropriate finalizers, coarray deregistering, and
