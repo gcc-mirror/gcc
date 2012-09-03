@@ -1,3 +1,11 @@
+2012-09-03  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backported from mainline
+	2012-08-23  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR driver/54335
+	* doc/invoke.texi: Add -da and remove -dm.
+
 2012-09-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/54369

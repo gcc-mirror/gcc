@@ -5282,7 +5282,9 @@ Dump after live range splitting.
 @opindex fdump-rtl-dfinish
 These dumps are defined but always produce empty files.
 
-@item -fdump-rtl-all
+@item -da
+@itemx -fdump-rtl-all
+@opindex da
 @opindex fdump-rtl-all
 Produce all the dumps listed above.
 
@@ -5298,11 +5300,6 @@ normal output.
 @item -dH
 @opindex dH
 Produce a core dump whenever an error occurs.
-
-@item -dm
-@opindex dm
-Print statistics on memory usage, at the end of the run, to
-standard error.
 
 @item -dp
 @opindex dp
