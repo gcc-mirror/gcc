@@ -1,3 +1,10 @@
+2012-09-03  Michael Matz  <matz@suse.de>
+
+	PR tree-optimization/46590
+	* tree-cfg.c (gimple_duplicate_sese_region): Don't update
+	SSA web here ...
+	* tree-ssa-loop-ch.c (copy_loop_headers): ... but here.
+
 2012-09-03  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/invoke.texi: Fix numerous typos and punctuation/grammatical

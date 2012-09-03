@@ -241,6 +241,7 @@ copy_loop_headers (void)
       split_edge (loop_latch_edge (loop));
     }
 
+  update_ssa (TODO_update_ssa);
   free (bbs);
   free (copied_bbs);
 
