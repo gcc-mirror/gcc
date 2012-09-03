@@ -4527,6 +4527,18 @@ find_func_aliases (gimple origt)
 			 && !POINTER_TYPE_P (TREE_TYPE (rhsop))))
 		   || gimple_assign_single_p (t))
 	    get_constraint_for_rhs (rhsop, &rhsc);
+	  else if (code == COND_EXPR)
+	    {
+	      /* The result is a merge of both COND_EXPR arms.  */
+	      VEC (ce_s, heap) *tmp = NULL;
+	      struct constraint_expr *rhsp;
+	      unsigned i;
+	      get_constraint_for_rhs (gimple_assign_rhs2 (t), &rhsc);
+	      get_constraint_for_rhs (gimple_assign_rhs3 (t), &tmp);
+	      FOR_EACH_VEC_ELT (ce_s, tmp, i, rhsp)
+		VEC_safe_push (ce_s, heap, rhsc, rhsp);
+	      VEC_free (ce_s, heap, tmp);
+	    }
 	  else if (truth_value_p (code))
 	    /* Truth value results are not pointer (parts).  Or at least
 	       very very unreasonable obfuscation of a part.  */

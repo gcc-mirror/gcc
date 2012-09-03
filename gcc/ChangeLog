@@ -1,9 +1,15 @@
+2012-09-03  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/54362
+	* tree-ssa-structalias.c (find_func_aliases): Handle COND_EXPR.
+
 2012-09-03  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.c (s390_loadrelative_operand_p): New function.
 	(s390_check_qrst_address, print_operand_address): Use
 	s390_loadrelative_operand_p instead of s390_symref_operand_p.
-	(s390_check_symref_alignment): Accept pointer size alignment for GOT slots.
+	(s390_check_symref_alignment): Accept pointer size alignment for
+	GOT slots.
 	(legitimize_pic_address): Use load relative on z10 or later.
 
 2012-09-03  Jakub Jelinek  <jakub@redhat.com>
