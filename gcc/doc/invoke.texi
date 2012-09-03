@@ -457,7 +457,7 @@ Objective-C and Objective-C++ Dialects}.
 @xref{Directory Options,,Options for Directory Search}.
 @gccoptlist{-B@var{prefix} -I@var{dir} -iplugindir=@var{dir} @gol
 -iquote@var{dir} -L@var{dir} -specs=@var{file} -I- @gol
---sysroot=@var{dir}}
+--sysroot=@var{dir} --no-sysroot-suffix}
 
 @item Machine Dependent Options
 @xref{Submodel Options,,Hardware Models and Configurations}.
@@ -9840,6 +9840,15 @@ The GNU linker (beginning with version 2.16) has the necessary support
 for this option.  If your linker does not support this option, the
 header file aspect of @option{--sysroot} still works, but the
 library aspect does not.
+
+@item --no-sysroot-suffix
+@opindex no-sysroot-suffix
+For some targets, a suffix is added to the root directory specified
+with @option{--sysroot}, depending on the other options used, so that
+headers may for example be found in
+@file{@var{dir}/@var{suffix}/usr/include} instead of
+@file{@var{dir}/usr/include}.  This option disables the addition of
+such a suffix.
 
 @item -I-
 @opindex I-

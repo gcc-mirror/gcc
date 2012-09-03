@@ -291,6 +291,9 @@ Driver Alias(no-canonical-prefixes)
 -no-standard-libraries
 Driver Alias(nostdlib)
 
+-no-sysroot-suffix
+Driver Var(no_sysroot_suffix)
+
 -no-warnings
 Common Alias(w)
 
