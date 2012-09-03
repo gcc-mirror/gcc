@@ -1,3 +1,11 @@
+2012-09-03  Andrew Pinski  <apinski@cavium.com>
+
+	PR tree-opt/53395
+	* tree-if-conv.c (constant_or_ssa_name): New function.
+	(fold_build_cond_expr): New function.
+	(predicate_scalar_phi): Use fold_build_cond_expr instead of build3.
+	(predicate_mem_writes): Likewise.
+
 2012-09-03  Marc Glisse  <marc.glisse@inria.fr>
 
 	* fold-const.c (fold_ternary_loc): Constant-propagate after

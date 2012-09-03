@@ -307,6 +307,65 @@ fold_or_predicates (location_t loc, tree c1, tree c2)
   return fold_build2_loc (loc, TRUTH_OR_EXPR, boolean_type_node, c1, c2);
 }
 
+/* Returns true if N is either a constant or a SSA_NAME.  */
+
+static bool
+constant_or_ssa_name (tree n)
+{
+  switch (TREE_CODE (n))
+    {
+      case SSA_NAME:
+      case INTEGER_CST:
+      case REAL_CST:
+      case COMPLEX_CST:
+      case VECTOR_CST:
+	return true;
+      default:
+	return false;
+    }
+}
+
+/* Returns either a COND_EXPR or the folded expression if the folded
+   expression is a MIN_EXPR, a MAX_EXPR, an ABS_EXPR,
+   a constant or a SSA_NAME. */
+
+static tree
+fold_build_cond_expr (tree type, tree cond, tree rhs, tree lhs)
+{
+  tree rhs1, lhs1, cond_expr;
+  cond_expr = fold_ternary (COND_EXPR, type, cond,
+			    rhs, lhs);
+
+  if (cond_expr == NULL_TREE)
+    return build3 (COND_EXPR, type, cond, rhs, lhs);
+
+  STRIP_USELESS_TYPE_CONVERSION (cond_expr);
+
+  if (constant_or_ssa_name (cond_expr))
+    return cond_expr;
+
+  if (TREE_CODE (cond_expr) == ABS_EXPR)
+    {
+      rhs1 = TREE_OPERAND (cond_expr, 1);
+      STRIP_USELESS_TYPE_CONVERSION (rhs1);
+      if (constant_or_ssa_name (rhs1))
+	return build1 (ABS_EXPR, type, rhs1);
+    }
+
+  if (TREE_CODE (cond_expr) == MIN_EXPR
+      || TREE_CODE (cond_expr) == MAX_EXPR)
+    {
+      lhs1 = TREE_OPERAND (cond_expr, 0);
+      STRIP_USELESS_TYPE_CONVERSION (lhs1);
+      rhs1 = TREE_OPERAND (cond_expr, 1);
+      STRIP_USELESS_TYPE_CONVERSION (rhs1);
+      if (constant_or_ssa_name (rhs1)
+	  && constant_or_ssa_name (lhs1))
+	return build2 (TREE_CODE (cond_expr), type, lhs1, rhs1);
+    }
+  return build3 (COND_EXPR, type, cond, rhs, lhs);
+}
+
 /* Add condition NC to the predicate list of basic block BB.  */
 
 static inline void
@@ -1293,8 +1352,8 @@ predicate_scalar_phi (gimple phi, tree cond,
 			   || bb_postdominates_preds (bb));
 
       /* Build new RHS using selected condition and arguments.  */
-      rhs = build3 (COND_EXPR, TREE_TYPE (res),
-		    unshare_expr (cond), arg_0, arg_1);
+      rhs = fold_build_cond_expr (TREE_TYPE (res), unshare_expr (cond),
+				  arg_0, arg_1);
     }
 
   new_stmt = gimple_build_assign (res, rhs);
@@ -1554,7 +1613,7 @@ predicate_mem_writes (loop_p loop)
 	    cond = force_gimple_operand_gsi_1 (&gsi, unshare_expr (cond),
 					       is_gimple_condexpr, NULL_TREE,
 					       true, GSI_SAME_STMT);
-	    rhs = build3 (COND_EXPR, type, unshare_expr (cond), rhs, lhs);
+	    rhs = fold_build_cond_expr (type, unshare_expr (cond), rhs, lhs);
 	    gimple_assign_set_rhs1 (stmt, ifc_temp_var (type, rhs, &gsi));
 	    update_stmt (stmt);
 	  }
