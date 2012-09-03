@@ -1624,7 +1624,9 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 		 components and the calls to finalization subroutines.
 		 Note: The actual wrapper function can only be generated
 		 at resolution time.  */
-
+	    /* FIXME: Enable ABI-breaking "_final" generation.  */
+	    if (0) 
+	    {
 	      if (gfc_add_component (vtype, "_final", &c) == FAILURE)
 		goto cleanup;
 	      c->attr.proc_pointer = 1;
@@ -1636,6 +1638,7 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 	      /* Add procedure pointers for type-bound procedures.  */
 	      add_procs_to_declared_vtab (derived, vtype);
 	    }
+	  }
 
 have_vtype:
 	  vtab->ts.u.derived = vtype;
