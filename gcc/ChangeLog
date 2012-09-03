@@ -1,3 +1,12 @@
+2012-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2012-08-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/54363
+	* gimplify.c (optimize_compound_literals_in_ctor): Only recurse
+	if init is a CONSTRUCTOR.
+
 2012-09-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/54369
