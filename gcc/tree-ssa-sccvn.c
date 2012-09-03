@@ -1007,7 +1007,7 @@ vn_reference_fold_indirect (VEC (vn_reference_op_s, heap) **ops,
   vn_reference_op_t op = &VEC_index (vn_reference_op_s, *ops, i);
   vn_reference_op_t mem_op = &VEC_index (vn_reference_op_s, *ops, i - 1);
   tree addr_base;
-  HOST_WIDE_INT addr_offset;
+  HOST_WIDE_INT addr_offset = 0;
 
   /* The only thing we have to do is from &OBJ.foo.bar add the offset
      from .foo.bar to the preceding MEM_REF offset and replace the

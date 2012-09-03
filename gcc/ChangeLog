@@ -1,3 +1,8 @@
+2012-09-03  Andi Kleen <ak@linux.intel.com>
+
+	* tree-ssa-sccvn.c (vn_reference_fold_indirect): Initialize
+	addr_offset always.
+
 2012-09-03  Andrew Pinski  <apinski@cavium.com>
 
 	PR tree-opt/53395
