@@ -1,3 +1,9 @@
+2012-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/53923
+	* valtrack.c (dead_debug_insert_temp): Drop non-reg uses
+	from the chain.
+
 2012-09-03  Joseph Myers  <joseph@codesourcery.com>
 
 	* common.opt (--no-sysroot-suffix): New driver option.
