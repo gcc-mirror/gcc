@@ -1,3 +1,8 @@
+2012-09-03  Georg-Johann Lay  <avr@gjlay.de>
+
+	* configure.ac (noconfigdirs,target=avr): Add target-libquadmath.
+	* configure: Regenerate.
+
 2012-08-27  Ulrich Drepper  <drepper@gmail.com>
 
 	* MAINTAINERS: Fix my email address.

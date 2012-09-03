@@ -3153,6 +3153,13 @@ case "${target}" in
     ;;
 esac
 
+# Disable libquadmath for some systems.
+case "${target}" in
+  avr-*-*)
+    noconfigdirs="$noconfigdirs target-libquadmath"
+    ;;
+esac
+
 # Disable libstdc++-v3 for some systems.
 case "${target}" in
   *-*-vxworks*)
