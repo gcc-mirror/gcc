@@ -1634,10 +1634,10 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 	      c->tb = XCNEW (gfc_typebound_proc);
 	      c->tb->ppc = 1;
 	      generate_finalization_wrapper (derived, ns, tname, c);
+	    }
 
 	      /* Add procedure pointers for type-bound procedures.  */
 	      add_procs_to_declared_vtab (derived, vtype);
-	    }
 	  }
 
 have_vtype:
