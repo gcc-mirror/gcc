@@ -1,3 +1,27 @@
+2012-09-03  Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/37336
+	* gfortran.h (symbol_attribute): Add artificial.
+	* module.c (mio_symbol_attribute): Handle attr.artificial
+	* class.c (gfc_build_class_symbol): Defer creation of the vtab
+	if the DT has finalizers, mark generated symbols as
+	attr.artificial.
+	(has_finalizer_component, finalize_component,
+	finalization_scalarizer, generate_finalization_wrapper):
+	New static functions.
+	(gfc_find_derived_vtab): Add _final component and call
+	generate_finalization_wrapper.
+	* dump-parse-tree.c (show_f2k_derived): Use resolved
+	proc_tree->n.sym rather than unresolved proc_sym.
+	(show_attr): Handle attr.artificial.
+	* resolve.c (gfc_resolve_finalizers): Ensure that the vtab exists.
+	(resolve_fl_derived): Resolve finalizers before
+	generating the vtab.
+	(resolve_symbol): Also allow assumed-rank arrays with CONTIGUOUS;
+	skip artificial symbols.
+	(resolve_fl_derived0): Skip artificial symbols.
+
 2012-09-02  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/54426
