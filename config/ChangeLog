@@ -1,3 +1,9 @@
+2012-09-03  Richard Guenther  <rguenther@suse.de>
+
+	PR bootstrap/54138
+	* config/cloog.m4: Adjust for toplevel reorg.
+	* config/isl.m4: Adjust.
+
 2012-08-26  Art Haas <ahaas@impactweather.com>
 
 	* cloog.m4 (CLOOG_INIT_FLAGS): Use = instead of == in test.
