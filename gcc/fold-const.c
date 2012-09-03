@@ -14196,16 +14196,6 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 		return op1;
 	    }
 
-	  if ((TREE_CODE (arg0) == VECTOR_CST
-	       || TREE_CODE (arg0) == CONSTRUCTOR)
-	      && (TREE_CODE (arg1) == VECTOR_CST
-		  || TREE_CODE (arg1) == CONSTRUCTOR))
-	    {
-	      t = fold_vec_perm (type, arg0, arg1, sel);
-	      if (t != NULL_TREE)
-		return t;
-	    }
-
 	  if (all_in_vec0)
 	    op1 = op0;
 	  else if (all_in_vec1)
@@ -14214,6 +14204,16 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 	      for (i = 0; i < nelts; i++)
 		sel[i] -= nelts;
 	      need_mask_canon = true;
+	    }
+
+	  if ((TREE_CODE (op0) == VECTOR_CST
+	       || TREE_CODE (op0) == CONSTRUCTOR)
+	      && (TREE_CODE (op1) == VECTOR_CST
+		  || TREE_CODE (op1) == CONSTRUCTOR))
+	    {
+	      t = fold_vec_perm (type, op0, op1, sel);
+	      if (t != NULL_TREE)
+		return t;
 	    }
 
 	  if (op0 == op1 && !single_arg)

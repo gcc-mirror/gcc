@@ -1,3 +1,7 @@
+2012-09-03  Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.dg/fold-perm.c: Improve test.
+
 2012-09-03  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/51632
