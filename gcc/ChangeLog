@@ -1,3 +1,7 @@
+2012-09-04  Richard Henderson  <rth@redhat.com>
+
+	* alias.c (read_dependence): Return true for ALIAS_SET_MEMORY_BARRIER.
+
 2012-09-04  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backport from 2012-09-04 mainline r190920

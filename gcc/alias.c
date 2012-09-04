@@ -2127,12 +2127,18 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
    storeqi_unaligned pattern.  */
 
 /* Read dependence: X is read after read in MEM takes place.  There can
-   only be a dependence here if both reads are volatile.  */
+   only be a dependence here if both reads are volatile, or if either is
+   an explicit barrier.  */
 
 int
 read_dependence (const_rtx mem, const_rtx x)
 {
-  return MEM_VOLATILE_P (x) && MEM_VOLATILE_P (mem);
+  if (MEM_VOLATILE_P (x) && MEM_VOLATILE_P (mem))
+    return true;
+  if (MEM_ALIAS_SET (x) == ALIAS_SET_MEMORY_BARRIER
+      || MEM_ALIAS_SET (mem) == ALIAS_SET_MEMORY_BARRIER)
+    return true;
+  return false;
 }
 
 /* Returns nonzero if something about the mode or address format MEM1
