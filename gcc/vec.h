@@ -171,7 +171,7 @@ struct GTY(()) vec_t
   T &last (ALONE_VEC_CHECK_DECL);
   const T &operator[] (unsigned) const;
   T &operator[] (unsigned);
-  void embedded_init (int, int);
+  void embedded_init (int, int = 0);
 
   template<enum vec_allocation_t A>
   vec_t<T> *copy (ALONE_MEM_STAT_DECL);
@@ -599,7 +599,7 @@ vec_t<T>::iterate (const vec_t<T> *vec, unsigned ix, T **ptr)
    final member):
 
    size_t vec_t<T>::embedded_size<T> (int reserve);
-   void v->embedded_init(int reserve, int active = 0);
+   void v->embedded_init(int reserve, int active);
 
    These allow the caller to perform the memory allocation.  */
 
@@ -616,7 +616,7 @@ vec_t<T>::embedded_size (int nelems)
 
 template<typename T>
 void
-vec_t<T>::embedded_init (int nelems, int active = 0)
+vec_t<T>::embedded_init (int nelems, int active)
 {
   prefix_.num_ = active;
   prefix_.alloc_ = nelems;

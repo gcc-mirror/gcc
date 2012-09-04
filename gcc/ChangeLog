@@ -1,3 +1,9 @@
+2012-09-04  Diego Novillo  <dnovillo@google.com>
+
+	PR bootstrap/54484
+	* vec.h (vec_t::embedded_init): Move default argument value
+	to function declaration.
+
 2012-09-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* bb-reorder.c (gate_handle_reorder_blocks): Move around.
