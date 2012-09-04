@@ -1,3 +1,8 @@
+2012-09-04  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/54458
+	* gcc.dg/torture/pr54458.c: New testcase.
+
 2012-09-04  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* gcc.target/arm/neon-vext.c: New test.

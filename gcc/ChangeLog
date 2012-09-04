@@ -1,3 +1,9 @@
+2012-09-04  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/54458
+	* tree-ssa-threadupdate.c (thread_through_loop_header): If we
+	turn the loop into one with multiple latches mark it so.
+
 2012-09-04  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	PR target/54220

@@ -1037,11 +1037,21 @@ thread_through_loop_header (struct loop *loop, bool may_peel_loop_headers)
 	}
       free (bblocks);
 
+      /* If the new header has multiple latches mark it so.  */
+      FOR_EACH_EDGE (e, ei, loop->header->preds)
+	if (e->src->loop_father == loop
+	    && e->src != loop->latch)
+	  {
+	    loop->latch = NULL;
+	    loops_state_set (LOOPS_MAY_HAVE_MULTIPLE_LATCHES);
+	  }
+
       /* Cancel remaining threading requests that would make the
 	 loop a multiple entry loop.  */
       FOR_EACH_EDGE (e, ei, header->preds)
 	{
 	  edge e2;
+
 	  if (e->aux == NULL)
 	    continue;
 
