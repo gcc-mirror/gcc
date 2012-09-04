@@ -248,6 +248,13 @@ read_counts_file (void)
 		summary.ctrs[ix].run_max = sum.ctrs[ix].run_max;
 	      summary.ctrs[ix].sum_max += sum.ctrs[ix].sum_max;
 	    }
+          if (new_summary)
+            memcpy (summary.ctrs[GCOV_COUNTER_ARCS].histogram,
+                    sum.ctrs[GCOV_COUNTER_ARCS].histogram,
+                    sizeof (gcov_bucket_type) * GCOV_HISTOGRAM_SIZE);
+          else
+            gcov_histogram_merge (summary.ctrs[GCOV_COUNTER_ARCS].histogram,
+                                  sum.ctrs[GCOV_COUNTER_ARCS].histogram);
 	  new_summary = 0;
 	}
       else if (GCOV_TAG_IS_COUNTER (tag) && fn_ident)
@@ -268,8 +275,9 @@ read_counts_file (void)
 	      entry->ctr = elt.ctr;
 	      entry->lineno_checksum = lineno_checksum;
 	      entry->cfg_checksum = cfg_checksum;
-	      entry->summary = summary.ctrs[elt.ctr];
-	      entry->summary.num = n_counts;
+              if (elt.ctr < GCOV_COUNTERS_SUMMABLE)
+                entry->summary = summary.ctrs[elt.ctr];
+              entry->summary.num = n_counts;
 	      entry->counts = XCNEWVEC (gcov_type, n_counts);
 	    }
 	  else if (entry->lineno_checksum != lineno_checksum
