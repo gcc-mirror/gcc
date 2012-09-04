@@ -881,10 +881,9 @@
   if (TARGET_SHMEDIA)
     emit_jump_insn (gen_cbranchint4_media (operands[0], operands[1],
 					   operands[2], operands[3]));
-  else if (TARGET_CBRANCHDI4)
-    expand_cbranchsi4 (operands, LAST_AND_UNUSED_RTX_CODE, -1);
   else
-    sh_emit_compare_and_branch (operands, SImode);
+    expand_cbranchsi4 (operands, LAST_AND_UNUSED_RTX_CODE, -1);
+
   DONE;
 })
 
