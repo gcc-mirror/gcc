@@ -1,3 +1,8 @@
+2012-09-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/54456
+	* sched-rgn.c (gate_handle_sched): Return 1 only if optimize > 0.
+
 2012-09-04  Diego Novillo  <dnovillo@google.com>
 
 	PR bootstrap/54478
