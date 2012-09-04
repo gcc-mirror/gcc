@@ -1,3 +1,8 @@
+2012-09-04  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/neon-vext.c: New test.
+	* gcc.target/arm/neon-vext-execute.c: Ditto.
+
 2012-09-04  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/54243
