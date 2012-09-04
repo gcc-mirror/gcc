@@ -1,3 +1,14 @@
+2012-09-04  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/51244
+	* config/sh/sh.c (prepare_cbranch_operands): Pull out comparison
+	canonicalization code into...
+	* (sh_canonicalize_comparison): This new function.
+	* config/sh/sh-protos.h: Declare it.
+	* config/sh/sh.h: Use it in new macro CANONICALIZE_COMPARISON.
+	* config/sh/sh.md (cbranchsi4): Remove TARGET_CBRANCHDI4 check and
+	always invoke expand_cbranchsi4.
+
 2012-09-03  Andi Kleen <ak@linux.intel.com>
 
 	* tree-ssa-sccvn.c (vn_reference_fold_indirect): Initialize
