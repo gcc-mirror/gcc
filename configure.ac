@@ -1758,6 +1758,7 @@ if test -d ${srcdir}/gcc; then
 	  boot_language=yes
 	fi
 
+        add_this_lang=no
         case ,${enable_languages}, in
           *,${language},*)
             # Language was explicitly selected; include it
@@ -1768,10 +1769,9 @@ if test -d ${srcdir}/gcc; then
             ;;
           *,all,*)
             # 'all' was selected, select it if it is a default language
-            add_this_lang=${build_by_default}
-            ;;
-          *)
-            add_this_lang=no
+	    if test "$language" != "c"; then
+	      add_this_lang=${build_by_default}
+	    fi
             ;;
         esac
 

@@ -1,3 +1,7 @@
+2012-09-04  Jason Merrill  <jason@redhat.com>
+
+	* configure.ac: Fix --enable-languages=all.
+
 2012-09-04  Christophe Lyon  <christophe.lyon@st.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
