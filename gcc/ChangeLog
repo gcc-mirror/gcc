@@ -1,5 +1,11 @@
 2012-09-04  Christophe Lyon  <christophe.lyon@linaro.org>
 
+	* config/arm/arm.c (arm_expand_builtin): Replace gen_rtx_CONST_INT
+	by GEN_INT.
+	(arm_emit_coreregs_64bit_shift): Likewise.
+
+2012-09-04  Christophe Lyon  <christophe.lyon@linaro.org>
+
 	* config/arm/arm.c (arm_evpc_neon_vext): New
 	function.
 	(arm_expand_vec_perm_const_1): Add call to
