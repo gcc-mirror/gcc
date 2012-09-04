@@ -185,7 +185,7 @@ while (<F>) {
 	$glob = 'glob';
 	if ($in_extern) {
 	    $in_extern--;
-	    print "$1##$2";
+	    print "$1##$2\n";
 	} else {
 	    print;
 	}
