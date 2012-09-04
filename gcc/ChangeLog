@@ -1,3 +1,8 @@
+2012-09-04   Diego Novillo  <dnovillo@google.com>
+
+	PR bootstrap/54479
+	* vec.h (vec_t::copy): Add cast in call to reserve_exact.
+
 2012-09-04  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-pre.c (add_to_exp_gen): Adjust.

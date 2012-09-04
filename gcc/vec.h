@@ -699,7 +699,8 @@ vec_t<T>::copy (ALONE_MEM_STAT_DECL)
 
   if (len)
     {
-      new_vec = vec_t<T>::reserve_exact<A> (NULL, len PASS_MEM_STAT);
+      new_vec = vec_t<T>::reserve_exact<A> (static_cast<vec_t<T> *> (NULL),
+					    len PASS_MEM_STAT);
       new_vec->embedded_init (len, len);
       memcpy (new_vec->address (), vec_, sizeof (T) * len);
     }
