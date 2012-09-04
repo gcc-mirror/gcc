@@ -9142,7 +9142,7 @@ execute_vrp (void)
       /* As we may have replaced the default label with a regular one
 	 make sure to make it a real default label again.  This ensures
 	 optimal expansion.  */
-      label = gimple_switch_default_label (su->stmt);
+      label = gimple_switch_label (su->stmt, 0);
       CASE_LOW (label) = NULL_TREE;
       CASE_HIGH (label) = NULL_TREE;
     }
