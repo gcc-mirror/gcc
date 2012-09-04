@@ -447,7 +447,8 @@ tag_summary (const char *filename ATTRIBUTE_UNUSED,
 	     unsigned tag ATTRIBUTE_UNUSED, unsigned length ATTRIBUTE_UNUSED)
 {
   struct gcov_summary summary;
-  unsigned ix;
+  unsigned ix, h_ix;
+  gcov_bucket_type *histo_bucket;
 
   gcov_read_summary (&summary);
   printf (" checksum=0x%08x", summary.checksum);
@@ -465,5 +466,24 @@ tag_summary (const char *filename ATTRIBUTE_UNUSED,
 	      (HOST_WIDEST_INT)summary.ctrs[ix].run_max);
       printf (", sum_max=" HOST_WIDEST_INT_PRINT_DEC,
 	      (HOST_WIDEST_INT)summary.ctrs[ix].sum_max);
+      if (ix != GCOV_COUNTER_ARCS)
+        continue;
+      printf ("\n");
+      print_prefix (filename, 0, 0);
+      printf ("\t\tcounter histogram:");
+      for (h_ix = 0; h_ix < GCOV_HISTOGRAM_SIZE; h_ix++)
+        {
+          histo_bucket = &summary.ctrs[ix].histogram[h_ix];
+          if (!histo_bucket->num_counters)
+            continue;
+          printf ("\n");
+          print_prefix (filename, 0, 0);
+          printf ("\t\t%d: num counts=%u, min counter="
+              HOST_WIDEST_INT_PRINT_DEC ", cum_counter="
+              HOST_WIDEST_INT_PRINT_DEC,
+	      h_ix, histo_bucket->num_counters,
+              (HOST_WIDEST_INT)histo_bucket->min_value,
+              (HOST_WIDEST_INT)histo_bucket->cum_value);
+        }
     }
 }
