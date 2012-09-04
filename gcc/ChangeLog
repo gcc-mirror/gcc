@@ -1,3 +1,11 @@
+2012-09-04  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backport from 2012-09-04 mainline r190920
+
+	PR target/54476
+	* config/avr/avr.c (avr_expand_delay_cycles): Mask operand with
+	SImode.
+
 2012-09-04  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	Backport from 2012-09-04 mainline r190914
