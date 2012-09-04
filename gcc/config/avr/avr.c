@@ -10449,7 +10449,7 @@ avr_mem_clobber (void)
 static void
 avr_expand_delay_cycles (rtx operands0)
 {
-  unsigned HOST_WIDE_INT cycles = UINTVAL (operands0);
+  unsigned HOST_WIDE_INT cycles = UINTVAL (operands0) & GET_MODE_MASK (SImode);
   unsigned HOST_WIDE_INT cycles_used;
   unsigned HOST_WIDE_INT loop_count;
   

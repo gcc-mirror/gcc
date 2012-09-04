@@ -1,3 +1,9 @@
+2012-09-04  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/54476
+	* config/avr/avr.c (avr_expand_delay_cycles): Mask operand with
+	SImode.
+
 2012-09-04  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/54458
