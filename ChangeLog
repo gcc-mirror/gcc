@@ -1,3 +1,7 @@
+2012-09-04  Christophe Lyon  <christophe.lyon@st.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2012-09-03  Richard Guenther  <rguenther@suse.de>
 
 	PR bootstrap/54138
