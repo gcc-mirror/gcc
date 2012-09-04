@@ -3473,7 +3473,7 @@ static bool
 gate_handle_sched (void)
 {
 #ifdef INSN_SCHEDULING
-  return flag_schedule_insns && dbg_cnt (sched_func);
+  return optimize > 0 && flag_schedule_insns && dbg_cnt (sched_func);
 #else
   return 0;
 #endif
