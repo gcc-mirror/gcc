@@ -94,6 +94,7 @@ static bool avr_hard_regno_scratch_ok (unsigned int);
 static unsigned int avr_case_values_threshold (void);
 static bool avr_frame_pointer_required_p (void);
 static bool avr_can_eliminate (const int, const int);
+static bool avr_allocate_stack_slots_for_args (void);
 static bool avr_class_likely_spilled_p (reg_class_t c);
 static rtx avr_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
 			     const_tree, bool);
@@ -217,6 +218,9 @@ static const struct default_options avr_option_optimization_table[] =
 #define TARGET_FRAME_POINTER_REQUIRED avr_frame_pointer_required_p
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE avr_can_eliminate
+
+#undef TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS
+#define TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS avr_allocate_stack_slots_for_args
 
 #undef TARGET_CLASS_LIKELY_SPILLED_P
 #define TARGET_CLASS_LIKELY_SPILLED_P avr_class_likely_spilled_p
@@ -445,6 +449,16 @@ avr_regs_to_save (HARD_REG_SET *set)
     }
   return count;
 }
+
+
+/* Implement `TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS' */
+
+static bool
+avr_allocate_stack_slots_for_args (void)
+{
+  return !cfun->machine->is_naked;
+}
+
 
 /* Return true if register FROM can be eliminated via register TO.  */
 
