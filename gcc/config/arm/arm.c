@@ -20959,7 +20959,7 @@ arm_expand_builtin (tree exp,
 	  else if (icode == CODE_FOR_iwmmxt_tinsrw && (selector < 0 ||selector > 1))
 	    error ("the range of selector should be in 0 to 1");
 	  mask <<= selector;
-	  op2 = gen_rtx_CONST_INT (SImode, mask);
+	  op2 = GEN_INT (mask);
 	}
       if (target == 0
 	  || GET_MODE (target) != tmode
@@ -26290,12 +26290,12 @@ arm_emit_coreregs_64bit_shift (enum rtx_code code, rtx out, rtx in,
 
   /* Macros to make following code more readable.  */
   #define SUB_32(DEST,SRC) \
-	    gen_addsi3 ((DEST), (SRC), gen_rtx_CONST_INT (VOIDmode, -32))
+	    gen_addsi3 ((DEST), (SRC), GEN_INT (-32))
   #define RSB_32(DEST,SRC) \
-	    gen_subsi3 ((DEST), gen_rtx_CONST_INT (VOIDmode, 32), (SRC))
+	    gen_subsi3 ((DEST), GEN_INT (32), (SRC))
   #define SUB_S_32(DEST,SRC) \
 	    gen_addsi3_compare0 ((DEST), (SRC), \
-				 gen_rtx_CONST_INT (VOIDmode, -32))
+				 GEN_INT (-32))
   #define SET(DEST,SRC) \
 	    gen_rtx_SET (SImode, (DEST), (SRC))
   #define SHIFT(CODE,SRC,AMOUNT) \
@@ -26331,7 +26331,7 @@ arm_emit_coreregs_64bit_shift (enum rtx_code code, rtx out, rtx in,
 	{
 	  if (code == ASHIFTRT)
 	    {
-	      rtx const31_rtx = gen_rtx_CONST_INT (VOIDmode, 31);
+	      rtx const31_rtx = GEN_INT (31);
 	      emit_insn (SET (out_down, SHIFT (code, in_up, const31_rtx)));
 	      emit_insn (SET (out_up, SHIFT (code, in_up, const31_rtx)));
 	    }
@@ -26343,8 +26343,7 @@ arm_emit_coreregs_64bit_shift (enum rtx_code code, rtx out, rtx in,
       else if (INTVAL (amount) < 32)
 	{
 	  /* Shifts by a constant less than 32.  */
-	  rtx reverse_amount = gen_rtx_CONST_INT (VOIDmode,
-						  32 - INTVAL (amount));
+	  rtx reverse_amount = GEN_INT (32 - INTVAL (amount));
 
 	  emit_insn (SET (out_down, LSHIFT (code, in_down, amount)));
 	  emit_insn (SET (out_down,
@@ -26355,12 +26354,12 @@ arm_emit_coreregs_64bit_shift (enum rtx_code code, rtx out, rtx in,
       else
 	{
 	  /* Shifts by a constant greater than 31.  */
-	  rtx adj_amount = gen_rtx_CONST_INT (VOIDmode, INTVAL (amount) - 32);
+	  rtx adj_amount = GEN_INT (INTVAL (amount) - 32);
 
 	  emit_insn (SET (out_down, SHIFT (code, in_up, adj_amount)));
 	  if (code == ASHIFTRT)
 	    emit_insn (gen_ashrsi3 (out_up, in_up,
-				    gen_rtx_CONST_INT (VOIDmode, 31)));
+				    GEN_INT (31)));
 	  else
 	    emit_insn (SET (out_up, const0_rtx));
 	}
