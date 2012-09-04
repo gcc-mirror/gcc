@@ -1,5 +1,8 @@
 2012-09-04  Jason Merrill  <jason@redhat.com>
 
+	PR c++/54198
+	* g++.dg/template/defarg15.C: New.
+
 	PR c++/54437
 	* g++.dg/template/access24.C: New.
 

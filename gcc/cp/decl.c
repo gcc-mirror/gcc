@@ -10575,8 +10575,10 @@ check_default_argument (tree decl, tree arg)
 
      A default argument expression is implicitly converted to the
      parameter type.  */
+  ++cp_unevaluated_operand;
   perform_implicit_conversion_flags (decl_type, arg, tf_warning_or_error,
 				     LOOKUP_NORMAL);
+  --cp_unevaluated_operand;
 
   if (warn_zero_as_null_pointer_constant
       && c_inhibit_evaluation_warnings == 0

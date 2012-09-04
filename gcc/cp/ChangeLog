@@ -1,5 +1,9 @@
 2012-09-04  Jason Merrill  <jason@redhat.com>
 
+	PR c++/54198
+	* decl.c (check_default_argument): Set cp_unevaluated_operand
+	around call to perform_implicit_conversion_flags.
+
 	PR c++/54437
 	PR c++/51213
 	* pt.c (fn_type_unification): Call coerce_template_parms before
