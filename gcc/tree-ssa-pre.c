@@ -3786,14 +3786,15 @@ insert (void)
 static void
 add_to_exp_gen (basic_block block, tree op)
 {
-  if (!in_fre)
-    {
-      pre_expr result;
-      if (TREE_CODE (op) == SSA_NAME && ssa_undefined_value_p (op))
-	return;
-      result = get_or_alloc_expr_for_name (op);
-      bitmap_value_insert_into_set (EXP_GEN (block), result);
-    }
+  pre_expr result;
+
+  gcc_checking_assert (!in_fre);
+
+  if (TREE_CODE (op) == SSA_NAME && ssa_undefined_value_p (op))
+    return;
+
+  result = get_or_alloc_expr_for_name (op);
+  bitmap_value_insert_into_set (EXP_GEN (block), result);
 }
 
 /* Create value ids for PHI in BLOCK.  */
@@ -3805,23 +3806,23 @@ make_values_for_phi (gimple phi, basic_block block)
 
   /* We have no need for virtual phis, as they don't represent
      actual computations.  */
-  if (!virtual_operand_p (result))
+  if (virtual_operand_p (result))
+    return;
+
+  pre_expr e = get_or_alloc_expr_for_name (result);
+  add_to_value (get_expr_value_id (e), e);
+  bitmap_value_insert_into_set (AVAIL_OUT (block), e);
+  if (!in_fre)
     {
-      pre_expr e = get_or_alloc_expr_for_name (result);
-      add_to_value (get_expr_value_id (e), e);
+      unsigned i;
       bitmap_insert_into_set (PHI_GEN (block), e);
-      bitmap_value_insert_into_set (AVAIL_OUT (block), e);
-      if (!in_fre)
+      for (i = 0; i < gimple_phi_num_args (phi); ++i)
 	{
-	  unsigned i;
-	  for (i = 0; i < gimple_phi_num_args (phi); ++i)
+	  tree arg = gimple_phi_arg_def (phi, i);
+	  if (TREE_CODE (arg) == SSA_NAME)
 	    {
-	      tree arg = gimple_phi_arg_def (phi, i);
-	      if (TREE_CODE (arg) == SSA_NAME)
-		{
-		  e = get_or_alloc_expr_for_name (arg);
-		  add_to_value (get_expr_value_id (e), e);
-		}
+	      e = get_or_alloc_expr_for_name (arg);
+	      add_to_value (get_expr_value_id (e), e);
 	    }
 	}
     }
@@ -3934,6 +3935,10 @@ compute_avail (void)
 	      bitmap_value_insert_into_set (AVAIL_OUT (block), e);
 	    }
 
+	  /* That's all we need to do when doing FRE.  */
+	  if (in_fre)
+	    continue;
+
 	  if (gimple_has_side_effects (stmt) || stmt_could_throw_p (stmt))
 	    continue;
 
@@ -3992,8 +3997,7 @@ compute_avail (void)
 
 		    get_or_alloc_expression_id (result);
 		    add_to_value (get_expr_value_id (result), result);
-		    if (!in_fre)
-		      bitmap_value_insert_into_set (EXP_GEN (block), result);
+		    bitmap_value_insert_into_set (EXP_GEN (block), result);
 		  }
 		continue;
 	      }
@@ -4105,8 +4109,7 @@ compute_avail (void)
 
 		get_or_alloc_expression_id (result);
 		add_to_value (get_expr_value_id (result), result);
-		if (!in_fre)
-		  bitmap_value_insert_into_set (EXP_GEN (block), result);
+		bitmap_value_insert_into_set (EXP_GEN (block), result);
 
 		continue;
 	      }
@@ -4733,15 +4736,15 @@ my_rev_post_order_compute (int *post_order, bool include_entry_exit)
       src = ei_edge (ei)->src;
       dest = ei_edge (ei)->dest;
 
-      /* Check if the edge destination has been visited yet.  */
+      /* Check if the edge source has been visited yet.  */
       if (src != ENTRY_BLOCK_PTR && ! TEST_BIT (visited, src->index))
         {
           /* Mark that we have visited the destination.  */
           SET_BIT (visited, src->index);
 
           if (EDGE_COUNT (src->preds) > 0)
-            /* Since the DEST node has been visited for the first
-               time, check its successors.  */
+            /* Since the SRC node has been visited for the first
+               time, check its predecessors.  */
             stack[sp++] = ei_start (src->preds);
           else
             post_order[post_order_num++] = src->index;
@@ -4807,9 +4810,12 @@ init_pre (bool do_fre)
 				     sizeof (struct pre_expr_d), 30);
   FOR_ALL_BB (bb)
     {
-      EXP_GEN (bb) = bitmap_set_new ();
-      PHI_GEN (bb) = bitmap_set_new ();
-      TMP_GEN (bb) = bitmap_set_new ();
+      if (!do_fre)
+	{
+	  EXP_GEN (bb) = bitmap_set_new ();
+	  PHI_GEN (bb) = bitmap_set_new ();
+	  TMP_GEN (bb) = bitmap_set_new ();
+	}
       AVAIL_OUT (bb) = bitmap_set_new ();
     }
 
