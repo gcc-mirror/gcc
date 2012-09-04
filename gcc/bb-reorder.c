@@ -2037,6 +2037,65 @@ insert_section_boundary_note (void)
     }
 }
 
+static bool
+gate_handle_reorder_blocks (void)
+{
+  if (targetm.cannot_modify_jumps_p ())
+    return false;
+  /* Don't reorder blocks when optimizing for size because extra jump insns may
+     be created; also barrier may create extra padding.
+
+     More correctly we should have a block reordering mode that tried to
+     minimize the combined size of all the jumps.  This would more or less
+     automatically remove extra jumps, but would also try to use more short
+     jumps instead of long jumps.  */
+  if (!optimize_function_for_speed_p (cfun))
+    return false;
+  return (optimize > 0
+	  && (flag_reorder_blocks || flag_reorder_blocks_and_partition));
+}
+
+static unsigned int
+rest_of_handle_reorder_blocks (void)
+{
+  basic_block bb;
+
+  /* Last attempt to optimize CFG, as scheduling, peepholing and insn
+     splitting possibly introduced more crossjumping opportunities.  */
+  cfg_layout_initialize (CLEANUP_EXPENSIVE);
+
+  reorder_basic_blocks ();
+  cleanup_cfg (CLEANUP_EXPENSIVE);
+
+  FOR_EACH_BB (bb)
+    if (bb->next_bb != EXIT_BLOCK_PTR)
+      bb->aux = bb->next_bb;
+  cfg_layout_finalize ();
+
+  /* Add NOTE_INSN_SWITCH_TEXT_SECTIONS notes.  */
+  insert_section_boundary_note ();
+  return 0;
+}
+
+struct rtl_opt_pass pass_reorder_blocks =
+{
+ {
+  RTL_PASS,
+  "bbro",                               /* name */
+  gate_handle_reorder_blocks,           /* gate */
+  rest_of_handle_reorder_blocks,        /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_REORDER_BLOCKS,                    /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  TODO_verify_rtl_sharing,              /* todo_flags_finish */
+ }
+};
+
 /* Duplicate the blocks containing computed gotos.  This basically unfactors
    computed gotos that were factored early on in the compilation process to
    speed up edge based data flow.  We used to not unfactoring them again,
@@ -2178,6 +2237,21 @@ struct rtl_opt_pass pass_duplicate_computed_gotos =
  }
 };
 
+static bool
+gate_handle_partition_blocks (void)
+{
+  /* The optimization to partition hot/cold basic blocks into separate
+     sections of the .o file does not work well with linkonce or with
+     user defined section attributes.  Don't call it if either case
+     arises.  */
+  return (flag_reorder_blocks_and_partition
+          && optimize
+	  /* See gate_handle_reorder_blocks.  We should not partition if
+	     we are going to omit the reordering.  */
+	  && optimize_function_for_speed_p (cfun)
+	  && !DECL_ONE_ONLY (current_function_decl)
+	  && !user_defined_section_attribute);
+}
 
 /* This function is the main 'entrance' for the optimization that
    partitions hot and cold basic blocks into separate sections of the
@@ -2345,83 +2419,6 @@ partition_hot_cold_basic_blocks (void)
     }
 
   return TODO_verify_flow | TODO_verify_rtl_sharing;
-}
-
-static bool
-gate_handle_reorder_blocks (void)
-{
-  if (targetm.cannot_modify_jumps_p ())
-    return false;
-  /* Don't reorder blocks when optimizing for size because extra jump insns may
-     be created; also barrier may create extra padding.
-
-     More correctly we should have a block reordering mode that tried to
-     minimize the combined size of all the jumps.  This would more or less
-     automatically remove extra jumps, but would also try to use more short
-     jumps instead of long jumps.  */
-  if (!optimize_function_for_speed_p (cfun))
-    return false;
-  return (optimize > 0
-	  && (flag_reorder_blocks || flag_reorder_blocks_and_partition));
-}
-
-
-/* Reorder basic blocks.  */
-static unsigned int
-rest_of_handle_reorder_blocks (void)
-{
-  basic_block bb;
-
-  /* Last attempt to optimize CFG, as scheduling, peepholing and insn
-     splitting possibly introduced more crossjumping opportunities.  */
-  cfg_layout_initialize (CLEANUP_EXPENSIVE);
-
-  reorder_basic_blocks ();
-  cleanup_cfg (CLEANUP_EXPENSIVE);
-
-  FOR_EACH_BB (bb)
-    if (bb->next_bb != EXIT_BLOCK_PTR)
-      bb->aux = bb->next_bb;
-  cfg_layout_finalize ();
-
-  /* Add NOTE_INSN_SWITCH_TEXT_SECTIONS notes.  */
-  insert_section_boundary_note ();
-  return 0;
-}
-
-struct rtl_opt_pass pass_reorder_blocks =
-{
- {
-  RTL_PASS,
-  "bbro",                               /* name */
-  gate_handle_reorder_blocks,           /* gate */
-  rest_of_handle_reorder_blocks,        /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_REORDER_BLOCKS,                    /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  TODO_verify_rtl_sharing,              /* todo_flags_finish */
- }
-};
-
-static bool
-gate_handle_partition_blocks (void)
-{
-  /* The optimization to partition hot/cold basic blocks into separate
-     sections of the .o file does not work well with linkonce or with
-     user defined section attributes.  Don't call it if either case
-     arises.  */
-  return (flag_reorder_blocks_and_partition
-          && optimize
-	  /* See gate_handle_reorder_blocks.  We should not partition if
-	     we are going to omit the reordering.  */
-	  && optimize_function_for_speed_p (cfun)
-	  && !DECL_ONE_ONLY (current_function_decl)
-	  && !user_defined_section_attribute);
 }
 
 struct rtl_opt_pass pass_partition_blocks =
