@@ -1,3 +1,7 @@
+2012-09-04  Richard Henderson  <rth@redhat.com>
+
+	* alias.c (read_dependence): Return true for ALIAS_SET_MEMORY_BARRIER.
+
 2012-09-04  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-pre.c (value_expressions): Make it a vector of
