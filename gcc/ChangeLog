@@ -1,5 +1,12 @@
 2012-09-04  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* bb-reorder.c (gate_handle_reorder_blocks): Move around.
+	(rest_of_handle_reorder_blocks): Likewise.
+	(pass_reorder_blocks): Likewise.
+	(gate_handle_partition_blocks): Likewise.
+
+2012-09-04  Eric Botcazou  <ebotcazou@adacore.com>
+
 	PR rtl-optimization/54456
 	* sched-rgn.c (gate_handle_sched): Return 1 only if optimize > 0.
 
