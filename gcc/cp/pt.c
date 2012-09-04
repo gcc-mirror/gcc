@@ -14591,11 +14591,22 @@ fn_type_unification (tree fn,
   static int deduction_depth;
   struct pending_template *old_last_pend = last_pending_template;
   struct tinst_level *old_error_tinst = last_error_tinst_level;
+  tree tparms = DECL_INNERMOST_TEMPLATE_PARMS (fn);
   tree tinst;
   tree r = error_mark_node;
 
-  if (excessive_deduction_depth)
-    return error_mark_node;
+  /* Adjust any explicit template arguments before entering the
+     substitution context.  */
+  if (explicit_targs)
+    {
+      explicit_targs
+	= (coerce_template_parms (tparms, explicit_targs, NULL_TREE,
+				  complain,
+				  /*require_all_args=*/false,
+				  /*use_default_args=*/false));
+      if (explicit_targs == error_mark_node)
+	return error_mark_node;
+    }
 
   /* In C++0x, it's possible to have a function template whose type depends
      on itself recursively.  This is most obvious with decltype, but can also
@@ -14608,6 +14619,8 @@ fn_type_unification (tree fn,
      substitutions back up to the initial one.
 
      This is, of course, not reentrant.  */
+  if (excessive_deduction_depth)
+    return error_mark_node;
   tinst = build_tree_list (fn, targs);
   if (!push_tinst_level (tinst))
     {
@@ -14640,22 +14653,9 @@ fn_type_unification (tree fn,
 	 specified template argument values.  If a substitution in a
 	 template parameter or in the function type of the function
 	 template results in an invalid type, type deduction fails.  */
-      tree tparms = DECL_INNERMOST_TEMPLATE_PARMS (fn);
       int i, len = TREE_VEC_LENGTH (tparms);
       location_t loc = input_location;
-      tree converted_args;
       bool incomplete = false;
-
-      if (explicit_targs == error_mark_node)
-	goto fail;
-
-      converted_args
-	= (coerce_template_parms (tparms, explicit_targs, NULL_TREE,
-				  complain,
-				   /*require_all_args=*/false,
-				   /*use_default_args=*/false));
-      if (converted_args == error_mark_node)
-	goto fail;
 
       /* Substitute the explicit args into the function type.  This is
 	 necessary so that, for instance, explicitly declared function
@@ -14667,7 +14667,7 @@ fn_type_unification (tree fn,
         {
           tree parm = TREE_VALUE (TREE_VEC_ELT (tparms, i));
           bool parameter_pack = false;
-	  tree targ = TREE_VEC_ELT (converted_args, i);
+	  tree targ = TREE_VEC_ELT (explicit_targs, i);
 
           /* Dig out the actual parm.  */
           if (TREE_CODE (parm) == TYPE_DECL
@@ -14705,7 +14705,7 @@ fn_type_unification (tree fn,
 
       processing_template_decl += incomplete;
       input_location = DECL_SOURCE_LOCATION (fn);
-      fntype = tsubst (TREE_TYPE (fn), converted_args,
+      fntype = tsubst (TREE_TYPE (fn), explicit_targs,
 		       complain | tf_partial, NULL_TREE);
       input_location = loc;
       processing_template_decl -= incomplete;
@@ -14714,8 +14714,8 @@ fn_type_unification (tree fn,
 	goto fail;
 
       /* Place the explicitly specified arguments in TARGS.  */
-      for (i = NUM_TMPL_ARGS (converted_args); i--;)
-	TREE_VEC_ELT (targs, i) = TREE_VEC_ELT (converted_args, i);
+      for (i = NUM_TMPL_ARGS (explicit_targs); i--;)
+	TREE_VEC_ELT (targs, i) = TREE_VEC_ELT (explicit_targs, i);
     }
 
   /* Never do unification on the 'this' parameter.  */
