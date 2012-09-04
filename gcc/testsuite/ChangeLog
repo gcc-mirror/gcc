@@ -1,3 +1,8 @@
+2012-09-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/54437
+	* g++.dg/template/access24.C: New.
+
 2012-09-04  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/54458

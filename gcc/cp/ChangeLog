@@ -1,3 +1,10 @@
+2012-09-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/54437
+	PR c++/51213
+	* pt.c (fn_type_unification): Call coerce_template_parms before
+	entering substitution context.
+
 2012-08-31  Paolo Carlini  <paolo.carlini@oracle.com>
 	    Jason Merrill  <jason@redhat.com>
 
