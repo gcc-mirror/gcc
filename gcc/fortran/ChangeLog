@@ -1,3 +1,10 @@
+2012-09-04  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54435
+	PR fortran/54443
+	* match.c (gfc_match_select_type): Make sure to only access CLASS_DATA
+	for BT_CLASS.
+
 2012-09-03  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/54467
