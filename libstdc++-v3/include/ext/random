@@ -374,6 +374,223 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					    0x3bd2b64bU, 0x0c64b1e4U>
     sfmt216091_64;
 
+
+  /**
+   * @brief A beta continuous distribution for random numbers.
+   *
+   * The formula for the beta probability density function is:
+   * @f[
+   *     p(x|\alpha,\beta) = \frac{1}{B(\alpha,\beta)}
+   *                         x^{\alpha - 1} (1 - x)^{\beta - 1}
+   * @f]
+   */
+  template<typename _RealType = double>
+    class beta_distribution
+    {
+      static_assert(std::is_floating_point<_RealType>::value,
+		    "template argument not a floating point type");
+
+    public:
+      /** The type of the range of the distribution. */
+      typedef _RealType result_type;
+      /** Parameter type. */
+      struct param_type
+      {
+	typedef beta_distribution<_RealType> distribution_type;
+	friend class beta_distribution<_RealType>;
+
+	explicit
+	param_type(_RealType __alpha_val = _RealType(1),
+		   _RealType __beta_val = _RealType(1))
+	: _M_alpha(__alpha_val), _M_beta(__beta_val)
+	{
+	  _GLIBCXX_DEBUG_ASSERT(_M_alpha > _RealType(0));
+	  _GLIBCXX_DEBUG_ASSERT(_M_beta > _RealType(0));
+	}
+
+	_RealType
+	alpha() const
+	{ return _M_alpha; }
+
+	_RealType
+	beta() const
+	{ return _M_beta; }
+
+	friend bool
+	operator==(const param_type& __p1, const param_type& __p2)
+	{ return (__p1._M_alpha == __p2._M_alpha
+		  && __p1._M_beta == __p2._M_beta); }
+
+      private:
+	void
+	_M_initialize();
+
+	_RealType _M_alpha;
+	_RealType _M_beta;
+      };
+
+    public:
+      /**
+       * @brief Constructs a beta distribution with parameters
+       * @f$\alpha@f$ and @f$\beta@f$.
+       */
+      explicit
+      beta_distribution(_RealType __alpha_val = _RealType(1),
+			_RealType __beta_val = _RealType(1))
+      : _M_param(__alpha_val, __beta_val)
+      { }
+
+      explicit
+      beta_distribution(const param_type& __p)
+      : _M_param(__p)
+      { }
+
+      /**
+       * @brief Resets the distribution state.
+       */
+      void
+      reset()
+      { }
+
+      /**
+       * @brief Returns the @f$\alpha@f$ of the distribution.
+       */
+      _RealType
+      alpha() const
+      { return _M_param.alpha(); }
+
+      /**
+       * @brief Returns the @f$\beta@f$ of the distribution.
+       */
+      _RealType
+      beta() const
+      { return _M_param.beta(); }
+
+      /**
+       * @brief Returns the parameter set of the distribution.
+       */
+      param_type
+      param() const
+      { return _M_param; }
+
+      /**
+       * @brief Sets the parameter set of the distribution.
+       * @param __param The new parameter set of the distribution.
+       */
+      void
+      param(const param_type& __param)
+      { _M_param = __param; }
+
+      /**
+       * @brief Returns the greatest lower bound value of the distribution.
+       */
+      result_type
+      min() const
+      { return result_type(0); }
+
+      /**
+       * @brief Returns the least upper bound value of the distribution.
+       */
+      result_type
+      max() const
+      { return result_type(1); }
+
+      /**
+       * @brief Generating functions.
+       */
+      template<typename _UniformRandomNumberGenerator>
+	result_type
+	operator()(_UniformRandomNumberGenerator& __urng)
+	{ return this->operator()(__urng, this->param()); }
+
+      template<typename _UniformRandomNumberGenerator>
+	result_type
+	operator()(_UniformRandomNumberGenerator& __urng,
+		   const param_type& __p);
+
+      template<typename _ForwardIterator,
+	       typename _UniformRandomNumberGenerator>
+	void
+	__generate(_ForwardIterator __f, _ForwardIterator __t,
+		   _UniformRandomNumberGenerator& __urng)
+	{ this->__generate(__f, __t, __urng, this->param()); }
+
+      template<typename _ForwardIterator,
+	       typename _UniformRandomNumberGenerator>
+	void
+	__generate(_ForwardIterator __f, _ForwardIterator __t,
+		   _UniformRandomNumberGenerator& __urng,
+		   const param_type& __p)
+	{ this->__generate_impl(__f, __t, __urng, __p); }
+
+      template<typename _UniformRandomNumberGenerator>
+	void
+	__generate(result_type* __f, result_type* __t,
+		   _UniformRandomNumberGenerator& __urng,
+		   const param_type& __p)
+	{ this->__generate_impl(__f, __t, __urng, __p); }
+
+      /**
+       * @brief Return true if two beta distributions have the same
+       *        parameters and the sequences that would be generated
+       *        are equal.
+       */
+      friend bool
+      operator==(const beta_distribution& __d1,
+		 const beta_distribution& __d2)
+      { return __d1.param() == __d2.param(); }
+
+      /**
+       * @brief Inserts a %beta_distribution random number distribution
+       * @p __x into the output stream @p __os.
+       *
+       * @param __os An output stream.
+       * @param __x  A %beta_distribution random number distribution.
+       *
+       * @returns The output stream with the state of @p __x inserted or in
+       * an error state.
+       */
+      template<typename _RealType1, typename _CharT, typename _Traits>
+	friend std::basic_ostream<_CharT, _Traits>&
+	operator<<(std::basic_ostream<_CharT, _Traits>& __os,
+		   const __gnu_cxx::beta_distribution<_RealType1>& __x);
+
+      /**
+       * @brief Extracts a %beta_distribution random number distribution
+       * @p __x from the input stream @p __is.
+       *
+       * @param __is An input stream.
+       * @param __x  A %beta_distribution random number generator engine.
+       *
+       * @returns The input stream with @p __x extracted or in an error state.
+       */
+      template<typename _RealType1, typename _CharT, typename _Traits>
+	friend std::basic_istream<_CharT, _Traits>&
+	operator>>(std::basic_istream<_CharT, _Traits>& __is,
+		   __gnu_cxx::beta_distribution<_RealType1>& __x);
+
+    private:
+      template<typename _ForwardIterator,
+	       typename _UniformRandomNumberGenerator>
+	void
+	__generate_impl(_ForwardIterator __f, _ForwardIterator __t,
+			_UniformRandomNumberGenerator& __urng,
+			const param_type& __p);
+
+      param_type _M_param;
+    };
+
+  /**
+   * @brief Return true if two beta distributions are different.
+   */
+   template<typename _RealType>
+     inline bool
+     operator!=(const __gnu_cxx::beta_distribution<_RealType>& __d1,
+		const __gnu_cxx::beta_distribution<_RealType>& __d2)
+    { return !(__d1 == __d2); }
+
+
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 

@@ -1,3 +1,24 @@
+2012-09-04  Ulrich Drepper  <drepper@gmail.com>
+
+	* libstdc++-v3/include/ext/random: Add __gnu_cxx::beta_distribution<>
+	class.
+	* libstdc++-v3/include/ext/random.tcc: Add out-of-line functions for
+	__gnu_cxx::beta_distribution<>.
+	* libstdc++-v3/testsuite/26_numerics/random/beta_distribution/
+	operators/equal.cc: New file.
+	* libstdc++-v3/testsuite/26_numerics/random/beta_distribution/
+	operators/serialize.cc: New file.
+	* libstdc++-v3/testsuite/26_numerics/random/beta_distribution/
+	operators/inequal.cc: New file.
+	* libstdc++-v3/testsuite/26_numerics/random/beta_distribution/
+	cons/parms.cc: New file.
+	* libstdc++-v3/testsuite/26_numerics/random/beta_distribution/
+	cons/default.cc: New file.
+	* libstdc++-v3/testsuite/26_numerics/random/beta_distribution/
+	requirements/typedefs.cc: New file.
+	* libstdc++-v3/testsuite/26_numerics/random/beta_distribution/
+	requirements/explicit_instantiation/1.cc: New file.
+
 2012-09-04  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR bootstrap/54453

@@ -438,6 +438,106 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __is;
     }
 
+
+  /**
+   * Iteration method due to M.D. J<o:>hnk.
+   *
+   * M.D. J<o:>hnk, Erzeugung von betaverteilten und gammaverteilten
+   * Zufallszahlen, Metrika, Volume 8, 1964
+   */
+  template<typename _RealType>
+    template<typename _UniformRandomNumberGenerator>
+      typename beta_distribution<_RealType>::result_type
+      beta_distribution<_RealType>::
+      operator()(_UniformRandomNumberGenerator& __urng,
+		 const param_type& __param)
+      {
+	std::__detail::_Adaptor<_UniformRandomNumberGenerator, result_type>
+	  __aurng(__urng);
+
+	result_type __x, __y;
+	do
+	  {
+	    __x = std::exp(std::log(__aurng()) / __param.alpha());
+	    __y = std::exp(std::log(__aurng()) / __param.beta());
+	  }
+	while (__x + __y > result_type(1));
+
+	return __x / (__x + __y);
+      }
+
+  template<typename _RealType>
+    template<typename _OutputIterator,
+	     typename _UniformRandomNumberGenerator>
+      void
+      beta_distribution<_RealType>::
+      __generate_impl(_OutputIterator __f, _OutputIterator __t,
+		      _UniformRandomNumberGenerator& __urng,
+		      const param_type& __param)
+      {
+	__glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator>)
+
+	std::__detail::_Adaptor<_UniformRandomNumberGenerator, result_type>
+	  __aurng(__urng);
+
+	while (__f != __t)
+	  {
+	    result_type __x, __y;
+	    do
+	      {
+		__x = std::exp(std::log(__aurng()) / __param.alpha());
+		__y = std::exp(std::log(__aurng()) / __param.beta());
+	      }
+	    while (__x + __y > result_type(1));
+
+	    *__f++ = __x / (__x + __y);
+	  }
+      }
+
+  template<typename _RealType, typename _CharT, typename _Traits>
+    std::basic_ostream<_CharT, _Traits>&
+    operator<<(std::basic_ostream<_CharT, _Traits>& __os,
+	       const __gnu_cxx::beta_distribution<_RealType>& __x)
+    {
+      typedef std::basic_ostream<_CharT, _Traits>  __ostream_type;
+      typedef typename __ostream_type::ios_base    __ios_base;
+
+      const typename __ios_base::fmtflags __flags = __os.flags();
+      const _CharT __fill = __os.fill();
+      const std::streamsize __precision = __os.precision();
+      const _CharT __space = __os.widen(' ');
+      __os.flags(__ios_base::scientific | __ios_base::left);
+      __os.fill(__space);
+      __os.precision(std::numeric_limits<_RealType>::max_digits10);
+
+      __os << __x.alpha() << __space << __x.beta();
+
+      __os.flags(__flags);
+      __os.fill(__fill);
+      __os.precision(__precision);
+      return __os;
+    }
+
+  template<typename _RealType, typename _CharT, typename _Traits>
+    std::basic_istream<_CharT, _Traits>&
+    operator>>(std::basic_istream<_CharT, _Traits>& __is,
+	       __gnu_cxx::beta_distribution<_RealType>& __x)
+    {
+      typedef std::basic_istream<_CharT, _Traits>  __istream_type;
+      typedef typename __istream_type::ios_base    __ios_base;
+
+      const typename __ios_base::fmtflags __flags = __is.flags();
+      __is.flags(__ios_base::dec | __ios_base::skipws);
+
+      _RealType __alpha_val, __beta_val;
+      __is >> __alpha_val >> __beta_val;
+      __x.param(typename __gnu_cxx::beta_distribution<_RealType>::
+		param_type(__alpha_val, __beta_val));
+
+      __is.flags(__flags);
+      return __is;
+    }
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 
