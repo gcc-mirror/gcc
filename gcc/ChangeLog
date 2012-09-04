@@ -1,3 +1,20 @@
+2012-09-04  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-pre.c (value_expressions): Make it a vector of
+	bitmaps containing expression IDs.
+	(add_to_value): Adjust.
+	(sorted_array_from_bitmap_set): Likewise.
+	(bitmap_set_replace_value): Likewise.
+	(print_value_expressions): Likewise.
+	(get_constant_for_value_id): Likewise.
+	(get_representative_for): Likewise.
+	(phi_translate_1): Likewise.
+	(bitmap_find_leader): Likewise.
+	(find_or_generate_expression): Likewise.
+	(do_regular_insertion): Likewise.
+	(init_pre): Likewise.
+	(fini_pre): Likewise.
+
 2012-09-04   Diego Novillo  <dnovillo@google.com>
 
 	PR bootstrap/54479
