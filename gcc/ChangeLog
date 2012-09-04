@@ -1,3 +1,11 @@
+2012-09-04  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-pre.c (add_to_exp_gen): Adjust.
+	(make_values_for_phi): Do not add to PHI_GEN for FRE.
+	(compute_avail): Stop processing after adding all defs to
+	AVAIL_OUT for FRE.
+	(init_pre): Do not allocate not needed bitmap sets for FRE.
+
 2012-09-04   Diego Novillo  <dnovillo@google.com>
 
 	Rewrite VEC_* functions as member functions of vec_t.
