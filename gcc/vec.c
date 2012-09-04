@@ -175,8 +175,8 @@ calculate_allocation (const struct vec_prefix *pfx, int reserve, bool exact)
 
   if (pfx)
     {
-      alloc = pfx->alloc;
-      num = pfx->num;
+      alloc = pfx->alloc_;
+      num = pfx->num_;
     }
   else if (!reserve)
     /* If there's no prefix, and we've not requested anything, then we
@@ -240,9 +240,9 @@ vec_gc_o_reserve_1 (void *vec, int reserve, size_t vec_offset, size_t elt_size,
 
   vec = ggc_realloc_stat (vec, size PASS_MEM_STAT);
 
-  ((struct vec_prefix *)vec)->alloc = alloc;
+  ((struct vec_prefix *)vec)->alloc_ = alloc;
   if (!pfx)
-    ((struct vec_prefix *)vec)->num = 0;
+    ((struct vec_prefix *)vec)->num_ = 0;
 
   return vec;
 }
@@ -268,9 +268,9 @@ vec_heap_o_reserve_1 (void *vec, int reserve, size_t vec_offset,
     free_overhead (pfx);
 
   vec = xrealloc (vec, vec_offset + alloc * elt_size);
-  ((struct vec_prefix *)vec)->alloc = alloc;
+  ((struct vec_prefix *)vec)->alloc_ = alloc;
   if (!pfx)
-    ((struct vec_prefix *)vec)->num = 0;
+    ((struct vec_prefix *)vec)->num_ = 0;
   if (GATHER_STATISTICS && vec)
     register_overhead ((struct vec_prefix *)vec,
     		       vec_offset + alloc * elt_size FINAL_PASS_MEM_STAT);
@@ -306,8 +306,8 @@ vec_stack_p_reserve_exact_1 (int alloc, void *space)
 
   VEC_safe_push (void_p, heap, stack_vecs, space);
 
-  pfx->num = 0;
-  pfx->alloc = alloc;
+  pfx->num_ = 0;
+  pfx->alloc_ = alloc;
 
   return space;
 }
@@ -343,15 +343,15 @@ vec_stack_o_reserve_1 (void *vec, int reserve, size_t vec_offset,
     }
 
   /* Move VEC to the heap.  */
-  reserve += ((struct vec_prefix *) vec)->num;
+  reserve += ((struct vec_prefix *) vec)->num_;
   newvec = vec_heap_o_reserve_1 (NULL, reserve, vec_offset, elt_size,
 				 exact PASS_MEM_STAT);
   if (newvec && vec)
     {
-      ((struct vec_prefix *) newvec)->num = ((struct vec_prefix *) vec)->num;
+      ((struct vec_prefix *) newvec)->num_ = ((struct vec_prefix *) vec)->num_;
       memcpy (((struct vec_prefix *) newvec)+1,
 	      ((struct vec_prefix *) vec)+1,
-	      ((struct vec_prefix *) vec)->num * elt_size);
+	      ((struct vec_prefix *) vec)->num_ * elt_size);
     }
   return newvec;
 }

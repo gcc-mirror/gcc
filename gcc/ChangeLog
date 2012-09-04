@@ -1,3 +1,55 @@
+2012-09-04   Diego Novillo  <dnovillo@google.com>
+
+	Rewrite VEC_* functions as member functions of vec_t.
+
+	* vec.h: Update documentation.
+	(ALONE_VEC_CHECK_INFO): Define.
+	(ALONE_VEC_CHECK_DECL): Define.
+	(ALONE_VEC_CHECK_PASS): Define.
+	(struct vec_prefix): Rename field NUM to NUM_.
+	Rename field ALLOC to ALLOC_.
+	Update all users.
+	(struct vec_t): Rename field PREFIX to PREFIX_.
+	Rename field VEC to VEC_.
+	Update all users.
+	(vec_t::length): Rename from VEC_length_1.  Update all users.
+	(vec_t::empty): Rename from VEC_empty_1.  Update all users.
+	(vec_t::address): Rename from VEC_address_1.  Update all users.
+	(vec_address): New.
+	(vec_t::last): Rename from VEC_last_1.  Update all users.
+	(vec_t::operator[]): Rename from VEC_index_1.  Update all users.
+	(vec_t::iterate): Rename from VEC_iterate_1.  Update all users.
+	(vec_t::embedded_size): Rename from VEC_embedded_size_1.
+	Update all users.
+	(vec_t::embedded_init): Rename from VEC_embedded_init_1.
+	Update all users.
+	(vec_t::alloc): Rename from VEC_alloc_1.  Update all users.
+	(vec_t::free): Rename from VEC_free_1.  Update all users.
+	(vec_t::copy): Rename from VEC_copy_1.  Update all users.
+	(vec_t::space): Rename from VEC_space_1.  Update all users.
+	(vec_t::reserve): Rename from VEC_reserve_1.  Update all users.
+	(vec_t::reserve_exact): Rename from VEC_reserve_exact_1.
+	Update all users.
+	(vec_t::splice): Rename from VEC_splice_1.  Update all users.
+	(vec_t::safe_splice): Rename from VEC_safe_splice_1.  Update all users.
+	(vec_t::quick_push): Rename from VEC_quick_push_1.  Update all users.
+	(vec_t::safe_push): Rename from VEC_safe_push_1.  Update all users.
+	(vec_t::pop): Rename from VEC_pop_1.  Update all users.
+	(vec_t::truncate): Rename from VEC_truncate_1.  Update all users.
+	(vec_t::safe_grow): Rename from VEC_safe_grow_1.  Update all users.
+	(vec_t::safe_grow_cleared): Rename from VEC_safe_grow_cleared_1.
+	Update all users.
+	(vec_t::replace): Rename from VEC_replace_1.  Update all users.
+	(vec_t::quick_insert): Rename from VEC_quick_insert_1.
+	Update all users.
+	(vec_t::safe_insert): Rename from VEC_safe_insert_1.  Update all users.
+	(vec_t::ordered_remove): Rename from VEC_ordered_remove_1.
+	Update all users.
+	(vec_t::unordered_remove): Rename from VEC_unordered_remove_1.
+	Update all users.
+	(vec_t::block_remove): Rename from VEC_block_remove_1. Update all users.
+	(vec_t::lower_bound): Rename from VEC_lower_bound_1. Update all users.
+
 2012-09-04  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* gimple.h (gimple_build_switch): Remove.
