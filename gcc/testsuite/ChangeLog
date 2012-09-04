@@ -1,3 +1,9 @@
+2012-09-04  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54243
+	PR fortran/54244
+	* gfortran.dg/select_type_29.f03: New.
+
 2012-09-03  Marc Glisse  <marc.glisse@inria.fr>
 
 	* gcc.dg/fold-perm.c: Improve test.
