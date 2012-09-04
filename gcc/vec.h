@@ -655,7 +655,7 @@ template<enum vec_allocation_t A>
 vec_t<T> *
 vec_t<T>::alloc (int nelems MEM_STAT_DECL)
 {
-  return vec_t<T>::reserve_exact<A> ((vec_t<T> *) NULL, nelems PASS_MEM_STAT);
+  return reserve_exact<A> ((vec_t<T> *) NULL, nelems PASS_MEM_STAT);
 }
 
 template<typename T>
@@ -699,8 +699,8 @@ vec_t<T>::copy (ALONE_MEM_STAT_DECL)
 
   if (len)
     {
-      new_vec = vec_t<T>::reserve_exact<A> (static_cast<vec_t<T> *> (NULL),
-					    len PASS_MEM_STAT);
+      new_vec = reserve_exact<A> (static_cast<vec_t<T> *> (NULL),
+				  len PASS_MEM_STAT);
       new_vec->embedded_init (len, len);
       memcpy (new_vec->address (), vec_, sizeof (T) * len);
     }
@@ -736,7 +736,7 @@ vec_t<T>::reserve (vec_t<T> **vec, int nelems VEC_CHECK_DECL MEM_STAT_DECL)
   bool extend = (*vec) ? !(*vec)->space (nelems VEC_CHECK_PASS) : nelems != 0;
 
   if (extend)
-    *vec = vec_t<T>::reserve<A> (*vec, nelems PASS_MEM_STAT);
+    *vec = reserve<A> (*vec, nelems PASS_MEM_STAT);
 
   return extend;
 }
@@ -755,7 +755,7 @@ vec_t<T>::reserve_exact (vec_t<T> **vec, int nelems VEC_CHECK_DECL
   bool extend = (*vec) ? !(*vec)->space (nelems VEC_CHECK_PASS) : nelems != 0;
 
   if (extend)
-    *vec = vec_t<T>::reserve_exact<A> (*vec, nelems PASS_MEM_STAT);
+    *vec = reserve_exact<A> (*vec, nelems PASS_MEM_STAT);
 
   return extend;
 }
@@ -796,8 +796,7 @@ vec_t<T>::safe_splice (vec_t<T> **dst, vec_t<T> *src VEC_CHECK_DECL
 {
   if (src)
     {
-      vec_t<T>::reserve_exact<A> (dst, VEC_length (T, src) VEC_CHECK_PASS
-			          MEM_STAT_INFO);
+      reserve_exact<A> (dst, VEC_length (T, src) VEC_CHECK_PASS MEM_STAT_INFO);
       (*dst)->splice (src VEC_CHECK_PASS);
     }
 }
@@ -843,7 +842,7 @@ template<enum vec_allocation_t A>
 T &
 vec_t<T>::safe_push (vec_t<T> **vec, T obj VEC_CHECK_DECL MEM_STAT_DECL)
 {
-  vec_t<T>::reserve<A> (vec, 1 VEC_CHECK_PASS PASS_MEM_STAT);
+  reserve<A> (vec, 1 VEC_CHECK_PASS PASS_MEM_STAT);
   return (*vec)->quick_push (obj VEC_CHECK_PASS);
 }
 
@@ -858,7 +857,7 @@ template<enum vec_allocation_t A>
 T *
 vec_t<T>::safe_push (vec_t<T> **vec, const T *ptr VEC_CHECK_DECL MEM_STAT_DECL)
 {
-  vec_t<T>::reserve<A> (vec, 1 VEC_CHECK_PASS PASS_MEM_STAT);
+  reserve<A> (vec, 1 VEC_CHECK_PASS PASS_MEM_STAT);
   return (*vec)->quick_push (ptr VEC_CHECK_PASS);
 }
 
@@ -898,8 +897,8 @@ vec_t<T>::safe_grow (vec_t<T> **vec, int size VEC_CHECK_DECL MEM_STAT_DECL)
 {
   VEC_ASSERT (size >= 0 && VEC_length (T, *vec) <= (unsigned)size,
 	      "grow", T, A);
-  vec_t<T>::reserve_exact<A> (vec, size - (int)VEC_length (T, *vec)
-		              VEC_CHECK_PASS PASS_MEM_STAT);
+  reserve_exact<A> (vec, size - (int)VEC_length (T, *vec)
+		    VEC_CHECK_PASS PASS_MEM_STAT);
   (*vec)->prefix_.num_ = size;
 }
 
@@ -915,7 +914,7 @@ vec_t<T>::safe_grow_cleared (vec_t<T> **vec, int size VEC_CHECK_DECL
 			     MEM_STAT_DECL)
 {
   int oldsize = VEC_length (T, *vec);
-  vec_t<T>::safe_grow<A> (vec, size VEC_CHECK_PASS PASS_MEM_STAT);
+  safe_grow<A> (vec, size VEC_CHECK_PASS PASS_MEM_STAT);
   memset (&((*vec)->address ()[oldsize]), 0, sizeof (T) * (size - oldsize));
 }
 
@@ -972,7 +971,7 @@ void
 vec_t<T>::safe_insert (vec_t<T> **vec, unsigned ix, T obj VEC_CHECK_DECL
 		       MEM_STAT_DECL)
 {
-  vec_t<T>::reserve<A> (vec, 1 VEC_CHECK_PASS PASS_MEM_STAT);
+  reserve<A> (vec, 1 VEC_CHECK_PASS PASS_MEM_STAT);
   (*vec)->quick_insert (ix, obj VEC_CHECK_PASS);
 }
 
@@ -988,7 +987,7 @@ void
 vec_t<T>::safe_insert (vec_t<T> **vec, unsigned ix, T *ptr VEC_CHECK_DECL
 		       MEM_STAT_DECL)
 {
-  vec_t<T>::reserve<A> (vec, 1 VEC_CHECK_PASS PASS_MEM_STAT);
+  reserve<A> (vec, 1 VEC_CHECK_PASS PASS_MEM_STAT);
   (*vec)->quick_insert (ix, ptr VEC_CHECK_PASS);
 }
 

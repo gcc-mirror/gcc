@@ -1,3 +1,17 @@
+2012-09-04  Diego Novillo  <dnovillo@google.com>
+
+	PR bootstrap/54478
+	* vec.h (vec_t::alloc): Remove explicit type specification
+	in call to reserve.
+	(vec_t::copy): Likewise.
+	(vec_t::reserve): Likewise.
+	(vec_t::reserve_exact): Likewise.
+	(vec_t::safe_splice): Likewise.
+	(vec_t::safe_push): Likewise.
+	(vec_t::safe_grow): Likewise.
+	(vec_t::safe_grow_cleared): Likewise.
+	(vec_t::safe_insert): Likewise.
+
 2012-09-04  Richard Henderson  <rth@redhat.com>
 
 	* alias.c (read_dependence): Return true for ALIAS_SET_MEMORY_BARRIER.
