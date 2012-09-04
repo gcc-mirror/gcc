@@ -1675,7 +1675,7 @@ preprocess_case_label_vec_for_gimple (VEC(tree,heap) *labels,
 	  gcc_assert (!default_case);
 	  default_case = elt;
 	  /* The default case must be passed separately to the
-	     gimple_build_switch routines.  But if DEFAULT_CASEP
+	     gimple_build_switch routine.  But if DEFAULT_CASEP
 	     is NULL, we do not remove the default case (it would
 	     be completely lost).  */
 	  if (default_casep)
@@ -1788,8 +1788,8 @@ gimplify_switch_expr (tree *expr_p, gimple_seq *pre_p)
 	  gimplify_seq_add_stmt (&switch_body_seq, new_default);
 	}
 
-      gimple_switch = gimple_build_switch_vec (SWITCH_COND (switch_expr),
-					       default_case, labels);
+      gimple_switch = gimple_build_switch (SWITCH_COND (switch_expr),
+					   default_case, labels);
       gimplify_seq_add_stmt (pre_p, gimple_switch);
       gimplify_seq_add_seq (pre_p, switch_body_seq);
       VEC_free(tree, heap, labels);

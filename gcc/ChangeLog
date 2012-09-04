@@ -1,3 +1,35 @@
+2012-09-04  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* gimple.h (gimple_build_switch): Remove.
+	(gimple_build_switch_vec): Promote to the new gimple_build_switch.
+	(gimple_switch_default_label): Assert the default case label is
+	really a default case label.
+	(gimple_switch_set_default_label): Likewise.
+	* gimple.c (gimple_build_switch_nlabels): Make sure a default label
+	is passed in, and simplify accordingly.
+	(gimple_build_switch): Removed.
+	(gimple_build_switch_vec): Rename to gimple_build_switch.
+	* gimplify.c (gimplify_switch_expr): Update gimple_build_switch use.
+	* gimple-pretty-print.c (dump_gimple_switch): Do not accept a NULL
+	case label.
+	* stmt.c (expand_case): Simplify using the fact that every GIMPLE
+	switch must have a default case.
+	* tree-cfg.c (group_case_labels_stmt): Likewise.
+	(verify_gimple_switch): Use gimple_switch_label in verifier to get
+	the label at index 0, and verify that it is a valid default case.
+	* except.c (sjlj_emit_dispatch_table): Rewrite construction of the
+	switch for dispatching.
+	* tree-eh.c (lower_try_finally_switch): Update gimple_build_switch use.
+	(lower_eh_dispatch): Likewise.
+	* tree-vrp.c (execute_vrp): Use gimple_switch_label to get the case
+	label at index 0 before turning it into a default case label.
+	* omp-low.c (expand_omp_sections): Update gimple_build_switch use.
+	* tree-switch-conversion.c (emit_case_bit_tests): Get the default case
+	label using gimple_switch_default_label.
+	(collect_switch_conv_info): Likewise.
+	(process_switch): Likewise.
+	* doc/gimple.texi: Update documentation of gimple_build_switch.
+
 2012-09-04  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/54476

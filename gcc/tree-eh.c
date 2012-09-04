@@ -1487,8 +1487,8 @@ lower_try_finally_switch (struct leh_state *state, struct leh_tf_state *tf)
 
   /* Build the switch statement, setting last_case to be the default
      label.  */
-  switch_stmt = gimple_build_switch_vec (finally_tmp, last_case,
-                                         case_label_vec);
+  switch_stmt = gimple_build_switch (finally_tmp, last_case,
+				     case_label_vec);
   gimple_set_location (switch_stmt, finally_loc);
 
   /* Need to link SWITCH_STMT after running replace_goto_queue
@@ -3376,7 +3376,7 @@ lower_eh_dispatch (basic_block src, gimple stmt)
 	    default_label = build_case_label (NULL, NULL, default_label);
 	    sort_case_labels (labels);
 
-	    x = gimple_build_switch_vec (filter, default_label, labels);
+	    x = gimple_build_switch (filter, default_label, labels);
 	    gsi_insert_before (&gsi, x, GSI_SAME_STMT);
 
 	    VEC_free (tree, heap, labels);

@@ -1334,26 +1334,11 @@ group_case_labels_stmt (gimple stmt)
   int old_size = gimple_switch_num_labels (stmt);
   int i, j, new_size = old_size;
   basic_block default_bb = NULL;
-  bool has_default;
 
-  /* The default label is always the first case in a switch
-     statement after gimplification if it was not optimized
-     away */
-  if (!CASE_LOW (gimple_switch_default_label (stmt))
-      && !CASE_HIGH (gimple_switch_default_label (stmt)))
-    {
-      tree default_case = gimple_switch_default_label (stmt);
-      default_bb = label_to_block (CASE_LABEL (default_case));
-      has_default = true;
-    }
-  else
-    has_default = false;
+  default_bb = label_to_block (CASE_LABEL (gimple_switch_default_label (stmt)));
 
   /* Look for possible opportunities to merge cases.  */
-  if (has_default)
-    i = 1;
-  else
-    i = 0;
+  i = 1;
   while (i < old_size)
     {
       tree base_case, base_high;
@@ -4148,7 +4133,7 @@ verify_gimple_switch (gimple stmt)
       return true;
     }
 
-  elt = gimple_switch_default_label (stmt);
+  elt = gimple_switch_label (stmt, 0);
   if (CASE_LOW (elt) != NULL_TREE || CASE_HIGH (elt) != NULL_TREE)
     {
       error ("invalid default case label in switch statement");

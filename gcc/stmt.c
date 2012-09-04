@@ -1951,7 +1951,7 @@ expand_case (gimple stmt)
   tree minval = NULL_TREE, maxval = NULL_TREE, range = NULL_TREE;
   rtx default_label = NULL_RTX;
   unsigned int count, uniq;
-  int i, stopi = 0;
+  int i;
   rtx before_case, end;
   int ncases = gimple_switch_num_labels (stmt);
   tree index_expr = gimple_switch_index (stmt);
@@ -1986,16 +1986,11 @@ expand_case (gimple stmt)
 
   do_pending_stack_adjust ();
 
-  /* The default case, if ever taken, is the first element.  */
-  elt = gimple_switch_label (stmt, 0);
-  if (!CASE_LOW (elt) && !CASE_HIGH (elt))
-    {
-      default_label = label_rtx (CASE_LABEL (elt));
-      stopi = 1;
-    }
+  /* Find the default case target label.  */
+  default_label = label_rtx (CASE_LABEL (gimple_switch_default_label (stmt)));
 
   /* Get upper and lower bounds of case values.  */
-  elt = gimple_switch_label (stmt, stopi);
+  elt = gimple_switch_label (stmt, 1);
   minval = fold_convert (index_type, CASE_LOW (elt));
   elt = gimple_switch_label (stmt, ncases - 1);
   if (CASE_HIGH (elt))
@@ -2011,7 +2006,7 @@ expand_case (gimple stmt)
   uniq = 0;
   count = 0;
   label_bitmap = BITMAP_ALLOC (NULL);
-  for (i = gimple_switch_num_labels (stmt) - 1; i >= stopi; --i)
+  for (i = gimple_switch_num_labels (stmt) - 1; i >= 1; --i)
     {
       tree low, high;
       rtx lab;

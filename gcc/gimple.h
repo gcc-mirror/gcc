@@ -781,8 +781,7 @@ gimple gimple_build_wce (gimple_seq);
 gimple gimple_build_resx (int);
 gimple gimple_build_eh_dispatch (int);
 gimple gimple_build_switch_nlabels (unsigned, tree, tree);
-gimple gimple_build_switch (unsigned, tree, tree, ...);
-gimple gimple_build_switch_vec (tree, tree, VEC(tree,heap) *);
+gimple gimple_build_switch (tree, tree, VEC(tree,heap) *);
 gimple gimple_build_omp_parallel (gimple_seq, tree, tree, tree);
 gimple gimple_build_omp_task (gimple_seq, tree, tree, tree, tree, tree, tree);
 gimple gimple_build_omp_for (gimple_seq, tree, size_t, gimple_seq);
@@ -3639,7 +3638,9 @@ gimple_switch_set_label (gimple gs, unsigned index, tree label)
 static inline tree
 gimple_switch_default_label (const_gimple gs)
 {
-  return gimple_switch_label (gs, 0);
+  tree label = gimple_switch_label (gs, 0);
+  gcc_checking_assert (!CASE_LOW (label) && !CASE_HIGH (label));
+  return label;
 }
 
 /* Set the default label for a switch statement.  */
@@ -3647,6 +3648,7 @@ gimple_switch_default_label (const_gimple gs)
 static inline void
 gimple_switch_set_default_label (gimple gs, tree label)
 {
+  gcc_checking_assert (!CASE_LOW (label) && !CASE_HIGH (label));
   gimple_switch_set_label (gs, 0, label);
 }
 

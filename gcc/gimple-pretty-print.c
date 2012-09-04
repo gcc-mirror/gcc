@@ -770,9 +770,7 @@ dump_gimple_switch (pretty_printer *buffer, gimple gs, int spc, int flags)
   for (i = 0; i < gimple_switch_num_labels (gs); i++)
     {
       tree case_label = gimple_switch_label (gs, i);
-      if (case_label == NULL_TREE)
-	continue;
-
+      gcc_checking_assert (case_label != NULL_TREE);
       dump_generic_node (buffer, case_label, spc, flags, false);
       pp_character (buffer, ' ');
       dump_generic_node (buffer, CASE_LABEL (case_label), spc, flags, false);

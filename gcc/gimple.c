@@ -803,38 +803,13 @@ gimple
 gimple_build_switch_nlabels (unsigned nlabels, tree index, tree default_label)
 {
   /* nlabels + 1 default label + 1 index.  */
+  gcc_checking_assert (default_label);
   gimple p = gimple_build_with_ops (GIMPLE_SWITCH, ERROR_MARK,
-				    1 + (default_label != NULL) + nlabels);
+				    1 + 1 + nlabels);
   gimple_switch_set_index (p, index);
-  if (default_label)
-    gimple_switch_set_default_label (p, default_label);
+  gimple_switch_set_default_label (p, default_label);
   return p;
 }
-
-
-/* Build a GIMPLE_SWITCH statement.
-
-   INDEX is the switch's index.
-   NLABELS is the number of labels in the switch excluding the DEFAULT_LABEL.
-   ... are the labels excluding the default.  */
-
-gimple
-gimple_build_switch (unsigned nlabels, tree index, tree default_label, ...)
-{
-  va_list al;
-  unsigned i, offset;
-  gimple p = gimple_build_switch_nlabels (nlabels, index, default_label);
-
-  /* Store the rest of the labels.  */
-  va_start (al, default_label);
-  offset = (default_label != NULL);
-  for (i = 0; i < nlabels; i++)
-    gimple_switch_set_label (p, i + offset, va_arg (al, tree));
-  va_end (al);
-
-  return p;
-}
-
 
 /* Build a GIMPLE_SWITCH statement.
 
@@ -843,15 +818,15 @@ gimple_build_switch (unsigned nlabels, tree index, tree default_label, ...)
    ARGS is a vector of labels excluding the default.  */
 
 gimple
-gimple_build_switch_vec (tree index, tree default_label, VEC(tree, heap) *args)
+gimple_build_switch (tree index, tree default_label, VEC(tree, heap) *args)
 {
-  unsigned i, offset, nlabels = VEC_length (tree, args);
+  unsigned i, nlabels = VEC_length (tree, args);
+
   gimple p = gimple_build_switch_nlabels (nlabels, index, default_label);
 
   /* Copy the labels from the vector to the switch statement.  */
-  offset = (default_label != NULL);
   for (i = 0; i < nlabels; i++)
-    gimple_switch_set_label (p, i + offset, VEC_index (tree, args, i));
+    gimple_switch_set_label (p, i + 1, VEC_index (tree, args, i));
 
   return p;
 }
