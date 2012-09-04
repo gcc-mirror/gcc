@@ -1,3 +1,11 @@
+2012-09-04  Teresa Johnson  <tejohnson@google.com>
+
+	* libgcov.c (struct gcov_summary_buffer): New structure.
+	(gcov_histogram_insert): New function.
+	(gcov_compute_histogram): Ditto.
+	(gcov_exit): Invoke gcov_compute_histogram, and perform merging of
+	histograms during summary merging.
+
 2012-09-01  Mark Kettenis  <kettenis@openbsd.org>
 
 	* config.host (x86_64-*-openbsd*): New target.

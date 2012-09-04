@@ -1,3 +1,28 @@
+2012-09-04  Teresa Johnson  <tejohnson@google.com>
+
+	* gcov-io.c (gcov_write_summary): Write out non-zero histogram
+	entries to function summary along with an occupancy bit vector.
+	(gcov_read_summary): Read in the histogram entries.
+	(gcov_histo_index): New function.
+	(void gcov_histogram_merge): Ditto.
+	* gcov-io.h (gcov_type_unsigned): New type.
+	(struct gcov_bucket_type): Ditto.
+	(struct gcov_ctr_summary): Include histogram.
+	(GCOV_TAG_SUMMARY_LENGTH): Update to include histogram entries.
+	(GCOV_HISTOGRAM_SIZE): New macro.
+	(GCOV_HISTOGRAM_BITVECTOR_SIZE): Ditto.
+	* profile.c (NUM_GCOV_WORKING_SETS): Ditto.
+	(gcov_working_sets): New global variable.
+	(compute_working_sets): New function.
+	(find_working_set): Ditto.
+	(get_exec_counts): Invoke compute_working_sets.
+	* coverage.c (read_counts_file): Merge histograms, and
+	fix bug with accessing summary info for non-summable counters.
+	* basic-block.h (gcov_type_unsigned): New type.
+	(struct gcov_working_set_info): Ditto.
+	(find_working_set): Declare.
+	* gcov-dump.c (tag_summary): Dump out histogram.
+
 2012-09-04  Diego Novillo  <dnovillo@google.com>
 
 	PR bootstrap/54484
