@@ -179,6 +179,13 @@
 	* config/avr/avr.c (avr_expand_delay_cycles): Mask operand with
 	SImode.
 
+2012-09-04  Bin Cheng  <bin.cheng@arm.com>
+
+	PR target/45070
+	* config/arm/arm.c (thumb1_extra_regs_pushed): Handle return value of size
+	less than 4 bytes by using macro ARM_NUM_INTS.
+	(thumb1_unexpanded_epilogue): Use macro ARM_NUM_INTS.
+
 2012-09-04  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/54458
