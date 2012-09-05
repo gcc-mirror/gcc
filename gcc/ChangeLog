@@ -1,3 +1,17 @@
+2012-09-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backport from 2012-09-05 mainline r190697.
+	
+	PR target/54461
+	* config.gcc (tm_file,target=avr-*-*): Add avr/avrlibc.h if
+	configured --with-avrlibc.
+	(tm_defines,target=avr-*-*): Add WITH_AVRLIBC if configured
+	--with-avrlibc.
+	* config/avr/avrlibc.h: New file.
+	* config/avr/avr-c.c: Build-in define __WITH_AVRLIBC__ if
+	configured --with-avrlibc.
+	* doc/invoke.texi (AVR Built-in Macros): Document __WITH_AVRLIBC__
+
 2012-09-05  Bin Cheng  <bin.cheng@arm.com>
 
 	Backport from 2012-09-04 mainline r190919

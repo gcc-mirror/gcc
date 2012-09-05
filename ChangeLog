@@ -1,3 +1,12 @@
+2012-09-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backport from 2012-09-05 mainline r190697.
+	
+	PR target/54461
+	* configure.ac (noconfigdirs,target=avr-*-*): Add target-newlib,
+	target-libgloss if configured --with-avrlibc.
+	* configure: Regenerate.
+
 2012-06-14  Release Manager
 
 	* GCC 4.7.1 released.

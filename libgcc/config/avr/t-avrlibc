@@ -1,0 +1,66 @@
+# This file is used with --with-avrlibc=yes
+#
+# AVR-Libc comes with hand-optimized float routines.
+# For historical reasons, these routines live in AVR-Libc
+# and not in libgcc and use the same function names like libgcc.
+# To get the best support, i.e. always use the routines from
+# AVR-Libc, we remove these routines from libgcc.
+#
+# See also PR54461.
+#
+#
+# Arithmetic:
+#     __addsf3 __subsf3 __divsf3 __mulsf3 __negsf2
+#
+# Comparison:
+#     __cmpsf2 __unordsf2
+#     __eqsf2 __lesf2 __ltsf2 __nesf2 __gesf2 __gtsf2
+#
+# Conversion:
+#     __fixsfdi __fixunssfdi __floatdisf __floatundisf
+#     __fixsfsi __fixunssfsi __floatsisf __floatunsisf
+#
+#
+# These functions are contained in modules:
+#
+# _addsub_sf.o:   __addsf3  __subsf3
+# _mul_sf.o:      __mulsf3
+# _div_sf.o:      __divsf3
+# _negate_sf.o:   __negsf2
+#
+# _compare_sf.o:  __cmpsf2
+# _unord_sf.o:    __unordsf2
+# _eq_sf.o:       __eqsf2
+# _ne_sf.o:       __nesf2
+# _ge_sf.o:       __gesf2
+# _gt_sf.o:       __gtsf2
+# _le_sf.o:       __lesf2
+# _lt_sf.o:       __ltsf2
+#
+# _fixsfdi.o:     __fixsfdi
+# _fixunssfdi.o:  __fixunssfdi
+# _fixunssfsi.o:  __fixunssfsi
+# _floatdisf.o:   __floatdisf
+# _floatundisf.o: __floatundisf
+# _sf_to_si.o:    __fixsfsi
+# _si_to_sf.o:    __floatsisf
+# _usi_to_sf.o:   __floatunsisf
+
+
+# SFmode
+LIB2FUNCS_EXCLUDE += \
+	_addsub_sf \
+	_negate_sf \
+	_mul_sf _div_sf \
+	\
+	_compare_sf \
+	_unord_sf \
+	_eq_sf _ne_sf \
+	_gt_sf _ge_sf \
+	_lt_sf _le_sf \
+	\
+	_si_to_sf  _sf_to_si \
+	_usi_to_sf _sf_to_usi \
+	_fixunssfsi _fixsfdi \
+	_fixunssfdi \
+	_floatdisf _floatundisf
