@@ -1,3 +1,9 @@
+2012-09-05   Diego Novillo  <dnovillo@google.com>
+
+	PR bootstrap/54484
+	* vec.h (vec_t::lower_bound): Fix spelling of LESSTHAN
+	argument.
+
 2012-09-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/54486

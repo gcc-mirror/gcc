@@ -1075,7 +1075,7 @@ vec_t<T>::lower_bound (T obj, bool (*lessthan)(T, T)) const
 template<typename T>
 unsigned
 vec_t<T>::lower_bound (const T *ptr,
-		       bool (*lessthan_)(const T *, const T *)) const
+		       bool (*lessthan)(const T *, const T *)) const
 {
   unsigned int len = VEC_length (T, this);
   unsigned int half, middle;
