@@ -8524,7 +8524,7 @@ grokdeclarator (const cp_declarator *declarator,
 		      }
 		    else if (innermost_code != cdk_function
 			     && current_class_type
-			     && !UNIQUELY_DERIVED_FROM_P (ctype,
+			     && !uniquely_derived_from_p (ctype,
 							  current_class_type))
 		      {
 			error ("type %qT is not derived from type %qT",

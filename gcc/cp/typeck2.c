@@ -57,7 +57,8 @@ error_not_base_type (tree basetype, tree type)
 tree
 binfo_or_else (tree base, tree type)
 {
-  tree binfo = lookup_base (type, base, ba_unique, NULL);
+  tree binfo = lookup_base (type, base, ba_unique,
+			    NULL, tf_warning_or_error);
 
   if (binfo == error_mark_node)
     return NULL_TREE;
@@ -1447,7 +1448,8 @@ build_scoped_ref (tree datum, tree basetype, tree* binfo_p)
   if (*binfo_p)
     binfo = *binfo_p;
   else
-    binfo = lookup_base (TREE_TYPE (datum), basetype, ba_check, NULL);
+    binfo = lookup_base (TREE_TYPE (datum), basetype, ba_check,
+			 NULL, tf_warning_or_error);
 
   if (!binfo || binfo == error_mark_node)
     {
@@ -1600,7 +1602,7 @@ build_m_component_ref (tree datum, tree component, tsubst_flags_t complain)
     }
   else
     {
-      binfo = lookup_base (objtype, ctype, ba_check, NULL);
+      binfo = lookup_base (objtype, ctype, ba_check, NULL, complain);
 
       if (!binfo)
 	{

@@ -1278,15 +1278,8 @@ enum languages { lang_c, lang_cplusplus, lang_java };
 /* Nonzero iff TYPE is derived from PARENT. Ignores accessibility and
    ambiguity issues.  */
 #define DERIVED_FROM_P(PARENT, TYPE) \
-  (lookup_base ((TYPE), (PARENT), ba_any, NULL) != NULL_TREE)
-/* Nonzero iff TYPE is uniquely derived from PARENT. Ignores
-   accessibility.  */
-#define UNIQUELY_DERIVED_FROM_P(PARENT, TYPE) \
-  (lookup_base ((TYPE), (PARENT), ba_unique | ba_quiet, NULL) != NULL_TREE)
-/* Nonzero iff TYPE is publicly & uniquely derived from PARENT.  */
-#define PUBLICLY_UNIQUELY_DERIVED_P(PARENT, TYPE) \
-  (lookup_base ((TYPE), (PARENT), ba_ignore_scope | ba_check | ba_quiet, \
-		NULL) != NULL_TREE)
+  (lookup_base ((TYPE), (PARENT), ba_any, NULL, tf_warning_or_error)\
+   != NULL_TREE)
 
 /* Gives the visibility specification for a class type.  */
 #define CLASSTYPE_VISIBILITY(TYPE)		\
@@ -4187,8 +4180,7 @@ enum base_access_flags {
   ba_unique = 1 << 0,  /* Must be a unique base.  */
   ba_check_bit = 1 << 1,   /* Check access.  */
   ba_check = ba_unique | ba_check_bit,
-  ba_ignore_scope = 1 << 2, /* Ignore access allowed by local scope.  */
-  ba_quiet = 1 << 3     /* Do not issue error messages.  */
+  ba_ignore_scope = 1 << 2 /* Ignore access allowed by local scope.  */
 };
 
 /* This type is used for parameters and variables which hold
@@ -5003,6 +4995,8 @@ extern void clone_function_decl			(tree, int);
 extern void adjust_clone_args			(tree);
 extern void deduce_noexcept_on_destructor       (tree);
 extern void insert_late_enum_def_into_classtype_sorted_fields (tree, tree);
+extern bool uniquely_derived_from_p             (tree, tree);
+extern bool publicly_uniquely_derived_p         (tree, tree);
 
 /* in cvt.c */
 extern tree convert_to_reference		(tree, tree, int, int, tree,
@@ -5438,8 +5432,8 @@ extern bool emit_tinfo_decl			(tree);
 
 /* in search.c */
 extern bool accessible_base_p			(tree, tree, bool);
-extern tree lookup_base				(tree, tree, base_access,
-						 base_kind *);
+extern tree lookup_base                         (tree, tree, base_access,
+						 base_kind *, tsubst_flags_t);
 extern tree dcast_base_hint			(tree, tree);
 extern int accessible_p				(tree, tree, bool);
 extern tree lookup_field_1			(tree, tree, bool);

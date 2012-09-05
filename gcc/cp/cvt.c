@@ -149,11 +149,13 @@ cp_convert_to_pointer (tree type, tree expr, tsubst_flags_t complain)
 	  binfo = NULL_TREE;
 	  /* Try derived to base conversion.  */
 	  if (!same_p)
-	    binfo = lookup_base (intype_class, type_class, ba_check, NULL);
+	    binfo = lookup_base (intype_class, type_class, ba_check,
+				 NULL, complain);
 	  if (!same_p && !binfo)
 	    {
 	      /* Try base to derived conversion.  */
-	      binfo = lookup_base (type_class, intype_class, ba_check, NULL);
+	      binfo = lookup_base (type_class, intype_class, ba_check,
+				   NULL, complain);
 	      code = MINUS_EXPR;
 	    }
 	  if (binfo == error_mark_node)
@@ -279,11 +281,11 @@ convert_to_pointer_force (tree type, tree expr, tsubst_flags_t complain)
 	  tree binfo;
 
 	  binfo = lookup_base (TREE_TYPE (intype), TREE_TYPE (type),
-			       ba_unique, NULL);
+			       ba_unique, NULL, complain);
 	  if (!binfo)
 	    {
 	      binfo = lookup_base (TREE_TYPE (type), TREE_TYPE (intype),
-				   ba_unique, NULL);
+				   ba_unique, NULL, complain);
 	      code = MINUS_EXPR;
 	    }
 	  if (binfo == error_mark_node)
@@ -352,7 +354,8 @@ build_up_reference (tree type, tree arg, int flags, tree decl,
       && MAYBE_CLASS_TYPE_P (target_type))
     {
       /* We go through lookup_base for the access control.  */
-      tree binfo = lookup_base (argtype, target_type, ba_check, NULL);
+      tree binfo = lookup_base (argtype, target_type, ba_check,
+				NULL, complain);
       if (binfo == error_mark_node)
 	return error_mark_node;
       if (binfo == NULL_TREE)
