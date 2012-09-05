@@ -53,7 +53,7 @@ static void vax_init_libfuncs (void);
 static void vax_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
 				 HOST_WIDE_INT, tree);
 static int vax_address_cost_1 (rtx);
-static int vax_address_cost (rtx, bool);
+static int vax_address_cost (rtx, enum machine_mode, addr_space_t, bool);
 static bool vax_rtx_costs (rtx, int, int, int, int *, bool);
 static rtx vax_function_arg (cumulative_args_t, enum machine_mode,
 			     const_tree, bool);
@@ -738,7 +738,9 @@ vax_address_cost_1 (rtx addr)
 }
 
 static int
-vax_address_cost (rtx x, bool speed ATTRIBUTE_UNUSED)
+vax_address_cost (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED,
+		  addr_space_t as ATTRIBUTE_UNUSED,
+		  bool speed ATTRIBUTE_UNUSED)
 {
   return (1 + (REG_P (x) ? 0 : vax_address_cost_1 (x)));
 }

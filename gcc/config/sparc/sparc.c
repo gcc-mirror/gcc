@@ -689,7 +689,7 @@ char sparc_hard_reg_printed[8];
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS sparc_rtx_costs
 #undef TARGET_ADDRESS_COST
-#define TARGET_ADDRESS_COST hook_int_rtx_bool_0
+#define TARGET_ADDRESS_COST hook_int_rtx_mode_as_bool_0
 #undef TARGET_REGISTER_MOVE_COST
 #define TARGET_REGISTER_MOVE_COST sparc_register_move_cost
 

@@ -2142,7 +2142,8 @@ mn10300_delegitimize_address (rtx orig_x)
    with an address register.  */
 
 static int
-mn10300_address_cost (rtx x, bool speed)
+mn10300_address_cost (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED,
+		      addr_space_t as ATTRIBUTE_UNUSED, bool speed)
 {
   HOST_WIDE_INT i;
   rtx base, index;
@@ -2457,7 +2458,8 @@ mn10300_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
       break;
 
     case MEM:
-      total = mn10300_address_cost (XEXP (x, 0), speed);
+      total = mn10300_address_cost (XEXP (x, 0), GET_MODE (x),
+				    MEM_ADDR_SPACE (x), speed);
       if (speed)
 	total = COSTS_N_INSNS (2 + total);
       goto alldone;

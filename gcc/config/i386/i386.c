@@ -12027,7 +12027,9 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
    requires to two regs - that would mean more pseudos with longer
    lifetimes.  */
 static int
-ix86_address_cost (rtx x, bool speed ATTRIBUTE_UNUSED)
+ix86_address_cost (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED,
+		   addr_space_t as ATTRIBUTE_UNUSED,
+		   bool speed ATTRIBUTE_UNUSED)
 {
   struct ix86_address parts;
   int cost = 1;

@@ -8896,7 +8896,9 @@ avr_rtx_costs (rtx x, int codearg, int outer_code,
 /* Implement `TARGET_ADDRESS_COST'.  */
 
 static int
-avr_address_cost (rtx x, bool speed ATTRIBUTE_UNUSED)
+avr_address_cost (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED,
+		  addr_space_t as ATTRIBUTE_UNUSED,
+		  bool speed ATTRIBUTE_UNUSED)
 {
   int cost = 4;
   

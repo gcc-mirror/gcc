@@ -2724,7 +2724,8 @@ rx_is_legitimate_constant (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 }
 
 static int
-rx_address_cost (rtx addr, bool speed)
+rx_address_cost (rtx addr, enum machine_mode mode ATTRIBUTE_UNUSED,
+		 addr_space_t as ATTRIBUTE_UNUSED, bool speed)
 {
   rtx a, b;
 

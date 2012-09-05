@@ -7161,7 +7161,7 @@ static const struct attribute_spec spu_attribute_table[] =
 #define TARGET_RTX_COSTS spu_rtx_costs
 
 #undef TARGET_ADDRESS_COST
-#define TARGET_ADDRESS_COST hook_int_rtx_bool_0
+#define TARGET_ADDRESS_COST hook_int_rtx_mode_as_bool_0
 
 #undef TARGET_SCHED_ISSUE_RATE
 #define TARGET_SCHED_ISSUE_RATE spu_sched_issue_rate

@@ -211,7 +211,7 @@ static const int reg_nonleaf_alloc_order[FIRST_PSEUDO_REGISTER] =
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS xtensa_rtx_costs
 #undef TARGET_ADDRESS_COST
-#define TARGET_ADDRESS_COST hook_int_rtx_bool_0
+#define TARGET_ADDRESS_COST hook_int_rtx_mode_as_bool_0
 
 #undef TARGET_MEMBER_TYPE_FORCES_BLK
 #define TARGET_MEMBER_TYPE_FORCES_BLK xtensa_member_type_forces_blk

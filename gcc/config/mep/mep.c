@@ -212,7 +212,7 @@ static int mep_sched_reorder (FILE *, int, rtx *, int *, int);
 static rtx mep_make_bundle (rtx, rtx);
 static void mep_bundle_insns (rtx);
 static bool mep_rtx_cost (rtx, int, int, int, int *, bool);
-static int mep_address_cost (rtx, bool);
+static int mep_address_cost (rtx, enum machine_mode, addr_space_t, bool);
 static void mep_setup_incoming_varargs (cumulative_args_t, enum machine_mode,
 					tree, int *, int);
 static bool mep_pass_by_reference (cumulative_args_t cum, enum machine_mode,
@@ -7152,7 +7152,10 @@ mep_rtx_cost (rtx x, int code, int outer_code ATTRIBUTE_UNUSED,
 }
 
 static int
-mep_address_cost (rtx addr ATTRIBUTE_UNUSED, bool ATTRIBUTE_UNUSED speed_p)
+mep_address_cost (rtx addr ATTRIBUTE_UNUSED,
+		  enum machine_mode mode ATTRIBUTE_UNUSED,
+		  addr_space_t as ATTRIBUTE_UNUSED,
+		  bool ATTRIBUTE_UNUSED speed_p)
 {
   return 1;
 }

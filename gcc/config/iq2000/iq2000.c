@@ -152,7 +152,8 @@ static void iq2000_setup_incoming_varargs (cumulative_args_t,
 					   enum machine_mode, tree, int *,
 					   int);
 static bool iq2000_rtx_costs          (rtx, int, int, int, int *, bool);
-static int  iq2000_address_cost       (rtx, bool);
+static int  iq2000_address_cost       (rtx, enum machine_mode, addr_space_t,
+				       bool);
 static section *iq2000_select_section (tree, int, unsigned HOST_WIDE_INT);
 static rtx  iq2000_legitimize_address (rtx, rtx, enum machine_mode);
 static bool iq2000_pass_by_reference  (cumulative_args_t, enum machine_mode,
@@ -779,7 +780,8 @@ iq2000_move_1word (rtx operands[], rtx insn, int unsignedp)
 /* Provide the costs of an addressing mode that contains ADDR.  */
 
 static int
-iq2000_address_cost (rtx addr, bool speed)
+iq2000_address_cost (rtx addr, enum machine_mode mode, addr_space_t as,
+		     bool speed)
 {
   switch (GET_CODE (addr))
     {
@@ -830,7 +832,7 @@ iq2000_address_cost (rtx addr, bool speed)
 	  case LABEL_REF:
 	  case HIGH:
 	  case LO_SUM:
-	    return iq2000_address_cost (plus1, speed) + 1;
+	    return iq2000_address_cost (plus1, mode, as, speed) + 1;
 
 	  default:
 	    break;

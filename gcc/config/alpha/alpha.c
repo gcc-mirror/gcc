@@ -9795,7 +9795,7 @@ alpha_conditional_register_usage (void)
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS alpha_rtx_costs
 #undef TARGET_ADDRESS_COST
-#define TARGET_ADDRESS_COST hook_int_rtx_bool_0
+#define TARGET_ADDRESS_COST hook_int_rtx_mode_as_bool_0
 
 #undef TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG alpha_reorg

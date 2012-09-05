@@ -91,7 +91,7 @@ static void copy_reg_pointer (rtx, rtx);
 static void fix_range (const char *);
 static int hppa_register_move_cost (enum machine_mode mode, reg_class_t,
 				    reg_class_t);
-static int hppa_address_cost (rtx, bool);
+static int hppa_address_cost (rtx, enum machine_mode mode, addr_space_t, bool);
 static bool hppa_rtx_costs (rtx, int, int, int, int *, bool);
 static inline rtx force_mode (enum machine_mode, rtx);
 static void pa_reorg (void);
@@ -1397,7 +1397,8 @@ hppa_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
    as GO_IF_LEGITIMATE_ADDRESS.  */
 
 static int
-hppa_address_cost (rtx X,
+hppa_address_cost (rtx X, enum machine_mode mode ATTRIBUTE_UNUSED,
+		   addr_space_t as ATTRIBUTE_UNUSED,
 		   bool speed ATTRIBUTE_UNUSED)
 {
   switch (GET_CODE (X))

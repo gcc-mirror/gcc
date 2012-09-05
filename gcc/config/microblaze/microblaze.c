@@ -1043,7 +1043,9 @@ microblaze_address_insns (rtx x, enum machine_mode mode)
 /* Provide the costs of an addressing mode that contains ADDR.
    If ADDR is not a valid address, its cost is irrelevant.  */
 static int
-microblaze_address_cost (rtx addr, bool speed ATTRIBUTE_UNUSED)
+microblaze_address_cost (rtx addr, enum machine_mode mode ATTRIBUTE_UNUSED,
+			 addr_space_t as ATTRIBUTE_UNUSED,
+			 bool speed ATTRIBUTE_UNUSED)
 {
   return COSTS_N_INSNS (microblaze_address_insns (addr, GET_MODE (addr)));
 }

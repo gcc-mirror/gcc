@@ -6440,7 +6440,7 @@ The hook returns true when all subexpressions of @var{x} have been
 processed, and false when @code{rtx_cost} should recurse.
 @end deftypefn
 
-@deftypefn {Target Hook} int TARGET_ADDRESS_COST (rtx @var{address}, bool @var{speed})
+@deftypefn {Target Hook} int TARGET_ADDRESS_COST (rtx @var{address}, enum machine_mode @var{mode}, addr_space_t @var{as}, bool @var{speed})
 This hook computes the cost of an addressing mode that contains
 @var{address}.  If not defined, the cost is computed from
 the @var{address} expression and the @code{TARGET_RTX_COST} hook.
