@@ -538,6 +538,220 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __is;
     }
 
+
+  template<std::size_t _Dimen, typename _RealType>
+    template<typename _InputIterator1, typename _InputIterator2>
+      void
+      normal_mv_distribution<_Dimen, _RealType>::param_type::
+      _M_init_full(_InputIterator1 __meanbegin, _InputIterator1 __meanend,
+		   _InputIterator2 __varcovbegin, _InputIterator2 __varcovend)
+      {
+	__glibcxx_function_requires(_InputIteratorConcept<_InputIterator1>)
+	__glibcxx_function_requires(_InputIteratorConcept<_InputIterator2>)
+	std::fill(std::copy(__meanbegin, __meanend, _M_mean.begin()),
+		  _M_mean.end(), _RealType(0));
+
+	// Perform the Cholesky decomposition
+	auto __w = _M_t.begin();
+	for (size_t __j = 0; __j < _Dimen; ++__j)
+	  {
+	    _RealType __sum = _RealType(0);
+
+	    auto __slitbegin = __w;
+	    auto __cit = _M_t.begin();
+	    for (size_t __i = 0; __i < __j; ++__i)
+	      {
+		auto __slit = __slitbegin;
+		_RealType __s = *__varcovbegin++;
+		for (size_t __k = 0; __k < __i; ++__k)
+		  __s -= *__slit++ * *__cit++;
+
+		*__w++ = __s /= *__cit++;
+		__sum += __s * __s;
+	      }
+
+	    __sum = *__varcovbegin - __sum;
+	    if (__builtin_expect(__sum <= _RealType(0), 0))
+	      std::__throw_runtime_error(__N("normal_mv_distribution::"
+					     "param_type::_M_init_full"));
+	    *__w++ = std::sqrt(__sum);
+
+	    std::advance(__varcovbegin, _Dimen - __j);
+	  }
+      }
+
+  template<std::size_t _Dimen, typename _RealType>
+    template<typename _InputIterator1, typename _InputIterator2>
+      void
+      normal_mv_distribution<_Dimen, _RealType>::param_type::
+      _M_init_lower(_InputIterator1 __meanbegin, _InputIterator1 __meanend,
+		    _InputIterator2 __varcovbegin, _InputIterator2 __varcovend)
+      {
+	__glibcxx_function_requires(_InputIteratorConcept<_InputIterator1>)
+	__glibcxx_function_requires(_InputIteratorConcept<_InputIterator2>)
+	std::fill(std::copy(__meanbegin, __meanend, _M_mean.begin()),
+		  _M_mean.end(), _RealType(0));
+
+	// Perform the Cholesky decomposition
+	auto __w = _M_t.begin();
+	for (size_t __j = 0; __j < _Dimen; ++__j)
+	  {
+	    _RealType __sum = _RealType(0);
+
+	    auto __slitbegin = __w;
+	    auto __cit = _M_t.begin();
+	    for (size_t __i = 0; __i < __j; ++__i)
+	      {
+		auto __slit = __slitbegin;
+		_RealType __s = *__varcovbegin++;
+		for (size_t __k = 0; __k < __i; ++__k)
+		  __s -= *__slit++ * *__cit++;
+
+		*__w++ = __s /= *__cit++;
+		__sum += __s * __s;
+	      }
+
+	    __sum = *__varcovbegin++ - __sum;
+	    if (__builtin_expect(__sum <= _RealType(0), 0))
+	      std::__throw_runtime_error(__N("normal_mv_distribution::"
+					     "param_type::_M_init_full"));
+	    *__w++ = std::sqrt(__sum);
+	  }
+      }
+
+  template<std::size_t _Dimen, typename _RealType>
+    template<typename _InputIterator1, typename _InputIterator2>
+      void
+      normal_mv_distribution<_Dimen, _RealType>::param_type::
+      _M_init_diagonal(_InputIterator1 __meanbegin, _InputIterator1 __meanend,
+		       _InputIterator2 __varbegin, _InputIterator2 __varend)
+      {
+	__glibcxx_function_requires(_InputIteratorConcept<_InputIterator1>)
+	__glibcxx_function_requires(_InputIteratorConcept<_InputIterator2>)
+	std::fill(std::copy(__meanbegin, __meanend, _M_mean.begin()),
+		  _M_mean.end(), _RealType(0));
+
+	auto __w = _M_t.begin();
+	size_t __step = 0;
+	while (__varbegin != __varend)
+	  {
+	    std::fill_n(__w, __step, _RealType(0));
+	    __w += __step++;
+	    if (__builtin_expect(*__varbegin < _RealType(0), 0))
+	      std::__throw_runtime_error(__N("normal_mv_distribution::"
+					     "param_type::_M_init_diagonal"));
+	    *__w++ = std::sqrt(*__varbegin++);
+	  }
+      }
+
+  template<std::size_t _Dimen, typename _RealType>
+    template<typename _UniformRandomNumberGenerator>
+      typename normal_mv_distribution<_Dimen, _RealType>::result_type
+      normal_mv_distribution<_Dimen, _RealType>::
+      operator()(_UniformRandomNumberGenerator& __urng,
+		 const param_type& __param)
+      {
+	result_type __ret;
+
+	for (size_t __i = 0; __i < _Dimen; ++__i)
+	  __ret[__i] = _M_nd(__urng);
+
+	auto __t_it = __param._M_t.crbegin();
+	for (size_t __i = _Dimen; __i > 0; --__i)
+	  {
+	    _RealType __sum = _RealType(0);
+	    for (size_t __j = __i; __j > 0; --__j)
+	      __sum += __ret[__j - 1] * *__t_it++;
+	    __ret[__i - 1] = __sum;
+	  }
+
+	return __ret;
+      }
+
+  template<std::size_t _Dimen, typename _RealType>
+    template<typename _ForwardIterator, typename _UniformRandomNumberGenerator>
+      void
+      normal_mv_distribution<_Dimen, _RealType>::
+      __generate_impl(_ForwardIterator __f, _ForwardIterator __t,
+		      _UniformRandomNumberGenerator& __urng,
+		      const param_type& __param)
+      {
+	__glibcxx_function_requires(_Mutable_ForwardIteratorConcept<
+				    _ForwardIterator>)
+	while (__f != __t)
+	  *__f++ = this->operator()(__urng, __param);
+      }
+
+  template<size_t _Dimen, typename _RealType>
+    bool
+    operator==(const __gnu_cxx::normal_mv_distribution<_Dimen, _RealType>&
+	       __d1,
+	       const __gnu_cxx::normal_mv_distribution<_Dimen, _RealType>&
+	       __d2)
+    {
+      return __d1._M_param == __d2._M_param && __d1._M_nd == __d2._M_nd;
+    }
+
+  template<size_t _Dimen, typename _RealType, typename _CharT, typename _Traits>
+    std::basic_ostream<_CharT, _Traits>&
+    operator<<(std::basic_ostream<_CharT, _Traits>& __os,
+	       const __gnu_cxx::normal_mv_distribution<_Dimen, _RealType>& __x)
+    {
+      typedef std::basic_ostream<_CharT, _Traits>  __ostream_type;
+      typedef typename __ostream_type::ios_base    __ios_base;
+
+      const typename __ios_base::fmtflags __flags = __os.flags();
+      const _CharT __fill = __os.fill();
+      const std::streamsize __precision = __os.precision();
+      const _CharT __space = __os.widen(' ');
+      __os.flags(__ios_base::scientific | __ios_base::left);
+      __os.fill(__space);
+      __os.precision(std::numeric_limits<_RealType>::max_digits10);
+
+      auto __mean = __x._M_param.mean();
+      for (auto __it : __mean)
+	__os << __it << __space;
+      auto __t = __x._M_param.varcov();
+      for (auto __it : __t)
+	__os << __it << __space;
+
+      __os << __x._M_nd;
+
+      __os.flags(__flags);
+      __os.fill(__fill);
+      __os.precision(__precision);
+      return __os;
+    }
+
+  template<size_t _Dimen, typename _RealType, typename _CharT, typename _Traits>
+    std::basic_istream<_CharT, _Traits>&
+    operator>>(std::basic_istream<_CharT, _Traits>& __is,
+	       __gnu_cxx::normal_mv_distribution<_Dimen, _RealType>& __x)
+    {
+      typedef std::basic_istream<_CharT, _Traits>  __istream_type;
+      typedef typename __istream_type::ios_base    __ios_base;
+
+      const typename __ios_base::fmtflags __flags = __is.flags();
+      __is.flags(__ios_base::dec | __ios_base::skipws);
+
+      std::array<_RealType, _Dimen> __mean;
+      for (auto& __it : __mean)
+	__is >> __it;
+      std::array<_RealType, _Dimen * (_Dimen + 1) / 2> __varcov;
+      for (auto& __it : __varcov)
+	__is >> __it;
+
+      __is >> __x._M_nd;
+
+      __x.param(typename normal_mv_distribution<_Dimen, _RealType>::
+		param_type(__mean.begin(), __mean.end(),
+			   __varcov.begin(), __varcov.end()));
+
+      __is.flags(__flags);
+      return __is;
+    }
+
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 

@@ -32,6 +32,7 @@
 #pragma GCC system_header
 
 #include <random>
+#include <array>
 #ifdef __SSE2__
 # include <x86intrin.h>
 #endif
@@ -589,6 +590,310 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		const __gnu_cxx::beta_distribution<_RealType>& __d2)
     { return !(__d1 == __d2); }
 
+
+  /**
+   * @brief A multi-variate normal continuous distribution for random numbers.
+   *
+   * The formula for the normal probability density function is
+   * @f[
+   *     p(\overrightarrow{x}|\overrightarrow{\mu },\Sigma) =
+   *       \frac{1}{\sqrt{(2\pi )^k\det(\Sigma))}}
+   *       e^{-\frac{1}{2}(\overrightarrow{x}-\overrightarrow{\mu})^\text{T}
+   *          \Sigma ^{-1}(\overrightarrow{x}-\overrightarrow{\mu})}
+   * @f]
+   *
+   * where @f$\overrightarrow{x}@f$ and @f$\overrightarrow{\mu}@f$ are
+   * vectors of dimension @f$k@f$ and @f$\Sigma@f$ is the covariance
+   * matrix (which must be positive-definite).
+   */
+  template<std::size_t _Dimen, typename _RealType = double>
+    class normal_mv_distribution
+    {
+      static_assert(std::is_floating_point<_RealType>::value,
+		    "template argument not a floating point type");
+      static_assert(_Dimen != 0, "dimension is zero");
+
+    public:
+      /** The type of the range of the distribution. */
+      typedef std::array<_RealType, _Dimen> result_type;
+      /** Parameter type. */
+      class param_type
+      {
+	static constexpr size_t _M_t_size = _Dimen * (_Dimen + 1) / 2;
+
+      public:
+	typedef normal_mv_distribution<_Dimen, _RealType> distribution_type;
+	friend class normal_mv_distribution<_Dimen, _RealType>;
+
+	param_type()
+	{
+	  std::fill(_M_mean.begin(), _M_mean.end(), _RealType(0));
+	  auto __it = _M_t.begin();
+	  for (size_t __i = 0; __i < _Dimen; ++__i)
+	    {
+	      std::fill_n(__it, __i, _RealType(0));
+	      __it += __i;
+	      *__it++ = _RealType(1);
+	    }
+	}
+
+	template<typename _ForwardIterator1, typename _ForwardIterator2>
+	  param_type(_ForwardIterator1 __meanbegin,
+		     _ForwardIterator1 __meanend,
+		     _ForwardIterator2 __varcovbegin,
+		     _ForwardIterator2 __varcovend)
+	{
+	  __glibcxx_function_requires(_ForwardIteratorConcept<
+				      _ForwardIterator1>)
+	  __glibcxx_function_requires(_ForwardIteratorConcept<
+				      _ForwardIterator2>)
+	  _GLIBCXX_DEBUG_ASSERT(std::distance(__meanbegin, __meanend)
+				<= _Dimen);
+	  const auto __dist = std::distance(__varcovbegin, __varcovend);
+	  _GLIBCXX_DEBUG_ASSERT(__dist == _Dimen * _Dimen
+				|| __dist == _Dimen * (_Dimen + 1) / 2
+				|| __dist == _Dimen);
+
+	  if (__dist == _Dimen * _Dimen)
+	    _M_init_full(__meanbegin, __meanend, __varcovbegin, __varcovend);
+	  else if (__dist == _Dimen * (_Dimen + 1) / 2)
+	    _M_init_lower(__meanbegin, __meanend, __varcovbegin, __varcovend);
+	  else
+	    _M_init_diagonal(__meanbegin, __meanend,
+			     __varcovbegin, __varcovend);
+	}
+
+	param_type(std::initializer_list<_RealType> __mean,
+		   std::initializer_list<_RealType> __varcov)
+	{
+	  _GLIBCXX_DEBUG_ASSERT(__mean.size() <= _Dimen);
+	  _GLIBCXX_DEBUG_ASSERT(__varcov.size() == _Dimen * _Dimen
+				|| __varcov.size() == _Dimen * (_Dimen + 1) / 2
+				|| __varcov.size() == _Dimen);
+
+	  if (__varcov.size() == _Dimen * _Dimen)
+	    _M_init_full(__mean.begin(), __mean.end(),
+			 __varcov.begin(), __varcov.end());
+	  else if (__varcov.size() == _Dimen * (_Dimen + 1) / 2)
+	    _M_init_lower(__mean.begin(), __mean.end(),
+			  __varcov.begin(), __varcov.end());
+	  else
+	    _M_init_diagonal(__mean.begin(), __mean.end(),
+			     __varcov.begin(), __varcov.end());
+	}
+
+	std::array<_RealType, _Dimen>
+	mean() const
+	{ return _M_mean; }
+
+	std::array<_RealType, _M_t_size>
+	varcov() const
+	{ return _M_t; }
+
+	friend bool
+	operator==(const param_type& __p1, const param_type& __p2)
+	{ return __p1._M_mean == __p2._M_mean && __p1._M_t == __p2._M_t; }
+
+      private:
+	template <typename _InputIterator1, typename _InputIterator2>
+	  void _M_init_full(_InputIterator1 __meanbegin,
+			    _InputIterator1 __meanend,
+			    _InputIterator2 __varcovbegin,
+			    _InputIterator2 __varcovend);
+	template <typename _InputIterator1, typename _InputIterator2>
+	  void _M_init_lower(_InputIterator1 __meanbegin,
+			     _InputIterator1 __meanend,
+			     _InputIterator2 __varcovbegin,
+			     _InputIterator2 __varcovend);
+	template <typename _InputIterator1, typename _InputIterator2>
+	  void _M_init_diagonal(_InputIterator1 __meanbegin,
+				_InputIterator1 __meanend,
+				_InputIterator2 __varbegin,
+				_InputIterator2 __varend);
+
+	std::array<_RealType, _Dimen> _M_mean;
+	std::array<_RealType, _M_t_size> _M_t;
+      };
+
+    public:
+      normal_mv_distribution()
+      : _M_param(), _M_nd()
+      { }
+
+      template<typename _ForwardIterator1, typename _ForwardIterator2>
+	normal_mv_distribution(_ForwardIterator1 __meanbegin,
+			       _ForwardIterator1 __meanend,
+			       _ForwardIterator2 __varcovbegin,
+			       _ForwardIterator2 __varcovend)
+	: _M_param(__meanbegin, __meanend, __varcovbegin, __varcovend),
+	  _M_nd()
+	{ }
+
+      normal_mv_distribution(std::initializer_list<_RealType> __mean,
+			     std::initializer_list<_RealType> __varcov)
+      : _M_param(__mean, __varcov), _M_nd()
+      { }
+
+      explicit
+      normal_mv_distribution(const param_type& __p)
+      : _M_param(__p), _M_nd()
+      { }
+
+      /**
+       * @brief Resets the distribution state.
+       */
+      void
+      reset()
+      { _M_nd.reset(); }
+
+      /**
+       * @brief Returns the mean of the distribution.
+       */
+      result_type
+      mean() const
+      { return _M_param.mean(); }
+
+      /**
+       * @brief Returns the compact form of the variance/covariance
+       * matrix of the distribution.
+       */
+      std::array<_RealType, _Dimen * (_Dimen + 1) / 2>
+      varcov() const
+      { return _M_param.varcov(); }
+
+      /**
+       * @brief Returns the parameter set of the distribution.
+       */
+      param_type
+      param() const
+      { return _M_param; }
+
+      /**
+       * @brief Sets the parameter set of the distribution.
+       * @param __param The new parameter set of the distribution.
+       */
+      void
+      param(const param_type& __param)
+      { _M_param = __param; }
+
+      /**
+       * @brief Returns the greatest lower bound value of the distribution.
+       */
+      result_type
+      min() const
+      { result_type __res;
+	__res.fill(std::numeric_limits<_RealType>::min());
+	return __res; }
+
+      /**
+       * @brief Returns the least upper bound value of the distribution.
+       */
+      result_type
+      max() const
+      { result_type __res;
+	__res.fill(std::numeric_limits<_RealType>::max());
+	return __res; }
+
+      /**
+       * @brief Generating functions.
+       */
+      template<typename _UniformRandomNumberGenerator>
+	result_type
+	operator()(_UniformRandomNumberGenerator& __urng)
+	{ return this->operator()(__urng, this->param()); }
+
+      template<typename _UniformRandomNumberGenerator>
+	result_type
+	operator()(_UniformRandomNumberGenerator& __urng,
+		   const param_type& __p);
+
+      template<typename _ForwardIterator,
+	       typename _UniformRandomNumberGenerator>
+	void
+	__generate(_ForwardIterator __f, _ForwardIterator __t,
+		   _UniformRandomNumberGenerator& __urng)
+	{ return this->__generate_impl(__f, __t, __urng, this->param()); }
+
+      template<typename _ForwardIterator,
+	       typename _UniformRandomNumberGenerator>
+	void
+	__generate(_ForwardIterator __f, _ForwardIterator __t,
+		   _UniformRandomNumberGenerator& __urng,
+		   const param_type& __p)
+	{ return this->__generate_impl(__f, __t, __urng, __p); }
+
+      /**
+       * @brief Return true if two multi-variant normal distributions have
+       *        the same parameters and the sequences that would
+       *        be generated are equal.
+       */
+      template<size_t _Dimen1, typename _RealType1>
+	friend bool
+	operator==(const
+		   __gnu_cxx::normal_mv_distribution<_Dimen1, _RealType1>&
+		   __d1,
+		   const
+		   __gnu_cxx::normal_mv_distribution<_Dimen1, _RealType1>&
+		   __d2);
+
+      /**
+       * @brief Inserts a %normal_mv_distribution random number distribution
+       * @p __x into the output stream @p __os.
+       *
+       * @param __os An output stream.
+       * @param __x  A %normal_mv_distribution random number distribution.
+       *
+       * @returns The output stream with the state of @p __x inserted or in
+       * an error state.
+       */
+      template<size_t _Dimen1, typename _RealType1,
+	       typename _CharT, typename _Traits>
+	friend std::basic_ostream<_CharT, _Traits>&
+	operator<<(std::basic_ostream<_CharT, _Traits>& __os,
+		   const
+		   __gnu_cxx::normal_mv_distribution<_Dimen1, _RealType1>&
+		   __x);
+
+      /**
+       * @brief Extracts a %normal_mv_distribution random number distribution
+       * @p __x from the input stream @p __is.
+       *
+       * @param __is An input stream.
+       * @param __x  A %normal_mv_distribution random number generator engine.
+       *
+       * @returns The input stream with @p __x extracted or in an error
+       *          state.
+       */
+      template<size_t _Dimen1, typename _RealType1,
+	       typename _CharT, typename _Traits>
+	friend std::basic_istream<_CharT, _Traits>&
+	operator>>(std::basic_istream<_CharT, _Traits>& __is,
+		   __gnu_cxx::normal_mv_distribution<_Dimen1, _RealType1>&
+		   __x);
+
+    private:
+      template<typename _ForwardIterator,
+	       typename _UniformRandomNumberGenerator>
+	void
+	__generate_impl(_ForwardIterator __f, _ForwardIterator __t,
+			_UniformRandomNumberGenerator& __urng,
+			const param_type& __p);
+
+      param_type _M_param;
+      std::normal_distribution<_RealType> _M_nd;
+  };
+
+  /**
+   * @brief Return true if two multi-variate normal distributions are
+   * different.
+   */
+  template<size_t _Dimen, typename _RealType>
+    inline bool
+    operator!=(const __gnu_cxx::normal_mv_distribution<_Dimen, _RealType>&
+	       __d1,
+	       const __gnu_cxx::normal_mv_distribution<_Dimen, _RealType>&
+	       __d2)
+    { return !(__d1 == __d2); }
 
 
 _GLIBCXX_END_NAMESPACE_VERSION
