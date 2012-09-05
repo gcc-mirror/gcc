@@ -1,3 +1,8 @@
+2012-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/54486
+	* c-c++-common/pr54486.c: New test.
+
 2012-09-05  Dominique Dhumieres  <dominiq@lps.ens.fr>
 
 	PR fortran/54474
