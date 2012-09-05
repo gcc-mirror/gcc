@@ -1,3 +1,15 @@
+2012-09-04  Nenad Vukicevic  <nenad@intrepid.com>
+
+	Add backtrace logging into files.
+	* upc_backtrace.h (GUPCR_BACKTRACE_FILE_ENV): New. File prefix
+	for backtrace log file.
+	* upc_backtrace.c (__upc_backtrace): Save backtrace logs into the
+	file if environment variable UPC_BACKTRACEFILE is defined.  Do not
+	show traces above upc_main.
+	(__upc_backtrace_thread_map): Rename to __upc_backtrace_monitor.
+	(__upc_backtrace_monitor): If logging into files is specified, monitor
+	thread sends backtrace signal to all UPC threads.
+
 2012-08-30  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* upc_defs.h (upc_info_struct): Added host name and

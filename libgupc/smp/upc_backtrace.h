@@ -32,6 +32,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* Environment variables. */
 /** Enable/Disable backtrace env variable. */
 #define GUPCR_BACKTRACE_ENV "UPC_BACKTRACE"
+/** Enable/Disable STAT backtrace env variable. */
+#define GUPCR_BACKTRACE_FILE_ENV "UPC_BACKTRACEFILE"
 /** GDB command for backtrace env variable. */
 #define GUPCR_BACKTRACE_GDB_ENV "UPC_BACKTRACE_GDB"
 

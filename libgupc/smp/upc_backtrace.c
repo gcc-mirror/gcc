@@ -57,6 +57,16 @@ static char __upc_abs_execname[PATH_MAX];
  * Show backtrace by using the GLIBC backtrace functionality.
  * Backtrace is improved with the source file/line numbers if
  * libbfd is available.
+ *
+ * By default backtrace lines are sent to the 'stderr' file
+ * descriptor.  However, an environment variable
+ * UPC_BACKTRACEFILE can be used to redirect the backtrace
+ * to an actual file and it is used as a simple prefix for
+ * the backtrace file. For example, if it is set to "/tmp/trace-upc",
+ * the actual trace file is going to be "/tmp/trace-upc-PID.MYTHREAD".
+ * If empty environment variable is provided, a simple "trace" prefix
+ * is used.
+ *
  */
 void
 __upc_backtrace (void)
@@ -64,8 +74,35 @@ __upc_backtrace (void)
   void *strace[GUPCR_BT_DEPTH_CNT];
   size_t size,i;
   char **strace_str;
+  char *file_env;
+  int under_upc_main = 1;
+  FILE *traceout = stderr;
+  upc_info_p u = __upc_info;
+  if (!u)
+    __upc_fatal ("UPC runtime not initialized");
 
-  fprintf (stderr, "Thread %d backtrace:\n", MYTHREAD);
+  file_env = getenv (GUPCR_BACKTRACE_FILE_ENV);
+  if (file_env)
+    {
+      int len = strlen (file_env); 
+      char *tracefile = malloc (len + 128);
+      if (!tracefile)
+        __upc_fatal ("UPC backtrace cannot allocate file name memory");
+      if (len)
+        strcpy (tracefile, file_env);
+      else
+        {
+	  strcpy (tracefile, "trace");
+          len = 5;
+	}
+      len = snprintf (&tracefile[len], 128, "-%d.%d", getpid (), MYTHREAD);
+      traceout = fopen (tracefile, "w");
+      if (!traceout)
+	__upc_fatal ("Cannot open file for backtrace log");
+      free (tracefile);
+    }
+  else
+    fprintf (traceout, "Thread %d backtrace:\n", MYTHREAD);
 
   /* Use "backtrace" functionality of glibc. */
   size = backtrace (strace, GUPCR_BT_DEPTH_CNT);
@@ -76,15 +113,23 @@ __upc_backtrace (void)
 # endif
   for (i = GUPCR_BT_SKIP_FRAME_CNT; i < size; i++)
     {
-      fprintf (stderr, "[t: %4d][%lld] %s\n", MYTHREAD, 
+      if (under_upc_main)
+        {
+	  fprintf (traceout, "[%4d][%lld] %s\n", MYTHREAD, 
 	      (long long int) (i - GUPCR_BT_SKIP_FRAME_CNT), strace_str[i]);
-      /* Extra info for the barrier. */
-      if ( strstr( strace_str[i], "__upc_wait"))
-	{
-          fprintf (stderr, "[t: %4d]       BARRIER ID: %d\n", MYTHREAD, 
-	           __upc_barrier_id);
+	  /* Extra info for the barrier. */
+	  if ( strstr( strace_str[i], "__upc_wait"))
+	    {
+	      fprintf (traceout, "[%4d]       BARRIER ID: %d\n", MYTHREAD, 
+		       __upc_barrier_id);
+	    }
 	}
+      if (under_upc_main && strstr (strace_str[i], "upc_main"))
+        under_upc_main = 0;
     }
+  fflush (traceout);
+  if (file_env)
+    fclose (traceout);
 }
 
 #define GUPCR_BACKTRACE_PID_BUFLEN 16
@@ -180,17 +225,34 @@ __upc_fatal_backtrace (void)
 }
 
 /**
- * Print thread/process mapping.
+ * Print thread/process mapping OR
+ *   request a trace dump from UPC threads.
  */
 static void
-__upc_backtrace_thread_map (void)
+__upc_backtrace_monitor (void)
 {
   int i;
-  fprintf (stderr, "Thread ID to PID mappings\n");
-  fprintf (stderr, " Thread   PID\n");
-  for (i = 0; i < THREADS; i++)
+  char *trace_file_name;
+  trace_file_name = getenv (GUPCR_BACKTRACE_FILE_ENV);
+  if (trace_file_name)
     {
-      fprintf (stderr, "   %4d   %d\n", i, __upc_info->thread_info[i].pid);
+      /* Dump backtraces into files.
+         Send signal to all UPC threads.  */
+      fprintf (stderr, "Thread monitor\n");
+      fprintf (stderr, "Sending requests for trace dump\n");
+      for (i = 0; i < THREADS; i++)
+	{
+	  kill (__upc_info->thread_info[i].pid, GUPCR_BACKTRACE_SIGNAL);
+	}
+    }
+  else
+    {
+      fprintf (stderr, "Thread ID to PID mappings\n");
+      fprintf (stderr, " Thread   PID\n");
+      for (i = 0; i < THREADS; i++)
+	{
+	  fprintf (stderr, "   %4d   %d\n", i, __upc_info->thread_info[i].pid);
+	}
     }
 }
 
@@ -207,7 +269,7 @@ __upc_backtrace_handler (int sig __attribute__ ((unused)),
 			 void *context __attribute__ ((unused)))
 {
   if (MYTHREAD == -1)
-    __upc_backtrace_thread_map ();
+    __upc_backtrace_monitor ();
   else
     __upc_backtrace ();
 }
