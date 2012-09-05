@@ -1,5 +1,11 @@
 2012-09-04  Jason Merrill  <jason@redhat.com>
 
+	PR c++/54441
+	* decl.c (reshape_init_class): Handle invalid initializer for
+	0-length array member.
+
+	* error.c (dump_type_suffix): Correct handling of 0-length arrays.
+
 	PR c++/54420
 	* cp-tree.h (LAMBDANAME_P): Remove.
 	(LAMBDA_TYPE_P): Check CLASSTYPE_LAMBDA_EXPR instead.

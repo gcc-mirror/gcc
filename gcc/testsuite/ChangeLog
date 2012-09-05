@@ -1,5 +1,8 @@
 2012-09-04  Jason Merrill  <jason@redhat.com>
 
+	PR c++/54441
+	* g++.dg/ext/flexary3.C: New.
+
 	PR c++/54420
 	* g++.dg/cpp0x/lambda/lambda-intname.C: New.
 
