@@ -1052,7 +1052,7 @@ can_convert_eh (tree to, tree from)
     }
 
   if (CLASS_TYPE_P (to) && CLASS_TYPE_P (from)
-      && PUBLICLY_UNIQUELY_DERIVED_P (to, from))
+      && publicly_uniquely_derived_p (to, from))
     return 1;
 
   return 0;

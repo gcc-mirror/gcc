@@ -975,7 +975,7 @@ comp_except_types (tree a, tree b, bool exact)
 	  || TREE_CODE (b) != RECORD_TYPE)
 	return false;
 
-      if (PUBLICLY_UNIQUELY_DERIVED_P (a, b))
+      if (publicly_uniquely_derived_p (a, b))
 	return true;
     }
   return false;
@@ -2247,7 +2247,7 @@ build_class_member_access_expr (tree object, tree member,
 	  base_kind kind;
 
 	  binfo = lookup_base (access_path ? access_path : object_type,
-			       member_scope, ba_unique,  &kind);
+			       member_scope, ba_unique, &kind, complain);
 	  if (binfo == error_mark_node)
 	    return error_mark_node;
 
@@ -2630,7 +2630,8 @@ finish_class_member_access_expr (tree object, tree name, bool template_p,
 	    }
 
 	  /* Find the base of OBJECT_TYPE corresponding to SCOPE.  */
-	  access_path = lookup_base (object_type, scope, ba_check, NULL);
+	  access_path = lookup_base (object_type, scope, ba_check,
+				     NULL, complain);
 	  if (access_path == error_mark_node)
 	    return error_mark_node;
 	  if (!access_path)
@@ -3151,7 +3152,7 @@ get_member_function_from_ptrfunc (tree *instance_ptrptr, tree function,
 	  (basetype, TREE_TYPE (TREE_TYPE (instance_ptr))))
 	{
 	  basetype = lookup_base (TREE_TYPE (TREE_TYPE (instance_ptr)),
-				  basetype, ba_check, NULL);
+				  basetype, ba_check, NULL, complain);
 	  instance_ptr = build_base_path (PLUS_EXPR, instance_ptr, basetype,
 					  1, complain);
 	  if (instance_ptr == error_mark_node)
@@ -5997,7 +5998,7 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
 	 not considered.  */
       base = lookup_base (TREE_TYPE (type), intype,
 			  c_cast_p ? ba_unique : ba_check,
-			  NULL);
+			  NULL, complain);
 
       /* Convert from "B*" to "D*".  This function will check that "B"
 	 is not a virtual base of "D".  */
@@ -6121,7 +6122,7 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
 	return error_mark_node;
       base = lookup_base (TREE_TYPE (type), TREE_TYPE (intype),
 			  c_cast_p ? ba_unique : ba_check,
-			  NULL);
+			  NULL, complain);
       expr = build_base_path (MINUS_EXPR, expr, base, /*nonnull=*/false,
 			      complain);
       return cp_fold_convert(type, expr);
@@ -7181,16 +7182,11 @@ get_delta_difference_1 (tree from, tree to, bool c_cast_p,
 {
   tree binfo;
   base_kind kind;
-  base_access access = c_cast_p ? ba_unique : ba_check;
 
-  /* Note: ba_quiet does not distinguish between access control and
-     ambiguity.  */
-  if (!(complain & tf_error))
-    access |= ba_quiet;
+  binfo = lookup_base (to, from, c_cast_p ? ba_unique : ba_check,
+		       &kind, complain);
 
-  binfo = lookup_base (to, from, access, &kind);
-
-  if (kind == bk_inaccessible || kind == bk_ambig)
+  if (binfo == error_mark_node)
     {
       if (!(complain & tf_error))
 	return error_mark_node;

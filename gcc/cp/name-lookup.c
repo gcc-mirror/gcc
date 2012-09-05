@@ -3264,7 +3264,8 @@ do_class_using_decl (tree scope, tree name)
   if (!scope_dependent_p)
     {
       base_kind b_kind;
-      binfo = lookup_base (current_class_type, scope, ba_any, &b_kind);
+      binfo = lookup_base (current_class_type, scope, ba_any, &b_kind,
+			   tf_warning_or_error);
       if (b_kind < bk_proper_base)
 	{
 	  if (!bases_dependent_p)

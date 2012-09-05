@@ -179,13 +179,13 @@ accessible_base_p (tree t, tree base, bool consider_local_p)
    non-NULL, fill with information about what kind of base we
    discovered.
 
-   If the base is inaccessible, or ambiguous, and the ba_quiet bit is
-   not set in ACCESS, then an error is issued and error_mark_node is
-   returned.  If the ba_quiet bit is set, then no error is issued and
-   NULL_TREE is returned.  */
+   If the base is inaccessible, or ambiguous, then error_mark_node is
+   returned.  If the tf_error bit of COMPLAIN is not set, no error
+   is issued.  */
 
 tree
-lookup_base (tree t, tree base, base_access access, base_kind *kind_ptr)
+lookup_base (tree t, tree base, base_access access,
+	     base_kind *kind_ptr, tsubst_flags_t complain)
 {
   tree binfo;
   tree t_binfo;
@@ -251,11 +251,9 @@ lookup_base (tree t, tree base, base_access access, base_kind *kind_ptr)
 	break;
 
       case bk_ambig:
-	if (!(access & ba_quiet))
-	  {
-	    error ("%qT is an ambiguous base of %qT", base, t);
-	    binfo = error_mark_node;
-	  }
+	if (complain & tf_error)
+	  error ("%qT is an ambiguous base of %qT", base, t);
+	binfo = error_mark_node;
 	break;
 
       default:
@@ -269,13 +267,9 @@ lookup_base (tree t, tree base, base_access access, base_kind *kind_ptr)
 	    && COMPLETE_TYPE_P (base)
 	    && !accessible_base_p (t, base, !(access & ba_ignore_scope)))
 	  {
-	    if (!(access & ba_quiet))
-	      {
-		error ("%qT is an inaccessible base of %qT", base, t);
-		binfo = error_mark_node;
-	      }
-	    else
-	      binfo = NULL_TREE;
+	    if (complain & tf_error)
+	      error ("%qT is an inaccessible base of %qT", base, t);
+	    binfo = error_mark_node;
 	    bk = bk_inaccessible;
 	  }
 	break;
@@ -1537,14 +1531,13 @@ adjust_result_of_qualified_name_lookup (tree decl,
 	 or ambiguity -- in either case, the choice of a static member
 	 function might make the usage valid.  */
       base = lookup_base (context_class, qualifying_scope,
-			  ba_unique | ba_quiet, NULL);
-      if (base)
+			  ba_unique, NULL, tf_none);
+      if (base && base != error_mark_node)
 	{
 	  BASELINK_ACCESS_BINFO (decl) = base;
 	  BASELINK_BINFO (decl)
 	    = lookup_base (base, BINFO_TYPE (BASELINK_BINFO (decl)),
-			   ba_unique | ba_quiet,
-			   NULL);
+			   ba_unique, NULL, tf_none);
 	}
     }
 
@@ -1875,12 +1868,13 @@ check_final_overrider (tree overrider, tree basefn)
 	  /* Strictly speaking, the standard requires the return type to be
 	     complete even if it only differs in cv-quals, but that seems
 	     like a bug in the wording.  */
-	  if (!same_type_ignoring_top_level_qualifiers_p (base_return, over_return))
+	  if (!same_type_ignoring_top_level_qualifiers_p (base_return,
+							  over_return))
 	    {
 	      tree binfo = lookup_base (over_return, base_return,
-					ba_check | ba_quiet, NULL);
+					ba_check, NULL, tf_none);
 
-	      if (!binfo)
+	      if (!binfo || binfo == error_mark_node)
 		fail = 1;
 	    }
 	}

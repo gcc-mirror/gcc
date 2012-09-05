@@ -1,3 +1,30 @@
+2012-09-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54191
+	* search.c (lookup_base): Add tsubst_flags_t parameter.
+	(adjust_result_of_qualified_name_lookup, check_final_overrider):
+	Adjust.
+	* name-lookup.c (do_class_using_decl): Adjust.
+	* typeck2.c (binfo_or_else, build_scoped_ref, build_m_component_ref):
+	Likewise.
+	* cvt.c (cp_convert_to_pointer, convert_to_pointer_force,
+	build_up_reference): Likewise.
+	* rtti.c (build_dynamic_cast_1): Likewise.
+	* tree.c (maybe_dummy_object): Likewise.
+	* call.c (build_conditional_expr_1, build_over_call): Likewise.
+	* cp-tree.h (UNIQUELY_DERIVED_FROM_P, PUBLICLY_UNIQUELY_DERIVED_P):
+	Remove.
+	(enum base_access_flags, ba_quiet): Remove.
+	(uniquely_derived_from_p, publicly_uniquely_derived_p): Declare.
+	* except.c (can_convert_eh): Adjust.
+	* decl.c (grokdeclarator): Likewise.
+	* typeck.c (comp_except_types, build_class_member_access_expr,
+	finish_class_member_access_expr, get_member_function_from_ptrfunc,
+	build_static_cast_1, get_delta_difference_1): Likewise.
+	* class.c (build_base_path, convert_to_base, build_vtbl_ref_1,
+	warn_about_ambiguous_bases): Likewise.
+	(uniquely_derived_from_p, publicly_uniquely_derived_p): Define.
+
 2012-09-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/54441
