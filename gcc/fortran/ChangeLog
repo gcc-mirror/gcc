@@ -1,3 +1,8 @@
+2012-09-05  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54462
+	* symbol.c (gfc_undo_symbols): Avoid NULL pointer dereference.
+
 2012-09-04  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/54435
