@@ -1,5 +1,8 @@
 2012-09-05  Ulrich Drepper  <drepper@gmail.com>
 
+	* include/ext/random.tcc (__gnu_cxx:normal_mv_distribution<>)
+	(operator()): Use __generate() function of _M_nd.
+
 	* include/ext/random: Add __gnu_cxx:normal_mv_distribution<> class.
 	* include/ext/random.tccAdd out-of-line functions for
 	__gnu_cxx::normal_mv_distribution<>.

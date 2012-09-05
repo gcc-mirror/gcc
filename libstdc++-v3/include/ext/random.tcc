@@ -653,8 +653,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	result_type __ret;
 
-	for (size_t __i = 0; __i < _Dimen; ++__i)
-	  __ret[__i] = _M_nd(__urng);
+	_M_nd.__generate(__ret.begin(), __ret.end(), __urng);
 
 	auto __t_it = __param._M_t.crbegin();
 	for (size_t __i = _Dimen; __i > 0; --__i)
