@@ -1,3 +1,14 @@
+2012-09-05  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/46590
+	* tree-ssa-loop-ivcanon.c (try_unroll_loop_completely): Do not
+	update SSA form here.
+	(canonicalize_induction_variables): Assert we do not need to
+	update SSA form.
+	(tree_unroll_loops_completely): Update SSA form here.
+	* tree-ssa-loop-manip.c (gimple_duplicate_loop_to_header_edge):
+	Do not verify loop-closed SSA form if SSA form is not up-to-date.
+
 2012-09-05  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/54461

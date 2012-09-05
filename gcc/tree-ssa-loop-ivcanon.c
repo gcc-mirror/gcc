@@ -414,7 +414,6 @@ try_unroll_loop_completely (struct loop *loop,
   else
     gimple_cond_make_false (cond);
   update_stmt (cond);
-  update_ssa (TODO_update_ssa);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "Unrolled loop %d completely.\n", loop->num);
@@ -493,6 +492,7 @@ canonicalize_induction_variables (void)
 							true, UL_SINGLE_ITER,
 							true);
     }
+  gcc_assert (!need_ssa_update_p (cfun));
 
   /* Clean up the information about numbers of iterations, since brute force
      evaluation could reveal new information.  */
@@ -536,6 +536,8 @@ tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
 
       if (changed)
 	{
+	  update_ssa (TODO_update_ssa);
+
 	  /* This will take care of removing completely unrolled loops
 	     from the loop structures so we can continue unrolling now
 	     innermost loops.  */
