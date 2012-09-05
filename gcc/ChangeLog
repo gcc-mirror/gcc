@@ -1,3 +1,9 @@
+2012-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/54486
+	* builtins.c (fold_builtin_strspn, fold_builtin_strcspn): Use
+	build_int_cst with size_type_node instead of size_int.
+
 2012-09-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (<sse4_1>_blendv<ssemodesuffix><avxsizesuffix>):
