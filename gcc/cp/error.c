@@ -846,7 +846,9 @@ dump_type_suffix (tree t, int flags)
 	{
 	  tree dtype = TYPE_DOMAIN (t);
 	  tree max = TYPE_MAX_VALUE (dtype);
-	  if (host_integerp (max, 0))
+	  if (integer_all_onesp (max))
+	    pp_character (cxx_pp, '0');
+	  else if (host_integerp (max, 0))
 	    pp_wide_integer (cxx_pp, tree_low_cst (max, 0) + 1);
 	  else if (TREE_CODE (max) == MINUS_EXPR)
 	    dump_expr (TREE_OPERAND (max, 0),
