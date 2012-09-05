@@ -1,3 +1,8 @@
+2012-03-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/fpu-387.h (set_fpu): Use __builtin_ia32_stmxcsr and
+	__builtin_ia32_ldmxcsr intrinsics.
+
 2012-07-25  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* io/list_read.c (list_formatted_read_scalar): Fix copying real
