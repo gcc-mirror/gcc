@@ -2919,10 +2919,12 @@ gfc_undo_symbols (void)
 		  gfc_symtree st, *st0;
 		  st0 = find_common_symtree (p->ns->common_root,
 					     p->common_block);
-
-		  st.name = st0->name;
-		  gfc_delete_bbt (&p->ns->common_root, &st, compare_symtree);
-		  free (st0);
+		  if (st0)
+		    {
+		      st.name = st0->name;
+		      gfc_delete_bbt (&p->ns->common_root, &st, compare_symtree);
+		      free (st0);
+		    }
 		}
 
 	      if (p->common_block->head == p)
