@@ -1,3 +1,12 @@
+2012-09-05  Bin Cheng  <bin.cheng@arm.com>
+
+	Backport from 2012-09-04 mainline r190919
+
+	PR target/45070
+	* config/arm/arm.c (thumb1_extra_regs_pushed): Handle return value of
+	size less than 4 bytes by using macro ARM_NUM_INTS.
+	(thumb1_unexpanded_epilogue): Use macro ARM_NUM_INTS.
+
 2012-09-04  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	Backport from 2012-09-04 mainline r190914
