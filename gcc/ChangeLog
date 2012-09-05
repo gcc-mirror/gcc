@@ -1,3 +1,8 @@
+2012-09-05  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-inline.c (want_inline_small_function_p): Use INLINE_HINT_loop_iterations
+	hint.
+
 2012-09-05  Andrew Pinski  <apinski@cavium.com>
 
  	* optabs.c (emit_conditional_add): Correct comment about the arguments.
