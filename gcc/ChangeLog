@@ -1,3 +1,20 @@
+2012-09-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (<sse4_1>_blendv<ssemodesuffix><avxsizesuffix>):
+	Use register_operand instead of reg_not_xmm0_operand{,_maybe_avx}.
+	Use nonimmediate_operand instead of
+	nonimm_not_xmm0_operand{,_maybe_avx}.
+	(<sse4_1_avx2>_pblendvb): Ditto.
+	(sse4_2_pcmpestr): Ditto.
+	(*sse4_2_pcmpestr_unaligned): Ditto.
+	(sse4_2_pcmpistr): Ditto.
+	(*sse4_2_pcmpistr_unaligned): Ditto.
+	* config/i386/predicates.md (reg_not_xmm0_operand): Remove predicate.
+	(nonimm_not_xmm0_operand): Ditto.
+	(nonimm_not_xmm0_operand_maybe_avx): Ditto.
+	(nonimm_not_xmm0_operand_maybe_avx): Ditto.
+	* config/i386/i386.md (rdpmc): Do not force operand 1 into ecx.
+
 2012-09-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* bb-reorder.c: Clarify a few points in the head comment and fix
@@ -217,8 +234,8 @@
 2012-09-04  Bin Cheng  <bin.cheng@arm.com>
 
 	PR target/45070
-	* config/arm/arm.c (thumb1_extra_regs_pushed): Handle return value of size
-	less than 4 bytes by using macro ARM_NUM_INTS.
+	* config/arm/arm.c (thumb1_extra_regs_pushed): Handle return value
+	of size less than 4 bytes by using macro ARM_NUM_INTS.
 	(thumb1_unexpanded_epilogue): Use macro ARM_NUM_INTS.
 
 2012-09-04  Richard Guenther  <rguenther@suse.de>
@@ -242,10 +259,8 @@
 
 2012-09-04  Christophe Lyon  <christophe.lyon@linaro.org>
 
-	* config/arm/arm.c (arm_evpc_neon_vext): New
-	function.
-	(arm_expand_vec_perm_const_1): Add call to
-	arm_evpc_neon_vext.
+	* config/arm/arm.c (arm_evpc_neon_vext): New function.
+	(arm_expand_vec_perm_const_1): Add call to arm_evpc_neon_vext.
 
 2012-09-04  Oleg Endo  <olegendo@gcc.gnu.org>
 
@@ -401,7 +416,7 @@
 2012-08-31  Greta Yorsh  <Greta.Yorsh@arm.com>
 
 	* config/arm/arm.c (arm_expand_epilogue): Remove unused variable
-        floats_from_frame.
+	floats_from_frame.
 
 2012-08-31  Martin Jambor  <mjambor@suse.cz>
 
@@ -2633,11 +2648,6 @@
 	* gdbinit.in: (macro define __FILE__): New.
 	(macro define __LINE__): New.
 	(skip "tree.h"): New.
-
-2012-08-14  Uros Bizjak  <ubizjak@gmail.com>
-
-	* config/i386/i386.md (enabled): Add comment with explanation
-	why fma4 instructions are disabled for generic code.
 
 2012-08-14  Oleg Endo  <olegendo@gcc.gnu.org>
 
