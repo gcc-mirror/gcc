@@ -1,5 +1,6 @@
 /* { dg-do compile } */ 
-/* { dg-options "-O2 -fdump-tree-dom1-details" } */
+/* { dg-options "-O2 -fdump-tree-dom1-details -fno-short-enums" } */
+
 extern void abort (void) __attribute__ ((__noreturn__));
 union tree_node;
 typedef union tree_node *tree;

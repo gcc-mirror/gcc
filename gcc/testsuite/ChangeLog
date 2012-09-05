@@ -1,3 +1,10 @@
+2012-09-05  Joey Ye  <joey.ye@arm.com>
+
+	Backported from trunk
+	2012-08-28  Joey Ye  <joey.ye@arm.com>
+
+	* gcc.dg/tree-ssa/ssa-dom-thread-3.c: Add -fno-short-enums.
+
 2012-09-03  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
