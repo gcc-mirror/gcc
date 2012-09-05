@@ -8593,10 +8593,10 @@
    (set_attr "mode" "<MODE>")])
 
 (define_insn "<sse4_1>_blendv<ssemodesuffix><avxsizesuffix>"
-  [(set (match_operand:VF 0 "reg_not_xmm0_operand_maybe_avx" "=x,x")
+  [(set (match_operand:VF 0 "register_operand" "=x,x")
 	(unspec:VF
-	  [(match_operand:VF 1 "reg_not_xmm0_operand_maybe_avx" "0,x")
-	   (match_operand:VF 2 "nonimm_not_xmm0_operand_maybe_avx" "xm,xm")
+	  [(match_operand:VF 1 "register_operand" "0,x")
+	   (match_operand:VF 2 "nonimmediate_operand" "xm,xm")
 	   (match_operand:VF 3 "register_operand" "Yz,x")]
 	  UNSPEC_BLENDV))]
   "TARGET_SSE4_1"
@@ -8691,10 +8691,10 @@
    (set_attr "mode" "TI")])
 
 (define_insn "<sse4_1_avx2>_pblendvb"
-  [(set (match_operand:VI1_AVX2 0 "reg_not_xmm0_operand" "=x,x")
+  [(set (match_operand:VI1_AVX2 0 "register_operand" "=x,x")
 	(unspec:VI1_AVX2
-	  [(match_operand:VI1_AVX2 1 "reg_not_xmm0_operand_maybe_avx"  "0,x")
-	   (match_operand:VI1_AVX2 2 "nonimm_not_xmm0_operand_maybe_avx" "xm,xm")
+	  [(match_operand:VI1_AVX2 1 "register_operand"  "0,x")
+	   (match_operand:VI1_AVX2 2 "nonimmediate_operand" "xm,xm")
 	   (match_operand:VI1_AVX2 3 "register_operand" "Yz,x")]
 	  UNSPEC_BLENDV))]
   "TARGET_SSE4_1"
@@ -9164,9 +9164,9 @@
 (define_insn_and_split "sse4_2_pcmpestr"
   [(set (match_operand:SI 0 "register_operand" "=c,c")
 	(unspec:SI
-	  [(match_operand:V16QI 2 "reg_not_xmm0_operand" "x,x")
+	  [(match_operand:V16QI 2 "register_operand" "x,x")
 	   (match_operand:SI 3 "register_operand" "a,a")
-	   (match_operand:V16QI 4 "nonimm_not_xmm0_operand" "x,m")
+	   (match_operand:V16QI 4 "nonimmediate_operand" "x,m")
 	   (match_operand:SI 5 "register_operand" "d,d")
 	   (match_operand:SI 6 "const_0_to_255_operand" "n,n")]
 	  UNSPEC_PCMPESTR))
@@ -9224,7 +9224,7 @@
 (define_insn_and_split "*sse4_2_pcmpestr_unaligned"
   [(set (match_operand:SI 0 "register_operand" "=c")
 	(unspec:SI
-	  [(match_operand:V16QI 2 "reg_not_xmm0_operand" "x")
+	  [(match_operand:V16QI 2 "register_operand" "x")
 	   (match_operand:SI 3 "register_operand" "a")
 	   (unspec:V16QI
 	     [(match_operand:V16QI 4 "memory_operand" "m")]
@@ -9365,8 +9365,8 @@
 (define_insn_and_split "sse4_2_pcmpistr"
   [(set (match_operand:SI 0 "register_operand" "=c,c")
 	(unspec:SI
-	  [(match_operand:V16QI 2 "reg_not_xmm0_operand" "x,x")
-	   (match_operand:V16QI 3 "nonimm_not_xmm0_operand" "x,m")
+	  [(match_operand:V16QI 2 "register_operand" "x,x")
+	   (match_operand:V16QI 3 "nonimmediate_operand" "x,m")
 	   (match_operand:SI 4 "const_0_to_255_operand" "n,n")]
 	  UNSPEC_PCMPISTR))
    (set (match_operand:V16QI 1 "register_operand" "=Yz,Yz")
@@ -9416,7 +9416,7 @@
 (define_insn_and_split "*sse4_2_pcmpistr_unaligned"
   [(set (match_operand:SI 0 "register_operand" "=c")
 	(unspec:SI
-	  [(match_operand:V16QI 2 "reg_not_xmm0_operand" "x")
+	  [(match_operand:V16QI 2 "register_operand" "x")
 	   (unspec:V16QI
 	     [(match_operand:V16QI 3 "memory_operand" "m")]
 	     UNSPEC_MOVU)
