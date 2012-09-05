@@ -1,3 +1,8 @@
+2012-09-05  Dominique Dhumieres  <dominiq@lps.ens.fr>
+
+	PR fortran/54474
+	* gfortran.dg/coarray_poly_3.f90: Adjust error messages.
+
 2012-09-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/54191
