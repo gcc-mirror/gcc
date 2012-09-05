@@ -2613,7 +2613,9 @@ s390_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
 /* Return the cost of an address rtx ADDR.  */
 
 static int
-s390_address_cost (rtx addr, bool speed ATTRIBUTE_UNUSED)
+s390_address_cost (rtx addr, enum machine_mode mode ATTRIBUTE_UNUSED,
+		   addr_space_t as ATTRIBUTE_UNUSED,
+		   bool speed ATTRIBUTE_UNUSED)
 {
   struct s390_address ad;
   if (!s390_decompose_address (addr, &ad))

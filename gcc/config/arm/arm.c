@@ -162,7 +162,7 @@ static bool arm_fastmul_rtx_costs (rtx, enum rtx_code, enum rtx_code, int *, boo
 static bool arm_xscale_rtx_costs (rtx, enum rtx_code, enum rtx_code, int *, bool);
 static bool arm_9e_rtx_costs (rtx, enum rtx_code, enum rtx_code, int *, bool);
 static bool arm_rtx_costs (rtx, int, int, int, int *, bool);
-static int arm_address_cost (rtx, bool);
+static int arm_address_cost (rtx, enum machine_mode, addr_space_t, bool);
 static int arm_register_move_cost (enum machine_mode, reg_class_t, reg_class_t);
 static int arm_memory_move_cost (enum machine_mode, reg_class_t, bool);
 static void arm_init_builtins (void);
@@ -8411,7 +8411,8 @@ arm_thumb_address_cost (rtx x)
 }
 
 static int
-arm_address_cost (rtx x, bool speed ATTRIBUTE_UNUSED)
+arm_address_cost (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED,
+		  addr_space_t as ATTRIBUTE_UNUSED, bool speed ATTRIBUTE_UNUSED)
 {
   return TARGET_32BIT ? arm_arm_address_cost (x) : arm_thumb_address_cost (x);
 }

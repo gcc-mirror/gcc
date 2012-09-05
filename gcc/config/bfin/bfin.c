@@ -1288,7 +1288,10 @@ bfin_dsp_memref_p (rtx x)
    All addressing modes are equally cheap on the Blackfin.  */
 
 static int
-bfin_address_cost (rtx addr ATTRIBUTE_UNUSED, bool speed ATTRIBUTE_UNUSED)
+bfin_address_cost (rtx addr ATTRIBUTE_UNUSED,
+		   enum machine_mode mode ATTRIBUTE_UNUSED,
+		   addr_space_t as ATTRIBUTE_UNUSED,
+		   bool speed ATTRIBUTE_UNUSED)
 {
   return 1;
 }

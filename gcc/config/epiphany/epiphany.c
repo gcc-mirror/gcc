@@ -729,7 +729,8 @@ epiphany_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
    If ADDR is not a valid address, its cost is irrelevant.  */
 
 static int
-epiphany_address_cost (rtx addr, bool speed)
+epiphany_address_cost (rtx addr, enum machine_mode mode ATTRIBUTE_UNUSED,
+		       addr_space_t as ATTRIBUTE_UNUSED, bool speed)
 {
   rtx reg;
   rtx off = const0_rtx;

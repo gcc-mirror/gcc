@@ -928,7 +928,8 @@ static tree rs6000_builtin_vectorized_libmass (tree, tree, tree);
 static rtx rs6000_emit_set_long_const (rtx, HOST_WIDE_INT, HOST_WIDE_INT);
 static int rs6000_memory_move_cost (enum machine_mode, reg_class_t, bool);
 static bool rs6000_debug_rtx_costs (rtx, int, int, int, int *, bool);
-static int rs6000_debug_address_cost (rtx, bool);
+static int rs6000_debug_address_cost (rtx, enum machine_mode, addr_space_t,
+				      bool);
 static int rs6000_debug_adjust_cost (rtx, rtx, rtx, int);
 static bool is_microcoded_insn (rtx);
 static bool is_nonpipeline_insn (rtx);
@@ -1294,7 +1295,7 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS rs6000_rtx_costs
 #undef TARGET_ADDRESS_COST
-#define TARGET_ADDRESS_COST hook_int_rtx_bool_0
+#define TARGET_ADDRESS_COST hook_int_rtx_mode_as_bool_0
 
 #undef TARGET_DWARF_REGISTER_SPAN
 #define TARGET_DWARF_REGISTER_SPAN rs6000_dwarf_register_span
@@ -26070,7 +26071,8 @@ rs6000_debug_rtx_costs (rtx x, int code, int outer_code, int opno, int *total,
 /* Debug form of ADDRESS_COST that is selected if -mdebug=cost.  */
 
 static int
-rs6000_debug_address_cost (rtx x, bool speed)
+rs6000_debug_address_cost (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED,
+			   addr_space_t as ATTRIBUTE_UNUSED, bool speed)
 {
   int ret = TARGET_ADDRESS_COST (x, speed);
 

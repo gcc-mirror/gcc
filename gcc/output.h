@@ -606,7 +606,7 @@ extern void default_elf_init_array_asm_out_constructor (rtx, int);
 extern void default_elf_fini_array_asm_out_destructor (rtx, int);
 extern int maybe_assemble_visibility (tree);
 
-extern int default_address_cost (rtx, bool);
+extern int default_address_cost (rtx, enum machine_mode, addr_space_t, bool);
 
 /* Output stack usage information.  */
 extern void output_stack_usage (void);

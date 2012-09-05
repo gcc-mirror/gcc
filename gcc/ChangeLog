@@ -1,3 +1,68 @@
+2012-09-05  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* hooks.c (hook_int_rtx_mode_as_bool_0): New function.
+	* hooks.h (hook_int_rtx_mode_as_bool_0): Declare it.
+	* output.h (default_address_cost): Add machine_mode and address space
+	arguments.
+	* target.def (address_cost): Likewise.
+	* rtlanal.c (address_cost): Pass mode and address space to target hook.
+	(default_address_cost): Add unnamed machine_mode and address space
+	arguments.
+	* doc/tm.texi: Regenerate.
+	* config/alpha/alpha.c (TARGET_ADDRESS_COST): Use
+	hook_int_rtx_mode_as_bool_0 instead of hook_int_rtx_bool_0.
+	* config/arm/arm.c (arm_address_cost): Add machine_mode and address
+	space arguments.
+	* config/avr/avr.c (avr_address_cost): Likewise.
+	* config/bfin/bfin.c (bfin_address_cost): Likewise.
+	* config/cr16/cr16.c (cr16_address_cost): Likewise.
+	* config/cris/cris.c (cris_address_cost): Likewise.
+	* config/epiphany/epiphany.c (epiphany_address_cost): Likewise.
+	* config/i386/i386.c (ix86_address_cost): Likewise.
+	* config/ia64/ia64.c (TARGET_ADDRESS_COST): Use
+	hook_int_rtx_mode_as_bool_0 instead of hook_int_rtx_bool_0.
+	* config/iq2000/iq2000.c (iq2000_address_cost): Add machine_mode and
+	address space arguments.  Pass them on in recursive invocation.
+	* config/lm32/lm32.c (TARGET_ADDRESS_COST): Use
+	hook_int_rtx_mode_as_bool_0 instead of hook_int_rtx_bool_0.
+	* config/m32c/m32c.c (m32c_address_cost): Add machine_mode and address
+	space arguments.
+	* config/m32r/m32r.c (TARGET_ADDRESS_COST): Use
+	hook_int_rtx_mode_as_bool_0 instead of hook_int_rtx_bool_0.
+	* config/mcore/mcore.c (TARGET_ADDRESS_COST): Likewise.
+	* config/mep/mep.c (mep_address_cost): Add machine_mode and address
+	space arguments.
+	* config/microblaze/microblaze.c (microblaze_address_cost): Likewise.
+	* config/mips/mips.c (mips_address_cost): Likewise.
+	* config/mmix/mmix.c (TARGET_ADDRESS_COST): Use
+	hook_int_rtx_mode_as_bool_0 instead of hook_int_rtx_bool_0.
+	* config/mn10300/mn10300.c (mn10300_address_cost): Add machine_mode and
+	address space arguments.
+	(mn10300_rtx_costs): Pass GET_MODE (x) and MEM_ADDR_SPACE (x) to
+	mn10300_address_cost.
+	* config/pa/pa.c (hppa_address_cost): Add machine_mode and address
+	space arguments.
+	* config/rs6000/rs6000.c (rs6000_debug_address_cost): Likewise.
+	(TARGET_ADDRESS_COST): Use hook_int_rtx_mode_as_bool_0 instead of
+	hook_int_rtx_bool_0.
+	* config/rx/rx.c (rx_address_cost): Add machine_mode and address
+	space arguments.
+	* config/s390/s390.c (s390_address_cost): Likewise.
+	* config/score/score-protos.h (score_address_cost): Likewise.
+	* config/score/score.c (score_address_cost): Likewise.
+	* config/sh/sh.c (sh_address_cost): Likewise.
+	* config/sparc/sparc.c (TARGET_ADDRESS_COST): Use
+	hook_int_rtx_mode_as_bool_0 instead of hook_int_rtx_bool_0.
+	* config/spu/spu.c (TARGET_ADDRESS_COST): Likewise.
+	* config/stormy16/stormy16.c (xstormy16_address_cost): Add machine_mode
+	and address space arguments.
+	* config/v850/v850.c (TARGET_ADDRESS_COST): Use
+	hook_int_rtx_mode_as_bool_0 instead of hook_int_rtx_bool_0.
+	* config/vax/vax.c (vax_address_cost): Add machine_mode and address
+	space arguments.
+	* config/xtensa/xtensa (TARGET_ADDRESS_COST): Use
+	hook_int_rtx_mode_as_bool_0 instead of hook_int_rtx_bool_0.
+
 2012-09-05   Diego Novillo  <dnovillo@google.com>
 
 	PR bootstrap/54484

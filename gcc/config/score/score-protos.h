@@ -39,7 +39,8 @@ extern const char * score_move (rtx *ops);
 extern bool score_unaligned_load (rtx* ops);
 extern bool score_unaligned_store (rtx* ops);
 extern bool score_block_move (rtx* ops);
-extern int score_address_cost (rtx addr, bool speed);
+extern int score_address_cost (rtx addr, enum machine_mode mode,
+			       addr_space_t as, bool speed);
 extern int score_address_p (enum machine_mode mode, rtx x, int strict);
 extern int score_reg_class (int regno);
 extern int score_hard_regno_mode_ok (unsigned int, enum machine_mode);

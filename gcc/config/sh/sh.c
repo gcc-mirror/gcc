@@ -255,7 +255,7 @@ static int multcosts (rtx);
 static bool unspec_caller_rtx_p (rtx);
 static bool sh_cannot_copy_insn_p (rtx);
 static bool sh_rtx_costs (rtx, int, int, int, int *, bool);
-static int sh_address_cost (rtx, bool);
+static int sh_address_cost (rtx, enum machine_mode, addr_space_t, bool);
 static int sh_pr_n_sets (void);
 static rtx sh_allocate_initial_value (rtx);
 static reg_class_t sh_preferred_reload_class (rtx, reg_class_t);
@@ -3430,7 +3430,8 @@ disp_addr_displacement (rtx x)
 /* Compute the cost of an address.  */
 
 static int
-sh_address_cost (rtx x, bool speed ATTRIBUTE_UNUSED)
+sh_address_cost (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED,
+		 addr_space_t as ATTRIBUTE_UNUSED, bool speed ATTRIBUTE_UNUSED)
 {
   /* 'reg + disp' addressing.  */
   if (satisfies_constraint_Sdd (x))

@@ -1758,7 +1758,7 @@ DEFHOOK
 DEFHOOK
 (address_cost,
  "",
- int, (rtx address, bool speed),
+ int, (rtx address, enum machine_mode mode, addr_space_t as, bool speed),
  default_address_cost)
 
 /* Return where to allocate pseudo for a given hard register initial value.  */

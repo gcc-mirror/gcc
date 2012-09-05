@@ -161,7 +161,7 @@ static const struct attribute_spec m32r_attribute_table[] =
 #undef  TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS m32r_rtx_costs
 #undef  TARGET_ADDRESS_COST
-#define TARGET_ADDRESS_COST hook_int_rtx_bool_0
+#define TARGET_ADDRESS_COST hook_int_rtx_mode_as_bool_0
 
 #undef  TARGET_PROMOTE_PROTOTYPES
 #define TARGET_PROMOTE_PROTOTYPES hook_bool_const_tree_true

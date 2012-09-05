@@ -2278,7 +2278,9 @@ m32c_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST m32c_address_cost
 static int
-m32c_address_cost (rtx addr, bool speed ATTRIBUTE_UNUSED)
+m32c_address_cost (rtx addr, enum machine_mode mode ATTRIBUTE_UNUSED,
+		   addr_space_t as ATTRIBUTE_UNUSED,
+		   bool speed ATTRIBUTE_UNUSED)
 {
   int i;
   /*  fprintf(stderr, "\naddress_cost\n");

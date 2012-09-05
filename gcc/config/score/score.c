@@ -1232,7 +1232,8 @@ score_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
 
 /* Implement TARGET_ADDRESS_COST macro.  */
 int
-score_address_cost (rtx addr,
+score_address_cost (rtx addr, enum machine_mode mode ATTRIBUTE_UNUSED,
+		    addr_space_t as ATTRIBUTE_UNUSED,
 		    bool speed ATTRIBUTE_UNUSED)
 {
   return score_address_insns (addr, SImode);
