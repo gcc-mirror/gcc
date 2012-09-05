@@ -77,9 +77,9 @@ namespace std _GLIBCXX_VISIBILITY(default)
       {
 #if defined __i386__ || defined __x86_64__
 	unsigned int eax, ebx, ecx, edx;
-	__cpuid(0, eax, ebx, ecx, edx);
-	// Check for "GenuineIntel"
-	if (ebx == 0x756e6547 && ecx == 0x6c65746e && edx == 0x49656e69)
+	// Check availability of cpuid and, for now at least, also the
+	// CPU signature for Intel's
+	if (__get_cpuid_max(0, &ebx) > 0 && ebx == 0x756e6547)
 	  {
 	    __cpuid(1, eax, ebx, ecx, edx);
 	    if (ecx & bit_RDRND)
@@ -104,7 +104,6 @@ namespace std _GLIBCXX_VISIBILITY(default)
 
   void
   random_device::_M_init_pretr1(const std::string& token)
-
   {
     _M_mt.seed(_M_strtoul(token));
   }

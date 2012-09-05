@@ -1,5 +1,8 @@
 2012-09-05  Ulrich Drepper  <drepper@gmail.com>
 
+	* src/c++11/random.cc (random_device::_M_init): Check whether cpuid
+	instruction is available by using __get_cpuid_max.
+
 	* include/ext/random.tcc (__gnu_cxx:normal_mv_distribution<>)
 	(operator()): Use __generate() function of _M_nd.
 
