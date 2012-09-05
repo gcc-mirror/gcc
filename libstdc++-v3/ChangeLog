@@ -1,3 +1,17 @@
+2012-09-05  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/54296
+	* include/bits/hashtable.h (_M_erase(size_type, __node_base*,
+	__node_type*)): New.
+	(erase(const_iterator)): Use latter.
+	(_M_erase(std::true_type, const key_type&)): New, likewise.
+	(_M_erase(std::false_type, const key_type&)): New. Find all nodes
+	matching the key before deallocating them so that the key doesn't
+	get invalidated.
+	(erase(const key_type&)): Use the new member functions.
+	* testsuite/23_containers/unordered_map/erase/54296.cc: New.
+	* testsuite/23_containers/unordered_multimap/erase/54296.cc: New.
+
 2012-09-05  Ulrich Drepper  <drepper@gmail.com>
 
 	* src/c++11/random.cc (random_device::_M_init): Check whether cpuid

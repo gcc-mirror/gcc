@@ -612,6 +612,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	iterator
 	_M_insert(_Arg&&, std::false_type);
 
+      size_type
+      _M_erase(std::true_type, const key_type&);
+
+      size_type
+      _M_erase(std::false_type, const key_type&);
+
+      iterator
+      _M_erase(size_type __bkt, __node_base* __prev_n, __node_type* __n);
+
     public:
       // Emplace
       template<typename... _Args>
@@ -636,7 +645,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return erase(const_iterator(__it)); }
 
       size_type
-      erase(const key_type&);
+      erase(const key_type& __k)
+      { return _M_erase(__unique_keys(), __k); }
 
       iterator
       erase(const_iterator, const_iterator);
@@ -1430,7 +1440,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // is why we need buckets to contain the before begin to make
       // this research fast.
       __node_base* __prev_n = _M_get_previous_node(__bkt, __n);
-      if (__n == _M_bucket_begin(__bkt))
+      return _M_erase(__bkt, __prev_n, __n);
+    }
+
+  template<typename _Key, typename _Value,
+	   typename _Alloc, typename _ExtractKey, typename _Equal,
+	   typename _H1, typename _H2, typename _Hash, typename _RehashPolicy,
+	   typename _Traits>
+    typename _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
+			_H1, _H2, _Hash, _RehashPolicy,
+			_Traits>::iterator
+    _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
+	       _H1, _H2, _Hash, _RehashPolicy, _Traits>::
+    _M_erase(size_type __bkt, __node_base* __prev_n, __node_type* __n)
+    {
+      if (__prev_n == _M_buckets[__bkt])
 	_M_remove_bucket_begin(__bkt, __n->_M_next(),
 	   __n->_M_nxt ? _M_bucket_index(__n->_M_next()) : 0);
       else if (__n->_M_nxt)
@@ -1457,7 +1481,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			_Traits>::size_type
     _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 	       _H1, _H2, _Hash, _RehashPolicy, _Traits>::
-    erase(const key_type& __k)
+    _M_erase(std::true_type, const key_type& __k)
     {
       __hash_code __code = this->_M_hash_code(__k);
       std::size_t __bkt = _M_bucket_index(__k, __code);
@@ -1466,43 +1490,67 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __node_base* __prev_n = _M_find_before_node(__bkt, __k, __code);
       if (!__prev_n)
 	return 0;
-      __node_type* __n = static_cast<__node_type*>(__prev_n->_M_nxt);
-      bool __is_bucket_begin = _M_buckets[__bkt] == __prev_n;
 
-      // We found a matching node, start deallocation loop from it
-      std::size_t __next_bkt = __bkt;
-      __node_type* __next_n = __n;
-      size_type __result = 0;
-      __node_type* __saved_n = nullptr;
+      // We found a matching node, erase it.
+      __node_type* __n = static_cast<__node_type*>(__prev_n->_M_nxt);
+      _M_erase(__bkt, __prev_n, __n);
+      return 1;
+    }
+
+  template<typename _Key, typename _Value,
+	   typename _Alloc, typename _ExtractKey, typename _Equal,
+	   typename _H1, typename _H2, typename _Hash, typename _RehashPolicy,
+	   typename _Traits>
+    typename _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
+			_H1, _H2, _Hash, _RehashPolicy,
+			_Traits>::size_type
+    _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
+	       _H1, _H2, _Hash, _RehashPolicy, _Traits>::
+    _M_erase(std::false_type, const key_type& __k)
+    {
+      __hash_code __code = this->_M_hash_code(__k);
+      std::size_t __bkt = _M_bucket_index(__k, __code);
+
+      // Look for the node before the first matching node.
+      __node_base* __prev_n = _M_find_before_node(__bkt, __k, __code);
+      if (!__prev_n)
+	return 0;
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 526. Is it undefined if a function in the standard changes
+      // in parameters?
+      // We use one loop to find all matching nodes and another to deallocate
+      // them so that the key stays valid during the first loop. It might be
+      // invalidated indirectly when destroying nodes.
+      __node_type* __n = static_cast<__node_type*>(__prev_n->_M_nxt);
+      __node_type* __n_last = __n;
+      std::size_t __n_last_bkt = __bkt;
       do
 	{
-	  __node_type* __p = __next_n;
-	  __next_n = __p->_M_next();
-
-	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
-	  // 526. Is it undefined if a function in the standard changes
-	  // in parameters?
-	  if (std::__addressof(this->_M_extract()(__p->_M_v))
-	      != std::__addressof(__k))
-	    _M_deallocate_node(__p);
-	  else
-	    __saved_n = __p;
-	  --_M_element_count;
-	  ++__result;
-	  if (!__next_n)
+	  __n_last = __n_last->_M_next();
+	  if (!__n_last)
 	    break;
-	  __next_bkt = _M_bucket_index(__next_n);
+	  __n_last_bkt = _M_bucket_index(__n_last);
 	}
-      while (__next_bkt == __bkt && this->_M_equals(__k, __code, __next_n));
+      while (__n_last_bkt == __bkt && this->_M_equals(__k, __code, __n_last));
 
-      if (__saved_n)
-	_M_deallocate_node(__saved_n);
-      if (__is_bucket_begin)
-	_M_remove_bucket_begin(__bkt, __next_n, __next_bkt);
-      else if (__next_n && __next_bkt != __bkt)
-	_M_buckets[__next_bkt] = __prev_n;
-      if (__prev_n)
-	__prev_n->_M_nxt = __next_n;
+      // Deallocate nodes.
+      size_type __result = 0;
+      do
+	{
+	  __node_type* __p = __n->_M_next();
+	  _M_deallocate_node(__n);
+	  __n = __p;
+	  ++__result;
+	  --_M_element_count;
+	}
+      while (__n != __n_last);
+
+      if (__prev_n == _M_buckets[__bkt])
+	_M_remove_bucket_begin(__bkt, __n_last, __n_last_bkt);
+      else if (__n_last && __n_last_bkt != __bkt)
+	_M_buckets[__n_last_bkt] = __prev_n;
+      __prev_n->_M_nxt = __n_last;
       return __result;
     }
 
