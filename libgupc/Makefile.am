@@ -116,7 +116,7 @@ UPC_RUNTIME_SRC += smp/upc_access.c smp/upc_accessg.c smp/upc_access.h \
 	smp/upc_addr.c smp/upc_affinity.h $(UPC_AFFINITY_SUP) \
 	smp/upc_allocg.upc smp/upc_alloc.upc smp/upc_barrier.upc \
 	$(UPC_BACKTRACE_SUP) smp/upc_config.h \
-	smp/upc_debug.h \
+	smp/upc_debug.h smp/upc_debug.c \
 	smp/upc_defs.h smp/upc_gasp.c $(UPC_GUM_SUP) smp/upc_libg.c \
 	smp/upc_lib.h smp/upc_lock.c smp/upc_main.c smp/upc_mem.c \
 	smp/upc_mem.h smp/upc_numa.h $(UPC_NUMA_SUP) smp/upc_pgm_info.c \

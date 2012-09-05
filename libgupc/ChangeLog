@@ -1,5 +1,18 @@
 2012-09-04  Nenad Vukicevic  <nenad@intrepid.com>
 
+	Move MPIR related variables/functions into a separate file.
+	* Makefile.am (UPC_RUNTIME_SRC): Add upc_debug.c
+	* Makefile.in: Regenerate.
+	* smp/upc_main.c: Move MPIR specific variables into upc_debug.c.
+	(MPIR_Breakpoint): Delete. Move into upc_debug.c.
+	(MPIR_i_am_starter): Delete. Move into upc_debug.c.
+	(MPIR_ignore_queues): Delete. Move into upc_debug.c.
+	(MPIR_force_to_main): Delete. Move into upc_debug.c.
+	* smp/upc_debug.c: New. All MPIR related variables and procedures
+	are in this file now.
+
+2012-09-04  Nenad Vukicevic  <nenad@intrepid.com>
+
 	Add backtrace logging into files.
 	* upc_backtrace.h (GUPCR_BACKTRACE_FILE_ENV): New. File prefix
 	for backtrace log file.

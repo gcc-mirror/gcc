@@ -50,7 +50,7 @@ target_triplet = @target@
 @LIBGUPC_SMP_RUNTIME_TRUE@	smp/upc_addr.c smp/upc_affinity.h $(UPC_AFFINITY_SUP) \
 @LIBGUPC_SMP_RUNTIME_TRUE@	smp/upc_allocg.upc smp/upc_alloc.upc smp/upc_barrier.upc \
 @LIBGUPC_SMP_RUNTIME_TRUE@	$(UPC_BACKTRACE_SUP) smp/upc_config.h \
-@LIBGUPC_SMP_RUNTIME_TRUE@	smp/upc_debug.h \
+@LIBGUPC_SMP_RUNTIME_TRUE@	smp/upc_debug.h smp/upc_debug.c \
 @LIBGUPC_SMP_RUNTIME_TRUE@	smp/upc_defs.h smp/upc_gasp.c $(UPC_GUM_SUP) smp/upc_libg.c \
 @LIBGUPC_SMP_RUNTIME_TRUE@	smp/upc_lib.h smp/upc_lock.c smp/upc_main.c smp/upc_mem.c \
 @LIBGUPC_SMP_RUNTIME_TRUE@	smp/upc_mem.h smp/upc_numa.h $(UPC_NUMA_SUP) smp/upc_pgm_info.c \
@@ -124,12 +124,12 @@ am__libgupc_la_SOURCES_DIST = smp/upc_access.c smp/upc_accessg.c \
 	smp/upc_affinity_stub.c smp/upc_affinity.c smp/upc_allocg.upc \
 	smp/upc_alloc.upc smp/upc_barrier.upc smp/upc_backtrace.h \
 	smp/upc_backtrace.c smp/upc_backtrace_sup.c smp/upc_config.h \
-	smp/upc_debug.h smp/upc_defs.h smp/upc_gasp.c smp/upc_gum.c \
-	smp/upc_libg.c smp/upc_lib.h smp/upc_lock.c smp/upc_main.c \
-	smp/upc_mem.c smp/upc_mem.h smp/upc_numa.h smp/upc_numa_stub.c \
-	smp/upc_numa.c smp/upc_pgm_info.c smp/upc_pts.h smp/upc_pupc.c \
-	smp/upc_pupc.h smp/upc_sup.h smp/upc_sync.h smp/upc_sysdep.c \
-	smp/upc_sysdep.h smp/upc_vm.c \
+	smp/upc_debug.h smp/upc_debug.c smp/upc_defs.h smp/upc_gasp.c \
+	smp/upc_gum.c smp/upc_libg.c smp/upc_lib.h smp/upc_lock.c \
+	smp/upc_main.c smp/upc_mem.c smp/upc_mem.h smp/upc_numa.h \
+	smp/upc_numa_stub.c smp/upc_numa.c smp/upc_pgm_info.c \
+	smp/upc_pts.h smp/upc_pupc.c smp/upc_pupc.h smp/upc_sup.h \
+	smp/upc_sync.h smp/upc_sysdep.c smp/upc_sysdep.h smp/upc_vm.c \
 	collectives/upc_coll_broadcast.upc \
 	collectives/upc_coll_err.upc collectives/upc_coll_exchange.upc \
 	collectives/upc_coll_gather_all.upc \
@@ -153,11 +153,11 @@ am__libgupc_la_SOURCES_DIST = smp/upc_access.c smp/upc_accessg.c \
 @LIBGUPC_SMP_RUNTIME_TRUE@	upc_addr.lo $(am__objects_1) \
 @LIBGUPC_SMP_RUNTIME_TRUE@	upc_allocg.lo upc_alloc.lo \
 @LIBGUPC_SMP_RUNTIME_TRUE@	upc_barrier.lo $(am__objects_4) \
-@LIBGUPC_SMP_RUNTIME_TRUE@	upc_gasp.lo $(am__objects_5) \
-@LIBGUPC_SMP_RUNTIME_TRUE@	upc_libg.lo upc_lock.lo upc_main.lo \
-@LIBGUPC_SMP_RUNTIME_TRUE@	upc_mem.lo $(am__objects_6) \
-@LIBGUPC_SMP_RUNTIME_TRUE@	upc_pgm_info.lo upc_pupc.lo \
-@LIBGUPC_SMP_RUNTIME_TRUE@	upc_sysdep.lo upc_vm.lo
+@LIBGUPC_SMP_RUNTIME_TRUE@	upc_debug.lo upc_gasp.lo \
+@LIBGUPC_SMP_RUNTIME_TRUE@	$(am__objects_5) upc_libg.lo \
+@LIBGUPC_SMP_RUNTIME_TRUE@	upc_lock.lo upc_main.lo upc_mem.lo \
+@LIBGUPC_SMP_RUNTIME_TRUE@	$(am__objects_6) upc_pgm_info.lo \
+@LIBGUPC_SMP_RUNTIME_TRUE@	upc_pupc.lo upc_sysdep.lo upc_vm.lo
 @LIBGUPC_GENERIC_COLLECTIVES_TRUE@am__objects_8 =  \
 @LIBGUPC_GENERIC_COLLECTIVES_TRUE@	upc_coll_prefix_reduce.lo
 @LIBGUPC_GENERIC_COLLECTIVES_TRUE@am__objects_9 = upc_coll_reduce.lo
@@ -195,6 +195,7 @@ libgupc_la_OBJECTS = $(am_libgupc_la_OBJECTS)
 @LIBGUPC_SMP_RUNTIME_TRUE@	libgupc_pt_la-upc_alloc.lo \
 @LIBGUPC_SMP_RUNTIME_TRUE@	libgupc_pt_la-upc_barrier.lo \
 @LIBGUPC_SMP_RUNTIME_TRUE@	$(am__objects_16) \
+@LIBGUPC_SMP_RUNTIME_TRUE@	libgupc_pt_la-upc_debug.lo \
 @LIBGUPC_SMP_RUNTIME_TRUE@	libgupc_pt_la-upc_gasp.lo \
 @LIBGUPC_SMP_RUNTIME_TRUE@	$(am__objects_17) \
 @LIBGUPC_SMP_RUNTIME_TRUE@	libgupc_pt_la-upc_libg.lo \
@@ -695,6 +696,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgupc_pt_la-upc_coll_reduce.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgupc_pt_la-upc_coll_scatter.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgupc_pt_la-upc_coll_sort.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgupc_pt_la-upc_debug.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgupc_pt_la-upc_gasp.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgupc_pt_la-upc_gum.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgupc_pt_la-upc_libg.Plo@am__quote@
@@ -728,6 +730,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/upc_coll_reduce.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/upc_coll_scatter.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/upc_coll_sort.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/upc_debug.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/upc_gasp.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/upc_gum.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/upc_libg.Plo@am__quote@
@@ -810,6 +813,13 @@ upc_backtrace_sup.lo: smp/upc_backtrace_sup.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='smp/upc_backtrace_sup.c' object='upc_backtrace_sup.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o upc_backtrace_sup.lo `test -f 'smp/upc_backtrace_sup.c' || echo '$(srcdir)/'`smp/upc_backtrace_sup.c
+
+upc_debug.lo: smp/upc_debug.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT upc_debug.lo -MD -MP -MF $(DEPDIR)/upc_debug.Tpo -c -o upc_debug.lo `test -f 'smp/upc_debug.c' || echo '$(srcdir)/'`smp/upc_debug.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/upc_debug.Tpo $(DEPDIR)/upc_debug.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='smp/upc_debug.c' object='upc_debug.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o upc_debug.lo `test -f 'smp/upc_debug.c' || echo '$(srcdir)/'`smp/upc_debug.c
 
 upc_gasp.lo: smp/upc_gasp.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT upc_gasp.lo -MD -MP -MF $(DEPDIR)/upc_gasp.Tpo -c -o upc_gasp.lo `test -f 'smp/upc_gasp.c' || echo '$(srcdir)/'`smp/upc_gasp.c
@@ -943,6 +953,13 @@ libgupc_pt_la-upc_backtrace_sup.lo: smp/upc_backtrace_sup.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='smp/upc_backtrace_sup.c' object='libgupc_pt_la-upc_backtrace_sup.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgupc_pt_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgupc_pt_la-upc_backtrace_sup.lo `test -f 'smp/upc_backtrace_sup.c' || echo '$(srcdir)/'`smp/upc_backtrace_sup.c
+
+libgupc_pt_la-upc_debug.lo: smp/upc_debug.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgupc_pt_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgupc_pt_la-upc_debug.lo -MD -MP -MF $(DEPDIR)/libgupc_pt_la-upc_debug.Tpo -c -o libgupc_pt_la-upc_debug.lo `test -f 'smp/upc_debug.c' || echo '$(srcdir)/'`smp/upc_debug.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/libgupc_pt_la-upc_debug.Tpo $(DEPDIR)/libgupc_pt_la-upc_debug.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='smp/upc_debug.c' object='libgupc_pt_la-upc_debug.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgupc_pt_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o libgupc_pt_la-upc_debug.lo `test -f 'smp/upc_debug.c' || echo '$(srcdir)/'`smp/upc_debug.c
 
 libgupc_pt_la-upc_gasp.lo: smp/upc_gasp.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgupc_pt_la_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT libgupc_pt_la-upc_gasp.lo -MD -MP -MF $(DEPDIR)/libgupc_pt_la-upc_gasp.Tpo -c -o libgupc_pt_la-upc_gasp.lo `test -f 'smp/upc_gasp.c' || echo '$(srcdir)/'`smp/upc_gasp.c

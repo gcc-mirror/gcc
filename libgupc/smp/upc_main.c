@@ -82,24 +82,6 @@ GUPCR_THREAD_LOCAL const char *__upc_err_filename;
    debug-enabled ('g') UPC runtime library routines.  */
 GUPCR_THREAD_LOCAL unsigned int __upc_err_linenum;
 
-/* MPIR Interface support for debugging.
-   http://www.mpi-forum.org/docs/mpir-specification-10-11-2010.pdf
-
-   MPIR_being_debugged is being set by the debugger to 1.
-   As we support MPIR_partial_attach_ok (section 9.13), all
-   threads are in the hold mode and continue to run only after the
-   debugger continues the monitor thread from the MPRI_breakpoint().
-   If debugger wants to attach to any of the threads, thread's gate
-   must be lowered by the debugger.  */
-   
-MPIR_PROCDESC *MPIR_proctable = 0;
-int MPIR_proctable_size = 0;
-const char *MPIR_debug_abort_string = 0;
-volatile int MPIR_debug_state;
-volatile int MPIR_debug_gate = 1; /* Threads continue to run by default.  */
-int MPIR_being_debugged;	  /* Set by the debugger.  */
-int MPIR_partial_attach_ok;	  /* OK to attach to subset of threads.  */
-
 /* Local host name.  */
 #define HOST_NAME_LEN 256
 static char host_name[HOST_NAME_LEN];
@@ -1034,31 +1016,6 @@ upc_global_exit (int status)
 }
 
 #endif /* !GUPCR_USE_PTHREADS */
-
-void
-MPIR_Breakpoint (void)
-{
-}
-
-/* Tell the debugger that this initial process is not to be
-   included in the set of processes which form the UPC program.  */
-void
-MPIR_i_am_starter (void)
-{
-}
-
-/* Tell the debugger that we're not really MPI after all.  */
-void
-MPIR_ignore_queues (void)
-{
-}
-
-/* Tell the debugger to display "main" if we stop immediately
-   after acquiring the processes at startup time.  */
-void
-MPIR_force_to_main (void)
-{
-}
 
 static void
 __upc_notify_debugger_of_abort (const char *mesg)
