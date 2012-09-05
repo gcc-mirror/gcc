@@ -1,4 +1,4 @@
-2012-03-30  Uros Bizjak  <ubizjak@gmail.com>
+2012-09-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/fpu-387.h (set_fpu): Use __builtin_ia32_stmxcsr and
 	__builtin_ia32_ldmxcsr intrinsics.
