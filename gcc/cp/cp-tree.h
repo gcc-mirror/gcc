@@ -621,7 +621,7 @@ struct GTY (()) tree_trait_expr {
 
 /* Based off of TYPE_ANONYMOUS_P.  */
 #define LAMBDA_TYPE_P(NODE) \
-  (CLASS_TYPE_P (NODE) && LAMBDANAME_P (TYPE_LINKAGE_IDENTIFIER (NODE)))
+  (CLASS_TYPE_P (NODE) && CLASSTYPE_LAMBDA_EXPR (NODE))
 
 /* Test if FUNCTION_DECL is a lambda function.  */
 #define LAMBDA_FUNCTION_P(FNDECL) \
@@ -4329,10 +4329,6 @@ extern GTY(()) VEC(tree,gc) *local_classes;
 
 #define LAMBDANAME_PREFIX "__lambda"
 #define LAMBDANAME_FORMAT LAMBDANAME_PREFIX "%d"
-#define LAMBDANAME_P(ID_NODE) \
-  (!strncmp (IDENTIFIER_POINTER (ID_NODE), \
-             LAMBDANAME_PREFIX, \
-	     sizeof (LAMBDANAME_PREFIX) - 1))
 
 #define UDLIT_OP_ANSI_PREFIX "operator\"\" "
 #define UDLIT_OP_ANSI_FORMAT UDLIT_OP_ANSI_PREFIX "%s"

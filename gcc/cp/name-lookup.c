@@ -1998,10 +1998,9 @@ make_anon_name (void)
 }
 
 /* This code is practically identical to that for creating
-   anonymous names, but is just used for lambdas instead.  This is necessary
-   because anonymous names are recognized and cannot be passed to template
-   functions.  */
-/* FIXME is this still necessary? */
+   anonymous names, but is just used for lambdas instead.  This isn't really
+   necessary, but it's convenient to avoid treating lambdas like other
+   anonymous types.  */
 
 static GTY(()) int lambda_cnt = 0;
 
