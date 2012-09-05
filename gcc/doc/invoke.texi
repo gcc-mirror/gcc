@@ -11496,6 +11496,10 @@ or @code{STS}. This offset depends on the device architecture and has
 to be subtracted from the RAM address in order to get the
 respective I/O@tie{}address.
 
+@item __WITH_AVRLIBC__
+The compiler is configured to be used together with AVR-Libc.
+See the @code{--with-avrlibc} configure option.
+
 @end table
 
 @node Blackfin Options

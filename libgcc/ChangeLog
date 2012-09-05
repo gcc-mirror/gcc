@@ -1,3 +1,13 @@
+2012-09-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/54461
+	* config.host (tmake_file,host=avr-*-*): Add avr/t-avrlibc if
+	not configured --with-avrlibc=no.
+	* config/avr/t-avrlibc: New file.
+	* Makefile.in (FPBIT_FUNCS): filter-out LIB2FUNCS_EXCLUDE.
+	(DPBIT_FUNCS): Ditto.
+	(TPBIT_FUNCS): Ditto.
+
 2012-09-04  Teresa Johnson  <tejohnson@google.com>
 
 	* libgcov.c (struct gcov_summary_buffer): New structure.

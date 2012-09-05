@@ -1,3 +1,10 @@
+2012-09-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/54461
+	* configure.ac (noconfigdirs,target=avr-*-*): Add target-newlib,
+	target-libgloss if not configured --with-avrlibc=no.
+	* configure: Regenerate.
+
 2012-09-04  Jason Merrill  <jason@redhat.com>
 
 	* configure.ac: Fix --enable-languages=all.
