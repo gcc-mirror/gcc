@@ -1,3 +1,15 @@
+2012-09-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* bb-reorder.c: Clarify a few points in the head comment and fix
+	long lines in other comments.
+	(find_traces): Fix long line.
+	(find_traces_1_round): Likewise.
+	(better_edge_p): Likewise.
+	(connect_traces): Likewise.
+	(duplicate_computed_gotos): Likewise.
+	(find_rarely_executed_basic_blocks_and_cr): Remove trailing spaces.
+	(fix_up_fall_thru_edges): Fix formatting.
+
 2012-09-05  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/46590
