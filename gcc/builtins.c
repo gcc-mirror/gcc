@@ -11927,7 +11927,7 @@ fold_builtin_strspn (location_t loc, tree s1, tree s2)
       if (p1 && p2)
 	{
 	  const size_t r = strspn (p1, p2);
-	  return size_int (r);
+	  return build_int_cst (size_type_node, r);
 	}
 
       /* If either argument is "", return NULL_TREE.  */
@@ -11972,7 +11972,7 @@ fold_builtin_strcspn (location_t loc, tree s1, tree s2)
       if (p1 && p2)
 	{
 	  const size_t r = strcspn (p1, p2);
-	  return size_int (r);
+	  return build_int_cst (size_type_node, r);
 	}
 
       /* If the first argument is "", return NULL_TREE.  */
