@@ -1,22 +1,41 @@
+2012-09-05  Ulrich Drepper  <drepper@gmail.com>
+
+	* include/ext/random: Add __gnu_cxx:normal_mv_distribution<> class.
+	* include/ext/random.tccAdd out-of-line functions for
+	__gnu_cxx::normal_mv_distribution<>.
+	* testsuite/26_numerics/random/normal_mv_distribution/
+	operators/equal.cc: New file.
+	* testsuite/26_numerics/random/normal_mv_distribution/
+	operators/serialize.cc: New file.
+	* testsuite/26_numerics/random/normal_mv_distribution/
+	operators/inequal.cc: New file.
+	* testsuite/26_numerics/random/normal_mv_distribution/
+	cons/default.cc: New file.
+	* testsuite/26_numerics/random/normal_mv_distribution/
+	cons/parms.cc: New file.
+	* testsuite/26_numerics/random/normal_mv_distribution/
+	requirements/explicit_instantiation/1.cc: New file.
+	* testsuite/26_numerics/random/normal_mv_distribution/
+	requirements/typedefs.cc: New file.
+
 2012-09-04  Ulrich Drepper  <drepper@gmail.com>
 
-	* libstdc++-v3/include/ext/random: Add __gnu_cxx::beta_distribution<>
-	class.
-	* libstdc++-v3/include/ext/random.tcc: Add out-of-line functions for
+	* include/ext/random: Add __gnu_cxx::beta_distribution<> class.
+	* include/ext/random.tcc: Add out-of-line functions for
 	__gnu_cxx::beta_distribution<>.
-	* libstdc++-v3/testsuite/26_numerics/random/beta_distribution/
+	* testsuite/26_numerics/random/beta_distribution/
 	operators/equal.cc: New file.
-	* libstdc++-v3/testsuite/26_numerics/random/beta_distribution/
+	* testsuite/26_numerics/random/beta_distribution/
 	operators/serialize.cc: New file.
-	* libstdc++-v3/testsuite/26_numerics/random/beta_distribution/
+	* testsuite/26_numerics/random/beta_distribution/
 	operators/inequal.cc: New file.
-	* libstdc++-v3/testsuite/26_numerics/random/beta_distribution/
+	* testsuite/26_numerics/random/beta_distribution/
 	cons/parms.cc: New file.
-	* libstdc++-v3/testsuite/26_numerics/random/beta_distribution/
+	* testsuite/26_numerics/random/beta_distribution/
 	cons/default.cc: New file.
-	* libstdc++-v3/testsuite/26_numerics/random/beta_distribution/
+	* testsuite/26_numerics/random/beta_distribution/
 	requirements/typedefs.cc: New file.
-	* libstdc++-v3/testsuite/26_numerics/random/beta_distribution/
+	* testsuite/26_numerics/random/beta_distribution/
 	requirements/explicit_instantiation/1.cc: New file.
 
 2012-09-04  Steven Bosscher  <steven@gcc.gnu.org>
