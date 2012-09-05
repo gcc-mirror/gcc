@@ -4584,7 +4584,7 @@ can_conditionally_move_p (enum machine_mode mode)
    the mode to use should they be constants.  If it is VOIDmode, they cannot
    both be constants.
 
-   OP2 should be stored in TARGET if the comparison is true, otherwise OP2+OP3
+   OP2 should be stored in TARGET if the comparison is false, otherwise OP2+OP3
    should be stored there.  MODE is the mode to use should they be constants.
    If it is VOIDmode, they cannot both be constants.
 
@@ -4598,7 +4598,6 @@ emit_conditional_add (rtx target, enum rtx_code code, rtx op0, rtx op1,
 {
   rtx tem, comparison, last;
   enum insn_code icode;
-  enum rtx_code reversed;
 
   /* If one operand is constant, make it the second one.  Only do this
      if the other operand is not constant as well.  */
@@ -4621,16 +4620,6 @@ emit_conditional_add (rtx target, enum rtx_code code, rtx op0, rtx op1,
 
   if (cmode == VOIDmode)
     cmode = GET_MODE (op0);
-
-  if (swap_commutative_operands_p (op2, op3)
-      && ((reversed = reversed_comparison_code_parts (code, op0, op1, NULL))
-          != UNKNOWN))
-    {
-      tem = op2;
-      op2 = op3;
-      op3 = tem;
-      code = reversed;
-    }
 
   if (mode == VOIDmode)
     mode = GET_MODE (op2);

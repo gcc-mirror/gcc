@@ -5250,7 +5250,7 @@ define these patterns.
 @item @samp{add@var{mode}cc}
 Similar to @samp{mov@var{mode}cc} but for conditional addition.  Conditionally
 move operand 2 or (operands 2 + operand 3) into operand 0 according to the
-comparison in operand 1.  If the comparison is true, operand 2 is moved into
+comparison in operand 1.  If the comparison is false, operand 2 is moved into
 operand 0, otherwise (operand 2 + operand 3) is moved.
 
 @cindex @code{cstore@var{mode}4} instruction pattern

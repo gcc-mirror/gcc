@@ -1,3 +1,10 @@
+2012-09-05  Andrew Pinski  <apinski@cavium.com>
+
+ 	* optabs.c (emit_conditional_add): Correct comment about the arguments.
+	Remove code which might swap op2 and op3 since they cannot be swapped.
+	* doc/md.texi (add@var{mode}cc): Fix document about how the arguments
+	are used.
+
 2012-09-05  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* hooks.c (hook_int_rtx_mode_as_bool_0): New function.
