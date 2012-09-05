@@ -516,6 +516,10 @@ FPBIT_FUNCS := $(filter-out _sf_to_tf,$(FPBIT_FUNCS))
 DPBIT_FUNCS := $(filter-out _df_to_tf,$(DPBIT_FUNCS))
 endif
 
+FPBIT_FUNCS := $(filter-out $(LIB2FUNCS_EXCLUDE),$(FPBIT_FUNCS))
+DPBIT_FUNCS := $(filter-out $(LIB2FUNCS_EXCLUDE),$(DPBIT_FUNCS))
+TPBIT_FUNCS := $(filter-out $(LIB2FUNCS_EXCLUDE),$(TPBIT_FUNCS))
+
 fpbit-src := $(srcdir)/fp-bit.c
 
 # Build FPBIT.

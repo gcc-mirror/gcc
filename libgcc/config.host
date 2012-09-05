@@ -380,6 +380,9 @@ avr-*-rtems*)
 avr-*-*)
 	# Make HImode functions for AVR
 	tmake_file="${cpu_type}/t-avr t-fpbit"
+	if test x${with_avrlibc} != xno; then
+	    tmake_file="$tmake_file ${cpu_type}/t-avrlibc"
+	fi
 	tm_file="$tm_file avr/avr-lib.h"
 	;;
 bfin*-elf*)

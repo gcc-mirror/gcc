@@ -891,6 +891,13 @@ case "${target}" in
   arm-*-riscix*)
     noconfigdirs="$noconfigdirs ld target-libgloss"
     ;;
+  avr-*-rtems*)
+    ;;
+  avr-*-*)
+    if test x${with_avrlibc} != xno; then
+      noconfigdirs="$noconfigdirs target-newlib target-libgloss"
+    fi
+    ;;
   c4x-*-* | tic4x-*-*)
     noconfigdirs="$noconfigdirs target-libgloss"
     ;;

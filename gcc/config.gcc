@@ -892,6 +892,10 @@ avr-*-rtems*)
 	;;
 avr-*-*)
 	tm_file="elfos.h avr/elf.h avr/avr.h dbxelf.h avr/avr-stdint.h"
+	if test x${with_avrlibc} != xno; then
+	    tm_file="${tm_file} ${cpu_type}/avrlibc.h"
+	    tm_defines="${tm_defines} WITH_AVRLIBC"
+	fi
 	tmake_file="avr/t-avr avr/t-multilib"
 	use_gcc_stdint=wrap
 	extra_gcc_objs="driver-avr.o avr-devices.o"
