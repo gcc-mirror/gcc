@@ -26,7 +26,7 @@
   /* We don't consider registers whose class is NO_REGS
      to be a register operand.  */
   /* XXX might have to check for lo regs only for thumb ??? */
-  return (GET_CODE (op) == REG
+  return (REG_P (op)
 	  && (REGNO (op) >= FIRST_PSEUDO_REGISTER
 	      || REGNO_REG_CLASS (REGNO (op)) != NO_REGS));
 })
@@ -55,7 +55,7 @@
   if (GET_CODE (op) == SUBREG)
     op = SUBREG_REG (op);
 
-  return (GET_CODE (op) == REG
+  return (REG_P (op)
 	  && (REGNO (op) <= LAST_ARM_REGNUM
 	      || REGNO (op) >= FIRST_PSEUDO_REGISTER));
 })
@@ -68,7 +68,7 @@
 
   /* We don't consider registers whose class is NO_REGS
      to be a register operand.  */
-  return (GET_CODE (op) == REG
+  return (REG_P (op)
 	  && (REGNO (op) >= FIRST_PSEUDO_REGISTER
 	      || REGNO_REG_CLASS (REGNO (op)) == VFP_D0_D7_REGS
 	      || REGNO_REG_CLASS (REGNO (op)) == VFP_LO_REGS
@@ -178,7 +178,7 @@
   (and (match_code "mem,reg,subreg")
        (match_test "(!CONSTANT_P (op)
 		     && (true_regnum(op) == -1
-			 || (GET_CODE (op) == REG
+			 || (REG_P (op)
 			     && REGNO (op) >= FIRST_PSEUDO_REGISTER)))")))
 
 (define_predicate "vfp_compare_operand"
@@ -195,7 +195,7 @@
 (define_predicate "index_operand"
   (ior (match_operand 0 "s_register_operand")
        (and (match_operand 0 "immediate_operand")
-	    (match_test "(GET_CODE (op) != CONST_INT
+	    (match_test "(!CONST_INT_P (op)
 			  || (INTVAL (op) < 4096 && INTVAL (op) > -4096))"))))
 
 ;; True for operators that can be combined with a shift in ARM state.
@@ -223,10 +223,10 @@
   (and (ior (ior (and (match_code "mult")
 		      (match_test "power_of_two_operand (XEXP (op, 1), mode)"))
 		 (and (match_code "rotate")
-		      (match_test "GET_CODE (XEXP (op, 1)) == CONST_INT
+		      (match_test "CONST_INT_P (XEXP (op, 1))
 				   && ((unsigned HOST_WIDE_INT) INTVAL (XEXP (op, 1))) < 32")))
 	    (and (match_code "ashift,ashiftrt,lshiftrt,rotatert")
-		 (match_test "GET_CODE (XEXP (op, 1)) != CONST_INT
+		 (match_test "!CONST_INT_P (XEXP (op, 1))
 			      || ((unsigned HOST_WIDE_INT) INTVAL (XEXP (op, 1))) < 32")))
        (match_test "mode == GET_MODE (op)")))
 
@@ -235,7 +235,7 @@
   (and (ior (and (match_code "mult")
                  (match_test "power_of_two_operand (XEXP (op, 1), mode)"))
             (and (match_code "ashift,ashiftrt")
-                 (match_test "GET_CODE (XEXP (op, 1)) == CONST_INT
+                 (match_test "CONST_INT_P (XEXP (op, 1))
 		              && ((unsigned HOST_WIDE_INT) INTVAL (XEXP (op, 1)) < 32)")))
        (match_test "mode == GET_MODE (op)")))
 
@@ -332,7 +332,7 @@
    if (GET_CODE (op) == SUBREG)
      op = SUBREG_REG (op);
 
-   return GET_CODE (op) == MEM && memory_address_p (DImode, XEXP (op, 0));
+   return MEM_P (op) && memory_address_p (DImode, XEXP (op, 0));
 })
 
 (define_predicate "di_operand"
@@ -349,7 +349,7 @@
   if (GET_CODE (op) == SUBREG)
     op = SUBREG_REG (op);
 
-  return GET_CODE (op) == MEM && memory_address_p (DFmode, XEXP (op, 0));
+  return MEM_P (op) && memory_address_p (DFmode, XEXP (op, 0));
 })
 
 (define_predicate "soft_df_operand"
@@ -559,7 +559,7 @@
      rtx elt = XVECEXP (op, 0, i);
      int val;
 
-     if (GET_CODE (elt) != CONST_INT)
+     if (!CONST_INT_P (elt))
        return false;
 
      val = INTVAL (elt);
@@ -588,7 +588,7 @@
      rtx elt = XVECEXP (op, 0, i);
      int val;
 
-     if (GET_CODE (elt) != CONST_INT)
+     if (!CONST_INT_P (elt))
        return false;
 
      val = INTVAL (elt);

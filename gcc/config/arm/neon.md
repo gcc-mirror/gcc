@@ -255,7 +255,7 @@
 {
   if (can_create_pseudo_p ())
     {
-      if (GET_CODE (operands[0]) != REG)
+      if (!REG_P (operands[0]))
 	operands[1] = force_reg (TImode, operands[1]);
     }
 })
@@ -267,7 +267,7 @@
 {
   if (can_create_pseudo_p ())
     {
-      if (GET_CODE (operands[0]) != REG)
+      if (!REG_P (operands[0]))
 	operands[1] = force_reg (<MODE>mode, operands[1]);
     }
 })
