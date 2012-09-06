@@ -1886,7 +1886,7 @@ stmt_kills_ref_p (gimple stmt, tree ref)
 
 static bool
 maybe_skip_until (gimple phi, tree target, ao_ref *ref,
-		  tree vuse, bitmap *visited)
+		  tree vuse, bitmap *visited, bool abort_on_visited)
 {
   basic_block bb = gimple_bb (phi);
 
@@ -1904,8 +1904,9 @@ maybe_skip_until (gimple phi, tree target, ao_ref *ref,
 	{
 	  /* An already visited PHI node ends the walk successfully.  */
 	  if (bitmap_bit_p (*visited, SSA_NAME_VERSION (PHI_RESULT (def_stmt))))
-	    return true;
-	  vuse = get_continuation_for_phi (def_stmt, ref, visited);
+	    return !abort_on_visited;
+	  vuse = get_continuation_for_phi (def_stmt, ref,
+					   visited, abort_on_visited);
 	  if (!vuse)
 	    return false;
 	  continue;
@@ -1919,7 +1920,7 @@ maybe_skip_until (gimple phi, tree target, ao_ref *ref,
       if (gimple_bb (def_stmt) != bb)
 	{
 	  if (!bitmap_set_bit (*visited, SSA_NAME_VERSION (vuse)))
-	    return true;
+	    return !abort_on_visited;
 	  bb = gimple_bb (def_stmt);
 	}
       vuse = gimple_vuse (def_stmt);
@@ -1933,7 +1934,8 @@ maybe_skip_until (gimple phi, tree target, ao_ref *ref,
 
 static tree
 get_continuation_for_phi_1 (gimple phi, tree arg0, tree arg1,
-			    ao_ref *ref, bitmap *visited)
+			    ao_ref *ref, bitmap *visited,
+			    bool abort_on_visited)
 {
   gimple def0 = SSA_NAME_DEF_STMT (arg0);
   gimple def1 = SSA_NAME_DEF_STMT (arg1);
@@ -1946,14 +1948,14 @@ get_continuation_for_phi_1 (gimple phi, tree arg0, tree arg1,
 	       && dominated_by_p (CDI_DOMINATORS,
 				  gimple_bb (def1), gimple_bb (def0))))
     {
-      if (maybe_skip_until (phi, arg0, ref, arg1, visited))
+      if (maybe_skip_until (phi, arg0, ref, arg1, visited, abort_on_visited))
 	return arg0;
     }
   else if (gimple_nop_p (def1)
 	   || dominated_by_p (CDI_DOMINATORS,
 			      gimple_bb (def0), gimple_bb (def1)))
     {
-      if (maybe_skip_until (phi, arg1, ref, arg0, visited))
+      if (maybe_skip_until (phi, arg1, ref, arg0, visited, abort_on_visited))
 	return arg1;
     }
   /* Special case of a diamond:
@@ -1988,7 +1990,8 @@ get_continuation_for_phi_1 (gimple phi, tree arg0, tree arg1,
    be found.  */
 
 tree
-get_continuation_for_phi (gimple phi, ao_ref *ref, bitmap *visited)
+get_continuation_for_phi (gimple phi, ao_ref *ref, bitmap *visited,
+			  bool abort_on_visited)
 {
   unsigned nargs = gimple_phi_num_args (phi);
 
@@ -2025,7 +2028,8 @@ get_continuation_for_phi (gimple phi, ao_ref *ref, bitmap *visited)
       for (i = 0; i < nargs; ++i)
 	{
 	  arg1 = PHI_ARG_DEF (phi, i);
-	  arg0 = get_continuation_for_phi_1 (phi, arg0, arg1, ref, visited);
+	  arg0 = get_continuation_for_phi_1 (phi, arg0, arg1, ref, visited,
+					     abort_on_visited);
 	  if (!arg0)
 	    return NULL_TREE;
 	}
@@ -2061,6 +2065,7 @@ walk_non_aliased_vuses (ao_ref *ref, tree vuse,
 {
   bitmap visited = NULL;
   void *res;
+  bool translated = false;
 
   timevar_push (TV_ALIAS_STMT_WALK);
 
@@ -2077,7 +2082,7 @@ walk_non_aliased_vuses (ao_ref *ref, tree vuse,
       if (gimple_nop_p (def_stmt))
 	break;
       else if (gimple_code (def_stmt) == GIMPLE_PHI)
-	vuse = get_continuation_for_phi (def_stmt, ref, &visited);
+	vuse = get_continuation_for_phi (def_stmt, ref, &visited, translated);
       else
 	{
 	  if (stmt_may_clobber_ref_p_1 (def_stmt, ref))
@@ -2095,6 +2100,7 @@ walk_non_aliased_vuses (ao_ref *ref, tree vuse,
 	      else if (res != NULL)
 		break;
 	      /* Translation succeeded, continue walking.  */
+	      translated = true;
 	    }
 	  vuse = gimple_vuse (def_stmt);
 	}
