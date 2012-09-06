@@ -1436,9 +1436,6 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	  		 false);
       pp_space (buffer);
       pp_character (buffer, '=');
-      if (TREE_CODE (node) == MODIFY_EXPR
-	  && MOVE_NONTEMPORAL (node))
-	pp_string (buffer, "{nt}");
       pp_space (buffer);
       dump_generic_node (buffer, TREE_OPERAND (node, 1), spc, flags,
 	  		 false);

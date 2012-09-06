@@ -1,5 +1,12 @@
 2012-09-06  Richard Guenther  <rguenther@suse.de>
 
+	* tree.h (MOVE_NONTEMPORAL): Remove.
+	* tree-pretty-print.c (dump_generic_node): Remove
+	MOVE_NONTEMPORAL handling.
+	* expr.c (expand_expr_real_1): Likewise.
+
+2012-09-06  Richard Guenther  <rguenther@suse.de>
+
 	* passes.c (execute_function_todo): Call compute_may_aliases
 	only if flag_tree_pta is set.
 
