@@ -1,3 +1,8 @@
+2012-09-06  Tobias Burnus
+
+	PR fortran/54463
+	* gfortran.dg/promotion_2.f90: New.
+
 2012-09-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/54486
