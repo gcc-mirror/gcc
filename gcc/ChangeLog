@@ -1,3 +1,8 @@
+2012-09-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* configure.ac (hle prefixes): Remove .code64.
+	* configure: Regenerated.
+
 2012-09-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.c: Use CONST_INT_P, CONST_DOUBLE_P, REG_P, MEM_P,
@@ -6,8 +11,7 @@
 	* config/arm/arm.md: Use CONST_INT_P, REG_P, MEM_P, CONST_DOUBLE_P
 	consistently.
 	* config/arm/neon.md: Use REG_P consistently.
-	* config/arm/predicates.md: Use CONST_INT_P, REG_P, MEM_P
-	consistently.
+	* config/arm/predicates.md: Use CONST_INT_P, REG_P, MEM_P consistently.
 	* config/arm/thumb2.md: Use CONST_INT_P, REG_P consistently.
 	* config/arm/vec-common.md: Use REG_P consistently.
 
@@ -54,13 +58,13 @@
 
 2012-09-06  Chen Liqin  <liqin.gcc@gmail.com>
 
-	* config/score/score.c: Remove TARGET_LEGITIMIZE_ADDRESS define
-	and score_legitimize_address function, use compiler default code instead.
+	* config/score/score.c: Remove TARGET_LEGITIMIZE_ADDRESS define and
+	score_legitimize_address function, use compiler default code instead.
 
 2012-09-05  Jan Hubicka  <jh@suse.cz>
 
-	* ipa-inline.c (want_inline_small_function_p): Use INLINE_HINT_loop_iterations
-	hint.
+	* ipa-inline.c (want_inline_small_function_p): Use
+	INLINE_HINT_loop_iterations hint.
 
 2012-09-05  Andrew Pinski  <apinski@cavium.com>
 
@@ -137,8 +141,7 @@
 2012-09-05   Diego Novillo  <dnovillo@google.com>
 
 	PR bootstrap/54484
-	* vec.h (vec_t::lower_bound): Fix spelling of LESSTHAN
-	argument.
+	* vec.h (vec_t::lower_bound): Fix spelling of LESSTHAN argument.
 
 2012-09-05  Jakub Jelinek  <jakub@redhat.com>
 

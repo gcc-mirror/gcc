@@ -3581,9 +3581,7 @@ foo:	nop
 
     gcc_GAS_CHECK_FEATURE([hle prefixes],
       gcc_cv_as_ix86_hle,,,
-      [.code64
-       lock xacquire cmpxchg %esi, (%rcx)
-       ],,
+      [lock xacquire cmpxchg %esi, (%ecx)],,
       [AC_DEFINE(HAVE_AS_IX86_HLE, 1,
         [Define if your assembler supports HLE prefixes.])])
 
