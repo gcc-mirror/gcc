@@ -1,3 +1,8 @@
+2012-09-06  Andrew Pinski  <apinski@cavium.com>
+
+	PR tree-opt/54494
+	* tree-inline.c (remap_gimple_op_r): Copy TREE_SIDE_EFFECTS also.
+
 2012-09-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/54455
