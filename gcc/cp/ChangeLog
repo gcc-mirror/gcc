@@ -1,3 +1,13 @@
+2012-09-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/54341
+	PR c++/54253
+	* semantics.c (sort_constexpr_mem_initializers): New.
+	(build_constexpr_constructor_member_initializers): Use it.
+	(cx_check_missing_mem_inits): Skip artificial fields.
+	* init.c (expand_aggr_init_1): Don't zero out a class
+	with no data.
+
 2012-09-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/54191

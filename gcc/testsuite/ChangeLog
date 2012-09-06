@@ -1,3 +1,10 @@
+2012-09-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/54341
+	PR c++/54253
+	* g++.dg/cpp0x/constexpr-virtual2.C: New.
+	* g++.dg/cpp0x/constexpr-virtual3.C: New.
+
 2012-09-06  Andrew Pinski  <apinski@cavium.com>
 
 	PR tree-opt/54494
