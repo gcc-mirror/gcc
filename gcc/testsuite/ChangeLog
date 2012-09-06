@@ -1,3 +1,8 @@
+2012-09-06  Andrew Pinski  <apinski@cavium.com>
+
+	PR tree-opt/54494
+	* gcc.dg/tree-ssa/strlen-1.c: New testcase.
+
 2012-09-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/54455
