@@ -2274,12 +2274,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *        the same parameters and the sequences that would
        *        be generated are equal.
        */
-      template<typename _RealType1>
-        friend bool
-        operator==(const std::lognormal_distribution<_RealType1>& __d1,
-		   const std::lognormal_distribution<_RealType1>& __d2)
-        { return (__d1.param() == __d2.param()
-		  && __d1._M_nd == __d2._M_nd); }
+      friend bool
+      operator==(const lognormal_distribution& __d1,
+		 const lognormal_distribution& __d2)
+      { return (__d1.param() == __d2.param()
+		&& __d1._M_nd == __d2._M_nd); }
 
       /**
        * @brief Inserts a %lognormal_distribution random number distribution
@@ -2467,12 +2466,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *        parameters and the sequences that would be generated
        *        are equal.
        */
-      template<typename _RealType1>
-        friend bool
-        operator==(const std::gamma_distribution<_RealType1>& __d1,
-		   const std::gamma_distribution<_RealType1>& __d2)
-        { return (__d1.param() == __d2.param()
-		  && __d1._M_nd == __d2._M_nd); }
+      friend bool
+      operator==(const gamma_distribution& __d1,
+		 const gamma_distribution& __d2)
+      { return (__d1.param() == __d2.param()
+		&& __d1._M_nd == __d2._M_nd); }
 
       /**
        * @brief Inserts a %gamma_distribution random number distribution
@@ -2632,11 +2630,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *        the same parameters and the sequences that would be
        *        generated are equal.
        */
-      template<typename _RealType1>
-        friend bool
-        operator==(const std::chi_squared_distribution<_RealType1>& __d1,
-		   const std::chi_squared_distribution<_RealType1>& __d2)
-        { return __d1.param() == __d2.param() && __d1._M_gd == __d2._M_gd; }
+      friend bool
+      operator==(const chi_squared_distribution& __d1,
+		 const chi_squared_distribution& __d2)
+      { return __d1.param() == __d2.param() && __d1._M_gd == __d2._M_gd; }
 
       /**
        * @brief Inserts a %chi_squared_distribution random number distribution
@@ -2985,13 +2982,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *        the same parameters and the sequences that would
        *        be generated are equal.
        */
-      template<typename _RealType1>
-        friend bool
-        operator==(const std::fisher_f_distribution<_RealType1>& __d1,
-		   const std::fisher_f_distribution<_RealType1>& __d2)
-        { return (__d1.param() == __d2.param()
-		  && __d1._M_gd_x == __d2._M_gd_x
-		  && __d1._M_gd_y == __d2._M_gd_y); }
+      friend bool
+      operator==(const fisher_f_distribution& __d1,
+		 const fisher_f_distribution& __d2)
+      { return (__d1.param() == __d2.param()
+		&& __d1._M_gd_x == __d2._M_gd_x
+		&& __d1._M_gd_y == __d2._M_gd_y); }
 
       /**
        * @brief Inserts a %fisher_f_distribution random number distribution
@@ -3159,12 +3155,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *        the same parameters and the sequences that would
        *        be generated are equal.
        */
-      template<typename _RealType1>
-        friend bool
-        operator==(const std::student_t_distribution<_RealType1>& __d1,
-		   const std::student_t_distribution<_RealType1>& __d2)
-        { return (__d1.param() == __d2.param()
-		  && __d1._M_nd == __d2._M_nd && __d1._M_gd == __d2._M_gd); }
+      friend bool
+      operator==(const student_t_distribution& __d1,
+		 const student_t_distribution& __d2)
+      { return (__d1.param() == __d2.param()
+		&& __d1._M_nd == __d2._M_nd && __d1._M_gd == __d2._M_gd); }
 
       /**
        * @brief Inserts a %student_t_distribution random number distribution
@@ -3535,10 +3530,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *        the same parameters and the sequences that would
        *        be generated are equal.
        */
-      template<typename _IntType1>
 	friend bool
-        operator==(const std::binomial_distribution<_IntType1>& __d1,
-		   const std::binomial_distribution<_IntType1>& __d2)
+        operator==(const binomial_distribution& __d1,
+		   const binomial_distribution& __d2)
 #ifdef _GLIBCXX_USE_C99_MATH_TR1
 	{ return __d1.param() == __d2.param() && __d1._M_nd == __d2._M_nd; }
 #else
@@ -3892,11 +3886,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *        the same parameters and the sequences that would be
        *        generated are equal.
        */
-      template<typename _IntType1>
-        friend bool
-        operator==(const std::negative_binomial_distribution<_IntType1>& __d1,
-		   const std::negative_binomial_distribution<_IntType1>& __d2)
-        { return __d1.param() == __d2.param() && __d1._M_gd == __d2._M_gd; }
+      friend bool
+      operator==(const negative_binomial_distribution& __d1,
+		 const negative_binomial_distribution& __d2)
+      { return __d1.param() == __d2.param() && __d1._M_gd == __d2._M_gd; }
 
       /**
        * @brief Inserts a %negative_binomial_distribution random
@@ -4076,14 +4069,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	*        parameters and the sequences that would be generated
 	*        are equal.
 	*/
-      template<typename _IntType1>
-        friend bool
-        operator==(const std::poisson_distribution<_IntType1>& __d1,
-		   const std::poisson_distribution<_IntType1>& __d2)
+      friend bool
+      operator==(const poisson_distribution& __d1,
+		 const poisson_distribution& __d2)
 #ifdef _GLIBCXX_USE_C99_MATH_TR1
-        { return __d1.param() == __d2.param() && __d1._M_nd == __d2._M_nd; }
+      { return __d1.param() == __d2.param() && __d1._M_nd == __d2._M_nd; }
 #else
-        { return __d1.param() == __d2.param(); }
+      { return __d1.param() == __d2.param(); }
 #endif
 
       /**
