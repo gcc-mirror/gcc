@@ -2362,21 +2362,20 @@ gfc_conv_intrinsic_funcall (gfc_se * se, gfc_expr * expr)
 
       if (gfc_option.flag_external_blas
 	  && (sym->ts.type == BT_REAL || sym->ts.type == BT_COMPLEX)
-	  && (sym->ts.kind == gfc_default_real_kind
-	      || sym->ts.kind == gfc_default_double_kind))
+	  && (sym->ts.kind == 4 || sym->ts.kind == 8))
 	{
 	  tree gemm_fndecl;
 
 	  if (sym->ts.type == BT_REAL)
 	    {
-	      if (sym->ts.kind == gfc_default_real_kind)
+	      if (sym->ts.kind == 4)
 		gemm_fndecl = gfor_fndecl_sgemm;
 	      else
 		gemm_fndecl = gfor_fndecl_dgemm;
 	    }
 	  else
 	    {
-	      if (sym->ts.kind == gfc_default_real_kind)
+	      if (sym->ts.kind == 4)
 		gemm_fndecl = gfor_fndecl_cgemm;
 	      else
 		gemm_fndecl = gfor_fndecl_zgemm;
