@@ -1,3 +1,28 @@
+2012-09-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (<sse4_1_avx2>_pblendvb): Use
+	reg_not_xmm0_operand_maybe_avx as operand 0 constraint.
+
+2012-09-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2012-08-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (isa): Add fma and fma4.
+	(enabled): Handle fma and fma4.
+	* config/i386/sse.md (*fma_fmadd_<mode>): Merge *fma4_fmadd_<mode>.
+	(*fma_fmsub_<mode>): Merge *fma4_fmsub_<mode>.
+	(*fma_fnmadd_<mode>): Merge *fma4_fnmadd_<mode>.
+	(*fma_fnmsub_<mode>): Merge *fma4_fnmsub_<mode>.
+	(*fma_fmaddsub_<mode>): Merge *fma4_fmaddsub_<mode>.
+	(*fma_fmsubadd_<mode>): Merge *fma4_fmsubadd_<mode>.
+
+	2012-08-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (*fma_fmadd_<mode>, *fma_fmsub_<mode>,
+	*fma_fnmadd_<mode>, *fma_fnmsub_<mode>, *fma_fmaddsub_<mode>,
+	*fma_fmsubadd_<mode>): Move FMA3 insn patterns before FMA4 patterns.
+
 2012-09-06  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/54498
@@ -23,7 +48,7 @@
 2012-09-05  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backport from 2012-09-05 mainline r190697.
-	
+
 	PR target/54461
 	* config.gcc (tm_file,target=avr-*-*): Add avr/avrlibc.h if
 	configured --with-avrlibc.
@@ -39,8 +64,8 @@
 	Backport from 2012-09-04 mainline r190919
 
 	PR target/45070
-	* config/arm/arm.c (thumb1_extra_regs_pushed): Handle return value of size
-	less than 4 bytes by using macro ARM_NUM_INTS.
+	* config/arm/arm.c (thumb1_extra_regs_pushed): Handle return value
+	of size less than 4 bytes by using macro ARM_NUM_INTS.
 	(thumb1_unexpanded_epilogue): Use macro ARM_NUM_INTS.
 
 2012-09-04  Richard Henderson  <rth@redhat.com>
@@ -52,8 +77,7 @@
 	Backport from 2012-09-04 mainline r190920
 
 	PR target/54476
-	* config/avr/avr.c (avr_expand_delay_cycles): Mask operand with
-	SImode.
+	* config/avr/avr.c (avr_expand_delay_cycles): Mask operand with SImode.
 
 2012-09-04  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
