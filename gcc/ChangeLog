@@ -1,3 +1,10 @@
+2012-09-06  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_xcoff_asm_named_section): Add TLS
+	section.
+	* config/rs6000/rs6000.c (rs6000_debug_address_cost): Add new
+	arguments to TARGET_ADDRESS_COST call.
+
 2012-09-06  Richard Guenther  <rguenther@suse.de>
 
 	* tree.h (MOVE_NONTEMPORAL): Remove.

@@ -25547,10 +25547,12 @@ rs6000_xcoff_asm_named_section (const char *name, unsigned int flags,
 				tree decl ATTRIBUTE_UNUSED)
 {
   int smclass;
-  static const char * const suffix[3] = { "PR", "RO", "RW" };
+  static const char * const suffix[4] = { "PR", "RO", "RW", "TL" };
 
   if (flags & SECTION_CODE)
     smclass = 0;
+  else if (flags & SECTION_TLS)
+    smclass = 3;
   else if (flags & SECTION_WRITE)
     smclass = 2;
   else
@@ -26071,10 +26073,10 @@ rs6000_debug_rtx_costs (rtx x, int code, int outer_code, int opno, int *total,
 /* Debug form of ADDRESS_COST that is selected if -mdebug=cost.  */
 
 static int
-rs6000_debug_address_cost (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED,
-			   addr_space_t as ATTRIBUTE_UNUSED, bool speed)
+rs6000_debug_address_cost (rtx x, enum machine_mode mode,
+			   addr_space_t as, bool speed)
 {
-  int ret = TARGET_ADDRESS_COST (x, speed);
+  int ret = TARGET_ADDRESS_COST (x, mode, as, speed);
 
   fprintf (stderr, "\nrs6000_address_cost, return = %d, speed = %s, x:\n",
 	   ret, speed ? "true" : "false");
