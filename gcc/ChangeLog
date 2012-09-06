@@ -1,3 +1,9 @@
+2012-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/54455
+	* sel-sched-ir.c (maybe_tidy_empty_bb): Give up if previous fallthru
+	bb ends up with asm goto referencing bb's label.
+
 2012-09-06  Chen Liqin  <liqin.gcc@gmail.com>
 
 	* config/score/score.c: Remove TARGET_LEGITIMIZE_ADDRESS define

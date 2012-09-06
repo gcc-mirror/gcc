@@ -1,4 +1,4 @@
-2012-09-06  Tobias Burnus
+2012-09-06  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/54463
 	* trans-intrinsic.c (gfc_conv_intrinsic_funcall): Fix matmul

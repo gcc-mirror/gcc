@@ -1,4 +1,9 @@
-2012-09-06  Tobias Burnus
+2012-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/54455
+	* gcc.dg/54455.c: New test.
+
+2012-09-06  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/54463
 	* gfortran.dg/promotion_2.f90: New.
