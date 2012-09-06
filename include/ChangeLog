@@ -1,3 +1,7 @@
+2012-09-06  Cary Coutant  <ccoutant@google.com>
+
+	* dwarf2.def: Edit comment.
+
 2012-08-24  Sriraman Tallam  <tmsriram@google.com>
 
 	* plugin-api.h (ld_plugin_allow_unique_segment_for_sections):
