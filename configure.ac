@@ -1358,7 +1358,7 @@ if test -d ${srcdir}/gcc && test "x$have_gmp" = xno; then
   AC_TRY_COMPILE([#include "gmp.h"],[
   #define GCC_GMP_VERSION_NUM(a,b,c) (((a) << 16L) | ((b) << 8) | (c))
   #define GCC_GMP_VERSION GCC_GMP_VERSION_NUM(__GNU_MP_VERSION,__GNU_MP_VERSION_MINOR,__GNU_MP_VERSION_PATCHLEVEL)
-  #if GCC_GMP_VERSION < GCC_GMP_VERSION_NUM(4,2,0)
+  #if GCC_GMP_VERSION < GCC_GMP_VERSION_NUM(4,2,3)
   choke me
   #endif
   ], [AC_TRY_COMPILE([#include <gmp.h>],[
