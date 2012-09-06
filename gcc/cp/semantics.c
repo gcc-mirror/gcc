@@ -5895,6 +5895,35 @@ check_constexpr_ctor_body (tree last, tree list)
   return ok;
 }
 
+/* VEC is a vector of constructor elements built up for the base and member
+   initializers of a constructor for TYPE.  They need to be in increasing
+   offset order, which they might not be yet if TYPE has a primary base
+   which is not first in the base-clause.  */
+
+static VEC(constructor_elt,gc) *
+sort_constexpr_mem_initializers (tree type, VEC(constructor_elt,gc) *vec)
+{
+  if (!CLASSTYPE_HAS_PRIMARY_BASE_P (type)
+      || (CLASSTYPE_PRIMARY_BINFO (type)
+	  == BINFO_BASE_BINFO (TYPE_BINFO (type), 0)))
+    return vec;
+
+  /* Find the element for the primary base and move it to the beginning of
+     the vec.  */
+  tree pri = BINFO_TYPE (CLASSTYPE_PRIMARY_BINFO (type));
+  VEC(constructor_elt,gc) &v = *vec;
+  int pri_idx;
+
+  for (pri_idx = 1; ; ++pri_idx)
+    if (TREE_TYPE (v[pri_idx].index) == pri)
+      break;
+  constructor_elt pri_elt = v[pri_idx];
+  for (int i = 0; i < pri_idx; ++i)
+    v[i+1] = v[i];
+  v[0] = pri_elt;
+  return vec;
+}
+
 /* Build compile-time evalable representations of member-initializer list
    for a constexpr constructor.  */
 
@@ -5957,6 +5986,7 @@ build_constexpr_constructor_member_initializers (tree type, tree body)
 	      return body;
 	    }
 	}
+      vec = sort_constexpr_mem_initializers (type, vec);
       return build_constructor (type, vec);
     }
   else
@@ -6075,14 +6105,16 @@ cx_check_missing_mem_inits (tree fun, tree body, bool complain)
 	{
 	  index = CONSTRUCTOR_ELT (body, i)->index;
 	  /* Skip base and vtable inits.  */
-	  if (TREE_CODE (index) != FIELD_DECL)
+	  if (TREE_CODE (index) != FIELD_DECL
+	      || DECL_ARTIFICIAL (index))
 	    continue;
 	}
       for (; field != index; field = DECL_CHAIN (field))
 	{
 	  tree ftype;
 	  if (TREE_CODE (field) != FIELD_DECL
-	      || (DECL_C_BIT_FIELD (field) && !DECL_NAME (field)))
+	      || (DECL_C_BIT_FIELD (field) && !DECL_NAME (field))
+	      || DECL_ARTIFICIAL (field))
 	    continue;
 	  ftype = strip_array_types (TREE_TYPE (field));
 	  if (type_has_constexpr_default_constructor (ftype))
