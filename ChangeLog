@@ -1,3 +1,8 @@
+2012-09-06   Diego Novillo  <dnovillo@google.com>
+
+	* configure.ac: Bump minimum GMP version to 4.2.3.
+	* configure: Re-generate.
+
 2012-09-05  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/54461
