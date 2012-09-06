@@ -586,7 +586,7 @@ DW_OP (DW_OP_GNU_convert, 0xf7)
 DW_OP (DW_OP_GNU_reinterpret, 0xf9)
 /* The GNU parameter ref extension.  */
 DW_OP (DW_OP_GNU_parameter_ref, 0xfa)
-/* Extension for Fission.  See http://gcc.gnu.org/wiki/DebugFission.  */
+/* Extensions for Fission.  See http://gcc.gnu.org/wiki/DebugFission.  */
 DW_OP (DW_OP_GNU_addr_index, 0xfb)
 DW_OP (DW_OP_GNU_const_index, 0xfc)
 /* HP extensions.  */
