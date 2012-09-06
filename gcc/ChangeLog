@@ -1,3 +1,16 @@
+2012-09-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.c: Use CONST_INT_P, CONST_DOUBLE_P, REG_P, MEM_P,
+	LABEL_P, JUMP_P, CALL_P, NOTE_P, BARRIER_P consistently.
+	* config/arm/arm.h: Use REG_P, MEM_P consistently.
+	* config/arm/arm.md: Use CONST_INT_P, REG_P, MEM_P, CONST_DOUBLE_P
+	consistently.
+	* config/arm/neon.md: Use REG_P consistently.
+	* config/arm/predicates.md: Use CONST_INT_P, REG_P, MEM_P
+	consistently.
+	* config/arm/thumb2.md: Use CONST_INT_P, REG_P consistently.
+	* config/arm/vec-common.md: Use REG_P consistently.
+
 2012-09-06  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/54498
