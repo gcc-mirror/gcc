@@ -1776,7 +1776,8 @@ execute_function_todo (void *data)
   if (flags & TODO_rebuild_alias)
     {
       execute_update_addresses_taken ();
-      compute_may_aliases ();
+      if (flag_tree_pta)
+	compute_may_aliases ();
     }
   else if (optimize && (flags & TODO_update_address_taken))
     execute_update_addresses_taken ();

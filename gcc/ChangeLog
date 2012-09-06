@@ -1,3 +1,8 @@
+2012-09-06  Richard Guenther  <rguenther@suse.de>
+
+	* passes.c (execute_function_todo): Call compute_may_aliases
+	only if flag_tree_pta is set.
+
 2012-09-06  Andrew Pinski  <apinski@cavium.com>
 
 	PR tree-opt/54494
