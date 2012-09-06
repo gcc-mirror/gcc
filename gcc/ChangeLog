@@ -1,3 +1,8 @@
+2012-09-06  Chen Liqin  <liqin.gcc@gmail.com>
+
+	* config/score/score.c: Remove TARGET_LEGITIMIZE_ADDRESS define
+	and score_legitimize_address function, use compiler default code instead.
+
 2012-09-05  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-inline.c (want_inline_small_function_p): Use INLINE_HINT_loop_iterations
