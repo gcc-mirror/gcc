@@ -707,7 +707,13 @@ gcov_exit (void)
 	    memcpy (cs_all, cs_prg, sizeof (*cs_all));
 	  else if (!all_prg.checksum
 		   && (!GCOV_LOCKED || cs_all->runs == cs_prg->runs)
-		   && memcmp (cs_all, cs_prg, sizeof (*cs_all)))
+                   /* Don't compare the histograms, which may have slight
+                      variations depending on the order they were updated
+                      due to the truncating integer divides used in the
+                      merge.  */
+                   && memcmp (cs_all, cs_prg,
+                              sizeof (*cs_all) - (sizeof (gcov_bucket_type)
+                                                  * GCOV_HISTOGRAM_SIZE)))
 	    {
 	      fprintf (stderr, "profiling:%s:Invocation mismatch - some data files may have been removed%s\n",
 		       gi_filename, GCOV_LOCKED

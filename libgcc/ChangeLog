@@ -1,3 +1,9 @@
+2012-09-07  Teresa Johnson  <tejohnson@google.com>
+
+        PR gcov-profile/54487
+	* libgcc/libgcov.c (gcov_exit): Avoid warning on histogram
+        differences.
+
 2012-09-05  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/54461
