@@ -1,3 +1,11 @@
+2012-09-07  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/53986
+	* tree-vrp.c (extract_range_from_multiplicative_op_1): Allow
+	LSHIFT_EXPR.
+	(extract_range_from_binary_expr_1): Handle LSHIFT with constant range as
+	shift amount.
+
 2012-09-07  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/aix43.h (RS6000_CALL_GLUE): Delete.
