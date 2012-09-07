@@ -1,5 +1,21 @@
 2012-09-07  Richard Guenther  <rguenther@suse.de>
 
+	Backport from mainline
+	2012-07-13  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/53922
+	* tree-vrp.c (value_inside_range): Change prototype to take
+	min/max instead of value-range.
+	(range_includes_zero_p): Likewise.  Return the result from
+	value_inside_range.
+	(extract_range_from_binary_expr_1): Adjust to handle dont-know
+	return value from range_includes_zero_p.
+	(extract_range_from_unary_expr_1): Likewise.
+	(compare_range_with_value): Likewise.
+	(vrp_meet_1): Likewise.
+
+2012-09-07  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/53667
 	* tree-ssa-structalias.c (handle_rhs_call): Properly clobber
 	EAF_NOESCAPED arguments.  Transitively close non-EAF_DIRECT

@@ -1316,41 +1316,25 @@ compare_values (tree val1, tree val2)
 }
 
 
-/* Return 1 if VAL is inside value range VR (VR->MIN <= VAL <= VR->MAX),
-          0 if VAL is not inside VR,
+/* Return 1 if VAL is inside value range MIN <= VAL <= MAX,
+          0 if VAL is not inside [MIN, MAX],
 	 -2 if we cannot tell either way.
-
-   FIXME, the current semantics of this functions are a bit quirky
-	  when taken in the context of VRP.  In here we do not care
-	  about VR's type.  If VR is the anti-range ~[3, 5] the call
-	  value_inside_range (4, VR) will return 1.
-
-	  This is counter-intuitive in a strict sense, but the callers
-	  currently expect this.  They are calling the function
-	  merely to determine whether VR->MIN <= VAL <= VR->MAX.  The
-	  callers are applying the VR_RANGE/VR_ANTI_RANGE semantics
-	  themselves.
-
-	  This also applies to value_ranges_intersect_p and
-	  range_includes_zero_p.  The semantics of VR_RANGE and
-	  VR_ANTI_RANGE should be encoded here, but that also means
-	  adapting the users of these functions to the new semantics.
 
    Benchmark compile/20001226-1.c compilation time after changing this
    function.  */
 
 static inline int
-value_inside_range (tree val, value_range_t * vr)
+value_inside_range (tree val, tree min, tree max)
 {
   int cmp1, cmp2;
 
-  cmp1 = operand_less_p (val, vr->min);
+  cmp1 = operand_less_p (val, min);
   if (cmp1 == -2)
     return -2;
   if (cmp1 == 1)
     return 0;
 
-  cmp2 = operand_less_p (vr->max, val);
+  cmp2 = operand_less_p (max, val);
   if (cmp2 == -2)
     return -2;
 
@@ -1379,23 +1363,14 @@ value_ranges_intersect_p (value_range_t *vr0, value_range_t *vr1)
 }
 
 
-/* Return true if VR includes the value zero, false otherwise.  FIXME,
-   currently this will return false for an anti-range like ~[-4, 3].
-   This will be wrong when the semantics of value_inside_range are
-   modified (currently the users of this function expect these
-   semantics).  */
+/* Return 1 if [MIN, MAX] includes the value zero, 0 if it does not
+   include the value zero, -2 if we cannot tell.  */
 
-static inline bool
-range_includes_zero_p (value_range_t *vr)
+static inline int
+range_includes_zero_p (tree min, tree max)
 {
-  tree zero;
-
-  gcc_assert (vr->type != VR_UNDEFINED
-              && vr->type != VR_VARYING
-	      && !symbolic_range_p (vr));
-
-  zero = build_int_cst (TREE_TYPE (vr->min), 0);
-  return (value_inside_range (zero, vr) == 1);
+  tree zero = build_int_cst (TREE_TYPE (min), 0);
+  return value_inside_range (zero, min, max);
 }
 
 /* Return true if *VR is know to only contain nonnegative values.  */
@@ -2609,7 +2584,7 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 	     gives [min / 4, max / 4] range.  */
 	  if (vr1.type == VR_RANGE
 	      && !symbolic_range_p (&vr1)
-	      && !range_includes_zero_p (&vr1))
+	      && range_includes_zero_p (vr1.min, vr1.max) == 0)
 	    {
 	      vr0.type = type = VR_RANGE;
 	      vr0.min = vrp_val_min (expr_type);
@@ -2626,8 +2601,7 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 	 not eliminate a division by zero.  */
       if (cfun->can_throw_non_call_exceptions
 	  && (vr1.type != VR_RANGE
-	      || symbolic_range_p (&vr1)
-	      || range_includes_zero_p (&vr1)))
+	      || range_includes_zero_p (vr1.min, vr1.max) != 0))
 	{
 	  set_value_range_to_varying (vr);
 	  return;
@@ -2638,8 +2612,7 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 	 include 0.  */
       if (vr0.type == VR_RANGE
 	  && (vr1.type != VR_RANGE
-	      || symbolic_range_p (&vr1)
-	      || range_includes_zero_p (&vr1)))
+	      || range_includes_zero_p (vr1.min, vr1.max) != 0))
 	{
 	  tree zero = build_int_cst (TREE_TYPE (vr0.min), 0);
 	  int cmp;
@@ -2691,8 +2664,7 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
   else if (code == TRUNC_MOD_EXPR)
     {
       if (vr1.type != VR_RANGE
-	  || symbolic_range_p (&vr1)
-	  || range_includes_zero_p (&vr1)
+	  || range_includes_zero_p (vr1.min, vr1.max) != 0
 	  || vrp_val_is_min (vr1.min))
 	{
 	  set_value_range_to_varying (vr);
@@ -3093,7 +3065,7 @@ extract_range_from_unary_expr_1 (value_range_t *vr,
 	 ~[-INF, min(MIN, MAX)].  */
       if (vr0.type == VR_ANTI_RANGE)
 	{
-	  if (range_includes_zero_p (&vr0))
+	  if (range_includes_zero_p (vr0.min, vr0.max) == 1)
 	    {
 	      /* Take the lower of the two values.  */
 	      if (cmp != 1)
@@ -3144,7 +3116,7 @@ extract_range_from_unary_expr_1 (value_range_t *vr,
 
       /* If the range contains zero then we know that the minimum value in the
          range will be zero.  */
-      else if (range_includes_zero_p (&vr0))
+      else if (range_includes_zero_p (vr0.min, vr0.max) == 1)
 	{
 	  if (cmp == 1)
 	    max = min;
@@ -3759,7 +3731,7 @@ compare_range_with_value (enum tree_code comp, value_range_t *vr, tree val,
 	return NULL_TREE;
 
       /* ~[VAL_1, VAL_2] OP VAL is known if VAL_1 <= VAL <= VAL_2.  */
-      if (value_inside_range (val, vr) == 1)
+      if (value_inside_range (val, vr->min, vr->max) == 1)
 	return (comp == NE_EXPR) ? boolean_true_node : boolean_false_node;
 
       return NULL_TREE;
@@ -6570,11 +6542,15 @@ give_up:
      anti-ranges from ranges is necessary because of the odd
      semantics of range_includes_zero_p and friends.  */
   if (!symbolic_range_p (vr0)
-      && ((vr0->type == VR_RANGE && !range_includes_zero_p (vr0))
-	  || (vr0->type == VR_ANTI_RANGE && range_includes_zero_p (vr0)))
+      && ((vr0->type == VR_RANGE
+	   && range_includes_zero_p (vr0->min, vr0->max) == 0)
+	  || (vr0->type == VR_ANTI_RANGE
+	      && range_includes_zero_p (vr0->min, vr0->max) == 1))
       && !symbolic_range_p (vr1)
-      && ((vr1->type == VR_RANGE && !range_includes_zero_p (vr1))
-	  || (vr1->type == VR_ANTI_RANGE && range_includes_zero_p (vr1))))
+      && ((vr1->type == VR_RANGE
+	   && range_includes_zero_p (vr1->min, vr1->max) == 0)
+	  || (vr1->type == VR_ANTI_RANGE
+	      && range_includes_zero_p (vr1->min, vr1->max) == 1)))
     {
       set_value_range_to_nonnull (vr0, TREE_TYPE (vr0->min));
 
