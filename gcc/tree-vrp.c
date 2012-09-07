@@ -2066,7 +2066,8 @@ extract_range_from_multiplicative_op_1 (value_range_t *vr,
 	      || code == CEIL_DIV_EXPR
 	      || code == EXACT_DIV_EXPR
 	      || code == ROUND_DIV_EXPR
-	      || code == RSHIFT_EXPR);
+	      || code == RSHIFT_EXPR
+	      || code == LSHIFT_EXPR);
   gcc_assert ((vr0->type == VR_RANGE
 	       || (code == MULT_EXPR && vr0->type == VR_ANTI_RANGE))
 	      && vr0->type == vr1->type);
@@ -2761,6 +2762,27 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 						&vr0, &vr1p);
 	      flag_wrapv = saved_flag_wrapv;
 	      return;
+	    }
+	  else if (code == LSHIFT_EXPR
+		   && range_int_cst_p (&vr0))
+	    {
+	      int overflow_pos = TYPE_PRECISION (expr_type);
+	      int bound_shift;
+	      double_int bound;
+
+	      if (!TYPE_UNSIGNED (expr_type))
+		overflow_pos -= 1;
+
+	      bound_shift = overflow_pos - TREE_INT_CST_LOW (vr1.max);
+	      bound = double_int_one.llshift (bound_shift,
+					      TYPE_PRECISION (expr_type));
+	      if (tree_to_double_int (vr0.max).ult (bound))
+		{
+		  /* In the absense of overflow, (a << b) is equivalent
+		     to (a * 2^b).  */
+		  extract_range_from_multiplicative_op_1 (vr, code, &vr0, &vr1);
+		  return;
+		}
 	    }
 	}
       set_value_range_to_varying (vr);
