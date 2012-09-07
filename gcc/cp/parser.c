@@ -20670,54 +20670,24 @@ cp_parser_check_declarator_template_parameters (cp_parser* parser,
 						cp_declarator *declarator,
 						location_t declarator_location)
 {
-  unsigned num_templates;
-
-  /* We haven't seen any classes that involve template parameters yet.  */
-  num_templates = 0;
-
   switch (declarator->kind)
     {
     case cdk_id:
-      if (declarator->u.id.qualifying_scope)
-	{
-	  tree scope;
+      {
+	unsigned num_templates = 0;
+	tree scope = declarator->u.id.qualifying_scope;
 
-	  scope = declarator->u.id.qualifying_scope;
+	if (scope)
+	  num_templates = num_template_headers_for_class (scope);
+	else if (TREE_CODE (declarator->u.id.unqualified_name)
+		 == TEMPLATE_ID_EXPR)
+	  /* If the DECLARATOR has the form `X<y>' then it uses one
+	     additional level of template parameters.  */
+	  ++num_templates;
 
-	  while (scope && CLASS_TYPE_P (scope))
-	    {
-	      /* You're supposed to have one `template <...>'
-		 for every template class, but you don't need one
-		 for a full specialization.  For example:
-
-		 template <class T> struct S{};
-		 template <> struct S<int> { void f(); };
-		 void S<int>::f () {}
-
-		 is correct; there shouldn't be a `template <>' for
-		 the definition of `S<int>::f'.  */
-	      if (!CLASSTYPE_TEMPLATE_INFO (scope))
-		/* If SCOPE does not have template information of any
-		   kind, then it is not a template, nor is it nested
-		   within a template.  */
-		break;
-	      if (explicit_class_specialization_p (scope))
-		break;
-	      if (PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (scope)))
-		++num_templates;
-
-	      scope = TYPE_CONTEXT (scope);
-	    }
-	}
-      else if (TREE_CODE (declarator->u.id.unqualified_name)
-	       == TEMPLATE_ID_EXPR)
-	/* If the DECLARATOR has the form `X<y>' then it uses one
-	   additional level of template parameters.  */
-	++num_templates;
-
-      return cp_parser_check_template_parameters 
-	(parser, num_templates, declarator_location, declarator);
-
+	return cp_parser_check_template_parameters 
+	  (parser, num_templates, declarator_location, declarator);
+      }
 
     case cdk_function:
     case cdk_array:

@@ -2214,9 +2214,9 @@ copy_default_args_to_explicit_spec (tree decl)
 int
 num_template_headers_for_class (tree ctype)
 {
-  int template_count = 0;
-  tree t = ctype;
-  while (t != NULL_TREE && CLASS_TYPE_P (t))
+  int num_templates = 0;
+
+  while (ctype && CLASS_TYPE_P (ctype))
     {
       /* You're supposed to have one `template <...>' for every
 	 template class, but you don't need one for a full
@@ -2228,21 +2228,20 @@ num_template_headers_for_class (tree ctype)
 
 	 is correct; there shouldn't be a `template <>' for the
 	 definition of `S<int>::f'.  */
-      if (CLASSTYPE_TEMPLATE_SPECIALIZATION (t)
-	  && !any_dependent_template_arguments_p (CLASSTYPE_TI_ARGS (t)))
-	/* T is an explicit (not partial) specialization.  All
-	   containing classes must therefore also be explicitly
-	   specialized.  */
+      if (!CLASSTYPE_TEMPLATE_INFO (ctype))
+	/* If CTYPE does not have template information of any
+	   kind,  then it is not a template, nor is it nested
+	   within a template.  */
 	break;
-      if ((CLASSTYPE_USE_TEMPLATE (t) || CLASSTYPE_IS_TEMPLATE (t))
-	  && PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (t)))
-	template_count += 1;
+      if (explicit_class_specialization_p (ctype))
+	break;
+      if (PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (ctype)))
+	++num_templates;
 
-      t = TYPE_MAIN_DECL (t);
-      t = DECL_CONTEXT (t);
+      ctype = TYPE_CONTEXT (ctype);
     }
 
-  return template_count;
+  return num_templates;
 }
 
 /* Do a simple sanity check on the template headers that precede the
