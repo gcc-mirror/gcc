@@ -157,12 +157,6 @@ do {									\
 #undef  WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE (!TARGET_64BIT ? 16 : 32)
 
-/* AIX V5 uses PowerPC nop (ori 0,0,0) instruction as call glue for PowerPC
-   and "cror 31,31,31" for POWER architecture.  */
-
-#undef RS6000_CALL_GLUE
-#define RS6000_CALL_GLUE "nop"
-
 /* AIX 4.2 and above provides initialization and finalization function
    support from linker command line.  */
 #undef HAS_INIT_SECTION
