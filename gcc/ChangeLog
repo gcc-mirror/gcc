@@ -1,3 +1,8 @@
+2012-06-04  Andi Kleen <ak@linux.intel.com>
+
+	* doc/invoke.texi (-ffat-lto-objects): Clarify that gcc-ar
+	et.al. should be used.
+
 2012-09-06  Andi Kleen  <ak@linux.intel.com>
 
 	* gcc/lto-streamer.h (res_pair): Add.
