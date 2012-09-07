@@ -3743,29 +3743,43 @@ handle_rhs_call (gimple stmt, VEC(ce_s, heap) **results)
       /* As we compute ESCAPED context-insensitive we do not gain
          any precision with just EAF_NOCLOBBER but not EAF_NOESCAPE
 	 set.  The argument would still get clobbered through the
-	 escape solution.
-	 ???  We might get away with less (and more precise) constraints
-	 if using a temporary for transitively closing things.  */
+	 escape solution.  */
       if ((flags & EAF_NOCLOBBER)
 	   && (flags & EAF_NOESCAPE))
 	{
 	  varinfo_t uses = get_call_use_vi (stmt);
 	  if (!(flags & EAF_DIRECT))
-	    make_transitive_closure_constraints (uses);
-	  make_constraint_to (uses->id, arg);
+	    {
+	      varinfo_t tem = new_var_info (NULL_TREE, "callarg");
+	      make_constraint_to (tem->id, arg);
+	      make_transitive_closure_constraints (tem);
+	      make_copy_constraint (uses, tem->id);
+	    }
+	  else
+	    make_constraint_to (uses->id, arg);
 	  returns_uses = true;
 	}
       else if (flags & EAF_NOESCAPE)
 	{
+	  struct constraint_expr lhs, rhs;
 	  varinfo_t uses = get_call_use_vi (stmt);
 	  varinfo_t clobbers = get_call_clobber_vi (stmt);
+	  varinfo_t tem = new_var_info (NULL_TREE, "callarg");
+	  make_constraint_to (tem->id, arg);
 	  if (!(flags & EAF_DIRECT))
-	    {
-	      make_transitive_closure_constraints (uses);
-	      make_transitive_closure_constraints (clobbers);
-	    }
-	  make_constraint_to (uses->id, arg);
-	  make_constraint_to (clobbers->id, arg);
+	    make_transitive_closure_constraints (tem);
+	  make_copy_constraint (uses, tem->id);
+	  make_copy_constraint (clobbers, tem->id);
+	  /* Add *tem = nonlocal, do not add *tem = callused as
+	     EAF_NOESCAPE parameters do not escape to other parameters
+	     and all other uses appear in NONLOCAL as well.  */
+	  lhs.type = DEREF;
+	  lhs.var = tem->id;
+	  lhs.offset = 0;
+	  rhs.type = SCALAR;
+	  rhs.var = nonlocal_id;
+	  rhs.offset = 0;
+	  process_constraint (new_constraint (lhs, rhs));
 	  returns_uses = true;
 	}
       else
