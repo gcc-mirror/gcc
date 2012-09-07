@@ -1,3 +1,12 @@
+2012-09-06  Andi Kleen  <ak@linux.intel.com>
+
+	* gcc/lto-streamer.h (res_pair): Add.
+	(lto_file_decl_data): Replace resolutions with respairs.
+	Add max_index.
+	* gcc/lto/lto.c (lto_resolution_read): Remove max_index.  Add rp.
+	Initialize respairs.
+	(lto_file_finalize): Set up resolutions vector lazily from respairs.
+
 2012-09-06  Lawrence Crowl  <crowl@google.com>
 
 	* double-int.h (double_int::operator &=): New.
