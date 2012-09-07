@@ -97,7 +97,7 @@ print_global_statistics (FILE* file)
 	  n_p_loops += bb->count;
 	}
 
-      if (VEC_length (edge, bb->succs) > 1)
+      if (EDGE_COUNT (bb->succs) > 1)
 	{
 	  n_conditions++;
 	  n_p_conditions += bb->count;
@@ -149,7 +149,7 @@ print_graphite_scop_statistics (FILE* file, scop_p scop)
       n_bbs++;
       n_p_bbs += bb->count;
 
-      if (VEC_length (edge, bb->succs) > 1)
+      if (EDGE_COUNT (bb->succs) > 1)
 	{
 	  n_conditions++;
 	  n_p_conditions += bb->count;

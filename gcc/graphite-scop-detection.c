@@ -67,7 +67,7 @@ static gbb_type
 get_bb_type (basic_block bb, struct loop *last_loop)
 {
   VEC (basic_block, heap) *dom;
-  int nb_dom, nb_suc;
+  int nb_dom;
   struct loop *loop = bb->loop_father;
 
   /* Check, if we entry into a new loop. */
@@ -88,9 +88,7 @@ get_bb_type (basic_block bb, struct loop *last_loop)
   if (nb_dom == 0)
     return GBB_LAST;
 
-  nb_suc = VEC_length (edge, bb->succs);
-
-  if (nb_dom == 1 && nb_suc == 1)
+  if (nb_dom == 1 && single_succ_p (bb))
     return GBB_SIMPLE;
 
   return GBB_COND_HEADER;
@@ -1114,7 +1112,7 @@ print_graphite_scop_statistics (FILE* file, scop_p scop)
       n_bbs++;
       n_p_bbs += bb->count;
 
-      if (VEC_length (edge, bb->succs) > 1)
+      if (EDGE_COUNT (bb->succs) > 1)
 	{
 	  n_conditions++;
 	  n_p_conditions += bb->count;
@@ -1299,7 +1297,7 @@ canonicalize_loop_closed_ssa (loop_p loop)
 
   bb = e->dest;
 
-  if (VEC_length (edge, bb->preds) == 1)
+  if (single_pred_p (bb))
     {
       e = split_block_after_labels (bb);
       make_close_phi_nodes_unique (e->src);

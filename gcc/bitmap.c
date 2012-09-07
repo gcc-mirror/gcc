@@ -837,33 +837,24 @@ bitmap_last_set_bit (const_bitmap a)
   gcc_unreachable ();
  found_bit:
   bit_no += ix * BITMAP_WORD_BITS;
-
-  /* Binary search for the last set bit.  */
 #if GCC_VERSION >= 3004
   gcc_assert (sizeof(long) == sizeof (word));
-  bit_no += sizeof (long) * 8 - __builtin_ctzl (word);
+  bit_no += BITMAP_WORD_BITS - __builtin_clzl (word) - 1;
 #else
-#if BITMAP_WORD_BITS > 64
-#error "Fill out the table."
-#endif
+  /* Hopefully this is a twos-complement host...  */
+  BITMAP_WORD x = word;
+  x |= (x >> 1);
+  x |= (x >> 2);
+  x |= (x >> 4);
+  x |= (x >> 8);
+  x |= (x >> 16);
 #if BITMAP_WORD_BITS > 32
-  if ((word & 0xffffffff00000000))
-    word >>= 32, bit_no += 32;
+  x |= (x >> 32);
 #endif
-  if (word & 0xffff0000)
-    word >>= 16, bit_no += 16;
-  if (!(word & 0xff00))
-    word >>= 8, bit_no += 8;
-  if (!(word & 0xf0))
-    word >>= 4, bit_no += 4;
-  if (!(word & 12))
-    word >>= 2, bit_no += 2;
-  if (!(word & 2))
-    word >>= 1, bit_no += 1;
+  bit_no += bitmap_popcount (x) - 1;
 #endif
 
- gcc_checking_assert (word & 1);
- return bit_no;
+  return bit_no;
 }
 
 
