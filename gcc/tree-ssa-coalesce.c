@@ -626,10 +626,10 @@ ssa_conflicts_dump (FILE *file, ssa_conflicts_p ptr)
 
   fprintf (file, "\nConflict graph:\n");
 
-  FOR_EACH_VEC_ELT (bitmap, ptr->conflicts, x, b);
+  FOR_EACH_VEC_ELT (bitmap, ptr->conflicts, x, b)
     if (b)
       {
-	fprintf (dump_file, "%d: ", x);
+	fprintf (file, "%d: ", x);
 	dump_bitmap (file, b);
       }
 }

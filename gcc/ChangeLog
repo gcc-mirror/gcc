@@ -1,3 +1,19 @@
+2012-09-07  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* bitmap.c (bitmap_last_set_bit): Rewrite to return the correct bit.
+
+	* graphite.c (print_global_statistics): Use EDGE_COUNT instead
+	of VEC_length.
+	(print_graphite_scop_statistics): Likewise.
+	* graphite-scop-detection.c (get_bb_type): Use single_succ_p.
+	(print_graphite_scop_statistics): Use EDGE_COUNT, not VEC_length.
+	(canonicalize_loop_closed_ssa): Use single_pred_p.
+
+	* alias.c (reg_seen): Make this an sbitmap.
+	(record_set, init_alias_analysis): Update.
+
+	* tree-ssa-coalesce.c (ssa_conflicts_dump): Fix dumping.
+
 2012-09-07  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/53986
