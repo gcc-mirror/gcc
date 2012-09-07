@@ -9332,13 +9332,13 @@ static inline double_int
 double_int_type_size_in_bits (const_tree type)
 {
   if (TREE_CODE (type) == ERROR_MARK)
-    return uhwi_to_double_int (BITS_PER_WORD);
+    return double_int::from_uhwi (BITS_PER_WORD);
   else if (TYPE_SIZE (type) == NULL_TREE)
     return double_int_zero;
   else if (TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST)
     return tree_to_double_int (TYPE_SIZE (type));
   else
-    return uhwi_to_double_int (TYPE_ALIGN (type));
+    return double_int::from_uhwi (TYPE_ALIGN (type));
 }
 
 /*  Given a pointer to a tree node for a subrange type, return a pointer
@@ -11758,7 +11758,7 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
 	      mem_loc_result->dw_loc_oprnd2.val_class
 		= dw_val_class_const_double;
 	      mem_loc_result->dw_loc_oprnd2.v.val_double
-		= shwi_to_double_int (INTVAL (rtl));
+		= double_int::from_shwi (INTVAL (rtl));
 	    }
 	}
       break;
@@ -12317,7 +12317,7 @@ loc_descriptor (rtx rtl, enum machine_mode mode,
 		  double_int val = rtx_to_double_int (elt);
 
 		  if (elt_size <= sizeof (HOST_WIDE_INT))
-		    insert_int (double_int_to_shwi (val), elt_size, p);
+		    insert_int (val.to_shwi (), elt_size, p);
 		  else
 		    {
 		      gcc_assert (elt_size == 2 * sizeof (HOST_WIDE_INT));
@@ -13646,11 +13646,11 @@ simple_decl_align_in_bits (const_tree decl)
 static inline double_int
 round_up_to_align (double_int t, unsigned int align)
 {
-  double_int alignd = uhwi_to_double_int (align);
-  t = double_int_add (t, alignd);
-  t = double_int_add (t, double_int_minus_one);
-  t = double_int_div (t, alignd, true, TRUNC_DIV_EXPR);
-  t = double_int_mul (t, alignd);
+  double_int alignd = double_int::from_uhwi (align);
+  t += alignd;
+  t += double_int_minus_one;
+  t = t.div (alignd, true, TRUNC_DIV_EXPR);
+  t *= alignd;
   return t;
 }
 
@@ -13757,23 +13757,21 @@ field_byte_offset (const_tree decl)
 
       /* Figure out the bit-distance from the start of the structure to
 	 the "deepest" bit of the bit-field.  */
-      deepest_bitpos = double_int_add (bitpos_int, field_size_in_bits);
+      deepest_bitpos = bitpos_int + field_size_in_bits;
 
       /* This is the tricky part.  Use some fancy footwork to deduce
 	 where the lowest addressed bit of the containing object must
 	 be.  */
-      object_offset_in_bits
-	= double_int_sub (deepest_bitpos, type_size_in_bits);
+      object_offset_in_bits = deepest_bitpos - type_size_in_bits;
 
       /* Round up to type_align by default.  This works best for
 	 bitfields.  */
       object_offset_in_bits
 	= round_up_to_align (object_offset_in_bits, type_align_in_bits);
 
-      if (double_int_ucmp (object_offset_in_bits, bitpos_int) > 0)
+      if (object_offset_in_bits.ugt (bitpos_int))
 	{
-	  object_offset_in_bits
-	    = double_int_sub (deepest_bitpos, type_size_in_bits);
+	  object_offset_in_bits = deepest_bitpos - type_size_in_bits;
 
 	  /* Round up to decl_align instead.  */
 	  object_offset_in_bits
@@ -13785,10 +13783,9 @@ field_byte_offset (const_tree decl)
     object_offset_in_bits = bitpos_int;
 
   object_offset_in_bytes
-    = double_int_div (object_offset_in_bits,
-		      uhwi_to_double_int (BITS_PER_UNIT), true,
-		      TRUNC_DIV_EXPR);
-  return double_int_to_shwi (object_offset_in_bytes);
+    = object_offset_in_bits.div (double_int::from_uhwi (BITS_PER_UNIT),
+				 true, TRUNC_DIV_EXPR);
+  return object_offset_in_bytes.to_shwi ();
 }
 
 /* The following routines define various Dwarf attributes and any data
@@ -14064,7 +14061,7 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
 		double_int val = rtx_to_double_int (elt);
 
 		if (elt_size <= sizeof (HOST_WIDE_INT))
-		  insert_int (double_int_to_shwi (val), elt_size, p);
+		  insert_int (val.to_shwi (), elt_size, p);
 		else
 		  {
 		    gcc_assert (elt_size == 2 * sizeof (HOST_WIDE_INT));

@@ -1271,7 +1271,7 @@ get_addr_base_and_unit_offset_1 (tree exp, HOST_WIDE_INT *poffset,
 		  {
 		    double_int off = mem_ref_offset (exp);
 		    gcc_assert (off.high == -1 || off.high == 0);
-		    byte_offset += double_int_to_shwi (off);
+		    byte_offset += off.to_shwi ();
 		  }
 		exp = TREE_OPERAND (base, 0);
 	      }
@@ -1294,7 +1294,7 @@ get_addr_base_and_unit_offset_1 (tree exp, HOST_WIDE_INT *poffset,
 		  {
 		    double_int off = mem_ref_offset (exp);
 		    gcc_assert (off.high == -1 || off.high == 0);
-		    byte_offset += double_int_to_shwi (off);
+		    byte_offset += off.to_shwi ();
 		  }
 		exp = TREE_OPERAND (base, 0);
 	      }

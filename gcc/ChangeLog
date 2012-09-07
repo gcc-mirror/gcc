@@ -1,3 +1,69 @@
+2012-09-06  Lawrence Crowl  <crowl@google.com>
+
+	* double-int.h (double_int::operator &=): New.
+	(double_int::operator ^=): New.
+	(double_int::operator |=): New.
+	(double_int::mul_with_sign): Modify overflow parameter to bool*.
+	(double_int::add_with_sign): New.
+	(double_int::ule): New.
+	(double_int::sle): New.
+	(binary double_int::operator *): Remove parameter name.
+	(binary double_int::operator +): Likewise.
+	(binary double_int::operator -): Likewise.
+	(binary double_int::operator &): Likewise.
+	(double_int::operator |): Likewise.
+	(double_int::operator ^): Likewise.
+	(double_int::and_not): Likewise.
+	(double_int::from_shwi): Tidy formatting.
+	(double_int::from_uhwi): Likewise.
+	(double_int::from_uhwi): Likewise.
+	* double-int.c (double_int::mul_with_sign): Modify overflow parameter
+	to bool*.
+	(double_int::add_with_sign): New.
+	(double_int::ule): New.
+	(double_int::sle): New.
+	* builtins.c: Modify to use the new double_int interface.
+	* cgraph.c: Likewise.
+	* combine.c: Likewise.
+	* dwarf2out.c: Likewise.
+	* emit-rtl.c: Likewise.
+	* expmed.c: Likewise.
+	* expr.c: Likewise.
+	* fixed-value.c: Likewise.
+	* fold-const.c: Likewise.
+	* gimple-fold.c: Likewise.
+	* gimple-ssa-strength-reduction.c: Likewise.
+	* gimplify-rtx.c: Likewise.
+	* ipa-prop.c: Likewise.
+	* loop-iv.c: Likewise.
+	* optabs.c: Likewise.
+	* stor-layout.c: Likewise.
+	* tree-affine.c: Likewise.
+	* tree-cfg.c: Likewise.
+	* tree-dfa.c: Likewise.
+	* tree-flow-inline.h: Likewise.
+	* tree-object-size.c: Likewise.
+	* tree-predcom.c: Likewise.
+	* tree-pretty-print.c: Likewise.
+	* tree-sra.c: Likewise.
+	* tree-ssa-address.c: Likewise.
+	* tree-ssa-alias.c: Likewise.
+	* tree-ssa-ccp.c: Likewise.
+	* tree-ssa-forwprop.c: Likewise.
+	* tree-ssa-loop-ivopts.c: Likewise.
+	* tree-ssa-loop-niter.c: Likewise.
+	* tree-ssa-phiopt.c: Likewise.
+	* tree-ssa-pre.c: Likewise.
+	* tree-ssa-sccvn: Likewise.
+	* tree-ssa-structalias.c: Likewise.
+	* tree-ssa.c: Likewise.
+	* tree-switch-conversion.c: Likewise.
+	* tree-vect-loop-manip.c: Likewise.
+	* tree-vrp.c: Likewise.
+	* tree.h: Likewise.
+	* tree.c: Likewise.
+	* varasm.c: Likewise.
+
 2012-09-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	* configure.ac (hle prefixes): Remove .code64.

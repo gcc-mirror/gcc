@@ -423,9 +423,7 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
       switch (TREE_CODE (exp))
 	{
 	case BIT_FIELD_REF:
-	  bit_offset
-	    = double_int_add (bit_offset,
-			      tree_to_double_int (TREE_OPERAND (exp, 2)));
+	  bit_offset += tree_to_double_int (TREE_OPERAND (exp, 2));
 	  break;
 
 	case COMPONENT_REF:
@@ -436,14 +434,11 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 	    if (this_offset && TREE_CODE (this_offset) == INTEGER_CST)
 	      {
 		double_int doffset = tree_to_double_int (this_offset);
-		doffset = double_int_lshift (doffset,
-					     BITS_PER_UNIT == 8
-					     ? 3 : exact_log2 (BITS_PER_UNIT),
-					     HOST_BITS_PER_DOUBLE_INT, true);
-		doffset = double_int_add (doffset,
-					  tree_to_double_int
-					  (DECL_FIELD_BIT_OFFSET (field)));
-		bit_offset = double_int_add (bit_offset, doffset);
+		doffset = doffset.alshift (BITS_PER_UNIT == 8
+					   ? 3 : exact_log2 (BITS_PER_UNIT),
+					   HOST_BITS_PER_DOUBLE_INT);
+		doffset += tree_to_double_int (DECL_FIELD_BIT_OFFSET (field));
+		bit_offset = bit_offset + doffset;
 
 		/* If we had seen a variable array ref already and we just
 		   referenced the last field of a struct or a union member
@@ -462,11 +457,11 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 			tree ssize = TYPE_SIZE_UNIT (stype);
 			if (host_integerp (fsize, 0)
 			    && host_integerp (ssize, 0)
-			    && double_int_fits_in_shwi_p (doffset))
+			    && doffset.fits_shwi ())
 			  maxsize += ((TREE_INT_CST_LOW (ssize)
 				       - TREE_INT_CST_LOW (fsize))
 				      * BITS_PER_UNIT
-					- double_int_to_shwi (doffset));
+					- doffset.to_shwi ());
 			else
 			  maxsize = -1;
 		      }
@@ -481,9 +476,9 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 		if (maxsize != -1
 		    && csize
 		    && host_integerp (csize, 1)
-		    && double_int_fits_in_shwi_p (bit_offset))
+		    && bit_offset.fits_shwi ())
 		  maxsize = TREE_INT_CST_LOW (csize)
-			    - double_int_to_shwi (bit_offset);
+			    - bit_offset.to_shwi ();
 		else
 		  maxsize = -1;
 	      }
@@ -504,17 +499,13 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 		    TREE_CODE (unit_size) == INTEGER_CST))
 	      {
 		double_int doffset
-		  = double_int_sext
-		    (double_int_sub (TREE_INT_CST (index),
-				     TREE_INT_CST (low_bound)),
-		     TYPE_PRECISION (TREE_TYPE (index)));
-		doffset = double_int_mul (doffset,
-					  tree_to_double_int (unit_size));
-		doffset = double_int_lshift (doffset,
-					     BITS_PER_UNIT == 8
-					     ? 3 : exact_log2 (BITS_PER_UNIT),
-					     HOST_BITS_PER_DOUBLE_INT, true);
-		bit_offset = double_int_add (bit_offset, doffset);
+		  = (TREE_INT_CST (index) - TREE_INT_CST (low_bound))
+		    .sext (TYPE_PRECISION (TREE_TYPE (index)));
+		doffset *= tree_to_double_int (unit_size);
+		doffset = doffset.alshift (BITS_PER_UNIT == 8
+					   ? 3 : exact_log2 (BITS_PER_UNIT),
+					   HOST_BITS_PER_DOUBLE_INT);
+		bit_offset = bit_offset + doffset;
 
 		/* An array ref with a constant index up in the structure
 		   hierarchy will constrain the size of any variable array ref
@@ -530,9 +521,9 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 		if (maxsize != -1
 		    && asize
 		    && host_integerp (asize, 1)
-		    && double_int_fits_in_shwi_p (bit_offset))
+		    && bit_offset.fits_shwi ())
 		  maxsize = TREE_INT_CST_LOW (asize)
-			    - double_int_to_shwi (bit_offset);
+			    - bit_offset.to_shwi ();
 		else
 		  maxsize = -1;
 
@@ -547,8 +538,7 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 	  break;
 
 	case IMAGPART_EXPR:
-	  bit_offset
-	    = double_int_add (bit_offset, uhwi_to_double_int (bitsize));
+	  bit_offset += double_int::from_uhwi (bitsize);
 	  break;
 
 	case VIEW_CONVERT_EXPR:
@@ -563,12 +553,11 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 	      else
 		{
 		  double_int off = mem_ref_offset (exp);
-		  off = double_int_lshift (off,
-					   BITS_PER_UNIT == 8
-					   ? 3 : exact_log2 (BITS_PER_UNIT),
-					   HOST_BITS_PER_DOUBLE_INT, true);
-		  off = double_int_add (off, bit_offset);
-		  if (double_int_fits_in_shwi_p (off))
+		  off = off.alshift (BITS_PER_UNIT == 8
+				     ? 3 : exact_log2 (BITS_PER_UNIT),
+				     HOST_BITS_PER_DOUBLE_INT);
+		  off = off + bit_offset;
+		  if (off.fits_shwi ())
 		    {
 		      bit_offset = off;
 		      exp = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
@@ -595,12 +584,11 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 	      else
 		{
 		  double_int off = mem_ref_offset (exp);
-		  off = double_int_lshift (off,
-					   BITS_PER_UNIT == 8
-					   ? 3 : exact_log2 (BITS_PER_UNIT),
-					   HOST_BITS_PER_DOUBLE_INT, true);
-		  off = double_int_add (off, bit_offset);
-		  if (double_int_fits_in_shwi_p (off))
+		  off = off.alshift (BITS_PER_UNIT == 8
+				     ? 3 : exact_log2 (BITS_PER_UNIT),
+				     HOST_BITS_PER_DOUBLE_INT);
+		  off += bit_offset;
+		  if (off.fits_shwi ())
 		    {
 		      bit_offset = off;
 		      exp = TREE_OPERAND (TMR_BASE (exp), 0);
@@ -617,7 +605,7 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
     }
  done:
 
-  if (!double_int_fits_in_shwi_p (bit_offset))
+  if (!bit_offset.fits_shwi ())
     {
       *poffset = 0;
       *psize = bitsize;
@@ -626,7 +614,7 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
       return exp;
     }
 
-  hbit_offset = double_int_to_shwi (bit_offset);
+  hbit_offset = bit_offset.to_shwi ();
 
   /* We need to deal with variable arrays ending structures such as
        struct { int length; int a[1]; } x;           x.a[d]

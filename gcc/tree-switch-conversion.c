@@ -970,17 +970,14 @@ array_value_type (gimple swtch, tree type, int num,
 	  if (prec > HOST_BITS_PER_WIDE_INT)
 	    return type;
 
-	  if (sign >= 0
-	      && double_int_equal_p (cst, double_int_zext (cst, prec)))
+	  if (sign >= 0 && cst == cst.zext (prec))
 	    {
-	      if (sign == 0
-		  && double_int_equal_p (cst, double_int_sext (cst, prec)))
+	      if (sign == 0 && cst == cst.sext (prec))
 		break;
 	      sign = 1;
 	      break;
 	    }
-	  if (sign <= 0
-	      && double_int_equal_p (cst, double_int_sext (cst, prec)))
+	  if (sign <= 0 && cst == cst.sext (prec))
 	    {
 	      sign = -1;
 	      break;

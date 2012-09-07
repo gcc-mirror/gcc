@@ -376,9 +376,8 @@ do_fixed_multiply (FIXED_VALUE_TYPE *f, const FIXED_VALUE_TYPE *a,
   if (GET_MODE_PRECISION (f->mode) <= HOST_BITS_PER_WIDE_INT)
     {
       f->data = a->data * b->data;
-      f->data = f->data.lshift ((-GET_MODE_FBIT (f->mode)),
-		     HOST_BITS_PER_DOUBLE_INT,
-		     !unsigned_p);
+      f->data = f->data.lshift (-GET_MODE_FBIT (f->mode),
+				HOST_BITS_PER_DOUBLE_INT, !unsigned_p);
       overflow_p = fixed_saturate1 (f->mode, f->data, &f->data, sat_p);
     }
   else
@@ -466,9 +465,8 @@ do_fixed_multiply (FIXED_VALUE_TYPE *f, const FIXED_VALUE_TYPE *a,
 	  f->data.high = f->data.high | s.high;
 	  s.low = f->data.low;
 	  s.high = f->data.high;
-	  r = r.lshift ((-GET_MODE_FBIT (f->mode)),
-			 HOST_BITS_PER_DOUBLE_INT,
-			 !unsigned_p);
+	  r = r.lshift (-GET_MODE_FBIT (f->mode),
+			HOST_BITS_PER_DOUBLE_INT, !unsigned_p);
 	}
 
       overflow_p = fixed_saturate2 (f->mode, r, s, &f->data, sat_p);
@@ -493,8 +491,7 @@ do_fixed_divide (FIXED_VALUE_TYPE *f, const FIXED_VALUE_TYPE *a,
   if (GET_MODE_PRECISION (f->mode) <= HOST_BITS_PER_WIDE_INT)
     {
       f->data = a->data.lshift (GET_MODE_FBIT (f->mode),
-		     HOST_BITS_PER_DOUBLE_INT,
-		     !unsigned_p);
+				HOST_BITS_PER_DOUBLE_INT, !unsigned_p);
       f->data = f->data.div (b->data, unsigned_p, TRUNC_DIV_EXPR);
       overflow_p = fixed_saturate1 (f->mode, f->data, &f->data, sat_p);
     }
@@ -612,9 +609,8 @@ do_fixed_shift (FIXED_VALUE_TYPE *f, const FIXED_VALUE_TYPE *a,
 
   if (GET_MODE_PRECISION (f->mode) <= HOST_BITS_PER_WIDE_INT || (!left_p))
     {
-      f->data = a->data.lshift (left_p ? b->data.low : (-b->data.low),
-		     HOST_BITS_PER_DOUBLE_INT,
-		     !unsigned_p);
+      f->data = a->data.lshift (left_p ? b->data.low : -b->data.low,
+				HOST_BITS_PER_DOUBLE_INT, !unsigned_p);
       if (left_p) /* Only left shift saturates.  */
 	overflow_p = fixed_saturate1 (f->mode, f->data, &f->data, sat_p);
     }
@@ -630,8 +626,7 @@ do_fixed_shift (FIXED_VALUE_TYPE *f, const FIXED_VALUE_TYPE *a,
       else
 	{
 	  temp_low = a->data.lshift (b->data.low,
-			 HOST_BITS_PER_DOUBLE_INT,
-			 !unsigned_p);
+				     HOST_BITS_PER_DOUBLE_INT, !unsigned_p);
 	  /* Logical shift right to temp_high.  */
 	  temp_high = a->data.llshift (b->data.low - HOST_BITS_PER_DOUBLE_INT,
 			 HOST_BITS_PER_DOUBLE_INT);
@@ -801,8 +796,8 @@ fixed_convert (FIXED_VALUE_TYPE *f, enum machine_mode mode,
       double_int temp_high, temp_low;
       int amount = GET_MODE_FBIT (mode) - GET_MODE_FBIT (a->mode);
       temp_low = a->data.lshift (amount,
-		     HOST_BITS_PER_DOUBLE_INT,
-		     SIGNED_FIXED_POINT_MODE_P (a->mode));
+				 HOST_BITS_PER_DOUBLE_INT,
+				 SIGNED_FIXED_POINT_MODE_P (a->mode));
       /* Logical shift right to temp_high.  */
       temp_high = a->data.llshift (amount - HOST_BITS_PER_DOUBLE_INT,
 		     HOST_BITS_PER_DOUBLE_INT);
@@ -864,8 +859,8 @@ fixed_convert (FIXED_VALUE_TYPE *f, enum machine_mode mode,
       /* Right shift a to temp based on a->mode.  */
       double_int temp;
       temp = a->data.lshift (GET_MODE_FBIT (mode) - GET_MODE_FBIT (a->mode),
-		     HOST_BITS_PER_DOUBLE_INT,
-		     SIGNED_FIXED_POINT_MODE_P (a->mode));
+			     HOST_BITS_PER_DOUBLE_INT,
+			     SIGNED_FIXED_POINT_MODE_P (a->mode));
       f->mode = mode;
       f->data = temp;
       if (SIGNED_FIXED_POINT_MODE_P (a->mode) ==

@@ -490,7 +490,7 @@ rtx_to_double_int (const_rtx cst)
   double_int r;
 
   if (CONST_INT_P (cst))
-      r = shwi_to_double_int (INTVAL (cst));
+      r = double_int::from_shwi (INTVAL (cst));
   else if (CONST_DOUBLE_AS_INT_P (cst))
     {
       r.low = CONST_DOUBLE_LOW (cst);

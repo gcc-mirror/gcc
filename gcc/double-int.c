@@ -606,7 +606,6 @@ div_and_round_double (unsigned code, int uns,
   return overflow;
 }
 
-
 /* Returns mask for PREC bits.  */
 
 double_int
@@ -754,7 +753,7 @@ double_int::operator * (double_int b) const
    *OVERFLOW is set to nonzero.  */
 
 double_int
-double_int::mul_with_sign (double_int b, bool unsigned_p, int *overflow) const
+double_int::mul_with_sign (double_int b, bool unsigned_p, bool *overflow) const
 {
   const double_int &a = *this;
   double_int ret;
@@ -771,6 +770,19 @@ double_int::operator + (double_int b) const
   const double_int &a = *this;
   double_int ret;
   add_double (a.low, a.high, b.low, b.high, &ret.low, &ret.high);
+  return ret;
+}
+
+/* Returns A + B. If the operation overflows according to UNSIGNED_P,
+   *OVERFLOW is set to nonzero.  */
+
+double_int
+double_int::add_with_sign (double_int b, bool unsigned_p, bool *overflow) const
+{
+  const double_int &a = *this;
+  double_int ret;
+  *overflow = add_double_with_sign (a.low, a.high, b.low, b.high,
+                                    &ret.low, &ret.high, unsigned_p);
   return ret;
 }
 
@@ -1104,6 +1116,20 @@ double_int::ult (double_int b) const
   return false;
 }
 
+/* Compares two unsigned values A and B for less-than or equal-to.  */
+
+bool
+double_int::ule (double_int b) const
+{
+  if ((unsigned HOST_WIDE_INT) high < (unsigned HOST_WIDE_INT) b.high)
+    return true;
+  if ((unsigned HOST_WIDE_INT) high > (unsigned HOST_WIDE_INT) b.high)
+    return false;
+  if (low <= b.low)
+    return true;
+  return false;
+}
+
 /* Compares two unsigned values A and B for greater-than.  */
 
 bool
@@ -1128,6 +1154,20 @@ double_int::slt (double_int b) const
   if (high > b.high)
     return false;
   if (low < b.low)
+    return true;
+  return false;
+}
+
+/* Compares two signed values A and B for less-than or equal-to.  */
+
+bool
+double_int::sle (double_int b) const
+{
+  if (high < b.high)
+    return true;
+  if (high > b.high)
+    return false;
+  if (low <= b.low)
     return true;
   return false;
 }

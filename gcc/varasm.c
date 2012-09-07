@@ -4649,14 +4649,13 @@ array_size_for_constructor (tree val)
 
   /* Compute the total number of array elements.  */
   tmp = TYPE_MIN_VALUE (TYPE_DOMAIN (TREE_TYPE (val)));
-  i = double_int_sub (tree_to_double_int (max_index), tree_to_double_int (tmp));
-  i = double_int_add (i, double_int_one);
+  i = tree_to_double_int (max_index) - tree_to_double_int (tmp);
+  i += double_int_one;
 
   /* Multiply by the array element unit size to find number of bytes.  */
-  i = double_int_mul (i, tree_to_double_int
-		           (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (val)))));
+  i *= tree_to_double_int (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (val))));
 
-  gcc_assert (double_int_fits_in_uhwi_p (i));
+  gcc_assert (i.fits_uhwi ());
   return i.low;
 }
 
@@ -4740,9 +4739,9 @@ output_constructor_regular_field (oc_local_state *local)
 	 sign-extend the result because Ada has negative DECL_FIELD_OFFSETs
 	 but we are using an unsigned sizetype.  */
       unsigned prec = TYPE_PRECISION (sizetype);
-      double_int idx = double_int_sub (tree_to_double_int (local->index),
-				       tree_to_double_int (local->min_index));
-      idx = double_int_sext (idx, prec);
+      double_int idx = tree_to_double_int (local->index)
+		       - tree_to_double_int (local->min_index);
+      idx = idx.sext (prec);
       fieldpos = (tree_low_cst (TYPE_SIZE_UNIT (TREE_TYPE (local->val)), 1)
 		  * idx.low);
     }

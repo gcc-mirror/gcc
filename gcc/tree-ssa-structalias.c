@@ -2902,10 +2902,9 @@ get_constraint_for_ptr_offset (tree ptr, tree offset,
   else
     {
       /* Sign-extend the offset.  */
-      double_int soffset
-	= double_int_sext (tree_to_double_int (offset),
-			   TYPE_PRECISION (TREE_TYPE (offset)));
-      if (!double_int_fits_in_shwi_p (soffset))
+      double_int soffset = tree_to_double_int (offset)
+			   .sext (TYPE_PRECISION (TREE_TYPE (offset)));
+      if (!soffset.fits_shwi ())
 	rhsoffset = UNKNOWN_OFFSET;
       else
 	{
