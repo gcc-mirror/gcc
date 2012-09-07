@@ -786,8 +786,14 @@ typedef enum
 #define DEFAULT_GDB_EXTENSIONS 1
 
 /* Use stabs debugging info by default.  */
-#undef PREFERRED_DEBUGGING_TYPE
-#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
+#undef  PREFERRED_DEBUGGING_TYPE
+#define PREFERRED_DEBUGGING_TYPE  DBX_DEBUG
+#define DBX_DEBUGGING_INFO        1
+
+#ifndef ASM_GENERATE_INTERNAL_LABEL
+#define ASM_GENERATE_INTERNAL_LABEL(STRING, PREFIX, NUM)  \
+  sprintf (STRING, "*.%s%u", PREFIX, (unsigned int)(NUM))
+#endif
 
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.  */
