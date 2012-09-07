@@ -1,3 +1,9 @@
+2012-09-07  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/54208
+	* simplify.c (simplify_bound_dim): Resolve array spec before
+	proceeding with simplification.
+
 2012-09-06  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/54463
