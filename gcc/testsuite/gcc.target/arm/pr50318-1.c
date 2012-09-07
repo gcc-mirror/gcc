@@ -8,4 +8,4 @@ long long test (unsigned int sec, unsigned long long nsecs)
    long)nsecs;
 }
 
-/* { dg-final { scan-assembler "umlal" } } */
+/* { dg-final { scan-assembler "smlal" } } */

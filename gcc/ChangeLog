@@ -1,3 +1,10 @@
+2012-09-07  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR tree-ssa/54295
+	* tree-ssa-math-opts.c (widening_mult_conversion_strippable_p):
+	Sign-extension of a zero-extended value can be simplified to
+	just zero-extension.
+
 2012-09-07  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/53667
