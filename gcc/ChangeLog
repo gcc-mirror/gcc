@@ -1,3 +1,15 @@
+2012-09-07  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	Backport from mainline.
+	2012-08-29  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+                   Richard Earnshaw  <richard.earnshaw@arm.com>
+
+	PR target/54252
+	* config/arm/arm.c (neon_dereference_pointer): Adjust nelems by
+	element size. Use elem_type from the formal parameter. New parameter
+	fcode.
+	(neon_expand_args): Adjust call to neon_dereference_pointer.
+
 2012-09-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (<sse4_1_avx2>_pblendvb): Use
