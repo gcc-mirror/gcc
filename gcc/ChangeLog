@@ -1,3 +1,16 @@
+2012-09-07  Nick Clifton  <nickc@redhat.com>
+
+	* config/v850/v850.h (DBX_DEBUGGING_INFO): Define.
+	(ASM_GENERATE_INTERNAL_LABEL): Define if not already provided.
+	* config/v850/v850.c (compute_register_save_size): Always include
+	the link pointer.
+	(increment_stack): New function - emits insns to increment or
+	decrement the stack pointer.
+	(expand_prologue, expand_epilogue): Use it.
+	(expand_prologue): Set the function stack size, if requested.
+	(v850_debug_unwind_info): New function.
+	(TARGET_DEBUG_UNWIND_INFO): Define.
+
 2012-09-07  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR tree-ssa/54295
