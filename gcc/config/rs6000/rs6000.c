@@ -14628,12 +14628,6 @@ print_operand (FILE *file, rtx x, int code)
 
   switch (code)
     {
-    case '.':
-      /* Write out an instruction after the call which may be replaced
-	 with glue code by the loader.  This depends on the AIX version.  */
-      asm_fprintf (file, RS6000_CALL_GLUE);
-      return;
-
       /* %a is output_address.  */
 
     case 'A':

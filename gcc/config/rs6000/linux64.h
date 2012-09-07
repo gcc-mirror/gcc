@@ -417,10 +417,6 @@ extern int dot_symbols;
 #undef  ASM_APP_OFF
 #define ASM_APP_OFF "#NO_APP\n"
 
-/* PowerPC no-op instruction.  */
-#undef  RS6000_CALL_GLUE
-#define RS6000_CALL_GLUE (TARGET_64BIT ? "nop" : "cror 31,31,31")
-
 #undef  RS6000_MCOUNT
 #define RS6000_MCOUNT "_mcount"
 

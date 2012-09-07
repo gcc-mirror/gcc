@@ -1,3 +1,24 @@
+2012-09-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/aix43.h (RS6000_CALL_GLUE): Delete.
+	* config/rs6000/aix51.h (RS6000_CALL_GLUE): Delete.
+	* config/rs6000/aix52.h (RS6000_CALL_GLUE): Delete.
+	* config/rs6000/aix53.h (RS6000_CALL_GLUE): Delete.
+	* config/rs6000/aix61.h (RS6000_CALL_GLUE): Delete.
+	* config/rs6000/freebsd64.h (RS6000_CALL_GLUE): Delete.
+	* config/rs6000/linux64.h (RS6000_CALL_GLUE): Delete.
+	* config/rs6000/rs6000.c (print_operand) ['.']: Delete.
+	* config/rs6000/rs6000.h (RS6000_CALL_GLUE): Delete.
+	* config/rs6000/rs6000.md (tls_gd_aix<TLSmode:tls_abi_suffix>):
+	Replace %. with nop.
+	(tls_gd_call_aix<TLSmode:tls_abi_suffix>): Ditto.
+	(tls_ld_aix<TLSmode:tls_abi_suffix>): Ditto.
+	(tls_ld_call_aix<TLSmode:tls_abi_suffix>): Ditto.
+	(call_nonlocal_aix32): Ditto.
+	(call_nonlocal_aix64): Ditto.
+	(call_value_nonlocal_aix32): Ditto.
+	(call_value_nonlocal_aix64): Ditto.
+
 2012-06-04  Andi Kleen <ak@linux.intel.com>
 
 	* doc/invoke.texi (-ffat-lto-objects): Clarify that gcc-ar
