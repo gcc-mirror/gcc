@@ -1,6 +1,15 @@
 2012-09-07  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline
+	2012-06-26  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/53572
+	* cgraph.h (varpool_can_remove_if_no_refs): Fix handling of
+	used symbols.
+
+2012-09-07  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
 	2012-07-13  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/53922

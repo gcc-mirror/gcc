@@ -946,10 +946,13 @@ cgraph_only_called_directly_or_aliased_p (struct cgraph_node *node)
 static inline bool
 varpool_can_remove_if_no_refs (struct varpool_node *node)
 {
+  if (DECL_EXTERNAL (node->decl))
+    return true;
   return (!node->force_output && !node->used_from_other_partition
-	  && (flag_toplevel_reorder || DECL_COMDAT (node->decl)
-	      || DECL_ARTIFICIAL (node->decl))
-  	  && (DECL_COMDAT (node->decl) || !node->externally_visible));
+	  && ((DECL_COMDAT (node->decl)
+	       && !varpool_used_from_object_file_p (node))
+	      || !node->externally_visible
+	      || DECL_HAS_VALUE_EXPR_P (node->decl)));
 }
 
 /* Return true when all references to VNODE must be visible in ipa_ref_list.
