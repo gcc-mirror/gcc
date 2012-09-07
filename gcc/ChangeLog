@@ -1,3 +1,10 @@
+2012-09-07  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/53667
+	* tree-ssa-structalias.c (handle_rhs_call): Properly clobber
+	EAF_NOESCAPED arguments.  Transitively close non-EAF_DIRECT
+	arguments separately.
+
 2012-09-07  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* bitmap.c (bitmap_last_set_bit): Rewrite to return the correct bit.
