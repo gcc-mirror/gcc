@@ -1,3 +1,9 @@
+2012-09-07  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/53986
+	* gcc.dg/tree-ssa/vrp80.c: New test.
+	* gcc.dg/tree-ssa/vrp80-2.c: Same.
+
 2012-09-06  Jason Merrill  <jason@redhat.com>
 
 	PR c++/54341
