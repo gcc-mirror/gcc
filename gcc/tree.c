@@ -1041,7 +1041,7 @@ build_int_cst (tree type, HOST_WIDE_INT low)
   if (!type)
     type = integer_type_node;
 
-  return double_int_to_tree (type, shwi_to_double_int (low));
+  return double_int_to_tree (type, double_int::from_shwi (low));
 }
 
 /* Create an INT_CST node with a LOW value sign extended to TYPE.  */
@@ -1051,7 +1051,7 @@ build_int_cst_type (tree type, HOST_WIDE_INT low)
 {
   gcc_assert (type);
 
-  return double_int_to_tree (type, shwi_to_double_int (low));
+  return double_int_to_tree (type, double_int::from_shwi (low));
 }
 
 /* Constructs tree in type TYPE from with value given by CST.  Signedness
@@ -1062,7 +1062,7 @@ double_int_to_tree (tree type, double_int cst)
 {
   bool sign_extended_type = !TYPE_UNSIGNED (type);
 
-  cst = double_int_ext (cst, TYPE_PRECISION (type), !sign_extended_type);
+  cst = cst.ext (TYPE_PRECISION (type), !sign_extended_type);
 
   return build_int_cst_wide (type, cst.low, cst.high);
 }
@@ -1077,9 +1077,9 @@ double_int_fits_to_tree_p (const_tree type, double_int cst)
   bool sign_extended_type = !TYPE_UNSIGNED (type);
 
   double_int ext
-    = double_int_ext (cst, TYPE_PRECISION (type), !sign_extended_type);
+    = cst.ext (TYPE_PRECISION (type), !sign_extended_type);
 
-  return double_int_equal_p (cst, ext);
+  return cst == ext;
 }
 
 /* We force the double_int CST to the range of the type TYPE by sign or
@@ -1114,7 +1114,7 @@ force_fit_type_double (tree type, double_int cst, int overflowable,
 	  || (overflowable > 0 && sign_extended_type))
 	{
 	  tree t = make_node (INTEGER_CST);
-	  TREE_INT_CST (t) = double_int_ext (cst, TYPE_PRECISION (type),
+	  TREE_INT_CST (t) = cst.ext (TYPE_PRECISION (type),
 					     !sign_extended_type);
 	  TREE_TYPE (t) = type;
 	  TREE_OVERFLOW (t) = 1;
@@ -1285,7 +1285,7 @@ build_low_bits_mask (tree type, unsigned bits)
     /* Sign extended all-ones mask.  */
     mask = double_int_minus_one;
   else
-    mask = double_int_mask (bits);
+    mask = double_int::mask (bits);
 
   return build_int_cst_wide (type, mask.low, mask.high);
 }
@@ -1910,7 +1910,7 @@ int
 fixed_zerop (const_tree expr)
 {
   return (TREE_CODE (expr) == FIXED_CST
-	  && double_int_zero_p (TREE_FIXED_CST (expr).data));
+	  && TREE_FIXED_CST (expr).data.is_zero ());
 }
 
 /* Return the power of two represented by a tree node known to be a
@@ -3998,8 +3998,7 @@ double_int
 mem_ref_offset (const_tree t)
 {
   tree toff = TREE_OPERAND (t, 1);
-  return double_int_sext (tree_to_double_int (toff),
-			  TYPE_PRECISION (TREE_TYPE (toff)));
+  return tree_to_double_int (toff).sext (TYPE_PRECISION (TREE_TYPE (toff)));
 }
 
 /* Return the pointer-type relevant for TBAA purposes from the
@@ -6557,7 +6556,7 @@ HOST_WIDE_INT
 size_low_cst (const_tree t)
 {
   double_int d = tree_to_double_int (t);
-  return double_int_sext (d, TYPE_PRECISION (TREE_TYPE (t))).low;
+  return d.sext (TYPE_PRECISION (TREE_TYPE (t))).low;
 }
 
 /* Return the most significant (sign) bit of T.  */
@@ -8295,15 +8294,15 @@ retry:
       dd = tree_to_double_int (type_low_bound);
       if (unsc != TYPE_UNSIGNED (TREE_TYPE (type_low_bound)))
 	{
-	  int c_neg = (!unsc && double_int_negative_p (dc));
-	  int t_neg = (unsc && double_int_negative_p (dd));
+	  int c_neg = (!unsc && dc.is_negative ());
+	  int t_neg = (unsc && dd.is_negative ());
 
 	  if (c_neg && !t_neg)
 	    return false;
-	  if ((c_neg || !t_neg) && double_int_ucmp (dc, dd) < 0)
+	  if ((c_neg || !t_neg) && dc.ult (dd))
 	    return false;
 	}
-      else if (double_int_cmp (dc, dd, unsc) < 0)
+      else if (dc.cmp (dd, unsc) < 0)
 	return false;
       ok_for_low_bound = true;
     }
@@ -8316,15 +8315,15 @@ retry:
       dd = tree_to_double_int (type_high_bound);
       if (unsc != TYPE_UNSIGNED (TREE_TYPE (type_high_bound)))
 	{
-	  int c_neg = (!unsc && double_int_negative_p (dc));
-	  int t_neg = (unsc && double_int_negative_p (dd));
+	  int c_neg = (!unsc && dc.is_negative ());
+	  int t_neg = (unsc && dd.is_negative ());
 
 	  if (t_neg && !c_neg)
 	    return false;
-	  if ((t_neg || !c_neg) && double_int_ucmp (dc, dd) > 0)
+	  if ((t_neg || !c_neg) && dc.ugt (dd))
 	    return false;
 	}
-      else if (double_int_cmp (dc, dd, unsc) > 0)
+      else if (dc.cmp (dd, unsc) > 0)
 	return false;
       ok_for_high_bound = true;
     }
@@ -8338,7 +8337,7 @@ retry:
   /* Perform some generic filtering which may allow making a decision
      even if the bounds are not constant.  First, negative integers
      never fit in unsigned types, */
-  if (TYPE_UNSIGNED (type) && !unsc && double_int_negative_p (dc))
+  if (TYPE_UNSIGNED (type) && !unsc && dc.is_negative ())
     return false;
 
   /* Second, narrower types always fit in wider ones.  */
@@ -8393,9 +8392,8 @@ get_type_static_bounds (const_tree type, mpz_t min, mpz_t max)
       else
 	{
 	  double_int mn;
-	  mn = double_int_mask (TYPE_PRECISION (type) - 1);
-	  mn = double_int_sext (double_int_add (mn, double_int_one),
-				TYPE_PRECISION (type));
+	  mn = double_int::mask (TYPE_PRECISION (type) - 1);
+	  mn = (mn + double_int_one).sext (TYPE_PRECISION (type));
 	  mpz_set_double_int (min, mn, false);
 	}
     }
@@ -8407,10 +8405,10 @@ get_type_static_bounds (const_tree type, mpz_t min, mpz_t max)
   else
     {
       if (TYPE_UNSIGNED (type))
-	mpz_set_double_int (max, double_int_mask (TYPE_PRECISION (type)),
+	mpz_set_double_int (max, double_int::mask (TYPE_PRECISION (type)),
 			    true);
       else
-	mpz_set_double_int (max, double_int_mask (TYPE_PRECISION (type) - 1),
+	mpz_set_double_int (max, double_int::mask (TYPE_PRECISION (type) - 1),
 			    true);
     }
 }

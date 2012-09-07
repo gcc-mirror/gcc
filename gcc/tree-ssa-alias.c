@@ -756,12 +756,11 @@ indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
   /* The offset embedded in MEM_REFs can be negative.  Bias them
      so that the resulting offset adjustment is positive.  */
   moff = mem_ref_offset (base1);
-  moff = double_int_lshift (moff,
-			    BITS_PER_UNIT == 8
-			    ? 3 : exact_log2 (BITS_PER_UNIT),
-			    HOST_BITS_PER_DOUBLE_INT, true);
-  if (double_int_negative_p (moff))
-    offset2p += double_int_neg (moff).low;
+  moff = moff.alshift (BITS_PER_UNIT == 8
+		       ? 3 : exact_log2 (BITS_PER_UNIT),
+		       HOST_BITS_PER_DOUBLE_INT);
+  if (moff.is_negative ())
+    offset2p += (-moff).low;
   else
     offset1p += moff.low;
 
@@ -835,12 +834,11 @@ indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
       || TREE_CODE (dbase2) == TARGET_MEM_REF)
     {
       double_int moff = mem_ref_offset (dbase2);
-      moff = double_int_lshift (moff,
-				BITS_PER_UNIT == 8
-				? 3 : exact_log2 (BITS_PER_UNIT),
-				HOST_BITS_PER_DOUBLE_INT, true);
-      if (double_int_negative_p (moff))
-	doffset1 -= double_int_neg (moff).low;
+      moff = moff.alshift (BITS_PER_UNIT == 8
+			   ? 3 : exact_log2 (BITS_PER_UNIT),
+			   HOST_BITS_PER_DOUBLE_INT);
+      if (moff.is_negative ())
+	doffset1 -= (-moff).low;
       else
 	doffset2 -= moff.low;
     }
@@ -932,21 +930,19 @@ indirect_refs_may_alias_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
       /* The offset embedded in MEM_REFs can be negative.  Bias them
 	 so that the resulting offset adjustment is positive.  */
       moff = mem_ref_offset (base1);
-      moff = double_int_lshift (moff,
-				BITS_PER_UNIT == 8
-				? 3 : exact_log2 (BITS_PER_UNIT),
-				HOST_BITS_PER_DOUBLE_INT, true);
-      if (double_int_negative_p (moff))
-	offset2 += double_int_neg (moff).low;
+      moff = moff.alshift (BITS_PER_UNIT == 8
+			   ? 3 : exact_log2 (BITS_PER_UNIT),
+			   HOST_BITS_PER_DOUBLE_INT);
+      if (moff.is_negative ())
+	offset2 += (-moff).low;
       else
 	offset1 += moff.low;
       moff = mem_ref_offset (base2);
-      moff = double_int_lshift (moff,
-				BITS_PER_UNIT == 8
-				? 3 : exact_log2 (BITS_PER_UNIT),
-				HOST_BITS_PER_DOUBLE_INT, true);
-      if (double_int_negative_p (moff))
-	offset1 += double_int_neg (moff).low;
+      moff = moff.alshift (BITS_PER_UNIT == 8
+			   ? 3 : exact_log2 (BITS_PER_UNIT),
+			   HOST_BITS_PER_DOUBLE_INT);
+      if (moff.is_negative ())
+	offset1 += (-moff).low;
       else
 	offset2 += moff.low;
       return ranges_overlap_p (offset1, max_size1, offset2, max_size2);

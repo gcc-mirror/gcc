@@ -1908,7 +1908,7 @@ vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo, tree *ratio,
   max_iter = LOOP_VINFO_VECT_FACTOR (loop_vinfo) - 1;
   if (check_profitability)
     max_iter = MAX (max_iter, (int) th);
-  record_niter_bound (new_loop, shwi_to_double_int (max_iter), false, true);
+  record_niter_bound (new_loop, double_int::from_shwi (max_iter), false, true);
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "Setting upper bound of nb iterations for epilogue "
 	     "loop to %d\n", max_iter);
@@ -2130,7 +2130,7 @@ vect_do_peeling_for_alignment (loop_vec_info loop_vinfo,
   max_iter = LOOP_VINFO_VECT_FACTOR (loop_vinfo) - 1;
   if (check_profitability)
     max_iter = MAX (max_iter, (int) th);
-  record_niter_bound (new_loop, shwi_to_double_int (max_iter), false, true);
+  record_niter_bound (new_loop, double_int::from_shwi (max_iter), false, true);
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "Setting upper bound of nb iterations for prologue "
 	     "loop to %d\n", max_iter);

@@ -4718,7 +4718,7 @@ extern tree force_fit_type_double (tree, double_int, int, bool);
 static inline tree
 build_int_cstu (tree type, unsigned HOST_WIDE_INT cst)
 {
-  return double_int_to_tree (type, uhwi_to_double_int (cst));
+  return double_int_to_tree (type, double_int::from_uhwi (cst));
 }
 
 extern tree build_int_cst (tree, HOST_WIDE_INT);

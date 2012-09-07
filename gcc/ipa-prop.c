@@ -2887,8 +2887,8 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gimple stmt,
 	      unsigned HOST_WIDE_INT misalign;
 
 	      get_pointer_alignment_1 (base, &align, &misalign);
-	      misalign += (double_int_sext (tree_to_double_int (off),
-					    TYPE_PRECISION (TREE_TYPE (off))).low
+	      misalign += (tree_to_double_int (off)
+			   .sext (TYPE_PRECISION (TREE_TYPE (off))).low
 			   * BITS_PER_UNIT);
 	      misalign = misalign & (align - 1);
 	      if (misalign != 0)

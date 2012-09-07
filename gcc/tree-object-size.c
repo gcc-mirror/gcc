@@ -192,12 +192,11 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
 	}
       if (sz != unknown[object_size_type])
 	{
-	  double_int dsz = double_int_sub (uhwi_to_double_int (sz),
-					   mem_ref_offset (pt_var));
-	  if (double_int_negative_p (dsz))
+	  double_int dsz = double_int::from_uhwi (sz) - mem_ref_offset (pt_var);
+	  if (dsz.is_negative ())
 	    sz = 0;
-	  else if (double_int_fits_in_uhwi_p (dsz))
-	    sz = double_int_to_uhwi (dsz);
+	  else if (dsz.fits_uhwi ())
+	    sz = dsz.to_uhwi ();
 	  else
 	    sz = unknown[object_size_type];
 	}

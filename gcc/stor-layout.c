@@ -2218,14 +2218,13 @@ layout_type (tree type)
 		    && TYPE_UNSIGNED (TREE_TYPE (lb))
 		    && tree_int_cst_lt (ub, lb))
 		  {
+		    unsigned prec = TYPE_PRECISION (TREE_TYPE (lb));
 		    lb = double_int_to_tree
 			   (ssizetype,
-			    double_int_sext (tree_to_double_int (lb),
-					     TYPE_PRECISION (TREE_TYPE (lb))));
+			    tree_to_double_int (lb).sext (prec));
 		    ub = double_int_to_tree
 			   (ssizetype,
-			    double_int_sext (tree_to_double_int (ub),
-					     TYPE_PRECISION (TREE_TYPE (ub))));
+			    tree_to_double_int (ub).sext (prec));
 		  }
 		length
 		  = fold_convert (sizetype,

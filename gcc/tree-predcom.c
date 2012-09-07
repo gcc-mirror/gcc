@@ -901,7 +901,7 @@ order_drefs (const void *a, const void *b)
 {
   const dref *const da = (const dref *) a;
   const dref *const db = (const dref *) b;
-  int offcmp = double_int_scmp ((*da)->offset, (*db)->offset);
+  int offcmp = (*da)->offset.scmp ((*db)->offset);
 
   if (offcmp != 0)
     return offcmp;
@@ -925,18 +925,18 @@ add_ref_to_chain (chain_p chain, dref ref)
   dref root = get_chain_root (chain);
   double_int dist;
 
-  gcc_assert (double_int_scmp (root->offset, ref->offset) <= 0);
-  dist = double_int_sub (ref->offset, root->offset);
-  if (double_int_ucmp (uhwi_to_double_int (MAX_DISTANCE), dist) <= 0)
+  gcc_assert (root->offset.sle (ref->offset));
+  dist = ref->offset - root->offset;
+  if (double_int::from_uhwi (MAX_DISTANCE).ule (dist))
     {
       free (ref);
       return;
     }
-  gcc_assert (double_int_fits_in_uhwi_p (dist));
+  gcc_assert (dist.fits_uhwi ());
 
   VEC_safe_push (dref, heap, chain->refs, ref);
 
-  ref->distance = double_int_to_uhwi (dist);
+  ref->distance = dist.to_uhwi ();
 
   if (ref->distance >= chain->length)
     {
@@ -1055,7 +1055,7 @@ valid_initializer_p (struct data_reference *ref,
   if (!aff_combination_constant_multiple_p (&diff, &step, &off))
     return false;
 
-  if (!double_int_equal_p (off, uhwi_to_double_int (distance)))
+  if (off != double_int::from_uhwi (distance))
     return false;
 
   return true;
@@ -1198,8 +1198,7 @@ determine_roots_comp (struct loop *loop,
   FOR_EACH_VEC_ELT (dref, comp->refs, i, a)
     {
       if (!chain || DR_IS_WRITE (a->ref)
-	  || double_int_ucmp (uhwi_to_double_int (MAX_DISTANCE),
-			      double_int_sub (a->offset, last_ofs)) <= 0)
+	  || double_int::from_uhwi (MAX_DISTANCE).ule (a->offset - last_ofs))
 	{
 	  if (nontrivial_chain_p (chain))
 	    {

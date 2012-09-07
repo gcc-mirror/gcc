@@ -1833,10 +1833,9 @@ non_rewritable_mem_ref_base (tree ref)
 	   || TREE_CODE (TREE_TYPE (decl)) == COMPLEX_TYPE)
 	  && useless_type_conversion_p (TREE_TYPE (base),
 					TREE_TYPE (TREE_TYPE (decl)))
-	  && double_int_fits_in_uhwi_p (mem_ref_offset (base))
-	  && double_int_ucmp
-	       (tree_to_double_int (TYPE_SIZE_UNIT (TREE_TYPE (decl))),
-		mem_ref_offset (base)) == 1
+	  && mem_ref_offset (base).fits_uhwi ()
+	  && tree_to_double_int (TYPE_SIZE_UNIT (TREE_TYPE (decl)))
+	     .ugt (mem_ref_offset (base))
 	  && multiple_of_p (sizetype, TREE_OPERAND (base, 1),
 			    TYPE_SIZE_UNIT (TREE_TYPE (base))))
 	return NULL_TREE;

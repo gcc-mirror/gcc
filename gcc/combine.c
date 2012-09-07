@@ -2673,11 +2673,11 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
 	  o = rtx_to_double_int (outer);
 	  i = rtx_to_double_int (inner);
 
-	  m = double_int_mask (width);
-	  i = double_int_and (i, m);
-	  m = double_int_lshift (m, offset, HOST_BITS_PER_DOUBLE_INT, false);
-	  i = double_int_lshift (i, offset, HOST_BITS_PER_DOUBLE_INT, false);
-	  o = double_int_ior (double_int_and_not (o, m), i);
+	  m = double_int::mask (width);
+	  i &= m;
+	  m = m.llshift (offset, HOST_BITS_PER_DOUBLE_INT);
+	  i = i.llshift (offset, HOST_BITS_PER_DOUBLE_INT);
+	  o = o.and_not (m) | i;
 
 	  combine_merges++;
 	  subst_insn = i3;
