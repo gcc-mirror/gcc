@@ -1,3 +1,11 @@
+2012-09-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2012-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/54455
+	* gcc.dg/54455.c: New test.
+
 2012-09-06  Andrew Pinski  <apinski@cavium.com>
 
 	PR tree-opt/54494
