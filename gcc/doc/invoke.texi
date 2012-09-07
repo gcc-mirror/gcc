@@ -8138,7 +8138,9 @@ requires the complete toolchain to be aware of LTO. It requires a linker with
 linker plugin support for basic functionality.  Additionally,
 @command{nm}, @command{ar} and @command{ranlib}
 need to support linker plugins to allow a full-featured build environment
-(capable of building static libraries etc).
+(capable of building static libraries etc). gcc provides the @command{gcc-ar},
+@command{gcc-nm}, @command{gcc-ranlib} wrappers to pass the right options
+to these tools. With non fat LTO makefiles need to be modified to use them.
 
 The default is @option{-ffat-lto-objects} but this default is intended to
 change in future releases when linker plugin enabled environments become more
