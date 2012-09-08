@@ -1470,6 +1470,10 @@ fmem-report
 Common Report Var(mem_report)
 Report on permanent memory allocation
 
+fmem-report-wpa
+Common Report Var(mem_report_wpa)
+Report on permanent memory allocation in WPA only
+
 ; This will attempt to merge constant section constants, if 1 only
 ; string constants and constants from constant pool, if 2 also constant
 ; variables.
