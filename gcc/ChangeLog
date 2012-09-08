@@ -1,5 +1,10 @@
 2012-09-08  Andi Kleen  <ak@linux.intel.com>
 
+	* gcc/lto/lto.c (do_whole_program_analysis): 
+	Fix last broken patch
+
+2012-09-08  Andi Kleen  <ak@linux.intel.com>
+
 	* gcc/common.opt (-fmem-report-wpa): Add
 	* gcc/doc/invoke.texi (-fmem-report-wpa): Document.
 	* gcc/lto/lto.c (do_whole_program_analysis): Run mem_report
