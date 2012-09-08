@@ -77,7 +77,7 @@
 	(call_value_nonlocal_aix32): Ditto.
 	(call_value_nonlocal_aix64): Ditto.
 
-2012-06-04  Andi Kleen <ak@linux.intel.com>
+2012-09-06  Andi Kleen <ak@linux.intel.com>
 
 	* doc/invoke.texi (-ffat-lto-objects): Clarify that gcc-ar
 	et.al. should be used.
