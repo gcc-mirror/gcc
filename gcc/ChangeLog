@@ -1,3 +1,10 @@
+2012-09-07  Anthony Green  <green@moxielogic.com>
+
+	* config/moxie/moxie.c (moxie_expand_prologue): Optimize prologue
+	for functions with large static stack requirements.
+	(moxie_expand_epilogue): Use $r12 instead of $r5 for pulling saved
+	values off of the stack.
+
 2012-09-07  Nick Clifton  <nickc@redhat.com>
 
 	* config/v850/v850.h (DBX_DEBUGGING_INFO): Define.

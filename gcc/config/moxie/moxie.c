@@ -1,5 +1,5 @@
 /* Target Code for moxie
-   Copyright (C) 2008, 2009, 2010, 2011  Free Software Foundation
+   Copyright (C) 2008, 2009, 2010, 2011, 2012  Free Software Foundation
    Contributed by Anthony Green.
 
    This file is part of GCC.
@@ -293,8 +293,8 @@ moxie_expand_prologue (void)
 
   if (cfun->machine->size_for_adjusting_sp > 0)
     {
-      int i = cfun->machine->size_for_adjusting_sp;
-      while (i > 255)
+      int i = cfun->machine->size_for_adjusting_sp; 
+      while ((i >= 255) && (i <= 510))
 	{
 	  insn = emit_insn (gen_subsi3 (stack_pointer_rtx, 
 					stack_pointer_rtx, 
@@ -302,11 +302,21 @@ moxie_expand_prologue (void)
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	  i -= 255;
 	}
-      if (i > 0)
+      if (i <= 255)
 	{
 	  insn = emit_insn (gen_subsi3 (stack_pointer_rtx, 
 					stack_pointer_rtx, 
 					GEN_INT (i)));
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	}
+      else
+	{
+	  rtx reg = gen_rtx_REG (SImode, MOXIE_R12);
+	  insn = emit_move_insn (reg, GEN_INT (i));
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	  insn = emit_insn (gen_subsi3 (stack_pointer_rtx, 
+					stack_pointer_rtx, 
+					reg));
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
     }
@@ -320,7 +330,7 @@ moxie_expand_epilogue (void)
 
   if (cfun->machine->callee_saved_reg_size != 0)
     {
-      reg = gen_rtx_REG (Pmode, MOXIE_R5);
+      reg = gen_rtx_REG (Pmode, MOXIE_R12);
       if (cfun->machine->callee_saved_reg_size <= 255)
 	{
 	  emit_move_insn (reg, hard_frame_pointer_rtx);
