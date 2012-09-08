@@ -328,7 +328,7 @@ Objective-C and Objective-C++ Dialects}.
 -feliminate-unused-debug-symbols -femit-class-debug-always @gol
 -fenable-@var{kind}-@var{pass} @gol
 -fenable-@var{kind}-@var{pass}=@var{range-list} @gol
--fdebug-types-section @gol
+-fdebug-types-section -fmem-report-wpa @gol
 -fmem-report -fpre-ipa-mem-report -fpost-ipa-mem-report -fprofile-arcs @gol
 -frandom-seed=@var{string} -fsched-verbose=@var{n} @gol
 -fsel-sched-verbose -fsel-sched-dump-cfg -fsel-sched-pipelining-verbose @gol
@@ -5131,6 +5131,11 @@ pass when it finishes.
 @opindex fmem-report
 Makes the compiler print some statistics about permanent memory
 allocation when it finishes.
+
+@item -fmem-report-wpa
+@opindex fmem-report-wpa
+Makes the compiler print some statistics about permanent memory
+allocation for the WPA phase only.
 
 @item -fpre-ipa-mem-report
 @opindex fpre-ipa-mem-report

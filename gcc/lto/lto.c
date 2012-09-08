@@ -2016,6 +2016,8 @@ do_whole_program_analysis (void)
   /* Show the LTO report before launching LTRANS.  */
   if (flag_lto_report)
     print_lto_report ();
+  if (mem_report_wpa)
+    dump_mem_report ();
 }
 
 

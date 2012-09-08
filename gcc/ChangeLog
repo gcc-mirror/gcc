@@ -1,3 +1,10 @@
+2012-09-08  Andi Kleen  <ak@linux.intel.com>
+
+	* gcc/common.opt (-fmem-report-wpa): Add
+	* gcc/doc/invoke.texi (-fmem-report-wpa): Document.
+	* gcc/lto/lto.c (do_whole_program_analysis): Run mem_report
+	when mem_report_wpa is set.
+
 2012-09-07  Anthony Green  <green@moxielogic.com>
 
 	* config/moxie/moxie.c (moxie_expand_prologue): Optimize prologue
