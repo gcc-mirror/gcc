@@ -2017,7 +2017,7 @@ do_whole_program_analysis (void)
   if (flag_lto_report)
     print_lto_report ();
   if (mem_report_wpa)
-    dump_mem_report ();
+    dump_memory_report (true);
 }
 
 
