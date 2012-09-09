@@ -1,3 +1,8 @@
+2012-09-09  Mark Kettenis  <kettenis@openbsd.org>
+
+	* decl.c (reshape_init_class): Avoid dereferencing a
+	past-the-end pointer.
+		  
 2012-09-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* pt.c (num_template_headers_for_class): Rework per the code
