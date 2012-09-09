@@ -1,3 +1,16 @@
+2012-09-10  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+	    Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/43852
+	* acinclude.m4 (GLIBCXX_ENABLE_VERBOSE): Define.
+	* configure.ac (GLIBCXX_ENABLE_VERBOSE): Use it.
+	* config.h.in: Regenerate.
+	* configure: Likewise.
+	* libsupc++/eh_term_handler.cc (_GLIBCXX_VERBOSE): Check new macro.
+	* libsupc++/pure.cc (_GLIBCXX_VERBOSE): Likewise.
+	* doc/xml/manual/configure.xml (--disable-libstdcxx-verbose): Document.
+	* doc/html/manual/configure.html: Regenerate.
+
 2012-09-09  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR bootstrap/54419

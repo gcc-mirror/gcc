@@ -2317,6 +2317,31 @@ AC_DEFUN([GLIBCXX_ENABLE_HOSTED], [
 
 
 dnl
+dnl Check if the user wants a non-verbose library implementation.
+dnl
+dnl --disable-libstdcxx-verbose will turn off descriptive messages to
+dnl standard error on termination.
+dnl
+dnl Defines:
+dnl  _GLIBCXX_VERBOSE (always defined, either to 1 or 0)
+dnl
+AC_DEFUN([GLIBCXX_ENABLE_VERBOSE], [
+  AC_ARG_ENABLE([libstdcxx-verbose],
+    AC_HELP_STRING([--disable-libstdcxx-verbose],
+		   [disable termination messages to standard error]),,
+		   [enable_libstdcxx_verbose=yes])
+  if test x"$enable_libstdcxx_verbose" = xyes; then
+    verbose_define=1
+  else
+    AC_MSG_NOTICE([verbose termination messages are disabled])
+    verbose_define=0
+  fi
+  AC_DEFINE_UNQUOTED(_GLIBCXX_VERBOSE, $verbose_define,
+    [Define to 1 if a verbose library is built, or 0 otherwise.])
+])
+
+
+dnl
 dnl Check for template specializations for the 'long long' type.
 dnl The result determines only whether 'long long' I/O is enabled; things
 dnl like numeric_limits<> specializations are always available.
