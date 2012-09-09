@@ -280,6 +280,18 @@ partition_varpool_node_p (struct varpool_node *vnode)
   return true;
 }
 
+/* Return true if NODE should be partitioned. 
+   This means that partitioning algorithm should put NODE into one of partitions. */
+
+static bool
+partition_symbol_p (symtab_node node)
+{
+  if (symtab_function_p (node))
+    return partition_cgraph_node_p (cgraph (node));
+  else
+    return partition_varpool_node_p (varpool (node));
+}
+
 /* Group cgrah nodes by input files.  This is used mainly for testing
    right now.  */
 
@@ -739,38 +751,25 @@ lto_balanced_map (void)
 
 /* Promote variable VNODE to be static.  */
 
-static bool
-promote_var (struct varpool_node *vnode)
+static void
+promote_symbol (symtab_node node)
 {
-  if (TREE_PUBLIC (vnode->symbol.decl) || DECL_EXTERNAL (vnode->symbol.decl))
-    return false;
-  gcc_assert (flag_wpa);
-  TREE_PUBLIC (vnode->symbol.decl) = 1;
-  DECL_VISIBILITY (vnode->symbol.decl) = VISIBILITY_HIDDEN;
-  DECL_VISIBILITY_SPECIFIED (vnode->symbol.decl) = true;
-  if (cgraph_dump_file)
-    fprintf (cgraph_dump_file,
-	    "Promoting var as hidden: %s\n", varpool_node_name (vnode));
-  return true;
-}
+  /* We already promoted ... */
+  if (DECL_VISIBILITY (node->symbol.decl) == VISIBILITY_HIDDEN
+      && DECL_VISIBILITY_SPECIFIED (node->symbol.decl)
+      && TREE_PUBLIC (node->symbol.decl))
+    return;
 
-/* Promote function NODE to be static.  */
-
-static bool
-promote_fn (struct cgraph_node *node)
-{
-  gcc_assert (flag_wpa);
-  if (TREE_PUBLIC (node->symbol.decl) || DECL_EXTERNAL (node->symbol.decl))
-    return false;
+  gcc_checking_assert (!TREE_PUBLIC (node->symbol.decl)
+		       && !DECL_EXTERNAL (node->symbol.decl));
   TREE_PUBLIC (node->symbol.decl) = 1;
   DECL_VISIBILITY (node->symbol.decl) = VISIBILITY_HIDDEN;
   DECL_VISIBILITY_SPECIFIED (node->symbol.decl) = true;
   if (cgraph_dump_file)
     fprintf (cgraph_dump_file,
-	     "Promoting function as hidden: %s/%i\n",
-	     cgraph_node_name (node), node->uid);
-  return true;
+	    "Promoting as hidden: %s\n", symtab_node_name (node));
 }
+
 
 /* Find out all static decls that need to be promoted to global because
    of cross file sharing.  This function must be run in the WPA mode after
@@ -779,118 +778,43 @@ promote_fn (struct cgraph_node *node)
 void
 lto_promote_cross_file_statics (void)
 {
-  struct varpool_node *vnode;
   unsigned i, n_sets;
-  VEC(varpool_node_ptr, heap) *promoted_initializers = NULL;
-  struct pointer_set_t *inserted = pointer_set_create ();
-  lto_symtab_encoder_iterator lsei;
-  lto_symtab_encoder_t encoder;
 
   gcc_assert (flag_wpa);
 
+  /* First compute boundaries.  */
   n_sets = VEC_length (ltrans_partition, ltrans_partitions);
   for (i = 0; i < n_sets; i++)
     {
       ltrans_partition part
 	= VEC_index (ltrans_partition, ltrans_partitions, i);
-      encoder = part->encoder;
-
-      /* If node called or referred to from other partition, it needs to be
-	 globalized.  */
-      for (lsei = lsei_start_in_partition (encoder); !lsei_end_p (lsei);
-	   lsei_next_in_partition (&lsei))
-	{
-	  symtab_node node = lsei_node (lsei);
-	  if (node->symbol.externally_visible)
-	    continue;
-	  if (symtab_function_p (node))
-	    {
-	      struct cgraph_node *cnode = cgraph (node);
-	      if (partition_cgraph_node_p (cnode)
-		  && (referenced_from_other_partition_p (&cnode->symbol.ref_list, encoder)
-		      || reachable_from_other_partition_p (cnode, encoder)))
-		promote_fn (cnode);
-	    }
-	  else if (symtab_variable_p (node))
-	    {
-	      vnode = varpool (node);
-	      /* Constant pool references use internal labels and thus can not
-		 be made global.  It is sensible to keep those ltrans local to
-		 allow better optimization.  */
-	      if (partition_varpool_node_p (vnode)
-		  && referenced_from_other_partition_p (&vnode->symbol.ref_list,
-							encoder))
-		promote_var (vnode);
-	    }
-	  else
-	    gcc_unreachable ();
-	}
-
-      /* We export the initializer of a read-only var into each partition
-	 referencing the var.  Folding might take declarations from the
-	 initializer and use them, so everything referenced from the
-	 initializer can be accessed from this partition after folding.
-
-	 This means that we need to promote all variables and functions
-	 referenced from all initializers of read-only vars referenced
-	 from this partition that are not in this partition.  This needs
-	 to be done recursively.  */
-      FOR_EACH_VARIABLE (vnode)
-	if (const_value_known_p (vnode->symbol.decl)
-	    && DECL_INITIAL (vnode->symbol.decl)
-	    && !lto_symtab_encoder_in_partition_p (encoder, (symtab_node)vnode)
-	    && referenced_from_this_partition_p (&vnode->symbol.ref_list, encoder)
-	    && !pointer_set_insert (inserted, vnode))
-	VEC_safe_push (varpool_node_ptr, heap, promoted_initializers, vnode);
-
-      while (!VEC_empty (varpool_node_ptr, promoted_initializers))
-	{
-	  int i;
-	  struct ipa_ref *ref;
-
-	  vnode = VEC_pop (varpool_node_ptr, promoted_initializers);
-	  for (i = 0;
-	       ipa_ref_list_reference_iterate (&vnode->symbol.ref_list, i, ref);
-	       i++)
-	    {
-	      if (symtab_function_p (ref->referred))
-		{
-		  struct cgraph_node *n = ipa_ref_node (ref);
-		  gcc_assert (!n->global.inlined_to);
-		  if (!n->symbol.externally_visible
-		      && !lto_symtab_encoder_in_partition_p (encoder, (symtab_node)n))
-		    promote_fn (n);
-		}
-	      else
-		{
-		  struct varpool_node *v = ipa_ref_varpool_node (ref);
-		  if (lto_symtab_encoder_in_partition_p (encoder, (symtab_node)v))
-		    continue;
-
-		  /* Constant pool references use internal labels and thus
-		     cannot be made global.  It is sensible to keep those
-		     ltrans local to allow better optimization.
-		     Similarly we ship external vars initializers into
-		     every ltrans unit possibly referring to it.  */
-		  if (DECL_IN_CONSTANT_POOL (v->symbol.decl)
-		      || DECL_EXTERNAL (v->symbol.decl))
-		    {
-		      if (!pointer_set_insert (inserted, vnode))
-			VEC_safe_push (varpool_node_ptr, heap,
-				       promoted_initializers, v);
-		    }
-		  else if (!v->symbol.externally_visible && v->analyzed)
-		    {
-		      if (promote_var (v)
-			  && DECL_INITIAL (v->symbol.decl)
-			  && const_value_known_p (v->symbol.decl)
-			  && !pointer_set_insert (inserted, vnode))
-			VEC_safe_push (varpool_node_ptr, heap,
-				       promoted_initializers, v);
-		    }
-		}
-	    }
-	}
+      part->encoder = compute_ltrans_boundary (part->encoder);
     }
-  pointer_set_destroy (inserted);
+
+  /* Look at boundaries and promote symbols as needed.  */
+  for (i = 0; i < n_sets; i++)
+    {
+      lto_symtab_encoder_iterator lsei;
+      lto_symtab_encoder_t encoder;
+      ltrans_partition part
+	= VEC_index (ltrans_partition, ltrans_partitions, i);
+
+      encoder = part->encoder;
+      for (lsei = lsei_start (encoder); !lsei_end_p (lsei);
+	   lsei_next (&lsei))
+        {
+          symtab_node node = lsei_node (lsei);
+
+	  /* No need to promote if symbol already is externally visible ... */
+	  if (node->symbol.externally_visible
+ 	      /* ... or if it is part of current partition ... */
+	      || lto_symtab_encoder_in_partition_p (encoder, node)
+	      /* ... or if we do not partition it. This mean that it will
+		 appear in every partition refernecing it.  */
+	      || !partition_symbol_p (node))
+	    continue;
+
+          promote_symbol (node);
+        }
+    }
 }
