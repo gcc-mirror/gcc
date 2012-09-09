@@ -164,22 +164,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return _M_instance[__n];
       }
 
-#ifdef __EXCEPTIONS
       constexpr const_reference
       at(size_type __n) const
       {
-	return __n < _Nm ? 
-	       _M_instance[__n] : throw out_of_range(__N("array::at"));
+	// Result of conditional expression must be an lvalue so use
+	// boolean ? lvalue : (throw-expr, lvalue)
+	return __n < _Nm ? _M_instance[__n]
+	  : (std::__throw_out_of_range(__N("array::at")), _M_instance[0]);
       }
-#else
-      const_reference
-      at(size_type __n) const
-      {
-	if (__n >= _Nm)
-	  std::__throw_out_of_range(__N("array::at"));
-	return _M_instance[__n];
-      }
-#endif
 
       reference 
       front()
