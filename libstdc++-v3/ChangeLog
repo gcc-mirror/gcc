@@ -1,5 +1,11 @@
 2012-09-09  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	PR bootstrap/54419
+	* acinclude.m4 (GLIBCXX_CHECK_X86_RDRAND): Remove stray character.
+	* configure: Regenerated.
+
+2012-09-09  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	PR libstdc++/54388
 	* include/std/array (array::at() const): Ensure lvalue result.
 	* testsuite/23_containers/array/element_access/54388.cc: New.
