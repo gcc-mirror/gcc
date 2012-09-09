@@ -370,6 +370,19 @@
      </para>
  </listitem></varlistentry>
 
+<varlistentry><term><code>--disable-libstdcxx-verbose</code></term>
+ <listitem>
+   <para>
+     By default, the library is configured to write descriptive messages
+     to standard error for certain events such as calling a pure virtual
+     function or the invocation of the standard terminate handler.  Those
+     messages cause the library to depend on the demangler and standard I/O
+     facilites, which might be undesirable in a low-memory environment or
+     when standard error is not available.  This option disables those
+     messages.  This option does not change the library ABI.
+   </para>
+ </listitem></varlistentry>
+
 </variablelist>
 
 </section>

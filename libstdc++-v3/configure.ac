@@ -104,6 +104,9 @@ postdeps_CXX=`echo " $postdeps_CXX " | sed 's, -lstdc++ ,,g'`
 ## than just ignoring the results.  Faster /and/ more correct, win win.
 GLIBCXX_ENABLE_HOSTED
 
+# Enable descriptive messages to standard output on termination.
+GLIBCXX_ENABLE_VERBOSE
+
 # Enable compiler support that doesn't require linking.
 GLIBCXX_ENABLE_SJLJ_EXCEPTIONS
 GLIBCXX_ENABLE_PCH($is_hosted)

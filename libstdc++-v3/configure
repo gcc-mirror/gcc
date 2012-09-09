@@ -843,6 +843,7 @@ enable_fast_install
 with_gnu_ld
 enable_libtool_lock
 enable_hosted_libstdcxx
+enable_libstdcxx_verbose
 enable_sjlj_exceptions
 enable_libstdcxx_pch
 enable_cstdio
@@ -1517,6 +1518,8 @@ Optional Features:
   --disable-libtool-lock  avoid locking (might break parallel builds)
   --disable-hosted-libstdcxx
                           only build freestanding C++ runtime support
+  --disable-libstdcxx-verbose
+                          disable termination messages to standard error
   --enable-sjlj-exceptions
                           force use of builtin_setjmp for exceptions
                           [default=auto]
@@ -11504,7 +11507,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11507 "configure"
+#line 11510 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11610,7 +11613,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11613 "configure"
+#line 11616 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14936,6 +14939,29 @@ _ACEOF
 
 
 
+# Enable descriptive messages to standard output on termination.
+
+  # Check whether --enable-libstdcxx-verbose was given.
+if test "${enable_libstdcxx_verbose+set}" = set; then :
+  enableval=$enable_libstdcxx_verbose;
+else
+  enable_libstdcxx_verbose=yes
+fi
+
+  if test x"$enable_libstdcxx_verbose" = xyes; then
+    verbose_define=1
+  else
+    { $as_echo "$as_me:${as_lineno-$LINENO}: verbose termination messages are disabled" >&5
+$as_echo "$as_me: verbose termination messages are disabled" >&6;}
+    verbose_define=0
+  fi
+
+cat >>confdefs.h <<_ACEOF
+#define _GLIBCXX_VERBOSE $verbose_define
+_ACEOF
+
+
+
 # Enable compiler support that doesn't require linking.
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for exception model to use" >&5
@@ -14968,7 +14994,7 @@ fi
     #
     # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
     cat > conftest.$ac_ext << EOF
-#line 14971 "configure"
+#line 14997 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -15303,7 +15329,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15306 "configure"
+#line 15332 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15338,7 +15364,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15341 "configure"
+#line 15367 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15373,7 +15399,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15376 "configure"
+#line 15402 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -15409,7 +15435,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15412 "configure"
+#line 15438 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -15488,7 +15514,7 @@ $as_echo "$as_me: WARNING: Performance of certain classes will degrade as a resu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15491 "configure"
+#line 15517 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -15530,7 +15556,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15533 "configure"
+#line 15559 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -15564,7 +15590,7 @@ $as_echo "$enable_int128" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15567 "configure"
+#line 15593 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
