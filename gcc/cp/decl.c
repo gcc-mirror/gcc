@@ -5131,7 +5131,7 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
       if (field_init == error_mark_node)
 	return error_mark_node;
 
-      if (d->cur->index && d->cur == old_cur)
+      if (d->cur == old_cur && d->cur->index)
 	{
 	  /* This can happen with an invalid initializer for a flexible
 	     array member (c++/54441).  */
