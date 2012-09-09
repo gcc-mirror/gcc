@@ -3363,7 +3363,7 @@ dnl
 dnl Check whether rdrand is supported in the assembler.
 AC_DEFUN([GLIBCXX_CHECK_X86_RDRAND], [
   AC_MSG_CHECKING([for rdrand support in assembler])
-  AC_CACHE_VAL($ac_cv_x86_rdrand, [
+  AC_CACHE_VAL(ac_cv_x86_rdrand, [
   ac_cv_x86_rdrand=no
   case "$target" in
     i?86-*-* | \
