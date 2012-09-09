@@ -1421,14 +1421,10 @@ cmp_partitions_order (const void *a, const void *b)
      = *(struct ltrans_partition_def *const *)b;
   int ordera = -1, orderb = -1;
 
-  if (VEC_length (cgraph_node_ptr, pa->cgraph_set->nodes))
-    ordera = VEC_index (cgraph_node_ptr, pa->cgraph_set->nodes, 0)->symbol.order;
-  else if (VEC_length (varpool_node_ptr, pa->varpool_set->nodes))
-    ordera = VEC_index (varpool_node_ptr, pa->varpool_set->nodes, 0)->symbol.order;
-  if (VEC_length (cgraph_node_ptr, pb->cgraph_set->nodes))
-    orderb = VEC_index (cgraph_node_ptr, pb->cgraph_set->nodes, 0)->symbol.order;
-  else if (VEC_length (varpool_node_ptr, pb->varpool_set->nodes))
-    orderb = VEC_index (varpool_node_ptr, pb->varpool_set->nodes, 0)->symbol.order;
+  if (lto_symtab_encoder_size (pa->encoder))
+    ordera = lto_symtab_encoder_deref (pa->encoder, 0)->symbol.order;
+  if (lto_symtab_encoder_size (pb->encoder))
+    orderb = lto_symtab_encoder_deref (pb->encoder, 0)->symbol.order;
   return orderb - ordera;
 }
 
@@ -1440,8 +1436,6 @@ lto_wpa_write_files (void)
 {
   unsigned i, n_sets;
   lto_file *file;
-  cgraph_node_set set;
-  varpool_node_set vset;
   ltrans_partition part;
   FILE *ltrans_output_list_stream;
   char *temp_filename;
@@ -1457,8 +1451,7 @@ lto_wpa_write_files (void)
   timevar_push (TV_WHOPR_WPA);
 
   FOR_EACH_VEC_ELT (ltrans_partition, ltrans_partitions, i, part)
-    lto_stats.num_output_cgraph_nodes += VEC_length (cgraph_node_ptr,
-						     part->cgraph_set->nodes);
+    lto_stats.num_output_symtab_nodes += lto_symtab_encoder_size (part->encoder);
 
   /* Find out statics that need to be promoted
      to globals with hidden visibility because they are accessed from multiple
@@ -1491,9 +1484,6 @@ lto_wpa_write_files (void)
       size_t len;
       ltrans_partition part = VEC_index (ltrans_partition, ltrans_partitions, i);
 
-      set = part->cgraph_set;
-      vset = part->varpool_set;
-
       /* Write all the nodes in SET.  */
       sprintf (temp_filename + blen, "%u.o", i);
       file = lto_obj_file_open (temp_filename, true);
@@ -1504,22 +1494,28 @@ lto_wpa_write_files (void)
 	fprintf (stderr, " %s (%s %i insns)", temp_filename, part->name, part->insns);
       if (cgraph_dump_file)
 	{
+          lto_symtab_encoder_iterator lsei;
+	  
 	  fprintf (cgraph_dump_file, "Writing partition %s to file %s, %i insns\n",
 		   part->name, temp_filename, part->insns);
-	  fprintf (cgraph_dump_file, "cgraph nodes:");
-	  dump_cgraph_node_set (cgraph_dump_file, set);
-	  fprintf (cgraph_dump_file, "varpool nodes:");
-	  dump_varpool_node_set (cgraph_dump_file, vset);
+	  for (lsei = lsei_start_in_partition (part->encoder); !lsei_end_p (lsei);
+	       lsei_next_in_partition (&lsei))
+	    {
+	      symtab_node node = lsei_node (lsei);
+	      fprintf (cgraph_dump_file, "%s ", symtab_node_name (node));
+	    }
+	  fprintf (cgraph_dump_file, "\n");
 	}
-      gcc_checking_assert (cgraph_node_set_nonempty_p (set)
-			   || varpool_node_set_nonempty_p (vset) || !i);
+      gcc_checking_assert (lto_symtab_encoder_size (part->encoder) || !i);
 
       lto_set_current_out_file (file);
 
-      ipa_write_optimization_summaries (set, vset);
+      ipa_write_optimization_summaries (part->encoder);
 
       lto_set_current_out_file (NULL);
       lto_obj_file_close (file);
+      lto_symtab_encoder_delete (part->encoder);
+      part->encoder = NULL;
 
       len = strlen (temp_filename);
       if (fwrite (temp_filename, 1, len, ltrans_output_list_stream) < len
