@@ -1,3 +1,13 @@
+2012-09-09  Ulrich Drepper  <drepper@gmail.com>
+
+	* config/i386/cpuid.h: Define signature_*_e[bcd]x macros for
+	matching results of level 0 calls to __cpuid to processor
+	manufacturers.
+	* config/i386/driver-i386.c (vendor_signatures): Removed.
+	(processor_signatures): Removed.
+	(host_detect_local_cpu): Replace uses of now-removed SIG_*
+	constants with the new signature_*_ebx constants.
+
 2012-09-08  Jan Hubicka  <jh@suse.cz>
 
 	Replace cgraph_node_set and varpool_node_set by symtab_node_encoder

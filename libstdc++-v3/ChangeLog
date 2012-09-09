@@ -1,3 +1,8 @@
+2012-09-09  Ulrich Drepper  <drepper@gmail.com>
+
+	* src/c++11/random.cc (random_device::_M_init): Use new macro
+	signature_INTEL_ebx to check for Intel processors.
+
 2012-09-06  Thiago Macieira  <thiago.macieira@intel.com>
 
 	PR libstdc++/54172
