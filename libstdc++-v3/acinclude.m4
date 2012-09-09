@@ -3360,6 +3360,26 @@ AC_DEFUN([AC_LC_MESSAGES], [
 ])
 
 dnl
+dnl Check whether rdrand is supported in the assembler.
+AC_DEFUN([GLIBCXX_CHECK_X86_RDRAND], [
+  AC_MSG_CHECKING([for rdrand support in assembler])
+  AC_CACHE_VAL($ac_cv_x86_rdrand, [
+  ac_cv_x86_rdrand=no
+  case "$target" in
+    i?86-*-* | \
+    x86_64-*-*)
+    AC_TRY_COMPILE(, [asm("rdrand %eax");],
+		[ac_cv_x86_rdrand=yes], [ac_cv_x86_rdrand=no])
+  esac
+  ])
+  if test $ac_cv_x86_rdrand = yes; then
+    AC_DEFINE(_GLIBCXX_X86_RDRAND, 1,
+		[ Defined if as can handle rdrand. ])
+  fi
+  AC_MSG_RESULT($ac_cv_x86_rdrand)
+])
+
+dnl
 dnl Check whether get_nprocs is available in <sys/sysinfo.h>, and define _GLIBCXX_USE_GET_NPROCS.
 dnl
 AC_DEFUN([GLIBCXX_CHECK_GET_NPROCS], [

@@ -50,7 +50,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
       return __ret;
     }
 
-#if defined __i386__ || defined __x86_64__
+#if (defined __i386__ || defined __x86_64__) && defined _GLIBCXX_X86_RDRAND
     unsigned int
     __attribute__ ((target("rdrnd")))
     __x86_rdrand(void)
@@ -75,7 +75,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 
     if (token == "default")
       {
-#if defined __i386__ || defined __x86_64__
+#if (defined __i386__ || defined __x86_64__) && defined _GLIBCXX_X86_RDRAND
 	unsigned int eax, ebx, ecx, edx;
 	// Check availability of cpuid and, for now at least, also the
 	// CPU signature for Intel's
@@ -118,7 +118,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
   random_device::result_type
   random_device::_M_getval()
   {
-#if (defined __i386__ || defined __x86_64__)
+#if (defined __i386__ || defined __x86_64__) && defined _GLIBCXX_X86_RDRAND
     if (! _M_file)
       return __x86_rdrand();
 #endif
