@@ -1,6 +1,5 @@
-// { dg-options "-std=gnu++11" }
-// { dg-do compile }
-
+// { dg-options "-std=gnu++0x" }
+//
 // Copyright (C) 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -8,25 +7,36 @@
 // terms of the GNU General Public License as published by the
 // Free Software Foundation; either version 3, or (at your option)
 // any later version.
-
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-
+//
 // You should have received a copy of the GNU General Public License along
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
 #include <array>
+#include <testsuite_hooks.h>
 
-std::array<int, 1> a{};
-const std::array<int, 1> ca{};
+struct A
+{
+  bool valid = true;
+  ~A() { valid = false; }
+};
 
-int n1 = std::get<1>(a);
-int n2 = std::get<1>(std::move(a));
-int n3 = std::get<1>(ca);
+void
+test01()
+{
+  bool test __attribute__((unused)) = true;
 
-// { dg-error "static assertion failed" "" { target *-*-* } 275 }
-// { dg-error "static assertion failed" "" { target *-*-* } 283 }
-// { dg-error "static assertion failed" "" { target *-*-* } 267 }
+  const std::array<A, 1> a;
+  const A& aa = a.at(0);
+  VERIFY(aa.valid);
+}
+
+int main()
+{
+  test01();
+}
