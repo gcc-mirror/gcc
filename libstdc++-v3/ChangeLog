@@ -1,3 +1,9 @@
+2012-09-09  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/54388
+	* include/std/array (array::at() const): Ensure lvalue result.
+	* testsuite/23_containers/array/element_access/54388.cc: New.
+
 2012-09-06  Marc Glisse  <marc.glisse@inria.fr>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 
