@@ -1,3 +1,38 @@
+2012-09-08  Jan Hubicka  <jh@suse.cz>
+
+	Replace cgraph_node_set and varpool_node_set by symtab_node_encoder
+	in partitioning.
+	* tree-pass.h (cgraph_node_set_def, varpool_node_set_def): Remove
+	forward declaration.
+	(lto_symtab_encoder_d): Forward declare.
+	(ipa_write_optimization_summaries): Update.
+	* lto-cgraph.c (lto_symtab_encoder_new): Do not initialize
+	body, initializer and in_partition.
+	(lto_symtab_encoder_delete): Update.
+	(lto_symtab_encoder_encode): Update.
+	(lto_symtab_encoder_lookup): Move inline.
+	(lto_symtab_encoder_delete_node): New function.
+	(lto_symtab_encoder_encode_body_p, lto_set_symtab_encoder_encode_body,
+	lto_symtab_encoder_encode_initializer_p,
+	lto_set_symtab_encoder_encode_initializer, lto_symtab_encoder_in_partition_p,
+	lto_symtab_encoder_in_partition_p): Update.
+	(compute_ltrans_boundary): Take encoder as an input.
+	* passes.c (ipa_write_summaries_1): Update.
+	(ipa_write_summaries_1): Update.
+	(ipa_write_summaries): Update.
+	(ipa_write_optimization_summaries): Update.
+	* lto-streamer.c (print_lto_report): Report number of cgraph nodes.
+	* lto-streamer.h (lto_stats_d): Replace num_output_cgraph_nodes by
+	num_output_symtab_nodes.
+	(lto_encoder_entry): New structure.
+	(struct lto_symtab_encoder_d): Reorg.
+	(lto_symtab_encoder_delete_node): Declare.
+	(lto_symtab_encoder_lookup): Bring inline.
+	(compute_ltrans_boundary): Update.
+	(lto_symtab_encoder_size): Update.
+	(lsei_node, lsei_cgraph_node, lsei_varpool_node): Update.
+	(lto_symtab_encoder_deref): Update.
+
 2012-09-08  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* config/pa/pa.c (hppa_rtx_costs): Update costs for large integer modes.
