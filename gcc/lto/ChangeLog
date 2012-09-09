@@ -1,5 +1,15 @@
 2012-08-12  Jan Hubicka  <jh@suse.cz>
 
+	* lto.c (lto_wpa_write_files): Do not delete partition encoder;
+	it is deleted after streaming.
+	* lto-partition.c (partition_symbol_p): New function.
+	(promote_var, promote_fn): Remove.
+	(promote_symbol): New function.
+	(lto_promote_cross_file_statics): First compute boundaries; rewrite
+	to lookup the actual boundaries instead of computing them ad-hoc.
+
+2012-08-12  Jan Hubicka  <jh@suse.cz>
+
 	Replace cgraph_node_set and varpool_node_set by symtab_node_encoder
 	in partitioning.
 	* lto-partition.h (ltrans_partition_def): Replace cgraph_set and varpool_set

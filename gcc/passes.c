@@ -2264,7 +2264,7 @@ static void
 ipa_write_summaries_1 (lto_symtab_encoder_t encoder)
 {
   struct lto_out_decl_state *state = lto_new_out_decl_state ();
-  compute_ltrans_boundary (state, encoder);
+  state->symtab_node_encoder = encoder;
 
   lto_push_out_decl_state (state);
 
@@ -2324,7 +2324,7 @@ ipa_write_summaries (void)
     if ((!vnode->alias || vnode->alias_of))
       lto_set_symtab_encoder_in_partition (encoder, (symtab_node)vnode);
 
-  ipa_write_summaries_1 (encoder);
+  ipa_write_summaries_1 (compute_ltrans_boundary (encoder));
 
   free (order);
 }
@@ -2376,7 +2376,7 @@ ipa_write_optimization_summaries (lto_symtab_encoder_t encoder)
 {
   struct lto_out_decl_state *state = lto_new_out_decl_state ();
   lto_symtab_encoder_iterator lsei;
-  compute_ltrans_boundary (state, encoder);
+  state->symtab_node_encoder = encoder;
 
   lto_push_out_decl_state (state);
   for (lsei = lsei_start_function_in_partition (encoder);

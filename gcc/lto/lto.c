@@ -1514,7 +1514,6 @@ lto_wpa_write_files (void)
 
       lto_set_current_out_file (NULL);
       lto_obj_file_close (file);
-      lto_symtab_encoder_delete (part->encoder);
       part->encoder = NULL;
 
       len = strlen (temp_filename);

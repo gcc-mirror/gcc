@@ -441,7 +441,7 @@ DEF_VEC_ALLOC_O(lto_encoder_entry, heap);
 /* Encoder data structure used to stream callgraph nodes.  */
 struct lto_symtab_encoder_d
 {
-  VEC(lto_encoder_entry,gc) *nodes;
+  VEC(lto_encoder_entry,heap) *nodes;
   pointer_map_t *map;
 };
 
@@ -856,8 +856,7 @@ bool referenced_from_this_partition_p (struct ipa_ref_list *,
 					lto_symtab_encoder_t);
 bool reachable_from_this_partition_p (struct cgraph_node *,
 				      lto_symtab_encoder_t);
-void compute_ltrans_boundary (struct lto_out_decl_state *state,
-			      lto_symtab_encoder_t encoder);
+lto_symtab_encoder_t compute_ltrans_boundary (lto_symtab_encoder_t encoder);
 
 
 /* In lto-symtab.c.  */

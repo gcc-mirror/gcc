@@ -588,38 +588,6 @@ output_profile_summary (struct lto_simple_output_block *ob)
     streamer_write_uhwi_stream (ob->main_stream, 0);
 }
 
-/* Add NODE into encoder as well as nodes it is cloned from.
-   Do it in a way so clones appear first.  */
-
-static void
-add_node_to (lto_symtab_encoder_t encoder, struct cgraph_node *node,
-	     bool include_body)
-{
-  if (node->clone_of)
-    add_node_to (encoder, node->clone_of, include_body);
-  else if (include_body)
-    lto_set_symtab_encoder_encode_body (encoder, node);
-  lto_symtab_encoder_encode (encoder, (symtab_node)node);
-}
-
-/* Add all references in LIST to encoders.  */
-
-static void
-add_references (lto_symtab_encoder_t encoder,
-		struct ipa_ref_list *list)
-{
-  int i;
-  struct ipa_ref *ref;
-  for (i = 0; ipa_ref_list_reference_iterate (list, i, ref); i++)
-    if (symtab_function_p (ref->referred))
-      add_node_to (encoder, ipa_ref_node (ref), false);
-    else
-      {
-	struct varpool_node *vnode = ipa_ref_varpool_node (ref);
-        lto_symtab_encoder_encode (encoder, (symtab_node)vnode);
-      }
-}
-
 /* Output all callees or indirect outgoing edges.  EDGE must be the first such
    edge.  */
 
@@ -674,11 +642,48 @@ output_refs (lto_symtab_encoder_t encoder)
   lto_destroy_simple_output_block (ob);
 }
 
-/* Find out all cgraph and varpool nodes we want to encode in current unit
-   and insert them to encoders.  */
-void
-compute_ltrans_boundary (struct lto_out_decl_state *state,
-			 lto_symtab_encoder_t in_encoder)
+/* Add NODE into encoder as well as nodes it is cloned from.
+   Do it in a way so clones appear first.  */
+
+static void
+add_node_to (lto_symtab_encoder_t encoder, struct cgraph_node *node,
+	     bool include_body)
+{
+  if (node->clone_of)
+    add_node_to (encoder, node->clone_of, include_body);
+  else if (include_body)
+    lto_set_symtab_encoder_encode_body (encoder, node);
+  lto_symtab_encoder_encode (encoder, (symtab_node)node);
+}
+
+/* Add all references in LIST to encoders.  */
+
+static void
+add_references (lto_symtab_encoder_t encoder,
+		struct ipa_ref_list *list)
+{
+  int i;
+  struct ipa_ref *ref;
+  for (i = 0; ipa_ref_list_reference_iterate (list, i, ref); i++)
+    if (symtab_function_p (ref->referred))
+      add_node_to (encoder, ipa_ref_node (ref), false);
+    else
+      {
+	struct varpool_node *vnode = ipa_ref_varpool_node (ref);
+        lto_symtab_encoder_encode (encoder, (symtab_node)vnode);
+      }
+}
+
+/* Find all symbols we want to stream into given partition and insert them
+   to encoders.
+
+   The function actually replaces IN_ENCODER by new one.  The reason is that
+   streaming code needs clone's origin to be streamed before clone.  This
+   means that we need to insert the nodes in specific order.  This order is
+   ignored by the partitioning logic earlier.  */
+
+lto_symtab_encoder_t 
+compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
 {
   struct cgraph_node *node;
   struct cgraph_edge *edge;
@@ -686,7 +691,7 @@ compute_ltrans_boundary (struct lto_out_decl_state *state,
   lto_symtab_encoder_t encoder;
   lto_symtab_encoder_iterator lsei;
 
-  encoder = state->symtab_node_encoder = lto_symtab_encoder_new ();
+  encoder = lto_symtab_encoder_new ();
 
   /* Go over all entries in the IN_ENCODER and duplicate them to
      ENCODER. At the same time insert masters of clones so
@@ -747,6 +752,8 @@ compute_ltrans_boundary (struct lto_out_decl_state *state,
 	    }
 	}
     }
+ lto_symtab_encoder_delete (in_encoder);
+ return encoder;
 }
 
 /* Output the part of the symtab in SET and VSET.  */
