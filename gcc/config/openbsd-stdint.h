@@ -26,6 +26,9 @@
 #define UINT_FAST16_TYPE	"unsigned int"
 #define UINT_FAST32_TYPE	"unsigned int"
 #define UINT_FAST64_TYPE	"long long unsigned int"
+
+#define INTMAX_TYPE		"long long int"
+#define UINTMAX_TYPE		"long long unsigned int"
  
 #define INTPTR_TYPE		"long int"
 #define UINTPTR_TYPE		"long unsigned int"

@@ -1,3 +1,7 @@
+2012-09-09  Mark Kettenis  <kettenis@gnu.org>
+
+	* config/openbsd-stdint.h (INTMAX_TYPE, UINTMAX_TYPE): Define.
+			
 2012-09-09  Jan Hubicka  <jh@suse.cz>
 
 	* passes.c (ipa_write_summaries_1): Set state;
