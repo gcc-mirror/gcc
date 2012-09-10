@@ -1,3 +1,9 @@
+2012-09-10  Markus Trippelsdorf  <markus@trippelsdorf.de>
+
+	PR middle-end/54515
+	* tree-sra.c (disqualify_base_of_expr): Check for possible
+	NULL_TREE returned by get_base_address()
+
 2012-09-05  Bin Cheng  <bin.cheng@arm.com>
 
 	Backport from 2012-09-04 mainline r190919
