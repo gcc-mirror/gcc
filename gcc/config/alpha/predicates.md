@@ -328,26 +328,50 @@
 (define_predicate "small_symbolic_operand"
   (match_code "const,symbol_ref")
 {
+  HOST_WIDE_INT ofs = 0, max_ofs = 0;
+
   if (! TARGET_SMALL_DATA)
-    return 0;
+    return false;
 
   if (GET_CODE (op) == CONST
       && GET_CODE (XEXP (op, 0)) == PLUS
       && CONST_INT_P (XEXP (XEXP (op, 0), 1)))
-    op = XEXP (XEXP (op, 0), 0);
+    {
+      ofs = INTVAL (XEXP (XEXP (op, 0), 1));
+      op = XEXP (XEXP (op, 0), 0);
+    }
 
   if (GET_CODE (op) != SYMBOL_REF)
-    return 0;
+    return false;
 
   /* ??? There's no encode_section_info equivalent for the rtl
      constant pool, so SYMBOL_FLAG_SMALL never gets set.  */
   if (CONSTANT_POOL_ADDRESS_P (op))
-    return GET_MODE_SIZE (get_pool_mode (op)) <= g_switch_value;
+    {
+      max_ofs = GET_MODE_SIZE (get_pool_mode (op));
+      if (max_ofs > g_switch_value)
+	return false;
+    }
+  else if (SYMBOL_REF_LOCAL_P (op)
+	    && SYMBOL_REF_SMALL_P (op)
+	    && !SYMBOL_REF_WEAK (op)
+	    && !SYMBOL_REF_TLS_MODEL (op))
+    {
+      if (SYMBOL_REF_DECL (op))
+        max_ofs = tree_low_cst (DECL_SIZE_UNIT (SYMBOL_REF_DECL (op)), 1);
+    }
+  else
+    return false;
 
-  return (SYMBOL_REF_LOCAL_P (op)
-	  && SYMBOL_REF_SMALL_P (op)
-	  && !SYMBOL_REF_WEAK (op)
-	  && !SYMBOL_REF_TLS_MODEL (op));
+  /* Given that we know that the GP is always 8 byte aligned, we can
+     always adjust by 7 without overflowing.  */
+  if (max_ofs < 8)
+    max_ofs = 8;
+
+  /* Since we know this is an object in a small data section, we know the
+     entire section is addressable via GP.  We don't know where the section
+     boundaries are, but we know the entire object is within.  */
+  return IN_RANGE (ofs, 0, max_ofs - 1);
 })
 
 ;; Return true if OP is a SYMBOL_REF or CONST referencing a variable
