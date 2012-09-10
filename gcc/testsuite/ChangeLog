@@ -19,6 +19,11 @@
 
 2012-09-07  Aldy Hernandez  <aldyh@redhat.com>
 
+	* gcc.dg/pr52558-2.c: Delete.
+	* gcc.dg/simulate-thread/speculative-store-3.c: New.
+
+2012-09-07  Aldy Hernandez  <aldyh@redhat.com>
+
 	PR testsuite/54184
 	* gcc.dg/pr52558-1.c: Delete.
 	* gcc.dg/simulate-thread/speculative-store-2.c: New.
