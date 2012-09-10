@@ -5903,24 +5903,26 @@ check_constexpr_ctor_body (tree last, tree list)
 static VEC(constructor_elt,gc) *
 sort_constexpr_mem_initializers (tree type, VEC(constructor_elt,gc) *vec)
 {
-  if (!CLASSTYPE_HAS_PRIMARY_BASE_P (type)
-      || (CLASSTYPE_PRIMARY_BINFO (type)
-	  == BINFO_BASE_BINFO (TYPE_BINFO (type), 0)))
+  tree pri = CLASSTYPE_PRIMARY_BINFO (type);
+  constructor_elt elt;
+  int i;
+
+  if (pri == NULL_TREE
+      || pri == BINFO_BASE_BINFO (TYPE_BINFO (type), 0))
     return vec;
 
   /* Find the element for the primary base and move it to the beginning of
      the vec.  */
-  tree pri = BINFO_TYPE (CLASSTYPE_PRIMARY_BINFO (type));
   VEC(constructor_elt,gc) &v = *vec;
-  int pri_idx;
-
-  for (pri_idx = 1; ; ++pri_idx)
-    if (TREE_TYPE (v[pri_idx].index) == pri)
+  pri = BINFO_TYPE (pri);
+  for (i = 1; ; ++i)
+    if (TREE_TYPE (v[i].index) == pri)
       break;
-  constructor_elt pri_elt = v[pri_idx];
-  for (int i = 0; i < pri_idx; ++i)
-    v[i+1] = v[i];
-  v[0] = pri_elt;
+
+  elt = v[i];
+  for (; i > 0; --i)
+    v[i] = v[i-1];
+  v[0] = elt;
   return vec;
 }
 

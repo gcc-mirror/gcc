@@ -1,3 +1,7 @@
+2012-09-07  Jason Merrill  <jason@redhat.com>
+
+	* semantics.c (sort_constexpr_mem_initializers): Tweak.
+
 2012-09-09  Mark Kettenis  <kettenis@openbsd.org>
 
 	* decl.c (reshape_init_class): Avoid dereferencing a
