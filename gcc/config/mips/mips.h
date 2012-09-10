@@ -728,6 +728,11 @@ struct mips_cpu_info {
 #define MIPS_32BIT_OPTION_SPEC \
   "mips1|mips2|mips32*|mgp32"
 
+/* Infer a -msynci setting from a -mips argument, on the assumption that
+   -msynci is desired where possible.  */
+#define MIPS_ISA_SYNCI_SPEC \
+  "%{msynci|mno-synci:;:%{mips32r2|mips64r2:-msynci;:-mno-synci}}"
+
 #if MIPS_ABI_DEFAULT == ABI_O64 \
   || MIPS_ABI_DEFAULT == ABI_N32 \
   || MIPS_ABI_DEFAULT == ABI_64
@@ -761,7 +766,6 @@ struct mips_cpu_info {
   {"llsc", "%{!mllsc:%{!mno-llsc:-m%(VALUE)}}" }, \
   {"mips-plt", "%{!mplt:%{!mno-plt:-m%(VALUE)}}" }, \
   {"synci", "%{!msynci:%{!mno-synci:-m%(VALUE)}}" }
-
 
 /* A spec that infers the -mdsp setting from an -march argument.  */
 #define BASE_DRIVER_SELF_SPECS \
