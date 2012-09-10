@@ -949,9 +949,10 @@ process_subob_fn (tree fn, bool move_p, tree *spec_p, bool *trivial_p,
 	}
     }
 
-  /* Core 1402: A non-trivial copy op suppresses the implicit
+  /* Core 1402: A non-trivial non-move ctor suppresses the implicit
      declaration of the move ctor/op=.  */
-  if (no_implicit_p && move_p && !move_fn_p (fn) && !trivial_fn_p (fn))
+  if (no_implicit_p && move_p && !move_signature_fn_p (fn)
+      && !trivial_fn_p (fn))
     *no_implicit_p = true;
 
   if (constexpr_p && !DECL_DECLARED_CONSTEXPR_P (fn))

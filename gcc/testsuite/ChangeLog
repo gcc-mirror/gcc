@@ -1,5 +1,8 @@
 2012-09-10  Jason Merrill  <jason@redhat.com>
 
+	PR c++/54506
+	* g++.dg/cpp0x/implicit14.C: New.
+
 	PR c++/54341
 	PR c++/54253
 	* g++.dg/cpp0x/constexpr-virtual2.C: New.

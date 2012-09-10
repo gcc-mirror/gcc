@@ -5042,6 +5042,7 @@ extern tree build_ptrmem_type			(tree, tree);
 extern tree build_this_parm			(tree, cp_cv_quals);
 extern int copy_fn_p				(const_tree);
 extern bool move_fn_p                           (const_tree);
+extern bool move_signature_fn_p                 (const_tree);
 extern tree get_scope_of_declarator		(const cp_declarator *);
 extern void grok_special_member_properties	(tree);
 extern int grok_ctor_properties			(const_tree, const_tree);
