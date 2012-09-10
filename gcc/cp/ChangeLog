@@ -1,5 +1,10 @@
 2012-09-10  Jason Merrill  <jason@redhat.com>
 
+	PR c++/54538
+	PR c++/53783
+	* pt.c (tsubst_copy_and_build) [LAMBDA_EXPR]: Go back to using RECUR
+	for LAMBDA_EXPR_EXTRA_SCOPE except for function scope.
+
 	PR c++/54506
 	* decl.c (move_signature_fn_p): Split out from move_fn_p.
 	* method.c (process_subob_fn): Use it.
