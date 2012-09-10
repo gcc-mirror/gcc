@@ -1,3 +1,12 @@
+2012-09-10  Martin Jambor  <mjambor@suse.cz>
+
+	* params.def (PARAM_IPA_MAX_AGG_ITEMS): New parameter.
+	* ipa-prop.c: Include params.h.
+	(IPA_MAX_AFF_JF_ITEMS): Removed.
+	(determine_known_aggregate_parts): Use param value of
+	PARAM_IPA_MAX_AGG_ITEMS instead of IPA_MAX_AFF_JF_ITEMS.
+	* Makefile.in (ipa-prop.o): Add PARAMS_H dependency.
+
 2012-09-10  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/54520

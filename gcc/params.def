@@ -885,6 +885,12 @@ DEFPARAM (PARAM_IPA_CP_EVAL_THRESHOLD,
 	  "beneficial to clone.",
 	  500, 0, 0)
 
+DEFPARAM (PARAM_IPA_MAX_AGG_ITEMS,
+	  "ipa-max-agg-items",
+	  "Maximum number of aggregate content items for a parameter in "
+	  "jump functions and lattices",
+	  16, 0, 0)
+
 /* WHOPR partitioning configuration.  */
 
 DEFPARAM (PARAM_LTO_PARTITIONS,
