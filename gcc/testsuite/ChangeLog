@@ -1,3 +1,10 @@
+2012-09-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/54341
+	PR c++/54253
+	* g++.dg/cpp0x/constexpr-virtual2.C: New.
+	* g++.dg/cpp0x/constexpr-virtual3.C: New.
+
 2012-09-10  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/54435
