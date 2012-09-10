@@ -1,3 +1,7 @@
+2012-09-10  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* ira.c (setup_pressure_classes): Handle synonymous classes.
+
 2012-09-10  Marc Glisse  <marc.glisse@inria.fr>
 
         * tree-ssa-forwprop.c (simplify_bitfield_ref): New function.
