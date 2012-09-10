@@ -20,5 +20,5 @@ void func()
   }
 }
 
-/* { dg-final { scan-tree-dump-times "MEM count_lsm.. count_lsm_flag" 1 "lim1" } } */
+/* { dg-final { scan-tree-dump-times "Cannot hoist conditional load of count because it is in a transaction" 1 "lim1" } } */
 /* { dg-final { cleanup-tree-dump "lim1" } } */
