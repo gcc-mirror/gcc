@@ -1,3 +1,10 @@
+2012-09-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/54506
+	* decl.c (move_signature_fn_p): Split out from move_fn_p.
+	* method.c (process_subob_fn): Use it.
+	* cp-tree.h: Declare it.
+
 2012-09-07  Jason Merrill  <jason@redhat.com>
 
 	* semantics.c (sort_constexpr_mem_initializers): Tweak.
