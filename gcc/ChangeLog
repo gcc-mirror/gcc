@@ -1,3 +1,10 @@
+2012-09-10  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backport from 2012-09-10 mainline r191132.
+	
+	PR target/54536
+	* config/avr/avr-mcus.def (at90usb1287): Set LIBRARY_NAME to "usb1287".
+
 2012-09-10  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	PR middle-end/54515
