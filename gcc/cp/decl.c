@@ -10859,10 +10859,6 @@ copy_fn_p (const_tree d)
 bool
 move_fn_p (const_tree d)
 {
-  tree args;
-  tree arg_type;
-  bool result = false;
-
   gcc_assert (DECL_FUNCTION_MEMBER_P (d));
 
   if (cxx_dialect == cxx98)
@@ -10872,11 +10868,28 @@ move_fn_p (const_tree d)
   if (TREE_CODE (d) == TEMPLATE_DECL
       || (DECL_TEMPLATE_INFO (d)
          && DECL_MEMBER_TEMPLATE_P (DECL_TI_TEMPLATE (d))))
-    /* Instantiations of template member functions are never copy
+    /* Instantiations of template member functions are never move
        functions.  Note that member functions of templated classes are
        represented as template functions internally, and we must
-       accept those as copy functions.  */
+       accept those as move functions.  */
     return 0;
+
+  return move_signature_fn_p (d);
+}
+
+/* D is a constructor or overloaded `operator='.
+
+   Then, this function returns true when D has the same signature as a move
+   constructor or move assignment operator (because either it is such a
+   ctor/op= or it is a template specialization with the same signature),
+   false otherwise.  */
+
+bool
+move_signature_fn_p (const_tree d)
+{
+  tree args;
+  tree arg_type;
+  bool result = false;
 
   args = FUNCTION_FIRST_USER_PARMTYPE (d);
   if (!args)
