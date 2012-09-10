@@ -1,3 +1,8 @@
+2012-09-10  Marc Glisse  <marc.glisse@inria.fr>
+
+        * tree-ssa-forwprop.c (simplify_bitfield_ref): New function.
+        (ssa_forward_propagate_and_combine): Call it.
+
 2012-09-10  Steve Ellcey  <sellcey@mips.com>
 
 	* config.gcc: Add mips*-mti-linux* target

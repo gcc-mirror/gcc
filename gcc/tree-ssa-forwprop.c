@@ -2574,6 +2574,78 @@ combine_conversions (gimple_stmt_iterator *gsi)
   return 0;
 }
 
+/* Combine an element access with a shuffle.  Returns true if there were
+   any changes made, else it returns false.  */
+ 
+static bool
+simplify_bitfield_ref (gimple_stmt_iterator *gsi)
+{
+  gimple stmt = gsi_stmt (*gsi);
+  gimple def_stmt;
+  tree op, op0, op1, op2;
+  tree elem_type;
+  unsigned idx, n, size;
+  enum tree_code code;
+
+  op = gimple_assign_rhs1 (stmt);
+  gcc_checking_assert (TREE_CODE (op) == BIT_FIELD_REF);
+
+  op0 = TREE_OPERAND (op, 0);
+  if (TREE_CODE (op0) != SSA_NAME
+      || TREE_CODE (TREE_TYPE (op0)) != VECTOR_TYPE)
+    return false;
+
+  elem_type = TREE_TYPE (TREE_TYPE (op0));
+  if (TREE_TYPE (op) != elem_type)
+    return false;
+
+  size = TREE_INT_CST_LOW (TYPE_SIZE (elem_type));
+  op1 = TREE_OPERAND (op, 1);
+  n = TREE_INT_CST_LOW (op1) / size;
+  if (n != 1)
+    return false;
+
+  def_stmt = SSA_NAME_DEF_STMT (op0);
+  if (!def_stmt || !is_gimple_assign (def_stmt)
+      || !can_propagate_from (def_stmt))
+    return false;
+
+  op2 = TREE_OPERAND (op, 2);
+  idx = TREE_INT_CST_LOW (op2) / size;
+
+  code = gimple_assign_rhs_code (def_stmt);
+
+  if (code == VEC_PERM_EXPR)
+    {
+      tree p, m, index, tem;
+      unsigned nelts;
+      m = gimple_assign_rhs3 (def_stmt);
+      if (TREE_CODE (m) != VECTOR_CST)
+	return false;
+      nelts = VECTOR_CST_NELTS (m);
+      idx = TREE_INT_CST_LOW (VECTOR_CST_ELT (m, idx));
+      idx %= 2 * nelts;
+      if (idx < nelts)
+	{
+	  p = gimple_assign_rhs1 (def_stmt);
+	}
+      else
+	{
+	  p = gimple_assign_rhs2 (def_stmt);
+	  idx -= nelts;
+	}
+      index = build_int_cst (TREE_TYPE (TREE_TYPE (m)), idx * size);
+      tem = build3 (BIT_FIELD_REF, TREE_TYPE (op),
+			 unshare_expr (p), op1, index);
+      gimple_assign_set_rhs1 (stmt, tem);
+      fold_stmt (gsi);
+      update_stmt (gsi_stmt (*gsi));
+      return true;
+    }
+
+  return false;
+}
+
 /* Determine whether applying the 2 permutations (mask1 then mask2)
    gives back one of the input.  */
 
@@ -2891,6 +2963,8 @@ ssa_forward_propagate_and_combine (void)
 		      cfg_changed = true;
 		    changed = did_something != 0;
 		  }
+		else if (code == BIT_FIELD_REF)
+		  changed = simplify_bitfield_ref (&gsi);
 		break;
 	      }
 
