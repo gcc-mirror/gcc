@@ -1,3 +1,7 @@
+2012-09-10  Marc Glisse  <marc.glisse@inria.fr>
+
+        * gcc.dg/tree-ssa/forwprop-21.c: New testcase.
+
 2012-09-10  Aldy Hernandez  <aldyh@redhat.com>
 
 	* gcc.dg/tm/reg-promotion.c: Modify dump message check.
