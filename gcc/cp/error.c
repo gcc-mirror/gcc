@@ -657,7 +657,7 @@ dump_aggr_type (tree t, int flags)
       else
 	pp_printf (pp_base (cxx_pp), M_("<anonymous %s>"), variety);
     }
-  else if (LAMBDANAME_P (name))
+  else if (LAMBDA_TYPE_P (name))
     {
       /* A lambda's "type" is essentially its signature.  */
       pp_string (cxx_pp, M_("<lambda"));
@@ -846,7 +846,9 @@ dump_type_suffix (tree t, int flags)
 	{
 	  tree dtype = TYPE_DOMAIN (t);
 	  tree max = TYPE_MAX_VALUE (dtype);
-	  if (host_integerp (max, 0))
+	  if (integer_all_onesp (max))
+	    pp_character (cxx_pp, '0');
+	  else if (host_integerp (max, 0))
 	    pp_wide_integer (cxx_pp, tree_low_cst (max, 0) + 1);
 	  else if (TREE_CODE (max) == MINUS_EXPR)
 	    dump_expr (TREE_OPERAND (max, 0),
@@ -1042,7 +1044,7 @@ dump_decl (tree t, int flags)
     case SCOPE_REF:
       dump_type (TREE_OPERAND (t, 0), flags);
       pp_string (cxx_pp, "::");
-      dump_decl (TREE_OPERAND (t, 1), flags|TFF_UNQUALIFIED_NAME);
+      dump_decl (TREE_OPERAND (t, 1), TFF_UNQUALIFIED_NAME);
       break;
 
     case ARRAY_REF:

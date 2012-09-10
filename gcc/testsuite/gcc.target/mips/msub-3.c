@@ -1,5 +1,7 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 isa_rev>=1 -mgp32" } */
+/* This test requires widening_mul */
+/* { dg-options "isa_rev>=1 -mgp32 -fexpensive-optimizations" } */
+/* { dg-skip-if "code quality test" { *-*-* } { "-O0" } { "" } } */
 /* { dg-final { scan-assembler-times "\tmsub\t" 2 } } */
 
 NOMIPS16 long long

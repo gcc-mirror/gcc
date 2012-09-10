@@ -656,13 +656,12 @@ copy_reference_ops_from_ref (tree ref, VEC(vn_reference_op_s, heap) **result)
 		if (TREE_INT_CST_LOW (bit_offset) % BITS_PER_UNIT == 0)
 		  {
 		    double_int off
-		      = double_int_add (tree_to_double_int (this_offset),
-					double_int_rshift
-					  (tree_to_double_int (bit_offset),
-					   BITS_PER_UNIT == 8
-					   ? 3 : exact_log2 (BITS_PER_UNIT),
-					   HOST_BITS_PER_DOUBLE_INT, true));
-		    if (double_int_fits_in_shwi_p (off))
+		      = tree_to_double_int (this_offset)
+			+ tree_to_double_int (bit_offset)
+			  .arshift (BITS_PER_UNIT == 8
+				    ? 3 : exact_log2 (BITS_PER_UNIT),
+				    HOST_BITS_PER_DOUBLE_INT);
+		    if (off.fits_shwi ())
 		      temp.off = off.low;
 		  }
 	      }
@@ -680,11 +679,9 @@ copy_reference_ops_from_ref (tree ref, VEC(vn_reference_op_s, heap) **result)
 	      && TREE_CODE (temp.op2) == INTEGER_CST)
 	    {
 	      double_int off = tree_to_double_int (temp.op0);
-	      off = double_int_add (off,
-				    double_int_neg
-				      (tree_to_double_int (temp.op1)));
-	      off = double_int_mul (off, tree_to_double_int (temp.op2));
-	      if (double_int_fits_in_shwi_p (off))
+	      off += -tree_to_double_int (temp.op1);
+	      off *= tree_to_double_int (temp.op2);
+	      if (off.fits_shwi ())
 		temp.off = off.low;
 	    }
 	  break;
@@ -1007,7 +1004,7 @@ vn_reference_fold_indirect (VEC (vn_reference_op_s, heap) **ops,
   vn_reference_op_t op = &VEC_index (vn_reference_op_s, *ops, i);
   vn_reference_op_t mem_op = &VEC_index (vn_reference_op_s, *ops, i - 1);
   tree addr_base;
-  HOST_WIDE_INT addr_offset;
+  HOST_WIDE_INT addr_offset = 0;
 
   /* The only thing we have to do is from &OBJ.foo.bar add the offset
      from .foo.bar to the preceding MEM_REF offset and replace the
@@ -1018,8 +1015,8 @@ vn_reference_fold_indirect (VEC (vn_reference_op_s, heap) **ops,
   if (addr_base != op->op0)
     {
       double_int off = tree_to_double_int (mem_op->op0);
-      off = double_int_sext (off, TYPE_PRECISION (TREE_TYPE (mem_op->op0)));
-      off = double_int_add (off, shwi_to_double_int (addr_offset));
+      off = off.sext (TYPE_PRECISION (TREE_TYPE (mem_op->op0)));
+      off += double_int::from_shwi (addr_offset);
       mem_op->op0 = double_int_to_tree (TREE_TYPE (mem_op->op0), off);
       op->op0 = build_fold_addr_expr (addr_base);
       if (host_integerp (mem_op->op0, 0))
@@ -1052,7 +1049,7 @@ vn_reference_maybe_forwprop_address (VEC (vn_reference_op_s, heap) **ops,
     return;
 
   off = tree_to_double_int (mem_op->op0);
-  off = double_int_sext (off, TYPE_PRECISION (TREE_TYPE (mem_op->op0)));
+  off = off.sext (TYPE_PRECISION (TREE_TYPE (mem_op->op0)));
 
   /* The only thing we have to do is from &OBJ.foo.bar add the offset
      from .foo.bar to the preceding MEM_REF offset and replace the
@@ -1069,8 +1066,8 @@ vn_reference_maybe_forwprop_address (VEC (vn_reference_op_s, heap) **ops,
 	  || TREE_CODE (addr_base) != MEM_REF)
 	return;
 
-      off = double_int_add (off, shwi_to_double_int (addr_offset));
-      off = double_int_add (off, mem_ref_offset (addr_base));
+      off += double_int::from_shwi (addr_offset);
+      off += mem_ref_offset (addr_base);
       op->op0 = TREE_OPERAND (addr_base, 0);
     }
   else
@@ -1082,7 +1079,7 @@ vn_reference_maybe_forwprop_address (VEC (vn_reference_op_s, heap) **ops,
 	  || TREE_CODE (ptroff) != INTEGER_CST)
 	return;
 
-      off = double_int_add (off, tree_to_double_int (ptroff));
+      off += tree_to_double_int (ptroff);
       op->op0 = ptr;
     }
 
@@ -1242,11 +1239,9 @@ valueize_refs_1 (VEC (vn_reference_op_s, heap) *orig, bool *valueized_anything)
 	       && TREE_CODE (vro->op2) == INTEGER_CST)
 	{
 	  double_int off = tree_to_double_int (vro->op0);
-	  off = double_int_add (off,
-				double_int_neg
-				  (tree_to_double_int (vro->op1)));
-	  off = double_int_mul (off, tree_to_double_int (vro->op2));
-	  if (double_int_fits_in_shwi_p (off))
+	  off += -tree_to_double_int (vro->op1);
+	  off *= tree_to_double_int (vro->op2);
+	  if (off.fits_shwi ())
 	    vro->off = off.low;
 	}
     }

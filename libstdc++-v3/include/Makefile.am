@@ -518,6 +518,8 @@ ext_headers = \
 	${ext_srcdir}/pointer.h \
 	${ext_srcdir}/pool_allocator.h \
 	${ext_srcdir}/rb_tree \
+	${ext_srcdir}/random \
+	${ext_srcdir}/random.tcc \
 	${ext_srcdir}/rope \
 	${ext_srcdir}/ropeimpl.h \
 	${ext_srcdir}/slist \

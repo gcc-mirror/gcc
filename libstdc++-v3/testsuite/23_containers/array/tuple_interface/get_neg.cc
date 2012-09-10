@@ -29,4 +29,4 @@ int n3 = std::get<1>(ca);
 
 // { dg-error "static assertion failed" "" { target *-*-* } 275 }
 // { dg-error "static assertion failed" "" { target *-*-* } 283 }
-// { dg-error "static assertion failed" "" { target *-*-* } 291 }
+// { dg-error "static assertion failed" "" { target *-*-* } 267 }

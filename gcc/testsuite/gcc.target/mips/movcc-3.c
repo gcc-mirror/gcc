@@ -1,13 +1,14 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 isa>=4 -mhard-float" } */
-/* { dg-final { scan-assembler "movt" } } */
-/* { dg-final { scan-assembler "movf" } } */
-/* { dg-final { scan-assembler "movz.s" } } */
-/* { dg-final { scan-assembler "movn.s" } } */
-/* { dg-final { scan-assembler "movt.s" } } */
-/* { dg-final { scan-assembler "movz.d" } } */
-/* { dg-final { scan-assembler "movn.d" } } */
-/* { dg-final { scan-assembler "movf.d" } } */
+/* { dg-options "isa>=4 -mhard-float" } */
+/* { dg-skip-if "code quality test" { *-*-* } { "-O0" } { "" } } */
+/* { dg-final { scan-assembler "\tmovt\t" } } */
+/* { dg-final { scan-assembler "\tmovf\t" } } */
+/* { dg-final { scan-assembler "\tmovz.s\t" } } */
+/* { dg-final { scan-assembler "\tmovn.s\t" } } */
+/* { dg-final { scan-assembler "\tmovt.s\t" } } */
+/* { dg-final { scan-assembler "\tmovz.d\t" } } */
+/* { dg-final { scan-assembler "\tmovn.d\t" } } */
+/* { dg-final { scan-assembler "\tmovf.d\t" } } */
 
 void ext_int (int);
 void ext_long (long);

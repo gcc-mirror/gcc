@@ -1,3 +1,142 @@
+2012-09-07  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/54208
+	* simplify.c (simplify_bound_dim): Resolve array spec before
+	proceeding with simplification.
+
+2012-09-06  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54463
+	* trans-intrinsic.c (gfc_conv_intrinsic_funcall): Fix matmul
+	call to BLAS if the default-kind has been promoted.
+
+2012-09-05  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54462
+	* symbol.c (gfc_undo_symbols): Avoid NULL pointer dereference.
+
+2012-09-04  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54435
+	PR fortran/54443
+	* match.c (gfc_match_select_type): Make sure to only access CLASS_DATA
+	for BT_CLASS.
+
+2012-09-03  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54467
+	* class.c (gfc_find_derived_vtab): Fix disabling of _final
+	by continuing to generate normal type-bound procedures.
+
+2012-09-03  Tobias Burnus  <burnus@net-b.de>
+
+	* class.c (gfc_find_derived_vtab): Disable ABI-breaking
+	generation of the "_final" subroutine for now.
+
+2012-09-03  Tobias Burnus  <burnus@net-b.de>
+
+	* class.c (finalize_component): Fixes to the comment.
+
+2012-09-03  Alessandro Fanfarillo  <fanfarillo.gcc@gmail.com>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/37336
+	* gfortran.h (symbol_attribute): Add artificial.
+	* module.c (mio_symbol_attribute): Handle attr.artificial
+	* class.c (gfc_build_class_symbol): Defer creation of the vtab
+	if the DT has finalizers, mark generated symbols as
+	attr.artificial.
+	(has_finalizer_component, finalize_component,
+	finalization_scalarizer, generate_finalization_wrapper):
+	New static functions.
+	(gfc_find_derived_vtab): Add _final component and call
+	generate_finalization_wrapper.
+	* dump-parse-tree.c (show_f2k_derived): Use resolved
+	proc_tree->n.sym rather than unresolved proc_sym.
+	(show_attr): Handle attr.artificial.
+	* resolve.c (gfc_resolve_finalizers): Ensure that the vtab exists.
+	(resolve_fl_derived): Resolve finalizers before
+	generating the vtab.
+	(resolve_symbol): Also allow assumed-rank arrays with CONTIGUOUS;
+	skip artificial symbols.
+	(resolve_fl_derived0): Skip artificial symbols.
+
+2012-09-02  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54426
+	* symbol.c (find_common_symtree): New function.
+	(gfc_undo_symbols): Use it; free common_head if needed.
+
+2012-08-28  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54389
+	* trans-decl.c (gfc_get_extern_function_decl,
+	build_function_decl): Don't mark impure elemental
+	functions as DECL_PURE_P and honour implicit_pure.
+
+2012-08-28  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54382
+	* error.c (show_locus): Avoid out of bound access.
+
+2012-08-28  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54384
+	* decl.c (match_data_constant): Add missing gfc_free_expr.
+	(top_val_list): Remove always-true condition.
+	* data.c (get_array_index, create_character_initializer):
+	Free temporary expressions.
+	(gfc_assign_data_value): Free expression when aborting.
+
+2012-08-28  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54384
+	* symbol.c (gfc_copy_formal_args): Set also sym->formal_ns.
+
+2012-08-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54384
+	* resolve.c (gfc_resolve_character_operator): Free temporary
+	variables.
+	* trans-expr.c (gfc_conv_statement_function): Ditto.
+
+2012-08-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54384
+	* dependency.c (check_section_vs_section): Use gfc_free_expr
+	instead of free.
+	* trans-intrinsic.c (conv_generic_with_optional_char_arg): Use
+	gfc_free_symbol instead of free.
+
+2012-08-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54384
+	* trans-expr.c (gfc_trans_arrayfunc_assign): Free se.ss
+	and loop.
+
+2012-08-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/41093
+	* gfortran.h (gfc_common_head): Add "int refs".
+	* match.c (gfc_match_common): Increment refs.
+	* resolve.c (resolve_symbol): Only increment formal_ns->refs
+	if formal_ns is not sym->ns.
+	* symbol.c (gfc_free_symbol): Only free formal_ns if
+	if formal_ns is not sym->ns. Free common_block if refs is one.
+	(gfc_release_symbol): Release formal_ns only if the
+	symbol is not ENTRY of a module.
+	* decl.c (get_proc_name): Don't increment gfc_current_ns->refs.
+	* parse.c (parse_interface): Incement proc_unit->refs++ for
+	proc-pointer result variables.
+	* module.c (mio_symbol): Don't increase sym->refs for its
+	use in sym->formal_ns->proc_name.
+
+2012-08-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54370
+	* trans-stmt.c (gfc_trans_do_while): Don't change the logical
+	kind for negation of the condition.
+
 2012-08-27  Tobias Burnus  <burnus@net-b.de>
 
 	* options.c (set_Wall): Don't set for -Wcompare-reals.

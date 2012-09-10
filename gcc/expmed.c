@@ -1985,11 +1985,11 @@ mask_rtx (enum machine_mode mode, int bitpos, int bitsize, int complement)
 {
   double_int mask;
 
-  mask = double_int_mask (bitsize);
-  mask = double_int_lshift (mask, bitpos, HOST_BITS_PER_DOUBLE_INT, false);
+  mask = double_int::mask (bitsize);
+  mask = mask.llshift (bitpos, HOST_BITS_PER_DOUBLE_INT);
 
   if (complement)
-    mask = double_int_not (mask);
+    mask = ~mask;
 
   return immed_double_int_const (mask, mode);
 }
@@ -2002,8 +2002,8 @@ lshift_value (enum machine_mode mode, rtx value, int bitpos, int bitsize)
 {
   double_int val;
   
-  val = double_int_zext (uhwi_to_double_int (INTVAL (value)), bitsize);
-  val = double_int_lshift (val, bitpos, HOST_BITS_PER_DOUBLE_INT, false);
+  val = double_int::from_uhwi (INTVAL (value)).zext (bitsize);
+  val = val.llshift (bitpos, HOST_BITS_PER_DOUBLE_INT);
 
   return immed_double_int_const (val, mode);
 }

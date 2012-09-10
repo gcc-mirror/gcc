@@ -20,41 +20,41 @@
 
 /* This (greedy) algorithm constructs traces in several rounds.
    The construction starts from "seeds".  The seed for the first round
-   is the entry point of function.  When there are more than one seed
-   that one is selected first that has the lowest key in the heap
-   (see function bb_to_key).  Then the algorithm repeatedly adds the most
-   probable successor to the end of a trace.  Finally it connects the traces.
+   is the entry point of the function.  When there are more than one seed,
+   the one with the lowest key in the heap is selected first (see bb_to_key).
+   Then the algorithm repeatedly adds the most probable successor to the end
+   of a trace.  Finally it connects the traces.
 
    There are two parameters: Branch Threshold and Exec Threshold.
-   If the edge to a successor of the actual basic block is lower than
-   Branch Threshold or the frequency of the successor is lower than
-   Exec Threshold the successor will be the seed in one of the next rounds.
+   If the probability of an edge to a successor of the current basic block is
+   lower than Branch Threshold or its frequency is lower than Exec Threshold,
+   then the successor will be the seed in one of the next rounds.
    Each round has these parameters lower than the previous one.
-   The last round has to have these parameters set to zero
-   so that the remaining blocks are picked up.
+   The last round has to have these parameters set to zero so that the
+   remaining blocks are picked up.
 
    The algorithm selects the most probable successor from all unvisited
    successors and successors that have been added to this trace.
    The other successors (that has not been "sent" to the next round) will be
-   other seeds for this round and the secondary traces will start in them.
-   If the successor has not been visited in this trace it is added to the trace
-   (however, there is some heuristic for simple branches).
-   If the successor has been visited in this trace the loop has been found.
-   If the loop has many iterations the loop is rotated so that the
-   source block of the most probable edge going out from the loop
-   is the last block of the trace.
+   other seeds for this round and the secondary traces will start from them.
+   If the successor has not been visited in this trace, it is added to the
+   trace (however, there is some heuristic for simple branches).
+   If the successor has been visited in this trace, a loop has been found.
+   If the loop has many iterations, the loop is rotated so that the source
+   block of the most probable edge going out of the loop is the last block
+   of the trace.
    If the loop has few iterations and there is no edge from the last block of
-   the loop going out from loop the loop header is duplicated.
-   Finally, the construction of the trace is terminated.
+   the loop going out of the loop, the loop header is duplicated.
 
-   When connecting traces it first checks whether there is an edge from the
-   last block of one trace to the first block of another trace.
+   When connecting traces, the algorithm first checks whether there is an edge
+   from the last block of a trace to the first block of another trace.
    When there are still some unconnected traces it checks whether there exists
-   a basic block BB such that BB is a successor of the last bb of one trace
-   and BB is a predecessor of the first block of another trace. In this case,
-   BB is duplicated and the traces are connected through this duplicate.
+   a basic block BB such that BB is a successor of the last block of a trace
+   and BB is a predecessor of the first block of another trace.  In this case,
+   BB is duplicated, added at the end of the first trace and the traces are
+   connected through it.
    The rest of traces are simply connected so there will be a jump to the
-   beginning of the rest of trace.
+   beginning of the rest of traces.
 
 
    References:
@@ -89,11 +89,11 @@
 
 /* The number of rounds.  In most cases there will only be 4 rounds, but
    when partitioning hot and cold basic blocks into separate sections of
-   the .o file there will be an extra round.*/
+   the object file there will be an extra round.  */
 #define N_ROUNDS 5
 
 /* Stubs in case we don't have a return insn.
-   We have to check at runtime too, not only compiletime.  */
+   We have to check at run time too, not only compile time.  */
 
 #ifndef HAVE_return
 #define HAVE_return 0
@@ -122,10 +122,10 @@ static int exec_threshold[N_ROUNDS] = {500, 200, 50, 0, 0};
 /* Structure to hold needed information for each basic block.  */
 typedef struct bbro_basic_block_data_def
 {
-  /* Which trace is the bb start of (-1 means it is not a start of a trace).  */
+  /* Which trace is the bb start of (-1 means it is not a start of any).  */
   int start_of_trace;
 
-  /* Which trace is the bb end of (-1 means it is not an end of a trace).  */
+  /* Which trace is the bb end of (-1 means it is not an end of any).  */
   int end_of_trace;
 
   /* Which trace is the bb in?  */
@@ -179,7 +179,8 @@ static void find_traces_1_round (int, int, gcov_type, struct trace *, int *,
 				 int, fibheap_t *, int);
 static basic_block copy_bb (basic_block, edge, basic_block, int);
 static fibheapkey_t bb_to_key (basic_block);
-static bool better_edge_p (const_basic_block, const_edge, int, int, int, int, const_edge);
+static bool better_edge_p (const_basic_block, const_edge, int, int, int, int,
+			   const_edge);
 static void connect_traces (int, struct trace *);
 static bool copy_bb_p (const_basic_block, int);
 static bool push_to_next_round_p (const_basic_block, int, int, int, gcov_type);
@@ -296,7 +297,9 @@ find_traces (int *n_traces, struct trace *traces)
 	  basic_block bb;
 	  fprintf (dump_file, "Trace %d (round %d):  ", i + 1,
 		   traces[i].round + 1);
-	  for (bb = traces[i].first; bb != traces[i].last; bb = (basic_block) bb->aux)
+	  for (bb = traces[i].first;
+	       bb != traces[i].last;
+	       bb = (basic_block) bb->aux)
 	    fprintf (dump_file, "%d [%d] ", bb->index, bb->frequency);
 	  fprintf (dump_file, "%d [%d]\n", bb->index, bb->frequency);
 	}
@@ -421,13 +424,13 @@ rotate_loop (edge back_edge, struct trace *trace, int trace_n)
   return best_bb;
 }
 
-/* One round of finding traces. Find traces for BRANCH_TH and EXEC_TH i.e. do
-   not include basic blocks their probability is lower than BRANCH_TH or their
-   frequency is lower than EXEC_TH into traces (or count is lower than
-   COUNT_TH).  It stores the new traces into TRACES and modifies the number of
-   traces *N_TRACES. Sets the round (which the trace belongs to) to ROUND. It
-   expects that starting basic blocks are in *HEAP and at the end it deletes
-   *HEAP and stores starting points for the next round into new *HEAP.  */
+/* One round of finding traces.  Find traces for BRANCH_TH and EXEC_TH i.e. do
+   not include basic blocks whose probability is lower than BRANCH_TH or whose
+   frequency is lower than EXEC_TH into traces (or whose count is lower than
+   COUNT_TH).  Store the new traces into TRACES and modify the number of
+   traces *N_TRACES.  Set the round (which the trace belongs to) to ROUND.
+   The function expects starting basic blocks to be in *HEAP and will delete
+   *HEAP and store starting points for the next round into new *HEAP.  */
 
 static void
 find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
@@ -453,7 +456,7 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
       if (dump_file)
 	fprintf (dump_file, "Getting bb %d\n", bb->index);
 
-      /* If the BB's frequency is too low send BB to the next round.  When
+      /* If the BB's frequency is too low, send BB to the next round.  When
 	 partitioning hot/cold blocks into separate sections, make sure all
 	 the cold blocks (and ONLY the cold blocks) go into the (extra) final
 	 round.  */
@@ -653,7 +656,8 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 
 			  if (single_succ_p (bb)
 			      && copy_bb_p (best_edge->dest,
-			      		    optimize_edge_for_speed_p (best_edge)))
+			      		    optimize_edge_for_speed_p
+			      		    (best_edge)))
 			    {
 			      bb = copy_bb (best_edge->dest, best_edge, bb,
 					    *n_traces);
@@ -843,6 +847,7 @@ bb_to_key (basic_block bb)
   if (priority)
     /* The block with priority should have significantly lower key.  */
     return -(100 * BB_FREQ_MAX + 100 * priority + bb->frequency);
+
   return -bb->frequency;
 }
 
@@ -854,8 +859,8 @@ bb_to_key (basic_block bb)
    BEST_PROB; similarly for frequency.  */
 
 static bool
-better_edge_p (const_basic_block bb, const_edge e, int prob, int freq, int best_prob,
-	       int best_freq, const_edge cur_best_edge)
+better_edge_p (const_basic_block bb, const_edge e, int prob, int freq,
+	       int best_prob, int best_freq, const_edge cur_best_edge)
 {
   bool is_better_edge;
 
@@ -1081,9 +1086,9 @@ connect_traces (int n_traces, struct trace *traces)
 				&& !(e2->flags & EDGE_COMPLEX)
 				&& bbd[di].start_of_trace >= 0
 				&& !connected[bbd[di].start_of_trace]
-				&& (BB_PARTITION (e2->dest) == current_partition)
-				&& (EDGE_FREQUENCY (e2) >= freq_threshold)
-				&& (e2->count >= count_threshold)
+				&& BB_PARTITION (e2->dest) == current_partition
+				&& EDGE_FREQUENCY (e2) >= freq_threshold
+				&& e2->count >= count_threshold
 				&& (!best2
 				    || e2->probability > best2->probability
 				    || (e2->probability == best2->probability
@@ -1361,7 +1366,7 @@ find_rarely_executed_basic_blocks_and_crossing_edges (void)
     FOR_EACH_EDGE (e, ei, bb->succs)
       {
 	unsigned int flags = e->flags;
-      
+
         /* We should never have EDGE_CROSSING set yet.  */
 	gcc_checking_assert ((flags & EDGE_CROSSING) == 0);
 
@@ -1591,13 +1596,13 @@ fix_up_fall_thru_edges (void)
 		     block are crossing edges. Here we will fix up the
 		     fall through edge. The jump edge will be taken care
 		     of later.  The EDGE_CROSSING flag of fall_thru edge
-                     is unset before the call to force_nonfallthru
-                     function because if a new basic-block is created
-                     this edge remains in the current section boundary
-                     while the edge between new_bb and the fall_thru->dest
-                     becomes EDGE_CROSSING.  */
+		     is unset before the call to force_nonfallthru
+		     function because if a new basic-block is created
+		     this edge remains in the current section boundary
+		     while the edge between new_bb and the fall_thru->dest
+		     becomes EDGE_CROSSING.  */
 
-                  fall_thru->flags &= ~EDGE_CROSSING;
+		  fall_thru->flags &= ~EDGE_CROSSING;
 		  new_bb = force_nonfallthru (fall_thru);
 
 		  if (new_bb)
@@ -1611,12 +1616,12 @@ fix_up_fall_thru_edges (void)
 		      BB_COPY_PARTITION (new_bb, cur_bb);
 		      single_succ_edge (new_bb)->flags |= EDGE_CROSSING;
 		    }
-                  else
-                    {
-                      /* If a new basic-block was not created; restore
-                         the EDGE_CROSSING flag.  */
-                      fall_thru->flags |= EDGE_CROSSING;
-                    }
+		  else
+		    {
+		      /* If a new basic-block was not created; restore
+			 the EDGE_CROSSING flag.  */
+		      fall_thru->flags |= EDGE_CROSSING;
+		    }
 
 		  /* Add barrier after new jump */
 		  emit_barrier_after_bb (new_bb ? new_bb : cur_bb);
@@ -2037,6 +2042,65 @@ insert_section_boundary_note (void)
     }
 }
 
+static bool
+gate_handle_reorder_blocks (void)
+{
+  if (targetm.cannot_modify_jumps_p ())
+    return false;
+  /* Don't reorder blocks when optimizing for size because extra jump insns may
+     be created; also barrier may create extra padding.
+
+     More correctly we should have a block reordering mode that tried to
+     minimize the combined size of all the jumps.  This would more or less
+     automatically remove extra jumps, but would also try to use more short
+     jumps instead of long jumps.  */
+  if (!optimize_function_for_speed_p (cfun))
+    return false;
+  return (optimize > 0
+	  && (flag_reorder_blocks || flag_reorder_blocks_and_partition));
+}
+
+static unsigned int
+rest_of_handle_reorder_blocks (void)
+{
+  basic_block bb;
+
+  /* Last attempt to optimize CFG, as scheduling, peepholing and insn
+     splitting possibly introduced more crossjumping opportunities.  */
+  cfg_layout_initialize (CLEANUP_EXPENSIVE);
+
+  reorder_basic_blocks ();
+  cleanup_cfg (CLEANUP_EXPENSIVE);
+
+  FOR_EACH_BB (bb)
+    if (bb->next_bb != EXIT_BLOCK_PTR)
+      bb->aux = bb->next_bb;
+  cfg_layout_finalize ();
+
+  /* Add NOTE_INSN_SWITCH_TEXT_SECTIONS notes.  */
+  insert_section_boundary_note ();
+  return 0;
+}
+
+struct rtl_opt_pass pass_reorder_blocks =
+{
+ {
+  RTL_PASS,
+  "bbro",                               /* name */
+  gate_handle_reorder_blocks,           /* gate */
+  rest_of_handle_reorder_blocks,        /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_REORDER_BLOCKS,                    /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  TODO_verify_rtl_sharing,              /* todo_flags_finish */
+ }
+};
+
 /* Duplicate the blocks containing computed gotos.  This basically unfactors
    computed gotos that were factored early on in the compilation process to
    speed up edge based data flow.  We used to not unfactoring them again,
@@ -2073,7 +2137,8 @@ duplicate_computed_gotos (void)
   if (uncond_jump_length == 0)
     uncond_jump_length = get_uncond_jump_length ();
 
-  max_size = uncond_jump_length * PARAM_VALUE (PARAM_MAX_GOTO_DUPLICATION_INSNS);
+  max_size
+    = uncond_jump_length * PARAM_VALUE (PARAM_MAX_GOTO_DUPLICATION_INSNS);
   candidates = BITMAP_ALLOC (NULL);
 
   /* Look for blocks that end in a computed jump, and see if such blocks
@@ -2178,6 +2243,21 @@ struct rtl_opt_pass pass_duplicate_computed_gotos =
  }
 };
 
+static bool
+gate_handle_partition_blocks (void)
+{
+  /* The optimization to partition hot/cold basic blocks into separate
+     sections of the .o file does not work well with linkonce or with
+     user defined section attributes.  Don't call it if either case
+     arises.  */
+  return (flag_reorder_blocks_and_partition
+          && optimize
+	  /* See gate_handle_reorder_blocks.  We should not partition if
+	     we are going to omit the reordering.  */
+	  && optimize_function_for_speed_p (cfun)
+	  && !DECL_ONE_ONLY (current_function_decl)
+	  && !user_defined_section_attribute);
+}
 
 /* This function is the main 'entrance' for the optimization that
    partitions hot and cold basic blocks into separate sections of the
@@ -2345,83 +2425,6 @@ partition_hot_cold_basic_blocks (void)
     }
 
   return TODO_verify_flow | TODO_verify_rtl_sharing;
-}
-
-static bool
-gate_handle_reorder_blocks (void)
-{
-  if (targetm.cannot_modify_jumps_p ())
-    return false;
-  /* Don't reorder blocks when optimizing for size because extra jump insns may
-     be created; also barrier may create extra padding.
-
-     More correctly we should have a block reordering mode that tried to
-     minimize the combined size of all the jumps.  This would more or less
-     automatically remove extra jumps, but would also try to use more short
-     jumps instead of long jumps.  */
-  if (!optimize_function_for_speed_p (cfun))
-    return false;
-  return (optimize > 0
-	  && (flag_reorder_blocks || flag_reorder_blocks_and_partition));
-}
-
-
-/* Reorder basic blocks.  */
-static unsigned int
-rest_of_handle_reorder_blocks (void)
-{
-  basic_block bb;
-
-  /* Last attempt to optimize CFG, as scheduling, peepholing and insn
-     splitting possibly introduced more crossjumping opportunities.  */
-  cfg_layout_initialize (CLEANUP_EXPENSIVE);
-
-  reorder_basic_blocks ();
-  cleanup_cfg (CLEANUP_EXPENSIVE);
-
-  FOR_EACH_BB (bb)
-    if (bb->next_bb != EXIT_BLOCK_PTR)
-      bb->aux = bb->next_bb;
-  cfg_layout_finalize ();
-
-  /* Add NOTE_INSN_SWITCH_TEXT_SECTIONS notes.  */
-  insert_section_boundary_note ();
-  return 0;
-}
-
-struct rtl_opt_pass pass_reorder_blocks =
-{
- {
-  RTL_PASS,
-  "bbro",                               /* name */
-  gate_handle_reorder_blocks,           /* gate */
-  rest_of_handle_reorder_blocks,        /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_REORDER_BLOCKS,                    /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  TODO_verify_rtl_sharing,              /* todo_flags_finish */
- }
-};
-
-static bool
-gate_handle_partition_blocks (void)
-{
-  /* The optimization to partition hot/cold basic blocks into separate
-     sections of the .o file does not work well with linkonce or with
-     user defined section attributes.  Don't call it if either case
-     arises.  */
-  return (flag_reorder_blocks_and_partition
-          && optimize
-	  /* See gate_handle_reorder_blocks.  We should not partition if
-	     we are going to omit the reordering.  */
-	  && optimize_function_for_speed_p (cfun)
-	  && !DECL_ONE_ONLY (current_function_decl)
-	  && !user_defined_section_attribute);
 }
 
 struct rtl_opt_pass pass_partition_blocks =

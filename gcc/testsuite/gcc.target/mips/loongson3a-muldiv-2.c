@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -march=loongson3a -mgp64" } */
+/* { dg-options "-march=loongson3a -mgp64" } */
 
 typedef long long st;
 typedef unsigned long long ut;

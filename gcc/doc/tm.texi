@@ -6441,7 +6441,7 @@ The hook returns true when all subexpressions of @var{x} have been
 processed, and false when @code{rtx_cost} should recurse.
 @end deftypefn
 
-@deftypefn {Target Hook} int TARGET_ADDRESS_COST (rtx @var{address}, bool @var{speed})
+@deftypefn {Target Hook} int TARGET_ADDRESS_COST (rtx @var{address}, enum machine_mode @var{mode}, addr_space_t @var{as}, bool @var{speed})
 This hook computes the cost of an addressing mode that contains
 @var{address}.  If not defined, the cost is computed from
 the @var{address} expression and the @code{TARGET_RTX_COST} hook.
@@ -11017,6 +11017,10 @@ instruction that clobbers these this function should return a string indicating
 the reason why the doloop could not be applied.
 By default, the RTL loop optimizer does not use a present doloop pattern for
 loops containing function calls or branch on table instructions.
+@end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_LEGITIMATE_COMBINED_INSN (rtx @var{insn})
+Take an instruction in @var{insn} and return @code{false} if the instruction is not appropriate as a combination of two or more instructions.  The default is to accept all instructions.
 @end deftypefn
 
 @defmac MD_CAN_REDIRECT_BRANCH (@var{branch1}, @var{branch2})

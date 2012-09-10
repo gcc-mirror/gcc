@@ -1,6 +1,6 @@
 /* Also make sure we don't use ext for MIPS*r1.  */
 /* { dg-do compile } */
-/* { dg-options "-O isa_rev<=1" } */
+/* { dg-options "isa_rev<=1" } */
 /* { dg-final { scan-assembler "\tand\t" } } */
 /* { dg-final { scan-assembler-not "\td?ext\t" } } */
 

@@ -494,13 +494,13 @@
   if (GET_CODE (operands[5]) == LT
       && (operands[4] == const0_rtx))
     {
-      if (which_alternative != 1 && GET_CODE (operands[1]) == REG)
+      if (which_alternative != 1 && REG_P (operands[1]))
 	{
 	  if (operands[2] == const0_rtx)
 	    return \"and\\t%0, %1, %3, asr #31\";
 	  return \"ands\\t%0, %1, %3, asr #32\;it\\tcc\;movcc\\t%0, %2\";
 	}
-      else if (which_alternative != 0 && GET_CODE (operands[2]) == REG)
+      else if (which_alternative != 0 && REG_P (operands[2]))
 	{
 	  if (operands[1] == const0_rtx)
 	    return \"bic\\t%0, %2, %3, asr #31\";
@@ -513,13 +513,13 @@
   if (GET_CODE (operands[5]) == GE
       && (operands[4] == const0_rtx))
     {
-      if (which_alternative != 1 && GET_CODE (operands[1]) == REG)
+      if (which_alternative != 1 && REG_P (operands[1]))
 	{
 	  if (operands[2] == const0_rtx)
 	    return \"bic\\t%0, %1, %3, asr #31\";
 	  return \"bics\\t%0, %1, %3, asr #32\;it\\tcs\;movcs\\t%0, %2\";
 	}
-      else if (which_alternative != 0 && GET_CODE (operands[2]) == REG)
+      else if (which_alternative != 0 && REG_P (operands[2]))
 	{
 	  if (operands[1] == const0_rtx)
 	    return \"and\\t%0, %2, %3, asr #31\";
@@ -528,7 +528,7 @@
       /* The only case that falls through to here is when both ops 1 & 2
 	 are constants.  */
     }
-  if (GET_CODE (operands[4]) == CONST_INT
+  if (CONST_INT_P (operands[4])
       && !const_ok_for_arm (INTVAL (operands[4])))
     output_asm_insn (\"cmn\\t%3, #%n4\", operands);
   else
@@ -680,7 +680,7 @@
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_THUMB2 && reload_completed
    && ((GET_CODE(operands[3]) != ROTATE && GET_CODE(operands[3]) != ROTATERT)
-       || REG_P(operands[2]))"
+       || REG_P (operands[2]))"
   "* return arm_output_shift(operands, 2);"
   [(set_attr "predicable" "yes")
    (set_attr "shift" "1")
@@ -709,7 +709,7 @@
   "*
     HOST_WIDE_INT val;
 
-    if (GET_CODE (operands[2]) == CONST_INT)
+    if (CONST_INT_P (operands[2]))
       val = INTVAL(operands[2]);
     else
       val = 0;
@@ -773,7 +773,7 @@
   "*
     HOST_WIDE_INT val;
 
-    if (GET_CODE (operands[2]) == CONST_INT)
+    if (CONST_INT_P (operands[2]))
       val = INTVAL (operands[2]);
     else
       val = 0;
@@ -797,7 +797,7 @@
   "*
     HOST_WIDE_INT val;
 
-    if (GET_CODE (operands[1]) == CONST_INT)
+    if (CONST_INT_P (operands[1]))
       val = INTVAL (operands[1]);
     else
       val = 0;

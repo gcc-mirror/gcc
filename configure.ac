@@ -554,6 +554,13 @@ case "${target}" in
     ;;
 esac
 
+# Disable libquadmath for some systems.
+case "${target}" in
+  avr-*-*)
+    noconfigdirs="$noconfigdirs target-libquadmath"
+    ;;
+esac
+
 # Disable libstdc++-v3 for some systems.
 case "${target}" in
   *-*-vxworks*)
@@ -893,6 +900,13 @@ case "${target}" in
     ;;
   arm-*-riscix*)
     noconfigdirs="$noconfigdirs ld target-libgloss"
+    ;;
+  avr-*-rtems*)
+    ;;
+  avr-*-*)
+    if test x${with_avrlibc} != xno; then
+      noconfigdirs="$noconfigdirs target-newlib target-libgloss"
+    fi
     ;;
   c4x-*-* | tic4x-*-*)
     noconfigdirs="$noconfigdirs target-libgloss"
@@ -1356,7 +1370,7 @@ if test -d ${srcdir}/gcc && test "x$have_gmp" = xno; then
   AC_TRY_COMPILE([#include "gmp.h"],[
   #define GCC_GMP_VERSION_NUM(a,b,c) (((a) << 16L) | ((b) << 8) | (c))
   #define GCC_GMP_VERSION GCC_GMP_VERSION_NUM(__GNU_MP_VERSION,__GNU_MP_VERSION_MINOR,__GNU_MP_VERSION_PATCHLEVEL)
-  #if GCC_GMP_VERSION < GCC_GMP_VERSION_NUM(4,2,0)
+  #if GCC_GMP_VERSION < GCC_GMP_VERSION_NUM(4,2,3)
   choke me
   #endif
   ], [AC_TRY_COMPILE([#include <gmp.h>],[
@@ -1518,43 +1532,70 @@ AC_ARG_WITH(boot-ldflags,
  fi])
 AC_SUBST(poststage1_ldflags)
 
-# Check for ISL
-dnl Provide configure switches and initialize islinc & isllibs
-dnl with user input.
-ISL_INIT_FLAGS
-if test "x$with_isl" != "xno"; then
+# GCC GRAPHITE dependences, ISL and CLOOG which in turn requires ISL.
+# Basic setup is inlined here, actual checks are in config/cloog.m4 and
+# config/isl.m4
+
+AC_ARG_WITH(cloog,
+  [AS_HELP_STRING(
+    [--with-cloog=PATH],
+    [Specify prefix directory for the installed CLooG-ISL package.
+     Equivalent to --with-cloog-include=PATH/include
+     plus --with-cloog-lib=PATH/lib])])
+AC_ARG_WITH(isl,
+  [AS_HELP_STRING(
+   [--with-isl=PATH],
+   [Specify prefix directory for the installed ISL package.
+    Equivalent to --with-isl-include=PATH/include
+    plus --with-isl-lib=PATH/lib])])
+
+# Treat either --without-cloog or --without-isl as a request to disable
+# GRAPHITE support and skip all following checks.
+if test "x$with_isl" != "xno" &&
+   test "x$with_cloog" != "xno"; then
+  # Check for ISL
+  dnl Provide configure switches and initialize islinc & isllibs
+  dnl with user input.
+  ISL_INIT_FLAGS
   dnl The minimal version of ISL required for Graphite.
   ISL_CHECK_VERSION(0,10)
-
   dnl Only execute fail-action, if ISL has been requested.
   ISL_IF_FAILED([
     AC_MSG_ERROR([Unable to find a usable ISL.  See config.log for details.])])
-fi
 
-# Check for CLOOG
-dnl Provide configure switches and initialize clooginc & clooglibs
-dnl with user input.
-CLOOG_INIT_FLAGS
-if test "x$isllibs" = x && test "x$islinc" = x; then
-  clooglibs=
-  clooginc=
-elif test "x$with_cloog" != "xno"; then
-  dnl The minimal version of CLooG required for Graphite.
-  dnl
-  dnl If we use CLooG-Legacy, the provided version information is
-  dnl ignored.
-  CLOOG_CHECK_VERSION(0,17,0)
+  if test "x$gcc_cv_isl" != "xno"; then
+    # Check for CLOOG
+    dnl Provide configure switches and initialize clooginc & clooglibs
+    dnl with user input.
+    CLOOG_INIT_FLAGS
+    dnl The minimal version of CLooG required for Graphite.
+    dnl
+    dnl If we use CLooG-Legacy, the provided version information is
+    dnl ignored.
+    CLOOG_CHECK_VERSION(0,17,0)
 
-  dnl Only execute fail-action, if CLooG has been requested.
-  CLOOG_IF_FAILED([
-    AC_MSG_ERROR([Unable to find a usable CLooG.  See config.log for details.])])
+    dnl Only execute fail-action, if CLooG has been requested.
+    CLOOG_IF_FAILED([
+      AC_MSG_ERROR([Unable to find a usable CLooG.  See config.log for details.])])
+  fi
 fi
 
 # If either the ISL or the CLooG check failed, disable builds of in-tree
 # variants of both
-if test "x$clooglibs" = x && test "x$clooginc" = x; then
+if test "x$with_isl" = xno ||
+   test "x$with_cloog" = xno ||
+   test "x$gcc_cv_cloog" = xno ||
+   test "x$gcc_cv_isl" = xno; then
   noconfigdirs="$noconfigdirs cloog isl"
+  islinc=
+  clooginc=
+  clooglibs=
 fi
+
+AC_SUBST(islinc)
+AC_SUBST(clooglibs)
+AC_SUBST(clooginc)
+
 
 # Check for LTO support.
 AC_ARG_ENABLE(lto,
@@ -1736,6 +1777,7 @@ if test -d ${srcdir}/gcc; then
 	  boot_language=yes
 	fi
 
+        add_this_lang=no
         case ,${enable_languages}, in
           *,${language},*)
             # Language was explicitly selected; include it
@@ -1746,10 +1788,9 @@ if test -d ${srcdir}/gcc; then
             ;;
           *,all,*)
             # 'all' was selected, select it if it is a default language
-            add_this_lang=${build_by_default}
-            ;;
-          *)
-            add_this_lang=no
+	    if test "$language" != "c"; then
+	      add_this_lang=${build_by_default}
+	    fi
             ;;
         esac
 

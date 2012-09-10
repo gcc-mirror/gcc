@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O -meb isa_rev>=2 -mgp64" } */
+/* { dg-options "-meb isa_rev>=2 -mgp64" } */
+/* { dg-skip-if "code quality test" { *-*-* } { "-O0" } { "" } } */
 /* { dg-final { scan-assembler-times "\tins\t|\tdins\t" 1 } } */
 /* { dg-final { scan-assembler-times "\tsll\t|\tins\t" 1 } } */
 

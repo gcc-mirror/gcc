@@ -1776,7 +1776,8 @@ execute_function_todo (void *data)
   if (flags & TODO_rebuild_alias)
     {
       execute_update_addresses_taken ();
-      compute_may_aliases ();
+      if (flag_tree_pta)
+	compute_may_aliases ();
     }
   else if (optimize && (flags & TODO_update_address_taken))
     execute_update_addresses_taken ();
@@ -2260,10 +2261,10 @@ ipa_write_summaries_2 (struct opt_pass *pass, struct lto_out_decl_state *state)
    summaries.  SET is the set of nodes to be written.  */
 
 static void
-ipa_write_summaries_1 (cgraph_node_set set, varpool_node_set vset)
+ipa_write_summaries_1 (lto_symtab_encoder_t encoder)
 {
   struct lto_out_decl_state *state = lto_new_out_decl_state ();
-  compute_ltrans_boundary (state, set, vset);
+  state->symtab_node_encoder = encoder;
 
   lto_push_out_decl_state (state);
 
@@ -2281,16 +2282,15 @@ ipa_write_summaries_1 (cgraph_node_set set, varpool_node_set vset)
 void
 ipa_write_summaries (void)
 {
-  cgraph_node_set set;
-  varpool_node_set vset;
-  struct cgraph_node **order;
-  struct varpool_node *vnode;
+  lto_symtab_encoder_t encoder;
   int i, order_pos;
+  struct varpool_node *vnode;
+  struct cgraph_node **order;
 
   if (!flag_generate_lto || seen_error ())
     return;
 
-  set = cgraph_node_set_new ();
+  encoder = lto_symtab_encoder_new ();
 
   /* Create the callgraph set in the same order used in
      cgraph_expand_all_functions.  This mostly facilitates debugging,
@@ -2317,19 +2317,16 @@ ipa_write_summaries (void)
 	  pop_cfun ();
 	}
       if (node->analyzed)
-        cgraph_node_set_add (set, node);
+        lto_set_symtab_encoder_in_partition (encoder, (symtab_node)node);
     }
-  vset = varpool_node_set_new ();
 
   FOR_EACH_DEFINED_VARIABLE (vnode)
     if ((!vnode->alias || vnode->alias_of))
-      varpool_node_set_add (vset, vnode);
+      lto_set_symtab_encoder_in_partition (encoder, (symtab_node)vnode);
 
-  ipa_write_summaries_1 (set, vset);
+  ipa_write_summaries_1 (compute_ltrans_boundary (encoder));
 
   free (order);
-  free_cgraph_node_set (set);
-  free_varpool_node_set (vset);
 }
 
 /* Same as execute_pass_list but assume that subpasses of IPA passes
@@ -2375,16 +2372,17 @@ ipa_write_optimization_summaries_1 (struct opt_pass *pass, struct lto_out_decl_s
    NULL, write out all summaries of all nodes. */
 
 void
-ipa_write_optimization_summaries (cgraph_node_set set, varpool_node_set vset)
+ipa_write_optimization_summaries (lto_symtab_encoder_t encoder)
 {
   struct lto_out_decl_state *state = lto_new_out_decl_state ();
-  cgraph_node_set_iterator csi;
-  compute_ltrans_boundary (state, set, vset);
+  lto_symtab_encoder_iterator lsei;
+  state->symtab_node_encoder = encoder;
 
   lto_push_out_decl_state (state);
-  for (csi = csi_start (set); !csi_end_p (csi); csi_next (&csi))
+  for (lsei = lsei_start_function_in_partition (encoder);
+       !lsei_end_p (lsei); lsei_next_function_in_partition (&lsei))
     {
-      struct cgraph_node *node = csi_node (csi);
+      struct cgraph_node *node = lsei_cgraph_node (lsei);
       /* When streaming out references to statements as part of some IPA
 	 pass summary, the statements need to have uids assigned.
 

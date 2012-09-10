@@ -1844,13 +1844,14 @@ typedef enum
   AB_IS_BIND_C, AB_IS_C_INTEROP, AB_IS_ISO_C, AB_ABSTRACT, AB_ZERO_COMP,
   AB_IS_CLASS, AB_PROCEDURE, AB_PROC_POINTER, AB_ASYNCHRONOUS, AB_CODIMENSION,
   AB_COARRAY_COMP, AB_VTYPE, AB_VTAB, AB_CONTIGUOUS, AB_CLASS_POINTER,
-  AB_IMPLICIT_PURE
+  AB_IMPLICIT_PURE, AB_ARTIFICIAL
 }
 ab_attribute;
 
 static const mstring attr_bits[] =
 {
     minit ("ALLOCATABLE", AB_ALLOCATABLE),
+    minit ("ARTIFICIAL", AB_ARTIFICIAL),
     minit ("ASYNCHRONOUS", AB_ASYNCHRONOUS),
     minit ("DIMENSION", AB_DIMENSION),
     minit ("CODIMENSION", AB_CODIMENSION),
@@ -1975,6 +1976,8 @@ mio_symbol_attribute (symbol_attribute *attr)
     {
       if (attr->allocatable)
 	MIO_NAME (ab_attribute) (AB_ALLOCATABLE, attr_bits);
+      if (attr->artificial)
+	MIO_NAME (ab_attribute) (AB_ARTIFICIAL, attr_bits);
       if (attr->asynchronous)
 	MIO_NAME (ab_attribute) (AB_ASYNCHRONOUS, attr_bits);
       if (attr->dimension)
@@ -2089,6 +2092,9 @@ mio_symbol_attribute (symbol_attribute *attr)
 	    {
 	    case AB_ALLOCATABLE:
 	      attr->allocatable = 1;
+	      break;
+	    case AB_ARTIFICIAL:
+	      attr->artificial = 1;
 	      break;
 	    case AB_ASYNCHRONOUS:
 	      attr->asynchronous = 1;
@@ -3807,10 +3813,7 @@ mio_symbol (gfc_symbol *sym)
     {
       mio_namespace_ref (&sym->formal_ns);
       if (sym->formal_ns)
-	{
-	  sym->formal_ns->proc_name = sym;
-	  sym->refs++;
-	}
+	sym->formal_ns->proc_name = sym;
     }
 
   /* Save/restore common block links.  */

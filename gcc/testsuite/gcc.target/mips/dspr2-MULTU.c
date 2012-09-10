@@ -1,12 +1,13 @@
 /* Test MIPS32 DSP REV 2 MULTU instruction.  Tune for a CPU that has
    pipelined multu.  */
 /* { dg-do compile } */
-/* { dg-options "-mgp32 -mdspr2 -O2 -mtune=74kc" } */
+/* { dg-options "-mgp32 -mdspr2 -mtune=74kc" } */
+/* { dg-skip-if "code quality test" { *-*-* } { "-O0" } { "" } } */
 
 /* See PR target/51729 for the reason behind the XFAILs.  */
 /* { dg-final { scan-assembler "\tmultu\t" } } */
-/* { dg-final { scan-assembler "ac1" { xfail *-*-* } } } */
-/* { dg-final { scan-assembler "ac2" { xfail *-*-* } } } */
+/* { dg-final { scan-assembler "\\\$ac1" { xfail *-*-* } } } */
+/* { dg-final { scan-assembler "\\\$ac2" { xfail *-*-* } } } */
 
 typedef unsigned long long a64;
 

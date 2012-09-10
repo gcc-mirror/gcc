@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -mr10k-cache-barrier=store -mno-abicalls" } */
+/* { dg-options "-mr10k-cache-barrier=store -mno-abicalls" } */
 
 /* Test that in-range stores to the frame are not protected by
    cache barriers.  */

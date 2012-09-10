@@ -2363,7 +2363,6 @@ parse_interface (void)
   gfc_interface_info save;
   gfc_state_data s1, s2;
   gfc_statement st;
-  locus proc_locus;
 
   accept_statement (ST_INTERFACE);
 
@@ -2452,7 +2451,9 @@ loop:
   accept_statement (st);
   prog_unit = gfc_new_block;
   prog_unit->formal_ns = gfc_current_ns;
-  proc_locus = gfc_current_locus;
+  if (prog_unit == prog_unit->formal_ns->proc_name
+      && prog_unit->ns != prog_unit->formal_ns)
+    prog_unit->refs++;
 
 decl:
   /* Read data declaration statements.  */
@@ -2493,7 +2494,8 @@ decl:
 	&& strcmp (current_interface.ns->proc_name->name,
 		   prog_unit->name) == 0)
     gfc_error ("INTERFACE procedure '%s' at %L has the same name as the "
-	       "enclosing procedure", prog_unit->name, &proc_locus);
+	       "enclosing procedure", prog_unit->name,
+	       &current_interface.ns->proc_name->declared_at);
 
   goto loop;
 

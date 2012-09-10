@@ -1,10 +1,11 @@
 /* Test SB-1 v2sf extensions.  */
 /* { dg-do compile } */ 
-/* { dg-options "-march=sb1 -O2 -mpaired-single -mgp64 -ffast-math" } */
-/* { dg-final { scan-assembler "div.ps" } } */ 
-/* { dg-final { scan-assembler "recip.ps" } } */ 
-/* { dg-final { scan-assembler "sqrt.ps" } } */ 
-/* { dg-final { scan-assembler "rsqrt.ps" } } */ 
+/* { dg-options "-march=sb1 -mpaired-single -mgp64 -ffast-math" } */
+/* { dg-skip-if "rsqrt code quality test" { *-*-* } { "-O0" } { "" } } */
+/* { dg-final { scan-assembler "\tdiv.ps\t" } } */
+/* { dg-final { scan-assembler "\trecip.ps\t" } } */
+/* { dg-final { scan-assembler "\tsqrt.ps\t" } } */
+/* { dg-final { scan-assembler "\trsqrt.ps\t" } } */
 
 typedef float v2sf __attribute__ ((vector_size (8)));
 

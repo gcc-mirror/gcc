@@ -5593,7 +5593,12 @@ gfc_resolve_character_operator (gfc_expr *e)
   e->ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
 
   if (!e1 || !e2)
-    return;
+    {
+      gfc_free_expr (e1);
+      gfc_free_expr (e2);
+      
+      return;
+    }
 
   e->ts.u.cl->length = gfc_add (e1, e2);
   e->ts.u.cl->length->ts.type = BT_INTEGER;
@@ -11217,6 +11222,7 @@ error:
   gfc_error ("Finalization at %L is not yet implemented",
 	     &derived->declared_at);
 
+  gfc_find_derived_vtab (derived);
   return result;
 }
 
@@ -11920,6 +11926,9 @@ resolve_fl_derived0 (gfc_symbol *sym)
 
   for ( ; c != NULL; c = c->next)
     {
+      if (c->attr.artificial)
+	continue;
+
       /* See PRs 51550, 47545, 48654, 49050, 51075 - and 45170.  */
       if (c->ts.type == BT_CHARACTER && c->ts.deferred && !c->attr.function)
 	{
@@ -12316,6 +12325,10 @@ resolve_fl_derived (gfc_symbol *sym)
 			 &sym->declared_at) == FAILURE)
     return FAILURE;
 
+  /* Resolve the finalizer procedures.  */
+  if (gfc_resolve_finalizers (sym) == FAILURE)
+    return FAILURE;
+  
   if (sym->attr.is_class && sym->ts.u.derived == NULL)
     {
       /* Fix up incomplete CLASS symbols.  */
@@ -12336,10 +12349,6 @@ resolve_fl_derived (gfc_symbol *sym)
   if (resolve_typebound_procedures (sym) == FAILURE)
     return FAILURE;
 
-  /* Resolve the finalizer procedures.  */
-  if (gfc_resolve_finalizers (sym) == FAILURE)
-    return FAILURE;
-  
   return SUCCESS;
 }
 
@@ -12536,6 +12545,9 @@ resolve_symbol (gfc_symbol *sym)
   symbol_attribute class_attr;
   gfc_array_spec *as;
 
+  if (sym->attr.artificial)
+    return;
+
   if (sym->attr.flavor == FL_UNKNOWN
       || (sym->attr.flavor == FL_PROCEDURE && !sym->attr.intrinsic
 	  && !sym->attr.generic && !sym->attr.external
@@ -12669,11 +12681,12 @@ resolve_symbol (gfc_symbol *sym)
   /* F2008, C530. */
   if (sym->attr.contiguous
       && (!class_attr.dimension
-	  || (as->type != AS_ASSUMED_SHAPE && !class_attr.pointer)))
+	  || (as->type != AS_ASSUMED_SHAPE && as->type != AS_ASSUMED_RANK
+	      && !class_attr.pointer)))
     {
       gfc_error ("'%s' at %L has the CONTIGUOUS attribute but is not an "
-		  "array pointer or an assumed-shape array", sym->name,
-		  &sym->declared_at);
+		 "array pointer or an assumed-shape or assumed-rank array",
+		 sym->name, &sym->declared_at);
       return;
     }
 
@@ -13086,7 +13099,8 @@ resolve_symbol (gfc_symbol *sym)
       if (formal)
 	{
 	  sym->formal_ns = formal->sym->ns;
-	  sym->formal_ns->refs++;
+          if (sym->ns != formal->sym->ns)
+	    sym->formal_ns->refs++;
 	}
     }
 

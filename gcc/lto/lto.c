@@ -1012,7 +1012,6 @@ lto_resolution_read (splay_tree file_ids, FILE *resolution, lto_file *file)
   unsigned int num_symbols;
   unsigned int i;
   struct lto_file_decl_data *file_data;
-  unsigned max_index = 0;
   splay_tree_node nd = NULL; 
 
   if (!resolution)
@@ -1054,13 +1053,12 @@ lto_resolution_read (splay_tree file_ids, FILE *resolution, lto_file *file)
       unsigned int j;
       unsigned int lto_resolution_str_len =
 	sizeof (lto_resolution_str) / sizeof (char *);
+      res_pair rp;
 
       t = fscanf (resolution, "%u " HOST_WIDE_INT_PRINT_HEX_PURE " %26s %*[^\n]\n", 
 		  &index, &id, r_str);
       if (t != 3)
         internal_error ("invalid line in the resolution file");
-      if (index > max_index)
-	max_index = index;
 
       for (j = 0; j < lto_resolution_str_len; j++)
 	{
@@ -1082,11 +1080,13 @@ lto_resolution_read (splay_tree file_ids, FILE *resolution, lto_file *file)
 	}
 
       file_data = (struct lto_file_decl_data *)nd->value;
-      VEC_safe_grow_cleared (ld_plugin_symbol_resolution_t, heap, 
-			     file_data->resolutions,
-			     max_index + 1);
-      VEC_replace (ld_plugin_symbol_resolution_t, 
-		   file_data->resolutions, index, r);
+      /* The indexes are very sparse. To save memory save them in a compact
+         format that is only unpacked later when the subfile is processed. */
+      rp.res = r;
+      rp.index = index;
+      VEC_safe_push (res_pair, heap, file_data->respairs, rp);
+      if (file_data->max_index < index)
+        file_data->max_index = index;
     }
 }
 
@@ -1166,6 +1166,18 @@ lto_file_finalize (struct lto_file_decl_data *file_data, lto_file *file)
 {
   const char *data;
   size_t len;
+  VEC(ld_plugin_symbol_resolution_t,heap) *resolutions = NULL;
+  int i;
+  res_pair *rp;
+
+  /* Create vector for fast access of resolution. We do this lazily
+     to save memory. */ 
+  VEC_safe_grow_cleared (ld_plugin_symbol_resolution_t, heap, 
+                            resolutions,
+                            file_data->max_index + 1);
+  for (i = 0; VEC_iterate (res_pair, file_data->respairs, i, rp); i++)
+    VEC_replace (ld_plugin_symbol_resolution_t, resolutions, rp->index, rp->res);
+  VEC_free (res_pair, heap, file_data->respairs);
 
   file_data->renaming_hash_table = lto_create_renaming_table ();
   file_data->file_name = file->filename;
@@ -1175,7 +1187,8 @@ lto_file_finalize (struct lto_file_decl_data *file_data, lto_file *file)
       internal_error ("cannot read LTO decls from %s", file_data->file_name);
       return;
     }
-  lto_read_decls (file_data, data, file_data->resolutions);
+  /* Frees resolutions */
+  lto_read_decls (file_data, data, resolutions);
   lto_free_section_data (file_data, LTO_section_decls, NULL, data, len);
 }
 
@@ -1408,14 +1421,10 @@ cmp_partitions_order (const void *a, const void *b)
      = *(struct ltrans_partition_def *const *)b;
   int ordera = -1, orderb = -1;
 
-  if (VEC_length (cgraph_node_ptr, pa->cgraph_set->nodes))
-    ordera = VEC_index (cgraph_node_ptr, pa->cgraph_set->nodes, 0)->symbol.order;
-  else if (VEC_length (varpool_node_ptr, pa->varpool_set->nodes))
-    ordera = VEC_index (varpool_node_ptr, pa->varpool_set->nodes, 0)->symbol.order;
-  if (VEC_length (cgraph_node_ptr, pb->cgraph_set->nodes))
-    orderb = VEC_index (cgraph_node_ptr, pb->cgraph_set->nodes, 0)->symbol.order;
-  else if (VEC_length (varpool_node_ptr, pb->varpool_set->nodes))
-    orderb = VEC_index (varpool_node_ptr, pb->varpool_set->nodes, 0)->symbol.order;
+  if (lto_symtab_encoder_size (pa->encoder))
+    ordera = lto_symtab_encoder_deref (pa->encoder, 0)->symbol.order;
+  if (lto_symtab_encoder_size (pb->encoder))
+    orderb = lto_symtab_encoder_deref (pb->encoder, 0)->symbol.order;
   return orderb - ordera;
 }
 
@@ -1427,8 +1436,6 @@ lto_wpa_write_files (void)
 {
   unsigned i, n_sets;
   lto_file *file;
-  cgraph_node_set set;
-  varpool_node_set vset;
   ltrans_partition part;
   FILE *ltrans_output_list_stream;
   char *temp_filename;
@@ -1444,8 +1451,7 @@ lto_wpa_write_files (void)
   timevar_push (TV_WHOPR_WPA);
 
   FOR_EACH_VEC_ELT (ltrans_partition, ltrans_partitions, i, part)
-    lto_stats.num_output_cgraph_nodes += VEC_length (cgraph_node_ptr,
-						     part->cgraph_set->nodes);
+    lto_stats.num_output_symtab_nodes += lto_symtab_encoder_size (part->encoder);
 
   /* Find out statics that need to be promoted
      to globals with hidden visibility because they are accessed from multiple
@@ -1478,9 +1484,6 @@ lto_wpa_write_files (void)
       size_t len;
       ltrans_partition part = VEC_index (ltrans_partition, ltrans_partitions, i);
 
-      set = part->cgraph_set;
-      vset = part->varpool_set;
-
       /* Write all the nodes in SET.  */
       sprintf (temp_filename + blen, "%u.o", i);
       file = lto_obj_file_open (temp_filename, true);
@@ -1491,22 +1494,27 @@ lto_wpa_write_files (void)
 	fprintf (stderr, " %s (%s %i insns)", temp_filename, part->name, part->insns);
       if (cgraph_dump_file)
 	{
+          lto_symtab_encoder_iterator lsei;
+	  
 	  fprintf (cgraph_dump_file, "Writing partition %s to file %s, %i insns\n",
 		   part->name, temp_filename, part->insns);
-	  fprintf (cgraph_dump_file, "cgraph nodes:");
-	  dump_cgraph_node_set (cgraph_dump_file, set);
-	  fprintf (cgraph_dump_file, "varpool nodes:");
-	  dump_varpool_node_set (cgraph_dump_file, vset);
+	  for (lsei = lsei_start_in_partition (part->encoder); !lsei_end_p (lsei);
+	       lsei_next_in_partition (&lsei))
+	    {
+	      symtab_node node = lsei_node (lsei);
+	      fprintf (cgraph_dump_file, "%s ", symtab_node_name (node));
+	    }
+	  fprintf (cgraph_dump_file, "\n");
 	}
-      gcc_checking_assert (cgraph_node_set_nonempty_p (set)
-			   || varpool_node_set_nonempty_p (vset) || !i);
+      gcc_checking_assert (lto_symtab_encoder_size (part->encoder) || !i);
 
       lto_set_current_out_file (file);
 
-      ipa_write_optimization_summaries (set, vset);
+      ipa_write_optimization_summaries (part->encoder);
 
       lto_set_current_out_file (NULL);
       lto_obj_file_close (file);
+      part->encoder = NULL;
 
       len = strlen (temp_filename);
       if (fwrite (temp_filename, 1, len, ltrans_output_list_stream) < len
@@ -2003,6 +2011,8 @@ do_whole_program_analysis (void)
   /* Show the LTO report before launching LTRANS.  */
   if (flag_lto_report)
     print_lto_report ();
+  if (mem_report_wpa)
+    dump_memory_report (true);
 }
 
 

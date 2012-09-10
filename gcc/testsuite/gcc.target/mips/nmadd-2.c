@@ -1,9 +1,10 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-fast-math -ffinite-math-only isa=4 -mhard-float" } */
-/* { dg-final { scan-assembler "nmadd.s" } } */
-/* { dg-final { scan-assembler "nmadd.d" } } */
-/* { dg-final { scan-assembler "nmsub.s" } } */
-/* { dg-final { scan-assembler "nmsub.d" } } */
+/* { dg-options "-fno-fast-math -ffinite-math-only isa=4 -mhard-float" } */
+/* { dg-skip-if "code quality test" { *-*-* } { "-O0" } { "" } } */
+/* { dg-final { scan-assembler "\tnmadd.s\t" } } */
+/* { dg-final { scan-assembler "\tnmadd.d\t" } } */
+/* { dg-final { scan-assembler "\tnmsub.s\t" } } */
+/* { dg-final { scan-assembler "\tnmsub.d\t" } } */
 
 NOMIPS16 float
 sub1 (float f, float g, float h)

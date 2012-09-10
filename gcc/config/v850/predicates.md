@@ -497,5 +497,3 @@
 
   return op == CONST0_RTX(mode);
 })
-
-

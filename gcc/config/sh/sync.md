@@ -26,11 +26,11 @@
 ;; In addition to that all SH CPUs support the 'tas.b' instruction, which
 ;; can be optionally used to implement the 'atomic_test_and_set' builtin.
 ;;
-;; tas.b atomic_test_and_set (-menable-tas)
+;; tas.b atomic_test_and_set (-mtas)
 ;;
 ;; Depending on the particular hardware configuration, usage of the 'tas.b'
 ;; instruction might be undesired or even unsafe.  Thus, it has to be
-;; enabled by the user explicitely.  If it is not enabled, the
+;; enabled by the user explicitly.  If it is not enabled, the
 ;; 'atomic_test_and_set' builtin is implemented either with hardware or with
 ;; software atomics, depending on which is enabled.  It is also possible to
 ;; enable the 'tas.b' instruction only, without enabling support for the 
@@ -132,10 +132,6 @@
   UNSPECV_CMPXCHG_3
 ])
 
-(define_mode_iterator I124 [QI HI SI])
-(define_mode_iterator I12 [QI HI])
-
-(define_mode_attr i124suffix [(QI "b") (HI "w") (SI "l")])
 (define_mode_attr i124extend_insn [(QI "exts.b") (HI "exts.w") (SI "mov")])
 
 (define_code_iterator FETCHOP [plus minus ior xor and])
@@ -155,10 +151,10 @@
 
 (define_expand "atomic_compare_and_swap<mode>"
   [(match_operand:SI 0 "register_operand" "")		;; bool success output
-   (match_operand:I124 1 "register_operand" "")		;; oldval output
-   (match_operand:I124 2 "memory_operand" "")		;; memory
-   (match_operand:I124 3 "atomic_arith_operand" "")	;; expected input
-   (match_operand:I124 4 "atomic_arith_operand" "")	;; newval input
+   (match_operand:QIHISI 1 "register_operand" "")	;; oldval output
+   (match_operand:QIHISI 2 "memory_operand" "")		;; memory
+   (match_operand:QIHISI 3 "atomic_arith_operand" "")	;; expected input
+   (match_operand:QIHISI 4 "atomic_arith_operand" "")	;; newval input
    (match_operand:SI 5 "const_int_operand" "")		;; is_weak
    (match_operand:SI 6 "const_int_operand" "")		;; success model
    (match_operand:SI 7 "const_int_operand" "")]		;; failure model
@@ -171,11 +167,11 @@
   rtx atomic_insn;
 
   if (TARGET_HARD_ATOMIC || (TARGET_SH4A_ARCH && <MODE>mode == SImode))
-      atomic_insn = gen_atomic_compare_and_swap<mode>_hard (old_val, addr,
-							    exp_val, new_val);
+    atomic_insn = gen_atomic_compare_and_swap<mode>_hard (old_val, addr,
+							  exp_val, new_val);
   else
-      atomic_insn = gen_atomic_compare_and_swap<mode>_soft (old_val, addr,
-							    exp_val, new_val);
+    atomic_insn = gen_atomic_compare_and_swap<mode>_soft (old_val, addr,
+							  exp_val, new_val);
   emit_insn (atomic_insn);
 
   if (<MODE>mode == QImode)
@@ -216,12 +212,12 @@
 (define_insn "atomic_compare_and_swap<mode>_hard"
   [(set (match_operand:SI 0 "register_operand" "=&r")
 	(unspec_volatile:SI
-	  [(mem:I12 (match_operand:SI 1 "register_operand" "r"))
-	   (match_operand:I12 2 "register_operand" "r")
-	   (match_operand:I12 3 "register_operand" "r")]
+	  [(mem:QIHI (match_operand:SI 1 "register_operand" "r"))
+	   (match_operand:QIHI 2 "register_operand" "r")
+	   (match_operand:QIHI 3 "register_operand" "r")]
 	  UNSPECV_CMPXCHG_1))
-   (set (mem:I12 (match_dup 1))
-	(unspec_volatile:I12 [(const_int 0)] UNSPECV_CMPXCHG_2))
+   (set (mem:QIHI (match_dup 1))
+	(unspec_volatile:QIHI [(const_int 0)] UNSPECV_CMPXCHG_2))
    (set (reg:SI T_REG)
 	(unspec_volatile:SI [(const_int 0)] UNSPECV_CMPXCHG_3))
    (clobber (reg:SI R0_REG))
@@ -238,8 +234,8 @@
 	 "	add	#-4,%1"			"\n"
 	 "0:	movli.l	@%5,r0"			"\n"
 	 "	mov.l	r0,@-r15"		"\n"
-	 "	mov.<i124suffix>	@%1,%0"	"\n"
-	 "	mov.<i124suffix>	%3,@%1" "\n"
+	 "	mov.<bw>	@%1,%0"		"\n"
+	 "	mov.<bw>	%3,@%1"		"\n"
 	 "	cmp/eq	%4,%0"			"\n"
 	 "	bf{.|/}s	0f"		"\n"
 	 "	mov.l	@r15+,r0"		"\n"
@@ -252,12 +248,12 @@
 (define_insn "atomic_compare_and_swap<mode>_soft"
   [(set (match_operand:SI 0 "register_operand" "=&u")
 	(unspec_volatile:SI
-	  [(mem:I124 (match_operand:SI 1 "register_operand" "u"))
-	   (match_operand:I124 2 "register_operand" "u")
-	   (match_operand:I124 3 "register_operand" "u")]
+	  [(mem:QIHISI (match_operand:SI 1 "register_operand" "u"))
+	   (match_operand:QIHISI 2 "register_operand" "u")
+	   (match_operand:QIHISI 3 "register_operand" "u")]
 	  UNSPECV_CMPXCHG_1))
-   (set (mem:I124 (match_dup 1))
-	(unspec_volatile:I124 [(const_int 0)] UNSPECV_CMPXCHG_2))
+   (set (mem:QIHISI (match_dup 1))
+	(unspec_volatile:QIHISI [(const_int 0)] UNSPECV_CMPXCHG_2))
    (set (reg:SI T_REG)
 	(unspec_volatile:SI [(const_int 0)] UNSPECV_CMPXCHG_3))
    (clobber (match_scratch:SI 4 "=&u"))
@@ -270,10 +266,10 @@
 	 "	.align 2"			"\n"
 	 "	mov	r15,r1"			"\n"
 	 "	mov	#(0f-1f),r15"		"\n"
-	 "0:	mov.<i124suffix>	@%1,%0"	"\n"
+	 "0:	mov.<bwl>	@%1,%0"		"\n"
 	 "	cmp/eq	%0,%4"			"\n"
 	 "	bf	1f"			"\n"
-	 "	mov.<i124suffix>	%3,@%1"	"\n"
+	 "	mov.<bwl>	%3,@%1"		"\n"
 	 "1:	mov	r1,r15";
 }
   [(set_attr "length" "20")])
@@ -282,9 +278,9 @@
 ;; read - write - return old value
 
 (define_expand "atomic_exchange<mode>"
-  [(match_operand:I124 0 "register_operand" "")		;; oldval output
-   (match_operand:I124 1 "memory_operand" "")		;; memory
-   (match_operand:I124 2 "atomic_arith_operand" "")	;; newval input
+  [(match_operand:QIHISI 0 "register_operand" "")	;; oldval output
+   (match_operand:QIHISI 1 "memory_operand" "")		;; memory
+   (match_operand:QIHISI 2 "atomic_arith_operand" "")	;; newval input
    (match_operand:SI 3 "const_int_operand" "")]		;; memory model
   "TARGET_ANY_ATOMIC && !TARGET_SHMEDIA"
 {
@@ -293,9 +289,9 @@
   rtx atomic_insn;
 
   if (TARGET_HARD_ATOMIC || (TARGET_SH4A_ARCH && <MODE>mode == SImode))
-      atomic_insn = gen_atomic_exchange<mode>_hard (operands[0], addr, val);
+    atomic_insn = gen_atomic_exchange<mode>_hard (operands[0], addr, val);
   else
-      atomic_insn = gen_atomic_exchange<mode>_soft (operands[0], addr, val);
+    atomic_insn = gen_atomic_exchange<mode>_soft (operands[0], addr, val);
 
   emit_insn (atomic_insn);
 
@@ -326,11 +322,11 @@
   [(set_attr "length" "10")])
 
 (define_insn "atomic_exchange<mode>_hard"
-  [(set (match_operand:I12 0 "register_operand" "=&r")
-	(mem:I12 (match_operand:SI 1 "register_operand" "r")))
-   (set (mem:I12 (match_dup 1))
-	(unspec:I12
-	  [(match_operand:I12 2 "register_operand" "r")] UNSPEC_ATOMIC))
+  [(set (match_operand:QIHI 0 "register_operand" "=&r")
+	(mem:QIHI (match_operand:SI 1 "register_operand" "r")))
+   (set (mem:QIHI (match_dup 1))
+	(unspec:QIHI
+	  [(match_operand:QIHI 2 "register_operand" "r")] UNSPEC_ATOMIC))
    (clobber (reg:SI R0_REG))
    (clobber (match_scratch:SI 3 "=&r"))
    (clobber (match_scratch:SI 4 "=1"))]
@@ -343,8 +339,8 @@
 	 "	add	#-4,%1"			"\n"
 	 "0:	movli.l	@%3,r0"			"\n"
 	 "	mov.l	r0,@-r15"		"\n"
-	 "	mov.<i124suffix>	@%1,%0"	"\n"
-	 "	mov.<i124suffix>	%2,@%1" "\n"
+	 "	mov.<bw>	@%1,%0"		"\n"
+	 "	mov.<bw>	%2,@%1" 	"\n"
 	 "	mov.l	@r15+,r0"		"\n"
 	 "	movco.l	r0,@%3"			"\n"
 	 "	bf	0b";
@@ -352,11 +348,11 @@
   [(set_attr "length" "24")])
 
 (define_insn "atomic_exchange<mode>_soft"
-  [(set (match_operand:I124 0 "register_operand" "=&u")
-	(mem:I124 (match_operand:SI 1 "register_operand" "u")))
-   (set (mem:I124 (match_dup 1))
-	(unspec:I124
-	  [(match_operand:I124 2 "register_operand" "u")] UNSPEC_ATOMIC))
+  [(set (match_operand:QIHISI 0 "register_operand" "=&u")
+	(mem:QIHISI (match_operand:SI 1 "register_operand" "u")))
+   (set (mem:QIHISI (match_dup 1))
+	(unspec:QIHISI
+	  [(match_operand:QIHISI 2 "register_operand" "u")] UNSPEC_ATOMIC))
    (clobber (reg:SI R0_REG))
    (clobber (reg:SI R1_REG))]
   "TARGET_SOFT_ATOMIC && !TARGET_SHMEDIA"
@@ -365,8 +361,8 @@
 	 "	.align 2"			"\n"
 	 "	mov	r15,r1"			"\n"
 	 "	mov	#(0f-1f),r15"		"\n"
-	 "0:	mov.<i124suffix>	@%1,%0"	"\n"
-	 "	mov.<i124suffix>	%2,@%1"	"\n"
+	 "0:	mov.<bwl>	@%1,%0"		"\n"
+	 "	mov.<bwl>	%2,@%1"		"\n"
 	 "1:	mov	r1,r15";
 }
   [(set_attr "length" "14")])
@@ -375,12 +371,12 @@
 ;; read - add|sub|or|and|xor|nand - write - return old value
 
 (define_expand "atomic_fetch_<fetchop_name><mode>"
-  [(set (match_operand:I124 0 "register_operand" "")
-	(match_operand:I124 1 "memory_operand" ""))
+  [(set (match_operand:QIHISI 0 "register_operand" "")
+	(match_operand:QIHISI 1 "memory_operand" ""))
    (set (match_dup 1)
-	(unspec:I124
-	  [(FETCHOP:I124 (match_dup 1)
-	     (match_operand:I124 2 "<fetchop_predicate>" ""))]
+	(unspec:QIHISI
+	  [(FETCHOP:QIHISI (match_dup 1)
+	     (match_operand:QIHISI 2 "<fetchop_predicate>" ""))]
 	  UNSPEC_ATOMIC))
    (match_operand:SI 3 "const_int_operand" "")]
   "TARGET_ANY_ATOMIC && !TARGET_SHMEDIA"
@@ -392,9 +388,9 @@
     atomic_insn = gen_atomic_fetch_<fetchop_name><mode>_hard (operands[0], addr,
 							      operands[2]);
   else
-      atomic_insn = gen_atomic_fetch_<fetchop_name><mode>_soft (operands[0],
-								addr,
-								operands[2]);
+    atomic_insn = gen_atomic_fetch_<fetchop_name><mode>_soft (operands[0],
+							      addr,
+							      operands[2]);
   emit_insn (atomic_insn);
 
   if (<MODE>mode == QImode)
@@ -426,12 +422,12 @@
   [(set_attr "length" "10")])
 
 (define_insn "atomic_fetch_<fetchop_name><mode>_hard"
-  [(set (match_operand:I12 0 "register_operand" "=&r")
-	(mem:I12 (match_operand:SI 1 "register_operand" "r")))
-   (set (mem:I12 (match_dup 1))
-	(unspec:I12
-	  [(FETCHOP:I12 (mem:I12 (match_dup 1))
-	     (match_operand:I12 2 "<fetchop_predicate>" "<fetchop_constraint>"))]
+  [(set (match_operand:QIHI 0 "register_operand" "=&r")
+	(mem:QIHI (match_operand:SI 1 "register_operand" "r")))
+   (set (mem:QIHI (match_dup 1))
+	(unspec:QIHI
+	  [(FETCHOP:QIHI (mem:QIHI (match_dup 1))
+	     (match_operand:QIHI 2 "<fetchop_predicate>" "<fetchop_constraint>"))]
 	  UNSPEC_ATOMIC))
    (clobber (reg:SI R0_REG))
    (clobber (match_scratch:SI 3 "=&r"))
@@ -445,10 +441,10 @@
 	 "	add	#-4,%1"			"\n"
 	 "0:	movli.l	@%3,r0"			"\n"
 	 "	mov.l	r0,@-r15"		"\n"
-	 "	mov.<i124suffix>	@%1,r0"	"\n"
+	 "	mov.<bw>	@%1,r0"		"\n"
 	 "	mov	r0,%0"			"\n"
 	 "	<fetchop_name>	%2,r0"		"\n"
-	 "	mov.<i124suffix>	r0,@%1"	"\n"
+	 "	mov.<bw>	r0,@%1"		"\n"
 	 "	mov.l	@r15+,r0"		"\n"
 	 "	movco.l	r0,@%3"			"\n"
 	 "	bf	0b";
@@ -456,14 +452,14 @@
   [(set_attr "length" "28")])
 
 (define_insn "atomic_fetch_<fetchop_name><mode>_soft"
-  [(set (match_operand:I124 0 "register_operand" "=&u")
-	(mem:I124 (match_operand:SI 1 "register_operand" "u")))
-   (set (mem:I124 (match_dup 1))
-	(unspec:I124
-	  [(FETCHOP:I124 (mem:I124 (match_dup 1))
-	     (match_operand:I124 2 "register_operand" "u"))]
+  [(set (match_operand:QIHISI 0 "register_operand" "=&u")
+	(mem:QIHISI (match_operand:SI 1 "register_operand" "u")))
+   (set (mem:QIHISI (match_dup 1))
+	(unspec:QIHISI
+	  [(FETCHOP:QIHISI (mem:QIHISI (match_dup 1))
+	     (match_operand:QIHISI 2 "register_operand" "u"))]
 	  UNSPEC_ATOMIC))
-   (clobber (match_scratch:I124 3 "=&u"))
+   (clobber (match_scratch:QIHISI 3 "=&u"))
    (clobber (reg:SI R0_REG))
    (clobber (reg:SI R1_REG))]
   "TARGET_SOFT_ATOMIC && !TARGET_SHMEDIA"
@@ -472,21 +468,21 @@
 	 "	.align 2"			"\n"
 	 "	mov	r15,r1"			"\n"
 	 "	mov	#(0f-1f),r15"		"\n"
-	 "0:	mov.<i124suffix>	@%1,%0"	"\n"
+	 "0:	mov.<bwl>	@%1,%0"		"\n"
 	 "	mov	%0,%3"			"\n"
 	 "	<fetchop_name>	%2,%3"		"\n"
-	 "	mov.<i124suffix>	%3,@%1"	"\n"
+	 "	mov.<bwl>	%3,@%1"		"\n"
 	 "1:	mov	r1,r15";
 }
   [(set_attr "length" "18")])
 
 (define_expand "atomic_fetch_nand<mode>"
-  [(set (match_operand:I124 0 "register_operand" "")
-	(match_operand:I124 1 "memory_operand" ""))
+  [(set (match_operand:QIHISI 0 "register_operand" "")
+	(match_operand:QIHISI 1 "memory_operand" ""))
    (set (match_dup 1)
-	(unspec:I124
-	  [(not:I124 (and:I124 (match_dup 1)
-		     (match_operand:I124 2 "atomic_logical_operand" "")))]
+	(unspec:QIHISI
+	  [(not:QIHISI (and:QIHISI (match_dup 1)
+		       (match_operand:QIHISI 2 "atomic_logical_operand" "")))]
 	  UNSPEC_ATOMIC))
    (match_operand:SI 3 "const_int_operand" "")]
   "TARGET_ANY_ATOMIC && !TARGET_SHMEDIA"
@@ -533,12 +529,12 @@
   [(set_attr "length" "12")])
 
 (define_insn "atomic_fetch_nand<mode>_hard"
-  [(set (match_operand:I12 0 "register_operand" "=&r")
-	(mem:I12 (match_operand:SI 1 "register_operand" "r")))
-   (set (mem:I12 (match_dup 1))
-	(unspec:I12
-	  [(not:I12 (and:I12 (mem:I12 (match_dup 1))
-		    (match_operand:I12 2 "logical_operand" "rK08")))]
+  [(set (match_operand:QIHI 0 "register_operand" "=&r")
+	(mem:QIHI (match_operand:SI 1 "register_operand" "r")))
+   (set (mem:QIHI (match_dup 1))
+	(unspec:QIHI
+	  [(not:QIHI (and:QIHI (mem:QIHI (match_dup 1))
+		     (match_operand:QIHI 2 "logical_operand" "rK08")))]
 	  UNSPEC_ATOMIC))
    (clobber (reg:SI R0_REG))
    (clobber (match_scratch:SI 3 "=&r"))
@@ -552,11 +548,11 @@
 	 "	add	#-4,%1"			"\n"
 	 "0:	movli.l	@%3,r0"			"\n"
 	 "	mov.l	r0,@-r15"		"\n"
-	 "	mov.<i124suffix>	@%1,r0"	"\n"
+	 "	mov.<bw>	@%1,r0"		"\n"
 	 "	mov	r0,%0"			"\n"
 	 "	and	%2,r0"			"\n"
 	 "	not	r0,r0"			"\n"
-	 "	mov.<i124suffix>	r0,@%1"	"\n"
+	 "	mov.<bw>	r0,@%1"		"\n"
 	 "	mov.l	@r15+,r0"		"\n"
 	 "	movco.l	r0,@%3"			"\n"
 	 "	bf	0b";
@@ -564,14 +560,14 @@
   [(set_attr "length" "30")])
 
 (define_insn "atomic_fetch_nand<mode>_soft"
-  [(set (match_operand:I124 0 "register_operand" "=&u")
-	(mem:I124 (match_operand:SI 1 "register_operand" "u")))
-   (set (mem:I124 (match_dup 1))
-	(unspec:I124
-	  [(not:I124 (and:I124 (mem:I124 (match_dup 1))
-	     (match_operand:I124 2 "register_operand" "u")))]
+  [(set (match_operand:QIHISI 0 "register_operand" "=&u")
+	(mem:QIHISI (match_operand:SI 1 "register_operand" "u")))
+   (set (mem:QIHISI (match_dup 1))
+	(unspec:QIHISI
+	  [(not:QIHISI (and:QIHISI (mem:QIHISI (match_dup 1))
+	     (match_operand:QIHISI 2 "register_operand" "u")))]
 	  UNSPEC_ATOMIC))
-   (clobber (match_scratch:I124 3 "=&u"))
+   (clobber (match_scratch:QIHISI 3 "=&u"))
    (clobber (reg:SI R0_REG))
    (clobber (reg:SI R1_REG))]
   "TARGET_SOFT_ATOMIC && !TARGET_SHMEDIA"
@@ -580,11 +576,11 @@
 	 "	mov	r15,r1"			"\n"
 	 "	.align 2"			"\n"
 	 "	mov	#(0f-1f),r15"		"\n"
-	 "0:	mov.<i124suffix>	@%1,%0"	"\n"
+	 "0:	mov.<bwl>	@%1,%0"		"\n"
 	 "	mov	%2,%3"			"\n"
 	 "	and	%0,%3"			"\n"
 	 "	not	%3,%3"			"\n"
-	 "	mov.<i124suffix>	%3,@%1"	"\n"
+	 "	mov.<bwl>	%3,@%1"		"\n"
 	 "1:	mov	r1,r15";
 }
   [(set_attr "length" "20")])
@@ -593,13 +589,13 @@
 ;; read - add|sub|or|and|xor|nand - write - return new value
 
 (define_expand "atomic_<fetchop_name>_fetch<mode>"
-  [(set (match_operand:I124 0 "register_operand" "")
-	(FETCHOP:I124
-	  (match_operand:I124 1 "memory_operand" "")
-	  (match_operand:I124 2 "<fetchop_predicate>" "")))
+  [(set (match_operand:QIHISI 0 "register_operand" "")
+	(FETCHOP:QIHISI
+	  (match_operand:QIHISI 1 "memory_operand" "")
+	  (match_operand:QIHISI 2 "<fetchop_predicate>" "")))
    (set (match_dup 1)
-	(unspec:I124
-	  [(FETCHOP:I124 (match_dup 1) (match_dup 2))]
+	(unspec:QIHISI
+	  [(FETCHOP:QIHISI (match_dup 1) (match_dup 2))]
 	  UNSPEC_ATOMIC))
    (match_operand:SI 3 "const_int_operand" "")]
   "TARGET_ANY_ATOMIC && !TARGET_SHMEDIA"
@@ -643,13 +639,13 @@
   [(set_attr "length" "8")])
 
 (define_insn "atomic_<fetchop_name>_fetch<mode>_hard"
-  [(set (match_operand:I12 0 "register_operand" "=&r")
-	(FETCHOP:I12
-	  (mem:I12 (match_operand:SI 1 "register_operand" "r"))
-	  (match_operand:I12 2 "<fetchop_predicate>" "<fetchop_constraint>")))
-   (set (mem:I12 (match_dup 1))
-	(unspec:I12
-	  [(FETCHOP:I12 (mem:I12 (match_dup 1)) (match_dup 2))]
+  [(set (match_operand:QIHI 0 "register_operand" "=&r")
+	(FETCHOP:QIHI
+	  (mem:QIHI (match_operand:SI 1 "register_operand" "r"))
+	  (match_operand:QIHI 2 "<fetchop_predicate>" "<fetchop_constraint>")))
+   (set (mem:QIHI (match_dup 1))
+	(unspec:QIHI
+	  [(FETCHOP:QIHI (mem:QIHI (match_dup 1)) (match_dup 2))]
 	  UNSPEC_ATOMIC))
 
    (clobber (reg:SI R0_REG))
@@ -664,9 +660,9 @@
 	 "	add	#-4,%1"			"\n"
 	 "0:	movli.l	@%3,r0"			"\n"
 	 "	mov.l	r0,@-r15"		"\n"
-	 "	mov.<i124suffix>	@%1,r0"	"\n"
+	 "	mov.<bw>	@%1,r0"		"\n"
 	 "	<fetchop_name>	%2,r0"		"\n"
-	 "	mov.<i124suffix>	r0,@%1"	"\n"
+	 "	mov.<bw>	r0,@%1"		"\n"
 	 "	mov	r0,%0"			"\n"
 	 "	mov.l	@r15+,r0"		"\n"
 	 "	movco.l	r0,@%3"			"\n"
@@ -675,13 +671,13 @@
   [(set_attr "length" "28")])
 
 (define_insn "atomic_<fetchop_name>_fetch<mode>_soft"
-  [(set (match_operand:I124 0 "register_operand" "=&u")
-	(FETCHOP:I124
-	  (mem:I124 (match_operand:SI 1 "register_operand" "u"))
-	  (match_operand:I124 2 "register_operand" "u")))
-   (set (mem:I124 (match_dup 1))
-	(unspec:I124
-	  [(FETCHOP:I124 (mem:I124 (match_dup 1)) (match_dup 2))]
+  [(set (match_operand:QIHISI 0 "register_operand" "=&u")
+	(FETCHOP:QIHISI
+	  (mem:QIHISI (match_operand:SI 1 "register_operand" "u"))
+	  (match_operand:QIHISI 2 "register_operand" "u")))
+   (set (mem:QIHISI (match_dup 1))
+	(unspec:QIHISI
+	  [(FETCHOP:QIHISI (mem:QIHISI (match_dup 1)) (match_dup 2))]
 	  UNSPEC_ATOMIC))
    (clobber (reg:SI R0_REG))
    (clobber (reg:SI R1_REG))]
@@ -691,21 +687,21 @@
 	 "	mov	r15,r1"			"\n"
 	 "	.align 2"			"\n"
 	 "	mov	#(0f-1f),r15"		"\n"
-	 "0:	mov.<i124suffix>	@%1,%0"	"\n"
+	 "0:	mov.<bwl>	@%1,%0"		"\n"
 	 "	<fetchop_name>	%2,%0"		"\n"
-	 "	mov.<i124suffix>	%0,@%1"	"\n"
+	 "	mov.<bwl>	%0,@%1"		"\n"
 	 "1:	mov	r1,r15";
 }
   [(set_attr "length" "16")])
 
 (define_expand "atomic_nand_fetch<mode>"
-  [(set (match_operand:I124 0 "register_operand" "")
-	(not:I124 (and:I124
-	  (match_operand:I124 1 "memory_operand" "")
-	  (match_operand:I124 2 "atomic_logical_operand" ""))))
+  [(set (match_operand:QIHISI 0 "register_operand" "")
+	(not:QIHISI (and:QIHISI
+	  (match_operand:QIHISI 1 "memory_operand" "")
+	  (match_operand:QIHISI 2 "atomic_logical_operand" ""))))
    (set (match_dup 1)
-	(unspec:I124
-	  [(not:I124 (and:I124 (match_dup 1) (match_dup 2)))]
+	(unspec:QIHISI
+	  [(not:QIHISI (and:QIHISI (match_dup 1) (match_dup 2)))]
 	  UNSPEC_ATOMIC))
    (match_operand:SI 3 "const_int_operand" "")]
   "TARGET_ANY_ATOMIC && !TARGET_SHMEDIA"
@@ -749,12 +745,13 @@
   [(set_attr "length" "10")])
 
 (define_insn "atomic_nand_fetch<mode>_hard"
-  [(set (match_operand:I12 0 "register_operand" "=&r")
-	(not:I12 (and:I12 (mem:I12 (match_operand:SI 1 "register_operand" "r"))
-			  (match_operand:I12 2 "logical_operand" "rK08"))))
-   (set (mem:I12 (match_dup 1))
-	(unspec:I12
-	  [(not:I12 (and:I12 (mem:I12 (match_dup 1)) (match_dup 2)))]
+  [(set (match_operand:QIHI 0 "register_operand" "=&r")
+	(not:QIHI
+	  (and:QIHI (mem:QIHI (match_operand:SI 1 "register_operand" "r"))
+		    (match_operand:QIHI 2 "logical_operand" "rK08"))))
+   (set (mem:QIHI (match_dup 1))
+	(unspec:QIHI
+	  [(not:QIHI (and:QIHI (mem:QIHI (match_dup 1)) (match_dup 2)))]
 	  UNSPEC_ATOMIC))
    (clobber (reg:SI R0_REG))
    (clobber (match_scratch:SI 3 "=&r"))
@@ -768,10 +765,10 @@
 	 "	add	#-4,%1"			"\n"
 	 "0:	movli.l	@%3,r0"			"\n"
 	 "	mov.l	r0,@-r15"		"\n"
-	 "	mov.<i124suffix>	@%1,r0"	"\n"
+	 "	mov.<bw>	@%1,r0"		"\n"
 	 "	and	%2,r0"			"\n"
 	 "	not	r0,%0"			"\n"
-	 "	mov.<i124suffix>	%0,@%1"	"\n"
+	 "	mov.<bw>	%0,@%1"		"\n"
 	 "	mov.l	@r15+,r0"		"\n"
 	 "	movco.l	r0,@%3"			"\n"
 	 "	bf	0b";
@@ -779,13 +776,13 @@
   [(set_attr "length" "28")])
 
 (define_insn "atomic_nand_fetch<mode>_soft"
-  [(set (match_operand:I124 0 "register_operand" "=&u")
-	(not:I124 (and:I124
-	  (mem:I124 (match_operand:SI 1 "register_operand" "u"))
-	  (match_operand:I124 2 "register_operand" "u"))))
-   (set (mem:I124 (match_dup 1))
-	(unspec:I124
-	  [(not:I124 (and:I124 (mem:I124 (match_dup 1)) (match_dup 2)))]
+  [(set (match_operand:QIHISI 0 "register_operand" "=&u")
+	(not:QIHISI (and:QIHISI
+	  (mem:QIHISI (match_operand:SI 1 "register_operand" "u"))
+	  (match_operand:QIHISI 2 "register_operand" "u"))))
+   (set (mem:QIHISI (match_dup 1))
+	(unspec:QIHISI
+	  [(not:QIHISI (and:QIHISI (mem:QIHISI (match_dup 1)) (match_dup 2)))]
 	  UNSPEC_ATOMIC))
    (clobber (reg:SI R0_REG))
    (clobber (reg:SI R1_REG))]
@@ -795,10 +792,10 @@
 	 "	.align 2"			"\n"
 	 "	mov	r15,r1"			"\n"
 	 "	mov	#(0f-1f),r15"		"\n"
-	 "0:	mov.<i124suffix>	@%1,%0"	"\n"
+	 "0:	mov.<bwl>	@%1,%0"		"\n"
 	 "	and	%2,%0"			"\n"
 	 "	not	%0,%0"			"\n"
-	 "	mov.<i124suffix>	%0,@%1"	"\n"
+	 "	mov.<bwl>	%0,@%1"		"\n"
 	 "1:	mov	r1,r15";
 }
   [(set_attr "length" "18")])

@@ -130,7 +130,7 @@ static reg_class_t cris_preferred_reload_class (rtx, reg_class_t);
 static int cris_register_move_cost (enum machine_mode, reg_class_t, reg_class_t);
 static int cris_memory_move_cost (enum machine_mode, reg_class_t, bool);
 static bool cris_rtx_costs (rtx, int, int, int, int *, bool);
-static int cris_address_cost (rtx, bool);
+static int cris_address_cost (rtx, enum machine_mode, addr_space_t, bool);
 static bool cris_pass_by_reference (cumulative_args_t, enum machine_mode,
 				    const_tree, bool);
 static int cris_arg_partial_bytes (cumulative_args_t, enum machine_mode,
@@ -2149,7 +2149,9 @@ cris_rtx_costs (rtx x, int code, int outer_code, int opno, int *total,
 /* The ADDRESS_COST worker.  */
 
 static int
-cris_address_cost (rtx x, bool speed ATTRIBUTE_UNUSED)
+cris_address_cost (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED,
+		   addr_space_t as ATTRIBUTE_UNUSED,
+		   bool speed ATTRIBUTE_UNUSED)
 {
   /* The metric to use for the cost-macros is unclear.
      The metric used here is (the number of cycles needed) / 2,

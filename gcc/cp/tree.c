@@ -2772,7 +2772,8 @@ maybe_dummy_object (tree type, tree* binfop)
   tree current = current_nonlambda_class_type ();
 
   if (current
-      && (binfo = lookup_base (current, type, ba_any, NULL)))
+      && (binfo = lookup_base (current, type, ba_any, NULL,
+			       tf_warning_or_error)))
     context = current;
   else
     {

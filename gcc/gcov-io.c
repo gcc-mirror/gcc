@@ -368,10 +368,25 @@ gcov_write_tag_length (gcov_unsigned_t tag, gcov_unsigned_t length)
 GCOV_LINKAGE void
 gcov_write_summary (gcov_unsigned_t tag, const struct gcov_summary *summary)
 {
-  unsigned ix;
+  unsigned ix, h_ix, bv_ix, h_cnt = 0;
   const struct gcov_ctr_summary *csum;
+  unsigned histo_bitvector[GCOV_HISTOGRAM_BITVECTOR_SIZE];
 
-  gcov_write_tag_length (tag, GCOV_TAG_SUMMARY_LENGTH);
+  /* Count number of non-zero histogram entries, and fill in a bit vector
+     of non-zero indices. The histogram is only currently computed for arc
+     counters.  */
+  for (bv_ix = 0; bv_ix < GCOV_HISTOGRAM_BITVECTOR_SIZE; bv_ix++)
+    histo_bitvector[bv_ix] = 0;
+  csum = &summary->ctrs[GCOV_COUNTER_ARCS];
+  for (h_ix = 0; h_ix < GCOV_HISTOGRAM_SIZE; h_ix++)
+    {
+      if (csum->histogram[h_ix].num_counters > 0)
+        {
+          histo_bitvector[h_ix / 32] |= 1 << (h_ix % 32);
+          h_cnt++;
+        }
+    }
+  gcov_write_tag_length (tag, GCOV_TAG_SUMMARY_LENGTH(h_cnt));
   gcov_write_unsigned (summary->checksum);
   for (csum = summary->ctrs, ix = GCOV_COUNTERS_SUMMABLE; ix--; csum++)
     {
@@ -380,6 +395,22 @@ gcov_write_summary (gcov_unsigned_t tag, const struct gcov_summary *summary)
       gcov_write_counter (csum->sum_all);
       gcov_write_counter (csum->run_max);
       gcov_write_counter (csum->sum_max);
+      if (ix != GCOV_COUNTER_ARCS)
+        {
+          for (bv_ix = 0; bv_ix < GCOV_HISTOGRAM_BITVECTOR_SIZE; bv_ix++)
+            gcov_write_unsigned (0);
+          continue;
+        }
+      for (bv_ix = 0; bv_ix < GCOV_HISTOGRAM_BITVECTOR_SIZE; bv_ix++)
+        gcov_write_unsigned (histo_bitvector[bv_ix]);
+      for (h_ix = 0; h_ix < GCOV_HISTOGRAM_SIZE; h_ix++)
+        {
+          if (!csum->histogram[h_ix].num_counters)
+            continue;
+          gcov_write_unsigned (csum->histogram[h_ix].num_counters);
+          gcov_write_counter (csum->histogram[h_ix].min_value);
+          gcov_write_counter (csum->histogram[h_ix].cum_value);
+        }
     }
 }
 #endif /* IN_LIBGCOV */
@@ -488,8 +519,10 @@ gcov_read_string (void)
 GCOV_LINKAGE void
 gcov_read_summary (struct gcov_summary *summary)
 {
-  unsigned ix;
+  unsigned ix, h_ix, bv_ix, h_cnt = 0;
   struct gcov_ctr_summary *csum;
+  unsigned histo_bitvector[GCOV_HISTOGRAM_BITVECTOR_SIZE];
+  unsigned cur_bitvector;
 
   summary->checksum = gcov_read_unsigned ();
   for (csum = summary->ctrs, ix = GCOV_COUNTERS_SUMMABLE; ix--; csum++)
@@ -499,6 +532,43 @@ gcov_read_summary (struct gcov_summary *summary)
       csum->sum_all = gcov_read_counter ();
       csum->run_max = gcov_read_counter ();
       csum->sum_max = gcov_read_counter ();
+      memset (csum->histogram, 0,
+              sizeof (gcov_bucket_type) * GCOV_HISTOGRAM_SIZE);
+      for (bv_ix = 0; bv_ix < GCOV_HISTOGRAM_BITVECTOR_SIZE; bv_ix++)
+        {
+          histo_bitvector[bv_ix] = gcov_read_unsigned ();
+          h_cnt += __builtin_popcountll (histo_bitvector[bv_ix]);
+        }
+      bv_ix = 0;
+      h_ix = 0;
+      cur_bitvector = 0;
+      while (h_cnt--)
+        {
+          /* Find the index corresponding to the next entry we will read in.
+             First find the next non-zero bitvector and re-initialize
+             the histogram index accordingly, then right shift and increment
+             the index until we find a set bit.  */
+          while (!cur_bitvector)
+            {
+              h_ix = bv_ix * 32;
+              cur_bitvector = histo_bitvector[bv_ix++];
+              gcc_assert(bv_ix <= GCOV_HISTOGRAM_BITVECTOR_SIZE);
+            }
+          while (!(cur_bitvector & 0x1))
+            {
+              h_ix++;
+              cur_bitvector >>= 1;
+            }
+          gcc_assert(h_ix < GCOV_HISTOGRAM_SIZE);
+
+          csum->histogram[h_ix].num_counters = gcov_read_unsigned ();
+          csum->histogram[h_ix].min_value = gcov_read_counter ();
+          csum->histogram[h_ix].cum_value = gcov_read_counter ();
+          /* Shift off the index we are done with and increment to the
+             corresponding next histogram entry.  */
+          cur_bitvector >>= 1;
+          h_ix++;
+        }
     }
 }
 
@@ -550,3 +620,184 @@ gcov_time (void)
     return status.st_mtime;
 }
 #endif /* IN_GCOV */
+
+#if IN_LIBGCOV || !IN_GCOV
+/* Determine the index into histogram for VALUE. */
+
+static unsigned
+gcov_histo_index(gcov_type value)
+{
+  gcov_type_unsigned v = (gcov_type_unsigned)value;
+  unsigned r = 0;
+  unsigned prev2bits = 0;
+
+  /* Find index into log2 scale histogram, where each of the log2
+     sized buckets is divided into 4 linear sub-buckets for better
+     focus in the higher buckets.  */
+
+  /* Find the place of the most-significant bit set.  */
+  if (v > 0)
+    r = 63 - __builtin_clzll (v);
+
+  /* If at most the 2 least significant bits are set (value is
+     0 - 3) then that value is our index into the lowest set of
+     four buckets.  */
+  if (r < 2)
+    return (unsigned)value;
+
+  gcc_assert (r < 64);
+
+  /* Find the two next most significant bits to determine which
+     of the four linear sub-buckets to select.  */
+  prev2bits = (v >> (r - 2)) & 0x3;
+  /* Finally, compose the final bucket index from the log2 index and
+     the next 2 bits. The minimum r value at this point is 2 since we
+     returned above if r was 2 or more, so the minimum bucket at this
+     point is 4.  */
+  return (r - 1) * 4 + prev2bits;
+}
+
+/* Merge SRC_HISTO into TGT_HISTO. The counters are assumed to be in
+   the same relative order in both histograms, and are matched up
+   and merged in reverse order. Each counter is assigned an equal portion of
+   its entry's original cumulative counter value when computing the
+   new merged cum_value.  */
+
+static void gcov_histogram_merge(gcov_bucket_type *tgt_histo,
+                                 gcov_bucket_type *src_histo)
+{
+  int src_i, tgt_i, tmp_i = 0;
+  unsigned src_num, tgt_num, merge_num;
+  gcov_type src_cum, tgt_cum, merge_src_cum, merge_tgt_cum, merge_cum;
+  gcov_type merge_min;
+  gcov_bucket_type tmp_histo[GCOV_HISTOGRAM_SIZE];
+  int src_done = 0;
+
+  memset(tmp_histo, 0, sizeof (gcov_bucket_type) * GCOV_HISTOGRAM_SIZE);
+
+  /* Assume that the counters are in the same relative order in both
+     histograms. Walk the histograms from largest to smallest entry,
+     matching up and combining counters in order.  */
+  src_num = 0;
+  src_cum = 0;
+  src_i = GCOV_HISTOGRAM_SIZE - 1;
+  for (tgt_i = GCOV_HISTOGRAM_SIZE - 1; tgt_i >= 0 && !src_done; tgt_i--)
+    {
+      tgt_num = tgt_histo[tgt_i].num_counters;
+      tgt_cum = tgt_histo[tgt_i].cum_value;
+      /* Keep going until all of the target histogram's counters at this
+         position have been matched and merged with counters from the
+         source histogram.  */
+      while (tgt_num > 0 && !src_done)
+        {
+          /* If this is either the first time through this loop or we just
+             exhausted the previous non-zero source histogram entry, look
+             for the next non-zero source histogram entry.  */
+          if (!src_num)
+            {
+              /* Locate the next non-zero entry.  */
+              while (src_i >= 0 && !src_histo[src_i].num_counters)
+                src_i--;
+              /* If source histogram has fewer counters, then just copy over the
+                 remaining target counters and quit.  */
+              if (src_i < 0)
+                {
+                  tmp_histo[tgt_i].num_counters += tgt_num;
+                  tmp_histo[tgt_i].cum_value += tgt_cum;
+                  if (!tmp_histo[tgt_i].min_value ||
+                      tgt_histo[tgt_i].min_value < tmp_histo[tgt_i].min_value)
+                    tmp_histo[tgt_i].min_value = tgt_histo[tgt_i].min_value;
+                  while (--tgt_i >= 0)
+                    {
+                      tmp_histo[tgt_i].num_counters
+                          += tgt_histo[tgt_i].num_counters;
+                      tmp_histo[tgt_i].cum_value += tgt_histo[tgt_i].cum_value;
+                      if (!tmp_histo[tgt_i].min_value ||
+                          tgt_histo[tgt_i].min_value
+                          < tmp_histo[tgt_i].min_value)
+                        tmp_histo[tgt_i].min_value = tgt_histo[tgt_i].min_value;
+                    }
+
+                  src_done = 1;
+                  break;
+                }
+
+              src_num = src_histo[src_i].num_counters;
+              src_cum = src_histo[src_i].cum_value;
+            }
+
+          /* The number of counters to merge on this pass is the minimum
+             of the remaining counters from the current target and source
+             histogram entries.  */
+          merge_num = tgt_num;
+          if (src_num < merge_num)
+            merge_num = src_num;
+
+          /* The merged min_value is the sum of the min_values from target
+             and source.  */
+          merge_min = tgt_histo[tgt_i].min_value + src_histo[src_i].min_value;
+
+          /* Compute the portion of source and target entries' cum_value
+             that will be apportioned to the counters being merged.
+             The total remaining cum_value from each entry is divided
+             equally among the counters from that histogram entry if we
+             are not merging all of them.  */
+          merge_src_cum = src_cum;
+          if (merge_num < src_num)
+            merge_src_cum = merge_num * src_cum / src_num;
+          merge_tgt_cum = tgt_cum;
+          if (merge_num < tgt_num)
+            merge_tgt_cum = merge_num * tgt_cum / tgt_num;
+          /* The merged cum_value is the sum of the source and target
+             components.  */
+          merge_cum = merge_src_cum + merge_tgt_cum;
+
+          /* Update the remaining number of counters and cum_value left
+             to be merged from this source and target entry.  */
+          src_cum -= merge_src_cum;
+          tgt_cum -= merge_tgt_cum;
+          src_num -= merge_num;
+          tgt_num -= merge_num;
+
+          /* The merged counters get placed in the new merged histogram
+             at the entry for the merged min_value.  */
+          tmp_i = gcov_histo_index(merge_min);
+          gcc_assert (tmp_i < GCOV_HISTOGRAM_SIZE);
+          tmp_histo[tmp_i].num_counters += merge_num;
+          tmp_histo[tmp_i].cum_value += merge_cum;
+          if (!tmp_histo[tmp_i].min_value ||
+              merge_min < tmp_histo[tmp_i].min_value)
+            tmp_histo[tmp_i].min_value = merge_min;
+
+          /* Ensure the search for the next non-zero src_histo entry starts
+             at the next smallest histogram bucket.  */
+          if (!src_num)
+            src_i--;
+        }
+    }
+
+  gcc_assert (tgt_i < 0);
+
+  /* In the case where there were more counters in the source histogram,
+     accumulate the remaining unmerged cumulative counter values. Add
+     those to the smallest non-zero target histogram entry. Otherwise,
+     the total cumulative counter values in the histogram will be smaller
+     than the sum_all stored in the summary, which will complicate
+     computing the working set information from the histogram later on.  */
+  if (src_num)
+    src_i--;
+  while (src_i >= 0)
+    {
+      src_cum += src_histo[src_i].cum_value;
+      src_i--;
+    }
+  /* At this point, tmp_i should be the smallest non-zero entry in the
+     tmp_histo.  */
+  gcc_assert(tmp_i >= 0 && tmp_i < GCOV_HISTOGRAM_SIZE
+             && tmp_histo[tmp_i].num_counters > 0);
+  tmp_histo[tmp_i].cum_value += src_cum;
+
+  /* Finally, copy the merged histogram into tgt_histo.  */
+  memcpy(tgt_histo, tmp_histo, sizeof (gcov_bucket_type) * GCOV_HISTOGRAM_SIZE);
+}
+#endif /* IN_LIBGCOV || !IN_GCOV */

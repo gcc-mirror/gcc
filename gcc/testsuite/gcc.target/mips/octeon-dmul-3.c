@@ -1,5 +1,6 @@
 /* Use DMUL for widening multiplication too.  */
-/* { dg-options "-O -march=octeon -mgp64" } */
+/* { dg-options "-march=octeon -mgp64" } */
+/* { dg-skip-if "code quality test" { *-*-* } { "-O0" } { "" } } */
 /* { dg-final { scan-assembler-times "\tdmul\t" 2 } } */
 /* { dg-final { scan-assembler-not "\td?mult\t" } } */
 /* { dg-final { scan-assembler-times "\tdext\t" 2 } } */

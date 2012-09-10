@@ -1,4 +1,5 @@
-/* { dg-options "(-mips16) -O -mabi=o64" } */
+/* { dg-options "(-mips16) -mabi=o64" } */
+/* { dg-skip-if "code quality test" { *-*-* } { "-O0" } { "" } } */
 
 /* { dg-final { scan-assembler-not "and\t\|andi\t\|ext\t\|sll\t\|srl\t" } } */
 /* { dg-final { scan-assembler-times "slt\t\|slti?u\t" 8 } } */

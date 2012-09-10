@@ -22,8 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 
 struct ltrans_partition_def
 {
-  cgraph_node_set cgraph_set;
-  varpool_node_set varpool_set;
+  lto_symtab_encoder_t encoder;
   const char * name;
   int insns;
 };

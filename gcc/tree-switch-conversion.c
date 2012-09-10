@@ -318,7 +318,7 @@ emit_case_bit_tests (gimple swtch, tree index_expr,
   memset (&test, 0, sizeof (test));
 
   /* Get the edge for the default case.  */
-  tmp = gimple_switch_label (swtch, 0);
+  tmp = gimple_switch_default_label (swtch);
   default_bb = label_to_block (CASE_LABEL (tmp));
   default_edge = find_edge (switch_bb, default_bb);
 
@@ -612,14 +612,12 @@ collect_switch_conv_info (gimple swtch, struct switch_conv_info *info)
   memset (info, 0, sizeof (*info));
 
   /* The gimplifier has already sorted the cases by CASE_LOW and ensured there
-     is a default label which is the first in the vector.  */
-  gcc_assert (CASE_LOW (gimple_switch_label (swtch, 0)) == NULL_TREE);
-
-  /* Collect the bits we can deduce from the CFG.  */
+     is a default label which is the first in the vector.
+     Collect the bits we can deduce from the CFG.  */
   info->index_expr = gimple_switch_index (swtch);
   info->switch_bb = gimple_bb (swtch);
   info->default_bb =
-    label_to_block (CASE_LABEL (gimple_switch_label (swtch, 0)));
+    label_to_block (CASE_LABEL (gimple_switch_default_label (swtch)));
   e_default = find_edge (info->switch_bb, info->default_bb);
   info->default_prob = e_default->probability;
   info->default_count = e_default->count;
@@ -972,17 +970,14 @@ array_value_type (gimple swtch, tree type, int num,
 	  if (prec > HOST_BITS_PER_WIDE_INT)
 	    return type;
 
-	  if (sign >= 0
-	      && double_int_equal_p (cst, double_int_zext (cst, prec)))
+	  if (sign >= 0 && cst == cst.zext (prec))
 	    {
-	      if (sign == 0
-		  && double_int_equal_p (cst, double_int_sext (cst, prec)))
+	      if (sign == 0 && cst == cst.sext (prec))
 		break;
 	      sign = 1;
 	      break;
 	    }
-	  if (sign <= 0
-	      && double_int_equal_p (cst, double_int_sext (cst, prec)))
+	  if (sign <= 0 && cst == cst.sext (prec))
 	    {
 	      sign = -1;
 	      break;
@@ -1393,7 +1388,7 @@ process_switch (gimple swtch)
      transformation.  */
 
   create_temp_arrays (&info);
-  gather_default_values (gimple_switch_label (swtch, 0), &info);
+  gather_default_values (gimple_switch_default_label (swtch), &info);
   build_constructors (swtch, &info);
 
   build_arrays (swtch, &info); /* Build the static arrays and assignments.   */

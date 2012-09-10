@@ -97,6 +97,12 @@ struct gcov_fn_buffer
   /* note gcov_fn_info ends in a trailing array.  */
 };
 
+struct gcov_summary_buffer
+{
+  struct gcov_summary_buffer *next;
+  struct gcov_summary summary;
+};
+
 /* Chain of per-object gcov structures.  */
 static struct gcov_info *gcov_list;
 
@@ -276,6 +282,76 @@ gcov_version (struct gcov_info *ptr, gcov_unsigned_t version,
   return 1;
 }
 
+/* Insert counter VALUE into HISTOGRAM.  */
+
+static void
+gcov_histogram_insert(gcov_bucket_type *histogram, gcov_type value)
+{
+  unsigned i;
+
+  i = gcov_histo_index(value);
+  histogram[i].num_counters++;
+  histogram[i].cum_value += value;
+  if (value < histogram[i].min_value)
+    histogram[i].min_value = value;
+}
+
+/* Computes a histogram of the arc counters to place in the summary SUM.  */
+
+static void
+gcov_compute_histogram (struct gcov_summary *sum)
+{
+  struct gcov_info *gi_ptr;
+  const struct gcov_fn_info *gfi_ptr;
+  const struct gcov_ctr_info *ci_ptr;
+  struct gcov_ctr_summary *cs_ptr;
+  unsigned t_ix, f_ix, ctr_info_ix, ix;
+  int h_ix;
+
+  /* This currently only applies to arc counters.  */
+  t_ix = GCOV_COUNTER_ARCS;
+
+  /* First check if there are any counts recorded for this counter.  */
+  cs_ptr = &(sum->ctrs[t_ix]);
+  if (!cs_ptr->num)
+    return;
+
+  for (h_ix = 0; h_ix < GCOV_HISTOGRAM_SIZE; h_ix++)
+    {
+      cs_ptr->histogram[h_ix].num_counters = 0;
+      cs_ptr->histogram[h_ix].min_value = cs_ptr->run_max;
+      cs_ptr->histogram[h_ix].cum_value = 0;
+    }
+
+  /* Walk through all the per-object structures and record each of
+     the count values in histogram.  */
+  for (gi_ptr = gcov_list; gi_ptr; gi_ptr = gi_ptr->next)
+    {
+      if (!gi_ptr->merge[t_ix])
+        continue;
+
+      /* Find the appropriate index into the gcov_ctr_info array
+         for the counter we are currently working on based on the
+         existence of the merge function pointer for this object.  */
+      for (ix = 0, ctr_info_ix = 0; ix < t_ix; ix++)
+        {
+          if (gi_ptr->merge[ix])
+            ctr_info_ix++;
+        }
+      for (f_ix = 0; f_ix != gi_ptr->n_functions; f_ix++)
+        {
+          gfi_ptr = gi_ptr->functions[f_ix];
+
+          if (!gfi_ptr || gfi_ptr->key != gi_ptr)
+            continue;
+
+          ci_ptr = &gfi_ptr->ctrs[ctr_info_ix];
+          for (ix = 0; ix < ci_ptr->num; ix++)
+            gcov_histogram_insert (cs_ptr->histogram, ci_ptr->values[ix]);
+        }
+    }
+}
+
 /* Dump the coverage counts. We merge with existing counts when
    possible, to avoid growing the .da files ad infinitum. We use this
    program's checksum to make sure we only accumulate whole program
@@ -347,6 +423,7 @@ gcov_exit (void)
 	    }
 	}
     }
+  gcov_compute_histogram (&this_prg);
 
   {
     /* Check if the level of dirs to strip off specified. */
@@ -400,6 +477,8 @@ gcov_exit (void)
       const char *fname, *s;
       struct gcov_fn_buffer *fn_buffer = 0;
       struct gcov_fn_buffer **fn_tail = &fn_buffer;
+      struct gcov_summary_buffer *next_sum_buffer, *sum_buffer = 0;
+      struct gcov_summary_buffer **sum_tail = &sum_buffer;
 
       fname = gi_ptr->filename;
 
@@ -482,17 +561,29 @@ gcov_exit (void)
 
 	      f_ix--;
 	      length = gcov_read_unsigned ();
-	      if (length != GCOV_TAG_SUMMARY_LENGTH)
-		goto read_mismatch;
 	      gcov_read_summary (&tmp);
 	      if ((error = gcov_is_error ()))
 		goto read_error;
-	      if (summary_pos || tmp.checksum != crc32)
-		goto next_summary;
+	      if (summary_pos)
+                {
+                  /* Save all summaries after the one that will be
+                     merged into below. These will need to be rewritten
+                     as histogram merging may change the number of non-zero
+                     histogram entries that will be emitted, and thus the
+                     size of the merged summary.  */
+                  (*sum_tail) = (struct gcov_summary_buffer *)
+                      malloc (sizeof(struct gcov_summary_buffer));
+                  (*sum_tail)->summary = tmp;
+                  (*sum_tail)->next = 0;
+                  sum_tail = &((*sum_tail)->next);
+                  goto next_summary;
+                }
+	      if (tmp.checksum != crc32)
+                goto next_summary;
 	      
 	      for (t_ix = 0; t_ix != GCOV_COUNTERS_SUMMABLE; t_ix++)
 		if (tmp.ctrs[t_ix].num != this_prg.ctrs[t_ix].num)
-		  goto next_summary;
+                  goto next_summary;
 	      prg = tmp;
 	      summary_pos = eof_pos;
 
@@ -598,11 +689,16 @@ gcov_exit (void)
 	  if (gi_ptr->merge[t_ix])
 	    {
 	      if (!cs_prg->runs++)
-		cs_prg->num = cs_tprg->num;
+	        cs_prg->num = cs_tprg->num;
 	      cs_prg->sum_all += cs_tprg->sum_all;
 	      if (cs_prg->run_max < cs_tprg->run_max)
 		cs_prg->run_max = cs_tprg->run_max;
 	      cs_prg->sum_max += cs_tprg->run_max;
+              if (cs_prg->runs == 1)
+                memcpy (cs_prg->histogram, cs_tprg->histogram,
+                        sizeof (gcov_bucket_type) * GCOV_HISTOGRAM_SIZE);
+              else
+                gcov_histogram_merge (cs_prg->histogram, cs_tprg->histogram);
 	    }
 	  else if (cs_prg->runs)
 	    goto read_mismatch;
@@ -611,7 +707,13 @@ gcov_exit (void)
 	    memcpy (cs_all, cs_prg, sizeof (*cs_all));
 	  else if (!all_prg.checksum
 		   && (!GCOV_LOCKED || cs_all->runs == cs_prg->runs)
-		   && memcmp (cs_all, cs_prg, sizeof (*cs_all)))
+                   /* Don't compare the histograms, which may have slight
+                      variations depending on the order they were updated
+                      due to the truncating integer divides used in the
+                      merge.  */
+                   && memcmp (cs_all, cs_prg,
+                              sizeof (*cs_all) - (sizeof (gcov_bucket_type)
+                                                  * GCOV_HISTOGRAM_SIZE)))
 	    {
 	      fprintf (stderr, "profiling:%s:Invocation mismatch - some data files may have been removed%s\n",
 		       gi_filename, GCOV_LOCKED
@@ -635,8 +737,18 @@ gcov_exit (void)
       /* Generate whole program statistics.  */
       gcov_write_summary (GCOV_TAG_PROGRAM_SUMMARY, &prg);
 
-      if (summary_pos < eof_pos)
-	gcov_seek (eof_pos);
+      /* Rewrite all the summaries that were after the summary we merged
+         into. This is necessary as the merged summary may have a different
+         size due to the number of non-zero histogram entries changing after
+         merging.  */
+      
+      while (sum_buffer)
+        {
+          gcov_write_summary (GCOV_TAG_PROGRAM_SUMMARY, &sum_buffer->summary);
+          next_sum_buffer = sum_buffer->next;
+          free (sum_buffer);
+          sum_buffer = next_sum_buffer;
+        }
 
       /* Write execution counts for each function.  */
       for (f_ix = 0; (unsigned)f_ix != gi_ptr->n_functions; f_ix++)

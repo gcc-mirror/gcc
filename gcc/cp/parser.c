@@ -20670,54 +20670,24 @@ cp_parser_check_declarator_template_parameters (cp_parser* parser,
 						cp_declarator *declarator,
 						location_t declarator_location)
 {
-  unsigned num_templates;
-
-  /* We haven't seen any classes that involve template parameters yet.  */
-  num_templates = 0;
-
   switch (declarator->kind)
     {
     case cdk_id:
-      if (declarator->u.id.qualifying_scope)
-	{
-	  tree scope;
+      {
+	unsigned num_templates = 0;
+	tree scope = declarator->u.id.qualifying_scope;
 
-	  scope = declarator->u.id.qualifying_scope;
+	if (scope)
+	  num_templates = num_template_headers_for_class (scope);
+	else if (TREE_CODE (declarator->u.id.unqualified_name)
+		 == TEMPLATE_ID_EXPR)
+	  /* If the DECLARATOR has the form `X<y>' then it uses one
+	     additional level of template parameters.  */
+	  ++num_templates;
 
-	  while (scope && CLASS_TYPE_P (scope))
-	    {
-	      /* You're supposed to have one `template <...>'
-		 for every template class, but you don't need one
-		 for a full specialization.  For example:
-
-		 template <class T> struct S{};
-		 template <> struct S<int> { void f(); };
-		 void S<int>::f () {}
-
-		 is correct; there shouldn't be a `template <>' for
-		 the definition of `S<int>::f'.  */
-	      if (!CLASSTYPE_TEMPLATE_INFO (scope))
-		/* If SCOPE does not have template information of any
-		   kind, then it is not a template, nor is it nested
-		   within a template.  */
-		break;
-	      if (explicit_class_specialization_p (scope))
-		break;
-	      if (PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (scope)))
-		++num_templates;
-
-	      scope = TYPE_CONTEXT (scope);
-	    }
-	}
-      else if (TREE_CODE (declarator->u.id.unqualified_name)
-	       == TEMPLATE_ID_EXPR)
-	/* If the DECLARATOR has the form `X<y>' then it uses one
-	   additional level of template parameters.  */
-	++num_templates;
-
-      return cp_parser_check_template_parameters 
-	(parser, num_templates, declarator_location, declarator);
-
+	return cp_parser_check_template_parameters 
+	  (parser, num_templates, declarator_location, declarator);
+      }
 
     case cdk_function:
     case cdk_array:
@@ -21240,7 +21210,9 @@ cp_parser_template_declaration_after_export (cp_parser* parser, bool member_p)
 
 	  decl = finish_member_template_decl (decl);
 	}
-      else if (friend_p && decl && TREE_CODE (decl) == TYPE_DECL)
+      else if (friend_p && decl
+	       && (TREE_CODE (decl) == TYPE_DECL
+		   || DECL_TYPE_TEMPLATE_P (decl)))
 	make_friend_class (current_class_type, TREE_TYPE (decl),
 			   /*complain=*/true);
     }
@@ -21308,8 +21280,8 @@ cp_parser_perform_template_parameter_access_checks (VEC (deferred_access_check,g
 }
 
 /* Parse a `decl-specifier-seq [opt] init-declarator [opt] ;' or
-   `function-definition' sequence.  MEMBER_P is true, this declaration
-   appears in a class scope.
+   `function-definition' sequence that follows a template header.
+   If MEMBER_P is true, this declaration appears in a class scope.
 
    Returns the DECL for the declared entity.  If FRIEND_P is non-NULL,
    *FRIEND_P is set to TRUE iff the declaration is a friend.  */
@@ -21429,6 +21401,9 @@ cp_parser_single_declaration (cp_parser* parser,
 		  "explicit template specialization cannot have a storage class");
         decl = error_mark_node;
       }
+
+    if (decl && TREE_CODE (decl) == VAR_DECL)
+      check_template_variable (decl);
     }
 
   /* Look for a trailing `;' after the declaration.  */

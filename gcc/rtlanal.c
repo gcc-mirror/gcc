@@ -3820,13 +3820,13 @@ address_cost (rtx x, enum machine_mode mode, addr_space_t as, bool speed)
   if (!memory_address_addr_space_p (mode, x, as))
     return 1000;
 
-  return targetm.address_cost (x, speed);
+  return targetm.address_cost (x, mode, as, speed);
 }
 
 /* If the target doesn't override, compute the cost as with arithmetic.  */
 
 int
-default_address_cost (rtx x, bool speed)
+default_address_cost (rtx x, enum machine_mode, addr_space_t, bool speed)
 {
   return rtx_cost (x, MEM, 0, speed);
 }

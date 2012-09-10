@@ -1,5 +1,5 @@
 // -*- C++ -*- 
-// Copyright (C) 2000, 2001, 2009, 2011 Free Software Foundation
+// Copyright (C) 2000-2012 Free Software Foundation
 //
 // This file is part of GCC.
 //
@@ -26,7 +26,7 @@
 #include <cxxabi.h>
 #include "unwind-cxx.h"
 
-#if _GLIBCXX_HOSTED
+#if _GLIBCXX_HOSTED && _GLIBCXX_VERBOSE
 #ifdef _GLIBCXX_HAVE_UNISTD_H
 # include <unistd.h>
 # define writestr(str)	write(2, str, sizeof(str) - 1)

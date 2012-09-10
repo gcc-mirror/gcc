@@ -4873,7 +4873,7 @@ expand_omp_sections (struct omp_region *region)
   u = build_case_label (NULL, NULL, t);
   make_edge (l0_bb, default_bb, 0);
 
-  stmt = gimple_build_switch_vec (vmain, u, label_vec);
+  stmt = gimple_build_switch (vmain, u, label_vec);
   gsi_insert_after (&switch_si, stmt, GSI_SAME_STMT);
   gsi_remove (&switch_si, true);
   VEC_free (tree, heap, label_vec);

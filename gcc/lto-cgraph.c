@@ -80,9 +80,6 @@ lto_symtab_encoder_new (void)
   lto_symtab_encoder_t encoder = XCNEW (struct lto_symtab_encoder_d);
   encoder->map = pointer_map_create ();
   encoder->nodes = NULL;
-  encoder->body = pointer_set_create ();
-  encoder->initializer = pointer_set_create ();
-  encoder->in_partition = pointer_set_create ();
   return encoder;
 }
 
@@ -92,11 +89,8 @@ lto_symtab_encoder_new (void)
 void
 lto_symtab_encoder_delete (lto_symtab_encoder_t encoder)
 {
-   VEC_free (symtab_node, heap, encoder->nodes);
+   VEC_free (lto_encoder_entry, heap, encoder->nodes);
    pointer_map_destroy (encoder->map);
-   pointer_set_destroy (encoder->body);
-   pointer_set_destroy (encoder->initializer);
-   pointer_set_destroy (encoder->in_partition);
    free (encoder);
 }
 
@@ -113,29 +107,57 @@ lto_symtab_encoder_encode (lto_symtab_encoder_t encoder,
   void **slot;
 
   slot = pointer_map_contains (encoder->map, node);
-  if (!slot)
+  if (!slot || !*slot)
     {
-      ref = VEC_length (symtab_node, encoder->nodes);
-      slot = pointer_map_insert (encoder->map, node);
-      *slot = (void *) (intptr_t) ref;
-      VEC_safe_push (symtab_node, heap, encoder->nodes, node);
+      lto_encoder_entry entry = {node, false, false, false};
+      ref = VEC_length (lto_encoder_entry, encoder->nodes);
+      if (!slot)
+        slot = pointer_map_insert (encoder->map, node);
+      *slot = (void *) (intptr_t) (ref + 1);
+      VEC_safe_push (lto_encoder_entry, heap, encoder->nodes, &entry);
     }
   else
-    ref = (int) (intptr_t) *slot;
+    ref = (size_t) *slot - 1;
 
   return ref;
 }
 
+/* Remove NODE from encoder.  */
 
-/* Look up NODE in encoder.  Return NODE's reference if it has been encoded
-   or LCC_NOT_FOUND if it is not there.  */
-
-int
-lto_symtab_encoder_lookup (lto_symtab_encoder_t encoder,
-			   symtab_node node)
+bool
+lto_symtab_encoder_delete_node (lto_symtab_encoder_t encoder,
+			        symtab_node node)
 {
-  void **slot = pointer_map_contains (encoder->map, node);
-  return (slot ? (int) (intptr_t) *slot : LCC_NOT_FOUND);
+  void **slot, **last_slot;
+  int index;
+  lto_encoder_entry last_node;
+
+  slot = pointer_map_contains (encoder->map, node);
+  if (slot == NULL || !*slot)
+    return false;
+
+  index = (size_t) *slot - 1;
+  gcc_checking_assert (VEC_index (lto_encoder_entry,
+				  encoder->nodes, index).node
+	      	       == node);
+
+  /* Remove from vector. We do this by swapping node with the last element
+     of the vector.  */
+  last_node = VEC_pop (lto_encoder_entry, encoder->nodes);
+  if (last_node.node != node)
+    {
+      last_slot = pointer_map_contains (encoder->map, last_node.node);
+      gcc_checking_assert (last_slot && *last_slot);
+      *last_slot = (void *)(size_t) (index + 1);
+
+      /* Move the last element to the original spot of NODE.  */
+      VEC_replace (lto_encoder_entry, encoder->nodes, index,
+		   last_node);
+    }
+
+  /* Remove element from hash table.  */
+  *slot = NULL;
+  return true;
 }
 
 
@@ -145,7 +167,8 @@ bool
 lto_symtab_encoder_encode_body_p (lto_symtab_encoder_t encoder,
 				  struct cgraph_node *node)
 {
-  return pointer_set_contains (encoder->body, node);
+  int index = lto_symtab_encoder_lookup (encoder, (symtab_node)node);
+  return VEC_index (lto_encoder_entry, encoder->nodes, index).body;
 }
 
 /* Return TRUE if we should encode body of NODE (if any).  */
@@ -154,7 +177,10 @@ static void
 lto_set_symtab_encoder_encode_body (lto_symtab_encoder_t encoder,
 				    struct cgraph_node *node)
 {
-  pointer_set_insert (encoder->body, node);
+  int index = lto_symtab_encoder_encode (encoder, (symtab_node)node);
+  gcc_checking_assert (VEC_index (lto_encoder_entry, encoder->nodes,
+				  index).node == (symtab_node)node);
+  VEC_index (lto_encoder_entry, encoder->nodes, index).body = true;
 }
 
 /* Return TRUE if we should encode initializer of NODE (if any).  */
@@ -163,7 +189,10 @@ bool
 lto_symtab_encoder_encode_initializer_p (lto_symtab_encoder_t encoder,
 					 struct varpool_node *node)
 {
-  return pointer_set_contains (encoder->initializer, node);
+  int index = lto_symtab_encoder_lookup (encoder, (symtab_node)node);
+  if (index == LCC_NOT_FOUND)
+    return false;
+  return VEC_index (lto_encoder_entry, encoder->nodes, index).initializer;
 }
 
 /* Return TRUE if we should encode initializer of NODE (if any).  */
@@ -172,7 +201,8 @@ static void
 lto_set_symtab_encoder_encode_initializer (lto_symtab_encoder_t encoder,
 					   struct varpool_node *node)
 {
-  pointer_set_insert (encoder->initializer, node);
+  int index = lto_symtab_encoder_lookup (encoder, (symtab_node)node);
+  VEC_index (lto_encoder_entry, encoder->nodes, index).initializer = true;
 }
 
 /* Return TRUE if we should encode initializer of NODE (if any).  */
@@ -181,7 +211,10 @@ bool
 lto_symtab_encoder_in_partition_p (lto_symtab_encoder_t encoder,
 				   symtab_node node)
 {
-  return pointer_set_contains (encoder->in_partition, node);
+  int index = lto_symtab_encoder_lookup (encoder, (symtab_node)node);
+  if (index == LCC_NOT_FOUND)
+    return false;
+  return VEC_index (lto_encoder_entry, encoder->nodes, index).in_partition;
 }
 
 /* Return TRUE if we should encode body of NODE (if any).  */
@@ -190,8 +223,8 @@ void
 lto_set_symtab_encoder_in_partition (lto_symtab_encoder_t encoder,
 				     symtab_node node)
 {
-  lto_symtab_encoder_encode (encoder, (symtab_node)node);
-  pointer_set_insert (encoder->in_partition, node);
+  int index = lto_symtab_encoder_encode (encoder, (symtab_node)node);
+  VEC_index (lto_encoder_entry, encoder->nodes, index).in_partition = true;
 }
 
 /* Output the cgraph EDGE to OB using ENCODER.  */
@@ -555,38 +588,6 @@ output_profile_summary (struct lto_simple_output_block *ob)
     streamer_write_uhwi_stream (ob->main_stream, 0);
 }
 
-/* Add NODE into encoder as well as nodes it is cloned from.
-   Do it in a way so clones appear first.  */
-
-static void
-add_node_to (lto_symtab_encoder_t encoder, struct cgraph_node *node,
-	     bool include_body)
-{
-  if (node->clone_of)
-    add_node_to (encoder, node->clone_of, include_body);
-  else if (include_body)
-    lto_set_symtab_encoder_encode_body (encoder, node);
-  lto_symtab_encoder_encode (encoder, (symtab_node)node);
-}
-
-/* Add all references in LIST to encoders.  */
-
-static void
-add_references (lto_symtab_encoder_t encoder,
-		struct ipa_ref_list *list)
-{
-  int i;
-  struct ipa_ref *ref;
-  for (i = 0; ipa_ref_list_reference_iterate (list, i, ref); i++)
-    if (symtab_function_p (ref->referred))
-      add_node_to (encoder, ipa_ref_node (ref), false);
-    else
-      {
-	struct varpool_node *vnode = ipa_ref_varpool_node (ref);
-        lto_symtab_encoder_encode (encoder, (symtab_node)vnode);
-      }
-}
-
 /* Output all callees or indirect outgoing edges.  EDGE must be the first such
    edge.  */
 
@@ -641,32 +642,72 @@ output_refs (lto_symtab_encoder_t encoder)
   lto_destroy_simple_output_block (ob);
 }
 
-/* Find out all cgraph and varpool nodes we want to encode in current unit
-   and insert them to encoders.  */
-void
-compute_ltrans_boundary (struct lto_out_decl_state *state,
-			 cgraph_node_set set, varpool_node_set vset)
+/* Add NODE into encoder as well as nodes it is cloned from.
+   Do it in a way so clones appear first.  */
+
+static void
+add_node_to (lto_symtab_encoder_t encoder, struct cgraph_node *node,
+	     bool include_body)
+{
+  if (node->clone_of)
+    add_node_to (encoder, node->clone_of, include_body);
+  else if (include_body)
+    lto_set_symtab_encoder_encode_body (encoder, node);
+  lto_symtab_encoder_encode (encoder, (symtab_node)node);
+}
+
+/* Add all references in LIST to encoders.  */
+
+static void
+add_references (lto_symtab_encoder_t encoder,
+		struct ipa_ref_list *list)
+{
+  int i;
+  struct ipa_ref *ref;
+  for (i = 0; ipa_ref_list_reference_iterate (list, i, ref); i++)
+    if (symtab_function_p (ref->referred))
+      add_node_to (encoder, ipa_ref_node (ref), false);
+    else
+      {
+	struct varpool_node *vnode = ipa_ref_varpool_node (ref);
+        lto_symtab_encoder_encode (encoder, (symtab_node)vnode);
+      }
+}
+
+/* Find all symbols we want to stream into given partition and insert them
+   to encoders.
+
+   The function actually replaces IN_ENCODER by new one.  The reason is that
+   streaming code needs clone's origin to be streamed before clone.  This
+   means that we need to insert the nodes in specific order.  This order is
+   ignored by the partitioning logic earlier.  */
+
+lto_symtab_encoder_t 
+compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
 {
   struct cgraph_node *node;
-  cgraph_node_set_iterator csi;
-  varpool_node_set_iterator vsi;
   struct cgraph_edge *edge;
   int i;
   lto_symtab_encoder_t encoder;
+  lto_symtab_encoder_iterator lsei;
 
-  encoder = state->symtab_node_encoder = lto_symtab_encoder_new ();
+  encoder = lto_symtab_encoder_new ();
 
-  /* Go over all the nodes in SET and assign references.  */
-  for (csi = csi_start (set); !csi_end_p (csi); csi_next (&csi))
+  /* Go over all entries in the IN_ENCODER and duplicate them to
+     ENCODER. At the same time insert masters of clones so
+     every master appears before clone.  */
+  for (lsei = lsei_start_function_in_partition (in_encoder);
+       !lsei_end_p (lsei); lsei_next_function_in_partition (&lsei))
     {
-      node = csi_node (csi);
+      node = lsei_cgraph_node (lsei);
       add_node_to (encoder, node, true);
       lto_set_symtab_encoder_in_partition (encoder, (symtab_node)node);
       add_references (encoder, &node->symbol.ref_list);
     }
-  for (vsi = vsi_start (vset); !vsi_end_p (vsi); vsi_next (&vsi))
+  for (lsei = lsei_start_variable_in_partition (in_encoder);
+       !lsei_end_p (lsei); lsei_next_variable_in_partition (&lsei))
     {
-      struct varpool_node *vnode = vsi_node (vsi);
+      struct varpool_node *vnode = lsei_varpool_node (lsei);
       gcc_assert (!vnode->alias || vnode->alias_of);
       lto_set_symtab_encoder_in_partition (encoder, (symtab_node)vnode);
       lto_set_symtab_encoder_encode_initializer (encoder, vnode);
@@ -689,20 +730,19 @@ compute_ltrans_boundary (struct lto_out_decl_state *state,
 	      lto_set_symtab_encoder_encode_initializer (encoder, vnode);
 	      add_references (encoder, &vnode->symbol.ref_list);
 	    }
-	  else if (vnode->alias || vnode->alias_of)
-	    add_references (encoder, &vnode->symbol.ref_list);
        }
     }
 
   /* Go over all the nodes again to include callees that are not in
      SET.  */
-  for (csi = csi_start (set); !csi_end_p (csi); csi_next (&csi))
+  for (lsei = lsei_start_function_in_partition (encoder);
+       !lsei_end_p (lsei); lsei_next_function_in_partition (&lsei))
     {
-      node = csi_node (csi);
+      node = lsei_cgraph_node (lsei);
       for (edge = node->callees; edge; edge = edge->next_callee)
 	{
 	  struct cgraph_node *callee = edge->callee;
-	  if (!cgraph_node_in_set_p (callee, set))
+	  if (!lto_symtab_encoder_in_partition_p (encoder, (symtab_node)callee))
 	    {
 	      /* We should have moved all the inlines.  */
 	      gcc_assert (!callee->global.inlined_to);
@@ -710,6 +750,8 @@ compute_ltrans_boundary (struct lto_out_decl_state *state,
 	    }
 	}
     }
+ lto_symtab_encoder_delete (in_encoder);
+ return encoder;
 }
 
 /* Output the part of the symtab in SET and VSET.  */

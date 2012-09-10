@@ -191,7 +191,7 @@ static const struct attribute_spec mcore_attribute_table[] =
 #undef  TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS 		mcore_rtx_costs
 #undef  TARGET_ADDRESS_COST
-#define TARGET_ADDRESS_COST 		hook_int_rtx_bool_0
+#define TARGET_ADDRESS_COST 		hook_int_rtx_mode_as_bool_0
 #undef  TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG	mcore_reorg
 

@@ -4398,6 +4398,7 @@ gfc_match_common (void)
 
           /* Store a ref to the common block for error checking.  */
           sym->common_block = t;
+          sym->common_block->refs++;
           
           /* See if we know the current common block is bind(c), and if
              so, then see if we can check if the symbol is (which it'll
@@ -5367,10 +5368,10 @@ gfc_match_select_type (void)
      array, which can have a reference, from other expressions that
      have references, such as derived type components, and are not
      allowed by the standard.
-     TODO; see is it is sufficient to exclude component and substring
+     TODO: see if it is sufficient to exclude component and substring
      references.  */
   class_array = expr1->expr_type == EXPR_VARIABLE
-		  && expr1->ts.type != BT_UNKNOWN
+		  && expr1->ts.type == BT_CLASS
 		  && CLASS_DATA (expr1)
 		  && (strcmp (CLASS_DATA (expr1)->name, "_data") == 0)
 		  && (CLASS_DATA (expr1)->attr.dimension

@@ -75,6 +75,60 @@
 #define bit_RDSEED	(1 << 18)
 #define bit_ADX	(1 << 19)
 
+/* Signatures for different CPU implementations as returned in uses
+   of cpuid with level 0.  */
+#define signature_AMD_ebx	0x68747541
+#define signature_AMD_ecx	0x444d4163
+#define signature_AMD_edx	0x69746e65
+
+#define signature_CENTAUR_ebx	0x746e6543
+#define signature_CENTAUR_ecx	0x736c7561
+#define signature_CENTAUR_edx	0x48727561
+
+#define signature_CYRIX_ebx	0x69727943
+#define signature_CYRIX_ecx	0x64616574
+#define signature_CYRIX_edx	0x736e4978
+
+#define signature_INTEL_ebx	0x756e6547
+#define signature_INTEL_ecx	0x6c65746e
+#define signature_INTEL_edx	0x49656e69
+
+#define signature_TM1_ebx	0x6e617254
+#define signature_TM1_ecx	0x55504361
+#define signature_TM1_edx	0x74656d73
+
+#define signature_TM2_ebx	0x756e6547
+#define signature_TM2_ecx	0x3638784d
+#define signature_TM2_edx	0x54656e69
+
+#define signature_NSC_ebx	0x646f6547
+#define signature_NSC_ecx	0x43534e20
+#define signature_NSC_edx	0x79622065
+
+#define signature_NEXGEN_ebx	0x4778654e
+#define signature_NEXGEN_ecx	0x6e657669
+#define signature_NEXGEN_edx	0x72446e65
+
+#define signature_RISE_ebx	0x65736952
+#define signature_RISE_ecx	0x65736952
+#define signature_RISE_edx	0x65736952
+
+#define signature_SIS_ebx	0x20536953
+#define signature_SIS_ecx	0x20536953
+#define signature_SIS_edx	0x20536953
+
+#define signature_UMC_ebx	0x20434d55
+#define signature_UMC_ecx	0x20434d55
+#define signature_UMC_edx	0x20434d55
+
+#define signature_VIA_ebx	0x20414956
+#define signature_VIA_ecx	0x20414956
+#define signature_VIA_edx	0x20414956
+
+#define signature_VORTEX_ebx	0x74726f56
+#define signature_VORTEX_ecx	0x436f5320
+#define signature_VORTEX_edx	0x36387865
+
 #if defined(__i386__) && defined(__PIC__)
 /* %ebx may be the PIC register.  */
 #if __GNUC__ >= 3

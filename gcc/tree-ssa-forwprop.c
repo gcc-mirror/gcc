@@ -813,11 +813,10 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
 	{
 	  double_int off = mem_ref_offset (lhs);
 	  tree new_ptr;
-	  off = double_int_add (off,
-				shwi_to_double_int (def_rhs_offset));
+	  off += double_int::from_shwi (def_rhs_offset);
 	  if (TREE_CODE (def_rhs_base) == MEM_REF)
 	    {
-	      off = double_int_add (off, mem_ref_offset (def_rhs_base));
+	      off += mem_ref_offset (def_rhs_base);
 	      new_ptr = TREE_OPERAND (def_rhs_base, 0);
 	    }
 	  else
@@ -898,11 +897,10 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
 	{
 	  double_int off = mem_ref_offset (rhs);
 	  tree new_ptr;
-	  off = double_int_add (off,
-				shwi_to_double_int (def_rhs_offset));
+	  off += double_int::from_shwi (def_rhs_offset);
 	  if (TREE_CODE (def_rhs_base) == MEM_REF)
 	    {
-	      off = double_int_add (off, mem_ref_offset (def_rhs_base));
+	      off += mem_ref_offset (def_rhs_base);
 	      new_ptr = TREE_OPERAND (def_rhs_base, 0);
 	    }
 	  else
@@ -2373,8 +2371,7 @@ associate_pointerplus (gimple_stmt_iterator *gsi)
   if (gimple_assign_rhs1 (def_stmt) != ptr)
     return false;
 
-  algn = double_int_to_tree (TREE_TYPE (ptr),
-			     double_int_not (tree_to_double_int (algn)));
+  algn = double_int_to_tree (TREE_TYPE (ptr), ~tree_to_double_int (algn));
   gimple_assign_set_rhs_with_ops (gsi, BIT_AND_EXPR, ptr, algn);
   fold_stmt_inplace (gsi);
   update_stmt (stmt);
@@ -2537,7 +2534,7 @@ combine_conversions (gimple_stmt_iterator *gsi)
 	  tem = fold_build2 (BIT_AND_EXPR, inside_type,
 			     defop0,
 			     double_int_to_tree
-			       (inside_type, double_int_mask (inter_prec)));
+			       (inside_type, double_int::mask (inter_prec)));
 	  if (!useless_type_conversion_p (type, inside_type))
 	    {
 	      tem = force_gimple_operand_gsi (gsi, tem, true, NULL_TREE, true,

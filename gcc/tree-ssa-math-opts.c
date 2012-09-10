@@ -1985,7 +1985,11 @@ widening_mult_conversion_strippable_p (tree result_type, gimple stmt)
 	 the operation and doesn't narrow the range.  */
       inner_op_type = TREE_TYPE (gimple_assign_rhs1 (stmt));
 
-      if (TYPE_UNSIGNED (op_type) == TYPE_UNSIGNED (inner_op_type)
+      /* If the inner-most type is unsigned, then we can strip any
+	 intermediate widening operation.  If it's signed, then the
+	 intermediate widening operation must also be signed.  */
+      if ((TYPE_UNSIGNED (inner_op_type)
+	   || TYPE_UNSIGNED (op_type) == TYPE_UNSIGNED (inner_op_type))
 	  && TYPE_PRECISION (op_type) > TYPE_PRECISION (inner_op_type))
 	return true;
 

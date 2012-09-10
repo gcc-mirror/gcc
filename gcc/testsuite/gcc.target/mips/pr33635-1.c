@@ -1,4 +1,4 @@
-/* { dg-options "-mabi=64 -O2" } */
+/* { dg-options "-mabi=64" } */
 
 NOMIPS16 long double __powitf2 (long double x, int m)
 {

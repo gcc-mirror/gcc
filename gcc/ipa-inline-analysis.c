@@ -2070,6 +2070,99 @@ param_change_prob (gimple stmt, int i)
   return REG_BR_PROB_BASE;
 }
 
+/* Find whether a basic block BB is the final block of a (half) diamond CFG
+   sub-graph and if the predicate the condition depends on is known.  If so,
+   return true and store the pointer the predicate in *P.  */
+
+static bool
+phi_result_unknown_predicate (struct ipa_node_params *info,
+			      struct inline_summary *summary, basic_block bb,
+			      struct predicate *p,
+			      VEC (predicate_t, heap) *nonconstant_names)
+{
+  edge e;
+  edge_iterator ei;
+  basic_block first_bb = NULL;
+  gimple stmt;
+
+  if (single_pred_p (bb))
+    {
+      *p = false_predicate ();
+      return true;
+    }
+
+  FOR_EACH_EDGE (e, ei, bb->preds)
+    {
+      if (single_succ_p (e->src))
+	{
+	  if (!single_pred_p (e->src))
+	    return false;
+	  if (!first_bb)
+	    first_bb = single_pred (e->src);
+	  else if (single_pred (e->src) != first_bb)
+	    return false;
+	}
+      else
+	{
+	  if (!first_bb)
+	    first_bb = e->src;
+	  else if (e->src != first_bb)
+	    return false;
+	}
+    }
+
+  if (!first_bb)
+    return false;
+
+  stmt = last_stmt (first_bb);
+  if (!stmt
+      || gimple_code (stmt) != GIMPLE_COND
+      || !is_gimple_ip_invariant (gimple_cond_rhs (stmt)))
+    return false;
+
+  *p = will_be_nonconstant_expr_predicate (info, summary,
+					   gimple_cond_lhs (stmt),
+					   nonconstant_names);
+  if (true_predicate_p (p))
+    return false;
+  else
+    return true;
+}
+
+/* Given a PHI statement in a function described by inline properties SUMMARY
+   and *P being the predicate describing whether the selected PHI argument is
+   known, store a predicate for the result of the PHI statement into
+   NONCONSTANT_NAMES, if possible.  */
+
+static void
+predicate_for_phi_result (struct inline_summary *summary, gimple phi,
+			  struct predicate *p,
+			  VEC (predicate_t, heap) *nonconstant_names)
+{
+  unsigned i;
+
+  for (i = 0; i < gimple_phi_num_args (phi); i++)
+    {
+      tree arg = gimple_phi_arg (phi, i)->def;
+      if (!is_gimple_min_invariant (arg))
+	{
+	  gcc_assert (TREE_CODE (arg) == SSA_NAME);
+	  *p = or_predicates (summary->conds, p,
+			      &VEC_index (predicate_t, nonconstant_names,
+					  SSA_NAME_VERSION (arg)));
+	  if (true_predicate_p (p))
+	    return;
+	}
+    }
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "\t\tphi predicate: ");
+      dump_predicate (dump_file, summary->conds, p);
+    }
+  VEC_replace (predicate_t, nonconstant_names,
+	       SSA_NAME_VERSION (gimple_phi_result (phi)), *p);
+}
 
 /* Compute function body size parameters for NODE.
    When EARLY is true, we compute only simple summaries without
@@ -2092,16 +2185,21 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
   struct ipa_node_params *parms_info = NULL;
   VEC (predicate_t, heap) *nonconstant_names = NULL;
 
-  if (ipa_node_params_vector && !early && optimize)
-    {
-      parms_info = IPA_NODE_REF (node);
-      VEC_safe_grow_cleared (predicate_t, heap, nonconstant_names,
-			     VEC_length (tree, SSANAMES (my_function)));
-    }
-
   info->conds = 0;
   info->entry = 0;
 
+  if (optimize && !early)
+    {
+      calculate_dominance_info (CDI_DOMINATORS);
+      loop_optimizer_init (LOOPS_NORMAL | LOOPS_HAVE_RECORDED_EXITS);
+
+      if (ipa_node_params_vector)
+	{
+	  parms_info = IPA_NODE_REF (node);
+	  VEC_safe_grow_cleared (predicate_t, heap, nonconstant_names,
+				 VEC_length (tree, SSANAMES (my_function)));
+	}
+    }
 
   if (dump_file)
     fprintf (dump_file, "\nAnalyzing function body size: %s\n",
@@ -2138,7 +2236,30 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 	  fprintf (dump_file, "\n BB %i predicate:", bb->index);
 	  dump_predicate (dump_file, info->conds, &bb_predicate);
 	}
-      
+
+      if (parms_info && nonconstant_names)
+	{
+	  struct predicate phi_predicate;
+	  bool first_phi = true;
+
+	  for (bsi = gsi_start_phis (bb); !gsi_end_p (bsi); gsi_next (&bsi))
+	    {
+	      if (first_phi
+		  && !phi_result_unknown_predicate (parms_info, info, bb,
+						    &phi_predicate,
+						    nonconstant_names))
+		break;
+	      first_phi = false;
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		{
+		  fprintf (dump_file, "  ");
+		  print_gimple_stmt (dump_file, gsi_stmt (bsi), 0, 0);
+		}
+	      predicate_for_phi_result (info, gsi_stmt (bsi), &phi_predicate,
+					nonconstant_names);
+	    }
+	}
+
       for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
 	{
 	  gimple stmt = gsi_stmt (bsi);
@@ -2270,9 +2391,6 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
       loop_iterator li;
       predicate loop_iterations = true_predicate ();
 
-      calculate_dominance_info (CDI_DOMINATORS);
-      loop_optimizer_init (LOOPS_NORMAL
-			   | LOOPS_HAVE_RECORDED_EXITS);
       if (dump_file && (dump_flags & TDF_DETAILS))
 	flow_loops_dump (dump_file, NULL, 0);
       scev_initialize ();
@@ -2305,12 +2423,15 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
           *inline_summary (node)->loop_iterations = loop_iterations;
 	}
       scev_finalize ();
-      loop_optimizer_finalize ();
-      free_dominance_info (CDI_DOMINATORS);
     }
   inline_summary (node)->self_time = time;
   inline_summary (node)->self_size = size;
   VEC_free (predicate_t, heap, nonconstant_names);
+  if (optimize && !early)
+    {
+      loop_optimizer_finalize ();
+      free_dominance_info (CDI_DOMINATORS);
+    }
   if (dump_file)
     {
       fprintf (dump_file, "\n");
@@ -2690,8 +2811,11 @@ remap_predicate (struct inline_summary *info,
 		 if (!operand_map
 		     || (int)VEC_length (int, operand_map) <= c->operand_num
 		     || VEC_index (int, operand_map, c->operand_num) == -1
-		     || (!c->agg_contents
-			 && VEC_index (int, offset_map, c->operand_num) != 0)
+		     /* TODO: For non-aggregate conditions, adding an offset is
+			basically an arithmetic jump function processing which
+			we should support in future.  */
+		     || ((!c->agg_contents || !c->by_ref)
+			 && VEC_index (int, offset_map, c->operand_num) > 0)
 		     || (c->agg_contents && c->by_ref
 			 && VEC_index (int, offset_map, c->operand_num) < 0))
 		   cond_predicate = true_predicate ();

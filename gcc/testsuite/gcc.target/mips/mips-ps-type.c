@@ -1,20 +1,21 @@
 /* Test v2sf calculations.  The nmadd and nmsub patterns need
    -ffinite-math-only.  */
 /* { dg-do compile } */ 
-/* { dg-options "-O2 -mpaired-single -mgp64 -ffinite-math-only" } */
-/* { dg-final { scan-assembler "cvt.ps.s" } } */ 
-/* { dg-final { scan-assembler "mov.ps" } } */ 
-/* { dg-final { scan-assembler "ldc1" } } */ 
-/* { dg-final { scan-assembler "sdc1" } } */ 
-/* { dg-final { scan-assembler "add.ps" } } */ 
-/* { dg-final { scan-assembler "sub.ps" } } */ 
-/* { dg-final { scan-assembler "neg.ps" } } */ 
-/* { dg-final { scan-assembler "mul.ps" } } */ 
-/* { dg-final { scan-assembler "madd.ps" } } */ 
-/* { dg-final { scan-assembler "msub.ps" } } */ 
-/* { dg-final { scan-assembler "nmadd.ps" } } */ 
-/* { dg-final { scan-assembler "nmsub.ps" } } */ 
-/* { dg-final { scan-assembler "mov(n|z).ps" } } */ 
+/* { dg-options "-mpaired-single -mgp64 -ffinite-math-only" } */
+/* { dg-skip-if "nmadd and nmsub need combine" { *-*-* } { "-O0" } { "" } } */
+/* { dg-final { scan-assembler "\tcvt.ps.s\t" } } */
+/* { dg-final { scan-assembler "\tmov.ps\t" } } */
+/* { dg-final { scan-assembler "\tldc1\t" } } */
+/* { dg-final { scan-assembler "\tsdc1\t" } } */
+/* { dg-final { scan-assembler "\tadd.ps\t" } } */
+/* { dg-final { scan-assembler "\tsub.ps\t" } } */
+/* { dg-final { scan-assembler "\tneg.ps\t" } } */
+/* { dg-final { scan-assembler "\tmul.ps\t" } } */
+/* { dg-final { scan-assembler "\tmadd.ps\t" } } */
+/* { dg-final { scan-assembler "\tmsub.ps\t" } } */
+/* { dg-final { scan-assembler "\tnmadd.ps\t" } } */
+/* { dg-final { scan-assembler "\tnmsub.ps\t" } } */
+/* { dg-final { scan-assembler "\tmov(n|z).ps\t" } } */
 
 typedef float v2sf __attribute__ ((vector_size(8)));
 

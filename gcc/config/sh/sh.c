@@ -21,6 +21,12 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+/* FIXME: This is a temporary hack, so that we can include <algorithm>
+   below.  <algorithm> will try to include <cstdlib> which will reference
+   malloc & co, which are poisoned by "system.h".  The proper solution is
+   to include <cstdlib> in "system.h" instead of <stdlib.h>.  */
+#include <cstdlib>
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -56,6 +62,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm-constrs.h"
 #include "opts.h"
 
+#include <algorithm>
 
 int code_for_indirect_jump_scratch = CODE_FOR_indirect_jump_scratch;
 
@@ -248,7 +255,7 @@ static int multcosts (rtx);
 static bool unspec_caller_rtx_p (rtx);
 static bool sh_cannot_copy_insn_p (rtx);
 static bool sh_rtx_costs (rtx, int, int, int, int *, bool);
-static int sh_address_cost (rtx, bool);
+static int sh_address_cost (rtx, enum machine_mode, addr_space_t, bool);
 static int sh_pr_n_sets (void);
 static rtx sh_allocate_initial_value (rtx);
 static reg_class_t sh_preferred_reload_class (rtx, reg_class_t);
@@ -1791,65 +1798,124 @@ prepare_move_operands (rtx operands[], enum machine_mode mode)
     }
 }
 
+/* Implement the CANONICALIZE_COMPARISON macro for the combine pass.
+   This function is also re-used to canonicalize comparisons in cbranch
+   pattern expanders.  */
+void
+sh_canonicalize_comparison (enum rtx_code& cmp, rtx& op0, rtx& op1,
+			    enum machine_mode mode)
+{
+  /* When invoked from within the combine pass the mode is not specified,
+     so try to get it from one of the operands.  */
+  if (mode == VOIDmode)
+    mode = GET_MODE (op0);
+  if (mode == VOIDmode)
+    mode = GET_MODE (op1);
+
+  // We need to have a mode to do something useful here.
+  if (mode == VOIDmode)
+    return;
+
+  // Currently, we don't deal with floats here.
+  if (GET_MODE_CLASS (mode) == MODE_FLOAT)
+    return;
+
+  // Make sure that the constant operand is the second operand.
+  if (CONST_INT_P (op0) && !CONST_INT_P (op1))
+    {
+      std::swap (op0, op1);
+      cmp = swap_condition (cmp);
+    }
+
+  if (CONST_INT_P (op1))
+    {
+      /* Try to adjust the constant operand in such a way that available
+         comparison insns can be utilized better and the constant can be
+         loaded with a 'mov #imm,Rm' insn.  This avoids a load from the
+         constant pool.  */
+      const HOST_WIDE_INT val = INTVAL (op1);
+
+      /* x > -1		  --> x >= 0
+	 x > 0xFFFFFF7F	  --> x >= 0xFFFFFF80
+	 x <= -1	  --> x < 0
+	 x <= 0xFFFFFF7F  --> x < 0xFFFFFF80  */
+      if ((val == -1 || val == -0x81) && (cmp == GT || cmp == LE))
+	{
+	  cmp = cmp == GT ? GE : LT;
+	  op1 = gen_int_mode (val + 1, mode);
+        }
+
+      /* x >= 1     --> x > 0
+	 x >= 0x80  --> x > 0x7F
+	 x < 1      --> x <= 0
+	 x < 0x80   --> x <= 0x7F  */
+      else if ((val == 1 || val == 0x80) && (cmp == GE || cmp == LT))
+	{
+	  cmp = cmp == GE ? GT : LE;
+	  op1 = gen_int_mode (val - 1, mode);
+	}
+
+      /* unsigned x >= 1  --> x != 0
+	 unsigned x < 1   --> x == 0  */
+      else if (val == 1 && (cmp == GEU || cmp == LTU))
+	{
+	  cmp = cmp == GEU ? NE : EQ;
+	  op1 = CONST0_RTX (mode);
+	}
+
+      /* unsigned x >= 0x80  --> unsigned x > 0x7F
+	 unsigned x < 0x80   --> unsigned x < 0x7F  */
+      else if (val == 0x80 && (cmp == GEU || cmp == LTU))
+	{
+	  cmp = cmp == GEU ? GTU : LEU;
+	  op1 = gen_int_mode (val - 1, mode);
+	}
+
+      /* unsigned x > 0   --> x != 0
+	 unsigned x <= 0  --> x == 0  */
+      else if (val == 0 && (cmp == GTU || cmp == LEU))
+	cmp = cmp == GTU ? NE : EQ;
+
+      /* unsigned x > 0x7FFFFFFF   --> signed x < 0
+	 unsigned x <= 0x7FFFFFFF  --> signed x >= 0  */
+      else if (mode == SImode && (cmp == GTU || cmp == LEU)
+	       && val == 0x7FFFFFFF)
+	{
+	  cmp = cmp == GTU ? LT : GE;
+	  op1 = const0_rtx;
+	}
+
+      /* unsigned x >= 0x80000000  --> signed x < 0
+	 unsigned x < 0x80000000   --> signed x >= 0  */
+      else if (mode == SImode && (cmp == GEU || cmp == LTU)
+	       && (unsigned HOST_WIDE_INT)val
+		   == ((unsigned HOST_WIDE_INT)0x7FFFFFFF + 1))
+	{
+	  cmp = cmp == GEU ? LT : GE;
+	  op1 = const0_rtx;
+	}
+    }
+}
+
 enum rtx_code
 prepare_cbranch_operands (rtx *operands, enum machine_mode mode,
 			  enum rtx_code comparison)
 {
-  rtx op1;
+  /* The scratch reg is only available when this is invoked from within
+     the cbranchdi4_i splitter, through expand_cbranchdi4.  */
   rtx scratch = NULL_RTX;
 
   if (comparison == LAST_AND_UNUSED_RTX_CODE)
     comparison = GET_CODE (operands[0]);
   else
     scratch = operands[4];
-  if (CONST_INT_P (operands[1])
-      && !CONST_INT_P (operands[2]))
-    {
-      rtx tmp = operands[1];
 
-      operands[1] = operands[2];
-      operands[2] = tmp;
-      comparison = swap_condition (comparison);
-    }
-  if (CONST_INT_P (operands[2]))
-    {
-      HOST_WIDE_INT val = INTVAL (operands[2]);
-      if ((val == -1 || val == -0x81)
-	  && (comparison == GT || comparison == LE))
-	{
-	  comparison = (comparison == GT) ? GE : LT;
-	  operands[2] = gen_int_mode (val + 1, mode);
-	}
-      else if ((val == 1 || val == 0x80)
-	       && (comparison == GE || comparison == LT))
-	{
-	  comparison = (comparison == GE) ? GT : LE;
-	  operands[2] = gen_int_mode (val - 1, mode);
-	}
-      else if (val == 1 && (comparison == GEU || comparison == LTU))
-	{
-	  comparison = (comparison == GEU) ? NE : EQ;
-	  operands[2] = CONST0_RTX (mode);
-	}
-      else if (val == 0x80 && (comparison == GEU || comparison == LTU))
-	{
-	  comparison = (comparison == GEU) ? GTU : LEU;
-	  operands[2] = gen_int_mode (val - 1, mode);
-	}
-      else if (val == 0 && (comparison == GTU || comparison == LEU))
-	comparison = (comparison == GTU) ? NE : EQ;
-      else if (mode == SImode
-	       && ((val == 0x7fffffff
-		    && (comparison == GTU || comparison == LEU))
-		   || ((unsigned HOST_WIDE_INT) val
-			== (unsigned HOST_WIDE_INT) 0x7fffffff + 1
-		       && (comparison == GEU || comparison == LTU))))
-	{
-	  comparison = (comparison == GTU || comparison == GEU) ? LT : GE;
-	  operands[2] = CONST0_RTX (mode);
-	}
-    }
-  op1 = operands[1];
+  sh_canonicalize_comparison (comparison, operands[1], operands[2], mode);
+
+  /* Notice that this function is also invoked after reload by
+     the cbranchdi4_i pattern, through expand_cbranchdi4.  */
+  rtx op1 = operands[1];
+
   if (can_create_pseudo_p ())
     operands[1] = force_reg (mode, op1);
   /* When we are handling DImode comparisons, we want to keep constants so
@@ -1883,8 +1949,6 @@ void
 expand_cbranchsi4 (rtx *operands, enum rtx_code comparison, int probability)
 {
   rtx (*branch_expander) (rtx, rtx) = gen_branch_true;
-  rtx jump;
-
   comparison = prepare_cbranch_operands (operands, SImode, comparison);
   switch (comparison)
     {
@@ -1896,10 +1960,9 @@ expand_cbranchsi4 (rtx *operands, enum rtx_code comparison, int probability)
   emit_insn (gen_rtx_SET (VOIDmode, get_t_reg_rtx (),
                           gen_rtx_fmt_ee (comparison, SImode,
                                           operands[1], operands[2])));
-  jump = emit_jump_insn (branch_expander (operands[3], get_t_reg_rtx ()));
+  rtx jump = emit_jump_insn (branch_expander (operands[3], get_t_reg_rtx ()));
   if (probability >= 0)
     add_reg_note (jump, REG_BR_PROB, GEN_INT (probability));
-
 }
 
 /* ??? How should we distribute probabilities when more than one branch
@@ -1956,8 +2019,7 @@ expand_cbranchdi4 (rtx *operands, enum rtx_code comparison)
       lsw_taken = EQ;
       if (prob >= 0)
 	{
-	  /* If we had more precision, we'd use rev_prob - (rev_prob >> 32) .
-	   */
+	  // If we had more precision, we'd use rev_prob - (rev_prob >> 32) .
 	  msw_skip_prob = rev_prob;
 	  if (REG_BR_PROB_BASE <= 65535)
 	    lsw_taken_prob = prob ? REG_BR_PROB_BASE : 0;
@@ -3368,7 +3430,8 @@ disp_addr_displacement (rtx x)
 /* Compute the cost of an address.  */
 
 static int
-sh_address_cost (rtx x, bool speed ATTRIBUTE_UNUSED)
+sh_address_cost (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED,
+		 addr_space_t as ATTRIBUTE_UNUSED, bool speed ATTRIBUTE_UNUSED)
 {
   /* 'reg + disp' addressing.  */
   if (satisfies_constraint_Sdd (x))

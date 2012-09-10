@@ -1262,8 +1262,8 @@ enum reg_class
      && CONSTANT_P (X))						\
     ? GENERAL_REGS :						\
     (((MODE) == HImode && ! arm_arch4				\
-      && (GET_CODE (X) == MEM					\
-	  || ((GET_CODE (X) == REG || GET_CODE (X) == SUBREG)	\
+      && (MEM_P (X)					\
+	  || ((REG_P (X) || GET_CODE (X) == SUBREG)	\
 	      && true_regnum (X) == -1)))			\
      ? GENERAL_REGS : NO_REGS)					\
     : THUMB_SECONDARY_INPUT_RELOAD_CLASS (CLASS, MODE, X)))
@@ -1909,10 +1909,10 @@ enum arm_auto_incmodes
   REG_OK_FOR_INDEX_P (X)
 
 #define ARM_BASE_REGISTER_RTX_P(X)  \
-  (GET_CODE (X) == REG && ARM_REG_OK_FOR_BASE_P (X))
+  (REG_P (X) && ARM_REG_OK_FOR_BASE_P (X))
 
 #define ARM_INDEX_REGISTER_RTX_P(X)  \
-  (GET_CODE (X) == REG && ARM_REG_OK_FOR_INDEX_P (X))
+  (REG_P (X) && ARM_REG_OK_FOR_INDEX_P (X))
 
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.  */

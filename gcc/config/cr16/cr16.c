@@ -1286,7 +1286,9 @@ cr16_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
 
 /* Return cost of the memory address x.  */
 static int
-cr16_address_cost (rtx addr, bool speed ATTRIBUTE_UNUSED)
+cr16_address_cost (rtx addr, enum machine_mode mode ATTRIBUTE_UNUSED,
+		   addr_space_t as ATTRIBUTE_UNUSED,
+		   bool speed ATTRIBUTE_UNUSED)
 {
   enum cr16_addrtype addrtype;
   struct cr16_address address;

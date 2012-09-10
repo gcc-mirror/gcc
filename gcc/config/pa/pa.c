@@ -91,7 +91,7 @@ static void copy_reg_pointer (rtx, rtx);
 static void fix_range (const char *);
 static int hppa_register_move_cost (enum machine_mode mode, reg_class_t,
 				    reg_class_t);
-static int hppa_address_cost (rtx, bool);
+static int hppa_address_cost (rtx, enum machine_mode mode, addr_space_t, bool);
 static bool hppa_rtx_costs (rtx, int, int, int, int *, bool);
 static inline rtx force_mode (enum machine_mode, rtx);
 static void pa_reorg (void);
@@ -1397,7 +1397,8 @@ hppa_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
    as GO_IF_LEGITIMATE_ADDRESS.  */
 
 static int
-hppa_address_cost (rtx X,
+hppa_address_cost (rtx X, enum machine_mode mode ATTRIBUTE_UNUSED,
+		   addr_space_t as ATTRIBUTE_UNUSED,
 		   bool speed ATTRIBUTE_UNUSED)
 {
   switch (GET_CODE (X))
@@ -1421,6 +1422,8 @@ static bool
 hppa_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
 		int *total, bool speed ATTRIBUTE_UNUSED)
 {
+  int factor;
+
   switch (code)
     {
     case CONST_INT:
@@ -1452,11 +1455,20 @@ hppa_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
 
     case MULT:
       if (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
-        *total = COSTS_N_INSNS (3);
-      else if (TARGET_PA_11 && !TARGET_DISABLE_FPREGS && !TARGET_SOFT_FLOAT)
-	*total = COSTS_N_INSNS (8);
+	{
+	  *total = COSTS_N_INSNS (3);
+	  return true;
+	}
+
+      /* A mode size N times larger than SImode needs O(N*N) more insns.  */
+      factor = GET_MODE_SIZE (GET_MODE (x)) / 4;
+      if (factor == 0)
+	factor = 1;
+
+      if (TARGET_PA_11 && !TARGET_DISABLE_FPREGS && !TARGET_SOFT_FLOAT)
+	*total = factor * factor * COSTS_N_INSNS (8);
       else
-	*total = COSTS_N_INSNS (20);
+	*total = factor * factor * COSTS_N_INSNS (20);
       return true;
 
     case DIV:
@@ -1470,15 +1482,28 @@ hppa_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
     case UDIV:
     case MOD:
     case UMOD:
-      *total = COSTS_N_INSNS (60);
+      /* A mode size N times larger than SImode needs O(N*N) more insns.  */
+      factor = GET_MODE_SIZE (GET_MODE (x)) / 4;
+      if (factor == 0)
+	factor = 1;
+
+      *total = factor * factor * COSTS_N_INSNS (60);
       return true;
 
     case PLUS: /* this includes shNadd insns */
     case MINUS:
       if (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
-	*total = COSTS_N_INSNS (3);
-      else
-        *total = COSTS_N_INSNS (1);
+	{
+	  *total = COSTS_N_INSNS (3);
+	  return true;
+	}
+
+      /* A size N times larger than UNITS_PER_WORD needs N times as
+	 many insns, taking N times as long.  */
+      factor = GET_MODE_SIZE (GET_MODE (x)) / UNITS_PER_WORD;
+      if (factor == 0)
+	factor = 1;
+      *total = factor * COSTS_N_INSNS (1);
       return true;
 
     case ASHIFT:

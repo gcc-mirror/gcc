@@ -23,12 +23,6 @@
 # Initialize isllibs/islinc according to the user input.
 AC_DEFUN([ISL_INIT_FLAGS],
 [
-  AC_ARG_WITH(isl,
-    [AS_HELP_STRING(
-      [--with-isl=PATH],
-      [Specify prefix directory for the installed ISL package.
-       Equivalent to --with-isl-include=PATH/include
-       plus --with-isl-lib=PATH/lib])])
   AC_ARG_WITH([isl-include],
     [AS_HELP_STRING(
       [--with-isl-include=PATH],
@@ -73,12 +67,6 @@ AC_DEFUN([ISL_INIT_FLAGS],
     islinc='-I$$r/$(HOST_SUBDIR)/isl/include -I$$s/isl/include'
     ENABLE_ISL_CHECK=no
   fi
-
-  isllibs="${isllibs} -lisl"
-
-  dnl Flags needed for ISL
-  AC_SUBST(isllibs)
-  AC_SUBST(islinc)
 ]
 )
 

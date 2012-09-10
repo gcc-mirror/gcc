@@ -1,3 +1,8 @@
+2012-09-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Loop_Statement_to_gnu): Revert to using
+	size_type_node instead of sizetype.
+
 2012-08-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* layout.adb (Set_Elem_Alignment): Cap the alignment of access types

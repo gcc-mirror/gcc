@@ -720,9 +720,7 @@ jump_function_from_stmt (tree *arg, gimple stmt)
 						&offset);
       if (tem
 	  && TREE_CODE (tem) == MEM_REF
-	  && double_int_zero_p
-	       (double_int_add (mem_ref_offset (tem),
-				shwi_to_double_int (offset))))
+	  && (mem_ref_offset (tem) + double_int::from_shwi (offset)).is_zero ())
 	{
 	  *arg = TREE_OPERAND (tem, 0);
 	  return true;

@@ -1,3 +1,7 @@
+2012-09-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/fpu-387.h (set_fpu): Prefix stmxcsr and ldmxcsr with %v.
+
 2012-07-25  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* io/list_read.c (list_formatted_read_scalar): Fix copying real

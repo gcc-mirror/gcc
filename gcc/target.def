@@ -1758,7 +1758,7 @@ DEFHOOK
 DEFHOOK
 (address_cost,
  "",
- int, (rtx address, bool speed),
+ int, (rtx address, enum machine_mode mode, addr_space_t as, bool speed),
  default_address_cost)
 
 /* Return where to allocate pseudo for a given hard register initial value.  */
@@ -1983,6 +1983,15 @@ DEFHOOK
  "",
  const char *, (const_rtx insn),
  default_invalid_within_doloop)
+
+/* Returns true for a legitimate combined insn.  */
+DEFHOOK
+(legitimate_combined_insn,
+"Take an instruction in @var{insn} and return @code{false} if the instruction\
+ is not appropriate as a combination of two or more instructions.  The\
+ default is to accept all instructions.",
+ bool, (rtx insn),
+ hook_bool_rtx_true)
 
 DEFHOOK
 (valid_dllimport_attribute_p,

@@ -145,6 +145,10 @@ while (0)
 #endif
 
 #define TARGET_POSIX_IO
+
+/* All new versions of OpenBSD have C99 functions.  */
+#define TARGET_C99_FUNCTIONS 1
+
 
 /* Runtime target specification.  */
 

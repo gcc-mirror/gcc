@@ -465,9 +465,10 @@ XSLT_PARAM = --param toc.section.depth 4
 #XSL_STYLE_DIR = /usr/share/xml/docbook/stylesheet/docbook-xsl-ns
 #XSL_STYLE_DIR = /usr/share/sgml/docbook/xsl-ns-stylesheets
 XSL_FO_STYLE = $(XSL_STYLE_DIR)/fo/docbook.xsl
-XSL_HTML_STYLE = $(XSL_STYLE_DIR)/xhtml-1_1/chunk.xsl
-XSL_HTML_SINGLE_STYLE = $(XSL_STYLE_DIR)/xhtml-1_1/docbook.xsl
+XSL_HTML_STYLE = $(XSL_STYLE_DIR)/xhtml/chunk.xsl
+XSL_HTML_SINGLE_STYLE = $(XSL_STYLE_DIR)/html/docbook.xsl
 XSL_EPUB_STYLE = $(XSL_STYLE_DIR)/epub3/chunk.xsl
+XSL_LOCAL_STYLE = ${glibcxx_builddir}/doc/xsl/customization.xsl
 
 ${docbook_outdir}/epub:
 	mkdir -p ${docbook_outdir}/epub
@@ -529,21 +530,25 @@ stamp-html-docbook-lwg: stamp-html-docbook $(xml_extra)
 stamp-html-docbook-data: stamp-html-docbook-images stamp-html-docbook-lwg
 	$(STAMP) stamp-html-docbook-data
 
-# HTML, index plus chapters
+# HTML, "chunked" into index plus chapters as separate pages
 stamp-html-docbook: $(xml_sources) ${docbook_outdir}/html
 	@echo "Generating html files..."
 	$(XSLTPROC) $(XSLT_PARAM) $(XSLT_FLAGS) -o ${docbook_outdir}/html/ \
-	$(XSL_HTML_STYLE) ${top_srcdir}/doc/xml/spine.xml
+	 --stringparam chunker.output.encoding UTF-8 \
+	$(XSL_HTML_STYLE) \
+	${top_srcdir}/doc/xml/spine.xml
 	$(STAMP) stamp-html-docbook
 
 doc-html-docbook: stamp-html-docbook-data
 
 # HTML, all one page
+# NB: Have to generate customization XSL for UTF-8 output.
 manual_html = ${docbook_outdir}/html/libstdc++-manual-single.html
 stamp-html-single-docbook: $(xml_sources) ${docbook_outdir}/html
 	@echo "Generating html single file..."
 	$(XSLTPROC) $(XSLT_PARAM) $(XSLT_FLAGS) -o ${manual_html} \
-	$(XSL_HTML_SINGLE_STYLE) ${top_srcdir}/doc/xml/spine.xml
+	${XSL_LOCAL_STYLE} \
+	${top_srcdir}/doc/xml/spine.xml
 	$(STAMP) stamp-html-single-docbook
 
 doc-html-single-docbook: stamp-html-single-docbook

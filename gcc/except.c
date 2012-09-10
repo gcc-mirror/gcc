@@ -1243,7 +1243,7 @@ sjlj_emit_dispatch_table (rtx dispatch_label, int num_dispatch)
   eh_region r;
   edge e;
   int i, disp_index;
-  gimple switch_stmt;
+  VEC(tree, heap) *dispatch_labels = NULL;
 
   fc = crtl->eh.sjlj_fc;
 
@@ -1289,17 +1289,8 @@ sjlj_emit_dispatch_table (rtx dispatch_label, int num_dispatch)
 
   /* If there's exactly one call site in the function, don't bother
      generating a switch statement.  */
-  switch_stmt = NULL;
   if (num_dispatch > 1)
-    {
-      tree disp;
-
-      mem = adjust_address (fc, TYPE_MODE (integer_type_node),
-			    sjlj_fc_call_site_ofs);
-      disp = make_tree (integer_type_node, mem);
-
-      switch_stmt = gimple_build_switch_nlabels (num_dispatch, disp, NULL);
-    }
+    dispatch_labels = VEC_alloc (tree, heap, num_dispatch);
 
   for (i = 1; VEC_iterate (eh_landing_pad, cfun->eh->lp_array, i, lp); ++i)
     if (lp && lp->post_landing_pad)
@@ -1317,8 +1308,7 @@ sjlj_emit_dispatch_table (rtx dispatch_label, int num_dispatch)
 	    t_label = create_artificial_label (UNKNOWN_LOCATION);
 	    t = build_int_cst (integer_type_node, disp_index);
 	    case_elt = build_case_label (t, NULL, t_label);
-	    gimple_switch_set_label (switch_stmt, disp_index, case_elt);
-
+	    VEC_quick_push (tree, dispatch_labels, case_elt);
 	    label = label_rtx (t_label);
 	  }
 	else
@@ -1371,7 +1361,16 @@ sjlj_emit_dispatch_table (rtx dispatch_label, int num_dispatch)
 
   if (num_dispatch > 1)
     {
+      gimple switch_stmt;
+      tree default_label = create_artificial_label (UNKNOWN_LOCATION);
+      rtx disp = adjust_address (fc, TYPE_MODE (integer_type_node),
+				 sjlj_fc_call_site_ofs);
+      switch_stmt = gimple_build_switch (make_tree (integer_type_node, disp),
+					 build_case_label (NULL, NULL,
+							   default_label),
+					 dispatch_labels);
       expand_case (switch_stmt);
+      emit_label (label_rtx (default_label));
       expand_builtin_trap ();
     }
 

@@ -384,6 +384,7 @@ show_locus (locus *loc, int c1, int c2)
 
   c1 -= offset;
   c2 -= offset;
+  cmax -= offset;
 
   p = &(lb->line[offset]);
   for (i = 0; i <= cmax; i++)

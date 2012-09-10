@@ -2908,9 +2908,9 @@ expand_absneg_bit (enum rtx_code code, enum machine_mode mode,
       nwords = (GET_MODE_BITSIZE (mode) + BITS_PER_WORD - 1) / BITS_PER_WORD;
     }
 
-  mask = double_int_setbit (double_int_zero, bitpos);
+  mask = double_int_zero.set_bit (bitpos);
   if (code == ABS)
-    mask = double_int_not (mask);
+    mask = ~mask;
 
   if (target == 0
       || target == op0
@@ -3569,7 +3569,7 @@ expand_copysign_absneg (enum machine_mode mode, rtx op0, rtx op1, rtx target,
 	  op1 = operand_subword_force (op1, word, mode);
 	}
 
-      mask = double_int_setbit (double_int_zero, bitpos);
+      mask = double_int_zero.set_bit (bitpos);
 
       sign = expand_binop (imode, and_optab, op1,
 			   immed_double_int_const (mask, imode),
@@ -3640,7 +3640,7 @@ expand_copysign_bit (enum machine_mode mode, rtx op0, rtx op1, rtx target,
       nwords = (GET_MODE_BITSIZE (mode) + BITS_PER_WORD - 1) / BITS_PER_WORD;
     }
 
-  mask = double_int_setbit (double_int_zero, bitpos);
+  mask = double_int_zero.set_bit (bitpos);
 
   if (target == 0
       || target == op0
@@ -3662,8 +3662,7 @@ expand_copysign_bit (enum machine_mode mode, rtx op0, rtx op1, rtx target,
 	      if (!op0_is_abs)
 		op0_piece
 		  = expand_binop (imode, and_optab, op0_piece,
-				  immed_double_int_const (double_int_not (mask),
-							  imode),
+				  immed_double_int_const (~mask, imode),
 				  NULL_RTX, 1, OPTAB_LIB_WIDEN);
 
 	      op1 = expand_binop (imode, and_optab,
@@ -3694,8 +3693,7 @@ expand_copysign_bit (enum machine_mode mode, rtx op0, rtx op1, rtx target,
       op0 = gen_lowpart (imode, op0);
       if (!op0_is_abs)
 	op0 = expand_binop (imode, and_optab, op0,
-			    immed_double_int_const (double_int_not (mask),
-						    imode),
+			    immed_double_int_const (~mask, imode),
 			    NULL_RTX, 1, OPTAB_LIB_WIDEN);
 
       temp = expand_binop (imode, ior_optab, op0, op1,
@@ -4584,7 +4582,7 @@ can_conditionally_move_p (enum machine_mode mode)
    the mode to use should they be constants.  If it is VOIDmode, they cannot
    both be constants.
 
-   OP2 should be stored in TARGET if the comparison is true, otherwise OP2+OP3
+   OP2 should be stored in TARGET if the comparison is false, otherwise OP2+OP3
    should be stored there.  MODE is the mode to use should they be constants.
    If it is VOIDmode, they cannot both be constants.
 
@@ -4598,7 +4596,6 @@ emit_conditional_add (rtx target, enum rtx_code code, rtx op0, rtx op1,
 {
   rtx tem, comparison, last;
   enum insn_code icode;
-  enum rtx_code reversed;
 
   /* If one operand is constant, make it the second one.  Only do this
      if the other operand is not constant as well.  */
@@ -4621,16 +4618,6 @@ emit_conditional_add (rtx target, enum rtx_code code, rtx op0, rtx op1,
 
   if (cmode == VOIDmode)
     cmode = GET_MODE (op0);
-
-  if (swap_commutative_operands_p (op2, op3)
-      && ((reversed = reversed_comparison_code_parts (code, op0, op1, NULL))
-          != UNKNOWN))
-    {
-      tem = op2;
-      op2 = op3;
-      op3 = tem;
-      code = reversed;
-    }
 
   if (mode == VOIDmode)
     mode = GET_MODE (op2);

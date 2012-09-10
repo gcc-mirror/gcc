@@ -1,4 +1,5 @@
-/* { dg-options "-O2 -march=5kc" } */
+/* { dg-options "-march=5kc" } */
+/* { dg-skip-if "code quality test" { *-*-* } { "-O0" } { "" } } */
 /* { dg-final { scan-assembler "\tmul\t" } } */
 /* { dg-final { scan-assembler-not "\tmadd\t" } } */
 /* { dg-final { scan-assembler-not "\tmtlo\t" } } */

@@ -118,7 +118,7 @@ void set_fpu (void)
     {
       unsigned int cw_sse;
 
-      asm volatile ("stmxcsr %0" : "=m" (cw_sse));
+      asm volatile ("%vstmxcsr %0" : "=m" (cw_sse));
 
       cw_sse &= 0xffff0000;
       cw_sse |= (_FPU_MASK_IM | _FPU_MASK_DM | _FPU_MASK_ZM | _FPU_MASK_OM
@@ -131,6 +131,6 @@ void set_fpu (void)
       if (options.fpe & GFC_FPE_UNDERFLOW) cw_sse &= ~(_FPU_MASK_UM << 7);
       if (options.fpe & GFC_FPE_INEXACT) cw_sse &= ~(_FPU_MASK_PM << 7);
 
-      asm volatile ("ldmxcsr %0" : : "m" (cw_sse));
+      asm volatile ("%vldmxcsr %0" : : "m" (cw_sse));
     }
 }

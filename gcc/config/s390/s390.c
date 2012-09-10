@@ -2123,6 +2123,22 @@ s390_symref_operand_p (rtx addr, rtx *symref, HOST_WIDE_INT *addend)
   return true;
 }
 
+/* Return TRUE if ADDR is an operand valid for a load/store relative
+   instructions.  Be aware that the alignment of the operand needs to
+   be checked separately.  */
+static bool
+s390_loadrelative_operand_p (rtx addr)
+{
+  if (GET_CODE (addr) == CONST)
+    addr = XEXP (addr, 0);
+
+  /* Enable load relative for symbol@GOTENT.  */
+  if (GET_CODE (addr) == UNSPEC
+      && XINT (addr, 1) == UNSPEC_GOTENT)
+    return true;
+
+  return s390_symref_operand_p (addr, NULL, NULL);
+}
 
 /* Return true if the address in OP is valid for constraint letter C
    if wrapped in a MEM rtx.  Set LIT_POOL_OK to true if it literal
@@ -2137,7 +2153,7 @@ s390_check_qrst_address (char c, rtx op, bool lit_pool_ok)
 
   /* This check makes sure that no symbolic address (except literal
      pool references) are accepted by the R or T constraints.  */
-  if (s390_symref_operand_p (op, NULL, NULL))
+  if (s390_loadrelative_operand_p (op))
     return 0;
 
   /* Ensure literal pool references are only accepted if LIT_POOL_OK.  */
@@ -2597,7 +2613,9 @@ s390_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
 /* Return the cost of an address rtx ADDR.  */
 
 static int
-s390_address_cost (rtx addr, bool speed ATTRIBUTE_UNUSED)
+s390_address_cost (rtx addr, enum machine_mode mode ATTRIBUTE_UNUSED,
+		   addr_space_t as ATTRIBUTE_UNUSED,
+		   bool speed ATTRIBUTE_UNUSED)
 {
   struct s390_address ad;
   if (!s390_decompose_address (addr, &ad))
@@ -2940,6 +2958,13 @@ s390_check_symref_alignment (rtx addr, HOST_WIDE_INT alignment)
 {
   HOST_WIDE_INT addend;
   rtx symref;
+
+  /* Accept symbol@GOTENT with pointer size alignment.  */
+  if (GET_CODE (addr) == CONST
+      && GET_CODE (XEXP (addr, 0)) == UNSPEC
+      && XINT (XEXP (addr, 0), 1) == UNSPEC_GOTENT
+      && alignment <= UNITS_PER_LONG)
+    return true;
 
   if (!s390_symref_operand_p (addr, &symref, &addend))
     return false;
@@ -3398,9 +3423,14 @@ legitimize_pic_address (rtx orig, rtx reg)
 
           new_rtx = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_GOTENT);
           new_rtx = gen_rtx_CONST (Pmode, new_rtx);
-          emit_move_insn (temp, new_rtx);
 
-          new_rtx = gen_const_mem (Pmode, temp);
+	  if (!TARGET_Z10)
+	    {
+	      emit_move_insn (temp, new_rtx);
+	      new_rtx = gen_const_mem (Pmode, temp);
+	    }
+	  else
+	    new_rtx = gen_const_mem (GET_MODE (reg), new_rtx);
           emit_move_insn (reg, new_rtx);
           new_rtx = reg;
         }
@@ -5250,7 +5280,7 @@ print_operand_address (FILE *file, rtx addr)
 {
   struct s390_address ad;
 
-  if (s390_symref_operand_p (addr, NULL, NULL))
+  if (s390_loadrelative_operand_p (addr))
     {
       if (!TARGET_Z10)
 	{

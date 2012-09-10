@@ -1,3 +1,246 @@
+2012-09-10  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+	    Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/43852
+	* acinclude.m4 (GLIBCXX_ENABLE_VERBOSE): Define.
+	* configure.ac (GLIBCXX_ENABLE_VERBOSE): Use it.
+	* config.h.in: Regenerate.
+	* configure: Likewise.
+	* libsupc++/eh_term_handler.cc (_GLIBCXX_VERBOSE): Check new macro.
+	* libsupc++/pure.cc (_GLIBCXX_VERBOSE): Likewise.
+	* doc/xml/manual/configure.xml (--disable-libstdcxx-verbose): Document.
+	* doc/html/manual/configure.html: Regenerate.
+
+2012-09-09  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR bootstrap/54419
+	* acinclude.m4 (GLIBCXX_CHECK_X86_RDRAND): Remove stray character.
+	* configure: Regenerated.
+
+2012-09-09  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/54388
+	* include/std/array (array::at() const): Ensure lvalue result.
+	* testsuite/23_containers/array/element_access/54388.cc: New.
+	* testsuite/23_containers/array/tuple_interface/get_neg.cc: Adjust
+	dg-error line numbers.
+	* testsuite/23_containers/array/tuple_interface/tuple_element_neg.cc:
+	Likewise.
+
+2012-09-09  Ulrich Drepper  <drepper@gmail.com>
+	    Dominique d'Humieres  <dominiq@lps.ens.fr>
+	    Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	PR bootstrap/54419
+	* acinclude.m4: Define GLIBCXX_CHECK_X86_RDRAND.
+	* configure.ac: Use GLIBCXX_CHECK_X86_RDRAND to test for rdrand
+	support in assembler.
+	* src/c++11/random.cc (__x86_rdrand): Depend on _GLIBCXX_X86_RDRAND.
+	(random_device::_M_init): Likewise.
+	(random_device::_M_getval): Likewise.
+	* configure: Regenerated.
+	* config.h.in: Regenerated.
+
+2012-09-09  Ulrich Drepper  <drepper@gmail.com>
+
+	* src/c++11/random.cc (random_device::_M_init): Use new macro
+	signature_INTEL_ebx to check for Intel processors.
+
+2012-09-06  Thiago Macieira  <thiago.macieira@intel.com>
+
+	PR libstdc++/54172
+        * libsupc++/guard.cc (__cxa_guard_acquire): Exit the loop earlier if
+        we detect that another thread has had success. Don't compare_exchange
+        from a finished state back to a waiting state. Comment.
+
+2012-09-05  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/54296
+	* include/bits/hashtable.h (_M_erase(size_type, __node_base*,
+	__node_type*)): New.
+	(erase(const_iterator)): Use latter.
+	(_M_erase(std::true_type, const key_type&)): New, likewise.
+	(_M_erase(std::false_type, const key_type&)): New. Find all nodes
+	matching the key before deallocating them so that the key doesn't
+	get invalidated.
+	(erase(const key_type&)): Use the new member functions.
+	* testsuite/23_containers/unordered_map/erase/54296.cc: New.
+	* testsuite/23_containers/unordered_multimap/erase/54296.cc: New.
+
+2012-09-05  Ulrich Drepper  <drepper@gmail.com>
+
+	* src/c++11/random.cc (random_device::_M_init): Check whether cpuid
+	instruction is available by using __get_cpuid_max.
+
+	* include/ext/random.tcc (__gnu_cxx:normal_mv_distribution<>)
+	(operator()): Use __generate() function of _M_nd.
+
+	* include/ext/random: Add __gnu_cxx:normal_mv_distribution<> class.
+	* include/ext/random.tccAdd out-of-line functions for
+	__gnu_cxx::normal_mv_distribution<>.
+	* testsuite/26_numerics/random/normal_mv_distribution/
+	operators/equal.cc: New file.
+	* testsuite/26_numerics/random/normal_mv_distribution/
+	operators/serialize.cc: New file.
+	* testsuite/26_numerics/random/normal_mv_distribution/
+	operators/inequal.cc: New file.
+	* testsuite/26_numerics/random/normal_mv_distribution/
+	cons/default.cc: New file.
+	* testsuite/26_numerics/random/normal_mv_distribution/
+	cons/parms.cc: New file.
+	* testsuite/26_numerics/random/normal_mv_distribution/
+	requirements/explicit_instantiation/1.cc: New file.
+	* testsuite/26_numerics/random/normal_mv_distribution/
+	requirements/typedefs.cc: New file.
+
+2012-09-04  Ulrich Drepper  <drepper@gmail.com>
+
+	* include/ext/random: Add __gnu_cxx::beta_distribution<> class.
+	* include/ext/random.tcc: Add out-of-line functions for
+	__gnu_cxx::beta_distribution<>.
+	* testsuite/26_numerics/random/beta_distribution/
+	operators/equal.cc: New file.
+	* testsuite/26_numerics/random/beta_distribution/
+	operators/serialize.cc: New file.
+	* testsuite/26_numerics/random/beta_distribution/
+	operators/inequal.cc: New file.
+	* testsuite/26_numerics/random/beta_distribution/
+	cons/parms.cc: New file.
+	* testsuite/26_numerics/random/beta_distribution/
+	cons/default.cc: New file.
+	* testsuite/26_numerics/random/beta_distribution/
+	requirements/typedefs.cc: New file.
+	* testsuite/26_numerics/random/beta_distribution/
+	requirements/explicit_instantiation/1.cc: New file.
+
+2012-09-04  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR bootstrap/54453
+	* include/Makefile.am: Fix regex.
+	* include/Makefile.in: Regenerate.
+
+2012-08-30  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/54005 continued
+	* include/std/atomic: Use __atomic_lock_free with NULL.
+	* include/bits/atomic_base.h: Same.
+
+2012-08-30  Ulrich Drepper  <drepper@gmail.com>
+
+	* include/bits/random.h (random_device) [GLIBCXX_USE_RANDOM_TR1]:
+	Remove 'return' from constructor.
+
+2012-08-30  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/util/testsuite_abi.cc (check_version): Add GLIBCXX_3.4.18.
+
+2012-08-29  Ulrich Drepper  <drepper@gmail.com>
+
+	* include/bits/random.h (random_device): Move implementation to...
+	* src/c++11/random.cc: ...here.  New file.
+	* config/abi/pre/gnu.ver: Add new version GLIBCXX_3.4.18.  Export
+	std::random_device::* symbols.
+	* config/abi/post/x86_64-linux-gnu/baseline_symbols.txt: Generated.
+	* src/c++11/Makefile.am (sources): Add random.cc.
+	* src/c++11/Makefile.in: Regenerated.
+
+	Add simd_fast_mersenne_twister_engine class.
+	* include/ext/random: New file.
+	* include/ext/random.tcc: New file.
+	* include/Makefile.am (ext_headers): Add random and random.tcc.
+	* testsuite/26_numerics/random/simd_fast_mersenne_twister_engine/
+	operators/inequal.cc: New file.
+	* testsuite/26_numerics/random/simd_fast_mersenne_twister_engine/
+	operators/equal.cc: New file.
+	* testsuite/26_numerics/random/simd_fast_mersenne_twister_engine/
+	operators/serialize.cc: New file.
+	* testsuite/26_numerics/random/simd_fast_mersenne_twister_engine/
+	cons/seed2.cc: New file.
+	* testsuite/26_numerics/random/simd_fast_mersenne_twister_engine/
+	cons/default.cc: New file.
+	* testsuite/26_numerics/random/simd_fast_mersenne_twister_engine/
+	cons/seed_seq.cc: New file.
+	* testsuite/26_numerics/random/simd_fast_mersenne_twister_engine/
+	cons/copy.cc: New file.
+	* testsuite/26_numerics/random/simd_fast_mersenne_twister_engine/
+	cons/seed1.cc: New file.
+
+2012-08-28  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/54102, part 2
+	* doc/Makefile.am (XSL_HTML_STYLE): use xhtml, not html.
+	* doc/Makefile.in: Regenerate.
+	* doc/html/*: Same.
+
+2012-08-28  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/html/*: Regenerate.
+
+2012-08-28  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/54102
+	* doc/xsl/customization.xsl.in: New.
+	* configure.ac: Output local copy of customization xsl.
+	* doc/Makefile.am (stamp-html-single-docbook): Use XSL_LOCAL_STYLE.
+	(stamp-html-docbook): Set stringparam to UTF-8.
+	* Makefile.in: Regenerated.
+	* configure: Same.
+	* doc/Makefile.in: Same.
+
+2012-08-27  Ulrich Drepper  <drepper@gmail.com>
+
+	Add interfaces to retrieve random numbers in bulk.
+	* include/bits/random.h (uniform_int_distribution<>): Add __generate
+	and __generate_impl functions.
+	(uniform_real_distribution<>): Likewise.
+	(bernoulli_distribution): Likewise.
+	(geometric_distribution<>): Likewise.
+	(negative_binomial_distribution<>): Likewise.
+	(poisson_distribution<>): Likewise.
+	(exponential_distribution<>): Likewise.
+	(normal_distribution<>): Likewise.
+	(lognormal_distribution<>): Likewise.
+	(chi_squared_distribution<>): Likewise.
+	(cauchy_distribution<>): Likewise.
+	(fisher_f_distribution<>): Likewise.
+	(student_t_distribution<>): Likewise.
+	(gamma_distribution<>): Likewise.
+	(weibull_distribution<>): Likewise.
+	(extreme_value_distribution<>): Likewise.
+	(discrete_distribution<>): Likewise.
+	(piecewise_constant_distribution<>): Likewise.
+	(piecewise_linear_distribution<>): Likewise.
+	* include/bits/random.tcc (__detail::_Power_of_2): New function.
+	(uniform_int_distribution<>::__generate_impl): New function.
+	(uniform_real_distribution<>::__generate_impl): New function.
+	(bernoulli_distribution::__generate_impl): New function.
+	(geometric_distribution<>::__generate_impl): New function.
+	(negative_binomial_distribution<>::__generate_impl): New function.
+	(poisson_distribution<>::__generate_impl): New function.
+	(exponential_distribution<>::__generate_impl): New function.
+	(normal_distribution<>::__generate_impl): New function.
+	(lognormal_distribution<>::__generate_impl): New function.
+	(chi_squared_distribution<>::__generate_impl): New function.
+	(cauchy_distribution<>::__generate_impl): New function.
+	(fisher_f_distribution<>::__generate_impl): New function.
+	(student_t_distribution<>::__generate_impl): New function.
+	(gamma_distribution<>::__generate_impl): New function.
+	(weibull_distribution<>::__generate_impl): New function.
+	(extreme_value_distribution<>::__generate_impl): New function.
+	(discrete_distribution<>::__generate_impl): New function.
+	(piecewise_constant_distribution<>::__generate_impl): New function.
+	(piecewise_linear_distribution<>::__generate_impl): New function.
+
+2012-08-22  Ulrich Drepper  <drepper@gmail.com>
+
+	* include/bits/random.h (mersenne_twister_engine): Don't inline
+	discard here.  New member function _M_gen_rand.
+	* include/bits/random.tcc (mersenne_twister_engine<>::_M_gen_rand):
+	New function.  Extracted from operator().
+	(mersenne_twister_engine<>::discard): New implementation which
+	skips in large steps.
+	(mersenne_twister_engine<>::operator()): Use _M_gen_rand.
+
 2012-08-26  Marc Glisse  <marc.glisse@inria.fr>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -479,8 +722,8 @@
 
 	PR c++/53322
 	* include/bits/stl_algobase.h (lower_bound)
-    	(lexicographical_compare): Do not declare unused local typedefs
-    	here when Concepts are turned off.
+	(lexicographical_compare): Do not declare unused local typedefs
+	here when Concepts are turned off.
 
 2012-05-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -1996,7 +2239,7 @@
 
 	PR libstdc++/52309
 	* include/bits/hashtable_policy.h (_Equality_base<, true,>::
-    	_M_equal(const _Hashtable&)): Compare values with operator==.
+	_M_equal(const _Hashtable&)): Compare values with operator==.
 	* testsuite/23_containers/unordered_set/operators/52309.cc: New.
 
 2012-02-17  Benjamin Kosnik  <bkoz@redhat.com>

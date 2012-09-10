@@ -2511,7 +2511,8 @@ gfc_free_symbol (gfc_symbol *sym)
 
   gfc_free_namelist (sym->namelist);
 
-  gfc_free_namespace (sym->formal_ns);
+  if (sym->ns != sym->formal_ns)
+    gfc_free_namespace (sym->formal_ns);
 
   if (!sym->attr.generic_copy)
     gfc_free_interface (sym->generic);
@@ -2519,6 +2520,13 @@ gfc_free_symbol (gfc_symbol *sym)
   gfc_free_formal_arglist (sym->formal);
 
   gfc_free_namespace (sym->f2k_derived);
+
+  if (sym->common_block && sym->common_block->name[0] != '\0')
+    { 
+      sym->common_block->refs--; 
+      if (sym->common_block->refs == 0)
+	free (sym->common_block);
+    }
 
   free (sym);
 }
@@ -2532,7 +2540,8 @@ gfc_release_symbol (gfc_symbol *sym)
   if (sym == NULL)
     return;
 
-  if (sym->formal_ns != NULL && sym->refs == 2)
+  if (sym->formal_ns != NULL && sym->refs == 2 && sym->formal_ns != sym->ns
+      && (!sym->attr.entry || !sym->module))
     {
       /* As formal_ns contains a reference to sym, delete formal_ns just
 	 before the deletion of sym.  */
@@ -2858,6 +2867,30 @@ gfc_get_ha_symbol (const char *name, gfc_symbol **result)
   return i;
 }
 
+
+/* Search for the symtree belonging to a gfc_common_head; we cannot use
+   head->name as the common_root symtree's name might be mangled.  */
+
+static gfc_symtree *
+find_common_symtree (gfc_symtree *st, gfc_common_head *head)
+{
+
+  gfc_symtree *result;
+
+  if (st == NULL)
+    return NULL;
+
+  if (st->n.common == head)
+    return st;
+
+  result = find_common_symtree (st->left, head);
+  if (!result)  
+    result = find_common_symtree (st->right, head);
+
+  return result;
+}
+
+
 /* Undoes all the changes made to symbols in the current statement.
    This subroutine is made simpler due to the fact that attributes are
    never removed once added.  */
@@ -2880,6 +2913,19 @@ gfc_undo_symbols (void)
 	      /* If the symbol was added to any common block, it
 		 needs to be removed to stop the resolver looking
 		 for a (possibly) dead symbol.  */
+
+	      if (p->common_block->head == p && !p->common_next)
+		{
+		  gfc_symtree st, *st0;
+		  st0 = find_common_symtree (p->ns->common_root,
+					     p->common_block);
+		  if (st0)
+		    {
+		      st.name = st0->name;
+		      gfc_delete_bbt (&p->ns->common_root, &st, compare_symtree);
+		      free (st0);
+		    }
+		}
 
 	      if (p->common_block->head == p)
 	        p->common_block->head = p->common_next;
@@ -4094,6 +4140,7 @@ gfc_copy_formal_args (gfc_symbol *dest, gfc_symbol *src, ifsrc if_src)
      of the formal args).  */
   gfc_current_ns = gfc_get_namespace (parent_ns, 0);
   gfc_current_ns->proc_name = dest;
+  dest->formal_ns = gfc_current_ns;
 
   for (curr_arg = src->formal; curr_arg; curr_arg = curr_arg->next)
     {

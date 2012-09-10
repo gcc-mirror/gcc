@@ -41,6 +41,7 @@ sources = \
 	limits.cc \
 	mutex.cc \
 	placeholders.cc \
+	random.cc \
 	regex.cc  \
 	shared_ptr.cc \
 	system_error.cc \

@@ -23,6 +23,8 @@
 #define GCC_TILEGX_PROTOS_H
 
 extern void tilegx_init_expanders (void);
+extern void tilegx_compute_pcrel_address (rtx, rtx);
+extern void tilegx_compute_pcrel_plt_address (rtx, rtx);
 extern bool tilegx_legitimate_pic_operand_p (rtx);
 extern rtx tilegx_simd_int (rtx, enum machine_mode);
 

@@ -648,7 +648,6 @@ extra_host_libiberty_configure_flags
 clooginc
 clooglibs
 islinc
-isllibs
 poststage1_ldflags
 poststage1_libs
 stage1_libs
@@ -770,11 +769,11 @@ with_stage1_ldflags
 with_stage1_libs
 with_boot_libs
 with_boot_ldflags
+with_cloog
 with_isl
 with_isl_include
 with_isl_lib
 enable_isl_version_check
-with_cloog
 with_cloog_include
 with_cloog_lib
 enable_cloog_version_check
@@ -1531,16 +1530,16 @@ Optional Packages:
   --with-boot-libs=LIBS   libraries for stage2 and later
   --with-boot-ldflags=FLAGS
                           linker flags for stage2 and later
+  --with-cloog=PATH       Specify prefix directory for the installed CLooG-ISL
+                          package. Equivalent to
+                          --with-cloog-include=PATH/include plus
+                          --with-cloog-lib=PATH/lib
   --with-isl=PATH         Specify prefix directory for the installed ISL
                           package. Equivalent to
                           --with-isl-include=PATH/include plus
                           --with-isl-lib=PATH/lib
   --with-isl-include=PATH Specify directory for installed ISL include files
   --with-isl-lib=PATH     Specify the directory for the installed ISL library
-  --with-cloog=PATH       Specify prefix directory for the installed CLooG-PPL
-                          package. Equivalent to
-                          --with-cloog-include=PATH/include plus
-                          --with-cloog-lib=PATH/lib
   --with-cloog-include=PATH
                           Specify directory for installed CLooG include files
   --with-cloog-lib=PATH   Specify the directory for the installed CLooG
@@ -3177,6 +3176,13 @@ case "${target}" in
     ;;
 esac
 
+# Disable libquadmath for some systems.
+case "${target}" in
+  avr-*-*)
+    noconfigdirs="$noconfigdirs target-libquadmath"
+    ;;
+esac
+
 # Disable libstdc++-v3 for some systems.
 case "${target}" in
   *-*-vxworks*)
@@ -3516,6 +3522,13 @@ case "${target}" in
     ;;
   arm-*-riscix*)
     noconfigdirs="$noconfigdirs ld target-libgloss"
+    ;;
+  avr-*-rtems*)
+    ;;
+  avr-*-*)
+    if test x${with_avrlibc} != xno; then
+      noconfigdirs="$noconfigdirs target-newlib target-libgloss"
+    fi
     ;;
   c4x-*-* | tic4x-*-*)
     noconfigdirs="$noconfigdirs target-libgloss"
@@ -5331,7 +5344,7 @@ main ()
 
   #define GCC_GMP_VERSION_NUM(a,b,c) (((a) << 16L) | ((b) << 8) | (c))
   #define GCC_GMP_VERSION GCC_GMP_VERSION_NUM(__GNU_MP_VERSION,__GNU_MP_VERSION_MINOR,__GNU_MP_VERSION_PATCHLEVEL)
-  #if GCC_GMP_VERSION < GCC_GMP_VERSION_NUM(4,2,0)
+  #if GCC_GMP_VERSION < GCC_GMP_VERSION_NUM(4,2,3)
   choke me
   #endif
 
@@ -5628,13 +5641,28 @@ fi
 
 
 
-# Check for ISL
+# GCC GRAPHITE dependences, ISL and CLOOG which in turn requires ISL.
+# Basic setup is inlined here, actual checks are in config/cloog.m4 and
+# config/isl.m4
+
+
+# Check whether --with-cloog was given.
+if test "${with_cloog+set}" = set; then :
+  withval=$with_cloog;
+fi
 
 
 # Check whether --with-isl was given.
 if test "${with_isl+set}" = set; then :
   withval=$with_isl;
 fi
+
+
+# Treat either --without-cloog or --without-isl as a request to disable
+# GRAPHITE support and skip all following checks.
+if test "x$with_isl" != "xno" &&
+   test "x$with_cloog" != "xno"; then
+  # Check for ISL
 
 
 # Check whether --with-isl-include was given.
@@ -5683,13 +5711,7 @@ fi
     ENABLE_ISL_CHECK=no
   fi
 
-  isllibs="${isllibs} -lisl"
 
-
-
-
-
-if test "x$with_isl" != "xno"; then
 
   if test "${ENABLE_ISL_CHECK}" = yes ; then
     _isl_saved_CFLAGS=$CFLAGS
@@ -5746,7 +5768,6 @@ $as_echo "$gcc_cv_isl" >&6; }
 
 
 
-
   if test "x${with_isl}" = xno; then
     graphite_requested=no
   elif test "x${with_isl}" != x \
@@ -5772,15 +5793,9 @@ $as_echo "$gcc_cv_isl" >&6; }
   fi
 
 
-fi
 
-# Check for CLOOG
-
-
-# Check whether --with-cloog was given.
-if test "${with_cloog+set}" = set; then :
-  withval=$with_cloog;
-fi
+  if test "x$gcc_cv_isl" != "xno"; then
+    # Check for CLOOG
 
 
 # Check whether --with-cloog-include was given.
@@ -5829,16 +5844,9 @@ fi
   fi
 
   clooginc="-DCLOOG_INT_GMP ${clooginc}"
-  clooglibs="${clooglibs} -lcloog-isl ${isllibs}"
+  clooglibs="${clooglibs} -lcloog-isl ${isllibs} -lisl"
 
 
-
-
-
-if test "x$isllibs" = x && test "x$islinc" = x; then
-  clooglibs=
-  clooginc=
-elif test "x$with_cloog" != "xno"; then
 
 
 
@@ -5910,17 +5918,29 @@ $as_echo "$gcc_cv_cloog" >&6; }
     && test "x${clooglibs}" = x \
     && test "x${clooginc}" = x ; then
 
-    as_fn_error "Unable to find a usable CLooG.  See config.log for details." "$LINENO" 5
+      as_fn_error "Unable to find a usable CLooG.  See config.log for details." "$LINENO" 5
   fi
 
 
+  fi
 fi
 
 # If either the ISL or the CLooG check failed, disable builds of in-tree
 # variants of both
-if test "x$clooglibs" = x && test "x$clooginc" = x; then
+if test "x$with_isl" = xno ||
+   test "x$with_cloog" = xno ||
+   test "x$gcc_cv_cloog" = xno ||
+   test "x$gcc_cv_isl" = xno; then
   noconfigdirs="$noconfigdirs cloog isl"
+  islinc=
+  clooginc=
+  clooglibs=
 fi
+
+
+
+
+
 
 # Check for LTO support.
 # Check whether --enable-lto was given.
@@ -6125,6 +6145,7 @@ if test -d ${srcdir}/gcc; then
 	  boot_language=yes
 	fi
 
+        add_this_lang=no
         case ,${enable_languages}, in
           *,${language},*)
             # Language was explicitly selected; include it
@@ -6135,10 +6156,9 @@ if test -d ${srcdir}/gcc; then
             ;;
           *,all,*)
             # 'all' was selected, select it if it is a default language
-            add_this_lang=${build_by_default}
-            ;;
-          *)
-            add_this_lang=no
+	    if test "$language" != "c"; then
+	      add_this_lang=${build_by_default}
+	    fi
             ;;
         esac
 

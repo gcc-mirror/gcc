@@ -1,7 +1,8 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 isa>=4" } */
-/* { dg-final { scan-assembler "movz" } } */
-/* { dg-final { scan-assembler "movn" } } */
+/* { dg-options "isa>=4" } */
+/* { dg-skip-if "code quality test" { *-*-* } { "-O0" } { "" } } */
+/* { dg-final { scan-assembler "\tmovz\t" } } */
+/* { dg-final { scan-assembler "\tmovn\t" } } */
 
 void ext_int (int);
 

@@ -2,7 +2,7 @@
    This testcase used to trigger an unrecognizable insn.  */
 
 /* { dg-do compile } */
-/* { dg-options "-O2 -w" } */
+/* { dg-options "-w" } */
 
 __thread int *a = 0;
 

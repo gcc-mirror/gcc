@@ -361,6 +361,8 @@ match_data_constant (gfc_expr **result)
 	m = MATCH_ERROR;
       return m;
     }
+  else if (m == MATCH_YES)
+    gfc_free_expr (*result);
 
   gfc_current_locus = old_loc;
 
@@ -451,8 +453,7 @@ top_val_list (gfc_data *data)
 	}
       else
 	{
-	  if (expr->ts.type == BT_INTEGER)
-	    mpz_set (tail->repeat, expr->value.integer);
+	  mpz_set (tail->repeat, expr->value.integer);
 	  gfc_free_expr (expr);
 
 	  m = match_data_constant (&tail->expr);
@@ -891,7 +892,6 @@ get_proc_name (const char *name, gfc_symbol **result, bool module_fcn_entry)
     return rc;
 
   sym = *result;
-  gfc_current_ns->refs++;
 
   if (sym && !sym->gfc_new && gfc_current_state () != COMP_INTERFACE)
     {

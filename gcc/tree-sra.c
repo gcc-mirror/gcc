@@ -1488,8 +1488,8 @@ build_ref_for_offset (location_t loc, tree base, HOST_WIDE_INT offset,
 	  || TREE_CODE (prev_base) == TARGET_MEM_REF)
 	align = TYPE_ALIGN (TREE_TYPE (prev_base));
     }
-  misalign += (double_int_sext (tree_to_double_int (off),
-				TYPE_PRECISION (TREE_TYPE (off))).low
+  misalign += (tree_to_double_int (off)
+	       .sext (TYPE_PRECISION (TREE_TYPE (off))).low
 	       * BITS_PER_UNIT);
   misalign = misalign & (align - 1);
   if (misalign != 0)

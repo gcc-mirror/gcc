@@ -869,6 +869,14 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
 	  && COMPARISON_P (op)
 	  && (STORE_FLAG_VALUE & ~GET_MODE_MASK (mode)) == 0)
 	return rtl_hooks.gen_lowpart_no_emit (mode, op);
+
+      /* A truncate of a memory is just loading the low part of the memory
+	 if we are not changing the meaning of the address. */
+      if (GET_CODE (op) == MEM
+	  && !MEM_VOLATILE_P (op)
+	  && !mode_dependent_address_p (XEXP (op, 0)))
+	return rtl_hooks.gen_lowpart_no_emit (mode, op);
+
       break;
 
     case FLOAT_TRUNCATE:
@@ -1978,7 +1986,7 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 	  else if (GET_CODE (lhs) == MULT
 		   && CONST_INT_P (XEXP (lhs, 1)))
 	    {
-	      coeff0 = shwi_to_double_int (INTVAL (XEXP (lhs, 1)));
+	      coeff0 = double_int::from_shwi (INTVAL (XEXP (lhs, 1)));
 	      lhs = XEXP (lhs, 0);
 	    }
 	  else if (GET_CODE (lhs) == ASHIFT
@@ -1986,8 +1994,7 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
                    && INTVAL (XEXP (lhs, 1)) >= 0
 		   && INTVAL (XEXP (lhs, 1)) < HOST_BITS_PER_WIDE_INT)
 	    {
-	      coeff0 = double_int_setbit (double_int_zero,
-					  INTVAL (XEXP (lhs, 1)));
+	      coeff0 = double_int_zero.set_bit (INTVAL (XEXP (lhs, 1)));
 	      lhs = XEXP (lhs, 0);
 	    }
 
@@ -1999,7 +2006,7 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 	  else if (GET_CODE (rhs) == MULT
 		   && CONST_INT_P (XEXP (rhs, 1)))
 	    {
-	      coeff1 = shwi_to_double_int (INTVAL (XEXP (rhs, 1)));
+	      coeff1 = double_int::from_shwi (INTVAL (XEXP (rhs, 1)));
 	      rhs = XEXP (rhs, 0);
 	    }
 	  else if (GET_CODE (rhs) == ASHIFT
@@ -2007,8 +2014,7 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 		   && INTVAL (XEXP (rhs, 1)) >= 0
 		   && INTVAL (XEXP (rhs, 1)) < HOST_BITS_PER_WIDE_INT)
 	    {
-	      coeff1 = double_int_setbit (double_int_zero,
-					  INTVAL (XEXP (rhs, 1)));
+	      coeff1 = double_int_zero.set_bit (INTVAL (XEXP (rhs, 1)));
 	      rhs = XEXP (rhs, 0);
 	    }
 
@@ -2019,7 +2025,7 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 	      double_int val;
 	      bool speed = optimize_function_for_speed_p (cfun);
 
-	      val = double_int_add (coeff0, coeff1);
+	      val = coeff0 + coeff1;
 	      coeff = immed_double_int_const (val, mode);
 
 	      tem = simplify_gen_binary (MULT, mode, lhs, coeff);
@@ -2157,7 +2163,7 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 	  else if (GET_CODE (lhs) == MULT
 		   && CONST_INT_P (XEXP (lhs, 1)))
 	    {
-	      coeff0 = shwi_to_double_int (INTVAL (XEXP (lhs, 1)));
+	      coeff0 = double_int::from_shwi (INTVAL (XEXP (lhs, 1)));
 	      lhs = XEXP (lhs, 0);
 	    }
 	  else if (GET_CODE (lhs) == ASHIFT
@@ -2165,8 +2171,7 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 		   && INTVAL (XEXP (lhs, 1)) >= 0
 		   && INTVAL (XEXP (lhs, 1)) < HOST_BITS_PER_WIDE_INT)
 	    {
-	      coeff0 = double_int_setbit (double_int_zero,
-					  INTVAL (XEXP (lhs, 1)));
+	      coeff0 = double_int_zero.set_bit (INTVAL (XEXP (lhs, 1)));
 	      lhs = XEXP (lhs, 0);
 	    }
 
@@ -2178,7 +2183,7 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 	  else if (GET_CODE (rhs) == MULT
 		   && CONST_INT_P (XEXP (rhs, 1)))
 	    {
-	      negcoeff1 = shwi_to_double_int (-INTVAL (XEXP (rhs, 1)));
+	      negcoeff1 = double_int::from_shwi (-INTVAL (XEXP (rhs, 1)));
 	      rhs = XEXP (rhs, 0);
 	    }
 	  else if (GET_CODE (rhs) == ASHIFT
@@ -2186,9 +2191,8 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 		   && INTVAL (XEXP (rhs, 1)) >= 0
 		   && INTVAL (XEXP (rhs, 1)) < HOST_BITS_PER_WIDE_INT)
 	    {
-	      negcoeff1 = double_int_setbit (double_int_zero,
-					     INTVAL (XEXP (rhs, 1)));
-	      negcoeff1 = double_int_neg (negcoeff1);
+	      negcoeff1 = double_int_zero.set_bit (INTVAL (XEXP (rhs, 1)));
+	      negcoeff1 = -negcoeff1;
 	      rhs = XEXP (rhs, 0);
 	    }
 
@@ -2199,7 +2203,7 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 	      double_int val;
 	      bool speed = optimize_function_for_speed_p (cfun);
 
-	      val = double_int_add (coeff0, negcoeff1);
+	      val = coeff0 + negcoeff1;
 	      coeff = immed_double_int_const (val, mode);
 
 	      tem = simplify_gen_binary (MULT, mode, lhs, coeff);
@@ -3582,16 +3586,16 @@ simplify_const_binary_operation (enum rtx_code code, enum machine_mode mode,
 	{
 	case MINUS:
 	  /* A - B == A + (-B).  */
-	  o1 = double_int_neg (o1);
+	  o1 = -o1;
 
 	  /* Fall through....  */
 
 	case PLUS:
-	  res = double_int_add (o0, o1);
+	  res = o0 + o1;
 	  break;
 
 	case MULT:
-	  res = double_int_mul (o0, o1);
+	  res = o0 * o1;
 	  break;
 
 	case DIV:
@@ -3627,31 +3631,31 @@ simplify_const_binary_operation (enum rtx_code code, enum machine_mode mode,
 	  break;
 
 	case AND:
-	  res = double_int_and (o0, o1);
+	  res = o0 & o1;
 	  break;
 
 	case IOR:
-	  res = double_int_ior (o0, o1);
+	  res = o0 | o1;
 	  break;
 
 	case XOR:
-	  res = double_int_xor (o0, o1);
+	  res = o0 ^ o1;
 	  break;
 
 	case SMIN:
-	  res = double_int_smin (o0, o1);
+	  res = o0.smin (o1);
 	  break;
 
 	case SMAX:
-	  res = double_int_smax (o0, o1);
+	  res = o0.smax (o1);
 	  break;
 
 	case UMIN:
-	  res = double_int_umin (o0, o1);
+	  res = o0.umin (o1);
 	  break;
 
 	case UMAX:
-	  res = double_int_umax (o0, o1);
+	  res = o0.umax (o1);
 	  break;
 
 	case LSHIFTRT:   case ASHIFTRT:
@@ -3666,22 +3670,21 @@ simplify_const_binary_operation (enum rtx_code code, enum machine_mode mode,
 		o1.low &= GET_MODE_PRECISION (mode) - 1;
 	      }
 
-	    if (!double_int_fits_in_uhwi_p (o1)
-	        || double_int_to_uhwi (o1) >= GET_MODE_PRECISION (mode))
+	    if (!o1.fits_uhwi ()
+	        || o1.to_uhwi () >= GET_MODE_PRECISION (mode))
 	      return 0;
 
-	    cnt = double_int_to_uhwi (o1);
+	    cnt = o1.to_uhwi ();
+	    unsigned short prec = GET_MODE_PRECISION (mode);
 
 	    if (code == LSHIFTRT || code == ASHIFTRT)
-	      res = double_int_rshift (o0, cnt, GET_MODE_PRECISION (mode),
-				       code == ASHIFTRT);
+	      res = o0.rshift (cnt, prec, code == ASHIFTRT);
 	    else if (code == ASHIFT)
-	      res = double_int_lshift (o0, cnt, GET_MODE_PRECISION (mode),
-				       true);
+	      res = o0.alshift (cnt, prec);
 	    else if (code == ROTATE)
-	      res = double_int_lrotate (o0, cnt, GET_MODE_PRECISION (mode));
+	      res = o0.lrotate (cnt, prec);
 	    else /* code == ROTATERT */
-	      res = double_int_rrotate (o0, cnt, GET_MODE_PRECISION (mode));
+	      res = o0.rrotate (cnt, prec);
 	  }
 	  break;
 

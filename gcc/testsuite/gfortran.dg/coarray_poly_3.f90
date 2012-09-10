@@ -3,13 +3,13 @@
 !
 
 
-subroutine cont1(x) ! { dg-error "has the CONTIGUOUS attribute but is not an array pointer or an assumed-shape array" }
+subroutine cont1(x) ! { dg-error "has the CONTIGUOUS attribute but is not an array pointer or an assumed-shape or assumed-rank array" }
   type t
   end type t
   class(t), contiguous, allocatable :: x(:)
 end
 
-subroutine cont2(x) ! { dg-error "has the CONTIGUOUS attribute but is not an array pointer or an assumed-shape array" }
+subroutine cont2(x) ! { dg-error "has the CONTIGUOUS attribute but is not an array pointer or an assumed-shape or assumed-rank array" }
   type t
   end type t
   class(t), contiguous, allocatable :: x(:)[:]

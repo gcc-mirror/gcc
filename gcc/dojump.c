@@ -165,8 +165,7 @@ prefer_and_bit_test (enum machine_mode mode, int bitnum)
 
   /* Fill in the integers.  */
   XEXP (and_test, 1)
-    = immed_double_int_const (double_int_setbit (double_int_zero, bitnum),
-						 mode);
+    = immed_double_int_const (double_int_zero.set_bit (bitnum), mode);
   XEXP (XEXP (shift_test, 0), 1) = GEN_INT (bitnum);
 
   speed_p = optimize_insn_for_speed_p ();

@@ -892,6 +892,10 @@ avr-*-rtems*)
 	;;
 avr-*-*)
 	tm_file="elfos.h avr/elf.h avr/avr.h dbxelf.h avr/avr-stdint.h"
+	if test x${with_avrlibc} != xno; then
+	    tm_file="${tm_file} ${cpu_type}/avrlibc.h"
+	    tm_defines="${tm_defines} WITH_AVRLIBC"
+	fi
 	tmake_file="avr/t-avr avr/t-multilib"
 	use_gcc_stdint=wrap
 	extra_gcc_objs="driver-avr.o avr-devices.o"
@@ -1179,6 +1183,13 @@ i[34567]86-*-openbsd2.*|i[34567]86-*openbsd3.[0123])
 i[34567]86-*-openbsd*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h"
 	tm_file="${tm_file} openbsd.h openbsd-stdint.h openbsd-libpthread.h i386/openbsdelf.h"
+	extra_options="${extra_options} openbsd.opt"
+	gas=yes
+	gnu_ld=yes
+	;;
+x86_64-*-openbsd*)
+	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h"
+	tm_file="${tm_file} openbsd.h openbsd-stdint.h openbsd-libpthread.h i386/x86-64.h i386/openbsdelf.h"
 	extra_options="${extra_options} openbsd.opt"
 	gas=yes
 	gnu_ld=yes

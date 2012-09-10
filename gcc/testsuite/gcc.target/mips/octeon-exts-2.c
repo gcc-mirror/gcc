@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O -march=octeon -meb" } */
+/* { dg-options "-march=octeon -meb" } */
+/* { dg-skip-if "code quality test" { *-*-* } { "-O0" } { "" } } */
 /* { dg-final { scan-assembler-times "\texts\t" 4 } } */
 
 struct bar

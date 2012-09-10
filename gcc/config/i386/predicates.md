@@ -93,33 +93,6 @@
        (match_test "TARGET_64BIT")
        (match_test "REGNO (op) > BX_REG")))
 
-;; Return true if op is not xmm0 register.
-(define_predicate "reg_not_xmm0_operand"
-  (match_operand 0 "register_operand")
-{
-  if (GET_CODE (op) == SUBREG)
-    op = SUBREG_REG (op);
-
-  return !REG_P (op) || REGNO (op) != FIRST_SSE_REG;
-})
-
-;; As above, but also allow memory operands.
-(define_predicate "nonimm_not_xmm0_operand"
-  (ior (match_operand 0 "memory_operand")
-       (match_operand 0 "reg_not_xmm0_operand")))
-
-;; Return true if op is not xmm0 register, but only for non-AVX targets.
-(define_predicate "reg_not_xmm0_operand_maybe_avx"
-  (if_then_else (match_test "TARGET_AVX")
-    (match_operand 0 "register_operand")
-    (match_operand 0 "reg_not_xmm0_operand")))
-
-;; As above, but also allow memory operands.
-(define_predicate "nonimm_not_xmm0_operand_maybe_avx"
-  (if_then_else (match_test "TARGET_AVX")
-    (match_operand 0 "nonimmediate_operand")
-    (match_operand 0 "nonimm_not_xmm0_operand")))
-
 ;; Return true if VALUE can be stored in a sign extended immediate field.
 (define_predicate "x86_64_immediate_operand"
   (match_code "const_int,symbol_ref,label_ref,const")
@@ -970,6 +943,9 @@
 {
   struct ix86_address parts;
   int ok;
+
+  if (TARGET_64BIT || !flag_pic)
+    return true;
 
   ok = ix86_decompose_address (XEXP (op, 0), &parts);
   gcc_assert (ok);

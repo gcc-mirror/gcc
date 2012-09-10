@@ -1,3 +1,136 @@
+2012-09-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/54506
+	* decl.c (move_signature_fn_p): Split out from move_fn_p.
+	* method.c (process_subob_fn): Use it.
+	* cp-tree.h: Declare it.
+
+2012-09-07  Jason Merrill  <jason@redhat.com>
+
+	* semantics.c (sort_constexpr_mem_initializers): Tweak.
+
+2012-09-09  Mark Kettenis  <kettenis@openbsd.org>
+
+	* decl.c (reshape_init_class): Avoid dereferencing a
+	past-the-end pointer.
+		  
+2012-09-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* pt.c (num_template_headers_for_class): Rework per the code
+	inline in cp_parser_check_declarator_template_parameters.
+	* parser.c (cp_parser_check_declarator_template_parameters):
+	Use num_template_headers_for_class.
+
+2012-09-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/54341
+	PR c++/54253
+	* semantics.c (sort_constexpr_mem_initializers): New.
+	(build_constexpr_constructor_member_initializers): Use it.
+	(cx_check_missing_mem_inits): Skip artificial fields.
+	* init.c (expand_aggr_init_1): Don't zero out a class
+	with no data.
+
+2012-09-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54191
+	* search.c (lookup_base): Add tsubst_flags_t parameter.
+	(adjust_result_of_qualified_name_lookup, check_final_overrider):
+	Adjust.
+	* name-lookup.c (do_class_using_decl): Adjust.
+	* typeck2.c (binfo_or_else, build_scoped_ref, build_m_component_ref):
+	Likewise.
+	* cvt.c (cp_convert_to_pointer, convert_to_pointer_force,
+	build_up_reference): Likewise.
+	* rtti.c (build_dynamic_cast_1): Likewise.
+	* tree.c (maybe_dummy_object): Likewise.
+	* call.c (build_conditional_expr_1, build_over_call): Likewise.
+	* cp-tree.h (UNIQUELY_DERIVED_FROM_P, PUBLICLY_UNIQUELY_DERIVED_P):
+	Remove.
+	(enum base_access_flags, ba_quiet): Remove.
+	(uniquely_derived_from_p, publicly_uniquely_derived_p): Declare.
+	* except.c (can_convert_eh): Adjust.
+	* decl.c (grokdeclarator): Likewise.
+	* typeck.c (comp_except_types, build_class_member_access_expr,
+	finish_class_member_access_expr, get_member_function_from_ptrfunc,
+	build_static_cast_1, get_delta_difference_1): Likewise.
+	* class.c (build_base_path, convert_to_base, build_vtbl_ref_1,
+	warn_about_ambiguous_bases): Likewise.
+	(uniquely_derived_from_p, publicly_uniquely_derived_p): Define.
+
+2012-09-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/54441
+	* decl.c (reshape_init_class): Handle invalid initializer for
+	0-length array member.
+
+	* error.c (dump_type_suffix): Correct handling of 0-length arrays.
+
+	PR c++/54420
+	* cp-tree.h (LAMBDANAME_P): Remove.
+	(LAMBDA_TYPE_P): Check CLASSTYPE_LAMBDA_EXPR instead.
+	* cp-lang.c (cxx_dwarf_name): Likewise.
+	* error.c (dump_aggr_type): Likewise.
+	* semantics.c (begin_lambda_type): Set CLASSTYPE_LAMBDA_EXPR sooner.
+
+	PR c++/54198
+	* decl.c (check_default_argument): Set cp_unevaluated_operand
+	around call to perform_implicit_conversion_flags.
+
+	PR c++/54437
+	PR c++/51213
+	* pt.c (fn_type_unification): Call coerce_template_parms before
+	entering substitution context.
+
+2012-08-31  Paolo Carlini  <paolo.carlini@oracle.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/18747
+	* pt.c (check_template_variable): New.
+	(num_template_headers_for_class): Split out...
+	* decl.c (grokdeclarator): ...from here.
+	(start_decl): Remove redundant diagnostic.
+	* cp-tree.h: Declare them
+	* parser.c (cp_parser_single_declaration): Call check_template_variable.
+
+2012-08-31  Ollie Wild  <aaw@google.com>
+
+	PR c++/54197
+	* call.c (extend_ref_init_temps_1): Handle COMPOUND_EXPR trees.
+
+2012-08-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/50545
+	PR c++/51222
+	* pt.c (instantiation_dependent_r): New.
+	(instantiation_dependent_expression_p): New.
+	(value_dependent_expression_p): Use it.  SCOPE_REF is always dependent.
+	* semantics.c (finish_decltype_type): Use it.
+	* cp-tree.h: Declare it.
+
+	* semantics.c (finish_qualified_id_expr): Handle building up a
+	non-dependent SCOPE_REF here.
+	(finish_id_expression): Not here.
+	* error.c (dump_decl) [SCOPE_REF]: Only pass TFF_UNQUALIFIED_NAME.
+
+	* friend.c (make_friend_class): Handle template template parameters.
+	* parser.c (cp_parser_template_declaration_after_export): Likewise.
+	* pt.c (tsubst_friend_class): Likewise.
+	(instantiate_class_template_1): Likewise
+	* decl.c (check_elaborated_type_specifier): Likewise.
+	(lookup_and_check_tag): Likewise.
+
+	* pt.c (get_class_bindings): Call coerce_template_parms.  Add
+	main_tmpl parameter.
+	(more_specialized_class): Add main_tmpl parameter.
+	(most_specialized_class): Adjust calls.
+
+	* decl.c (cp_finish_decl): Check for invalid multiple initializers
+	even if the initializer is dependent.
+
+	* pt.c (instantiate_template_1): Keep processing_template_decl set
+	if there are dependent args.
+
 2012-08-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51421

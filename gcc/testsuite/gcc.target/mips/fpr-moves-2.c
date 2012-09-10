@@ -1,4 +1,5 @@
-/* { dg-options "-mabi=32 -mhard-float -mips1 -O2 -EB" } */
+/* { dg-options "-mabi=32 -mhard-float -mips1 -EB" } */
+/* { dg-skip-if "code quality test" { *-*-* } { "-O0" } { "" } } */
 
 NOMIPS16 void
 foo (double d, double *x)

@@ -407,7 +407,7 @@ struct lto_asm_header
 struct lto_stats_d
 {
   unsigned HOST_WIDE_INT num_input_cgraph_nodes;
-  unsigned HOST_WIDE_INT num_output_cgraph_nodes;
+  unsigned HOST_WIDE_INT num_output_symtab_nodes;
   unsigned HOST_WIDE_INT num_input_files;
   unsigned HOST_WIDE_INT num_output_files;
   unsigned HOST_WIDE_INT num_cgraph_partitions;
@@ -420,21 +420,29 @@ struct lto_stats_d
   unsigned HOST_WIDE_INT num_uncompressed_il_bytes;
 };
 
+/* Entry of LTO symtab encoder.  */
+typedef struct
+{
+  symtab_node node;
+  /* Is the node in this partition (i.e. ltrans of this partition will
+     be responsible for outputting it)? */
+  unsigned int in_partition:1;
+  /* Do we encode body in this partition?  */
+  unsigned int body:1;
+  /* Do we encode initializer in this partition?
+     For example the readonly variable initializers are encoded to aid
+     constant folding even if they are not in the partition.  */
+  unsigned int initializer:1;
+} lto_encoder_entry;
+
+DEF_VEC_O(lto_encoder_entry);
+DEF_VEC_ALLOC_O(lto_encoder_entry, heap);
+
 /* Encoder data structure used to stream callgraph nodes.  */
 struct lto_symtab_encoder_d
 {
-  /* Map nodes to reference number. */
-  struct pointer_map_t *map;
-
-  /* Map reference number to node. */
-  VEC(symtab_node,heap) *nodes;
-
-  /* Map of nodes where we want to output body.  */
-  struct pointer_set_t *body;
-  /* Map of nodes where we want to output initializer.  */
-  struct pointer_set_t *initializer;
-  /* Map of nodes in this partition.  */
-  struct pointer_set_t *in_partition;
+  VEC(lto_encoder_entry,heap) *nodes;
+  pointer_map_t *map;
 };
 
 typedef struct lto_symtab_encoder_d *lto_symtab_encoder_t;
@@ -513,6 +521,18 @@ typedef struct lto_out_decl_state *lto_out_decl_state_ptr;
 DEF_VEC_P(lto_out_decl_state_ptr);
 DEF_VEC_ALLOC_P(lto_out_decl_state_ptr, heap);
 
+/* Compact representation of a index <-> resolution pair. Unpacked to an 
+   vector later. */
+struct res_pair 
+{
+  ld_plugin_symbol_resolution_t res;
+  unsigned index;
+};
+typedef struct res_pair res_pair;
+
+DEF_VEC_O(res_pair);
+DEF_VEC_ALLOC_O(res_pair, heap);
+
 /* One of these is allocated for each object file that being compiled
    by lto.  This structure contains the tables that are needed by the
    serialized functions and ipa passes to connect themselves to the
@@ -548,7 +568,8 @@ struct GTY(()) lto_file_decl_data
   unsigned HOST_WIDE_INT id;
 
   /* Symbol resolutions for this file */
-  VEC(ld_plugin_symbol_resolution_t,heap) * GTY((skip)) resolutions;
+  VEC(res_pair, heap) * GTY((skip)) respairs;
+  unsigned max_index;
 
   struct gcov_ctr_summary GTY((skip)) profile_info;
 };
@@ -812,10 +833,10 @@ void lto_output_location (struct output_block *, location_t);
 
 
 /* In lto-cgraph.c  */
-int lto_symtab_encoder_lookup (lto_symtab_encoder_t, symtab_node);
 lto_symtab_encoder_t lto_symtab_encoder_new (void);
 int lto_symtab_encoder_encode (lto_symtab_encoder_t, symtab_node);
 void lto_symtab_encoder_delete (lto_symtab_encoder_t);
+bool lto_symtab_encoder_delete_node (lto_symtab_encoder_t, symtab_node);
 bool lto_symtab_encoder_encode_body_p (lto_symtab_encoder_t,
 				       struct cgraph_node *);
 bool lto_symtab_encoder_in_partition_p (lto_symtab_encoder_t,
@@ -835,8 +856,7 @@ bool referenced_from_this_partition_p (struct ipa_ref_list *,
 					lto_symtab_encoder_t);
 bool reachable_from_this_partition_p (struct cgraph_node *,
 				      lto_symtab_encoder_t);
-void compute_ltrans_boundary (struct lto_out_decl_state *state,
-			      cgraph_node_set, varpool_node_set);
+lto_symtab_encoder_t compute_ltrans_boundary (lto_symtab_encoder_t encoder);
 
 
 /* In lto-symtab.c.  */
@@ -994,7 +1014,21 @@ emit_label_in_global_context_p (tree label)
 static inline int
 lto_symtab_encoder_size (lto_symtab_encoder_t encoder)
 {
-  return VEC_length (symtab_node, encoder->nodes);
+  return VEC_length (lto_encoder_entry, encoder->nodes);
+}
+
+/* Value used to represent failure of lto_symtab_encoder_lookup.  */
+#define LCC_NOT_FOUND	(-1)
+
+/* Look up NODE in encoder.  Return NODE's reference if it has been encoded
+   or LCC_NOT_FOUND if it is not there.  */
+
+static inline int
+lto_symtab_encoder_lookup (lto_symtab_encoder_t encoder,
+			   symtab_node node)
+{
+  void **slot = pointer_map_contains (encoder->map, node);
+  return (slot && *slot ? (size_t) *(slot) - 1 : LCC_NOT_FOUND);
 }
 
 /* Return true if iterator LSE points to nothing.  */
@@ -1015,25 +1049,25 @@ lsei_next (lto_symtab_encoder_iterator *lsei)
 static inline symtab_node
 lsei_node (lto_symtab_encoder_iterator lsei)
 {
-  return VEC_index (symtab_node, lsei.encoder->nodes, lsei.index);
+  return VEC_index (lto_encoder_entry,
+		    lsei.encoder->nodes, lsei.index).node;
 }
 
 /* Return the node pointed to by LSI.  */
 static inline struct cgraph_node *
 lsei_cgraph_node (lto_symtab_encoder_iterator lsei)
 {
-  return cgraph (VEC_index (symtab_node, lsei.encoder->nodes, lsei.index));
+  return cgraph (VEC_index (lto_encoder_entry,
+			    lsei.encoder->nodes, lsei.index).node);
 }
 
 /* Return the node pointed to by LSI.  */
 static inline struct varpool_node *
 lsei_varpool_node (lto_symtab_encoder_iterator lsei)
 {
-  return varpool (VEC_index (symtab_node, lsei.encoder->nodes, lsei.index));
+  return varpool (VEC_index (lto_encoder_entry,
+			     lsei.encoder->nodes, lsei.index).node);
 }
-
-/* Value used to represent failure of lto_symtab_encoder_lookup.  */
-#define LCC_NOT_FOUND	(-1)
 
 /* Return the cgraph node corresponding to REF using ENCODER.  */
 
@@ -1043,7 +1077,7 @@ lto_symtab_encoder_deref (lto_symtab_encoder_t encoder, int ref)
   if (ref == LCC_NOT_FOUND)
     return NULL;
 
-  return VEC_index (symtab_node, encoder->nodes, ref);
+  return VEC_index (lto_encoder_entry, encoder->nodes, ref).node;
 }
 
 /* Return an iterator to the first node in LSI.  */

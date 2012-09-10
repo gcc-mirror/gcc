@@ -4990,7 +4990,7 @@ expand_builtin_signbit (tree exp, rtx target)
 
   if (bitpos < GET_MODE_BITSIZE (rmode))
     {
-      double_int mask = double_int_setbit (double_int_zero, bitpos);
+      double_int mask = double_int_zero.set_bit (bitpos);
 
       if (GET_MODE_SIZE (imode) > GET_MODE_SIZE (rmode))
 	temp = gen_lowpart (rmode, temp);
@@ -8775,14 +8775,14 @@ fold_builtin_memory_op (location_t loc, tree dest, tree src,
 		  if (! operand_equal_p (TREE_OPERAND (src_base, 0),
 					 TREE_OPERAND (dest_base, 0), 0))
 		    return NULL_TREE;
-		  off = double_int_add (mem_ref_offset (src_base),
-					shwi_to_double_int (src_offset));
-		  if (!double_int_fits_in_shwi_p (off))
+		  off = mem_ref_offset (src_base) +
+					double_int::from_shwi (src_offset);
+		  if (!off.fits_shwi ())
 		    return NULL_TREE;
 		  src_offset = off.low;
-		  off = double_int_add (mem_ref_offset (dest_base),
-					shwi_to_double_int (dest_offset));
-		  if (!double_int_fits_in_shwi_p (off))
+		  off = mem_ref_offset (dest_base) +
+					double_int::from_shwi (dest_offset);
+		  if (!off.fits_shwi ())
 		    return NULL_TREE;
 		  dest_offset = off.low;
 		  if (ranges_overlap_p (src_offset, maxsize,
@@ -11890,7 +11890,7 @@ fold_builtin_strspn (location_t loc, tree s1, tree s2)
       if (p1 && p2)
 	{
 	  const size_t r = strspn (p1, p2);
-	  return size_int (r);
+	  return build_int_cst (size_type_node, r);
 	}
 
       /* If either argument is "", return NULL_TREE.  */
@@ -11935,7 +11935,7 @@ fold_builtin_strcspn (location_t loc, tree s1, tree s2)
       if (p1 && p2)
 	{
 	  const size_t r = strcspn (p1, p2);
-	  return size_int (r);
+	  return build_int_cst (size_type_node, r);
 	}
 
       /* If the first argument is "", return NULL_TREE.  */
@@ -12696,7 +12696,7 @@ fold_builtin_object_size (tree ptr, tree ost)
     {
       bytes = compute_builtin_object_size (ptr, object_size_type);
       if (double_int_fits_to_tree_p (size_type_node,
-				     uhwi_to_double_int (bytes)))
+				     double_int::from_uhwi (bytes)))
 	return build_int_cstu (size_type_node, bytes);
     }
   else if (TREE_CODE (ptr) == SSA_NAME)
@@ -12707,7 +12707,7 @@ fold_builtin_object_size (tree ptr, tree ost)
       bytes = compute_builtin_object_size (ptr, object_size_type);
       if (bytes != (unsigned HOST_WIDE_INT) (object_size_type < 2 ? -1 : 0)
           && double_int_fits_to_tree_p (size_type_node,
-					uhwi_to_double_int (bytes)))
+					double_int::from_uhwi (bytes)))
 	return build_int_cstu (size_type_node, bytes);
     }
 

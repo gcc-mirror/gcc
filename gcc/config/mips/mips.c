@@ -3943,9 +3943,11 @@ mips_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
 /* Implement TARGET_ADDRESS_COST.  */
 
 static int
-mips_address_cost (rtx addr, bool speed ATTRIBUTE_UNUSED)
+mips_address_cost (rtx addr, enum machine_mode mode,
+		   addr_space_t as ATTRIBUTE_UNUSED,
+		   bool speed ATTRIBUTE_UNUSED)
 {
-  return mips_address_insns (addr, SImode, false);
+  return mips_address_insns (addr, mode, false);
 }
 
 /* Information about a single instruction in a multi-instruction
@@ -14706,19 +14708,25 @@ mips_pic_call_symbol_from_set (df_ref def, rtx reg, bool recurse_p)
     {
       rtx note, src, symbol;
 
-      /* First, look at REG_EQUAL/EQUIV notes.  */
-      note = find_reg_equal_equiv_note (def_insn);
-      if (note && GET_CODE (XEXP (note, 0)) == SYMBOL_REF)
-	return XEXP (note, 0);
-
-      /* For %call16 references we don't have REG_EQUAL.  */
+      /* First see whether the source is a plain symbol.  This is used
+	 when calling symbols that are not lazily bound.  */
       src = SET_SRC (set);
+      if (GET_CODE (src) == SYMBOL_REF)
+	return src;
+
+      /* Handle %call16 references.  */
       symbol = mips_strip_unspec_call (src);
       if (symbol)
 	{
 	  gcc_assert (GET_CODE (symbol) == SYMBOL_REF);
 	  return symbol;
 	}
+
+      /* If we have something more complicated, look for a
+	 REG_EQUAL or REG_EQUIV note.  */
+      note = find_reg_equal_equiv_note (def_insn);
+      if (note && GET_CODE (XEXP (note, 0)) == SYMBOL_REF)
+	return XEXP (note, 0);
 
       /* Follow at most one simple register copy.  Such copies are
 	 interesting in cases like:
@@ -15145,7 +15153,8 @@ vr4130_align_insns (void)
 	 the fly to avoid a separate instruction walk.  */
       vr4130_avoid_branch_rt_conflict (insn);
 
-      if (USEFUL_INSN_P (insn))
+      length = get_attr_length (insn);
+      if (length > 0 && USEFUL_INSN_P (insn))
 	FOR_EACH_SUBINSN (subinsn, insn)
 	  {
 	    mips_sim_wait_insn (&state, subinsn);
@@ -15180,6 +15189,7 @@ vr4130_align_insns (void)
 		       issuing at the same time as the branch.  We therefore
 		       insert a nop before the branch in order to align its
 		       delay slot.  */
+		    gcc_assert (last2);
 		    emit_insn_after (gen_nop (), last2);
 		    aligned_p = false;
 		  }
@@ -15188,6 +15198,7 @@ vr4130_align_insns (void)
 		    /* SUBINSN is the delay slot of INSN, but INSN is
 		       currently unaligned.  Insert a nop between
 		       LAST and INSN to align it.  */
+		    gcc_assert (last);
 		    emit_insn_after (gen_nop (), last);
 		    aligned_p = true;
 		  }
@@ -15720,7 +15731,10 @@ mips_reorg (void)
     }
 
   if (optimize > 0 && flag_delayed_branch)
-    dbr_schedule (get_insns ());
+    {
+      cleanup_barriers ();
+      dbr_schedule (get_insns ());
+    }
   mips_reorg_process_insns ();
   if (!TARGET_MIPS16
       && TARGET_EXPLICIT_RELOCS

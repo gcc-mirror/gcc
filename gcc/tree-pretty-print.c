@@ -1366,8 +1366,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 		  }
 		else if (is_array_init
 			 && (TREE_CODE (field) != INTEGER_CST
-			     || !double_int_equal_p (tree_to_double_int (field),
-						     curidx)))
+			     || tree_to_double_int (field) != curidx))
 		  {
 		    pp_character (buffer, '[');
 		    if (TREE_CODE (field) == RANGE_EXPR)
@@ -1388,7 +1387,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 		  }
 	      }
             if (is_array_init)
-	      curidx = double_int_add (curidx, double_int_one);
+	      curidx += double_int_one;
 	    if (val && TREE_CODE (val) == ADDR_EXPR)
 	      if (TREE_CODE (TREE_OPERAND (val, 0)) == FUNCTION_DECL)
 		val = TREE_OPERAND (val, 0);
@@ -1472,9 +1471,6 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	  		 false);
       pp_space (buffer);
       pp_character (buffer, '=');
-      if (TREE_CODE (node) == MODIFY_EXPR
-	  && MOVE_NONTEMPORAL (node))
-	pp_string (buffer, "{nt}");
       pp_space (buffer);
       dump_generic_node (buffer, TREE_OPERAND (node, 1), spc, flags,
 	  		 false);

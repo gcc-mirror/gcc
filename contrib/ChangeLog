@@ -1,3 +1,11 @@
+2012-09-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* make_sunver.pl: Add missing newline at the end of extern "C++" block.
+
+2012-08-24   Diego Novillo  <dnovillo@google.com>
+
+	* testsuite-management/x86_64-unknown-linux-gnu.xfail: Update.
+	
 2012-08-14   Diego Novillo  <dnovillo@google.com>
 
 	* testsuite-management/x86_64-unknown-linux-gnu.xfail: New.

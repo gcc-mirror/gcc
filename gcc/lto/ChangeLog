@@ -1,3 +1,44 @@
+2012-09-10  Jan Hubicka  <jh@suse.cz>
+
+	* lto-partition.c (partition_symbol_p): Forward declare.
+	(add_references_to_partition): Reimplement using partition_symbol_p.
+	(add_aliases_to_partition): Break out from add_references_to_partition;
+	reimplement using partition_symbol_p.
+	(add_cgraph_node_to_partition_1): Handle callees using partition_symbol_p;
+	add sanity checks.
+	(add_varpool_node_to_partition): Use add_aliases_to_partition.
+	(partition_varpool_node_p): Do not special case aliases.
+
+2012-08-12  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (lto_wpa_write_files): Do not delete partition encoder;
+	it is deleted after streaming.
+	* lto-partition.c (partition_symbol_p): New function.
+	(promote_var, promote_fn): Remove.
+	(promote_symbol): New function.
+	(lto_promote_cross_file_statics): First compute boundaries; rewrite
+	to lookup the actual boundaries instead of computing them ad-hoc.
+
+2012-08-12  Jan Hubicka  <jh@suse.cz>
+
+	Replace cgraph_node_set and varpool_node_set by symtab_node_encoder
+	in partitioning.
+	* lto-partition.h (ltrans_partition_def): Replace cgraph_set and varpool_set
+	by encoder.
+	* lto-partition.c (new_partition): Update.
+	* lto.c (cmp_partitions_order): Update.
+	(lto_wpa_write_files): Update.
+	(free_ltrans_partitions): Update.
+	(add_references_to_partition): Update.
+	(add_cgraph_node_to_partition_1): Update.
+	(add_cgraph_node_to_partition): Update.
+	(add_varpool_node_to_partition): Update.
+	(undo_partition): Update.
+	(lto_balanced_map): Update.
+	(set_referenced_from_other_partition_p, set_reachable_from_other_partition_p,
+	set_referenced_from_this_partition_p): Update.
+	(lto_promote_cross_file_statics): Update.
+
 2012-08-12  Jan Hubicka  <jh@suse.cz>
 
 	* lto-partition.c (set_referenced_from_other_partition_p,

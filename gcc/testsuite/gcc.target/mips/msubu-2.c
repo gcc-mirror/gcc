@@ -1,5 +1,7 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -march=vr5500 -mgp32" } */
+/* This test requires widening_mul */
+/* { dg-options "-march=vr5500 -mgp32 -fexpensive-optimizations" } */
+/* { dg-skip-if "code quality test" { *-*-* } { "-O0" } { "" } } */
 /* { dg-final { scan-assembler-times "\tmsubu\t" 2 } } */
 
 typedef unsigned int ui;

@@ -2902,10 +2902,9 @@ get_constraint_for_ptr_offset (tree ptr, tree offset,
   else
     {
       /* Sign-extend the offset.  */
-      double_int soffset
-	= double_int_sext (tree_to_double_int (offset),
-			   TYPE_PRECISION (TREE_TYPE (offset)));
-      if (!double_int_fits_in_shwi_p (soffset))
+      double_int soffset = tree_to_double_int (offset)
+			   .sext (TYPE_PRECISION (TREE_TYPE (offset)));
+      if (!soffset.fits_shwi ())
 	rhsoffset = UNKNOWN_OFFSET;
       else
 	{
@@ -3744,29 +3743,43 @@ handle_rhs_call (gimple stmt, VEC(ce_s, heap) **results)
       /* As we compute ESCAPED context-insensitive we do not gain
          any precision with just EAF_NOCLOBBER but not EAF_NOESCAPE
 	 set.  The argument would still get clobbered through the
-	 escape solution.
-	 ???  We might get away with less (and more precise) constraints
-	 if using a temporary for transitively closing things.  */
+	 escape solution.  */
       if ((flags & EAF_NOCLOBBER)
 	   && (flags & EAF_NOESCAPE))
 	{
 	  varinfo_t uses = get_call_use_vi (stmt);
 	  if (!(flags & EAF_DIRECT))
-	    make_transitive_closure_constraints (uses);
-	  make_constraint_to (uses->id, arg);
+	    {
+	      varinfo_t tem = new_var_info (NULL_TREE, "callarg");
+	      make_constraint_to (tem->id, arg);
+	      make_transitive_closure_constraints (tem);
+	      make_copy_constraint (uses, tem->id);
+	    }
+	  else
+	    make_constraint_to (uses->id, arg);
 	  returns_uses = true;
 	}
       else if (flags & EAF_NOESCAPE)
 	{
+	  struct constraint_expr lhs, rhs;
 	  varinfo_t uses = get_call_use_vi (stmt);
 	  varinfo_t clobbers = get_call_clobber_vi (stmt);
+	  varinfo_t tem = new_var_info (NULL_TREE, "callarg");
+	  make_constraint_to (tem->id, arg);
 	  if (!(flags & EAF_DIRECT))
-	    {
-	      make_transitive_closure_constraints (uses);
-	      make_transitive_closure_constraints (clobbers);
-	    }
-	  make_constraint_to (uses->id, arg);
-	  make_constraint_to (clobbers->id, arg);
+	    make_transitive_closure_constraints (tem);
+	  make_copy_constraint (uses, tem->id);
+	  make_copy_constraint (clobbers, tem->id);
+	  /* Add *tem = nonlocal, do not add *tem = callused as
+	     EAF_NOESCAPE parameters do not escape to other parameters
+	     and all other uses appear in NONLOCAL as well.  */
+	  lhs.type = DEREF;
+	  lhs.var = tem->id;
+	  lhs.offset = 0;
+	  rhs.type = SCALAR;
+	  rhs.var = nonlocal_id;
+	  rhs.offset = 0;
+	  process_constraint (new_constraint (lhs, rhs));
 	  returns_uses = true;
 	}
       else
@@ -4527,6 +4540,18 @@ find_func_aliases (gimple origt)
 			 && !POINTER_TYPE_P (TREE_TYPE (rhsop))))
 		   || gimple_assign_single_p (t))
 	    get_constraint_for_rhs (rhsop, &rhsc);
+	  else if (code == COND_EXPR)
+	    {
+	      /* The result is a merge of both COND_EXPR arms.  */
+	      VEC (ce_s, heap) *tmp = NULL;
+	      struct constraint_expr *rhsp;
+	      unsigned i;
+	      get_constraint_for_rhs (gimple_assign_rhs2 (t), &rhsc);
+	      get_constraint_for_rhs (gimple_assign_rhs3 (t), &tmp);
+	      FOR_EACH_VEC_ELT (ce_s, tmp, i, rhsp)
+		VEC_safe_push (ce_s, heap, rhsc, rhsp);
+	      VEC_free (ce_s, heap, tmp);
+	    }
 	  else if (truth_value_p (code))
 	    /* Truth value results are not pointer (parts).  Or at least
 	       very very unreasonable obfuscation of a part.  */

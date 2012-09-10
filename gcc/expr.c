@@ -727,11 +727,11 @@ convert_modes (enum machine_mode mode, enum machine_mode oldmode, rtx x, int uns
       && GET_MODE_BITSIZE (mode) == HOST_BITS_PER_DOUBLE_INT
       && CONST_INT_P (x) && INTVAL (x) < 0)
     {
-      double_int val = uhwi_to_double_int (INTVAL (x));
+      double_int val = double_int::from_uhwi (INTVAL (x));
 
       /* We need to zero extend VAL.  */
       if (oldmode != VOIDmode)
-	val = double_int_zext (val, GET_MODE_BITSIZE (oldmode));
+	val = val.zext (GET_MODE_BITSIZE (oldmode));
 
       return immed_double_int_const (val, mode);
     }
@@ -6557,9 +6557,7 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
       switch (TREE_CODE (exp))
 	{
 	case BIT_FIELD_REF:
-	  bit_offset
-	    = double_int_add (bit_offset,
-			      tree_to_double_int (TREE_OPERAND (exp, 2)));
+	  bit_offset += tree_to_double_int (TREE_OPERAND (exp, 2));
 	  break;
 
 	case COMPONENT_REF:
@@ -6574,9 +6572,7 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
 	      break;
 
 	    offset = size_binop (PLUS_EXPR, offset, this_offset);
-	    bit_offset = double_int_add (bit_offset,
-					 tree_to_double_int
-					   (DECL_FIELD_BIT_OFFSET (field)));
+	    bit_offset += tree_to_double_int (DECL_FIELD_BIT_OFFSET (field));
 
 	    /* ??? Right now we don't do anything with DECL_OFFSET_ALIGN.  */
 	  }
@@ -6608,8 +6604,7 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
 	  break;
 
 	case IMAGPART_EXPR:
-	  bit_offset = double_int_add (bit_offset,
-				       uhwi_to_double_int (*pbitsize));
+	  bit_offset += double_int::from_uhwi (*pbitsize);
 	  break;
 
 	case VIEW_CONVERT_EXPR:
@@ -6631,11 +6626,10 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
 	      if (!integer_zerop (off))
 		{
 		  double_int boff, coff = mem_ref_offset (exp);
-		  boff = double_int_lshift (coff,
-					    BITS_PER_UNIT == 8
-					    ? 3 : exact_log2 (BITS_PER_UNIT),
-					    HOST_BITS_PER_DOUBLE_INT, true);
-		  bit_offset = double_int_add (bit_offset, boff);
+		  boff = coff.alshift (BITS_PER_UNIT == 8
+				       ? 3 : exact_log2 (BITS_PER_UNIT),
+				       HOST_BITS_PER_DOUBLE_INT);
+		  bit_offset += boff;
 		}
 	      exp = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
 	    }
@@ -6659,15 +6653,13 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
   if (TREE_CODE (offset) == INTEGER_CST)
     {
       double_int tem = tree_to_double_int (offset);
-      tem = double_int_sext (tem, TYPE_PRECISION (sizetype));
-      tem = double_int_lshift (tem,
-			       BITS_PER_UNIT == 8
-			       ? 3 : exact_log2 (BITS_PER_UNIT),
-			       HOST_BITS_PER_DOUBLE_INT, true);
-      tem = double_int_add (tem, bit_offset);
-      if (double_int_fits_in_shwi_p (tem))
+      tem = tem.sext (TYPE_PRECISION (sizetype));
+      tem = tem.alshift (BITS_PER_UNIT == 8 ? 3 : exact_log2 (BITS_PER_UNIT),
+			 HOST_BITS_PER_DOUBLE_INT);
+      tem += bit_offset;
+      if (tem.fits_shwi ())
 	{
-	  *pbitpos = double_int_to_shwi (tem);
+	  *pbitpos = tem.to_shwi ();
 	  *poffset = offset = NULL_TREE;
 	}
     }
@@ -6676,24 +6668,23 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
   if (offset)
     {
       /* Avoid returning a negative bitpos as this may wreak havoc later.  */
-      if (double_int_negative_p (bit_offset))
+      if (bit_offset.is_negative ())
         {
 	  double_int mask
-	    = double_int_mask (BITS_PER_UNIT == 8
+	    = double_int::mask (BITS_PER_UNIT == 8
 			       ? 3 : exact_log2 (BITS_PER_UNIT));
-	  double_int tem = double_int_and_not (bit_offset, mask);
+	  double_int tem = bit_offset.and_not (mask);
 	  /* TEM is the bitpos rounded to BITS_PER_UNIT towards -Inf.
 	     Subtract it to BIT_OFFSET and add it (scaled) to OFFSET.  */
-	  bit_offset = double_int_sub (bit_offset, tem);
-	  tem = double_int_rshift (tem,
-				   BITS_PER_UNIT == 8
-				   ? 3 : exact_log2 (BITS_PER_UNIT),
-				   HOST_BITS_PER_DOUBLE_INT, true);
+	  bit_offset -= tem;
+	  tem = tem.arshift (BITS_PER_UNIT == 8
+			     ? 3 : exact_log2 (BITS_PER_UNIT),
+			     HOST_BITS_PER_DOUBLE_INT);
 	  offset = size_binop (PLUS_EXPR, offset,
 			       double_int_to_tree (sizetype, tem));
 	}
 
-      *pbitpos = double_int_to_shwi (bit_offset);
+      *pbitpos = bit_offset.to_shwi ();
       *poffset = offset;
     }
 
@@ -8720,7 +8711,7 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
       if (reduce_bit_field && TYPE_UNSIGNED (type))
 	temp = expand_binop (mode, xor_optab, op0,
 			     immed_double_int_const
-			       (double_int_mask (TYPE_PRECISION (type)), mode),
+			       (double_int::mask (TYPE_PRECISION (type)), mode),
 			     target, 1, OPTAB_LIB_WIDEN);
       else
 	temp = expand_unop (mode, one_cmpl_optab, op0, target, 1);
@@ -10319,13 +10310,13 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 		     value ? label : 0,
 		     value ? 0 : label, -1);
 	    expand_assignment (lhs, build_int_cst (TREE_TYPE (rhs), value),
-			       MOVE_NONTEMPORAL (exp));
+			       false);
 	    do_pending_stack_adjust ();
 	    emit_label (label);
 	    return const0_rtx;
 	  }
 
-	expand_assignment (lhs, rhs, MOVE_NONTEMPORAL (exp));
+	expand_assignment (lhs, rhs, false);
 	return const0_rtx;
       }
 
@@ -10407,7 +10398,7 @@ reduce_to_bit_field_precision (rtx exp, rtx target, tree type)
     }
   else if (TYPE_UNSIGNED (type))
     {
-      rtx mask = immed_double_int_const (double_int_mask (prec),
+      rtx mask = immed_double_int_const (double_int::mask (prec),
 					 GET_MODE (exp));
       return expand_and (GET_MODE (exp), exp, mask, target);
     }

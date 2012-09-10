@@ -845,6 +845,12 @@
 /* Define if code specialized for wchar_t should be used. */
 #undef _GLIBCXX_USE_WCHAR_T
 
+/* Define to 1 if a verbose library is built, or 0 otherwise. */
+#undef _GLIBCXX_VERBOSE
+
+/* Defined if as can handle rdrand. */
+#undef _GLIBCXX_X86_RDRAND
+
 /* Define to 1 if mutex_timedlock is available. */
 #undef _GTHREAD_USE_MUTEX_TIMEDLOCK
 

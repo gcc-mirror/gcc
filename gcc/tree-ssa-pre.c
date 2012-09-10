@@ -368,9 +368,7 @@ typedef struct bitmap_set
   EXECUTE_IF_SET_IN_BITMAP(&(set)->values, 0, (id), (bi))
 
 /* Mapping from value id to expressions with that value_id.  */
-DEF_VEC_P (bitmap_set_t);
-DEF_VEC_ALLOC_P (bitmap_set_t, heap);
-static VEC(bitmap_set_t, heap) *value_expressions;
+static VEC(bitmap, heap) *value_expressions;
 
 /* Sets that we need to keep track of.  */
 typedef struct bb_bitmap_sets
@@ -580,24 +578,23 @@ phi_trans_add (pre_expr e, pre_expr v, basic_block pred)
 static void
 add_to_value (unsigned int v, pre_expr e)
 {
-  bitmap_set_t set;
+  bitmap set;
 
-  gcc_assert (get_expr_value_id (e) == v);
+  gcc_checking_assert (get_expr_value_id (e) == v);
 
-  if (v >= VEC_length (bitmap_set_t, value_expressions))
+  if (v >= VEC_length (bitmap, value_expressions))
     {
-      VEC_safe_grow_cleared (bitmap_set_t, heap, value_expressions,
-			     v + 1);
+      VEC_safe_grow_cleared (bitmap, heap, value_expressions, v + 1);
     }
 
-  set = VEC_index (bitmap_set_t, value_expressions, v);
+  set = VEC_index (bitmap, value_expressions, v);
   if (!set)
     {
-      set = bitmap_set_new ();
-      VEC_replace (bitmap_set_t, value_expressions, v, set);
+      set = BITMAP_ALLOC (&grand_bitmap_obstack);
+      VEC_replace (bitmap, value_expressions, v, set);
     }
 
-  bitmap_insert_into_set_1 (set, e, v, true);
+  bitmap_set_bit (set, get_or_alloc_expression_id (e));
 }
 
 /* Create a new bitmap set and return it.  */
@@ -717,8 +714,8 @@ sorted_array_from_bitmap_set (bitmap_set_t set)
 
 	 If this is somehow a significant lose for some cases, we can
 	 choose which set to walk based on the set size.  */
-      bitmap_set_t exprset = VEC_index (bitmap_set_t, value_expressions, i);
-      FOR_EACH_EXPR_ID_IN_SET (exprset, j, bj)
+      bitmap exprset = VEC_index (bitmap, value_expressions, i);
+      EXECUTE_IF_SET_IN_BITMAP (exprset, 0, j, bj)
 	{
 	  if (bitmap_bit_p (&set->expressions, j))
 	    VEC_safe_push (pre_expr, heap, result, expression_for_id (j));
@@ -824,7 +821,7 @@ static void
 bitmap_set_replace_value (bitmap_set_t set, unsigned int lookfor,
 			  const pre_expr expr)
 {
-  bitmap_set_t exprset;
+  bitmap exprset;
   unsigned int i;
   bitmap_iterator bi;
 
@@ -843,8 +840,8 @@ bitmap_set_replace_value (bitmap_set_t set, unsigned int lookfor,
      5-10x faster than walking the bitmap.  If this is somehow a
      significant lose for some cases, we can choose which set to walk
      based on the set size.  */
-  exprset = VEC_index (bitmap_set_t, value_expressions, lookfor);
-  FOR_EACH_EXPR_ID_IN_SET (exprset, i, bi)
+  exprset = VEC_index (bitmap, value_expressions, lookfor);
+  EXECUTE_IF_SET_IN_BITMAP (exprset, 0, i, bi)
     {
       if (bitmap_clear_bit (&set->expressions, i))
 	{
@@ -1042,12 +1039,14 @@ debug_bitmap_sets_for (basic_block bb)
 static void
 print_value_expressions (FILE *outfile, unsigned int val)
 {
-  bitmap_set_t set = VEC_index (bitmap_set_t, value_expressions, val);
+  bitmap set = VEC_index (bitmap, value_expressions, val);
   if (set)
     {
+      bitmap_set x;
       char s[10];
       sprintf (s, "%04d", val);
-      print_bitmap_set (outfile, set, s, 0);
+      x.expressions = *set;
+      print_bitmap_set (outfile, &x, s, 0);
     }
 }
 
@@ -1095,9 +1094,9 @@ get_constant_for_value_id (unsigned int v)
     {
       unsigned int i;
       bitmap_iterator bi;
-      bitmap_set_t exprset = VEC_index (bitmap_set_t, value_expressions, v);
+      bitmap exprset = VEC_index (bitmap, value_expressions, v);
 
-      FOR_EACH_EXPR_ID_IN_SET (exprset, i, bi)
+      EXECUTE_IF_SET_IN_BITMAP (exprset, 0, i, bi)
 	{
 	  pre_expr expr = expression_for_id (i);
 	  if (expr->kind == CONSTANT)
@@ -1292,7 +1291,7 @@ translate_vuse_through_block (VEC (vn_reference_op_s, heap) *operands,
 	  unsigned int cnt;
 	  /* Try to find a vuse that dominates this phi node by skipping
 	     non-clobbering statements.  */
-	  vuse = get_continuation_for_phi (phi, &ref, &cnt, &visited);
+	  vuse = get_continuation_for_phi (phi, &ref, &cnt, &visited, false);
 	  if (visited)
 	    BITMAP_FREE (visited);
 	}
@@ -1377,9 +1376,8 @@ get_representative_for (const pre_expr e)
 	   and pick out an SSA_NAME.  */
 	unsigned int i;
 	bitmap_iterator bi;
-	bitmap_set_t exprs = VEC_index (bitmap_set_t, value_expressions,
-					value_id);
-	FOR_EACH_EXPR_ID_IN_SET (exprs, i, bi)
+	bitmap exprs = VEC_index (bitmap, value_expressions, value_id);
+	EXECUTE_IF_SET_IN_BITMAP (exprs, 0, i, bi)
 	  {
 	    pre_expr rep = expression_for_id (i);
 	    if (rep->kind == NAME)
@@ -1499,7 +1497,7 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 	    else
 	      {
 		new_val_id = get_next_value_id ();
-		VEC_safe_grow_cleared (bitmap_set_t, heap,
+		VEC_safe_grow_cleared (bitmap, heap,
 				       value_expressions,
 				       get_max_value_id() + 1);
 		nary = vn_nary_op_insert_pieces (newnary->length,
@@ -1602,11 +1600,9 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 		&& TREE_CODE (op[2]) == INTEGER_CST)
 	      {
 		double_int off = tree_to_double_int (op[0]);
-		off = double_int_add (off,
-				      double_int_neg
-				        (tree_to_double_int (op[1])));
-		off = double_int_mul (off, tree_to_double_int (op[2]));
-		if (double_int_fits_in_shwi_p (off))
+		off += -tree_to_double_int (op[1]);
+		off *= tree_to_double_int (op[2]);
+		if (off.fits_shwi ())
 		  newop.off = off.low;
 	      }
 	    VEC_replace (vn_reference_op_s, newoperands, j, newop);
@@ -1698,7 +1694,7 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 		if (changed || !same_valid)
 		  {
 		    new_val_id = get_next_value_id ();
-		    VEC_safe_grow_cleared (bitmap_set_t, heap,
+		    VEC_safe_grow_cleared (bitmap, heap,
 					   value_expressions,
 					   get_max_value_id() + 1);
 		  }
@@ -1851,9 +1847,9 @@ bitmap_find_leader (bitmap_set_t set, unsigned int val, gimple stmt)
     {
       unsigned int i;
       bitmap_iterator bi;
-      bitmap_set_t exprset = VEC_index (bitmap_set_t, value_expressions, val);
+      bitmap exprset = VEC_index (bitmap, value_expressions, val);
 
-      FOR_EACH_EXPR_ID_IN_SET (exprset, i, bi)
+      EXECUTE_IF_SET_IN_BITMAP (exprset, 0, i, bi)
 	{
 	  pre_expr expr = expression_for_id (i);
 	  if (expr->kind == CONSTANT)
@@ -1875,10 +1871,9 @@ bitmap_find_leader (bitmap_set_t set, unsigned int val, gimple stmt)
 	 choose which set to walk based on which set is smaller.  */
       unsigned int i;
       bitmap_iterator bi;
-      bitmap_set_t exprset = VEC_index (bitmap_set_t, value_expressions, val);
+      bitmap exprset = VEC_index (bitmap, value_expressions, val);
 
-      EXECUTE_IF_AND_IN_BITMAP (&exprset->expressions,
-				&set->expressions, 0, i, bi)
+      EXECUTE_IF_AND_IN_BITMAP (exprset, &set->expressions, 0, i, bi)
 	{
 	  pre_expr val = expression_for_id (i);
 	  /* At the point where stmt is not null, there should always
@@ -2916,14 +2911,14 @@ find_or_generate_expression (basic_block block, pre_expr expr,
   if (genop == NULL
       && !domstmt)
     {
-      bitmap_set_t exprset;
+      bitmap exprset;
       unsigned int lookfor = get_expr_value_id (expr);
       bool handled = false;
       bitmap_iterator bi;
       unsigned int i;
 
-      exprset = VEC_index (bitmap_set_t, value_expressions, lookfor);
-      FOR_EACH_EXPR_ID_IN_SET (exprset, i, bi)
+      exprset = VEC_index (bitmap, value_expressions, lookfor);
+      EXECUTE_IF_SET_IN_BITMAP (exprset, 0, i, bi)
 	{
 	  pre_expr temp = expression_for_id (i);
 	  if (temp->kind != NAME)
@@ -3542,11 +3537,10 @@ do_regular_insertion (basic_block block, basic_block dom)
 	    {
 	      unsigned int j;
 	      bitmap_iterator bi;
-	      bitmap_set_t exprset = VEC_index (bitmap_set_t,
-						value_expressions, val);
+	      bitmap exprset = VEC_index (bitmap, value_expressions, val);
 
 	      unsigned int new_val = get_expr_value_id (edoubleprime);
-	      FOR_EACH_EXPR_ID_IN_SET (exprset, j, bi)
+	      EXECUTE_IF_SET_IN_BITMAP (exprset, 0, j, bi)
 		{
 		  pre_expr expr = expression_for_id (j);
 
@@ -3786,14 +3780,15 @@ insert (void)
 static void
 add_to_exp_gen (basic_block block, tree op)
 {
-  if (!in_fre)
-    {
-      pre_expr result;
-      if (TREE_CODE (op) == SSA_NAME && ssa_undefined_value_p (op))
-	return;
-      result = get_or_alloc_expr_for_name (op);
-      bitmap_value_insert_into_set (EXP_GEN (block), result);
-    }
+  pre_expr result;
+
+  gcc_checking_assert (!in_fre);
+
+  if (TREE_CODE (op) == SSA_NAME && ssa_undefined_value_p (op))
+    return;
+
+  result = get_or_alloc_expr_for_name (op);
+  bitmap_value_insert_into_set (EXP_GEN (block), result);
 }
 
 /* Create value ids for PHI in BLOCK.  */
@@ -3805,23 +3800,23 @@ make_values_for_phi (gimple phi, basic_block block)
 
   /* We have no need for virtual phis, as they don't represent
      actual computations.  */
-  if (!virtual_operand_p (result))
+  if (virtual_operand_p (result))
+    return;
+
+  pre_expr e = get_or_alloc_expr_for_name (result);
+  add_to_value (get_expr_value_id (e), e);
+  bitmap_value_insert_into_set (AVAIL_OUT (block), e);
+  if (!in_fre)
     {
-      pre_expr e = get_or_alloc_expr_for_name (result);
-      add_to_value (get_expr_value_id (e), e);
+      unsigned i;
       bitmap_insert_into_set (PHI_GEN (block), e);
-      bitmap_value_insert_into_set (AVAIL_OUT (block), e);
-      if (!in_fre)
+      for (i = 0; i < gimple_phi_num_args (phi); ++i)
 	{
-	  unsigned i;
-	  for (i = 0; i < gimple_phi_num_args (phi); ++i)
+	  tree arg = gimple_phi_arg_def (phi, i);
+	  if (TREE_CODE (arg) == SSA_NAME)
 	    {
-	      tree arg = gimple_phi_arg_def (phi, i);
-	      if (TREE_CODE (arg) == SSA_NAME)
-		{
-		  e = get_or_alloc_expr_for_name (arg);
-		  add_to_value (get_expr_value_id (e), e);
-		}
+	      e = get_or_alloc_expr_for_name (arg);
+	      add_to_value (get_expr_value_id (e), e);
 	    }
 	}
     }
@@ -3934,6 +3929,10 @@ compute_avail (void)
 	      bitmap_value_insert_into_set (AVAIL_OUT (block), e);
 	    }
 
+	  /* That's all we need to do when doing FRE.  */
+	  if (in_fre)
+	    continue;
+
 	  if (gimple_has_side_effects (stmt) || stmt_could_throw_p (stmt))
 	    continue;
 
@@ -3992,8 +3991,7 @@ compute_avail (void)
 
 		    get_or_alloc_expression_id (result);
 		    add_to_value (get_expr_value_id (result), result);
-		    if (!in_fre)
-		      bitmap_value_insert_into_set (EXP_GEN (block), result);
+		    bitmap_value_insert_into_set (EXP_GEN (block), result);
 		  }
 		continue;
 	      }
@@ -4105,8 +4103,7 @@ compute_avail (void)
 
 		get_or_alloc_expression_id (result);
 		add_to_value (get_expr_value_id (result), result);
-		if (!in_fre)
-		  bitmap_value_insert_into_set (EXP_GEN (block), result);
+		bitmap_value_insert_into_set (EXP_GEN (block), result);
 
 		continue;
 	      }
@@ -4733,15 +4730,15 @@ my_rev_post_order_compute (int *post_order, bool include_entry_exit)
       src = ei_edge (ei)->src;
       dest = ei_edge (ei)->dest;
 
-      /* Check if the edge destination has been visited yet.  */
+      /* Check if the edge source has been visited yet.  */
       if (src != ENTRY_BLOCK_PTR && ! TEST_BIT (visited, src->index))
         {
           /* Mark that we have visited the destination.  */
           SET_BIT (visited, src->index);
 
           if (EDGE_COUNT (src->preds) > 0)
-            /* Since the DEST node has been visited for the first
-               time, check its successors.  */
+            /* Since the SRC node has been visited for the first
+               time, check its predecessors.  */
             stack[sp++] = ei_start (src->preds);
           else
             post_order[post_order_num++] = src->index;
@@ -4777,8 +4774,8 @@ init_pre (bool do_fre)
   next_expression_id = 1;
   expressions = NULL;
   VEC_safe_push (pre_expr, heap, expressions, (pre_expr)NULL);
-  value_expressions = VEC_alloc (bitmap_set_t, heap, get_max_value_id () + 1);
-  VEC_safe_grow_cleared (bitmap_set_t, heap, value_expressions,
+  value_expressions = VEC_alloc (bitmap, heap, get_max_value_id () + 1);
+  VEC_safe_grow_cleared (bitmap, heap, value_expressions,
 			 get_max_value_id() + 1);
   name_to_id = NULL;
 
@@ -4807,9 +4804,12 @@ init_pre (bool do_fre)
 				     sizeof (struct pre_expr_d), 30);
   FOR_ALL_BB (bb)
     {
-      EXP_GEN (bb) = bitmap_set_new ();
-      PHI_GEN (bb) = bitmap_set_new ();
-      TMP_GEN (bb) = bitmap_set_new ();
+      if (!do_fre)
+	{
+	  EXP_GEN (bb) = bitmap_set_new ();
+	  PHI_GEN (bb) = bitmap_set_new ();
+	  TMP_GEN (bb) = bitmap_set_new ();
+	}
       AVAIL_OUT (bb) = bitmap_set_new ();
     }
 
@@ -4827,7 +4827,7 @@ fini_pre (bool do_fre)
   bool do_ab_cleanup = !bitmap_empty_p (need_ab_cleanup);
 
   free (postorder);
-  VEC_free (bitmap_set_t, heap, value_expressions);
+  VEC_free (bitmap, heap, value_expressions);
   BITMAP_FREE (inserted_exprs);
   bitmap_obstack_release (&grand_bitmap_obstack);
   free_alloc_pool (bitmap_set_pool);

@@ -222,6 +222,10 @@ load_lib gcc-dg.exp
 # A list of GROUP REGEXP pairs.  Each GROUP represents a logical group of
 # options from which only one option should be chosen.  REGEXP matches all
 # the options in that group; it is implicitly wrapped in "^(...)$".
+#
+# Note that -O* is deliberately omitted from this list.  Tests in this
+# directory are run at various optimisation levels and should use
+# dg-skip-if to skip any incompatible levels.
 set mips_option_groups {
     abi "-mabi=.*"
     addressing "addressing=.*"
@@ -236,7 +240,6 @@ set mips_option_groups {
     long "-mlong(32|64)"
     mips16 "-mips16|-mno-mips16|-mflip-mips16"
     mips3d "-mips3d|-mno-mips3d"
-    optimization "-O(|[0-3s])"
     pic "-f(no-|)(pic|PIC)"
     profiling "-pg"
     small-data "-G[0-9]+"
@@ -283,13 +286,21 @@ foreach option {
 # Add -ffoo/-fno-foo options to mips_option_groups.
 foreach option {
     delayed-branch
+    expensive-optimizations
     fast-math
+    fat-lto-objects
     finite-math-only
     fixed-hi
     fixed-lo
     lax-vector-conversions
+    omit-frame-pointer
+    optimize-sibling-calls
+    peephole2
+    schedule-insns2
     split-wide-types
     tree-vectorize
+    unroll-all-loops
+    unroll-loops
 } {
     lappend mips_option_groups $option "-f(no-|)$option"
 }
@@ -756,6 +767,12 @@ proc mips-dg-init {} {
 	    "-mno-smartmips",
 	    #endif
 
+	    #ifdef __mips_synci
+	    "-msynci",
+	    #else
+	    "-mno-synci",
+	    #endif
+
 	    0
 	};
     }]
@@ -880,6 +897,10 @@ proc mips-dg-options { args } {
 	    mips_make_test_option options $option $all_but_p
 	}
     }
+
+    # Handle dependencies between the test options and the optimization ones.
+    mips_option_dependency options "-fno-unroll-loops" "-fno-unroll-all-loops"
+    mips_option_dependency options "-pg" "-fno-omit-frame-pointer"
 
     # Handle dependencies between options on the left of the
     # dependency diagram.
@@ -1253,8 +1274,7 @@ proc mips-gcc-dg-test { prog do_what extra_tool_flags } {
 
 dg-init
 mips-dg-init
-# MIPS16 is defined by "-mips16" or "(-mips16)" in dg-options.
-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.c]] "" \
+gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.c]] \
     "-DNOMIPS16=__attribute__((nomips16))"
 mips-dg-finish
 dg-finish

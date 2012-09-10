@@ -4758,6 +4758,9 @@ build_conditional_expr_1 (tree arg1, tree arg2, tree arg3,
       return error_mark_node;
     }
 
+  if (arg2 == error_mark_node || arg3 == error_mark_node)
+    return error_mark_node;
+
  valid_operands:
   result = build3 (COND_EXPR, result_type, arg1, arg2, arg3);
   if (!cp_unevaluated_operand)
@@ -6608,7 +6611,8 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	 will be to the derived class, not the base declaring fn. We
 	 must convert from derived to base.  */
       base_binfo = lookup_base (TREE_TYPE (TREE_TYPE (converted_arg)),
-				TREE_TYPE (parmtype), ba_unique, NULL);
+				TREE_TYPE (parmtype), ba_unique,
+				NULL, complain);
       converted_arg = build_base_path (PLUS_EXPR, converted_arg,
 				       base_binfo, 1, complain);
 
@@ -6852,7 +6856,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       tree t;
       tree binfo = lookup_base (TREE_TYPE (TREE_TYPE (argarray[0])),
 				DECL_CONTEXT (fn),
-				ba_any, NULL);
+				ba_any, NULL, complain);
       gcc_assert (binfo && binfo != error_mark_node);
 
       /* Warn about deprecated virtual functions now, since we're about
@@ -8916,6 +8920,12 @@ extend_ref_init_temps_1 (tree decl, tree init, VEC(tree,gc) **cleanups)
   tree sub = init;
   tree *p;
   STRIP_NOPS (sub);
+  if (TREE_CODE (sub) == COMPOUND_EXPR)
+    {
+      TREE_OPERAND (sub, 1)
+        = extend_ref_init_temps_1 (decl, TREE_OPERAND (sub, 1), cleanups);
+      return init;
+    }
   if (TREE_CODE (sub) != ADDR_EXPR)
     return init;
   /* Deal with binding to a subobject.  */

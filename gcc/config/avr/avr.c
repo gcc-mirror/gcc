@@ -700,6 +700,16 @@ avr_regs_to_save (HARD_REG_SET *set)
   return count;
 }
 
+
+/* Implement `TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS' */
+
+static bool
+avr_allocate_stack_slots_for_args (void)
+{
+  return !cfun->machine->is_naked;
+}
+
+
 /* Return true if register FROM can be eliminated via register TO.  */
 
 static bool
@@ -8886,7 +8896,9 @@ avr_rtx_costs (rtx x, int codearg, int outer_code,
 /* Implement `TARGET_ADDRESS_COST'.  */
 
 static int
-avr_address_cost (rtx x, bool speed ATTRIBUTE_UNUSED)
+avr_address_cost (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED,
+		  addr_space_t as ATTRIBUTE_UNUSED,
+		  bool speed ATTRIBUTE_UNUSED)
 {
   int cost = 4;
   
@@ -10439,7 +10451,7 @@ avr_mem_clobber (void)
 static void
 avr_expand_delay_cycles (rtx operands0)
 {
-  unsigned HOST_WIDE_INT cycles = UINTVAL (operands0);
+  unsigned HOST_WIDE_INT cycles = UINTVAL (operands0) & GET_MODE_MASK (SImode);
   unsigned HOST_WIDE_INT cycles_used;
   unsigned HOST_WIDE_INT loop_count;
   
@@ -11338,6 +11350,9 @@ avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
 #define TARGET_FRAME_POINTER_REQUIRED avr_frame_pointer_required_p
 #undef  TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE avr_can_eliminate
+
+#undef  TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS
+#define TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS avr_allocate_stack_slots_for_args
 
 #undef TARGET_WARN_FUNC_RETURN
 #define TARGET_WARN_FUNC_RETURN avr_warn_func_return

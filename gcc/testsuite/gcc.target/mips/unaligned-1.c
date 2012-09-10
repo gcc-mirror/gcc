@@ -1,13 +1,14 @@
-/* { dg-options "-O2 -mgp64" } */
-/* { dg-final { scan-assembler-times "sdl\t" 1 } } */
-/* { dg-final { scan-assembler-times "sdr\t" 1 } } */
-/* { dg-final { scan-assembler-times "ldl\t" 1 } } */
-/* { dg-final { scan-assembler-times "ldr\t" 1 } } */
-/* { dg-final { scan-assembler-times "swl\t" 1 } } */
-/* { dg-final { scan-assembler-times "swr\t" 1 } } */
-/* { dg-final { scan-assembler-times "lwl\t" 1 } } */
-/* { dg-final { scan-assembler-times "lwr\t" 1 } } */
-/* { dg-final { scan-assembler-not "nop" } } */
+/* { dg-options "-mgp64" } */
+/* { dg-skip-if "code quality test" { *-*-* } { "-O0" } { "" } } */
+/* { dg-final { scan-assembler-times "\tsdl\t" 1 } } */
+/* { dg-final { scan-assembler-times "\tsdr\t" 1 } } */
+/* { dg-final { scan-assembler-times "\tldl\t" 1 } } */
+/* { dg-final { scan-assembler-times "\tldr\t" 1 } } */
+/* { dg-final { scan-assembler-times "\tswl\t" 1 } } */
+/* { dg-final { scan-assembler-times "\tswr\t" 1 } } */
+/* { dg-final { scan-assembler-times "\tlwl\t" 1 } } */
+/* { dg-final { scan-assembler-times "\tlwr\t" 1 } } */
+/* { dg-final { scan-assembler-not "\tnop" } } */
 
 /* Test to make sure we produce the unaligned load/store for
    both 64bit and 32bits sized accesses.  */
@@ -19,25 +20,25 @@ struct s
   long long l;
 } __attribute__ ((packed)) s __attribute__((aligned(1) ));
 
-void
+NOMIPS16 void
 sd (long long l)
 {
   s.l = l;
 }
 
-long long
+NOMIPS16 long long
 ld ()
 {
   return s.l;
 }
 
-void
+NOMIPS16 void
 sw (int i)
 {
   s.i = i;
 }
 
-int
+NOMIPS16 int
 lw ()
 {
   return s.i;

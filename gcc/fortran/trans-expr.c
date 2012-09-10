@@ -5080,6 +5080,7 @@ gfc_conv_statement_function (gfc_se * se, gfc_expr * expr)
   /* Restore the original variables.  */
   for (fargs = sym->formal, n = 0; fargs; fargs = fargs->next, n++)
     gfc_restore_sym (fargs->sym, &saved_vars[n]);
+  free (temp_vars);
   free (saved_vars);
 }
 
@@ -6780,6 +6781,11 @@ gfc_trans_arrayfunc_assign (gfc_expr * expr1, gfc_expr * expr2)
 
   gfc_conv_function_expr (&se, expr2);
   gfc_add_block_to_block (&se.pre, &se.post);
+
+  if (ss)
+    gfc_cleanup_loop (&loop);
+  else
+    gfc_free_ss_chain (se.ss);
 
   return gfc_finish_block (&se.pre);
 }

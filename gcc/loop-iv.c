@@ -2295,7 +2295,7 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
   desc->niter_expr = NULL_RTX;
   desc->niter_max = 0;
   if (loop->any_upper_bound
-      && double_int_fits_in_uhwi_p (loop->nb_iterations_upper_bound))
+      && loop->nb_iterations_upper_bound.fits_uhwi ())
     desc->niter_max = loop->nb_iterations_upper_bound.low;
 
   cond = GET_CODE (condition);

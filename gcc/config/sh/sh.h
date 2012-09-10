@@ -1946,6 +1946,10 @@ struct sh_args {
    leave this zero for correct SH3 code.  */
 #define SHIFT_COUNT_TRUNCATED (! TARGET_SH3 && ! TARGET_SH2A)
 
+/* CANONICALIZE_COMPARISON macro for the combine pass.  */
+#define CANONICALIZE_COMPARISON(CODE, OP0, OP1) \
+  sh_canonicalize_comparison ((CODE), (OP0), (OP1))
+
 /* All integers have the same format so truncation is easy.  */
 /* But SHmedia must sign-extend DImode when truncating to SImode.  */
 #define TRULY_NOOP_TRUNCATION(OUTPREC,INPREC) \

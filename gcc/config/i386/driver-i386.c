@@ -348,17 +348,6 @@ detect_caches_intel (bool xeon_mp, unsigned max_level,
   return describe_cache (level1, level2);
 }
 
-enum vendor_signatures
-{
-  SIG_INTEL =	0x756e6547 /* Genu */,
-  SIG_AMD =	0x68747541 /* Auth */
-};
-
-enum processor_signatures
-{
-  SIG_GEODE =	0x646f6547 /* Geod */
-};
-
 /* This will be called by the spec parser in gcc.c when it sees
    a %:local_cpu_detect(args) construct.  Currently it will be called
    with either "arch" or "tune" as argument depending on if -march=native
@@ -422,7 +411,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 
   model = (eax >> 4) & 0x0f;
   family = (eax >> 8) & 0x0f;
-  if (vendor == SIG_INTEL)
+  if (vendor == signature_INTEL_ebx)
     {
       unsigned int extended_model, extended_family;
 
@@ -483,7 +472,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       has_abm = ecx & bit_ABM;
       has_lwp = ecx & bit_LWP;
       has_fma4 = ecx & bit_FMA4;
-      if (vendor == SIG_AMD && has_fma4 && has_fma)
+      if (vendor == signature_AMD_ebx && has_fma4 && has_fma)
 	has_fma4 = 0;
       has_xop = ecx & bit_XOP;
       has_tbm = ecx & bit_TBM;
@@ -497,9 +486,9 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 
   if (!arch)
     {
-      if (vendor == SIG_AMD)
+      if (vendor == signature_AMD_ebx)
 	cache = detect_caches_amd (ext_level);
-      else if (vendor == SIG_INTEL)
+      else if (vendor == signature_INTEL_ebx)
 	{
 	  bool xeon_mp = (family == 15 && model == 6);
 	  cache = detect_caches_intel (xeon_mp, max_level,
@@ -507,7 +496,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	}
     }
 
-  if (vendor == SIG_AMD)
+  if (vendor == signature_AMD_ebx)
     {
       unsigned int name;
 
@@ -517,7 +506,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       else
 	name = 0;
 
-      if (name == SIG_GEODE)
+      if (name == signature_NSC_ebx)
 	processor = PROCESSOR_GEODE;
       else if (has_movbe)
 	processor = PROCESSOR_BTVER2;

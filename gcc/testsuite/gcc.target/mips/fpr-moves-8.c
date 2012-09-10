@@ -1,4 +1,4 @@
-/* { dg-options "(-mips16) -mabi=64 -O2 -EB" } */
+/* { dg-options "(-mips16) -mabi=64 -EB" } */
 
 extern long double g[16];
 extern unsigned char gstuff[0x10000];

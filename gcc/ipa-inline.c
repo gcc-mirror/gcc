@@ -532,7 +532,8 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
 	 Upgrade it to MAX_INLINE_INSNS_SINGLE when hints suggests that
 	 inlining given function is very profitable.  */
       else if (!DECL_DECLARED_INLINE_P (callee->symbol.decl)
-	       && growth >= ((hints & INLINE_HINT_indirect_call)
+	       && growth >= ((hints & (INLINE_HINT_indirect_call
+				       | INLINE_HINT_loop_iterations))
 			     ? MAX (MAX_INLINE_INSNS_AUTO,
 				    MAX_INLINE_INSNS_SINGLE)
 			     : MAX_INLINE_INSNS_AUTO))

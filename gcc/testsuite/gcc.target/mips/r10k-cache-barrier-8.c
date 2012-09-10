@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -mr10k-cache-barrier=store -G8" } */
+/* { dg-options "-mr10k-cache-barrier=store -G8" } */
 
 /* Test that in-range stores to components of static objects
    do not get an unnecessary cache barrier.  */

@@ -1,3 +1,36 @@
+2012-09-07  Teresa Johnson  <tejohnson@google.com>
+
+        PR gcov-profile/54487
+	* libgcc/libgcov.c (gcov_exit): Avoid warning on histogram
+        differences.
+
+2012-09-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/54461
+	* config.host (tmake_file,host=avr-*-*): Add avr/t-avrlibc if
+	not configured --with-avrlibc=no.
+	* config/avr/t-avrlibc: New file.
+	* Makefile.in (FPBIT_FUNCS): filter-out LIB2FUNCS_EXCLUDE.
+	(DPBIT_FUNCS): Ditto.
+	(TPBIT_FUNCS): Ditto.
+
+2012-09-04  Teresa Johnson  <tejohnson@google.com>
+
+	* libgcov.c (struct gcov_summary_buffer): New structure.
+	(gcov_histogram_insert): New function.
+	(gcov_compute_histogram): Ditto.
+	(gcov_exit): Invoke gcov_compute_histogram, and perform merging of
+	histograms during summary merging.
+
+2012-09-01  Mark Kettenis  <kettenis@openbsd.org>
+
+	* config.host (x86_64-*-openbsd*): New target.
+	
+2012-08-29  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* config/mips/crtfastmath.c (set_fast_math): Add 'nomips16'
+	attribute.
+
 2012-08-24  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/54222

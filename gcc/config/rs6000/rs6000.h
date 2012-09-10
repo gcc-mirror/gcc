@@ -2186,10 +2186,6 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0).  */
   {"vs56", 101},{"vs57", 102},{"vs58", 103},{"vs59", 104},      \
   {"vs60", 105},{"vs61", 106},{"vs62", 107},{"vs63", 108} }
 
-/* Text to write out after a CALL that may be replaced by glue code by
-   the loader.  This depends on the AIX version.  */
-#define RS6000_CALL_GLUE "cror 31,31,31"
-
 /* This is how to output an element of a case-vector that is relative.  */
 
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL) \

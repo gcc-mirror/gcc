@@ -228,9 +228,9 @@ print_lto_report (void)
 	       HOST_WIDE_INT_PRINT_UNSIGNED "\n", s,
 	       lto_stats.num_output_files);
 
-      fprintf (stderr, "[%s] # of output cgraph nodes: "
+      fprintf (stderr, "[%s] # of output symtab nodes: "
 	       HOST_WIDE_INT_PRINT_UNSIGNED "\n", s,
-	       lto_stats.num_output_cgraph_nodes);
+	       lto_stats.num_output_symtab_nodes);
 
       fprintf (stderr, "[%s] # callgraph partitions: "
 	       HOST_WIDE_INT_PRINT_UNSIGNED "\n", s,

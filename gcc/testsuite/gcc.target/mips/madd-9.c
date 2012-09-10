@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 isa_rev>=1 -mgp32" } */
+/* { dg-options "isa_rev>=1 -mgp32" } */
+/* { dg-skip-if "code quality test" { *-*-* } { "-O0" } { "" } } */
 /* { dg-final { scan-assembler-not "\tmul\t" } } */
 /* { dg-final { scan-assembler "\tmadd\t" } } */
 

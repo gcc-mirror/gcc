@@ -1,5 +1,5 @@
 /* Check that we don't try to save the same register twice.  */
-/* { dg-options "(-mips16) isa_rev>=1 -mgp32 -O2" } */
+/* { dg-options "(-mips16) isa_rev>=1 -mgp32" } */
 
 int bar (int, int, int, int);
 void frob (void);

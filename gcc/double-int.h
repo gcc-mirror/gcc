@@ -50,9 +50,8 @@ along with GCC; see the file COPYING3.  If not see
    numbers with precision higher than HOST_WIDE_INT).  It might be less
    confusing to have them both signed or both unsigned.  */
 
-typedef struct double_int
+struct double_int
 {
-public:
   /* Normally, we would define constructors to create instances.
      Two things prevent us from doing so.
      First, defining a constructor makes the class non-POD in C++03,
@@ -78,6 +77,9 @@ public:
   double_int &operator *= (double_int);
   double_int &operator += (double_int);
   double_int &operator -= (double_int);
+  double_int &operator &= (double_int);
+  double_int &operator ^= (double_int);
+  double_int &operator |= (double_int);
 
   /* The following functions are non-mutating operations.  */
 
@@ -104,17 +106,18 @@ public:
   /* Arithmetic operation functions.  */
 
   double_int set_bit (unsigned) const;
-  double_int mul_with_sign (double_int, bool, int *) const;
+  double_int mul_with_sign (double_int, bool unsigned_p, bool *overflow) const;
+  double_int add_with_sign (double_int, bool unsigned_p, bool *overflow) const;
 
-  double_int operator * (double_int b) const;
-  double_int operator + (double_int b) const;
-  double_int operator - (double_int b) const;
+  double_int operator * (double_int) const;
+  double_int operator + (double_int) const;
+  double_int operator - (double_int) const;
   double_int operator - () const;
   double_int operator ~ () const;
-  double_int operator & (double_int b) const;
-  double_int operator | (double_int b) const;
-  double_int operator ^ (double_int b) const;
-  double_int and_not (double_int b) const;
+  double_int operator & (double_int) const;
+  double_int operator | (double_int) const;
+  double_int operator ^ (double_int) const;
+  double_int and_not (double_int) const;
 
   double_int lshift (HOST_WIDE_INT count, unsigned int prec, bool arith) const;
   double_int rshift (HOST_WIDE_INT count, unsigned int prec, bool arith) const;
@@ -156,8 +159,10 @@ public:
   int scmp (double_int b) const;
 
   bool ult (double_int b) const;
+  bool ule (double_int b) const;
   bool ugt (double_int b) const;
   bool slt (double_int b) const;
+  bool sle (double_int b) const;
   bool sgt (double_int b) const;
 
   double_int max (double_int b, bool uns);
@@ -176,7 +181,7 @@ public:
   unsigned HOST_WIDE_INT low;
   HOST_WIDE_INT high;
 
-} double_int;
+};
 
 #define HOST_BITS_PER_DOUBLE_INT (2 * HOST_BITS_PER_WIDE_INT)
 
@@ -185,8 +190,8 @@ public:
 /* Constructs double_int from integer CST.  The bits over the precision of
    HOST_WIDE_INT are filled with the sign bit.  */
 
-inline
-double_int double_int::from_shwi (HOST_WIDE_INT cst)
+inline double_int
+double_int::from_shwi (HOST_WIDE_INT cst)
 {
   double_int r;
   r.low = (unsigned HOST_WIDE_INT) cst;
@@ -215,8 +220,8 @@ shwi_to_double_int (HOST_WIDE_INT cst)
 /* Constructs double_int from unsigned integer CST.  The bits over the
    precision of HOST_WIDE_INT are filled with zeros.  */
 
-inline
-double_int double_int::from_uhwi (unsigned HOST_WIDE_INT cst)
+inline double_int
+double_int::from_uhwi (unsigned HOST_WIDE_INT cst)
 {
   double_int r;
   r.low = cst;
@@ -263,6 +268,27 @@ inline double_int &
 double_int::operator -= (double_int b)
 {
   *this = *this - b;
+  return *this;
+}
+
+inline double_int &
+double_int::operator &= (double_int b)
+{
+  *this = *this & b;
+  return *this;
+}
+
+inline double_int &
+double_int::operator ^= (double_int b)
+{
+  *this = *this ^ b;
+  return *this;
+}
+
+inline double_int &
+double_int::operator |= (double_int b)
+{
+  *this = *this | b;
   return *this;
 }
 
@@ -346,7 +372,9 @@ inline double_int
 double_int_mul_with_sign (double_int a, double_int b,
 			  bool unsigned_p, int *overflow)
 {
-  return a.mul_with_sign (b, unsigned_p, overflow);
+  bool ovf;
+  return a.mul_with_sign (b, unsigned_p, &ovf);
+  *overflow = ovf;
 }
 
 /* FIXME(crowl): Remove after converting callers.  */

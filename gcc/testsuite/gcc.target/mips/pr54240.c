@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-phiopt-details isa>=4" } */
+/* { dg-options "-fdump-tree-phiopt-details isa>=4" } */
+/* { dg-skip-if "code quality test" { *-*-* } { "-O0" "-O1" } { "" } } */
 
 typedef struct s {
   int v;
@@ -8,8 +9,8 @@ typedef struct s {
   struct s *r;
 } S;
 
-
-int foo(S *s)
+/* Test requires conditional moves.  */
+NOMIPS16 int foo(S *s)
 {
   S *this;
   S *next;

@@ -139,7 +139,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 	counts: header int64:count*
 	summary: int32:checksum {count-summary}GCOV_COUNTERS_SUMMABLE
 	count-summary:	int32:num int32:runs int64:sum
-			int64:max int64:sum_max
+			int64:max int64:sum_max histogram
+        histogram: {int32:bitvector}8 histogram-buckets*
+        histogram-buckets: int32:num int64:min int64:sum
 
    The ANNOUNCE_FUNCTION record is the same as that in the note file,
    but without the source location.  The COUNTS gives the
@@ -171,8 +173,10 @@ typedef unsigned gcov_unsigned_t __attribute__ ((mode (SI)));
 typedef unsigned gcov_position_t __attribute__ ((mode (SI)));
 #if LONG_LONG_TYPE_SIZE > 32
 typedef signed gcov_type __attribute__ ((mode (DI)));
+typedef unsigned gcov_type_unsigned __attribute__ ((mode (DI)));
 #else
 typedef signed gcov_type __attribute__ ((mode (SI)));
+typedef unsigned gcov_type_unsigned __attribute__ ((mode (SI)));
 #endif
 #else
 #if BITS_PER_UNIT == 16
@@ -180,16 +184,20 @@ typedef unsigned gcov_unsigned_t __attribute__ ((mode (HI)));
 typedef unsigned gcov_position_t __attribute__ ((mode (HI)));
 #if LONG_LONG_TYPE_SIZE > 32
 typedef signed gcov_type __attribute__ ((mode (SI)));
+typedef unsigned gcov_type_unsigned __attribute__ ((mode (SI)));
 #else
 typedef signed gcov_type __attribute__ ((mode (HI)));
+typedef unsigned gcov_type_unsigned __attribute__ ((mode (HI)));
 #endif
 #else
 typedef unsigned gcov_unsigned_t __attribute__ ((mode (QI)));
 typedef unsigned gcov_position_t __attribute__ ((mode (QI)));
 #if LONG_LONG_TYPE_SIZE > 32
 typedef signed gcov_type __attribute__ ((mode (HI)));
+typedef unsigned gcov_type_unsigned __attribute__ ((mode (HI)));
 #else
 typedef signed gcov_type __attribute__ ((mode (QI)));
+typedef unsigned gcov_type_unsigned __attribute__ ((mode (QI)));
 #endif
 #endif
 #endif
@@ -210,6 +218,7 @@ typedef unsigned gcov_position_t;
 #if IN_GCOV
 #define GCOV_LINKAGE static
 typedef HOST_WIDEST_INT gcov_type;
+typedef unsigned HOST_WIDEST_INT gcov_type_unsigned;
 #if IN_GCOV > 0
 #include <sys/types.h>
 #endif
@@ -309,8 +318,9 @@ typedef HOST_WIDEST_INT gcov_type;
 #define GCOV_TAG_COUNTER_NUM(LENGTH) ((LENGTH) / 2)
 #define GCOV_TAG_OBJECT_SUMMARY  ((gcov_unsigned_t)0xa1000000) /* Obsolete */
 #define GCOV_TAG_PROGRAM_SUMMARY ((gcov_unsigned_t)0xa3000000)
-#define GCOV_TAG_SUMMARY_LENGTH  \
-	(1 + GCOV_COUNTERS_SUMMABLE * (2 + 3 * 2))
+#define GCOV_TAG_SUMMARY_LENGTH(NUM)  \
+        (1 + GCOV_COUNTERS_SUMMABLE * (10 + 3 * 2) + (NUM) * 5)
+
 
 /* Counters that are collected.  */
 #define GCOV_COUNTER_ARCS 	0  /* Arc transitions.  */
@@ -389,6 +399,29 @@ typedef HOST_WIDEST_INT gcov_type;
 
 /* Structured records.  */
 
+/* Structure used for each bucket of the log2 histogram of counter values.  */
+typedef struct
+{
+  /* Number of counters whose profile count falls within the bucket.  */
+  gcov_unsigned_t num_counters;
+  /* Smallest profile count included in this bucket.  */
+  gcov_type min_value;
+  /* Cumulative value of the profile counts in this bucket.  */
+  gcov_type cum_value;
+} gcov_bucket_type;
+
+/* For a log2 scale histogram with each range split into 4
+   linear sub-ranges, there will be at most 64 (max gcov_type bit size) - 1 log2
+   ranges since the lowest 2 log2 values share the lowest 4 linear
+   sub-range (values 0 - 3).  This is 252 total entries (63*4).  */
+
+#define GCOV_HISTOGRAM_SIZE 252
+
+/* How many unsigned ints are required to hold a bit vector of non-zero
+   histogram entries when the histogram is written to the gcov file.
+   This is essentially a ceiling divide by 32 bits.  */
+#define GCOV_HISTOGRAM_BITVECTOR_SIZE (GCOV_HISTOGRAM_SIZE + 31) / 32
+
 /* Cumulative counter data.  */
 struct gcov_ctr_summary
 {
@@ -397,6 +430,8 @@ struct gcov_ctr_summary
   gcov_type sum_all;		/* sum of all counters accumulated.  */
   gcov_type run_max;		/* maximum value on a single run.  */
   gcov_type sum_max;    	/* sum of individual run max values.  */
+  gcov_bucket_type histogram[GCOV_HISTOGRAM_SIZE]; /* histogram of
+                                                      counter values.  */
 };
 
 /* Object & program summary record.  */

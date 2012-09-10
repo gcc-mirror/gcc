@@ -1,2 +1,2 @@
-/* { dg-options "-mabi=eabi -mgp32 -mlong64 -O2" } */
+/* { dg-options "-mabi=eabi -mgp32 -mlong64" } */
 #include "abi-main.h"

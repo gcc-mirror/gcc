@@ -1,2 +1,2 @@
-/* { dg-options "-mabi=o64 -mlong32 -fpic -O2" } */
+/* { dg-options "-mabi=o64 -mlong32 -fpic" } */
 #include "abi-main.h"

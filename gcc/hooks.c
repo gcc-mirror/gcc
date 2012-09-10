@@ -200,6 +200,12 @@ hook_int_rtx_bool_0 (rtx a ATTRIBUTE_UNUSED, bool b ATTRIBUTE_UNUSED)
   return 0;
 }
 
+int
+hook_int_rtx_mode_as_bool_0 (rtx, enum machine_mode, addr_space_t, bool)
+{
+  return 0;
+}
+
 unsigned int
 hook_uint_void_0 (void)
 {
@@ -266,6 +272,12 @@ bool
 hook_bool_tree_bool_false (tree a ATTRIBUTE_UNUSED, bool b ATTRIBUTE_UNUSED)
 {
   return false;
+}
+
+bool
+hook_bool_rtx_true (rtx a ATTRIBUTE_UNUSED)
+{
+  return true;
 }
 
 bool

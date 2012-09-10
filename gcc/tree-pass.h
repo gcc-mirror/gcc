@@ -92,8 +92,7 @@ struct rtl_opt_pass
 
 struct varpool_node;
 struct cgraph_node;
-struct cgraph_node_set_def;
-struct varpool_node_set_def;
+struct lto_symtab_encoder_d;
 
 /* Description of IPA pass with generate summary, write, execute, read and
    transform stages.  */
@@ -526,8 +525,7 @@ extern const char *get_current_pass_name (void);
 extern void print_current_pass (FILE *);
 extern void debug_pass (void);
 extern void ipa_write_summaries (void);
-extern void ipa_write_optimization_summaries (struct cgraph_node_set_def *,
-					      struct varpool_node_set_def *);
+extern void ipa_write_optimization_summaries (struct lto_symtab_encoder_d *);
 extern void ipa_read_summaries (void);
 extern void ipa_read_optimization_summaries (void);
 extern void register_one_dump_file (struct opt_pass *);

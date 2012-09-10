@@ -86,7 +86,7 @@ static bool lm32_legitimate_constant_p (enum machine_mode, rtx);
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE lm32_option_override
 #undef TARGET_ADDRESS_COST
-#define TARGET_ADDRESS_COST hook_int_rtx_bool_0
+#define TARGET_ADDRESS_COST hook_int_rtx_mode_as_bool_0
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS lm32_rtx_costs
 #undef TARGET_IN_SMALL_DATA_P

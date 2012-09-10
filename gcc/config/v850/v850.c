@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for NEC V850 series
    Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-   2006, 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+   2006, 2007, 2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
    This file is part of GCC.
@@ -375,13 +375,13 @@ v850_print_operand (FILE * file, rtx x, int code)
   switch (code)
     {
     case 'c':
-      /* We use 'c' operands with symbols for .vtinherit */
+      /* We use 'c' operands with symbols for .vtinherit.  */
       if (GET_CODE (x) == SYMBOL_REF)
         {
           output_addr_const(file, x);
           break;
         }
-      /* fall through */
+      /* Fall through.  */
     case 'b':
     case 'B':
     case 'C':
@@ -428,7 +428,7 @@ v850_print_operand (FILE * file, rtx x, int code)
 	    gcc_unreachable ();
 	}
       break;
-    case 'F':			/* high word of CONST_DOUBLE */
+    case 'F':			/* High word of CONST_DOUBLE.  */
       switch (GET_CODE (x))
 	{
 	case CONST_INT:
@@ -444,7 +444,7 @@ v850_print_operand (FILE * file, rtx x, int code)
 	  gcc_unreachable ();
 	}
       break;
-    case 'G':			/* low word of CONST_DOUBLE */
+    case 'G':			/* Low word of CONST_DOUBLE.  */
       switch (GET_CODE (x))
 	{
 	case CONST_INT:
@@ -537,7 +537,7 @@ v850_print_operand (FILE * file, rtx x, int code)
 
         break;
       }
-    case 'W':			/* print the instruction suffix */
+    case 'W':			/* Print the instruction suffix.  */
       switch (GET_MODE (x))
 	{
 	default:
@@ -549,11 +549,11 @@ v850_print_operand (FILE * file, rtx x, int code)
 	case SFmode: fputs (".w", file); break;
 	}
       break;
-    case '.':			/* register r0 */
+    case '.':			/* Register r0.  */
       fputs (reg_names[0], file);
       break;
-    case 'z':			/* reg or zero */
-      if (GET_CODE (x) == REG)
+    case 'z':			/* Reg or zero.  */
+      if (REG_P (x))
 	fputs (reg_names[REGNO (x)], file);
       else if ((GET_MODE(x) == SImode
 		|| GET_MODE(x) == DFmode
@@ -1448,13 +1448,13 @@ compute_register_save_size (long * p_reg_saved)
   int call_p = df_regs_ever_live_p (LINK_POINTER_REGNUM);
   long reg_saved = 0;
 
-  /* Count the return pointer if we need to save it.  */
-  if (crtl->profile && !call_p)
+  /* Always save the link pointer - we cannot rely upon df_regs_ever_live_p.  */
+  if (!call_p)
     {
       df_set_regs_ever_live (LINK_POINTER_REGNUM, true);
       call_p = 1;
     }
- 
+
   /* Count space for the register saves.  */
   if (interrupt_handler)
     {
@@ -1589,6 +1589,27 @@ use_prolog_function (int num_save, int frame_size)
   return ((save_func_len + restore_func_len) < (save_normal_len + restore_normal_len));
 }
 
+static void
+increment_stack (unsigned int amount)
+{
+  rtx inc;
+
+  if (amount == 0)
+    return;
+
+  inc = GEN_INT (amount);
+
+  if (! CONST_OK_FOR_K (amount))
+    {
+      rtx reg = gen_rtx_REG (Pmode, 12);
+
+      emit_move_insn (reg, inc);
+      inc = reg;
+    }
+
+  emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx, inc));
+}
+
 void
 expand_prologue (void)
 {
@@ -1604,6 +1625,9 @@ expand_prologue (void)
   long reg_saved = 0;
 
   actual_fsize = compute_frame_size (size, &reg_saved);
+
+  if (flag_stack_usage_info)
+    current_function_static_stack_size = actual_fsize;
 
   /* Save/setup global registers for interrupt functions right now.  */
   if (interrupt_handler)
@@ -1710,9 +1734,7 @@ expand_prologue (void)
 	  offset = init_stack_alloc - 4;
 	  
 	  if (init_stack_alloc)
-	    emit_insn (gen_addsi3 (stack_pointer_rtx,
-				   stack_pointer_rtx,
-				   GEN_INT (- (signed) init_stack_alloc)));
+	    increment_stack (- (signed) init_stack_alloc);
 	  
 	  /* Save the return pointer first.  */
 	  if (num_save > 0 && REGNO (save_regs[num_save-1]) == LINK_POINTER_REGNUM)
@@ -1743,16 +1765,8 @@ expand_prologue (void)
   if (actual_fsize > init_stack_alloc)
     {
       int diff = actual_fsize - init_stack_alloc;
-      if (CONST_OK_FOR_K (-diff))
-	emit_insn (gen_addsi3 (stack_pointer_rtx,
-			       stack_pointer_rtx,
-			       GEN_INT (-diff)));
-      else
-	{
-	  rtx reg = gen_rtx_REG (Pmode, 12);
-	  emit_move_insn (reg, GEN_INT (-diff));
-	  emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx, reg));
-	}
+
+      increment_stack (- diff);
     }
 
   /* If we need a frame pointer, set it up now.  */
@@ -1837,25 +1851,10 @@ expand_epilogue (void)
 	      rtx insn;
 
 	      actual_fsize -= alloc_stack;
-	      if (actual_fsize)
-		{
-		  if (CONST_OK_FOR_K (actual_fsize))
-		    emit_insn (gen_addsi3 (stack_pointer_rtx,
-					   stack_pointer_rtx,
-					   GEN_INT (actual_fsize)));
-		  else
-		    {
-		      rtx reg = gen_rtx_REG (Pmode, 12);
-		      emit_move_insn (reg, GEN_INT (actual_fsize));
-		      emit_insn (gen_addsi3 (stack_pointer_rtx,
-					     stack_pointer_rtx,
-					     reg));
-		    }
-		}
+	      increment_stack (actual_fsize);
 
 	      insn = emit_jump_insn (restore_all);
 	      INSN_CODE (insn) = code;
-
 	    }
 	  else
 	    restore_all = NULL_RTX;
@@ -1878,24 +1877,7 @@ expand_epilogue (void)
 
       /* Deallocate the rest of the stack if it is > 32K.  */
       if ((unsigned int) actual_fsize > init_stack_free)
-	{
-	  int diff;
-
-	  diff = actual_fsize - init_stack_free;
-
-	  if (CONST_OK_FOR_K (diff))
-	    emit_insn (gen_addsi3 (stack_pointer_rtx,
-				   stack_pointer_rtx,
-				   GEN_INT (diff)));
-	  else
-	    {
-	      rtx reg = gen_rtx_REG (Pmode, 12);
-	      emit_move_insn (reg, GEN_INT (diff));
-	      emit_insn (gen_addsi3 (stack_pointer_rtx,
-				     stack_pointer_rtx,
-				     reg));
-	    }
-	}
+	increment_stack (actual_fsize - init_stack_free);
 
       /* Special case interrupt functions that save all registers
 	 for a call.  */
@@ -1936,10 +1918,7 @@ expand_epilogue (void)
 	    }
 
 	  /* Cut back the remainder of the stack.  */
-	  if (init_stack_free)
-	    emit_insn (gen_addsi3 (stack_pointer_rtx,
-				   stack_pointer_rtx,
-				   GEN_INT (init_stack_free)));
+	  increment_stack (init_stack_free);
 	}
 
       /* And return or use reti for interrupt handlers.  */
@@ -3088,6 +3067,15 @@ static const struct attribute_spec v850_attribute_table[] =
   { NULL,                0, 0, false, false, false, NULL, false }
 };
 
+static enum unwind_info_type
+v850_debug_unwind_info (void)
+{
+  return UI_NONE;
+}
+
+#undef  TARGET_DEBUG_UNWIND_INFO
+#define TARGET_DEBUG_UNWIND_INFO	v850_debug_unwind_info
+
 /* Initialize the GCC target structure.  */
 
 #undef  TARGET_MEMORY_MOVE_COST
@@ -3130,7 +3118,7 @@ static const struct attribute_spec v850_attribute_table[] =
 #define TARGET_RTX_COSTS v850_rtx_costs
 
 #undef  TARGET_ADDRESS_COST
-#define TARGET_ADDRESS_COST hook_int_rtx_bool_0
+#define TARGET_ADDRESS_COST hook_int_rtx_mode_as_bool_0
 
 #undef  TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG v850_reorg

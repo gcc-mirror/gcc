@@ -18,24 +18,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* This keeps us from using libraries compiled with the native cc, so
-   undef it. */
-#undef NO_DOLLAR_IN_LABEL
-
-/* Override the default comment-starter of "/".  */
-#undef ASM_COMMENT_START
-#define ASM_COMMENT_START "#"
-
-#undef DBX_REGISTER_NUMBER
-#define DBX_REGISTER_NUMBER(n)  svr4_dbx_register_map[n]
-
-/* This goes away when the math-emulator is fixed */
-#undef TARGET_DEFAULT
-#define TARGET_DEFAULT \
-  (MASK_80387 | MASK_IEEE_FP | MASK_FLOAT_RETURNS | MASK_NO_FANCY_MATH_387)
-
-/* Run-time target specifications */
-
 #define TARGET_OS_CPP_BUILTINS()		\
   do						\
     {						\
@@ -43,17 +25,11 @@ along with GCC; see the file COPYING3.  If not see
     }						\
   while (0)
 
-/* As an elf system, we need crtbegin/crtend stuff.  */
-#undef STARTFILE_SPEC
-#define STARTFILE_SPEC "\
-	%{!shared: %{pg:gcrt0%O%s} %{!pg:%{p:gcrt0%O%s} %{!p:crt0%O%s}} \
-	crtbegin%O%s} %{shared:crtbeginS%O%s}"
-#undef ENDFILE_SPEC
-#define ENDFILE_SPEC "%{!shared:crtend%O%s} %{shared:crtendS%O%s}"
+#undef DBX_REGISTER_NUMBER
+#define DBX_REGISTER_NUMBER(n) \
+  (TARGET_64BIT ? dbx64_register_map[n] : svr4_dbx_register_map[n])
 
-/* Layout of source language data types.  */
-
-/* This must agree with <machine/ansi.h> */
+/* This must agree with <machine/_types.h>.  */
 #undef SIZE_TYPE
 #define SIZE_TYPE "long unsigned int"
 
@@ -64,12 +40,20 @@ along with GCC; see the file COPYING3.  If not see
 #define WCHAR_TYPE "int"
 
 #undef WCHAR_TYPE_SIZE
-#define WCHAR_TYPE_SIZE BITS_PER_WORD
+#define WCHAR_TYPE_SIZE 32
 
 #undef WINT_TYPE
 #define WINT_TYPE "int"
 
-/* Assembler format: overall framework.  */
+/* Don't default to pcc-struct-return, because gcc is the only compiler, and
+   we want to retain compatibility with older gcc versions.  */
+
+#undef DEFAULT_PCC_STRUCT_RETURN
+#define DEFAULT_PCC_STRUCT_RETURN 0
+
+/* Override the default comment-starter of "/".  */
+#undef ASM_COMMENT_START
+#define ASM_COMMENT_START "#"
 
 #undef ASM_APP_ON
 #define ASM_APP_ON "#APP\n"
@@ -77,50 +61,35 @@ along with GCC; see the file COPYING3.  If not see
 #undef ASM_APP_OFF
 #define ASM_APP_OFF "#NO_APP\n"
 
-#undef SET_ASM_OP
-#define SET_ASM_OP	"\t.set\t"
+/* A C statement to output to the stdio stream FILE an assembler
+   command to advance the location counter to a multiple of 1<<LOG
+   bytes if it is within MAX_SKIP bytes.
 
-/* The following macros were originally stolen from i386v4.h.
-   These have to be defined to get PIC code correct.  */
-
-/* Assembler format: dispatch tables.  */
-
-/* Assembler format: sections.  */
-
-/* Stack & calling: aggregate returns.  */
-
-/* Don't default to pcc-struct-return, because gcc is the only compiler, and
-   we want to retain compatibility with older gcc versions.  */
-#define DEFAULT_PCC_STRUCT_RETURN 0
-
-/* Assembler format: alignment output.  */
+   This is used to align code labels according to Intel recommendations.  */
 
 #ifdef HAVE_GAS_MAX_SKIP_P2ALIGN
-#define ASM_OUTPUT_MAX_SKIP_ALIGN(FILE,LOG,MAX_SKIP) \
-  if ((LOG) != 0) {\
-    if ((MAX_SKIP) == 0) fprintf ((FILE), "\t.p2align %d\n", (LOG)); \
-    else fprintf ((FILE), "\t.p2align %d,,%d\n", (LOG), (MAX_SKIP)); \
-  }
+#define ASM_OUTPUT_MAX_SKIP_ALIGN(FILE,LOG,MAX_SKIP)			\
+  do {									\
+    if ((LOG) != 0) {							\
+      if ((MAX_SKIP) == 0) fprintf ((FILE), "\t.p2align %d\n", (LOG));	\
+      else {								\
+	fprintf ((FILE), "\t.p2align %d,,%d\n", (LOG), (MAX_SKIP));	\
+	/* Make sure that we have at least 8 byte alignment if > 8 byte \
+	   alignment is preferred.  */					\
+	if ((LOG) > 3							\
+	    && (1 << (LOG)) > ((MAX_SKIP) + 1)				\
+	    && (MAX_SKIP) >= 7)						\
+	  fputs ("\t.p2align 3\n", (FILE));				\
+      }									\
+    }									\
+  } while (0)
 #endif
 
-/* Stack & calling: profiling.  */
-
 /* OpenBSD's profiler recovers all information from the stack pointer.
-   The icky part is not here, but in machine/profile.h.  */
+   The icky part is not here, but in <machine/profile.h>.  */
 #undef FUNCTION_PROFILER
 #define FUNCTION_PROFILER(FILE, LABELNO)  \
   fputs (flag_pic ? "\tcall __mcount@PLT\n": "\tcall __mcount\n", FILE);
-
-/* Assembler format: exception region output.  */
-
-/* our configuration still doesn't handle dwarf2 correctly */
-#define DWARF2_UNWIND_INFO 0
-
-/* Assembler format: alignment output.  */
-
-/* Note that we pick up ASM_OUTPUT_MAX_SKIP_ALIGN from i386/gas.h */
-
-/* Note that we pick up ASM_OUTPUT_MI_THUNK from unix.h.  */
 
 #undef LINK_SPEC
 #define LINK_SPEC \
@@ -131,4 +100,14 @@ along with GCC; see the file COPYING3.  If not see
    %{assert*} \
    -dynamic-linker /usr/libexec/ld.so"
 
+#undef STARTFILE_SPEC
+#define STARTFILE_SPEC "\
+	%{!shared: %{pg:gcrt0%O%s} %{!pg:%{p:gcrt0%O%s} %{!p:crt0%O%s}} \
+	crtbegin%O%s} %{shared:crtbeginS%O%s}"
+
+#undef ENDFILE_SPEC
+#define ENDFILE_SPEC "%{!shared:crtend%O%s} %{shared:crtendS%O%s}"
+
 #define OBSD_HAS_CORRECT_SPECS
+
+#define HAVE_ENABLE_EXECUTE_STACK

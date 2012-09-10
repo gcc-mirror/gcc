@@ -1334,26 +1334,11 @@ group_case_labels_stmt (gimple stmt)
   int old_size = gimple_switch_num_labels (stmt);
   int i, j, new_size = old_size;
   basic_block default_bb = NULL;
-  bool has_default;
 
-  /* The default label is always the first case in a switch
-     statement after gimplification if it was not optimized
-     away */
-  if (!CASE_LOW (gimple_switch_default_label (stmt))
-      && !CASE_HIGH (gimple_switch_default_label (stmt)))
-    {
-      tree default_case = gimple_switch_default_label (stmt);
-      default_bb = label_to_block (CASE_LABEL (default_case));
-      has_default = true;
-    }
-  else
-    has_default = false;
+  default_bb = label_to_block (CASE_LABEL (gimple_switch_default_label (stmt)));
 
   /* Look for possible opportunities to merge cases.  */
-  if (has_default)
-    i = 1;
-  else
-    i = 0;
+  i = 1;
   while (i < old_size)
     {
       tree base_case, base_high;
@@ -1386,14 +1371,12 @@ group_case_labels_stmt (gimple stmt)
 	{
 	  tree merge_case = gimple_switch_label (stmt, i);
 	  basic_block merge_bb = label_to_block (CASE_LABEL (merge_case));
-	  double_int bhp1 = double_int_add (tree_to_double_int (base_high),
-					    double_int_one);
+	  double_int bhp1 = tree_to_double_int (base_high) + double_int_one;
 
 	  /* Merge the cases if they jump to the same place,
 	     and their ranges are consecutive.  */
 	  if (merge_bb == base_bb
-	      && double_int_equal_p (tree_to_double_int (CASE_LOW (merge_case)),
-				     bhp1))
+	      && tree_to_double_int (CASE_LOW (merge_case)) == bhp1)
 	    {
 	      base_high = CASE_HIGH (merge_case) ?
 		  CASE_HIGH (merge_case) : CASE_LOW (merge_case);
@@ -4148,7 +4131,7 @@ verify_gimple_switch (gimple stmt)
       return true;
     }
 
-  elt = gimple_switch_default_label (stmt);
+  elt = gimple_switch_label (stmt, 0);
   if (CASE_LOW (elt) != NULL_TREE || CASE_HIGH (elt) != NULL_TREE)
     {
       error ("invalid default case label in switch statement");
@@ -5530,9 +5513,10 @@ add_phi_args_after_copy (basic_block *region_copy, unsigned n_region,
    important exit edge EXIT.  By important we mean that no SSA name defined
    inside region is live over the other exit edges of the region.  All entry
    edges to the region must go to ENTRY->dest.  The edge ENTRY is redirected
-   to the duplicate of the region.  SSA form, dominance and loop information
-   is updated.  The new basic blocks are stored to REGION_COPY in the same
-   order as they had in REGION, provided that REGION_COPY is not NULL.
+   to the duplicate of the region.  Dominance and loop information is
+   updated, but not the SSA web.  The new basic blocks are stored to
+   REGION_COPY in the same order as they had in REGION, provided that
+   REGION_COPY is not NULL.
    The function returns false if it is unable to copy the region,
    true otherwise.  */
 
@@ -5592,8 +5576,6 @@ gimple_duplicate_sese_region (edge entry, edge exit,
       region_copy = XNEWVEC (basic_block, n_region);
       free_region_copy = true;
     }
-
-  gcc_assert (!need_ssa_update_p (cfun));
 
   /* Record blocks outside the region that are dominated by something
      inside.  */
@@ -5662,9 +5644,6 @@ gimple_duplicate_sese_region (edge entry, edge exit,
 
   /* Add the other PHI node arguments.  */
   add_phi_args_after_copy (region_copy, n_region, NULL);
-
-  /* Update the SSA web.  */
-  update_ssa (TODO_update_ssa);
 
   if (free_region_copy)
     free (region_copy);

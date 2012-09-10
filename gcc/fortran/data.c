@@ -66,6 +66,7 @@ get_array_index (gfc_array_ref *ar, mpz_t *offset)
 	gfc_error ("non-constant array in DATA statement %L", &ar->where);
 
       mpz_set (tmp, e->value.integer);
+      gfc_free_expr (e);
       mpz_sub (tmp, tmp, ar->as->lower[i]->value.integer);
       mpz_mul (tmp, tmp, delta);
       mpz_add (*offset, tmp, *offset);
@@ -138,8 +139,10 @@ create_character_initializer (gfc_expr *init, gfc_typespec *ts,
 	}
 
       gfc_extract_int (start_expr, &start);
+      gfc_free_expr (start_expr);
       start--;
       gfc_extract_int (end_expr, &end);
+      gfc_free_expr (end_expr);
     }
   else
     {
@@ -200,7 +203,7 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index,
 {
   gfc_ref *ref;
   gfc_expr *init;
-  gfc_expr *expr;
+  gfc_expr *expr = NULL;
   gfc_constructor *con;
   gfc_constructor *last_con;
   gfc_symbol *symbol;
@@ -500,6 +503,8 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index,
   return SUCCESS;
 
 abort:
+  if (!init)
+    gfc_free_expr (expr);
   mpz_clear (offset);
   return FAILURE;
 }
