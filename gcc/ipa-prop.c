@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "lto-streamer.h"
 #include "data-streamer.h"
 #include "tree-streamer.h"
+#include "params.h"
 
 
 /* Intermediate information about a parameter that is only useful during the
@@ -1145,9 +1146,6 @@ get_ssa_def_if_simple_copy (tree rhs)
   return rhs;
 }
 
-/* TODO: Turn this into a PARAM.  */
-#define IPA_MAX_AFF_JF_ITEMS 16
-
 /* Simple linked list, describing known contents of an aggregate beforere
    call.  */
 
@@ -1327,8 +1325,8 @@ determine_known_aggregate_parts (gimple call, tree arg,
       *p = n;
 
       item_count++;
-      if (const_count == IPA_MAX_AFF_JF_ITEMS
-	  || item_count == 2 * IPA_MAX_AFF_JF_ITEMS)
+      if (const_count == PARAM_VALUE (PARAM_IPA_MAX_AGG_ITEMS)
+	  || item_count == 2 * PARAM_VALUE (PARAM_IPA_MAX_AGG_ITEMS))
 	break;
     }
 
