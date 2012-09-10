@@ -2871,35 +2871,35 @@ struct ashl_lshr_sequence
 
 static const struct ashl_lshr_sequence ashl_lshr_seq[32] =
 {
-  { 0, { 0 },		    0 },
+  { 0, { 0 },		    0 },		// 0
   { 1, { 1 },		    LSHR_CLOBBERS_T },
   { 1, { 2 },		    0 },
   { 2, { 2, 1 },	    LSHR_CLOBBERS_T },
-  { 2, { 2, 2 },	    0 },
+  { 2, { 2, 2 },	    0 },		// 4
   { 3, { 2, 1, 2 },	    LSHR_CLOBBERS_T },
   { 3, { 2, 2, 2 },	    0 },
   { 4, { 2, 2, 1, 2 },	    LSHR_CLOBBERS_T },
-  { 1, { 8 },		    0 },
+  { 1, { 8 },		    0 },		// 8
   { 2, { 8, 1 },	    LSHR_CLOBBERS_T },
   { 2, { 8, 2 },	    0 },
   { 3, { 8, 1, 2 },	    LSHR_CLOBBERS_T },
-  { 3, { 8, 2, 2 },	    0 },
+  { 3, { 8, 2, 2 },	    0 },		// 12
   { 4, { 8, 2, 1, 2 },	    LSHR_CLOBBERS_T },
   { 3, { 8, -2, 8 },	    0 },
   { 3, { 8, -1, 8 },	    ASHL_CLOBBERS_T },
-  { 1, { 16 },		    0 },
+  { 1, { 16 },		    0 },		// 16
   { 2, { 16, 1 },	    LSHR_CLOBBERS_T },
   { 2, { 16, 2 },	    0 },
   { 3, { 16, 1, 2 },	    LSHR_CLOBBERS_T },
-  { 3, { 16, 2, 2 },	    0 },
+  { 3, { 16, 2, 2 },	    0 },		// 20
   { 4, { 16, 2, 1, 2 },	    LSHR_CLOBBERS_T },
   { 3, { 16, -2, 8 },	    0 },
   { 3, { 16, -1, 8 },	    ASHL_CLOBBERS_T },
-  { 2, { 16, 8 },	    0 },
+  { 2, { 16, 8 },	    0 },		// 24
   { 3, { 16, 1, 8 },	    LSHR_CLOBBERS_T },
   { 3, { 16, 8, 2 },	    0 },
   { 4, { 16, 8, 1, 2 },     LSHR_CLOBBERS_T },
-  { 4, { 16, 8, 2, 2 },	    0 },
+  { 4, { 16, 8, 2, 2 },	    0 },		// 28
   { 4, { 16, -1, -2, 16 },  ASHL_CLOBBERS_T },
   { 3, { 16, -2, 16 },	    0 },
 
@@ -2915,35 +2915,35 @@ static const struct ashl_lshr_sequence ashl_lshr_seq[32] =
    kind of sign or zero extension.  */
 static const struct ashl_lshr_sequence ext_ashl_lshr_seq[32] =
 {
-  { 0, { 0 },		    0 },
+  { 0, { 0 },		    0 },		// 0
   { 1, { 1 },		    LSHR_CLOBBERS_T },
   { 1, { 2 },		    0 },
   { 2, { 2, 1 },	    LSHR_CLOBBERS_T },
-  { 2, { 2, 2 },	    0 },
+  { 2, { 2, 2 },	    0 },		// 4
   { 3, { 2, 1, 2 },	    LSHR_CLOBBERS_T },
   { 2, { 8, -2 },	    0 },
   { 2, { 8, -1 },	    ASHL_CLOBBERS_T },
-  { 1, { 8 },		    0 },
+  { 1, { 8 },		    0 },		// 8
   { 2, { 8, 1 },	    LSHR_CLOBBERS_T },
   { 2, { 8, 2 },	    0 },
   { 3, { 8, 1, 2 },	    LSHR_CLOBBERS_T },
-  { 3, { 8, 2, 2 },	    0 },
+  { 3, { 8, 2, 2 },	    0 },		// 12
   { 3, { 16, -2, -1 },	    ASHL_CLOBBERS_T },
   { 2, { 16, -2 },	    0 },
   { 2, { 16, -1 },	    ASHL_CLOBBERS_T },
-  { 1, { 16 },		    0 },
+  { 1, { 16 },		    0 },		// 16
   { 2, { 16, 1 },	    LSHR_CLOBBERS_T },
   { 2, { 16, 2 },	    0 },
   { 3, { 16, 1, 2 },	    LSHR_CLOBBERS_T },
-  { 3, { 16, 2, 2 },	    0 },
+  { 3, { 16, 2, 2 },	    0 },		// 20
   { 4, { 16, 2, 1, 2 },	    LSHR_CLOBBERS_T },
   { 3, { 16, -2, 8 },	    0 },
   { 3, { 16, -1, 8 },	    ASHL_CLOBBERS_T },
-  { 2, { 16, 8 },	    0 },
+  { 2, { 16, 8 },	    0 },		// 24
   { 3, { 16, 1, 8 },	    LSHR_CLOBBERS_T },
   { 3, { 16, 8, 2 },	    0 },
   { 4, { 16, 8, 1, 2 },	    LSHR_CLOBBERS_T },
-  { 4, { 16, 8, 2, 2 },	    0 },
+  { 4, { 16, 8, 2, 2 },	    0 },		// 28
   { 4, { 16, -1, -2, 16 },  ASHL_CLOBBERS_T },
   { 3, { 16, -2, 16 },	    0 },
   { 3, { 16, -1, 16 },	    ASHL_CLOBBERS_T }

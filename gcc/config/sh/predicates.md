@@ -791,9 +791,8 @@
   /* Allow T_REG as shift count for dynamic shifts, although it is not
      really possible.  It will then be copied to a general purpose reg.  */
   if (! TARGET_SHMEDIA)
-    return const_int_operand (op, mode)
-	   || (TARGET_DYNSHIFT && (arith_reg_operand (op, mode)
-				   || t_reg_operand (op, mode)));
+    return const_int_operand (op, mode) || arith_reg_operand (op, mode)
+	   || (TARGET_DYNSHIFT && t_reg_operand (op, mode));
 
   return (CONSTANT_P (op)
 	  ? (CONST_INT_P (op)
