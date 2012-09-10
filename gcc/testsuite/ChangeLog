@@ -1,3 +1,9 @@
+2012-09-10  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54435
+	PR fortran/54443
+	* gfortran.dg/select_type_29.f03: New.
+
 2012-09-10  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	PR middle-end/54515
