@@ -730,8 +730,6 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
 	      lto_set_symtab_encoder_encode_initializer (encoder, vnode);
 	      add_references (encoder, &vnode->symbol.ref_list);
 	    }
-	  else if (vnode->alias || vnode->alias_of)
-	    add_references (encoder, &vnode->symbol.ref_list);
        }
     }
 
