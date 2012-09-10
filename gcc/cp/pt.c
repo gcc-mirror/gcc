@@ -14199,8 +14199,18 @@ tsubst_copy_and_build (tree t,
 	LAMBDA_EXPR_MUTABLE_P (r) = LAMBDA_EXPR_MUTABLE_P (t);
 	LAMBDA_EXPR_DISCRIMINATOR (r)
 	  = (LAMBDA_EXPR_DISCRIMINATOR (t));
-	LAMBDA_EXPR_EXTRA_SCOPE (r)
-	  = tsubst (LAMBDA_EXPR_EXTRA_SCOPE (t), args, complain, in_decl);
+	/* For a function scope, we want to use tsubst so that we don't
+	   complain about referring to an auto function before its return
+	   type has been deduced.  Otherwise, we want to use tsubst_copy so
+	   that we look up the existing field/parameter/variable rather
+	   than build a new one.  */
+	tree scope = LAMBDA_EXPR_EXTRA_SCOPE (t);
+	if (scope && TREE_CODE (scope) == FUNCTION_DECL)
+	  scope = tsubst (LAMBDA_EXPR_EXTRA_SCOPE (t), args,
+			  complain, in_decl);
+	else
+	  scope = RECUR (scope);
+	LAMBDA_EXPR_EXTRA_SCOPE (r) = scope;
 	LAMBDA_EXPR_RETURN_TYPE (r)
 	  = tsubst (LAMBDA_EXPR_RETURN_TYPE (t), args, complain, in_decl);
 

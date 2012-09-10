@@ -1,3 +1,8 @@
+2012-09-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/54538
+	* g++.dg/cpp0x/lambda/lambda-mangle4.C: New.
+
 2012-09-10  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/54089
