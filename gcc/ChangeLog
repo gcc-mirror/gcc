@@ -1,3 +1,7 @@
+2012-09-10  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* config/rs6000/rs6000.md: Move a splitter next to its insn.
+
 2012-09-10  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/54089
