@@ -1,3 +1,9 @@
+2012-09-10  Jan Hubicka  <jh@suse.cz>
+
+	* lto-cgraph.c (compute_ltrans_boundary): Do not care about aliases.
+	* symtab.c (symtab_make_decl_local): Remove user defined visibility
+	when making symbol local.
+
 2012-09-09  Mark Kettenis  <kettenis@gnu.org>
 
 	* config/openbsd-stdint.h (INTMAX_TYPE, UINTMAX_TYPE): Define.

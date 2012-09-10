@@ -734,6 +734,8 @@ symtab_make_decl_local (tree decl)
   DECL_WEAK (decl) = 0;
   DECL_EXTERNAL (decl) = 0;
   TREE_PUBLIC (decl) = 0;
+  DECL_VISIBILITY_SPECIFIED (decl) = 0;
+  DECL_VISIBILITY (decl) = VISIBILITY_DEFAULT;
   if (!DECL_RTL_SET_P (decl))
     return;
 

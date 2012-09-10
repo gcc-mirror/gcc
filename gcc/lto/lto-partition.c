@@ -35,6 +35,7 @@ VEC(ltrans_partition, heap) *ltrans_partitions;
 
 static void add_cgraph_node_to_partition (ltrans_partition part, struct cgraph_node *node);
 static void add_varpool_node_to_partition (ltrans_partition part, struct varpool_node *vnode);
+static bool partition_symbol_p (symtab_node node);
 
 /* Create new partition with name NAME.  */
 static ltrans_partition
@@ -62,8 +63,8 @@ free_ltrans_partitions (void)
   VEC_free (ltrans_partition, heap, ltrans_partitions);
 }
 
-/* See all references that go to comdat objects and bring them into partition too.
-   Also see all aliases of the newly added entry and bring them, too.  */
+/* Add all referenced symbols referenced by REFS that are not external and not
+   partitioned into PART.  */
 static void
 add_references_to_partition (ltrans_partition part, struct ipa_ref_list *refs)
 {
@@ -71,46 +72,38 @@ add_references_to_partition (ltrans_partition part, struct ipa_ref_list *refs)
   struct ipa_ref *ref;
   for (i = 0; ipa_ref_list_reference_iterate (refs, i, ref); i++)
     {
-      if (symtab_function_p (ref->referred)
-	  && (DECL_COMDAT (cgraph_function_node (ipa_ref_node (ref),
-			   NULL)->symbol.decl)
-	      || (ref->use == IPA_REF_ALIAS
-		  && lookup_attribute
-		       ("weakref", DECL_ATTRIBUTES (ref->referred->symbol.decl))))
-	  && !lto_symtab_encoder_in_partition_p (part->encoder, ref->referred))
+      if (DECL_EXTERNAL (ref->referred->symbol.decl)
+	  || partition_symbol_p (ref->referred)
+	  || lto_symtab_encoder_in_partition_p (part->encoder, ref->referred))
+	continue;
+      if (symtab_function_p (ref->referred))
 	add_cgraph_node_to_partition (part, ipa_ref_node (ref));
       else
-        if (symtab_variable_p (ref->referred)
-	    && (DECL_COMDAT (ref->referred->symbol.decl)
-		|| DECL_EXTERNAL (ref->referred->symbol.decl)
-	        || (ref->use == IPA_REF_ALIAS
-		    && lookup_attribute
-		         ("weakref",
-			  DECL_ATTRIBUTES (ref->referred->symbol.decl))))
-	    && !lto_symtab_encoder_in_partition_p (part->encoder, ref->referred))
-	  add_varpool_node_to_partition (part, ipa_ref_varpool_node (ref));
+	add_varpool_node_to_partition (part, ipa_ref_varpool_node (ref));
     }
+}
+
+/* Look for all (nonweakref) aliases in REFS and add them into PART. */
+static void
+add_aliases_to_partition (ltrans_partition part, struct ipa_ref_list *refs)
+{
+  int i;
+  struct ipa_ref *ref;
+
   for (i = 0; ipa_ref_list_referring_iterate (refs, i, ref); i++)
-    {
-      if (symtab_function_p (ref->referring)
-	  && ref->use == IPA_REF_ALIAS
-	  && !lto_symtab_encoder_in_partition_p (part->encoder,
-						 ref->referring)
-	  && !lookup_attribute ("weakref",
-				DECL_ATTRIBUTES
-				  (ref->referring->symbol.decl)))
-	add_cgraph_node_to_partition (part, ipa_ref_referring_node (ref));
-      else
-        if (symtab_variable_p (ref->referring)
-	    && ref->use == IPA_REF_ALIAS
-	    && !lto_symtab_encoder_in_partition_p (part->encoder,
-						   ref->referring)
-	    && !lookup_attribute ("weakref",
-				  DECL_ATTRIBUTES
-				    (ref->referring->symbol.decl)))
+    if (ref->use == IPA_REF_ALIAS
+	&& !lto_symtab_encoder_in_partition_p (part->encoder,
+					       ref->referring)
+	&& !lookup_attribute ("weakref",
+			      DECL_ATTRIBUTES
+				(ref->referring->symbol.decl)))
+      {
+	if (symtab_function_p (ref->referring))
+	  add_cgraph_node_to_partition (part, ipa_ref_referring_node (ref));
+	else
 	  add_varpool_node_to_partition (part,
 					 ipa_ref_referring_varpool_node (ref));
-    }
+      }
 }
 
 /* Worker for add_cgraph_node_to_partition.  */
@@ -119,6 +112,9 @@ static bool
 add_cgraph_node_to_partition_1 (struct cgraph_node *node, void *data)
 {
   ltrans_partition part = (ltrans_partition) data;
+
+  if (lto_symtab_encoder_in_partition_p (part->encoder, (symtab_node) node))
+    return false;
 
   /* non-COMDAT aliases of COMDAT functions needs to be output just once.  */
   if (!DECL_COMDAT (node->symbol.decl)
@@ -157,12 +153,10 @@ add_cgraph_node_to_partition (ltrans_partition part, struct cgraph_node *node)
 
   part->insns += inline_summary (node)->self_size;
 
-
-  lto_set_symtab_encoder_in_partition (part->encoder, (symtab_node) node);
-
   for (e = node->callees; e; e = e->next_callee)
     if ((!e->inline_failed
-	 || DECL_COMDAT (cgraph_function_node (e->callee, NULL)->symbol.decl)))
+         || (!DECL_EXTERNAL (e->callee->symbol.decl)
+	     && !partition_symbol_p ((symtab_node) e->callee))))
       add_cgraph_node_to_partition (part, e->callee);
 
   /* The only way to assemble non-weakref alias is to add the aliased object into
@@ -211,6 +205,7 @@ add_varpool_node_to_partition (ltrans_partition part, struct varpool_node *vnode
     add_varpool_node_to_partition (part, v);
 
   add_references_to_partition (part, &vnode->symbol.ref_list);
+  add_aliases_to_partition (part, &vnode->symbol.ref_list);
 
   if (vnode->symbol.same_comdat_group
       && !lto_symtab_encoder_in_partition_p (part->encoder,
@@ -266,7 +261,7 @@ partition_cgraph_node_p (struct cgraph_node *node)
 static bool
 partition_varpool_node_p (struct varpool_node *vnode)
 {
-  if (vnode->alias || !vnode->analyzed)
+  if (!vnode->analyzed)
     return false;
   /* Constant pool and comdat are always only in partitions they are needed.  */
   if (DECL_IN_CONSTANT_POOL (vnode->symbol.decl)

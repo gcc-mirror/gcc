@@ -1,3 +1,14 @@
+2012-09-10  Jan Hubicka  <jh@suse.cz>
+
+	* lto-partition.c (partition_symbol_p): Forward declare.
+	(add_references_to_partition): Reimplement using partition_symbol_p.
+	(add_aliases_to_partition): Break out from add_references_to_partition;
+	reimplement using partition_symbol_p.
+	(add_cgraph_node_to_partition_1): Handle callees using partition_symbol_p;
+	add sanity checks.
+	(add_varpool_node_to_partition): Use add_aliases_to_partition.
+	(partition_varpool_node_p): Do not special case aliases.
+
 2012-08-12  Jan Hubicka  <jh@suse.cz>
 
 	* lto.c (lto_wpa_write_files): Do not delete partition encoder;
