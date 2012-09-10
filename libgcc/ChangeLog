@@ -1,3 +1,9 @@
+2012-09-10  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54089
+	* config/sh/lib1funcs.S (ashlsi3): Reimplement as ashlsi3_r0.
+	(lshrsi3): Reimplement as lshrsi3_r0.
+
 2012-09-10  Andreas Schwab  <schwab@linux-m68k.org>
 
 	PR target/46191

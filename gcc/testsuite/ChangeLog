@@ -1,6 +1,11 @@
+2012-09-10  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54089
+	* gcc.target/sh/pr54089-3.c: New.
+
 2012-09-10  Marc Glisse  <marc.glisse@inria.fr>
 
-        * gcc.dg/tree-ssa/forwprop-21.c: New testcase.
+	* gcc.dg/tree-ssa/forwprop-21.c: New testcase.
 
 2012-09-10  Aldy Hernandez  <aldyh@redhat.com>
 

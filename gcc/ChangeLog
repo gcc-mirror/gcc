@@ -1,11 +1,24 @@
+2012-09-10  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54089
+	* config/sh/sh.h (SH_DYNAMIC_SHIFT_COST): Set always to 1 if
+	dynamic shifts are available.
+	(SHIFT_COUNT_TRUNCATED): Always define to 0.  Correct comment.
+	* config/sh/sh.c (ashl_lshr_seq, ext_ashl_lshr_seq): Add comments.
+	* config/sh/predicates.md (shift_count_operand): Allow
+	arith_reg_operand even if TARGET_DYNSHIFT is false.
+	* config/sh/sh.md (ashlsi3, lshrsi3): Expand library call patterns
+	if needed.
+	(ashlsi3_d_call, lshrsi3_d_call): New insns.
+
 2012-09-10  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* ira.c (setup_pressure_classes): Handle synonymous classes.
 
 2012-09-10  Marc Glisse  <marc.glisse@inria.fr>
 
-        * tree-ssa-forwprop.c (simplify_bitfield_ref): New function.
-        (ssa_forward_propagate_and_combine): Call it.
+	* tree-ssa-forwprop.c (simplify_bitfield_ref): New function.
+	(ssa_forward_propagate_and_combine): Call it.
 
 2012-09-10  Steve Ellcey  <sellcey@mips.com>
 
