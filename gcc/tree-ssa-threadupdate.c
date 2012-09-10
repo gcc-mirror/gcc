@@ -846,8 +846,9 @@ static bool
 def_split_header_continue_p (const_basic_block bb, const void *data)
 {
   const_basic_block new_header = (const_basic_block) data;
-  return (bb->loop_father == new_header->loop_father
-	  && bb != new_header);
+  return (bb != new_header
+	  && (loop_depth (bb->loop_father)
+	      >= loop_depth (new_header->loop_father)));
 }
 
 /* Thread jumps through the header of LOOP.  Returns true if cfg changes.
@@ -1031,10 +1032,11 @@ thread_through_loop_header (struct loop *loop, bool may_peel_loop_headers)
       nblocks = dfs_enumerate_from (header, 0, def_split_header_continue_p,
 				    bblocks, loop->num_nodes, tgt_bb);
       for (i = 0; i < nblocks; i++)
-	{
-	  remove_bb_from_loops (bblocks[i]);
-	  add_bb_to_loop (bblocks[i], loop_outer (loop));
-	}
+	if (bblocks[i]->loop_father == loop)
+	  {
+	    remove_bb_from_loops (bblocks[i]);
+	    add_bb_to_loop (bblocks[i], loop_outer (loop));
+	  }
       free (bblocks);
 
       /* If the new header has multiple latches mark it so.  */

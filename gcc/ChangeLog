@@ -1,3 +1,9 @@
+2012-09-10  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/54520
+	* tree-ssa-threadupdate.c (def_split_header_continue_p):
+	Properly consider sub-loops.
+
 2012-09-10  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/predicates.md (small_symbolic_operand): Disallow
