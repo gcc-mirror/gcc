@@ -1,3 +1,10 @@
+2012-09-09  Thiago Macieira  <thiago.macieira@intel.com>
+
+	PR libstdc++/54172
+        * libsupc++/guard.cc (__cxa_guard_acquire): Exit the loop earlier if
+        we detect that another thread has had success. Don't compare_exchange
+        from a finished state back to a waiting state. Comment.
+
 2012-09-09  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/54388
