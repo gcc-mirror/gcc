@@ -1,3 +1,8 @@
+2012-09-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/54086
+	* decl.c (grokdeclarator): Allow const and constexpr together.
+
 2012-08-31  Ollie Wild  <aaw@google.com>
 
 	PR c++/54197
