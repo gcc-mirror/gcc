@@ -211,7 +211,7 @@ const struct mcu_type_s avr_mcu_types[] = {
   { "atmega128rfa1",        ARCH_AVR51, "__AVR_ATmega128RFA1__",    0, 0x0200, "m128rfa1" },
   { "at90can128",           ARCH_AVR51, "__AVR_AT90CAN128__",       0, 0x0100, "can128" },
   { "at90usb1286",          ARCH_AVR51, "__AVR_AT90USB1286__",      0, 0x0100, "usb1286" },
-  { "at90usb1287",          ARCH_AVR51, "__AVR_AT90USB1287__",      0, 0x0100, "usb1286" },
+  { "at90usb1287",          ARCH_AVR51, "__AVR_AT90USB1287__",      0, 0x0100, "usb1287" },
     /* 3-Byte PC.  */
   { "avr6",                 ARCH_AVR6, NULL,                        0, 0x0200, "m2561" },
   { "atmega2560",           ARCH_AVR6, "__AVR_ATmega2560__",        0, 0x0200, "m2560" },
