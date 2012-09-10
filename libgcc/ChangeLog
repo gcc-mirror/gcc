@@ -1,3 +1,9 @@
+2012-09-10  Andreas Schwab  <schwab@linux-m68k.org>
+
+	PR target/46191
+	* config/t-slibgcc-libgcc (SHLIB_MAKE_SOLINK): Use -lgcc instead
+	of libgcc.a.
+
 2012-09-07  Teresa Johnson  <tejohnson@google.com>
 
         PR gcov-profile/54487
