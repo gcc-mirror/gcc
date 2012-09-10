@@ -1,3 +1,7 @@
+2012-09-10  Marc Glisse  <marc.glisse@inria.fr>
+
+        * gcc.dg/tree-ssa/forwprop-20.c: New testcase.
+
 2012-09-10  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/54520
