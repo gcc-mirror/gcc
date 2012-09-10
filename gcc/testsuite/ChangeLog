@@ -1,3 +1,12 @@
+2012-09-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/tm/reg-promotion.c: Modify dump message check.
+
+2012-09-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/pr52558-2.c: Delete.
+	* gcc.dg/simulate-thread/speculative-store-3.c: New.
+
 2012-09-10  Marc Glisse  <marc.glisse@inria.fr>
 
         * gcc.dg/tree-ssa/forwprop-20.c: New testcase.
@@ -16,11 +25,6 @@
 
 	PR fortran/54208
 	* gfortran.dg/bound_simplification_3.f90: New test.
-
-2012-09-07  Aldy Hernandez  <aldyh@redhat.com>
-
-	* gcc.dg/pr52558-2.c: Delete.
-	* gcc.dg/simulate-thread/speculative-store-3.c: New.
 
 2012-09-07  Aldy Hernandez  <aldyh@redhat.com>
 
