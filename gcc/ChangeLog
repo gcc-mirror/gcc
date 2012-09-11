@@ -1,5 +1,13 @@
 2012-09-11  Richard Guenther  <rguenther@suse.de>
 
+	* graphite-scop-detection.c (move_sd_regions): Adjust for VEC
+	changes.
+	(scopdet_basic_block_info): Likewise.
+	(build_scops_1): Likewise.
+	(limit_scops): Likewise.
+ 
+2012-09-11  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/54515
 	* gimple.c (get_base_address): Do not return NULL_TREE apart
 	from for WITH_SIZE_EXPR.

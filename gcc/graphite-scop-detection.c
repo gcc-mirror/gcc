@@ -143,7 +143,7 @@ move_sd_regions (VEC (sd_region, heap) **source,
   int i;
 
   FOR_EACH_VEC_ELT (sd_region, *source, i, s)
-    VEC_safe_push (sd_region, heap, *target, s);
+    VEC_safe_push (sd_region, heap, *target, *s);
 
   VEC_free (sd_region, heap, *source);
 }
@@ -500,7 +500,7 @@ scopdet_basic_block_info (basic_block bb, loop_p outermost_loop,
 		sd_region open_scop;
 		open_scop.entry = bb;
 		open_scop.exit = exit_e->dest;
-		VEC_safe_push (sd_region, heap, *scops, &open_scop);
+		VEC_safe_push (sd_region, heap, *scops, open_scop);
 		VEC_free (sd_region, heap, regions);
 	      }
 	  }
@@ -756,7 +756,7 @@ build_scops_1 (basic_block current, loop_p outermost_loop,
       else if (in_scop && (sinfo.exits || sinfo.difficult))
         {
 	  open_scop.exit = current;
-          VEC_safe_push (sd_region, heap, *scops, &open_scop);
+          VEC_safe_push (sd_region, heap, *scops, open_scop);
           in_scop = false;
         }
 
@@ -771,7 +771,7 @@ build_scops_1 (basic_block current, loop_p outermost_loop,
     {
       open_scop.exit = sinfo.exit;
       gcc_assert (open_scop.exit);
-      VEC_safe_push (sd_region, heap, *scops, &open_scop);
+      VEC_safe_push (sd_region, heap, *scops, open_scop);
     }
 
   result.exit = sinfo.exit;
@@ -1205,7 +1205,7 @@ limit_scops (VEC (scop_p, heap) **scops)
 		&& contains_only_close_phi_nodes (open_scop.exit))
 	      open_scop.exit = single_succ_edge (open_scop.exit)->dest;
 
-	    VEC_safe_push (sd_region, heap, regions, &open_scop);
+	    VEC_safe_push (sd_region, heap, regions, open_scop);
 	  }
     }
 
