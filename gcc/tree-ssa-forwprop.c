@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "expr.h"
 #include "cfgloop.h"
+#include "tree-vectorizer.h"
 
 /* This pass propagates the RHS of assignment statements into use
    sites of the LHS of the assignment.  It's basically a specialized
@@ -2794,6 +2795,84 @@ simplify_permutation (gimple_stmt_iterator *gsi)
   return 0;
 }
 
+/* Recognize a VEC_PERM_EXPR.  Returns true if there were any changes.  */
+
+static bool
+simplify_vector_constructor (gimple_stmt_iterator *gsi)
+{
+  gimple stmt = gsi_stmt (*gsi);
+  gimple def_stmt;
+  tree op, op2, orig, type, elem_type;
+  unsigned elem_size, nelts, i;
+  enum tree_code code;
+  constructor_elt *elt;
+  unsigned char *sel;
+  bool maybe_ident;
+
+  gcc_checking_assert (gimple_assign_rhs_code (stmt) == CONSTRUCTOR);
+
+  op = gimple_assign_rhs1 (stmt);
+  type = TREE_TYPE (op);
+  gcc_checking_assert (TREE_CODE (type) == VECTOR_TYPE);
+
+  nelts = TYPE_VECTOR_SUBPARTS (type);
+  elem_type = TREE_TYPE (type);
+  elem_size = TREE_INT_CST_LOW (TYPE_SIZE (elem_type));
+
+  sel = XALLOCAVEC (unsigned char, nelts);
+  orig = NULL;
+  maybe_ident = true;
+  FOR_EACH_VEC_ELT (constructor_elt, CONSTRUCTOR_ELTS (op), i, elt)
+    {
+      tree ref, op1;
+
+      if (i >= nelts)
+	return false;
+
+      if (TREE_CODE (elt->value) != SSA_NAME)
+	return false;
+      def_stmt = SSA_NAME_DEF_STMT (elt->value);
+      if (!def_stmt || !is_gimple_assign (def_stmt))
+	return false;
+      code = gimple_assign_rhs_code (def_stmt);
+      if (code != BIT_FIELD_REF)
+	return false;
+      op1 = gimple_assign_rhs1 (def_stmt);
+      ref = TREE_OPERAND (op1, 0);
+      if (orig)
+	{
+	  if (ref != orig)
+	    return false;
+	}
+      else
+	{
+	  if (TREE_CODE (ref) != SSA_NAME)
+	    return false;
+	  orig = ref;
+	}
+      if (TREE_INT_CST_LOW (TREE_OPERAND (op1, 1)) != elem_size)
+	return false;
+      sel[i] = TREE_INT_CST_LOW (TREE_OPERAND (op1, 2)) / elem_size;
+      if (sel[i] != i) maybe_ident = false;
+    }
+  if (i < nelts)
+    return false;
+
+  if (maybe_ident)
+    {
+      gimple_assign_set_rhs_from_tree (gsi, orig);
+    }
+  else
+    {
+      op2 = vect_gen_perm_mask (type, sel);
+      if (!op2)
+	return false;
+      gimple_assign_set_rhs_with_ops_1 (gsi, VEC_PERM_EXPR, orig, orig, op2);
+    }
+  update_stmt (gsi_stmt (*gsi));
+  return true;
+}
+
 /* Main entry point for the forward propagation and statement combine
    optimizer.  */
 
@@ -2965,6 +3044,9 @@ ssa_forward_propagate_and_combine (void)
 		  }
 		else if (code == BIT_FIELD_REF)
 		  changed = simplify_bitfield_ref (&gsi);
+                else if (code == CONSTRUCTOR
+                         && TREE_CODE (TREE_TYPE (rhs1)) == VECTOR_TYPE)
+                  changed = simplify_vector_constructor (&gsi);
 		break;
 	      }
 
