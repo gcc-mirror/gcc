@@ -276,6 +276,8 @@ lto_read_in_decl_state (struct data_in *data_in, const uint32_t *data,
   return data;
 }
 
+
+
 /* Global type table.  FIXME, it should be possible to re-use some
    of the type hashing routines in tree.c (type_hash_canon, type_hash_lookup,
    etc), but those assume that types were built with the various
@@ -285,8 +287,6 @@ static GTY((if_marked ("ggc_marked_p"), param_is (union tree_node)))
 static GTY((if_marked ("tree_int_map_marked_p"), param_is (struct tree_int_map)))
   htab_t type_hash_cache;
 
-enum gtc_mode { GTC_MERGE = 0, GTC_DIAG = 1 };
-
 static hashval_t gimple_type_hash (const void *);
 
 /* Structure used to maintain a cache of some type pairs compared by
@@ -295,16 +295,13 @@ static hashval_t gimple_type_hash (const void *);
 
    	-2: The pair (T1, T2) has just been inserted in the table.
 	 0: T1 and T2 are different types.
-	 1: T1 and T2 are the same type.
-
-   The two elements in the SAME_P array are indexed by the comparison
-   mode gtc_mode.  */
+	 1: T1 and T2 are the same type.  */
 
 struct type_pair_d
 {
   unsigned int uid1;
   unsigned int uid2;
-  signed char same_p[2];
+  signed char same_p;
 };
 typedef struct type_pair_d *type_pair_t;
 DEF_VEC_P(type_pair_t);
@@ -322,9 +319,6 @@ lookup_type_pair (tree t1, tree t2)
 {
   unsigned int index;
   unsigned int uid1, uid2;
-
-  if (type_pair_cache == NULL)
-    type_pair_cache = XCNEWVEC (struct type_pair_d, GIMPLE_TYPE_PAIR_SIZE);
 
   if (TYPE_UID (t1) < TYPE_UID (t2))
     {
@@ -348,8 +342,7 @@ lookup_type_pair (tree t1, tree t2)
 
   type_pair_cache [index].uid1 = uid1;
   type_pair_cache [index].uid2 = uid2;
-  type_pair_cache [index].same_p[0] = -2;
-  type_pair_cache [index].same_p[1] = -2;
+  type_pair_cache [index].same_p = -2;
 
   return &type_pair_cache[index];
 }
@@ -381,7 +374,7 @@ typedef struct GTY(()) gimple_type_leader_entry_s {
 } gimple_type_leader_entry;
 
 #define GIMPLE_TYPE_LEADER_SIZE 16381
-static GTY((deletable, length("GIMPLE_TYPE_LEADER_SIZE")))
+static GTY((length("GIMPLE_TYPE_LEADER_SIZE")))
   gimple_type_leader_entry *gimple_type_leader;
 
 /* Lookup an existing leader for T and return it or NULL_TREE, if
@@ -392,16 +385,12 @@ gimple_lookup_type_leader (tree t)
 {
   gimple_type_leader_entry *leader;
 
-  if (!gimple_type_leader)
-    return NULL_TREE;
-
   leader = &gimple_type_leader[TYPE_UID (t) % GIMPLE_TYPE_LEADER_SIZE];
   if (leader->type != t)
     return NULL_TREE;
 
   return leader->leader;
 }
-
 
 
 /* Return true if T1 and T2 have the same name.  If FOR_COMPLETION_P is
@@ -535,11 +524,11 @@ gtc_visit (tree t1, tree t2,
 
   /* Allocate a new cache entry for this comparison.  */
   p = lookup_type_pair (t1, t2);
-  if (p->same_p[GTC_MERGE] == 0 || p->same_p[GTC_MERGE] == 1)
+  if (p->same_p == 0 || p->same_p == 1)
     {
       /* We have already decided whether T1 and T2 are the
 	 same, return the cached result.  */
-      return p->same_p[GTC_MERGE] == 1;
+      return p->same_p == 1;
     }
 
   if ((slot = pointer_map_contains (sccstate, p)) != NULL)
@@ -574,7 +563,7 @@ gimple_types_compatible_p_1 (tree t1, tree t2, type_pair_t p,
 {
   struct sccs *state;
 
-  gcc_assert (p->same_p[GTC_MERGE] == -2);
+  gcc_assert (p->same_p == -2);
 
   state = XOBNEW (sccstate_obstack, struct sccs);
   *pointer_map_insert (sccstate, p) = state;
@@ -861,7 +850,7 @@ pop:
 	  x = VEC_pop (type_pair_t, *sccstack);
 	  cstate = (struct sccs *)*pointer_map_contains (sccstate, x);
 	  cstate->on_sccstack = false;
-	  x->same_p[GTC_MERGE] = state->u.same_p;
+	  x->same_p = state->u.same_p;
 	}
       while (x != p);
     }
@@ -958,11 +947,11 @@ gimple_types_compatible_p (tree t1, tree t2)
   /* If we've visited this type pair before (in the case of aggregates
      with self-referential types), and we made a decision, return it.  */
   p = lookup_type_pair (t1, t2);
-  if (p->same_p[GTC_MERGE] == 0 || p->same_p[GTC_MERGE] == 1)
+  if (p->same_p == 0 || p->same_p == 1)
     {
       /* We have already decided whether T1 and T2 are the
 	 same, return the cached result.  */
-      return p->same_p[GTC_MERGE] == 1;
+      return p->same_p == 1;
     }
 
   /* Now set up the SCC machinery for the comparison.  */
@@ -1030,8 +1019,6 @@ visit (tree t, struct sccs *state, hashval_t v,
      and return the unaltered hash value.  */
   return v;
 }
-
-
 
 /* Hash NAME with the previous hash value V and return it.  */
 
@@ -1304,10 +1291,6 @@ gimple_type_hash (const void *p)
   void **slot;
   struct tree_int_map m;
 
-  if (type_hash_cache == NULL)
-    type_hash_cache = htab_create_ggc (512, tree_int_map_hash,
-				       tree_int_map_eq, NULL);
-
   m.base.from = CONST_CAST_TREE (t);
   if ((slot = htab_find_slot (type_hash_cache, &m, NO_INSERT))
       && *slot)
@@ -1325,6 +1308,7 @@ gimple_type_hash (const void *p)
 
   return val;
 }
+
 /* Returns nonzero if P1 and P2 are equal.  */
 
 static int
@@ -1393,14 +1377,6 @@ static tree
 gimple_register_type (tree t)
 {
   gcc_assert (TYPE_P (t));
-
-  if (!gimple_type_leader)
-    gimple_type_leader = ggc_alloc_cleared_vec_gimple_type_leader_entry_s
-				(GIMPLE_TYPE_LEADER_SIZE);
-
-  if (gimple_types == NULL)
-    gimple_types = htab_create_ggc (16381, gimple_type_hash, gimple_type_eq, 0);
-
   return gimple_register_type_1 (t, false);
 }
 
@@ -2895,6 +2871,12 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
 
   tree_with_vars = htab_create_ggc (101, htab_hash_pointer, htab_eq_pointer,
 				    NULL);
+  type_hash_cache = htab_create_ggc (512, tree_int_map_hash,
+				     tree_int_map_eq, NULL);
+  type_pair_cache = XCNEWVEC (struct type_pair_d, GIMPLE_TYPE_PAIR_SIZE);
+  gimple_type_leader = ggc_alloc_cleared_vec_gimple_type_leader_entry_s
+		        (GIMPLE_TYPE_LEADER_SIZE);
+  gimple_types = htab_create_ggc (16381, gimple_type_hash, gimple_type_eq, 0);
 
   if (!quiet_flag)
     fprintf (stderr, "Reading object files:");
@@ -2965,21 +2947,12 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   lto_fixup_decls (all_file_decl_data);
   htab_delete (tree_with_vars);
   tree_with_vars = NULL;
-  if (gimple_types)
-    {
-      htab_delete (gimple_types);
-      gimple_types = NULL;
-    }
-  if (type_hash_cache)
-    {
-      htab_delete (type_hash_cache);
-      type_hash_cache = NULL;
-    }
-  if (type_pair_cache)
-    {
-      free (type_pair_cache);
-      type_pair_cache = NULL;
-    }
+  htab_delete (gimple_types);
+  gimple_types = NULL;
+  htab_delete (type_hash_cache);
+  type_hash_cache = NULL;
+  free (type_pair_cache);
+  type_pair_cache = NULL;
   gimple_type_leader = NULL;
   free_gimple_type_tables ();
   ggc_collect ();
