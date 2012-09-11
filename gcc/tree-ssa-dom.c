@@ -1231,7 +1231,7 @@ build_and_record_new_cond (enum tree_code code,
   cond->ops.binary.opnd1 = op1;
 
   c.value = boolean_true_node;
-  VEC_safe_push (cond_equivalence, heap, *p, &c);
+  VEC_safe_push (cond_equivalence, heap, *p, c);
 }
 
 /* Record that COND is true and INVERTED is false into the edge information
@@ -1338,7 +1338,7 @@ record_conditions (struct edge_info *edge_info, tree cond, tree inverted)
      two slots.  */
   initialize_expr_from_cond (cond, &c.cond);
   c.value = boolean_true_node;
-  VEC_safe_push (cond_equivalence, heap, edge_info->cond_equivalences, &c);
+  VEC_safe_push (cond_equivalence, heap, edge_info->cond_equivalences, c);
 
   /* It is possible for INVERTED to be the negation of a comparison,
      and not a valid RHS or GIMPLE_COND condition.  This happens because
@@ -1347,7 +1347,7 @@ record_conditions (struct edge_info *edge_info, tree cond, tree inverted)
      obey the trichotomy law.  */
   initialize_expr_from_cond (inverted, &c.cond);
   c.value = boolean_false_node;
-  VEC_safe_push (cond_equivalence, heap, edge_info->cond_equivalences, &c);
+  VEC_safe_push (cond_equivalence, heap, edge_info->cond_equivalences, c);
 }
 
 /* A helper function for record_const_or_copy and record_equality.

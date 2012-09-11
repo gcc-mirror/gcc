@@ -868,13 +868,11 @@ build_constructors (gimple swtch, struct switch_conv_info *info)
 	  int k;
 	  for (k = 0; k < info->phi_count; k++)
 	    {
-	      constructor_elt *elt;
+	      constructor_elt elt;
 
-	      elt = VEC_quick_push (constructor_elt,
-				    info->constructors[k], NULL);
-	      elt->index = int_const_binop (MINUS_EXPR, pos,
-					    info->range_min);
-	      elt->value = info->default_values[k];
+	      elt.index = int_const_binop (MINUS_EXPR, pos, info->range_min);
+	      elt.value = info->default_values[k];
+	      VEC_quick_push (constructor_elt, info->constructors[k], elt);
 	    }
 
 	  pos = int_const_binop (PLUS_EXPR, pos, integer_one_node);
@@ -896,12 +894,11 @@ build_constructors (gimple swtch, struct switch_conv_info *info)
 
 	  do
 	    {
-	      constructor_elt *elt;
+	      constructor_elt elt;
 
-	      elt = VEC_quick_push (constructor_elt,
-				    info->constructors[j], NULL);
-	      elt->index = int_const_binop (MINUS_EXPR, pos, info->range_min);
-	      elt->value = val;
+	      elt.index = int_const_binop (MINUS_EXPR, pos, info->range_min);
+	      elt.value = val;
+	      VEC_quick_push (constructor_elt, info->constructors[j], elt);
 
 	      pos = int_const_binop (PLUS_EXPR, pos, integer_one_node);
 	    } while (!tree_int_cst_lt (high, pos)

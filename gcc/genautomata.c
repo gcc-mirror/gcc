@@ -7752,8 +7752,7 @@ output_min_issue_delay_table (automaton_t automaton)
     = VEC_alloc (vect_el_t, heap, compressed_min_issue_delay_len);
 
   for (i = 0; i < compressed_min_issue_delay_len; i++)
-    VEC_quick_push (vect_el_t, compressed_min_issue_delay_vect,
-		    (vect_el_t) 0);
+    VEC_quick_push (vect_el_t, compressed_min_issue_delay_vect, 0);
 
   for (i = 0; i < min_issue_delay_len; i++)
     {
@@ -7845,7 +7844,7 @@ output_reserved_units_table (automaton_t automaton)
   reserved_units_table = VEC_alloc (vect_el_t, heap, reserved_units_size);
 
   for (i = 0; i < reserved_units_size; i++)
-    VEC_quick_push (vect_el_t, reserved_units_table, (vect_el_t) 0);
+    VEC_quick_push (vect_el_t, reserved_units_table, 0);
   for (n = 0; n < VEC_length (state_t, output_states_vect); n++)
     {
       state_t s = VEC_index (state_t, output_states_vect, n);

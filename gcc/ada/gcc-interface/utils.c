@@ -4615,16 +4615,14 @@ convert (tree type, tree expr)
 
 	  FOR_EACH_CONSTRUCTOR_ELT(e, idx, index, value)
 	    {
-	      constructor_elt *elt;
 	      /* We expect only simple constructors.  */
 	      if (!SAME_FIELD_P (index, efield))
 		break;
 	      /* The field must be the same.  */
 	      if (!SAME_FIELD_P (efield, field))
 		break;
-	      elt = VEC_quick_push (constructor_elt, v, NULL);
-	      elt->index = field;
-	      elt->value = convert (TREE_TYPE (field), value);
+	      constructor_elt elt = {field, convert (TREE_TYPE (field), value)};
+	      VEC_quick_push (constructor_elt, v, elt);
 
 	      /* If packing has made this field a bitfield and the input
 		 value couldn't be emitted statically any more, we need to
@@ -4690,9 +4688,8 @@ convert (tree type, tree expr)
 	  v = VEC_alloc (constructor_elt, gc, len);
 	  FOR_EACH_CONSTRUCTOR_VALUE (e, ix, value)
 	    {
-	      constructor_elt *elt = VEC_quick_push (constructor_elt, v, NULL);
-	      elt->index = NULL_TREE;
-	      elt->value = value;
+	      constructor_elt elt = {NULL_TREE, value};
+	      VEC_quick_push (constructor_elt, v, elt);
 	    }
 	  expr = copy_node (expr);
 	  TREE_TYPE (expr) = type;

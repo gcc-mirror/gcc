@@ -214,7 +214,7 @@ adjust_debug_stmts (tree from, tree to, basic_block bb)
       ai.bb = bb;
 
       if (adjust_vec)
-	VEC_safe_push (adjust_info, stack, adjust_vec, &ai);
+	VEC_safe_push (adjust_info, stack, adjust_vec, ai);
       else
 	adjust_debug_stmts_now (&ai);
     }

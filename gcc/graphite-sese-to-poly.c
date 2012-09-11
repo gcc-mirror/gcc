@@ -1249,7 +1249,7 @@ build_sese_conditions_before (struct dom_walk_data *dw_data,
       if (e->flags & EDGE_TRUE_VALUE)
 	VEC_safe_push (gimple, heap, *cases, stmt);
       else
-	VEC_safe_push (gimple, heap, *cases, (gimple) NULL);
+	VEC_safe_push (gimple, heap, *cases, NULL);
     }
 
   gbb = gbb_from_bb (bb);

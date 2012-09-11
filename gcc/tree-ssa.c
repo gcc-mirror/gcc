@@ -68,7 +68,7 @@ redirect_edge_var_map_add (edge e, tree result, tree def, source_location locus)
   new_node.result = result;
   new_node.locus = locus;
 
-  VEC_safe_push (edge_var_map, heap, head, &new_node);
+  VEC_safe_push (edge_var_map, heap, head, new_node);
   if (old_head != head)
     {
       /* The push did some reallocation.  Update the pointer map.  */

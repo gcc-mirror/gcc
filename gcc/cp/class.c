@@ -8835,11 +8835,9 @@ add_vcall_offset (tree orig_fn, tree binfo, vtbl_init_data *vid)
      offset.  */
   if (vid->binfo == TYPE_BINFO (vid->derived))
     {
-      tree_pair_p elt = VEC_safe_push (tree_pair_s, gc,
-				       CLASSTYPE_VCALL_INDICES (vid->derived),
-				       NULL);
-      elt->purpose = orig_fn;
-      elt->value = vid->index;
+      tree_pair_s elt = {orig_fn, vid->index};
+      VEC_safe_push (tree_pair_s, gc, CLASSTYPE_VCALL_INDICES (vid->derived),
+		     elt);
     }
 
   /* The next vcall offset will be found at a more negative

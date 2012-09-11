@@ -24901,11 +24901,8 @@ static void
 add_compiler_branch_island (tree label_name, tree function_name,
 			    int line_number)
 {
-  branch_island *bi = VEC_safe_push (branch_island, gc, branch_islands, NULL);
-
-  bi->function_name = function_name;
-  bi->label_name = label_name;
-  bi->line_number = line_number;
+  branch_island bi = {function_name, label_name, line_number};
+  VEC_safe_push (branch_island, gc, branch_islands, bi);
 }
 
 /* Generate far-jump branch islands for everything recorded in

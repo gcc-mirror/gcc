@@ -8535,7 +8535,7 @@ parse_optimize_options (tree args, bool attr_p)
   /* Build up argv vector.  Just in case the string is stored away, use garbage
      collected strings.  */
   VEC_truncate (const_char_p, optimize_args, 0);
-  VEC_safe_push (const_char_p, gc, optimize_args, (const_char_p)NULL);
+  VEC_safe_push (const_char_p, gc, optimize_args, NULL);
 
   for (ap = args; ap != NULL_TREE; ap = TREE_CHAIN (ap))
     {

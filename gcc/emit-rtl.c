@@ -6004,7 +6004,7 @@ curr_insn_locator (void)
     {
       curr_rtl_loc++;
       VEC_safe_push (int, heap, locations_locators_locs, curr_rtl_loc);
-      VEC_safe_push (location_t, heap, locations_locators_vals, &curr_location);
+      VEC_safe_push (location_t, heap, locations_locators_vals, curr_location);
       last_location = curr_location;
     }
   return curr_rtl_loc;

@@ -1344,7 +1344,7 @@ undistribute_ops_list (enum tree_code opcode,
 	  c.cnt = 1;
 	  c.id = next_oecount_id++;
 	  c.op = oe1->op;
-	  VEC_safe_push (oecount, heap, cvec, &c);
+	  VEC_safe_push (oecount, heap, cvec, c);
 	  idx = VEC_length (oecount, cvec) + 41;
 	  slot = htab_find_slot (ctable, (void *)idx, INSERT);
 	  if (!*slot)
@@ -3118,7 +3118,7 @@ attempt_builtin_powi (gimple stmt, VEC(operand_entry_t, heap) **ops)
 	      rfnew.rank = oe->rank;
 	      rfnew.count = oe->count;
 	      rfnew.repr = NULL_TREE;
-	      VEC_safe_push (repeat_factor, heap, repeat_factor_vec, &rfnew);
+	      VEC_safe_push (repeat_factor, heap, repeat_factor_vec, rfnew);
 	    }
 	}
     }

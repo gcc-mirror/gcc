@@ -3999,7 +3999,7 @@ splice_all_param_accesses (VEC (access_p, heap) **representatives)
 	    result = UNUSED_PARAMS;
 	}
       else
-	VEC_quick_push (access_p, *representatives, (access_p) NULL);
+	VEC_quick_push (access_p, *representatives, NULL);
     }
 
   if (result == NO_GOOD_ACCESS)
@@ -4050,36 +4050,35 @@ turn_representatives_into_adjustments (VEC (access_p, heap) *representatives,
 
       if (!repr || no_accesses_p (repr))
 	{
-	  struct ipa_parm_adjustment *adj;
+	  struct ipa_parm_adjustment adj;
 
-	  adj = VEC_quick_push (ipa_parm_adjustment_t, adjustments, NULL);
-	  memset (adj, 0, sizeof (*adj));
-	  adj->base_index = get_param_index (parm, parms);
-	  adj->base = parm;
+	  memset (&adj, 0, sizeof (adj));
+	  adj.base_index = get_param_index (parm, parms);
+	  adj.base = parm;
 	  if (!repr)
-	    adj->copy_param = 1;
+	    adj.copy_param = 1;
 	  else
-	    adj->remove_param = 1;
+	    adj.remove_param = 1;
+	  VEC_quick_push (ipa_parm_adjustment_t, adjustments, adj);
 	}
       else
 	{
-	  struct ipa_parm_adjustment *adj;
+	  struct ipa_parm_adjustment adj;
 	  int index = get_param_index (parm, parms);
 
 	  for (; repr; repr = repr->next_grp)
 	    {
-	      adj = VEC_quick_push (ipa_parm_adjustment_t, adjustments, NULL);
-	      memset (adj, 0, sizeof (*adj));
+	      memset (&adj, 0, sizeof (adj));
 	      gcc_assert (repr->base == parm);
-	      adj->base_index = index;
-	      adj->base = repr->base;
-	      adj->type = repr->type;
-	      adj->alias_ptr_type = reference_alias_ptr_type (repr->expr);
-	      adj->offset = repr->offset;
-	      adj->by_ref = (POINTER_TYPE_P (TREE_TYPE (repr->base))
-			     && (repr->grp_maybe_modified
-				 || repr->grp_not_necessarilly_dereferenced));
-
+	      adj.base_index = index;
+	      adj.base = repr->base;
+	      adj.type = repr->type;
+	      adj.alias_ptr_type = reference_alias_ptr_type (repr->expr);
+	      adj.offset = repr->offset;
+	      adj.by_ref = (POINTER_TYPE_P (TREE_TYPE (repr->base))
+			    && (repr->grp_maybe_modified
+				|| repr->grp_not_necessarilly_dereferenced));
+	      VEC_quick_push (ipa_parm_adjustment_t, adjustments, adj);
 	    }
 	}
     }

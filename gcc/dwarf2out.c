@@ -3484,7 +3484,7 @@ add_dwarf_attr (dw_die_ref die, dw_attr_ref attr)
 
   if (die->die_attr == NULL)
     die->die_attr = VEC_alloc (dw_attr_node, gc, 1);
-  VEC_safe_push (dw_attr_node, gc, die->die_attr, attr);
+  VEC_safe_push (dw_attr_node, gc, die->die_attr, *attr);
 }
 
 static inline enum dw_val_class
@@ -8218,7 +8218,7 @@ add_pubname_string (const char *str, dw_die_ref die)
 
   e.die = die;
   e.name = xstrdup (str);
-  VEC_safe_push (pubname_entry, gc, pubname_table, &e);
+  VEC_safe_push (pubname_entry, gc, pubname_table, e);
 }
 
 static void
@@ -8252,7 +8252,7 @@ add_enumerator_pubname (const char *scope_name, dw_die_ref die)
   gcc_assert (scope_name);
   e.name = concat (scope_name, get_AT_string (die, DW_AT_name), NULL);
   e.die = die;
-  VEC_safe_push (pubname_entry, gc, pubname_table, &e);
+  VEC_safe_push (pubname_entry, gc, pubname_table, e);
 }
 
 /* Add a new entry to .debug_pubtypes if appropriate.  */
@@ -8295,7 +8295,7 @@ add_pubtype (tree decl, dw_die_ref die)
         {
           e.die = die;
           e.name = concat (scope_name, name, NULL);
-          VEC_safe_push (pubname_entry, gc, pubtype_table, &e);
+          VEC_safe_push (pubname_entry, gc, pubtype_table, e);
         }
 
       /* Although it might be more consistent to add the pubinfo for the
@@ -14671,7 +14671,7 @@ defer_location (tree variable, dw_die_ref die)
   deferred_locations entry;
   entry.variable = variable;
   entry.die = die;
-  VEC_safe_push (deferred_locations, gc, deferred_locations_list, &entry);
+  VEC_safe_push (deferred_locations, gc, deferred_locations_list, entry);
 }
 
 /* Helper function for tree_add_const_value_attribute.  Natively encode
@@ -19870,7 +19870,7 @@ append_entry_to_tmpl_value_parm_die_table (dw_die_ref die, tree arg)
   entry.arg = arg;
   VEC_safe_push (die_arg_entry, gc,
 		 tmpl_value_parm_die_table,
-		 &entry);
+		 entry);
 }
 
 /* Return TRUE if T is an instance of generic type, FALSE
@@ -20256,7 +20256,7 @@ push_dw_line_info_entry (dw_line_info_table *table,
   dw_line_info_entry e;
   e.opcode = opcode;
   e.val = val;
-  VEC_safe_push (dw_line_info_entry, gc, table->entries, &e);
+  VEC_safe_push (dw_line_info_entry, gc, table->entries, e);
 }
 
 /* Output a label to mark the beginning of a source code line entry
@@ -20376,7 +20376,7 @@ dwarf2out_start_source_file (unsigned int lineno, const char *filename)
       e.code = DW_MACINFO_start_file;
       e.lineno = lineno;
       e.info = ggc_strdup (filename);
-      VEC_safe_push (macinfo_entry, gc, macinfo_table, &e);
+      VEC_safe_push (macinfo_entry, gc, macinfo_table, e);
     }
 }
 
@@ -20395,7 +20395,7 @@ dwarf2out_end_source_file (unsigned int lineno ATTRIBUTE_UNUSED)
       e.code = DW_MACINFO_end_file;
       e.lineno = lineno;
       e.info = NULL;
-      VEC_safe_push (macinfo_entry, gc, macinfo_table, &e);
+      VEC_safe_push (macinfo_entry, gc, macinfo_table, e);
     }
 }
 
@@ -20417,12 +20417,12 @@ dwarf2out_define (unsigned int lineno ATTRIBUTE_UNUSED,
 	  e.code = 0;
 	  e.lineno = 0;
 	  e.info = NULL;
-	  VEC_safe_push (macinfo_entry, gc, macinfo_table, &e);
+	  VEC_safe_push (macinfo_entry, gc, macinfo_table, e);
 	}
       e.code = DW_MACINFO_define;
       e.lineno = lineno;
       e.info = ggc_strdup (buffer);
-      VEC_safe_push (macinfo_entry, gc, macinfo_table, &e);
+      VEC_safe_push (macinfo_entry, gc, macinfo_table, e);
     }
 }
 
@@ -20444,12 +20444,12 @@ dwarf2out_undef (unsigned int lineno ATTRIBUTE_UNUSED,
 	  e.code = 0;
 	  e.lineno = 0;
 	  e.info = NULL;
-	  VEC_safe_push (macinfo_entry, gc, macinfo_table, &e);
+	  VEC_safe_push (macinfo_entry, gc, macinfo_table, e);
 	}
       e.code = DW_MACINFO_undef;
       e.lineno = lineno;
       e.info = ggc_strdup (buffer);
-      VEC_safe_push (macinfo_entry, gc, macinfo_table, &e);
+      VEC_safe_push (macinfo_entry, gc, macinfo_table, e);
     }
 }
 
@@ -20725,7 +20725,7 @@ output_macinfo (void)
       switch (ref->code)
 	{
 	case DW_MACINFO_start_file:
-	  VEC_safe_push (macinfo_entry, gc, files, ref);
+	  VEC_safe_push (macinfo_entry, gc, files, *ref);
 	  break;
 	case DW_MACINFO_end_file:
 	  if (!VEC_empty (macinfo_entry, files))
@@ -21364,7 +21364,7 @@ move_linkage_attr (dw_die_ref die)
   if (ix != VEC_length (dw_attr_node, die->die_attr) - 1)
     {
       VEC_pop (dw_attr_node, die->die_attr);
-      VEC_quick_insert (dw_attr_node, die->die_attr, ix, &linkage);
+      VEC_quick_insert (dw_attr_node, die->die_attr, ix, linkage);
     }
 }
 

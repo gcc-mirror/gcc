@@ -372,10 +372,8 @@ handle_pragma_weak (cpp_reader * ARG_UNUSED (dummy))
     }
   else
     {
-      pending_weak *pe;
-      pe = VEC_safe_push (pending_weak, gc, pending_weaks, NULL);
-      pe->name = name;
-      pe->value = value;
+      pending_weak pe = {name, value};
+      VEC_safe_push (pending_weak, gc, pending_weaks, pe);
     }
 }
 
@@ -499,9 +497,8 @@ add_to_renaming_pragma_list (tree oldname, tree newname)
 	return;
       }
 
-  p = VEC_safe_push (pending_redefinition, gc, pending_redefine_extname, NULL);
-  p->oldname = oldname;
-  p->newname = newname;
+  pending_redefinition e = {oldname, newname};
+  VEC_safe_push (pending_redefinition, gc, pending_redefine_extname, e);
 }
 
 /* The current prefix set by #pragma extern_prefix.  */
@@ -1236,14 +1233,14 @@ c_register_pragma_1 (const char *space, const char *name,
 
       ns_name.space = space;
       ns_name.name = name;
-      VEC_safe_push (pragma_ns_name, heap, registered_pp_pragmas, &ns_name);
+      VEC_safe_push (pragma_ns_name, heap, registered_pp_pragmas, ns_name);
       id = VEC_length (pragma_ns_name, registered_pp_pragmas);
       id += PRAGMA_FIRST_EXTERNAL - 1;
     }
   else
     {
       VEC_safe_push (internal_pragma_handler, heap, registered_pragmas,
-                     &ihandler);
+                     ihandler);
       id = VEC_length (internal_pragma_handler, registered_pragmas);
       id += PRAGMA_FIRST_EXTERNAL - 1;
 

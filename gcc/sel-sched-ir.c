@@ -1542,7 +1542,7 @@ insert_in_history_vect (VEC (expr_history_def, heap) **pvect,
 
   vinsn_attach (old_expr_vinsn);
   vinsn_attach (new_expr_vinsn);
-  VEC_safe_insert (expr_history_def, heap, vect, ind, &temp);
+  VEC_safe_insert (expr_history_def, heap, vect, ind, temp);
   *pvect = vect;
 }
 

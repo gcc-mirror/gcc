@@ -266,7 +266,7 @@ add_condition (struct inline_summary *summary, int operand_num,
   new_cond.agg_contents = agg_contents;
   new_cond.by_ref = by_ref;
   new_cond.offset = offset;
-  VEC_safe_push (condition, gc, summary->conds, &new_cond);
+  VEC_safe_push (condition, gc, summary->conds, new_cond);
   return single_cond_predicate (i + predicate_first_dynamic_condition);
 }
 
@@ -688,7 +688,7 @@ account_size_time (struct inline_summary *summary, int size, int time,
       new_entry.size = size;
       new_entry.time = time;
       new_entry.predicate = *pred;
-      VEC_safe_push (size_time_entry, gc, summary->entry, &new_entry);
+      VEC_safe_push (size_time_entry, gc, summary->entry, new_entry);
     }
   else
     {
@@ -3579,7 +3579,7 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
 	  c.by_ref = bp_unpack_value (&bp, 1);
 	  if (c.agg_contents)
 	    c.offset = streamer_read_uhwi (&ib);
-	  VEC_safe_push (condition, gc, info->conds, &c);
+	  VEC_safe_push (condition, gc, info->conds, c);
 	}
       count2 = streamer_read_uhwi (&ib);
       gcc_assert (!info->entry);
@@ -3591,7 +3591,7 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
 	  e.time = streamer_read_uhwi (&ib);
 	  e.predicate = read_predicate (&ib);
 
-	  VEC_safe_push (size_time_entry, gc, info->entry, &e);
+	  VEC_safe_push (size_time_entry, gc, info->entry, e);
 	}
      
       p = read_predicate (&ib);

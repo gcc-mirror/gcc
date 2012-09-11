@@ -1144,12 +1144,8 @@ set_option (struct gcc_options *opts, struct gcc_options *opts_set,
 	{
 	  VEC(cl_deferred_option,heap) *vec
 	    = (VEC(cl_deferred_option,heap) *) *(void **) flag_var;
-	  cl_deferred_option *p;
-
-	  p = VEC_safe_push (cl_deferred_option, heap, vec, NULL);
-	  p->opt_index = opt_index;
-	  p->arg = arg;
-	  p->value = value;
+	  cl_deferred_option p = {opt_index, arg, value};
+	  VEC_safe_push (cl_deferred_option, heap, vec, p);
 	  *(void **) flag_var = vec;
 	  if (set_flag_var)
 	    *(void **) set_flag_var = vec;
