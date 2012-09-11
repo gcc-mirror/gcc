@@ -1,3 +1,9 @@
+2012-09-11  Dominique Dhumieres  <dominiq@lps.ens.fr>
+
+	* config/darwin.c (darwin_asm_named_section): Adjust for
+	VEC changes.
+	(darwin_asm_dwarf_section): Likewise.
+
 2012-09-11  Martin Jambor  <mjambor@suse.cz>
 
 	* dwarf2out.c (dwarf2out_abstract_function): Do not change cfun.
