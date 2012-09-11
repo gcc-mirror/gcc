@@ -1,3 +1,9 @@
+2012-09-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/54172
+	* libsupc++/guard.cc (__cxa_guard_acquire): Fix up the last
+	argument of the first __atomic_compare_exchange_n.
+
 2012-09-09  Thiago Macieira  <thiago.macieira@intel.com>
 
 	PR libstdc++/54172
