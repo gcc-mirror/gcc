@@ -253,7 +253,7 @@ namespace __cxxabiv1
 	    int expected(0);
 	    if (__atomic_compare_exchange_n(gi, &expected, pending_bit, false,
 					    __ATOMIC_ACQ_REL,
-					    __ATOMIC_RELAXED))
+					    __ATOMIC_ACQUIRE))
 	      {
 		// This thread should do the initialization.
 		return 1;
