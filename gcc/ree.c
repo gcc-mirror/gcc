@@ -816,11 +816,8 @@ add_removable_extension (const_rtx expr, rtx insn,
 
       /* Then add the candidate to the list and insert the reaching definitions
          into the definition map.  */
-      cand = VEC_safe_push (ext_cand, heap, *insn_list, NULL);
-      cand->expr = expr;
-      cand->code = code;
-      cand->mode = mode;
-      cand->insn = insn;
+      ext_cand e = {expr, code, mode, insn};
+      VEC_safe_push (ext_cand, heap, *insn_list, e);
       idx = VEC_length (ext_cand, *insn_list);
 
       for (def = defs; def; def = def->next)

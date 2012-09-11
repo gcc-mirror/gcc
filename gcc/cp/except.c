@@ -1249,11 +1249,8 @@ expr_noexcept_p (tree expr, tsubst_flags_t complain)
 	  if (!DECL_INITIAL (fn))
 	    {
 	      /* Not defined yet; check again at EOF.  */
-	      pending_noexcept *p
-		= VEC_safe_push (pending_noexcept, gc,
-				 pending_noexcept_checks, NULL);
-	      p->fn = fn;
-	      p->loc = input_location;
+	      pending_noexcept p = {fn, input_location};
+	      VEC_safe_push (pending_noexcept, gc, pending_noexcept_checks, p);
 	    }
 	  else
 	    maybe_noexcept_warning (fn);

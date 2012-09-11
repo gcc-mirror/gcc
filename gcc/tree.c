@@ -1443,12 +1443,10 @@ tree
 build_constructor_single (tree type, tree index, tree value)
 {
   VEC(constructor_elt,gc) *v;
-  constructor_elt *elt;
+  constructor_elt elt = {index, value};
 
   v = VEC_alloc (constructor_elt, gc, 1);
-  elt = VEC_quick_push (constructor_elt, v, NULL);
-  elt->index = index;
-  elt->value = value;
+  VEC_quick_push (constructor_elt, v, elt);
 
   return build_constructor (type, v);
 }

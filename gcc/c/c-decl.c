@@ -6437,7 +6437,7 @@ get_parm_info (bool ellipsis, tree expr)
     {
       tree decl = b->decl;
       tree type = TREE_TYPE (decl);
-      c_arg_tag *tag;
+      c_arg_tag tag;
       const char *keyword;
 
       switch (TREE_CODE (decl))
@@ -6511,9 +6511,9 @@ get_parm_info (bool ellipsis, tree expr)
 		}
 	    }
 
-	  tag = VEC_safe_push (c_arg_tag, gc, tags, NULL);
-	  tag->id = b->id;
-	  tag->type = decl;
+	  tag.id = b->id;
+	  tag.type = decl;
+	  VEC_safe_push (c_arg_tag, gc, tags, tag);
 	  break;
 
 	case CONST_DECL:

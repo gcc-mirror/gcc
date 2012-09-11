@@ -8493,7 +8493,7 @@ simplify_switch_using_ranges (gimple stmt)
   /* And queue an update for the stmt.  */
   su.stmt = stmt;
   su.vec = vec2;
-  VEC_safe_push (switch_update, heap, to_update_switch_stmts, &su);
+  VEC_safe_push (switch_update, heap, to_update_switch_stmts, su);
   return false;
 }
 

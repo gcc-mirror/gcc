@@ -7709,7 +7709,6 @@ output_init_element (tree value, tree origtype, bool strict_string, tree type,
 		     struct obstack * braced_init_obstack)
 {
   tree semantic_type = NULL_TREE;
-  constructor_elt *celt;
   bool maybe_const = true;
   bool npc;
 
@@ -7876,9 +7875,8 @@ output_init_element (tree value, tree origtype, bool strict_string, tree type,
   /* Otherwise, output this element either to
      constructor_elements or to the assembler file.  */
 
-  celt = VEC_safe_push (constructor_elt, gc, constructor_elements, NULL);
-  celt->index = field;
-  celt->value = value;
+  constructor_elt celt = {field, value};
+  VEC_safe_push (constructor_elt, gc, constructor_elements, celt);
 
   /* Advance the variable that indicates sequential elements output.  */
   if (TREE_CODE (constructor_type) == ARRAY_TYPE)

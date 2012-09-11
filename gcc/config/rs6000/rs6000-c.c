@@ -3582,11 +3582,8 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
       vec = VEC_alloc (constructor_elt, gc, size);
       for(i = 0; i < size; i++)
 	{
-	  constructor_elt *elt;
-
-	  elt = VEC_quick_push (constructor_elt, vec, NULL);
-	  elt->index = NULL_TREE;
-	  elt->value = arg;
+	  constructor_elt elt = {NULL_TREE, arg};
+	  VEC_quick_push (constructor_elt, vec, elt);
 	}
 	return build_constructor (type, vec);
     }

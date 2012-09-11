@@ -3989,8 +3989,8 @@ mips_multi_start (void)
 static struct mips_multi_member *
 mips_multi_add (void)
 {
-  return VEC_safe_push (mips_multi_member, heap, mips_multi_members,
-			(struct mips_multi_member *) 0);
+  mips_multi_member empty;
+  return VEC_safe_push (mips_multi_member, heap, mips_multi_members, empty);
 }
 
 /* Add a normal insn with the given asm format to the current multi-insn

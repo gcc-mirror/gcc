@@ -94,7 +94,7 @@ add_stmt_info_to_vec (stmt_vector_for_cost *stmt_cost_vec, int count,
   si.kind = kind;
   si.stmt = stmt;
   si.misalign = misalign;
-  VEC_safe_push (stmt_info_for_cost, heap, *stmt_cost_vec, &si);
+  VEC_safe_push (stmt_info_for_cost, heap, *stmt_cost_vec, si);
 }
 
 /************************************************************************

@@ -912,7 +912,7 @@ find_split_points (int overall_time, int overall_size)
   first.set_ssa_names = 0;
   first.used_ssa_names = 0;
   first.bbs_visited = 0;
-  VEC_safe_push (stack_entry, heap, stack, &first);
+  VEC_safe_push (stack_entry, heap, stack, first);
   ENTRY_BLOCK_PTR->aux = (void *)(intptr_t)-1;
 
   while (!VEC_empty (stack_entry, stack))
@@ -994,7 +994,7 @@ find_split_points (int overall_time, int overall_size)
 	      new_entry.non_ssa_vars = BITMAP_ALLOC (NULL);
 	      new_entry.can_split = true;
 	      bitmap_set_bit (new_entry.bbs_visited, dest->index);
-	      VEC_safe_push (stack_entry, heap, stack, &new_entry);
+	      VEC_safe_push (stack_entry, heap, stack, new_entry);
 	      dest->aux = (void *)(intptr_t)VEC_length (stack_entry, stack);
 	    }
 	  /* Back edge found, record the earliest point.  */

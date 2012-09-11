@@ -659,15 +659,12 @@ grow_reg_equivs (void)
   int old_size = VEC_length (reg_equivs_t, reg_equivs);
   int max_regno = max_reg_num ();
   int i;
+  reg_equivs_t ze;
 
+  memset (&ze, 0, sizeof (reg_equivs_t));
   VEC_reserve (reg_equivs_t, gc, reg_equivs, max_regno);
   for (i = old_size; i < max_regno; i++)
-    {
-      VEC_quick_insert (reg_equivs_t, reg_equivs, i, 0);
-      memset (&VEC_index (reg_equivs_t, reg_equivs, i), 0,
-	      sizeof (reg_equivs_t));
-    }
-    
+    VEC_quick_insert (reg_equivs_t, reg_equivs, i, ze);
 }
 
 

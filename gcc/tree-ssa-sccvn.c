@@ -591,21 +591,21 @@ copy_reference_ops_from_ref (tree ref, VEC(vn_reference_op_s, heap) **result)
       temp.op1 = TMR_STEP (ref);
       temp.op2 = TMR_OFFSET (ref);
       temp.off = -1;
-      VEC_safe_push (vn_reference_op_s, heap, *result, &temp);
+      VEC_safe_push (vn_reference_op_s, heap, *result, temp);
 
       memset (&temp, 0, sizeof (temp));
       temp.type = NULL_TREE;
       temp.opcode = ERROR_MARK;
       temp.op0 = TMR_INDEX2 (ref);
       temp.off = -1;
-      VEC_safe_push (vn_reference_op_s, heap, *result, &temp);
+      VEC_safe_push (vn_reference_op_s, heap, *result, temp);
 
       memset (&temp, 0, sizeof (temp));
       temp.type = NULL_TREE;
       temp.opcode = TREE_CODE (TMR_BASE (ref));
       temp.op0 = TMR_BASE (ref);
       temp.off = -1;
-      VEC_safe_push (vn_reference_op_s, heap, *result, &temp);
+      VEC_safe_push (vn_reference_op_s, heap, *result, temp);
       return;
     }
 
@@ -700,7 +700,7 @@ copy_reference_ops_from_ref (tree ref, VEC(vn_reference_op_s, heap) **result)
 	  temp.opcode = MEM_REF;
 	  temp.op0 = build_int_cst (build_pointer_type (TREE_TYPE (ref)), 0);
 	  temp.off = 0;
-	  VEC_safe_push (vn_reference_op_s, heap, *result, &temp);
+	  VEC_safe_push (vn_reference_op_s, heap, *result, temp);
 	  temp.opcode = ADDR_EXPR;
 	  temp.op0 = build_fold_addr_expr (ref);
 	  temp.type = TREE_TYPE (temp.op0);
@@ -739,7 +739,7 @@ copy_reference_ops_from_ref (tree ref, VEC(vn_reference_op_s, heap) **result)
 	default:
 	  gcc_unreachable ();
 	}
-      VEC_safe_push (vn_reference_op_s, heap, *result, &temp);
+      VEC_safe_push (vn_reference_op_s, heap, *result, temp);
 
       if (REFERENCE_CLASS_P (ref)
 	  || TREE_CODE (ref) == MODIFY_EXPR
@@ -949,7 +949,7 @@ copy_reference_ops_from_call (gimple call,
       temp.type = TREE_TYPE (lhs);
       temp.op0 = lhs;
       temp.off = -1;
-      VEC_safe_push (vn_reference_op_s, heap, *result, &temp);
+      VEC_safe_push (vn_reference_op_s, heap, *result, temp);
     }
 
   /* Copy the type, opcode, function being called and static chain.  */
@@ -959,7 +959,7 @@ copy_reference_ops_from_call (gimple call,
   temp.op0 = gimple_call_fn (call);
   temp.op1 = gimple_call_chain (call);
   temp.off = -1;
-  VEC_safe_push (vn_reference_op_s, heap, *result, &temp);
+  VEC_safe_push (vn_reference_op_s, heap, *result, temp);
 
   /* Copy the call arguments.  As they can be references as well,
      just chain them together.  */
@@ -3766,7 +3766,7 @@ start_over:
 	    {
 	      /* Recurse by pushing the current use walking state on
 		 the stack and starting over.  */
-	      VEC_safe_push(ssa_op_iter, heap, itervec, &iter);
+	      VEC_safe_push(ssa_op_iter, heap, itervec, iter);
 	      VEC_safe_push(tree, heap, namevec, name);
 	      name = use;
 	      goto start_over;

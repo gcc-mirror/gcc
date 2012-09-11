@@ -127,7 +127,7 @@ maybe_unwind_expanded_macro_loc (diagnostic_context *context,
       loc.where = where;
       loc.map = map;
 
-      VEC_safe_push (loc_map_pair, heap, loc_vec, &loc);
+      VEC_safe_push (loc_map_pair, heap, loc_vec, loc);
 
       /* WHERE is the location of a token inside the expansion of a
          macro.  MAP is the map holding the locations of that macro

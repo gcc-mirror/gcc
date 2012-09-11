@@ -374,7 +374,7 @@ gen_conditions_for_domain (tree arg, inp_domain domain,
     {
       /* Now push a separator.  */
       if (domain.has_lb)
-        VEC_quick_push (gimple, conds, (gimple)NULL);
+        VEC_quick_push (gimple, conds, NULL);
 
       gen_one_condition (arg, domain.ub,
                          (domain.is_ub_inclusive
@@ -496,7 +496,7 @@ gen_conditions_for_pow_int_base (tree base, tree expn,
      type is integer.  */
 
   /* Push a separator.  */
-  VEC_quick_push (gimple, conds, (gimple)NULL);
+  VEC_quick_push (gimple, conds, NULL);
 
   temp = create_tmp_var (int_type, "DCE_COND1");
   cst0 = build_int_cst (int_type, 0);

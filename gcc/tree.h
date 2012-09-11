@@ -1546,9 +1546,8 @@ struct GTY(()) tree_vec {
 /* Append a new constructor element to V, with the specified INDEX and VAL.  */
 #define CONSTRUCTOR_APPEND_ELT(V, INDEX, VALUE) \
   do { \
-    constructor_elt *_ce___ = VEC_safe_push (constructor_elt, gc, V, NULL); \
-    _ce___->index = INDEX; \
-    _ce___->value = VALUE; \
+    constructor_elt _ce___ = {INDEX, VALUE}; \
+    VEC_safe_push (constructor_elt, gc, V, _ce___); \
   } while (0)
 
 /* True if NODE, a FIELD_DECL, is to be processed as a bitfield for

@@ -149,29 +149,29 @@ tree
 default_emutls_var_init (tree to, tree decl, tree proxy)
 {
   VEC(constructor_elt,gc) *v = VEC_alloc (constructor_elt, gc, 4);
-  constructor_elt *elt;
+  constructor_elt elt;
   tree type = TREE_TYPE (to);
   tree field = TYPE_FIELDS (type);
 
-  elt = VEC_quick_push (constructor_elt, v, NULL);
-  elt->index = field;
-  elt->value = fold_convert (TREE_TYPE (field), DECL_SIZE_UNIT (decl));
+  elt.index = field;
+  elt.value = fold_convert (TREE_TYPE (field), DECL_SIZE_UNIT (decl));
+  VEC_quick_push (constructor_elt, v, elt);
 
-  elt = VEC_quick_push (constructor_elt, v, NULL);
   field = DECL_CHAIN (field);
-  elt->index = field;
-  elt->value = build_int_cst (TREE_TYPE (field),
-			      DECL_ALIGN_UNIT (decl));
+  elt.index = field;
+  elt.value = build_int_cst (TREE_TYPE (field),
+			     DECL_ALIGN_UNIT (decl));
+  VEC_quick_push (constructor_elt, v, elt);
 
-  elt = VEC_quick_push (constructor_elt, v, NULL);
   field = DECL_CHAIN (field);
-  elt->index = field;
-  elt->value = null_pointer_node;
+  elt.index = field;
+  elt.value = null_pointer_node;
+  VEC_quick_push (constructor_elt, v, elt);
 
-  elt = VEC_quick_push (constructor_elt, v, NULL);
   field = DECL_CHAIN (field);
-  elt->index = field;
-  elt->value = proxy;
+  elt.index = field;
+  elt.value = proxy;
+  VEC_quick_push (constructor_elt, v, elt);
 
   return build_constructor (type, v);
 }

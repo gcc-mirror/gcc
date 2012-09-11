@@ -2520,7 +2520,7 @@ execute (void)
      and record info about each one.
      Also search for the programs that are to be run.  */
 
-  VEC_safe_push (const_char_p, heap, argbuf, (const_char_p)0);
+  VEC_safe_push (const_char_p, heap, argbuf, 0);
 
   commands[0].prog = VEC_index (const_char_p, argbuf, 0); /* first command.  */
   commands[0].argv = VEC_address (const_char_p, argbuf);

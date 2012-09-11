@@ -20390,7 +20390,7 @@ append_type_to_template_for_access_check_1 (tree t,
 
   VEC_safe_push (qualified_typedef_usage_t, gc,
 		 TI_TYPEDEFS_NEEDING_ACCESS_CHECKING (ti),
-		 &typedef_usage);
+		 typedef_usage);
 }
 
 /* Append TYPE_DECL to the template TEMPL.

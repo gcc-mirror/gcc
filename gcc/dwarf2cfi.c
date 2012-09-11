@@ -941,10 +941,8 @@ record_reg_saved_in_reg (rtx dest, rtx src)
   if (dest == NULL)
     return;
 
-  elt = VEC_safe_push (reg_saved_in_data, heap,
-		       cur_trace->regs_saved_in_regs, NULL);
-  elt->orig_reg = src;
-  elt->saved_in_reg = dest;
+  reg_saved_in_data e = {src, dest};
+  VEC_safe_push (reg_saved_in_data, heap, cur_trace->regs_saved_in_regs, e);
 }
 
 /* Add an entry to QUEUED_REG_SAVES saying that REG is now saved at
@@ -954,20 +952,19 @@ static void
 queue_reg_save (rtx reg, rtx sreg, HOST_WIDE_INT offset)
 {
   queued_reg_save *q;
+  queued_reg_save e = {reg, sreg, offset};
   size_t i;
 
   /* Duplicates waste space, but it's also necessary to remove them
      for correctness, since the queue gets output in reverse order.  */
   FOR_EACH_VEC_ELT (queued_reg_save, queued_reg_saves, i, q)
     if (compare_reg_or_pc (q->reg, reg))
-      goto found;
+      {
+	*q = e;
+	return;
+      }
 
-  q = VEC_safe_push (queued_reg_save, heap, queued_reg_saves, NULL);
-
- found:
-  q->reg = reg;
-  q->saved_reg = sreg;
-  q->cfa_offset = offset;
+  VEC_safe_push (queued_reg_save, heap, queued_reg_saves, e);
 }
 
 /* Output all the entries in QUEUED_REG_SAVES.  */
@@ -2713,23 +2710,23 @@ static void
 create_pseudo_cfg (void)
 {
   bool saw_barrier, switch_sections;
-  dw_trace_info *ti;
+  dw_trace_info ti;
   rtx insn;
   unsigned i;
 
   /* The first trace begins at the start of the function,
      and begins with the CIE row state.  */
   trace_info = VEC_alloc (dw_trace_info, heap, 16);
-  ti = VEC_quick_push (dw_trace_info, trace_info, NULL);
+  memset (&ti, 0, sizeof (ti));
+  ti.head = get_insns ();
+  ti.beg_row = cie_cfi_row;
+  ti.cfa_store = cie_cfi_row->cfa;
+  ti.cfa_temp.reg = INVALID_REGNUM;
+  VEC_quick_push (dw_trace_info, trace_info, ti);
 
-  memset (ti, 0, sizeof (*ti));
-  ti->head = get_insns ();
-  ti->beg_row = cie_cfi_row;
-  ti->cfa_store = cie_cfi_row->cfa;
-  ti->cfa_temp.reg = INVALID_REGNUM;
   if (cie_return_save)
     VEC_safe_push (reg_saved_in_data, heap,
-		   ti->regs_saved_in_regs, cie_return_save);
+		   ti.regs_saved_in_regs, *cie_return_save);
 
   /* Walk all the insns, collecting start of trace locations.  */
   saw_barrier = false;
@@ -2751,11 +2748,11 @@ create_pseudo_cfg (void)
       else if (save_point_p (insn)
 	       && (LABEL_P (insn) || !saw_barrier))
 	{
-	  ti = VEC_safe_push (dw_trace_info, heap, trace_info, NULL);
-	  memset (ti, 0, sizeof (*ti));
-	  ti->head = insn;
-	  ti->switch_sections = switch_sections;
-	  ti->id = VEC_length (dw_trace_info, trace_info) - 1;
+	  memset (&ti, 0, sizeof (ti));
+	  ti.head = insn;
+	  ti.switch_sections = switch_sections;
+	  ti.id = VEC_length (dw_trace_info, trace_info) - 1;
+	  VEC_safe_push (dw_trace_info, heap, trace_info, ti);
 
 	  saw_barrier = false;
 	  switch_sections = false;
@@ -2766,19 +2763,20 @@ create_pseudo_cfg (void)
      avoiding stale pointer problems due to reallocation.  */
   trace_index = htab_create (VEC_length (dw_trace_info, trace_info),
 			     dw_trace_info_hash, dw_trace_info_eq, NULL);
-  FOR_EACH_VEC_ELT (dw_trace_info, trace_info, i, ti)
+  dw_trace_info *tp;
+  FOR_EACH_VEC_ELT (dw_trace_info, trace_info, i, tp)
     {
       void **slot;
 
       if (dump_file)
 	fprintf (dump_file, "Creating trace %u : start at %s %d%s\n", i,
-		 rtx_name[(int) GET_CODE (ti->head)], INSN_UID (ti->head),
-		 ti->switch_sections ? " (section switch)" : "");
+		 rtx_name[(int) GET_CODE (tp->head)], INSN_UID (tp->head),
+		 tp->switch_sections ? " (section switch)" : "");
 
-      slot = htab_find_slot_with_hash (trace_index, ti,
-				       INSN_UID (ti->head), INSERT);
+      slot = htab_find_slot_with_hash (trace_index, tp,
+				       INSN_UID (tp->head), INSERT);
       gcc_assert (*slot == NULL);
-      *slot = (void *) ti;
+      *slot = (void *) tp;
     }
 }
 

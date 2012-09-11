@@ -729,7 +729,7 @@ dump_enumerated_decls_push (tree *tp, int *walk_subtrees, void *data)
     return NULL_TREE;
   nt.t = *tp;
   nt.num = VEC_length (numbered_tree, *list);
-  VEC_safe_push (numbered_tree, heap, *list, &nt);
+  VEC_safe_push (numbered_tree, heap, *list, nt);
   *walk_subtrees = 0;
   return NULL_TREE;
 }

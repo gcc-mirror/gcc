@@ -684,11 +684,8 @@ validate_const_int (const char *string)
 static void
 record_iterator_use (struct mapping *iterator, void *ptr)
 {
-  struct iterator_use *iuse;
-
-  iuse = VEC_safe_push (iterator_use, heap, iterator_uses, NULL);
-  iuse->iterator = iterator;
-  iuse->ptr = ptr;
+  struct iterator_use iuse = {iterator, ptr};
+  VEC_safe_push (iterator_use, heap, iterator_uses, iuse);
 }
 
 /* Record that PTR uses attribute VALUE, which must match a built-in
@@ -698,12 +695,8 @@ static void
 record_attribute_use (struct iterator_group *group, void *ptr,
 		      const char *value)
 {
-  struct attribute_use *ause;
-
-  ause = VEC_safe_push (attribute_use, heap, attribute_uses, NULL);
-  ause->group = group;
-  ause->value = value;
-  ause->ptr = ptr;
+  struct attribute_use ause = {group, value, ptr};
+  VEC_safe_push (attribute_use, heap, attribute_uses, ause);
 }
 
 /* Interpret NAME as either a built-in value, iterator or attribute

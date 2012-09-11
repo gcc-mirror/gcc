@@ -1434,9 +1434,8 @@ gfc_trans_omp_do (gfc_code *code, stmtblock_t *pblock,
 	  /* Initialize DOVAR.  */
 	  tmp = fold_build2_loc (input_location, MULT_EXPR, type, count, step);
 	  tmp = fold_build2_loc (input_location, PLUS_EXPR, type, from, tmp);
-	  di = VEC_safe_push (dovar_init, heap, inits, NULL);
-	  di->var = dovar;
-	  di->init = tmp;
+	  dovar_init e = {dovar, tmp};
+	  VEC_safe_push (dovar_init, heap, inits, e);
 	}
 
       if (!dovar_found)

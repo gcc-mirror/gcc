@@ -4773,7 +4773,7 @@ init_pre (bool do_fre)
 
   next_expression_id = 1;
   expressions = NULL;
-  VEC_safe_push (pre_expr, heap, expressions, (pre_expr)NULL);
+  VEC_safe_push (pre_expr, heap, expressions, NULL);
   value_expressions = VEC_alloc (bitmap, heap, get_max_value_id () + 1);
   VEC_safe_grow_cleared (bitmap, heap, value_expressions,
 			 get_max_value_id() + 1);

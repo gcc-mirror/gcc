@@ -265,7 +265,7 @@ gen_insn (rtx insn)
 	{
 	  p.op = optabs[pindex].op;
 	  p.sort_num = (p.op << 16) | (p.m2 << 8) | p.m1;
-	  VEC_safe_push (pattern, heap, patterns, &p);
+	  VEC_safe_push (pattern, heap, patterns, p);
 	  return;
 	}
     }
