@@ -1,5 +1,23 @@
 2012-09-11  Richard Guenther  <rguenther@suse.de>
 
+	* gimple.h (gimple_register_type): Remove.
+	(print_gimple_types_stats): Adjust prototype.
+	* lto-streamer.h (print_lto_report): Likewise.
+	* lto-streamer.c (print_lto_report): Adjust.
+	* gimple.c (gimple_types, type_hash_cache, enum gtc_mode,
+	struct type_pair_d, lookup_type_pair, struct sccs,
+	next_dfs_num, gtc_next_dfs_num, struct gimple_type_leader_entry_s,
+	gimple_type_leader, gimple_lookup_type_leader, compare_type_names_p,
+	gtc_visit, gimple_types_compatible_p_1, gimple_types_compatible_p,
+	visit, iterative_hash_name, struct type_hash_pair,
+	type_hash_pair_compare, iterative_hash_gimple_type, gimple_type_hash,
+	gimple_type_eq, gimple_register_type_1, gimple_register_type):
+	Move to lto/lto.c.
+	(print_gimple_types_stats): Adjust.
+	(free_gimple_type_tables): Likewise.
+
+2012-09-11  Richard Guenther  <rguenther@suse.de>
+
 	* graphite-scop-detection.c (move_sd_regions): Adjust for VEC
 	changes.
 	(scopdet_basic_block_info): Likewise.
