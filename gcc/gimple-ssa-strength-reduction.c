@@ -54,6 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "domwalk.h"
 #include "pointer-set.h"
 #include "expmed.h"
+#include "params.h"
 
 /* Information about a strength reduction candidate.  Each statement
    in the candidate table represents an expression of one of the
@@ -353,10 +354,14 @@ find_basis_for_candidate (slsr_cand_t c)
   cand_chain_t chain;
   slsr_cand_t basis = NULL;
 
+  // Limit potential of N^2 behavior for long candidate chains.
+  int iters = 0;
+  int max_iters = PARAM_VALUE (PARAM_MAX_SLSR_CANDIDATE_SCAN);
+
   mapping_key.base_expr = c->base_expr;
   chain = (cand_chain_t) htab_find (base_cand_map, &mapping_key);
 
-  for (; chain; chain = chain->next)
+  for (; chain && iters < max_iters; chain = chain->next, ++iters)
     {
       slsr_cand_t one_basis = chain->cand;
 
