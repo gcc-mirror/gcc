@@ -9356,13 +9356,13 @@ vt_add_function_parameter (tree parm)
       && HARD_REGISTER_P (incoming)
       && OUTGOING_REGNO (REGNO (incoming)) != REGNO (incoming))
     {
-      parm_reg_t *p
-	= VEC_safe_push (parm_reg_t, gc, windowed_parm_regs, NULL);
-      p->incoming = incoming;
+      parm_reg_t p;
+      p.incoming = incoming;
       incoming
 	= gen_rtx_REG_offset (incoming, GET_MODE (incoming),
 			      OUTGOING_REGNO (REGNO (incoming)), 0);
-      p->outgoing = incoming;
+      p.outgoing = incoming;
+      VEC_safe_push (parm_reg_t, gc, windowed_parm_regs, p);
     }
   else if (MEM_P (incoming)
 	   && REG_P (XEXP (incoming, 0))
@@ -9371,11 +9371,11 @@ vt_add_function_parameter (tree parm)
       rtx reg = XEXP (incoming, 0);
       if (OUTGOING_REGNO (REGNO (reg)) != REGNO (reg))
 	{
-	  parm_reg_t *p
-	    = VEC_safe_push (parm_reg_t, gc, windowed_parm_regs, NULL);
-	  p->incoming = reg;
+	  parm_reg_t p;
+	  p.incoming = reg;
 	  reg = gen_raw_REG (GET_MODE (reg), OUTGOING_REGNO (REGNO (reg)));
-	  p->outgoing = reg;
+	  p.outgoing = reg;
+	  VEC_safe_push (parm_reg_t, gc, windowed_parm_regs, p);
 	  incoming = replace_equiv_address_nv (incoming, reg);
 	}
     }
