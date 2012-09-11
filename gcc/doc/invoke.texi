@@ -9407,6 +9407,11 @@ having a regular register file and accurate register pressure classes.
 See @file{haifa-sched.c} in the GCC sources for more details.
 
 The default choice depends on the target.
+
+@item max-slsr-cand-scan
+Set the maximum number of existing candidates that will be considered when
+seeking a basis for a new straight-line strength reduction candidate.
+
 @end table
 @end table
 

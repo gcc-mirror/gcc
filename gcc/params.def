@@ -979,6 +979,13 @@ DEFPARAM (PARAM_SCHED_PRESSURE_ALGORITHM,
 	  "Which -fsched-pressure algorithm to apply",
 	  1, 1, 2)
 
+/* Maximum length of candidate scans in straight-line strength reduction.  */
+DEFPARAM (PARAM_MAX_SLSR_CANDIDATE_SCAN,
+	  "max-slsr-cand-scan",
+	  "Maximum length of candidate scans for straight-line "
+	  "strength reduction",
+	  50, 1, 999999)
+
 /*
 Local variables:
 mode:c
