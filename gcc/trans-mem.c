@@ -1379,6 +1379,19 @@ thread_private_new_memory (basic_block entry_block, tree x)
 	  /* x = (cast*) foo ==> foo */
 	  else if (code == VIEW_CONVERT_EXPR || code == NOP_EXPR)
 	    x = gimple_assign_rhs1 (stmt);
+	  /* x = c ? op1 : op2 == > op1 or op2 just like a PHI */
+	  else if (code == COND_EXPR)
+	    {
+	      tree op1 = gimple_assign_rhs2 (stmt);
+	      tree op2 = gimple_assign_rhs3 (stmt);
+	      enum thread_memory_type mem;
+	      retval = thread_private_new_memory (entry_block, op1);
+	      if (retval == mem_non_local)
+		goto new_memory_ret;
+	      mem = thread_private_new_memory (entry_block, op2);
+	      retval = MIN (retval, mem);
+	      goto new_memory_ret;
+	    }
 	  else
 	    {
 	      retval = mem_non_local;
