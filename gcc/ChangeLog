@@ -1,3 +1,10 @@
+2012-09-11  Martin Jambor  <mjambor@suse.cz>
+
+	* dwarf2out.c (dwarf2out_abstract_function): Do not change cfun.
+	(premark_used_types): New parameter fun, use it instead of cfun.
+	(gen_subprogram_die): Use DECL_STRUCT_FUNCTION (decl) instead of cfun,
+	also pass it to premark_used_types.
+
 2012-09-11  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* doc/sourcebuild.texi (arm_neon_v2_ok): Adjust command line.

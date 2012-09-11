@@ -16762,7 +16762,6 @@ dwarf2out_abstract_function (tree decl)
   /* Pretend we've just finished compiling this function.  */
   save_fn = current_function_decl;
   current_function_decl = decl;
-  push_cfun (DECL_STRUCT_FUNCTION (decl));
 
   was_abstract = DECL_ABSTRACT (decl);
   set_decl_abstract_flags (decl, 1);
@@ -16776,7 +16775,6 @@ dwarf2out_abstract_function (tree decl)
   call_arg_locations = old_call_arg_locations;
   call_site_count = old_call_site_count;
   tail_call_site_count = old_tail_call_site_count;
-  pop_cfun ();
 }
 
 /* Helper function of premark_used_types() which gets called through
@@ -16835,10 +16833,10 @@ premark_types_used_by_global_vars_helper (void **slot,
 /* Mark all members of used_types_hash as perennial.  */
 
 static void
-premark_used_types (void)
+premark_used_types (struct function *fun)
 {
-  if (cfun && cfun->used_types_hash)
-    htab_traverse (cfun->used_types_hash, premark_used_types_helper, NULL);
+  if (fun && fun->used_types_hash)
+    htab_traverse (fun->used_types_hash, premark_used_types_helper, NULL);
 }
 
 /* Mark all members of types_used_by_vars_entry as perennial.  */
@@ -16901,7 +16899,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
   int declaration = (current_function_decl != decl
 		     || class_or_namespace_scope_p (context_die));
 
-  premark_used_types ();
+  premark_used_types (DECL_STRUCT_FUNCTION (decl));
 
   /* It is possible to have both DECL_ABSTRACT and DECLARATION be true if we
      started to generate the abstract instance of an inline, decided to output
@@ -17064,13 +17062,15 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
   else if (!DECL_EXTERNAL (decl))
     {
       HOST_WIDE_INT cfa_fb_offset;
+      struct function *fun = DECL_STRUCT_FUNCTION (decl);
 
       if (!old_die || !get_AT (old_die, DW_AT_inline))
 	equate_decl_number_to_die (decl, subr_die);
 
+      gcc_checking_assert (fun);
       if (!flag_reorder_blocks_and_partition)
 	{
-	  dw_fde_ref fde = cfun->fde;
+	  dw_fde_ref fde = fun->fde;
 	  if (fde->dw_fde_begin)
 	    {
 	      /* We have already generated the labels.  */
@@ -17116,7 +17116,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
       else
 	{
 	  /* Generate pubnames entries for the split function code ranges.  */
-	  dw_fde_ref fde = cfun->fde;
+	  dw_fde_ref fde = fun->fde;
 
 	  if (fde->dw_fde_second_begin)
 	    {
@@ -17216,9 +17216,9 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	 by this displacement.  */
       compute_frame_pointer_to_fb_displacement (cfa_fb_offset);
 
-      if (cfun->static_chain_decl)
+      if (fun->static_chain_decl)
 	add_AT_location_description (subr_die, DW_AT_static_link,
-		 loc_list_from_tree (cfun->static_chain_decl, 2));
+		 loc_list_from_tree (fun->static_chain_decl, 2));
     }
 
   /* Generate child dies for template paramaters.  */
