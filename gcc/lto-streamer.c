@@ -180,12 +180,10 @@ lto_get_section_name (int section_type, const char *name, struct lto_file_decl_d
 /* Show various memory usage statistics related to LTO.  */
 
 void
-print_lto_report (void)
+print_lto_report (const char *s)
 {
-  const char *s = (flag_lto) ? "LTO" : (flag_wpa) ? "WPA" : "LTRANS";
   unsigned i;
 
-  fprintf (stderr, "%s statistics\n", s);
   fprintf (stderr, "[%s] # of input files: "
 	   HOST_WIDE_INT_PRINT_UNSIGNED "\n", s, lto_stats.num_input_files);
 
@@ -196,9 +194,6 @@ print_lto_report (void)
   fprintf (stderr, "[%s] # of function bodies: "
 	   HOST_WIDE_INT_PRINT_UNSIGNED "\n", s,
 	   lto_stats.num_function_bodies);
-
-  fprintf (stderr, "[%s] ", s);
-  print_gimple_types_stats ();
 
   for (i = 0; i < NUM_TREE_CODES; i++)
     if (lto_stats.num_trees[i])

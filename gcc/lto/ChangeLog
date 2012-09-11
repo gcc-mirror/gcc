@@ -1,3 +1,19 @@
+2012-09-11  Richard Guenther  <rguenther@suse.de>
+
+	* lto.c (gimple_types, type_hash_cache, enum gtc_mode,
+	struct type_pair_d, lookup_type_pair, struct sccs,
+	next_dfs_num, gtc_next_dfs_num, struct gimple_type_leader_entry_s,
+	gimple_type_leader, gimple_lookup_type_leader, compare_type_names_p,
+	gtc_visit, gimple_types_compatible_p_1, gimple_types_compatible_p,
+	visit, iterative_hash_name, struct type_hash_pair,
+	type_hash_pair_compare, iterative_hash_gimple_type, gimple_type_hash,
+	gimple_type_eq, gimple_register_type_1, gimple_register_type):
+	Move here from gimple.c
+	(read_cgraph_and_symbols): Free hash tables here.
+	(print_lto_report_1): New function wrapping print_lto_report.
+	(do_whole_program_analysis): Call it.
+	(lto_main): Likewise.
+
 2012-09-10  Jan Hubicka  <jh@suse.cz>
 
 	* lto-partition.c (partition_symbol_p): Forward declare.
