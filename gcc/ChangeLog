@@ -1,3 +1,9 @@
+2012-09-11  Richard Guenther  <rguenther@suse.de>
+
+	PR debug/54534
+	* cgraph.h (varpool_can_remove_if_no_refs): Restore dependence
+	on flag_toplevel_reorder.
+ 
 2012-09-10  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/predicates.md (small_symbolic_operand): Disallow
