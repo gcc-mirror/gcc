@@ -128,7 +128,8 @@ build_delete_destructor_body (tree delete_dtor, tree complete_dtor)
 
   /* Call the corresponding complete destructor.  */
   gcc_assert (complete_dtor);
-  call_dtor = build_cxx_call (complete_dtor, 1, &parm);
+  call_dtor = build_cxx_call (complete_dtor, 1, &parm,
+			      tf_warning_or_error);
   add_stmt (call_dtor);
 
   add_stmt (build_stmt (0, LABEL_EXPR, cdtor_label));

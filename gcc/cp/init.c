@@ -2739,7 +2739,8 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
 	      /* We are processing something like `new int (10)', which
 		 means allocate an int, and initialize it with 10.  */
 
-	      ie = build_x_compound_expr_from_vec (*init, "new initializer");
+	      ie = build_x_compound_expr_from_vec (*init, "new initializer",
+						   complain);
 	      init_expr = cp_build_modify_expr (init_expr, INIT_EXPR, ie,
 						complain);
 	    }

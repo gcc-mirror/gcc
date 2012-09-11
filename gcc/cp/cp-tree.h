@@ -4918,7 +4918,8 @@ extern tree build_integral_nontype_arg_conv	(tree, tree, tsubst_flags_t);
 extern tree perform_direct_initialization_if_possible (tree, tree, bool,
                                                        tsubst_flags_t);
 extern tree in_charge_arg_for_name		(tree);
-extern tree build_cxx_call			(tree, int, tree *);
+extern tree build_cxx_call			(tree, int, tree *,
+						 tsubst_flags_t);
 extern bool is_std_init_list			(tree);
 extern bool is_list_ctor			(tree);
 #ifdef ENABLE_CHECKING
@@ -5851,7 +5852,8 @@ extern tree build_x_conditional_expr		(location_t, tree, tree, tree,
                                                  tsubst_flags_t);
 extern tree build_x_compound_expr_from_list	(tree, expr_list_kind,
 						 tsubst_flags_t);
-extern tree build_x_compound_expr_from_vec	(VEC(tree,gc) *, const char *);
+extern tree build_x_compound_expr_from_vec	(VEC(tree,gc) *, const char *,
+						 tsubst_flags_t);
 extern tree build_x_compound_expr		(location_t, tree, tree,
 						 tsubst_flags_t);
 extern tree build_compound_expr                 (location_t, tree, tree);

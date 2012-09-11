@@ -3373,7 +3373,7 @@ cp_build_function_call_vec (tree function, VEC(tree,gc) **params,
      null parameters.  */
   check_function_arguments (fntype, nargs, argarray);
 
-  ret = build_cxx_call (function, nargs, argarray);
+  ret = build_cxx_call (function, nargs, argarray, complain);
 
   if (allocated != NULL)
     release_tree_vector (allocated);
@@ -5719,7 +5719,8 @@ build_x_compound_expr_from_list (tree list, expr_list_kind exp,
 /* Like build_x_compound_expr_from_list, but using a VEC.  */
 
 tree
-build_x_compound_expr_from_vec (VEC(tree,gc) *vec, const char *msg)
+build_x_compound_expr_from_vec (VEC(tree,gc) *vec, const char *msg,
+				tsubst_flags_t complain)
 {
   if (VEC_empty (tree, vec))
     return NULL_TREE;
@@ -5732,14 +5733,19 @@ build_x_compound_expr_from_vec (VEC(tree,gc) *vec, const char *msg)
       tree t;
 
       if (msg != NULL)
-	permerror (input_location,
-		   "%s expression list treated as compound expression",
-		   msg);
+	{
+	  if (complain & tf_error)
+	    permerror (input_location,
+		       "%s expression list treated as compound expression",
+		       msg);
+	  else
+	    return error_mark_node;
+	}
 
       expr = VEC_index (tree, vec, 0);
       for (ix = 1; VEC_iterate (tree, vec, ix, t); ++ix)
 	expr = build_x_compound_expr (EXPR_LOCATION (t), expr,
-				      t, tf_warning_or_error);
+				      t, complain);
 
       return expr;
     }
