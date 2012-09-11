@@ -1534,8 +1534,8 @@ ARM Target supports @code{-mfpu=neon -mfloat-abi=softfp} or compatible
 options.  Some multilibs may be incompatible with these options.
 
 @item arm_neonv2_ok
-@anchor{arm_neon2_ok}
-ARM Target supports @code{-mfpu=neon -mfloat-abi=softfp} or compatible
+@anchor{arm_neonv2_ok}
+ARM Target supports @code{-mfpu=neon-vfpv4 -mfloat-abi=softfp} or compatible
 options.  Some multilibs may be incompatible with these options.
 
 @item arm_neon_fp16_ok
