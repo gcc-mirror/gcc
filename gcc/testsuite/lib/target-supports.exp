@@ -2099,6 +2099,19 @@ proc add_options_for_arm_neon { flags } {
     return "$flags $et_arm_neon_flags"
 }
 
+# Add the options needed for NEON.  We need either -mfloat-abi=softfp
+# or -mfloat-abi=hard, but if one is already specified by the
+# multilib, use it.  Similarly, if a -mfpu option already enables
+# NEON, do not add -mfpu=neon.
+
+proc add_options_for_arm_neonv2 { flags } {
+    if { ! [check_effective_target_arm_neonv2_ok] } {
+	return "$flags"
+    }
+    global et_arm_neonv2_flags
+    return "$flags $et_arm_neonv2_flags"
+}
+
 # Return 1 if this is an ARM target supporting -mfpu=neon
 # -mfloat-abi=softfp or equivalent options.  Some multilibs may be
 # incompatible with these options.  Also set et_arm_neon_flags to the
@@ -2125,6 +2138,38 @@ proc check_effective_target_arm_neon_ok_nocache { } {
 proc check_effective_target_arm_neon_ok { } {
     return [check_cached_effective_target arm_neon_ok \
 		check_effective_target_arm_neon_ok_nocache]
+}
+
+# Return 1 if this is an ARM target supporting -mfpu=neon-vfpv4
+# -mfloat-abi=softfp or equivalent options.  Some multilibs may be
+# incompatible with these options.  Also set et_arm_neonv2_flags to the
+# best options to add.
+
+proc check_effective_target_arm_neonv2_ok_nocache { } {
+    global et_arm_neonv2_flags
+    set et_arm_neonv2_flags ""
+    if { [check_effective_target_arm32] } {
+	foreach flags {"" "-mfloat-abi=softfp" "-mfpu=neon-vfpv4" "-mfpu=neon-vfpv4 -mfloat-abi=softfp"} {
+	    if { [check_no_compiler_messages_nocache arm_neonv2_ok object {
+		#include "arm_neon.h"
+		float32x2_t 
+		foo (float32x2_t a, float32x2_t b, float32x2_t c)
+                {
+                  return vfma_f32 (a, b, c);
+                }
+	    } "$flags"] } {
+		set et_arm_neonv2_flags $flags
+		return 1
+	    }
+	}
+    }
+
+    return 0
+}
+
+proc check_effective_target_arm_neonv2_ok { } {
+    return [check_cached_effective_target arm_neonv2_ok \
+		check_effective_target_arm_neonv2_ok_nocache]
 }
 
 # Add the options needed for NEON.  We need either -mfloat-abi=softfp
@@ -2318,6 +2363,21 @@ proc check_effective_target_arm_neon_hw { } {
     } [add_options_for_arm_neon ""]]
 }
 
+proc check_effective_target_arm_neonv2_hw { } {
+    return [check_runtime arm_neon_hwv2_available {
+	#include "arm_neon.h"
+	int
+	main (void)
+	{
+	  float32x2_t a, b, c;
+	  asm ("vfma.f32 %P0, %P1, %P2"
+	       : "=w" (a)
+	       : "w" (b), "w" (c));
+	  return 0;
+	}
+    } [add_options_for_arm_neonv2 ""]]
+}
+
 # Return 1 if this is a ARM target with NEON enabled.
 
 proc check_effective_target_arm_neon { } {
@@ -2327,6 +2387,24 @@ proc check_effective_target_arm_neon { } {
 	    #error not NEON
 	    #else
 	    int dummy;
+	    #endif
+	}]
+    } else {
+	return 0
+    }
+}
+
+proc check_effective_target_arm_neonv2 { } {
+    if { [check_effective_target_arm32] } {
+	return [check_no_compiler_messages arm_neon object {
+	    #ifndef __ARM_NEON__
+	    #error not NEON
+	    #else
+	    #ifndef __ARM_FEATURE_FMA
+	    #error not NEONv2
+            #else
+	    int dummy;
+	    #endif
 	    #endif
 	}]
     } else {
