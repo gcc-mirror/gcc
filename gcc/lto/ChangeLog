@@ -1,5 +1,20 @@
 2012-09-11  Richard Guenther  <rguenther@suse.de>
 
+	* lto.c (enum gtc_mode): Remove.
+	(struct type_pair_d): Adjust.
+	(lookup_type_pair): Likewise.
+	(gimple_type_leader): Do not mark as deletable.
+	(gimple_lookup_type_leader): Adjust.
+	(gtc_visit): Likewise.
+	(gimple_types_compatible_p_1): Likewise.
+	(gimple_types_compatible_p): Likewise.
+	(gimple_type_hash): Likewise.
+	(gimple_register_type): Likewise.
+	(read_cgraph_and_symbols): Manage lifetime of tables
+	here.
+
+2012-09-11  Richard Guenther  <rguenther@suse.de>
+
 	* lto.c (gimple_types, type_hash_cache, enum gtc_mode,
 	struct type_pair_d, lookup_type_pair, struct sccs,
 	next_dfs_num, gtc_next_dfs_num, struct gimple_type_leader_entry_s,
