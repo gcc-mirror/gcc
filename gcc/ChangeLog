@@ -1,3 +1,8 @@
+2012-09-10  Andrew Pinski  <apinski@cavium.com>
+
+	PR tree-opt/54362
+	* trans-mem.c (thread_private_new_memory): Handle COND_EXPR also.
+
 2012-09-10  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	* config/m68k/m68k.c (m68k_sched_dfa_post_advance_cycle): Support
