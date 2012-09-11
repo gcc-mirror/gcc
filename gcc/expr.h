@@ -721,4 +721,13 @@ extern tree build_libfunc_function (const char *);
 /* Get the personality libfunc for a function decl.  */
 rtx get_personality_function (tree);
 
+
+/* In stmt.c */
+
+/* Expand a GIMPLE_SWITCH statement.  */
+extern void expand_case (gimple);
+
+/* Like expand_case but special-case for SJLJ exception dispatching.  */
+extern void expand_sjlj_dispatch_table (rtx, VEC(tree,heap) *);
+
 #endif /* GCC_EXPR_H */

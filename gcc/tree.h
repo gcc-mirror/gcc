@@ -6117,7 +6117,6 @@ extern bool parse_input_constraint (const char **, int, int, int, int,
 				    const char * const *, bool *, bool *);
 extern void expand_asm_stmt (gimple);
 extern tree resolve_asm_operand_names (tree, tree, tree, tree);
-extern void expand_case (gimple);
 #ifdef HARD_CONST
 /* Silly ifdef to avoid having all includers depend on hard-reg-set.h.  */
 extern tree tree_overlaps_hard_reg_set (tree, HARD_REG_SET *);
