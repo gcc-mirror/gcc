@@ -1,3 +1,10 @@
+2012-09-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54541
+	PR c++/54542
+	* g++.dg/cpp0x/sfinae40.C: New.
+	* g++.dg/cpp0x/sfinae41.C: Likewise.
+
 2012-09-10  Jason Merrill  <jason@redhat.com>
 
 	PR c++/54538

@@ -1,3 +1,21 @@
+2012-09-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54541
+	PR c++/54542
+	* call.c (build_cxx_call): Add tsubst_flags_t parameter, use
+	require_complete_type_sfinae.
+	(build_op_delete_call, build_over_call): Adjust.
+	* typeck.c (build_x_compound_expr_from_vec): Add tsubst_flags_t
+	parameter.
+	(cp_build_function_call_vec): Adjust.
+	* init.c (build_new_1): Likewise.
+	* rtti.c (throw_bad_cast, throw_bad_typeid, build_dynamic_cast_1):
+	Likewise.
+	* optimize.c (build_delete_destructor_body): Likewise.
+	* cp-tree.h: Adjust declarations.
+
+	* call.c (convert_arg_to_ellipsis): Use require_complete_type_sfinae.
+
 2012-09-10  Jason Merrill  <jason@redhat.com>
 
 	PR c++/54538
@@ -18,7 +36,7 @@
 
 	* decl.c (reshape_init_class): Avoid dereferencing a
 	past-the-end pointer.
-		  
+
 2012-09-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* pt.c (num_template_headers_for_class): Rework per the code
