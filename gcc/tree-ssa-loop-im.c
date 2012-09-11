@@ -2113,9 +2113,14 @@ execute_sm_if_changed_flag_set (struct loop *loop, mem_ref_p ref)
       gimple_stmt_iterator gsi;
       gimple stmt;
 
-      gsi = gsi_for_stmt (loc->stmt);
-      stmt = gimple_build_assign (flag, boolean_true_node);
-      gsi_insert_after (&gsi, stmt, GSI_CONTINUE_LINKING);
+      /* Only set the flag for writes.  */
+      if (is_gimple_assign (loc->stmt)
+	  && gimple_assign_lhs_ptr (loc->stmt) == loc->ref)
+	{
+	  gsi = gsi_for_stmt (loc->stmt);
+	  stmt = gimple_build_assign (flag, boolean_true_node);
+	  gsi_insert_after (&gsi, stmt, GSI_CONTINUE_LINKING);
+	}
     }
   VEC_free (mem_ref_loc_p, heap, locs);
   return flag;
