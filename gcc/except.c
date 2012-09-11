@@ -1361,17 +1361,9 @@ sjlj_emit_dispatch_table (rtx dispatch_label, int num_dispatch)
 
   if (num_dispatch > 1)
     {
-      gimple switch_stmt;
-      tree default_label = create_artificial_label (UNKNOWN_LOCATION);
       rtx disp = adjust_address (fc, TYPE_MODE (integer_type_node),
 				 sjlj_fc_call_site_ofs);
-      switch_stmt = gimple_build_switch (make_tree (integer_type_node, disp),
-					 build_case_label (NULL, NULL,
-							   default_label),
-					 dispatch_labels);
-      expand_case (switch_stmt);
-      emit_label (label_rtx (default_label));
-      expand_builtin_trap ();
+      expand_sjlj_dispatch_table (disp, dispatch_labels);
     }
 
   seq = get_insns ();

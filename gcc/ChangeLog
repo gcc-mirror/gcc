@@ -1,3 +1,15 @@
+2012-09-11  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* tree.h (expand_case): Move prototype ...
+	* expr.h (expand_case): ...here.
+	(expand_sjlj_dispatch_table): New prototype.
+	* stmt.c: Include pointer-set.h instead of bitmap.h.
+	(expand_case): Use a pointer set instead of a bitmap for
+	already-seen labels.  Fold label values here.
+	(add_case_node): Don't fold label values here.
+	(expand_sjlj_dispatch_table): New function.
+	* except.c (sjlj_emit_dispatch_table): Use it.
+
 2012-09-11  Marc Glisse  <marc.glisse@inria.fr>
 
         * tree-ssa-forwprop.c (simplify_vector_constructor): New function.
