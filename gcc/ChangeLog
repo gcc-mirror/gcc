@@ -1,9 +1,13 @@
+2012-09-11  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* doc/sourcebuild.texi (arm_neon_v2_ok): Adjust command line.
+
 2012-09-11  Tobias Burnus  <burnus@net-b.de>
 
 	* doc/sourcebuild.texi (arm_neon_v2_ok): Fix @anchor.
 
 2012-09-11  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
-	    Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
+            Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
 
 	* config/arm/neon.md (fma<VCVTF:mode>4): New pattern.
 	(*fmsub<VCVTF:mode>4): Likewise.
