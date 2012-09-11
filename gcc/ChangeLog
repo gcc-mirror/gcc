@@ -1,3 +1,9 @@
+2012-09-11  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR middle-end/54149
+	* tree-ssa-loop-im.c (execute_sm_if_changed_flag_set): Only set
+	flag for writes.
+
 2012-09-11  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/55492
