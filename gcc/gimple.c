@@ -2878,16 +2878,12 @@ get_base_address (tree t)
       && TREE_CODE (TREE_OPERAND (t, 0)) == ADDR_EXPR)
     t = TREE_OPERAND (TREE_OPERAND (t, 0), 0);
 
-  if (TREE_CODE (t) == SSA_NAME
-      || DECL_P (t)
-      || TREE_CODE (t) == STRING_CST
-      || TREE_CODE (t) == CONSTRUCTOR
-      || INDIRECT_REF_P (t)
-      || TREE_CODE (t) == MEM_REF
-      || TREE_CODE (t) == TARGET_MEM_REF)
-    return t;
-  else
+  /* ???  Either the alias oracle or all callers need to properly deal
+     with WITH_SIZE_EXPRs before we can look through those.  */
+  if (TREE_CODE (t) == WITH_SIZE_EXPR)
     return NULL_TREE;
+
+  return t;
 }
 
 void

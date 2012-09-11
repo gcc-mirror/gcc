@@ -1,3 +1,11 @@
+2012-09-11  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/54515
+	* gimple.c (get_base_address): Do not return NULL_TREE apart
+	from for WITH_SIZE_EXPR.
+	* gimple-fold.c (canonicalize_constructor_val): Do not call
+	get_base_address when not necessary.
+
 2012-09-10  Andrew Pinski  <apinski@cavium.com>
 
 	PR tree-opt/54362

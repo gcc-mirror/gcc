@@ -154,13 +154,15 @@ canonicalize_constructor_val (tree cval, tree from_decl)
     }
   if (TREE_CODE (cval) == ADDR_EXPR)
     {
-      tree base = get_base_address (TREE_OPERAND (cval, 0));
-      if (!base && TREE_CODE (TREE_OPERAND (cval, 0)) == COMPOUND_LITERAL_EXPR)
+      tree base = NULL_TREE;
+      if (TREE_CODE (TREE_OPERAND (cval, 0)) == COMPOUND_LITERAL_EXPR)
 	{
 	  base = COMPOUND_LITERAL_EXPR_DECL (TREE_OPERAND (cval, 0));
 	  if (base)
 	    TREE_OPERAND (cval, 0) = base;
 	}
+      else
+	base = get_base_address (TREE_OPERAND (cval, 0));
       if (!base)
 	return NULL_TREE;
 
