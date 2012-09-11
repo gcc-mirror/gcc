@@ -1,3 +1,9 @@
+2012-09-10  Diego Novillo  <dnovillo@google.com>
+
+	* gcc-interface/decl.c (build_subst_list): Adjust call to VEC_safe_push.
+	(build_variant_list): Likewise.
+	* gcc-interface/utils.c (convert): Adjust calls to VEC_quick_push.
+
 2012-09-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (Loop_Statement_to_gnu): Revert to using
