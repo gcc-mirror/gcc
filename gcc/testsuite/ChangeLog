@@ -1,3 +1,8 @@
+2012-09-11  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/54515
+	* g++.dg/tree-ssa/pr54515.C: New testcase.
+
 2012-09-10  Andrew Pinski  <apinski@cavium.com>
 
 	PR tree-opt/c54362
