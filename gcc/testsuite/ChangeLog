@@ -1,3 +1,9 @@
+2012-09-11  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	gcc/testsuite/
+	* gcc.target/arm/neon-vset_lanes8.c, gcc.target/arm/pr51835.c,
+	gcc.target/arm/pr48252.c: Fix for big-endian support.
+
 2012-09-11  Marc Glisse  <marc.glisse@inria.fr>
 
         * gcc.dg/tree-ssa/forwprop-22.c: New testcase.
