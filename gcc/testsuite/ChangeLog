@@ -1,3 +1,11 @@
+2012-09-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54225
+	PR fortran/53306
+	* gfortran.dg/coarray_10.f90: Update dg-error.
+	* gfortran.dg/coarray_28.f90: New.
+	* gfortran.dg/array_section_3.f90: New.
+
 2012-09-11  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	gcc/testsuite/
@@ -6,22 +14,22 @@
 
 2012-09-11  Marc Glisse  <marc.glisse@inria.fr>
 
-        * gcc.dg/tree-ssa/forwprop-22.c: New testcase.
+	* gcc.dg/tree-ssa/forwprop-22.c: New testcase.
 
 2012-09-11  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
-           Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
+	    Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
 
-       * gcc.target/arm/neon-vfma-1.c: New testcase.
-       * gcc.target/arm/neon-vfms-1.c: Likewise.
-       * gcc.target/arm/neon-vmla-1.c: Update test to use int instead
-       of float.
-       * gcc.target/arm/neon-vmls-1.c: Likewise.
-       * lib/target-supports.exp (add_options_for_arm_neonv2): New
-       function.
-       (check_effective_target_arm_neonv2_ok_nocache): Likewise.
-       (check_effective_target_arm_neonv2_ok): Likewise.
-       (check_effective_target_arm_neonv2_hw): Likewise.
-       (check_effective_target_arm_neonv2): Likewise.
+	* gcc.target/arm/neon-vfma-1.c: New testcase.
+	* gcc.target/arm/neon-vfms-1.c: Likewise.
+	* gcc.target/arm/neon-vmla-1.c: Update test to use int instead
+	of float.
+	* gcc.target/arm/neon-vmls-1.c: Likewise.
+	* lib/target-supports.exp (add_options_for_arm_neonv2): New
+	function.
+	(check_effective_target_arm_neonv2_ok_nocache): Likewise.
+	(check_effective_target_arm_neonv2_ok): Likewise.
+	(check_effective_target_arm_neonv2_hw): Likewise.
+	(check_effective_target_arm_neonv2): Likewise.
 
 2012-09-11  Richard Guenther  <rguenther@suse.de>
 

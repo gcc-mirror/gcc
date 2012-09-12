@@ -1,3 +1,10 @@
+2012-09-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54225
+	PR fortran/53306
+	* array.c (match_subscript, gfc_match_array_ref): Fix
+	diagnostic of coarray's '*'.
+
 2012-09-07  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/54208
