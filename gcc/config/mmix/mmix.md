@@ -43,6 +43,7 @@
 ;; Operand and operator predicates.
 
 (include "predicates.md")
+(include "constraints.md")
 
 ;; FIXME: Can we remove the reg-to-reg for smaller modes?  Shouldn't they
 ;; be synthesized ok?
@@ -274,7 +275,7 @@
 (define_insn "iordi3"
   [(set (match_operand:DI 0 "register_operand" "=r,r")
 	(ior:DI (match_operand:DI 1 "register_operand" "%r,0")
-		(match_operand:DI 2 "mmix_reg_or_constant_operand" "rH,LS")))]
+		(match_operand:DI 2 "mmix_reg_or_constant_operand" "rI,LS")))]
   ""
   "@
    OR %0,%1,%2
@@ -1037,6 +1038,7 @@ DIVU %1,%1,%2\;GET %0,:rR\;NEGU %2,0,%0\;CSNN %0,$255,%2")
 ;; first ("p") alternative by adding ? in the first operand
 ;; might do the trick.  We define 'U' as a synonym to 'p', but without the
 ;; caveats (and very small advantages) of 'p'.
+;; As of r190682 still so: newlib/libc/stdlib/dtoa.c ICEs if "p" is used.
 (define_insn "*call_real"
   [(call (mem:QI
 	  (match_operand:DI 0 "mmix_symbolic_or_address_operand" "s,rU"))

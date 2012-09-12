@@ -118,7 +118,7 @@
 	return 1;
       /* Fall through.  */
     default:
-      return address_operand (op, mode);
+      return mmix_address_operand (op, mode);
     }
 })
 
@@ -152,4 +152,12 @@
   (ior
    (match_operand 0 "register_operand")
    (and (match_code "const_int")
-	(match_test "CONST_OK_FOR_LETTER_P (INTVAL (op), 'I')"))))
+	(match_test "satisfies_constraint_I (op)"))))
+
+;; True if this is a memory address, possibly strictly.
+;; See also comment above the "*call_real" pattern.
+
+(define_predicate "mmix_address_operand"
+  (if_then_else (match_test "reload_in_progress || reload_completed")
+    (match_test "strict_memory_address_p (Pmode, op)")
+    (match_test "memory_address_p (Pmode, op)")))

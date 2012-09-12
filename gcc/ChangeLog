@@ -1,3 +1,29 @@
+2012-09-12  Nathan Froyd  <froydnj@gcc.gnu.org>
+	    Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/mmix/mmix.h (MMIX_REG_OK_STRICT): Delete.
+	(REG_CLASS_FROM_LETTER, CONST_OK_FOR_LETTER_P): Delete.
+	(CONST_DOUBLE_OK_FOR_LETTER_P, EXTRA_CONSTRAINT): Delete.
+	* config/mmix/mmix-protos.h (mmix_intval): Declare.
+	(mmix_const_ok_for_letter_p, mmix_extra_constraint): Delete.
+	(mmix_const_double_ok_for_letter_p): Delete.
+	* config/mmix/constraints.md: New file.
+	* config/mmix/mmix.md: Include it.
+	(iordi3): Fix typo; use "I" instead of undefined "H" constraint.
+	("*call_real"): Update comment about not using the "p" constraint.
+	* config/mmix/predicates.md (mmix_reg_or_8bit_operand): Use
+	satisfies_constraint_I.
+	(mmix_address_operand): New predicate.
+	(mmix_symbolic_or_address_operand): Use it instead of address_operand.
+	* config/mmix/mmix.c: #include tm-constrs.h.
+	(mmix_intval): Delete declaration.  Make non-static.
+	(mmix_const_ok_for_letter_p, mmix_extra_constraint): Delete.
+	(mmix_const_double_ok_for_letter_p): Delete.
+	(mmix_legitimate_address_p): Use satisfies_constraint_I.
+	(mmix_print_operand_address): Likewise.
+	(mmix_emit_sp_add): Adjust to use insn_const_int_ok_for_constraint
+	when matching "L" constraint.
+
 2012-09-11  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* tree.h (expand_case): Move prototype ...
