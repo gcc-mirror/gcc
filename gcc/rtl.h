@@ -33,11 +33,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "hashtab.h"
 #include "flags.h"
 
-#undef FFS  /* Some systems predefine this symbol; don't let it interfere.  */
-#undef FLOAT /* Likewise.  */
-#undef ABS /* Likewise.  */
-#undef PC /* Likewise.  */
-
 /* Value used by some passes to "recognize" noop moves as valid
  instructions.  */
 #define NOOP_MOVE_INSN_CODE	INT_MAX
