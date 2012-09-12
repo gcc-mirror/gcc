@@ -1,3 +1,30 @@
+2012-09-12  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/54489
+	* tree-ssa-pre.c: Include domwalk.h.
+	(in_fre): Remove.
+	(sccvn_valnum_from_value_id): New function.
+	(debug_bitmap_sets_for): Simplify.
+	(get_representative_for): Properly initialize the SCCVN valnum.
+	(create_expression_by_pieces): Likewise.
+	(insert_into_preds_of_block): Likewise.
+	(can_PRE_operation): Remove.
+	(make_values_for_phi): Simplify.
+	(compute_avail): Likewise.
+	(do_SCCVN_insertion): Remove.
+	(eliminate_avail, eliminate_push_avail, eliminate_insert):
+	New functions.
+	(eliminate): Split and perform a domwalk.
+	(eliminate_bb): Former eliminate part that is now dom-enter.
+	(eliminate_leave_block): New function.
+	(fini_eliminate): Likewise.
+	(init_pre): Simplify.
+	(fini_pre): Likewise.
+	(execute_pre): Fold into do_pre and do_fre.
+	(do_pre): Consume execute_pre.
+	(do_fre): Likewise.
+	* Makefile.in (tree-ssa-pre.o): Add domwalk.h dependency.
+
 2012-09-12  Diego Novillo  <dnovillo@google.com>
 
 	* vec.h: Remove compatibility notes for previous distinction
