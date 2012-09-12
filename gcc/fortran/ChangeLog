@@ -1,3 +1,9 @@
+2012-09-12  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/54208
+	* simplify.c (simplify_bound_dim): Resolve array spec before
+	proceeding with simplification.
+
 2012-07-14  Mikael Morin  <mikael@gcc.gnu.org>
 
 	Backport from trunk:

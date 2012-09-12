@@ -1,3 +1,8 @@
+2012-09-12  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/54208
+	* gfortran.dg/bound_simplification_3.f90: New test.
+
 2012-09-10  Markus Trippelsdorf  <markus@trippelsdorf.de>
 
 	PR middle-end/54515
