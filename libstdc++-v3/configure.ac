@@ -333,6 +333,9 @@ case "$target" in
 esac
 GLIBCXX_CONDITIONAL(GLIBCXX_LDBL_COMPAT, test $ac_ldbl_compat = yes)
 
+# Check if assembler supports disabling hardware capability support.
+GLIBCXX_CHECK_ASSEMBLER_HWCAP
+
 # Check if assembler supports rdrand opcode.
 GLIBCXX_CHECK_X86_RDRAND
 
