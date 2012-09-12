@@ -1,3 +1,23 @@
+2012-09-12  Jan Hubicka  <jh@suse.cz>
+
+	PR fortran/48636
+	* ipa-inline-analysis.c (dump_inline_hints): Dump loop stride.
+	(set_hint_predicate): New function.
+	(reset_inline_summary): Reset loop stride.
+	(remap_predicate_after_duplication): New function.
+	(remap_hint_predicate_after_duplication): New function.
+	(inline_node_duplication_hook): Update.
+	(dump_inline_summary): Dump stride summaries.
+	(estimate_function_body_sizes): Compute strides.
+	(remap_hint_predicate): New function.
+	(inline_merge_summary): Use it.
+	(inline_read_section): Read stride.
+	(inline_write_summary): Write stride.
+	* ipa-inline.c (want_inline_small_function_p): Handle strides.
+	(edge_badness): Likewise.
+	* ipa-inline.h (inline_hints_vals): Add stride hint.
+	(inline_summary): Update stride.
+
 2012-09-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (x86_prefetch_sse): Change to unsigned char.
