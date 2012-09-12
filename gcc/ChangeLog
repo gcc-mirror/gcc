@@ -1,3 +1,7 @@
+2012-09-27  Christian Bruel  <christian.bruel@st.com>
+
+	* config/sh/newlib.h (NO_IMPLICIT_EXTERN_C): Define.
+
 2012-09-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* rtl.h (FFS, FLOAT, ABS, PC): Don't undef.
