@@ -46,7 +46,8 @@ typedef struct GTY(()) condition
    They are represtented as bitmap of the following values.  */
 enum inline_hints_vals {
   INLINE_HINT_indirect_call = 1,
-  INLINE_HINT_loop_iterations = 2
+  INLINE_HINT_loop_iterations = 2,
+  INLINE_HINT_loop_stride = 4
 };
 typedef int inline_hints;
 
@@ -120,9 +121,12 @@ struct GTY(()) inline_summary
   conditions conds;
   VEC(size_time_entry,gc) *entry;
 
-  /* Predicate on when some loop in the function sbecomes to have known
+  /* Predicate on when some loop in the function becomes to have known
      bounds.   */
   struct predicate * GTY((skip)) loop_iterations;
+  /* Predicate on when some loop in the function becomes to have known
+     stride.   */
+  struct predicate * GTY((skip)) loop_stride;
 };
 
 
