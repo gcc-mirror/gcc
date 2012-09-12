@@ -1,3 +1,8 @@
+2012-09-12  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/54553
+	* common.opt (finline): Mark with Optimization.
+
 2012-09-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* config.gcc: Obsolete picochip-*.
