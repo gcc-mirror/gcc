@@ -1,3 +1,7 @@
+2012-09-12  Christian Bruel  <christian.bruel@st.com>
+
+       * config/sh/newlib.h (NO_IMPLICIT_EXTERN_C): Define.
+
 2012-09-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* config.gcc: Obsolete picochip-*.
@@ -7,7 +11,7 @@
 	PR debug/54534
 	* cgraph.h (varpool_can_remove_if_no_refs): Restore dependence
 	on flag_toplevel_reorder.
- 
+
 2012-09-10  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/predicates.md (small_symbolic_operand): Disallow
@@ -16,7 +20,7 @@
 2012-09-10  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backport from 2012-09-10 mainline r191132.
-	
+
 	PR target/54536
 	* config/avr/avr-mcus.def (at90usb1287): Set LIBRARY_NAME to "usb1287".
 
