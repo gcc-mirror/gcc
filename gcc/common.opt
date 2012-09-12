@@ -1289,7 +1289,7 @@ Perform indirect inlining
 ; General flag to enable inlining.  Specifying -fno-inline will disable
 ; all inlining apart from always-inline functions.
 finline
-Common Report Var(flag_no_inline,0) Init(0)
+Common Report Var(flag_no_inline,0) Init(0) Optimization
 Enable inlining of function declared \"inline\", disabling disables all inlining
 
 finline-small-functions
