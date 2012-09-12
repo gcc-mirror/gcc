@@ -262,6 +262,7 @@ case ${target} in
  | arm*-wince-pe*			\
  | mips-sgi-irix6.5			\
  | mips*-*-openbsd*			\
+ | picochip-*				\
  | score-*				\
  | *-*-solaris2.8*			\
  )
