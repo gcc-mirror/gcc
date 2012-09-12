@@ -1,3 +1,27 @@
+2012-09-12  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (do_whole_program_analysis): Care timevars, statistics and
+	AUX pointer cleaning. Add max partitioning.
+	* lto-partition.c (enum symbol_class): New.
+	(get_symbol_class): New function.
+	(symbol_partitioned_p): New function.
+	(add_references_to_partition): Remove.
+	(add_aliases_to_partition): Remove.
+	(add_cgraph_node_to_partition_1): Remove.
+	(add_cgraph_node_to_partition): Remove.
+	(add_symbol_to_partition): New function.
+	(add_symbol_to_partition_1): New function.
+	(contained_in_symbol): New function.
+	(partition_cgraph_node_p): Remove.
+	(partition_varpool_node_p): Remove.
+	(partition_symbol_p): Remove.
+	(lto_1_to_1_map): Cleanup.
+	(lto_max_map): New.
+	(lto_balanced_map): Update.
+	(lto_promote_cross_file_statics): Update.
+	* lto-partition.h (lto_max_map): Declare.
+	* timevar.def (TV_WHOPR_PARTITIONING): New timevar.
+
 2012-09-11  Jan Hubicka  <jh@suse.cz>
 
 	PR lto/54312

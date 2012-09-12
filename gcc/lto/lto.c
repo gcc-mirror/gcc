@@ -2604,11 +2604,28 @@ lto_wpa_write_files (void)
 	  
 	  fprintf (cgraph_dump_file, "Writing partition %s to file %s, %i insns\n",
 		   part->name, temp_filename, part->insns);
+	  fprintf (cgraph_dump_file, "  Symbols in partition: ");
 	  for (lsei = lsei_start_in_partition (part->encoder); !lsei_end_p (lsei);
 	       lsei_next_in_partition (&lsei))
 	    {
 	      symtab_node node = lsei_node (lsei);
-	      fprintf (cgraph_dump_file, "%s ", symtab_node_name (node));
+	      fprintf (cgraph_dump_file, "%s ", symtab_node_asm_name (node));
+	    }
+	  fprintf (cgraph_dump_file, "\n  Symbols in boundary: ");
+	  for (lsei = lsei_start (part->encoder); !lsei_end_p (lsei);
+	       lsei_next (&lsei))
+	    {
+	      symtab_node node = lsei_node (lsei);
+	      if (!lto_symtab_encoder_in_partition_p (part->encoder, node))
+		{
+	          fprintf (cgraph_dump_file, "%s ", symtab_node_asm_name (node));
+		  if (symtab_function_p (node)
+		      && lto_symtab_encoder_encode_body_p (part->encoder, cgraph (node)))
+		    fprintf (cgraph_dump_file, "(body included)");
+		  else if (symtab_variable_p (node)
+		           && lto_symtab_encoder_encode_initializer_p (part->encoder, varpool (node)))
+		    fprintf (cgraph_dump_file, "(initializer included)");
+		}
 	    }
 	  fprintf (cgraph_dump_file, "\n");
 	}
@@ -3093,6 +3110,8 @@ print_lto_report_1 (void)
 static void
 do_whole_program_analysis (void)
 {
+  symtab_node node;
+
   timevar_start (TV_PHASE_OPT_GEN);
 
   /* Note that since we are in WPA mode, materialize_cgraph will not
@@ -3127,16 +3146,30 @@ do_whole_program_analysis (void)
       dump_cgraph (cgraph_dump_file);
       dump_varpool (cgraph_dump_file);
     }
+#ifdef ENABLE_CHECKING
   verify_cgraph ();
+#endif
   bitmap_obstack_release (NULL);
 
   /* We are about to launch the final LTRANS phase, stop the WPA timer.  */
   timevar_pop (TV_WHOPR_WPA);
 
+  timevar_push (TV_WHOPR_PARTITIONING);
   if (flag_lto_partition_1to1)
     lto_1_to_1_map ();
+  else if (flag_lto_partition_max)
+    lto_max_map ();
   else
     lto_balanced_map ();
+
+  /* AUX pointers are used by partitioning code to bookkeep number of
+     partitions symbol is in.  This is no longer needed.  */
+  FOR_EACH_SYMBOL (node)
+    node->symbol.aux = NULL;
+
+  lto_stats.num_cgraph_partitions += VEC_length (ltrans_partition, 
+						 ltrans_partitions);
+  timevar_pop (TV_WHOPR_PARTITIONING);
 
   timevar_stop (TV_PHASE_OPT_GEN);
   timevar_start (TV_PHASE_STREAM_OUT);

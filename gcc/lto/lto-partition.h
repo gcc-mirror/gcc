@@ -25,6 +25,7 @@ struct ltrans_partition_def
   lto_symtab_encoder_t encoder;
   const char * name;
   int insns;
+  pointer_set_t *initializers_visited;
 };
 
 typedef struct ltrans_partition_def *ltrans_partition;
@@ -34,6 +35,7 @@ DEF_VEC_ALLOC_P(ltrans_partition,heap);
 extern VEC(ltrans_partition, heap) *ltrans_partitions;
 
 void lto_1_to_1_map (void);
+void lto_max_map (void);
 void lto_balanced_map (void);
 void lto_promote_cross_file_statics (void);
 void free_ltrans_partitions (void);
