@@ -1850,6 +1850,7 @@ uniquify_nodes (struct data_in *data_in, unsigned from)
 	     variant list state before fixup is broken.  */
 	  tree tem, mv;
 
+#ifdef ENABLE_CHECKING
 	  /* Remove us from our main variant list if we are not the
 	     variant leader.  */
 	  if (TYPE_MAIN_VARIANT (t) != t)
@@ -1857,10 +1858,9 @@ uniquify_nodes (struct data_in *data_in, unsigned from)
 	      tem = TYPE_MAIN_VARIANT (t);
 	      while (tem && TYPE_NEXT_VARIANT (tem) != t)
 		tem = TYPE_NEXT_VARIANT (tem);
-	      if (tem)
-		TYPE_NEXT_VARIANT (tem) = TYPE_NEXT_VARIANT (t);
-	      TYPE_NEXT_VARIANT (t) = NULL_TREE;
+	      gcc_assert (!tem && !TYPE_NEXT_VARIANT (t));
 	    }
+#endif
 
 	  /* Query our new main variant.  */
 	  mv = GIMPLE_REGISTER_TYPE (TYPE_MAIN_VARIANT (t));

@@ -1,3 +1,9 @@
+2012-09-11  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/54312
+	* lto.c (uniquify_nodes): Remove quadratic loop checking if the
+	type is variant leader.
+
 2012-09-11  Richard Guenther  <rguenther@suse.de>
 
 	* lto.c (enum gtc_mode): Remove.
