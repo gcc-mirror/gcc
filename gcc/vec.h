@@ -31,23 +31,6 @@ along with GCC; see the file COPYING3.  If not see
    sometimes backed by out-of-line generic functions.  The vectors are
    designed to interoperate with the GTY machinery.
 
-   FIXME - Remove the following compatibility notes after a handler
-   class for vec_t is implemented.
-
-   To preserve compatibility with the existing API, some functions
-   that manipulate vector elements implement two overloads: one taking
-   a pointer to the element and others that take a pointer to a
-   pointer to the element.
-
-   This used to be implemented with three different families of macros
-   and structures: structure objects, scalar objects and of pointers.
-   Both the structure object and pointer variants passed pointers to
-   objects around -- in the former case the pointers were stored into
-   the vector and in the latter case the pointers were dereferenced and
-   the objects copied into the vector.  The scalar object variant was
-   suitable for int-like objects, and the vector elements were returned
-   by value.
-
    There are both 'index' and 'iterate' accessors.  The index accessor
    is implemented by operator[].  The iterator returns a boolean
    iteration condition and updates the iteration variable passed by
@@ -124,7 +107,6 @@ along with GCC; see the file COPYING3.  If not see
    VEC_safe_push(tree,gc,s->v,decl); // append some decl onto the end
    for (ix = 0; VEC_iterate(tree,s->v,ix,elt); ix++)
      { do something with elt }
-
 */
 
 #if ENABLE_CHECKING

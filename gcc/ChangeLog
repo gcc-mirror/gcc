@@ -1,3 +1,8 @@
+2012-09-12  Diego Novillo  <dnovillo@google.com>
+
+	* vec.h: Remove compatibility notes for previous distinction
+	between vectors of objects and vectors of pointers.
+
 2012-09-12  Christian Bruel  <christian.bruel@st.com>
 
 	* config/sh/newlib.h (NO_IMPLICIT_EXTERN_C): Define.
