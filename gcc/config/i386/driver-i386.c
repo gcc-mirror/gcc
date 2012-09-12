@@ -476,8 +476,6 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       has_abm = ecx & bit_ABM;
       has_lwp = ecx & bit_LWP;
       has_fma4 = ecx & bit_FMA4;
-      if (vendor == SIG_AMD && has_fma4 && has_fma)
-	has_fma4 = 0;
       has_xop = ecx & bit_XOP;
       has_tbm = ecx & bit_TBM;
       has_lzcnt = ecx & bit_LZCNT;

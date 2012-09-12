@@ -1,3 +1,17 @@
+2012-09-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2012-09-12  Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
+
+	* config/i386/i386.md : Comments on fma4 instruction selection
+	reflect requirement on register pressure based cost model.
+
+	* config/i386/driver-i386.c (host_detect_local_cpu): fma4
+	flag is set-reset as informed by the cpuid flag.
+
+	* config/i386/i386.c (processor_alias_table): fma4
+	flag is enabled for bdver2.
+
 2012-09-12  Christian Bruel  <christian.bruel@st.com>
 
        * config/sh/newlib.h (NO_IMPLICIT_EXTERN_C): Define.
@@ -75,7 +89,7 @@
 
 	Backport from mainline.
 	2012-08-29  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
-                   Richard Earnshaw  <richard.earnshaw@arm.com>
+		    Richard Earnshaw  <richard.earnshaw@arm.com>
 
 	PR target/54252
 	* config/arm/arm.c (neon_dereference_pointer): Adjust nelems by
