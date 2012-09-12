@@ -8093,9 +8093,12 @@ This option is disabled by default.
 Specify the partitioning algorithm used by the link-time optimizer.
 The value is either @code{1to1} to specify a partitioning mirroring
 the original source files or @code{balanced} to specify partitioning
-into equally sized chunks (whenever possible).  Specifying @code{none}
-as an algorithm disables partitioning and streaming completely. The
-default value is @code{balanced}.
+into equally sized chunks (whenever possible) or @code{max} to create
+new partition for every symbol where possible.  Specifying @code{none}
+as an algorithm disables partitioning and streaming completely. 
+The default value is @code{balanced}. While @code{1to1} can be used
+as an workaround for various code ordering issues, the @code{max}
+partitioning is intended for internal testing only.
 
 @item -flto-compression-level=@var{n}
 This option specifies the level of compression used for intermediate

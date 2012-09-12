@@ -1,3 +1,8 @@
+2012-09-12  Jan Hubicka  <jh@suse.cz>
+
+	* common.opt (flto-partition): Add "max".
+	* invoke.texi (flto-partition): Document "max"
+
 2012-09-12  Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
 
 	* config/i386/i386.md : Comments on fma4 instruction
