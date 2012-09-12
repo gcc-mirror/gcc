@@ -92,9 +92,7 @@ match_subscript (gfc_array_ref *ar, int init, bool match_star)
   else if (!star)
     m = gfc_match_expr (&ar->start[i]);
 
-  if (m == MATCH_NO && gfc_match_char ('*') == MATCH_YES)
-    return MATCH_NO;
-  else if (m == MATCH_NO)
+  if (m == MATCH_NO)
     gfc_error ("Expected array subscript at %C");
   if (m != MATCH_YES)
     return MATCH_ERROR;
@@ -225,7 +223,7 @@ coarray:
 
   for (ar->codimen = 0; ar->codimen + ar->dimen < GFC_MAX_DIMENSIONS; ar->codimen++)
     {
-      m = match_subscript (ar, init, ar->codimen == (corank - 1));
+      m = match_subscript (ar, init, true);
       if (m == MATCH_ERROR)
 	return MATCH_ERROR;
 
@@ -256,6 +254,13 @@ coarray:
 	    gfc_error ("Invalid form of coarray reference at %C");
 	  return MATCH_ERROR;
 	}
+      else if (ar->dimen_type[ar->codimen + ar->dimen] == DIMEN_STAR)
+	{
+	  gfc_error ("Unexpected '*' for codimension %d of %d at %C",
+		     ar->codimen + 1, corank);
+	  return MATCH_ERROR;
+	}
+
       if (ar->codimen >= corank)
 	{
 	  gfc_error ("Invalid codimension %d at %C, only %d codimensions exist",

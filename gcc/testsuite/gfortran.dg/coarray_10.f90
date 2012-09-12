@@ -30,12 +30,12 @@ end subroutine this_image_check
 subroutine rank_mismatch()
   implicit none
   integer,allocatable :: A(:)[:,:,:,:]
-  allocate(A(1)[1,1,1:*])     ! { dg-error "Unexpected ... for codimension" }
+  allocate(A(1)[1,1,1:*])     ! { dg-error "Too few codimensions" }
   allocate(A(1)[1,1,1,1,1,*]) ! { dg-error "Invalid codimension 5" }
   allocate(A(1)[1,1,1,*])
   allocate(A(1)[1,1])     ! { dg-error "Too few codimensions" }
   allocate(A(1)[1,*])     ! { dg-error "Too few codimensions" }
-  allocate(A(1)[1,1:*])   ! { dg-error "Unexpected ... for codimension" }
+  allocate(A(1)[1,1:*])   ! { dg-error "Too few codimensions" }
 
   A(1)[1,1,1] = 1       ! { dg-error "Too few codimensions" }
   A(1)[1,1,1,1,1,1] = 1 ! { dg-error "Invalid codimension 5" }
@@ -48,5 +48,5 @@ end subroutine rank_mismatch
 subroutine rank_mismatch2()
   implicit none
   integer, allocatable:: A(:)[:,:,:]
-  allocate(A(1)[7:8,4:*]) ! { dg-error "Unexpected .*. for codimension 2 of 3" }
+  allocate(A(1)[7:8,4:*]) ! { dg-error "Too few codimensions" }
 end subroutine rank_mismatch2
