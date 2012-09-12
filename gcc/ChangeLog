@@ -1,3 +1,7 @@
+2012-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* config.gcc: Obsolete picochip-*.
+
 2012-09-12  Nathan Froyd  <froydnj@gcc.gnu.org>
 	    Hans-Peter Nilsson  <hp@bitrange.com>
 
