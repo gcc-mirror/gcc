@@ -2517,8 +2517,8 @@ enum processor_type ix86_tune;
 /* Which instruction set architecture to use.  */
 enum processor_type ix86_arch;
 
-/* true if sse prefetch instruction is not NOOP.  */
-int x86_prefetch_sse;
+/* True if processor has SSE prefetch instruction.  */
+unsigned char x86_prefetch_sse;
 
 /* -mstackrealign option */
 static const char ix86_force_align_arg_pointer_string[]

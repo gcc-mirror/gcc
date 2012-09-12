@@ -1,3 +1,8 @@
+2012-09-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (x86_prefetch_sse): Change to unsigned char.
+	* config/i386/i386.h (x86_prefetch_sse): Ditto.
+
 2012-09-12  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/54445
@@ -11,9 +16,8 @@
 
 2012-09-12  Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
 
-	* config/i386/i386.md : Comments on fma4 instruction
-	selection reflect requirement on register pressure based
-	cost model.
+	* config/i386/i386.md : Comments on fma4 instruction selection
+	reflect requirement on register pressure based cost model.
 
 	* config/i386/driver-i386.c (host_detect_local_cpu): fma4
 	flag is set-reset as informed by the cpuid flag.
