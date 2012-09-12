@@ -1,3 +1,15 @@
+2012-09-12  Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
+
+	* config/i386/i386.md : Comments on fma4 instruction
+	selection reflect requirement on register pressure based
+	cost model.
+
+	* config/i386/driver-i386.c (host_detect_local_cpu): fma4
+	flag is set-reset as informed by the cpuid flag.
+
+	* config/i386/i386.c (processor_alias_table): fma4
+	flag is enabled for bdver2.
+
 2012-09-12  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/54489
@@ -93,13 +105,11 @@
 
 2012-09-11  Diego Novillo  <dnovillo@google.com>
 
-	* var-tracking.c (vt_add_function_parameter): Adjust for VEC
-	changes.
+	* var-tracking.c (vt_add_function_parameter): Adjust for VEC changes.
 
 2012-09-11  Dominique Dhumieres  <dominiq@lps.ens.fr>
 
-	* config/darwin.c (darwin_asm_named_section): Adjust for
-	VEC changes.
+	* config/darwin.c (darwin_asm_named_section): Adjust for VEC changes.
 	(darwin_asm_dwarf_section): Likewise.
 
 2012-09-11  Martin Jambor  <mjambor@suse.cz>
@@ -158,12 +168,11 @@
 
 2012-09-11  Richard Guenther  <rguenther@suse.de>
 
-	* graphite-scop-detection.c (move_sd_regions): Adjust for VEC
-	changes.
+	* graphite-scop-detection.c (move_sd_regions): Adjust for VEC changes.
 	(scopdet_basic_block_info): Likewise.
 	(build_scops_1): Likewise.
 	(limit_scops): Likewise.
- 
+
 2012-09-11  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/54515
@@ -266,7 +275,7 @@
 2012-09-09  Mark Kettenis  <kettenis@gnu.org>
 
 	* config/openbsd-stdint.h (INTMAX_TYPE, UINTMAX_TYPE): Define.
-			
+
 2012-09-09  Jan Hubicka  <jh@suse.cz>
 
 	* passes.c (ipa_write_summaries_1): Set state;
@@ -302,7 +311,8 @@
 	(lto_symtab_encoder_delete_node): New function.
 	(lto_symtab_encoder_encode_body_p, lto_set_symtab_encoder_encode_body,
 	lto_symtab_encoder_encode_initializer_p,
-	lto_set_symtab_encoder_encode_initializer, lto_symtab_encoder_in_partition_p,
+	lto_set_symtab_encoder_encode_initializer,
+	lto_symtab_encoder_in_partition_p,
 	lto_symtab_encoder_in_partition_p): Update.
 	(compute_ltrans_boundary): Take encoder as an input.
 	* passes.c (ipa_write_summaries_1): Update.
@@ -323,12 +333,12 @@
 
 2012-09-08  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
-	* config/pa/pa.c (hppa_rtx_costs): Update costs for large integer modes.
+	* config/pa/pa.c (hppa_rtx_costs): Update costs for large
+	integer modes.
 
 2012-09-08  Andi Kleen  <ak@linux.intel.com>
 
-	* gcc/lto/lto.c (do_whole_program_analysis): 
-	Fix last broken patch
+	* gcc/lto/lto.c (do_whole_program_analysis): Fix last broken patch.
 
 2012-09-08  Andi Kleen  <ak@linux.intel.com>
 
@@ -392,8 +402,8 @@
 	PR tree-optimization/53986
 	* tree-vrp.c (extract_range_from_multiplicative_op_1): Allow
 	LSHIFT_EXPR.
-	(extract_range_from_binary_expr_1): Handle LSHIFT with constant range as
-	shift amount.
+	(extract_range_from_binary_expr_1): Handle LSHIFT with constant
+	range as shift amount.
 
 2012-09-07  Segher Boessenkool  <segher@kernel.crashing.org>
 
@@ -416,7 +426,7 @@
 	(call_value_nonlocal_aix32): Ditto.
 	(call_value_nonlocal_aix64): Ditto.
 
-2012-09-06  Andi Kleen <ak@linux.intel.com>
+2012-09-06  Andi Kleen  <ak@linux.intel.com>
 
 	* doc/invoke.texi (-ffat-lto-objects): Clarify that gcc-ar
 	et.al. should be used.
@@ -498,7 +508,7 @@
 
 2012-09-06  Uros Bizjak  <ubizjak@gmail.com>
 
-	* configure.ac (hle prefixes): Remove .code64.
+	* configure.ac (hle prefixes): Remove .code64 directive.
 	* configure: Regenerated.
 
 2012-09-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
@@ -922,7 +932,7 @@
 	* config/sh/sh.md (cbranchsi4): Remove TARGET_CBRANCHDI4 check and
 	always invoke expand_cbranchsi4.
 
-2012-09-03  Andi Kleen <ak@linux.intel.com>
+2012-09-03  Andi Kleen  <ak@linux.intel.com>
 
 	* tree-ssa-sccvn.c (vn_reference_fold_indirect): Initialize
 	addr_offset always.
@@ -15115,7 +15125,7 @@
 	* cgraphunit.c (cgraph_analyze_function): Use gimple_has_body_p.
 
 2012-05-02  Kirill Yukhin  <kirill.yukhin@intel.com>
-	    Andi Kleen <ak@linux.intel.com>
+	    Andi Kleen  <ak@linux.intel.com>
 
 	* coretypes.h (MEMMODEL_MASK): New.
 	* builtins.c (get_memmodel): Add val. Call target.memmodel_check
