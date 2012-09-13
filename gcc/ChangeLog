@@ -1,3 +1,8 @@
+2012-09-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac (CXXFLAGS): Remove -O2 when not bootstrapping.
+	* configure: Regenerated.
+
 2012-08-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (prefetch): Do not assert mode of operand 0.
