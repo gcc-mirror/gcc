@@ -1,6 +1,7 @@
 /* PR c/51712 */
 /* { dg-do compile } */
 /* { dg-options "-Wtype-limits" } */
+/* { dg-additional-options "-fno-short-enums" { target short_enums } } */
 
 enum test_enum {
   FOO,
