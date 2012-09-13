@@ -1,3 +1,8 @@
+2012-09-12  Terry Guo  <terry.guo@arm.com>
+
+	* gcc.target/arm/combine-movs.c: Check movs for ARM mode
+	and lsrs for Thumb2 mode.
+
 2012-09-12  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/ipa/inlinehint-2.c: New testcase.
