@@ -3922,21 +3922,22 @@ compute_avail (void)
 	      bitmap_value_insert_into_set (AVAIL_OUT (block), e);
 	    }
 
-	  if (gimple_has_side_effects (stmt) || stmt_could_throw_p (stmt))
+	  if (gimple_has_side_effects (stmt)
+	      || stmt_could_throw_p (stmt)
+	      || is_gimple_debug (stmt))
 	    continue;
+
+	  FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_USE)
+	    add_to_exp_gen (block, op);
 
 	  switch (gimple_code (stmt))
 	    {
 	    case GIMPLE_RETURN:
-	      FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_USE)
-		add_to_exp_gen (block, op);
 	      continue;
 
 	    case GIMPLE_CALL:
 	      {
 		vn_reference_t ref;
-		unsigned int i;
-		vn_reference_op_t vro;
 		pre_expr result = NULL;
 		VEC(vn_reference_op_s, heap) *ops = NULL;
 
@@ -3951,18 +3952,6 @@ compute_avail (void)
 		VEC_free (vn_reference_op_s, heap, ops);
 		if (!ref)
 		  continue;
-
-		for (i = 0; VEC_iterate (vn_reference_op_s,
-					 ref->operands, i,
-					 vro); i++)
-		  {
-		    if (vro->op0 && TREE_CODE (vro->op0) == SSA_NAME)
-		      add_to_exp_gen (block, vro->op0);
-		    if (vro->op1 && TREE_CODE (vro->op1) == SSA_NAME)
-		      add_to_exp_gen (block, vro->op1);
-		    if (vro->op2 && TREE_CODE (vro->op2) == SSA_NAME)
-		      add_to_exp_gen (block, vro->op2);
-		  }
 
 		/* If the value of the call is not invalidated in
 		   this block until it is computed, add the expression
@@ -3988,27 +3977,18 @@ compute_avail (void)
 	    case GIMPLE_ASSIGN:
 	      {
 		pre_expr result = NULL;
-		switch (TREE_CODE_CLASS (gimple_assign_rhs_code (stmt)))
+		switch (vn_get_stmt_kind (stmt))
 		  {
-		  case tcc_unary:
-		  case tcc_binary:
-		  case tcc_comparison:
+		  case VN_NARY:
 		    {
 		      vn_nary_op_t nary;
-		      unsigned int i;
-
 		      vn_nary_op_lookup_pieces (gimple_num_ops (stmt) - 1,
 						gimple_assign_rhs_code (stmt),
 						gimple_expr_type (stmt),
 						gimple_assign_rhs1_ptr (stmt),
 						&nary);
-
 		      if (!nary)
 			continue;
-
-		      for (i = 0; i < nary->length; i++)
-			if (TREE_CODE (nary->op[i]) == SSA_NAME)
-			  add_to_exp_gen (block, nary->op[i]);
 
 		      /* If the NARY traps and there was a preceding
 		         point in the block that might not return avoid
@@ -4024,30 +4004,14 @@ compute_avail (void)
 		      break;
 		    }
 
-		  case tcc_declaration:
-		  case tcc_reference:
+		  case VN_REFERENCE:
 		    {
 		      vn_reference_t ref;
-		      unsigned int i;
-		      vn_reference_op_t vro;
-
 		      vn_reference_lookup (gimple_assign_rhs1 (stmt),
 					   gimple_vuse (stmt),
 					   VN_WALK, &ref);
 		      if (!ref)
 			continue;
-
-		      for (i = 0; VEC_iterate (vn_reference_op_s,
-					       ref->operands, i,
-					       vro); i++)
-			{
-			  if (vro->op0 && TREE_CODE (vro->op0) == SSA_NAME)
-			    add_to_exp_gen (block, vro->op0);
-			  if (vro->op1 && TREE_CODE (vro->op1) == SSA_NAME)
-			    add_to_exp_gen (block, vro->op1);
-			  if (vro->op2 && TREE_CODE (vro->op2) == SSA_NAME)
-			    add_to_exp_gen (block, vro->op2);
-			}
 
 		      /* If the value of the reference is not invalidated in
 			 this block until it is computed, add the expression
@@ -4082,18 +4046,12 @@ compute_avail (void)
 		    }
 
 		  default:
-		    /* For any other statement that we don't
-		       recognize, simply add all referenced
-		       SSA_NAMEs to EXP_GEN.  */
-		    FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_USE)
-		      add_to_exp_gen (block, op);
 		    continue;
 		  }
 
 		get_or_alloc_expression_id (result);
 		add_to_value (get_expr_value_id (result), result);
 		bitmap_value_insert_into_set (EXP_GEN (block), result);
-
 		continue;
 	      }
 	    default:
