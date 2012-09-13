@@ -10028,6 +10028,16 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	    break;
 	  }
 
+	if (TREE_CODE (t) == VAR_DECL && DECL_ANON_UNION_VAR_P (t))
+	  {
+	    /* Just use name lookup to find a member alias for an anonymous
+	       union, but then add it to the hash table.  */
+	    r = lookup_name (DECL_NAME (t));
+	    gcc_assert (DECL_ANON_UNION_VAR_P (r));
+	    register_local_specialization (r, t);
+	    break;
+	  }
+
 	/* Create a new node for the specialization we need.  */
 	r = copy_decl (t);
 	if (type == NULL_TREE)

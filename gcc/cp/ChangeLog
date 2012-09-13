@@ -1,3 +1,8 @@
+2012-09-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/54511
+	* pt.c (tsubst_decl) [VAR_DECL]: Handle DECL_ANON_UNION_VAR_P.
+
 2012-06-25  Jason Merrill  <jason@redhat.com>
 
 	PR c++/52988

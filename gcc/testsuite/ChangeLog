@@ -1,3 +1,8 @@
+2012-09-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/54511
+	* g++.dg/template/anonunion2.C: New.
+
 2012-09-12  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/54208
