@@ -1,3 +1,17 @@
+2012-09-13  Anthony Green  <green@moxielogic.com>
+
+	* config/moxie/moxie.h (LINK_SPEC): Add bi-endian support.
+	(MULTILIB_DEFAULTS): Define.
+	(ASM_SPEC): Define.
+	(BYTES_BIG_ENDIAN, WORDS_BIG_ENDIAN): Add bi-endian support.
+	(TARGET_CPU_CPP_BUILTINS): Add __MOXIE_LITTLE_ENDIAN__ and
+	__MOXIE_BIG_ENDIAN__.
+	* config/moxie/t-moxie (MULTILIB_DIRNAMES, MULTILIB_OPTIONS):
+	Define.
+	* config/moxie/moxie.opt: New file.
+	* doc/invoke.texi (Moxie Options): Add section documenting -mel
+	and -meb.
+
 2012-09-13  Paolo Carlini  <paolo.carlini@oracle.com>
 	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
