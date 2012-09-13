@@ -8682,12 +8682,18 @@ c_finish_return (location_t loc, tree retval, tree origtype)
 				       npc, NULL_TREE, NULL_TREE, 0);
       tree res = DECL_RESULT (current_function_decl);
       tree inner;
+      bool save;
 
       current_function_returns_value = 1;
       if (t == error_mark_node)
 	return NULL_TREE;
 
+      save = in_late_binary_op;
+      if (TREE_CODE (TREE_TYPE (res)) == BOOLEAN_TYPE
+          || TREE_CODE (TREE_TYPE (res)) == COMPLEX_TYPE)
+        in_late_binary_op = true;
       inner = t = convert (TREE_TYPE (res), t);
+      in_late_binary_op = save;
 
       /* Strip any conversions, additions, and subtractions, and see if
 	 we are returning the address of a local variable.  Warn if so.  */
