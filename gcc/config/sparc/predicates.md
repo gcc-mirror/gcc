@@ -357,7 +357,7 @@
 (define_predicate "arith_add_operand"
   (ior (match_operand 0 "arith_operand")
        (match_operand 0 "const_4096_operand")))
-       
+
 ;; Return true if OP is suitable as second double operand for add/sub.
 (define_predicate "arith_double_add_operand"
   (match_code "const_int,const_double,reg,subreg")
@@ -427,6 +427,7 @@
 
   /* Allow any 1-instruction integer constant.  */
   if (mclass == MODE_INT
+      && mode != TImode
       && (small_int_operand (op, mode) || const_high_operand (op, mode)))
     return true;
 
@@ -440,12 +441,10 @@
   if (mclass == MODE_FLOAT && GET_CODE (op) == CONST_DOUBLE)
     return true;
 
-  if (mclass == MODE_VECTOR_INT && GET_CODE (op) == CONST_VECTOR
-      && (const_zero_operand (op, mode)
-          || const_all_ones_operand (op, mode)))
+  if (mclass == MODE_VECTOR_INT && const_all_ones_operand (op, mode))
     return true;
 
-  if (register_operand (op, mode))
+  if (register_or_zero_operand (op, mode))
     return true;
 
   /* If this is a SUBREG, look inside so that we handle paradoxical ones.  */

@@ -1,3 +1,21 @@
+2012-09-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/predicates.md (input_operand): Do not consider TImode
+	constants as 1-instruction integer constants.
+	Use register_or_zero_operand instead of register_operand and tidy up.
+	* config/sparc/sparc.md (movti): New expander.
+	(movti_insn_sp64): New instruction.
+	(movti_insn_sp64_hq): Likewise.
+	(TImode splitters): New splitters.
+	* config/sparc/sparc.c (sparc_expand_move) <TImode>: New case.
+	(sparc_legitimate_address_p): Return 0 for REG+REG in TImode.
+
+	* config/sparc/sparc-protos.h (arith_double_4096_operand): Delete.
+	(arith_4096_operand): Likewise.
+	(zero_operand): Likewise.
+	(fp_zero_operand): Likewise.
+	(reg_or_0_operand): Likewise.
+
 2012-09-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure.ac (CXXFLAGS): Remove -O2 when not bootstrapping.
