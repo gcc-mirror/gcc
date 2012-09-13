@@ -667,7 +667,7 @@ cp_lexer_token_position (cp_lexer *lexer, bool previous_p)
 }
 
 static inline cp_token *
-cp_lexer_token_at (cp_lexer *lexer ATTRIBUTE_UNUSED, cp_token_position pos)
+cp_lexer_token_at (cp_lexer * /*lexer*/, cp_token_position pos)
 {
   return pos;
 }
@@ -25322,7 +25322,7 @@ cp_parser_omp_clause_if (cp_parser *parser, tree list, location_t location)
    mergeable */
 
 static tree
-cp_parser_omp_clause_mergeable (cp_parser *parser ATTRIBUTE_UNUSED,
+cp_parser_omp_clause_mergeable (cp_parser * /*parser*/,
 				tree list, location_t location)
 {
   tree c;
@@ -25339,7 +25339,7 @@ cp_parser_omp_clause_mergeable (cp_parser *parser ATTRIBUTE_UNUSED,
    nowait */
 
 static tree
-cp_parser_omp_clause_nowait (cp_parser *parser ATTRIBUTE_UNUSED,
+cp_parser_omp_clause_nowait (cp_parser * /*parser*/,
 			     tree list, location_t location)
 {
   tree c;
@@ -25385,7 +25385,7 @@ cp_parser_omp_clause_num_threads (cp_parser *parser, tree list,
    ordered */
 
 static tree
-cp_parser_omp_clause_ordered (cp_parser *parser ATTRIBUTE_UNUSED,
+cp_parser_omp_clause_ordered (cp_parser * /*parser*/,
 			      tree list, location_t location)
 {
   tree c;
@@ -25578,7 +25578,7 @@ cp_parser_omp_clause_schedule (cp_parser *parser, tree list, location_t location
    untied */
 
 static tree
-cp_parser_omp_clause_untied (cp_parser *parser ATTRIBUTE_UNUSED,
+cp_parser_omp_clause_untied (cp_parser * /*parser*/,
 			     tree list, location_t location)
 {
   tree c;

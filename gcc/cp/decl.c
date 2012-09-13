@@ -10536,7 +10536,7 @@ local_variable_p (const_tree t)
 
 static tree
 local_variable_p_walkfn (tree *tp, int *walk_subtrees,
-			 void *data ATTRIBUTE_UNUSED)
+			 void * /*data*/)
 {
   /* Check DECL_NAME to avoid including temporaries.  We don't check
      DECL_ARTIFICIAL because we do want to complain about 'this'.  */

@@ -92,11 +92,11 @@ struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 /* The following function does something real, but only in Objective-C++.  */
 
 tree
-objcp_tsubst_copy_and_build (tree t ATTRIBUTE_UNUSED,
-			     tree args ATTRIBUTE_UNUSED,
-			     tsubst_flags_t complain ATTRIBUTE_UNUSED,
-			     tree in_decl ATTRIBUTE_UNUSED,
-			     bool function_p ATTRIBUTE_UNUSED)
+objcp_tsubst_copy_and_build (tree /*t*/,
+			     tree /*args*/,
+			     tsubst_flags_t /*complain*/,
+			     tree /*in_decl*/,
+			     bool /*function_p*/)
 {
   return NULL_TREE;
 }

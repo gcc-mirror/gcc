@@ -1,3 +1,35 @@
+2012-09-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* typeck.c (build_indirect_ref, build_function_call,
+	build_function_call_vec, build_binary_op, build_unary_op,
+	build_compound_expr, build_c_cast, build_modify_expr): Remove
+	uses of ATTRIBUTE_UNUSED on the parameters.
+	* class.c (set_linkage_according_to_type, resort_type_method_vec,
+	dfs_find_final_overrider_post, empty_base_at_nonzero_offset_p):
+	Likewise.
+	* decl.c (local_variable_p_walkfn): Likewise.
+	* except.c (wrap_cleanups_r, check_noexcept_r): Likewise.
+	* error.c (find_typenames_r): Likewise.
+	* tree.c (verify_stmt_tree_r, bot_replace,
+	handle_java_interface_attribute, handle_com_interface_attribute,
+	handle_init_priority_attribute, c_register_addr_space): Likewise.
+	* cp-gimplify.c (cxx_omp_clause_default_ctor): Likewise.
+	* cp-lang.c (objcp_tsubst_copy_and_build): Likewise.
+	* pt.c (unify_success, unify_invalid, instantiation_dependent_r):
+	Likewise.
+	* semantics.c (dfs_calculate_bases_pre): Likewise.
+	* decl2.c (fix_temporary_vars_context_r, clear_decl_external):
+	Likewise.
+	* parser.c (cp_lexer_token_at, cp_parser_omp_clause_mergeable,
+	cp_parser_omp_clause_nowait, cp_parser_omp_clause_ordered,
+	cp_parser_omp_clause_untied): Likewise.
+	* mangle.c (write_unnamed_type_name,
+	discriminator_for_string_literal): Likewise.
+	* search.c (dfs_accessible_post, dfs_debug_mark): Likewise.
+	* lex.c (handle_pragma_vtable, handle_pragma_unit,
+	handle_pragma_interface, handle_pragma_implementation,
+	handle_pragma_java_exceptions): Likewise.
+
 2012-09-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/53839

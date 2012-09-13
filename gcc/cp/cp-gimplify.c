@@ -1318,8 +1318,7 @@ cxx_omp_clause_apply_fn (tree fn, tree arg1, tree arg2)
    NULL if there's nothing to do.  */
 
 tree
-cxx_omp_clause_default_ctor (tree clause, tree decl,
-			     tree outer ATTRIBUTE_UNUSED)
+cxx_omp_clause_default_ctor (tree clause, tree decl, tree /*outer*/)
 {
   tree info = CP_OMP_CLAUSE_INFO (clause);
   tree ret = NULL;
