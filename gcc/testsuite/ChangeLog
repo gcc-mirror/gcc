@@ -1,3 +1,8 @@
+2012-09-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53836
+	* g++.dg/template/init10.C: New.
+
 2012-09-13  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/54556

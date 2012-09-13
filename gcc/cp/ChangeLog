@@ -1,3 +1,9 @@
+2012-09-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53836
+	* pt.c (value_dependent_expression_p): A TREE_LIST initializer must
+	be dependent.
+
 2012-09-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/54541
