@@ -1285,7 +1285,7 @@ struct find_typenames_t
 };
 
 static tree
-find_typenames_r (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED, void *data)
+find_typenames_r (tree *tp, int * /*walk_subtrees*/, void *data)
 {
   struct find_typenames_t *d = (struct find_typenames_t *)data;
   tree mv = NULL_TREE;

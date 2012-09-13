@@ -330,21 +330,21 @@ parse_strconst_pragma (const char* name, int opt)
 }
 
 static void
-handle_pragma_vtable (cpp_reader* dfile ATTRIBUTE_UNUSED )
+handle_pragma_vtable (cpp_reader* /*dfile*/)
 {
   parse_strconst_pragma ("vtable", 0);
   sorry ("#pragma vtable no longer supported");
 }
 
 static void
-handle_pragma_unit (cpp_reader* dfile ATTRIBUTE_UNUSED )
+handle_pragma_unit (cpp_reader* /*dfile*/)
 {
   /* Validate syntax, but don't do anything.  */
   parse_strconst_pragma ("unit", 0);
 }
 
 static void
-handle_pragma_interface (cpp_reader* dfile ATTRIBUTE_UNUSED )
+handle_pragma_interface (cpp_reader* /*dfile*/)
 {
   tree fname = parse_strconst_pragma ("interface", 1);
   struct c_fileinfo *finfo;
@@ -384,7 +384,7 @@ handle_pragma_interface (cpp_reader* dfile ATTRIBUTE_UNUSED )
    any effect.  */
 
 static void
-handle_pragma_implementation (cpp_reader* dfile ATTRIBUTE_UNUSED )
+handle_pragma_implementation (cpp_reader* /*dfile*/)
 {
   tree fname = parse_strconst_pragma ("implementation", 1);
   const char *filename;
@@ -425,7 +425,7 @@ handle_pragma_implementation (cpp_reader* dfile ATTRIBUTE_UNUSED )
 
 /* Indicate that this file uses Java-personality exception handling.  */
 static void
-handle_pragma_java_exceptions (cpp_reader* dfile ATTRIBUTE_UNUSED)
+handle_pragma_java_exceptions (cpp_reader* /*dfile*/)
 {
   tree x;
   if (pragma_lex (&x) != CPP_EOF)

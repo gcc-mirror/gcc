@@ -1915,9 +1915,7 @@ count_trees (tree t)
 /* Called from verify_stmt_tree via walk_tree.  */
 
 static tree
-verify_stmt_tree_r (tree* tp,
-		    int* walk_subtrees ATTRIBUTE_UNUSED ,
-		    void* data)
+verify_stmt_tree_r (tree* tp, int * /*walk_subtrees*/, void* data)
 {
   tree t = *tp;
   htab_t *statements = (htab_t *) data;
@@ -2155,9 +2153,7 @@ bot_manip (tree* tp, int* walk_subtrees, void* data)
    variables.  */
 
 static tree
-bot_replace (tree* t,
-	     int* walk_subtrees ATTRIBUTE_UNUSED ,
-	     void* data)
+bot_replace (tree* t, int* /*walk_subtrees*/, void* data)
 {
   splay_tree target_remap = ((splay_tree) data);
 
@@ -3001,7 +2997,7 @@ const struct attribute_spec cxx_attribute_table[] =
 static tree
 handle_java_interface_attribute (tree* node,
 				 tree name,
-				 tree args ATTRIBUTE_UNUSED ,
+				 tree /*args*/,
 				 int flags,
 				 bool* no_add_attrs)
 {
@@ -3026,8 +3022,8 @@ handle_java_interface_attribute (tree* node,
 static tree
 handle_com_interface_attribute (tree* node,
 				tree name,
-				tree args ATTRIBUTE_UNUSED ,
-				int flags ATTRIBUTE_UNUSED ,
+				tree /*args*/,
+				int /*flags*/,
 				bool* no_add_attrs)
 {
   static int warned;
@@ -3056,7 +3052,7 @@ static tree
 handle_init_priority_attribute (tree* node,
 				tree name,
 				tree args,
-				int flags ATTRIBUTE_UNUSED ,
+				int /*flags*/,
 				bool* no_add_attrs)
 {
   tree initp_expr = TREE_VALUE (args);
@@ -3770,8 +3766,7 @@ cp_free_lang_data (tree t)
    should be a C target hook.  But currently this is not possible,
    because this function is called via REGISTER_TARGET_PRAGMAS.  */
 void
-c_register_addr_space (const char *word ATTRIBUTE_UNUSED,
-		       addr_space_t as ATTRIBUTE_UNUSED)
+c_register_addr_space (const char * /*word*/, addr_space_t /*as*/)
 {
 }
 

@@ -1337,7 +1337,7 @@ nested_anon_class_index (tree type)
 /* <unnamed-type-name> ::= Ut [ <nonnegative number> ] _ */
 
 static void
-write_unnamed_type_name (const tree type ATTRIBUTE_UNUSED)
+write_unnamed_type_name (const tree type)
 {
   int discriminator;
   MANGLE_TRACE_TREE ("unnamed-type-name", type);
@@ -1694,8 +1694,8 @@ discriminator_for_local_entity (tree entity)
    string literals used in FUNCTION.  */
 
 static int
-discriminator_for_string_literal (tree function ATTRIBUTE_UNUSED,
-				  tree string ATTRIBUTE_UNUSED)
+discriminator_for_string_literal (tree /*function*/,
+				  tree /*string*/)
 {
   /* For now, we don't discriminate amongst string literals.  */
   return 0;

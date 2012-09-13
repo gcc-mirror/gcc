@@ -3037,8 +3037,8 @@ get_priority_info (int priority)
    it's DECL_CONTECT() properly set.  */
 static tree 
 fix_temporary_vars_context_r (tree *node,
-			      int  *unused ATTRIBUTE_UNUSED,
-			      void *unused1 ATTRIBUTE_UNUSED)
+			      int  * /*unused*/,
+			      void * /*unused1*/)
 {
   gcc_assert (current_function_decl);
 
@@ -3656,7 +3656,7 @@ collect_all_refs (const char *source_file)
 /* Clear DECL_EXTERNAL for NODE.  */
 
 static bool
-clear_decl_external (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
+clear_decl_external (struct cgraph_node *node, void * /*data*/)
 {
   DECL_EXTERNAL (node->symbol.decl) = 0;
   return false;

@@ -5187,7 +5187,7 @@ has_value_dependent_address (tree op)
    call.c  */
 
 static int
-unify_success (bool explain_p ATTRIBUTE_UNUSED)
+unify_success (bool /*explain_p*/)
 {
   return 0;
 }
@@ -5202,7 +5202,7 @@ unify_parameter_deduction_failure (bool explain_p, tree parm)
 }
 
 static int
-unify_invalid (bool explain_p ATTRIBUTE_UNUSED)
+unify_invalid (bool /*explain_p*/)
 {
   return 1;
 }
@@ -19564,7 +19564,7 @@ type_dependent_expression_p (tree expression)
 
 static tree
 instantiation_dependent_r (tree *tp, int *walk_subtrees,
-			   void *data ATTRIBUTE_UNUSED)
+			   void * /*data*/)
 {
   if (TYPE_P (*tp))
     {

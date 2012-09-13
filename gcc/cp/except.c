@@ -671,8 +671,7 @@ do_free_exception (tree ptr)
    Called from build_throw via walk_tree_without_duplicates.  */
 
 static tree
-wrap_cleanups_r (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
-		 void *data ATTRIBUTE_UNUSED)
+wrap_cleanups_r (tree *tp, int *walk_subtrees, void * /*data*/)
 {
   tree exp = *tp;
   tree cleanup;
@@ -1129,8 +1128,7 @@ check_handlers (tree handlers)
      expression whose type is a polymorphic class type (10.3).  */
 
 static tree
-check_noexcept_r (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
-		  void *data ATTRIBUTE_UNUSED)
+check_noexcept_r (tree *tp, int * /*walk_subtrees*/, void * /*data*/)
 {
   tree t = *tp;
   enum tree_code code = TREE_CODE (t);

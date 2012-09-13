@@ -3455,7 +3455,7 @@ calculate_direct_bases (tree type)
 /* Virtual base classes are handled separately in finish_bases */
 
 static tree
-dfs_calculate_bases_pre (tree binfo, ATTRIBUTE_UNUSED void *data_)
+dfs_calculate_bases_pre (tree binfo, void * /*data_*/)
 {
   /* Don't walk bases of virtual bases */
   return BINFO_VIRTUAL_P (binfo) ? dfs_skip_bases : NULL_TREE;
