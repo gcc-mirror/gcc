@@ -776,6 +776,9 @@ Objective-C and Objective-C++ Dialects}.
 -mreturn-pointer-on-d0 @gol
 -mno-crt0  -mrelax -mliw -msetlb}
 
+@emph{Moxie Options}
+@gccoptlist{-meb  -mel}
+
 @emph{PDP-11 Options}
 @gccoptlist{-mfpu  -msoft-float  -mac0  -mno-ac0  -m40  -m45  -m10 @gol
 -mbcopy  -mbcopy-builtin  -mint32  -mno-int16 @gol
@@ -10529,6 +10532,7 @@ platform.
 * MIPS Options::
 * MMIX Options::
 * MN10300 Options::
+* Moxie Options::
 * PDP-11 Options::
 * picoChip Options::
 * PowerPC Options::
@@ -16445,6 +16449,23 @@ default.  This option defines the preprocessor macro @samp{__SETLB__}.
 Do not allow the compiler to generate @emph{SETLB} or @emph{Lcc}
 instructions.  This option defines the preprocessor macro
 @samp{__NO_SETLB__}.
+
+@end table
+
+@node Moxie Options
+@subsection Moxie Options
+@cindex Moxie Options
+
+@table @gcctabopt
+
+@item -meb
+@opindex meb
+Generate big-endian code.  This is the default for @samp{moxie-*-*}
+configurations.
+
+@item -mel
+@opindex mel
+Generate little-endian code.
 
 @end table
 
