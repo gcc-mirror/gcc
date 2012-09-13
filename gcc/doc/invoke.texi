@@ -3348,6 +3348,8 @@ int f()
 @end group
 @end smallexample
 
+This warning is enabled by @option{-Wall} in C++.
+
 @item -Wimplicit-int @r{(C and Objective-C only)}
 @opindex Wimplicit-int
 @opindex Wno-implicit-int

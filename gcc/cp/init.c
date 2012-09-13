@@ -578,7 +578,7 @@ perform_member_init (tree member, tree init)
       if (TREE_CODE (val) == COMPONENT_REF && TREE_OPERAND (val, 1) == member
 	  && TREE_OPERAND (val, 0) == current_class_ref)
 	warning_at (DECL_SOURCE_LOCATION (current_function_decl),
-		    OPT_Wuninitialized, "%qD is initialized with itself",
+		    OPT_Winit_self, "%qD is initialized with itself",
 		    member);
     }
 
