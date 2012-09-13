@@ -1,5 +1,8 @@
 2012-09-13  Jason Merrill  <jason@redhat.com>
 
+	PR c++/54511
+	* pt.c (tsubst_decl) [VAR_DECL]: Handle DECL_ANON_UNION_VAR_P.
+
 	PR c++/53836
 	* pt.c (value_dependent_expression_p): A TREE_LIST initializer must
 	be dependent.
