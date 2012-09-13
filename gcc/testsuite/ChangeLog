@@ -1,3 +1,7 @@
+2012-09-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* c-c++-common/pr51712.c: Handle for short-enum targets.
+
 2012-09-12  Terry Guo  <terry.guo@arm.com>
 
 	* gcc.target/arm/combine-movs.c: Check movs for ARM mode
