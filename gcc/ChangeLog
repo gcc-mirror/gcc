@@ -1,3 +1,12 @@
+2012-09-13  Christophe Lyon  <christophe.lyon@linaro.org>
+	    Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.md (arm_rev): Factorize thumb1, thumb2 and arm
+	variants for rev instruction..
+	(thumb1_rev): Delete pattern.
+	(arm_revsh): New pattern to support builtin_bswap16.
+	(arm_rev16, bswaphi2): Likewise.
+
 2012-09-12  Teresa Johnson  <tejohnson@google.com>
 
 	PR gcov-profile/54487
