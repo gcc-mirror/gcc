@@ -287,6 +287,63 @@ vn_get_expr_for (tree name)
   return expr;
 }
 
+/* Return the vn_kind the expression computed by the stmt should be
+   associated with.  */
+
+enum vn_kind
+vn_get_stmt_kind (gimple stmt)
+{
+  switch (gimple_code (stmt))
+    {
+    case GIMPLE_CALL:
+      return VN_REFERENCE;
+    case GIMPLE_PHI:
+      return VN_PHI;
+    case GIMPLE_ASSIGN:
+      {
+	enum tree_code code = gimple_assign_rhs_code (stmt);
+	tree rhs1 = gimple_assign_rhs1 (stmt);
+	switch (get_gimple_rhs_class (code))
+	  {
+	  case GIMPLE_UNARY_RHS:
+	  case GIMPLE_BINARY_RHS:
+	  case GIMPLE_TERNARY_RHS:
+	    return VN_NARY;
+	  case GIMPLE_SINGLE_RHS:
+	    switch (TREE_CODE_CLASS (code))
+	      {
+	      case tcc_reference:
+		/* VOP-less references can go through unary case.  */
+		if ((code == REALPART_EXPR
+		     || code == IMAGPART_EXPR
+		     || code == VIEW_CONVERT_EXPR
+		     || code == BIT_FIELD_REF)
+		    && TREE_CODE (TREE_OPERAND (rhs1, 0)) == SSA_NAME)
+		  return VN_NARY;
+
+		/* Fallthrough.  */
+	      case tcc_declaration:
+		return VN_REFERENCE;
+
+	      case tcc_constant:
+		return VN_CONSTANT;
+
+	      default:
+		if (code == ADDR_EXPR)
+		  return (is_gimple_min_invariant (rhs1)
+			  ? VN_CONSTANT : VN_REFERENCE);
+		else if (code == CONSTRUCTOR)
+		  return VN_NARY;
+		return VN_NONE;
+	      }
+	  default:
+	    return VN_NONE;
+	  }
+      }
+    default:
+      return VN_NONE;
+    }
+}
 
 /* Free a phi operation structure VP.  */
 
@@ -3364,44 +3421,13 @@ visit_use (tree use)
 		}
 	      else
 		{
-		  switch (get_gimple_rhs_class (code))
+		  switch (vn_get_stmt_kind (stmt))
 		    {
-		    case GIMPLE_UNARY_RHS:
-		    case GIMPLE_BINARY_RHS:
-		    case GIMPLE_TERNARY_RHS:
+		    case VN_NARY:
 		      changed = visit_nary_op (lhs, stmt);
 		      break;
-		    case GIMPLE_SINGLE_RHS:
-		      switch (TREE_CODE_CLASS (code))
-			{
-			case tcc_reference:
-			  /* VOP-less references can go through unary case.  */
-			  if ((code == REALPART_EXPR
-			       || code == IMAGPART_EXPR
-			       || code == VIEW_CONVERT_EXPR
-			       || code == BIT_FIELD_REF)
-			      && TREE_CODE (TREE_OPERAND (rhs1, 0)) == SSA_NAME)
-			    {
-			      changed = visit_nary_op (lhs, stmt);
-			      break;
-			    }
-			  /* Fallthrough.  */
-			case tcc_declaration:
-			  changed = visit_reference_op_load (lhs, rhs1, stmt);
-			  break;
-			default:
-			  if (code == ADDR_EXPR)
-			    {
-			      changed = visit_nary_op (lhs, stmt);
-			      break;
-			    }
-			  else if (code == CONSTRUCTOR)
-			    {
-			      changed = visit_nary_op (lhs, stmt);
-			      break;
-			    }
-			  changed = defs_to_varying (stmt);
-			}
+		    case VN_REFERENCE:
+		      changed = visit_reference_op_load (lhs, rhs1, stmt);
 		      break;
 		    default:
 		      changed = defs_to_varying (stmt);

@@ -1,3 +1,12 @@
+2012-09-13  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.h (enum vn_kind): New.
+	(vn_get_stmt_kind): Likewise.
+	* tree-ssa-sccvn.c (vn_get_stmt_kind): New function, adjust
+	ADDR_EXPR handling.
+	(visit_use): Use it.
+	* tree-ssa-pre.c (compute_avail): Likewise, simplify further.
+
 2012-09-13  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
 
 	* config/i386/i386.c (processor_alias_table): Enable PTA_PRFCHW
