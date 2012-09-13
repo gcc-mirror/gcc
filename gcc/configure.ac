@@ -296,9 +296,11 @@ AC_SUBST(OUTPUT_OPTION)
 # optimizations to be activated explicitly by the toplevel.
 case "$CC" in
   */prev-gcc/xgcc*) ;;
-  *) CFLAGS=`echo $CFLAGS | sed "s/-O[[s0-9]]* *//" ` ;;
+  *) CFLAGS=`echo $CFLAGS | sed "s/-O[[s0-9]]* *//" `
+     CXXFLAGS=`echo $CXXFLAGS | sed "s/-O[[s0-9]]* *//" ` ;;
 esac
 AC_SUBST(CFLAGS)
+AC_SUBST(CXXFLAGS)
 
 # Determine PICFLAG for target gnatlib.
 GCC_PICFLAG_FOR_TARGET

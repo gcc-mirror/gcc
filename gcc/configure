@@ -4863,8 +4863,10 @@ fi
 # optimizations to be activated explicitly by the toplevel.
 case "$CC" in
   */prev-gcc/xgcc*) ;;
-  *) CFLAGS=`echo $CFLAGS | sed "s/-O[s0-9]* *//" ` ;;
+  *) CFLAGS=`echo $CFLAGS | sed "s/-O[s0-9]* *//" `
+     CXXFLAGS=`echo $CXXFLAGS | sed "s/-O[s0-9]* *//" ` ;;
 esac
+
 
 
 # Determine PICFLAG for target gnatlib.
@@ -17782,7 +17784,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17785 "configure"
+#line 17787 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -17888,7 +17890,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17891 "configure"
+#line 17893 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
