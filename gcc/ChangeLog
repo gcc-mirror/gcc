@@ -1,3 +1,44 @@
+2012-09-13  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* ipa-pure-const.c (state_from_flags, local_pure_const): Use
+	current_function_name instead of lang_hooks.decl_printable_name.
+
+	* function.h (fndecl_name): New prototype.
+	* function.c (fndecl_name): New function.
+	* vecir.h (cgraph_node_p): New standard IR VEC type.
+	* trans-mem.c (cgraph_node_p): No need anymore to define it here.
+	* ipa-utils.h (ipa_get_nodes_in_cycle): New prototype.
+	* ipa-utils.c (ipa_get_nodes_in_cycle): New function.
+	* ipa-reference.c: Don't include langhooks.h, and certainly not twice.
+	Fix many formatting issues (long lines, short lines, spacing, etc.).
+	(get_static_name): Use fndecl_name.
+	(dump_static_vars_set_to_file): New function split out from propagate.
+	(union_static_var_sets): New function, union two sets and collapse
+	to all_module_statics as quickly as possible.
+	(intersect_static_var_sets): New function, similar to above.
+	(copy_static_var_set): Renamed from copy_global_bitmap and rewritten
+	to allocate a copy on the same bitmap_obstack as the source set.
+	(propagate_bits): Simplify, and clarify by using union_static_var_sets.
+	(generate_summary): Remove bm_temp.  Print UID of promotable globals.
+	(read_write_all_from_decl): Use pass-by-reference, bless C++.
+	(get_read_write_all_from_node): New function, split out from propagate.
+	(propagate): Simplify and clarify with helper functions.  Use
+	ipa_get_nodes_in_cycle to walk all nodes in a reduced node.
+	(ipa_reference_read_optimization_summary): Use fndecl_name instead of
+	lang_hooks.decl_printable_name.
+
+	* rtl.h (print_rtl_single_with_indent): New prototype.
+	* print-rtl.c (print_rtl_single_with_indent): New function.
+	* cfghooks.h (empty_block_p, split_block_before_cond_jump): New hooks.
+	* cfghooks.c (empty_block_p, split_block_before_cond_jump): Implement.
+	* cfgrtl.c (rtl_block_empty_p, rtl_split_block_before_cond_jump):
+	Implement RTL specific hooks.
+	(rtl_cfg_hooks, cfg_layout_rtl_cfg_hooks): Register the new hooks.
+	* tree-cfg.c (gimple_empty_block_p,
+	gimple_split_block_before_cond_jump): Implement GIMPLE specific hooks.
+	(gimple_cfg_hooks): Register the new hooks.
+	* tree-ssa-phiopt.c (empty_block_p): Remove in favor of new hook.
+
 2012-09-13  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.h (enum vn_kind): New.
@@ -165,8 +206,8 @@
 
 2012-09-11  Marc Glisse  <marc.glisse@inria.fr>
 
-        * tree-ssa-forwprop.c (simplify_vector_constructor): New function.
-        (ssa_forward_propagate_and_combine): Call it.
+	* tree-ssa-forwprop.c (simplify_vector_constructor): New function.
+	(ssa_forward_propagate_and_combine): Call it.
 
 2012-09-11  Diego Novillo  <dnovillo@google.com>
 
@@ -193,7 +234,7 @@
 	* doc/sourcebuild.texi (arm_neon_v2_ok): Fix @anchor.
 
 2012-09-11  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
-            Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
+	    Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
 
 	* config/arm/neon.md (fma<VCVTF:mode>4): New pattern.
 	(*fmsub<VCVTF:mode>4): Likewise.
@@ -304,7 +345,7 @@
 
 2012-09-10  Marc Glisse  <marc.glisse@inria.fr>
 
-        * tree-ssa-forwprop.c (simplify_permutation): Handle CONSTRUCTOR.
+	* tree-ssa-forwprop.c (simplify_permutation): Handle CONSTRUCTOR.
 
 2012-09-10  Martin Jambor  <mjambor@suse.cz>
 
@@ -641,7 +682,7 @@
 
 2012-09-05  Andrew Pinski  <apinski@cavium.com>
 
- 	* optabs.c (emit_conditional_add): Correct comment about the arguments.
+	* optabs.c (emit_conditional_add): Correct comment about the arguments.
 	Remove code which might swap op2 and op3 since they cannot be swapped.
 	* doc/md.texi (add@var{mode}cc): Fix document about how the arguments
 	are used.
@@ -1598,7 +1639,7 @@
 	* alias.c (rtx_equal_for_memref_p): Convert constant cases.
 	* combine.c (find_single_use_1, mark_used_regs_combine): Convert
 	to CASE_CONST_ANY.
- 	* cse.c (exp_equiv_p, canon_reg, fold_rtx, cse_process_notes_1,
+	* cse.c (exp_equiv_p, canon_reg, fold_rtx, cse_process_notes_1,
 	count_reg_usage): Convert constant cases.
 	* cselib.c (cselib_expand_value_rtx_1): Convert to CASE_CONST_ANY.
 	(cselib_subst_to_values): Convert constant cases.

@@ -154,8 +154,11 @@ searchc (struct searchc_env* env, struct cgraph_node *v,
 
 /* Topsort the call graph by caller relation.  Put the result in ORDER.
 
-   The REDUCE flag is true if you want the cycles reduced to single nodes.  Set
-   ALLOW_OVERWRITABLE if nodes with such availability should be included.
+   The REDUCE flag is true if you want the cycles reduced to single nodes.
+   You can use ipa_get_nodes_in_cycle to obtain a vector containing all real
+   call graph nodes in a reduced node.
+
+   Set ALLOW_OVERWRITABLE if nodes with such availability should be included.
    IGNORE_EDGE, if non-NULL is a hook that may make some edges insignificant
    for the topological sort.   */
 
@@ -229,6 +232,23 @@ ipa_free_postorder_info (void)
 	  node->symbol.aux = NULL;
 	}
     }
+}
+
+/* Get the set of nodes for the cycle in the reduced call graph starting
+   from NODE.  */
+
+VEC (cgraph_node_p, heap) *
+ipa_get_nodes_in_cycle (struct cgraph_node *node)
+{
+  VEC (cgraph_node_p, heap) *v = NULL;
+  struct ipa_dfs_info *node_dfs_info;
+  while (node)
+    {
+      VEC_safe_push (cgraph_node_p, heap, v, node);
+      node_dfs_info = (struct ipa_dfs_info *) node->symbol.aux;
+      node = node_dfs_info->next_cycle;
+    }
+  return v;
 }
 
 struct postorder_stack
