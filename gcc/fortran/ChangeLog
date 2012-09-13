@@ -1,3 +1,11 @@
+2012-09-13  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54556
+	* resolve.c (resolve_formal_arglist): Allow VALUE arguments
+	with implicit_pure.
+	(gfc_impure_variable): Don't check gfc_pure such that the
+	function also works for gfc_implicit_pure procedures.
+
 2012-09-12  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/54225
