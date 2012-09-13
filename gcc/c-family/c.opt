@@ -408,7 +408,7 @@ C C++ Var(warn_ignored_qualifiers) Warning EnabledBy(Wextra)
 Warn whenever type qualifiers are ignored.
 
 Winit-self
-C ObjC C++ ObjC++ Var(warn_init_self) Warning
+C ObjC C++ ObjC++ Var(warn_init_self) Warning LangEnabledBy(C++ ObjC++,Wall)
 Warn about variables which are initialized to themselves
 
 Wimplicit

@@ -1,3 +1,10 @@
+2012-09-13  Paolo Carlini  <paolo.carlini@oracle.com>
+	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c++/53210
+	* doc/invoke.texi ([Winit-self]): Document as enabled by -Wall
+	in C++.
+
 2012-09-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/predicates.md (input_operand): Do not consider TImode

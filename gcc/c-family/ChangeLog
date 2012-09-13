@@ -1,3 +1,9 @@
+2012-09-13  Paolo Carlini  <paolo.carlini@oracle.com>
+	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c++/53210
+	* c.opt ([Winit-self]): Enabled by -Wall in C++.
+
 2012-08-23  Arnaud Charlet  <charlet@adacore.com>
 
 	* c-ada-spec.c (dump_generic_ada_node): Fix handling of name_only
