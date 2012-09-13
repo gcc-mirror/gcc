@@ -1,3 +1,27 @@
+2012-09-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (x86_prefetchw): New global variable.
+	(TARGET_PREFETCHW): New macro.
+	* config/i386/i386.c (PTA_PREFETCHW): Ditto.
+	(processor_alias_table): Add PTA_PREFETCHW to
+	bdver1, bdver2 and btver1.
+	(ix86_option_override_internal): Set x86_prefetchw for
+	PTA_PREFETCHW targets.
+	* config/i386/i386.md (prefetch): Expand to prefetchw
+	for TARGET_PREFETCHW.
+	(*prefetch_3dnow_<mode>): Also enable for TARGET_PREFETCHW.
+
+	Backport from mainline
+	2012-08-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (prefetch): Do not assert mode of operand 0.
+	(*prefetch_sse_<mode>): Do not set mode of address_operand predicate.
+	Rename to ...
+	(*prefetch_sse): ... this.
+	(*prefetch_3dnow_<mode>): Do not set mode of address_operand predicate.
+	Rename to ...
+	(*prefetch_3dnow): ... this.
+
 2012-09-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/54559
