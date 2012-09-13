@@ -1,3 +1,10 @@
+2012-09-12  Teresa Johnson  <tejohnson@google.com>
+
+	PR gcov-profile/54487
+	* configure.ac (HOST_HAS_F_SETLKW): Set based on compile
+	test using F_SETLKW with fcntl.
+	* configure, config.in: Regenerate.
+
 2012-09-12  Jan Hubicka  <jh@suse.cz>
 
 	PR fortran/48636
