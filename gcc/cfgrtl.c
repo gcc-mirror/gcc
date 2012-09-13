@@ -4120,6 +4120,51 @@ rtl_make_forwarder_block (edge fallthru ATTRIBUTE_UNUSED)
 {
 }
 
+/* Return true if BB contains only labels or non-executable
+   instructions.  */
+
+static bool
+rtl_block_empty_p (basic_block bb)
+{
+  rtx insn;
+
+  if (bb == ENTRY_BLOCK_PTR || bb == EXIT_BLOCK_PTR)
+    return true;
+
+  FOR_BB_INSNS (bb, insn)
+    if (NONDEBUG_INSN_P (insn) && !any_uncondjump_p (insn))
+      return false;
+
+  return true;
+}
+
+/* Split a basic block if it ends with a conditional branch and if
+   the other part of the block is not empty.  */
+
+static basic_block
+rtl_split_block_before_cond_jump (basic_block bb)
+{
+  rtx insn;
+  rtx split_point = NULL;
+  rtx last = NULL;
+  bool found_code = false;
+
+  FOR_BB_INSNS (bb, insn)
+    {
+      if (any_condjump_p (insn))
+	split_point = last;
+      else if (NONDEBUG_INSN_P (insn))
+	found_code = true;
+      last = insn;
+    }
+
+  /* Did not find everything.  */ 
+  if (found_code && split_point)
+    return split_block (bb, split_point)->dest;
+  else 
+    return NULL;
+}
+
 /* Return 1 if BB ends with a call, possibly followed by some
    instructions that must stay with the call, 0 otherwise.  */
 
@@ -4432,7 +4477,9 @@ struct cfg_hooks rtl_cfg_hooks = {
   NULL, /* lv_add_condition_to_bb */
   NULL, /* lv_adjust_loop_header_phi*/
   NULL, /* extract_cond_bb_edges */
-  NULL		/* flush_pending_stmts */
+  NULL, /* flush_pending_stmts */
+  rtl_block_empty_p, /* block_empty_p */
+  rtl_split_block_before_cond_jump, /* split_block_before_cond_jump */
 };
 
 /* Implementation of CFG manipulation for cfg layout RTL, where
@@ -4470,7 +4517,9 @@ struct cfg_hooks cfg_layout_rtl_cfg_hooks = {
   rtl_lv_add_condition_to_bb, /* lv_add_condition_to_bb */
   NULL, /* lv_adjust_loop_header_phi*/
   rtl_extract_cond_bb_edges, /* extract_cond_bb_edges */
-  NULL		/* flush_pending_stmts */
+  NULL, /* flush_pending_stmts */  
+  rtl_block_empty_p, /* block_empty_p */
+  rtl_split_block_before_cond_jump, /* split_block_before_cond_jump */
 };
 
 #include "gt-cfgrtl.h"

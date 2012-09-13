@@ -5335,6 +5335,44 @@ gimple_move_block_after (basic_block bb, basic_block after)
 }
 
 
+/* Return TRUE if block BB has no executable statements, otherwise return
+   FALSE.  */
+
+bool
+gimple_empty_block_p (basic_block bb)
+{
+  /* BB must have no executable statements.  */
+  gimple_stmt_iterator gsi = gsi_after_labels (bb);
+  if (phi_nodes (bb))
+    return false;
+  if (gsi_end_p (gsi))
+    return true;
+  if (is_gimple_debug (gsi_stmt (gsi)))
+    gsi_next_nondebug (&gsi);
+  return gsi_end_p (gsi);
+}
+
+
+/* Split a basic block if it ends with a conditional branch and if the
+   other part of the block is not empty.  */
+
+static basic_block
+gimple_split_block_before_cond_jump (basic_block bb)
+{
+  gimple last, split_point;
+  gimple_stmt_iterator gsi = gsi_last_nondebug_bb (bb);
+  if (gsi_end_p (gsi))
+    return NULL;
+  last = gsi_stmt (gsi);
+  if (gimple_code (last) != GIMPLE_COND
+      && gimple_code (last) != GIMPLE_SWITCH)
+    return NULL;
+  gsi_prev_nondebug (&gsi);
+  split_point = gsi_stmt (gsi);
+  return split_block (bb, split_point)->dest;
+}
+
+
 /* Return true if basic_block can be duplicated.  */
 
 static bool
@@ -7492,7 +7530,9 @@ struct cfg_hooks gimple_cfg_hooks = {
   gimple_lv_add_condition_to_bb, /* lv_add_condition_to_bb */
   gimple_lv_adjust_loop_header_phi, /* lv_adjust_loop_header_phi*/
   extract_true_false_edges_from_block, /* extract_cond_bb_edges */
-  flush_pending_stmts		/* flush_pending_stmts */
+  flush_pending_stmts, 		/* flush_pending_stmts */  
+  gimple_empty_block_p,           /* block_empty_p */
+  gimple_split_block_before_cond_jump, /* split_block_before_cond_jump */
 };
 
 

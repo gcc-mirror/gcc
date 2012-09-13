@@ -6753,13 +6753,21 @@ reposition_prologue_and_epilogue_notes (void)
 #endif /* HAVE_prologue or HAVE_epilogue */
 }
 
+/* Returns the name of function declared by FNDECL.  */
+const char *
+fndecl_name (tree fndecl)
+{
+  if (fndecl == NULL)
+    return "(nofn)";
+  return lang_hooks.decl_printable_name (fndecl, 2);
+}
+
 /* Returns the name of function FN.  */
 const char *
 function_name (struct function *fn)
 {
-  if (fn == NULL)
-    return "(nofn)";
-  return lang_hooks.decl_printable_name (fn->decl, 2);
+  tree fndecl = (fn == NULL) ? NULL : fn->decl;
+  return fndecl_name (fndecl);
 }
 
 /* Returns the name of the current function.  */

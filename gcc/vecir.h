@@ -49,4 +49,9 @@ DEF_VEC_P(rtx);
 DEF_VEC_ALLOC_P(rtx,heap);
 DEF_VEC_ALLOC_P(rtx,gc);
 
+/* A varray of call graph nodes.  */
+typedef struct cgraph_node *cgraph_node_p;
+DEF_VEC_P (cgraph_node_p);
+DEF_VEC_ALLOC_P (cgraph_node_p, heap);
+
 #endif /* GCC_VECIR_H */

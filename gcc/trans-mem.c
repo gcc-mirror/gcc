@@ -3582,11 +3582,6 @@ struct tm_ipa_cg_data
   bool want_irr_scan_normal;
 };
 
-typedef struct cgraph_node *cgraph_node_p;
-
-DEF_VEC_P (cgraph_node_p);
-DEF_VEC_ALLOC_P (cgraph_node_p, heap);
-
 typedef VEC (cgraph_node_p, heap) *cgraph_node_queue;
 
 /* Return the ipa data associated with NODE, allocating zeroed memory
