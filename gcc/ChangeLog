@@ -1,3 +1,13 @@
+2012-08-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (prefetch): Do not assert mode of operand 0.
+	(*prefetch_sse_<mode>): Do not set mode of address_operand predicate.
+	Rename to ...
+	(*prefetch_sse): ... this.
+	(*prefetch_3dnow_<mode>): Do not set mode of address_operand predicate.
+	Rename to ...
+	(*prefetch_3dnow): ... this.
+
 2012-09-13  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* ipa-pure-const.c (state_from_flags, local_pure_const): Use
