@@ -1,5 +1,12 @@
 2012-09-13  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/54225
+	PR fortran/53306
+	* array.c (match_subscript, gfc_match_array_ref): Fix
+	diagnostic of coarray's '*'.
+
+2012-09-13  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/54556
 	* resolve.c (gfc_impure_variable): Don't check gfc_pure such
 	that the function also works for gfc_implicit_pure procedures.
