@@ -1,3 +1,9 @@
+2012-09-13  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54556
+	* resolve.c (gfc_impure_variable): Don't check gfc_pure such
+	that the function also works for gfc_implicit_pure procedures.
+
 2012-09-12  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/54208

@@ -1,3 +1,8 @@
+2012-09-13  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54556
+	* gfortran.dg/implicit_pure_3.f90: New.
+
 2012-09-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/54511
