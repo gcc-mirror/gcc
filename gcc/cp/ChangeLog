@@ -1,5 +1,9 @@
 2012-09-13  Jason Merrill  <jason@redhat.com>
 
+	PR c++/53839
+	* semantics.c (cxx_eval_indirect_ref): If we aren't looking for an
+	address, make sure the value is constant.
+
 	PR c++/54511
 	* pt.c (tsubst_decl) [VAR_DECL]: Handle DECL_ANON_UNION_VAR_P.
 
