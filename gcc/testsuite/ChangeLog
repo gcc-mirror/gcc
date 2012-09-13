@@ -1,3 +1,7 @@
+2012-09-13  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/builtin-bswap-1.c: New testcase.
+
 2012-09-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* c-c++-common/pr51712.c: Handle for short-enum targets.
