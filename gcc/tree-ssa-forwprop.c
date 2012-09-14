@@ -2606,9 +2606,8 @@ simplify_bitfield_ref (gimple_stmt_iterator *gsi)
   if (n != 1)
     return false;
 
-  def_stmt = SSA_NAME_DEF_STMT (op0);
-  if (!def_stmt || !is_gimple_assign (def_stmt)
-      || !can_propagate_from (def_stmt))
+  def_stmt = get_prop_source_stmt (op0, false, NULL);
+  if (!def_stmt || !can_propagate_from (def_stmt))
     return false;
 
   op2 = TREE_OPERAND (op, 2);
@@ -2637,7 +2636,7 @@ simplify_bitfield_ref (gimple_stmt_iterator *gsi)
 	}
       index = build_int_cst (TREE_TYPE (TREE_TYPE (m)), idx * size);
       tem = build3 (BIT_FIELD_REF, TREE_TYPE (op),
-			 unshare_expr (p), op1, index);
+		    unshare_expr (p), op1, index);
       gimple_assign_set_rhs1 (stmt, tem);
       fold_stmt (gsi);
       update_stmt (gsi_stmt (*gsi));
@@ -2689,6 +2688,7 @@ simplify_permutation (gimple_stmt_iterator *gsi)
   gimple def_stmt;
   tree op0, op1, op2, op3, arg0, arg1;
   enum tree_code code;
+  bool single_use_op0 = false;
 
   gcc_checking_assert (gimple_assign_rhs_code (stmt) == VEC_PERM_EXPR);
 
@@ -2706,9 +2706,8 @@ simplify_permutation (gimple_stmt_iterator *gsi)
     }
   else if (TREE_CODE (op0) == SSA_NAME)
     {
-      def_stmt = SSA_NAME_DEF_STMT (op0);
-      if (!def_stmt || !is_gimple_assign (def_stmt)
-	  || !can_propagate_from (def_stmt))
+      def_stmt = get_prop_source_stmt (op0, false, &single_use_op0);
+      if (!def_stmt || !can_propagate_from (def_stmt))
 	return 0;
 
       code = gimple_assign_rhs_code (def_stmt);
@@ -2747,7 +2746,7 @@ simplify_permutation (gimple_stmt_iterator *gsi)
       bool ret = false;
       if (op0 != op1)
 	{
-	  if (TREE_CODE (op0) == SSA_NAME && !has_single_use (op0))
+	  if (TREE_CODE (op0) == SSA_NAME && !single_use_op0)
 	    return 0;
 
 	  if (TREE_CODE (op1) == VECTOR_CST)
@@ -2756,12 +2755,8 @@ simplify_permutation (gimple_stmt_iterator *gsi)
 	    {
 	      enum tree_code code2;
 
-	      if (!has_single_use (op1))
-		return 0;
-
-	      gimple def_stmt2 = SSA_NAME_DEF_STMT (op1);
-	      if (!def_stmt2 || !is_gimple_assign (def_stmt2)
-		  || !can_propagate_from (def_stmt2))
+	      gimple def_stmt2 = get_prop_source_stmt (op1, true, NULL);
+	      if (!def_stmt2 || !can_propagate_from (def_stmt2))
 		return 0;
 
 	      code2 = gimple_assign_rhs_code (def_stmt2);
@@ -2831,8 +2826,8 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 
       if (TREE_CODE (elt->value) != SSA_NAME)
 	return false;
-      def_stmt = SSA_NAME_DEF_STMT (elt->value);
-      if (!def_stmt || !is_gimple_assign (def_stmt))
+      def_stmt = get_prop_source_stmt (elt->value, false, NULL);
+      if (!def_stmt)
 	return false;
       code = gimple_assign_rhs_code (def_stmt);
       if (code != BIT_FIELD_REF)

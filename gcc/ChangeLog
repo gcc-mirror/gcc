@@ -1,3 +1,10 @@
+2012-09-14  Marc Glisse  <marc.glisse@inria.fr>
+
+	* tree-ssa-forwprop.c (simplify_bitfield_ref): Call
+	get_prop_source_stmt.
+	(simplify_permutation): Likewise.
+	(simplify_vector_constructor): Likewise.
+
 2012-09-14  Richard Guenther  <rguenther@suse.de>
 
 	* builtin-types.def (BT_FN_CONST_STRING): Add.
