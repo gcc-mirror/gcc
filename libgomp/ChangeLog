@@ -1,3 +1,7 @@
+2012-09-14  David Edelsohn  <dje.gcc@gmail.com>
+
+	* configure: Regenerated.
+
 2012-08-29  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* config/linux/mips/futex.h (sys_futex0): Change to static
