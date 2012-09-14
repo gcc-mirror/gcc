@@ -1,3 +1,30 @@
+2012-09-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/44194
+	* calls.c (expand_call): In the PARALLEL case, copy the return value
+	into pseudos instead of spilling it onto the stack.
+	* emit-rtl.c (adjust_address_1): Rename ADJUST into ADJUST_ADDRESS and
+	add new ADJUST_OBJECT parameter.
+	If ADJUST_OBJECT is set, drop the underlying object if it cannot be
+	proved that the adjusted memory access is still within its bounds.
+	(adjust_automodify_address_1): Adjust call to adjust_address_1.
+	(widen_memory_access): Likewise.
+	* expmed.c (store_bit_field_1): Call adjust_bitfield_address instead
+	of adjust_address.  Do not drop the underlying object of a MEM.
+	(store_fixed_bit_field): Likewise.
+	(extract_bit_field_1): Likewise.  Fix oversight in recursion.
+	(extract_fixed_bit_field): Likewise.
+	* expr.h (adjust_address_1): Adjust prototype.
+	(adjust_address): Adjust call to adjust_address_1.
+	(adjust_address_nv): Likewise.
+	(adjust_bitfield_address): New macro.
+	(adjust_bitfield_address_nv): Likewise.
+	* expr.c (expand_assignment): Handle a PARALLEL in more cases.
+	(store_expr): Likewise.
+	(store_field): Likewise.
+
+	* dse.c: Fix typos in the head comment.
+
 2012-09-14  Christian Bruel  <christian.bruel@st.com>
 
 	PR target/54546

@@ -4870,8 +4870,16 @@ expand_assignment (tree to, tree from, bool nontemporal)
       /* Handle calls that return values in multiple non-contiguous locations.
 	 The Irix 6 ABI has examples of this.  */
       if (GET_CODE (to_rtx) == PARALLEL)
-	emit_group_load (to_rtx, value, TREE_TYPE (from),
-			 int_size_in_bytes (TREE_TYPE (from)));
+	{
+	  if (GET_CODE (value) == PARALLEL)
+	    emit_group_move (to_rtx, value);
+	  else
+	    emit_group_load (to_rtx, value, TREE_TYPE (from),
+			     int_size_in_bytes (TREE_TYPE (from)));
+	}
+      else if (GET_CODE (value) == PARALLEL)
+	emit_group_store (to_rtx, value, TREE_TYPE (from),
+			  int_size_in_bytes (TREE_TYPE (from)));
       else if (GET_MODE (to_rtx) == BLKmode)
 	emit_block_move (to_rtx, value, expr_size (from), BLOCK_OP_NORMAL);
       else
@@ -4903,9 +4911,16 @@ expand_assignment (tree to, tree from, bool nontemporal)
       else
 	temp = expand_expr (from, NULL_RTX, GET_MODE (to_rtx), EXPAND_NORMAL);
 
+      /* Handle calls that return values in multiple non-contiguous locations.
+	 The Irix 6 ABI has examples of this.  */
       if (GET_CODE (to_rtx) == PARALLEL)
-	emit_group_load (to_rtx, temp, TREE_TYPE (from),
-			 int_size_in_bytes (TREE_TYPE (from)));
+	{
+	  if (GET_CODE (temp) == PARALLEL)
+	    emit_group_move (to_rtx, temp);
+	  else
+	    emit_group_load (to_rtx, temp, TREE_TYPE (from),
+			     int_size_in_bytes (TREE_TYPE (from)));
+	}
       else if (temp)
 	emit_move_insn (to_rtx, temp);
 
@@ -5299,16 +5314,22 @@ store_expr (tree exp, rtx target, int call_param_p, bool nontemporal)
       /* Handle calls that return values in multiple non-contiguous locations.
 	 The Irix 6 ABI has examples of this.  */
       else if (GET_CODE (target) == PARALLEL)
-	emit_group_load (target, temp, TREE_TYPE (exp),
-			 int_size_in_bytes (TREE_TYPE (exp)));
+	{
+	  if (GET_CODE (temp) == PARALLEL)
+	    emit_group_move (target, temp);
+	  else
+	    emit_group_load (target, temp, TREE_TYPE (exp),
+			     int_size_in_bytes (TREE_TYPE (exp)));
+	}
+      else if (GET_CODE (temp) == PARALLEL)
+	emit_group_store (target, temp, TREE_TYPE (exp),
+			  int_size_in_bytes (TREE_TYPE (exp)));
       else if (GET_MODE (temp) == BLKmode)
 	emit_block_move (target, temp, expr_size (exp),
 			 (call_param_p
 			  ? BLOCK_OP_CALL_PARM : BLOCK_OP_NORMAL));
-      else if (nontemporal
-	       && emit_storent_insn (target, temp))
-	/* If we managed to emit a nontemporal store, there is nothing else to
-	   do.  */
+      /* If we emit a nontemporal store, there is nothing else to do.  */
+      else if (nontemporal && emit_storent_insn (target, temp))
 	;
       else
 	{
@@ -6429,10 +6450,18 @@ store_field (rtx target, HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
 	  return const0_rtx;
 	}
 
-      /* Store the value in the bitfield.  */
-      store_bit_field (target, bitsize, bitpos,
-		       bitregion_start, bitregion_end,
-		       mode, temp);
+      /* Handle calls that return values in multiple non-contiguous locations.
+	 The Irix 6 ABI has examples of this.  */
+      if (bitpos == 0
+	  && bitsize == GET_MODE_BITSIZE (mode)
+	  && GET_CODE (temp) == PARALLEL)
+	emit_group_store (target, temp, TREE_TYPE (exp),
+			  int_size_in_bytes (TREE_TYPE (exp)));
+      else
+	/* Store the value in the bitfield.  */
+	store_bit_field (target, bitsize, bitpos,
+		         bitregion_start, bitregion_end,
+		         mode, temp);
 
       return const0_rtx;
     }
