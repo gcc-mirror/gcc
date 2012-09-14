@@ -1,4 +1,4 @@
-/* Copyright (C) 2011 Free Software Foundation, Inc.
+/* Copyright (C) 2011, 2012 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -164,7 +164,7 @@ extern __inline __m128d
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_fnmadd_sd (__m128d __A, __m128d __B, __m128d __C)
 {
-  return (__m128d)__builtin_ia32_vfmaddsd3 (-(__v2df)__A, (__v2df)__B,
+  return (__m128d)__builtin_ia32_vfmaddsd3 ((__v2df)__A, -(__v2df)__B,
                                             (__v2df)__C);
 }
 
@@ -172,7 +172,7 @@ extern __inline __m128
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_fnmadd_ss (__m128 __A, __m128 __B, __m128 __C)
 {
-  return (__m128)__builtin_ia32_vfmaddss3 (-(__v4sf)__A, (__v4sf)__B,
+  return (__m128)__builtin_ia32_vfmaddss3 ((__v4sf)__A, -(__v4sf)__B,
                                            (__v4sf)__C);
 }
 
@@ -212,7 +212,7 @@ extern __inline __m128d
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_fnmsub_sd (__m128d __A, __m128d __B, __m128d __C)
 {
-  return (__m128d)__builtin_ia32_vfmaddsd3 (-(__v2df)__A, (__v2df)__B,
+  return (__m128d)__builtin_ia32_vfmaddsd3 ((__v2df)__A, -(__v2df)__B,
                                             -(__v2df)__C);
 }
 
@@ -220,7 +220,7 @@ extern __inline __m128
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_fnmsub_ss (__m128 __A, __m128 __B, __m128 __C)
 {
-  return (__m128)__builtin_ia32_vfmaddss3 (-(__v4sf)__A, (__v4sf)__B,
+  return (__m128)__builtin_ia32_vfmaddss3 ((__v4sf)__A, -(__v4sf)__B,
                                            -(__v4sf)__C);
 }
 
