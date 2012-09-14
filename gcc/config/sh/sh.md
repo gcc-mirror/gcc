@@ -9335,7 +9335,7 @@ label:
   [(return)]
   ""
 {
-  sh_expand_epilogue (1);
+  sh_expand_epilogue (true);
   if (TARGET_SHCOMPACT)
     {
       rtx insn, set;
@@ -10154,9 +10154,13 @@ label:
 }
   [(set_attr "type" "load_media")])
 
+(define_expand "simple_return"
+  [(simple_return)]
+ "sh_can_use_simple_return_p ()")
+
 (define_expand "return"
   [(return)]
-  "reload_completed && ! sh_need_epilogue ()"
+ "reload_completed && epilogue_completed"
 {
   if (TARGET_SHMEDIA)
     {
@@ -10172,8 +10176,8 @@ label:
     }
 })
 
-(define_insn "*return_i"
-  [(return)]
+(define_insn "*<code>_i"
+  [(any_return)]
   "TARGET_SH1 && ! (TARGET_SHCOMPACT
 		    && (crtl->args.info.call_cookie
 			& CALL_COOKIE_RET_TRAMP (1)))
@@ -10299,19 +10303,12 @@ label:
 (define_expand "prologue"
   [(const_int 0)]
   ""
-{
-  sh_expand_prologue ();
-  DONE;
-})
+  "sh_expand_prologue (); DONE;")
 
 (define_expand "epilogue"
   [(return)]
   ""
-{
-  sh_expand_epilogue (0);
-  emit_jump_insn (gen_return ());
-  DONE;
-})
+  "sh_expand_epilogue (false);")
 
 (define_expand "eh_return"
   [(use (match_operand 0 "register_operand" ""))]

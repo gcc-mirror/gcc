@@ -7899,24 +7899,6 @@ sh_expand_epilogue (bool sibcall_p)
     emit_use (gen_rtx_REG (SImode, PR_REG));
 }
 
-static int sh_need_epilogue_known = 0;
-
-bool
-sh_need_epilogue (void)
-{
-  if (! sh_need_epilogue_known)
-    {
-      rtx epilogue;
-
-      start_sequence ();
-      sh_expand_epilogue (0);
-      epilogue = get_insns ();
-      end_sequence ();
-      sh_need_epilogue_known = (epilogue == NULL ? -1 : 1);
-    }
-  return sh_need_epilogue_known > 0;
-}
-
 /* Emit code to change the current function's return address to RA.
    TEMP is available as a scratch register, if needed.  */
 
@@ -7996,7 +7978,6 @@ static void
 sh_output_function_epilogue (FILE *file ATTRIBUTE_UNUSED,
 			     HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 {
-  sh_need_epilogue_known = 0;
 }
 
 static rtx
@@ -12953,6 +12934,36 @@ static void
 sh_init_sync_libfuncs (void)
 {
   init_sync_libfuncs (UNITS_PER_WORD);
+}
+
+/* Return true if it is appropriate to emit `ret' instructions in the
+   body of a function.  */
+
+bool
+sh_can_use_simple_return_p (void)
+{
+  HARD_REG_SET live_regs_mask;
+  int d;
+
+  if (! reload_completed || frame_pointer_needed)
+    return false;
+
+  /* Moving prologue around does't reduce the size.  */
+  if (optimize_function_for_size_p (cfun))
+    return false;
+
+  /* Can't optimize CROSSING_JUMPS for now.  */
+  if (flag_reorder_blocks_and_partition)
+    return false;
+
+  /* Finally, allow for pr save.  */
+  d = calc_live_regs (&live_regs_mask);
+
+  if (rounded_frame_size (d) > 4)
+   return false;
+
+  return true;
+
 }
 
 #include "gt-sh.h"
