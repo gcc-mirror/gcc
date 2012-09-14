@@ -1,3 +1,7 @@
+2012-09-14  David Edelsohn  <dje.gcc@gmail.com>
+
+	* configure: Regenerated.
+
 2012-07-31  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/x86/target.h (cpu_relax): Use __builtin_ia32_pause.
