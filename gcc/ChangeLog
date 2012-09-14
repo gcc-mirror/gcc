@@ -1,3 +1,11 @@
+2012-09-14  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vrp.c (register_new_assert_for): Simplify for backward
+	walk.
+	(find_assert_locations_1): Walk the basic-block backwards,
+	properly add/prune from live.  Use live for asserts derived
+	from stmts.
+
 2012-09-14  Marc Glisse  <marc.glisse@inria.fr>
 
 	* tree-ssa-forwprop.c (simplify_bitfield_ref): Call
