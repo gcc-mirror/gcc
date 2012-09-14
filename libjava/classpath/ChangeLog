@@ -1,3 +1,7 @@
+2012-09-14  David Edelsohn  <dje.gcc@gmail.com>
+
+	* configure: Regenerated.
+
 2012-08-09  Dodji Seketeli  <dodji@redhat.com>
 
 	Use accessor functions to manipulate xmlOutputBuffer
