@@ -2,8 +2,7 @@
 	    H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR libstdc++/54576
-	* libstdc++-v3/src/c++11/random.cc: Check if
-	_GLIBCXX_USE_C99_STDINT_TR1 is defined.
+	* src/c++11/random.cc: Check if _GLIBCXX_USE_C99_STDINT_TR1 is defined.
 
 2012-09-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
