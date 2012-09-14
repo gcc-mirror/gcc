@@ -1,3 +1,12 @@
+2012-09-14  Richard Guenther  <rguenther@suse.de>
+
+	* builtin-types.def (BT_FN_CONST_STRING): Add.
+	* builtins.def (BUILT_IN_FILE, BUILT_IN_FUNCTION,
+	BUILT_IN_LINE): New builtins.
+	* gimplify.c (gimplify_call_expr): Expand them.
+	* doc/extend.texi (__builtin_LINE, __builtin_FUNCTION,
+	__builtin_FILE): Document.
+
 2012-09-13  Anthony Green  <green@moxielogic.com>
 
 	* config/moxie/moxie.h (LINK_SPEC): Add bi-endian support.
