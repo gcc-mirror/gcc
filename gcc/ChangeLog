@@ -1,3 +1,10 @@
+2012-09-14  Walter Lee  <walt@tilera.com>
+
+	* doc/invoke.texi (Option Summary): fix typesetting for -mcpu
+	option for TILEPro and TILE-Gx.
+	(TILE-Gx Options): Fix grammar and spellings in documentation for
+	-mcmodel.
+
 2012-09-14  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/54427
