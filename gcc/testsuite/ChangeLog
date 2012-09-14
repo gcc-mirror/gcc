@@ -1,3 +1,8 @@
+2012-09-14  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/54552
+	* gcc.c-torture/compile/pr54552-1.c: New test.
+
 2012-09-14  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/54427
