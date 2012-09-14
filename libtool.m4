@@ -3580,6 +3580,7 @@ m4_if([$1], [CXX], [
 	# AIX 5 now supports IA64 processor
 	_LT_TAGVAR(lt_prog_compiler_static, $1)='-Bstatic'
       fi
+      _LT_TAGVAR(lt_prog_compiler_pic, $1)='-fPIC'
       ;;
 
     amigaos*)
@@ -3891,6 +3892,7 @@ m4_if([$1], [CXX], [
 	# AIX 5 now supports IA64 processor
 	_LT_TAGVAR(lt_prog_compiler_static, $1)='-Bstatic'
       fi
+      _LT_TAGVAR(lt_prog_compiler_pic, $1)='-fPIC'
       ;;
 
     amigaos*)
