@@ -998,11 +998,12 @@
 	return REGNO (op) == T_REG;
 
       case SUBREG:
-	return REGNO (SUBREG_REG (op)) == T_REG;
+	return REG_P (SUBREG_REG (op)) && REGNO (SUBREG_REG (op)) == T_REG;
 
       case ZERO_EXTEND:
       case SIGN_EXTEND:
 	return GET_CODE (XEXP (op, 0)) == SUBREG
+	       && REG_P (SUBREG_REG (XEXP (op, 0)))
 	       && REGNO (SUBREG_REG (XEXP (op, 0))) == T_REG;
 
       default:

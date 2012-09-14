@@ -1,3 +1,8 @@
+2012-09-14  Christian Bruel  <christian.bruel@st.com>
+
+	* config/sh/predicates.md (t_reg_operand): Check REG_P for SUBREG.
+	* config/sh/sh.c (sequence_insn_p: Check INSNP_P for SEQUENCE.
+
 2012-09-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/54564
