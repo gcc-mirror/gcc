@@ -1,3 +1,8 @@
+2012-09-14  Richard Earnshaw  <rearnsha@arm.com>
+
+	* reload.c (find_dummy_reload): Don't use OUT as a reload reg
+	for IN if it overlaps a fixed register.
+
 2012-09-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/44194
