@@ -1,3 +1,9 @@
+2012-09-14  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/54565
+	* gcc.dg/tree-ssa/ssa-ccp-17.c: Adjust.
+	* gcc.dg/tree-ssa/forwprop-6.c: Likewise.  Remove XFAIL.
+
 2012-09-14  Ulrich Weigand  <ulrich.weigand@linaro.org>
 
 	* gcc.target/arm/combine-movs.c: Add missing space.

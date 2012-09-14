@@ -1297,11 +1297,11 @@ init_optimization_passes (void)
 	  NEXT_PASS (pass_remove_cgraph_callee_edges);
 	  NEXT_PASS (pass_rename_ssa_copies);
 	  NEXT_PASS (pass_ccp);
+	  /* After CCP we rewrite no longer addressed locals into SSA
+	     form if possible.  */
 	  NEXT_PASS (pass_forwprop);
 	  /* pass_build_ealias is a dummy pass that ensures that we
-	     execute TODO_rebuild_alias at this point.  Re-building
-	     alias information also rewrites no longer addressed
-	     locals into SSA form if possible.  */
+	     execute TODO_rebuild_alias at this point.  */
 	  NEXT_PASS (pass_build_ealias);
 	  NEXT_PASS (pass_sra_early);
 	  NEXT_PASS (pass_fre);
@@ -1371,11 +1371,11 @@ init_optimization_passes (void)
       NEXT_PASS (pass_rename_ssa_copies);
       NEXT_PASS (pass_complete_unrolli);
       NEXT_PASS (pass_ccp);
+      /* After CCP we rewrite no longer addressed locals into SSA
+	 form if possible.  */
       NEXT_PASS (pass_forwprop);
       /* pass_build_alias is a dummy pass that ensures that we
-	 execute TODO_rebuild_alias at this point.  Re-building
-	 alias information also rewrites no longer addressed
-	 locals into SSA form if possible.  */
+	 execute TODO_rebuild_alias at this point.  */
       NEXT_PASS (pass_build_alias);
       NEXT_PASS (pass_return_slot);
       NEXT_PASS (pass_phiprop);
@@ -1414,6 +1414,8 @@ init_optimization_passes (void)
       NEXT_PASS (pass_object_sizes);
       NEXT_PASS (pass_strlen);
       NEXT_PASS (pass_ccp);
+      /* After CCP we rewrite no longer addressed locals into SSA
+	 form if possible.  */
       NEXT_PASS (pass_copy_prop);
       NEXT_PASS (pass_cse_sincos);
       NEXT_PASS (pass_optimize_bswap);
@@ -1773,13 +1775,10 @@ execute_function_todo (void *data)
       cfun->last_verified &= ~TODO_verify_ssa;
     }
 
-  if (flags & TODO_rebuild_alias)
-    {
-      execute_update_addresses_taken ();
-      if (flag_tree_pta)
-	compute_may_aliases ();
-    }
-  else if (optimize && (flags & TODO_update_address_taken))
+  if (flag_tree_pta && (flags & TODO_rebuild_alias))
+    compute_may_aliases ();
+
+  if (optimize && (flags & TODO_update_address_taken))
     execute_update_addresses_taken ();
 
   if (flags & TODO_remove_unused_locals)
