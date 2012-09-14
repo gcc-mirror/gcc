@@ -1,3 +1,4 @@
+/* { dg-do run } */
 #define vector(elcount, type)  \
 __attribute__((vector_size((elcount)*sizeof(type)))) type
 
@@ -38,7 +39,7 @@ int main (int argc, char *argv[]) {
     vector (4, int) ires;
     int i;
 
-    i0 = (vector (4, INT)){argc, 1,  2,  10};
+    i0 = (vector (4, INT)){(INT)argc, 1,  2,  10};
     i1 = (vector (4, INT)){0, 3, 2, (INT)-23};
     test (4, i0, i1, ires, "%i");
 #undef INT
@@ -48,7 +49,7 @@ int main (int argc, char *argv[]) {
     vector (4, INT) u0;
     vector (4, INT) u1;
 
-    u0 = (vector (4, INT)){argc, 1,  2,  10};
+    u0 = (vector (4, INT)){(INT)argc, 1,  2,  10};
     u1 = (vector (4, INT)){0, 3, 2, (INT)-23};
     test (4, u0, u1, ures, "%u");
 #undef INT
@@ -59,7 +60,7 @@ int main (int argc, char *argv[]) {
     vector (8, SHORT) s1;
     vector (8, short) sres;
 
-    s0 = (vector (8, SHORT)){argc, 1,  2,  10,  6, 87, (SHORT)-5, 2};
+    s0 = (vector (8, SHORT)){(SHORT)argc, 1,  2,  10,  6, 87, (SHORT)-5, 2};
     s1 = (vector (8, SHORT)){0, 3, 2, (SHORT)-23, 12, 10, (SHORT)-2, 0};
     test (8, s0, s1, sres, "%i");
 #undef SHORT
@@ -69,7 +70,7 @@ int main (int argc, char *argv[]) {
     vector (8, SHORT) us1;
     vector (8, short) usres;
 
-    us0 = (vector (8, SHORT)){argc, 1,  2,  10,  6, 87, (SHORT)-5, 2};
+    us0 = (vector (8, SHORT)){(SHORT)argc, 1,  2,  10,  6, 87, (SHORT)-5, 2};
     us1 = (vector (8, SHORT)){0, 3, 2, (SHORT)-23, 12, 10, (SHORT)-2, 0};
     test (8, us0, us1, usres, "%u");
 #undef SHORT
@@ -79,8 +80,8 @@ int main (int argc, char *argv[]) {
     vector (16, CHAR) c1;
     vector (16, signed char) cres;
 
-    c0 = (vector (16, CHAR)){argc, 1,  2,  10,  6, 87, (CHAR)-5, 2, \
-                             argc, 1,  2,  10,  6, 87, (CHAR)-5, 2 };
+    c0 = (vector (16, CHAR)){(CHAR)argc, 1,  2,  10,  6, 87, (CHAR)-5, 2, \
+                             (CHAR)argc, 1,  2,  10,  6, 87, (CHAR)-5, 2 };
 
     c1 = (vector (16, CHAR)){0, 3, 2, (CHAR)-23, 12, 10, (CHAR)-2, 0, \
                              0, 3, 2, (CHAR)-23, 12, 10, (CHAR)-2, 0};
@@ -92,8 +93,8 @@ int main (int argc, char *argv[]) {
     vector (16, CHAR) uc1;
     vector (16, signed char) ucres;
 
-    uc0 = (vector (16, CHAR)){argc, 1,  2,  10,  6, 87, (CHAR)-5, 2, \
-                             argc, 1,  2,  10,  6, 87, (CHAR)-5, 2 };
+    uc0 = (vector (16, CHAR)){(CHAR)argc, 1,  2,  10,  6, 87, (CHAR)-5, 2, \
+                              (CHAR)argc, 1,  2,  10,  6, 87, (CHAR)-5, 2 };
 
     uc1 = (vector (16, CHAR)){0, 3, 2, (CHAR)-23, 12, 10, (CHAR)-2, 0, \
                              0, 3, 2, (CHAR)-23, 12, 10, (CHAR)-2, 0};

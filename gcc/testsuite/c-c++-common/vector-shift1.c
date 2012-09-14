@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-prune-output "in evaluation of" } */
 #define vector(elcount, type)  \
 __attribute__((vector_size((elcount)*sizeof(type)))) type
 
@@ -11,7 +12,7 @@ int main (int argc, char *argv[]) {
     vint <<= vfloat0;  /* { dg-error "nvalid operands to binary <<" } */
     vfloat0 >>= vint;  /* { dg-error "nvalid operands to binary >>" } */
 
-    vfloat0 <<= vfloat1;  /* { dg-error "nvalid operands to binary <<" } */
+    vfloat0 <<= vfloat1;  /* { dg-error "nvalid operands" } */
 
     return 0;
 }

@@ -1,3 +1,4 @@
+/* { dg-do run } */
 #define vector(elcount, type)  \
 __attribute__((vector_size((elcount)*sizeof(type)))) type
 
