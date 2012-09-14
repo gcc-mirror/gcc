@@ -24,6 +24,8 @@
 
 #include <random>
 
+#ifdef  _GLIBCXX_USE_C99_STDINT_TR1
+
 #if defined __i386__ || defined __x86_64__
 # include <cpuid.h>
 #endif
@@ -142,5 +144,5 @@ namespace std _GLIBCXX_VISIBILITY(default)
     0xffffffffUL, 7,
     0x9d2c5680UL, 15,
     0xefc60000UL, 18, 1812433253UL>;
-
 }
+#endif
