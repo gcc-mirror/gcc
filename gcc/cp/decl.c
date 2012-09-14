@@ -3235,13 +3235,15 @@ make_typename_type (tree context, tree name, enum tag_types tag_type,
 	name = TREE_OPERAND (fullname, 0) = DECL_NAME (name);
       else if (TREE_CODE (name) == OVERLOAD)
 	{
-	  error ("%qD is not a type", name);
+	  if (complain & tf_error)
+	    error ("%qD is not a type", name);
 	  return error_mark_node;
 	}
     }
   if (TREE_CODE (name) == TEMPLATE_DECL)
     {
-      error ("%qD used without template parameters", name);
+      if (complain & tf_error)
+	error ("%qD used without template parameters", name);
       return error_mark_node;
     }
   gcc_assert (TREE_CODE (name) == IDENTIFIER_NODE);
