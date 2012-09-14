@@ -1,3 +1,7 @@
+2012-09-14  Richard Guenther  <rguenther@suse.de>
+
+	* g++.dg/torture/builtin-location.C: New testcase.
+
 2012-09-13  Paolo Carlini  <paolo.carlini@oracle.com>
 	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
 

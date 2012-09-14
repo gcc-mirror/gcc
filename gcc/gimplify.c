@@ -2498,21 +2498,11 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
      transform all calls in the same manner as the expanders do, but
      we do transform most of them.  */
   fndecl = get_callee_fndecl (*expr_p);
-  if (fndecl && DECL_BUILT_IN (fndecl))
-    {
-      tree new_tree = fold_call_expr (input_location, *expr_p, !want_value);
-
-      if (new_tree && new_tree != *expr_p)
-	{
-	  /* There was a transformation of this call which computes the
-	     same value, but in a more efficient way.  Return and try
-	     again.  */
-	  *expr_p = new_tree;
-	  return GS_OK;
-	}
-
-      if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
-	  && DECL_FUNCTION_CODE (fndecl) == BUILT_IN_VA_START)
+  if (fndecl
+      && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
+    switch (DECL_FUNCTION_CODE (fndecl))
+      {
+      case BUILT_IN_VA_START:
         {
 	  builtin_va_start_p = TRUE;
 	  if (call_expr_nargs (*expr_p) < 2)
@@ -2527,6 +2517,40 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
 	      *expr_p = build_empty_stmt (EXPR_LOCATION (*expr_p));
 	      return GS_OK;
 	    }
+	  break;
+	}
+      case BUILT_IN_LINE:
+	{
+	  expanded_location loc = expand_location (EXPR_LOCATION (*expr_p));
+	  *expr_p = build_int_cst (TREE_TYPE (*expr_p), loc.line);
+	  return GS_OK;
+	}
+      case BUILT_IN_FILE:
+	{
+	  expanded_location loc = expand_location (EXPR_LOCATION (*expr_p));
+	  *expr_p = build_string_literal (strlen (loc.file) + 1, loc.file);
+	  return GS_OK;
+	}
+      case BUILT_IN_FUNCTION:
+	{
+	  const char *function;
+	  function = IDENTIFIER_POINTER (DECL_NAME (current_function_decl));
+	  *expr_p = build_string_literal (strlen (function) + 1, function);
+	  return GS_OK;
+	}
+      default:
+        ;
+      }
+  if (fndecl && DECL_BUILT_IN (fndecl))
+    {
+      tree new_tree = fold_call_expr (input_location, *expr_p, !want_value);
+      if (new_tree && new_tree != *expr_p)
+	{
+	  /* There was a transformation of this call which computes the
+	     same value, but in a more efficient way.  Return and try
+	     again.  */
+	  *expr_p = new_tree;
+	  return GS_OK;
 	}
     }
 
