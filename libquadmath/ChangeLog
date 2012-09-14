@@ -1,9 +1,13 @@
+2012-09-14  David Edelsohn  <dje.gcc@gmail.com>
+
+	* configure: Regenerated.
+
 2012-05-29  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/51007
 	* configure.ac: Allow gnu, gnu* variants for --enable-symvers argument.
 	* configure: Regenerated.
-	
+
 2012-05-16  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* configure: Regenerated.
