@@ -1,3 +1,7 @@
+2012-09-14  David Edelsohn  <dje.gcc@gmail.com>
+
+	* configure: Regenerated.
+
 2012-07-13  Richard Guenther  <rguenther@suse.de>
 
 	* testsuite/libmudflap.c++/ctors.exp: Explicitely specify -O0.
