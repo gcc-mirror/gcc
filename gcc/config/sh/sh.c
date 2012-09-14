@@ -9876,7 +9876,7 @@ fpscr_set_from_mem (int mode, HARD_REG_SET regs_live)
 static bool
 sequence_insn_p (rtx insn)
 {
-  rtx prev, next, pat;
+  rtx prev, next;
 
   prev = PREV_INSN (insn);
   if (prev == NULL)
@@ -9886,11 +9886,7 @@ sequence_insn_p (rtx insn)
   if (next == NULL)
     return false;
 
-  pat = PATTERN (next);
-  if (pat == NULL)
-    return false;
-
-  return GET_CODE (pat) == SEQUENCE;
+  return INSN_P (next) && GET_CODE (PATTERN (next)) == SEQUENCE;
 }
 
 int
