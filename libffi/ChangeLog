@@ -1,3 +1,7 @@
+2012-09-14  David Edelsohn  <dje.gcc@gmail.com>
+
+	* configure: Regenerated.
+
 2012-08-26  Andrew Pinski  <apinski@cavium.com>
 
 	PR libffi/53014
