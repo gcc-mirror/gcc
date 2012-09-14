@@ -34,3 +34,6 @@
 (define_mode_attr disp04 [(QI "K04") (HI "K05")])
 (define_mode_attr disp12 [(QI "K12") (HI "K13")])
 
+;; Return codes.
+(define_code_iterator any_return [return simple_return])
+

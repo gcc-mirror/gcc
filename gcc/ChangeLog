@@ -1,5 +1,18 @@
 2012-09-14  Christian Bruel  <christian.bruel@st.com>
 
+	PR target/54546
+	* config/sh/sh-protos.h (sh_need_epilogue): Delete.
+	(sh_can_use_simple_return_p): Declare.
+	* config/sh/sh.c (sh_can_use_simple_return_p): Define.
+	(sh_need_epilogue, sh_need_epilogue_known): Delete.
+	(sh_output_function_epilogue): Remove sh_need_epilogue_known.
+	* config/sh/sh.md (simple_return, return): Define.
+	(epilogue): Use inline return rtl.
+	(sh_expand_epilogue): Cleanup parameters boolean type.
+	* config/sh/iterators.md (any_return): New iterator.
+
+2012-09-14  Christian Bruel  <christian.bruel@st.com>
+
 	* config/sh/predicates.md (t_reg_operand): Check REG_P for SUBREG.
 	* config/sh/sh.c (sequence_insn_p: Check INSNP_P for SEQUENCE.
 
