@@ -1,3 +1,10 @@
+2012-09-14  Wei Guozhi  <carrot@google.com>
+
+	Backport from 2012-02-13 mainline r184169.
+
+	* cselib.c (expand_loc): Return sp, fp, hfp or cfa base reg right
+	away if seen.
+
 2012-09-10  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backport from 2012-09-10 mainline r191132.
