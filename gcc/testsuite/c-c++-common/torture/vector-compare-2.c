@@ -1,3 +1,5 @@
+/* { dg-do run } */
+/* { dg-options "-Wno-psabi" } */
 #define vector(elcount, type)  \
 __attribute__((vector_size((elcount)*sizeof(type)))) type
 

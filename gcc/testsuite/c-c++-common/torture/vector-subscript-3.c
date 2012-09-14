@@ -1,4 +1,4 @@
-/* dg-do run */
+/* { dg-do run } */
 #define vector __attribute__((vector_size(16) ))
 
 /* Check whether register declaration of vector type still 

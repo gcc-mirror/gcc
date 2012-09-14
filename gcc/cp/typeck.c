@@ -3985,7 +3985,15 @@ cp_build_binary_op (location_t location,
 	 Also set SHORT_SHIFT if shifting rightward.  */
 
     case RSHIFT_EXPR:
-      if (code0 == INTEGER_TYPE && code1 == INTEGER_TYPE)
+      if (code0 == VECTOR_TYPE && code1 == VECTOR_TYPE
+	  && TREE_CODE (TREE_TYPE (type0)) == INTEGER_TYPE
+	  && TREE_CODE (TREE_TYPE (type1)) == INTEGER_TYPE
+	  && TYPE_VECTOR_SUBPARTS (type0) == TYPE_VECTOR_SUBPARTS (type1))
+	{
+	  result_type = type0;
+	  converted = 1;
+	}
+      else if (code0 == INTEGER_TYPE && code1 == INTEGER_TYPE)
 	{
 	  result_type = type0;
 	  if (TREE_CODE (op1) == INTEGER_CST)
@@ -4014,7 +4022,15 @@ cp_build_binary_op (location_t location,
       break;
 
     case LSHIFT_EXPR:
-      if (code0 == INTEGER_TYPE && code1 == INTEGER_TYPE)
+      if (code0 == VECTOR_TYPE && code1 == VECTOR_TYPE
+	  && TREE_CODE (TREE_TYPE (type0)) == INTEGER_TYPE
+	  && TREE_CODE (TREE_TYPE (type1)) == INTEGER_TYPE
+	  && TYPE_VECTOR_SUBPARTS (type0) == TYPE_VECTOR_SUBPARTS (type1))
+	{
+	  result_type = type0;
+	  converted = 1;
+	}
+      else if (code0 == INTEGER_TYPE && code1 == INTEGER_TYPE)
 	{
 	  result_type = type0;
 	  if (TREE_CODE (op1) == INTEGER_CST)
@@ -4072,6 +4088,8 @@ cp_build_binary_op (location_t location,
 
     case EQ_EXPR:
     case NE_EXPR:
+      if (code0 == VECTOR_TYPE && code1 == VECTOR_TYPE)
+	goto vector_compare;
       if ((complain & tf_warning)
 	  && (FLOAT_TYPE_P (type0) || FLOAT_TYPE_P (type1)))
 	warning (OPT_Wfloat_equal,
@@ -4314,6 +4332,35 @@ cp_build_binary_op (location_t location,
 	    warning (OPT_Waddress, "comparison with string literal results in unspecified behaviour");
 	}
 
+      if (code0 == VECTOR_TYPE && code1 == VECTOR_TYPE)
+	{
+	vector_compare:
+	  tree intt;
+	  if (!same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (type0),
+							  TREE_TYPE (type1)))
+	    {
+	      error_at (location, "comparing vectors with different "
+				  "element types");
+	      inform (location, "operand types are %qT and %qT", type0, type1);
+	      return error_mark_node;
+	    }
+
+	  if (TYPE_VECTOR_SUBPARTS (type0) != TYPE_VECTOR_SUBPARTS (type1))
+	    {
+	      error_at (location, "comparing vectors with different "
+				  "number of elements");
+	      inform (location, "operand types are %qT and %qT", type0, type1);
+	      return error_mark_node;
+	    }
+
+	  /* Always construct signed integer vector type.  */
+	  intt = c_common_type_for_size (GET_MODE_BITSIZE
+					   (TYPE_MODE (TREE_TYPE (type0))), 0);
+	  result_type = build_opaque_vector_type (intt,
+						  TYPE_VECTOR_SUBPARTS (type0));
+	  converted = 1;
+	  break;
+	}
       build_type = boolean_type_node;
       if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE
 	   || code0 == ENUMERAL_TYPE)

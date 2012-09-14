@@ -1,3 +1,11 @@
+2012-09-14  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/54427
+	* fold-const.c (fold_unary_loc): Disable for VECTOR_TYPE.
+	(fold_binary_loc): Likewise.
+	* gimple-fold.c (and_comparisons_1): Handle VECTOR_TYPE.
+	(or_comparisons_1): Likewise.
+
 2012-09-14  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/54516

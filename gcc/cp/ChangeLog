@@ -1,3 +1,9 @@
+2012-09-14  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/54427
+	* typeck.c (cp_build_binary_op) [LSHIFT_EXPR, RSHIFT_EXPR, EQ_EXPR,
+	NE_EXPR, LE_EXPR, GE_EXPR, LT_EXPR, GT_EXPR]: Handle VECTOR_TYPE.
+
 2012-09-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* decl.c (make_typename_type): Only error out if tf_error is set

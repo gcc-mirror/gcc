@@ -1,4 +1,4 @@
-/* dg-do run */
+/* { dg-do run } */
 #define vector __attribute__((vector_size(sizeof(int)*4) ))
 
 /* Check to make sure that we extract and insert the vector at the same
