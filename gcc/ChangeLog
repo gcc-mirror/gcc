@@ -1,5 +1,13 @@
 2012-09-14  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/54565
+	* passes.c (init_optimization_passes): Adjust comments.
+	(execute_function_todo): Do not execute execute_update_addresses_taken
+	before processing TODO_rebuild_alias.
+	* tree-ssa-ccp.c (do_ssa_ccp): Schedule TODO_update_address_taken.
+
+2012-09-14  Richard Guenther  <rguenther@suse.de>
+
 	* tree-vrp.c (register_new_assert_for): Simplify for backward
 	walk.
 	(find_assert_locations_1): Walk the basic-block backwards,

@@ -2134,6 +2134,7 @@ struct gimple_opt_pass pass_ccp =
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
   TODO_verify_ssa
+  | TODO_update_address_taken
   | TODO_verify_stmts | TODO_ggc_collect/* todo_flags_finish */
  }
 };
