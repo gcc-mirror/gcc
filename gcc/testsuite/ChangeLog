@@ -1,5 +1,11 @@
 2012-09-15  Tom de Vries  <tom@codesourcery.com>
 
+	* gcc.dg/tree-ssa/vrp82.c: New test.
+	* gcc.dg/tree-ssa/vrp83.c: Same.
+	* gcc.dg/tree-ssa/vrp84.c: Same.
+
+2012-09-15  Tom de Vries  <tom@codesourcery.com>
+
 	* gcc.dg/tree-ssa/vrp80-2.c: Rename to ...
 	* gcc.dg/tree-ssa/vrp81.c: ... this.
 
