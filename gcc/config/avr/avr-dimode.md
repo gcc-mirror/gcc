@@ -48,10 +48,10 @@
    (ACC_B	10)])
 
 ;; Supported modes that are 8 bytes wide
-(define_mode_iterator ALL8 [(DI "")
-                            (DQ "") (UDQ "")
-                            (DA "") (UDA "")
-                            (TA "") (UTA "")])
+(define_mode_iterator ALL8 [DI DQ UDQ DA UDA TA UTA])
+
+(define_mode_iterator ALL8U [UDQ UDA UTA])
+(define_mode_iterator ALL8S [ DQ  DA  TA])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Addition
@@ -124,9 +124,9 @@
   "avr_have_dimode
    && !s8_operand (operands[0], VOIDmode)"
   {
-    return avr_out_plus64 (operands[0], NULL);
+    return avr_out_plus (insn, operands);
   }
-  [(set_attr "adjust_len" "plus64")
+  [(set_attr "adjust_len" "plus")
    (set_attr "cc" "clobber")])
 
 
@@ -185,11 +185,106 @@
                     (match_operand:ALL8 0 "const_operand" "n Ynn")))]
   "avr_have_dimode"
   {
-    return avr_out_minus64 (operands[0], NULL);
+    return avr_out_plus (insn, operands);
   }
-  [(set_attr "adjust_len" "minus64")
+  [(set_attr "adjust_len" "plus")
    (set_attr "cc" "clobber")])
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Signed Saturating Addition and Subtraction
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define_expand "<code_stdname><mode>3"
+  [(set (match_operand:ALL8S 0 "general_operand" "")
+        (ss_addsub:ALL8S (match_operand:ALL8S 1 "general_operand" "")
+                         (match_operand:ALL8S 2 "general_operand" "")))]
+  "avr_have_dimode"
+  {
+    rtx acc_a = gen_rtx_REG (<MODE>mode, ACC_A);
+
+    emit_move_insn (acc_a, operands[1]);
+
+    if (const_operand (operands[2], GET_MODE (operands[2])))
+      {
+        emit_insn (gen_<code_stdname><mode>3_const_insn (operands[2]));
+      }
+    else
+      {
+        emit_move_insn (gen_rtx_REG (<MODE>mode, ACC_B), operands[2]);
+        emit_insn (gen_<code_stdname><mode>3_insn ());
+      }
+
+    emit_move_insn (operands[0], acc_a);
+    DONE;
+  })
+
+(define_insn "<code_stdname><mode>3_insn"
+  [(set (reg:ALL8S ACC_A)
+        (ss_addsub:ALL8S (reg:ALL8S ACC_A)
+                         (reg:ALL8S ACC_B)))]
+  "avr_have_dimode"
+  "%~call __<code_stdname><mode>3"
+  [(set_attr "adjust_len" "call")
+   (set_attr "cc" "clobber")])
+
+(define_insn "<code_stdname><mode>3_const_insn"
+  [(set (reg:ALL8S ACC_A)
+        (ss_addsub:ALL8S (reg:ALL8S ACC_A)
+                         (match_operand:ALL8S 0 "const_operand" "n Ynn")))]
+  "avr_have_dimode"
+  {
+    return avr_out_plus (insn, operands);
+  }
+  [(set_attr "adjust_len" "plus")
+   (set_attr "cc" "clobber")])
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Unsigned Saturating Addition and Subtraction
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define_expand "<code_stdname><mode>3"
+  [(set (match_operand:ALL8U 0 "general_operand" "")
+        (us_addsub:ALL8U (match_operand:ALL8U 1 "general_operand" "")
+                         (match_operand:ALL8U 2 "general_operand" "")))]
+  "avr_have_dimode"
+  {
+    rtx acc_a = gen_rtx_REG (<MODE>mode, ACC_A);
+
+    emit_move_insn (acc_a, operands[1]);
+
+    if (const_operand (operands[2], GET_MODE (operands[2])))
+      {
+        emit_insn (gen_<code_stdname><mode>3_const_insn (operands[2]));
+      }
+    else
+      {
+        emit_move_insn (gen_rtx_REG (<MODE>mode, ACC_B), operands[2]);
+        emit_insn (gen_<code_stdname><mode>3_insn ());
+      }
+
+    emit_move_insn (operands[0], acc_a);
+    DONE;
+  })
+
+(define_insn "<code_stdname><mode>3_insn"
+  [(set (reg:ALL8U ACC_A)
+        (us_addsub:ALL8U (reg:ALL8U ACC_A)
+                         (reg:ALL8U ACC_B)))]
+  "avr_have_dimode"
+  "%~call __<code_stdname><mode>3"
+  [(set_attr "adjust_len" "call")
+   (set_attr "cc" "clobber")])
+
+(define_insn "<code_stdname><mode>3_const_insn"
+  [(set (reg:ALL8U ACC_A)
+        (us_addsub:ALL8U (reg:ALL8U ACC_A)
+                         (match_operand:ALL8U 0 "const_operand" "n Ynn")))]
+  "avr_have_dimode"
+  {
+    return avr_out_plus (insn, operands);
+  }
+  [(set_attr "adjust_len" "plus")
+   (set_attr "cc" "clobber")])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Negation
