@@ -2766,20 +2766,63 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 	  else if (code == LSHIFT_EXPR
 		   && range_int_cst_p (&vr0))
 	    {
-	      int overflow_pos = TYPE_PRECISION (expr_type);
+	      int prec = TYPE_PRECISION (expr_type);
+	      int overflow_pos = prec;
 	      int bound_shift;
-	      double_int bound;
+	      double_int bound, complement, low_bound, high_bound;
+	      bool uns = TYPE_UNSIGNED (expr_type);
+	      bool in_bounds = false;
 
-	      if (!TYPE_UNSIGNED (expr_type))
+	      if (!uns)
 		overflow_pos -= 1;
 
 	      bound_shift = overflow_pos - TREE_INT_CST_LOW (vr1.max);
-	      bound = double_int_one.llshift (bound_shift,
-					      TYPE_PRECISION (expr_type));
-	      if (tree_to_double_int (vr0.max).ult (bound))
+	      /* If bound_shift == HOST_BITS_PER_DOUBLE_INT, the llshift can
+		 overflow.  However, for that to happen, vr1.max needs to be
+		 zero, which means vr1 is a singleton range of zero, which
+		 means it should be handled by the previous LSHIFT_EXPR
+		 if-clause.  */
+	      bound = double_int_one.llshift (bound_shift, prec);
+	      complement = ~(bound - double_int_one);
+
+	      if (uns)
 		{
-		  /* In the absense of overflow, (a << b) is equivalent
-		     to (a * 2^b).  */
+		  low_bound = bound;
+		  high_bound = complement.zext (prec);
+		  if (tree_to_double_int (vr0.max).ult (low_bound))
+		    {
+		      /* [5, 6] << [1, 2] == [10, 24].  */
+		      /* We're shifting out only zeroes, the value increases
+			 monotonically.  */
+		      in_bounds = true;
+		    }
+		  else if (high_bound.ult (tree_to_double_int (vr0.min)))
+		    {
+		      /* [0xffffff00, 0xffffffff] << [1, 2]
+		         == [0xfffffc00, 0xfffffffe].  */
+		      /* We're shifting out only ones, the value decreases
+			 monotonically.  */
+		      in_bounds = true;
+		    }
+		}
+	      else
+		{
+		  /* [-1, 1] << [1, 2] == [-4, 4].  */
+		  low_bound = complement.sext (prec);
+		  high_bound = bound;
+		  if (tree_to_double_int (vr0.max).slt (high_bound)
+		      && low_bound.slt (tree_to_double_int (vr0.min)))
+		    {
+		      /* For non-negative numbers, we're shifting out only
+			 zeroes, the value increases monotonically.
+			 For negative numbers, we're shifting out only ones, the
+			 value decreases monotomically.  */
+		      in_bounds = true;
+		    }
+		}
+
+	      if (in_bounds)
+		{
 		  extract_range_from_multiplicative_op_1 (vr, code, &vr0, &vr1);
 		  return;
 		}
