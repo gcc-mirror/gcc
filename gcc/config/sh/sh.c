@@ -3196,6 +3196,78 @@ sh_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
         }
       return false;
 
+    /* The cost of a mem access is mainly the cost of the address mode.  */
+    case MEM:
+      *total = sh_address_cost (XEXP (x, 0), GET_MODE (x), MEM_ADDR_SPACE (x),
+				true);
+      return true;
+
+    /* The cost of a sign or zero extend depends on whether the source is a
+       reg or a mem.  In case of a mem take the address into acount.  */
+    case SIGN_EXTEND:
+      if (REG_P (XEXP (x, 0)))
+	{
+	  *total = COSTS_N_INSNS (1);
+	  return true;
+	}
+      if (MEM_P (XEXP (x, 0)))
+	{
+	  *total = sh_address_cost (XEXP (XEXP (x, 0), 0),
+				    GET_MODE (XEXP (x, 0)),
+				    MEM_ADDR_SPACE (XEXP (x, 0)), true);
+	  return true;
+	}
+      return false;
+
+    case ZERO_EXTEND:
+      if (REG_P (XEXP (x, 0)))
+	{
+	  *total = COSTS_N_INSNS (1);
+	  return true;
+	}
+      else if (TARGET_SH2A && MEM_P (XEXP (x, 0))
+	       && (GET_MODE (XEXP (x, 0)) == QImode
+		   || GET_MODE (XEXP (x, 0)) == HImode))
+	{
+	  /* Handle SH2A's movu.b and movu.w insn.  */
+	  *total = sh_address_cost (XEXP (XEXP (x, 0), 0), 
+				    GET_MODE (XEXP (x, 0)), 
+				    MEM_ADDR_SPACE (XEXP (x, 0)), true);
+	  return true;
+	}
+      return false;
+
+    /* mems for SFmode and DFmode can be inside a parallel due to
+       the way the fpscr is handled.  */
+    case PARALLEL:
+      for (int i = 0; i < XVECLEN (x, 0); i++)
+	{
+	  rtx xx = XVECEXP (x, 0, i);
+	  if (GET_CODE (xx) == SET && MEM_P (XEXP (xx, 0)))
+	    {
+	      *total = sh_address_cost (XEXP (XEXP (xx, 0), 0), 
+					GET_MODE (XEXP (xx, 0)),
+					MEM_ADDR_SPACE (XEXP (xx, 0)), true);
+	      return true;
+	    }
+	  if (GET_CODE (xx) == SET && MEM_P (XEXP (xx, 1)))
+	    {
+	      *total = sh_address_cost (XEXP (XEXP (xx, 1), 0),
+					GET_MODE (XEXP (xx, 1)),
+					MEM_ADDR_SPACE (XEXP (xx, 1)), true);
+	      return true;
+	    }
+	}
+
+      if (sh_1el_vec (x, VOIDmode))
+	*total = outer_code != SET;
+      else if (sh_rep_vec (x, VOIDmode))
+	*total = ((GET_MODE_UNIT_SIZE (GET_MODE (x)) + 3) / 4
+		  + (outer_code != SET));
+      else
+	*total = COSTS_N_INSNS (3) + (outer_code != SET);
+      return true;
+
     case CONST_INT:
       if (TARGET_SHMEDIA)
         {
@@ -3271,7 +3343,10 @@ sh_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
       else
         *total = 10;
       return true;
+
     case CONST_VECTOR:
+    /* FIXME: This looks broken.  Only the last statement has any effect.
+       Probably this could be folded with the PARALLEL case?  */
       if (x == CONST0_RTX (GET_MODE (x)))
 	*total = 0;
       else if (sh_1el_vec (x, VOIDmode))
@@ -3337,15 +3412,6 @@ sh_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
     case MOD:
     case UMOD:
       *total = COSTS_N_INSNS (20);
-      return true;
-
-    case PARALLEL:
-      if (sh_1el_vec (x, VOIDmode))
-	*total = outer_code != SET;
-      if (sh_rep_vec (x, VOIDmode))
-	*total = ((GET_MODE_UNIT_SIZE (GET_MODE (x)) + 3) / 4
-		  + (outer_code != SET));
-      *total = COSTS_N_INSNS (3) + (outer_code != SET);
       return true;
 
     case FLOAT:
@@ -3430,36 +3496,47 @@ disp_addr_displacement (rtx x)
 /* Compute the cost of an address.  */
 
 static int
-sh_address_cost (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED,
+sh_address_cost (rtx x, enum machine_mode mode,
 		 addr_space_t as ATTRIBUTE_UNUSED, bool speed ATTRIBUTE_UNUSED)
 {
-  /* 'reg + disp' addressing.  */
-  if (satisfies_constraint_Sdd (x))
-    {
-      const HOST_WIDE_INT offset = disp_addr_displacement (x);
-      const enum machine_mode mode = GET_MODE (x);
+  /* Simple reg, post-inc, pre-dec addressing.  */
+  if (REG_P (x) || GET_CODE (x) == POST_INC || GET_CODE (x) == PRE_DEC)
+    return 1;
 
-      /* The displacement would fit into a 2 byte move insn.  */
+  /* 'reg + disp' addressing.  */
+  if (GET_CODE (x) == PLUS
+      && REG_P (XEXP (x, 0)) && CONST_INT_P (XEXP (x, 1)))
+    {
+      const HOST_WIDE_INT offset = INTVAL (XEXP (x, 1));
+
+      if (offset == 0)
+	return 1;
+
+      /* The displacement would fit into a 2 byte move insn.
+	 HImode and QImode loads/stores with displacement put pressure on
+	 R0 which will most likely require another reg copy.  Thus account
+	 a higher cost for that.  */
       if (offset > 0 && offset <= max_mov_insn_displacement (mode, false))
-	return 0;
+	return (mode == HImode || mode == QImode) ? 2 : 1;
 
       /* The displacement would fit into a 4 byte move insn (SH2A).  */
       if (TARGET_SH2A
 	  && offset > 0 && offset <= max_mov_insn_displacement (mode, true))
-	return 1;
+	return 2;
 
       /* The displacement is probably out of range and will require extra
 	 calculations.  */
-      return 2;
+      return 3;
     }
 
   /* 'reg + reg' addressing.  Account a slightly higher cost because of 
      increased pressure on R0.  */
   if (GET_CODE (x) == PLUS && ! CONSTANT_P (XEXP (x, 1))
       && ! TARGET_SHMEDIA)
-    return 1;
+    return 3;
 
-  return 0;
+  /* Not sure what it is - probably expensive.  */
+  return 10;
 }
 
 /* Code to expand a shift.  */

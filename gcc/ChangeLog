@@ -1,3 +1,9 @@
+2012-09-15  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/sh.c (sh_rtx_costs): Add handling of MEM, SIGN_EXTEND,
+	ZERO_EXTEND and PARALLEL cases.
+	(sh_address_cost): Correct rtx parsing and tweak cost estimations.
+
 2012-09-14  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/tm.texi.in (Stack Arguments): Update obsolete references
