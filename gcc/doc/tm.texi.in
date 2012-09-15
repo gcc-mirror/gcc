@@ -3863,11 +3863,12 @@ alignment.  Then the definition should be
 If the value of this macro has a type, it should be an unsigned type.
 @end defmac
 
-@findex current_function_outgoing_args_size
+@findex outgoing_args_size
+@findex crtl->outgoing_args_size
 @defmac ACCUMULATE_OUTGOING_ARGS
 A C expression.  If nonzero, the maximum amount of space required for outgoing arguments
-will be computed and placed into the variable
-@code{current_function_outgoing_args_size}.  No space will be pushed
+will be computed and placed into
+@code{crtl->outgoing_args_size}.  No space will be pushed
 onto the stack for each call; instead, the function prologue should
 increase the stack frame size by this amount.
 
@@ -3901,7 +3902,7 @@ if the function called is a library function.
 
 If @code{ACCUMULATE_OUTGOING_ARGS} is defined, this macro controls
 whether the space for these arguments counts in the value of
-@code{current_function_outgoing_args_size}.
+@code{crtl->outgoing_args_size}.
 @end defmac
 
 @defmac STACK_PARMS_IN_REG_PARM_AREA
@@ -4700,7 +4701,8 @@ others leave that for the caller to do.  For example, the 68020 when
 given @option{-mrtd} pops arguments in functions that take a fixed
 number of arguments.
 
-@findex current_function_pops_args
+@findex pops_args
+@findex crtl->args.pops_args
 Your definition of the macro @code{RETURN_POPS_ARGS} decides which
 functions pop their own arguments.  @code{TARGET_ASM_FUNCTION_EPILOGUE}
 needs to know what was decided.  The number of bytes of the current
@@ -4710,8 +4712,9 @@ function's arguments that this function should pop is available in
 
 @itemize @bullet
 @item
-@findex current_function_pretend_args_size
-A region of @code{current_function_pretend_args_size} bytes of
+@findex pretend_args_size
+@findex crtl->args.pretend_args_size
+A region of @code{crtl->args.pretend_args_size} bytes of
 uninitialized space just underneath the first argument arriving on the
 stack.  (This may not be at the very start of the allocated stack region
 if the calling sequence has pushed anything else since pushing the stack
@@ -4738,7 +4741,7 @@ save area closer to the top of the stack.
 @item
 @cindex @code{ACCUMULATE_OUTGOING_ARGS} and stack frames
 Optionally, when @code{ACCUMULATE_OUTGOING_ARGS} is defined, a region of
-@code{current_function_outgoing_args_size} bytes to be used for outgoing
+@code{crtl->outgoing_args_size} bytes to be used for outgoing
 argument lists of the function.  @xref{Stack Arguments}.
 @end itemize
 
@@ -4787,11 +4790,12 @@ may be reconsidered for a subsequent delay slot.  Also, other insns may
 (at least in principle) be considered for the so far unfilled delay
 slot.
 
-@findex current_function_epilogue_delay_list
+@findex epilogue_delay_list
+@findex crtl->epilogue_delay_list
 @findex final_scan_insn
 The insns accepted to fill the epilogue delay slots are put in an RTL
-list made with @code{insn_list} objects, stored in the variable
-@code{current_function_epilogue_delay_list}.  The insn for the first
+list made with @code{insn_list} objects, stored in
+@code{crtl->epilogue_delay_list}.  The insn for the first
 delay slot comes first in the list.  Your definition of the macro
 @code{TARGET_ASM_FUNCTION_EPILOGUE} should fill the delay slots by
 outputting the insns in this list, usually by calling
@@ -10831,8 +10835,8 @@ the hard register itself, if it is known not to be clobbered---or a
 @code{MEM}.
 If you are returning a @code{MEM}, this is only a hint for the allocator;
 it might decide to use another register anyways.
-You may use @code{current_function_leaf_function} in the hook, functions
-that use @code{REG_N_SETS}, to determine if the hard
+You may use @code{current_function_is_leaf} or 
+@code{REG_N_SETS} in the hook to determine if the hard
 register in question will not be clobbered.
 The default value of this hook is @code{NULL}, which disables any special
 allocation.
