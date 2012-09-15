@@ -1,3 +1,14 @@
+2012-09-14  Dehao Chen  <dehao@google.com>
+
+	 * tree-eh.c (goto_queue_node): New field.
+	(record_in_goto_queue): New parameter.
+	(record_in_goto_queue_label): New parameter.
+	(lower_try_finally_dup_block): New parameter.
+	(maybe_record_in_goto_queue): Update source location.
+	(lower_try_finally_copy): Likewise.
+	(honor_protect_cleanup_actions): Likewise.
+	* gimplify.c (gimplify_expr): Reset the location to unknown.
+
 2012-09-14  David Edelsohn  <dje.gcc@gmail.com>
 
 	* configure: Regenerated.
