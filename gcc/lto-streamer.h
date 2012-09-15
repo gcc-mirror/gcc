@@ -535,6 +535,18 @@ typedef struct lto_out_decl_state *lto_out_decl_state_ptr;
 DEF_VEC_P(lto_out_decl_state_ptr);
 DEF_VEC_ALLOC_P(lto_out_decl_state_ptr, heap);
 
+/* Compact representation of a index <-> resolution pair. Unpacked to an 
+   vector later. */
+struct res_pair 
+{
+  ld_plugin_symbol_resolution_t res;
+  unsigned index;
+};
+typedef struct res_pair res_pair;
+
+DEF_VEC_O(res_pair);
+DEF_VEC_ALLOC_O(res_pair, heap);
+
 /* One of these is allocated for each object file that being compiled
    by lto.  This structure contains the tables that are needed by the
    serialized functions and ipa passes to connect themselves to the
@@ -573,7 +585,8 @@ struct GTY(()) lto_file_decl_data
   unsigned HOST_WIDE_INT id;
 
   /* Symbol resolutions for this file */
-  VEC(ld_plugin_symbol_resolution_t,heap) * GTY((skip)) resolutions;
+  VEC(res_pair, heap) * GTY((skip)) respairs;
+  unsigned max_index;
 
   struct gcov_ctr_summary GTY((skip)) profile_info;
 };
