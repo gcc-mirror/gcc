@@ -7453,6 +7453,15 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	    gimple_seq eval, cleanup;
 	    gimple try_;
 
+	    /* Calls to destructors are generated automatically in FINALLY/CATCH
+	       block. They should have location as UNKNOWN_LOCATION. However,
+	       gimplify_call_expr will reset these call stmts to input_location
+	       if it finds stmt's location is unknown. To prevent resetting for
+	       destructors, we set the input_location to unknown.
+	       Note that this only affects the destructor calls in FINALLY/CATCH
+	       block, and will automatically reset to its original value by the
+	       end of gimplify_expr.  */
+	    input_location = UNKNOWN_LOCATION;
 	    eval = cleanup = NULL;
 	    gimplify_and_add (TREE_OPERAND (*expr_p, 0), &eval);
 	    gimplify_and_add (TREE_OPERAND (*expr_p, 1), &cleanup);

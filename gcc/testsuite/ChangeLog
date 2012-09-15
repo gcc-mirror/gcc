@@ -1,3 +1,7 @@
+2012-09-14  Dehao Chen  <dehao@google.com>
+
+	* g++.dg/debug/dwarf2/deallocator.C: New test.
+
 2012-09-14  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/54552
