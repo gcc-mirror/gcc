@@ -1,3 +1,24 @@
+2012-09-15  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/54222
+	* gcc.target/avr/torture/fix-types.h: New.
+	* gcc.target/avr/torture/vals-hr.def: New.
+	* gcc.target/avr/torture/vals-r.def: New.
+	* gcc.target/avr/torture/vals-k.def: New.
+	* gcc.target/avr/torture/vals-ur.def: New.
+	* gcc.target/avr/torture/vals-uk.def: New.
+	* gcc.target/avr/torture/vals-uhr.def: New.
+	* gcc.target/avr/torture/vals-llk.def: New.
+	* gcc.target/avr/torture/vals-ullk.def: New.
+	* gcc.target/avr/torture/sat-hr-plus-minus.c: New.
+	* gcc.target/avr/torture/sat-r-plus-minus.c: New.
+	* gcc.target/avr/torture/sat-k-plus-minus.c: New.
+	* gcc.target/avr/torture/sat-ur-plus-minus.c: New.
+	* gcc.target/avr/torture/sat-uk-plus-minus.c: New.
+	* gcc.target/avr/torture/sat-uhr-plus-minus.c: New.
+	* gcc.target/avr/torture/sat-llk-plus-minus.c: New.
+	* gcc.target/avr/torture/sat-ullk-plus-minus.c: New.
+
 2012-09-14  Dehao Chen  <dehao@google.com>
 
 	* g++.dg/debug/dwarf2/deallocator.C: New test.

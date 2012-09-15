@@ -2069,9 +2069,11 @@ avr_print_operand (FILE *file, rtx x, int code)
   else if (REG_P (x))
     {
       if (x == zero_reg_rtx)
-	fprintf (file, "__zero_reg__");
+        fprintf (file, "__zero_reg__");
+      else if (code == 'r' && REGNO (x) < 32)
+        fprintf (file, "%d", (int) REGNO (x));
       else
-	fprintf (file, reg_names[true_regnum (x) + abcd]);
+        fprintf (file, reg_names[REGNO (x) + abcd]);
     }
   else if (CONST_INT_P (x))
     {
@@ -2172,7 +2174,7 @@ avr_print_operand (FILE *file, rtx x, int code)
       /* Use normal symbol for direct address no linker trampoline needed */
       output_addr_const (file, x);
     }
-  else if (GET_CODE (x) == CONST_FIXED)
+  else if (CONST_FIXED_P (x))
     {
       HOST_WIDE_INT ival = INTVAL (avr_to_int_mode (x));
       if (code != 0)
@@ -2213,9 +2215,7 @@ notice_update_cc (rtx body ATTRIBUTE_UNUSED, rtx insn)
     default:
       break;
 
-    case CC_OUT_PLUS:
-    case CC_OUT_PLUS_NOCLOBBER:
-    case CC_MINUS:
+    case CC_PLUS:
     case CC_LDI:
       {
         rtx *op = recog_data.operand;
@@ -2229,18 +2229,8 @@ notice_update_cc (rtx body ATTRIBUTE_UNUSED, rtx insn)
           default:
             gcc_unreachable();
             
-          case CC_OUT_PLUS:
-            avr_out_plus (op, &len_dummy, &icc);
-            cc = (enum attr_cc) icc;
-            break;
-            
-          case CC_OUT_PLUS_NOCLOBBER:
-            avr_out_plus_noclobber (op, &len_dummy, &icc);
-            cc = (enum attr_cc) icc;
-            break;
-
-          case CC_MINUS:
-            avr_out_minus (op, &len_dummy, &icc);
+          case CC_PLUS:
+            avr_out_plus (insn, op, &len_dummy, &icc);
             cc = (enum attr_cc) icc;
             break;
 
@@ -4246,7 +4236,7 @@ avr_out_compare (rtx insn, rtx *xop, int *plen)
   /* Map fixed mode operands to integer operands with the same binary
      representation.  They are easier to handle in the remainder.  */
 
-  if (CONST_FIXED == GET_CODE (xval))
+  if (CONST_FIXED_P (xval))
     {
       xreg = avr_to_int_mode (xop[0]);
       xval = avr_to_int_mode (xop[1]);
@@ -5987,19 +5977,32 @@ lshrsi3_out (rtx insn, rtx operands[], int *len)
 }
 
 
-/* Output addition of register XOP[0] and compile time constant XOP[2]:
-
+/* Output addition of register XOP[0] and compile time constant XOP[2].
+   CODE == PLUS:  perform addition by using ADD instructions or
+   CODE == MINUS: perform addition by using SUB instructions:
+   
       XOP[0] = XOP[0] + XOP[2]
+      
+   Or perform addition/subtraction with register XOP[2] depending on CODE:
+   
+      XOP[0] = XOP[0] +/- XOP[2]
 
-   and return "".  If PLEN == NULL, print assembler instructions to perform the
-   addition; otherwise, set *PLEN to the length of the instruction sequence (in
-   words) printed with PLEN == NULL.  XOP[3] is an 8-bit scratch register.
-   CODE == PLUS:  perform addition by using ADD instructions.
-   CODE == MINUS: perform addition by using SUB instructions.
-   Set *PCC to effect on cc0 according to respective CC_* insn attribute.  */
+   If PLEN == NULL, print assembler instructions to perform the operation;
+   otherwise, set *PLEN to the length of the instruction sequence (in words)
+   printed with PLEN == NULL.  XOP[3] is an 8-bit scratch register or NULL_RTX.
+   Set *PCC to effect on cc0 according to respective CC_* insn attribute.
+
+   CODE_SAT == UNKNOWN: Perform ordinary, non-saturating operation.
+   CODE_SAT != UNKNOWN: Perform operation and saturate according to CODE_SAT.
+   If  CODE_SAT != UNKNOWN  then SIGN contains the sign of the summand resp.
+   the subtrahend in the original insn, provided it is a compile time constant.
+   In all other cases, SIGN is 0.
+
+   Return "".  */
 
 static void
-avr_out_plus_1 (rtx *xop, int *plen, enum rtx_code code, int *pcc)
+avr_out_plus_1 (rtx *xop, int *plen, enum rtx_code code, int *pcc,
+                enum rtx_code code_sat = UNKNOWN, int sign = 0)
 {
   /* MODE of the operation.  */
   enum machine_mode mode = GET_MODE (xop[0]);
@@ -6026,6 +6029,41 @@ avr_out_plus_1 (rtx *xop, int *plen, enum rtx_code code, int *pcc)
   /* Value to add.  There are two ways to add VAL: R += VAL and R -= -VAL.  */
   rtx xval = xop[2];
 
+  /* Output a BRVC instruction.  Only needed with saturation.  */
+  bool out_brvc = true;
+
+  if (plen)
+    *plen = 0;
+
+  if (REG_P (xop[2]))
+    {
+      *pcc = MINUS == code ? (int) CC_SET_CZN : (int) CC_SET_N;
+
+      for (i = 0; i < n_bytes; i++)
+        {
+          /* We operate byte-wise on the destination.  */
+          op[0] = simplify_gen_subreg (QImode, xop[0], mode, i);
+          op[1] = simplify_gen_subreg (QImode, xop[2], mode, i);
+
+          if (i == 0)
+            avr_asm_len (code == PLUS ? "add %0,%1" : "sub %0,%1",
+                         op, plen, 1);
+          else
+            avr_asm_len (code == PLUS ? "adc %0,%1" : "sbc %0,%1",
+                         op, plen, 1);
+        }
+
+      if (reg_overlap_mentioned_p (xop[0], xop[2]))
+        {
+          gcc_assert (REGNO (xop[0]) == REGNO (xop[2]));
+          
+          if (MINUS == code)
+            return;
+        }
+
+      goto saturate;
+    }
+
   /* Except in the case of ADIW with 16-bit register (see below)
      addition does not set cc0 in a usable way.  */
   
@@ -6034,13 +6072,39 @@ avr_out_plus_1 (rtx *xop, int *plen, enum rtx_code code, int *pcc)
   if (CONST_FIXED_P (xval))
     xval = avr_to_int_mode (xval);
 
+  /* Adding/Subtracting zero is a no-op.  */
+  
+  if (xval == const0_rtx)
+    {
+      *pcc = CC_NONE;
+      return;
+    }
+
   if (MINUS == code)
     xval = simplify_unary_operation (NEG, imode, xval, imode);
 
   op[2] = xop[3];
 
-  if (plen)
-    *plen = 0;
+  if (SS_PLUS == code_sat && MINUS == code
+      && sign < 0
+      && 0x80 == (INTVAL (simplify_gen_subreg (QImode, xval, imode, n_bytes-1))
+                  & GET_MODE_MASK (QImode)))
+    {
+      /* We compute x + 0x80 by means of SUB instructions.  We negated the
+         constant subtrahend above and are left with  x - (-128)  so that we
+         need something like SUBI r,128 which does not exist because SUBI sets
+         V according to the sign of the subtrahend.  Notice the only case
+         where this must be done is when NEG overflowed in case [2s] because
+         the V computation needs the right sign of the subtrahend.  */
+      
+      rtx msb = simplify_gen_subreg (QImode, xop[0], mode, n_bytes-1);
+
+      avr_asm_len ("subi %0,128" CR_TAB
+                   "brmi 0f", &msb, plen, 2);
+      out_brvc = false;
+
+      goto saturate;
+    }
 
   for (i = 0; i < n_bytes; i++)
     {
@@ -6082,7 +6146,7 @@ avr_out_plus_1 (rtx *xop, int *plen, enum rtx_code code, int *pcc)
                                op, plen, 1);
 
                   if (n_bytes == 2 && PLUS == code)
-                      *pcc = CC_SET_ZN;
+                    *pcc = CC_SET_ZN;
                 }
 
               i++;
@@ -6099,6 +6163,7 @@ avr_out_plus_1 (rtx *xop, int *plen, enum rtx_code code, int *pcc)
           continue;
         }
       else if ((val8 == 1 || val8 == 0xff)
+               && UNKNOWN == code_sat
                && !started
                && i == n_bytes - 1)
         {
@@ -6111,7 +6176,17 @@ avr_out_plus_1 (rtx *xop, int *plen, enum rtx_code code, int *pcc)
         {
         case PLUS:
 
-          gcc_assert (plen != NULL || REG_P (op[2]));
+          gcc_assert (plen != NULL || (op[2] && REG_P (op[2])));
+
+          if (plen != NULL && UNKNOWN != code_sat)
+            {
+              /* This belongs to the x + 0x80 corner case.  The code with
+                 ADD instruction is not smaller, thus make this case
+                 expensive so that the caller won't pick it.  */
+
+              *plen += 10;
+              break;
+            }
 
           if (clobber_val != (int) val8)
             avr_asm_len ("ldi %2,%1", op, plen, 1);
@@ -6147,133 +6222,369 @@ avr_out_plus_1 (rtx *xop, int *plen, enum rtx_code code, int *pcc)
 
     } /* for all sub-bytes */
 
-  /* No output doesn't change cc0.  */
+ saturate:
+
+  if (UNKNOWN == code_sat)
+    return;
+
+  *pcc = (int) CC_CLOBBER;
+
+  /* Vanilla addition/subtraction is done.  We are left with saturation.
+     
+     We have to compute  A = A <op> B  where  A  is a register and
+     B is a register or a non-zero compile time constant CONST.
+     A is register class "r" if unsigned && B is REG.  Otherwise, A is in "d".
+     B stands for the original operand $2 in INSN.  In the case of B = CONST
+     SIGN in { -1, 1 } is the sign of B.  Otherwise, SIGN is 0.
+     
+     CODE is the instruction flavor we use in the asm sequence to perform <op>.
+     
+     
+     unsigned
+     operation        |  code |  sat if  |    b is      | sat value |  case
+     -----------------+-------+----------+--------------+-----------+-------
+     +  as  a + b     |  add  |  C == 1  |  const, reg  | u+ = 0xff |  [1u]
+     +  as  a - (-b)  |  sub  |  C == 0  |  const       | u+ = 0xff |  [2u]
+     -  as  a - b     |  sub  |  C == 1  |  const, reg  | u- = 0    |  [3u]
+     -  as  a + (-b)  |  add  |  C == 0  |  const       | u- = 0    |  [4u]
+     
+     
+     signed
+     operation        |  code |  sat if  |    b is      | sat value |  case
+     -----------------+-------+----------+--------------+-----------+-------
+     +  as  a + b     |  add  |  V == 1  |  const, reg  | s+        |  [1s]
+     +  as  a - (-b)  |  sub  |  V == 1  |  const       | s+        |  [2s]
+     -  as  a - b     |  sub  |  V == 1  |  const, reg  | s-        |  [3s]
+     -  as  a + (-b)  |  add  |  V == 1  |  const       | s-        |  [4s]
+     
+     s+  =  b < 0  ?  -0x80 :  0x7f
+     s-  =  b < 0  ?   0x7f : -0x80
+     
+     The cases a - b actually perform  a - (-(-b))  if B is CONST.
+  */
+
+  op[0] = simplify_gen_subreg (QImode, xop[0], mode, n_bytes-1);
+  op[1] = n_bytes > 1
+    ? simplify_gen_subreg (QImode, xop[0], mode, n_bytes-2)
+    : NULL_RTX;
+
+  if (!plen && flag_print_asm_name)
+    avr_fdump (asm_out_file, ";; %C (%C)\n", code_sat, code);
+
+  bool need_copy = true;
+  int len_call = 1 + AVR_HAVE_JMP_CALL;
   
-  if (plen && *plen == 0)
-    *pcc = CC_NONE;
+  switch (code_sat)
+    {
+    default:
+      gcc_unreachable();
+
+    case SS_PLUS:
+    case SS_MINUS:
+      if (!plen && flag_print_asm_name)
+        avr_fdump (asm_out_file, ";; %s = %r\n", sign < 0 ? "neg" : "pos",
+                   xop[2]);
+
+      if (out_brvc)
+        avr_asm_len ("brvc 0f", op, plen, 1);
+
+      if (reg_overlap_mentioned_p (xop[0], xop[2]))
+        {
+          /* [1s,reg] */
+
+          if (n_bytes == 1)
+            avr_asm_len ("ldi %0,0x7f" CR_TAB
+                         "adc %0,__zero_reg__", op, plen, 2);
+          else
+            avr_asm_len ("ldi %0,0x7f" CR_TAB
+                         "ldi %1,0xff" CR_TAB
+                         "adc %1,__zero_reg__" CR_TAB
+                         "adc %0,__zero_reg__", op, plen, 4);
+        }
+      else if (sign == 0 && PLUS == code)
+        {
+          /* [1s,reg] */
+
+          op[2] = simplify_gen_subreg (QImode, xop[2], mode, n_bytes-1);
+
+          if (n_bytes == 1)
+            avr_asm_len ("ldi %0,0x80" CR_TAB
+                         "sbrs %2,7"   CR_TAB
+                         "dec %0", op, plen, 3);
+          else
+            avr_asm_len ("ldi %0,0x80" CR_TAB
+                         "cp %2,%0"    CR_TAB
+                         "sbc %1,%1"   CR_TAB
+                         "sbci %0,0", op, plen, 4);
+        }
+      else if (sign == 0 && MINUS == code)
+        {
+          /* [3s,reg] */
+
+          op[2] = simplify_gen_subreg (QImode, xop[2], mode, n_bytes-1);
+
+          if (n_bytes == 1)
+            avr_asm_len ("ldi %0,0x7f" CR_TAB
+                         "sbrs %2,7"   CR_TAB
+                         "inc %0", op, plen, 3);
+          else
+            avr_asm_len ("ldi %0,0x7f" CR_TAB
+                         "cp %0,%2"    CR_TAB
+                         "sbc %1,%1"   CR_TAB
+                         "sbci %0,-1", op, plen, 4);
+        }
+      else if ((sign < 0) ^ (SS_MINUS == code_sat))
+        {
+          /* [1s,const,B < 0] [2s,B < 0] */
+          /* [3s,const,B > 0] [4s,B > 0] */
+
+          if (n_bytes == 8)
+            {
+              avr_asm_len ("%~call __clr_8", op, plen, len_call);
+              need_copy = false;
+            }
+
+          avr_asm_len ("ldi %0,0x80", op, plen, 1);
+          if (n_bytes > 1 && need_copy)
+            avr_asm_len ("clr %1", op, plen, 1);
+        }
+      else if ((sign > 0) ^ (SS_MINUS == code_sat))
+        {
+          /* [1s,const,B > 0] [2s,B > 0] */
+          /* [3s,const,B < 0] [4s,B < 0] */
+
+          if (n_bytes == 8)
+            {
+              avr_asm_len ("sec" CR_TAB
+                           "%~call __sbc_8", op, plen, 1 + len_call);
+              need_copy = false;
+            }
+
+          avr_asm_len ("ldi %0,0x7f", op, plen, 1);
+          if (n_bytes > 1 && need_copy)
+            avr_asm_len ("ldi %1,0xff", op, plen, 1);
+        }
+      else
+        gcc_unreachable();
+      
+      break;
+
+    case US_PLUS:
+      /* [1u] : [2u] */
+      
+      avr_asm_len (PLUS == code ? "brcc 0f" : "brcs 0f", op, plen, 1);
+      
+      if (n_bytes == 8)
+        {
+          if (MINUS == code)
+            avr_asm_len ("sec", op, plen, 1);
+          avr_asm_len ("%~call __sbc_8", op, plen, len_call);
+
+          need_copy = false;
+        }
+      else
+        {
+          if (MINUS == code && !test_hard_reg_class (LD_REGS, op[0]))
+            avr_asm_len ("sec" CR_TAB "sbc %0,%0", op, plen, 2);
+          else
+            avr_asm_len (PLUS == code ? "sbc %0,%0" : "ldi %0,0xff",
+                         op, plen, 1);
+        }
+      break; /* US_PLUS */
+      
+    case US_MINUS:
+      /* [4u] : [3u] */
+
+      avr_asm_len (PLUS == code ? "brcs 0f" : "brcc 0f", op, plen, 1);
+
+      if (n_bytes == 8)
+        {
+          avr_asm_len ("%~call __clr_8", op, plen, len_call);
+          need_copy = false;
+        }
+      else
+        avr_asm_len ("clr %0", op, plen, 1);
+      
+      break;
+    }
+
+  /* We set the MSB in the unsigned case and the 2 MSBs in the signed case.
+     Now copy the right value to the LSBs.  */
+  
+  if (need_copy && n_bytes > 1)
+    {
+      if (US_MINUS == code_sat || US_PLUS == code_sat)
+        {
+          avr_asm_len ("mov %1,%0", op, plen, 1);
+
+          if (n_bytes > 2)
+            {
+              op[0] = xop[0];
+              if (AVR_HAVE_MOVW)
+                avr_asm_len ("movw %0,%1", op, plen, 1);
+              else
+                avr_asm_len ("mov %A0,%1" CR_TAB
+                             "mov %B0,%1", op, plen, 2);
+            }
+        }
+      else if (n_bytes > 2)
+        {
+          op[0] = xop[0];
+          avr_asm_len ("mov %A0,%1" CR_TAB
+                       "mov %B0,%1", op, plen, 2);
+        }
+    }
+
+  if (need_copy && n_bytes == 8)
+    {
+      if (AVR_HAVE_MOVW)
+        avr_asm_len ("movw %r0+2,%0" CR_TAB
+                     "movw %r0+4,%0", xop, plen, 2);
+      else
+        avr_asm_len ("mov %r0+2,%0" CR_TAB
+                     "mov %r0+3,%0" CR_TAB
+                     "mov %r0+4,%0" CR_TAB
+                     "mov %r0+5,%0", xop, plen, 4);
+    }
+
+  avr_asm_len ("0:", op, plen, 0);
 }
 
 
-/* Output addition of register XOP[0] and compile time constant XOP[2]:
+/* Output addition/subtraction of register XOP[0] and a constant XOP[2] that
+   is ont a compile-time constant:
 
-      XOP[0] = XOP[0] + XOP[2]
+      XOP[0] = XOP[0] +/- XOP[2]
 
-   and return "".  If PLEN == NULL, print assembler instructions to perform the
-   addition; otherwise, set *PLEN to the length of the instruction sequence (in
-   words) printed with PLEN == NULL.
-   If PCC != 0 then set *PCC to the the instruction sequence's effect on the
-   condition code (with respect to XOP[0]).  */
+   This is a helper for the function below.  The only insns that need this
+   are additions/subtraction for pointer modes, i.e. HImode and PSImode.  */
+
+static const char*
+avr_out_plus_symbol (rtx *xop, enum rtx_code code, int *plen, int *pcc)
+{
+  enum machine_mode mode = GET_MODE (xop[0]);
+  int n_bytes = GET_MODE_SIZE (mode);
+
+  /* Only pointer modes want to add symbols.  */
+  
+  gcc_assert (mode == HImode || mode == PSImode);
+
+  *pcc = MINUS == code ? (int) CC_SET_CZN : (int) CC_SET_N;
+
+  avr_asm_len (PLUS == code
+               ? "subi %A0,lo8(-(%2))" CR_TAB "sbci %B0,hi8(-(%2))"
+               : "subi %A0,lo8(%2)"    CR_TAB "sbci %B0,hi8(%2)",
+               xop, plen, -2);
+
+  if (3 == n_bytes)
+    avr_asm_len (PLUS == code
+                 ? "sbci %C0,hlo8((-%2))"
+                 : "sbci %C0,hlo8(%2)", xop, plen, 1);
+  return "";
+}
+
+
+/* Prepare operands of addition/subtraction to be used with avr_out_plus_1.
+   
+   INSN is a single_set insn with a binary operation as SET_SRC that is
+   one of:  PLUS, SS_PLUS, US_PLUS, MINUS, SS_MINUS, US_MINUS.
+
+   XOP are the operands of INSN.  In the case of 64-bit operations with
+   constant XOP[] has just one element:  The summand/subtrahend in XOP[0].
+   The non-saturating insns up to 32 bits may or may not supply a "d" class
+   scratch as XOP[3].
+
+   If PLEN == NULL output the instructions.
+   If PLEN != NULL set *PLEN to the length of the sequence in words.
+
+   PCC is a pointer to store the instructions' effect on cc0.
+   PCC may be NULL.
+
+   PLEN and PCC default to NULL.
+
+   Return ""  */
 
 const char*
-avr_out_plus (rtx *xop, int *plen, int *pcc)
+avr_out_plus (rtx insn, rtx *xop, int *plen, int *pcc)
 {
-  int len_plus, len_minus;
   int cc_plus, cc_minus, cc_dummy;
+  int len_plus, len_minus;
+  rtx op[4];
+  rtx xdest = SET_DEST (single_set (insn));
+  enum machine_mode mode = GET_MODE (xdest);
+  enum machine_mode imode = int_mode_for_mode (mode);
+  int n_bytes = GET_MODE_SIZE (mode);
+  enum rtx_code code_sat = GET_CODE (SET_SRC (single_set (insn)));
+  enum rtx_code code
+    = (PLUS == code_sat || SS_PLUS == code_sat || US_PLUS == code_sat
+       ? PLUS : MINUS);
 
   if (!pcc)
     pcc = &cc_dummy;
-                                   
-  /* Work out if  XOP[0] += XOP[2]  is better or  XOP[0] -= -XOP[2].  */
-  
-  avr_out_plus_1 (xop, &len_plus, PLUS, &cc_plus);
-  avr_out_plus_1 (xop, &len_minus, MINUS, &cc_minus);
 
-  /* Prefer MINUS over PLUS if size is equal because it sets cc0.  */
+  /* PLUS and MINUS don't saturate:  Use modular wrap-around.  */
   
+  if (PLUS == code_sat || MINUS == code_sat)
+    code_sat = UNKNOWN;
+
+  if (n_bytes <= 4 && REG_P (xop[2]))
+    {
+      avr_out_plus_1 (xop, plen, code, pcc, code_sat);
+      return "";
+    }
+
+  if (8 == n_bytes)
+    {
+      op[0] = gen_rtx_REG (DImode, ACC_A);
+      op[1] = gen_rtx_REG (DImode, ACC_A);
+      op[2] = avr_to_int_mode (xop[0]);
+    }
+  else
+    {
+      if (!REG_P (xop[2])
+          && !CONST_INT_P (xop[2])
+          && !CONST_FIXED_P (xop[2]))
+        {
+          return avr_out_plus_symbol (xop, code, plen, pcc);
+        }
+      
+      op[0] = avr_to_int_mode (xop[0]);
+      op[1] = avr_to_int_mode (xop[1]);
+      op[2] = avr_to_int_mode (xop[2]);
+    }
+
+  /* Saturations and 64-bit operations don't have a clobber operand.
+     For the other cases, the caller will provide a proper XOP[3].  */
+  
+  op[3] = PARALLEL == GET_CODE (PATTERN (insn)) ? xop[3] : NULL_RTX;
+
+  /* Saturation will need the sign of the original operand.  */
+
+  rtx xmsb = simplify_gen_subreg (QImode, op[2], imode, n_bytes-1);
+  int sign = INTVAL (xmsb) < 0 ? -1 : 1;
+
+  /* If we subtract and the subtrahend is a constant, then negate it
+     so that avr_out_plus_1 can be used.  */
+
+  if (MINUS == code)
+    op[2] = simplify_unary_operation (NEG, imode, op[2], imode);
+
+  /* Work out the shortest sequence.  */
+
+  avr_out_plus_1 (op, &len_minus, MINUS, &cc_plus, code_sat, sign);
+  avr_out_plus_1 (op, &len_plus, PLUS, &cc_minus, code_sat, sign);
+
   if (plen)
     {
       *plen = (len_minus <= len_plus) ? len_minus : len_plus;
       *pcc  = (len_minus <= len_plus) ? cc_minus : cc_plus;
     }
   else if (len_minus <= len_plus)
-    avr_out_plus_1 (xop, NULL, MINUS, pcc);
+    avr_out_plus_1 (op, NULL, MINUS, pcc, code_sat, sign);
   else
-    avr_out_plus_1 (xop, NULL, PLUS, pcc);
+    avr_out_plus_1 (op, NULL, PLUS, pcc, code_sat, sign);
 
   return "";
-}
-
-
-/* Same as above but XOP has just 3 entries.
-   Supply a dummy 4th operand.  */
-
-const char*
-avr_out_plus_noclobber (rtx *xop, int *plen, int *pcc)
-{
-  rtx op[4];
-
-  op[0] = xop[0];
-  op[1] = xop[1];
-  op[2] = xop[2];
-  op[3] = NULL_RTX;
-
-  return avr_out_plus (op, plen, pcc);
-}
-
-
-/* Output subtraction of register XOP[0] and compile time constant XOP[2]:
-
-      XOP[0] = XOP[0] - XOP[2]
-
-   This is basically the same as `avr_out_plus' except that we subtract.
-   It's needed because (minus x const) is not mapped to (plus x -const)
-   for the fixed point modes.  */
-
-const char*
-avr_out_minus (rtx *xop, int *plen, int *pcc)
-{
-  rtx op[4];
-
-  if (pcc)
-    *pcc = (int) CC_SET_CZN;
-
-  if (REG_P (xop[2]))
-    return avr_asm_len ("sub %A0,%A2" CR_TAB
-                        "sbc %B0,%B2", xop, plen, -2);
-
-  if (!CONST_INT_P (xop[2])
-      && !CONST_FIXED_P (xop[2]))
-    return avr_asm_len ("subi %A0,lo8(%2)" CR_TAB
-                        "sbci %B0,hi8(%2)", xop, plen, -2);
-  
-  op[0] = avr_to_int_mode (xop[0]);
-  op[1] = avr_to_int_mode (xop[1]);
-  op[2] = gen_int_mode (-INTVAL (avr_to_int_mode (xop[2])),
-                        GET_MODE (op[0]));
-  op[3] = xop[3];
-
-  return avr_out_plus (op, plen, pcc);
-}
-
-
-/* Prepare operands of adddi3_const_insn to be used with avr_out_plus_1.  */
-
-const char*
-avr_out_plus64 (rtx addend, int *plen)
-{
-  int cc_dummy;
-  rtx op[4];
-
-  op[0] = gen_rtx_REG (DImode, 18);
-  op[1] = op[0];
-  op[2] = addend;
-  op[3] = NULL_RTX;
-
-  avr_out_plus_1 (op, plen, MINUS, &cc_dummy);
-
-  return "";
-}
-
-
-/* Prepare operands of subdi3_const_insn to be used with avr_out_plus64.  */
-
-const char*
-avr_out_minus64 (rtx subtrahend, int *plen)
-{
-  rtx xneg = avr_to_int_mode (subtrahend);
-  xneg = simplify_unary_operation (NEG, DImode, xneg, DImode);
-
-  return avr_out_plus64 (xneg, plen);
 }
 
 
@@ -7004,13 +7315,7 @@ adjust_insn_length (rtx insn, int len)
       
     case ADJUST_LEN_OUT_BITOP: avr_out_bitop (insn, op, &len); break;
       
-    case ADJUST_LEN_OUT_PLUS: avr_out_plus (op, &len, NULL); break;
-    case ADJUST_LEN_PLUS64: avr_out_plus64 (op[0], &len); break;
-    case ADJUST_LEN_MINUS: avr_out_minus (op, &len, NULL); break;
-    case ADJUST_LEN_MINUS64: avr_out_minus64 (op[0], &len); break;
-    case ADJUST_LEN_OUT_PLUS_NOCLOBBER:
-      avr_out_plus_noclobber (op, &len, NULL); break;
-
+    case ADJUST_LEN_PLUS: avr_out_plus (insn, op, &len); break;
     case ADJUST_LEN_ADDTO_SP: avr_out_addto_sp (op, &len); break;
       
     case ADJUST_LEN_MOV8:  output_movqi (insn, op, &len); break;
@@ -8897,8 +9202,8 @@ avr_rtx_costs (rtx x, int codearg, int outer_code,
 
 static int
 avr_address_cost (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED,
-		  addr_space_t as ATTRIBUTE_UNUSED,
-		  bool speed ATTRIBUTE_UNUSED)
+                  addr_space_t as ATTRIBUTE_UNUSED,
+                  bool speed ATTRIBUTE_UNUSED)
 {
   int cost = 4;
   

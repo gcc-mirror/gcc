@@ -29,6 +29,12 @@
                               (HA "") (UHA "")])
 (define_mode_iterator ALL4A [(SA "") (USA "")])
 
+(define_mode_iterator ALL2S [HQ HA])
+(define_mode_iterator ALL4S [SA SQ])
+(define_mode_iterator ALL24S  [    HQ   HA  SA  SQ])
+(define_mode_iterator ALL124S [ QQ HQ   HA  SA  SQ])
+(define_mode_iterator ALL124U [UQQ UHQ UHA USA USQ])
+
 ;;; Conversions
 
 (define_mode_iterator FIXED_A
@@ -70,6 +76,112 @@
   }
   [(set_attr "cc" "clobber")
    (set_attr "adjust_len" "ufract")])
+
+;******************************************************************************
+;** Saturated Addition and Subtraction
+;******************************************************************************
+
+;; Fixme:  It would be nice if we could expand the 32-bit versions to a
+;;    transparent libgcc call if $2 is a REG.  Problem is that it is
+;;    not possible to describe that addition is commutative.
+;;    And defining register classes/constraintrs for the involved hard
+;;    registers and let IRA do the work, yields inacceptable bloated code.
+;;    Thus, we have to live with the up to 11 instructions that are output
+;;    for these 32-bit saturated operations.
+
+;; "ssaddqq3"  "ssaddhq3"  "ssaddha3"  "ssaddsq3"  "ssaddsa3"
+;; "sssubqq3"  "sssubhq3"  "sssubha3"  "sssubsq3"  "sssubsa3"
+(define_insn "<code_stdname><mode>3"
+  [(set (match_operand:ALL124S 0 "register_operand"                          "=??d,d")
+        (ss_addsub:ALL124S (match_operand:ALL124S 1 "register_operand" "<abelian>0,0")
+                           (match_operand:ALL124S 2 "nonmemory_operand"         "r,Ynn")))]
+  ""
+  {
+    return avr_out_plus (insn, operands);
+  }
+  [(set_attr "cc" "clobber")
+   (set_attr "adjust_len" "plus")])
+
+;; "usadduqq3"  "usadduhq3"  "usadduha3" "usaddusq3"  "usaddusa3"
+;; "ussubuqq3"  "ussubuhq3"  "ussubuha3" "ussubusq3"  "ussubusa3"
+(define_insn "<code_stdname><mode>3"
+  [(set (match_operand:ALL124U 0 "register_operand"                          "=??r,d")
+        (us_addsub:ALL124U (match_operand:ALL124U 1 "register_operand" "<abelian>0,0")
+                           (match_operand:ALL124U 2 "nonmemory_operand"         "r,Ynn")))]
+  ""
+  {
+    return avr_out_plus (insn, operands);
+  }
+  [(set_attr "cc" "clobber")
+   (set_attr "adjust_len" "plus")])
+
+;******************************************************************************
+;** Saturated Negation and Absolute Value
+;******************************************************************************
+
+;; Fixme: This will always result in 0.  Dunno why simplify-rtx.c says
+;;   "unknown" on how to optimize this.  libgcc call would be in order,
+;;   but the performance is *PLAIN* *HORROR* because the optimizers don't
+;;   manage to optimize out MEMCPY that's sprincled all over fixed-bit.c  */
+
+(define_expand "usneg<mode>2"
+  [(parallel [(match_operand:ALL124U 0 "register_operand" "")
+              (match_operand:ALL124U 1 "nonmemory_operand" "")])]
+  ""
+  {
+    emit_move_insn (operands[0], CONST0_RTX (<MODE>mode));
+    DONE;
+  })
+
+(define_insn "ssnegqq2"
+  [(set (match_operand:QQ 0 "register_operand"            "=r")
+        (ss_neg:QQ (match_operand:QQ 1 "register_operand"  "0")))]
+  ""
+  "neg %0\;brvc 0f\;dec %0\;0:"
+  [(set_attr "cc" "clobber")
+   (set_attr "length" "3")])
+
+(define_insn "ssabsqq2"
+  [(set (match_operand:QQ 0 "register_operand"            "=r")
+        (ss_abs:QQ (match_operand:QQ 1 "register_operand"  "0")))]
+  ""
+  "sbrc %0,7\;neg %0\;sbrc %0,7\;dec %0"
+  [(set_attr "cc" "clobber")
+   (set_attr "length" "4")])
+
+;; "ssneghq2"  "ssnegha2"  "ssnegsq2"  "ssnegsa2"
+;; "ssabshq2"  "ssabsha2"  "ssabssq2"  "ssabssa2"
+(define_expand "<code_stdname><mode>2"
+  [(set (match_dup 2)
+        (match_operand:ALL24S 1 "register_operand" ""))
+   (set (match_dup 2)
+        (ss_abs_neg:ALL24S (match_dup 2)))
+   (set (match_operand:ALL24S 0 "register_operand" "")
+        (match_dup 2))]
+  ""
+  {
+    operands[2] = gen_rtx_REG (<MODE>mode, 26 - GET_MODE_SIZE (<MODE>mode));
+  })
+
+;; "*ssneghq2"  "*ssnegha2"
+;; "*ssabshq2"  "*ssabsha2"
+(define_insn "*<code_stdname><mode>2"
+  [(set (reg:ALL2S 24)
+        (ss_abs_neg:ALL2S (reg:ALL2S 24)))]
+  ""
+  "%~call __<code_stdname>_2"
+  [(set_attr "type" "xcall")
+   (set_attr "cc" "clobber")])
+
+;; "*ssnegsq2"  "*ssnegsa2"
+;; "*ssabssq2"  "*ssabssa2"
+(define_insn "*<code_stdname><mode>2"
+  [(set (reg:ALL4S 22)
+        (ss_abs_neg:ALL4S (reg:ALL4S 22)))]
+  ""
+  "%~call __<code_stdname>_4"
+  [(set_attr "type" "xcall")
+   (set_attr "cc" "clobber")])
 
 ;******************************************************************************
 ; mul

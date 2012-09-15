@@ -808,8 +808,8 @@ DEFUN   __divsa3
     XCALL   __udivusa3
     sbrs    r0, 7   ; negate result if needed
     ret
-    NEG4    r_quoL
-    ret
+    ;; negate r_quoL
+    XJMP    __negsi2
 ENDF __divsa3
 #endif  /* defined (L_divsa3) */
 
@@ -872,3 +872,223 @@ ENDF __udivusa3
 #undef  r_divHL
 #undef  r_divHH
 #undef  r_cnt
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Saturation, 2 Bytes
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; First Argument and Return Register
+#define A0  24
+#define A1  A0+1
+
+#if defined (L_ssneg_2)
+DEFUN __ssneg_2
+    NEG2    A0
+    brvc 0f
+    sbiw    A0, 1
+0:  ret
+ENDF __ssneg_2
+#endif /* L_ssneg_2 */
+
+#if defined (L_ssabs_2)
+DEFUN __ssabs_2
+    sbrs    A1, 7
+    ret
+    XJMP    __ssneg_2
+ENDF __ssabs_2
+#endif /* L_ssabs_2 */
+
+#undef A0
+#undef A1
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Saturation, 4 Bytes
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; First Argument and Return Register
+#define A0  22
+#define A1  A0+1
+#define A2  A0+2
+#define A3  A0+3
+
+#if defined (L_ssneg_4)
+DEFUN __ssneg_4
+    XCALL   __negsi2
+    brvc 0f
+    ldi     A3, 0x7f
+    ldi     A2, 0xff
+    ldi     A1, 0xff
+    ldi     A0, 0xff
+0:  ret
+ENDF __ssneg_4
+#endif /* L_ssneg_4 */
+
+#if defined (L_ssabs_4)
+DEFUN __ssabs_4
+    sbrs    A3, 7
+    ret
+    XJMP    __ssneg_4
+ENDF __ssabs_4
+#endif /* L_ssabs_4 */
+
+#undef A0
+#undef A1
+#undef A2
+#undef A3
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Saturation, 8 Bytes
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; First Argument and Return Register
+#define A0  18
+#define A1  A0+1
+#define A2  A0+2
+#define A3  A0+3
+#define A4  A0+4
+#define A5  A0+5
+#define A6  A0+6
+#define A7  A0+7
+
+#if defined (L_clr_8)
+FALIAS __usneguta2
+FALIAS __usneguda2
+FALIAS __usnegudq2
+
+;; Clear Carry and all Bytes
+DEFUN __clr_8
+    ;; Clear Carry and set Z
+    sub     A7, A7
+    ;; FALLTHRU
+ENDF  __clr_8
+;; Propagate Carry to all Bytes, Carry unaltered
+DEFUN __sbc_8
+    sbc     A7, A7
+    sbc     A6, A6
+    wmov    A4, A6
+    wmov    A2, A6
+    wmov    A0, A6
+    ret
+ENDF __sbc_8
+#endif /* L_clr_8 */
+
+#if defined (L_ssneg_8)
+FALIAS __ssnegta2
+FALIAS __ssnegda2
+FALIAS __ssnegdq2
+
+DEFUN __ssneg_8
+    XCALL   __negdi2
+    brvc 0f
+    ;; A[] = 0x7fffffff
+    sec
+    XCALL   __sbc_8
+    ldi     A7, 0x7f
+0:  ret
+ENDF __ssneg_8
+#endif /* L_ssneg_8 */
+
+#if defined (L_ssabs_8)
+FALIAS __ssabsta2
+FALIAS __ssabsda2
+FALIAS __ssabsdq2
+
+DEFUN __ssabs_8
+    sbrs    A7, 7
+    ret
+    XJMP    __ssneg_8
+ENDF __ssabs_8
+#endif /* L_ssabs_8 */
+
+;; Second Argument
+#define B0  10
+#define B1  B0+1
+#define B2  B0+2
+#define B3  B0+3
+#define B4  B0+4
+#define B5  B0+5
+#define B6  B0+6
+#define B7  B0+7
+
+#if defined (L_usadd_8)
+FALIAS __usadduta3
+FALIAS __usadduda3
+FALIAS __usaddudq3
+
+DEFUN __usadd_8
+    XCALL   __adddi3
+    brcs 0f
+    ret
+	;; A[] = 0xffffffff
+0:  XJMP    __sbc_8
+ENDF __usadd_8
+#endif /* L_usadd_8 */
+
+#if defined (L_ussub_8)
+FALIAS __ussubuta3
+FALIAS __ussubuda3
+FALIAS __ussubudq3
+
+DEFUN __ussub_8
+    XCALL   __subdi3
+    brcs 0f
+    ret
+	;; A[] = 0
+0:  XJMP    __clr_8
+ENDF __ussub_8
+#endif /* L_ussub_8 */
+
+#if defined (L_ssadd_8)
+FALIAS __ssaddta3
+FALIAS __ssaddda3
+FALIAS __ssadddq3
+
+DEFUN __ssadd_8
+    ;; A = (B >= 0) ? INT64_MAX : INT64_MIN
+    XCALL   __adddi3
+    brvc 0f
+    cpi     B7, 0x80
+    XCALL   __sbc_8
+    subi    A7, 0x80
+0:  ret
+ENDF __ssadd_8
+#endif /* L_ssadd_8 */
+
+#if defined (L_sssub_8)
+FALIAS __sssubta3
+FALIAS __sssubda3
+FALIAS __sssubdq3
+
+DEFUN __sssub_8
+    XCALL   __subdi3
+    brvc 0f
+	;; A = (B < 0) ? INT64_MAX : INT64_MIN
+    ldi     A7, 0x7f
+    cp      A7, B7
+    XCALL   __sbc_8
+    subi    A7, 0x80
+0:  ret
+ENDF __sssub_8
+#endif /* L_sssub_8 */
+
+#undef A0
+#undef A1
+#undef A2
+#undef A3
+#undef A4
+#undef A5
+#undef A6
+#undef A7
+#undef B0
+#undef B1
+#undef B2
+#undef B3
+#undef B4
+#undef B5
+#undef B6
+#undef B7

@@ -1,3 +1,44 @@
+2012-09-15  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/54222
+	* config/avr/avr-fixed.md (ALL2S, ALL4S, ALL24S, ALL124S,
+	ALL124U): New mode iterators.
+	(<code_stdname><mode>3): New insns for SS_PLUS, SS_MINUS.
+	(<code_stdname><mode>3): New insns for US_PLUS, US_MINUS.
+	(usneg<mode>2): New insns.
+	(<code_stdname><mode>2): New expanders for SS_NEG, SS_ABS.
+	(*<code_stdname><mode>2): New insns for SS_NEG, SS_ABS.
+	* config/avr/avr-dimode.md (ALL8U, ALL8S): New mode iterators.
+	(avr_out_plus64, avr_out_minus64): Use avr_out_plus instead.
+	(<code_stdname><mode>3): New expanders for SS_PLUS, SS_MINUS.
+	(<code_stdname><mode>3): New expanders for US_PLUS, US_MINUS.
+	(<code_stdname><mode>3_insn): New insns.
+	(<code_stdname><mode>3_const_insn): New insns.
+	* config/avr/avr.md (cc): Add: plus. Remove: out_plus,
+	out_plus_noclobber, minus.
+	(length): Add: plus.  Remove: out_plus, out_plus_noclobber,
+	plus64, minus, minus64.
+	(abelian): New code_attr.
+	(code_stdname): Handle: ss_plus, ss_minus, ss_neg, ss_abs,
+	us_plus, us_minus, us_neg.
+	(*add<mode>3, add<mode>3_clobber, add<mode>3, addpsi3, sub<mode>3):
+	Use avr_out_plus to output.
+	* config/avr/avr-protos.h (avr_out_plus): Change prototype.
+	(avr_out_plus_noclobber, avr_out_minus): Remove.
+	(avr_out_plus64, avr_out_minus64): Remove.
+	* config/avr/avr.c (avr_out_plus_1): Add new default arguments
+	code_sat, sign.  Saturate after operation if code_sat != UNKNOWN.
+	(avr_out_plus_symbol): New static function.
+	(avr_out_plus): Rewrite.
+	(adjust_insn_length): Handle: ADJUST_LEN_PLUS.  Remove handling
+	of: ADJUST_LEN_OUT_PLUS, ADJUST_LEN_PLUS64, ADJUST_LEN_MINUS, 
+	ADJUST_LEN_MINUS64, ADJUST_LEN_OUT_PLUS_NOCLOBBER.
+	(notice_update_cc): Handle: CC_PLUS.  Remove handling of: CC_MINUS,
+	CC_OUT_PLUS, CC_OUT_PLUS_NOCLOBBER
+	(avr_out_plus_noclobber, avr_out_minus): Remove.
+	(avr_out_plus64, avr_out_minus64): Remove.
+	(avr_print_operand): Print raw REGNO if 'r' is used with REG.
+
 2012-09-15  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/sh.c (sh_rtx_costs): Add handling of MEM, SIGN_EXTEND,
