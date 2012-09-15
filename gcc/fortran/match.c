@@ -2964,11 +2964,15 @@ syntax:
   gfc_syntax_error (st);
 
 cleanup:
+  if (acq_lock != tmp)
+    gfc_free_expr (acq_lock);
+  if (errmsg != tmp)
+    gfc_free_expr (errmsg);
+  if (stat != tmp)
+    gfc_free_expr (stat);
+
   gfc_free_expr (tmp);
   gfc_free_expr (lockvar);
-  gfc_free_expr (acq_lock);
-  gfc_free_expr (stat);
-  gfc_free_expr (errmsg);
 
   return MATCH_ERROR;
 }
@@ -3121,9 +3125,6 @@ sync_statement (gfc_statement st)
 	break;
     }
 
-  if (m == MATCH_ERROR)
-    goto syntax;
-
   if (gfc_match (" )%t") != MATCH_YES)
     goto syntax;
 
@@ -3153,10 +3154,13 @@ syntax:
   gfc_syntax_error (st);
 
 cleanup:
+  if (stat != tmp)
+    gfc_free_expr (stat);
+  if (errmsg != tmp)
+    gfc_free_expr (errmsg);
+
   gfc_free_expr (tmp);
   gfc_free_expr (imageset);
-  gfc_free_expr (stat);
-  gfc_free_expr (errmsg);
 
   return MATCH_ERROR;
 }

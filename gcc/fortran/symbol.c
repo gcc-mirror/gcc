@@ -4846,7 +4846,9 @@ gfc_get_typebound_proc (gfc_typebound_proc *tb0)
 gfc_symbol*
 gfc_get_derived_super_type (gfc_symbol* derived)
 {
-  if (derived && derived->attr.generic)
+  gcc_assert (derived);
+
+  if (derived->attr.generic)
     derived = gfc_find_dt_in_generic (derived);
 
   if (!derived->attr.extension)
@@ -4968,7 +4970,7 @@ gfc_find_dt_in_generic (gfc_symbol *sym)
     return sym;
 
   if (sym->attr.generic)
-    for (intr = (sym ? sym->generic : NULL); intr; intr = intr->next)
+    for (intr = sym->generic; intr; intr = intr->next)
       if (intr->sym->attr.flavor == FL_DERIVED)
         break;
   return intr ? intr->sym : NULL;
