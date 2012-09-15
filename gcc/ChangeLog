@@ -1,3 +1,9 @@
+2012-09-15  Tom de Vries  <tom@codesourcery.com>
+
+	* tree-vrp.c (extract_range_from_binary_expr_1): Fix bug in handling of
+	LSHIFT_EXPR with shift range.  Handle more LSHIFT_EXPR cases with shift
+	range.
+
 2012-09-15  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/54222
