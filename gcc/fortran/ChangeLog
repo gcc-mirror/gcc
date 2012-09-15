@@ -1,3 +1,18 @@
+2012-09-15  Tobias Burnus  <burnus@net-b.de>
+
+	* match.c (lock_unlock_statement, sync_statement): Fix potential
+	double freeing.
+	(sync_statement): Remove unreachable code.
+	* simplify.c (gfc_simplify_bessel_n2): Avoid double freeing.
+	(gfc_simplify_repeat): Remove bogus code.
+	* target-memory.h (gfc_target_encode_expr): Update prototype.
+	* target-memory.c (gfc_target_encode_expr, encode_array,
+	encode_derived): Return unsigned HOST_WIDE_INT.
+	(gfc_target_interpret_expr): Add assert.
+	(gfc_merge_initializers): Fix "== 0" check for mpz_t.
+	* symbol.c (gfc_get_typebound_proc): Add assert.
+	(gfc_merge_initializers): Remove unreachable check.
+
 2012-09-13  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/54556
