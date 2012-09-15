@@ -4761,8 +4761,11 @@ c_cast_expr (location_t loc, struct c_type_name *type_name, tree expr)
   ret = build_c_cast (loc, type, expr);
   if (type_expr)
     {
+      bool inner_expr_const = true;
+      ret = c_fully_fold (ret, require_constant_value, &inner_expr_const);
       ret = build2 (C_MAYBE_CONST_EXPR, TREE_TYPE (ret), type_expr, ret);
-      C_MAYBE_CONST_EXPR_NON_CONST (ret) = !type_expr_const;
+      C_MAYBE_CONST_EXPR_NON_CONST (ret) = !(type_expr_const
+					     && inner_expr_const);
       SET_EXPR_LOCATION (ret, loc);
     }
 

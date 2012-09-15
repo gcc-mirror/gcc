@@ -1,4 +1,9 @@
-2012-09-14  Joseph Myers  <joseph@codesourcery.com>
+2012-09-15  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/54552
+	* gcc.c-torture/compile/pr54552-1.c: New test.
+
+2012-09-15  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/54103
 	* gcc.c-torture/compile/pr54103-1.c,
