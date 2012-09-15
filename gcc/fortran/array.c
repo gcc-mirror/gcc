@@ -1074,6 +1074,7 @@ gfc_match_array_constructor (gfc_expr **result)
   seen_ts = false;
 
   /* Try to match an optional "type-spec ::"  */
+  gfc_clear_ts (&ts);
   if (gfc_match_decl_type_spec (&ts, 0) == MATCH_YES)
     {
       seen_ts = (gfc_match (" ::") == MATCH_YES);
@@ -1973,7 +1974,7 @@ got_charlen:
 	      /* If gfc_extract_int above set current_length, we implicitly
 		 know the type is BT_INTEGER and it's EXPR_CONSTANT.  */
 
-	      has_ts = (expr->ts.u.cl && expr->ts.u.cl->length_from_typespec);
+	      has_ts = expr->ts.u.cl->length_from_typespec;
 
 	      if (! cl
 		  || (current_length != -1 && current_length != found_length))
@@ -2225,13 +2226,15 @@ gfc_array_dimen_size (gfc_expr *array, int dimen, mpz_t *result)
   gfc_ref *ref;
   int i;
 
+  gcc_assert (array != NULL);
+
   if (array->ts.type == BT_CLASS)
     return FAILURE;
 
   if (array->rank == -1)
     return FAILURE;
 
-  if (dimen < 0 || array == NULL || dimen > array->rank - 1)
+  if (dimen < 0 || dimen > array->rank - 1)
     gfc_internal_error ("gfc_array_dimen_size(): Bad dimension");
 
   switch (array->expr_type)

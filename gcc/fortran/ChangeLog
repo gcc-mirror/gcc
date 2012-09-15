@@ -1,5 +1,20 @@
 2012-09-15  Tobias Burnus  <burnus@net-b.de>
 
+	* arith.c (arith_power): Call gfc_free_expr in case of error.
+	* array.c (gfc_match_array_constructor): Initialize variable.
+	(gfc_resolve_character_array_constructor): Remove superfluous check.
+	(gfc_array_dimen_size): Add assert.
+	* check.c (numeric_check): Fix implicit typing.
+	* class.c (gfc_build_class_symbol): Add assert.
+	(finalize_component): Free memory.
+	* dump-parse-tree.c (show_namespace): Add assert.
+	* trans-io.c (transfer_namelist_element, transfer_expr): Avoid
+	memory leakage.
+	(gfc_trans_transfer): Add assert.
+	* trans.c (gfc_trans_runtime_check): Call va_end
+
+2012-09-15  Tobias Burnus  <burnus@net-b.de>
+
 	* match.c (lock_unlock_statement, sync_statement): Fix potential
 	double freeing.
 	(sync_statement): Remove unreachable code.

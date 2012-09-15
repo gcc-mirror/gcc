@@ -506,6 +506,7 @@ gfc_trans_runtime_check (bool error, bool once, tree cond, stmtblock_t * pblock,
   gfc_add_expr_to_block (&block,
 			 trans_runtime_error_vararg (error, where,
 						     msgid, ap));
+  va_end (ap);
 
   if (once)
     gfc_add_modify (&block, tmpvar, boolean_false_node);
