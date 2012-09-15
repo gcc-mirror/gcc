@@ -1,5 +1,9 @@
 2012-09-15  Tobias Burnus  <burnus@net-b.de>
 
+	* trans-io.c (gfc_trans_transfer): Add an assert.
+
+2012-09-15  Tobias Burnus  <burnus@net-b.de>
+
 	* arith.c (arith_power): Call gfc_free_expr in case of error.
 	* array.c (gfc_match_array_constructor): Initialize variable.
 	(gfc_resolve_character_array_constructor): Remove superfluous check.
