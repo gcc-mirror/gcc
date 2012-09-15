@@ -1,3 +1,8 @@
+2012-09-15  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/tree-ssa/vrp80-2.c: Rename to ...
+	* gcc.dg/tree-ssa/vrp81.c: ... this.
+
 2012-09-15  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/54222
