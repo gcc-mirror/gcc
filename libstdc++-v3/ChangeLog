@@ -1,3 +1,20 @@
+2012-09-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/ext/random (rice_distribution<>::operator==): Change
+	inline friend definition to non-template.
+	* testsuite/ext/random/rice_distribution/requirements/
+	explicit_instantiation/1.cc: New.
+
+	* testsuite/26_numerics/random/normal_mv_distribution: Move...
+	* testsuite/ext/random/normal_mv_distribution: ... here.
+	* testsuite/26_numerics/random/simd_fast_mersenne_twister_engine:
+	Move...
+	* testsuite/ext/random/simd_fast_mersenne_twister_engine: ... here.
+	* testsuite/26_numerics/random/beta_distribution: Move...
+	* testsuite/ext/random/beta_distribution: ... here.
+	* testsuite/26_numerics/random/rice_distribution: Move...
+	* testsuite/ext/random/rice_distribution: ... here.
+
 2012-09-14  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	* include/ext/random: Add __gnu_cxx::rice_distribution<> class.
