@@ -1,5 +1,8 @@
 2012-09-16  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
+	PR testsuite/54007
+	* gnat.dg/lto15.adb: Require lto.
+
 	* gfortran.dg/bind_c_array_params_2.f90: Adjust scan-assembler-times
 	"myBindC" for hppa*-*-hpux*.
 
