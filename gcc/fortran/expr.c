@@ -3430,6 +3430,15 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 	      gfc_resolve_intrinsic (sym, &rvalue->where);
 	      attr = gfc_expr_attr (rvalue);
 	    }
+	  /* Check for result of embracing function.  */
+	  if (sym == gfc_current_ns->proc_name
+	      && sym->attr.function && sym->result == sym)
+	    {
+	      gfc_error ("Function result '%s' is invalid as proc-target "
+			 "in procedure pointer assignment at %L",
+			 sym->name, &rvalue->where);
+	      return FAILURE;
+	    }
 	}
       if (attr.abstract)
 	{
