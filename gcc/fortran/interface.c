@@ -507,14 +507,18 @@ gfc_compare_types (gfc_typespec *ts1, gfc_typespec *ts2)
 static int
 compare_type_rank (gfc_symbol *s1, gfc_symbol *s2)
 {
+  gfc_array_spec *as1, *as2;
   int r1, r2;
 
-  r1 = (s1->as != NULL) ? s1->as->rank : 0;
-  r2 = (s2->as != NULL) ? s2->as->rank : 0;
+  as1 = (s1->ts.type == BT_CLASS) ? CLASS_DATA (s1)->as : s1->as;
+  as2 = (s2->ts.type == BT_CLASS) ? CLASS_DATA (s2)->as : s2->as;
+
+  r1 = as1 ? as1->rank : 0;
+  r2 = as2 ? as2->rank : 0;
 
   if (r1 != r2
-      && (!s1->as || s1->as->type != AS_ASSUMED_RANK)
-      && (!s2->as || s2->as->type != AS_ASSUMED_RANK))
+      && (!as1 || as1->type != AS_ASSUMED_RANK)
+      && (!as2 || as2->type != AS_ASSUMED_RANK))
     return 0;			/* Ranks differ.  */
 
   return gfc_compare_types (&s1->ts, &s2->ts)
