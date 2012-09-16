@@ -1,5 +1,10 @@
 2012-09-16  Janus Weil  <janus@gcc.gnu.org>
 
+	PR fortran/54594
+	* interface.c (compare_type_rank): Handle CLASS arrays.
+
+2012-09-16  Janus Weil  <janus@gcc.gnu.org>
+
 	PR fortran/54387
 	* expr.c (gfc_check_pointer_assign): Check for result of embracing
 	function.

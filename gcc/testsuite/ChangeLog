@@ -1,5 +1,10 @@
 2012-09-16  Janus Weil  <janus@gcc.gnu.org>
 
+	PR fortran/54594
+	* gfortran.dg/typebound_generic_14.f03: New.
+
+2012-09-16  Janus Weil  <janus@gcc.gnu.org>
+
 	PR fortran/54387
 	* gfortran.dg/proc_ptr_38.f90: New.
 
