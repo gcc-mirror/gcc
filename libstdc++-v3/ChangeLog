@@ -1,3 +1,21 @@
+2012-09-14  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* include/ext/random: Add __gnu_cxx::rice_distribution<> class.
+	* include/ext/random.tcc: Add out-of-line functions for
+	__gnu_cxx::rice_distribution<>.
+	* testsuite/26_numerics/random/rice_distribution/
+	operators/equal.cc: New file.
+	* testsuite/26_numerics/random/rice_distribution/
+	operators/serialize.cc: New file.
+	* testsuite/26_numerics/random/rice_distribution/
+	operators/inequal.cc: New file.
+	* testsuite/26_numerics/random/rice_distribution/
+	cons/parms.cc: New file.
+	* testsuite/26_numerics/random/rice_distribution/
+	cons/default.cc: New file.
+	* testsuite/26_numerics/random/rice_distribution/
+	requirements/typedefs.cc: New file.
+
 2012-09-14  David Edelsohn  <dje.gcc@gmail.com>
 
 	* configure: Regenerated.
