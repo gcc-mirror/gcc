@@ -3273,7 +3273,13 @@ expand_call (tree exp, rtx target, int ignore)
 	{
 	  if (target == 0)
 	    target = emit_group_move_into_temps (valreg);
-	  else if (!rtx_equal_p (target, valreg))
+	  else if (rtx_equal_p (target, valreg))
+	    ;
+	  else if (GET_CODE (target) == PARALLEL)
+	    /* Handle the result of a emit_group_move_into_temps
+	       call in the previous pass.  */
+	    emit_group_move (target, valreg);
+	  else
 	    emit_group_store (target, valreg, rettype,
 			      int_size_in_bytes (rettype));
 
