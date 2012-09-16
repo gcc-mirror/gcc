@@ -1,5 +1,9 @@
 2012-09-16  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
+	PR debug/54460
+	* g++.dg/debug/dwarf2/nested-3.C: Add hppa assembler comment character
+	to scary regexp.
+
 	PR testsuite/54007
 	* gnat.dg/lto15.adb: Require lto.
 
