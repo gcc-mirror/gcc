@@ -87,7 +87,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { seed(__sd); }
 
       template<typename _Sseq, typename = typename
-	std::enable_if<!std::is_same<_Sseq, simd_fast_mersenne_twister_engine>::value>
+	std::enable_if<!std::is_same<_Sseq,
+				     simd_fast_mersenne_twister_engine>::value>
 	       ::type>
 	explicit
 	simd_fast_mersenne_twister_engine(_Sseq& __q)
@@ -149,7 +150,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       typename _CharT, typename _Traits>
 	friend std::basic_ostream<_CharT, _Traits>&
 	operator<<(std::basic_ostream<_CharT, _Traits>& __os,
-		   const __gnu_cxx::simd_fast_mersenne_twister_engine<_UIntType_2,
+		   const __gnu_cxx::simd_fast_mersenne_twister_engine
+		   <_UIntType_2,
 		   __m_2, __pos1_2, __sl1_2, __sl2_2, __sr1_2, __sr2_2,
 		   __msk1_2, __msk2_2, __msk3_2, __msk4_2,
 		   __parity1_2, __parity2_2, __parity3_2, __parity4_2>& __x);
@@ -1079,13 +1081,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *        the same parameters and the sequences that would
        *        be generated are equal.
        */
-      template<typename _RealType1>
-        friend bool
-        operator==(const rice_distribution<_RealType1>& __d1,
-		   const rice_distribution<_RealType1>& __d2)
-        { return (__d1.param() == __d2.param()
-		  && __d1._M_ndx == __d2._M_ndx
-		  && __d1._M_ndy == __d2._M_ndy); }
+      friend bool
+      operator==(const rice_distribution& __d1,
+		 const rice_distribution& __d2)
+      { return (__d1.param() == __d2.param()
+		&& __d1._M_ndx == __d2._M_ndx
+		&& __d1._M_ndy == __d2._M_ndy); }
 
       /**
        * @brief Inserts a %rice_distribution random number distribution
