@@ -1,3 +1,10 @@
+2012-09-16  Tobias Burnus  <burnus@net-b.de>
+
+	* trans-decl.c (gfc_generate_function_code): Fix
+	gfc_option.coarray check.
+	* trans-stmt.c (compute_inner_temp_size): Fix handling
+	of gfc_option.rtcheck.
+
 2012-09-16  Mikael Morin  <mikael@gcc.gnu.org>
 
 	* symbol.c (gfc_undo_symbols): Correctly undo namelists.

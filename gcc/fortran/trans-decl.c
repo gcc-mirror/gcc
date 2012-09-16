@@ -5480,7 +5480,7 @@ gfc_generate_function_code (gfc_namespace * ns)
     }
   current_function_decl = old_context;
 
-  if (decl_function_context (fndecl) && !gfc_option.coarray == GFC_FCOARRAY_LIB
+  if (decl_function_context (fndecl) && gfc_option.coarray != GFC_FCOARRAY_LIB
       && has_coarray_vars)
     /* Register this function with cgraph just far enough to get it
        added to our parent's nested function list.
