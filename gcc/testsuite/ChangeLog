@@ -1,3 +1,7 @@
+2012-09-16  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* gfortran.dg/namelist_75.f90: New test.
+
 2012-09-15  Tom de Vries  <tom@codesourcery.com>
 
 	* gcc.dg/tree-ssa/vrp82.c: New test.
