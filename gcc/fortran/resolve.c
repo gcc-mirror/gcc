@@ -11429,7 +11429,7 @@ get_checked_tb_operator_target (gfc_tbp_generic* target, locus where)
   target_proc = target->specific->u.specific->n.sym;
   gcc_assert (target_proc);
 
-  /* All operator bindings must have a passed-object dummy argument.  */
+  /* F08:C468. All operator bindings must have a passed-object dummy argument.  */
   if (target->specific->nopass)
     {
       gfc_error ("Type-bound operator at %L can't be NOPASS", &where);

@@ -1,6 +1,12 @@
 2012-09-16  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/54594
+	* resolve.c (get_checked_tb_operator_target): Add a reference to the
+	relevant quote from the F08 standard.
+
+2012-09-16  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54594
 	* interface.c (compare_type_rank): Handle CLASS arrays.
 
 2012-09-16  Janus Weil  <janus@gcc.gnu.org>
