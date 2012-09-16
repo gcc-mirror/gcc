@@ -2996,7 +2996,7 @@ gfc_undo_symbols (void)
 	{
 	  if (p->namelist_tail != old->namelist_tail)
 	    {
-	      gfc_free_namelist (old->namelist_tail);
+	      gfc_free_namelist (old->namelist_tail->next);
 	      old->namelist_tail->next = NULL;
 	    }
 	}
