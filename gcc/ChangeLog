@@ -1,5 +1,11 @@
 2012-09-17  Georg-Johann Lay  <avr@gjlay.de>
 
+	PR lto/54598
+	* tree-streamer-in.c (unpack_ts_real_cst_value_fields): Use ggc'ed
+	FIXED_VALUE_TYPE instead of struct fixed_value.
+
+2012-09-17  Georg-Johann Lay  <avr@gjlay.de>
+
 	* config/avr/avr.c (CONST_FIXED_P): Remove define.
 	* config/avr/avr.md (add<mode>3): Use CONST_FIXED_P.
 
