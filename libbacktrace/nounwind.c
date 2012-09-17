@@ -53,7 +53,8 @@ backtrace (int skip ATTRIBUTE_UNUSED,
 }
 
 int
-backtrace_simple (int skip ATTRIBUTE_UNUSED,
+backtrace_simple (struct backtrace_state *state ATTRIBUTE_UNUSED,
+		  int skip ATTRIBUTE_UNUSED,
 		  backtrace_simple_callback callback ATTRIBUTE_UNUSED,
 		  backtrace_error_callback error_callback, void *data)
 {
