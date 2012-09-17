@@ -6268,9 +6268,6 @@ avr_out_plus_1 (rtx *xop, int *plen, enum rtx_code code, int *pcc,
     ? simplify_gen_subreg (QImode, xop[0], mode, n_bytes-2)
     : NULL_RTX;
 
-  if (!plen && flag_print_asm_name)
-    avr_fdump (asm_out_file, ";; %C (%C)\n", code_sat, code);
-
   bool need_copy = true;
   int len_call = 1 + AVR_HAVE_JMP_CALL;
   
@@ -6281,9 +6278,6 @@ avr_out_plus_1 (rtx *xop, int *plen, enum rtx_code code, int *pcc,
 
     case SS_PLUS:
     case SS_MINUS:
-      if (!plen && flag_print_asm_name)
-        avr_fdump (asm_out_file, ";; %s = %r\n", sign < 0 ? "neg" : "pos",
-                   xop[2]);
 
       if (out_brvc)
         avr_asm_len ("brvc 0f", op, plen, 1);
@@ -6463,7 +6457,6 @@ static const char*
 avr_out_plus_symbol (rtx *xop, enum rtx_code code, int *plen, int *pcc)
 {
   enum machine_mode mode = GET_MODE (xop[0]);
-  int n_bytes = GET_MODE_SIZE (mode);
 
   /* Only pointer modes want to add symbols.  */
   
@@ -6476,9 +6469,9 @@ avr_out_plus_symbol (rtx *xop, enum rtx_code code, int *plen, int *pcc)
                : "subi %A0,lo8(%2)"    CR_TAB "sbci %B0,hi8(%2)",
                xop, plen, -2);
 
-  if (3 == n_bytes)
+  if (PSImode == mode)
     avr_asm_len (PLUS == code
-                 ? "sbci %C0,hlo8((-%2))"
+                 ? "sbci %C0,hlo8(-(%2))"
                  : "sbci %C0,hlo8(%2)", xop, plen, 1);
   return "";
 }
