@@ -5337,7 +5337,8 @@ Parse::import_spec(void*)
 
   if (!token->is_string())
     {
-      error_at(this->location(), "missing import package name");
+      error_at(this->location(), "import statement not a string");
+      this->advance_token();
       return;
     }
 

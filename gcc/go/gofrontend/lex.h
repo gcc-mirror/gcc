@@ -375,6 +375,10 @@ class Lex
   static int
   fetch_char(const char* str, unsigned int *value);
 
+  // Return whether C is a Unicode or "C" locale space character.
+  static bool
+  is_unicode_space(unsigned int c);
+
  private:
   ssize_t
   get_line();
