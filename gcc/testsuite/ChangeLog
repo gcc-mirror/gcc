@@ -1,4 +1,9 @@
-2012-09-14  Jason Merrill  <jason@redhat.com>
+2012-09-17  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54608
+	* gfortran.dg/scan_2.f90: New.
+
+2012-09-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/53661
 	* g++.dg/init/aggr9.C: New.
