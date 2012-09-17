@@ -111,13 +111,6 @@
 
 	* gcc.dg/pr44194-1.c: Check that there are no memory accesses left.
 
-2012-09-14  Jakub Jelinek  <jakub@redhat.com>
-
-	PR target/54564
-	* config/i386/fmaintrin.h (_mm_fnmadd_sd, _mm_fnmadd_ss,
-	_mm_fnmsub_sd, _mm_fnmsub_ss): Negate the second argument instead
-	of the first.
-
 2012-09-14  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/54565
