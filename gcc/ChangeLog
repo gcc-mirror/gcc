@@ -1,3 +1,13 @@
+2012-09-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-cfgcleanup. (cleanup_control_expr_graph) <GIMPLE_COND>: Remove
+	code doing propagation from degenerate PHI nodes.
+	* tree-ssa-loop-ivcanon.c (propagate_into_all_uses): New function.
+	(propagate_constants_for_unrolling): Likewise.
+	(tree_unroll_loops_completely): If the current loop has been unrolled
+	and its father isn't the entire function, propagate constants within
+	the new basic blocks by means of propagate_constants_for_unrolling.
+
 2012-09-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/54563

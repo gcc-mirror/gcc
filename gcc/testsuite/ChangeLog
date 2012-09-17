@@ -1,3 +1,7 @@
+2012-09-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/loop_optimization12.ad[sb]: New test.
+
 2012-09-17  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/54285
