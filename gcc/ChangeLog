@@ -1,3 +1,8 @@
+2012-09-17  Ruben Buchatskiy  <ruben@ispras.ru>
+
+	* config/arm/vfp.md (*thumb2_movdf_vfp): Require one of the operands
+	to be a register.
+
 2012-09-16  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* calls.c (expand_call): Use emit_group_move for PARALLEL->PARALLEL
