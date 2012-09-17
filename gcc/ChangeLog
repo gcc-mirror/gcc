@@ -1,3 +1,8 @@
+2012-09-17  Ben Cheng  <bccheng@google.com
+
+	* config/arm/linux-elf.h (LINUX_TARGET_LINK_SPEC): Suppress the
+	dynamic linker commands for statically linked programs.
+
 2012-09-17  Ulrich Weigand  <ulrich.weigand@linaro.org>
 
 	* config/arm/arm.c (arm_rtx_costs_1): Handle vec_extract and vec_set
