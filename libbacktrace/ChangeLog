@@ -1,3 +1,8 @@
+2012-09-17  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	PR bootstrap/54611
+	* nounwind.c (backtrace_simple): Add state parameter.
+
 2012-09-17  Ian Lance Taylor  <iant@google.com>
 
 	PR bootstrap/54609
