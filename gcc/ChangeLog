@@ -1,3 +1,14 @@
+2012-09-17  Ulrich Weigand  <ulrich.weigand@linaro.org>
+
+	* config/arm/arm.c (arm_rtx_costs_1): Handle vec_extract and vec_set
+	patterns.
+	* config/arm/arm.md ("vec_set<mode>_internal"): Support memory source
+	operands, implemented via vld1 instruction.
+	("vec_extract<mode>"): Support memory destination operands, implemented
+	via vst1 instruction.
+	("neon_vst1_lane<mode>"): Use UNSPEC_VST1_LANE instead of vec_select.
+	* config/arm/predicates.md ("neon_lane_number"): Remove.
+
 2012-09-17  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 	    Ulrich Weigand  <ulrich.weigand@linaro.org>
 
