@@ -1,3 +1,7 @@
+2012-09-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	* rtl.h (CONST_FIXED_P): New predicate macro.
+
 2012-09-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-cfgcleanup. (cleanup_control_expr_graph) <GIMPLE_COND>: Remove
