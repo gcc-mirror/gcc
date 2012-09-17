@@ -1,3 +1,7 @@
+2012-09-16  Ian Lance Taylor  <iant@google.com>
+
+	* Make-lang.in (go/gogo.o): Depend on filenames.h.
+
 2012-08-14   Diego Novillo  <dnovillo@google.com>
 
 	Merge from cxx-conversion branch.  Configury.
