@@ -155,6 +155,7 @@ objective-c/c++		Stan Shebs		stanshebs@earthlink.net
 
 			Various Maintainers
 
+libbacktrace		Ian Lance Taylor	ian@airs.com
 libcpp			Per Bothner		per@bothner.com
 libcpp			All C and C++ front end maintainers
 fp-bit			Ian Lance Taylor	ian@airs.com

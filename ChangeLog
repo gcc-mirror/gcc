@@ -1,3 +1,12 @@
+2012-09-17  Ian Lance Taylor  <iant@google.com>
+
+	* MAINTAINERS (Various Maintainers): Add libbacktrace.
+	* configure.ac (host_libs): Add libbacktrace.
+	(target_libraries): Add libbacktrace.
+	* Makefile.def (host_modules): Add libbacktrace.
+	(target_modules): Likewise.
+	* configure, Makefile.in: Rebuild.
+
 2012-09-14  David Edelsohn  <dje.gcc@gmail.com>
 
 	PR target/38607

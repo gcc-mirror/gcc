@@ -890,6 +890,7 @@ configure-host:  \
     maybe-configure-tcl \
     maybe-configure-itcl \
     maybe-configure-ld \
+    maybe-configure-libbacktrace \
     maybe-configure-libcpp \
     maybe-configure-libdecnumber \
     maybe-configure-libgui \
@@ -916,6 +917,7 @@ configure-target:  \
     maybe-configure-target-libssp \
     maybe-configure-target-newlib \
     maybe-configure-target-libgcc \
+    maybe-configure-target-libbacktrace \
     maybe-configure-target-libquadmath \
     maybe-configure-target-libgfortran \
     maybe-configure-target-libobjc \
@@ -1021,6 +1023,9 @@ all-host: maybe-all-itcl
 @if ld-no-bootstrap
 all-host: maybe-all-ld
 @endif ld-no-bootstrap
+@if libbacktrace-no-bootstrap
+all-host: maybe-all-libbacktrace
+@endif libbacktrace-no-bootstrap
 @if libcpp-no-bootstrap
 all-host: maybe-all-libcpp
 @endif libcpp-no-bootstrap
@@ -1062,6 +1067,7 @@ all-target: maybe-all-target-newlib
 @if target-libgcc-no-bootstrap
 all-target: maybe-all-target-libgcc
 @endif target-libgcc-no-bootstrap
+all-target: maybe-all-target-libbacktrace
 all-target: maybe-all-target-libquadmath
 all-target: maybe-all-target-libgfortran
 all-target: maybe-all-target-libobjc
@@ -1121,6 +1127,7 @@ info-host: maybe-info-intl
 info-host: maybe-info-tcl
 info-host: maybe-info-itcl
 info-host: maybe-info-ld
+info-host: maybe-info-libbacktrace
 info-host: maybe-info-libcpp
 info-host: maybe-info-libdecnumber
 info-host: maybe-info-libgui
@@ -1148,6 +1155,7 @@ info-target: maybe-info-target-libmudflap
 info-target: maybe-info-target-libssp
 info-target: maybe-info-target-newlib
 info-target: maybe-info-target-libgcc
+info-target: maybe-info-target-libbacktrace
 info-target: maybe-info-target-libquadmath
 info-target: maybe-info-target-libgfortran
 info-target: maybe-info-target-libobjc
@@ -1200,6 +1208,7 @@ dvi-host: maybe-dvi-intl
 dvi-host: maybe-dvi-tcl
 dvi-host: maybe-dvi-itcl
 dvi-host: maybe-dvi-ld
+dvi-host: maybe-dvi-libbacktrace
 dvi-host: maybe-dvi-libcpp
 dvi-host: maybe-dvi-libdecnumber
 dvi-host: maybe-dvi-libgui
@@ -1227,6 +1236,7 @@ dvi-target: maybe-dvi-target-libmudflap
 dvi-target: maybe-dvi-target-libssp
 dvi-target: maybe-dvi-target-newlib
 dvi-target: maybe-dvi-target-libgcc
+dvi-target: maybe-dvi-target-libbacktrace
 dvi-target: maybe-dvi-target-libquadmath
 dvi-target: maybe-dvi-target-libgfortran
 dvi-target: maybe-dvi-target-libobjc
@@ -1279,6 +1289,7 @@ pdf-host: maybe-pdf-intl
 pdf-host: maybe-pdf-tcl
 pdf-host: maybe-pdf-itcl
 pdf-host: maybe-pdf-ld
+pdf-host: maybe-pdf-libbacktrace
 pdf-host: maybe-pdf-libcpp
 pdf-host: maybe-pdf-libdecnumber
 pdf-host: maybe-pdf-libgui
@@ -1306,6 +1317,7 @@ pdf-target: maybe-pdf-target-libmudflap
 pdf-target: maybe-pdf-target-libssp
 pdf-target: maybe-pdf-target-newlib
 pdf-target: maybe-pdf-target-libgcc
+pdf-target: maybe-pdf-target-libbacktrace
 pdf-target: maybe-pdf-target-libquadmath
 pdf-target: maybe-pdf-target-libgfortran
 pdf-target: maybe-pdf-target-libobjc
@@ -1358,6 +1370,7 @@ html-host: maybe-html-intl
 html-host: maybe-html-tcl
 html-host: maybe-html-itcl
 html-host: maybe-html-ld
+html-host: maybe-html-libbacktrace
 html-host: maybe-html-libcpp
 html-host: maybe-html-libdecnumber
 html-host: maybe-html-libgui
@@ -1385,6 +1398,7 @@ html-target: maybe-html-target-libmudflap
 html-target: maybe-html-target-libssp
 html-target: maybe-html-target-newlib
 html-target: maybe-html-target-libgcc
+html-target: maybe-html-target-libbacktrace
 html-target: maybe-html-target-libquadmath
 html-target: maybe-html-target-libgfortran
 html-target: maybe-html-target-libobjc
@@ -1437,6 +1451,7 @@ TAGS-host: maybe-TAGS-intl
 TAGS-host: maybe-TAGS-tcl
 TAGS-host: maybe-TAGS-itcl
 TAGS-host: maybe-TAGS-ld
+TAGS-host: maybe-TAGS-libbacktrace
 TAGS-host: maybe-TAGS-libcpp
 TAGS-host: maybe-TAGS-libdecnumber
 TAGS-host: maybe-TAGS-libgui
@@ -1464,6 +1479,7 @@ TAGS-target: maybe-TAGS-target-libmudflap
 TAGS-target: maybe-TAGS-target-libssp
 TAGS-target: maybe-TAGS-target-newlib
 TAGS-target: maybe-TAGS-target-libgcc
+TAGS-target: maybe-TAGS-target-libbacktrace
 TAGS-target: maybe-TAGS-target-libquadmath
 TAGS-target: maybe-TAGS-target-libgfortran
 TAGS-target: maybe-TAGS-target-libobjc
@@ -1516,6 +1532,7 @@ install-info-host: maybe-install-info-intl
 install-info-host: maybe-install-info-tcl
 install-info-host: maybe-install-info-itcl
 install-info-host: maybe-install-info-ld
+install-info-host: maybe-install-info-libbacktrace
 install-info-host: maybe-install-info-libcpp
 install-info-host: maybe-install-info-libdecnumber
 install-info-host: maybe-install-info-libgui
@@ -1543,6 +1560,7 @@ install-info-target: maybe-install-info-target-libmudflap
 install-info-target: maybe-install-info-target-libssp
 install-info-target: maybe-install-info-target-newlib
 install-info-target: maybe-install-info-target-libgcc
+install-info-target: maybe-install-info-target-libbacktrace
 install-info-target: maybe-install-info-target-libquadmath
 install-info-target: maybe-install-info-target-libgfortran
 install-info-target: maybe-install-info-target-libobjc
@@ -1595,6 +1613,7 @@ install-pdf-host: maybe-install-pdf-intl
 install-pdf-host: maybe-install-pdf-tcl
 install-pdf-host: maybe-install-pdf-itcl
 install-pdf-host: maybe-install-pdf-ld
+install-pdf-host: maybe-install-pdf-libbacktrace
 install-pdf-host: maybe-install-pdf-libcpp
 install-pdf-host: maybe-install-pdf-libdecnumber
 install-pdf-host: maybe-install-pdf-libgui
@@ -1622,6 +1641,7 @@ install-pdf-target: maybe-install-pdf-target-libmudflap
 install-pdf-target: maybe-install-pdf-target-libssp
 install-pdf-target: maybe-install-pdf-target-newlib
 install-pdf-target: maybe-install-pdf-target-libgcc
+install-pdf-target: maybe-install-pdf-target-libbacktrace
 install-pdf-target: maybe-install-pdf-target-libquadmath
 install-pdf-target: maybe-install-pdf-target-libgfortran
 install-pdf-target: maybe-install-pdf-target-libobjc
@@ -1674,6 +1694,7 @@ install-html-host: maybe-install-html-intl
 install-html-host: maybe-install-html-tcl
 install-html-host: maybe-install-html-itcl
 install-html-host: maybe-install-html-ld
+install-html-host: maybe-install-html-libbacktrace
 install-html-host: maybe-install-html-libcpp
 install-html-host: maybe-install-html-libdecnumber
 install-html-host: maybe-install-html-libgui
@@ -1701,6 +1722,7 @@ install-html-target: maybe-install-html-target-libmudflap
 install-html-target: maybe-install-html-target-libssp
 install-html-target: maybe-install-html-target-newlib
 install-html-target: maybe-install-html-target-libgcc
+install-html-target: maybe-install-html-target-libbacktrace
 install-html-target: maybe-install-html-target-libquadmath
 install-html-target: maybe-install-html-target-libgfortran
 install-html-target: maybe-install-html-target-libobjc
@@ -1753,6 +1775,7 @@ installcheck-host: maybe-installcheck-intl
 installcheck-host: maybe-installcheck-tcl
 installcheck-host: maybe-installcheck-itcl
 installcheck-host: maybe-installcheck-ld
+installcheck-host: maybe-installcheck-libbacktrace
 installcheck-host: maybe-installcheck-libcpp
 installcheck-host: maybe-installcheck-libdecnumber
 installcheck-host: maybe-installcheck-libgui
@@ -1780,6 +1803,7 @@ installcheck-target: maybe-installcheck-target-libmudflap
 installcheck-target: maybe-installcheck-target-libssp
 installcheck-target: maybe-installcheck-target-newlib
 installcheck-target: maybe-installcheck-target-libgcc
+installcheck-target: maybe-installcheck-target-libbacktrace
 installcheck-target: maybe-installcheck-target-libquadmath
 installcheck-target: maybe-installcheck-target-libgfortran
 installcheck-target: maybe-installcheck-target-libobjc
@@ -1832,6 +1856,7 @@ mostlyclean-host: maybe-mostlyclean-intl
 mostlyclean-host: maybe-mostlyclean-tcl
 mostlyclean-host: maybe-mostlyclean-itcl
 mostlyclean-host: maybe-mostlyclean-ld
+mostlyclean-host: maybe-mostlyclean-libbacktrace
 mostlyclean-host: maybe-mostlyclean-libcpp
 mostlyclean-host: maybe-mostlyclean-libdecnumber
 mostlyclean-host: maybe-mostlyclean-libgui
@@ -1859,6 +1884,7 @@ mostlyclean-target: maybe-mostlyclean-target-libmudflap
 mostlyclean-target: maybe-mostlyclean-target-libssp
 mostlyclean-target: maybe-mostlyclean-target-newlib
 mostlyclean-target: maybe-mostlyclean-target-libgcc
+mostlyclean-target: maybe-mostlyclean-target-libbacktrace
 mostlyclean-target: maybe-mostlyclean-target-libquadmath
 mostlyclean-target: maybe-mostlyclean-target-libgfortran
 mostlyclean-target: maybe-mostlyclean-target-libobjc
@@ -1911,6 +1937,7 @@ clean-host: maybe-clean-intl
 clean-host: maybe-clean-tcl
 clean-host: maybe-clean-itcl
 clean-host: maybe-clean-ld
+clean-host: maybe-clean-libbacktrace
 clean-host: maybe-clean-libcpp
 clean-host: maybe-clean-libdecnumber
 clean-host: maybe-clean-libgui
@@ -1938,6 +1965,7 @@ clean-target: maybe-clean-target-libmudflap
 clean-target: maybe-clean-target-libssp
 clean-target: maybe-clean-target-newlib
 clean-target: maybe-clean-target-libgcc
+clean-target: maybe-clean-target-libbacktrace
 clean-target: maybe-clean-target-libquadmath
 clean-target: maybe-clean-target-libgfortran
 clean-target: maybe-clean-target-libobjc
@@ -1990,6 +2018,7 @@ distclean-host: maybe-distclean-intl
 distclean-host: maybe-distclean-tcl
 distclean-host: maybe-distclean-itcl
 distclean-host: maybe-distclean-ld
+distclean-host: maybe-distclean-libbacktrace
 distclean-host: maybe-distclean-libcpp
 distclean-host: maybe-distclean-libdecnumber
 distclean-host: maybe-distclean-libgui
@@ -2017,6 +2046,7 @@ distclean-target: maybe-distclean-target-libmudflap
 distclean-target: maybe-distclean-target-libssp
 distclean-target: maybe-distclean-target-newlib
 distclean-target: maybe-distclean-target-libgcc
+distclean-target: maybe-distclean-target-libbacktrace
 distclean-target: maybe-distclean-target-libquadmath
 distclean-target: maybe-distclean-target-libgfortran
 distclean-target: maybe-distclean-target-libobjc
@@ -2069,6 +2099,7 @@ maintainer-clean-host: maybe-maintainer-clean-intl
 maintainer-clean-host: maybe-maintainer-clean-tcl
 maintainer-clean-host: maybe-maintainer-clean-itcl
 maintainer-clean-host: maybe-maintainer-clean-ld
+maintainer-clean-host: maybe-maintainer-clean-libbacktrace
 maintainer-clean-host: maybe-maintainer-clean-libcpp
 maintainer-clean-host: maybe-maintainer-clean-libdecnumber
 maintainer-clean-host: maybe-maintainer-clean-libgui
@@ -2096,6 +2127,7 @@ maintainer-clean-target: maybe-maintainer-clean-target-libmudflap
 maintainer-clean-target: maybe-maintainer-clean-target-libssp
 maintainer-clean-target: maybe-maintainer-clean-target-newlib
 maintainer-clean-target: maybe-maintainer-clean-target-libgcc
+maintainer-clean-target: maybe-maintainer-clean-target-libbacktrace
 maintainer-clean-target: maybe-maintainer-clean-target-libquadmath
 maintainer-clean-target: maybe-maintainer-clean-target-libgfortran
 maintainer-clean-target: maybe-maintainer-clean-target-libobjc
@@ -2203,6 +2235,7 @@ check-host:  \
     maybe-check-tcl \
     maybe-check-itcl \
     maybe-check-ld \
+    maybe-check-libbacktrace \
     maybe-check-libcpp \
     maybe-check-libdecnumber \
     maybe-check-libgui \
@@ -2230,6 +2263,7 @@ check-target:  \
     maybe-check-target-libssp \
     maybe-check-target-newlib \
     maybe-check-target-libgcc \
+    maybe-check-target-libbacktrace \
     maybe-check-target-libquadmath \
     maybe-check-target-libgfortran \
     maybe-check-target-libobjc \
@@ -2308,6 +2342,7 @@ install-host-nogcc:  \
     maybe-install-tcl \
     maybe-install-itcl \
     maybe-install-ld \
+    maybe-install-libbacktrace \
     maybe-install-libcpp \
     maybe-install-libdecnumber \
     maybe-install-libgui \
@@ -2354,6 +2389,7 @@ install-host:  \
     maybe-install-tcl \
     maybe-install-itcl \
     maybe-install-ld \
+    maybe-install-libbacktrace \
     maybe-install-libcpp \
     maybe-install-libdecnumber \
     maybe-install-libgui \
@@ -2381,6 +2417,7 @@ install-target:  \
     maybe-install-target-libssp \
     maybe-install-target-newlib \
     maybe-install-target-libgcc \
+    maybe-install-target-libbacktrace \
     maybe-install-target-libquadmath \
     maybe-install-target-libgfortran \
     maybe-install-target-libobjc \
@@ -2453,6 +2490,7 @@ install-strip-host:  \
     maybe-install-strip-tcl \
     maybe-install-strip-itcl \
     maybe-install-strip-ld \
+    maybe-install-strip-libbacktrace \
     maybe-install-strip-libcpp \
     maybe-install-strip-libdecnumber \
     maybe-install-strip-libgui \
@@ -2480,6 +2518,7 @@ install-strip-target:  \
     maybe-install-strip-target-libssp \
     maybe-install-strip-target-newlib \
     maybe-install-strip-target-libgcc \
+    maybe-install-strip-target-libbacktrace \
     maybe-install-strip-target-libquadmath \
     maybe-install-strip-target-libgfortran \
     maybe-install-strip-target-libobjc \
@@ -19558,6 +19597,887 @@ maintainer-clean-ld:
 
 
 
+.PHONY: configure-libbacktrace maybe-configure-libbacktrace
+maybe-configure-libbacktrace:
+@if gcc-bootstrap
+configure-libbacktrace: stage_current
+@endif gcc-bootstrap
+@if libbacktrace
+maybe-configure-libbacktrace: configure-libbacktrace
+configure-libbacktrace: 
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/libbacktrace/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libbacktrace ; \
+	$(HOST_EXPORTS)  \
+	echo Configuring in $(HOST_SUBDIR)/libbacktrace; \
+	cd "$(HOST_SUBDIR)/libbacktrace" || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libbacktrace/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/libbacktrace"; \
+	libsrcdir="$$s/libbacktrace"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
+	  || exit 1
+@endif libbacktrace
+
+
+
+.PHONY: configure-stage1-libbacktrace maybe-configure-stage1-libbacktrace
+maybe-configure-stage1-libbacktrace:
+@if libbacktrace-bootstrap
+maybe-configure-stage1-libbacktrace: configure-stage1-libbacktrace
+configure-stage1-libbacktrace:
+	@[ $(current_stage) = stage1 ] || $(MAKE) stage1-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libbacktrace
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE1_TFLAGS)"; \
+	test ! -f $(HOST_SUBDIR)/libbacktrace/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	CFLAGS="$(STAGE1_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGE1_CXXFLAGS)"; export CXXFLAGS; \
+	LIBCFLAGS="$(LIBCFLAGS)"; export LIBCFLAGS;  \
+	echo Configuring stage 1 in $(HOST_SUBDIR)/libbacktrace ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libbacktrace ; \
+	cd $(HOST_SUBDIR)/libbacktrace || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libbacktrace/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/libbacktrace"; \
+	libsrcdir="$$s/libbacktrace"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  $(STAGE1_CONFIGURE_FLAGS)
+@endif libbacktrace-bootstrap
+
+.PHONY: configure-stage2-libbacktrace maybe-configure-stage2-libbacktrace
+maybe-configure-stage2-libbacktrace:
+@if libbacktrace-bootstrap
+maybe-configure-stage2-libbacktrace: configure-stage2-libbacktrace
+configure-stage2-libbacktrace:
+	@[ $(current_stage) = stage2 ] || $(MAKE) stage2-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libbacktrace
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE2_TFLAGS)"; \
+	test ! -f $(HOST_SUBDIR)/libbacktrace/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGE2_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGE2_CXXFLAGS)"; export CXXFLAGS; \
+	LIBCFLAGS="$(STAGE2_CFLAGS)"; export LIBCFLAGS;  \
+	echo Configuring stage 2 in $(HOST_SUBDIR)/libbacktrace ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libbacktrace ; \
+	cd $(HOST_SUBDIR)/libbacktrace || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libbacktrace/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/libbacktrace"; \
+	libsrcdir="$$s/libbacktrace"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGE2_CONFIGURE_FLAGS)
+@endif libbacktrace-bootstrap
+
+.PHONY: configure-stage3-libbacktrace maybe-configure-stage3-libbacktrace
+maybe-configure-stage3-libbacktrace:
+@if libbacktrace-bootstrap
+maybe-configure-stage3-libbacktrace: configure-stage3-libbacktrace
+configure-stage3-libbacktrace:
+	@[ $(current_stage) = stage3 ] || $(MAKE) stage3-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libbacktrace
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE3_TFLAGS)"; \
+	test ! -f $(HOST_SUBDIR)/libbacktrace/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGE3_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGE3_CXXFLAGS)"; export CXXFLAGS; \
+	LIBCFLAGS="$(STAGE3_CFLAGS)"; export LIBCFLAGS;  \
+	echo Configuring stage 3 in $(HOST_SUBDIR)/libbacktrace ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libbacktrace ; \
+	cd $(HOST_SUBDIR)/libbacktrace || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libbacktrace/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/libbacktrace"; \
+	libsrcdir="$$s/libbacktrace"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGE3_CONFIGURE_FLAGS)
+@endif libbacktrace-bootstrap
+
+.PHONY: configure-stage4-libbacktrace maybe-configure-stage4-libbacktrace
+maybe-configure-stage4-libbacktrace:
+@if libbacktrace-bootstrap
+maybe-configure-stage4-libbacktrace: configure-stage4-libbacktrace
+configure-stage4-libbacktrace:
+	@[ $(current_stage) = stage4 ] || $(MAKE) stage4-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libbacktrace
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE4_TFLAGS)"; \
+	test ! -f $(HOST_SUBDIR)/libbacktrace/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGE4_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGE4_CXXFLAGS)"; export CXXFLAGS; \
+	LIBCFLAGS="$(STAGE4_CFLAGS)"; export LIBCFLAGS;  \
+	echo Configuring stage 4 in $(HOST_SUBDIR)/libbacktrace ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libbacktrace ; \
+	cd $(HOST_SUBDIR)/libbacktrace || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libbacktrace/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/libbacktrace"; \
+	libsrcdir="$$s/libbacktrace"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGE4_CONFIGURE_FLAGS)
+@endif libbacktrace-bootstrap
+
+.PHONY: configure-stageprofile-libbacktrace maybe-configure-stageprofile-libbacktrace
+maybe-configure-stageprofile-libbacktrace:
+@if libbacktrace-bootstrap
+maybe-configure-stageprofile-libbacktrace: configure-stageprofile-libbacktrace
+configure-stageprofile-libbacktrace:
+	@[ $(current_stage) = stageprofile ] || $(MAKE) stageprofile-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libbacktrace
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEprofile_TFLAGS)"; \
+	test ! -f $(HOST_SUBDIR)/libbacktrace/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGEprofile_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGEprofile_CXXFLAGS)"; export CXXFLAGS; \
+	LIBCFLAGS="$(STAGEprofile_CFLAGS)"; export LIBCFLAGS;  \
+	echo Configuring stage profile in $(HOST_SUBDIR)/libbacktrace ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libbacktrace ; \
+	cd $(HOST_SUBDIR)/libbacktrace || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libbacktrace/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/libbacktrace"; \
+	libsrcdir="$$s/libbacktrace"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGEprofile_CONFIGURE_FLAGS)
+@endif libbacktrace-bootstrap
+
+.PHONY: configure-stagefeedback-libbacktrace maybe-configure-stagefeedback-libbacktrace
+maybe-configure-stagefeedback-libbacktrace:
+@if libbacktrace-bootstrap
+maybe-configure-stagefeedback-libbacktrace: configure-stagefeedback-libbacktrace
+configure-stagefeedback-libbacktrace:
+	@[ $(current_stage) = stagefeedback ] || $(MAKE) stagefeedback-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libbacktrace
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEfeedback_TFLAGS)"; \
+	test ! -f $(HOST_SUBDIR)/libbacktrace/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGEfeedback_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGEfeedback_CXXFLAGS)"; export CXXFLAGS; \
+	LIBCFLAGS="$(STAGEfeedback_CFLAGS)"; export LIBCFLAGS;  \
+	echo Configuring stage feedback in $(HOST_SUBDIR)/libbacktrace ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libbacktrace ; \
+	cd $(HOST_SUBDIR)/libbacktrace || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libbacktrace/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/libbacktrace"; \
+	libsrcdir="$$s/libbacktrace"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGEfeedback_CONFIGURE_FLAGS)
+@endif libbacktrace-bootstrap
+
+
+
+
+
+.PHONY: all-libbacktrace maybe-all-libbacktrace
+maybe-all-libbacktrace:
+@if gcc-bootstrap
+all-libbacktrace: stage_current
+@endif gcc-bootstrap
+@if libbacktrace
+TARGET-libbacktrace=all
+maybe-all-libbacktrace: all-libbacktrace
+all-libbacktrace: configure-libbacktrace
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS)  \
+	(cd $(HOST_SUBDIR)/libbacktrace && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)  \
+		$(TARGET-libbacktrace))
+@endif libbacktrace
+
+
+
+.PHONY: all-stage1-libbacktrace maybe-all-stage1-libbacktrace
+.PHONY: clean-stage1-libbacktrace maybe-clean-stage1-libbacktrace
+maybe-all-stage1-libbacktrace:
+maybe-clean-stage1-libbacktrace:
+@if libbacktrace-bootstrap
+maybe-all-stage1-libbacktrace: all-stage1-libbacktrace
+all-stage1: all-stage1-libbacktrace
+TARGET-stage1-libbacktrace = $(TARGET-libbacktrace)
+all-stage1-libbacktrace: configure-stage1-libbacktrace
+	@[ $(current_stage) = stage1 ] || $(MAKE) stage1-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE1_TFLAGS)"; \
+	$(HOST_EXPORTS)  \
+	cd $(HOST_SUBDIR)/libbacktrace && \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE1_CFLAGS)" \
+		CXXFLAGS="$(STAGE1_CXXFLAGS)" \
+		LIBCFLAGS="$(LIBCFLAGS)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_HOST_FLAGS)   \
+		TFLAGS="$(STAGE1_TFLAGS)" \
+		$(TARGET-stage1-libbacktrace)
+
+maybe-clean-stage1-libbacktrace: clean-stage1-libbacktrace
+clean-stage1: clean-stage1-libbacktrace
+clean-stage1-libbacktrace:
+	@if [ $(current_stage) = stage1 ]; then \
+	  [ -f $(HOST_SUBDIR)/libbacktrace/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage1-libbacktrace/Makefile ] || exit 0; \
+	  $(MAKE) stage1-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/libbacktrace && \
+	$(MAKE) $(EXTRA_HOST_FLAGS)  \
+		 clean
+@endif libbacktrace-bootstrap
+
+
+.PHONY: all-stage2-libbacktrace maybe-all-stage2-libbacktrace
+.PHONY: clean-stage2-libbacktrace maybe-clean-stage2-libbacktrace
+maybe-all-stage2-libbacktrace:
+maybe-clean-stage2-libbacktrace:
+@if libbacktrace-bootstrap
+maybe-all-stage2-libbacktrace: all-stage2-libbacktrace
+all-stage2: all-stage2-libbacktrace
+TARGET-stage2-libbacktrace = $(TARGET-libbacktrace)
+all-stage2-libbacktrace: configure-stage2-libbacktrace
+	@[ $(current_stage) = stage2 ] || $(MAKE) stage2-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE2_TFLAGS)"; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS)  \
+	cd $(HOST_SUBDIR)/libbacktrace && \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE2_CFLAGS)" \
+		CXXFLAGS="$(STAGE2_CXXFLAGS)" \
+		LIBCFLAGS="$(STAGE2_CFLAGS)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		TFLAGS="$(STAGE2_TFLAGS)" \
+		$(TARGET-stage2-libbacktrace)
+
+maybe-clean-stage2-libbacktrace: clean-stage2-libbacktrace
+clean-stage2: clean-stage2-libbacktrace
+clean-stage2-libbacktrace:
+	@if [ $(current_stage) = stage2 ]; then \
+	  [ -f $(HOST_SUBDIR)/libbacktrace/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage2-libbacktrace/Makefile ] || exit 0; \
+	  $(MAKE) stage2-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/libbacktrace && \
+	$(MAKE) $(EXTRA_HOST_FLAGS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		 clean
+@endif libbacktrace-bootstrap
+
+
+.PHONY: all-stage3-libbacktrace maybe-all-stage3-libbacktrace
+.PHONY: clean-stage3-libbacktrace maybe-clean-stage3-libbacktrace
+maybe-all-stage3-libbacktrace:
+maybe-clean-stage3-libbacktrace:
+@if libbacktrace-bootstrap
+maybe-all-stage3-libbacktrace: all-stage3-libbacktrace
+all-stage3: all-stage3-libbacktrace
+TARGET-stage3-libbacktrace = $(TARGET-libbacktrace)
+all-stage3-libbacktrace: configure-stage3-libbacktrace
+	@[ $(current_stage) = stage3 ] || $(MAKE) stage3-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE3_TFLAGS)"; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS)  \
+	cd $(HOST_SUBDIR)/libbacktrace && \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE3_CFLAGS)" \
+		CXXFLAGS="$(STAGE3_CXXFLAGS)" \
+		LIBCFLAGS="$(STAGE3_CFLAGS)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		TFLAGS="$(STAGE3_TFLAGS)" \
+		$(TARGET-stage3-libbacktrace)
+
+maybe-clean-stage3-libbacktrace: clean-stage3-libbacktrace
+clean-stage3: clean-stage3-libbacktrace
+clean-stage3-libbacktrace:
+	@if [ $(current_stage) = stage3 ]; then \
+	  [ -f $(HOST_SUBDIR)/libbacktrace/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage3-libbacktrace/Makefile ] || exit 0; \
+	  $(MAKE) stage3-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/libbacktrace && \
+	$(MAKE) $(EXTRA_HOST_FLAGS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		 clean
+@endif libbacktrace-bootstrap
+
+
+.PHONY: all-stage4-libbacktrace maybe-all-stage4-libbacktrace
+.PHONY: clean-stage4-libbacktrace maybe-clean-stage4-libbacktrace
+maybe-all-stage4-libbacktrace:
+maybe-clean-stage4-libbacktrace:
+@if libbacktrace-bootstrap
+maybe-all-stage4-libbacktrace: all-stage4-libbacktrace
+all-stage4: all-stage4-libbacktrace
+TARGET-stage4-libbacktrace = $(TARGET-libbacktrace)
+all-stage4-libbacktrace: configure-stage4-libbacktrace
+	@[ $(current_stage) = stage4 ] || $(MAKE) stage4-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE4_TFLAGS)"; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS)  \
+	cd $(HOST_SUBDIR)/libbacktrace && \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE4_CFLAGS)" \
+		CXXFLAGS="$(STAGE4_CXXFLAGS)" \
+		LIBCFLAGS="$(STAGE4_CFLAGS)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		TFLAGS="$(STAGE4_TFLAGS)" \
+		$(TARGET-stage4-libbacktrace)
+
+maybe-clean-stage4-libbacktrace: clean-stage4-libbacktrace
+clean-stage4: clean-stage4-libbacktrace
+clean-stage4-libbacktrace:
+	@if [ $(current_stage) = stage4 ]; then \
+	  [ -f $(HOST_SUBDIR)/libbacktrace/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage4-libbacktrace/Makefile ] || exit 0; \
+	  $(MAKE) stage4-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/libbacktrace && \
+	$(MAKE) $(EXTRA_HOST_FLAGS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		 clean
+@endif libbacktrace-bootstrap
+
+
+.PHONY: all-stageprofile-libbacktrace maybe-all-stageprofile-libbacktrace
+.PHONY: clean-stageprofile-libbacktrace maybe-clean-stageprofile-libbacktrace
+maybe-all-stageprofile-libbacktrace:
+maybe-clean-stageprofile-libbacktrace:
+@if libbacktrace-bootstrap
+maybe-all-stageprofile-libbacktrace: all-stageprofile-libbacktrace
+all-stageprofile: all-stageprofile-libbacktrace
+TARGET-stageprofile-libbacktrace = $(TARGET-libbacktrace)
+all-stageprofile-libbacktrace: configure-stageprofile-libbacktrace
+	@[ $(current_stage) = stageprofile ] || $(MAKE) stageprofile-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEprofile_TFLAGS)"; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS)  \
+	cd $(HOST_SUBDIR)/libbacktrace && \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGEprofile_CFLAGS)" \
+		CXXFLAGS="$(STAGEprofile_CXXFLAGS)" \
+		LIBCFLAGS="$(STAGEprofile_CFLAGS)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		TFLAGS="$(STAGEprofile_TFLAGS)" \
+		$(TARGET-stageprofile-libbacktrace)
+
+maybe-clean-stageprofile-libbacktrace: clean-stageprofile-libbacktrace
+clean-stageprofile: clean-stageprofile-libbacktrace
+clean-stageprofile-libbacktrace:
+	@if [ $(current_stage) = stageprofile ]; then \
+	  [ -f $(HOST_SUBDIR)/libbacktrace/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageprofile-libbacktrace/Makefile ] || exit 0; \
+	  $(MAKE) stageprofile-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/libbacktrace && \
+	$(MAKE) $(EXTRA_HOST_FLAGS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		 clean
+@endif libbacktrace-bootstrap
+
+
+.PHONY: all-stagefeedback-libbacktrace maybe-all-stagefeedback-libbacktrace
+.PHONY: clean-stagefeedback-libbacktrace maybe-clean-stagefeedback-libbacktrace
+maybe-all-stagefeedback-libbacktrace:
+maybe-clean-stagefeedback-libbacktrace:
+@if libbacktrace-bootstrap
+maybe-all-stagefeedback-libbacktrace: all-stagefeedback-libbacktrace
+all-stagefeedback: all-stagefeedback-libbacktrace
+TARGET-stagefeedback-libbacktrace = $(TARGET-libbacktrace)
+all-stagefeedback-libbacktrace: configure-stagefeedback-libbacktrace
+	@[ $(current_stage) = stagefeedback ] || $(MAKE) stagefeedback-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEfeedback_TFLAGS)"; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS)  \
+	cd $(HOST_SUBDIR)/libbacktrace && \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGEfeedback_CFLAGS)" \
+		CXXFLAGS="$(STAGEfeedback_CXXFLAGS)" \
+		LIBCFLAGS="$(STAGEfeedback_CFLAGS)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		TFLAGS="$(STAGEfeedback_TFLAGS)" \
+		$(TARGET-stagefeedback-libbacktrace)
+
+maybe-clean-stagefeedback-libbacktrace: clean-stagefeedback-libbacktrace
+clean-stagefeedback: clean-stagefeedback-libbacktrace
+clean-stagefeedback-libbacktrace:
+	@if [ $(current_stage) = stagefeedback ]; then \
+	  [ -f $(HOST_SUBDIR)/libbacktrace/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stagefeedback-libbacktrace/Makefile ] || exit 0; \
+	  $(MAKE) stagefeedback-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/libbacktrace && \
+	$(MAKE) $(EXTRA_HOST_FLAGS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		 clean
+@endif libbacktrace-bootstrap
+
+
+
+
+
+.PHONY: check-libbacktrace maybe-check-libbacktrace
+maybe-check-libbacktrace:
+@if libbacktrace
+maybe-check-libbacktrace: check-libbacktrace
+
+check-libbacktrace:
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/libbacktrace && \
+	  $(MAKE) $(FLAGS_TO_PASS)  check)
+
+@endif libbacktrace
+
+.PHONY: install-libbacktrace maybe-install-libbacktrace
+maybe-install-libbacktrace:
+@if libbacktrace
+maybe-install-libbacktrace: install-libbacktrace
+
+install-libbacktrace: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/libbacktrace && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install)
+
+@endif libbacktrace
+
+.PHONY: install-strip-libbacktrace maybe-install-strip-libbacktrace
+maybe-install-strip-libbacktrace:
+@if libbacktrace
+maybe-install-strip-libbacktrace: install-strip-libbacktrace
+
+install-strip-libbacktrace: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/libbacktrace && \
+	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
+
+@endif libbacktrace
+
+# Other targets (info, dvi, pdf, etc.)
+
+.PHONY: maybe-info-libbacktrace info-libbacktrace
+maybe-info-libbacktrace:
+@if libbacktrace
+maybe-info-libbacktrace: info-libbacktrace
+
+info-libbacktrace: \
+    configure-libbacktrace 
+	@[ -f ./libbacktrace/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing info in libbacktrace" ; \
+	(cd $(HOST_SUBDIR)/libbacktrace && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          info) \
+	  || exit 1
+
+@endif libbacktrace
+
+.PHONY: maybe-dvi-libbacktrace dvi-libbacktrace
+maybe-dvi-libbacktrace:
+@if libbacktrace
+maybe-dvi-libbacktrace: dvi-libbacktrace
+
+dvi-libbacktrace: \
+    configure-libbacktrace 
+	@[ -f ./libbacktrace/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing dvi in libbacktrace" ; \
+	(cd $(HOST_SUBDIR)/libbacktrace && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          dvi) \
+	  || exit 1
+
+@endif libbacktrace
+
+.PHONY: maybe-pdf-libbacktrace pdf-libbacktrace
+maybe-pdf-libbacktrace:
+@if libbacktrace
+maybe-pdf-libbacktrace: pdf-libbacktrace
+
+pdf-libbacktrace: \
+    configure-libbacktrace 
+	@[ -f ./libbacktrace/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing pdf in libbacktrace" ; \
+	(cd $(HOST_SUBDIR)/libbacktrace && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          pdf) \
+	  || exit 1
+
+@endif libbacktrace
+
+.PHONY: maybe-html-libbacktrace html-libbacktrace
+maybe-html-libbacktrace:
+@if libbacktrace
+maybe-html-libbacktrace: html-libbacktrace
+
+html-libbacktrace: \
+    configure-libbacktrace 
+	@[ -f ./libbacktrace/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing html in libbacktrace" ; \
+	(cd $(HOST_SUBDIR)/libbacktrace && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          html) \
+	  || exit 1
+
+@endif libbacktrace
+
+.PHONY: maybe-TAGS-libbacktrace TAGS-libbacktrace
+maybe-TAGS-libbacktrace:
+@if libbacktrace
+maybe-TAGS-libbacktrace: TAGS-libbacktrace
+
+TAGS-libbacktrace: \
+    configure-libbacktrace 
+	@[ -f ./libbacktrace/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing TAGS in libbacktrace" ; \
+	(cd $(HOST_SUBDIR)/libbacktrace && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          TAGS) \
+	  || exit 1
+
+@endif libbacktrace
+
+.PHONY: maybe-install-info-libbacktrace install-info-libbacktrace
+maybe-install-info-libbacktrace:
+@if libbacktrace
+maybe-install-info-libbacktrace: install-info-libbacktrace
+
+install-info-libbacktrace: \
+    configure-libbacktrace \
+    info-libbacktrace 
+	@[ -f ./libbacktrace/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-info in libbacktrace" ; \
+	(cd $(HOST_SUBDIR)/libbacktrace && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-info) \
+	  || exit 1
+
+@endif libbacktrace
+
+.PHONY: maybe-install-pdf-libbacktrace install-pdf-libbacktrace
+maybe-install-pdf-libbacktrace:
+@if libbacktrace
+maybe-install-pdf-libbacktrace: install-pdf-libbacktrace
+
+install-pdf-libbacktrace: \
+    configure-libbacktrace \
+    pdf-libbacktrace 
+	@[ -f ./libbacktrace/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-pdf in libbacktrace" ; \
+	(cd $(HOST_SUBDIR)/libbacktrace && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-pdf) \
+	  || exit 1
+
+@endif libbacktrace
+
+.PHONY: maybe-install-html-libbacktrace install-html-libbacktrace
+maybe-install-html-libbacktrace:
+@if libbacktrace
+maybe-install-html-libbacktrace: install-html-libbacktrace
+
+install-html-libbacktrace: \
+    configure-libbacktrace \
+    html-libbacktrace 
+	@[ -f ./libbacktrace/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing install-html in libbacktrace" ; \
+	(cd $(HOST_SUBDIR)/libbacktrace && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          install-html) \
+	  || exit 1
+
+@endif libbacktrace
+
+.PHONY: maybe-installcheck-libbacktrace installcheck-libbacktrace
+maybe-installcheck-libbacktrace:
+@if libbacktrace
+maybe-installcheck-libbacktrace: installcheck-libbacktrace
+
+installcheck-libbacktrace: \
+    configure-libbacktrace 
+	@[ -f ./libbacktrace/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing installcheck in libbacktrace" ; \
+	(cd $(HOST_SUBDIR)/libbacktrace && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          installcheck) \
+	  || exit 1
+
+@endif libbacktrace
+
+.PHONY: maybe-mostlyclean-libbacktrace mostlyclean-libbacktrace
+maybe-mostlyclean-libbacktrace:
+@if libbacktrace
+maybe-mostlyclean-libbacktrace: mostlyclean-libbacktrace
+
+mostlyclean-libbacktrace: 
+	@[ -f ./libbacktrace/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing mostlyclean in libbacktrace" ; \
+	(cd $(HOST_SUBDIR)/libbacktrace && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          mostlyclean) \
+	  || exit 1
+
+@endif libbacktrace
+
+.PHONY: maybe-clean-libbacktrace clean-libbacktrace
+maybe-clean-libbacktrace:
+@if libbacktrace
+maybe-clean-libbacktrace: clean-libbacktrace
+
+clean-libbacktrace: 
+	@[ -f ./libbacktrace/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing clean in libbacktrace" ; \
+	(cd $(HOST_SUBDIR)/libbacktrace && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          clean) \
+	  || exit 1
+
+@endif libbacktrace
+
+.PHONY: maybe-distclean-libbacktrace distclean-libbacktrace
+maybe-distclean-libbacktrace:
+@if libbacktrace
+maybe-distclean-libbacktrace: distclean-libbacktrace
+
+distclean-libbacktrace: 
+	@[ -f ./libbacktrace/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing distclean in libbacktrace" ; \
+	(cd $(HOST_SUBDIR)/libbacktrace && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          distclean) \
+	  || exit 1
+
+@endif libbacktrace
+
+.PHONY: maybe-maintainer-clean-libbacktrace maintainer-clean-libbacktrace
+maybe-maintainer-clean-libbacktrace:
+@if libbacktrace
+maybe-maintainer-clean-libbacktrace: maintainer-clean-libbacktrace
+
+maintainer-clean-libbacktrace: 
+	@[ -f ./libbacktrace/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing maintainer-clean in libbacktrace" ; \
+	(cd $(HOST_SUBDIR)/libbacktrace && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          maintainer-clean) \
+	  || exit 1
+
+@endif libbacktrace
+
+
+
 .PHONY: configure-libcpp maybe-configure-libcpp
 maybe-configure-libcpp:
 @if gcc-bootstrap
@@ -33309,6 +34229,463 @@ maintainer-clean-target-libgcc:
 
 
 
+.PHONY: configure-target-libbacktrace maybe-configure-target-libbacktrace
+maybe-configure-target-libbacktrace:
+@if gcc-bootstrap
+configure-target-libbacktrace: stage_current
+@endif gcc-bootstrap
+@if target-libbacktrace
+maybe-configure-target-libbacktrace: configure-target-libbacktrace
+configure-target-libbacktrace: 
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	echo "Checking multilib configuration for libbacktrace..."; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libbacktrace ; \
+	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libbacktrace/multilib.tmp 2> /dev/null ; \
+	if test -r $(TARGET_SUBDIR)/libbacktrace/multilib.out; then \
+	  if cmp -s $(TARGET_SUBDIR)/libbacktrace/multilib.tmp $(TARGET_SUBDIR)/libbacktrace/multilib.out; then \
+	    rm -f $(TARGET_SUBDIR)/libbacktrace/multilib.tmp; \
+	  else \
+	    rm -f $(TARGET_SUBDIR)/libbacktrace/Makefile; \
+	    mv $(TARGET_SUBDIR)/libbacktrace/multilib.tmp $(TARGET_SUBDIR)/libbacktrace/multilib.out; \
+	  fi; \
+	else \
+	  mv $(TARGET_SUBDIR)/libbacktrace/multilib.tmp $(TARGET_SUBDIR)/libbacktrace/multilib.out; \
+	fi; \
+	test ! -f $(TARGET_SUBDIR)/libbacktrace/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libbacktrace ; \
+	$(NORMAL_TARGET_EXPORTS)  \
+	echo Configuring in $(TARGET_SUBDIR)/libbacktrace; \
+	cd "$(TARGET_SUBDIR)/libbacktrace" || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(TARGET_SUBDIR)/libbacktrace/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/libbacktrace"; \
+	libsrcdir="$$s/libbacktrace"; \
+	rm -f no-such-file || : ; \
+	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} $${srcdiroption}  \
+	  || exit 1
+@endif target-libbacktrace
+
+
+
+
+
+.PHONY: all-target-libbacktrace maybe-all-target-libbacktrace
+maybe-all-target-libbacktrace:
+@if gcc-bootstrap
+all-target-libbacktrace: stage_current
+@endif gcc-bootstrap
+@if target-libbacktrace
+TARGET-target-libbacktrace=all
+maybe-all-target-libbacktrace: all-target-libbacktrace
+all-target-libbacktrace: configure-target-libbacktrace
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS)  \
+	(cd $(TARGET_SUBDIR)/libbacktrace && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)  \
+		$(TARGET-target-libbacktrace))
+@endif target-libbacktrace
+
+
+
+
+
+.PHONY: check-target-libbacktrace maybe-check-target-libbacktrace
+maybe-check-target-libbacktrace:
+@if target-libbacktrace
+maybe-check-target-libbacktrace: check-target-libbacktrace
+
+check-target-libbacktrace:
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/libbacktrace && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)   check)
+
+@endif target-libbacktrace
+
+.PHONY: install-target-libbacktrace maybe-install-target-libbacktrace
+maybe-install-target-libbacktrace:
+@if target-libbacktrace
+maybe-install-target-libbacktrace: install-target-libbacktrace
+
+install-target-libbacktrace: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/libbacktrace && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install)
+
+@endif target-libbacktrace
+
+.PHONY: install-strip-target-libbacktrace maybe-install-strip-target-libbacktrace
+maybe-install-strip-target-libbacktrace:
+@if target-libbacktrace
+maybe-install-strip-target-libbacktrace: install-strip-target-libbacktrace
+
+install-strip-target-libbacktrace: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/libbacktrace && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install-strip)
+
+@endif target-libbacktrace
+
+# Other targets (info, dvi, pdf, etc.)
+
+.PHONY: maybe-info-target-libbacktrace info-target-libbacktrace
+maybe-info-target-libbacktrace:
+@if target-libbacktrace
+maybe-info-target-libbacktrace: info-target-libbacktrace
+
+info-target-libbacktrace: \
+    configure-target-libbacktrace 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libbacktrace/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing info in $(TARGET_SUBDIR)/libbacktrace" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libbacktrace && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           info) \
+	  || exit 1
+
+@endif target-libbacktrace
+
+.PHONY: maybe-dvi-target-libbacktrace dvi-target-libbacktrace
+maybe-dvi-target-libbacktrace:
+@if target-libbacktrace
+maybe-dvi-target-libbacktrace: dvi-target-libbacktrace
+
+dvi-target-libbacktrace: \
+    configure-target-libbacktrace 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libbacktrace/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing dvi in $(TARGET_SUBDIR)/libbacktrace" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libbacktrace && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           dvi) \
+	  || exit 1
+
+@endif target-libbacktrace
+
+.PHONY: maybe-pdf-target-libbacktrace pdf-target-libbacktrace
+maybe-pdf-target-libbacktrace:
+@if target-libbacktrace
+maybe-pdf-target-libbacktrace: pdf-target-libbacktrace
+
+pdf-target-libbacktrace: \
+    configure-target-libbacktrace 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libbacktrace/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing pdf in $(TARGET_SUBDIR)/libbacktrace" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libbacktrace && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           pdf) \
+	  || exit 1
+
+@endif target-libbacktrace
+
+.PHONY: maybe-html-target-libbacktrace html-target-libbacktrace
+maybe-html-target-libbacktrace:
+@if target-libbacktrace
+maybe-html-target-libbacktrace: html-target-libbacktrace
+
+html-target-libbacktrace: \
+    configure-target-libbacktrace 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libbacktrace/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing html in $(TARGET_SUBDIR)/libbacktrace" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libbacktrace && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           html) \
+	  || exit 1
+
+@endif target-libbacktrace
+
+.PHONY: maybe-TAGS-target-libbacktrace TAGS-target-libbacktrace
+maybe-TAGS-target-libbacktrace:
+@if target-libbacktrace
+maybe-TAGS-target-libbacktrace: TAGS-target-libbacktrace
+
+TAGS-target-libbacktrace: \
+    configure-target-libbacktrace 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libbacktrace/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing TAGS in $(TARGET_SUBDIR)/libbacktrace" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libbacktrace && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           TAGS) \
+	  || exit 1
+
+@endif target-libbacktrace
+
+.PHONY: maybe-install-info-target-libbacktrace install-info-target-libbacktrace
+maybe-install-info-target-libbacktrace:
+@if target-libbacktrace
+maybe-install-info-target-libbacktrace: install-info-target-libbacktrace
+
+install-info-target-libbacktrace: \
+    configure-target-libbacktrace \
+    info-target-libbacktrace 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libbacktrace/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-info in $(TARGET_SUBDIR)/libbacktrace" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libbacktrace && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-info) \
+	  || exit 1
+
+@endif target-libbacktrace
+
+.PHONY: maybe-install-pdf-target-libbacktrace install-pdf-target-libbacktrace
+maybe-install-pdf-target-libbacktrace:
+@if target-libbacktrace
+maybe-install-pdf-target-libbacktrace: install-pdf-target-libbacktrace
+
+install-pdf-target-libbacktrace: \
+    configure-target-libbacktrace \
+    pdf-target-libbacktrace 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libbacktrace/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-pdf in $(TARGET_SUBDIR)/libbacktrace" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libbacktrace && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-pdf) \
+	  || exit 1
+
+@endif target-libbacktrace
+
+.PHONY: maybe-install-html-target-libbacktrace install-html-target-libbacktrace
+maybe-install-html-target-libbacktrace:
+@if target-libbacktrace
+maybe-install-html-target-libbacktrace: install-html-target-libbacktrace
+
+install-html-target-libbacktrace: \
+    configure-target-libbacktrace \
+    html-target-libbacktrace 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libbacktrace/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-html in $(TARGET_SUBDIR)/libbacktrace" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libbacktrace && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-html) \
+	  || exit 1
+
+@endif target-libbacktrace
+
+.PHONY: maybe-installcheck-target-libbacktrace installcheck-target-libbacktrace
+maybe-installcheck-target-libbacktrace:
+@if target-libbacktrace
+maybe-installcheck-target-libbacktrace: installcheck-target-libbacktrace
+
+installcheck-target-libbacktrace: \
+    configure-target-libbacktrace 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libbacktrace/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing installcheck in $(TARGET_SUBDIR)/libbacktrace" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libbacktrace && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           installcheck) \
+	  || exit 1
+
+@endif target-libbacktrace
+
+.PHONY: maybe-mostlyclean-target-libbacktrace mostlyclean-target-libbacktrace
+maybe-mostlyclean-target-libbacktrace:
+@if target-libbacktrace
+maybe-mostlyclean-target-libbacktrace: mostlyclean-target-libbacktrace
+
+mostlyclean-target-libbacktrace: 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libbacktrace/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing mostlyclean in $(TARGET_SUBDIR)/libbacktrace" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libbacktrace && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           mostlyclean) \
+	  || exit 1
+
+@endif target-libbacktrace
+
+.PHONY: maybe-clean-target-libbacktrace clean-target-libbacktrace
+maybe-clean-target-libbacktrace:
+@if target-libbacktrace
+maybe-clean-target-libbacktrace: clean-target-libbacktrace
+
+clean-target-libbacktrace: 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libbacktrace/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing clean in $(TARGET_SUBDIR)/libbacktrace" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libbacktrace && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           clean) \
+	  || exit 1
+
+@endif target-libbacktrace
+
+.PHONY: maybe-distclean-target-libbacktrace distclean-target-libbacktrace
+maybe-distclean-target-libbacktrace:
+@if target-libbacktrace
+maybe-distclean-target-libbacktrace: distclean-target-libbacktrace
+
+distclean-target-libbacktrace: 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libbacktrace/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing distclean in $(TARGET_SUBDIR)/libbacktrace" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libbacktrace && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           distclean) \
+	  || exit 1
+
+@endif target-libbacktrace
+
+.PHONY: maybe-maintainer-clean-target-libbacktrace maintainer-clean-target-libbacktrace
+maybe-maintainer-clean-target-libbacktrace:
+@if target-libbacktrace
+maybe-maintainer-clean-target-libbacktrace: maintainer-clean-target-libbacktrace
+
+maintainer-clean-target-libbacktrace: 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libbacktrace/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing maintainer-clean in $(TARGET_SUBDIR)/libbacktrace" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libbacktrace && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           maintainer-clean) \
+	  || exit 1
+
+@endif target-libbacktrace
+
+
+
+
+
 .PHONY: configure-target-libquadmath maybe-configure-target-libquadmath
 maybe-configure-target-libquadmath:
 @if gcc-bootstrap
@@ -41322,6 +42699,11 @@ stage1-start::
 	  mkdir stage1-ld; \
 	mv stage1-ld ld 
 @endif ld
+@if libbacktrace
+	@cd $(HOST_SUBDIR); [ -d stage1-libbacktrace ] || \
+	  mkdir stage1-libbacktrace; \
+	mv stage1-libbacktrace libbacktrace 
+@endif libbacktrace
 @if libcpp
 	@cd $(HOST_SUBDIR); [ -d stage1-libcpp ] || \
 	  mkdir stage1-libcpp; \
@@ -41422,6 +42804,11 @@ stage1-end::
 	  cd $(HOST_SUBDIR); mv ld stage1-ld  ; \
 	fi
 @endif ld
+@if libbacktrace
+	@if test -d $(HOST_SUBDIR)/libbacktrace ; then \
+	  cd $(HOST_SUBDIR); mv libbacktrace stage1-libbacktrace  ; \
+	fi
+@endif libbacktrace
 @if libcpp
 	@if test -d $(HOST_SUBDIR)/libcpp ; then \
 	  cd $(HOST_SUBDIR); mv libcpp stage1-libcpp  ; \
@@ -41579,6 +42966,12 @@ stage2-start::
 	mv stage2-ld ld  ; \
 	mv stage1-ld prev-ld || test -f stage1-lean 
 @endif ld
+@if libbacktrace
+	@cd $(HOST_SUBDIR); [ -d stage2-libbacktrace ] || \
+	  mkdir stage2-libbacktrace; \
+	mv stage2-libbacktrace libbacktrace  ; \
+	mv stage1-libbacktrace prev-libbacktrace || test -f stage1-lean 
+@endif libbacktrace
 @if libcpp
 	@cd $(HOST_SUBDIR); [ -d stage2-libcpp ] || \
 	  mkdir stage2-libcpp; \
@@ -41699,6 +43092,12 @@ stage2-end::
 	  mv prev-ld stage1-ld ; :  ; \
 	fi
 @endif ld
+@if libbacktrace
+	@if test -d $(HOST_SUBDIR)/libbacktrace ; then \
+	  cd $(HOST_SUBDIR); mv libbacktrace stage2-libbacktrace ; \
+	  mv prev-libbacktrace stage1-libbacktrace ; :  ; \
+	fi
+@endif libbacktrace
 @if libcpp
 	@if test -d $(HOST_SUBDIR)/libcpp ; then \
 	  cd $(HOST_SUBDIR); mv libcpp stage2-libcpp ; \
@@ -41885,6 +43284,12 @@ stage3-start::
 	mv stage3-ld ld  ; \
 	mv stage2-ld prev-ld || test -f stage2-lean 
 @endif ld
+@if libbacktrace
+	@cd $(HOST_SUBDIR); [ -d stage3-libbacktrace ] || \
+	  mkdir stage3-libbacktrace; \
+	mv stage3-libbacktrace libbacktrace  ; \
+	mv stage2-libbacktrace prev-libbacktrace || test -f stage2-lean 
+@endif libbacktrace
 @if libcpp
 	@cd $(HOST_SUBDIR); [ -d stage3-libcpp ] || \
 	  mkdir stage3-libcpp; \
@@ -42005,6 +43410,12 @@ stage3-end::
 	  mv prev-ld stage2-ld ; :  ; \
 	fi
 @endif ld
+@if libbacktrace
+	@if test -d $(HOST_SUBDIR)/libbacktrace ; then \
+	  cd $(HOST_SUBDIR); mv libbacktrace stage3-libbacktrace ; \
+	  mv prev-libbacktrace stage2-libbacktrace ; :  ; \
+	fi
+@endif libbacktrace
 @if libcpp
 	@if test -d $(HOST_SUBDIR)/libcpp ; then \
 	  cd $(HOST_SUBDIR); mv libcpp stage3-libcpp ; \
@@ -42247,6 +43658,12 @@ stage4-start::
 	mv stage4-ld ld  ; \
 	mv stage3-ld prev-ld || test -f stage3-lean 
 @endif ld
+@if libbacktrace
+	@cd $(HOST_SUBDIR); [ -d stage4-libbacktrace ] || \
+	  mkdir stage4-libbacktrace; \
+	mv stage4-libbacktrace libbacktrace  ; \
+	mv stage3-libbacktrace prev-libbacktrace || test -f stage3-lean 
+@endif libbacktrace
 @if libcpp
 	@cd $(HOST_SUBDIR); [ -d stage4-libcpp ] || \
 	  mkdir stage4-libcpp; \
@@ -42367,6 +43784,12 @@ stage4-end::
 	  mv prev-ld stage3-ld ; :  ; \
 	fi
 @endif ld
+@if libbacktrace
+	@if test -d $(HOST_SUBDIR)/libbacktrace ; then \
+	  cd $(HOST_SUBDIR); mv libbacktrace stage4-libbacktrace ; \
+	  mv prev-libbacktrace stage3-libbacktrace ; :  ; \
+	fi
+@endif libbacktrace
 @if libcpp
 	@if test -d $(HOST_SUBDIR)/libcpp ; then \
 	  cd $(HOST_SUBDIR); mv libcpp stage4-libcpp ; \
@@ -42597,6 +44020,12 @@ stageprofile-start::
 	mv stageprofile-ld ld  ; \
 	mv stage1-ld prev-ld || test -f stage1-lean 
 @endif ld
+@if libbacktrace
+	@cd $(HOST_SUBDIR); [ -d stageprofile-libbacktrace ] || \
+	  mkdir stageprofile-libbacktrace; \
+	mv stageprofile-libbacktrace libbacktrace  ; \
+	mv stage1-libbacktrace prev-libbacktrace || test -f stage1-lean 
+@endif libbacktrace
 @if libcpp
 	@cd $(HOST_SUBDIR); [ -d stageprofile-libcpp ] || \
 	  mkdir stageprofile-libcpp; \
@@ -42717,6 +44146,12 @@ stageprofile-end::
 	  mv prev-ld stage1-ld ; :  ; \
 	fi
 @endif ld
+@if libbacktrace
+	@if test -d $(HOST_SUBDIR)/libbacktrace ; then \
+	  cd $(HOST_SUBDIR); mv libbacktrace stageprofile-libbacktrace ; \
+	  mv prev-libbacktrace stage1-libbacktrace ; :  ; \
+	fi
+@endif libbacktrace
 @if libcpp
 	@if test -d $(HOST_SUBDIR)/libcpp ; then \
 	  cd $(HOST_SUBDIR); mv libcpp stageprofile-libcpp ; \
@@ -42880,6 +44315,12 @@ stagefeedback-start::
 	mv stagefeedback-ld ld  ; \
 	mv stageprofile-ld prev-ld || test -f stageprofile-lean 
 @endif ld
+@if libbacktrace
+	@cd $(HOST_SUBDIR); [ -d stagefeedback-libbacktrace ] || \
+	  mkdir stagefeedback-libbacktrace; \
+	mv stagefeedback-libbacktrace libbacktrace  ; \
+	mv stageprofile-libbacktrace prev-libbacktrace || test -f stageprofile-lean 
+@endif libbacktrace
 @if libcpp
 	@cd $(HOST_SUBDIR); [ -d stagefeedback-libcpp ] || \
 	  mkdir stagefeedback-libcpp; \
@@ -43000,6 +44441,12 @@ stagefeedback-end::
 	  mv prev-ld stageprofile-ld ; :  ; \
 	fi
 @endif ld
+@if libbacktrace
+	@if test -d $(HOST_SUBDIR)/libbacktrace ; then \
+	  cd $(HOST_SUBDIR); mv libbacktrace stagefeedback-libbacktrace ; \
+	  mv prev-libbacktrace stageprofile-libbacktrace ; :  ; \
+	fi
+@endif libbacktrace
 @if libcpp
 	@if test -d $(HOST_SUBDIR)/libcpp ; then \
 	  cd $(HOST_SUBDIR); mv libcpp stagefeedback-libcpp ; \
@@ -43152,6 +44599,7 @@ configure-stage3-target-libgcc: maybe-all-stage3-gcc
 configure-stage4-target-libgcc: maybe-all-stage4-gcc
 configure-stageprofile-target-libgcc: maybe-all-stageprofile-gcc
 configure-stagefeedback-target-libgcc: maybe-all-stagefeedback-gcc
+configure-target-libbacktrace: stage_last
 configure-target-libquadmath: stage_last
 configure-target-libgfortran: stage_last
 configure-target-libobjc: stage_last
@@ -43181,6 +44629,7 @@ configure-target-libmudflap: maybe-all-gcc
 configure-target-libssp: maybe-all-gcc
 configure-target-newlib: maybe-all-gcc
 configure-target-libgcc: maybe-all-gcc
+configure-target-libbacktrace: maybe-all-gcc
 configure-target-libquadmath: maybe-all-gcc
 configure-target-libgfortran: maybe-all-gcc
 configure-target-libobjc: maybe-all-gcc
@@ -43949,6 +45398,7 @@ configure-target-libstdc++-v3: maybe-all-target-libgcc
 configure-target-libmudflap: maybe-all-target-libgcc
 configure-target-libssp: maybe-all-target-libgcc
 configure-target-newlib: maybe-all-target-libgcc
+configure-target-libbacktrace: maybe-all-target-libgcc
 configure-target-libquadmath: maybe-all-target-libgcc
 configure-target-libgfortran: maybe-all-target-libgcc
 configure-target-libobjc: maybe-all-target-libgcc
@@ -43975,6 +45425,8 @@ configure-target-libmudflap: maybe-all-target-newlib maybe-all-target-libgloss
 configure-target-libssp: maybe-all-target-newlib maybe-all-target-libgloss
 
 
+
+configure-target-libbacktrace: maybe-all-target-newlib maybe-all-target-libgloss
 
 configure-target-libquadmath: maybe-all-target-newlib maybe-all-target-libgloss
 
