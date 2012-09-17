@@ -1132,7 +1132,7 @@
           }
       }
 
-    if (CONST_FIXED == GET_CODE (operands[2]))
+    if (CONST_FIXED_P (operands[2]))
       {
         emit_insn (gen_add<mode>3_clobber (operands[0], operands[1], operands[2]));
         DONE;

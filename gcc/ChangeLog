@@ -1,5 +1,10 @@
 2012-09-17  Georg-Johann Lay  <avr@gjlay.de>
 
+	* config/avr/avr.c (CONST_FIXED_P): Remove define.
+	* config/avr/avr.md (add<mode>3): Use CONST_FIXED_P.
+
+2012-09-17  Georg-Johann Lay  <avr@gjlay.de>
+
 	PR target/54607
 	* config.gcc (tm_file,avr): Add avr/avr-arch.h.
 	* config/avr/t-avr (gen-avr-mmcu-texi): Use CC_FOR_BUILD to
