@@ -49,10 +49,6 @@
 #include "params.h"
 #include "df.h"
 
-#ifndef CONST_FIXED_P
-#define CONST_FIXED_P(X) (CONST_FIXED == GET_CODE (X))
-#endif
-
 /* Maximal allowed offset for an address in the LD command */
 #define MAX_LD_OFFSET(MODE) (64 - (signed)GET_MODE_SIZE (MODE))
 
