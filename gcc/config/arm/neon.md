@@ -156,9 +156,9 @@
 
 (define_insn "*neon_mov<mode>"
   [(set (match_operand:VDX 0 "nonimmediate_operand"
-	  "=w,Uv,w, w,  ?r,?w,?r,?r, ?Us")
+	  "=w,Un,w, w,  ?r,?w,?r,?r, ?Us")
 	(match_operand:VDX 1 "general_operand"
-	  " w,w, Dn,Uvi, w, r, r, Usi,r"))]
+	  " w,w, Dn,Uni, w, r, r, Usi,r"))]
   "TARGET_NEON
    && (register_operand (operands[0], <MODE>mode)
        || register_operand (operands[1], <MODE>mode))"
@@ -181,15 +181,10 @@
       return templ;
     }
 
-  /* FIXME: If the memory layout is changed in big-endian mode, output_move_vfp
-     below must be changed to output_move_neon (which will use the
-     element/structure loads/stores), and the constraint changed to 'Um' instead
-     of 'Uv'.  */
-
   switch (which_alternative)
     {
     case 0: return "vmov\t%P0, %P1  @ <mode>";
-    case 1: case 3: return output_move_vfp (operands);
+    case 1: case 3: return output_move_neon (operands);
     case 2: gcc_unreachable ();
     case 4: return "vmov\t%Q0, %R0, %P1  @ <mode>";
     case 5: return "vmov\t%P0, %Q1, %R1  @ <mode>";

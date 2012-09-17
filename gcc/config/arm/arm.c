@@ -9629,7 +9629,11 @@ neon_vector_mem_operand (rtx op, int type)
       && REG_MODE_OK_FOR_BASE_P (XEXP (ind, 0), VOIDmode)
       && CONST_INT_P (XEXP (ind, 1))
       && INTVAL (XEXP (ind, 1)) > -1024
-      && INTVAL (XEXP (ind, 1)) < 1016
+      /* For quad modes, we restrict the constant offset to be slightly less
+	 than what the instruction format permits.  We have no such constraint
+	 on double mode offsets.  (This must match arm_legitimate_index_p.)  */
+      && (INTVAL (XEXP (ind, 1))
+	  < (VALID_NEON_QREG_MODE (GET_MODE (op))? 1016 : 1024))
       && (INTVAL (XEXP (ind, 1)) & 3) == 0)
     return TRUE;
 
@@ -14573,15 +14577,16 @@ output_move_vfp (rtx *operands)
   return "";
 }
 
-/* Output a Neon quad-word load or store, or a load or store for
-   larger structure modes.
+/* Output a Neon double-word or quad-word load or store, or a load
+   or store for larger structure modes.
 
    WARNING: The ordering of elements is weird in big-endian mode,
-   because we use VSTM, as required by the EABI.  GCC RTL defines
-   element ordering based on in-memory order.  This can be differ
-   from the architectural ordering of elements within a NEON register.
-   The intrinsics defined in arm_neon.h use the NEON register element
-   ordering, not the GCC RTL element ordering.
+   because the EABI requires that vectors stored in memory appear
+   as though they were stored by a VSTM, as required by the EABI.
+   GCC RTL defines element ordering based on in-memory order.
+   This can be different from the architectural ordering of elements
+   within a NEON register. The intrinsics defined in arm_neon.h use the
+   NEON register element ordering, not the GCC RTL element ordering.
 
    For example, the in-memory ordering of a big-endian a quadword
    vector with 16-bit elements when stored from register pair {d0,d1}
@@ -14595,13 +14600,28 @@ output_move_vfp (rtx *operands)
      dN -> (rN+1, rN), dN+1 -> (rN+3, rN+2)
 
    So that STM/LDM can be used on vectors in ARM registers, and the
-   same memory layout will result as if VSTM/VLDM were used.  */
+   same memory layout will result as if VSTM/VLDM were used.
+
+   Instead of VSTM/VLDM we prefer to use VST1.64/VLD1.64 where
+   possible, which allows use of appropriate alignment tags.
+   Note that the choice of "64" is independent of the actual vector
+   element size; this size simply ensures that the behavior is
+   equivalent to VSTM/VLDM in both little-endian and big-endian mode.
+
+   Due to limitations of those instructions, use of VST1.64/VLD1.64
+   is not possible if:
+    - the address contains PRE_DEC, or
+    - the mode refers to more than 4 double-word registers
+
+   In those cases, it would be possible to replace VSTM/VLDM by a
+   sequence of instructions; this is not currently implemented since
+   this is not certain to actually improve performance.  */
 
 const char *
 output_move_neon (rtx *operands)
 {
   rtx reg, mem, addr, ops[2];
-  int regno, load = REG_P (operands[0]);
+  int regno, nregs, load = REG_P (operands[0]);
   const char *templ;
   char buff[50];
   enum machine_mode mode;
@@ -14613,6 +14633,7 @@ output_move_neon (rtx *operands)
 
   gcc_assert (REG_P (reg));
   regno = REGNO (reg);
+  nregs = HARD_REGNO_NREGS (regno, mode) / 2;
   gcc_assert (VFP_REGNO_OK_FOR_DOUBLE (regno)
 	      || NEON_REGNO_OK_FOR_QUAD (regno));
   gcc_assert (VALID_NEON_DREG_MODE (mode)
@@ -14629,13 +14650,23 @@ output_move_neon (rtx *operands)
   switch (GET_CODE (addr))
     {
     case POST_INC:
-      templ = "v%smia%%?\t%%0!, %%h1";
-      ops[0] = XEXP (addr, 0);
+      /* We have to use vldm / vstm for too-large modes.  */
+      if (nregs > 4)
+	{
+	  templ = "v%smia%%?\t%%0!, %%h1";
+	  ops[0] = XEXP (addr, 0);
+	}
+      else
+	{
+	  templ = "v%s1.64\t%%h1, %%A0";
+	  ops[0] = mem;
+	}
       ops[1] = reg;
       break;
 
     case PRE_DEC:
-      /* FIXME: We should be using vld1/vst1 here in BE mode?  */
+      /* We have to use vldm / vstm in this case, since there is no
+	 pre-decrement form of the vld1 / vst1 instructions.  */
       templ = "v%smdb%%?\t%%0!, %%h1";
       ops[0] = XEXP (addr, 0);
       ops[1] = reg;
@@ -14648,7 +14679,6 @@ output_move_neon (rtx *operands)
     case LABEL_REF:
     case PLUS:
       {
-	int nregs = HARD_REGNO_NREGS (REGNO (reg), mode) / 2;
 	int i;
 	int overlap = -1;
 	for (i = 0; i < nregs; i++)
@@ -14679,7 +14709,12 @@ output_move_neon (rtx *operands)
       }
 
     default:
-      templ = "v%smia%%?\t%%m0, %%h1";
+      /* We have to use vldm / vstm for too-large modes.  */
+      if (nregs > 4)
+	templ = "v%smia%%?\t%%m0, %%h1";
+      else
+	templ = "v%s1.64\t%%h1, %%A0";
+
       ops[0] = mem;
       ops[1] = reg;
     }
