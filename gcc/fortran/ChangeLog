@@ -1,5 +1,12 @@
 2012-09-17  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/54603
+	* trans-expr.c (gfc_trans_subcomponent_assign): Handle
+	proc-pointer components.
+
+2012-09-17  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54599
 	* error.c (error_print): Move increment out of the assert.
 	* interface.c (gfc_compare_derived_types): Add assert.
 	(get_expr_storage_size): Remove always-true logical condition.

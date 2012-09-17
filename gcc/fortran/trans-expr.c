@@ -5506,11 +5506,11 @@ gfc_trans_subcomponent_assign (tree dest, gfc_component * cm, gfc_expr * expr)
 
   gfc_start_block (&block);
 
-  if (cm->attr.pointer)
+  if (cm->attr.pointer || cm->attr.proc_pointer)
     {
       gfc_init_se (&se, NULL);
       /* Pointer component.  */
-      if (cm->attr.dimension)
+      if (cm->attr.dimension && !cm->attr.proc_pointer)
 	{
 	  /* Array pointer.  */
 	  if (expr->expr_type == EXPR_NULL)
@@ -5530,6 +5530,11 @@ gfc_trans_subcomponent_assign (tree dest, gfc_component * cm, gfc_expr * expr)
 	  se.want_pointer = 1;
 	  gfc_conv_expr (&se, expr);
 	  gfc_add_block_to_block (&block, &se.pre);
+
+	  if (expr->symtree && expr->symtree->n.sym->attr.proc_pointer
+	      && expr->symtree->n.sym->attr.dummy)
+	    se.expr = build_fold_indirect_ref_loc (input_location, se.expr);
+
 	  gfc_add_modify (&block, dest,
 			       fold_convert (TREE_TYPE (dest), se.expr));
 	  gfc_add_block_to_block (&block, &se.post);
