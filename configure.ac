@@ -133,7 +133,7 @@ build_tools="build-texinfo build-flex build-bison build-m4 build-fixincludes"
 
 # these libraries are used by various programs built for the host environment
 #
-host_libs="intl libiberty opcodes bfd readline tcl tk itcl libgui zlib libcpp libdecnumber gmp mpfr mpc isl cloog libelf libiconv"
+host_libs="intl libiberty opcodes bfd readline tcl tk itcl libgui zlib libbacktrace libcpp libdecnumber gmp mpfr mpc isl cloog libelf libiconv"
 
 # these tools are built for the host environment
 # Note, the powerpc-eabi build depends on sim occurring before gdb in order to
@@ -152,6 +152,7 @@ libgcj="target-libffi \
 # the host libraries and the host tools (which may be a cross compiler)
 # Note that libiberty is not a target library.
 target_libraries="target-libgcc \
+		target-libbacktrace \
 		target-libgloss \
 		target-newlib \
 		target-libgomp \
