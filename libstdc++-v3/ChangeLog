@@ -1,3 +1,8 @@
+2012-09-16  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* include/ext/random.tcc (__gnu_cxx::rice_distribution<>
+	::__generate_impl): Remove bogus _Adaptor usage.
+
 2012-09-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/ext/random (rice_distribution<>::operator==): Change
