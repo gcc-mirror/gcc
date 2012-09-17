@@ -762,9 +762,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	__glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator>)
 
-	std::__detail::_Adaptor<_UniformRandomNumberGenerator, result_type>
-	  __aurng(__urng);
-
 	while (__f != __t)
 	  {
 	    typename std::normal_distribution<result_type>::param_type
