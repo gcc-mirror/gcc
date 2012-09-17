@@ -125,9 +125,12 @@ gfc_target_expr_size (gfc_expr *e)
 	/* Determine type size without clobbering the typespec for ISO C
 	   binding types.  */
 	gfc_typespec ts;
+	HOST_WIDE_INT size;
 	ts = e->ts;
 	type = gfc_typenode_for_spec (&ts);
-	return int_size_in_bytes (type);
+	size = int_size_in_bytes (type);
+	gcc_assert (size >= 0);
+	return size;
       }
     default:
       gfc_internal_error ("Invalid expression in gfc_target_expr_size.");

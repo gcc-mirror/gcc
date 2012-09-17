@@ -7427,7 +7427,7 @@ check_symbols:
 			 "statement at %L", &e->where);
 	      goto failure;
 	    }
-	  break;
+	  continue;
 	}
 
       if (ar->dimen_type[i] == DIMEN_STAR && i == (ar->dimen + ar->codimen - 1)
