@@ -1,3 +1,9 @@
+2012-09-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/54222
+	* config/avr/avr.c (avr_out_plus_symbol): Fix typo if PLUS and PSImode.
+	(avr_out_plus_1): Remove log comments from assembler output.
+
 2012-09-17  Ruben Buchatskiy  <ruben@ispras.ru>
 
 	* config/arm/vfp.md (*thumb2_movdf_vfp): Require one of the operands
