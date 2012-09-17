@@ -18,10 +18,12 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+#ifndef IN_GEN_AVR_MMCU_TEXI
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
+#endif /* IN_GEN_AVR_MMCU_TEXI */
 
 /* List of all known AVR MCU architectures.
    Order as of enum avr_arch from avr.h.  */

@@ -1,5 +1,21 @@
 2012-09-17  Georg-Johann Lay  <avr@gjlay.de>
 
+	PR target/54607
+	* config.gcc (tm_file,avr): Add avr/avr-arch.h.
+	* config/avr/t-avr (gen-avr-mmcu-texi): Use CC_FOR_BUILD to
+	compile.  Don't depend on TM_H.  Use CFLAGS_FOR_BUILD.
+	* config/avr/avr.h (avr_arch, base_arch_s, mcu_type_s): Source out
+	to...
+	* config/avr/avr-arch.h: ...this new file.
+	* config/avr/gen-avr-mmcu-texi.c: Include avr-arch.h, stdio.h,
+	stdlib.h.
+	* comparator: Make letters smaller than digits.
+	* config/avr/avr-devices.c: Don't include headers if used in
+	gen-avr-mmcu-texi.c.
+	* doc/avr-mmcu.texi: Regenerate.
+
+2012-09-17  Georg-Johann Lay  <avr@gjlay.de>
+
 	* rtl.h (CONST_FIXED_P): New predicate macro.
 
 2012-09-17  Eric Botcazou  <ebotcazou@adacore.com>

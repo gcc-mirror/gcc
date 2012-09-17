@@ -44,8 +44,9 @@ $(srcdir)/config/avr/avr-tables.opt: $(srcdir)/config/avr/genopt.sh $(AVR_MCUS)
 	$(SHELL) $< $(AVR_MCUS) > $@
 
 gen-avr-mmcu-texi$(build_exeext): $(srcdir)/config/avr/gen-avr-mmcu-texi.c \
-  $(TM_H) $(AVR_MCUS) $(srcdir)/config/avr/avr-devices.c
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $< -o $@
+  $(AVR_MCUS) $(srcdir)/config/avr/avr-devices.c \
+  $(srcdir)/config/avr/avr-arch.h
+	$(CC_FOR_BUILD) $(CFLAGS_FOR_BUILD) $< -o $@
 
 # Make sure that the -mmcu= documentation is in sync with the compiler.
 $(srcdir)/doc/avr-mmcu.texi: s-avr-mmcu-texi; @true
