@@ -1,3 +1,8 @@
+2012-09-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53661
+	* g++.dg/init/aggr9.C: New.
+
 2012-09-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/loop_optimization12.ad[sb]: New test.
