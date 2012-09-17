@@ -419,6 +419,9 @@ struct GTY((variable_size)) rtvec_def {
 /* Predicate yielding nonzero iff X is an rtx for a constant integer.  */
 #define CONST_INT_P(X) (GET_CODE (X) == CONST_INT)
 
+/* Predicate yielding nonzero iff X is an rtx for a constant fixed-point.  */
+#define CONST_FIXED_P(X) (GET_CODE (X) == CONST_FIXED)
+
 /* Predicate yielding true iff X is an rtx for a double-int
    or floating point constant.  */
 #define CONST_DOUBLE_P(X) (GET_CODE (X) == CONST_DOUBLE)
