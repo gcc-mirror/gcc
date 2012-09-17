@@ -40,9 +40,9 @@ POSSIBILITY OF SUCH DAMAGE.  */
 /* A trivial routine that always fails to find fileline data.  */
 
 static int
-unknown_fileline (void *fileline_data ATTRIBUTE_UNUSED,
+unknown_fileline (struct backtrace_state *state ATTRIBUTE_UNUSED,
 		  uintptr_t pc, backtrace_full_callback callback,
-		  backtrace_error_callback ATTRIBUTE_UNUSED,
+		  backtrace_error_callback error_callback ATTRIBUTE_UNUSED,
 		  void *data)
 
 {
@@ -53,12 +53,12 @@ unknown_fileline (void *fileline_data ATTRIBUTE_UNUSED,
    debug info.  */
 
 int
-backtrace_initialize (int descriptor ATTRIBUTE_UNUSED,
+backtrace_initialize (struct backtrace_state *state ATTRIBUTE_UNUSED,
+		      int descriptor ATTRIBUTE_UNUSED,
 		      backtrace_error_callback error_callback ATTRIBUTE_UNUSED,
-		      void *data ATTRIBUTE_UNUSED, fileline *fileline_fn,
-		      void **fileline_data)
+		      void *data ATTRIBUTE_UNUSED, fileline *fileline_fn)
 {
+  state->fileline_data = NULL;
   *fileline_fn = unknown_fileline;
-  *fileline_data = NULL;
   return 1;
 }

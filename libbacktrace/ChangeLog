@@ -1,3 +1,10 @@
 2012-09-17  Ian Lance Taylor  <iant@google.com>
 
+	PR bootstrap/54609
+	* unknown.c (unknown_fileline): Add state parameter, remove
+	fileline_data parameter, name error_callback parameter.
+	(backtrace_initialize): Add state parameter.
+
+2012-09-17  Ian Lance Taylor  <iant@google.com>
+
 	* Initial implementation.
