@@ -1,3 +1,33 @@
+2012-09-17  Ulrich Drepper  <drepper@gmail.com>
+
+	* configure.ac: Substitute CPU_OPT_EXT_RANDOM.
+	* configure.host: Define cpu_opt_ext_random to location of the
+	optimized version of <ext/random>.
+	* include/Makefile.am (ext_headers): Add ${ext_host_headers}.
+	(ext_host_headers): Define.
+	* include/ext/random (simd_fast_mersenne_twister_engine<>
+	::operator==): Don't define function here.
+	* include/ext/random.tcc (simd_fast_mersenne_twister_engine): Don't
+	define code using SSE2 here.  Define generic code only if
+	_GLIBCXX_OPT_HAVE_RANDOM_SFMT_GEN_READ is not defined.
+	(simd_fast_mersenne_twister_engine<>
+	::operator==): Define here if
+	_GLIBCXX_OPT_HAVE_RANDOM_SFMT_OPERATOREQUAL is not defined.
+	* config/cpu/generic/opt/ext/opt_random.h: New file.
+	* config/cpu/i486/opt/ext/opt_random.h: New file.
+	* libsupc++/Makefile.in: Regenerated.
+	* testsuite/Makefile.in: Regenerated.
+	* po/Makefile.in: Regenerated.
+	* configure: Regenerated.
+	* Makefile.in: Regenerated.
+	* doc/Makefile.in: Regenerated.
+	* aclocal.m4: Regenerated.
+	* python/Makefile.in: Regenerated.
+	* include/Makefile.in: Regenerated.
+	* src/c++98/Makefile.in: Regenerated.
+	* src/c++11/Makefile.in: Regenerated.
+	* src/Makefile.in: Regenerated.
+
 2012-09-16  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	* include/ext/random.tcc (__gnu_cxx::rice_distribution<>

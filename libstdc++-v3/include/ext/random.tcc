@@ -202,71 +202,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
 
-#ifdef  __SSE2__
-
-  namespace {
-
-    template<size_t __sl1, size_t __sl2, size_t __sr1, size_t __sr2,
-	     uint32_t __msk1, uint32_t __msk2, uint32_t __msk3, uint32_t __msk4>
-      inline __m128i __sse2_recursion(__m128i __a, __m128i __b,
-				      __m128i __c, __m128i __d)
-      {
-	__m128i __y = _mm_srli_epi32(__b, __sr1);
-	__m128i __z = _mm_srli_si128(__c, __sr2);
-	__m128i __v = _mm_slli_epi32(__d, __sl1);
-	__z = _mm_xor_si128(__z, __a);
-	__z = _mm_xor_si128(__z, __v);
-	__m128i __x = _mm_slli_si128(__a, __sl2);
-	__y = _mm_and_si128(__y, _mm_set_epi32(__msk4, __msk3, __msk2, __msk1));
-	__z = _mm_xor_si128(__z, __x);
-	return _mm_xor_si128(__z, __y);
-      }
-
-  }
-
-
-  template<typename _UIntType, size_t __m,
-	   size_t __pos1, size_t __sl1, size_t __sl2,
-	   size_t __sr1, size_t __sr2,
-	   uint32_t __msk1, uint32_t __msk2,
-	   uint32_t __msk3, uint32_t __msk4,
-	   uint32_t __parity1, uint32_t __parity2,
-	   uint32_t __parity3, uint32_t __parity4>
-    void simd_fast_mersenne_twister_engine<_UIntType, __m,
-					   __pos1, __sl1, __sl2, __sr1, __sr2,
-					   __msk1, __msk2, __msk3, __msk4,
-					   __parity1, __parity2, __parity3,
-					   __parity4>::
-    _M_gen_rand(void)
-    {
-      __m128i __r1 = _mm_load_si128(&_M_state[_M_nstate - 2]);
-      __m128i __r2 = _mm_load_si128(&_M_state[_M_nstate - 1]);
-
-      size_t __i;
-      for (__i = 0; __i < _M_nstate - __pos1; ++__i)
-	{
-	  __m128i __r = __sse2_recursion<__sl1, __sl2, __sr1, __sr2,
-					 __msk1, __msk2, __msk3, __msk4>
-	    (_M_state[__i], _M_state[__i + __pos1], __r1, __r2);
-	  _mm_store_si128(&_M_state[__i], __r);
-	  __r1 = __r2;
-	  __r2 = __r;
-	}
-      for (; __i < _M_nstate; ++__i)
-	{
-	  __m128i __r = __sse2_recursion<__sl1, __sl2, __sr1, __sr2,
-					 __msk1, __msk2, __msk3, __msk4>
-	    (_M_state[__i], _M_state[__i + __pos1 - _M_nstate], __r1, __r2);
-	  _mm_store_si128(&_M_state[__i], __r);
-	  __r1 = __r2;
-	  __r2 = __r;
-	}
-
-      _M_pos = 0;
-    }
-
-
-#else
+#ifndef  _GLIBCXX_OPT_HAVE_RANDOM_SFMT_GEN_READ
 
   namespace {
 
@@ -374,6 +310,29 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #endif
 
+#ifndef _GLIBCXX_OPT_HAVE_RANDOM_SFMT_OPERATOREQUAL
+  template<typename _UIntType, size_t __m,
+	   size_t __pos1, size_t __sl1, size_t __sl2,
+	   size_t __sr1, size_t __sr2,
+	   uint32_t __msk1, uint32_t __msk2,
+	   uint32_t __msk3, uint32_t __msk4,
+	   uint32_t __parity1, uint32_t __parity2,
+	   uint32_t __parity3, uint32_t __parity4>
+    bool
+    operator==(const __gnu_cxx::simd_fast_mersenne_twister_engine<_UIntType,
+	       __m, __pos1, __sl1, __sl2, __sr1, __sr2,
+	       __msk1, __msk2, __msk3, __msk4,
+	       __parity1, __parity2, __parity3, __parity4>& __lhs,
+	       const __gnu_cxx::simd_fast_mersenne_twister_engine<_UIntType,
+	       __m, __pos1, __sl1, __sl2, __sr1, __sr2,
+	       __msk1, __msk2, __msk3, __msk4,
+	       __parity1, __parity2, __parity3, __parity4>& __rhs)
+    {
+      return (std::equal(__lhs._M_stateT, __lhs._M_stateT + state_size,
+			 __rhs._M_stateT)
+	      && __lhs._M_pos == __rhs._M_pos);
+    }
+#endif
 
   template<typename _UIntType, size_t __m,
 	   size_t __pos1, size_t __sl1, size_t __sl2,

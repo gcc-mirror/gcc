@@ -121,24 +121,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return _M_stateT[_M_pos++];
       }
 
-#ifdef __SSE2__
-      friend bool
-      operator==(const simd_fast_mersenne_twister_engine& __lhs,
-		 const simd_fast_mersenne_twister_engine& __rhs)
-      { __m128i __res = _mm_cmpeq_epi8(__lhs._M_state[0], __rhs._M_state[0]);
-	for (size_t __i = 1; __i < __lhs._M_nstate; ++__i)
-	  __res = _mm_and_si128(__res, _mm_cmpeq_epi8(__lhs._M_state[__i],
-						      __rhs._M_state[__i]));
-	return (_mm_movemask_epi8(__res) == 0xffff
-		&& __lhs._M_pos == __rhs._M_pos); }
-#else
-      friend bool
-      operator==(const simd_fast_mersenne_twister_engine& __lhs,
-		 const simd_fast_mersenne_twister_engine& __rhs)
-      { return (std::equal(__lhs._M_stateT, __lhs._M_stateT + state_size,
-			   __rhs._M_stateT)
-		&& __lhs._M_pos == __rhs._M_pos); }
-#endif
+      template<typename _UIntType_2, size_t __m_2,
+	       size_t __pos1_2, size_t __sl1_2, size_t __sl2_2,
+	       size_t __sr1_2, size_t __sr2_2,
+	       uint32_t __msk1_2, uint32_t __msk2_2,
+	       uint32_t __msk3_2, uint32_t __msk4_2,
+	       uint32_t __parity1_2, uint32_t __parity2_2,
+	       uint32_t __parity3_2, uint32_t __parity4_2>
+	friend bool
+	operator==(const simd_fast_mersenne_twister_engine<_UIntType_2,
+		   __m_2, __pos1_2, __sl1_2, __sl2_2, __sr1_2, __sr2_2,
+		   __msk1_2, __msk2_2, __msk3_2, __msk4_2,
+		   __parity1_2, __parity2_2, __parity3_2, __parity4_2>& __lhs,
+		   const simd_fast_mersenne_twister_engine<_UIntType_2,
+		   __m_2, __pos1_2, __sl1_2, __sl2_2, __sr1_2, __sr2_2,
+		   __msk1_2, __msk2_2, __msk3_2, __msk4_2,
+		   __parity1_2, __parity2_2, __parity3_2, __parity4_2>& __rhs);
 
       template<typename _UIntType_2, size_t __m_2,
 	       size_t __pos1_2, size_t __sl1_2, size_t __sl2_2,
@@ -1142,8 +1140,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return !(__d1 == __d2); }
 
 _GLIBCXX_END_NAMESPACE_VERSION
-} // namespace std
+} // namespace __gnu_cxx
 
+#include "opt_random.h"
 #include "random.tcc"
 
 #endif /* _EXT_RANDOM */
