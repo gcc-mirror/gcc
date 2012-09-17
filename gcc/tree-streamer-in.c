@@ -172,12 +172,11 @@ unpack_ts_real_cst_value_fields (struct bitpack_d *bp, tree expr)
 static void
 unpack_ts_fixed_cst_value_fields (struct bitpack_d *bp, tree expr)
 {
-  struct fixed_value fv;
-
-  fv.mode = bp_unpack_enum (bp, machine_mode, MAX_MACHINE_MODE);
-  fv.data.low = bp_unpack_var_len_int (bp);
-  fv.data.high = bp_unpack_var_len_int (bp);
-  TREE_FIXED_CST (expr) = fv;
+  FIXED_VALUE_TYPE *fp = ggc_alloc_fixed_value ();
+  fp->mode = bp_unpack_enum (bp, machine_mode, MAX_MACHINE_MODE);
+  fp->data.low = bp_unpack_var_len_int (bp);
+  fp->data.high = bp_unpack_var_len_int (bp);
+  TREE_FIXED_CST_PTR (expr) = fp;
 }
 
 
