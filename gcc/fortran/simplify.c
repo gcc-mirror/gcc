@@ -5247,7 +5247,8 @@ gfc_simplify_scan (gfc_expr *e, gfc_expr *c, gfc_expr *b, gfc_expr *kind)
   if (k == -1)
     return &gfc_bad_expr;
 
-  if (e->expr_type != EXPR_CONSTANT || c->expr_type != EXPR_CONSTANT)
+  if (e->expr_type != EXPR_CONSTANT || c->expr_type != EXPR_CONSTANT
+      || ( b != NULL && b->expr_type !=  EXPR_CONSTANT))
     return NULL;
 
   if (b != NULL && b->value.logical != 0)
@@ -6335,7 +6336,8 @@ gfc_simplify_verify (gfc_expr *s, gfc_expr *set, gfc_expr *b, gfc_expr *kind)
   if (k == -1)
     return &gfc_bad_expr;
 
-  if (s->expr_type != EXPR_CONSTANT || set->expr_type != EXPR_CONSTANT)
+  if (s->expr_type != EXPR_CONSTANT || set->expr_type != EXPR_CONSTANT
+      || ( b != NULL && b->expr_type !=  EXPR_CONSTANT))
     return NULL;
 
   if (b != NULL && b->value.logical != 0)
