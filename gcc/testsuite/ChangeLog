@@ -1,3 +1,8 @@
+2012-09-17  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54603
+	* gfortran.dg/structure_constructor_11.f90: New.
+
 2012-09-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/54563
