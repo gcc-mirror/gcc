@@ -1,3 +1,8 @@
+2012-09-17  Paul Koning  <ni1d@arrl.net>
+
+	* doc/invoke.text (-feliminate-unused-debug-types): Update to
+	reflect that this is enabled by default.
+
 2012-09-17  Ben Cheng  <bccheng@google.com
 
 	* config/arm/linux-elf.h (LINUX_TARGET_LINK_SPEC): Suppress the
