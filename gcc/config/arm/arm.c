@@ -7666,6 +7666,28 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
       return true;
 
     case SET:
+      /* The vec_extract patterns accept memory operands that require an
+	 address reload.  Account for the cost of that reload to give the
+	 auto-inc-dec pass an incentive to try to replace them.  */
+      if (TARGET_NEON && MEM_P (SET_DEST (x))
+	  && GET_CODE (SET_SRC (x)) == VEC_SELECT)
+	{
+	  *total = rtx_cost (SET_DEST (x), code, 0, speed);
+	  if (!neon_vector_mem_operand (SET_DEST (x), 2))
+	    *total += COSTS_N_INSNS (1);
+	  return true;
+	}
+      /* Likewise for the vec_set patterns.  */
+      if (TARGET_NEON && GET_CODE (SET_SRC (x)) == VEC_MERGE
+	  && GET_CODE (XEXP (SET_SRC (x), 0)) == VEC_DUPLICATE
+	  && MEM_P (XEXP (XEXP (SET_SRC (x), 0), 0)))
+	{
+	  rtx mem = XEXP (XEXP (SET_SRC (x), 0), 0);
+	  *total = rtx_cost (mem, code, 0, speed);
+	  if (!neon_vector_mem_operand (mem, 2))
+	    *total += COSTS_N_INSNS (1);
+	  return true;
+	}
       return false;
 
     case UNSPEC:
