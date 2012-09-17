@@ -544,7 +544,8 @@ error_print (const char *type, const char *format0, va_list argp)
 	  gcc_assert (pos >= 0);
 	  while (ISDIGIT(*format))
 	    format++;
-	  gcc_assert (*format++ == '$');
+	  gcc_assert (*format == '$');
+	  format++;
 	}
       else
 	pos++;

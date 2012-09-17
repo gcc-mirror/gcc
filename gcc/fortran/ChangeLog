@@ -1,3 +1,11 @@
+2012-09-17  Tobias Burnus  <burnus@net-b.de>
+
+	* error.c (error_print): Move increment out of the assert.
+	* interface.c (gfc_compare_derived_types): Add assert.
+	(get_expr_storage_size): Remove always-true logical condition.
+	* resolve.c (resolve_allocate_expr): Fix looping logic.
+	* target-memory.c (gfc_target_expr_size): Add assert.
+
 2012-09-16  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/54594
