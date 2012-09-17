@@ -3513,8 +3513,16 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
       comp = gfc_get_proc_ptr_comp (rvalue);
       if (comp)
 	{
-	  s2 = comp->ts.interface;
-	  name = comp->name;
+	  if (rvalue->expr_type == EXPR_FUNCTION)
+	    {
+	      s2 = comp->ts.interface->result;
+	      name = comp->ts.interface->result->name;
+	    }
+	  else
+	    {
+	      s2 = comp->ts.interface;
+	      name = comp->name;
+	    }
 	}
       else if (rvalue->expr_type == EXPR_FUNCTION)
 	{

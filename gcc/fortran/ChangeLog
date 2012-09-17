@@ -1,3 +1,11 @@
+2012-09-17  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54285
+	* expr.c (gfc_check_pointer_assign): Correctly handle procedure pointers
+	as function results.
+	* primary.c (gfc_match_varspec): Allow to call a PPC with proc-ptr
+	result.
+
 2012-09-17  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/54603
