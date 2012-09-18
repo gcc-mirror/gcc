@@ -2604,10 +2604,10 @@ convert_mult_to_fma (gimple mul_stmt, tree op1, tree op2)
 					   true, NULL_TREE, true,
 					   GSI_SAME_STMT);
 
-      fma_stmt = gimple_build_assign_with_ops3 (FMA_EXPR,
-						gimple_assign_lhs (use_stmt),
-						mulop1, op2,
-						addop);
+      fma_stmt = gimple_build_assign_with_ops (FMA_EXPR,
+					       gimple_assign_lhs (use_stmt),
+					       mulop1, op2,
+					       addop);
       gsi_replace (&gsi, fma_stmt, true);
       widen_mul_stats.fmas_inserted++;
     }

@@ -4170,8 +4170,8 @@ vect_permute_store_chain (VEC(tree,heap) *dr_chain,
 	     high = VEC_PERM_EXPR <vect1, vect2, {0, nelt, 1, nelt+1, ...}>  */
 	  high = make_temp_ssa_name (vectype, NULL, "vect_inter_high");
 	  perm_stmt
-	    = gimple_build_assign_with_ops3 (VEC_PERM_EXPR, high,
-					     vect1, vect2, perm_mask_high);
+	    = gimple_build_assign_with_ops (VEC_PERM_EXPR, high,
+					    vect1, vect2, perm_mask_high);
 	  vect_finish_stmt_generation (stmt, perm_stmt, gsi);
 	  VEC_replace (tree, *result_chain, 2*j, high);
 
@@ -4180,8 +4180,8 @@ vect_permute_store_chain (VEC(tree,heap) *dr_chain,
 						 nelt*3/2+1, ...}>  */
 	  low = make_temp_ssa_name (vectype, NULL, "vect_inter_low");
 	  perm_stmt
-	    = gimple_build_assign_with_ops3 (VEC_PERM_EXPR, low,
-					     vect1, vect2, perm_mask_low);
+	    = gimple_build_assign_with_ops (VEC_PERM_EXPR, low,
+					    vect1, vect2, perm_mask_low);
 	  vect_finish_stmt_generation (stmt, perm_stmt, gsi);
 	  VEC_replace (tree, *result_chain, 2*j+1, low);
 	}
@@ -4618,17 +4618,17 @@ vect_permute_load_chain (VEC(tree,heap) *dr_chain,
 
 	  /* data_ref = permute_even (first_data_ref, second_data_ref);  */
 	  data_ref = make_temp_ssa_name (vectype, NULL, "vect_perm_even");
-	  perm_stmt = gimple_build_assign_with_ops3 (VEC_PERM_EXPR, data_ref,
-						     first_vect, second_vect,
-						     perm_mask_even);
+	  perm_stmt = gimple_build_assign_with_ops (VEC_PERM_EXPR, data_ref,
+						    first_vect, second_vect,
+						    perm_mask_even);
 	  vect_finish_stmt_generation (stmt, perm_stmt, gsi);
 	  VEC_replace (tree, *result_chain, j/2, data_ref);
 
 	  /* data_ref = permute_odd (first_data_ref, second_data_ref);  */
 	  data_ref = make_temp_ssa_name (vectype, NULL, "vect_perm_odd");
-	  perm_stmt = gimple_build_assign_with_ops3 (VEC_PERM_EXPR, data_ref,
-						     first_vect, second_vect,
-						     perm_mask_odd);
+	  perm_stmt = gimple_build_assign_with_ops (VEC_PERM_EXPR, data_ref,
+						    first_vect, second_vect,
+						    perm_mask_odd);
 	  vect_finish_stmt_generation (stmt, perm_stmt, gsi);
 	  VEC_replace (tree, *result_chain, j/2+length/2, data_ref);
 	}

@@ -2672,8 +2672,8 @@ vect_create_mask_and_perm (gimple stmt, gimple next_scalar_stmt,
       second_vec = VEC_index (tree, dr_chain, second_vec_indx);
 
       /* Generate the permute statement.  */
-      perm_stmt = gimple_build_assign_with_ops3 (VEC_PERM_EXPR, perm_dest,
-						 first_vec, second_vec, mask);
+      perm_stmt = gimple_build_assign_with_ops (VEC_PERM_EXPR, perm_dest,
+						first_vec, second_vec, mask);
       data_ref = make_ssa_name (perm_dest, perm_stmt);
       gimple_set_lhs (perm_stmt, data_ref);
       vect_finish_stmt_generation (stmt, perm_stmt, gsi);

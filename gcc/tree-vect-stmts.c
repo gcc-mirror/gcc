@@ -3702,8 +3702,8 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
 		  ? VEC_index (tree, vec_oprnds1, i) : NULL_TREE);
 	  vop2 = ((op_type == ternary_op)
 		  ? VEC_index (tree, vec_oprnds2, i) : NULL_TREE);
-	  new_stmt = gimple_build_assign_with_ops3 (code, vec_dest,
-						    vop0, vop1, vop2);
+	  new_stmt = gimple_build_assign_with_ops (code, vec_dest,
+						   vop0, vop1, vop2);
 	  new_temp = make_ssa_name (vec_dest, new_stmt);
 	  gimple_assign_set_lhs (new_stmt, new_temp);
 	  vect_finish_stmt_generation (stmt, new_stmt, gsi);
@@ -4235,8 +4235,8 @@ permute_vec_elements (tree x, tree y, tree mask_vec, gimple stmt,
   data_ref = make_ssa_name (perm_dest, NULL);
 
   /* Generate the permute statement.  */
-  perm_stmt = gimple_build_assign_with_ops3 (VEC_PERM_EXPR, data_ref,
-					     x, y, mask_vec);
+  perm_stmt = gimple_build_assign_with_ops (VEC_PERM_EXPR, data_ref,
+					    x, y, mask_vec);
   vect_finish_stmt_generation (stmt, perm_stmt, gsi);
 
   return data_ref;
@@ -5047,9 +5047,9 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 		    realignment_token = dataref_ptr;
 		  vec_dest = vect_create_destination_var (scalar_dest, vectype);
 		  new_stmt
-		    = gimple_build_assign_with_ops3 (REALIGN_LOAD_EXPR,
-						     vec_dest, msq, lsq,
-						     realignment_token);
+		    = gimple_build_assign_with_ops (REALIGN_LOAD_EXPR,
+						    vec_dest, msq, lsq,
+						    realignment_token);
 		  new_temp = make_ssa_name (vec_dest, new_stmt);
 		  gimple_assign_set_lhs (new_stmt, new_temp);
 		  vect_finish_stmt_generation (stmt, new_stmt, gsi);

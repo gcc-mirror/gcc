@@ -1,3 +1,25 @@
+2012-09-18  Richard Guenther  <rguenther@suse.de>
+
+	* statistics.h (CXX_MEM_STAT_INFO): New define.
+	* gimple.h (gimple_build_assign_with_ops_stat,
+	gimple_build_assign_with_ops, gimple_build_assign_with_ops3):
+	Turn into an overload of the function gimple_build_assign_with_ops.
+	* gimple.c (gimple_build_assign_with_ops_stat): Rename to ...
+	(gimple_build_assign_with_ops): ... this.
+	* tree-ssa-loop-im.c (move_computations_stmt): Adjust.
+	* tree-ssa-math-opts.c (convert_mult_to_fma): Likewise.
+	* tree-vect-data-refs.c (vect_permute_store_chain): Likewise.
+	(vect_permute_load_chain): Likewise.
+	* tree-vect-generic.c (expand_vector_divmod): Likewise.
+	* tree-vect-patterns.c (vect_recog_dot_prod_pattern): Likewise.
+	(vect_recog_divmod_pattern): Likewise.
+	(vect_recog_mixed_size_cond_pattern): Likewise.
+	(adjust_bool_pattern): Likewise.
+	* tree-vect-slp.c (vect_create_mask_and_perm): Likewise.
+	* tree-vect-stmts.c (vectorizable_operation): Likewise.
+	(permute_vec_elements): Likewise.
+	(vectorizable_load): Likewise.
+
 2012-09-17  Paul Koning  <ni1d@arrl.net>
 
 	* doc/invoke.text (-feliminate-unused-debug-types): Update to
