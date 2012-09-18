@@ -269,7 +269,7 @@ error_callback_three (void *vdata, const char *msg, int errnum)
 
 /* Test the backtrace function with non-inlined functions.  */
 
-static int test1 (void) __attribute__ ((noinline));
+static int test1 (void) __attribute__ ((noinline, unused));
 static int f2 (int) __attribute__ ((noinline));
 static int f3 (int, int) __attribute__ ((noinline));
 
@@ -323,7 +323,7 @@ f3 (int f1line, int f2line)
 
 /* Test the backtrace function with inlined functions.  */
 
-static inline int test2 (void) __attribute__ ((always_inline));
+static inline int test2 (void) __attribute__ ((always_inline, unused));
 static inline int f12 (int) __attribute__ ((always_inline));
 static inline int f13 (int, int) __attribute__ ((always_inline));
 
@@ -375,7 +375,7 @@ f13 (int f1line, int f2line)
 
 /* Test the backtrace_simple function with non-inlined functions.  */
 
-static int test3 (void) __attribute__ ((noinline));
+static int test3 (void) __attribute__ ((noinline, unused));
 static int f22 (int) __attribute__ ((noinline));
 static int f23 (int, int) __attribute__ ((noinline));
 
@@ -524,7 +524,7 @@ f23 (int f1line, int f2line)
 
 /* Test the backtrace_simple function with inlined functions.  */
 
-static inline int test4 (void) __attribute__ ((always_inline));
+static inline int test4 (void) __attribute__ ((always_inline, unused));
 static inline int f32 (int) __attribute__ ((always_inline));
 static inline int f33 (int, int) __attribute__ ((always_inline));
 
