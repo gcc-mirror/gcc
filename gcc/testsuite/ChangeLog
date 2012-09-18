@@ -1,3 +1,7 @@
+2012-09-18  Janis Johnson  <janisjo@codesourcery.com>
+
+	* gcc.dg/vect/pr52298.c: Remove "dg-do run".
+
 2012-09-18  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	* lib/target-supports-dg.exp (check-flags): Add cflags from board
