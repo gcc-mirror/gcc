@@ -1,5 +1,7 @@
 2012-09-18  Janis Johnson  <janisjo@codesourcery.com>
 
+	* gcc.dg/vect/fast-math-pr35982.c: Skip check instead of xfail.
+
 	* gcc.dg/vect/no-vfa-vect-101.c: Skip a check for an irrelevant
 	target instead of xfailing it.
 	* gcc.dg/vect/no-vfa-vect-102.c: Likewise.
