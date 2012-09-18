@@ -1,4 +1,3 @@
-/* { dg-do run } */
 /* { dg-options "-O1 -ftree-vectorize -fno-tree-pre -fno-tree-loop-im" } */
 
 extern void abort (void);
