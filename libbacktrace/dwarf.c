@@ -44,6 +44,11 @@ POSSIBILITY OF SUCH DAMAGE.  */
 #include "backtrace.h"
 #include "internal.h"
 
+#ifndef HAVE_DECL_STRNLEN
+/* The function is defined in libiberty if needed.  */
+extern size_t strnlen (const char *, size_t);
+#endif
+
 /* A buffer to read DWARF info.  */
 
 struct dwarf_buf

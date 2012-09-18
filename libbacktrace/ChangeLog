@@ -1,3 +1,9 @@
+2012-09-18  Ian Lance Taylor  <iant@google.com>
+
+	* configure.ac: Check whether strnlen is declared.
+	* dwarf.c: Declare strnlen if not declared.
+	* configure, config.h.in: Rebuild.
+
 2012-09-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* fileline.c: Include <stdlib.h>.

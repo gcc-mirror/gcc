@@ -199,6 +199,8 @@ if test "$ALLOC_FILE" = "alloc.lo"; then
 fi
 AC_SUBST(BACKTRACE_USES_MALLOC)
 
+AC_CHECK_DECLS(strnlen)
+
 AC_CACHE_CHECK([whether tests can run],
   [libbacktrace_cv_sys_native],
   [AC_RUN_IFELSE([AC_LANG_PROGRAM([], [return 0;])],
