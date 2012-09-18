@@ -151,7 +151,7 @@ CFILES = alloca.c argv.c asprintf.c atexit.c				\
 	 spaces.c splay-tree.c stack-limit.c stpcpy.c stpncpy.c		\
 	 strcasecmp.c strchr.c strdup.c strerror.c strncasecmp.c	\
 	 strncmp.c strrchr.c strsignal.c strstr.c strtod.c strtol.c	\
-	 strtoul.c strndup.c strverscmp.c				\
+	 strtoul.c strndup.c strnlen.c strverscmp.c			\
 	timeval-utils.c tmpnam.c					\
 	unlink-if-ordinary.c						\
 	vasprintf.c vfork.c vfprintf.c vprintf.c vsnprintf.c vsprintf.c	\
@@ -215,9 +215,9 @@ CONFIGURED_OFILES = ./asprintf.$(objext) ./atexit.$(objext)		\
 	 ./sigsetmask.$(objext) ./snprintf.$(objext)			\
 	 ./stpcpy.$(objext) ./stpncpy.$(objext) ./strcasecmp.$(objext)	\
 	 ./strchr.$(objext) ./strdup.$(objext) ./strncasecmp.$(objext)	\
-	 ./strncmp.$(objext) ./strndup.$(objext) ./strrchr.$(objext)	\
-	 ./strstr.$(objext) ./strtod.$(objext) ./strtol.$(objext)	\
-	 ./strtoul.$(objext) ./strverscmp.$(objext)			\
+	 ./strncmp.$(objext) ./strndup.$(objext) ./strnlen.$(objext)	\
+	 ./strrchr.$(objext) ./strstr.$(objext) ./strtod.$(objext)	\
+	 ./strtol.$(objext) ./strtoul.$(objext) ./strverscmp.$(objext)	\
 	./tmpnam.$(objext)						\
 	./vasprintf.$(objext) ./vfork.$(objext) ./vfprintf.$(objext)	\
 	 ./vprintf.$(objext) ./vsnprintf.$(objext) ./vsprintf.$(objext)	\
@@ -622,8 +622,8 @@ $(CONFIGURED_OFILES): stamp-picdir
 	else true; fi
 	$(COMPILE.c) $(srcdir)/crc32.c $(OUTPUT_OPTION)
 
-./dwarfnames.$(objext): $(srcdir)/dwarfnames.c $(INCDIR)/dwarf2.h \
-	$(INCDIR)/dwarf2.def
+./dwarfnames.$(objext): $(srcdir)/dwarfnames.c $(INCDIR)/dwarf2.def \
+	$(INCDIR)/dwarf2.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/dwarfnames.c -o pic/$@; \
 	else true; fi
@@ -656,7 +656,8 @@ $(CONFIGURED_OFILES): stamp-picdir
 	else true; fi
 	$(COMPILE.c) $(srcdir)/fibheap.c $(OUTPUT_OPTION)
 
-./filename_cmp.$(objext): $(srcdir)/filename_cmp.c config.h $(INCDIR)/filenames.h \
+./filename_cmp.$(objext): $(srcdir)/filename_cmp.c config.h $(INCDIR)/ansidecl.h \
+	$(INCDIR)/filenames.h $(INCDIR)/hashtab.h \
 	$(INCDIR)/safe-ctype.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/filename_cmp.c -o pic/$@; \
@@ -757,7 +758,7 @@ $(CONFIGURED_OFILES): stamp-picdir
 	$(COMPILE.c) $(srcdir)/insque.c $(OUTPUT_OPTION)
 
 ./lbasename.$(objext): $(srcdir)/lbasename.c config.h $(INCDIR)/ansidecl.h \
-	$(INCDIR)/filenames.h $(INCDIR)/libiberty.h \
+	$(INCDIR)/filenames.h $(INCDIR)/hashtab.h $(INCDIR)/libiberty.h \
 	$(INCDIR)/safe-ctype.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/lbasename.c -o pic/$@; \
@@ -1043,7 +1044,7 @@ $(CONFIGURED_OFILES): stamp-picdir
 	else true; fi
 	$(COMPILE.c) $(srcdir)/splay-tree.c $(OUTPUT_OPTION)
 
-./stack-limit.$(objext): $(srcdir)/stack-limit.c config.h
+./stack-limit.$(objext): $(srcdir)/stack-limit.c config.h $(INCDIR)/ansidecl.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/stack-limit.c -o pic/$@; \
 	else true; fi
@@ -1103,6 +1104,12 @@ $(CONFIGURED_OFILES): stamp-picdir
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/strndup.c -o pic/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/strndup.c $(OUTPUT_OPTION)
+
+./strnlen.$(objext): $(srcdir)/strnlen.c config.h
+	if [ x"$(PICFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(srcdir)/strnlen.c -o pic/$@; \
+	else true; fi
+	$(COMPILE.c) $(srcdir)/strnlen.c $(OUTPUT_OPTION)
 
 ./strrchr.$(objext): $(srcdir)/strrchr.c $(INCDIR)/ansidecl.h
 	if [ x"$(PICFLAG)" != x ]; then \
