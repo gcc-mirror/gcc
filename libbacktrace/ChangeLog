@@ -1,5 +1,11 @@
 2012-09-18  Ian Lance Taylor  <iant@google.com>
 
+	* configure.ac: Add AC_USE_SYSTEM_EXTENSIONS.
+	* mmapio.c: Don't define _GNU_SOURCE.
+	* configure, config.h.in: Rebuild.
+
+2012-09-18  Ian Lance Taylor  <iant@google.com>
+
 	* configure.ac: Check whether strnlen is declared.
 	* dwarf.c: Declare strnlen if not declared.
 	* configure, config.h.in: Rebuild.
