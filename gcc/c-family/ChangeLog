@@ -1,3 +1,7 @@
+2012-09-18 Arnaud Charlet  <charlet@adacore.com>
+
+	* c-ada-spec.c: Style fixes.
+
 2012-09-18 Thomas Quinot  <quinot@adacore.com>
 
 	* c.opt (-fada-spec-parent): Define new command line switch.
