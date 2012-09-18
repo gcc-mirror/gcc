@@ -851,7 +851,8 @@ TREE_H = coretypes.h tree.h all-tree.def tree.def c-family/c-common.def \
 	double-int.h alias.h $(SYMTAB_H) $(FLAGS_H) vecir.h \
 	$(REAL_H) $(FIXED_VALUE_H)
 REGSET_H = regset.h $(BITMAP_H) hard-reg-set.h
-BASIC_BLOCK_H = basic-block.h $(PREDICT_H) $(VEC_H) $(FUNCTION_H) cfghooks.h
+BASIC_BLOCK_H = basic-block.h $(PREDICT_H) $(VEC_H) $(FUNCTION_H) \
+	cfg-flags.def cfghooks.h
 GIMPLE_H = gimple.h gimple.def gsstruct.def pointer-set.h $(VEC_H) \
 	vecir.h $(GGC_H) $(BASIC_BLOCK_H) $(TREE_H) tree-ssa-operands.h \
 	tree-ssa-alias.h $(INTERNAL_FN_H)
