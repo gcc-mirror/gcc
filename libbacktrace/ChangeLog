@@ -1,5 +1,9 @@
 2012-09-18  Ian Lance Taylor  <iant@google.com>
 
+	* btest.c (test1, test2, test3, test4): Add the unused attribute.
+
+2012-09-18  Ian Lance Taylor  <iant@google.com>
+
 	* dwarf.c: Correct test of HAVE_DECL_STRNLEN.
 
 2012-09-18  Ian Lance Taylor  <iant@google.com>
