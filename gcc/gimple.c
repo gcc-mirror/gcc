@@ -424,8 +424,8 @@ gimple_build_assign_stat (tree lhs, tree rhs MEM_STAT_DECL)
   tree op1, op2, op3;
 
   extract_ops_from_tree_1 (rhs, &subcode, &op1, &op2, &op3);
-  return gimple_build_assign_with_ops_stat (subcode, lhs, op1, op2, op3
-  					    PASS_MEM_STAT);
+  return gimple_build_assign_with_ops (subcode, lhs, op1, op2, op3
+				       PASS_MEM_STAT);
 }
 
 
@@ -434,8 +434,8 @@ gimple_build_assign_stat (tree lhs, tree rhs MEM_STAT_DECL)
    GIMPLE_UNARY_RHS or GIMPLE_SINGLE_RHS.  */
 
 gimple
-gimple_build_assign_with_ops_stat (enum tree_code subcode, tree lhs, tree op1,
-                                   tree op2, tree op3 MEM_STAT_DECL)
+gimple_build_assign_with_ops (enum tree_code subcode, tree lhs, tree op1,
+			      tree op2, tree op3 MEM_STAT_DECL)
 {
   unsigned num_ops;
   gimple p;
@@ -461,6 +461,14 @@ gimple_build_assign_with_ops_stat (enum tree_code subcode, tree lhs, tree op1,
     }
 
   return p;
+}
+
+gimple
+gimple_build_assign_with_ops (enum tree_code subcode, tree lhs, tree op1,
+			      tree op2 MEM_STAT_DECL)
+{
+  return gimple_build_assign_with_ops (subcode, lhs, op1, op2, NULL_TREE
+				       PASS_MEM_STAT);
 }
 
 

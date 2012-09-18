@@ -744,12 +744,12 @@ gimple gimple_build_assign_stat (tree, tree MEM_STAT_DECL);
 
 void extract_ops_from_tree_1 (tree, enum tree_code *, tree *, tree *, tree *);
 
-gimple gimple_build_assign_with_ops_stat (enum tree_code, tree, tree,
-					  tree, tree MEM_STAT_DECL);
-#define gimple_build_assign_with_ops(c,o1,o2,o3)			\
-  gimple_build_assign_with_ops_stat (c, o1, o2, o3, NULL_TREE MEM_STAT_INFO)
-#define gimple_build_assign_with_ops3(c,o1,o2,o3,o4)			\
-  gimple_build_assign_with_ops_stat (c, o1, o2, o3, o4 MEM_STAT_INFO)
+gimple
+gimple_build_assign_with_ops (enum tree_code, tree,
+			      tree, tree CXX_MEM_STAT_INFO);
+gimple
+gimple_build_assign_with_ops (enum tree_code, tree,
+			      tree, tree, tree CXX_MEM_STAT_INFO);
 
 gimple gimple_build_debug_bind_stat (tree, tree, gimple MEM_STAT_DECL);
 #define gimple_build_debug_bind(var,val,stmt)			\
