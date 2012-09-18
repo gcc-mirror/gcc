@@ -1,5 +1,15 @@
 2012-09-18  Janis Johnson  <janisjo@codesourcery.com>
 
+	* lib/target-supports.exp
+	(check_effective_target_vect_widen_mult_qi_to_hi,
+	check_effective_target_vect_widen_mult_hi_to_si,
+	check_effective_target_vect_widen_mult_qi_to_hi_pattern,
+	check_effective_target_vect_widen_mult_hi_to_si_pattern,
+	check_effective_target_vect_pack_trunc,
+	check_effective_target_vect_unpack,
+	check_effective_target_vect_multiple_sizes): Check arm_neon_ok
+	instead of arm_none.
+
 	* gcc.dg/vect/pr52298.c: Remove "dg-do run".
 
 2012-09-18  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
