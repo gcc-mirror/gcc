@@ -1,3 +1,15 @@
+2012-09-18  Ian Lance Taylor  <iant@google.com>
+
+	* strnlen.c: New file.
+	* configure.ac: Check for strnlen, add it to AC_LIBOBJ if it's not
+	present.
+	* Makefile.in: Rebuild dependencies.
+	(CFILES): Add strnlen.c.
+	(CONFIGURED_OFILES): Add ./strnlen.$(objext).
+	* configure, config.in, functions.texi: Rebuild.
+
+	* maint-tool: Accept .def files in the include directory.
+
 2012-09-18  Florian Weimer  <fweimer@redhat.com>
 
 	PR other/54411

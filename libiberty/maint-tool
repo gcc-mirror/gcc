@@ -222,7 +222,7 @@ sub deps {
 
     opendir(INC, $incdir);
     while ($f = readdir INC) {
-	next unless $f =~ /\.h$/;
+	next unless $f =~ /\.h$/ || $f =~ /\.def$/;
 	$mine{$f} = "\$(INCDIR)/$f";
 	$deps{$f} = join(' ', &deps_for("$incdir/$f"));
     }
