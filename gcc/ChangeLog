@@ -1,3 +1,8 @@
+2012-09-18  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.md: Tidy up empty "".  Fix C code indentation.
+	* config/avr/avr-fixed.md: Ditto.
+
 2012-09-18  Maciej W. Rozycki  <macro@codesourcery.com>
 
 	* config/rs6000/rs6000.c (print_operand) <'c'>: Remove.
