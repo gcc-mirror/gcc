@@ -1,3 +1,12 @@
+2012-09-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/54612
+	* include/ext/random.tcc (operator==
+	(const __gnu_cxx::simd_fast_mersenne_twister_engine<>&,
+	const __gnu_cxx::simd_fast_mersenne_twister_engine<>&)): Fix
+	state_size use.
+	* config/cpu/i486/opt/ext/opt_random.h: Guard with __SSE2__.
+
 2012-09-17  Ulrich Drepper  <drepper@gmail.com>
 
 	* configure.ac: Substitute CPU_OPT_EXT_RANDOM.
