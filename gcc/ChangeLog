@@ -1,3 +1,8 @@
+2012-09-18  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* config/rs6000/rs6000.c (print_operand) <'c'>: Remove.
+	* config/rs6000/spe.md: Remove a leftover comment.
+
 2012-09-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/54592

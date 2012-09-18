@@ -14659,14 +14659,6 @@ print_operand (FILE *file, rtx x, int code)
       /* %c is output_addr_const if a CONSTANT_ADDRESS_P, otherwise
 	 output_operand.  */
 
-    case 'c':
-      /* X is a CR register.  Print the number of the GT bit of the CR.  */
-      if (GET_CODE (x) != REG || ! CR_REGNO_P (REGNO (x)))
-	output_operand_lossage ("invalid %%c value");
-      else
-	fprintf (file, "%d", 4 * (REGNO (x) - CR0_REGNO) + 1);
-      return;
-
     case 'D':
       /* Like 'J' but get to the GT bit only.  */
       gcc_assert (REG_P (x));

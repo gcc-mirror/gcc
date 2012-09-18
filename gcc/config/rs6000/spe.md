@@ -2945,8 +2945,6 @@
   "mfspefscr %0"
   [(set_attr "type" "vecsimple")])
 
-;; FP comparison stuff.
-
 ;; Flip the GT bit.
 (define_insn "e500_flip_gt_bit"
   [(set (match_operand:CCFP 0 "cc_reg_operand" "=y")
