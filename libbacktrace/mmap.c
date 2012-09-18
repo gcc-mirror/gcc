@@ -34,6 +34,7 @@ POSSIBILITY OF SUCH DAMAGE.  */
 
 #include <errno.h>
 #include <string.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <sys/mman.h>
 

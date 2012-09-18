@@ -1,3 +1,8 @@
+2012-09-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* fileline.c: Include <stdlib.h>.
+	* mmap.c: Likewise.
+
 2012-09-17  Ian Lance Taylor  <iant@google.com>
 
 	PR bootstrap/54611
