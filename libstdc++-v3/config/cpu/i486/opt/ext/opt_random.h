@@ -32,6 +32,7 @@
 
 #pragma GCC system_header
 
+#ifdef __SSE2__
 
 namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
@@ -130,5 +131,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 
+#endif // __SSE2__
 
 #endif // _EXT_OPT_RANDOM_H

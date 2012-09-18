@@ -328,7 +328,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       __msk1, __msk2, __msk3, __msk4,
 	       __parity1, __parity2, __parity3, __parity4>& __rhs)
     {
-      return (std::equal(__lhs._M_stateT, __lhs._M_stateT + state_size,
+      typedef __gnu_cxx::simd_fast_mersenne_twister_engine<_UIntType,
+	       __m, __pos1, __sl1, __sl2, __sr1, __sr2,
+	       __msk1, __msk2, __msk3, __msk4,
+	       __parity1, __parity2, __parity3, __parity4> __engine;
+      return (std::equal(__lhs._M_stateT,
+			 __lhs._M_stateT + __engine::state_size,
 			 __rhs._M_stateT)
 	      && __lhs._M_pos == __rhs._M_pos);
     }
