@@ -817,15 +817,26 @@ get_ada_package (const char *file)
   char *res;
   const char *s;
   int i;
+  size_t plen;
 
   s = strstr (file, "/include/");
   if (s)
     base = s + 9;
   else
     base = lbasename (file);
-  res = XNEWVEC (char, strlen (base) + 1);
 
-  for (i = 0; *base; base++, i++)
+  if (ada_specs_parent == NULL)
+    plen = 0;
+  else
+    plen = strlen (ada_specs_parent) + 1;
+
+  res = XNEWVEC (char, plen + strlen (base) + 1);
+  if (ada_specs_parent != NULL) {
+    strcpy (res, ada_specs_parent);
+    res[plen - 1] = '.';
+  }
+
+  for (i = plen; *base; base++, i++)
     switch (*base)
       {
 	case '+':
@@ -837,14 +848,14 @@ get_ada_package (const char *file)
 	case '_':
 	case '/':
 	case '\\':
-	  res [i] = (i == 0 || res [i - 1] == '_') ? 'u' : '_';
+	  res[i] = (i == 0 || res[i - 1] == '.' || res[i - 1] == '_') ? 'u' : '_';
 	  break;
 
 	default:
-	  res [i] = *base;
+	  res[i] = *base;
 	  break;
       }
-  res [i] = '\0';
+  res[i] = '\0';
 
   return res;
 }
@@ -3250,7 +3261,10 @@ dump_ads (const char *source_file,
   ads_name = xstrdup (pkg_name);
 
   for (s = ads_name; *s; s++)
-    *s = TOLOWER (*s);
+    if (*s == '.')
+      *s = '-';
+    else
+      *s = TOLOWER (*s);
 
   ads_name = reconcat (ads_name, ads_name, ".ads", NULL);
 

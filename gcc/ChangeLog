@@ -1,3 +1,7 @@
+2012-09-18 Thomas Quinot  <quinot@adacore.com>       
+
+	* doc/invoke.texi: Document -fada-spec-parent.
+
 2012-09-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/54610
