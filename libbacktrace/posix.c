@@ -41,6 +41,10 @@ POSSIBILITY OF SUCH DAMAGE.  */
 #include "backtrace.h"
 #include "internal.h"
 
+#ifndef O_BINARY
+#define O_BINARY 0
+#endif
+
 #ifndef O_CLOEXEC
 #define O_CLOEXEC 0
 #endif
@@ -57,18 +61,20 @@ backtrace_open (const char *filename, backtrace_error_callback error_callback,
 {
   int descriptor;
 
-  descriptor = open (filename, O_RDONLY | O_CLOEXEC);
+  descriptor = open (filename, O_RDONLY | O_BINARY | O_CLOEXEC);
   if (descriptor < 0)
     {
       error_callback (data, filename, errno);
       return -1;
     }
 
+#ifdef HAVE_FCNTL
   /* Set FD_CLOEXEC just in case the kernel does not support
      O_CLOEXEC. It doesn't matter if this fails for some reason.
      FIXME: At some point it should be safe to only do this if
      O_CLOEXEC == 0.  */
   fcntl (descriptor, F_SETFD, FD_CLOEXEC);
+#endif
 
   return descriptor;
 }

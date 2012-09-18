@@ -1,5 +1,13 @@
 2012-09-18  Ian Lance Taylor  <iant@google.com>
 
+	* posix.c (O_BINARY): Define if not defined.
+	(backtrace_open): Pass O_BINARY to open.  Only call fcntl if
+	HAVE_FCNTL is defined.
+	* configure.ac: Test for the fcntl function.
+	* configure, config.h.in: Rebuild.
+
+2012-09-18  Ian Lance Taylor  <iant@google.com>
+
 	* btest.c (test1, test2, test3, test4): Add the unused attribute.
 
 2012-09-18  Ian Lance Taylor  <iant@google.com>
