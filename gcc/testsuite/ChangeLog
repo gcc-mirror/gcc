@@ -1,5 +1,24 @@
 2012-09-18  Janis Johnson  <janisjo@codesourcery.com>
 
+	* gcc.dg/vect/no-vfa-vect-101.c: Skip a check for an irrelevant
+	target instead of xfailing it.
+	* gcc.dg/vect/no-vfa-vect-102.c: Likewise.
+	* gcc.dg/vect/no-vfa-vect-102a.c: Likewise.
+	* gcc.dg/vect/no-vfa-vect-37.c: Likewise.
+	* gcc.dg/vect/no-vfa-vect-79.c: Likewise.
+	* gcc.dg/vect/vect-104.c: Likewise.
+	* gcc.dg/vect/vect-outer-1-big-array.c: Likewise.
+	* gcc.dg/vect/vect-outer-1.c: Likewise.
+	* gcc.dg/vect/vect-outer-1a-big-array.c: Likewise.
+	* gcc.dg/vect/vect-outer-1a.c: Likewise.
+	* gcc.dg/vect/vect-outer-1b-big-array.c: Likewise.
+	* gcc.dg/vect/vect-outer-1b.c: Likewise.
+	* gcc.dg/vect/vect-outer-2b.c: Likewise.
+	* gcc.dg/vect/vect-outer-3a-big-array.c: Likewise.
+	* gcc.dg/vect/vect-outer-3a.c: Likewise.
+	* gcc.dg/vect/vect-outer-3b.c: Likewise.
+	* gcc.dg/vect/vect-reduc-dot-s8b.c: Likewise.
+
 	* lib/target-supports.exp
 	(check_effective_target_vect_widen_mult_qi_to_hi,
 	check_effective_target_vect_widen_mult_hi_to_si,
