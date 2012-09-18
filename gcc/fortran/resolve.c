@@ -426,10 +426,12 @@ resolve_formal_arglist (gfc_symbol *proc)
 	    }
 	  else if (!sym->attr.pointer)
 	    {
-	      if (proc->attr.function && sym->attr.intent != INTENT_IN)
+	      if (proc->attr.function && sym->attr.intent != INTENT_IN
+		  && !sym->value)
 		proc->attr.implicit_pure = 0;
 
-	      if (proc->attr.subroutine && sym->attr.intent == INTENT_UNKNOWN)
+	      if (proc->attr.subroutine && sym->attr.intent == INTENT_UNKNOWN
+		  && !sym->value)
 		proc->attr.implicit_pure = 0;
 	    }
 	}
@@ -11427,7 +11429,7 @@ get_checked_tb_operator_target (gfc_tbp_generic* target, locus where)
   target_proc = target->specific->u.specific->n.sym;
   gcc_assert (target_proc);
 
-  /* All operator bindings must have a passed-object dummy argument.  */
+  /* F08:C468. All operator bindings must have a passed-object dummy argument.  */
   if (target->specific->nopass)
     {
       gfc_error ("Type-bound operator at %L can't be NOPASS", &where);
@@ -13565,10 +13567,9 @@ gfc_impure_variable (gfc_symbol *sym)
     }
 
   proc = sym->ns->proc_name;
-  if (sym->attr.dummy && gfc_pure (proc)
-	&& ((proc->attr.subroutine && sym->attr.intent == INTENT_IN)
-		||
-	     proc->attr.function))
+  if (sym->attr.dummy
+      && ((proc->attr.subroutine && sym->attr.intent == INTENT_IN)
+	  || proc->attr.function))
     return 1;
 
   /* TODO: Sort out what can be storage associated, if anything, and include

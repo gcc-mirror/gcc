@@ -1370,7 +1370,11 @@ gfc_simplify_bessel_n2 (gfc_expr *order1, gfc_expr *order2, gfc_expr *x,
       mpfr_sub (e->value.real, e->value.real, last1, GFC_RND_MODE);
 
       if (range_check (e, jn ? "BESSEL_JN" : "BESSEL_YN") == &gfc_bad_expr)
-	goto error;
+	{
+	  /* Range_check frees "e" in that case.  */
+	  e = NULL;
+	  goto error;
+	}
 
       if (jn)
 	gfc_constructor_insert_expr (&result->value.constructor, e, &x->where,
@@ -4929,11 +4933,6 @@ gfc_simplify_repeat (gfc_expr *e, gfc_expr *n)
     }
   else
     ncop = 0;
-
-  len = e->value.character.length;
-  nlen = ncop * len;
-
-  result = gfc_get_constant_expr (BT_CHARACTER, e->ts.kind, &e->where);
 
   if (ncop == 0)
     return gfc_get_character_expr (e->ts.kind, &e->where, NULL, 0);

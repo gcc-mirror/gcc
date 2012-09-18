@@ -1,5 +1,6 @@
 -- { dg-do compile }
 -- { dg-options "-O -flto -g" }
+-- { dg-require-effective-target lto }
 
 package body Lto15 is
 

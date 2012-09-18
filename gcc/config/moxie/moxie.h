@@ -41,8 +41,12 @@
 #define LIB_SPEC "%{!shared:%{!symbolic:-lc}}"
 
 #undef  LINK_SPEC
-#define LINK_SPEC "%{h*} %{v:-V} \
+#define LINK_SPEC "%{h*} %{v:-V} %{!mel:-EB} %{mel:-EL}\
 		   %{static:-Bstatic} %{shared:-shared} %{symbolic:-Bsymbolic}"
+
+#ifndef MULTILIB_DEFAULTS
+#define MULTILIB_DEFAULTS { "meb" }
+#endif
 
 /* Layout of Source Language Data Types */
 
@@ -192,6 +196,7 @@ enum reg_class
 /* The Overall Framework of an Assembler File */
 
 #undef  ASM_SPEC
+#define ASM_SPEC "%{!mel:-EB} %{mel:-EL}"
 #define ASM_COMMENT_START "#"
 #define ASM_APP_ON ""
 #define ASM_APP_OFF ""
@@ -291,8 +296,8 @@ enum reg_class
 /* Storage Layout */
 
 #define BITS_BIG_ENDIAN 0
-#define BYTES_BIG_ENDIAN 1
-#define WORDS_BIG_ENDIAN 1
+#define BYTES_BIG_ENDIAN ( ! TARGET_LITTLE_ENDIAN )
+#define WORDS_BIG_ENDIAN ( ! TARGET_LITTLE_ENDIAN )
 
 /* Alignment required for a function entry point, in bits.  */
 #define FUNCTION_BOUNDARY 16
@@ -473,8 +478,12 @@ enum reg_class
 
 #define TARGET_CPU_CPP_BUILTINS() \
   { \
-    builtin_define_std ("moxie");		\
-    builtin_define_std ("MOXIE");		\
+    builtin_define_std ("moxie");			\
+    builtin_define_std ("MOXIE");			\
+    if (TARGET_LITTLE_ENDIAN)				\
+      builtin_define ("__MOXIE_LITTLE_ENDIAN__");	\
+    else						\
+      builtin_define ("__MOXIE_BIG_ENDIAN__");		\
   }
 
 #define HAS_LONG_UNCOND_BRANCH true

@@ -20,7 +20,7 @@ LIB1ASMFUNCS = \
 	_divdi3 _udivdi3 \
 	_muldi3 \
 	_udivmod64 \
-	_negdi2 \
+	_negsi2 _negdi2 \
 	_prologue \
 	_epilogue \
 	_exit \
@@ -72,7 +72,12 @@ LIB1ASMFUNCS += \
 	_divqq3 _udivuqq3 \
 	_divhq3 _udivuhq3 \
 	_divha3 _udivuha3 \
-	_divsa3 _udivusa3
+	_divsa3 _udivusa3 \
+	_clr_8 \
+	_ssneg_2 _ssneg_4 _ssneg_8 \
+	_ssabs_2 _ssabs_4 _ssabs_8 \
+	_ssadd_8 _sssub_8 \
+	_usadd_8 _ussub_8
 
 LIB2FUNCS_EXCLUDE = \
 	_moddi3 _umoddi3 \
@@ -103,6 +108,7 @@ endif
 
 
 # Filter out supported conversions from fixed-bit.c
+# Also filter out TQ and UTQ.
 
 conv_XY=$(conv)$(mode1)$(mode2)
 func_X=$(func)$(mode)
@@ -141,8 +147,20 @@ allfix_modes = QQ UQQ HQ UHQ HA UHA SQ USQ SA USA DA UDA DQ UDQ TQ UTQ TA UTA
 
 LIB2FUNCS_EXCLUDE += \
 	$(foreach func,_add _sub,\
-	$(foreach mode,$(allfix_modes),$(func_X)3))
+	$(foreach mode,$(allfix_modes),$(func_X)))
 
 LIB2FUNCS_EXCLUDE += \
 	$(foreach func,_lshr _ashl _ashr _cmp,\
 	$(foreach mode,$(allfix_modes),$(func_X)))
+
+
+usat_modes = UQQ UHQ UHA USQ USA UDQ UDA UTQ UTA
+ssat_modes =  QQ  HQ  HA  SQ  SA  DQ  DA  TQ  TA
+
+LIB2FUNCS_EXCLUDE += \
+	$(foreach func,_ssadd _sssub _ssneg _ssabs,\
+	$(foreach mode,$(ssat_modes),$(func_X)))
+
+LIB2FUNCS_EXCLUDE += \
+	$(foreach func,_usadd _ussub _usneg,\
+	$(foreach mode,$(usat_modes),$(func_X)))

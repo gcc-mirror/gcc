@@ -471,7 +471,9 @@
 (define_insn "*thumb2_movdf_vfp"
   [(set (match_operand:DF 0 "nonimmediate_soft_df_operand" "=w,?r,w ,w  ,Uv,r ,m,w,r")
 	(match_operand:DF 1 "soft_df_operand"		   " ?r,w,Dy,UvF,w, mF,r, w,r"))]
-  "TARGET_THUMB2 && TARGET_HARD_FLOAT && TARGET_VFP"
+  "TARGET_THUMB2 && TARGET_HARD_FLOAT && TARGET_VFP
+   && (   register_operand (operands[0], DFmode)
+       || register_operand (operands[1], DFmode))"
   "*
   {
     switch (which_alternative)

@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-propagate.h"
 #include "target.h"
 #include "gimple-fold.h"
+#include "langhooks.h"
 
 /* Return true when DECL can be referenced from current unit.
    FROM_DECL (if non-null) specify constructor of variable DECL was taken from.
@@ -154,13 +155,15 @@ canonicalize_constructor_val (tree cval, tree from_decl)
     }
   if (TREE_CODE (cval) == ADDR_EXPR)
     {
-      tree base = get_base_address (TREE_OPERAND (cval, 0));
-      if (!base && TREE_CODE (TREE_OPERAND (cval, 0)) == COMPOUND_LITERAL_EXPR)
+      tree base = NULL_TREE;
+      if (TREE_CODE (TREE_OPERAND (cval, 0)) == COMPOUND_LITERAL_EXPR)
 	{
 	  base = COMPOUND_LITERAL_EXPR_DECL (TREE_OPERAND (cval, 0));
 	  if (base)
 	    TREE_OPERAND (cval, 0) = base;
 	}
+      else
+	base = get_base_address (TREE_OPERAND (cval, 0));
       if (!base)
 	return NULL_TREE;
 
@@ -1690,6 +1693,16 @@ static tree
 and_comparisons_1 (enum tree_code code1, tree op1a, tree op1b,
 		   enum tree_code code2, tree op2a, tree op2b)
 {
+  tree truth_type = boolean_type_node;
+  if (TREE_CODE (TREE_TYPE (op1a)) == VECTOR_TYPE)
+    {
+      tree vec_type = TREE_TYPE (op1a);
+      tree elem = lang_hooks.types.type_for_size
+	(GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (vec_type))), 0);
+      truth_type = build_opaque_vector_type (elem,
+					     TYPE_VECTOR_SUBPARTS (vec_type));
+    }
+
   /* First check for ((x CODE1 y) AND (x CODE2 y)).  */
   if (operand_equal_p (op1a, op2a, 0)
       && operand_equal_p (op1b, op2b, 0))
@@ -1697,7 +1710,7 @@ and_comparisons_1 (enum tree_code code1, tree op1a, tree op1b,
       /* Result will be either NULL_TREE, or a combined comparison.  */
       tree t = combine_comparisons (UNKNOWN_LOCATION,
 				    TRUTH_ANDIF_EXPR, code1, code2,
-				    boolean_type_node, op1a, op1b);
+				    truth_type, op1a, op1b);
       if (t)
 	return t;
     }
@@ -1710,7 +1723,7 @@ and_comparisons_1 (enum tree_code code1, tree op1a, tree op1b,
       tree t = combine_comparisons (UNKNOWN_LOCATION,
 				    TRUTH_ANDIF_EXPR, code1,
 				    swap_tree_comparison (code2),
-				    boolean_type_node, op1a, op1b);
+				    truth_type, op1a, op1b);
       if (t)
 	return t;
     }
@@ -2152,6 +2165,16 @@ static tree
 or_comparisons_1 (enum tree_code code1, tree op1a, tree op1b,
 		  enum tree_code code2, tree op2a, tree op2b)
 {
+  tree truth_type = boolean_type_node;
+  if (TREE_CODE (TREE_TYPE (op1a)) == VECTOR_TYPE)
+    {
+      tree vec_type = TREE_TYPE (op1a);
+      tree elem = lang_hooks.types.type_for_size
+	(GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (vec_type))), 0);
+      truth_type = build_opaque_vector_type (elem,
+					     TYPE_VECTOR_SUBPARTS (vec_type));
+    }
+
   /* First check for ((x CODE1 y) OR (x CODE2 y)).  */
   if (operand_equal_p (op1a, op2a, 0)
       && operand_equal_p (op1b, op2b, 0))
@@ -2159,7 +2182,7 @@ or_comparisons_1 (enum tree_code code1, tree op1a, tree op1b,
       /* Result will be either NULL_TREE, or a combined comparison.  */
       tree t = combine_comparisons (UNKNOWN_LOCATION,
 				    TRUTH_ORIF_EXPR, code1, code2,
-				    boolean_type_node, op1a, op1b);
+				    truth_type, op1a, op1b);
       if (t)
 	return t;
     }
@@ -2172,7 +2195,7 @@ or_comparisons_1 (enum tree_code code1, tree op1a, tree op1b,
       tree t = combine_comparisons (UNKNOWN_LOCATION,
 				    TRUTH_ORIF_EXPR, code1,
 				    swap_tree_comparison (code2),
-				    boolean_type_node, op1a, op1b);
+				    truth_type, op1a, op1b);
       if (t)
 	return t;
     }

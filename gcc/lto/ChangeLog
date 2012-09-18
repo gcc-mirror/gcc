@@ -1,3 +1,64 @@
+2012-09-12  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (do_whole_program_analysis): Care timevars, statistics and
+	AUX pointer cleaning. Add max partitioning.
+	* lto-partition.c (enum symbol_class): New.
+	(get_symbol_class): New function.
+	(symbol_partitioned_p): New function.
+	(add_references_to_partition): Remove.
+	(add_aliases_to_partition): Remove.
+	(add_cgraph_node_to_partition_1): Remove.
+	(add_cgraph_node_to_partition): Remove.
+	(add_symbol_to_partition): New function.
+	(add_symbol_to_partition_1): New function.
+	(contained_in_symbol): New function.
+	(partition_cgraph_node_p): Remove.
+	(partition_varpool_node_p): Remove.
+	(partition_symbol_p): Remove.
+	(lto_1_to_1_map): Cleanup.
+	(lto_max_map): New.
+	(lto_balanced_map): Update.
+	(lto_promote_cross_file_statics): Update.
+	* lto-partition.h (lto_max_map): Declare.
+	* timevar.def (TV_WHOPR_PARTITIONING): New timevar.
+
+2012-09-11  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/54312
+	* lto.c (uniquify_nodes): Remove quadratic loop checking if the
+	type is variant leader.
+
+2012-09-11  Richard Guenther  <rguenther@suse.de>
+
+	* lto.c (enum gtc_mode): Remove.
+	(struct type_pair_d): Adjust.
+	(lookup_type_pair): Likewise.
+	(gimple_type_leader): Do not mark as deletable.
+	(gimple_lookup_type_leader): Adjust.
+	(gtc_visit): Likewise.
+	(gimple_types_compatible_p_1): Likewise.
+	(gimple_types_compatible_p): Likewise.
+	(gimple_type_hash): Likewise.
+	(gimple_register_type): Likewise.
+	(read_cgraph_and_symbols): Manage lifetime of tables
+	here.
+
+2012-09-11  Richard Guenther  <rguenther@suse.de>
+
+	* lto.c (gimple_types, type_hash_cache, enum gtc_mode,
+	struct type_pair_d, lookup_type_pair, struct sccs,
+	next_dfs_num, gtc_next_dfs_num, struct gimple_type_leader_entry_s,
+	gimple_type_leader, gimple_lookup_type_leader, compare_type_names_p,
+	gtc_visit, gimple_types_compatible_p_1, gimple_types_compatible_p,
+	visit, iterative_hash_name, struct type_hash_pair,
+	type_hash_pair_compare, iterative_hash_gimple_type, gimple_type_hash,
+	gimple_type_eq, gimple_register_type_1, gimple_register_type):
+	Move here from gimple.c
+	(read_cgraph_and_symbols): Free hash tables here.
+	(print_lto_report_1): New function wrapping print_lto_report.
+	(do_whole_program_analysis): Call it.
+	(lto_main): Likewise.
+
 2012-09-10  Jan Hubicka  <jh@suse.cz>
 
 	* lto-partition.c (partition_symbol_p): Forward declare.

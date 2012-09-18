@@ -10392,6 +10392,7 @@ $as_echo_n "checking for $compiler option to produce PIC... " >&6; }
 	# AIX 5 now supports IA64 processor
 	lt_prog_compiler_static='-Bstatic'
       fi
+      lt_prog_compiler_pic='-fPIC'
       ;;
 
     amigaos*)
@@ -13365,7 +13366,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 13368 "configure"
+#line 13369 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -13471,7 +13472,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 13474 "configure"
+#line 13475 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15274,6 +15275,7 @@ $as_echo_n "checking for $compiler option to produce PIC... " >&6; }
 	# AIX 5 now supports IA64 processor
 	lt_prog_compiler_static_CXX='-Bstatic'
       fi
+      lt_prog_compiler_pic_CXX='-fPIC'
       ;;
 
     amigaos*)
@@ -17367,6 +17369,7 @@ $as_echo_n "checking for $compiler option to produce PIC... " >&6; }
 	# AIX 5 now supports IA64 processor
 	lt_prog_compiler_static_GCJ='-Bstatic'
       fi
+      lt_prog_compiler_pic_GCJ='-fPIC'
       ;;
 
     amigaos*)
@@ -19464,7 +19467,7 @@ if test "${enable_sjlj_exceptions+set}" = set; then :
   enableval=$enable_sjlj_exceptions; :
 else
   cat > conftest.$ac_ext << EOF
-#line 19467 "configure"
+#line 19470 "configure"
 struct S { ~S(); };
 void bar();
 void foo()

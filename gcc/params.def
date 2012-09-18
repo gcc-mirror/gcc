@@ -885,6 +885,12 @@ DEFPARAM (PARAM_IPA_CP_EVAL_THRESHOLD,
 	  "beneficial to clone.",
 	  500, 0, 0)
 
+DEFPARAM (PARAM_IPA_MAX_AGG_ITEMS,
+	  "ipa-max-agg-items",
+	  "Maximum number of aggregate content items for a parameter in "
+	  "jump functions and lattices",
+	  16, 0, 0)
+
 /* WHOPR partitioning configuration.  */
 
 DEFPARAM (PARAM_LTO_PARTITIONS,
@@ -972,6 +978,13 @@ DEFPARAM (PARAM_SCHED_PRESSURE_ALGORITHM,
 	  "sched-pressure-algorithm",
 	  "Which -fsched-pressure algorithm to apply",
 	  1, 1, 2)
+
+/* Maximum length of candidate scans in straight-line strength reduction.  */
+DEFPARAM (PARAM_MAX_SLSR_CANDIDATE_SCAN,
+	  "max-slsr-cand-scan",
+	  "Maximum length of candidate scans for straight-line "
+	  "strength reduction",
+	  50, 1, 999999)
 
 /*
 Local variables:

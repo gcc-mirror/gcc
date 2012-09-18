@@ -26,7 +26,7 @@ int foobar(void)
   return ((const struct Foo *)p)->i;
 }
 
-/* { dg-final { scan-tree-dump "= i;" "ccp1" } } */
+/* { dg-final { scan-tree-dump "= i_.;" "ccp1" } } */
 /* { dg-final { scan-tree-dump "= f.i;" "ccp1" } } */
 /* { dg-final { scan-tree-dump "= g.i;" "ccp1" } } */
 /* { dg-final { cleanup-tree-dump "ccp1" } } */

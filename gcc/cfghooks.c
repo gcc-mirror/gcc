@@ -1306,3 +1306,21 @@ copy_bbs (basic_block *bbs, unsigned n, basic_block *new_bbs,
     bbs[i]->flags &= ~BB_DUPLICATED;
 }
 
+/* Return true if BB contains only labels or non-executable
+   instructions */
+bool
+empty_block_p (basic_block bb)
+{
+  gcc_assert (cfg_hooks->empty_block_p);
+  return cfg_hooks->empty_block_p (bb);
+}
+
+/* Split a basic block if it ends with a conditional branch and if
+   the other part of the block is not empty.  */
+basic_block
+split_block_before_cond_jump (basic_block bb)
+{
+  gcc_assert (cfg_hooks->split_block_before_cond_jump);
+  return cfg_hooks->split_block_before_cond_jump (bb);
+}
+

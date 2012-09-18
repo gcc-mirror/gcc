@@ -3272,16 +3272,14 @@ expand_call (tree exp, rtx target, int ignore)
       else if (GET_CODE (valreg) == PARALLEL)
 	{
 	  if (target == 0)
-	    {
-	      /* This will only be assigned once, so it can be readonly.  */
-	      tree nt = build_qualified_type (rettype,
-					      (TYPE_QUALS (rettype)
-					       | TYPE_QUAL_CONST));
-
-	      target = assign_temp (nt, 1, 1);
-	    }
-
-	  if (! rtx_equal_p (target, valreg))
+	    target = emit_group_move_into_temps (valreg);
+	  else if (rtx_equal_p (target, valreg))
+	    ;
+	  else if (GET_CODE (target) == PARALLEL)
+	    /* Handle the result of a emit_group_move_into_temps
+	       call in the previous pass.  */
+	    emit_group_move (target, valreg);
+	  else
 	    emit_group_store (target, valreg, rettype,
 			      int_size_in_bytes (rettype));
 

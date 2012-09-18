@@ -811,11 +811,27 @@ print_rtl (FILE *outf, const_rtx rtx_first)
 int
 print_rtl_single (FILE *outf, const_rtx x)
 {
+  return print_rtl_single_with_indent (outf, x, 0);
+}
+
+/* Like print_rtl_single, except specify a file and indentation.  */
+
+int
+print_rtl_single_with_indent (FILE *outf, const_rtx x, int ind)
+{
+  int old_indent = indent;
+  char *s_indent = (char *) alloca ((size_t) ind + 1);
+  memset ((void *) s_indent, ' ', (size_t) ind);
+  s_indent[ind] = '\0';
+
+  indent = ind;
   outfile = outf;
   sawclose = 0;
+  fputs (s_indent, outfile);
   fputs (print_rtx_head, outfile);
   print_rtx (x);
   putc ('\n', outf);
+  indent = old_indent;
   return 1;
 }
 

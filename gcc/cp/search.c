@@ -819,7 +819,7 @@ friend_accessible_p (tree scope, tree decl, tree binfo)
 /* Called via dfs_walk_once_accessible from accessible_p */
 
 static tree
-dfs_accessible_post (tree binfo, void *data ATTRIBUTE_UNUSED)
+dfs_accessible_post (tree binfo, void * /*data*/)
 {
   if (BINFO_ACCESS (binfo) != ak_none)
     {
@@ -2160,7 +2160,7 @@ maybe_suppress_debug_info (tree t)
    information anyway.  */
 
 static tree
-dfs_debug_mark (tree binfo, void *data ATTRIBUTE_UNUSED)
+dfs_debug_mark (tree binfo, void * /*data*/)
 {
   tree t = BINFO_TYPE (binfo);
 

@@ -1525,9 +1525,17 @@ ARM target supports generating NEON instructions.
 @item arm_neon_hw
 Test system supports executing NEON instructions.
 
+@item arm_neonv2_hw
+Test system supports executing NEON v2 instructions.
+
 @item arm_neon_ok
 @anchor{arm_neon_ok}
 ARM Target supports @code{-mfpu=neon -mfloat-abi=softfp} or compatible
+options.  Some multilibs may be incompatible with these options.
+
+@item arm_neonv2_ok
+@anchor{arm_neonv2_ok}
+ARM Target supports @code{-mfpu=neon-vfpv4 -mfloat-abi=softfp} or compatible
 options.  Some multilibs may be incompatible with these options.
 
 @item arm_neon_fp16_ok

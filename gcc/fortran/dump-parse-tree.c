@@ -2248,67 +2248,63 @@ show_namespace (gfc_namespace *ns)
   gfc_equiv *eq;
   int i;
 
+  gcc_assert (ns);
   save = gfc_current_ns;
 
   show_indent ();
   fputs ("Namespace:", dumpfile);
 
-  if (ns != NULL)
+  i = 0;
+  do
     {
-      i = 0;
-      do
-	{
-	  int l = i;
-	  while (i < GFC_LETTERS - 1
-		 && gfc_compare_types(&ns->default_type[i+1],
-				      &ns->default_type[l]))
-	    i++;
+      int l = i;
+      while (i < GFC_LETTERS - 1
+	     && gfc_compare_types (&ns->default_type[i+1],
+				   &ns->default_type[l]))
+	i++;
 
-	  if (i > l)
-	    fprintf (dumpfile, " %c-%c: ", l+'A', i+'A');
-	  else
-	    fprintf (dumpfile, " %c: ", l+'A');
+      if (i > l)
+	fprintf (dumpfile, " %c-%c: ", l+'A', i+'A');
+      else
+	fprintf (dumpfile, " %c: ", l+'A');
 
-	  show_typespec(&ns->default_type[l]);
-	  i++;
-      } while (i < GFC_LETTERS);
+      show_typespec(&ns->default_type[l]);
+      i++;
+    } while (i < GFC_LETTERS);
 
-      if (ns->proc_name != NULL)
-	{
-	  show_indent ();
-	  fprintf (dumpfile, "procedure name = %s", ns->proc_name->name);
-	}
-
-      ++show_level;
-      gfc_current_ns = ns;
-      gfc_traverse_symtree (ns->common_root, show_common);
-
-      gfc_traverse_symtree (ns->sym_root, show_symtree);
-
-      for (op = GFC_INTRINSIC_BEGIN; op != GFC_INTRINSIC_END; op++)
-	{
-	  /* User operator interfaces */
-	  intr = ns->op[op];
-	  if (intr == NULL)
-	    continue;
-
-	  show_indent ();
-	  fprintf (dumpfile, "Operator interfaces for %s:",
-		   gfc_op2string ((gfc_intrinsic_op) op));
-
-	  for (; intr; intr = intr->next)
-	    fprintf (dumpfile, " %s", intr->sym->name);
-	}
-
-      if (ns->uop_root != NULL)
-	{
-	  show_indent ();
-	  fputs ("User operators:\n", dumpfile);
-	  gfc_traverse_user_op (ns, show_uop);
-	}
+  if (ns->proc_name != NULL)
+    {
+      show_indent ();
+      fprintf (dumpfile, "procedure name = %s", ns->proc_name->name);
     }
-  else
-    ++show_level;
+
+  ++show_level;
+  gfc_current_ns = ns;
+  gfc_traverse_symtree (ns->common_root, show_common);
+
+  gfc_traverse_symtree (ns->sym_root, show_symtree);
+
+  for (op = GFC_INTRINSIC_BEGIN; op != GFC_INTRINSIC_END; op++)
+    {
+      /* User operator interfaces */
+      intr = ns->op[op];
+      if (intr == NULL)
+	continue;
+
+      show_indent ();
+      fprintf (dumpfile, "Operator interfaces for %s:",
+	       gfc_op2string ((gfc_intrinsic_op) op));
+
+      for (; intr; intr = intr->next)
+	fprintf (dumpfile, " %s", intr->sym->name);
+    }
+
+  if (ns->uop_root != NULL)
+    {
+      show_indent ();
+      fputs ("User operators:\n", dumpfile);
+      gfc_traverse_user_op (ns, show_uop);
+    }
   
   for (eq = ns->equiv; eq; eq = eq->next)
     show_equiv (eq);

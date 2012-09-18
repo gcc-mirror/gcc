@@ -2772,7 +2772,7 @@ build_x_indirect_ref (location_t loc, tree expr, ref_operator errorstring,
 
 /* Helper function called from c-common.  */
 tree
-build_indirect_ref (location_t loc ATTRIBUTE_UNUSED,
+build_indirect_ref (location_t /*loc*/,
 		    tree ptr, ref_operator errorstring)
 {
   return cp_build_indirect_ref (ptr, errorstring, tf_warning_or_error);
@@ -3207,7 +3207,7 @@ get_member_function_from_ptrfunc (tree *instance_ptrptr, tree function,
 
 /* Used by the C-common bits.  */
 tree
-build_function_call (location_t loc ATTRIBUTE_UNUSED, 
+build_function_call (location_t /*loc*/, 
 		     tree function, tree params)
 {
   return cp_build_function_call (function, params, tf_warning_or_error);
@@ -3215,9 +3215,9 @@ build_function_call (location_t loc ATTRIBUTE_UNUSED,
 
 /* Used by the C-common bits.  */
 tree
-build_function_call_vec (location_t loc ATTRIBUTE_UNUSED,
+build_function_call_vec (location_t /*loc*/,
 			 tree function, VEC(tree,gc) *params,
-			 VEC(tree,gc) *origtypes ATTRIBUTE_UNUSED)
+			 VEC(tree,gc) * /*origtypes*/)
 {
   VEC(tree,gc) *orig_params = params;
   tree ret = cp_build_function_call_vec (function, &params,
@@ -3373,7 +3373,7 @@ cp_build_function_call_vec (tree function, VEC(tree,gc) **params,
      null parameters.  */
   check_function_arguments (fntype, nargs, argarray);
 
-  ret = build_cxx_call (function, nargs, argarray);
+  ret = build_cxx_call (function, nargs, argarray, complain);
 
   if (allocated != NULL)
     release_tree_vector (allocated);
@@ -3693,7 +3693,7 @@ enum_cast_to_int (tree op)
 /* For the c-common bits.  */
 tree
 build_binary_op (location_t location, enum tree_code code, tree op0, tree op1,
-		 int convert_p ATTRIBUTE_UNUSED)
+		 int /*convert_p*/)
 {
   return cp_build_binary_op (location, code, op0, op1, tf_warning_or_error);
 }
@@ -3985,7 +3985,15 @@ cp_build_binary_op (location_t location,
 	 Also set SHORT_SHIFT if shifting rightward.  */
 
     case RSHIFT_EXPR:
-      if (code0 == INTEGER_TYPE && code1 == INTEGER_TYPE)
+      if (code0 == VECTOR_TYPE && code1 == VECTOR_TYPE
+	  && TREE_CODE (TREE_TYPE (type0)) == INTEGER_TYPE
+	  && TREE_CODE (TREE_TYPE (type1)) == INTEGER_TYPE
+	  && TYPE_VECTOR_SUBPARTS (type0) == TYPE_VECTOR_SUBPARTS (type1))
+	{
+	  result_type = type0;
+	  converted = 1;
+	}
+      else if (code0 == INTEGER_TYPE && code1 == INTEGER_TYPE)
 	{
 	  result_type = type0;
 	  if (TREE_CODE (op1) == INTEGER_CST)
@@ -4014,7 +4022,15 @@ cp_build_binary_op (location_t location,
       break;
 
     case LSHIFT_EXPR:
-      if (code0 == INTEGER_TYPE && code1 == INTEGER_TYPE)
+      if (code0 == VECTOR_TYPE && code1 == VECTOR_TYPE
+	  && TREE_CODE (TREE_TYPE (type0)) == INTEGER_TYPE
+	  && TREE_CODE (TREE_TYPE (type1)) == INTEGER_TYPE
+	  && TYPE_VECTOR_SUBPARTS (type0) == TYPE_VECTOR_SUBPARTS (type1))
+	{
+	  result_type = type0;
+	  converted = 1;
+	}
+      else if (code0 == INTEGER_TYPE && code1 == INTEGER_TYPE)
 	{
 	  result_type = type0;
 	  if (TREE_CODE (op1) == INTEGER_CST)
@@ -4072,6 +4088,8 @@ cp_build_binary_op (location_t location,
 
     case EQ_EXPR:
     case NE_EXPR:
+      if (code0 == VECTOR_TYPE && code1 == VECTOR_TYPE)
+	goto vector_compare;
       if ((complain & tf_warning)
 	  && (FLOAT_TYPE_P (type0) || FLOAT_TYPE_P (type1)))
 	warning (OPT_Wfloat_equal,
@@ -4314,6 +4332,35 @@ cp_build_binary_op (location_t location,
 	    warning (OPT_Waddress, "comparison with string literal results in unspecified behaviour");
 	}
 
+      if (code0 == VECTOR_TYPE && code1 == VECTOR_TYPE)
+	{
+	vector_compare:
+	  tree intt;
+	  if (!same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (type0),
+							  TREE_TYPE (type1)))
+	    {
+	      error_at (location, "comparing vectors with different "
+				  "element types");
+	      inform (location, "operand types are %qT and %qT", type0, type1);
+	      return error_mark_node;
+	    }
+
+	  if (TYPE_VECTOR_SUBPARTS (type0) != TYPE_VECTOR_SUBPARTS (type1))
+	    {
+	      error_at (location, "comparing vectors with different "
+				  "number of elements");
+	      inform (location, "operand types are %qT and %qT", type0, type1);
+	      return error_mark_node;
+	    }
+
+	  /* Always construct signed integer vector type.  */
+	  intt = c_common_type_for_size (GET_MODE_BITSIZE
+					   (TYPE_MODE (TREE_TYPE (type0))), 0);
+	  result_type = build_opaque_vector_type (intt,
+						  TYPE_VECTOR_SUBPARTS (type0));
+	  converted = 1;
+	  break;
+	}
       build_type = boolean_type_node;
       if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE
 	   || code0 == ENUMERAL_TYPE)
@@ -5448,7 +5495,7 @@ cp_build_unary_op (enum tree_code code, tree xarg, int noconvert,
 
 /* Hook for the c-common bits that build a unary op.  */
 tree
-build_unary_op (location_t location ATTRIBUTE_UNUSED,
+build_unary_op (location_t /*location*/,
 		enum tree_code code, tree xarg, int noconvert)
 {
   return cp_build_unary_op (code, xarg, noconvert, tf_warning_or_error);
@@ -5719,7 +5766,8 @@ build_x_compound_expr_from_list (tree list, expr_list_kind exp,
 /* Like build_x_compound_expr_from_list, but using a VEC.  */
 
 tree
-build_x_compound_expr_from_vec (VEC(tree,gc) *vec, const char *msg)
+build_x_compound_expr_from_vec (VEC(tree,gc) *vec, const char *msg,
+				tsubst_flags_t complain)
 {
   if (VEC_empty (tree, vec))
     return NULL_TREE;
@@ -5732,14 +5780,19 @@ build_x_compound_expr_from_vec (VEC(tree,gc) *vec, const char *msg)
       tree t;
 
       if (msg != NULL)
-	permerror (input_location,
-		   "%s expression list treated as compound expression",
-		   msg);
+	{
+	  if (complain & tf_error)
+	    permerror (input_location,
+		       "%s expression list treated as compound expression",
+		       msg);
+	  else
+	    return error_mark_node;
+	}
 
       expr = VEC_index (tree, vec, 0);
       for (ix = 1; VEC_iterate (tree, vec, ix, t); ++ix)
 	expr = build_x_compound_expr (EXPR_LOCATION (t), expr,
-				      t, tf_warning_or_error);
+				      t, complain);
 
       return expr;
     }
@@ -5778,7 +5831,7 @@ build_x_compound_expr (location_t loc, tree op1, tree op2,
 /* Like cp_build_compound_expr, but for the c-common bits.  */
 
 tree
-build_compound_expr (location_t loc ATTRIBUTE_UNUSED, tree lhs, tree rhs)
+build_compound_expr (location_t /*loc*/, tree lhs, tree rhs)
 {
   return cp_build_compound_expr (lhs, rhs, tf_warning_or_error);
 }
@@ -6646,7 +6699,7 @@ build_const_cast (tree type, tree expr, tsubst_flags_t complain)
 /* Like cp_build_c_cast, but for the c-common bits.  */
 
 tree
-build_c_cast (location_t loc ATTRIBUTE_UNUSED, tree type, tree expr)
+build_c_cast (location_t /*loc*/, tree type, tree expr)
 {
   return cp_build_c_cast (type, expr, tf_warning_or_error);
 }
@@ -6776,11 +6829,11 @@ cp_build_c_cast (tree type, tree expr, tsubst_flags_t complain)
 
 /* For use from the C common bits.  */
 tree
-build_modify_expr (location_t location ATTRIBUTE_UNUSED,
-		   tree lhs, tree lhs_origtype ATTRIBUTE_UNUSED,
+build_modify_expr (location_t /*location*/,
+		   tree lhs, tree /*lhs_origtype*/,
 		   enum tree_code modifycode, 
-		   location_t rhs_location ATTRIBUTE_UNUSED, tree rhs,
-		   tree rhs_origtype ATTRIBUTE_UNUSED)
+		   location_t /*rhs_location*/, tree rhs,
+		   tree /*rhs_origtype*/)
 {
   return cp_build_modify_expr (lhs, modifycode, rhs, tf_warning_or_error);
 }

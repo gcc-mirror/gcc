@@ -791,9 +791,8 @@
   /* Allow T_REG as shift count for dynamic shifts, although it is not
      really possible.  It will then be copied to a general purpose reg.  */
   if (! TARGET_SHMEDIA)
-    return const_int_operand (op, mode)
-	   || (TARGET_DYNSHIFT && (arith_reg_operand (op, mode)
-				   || t_reg_operand (op, mode)));
+    return const_int_operand (op, mode) || arith_reg_operand (op, mode)
+	   || (TARGET_DYNSHIFT && t_reg_operand (op, mode));
 
   return (CONSTANT_P (op)
 	  ? (CONST_INT_P (op)
@@ -999,11 +998,12 @@
 	return REGNO (op) == T_REG;
 
       case SUBREG:
-	return REGNO (SUBREG_REG (op)) == T_REG;
+	return REG_P (SUBREG_REG (op)) && REGNO (SUBREG_REG (op)) == T_REG;
 
       case ZERO_EXTEND:
       case SIGN_EXTEND:
 	return GET_CODE (XEXP (op, 0)) == SUBREG
+	       && REG_P (SUBREG_REG (XEXP (op, 0)))
 	       && REGNO (SUBREG_REG (XEXP (op, 0))) == T_REG;
 
       default:

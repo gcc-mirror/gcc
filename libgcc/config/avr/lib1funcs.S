@@ -91,6 +91,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 .endfunc
 .endm
 
+.macro FALIAS name
+.global \name
+.func \name
+\name:
+.size \name, .-\name
+.endfunc
+.endm
+
 ;; Negate a 2-byte value held in consecutive registers
 .macro NEG2  reg
     com     \reg+1
@@ -99,6 +107,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 .endm
 
 ;; Negate a 4-byte value held in consecutive registers
+;; Sets the V flag for signed overflow tests if REG >= 16
 .macro NEG4  reg
     com     \reg+3
     com     \reg+2
@@ -1325,7 +1334,7 @@ DEFUN __divmodsi4
     bst     r_arg1HH,7          ; store sign of dividend
     brtc    0f
     com     __tmp_reg__         ; r0.7 is sign of result
-    rcall   __divmodsi4_neg1    ; dividend negative: negate
+    XCALL   __negsi2            ; dividend negative: negate
 0:
     sbrc    r_arg2HH,7
     rcall   __divmodsi4_neg2    ; divisor negative: negate
@@ -1333,16 +1342,7 @@ DEFUN __divmodsi4
     sbrc    __tmp_reg__, 7      ; correct quotient sign
     rcall   __divmodsi4_neg2
     brtc    __divmodsi4_exit    ; correct remainder sign
-__divmodsi4_neg1:
-    ;; correct dividend/remainder sign
-    com     r_arg1HH
-    com     r_arg1HL
-    com     r_arg1H
-    neg     r_arg1L
-    sbci    r_arg1H, 0xff
-    sbci    r_arg1HL,0xff
-    sbci    r_arg1HH,0xff
-    ret
+    XJMP    __negsi2
 __divmodsi4_neg2:
     ;; correct divisor/quotient sign
     com     r_arg2HH
@@ -1356,6 +1356,16 @@ __divmodsi4_exit:
     ret
 ENDF __divmodsi4
 #endif /* defined (L_divmodsi4) */
+
+#if defined (L_negsi2)
+;; (set (reg:SI 22)
+;;      (neg:SI (reg:SI 22)))
+;; Sets the V flag for signed overflow tests
+DEFUN __negsi2
+    NEG4    22
+    ret
+ENDF __negsi2
+#endif /* L_negsi2 */
 
 #undef r_remHH
 #undef r_remHL
@@ -1689,6 +1699,8 @@ ENDF __divdi3_moddi3
 ;; (set (reg:DI 18)
 ;;      (plus:DI (reg:DI 18)
 ;;               (reg:DI 10)))
+;; Sets the V flag for signed overflow tests
+;; Sets the C flag for unsigned overflow tests
 DEFUN __adddi3
     ADD A0,B0  $  adc A1,B1  $  adc A2,B2  $  adc A3,B3
     adc A4,B4  $  adc A5,B5  $  adc A6,B6  $  adc A7,B7
@@ -1700,6 +1712,8 @@ ENDF __adddi3
 ;; (set (reg:DI 18)
 ;;      (plus:DI (reg:DI 18)
 ;;               (sign_extend:SI (reg:QI 26))))
+;; Sets the V flag for signed overflow tests
+;; Sets the C flag for unsigned overflow tests provided 0 <= R26 < 128
 DEFUN __adddi3_s8
     clr     TT
     sbrc    r26, 7
@@ -1714,6 +1728,8 @@ ENDF __adddi3_s8
 ;; (set (reg:DI 18)
 ;;      (minus:DI (reg:DI 18)
 ;;                (reg:DI 10)))
+;; Sets the V flag for signed overflow tests
+;; Sets the C flag for unsigned overflow tests
 DEFUN __subdi3
     SUB A0,B0  $  sbc A1,B1  $  sbc A2,B2  $  sbc A3,B3
     sbc A4,B4  $  sbc A5,B5  $  sbc A6,B6  $  sbc A7,B7
@@ -1747,6 +1763,9 @@ ENDF __cmpdi2_s8
 #endif /* L_cmpdi2_s8 */
 
 #if defined (L_negdi2)
+;; (set (reg:DI 18)
+;;      (neg:DI (reg:DI 18)))
+;; Sets the V flag for signed overflow tests
 DEFUN __negdi2
 
     com  A4    $  com  A5    $  com  A6    $  com  A7

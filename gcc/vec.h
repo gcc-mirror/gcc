@@ -31,23 +31,6 @@ along with GCC; see the file COPYING3.  If not see
    sometimes backed by out-of-line generic functions.  The vectors are
    designed to interoperate with the GTY machinery.
 
-   FIXME - Remove the following compatibility notes after a handler
-   class for vec_t is implemented.
-
-   To preserve compatibility with the existing API, some functions
-   that manipulate vector elements implement two overloads: one taking
-   a pointer to the element and others that take a pointer to a
-   pointer to the element.
-
-   This used to be implemented with three different families of macros
-   and structures: structure objects, scalar objects and of pointers.
-   Both the structure object and pointer variants passed pointers to
-   objects around -- in the former case the pointers were stored into
-   the vector and in the latter case the pointers were dereferenced and
-   the objects copied into the vector.  The scalar object variant was
-   suitable for int-like objects, and the vector elements were returned
-   by value.
-
    There are both 'index' and 'iterate' accessors.  The index accessor
    is implemented by operator[].  The iterator returns a boolean
    iteration condition and updates the iteration variable passed by
@@ -124,7 +107,6 @@ along with GCC; see the file COPYING3.  If not see
    VEC_safe_push(tree,gc,s->v,decl); // append some decl onto the end
    for (ix = 0; VEC_iterate(tree,s->v,ix,elt); ix++)
      { do something with elt }
-
 */
 
 #if ENABLE_CHECKING
@@ -178,19 +160,15 @@ struct GTY(()) vec_t
 
   bool space (int VEC_CHECK_DECL);
   void splice (vec_t<T> * VEC_CHECK_DECL);
-  T &quick_push (T VEC_CHECK_DECL);
-  T *quick_push (const T * VEC_CHECK_DECL);
+  T *quick_push (const T & VEC_CHECK_DECL);
   T &pop (ALONE_VEC_CHECK_DECL);
   void truncate (unsigned VEC_CHECK_DECL);
-  void replace (unsigned, T VEC_CHECK_DECL);
-  void quick_insert (unsigned, T VEC_CHECK_DECL);
-  void quick_insert (unsigned, const T * VEC_CHECK_DECL);
+  void replace (unsigned, const T & VEC_CHECK_DECL);
+  void quick_insert (unsigned, const T & VEC_CHECK_DECL);
   void ordered_remove (unsigned VEC_CHECK_DECL);
   void unordered_remove (unsigned VEC_CHECK_DECL);
   void block_remove (unsigned, unsigned VEC_CHECK_DECL);
-
-  unsigned lower_bound (T, bool (*)(T, T)) const;
-  unsigned lower_bound (const T *, bool (*)(const T *, const T *)) const;
+  unsigned lower_bound (T, bool (*)(const T &, const T &)) const;
 
   /* Class-static member functions.  Some of these will become member
      functions of a future handler class wrapping vec_t.  */
@@ -221,10 +199,7 @@ struct GTY(()) vec_t
 			   MEM_STAT_DECL);
 
   template<enum vec_allocation_t A>
-  static T &safe_push (vec_t<T> **, T VEC_CHECK_DECL MEM_STAT_DECL);
-
-  template<enum vec_allocation_t A>
-  static T *safe_push (vec_t<T> **, const T * VEC_CHECK_DECL MEM_STAT_DECL);
+  static T *safe_push (vec_t<T> **, const T & VEC_CHECK_DECL MEM_STAT_DECL);
 
   template<enum vec_allocation_t A>
   static void safe_grow (vec_t<T> **, int VEC_CHECK_DECL MEM_STAT_DECL);
@@ -233,11 +208,7 @@ struct GTY(()) vec_t
   static void safe_grow_cleared (vec_t<T> **, int VEC_CHECK_DECL MEM_STAT_DECL);
 
   template<enum vec_allocation_t A>
-  static void safe_insert (vec_t<T> **, unsigned, T * VEC_CHECK_DECL
-			   MEM_STAT_DECL);
-
-  template<enum vec_allocation_t A>
-  static void safe_insert (vec_t<T> **, unsigned, T obj VEC_CHECK_DECL
+  static void safe_insert (vec_t<T> **, unsigned, const T & VEC_CHECK_DECL
 			   MEM_STAT_DECL);
 
   static bool iterate (const vec_t<T> *, unsigned, T *);
@@ -802,63 +773,32 @@ vec_t<T>::safe_splice (vec_t<T> **dst, vec_t<T> *src VEC_CHECK_DECL
 }
 
   
-/* Push OBJ (a new element) onto the end, returns a reference to the slot
-   filled in.  There must be sufficient space in the vector.  */
+/* Push OBJ (a new element) onto the end of the vector.  There must be
+   sufficient space in the vector.  Return a pointer to the slot
+   where OBJ was inserted.  */
 
-template<typename T>
-T &
-vec_t<T>::quick_push (T obj VEC_CHECK_DECL)
-{
-  VEC_ASSERT (prefix_.num_ < prefix_.alloc_, "push", T, base);
-  vec_[prefix_.num_] = obj;
-  T &val = vec_[prefix_.num_];
-  prefix_.num_++;
-  return val;
-}
-
-
-/* Push PTR (a new pointer to an element) onto the end, returns a
-   pointer to the slot filled in. The new value can be NULL, in which
-   case NO initialization is performed.  There must be sufficient
-   space in the vector.  */
 
 template<typename T>
 T *
-vec_t<T>::quick_push (const T *ptr VEC_CHECK_DECL)
+vec_t<T>::quick_push (const T &obj VEC_CHECK_DECL)
 {
   VEC_ASSERT (prefix_.num_ < prefix_.alloc_, "push", T, base);
   T *slot = &vec_[prefix_.num_++];
-  if (ptr)
-    *slot = *ptr;
+  *slot = obj;
   return slot;
 }
 
 
-/* Push a new element OBJ onto the end of VEC.  Returns a reference to
-   the slot filled in.  Reallocates V, if needed.  */
-
-template<typename T>
-template<enum vec_allocation_t A>
-T &
-vec_t<T>::safe_push (vec_t<T> **vec, T obj VEC_CHECK_DECL MEM_STAT_DECL)
-{
-  reserve<A> (vec, 1 VEC_CHECK_PASS PASS_MEM_STAT);
-  return (*vec)->quick_push (obj VEC_CHECK_PASS);
-}
-
-
-/* Push a pointer PTR to a new element onto the end of VEC.  Returns a
-   pointer to the slot filled in. For object vectors, the new value
-   can be NULL, in which case NO initialization is performed.
-   Reallocates VEC, if needed.  */
+/* Push a new element OBJ onto the end of VEC.  Reallocates VEC, if
+   needed.  Return a pointer to the slot where OBJ was inserted.  */
 
 template<typename T>
 template<enum vec_allocation_t A>
 T *
-vec_t<T>::safe_push (vec_t<T> **vec, const T *ptr VEC_CHECK_DECL MEM_STAT_DECL)
+vec_t<T>::safe_push (vec_t<T> **vec, const T &obj VEC_CHECK_DECL MEM_STAT_DECL)
 {
   reserve<A> (vec, 1 VEC_CHECK_PASS PASS_MEM_STAT);
-  return (*vec)->quick_push (ptr VEC_CHECK_PASS);
+  return (*vec)->quick_push (obj VEC_CHECK_PASS);
 }
 
 
@@ -923,7 +863,7 @@ vec_t<T>::safe_grow_cleared (vec_t<T> **vec, int size VEC_CHECK_DECL
 
 template<typename T>
 void
-vec_t<T>::replace (unsigned ix, T obj VEC_CHECK_DECL)
+vec_t<T>::replace (unsigned ix, const T &obj VEC_CHECK_DECL)
 {
   VEC_ASSERT (ix < prefix_.num_, "replace", T, base);
   vec_[ix] = obj;
@@ -935,7 +875,7 @@ vec_t<T>::replace (unsigned ix, T obj VEC_CHECK_DECL)
 
 template<typename T>
 void
-vec_t<T>::quick_insert (unsigned ix, T obj VEC_CHECK_DECL)
+vec_t<T>::quick_insert (unsigned ix, const T &obj VEC_CHECK_DECL)
 {
   VEC_ASSERT (prefix_.num_ < prefix_.alloc_, "insert", T, base);
   VEC_ASSERT (ix <= prefix_.num_, "insert", T, base);
@@ -945,50 +885,17 @@ vec_t<T>::quick_insert (unsigned ix, T obj VEC_CHECK_DECL)
 }
 
 
-/* Insert an element, *PTR, at the IXth position of V.  The new value
-   can be NULL, in which case no initialization of the inserted slot
-   takes place. There must be sufficient space.  */
-
-template<typename T>
-void
-vec_t<T>::quick_insert (unsigned ix, const T *ptr VEC_CHECK_DECL)
-{
-  VEC_ASSERT (prefix_.num_ < prefix_.alloc_, "insert", T, base);
-  VEC_ASSERT (ix <= prefix_.num_, "insert", T, base);
-  T *slot = &vec_[ix];
-  memmove (slot + 1, slot, (prefix_.num_++ - ix) * sizeof (T));
-  if (ptr)
-    *slot = *ptr;
-}
-
-
-/* Insert an element, VAL, at the IXth position of VEC. Reallocate
+/* Insert an element, OBJ, at the IXth position of VEC. Reallocate
    VEC, if necessary.  */
 
 template<typename T>
 template<enum vec_allocation_t A>
 void
-vec_t<T>::safe_insert (vec_t<T> **vec, unsigned ix, T obj VEC_CHECK_DECL
+vec_t<T>::safe_insert (vec_t<T> **vec, unsigned ix, const T &obj VEC_CHECK_DECL
 		       MEM_STAT_DECL)
 {
   reserve<A> (vec, 1 VEC_CHECK_PASS PASS_MEM_STAT);
   (*vec)->quick_insert (ix, obj VEC_CHECK_PASS);
-}
-
-
-/* Insert an element, *PTR, at the IXth position of VEC. Return a pointer
-   to the slot created.  For vectors of object, the new value can be
-   NULL, in which case no initialization of the inserted slot takes
-   place. Reallocate V, if necessary.  */
-
-template<typename T>
-template<enum vec_allocation_t A>
-void
-vec_t<T>::safe_insert (vec_t<T> **vec, unsigned ix, T *ptr VEC_CHECK_DECL
-		       MEM_STAT_DECL)
-{
-  reserve<A> (vec, 1 VEC_CHECK_PASS PASS_MEM_STAT);
-  (*vec)->quick_insert (ix, ptr VEC_CHECK_PASS);
 }
 
 
@@ -1043,50 +950,18 @@ vec_t<T>::block_remove (unsigned ix, unsigned len VEC_CHECK_DECL)
 
 template<typename T>
 unsigned
-vec_t<T>::lower_bound (T obj, bool (*lessthan)(T, T)) const
+vec_t<T>::lower_bound (T obj, bool (*lessthan)(const T &, const T &)) const
 {
   unsigned int len = VEC_length (T, this);
   unsigned int half, middle;
   unsigned int first = 0;
   while (len > 0)
     {
-      half = len >> 1;
+      half = len / 2;
       middle = first;
       middle += half;
       T middle_elem = (*this)[middle];
       if (lessthan (middle_elem, obj))
-	{
-	  first = middle;
-	  ++first;
-	  len = len - half - 1;
-	}
-      else
-	len = half;
-    }
-  return first;
-}
-
-
-/* Find and return the first position in which *PTR could be inserted
-   without changing the ordering of this vector.  LESSTHAN is a
-   function that returns true if the first argument is strictly less
-   than the second.  */
-
-template<typename T>
-unsigned
-vec_t<T>::lower_bound (const T *ptr,
-		       bool (*lessthan)(const T *, const T *)) const
-{
-  unsigned int len = VEC_length (T, this);
-  unsigned int half, middle;
-  unsigned int first = 0;
-  while (len > 0)
-    {
-      half = len >> 1;
-      middle = first;
-      middle += half;
-      const T *middle_elem = &(*this)[middle];
-      if (lessthan (middle_elem, ptr))
 	{
 	  first = middle;
 	  ++first;

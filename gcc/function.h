@@ -760,6 +760,7 @@ extern void clobber_return_register (void);
 extern rtx get_arg_pointer_save_area (void);
 
 /* Returns the name of the current function.  */
+extern const char *fndecl_name (tree);
 extern const char *function_name (struct function *);
 extern const char *current_function_name (void);
 

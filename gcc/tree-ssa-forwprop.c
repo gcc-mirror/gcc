@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "expr.h"
 #include "cfgloop.h"
+#include "tree-vectorizer.h"
 
 /* This pass propagates the RHS of assignment statements into use
    sites of the LHS of the assignment.  It's basically a specialized
@@ -2574,6 +2575,77 @@ combine_conversions (gimple_stmt_iterator *gsi)
   return 0;
 }
 
+/* Combine an element access with a shuffle.  Returns true if there were
+   any changes made, else it returns false.  */
+ 
+static bool
+simplify_bitfield_ref (gimple_stmt_iterator *gsi)
+{
+  gimple stmt = gsi_stmt (*gsi);
+  gimple def_stmt;
+  tree op, op0, op1, op2;
+  tree elem_type;
+  unsigned idx, n, size;
+  enum tree_code code;
+
+  op = gimple_assign_rhs1 (stmt);
+  gcc_checking_assert (TREE_CODE (op) == BIT_FIELD_REF);
+
+  op0 = TREE_OPERAND (op, 0);
+  if (TREE_CODE (op0) != SSA_NAME
+      || TREE_CODE (TREE_TYPE (op0)) != VECTOR_TYPE)
+    return false;
+
+  elem_type = TREE_TYPE (TREE_TYPE (op0));
+  if (TREE_TYPE (op) != elem_type)
+    return false;
+
+  size = TREE_INT_CST_LOW (TYPE_SIZE (elem_type));
+  op1 = TREE_OPERAND (op, 1);
+  n = TREE_INT_CST_LOW (op1) / size;
+  if (n != 1)
+    return false;
+
+  def_stmt = get_prop_source_stmt (op0, false, NULL);
+  if (!def_stmt || !can_propagate_from (def_stmt))
+    return false;
+
+  op2 = TREE_OPERAND (op, 2);
+  idx = TREE_INT_CST_LOW (op2) / size;
+
+  code = gimple_assign_rhs_code (def_stmt);
+
+  if (code == VEC_PERM_EXPR)
+    {
+      tree p, m, index, tem;
+      unsigned nelts;
+      m = gimple_assign_rhs3 (def_stmt);
+      if (TREE_CODE (m) != VECTOR_CST)
+	return false;
+      nelts = VECTOR_CST_NELTS (m);
+      idx = TREE_INT_CST_LOW (VECTOR_CST_ELT (m, idx));
+      idx %= 2 * nelts;
+      if (idx < nelts)
+	{
+	  p = gimple_assign_rhs1 (def_stmt);
+	}
+      else
+	{
+	  p = gimple_assign_rhs2 (def_stmt);
+	  idx -= nelts;
+	}
+      index = build_int_cst (TREE_TYPE (TREE_TYPE (m)), idx * size);
+      tem = build3 (BIT_FIELD_REF, TREE_TYPE (op),
+		    unshare_expr (p), op1, index);
+      gimple_assign_set_rhs1 (stmt, tem);
+      fold_stmt (gsi);
+      update_stmt (gsi_stmt (*gsi));
+      return true;
+    }
+
+  return false;
+}
+
 /* Determine whether applying the 2 permutations (mask1 then mask2)
    gives back one of the input.  */
 
@@ -2606,45 +2678,52 @@ is_combined_permutation_identity (tree mask1, tree mask2)
   return maybe_identity1 ? 1 : maybe_identity2 ? 2 : 0;
 }
 
-/* Combine two shuffles in a row.  Returns 1 if there were any changes
-   made, 2 if cfg-cleanup needs to run.  Else it returns 0.  */
+/* Combine a shuffle with its arguments.  Returns 1 if there were any
+   changes made, 2 if cfg-cleanup needs to run.  Else it returns 0.  */
  
 static int
 simplify_permutation (gimple_stmt_iterator *gsi)
 {
   gimple stmt = gsi_stmt (*gsi);
   gimple def_stmt;
-  tree op0, op1, op2, op3;
-  enum tree_code code = gimple_assign_rhs_code (stmt);
-  enum tree_code code2;
+  tree op0, op1, op2, op3, arg0, arg1;
+  enum tree_code code;
+  bool single_use_op0 = false;
 
-  gcc_checking_assert (code == VEC_PERM_EXPR);
+  gcc_checking_assert (gimple_assign_rhs_code (stmt) == VEC_PERM_EXPR);
 
   op0 = gimple_assign_rhs1 (stmt);
   op1 = gimple_assign_rhs2 (stmt);
   op2 = gimple_assign_rhs3 (stmt);
 
-  if (TREE_CODE (op0) != SSA_NAME)
-    return 0;
-
   if (TREE_CODE (op2) != VECTOR_CST)
     return 0;
 
-  if (op0 != op1)
-    return 0;
+  if (TREE_CODE (op0) == VECTOR_CST)
+    {
+      code = VECTOR_CST;
+      arg0 = op0;
+    }
+  else if (TREE_CODE (op0) == SSA_NAME)
+    {
+      def_stmt = get_prop_source_stmt (op0, false, &single_use_op0);
+      if (!def_stmt || !can_propagate_from (def_stmt))
+	return 0;
 
-  def_stmt = SSA_NAME_DEF_STMT (op0);
-  if (!def_stmt || !is_gimple_assign (def_stmt)
-      || !can_propagate_from (def_stmt))
+      code = gimple_assign_rhs_code (def_stmt);
+      arg0 = gimple_assign_rhs1 (def_stmt);
+    }
+  else
     return 0;
-
-  code2 = gimple_assign_rhs_code (def_stmt);
 
   /* Two consecutive shuffles.  */
-  if (code2 == VEC_PERM_EXPR)
+  if (code == VEC_PERM_EXPR)
     {
       tree orig;
       int ident;
+
+      if (op0 != op1)
+	return 0;
       op3 = gimple_assign_rhs3 (def_stmt);
       if (TREE_CODE (op3) != VECTOR_CST)
 	return 0;
@@ -2660,7 +2739,133 @@ simplify_permutation (gimple_stmt_iterator *gsi)
       return remove_prop_source_from_use (op0) ? 2 : 1;
     }
 
-  return false;
+  /* Shuffle of a constructor.  */
+  else if (code == CONSTRUCTOR || code == VECTOR_CST)
+    {
+      tree opt;
+      bool ret = false;
+      if (op0 != op1)
+	{
+	  if (TREE_CODE (op0) == SSA_NAME && !single_use_op0)
+	    return 0;
+
+	  if (TREE_CODE (op1) == VECTOR_CST)
+	    arg1 = op1;
+	  else if (TREE_CODE (op1) == SSA_NAME)
+	    {
+	      enum tree_code code2;
+
+	      gimple def_stmt2 = get_prop_source_stmt (op1, true, NULL);
+	      if (!def_stmt2 || !can_propagate_from (def_stmt2))
+		return 0;
+
+	      code2 = gimple_assign_rhs_code (def_stmt2);
+	      if (code2 != CONSTRUCTOR && code2 != VECTOR_CST)
+		return 0;
+	      arg1 = gimple_assign_rhs1 (def_stmt2);
+	    }
+	  else
+	    return 0;
+	}
+      else
+	{
+	  /* Already used twice in this statement.  */
+	  if (TREE_CODE (op0) == SSA_NAME && num_imm_uses (op0) > 2)
+	    return 0;
+	  arg1 = arg0;
+	}
+      opt = fold_ternary (VEC_PERM_EXPR, TREE_TYPE(op0), arg0, arg1, op2);
+      if (!opt
+	  || (TREE_CODE (opt) != CONSTRUCTOR && TREE_CODE(opt) != VECTOR_CST))
+	return 0;
+      gimple_assign_set_rhs_from_tree (gsi, opt);
+      update_stmt (gsi_stmt (*gsi));
+      if (TREE_CODE (op0) == SSA_NAME)
+	ret = remove_prop_source_from_use (op0);
+      if (op0 != op1 && TREE_CODE (op1) == SSA_NAME)
+	ret |= remove_prop_source_from_use (op1);
+      return ret ? 2 : 1;
+    }
+
+  return 0;
+}
+
+/* Recognize a VEC_PERM_EXPR.  Returns true if there were any changes.  */
+
+static bool
+simplify_vector_constructor (gimple_stmt_iterator *gsi)
+{
+  gimple stmt = gsi_stmt (*gsi);
+  gimple def_stmt;
+  tree op, op2, orig, type, elem_type;
+  unsigned elem_size, nelts, i;
+  enum tree_code code;
+  constructor_elt *elt;
+  unsigned char *sel;
+  bool maybe_ident;
+
+  gcc_checking_assert (gimple_assign_rhs_code (stmt) == CONSTRUCTOR);
+
+  op = gimple_assign_rhs1 (stmt);
+  type = TREE_TYPE (op);
+  gcc_checking_assert (TREE_CODE (type) == VECTOR_TYPE);
+
+  nelts = TYPE_VECTOR_SUBPARTS (type);
+  elem_type = TREE_TYPE (type);
+  elem_size = TREE_INT_CST_LOW (TYPE_SIZE (elem_type));
+
+  sel = XALLOCAVEC (unsigned char, nelts);
+  orig = NULL;
+  maybe_ident = true;
+  FOR_EACH_VEC_ELT (constructor_elt, CONSTRUCTOR_ELTS (op), i, elt)
+    {
+      tree ref, op1;
+
+      if (i >= nelts)
+	return false;
+
+      if (TREE_CODE (elt->value) != SSA_NAME)
+	return false;
+      def_stmt = get_prop_source_stmt (elt->value, false, NULL);
+      if (!def_stmt)
+	return false;
+      code = gimple_assign_rhs_code (def_stmt);
+      if (code != BIT_FIELD_REF)
+	return false;
+      op1 = gimple_assign_rhs1 (def_stmt);
+      ref = TREE_OPERAND (op1, 0);
+      if (orig)
+	{
+	  if (ref != orig)
+	    return false;
+	}
+      else
+	{
+	  if (TREE_CODE (ref) != SSA_NAME)
+	    return false;
+	  orig = ref;
+	}
+      if (TREE_INT_CST_LOW (TREE_OPERAND (op1, 1)) != elem_size)
+	return false;
+      sel[i] = TREE_INT_CST_LOW (TREE_OPERAND (op1, 2)) / elem_size;
+      if (sel[i] != i) maybe_ident = false;
+    }
+  if (i < nelts)
+    return false;
+
+  if (maybe_ident)
+    {
+      gimple_assign_set_rhs_from_tree (gsi, orig);
+    }
+  else
+    {
+      op2 = vect_gen_perm_mask (type, sel);
+      if (!op2)
+	return false;
+      gimple_assign_set_rhs_with_ops_1 (gsi, VEC_PERM_EXPR, orig, orig, op2);
+    }
+  update_stmt (gsi_stmt (*gsi));
+  return true;
 }
 
 /* Main entry point for the forward propagation and statement combine
@@ -2832,6 +3037,11 @@ ssa_forward_propagate_and_combine (void)
 		      cfg_changed = true;
 		    changed = did_something != 0;
 		  }
+		else if (code == BIT_FIELD_REF)
+		  changed = simplify_bitfield_ref (&gsi);
+                else if (code == CONSTRUCTOR
+                         && TREE_CODE (TREE_TYPE (rhs1)) == VECTOR_TYPE)
+                  changed = simplify_vector_constructor (&gsi);
 		break;
 	      }
 

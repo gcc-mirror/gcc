@@ -1,3 +1,268 @@
+2012-09-16  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54594
+	* gfortran.dg/typebound_generic_14.f03: New.
+
+2012-09-16  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54387
+	* gfortran.dg/proc_ptr_38.f90: New.
+
+2012-09-16  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR debug/54460
+	* g++.dg/debug/dwarf2/nested-3.C: Add hppa assembler comment character
+	to scary regexp.
+
+	PR testsuite/54007
+	* gnat.dg/lto15.adb: Require lto.
+
+	* gfortran.dg/bind_c_array_params_2.f90: Adjust scan-assembler-times
+	"myBindC" for hppa*-*-hpux*.
+
+2012-09-16  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* gfortran.dg/namelist_75.f90: New test.
+
+2012-09-15  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/tree-ssa/vrp82.c: New test.
+	* gcc.dg/tree-ssa/vrp83.c: Same.
+	* gcc.dg/tree-ssa/vrp84.c: Same.
+
+2012-09-15  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/tree-ssa/vrp80-2.c: Rename to ...
+	* gcc.dg/tree-ssa/vrp81.c: ... this.
+
+2012-09-15  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/54222
+	* gcc.target/avr/torture/fix-types.h: New.
+	* gcc.target/avr/torture/vals-hr.def: New.
+	* gcc.target/avr/torture/vals-r.def: New.
+	* gcc.target/avr/torture/vals-k.def: New.
+	* gcc.target/avr/torture/vals-ur.def: New.
+	* gcc.target/avr/torture/vals-uk.def: New.
+	* gcc.target/avr/torture/vals-uhr.def: New.
+	* gcc.target/avr/torture/vals-llk.def: New.
+	* gcc.target/avr/torture/vals-ullk.def: New.
+	* gcc.target/avr/torture/sat-hr-plus-minus.c: New.
+	* gcc.target/avr/torture/sat-r-plus-minus.c: New.
+	* gcc.target/avr/torture/sat-k-plus-minus.c: New.
+	* gcc.target/avr/torture/sat-ur-plus-minus.c: New.
+	* gcc.target/avr/torture/sat-uk-plus-minus.c: New.
+	* gcc.target/avr/torture/sat-uhr-plus-minus.c: New.
+	* gcc.target/avr/torture/sat-llk-plus-minus.c: New.
+	* gcc.target/avr/torture/sat-ullk-plus-minus.c: New.
+
+2012-09-14  Dehao Chen  <dehao@google.com>
+
+	* g++.dg/debug/dwarf2/deallocator.C: New test.
+
+2012-09-14  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/54552
+	* gcc.c-torture/compile/pr54552-1.c: New test.
+
+2012-09-14  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/54427
+	* g++.dg/other/vector-compare.C: New testcase.
+	* gcc/testsuite/c-c++-common/vector-compare-3.c: New testcase.
+	* gcc.dg/vector-shift.c: Move ...
+	* c-c++-common/vector-shift.c: ... here.
+	* gcc.dg/vector-shift1.c: Move ...
+	* c-c++-common/vector-shift1.c: ... here.
+	* gcc.dg/vector-shift3.c: Move ...
+	* c-c++-common/vector-shift3.c: ... here.
+	* gcc.dg/vector-compare-1.c: Move ...
+	* c-c++-common/vector-compare-1.c: ... here.
+	* gcc.dg/vector-compare-2.c: Move ...
+	* c-c++-common/vector-compare-2.c: ... here.
+	* gcc.c-torture/execute/vector-compare-1.c: Move ...
+	* c-c++-common/torture/vector-compare-1.c: ... here.
+	* gcc.c-torture/execute/vector-compare-2.x: Delete.
+	* gcc.c-torture/execute/vector-compare-2.c: Move ...
+	* c-c++-common/torture/vector-compare-2.c: ... here.
+	* gcc.c-torture/execute/vector-shift.c: Move ...
+	* c-c++-common/torture/vector-shift.c: ... here.
+	* gcc.c-torture/execute/vector-shift2.c: Move ...
+	* c-c++-common/torture/vector-shift2.c: ... here.
+	* gcc.c-torture/execute/vector-subscript-1.c: Move ...
+	* c-c++-common/torture/vector-subscript-1.c: ... here.
+	* gcc.c-torture/execute/vector-subscript-2.c: Move ...
+	* c-c++-common/torture/vector-subscript-2.c: ... here.
+	* gcc.c-torture/execute/vector-subscript-3.c: Move ...
+	* c-c++-common/torture/vector-subscript-3.c: ... here.
+
+2012-09-14  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/54103
+	* gcc.c-torture/compile/pr54103-1.c,
+	gcc.c-torture/compile/pr54103-2.c,
+	gcc.c-torture/compile/pr54103-3.c,
+	gcc.c-torture/compile/pr54103-4.c,
+	gcc.c-torture/compile/pr54103-5.c,
+	gcc.c-torture/compile/pr54103-6.c: New tests.
+	* gcc.dg/c90-const-expr-8.c: Update expected column number.
+
+2012-09-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/pr44194-1.c: Check that there are no memory accesses left.
+
+2012-09-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/54564
+	* config/i386/fmaintrin.h (_mm_fnmadd_sd, _mm_fnmadd_ss,
+	_mm_fnmsub_sd, _mm_fnmsub_ss): Negate the second argument instead
+	of the first.
+
+2012-09-14  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/54565
+	* gcc.dg/tree-ssa/ssa-ccp-17.c: Adjust.
+	* gcc.dg/tree-ssa/forwprop-6.c: Likewise.  Remove XFAIL.
+
+2012-09-14  Ulrich Weigand  <ulrich.weigand@linaro.org>
+
+	* gcc.target/arm/combine-movs.c: Add missing space.
+
+2012-09-14  Richard Guenther  <rguenther@suse.de>
+
+	* g++.dg/torture/builtin-location.C: New testcase.
+
+2012-09-13  Paolo Carlini  <paolo.carlini@oracle.com>
+	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c++/53210
+	* g++.dg/warn/Wuninitialized-self.C: New.
+
+2012-09-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/54559
+	* gcc.c-torture/compile/pr54559.c: New test.
+
+2012-09-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53839
+	* g++.dg/cpp0x/constexpr-temp1.C: New.
+
+	PR c++/54511
+	* g++.dg/template/anonunion2.C: New.
+
+	PR c++/53836
+	* g++.dg/template/init10.C: New.
+
+2012-09-13  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54556
+	* gfortran.dg/implicit_pure_3.f90: New.
+
+2012-09-13  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-fre-37.c: New testcase.
+
+2012-09-13  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/builtin-bswap-1.c: New testcase.
+
+2012-09-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* c-c++-common/pr51712.c: Handle for short-enum targets.
+
+2012-09-12  Terry Guo  <terry.guo@arm.com>
+
+	* gcc.target/arm/combine-movs.c: Check movs for ARM mode
+	and lsrs for Thumb2 mode.
+
+2012-09-12  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/ipa/inlinehint-2.c: New testcase.
+
+2012-09-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/54445
+	* gcc.target/i386/pr54445-1.c: New file.
+	* gcc.target/i386/pr54445-2.c: Likewise.
+
+2012-09-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54225
+	PR fortran/53306
+	* gfortran.dg/coarray_10.f90: Update dg-error.
+	* gfortran.dg/coarray_28.f90: New.
+	* gfortran.dg/array_section_3.f90: New.
+
+2012-09-11  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	gcc/testsuite/
+	* gcc.target/arm/neon-vset_lanes8.c, gcc.target/arm/pr51835.c,
+	gcc.target/arm/pr48252.c: Fix for big-endian support.
+
+2012-09-11  Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.dg/tree-ssa/forwprop-22.c: New testcase.
+
+2012-09-11  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+	    Matthew Gretton-Dann  <matthew.gretton-dann@arm.com>
+
+	* gcc.target/arm/neon-vfma-1.c: New testcase.
+	* gcc.target/arm/neon-vfms-1.c: Likewise.
+	* gcc.target/arm/neon-vmla-1.c: Update test to use int instead
+	of float.
+	* gcc.target/arm/neon-vmls-1.c: Likewise.
+	* lib/target-supports.exp (add_options_for_arm_neonv2): New
+	function.
+	(check_effective_target_arm_neonv2_ok_nocache): Likewise.
+	(check_effective_target_arm_neonv2_ok): Likewise.
+	(check_effective_target_arm_neonv2_hw): Likewise.
+	(check_effective_target_arm_neonv2): Likewise.
+
+2012-09-11  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/54515
+	* g++.dg/tree-ssa/pr54515.C: New testcase.
+
+2012-09-10  Andrew Pinski  <apinski@cavium.com>
+
+	PR tree-opt/c54362
+	* gcc.dg/tm/memopt-16.c: New testcase.
+
+2012-09-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54541
+	PR c++/54542
+	* g++.dg/cpp0x/sfinae40.C: New.
+	* g++.dg/cpp0x/sfinae41.C: Likewise.
+
+2012-09-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/54538
+	* g++.dg/cpp0x/lambda/lambda-mangle4.C: New.
+
+2012-09-10  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54089
+	* gcc.target/sh/pr54089-3.c: New.
+
+2012-09-10  Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.dg/tree-ssa/forwprop-21.c: New testcase.
+
+2012-09-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/tm/reg-promotion.c: Modify dump message check.
+
+2012-09-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/pr52558-2.c: Delete.
+	* gcc.dg/simulate-thread/speculative-store-3.c: New.
+
+2012-09-10  Marc Glisse  <marc.glisse@inria.fr>
+
+        * gcc.dg/tree-ssa/forwprop-20.c: New testcase.
+
 2012-09-10  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/54520

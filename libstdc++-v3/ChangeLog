@@ -1,3 +1,76 @@
+2012-09-16  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* include/ext/random.tcc (__gnu_cxx::rice_distribution<>
+	::__generate_impl): Remove bogus _Adaptor usage.
+
+2012-09-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/ext/random (rice_distribution<>::operator==): Change
+	inline friend definition to non-template.
+	* testsuite/ext/random/rice_distribution/requirements/
+	explicit_instantiation/1.cc: New.
+
+	* testsuite/26_numerics/random/normal_mv_distribution: Move...
+	* testsuite/ext/random/normal_mv_distribution: ... here.
+	* testsuite/26_numerics/random/simd_fast_mersenne_twister_engine:
+	Move...
+	* testsuite/ext/random/simd_fast_mersenne_twister_engine: ... here.
+	* testsuite/26_numerics/random/beta_distribution: Move...
+	* testsuite/ext/random/beta_distribution: ... here.
+	* testsuite/26_numerics/random/rice_distribution: Move...
+	* testsuite/ext/random/rice_distribution: ... here.
+
+2012-09-14  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* include/ext/random: Add __gnu_cxx::rice_distribution<> class.
+	* include/ext/random.tcc: Add out-of-line functions for
+	__gnu_cxx::rice_distribution<>.
+	* testsuite/26_numerics/random/rice_distribution/
+	operators/equal.cc: New file.
+	* testsuite/26_numerics/random/rice_distribution/
+	operators/serialize.cc: New file.
+	* testsuite/26_numerics/random/rice_distribution/
+	operators/inequal.cc: New file.
+	* testsuite/26_numerics/random/rice_distribution/
+	cons/parms.cc: New file.
+	* testsuite/26_numerics/random/rice_distribution/
+	cons/default.cc: New file.
+	* testsuite/26_numerics/random/rice_distribution/
+	requirements/typedefs.cc: New file.
+
+2012-09-14  David Edelsohn  <dje.gcc@gmail.com>
+
+	* configure: Regenerated.
+
+2012-09-14  Jonathan Wakely  <jwakely.gcc@gmail.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR libstdc++/54576
+	* src/c++11/random.cc: Check if _GLIBCXX_USE_C99_STDINT_TR1 is defined.
+
+2012-09-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* acinclude.m4 (GLIBCXX_CHECK_ASSEMBLER_HWCAP): Define.
+	* configure.ac: Call GLIBCXX_CHECK_ASSEMBLER_HWCAP.
+	* fragment.am (CONFIG_CXXFLAGS): Add $(HWCAP_FLAGS).
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+	* doc/Makefile.in: Regenerate.
+	* include/Makefile.in: Regenerate.
+	* libsupc++/Makefile.in: Regenerate.
+	* po/Makefile.in: Regenerate.
+	* python/Makefile.in: Regenerate.
+	* src/Makefile.in: Regenerate.
+	* src/c++11/Makefile.in: Regenerate.
+	* src/c++98/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
+2012-09-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/54172
+	* libsupc++/guard.cc (__cxa_guard_acquire): Fix up the last
+	argument of the first __atomic_compare_exchange_n.
+
 2012-09-10  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 	    Jonathan Wakely  <jwakely.gcc@gmail.com>
 

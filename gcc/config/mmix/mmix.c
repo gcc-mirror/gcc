@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "target-def.h"
 #include "df.h"
+#include "tm-constrs.h"
 
 /* First some local helper definitions.  */
 #define MMIX_FIRST_GLOBAL_REGNUM 32
@@ -118,7 +119,6 @@ static void mmix_output_shiftvalue_op_from_str
   (FILE *, const char *, HOST_WIDEST_INT);
 static void mmix_output_shifted_value (FILE *, HOST_WIDEST_INT);
 static void mmix_output_condition (FILE *, const_rtx, int);
-static HOST_WIDEST_INT mmix_intval (const_rtx);
 static void mmix_output_octa (FILE *, HOST_WIDEST_INT, int);
 static bool mmix_assemble_integer (rtx, unsigned int, int);
 static struct machine_function *mmix_init_machine_status (void);
@@ -457,87 +457,6 @@ mmix_secondary_reload_class (enum reg_class rclass,
     return GENERAL_REGS;
 
   return NO_REGS;
-}
-
-/* CONST_OK_FOR_LETTER_P.  */
-
-int
-mmix_const_ok_for_letter_p (HOST_WIDE_INT value, int c)
-{
-  return
-    (c == 'I' ? value >= 0 && value <= 255
-     : c == 'J' ? value >= 0 && value <= 65535
-     : c == 'K' ? value <= 0 && value >= -255
-     : c == 'L' ? mmix_shiftable_wyde_value (value)
-     : c == 'M' ? value == 0
-     : c == 'N' ? mmix_shiftable_wyde_value (~value)
-     : c == 'O' ? (value == 3 || value == 5 || value == 9
-		   || value == 17)
-     : 0);
-}
-
-/* CONST_DOUBLE_OK_FOR_LETTER_P.  */
-
-int
-mmix_const_double_ok_for_letter_p (rtx value, int c)
-{
-  return
-    (c == 'G' ? value == CONST0_RTX (GET_MODE (value))
-     : 0);
-}
-
-/* EXTRA_CONSTRAINT.
-   We need this since our constants are not always expressible as
-   CONST_INT:s, but rather often as CONST_DOUBLE:s.  */
-
-int
-mmix_extra_constraint (rtx x, int c, int strict)
-{
-  HOST_WIDEST_INT value;
-
-  /* When checking for an address, we need to handle strict vs. non-strict
-     register checks.  Don't use address_operand, but instead its
-     equivalent (its callee, which it is just a wrapper for),
-     memory_operand_p and the strict-equivalent strict_memory_address_p.  */
-  if (c == 'U')
-    return
-      strict
-      ? strict_memory_address_p (Pmode, x)
-      : memory_address_p (Pmode, x);
-
-  /* R asks whether x is to be loaded with GETA or something else.  Right
-     now, only a SYMBOL_REF and LABEL_REF can fit for
-     TARGET_BASE_ADDRESSES.
-
-     Only constant symbolic addresses apply.  With TARGET_BASE_ADDRESSES,
-     we just allow straight LABEL_REF or SYMBOL_REFs with SYMBOL_REF_FLAG
-     set right now; only function addresses and code labels.  If we change
-     to let SYMBOL_REF_FLAG be set on other symbols, we have to check
-     inside CONST expressions.  When TARGET_BASE_ADDRESSES is not in
-     effect, a "raw" constant check together with mmix_constant_address_p
-     is all that's needed; we want all constant addresses to be loaded
-     with GETA then.  */
-  if (c == 'R')
-    return
-      GET_CODE (x) != CONST_INT && GET_CODE (x) != CONST_DOUBLE
-      && mmix_constant_address_p (x)
-      && (! TARGET_BASE_ADDRESSES
-	  || (GET_CODE (x) == LABEL_REF
-	      || (GET_CODE (x) == SYMBOL_REF && SYMBOL_REF_FLAG (x))));
-
-  if (GET_CODE (x) != CONST_DOUBLE || GET_MODE (x) != VOIDmode)
-    return 0;
-
-  value = mmix_intval (x);
-
-  /* We used to map Q->J, R->K, S->L, T->N, U->O, but we don't have to any
-     more ('U' taken for address_operand, 'R' similarly).  Some letters map
-     outside of CONST_INT, though; we still use 'S' and 'T'.  */
-  if (c == 'S')
-    return mmix_shiftable_wyde_value (value);
-  else if (c == 'T')
-    return mmix_shiftable_wyde_value (~value);
-  return 0;
 }
 
 /* DYNAMIC_CHAIN_ADDRESS.  */
@@ -1161,8 +1080,7 @@ mmix_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
 	return 1;
 
       /* (mem (plus (reg) (0..255?))) */
-      if (GET_CODE (x2) == CONST_INT
-	  && CONST_OK_FOR_LETTER_P (INTVAL (x2), 'I'))
+      if (satisfies_constraint_I (x2))
 	return 1;
 
       return 0;
@@ -1843,8 +1761,7 @@ mmix_print_operand_address (FILE *stream, rtx x)
 		       reg_names[MMIX_OUTPUT_REGNO (REGNO (x2))]);
 	      return;
 	    }
-	  else if (GET_CODE (x2) == CONST_INT
-		   && CONST_OK_FOR_LETTER_P (INTVAL (x2), 'I'))
+	  else if (satisfies_constraint_I (x2))
 	    {
 	      output_addr_const (stream, x2);
 	      return;
@@ -2529,7 +2446,7 @@ mmix_emit_sp_add (HOST_WIDE_INT offset)
     {
       /* Positive adjustments are in the epilogue only.  Don't mark them
 	 as "frame-related" for unwind info.  */
-      if (CONST_OK_FOR_LETTER_P (offset, 'L'))
+      if (insn_const_int_ok_for_constraint (offset, CONSTRAINT_L))
 	emit_insn (gen_adddi3 (stack_pointer_rtx,
 			       stack_pointer_rtx,
 			       GEN_INT (offset)));
@@ -2754,7 +2671,7 @@ mmix_output_condition (FILE *stream, const_rtx x, int reversed)
 
 /* Return the bit-value for a const_int or const_double.  */
 
-static HOST_WIDEST_INT
+HOST_WIDEST_INT
 mmix_intval (const_rtx x)
 {
   unsigned HOST_WIDEST_INT retval;

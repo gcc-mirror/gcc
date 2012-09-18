@@ -1,3 +1,32 @@
+2012-09-15  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/54222
+	* config/avr/lib1funcs-fixed.S (__ssneg_2, __ssabs_2, __ssneg_4,
+	__ssabs_4, __clr_8, __ssneg_8, __ssabs_8,
+	__usadd_8, __ussub_8, __ssadd_8, __sssub_8): New functions.
+	(__divsa3): Use __negsi2 to negate r_quoL.
+	* config/avr/lib1funcs.S (FALIAS): New macro.
+	(__divmodsi4): Break out and use __divmodsi4_neg1 as...
+	(__negsi2): ...this new function.
+	* config/avr/t-avr (LIB1ASMFUNCS): Add _negsi2, _clr_8,
+	_ssneg_2, _ssneg_4, _ssneg_8, _ssabs_2, _ssabs_4,
+	_ssabs_8, _ssadd_8, _sssub_8, _usadd_8, _ussub_8.
+	(LIB2FUNCS_EXCLUDE): Fix typo for _add _sub.
+	Add: _ssadd*, _sssub*, _ssneg*, _ssabs* for signed fixed modes.
+	Add: _usadd*, _ussub*, _usneg* for unsigned fixed modes.
+
+2012-09-10  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54089
+	* config/sh/lib1funcs.S (ashlsi3): Reimplement as ashlsi3_r0.
+	(lshrsi3): Reimplement as lshrsi3_r0.
+
+2012-09-10  Andreas Schwab  <schwab@linux-m68k.org>
+
+	PR target/46191
+	* config/t-slibgcc-libgcc (SHLIB_MAKE_SOLINK): Use -lgcc instead
+	of libgcc.a.
+
 2012-09-07  Teresa Johnson  <tejohnson@google.com>
 
         PR gcov-profile/54487

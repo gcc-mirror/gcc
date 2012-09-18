@@ -318,13 +318,9 @@ cxx_binding_free (cxx_binding *binding)
 static cxx_binding *
 new_class_binding (tree name, tree value, tree type, cp_binding_level *scope)
 {
-  cp_class_binding *cb;
-  cxx_binding *binding;
-
-    cb = VEC_safe_push (cp_class_binding, gc, scope->class_shadowed, NULL);
-
-  cb->identifier = name;
-  cb->base = binding = cxx_binding_make (value, type);
+  cp_class_binding cb = {cxx_binding_make (value, type), name};
+  cxx_binding *binding = cb.base;
+  VEC_safe_push (cp_class_binding, gc, scope->class_shadowed, cb);
   binding->scope = scope;
   return binding;
 }
@@ -5884,16 +5880,16 @@ store_binding_p (tree id)
 static void
 store_binding (tree id, VEC(cxx_saved_binding,gc) **old_bindings)
 {
-  cxx_saved_binding *saved;
+  cxx_saved_binding saved;
 
   gcc_checking_assert (store_binding_p (id));
 
   IDENTIFIER_MARKED (id) = 1;
 
-  saved = VEC_quick_push (cxx_saved_binding, *old_bindings, NULL);
-  saved->identifier = id;
-  saved->binding = IDENTIFIER_BINDING (id);
-  saved->real_type_value = REAL_IDENTIFIER_TYPE_VALUE (id);
+  saved.identifier = id;
+  saved.binding = IDENTIFIER_BINDING (id);
+  saved.real_type_value = REAL_IDENTIFIER_TYPE_VALUE (id);
+  VEC_quick_push (cxx_saved_binding, *old_bindings, saved);
   IDENTIFIER_BINDING (id) = NULL;
 }
 

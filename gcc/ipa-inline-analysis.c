@@ -266,7 +266,7 @@ add_condition (struct inline_summary *summary, int operand_num,
   new_cond.agg_contents = agg_contents;
   new_cond.by_ref = by_ref;
   new_cond.offset = offset;
-  VEC_safe_push (condition, gc, summary->conds, &new_cond);
+  VEC_safe_push (condition, gc, summary->conds, new_cond);
   return single_cond_predicate (i + predicate_first_dynamic_condition);
 }
 
@@ -634,6 +634,11 @@ dump_inline_hints (FILE *f, inline_hints hints)
       hints &= ~INLINE_HINT_loop_iterations;
       fprintf (f, " loop_iterations");
     }
+  if (hints & INLINE_HINT_loop_stride)
+    {
+      hints &= ~INLINE_HINT_loop_stride;
+      fprintf (f, " loop_stride");
+    }
   gcc_assert (!hints);
 }
 
@@ -688,7 +693,7 @@ account_size_time (struct inline_summary *summary, int size, int time,
       new_entry.size = size;
       new_entry.time = time;
       new_entry.predicate = *pred;
-      VEC_safe_push (size_time_entry, gc, summary->entry, &new_entry);
+      VEC_safe_push (size_time_entry, gc, summary->entry, new_entry);
     }
   else
     {
@@ -716,6 +721,26 @@ edge_set_predicate (struct cgraph_edge *e, struct predicate *predicate)
       if (es->predicate)
         pool_free (edge_predicate_pool, es->predicate);
       es->predicate = NULL;
+    }
+}
+
+/* Set predicate for hint *P.  */
+
+static void
+set_hint_predicate (struct predicate **p, struct predicate new_predicate)
+{
+  if (false_predicate_p (&new_predicate)
+      || true_predicate_p (&new_predicate))
+    {
+      if (*p)
+	pool_free (edge_predicate_pool, *p);
+      *p = NULL;
+    }
+  else
+    {
+      if (!*p)
+	*p = (struct predicate *)pool_alloc (edge_predicate_pool);
+      **p = new_predicate;
     }
 }
 
@@ -953,6 +978,11 @@ reset_inline_summary (struct cgraph_node *node)
       pool_free (edge_predicate_pool, info->loop_iterations);
       info->loop_iterations = NULL;
     }
+  if (info->loop_stride)
+    {
+      pool_free (edge_predicate_pool, info->loop_stride);
+      info->loop_stride = NULL;
+    }
   VEC_free (condition, gc, info->conds);
   VEC_free (size_time_entry,gc, info->entry);
   for (e = node->callees; e; e = e->next_callee)
@@ -973,6 +1003,52 @@ inline_node_removal_hook (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
   info = inline_summary (node);
   reset_inline_summary (node);
   memset (info, 0, sizeof (inline_summary_t));
+}
+
+/* Remap predicate P of former function to be predicate of duplicated functoin.
+   POSSIBLE_TRUTHS is clause of possible truths in the duplicated node,
+   INFO is inline summary of the duplicated node.  */
+
+static struct predicate
+remap_predicate_after_duplication (struct predicate *p,
+				   clause_t possible_truths,
+				   struct inline_summary *info)
+{
+  struct predicate new_predicate = true_predicate ();
+  int j;
+  for (j = 0; p->clause[j]; j++)
+    if (!(possible_truths & p->clause[j]))
+      {
+	new_predicate = false_predicate ();
+	break;
+      }
+    else
+      add_clause (info->conds, &new_predicate,
+		  possible_truths & p->clause[j]);
+  return new_predicate;
+}
+
+/* Same as remap_predicate_after_duplication but handle hint predicate *P.
+   Additionally care about allocating new memory slot for updated predicate
+   and set it to NULL when it becomes true or false (and thus uninteresting).
+ */
+
+static void
+remap_hint_predicate_after_duplication (struct predicate **p,
+					clause_t possible_truths,
+					struct inline_summary *info)
+{
+  struct predicate new_predicate;
+
+  if (!*p)
+    return;
+
+  new_predicate = remap_predicate_after_duplication (*p,
+						     possible_truths,
+						     info);
+  /* We do not want to free previous predicate; it is used by node origin.  */
+  *p = NULL;
+  set_hint_predicate (p, new_predicate);
 }
 
 
@@ -1042,16 +1118,10 @@ inline_node_duplication_hook (struct cgraph_node *src, struct cgraph_node *dst,
 	 to be true.  */
       for (i = 0; VEC_iterate (size_time_entry, entry, i, e); i++)
 	{
-	  struct predicate new_predicate = true_predicate ();
-	  for (j = 0; e->predicate.clause[j]; j++)
-	    if (!(possible_truths & e->predicate.clause[j]))
-	      {
-		new_predicate = false_predicate ();
-		break;
-	      }
-	    else
-	      add_clause (info->conds, &new_predicate,
-			  possible_truths & e->predicate.clause[j]);
+	  struct predicate new_predicate;
+	  new_predicate = remap_predicate_after_duplication (&e->predicate,
+							     possible_truths,
+							     info);
 	  if (false_predicate_p (&new_predicate))
 	    {
 	      optimized_out_size += e->size;
@@ -1065,22 +1135,16 @@ inline_node_duplication_hook (struct cgraph_node *src, struct cgraph_node *dst,
 	 Also copy constantness arrays.   */
       for (edge = dst->callees; edge; edge = edge->next_callee)
 	{
-	  struct predicate new_predicate = true_predicate ();
+	  struct predicate new_predicate;
 	  struct inline_edge_summary *es = inline_edge_summary (edge);
 
 	  if (!edge->inline_failed)
 	    inlined_to_p = true;
 	  if (!es->predicate)
 	    continue;
-	  for (j = 0; es->predicate->clause[j]; j++)
-	    if (!(possible_truths & es->predicate->clause[j]))
-	      {
-		new_predicate = false_predicate ();
-		break;
-	      }
-	    else
-	      add_clause (info->conds, &new_predicate,
-			  possible_truths & es->predicate->clause[j]);
+	  new_predicate = remap_predicate_after_duplication (es->predicate,
+							     possible_truths,
+							     info);
 	  if (false_predicate_p (&new_predicate)
 	      && !false_predicate_p (es->predicate))
 	    {
@@ -1097,22 +1161,15 @@ inline_node_duplication_hook (struct cgraph_node *src, struct cgraph_node *dst,
 	 Also copy constantness arrays.   */
       for (edge = dst->indirect_calls; edge; edge = edge->next_callee)
 	{
-	  struct predicate new_predicate = true_predicate ();
+	  struct predicate new_predicate;
 	  struct inline_edge_summary *es = inline_edge_summary (edge);
 
-	  if (!edge->inline_failed)
-	    inlined_to_p = true;
+	  gcc_checking_assert (edge->inline_failed);
 	  if (!es->predicate)
 	    continue;
-	  for (j = 0; es->predicate->clause[j]; j++)
-	    if (!(possible_truths & es->predicate->clause[j]))
-	      {
-		new_predicate = false_predicate ();
-		break;
-	      }
-	    else
-	      add_clause (info->conds, &new_predicate,
-			  possible_truths & es->predicate->clause[j]);
+	  new_predicate = remap_predicate_after_duplication (es->predicate,
+							     possible_truths,
+							     info);
 	  if (false_predicate_p (&new_predicate)
 	      && !false_predicate_p (es->predicate))
 	    {
@@ -1124,28 +1181,12 @@ inline_node_duplication_hook (struct cgraph_node *src, struct cgraph_node *dst,
 	    }
 	  edge_set_predicate (edge, &new_predicate);
 	}
-      if (info->loop_iterations)
-	{
-	  struct predicate new_predicate = true_predicate ();
-
-	  for (j = 0; info->loop_iterations->clause[j]; j++)
-	    if (!(possible_truths & info->loop_iterations->clause[j]))
-	      {
-		new_predicate = false_predicate ();
-		break;
-	      }
-	    else
-	      add_clause (info->conds, &new_predicate,
-			  possible_truths & info->loop_iterations->clause[j]);
-	  if (false_predicate_p (&new_predicate)
-	      || true_predicate_p (&new_predicate))
-	    info->loop_iterations = NULL;
-	  else
-	    {
-	      info->loop_iterations = (struct predicate *)pool_alloc (edge_predicate_pool);
-	      *info->loop_iterations = new_predicate;
-	    }
-	}
+      remap_hint_predicate_after_duplication (&info->loop_iterations,
+					      possible_truths,
+					      info);
+      remap_hint_predicate_after_duplication (&info->loop_stride,
+					      possible_truths,
+					      info);
 
       /* If inliner or someone after inliner will ever start producing
 	 non-trivial clones, we will get trouble with lack of information
@@ -1175,8 +1216,14 @@ inline_node_duplication_hook (struct cgraph_node *src, struct cgraph_node *dst,
       if (info->loop_iterations)
 	{
 	  predicate p = *info->loop_iterations;
-	  info->loop_iterations = (struct predicate *)pool_alloc (edge_predicate_pool);
-	  *info->loop_iterations = p;
+	  info->loop_iterations = NULL;
+	  set_hint_predicate (&info->loop_iterations, p);
+	}
+      if (info->loop_stride)
+	{
+	  predicate p = *info->loop_stride;
+	  info->loop_stride = NULL;
+	  set_hint_predicate (&info->loop_stride, p);
 	}
     }
 }
@@ -1354,6 +1401,11 @@ dump_inline_summary (FILE * f, struct cgraph_node *node)
 	{
 	  fprintf (f, "  loop iterations:");
 	  dump_predicate (f, s->conds, s->loop_iterations);
+	}
+      if (s->loop_stride)
+	{
+	  fprintf (f, "  loop stride:");
+	  dump_predicate (f, s->conds, s->loop_stride);
 	}
       fprintf (f, "  calls:\n");
       dump_inline_edge_summary (f, 4, node, s);
@@ -1851,13 +1903,37 @@ will_be_nonconstant_expr_predicate (struct ipa_node_params *info,
   if (TREE_CODE (expr) == SSA_NAME)
     return VEC_index (predicate_t, nonconstant_names,
                       SSA_NAME_VERSION (expr));
-  if (BINARY_CLASS_P (expr))
+  if (BINARY_CLASS_P (expr)
+      || COMPARISON_CLASS_P (expr))
     {
-      struct predicate p1 =  will_be_nonconstant_expr_predicate (info, summary, TREE_OPERAND (expr, 0), nonconstant_names);
+      struct predicate p1 = will_be_nonconstant_expr_predicate
+			      (info, summary, TREE_OPERAND (expr, 0),
+			       nonconstant_names);
       struct predicate p2;
       if (true_predicate_p (&p1))
 	return p1;
-      p2 = will_be_nonconstant_expr_predicate (info, summary, TREE_OPERAND (expr, 0), nonconstant_names);
+      p2 = will_be_nonconstant_expr_predicate (info, summary,
+					       TREE_OPERAND (expr, 1),
+					       nonconstant_names);
+      return or_predicates (summary->conds, &p1, &p2);
+    }
+  else if (TREE_CODE (expr) == COND_EXPR)
+    {
+      struct predicate p1 = will_be_nonconstant_expr_predicate
+			      (info, summary, TREE_OPERAND (expr, 0),
+			       nonconstant_names);
+      struct predicate p2;
+      if (true_predicate_p (&p1))
+	return p1;
+      p2 = will_be_nonconstant_expr_predicate (info, summary,
+					       TREE_OPERAND (expr, 1),
+					       nonconstant_names);
+      if (true_predicate_p (&p2))
+	return p2;
+      p1 = or_predicates (summary->conds, &p1, &p2);
+      p2 = will_be_nonconstant_expr_predicate (info, summary,
+					       TREE_OPERAND (expr, 2),
+					       nonconstant_names);
       return or_predicates (summary->conds, &p1, &p2);
     }
   else
@@ -2390,6 +2466,7 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
       struct loop *loop;
       loop_iterator li;
       predicate loop_iterations = true_predicate ();
+      predicate loop_stride = true_predicate ();
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	flow_loops_dump (dump_file, NULL, 0);
@@ -2398,8 +2475,9 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 	{
           VEC (edge, heap) *exits;
           edge ex;
-	  unsigned int j;
+	  unsigned int j, i;
 	  struct tree_niter_desc niter_desc;
+	  basic_block *body = get_loop_body (loop);
 
 	  exits = get_loop_exit_edges (loop);
           FOR_EACH_VEC_ELT (edge, exits, j, ex)
@@ -2416,12 +2494,39 @@ estimate_function_body_sizes (struct cgraph_node *node, bool early)
 		  loop_iterations = and_predicates (info->conds, &loop_iterations, &will_be_nonconstant);
 	      }
           VEC_free (edge, heap, exits);
+
+          for (i = 0; i < loop->num_nodes; i++)
+	    {
+	      gimple_stmt_iterator gsi;
+	      for (gsi = gsi_start_bb (body[i]); !gsi_end_p (gsi); gsi_next (&gsi))
+		{
+		  gimple stmt = gsi_stmt (gsi);
+		  affine_iv iv;
+		  ssa_op_iter iter;
+		  tree use;
+
+		  FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, SSA_OP_USE)
+		    {
+		      predicate will_be_nonconstant;
+
+		      if (!simple_iv (loop, loop_containing_stmt (stmt), use, &iv, true)
+			  || is_gimple_min_invariant (iv.step))
+			continue;
+		      will_be_nonconstant
+		       = will_be_nonconstant_expr_predicate (parms_info, info,
+							     iv.step, nonconstant_names);
+		      if (!true_predicate_p (&will_be_nonconstant)
+			  && !false_predicate_p (&will_be_nonconstant))
+			/* This is slightly inprecise.  We may want to represent each loop with
+			   independent predicate.  */
+			loop_stride = and_predicates (info->conds, &loop_stride, &will_be_nonconstant);
+		    }
+		}
+	    }
+	  free (body);
 	}
-      if (!true_predicate_p (&loop_iterations))
-	{
-          inline_summary (node)->loop_iterations = (struct predicate *)pool_alloc (edge_predicate_pool);
-          *inline_summary (node)->loop_iterations = loop_iterations;
-	}
+      set_hint_predicate (&inline_summary (node)->loop_iterations, loop_iterations);
+      set_hint_predicate (&inline_summary (node)->loop_stride, loop_stride);
       scev_finalize ();
     }
   inline_summary (node)->self_time = time;
@@ -2715,6 +2820,9 @@ estimate_node_size_and_time (struct cgraph_node *node,
   if (info->loop_iterations
       && !evaluate_predicate (info->loop_iterations, possible_truths))
     hints |=INLINE_HINT_loop_iterations;
+  if (info->loop_stride
+      && !evaluate_predicate (info->loop_stride, possible_truths))
+    hints |=INLINE_HINT_loop_stride;
 
   if (time > MAX_TIME * INLINE_TIME_SCALE)
     time = MAX_TIME * INLINE_TIME_SCALE;
@@ -3011,6 +3119,37 @@ remap_edge_summaries  (struct cgraph_edge *inlined_edge,
     }
 }
 
+/* Same as remap_predicate, but set result into hint *HINT.  */
+
+static void
+remap_hint_predicate (struct inline_summary *info,
+		      struct inline_summary *callee_info,
+		      struct predicate **hint,
+		      VEC (int, heap) *operand_map,
+		      VEC (int, heap) *offset_map,
+		      clause_t possible_truths,
+		      struct predicate *toplev_predicate)
+{
+  predicate p;
+
+  if (!*hint)
+    return;
+  p = remap_predicate (info, callee_info,
+		       *hint,
+		       operand_map, offset_map,
+		       possible_truths,
+		       toplev_predicate);
+  if (!false_predicate_p (&p)
+      && !true_predicate_p (&p))
+    {
+      if (!*hint)
+	set_hint_predicate (hint, p);
+      else
+	**hint = and_predicates (info->conds, 
+				 *hint,
+				 &p);
+    }
+}
 
 /* We inlined EDGE.  Update summary of the function we inlined into.  */
 
@@ -3102,28 +3241,14 @@ inline_merge_summary (struct cgraph_edge *edge)
     }
   remap_edge_summaries (edge, edge->callee, info, callee_info, operand_map,
 			offset_map, clause, &toplev_predicate);
-  if (callee_info->loop_iterations)
-    {
-      predicate p = remap_predicate (info, callee_info,
-				     callee_info->loop_iterations,
-				     operand_map, offset_map,
-				     clause,
-				     &toplev_predicate);
-      if (!false_predicate_p (&p)
-	  && !true_predicate_p (&p))
-	{
-	  if (!info->loop_iterations)
-	    {
-	      info->loop_iterations
-		 = (struct predicate *)pool_alloc (edge_predicate_pool);
-	      *info->loop_iterations = p;
-	    }
-	  else
-	    *info->loop_iterations = and_predicates (info->conds, 
-						     info->loop_iterations,
-						     &p);
-	}
-    }
+  remap_hint_predicate (info, callee_info,
+			&callee_info->loop_iterations,
+			operand_map, offset_map,
+			clause, &toplev_predicate);
+  remap_hint_predicate (info, callee_info,
+			&callee_info->loop_stride,
+			operand_map, offset_map,
+			clause, &toplev_predicate);
 
   inline_update_callee_summaries (edge->callee,
 				  inline_edge_summary (edge)->loop_depth);
@@ -3579,7 +3704,7 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
 	  c.by_ref = bp_unpack_value (&bp, 1);
 	  if (c.agg_contents)
 	    c.offset = streamer_read_uhwi (&ib);
-	  VEC_safe_push (condition, gc, info->conds, &c);
+	  VEC_safe_push (condition, gc, info->conds, c);
 	}
       count2 = streamer_read_uhwi (&ib);
       gcc_assert (!info->entry);
@@ -3591,15 +3716,13 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
 	  e.time = streamer_read_uhwi (&ib);
 	  e.predicate = read_predicate (&ib);
 
-	  VEC_safe_push (size_time_entry, gc, info->entry, &e);
+	  VEC_safe_push (size_time_entry, gc, info->entry, e);
 	}
      
       p = read_predicate (&ib);
-      if (!true_predicate_p (&p))
-	{
-	  info->loop_iterations = (struct predicate *)pool_alloc (edge_predicate_pool);
-	  *info->loop_iterations = p;
-	}
+      set_hint_predicate (&info->loop_iterations, p);
+      p = read_predicate (&ib);
+      set_hint_predicate (&info->loop_stride, p);
       for (e = node->callees; e; e = e->next_callee)
 	read_inline_edge_summary (&ib, e);
       for (e = node->indirect_calls; e; e = e->next_callee)
@@ -3747,6 +3870,7 @@ inline_write_summary (void)
 	      write_predicate (ob, &e->predicate);
 	    }
 	  write_predicate (ob, info->loop_iterations);
+	  write_predicate (ob, info->loop_stride);
 	  for (edge = node->callees; edge; edge = edge->next_callee)
 	    write_inline_edge_summary (ob, edge);
 	  for (edge = node->indirect_calls; edge; edge = edge->next_callee)

@@ -6269,7 +6269,8 @@ m68k_sched_dfa_post_advance_cycle (void)
   while (--i >= 0)
     {
       if (state_transition (curr_state, sched_ib.insn) >= 0)
-	gcc_unreachable ();
+	/* Pick up scheduler state.  */
+	++sched_ib.filled;
     }
 }
 

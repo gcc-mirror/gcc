@@ -1,3 +1,80 @@
+2012-09-16  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54594
+	* resolve.c (get_checked_tb_operator_target): Add a reference to the
+	relevant quote from the F08 standard.
+
+2012-09-16  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54594
+	* interface.c (compare_type_rank): Handle CLASS arrays.
+
+2012-09-16  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54387
+	* expr.c (gfc_check_pointer_assign): Check for result of embracing
+	function.
+
+2012-09-16  Tobias Burnus  <burnus@net-b.de>
+
+	* trans-decl.c (gfc_generate_function_code): Fix
+	gfc_option.coarray check.
+	* trans-stmt.c (compute_inner_temp_size): Fix handling
+	of gfc_option.rtcheck.
+
+2012-09-16  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* symbol.c (gfc_undo_symbols): Correctly undo namelists.
+
+2012-09-15  Tobias Burnus  <burnus@net-b.de>
+
+	* trans-io.c (gfc_trans_transfer): Add an assert.
+
+2012-09-15  Tobias Burnus  <burnus@net-b.de>
+
+	* arith.c (arith_power): Call gfc_free_expr in case of error.
+	* array.c (gfc_match_array_constructor): Initialize variable.
+	(gfc_resolve_character_array_constructor): Remove superfluous check.
+	(gfc_array_dimen_size): Add assert.
+	* check.c (numeric_check): Fix implicit typing.
+	* class.c (gfc_build_class_symbol): Add assert.
+	(finalize_component): Free memory.
+	* dump-parse-tree.c (show_namespace): Add assert.
+	* trans-io.c (transfer_namelist_element, transfer_expr): Avoid
+	memory leakage.
+	(gfc_trans_transfer): Add assert.
+	* trans.c (gfc_trans_runtime_check): Call va_end
+
+2012-09-15  Tobias Burnus  <burnus@net-b.de>
+
+	* match.c (lock_unlock_statement, sync_statement): Fix potential
+	double freeing.
+	(sync_statement): Remove unreachable code.
+	* simplify.c (gfc_simplify_bessel_n2): Avoid double freeing.
+	(gfc_simplify_repeat): Remove bogus code.
+	* target-memory.h (gfc_target_encode_expr): Update prototype.
+	* target-memory.c (gfc_target_encode_expr, encode_array,
+	encode_derived): Return unsigned HOST_WIDE_INT.
+	(gfc_target_interpret_expr): Add assert.
+	(gfc_merge_initializers): Fix "== 0" check for mpz_t.
+	* symbol.c (gfc_get_typebound_proc): Add assert.
+	(gfc_merge_initializers): Remove unreachable check.
+
+2012-09-13  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54556
+	* resolve.c (resolve_formal_arglist): Allow VALUE arguments
+	with implicit_pure.
+	(gfc_impure_variable): Don't check gfc_pure such that the
+	function also works for gfc_implicit_pure procedures.
+
+2012-09-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54225
+	PR fortran/53306
+	* array.c (match_subscript, gfc_match_array_ref): Fix
+	diagnostic of coarray's '*'.
+
 2012-09-07  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/54208

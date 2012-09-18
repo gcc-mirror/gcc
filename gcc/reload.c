@@ -2036,7 +2036,12 @@ find_dummy_reload (rtx real_in, rtx real_out, rtx *inloc, rtx *outloc,
 	 However, we only ignore IN in its role as this reload.
 	 If the insn uses IN elsewhere and it contains OUT,
 	 that counts.  We can't be sure it's the "same" operand
-	 so it might not go through this reload.  */
+	 so it might not go through this reload.  
+
+         We also need to avoid using OUT if it, or part of it, is a
+         fixed register.  Modifying such registers, even transiently,
+         may have undefined effects on the machine, such as modifying
+         the stack pointer.  */
       saved_rtx = *inloc;
       *inloc = const0_rtx;
 
@@ -2049,7 +2054,8 @@ find_dummy_reload (rtx real_in, rtx real_out, rtx *inloc, rtx *outloc,
 
 	  for (i = 0; i < nwords; i++)
 	    if (! TEST_HARD_REG_BIT (reg_class_contents[(int) rclass],
-				     regno + i))
+				     regno + i)
+		|| fixed_regs[regno + i])
 	      break;
 
 	  if (i == nwords)

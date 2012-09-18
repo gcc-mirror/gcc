@@ -711,7 +711,7 @@ get_vtable_name (tree type)
    the abstract.  */
 
 void
-set_linkage_according_to_type (tree type ATTRIBUTE_UNUSED, tree decl)
+set_linkage_according_to_type (tree /*type*/, tree decl)
 {
   TREE_PUBLIC (decl) = 1;
   determine_visibility (decl);
@@ -1820,7 +1820,7 @@ resort_method_name_cmp (const void* m1_p, const void* m2_p)
 
 void
 resort_type_method_vec (void* obj,
-			void* orig_obj ATTRIBUTE_UNUSED ,
+			void* /*orig_obj*/,
 			gt_pointer_operator new_value,
 			void* cookie)
 {
@@ -2039,7 +2039,7 @@ dfs_find_final_overrider_pre (tree binfo, void *data)
 }
 
 static tree
-dfs_find_final_overrider_post (tree binfo ATTRIBUTE_UNUSED, void *data)
+dfs_find_final_overrider_post (tree /*binfo*/, void *data)
 {
   find_final_overrider_data *ffod = (find_final_overrider_data *) data;
   VEC_pop (tree, ffod->path);
@@ -3771,7 +3771,7 @@ layout_nonempty_base_or_field (record_layout_info rli,
 static int
 empty_base_at_nonzero_offset_p (tree type,
 				tree offset,
-				splay_tree offsets ATTRIBUTE_UNUSED)
+				splay_tree /*offsets*/)
 {
   return is_empty_class (type) && !integer_zerop (offset);
 }
@@ -8835,11 +8835,9 @@ add_vcall_offset (tree orig_fn, tree binfo, vtbl_init_data *vid)
      offset.  */
   if (vid->binfo == TYPE_BINFO (vid->derived))
     {
-      tree_pair_p elt = VEC_safe_push (tree_pair_s, gc,
-				       CLASSTYPE_VCALL_INDICES (vid->derived),
-				       NULL);
-      elt->purpose = orig_fn;
-      elt->value = vid->index;
+      tree_pair_s elt = {orig_fn, vid->index};
+      VEC_safe_push (tree_pair_s, gc, CLASSTYPE_VCALL_INDICES (vid->derived),
+		     elt);
     }
 
   /* The next vcall offset will be found at a more negative

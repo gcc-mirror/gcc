@@ -121,6 +121,9 @@ typedef struct vn_constant_s
   tree constant;
 } *vn_constant_t;
 
+enum vn_kind { VN_NONE, VN_CONSTANT, VN_NARY, VN_REFERENCE, VN_PHI };
+enum vn_kind vn_get_stmt_kind (gimple);
+
 /* Hash the constant CONSTANT with distinguishing type incompatible
    constants in the types_compatible_p sense.  */
 

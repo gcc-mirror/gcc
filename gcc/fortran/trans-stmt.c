@@ -3132,7 +3132,7 @@ compute_inner_temp_size (gfc_expr *expr1, gfc_expr *expr2,
 
       /* Calculate the bounds of the scalarization.  */
       save_flag = gfc_option.rtcheck;
-      gfc_option.rtcheck &= !GFC_RTCHECK_BOUNDS;
+      gfc_option.rtcheck &= ~GFC_RTCHECK_BOUNDS;
       gfc_conv_ss_startstride (&loop);
       gfc_option.rtcheck = save_flag;
       gfc_conv_loop_setup (&loop, &expr2->where);

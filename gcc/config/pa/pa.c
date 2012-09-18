@@ -9948,11 +9948,9 @@ static GTY(()) VEC(extern_symbol,gc) *extern_symbols;
 void
 pa_hpux_asm_output_external (FILE *file, tree decl, const char *name)
 {
-  extern_symbol * p = VEC_safe_push (extern_symbol, gc, extern_symbols, NULL);
-
   gcc_assert (file == asm_out_file);
-  p->decl = decl;
-  p->name = name;
+  extern_symbol p = {decl, name};
+  VEC_safe_push (extern_symbol, gc, extern_symbols, p);
 }
 
 /* Output text required at the end of an assembler file.

@@ -287,6 +287,63 @@ vn_get_expr_for (tree name)
   return expr;
 }
 
+/* Return the vn_kind the expression computed by the stmt should be
+   associated with.  */
+
+enum vn_kind
+vn_get_stmt_kind (gimple stmt)
+{
+  switch (gimple_code (stmt))
+    {
+    case GIMPLE_CALL:
+      return VN_REFERENCE;
+    case GIMPLE_PHI:
+      return VN_PHI;
+    case GIMPLE_ASSIGN:
+      {
+	enum tree_code code = gimple_assign_rhs_code (stmt);
+	tree rhs1 = gimple_assign_rhs1 (stmt);
+	switch (get_gimple_rhs_class (code))
+	  {
+	  case GIMPLE_UNARY_RHS:
+	  case GIMPLE_BINARY_RHS:
+	  case GIMPLE_TERNARY_RHS:
+	    return VN_NARY;
+	  case GIMPLE_SINGLE_RHS:
+	    switch (TREE_CODE_CLASS (code))
+	      {
+	      case tcc_reference:
+		/* VOP-less references can go through unary case.  */
+		if ((code == REALPART_EXPR
+		     || code == IMAGPART_EXPR
+		     || code == VIEW_CONVERT_EXPR
+		     || code == BIT_FIELD_REF)
+		    && TREE_CODE (TREE_OPERAND (rhs1, 0)) == SSA_NAME)
+		  return VN_NARY;
+
+		/* Fallthrough.  */
+	      case tcc_declaration:
+		return VN_REFERENCE;
+
+	      case tcc_constant:
+		return VN_CONSTANT;
+
+	      default:
+		if (code == ADDR_EXPR)
+		  return (is_gimple_min_invariant (rhs1)
+			  ? VN_CONSTANT : VN_REFERENCE);
+		else if (code == CONSTRUCTOR)
+		  return VN_NARY;
+		return VN_NONE;
+	      }
+	  default:
+	    return VN_NONE;
+	  }
+      }
+    default:
+      return VN_NONE;
+    }
+}
 
 /* Free a phi operation structure VP.  */
 
@@ -591,21 +648,21 @@ copy_reference_ops_from_ref (tree ref, VEC(vn_reference_op_s, heap) **result)
       temp.op1 = TMR_STEP (ref);
       temp.op2 = TMR_OFFSET (ref);
       temp.off = -1;
-      VEC_safe_push (vn_reference_op_s, heap, *result, &temp);
+      VEC_safe_push (vn_reference_op_s, heap, *result, temp);
 
       memset (&temp, 0, sizeof (temp));
       temp.type = NULL_TREE;
       temp.opcode = ERROR_MARK;
       temp.op0 = TMR_INDEX2 (ref);
       temp.off = -1;
-      VEC_safe_push (vn_reference_op_s, heap, *result, &temp);
+      VEC_safe_push (vn_reference_op_s, heap, *result, temp);
 
       memset (&temp, 0, sizeof (temp));
       temp.type = NULL_TREE;
       temp.opcode = TREE_CODE (TMR_BASE (ref));
       temp.op0 = TMR_BASE (ref);
       temp.off = -1;
-      VEC_safe_push (vn_reference_op_s, heap, *result, &temp);
+      VEC_safe_push (vn_reference_op_s, heap, *result, temp);
       return;
     }
 
@@ -700,7 +757,7 @@ copy_reference_ops_from_ref (tree ref, VEC(vn_reference_op_s, heap) **result)
 	  temp.opcode = MEM_REF;
 	  temp.op0 = build_int_cst (build_pointer_type (TREE_TYPE (ref)), 0);
 	  temp.off = 0;
-	  VEC_safe_push (vn_reference_op_s, heap, *result, &temp);
+	  VEC_safe_push (vn_reference_op_s, heap, *result, temp);
 	  temp.opcode = ADDR_EXPR;
 	  temp.op0 = build_fold_addr_expr (ref);
 	  temp.type = TREE_TYPE (temp.op0);
@@ -739,7 +796,7 @@ copy_reference_ops_from_ref (tree ref, VEC(vn_reference_op_s, heap) **result)
 	default:
 	  gcc_unreachable ();
 	}
-      VEC_safe_push (vn_reference_op_s, heap, *result, &temp);
+      VEC_safe_push (vn_reference_op_s, heap, *result, temp);
 
       if (REFERENCE_CLASS_P (ref)
 	  || TREE_CODE (ref) == MODIFY_EXPR
@@ -949,7 +1006,7 @@ copy_reference_ops_from_call (gimple call,
       temp.type = TREE_TYPE (lhs);
       temp.op0 = lhs;
       temp.off = -1;
-      VEC_safe_push (vn_reference_op_s, heap, *result, &temp);
+      VEC_safe_push (vn_reference_op_s, heap, *result, temp);
     }
 
   /* Copy the type, opcode, function being called and static chain.  */
@@ -959,7 +1016,7 @@ copy_reference_ops_from_call (gimple call,
   temp.op0 = gimple_call_fn (call);
   temp.op1 = gimple_call_chain (call);
   temp.off = -1;
-  VEC_safe_push (vn_reference_op_s, heap, *result, &temp);
+  VEC_safe_push (vn_reference_op_s, heap, *result, temp);
 
   /* Copy the call arguments.  As they can be references as well,
      just chain them together.  */
@@ -3364,44 +3421,13 @@ visit_use (tree use)
 		}
 	      else
 		{
-		  switch (get_gimple_rhs_class (code))
+		  switch (vn_get_stmt_kind (stmt))
 		    {
-		    case GIMPLE_UNARY_RHS:
-		    case GIMPLE_BINARY_RHS:
-		    case GIMPLE_TERNARY_RHS:
+		    case VN_NARY:
 		      changed = visit_nary_op (lhs, stmt);
 		      break;
-		    case GIMPLE_SINGLE_RHS:
-		      switch (TREE_CODE_CLASS (code))
-			{
-			case tcc_reference:
-			  /* VOP-less references can go through unary case.  */
-			  if ((code == REALPART_EXPR
-			       || code == IMAGPART_EXPR
-			       || code == VIEW_CONVERT_EXPR
-			       || code == BIT_FIELD_REF)
-			      && TREE_CODE (TREE_OPERAND (rhs1, 0)) == SSA_NAME)
-			    {
-			      changed = visit_nary_op (lhs, stmt);
-			      break;
-			    }
-			  /* Fallthrough.  */
-			case tcc_declaration:
-			  changed = visit_reference_op_load (lhs, rhs1, stmt);
-			  break;
-			default:
-			  if (code == ADDR_EXPR)
-			    {
-			      changed = visit_nary_op (lhs, stmt);
-			      break;
-			    }
-			  else if (code == CONSTRUCTOR)
-			    {
-			      changed = visit_nary_op (lhs, stmt);
-			      break;
-			    }
-			  changed = defs_to_varying (stmt);
-			}
+		    case VN_REFERENCE:
+		      changed = visit_reference_op_load (lhs, rhs1, stmt);
 		      break;
 		    default:
 		      changed = defs_to_varying (stmt);
@@ -3766,7 +3792,7 @@ start_over:
 	    {
 	      /* Recurse by pushing the current use walking state on
 		 the stack and starting over.  */
-	      VEC_safe_push(ssa_op_iter, heap, itervec, &iter);
+	      VEC_safe_push(ssa_op_iter, heap, itervec, iter);
 	      VEC_safe_push(tree, heap, namevec, name);
 	      name = use;
 	      goto start_over;

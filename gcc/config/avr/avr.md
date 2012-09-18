@@ -91,7 +91,7 @@
 
 ;; Condition code settings.
 (define_attr "cc" "none,set_czn,set_zn,set_n,compare,clobber,
-                   out_plus, out_plus_noclobber,ldi,minus"
+                   plus,ldi"
   (const_string "none"))
 
 (define_attr "type" "branch,branch1,arith,xcall"
@@ -138,8 +138,7 @@
 ;; Otherwise do special processing depending on the attribute.
 
 (define_attr "adjust_len"
-  "out_bitop, out_plus, out_plus_noclobber, plus64, addto_sp,
-   minus, minus64,
+  "out_bitop, plus, addto_sp,
    tsthi, tstpsi, tstsi, compare, compare64, call,
    mov8, mov16, mov24, mov32, reload_in16, reload_in24, reload_in32,
    ufract, sfract,
@@ -250,6 +249,10 @@
 (define_code_iterator xior [xor ior])
 (define_code_iterator eqne [eq ne])
 
+(define_code_iterator ss_addsub [ss_plus ss_minus])
+(define_code_iterator us_addsub [us_plus us_minus])
+(define_code_iterator ss_abs_neg [ss_abs ss_neg])
+
 ;; Define code attributes
 (define_code_attr extend_su
   [(sign_extend "s")
@@ -268,6 +271,10 @@
   [(zero_extend "r")
    (sign_extend "d")])
 
+(define_code_attr abelian
+  [(ss_minus "") (us_minus "")
+   (ss_plus "%") (us_plus "%")])
+
 ;; Map RTX code to its standard insn name
 (define_code_attr code_stdname
   [(ashift   "ashl")
@@ -275,7 +282,10 @@
    (lshiftrt "lshr")
    (ior      "ior")
    (xor      "xor")
-   (rotate   "rotl")])
+   (rotate   "rotl")
+   (ss_plus  "ssadd")  (ss_minus "sssub")  (ss_neg "ssneg")  (ss_abs "ssabs")
+   (us_plus  "usadd")  (us_minus "ussub")  (us_neg "usneg")
+   ])
 
 ;;========================================================================
 ;; The following is used by nonlocal_goto and setjmp.
@@ -1181,17 +1191,11 @@
                    (match_operand:ALL2 2 "nonmemory_or_const_operand" "r,s,IJ YIJ,n Ynn")))]
   ""
   {
-    if (REG_P (operands[2]))
-      return "add %A0,%A2\;adc %B0,%B2";
-    else if (CONST_INT_P (operands[2])
-             || CONST_FIXED == GET_CODE (operands[2]))
-      return avr_out_plus_noclobber (operands, NULL, NULL);
-    else
-      return "subi %A0,lo8(-(%2))\;sbci %B0,hi8(-(%2))";
+    return avr_out_plus (insn, operands);
   }
-  [(set_attr "length" "2,2,2,2")
-   (set_attr "adjust_len" "*,*,out_plus_noclobber,out_plus_noclobber")
-   (set_attr "cc" "set_n,set_czn,out_plus_noclobber,out_plus_noclobber")])
+  [(set_attr "length" "2")
+   (set_attr "adjust_len" "plus")
+   (set_attr "cc" "plus")])
 
 ;; Adding a constant to NO_LD_REGS might have lead to a reload of
 ;; that constant to LD_REGS.  We don't add a scratch to *addhi3
@@ -1238,13 +1242,11 @@
    (clobber (match_scratch:QI 3                             "=X     ,X    ,&d"))]
   ""
   {
-    gcc_assert (REGNO (operands[0]) == REGNO (operands[1]));
-    
-    return avr_out_plus (operands, NULL, NULL);
+    return avr_out_plus (insn, operands);
   }
   [(set_attr "length" "4")
-   (set_attr "adjust_len" "out_plus")
-   (set_attr "cc" "out_plus")])
+   (set_attr "adjust_len" "plus")
+   (set_attr "cc" "plus")])
 
 
 ;; "addsi3"
@@ -1257,14 +1259,11 @@
    (clobber (match_scratch:QI 3                             "=X,X ,&d"))]
   ""
   {
-    if (REG_P (operands[2]))
-      return "add %A0,%A2\;adc %B0,%B2\;adc %C0,%C2\;adc %D0,%D2";
-
-    return avr_out_plus (operands, NULL, NULL);
+    return avr_out_plus (insn, operands);
   }
-  [(set_attr "length" "4,4,8")
-   (set_attr "adjust_len" "*,out_plus,out_plus")
-   (set_attr "cc" "set_n,out_plus,out_plus")])
+  [(set_attr "length" "4")
+   (set_attr "adjust_len" "plus")
+   (set_attr "cc" "plus")])
 
 (define_insn "*addpsi3_zero_extend.qi"
   [(set (match_operand:PSI 0 "register_operand"                          "=r")
@@ -1318,22 +1317,11 @@
    (clobber (match_scratch:QI 3                           "=X,X ,X,&d"))]
   ""
   {
-    static const char * const asm_code[] =
-      {
-        "add %A0,%A2\;adc %B0,%B2\;adc %C0,%C2",
-        "subi %0,lo8(-(%2))\;sbci %B0,hi8(-(%2))\;sbci %C0,hlo8(-(%2))",
-        "",
-        ""
-      };
-
-    if (*asm_code[which_alternative])
-      return asm_code[which_alternative];
-
-    return avr_out_plus (operands, NULL, NULL);
+    return avr_out_plus (insn, operands);
   }
-  [(set_attr "length" "3,3,3,6")
-   (set_attr "adjust_len" "*,*,out_plus,out_plus")
-   (set_attr "cc" "set_n,set_czn,out_plus,out_plus")])
+  [(set_attr "length" "3")
+   (set_attr "adjust_len" "plus")
+   (set_attr "cc" "plus")])
 
 (define_insn "subpsi3"
   [(set (match_operand:PSI 0 "register_operand"           "=r")
@@ -1401,10 +1389,10 @@
    (clobber (match_scratch:QI 3                                       "=X,X    ,&d"))]
   ""
   {
-    return avr_out_minus (operands, NULL, NULL);
+    return avr_out_plus (insn, operands);
   }
-  [(set_attr "adjust_len" "minus")
-   (set_attr "cc" "minus")])
+  [(set_attr "adjust_len" "plus")
+   (set_attr "cc" "plus")])
 
 (define_insn "*subhi3_zero_extend1"
   [(set (match_operand:HI 0 "register_operand"                          "=r")
@@ -1438,14 +1426,10 @@
    (clobber (match_scratch:QI 3                                       "=X,X    ,&d"))]
   ""
   {
-    if (REG_P (operands[2]))
-      return "sub %0,%2\;sbc %B0,%B2\;sbc %C0,%C2\;sbc %D0,%D2";
-    
-    return avr_out_minus (operands, NULL, NULL);
+    return avr_out_plus (insn, operands);
   }
-  [(set_attr "length" "4")
-   (set_attr "adjust_len" "*,minus,minus")
-   (set_attr "cc" "set_czn")])
+  [(set_attr "adjust_len" "plus")
+   (set_attr "cc" "plus")])
 
 (define_insn "*subsi3_zero_extend"
   [(set (match_operand:SI 0 "register_operand"                          "=r")

@@ -2034,6 +2034,164 @@
   DONE;
 })
 
+(define_expand "movti"
+  [(set (match_operand:TI 0 "nonimmediate_operand" "")
+	(match_operand:TI 1 "general_operand" ""))]
+  "TARGET_ARCH64"
+{
+  if (sparc_expand_move (TImode, operands))
+    DONE;
+})
+
+;; We need to prevent reload from splitting TImode moves, because it
+;; might decide to overwrite a pointer with the value it points to.
+;; In that case we have to do the loads in the appropriate order so
+;; that the pointer is not destroyed too early.
+
+(define_insn "*movti_insn_sp64"
+  [(set (match_operand:TI 0 "nonimmediate_operand" "=r , o,?*e,?o,b")
+        (match_operand:TI 1 "input_operand"        "roJ,rJ, eo, e,J"))]
+  "TARGET_ARCH64
+   && ! TARGET_HARD_QUAD
+   && (register_operand (operands[0], TImode)
+       || register_or_zero_operand (operands[1], TImode))"
+  "#"
+  [(set_attr "length" "2,2,2,2,2")
+   (set_attr "cpu_feature" "*,*,fpu,fpu,vis")])
+
+(define_insn "*movti_insn_sp64_hq"
+  [(set (match_operand:TI 0 "nonimmediate_operand" "=r , o,?*e,?*e,?m,b")
+        (match_operand:TI 1 "input_operand"        "roJ,rJ,  e,  m, e,J"))]
+  "TARGET_ARCH64
+   && TARGET_HARD_QUAD
+   && (register_operand (operands[0], TImode)
+       || register_or_zero_operand (operands[1], TImode))"
+  "@
+  #
+  #
+  fmovq\t%1, %0
+  ldq\t%1, %0
+  stq\t%1, %0
+  #"
+  [(set_attr "type" "*,*,fpmove,fpload,fpstore,*")
+   (set_attr "length" "2,2,*,*,*,2")])
+
+;; Now all the splits to handle multi-insn TI mode moves.
+(define_split
+  [(set (match_operand:TI 0 "register_operand" "")
+        (match_operand:TI 1 "register_operand" ""))]
+  "reload_completed
+   && ((TARGET_FPU
+        && ! TARGET_HARD_QUAD)
+       || (! fp_register_operand (operands[0], TImode)
+           && ! fp_register_operand (operands[1], TImode)))"
+  [(clobber (const_int 0))]
+{
+  rtx set_dest = operands[0];
+  rtx set_src = operands[1];
+  rtx dest1, dest2;
+  rtx src1, src2;
+
+  dest1 = gen_highpart (DImode, set_dest);
+  dest2 = gen_lowpart (DImode, set_dest);
+  src1 = gen_highpart (DImode, set_src);
+  src2 = gen_lowpart (DImode, set_src);
+
+  /* Now emit using the real source and destination we found, swapping
+     the order if we detect overlap.  */
+  if (reg_overlap_mentioned_p (dest1, src2))
+    {
+      emit_insn (gen_movdi (dest2, src2));
+      emit_insn (gen_movdi (dest1, src1));
+    }
+  else
+    {
+      emit_insn (gen_movdi (dest1, src1));
+      emit_insn (gen_movdi (dest2, src2));
+    }
+  DONE;
+})
+
+(define_split
+  [(set (match_operand:TI 0 "nonimmediate_operand" "")
+        (match_operand:TI 1 "const_zero_operand" ""))]
+  "reload_completed"
+  [(clobber (const_int 0))]
+{
+  rtx set_dest = operands[0];
+  rtx dest1, dest2;
+
+  switch (GET_CODE (set_dest))
+    {
+    case REG:
+      dest1 = gen_highpart (DImode, set_dest);
+      dest2 = gen_lowpart (DImode, set_dest);
+      break;
+    case MEM:
+      dest1 = adjust_address (set_dest, DImode, 0);
+      dest2 = adjust_address (set_dest, DImode, 8);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  emit_insn (gen_movdi (dest1, const0_rtx));
+  emit_insn (gen_movdi (dest2, const0_rtx));
+  DONE;
+})
+
+(define_split
+  [(set (match_operand:TI 0 "register_operand" "")
+        (match_operand:TI 1 "memory_operand" ""))]
+  "reload_completed
+   && offsettable_memref_p (operands[1])
+   && (! TARGET_HARD_QUAD
+       || ! fp_register_operand (operands[0], TImode))"
+  [(clobber (const_int 0))]
+{
+  rtx word0 = adjust_address (operands[1], DImode, 0);
+  rtx word1 = adjust_address (operands[1], DImode, 8);
+  rtx set_dest, dest1, dest2;
+
+  set_dest = operands[0];
+
+  dest1 = gen_highpart (DImode, set_dest);
+  dest2 = gen_lowpart (DImode, set_dest);
+
+  /* Now output, ordering such that we don't clobber any registers
+     mentioned in the address.  */
+  if (reg_overlap_mentioned_p (dest1, word1))
+
+    {
+      emit_insn (gen_movdi (dest2, word1));
+      emit_insn (gen_movdi (dest1, word0));
+    }
+  else
+   {
+      emit_insn (gen_movdi (dest1, word0));
+      emit_insn (gen_movdi (dest2, word1));
+   }
+  DONE;
+})
+
+(define_split
+  [(set (match_operand:TI 0 "memory_operand" "")
+	(match_operand:TI 1 "register_operand" ""))]
+  "reload_completed
+   && offsettable_memref_p (operands[0])
+   && (! TARGET_HARD_QUAD
+       || ! fp_register_operand (operands[1], TImode))"
+  [(clobber (const_int 0))]
+{
+  rtx set_src = operands[1];
+
+  emit_insn (gen_movdi (adjust_address (operands[0], DImode, 0),
+			gen_highpart (DImode, set_src)));
+  emit_insn (gen_movdi (adjust_address (operands[0], DImode, 8),
+			gen_lowpart (DImode, set_src)));
+  DONE;
+})
+
 
 ;; Floating point move instructions
 
@@ -2477,7 +2635,7 @@
       dest2 = adjust_address (set_dest, DFmode, 8);
       break;
     default:
-      gcc_unreachable ();      
+      gcc_unreachable ();
     }
 
   emit_insn (gen_movdf (dest1, CONST0_RTX (DFmode)));

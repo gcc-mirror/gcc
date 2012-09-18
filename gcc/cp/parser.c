@@ -590,13 +590,13 @@ cp_lexer_new_main (void)
   lexer = cp_lexer_alloc ();
 
   /* Put the first token in the buffer.  */
-  VEC_quick_push (cp_token, lexer->buffer, &token);
+  VEC_quick_push (cp_token, lexer->buffer, token);
 
   /* Get the remaining tokens from the preprocessor.  */
   while (token.type != CPP_EOF)
     {
       cp_lexer_get_preprocessor_token (lexer, &token);
-      VEC_safe_push (cp_token, gc, lexer->buffer, &token);
+      VEC_safe_push (cp_token, gc, lexer->buffer, token);
     }
 
   lexer->last_token = VEC_address (cp_token, lexer->buffer)
@@ -667,7 +667,7 @@ cp_lexer_token_position (cp_lexer *lexer, bool previous_p)
 }
 
 static inline cp_token *
-cp_lexer_token_at (cp_lexer *lexer ATTRIBUTE_UNUSED, cp_token_position pos)
+cp_lexer_token_at (cp_lexer * /*lexer*/, cp_token_position pos)
 {
   return pos;
 }
@@ -1731,11 +1731,8 @@ cp_parser_context_new (cp_parser_context* next)
 static void
 push_unparsed_function_queues (cp_parser *parser)
 {
-  VEC_safe_push (cp_unparsed_functions_entry, gc,
-		 parser->unparsed_queues, NULL);
-  unparsed_funs_with_default_args = NULL;
-  unparsed_funs_with_definitions = make_tree_vector ();
-  unparsed_nsdmis = NULL;
+  cp_unparsed_functions_entry e = {NULL, make_tree_vector (), NULL};
+  VEC_safe_push (cp_unparsed_functions_entry, gc, parser->unparsed_queues, e);
 }
 
 static void
@@ -8028,7 +8025,7 @@ start_lambda_scope (tree decl)
     decl = current_function_decl;
   ti.t = lambda_scope;
   ti.i = lambda_count;
-  VEC_safe_push (tree_int, gc, lambda_scope_stack, &ti);
+  VEC_safe_push (tree_int, gc, lambda_scope_stack, ti);
   if (lambda_scope != decl)
     {
       /* Don't reset the count if we're still in the same function.  */
@@ -21758,11 +21755,9 @@ cp_parser_save_default_args (cp_parser* parser, tree decl)
        probe = TREE_CHAIN (probe))
     if (TREE_PURPOSE (probe))
       {
-	cp_default_arg_entry *entry
-	  = VEC_safe_push (cp_default_arg_entry, gc,
-			   unparsed_funs_with_default_args, NULL);
-	entry->class_type = current_class_type;
-	entry->decl = decl;
+	cp_default_arg_entry entry = {current_class_type, decl};
+	VEC_safe_push (cp_default_arg_entry, gc,
+		       unparsed_funs_with_default_args, entry);
 	break;
       }
 }
@@ -25327,7 +25322,7 @@ cp_parser_omp_clause_if (cp_parser *parser, tree list, location_t location)
    mergeable */
 
 static tree
-cp_parser_omp_clause_mergeable (cp_parser *parser ATTRIBUTE_UNUSED,
+cp_parser_omp_clause_mergeable (cp_parser * /*parser*/,
 				tree list, location_t location)
 {
   tree c;
@@ -25344,7 +25339,7 @@ cp_parser_omp_clause_mergeable (cp_parser *parser ATTRIBUTE_UNUSED,
    nowait */
 
 static tree
-cp_parser_omp_clause_nowait (cp_parser *parser ATTRIBUTE_UNUSED,
+cp_parser_omp_clause_nowait (cp_parser * /*parser*/,
 			     tree list, location_t location)
 {
   tree c;
@@ -25390,7 +25385,7 @@ cp_parser_omp_clause_num_threads (cp_parser *parser, tree list,
    ordered */
 
 static tree
-cp_parser_omp_clause_ordered (cp_parser *parser ATTRIBUTE_UNUSED,
+cp_parser_omp_clause_ordered (cp_parser * /*parser*/,
 			      tree list, location_t location)
 {
   tree c;
@@ -25583,7 +25578,7 @@ cp_parser_omp_clause_schedule (cp_parser *parser, tree list, location_t location
    untied */
 
 static tree
-cp_parser_omp_clause_untied (cp_parser *parser ATTRIBUTE_UNUSED,
+cp_parser_omp_clause_untied (cp_parser * /*parser*/,
 			     tree list, location_t location)
 {
   tree c;

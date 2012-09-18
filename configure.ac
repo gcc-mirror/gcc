@@ -537,6 +537,15 @@ if test -d ${srcdir}/libitm; then
     fi
 fi
 
+# Disable libquadmath for some systems.
+case "${target}" in
+  # libquadmath is unused on AIX and libquadmath build process use of
+  # LD_LIBRARY_PATH can break AIX bootstrap.
+  powerpc-*-aix* | rs6000-*-aix*)
+    noconfigdirs="$noconfigdirs target-libquadmath"
+    ;;
+esac
+
 # Disable libssp for some systems.
 case "${target}" in
   avr-*-*)
@@ -3267,6 +3276,7 @@ compare_exclusions="gcc/cc*-checksum\$(objext) | gcc/ada/*tools/*"
 case "$target" in
   hppa*64*-*-hpux*) ;;
   hppa*-*-hpux*) compare_exclusions="gcc/cc*-checksum\$(objext) | */libgcc/lib2funcs* | gcc/ada/*tools/*" ;;
+  powerpc*-ibm-aix*) compare_exclusions="gcc/cc*-checksum\$(objext) | gcc/ada/*tools/* | *libgomp*\$(objext)" ;;
 esac
 AC_SUBST(compare_exclusions)
 

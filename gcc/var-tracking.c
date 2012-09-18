@@ -5510,7 +5510,7 @@ add_uses (rtx *ploc, void *data)
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	log_op_type (mo.u.loc, cui->bb, cui->insn, mo.type, dump_file);
-      VEC_safe_push (micro_operation, heap, VTI (bb)->mos, &mo);
+      VEC_safe_push (micro_operation, heap, VTI (bb)->mos, mo);
     }
 
   return 0;
@@ -5794,7 +5794,7 @@ add_stores (rtx loc, const_rtx expr, void *cuip)
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    log_op_type (moa.u.loc, cui->bb, cui->insn,
 			 moa.type, dump_file);
-	  VEC_safe_push (micro_operation, heap, VTI (bb)->mos, &moa);
+	  VEC_safe_push (micro_operation, heap, VTI (bb)->mos, moa);
 	}
 
       resolve = false;
@@ -5881,7 +5881,7 @@ add_stores (rtx loc, const_rtx expr, void *cuip)
  log_and_return:
   if (dump_file && (dump_flags & TDF_DETAILS))
     log_op_type (mo.u.loc, cui->bb, cui->insn, mo.type, dump_file);
-  VEC_safe_push (micro_operation, heap, VTI (bb)->mos, &mo);
+  VEC_safe_push (micro_operation, heap, VTI (bb)->mos, mo);
 }
 
 /* Arguments to the call.  */
@@ -6300,7 +6300,7 @@ add_with_sets (rtx insn, struct cselib_set *sets, int n_sets)
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	log_op_type (PATTERN (insn), bb, insn, mo.type, dump_file);
-      VEC_safe_push (micro_operation, heap, VTI (bb)->mos, &mo);
+      VEC_safe_push (micro_operation, heap, VTI (bb)->mos, mo);
     }
 
   n1 = VEC_length (micro_operation, VTI (bb)->mos);
@@ -7864,7 +7864,9 @@ loc_exp_insert_dep (variable var, rtx x, htab_t vars)
     led = (loc_exp_dep *) pool_alloc (loc_exp_dep_pool);
   else
     {
-      VEC_quick_push (loc_exp_dep, VAR_LOC_DEP_VEC (var), NULL);
+      loc_exp_dep empty;
+      memset (&empty, 0, sizeof (empty));
+      VEC_quick_push (loc_exp_dep, VAR_LOC_DEP_VEC (var), empty);
       led = &VEC_last (loc_exp_dep, VAR_LOC_DEP_VEC (var));
     }
   led->dv = var->dv;
@@ -9354,13 +9356,13 @@ vt_add_function_parameter (tree parm)
       && HARD_REGISTER_P (incoming)
       && OUTGOING_REGNO (REGNO (incoming)) != REGNO (incoming))
     {
-      parm_reg_t *p
-	= VEC_safe_push (parm_reg_t, gc, windowed_parm_regs, NULL);
-      p->incoming = incoming;
+      parm_reg_t p;
+      p.incoming = incoming;
       incoming
 	= gen_rtx_REG_offset (incoming, GET_MODE (incoming),
 			      OUTGOING_REGNO (REGNO (incoming)), 0);
-      p->outgoing = incoming;
+      p.outgoing = incoming;
+      VEC_safe_push (parm_reg_t, gc, windowed_parm_regs, p);
     }
   else if (MEM_P (incoming)
 	   && REG_P (XEXP (incoming, 0))
@@ -9369,11 +9371,11 @@ vt_add_function_parameter (tree parm)
       rtx reg = XEXP (incoming, 0);
       if (OUTGOING_REGNO (REGNO (reg)) != REGNO (reg))
 	{
-	  parm_reg_t *p
-	    = VEC_safe_push (parm_reg_t, gc, windowed_parm_regs, NULL);
-	  p->incoming = reg;
+	  parm_reg_t p;
+	  p.incoming = reg;
 	  reg = gen_raw_REG (GET_MODE (reg), OUTGOING_REGNO (REGNO (reg)));
-	  p->outgoing = reg;
+	  p.outgoing = reg;
+	  VEC_safe_push (parm_reg_t, gc, windowed_parm_regs, p);
 	  incoming = replace_equiv_address_nv (incoming, reg);
 	}
     }
@@ -9815,7 +9817,7 @@ vt_initialize (void)
 			    log_op_type (PATTERN (insn), bb, insn,
 					 MO_ADJUST, dump_file);
 			  VEC_safe_push (micro_operation, heap, VTI (bb)->mos,
-					 &mo);
+					 mo);
 			  VTI (bb)->out.stack_adjust += pre;
 			}
 		    }
@@ -9847,7 +9849,7 @@ vt_initialize (void)
 			log_op_type (PATTERN (insn), bb, insn,
 				     MO_ADJUST, dump_file);
 		      VEC_safe_push (micro_operation, heap, VTI (bb)->mos,
-				     &mo);
+				     mo);
 		      VTI (bb)->out.stack_adjust += post;
 		    }
 

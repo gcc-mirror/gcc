@@ -1932,19 +1932,27 @@ struct sh_args {
    like shad and shld.  */
 #define TARGET_DYNSHIFT (TARGET_SH3 || TARGET_SH2A)
 
-#define SH_DYNAMIC_SHIFT_COST \
-  (TARGET_HARD_SH4 ? 1 : TARGET_DYNSHIFT ? (optimize_size ? 1 : 2) : 20)
+/* The cost of using the dynamic shift insns (shad, shld) are the same
+   if they are available.  If they are not available a library function will
+   be emitted instead, which is more expensive.  */
+#define SH_DYNAMIC_SHIFT_COST (TARGET_DYNSHIFT ? 1 : 20)
 
-/* Immediate shift counts are truncated by the output routines (or was it
-   the assembler?).  Shift counts in a register are truncated by SH.  Note
-   that the native compiler puts too large (> 32) immediate shift counts
-   into a register and shifts by the register, letting the SH decide what
-   to do instead of doing that itself.  */
-/* ??? The library routines in lib1funcs.S truncate the shift count.
-   However, the SH3 has hardware shifts that do not truncate exactly as gcc
-   expects - the sign bit is significant - so it appears that we need to
-   leave this zero for correct SH3 code.  */
-#define SHIFT_COUNT_TRUNCATED (! TARGET_SH3 && ! TARGET_SH2A)
+/* Defining SHIFT_COUNT_TRUNCATED tells the combine pass that code like
+   (X << (Y % 32)) for register X, Y is equivalent to (X << Y).
+   This is not generally true when hardware dynamic shifts (shad, shld) are
+   used, because they check the sign bit _before_ the modulo op.  The sign
+   bit determines whether it is a left shift or a right shift:
+     if (Y < 0)
+       return X << (Y & 31);
+     else
+       return X >> (-Y) & 31);
+ 
+   The dynamic shift library routines in lib1funcs.S do not use the sign bit
+   like the hardware dynamic shifts and truncate the shift count to 31.
+   We define SHIFT_COUNT_TRUNCATED to 0 and express the implied shift count
+   truncation in the library function call patterns, as this gives slightly
+   more compact code.  */
+#define SHIFT_COUNT_TRUNCATED (0)
 
 /* CANONICALIZE_COMPARISON macro for the combine pass.  */
 #define CANONICALIZE_COMPARISON(CODE, OP0, OP1) \

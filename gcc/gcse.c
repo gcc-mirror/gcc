@@ -1417,7 +1417,7 @@ canon_list_insert (rtx dest ATTRIBUTE_UNUSED, const_rtx x ATTRIBUTE_UNUSED,
 {
   rtx dest_addr, insn;
   int bb;
-  modify_pair *pair;
+  modify_pair pair;
 
   while (GET_CODE (dest) == SUBREG
       || GET_CODE (dest) == ZERO_EXTRACT
@@ -1436,9 +1436,9 @@ canon_list_insert (rtx dest ATTRIBUTE_UNUSED, const_rtx x ATTRIBUTE_UNUSED,
   insn = (rtx) v_insn;
   bb = BLOCK_FOR_INSN (insn)->index;
 
-  pair = VEC_safe_push (modify_pair, heap, canon_modify_mem_list[bb], NULL);
-  pair->dest = dest;
-  pair->dest_addr = dest_addr;
+  pair.dest = dest;
+  pair.dest_addr = dest_addr;
+  VEC_safe_push (modify_pair, heap, canon_modify_mem_list[bb], pair);
 }
 
 /* Record memory modification information for INSN.  We do not actually care

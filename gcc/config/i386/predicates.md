@@ -201,8 +201,7 @@
 		{
 		case UNSPEC_DTPOFF:
 		case UNSPEC_NTPOFF:
-		  if (offset > 0
-		      && trunc_int_for_mode (offset, SImode) == offset)
+		  if (trunc_int_for_mode (offset, SImode) == offset)
 		    return true;
 		}
 	      break;

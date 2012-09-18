@@ -7507,9 +7507,8 @@ build_subst_list (Entity_Id gnat_subtype, Entity_Id gnat_type, bool definition)
 				    (Node (gnat_value), gnat_subtype,
 				     get_entity_name (gnat_discrim),
 				     definition, true, false));
-	subst_pair *s = VEC_safe_push (subst_pair, heap, gnu_list, NULL);
-	s->discriminant = gnu_field;
-	s->replacement = replacement;
+	subst_pair s = {gnu_field, replacement};
+	VEC_safe_push (subst_pair, heap, gnu_list, s);
       }
 
   return gnu_list;
@@ -7541,14 +7540,10 @@ build_variant_list (tree qual_union_type, VEC(subst_pair,heap) *subst_list,
 	 still be accessed.  */
       if (!integer_zerop (qual))
 	{
-	  variant_desc *v;
 	  tree variant_type = TREE_TYPE (gnu_field), variant_subpart;
+	  variant_desc v = {variant_type, gnu_field, qual, NULL_TREE};
 
-	  v = VEC_safe_push (variant_desc, heap, gnu_list, NULL);
-	  v->type = variant_type;
-	  v->field = gnu_field;
-	  v->qual = qual;
-	  v->new_type = NULL_TREE;
+	  VEC_safe_push (variant_desc, heap, gnu_list, v);
 
 	  /* Recurse on the variant subpart of the variant, if any.  */
 	  variant_subpart = get_variant_part (variant_type);

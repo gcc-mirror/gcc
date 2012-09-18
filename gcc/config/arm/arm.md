@@ -11371,20 +11371,15 @@
 )
 
 (define_insn "*arm_rev"
-  [(set (match_operand:SI 0 "s_register_operand" "=r")
-	(bswap:SI (match_operand:SI 1 "s_register_operand" "r")))]
-  "TARGET_32BIT && arm_arch6"
-  "rev%?\t%0, %1"
-  [(set_attr "predicable" "yes")
-   (set_attr "length" "4")]
-)
-
-(define_insn "*thumb1_rev"
-  [(set (match_operand:SI 0 "s_register_operand" "=l")
-	(bswap:SI (match_operand:SI 1 "s_register_operand" "l")))]
-  "TARGET_THUMB1 && arm_arch6"
-   "rev\t%0, %1"
-  [(set_attr "length" "2")]
+  [(set (match_operand:SI 0 "s_register_operand" "=l,l,r")
+	(bswap:SI (match_operand:SI 1 "s_register_operand" "l,l,r")))]
+  "arm_arch6"
+  "@
+   rev\t%0, %1
+   rev%?\t%0, %1
+   rev%?\t%0, %1"
+  [(set_attr "arch" "t1,t2,32")
+   (set_attr "length" "2,2,4")]
 )
 
 (define_expand "arm_legacy_rev"
@@ -11470,6 +11465,40 @@
 	DONE;
       }
   "
+)
+
+;; bswap16 patterns: use revsh and rev16 instructions for the signed
+;; and unsigned variants, respectively. For rev16, expose
+;; byte-swapping in the lower 16 bits only.
+(define_insn "*arm_revsh"
+  [(set (match_operand:SI 0 "s_register_operand" "=l,l,r")
+	(sign_extend:SI (bswap:HI (match_operand:HI 1 "s_register_operand" "l,l,r"))))]
+  "arm_arch6"
+  "@
+  revsh\t%0, %1
+  revsh%?\t%0, %1
+  revsh%?\t%0, %1"
+  [(set_attr "arch" "t1,t2,32")
+   (set_attr "length" "2,2,4")]
+)
+
+(define_insn "*arm_rev16"
+  [(set (match_operand:HI 0 "s_register_operand" "=l,l,r")
+	(bswap:HI (match_operand:HI 1 "s_register_operand" "l,l,r")))]
+  "arm_arch6"
+  "@
+   rev16\t%0, %1
+   rev16%?\t%0, %1
+   rev16%?\t%0, %1"
+  [(set_attr "arch" "t1,t2,32")
+   (set_attr "length" "2,2,4")]
+)
+
+(define_expand "bswaphi2"
+  [(set (match_operand:HI 0 "s_register_operand" "=r")
+	(bswap:HI (match_operand:HI 1 "s_register_operand" "r")))]
+"arm_arch6"
+""
 )
 
 ;; Load the load/store multiple patterns

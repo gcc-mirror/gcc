@@ -1611,7 +1611,7 @@ transfer_namelist_element (stmtblock_t * block, const char * var_name,
       gfc_add_expr_to_block (block, tmp);
     }
 
-  if (ts->type == BT_DERIVED)
+  if (ts->type == BT_DERIVED && ts->u.derived->components)
     {
       gfc_component *cmp;
 
@@ -2146,6 +2146,9 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr, gfc_code * code)
       break;
 
     case BT_DERIVED:
+      if (ts->u.derived->components == NULL)
+	return;
+
       /* Recurse into the elements of the derived type.  */
       expr = gfc_evaluate_now (addr_expr, &se->pre);
       expr = build_fold_indirect_ref_loc (input_location,
@@ -2251,8 +2254,8 @@ gfc_trans_transfer (gfc_code * code)
       if (expr->ref && !gfc_is_proc_ptr_comp (expr))
 	{
 	  for (ref = expr->ref; ref && ref->type != REF_ARRAY;
-		 ref = ref->next);
-	  gcc_assert (ref->type == REF_ARRAY);
+	    ref = ref->next);
+	  gcc_assert (ref && ref->type == REF_ARRAY);
 	}
 
       if (expr->ts.type != BT_DERIVED
@@ -2314,6 +2317,7 @@ gfc_trans_transfer (gfc_code * code)
     tmp = gfc_finish_block (&body);
   else
     {
+      gcc_assert (expr->rank != 0);
       gcc_assert (se.ss == gfc_ss_terminator);
       gfc_trans_scalarizing_loops (&loop, &body);
 

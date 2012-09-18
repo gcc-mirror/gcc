@@ -91,9 +91,7 @@ match_subscript (gfc_array_ref *ar, int init, bool match_star)
   else if (!star)
     m = gfc_match_expr (&ar->start[i]);
 
-  if (m == MATCH_NO && gfc_match_char ('*') == MATCH_YES)
-    return MATCH_NO;
-  else if (m == MATCH_NO)
+  if (m == MATCH_NO)
     gfc_error ("Expected array subscript at %C");
   if (m != MATCH_YES)
     return MATCH_ERROR;
@@ -224,7 +222,7 @@ coarray:
 
   for (ar->codimen = 0; ar->codimen + ar->dimen < GFC_MAX_DIMENSIONS; ar->codimen++)
     {
-      m = match_subscript (ar, init, ar->codimen == (corank - 1));
+      m = match_subscript (ar, init, true);
       if (m == MATCH_ERROR)
 	return MATCH_ERROR;
 
@@ -255,6 +253,13 @@ coarray:
 	    gfc_error ("Invalid form of coarray reference at %C");
 	  return MATCH_ERROR;
 	}
+      else if (ar->dimen_type[ar->codimen + ar->dimen] == DIMEN_STAR)
+	{
+	  gfc_error ("Unexpected '*' for codimension %d of %d at %C",
+		     ar->codimen + 1, corank);
+	  return MATCH_ERROR;
+	}
+
       if (ar->codimen >= corank)
 	{
 	  gfc_error ("Invalid codimension %d at %C, only %d codimensions exist",
@@ -1069,6 +1074,7 @@ gfc_match_array_constructor (gfc_expr **result)
   seen_ts = false;
 
   /* Try to match an optional "type-spec ::"  */
+  gfc_clear_ts (&ts);
   if (gfc_match_decl_type_spec (&ts, 0) == MATCH_YES)
     {
       seen_ts = (gfc_match (" ::") == MATCH_YES);
@@ -1968,7 +1974,7 @@ got_charlen:
 	      /* If gfc_extract_int above set current_length, we implicitly
 		 know the type is BT_INTEGER and it's EXPR_CONSTANT.  */
 
-	      has_ts = (expr->ts.u.cl && expr->ts.u.cl->length_from_typespec);
+	      has_ts = expr->ts.u.cl->length_from_typespec;
 
 	      if (! cl
 		  || (current_length != -1 && current_length != found_length))
@@ -2220,13 +2226,15 @@ gfc_array_dimen_size (gfc_expr *array, int dimen, mpz_t *result)
   gfc_ref *ref;
   int i;
 
+  gcc_assert (array != NULL);
+
   if (array->ts.type == BT_CLASS)
     return FAILURE;
 
   if (array->rank == -1)
     return FAILURE;
 
-  if (dimen < 0 || array == NULL || dimen > array->rank - 1)
+  if (dimen < 0 || dimen > array->rank - 1)
     gfc_internal_error ("gfc_array_dimen_size(): Bad dimension");
 
   switch (array->expr_type)

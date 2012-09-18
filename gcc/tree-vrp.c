@@ -2766,20 +2766,63 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 	  else if (code == LSHIFT_EXPR
 		   && range_int_cst_p (&vr0))
 	    {
-	      int overflow_pos = TYPE_PRECISION (expr_type);
+	      int prec = TYPE_PRECISION (expr_type);
+	      int overflow_pos = prec;
 	      int bound_shift;
-	      double_int bound;
+	      double_int bound, complement, low_bound, high_bound;
+	      bool uns = TYPE_UNSIGNED (expr_type);
+	      bool in_bounds = false;
 
-	      if (!TYPE_UNSIGNED (expr_type))
+	      if (!uns)
 		overflow_pos -= 1;
 
 	      bound_shift = overflow_pos - TREE_INT_CST_LOW (vr1.max);
-	      bound = double_int_one.llshift (bound_shift,
-					      TYPE_PRECISION (expr_type));
-	      if (tree_to_double_int (vr0.max).ult (bound))
+	      /* If bound_shift == HOST_BITS_PER_DOUBLE_INT, the llshift can
+		 overflow.  However, for that to happen, vr1.max needs to be
+		 zero, which means vr1 is a singleton range of zero, which
+		 means it should be handled by the previous LSHIFT_EXPR
+		 if-clause.  */
+	      bound = double_int_one.llshift (bound_shift, prec);
+	      complement = ~(bound - double_int_one);
+
+	      if (uns)
 		{
-		  /* In the absense of overflow, (a << b) is equivalent
-		     to (a * 2^b).  */
+		  low_bound = bound;
+		  high_bound = complement.zext (prec);
+		  if (tree_to_double_int (vr0.max).ult (low_bound))
+		    {
+		      /* [5, 6] << [1, 2] == [10, 24].  */
+		      /* We're shifting out only zeroes, the value increases
+			 monotonically.  */
+		      in_bounds = true;
+		    }
+		  else if (high_bound.ult (tree_to_double_int (vr0.min)))
+		    {
+		      /* [0xffffff00, 0xffffffff] << [1, 2]
+		         == [0xfffffc00, 0xfffffffe].  */
+		      /* We're shifting out only ones, the value decreases
+			 monotonically.  */
+		      in_bounds = true;
+		    }
+		}
+	      else
+		{
+		  /* [-1, 1] << [1, 2] == [-4, 4].  */
+		  low_bound = complement.sext (prec);
+		  high_bound = bound;
+		  if (tree_to_double_int (vr0.max).slt (high_bound)
+		      && low_bound.slt (tree_to_double_int (vr0.min)))
+		    {
+		      /* For non-negative numbers, we're shifting out only
+			 zeroes, the value increases monotonically.
+			 For negative numbers, we're shifting out only ones, the
+			 value decreases monotomically.  */
+		      in_bounds = true;
+		    }
+		}
+
+	      if (in_bounds)
+		{
 		  extract_range_from_multiplicative_op_1 (vr, code, &vr0, &vr1);
 		  return;
 		}
@@ -4384,24 +4427,7 @@ register_new_assert_for (tree name, tree expr,
 	  && (loc->expr == expr
 	      || operand_equal_p (loc->expr, expr, 0)))
 	{
-	  /* If the assertion NAME COMP_CODE VAL has already been
-	     registered at a basic block that dominates DEST_BB, then
-	     we don't need to insert the same assertion again.  Note
-	     that we don't check strict dominance here to avoid
-	     replicating the same assertion inside the same basic
-	     block more than once (e.g., when a pointer is
-	     dereferenced several times inside a block).
-
-	     An exception to this rule are edge insertions.  If the
-	     new assertion is to be inserted on edge E, then it will
-	     dominate all the other insertions that we may want to
-	     insert in DEST_BB.  So, if we are doing an edge
-	     insertion, don't do this dominance check.  */
-          if (e == NULL
-	      && dominated_by_p (CDI_DOMINATORS, dest_bb, loc->bb))
-	    return;
-
-	  /* Otherwise, if E is not a critical edge and DEST_BB
+	  /* If E is not a critical edge and DEST_BB
 	     dominates the existing location for the assertion, move
 	     the assertion up in the dominance tree by updating its
 	     location information.  */
@@ -5439,7 +5465,6 @@ find_assert_locations_1 (basic_block bb, sbitmap live)
 {
   gimple_stmt_iterator si;
   gimple last;
-  gimple phi;
   bool need_assert;
 
   need_assert = false;
@@ -5462,7 +5487,7 @@ find_assert_locations_1 (basic_block bb, sbitmap live)
 
   /* Traverse all the statements in BB marking used names and looking
      for statements that may infer assertions for their used operands.  */
-  for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
+  for (si = gsi_last_bb (bb); !gsi_end_p (si); gsi_prev (&si))
     {
       gimple stmt;
       tree op;
@@ -5479,8 +5504,10 @@ find_assert_locations_1 (basic_block bb, sbitmap live)
 	  tree value;
 	  enum tree_code comp_code;
 
-	  /* Mark OP in our live bitmap.  */
-	  SET_BIT (live, SSA_NAME_VERSION (op));
+	  /* If op is not live beyond this stmt, do not bother to insert
+	     asserts for it.  */
+	  if (!TEST_BIT (live, SSA_NAME_VERSION (op)))
+	    continue;
 
 	  /* If OP is used in such a way that we can infer a value
 	     range for it, and we don't find a previous assertion for
@@ -5520,25 +5547,28 @@ find_assert_locations_1 (basic_block bb, sbitmap live)
 		    }
 		}
 
-	      /* If OP is used only once, namely in this STMT, don't
-		 bother creating an ASSERT_EXPR for it.  Such an
-		 ASSERT_EXPR would do nothing but increase compile time.  */
-	      if (!has_single_use (op))
-		{
-		  register_new_assert_for (op, op, comp_code, value,
-					   bb, NULL, si);
-		  need_assert = true;
-		}
+	      register_new_assert_for (op, op, comp_code, value, bb, NULL, si);
+	      need_assert = true;
 	    }
 	}
+
+      /* Update live.  */
+      FOR_EACH_SSA_TREE_OPERAND (op, stmt, i, SSA_OP_USE)
+	SET_BIT (live, SSA_NAME_VERSION (op));
+      FOR_EACH_SSA_TREE_OPERAND (op, stmt, i, SSA_OP_DEF)
+	RESET_BIT (live, SSA_NAME_VERSION (op));
     }
 
-  /* Traverse all PHI nodes in BB marking used operands.  */
+  /* Traverse all PHI nodes in BB, updating live.  */
   for (si = gsi_start_phis (bb); !gsi_end_p(si); gsi_next (&si))
     {
       use_operand_p arg_p;
       ssa_op_iter i;
-      phi = gsi_stmt (si);
+      gimple phi = gsi_stmt (si);
+      tree res = gimple_phi_result (phi);
+
+      if (virtual_operand_p (res))
+	continue;
 
       FOR_EACH_PHI_ARG (arg_p, phi, i, SSA_OP_USE)
 	{
@@ -5546,6 +5576,8 @@ find_assert_locations_1 (basic_block bb, sbitmap live)
 	  if (TREE_CODE (arg) == SSA_NAME)
 	    SET_BIT (live, SSA_NAME_VERSION (arg));
 	}
+
+      RESET_BIT (live, SSA_NAME_VERSION (res));
     }
 
   return need_assert;
@@ -8493,7 +8525,7 @@ simplify_switch_using_ranges (gimple stmt)
   /* And queue an update for the stmt.  */
   su.stmt = stmt;
   su.vec = vec2;
-  VEC_safe_push (switch_update, heap, to_update_switch_stmts, &su);
+  VEC_safe_push (switch_update, heap, to_update_switch_stmts, su);
   return false;
 }
 

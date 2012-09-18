@@ -851,7 +851,7 @@ lower_gimple_return (gimple_stmt_iterator *gsi, struct lower_data *data)
   /* Not found.  Create a new label and record the return statement.  */
   tmp_rs.label = create_artificial_label (cfun->function_end_locus);
   tmp_rs.stmt = stmt;
-  VEC_safe_push (return_statements_t, heap, data->return_statements, &tmp_rs);
+  VEC_safe_push (return_statements_t, heap, data->return_statements, tmp_rs);
 
   /* Generate a goto statement and remove the return statement.  */
  found:

@@ -1,3 +1,32 @@
+2012-09-14  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/54552
+	* c-typeck.c (c_cast_expr): When casting to a type requiring
+	C_MAYBE_CONST_EXPR to be created, pass the inner expression to
+	c_fully_fold first.
+
+2012-09-14  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/54103
+	* c-typeck.c (build_unary_op): Pass original argument of
+	TRUTH_NOT_EXPR to c_objc_common_truthvalue_conversion, then remove
+	any C_MAYBE_CONST_EXPR, if it has integer operands.
+	(build_binary_op): Pass original arguments of TRUTH_ANDIF_EXPR,
+	TRUTH_ORIF_EXPR, TRUTH_AND_EXPR, TRUTH_OR_EXPR and TRUTH_XOR_EXPR
+	to c_objc_common_truthvalue_conversion, then remove any
+	C_MAYBE_CONST_EXPR, if they have integer operands.  Use
+	c_objc_common_truthvalue_conversion not
+	c_common_truthvalue_conversion.
+	(c_objc_common_truthvalue_conversion): Build NE_EXPR directly and
+	call note_integer_operands for arguments with integer operands
+	that are not integer constants.
+
+2012-09-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/54559
+	* c-typeck.c (c_finish_return): Do convert to BOOLEAN_TYPE or
+	COMPLEX_TYPE with in_late_binary_op set temporarily to true.
+
 2012-08-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/54428

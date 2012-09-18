@@ -79,7 +79,7 @@ numeric_check (gfc_expr *e, int n)
 
   /* If the expression has not got a type, check if its namespace can
      offer a default type.  */
-  if ((e->expr_type == EXPR_VARIABLE || e->expr_type == EXPR_VARIABLE)
+  if ((e->expr_type == EXPR_VARIABLE || e->expr_type == EXPR_FUNCTION)
 	&& e->symtree->n.sym->ts.type == BT_UNKNOWN
 	&& gfc_set_default_type (e->symtree->n.sym, 0,
 				 e->symtree->n.sym->ns) == SUCCESS

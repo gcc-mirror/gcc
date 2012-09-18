@@ -52,7 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "regs.h"
 #include "alloc-pool.h"
 #include "pretty-print.h"
-#include "bitmap.h"
+#include "pointer-set.h"
 #include "params.h"
 #include "dumpfile.h"
 
@@ -113,9 +113,6 @@ static int node_has_low_bound (case_node_ptr, tree);
 static int node_has_high_bound (case_node_ptr, tree);
 static int node_is_bounded (case_node_ptr, tree);
 static void emit_case_nodes (rtx, case_node_ptr, rtx, tree);
-static struct case_node *add_case_node (struct case_node *, tree,
-                                        tree, tree, tree, alloc_pool);
-
 
 /* Return the rtx-label that corresponds to a LABEL_DECL,
    creating it if necessary.  */
@@ -1650,31 +1647,34 @@ expand_stack_restore (tree var)
   emit_stack_restore (SAVE_BLOCK, sa);
   fixup_args_size_notes (prev, get_last_insn (), 0);
 }
+
+/* Generate code to jump to LABEL if OP0 and OP1 are equal in mode MODE.  */
+static void
+do_jump_if_equal (enum machine_mode mode, rtx op0, rtx op1, rtx label,
+		  int unsignedp)
+{
+  do_compare_rtx_and_jump (op0, op1, EQ, unsignedp, mode,
+			   NULL_RTX, NULL_RTX, label, -1);
+}
 
 /* Do the insertion of a case label into case_list.  The labels are
    fed to us in descending order from the sorted vector of case labels used
    in the tree part of the middle end.  So the list we construct is
-   sorted in ascending order.  The bounds on the case range, LOW and HIGH,
-   are converted to case's index type TYPE.  Note that the original type
-   of the case index in the source code is usually "lost" during
-   gimplification due to type promotion, but the case labels retain the
-   original type.  */
+   sorted in ascending order.  */
 
 static struct case_node *
-add_case_node (struct case_node *head, tree type, tree low, tree high,
+add_case_node (struct case_node *head, tree low, tree high,
                tree label, alloc_pool case_node_pool)
 {
   struct case_node *r;
 
   gcc_checking_assert (low);
-  gcc_checking_assert (! high || (TREE_TYPE (low) == TREE_TYPE (high)));
+  gcc_checking_assert (high && (TREE_TYPE (low) == TREE_TYPE (high)));
 
-  /* Add this label to the chain.  Make sure to drop overflow flags.  */
+  /* Add this label to the chain.  */
   r = (struct case_node *) pool_alloc (case_node_pool);
-  r->low = build_int_cst_wide (type, TREE_INT_CST_LOW (low),
-			       TREE_INT_CST_HIGH (low));
-  r->high = build_int_cst_wide (type, TREE_INT_CST_LOW (high),
-				TREE_INT_CST_HIGH (high));
+  r->low = low;
+  r->high = high;
   r->code_label = label;
   r->parent = r->left = NULL;
   r->right = head;
@@ -1952,17 +1952,10 @@ expand_case (gimple stmt)
   rtx default_label = NULL_RTX;
   unsigned int count, uniq;
   int i;
-  rtx before_case, end;
   int ncases = gimple_switch_num_labels (stmt);
   tree index_expr = gimple_switch_index (stmt);
   tree index_type = TREE_TYPE (index_expr);
-
   tree elt;
-  bitmap label_bitmap;
-
-  /* The insn after which the case dispatch should finally
-     be emitted.  Zero for a dummy.  */
-  rtx start;
 
   /* A list of case labels; it is first built as a list and it may then
      be rearranged into a nearly balanced binary tree.  */
@@ -2005,17 +1998,15 @@ expand_case (gimple stmt)
      how to expand this switch().  */
   uniq = 0;
   count = 0;
-  label_bitmap = BITMAP_ALLOC (NULL);
+  struct pointer_set_t *seen_labels = pointer_set_create ();
   for (i = gimple_switch_num_labels (stmt) - 1; i >= 1; --i)
     {
-      tree low, high;
-      rtx lab;
-
       elt = gimple_switch_label (stmt, i);
-      low = CASE_LOW (elt);
+      tree low = CASE_LOW (elt);
       gcc_assert (low);
-      high = CASE_HIGH (elt);
+      tree high = CASE_HIGH (elt);
       gcc_assert (! high || tree_int_cst_lt (low, high));
+      tree lab = CASE_LABEL (elt);
 
       /* Count the elements.
 	 A range counts double, since it requires two compares.  */
@@ -2025,20 +2016,35 @@ expand_case (gimple stmt)
 
       /* If we have not seen this label yet, then increase the
 	 number of unique case node targets seen.  */
-      lab = label_rtx (CASE_LABEL (elt));
-      if (bitmap_set_bit (label_bitmap, CODE_LABEL_NUMBER (lab)))
+      if (!pointer_set_insert (seen_labels, lab))
 	uniq++;
+
+      /* The bounds on the case range, LOW and HIGH, have to be converted
+	 to case's index type TYPE.  Note that the original type of the
+	 case index in the source code is usually "lost" during
+	 gimplification due to type promotion, but the case labels retain the
+	 original type.  Make sure to drop overflow flags.  */
+      low = fold_convert (index_type, low);
+      if (TREE_OVERFLOW (low))
+	low = build_int_cst_wide (index_type,
+				  TREE_INT_CST_LOW (low),
+				  TREE_INT_CST_HIGH (low));
 
       /* The canonical from of a case label in GIMPLE is that a simple case
 	 has an empty CASE_HIGH.  For the casesi and tablejump expanders,
 	 the back ends want simple cases to have high == low.  */
       if (! high)
 	high = low;
+      high = fold_convert (index_type, high);
+      if (TREE_OVERFLOW (high))
+	high = build_int_cst_wide (index_type,
+				   TREE_INT_CST_LOW (high),
+				   TREE_INT_CST_HIGH (high));
 
-      case_list = add_case_node (case_list, index_type, low, high,
-				 CASE_LABEL (elt), case_node_pool);
+      case_list = add_case_node (case_list, low, high, lab,
+				 case_node_pool);
     }
-  BITMAP_FREE (label_bitmap);
+  pointer_set_destroy (seen_labels);
 
   /* cleanup_tree_cfg removes all SWITCH_EXPR with a single
      destination, such as one with a default case only.
@@ -2046,7 +2052,7 @@ expand_case (gimple stmt)
      type, so we should never get a zero here.  */
   gcc_assert (count > 0);
 
-  before_case = start = get_last_insn ();
+  rtx before_case = get_last_insn ();
 
   /* Decide how to expand this switch.
      The two options at this point are a dispatch table (casesi or
@@ -2060,23 +2066,108 @@ expand_case (gimple stmt)
 			      case_list, default_label,
 			      minval, maxval, range);
 
-  before_case = NEXT_INSN (before_case);
-  end = get_last_insn ();
-  reorder_insns (before_case, end, start);
+  reorder_insns (NEXT_INSN (before_case), get_last_insn (), before_case);
 
   free_temp_slots ();
   free_alloc_pool (case_node_pool);
 }
 
-/* Generate code to jump to LABEL if OP0 and OP1 are equal in mode MODE.  */
+/* Expand the dispatch to a short decrement chain if there are few cases
+   to dispatch to.  Likewise if neither casesi nor tablejump is available,
+   or if flag_jump_tables is set.  Otherwise, expand as a casesi or a
+   tablejump.  The index mode is always the mode of integer_type_node.
+   Trap if no case matches the index.
 
-static void
-do_jump_if_equal (enum machine_mode mode, rtx op0, rtx op1, rtx label,
-		  int unsignedp)
+   DISPATCH_INDEX is the index expression to switch on.  It should be a
+   memory or register operand.
+   
+   DISPATCH_TABLE is a set of case labels.  The set should be sorted in
+   ascending order, be contiguous, starting with value 0, and contain only
+   single-valued case labels.  */
+
+void
+expand_sjlj_dispatch_table (rtx dispatch_index,
+			    VEC(tree,heap) *dispatch_table)
 {
-  do_compare_rtx_and_jump (op0, op1, EQ, unsignedp, mode,
-			   NULL_RTX, NULL_RTX, label, -1);
+  tree index_type = integer_type_node;
+  enum machine_mode index_mode = TYPE_MODE (index_type);
+
+  int ncases = VEC_length (tree, dispatch_table);
+
+  do_pending_stack_adjust ();
+  rtx before_case = get_last_insn ();
+
+  /* Expand as a decrement-chain if there are 5 or fewer dispatch
+     labels.  This covers more than 98% of the cases in libjava,
+     and seems to be a reasonable compromise between the "old way"
+     of expanding as a decision tree or dispatch table vs. the "new
+     way" with decrement chain or dispatch table.  */
+  if (VEC_length (tree, dispatch_table) <= 5
+      || (!HAVE_casesi && !HAVE_tablejump)
+      || !flag_jump_tables)
+    {
+      /* Expand the dispatch as a decrement chain:
+
+	 "switch(index) {case 0: do_0; case 1: do_1; ...; case N: do_N;}"
+
+	 ==>
+
+	 if (index == 0) do_0; else index--;
+	 if (index == 0) do_1; else index--;
+	 ...
+	 if (index == 0) do_N; else index--;
+
+	 This is more efficient than a dispatch table on most machines.
+	 The last "index--" is redundant but the code is trivially dead
+	 and will be cleaned up by later passes.  */
+      rtx index = copy_to_mode_reg (index_mode, dispatch_index);
+      rtx zero = CONST0_RTX (index_mode);
+      for (int i = 0; i < ncases; i++)
+        {
+	  tree elt = VEC_index (tree, dispatch_table, i);
+	  rtx lab = label_rtx (CASE_LABEL (elt));
+	  do_jump_if_equal (index_mode, index, zero, lab, 0);
+	  force_expand_binop (index_mode, sub_optab,
+			      index, CONST1_RTX (index_mode),
+			      index, 0, OPTAB_DIRECT);
+	}
+    }
+  else
+    {
+      /* Similar to expand_case, but much simpler.  */
+      struct case_node *case_list = 0;
+      alloc_pool case_node_pool = create_alloc_pool ("struct sjlj_case pool",
+						     sizeof (struct case_node),
+						     ncases);
+      tree index_expr = make_tree (index_type, dispatch_index);
+      tree minval = build_int_cst (index_type, 0);
+      tree maxval = CASE_LOW (VEC_last (tree, dispatch_table));
+      tree range = maxval;
+      rtx default_label = gen_label_rtx ();
+
+      for (int i = ncases - 1; i > 0; --i)
+	{
+	  tree elt = VEC_index (tree, dispatch_table, i);
+	  tree low = CASE_LOW (elt);
+	  tree lab = CASE_LABEL (elt);
+	  case_list = add_case_node (case_list, low, low, lab, case_node_pool);
+	}
+
+      emit_case_dispatch_table (index_expr, index_type,
+				case_list, default_label,
+				minval, maxval, range);
+      emit_label (default_label);
+      free_alloc_pool (case_node_pool);
+    }
+
+  /* Dispatching something not handled?  Trap!  */
+  expand_builtin_trap ();
+
+  reorder_insns (NEXT_INSN (before_case), get_last_insn (), before_case);
+
+  free_temp_slots ();
 }
+
 
 /* Take an ordered list of case nodes
    and transform them into a near optimal binary tree,

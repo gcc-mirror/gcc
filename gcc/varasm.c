@@ -2999,9 +2999,8 @@ copy_constant (tree exp)
 						      CONSTRUCTOR_ELTS (exp)));
 	FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (exp), idx, purpose, value)
 	  {
-	    constructor_elt *ce = VEC_quick_push (constructor_elt, v, NULL);
-	    ce->index = purpose;
-	    ce->value = copy_constant (value);
+	    constructor_elt ce = {purpose, copy_constant (value)};
+	    VEC_quick_push (constructor_elt, v, ce);
 	  }
 	CONSTRUCTOR_ELTS (copy) = v;
 	return copy;
@@ -5563,9 +5562,8 @@ assemble_alias (tree decl, tree target)
     do_assemble_alias (decl, target);
   else
     {
-      alias_pair *p = VEC_safe_push (alias_pair, gc, alias_pairs, NULL);
-      p->decl = decl;
-      p->target = target;
+      alias_pair p = {decl, target};
+      VEC_safe_push (alias_pair, gc, alias_pairs, p);
     }
 }
 
@@ -5628,14 +5626,9 @@ static int
 dump_tm_clone_to_vec (void **slot, void *info)
 {
   struct tree_map *map = (struct tree_map *) *slot;
-  VEC(tm_alias_pair,heap) **tm_alias_pairs
-    = (VEC(tm_alias_pair, heap) **) info;
-  tm_alias_pair *p;
-
-  p = VEC_safe_push (tm_alias_pair, heap, *tm_alias_pairs, NULL);
-  p->from = map->base.from;
-  p->to = map->to;
-  p->uid = DECL_UID (p->from);
+  VEC(tm_alias_pair,heap) **tm_alias_pairs = (VEC(tm_alias_pair, heap) **) info;
+  tm_alias_pair p = {DECL_UID (map->base.from), map->base.from, map->to};
+  VEC_safe_push (tm_alias_pair, heap, *tm_alias_pairs, p);
   return 1;
 }
 

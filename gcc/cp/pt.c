@@ -5187,7 +5187,7 @@ has_value_dependent_address (tree op)
    call.c  */
 
 static int
-unify_success (bool explain_p ATTRIBUTE_UNUSED)
+unify_success (bool /*explain_p*/)
 {
   return 0;
 }
@@ -5202,7 +5202,7 @@ unify_parameter_deduction_failure (bool explain_p, tree parm)
 }
 
 static int
-unify_invalid (bool explain_p ATTRIBUTE_UNUSED)
+unify_invalid (bool /*explain_p*/)
 {
   return 1;
 }
@@ -10443,6 +10443,16 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	    break;
 	  }
 
+	if (TREE_CODE (t) == VAR_DECL && DECL_ANON_UNION_VAR_P (t))
+	  {
+	    /* Just use name lookup to find a member alias for an anonymous
+	       union, but then add it to the hash table.  */
+	    r = lookup_name (DECL_NAME (t));
+	    gcc_assert (DECL_ANON_UNION_VAR_P (r));
+	    register_local_specialization (r, t);
+	    break;
+	  }
+
 	/* Create a new node for the specialization we need.  */
 	r = copy_decl (t);
 	if (type == NULL_TREE)
@@ -14199,8 +14209,18 @@ tsubst_copy_and_build (tree t,
 	LAMBDA_EXPR_MUTABLE_P (r) = LAMBDA_EXPR_MUTABLE_P (t);
 	LAMBDA_EXPR_DISCRIMINATOR (r)
 	  = (LAMBDA_EXPR_DISCRIMINATOR (t));
-	LAMBDA_EXPR_EXTRA_SCOPE (r)
-	  = tsubst (LAMBDA_EXPR_EXTRA_SCOPE (t), args, complain, in_decl);
+	/* For a function scope, we want to use tsubst so that we don't
+	   complain about referring to an auto function before its return
+	   type has been deduced.  Otherwise, we want to use tsubst_copy so
+	   that we look up the existing field/parameter/variable rather
+	   than build a new one.  */
+	tree scope = LAMBDA_EXPR_EXTRA_SCOPE (t);
+	if (scope && TREE_CODE (scope) == FUNCTION_DECL)
+	  scope = tsubst (LAMBDA_EXPR_EXTRA_SCOPE (t), args,
+			  complain, in_decl);
+	else
+	  scope = RECUR (scope);
+	LAMBDA_EXPR_EXTRA_SCOPE (r) = scope;
 	LAMBDA_EXPR_RETURN_TYPE (r)
 	  = tsubst (LAMBDA_EXPR_RETURN_TYPE (t), args, complain, in_decl);
 
@@ -19189,10 +19209,15 @@ value_dependent_expression_p (tree expression)
 
     case VAR_DECL:
        /* A constant with literal type and is initialized
-	  with an expression that is value-dependent.  */
+	  with an expression that is value-dependent.
+
+          Note that a non-dependent parenthesized initializer will have
+          already been replaced with its constant value, so if we see
+          a TREE_LIST it must be dependent.  */
       if (DECL_INITIAL (expression)
 	  && decl_constant_var_p (expression)
-	  && value_dependent_expression_p (DECL_INITIAL (expression)))
+	  && (TREE_CODE (DECL_INITIAL (expression)) == TREE_LIST
+	      || value_dependent_expression_p (DECL_INITIAL (expression))))
 	return true;
       return false;
 
@@ -19539,7 +19564,7 @@ type_dependent_expression_p (tree expression)
 
 static tree
 instantiation_dependent_r (tree *tp, int *walk_subtrees,
-			   void *data ATTRIBUTE_UNUSED)
+			   void * /*data*/)
 {
   if (TYPE_P (*tp))
     {
@@ -20380,7 +20405,7 @@ append_type_to_template_for_access_check_1 (tree t,
 
   VEC_safe_push (qualified_typedef_usage_t, gc,
 		 TI_TYPEDEFS_NEEDING_ACCESS_CHECKING (ti),
-		 &typedef_usage);
+		 typedef_usage);
 }
 
 /* Append TYPE_DECL to the template TEMPL.

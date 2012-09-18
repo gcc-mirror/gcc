@@ -855,8 +855,8 @@ new_alias_set (void)
   if (flag_strict_aliasing)
     {
       if (alias_sets == 0)
-	VEC_safe_push (alias_set_entry, gc, alias_sets, (alias_set_entry) 0);
-      VEC_safe_push (alias_set_entry, gc, alias_sets, (alias_set_entry) 0);
+	VEC_safe_push (alias_set_entry, gc, alias_sets, 0);
+      VEC_safe_push (alias_set_entry, gc, alias_sets, 0);
       return VEC_length (alias_set_entry, alias_sets) - 1;
     }
   else

@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "lto-streamer.h"
 #include "data-streamer.h"
 #include "tree-streamer.h"
+#include "params.h"
 
 
 /* Intermediate information about a parameter that is only useful during the
@@ -1145,9 +1146,6 @@ get_ssa_def_if_simple_copy (tree rhs)
   return rhs;
 }
 
-/* TODO: Turn this into a PARAM.  */
-#define IPA_MAX_AFF_JF_ITEMS 16
-
 /* Simple linked list, describing known contents of an aggregate beforere
    call.  */
 
@@ -1327,8 +1325,8 @@ determine_known_aggregate_parts (gimple call, tree arg,
       *p = n;
 
       item_count++;
-      if (const_count == IPA_MAX_AFF_JF_ITEMS
-	  || item_count == 2 * IPA_MAX_AFF_JF_ITEMS)
+      if (const_count == PARAM_VALUE (PARAM_IPA_MAX_AGG_ITEMS)
+	  || item_count == 2 * PARAM_VALUE (PARAM_IPA_MAX_AGG_ITEMS))
 	break;
     }
 
@@ -1344,11 +1342,10 @@ determine_known_aggregate_parts (gimple call, tree arg,
 	{
 	  if (list->constant)
 	    {
-	      struct ipa_agg_jf_item *item;
-	      item = VEC_quick_push (ipa_agg_jf_item_t,
-				     jfunc->agg.items, NULL);
-	      item->offset = list->offset - arg_offset;
-	      item->value = list->constant;
+	      struct ipa_agg_jf_item item;
+	      item.offset = list->offset - arg_offset;
+	      item.value = list->constant;
+	      VEC_quick_push (ipa_agg_jf_item_t, jfunc->agg.items, item);
 	    }
 	  list = list->next;
 	}
@@ -3025,45 +3022,44 @@ ipa_combine_adjustments (ipa_parm_adjustment_vec inner,
       if (n->remove_param)
 	removals++;
       else
-	VEC_quick_push (ipa_parm_adjustment_t, tmp, n);
+	VEC_quick_push (ipa_parm_adjustment_t, tmp, *n);
     }
 
   adjustments = VEC_alloc (ipa_parm_adjustment_t, heap, outlen + removals);
   for (i = 0; i < outlen; i++)
     {
-      struct ipa_parm_adjustment *r;
+      struct ipa_parm_adjustment r;
       struct ipa_parm_adjustment *out = &VEC_index (ipa_parm_adjustment_t,
 						    outer, i);
       struct ipa_parm_adjustment *in = &VEC_index (ipa_parm_adjustment_t, tmp,
 						   out->base_index);
 
+      memset (&r, 0, sizeof (r));
       gcc_assert (!in->remove_param);
       if (out->remove_param)
 	{
 	  if (!index_in_adjustments_multiple_times_p (in->base_index, tmp))
 	    {
-	      r = VEC_quick_push (ipa_parm_adjustment_t, adjustments, NULL);
-	      memset (r, 0, sizeof (*r));
-	      r->remove_param = true;
+	      r.remove_param = true;
+	      VEC_quick_push (ipa_parm_adjustment_t, adjustments, r);
 	    }
 	  continue;
 	}
 
-      r = VEC_quick_push (ipa_parm_adjustment_t, adjustments, NULL);
-      memset (r, 0, sizeof (*r));
-      r->base_index = in->base_index;
-      r->type = out->type;
+      r.base_index = in->base_index;
+      r.type = out->type;
 
       /* FIXME:  Create nonlocal value too.  */
 
       if (in->copy_param && out->copy_param)
-	r->copy_param = true;
+	r.copy_param = true;
       else if (in->copy_param)
-	r->offset = out->offset;
+	r.offset = out->offset;
       else if (out->copy_param)
-	r->offset = in->offset;
+	r.offset = in->offset;
       else
-	r->offset = in->offset + out->offset;
+	r.offset = in->offset + out->offset;
+      VEC_quick_push (ipa_parm_adjustment_t, adjustments, r);
     }
 
   for (i = 0; i < inlen; i++)
@@ -3072,7 +3068,7 @@ ipa_combine_adjustments (ipa_parm_adjustment_vec inner,
 						  inner, i);
 
       if (n->remove_param)
-	VEC_quick_push (ipa_parm_adjustment_t, adjustments, n);
+	VEC_quick_push (ipa_parm_adjustment_t, adjustments, *n);
     }
 
   VEC_free (ipa_parm_adjustment_t, heap, tmp);
@@ -3240,11 +3236,10 @@ ipa_read_jump_function (struct lto_input_block *ib,
     }
   for (i = 0; i < count; i++)
     {
-      struct ipa_agg_jf_item *item = VEC_quick_push (ipa_agg_jf_item_t,
-				       jump_func->agg.items, NULL);
-
-      item->offset = streamer_read_uhwi (ib);
-      item->value = stream_read_tree (ib, data_in);
+      struct ipa_agg_jf_item item;
+      item.offset = streamer_read_uhwi (ib);
+      item.value = stream_read_tree (ib, data_in);
+      VEC_quick_push (ipa_agg_jf_item_t, jump_func->agg.items, item);
     }
 }
 

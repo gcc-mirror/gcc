@@ -639,6 +639,7 @@ BUILD_INFO_FALSE
 BUILD_INFO_TRUE
 baseline_subdir_switch
 baseline_dir
+HWCAP_FLAGS
 GLIBCXX_LDBL_COMPAT_FALSE
 GLIBCXX_LDBL_COMPAT_TRUE
 ENABLE_VISIBILITY_FALSE
@@ -8534,6 +8535,7 @@ $as_echo_n "checking for $compiler option to produce PIC... " >&6; }
 	# AIX 5 now supports IA64 processor
 	lt_prog_compiler_static='-Bstatic'
       fi
+      lt_prog_compiler_pic='-fPIC'
       ;;
 
     amigaos*)
@@ -11507,7 +11509,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11510 "configure"
+#line 11512 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11613,7 +11615,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11616 "configure"
+#line 11618 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -13416,6 +13418,7 @@ $as_echo_n "checking for $compiler option to produce PIC... " >&6; }
 	# AIX 5 now supports IA64 processor
 	lt_prog_compiler_static_CXX='-Bstatic'
       fi
+      lt_prog_compiler_pic_CXX='-fPIC'
       ;;
 
     amigaos*)
@@ -14994,7 +14997,7 @@ fi
     #
     # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
     cat > conftest.$ac_ext << EOF
-#line 14997 "configure"
+#line 15000 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -15329,7 +15332,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15332 "configure"
+#line 15335 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15364,7 +15367,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15367 "configure"
+#line 15370 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15399,7 +15402,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15402 "configure"
+#line 15405 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -15435,7 +15438,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15438 "configure"
+#line 15441 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -15514,7 +15517,7 @@ $as_echo "$as_me: WARNING: Performance of certain classes will degrade as a resu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15517 "configure"
+#line 15520 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -15556,7 +15559,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15559 "configure"
+#line 15562 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -15590,7 +15593,7 @@ $as_echo "$enable_int128" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15593 "configure"
+#line 15596 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -70645,6 +70648,43 @@ $as_echo "#define _GLIBCXX_LONG_DOUBLE_COMPAT 1" >>confdefs.h
     port_specific_symbol_files="\$(top_srcdir)/config/os/gnu-linux/ldbl-extra.ver"
   fi
 esac
+
+
+# Check if assembler supports disabling hardware capability support.
+
+  test -z "$HWCAP_FLAGS" && HWCAP_FLAGS=''
+
+  ac_save_CFLAGS="$CFLAGS"
+  CFLAGS="$CFLAGS -Wa,-nH"
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for as that supports -Wa,-nH" >&5
+$as_echo_n "checking for as that supports -Wa,-nH... " >&6; }
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+return 0;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  ac_hwcap_flags=yes
+else
+  ac_hwcap_flags=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+  if test "$ac_hwcap_flags" = "yes"; then
+    HWCAP_FLAGS="-Wa,-nH $HWCAP_FLAGS"
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_hwcap_flags" >&5
+$as_echo "$ac_hwcap_flags" >&6; }
+
+  CFLAGS="$ac_save_CFLAGS"
+
+
 
 
 # Check if assembler supports rdrand opcode.

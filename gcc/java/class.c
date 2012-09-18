@@ -2198,9 +2198,10 @@ make_class_data (tree type)
 
       for (i = 0; i < count; i++)
 	{
-	  constructor_elt *elt = VEC_quick_push (constructor_elt, v, NULL);
- 	  elt->index = build_int_cst (sizetype, i);
-	  elt->value = build_int_cstu (byte_type_node, data[i]);
+	  constructor_elt elt;
+ 	  elt.index = build_int_cst (sizetype, i);
+	  elt.value = build_int_cstu (byte_type_node, data[i]);
+	  VEC_quick_push (constructor_elt, v, elt);
 	}
 
       DECL_INITIAL (array) = build_constructor (type, v);

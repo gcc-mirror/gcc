@@ -304,8 +304,8 @@ init_eh_for_function (void)
   cfun->eh = ggc_alloc_cleared_eh_status ();
 
   /* Make sure zero'th entries are used.  */
-  VEC_safe_push (eh_region, gc, cfun->eh->region_array, (eh_region) NULL);
-  VEC_safe_push (eh_landing_pad, gc, cfun->eh->lp_array, (eh_landing_pad) NULL);
+  VEC_safe_push (eh_region, gc, cfun->eh->region_array, NULL);
+  VEC_safe_push (eh_landing_pad, gc, cfun->eh->lp_array, NULL);
 }
 
 /* Routines to generate the exception tree somewhat directly.
@@ -806,7 +806,7 @@ add_ehspec_entry (htab_t ehspec_hash, htab_t ttypes_hash, tree list)
       if (targetm.arm_eabi_unwinder)
 	VEC_safe_push (tree, gc, cfun->eh->ehspec_data.arm_eabi, NULL_TREE);
       else
-	VEC_safe_push (uchar, gc, cfun->eh->ehspec_data.other, (uchar) 0);
+	VEC_safe_push (uchar, gc, cfun->eh->ehspec_data.other, 0);
     }
 
   return n->filter;
@@ -1361,17 +1361,9 @@ sjlj_emit_dispatch_table (rtx dispatch_label, int num_dispatch)
 
   if (num_dispatch > 1)
     {
-      gimple switch_stmt;
-      tree default_label = create_artificial_label (UNKNOWN_LOCATION);
       rtx disp = adjust_address (fc, TYPE_MODE (integer_type_node),
 				 sjlj_fc_call_site_ofs);
-      switch_stmt = gimple_build_switch (make_tree (integer_type_node, disp),
-					 build_case_label (NULL, NULL,
-							   default_label),
-					 dispatch_labels);
-      expand_case (switch_stmt);
-      emit_label (label_rtx (default_label));
-      expand_builtin_trap ();
+      expand_sjlj_dispatch_table (disp, dispatch_labels);
     }
 
   seq = get_insns ();

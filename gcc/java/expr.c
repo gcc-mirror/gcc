@@ -2296,14 +2296,13 @@ get_symbol_table_index (tree t, tree special,
 {
   method_entry *e;
   unsigned i;
+  method_entry elem = {t, special};
 
   FOR_EACH_VEC_ELT (method_entry, *symbol_table, i, e)
     if (t == e->method && special == e->special)
       goto done;
 
-  e = VEC_safe_push (method_entry, gc, *symbol_table, NULL);
-  e->method = t;
-  e->special = special;
+  VEC_safe_push (method_entry, gc, *symbol_table, elem);
 
  done:
   return i + 1;

@@ -4023,6 +4023,17 @@ label:
 					   operands[2]));
       DONE;
     }
+
+  /* Expand a library call for the dynamic shift.  */
+  if (!CONST_INT_P (operands[2]) && !TARGET_DYNSHIFT)
+    {
+      emit_move_insn (gen_rtx_REG (SImode, R4_REG), operands[1]);
+      rtx funcaddr = gen_reg_rtx (Pmode);
+      function_symbol (funcaddr, "__ashlsi3_r0", SFUNC_STATIC);
+      emit_insn (gen_ashlsi3_d_call (operands[0], operands[2], funcaddr));
+
+      DONE;
+    }
 })
 
 (define_insn "ashlsi3_k"
@@ -4066,6 +4077,23 @@ label:
   FAIL;
 }
   [(set_attr "type" "dyn_shift")])
+
+;; If dynamic shifts are not available use a library function.
+;; By specifying the pattern we reduce the number of call clobbered regs.
+;; In order to make combine understand the truncation of the shift amount
+;; operand we have to allow it to use pseudo regs for the shift operands.
+(define_insn "ashlsi3_d_call"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=z")
+	(ashift:SI (reg:SI R4_REG)
+		   (and:SI (match_operand:SI 1 "arith_reg_operand" "z")
+			   (const_int 31))))
+   (use (match_operand:SI 2 "arith_reg_operand" "r"))
+   (clobber (reg:SI T_REG))
+   (clobber (reg:SI PR_REG))]
+  "TARGET_SH1 && !TARGET_DYNSHIFT"
+  "jsr	@%2%#"
+  [(set_attr "type" "sfunc")
+   (set_attr "needs_delay_slot" "yes")])
 
 (define_insn_and_split "ashlsi3_n"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
@@ -4512,6 +4540,16 @@ label:
 		 operands[2]));
       DONE;
     }
+
+  /* Expand a library call for the dynamic shift.  */
+  if (!CONST_INT_P (operands[2]) && !TARGET_DYNSHIFT)
+    {
+      emit_move_insn (gen_rtx_REG (SImode, R4_REG), operands[1]);
+      rtx funcaddr = gen_reg_rtx (Pmode);
+      function_symbol (funcaddr, "__lshrsi3_r0", SFUNC_STATIC);
+      emit_insn (gen_lshrsi3_d_call (operands[0], operands[2], funcaddr));
+      DONE;
+    }
 })
 
 (define_insn "lshrsi3_k"
@@ -4555,6 +4593,23 @@ label:
   FAIL;
 }
   [(set_attr "type" "dyn_shift")])
+
+;; If dynamic shifts are not available use a library function.
+;; By specifying the pattern we reduce the number of call clobbered regs.
+;; In order to make combine understand the truncation of the shift amount
+;; operand we have to allow it to use pseudo regs for the shift operands.
+(define_insn "lshrsi3_d_call"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=z")
+	(lshiftrt:SI (reg:SI R4_REG)
+		     (and:SI (match_operand:SI 1 "arith_reg_operand" "z")
+			     (const_int 31))))
+   (use (match_operand:SI 2 "arith_reg_operand" "r"))
+   (clobber (reg:SI T_REG))
+   (clobber (reg:SI PR_REG))]
+  "TARGET_SH1 && !TARGET_DYNSHIFT"
+  "jsr	@%2%#"
+  [(set_attr "type" "sfunc")
+   (set_attr "needs_delay_slot" "yes")])
 
 (define_insn_and_split "lshrsi3_n"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
@@ -9280,7 +9335,7 @@ label:
   [(return)]
   ""
 {
-  sh_expand_epilogue (1);
+  sh_expand_epilogue (true);
   if (TARGET_SHCOMPACT)
     {
       rtx insn, set;
@@ -10099,9 +10154,13 @@ label:
 }
   [(set_attr "type" "load_media")])
 
+(define_expand "simple_return"
+  [(simple_return)]
+ "sh_can_use_simple_return_p ()")
+
 (define_expand "return"
   [(return)]
-  "reload_completed && ! sh_need_epilogue ()"
+ "reload_completed && epilogue_completed"
 {
   if (TARGET_SHMEDIA)
     {
@@ -10117,8 +10176,8 @@ label:
     }
 })
 
-(define_insn "*return_i"
-  [(return)]
+(define_insn "*<code>_i"
+  [(any_return)]
   "TARGET_SH1 && ! (TARGET_SHCOMPACT
 		    && (crtl->args.info.call_cookie
 			& CALL_COOKIE_RET_TRAMP (1)))
@@ -10244,19 +10303,12 @@ label:
 (define_expand "prologue"
   [(const_int 0)]
   ""
-{
-  sh_expand_prologue ();
-  DONE;
-})
+  "sh_expand_prologue (); DONE;")
 
 (define_expand "epilogue"
   [(return)]
   ""
-{
-  sh_expand_epilogue (0);
-  emit_jump_insn (gen_return ());
-  DONE;
-})
+  "sh_expand_epilogue (false);")
 
 (define_expand "eh_return"
   [(use (match_operand 0 "register_operand" ""))]

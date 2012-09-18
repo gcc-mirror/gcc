@@ -1878,7 +1878,7 @@ darwin_asm_named_section (const char *name,
          the assumption of how this is done.  */
       if (lto_section_names == NULL)
         lto_section_names = VEC_alloc (darwin_lto_section_e, gc, 16);
-      VEC_safe_push (darwin_lto_section_e, gc, lto_section_names, &e);
+      VEC_safe_push (darwin_lto_section_e, gc, lto_section_names, e);
    }
   else if (strncmp (name, "__DWARF,", 8) == 0)
     darwin_asm_dwarf_section (name, flags, decl);
@@ -2698,7 +2698,7 @@ darwin_asm_dwarf_section (const char *name, unsigned int flags,
       fprintf (asm_out_file, "Lsection%.*s:\n", namelen, sname);
       e.count = 1;
       e.name = xstrdup (sname);
-      VEC_safe_push (dwarf_sect_used_entry, gc, dwarf_sect_names_table, &e);
+      VEC_safe_push (dwarf_sect_used_entry, gc, dwarf_sect_names_table, e);
     }
 }
 

@@ -25,7 +25,7 @@ SHLIB_MAKE_SOLINK = \
 	(echo "/* GNU ld script"; \
 	 echo "   Use the shared library, but some functions are only in"; \
 	 echo "   the static library.  */"; \
-	 echo "GROUP ( $(SHLIB_SONAME) libgcc.a )" \
+	 echo "GROUP ( $(SHLIB_SONAME) -lgcc )" \
 	) > $(SHLIB_DIR)/$(SHLIB_SOLINK)
 SHLIB_INSTALL_SOLINK = \
 	$(INSTALL_DATA) $(SHLIB_DIR)/$(SHLIB_SOLINK) \

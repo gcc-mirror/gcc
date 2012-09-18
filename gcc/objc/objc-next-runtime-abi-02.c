@@ -1068,7 +1068,7 @@ objc_v2_get_class_reference (tree ident)
   decl = build_v2_class_reference_decl (ident);
   e.ident = ident;
   e.data = decl;
-  VEC_safe_push (ident_data_tuple, gc, classrefs, &e);
+  VEC_safe_push (ident_data_tuple, gc, classrefs, e);
   return decl;
 }
 
@@ -1233,7 +1233,7 @@ build_v2_selector_messenger_reference (tree sel_name, tree message_func_decl)
   e.func = message_func_decl;
   e.selname = sel_name;
   e.refdecl = decl;
-  VEC_safe_push (msgref_entry, gc, msgrefs, &e);
+  VEC_safe_push (msgref_entry, gc, msgrefs, e);
   return decl;
 }
 
@@ -1290,7 +1290,7 @@ objc_v2_get_protocol_reference (tree ident)
   decl = build_v2_protocollist_ref_decl (ident);
   e.id = ident;
   e.refdecl = decl;
-  VEC_safe_push (prot_list_entry, gc, protrefs, &e);
+  VEC_safe_push (prot_list_entry, gc, protrefs, e);
   return decl;
 }
 
@@ -1476,7 +1476,7 @@ next_runtime_abi_02_get_class_super_ref (location_t loc ATTRIBUTE_UNUSED,
   decl = build_v2_superclass_ref_decl (id, inst_meth);
   e.ident = id;
   e.data = decl;
-  VEC_safe_push (ident_data_tuple, gc, list, &e);
+  VEC_safe_push (ident_data_tuple, gc, list, e);
   return decl;
 }
 
@@ -2126,7 +2126,7 @@ objc_add_to_protocol_list (tree protocol_interface_decl, tree protocol_decl)
     protlist = VEC_alloc (prot_list_entry, gc, 32);
   e.id = protocol_interface_decl;
   e.refdecl = protocol_decl;
-  VEC_safe_push (prot_list_entry, gc, protlist, &e);
+  VEC_safe_push (prot_list_entry, gc, protlist, e);
 }
 
 /* Build the __protocol_list section table containing address of all
@@ -2806,7 +2806,7 @@ ivar_offset_ref (tree class_name, tree field_decl)
 
   e.decl = decl;
   e.offset = byte_position (field_decl);
-  VEC_safe_push (ivarref_entry, gc, ivar_offset_refs, &e);
+  VEC_safe_push (ivarref_entry, gc, ivar_offset_refs, e);
   return decl;
 }
 
@@ -3082,7 +3082,7 @@ objc_v2_add_to_ehtype_list (tree name)
   /* Not found, or new list.  */
   e.ident = name;
   e.data = NULL_TREE;
-  VEC_safe_push (ident_data_tuple, gc, ehtype_list, &e);
+  VEC_safe_push (ident_data_tuple, gc, ehtype_list, e);
 }
 
 static void

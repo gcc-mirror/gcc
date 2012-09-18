@@ -1705,6 +1705,27 @@ struct Unicode_range
   unsigned int stride;
 };
 
+// A table of whitespace characters--Unicode code points classified as
+// "Space", "C" locale whitespace characters, the "next line" control
+// character (0085), the line separator (2028), the paragraph
+// separator (2029), and the "zero-width non-break space" (feff).
+
+static const Unicode_range unicode_space[] =
+{
+  { 0x0009, 0x000d, 1 },
+  { 0x0020, 0x0020, 1 },
+  { 0x0085, 0x0085, 1 },
+  { 0x00a0, 0x00a0, 1 },
+  { 0x1680, 0x1680, 1 },
+  { 0x180e, 0x180e, 1 },
+  { 0x2000, 0x200a, 1 },
+  { 0x2028, 0x2029, 1 },
+  { 0x202f, 0x202f, 1 },
+  { 0x205f, 0x205f, 1 },
+  { 0x3000, 0x3000, 1 },
+  { 0xfeff, 0xfeff, 1 },
+};
+
 // A table of Unicode digits--Unicode code points classified as
 // "Digit".
 
@@ -2292,6 +2313,15 @@ Lex::is_in_unicode_range(unsigned int c, const Unicode_range* ranges,
 	}
       return false;
     }
+}
+
+// Return whether C is a space character.
+
+bool
+Lex::is_unicode_space(unsigned int c)
+{
+  return Lex::is_in_unicode_range(c, unicode_space,
+				  ARRAY_SIZE(unicode_space));
 }
 
 // Return whether C is a Unicode digit--a Unicode code point

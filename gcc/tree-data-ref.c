@@ -4300,7 +4300,7 @@ static bool
 get_references_in_stmt (gimple stmt, VEC (data_ref_loc, heap) **references)
 {
   bool clobbers_memory = false;
-  data_ref_loc *ref;
+  data_ref_loc ref;
   tree *op0, *op1;
   enum gimple_code stmt_code = gimple_code (stmt);
 
@@ -4329,9 +4329,9 @@ get_references_in_stmt (gimple stmt, VEC (data_ref_loc, heap) **references)
 	      && (base = get_base_address (*op1))
 	      && TREE_CODE (base) != SSA_NAME))
 	{
-	  ref = VEC_safe_push (data_ref_loc, heap, *references, NULL);
-	  ref->pos = op1;
-	  ref->is_read = true;
+	  ref.pos = op1;
+	  ref.is_read = true;
+	  VEC_safe_push (data_ref_loc, heap, *references, ref);
 	}
     }
   else if (stmt_code == GIMPLE_CALL)
@@ -4347,9 +4347,9 @@ get_references_in_stmt (gimple stmt, VEC (data_ref_loc, heap) **references)
 	  if (DECL_P (*op1)
 	      || (REFERENCE_CLASS_P (*op1) && get_base_address (*op1)))
 	    {
-	      ref = VEC_safe_push (data_ref_loc, heap, *references, NULL);
-	      ref->pos = op1;
-	      ref->is_read = true;
+	      ref.pos = op1;
+	      ref.is_read = true;
+	      VEC_safe_push (data_ref_loc, heap, *references, ref);
 	    }
 	}
     }
@@ -4360,9 +4360,9 @@ get_references_in_stmt (gimple stmt, VEC (data_ref_loc, heap) **references)
       && (DECL_P (*op0)
 	  || (REFERENCE_CLASS_P (*op0) && get_base_address (*op0))))
     {
-      ref = VEC_safe_push (data_ref_loc, heap, *references, NULL);
-      ref->pos = op0;
-      ref->is_read = false;
+      ref.pos = op0;
+      ref.is_read = false;
+      VEC_safe_push (data_ref_loc, heap, *references, ref);
     }
   return clobbers_memory;
 }

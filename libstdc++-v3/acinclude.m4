@@ -169,6 +169,32 @@ AC_DEFUN([GLIBCXX_CHECK_COMPILER_FEATURES], [
 
 
 dnl
+dnl Check if the assembler used supports disabling generation of hardware
+dnl capabilities.  This is only supported by Sun as at the moment.
+dnl
+dnl Defines:
+dnl  HWCAP_FLAGS='-Wa,-nH' if possible.
+dnl
+AC_DEFUN([GLIBCXX_CHECK_ASSEMBLER_HWCAP], [
+  test -z "$HWCAP_FLAGS" && HWCAP_FLAGS=''
+
+  ac_save_CFLAGS="$CFLAGS"
+  CFLAGS="$CFLAGS -Wa,-nH"
+
+  AC_MSG_CHECKING([for as that supports -Wa,-nH])
+  AC_TRY_COMPILE([], [return 0;], [ac_hwcap_flags=yes],[ac_hwcap_flags=no])
+  if test "$ac_hwcap_flags" = "yes"; then
+    HWCAP_FLAGS="-Wa,-nH $HWCAP_FLAGS"
+  fi
+  AC_MSG_RESULT($ac_hwcap_flags)
+
+  CFLAGS="$ac_save_CFLAGS"
+
+  AC_SUBST(HWCAP_FLAGS)
+])
+
+
+dnl
 dnl If GNU ld is in use, check to see if tricky linker opts can be used.  If
 dnl the native linker is in use, all variables will be defined to something
 dnl safe (like an empty string).

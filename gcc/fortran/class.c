@@ -503,7 +503,9 @@ gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
   gfc_component *c;
   int rank;
 
-  if (as && *as && (*as)->type == AS_ASSUMED_SIZE)
+  gcc_assert (as);
+
+  if (*as && (*as)->type == AS_ASSUMED_SIZE)
     {
       gfc_error ("Assumed size polymorphic objects or components, such "
 		 "as that at %C, have not yet been implemented");
@@ -838,6 +840,7 @@ finalize_component (gfc_expr *expr, gfc_symbol *derived, gfc_component *comp,
 
       for (c = comp->ts.u.derived->components; c; c = c->next)
 	finalize_component (e, c->ts.u.derived, c, stat, code);
+      gfc_free_expr (e);
     }
 }
 

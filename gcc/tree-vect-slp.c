@@ -1099,7 +1099,7 @@ vect_slp_rearrange_stmts (slp_tree node, unsigned int group_size,
   tmp_stmts = VEC_alloc (gimple, heap, group_size);
 
   for (i = 0; i < group_size; i++)
-    VEC_safe_push (gimple, heap, tmp_stmts, (gimple)NULL);
+    VEC_safe_push (gimple, heap, tmp_stmts, NULL);
 
   FOR_EACH_VEC_ELT (gimple, SLP_TREE_SCALAR_STMTS (node), i, stmt)
     {
@@ -2663,7 +2663,7 @@ vect_create_mask_and_perm (gimple stmt, gimple next_scalar_stmt,
      stmts later.  */
   for (i = VEC_length (gimple, SLP_TREE_VEC_STMTS (node));
        i < (int) SLP_TREE_NUMBER_OF_VEC_STMTS (node); i++)
-    VEC_quick_push (gimple, SLP_TREE_VEC_STMTS (node), (gimple)NULL);
+    VEC_quick_push (gimple, SLP_TREE_VEC_STMTS (node), NULL);
 
   perm_dest = vect_create_destination_var (gimple_assign_lhs (stmt), vectype);
   for (i = 0; i < ncopies; i++)
