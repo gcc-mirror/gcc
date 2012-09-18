@@ -33,7 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "expr.h"
 #include "cfgloop.h"
-#include "tree-vectorizer.h"
+#include "optabs.h"
 
 /* This pass propagates the RHS of assignment statements into use
    sites of the LHS of the assignment.  It's basically a specialized
@@ -2854,14 +2854,24 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
     return false;
 
   if (maybe_ident)
-    {
-      gimple_assign_set_rhs_from_tree (gsi, orig);
-    }
+    gimple_assign_set_rhs_from_tree (gsi, orig);
   else
     {
-      op2 = vect_gen_perm_mask (type, sel);
-      if (!op2)
+      tree mask_type, *mask_elts;
+
+      if (!can_vec_perm_p (TYPE_MODE (type), false, sel))
 	return false;
+      mask_type
+	= build_vector_type (build_nonstandard_integer_type (elem_size, 1),
+			     nelts);
+      if (GET_MODE_CLASS (TYPE_MODE (mask_type)) != MODE_VECTOR_INT
+	  || GET_MODE_SIZE (TYPE_MODE (mask_type))
+	     != GET_MODE_SIZE (TYPE_MODE (type)))
+	return false;
+      mask_elts = XALLOCAVEC (tree, nelts);
+      for (i = 0; i < nelts; i++)
+	mask_elts[i] = build_int_cst (TREE_TYPE (mask_type), sel[i]);
+      op2 = build_vector (mask_type, mask_elts);
       gimple_assign_set_rhs_with_ops_1 (gsi, VEC_PERM_EXPR, orig, orig, op2);
     }
   update_stmt (gsi_stmt (*gsi));

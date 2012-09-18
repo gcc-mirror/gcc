@@ -1,3 +1,13 @@
+2012-09-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/54610
+	* tree-ssa-forwprop.c: Include optabs.h.  Don't include
+	tree-vectorizer.h.
+	(simplify_vector_constructor): Don't use vect_gen_perm_mask,
+	instead create the mask constant here.
+	* Makefile.in (tree-ssa-forwprop.o): Depend on $(OPTABS_H).
+	Don't depend on $(TREE_VECTORIZER_H).
+
 2012-09-18  Florian Weimer  <fweimer@redhat.com>
 
 	* Makefile.in (BASIC_BLOCK_H): Add cfg-flags.def.
