@@ -1,3 +1,8 @@
+2012-09-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/54617
+	* expr.c (store_field): Handle a PARALLEL in more cases.
+
 2012-09-18  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.md (sminsi3, smaxsi3, uminsi3, umaxsi3):
