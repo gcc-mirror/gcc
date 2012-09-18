@@ -1,3 +1,12 @@
+2012-09-18  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (sminsi3, smaxsi3, uminsi3, umaxsi3):
+	Delete.
+	(abssi2, abs<mode>2_isel, nabs<mode>2_isel, abssi2_nopower,
+	nabs_nopower): Delete.
+	(absdi2, absdi2_internal, nabsdi2): Delete.
+	(smindi3, smaxdi3, umindi3, umaxdi3): Delete.
+
 2012-09-18  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.md: Tidy up empty "".  Fix C code indentation.
