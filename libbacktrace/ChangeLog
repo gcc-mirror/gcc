@@ -1,5 +1,9 @@
 2012-09-18  Ian Lance Taylor  <iant@google.com>
 
+	* dwarf.c: Correct test of HAVE_DECL_STRNLEN.
+
+2012-09-18  Ian Lance Taylor  <iant@google.com>
+
 	* configure.ac: Add AC_USE_SYSTEM_EXTENSIONS.
 	* mmapio.c: Don't define _GNU_SOURCE.
 	* configure, config.h.in: Rebuild.

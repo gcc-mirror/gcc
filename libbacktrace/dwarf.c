@@ -44,7 +44,7 @@ POSSIBILITY OF SUCH DAMAGE.  */
 #include "backtrace.h"
 #include "internal.h"
 
-#ifndef HAVE_DECL_STRNLEN
+#if !defined(HAVE_DECL_STRNLEN) || !HAVE_DECL_STRNLEN
 /* The function is defined in libiberty if needed.  */
 extern size_t strnlen (const char *, size_t);
 #endif
