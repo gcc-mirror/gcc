@@ -201,6 +201,20 @@ if test "$ALLOC_FILE" = "alloc.lo"; then
 fi
 AC_SUBST(BACKTRACE_USES_MALLOC)
 
+# Check for the fcntl function.
+if test -n "${with_target_subdir}"; then
+   case "${host}" in
+   *-*-mingw*) have_fcntl=no ;;
+   *) have_fcntl=yes ;;
+   esac
+else
+  AC_CHECK_FUNC(fcntl, [have_fcntl=yes], [have_fcntl=no])
+fi
+if test "$have_fcntl" = "yes"; then
+  AC_DEFINE([HAVE_FCNTL], 1,
+	    [Define to 1 if you have the fcntl function])
+fi
+
 AC_CHECK_DECLS(strnlen)
 
 AC_CACHE_CHECK([whether tests can run],

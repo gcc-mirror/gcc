@@ -11713,6 +11713,27 @@ if test "$ALLOC_FILE" = "alloc.lo"; then
 fi
 
 
+# Check for the fcntl function.
+if test -n "${with_target_subdir}"; then
+   case "${host}" in
+   *-*-mingw*) have_fcntl=no ;;
+   *) have_fcntl=yes ;;
+   esac
+else
+  ac_fn_c_check_func "$LINENO" "fcntl" "ac_cv_func_fcntl"
+if test "x$ac_cv_func_fcntl" = x""yes; then :
+  have_fcntl=yes
+else
+  have_fcntl=no
+fi
+
+fi
+if test "$have_fcntl" = "yes"; then
+
+$as_echo "#define HAVE_FCNTL 1" >>confdefs.h
+
+fi
+
 ac_fn_c_check_decl "$LINENO" "strnlen" "ac_cv_have_decl_strnlen" "$ac_includes_default"
 if test "x$ac_cv_have_decl_strnlen" = x""yes; then :
   ac_have_decl=1

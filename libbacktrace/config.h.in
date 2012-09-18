@@ -10,6 +10,9 @@
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 
+/* Define to 1 if you have the fcntl function */
+#undef HAVE_FCNTL
+
 /* Define if _Unwind_GetIPInfo is available. */
 #undef HAVE_GETIPINFO
 
