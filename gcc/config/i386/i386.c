@@ -32792,7 +32792,8 @@ ix86_rtx_costs (rtx x, int code_i, int outer_code_i, int opno, int *total,
     case AND:
     case IOR:
     case XOR:
-      if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
+      if (GET_MODE_CLASS (mode) == MODE_INT
+	  && GET_MODE_SIZE (mode) > UNITS_PER_WORD)
 	{
 	  *total = (cost->add * 2
 		    + (rtx_cost (XEXP (x, 0), outer_code, opno, speed)

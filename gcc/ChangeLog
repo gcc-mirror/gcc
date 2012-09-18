@@ -1,3 +1,9 @@
+2012-09-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/54592
+	* config/i386/i386.c (ix86_rtx_costs): Limit > UNITS_PER_WORD
+	AND/IOR/XOR cost calculation to MODE_INT class modes.
+
 2012-09-18 Thomas Quinot  <quinot@adacore.com>       
 
 	* doc/invoke.texi: Document -fada-spec-parent.
