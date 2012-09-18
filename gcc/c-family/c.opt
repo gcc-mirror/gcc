@@ -729,6 +729,10 @@ faccess-control
 C++ ObjC++ Var(flag_access_control) Init(1)
 Enforce class member access control semantics
 
+fada-spec-parent=
+C ObjC C++ ObjC++ RejectNegative Joined Var(ada_specs_parent)
+-fada-spec-parent=unit  Dump Ada specs as child units of given parent
+
 fall-virtual
 C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 

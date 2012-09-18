@@ -166,7 +166,7 @@ in the following sections.
 -pipe  -pass-exit-codes  @gol
 -x @var{language}  -v  -###  --help@r{[}=@var{class}@r{[},@dots{}@r{]]}  --target-help  @gol
 --version -wrapper @@@var{file} -fplugin=@var{file} -fplugin-arg-@var{name}=@var{arg}  @gol
--fdump-ada-spec@r{[}-slim@r{]} -fdump-go-spec=@var{file}}
+-fdump-ada-spec@r{[}-slim@r{]} -fada-spec-parent=@var{arg} -fdump-go-spec=@var{file}}
 
 @item C Language Options
 @xref{C Dialect Options,,Options Controlling C Dialect}.
