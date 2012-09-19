@@ -6352,6 +6352,20 @@ choose_reload_regs_init (struct insn_chain *chain, rtx *save_reload_reg_rtx)
 			      rld[i].when_needed, rld[i].mode);
 }
 
+#ifdef SECONDARY_MEMORY_NEEDED
+/* If X is not a subreg, return it unmodified.  If it is a subreg,
+   look up whether we made a replacement for the SUBREG_REG.  Return
+   either the replacement or the SUBREG_REG.  */
+
+static rtx
+replaced_subreg (rtx x)
+{
+  if (GET_CODE (x) == SUBREG)
+    return find_replacement (&SUBREG_REG (x));
+  return x;
+}
+#endif
+
 /* Assign hard reg targets for the pseudo-registers we must reload
    into hard regs for this insn.
    Also output the instructions to copy them in and out of the hard regs.
@@ -6942,7 +6956,7 @@ choose_reload_regs (struct insn_chain *chain)
       for (j = 0; j < n_reloads; j++)
 	{
 	  int r = reload_order[j];
-	  rtx check_reg;
+	  rtx check_reg, tem;
 	  if (reload_inherited[r] && rld[r].reg_rtx)
 	    check_reg = rld[r].reg_rtx;
 	  else if (reload_override_in[r]
@@ -6974,10 +6988,26 @@ choose_reload_regs (struct insn_chain *chain)
 	     If we succeeded removing some reload and we are doing a preliminary
 	     pass just to remove such reloads, make another pass, since the
 	     removal of one reload might allow us to inherit another one.  */
-	  else if (rld[r].in
+	  else if (pass
+		   && rld[r].in
 		   && rld[r].out != rld[r].in
-		   && remove_address_replacements (rld[r].in) && pass)
+		   && remove_address_replacements (rld[r].in))
 	    pass = 2;
+#ifdef SECONDARY_MEMORY_NEEDED
+	  /* If we needed a memory location for the reload, we also have to
+	     remove its related reloads.  */
+	  else if (pass
+	           && rld[r].in
+		   && rld[r].out != rld[r].in
+		   && (tem = replaced_subreg (rld[r].in), REG_P (tem))		   
+		   && REGNO (tem) < FIRST_PSEUDO_REGISTER
+		   && SECONDARY_MEMORY_NEEDED (REGNO_REG_CLASS (REGNO (tem)),
+					       rld[r].rclass, rld[r].inmode)
+		   && remove_address_replacements
+		      (get_secondary_mem (tem, rld[r].inmode, rld[r].opnum,
+					  rld[r].when_needed)))
+	    pass = 2;
+#endif
 	}
     }
 
@@ -8457,20 +8487,6 @@ emit_insn_if_valid_for_reload (rtx insn)
   delete_insns_since (last);
   return NULL;
 }
-
-#ifdef SECONDARY_MEMORY_NEEDED
-/* If X is not a subreg, return it unmodified.  If it is a subreg,
-   look up whether we made a replacement for the SUBREG_REG.  Return
-   either the replacement or the SUBREG_REG.  */
-
-static rtx
-replaced_subreg (rtx x)
-{
-  if (GET_CODE (x) == SUBREG)
-    return find_replacement (&SUBREG_REG (x));
-  return x;
-}
-#endif
 
 /* Emit code to perform a reload from IN (which may be a reload register) to
    OUT (which may also be a reload register).  IN or OUT is from operand

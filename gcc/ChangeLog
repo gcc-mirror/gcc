@@ -1,3 +1,10 @@
+2012-09-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/54290
+	* reload1.c (choose_reload_regs): Also take into account secondary MEMs
+	to remove address replacements for inherited reloads.
+	(replaced_subreg): Move around.
+
 2012-09-19  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/aix61.h (TARGET_DEFAULT): Add MASK_PPC_GPOPT,
