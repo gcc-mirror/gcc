@@ -722,7 +722,16 @@ Lex::next_token()
 		unsigned int ci;
 		bool issued_error;
 		this->lineoff_ = p - this->linebuf_;
-		this->advance_one_utf8_char(p, &ci, &issued_error);
+		const char *pnext = this->advance_one_utf8_char(p, &ci,
+								&issued_error);
+
+		// Ignore byte order mark at start of file.
+		if (ci == 0xfeff && this->lineno_ == 1 && this->lineoff_ == 0)
+		  {
+		    p = pnext;
+		    break;
+		  }
+
 		if (Lex::is_unicode_letter(ci))
 		  return this->gather_identifier();
 
