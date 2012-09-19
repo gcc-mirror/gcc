@@ -1,3 +1,8 @@
+2012-09-19  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/aix61.h (TARGET_DEFAULT): Add MASK_PPC_GPOPT,
+	MASK_PPC_GFXOPT, and MASK_MFCRF.
+
 2012-09-19  Richard Guenther  <rguenther@suse.de>
 
 	* passes.c (init_optimization_passes): For -Og move
