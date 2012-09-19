@@ -3136,6 +3136,15 @@ $as_echo "yes" >&6; }
     fi
 fi
 
+# Disable libquadmath for some systems.
+case "${target}" in
+  # libquadmath is unused on AIX and libquadmath build process use of
+  # LD_LIBRARY_PATH can break AIX bootstrap.
+  powerpc-*-aix* | rs6000-*-aix*)
+    noconfigdirs="$noconfigdirs target-libquadmath"
+    ;;
+esac
+
 # Disable libssp for some systems.
 case "${target}" in
   avr-*-*)
@@ -3641,7 +3650,7 @@ case "${target}" in
   microblaze*)
     noconfigdirs="$noconfigdirs gprof"
     ;;
-  mips*-sde-elf*)
+  mips*-sde-elf* | mips*-mti-elf*)
     if test x$with_newlib = xyes; then
       noconfigdirs="$noconfigdirs gprof"
     fi
@@ -6657,7 +6666,7 @@ case "${target}" in
   spu-*-*)
     target_makefile_frag="config/mt-spu"
     ;;
-  mips*-sde-elf*)
+  mips*-sde-elf* | mips*-mti-elf*)
     target_makefile_frag="config/mt-sde"
     ;;
   mipsisa*-*-elfoabi*)
@@ -14248,6 +14257,7 @@ compare_exclusions="gcc/cc*-checksum\$(objext) | gcc/ada/*tools/*"
 case "$target" in
   hppa*64*-*-hpux*) ;;
   hppa*-*-hpux*) compare_exclusions="gcc/cc*-checksum\$(objext) | */libgcc/lib2funcs* | gcc/ada/*tools/*" ;;
+  powerpc*-ibm-aix*) compare_exclusions="gcc/cc*-checksum\$(objext) | gcc/ada/*tools/* | *libgomp*\$(objext)" ;;
 esac
 
 
