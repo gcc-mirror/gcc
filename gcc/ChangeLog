@@ -1,6 +1,6 @@
 2012-09-19  Bin Cheng  <bin.cheng@arm.com>
 
-	* fold-const.c (fold_truth_andor) Remove duplicated check on
+	* fold-const.c (fold_truth_andor): Remove duplicated check on
 	BRANCH_COST.
 
 2012-09-18  Eric Botcazou  <ebotcazou@adacore.com>
