@@ -1,3 +1,8 @@
+2012-09-19  Tulio Magno Quites Machado Filho  <tuliom@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/ppc-get-timebase.c: New file.
+	* gcc.target/powerpc/ppc-mftb.c: New file.
+
 2012-09-19  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/54089
