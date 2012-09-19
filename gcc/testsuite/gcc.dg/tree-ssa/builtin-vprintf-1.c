@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-fab" } */
+/* { dg-options "-O2 -fdump-tree-fab1" } */
 
 #include <stdarg.h>
 
@@ -27,11 +27,11 @@ test (va_list ap1, va_list ap2, va_list ap3, va_list ap4, va_list ap5,
   vi7 = 0;
 }
 
-/* { dg-final { scan-tree-dump "vi0.*vprintf.*\"hello\".*vi1" "fab"} } */
-/* { dg-final { scan-tree-dump "vi1.*puts.*\"hello\".*vi2" "fab"} } */
-/* { dg-final { scan-tree-dump "vi2.*putchar.*vi3" "fab"} } */
-/* { dg-final { scan-tree-dump "vi3 ={v} 0\[^\(\)\]*vi4 ={v} 0" "fab"} } */
-/* { dg-final { scan-tree-dump "vi4.*vprintf.*\"%s\".*vi5" "fab"} } */
-/* { dg-final { scan-tree-dump "vi5.*vprintf.*\"%c\".*vi6" "fab"} } */
-/* { dg-final { scan-tree-dump "vi6.*vprintf.*\"%s\\\\n\".*vi7" "fab"} } */
-/* { dg-final { cleanup-tree-dump "fab" } } */
+/* { dg-final { scan-tree-dump "vi0.*vprintf.*\"hello\".*vi1" "fab1"} } */
+/* { dg-final { scan-tree-dump "vi1.*puts.*\"hello\".*vi2" "fab1"} } */
+/* { dg-final { scan-tree-dump "vi2.*putchar.*vi3" "fab1"} } */
+/* { dg-final { scan-tree-dump "vi3 ={v} 0\[^\(\)\]*vi4 ={v} 0" "fab1"} } */
+/* { dg-final { scan-tree-dump "vi4.*vprintf.*\"%s\".*vi5" "fab1"} } */
+/* { dg-final { scan-tree-dump "vi5.*vprintf.*\"%c\".*vi6" "fab1"} } */
+/* { dg-final { scan-tree-dump "vi6.*vprintf.*\"%s\\\\n\".*vi7" "fab1"} } */
+/* { dg-final { cleanup-tree-dump "fab1" } } */

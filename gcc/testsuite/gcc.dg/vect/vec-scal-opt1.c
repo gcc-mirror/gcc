@@ -17,5 +17,5 @@ int main (int argc, char *argv[]) {
    return vidx(short, r1, 0);
 }
 
-/* { dg-final { scan-tree-dump-times ">> 2" 1 "veclower2" } } */
-/* { dg-final { cleanup-tree-dump "veclower2" } } */
+/* { dg-final { scan-tree-dump-times ">> 2" 1 "veclower21" } } */
+/* { dg-final { cleanup-tree-dump "veclower21" } } */
