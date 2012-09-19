@@ -1,3 +1,11 @@
+2012-09-19  Terry Guo  <terry.guo@arm.com>
+
+	* lib/gcc-dg.exp (dg_runtest_extra_prunes): New variable to define
+	extra prune rules that will be applied to all tests in a .exp file.
+	(gcc-dg-prune): Use rules defined by the above variable.
+	* gcc.target/arm/arm.exp (dg_runtest_extra_prunes): Skip all the
+	harmless warnings on architecture switch conflict.
+
 2012-09-19  Hans-Peter Nilsson  <hp@axis.com>
 
 	* g++.dg/debug/dwarf2/nested-3.C: Match a sequence
