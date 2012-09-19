@@ -1,5 +1,11 @@
 2012-09-19  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	PR target/54089
+	* gcc.target/sh/pr54089-1.c (test_11, test_12, test_13, test_14): New
+	functions.
+
+2012-09-19  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	PR target/54236
 	* gcc.target/sh/pr54236-1.c (test_08): Add one bit left shift case.
 

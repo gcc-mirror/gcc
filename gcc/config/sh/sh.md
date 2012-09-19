@@ -3940,7 +3940,7 @@ label:
   [(set (match_operand:SI 0 "arith_reg_dest")
 	(ior:SI (lshiftrt:SI (match_operand:SI 1 "arith_reg_operand")
 			     (match_operand:SI 2 "const_int_operand"))
-		(ashift:SI (match_operand:SI 3 "t_reg_operand")
+		(ashift:SI (match_operand:SI 3 "arith_reg_or_t_reg_operand")
 			   (const_int 31))))
    (clobber (reg:SI T_REG))]
   "TARGET_SH1"
@@ -3992,6 +3992,17 @@ label:
 	emit_insn (gen_cmpgtsi_t (tmp_t_reg, const0_rtx));
     }
 
+  /* For the rotcr insn to work, operands[3] must be in T_REG.
+     If it is not we can get it there by shifting it right one bit.
+     In this case T_REG is not an input for this insn, thus we don't have to
+     pay attention as of where to insert the shlr insn.  */
+  if (! t_reg_operand (operands[3], SImode))
+    {
+      /* We don't care about the shifted result here, only the T_REG.  */
+      emit_insn (gen_shlr (gen_reg_rtx (SImode), operands[3]));
+      operands[3] = get_t_reg_rtx ();
+    }
+
   emit_insn (gen_rotcr (operands[0], operands[1], operands[3]));
   DONE;
 })
@@ -4010,6 +4021,24 @@ label:
 			   (ashift:SI (match_dup 1) (const_int 31))))
 	      (set (reg:SI T_REG)
 		   (and:SI (match_dup 0) (const_int 1)))])])
+
+(define_insn_and_split "*rotcr"
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(ior:SI (and:SI (match_operand:SI 1 "arith_reg_operand")
+			(const_int -2147483648)) ;; 0xffffffff80000000
+		(lshiftrt:SI (match_operand:SI 2 "arith_reg_operand")
+			     (const_int 1))))
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH1"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(const_int 0)]
+{
+  rtx tmp = gen_reg_rtx (SImode);
+  emit_insn (gen_shll (tmp, operands[1]));
+  emit_insn (gen_rotcr (operands[0], operands[2], get_t_reg_rtx ()));
+  DONE;
+})
 
 ;; . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 ;; SImode shift left
