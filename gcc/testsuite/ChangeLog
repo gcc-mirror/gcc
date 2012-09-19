@@ -1,5 +1,9 @@
 2012-09-19  Richard Guenther  <rguenther@suse.de>
 
+	* gcc.dg/builtin-unreachable-6.c: Adjust.
+
+2012-09-19  Richard Guenther  <rguenther@suse.de>
+
 	* gcc.dg/builtin-object-size-10.c: Adjust.
 	* gcc.dg/builtin-unreachable-5.c: Adjust.
 	* gcc.dg/tree-ssa/builtin-fprintf-1.c: Adjust.
