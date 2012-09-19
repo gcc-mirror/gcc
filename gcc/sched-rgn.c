@@ -2103,6 +2103,8 @@ init_ready_list (void)
      Count number of insns in the target block being scheduled.  */
   for (insn = NEXT_INSN (prev_head); insn != next_tail; insn = NEXT_INSN (insn))
     {
+      gcc_assert (TODO_SPEC (insn) == HARD_DEP || TODO_SPEC (insn) == DEP_POSTPONED);
+      TODO_SPEC (insn) = HARD_DEP;
       try_ready (insn);
       target_n_insns++;
 
@@ -2126,7 +2128,11 @@ init_ready_list (void)
 
 	for (insn = src_head; insn != src_next_tail; insn = NEXT_INSN (insn))
 	  if (INSN_P (insn))
-	    try_ready (insn);
+	    {
+	      gcc_assert (TODO_SPEC (insn) == HARD_DEP || TODO_SPEC (insn) == DEP_POSTPONED);
+	      TODO_SPEC (insn) = HARD_DEP;
+	      try_ready (insn);
+	    }
       }
 }
 
@@ -2218,11 +2224,11 @@ new_ready (rtx next, ds_t ts)
 		ts = new_ds;
 	      else
 		/* NEXT isn't ready yet.  */
-		ts = (ts & ~SPECULATIVE) | HARD_DEP;
+		ts = DEP_POSTPONED;
 	    }
 	  else
 	    /* NEXT isn't ready yet.  */
-            ts = (ts & ~SPECULATIVE) | HARD_DEP;
+            ts = DEP_POSTPONED;
 	}
     }
 
@@ -2826,7 +2832,9 @@ void debug_dependencies (rtx head, rtx tail)
 	dep_t dep;
 
 	FOR_EACH_DEP (insn, SD_LIST_FORW, sd_it, dep)
-	  fprintf (sched_dump, "%d ", INSN_UID (DEP_CON (dep)));
+	  fprintf (sched_dump, "%d%s%s ", INSN_UID (DEP_CON (dep)),
+		   DEP_NONREG (dep) ? "n" : "",
+		   DEP_MULTIPLE (dep) ? "m" : "");
       }
       fprintf (sched_dump, "\n");
     }
