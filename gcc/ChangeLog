@@ -1,5 +1,13 @@
 2012-09-19  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	PR target/54089
+	* config/sh/predicates.md (arith_reg_or_t_reg_operand): New predicate.
+	* config/sh/sh.md (*rotcr): Use arith_reg_or_t_reg_operand predicate.
+	Handle the case where one of the operands is T_REG.
+	Add new pattern to handle MSB extraction.
+
+2012-09-19  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	PR target/54236
 	* config/sh/sh.md (*addc): Add pattern to handle one bit left shifts.
 
