@@ -32,6 +32,9 @@ int optimize
 Variable
 int optimize_size
 
+Variable
+int optimize_debug
+
 ; Not used directly to control optimizations, only to save -Ofast
 ; setting for "optimize" attributes.
 Variable
@@ -448,6 +451,10 @@ Optimize for space rather than speed
 Ofast
 Common Optimization
 Optimize for speed disregarding exact standards compliance
+
+Og
+Common Optimization
+Optimize for debugging experience rather than speed or size
 
 Q
 Driver

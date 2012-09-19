@@ -422,7 +422,7 @@ Objective-C and Objective-C++ Dialects}.
 -fvariable-expansion-in-unroller -fvect-cost-model -fvpt -fweb @gol
 -fwhole-program -fwpa -fuse-linker-plugin @gol
 --param @var{name}=@var{value}
--O  -O0  -O1  -O2  -O3  -Os -Ofast}
+-O  -O0  -O1  -O2  -O3  -Os -Ofast -Og}
 
 @item Preprocessor Options
 @xref{Preprocessor Options,,Options Controlling the Preprocessor}.
@@ -6363,6 +6363,14 @@ Disregard strict standards compliance.  @option{-Ofast} enables all
 valid for all standard-compliant programs.
 It turns on @option{-ffast-math} and the Fortran-specific
 @option{-fno-protect-parens} and @option{-fstack-arrays}.
+
+@item -Og
+@opindex Og
+Optimize debugging experience.  @option{-Og} enables optimizations
+that do not interfere with debugging. It should be the optimization
+level of choice for the standard edit-compile-debug cycle, offering
+a reasonable level of optimization while maintaining fast compilation
+and a good debugging experience.
 
 If you use multiple @option{-O} options, with or without level numbers,
 the last such option is the one that is effective.
