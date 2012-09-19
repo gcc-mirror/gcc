@@ -1,5 +1,22 @@
 2012-09-19  Richard Guenther  <rguenther@suse.de>
 
+	* gcc.dg/builtin-object-size-10.c: Adjust.
+	* gcc.dg/builtin-unreachable-5.c: Adjust.
+	* gcc.dg/tree-ssa/builtin-fprintf-1.c: Adjust.
+	* gcc.dg/tree-ssa/builtin-fprintf-chk-1.c: Adjust.
+	* gcc.dg/tree-ssa/builtin-printf-1.c: Adjust.
+	* gcc.dg/tree-ssa/builtin-printf-chk-1.c: Adjust.
+	* gcc.dg/tree-ssa/builtin-vfprintf-1.c: Adjust.
+	* gcc.dg/tree-ssa/builtin-vfprintf-chk-1.c: Adjust.
+	* gcc.dg/tree-ssa/builtin-vprintf-1.c: Adjust.
+	* gcc.dg/tree-ssa/builtin-vprintf-chk-1.c: Adjust.
+	* gcc.dg/tree-ssa/ssa-ccp-10.c: Adjust.
+	* gcc.dg/vect/vec-scal-opt.c: Adjust.
+	* gcc.dg/vect/vec-scal-opt1.c: Adjust.
+	* gcc.dg/vect/vec-scal-opt2.c: Adjust.
+
+2012-09-19  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/54132
 	* gcc.dg/tree-ssa/ldist-21.c: New testcase.
 	* gcc.dg/torture/pr54132.c: Likewise.
