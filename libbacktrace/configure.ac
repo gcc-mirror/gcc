@@ -168,6 +168,8 @@ if test "$backtrace_supported" = "yes"; then
 fi
 AC_SUBST(BACKTRACE_SUPPORTED)
 
+GCC_HEADER_STDINT(gstdint.h)
+
 AC_CHECK_HEADERS(sys/mman.h)
 if test "$ac_cv_header_sys_mman_h" = "no"; then
   have_mmap=no
