@@ -1,6 +1,11 @@
 2012-09-19  Richard Guenther  <rguenther@suse.de>
 
 	PR other/53316
+	* common/common-target.h (OPT_LEVELS_1_PLUS_NOT_DEBUG): Add.
+
+2012-09-19  Richard Guenther  <rguenther@suse.de>
+
+	PR other/53316
 	* common.opt (optimize_debug): New variable.
 	(Og): New optimization level.
 	* doc/invoke.texi (Og): Document.
