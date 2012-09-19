@@ -1,3 +1,26 @@
+2012-09-19  Tulio Magno Quites Machado Filho  <tuliom@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-builtin.def: Add __builtin_ppc_get_timebase
+	and __builtin_ppc_mftb.
+	* config/rs6000/rs6000.c (rs6000_expand_zeroop_builtin): New
+	function to expand an expression that calls a built-in without
+	arguments.
+	(rs6000_expand_builtin): Add __builtin_ppc_get_timebase and
+	__builtin_ppc_mftb.
+	(rs6000_init_builtins): Likewise.
+	* config/rs6000/rs6000.md (rs6000_get_timebase): New pattern.
+	(rs6000_get_timebase_ppc32): New pattern.
+	(rs6000_mftb_<mode>): New pattern.
+
+	* doc/extend.texi (PowerPC Built-in Functions): New section.
+	(PowerPC AltiVec/VSX Built-in Functions):
+	Move some built-ins unrelated to Altivec/VSX to the new section.
+
+2012-09-19  David Edelsohn  <dje.gcc@gmail.com>
+
+	* rs6000.md (mac*): Remove extra spaces.
+	(mulhw*): Same.
+
 2012-09-19  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/54089
