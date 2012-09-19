@@ -1,5 +1,10 @@
 2012-09-19  Richard Guenther  <rguenther@suse.de>
 
+	* passes.c (init_optimization_passes): For -Og move
+	pass_object_sizes inbetween CCP and copyprop.
+
+2012-09-19  Richard Guenther  <rguenther@suse.de>
+
 	* tree-ssa-forwprop.c (get_prop_source_stmt): Simplify. 
 
 2012-09-19  Jan Hubicka  <jh@suse.cz>
