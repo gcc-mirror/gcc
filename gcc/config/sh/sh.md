@@ -10303,12 +10303,17 @@ label:
 (define_expand "prologue"
   [(const_int 0)]
   ""
-  "sh_expand_prologue (); DONE;")
+{
+  sh_expand_prologue ();
+  DONE;
+})
 
 (define_expand "epilogue"
   [(return)]
   ""
-  "sh_expand_epilogue (false);")
+{
+  sh_expand_epilogue (false);
+})
 
 (define_expand "eh_return"
   [(use (match_operand 0 "register_operand" ""))]
