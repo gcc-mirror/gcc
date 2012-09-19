@@ -1,5 +1,12 @@
 2012-09-18  Ian Lance Taylor  <iant@google.com>
 
+	PR bootstrap/54623
+	* Makefile.am (AM_CPPFLAGS): Define.
+	(AM_CFLAGS): Remove -I options.
+	* Makefile.in: Rebuild.
+
+2012-09-18  Ian Lance Taylor  <iant@google.com>
+
 	* posix.c (O_BINARY): Define if not defined.
 	(backtrace_open): Pass O_BINARY to open.  Only call fcntl if
 	HAVE_FCNTL is defined.

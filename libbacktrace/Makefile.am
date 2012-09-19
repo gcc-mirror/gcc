@@ -31,7 +31,10 @@
 
 ACLOCAL_AMFLAGS = -I .. -I ../config
 
-AM_CFLAGS = $(WARN_FLAGS) $(PIC_FLAG) -I $(srcdir)/../include -I ../libgcc
+AM_CPPFLAGS = -I $(top_srcdir)/../include -I $(top_srcdir)/../libgcc \
+	-I ../libgcc -I ../gcc/include -I $(MULTIBUILDTOP)../../gcc/include
+
+AM_CFLAGS = $(WARN_FLAGS) $(PIC_FLAG)
 
 noinst_LTLIBRARIES = libbacktrace.la
 
