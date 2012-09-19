@@ -1,5 +1,5 @@
 /* mips*-sde-elf doesn't have 128-bit long doubles.  */
-/* { dg-do compile { target { ! mips*-sde-elf } } } */
+/* { dg-do compile { target { ! mips*-sde-elf mips*-mti-elf } } } */
 /* { dg-options "-march=mips64r2 -mabi=n32" } */
 
 typedef float TFtype __attribute__((mode(TF)));
