@@ -526,7 +526,10 @@ duplicate_eh_regions_1 (struct duplicate_eh_regions_data *data,
       break;
 
     case ERT_MUST_NOT_THROW:
-      new_r->u.must_not_throw = old_r->u.must_not_throw;
+      new_r->u.must_not_throw.failure_loc =
+	LOCATION_LOCUS (old_r->u.must_not_throw.failure_loc);
+      new_r->u.must_not_throw.failure_decl =
+	old_r->u.must_not_throw.failure_decl;
       break;
     }
 

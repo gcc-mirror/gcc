@@ -89,7 +89,7 @@ struct GTY(()) line_map_ordinary {
 
 /* This is the highest possible source location encoded within an
    ordinary or macro map.  */
-#define MAX_SOURCE_LOCATION 0xFFFFFFFF
+#define MAX_SOURCE_LOCATION 0x7FFFFFFF
 
 struct cpp_hashnode;
 
@@ -259,6 +259,31 @@ struct GTY(()) maps_info {
   unsigned int cache;
 };
 
+/* Data structure to associate an arbitrary data to a source location.  */
+struct location_adhoc_data {
+  source_location locus;
+  void *data;
+};
+
+struct htab;
+
+/* The following data structure encodes a location with some adhoc data
+   and maps it to a new unsigned integer (called an adhoc location)
+   that replaces the original location to represent the mapping.
+
+   The new adhoc_loc uses the highest bit as the enabling bit, i.e. if the
+   highest bit is 1, then the number is adhoc_loc. Otherwise, it serves as
+   the original location. Once identified as the adhoc_loc, the lower 31
+   bits of the integer is used to index the location_adhoc_data array,
+   in which the locus and associated data is stored.  */
+
+struct location_adhoc_data_map {
+  struct htab *htab;
+  source_location curr_loc;
+  struct location_adhoc_data *data;
+  unsigned int allocated;
+};
+
 /* A set of chronological line_map structures.  */
 struct GTY(()) line_maps {
   
@@ -289,6 +314,8 @@ struct GTY(()) line_maps {
   /* The allocators' function used to know the actual size it
      allocated, for a certain allocation size requested.  */
   line_map_round_alloc_size_func round_alloc_size;
+
+  struct location_adhoc_data_map GTY((skip)) location_adhoc_data_map;
 };
 
 /* Returns the pointer to the memory region where information about
@@ -407,6 +434,17 @@ struct GTY(()) line_maps {
 /* Returns the last macro map allocated in the line table SET.  */
 #define LINEMAPS_LAST_ALLOCATED_MACRO_MAP(SET) \
   LINEMAPS_LAST_ALLOCATED_MAP (SET, true)
+
+extern void location_adhoc_data_fini (struct line_maps *);
+extern source_location get_combined_adhoc_loc (struct line_maps *,
+					       source_location, void *);
+extern void *get_data_from_adhoc_loc (struct line_maps *, source_location);
+extern source_location get_location_from_adhoc_loc (struct line_maps *,
+						    source_location);
+
+#define IS_ADHOC_LOC(LOC) (((LOC) & MAX_SOURCE_LOCATION) != (LOC))
+#define COMBINE_LOCATION_DATA(SET, LOC, BLOCK) \
+  get_combined_adhoc_loc ((SET), (LOC), (BLOCK))
 
 /* Initialize a line map set.  */
 extern void linemap_init (struct line_maps *);
@@ -593,6 +631,8 @@ typedef struct
   int line;
 
   int column;
+
+  void *data;
 
   /* In a system header?. */
   bool sysp;

@@ -74,7 +74,7 @@ output_gimple_stmt (struct output_block *ob, gimple stmt)
   streamer_write_bitpack (&bp);
 
   /* Emit location information for the statement.  */
-  lto_output_location (ob, gimple_location (stmt));
+  lto_output_location (ob, LOCATION_LOCUS (gimple_location (stmt)));
 
   /* Emit the lexical block holding STMT.  */
   stream_write_tree (ob, gimple_block (stmt), true);

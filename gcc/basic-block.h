@@ -48,8 +48,7 @@ struct GTY((user)) edge_def {
   /* Auxiliary info specific to a pass.  */
   PTR aux;
 
-  /* Location of any goto implicit in the edge and associated BLOCK.  */
-  tree goto_block;
+  /* Location of any goto implicit in the edge.  */
   location_t goto_locus;
 
   /* The index number corresponding to this edge in the edge vector

@@ -416,10 +416,10 @@ print_rtx (const_rtx in_rtx)
 	if (i == 5 && INSN_P (in_rtx))
 	  {
 #ifndef GENERATOR_FILE
-	    /*  Pretty-print insn locators.  Ignore scoping as it is mostly
+	    /*  Pretty-print insn locations.  Ignore scoping as it is mostly
 		redundant with line number information and do not print anything
 		when there is no location information available.  */
-	    if (INSN_LOCATOR (in_rtx) && insn_file (in_rtx))
+	    if (INSN_LOCATION (in_rtx) && insn_file (in_rtx))
 	      fprintf(outfile, " %s:%i", insn_file (in_rtx), insn_line (in_rtx));
 #endif
 	  }
@@ -427,16 +427,16 @@ print_rtx (const_rtx in_rtx)
 	  {
 #ifndef GENERATOR_FILE
 	    fprintf (outfile, " %s:%i",
-		     locator_file (ASM_OPERANDS_SOURCE_LOCATION (in_rtx)),
-		     locator_line (ASM_OPERANDS_SOURCE_LOCATION (in_rtx)));
+		     LOCATION_FILE (ASM_OPERANDS_SOURCE_LOCATION (in_rtx)),
+		     LOCATION_LINE (ASM_OPERANDS_SOURCE_LOCATION (in_rtx)));
 #endif
 	  }
 	else if (i == 1 && GET_CODE (in_rtx) == ASM_INPUT)
 	  {
 #ifndef GENERATOR_FILE
 	    fprintf (outfile, " %s:%i",
-		     locator_file (ASM_INPUT_SOURCE_LOCATION (in_rtx)),
-		     locator_line (ASM_INPUT_SOURCE_LOCATION (in_rtx)));
+		     LOCATION_FILE (ASM_INPUT_SOURCE_LOCATION (in_rtx)),
+		     LOCATION_LINE (ASM_INPUT_SOURCE_LOCATION (in_rtx)));
 #endif
 	  }
 	else if (i == 6 && NOTE_P (in_rtx))

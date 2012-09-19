@@ -133,7 +133,7 @@ static bool contains (const_rtx, htab_t);
 static void prepare_function_start (void);
 static void do_clobber_return_reg (rtx, void *);
 static void do_use_return_reg (rtx, void *);
-static void set_insn_locators (rtx, int) ATTRIBUTE_UNUSED;
+static void set_insn_locations (rtx, int) ATTRIBUTE_UNUSED;
 
 /* Stack of nested functions.  */
 /* Keep track of the cfun stack.  */
@@ -200,7 +200,6 @@ free_after_compilation (struct function *f)
   f->cfg = NULL;
 
   regno_reg_rtx = NULL;
-  insn_locators_free ();
 }
 
 /* Return size needed for stack frame based on slots so far allocated.
@@ -4979,7 +4978,7 @@ expand_function_end (void)
 	      probe_stack_range (STACK_OLD_CHECK_PROTECT, max_frame_size);
 	    seq = get_insns ();
 	    end_sequence ();
-	    set_insn_locators (seq, prologue_locator);
+	    set_insn_locations (seq, prologue_location);
 	    emit_insn_before (seq, stack_check_probe_note);
 	    break;
 	  }
@@ -4994,7 +4993,7 @@ expand_function_end (void)
 
   /* Output a linenumber for the end of the function.
      SDB depends on this.  */
-  set_curr_insn_source_location (input_location);
+  set_curr_insn_location (input_location);
 
   /* Before the return label (if any), clobber the return
      registers so that they are not propagated live to the rest of
@@ -5277,14 +5276,14 @@ maybe_copy_prologue_epilogue_insn (rtx insn, rtx copy)
   *slot = copy;
 }
 
-/* Set the locator of the insn chain starting at INSN to LOC.  */
+/* Set the location of the insn chain starting at INSN to LOC.  */
 static void
-set_insn_locators (rtx insn, int loc)
+set_insn_locations (rtx insn, int loc)
 {
   while (insn != NULL_RTX)
     {
       if (INSN_P (insn))
-	INSN_LOCATOR (insn) = loc;
+	INSN_LOCATION (insn) = loc;
       insn = NEXT_INSN (insn);
     }
 }
@@ -5893,7 +5892,7 @@ thread_prologue_and_epilogue_insns (void)
       end_sequence ();
 
       record_insns (split_prologue_seq, NULL, &prologue_insn_hash);
-      set_insn_locators (split_prologue_seq, prologue_locator);
+      set_insn_locations (split_prologue_seq, prologue_location);
 #endif
     }
 
@@ -5922,7 +5921,7 @@ thread_prologue_and_epilogue_insns (void)
 
       prologue_seq = get_insns ();
       end_sequence ();
-      set_insn_locators (prologue_seq, prologue_locator);
+      set_insn_locations (prologue_seq, prologue_location);
     }
 #endif
 
@@ -6418,7 +6417,7 @@ thread_prologue_and_epilogue_insns (void)
 
       /* Retain a map of the epilogue insns.  */
       record_insns (seq, NULL, &epilogue_insn_hash);
-      set_insn_locators (seq, epilogue_locator);
+      set_insn_locations (seq, epilogue_location);
 
       seq = get_insns ();
       returnjump = get_last_insn ();
@@ -6608,7 +6607,7 @@ epilogue_done:
 	     avoid getting rid of sibcall epilogue insns.  Do this before we
 	     actually emit the sequence.  */
 	  record_insns (seq, NULL, &epilogue_insn_hash);
-	  set_insn_locators (seq, epilogue_locator);
+	  set_insn_locations (seq, epilogue_location);
 
 	  emit_insn_before (seq, insn);
 	}

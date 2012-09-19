@@ -155,6 +155,7 @@ lto_output_location_bitpack (struct bitpack_d *bp,
 {
   expanded_location xloc;
 
+  loc = LOCATION_LOCUS (loc);
   bp_pack_value (bp, loc == UNKNOWN_LOCATION, 1);
   if (loc == UNKNOWN_LOCATION)
     return;

@@ -3326,7 +3326,7 @@ peep2_attempt (basic_block bb, rtx insn, int match_len, rtx attempt)
   /* Replace the old sequence with the new.  */
   last = emit_insn_after_setloc (attempt,
 				 peep2_insn_data[i].insn,
-				 INSN_LOCATOR (peep2_insn_data[i].insn));
+				 INSN_LOCATION (peep2_insn_data[i].insn));
   before_try = PREV_INSN (insn);
   delete_insn_chain (insn, peep2_insn_data[i].insn, false);
 

@@ -471,7 +471,7 @@ write_ts_decl_minimal_tree_pointers (struct output_block *ob, tree expr,
 {
   stream_write_tree (ob, DECL_NAME (expr), ref_p);
   stream_write_tree (ob, DECL_CONTEXT (expr), ref_p);
-  lto_output_location (ob, DECL_SOURCE_LOCATION (expr));
+  lto_output_location (ob, LOCATION_LOCUS (DECL_SOURCE_LOCATION (expr)));
 }
 
 
@@ -668,7 +668,7 @@ write_ts_exp_tree_pointers (struct output_block *ob, tree expr, bool ref_p)
   streamer_write_hwi (ob, TREE_OPERAND_LENGTH (expr));
   for (i = 0; i < TREE_OPERAND_LENGTH (expr); i++)
     stream_write_tree (ob, TREE_OPERAND (expr, i), ref_p);
-  lto_output_location (ob, EXPR_LOCATION (expr));
+  lto_output_location (ob, LOCATION_LOCUS (EXPR_LOCATION (expr)));
   stream_write_tree (ob, TREE_BLOCK (expr), ref_p);
 }
 

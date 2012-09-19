@@ -883,7 +883,7 @@ lower_try_finally_dup_block (gimple_seq seq, struct leh_state *outer_state,
   new_seq = copy_gimple_seq_and_replace_locals (seq);
 
   for (gsi = gsi_start (new_seq); !gsi_end_p (gsi); gsi_next (&gsi))
-    if (gimple_location (gsi_stmt (gsi)) == UNKNOWN_LOCATION)
+    if (IS_UNKNOWN_LOCATION (gimple_location (gsi_stmt (gsi))))
       gimple_set_location (gsi_stmt (gsi), loc);
 
   if (outer_state->tf)
@@ -981,7 +981,7 @@ honor_protect_cleanup_actions (struct leh_state *outer_state,
     }
   else if (this_state)
     finally = lower_try_finally_dup_block (finally, outer_state,
-					   UNKNOWN_LOCATION);
+	gimple_location (tf->try_finally_expr));
   finally_may_fallthru = gimple_seq_may_fallthru (finally);
 
   /* If this cleanup consists of a TRY_CATCH_EXPR with TRY_CATCH_IS_CLEANUP

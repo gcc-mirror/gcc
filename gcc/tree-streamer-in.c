@@ -775,7 +775,7 @@ lto_input_ts_exp_tree_pointers (struct lto_input_block *ib,
 
   loc = lto_input_location (ib, data_in);
   SET_EXPR_LOCATION (expr, loc);
-  TREE_BLOCK (expr) = stream_read_tree (ib, data_in);
+  TREE_SET_BLOCK (expr, stream_read_tree (ib, data_in));
 }
 
 
