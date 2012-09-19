@@ -1,3 +1,9 @@
+2012-09-19  Hans-Peter Nilsson  <hp@axis.com>
+
+	* g++.dg/debug/dwarf2/nested-3.C: Match a sequence
+	of asm-comment characters instead of a single one.
+	* g++.dg/debug/dwarf2/nested-2.C: Similar.
+
 2012-09-18  Janis Johnson  <janisjo@codesourcery.com>
 
 	* gcc.dg/vect/fast-math-pr35982.c: Skip check instead of xfail.
