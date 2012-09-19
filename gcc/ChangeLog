@@ -1,3 +1,7 @@
+2012-09-19  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-forwprop.c (get_prop_source_stmt): Simplify. 
+
 2012-09-19  Jan Hubicka  <jh@suse.cz>
 
 	* symtab.c (insert_to_assembler_name_hash): Do not insert
