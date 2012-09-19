@@ -42,7 +42,8 @@ if [info exists TORTURE_OPTIONS] {
 	{ -O3 -fomit-frame-pointer -funroll-loops } \
 	{ -O3 -fomit-frame-pointer -funroll-all-loops -finline-functions } \
 	{ -O3 -g } \
-	{ -Os } ]
+	{ -Os } \
+	{ -Og -g } ]
 }
 
 if [info exists ADDITIONAL_TORTURE_OPTIONS] {
