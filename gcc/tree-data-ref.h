@@ -396,6 +396,8 @@ struct data_reference *create_data_ref (loop_p, loop_p, tree, gimple, bool);
 extern bool find_loop_nest (struct loop *, VEC (loop_p, heap) **);
 extern struct data_dependence_relation *initialize_data_dependence_relation
      (struct data_reference *, struct data_reference *, VEC (loop_p, heap) *); 
+extern void compute_affine_dependence (struct data_dependence_relation *,
+				       loop_p);
 extern void compute_self_dependence (struct data_dependence_relation *);
 extern bool compute_all_dependences (VEC (data_reference_p, heap) *,
 				     VEC (ddr_p, heap) **, VEC (loop_p, heap) *,
