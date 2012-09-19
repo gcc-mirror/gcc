@@ -1,3 +1,9 @@
+2012-09-19  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/54132
+	* gcc.dg/tree-ssa/ldist-21.c: New testcase.
+	* gcc.dg/torture/pr54132.c: Likewise.
+
 2012-09-19  Terry Guo  <terry.guo@arm.com>
 
 	* lib/gcc-dg.exp (dg_runtest_extra_prunes): New variable to define

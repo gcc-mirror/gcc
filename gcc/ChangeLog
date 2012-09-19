@@ -1,3 +1,11 @@
+2012-09-19  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/54132
+	* tree-loop-distribution.c (classify_partition): Properly
+	check dependences for memmove.
+	* tree-data-ref.h (compute_affine_dependence): Declare.
+	* tree-data-ref.c (compute_affine_dependence): Export.
+
 2012-09-19  Zhenqiang Chen <zhenqiang.chen@arm.com>
 
 	PR middle-end/54364

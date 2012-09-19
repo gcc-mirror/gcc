@@ -4130,7 +4130,7 @@ ddr_consistent_p (FILE *file,
    relation the first time we detect a CHREC_KNOWN element for a given
    subscript.  */
 
-static void
+void
 compute_affine_dependence (struct data_dependence_relation *ddr,
 			   struct loop *loop_nest)
 {
