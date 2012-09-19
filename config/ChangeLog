@@ -1,3 +1,7 @@
+2012-09-19  Steve Ellcey  <sellcey@mips.com>
+
+	* mt-sde: Change -mcode-xonly to -mcode-readable=pcrel.
+
 2012-09-03  Richard Guenther  <rguenther@suse.de>
 
 	PR bootstrap/54138

@@ -1,10 +1,10 @@
 # We default to building libraries optimised for size.  We use
 # -minterlink-mips16 so that the non-MIPS16 libraries can still be
-# linked against partly-MIPS16 code.  The -mcode-xonly option allows
+# linked against partly-MIPS16 code.  The -mcode-readable=pcrel option allows
 # MIPS16 libraries to run on Harvard-style split I/D memories, so long
 # as they have the D-to-I redirect for PC-relative loads.  -mno-gpopt
 # has two purposes: it allows libraries to be used in situations where
 # $gp != our _gp, and it allows them to be built with -G8 while
 # retaining link compatibility with -G0 and -G4.
-CFLAGS_FOR_TARGET += -Os -minterlink-mips16 -mcode-xonly -mno-gpopt
-CXXFLAGS_FOR_TARGET += -Os -minterlink-mips16 -mcode-xonly -mno-gpopt
+CFLAGS_FOR_TARGET += -Os -minterlink-mips16 -mcode-readable=pcrel -mno-gpopt
+CXXFLAGS_FOR_TARGET += -Os -minterlink-mips16 -mcode-readable=pcrel -mno-gpopt
