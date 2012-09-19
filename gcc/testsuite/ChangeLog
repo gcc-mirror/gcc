@@ -1,3 +1,8 @@
+2012-09-19  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54236
+	* gcc.target/sh/pr54236-1.c (test_08): Add one bit left shift case.
+
 2012-09-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c-torture/execute/20120919-1.c: New test.
