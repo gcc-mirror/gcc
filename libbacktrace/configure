@@ -11734,6 +11734,7 @@ fi
 
 
 
+if test -n "${with_target_subdir}"; then
 
 
 # Check whether --with-system-libunwind was given.
@@ -11770,6 +11771,20 @@ $as_echo "#define HAVE_GETIPINFO 1" >>confdefs.h
 
   fi
 
+else
+  ac_fn_c_check_func "$LINENO" "_Unwind_GetIPInfo" "ac_cv_func__Unwind_GetIPInfo"
+if test "x$ac_cv_func__Unwind_GetIPInfo" = x""yes; then :
+  have_unwind_getipinfo=yes
+else
+  have_unwind_getipinfo=no
+fi
+
+  if test "$have_unwind_getipinfo" = "yes"; then
+
+$as_echo "#define HAVE_GETIPINFO 1" >>confdefs.h
+
+  fi
+fi
 
 # When building as a target library, shared libraries may want to link
 # this in.  We don't want to provide another shared library to
