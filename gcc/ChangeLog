@@ -1,3 +1,45 @@
+2012-09-19  Jan Hubicka  <jh@suse.cz>
+
+	* symtab.c (insert_to_assembler_name_hash): Do not insert
+	register vars.
+	(unlink_from_assembler_name_hash): NULL out pointers of unlinked
+	var.
+	(symtab_prevail_in_asm_name_hash): New.
+	(symtab_initialize_asm_name_hash): Break out from ...
+	(symtab_node_for_asm): ... here.
+	(dump_symtab_base): Dump LTO file data.
+	(verify_symtab_base): Register vars are not in symtab.
+	* cgraph.h (symtab_initialize_asm_name_hash,
+	symtab_prevail_in_asm_name_hash): New functions.
+	(symtab_real_symbol_p): New inline.
+	* lto-symtab.c: Do not include gt-lto-symtab.h.
+	(lto_symtab_entry_def): Remove.
+	(lto_symtab_entry_t): Remove.
+	(lto_symtab_identifiers): Remove.
+	(lto_symtab_free): Remove.
+	(lto_symtab_entry_hash): Remove.
+	(lto_symtab_entry_eq): Remove.
+	(lto_symtab_entry_marked_p): Remove.
+	(lto_symtab_maybe_init_hash_table): Remove.
+	(resolution_guessed_p, set_resolution_guessed): New functions.
+	(lto_symtab_register_decl): Only set resolution info.
+	(lto_symtab_get, lto_symtab_get_resolution): Remove.
+	(lto_symtab_merge): Reorg to work across symtab; do nothing if decls
+	are same.
+	(lto_symtab_resolve_replaceable_p): Reorg to work on symtab.
+	(lto_symtab_resolve_can_prevail_p): Likewise; only real symbols can
+	prevail.
+	(lto_symtab_resolve_symbols): Reorg to work on symtab.
+	(lto_symtab_merge_decls_2): Likewise.
+	(lto_symtab_merge_decls_1): Likewise; add debug dumps.
+	(lto_symtab_merge_decls): Likewise; do not merge at ltrans stage.
+	(lto_symtab_merge_cgraph_nodes_1): Reorg to work on symtab.
+	(lto_symtab_merge_cgraph_nodes): Likewise; do not merge at ltrans stage.
+	(lto_symtab_prevailing_decl): Rewrite to lookup into symtab.
+	* lto-streaer.h (lto_symtab_free): Remove.
+	* lto-cgraph.c (add_references): Cleanup.
+	* varpool.c (varpool_assemble_decl): Skip hard regs.
+
 2012-09-19  Richard Guenther  <rguenther@suse.de>
 
 	PR other/53316
