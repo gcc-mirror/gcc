@@ -1,5 +1,9 @@
 2012-09-19  Richard Guenther  <rguenther@suse.de>
 
+	* lib/c-torture.exp (TORTURE_OPTIONS): Add -Og -g.
+
+2012-09-19  Richard Guenther  <rguenther@suse.de>
+
 	* gcc.dg/builtin-unreachable-6.c: Adjust.
 
 2012-09-19  Richard Guenther  <rguenther@suse.de>
