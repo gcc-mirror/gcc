@@ -704,6 +704,8 @@ bool varpool_for_node_and_aliases (struct varpool_node *,
 		                   bool (*) (struct varpool_node *, void *),
 			           void *, bool);
 void varpool_add_new_variable (tree);
+void symtab_initialize_asm_name_hash (void);
+void symtab_prevail_in_asm_name_hash (symtab_node node);
 
 /* Return true when NODE is function.  */
 static inline bool
@@ -1309,4 +1311,27 @@ cgraph_mark_force_output_node (struct cgraph_node *node)
   gcc_checking_assert (!node->global.inlined_to);
 }
 
+/* Return true when the symbol is real symbol, i.e. it is not inline clone
+   or extern function kept around just for inlining.  */
+
+static inline bool
+symtab_real_symbol_p (symtab_node node)
+{
+  struct cgraph_node *cnode;
+  struct ipa_ref *ref;
+
+  if (!symtab_function_p (node))
+    return true;
+  cnode = cgraph (node);
+  if (cnode->global.inlined_to)
+    return false;
+  if (cnode->abstract_and_needed)
+    return false;
+  /* We keep virtual clones in symtab.  */
+  if (!cnode->analyzed
+      || DECL_EXTERNAL (cnode->symbol.decl))
+    return (cnode->callers
+	    || ipa_ref_list_referring_iterate (&cnode->symbol.ref_list, 0, ref));
+  return true;
+}
 #endif  /* GCC_CGRAPH_H  */

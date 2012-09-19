@@ -668,10 +668,7 @@ add_references (lto_symtab_encoder_t encoder,
     if (symtab_function_p (ref->referred))
       add_node_to (encoder, ipa_ref_node (ref), false);
     else
-      {
-	struct varpool_node *vnode = ipa_ref_varpool_node (ref);
-        lto_symtab_encoder_encode (encoder, (symtab_node)vnode);
-      }
+      lto_symtab_encoder_encode (encoder, ref->referred);
 }
 
 /* Find all symbols we want to stream into given partition and insert them

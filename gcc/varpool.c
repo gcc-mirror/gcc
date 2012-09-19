@@ -301,6 +301,10 @@ varpool_assemble_decl (struct varpool_node *node)
       && !targetm.have_tls)
     return false;
 
+  /* Hard register vars do not need to be output.  */
+  if (DECL_HARD_REGISTER (decl))
+    return false;
+
   gcc_checking_assert (!TREE_ASM_WRITTEN (decl)
 		       && TREE_CODE (decl) == VAR_DECL
 		       && !DECL_HAS_VALUE_EXPR_P (decl));
