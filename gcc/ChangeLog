@@ -1,3 +1,9 @@
+2012-09-19  Steve Ellcey  <sellcey@mips.com>
+
+	* config.gcc (mips*-mti-elf*): New target.
+	* config/mips/mti-elf.h: New file.
+	* config/mips/t-mti-elf: New file.
+
 2012-09-19  Dehao Chen  <dehao@google.com>
 
 	* toplev.c (general_init): Init block_locations.
