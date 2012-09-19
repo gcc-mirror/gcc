@@ -1,3 +1,8 @@
+2012-09-19  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/54581
+	* g++.dg/cpp0x/decltype-54581.C: New testcase.
+
 2012-09-19  Steve Ellcey  <sellcey@mips.com>
 
 	* gcc.target/mips/pr37362.c: Add mips*-mti-elf exception.
