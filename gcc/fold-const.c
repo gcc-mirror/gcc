@@ -8435,9 +8435,7 @@ fold_truth_andor (location_t loc, enum tree_code code, tree type,
   if ((tem = fold_truth_andor_1 (loc, code, type, arg0, arg1)) != 0)
     return tem;
 
-  if ((BRANCH_COST (optimize_function_for_speed_p (cfun),
-		    false) >= 2)
-      && LOGICAL_OP_NON_SHORT_CIRCUIT
+  if (LOGICAL_OP_NON_SHORT_CIRCUIT
       && (code == TRUTH_AND_EXPR
           || code == TRUTH_ANDIF_EXPR
           || code == TRUTH_OR_EXPR
