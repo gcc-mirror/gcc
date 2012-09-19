@@ -1,5 +1,21 @@
 2012-09-19  Richard Guenther  <rguenther@suse.de>
 
+	PR other/53316
+	* common.opt (optimize_debug): New variable.
+	(Og): New optimization level.
+	* doc/invoke.texi (Og): Document.
+	* opts.c (maybe_default_option): Add debug parameter.
+	(maybe_default_options): Likewise.
+	(default_options_optimization): Handle -Og.
+	(common_handle_option): Likewise.
+	* passes.c (gate_all_optimizations): Do not run with -Og.
+	(gate_all_optimizations_g): New gate, run with -Og.
+	(pass_all_optimizations_g): New container pass, run with -Og.
+	(init_optimization_passes): Schedule pass_all_optimizations_g
+	alongside pass_all_optimizations.
+
+2012-09-19  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/54132
 	* tree-loop-distribution.c (classify_partition): Properly
 	check dependences for memmove.

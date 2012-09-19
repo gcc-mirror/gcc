@@ -337,10 +337,7 @@ static struct gimple_opt_pass pass_all_early_optimizations =
 static bool
 gate_all_optimizations (void)
 {
-  return (optimize >= 1
-	  /* Don't bother doing anything if the program has errors.
-	     We have to pass down the queue if we already went into SSA */
-	  && (!seen_error () || gimple_in_ssa_p (cfun)));
+  return optimize >= 1 && !optimize_debug;
 }
 
 static struct gimple_opt_pass pass_all_optimizations =
@@ -349,6 +346,33 @@ static struct gimple_opt_pass pass_all_optimizations =
   GIMPLE_PASS,
   "*all_optimizations",			/* name */
   gate_all_optimizations,		/* gate */
+  NULL,					/* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  TV_OPTIMIZE,				/* tv_id */
+  0,					/* properties_required */
+  0,					/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  0					/* todo_flags_finish */
+ }
+};
+
+/* Gate: execute, or not, all of the non-trivial optimizations.  */
+
+static bool
+gate_all_optimizations_g (void)
+{
+  return optimize >= 1 && optimize_debug;
+}
+
+static struct gimple_opt_pass pass_all_optimizations_g =
+{
+ {
+  GIMPLE_PASS,
+  "*all_optimizations_g",		/* name */
+  gate_all_optimizations_g,		/* gate */
   NULL,					/* execute */
   NULL,					/* sub */
   NULL,					/* next */
@@ -1491,6 +1515,29 @@ init_optimization_passes (void)
       NEXT_PASS (pass_optimize_widening_mul);
       NEXT_PASS (pass_tail_calls);
       NEXT_PASS (pass_rename_ssa_copies);
+      NEXT_PASS (pass_uncprop);
+      NEXT_PASS (pass_local_pure_const);
+    }
+  NEXT_PASS (pass_all_optimizations_g);
+    {
+      struct opt_pass **p = &pass_all_optimizations_g.pass.sub;
+      NEXT_PASS (pass_remove_cgraph_callee_edges);
+      NEXT_PASS (pass_strip_predict_hints);
+      /* Lower remaining pieces of GIMPLE.  */
+      NEXT_PASS (pass_lower_complex);
+      NEXT_PASS (pass_lower_vector_ssa);
+      /* Perform simple scalar cleanup which is constant/copy propagation.  */
+      NEXT_PASS (pass_ccp);
+      NEXT_PASS (pass_copy_prop);
+      NEXT_PASS (pass_rename_ssa_copies);
+      NEXT_PASS (pass_dce);
+      /* Fold remaining builtins.  */
+      NEXT_PASS (pass_object_sizes);
+      NEXT_PASS (pass_fold_builtins);
+      /* ???  We do want some kind of loop invariant motion, but we possibly
+         need to adjust LIM to be more friendly towards preserving accurate
+	 debug information here.  */
+      NEXT_PASS (pass_late_warn_uninitialized);
       NEXT_PASS (pass_uncprop);
       NEXT_PASS (pass_local_pure_const);
     }
