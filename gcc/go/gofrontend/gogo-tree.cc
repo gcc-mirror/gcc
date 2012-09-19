@@ -994,9 +994,19 @@ Named_object::get_id(Gogo* gogo)
     }
   if (this->is_type())
     {
-      const Named_object* in_function = this->type_value()->in_function();
+      unsigned int index;
+      const Named_object* in_function = this->type_value()->in_function(&index);
       if (in_function != NULL)
-	decl_name += '$' + Gogo::unpack_hidden_name(in_function->name());
+	{
+	  decl_name += '$' + Gogo::unpack_hidden_name(in_function->name());
+	  if (index > 0)
+	    {
+	      char buf[30];
+	      snprintf(buf, sizeof buf, "%u", index);
+	      decl_name += '$';
+	      decl_name += buf;
+	    }
+	}
     }
   return get_identifier_from_string(decl_name);
 }

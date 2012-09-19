@@ -1286,7 +1286,8 @@ Type::type_descriptor_var_name(Gogo* gogo, Named_type* nt)
     return "__go_td_" + this->mangled_name(gogo);
 
   Named_object* no = nt->named_object();
-  const Named_object* in_function = nt->in_function();
+  unsigned int index;
+  const Named_object* in_function = nt->in_function(&index);
   std::string ret = "__go_tdn_";
   if (nt->is_builtin())
     go_assert(in_function == NULL);
@@ -1301,6 +1302,13 @@ Type::type_descriptor_var_name(Gogo* gogo, Named_type* nt)
 	{
 	  ret.append(Gogo::unpack_hidden_name(in_function->name()));
 	  ret.append(1, '.');
+	  if (index > 0)
+	    {
+	      char buf[30];
+	      snprintf(buf, sizeof buf, "%u", index);
+	      ret.append(buf);
+	      ret.append(1, '.');
+	    }
 	}
     }
 
@@ -1737,9 +1745,19 @@ Type::specific_type_functions(Gogo* gogo, Named_type* name,
     {
       // This name is already hidden or not as appropriate.
       base_name = name->name();
-      const Named_object* in_function = name->in_function();
+      unsigned int index;
+      const Named_object* in_function = name->in_function(&index);
       if (in_function != NULL)
-	base_name += '$' + Gogo::unpack_hidden_name(in_function->name());
+	{
+	  base_name += '$' + Gogo::unpack_hidden_name(in_function->name());
+	  if (index > 0)
+	    {
+	      char buf[30];
+	      snprintf(buf, sizeof buf, "%u", index);
+	      base_name += '$';
+	      base_name += buf;
+	    }
+	}
     }
   std::string hash_name = base_name + "$hash";
   std::string equal_name = base_name + "$equal";
@@ -1980,10 +1998,19 @@ Type::uncommon_type_constructor(Gogo* gogo, Type* uncommon_type,
 				     ? gogo->pkgpath()
 				     : package->pkgpath());
 	  n.assign(pkgpath);
-	  if (name->in_function() != NULL)
+	  unsigned int index;
+	  const Named_object* in_function = name->in_function(&index);
+	  if (in_function != NULL)
 	    {
 	      n.append(1, '.');
-	      n.append(Gogo::unpack_hidden_name(name->in_function()->name()));
+	      n.append(Gogo::unpack_hidden_name(in_function->name()));
+	      if (index > 0)
+		{
+		  char buf[30];
+		  snprintf(buf, sizeof buf, "%u", index);
+		  n.append(1, '.');
+		  n.append(buf);
+		}
 	    }
 	  s = Expression::make_string(n, bloc);
 	  vals->push_back(Expression::make_unary(OPERATOR_AND, s, bloc));
@@ -8351,6 +8378,13 @@ Named_type::do_reflection(Gogo* gogo, std::string* ret) const
     {
       ret->append(Gogo::unpack_hidden_name(this->in_function_->name()));
       ret->push_back('$');
+      if (this->in_function_index_ > 0)
+	{
+	  char buf[30];
+	  snprintf(buf, sizeof buf, "%u", this->in_function_index_);
+	  ret->append(buf);
+	  ret->push_back('$');
+	}
     }
   ret->append(Gogo::unpack_hidden_name(this->named_object_->name()));
 }
@@ -8380,6 +8414,13 @@ Named_type::do_mangled_name(Gogo* gogo, std::string* ret) const
 	{
 	  name.append(Gogo::unpack_hidden_name(this->in_function_->name()));
 	  name.append(1, '$');
+	  if (this->in_function_index_ > 0)
+	    {
+	      char buf[30];
+	      snprintf(buf, sizeof buf, "%u", this->in_function_index_);
+	      name.append(buf);
+	      name.append(1, '$');
+	    }
 	}
     }
   name.append(Gogo::unpack_hidden_name(no->name()));
