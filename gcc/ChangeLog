@@ -1,3 +1,64 @@
+2012-09-19  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* dbgcnt.def (sched_breakdep): New counter.
+	* haifa-sched.c (update_insn_after_change): New static function,
+	broken out of haifa_change_pattern.
+	(haifa_change_pattern): Call it.
+	(dep_t heap vecs): Declare.
+	(INSN_COST): Define earlier.
+	(next_cycle_replace_deps, next_cycle_apply): New static
+	variables.
+	(apply_replacement): New static function.
+	(recompute_todo_spec): New argument FOR_BACKTRACK.  All callers
+	changed.  Handle DEP_REPLACE deps.
+	(contributes_to_priority_p): False for replaceable deps.
+	(must_restore_pattern_p, restore_pattern): New static functions.
+	(schedule_insn): Use them.  Apply replacements for broken deps.
+	(struct haifa_saved_data): Add new fields to keep track of
+	replacements.
+	(save_backtrack_point): Initialize them.
+	(undo_replacements_for_backtrack): New static function.
+	(restore_last_backtrack_point, free_topmost_backtrack_point):
+	Use it and keep track of replacements.
+	(perform_replacements_new_cycle, undo_all_replacements): New static
+	functions.
+	(schedule_block): Call these two as necessary.  Call
+	find_modifiable_mems.
+	(try_ready): Tweak the assert.  Check for DEP_POSTPONED.
+	* sched-deps.c: Include "emit-rtl.h".
+	(init_dep_1): Initialize DEP_NONREG, DEP_MULTIPLE and DEP_REPLACE.
+	(dep_spec_p): True for DEP_REPLACE deps.
+	(mark_as_hard): New static variable.
+	(update_dep): Update DEP_NONREG and DEP_MULTIPLE.
+	(add_dependence_list): New argument hard.  All callers changed.  Set
+	and clear mark_as_hard around function body.
+	(add_dependence_list_and_free): Likewise.
+	(haifa_note_mem_dep): Set DEP_NONREG.
+	(haifa_note_dep): Likewise if mark_as_hard is true.
+	(sched_analyze_insn): Switch loop with if statement testing for
+	sel_sched_p.
+	(struct mem_inc_info): New.
+	(attempt_change, parse_add_or_inc, find_inc, find_mem): New static
+	functions.
+	(find_modifiable_mems): New function.
+	* sched-int.h (struct dep_replacement): New.
+	(struct _dep): Add replace, nonreg and multiple fields.  Make type and
+	cost bitfields.
+	(UNKNOWN_DEP_COST): Change to match the bitfield.
+	(DEP_NONREG, DEP_MULTIPLE, DEP_REPLACE): New macros.
+	(DEP_POSTPONED): New macro.
+	(DEP_CANCELLED): Renumber.
+	(find_modifiable_mems): Declare.
+	(enum SCHED_FLAGS): Add DONT_BREAK_DEPENDENCIES.
+	* sched-rgn.c (init_ready_list): Set TODO_SPEC here.
+	(new_ready): Don't set HARD_DEP, use DEP_POSTPONED.
+	(debug_dependencies): Dump DEP_NONREG and DEP_MULTIPLE.
+	* Makefile.in (sched-deps.o): Update dependencies.
+	* config/c6x/c6x.c (in_hwloop): New static variable.
+	(c6x_set_sched_flags): If it is true, add DONT_BREAK_DEPENDENCIES.
+	(hwloop_optimize): Set and clear it around preliminary scheduling
+	pass.
+
 2012-09-19  Tulio Magno Quites Machado Filho  <tuliom@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000-builtin.def: Add __builtin_ppc_get_timebase

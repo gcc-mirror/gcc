@@ -206,6 +206,18 @@ typedef int dw_t;
 extern enum reg_note ds_to_dk (ds_t);
 extern ds_t dk_to_ds (enum reg_note);
 
+/* Describe a dependency that can be broken by making a replacement
+   in one of the patterns.  LOC is the location, ORIG and NEWVAL the
+   two alternative contents, and INSN the instruction that must be
+   changed.  */
+struct dep_replacement
+{
+  rtx *loc;
+  rtx orig;
+  rtx newval;
+  rtx insn;
+};
+
 /* Information about the dependency.  */
 struct _dep
 {
@@ -215,17 +227,29 @@ struct _dep
   /* Consumer.  */
   rtx con;
 
-  /* Dependency major type.  This field is superseded by STATUS below.
-     Though, it is still in place because some targets use it.  */
-  enum reg_note type;
+  /* If nonnull, holds a pointer to information about how to break the
+     dependency by making a replacement in one of the insns.  There is
+     only one such dependency for each insn that must be modified in
+     order to break such a dependency.  */
+  struct dep_replacement *replace;
 
   /* Dependency status.  This field holds all dependency types and additional
      information for speculative dependencies.  */
   ds_t status;
 
-  /* Cached cost of the dependency.  */
-  int cost;
+  /* Dependency major type.  This field is superseded by STATUS above.
+     Though, it is still in place because some targets use it.  */
+  ENUM_BITFIELD(reg_note) type:6;
+
+  unsigned nonreg:1;
+  unsigned multiple:1;
+
+  /* Cached cost of the dependency.  Make sure to update UNKNOWN_DEP_COST
+     when changing the size of this field.  */
+  int cost:20;
 };
+
+#define UNKNOWN_DEP_COST (-1<<19)
 
 typedef struct _dep dep_def;
 typedef dep_def *dep_t;
@@ -235,8 +259,9 @@ typedef dep_def *dep_t;
 #define DEP_TYPE(D) ((D)->type)
 #define DEP_STATUS(D) ((D)->status)
 #define DEP_COST(D) ((D)->cost)
-
-#define UNKNOWN_DEP_COST INT_MIN
+#define DEP_NONREG(D) ((D)->nonreg)
+#define DEP_MULTIPLE(D) ((D)->multiple)
+#define DEP_REPLACE(D) ((D)->replace)
 
 /* Functions to work with dep.  */
 
@@ -1047,7 +1072,11 @@ enum SPEC_TYPES_OFFSETS {
    Therefore, it can appear only in TODO_SPEC field of an instruction.  */
 #define HARD_DEP (DEP_CONTROL << 1)
 
-#define DEP_CANCELLED (HARD_DEP << 1)
+/* Set in the TODO_SPEC field of an instruction for which new_ready
+   has decided not to schedule it speculatively.  */
+#define DEP_POSTPONED (HARD_DEP << 1)
+
+#define DEP_CANCELLED (DEP_POSTPONED << 1)
 
 /* This represents the results of calling sched-deps.c functions,
    which modify dependencies.  */
@@ -1074,7 +1103,8 @@ enum SCHED_FLAGS {
   DO_SPECULATION = USE_DEPS_LIST << 1,
   DO_BACKTRACKING = DO_SPECULATION << 1,
   DO_PREDICATION = DO_BACKTRACKING << 1,
-  SCHED_RGN = DO_PREDICATION << 1,
+  DONT_BREAK_DEPENDENCIES = DO_PREDICATION << 1,
+  SCHED_RGN = DONT_BREAK_DEPENDENCIES << 1,
   SCHED_EBB = SCHED_RGN << 1,
   /* Scheduler can possibly create new basic blocks.  Used for assertions.  */
   NEW_BBS = SCHED_EBB << 1,
@@ -1405,6 +1435,8 @@ extern void dump_region_dot_file (const char *, int);
 
 extern void haifa_sched_init (void);
 extern void haifa_sched_finish (void);
+
+extern void find_modifiable_mems (rtx, rtx);
 
 /* sched-deps.c interface to walk, add, search, update, resolve, delete
    and debug instruction dependencies.  */

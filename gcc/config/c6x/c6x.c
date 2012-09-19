@@ -3912,6 +3912,13 @@ c6x_free_sched_context (void *_sc)
   free (_sc);
 }
 
+/* True if we are currently performing a preliminary scheduling
+   pass before modulo scheduling; we can't allow the scheduler to
+   modify instruction patterns using packetization assumptions,
+   since there will be another scheduling pass later if modulo
+   scheduling fails.  */
+static bool in_hwloop;
+
 /* Provide information about speculation capabilities, and set the
    DO_BACKTRACKING flag.  */
 static void
@@ -3923,6 +3930,8 @@ c6x_set_sched_flags (spec_info_t spec_info)
     {
       *flags |= DO_BACKTRACKING | DO_PREDICATION;
     }
+  if (in_hwloop)
+    *flags |= DONT_BREAK_DEPENDENCIES;
 
   spec_info->mask = 0;
 }
@@ -5536,9 +5545,11 @@ hwloop_optimize (hwloop_info loop)
 
   reshuffle_units (loop->head);
 
+  in_hwloop = true;
   schedule_ebbs_init ();
   schedule_ebb (BB_HEAD (loop->tail), loop->loop_end, true);
   schedule_ebbs_finish ();
+  in_hwloop = false;
 
   bb = loop->head;
   loop_earliest = bb_earliest_end_cycle (bb, loop->loop_end) + 1;
