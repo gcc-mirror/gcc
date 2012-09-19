@@ -502,7 +502,6 @@ score_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   /* Run just enough of rest_of_compilation.  This sequence was
      "borrowed" from alpha.c.  */
   insn = get_insns ();
-  insn_locators_alloc ();
   split_all_insns_noflow ();
   shorten_branches (insn);
   final_start_function (insn, file, 1);

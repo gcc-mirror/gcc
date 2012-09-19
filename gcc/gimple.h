@@ -210,10 +210,6 @@ struct GTY((chain_next ("%h.next"))) gimple_statement_base {
      and the prev pointer being the last.  */
   gimple next;
   gimple GTY((skip)) prev;
-
-  /* [ WORD 6 ]
-     Lexical block holding this statement.  */
-  tree block;
 };
 
 
@@ -1196,7 +1192,7 @@ gimple_bb (const_gimple g)
 static inline tree
 gimple_block (const_gimple g)
 {
-  return g->gsbase.block;
+  return LOCATION_BLOCK (g->gsbase.location);
 }
 
 
@@ -1205,7 +1201,11 @@ gimple_block (const_gimple g)
 static inline void
 gimple_set_block (gimple g, tree block)
 {
-  g->gsbase.block = block;
+  if (block)
+    g->gsbase.location =
+	COMBINE_LOCATION_DATA (line_table, g->gsbase.location, block);
+  else
+    g->gsbase.location = LOCATION_LOCUS (g->gsbase.location);
 }
 
 
@@ -1240,7 +1240,7 @@ gimple_set_location (gimple g, location_t location)
 static inline bool
 gimple_has_location (const_gimple g)
 {
-  return gimple_location (g) != UNKNOWN_LOCATION;
+  return !IS_UNKNOWN_LOCATION (gimple_location (g));
 }
 
 

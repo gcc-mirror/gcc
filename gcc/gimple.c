@@ -856,10 +856,7 @@ gimple_build_debug_bind_stat (tree var, tree value, gimple stmt MEM_STAT_DECL)
   gimple_debug_bind_set_var (p, var);
   gimple_debug_bind_set_value (p, value);
   if (stmt)
-    {
-      gimple_set_block (p, gimple_block (stmt));
-      gimple_set_location (p, gimple_location (stmt));
-    }
+    gimple_set_location (p, gimple_location (stmt));
 
   return p;
 }
@@ -880,10 +877,7 @@ gimple_build_debug_source_bind_stat (tree var, tree value,
   gimple_debug_source_bind_set_var (p, var);
   gimple_debug_source_bind_set_value (p, value);
   if (stmt)
-    {
-      gimple_set_block (p, gimple_block (stmt));
-      gimple_set_location (p, gimple_location (stmt));
-    }
+    gimple_set_location (p, gimple_location (stmt));
 
   return p;
 }
@@ -3003,7 +2997,6 @@ gimple_call_copy_skip_args (gimple stmt, bitmap args_to_skip)
   gimple_set_vuse (new_stmt, gimple_vuse (stmt));
   gimple_set_vdef (new_stmt, gimple_vdef (stmt));
 
-  gimple_set_block (new_stmt, gimple_block (stmt));
   if (gimple_has_location (stmt))
     gimple_set_location (new_stmt, gimple_location (stmt));
   gimple_call_copy_flags (new_stmt, stmt);

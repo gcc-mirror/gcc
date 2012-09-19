@@ -545,7 +545,7 @@ emit_delay_sequence (rtx insn, rtx list, int length)
   INSN_DELETED_P (delay_insn) = 0;
   PREV_INSN (delay_insn) = PREV_INSN (seq_insn);
 
-  INSN_LOCATOR (seq_insn) = INSN_LOCATOR (delay_insn);
+  INSN_LOCATION (seq_insn) = INSN_LOCATION (delay_insn);
 
   for (li = list; li; li = XEXP (li, 1), i++)
     {
@@ -561,9 +561,9 @@ emit_delay_sequence (rtx insn, rtx list, int length)
 
       /* SPARC assembler, for instance, emit warning when debug info is output
          into the delay slot.  */
-      if (INSN_LOCATOR (tem) && !INSN_LOCATOR (seq_insn))
-	INSN_LOCATOR (seq_insn) = INSN_LOCATOR (tem);
-      INSN_LOCATOR (tem) = 0;
+      if (INSN_LOCATION (tem) && !INSN_LOCATION (seq_insn))
+	INSN_LOCATION (seq_insn) = INSN_LOCATION (tem);
+      INSN_LOCATION (tem) = 0;
 
       for (note = REG_NOTES (tem); note; note = next)
 	{
@@ -4065,7 +4065,7 @@ dbr_schedule (rtx first)
     for (link = crtl->epilogue_delay_list;
          link;
          link = XEXP (link, 1))
-      INSN_LOCATOR (XEXP (link, 0)) = 0;
+      INSN_LOCATION (XEXP (link, 0)) = 0;
   }
 
 #endif

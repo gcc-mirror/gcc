@@ -33433,7 +33433,6 @@ x86_output_mi_thunk (FILE *file,
   /* Emit just enough of rest_of_compilation to get the insns emitted.
      Note that use_thunk calls assemble_start_function et al.  */
   tmp = get_insns ();
-  insn_locators_alloc ();
   shorten_branches (tmp);
   final_start_function (tmp, file, 1);
   final (tmp, file, 1);

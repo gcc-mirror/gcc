@@ -304,6 +304,9 @@ ipa_set_jf_known_type (struct ipa_jump_func *jfunc, HOST_WIDE_INT offset,
 static void
 ipa_set_jf_constant (struct ipa_jump_func *jfunc, tree constant)
 {
+  constant = unshare_expr (constant);
+  if (constant && EXPR_P (constant))
+    SET_EXPR_LOCATION (constant, UNKNOWN_LOCATION);
   jfunc->type = IPA_JF_CONST;
   jfunc->value.constant = constant;
 }
@@ -3150,6 +3153,8 @@ ipa_write_jump_function (struct output_block *ob,
       stream_write_tree (ob, jump_func->value.known_type.component_type, true);
       break;
     case IPA_JF_CONST:
+      gcc_assert (
+	  IS_UNKNOWN_LOCATION (EXPR_LOCATION (jump_func->value.constant)));
       stream_write_tree (ob, jump_func->value.constant, true);
       break;
     case IPA_JF_PASS_THROUGH:

@@ -1246,9 +1246,9 @@ loop_single_full_bb_p (struct loop *loop)
 /* Dump file:line from INSN's location info to dump_file.  */
 
 static void
-dump_insn_locator (rtx insn)
+dump_insn_location (rtx insn)
 {
-  if (dump_file && INSN_LOCATOR (insn))
+  if (dump_file && INSN_LOCATION (insn))
     {
       const char *file = insn_file (insn);
       if (file)
@@ -1282,7 +1282,7 @@ loop_canon_p (struct loop *loop)
 	  rtx insn = BB_END (loop->header);
 
 	  fprintf (dump_file, "SMS loop many exits");
-	  dump_insn_locator (insn);
+	  dump_insn_location (insn);
 	  fprintf (dump_file, "\n");
 	}
       return false;
@@ -1295,7 +1295,7 @@ loop_canon_p (struct loop *loop)
 	  rtx insn = BB_END (loop->header);
 
 	  fprintf (dump_file, "SMS loop many BBs.");
-	  dump_insn_locator (insn);
+	  dump_insn_location (insn);
 	  fprintf (dump_file, "\n");
 	}
       return false;
@@ -1421,7 +1421,7 @@ sms_schedule (void)
 	  rtx insn = BB_END (loop->header);
 
 	  fprintf (dump_file, "SMS loop num: %d", loop->num);
-	  dump_insn_locator (insn);
+	  dump_insn_location (insn);
 	  fprintf (dump_file, "\n");
 	}
 
@@ -1450,7 +1450,7 @@ sms_schedule (void)
 	{
 	  if (dump_file)
 	    {
-	      dump_insn_locator (tail);
+	      dump_insn_location (tail);
 	      fprintf (dump_file, "\nSMS single-bb-loop\n");
 	      if (profile_info && flag_branch_probabilities)
 	    	{
@@ -1556,7 +1556,7 @@ sms_schedule (void)
 	  rtx insn = BB_END (loop->header);
 
 	  fprintf (dump_file, "SMS loop num: %d", loop->num);
-	  dump_insn_locator (insn);
+	  dump_insn_location (insn);
 	  fprintf (dump_file, "\n");
 
 	  print_ddg (dump_file, g);
@@ -1571,7 +1571,7 @@ sms_schedule (void)
 
       if (dump_file)
 	{
-	  dump_insn_locator (tail);
+	  dump_insn_location (tail);
 	  fprintf (dump_file, "\nSMS single-bb-loop\n");
 	  if (profile_info && flag_branch_probabilities)
 	    {
@@ -1714,7 +1714,7 @@ sms_schedule (void)
 
           if (dump_file)
             {
-	      dump_insn_locator (tail);
+	      dump_insn_location (tail);
 	      fprintf (dump_file, " SMS succeeded %d %d (with ii, sc)\n",
 		       ps->ii, stage_count);
 	      print_partial_schedule (ps, dump_file);

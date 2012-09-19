@@ -7839,19 +7839,14 @@ expand_expr_real (tree exp, rtx target, enum machine_mode tmode,
   if (cfun && EXPR_HAS_LOCATION (exp))
     {
       location_t saved_location = input_location;
-      location_t saved_curr_loc = get_curr_insn_source_location ();
-      tree saved_block = get_curr_insn_block ();
+      location_t saved_curr_loc = curr_insn_location ();
       input_location = EXPR_LOCATION (exp);
-      set_curr_insn_source_location (input_location);
-
-      /* Record where the insns produced belong.  */
-      set_curr_insn_block (TREE_BLOCK (exp));
+      set_curr_insn_location (input_location);
 
       ret = expand_expr_real_1 (exp, target, tmode, modifier, alt_rtl);
 
       input_location = saved_location;
-      set_curr_insn_block (saved_block);
-      set_curr_insn_source_location (saved_curr_loc);
+      set_curr_insn_location (saved_curr_loc);
     }
   else
     {

@@ -145,7 +145,7 @@ static location_t
 expr_location_or (tree t, location_t loc)
 {
   location_t tloc = EXPR_LOCATION (t);
-  return tloc != UNKNOWN_LOCATION ? tloc : loc;
+  return IS_UNKNOWN_LOCATION (tloc) ? loc : tloc;
 }
 
 /* Similar to protected_set_expr_location, but never modify x in place,

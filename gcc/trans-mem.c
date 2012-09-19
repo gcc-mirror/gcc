@@ -3803,7 +3803,6 @@ ipa_tm_scan_irr_block (basic_block bb)
 	    {
 	      tree t = build1 (NOP_EXPR, void_type_node, size_zero_node);
 	      SET_EXPR_LOCATION (t, gimple_location (stmt));
-	      TREE_BLOCK (t) = gimple_block (stmt);
 	      error ("%Kasm not allowed in %<transaction_safe%> function", t);
 	    }
 	  return true;

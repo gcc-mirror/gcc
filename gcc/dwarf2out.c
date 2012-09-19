@@ -15552,7 +15552,7 @@ add_src_coords_attributes (dw_die_ref die, tree decl)
 {
   expanded_location s;
 
-  if (DECL_SOURCE_LOCATION (decl) == UNKNOWN_LOCATION)
+  if (IS_UNKNOWN_LOCATION (DECL_SOURCE_LOCATION (decl)))
     return;
   s = expand_location (DECL_SOURCE_LOCATION (decl));
   add_AT_file (die, DW_AT_decl_file, lookup_filename (s.file));
