@@ -287,6 +287,19 @@ ipa_print_all_jump_functions (FILE *f)
     }
 }
 
+/* Return the expression tree EXPR unshared and with location stripped off.  */
+
+static tree
+prune_expression_for_jf (tree exp)
+{
+  if (EXPR_P (exp))
+    {
+      exp = unshare_expr (exp);
+      SET_EXPR_LOCATION (exp, UNKNOWN_LOCATION);
+    }
+  return exp;
+}
+
 /* Set JFUNC to be a known type jump function.  */
 
 static void
@@ -308,7 +321,7 @@ ipa_set_jf_constant (struct ipa_jump_func *jfunc, tree constant)
   if (constant && EXPR_P (constant))
     SET_EXPR_LOCATION (constant, UNKNOWN_LOCATION);
   jfunc->type = IPA_JF_CONST;
-  jfunc->value.constant = constant;
+  jfunc->value.constant = prune_expression_for_jf (constant);
 }
 
 /* Set JFUNC to be a simple pass-through jump function.  */
@@ -330,7 +343,7 @@ ipa_set_jf_arith_pass_through (struct ipa_jump_func *jfunc, int formal_id,
 			       tree operand, enum tree_code operation)
 {
   jfunc->type = IPA_JF_PASS_THROUGH;
-  jfunc->value.pass_through.operand = operand;
+  jfunc->value.pass_through.operand = prune_expression_for_jf (operand);
   jfunc->value.pass_through.formal_id = formal_id;
   jfunc->value.pass_through.operation = operation;
   jfunc->value.pass_through.agg_preserved = false;
@@ -1347,7 +1360,7 @@ determine_known_aggregate_parts (gimple call, tree arg,
 	    {
 	      struct ipa_agg_jf_item item;
 	      item.offset = list->offset - arg_offset;
-	      item.value = list->constant;
+	      item.value = prune_expression_for_jf (list->constant);
 	      VEC_quick_push (ipa_agg_jf_item_t, jfunc->agg.items, item);
 	    }
 	  list = list->next;

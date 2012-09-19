@@ -1,3 +1,10 @@
+2012-09-19  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.c (prune_expression_for_jf): New function.
+	(ipa_set_jf_constant): Use it.
+	(ipa_set_jf_arith_pass_through): Likewise.
+	(determine_known_aggregate_parts): Likewise.
+
 2012-09-19  Steve Ellcey  <sellcey@mips.com>
 
 	* config.gcc (mips*-mti-elf*): New target.
