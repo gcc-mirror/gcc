@@ -1787,6 +1787,22 @@
 				          (reg:SI T_REG)))
 	      (clobber (reg:SI T_REG))])])
 
+;; Left shifts by one are usually done with an add insn to avoid T_REG
+;; clobbers.  Thus addc can also be used to do something like '(x << 1) + 1'.
+(define_insn_and_split "*addc"
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(plus:SI (mult:SI (match_operand:SI 1 "arith_reg_operand")
+			  (const_int 2))
+		 (const_int 1)))
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH1"
+  "#"
+  "&& 1"
+  [(set (reg:SI T_REG) (const_int 1))
+   (parallel [(set (match_dup 0) (plus:SI (plus:SI (match_dup 1) (match_dup 1))
+				          (reg:SI T_REG)))
+	      (clobber (reg:SI T_REG))])])
+
 ;; Sometimes combine will try to do 'reg + (0-reg) + 1' if the *addc pattern
 ;; matched.  Split this up into a simple sub add sequence, as this will save
 ;; us one sett insn.

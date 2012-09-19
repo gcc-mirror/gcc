@@ -1,5 +1,10 @@
 2012-09-19  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	PR target/54236
+	* config/sh/sh.md (*addc): Add pattern to handle one bit left shifts.
+
+2012-09-19  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	* config/sh/sh.md (prologue, epilogue): Use braced strings.
 
 2012-09-19  Eric Botcazou  <ebotcazou@adacore.com>
