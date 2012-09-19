@@ -1,3 +1,8 @@
+2012-09-19  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/54581
+	* semantics.c (finish_decltype_type): Make vectors not opaque.
+
 2012-09-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/54575
