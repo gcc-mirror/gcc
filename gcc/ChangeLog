@@ -1,3 +1,16 @@
+2012-09-19  Zhenqiang Chen <zhenqiang.chen@arm.com>
+
+	PR middle-end/54364
+	* bb-reorder.c (connect_better_edge_p): New added.
+	(find_traces_1_round): When optimizing for size, ignore edge frequency
+	and probability, and handle all in one round.
+	(bb_to_key): Use bb->index as key when optimizing for size.
+	(better_edge_p): The bb with smaller index is better when optimizing
+	for size.
+	(connect_traces): When optimizing for size, connect block n with
+	block n + 1; connect trace m with trace m + 1 if falling through.
+	(gate_handle_reorder_blocks): Enable bbro when optimizing for -Os.
+
 2012-09-19  Bin Cheng  <bin.cheng@arm.com>
 
 	* fold-const.c (fold_truth_andor): Remove duplicated check on

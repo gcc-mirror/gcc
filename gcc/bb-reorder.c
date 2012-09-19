@@ -56,6 +56,20 @@
    The rest of traces are simply connected so there will be a jump to the
    beginning of the rest of traces.
 
+   The above description is for the full algorithm, which is used when the
+   function is optimized for speed.  When the function is optimized for size,
+   in order to reduce long jumps and connect more fallthru edges, the
+   algorithm is modified as follows:
+   (1) Break long traces to short ones.  A trace is broken at a block that has
+   multiple predecessors/ successors during trace discovery.  When connecting
+   traces, only connect Trace n with Trace n + 1.  This change reduces most
+   long jumps compared with the above algorithm.
+   (2) Ignore the edge probability and frequency for fallthru edges.
+   (3) Keep the original order of blocks when there is no chance to fall
+   through.  We rely on the results of cfg_cleanup.
+
+   To implement the change for code size optimization, block's index is
+   selected as the key and all traces are found in one round.
 
    References:
 
@@ -181,6 +195,8 @@ static basic_block copy_bb (basic_block, edge, basic_block, int);
 static fibheapkey_t bb_to_key (basic_block);
 static bool better_edge_p (const_basic_block, const_edge, int, int, int, int,
 			   const_edge);
+static bool connect_better_edge_p (const_edge, bool, int, const_edge,
+				   struct trace *);
 static void connect_traces (int, struct trace *);
 static bool copy_bb_p (const_basic_block, int);
 static bool push_to_next_round_p (const_basic_block, int, int, int, gcov_type);
@@ -440,6 +456,7 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
   /* Heap for discarded basic blocks which are possible starting points for
      the next round.  */
   fibheap_t new_heap = fibheap_new ();
+  bool for_size = optimize_function_for_size_p (cfun);
 
   while (!fibheap_empty (*heap))
     {
@@ -459,10 +476,11 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
       /* If the BB's frequency is too low, send BB to the next round.  When
 	 partitioning hot/cold blocks into separate sections, make sure all
 	 the cold blocks (and ONLY the cold blocks) go into the (extra) final
-	 round.  */
+	 round.  When optimizing for size, do not push to next round.  */
 
-      if (push_to_next_round_p (bb, round, number_of_rounds, exec_th,
-				count_th))
+      if (!for_size
+	  && push_to_next_round_p (bb, round, number_of_rounds, exec_th,
+				   count_th))
 	{
 	  int key = bb_to_key (bb);
 	  bbd[bb->index].heap = new_heap;
@@ -533,10 +551,11 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 		}
 
 	      /* Edge that cannot be fallthru or improbable or infrequent
-		 successor (i.e. it is unsuitable successor).  */
+		 successor (i.e. it is unsuitable successor).  When optimizing
+		 for size, ignore the probability and frequency.  */
 	      if (!(e->flags & EDGE_CAN_FALLTHRU) || (e->flags & EDGE_COMPLEX)
-		  || prob < branch_th || EDGE_FREQUENCY (e) < exec_th
-		  || e->count < count_th)
+		  || ((prob < branch_th || EDGE_FREQUENCY (e) < exec_th
+		      || e->count < count_th) && (!for_size)))
 		continue;
 
 	      /* If partitioning hot/cold basic blocks, don't consider edges
@@ -556,6 +575,30 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 	     to a trace.  We'll duplicate it when connecting traces.  */
 	  if (best_edge && EDGE_COUNT (best_edge->dest->preds) >= 2
 	      && copy_bb_p (best_edge->dest, 0))
+	    best_edge = NULL;
+
+	  /* If the best destination has multiple successors or predecessors,
+	     don't allow it to be added when optimizing for size.  This makes
+	     sure predecessors with smaller index are handled before the best
+	     destinarion.  It breaks long trace and reduces long jumps.
+
+	     Take if-then-else as an example.
+		A
+	       / \
+	      B   C
+	       \ /
+		D
+	     If we do not remove the best edge B->D/C->D, the final order might
+	     be A B D ... C.  C is at the end of the program.  If D's successors
+	     and D are complicated, might need long jumps for A->C and C->D.
+	     Similar issue for order: A C D ... B.
+
+	     After removing the best edge, the final result will be ABCD/ ACBD.
+	     It does not add jump compared with the previous order.  But it
+	     reduces the possiblity of long jumps.  */
+	  if (best_edge && for_size
+	      && (EDGE_COUNT (best_edge->dest->succs) > 1
+		 || EDGE_COUNT (best_edge->dest->preds) > 1))
 	    best_edge = NULL;
 
 	  /* Add all non-selected successors to the heaps.  */
@@ -599,11 +642,12 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 		    {
 		      /* When partitioning hot/cold basic blocks, make sure
 			 the cold blocks (and only the cold blocks) all get
-			 pushed to the last round of trace collection.  */
+			 pushed to the last round of trace collection.  When
+			 optimizing for size, do not push to next round.  */
 
-		      if (push_to_next_round_p (e->dest, round,
-						number_of_rounds,
-						exec_th, count_th))
+		      if (!for_size && push_to_next_round_p (e->dest, round,
+							     number_of_rounds,
+							     exec_th, count_th))
 			which_heap = new_heap;
 		    }
 
@@ -685,6 +729,8 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 		  (i.e. 2 * B->frequency >= EDGE_FREQUENCY (AC) )
 		  Best ordering is then A B C.
 
+		  When optimizing for size, A B C is always the best order.
+
 		  This situation is created for example by:
 
 		  if (A) B;
@@ -704,7 +750,8 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 			    & EDGE_CAN_FALLTHRU)
 			&& !(single_succ_edge (e->dest)->flags & EDGE_COMPLEX)
 			&& single_succ (e->dest) == best_edge->dest
-			&& 2 * e->dest->frequency >= EDGE_FREQUENCY (best_edge))
+			&& (2 * e->dest->frequency >= EDGE_FREQUENCY (best_edge)
+			    || for_size))
 		      {
 			best_edge = e;
 			if (dump_file)
@@ -824,6 +871,10 @@ bb_to_key (basic_block bb)
   edge_iterator ei;
   int priority = 0;
 
+  /* Use index as key to align with its original order.  */
+  if (optimize_function_for_size_p (cfun))
+    return bb->index;
+
   /* Do not start in probably never executed blocks.  */
 
   if (BB_PARTITION (bb) == BB_COLD_PARTITION
@@ -869,6 +920,11 @@ better_edge_p (const_basic_block bb, const_edge e, int prob, int freq,
   int diff_prob = best_prob / 10;
   int diff_freq = best_freq / 10;
 
+  /* The smaller one is better to keep the original order.  */
+  if (optimize_function_for_size_p (cfun))
+    return !cur_best_edge
+	   || cur_best_edge->dest->index > e->dest->index;
+
   if (prob > best_prob + diff_prob)
     /* The edge has higher probability than the temporary best edge.  */
     is_better_edge = true;
@@ -904,6 +960,73 @@ better_edge_p (const_basic_block bb, const_edge e, int prob, int freq,
   return is_better_edge;
 }
 
+/* Return true when the edge E is better than the temporary best edge
+   CUR_BEST_EDGE.  If SRC_INDEX_P is true, the function compares the src bb of
+   E and CUR_BEST_EDGE; otherwise it will compare the dest bb.
+   BEST_LEN is the trace length of src (or dest) bb in CUR_BEST_EDGE.
+   TRACES record the information about traces.
+   When optimizing for size, the edge with smaller index is better.
+   When optimizing for speed, the edge with bigger probability or longer trace
+   is better.  */
+
+static bool
+connect_better_edge_p (const_edge e, bool src_index_p, int best_len,
+		       const_edge cur_best_edge, struct trace *traces)
+{
+  int e_index;
+  int b_index;
+  bool is_better_edge;
+
+  if (!cur_best_edge)
+    return true;
+
+  if (optimize_function_for_size_p (cfun))
+    {
+      e_index = src_index_p ? e->src->index : e->dest->index;
+      b_index = src_index_p ? cur_best_edge->src->index
+			      : cur_best_edge->dest->index;
+      /* The smaller one is better to keep the original order.  */
+      return b_index > e_index;
+    }
+
+  if (src_index_p)
+    {
+      e_index = e->src->index;
+
+      if (e->probability > cur_best_edge->probability)
+	/* The edge has higher probability than the temporary best edge.  */
+	is_better_edge = true;
+      else if (e->probability < cur_best_edge->probability)
+	/* The edge has lower probability than the temporary best edge.  */
+	is_better_edge = false;
+      else if (traces[bbd[e_index].end_of_trace].length > best_len)
+	/* The edge and the temporary best edge have equivalent probabilities.
+	   The edge with longer trace is better.  */
+	is_better_edge = true;
+      else
+	is_better_edge = false;
+    }
+  else
+    {
+      e_index = e->dest->index;
+
+      if (e->probability > cur_best_edge->probability)
+	/* The edge has higher probability than the temporary best edge.  */
+	is_better_edge = true;
+      else if (e->probability < cur_best_edge->probability)
+	/* The edge has lower probability than the temporary best edge.  */
+	is_better_edge = false;
+      else if (traces[bbd[e_index].start_of_trace].length > best_len)
+	/* The edge and the temporary best edge have equivalent probabilities.
+	   The edge with longer trace is better.  */
+	is_better_edge = true;
+      else
+	is_better_edge = false;
+    }
+
+  return is_better_edge;
+}
+
 /* Connect traces in array TRACES, N_TRACES is the count of traces.  */
 
 static void
@@ -917,6 +1040,7 @@ connect_traces (int n_traces, struct trace *traces)
   int current_partition;
   int freq_threshold;
   gcov_type count_threshold;
+  bool for_size = optimize_function_for_size_p (cfun);
 
   freq_threshold = max_entry_frequency * DUPLICATION_THRESHOLD / 1000;
   if (max_entry_count < INT_MAX / 1000)
@@ -980,10 +1104,7 @@ connect_traces (int n_traces, struct trace *traces)
 		  && bbd[si].end_of_trace >= 0
 		  && !connected[bbd[si].end_of_trace]
 		  && (BB_PARTITION (e->src) == current_partition)
-		  && (!best
-		      || e->probability > best->probability
-		      || (e->probability == best->probability
-			  && traces[bbd[si].end_of_trace].length > best_len)))
+		  && connect_better_edge_p (e, true, best_len, best, traces))
 		{
 		  best = e;
 		  best_len = traces[bbd[si].end_of_trace].length;
@@ -1026,17 +1147,52 @@ connect_traces (int n_traces, struct trace *traces)
 		  && bbd[di].start_of_trace >= 0
 		  && !connected[bbd[di].start_of_trace]
 		  && (BB_PARTITION (e->dest) == current_partition)
-		  && (!best
-		      || e->probability > best->probability
-		      || (e->probability == best->probability
-			  && traces[bbd[di].start_of_trace].length > best_len)))
+		  && connect_better_edge_p (e, false, best_len, best, traces))
 		{
 		  best = e;
 		  best_len = traces[bbd[di].start_of_trace].length;
 		}
 	    }
 
-	  if (best)
+	  if (for_size)
+	    {
+	      if (!best)
+		/* Stop finding the successor traces.  */
+		break;
+
+	      /* It is OK to connect block n with block n + 1 or a block
+		 before n.  For others, only connect to the loop header.  */
+	      if (best->dest->index > (traces[t].last->index + 1))
+		{
+		  int count = EDGE_COUNT (best->dest->preds);
+
+		  FOR_EACH_EDGE (e, ei, best->dest->preds)
+		    if (e->flags & EDGE_DFS_BACK)
+		      count--;
+
+		  /* If dest has multiple predecessors, skip it.  We expect
+		     that one predecessor with smaller index connects with it
+		     later.  */
+		  if (count != 1) 
+		    break;
+		}
+
+	      /* Only connect Trace n with Trace n + 1.  It is conservative
+		 to keep the order as close as possible to the original order.
+		 It also helps to reduce long jumps.  */
+	      if (last_trace != bbd[best->dest->index].start_of_trace - 1)
+		break;
+
+	      if (dump_file)
+		fprintf (dump_file, "Connection: %d %d\n",
+			 best->src->index, best->dest->index);
+
+	      t = bbd[best->dest->index].start_of_trace;
+	      traces[last_trace].last->aux = traces[t].first;
+	      connected[t] = true;
+	      last_trace = t;
+	    }
+	  else if (best)
 	    {
 	      if (dump_file)
 		{
@@ -2046,15 +2202,6 @@ static bool
 gate_handle_reorder_blocks (void)
 {
   if (targetm.cannot_modify_jumps_p ())
-    return false;
-  /* Don't reorder blocks when optimizing for size because extra jump insns may
-     be created; also barrier may create extra padding.
-
-     More correctly we should have a block reordering mode that tried to
-     minimize the combined size of all the jumps.  This would more or less
-     automatically remove extra jumps, but would also try to use more short
-     jumps instead of long jumps.  */
-  if (!optimize_function_for_speed_p (cfun))
     return false;
   return (optimize > 0
 	  && (flag_reorder_blocks || flag_reorder_blocks_and_partition));
