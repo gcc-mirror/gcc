@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2012-06-13 21:46+0000\n"
+"POT-Creation-Date: 2012-09-19 14:54+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -75,7 +75,7 @@ msgid "%.*s is not a valid universal character"
 msgstr ""
 
 #: charset.c:1056
-#: lex.c:1114
+#: lex.c:1117
 msgid "'$' in identifier or number"
 msgstr ""
 
@@ -314,102 +314,102 @@ msgstr ""
 msgid "registering pragma with NULL handler"
 msgstr ""
 
-#: directives.c:1434
+#: directives.c:1436
 msgid "#pragma once in main file"
 msgstr ""
 
-#: directives.c:1457
+#: directives.c:1459
 msgid "invalid #pragma push_macro directive"
 msgstr ""
 
-#: directives.c:1512
+#: directives.c:1514
 msgid "invalid #pragma pop_macro directive"
 msgstr ""
 
-#: directives.c:1567
+#: directives.c:1569
 msgid "invalid #pragma GCC poison directive"
 msgstr ""
 
-#: directives.c:1576
+#: directives.c:1578
 #, c-format
 msgid "poisoning existing macro \"%s\""
 msgstr ""
 
-#: directives.c:1595
+#: directives.c:1597
 msgid "#pragma system_header ignored outside include file"
 msgstr ""
 
-#: directives.c:1620
+#: directives.c:1622
 #, c-format
 msgid "cannot find source file %s"
 msgstr ""
 
-#: directives.c:1624
+#: directives.c:1626
 #, c-format
 msgid "current file is older than %s"
 msgstr ""
 
-#: directives.c:1806
+#: directives.c:1808
 msgid "_Pragma takes a parenthesized string literal"
 msgstr ""
 
-#: directives.c:1927
+#: directives.c:1929
 msgid "#else without #if"
 msgstr ""
 
-#: directives.c:1932
+#: directives.c:1934
 msgid "#else after #else"
 msgstr ""
 
-#: directives.c:1934
-#: directives.c:1967
+#: directives.c:1936
+#: directives.c:1969
 msgid "the conditional began here"
 msgstr ""
 
-#: directives.c:1960
+#: directives.c:1962
 msgid "#elif without #if"
 msgstr ""
 
-#: directives.c:1965
+#: directives.c:1967
 msgid "#elif after #else"
 msgstr ""
 
-#: directives.c:2003
+#: directives.c:2005
 msgid "#endif without #if"
 msgstr ""
 
-#: directives.c:2083
+#: directives.c:2085
 msgid "missing '(' after predicate"
 msgstr ""
 
-#: directives.c:2098
+#: directives.c:2100
 msgid "missing ')' to complete answer"
 msgstr ""
 
-#: directives.c:2118
+#: directives.c:2120
 msgid "predicate's answer is empty"
 msgstr ""
 
-#: directives.c:2145
+#: directives.c:2147
 msgid "assertion without predicate"
 msgstr ""
 
-#: directives.c:2148
+#: directives.c:2150
 msgid "predicate must be an identifier"
 msgstr ""
 
-#: directives.c:2234
+#: directives.c:2236
 #, c-format
 msgid "\"%s\" re-asserted"
 msgstr ""
 
-#: directives.c:2525
+#: directives.c:2527
 #, c-format
 msgid "unterminated #%s"
 msgstr ""
 
 #: directives-only.c:222
-#: lex.c:2227
+#: lex.c:2230
 #: traditional.c:163
 msgid "unterminated comment"
 msgstr ""
@@ -653,107 +653,107 @@ msgid ""
 "the target requires %lu bits"
 msgstr ""
 
-#: lex.c:908
+#: lex.c:911
 msgid "backslash and newline separated by space"
 msgstr ""
 
-#: lex.c:913
+#: lex.c:916
 msgid "backslash-newline at end of file"
 msgstr ""
 
-#: lex.c:929
+#: lex.c:932
 #, c-format
 msgid "trigraph ??%c converted to %c"
 msgstr ""
 
-#: lex.c:937
+#: lex.c:940
 #, c-format
 msgid "trigraph ??%c ignored, use -trigraphs to enable"
 msgstr ""
 
-#: lex.c:986
+#: lex.c:989
 msgid "\"/*\" within comment"
 msgstr ""
 
-#: lex.c:1044
+#: lex.c:1047
 #, c-format
 msgid "%s in preprocessing directive"
 msgstr ""
 
-#: lex.c:1053
+#: lex.c:1056
 msgid "null character(s) ignored"
-msgstr ""
-
-#: lex.c:1090
-#, c-format
-msgid "`%.*s' is not in NFKC"
 msgstr ""
 
 #: lex.c:1093
 #, c-format
+msgid "`%.*s' is not in NFKC"
+msgstr ""
+
+#: lex.c:1096
+#, c-format
 msgid "`%.*s' is not in NFC"
 msgstr ""
 
-#: lex.c:1161
-#: lex.c:1238
+#: lex.c:1164
+#: lex.c:1241
 #, c-format
 msgid "attempt to use poisoned \"%s\""
 msgstr ""
 
-#: lex.c:1169
-#: lex.c:1246
+#: lex.c:1172
+#: lex.c:1249
 msgid "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro"
 msgstr ""
 
-#: lex.c:1175
-#: lex.c:1252
+#: lex.c:1178
+#: lex.c:1255
 #, c-format
 msgid "identifier \"%s\" is a special operator name in C++"
 msgstr ""
 
-#: lex.c:1396
+#: lex.c:1399
 msgid "raw string delimiter longer than 16 characters"
 msgstr ""
 
-#: lex.c:1399
+#: lex.c:1402
 #, c-format
 msgid "invalid character '%c' in raw string delimiter"
 msgstr ""
 
-#: lex.c:1522
-#: lex.c:1544
+#: lex.c:1525
+#: lex.c:1547
 msgid "unterminated raw string"
 msgstr ""
 
-#: lex.c:1568
-#: lex.c:1699
+#: lex.c:1571
+#: lex.c:1702
 msgid ""
 "invalid suffix on literal; C++11 requires a space between literal and "
 "identifier"
 msgstr ""
 
-#: lex.c:1679
+#: lex.c:1682
 msgid "null character(s) preserved in literal"
 msgstr ""
 
-#: lex.c:1682
+#: lex.c:1685
 #, c-format
 msgid "missing terminating %c character"
 msgstr ""
 
-#: lex.c:2238
+#: lex.c:2241
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr ""
 
-#: lex.c:2240
+#: lex.c:2243
 msgid "(this will be reported only once per input file)"
 msgstr ""
 
-#: lex.c:2245
+#: lex.c:2248
 msgid "multi-line comment"
 msgstr ""
 
-#: lex.c:2565
+#: lex.c:2568
 #, c-format
 msgid "unspellable token %s"
 msgstr ""
