@@ -1,3 +1,42 @@
+2012-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/43620
+	* configure.ac (AM_INIT_AUTOMAKE): Add no-dist.
+	* Makefile.in: Regenerated.
+	* doc/Makefile.in: Regeneated.
+	* doc/api/Makefile.in: Regeneated.
+	* examples/Makefile.in: Regeneated.
+	* external/Makefile.in: Regeneated.
+	* external/jsr166/Makefile.in: Regeneated.
+	* external/relaxngDatatype/Makefile.in: Regeneated.
+	* external/sax/Makefile.in: Regeneated.
+	* external/w3c_dom/Makefile.in: Regeneated.
+	* include/Makefile.in: Regeneated.
+	* lib/Makefile.in: Regeneated.
+	* native/Makefile.in: Regeneated.
+	* native/fdlibm/Makefile.in: Regeneated.
+	* native/jawt/Makefile.in: Regeneated.
+	* native/jni/Makefile.in: Regeneated.
+	* native/jni/classpath/Makefile.in: Regeneated.
+	* native/jni/gconf-peer/Makefile.in: Regeneated.
+	* native/jni/gstreamer-peer/Makefile.in: Regeneated.
+	* native/jni/gtk-peer/Makefile.in: Regeneated.
+	* native/jni/java-io/Makefile.in: Regeneated.
+	* native/jni/java-lang/Makefile.in: Regeneated.
+	* native/jni/java-math/Makefile.in: Regeneated.
+	* native/jni/java-net/Makefile.in: Regeneated.
+	* native/jni/java-nio/Makefile.in: Regeneated.
+	* native/jni/java-util/Makefile.in: Regeneated.
+	* native/jni/midi-alsa/Makefile.in: Regeneated.
+	* native/jni/midi-dssi/Makefile.in: Regeneated.
+	* native/jni/native-lib/Makefile.in: Regeneated.
+	* native/jni/qt-peer/Makefile.in: Regeneated.
+	* native/jni/xmlj/Makefile.in: Regeneated.
+	* native/plugin/Makefile.in: Regeneated.
+	* resource/Makefile.in: Regeneated.
+	* scripts/Makefile.in: Regeneated.
+	* tools/Makefile.in: Regeneated.
+
 2011-11-29  Andreas Tobler  <andreast@fgznet.ch>
 
 	* config.rpath (ld_shlibs): Fix detection of FreeBSD-10 and up.
