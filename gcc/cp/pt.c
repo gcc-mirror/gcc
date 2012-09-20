@@ -13771,7 +13771,8 @@ tsubst_copy_and_build (tree t,
 	      }
 	    if (TREE_CODE (function) == IDENTIFIER_NODE)
 	      {
-		unqualified_name_lookup_error (function);
+		if (complain & tf_error)
+		  unqualified_name_lookup_error (function);
 		release_tree_vector (call_args);
 		RETURN (error_mark_node);
 	      }
