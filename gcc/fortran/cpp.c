@@ -822,6 +822,7 @@ print_line (source_location src_loc, const char *special_flags)
       size_t to_file_len;
       unsigned char *to_file_quoted;
       unsigned char *p;
+      int sysp;
 
       loc = expand_location (src_loc);
       to_file_len = strlen (loc.file);
@@ -838,9 +839,10 @@ print_line (source_location src_loc, const char *special_flags)
 	       print.src_line == 0 ? 1 : print.src_line,
 	       to_file_quoted, special_flags);
 
-      if (loc.sysp == 2)
+      sysp = in_system_header_at (src_loc);
+      if (sysp == 2)
 	fputs (" 3 4", print.outf);
-      else if (loc.sysp == 1)
+      else if (sysp == 1)
 	fputs (" 3", print.outf);
 
       putc ('\n', print.outf);
