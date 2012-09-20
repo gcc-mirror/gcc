@@ -1,5 +1,3 @@
--- { dg-do compile }
-
 with Unchecked_Conversion;
 
 package Atomic5 is

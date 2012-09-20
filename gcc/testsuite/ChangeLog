@@ -1,3 +1,14 @@
+2012-09-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/addr1.ads: Move dg directive to...
+	* gnat.dg/addr1.adb: ...here.
+	* gnat.dg/atomic5.ad[sb]: Likewise.
+	* gnat.dg/discr29.ad[sb]: Likewise.
+	* gnat.dg/discr23.ads: Remove dg directive.
+	* gnat.dg/nested_float_packed.ads: Likewise.
+	* gnat.dg/oconst6.ads: Move to...
+	* gnat.dg/specs/oconst6.ads: ...here.
+
 2012-09-15  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/54552
