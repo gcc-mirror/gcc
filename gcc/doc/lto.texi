@@ -455,7 +455,7 @@ alone.  The problem is that propagation of inter-procedural
 information does not work well across functions and variables
 that are called or referenced by other compilation units (such as
 from a dynamically linked library).  We say that such functions
-are variables are @emph{externally visible}.
+and variables are @emph{externally visible}.
 
 To make the situation even more difficult, many applications
 organize themselves as a set of shared libraries, and the default

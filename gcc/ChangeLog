@@ -1,3 +1,7 @@
+2012-09-20  Chen Wei-Ren  <chenwj@iis.sinica.edu.tw>
+
+	doc/lto.texi: Correct typo.
+
 2012-09-19  Dehao Chen  <dehao@google.com>
 
 	* config/s390/s390.c (s390_chunkify_start): Replacing INSN_LOCATOR.
