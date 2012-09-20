@@ -6956,7 +6956,10 @@ choose_reload_regs (struct insn_chain *chain)
       for (j = 0; j < n_reloads; j++)
 	{
 	  int r = reload_order[j];
-	  rtx check_reg, tem;
+	  rtx check_reg;
+#ifdef SECONDARY_MEMORY_NEEDED
+	  rtx tem;
+#endif
 	  if (reload_inherited[r] && rld[r].reg_rtx)
 	    check_reg = rld[r].reg_rtx;
 	  else if (reload_override_in[r]
