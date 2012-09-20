@@ -1,3 +1,8 @@
+2012-09-20  Walter Lee  <walt@tilera.com>
+
+	* configure.ac: Add tilegx to list of targets that support gold.
+	* configure: Regenerate.
+
 2012-09-20  Marek Polacek  <polacek@redhat.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
