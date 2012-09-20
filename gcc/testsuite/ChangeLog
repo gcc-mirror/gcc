@@ -1,3 +1,10 @@
+2012-09-20  Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.dg/tree-ssa/forwprop-19.c: Check in forwprop1.
+	* gcc.dg/tree-ssa/forwprop-20.c: Check in forwprop1.
+	* gcc.dg/tree-ssa/forwprop-21.c: Check in copyprop1.
+	* gcc.dg/tree-ssa/forwprop-22.c: Check in copyprop1.
+
 2012-09-19  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/54581
