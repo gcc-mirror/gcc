@@ -97,24 +97,22 @@ static tree
 vxworks_emutls_var_init (tree var, tree decl, tree tmpl_addr)
 {
   VEC(constructor_elt,gc) *v = VEC_alloc (constructor_elt, gc, 3);
-  constructor_elt *elt;
   
   tree type = TREE_TYPE (var);
   tree field = TYPE_FIELDS (type);
   
-  elt = VEC_quick_push (constructor_elt, v, NULL);
-  elt->index = field;
-  elt->value = fold_convert (TREE_TYPE (field), tmpl_addr);
+  constructor_elt elt = {field, fold_convert (TREE_TYPE (field), tmpl_addr)};
+  VEC_quick_push (constructor_elt, v, elt);
   
-  elt = VEC_quick_push (constructor_elt, v, NULL);
   field = DECL_CHAIN (field);
-  elt->index = field;
-  elt->value = build_int_cst (TREE_TYPE (field), 0);
+  elt.index = field;
+  elt.value = build_int_cst (TREE_TYPE (field), 0);
+  VEC_quick_push (constructor_elt, v, elt);
   
-  elt = VEC_quick_push (constructor_elt, v, NULL);
   field = DECL_CHAIN (field);
-  elt->index = field;
-  elt->value = fold_convert (TREE_TYPE (field), DECL_SIZE_UNIT (decl));
+  elt.index = field;
+  elt.value = fold_convert (TREE_TYPE (field), DECL_SIZE_UNIT (decl));
+  VEC_quick_push (constructor_elt, v, elt);
   
   return build_constructor (type, v);
 }

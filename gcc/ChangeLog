@@ -1,3 +1,9 @@
+2012-09-20  Diego Novillo  <dnovillo@google.com>
+
+	PR target/54631
+	* config/vxworks.c (vxworks_emutls_var_init): Update for new
+	VEC_quick_push interface.
+
 2012-09-20  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/54634
