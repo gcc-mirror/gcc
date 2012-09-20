@@ -22,6 +22,6 @@ enum e {
   E5 = 0 * -INT_MIN, /* { dg-warning "12:integer overflow in expression" } */
   /* { dg-error "3:overflow in constant expression" "constant" { target *-*-* } 22 } */
   E6 = 0 * !-INT_MIN, /* { dg-warning "13:integer overflow in expression" } */
-  /* { dg-error "3:not an integer constant" "constant" { target *-*-* } 24 } */
+  /* { dg-error "8:not an integer constant" "constant" { target *-*-* } 24 } */
   E7 = INT_MIN % -1 /* Not an overflow.  */
 };
