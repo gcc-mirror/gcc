@@ -12,7 +12,7 @@ target_alias=${target_alias-$host_alias}
 
 . ${srcdir}/configure.host
 
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([no-dist])
 
 # The same as in boehm-gc and libstdc++. Have to borrow it from there.
 # We must force CC to /not/ be precious variables; otherwise

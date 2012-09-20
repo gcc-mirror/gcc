@@ -2844,6 +2844,7 @@ target_alias=${target_alias-$host_alias}
 #  no-define:  PACKAGE and VERSION will not be #define'd in config.h (a bunch
 #              of other PACKAGE_* variables will, however, and there's nothing
 #              we can do about that; they come from AC_INIT).
+#  no-dist:  we don't want 'dist' and related rules.
 #  foreign:  we don't follow the normal rules for GNU packages (no COPYING
 #            file in the top srcdir, etc, etc), so stop complaining.
 #  -Wall:  turns on all automake warnings...
@@ -11770,7 +11771,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11773 "configure"
+#line 11774 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11876,7 +11877,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11879 "configure"
+#line 11880 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
