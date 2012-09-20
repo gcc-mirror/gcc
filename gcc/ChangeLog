@@ -1,5 +1,9 @@
 2012-09-20  Marek Polacek  <polacek@redhat.com>
 
+	* tree-ssa-operands.c (get_expr_operands): Merge identical cases.
+
+2012-09-20  Marek Polacek  <polacek@redhat.com>
+
 	* tree-ssa-threadupdate.c (mark_threaded_blocks): Don't cast XNEWVEC's
 	result.
 	(create_edge_and_update_destination_phis): Likewise.
