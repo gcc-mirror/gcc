@@ -1420,10 +1420,8 @@ estimated_stack_frame_size (struct cgraph_node *node)
   HOST_WIDE_INT size = 0;
   size_t i;
   tree var;
-  tree old_cur_fun_decl = current_function_decl;
   struct function *fn = DECL_STRUCT_FUNCTION (node->symbol.decl);
 
-  current_function_decl = node->symbol.decl;
   push_cfun (fn);
 
   init_vars_expansion ();
@@ -1443,7 +1441,6 @@ estimated_stack_frame_size (struct cgraph_node *node)
 
   fini_vars_expansion ();
   pop_cfun ();
-  current_function_decl = old_cur_fun_decl;
   return size;
 }
 

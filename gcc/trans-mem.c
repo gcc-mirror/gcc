@@ -3987,7 +3987,6 @@ ipa_tm_scan_irr_function (struct cgraph_node *node, bool for_clone)
       || DECL_STRUCT_FUNCTION (node->symbol.decl)->cfg == NULL)
     return false;
 
-  current_function_decl = node->symbol.decl;
   push_cfun (DECL_STRUCT_FUNCTION (node->symbol.decl));
   calculate_dominance_info (CDI_DOMINATORS);
 
@@ -4059,7 +4058,6 @@ ipa_tm_scan_irr_function (struct cgraph_node *node, bool for_clone)
 
   VEC_free (basic_block, heap, queue);
   pop_cfun ();
-  current_function_decl = NULL;
 
   return ret;
 }
@@ -4697,7 +4695,6 @@ ipa_tm_transform_transaction (struct cgraph_node *node)
 
   d = get_cg_data (&node, true);
 
-  current_function_decl = node->symbol.decl;
   push_cfun (DECL_STRUCT_FUNCTION (node->symbol.decl));
   calculate_dominance_info (CDI_DOMINATORS);
 
@@ -4722,7 +4719,6 @@ ipa_tm_transform_transaction (struct cgraph_node *node)
     update_ssa (TODO_update_ssa_only_virtuals);
 
   pop_cfun ();
-  current_function_decl = NULL;
 }
 
 /* Transform the calls within the transactional clone of NODE.  */
@@ -4741,8 +4737,7 @@ ipa_tm_transform_clone (struct cgraph_node *node)
   if (!node->callees && !node->indirect_calls && !d->irrevocable_blocks_clone)
     return;
 
-  current_function_decl = d->clone->symbol.decl;
-  push_cfun (DECL_STRUCT_FUNCTION (current_function_decl));
+  push_cfun (DECL_STRUCT_FUNCTION (d->clone->symbol.decl));
   calculate_dominance_info (CDI_DOMINATORS);
 
   need_ssa_rename =
@@ -4753,7 +4748,6 @@ ipa_tm_transform_clone (struct cgraph_node *node)
     update_ssa (TODO_update_ssa_only_virtuals);
 
   pop_cfun ();
-  current_function_decl = NULL;
 }
 
 /* Main entry point for the transactional memory IPA pass.  */
@@ -4800,7 +4794,6 @@ ipa_tm_execute (void)
 	    continue;
 	  }
 
-	current_function_decl = node->symbol.decl;
 	push_cfun (DECL_STRUCT_FUNCTION (node->symbol.decl));
 	calculate_dominance_info (CDI_DOMINATORS);
 
@@ -4820,7 +4813,6 @@ ipa_tm_execute (void)
 	  }
 
 	pop_cfun ();
-	current_function_decl = NULL;
       }
 
   /* For every local function on the callee list, scan as if we will be

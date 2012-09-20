@@ -2048,7 +2048,8 @@ remap_decl_1 (tree decl, void *data)
 }
 
 /* Build struct function and associated datastructures for the new clone
-   NEW_FNDECL to be build.  CALLEE_FNDECL is the original */
+   NEW_FNDECL to be build.  CALLEE_FNDECL is the original.  Function changes
+   the cfun to the function of new_fndecl (and current_function_decl too).  */
 
 static void
 initialize_cfun (tree new_fndecl, tree callee_fndecl, gcov_type count)
@@ -2113,7 +2114,6 @@ initialize_cfun (tree new_fndecl, tree callee_fndecl, gcov_type count)
       cfun->gimple_df->in_ssa_p = true;
       init_ssa_operands (cfun);
     }
-  pop_cfun ();
 }
 
 /* Helper function for copy_cfg_body.  Move debug stmts from the end
@@ -5047,8 +5047,6 @@ tree_function_versioning (tree old_decl, tree new_decl,
   struct ipa_replace_map *replace_info;
   basic_block old_entry_block, bb;
   VEC (gimple, heap) *init_stmts = VEC_alloc (gimple, heap, 10);
-
-  tree old_current_function_decl = current_function_decl;
   tree vars = NULL_TREE;
 
   gcc_assert (TREE_CODE (old_decl) == FUNCTION_DECL
@@ -5119,14 +5117,12 @@ tree_function_versioning (tree old_decl, tree new_decl,
   id.transform_return_to_modify = false;
   id.transform_lang_insert_block = NULL;
 
-  current_function_decl = new_decl;
   old_entry_block = ENTRY_BLOCK_PTR_FOR_FUNCTION
     (DECL_STRUCT_FUNCTION (old_decl));
   initialize_cfun (new_decl, old_decl,
 		   old_entry_block->count);
   DECL_STRUCT_FUNCTION (new_decl)->gimple_df->ipa_pta
     = id.src_cfun->gimple_df->ipa_pta;
-  push_cfun (DECL_STRUCT_FUNCTION (new_decl));
 
   /* Copy the function's static chain.  */
   p = DECL_STRUCT_FUNCTION (old_decl)->static_chain_decl;
@@ -5280,9 +5276,6 @@ tree_function_versioning (tree old_decl, tree new_decl,
   gcc_assert (!id.debug_stmts);
   VEC_free (gimple, heap, init_stmts);
   pop_cfun ();
-  current_function_decl = old_current_function_decl;
-  gcc_assert (!current_function_decl
-	      || DECL_STRUCT_FUNCTION (current_function_decl) == cfun);
   return;
 }
 

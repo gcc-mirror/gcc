@@ -313,7 +313,6 @@ cgraph_process_new_functions (void)
 	  if (!node->analyzed)
 	    cgraph_analyze_function (node);
 	  push_cfun (DECL_STRUCT_FUNCTION (fndecl));
-	  current_function_decl = fndecl;
 	  if ((cgraph_state == CGRAPH_STATE_IPA_SSA
 	      && !gimple_in_ssa_p (DECL_STRUCT_FUNCTION (fndecl)))
 	      /* When not optimizing, be sure we run early local passes anyway
@@ -325,7 +324,6 @@ cgraph_process_new_functions (void)
 	  free_dominance_info (CDI_POST_DOMINATORS);
 	  free_dominance_info (CDI_DOMINATORS);
 	  pop_cfun ();
-	  current_function_decl = NULL;
           cgraph_call_function_insertion_hooks (node);
 	  break;
 
@@ -495,14 +493,12 @@ cgraph_add_new_function (tree fndecl, bool lowered)
 	if (!lowered && cgraph_state == CGRAPH_STATE_EXPANSION)
 	  {
 	    push_cfun (DECL_STRUCT_FUNCTION (fndecl));
-	    current_function_decl = fndecl;
 	    gimple_register_cfg_hooks ();
 	    bitmap_obstack_initialize (NULL);
 	    execute_pass_list (all_lowering_passes);
 	    execute_pass_list (pass_early_local_passes.pass.sub);
 	    bitmap_obstack_release (NULL);
 	    pop_cfun ();
-	    current_function_decl = NULL;
 
 	    lowered = true;
 	  }
@@ -521,7 +517,6 @@ cgraph_add_new_function (tree fndecl, bool lowered)
 	  node->lowered = true;
 	cgraph_analyze_function (node);
 	push_cfun (DECL_STRUCT_FUNCTION (fndecl));
-	current_function_decl = fndecl;
 	gimple_register_cfg_hooks ();
 	bitmap_obstack_initialize (NULL);
 	if (!gimple_in_ssa_p (DECL_STRUCT_FUNCTION (fndecl)))
@@ -529,7 +524,6 @@ cgraph_add_new_function (tree fndecl, bool lowered)
 	bitmap_obstack_release (NULL);
 	pop_cfun ();
 	expand_function (node);
-	current_function_decl = NULL;
 	break;
 
       default:
@@ -597,7 +591,6 @@ fixup_same_cpp_alias_visibility (symtab_node node, symtab_node target, tree alia
 static void
 cgraph_analyze_function (struct cgraph_node *node)
 {
-  tree save = current_function_decl;
   tree decl = node->symbol.decl;
   location_t saved_loc = input_location;
   input_location = DECL_SOURCE_LOCATION (decl);
@@ -638,7 +631,6 @@ cgraph_analyze_function (struct cgraph_node *node)
     }
   else
     {
-      current_function_decl = decl;
       push_cfun (DECL_STRUCT_FUNCTION (decl));
 
       assign_assembler_name_if_neeeded (node->symbol.decl);
@@ -672,7 +664,6 @@ cgraph_analyze_function (struct cgraph_node *node)
     }
   node->analyzed = true;
 
-  current_function_decl = save;
   input_location = saved_loc;
 }
 
@@ -1524,6 +1515,7 @@ assemble_thunk (struct cgraph_node *node)
       bitmap_obstack_release (NULL);
     }
   current_function_decl = NULL;
+  set_cfun (NULL);
 }
 
 
@@ -1616,8 +1608,6 @@ expand_function (struct cgraph_node *node)
   /* Release the default bitmap obstack.  */
   bitmap_obstack_release (NULL);
 
-  set_cfun (NULL);
-
   /* If requested, warn about function definitions where the function will
      return a value (usually of some struct or union type) which itself will
      take up a lot of stack space.  */
@@ -1662,6 +1652,7 @@ expand_function (struct cgraph_node *node)
 
   /* Make sure that BE didn't give up on compiling.  */
   gcc_assert (TREE_ASM_WRITTEN (decl));
+  set_cfun (NULL);
   current_function_decl = NULL;
 
   /* It would make a lot more sense to output thunks before function body to get more

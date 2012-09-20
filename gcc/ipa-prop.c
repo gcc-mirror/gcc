@@ -1929,7 +1929,6 @@ ipa_analyze_node (struct cgraph_node *node)
   ipa_check_create_edge_args ();
   info = IPA_NODE_REF (node);
   push_cfun (DECL_STRUCT_FUNCTION (node->symbol.decl));
-  current_function_decl = node->symbol.decl;
   ipa_initialize_node_params (node);
 
   param_count = ipa_get_param_count (info);
@@ -1947,7 +1946,6 @@ ipa_analyze_node (struct cgraph_node *node)
 	BITMAP_FREE (parms_ainfo[i].pt_visited_statements);
     }
 
-  current_function_decl = NULL;
   pop_cfun ();
 }
 

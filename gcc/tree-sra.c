@@ -4616,7 +4616,6 @@ convert_callers_for_node (struct cgraph_node *node,
 
   for (cs = node->callers; cs; cs = cs->next_caller)
     {
-      current_function_decl = cs->caller->symbol.decl;
       push_cfun (DECL_STRUCT_FUNCTION (cs->caller->symbol.decl));
 
       if (dump_file)
@@ -4645,13 +4644,10 @@ static void
 convert_callers (struct cgraph_node *node, tree old_decl,
 		 ipa_parm_adjustment_vec adjustments)
 {
-  tree old_cur_fndecl = current_function_decl;
   basic_block this_block;
 
   cgraph_for_node_and_aliases (node, convert_callers_for_node,
 			       adjustments, false);
-
-  current_function_decl = old_cur_fndecl;
 
   if (!encountered_recursive_call)
     return;
@@ -4693,15 +4689,12 @@ modify_function (struct cgraph_node *node, ipa_parm_adjustment_vec adjustments)
   rebuild_cgraph_edges ();
   free_dominance_info (CDI_DOMINATORS);
   pop_cfun ();
-  current_function_decl = NULL_TREE;
 
   new_node = cgraph_function_versioning (node, redirect_callers, NULL, NULL,
 					 false, NULL, NULL, "isra");
   VEC_free (cgraph_edge_p, heap, redirect_callers);
 
-  current_function_decl = new_node->symbol.decl;
   push_cfun (DECL_STRUCT_FUNCTION (new_node->symbol.decl));
-
   ipa_modify_formal_parameters (current_function_decl, adjustments, "ISRA");
   cfg_changed = ipa_sra_modify_function_body (adjustments);
   sra_ipa_reset_debug_stmts (adjustments);
