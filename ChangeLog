@@ -1,3 +1,7 @@
+2012-09-20  Marek Polacek  <polacek@redhat.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2012-09-19  Steve Ellcey  <sellcey@mips.com>
 
 	* configure.ac: Add mips*-mti-elf* target.
