@@ -2628,7 +2628,7 @@ mips16_gp_pseudo_reg (void)
 
       insn = gen_load_const_gp (cfun->machine->mips16_gp_pseudo_rtx);
       insn = emit_insn_after (insn, scan);
-      INSN_LOCATOR (insn) = 0;
+      INSN_LOCATION (insn) = 0;
 
       pop_topmost_sequence ();
     }

@@ -5359,7 +5359,7 @@ require_pic_register (void)
 
 	      for (insn = seq; insn; insn = NEXT_INSN (insn))
 		if (INSN_P (insn))
-		  INSN_LOCATOR (insn) = prologue_locator;
+		  INSN_LOCATION (insn) = prologue_location;
 
 	      /* We can be called during expansion of PHI nodes, where
 	         we can't yet emit instructions directly in the final

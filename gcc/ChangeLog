@@ -1,3 +1,20 @@
+2012-09-19  Dehao Chen  <dehao@google.com>
+
+	* config/s390/s390.c (s390_chunkify_start): Replacing INSN_LOCATOR.
+	* config/spu/spu.c (emit_nop_for_insn): Likewise.
+	(pad_bb): Likewise.
+	(spu_emit_branch_hint): Likewise.
+	(insert_hbrp_for_ilb_runout): Likewise.
+	* config/mep/mep.c (mep_make_bundle): Likewise.
+	(mep_bundle_insns): Likewise.
+	* config/sh/sh.c (gen_block_redirect): Likewise.
+	* config/c6x/c6x.c (gen_one_bundle): Likewise.
+	* config/rs6000/rs6000.c (rs6000_final_prescan_insn): Likewise.
+	* config/picochip/picochip.c (picochip_reorg): Likewise.
+	* config/arm/arm.c (require_pic_register): Likewise.
+	* config/mips/mips.c (mips16_gp_pseudo_reg): Likewise.
+	* config/bfin/bfin.c (gen_one_bundle): Likewise.
+
 2012-09-19  Mark Kettenis  <kettenis@openbsd.org>
 
         * config.gcc (hppa*-*-openbsd*): New target.
