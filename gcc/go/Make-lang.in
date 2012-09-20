@@ -289,10 +289,11 @@ go/gogo-tree.o: go/gofrontend/gogo-tree.cc $(GO_SYSTEM_H) $(TOPLEV_H) \
 	convert.h output.h $(DIAGNOSTIC_H) $(GO_TYPES_H) \
 	$(GO_EXPRESSIONS_H) $(GO_STATEMENTS_H) $(GO_RUNTIME_H) \
 	go/gofrontend/backend.h $(GO_GOGO_H)
-go/gogo.o: go/gofrontend/gogo.cc $(GO_SYSTEM_H) $(GO_C_H) \
-	go/gofrontend/go-dump.h $(GO_LEX_H) $(GO_TYPES_H) $(GO_STATEMENTS_H) \
-	$(GO_EXPRESSIONS_H) go/gofrontend/dataflow.h $(GO_RUNTIME_H) \
-	$(GO_IMPORT_H) $(GO_EXPORT_H) go/gofrontend/backend.h $(GO_GOGO_H)
+go/gogo.o: go/gofrontend/gogo.cc $(GO_SYSTEM_H) \
+	$(srcdir)/../include/filenames.h $(GO_C_H) go/gofrontend/go-dump.h \
+	$(GO_LEX_H) $(GO_TYPES_H) $(GO_STATEMENTS_H) $(GO_EXPRESSIONS_H) \
+	go/gofrontend/dataflow.h $(GO_RUNTIME_H) $(GO_IMPORT_H) \
+	$(GO_EXPORT_H) go/gofrontend/backend.h $(GO_GOGO_H)
 go/import.o: go/gofrontend/import.cc $(GO_SYSTEM_H) \
 	$(srcdir)/../include/filenames.h $(srcdir)/../include/simple-object.h \
 	$(GO_C_H) $(GO_GOGO_H) $(GO_LEX_H) $(GO_TYPES_H) $(GO_EXPORT_H) \

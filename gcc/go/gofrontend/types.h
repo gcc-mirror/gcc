@@ -2623,8 +2623,8 @@ class Named_type : public Type
  public:
   Named_type(Named_object* named_object, Type* type, Location location)
     : Type(TYPE_NAMED),
-      named_object_(named_object), in_function_(NULL), type_(type),
-      local_methods_(NULL), all_methods_(NULL),
+      named_object_(named_object), in_function_(NULL), in_function_index_(0),
+      type_(type), local_methods_(NULL), all_methods_(NULL),
       interface_method_tables_(NULL), pointer_interface_method_tables_(NULL),
       location_(location), named_btype_(NULL), dependencies_(),
       is_visible_(true), is_error_(false), is_placeholder_(false),
@@ -2651,13 +2651,19 @@ class Named_type : public Type
   // Return the function in which this type is defined.  This will
   // return NULL for a type defined in global scope.
   const Named_object*
-  in_function() const
-  { return this->in_function_; }
+  in_function(unsigned int *pindex) const
+  {
+    *pindex = this->in_function_index_;
+    return this->in_function_;
+  }
 
   // Set the function in which this type is defined.
   void
-  set_in_function(Named_object* f)
-  { this->in_function_ = f; }
+  set_in_function(Named_object* f, unsigned int index)
+  {
+    this->in_function_ = f;
+    this->in_function_index_ = index;
+  }
 
   // Return the name of the type.
   const std::string&
@@ -2865,6 +2871,8 @@ class Named_type : public Type
   // If this type is defined in a function, a pointer back to the
   // function in which it is defined.
   Named_object* in_function_;
+  // The index of this type in IN_FUNCTION_.
+  unsigned int in_function_index_;
   // The actual type.
   Type* type_;
   // The list of methods defined for this type.  Any named type can

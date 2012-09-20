@@ -6,6 +6,8 @@
 
 #include "go-system.h"
 
+#include "filenames.h"
+
 #include "go-c.h"
 #include "go-dump.h"
 #include "lex.h"
@@ -385,6 +387,57 @@ Gogo::import_package(const std::string& filename,
 		     bool is_local_name_exported,
 		     Location location)
 {
+  if (filename.empty())
+    {
+      error_at(location, "import path is empty");
+      return;
+    }
+
+  const char *pf = filename.data();
+  const char *pend = pf + filename.length();
+  while (pf < pend)
+    {
+      unsigned int c;
+      int adv = Lex::fetch_char(pf, &c);
+      if (adv == 0)
+	{
+	  error_at(location, "import path contains invalid UTF-8 sequence");
+	  return;
+	}
+      if (c == '\0')
+	{
+	  error_at(location, "import path contains NUL");
+	  return;
+	}
+      if (c < 0x20 || c == 0x7f)
+	{
+	  error_at(location, "import path contains control character");
+	  return;
+	}
+      if (c == '\\')
+	{
+	  error_at(location, "import path contains backslash; use slash");
+	  return;
+	}
+      if (Lex::is_unicode_space(c))
+	{
+	  error_at(location, "import path contains space character");
+	  return;
+	}
+      if (c < 0x7f && strchr("!\"#$%&'()*,:;<=>?[]^`{|}", c) != NULL)
+	{
+	  error_at(location, "import path contains invalid character '%c'", c);
+	  return;
+	}
+      pf += adv;
+    }
+
+  if (IS_ABSOLUTE_PATH(filename.c_str()))
+    {
+      error_at(location, "import path cannot be absolute path");
+      return;
+    }
+
   if (filename == "unsafe")
     {
       this->import_unsafe(local_name, is_local_name_exported, location);
@@ -1003,7 +1056,15 @@ Gogo::add_type(const std::string& name, Type* type, Location location)
   Named_object* no = this->current_bindings()->add_type(name, NULL, type,
 							location);
   if (!this->in_global_scope() && no->is_type())
-    no->type_value()->set_in_function(this->functions_.back().function);
+    {
+      Named_object* f = this->functions_.back().function;
+      unsigned int index;
+      if (f->is_function())
+	index = f->func_value()->new_local_type_index();
+      else
+	index = 0;
+      no->type_value()->set_in_function(f, index);
+    }
 }
 
 // Add a named type.
@@ -1025,7 +1086,12 @@ Gogo::declare_type(const std::string& name, Location location)
   if (!this->in_global_scope() && no->is_type_declaration())
     {
       Named_object* f = this->functions_.back().function;
-      no->type_declaration_value()->set_in_function(f);
+      unsigned int index;
+      if (f->is_function())
+	index = f->func_value()->new_local_type_index();
+      else
+	index = 0;
+      no->type_declaration_value()->set_in_function(f, index);
     }
   return no;
 }
@@ -2989,9 +3055,10 @@ Gogo::convert_named_types_in_bindings(Bindings* bindings)
 Function::Function(Function_type* type, Function* enclosing, Block* block,
 		   Location location)
   : type_(type), enclosing_(enclosing), results_(NULL),
-    closure_var_(NULL), block_(block), location_(location), fndecl_(NULL),
-    defer_stack_(NULL), results_are_named_(false), calls_recover_(false),
-    is_recover_thunk_(false), has_recover_thunk_(false)
+    closure_var_(NULL), block_(block), location_(location), labels_(),
+    local_type_count_(0), fndecl_(NULL), defer_stack_(NULL),
+    results_are_named_(false), calls_recover_(false), is_recover_thunk_(false),
+    has_recover_thunk_(false)
 {
 }
 
@@ -4599,9 +4666,10 @@ Named_object::set_type_value(Named_type* named_type)
   go_assert(this->classification_ == NAMED_OBJECT_TYPE_DECLARATION);
   Type_declaration* td = this->u_.type_declaration;
   td->define_methods(named_type);
-  Named_object* in_function = td->in_function();
+  unsigned int index;
+  Named_object* in_function = td->in_function(&index);
   if (in_function != NULL)
-    named_type->set_in_function(in_function);
+    named_type->set_in_function(in_function, index);
   delete td;
   this->classification_ = NAMED_OBJECT_TYPE;
   this->u_.type_value = named_type;
