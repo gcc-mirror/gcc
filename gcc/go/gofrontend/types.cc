@@ -579,6 +579,9 @@ Type::are_compatible_for_comparison(bool is_equality_op, const Type *t1,
 	       p != fields->end();
 	       ++p)
 	    {
+	      if (Gogo::is_sink_name(p->field_name()))
+		continue;
+
 	      if (!p->type()->is_comparable())
 		{
 		  if (reason != NULL)
@@ -4294,6 +4297,9 @@ Struct_type::do_compare_is_identity(Gogo* gogo) const
        pf != fields->end();
        ++pf)
     {
+      if (Gogo::is_sink_name(pf->field_name()))
+	return false;
+
       if (!pf->type()->compare_is_identity(gogo))
 	return false;
 
@@ -4767,6 +4773,9 @@ Struct_type::write_hash_function(Gogo* gogo, Named_type*,
        pf != fields->end();
        ++pf)
     {
+      if (Gogo::is_sink_name(pf->field_name()))
+	continue;
+
       if (first)
 	first = false;
       else
@@ -4858,6 +4867,9 @@ Struct_type::write_equal_function(Gogo* gogo, Named_type* name)
        pf != fields->end();
        ++pf, ++field_index)
     {
+      if (Gogo::is_sink_name(pf->field_name()))
+	continue;
+
       // Compare one field in both P1 and P2.
       Expression* f1 = Expression::make_temporary_reference(p1, bloc);
       f1 = Expression::make_unary(OPERATOR_MULT, f1, bloc);

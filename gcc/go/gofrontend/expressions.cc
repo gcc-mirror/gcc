@@ -5178,6 +5178,9 @@ Binary_expression::lower_struct_comparison(Gogo* gogo,
        pf != fields->end();
        ++pf, ++field_index)
     {
+      if (Gogo::is_sink_name(pf->field_name()))
+	continue;
+
       if (field_index > 0)
 	{
 	  if (left_temp == NULL)
