@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target double64 } */
-/* { dg-options "-O2 -fdump-tree-optimized" }  */
+/* { dg-options "-O -fdump-tree-forwprop1" }  */
 
 #include <stdint.h>
 
@@ -66,5 +66,5 @@ void l (double d, vecf* r)
   *r = __builtin_shuffle (x, y, m); // { d, -d }
 }
 
-/* { dg-final { scan-tree-dump-not "VEC_PERM_EXPR" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */
+/* { dg-final { scan-tree-dump-not "VEC_PERM_EXPR" "forwprop1" } } */
+/* { dg-final { cleanup-tree-dump "forwprop1" } } */
