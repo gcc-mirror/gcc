@@ -1,5 +1,22 @@
 2012-09-20  Jakub Jelinek  <jakub@redhat.com>
 
+	Backported from mainline
+	2012-09-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/54564
+	* config/i386/sse.md (fmai_vmfmadd_<mode>): Use (match_dup 1)
+	instead of (match_dup 0) as second argument to vec_merge.
+	(*fmai_fmadd_<mode>, *fmai_fmsub_<mode>): Likewise.
+	Remove third alternative.
+	(*fmai_fnmadd_<mode>, *fmai_fnmsub_<mode>): Likewise.  Negate
+	operand 2 instead of operand 1, but put it as first argument
+	of fma.
+	* config/i386/fmaintrin.h (_mm_fnmadd_sd, _mm_fnmadd_ss,
+	_mm_fnmsub_sd, _mm_fnmsub_ss): Negate the second argument instead
+	of the first.
+
+2012-09-20  Jakub Jelinek  <jakub@redhat.com>
+
 	* BASE-VER: Set to 4.7.3.
 	* DEV-PHASE: Set to prerelease.
 
