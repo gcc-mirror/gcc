@@ -1,3 +1,7 @@
+2012-09-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* reload1.c (choose_reload_regs): Add missing #ifdef/#endif pair.
+
 2012-09-20  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR bootstrap/54643
