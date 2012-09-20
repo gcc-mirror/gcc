@@ -1,5 +1,3 @@
--- { dg-do compile }
-
 package Noreturn5 is
 
    procedure Proc (Arg_Line : Wide_String; Keep_Going : Boolean);

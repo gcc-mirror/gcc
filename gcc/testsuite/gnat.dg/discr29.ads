@@ -1,5 +1,3 @@
--- { dg-do compile }
-
 package Discr29 is
 
    type Rec1 is record
