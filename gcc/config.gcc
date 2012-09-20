@@ -1017,10 +1017,15 @@ hppa*-*-linux*)
 	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h pa/pa-linux.h \
 		 pa/pa32-regs.h pa/pa32-linux.h"
 	;;
-# port not yet contributed.
-#hppa*-*-openbsd*)
-#	target_cpu_default="MASK_PA_11"
-#	;;
+hppa*-*-openbsd*)
+	target_cpu_default="MASK_PA_11"
+	tm_file="${tm_file} dbxelf.h elfos.h openbsd.h openbsd-stdint.h openbsd-libpthread.h \
+		 pa/pa-openbsd.h pa/pa32-regs.h pa/pa32-openbsd.h"
+	tmake_file="${tmake_file} pa/t-openbsd"
+	extra_options="${extra_options} openbsd.opt"
+	gas=yes
+	gnu_ld=yes
+	;;
 hppa[12]*-*-hpux10*)
 	case ${target} in
 	hppa1.1-*-* | hppa2*-*-*)

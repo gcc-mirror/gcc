@@ -1,5 +1,6 @@
 /* OpenBSD host-specific hook definitions.
-   Copyright (C) 2004, 2007, 2008, 2010, 2011 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2007, 2008, 2010, 2011, 2012
+   Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -33,6 +34,8 @@
    that's probably free.  */
 #if defined(__amd64__)
 # define TRY_EMPTY_VM_SPACE	0x400000000000
+#elif defined(__hppa__)
+# define TRY_EMPTY_VM_SPACE	0xb0000000
 #elif defined(__i386__)
 # define TRY_EMPTY_VM_SPACE	0xb0000000
 #else

@@ -1,3 +1,8 @@
+2012-09-19  Mark Kettenis  <kettenis@openbsd.org>
+
+        * config.host (hppa-*-openbsd*): New target.
+        * config/pa/t-openbsd: New file.
+
 2012-09-15  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/54222

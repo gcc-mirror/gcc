@@ -1,3 +1,11 @@
+2012-09-19  Mark Kettenis  <kettenis@openbsd.org>
+
+        * config.gcc (hppa*-*-openbsd*): New target.
+        * config/pa/pa-openbsd.h: New file.
+        * config/pa/pa32-openbsd.h: New file.
+        * config/host-openbsd.c: Update copyright year.
+        (TRY_EXCEPT_VM_SPACE): Define for OpenBSD/hppa.
+
 2012-09-19  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-prop.c (prune_expression_for_jf): New function.
