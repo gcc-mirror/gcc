@@ -1,6 +1,12 @@
 2012-09-20  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2012-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/54563
+	* tree-ssa-math-opts.c (execute_cse_sincos): Call
+	gimple_purge_dead_eh_edges if last call has been changed.
+
 	2012-09-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/54564
