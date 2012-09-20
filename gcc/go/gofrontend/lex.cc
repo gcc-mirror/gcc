@@ -726,7 +726,7 @@ Lex::next_token()
 								&issued_error);
 
 		// Ignore byte order mark at start of file.
-		if (ci == 0xfeff && this->lineno_ == 1 && this->lineoff_ == 0)
+		if (ci == 0xfeff)
 		  {
 		    p = pnext;
 		    break;
@@ -840,6 +840,14 @@ Lex::advance_one_utf8_char(const char* p, unsigned int* value,
       *issued_error = true;
       return p + 1;
     }
+
+  // Warn about byte order mark, except at start of file.
+  if (*value == 0xfeff && (this->lineno_ != 1 || this->lineoff_ != 0))
+    {
+      error_at(this->location(), "Unicode (UTF-8) BOM in middle of file");
+      *issued_error = true;
+    }
+
   return p + adv;
 }
 
