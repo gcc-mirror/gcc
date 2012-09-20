@@ -5854,7 +5854,8 @@ schedule_block (basic_block *target_bb)
   rtx head = NEXT_INSN (prev_head);
   rtx tail = PREV_INSN (next_tail);
 
-  if ((current_sched_info->flags & DONT_BREAK_DEPENDENCIES) == 0)
+  if ((current_sched_info->flags & DONT_BREAK_DEPENDENCIES) == 0
+      && sched_pressure != SCHED_PRESSURE_MODEL)
     find_modifiable_mems (head, tail);
 
   /* We used to have code to avoid getting parameters moved from hard
