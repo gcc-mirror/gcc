@@ -4307,10 +4307,10 @@ get_references_in_stmt (gimple stmt, VEC (data_ref_loc, heap) **references)
   *references = NULL;
 
   /* ASM_EXPR and CALL_EXPR may embed arbitrary side effects.
-     Calls have side-effects, except those to const or pure
-     functions.  */
+     As we cannot model data-references to not spelled out
+     accesses give up if they may occur.  */
   if ((stmt_code == GIMPLE_CALL
-       && !(gimple_call_flags (stmt) & (ECF_CONST | ECF_PURE)))
+       && !(gimple_call_flags (stmt) & ECF_CONST))
       || (stmt_code == GIMPLE_ASM
 	  && (gimple_asm_volatile_p (stmt) || gimple_vuse (stmt))))
     clobbers_memory = true;

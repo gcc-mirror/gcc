@@ -1,3 +1,9 @@
+2012-09-20  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/54634
+	* tree-data-ref.c (get_references_in_stmt): For now give
+	up for pure functions.
+
 2012-09-20  Chen Wei-Ren  <chenwj@iis.sinica.edu.tw>
 
 	doc/lto.texi: Correct typo.
