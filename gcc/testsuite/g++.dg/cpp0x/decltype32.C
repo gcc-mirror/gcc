@@ -3,10 +3,10 @@
 
 template <typename T>
 auto make_array(const T& il) ->
-decltype(make_array(il))	// { dg-error "not declared" }
+decltype(make_array(il))    // { dg-error "not declared|no matching|exceeds" }
 { }
 
 int main()
 {
-  int z = make_array(1);	// { dg-error "no match" }
+  int z = make_array(1);    // { dg-error "no matching" }
 }

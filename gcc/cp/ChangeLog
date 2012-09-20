@@ -1,3 +1,9 @@
+2012-09-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/52432
+	* pt.c (tsubst_copy_and_build): If tf_error is not set in the complain
+	argument don't call unqualified_name_lookup_error.
+
 2012-09-19  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/54581
