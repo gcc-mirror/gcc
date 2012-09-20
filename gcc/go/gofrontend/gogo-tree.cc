@@ -476,7 +476,6 @@ Gogo::write_initialization_function(tree fndecl, tree init_stmt_list)
 
   DECL_SAVED_TREE(fndecl) = init_stmt_list;
 
-  current_function_decl = fndecl;
   if (DECL_STRUCT_FUNCTION(fndecl) == NULL)
     push_struct_function(fndecl);
   else
@@ -487,7 +486,6 @@ Gogo::write_initialization_function(tree fndecl, tree init_stmt_list)
 
   cgraph_add_new_function(fndecl, false);
 
-  current_function_decl = NULL_TREE;
   pop_cfun();
 }
 
@@ -864,17 +862,13 @@ Gogo::write_globals()
 	      // means that we need an fndecl.
 	      if (init_fndecl == NULL_TREE)
 		init_fndecl = this->initialization_function_decl();
-	      current_function_decl = init_fndecl;
 	      if (DECL_STRUCT_FUNCTION(init_fndecl) == NULL)
 		push_struct_function(init_fndecl);
 	      else
 		push_cfun(DECL_STRUCT_FUNCTION(init_fndecl));
-
 	      tree var_decl = is_sink ? NULL_TREE : vec[i];
 	      var_init_tree = no->var_value()->get_init_block(this, NULL,
 							      var_decl);
-
-	      current_function_decl = NULL_TREE;
 	      pop_cfun();
 	    }
 
@@ -1126,15 +1120,12 @@ Named_object::get_tree(Gogo* gogo, Named_object* function)
 		cfun->function_end_locus =
                   func->block()->end_location().gcc_location();
 
-		current_function_decl = decl;
-
 		func->build_tree(gogo, this);
 
 		gimplify_function_tree(decl);
 
 		cgraph_finalize_function(decl, true);
 
-		current_function_decl = NULL_TREE;
 		pop_cfun();
 	      }
 	  }
