@@ -1,3 +1,5 @@
+--  { dg-do compile }
+
 with System;
 package body addr1 is
    task type T is

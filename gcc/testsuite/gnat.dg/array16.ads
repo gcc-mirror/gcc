@@ -1,6 +1,3 @@
--- { dg-do compile }
--- { dg-options "-O -gnatn -fdump-tree-optimized" }
-
 with Array16_Pkg;
 
 package Array16 is
@@ -26,6 +23,3 @@ package Array16 is
   procedure Proc (A : access My_T1; B : access My_T2);
 
 end Array16;
-
--- { dg-final { scan-tree-dump-not "secondary_stack" "optimized" } }
--- { dg-final { cleanup-tree-dump "optimized" } }

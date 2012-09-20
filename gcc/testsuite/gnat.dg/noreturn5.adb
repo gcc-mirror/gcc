@@ -1,3 +1,5 @@
+-- { dg-do compile }
+
 with Ada.Characters.Handling; use Ada.Characters.Handling;
 with GNAT.OS_Lib;             use GNAT.OS_Lib;
 with Text_IO;                 use Text_IO;
