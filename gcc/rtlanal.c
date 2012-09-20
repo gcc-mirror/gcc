@@ -1701,8 +1701,9 @@ dead_or_set_regno_p (const_rtx insn, unsigned int test_regno)
 
   pattern = PATTERN (insn);
 
+  /* If a COND_EXEC is not executed, the value survives.  */
   if (GET_CODE (pattern) == COND_EXEC)
-    pattern = COND_EXEC_CODE (pattern);
+    return 0;
 
   if (GET_CODE (pattern) == SET)
     return covers_regno_p (SET_DEST (pattern), test_regno);
