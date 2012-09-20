@@ -8287,14 +8287,12 @@ flag_instrument_functions_exclude_p (tree fndecl)
 void
 gimplify_function_tree (tree fndecl)
 {
-  tree oldfn, parm, ret;
+  tree parm, ret;
   gimple_seq seq;
   gimple bind;
 
   gcc_assert (!gimple_body (fndecl));
 
-  oldfn = current_function_decl;
-  current_function_decl = fndecl;
   if (DECL_STRUCT_FUNCTION (fndecl))
     push_cfun (DECL_STRUCT_FUNCTION (fndecl));
   else
@@ -8379,7 +8377,6 @@ gimplify_function_tree (tree fndecl)
   DECL_SAVED_TREE (fndecl) = NULL_TREE;
   cfun->curr_properties = PROP_gimple_any;
 
-  current_function_decl = oldfn;
   pop_cfun ();
 }
 

@@ -618,7 +618,6 @@ lower_emutls_function_body (struct cgraph_node *node)
   struct lower_emutls_data d;
   bool any_edge_inserts = false;
 
-  current_function_decl = node->symbol.decl;
   push_cfun (DECL_STRUCT_FUNCTION (node->symbol.decl));
 
   d.cfun_node = node;
@@ -689,7 +688,6 @@ lower_emutls_function_body (struct cgraph_node *node)
     gsi_commit_edge_inserts ();
 
   pop_cfun ();
-  current_function_decl = NULL;
 }
 
 /* Create emutls variable for VAR, DATA is pointer to static

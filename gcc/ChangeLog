@@ -1,3 +1,56 @@
+2012-09-20  Martin Jambor  <mjambor@suse.cz>
+
+	* function.c (push_cfun): Check old current_function_decl matches
+	old cfun, set new current_function_decl to the decl of the new
+	cfun.
+	(push_struct_function): Likewise.
+	(pop_cfun): Likewise.
+	(allocate_struct_function): Move call to
+	invoke_set_current_function_hook to the end of the function.
+	* cfgexpand.c (estimated_stack_frame_size): Do not set and restore
+	current_function_decl.
+	* cgraph.c (cgraph_release_function_body): Likewise.
+	* cgraphunit.c (cgraph_process_new_functions): Likewise.
+	(cgraph_add_new_function): Likewise.
+	(cgraph_analyze_function): Likewise.
+	(assemble_thunk): Set cfun to NULL at the end.
+	(expand_function): Move call to set_cfun downwards.
+	* gimple-low.c (record_vars_into): Only check current_function_decl
+	before possibly doing push_cfun.
+	* gimplify.c (gimplify_function_tree): Do not set and restore
+	current_function_decl.
+	* ipa-inline-analysis.c (compute_inline_parameters): Likewise.
+	(inline_analyze_function): Likewise.
+	* ipa-prop.c (ipa_analyze_node): Likewise.
+	* ipa-pure-const.c (analyze_function): Likewise.
+	* lto-streamer-in.c (lto_input_function_body): Do not set
+	current_function_decl.
+	* lto-streamer-out.c (output_function): Do not set and restore
+	current_function_decl.
+	* omp-low.c (finalize_task_copyfn): Likewise.
+	(expand_omp_taskreg): Likewise.
+	(create_task_copyfn): Likewise, move push_cfun up quite a bit.
+	* passes.c (dump_passes): Do not set and restore current_function_decl.
+	(do_per_function): Likewise.
+	(do_per_function_toporder): Likewise.
+	* trans-mem.c (ipa_tm_scan_irr_function): Likewise.
+	(ipa_tm_transform_transaction): Likewise.
+	(ipa_tm_transform_clone): Likewise.
+	(ipa_tm_execute): Likewise.
+	* tree-emutls.c (lower_emutls_function_body): Likewise.
+	* tree-inline.c (initialize_cfun): Do not call pop_cfun.
+	(tree_function_versioning): Do not call push_cfun, do not set and
+	restore current_function_decl.  Remove assert checking consistency of
+	cfun and current_function_decl.
+	* tree-profile.c (tree_profiling): Do not set and restore
+	current_function_decl.
+	* tree-sra.c (convert_callers_for_node): Do not set
+	current_function_decl.
+	(convert_callers): Do not restore current_function_decl.
+	(modify_function): Do not set current_function_decl.
+	* tree-ssa-structalias.c (ipa_pta_execute): Do not set and restore
+	current_function_decl.
+
 2012-09-20  Diego Novillo  <dnovillo@google.com>
 
 	PR target/54631

@@ -4412,22 +4412,34 @@ set_cfun (struct function *new_cfun)
 
 static VEC(function_p,heap) *cfun_stack;
 
-/* Push the current cfun onto the stack, and set cfun to new_cfun.  */
+/* Push the current cfun onto the stack, and set cfun to new_cfun.  Also set
+   current_function_decl accordingly.  */
 
 void
 push_cfun (struct function *new_cfun)
 {
+  gcc_assert ((!cfun && !current_function_decl)
+	      || (cfun && current_function_decl == cfun->decl));
   VEC_safe_push (function_p, heap, cfun_stack, cfun);
+  current_function_decl = new_cfun ? new_cfun->decl : NULL_TREE;
   set_cfun (new_cfun);
 }
 
-/* Pop cfun from the stack.  */
+/* Pop cfun from the stack.  Also set current_function_decl accordingly.  */
 
 void
 pop_cfun (void)
 {
   struct function *new_cfun = VEC_pop (function_p, cfun_stack);
+  /* When in_dummy_function, we do have a cfun but current_function_decl is
+     NULL.  We also allow pushing NULL cfun and subsequently changing
+     current_function_decl to something else and have both restored by
+     pop_cfun.  */
+  gcc_checking_assert (in_dummy_function
+		       || !cfun
+		       || current_function_decl == cfun->decl);
   set_cfun (new_cfun);
+  current_function_decl = new_cfun ? new_cfun->decl : NULL_TREE;
 }
 
 /* Return value of funcdef and increase it.  */
@@ -4474,8 +4486,6 @@ allocate_struct_function (tree fndecl, bool abstract_p)
   OVERRIDE_ABI_FORMAT (fndecl);
 #endif
 
-  invoke_set_current_function_hook (fndecl);
-
   if (fndecl != NULL_TREE)
     {
       DECL_STRUCT_FUNCTION (fndecl) = cfun;
@@ -4501,6 +4511,8 @@ allocate_struct_function (tree fndecl, bool abstract_p)
          but is this worth the hassle?  */
       cfun->can_throw_non_call_exceptions = flag_non_call_exceptions;
     }
+
+  invoke_set_current_function_hook (fndecl);
 }
 
 /* This is like allocate_struct_function, but pushes a new cfun for FNDECL
@@ -4509,7 +4521,13 @@ allocate_struct_function (tree fndecl, bool abstract_p)
 void
 push_struct_function (tree fndecl)
 {
+  /* When in_dummy_function we might be in the middle of a pop_cfun and
+     current_function_decl and cfun may not match.  */
+  gcc_assert (in_dummy_function
+	      || (!cfun && !current_function_decl)
+	      || (cfun && current_function_decl == cfun->decl));
   VEC_safe_push (function_p, heap, cfun_stack, cfun);
+  current_function_decl = fndecl;
   allocate_struct_function (fndecl, false);
 }
 

@@ -1,3 +1,8 @@
+2012-09-20  Martin Jambor  <mjambor@suse.cz>
+
+	* lto.c (lto_materialize_function): Call push_struct_function and
+	pop_cfun.
+
 2012-09-19  Dehao Chen  <dehao@google.com>
 
 	* lto/lto.c (lto_fixup_prevailing_decls): Remove tree.exp.block field.

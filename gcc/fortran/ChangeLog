@@ -1,3 +1,9 @@
+2012-09-20  Martin Jambor  <mjambor@suse.cz>
+
+	* trans-decl.c (gfc_get_extern_function_decl): Push NULL cfun.  Do not
+	set and restore current_function_decl.
+	(gfc_init_coarray_decl): Do not set and restore current_function_decl.
+
 2012-09-17  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/54608

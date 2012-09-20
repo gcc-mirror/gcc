@@ -1630,17 +1630,14 @@ gfc_get_extern_function_decl (gfc_symbol * sym)
 	  /* By construction, the external function cannot be
 	     a contained procedure.  */
 	  locus old_loc;
-	  tree save_fn_decl = current_function_decl;
 
-	  current_function_decl = NULL_TREE;
 	  gfc_save_backend_locus (&old_loc);
-	  push_cfun (cfun);
+	  push_cfun (NULL);
 
 	  gfc_create_function_decl (gsym->ns, true);
 
 	  pop_cfun ();
 	  gfc_restore_backend_locus (&old_loc);
-	  current_function_decl = save_fn_decl;
 	}
 
       /* If the namespace has entries, the proc_name is the
@@ -4861,16 +4858,12 @@ add_argument_checking (stmtblock_t *block, gfc_symbol *sym)
 void
 gfc_init_coarray_decl (bool main_tu)
 {
-  tree save_fn_decl;
-
   if (gfc_option.coarray != GFC_FCOARRAY_LIB)
     return;
 
   if (gfort_gvar_caf_this_image || gfort_gvar_caf_num_images)
     return;
 
-  save_fn_decl = current_function_decl;
-  current_function_decl = NULL_TREE;
   push_cfun (cfun);
 
   gfort_gvar_caf_this_image
@@ -4906,7 +4899,6 @@ gfc_init_coarray_decl (bool main_tu)
   pushdecl_top_level (gfort_gvar_caf_num_images);
 
   pop_cfun ();
-  current_function_decl = save_fn_decl;
 }
 
 

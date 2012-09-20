@@ -725,7 +725,6 @@ static funct_state
 analyze_function (struct cgraph_node *fn, bool ipa)
 {
   tree decl = fn->symbol.decl;
-  tree old_decl = current_function_decl;
   funct_state l;
   basic_block this_block;
 
@@ -753,7 +752,6 @@ analyze_function (struct cgraph_node *fn, bool ipa)
     }
 
   push_cfun (DECL_STRUCT_FUNCTION (decl));
-  current_function_decl = decl;
 
   FOR_EACH_BB (this_block)
     {
@@ -821,7 +819,6 @@ end:
     l->can_throw = false;
 
   pop_cfun ();
-  current_function_decl = old_decl;
   if (dump_file)
     {
       if (l->looping)

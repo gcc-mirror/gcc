@@ -1036,7 +1036,6 @@ void
 lto_input_function_body (struct lto_file_decl_data *file_data,
 			 tree fn_decl, const char *data)
 {
-  current_function_decl = fn_decl;
   lto_read_body (file_data, fn_decl, data, LTO_section_function_body);
 }
 
