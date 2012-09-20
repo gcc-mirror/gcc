@@ -1,5 +1,5 @@
 /* Thread edges through blocks and update the control flow and SSA graphs.
-   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2010, 201
+   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2010, 2011, 2012
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -362,7 +362,7 @@ create_edge_and_update_destination_phis (struct redirection_data *rd,
 
   if (rd->outgoing_edge->aux)
     {
-      e->aux = (edge *) XNEWVEC (edge, 2);
+      e->aux = XNEWVEC (edge, 2);
       THREAD_TARGET(e) = THREAD_TARGET (rd->outgoing_edge);
       THREAD_TARGET2(e) = THREAD_TARGET2 (rd->outgoing_edge);
     }
@@ -1143,7 +1143,7 @@ mark_threaded_blocks (bitmap threaded_blocks)
   for (i = 0; i < VEC_length (edge, threaded_edges); i += 3)
     {
       edge e = VEC_index (edge, threaded_edges, i);
-      edge *x = (edge *) XNEWVEC (edge, 2);
+      edge *x = XNEWVEC (edge, 2);
 
       e->aux = x;
       THREAD_TARGET (e) = VEC_index (edge, threaded_edges, i + 1);
