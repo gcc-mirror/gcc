@@ -421,7 +421,7 @@ Type::are_identical(const Type* t1, const Type* t2, bool errors_are_identical,
 
     case TYPE_CALL_MULTIPLE_RESULT:
       if (reason != NULL)
-	*reason = "invalid use of multiple value function call";
+	*reason = "invalid use of multiple-value function call";
       return false;
 
     default:
@@ -627,8 +627,8 @@ Type::are_assignable_check_hidden(const Type* lhs, const Type* rhs,
       if (rhs->is_call_multiple_result_type())
 	{
 	  if (reason != NULL)
-	    reason->assign(_("multiple value function call in "
-			     "single value context"));
+	    reason->assign(_("multiple-value function call in "
+			     "single-value context"));
 	  return false;
 	}
     }
