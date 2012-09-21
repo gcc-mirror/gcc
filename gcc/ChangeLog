@@ -1,3 +1,8 @@
+2012-09-21  Matthias Klose  <doko@ubuntu.com>
+
+	* config/arm/arm.c (arm_mangle_type): Don't warn anymore that 
+	4.4 has changed the `va_list' mangling.
+
 2012-09-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/54290
