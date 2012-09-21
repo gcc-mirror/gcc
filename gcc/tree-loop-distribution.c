@@ -1019,10 +1019,10 @@ classify_partition (loop_p loop, struct graph *rdg, partition_t partition)
       ddr = initialize_data_dependence_relation (single_load, single_store,
 						 loops);
       compute_affine_dependence (ddr, loop);
-      VEC_free (loop_p, heap, loops);
       if (DDR_ARE_DEPENDENT (ddr) == chrec_dont_know)
 	{
 	  free_dependence_relation (ddr);
+	  VEC_free (loop_p, heap, loops);
 	  return;
 	}
       if (DDR_ARE_DEPENDENT (ddr) != chrec_known)
@@ -1030,6 +1030,7 @@ classify_partition (loop_p loop, struct graph *rdg, partition_t partition)
 	  if (DDR_NUM_DIST_VECTS (ddr) == 0)
 	    {
 	      free_dependence_relation (ddr);
+	      VEC_free (loop_p, heap, loops);
 	      return;
 	    }
 	  lambda_vector dist_v;
@@ -1040,10 +1041,13 @@ classify_partition (loop_p loop, struct graph *rdg, partition_t partition)
 	      if (dist > 0 && !DDR_REVERSED_P (ddr))
 		{
 		  free_dependence_relation (ddr);
+		  VEC_free (loop_p, heap, loops);
 		  return;
 		}
 	    }
 	}
+      free_dependence_relation (ddr);
+      VEC_free (loop_p, heap, loops);
       partition->kind = PKIND_MEMCPY;
       partition->main_dr = single_store;
       partition->secondary_dr = single_load;
