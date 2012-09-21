@@ -6679,38 +6679,6 @@ Builtin_call_expression::do_set_recover_arg(Expression* arg)
   this->set_args(new_args);
 }
 
-// A traversal class which looks for a call expression.
-
-class Find_call_expression : public Traverse
-{
- public:
-  Find_call_expression()
-    : Traverse(traverse_expressions),
-      found_(false)
-  { }
-
-  int
-  expression(Expression**);
-
-  bool
-  found()
-  { return this->found_; }
-
- private:
-  bool found_;
-};
-
-int
-Find_call_expression::expression(Expression** pexpr)
-{
-  if ((*pexpr)->call_expression() != NULL)
-    {
-      this->found_ = true;
-      return TRAVERSE_EXIT;
-    }
-  return TRAVERSE_CONTINUE;
-}
-
 // Lower a builtin call expression.  This turns new and make into
 // specific expressions.  We also convert to a constant if we can.
 
@@ -6731,20 +6699,6 @@ Builtin_call_expression::do_lower(Gogo* gogo, Named_object* function,
 
   if (this->is_constant())
     {
-      // We can only lower len and cap if there are no function calls
-      // in the arguments.  Otherwise we have to make the call.
-      if (this->code_ == BUILTIN_LEN || this->code_ == BUILTIN_CAP)
-	{
-	  Expression* arg = this->one_arg();
-	  if (arg != NULL && !arg->is_constant())
-	    {
-	      Find_call_expression find_call;
-	      Expression::traverse(&arg, &find_call);
-	      if (find_call.found())
-		return this;
-	    }
-	}
-
       Numeric_constant nc;
       if (this->numeric_constant_value(&nc))
 	return nc.expression(loc);
@@ -7061,8 +7015,42 @@ Builtin_call_expression::one_arg() const
   return args->front();
 }
 
-// Return whether this is constant: len of a string, or len or cap of
-// a fixed array, or unsafe.Sizeof, unsafe.Offsetof, unsafe.Alignof.
+// A traversal class which looks for a call or receive expression.
+
+class Find_call_expression : public Traverse
+{
+ public:
+  Find_call_expression()
+    : Traverse(traverse_expressions),
+      found_(false)
+  { }
+
+  int
+  expression(Expression**);
+
+  bool
+  found()
+  { return this->found_; }
+
+ private:
+  bool found_;
+};
+
+int
+Find_call_expression::expression(Expression** pexpr)
+{
+  if ((*pexpr)->call_expression() != NULL
+      || (*pexpr)->receive_expression() != NULL)
+    {
+      this->found_ = true;
+      return TRAVERSE_EXIT;
+    }
+  return TRAVERSE_CONTINUE;
+}
+
+// Return whether this is constant: len of a string constant, or len
+// or cap of an array, or unsafe.Sizeof, unsafe.Offsetof,
+// unsafe.Alignof.
 
 bool
 Builtin_call_expression::do_is_constant() const
@@ -7084,6 +7072,17 @@ Builtin_call_expression::do_is_constant() const
 	    && arg_type->points_to()->array_type() != NULL
 	    && !arg_type->points_to()->is_slice_type())
 	  arg_type = arg_type->points_to();
+
+	// The len and cap functions are only constant if there are no
+	// function calls or channel operations in the arguments.
+	// Otherwise we have to make the call.
+	if (!arg->is_constant())
+	  {
+	    Find_call_expression find_call;
+	    Expression::traverse(&arg, &find_call);
+	    if (find_call.found())
+	      return false;
+	  }
 
 	if (arg_type->array_type() != NULL
 	    && arg_type->array_type()->length() != NULL)
