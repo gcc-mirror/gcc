@@ -1,3 +1,9 @@
+2012-09-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/54290
+	PR rtl-optimization/54644
+	* reload1.c (choose_reload_regs): Fix thinko in previous change.
+
 2012-09-20  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.md (define_split for plus_eqsi):
