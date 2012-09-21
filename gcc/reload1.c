@@ -6991,16 +6991,17 @@ choose_reload_regs (struct insn_chain *chain)
 	     If we succeeded removing some reload and we are doing a preliminary
 	     pass just to remove such reloads, make another pass, since the
 	     removal of one reload might allow us to inherit another one.  */
-	  else if (pass
-		   && rld[r].in
+	  else if (rld[r].in
 		   && rld[r].out != rld[r].in
 		   && remove_address_replacements (rld[r].in))
-	    pass = 2;
+	    {
+	      if (pass)
+	        pass = 2;
+	    }
 #ifdef SECONDARY_MEMORY_NEEDED
 	  /* If we needed a memory location for the reload, we also have to
 	     remove its related reloads.  */
-	  else if (pass
-	           && rld[r].in
+	  else if (rld[r].in
 		   && rld[r].out != rld[r].in
 		   && (tem = replaced_subreg (rld[r].in), REG_P (tem))		   
 		   && REGNO (tem) < FIRST_PSEUDO_REGISTER
@@ -7009,7 +7010,10 @@ choose_reload_regs (struct insn_chain *chain)
 		   && remove_address_replacements
 		      (get_secondary_mem (tem, rld[r].inmode, rld[r].opnum,
 					  rld[r].when_needed)))
-	    pass = 2;
+	    {
+	      if (pass)
+	        pass = 2;
+	    }
 #endif
 	}
     }
