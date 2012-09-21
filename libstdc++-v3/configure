@@ -3025,8 +3025,7 @@ test -n "$target_alias" &&
 target_alias=${target_alias-$host_alias}
 
 # Handy for debugging:
-{ $as_echo "$as_me:${as_lineno-$LINENO}: $build / $host / $target / $host_alias / $target_alias" >&5
-$as_echo "$as_me: $build / $host / $target / $host_alias / $target_alias" >&6;}; sleep 5
+#AC_MSG_NOTICE($build / $host / $target / $host_alias / $target_alias); sleep 5
 
 if test "$build" != "$host"; then
   # We are being configured with some form of cross compiler.
@@ -11498,7 +11497,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11501 "configure"
+#line 11500 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11604,7 +11603,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11607 "configure"
+#line 11606 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14962,7 +14961,7 @@ fi
     #
     # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
     cat > conftest.$ac_ext << EOF
-#line 14965 "configure"
+#line 14964 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -15297,7 +15296,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15300 "configure"
+#line 15299 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15332,7 +15331,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15335 "configure"
+#line 15334 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15367,7 +15366,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15370 "configure"
+#line 15369 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -15403,7 +15402,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15406 "configure"
+#line 15405 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -15482,7 +15481,7 @@ $as_echo "$as_me: WARNING: Performance of certain classes will degrade as a resu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15485 "configure"
+#line 15484 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -15524,7 +15523,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15527 "configure"
+#line 15526 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -15558,7 +15557,7 @@ $as_echo "$enable_int128" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15561 "configure"
+#line 15560 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -66485,6 +66484,8 @@ ac_config_files="$ac_config_files scripts/testsuite_flags"
 
 ac_config_files="$ac_config_files scripts/extract_symvers"
 
+ac_config_files="$ac_config_files doc/xsl/customization.xsl"
+
 
 # Multilibs need MULTISUBDIR defined correctly in certain makefiles so
 # that multilib installs will end up installed in the correct place.
@@ -67696,6 +67697,7 @@ do
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "scripts/testsuite_flags") CONFIG_FILES="$CONFIG_FILES scripts/testsuite_flags" ;;
     "scripts/extract_symvers") CONFIG_FILES="$CONFIG_FILES scripts/extract_symvers" ;;
+    "doc/xsl/customization.xsl") CONFIG_FILES="$CONFIG_FILES doc/xsl/customization.xsl" ;;
     "include/Makefile") CONFIG_FILES="$CONFIG_FILES include/Makefile" ;;
     "libsupc++/Makefile") CONFIG_FILES="$CONFIG_FILES libsupc++/Makefile" ;;
     "python/Makefile") CONFIG_FILES="$CONFIG_FILES python/Makefile" ;;

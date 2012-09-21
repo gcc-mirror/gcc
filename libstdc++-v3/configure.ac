@@ -434,6 +434,7 @@ dnl AC_OUTPUT macro.  This one lists the files to be created:
 AC_CONFIG_FILES(Makefile)
 AC_CONFIG_FILES([scripts/testsuite_flags],[chmod +x scripts/testsuite_flags])
 AC_CONFIG_FILES([scripts/extract_symvers],[chmod +x scripts/extract_symvers])
+AC_CONFIG_FILES([doc/xsl/customization.xsl])
 
 # Multilibs need MULTISUBDIR defined correctly in certain makefiles so
 # that multilib installs will end up installed in the correct place.
