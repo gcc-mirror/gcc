@@ -6845,7 +6845,8 @@ Interface_type::implements_interface(const Type* t, std::string* reason) const
 	      std::string n = Gogo::message_name(p->name());
 	      size_t len = 100 + n.length();
 	      char* buf = new char[len];
-	      snprintf(buf, len, _("method %s%s%s requires a pointer"),
+	      snprintf(buf, len,
+		       _("method %s%s%s requires a pointer receiver"),
 		       open_quote, n.c_str(), close_quote);
 	      reason->assign(buf);
 	      delete[] buf;
@@ -9034,7 +9035,7 @@ Type::bind_field_or_method(Gogo* gogo, const Type* type, Expression* expr,
 		 Gogo::message_name(name).c_str(), ambig1.c_str(),
 		 ambig2.c_str());
       else if (found_pointer_method)
-	error_at(location, "method requires a pointer");
+	error_at(location, "method requires a pointer receiver");
       else if (nt == NULL && st == NULL && it == NULL)
 	error_at(location,
 		 ("reference to field %qs in object which "
