@@ -1,3 +1,9 @@
+2012-09-21  Dehao Chen  <dehao@google.com>
+
+	PR go/54649
+	* tree-eh.c (lower_try_finally_dup_block): Set the correct block for
+	stmts in the duplicated EH block.
+
 2012-09-21  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/54647
