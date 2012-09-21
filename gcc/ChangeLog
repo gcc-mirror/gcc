@@ -1,3 +1,9 @@
+2012-09-21  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/54647
+	* tree-ssa-pre.c (compute_avail): Do not put COND_EXPR
+	or VEC_COND_EXPR into EXP_GEN again.
+
 2012-09-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/54629
