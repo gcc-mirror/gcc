@@ -1,3 +1,9 @@
+2012-09-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/54629
+	* tree-loop-distribution.c (classify_partition): Free loop nest only
+	after freeing ddr.  Free ddr and loop nest also if successful.
+
 2012-09-21  Matthias Klose  <doko@ubuntu.com>
 
 	* config/arm/arm.c (arm_mangle_type): Don't warn anymore that 
