@@ -1,3 +1,12 @@
+2012-09-20  Nenad Vukicevic  <nenad@intrepid.com>
+
+	* smp/upc_main.c (__upc_monitor_threads): Install
+	SIGTERM handler for the monitor thread.  Use process
+	group (instead of PID) for killpg().  Announce child
+	KILL signal if upc global exit is not underway.
+	(__upc_sigterm_handler): New. Terminate the program on
+	SIGTERM to the monitor thread.
+
 2012-09-04  Nenad Vukicevic  <nenad@intrepid.com>
 
 	Move MPIR related variables/functions into a separate file.

@@ -736,6 +736,27 @@ __upc_get_thread_id (pid_t pid)
   return thread_id;
 }
 
+/* Terminate program. 
+   The monitor thread received a SIGTERM. Terminate
+   all processes in the current process group.  */
+static void
+__upc_sigterm_handler (int sig)
+{
+  struct sigaction action;
+  /* Install the default SIGTERM so monitor thread
+     is killed as part of the group.  */
+  action.sa_handler = SIG_DFL;
+  sigemptyset (&action.sa_mask);
+  action.sa_flags = 0;
+  sigaction (sig, &action, NULL);
+  /* Kill the whole group.  */
+  if (killpg (getpgrp (), sig) == -1)
+    {
+      perror ("killpg");
+      abort ();
+    }
+}
+
 static int
 __upc_monitor_threads (void)
 {
@@ -745,8 +766,16 @@ __upc_monitor_threads (void)
   int exit_status;
   int thread_id;
   int global_exit_invoked;
+  struct sigaction action;
   exit_status = -1;
   global_exit_invoked = 0;
+  /* Install SIGTERM handler responsible for
+     terminating the whole program.  */
+  action.sa_handler = __upc_sigterm_handler;
+  sigemptyset (&action.sa_mask);
+  action.sa_flags = 0;
+  sigaction (SIGTERM, &action, NULL);
+  /* Wait for threads to finish.  */
   while ((pid = wait (&wait_status)) > 0 || errno == EINTR)
     {
       if (errno == EINTR)
@@ -784,17 +813,17 @@ __upc_monitor_threads (void)
 	  int child_sig = WTERMSIG (wait_status);
 	  /* Ignore SIGKILL signals.
 	     We use them to implement upc_global_exit(). */
-	  if (child_sig == SIGKILL)
+	  if (child_sig == SIGKILL && global_exit_invoked)
 	    continue;
 	  fprintf (stderr, "thread %d terminated with signal: '%s'\n",
 		   thread_id, __upc_strsignal (child_sig));
           /*  GASP note: We can't record a noncollective GASP
               exit event here, because the process has already died.  */
 	  /* We'll all go away now. */
-	  if (killpg (getpid (), SIGTERM) == -1)
+	  if (killpg (getpgrp (), SIGTERM) == -1)
 	    {
 	      perror ("killpg");
-	      exit (-1);
+	      abort ();
 	    }
 	}
     }
