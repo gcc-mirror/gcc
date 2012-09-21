@@ -1138,8 +1138,13 @@ static inline bool
 ira_allocno_object_iter_cond (ira_allocno_object_iterator *i, ira_allocno_t a,
 			      ira_object_t *o)
 {
-  *o = ALLOCNO_OBJECT (a, i->n);
-  return i->n++ < ALLOCNO_NUM_OBJECTS (a);
+  int n = i->n++;
+  if (n < ALLOCNO_NUM_OBJECTS (a))
+    {
+      *o = ALLOCNO_OBJECT (a, n);
+      return true;
+    }
+  return false;
 }
 
 /* Loop over all objects associated with allocno A.  In each
