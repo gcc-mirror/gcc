@@ -1,3 +1,8 @@
+2012-09-20  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (define_split for plus_eqsi):
+	Fix output pattern.
+
 2012-09-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* reload1.c (choose_reload_regs): Add missing #ifdef/#endif pair.
