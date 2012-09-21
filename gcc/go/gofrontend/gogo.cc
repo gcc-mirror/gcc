@@ -4224,7 +4224,7 @@ Variable::determine_type()
 	  else if (type->is_call_multiple_result_type())
 	    {
 	      error_at(this->location_,
-		       "single variable set to multiple value function call");
+		       "single variable set to multiple-value function call");
 	      type = Type::make_error_type();
 	    }
 
