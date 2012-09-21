@@ -1,3 +1,8 @@
+2012-09-21  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/54427
+	* c-c++-common/torture/vector-compare-2.c: Add -w.
+
 2012-09-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt20.ads: Move dg directive to...
