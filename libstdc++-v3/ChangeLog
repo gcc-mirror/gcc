@@ -1,3 +1,20 @@
+2012-09-21  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* include/ext/random: Add __gnu_cxx::pareto_distribution<> class.
+	* include/ext/random.tcc: Add out-of-line functions for
+	__gnu_cxx::pareto_distribution<>.
+	* testsuite/ext/random/pareto_distribution/operators/equal.cc: New file.
+	* testsuite/ext/random/pareto_distribution/operators/serialize.cc:
+	New file.
+	* testsuite/ext/random/pareto_distribution/operators/inequal.cc:
+	New file.
+	* testsuite/ext/random/pareto_distribution/cons/parms.cc: New file.
+	* testsuite/ext/random/pareto_distribution/cons/default.cc: New file.
+	* testsuite/ext/random/pareto_distribution/requirements/typedefs.cc:
+	New file.
+	* testsuite/ext/random/pareto_distribution/requirements/
+	explicit_instantiation/1.cc: New file.
+
 2012-09-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/stl_algobase.h (max, min): Use conditional operator.
@@ -7,14 +24,14 @@
 	PR libstdc++/28811
 	PR libstdc++/54482
 	* configure.ac (glibcxx_lt_pic_flag,
-          glibcxx_compiler_pic_flag,
-          glibcxx_compiler_shared_flag): New. Use them.
+	glibcxx_compiler_pic_flag,
+	glibcxx_compiler_shared_flag): New. Use them.
 	(lt_prog_compiler_pic_CXX): Set via glibcxx_*_flag(s) above.
 	(pic_mode): Set to default.
 	(PIC_CXXFLAGS): Remove.
 	* Makefile.am (PICFLAG, PICFLAG_FOR_TARGET): Remove. Comment.
 	* libsupc++/Makefile.am: Use glibcxx_ld_pic_flag and
-          glibcxx_compiler_shared_flag. Comment.
+	glibcxx_compiler_shared_flag. Comment.
 	* src/c++11/Makefile.am: Same.
 	* src/c++98/Makefile.am: Same.
 	* src/Makefile.am: Use glibcxx_compiler_pic_flag.
@@ -33,8 +50,8 @@
 	* testsuite/Makefile.in: Same.
 
 	* src/c++11/compatibility-atomic-c++0x.cc: Use
-          _GLIBCXX_SHARED instead of PIC to designate shared-only
-          code blocks.
+	_GLIBCXX_SHARED instead of PIC to designate shared-only
+	code blocks.
 	* src/c++11/compatibility-c++0x.cc: Same.
 	* src/c++11/compatibility-thread-c++0x.cc: Same.
 	* src/c++98/compatibility-list-2.cc: Same.
