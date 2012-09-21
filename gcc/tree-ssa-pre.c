@@ -3981,9 +3981,18 @@ compute_avail (void)
 		  {
 		  case VN_NARY:
 		    {
+		      enum tree_code code = gimple_assign_rhs_code (stmt);
 		      vn_nary_op_t nary;
+
+		      /* COND_EXPR and VEC_COND_EXPR are awkward in
+			 that they contain an embedded complex expression.
+			 Don't even try to shove those through PRE.  */
+		      if (code == COND_EXPR
+			  || code == VEC_COND_EXPR)
+			continue;
+
 		      vn_nary_op_lookup_pieces (gimple_num_ops (stmt) - 1,
-						gimple_assign_rhs_code (stmt),
+						code,
 						gimple_expr_type (stmt),
 						gimple_assign_rhs1_ptr (stmt),
 						&nary);

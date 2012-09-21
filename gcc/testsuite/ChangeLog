@@ -1,3 +1,8 @@
+2012-09-21  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/54647
+	* g++.dg/torture/pr54647.C: New testcase.
+
 2012-09-21  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/54427
