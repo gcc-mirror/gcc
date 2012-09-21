@@ -25072,16 +25072,7 @@ arm_mangle_type (const_tree type)
      has to be managled as if it is in the "std" namespace.  */
   if (TARGET_AAPCS_BASED
       && lang_hooks.types_compatible_p (CONST_CAST_TREE (type), va_list_type))
-    {
-      static bool warned;
-      if (!warned && warn_psabi && !in_system_header)
-	{
-	  warned = true;
-	  inform (input_location,
-		  "the mangling of %<va_list%> has changed in GCC 4.4");
-	}
-      return "St9__va_list";
-    }
+    return "St9__va_list";
 
   /* Half-precision float.  */
   if (TREE_CODE (type) == REAL_TYPE && TYPE_PRECISION (type) == 16)
