@@ -2872,7 +2872,8 @@ int
 Build_method_tables::type(Type* type)
 {
   Named_type* nt = type->named_type();
-  if (nt != NULL)
+  Struct_type* st = type->struct_type();
+  if (nt != NULL || st != NULL)
     {
       for (std::vector<Interface_type*>::const_iterator p =
 	     this->interfaces_.begin();
@@ -2882,10 +2883,23 @@ Build_method_tables::type(Type* type)
 	  // We ask whether a pointer to the named type implements the
 	  // interface, because a pointer can implement more methods
 	  // than a value.
-	  if ((*p)->implements_interface(Type::make_pointer_type(nt), NULL))
+	  if (nt != NULL)
 	    {
-	      nt->interface_method_table(this->gogo_, *p, false);
-	      nt->interface_method_table(this->gogo_, *p, true);
+	      if ((*p)->implements_interface(Type::make_pointer_type(nt),
+					     NULL))
+		{
+		  nt->interface_method_table(this->gogo_, *p, false);
+		  nt->interface_method_table(this->gogo_, *p, true);
+		}
+	    }
+	  else
+	    {
+	      if ((*p)->implements_interface(Type::make_pointer_type(st),
+					     NULL))
+		{
+		  st->interface_method_table(this->gogo_, *p, false);
+		  st->interface_method_table(this->gogo_, *p, true);
+		}
 	    }
 	}
     }
