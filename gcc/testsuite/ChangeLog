@@ -1,3 +1,8 @@
+2012-09-22  Kai Tietz  <ktietz@redhat.com>
+
+	* gcc.dg/tree-ssa/scev-3.c: Add llp64 to xfail.
+	* gcc.dg/tree-ssa/scev-4.c: Likewise.
+
 2012-09-21  Dehao Chen  <dehao@google.com>
 
 	PR go/54649
