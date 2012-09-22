@@ -1312,6 +1312,12 @@ Lex::append_char(unsigned int v, bool is_character, std::string* str,
 	  // Turn it into the "replacement character".
 	  v = 0xfffd;
 	}
+      if (v >= 0xd800 && v < 0xe000)
+	{
+	  warning_at(location, 0,
+		     "unicode code point 0x%x is invalid surrogate pair", v);
+	  v = 0xfffd;
+	}
       if (v <= 0xffff)
 	{
 	  buf[0] = 0xe0 + (v >> 12);
