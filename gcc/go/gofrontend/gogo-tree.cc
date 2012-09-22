@@ -2128,8 +2128,7 @@ Gogo::slice_constructor(tree slice_type_tree, tree values, tree count,
 
 tree
 Gogo::interface_method_table_for_type(const Interface_type* interface,
-				      Named_type* type,
-				      bool is_pointer)
+				      Type* type, bool is_pointer)
 {
   const Typed_identifier_list* interface_methods = interface->methods();
   go_assert(!interface_methods->empty());
@@ -2158,7 +2157,9 @@ Gogo::interface_method_table_for_type(const Interface_type* interface,
   // interface.  If the interface has hidden methods, and the named
   // type is defined in a different package, then the interface
   // conversion table will be defined by that other package.
-  if (has_hidden_methods && type->named_object()->package() != NULL)
+  if (has_hidden_methods
+      && type->named_type() != NULL
+      && type->named_type()->named_object()->package() != NULL)
     {
       tree array_type = build_array_type(const_ptr_type_node, NULL);
       tree decl = build_decl(BUILTINS_LOCATION, VAR_DECL, id, array_type);
@@ -2187,13 +2188,20 @@ Gogo::interface_method_table_for_type(const Interface_type* interface,
                                               Linemap::predeclared_location());
   elt->value = fold_convert(const_ptr_type_node, tdp);
 
+  Named_type* nt = type->named_type();
+  Struct_type* st = type->struct_type();
+  go_assert(nt != NULL || st != NULL);
   size_t i = 1;
   for (Typed_identifier_list::const_iterator p = interface_methods->begin();
        p != interface_methods->end();
        ++p, ++i)
     {
       bool is_ambiguous;
-      Method* m = type->method_function(p->name(), &is_ambiguous);
+      Method* m;
+      if (nt != NULL)
+	m = nt->method_function(p->name(), &is_ambiguous);
+      else
+	m = st->method_function(p->name(), &is_ambiguous);
       go_assert(m != NULL);
 
       Named_object* no = m->named_object();

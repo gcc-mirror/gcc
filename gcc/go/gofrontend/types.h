@@ -983,6 +983,19 @@ class Type
   method_function(const Methods*, const std::string& name,
 		  bool* is_ambiguous);
 
+  // A mapping from interfaces to the associated interface method
+  // tables for this type.  This maps to a decl.
+  typedef Unordered_map_hash(const Interface_type*, tree, Type_hash_identical,
+			     Type_identical) Interface_method_tables;
+
+  // Return a pointer to the interface method table for TYPE for the
+  // interface INTERFACE.
+  static tree
+  interface_method_table(Gogo* gogo, Type* type,
+			 const Interface_type *interface, bool is_pointer,
+			 Interface_method_tables** method_tables,
+			 Interface_method_tables** pointer_tables);
+
   // Return a composite literal for the type descriptor entry for a
   // type.
   static Expression*
@@ -1994,7 +2007,8 @@ class Struct_type : public Type
  public:
   Struct_type(Struct_field_list* fields, Location location)
     : Type(TYPE_STRUCT),
-      fields_(fields), location_(location), all_methods_(NULL)
+      fields_(fields), location_(location), all_methods_(NULL),
+      interface_method_tables_(NULL), pointer_interface_method_tables_(NULL)
   { }
 
   // Return the field NAME.  This only looks at local fields, not at
@@ -2076,6 +2090,14 @@ class Struct_type : public Type
   Method*
   method_function(const std::string& name, bool* is_ambiguous) const;
 
+  // Return a pointer to the interface method table for this type for
+  // the interface INTERFACE.  If IS_POINTER is true, set the type
+  // descriptor to a pointer to this type, otherwise set it to this
+  // type.
+  tree
+  interface_method_table(Gogo*, const Interface_type* interface,
+			 bool is_pointer);
+
   // Traverse just the field types of a struct type.
   int
   traverse_field_types(Traverse* traverse)
@@ -2156,6 +2178,13 @@ class Struct_type : public Type
   Location location_;
   // If this struct is unnamed, a list of methods.
   Methods* all_methods_;
+  // A mapping from interfaces to the associated interface method
+  // tables for this type.  Only used if this struct is unnamed.
+  Interface_method_tables* interface_method_tables_;
+  // A mapping from interfaces to the associated interface method
+  // tables for pointers to this type.  Only used if this struct is
+  // unnamed.
+  Interface_method_tables* pointer_interface_method_tables_;
 };
 
 // The type of an array.
@@ -2860,11 +2889,6 @@ class Named_type : public Type
   // Create the placeholder during conversion.
   void
   create_placeholder(Gogo*);
-
-  // A mapping from interfaces to the associated interface method
-  // tables for this type.  This maps to a decl.
-  typedef Unordered_map_hash(const Interface_type*, tree, Type_hash_identical,
-			     Type_identical) Interface_method_tables;
 
   // A pointer back to the Named_object for this type.
   Named_object* named_object_;

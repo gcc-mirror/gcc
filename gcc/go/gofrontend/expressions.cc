@@ -293,19 +293,25 @@ Expression::convert_type_to_interface(Translate_context* context,
       // object type: a list of function pointers for each interface
       // method.
       Named_type* rhs_named_type = rhs_type->named_type();
+      Struct_type* rhs_struct_type = rhs_type->struct_type();
       bool is_pointer = false;
-      if (rhs_named_type == NULL)
+      if (rhs_named_type == NULL && rhs_struct_type == NULL)
 	{
 	  rhs_named_type = rhs_type->deref()->named_type();
+	  rhs_struct_type = rhs_type->deref()->struct_type();
 	  is_pointer = true;
 	}
       tree method_table;
-      if (rhs_named_type == NULL)
-	method_table = null_pointer_node;
-      else
+      if (rhs_named_type != NULL)
 	method_table =
 	  rhs_named_type->interface_method_table(gogo, lhs_interface_type,
 						 is_pointer);
+      else if (rhs_struct_type != NULL)
+	method_table =
+	  rhs_struct_type->interface_method_table(gogo, lhs_interface_type,
+						  is_pointer);
+      else
+	method_table = null_pointer_node;
       first_field_value = fold_convert_loc(location.gcc_location(),
                                            const_ptr_type_node, method_table);
     }
