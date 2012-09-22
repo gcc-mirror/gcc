@@ -5453,7 +5453,8 @@ Binary_expression::do_determine_type(const Type_context* context)
 	  && (this->left_->type()->integer_type() == NULL
 	      || (subcontext.type->integer_type() == NULL
 		  && subcontext.type->float_type() == NULL
-		  && subcontext.type->complex_type() == NULL)))
+		  && subcontext.type->complex_type() == NULL
+		  && subcontext.type->interface_type() == NULL)))
 	this->report_error(("invalid context-determined non-integer type "
 			    "for shift operand"));
 
