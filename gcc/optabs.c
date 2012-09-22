@@ -4108,10 +4108,11 @@ prepare_cmp_insn (rtx x, rtx y, enum rtx_code comparison, rtx size,
 					XEXP (x, 0), Pmode,
 					XEXP (y, 0), Pmode,
 					size, cmp_mode);
-
-      *ptest = gen_rtx_fmt_ee (comparison, VOIDmode, result, const0_rtx);
-      *pmode = result_mode;
-      return;
+      x = result;
+      y = const0_rtx;
+      mode = result_mode;
+      methods = OPTAB_LIB_WIDEN;
+      unsignedp = false;
     }
 
   /* Don't allow operands to the compare to trap, as that can put the

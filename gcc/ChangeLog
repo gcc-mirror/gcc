@@ -1,3 +1,8 @@
+2012-09-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* optabs.c (prepare_cmp_insn): Expand comparison of the result
+	of memcmp through generic comparison expansion code.
+
 2012-09-21  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	PR bootstrap/54642
@@ -23,7 +28,7 @@
 
 2012-09-21  Matthias Klose  <doko@ubuntu.com>
 
-	* config/arm/arm.c (arm_mangle_type): Don't warn anymore that 
+	* config/arm/arm.c (arm_mangle_type): Don't warn anymore that
 	4.4 has changed the `va_list' mangling.
 
 2012-09-21  Eric Botcazou  <ebotcazou@adacore.com>
@@ -64,8 +69,7 @@
 2012-09-20  Martin Jambor  <mjambor@suse.cz>
 
 	* function.c (push_cfun): Check old current_function_decl matches
-	old cfun, set new current_function_decl to the decl of the new
-	cfun.
+	old cfun, set new current_function_decl to the decl of the new cfun.
 	(push_struct_function): Likewise.
 	(pop_cfun): Likewise.
 	(allocate_struct_function): Move call to
@@ -128,7 +132,7 @@
 
 2012-09-20  Chen Wei-Ren  <chenwj@iis.sinica.edu.tw>
 
-	doc/lto.texi: Correct typo.
+	* doc/lto.texi: Correct typo.
 
 2012-09-19  Dehao Chen  <dehao@google.com>
 
@@ -149,11 +153,11 @@
 
 2012-09-19  Mark Kettenis  <kettenis@openbsd.org>
 
-        * config.gcc (hppa*-*-openbsd*): New target.
-        * config/pa/pa-openbsd.h: New file.
-        * config/pa/pa32-openbsd.h: New file.
-        * config/host-openbsd.c: Update copyright year.
-        (TRY_EXCEPT_VM_SPACE): Define for OpenBSD/hppa.
+	* config.gcc (hppa*-*-openbsd*): New target.
+	* config/pa/pa-openbsd.h: New file.
+	* config/pa/pa32-openbsd.h: New file.
+	* config/host-openbsd.c: Update copyright year.
+	(TRY_EXCEPT_VM_SPACE): Define for OpenBSD/hppa.
 
 2012-09-19  Martin Jambor  <mjambor@suse.cz>
 
@@ -316,8 +320,7 @@
 	(haifa_change_pattern): Call it.
 	(dep_t heap vecs): Declare.
 	(INSN_COST): Define earlier.
-	(next_cycle_replace_deps, next_cycle_apply): New static
-	variables.
+	(next_cycle_replace_deps, next_cycle_apply): New static variables.
 	(apply_replacement): New static function.
 	(recompute_todo_spec): New argument FOR_BACKTRACK.  All callers
 	changed.  Handle DEP_REPLACE deps.
@@ -366,16 +369,14 @@
 	* Makefile.in (sched-deps.o): Update dependencies.
 	* config/c6x/c6x.c (in_hwloop): New static variable.
 	(c6x_set_sched_flags): If it is true, add DONT_BREAK_DEPENDENCIES.
-	(hwloop_optimize): Set and clear it around preliminary scheduling
-	pass.
+	(hwloop_optimize): Set and clear it around preliminary scheduling pass.
 
 2012-09-19  Tulio Magno Quites Machado Filho  <tuliom@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000-builtin.def: Add __builtin_ppc_get_timebase
 	and __builtin_ppc_mftb.
-	* config/rs6000/rs6000.c (rs6000_expand_zeroop_builtin): New
-	function to expand an expression that calls a built-in without
-	arguments.
+	* config/rs6000/rs6000.c (rs6000_expand_zeroop_builtin): New function
+	to expand an expression that calls a built-in without arguments.
 	(rs6000_expand_builtin): Add __builtin_ppc_get_timebase and
 	__builtin_ppc_mftb.
 	(rs6000_init_builtins): Likewise.
@@ -384,8 +385,8 @@
 	(rs6000_mftb_<mode>): New pattern.
 
 	* doc/extend.texi (PowerPC Built-in Functions): New section.
-	(PowerPC AltiVec/VSX Built-in Functions):
-	Move some built-ins unrelated to Altivec/VSX to the new section.
+	(PowerPC AltiVec/VSX Built-in Functions): Move some built-ins
+	unrelated to Altivec/VSX to the new section.
 
 2012-09-19  David Edelsohn  <dje.gcc@gmail.com>
 
@@ -428,14 +429,13 @@
 
 2012-09-19  Richard Guenther  <rguenther@suse.de>
 
-	* tree-ssa-forwprop.c (get_prop_source_stmt): Simplify. 
+	* tree-ssa-forwprop.c (get_prop_source_stmt): Simplify.
 
 2012-09-19  Jan Hubicka  <jh@suse.cz>
 
 	* symtab.c (insert_to_assembler_name_hash): Do not insert
 	register vars.
-	(unlink_from_assembler_name_hash): NULL out pointers of unlinked
-	var.
+	(unlink_from_assembler_name_hash): NULL out pointers of unlinked var.
 	(symtab_prevail_in_asm_name_hash): New.
 	(symtab_initialize_asm_name_hash): Break out from ...
 	(symtab_node_for_asm): ... here.
@@ -466,7 +466,8 @@
 	(lto_symtab_merge_decls_1): Likewise; add debug dumps.
 	(lto_symtab_merge_decls): Likewise; do not merge at ltrans stage.
 	(lto_symtab_merge_cgraph_nodes_1): Reorg to work on symtab.
-	(lto_symtab_merge_cgraph_nodes): Likewise; do not merge at ltrans stage.
+	(lto_symtab_merge_cgraph_nodes): Likewise; do not merge at ltrans
+	stage.
 	(lto_symtab_prevailing_decl): Rewrite to lookup into symtab.
 	* lto-streaer.h (lto_symtab_free): Remove.
 	* lto-cgraph.c (add_references): Cleanup.
@@ -526,8 +527,7 @@
 
 2012-09-18  Segher Boessenkool  <segher@kernel.crashing.org>
 
-	* config/rs6000/rs6000.md (sminsi3, smaxsi3, uminsi3, umaxsi3):
-	Delete.
+	* config/rs6000/rs6000.md (sminsi3, smaxsi3, uminsi3, umaxsi3): Delete.
 	(abssi2, abs<mode>2_isel, nabs<mode>2_isel, abssi2_nopower,
 	nabs_nopower): Delete.
 	(absdi2, absdi2_internal, nabsdi2): Delete.
@@ -549,7 +549,7 @@
 	* config/i386/i386.c (ix86_rtx_costs): Limit > UNITS_PER_WORD
 	AND/IOR/XOR cost calculation to MODE_INT class modes.
 
-2012-09-18 Thomas Quinot  <quinot@adacore.com>       
+2012-09-18 Thomas Quinot  <quinot@adacore.com>
 
 	* doc/invoke.texi: Document -fada-spec-parent.
 
@@ -721,7 +721,7 @@
 	(avr_out_plus_symbol): New static function.
 	(avr_out_plus): Rewrite.
 	(adjust_insn_length): Handle: ADJUST_LEN_PLUS.  Remove handling
-	of: ADJUST_LEN_OUT_PLUS, ADJUST_LEN_PLUS64, ADJUST_LEN_MINUS, 
+	of: ADJUST_LEN_OUT_PLUS, ADJUST_LEN_PLUS64, ADJUST_LEN_MINUS,
 	ADJUST_LEN_MINUS64, ADJUST_LEN_OUT_PLUS_NOCLOBBER.
 	(notice_update_cc): Handle: CC_PLUS.  Remove handling of: CC_MINUS,
 	CC_OUT_PLUS, CC_OUT_PLUS_NOCLOBBER
@@ -837,8 +837,7 @@
 	(*fmai_fmadd_<mode>, *fmai_fmsub_<mode>): Likewise.
 	Remove third alternative.
 	(*fmai_fnmadd_<mode>, *fmai_fnmsub_<mode>): Likewise.  Negate
-	operand 2 instead of operand 1, but put it as first argument
-	of fma.
+	operand 2 instead of operand 1, but put it as first argument of fma.
 	* config/i386/fmaintrin.h (_mm_fnmadd_sd, _mm_fnmadd_ss,
 	_mm_fnmsub_sd, _mm_fnmsub_ss): Negate the second argument instead
 	of the first.
@@ -853,11 +852,9 @@
 
 2012-09-14  Richard Guenther  <rguenther@suse.de>
 
-	* tree-vrp.c (register_new_assert_for): Simplify for backward
-	walk.
-	(find_assert_locations_1): Walk the basic-block backwards,
-	properly add/prune from live.  Use live for asserts derived
-	from stmts.
+	* tree-vrp.c (register_new_assert_for): Simplify for backward walk.
+	(find_assert_locations_1): Walk the basic-block backwards, properly
+	add/prune from live.  Use live for asserts derived from stmts.
 
 2012-09-14  Marc Glisse  <marc.glisse@inria.fr>
 
@@ -883,8 +880,7 @@
 	(BYTES_BIG_ENDIAN, WORDS_BIG_ENDIAN): Add bi-endian support.
 	(TARGET_CPU_CPP_BUILTINS): Add __MOXIE_LITTLE_ENDIAN__ and
 	__MOXIE_BIG_ENDIAN__.
-	* config/moxie/t-moxie (MULTILIB_DIRNAMES, MULTILIB_OPTIONS):
-	Define.
+	* config/moxie/t-moxie (MULTILIB_DIRNAMES, MULTILIB_OPTIONS): Define.
 	* config/moxie/moxie.opt: New file.
 	* doc/invoke.texi (Moxie Options): Add section documenting -mel
 	and -meb.
@@ -893,8 +889,7 @@
 	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c++/53210
-	* doc/invoke.texi ([Winit-self]): Document as enabled by -Wall
-	in C++.
+	* doc/invoke.texi ([Winit-self]): Document as enabled by -Wall in C++.
 
 2012-09-13  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -1683,7 +1678,7 @@
 	* config/xtensa/xtensa (TARGET_ADDRESS_COST): Use
 	hook_int_rtx_mode_as_bool_0 instead of hook_int_rtx_bool_0.
 
-2012-09-05   Diego Novillo  <dnovillo@google.com>
+2012-09-05  Diego Novillo  <dnovillo@google.com>
 
 	PR bootstrap/54484
 	* vec.h (vec_t::lower_bound): Fix spelling of LESSTHAN argument.
@@ -1824,7 +1819,7 @@
 	(init_pre): Likewise.
 	(fini_pre): Likewise.
 
-2012-09-04   Diego Novillo  <dnovillo@google.com>
+2012-09-04  Diego Novillo  <dnovillo@google.com>
 
 	PR bootstrap/54479
 	* vec.h (vec_t::copy): Add cast in call to reserve_exact.
@@ -1837,7 +1832,7 @@
 	AVAIL_OUT for FRE.
 	(init_pre): Do not allocate not needed bitmap sets for FRE.
 
-2012-09-04   Diego Novillo  <dnovillo@google.com>
+2012-09-04  Diego Novillo  <dnovillo@google.com>
 
 	Rewrite VEC_* functions as member functions of vec_t.
 
