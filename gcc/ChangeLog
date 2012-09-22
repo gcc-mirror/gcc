@@ -1,3 +1,11 @@
+2012-09-22  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/predicates.md (altivec_register_operand,
+	vsx_register_operand, vfloat_operand, vint_operand,
+	vlogical_operand, gpc_reg_operand, cc_reg_operand,
+	cc_reg_not_cr0_operand, cc_reg_not_micro_cr0_operand):
+	If op is a SUBREG, consider its SUBREG_REG instead.
+
 2012-09-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	* optabs.c (prepare_cmp_insn): Expand comparison of the result
