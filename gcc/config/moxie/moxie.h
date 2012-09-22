@@ -1,5 +1,5 @@
 /* Target Definitions for moxie.
-   Copyright (C) 2008, 2009, 2010  Free Software Foundation, Inc.
+   Copyright (C) 2008, 2009, 2010, 2012  Free Software Foundation, Inc.
    Contributed by Anthony Green.
 
    This file is part of GCC.
@@ -22,7 +22,7 @@
 #define GCC_MOXIE_H
 
 #undef  STARTFILE_SPEC
-#define STARTFILE_SPEC "crt0%O%s crti.o%s crtbegin.o%s"
+#define STARTFILE_SPEC "%{!mno-crt0:crt0%O%s} crti.o%s crtbegin.o%s"
 
 /* Provide an ENDFILE_SPEC appropriate for svr4.  Here we tack on our own
    magical crtend.o file (see crtstuff.c) which provides part of the

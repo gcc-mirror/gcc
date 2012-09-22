@@ -777,7 +777,7 @@ Objective-C and Objective-C++ Dialects}.
 -mno-crt0  -mrelax -mliw -msetlb}
 
 @emph{Moxie Options}
-@gccoptlist{-meb  -mel}
+@gccoptlist{-meb -mel -mno-crt0}
 
 @emph{PDP-11 Options}
 @gccoptlist{-mfpu  -msoft-float  -mac0  -mno-ac0  -m40  -m45  -m10 @gol
@@ -16475,6 +16475,10 @@ configurations.
 @item -mel
 @opindex mel
 Generate little-endian code.
+
+@item -mno-crt0
+@opindex mno-crt0
+Do not link in the C run-time initialization object file.
 
 @end table
 
