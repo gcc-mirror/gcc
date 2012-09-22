@@ -7476,7 +7476,7 @@ Builtin_call_expression::do_determine_type(const Type_context* context)
 	if (args != NULL && args->size() == 2)
 	  {
 	    Type* t1 = args->front()->type();
-	    Type* t2 = args->front()->type();
+	    Type* t2 = args->back()->type();
 	    if (!t1->is_abstract())
 	      arg_type = t1;
 	    else if (!t2->is_abstract())
