@@ -4554,6 +4554,20 @@ Struct_type::method_function(const std::string& name, bool* is_ambiguous) const
   return Type::method_function(this->all_methods_, name, is_ambiguous);
 }
 
+// Return a pointer to the interface method table for this type for
+// the interface INTERFACE.  IS_POINTER is true if this is for a
+// pointer to THIS.
+
+tree
+Struct_type::interface_method_table(Gogo* gogo,
+				    const Interface_type* interface,
+				    bool is_pointer)
+{
+  return Type::interface_method_table(gogo, this, interface, is_pointer,
+				      &this->interface_method_tables_,
+				      &this->pointer_interface_method_tables_);
+}
+
 // Convert struct fields to the backend representation.  This is not
 // declared in types.h so that types.h doesn't have to #include
 // backend.h.
@@ -7182,7 +7196,17 @@ Interface_type::do_mangled_name(Gogo* gogo, std::string* ret) const
 	{
 	  if (!p->name().empty())
 	    {
-	      std::string n = Gogo::unpack_hidden_name(p->name());
+	      std::string n;
+	      if (!Gogo::is_hidden_name(p->name()))
+		n = p->name();
+	      else
+		{
+		  n = ".";
+		  std::string pkgpath = Gogo::hidden_name_pkgpath(p->name());
+		  n.append(Gogo::pkgpath_for_symbol(pkgpath));
+		  n.append(1, '.');
+		  n.append(Gogo::unpack_hidden_name(p->name()));
+		}
 	      char buf[20];
 	      snprintf(buf, sizeof buf, "%u_",
 		       static_cast<unsigned int>(n.length()));
@@ -7735,32 +7759,9 @@ tree
 Named_type::interface_method_table(Gogo* gogo, const Interface_type* interface,
 				   bool is_pointer)
 {
-  go_assert(!interface->is_empty());
-
-  Interface_method_tables** pimt = (is_pointer
-				    ? &this->interface_method_tables_
-				    : &this->pointer_interface_method_tables_);
-
-  if (*pimt == NULL)
-    *pimt = new Interface_method_tables(5);
-
-  std::pair<const Interface_type*, tree> val(interface, NULL_TREE);
-  std::pair<Interface_method_tables::iterator, bool> ins = (*pimt)->insert(val);
-
-  if (ins.second)
-    {
-      // This is a new entry in the hash table.
-      go_assert(ins.first->second == NULL_TREE);
-      ins.first->second = gogo->interface_method_table_for_type(interface,
-								this,
-								is_pointer);
-    }
-
-  tree decl = ins.first->second;
-  if (decl == error_mark_node)
-    return error_mark_node;
-  go_assert(decl != NULL_TREE && TREE_CODE(decl) == VAR_DECL);
-  return build_fold_addr_expr(decl);
+  return Type::interface_method_table(gogo, this, interface, is_pointer,
+				      &this->interface_method_tables_,
+				      &this->pointer_interface_method_tables_);
 }
 
 // Return whether a named type has any hidden fields.
@@ -8942,6 +8943,42 @@ Type::method_function(const Methods* methods, const std::string& name,
       return NULL;
     }
   return m;
+}
+
+// Return a pointer to the interface method table for TYPE for the
+// interface INTERFACE.
+
+tree
+Type::interface_method_table(Gogo* gogo, Type* type,
+			     const Interface_type *interface,
+			     bool is_pointer,
+			     Interface_method_tables** method_tables,
+			     Interface_method_tables** pointer_tables)
+{
+  go_assert(!interface->is_empty());
+
+  Interface_method_tables** pimt = is_pointer ? method_tables : pointer_tables;
+
+  if (*pimt == NULL)
+    *pimt = new Interface_method_tables(5);
+
+  std::pair<const Interface_type*, tree> val(interface, NULL_TREE);
+  std::pair<Interface_method_tables::iterator, bool> ins = (*pimt)->insert(val);
+
+  if (ins.second)
+    {
+      // This is a new entry in the hash table.
+      go_assert(ins.first->second == NULL_TREE);
+      ins.first->second = gogo->interface_method_table_for_type(interface,
+								type,
+								is_pointer);
+    }
+
+  tree decl = ins.first->second;
+  if (decl == error_mark_node)
+    return error_mark_node;
+  go_assert(decl != NULL_TREE && TREE_CODE(decl) == VAR_DECL);
+  return build_fold_addr_expr(decl);
 }
 
 // Look for field or method NAME for TYPE.  Return an Expression for
