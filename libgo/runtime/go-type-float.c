@@ -29,8 +29,14 @@ __go_type_hash_float (const void *vkey, uintptr_t key_size)
 
       __builtin_memcpy (uf.a, vkey, 4);
       f = uf.f;
-      if (__builtin_isinff (f) || __builtin_isnanf (f) || f == 0)
+      if (__builtin_isinff (f) || f == 0)
 	return 0;
+
+      /* NaN != NaN, so the hash code of a NaN is irrelevant.  Make it
+	 random so that not all NaNs wind up in the same place.  */
+      if (__builtin_isnanf (f))
+	return runtime_fastrand1 ();
+
       return (uintptr_t) uf.si;
     }
   else if (key_size == 8)
@@ -45,8 +51,12 @@ __go_type_hash_float (const void *vkey, uintptr_t key_size)
 
       __builtin_memcpy (ud.a, vkey, 8);
       d = ud.d;
-      if (__builtin_isinf (d) || __builtin_isnan (d) || d == 0)
+      if (__builtin_isinf (d) || d == 0)
 	return 0;
+
+      if (__builtin_isnan (d))
+	return runtime_fastrand1 ();
+
       return (uintptr_t) ud.di;
     }
   else
