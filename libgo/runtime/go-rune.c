@@ -53,6 +53,14 @@ __go_get_rune (const unsigned char *str, size_t len, int *rune)
       *rune = (((c & 0xf) << 12)
 	       + ((c1 & 0x3f) << 6)
 	       + (c2 & 0x3f));
+
+      if (*rune >= 0xd800 && *rune < 0xe000)
+	{
+	  /* Invalid surrogate half; return replace character.  */
+	  *rune = 0xfffd;
+	  return 1;
+	}
+
       return 3;
     }
 
