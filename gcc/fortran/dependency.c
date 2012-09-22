@@ -395,30 +395,21 @@ gfc_dep_compare_expr (gfc_expr *e1, gfc_expr *e2)
       l = gfc_dep_compare_expr (e1->value.op.op1, e2->value.op.op1);
       r = gfc_dep_compare_expr (e1->value.op.op2, e2->value.op.op2);
 
-      if (l <= -2)
+      if (l != 0)
 	return l;
 
-      if (l == 0)
-	{
-	  /* Watch out for 'A ' // x vs. 'A' // x.  */
-	  gfc_expr *e1_left = e1->value.op.op1;
-	  gfc_expr *e2_left = e2->value.op.op1;
+      /* Left expressions of // compare equal, but
+	 watch out for 'A ' // x vs. 'A' // x.  */
+      gfc_expr *e1_left = e1->value.op.op1;
+      gfc_expr *e2_left = e2->value.op.op1;
 
-	  if (e1_left->expr_type == EXPR_CONSTANT
-	      && e2_left->expr_type == EXPR_CONSTANT
-	      && e1_left->value.character.length
-		 != e2_left->value.character.length)
-	    return -2;
-	  else
-	    return r;
-	}
+      if (e1_left->expr_type == EXPR_CONSTANT
+	  && e2_left->expr_type == EXPR_CONSTANT
+	  && e1_left->value.character.length
+	  != e2_left->value.character.length)
+	return -2;
       else
-	{
-	  if (l != 0)
-	    return l;
-	  else
-	    return r;
-	}
+	return r;
     }
 
   /* Compare X vs. X-C, for INTEGER only.  */

@@ -1,3 +1,9 @@
+2012-09-22  Thomas König  <tkoenig@gcc.gnu.org>
+
+	PR fortran/54599
+	* dependency.c (gfc_dep_compare_expr):  Clarify logic,
+	remove dead code.
+
 2012-09-20  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/54599
