@@ -1,3 +1,11 @@
+2012-09-22  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	Backport from mainline:
+	2012-09-16  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR testsuite/54007
+	* gnat.dg/lto15.adb: Require lto.
+
 2012-09-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt20.ads: Move dg directive to...
