@@ -1,3 +1,7 @@
+2012-09-23  Marc Glisse  <marc.glisse@inria.fr>
+
+	* expr.c (do_store_flag): Remove duplicated code.
+
 2012-09-22  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/predicates.md (altivec_register_operand,
