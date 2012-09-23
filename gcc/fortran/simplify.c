@@ -4106,10 +4106,7 @@ simplify_min_max (gfc_expr *expr, int sign)
       min_max_choose (arg->expr, extremum->expr, sign);
 
       /* Delete the extra constant argument.  */
-      if (last == NULL)
-	expr->value.function.actual = arg->next;
-      else
-	last->next = arg->next;
+      last->next = arg->next;
 
       arg->next = NULL;
       gfc_free_actual_arglist (arg);

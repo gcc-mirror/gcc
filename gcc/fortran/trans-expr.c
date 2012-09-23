@@ -621,6 +621,16 @@ gfc_trans_class_init_assign (gfc_code *code)
       gfc_add_block_to_block (&block, &src.pre);
       tmp = gfc_build_memcpy_call (dst.expr, src.expr, memsz.expr);
     }
+
+  if (code->expr1->symtree->n.sym->attr.optional
+      || code->expr1->symtree->n.sym->ns->proc_name->attr.entry_master)
+    {
+      tree present = gfc_conv_expr_present (code->expr1->symtree->n.sym);
+      tmp = build3_loc (input_location, COND_EXPR, TREE_TYPE (tmp),
+			present, tmp,
+			build_empty_stmt (input_location));
+    }
+
   gfc_add_expr_to_block (&block, tmp);
   
   return gfc_finish_block (&block);
@@ -3905,21 +3915,41 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 
 		  /* If an ALLOCATABLE dummy argument has INTENT(OUT) and is 
 		     allocated on entry, it must be deallocated.  */
-		  if (fsym && fsym->attr.allocatable
-		      && fsym->attr.intent == INTENT_OUT)
+		  if (fsym && fsym->attr.intent == INTENT_OUT
+		      && (fsym->attr.allocatable
+			  || (fsym->ts.type == BT_CLASS
+			      && CLASS_DATA (e)->attr.allocatable)))
 		    {
 		      stmtblock_t block;
+		      tree ptr;
 
 		      gfc_init_block  (&block);
-		      tmp = gfc_deallocate_with_status (parmse.expr, NULL_TREE,
+		      ptr = parmse.expr;
+		      if (e->ts.type == BT_CLASS)
+			ptr = gfc_class_data_get (ptr);	
+
+		      tmp = gfc_deallocate_with_status (ptr, NULL_TREE,
 							NULL_TREE, NULL_TREE,
 							NULL_TREE, true, NULL,
 							false);
 		      gfc_add_expr_to_block (&block, tmp);
 		      tmp = fold_build2_loc (input_location, MODIFY_EXPR,
-					     void_type_node, parmse.expr,
+					     void_type_node, ptr,
 					     null_pointer_node);
 		      gfc_add_expr_to_block (&block, tmp);
+
+		      if (fsym->ts.type == BT_CLASS)
+			{
+			  gfc_symbol *vtab;
+			  gcc_assert (fsym->ts.u.derived == e->ts.u.derived);
+			  vtab = gfc_find_derived_vtab (fsym->ts.u.derived);
+			  tmp = gfc_get_symbol_decl (vtab);
+			  tmp = gfc_build_addr_expr (NULL_TREE, tmp);
+			  ptr = gfc_class_vptr_get (parmse.expr);
+			  gfc_add_modify (&block, ptr,
+					  fold_convert (TREE_TYPE (ptr), tmp));
+			  gfc_add_expr_to_block (&block, tmp);
+			}
 
 		      if (fsym->attr.optional
 			  && e->expr_type == EXPR_VARIABLE

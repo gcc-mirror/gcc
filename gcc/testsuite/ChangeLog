@@ -1,3 +1,8 @@
+2012-09-2323  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54618
+	* gfortran.dg/class_array_14.f90: New.
+
 2012-09-22  Kai Tietz  <ktietz@redhat.com>
 
 	* gcc.dg/tree-ssa/scev-3.c: Add llp64 to xfail.

@@ -1022,8 +1022,8 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post, gfc_ss * ss,
      dynamic type.  Generate an eltype and then the class expression.  */
   if (eltype == NULL_TREE && initial)
     {
-      if (POINTER_TYPE_P (TREE_TYPE (initial)))
-	class_expr = build_fold_indirect_ref_loc (input_location, initial);
+      gcc_assert (POINTER_TYPE_P (TREE_TYPE (initial)));
+      class_expr = build_fold_indirect_ref_loc (input_location, initial);
       eltype = TREE_TYPE (class_expr);
       eltype = gfc_get_element_type (eltype);
       /* Obtain the structure (class) expression.  */
