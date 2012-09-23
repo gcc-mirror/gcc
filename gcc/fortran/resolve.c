@@ -12478,7 +12478,7 @@ resolve_fl_namelist (gfc_symbol *sym)
 	  continue;
 
       nlsym = NULL;
-      if (nl->sym && nl->sym->name)
+      if (nl->sym->name)
 	gfc_find_symbol (nl->sym->name, sym->ns, 1, &nlsym);
       if (nlsym && nlsym->attr.flavor == FL_PROCEDURE)
 	{

@@ -1,3 +1,21 @@
+2012-09-23  Tobias Burnus  <burnus@net-b.de>
+
+	* parse.c (parse_derived): Don't set attr.alloc_comp
+	for pointer components with allocatable subcomps.
+
+	PR fortran/54599
+	* resolve.c (resolve_fl_namelist): Remove superfluous
+	NULL check.
+	* simplify.c (simplify_min_max): Remove unreachable code.
+	* trans-array.c (gfc_trans_create_temp_array): Change
+	a condition into an assert.
+
+	PR fortran/54618
+	* trans-expr.c (gfc_trans_class_init_assign): Guard
+	re-setting of the _data by gfc_conv_expr_present.
+	(gfc_conv_procedure_call): Fix INTENT(OUT) handling
+	for allocatable BT_CLASS.
+
 2012-09-22  Thomas König  <tkoenig@gcc.gnu.org>
 
 	PR fortran/54599
