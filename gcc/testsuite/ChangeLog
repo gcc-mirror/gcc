@@ -1,3 +1,9 @@
+2012-09-23  Paolo Carlini  <paolo.carlini@oracle.com>
+	    Dominique Dhumieres  <dominiq@lps.ens.fr>
+
+	PR testsuite/54677
+	* g++.dg/cpp0x/decltype32.C: Add -ftemplate-depth=10.
+
 2012-09-2323  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/54618
