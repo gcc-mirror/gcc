@@ -1,3 +1,9 @@
+2012-09-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/54669
+	* tree-ssa-loop-ivcanon.c (propagate_into_all_uses): Invoke
+	maybe_clean_or_replace_eh_stmt on the modified use statements.
+
 2012-09-23  Marc Glisse  <marc.glisse@inria.fr>
 
 	* expr.c (do_store_flag): Remove duplicated code.
