@@ -1,3 +1,10 @@
+2012-09-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR libstdc++/54675
+	* include/ext/random: Avoid the badname __alpha (and, for
+	consistency, __mu, __nu, __sigma and __omega too).
+	* include/bits/random.tcc: Likewise.
+
 2012-09-21  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	* include/ext/random: Add __gnu_cxx::pareto_distribution<> class.
