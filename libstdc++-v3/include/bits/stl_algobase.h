@@ -195,8 +195,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       // concept requirements
       __glibcxx_function_requires(_LessThanComparableConcept<_Tp>)
-
-      return __b < __a ? __b : __a;
+      //return __b < __a ? __b : __a;
+      if (__b < __a)
+	return __b;
+      return __a;
     }
 
   /**
@@ -216,8 +218,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       // concept requirements
       __glibcxx_function_requires(_LessThanComparableConcept<_Tp>)
-
-      return  __a < __b ? __b : __a;
+      //return  __a < __b ? __b : __a;
+      if (__a < __b)
+	return __b;
+      return __a;
     }
 
   /**
@@ -234,7 +238,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp, typename _Compare>
     inline const _Tp&
     min(const _Tp& __a, const _Tp& __b, _Compare __comp)
-    { return __comp(__b, __a) ? __b : __a; }
+    {
+      //return __comp(__b, __a) ? __b : __a;
+      if (__comp(__b, __a))
+	return __b;
+      return __a;
+    }
 
   /**
    *  @brief This does what you think it does.
@@ -250,7 +259,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp, typename _Compare>
     inline const _Tp&
     max(const _Tp& __a, const _Tp& __b, _Compare __comp)
-    { return __comp(__a, __b) ? __b : __a; }
+    {
+      //return __comp(__a, __b) ? __b : __a;
+      if (__comp(__a, __b))
+	return __b;
+      return __a;
+    }
 
   // If _Iterator is a __normal_iterator return its base (a plain pointer,
   // normally) otherwise return it untouched.  See copy, fill, ... 

@@ -1,3 +1,10 @@
+2012-09-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	Revert:
+	2012-09-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/stl_algobase.h (max, min): Use conditional operator.
+
 2012-09-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR libstdc++/54675
