@@ -531,6 +531,7 @@ propagate_into_all_uses (tree ssa_name, tree val)
 
       fold_stmt_inplace (&use_stmt_gsi);
       update_stmt (use_stmt);
+      maybe_clean_or_replace_eh_stmt (use_stmt, use_stmt);
     }
 }
 
