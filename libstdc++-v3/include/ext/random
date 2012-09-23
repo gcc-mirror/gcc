@@ -932,9 +932,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	typedef rice_distribution<result_type> distribution_type;
 
-	param_type(result_type __nu = result_type(0),
-		   result_type __sigma = result_type(1))
-	: _M_nu(__nu), _M_sigma(__sigma)
+	param_type(result_type __nu_val = result_type(0),
+		   result_type __sigma_val = result_type(1))
+	: _M_nu(__nu_val), _M_sigma(__sigma_val)
 	{
 	  _GLIBCXX_DEBUG_ASSERT(_M_nu >= result_type(0));
 	  _GLIBCXX_DEBUG_ASSERT(_M_sigma > result_type(0));
@@ -964,11 +964,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        * @brief Constructors.
        */
       explicit
-      rice_distribution(result_type __nu = result_type(0),
-			result_type __sigma = result_type(1))
-      : _M_param(__nu, __sigma),
-	_M_ndx(__nu, __sigma),
-	_M_ndy(result_type(0), __sigma)
+      rice_distribution(result_type __nu_val = result_type(0),
+			result_type __sigma_val = result_type(1))
+      : _M_param(__nu_val, __sigma_val),
+	_M_ndx(__nu_val, __sigma_val),
+	_M_ndy(result_type(0), __sigma_val)
       { }
 
       explicit
@@ -1166,9 +1166,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	typedef nakagami_distribution<result_type> distribution_type;
 
-	param_type(result_type __mu = result_type(1),
-		   result_type __omega = result_type(1))
-	: _M_mu(__mu), _M_omega(__omega)
+	param_type(result_type __mu_val = result_type(1),
+		   result_type __omega_val = result_type(1))
+	: _M_mu(__mu_val), _M_omega(__omega_val)
 	{
 	  _GLIBCXX_DEBUG_ASSERT(_M_mu >= result_type(0.5L));
 	  _GLIBCXX_DEBUG_ASSERT(_M_omega > result_type(0));
@@ -1198,10 +1198,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        * @brief Constructors.
        */
       explicit
-      nakagami_distribution(result_type __mu = result_type(1),
-			    result_type __omega = result_type(1))
-      : _M_param(__mu, __omega),
-	_M_gd(__mu, __omega / __mu)
+      nakagami_distribution(result_type __mu_val = result_type(1),
+			    result_type __omega_val = result_type(1))
+      : _M_param(__mu_val, __omega_val),
+	_M_gd(__mu_val, __omega_val / __mu_val)
       { }
 
       explicit
@@ -1399,9 +1399,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	typedef pareto_distribution<result_type> distribution_type;
 
-	param_type(result_type __alpha = result_type(1),
-		   result_type __mu = result_type(1))
-	: _M_alpha(__alpha), _M_mu(__mu)
+	param_type(result_type __alpha_val = result_type(1),
+		   result_type __mu_val = result_type(1))
+	: _M_alpha(__alpha_val), _M_mu(__mu_val)
 	{
 	  _GLIBCXX_DEBUG_ASSERT(_M_alpha > result_type(0));
 	  _GLIBCXX_DEBUG_ASSERT(_M_mu > result_type(0));
@@ -1430,9 +1430,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        * @brief Constructors.
        */
       explicit
-      pareto_distribution(result_type __alpha = result_type(1),
-			  result_type __mu = result_type(1))
-      : _M_param(__alpha, __mu),
+      pareto_distribution(result_type __alpha_val = result_type(1),
+			  result_type __mu_val = result_type(1))
+      : _M_param(__alpha_val, __mu_val),
 	_M_ud()
       { }
 
