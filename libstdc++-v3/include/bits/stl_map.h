@@ -61,6 +61,7 @@
 #include <bits/concept_check.h>
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
 #include <initializer_list>
+#include <tuple>
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -461,7 +462,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	iterator __i = lower_bound(__k);
 	// __i->first is greater than or equivalent to __k.
 	if (__i == end() || key_comp()(__k, (*__i).first))
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+	  __i = _M_t._M_emplace_hint_unique(__i, std::piecewise_construct,
+					    std::tuple<const key_type&>(__k),
+					    std::tuple<>());
+#else
           __i = insert(__i, value_type(__k, mapped_type()));
+#endif
 	return (*__i).second;
       }
 
@@ -475,7 +482,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	iterator __i = lower_bound(__k);
 	// __i->first is greater than or equivalent to __k.
 	if (__i == end() || key_comp()(__k, (*__i).first))
-          __i = insert(__i, std::make_pair(std::move(__k), mapped_type()));
+	  __i = _M_t._M_emplace_hint_unique(__i, std::piecewise_construct,
+					std::forward_as_tuple(std::move(__k)),
+					std::tuple<>());
 	return (*__i).second;
       }
 #endif
@@ -508,6 +517,64 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       }
 
       // modifiers
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      /**
+       *  @brief Attempts to build and insert a std::pair into the %map.
+       *
+       *  @param __args  Arguments used to generate a new pair instance (see
+       *	        std::piecewise_contruct for passing arguments to each
+       *	        part of the pair constructor).
+       *
+       *  @return  A pair, of which the first element is an iterator that points
+       *           to the possibly inserted pair, and the second is a bool that
+       *           is true if the pair was actually inserted.
+       *
+       *  This function attempts to build and insert a (key, value) %pair into
+       *  the %map.
+       *  A %map relies on unique keys and thus a %pair is only inserted if its
+       *  first element (the key) is not already present in the %map.
+       *
+       *  Insertion requires logarithmic time.
+       */
+      template<typename... _Args>
+	std::pair<iterator, bool>
+	emplace(_Args&&... __args)
+	{ return _M_t._M_emplace_unique(std::forward<_Args>(__args)...); }
+
+      /**
+       *  @brief Attempts to build and insert a std::pair into the %map.
+       *
+       *  @param  __pos  An iterator that serves as a hint as to where the pair
+       *                should be inserted.
+       *  @param  __args  Arguments used to generate a new pair instance (see
+       *	         std::piecewise_contruct for passing arguments to each
+       *	         part of the pair constructor).
+       *  @return An iterator that points to the element with key of the
+       *          std::pair built from @a __args (may or may not be that
+       *          std::pair).
+       *
+       *  This function is not concerned about whether the insertion took place,
+       *  and thus does not return a boolean like the single-argument emplace()
+       *  does.
+       *  Note that the first parameter is only a hint and can potentially
+       *  improve the performance of the insertion process. A bad hint would
+       *  cause no gains in efficiency.
+       *
+       *  See
+       *  http://gcc.gnu.org/onlinedocs/libstdc++/manual/bk01pt07ch17.html
+       *  for more on @a hinting.
+       *
+       *  Insertion requires logarithmic time (if the hint is not taken).
+       */
+      template<typename... _Args>
+	iterator
+	emplace_hint(const_iterator __pos, _Args&&... __args)
+	{
+	  return _M_t._M_emplace_hint_unique(__pos,
+					     std::forward<_Args>(__args)...);
+	}
+#endif
+
       /**
        *  @brief Attempts to insert a std::pair into the %map.
 
