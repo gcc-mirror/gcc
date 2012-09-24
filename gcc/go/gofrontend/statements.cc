@@ -3846,6 +3846,16 @@ Switch_statement::do_lower(Gogo*, Named_object*, Block* enclosing,
     return new Constant_switch_statement(this->val_, this->clauses_,
 					 this->break_label_, loc);
 
+  if (this->val_ != NULL
+      && !this->val_->type()->is_comparable()
+      && !Type::are_compatible_for_comparison(true, this->val_->type(),
+					      Type::make_nil_type(), NULL))
+    {
+      error_at(this->val_->location(),
+	       "cannot switch on value whose type that may not be compared");
+      return Statement::make_error_statement(loc);
+    }
+
   Block* b = new Block(enclosing, loc);
 
   if (this->clauses_->empty())
