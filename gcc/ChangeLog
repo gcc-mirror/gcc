@@ -1,5 +1,13 @@
 2012-09-24  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/54632
+	* tree-ssa-live.c (clear_unused_block_pointer_1): Do not
+	handle DECL_DEBUG_EXPR_IS_FROM here...
+	(clear_unused_block_pointer): ... but here when walking all
+	local decls.
+
+2012-09-24  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/54684
 	* tree-ssa-ccp.c (optimize_unreachable): Properly update stmts.
 
