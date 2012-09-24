@@ -1,0 +1,76 @@
+2012-09-19  Ian Lance Taylor  <iant@google.com>
+
+	* configure.ac: Only use GCC_CHECK_UNWIND_GETIPINFO when compiled
+	as a target library.
+	* configure: Rebuild.
+
+2012-09-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+	    Ian Lance Taylor  <iant@google.com>
+
+        * configure.ac (GCC_HEADER_STDINT): Invoke.
+        * backtrace.h: If we can't find <stdint.h>, use "gstdint.h".
+        * btest.c: Don't include <stdint.h>.
+        * dwarf.c: Likewise.
+        * configure, aclocal.m4, Makefile.in, config.h.in: Rebuild.
+
+2012-09-18  Ian Lance Taylor  <iant@google.com>
+
+	PR bootstrap/54623
+	* Makefile.am (AM_CPPFLAGS): Define.
+	(AM_CFLAGS): Remove -I options.
+	* Makefile.in: Rebuild.
+
+2012-09-18  Ian Lance Taylor  <iant@google.com>
+
+	* posix.c (O_BINARY): Define if not defined.
+	(backtrace_open): Pass O_BINARY to open.  Only call fcntl if
+	HAVE_FCNTL is defined.
+	* configure.ac: Test for the fcntl function.
+	* configure, config.h.in: Rebuild.
+
+2012-09-18  Ian Lance Taylor  <iant@google.com>
+
+	* btest.c (test1, test2, test3, test4): Add the unused attribute.
+
+2012-09-18  Ian Lance Taylor  <iant@google.com>
+
+	* dwarf.c: Correct test of HAVE_DECL_STRNLEN.
+
+2012-09-18  Ian Lance Taylor  <iant@google.com>
+
+	* configure.ac: Add AC_USE_SYSTEM_EXTENSIONS.
+	* mmapio.c: Don't define _GNU_SOURCE.
+	* configure, config.h.in: Rebuild.
+
+2012-09-18  Ian Lance Taylor  <iant@google.com>
+
+	* configure.ac: Check whether strnlen is declared.
+	* dwarf.c: Declare strnlen if not declared.
+	* configure, config.h.in: Rebuild.
+
+2012-09-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* fileline.c: Include <stdlib.h>.
+	* mmap.c: Likewise.
+
+2012-09-17  Ian Lance Taylor  <iant@google.com>
+
+	PR bootstrap/54611
+	* nounwind.c (backtrace_full): Rename from backtrace.  Add state
+	parameter.
+
+2012-09-17  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	PR bootstrap/54611
+	* nounwind.c (backtrace_simple): Add state parameter.
+
+2012-09-17  Ian Lance Taylor  <iant@google.com>
+
+	PR bootstrap/54609
+	* unknown.c (unknown_fileline): Add state parameter, remove
+	fileline_data parameter, name error_callback parameter.
+	(backtrace_initialize): Add state parameter.
+
+2012-09-17  Ian Lance Taylor  <iant@google.com>
+
+	* Initial implementation.

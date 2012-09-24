@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-objsz-details" } */
+/* { dg-options "-O2 -fdump-tree-objsz1-details" } */
 
 typedef struct {
     char sentinel[4];
@@ -21,6 +21,6 @@ foo(char *x)
   return dpkt;
 }
 
-/* { dg-final { scan-tree-dump "maximum object size 21" "objsz" } } */
-/* { dg-final { scan-tree-dump "maximum subobject size 16" "objsz" } } */
-/* { dg-final { cleanup-tree-dump "objsz" } } */
+/* { dg-final { scan-tree-dump "maximum object size 21" "objsz1" } } */
+/* { dg-final { scan-tree-dump "maximum subobject size 16" "objsz1" } } */
+/* { dg-final { cleanup-tree-dump "objsz1" } } */

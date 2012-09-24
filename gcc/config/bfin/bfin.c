@@ -3918,12 +3918,12 @@ gen_one_bundle (rtx slot[3])
     }
 
   /* Avoid line number information being printed inside one bundle.  */
-  if (INSN_LOCATOR (slot[1])
-      && INSN_LOCATOR (slot[1]) != INSN_LOCATOR (slot[0]))
-    INSN_LOCATOR (slot[1]) = INSN_LOCATOR (slot[0]);
-  if (INSN_LOCATOR (slot[2])
-      && INSN_LOCATOR (slot[2]) != INSN_LOCATOR (slot[0]))
-    INSN_LOCATOR (slot[2]) = INSN_LOCATOR (slot[0]);
+  if (INSN_LOCATION (slot[1])
+      && INSN_LOCATION (slot[1]) != INSN_LOCATION (slot[0]))
+    INSN_LOCATION (slot[1]) = INSN_LOCATION (slot[0]);
+  if (INSN_LOCATION (slot[2])
+      && INSN_LOCATION (slot[2]) != INSN_LOCATION (slot[0]))
+    INSN_LOCATION (slot[2]) = INSN_LOCATION (slot[0]);
 
   /* Terminate them with "|| " instead of ";" in the output.  */
   PUT_MODE (slot[0], SImode);

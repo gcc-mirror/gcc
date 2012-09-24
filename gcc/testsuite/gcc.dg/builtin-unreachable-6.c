@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-fab" } */
+/* { dg-options "-O2 -fdump-tree-fab1" } */
 
 void
 foo (int b, int c)
@@ -16,6 +16,6 @@ lab2:
   goto *x;
 }
 
-/* { dg-final { scan-tree-dump-times "lab:" 1 "fab" } } */
-/* { dg-final { scan-tree-dump-times "__builtin_unreachable" 1 "fab" } } */
-/* { dg-final { cleanup-tree-dump "fab" } } */
+/* { dg-final { scan-tree-dump-times "lab:" 1 "fab1" } } */
+/* { dg-final { scan-tree-dump-times "__builtin_unreachable" 1 "fab1" } } */
+/* { dg-final { cleanup-tree-dump "fab1" } } */

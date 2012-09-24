@@ -1,3 +1,5 @@
+-- { dg-do compile }
+
 package body Atomic5 is
 
   function Create return R is

@@ -2,7 +2,8 @@
 /* { dg-do compile { target "sh*-*-*" } } */
 /* { dg-options "-O1" } */
 /* { dg-skip-if "" { "sh*-*-*" } { "-m5*"} { "" } }  */
-/* { dg-final { scan-assembler-times "rotcr" 11 } } */
+/* { dg-final { scan-assembler-times "rotcr" 15 } } */
+/* { dg-final { scan-assembler-times "shll\t" 1 } } */
 
 typedef char bool;
 
@@ -80,4 +81,31 @@ test_10 (int a, int b)
 {
   bool r = a == b;
   return r << 31;
+}
+
+unsigned int
+test_11 (unsigned int a, int b)
+{
+  /* 1x shlr, 1x rotcr  */
+  return (a >> 1) | (b << 31);
+}
+
+unsigned int
+test_12 (unsigned int a, int b)
+{
+  return (a >> 2) | (b << 31);
+}
+
+unsigned int
+test_13 (unsigned int a, int b)
+{
+  return (a >> 3) | (b << 31);
+}
+
+unsigned int
+test_14 (unsigned int a, int b)
+{
+  /* 1x shll, 1x rotcr  */
+  bool r = b < 0;
+  return ((a >> 1) | (r << 31));
 }

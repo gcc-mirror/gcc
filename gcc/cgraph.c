@@ -1127,7 +1127,6 @@ cgraph_release_function_body (struct cgraph_node *node)
 {
   if (DECL_STRUCT_FUNCTION (node->symbol.decl))
     {
-      tree old_decl = current_function_decl;
       push_cfun (DECL_STRUCT_FUNCTION (node->symbol.decl));
       if (cfun->cfg
 	  && current_loops)
@@ -1137,11 +1136,9 @@ cgraph_release_function_body (struct cgraph_node *node)
 	}
       if (cfun->gimple_df)
 	{
-	  current_function_decl = node->symbol.decl;
 	  delete_tree_ssa ();
 	  delete_tree_cfg_annotations ();
 	  cfun->eh = NULL;
-	  current_function_decl = old_decl;
 	}
       if (cfun->cfg)
 	{

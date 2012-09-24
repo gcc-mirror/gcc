@@ -84,7 +84,7 @@ is respectively less than, matching, or greater than the array member.
 
 @end deftypefn
 
-@c argv.c:142
+@c argv.c:135
 @deftypefn Extension char** buildargv (char *@var{sp})
 
 Given a pointer to a string, parse the string extracting fields
@@ -95,7 +95,7 @@ remains unchanged.  The last element of the vector is followed by a
 @code{NULL} element.
 
 All of the memory for the pointer array and copies of the string
-is obtained from @code{malloc}.  All of the memory can be returned to the
+is obtained from @code{xmalloc}.  All of the memory can be returned to the
 system with the single function call @code{freeargv}, which takes the
 returned result of @code{buildargv}, as it's argument.
 
@@ -166,6 +166,14 @@ pointer encountered.  Pointers to empty strings are ignored.
 
 @end deftypefn
 
+@c argv.c:470
+@deftypefn Extension int countargv (char **@var{argv})
+
+Return the number of elements in @var{argv}.
+Returns zero if @var{argv} is NULL.
+
+@end deftypefn
+
 @c crc32.c:141
 @deftypefn Extension {unsigned int} crc32 (const unsigned char *@var{buf}, @
   int @var{len}, unsigned int @var{init})
@@ -224,7 +232,7 @@ symbolic name or message.
 
 @end deftypefn
 
-@c argv.c:361
+@c argv.c:341
 @deftypefn Extension void expandargv (int *@var{argcp}, char ***@var{argvp})
 
 The @var{argcp} and @code{argvp} arguments are pointers to the usual
@@ -296,7 +304,24 @@ and backward slashes are equal.
 
 @end deftypefn
 
-@c filename_cmp.c:81
+@c filename_cmp.c:178
+@deftypefn Extension int filename_eq (const void *@var{s1}, const void *@var{s2})
+
+Return non-zero if file names @var{s1} and @var{s2} are equivalent.
+This function is for use with hashtab.c hash tables.
+
+@end deftypefn
+
+@c filename_cmp.c:147
+@deftypefn Extension hashval_t filename_hash (const void *@var{s})
+
+Return the hash value for file name @var{s} that will be compared
+using filename_cmp.
+This function is for use with hashtab.c hash tables.
+
+@end deftypefn
+
+@c filename_cmp.c:89
 @deftypefn Extension int filename_ncmp (const char *@var{s1}, const char *@var{s2}, size_t @var{n})
 
 Return zero if the two file names @var{s1} and @var{s2} are equivalent
@@ -376,7 +401,7 @@ unchanged.
 
 @end deftypefn
 
-@c argv.c:97
+@c argv.c:90
 @deftypefn Extension void freeargv (char **@var{vector})
 
 Free an argument vector that was built using @code{buildargv}.  Simply
@@ -1465,6 +1490,13 @@ deallocate values.
 
 @end deftypefn
 
+@c stack-limit.c:28
+@deftypefn Extension void stack_limit_increase (unsigned long @var{pref})
+
+Attempt to increase stack size limit to @var{pref} bytes if possible.
+
+@end deftypefn
+
 @c stpcpy.c:23
 @deftypefn Supplemental char* stpcpy (char *@var{dst}, const char *@var{src})
 
@@ -1571,6 +1603,16 @@ Compares the first @var{n} bytes of two strings, returning a value as
 Returns a pointer to a copy of @var{s} with at most @var{n} characters
 in memory obtained from @code{malloc}, or @code{NULL} if insufficient
 memory was available.  The result is always NUL terminated.
+
+@end deftypefn
+
+@c strnlen.c:6
+@deftypefn Supplemental size_t strnlen (const char *@var{s}, size_t @var{maxlen})
+
+Returns the length of @var{s}, as with @code{strlen}, but never looks
+past the first @var{maxlen} characters in the string.  If there is no
+'\0' character in the first @var{maxlen} characters, returns
+@var{maxlen}.
 
 @end deftypefn
 
@@ -1728,6 +1770,22 @@ This function is especially useful when dealing with filename sorting,
 because filenames frequently hold indices/version numbers.
 @end deftypefun
 
+@c timeval-utils.c:43
+@deftypefn Extension void timeval_add (struct timeval *@var{a}, @
+  struct timeval *@var{b}, struct timeval *@var{result})
+
+Adds @var{a} to @var{b} and stores the result in @var{result}.
+
+@end deftypefn
+
+@c timeval-utils.c:67
+@deftypefn Extension void timeval_sub (struct timeval *@var{a}, @
+  struct timeval *@var{b}, struct timeval *@var{result})
+
+Subtracts @var{b} from @var{a} and stores the result in @var{result}.
+
+@end deftypefn
+
 @c tmpnam.c:3
 @deftypefn Supplemental char* tmpnam (char *@var{s})
 
@@ -1829,7 +1887,7 @@ does the return value.  The third argument is unused in @libib{}.
 
 @end deftypefn
 
-@c argv.c:306
+@c argv.c:286
 @deftypefn Extension int writeargv (const char **@var{argv}, FILE *@var{file})
 
 Write each member of ARGV, handling all necessary quoting, to the file

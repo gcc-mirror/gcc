@@ -1,5 +1,5 @@
 /* Global, SSA-based optimizations using mathematical identities.
-   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -1378,11 +1378,17 @@ execute_cse_sincos (void)
   FOR_EACH_BB (bb)
     {
       gimple_stmt_iterator gsi;
+      bool cleanup_eh = false;
 
       for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi); gsi_next (&gsi))
         {
 	  gimple stmt = gsi_stmt (gsi);
 	  tree fndecl;
+
+	  /* Only the last stmt in a bb could throw, no need to call
+	     gimple_purge_dead_eh_edges if we change something in the middle
+	     of a basic block.  */
+	  cleanup_eh = false;
 
 	  if (is_gimple_call (stmt)
 	      && gimple_call_lhs (stmt)
@@ -1421,6 +1427,7 @@ execute_cse_sincos (void)
 		      gimple_set_location (new_stmt, loc);
 		      unlink_stmt_vdef (stmt);
 		      gsi_replace (&gsi, new_stmt, true);
+		      cleanup_eh = true;
 		      if (gimple_vdef (stmt))
 			release_ssa_name (gimple_vdef (stmt));
 		    }
@@ -1443,6 +1450,7 @@ execute_cse_sincos (void)
 		      gimple_set_location (new_stmt, loc);
 		      unlink_stmt_vdef (stmt);
 		      gsi_replace (&gsi, new_stmt, true);
+		      cleanup_eh = true;
 		      if (gimple_vdef (stmt))
 			release_ssa_name (gimple_vdef (stmt));
 		    }
@@ -1460,6 +1468,7 @@ execute_cse_sincos (void)
 		      gimple_set_location (new_stmt, loc);
 		      unlink_stmt_vdef (stmt);
 		      gsi_replace (&gsi, new_stmt, true);
+		      cleanup_eh = true;
 		      if (gimple_vdef (stmt))
 			release_ssa_name (gimple_vdef (stmt));
 		    }
@@ -1469,6 +1478,8 @@ execute_cse_sincos (void)
 		}
 	    }
 	}
+      if (cleanup_eh)
+	cfg_changed |= gimple_purge_dead_eh_edges (bb);
     }
 
   statistics_counter_event (cfun, "sincos statements inserted",
@@ -2593,10 +2604,10 @@ convert_mult_to_fma (gimple mul_stmt, tree op1, tree op2)
 					   true, NULL_TREE, true,
 					   GSI_SAME_STMT);
 
-      fma_stmt = gimple_build_assign_with_ops3 (FMA_EXPR,
-						gimple_assign_lhs (use_stmt),
-						mulop1, op2,
-						addop);
+      fma_stmt = gimple_build_assign_with_ops (FMA_EXPR,
+					       gimple_assign_lhs (use_stmt),
+					       mulop1, op2,
+					       addop);
       gsi_replace (&gsi, fma_stmt, true);
       widen_mul_stats.fmas_inserted++;
     }

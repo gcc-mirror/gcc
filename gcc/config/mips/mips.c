@@ -2628,7 +2628,7 @@ mips16_gp_pseudo_reg (void)
 
       insn = gen_load_const_gp (cfun->machine->mips16_gp_pseudo_rtx);
       insn = emit_insn_after (insn, scan);
-      INSN_LOCATOR (insn) = 0;
+      INSN_LOCATION (insn) = 0;
 
       pop_topmost_sequence ();
     }
@@ -15864,7 +15864,6 @@ mips_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   /* Run just enough of rest_of_compilation.  This sequence was
      "borrowed" from alpha.c.  */
   insn = get_insns ();
-  insn_locators_alloc ();
   split_all_insns_noflow ();
   mips16_lay_out_constants (true);
   shorten_branches (insn);

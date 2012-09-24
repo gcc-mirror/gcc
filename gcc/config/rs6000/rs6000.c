@@ -9764,6 +9764,30 @@ rs6000_overloaded_builtin_p (enum rs6000_builtins fncode)
   return (rs6000_builtin_info[(int)fncode].attr & RS6000_BTC_OVERLOADED) != 0;
 }
 
+/* Expand an expression EXP that calls a builtin without arguments.  */
+static rtx
+rs6000_expand_zeroop_builtin (enum insn_code icode, rtx target)
+{
+  rtx pat;
+  enum machine_mode tmode = insn_data[icode].operand[0].mode;
+
+  if (icode == CODE_FOR_nothing)
+    /* Builtin not supported on this processor.  */
+    return 0;
+
+  if (target == 0
+      || GET_MODE (target) != tmode
+      || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
+    target = gen_reg_rtx (tmode);
+
+  pat = GEN_FCN (icode) (target);
+  if (! pat)
+    return 0;
+  emit_insn (pat);
+
+  return target;
+}
+
 
 static rtx
 rs6000_expand_unop_builtin (enum insn_code icode, tree exp, rtx target)
@@ -11353,6 +11377,16 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 					   ? CODE_FOR_bpermd_di
 					   : CODE_FOR_bpermd_si), exp, target);
 
+    case RS6000_BUILTIN_GET_TB:
+      return rs6000_expand_zeroop_builtin (CODE_FOR_rs6000_get_timebase,
+					   target);
+
+    case RS6000_BUILTIN_MFTB:
+      return rs6000_expand_zeroop_builtin (((TARGET_64BIT)
+					    ? CODE_FOR_rs6000_mftb_di
+					    : CODE_FOR_rs6000_mftb_si),
+					   target);
+
     case ALTIVEC_BUILTIN_MASK_FOR_LOAD:
     case ALTIVEC_BUILTIN_MASK_FOR_STORE:
       {
@@ -11636,6 +11670,18 @@ rs6000_init_builtins (void)
   ftype = builtin_function_type (mode, mode, mode, VOIDmode,
 				 POWER7_BUILTIN_BPERMD, "__builtin_bpermd");
   def_builtin ("__builtin_bpermd", ftype, POWER7_BUILTIN_BPERMD);
+
+  ftype = build_function_type_list (unsigned_intDI_type_node,
+				    NULL_TREE);
+  def_builtin ("__builtin_ppc_get_timebase", ftype, RS6000_BUILTIN_GET_TB);
+
+  if (TARGET_64BIT)
+    ftype = build_function_type_list (unsigned_intDI_type_node,
+				      NULL_TREE);
+  else
+    ftype = build_function_type_list (unsigned_intSI_type_node,
+				      NULL_TREE);
+  def_builtin ("__builtin_ppc_mftb", ftype, RS6000_BUILTIN_MFTB);
 
 #if TARGET_XCOFF
   /* AIX libm provides clog as __clog.  */
@@ -14674,14 +14720,6 @@ print_operand (FILE *file, rtx x, int code)
 
       /* %c is output_addr_const if a CONSTANT_ADDRESS_P, otherwise
 	 output_operand.  */
-
-    case 'c':
-      /* X is a CR register.  Print the number of the GT bit of the CR.  */
-      if (GET_CODE (x) != REG || ! CR_REGNO_P (REGNO (x)))
-	output_operand_lossage ("invalid %%c value");
-      else
-	fprintf (file, "%d", 4 * (REGNO (x) - CR0_REGNO) + 1);
-      return;
 
     case 'D':
       /* Like 'J' but get to the GT bit only.  */
@@ -21675,7 +21713,6 @@ rs6000_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
      instruction scheduling worth while.  Note that use_thunk calls
      assemble_start_function and assemble_end_function.  */
   insn = get_insns ();
-  insn_locators_alloc ();
   shorten_branches (insn);
   final_start_function (insn, file, 1);
   final (insn, file, 1);
@@ -27331,7 +27368,7 @@ rs6000_final_prescan_insn (rtx insn, rtx *operand ATTRIBUTE_UNUSED,
     {
       const char *temp;
       int insn_code_number = recog_memoized (insn);
-      location_t location = locator_location (INSN_LOCATOR (insn));
+      location_t location = INSN_LOCATION (insn);
 
       /* Punt on insns we cannot recognize.  */
       if (insn_code_number < 0)

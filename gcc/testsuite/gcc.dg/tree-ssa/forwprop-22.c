@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target vect_double } */
 /* { dg-require-effective-target vect_perm } */
-/* { dg-options "-O -fdump-tree-optimized" } */
+/* { dg-options "-O -fdump-tree-copyprop1" } */
 
 typedef double vec __attribute__((vector_size (2 * sizeof (double))));
 void f (vec *px, vec *y, vec *z)
@@ -13,6 +13,8 @@ void f (vec *px, vec *y, vec *z)
   *z = t2;
 }
 
-/* { dg-final { scan-tree-dump-times "VEC_PERM_EXPR" 1 "optimized" } } */
-/* { dg-final { scan-tree-dump-not "BIT_FIELD_REF" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */
+/* Optimization in forwprop1, cleanup in copyprop1.  */
+
+/* { dg-final { scan-tree-dump-times "VEC_PERM_EXPR" 1 "copyprop1" } } */
+/* { dg-final { scan-tree-dump-not "BIT_FIELD_REF" "copyprop1" } } */
+/* { dg-final { cleanup-tree-dump "copyprop1" } } */

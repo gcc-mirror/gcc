@@ -6925,7 +6925,6 @@ ipa_pta_execute (void)
     {
       struct function *func;
       basic_block bb;
-      tree old_func_decl;
 
       /* Nodes without a body are not interesting.  */
       if (!cgraph_function_with_gimple_body_p (node))
@@ -6943,9 +6942,7 @@ ipa_pta_execute (void)
 	}
 
       func = DECL_STRUCT_FUNCTION (node->symbol.decl);
-      old_func_decl = current_function_decl;
       push_cfun (func);
-      current_function_decl = node->symbol.decl;
 
       /* For externally visible or attribute used annotated functions use
 	 local constraints for their arguments.
@@ -7002,7 +6999,6 @@ ipa_pta_execute (void)
 	    }
 	}
 
-      current_function_decl = old_func_decl;
       pop_cfun ();
 
       if (dump_file)

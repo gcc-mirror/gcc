@@ -287,6 +287,19 @@ ipa_print_all_jump_functions (FILE *f)
     }
 }
 
+/* Return the expression tree EXPR unshared and with location stripped off.  */
+
+static tree
+prune_expression_for_jf (tree exp)
+{
+  if (EXPR_P (exp))
+    {
+      exp = unshare_expr (exp);
+      SET_EXPR_LOCATION (exp, UNKNOWN_LOCATION);
+    }
+  return exp;
+}
+
 /* Set JFUNC to be a known type jump function.  */
 
 static void
@@ -304,8 +317,11 @@ ipa_set_jf_known_type (struct ipa_jump_func *jfunc, HOST_WIDE_INT offset,
 static void
 ipa_set_jf_constant (struct ipa_jump_func *jfunc, tree constant)
 {
+  constant = unshare_expr (constant);
+  if (constant && EXPR_P (constant))
+    SET_EXPR_LOCATION (constant, UNKNOWN_LOCATION);
   jfunc->type = IPA_JF_CONST;
-  jfunc->value.constant = constant;
+  jfunc->value.constant = prune_expression_for_jf (constant);
 }
 
 /* Set JFUNC to be a simple pass-through jump function.  */
@@ -327,7 +343,7 @@ ipa_set_jf_arith_pass_through (struct ipa_jump_func *jfunc, int formal_id,
 			       tree operand, enum tree_code operation)
 {
   jfunc->type = IPA_JF_PASS_THROUGH;
-  jfunc->value.pass_through.operand = operand;
+  jfunc->value.pass_through.operand = prune_expression_for_jf (operand);
   jfunc->value.pass_through.formal_id = formal_id;
   jfunc->value.pass_through.operation = operation;
   jfunc->value.pass_through.agg_preserved = false;
@@ -1344,7 +1360,7 @@ determine_known_aggregate_parts (gimple call, tree arg,
 	    {
 	      struct ipa_agg_jf_item item;
 	      item.offset = list->offset - arg_offset;
-	      item.value = list->constant;
+	      item.value = prune_expression_for_jf (list->constant);
 	      VEC_quick_push (ipa_agg_jf_item_t, jfunc->agg.items, item);
 	    }
 	  list = list->next;
@@ -1913,7 +1929,6 @@ ipa_analyze_node (struct cgraph_node *node)
   ipa_check_create_edge_args ();
   info = IPA_NODE_REF (node);
   push_cfun (DECL_STRUCT_FUNCTION (node->symbol.decl));
-  current_function_decl = node->symbol.decl;
   ipa_initialize_node_params (node);
 
   param_count = ipa_get_param_count (info);
@@ -1931,7 +1946,6 @@ ipa_analyze_node (struct cgraph_node *node)
 	BITMAP_FREE (parms_ainfo[i].pt_visited_statements);
     }
 
-  current_function_decl = NULL;
   pop_cfun ();
 }
 
@@ -3150,6 +3164,8 @@ ipa_write_jump_function (struct output_block *ob,
       stream_write_tree (ob, jump_func->value.known_type.component_type, true);
       break;
     case IPA_JF_CONST:
+      gcc_assert (
+	  IS_UNKNOWN_LOCATION (EXPR_LOCATION (jump_func->value.constant)));
       stream_write_tree (ob, jump_func->value.constant, true);
       break;
     case IPA_JF_PASS_THROUGH:

@@ -22,12 +22,12 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
 
-(define_mode_iterator ALL1Q [(QQ "") (UQQ "")])
-(define_mode_iterator ALL2Q [(HQ "") (UHQ "")])
-(define_mode_iterator ALL2A [(HA "") (UHA "")])
-(define_mode_iterator ALL2QA [(HQ "") (UHQ "")
-                              (HA "") (UHA "")])
-(define_mode_iterator ALL4A [(SA "") (USA "")])
+(define_mode_iterator ALL1Q  [QQ UQQ])
+(define_mode_iterator ALL2Q  [HQ UHQ])
+(define_mode_iterator ALL2A  [HA UHA])
+(define_mode_iterator ALL2QA [HQ UHQ
+                              HA UHA])
+(define_mode_iterator ALL4A  [SA USA])
 
 (define_mode_iterator ALL2S [HQ HA])
 (define_mode_iterator ALL4S [SA SQ])
@@ -38,22 +38,22 @@
 ;;; Conversions
 
 (define_mode_iterator FIXED_A
-  [(QQ "") (UQQ "")
-   (HQ "") (UHQ "") (HA "") (UHA "")
-   (SQ "") (USQ "") (SA "") (USA "")
-   (DQ "") (UDQ "") (DA "") (UDA "")
-   (TA "") (UTA "")
-   (QI "") (HI "") (SI "") (DI "")])
+  [QQ UQQ
+   HQ UHQ HA UHA
+   SQ USQ SA USA
+   DQ UDQ DA UDA
+   TA UTA
+   QI HI SI DI])
 
 ;; Same so that be can build cross products
 
 (define_mode_iterator FIXED_B
-  [(QQ "") (UQQ "")
-   (HQ "") (UHQ "") (HA "") (UHA "")
-   (SQ "") (USQ "") (SA "") (USA "")
-   (DQ "") (UDQ "") (DA "") (UDA "")
-   (TA "") (UTA "")
-   (QI "") (HI "") (SI "") (DI "")])
+  [QQ UQQ
+   HQ UHQ HA UHA
+   SQ USQ SA USA
+   DQ UDQ DA UDA
+   TA UTA
+   QI HI SI DI])
 
 (define_insn "fract<FIXED_B:mode><FIXED_A:mode>2"
   [(set (match_operand:FIXED_A 0 "register_operand" "=r")

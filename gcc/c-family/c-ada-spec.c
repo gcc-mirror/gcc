@@ -130,7 +130,7 @@ print_ada_macros (pretty_printer *pp, cpp_hashnode **macros, int max_ada_macros)
 
   for (j = 0; j < max_ada_macros; j++)
     {
-      cpp_hashnode *node = macros [j];
+      cpp_hashnode *node = macros[j];
       const cpp_macro *macro = node->value.macro;
       unsigned i;
       int supported = 1, prev_is_one = 0, buffer_len, param_len;
@@ -345,10 +345,10 @@ print_ada_macros (pretty_printer *pp, cpp_hashnode **macros, int max_ada_macros)
 
 	  pp_string (pp, "   --  arg-macro: ");
 
-	  if (*start == '(' && buffer [-1] == ')')
+	  if (*start == '(' && buffer[-1] == ')')
 	    {
 	      start++;
-	      buffer [-1] = '\0';
+	      buffer[-1] = '\0';
 	      is_function = 1;
 	      pp_string (pp, "function ");
 	    }
@@ -595,7 +595,7 @@ collect_ada_nodes (tree t, const char *source_file)
   for (n = t; n; n = TREE_CHAIN (n))
     if (!DECL_IS_BUILTIN (n)
 	&& LOCATION_FILE (decl_sloc (n, false)) == source_file)
-      to_dump [i++] = n;
+      to_dump[i++] = n;
 }
 
 /* Call back for walk_tree to clear the TREE_VISITED flag of TP.  */
@@ -763,16 +763,16 @@ append_withs (const char *s, int limited_access)
     }
 
   for (i = 0; i < with_len; i++)
-    if (!strcmp (s, withs [i].s)
-	&& source_file_base == withs [i].in_file)
+    if (!strcmp (s, withs[i].s)
+	&& source_file_base == withs[i].in_file)
       {
-	withs [i].limited &= limited_access;
+	withs[i].limited &= limited_access;
 	return;
       }
 
-  withs [with_len].s = xstrdup (s);
-  withs [with_len].in_file = source_file_base;
-  withs [with_len].limited = limited_access;
+  withs[with_len].s = xstrdup (s);
+  withs[with_len].in_file = source_file_base;
+  withs[with_len].limited = limited_access;
   with_len++;
 }
 
@@ -787,7 +787,7 @@ reset_ada_withs (void)
     return;
 
   for (i = 0; i < with_len; i++)
-    free (withs [i].s);
+    free (withs[i].s);
   free (withs);
   withs = NULL;
   withs_max = 4096;
@@ -805,7 +805,7 @@ dump_ada_withs (FILE *f)
 
   for (i = 0; i < with_len; i++)
     fprintf
-      (f, "%swith %s;\n", withs [i].limited ? "limited " : "", withs [i].s);
+      (f, "%swith %s;\n", withs[i].limited ? "limited " : "", withs[i].s);
 }
 
 /* Return suitable Ada package name from FILE.  */
@@ -817,19 +817,30 @@ get_ada_package (const char *file)
   char *res;
   const char *s;
   int i;
+  size_t plen;
 
   s = strstr (file, "/include/");
   if (s)
     base = s + 9;
   else
     base = lbasename (file);
-  res = XNEWVEC (char, strlen (base) + 1);
 
-  for (i = 0; *base; base++, i++)
+  if (ada_specs_parent == NULL)
+    plen = 0;
+  else
+    plen = strlen (ada_specs_parent) + 1;
+
+  res = XNEWVEC (char, plen + strlen (base) + 1);
+  if (ada_specs_parent != NULL) {
+    strcpy (res, ada_specs_parent);
+    res[plen - 1] = '.';
+  }
+
+  for (i = plen; *base; base++, i++)
     switch (*base)
       {
 	case '+':
-	  res [i] = 'p';
+	  res[i] = 'p';
 	  break;
 
 	case '.':
@@ -837,14 +848,14 @@ get_ada_package (const char *file)
 	case '_':
 	case '/':
 	case '\\':
-	  res [i] = (i == 0 || res [i - 1] == '_') ? 'u' : '_';
+	  res[i] = (i == 0 || res[i - 1] == '.' || res[i - 1] == '_') ? 'u' : '_';
 	  break;
 
 	default:
-	  res [i] = *base;
+	  res[i] = *base;
 	  break;
       }
-  res [i] = '\0';
+  res[i] = '\0';
 
   return res;
 }
@@ -959,8 +970,8 @@ to_ada_name (const char *name, int *space_found)
   for (names = ada_reserved; *names; names++)
     if (!strcasecmp (name, *names))
       {
-	s [len2++] = 'c';
-	s [len2++] = '_';
+	s[len2++] = 'c';
+	s[len2++] = '_';
 	found = true;
 	break;
       }
@@ -970,23 +981,23 @@ to_ada_name (const char *name, int *space_found)
     for (names = c_duplicates; *names; names++)
       if (!strcmp (name, *names))
 	{
-	  s [len2++] = 'c';
-	  s [len2++] = '_';
+	  s[len2++] = 'c';
+	  s[len2++] = '_';
 	  found = true;
 	  break;
 	}
 
-  for (j = 0; name [j] == '_'; j++)
-    s [len2++] = 'u';
+  for (j = 0; name[j] == '_'; j++)
+    s[len2++] = 'u';
 
   if (j > 0)
-    s [len2++] = '_';
+    s[len2++] = '_';
   else if (*name == '.' || *name == '$')
     {
-      s [0] = 'a';
-      s [1] = 'n';
-      s [2] = 'o';
-      s [3] = 'n';
+      s[0] = 'a';
+      s[1] = 'n';
+      s[2] = 'o';
+      s[3] = 'n';
       len2 = 4;
       j++;
     }
@@ -994,57 +1005,57 @@ to_ada_name (const char *name, int *space_found)
   /* Replace unsuitable characters for Ada identifiers.  */
 
   for (; j < len; j++)
-    switch (name [j])
+    switch (name[j])
       {
 	case ' ':
 	  if (space_found)
 	    *space_found = true;
-	  s [len2++] = '_';
+	  s[len2++] = '_';
 	  break;
 
 	/* ??? missing some C++ operators.  */
 	case '=':
-	  s [len2++] = '_';
+	  s[len2++] = '_';
 
-	  if (name [j + 1] == '=')
+	  if (name[j + 1] == '=')
 	    {
 	      j++;
-	      s [len2++] = 'e';
-	      s [len2++] = 'q';
+	      s[len2++] = 'e';
+	      s[len2++] = 'q';
 	    }
 	  else
 	    {
-	      s [len2++] = 'a';
-	      s [len2++] = 's';
+	      s[len2++] = 'a';
+	      s[len2++] = 's';
 	    }
 	  break;
 
 	case '!':
-	  s [len2++] = '_';
-	  if (name [j + 1] == '=')
+	  s[len2++] = '_';
+	  if (name[j + 1] == '=')
 	    {
 	      j++;
-	      s [len2++] = 'n';
-	      s [len2++] = 'e';
+	      s[len2++] = 'n';
+	      s[len2++] = 'e';
 	    }
 	  break;
 
 	case '~':
-	  s [len2++] = '_';
-	  s [len2++] = 't';
-	  s [len2++] = 'i';
+	  s[len2++] = '_';
+	  s[len2++] = 't';
+	  s[len2++] = 'i';
 	  break;
 
 	case '&':
 	case '|':
 	case '^':
-	  s [len2++] = '_';
-	  s [len2++] = name [j] == '&' ? 'a' : name [j] == '|' ? 'o' : 'x';
+	  s[len2++] = '_';
+	  s[len2++] = name[j] == '&' ? 'a' : name[j] == '|' ? 'o' : 'x';
 
-	  if (name [j + 1] == '=')
+	  if (name[j + 1] == '=')
 	    {
 	      j++;
-	      s [len2++] = 'e';
+	      s[len2++] = 'e';
 	    }
 	  break;
 
@@ -1054,53 +1065,53 @@ to_ada_name (const char *name, int *space_found)
 	case '/':
 	case '(':
 	case '[':
-	  if (s [len2 - 1] != '_')
-	    s [len2++] = '_';
+	  if (s[len2 - 1] != '_')
+	    s[len2++] = '_';
 
-	  switch (name [j + 1]) {
+	  switch (name[j + 1]) {
 	    case '\0':
 	      j++;
-	      switch (name [j - 1]) {
-		case '+': s [len2++] = 'p'; break;  /* + */
-		case '-': s [len2++] = 'm'; break;  /* - */
-		case '*': s [len2++] = 't'; break;  /* * */
-		case '/': s [len2++] = 'd'; break;  /* / */
+	      switch (name[j - 1]) {
+		case '+': s[len2++] = 'p'; break;  /* + */
+		case '-': s[len2++] = 'm'; break;  /* - */
+		case '*': s[len2++] = 't'; break;  /* * */
+		case '/': s[len2++] = 'd'; break;  /* / */
 	      }
 	      break;
 
 	    case '=':
 	      j++;
-	      switch (name [j - 1]) {
-		case '+': s [len2++] = 'p'; break;  /* += */
-		case '-': s [len2++] = 'm'; break;  /* -= */
-		case '*': s [len2++] = 't'; break;  /* *= */
-		case '/': s [len2++] = 'd'; break;  /* /= */
+	      switch (name[j - 1]) {
+		case '+': s[len2++] = 'p'; break;  /* += */
+		case '-': s[len2++] = 'm'; break;  /* -= */
+		case '*': s[len2++] = 't'; break;  /* *= */
+		case '/': s[len2++] = 'd'; break;  /* /= */
 	      }
-	      s [len2++] = 'a';
+	      s[len2++] = 'a';
 	      break;
 
 	    case '-':  /* -- */
 	      j++;
-	      s [len2++] = 'm';
-	      s [len2++] = 'm';
+	      s[len2++] = 'm';
+	      s[len2++] = 'm';
 	      break;
 
 	    case '+':  /* ++ */
 	      j++;
-	      s [len2++] = 'p';
-	      s [len2++] = 'p';
+	      s[len2++] = 'p';
+	      s[len2++] = 'p';
 	      break;
 
 	    case ')':  /* () */
 	      j++;
-	      s [len2++] = 'o';
-	      s [len2++] = 'p';
+	      s[len2++] = 'o';
+	      s[len2++] = 'p';
 	      break;
 
 	    case ']':  /* [] */
 	      j++;
-	      s [len2++] = 'o';
-	      s [len2++] = 'b';
+	      s[len2++] = 'o';
+	      s[len2++] = 'b';
 	      break;
 	  }
 
@@ -1108,28 +1119,28 @@ to_ada_name (const char *name, int *space_found)
 
 	case '<':
 	case '>':
-	  c = name [j] == '<' ? 'l' : 'g';
-	  s [len2++] = '_';
+	  c = name[j] == '<' ? 'l' : 'g';
+	  s[len2++] = '_';
 
-	  switch (name [j + 1]) {
+	  switch (name[j + 1]) {
 	    case '\0':
-	      s [len2++] = c;
-	      s [len2++] = 't';
+	      s[len2++] = c;
+	      s[len2++] = 't';
 	      break;
 	    case '=':
 	      j++;
-	      s [len2++] = c;
-	      s [len2++] = 'e';
+	      s[len2++] = c;
+	      s[len2++] = 'e';
 	      break;
 	    case '>':
 	      j++;
-	      s [len2++] = 's';
-	      s [len2++] = 'r';
+	      s[len2++] = 's';
+	      s[len2++] = 'r';
 	      break;
 	    case '<':
 	      j++;
-	      s [len2++] = 's';
-	      s [len2++] = 'l';
+	      s[len2++] = 's';
+	      s[len2++] = 'l';
 	      break;
 	    default:
 	      break;
@@ -1137,18 +1148,18 @@ to_ada_name (const char *name, int *space_found)
 	  break;
 
 	case '_':
-	  if (len2 && s [len2 - 1] == '_')
-	    s [len2++] = 'u';
+	  if (len2 && s[len2 - 1] == '_')
+	    s[len2++] = 'u';
 	  /* fall through */
 
 	default:
-	  s [len2++] = name [j];
+	  s[len2++] = name[j];
       }
 
-  if (s [len2 - 1] == '_')
-    s [len2++] = 'u';
+  if (s[len2 - 1] == '_')
+    s[len2++] = 'u';
 
-  s [len2] = '\0';
+  s[len2] = '\0';
 
   return s;
 }
@@ -1365,7 +1376,7 @@ dump_ada_import (pretty_printer *buffer, tree t)
 
   if (is_stdcall)
     pp_string (buffer, "pragma Import (Stdcall, ");
-  else if (name [0] == '_' && name [1] == 'Z')
+  else if (name[0] == '_' && name[1] == 'Z')
     pp_string (buffer, "pragma Import (CPP, ");
   else
     pp_string (buffer, "pragma Import (C, ");
@@ -1422,7 +1433,7 @@ dump_ada_function_declaration (pretty_printer *buffer, tree func,
 {
   tree arg;
   const tree node = TREE_TYPE (func);
-  char buf [16];
+  char buf[16];
   int num = 0, num_args = 0, have_args = true, have_ellipsis = false;
 
   /* Compute number of arguments.  */
@@ -3060,7 +3071,7 @@ print_ada_struct_decl (pretty_printer *buffer, tree node, tree type,
   tree tmp;
   int is_union =
     TREE_CODE (node) == UNION_TYPE || TREE_CODE (node) == QUAL_UNION_TYPE;
-  char buf [16];
+  char buf[16];
   int field_num = 0;
   int field_spc = spc + INDENT_INCR;
   int need_semicolon;
@@ -3250,7 +3261,10 @@ dump_ads (const char *source_file,
   ads_name = xstrdup (pkg_name);
 
   for (s = ads_name; *s; s++)
-    *s = TOLOWER (*s);
+    if (*s == '.')
+      *s = '-';
+    else
+      *s = TOLOWER (*s);
 
   ads_name = reconcat (ads_name, ads_name, ".ads", NULL);
 
@@ -3314,7 +3328,7 @@ collect_source_ref (const char *filename)
     }
 
   for (i = 0; i < source_refs_used; i++)
-    if (filename == source_refs [i])
+    if (filename == source_refs[i])
       return;
 
   if (source_refs_used == source_refs_allocd)
@@ -3323,7 +3337,7 @@ collect_source_ref (const char *filename)
       source_refs = XRESIZEVEC (const char *, source_refs, source_refs_allocd);
     }
 
-  source_refs [source_refs_used++] = filename;
+  source_refs[source_refs_used++] = filename;
 }
 
 /* Main entry point: dump all Ada specs corresponding to SOURCE_REFS
@@ -3341,7 +3355,7 @@ dump_ada_specs (void (*collect_all_refs)(const char *),
 
   /* Iterate over the list of files to dump specs for */
   for (i = 0; i < source_refs_used; i++)
-    dump_ads (source_refs [i], collect_all_refs, cpp_check);
+    dump_ads (source_refs[i], collect_all_refs, cpp_check);
 
   /* Free files table.  */
   free (source_refs);

@@ -886,13 +886,13 @@ arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtemseabi*)
 	tm_file="${tm_file} arm/aout.h arm/arm.h"
 	;;
 avr-*-rtems*)
-	tm_file="elfos.h avr/elf.h avr/avr.h dbxelf.h avr/rtems.h rtems.h newlib-stdint.h"
+	tm_file="elfos.h avr/elf.h avr/avr-arch.h avr/avr.h dbxelf.h avr/rtems.h rtems.h newlib-stdint.h"
 	tmake_file="avr/t-avr avr/t-multilib t-rtems avr/t-rtems"
 	extra_gcc_objs="driver-avr.o avr-devices.o"
 	extra_objs="avr-devices.o avr-log.o"
 	;;
 avr-*-*)
-	tm_file="elfos.h avr/elf.h avr/avr.h dbxelf.h avr/avr-stdint.h"
+	tm_file="elfos.h avr/elf.h avr/avr-arch.h avr/avr.h dbxelf.h avr/avr-stdint.h"
 	if test x${with_avrlibc} != xno; then
 	    tm_file="${tm_file} ${cpu_type}/avrlibc.h"
 	    tm_defines="${tm_defines} WITH_AVRLIBC"
@@ -1017,10 +1017,15 @@ hppa*-*-linux*)
 	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h pa/pa-linux.h \
 		 pa/pa32-regs.h pa/pa32-linux.h"
 	;;
-# port not yet contributed.
-#hppa*-*-openbsd*)
-#	target_cpu_default="MASK_PA_11"
-#	;;
+hppa*-*-openbsd*)
+	target_cpu_default="MASK_PA_11"
+	tm_file="${tm_file} dbxelf.h elfos.h openbsd.h openbsd-stdint.h openbsd-libpthread.h \
+		 pa/pa-openbsd.h pa/pa32-regs.h pa/pa32-openbsd.h"
+	tmake_file="${tmake_file} pa/t-openbsd"
+	extra_options="${extra_options} openbsd.opt"
+	gas=yes
+	gnu_ld=yes
+	;;
 hppa[12]*-*-hpux10*)
 	case ${target} in
 	hppa1.1-*-* | hppa2*-*-*)
@@ -1741,6 +1746,11 @@ mips*-*-linux*)				# Linux MIPS, either endian.
 		tm_defines="${tm_defines} MIPS_ISA_DEFAULT=32"
         esac
 	test x$with_llsc != x || with_llsc=yes
+	;;
+mips*-mti-elf*)
+	tm_file="elfos.h newlib-stdint.h ${tm_file} mips/elf.h mips/sde.h mips/mti-elf.h"
+	tmake_file="mips/t-mti-elf"
+	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=33 MIPS_ABI_DEFAULT=ABI_32"
 	;;
 mips*-sde-elf*)
 	tm_file="elfos.h newlib-stdint.h ${tm_file} mips/elf.h mips/sde.h"

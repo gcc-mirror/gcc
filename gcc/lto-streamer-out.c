@@ -155,6 +155,7 @@ lto_output_location_bitpack (struct bitpack_d *bp,
 {
   expanded_location xloc;
 
+  loc = LOCATION_LOCUS (loc);
   bp_pack_value (bp, loc == UNKNOWN_LOCATION, 1);
   if (loc == UNKNOWN_LOCATION)
     return;
@@ -796,7 +797,6 @@ output_function (struct cgraph_node *node)
   gcc_assert (current_function_decl == NULL_TREE && cfun == NULL);
 
   /* Set current_function_decl and cfun.  */
-  current_function_decl = function;
   push_cfun (fn);
 
   /* Make string 0 be a NULL string.  */
@@ -850,7 +850,6 @@ output_function (struct cgraph_node *node)
 
   destroy_output_block (ob);
 
-  current_function_decl = NULL;
   pop_cfun ();
 }
 

@@ -33,10 +33,11 @@ enum opt_levels
   OPT_LEVELS_ALL, /* All levels (used by targets to disable options
 		     enabled in target-independent code).  */
   OPT_LEVELS_0_ONLY, /* -O0 only.  */
-  OPT_LEVELS_1_PLUS, /* -O1 and above, including -Os.  */
-  OPT_LEVELS_1_PLUS_SPEED_ONLY, /* -O1 and above, but not -Os.  */
+  OPT_LEVELS_1_PLUS, /* -O1 and above, including -Os and -Og.  */
+  OPT_LEVELS_1_PLUS_SPEED_ONLY, /* -O1 and above, but not -Os or -Og.  */
+  OPT_LEVELS_1_PLUS_NOT_DEBUG, /* -O1 and above, but not -Og.  */
   OPT_LEVELS_2_PLUS, /* -O2 and above, including -Os.  */
-  OPT_LEVELS_2_PLUS_SPEED_ONLY, /* -O2 and above, but not -Os.  */
+  OPT_LEVELS_2_PLUS_SPEED_ONLY, /* -O2 and above, but not -Os or -Og.  */
   OPT_LEVELS_3_PLUS, /* -O3 and above.  */
   OPT_LEVELS_3_PLUS_AND_SIZE, /* -O3 and above and -Os.  */
   OPT_LEVELS_SIZE, /* -Os only.  */

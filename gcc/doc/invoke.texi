@@ -166,7 +166,7 @@ in the following sections.
 -pipe  -pass-exit-codes  @gol
 -x @var{language}  -v  -###  --help@r{[}=@var{class}@r{[},@dots{}@r{]]}  --target-help  @gol
 --version -wrapper @@@var{file} -fplugin=@var{file} -fplugin-arg-@var{name}=@var{arg}  @gol
--fdump-ada-spec@r{[}-slim@r{]} -fdump-go-spec=@var{file}}
+-fdump-ada-spec@r{[}-slim@r{]} -fada-spec-parent=@var{arg} -fdump-go-spec=@var{file}}
 
 @item C Language Options
 @xref{C Dialect Options,,Options Controlling C Dialect}.
@@ -324,7 +324,7 @@ Objective-C and Objective-C++ Dialects}.
 -fdump-tree-storeccp@r{[}-@var{n}@r{]} @gol
 -fdump-final-insns=@var{file} @gol
 -fcompare-debug@r{[}=@var{opts}@r{]}  -fcompare-debug-second @gol
--feliminate-dwarf2-dups -feliminate-unused-debug-types @gol
+-feliminate-dwarf2-dups -fno-eliminate-unused-debug-types @gol
 -feliminate-unused-debug-symbols -femit-class-debug-always @gol
 -fenable-@var{kind}-@var{pass} @gol
 -fenable-@var{kind}-@var{pass}=@var{range-list} @gol
@@ -422,7 +422,7 @@ Objective-C and Objective-C++ Dialects}.
 -fvariable-expansion-in-unroller -fvect-cost-model -fvpt -fweb @gol
 -fwhole-program -fwpa -fuse-linker-plugin @gol
 --param @var{name}=@var{value}
--O  -O0  -O1  -O2  -O3  -Os -Ofast}
+-O  -O0  -O1  -O2  -O3  -Os -Ofast -Og}
 
 @item Preprocessor Options
 @xref{Preprocessor Options,,Options Controlling the Preprocessor}.
@@ -777,7 +777,7 @@ Objective-C and Objective-C++ Dialects}.
 -mno-crt0  -mrelax -mliw -msetlb}
 
 @emph{Moxie Options}
-@gccoptlist{-meb  -mel}
+@gccoptlist{-meb -mel -mno-crt0}
 
 @emph{PDP-11 Options}
 @gccoptlist{-mfpu  -msoft-float  -mac0  -mno-ac0  -m40  -m45  -m10 @gol
@@ -6192,17 +6192,18 @@ anything else.
 Print the compiler's built-in specs---and don't do anything else.  (This
 is used when GCC itself is being built.)  @xref{Spec Files}.
 
-@item -feliminate-unused-debug-types
+@item -fno-eliminate-unused-debug-types
 @opindex feliminate-unused-debug-types
-Normally, when producing DWARF 2 output, GCC emits debugging
+@opindex fno-eliminate-unused-debug-types
+Normally, when producing DWARF 2 output, GCC avoids producing debug symbol 
+output for types that are nowhere used in the source file being compiled.
+Sometimes it is useful to have GCC emit debugging
 information for all types declared in a compilation
 unit, regardless of whether or not they are actually used
-in that compilation unit.  Sometimes this is useful, such as
+in that compilation unit, for example 
 if, in the debugger, you want to cast a value to a type that is
 not actually used in your program (but is declared).  More often,
 however, this results in a significant amount of wasted space.
-With this option, GCC avoids producing debug symbol output
-for types that are nowhere used in the source file being compiled.
 @end table
 
 @node Optimize Options
@@ -6362,6 +6363,14 @@ Disregard strict standards compliance.  @option{-Ofast} enables all
 valid for all standard-compliant programs.
 It turns on @option{-ffast-math} and the Fortran-specific
 @option{-fno-protect-parens} and @option{-fstack-arrays}.
+
+@item -Og
+@opindex Og
+Optimize debugging experience.  @option{-Og} enables optimizations
+that do not interfere with debugging. It should be the optimization
+level of choice for the standard edit-compile-debug cycle, offering
+a reasonable level of optimization while maintaining fast compilation
+and a good debugging experience.
 
 If you use multiple @option{-O} options, with or without level numbers,
 the last such option is the one that is effective.
@@ -16466,6 +16475,10 @@ configurations.
 @item -mel
 @opindex mel
 Generate little-endian code.
+
+@item -mno-crt0
+@opindex mno-crt0
+Do not link in the C run-time initialization object file.
 
 @end table
 

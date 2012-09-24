@@ -424,8 +424,8 @@ gimple_build_assign_stat (tree lhs, tree rhs MEM_STAT_DECL)
   tree op1, op2, op3;
 
   extract_ops_from_tree_1 (rhs, &subcode, &op1, &op2, &op3);
-  return gimple_build_assign_with_ops_stat (subcode, lhs, op1, op2, op3
-  					    PASS_MEM_STAT);
+  return gimple_build_assign_with_ops (subcode, lhs, op1, op2, op3
+				       PASS_MEM_STAT);
 }
 
 
@@ -434,8 +434,8 @@ gimple_build_assign_stat (tree lhs, tree rhs MEM_STAT_DECL)
    GIMPLE_UNARY_RHS or GIMPLE_SINGLE_RHS.  */
 
 gimple
-gimple_build_assign_with_ops_stat (enum tree_code subcode, tree lhs, tree op1,
-                                   tree op2, tree op3 MEM_STAT_DECL)
+gimple_build_assign_with_ops (enum tree_code subcode, tree lhs, tree op1,
+			      tree op2, tree op3 MEM_STAT_DECL)
 {
   unsigned num_ops;
   gimple p;
@@ -461,6 +461,14 @@ gimple_build_assign_with_ops_stat (enum tree_code subcode, tree lhs, tree op1,
     }
 
   return p;
+}
+
+gimple
+gimple_build_assign_with_ops (enum tree_code subcode, tree lhs, tree op1,
+			      tree op2 MEM_STAT_DECL)
+{
+  return gimple_build_assign_with_ops (subcode, lhs, op1, op2, NULL_TREE
+				       PASS_MEM_STAT);
 }
 
 
@@ -848,10 +856,7 @@ gimple_build_debug_bind_stat (tree var, tree value, gimple stmt MEM_STAT_DECL)
   gimple_debug_bind_set_var (p, var);
   gimple_debug_bind_set_value (p, value);
   if (stmt)
-    {
-      gimple_set_block (p, gimple_block (stmt));
-      gimple_set_location (p, gimple_location (stmt));
-    }
+    gimple_set_location (p, gimple_location (stmt));
 
   return p;
 }
@@ -872,10 +877,7 @@ gimple_build_debug_source_bind_stat (tree var, tree value,
   gimple_debug_source_bind_set_var (p, var);
   gimple_debug_source_bind_set_value (p, value);
   if (stmt)
-    {
-      gimple_set_block (p, gimple_block (stmt));
-      gimple_set_location (p, gimple_location (stmt));
-    }
+    gimple_set_location (p, gimple_location (stmt));
 
   return p;
 }
@@ -2331,23 +2333,20 @@ gimple_copy (gimple stmt)
     }
 
   /* Make copy of operands.  */
-  if (num_ops > 0)
+  for (i = 0; i < num_ops; i++)
+    gimple_set_op (copy, i, unshare_expr (gimple_op (stmt, i)));
+
+  if (gimple_has_mem_ops (stmt))
     {
-      for (i = 0; i < num_ops; i++)
-	gimple_set_op (copy, i, unshare_expr (gimple_op (stmt, i)));
+      gimple_set_vdef (copy, gimple_vdef (stmt));
+      gimple_set_vuse (copy, gimple_vuse (stmt));
+    }
 
-      /* Clear out SSA operand vectors on COPY.  */
-      if (gimple_has_ops (stmt))
-	{
-	  gimple_set_def_ops (copy, NULL);
-	  gimple_set_use_ops (copy, NULL);
-	}
-
-      if (gimple_has_mem_ops (stmt))
-	{
-	  gimple_set_vdef (copy, gimple_vdef (stmt));
-	  gimple_set_vuse (copy, gimple_vuse (stmt));
-	}
+  /* Clear out SSA operand vectors on COPY.  */
+  if (gimple_has_ops (stmt))
+    {
+      gimple_set_def_ops (copy, NULL);
+      gimple_set_use_ops (copy, NULL);
 
       /* SSA operands need to be updated.  */
       gimple_set_modified (copy, true);
@@ -2995,7 +2994,6 @@ gimple_call_copy_skip_args (gimple stmt, bitmap args_to_skip)
   gimple_set_vuse (new_stmt, gimple_vuse (stmt));
   gimple_set_vdef (new_stmt, gimple_vdef (stmt));
 
-  gimple_set_block (new_stmt, gimple_block (stmt));
   if (gimple_has_location (stmt))
     gimple_set_location (new_stmt, gimple_location (stmt));
   gimple_call_copy_flags (new_stmt, stmt);

@@ -1,3 +1,27 @@
+2012-09-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/52432
+	* pt.c (tsubst_copy_and_build): If tf_error is not set in the complain
+	argument don't call unqualified_name_lookup_error.
+
+2012-09-19  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/54581
+	* semantics.c (finish_decltype_type): Make vectors not opaque.
+
+2012-09-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/54575
+	* pt.c (instantiate_alias_template): New.
+	(tsubst): Use it.
+	(push_access_scope): Allow TYPE_DECL.
+
+2012-09-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53661
+	* typeck2.c (check_narrowing): Avoid false positives on conversion
+	from enumeral type.
+
 2012-09-14  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/54427

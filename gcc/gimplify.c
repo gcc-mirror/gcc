@@ -2615,7 +2615,6 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
 	    = CALL_EXPR_RETURN_SLOT_OPT (call);
 	  CALL_FROM_THUNK_P (*expr_p) = CALL_FROM_THUNK_P (call);
 	  SET_EXPR_LOCATION (*expr_p, EXPR_LOCATION (call));
-	  TREE_BLOCK (*expr_p) = TREE_BLOCK (call);
 
 	  /* Set CALL_EXPR_VA_ARG_PACK.  */
 	  CALL_EXPR_VA_ARG_PACK (*expr_p) = 1;
@@ -8291,14 +8290,12 @@ flag_instrument_functions_exclude_p (tree fndecl)
 void
 gimplify_function_tree (tree fndecl)
 {
-  tree oldfn, parm, ret;
+  tree parm, ret;
   gimple_seq seq;
   gimple bind;
 
   gcc_assert (!gimple_body (fndecl));
 
-  oldfn = current_function_decl;
-  current_function_decl = fndecl;
   if (DECL_STRUCT_FUNCTION (fndecl))
     push_cfun (DECL_STRUCT_FUNCTION (fndecl));
   else
@@ -8383,7 +8380,6 @@ gimplify_function_tree (tree fndecl)
   DECL_SAVED_TREE (fndecl) = NULL_TREE;
   cfun->curr_properties = PROP_gimple_any;
 
-  current_function_decl = oldfn;
   pop_cfun ();
 }
 

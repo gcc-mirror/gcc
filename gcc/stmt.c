@@ -2483,7 +2483,7 @@ emit_case_nodes (rtx index, case_node_ptr node, rtx default_label,
 		 then emit the code for one side at a time.  */
 
 	      tree test_label
-		= build_decl (CURR_INSN_LOCATION,
+		= build_decl (curr_insn_location (),
 			      LABEL_DECL, NULL_TREE, NULL_TREE);
 
 	      /* See if the value is on the right.  */
@@ -2607,7 +2607,7 @@ emit_case_nodes (rtx index, case_node_ptr node, rtx default_label,
 	      /* Right hand node requires testing.
 		 Branch to a label where we will handle it later.  */
 
-	      test_label = build_decl (CURR_INSN_LOCATION,
+	      test_label = build_decl (curr_insn_location (),
 				       LABEL_DECL, NULL_TREE, NULL_TREE);
 	      emit_cmp_and_jump_insns (index,
 				       convert_modes

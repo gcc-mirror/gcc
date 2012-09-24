@@ -1,0 +1,35 @@
+# Copyright (C) 2012 Free Software Foundation, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+MULTILIB_OPTIONS = mips32/mips64/mips64r2 mips16 mabi=64 EL msoft-float
+MULTILIB_DIRNAMES = mips32 mips64 mips64r2 mips16 64 el sof
+MULTILIB_MATCHES = EL=mel EB=meb
+
+# We do not want to build mips16 versions of mips64* architectures.
+MULTILIB_EXCEPTIONS += *mips64*/*mips16*
+
+# 64 bit ABI is not supported on mips32 architecture.
+MULTILIB_EXCEPTIONS += *mips32*/*mabi=64*
+
+# The 64 bit ABI is not supported on the mips32r2 bit architecture.
+# Because mips32r2 is the default the exception list is a little messy.
+# Basically we are saying any list that doesn't specify mips32, mips64,
+# or mips64r2 but does specify mabi=64 is not allowed because that
+# would be defaulting to the mips32r2 architecture.
+MULTILIB_EXCEPTIONS += mabi=64*
+MULTILIB_EXCEPTIONS += mips16/mabi=64*

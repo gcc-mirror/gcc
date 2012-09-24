@@ -17,6 +17,11 @@ __go_int_to_string (int v)
   unsigned char *retdata;
   struct __go_string ret;
 
+  /* A negative value is not valid UTF-8; turn it into the replacement
+     character.  */
+  if (v < 0)
+    v = 0xfffd;
+
   if (v <= 0x7f)
     {
       buf[0] = v;
@@ -33,6 +38,10 @@ __go_int_to_string (int v)
       /* If the value is out of range for UTF-8, turn it into the
 	 "replacement character".  */
       if (v > 0x10ffff)
+	v = 0xfffd;
+      /* If the value is a surrogate pair, which is invalid in UTF-8,
+	 turn it into the replacement character.  */
+      if (v >= 0xd800 && v < 0xe000)
 	v = 0xfffd;
 
       if (v <= 0xffff)

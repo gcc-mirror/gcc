@@ -524,10 +524,6 @@
   (ior (match_operand 0 "imm_for_neon_inv_logic_operand")
        (match_operand 0 "s_register_operand")))
 
-;; TODO: We could check lane numbers more precisely based on the mode.
-(define_predicate "neon_lane_number"
-  (and (match_code "const_int")
-       (match_test "INTVAL (op) >= 0 && INTVAL (op) <= 15")))
 ;; Predicates for named expanders that overlap multiple ISAs.
 
 (define_predicate "cmpdi_operand"

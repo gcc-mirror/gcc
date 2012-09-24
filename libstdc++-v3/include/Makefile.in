@@ -97,6 +97,7 @@ CNUMERIC_CC = @CNUMERIC_CC@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CPU_DEFINES_SRCDIR = @CPU_DEFINES_SRCDIR@
+CPU_OPT_EXT_RANDOM = @CPU_OPT_EXT_RANDOM@
 CSTDIO_H = @CSTDIO_H@
 CTIME_CC = @CTIME_CC@
 CTIME_H = @CTIME_H@
@@ -161,7 +162,6 @@ PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PDFLATEX = @PDFLATEX@
-PIC_CXXFLAGS = @PIC_CXXFLAGS@
 RANLIB = @RANLIB@
 SECTION_FLAGS = @SECTION_FLAGS@
 SECTION_LDFLAGS = @SECTION_LDFLAGS@
@@ -209,7 +209,10 @@ glibcxx_MOFILES = @glibcxx_MOFILES@
 glibcxx_PCHFLAGS = @glibcxx_PCHFLAGS@
 glibcxx_POFILES = @glibcxx_POFILES@
 glibcxx_builddir = @glibcxx_builddir@
+glibcxx_compiler_pic_flag = @glibcxx_compiler_pic_flag@
+glibcxx_compiler_shared_flag = @glibcxx_compiler_shared_flag@
 glibcxx_localedir = @glibcxx_localedir@
+glibcxx_lt_pic_flag = @glibcxx_lt_pic_flag@
 glibcxx_prefixdir = @glibcxx_prefixdir@
 glibcxx_srcdir = @glibcxx_srcdir@
 glibcxx_toolexecdir = @glibcxx_toolexecdir@
@@ -785,11 +788,15 @@ ext_headers = \
 	${ext_srcdir}/vstring.tcc \
 	${ext_srcdir}/vstring_fwd.h \
 	${ext_srcdir}/vstring_util.h \
-	${ext_compat_headers}
+	${ext_compat_headers} \
+	${ext_host_headers}
 
 ext_compat_headers = \
 	${backward_srcdir}/hash_set \
 	${backward_srcdir}/hash_map
+
+ext_host_headers = \
+	${glibcxx_srcdir}/${CPU_OPT_EXT_RANDOM}
 
 tr1_srcdir = ${glibcxx_srcdir}/include/tr1
 tr1_builddir = ./tr1

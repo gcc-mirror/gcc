@@ -1,5 +1,3 @@
--- { dg-do compile }
-
 package Nested_Float_Packed is
 
    type Float_Type is record
@@ -20,5 +18,3 @@ package Nested_Float_Packed is
    Data_Block : array (Range_Type)
      of Data_Type := (others => Default_Data);
 end;
-
-

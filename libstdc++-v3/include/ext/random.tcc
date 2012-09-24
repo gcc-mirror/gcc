@@ -202,71 +202,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
 
-#ifdef  __SSE2__
-
-  namespace {
-
-    template<size_t __sl1, size_t __sl2, size_t __sr1, size_t __sr2,
-	     uint32_t __msk1, uint32_t __msk2, uint32_t __msk3, uint32_t __msk4>
-      inline __m128i __sse2_recursion(__m128i __a, __m128i __b,
-				      __m128i __c, __m128i __d)
-      {
-	__m128i __y = _mm_srli_epi32(__b, __sr1);
-	__m128i __z = _mm_srli_si128(__c, __sr2);
-	__m128i __v = _mm_slli_epi32(__d, __sl1);
-	__z = _mm_xor_si128(__z, __a);
-	__z = _mm_xor_si128(__z, __v);
-	__m128i __x = _mm_slli_si128(__a, __sl2);
-	__y = _mm_and_si128(__y, _mm_set_epi32(__msk4, __msk3, __msk2, __msk1));
-	__z = _mm_xor_si128(__z, __x);
-	return _mm_xor_si128(__z, __y);
-      }
-
-  }
-
-
-  template<typename _UIntType, size_t __m,
-	   size_t __pos1, size_t __sl1, size_t __sl2,
-	   size_t __sr1, size_t __sr2,
-	   uint32_t __msk1, uint32_t __msk2,
-	   uint32_t __msk3, uint32_t __msk4,
-	   uint32_t __parity1, uint32_t __parity2,
-	   uint32_t __parity3, uint32_t __parity4>
-    void simd_fast_mersenne_twister_engine<_UIntType, __m,
-					   __pos1, __sl1, __sl2, __sr1, __sr2,
-					   __msk1, __msk2, __msk3, __msk4,
-					   __parity1, __parity2, __parity3,
-					   __parity4>::
-    _M_gen_rand(void)
-    {
-      __m128i __r1 = _mm_load_si128(&_M_state[_M_nstate - 2]);
-      __m128i __r2 = _mm_load_si128(&_M_state[_M_nstate - 1]);
-
-      size_t __i;
-      for (__i = 0; __i < _M_nstate - __pos1; ++__i)
-	{
-	  __m128i __r = __sse2_recursion<__sl1, __sl2, __sr1, __sr2,
-					 __msk1, __msk2, __msk3, __msk4>
-	    (_M_state[__i], _M_state[__i + __pos1], __r1, __r2);
-	  _mm_store_si128(&_M_state[__i], __r);
-	  __r1 = __r2;
-	  __r2 = __r;
-	}
-      for (; __i < _M_nstate; ++__i)
-	{
-	  __m128i __r = __sse2_recursion<__sl1, __sl2, __sr1, __sr2,
-					 __msk1, __msk2, __msk3, __msk4>
-	    (_M_state[__i], _M_state[__i + __pos1 - _M_nstate], __r1, __r2);
-	  _mm_store_si128(&_M_state[__i], __r);
-	  __r1 = __r2;
-	  __r2 = __r;
-	}
-
-      _M_pos = 0;
-    }
-
-
-#else
+#ifndef  _GLIBCXX_OPT_HAVE_RANDOM_SFMT_GEN_READ
 
   namespace {
 
@@ -374,6 +310,34 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #endif
 
+#ifndef _GLIBCXX_OPT_HAVE_RANDOM_SFMT_OPERATOREQUAL
+  template<typename _UIntType, size_t __m,
+	   size_t __pos1, size_t __sl1, size_t __sl2,
+	   size_t __sr1, size_t __sr2,
+	   uint32_t __msk1, uint32_t __msk2,
+	   uint32_t __msk3, uint32_t __msk4,
+	   uint32_t __parity1, uint32_t __parity2,
+	   uint32_t __parity3, uint32_t __parity4>
+    bool
+    operator==(const __gnu_cxx::simd_fast_mersenne_twister_engine<_UIntType,
+	       __m, __pos1, __sl1, __sl2, __sr1, __sr2,
+	       __msk1, __msk2, __msk3, __msk4,
+	       __parity1, __parity2, __parity3, __parity4>& __lhs,
+	       const __gnu_cxx::simd_fast_mersenne_twister_engine<_UIntType,
+	       __m, __pos1, __sl1, __sl2, __sr1, __sr2,
+	       __msk1, __msk2, __msk3, __msk4,
+	       __parity1, __parity2, __parity3, __parity4>& __rhs)
+    {
+      typedef __gnu_cxx::simd_fast_mersenne_twister_engine<_UIntType,
+	       __m, __pos1, __sl1, __sl2, __sr1, __sr2,
+	       __msk1, __msk2, __msk3, __msk4,
+	       __parity1, __parity2, __parity3, __parity4> __engine;
+      return (std::equal(__lhs._M_stateT,
+			 __lhs._M_stateT + __engine::state_size,
+			 __rhs._M_stateT)
+	      && __lhs._M_pos == __rhs._M_pos);
+    }
+#endif
 
   template<typename _UIntType, size_t __m,
 	   size_t __pos1, size_t __sl1, size_t __sl2,
@@ -809,12 +773,140 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const typename __ios_base::fmtflags __flags = __is.flags();
       __is.flags(__ios_base::dec | __ios_base::skipws);
 
-      _RealType __nu, __sigma;
-      __is >> __nu >> __sigma;
+      _RealType __nu_val, __sigma_val;
+      __is >> __nu_val >> __sigma_val;
       __is >> __x._M_ndx;
       __is >> __x._M_ndy;
       __x.param(typename rice_distribution<_RealType>::
-		param_type(__nu, __sigma));
+		param_type(__nu_val, __sigma_val));
+
+      __is.flags(__flags);
+      return __is;
+    }
+
+
+  template<typename _RealType>
+    template<typename _OutputIterator,
+	     typename _UniformRandomNumberGenerator>
+      void
+      nakagami_distribution<_RealType>::
+      __generate_impl(_OutputIterator __f, _OutputIterator __t,
+		      _UniformRandomNumberGenerator& __urng,
+		      const param_type& __p)
+      {
+	__glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator>)
+
+	typename std::gamma_distribution<result_type>::param_type
+	  __pg(__p.mu(), __p.omega() / __p.mu());
+	while (__f != __t)
+	  *__f++ = std::sqrt(this->_M_gd(__pg, __urng));
+      }
+
+  template<typename _RealType, typename _CharT, typename _Traits>
+    std::basic_ostream<_CharT, _Traits>&
+    operator<<(std::basic_ostream<_CharT, _Traits>& __os,
+	       const nakagami_distribution<_RealType>& __x)
+    {
+      typedef std::basic_ostream<_CharT, _Traits>  __ostream_type;
+      typedef typename __ostream_type::ios_base    __ios_base;
+
+      const typename __ios_base::fmtflags __flags = __os.flags();
+      const _CharT __fill = __os.fill();
+      const std::streamsize __precision = __os.precision();
+      const _CharT __space = __os.widen(' ');
+      __os.flags(__ios_base::scientific | __ios_base::left);
+      __os.fill(__space);
+      __os.precision(std::numeric_limits<_RealType>::max_digits10);
+
+      __os << __x.mu() << __space << __x.omega();
+      __os << __space << __x._M_gd;
+
+      __os.flags(__flags);
+      __os.fill(__fill);
+      __os.precision(__precision);
+      return __os;
+    }
+
+  template<typename _RealType, typename _CharT, typename _Traits>
+    std::basic_istream<_CharT, _Traits>&
+    operator>>(std::basic_istream<_CharT, _Traits>& __is,
+	       nakagami_distribution<_RealType>& __x)
+    {
+      typedef std::basic_istream<_CharT, _Traits>  __istream_type;
+      typedef typename __istream_type::ios_base    __ios_base;
+
+      const typename __ios_base::fmtflags __flags = __is.flags();
+      __is.flags(__ios_base::dec | __ios_base::skipws);
+
+      _RealType __mu_val, __omega_val;
+      __is >> __mu_val >> __omega_val;
+      __is >> __x._M_gd;
+      __x.param(typename nakagami_distribution<_RealType>::
+		param_type(__mu_val, __omega_val));
+
+      __is.flags(__flags);
+      return __is;
+    }
+
+
+  template<typename _RealType>
+    template<typename _OutputIterator,
+	     typename _UniformRandomNumberGenerator>
+      void
+      pareto_distribution<_RealType>::
+      __generate_impl(_OutputIterator __f, _OutputIterator __t,
+		      _UniformRandomNumberGenerator& __urng,
+		      const param_type& __p)
+      {
+	__glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator>)
+
+	result_type __mu_val = __p.mu();
+	result_type __malphinv = -result_type(1) / __p.alpha();
+	while (__f != __t)
+	  *__f++ = __mu_val * std::pow(this->_M_ud(__urng), __malphinv);
+      }
+
+  template<typename _RealType, typename _CharT, typename _Traits>
+    std::basic_ostream<_CharT, _Traits>&
+    operator<<(std::basic_ostream<_CharT, _Traits>& __os,
+	       const pareto_distribution<_RealType>& __x)
+    {
+      typedef std::basic_ostream<_CharT, _Traits>  __ostream_type;
+      typedef typename __ostream_type::ios_base    __ios_base;
+
+      const typename __ios_base::fmtflags __flags = __os.flags();
+      const _CharT __fill = __os.fill();
+      const std::streamsize __precision = __os.precision();
+      const _CharT __space = __os.widen(' ');
+      __os.flags(__ios_base::scientific | __ios_base::left);
+      __os.fill(__space);
+      __os.precision(std::numeric_limits<_RealType>::max_digits10);
+
+      __os << __x.alpha() << __space << __x.mu();
+      __os << __space << __x._M_ud;
+
+      __os.flags(__flags);
+      __os.fill(__fill);
+      __os.precision(__precision);
+      return __os;
+    }
+
+  template<typename _RealType, typename _CharT, typename _Traits>
+    std::basic_istream<_CharT, _Traits>&
+    operator>>(std::basic_istream<_CharT, _Traits>& __is,
+	       pareto_distribution<_RealType>& __x)
+    {
+      typedef std::basic_istream<_CharT, _Traits>  __istream_type;
+      typedef typename __istream_type::ios_base    __ios_base;
+
+      const typename __ios_base::fmtflags __flags = __is.flags();
+      __is.flags(__ios_base::dec | __ios_base::skipws);
+
+      _RealType __alpha_val, __mu_val;
+      __is >> __alpha_val >> __mu_val;
+      __is >> __x._M_ud;
+      __x.param(typename pareto_distribution<_RealType>::
+		param_type(__alpha_val, __mu_val));
 
       __is.flags(__flags);
       return __is;

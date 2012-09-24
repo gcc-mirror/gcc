@@ -38,6 +38,11 @@
 #define PASS_MEM_STAT , ALONE_PASS_MEM_STAT
 #define FINAL_PASS_MEM_STAT , ALONE_FINAL_PASS_MEM_STAT
 #define MEM_STAT_INFO , ALONE_MEM_STAT_INFO
+#if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8)
+#define CXX_MEM_STAT_INFO , const char * _loc_name = __builtin_FILE (), int _loc_line = __builtin_LINE (), const char * _loc_function = __builtin_FUNCTION ()
+#else
+#define CXX_MEM_STAT_INFO , const char * _loc_name = __FILE__, int _loc_line = __LINE__, const char * _loc_function = NULL
+#endif
 #else
 #define ALONE_MEM_STAT_DECL void
 #define ALONE_FINAL_MEM_STAT_DECL GCC_MEM_STAT_ARGUMENTS
@@ -49,6 +54,7 @@
 #define PASS_MEM_STAT
 #define FINAL_PASS_MEM_STAT , ALONE_FINAL_PASS_MEM_STAT
 #define MEM_STAT_INFO ALONE_MEM_STAT_INFO
+#define CXX_MEM_STAT_INFO
 #endif
 
 struct function;

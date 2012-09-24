@@ -210,10 +210,6 @@ struct GTY((chain_next ("%h.next"))) gimple_statement_base {
      and the prev pointer being the last.  */
   gimple next;
   gimple GTY((skip)) prev;
-
-  /* [ WORD 6 ]
-     Lexical block holding this statement.  */
-  tree block;
 };
 
 
@@ -744,12 +740,12 @@ gimple gimple_build_assign_stat (tree, tree MEM_STAT_DECL);
 
 void extract_ops_from_tree_1 (tree, enum tree_code *, tree *, tree *, tree *);
 
-gimple gimple_build_assign_with_ops_stat (enum tree_code, tree, tree,
-					  tree, tree MEM_STAT_DECL);
-#define gimple_build_assign_with_ops(c,o1,o2,o3)			\
-  gimple_build_assign_with_ops_stat (c, o1, o2, o3, NULL_TREE MEM_STAT_INFO)
-#define gimple_build_assign_with_ops3(c,o1,o2,o3,o4)			\
-  gimple_build_assign_with_ops_stat (c, o1, o2, o3, o4 MEM_STAT_INFO)
+gimple
+gimple_build_assign_with_ops (enum tree_code, tree,
+			      tree, tree CXX_MEM_STAT_INFO);
+gimple
+gimple_build_assign_with_ops (enum tree_code, tree,
+			      tree, tree, tree CXX_MEM_STAT_INFO);
 
 gimple gimple_build_debug_bind_stat (tree, tree, gimple MEM_STAT_DECL);
 #define gimple_build_debug_bind(var,val,stmt)			\
@@ -1197,7 +1193,7 @@ gimple_bb (const_gimple g)
 static inline tree
 gimple_block (const_gimple g)
 {
-  return g->gsbase.block;
+  return LOCATION_BLOCK (g->gsbase.location);
 }
 
 
@@ -1206,7 +1202,11 @@ gimple_block (const_gimple g)
 static inline void
 gimple_set_block (gimple g, tree block)
 {
-  g->gsbase.block = block;
+  if (block)
+    g->gsbase.location =
+	COMBINE_LOCATION_DATA (line_table, g->gsbase.location, block);
+  else
+    g->gsbase.location = LOCATION_LOCUS (g->gsbase.location);
 }
 
 
@@ -1241,7 +1241,7 @@ gimple_set_location (gimple g, location_t location)
 static inline bool
 gimple_has_location (const_gimple g)
 {
-  return gimple_location (g) != UNKNOWN_LOCATION;
+  return !IS_UNKNOWN_LOCATION (gimple_location (g));
 }
 
 

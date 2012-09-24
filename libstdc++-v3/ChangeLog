@@ -1,3 +1,138 @@
+2012-09-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	Revert:
+	2012-09-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/stl_algobase.h (max, min): Use conditional operator.
+
+2012-09-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR libstdc++/54675
+	* include/ext/random: Avoid the badname __alpha (and, for
+	consistency, __mu, __nu, __sigma and __omega too).
+	* include/bits/random.tcc: Likewise.
+
+2012-09-21  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* include/ext/random: Add __gnu_cxx::pareto_distribution<> class.
+	* include/ext/random.tcc: Add out-of-line functions for
+	__gnu_cxx::pareto_distribution<>.
+	* testsuite/ext/random/pareto_distribution/operators/equal.cc: New file.
+	* testsuite/ext/random/pareto_distribution/operators/serialize.cc:
+	New file.
+	* testsuite/ext/random/pareto_distribution/operators/inequal.cc:
+	New file.
+	* testsuite/ext/random/pareto_distribution/cons/parms.cc: New file.
+	* testsuite/ext/random/pareto_distribution/cons/default.cc: New file.
+	* testsuite/ext/random/pareto_distribution/requirements/typedefs.cc:
+	New file.
+	* testsuite/ext/random/pareto_distribution/requirements/
+	explicit_instantiation/1.cc: New file.
+
+2012-09-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/stl_algobase.h (max, min): Use conditional operator.
+
+2012-09-18  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/28811
+	PR libstdc++/54482
+	* configure.ac (glibcxx_lt_pic_flag,
+	glibcxx_compiler_pic_flag,
+	glibcxx_compiler_shared_flag): New. Use them.
+	(lt_prog_compiler_pic_CXX): Set via glibcxx_*_flag(s) above.
+	(pic_mode): Set to default.
+	(PIC_CXXFLAGS): Remove.
+	* Makefile.am (PICFLAG, PICFLAG_FOR_TARGET): Remove. Comment.
+	* libsupc++/Makefile.am: Use glibcxx_ld_pic_flag and
+	glibcxx_compiler_shared_flag. Comment.
+	* src/c++11/Makefile.am: Same.
+	* src/c++98/Makefile.am: Same.
+	* src/Makefile.am: Use glibcxx_compiler_pic_flag.
+
+	* Makefile.in: Regenerated.
+	* aclocal.m4: Same.
+	* configure: Same.
+	* doc/Makefile.in: Same.
+	* include/Makefile.in: Same.
+	* libsupc++/Makefile.in: Same.
+	* po/Makefile.in: Same.
+	* python/Makefile.in: Same.
+	* src/Makefile.in: Same.
+	* src/c++11/Makefile.in: Same.
+	* src/c++98/Makefile.in: Same.
+	* testsuite/Makefile.in: Same.
+
+	* src/c++11/compatibility-atomic-c++0x.cc: Use
+	_GLIBCXX_SHARED instead of PIC to designate shared-only
+	code blocks.
+	* src/c++11/compatibility-c++0x.cc: Same.
+	* src/c++11/compatibility-thread-c++0x.cc: Same.
+	* src/c++98/compatibility-list-2.cc: Same.
+	* src/c++98/compatibility.cc: : Same.
+
+	* testsuite/17_intro/shared_with_static_deps.cc: New.
+
+	* doc/xml/manual/build_hacking.xml: Separate configure from
+	make/build issues, add build details.
+
+2012-09-18  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* include/ext/random: Add __gnu_cxx::nakagami_distribution<> class.
+	* include/ext/random.tcc: Add out-of-line functions for
+	__gnu_cxx::nakagami_distribution<>.
+	* testsuite/ext/random/nakagami_distribution/operators/equal.cc:
+	New file.
+	* testsuite/ext/random/nakagami_distribution/operators/serialize.cc:
+	New file.
+	* testsuite/ext/random/nakagami_distribution/operators/inequal.cc:
+	New file.
+	* testsuite/ext/random/nakagami_distribution/cons/parms.cc: New file.
+	* testsuite/ext/random/nakagami_distribution/cons/default.cc: New file.
+	* testsuite/ext/random/nakagami_distribution/requirements/typedefs.cc:
+	New file.
+	* testsuite/ext/random/nakagami_distribution/requirements/
+	explicit_instantiation/1.cc: New file.
+
+2012-09-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/54612
+	* include/ext/random.tcc (operator==
+	(const __gnu_cxx::simd_fast_mersenne_twister_engine<>&,
+	const __gnu_cxx::simd_fast_mersenne_twister_engine<>&)): Fix
+	state_size use.
+	* config/cpu/i486/opt/ext/opt_random.h: Guard with __SSE2__.
+
+2012-09-17  Ulrich Drepper  <drepper@gmail.com>
+
+	* configure.ac: Substitute CPU_OPT_EXT_RANDOM.
+	* configure.host: Define cpu_opt_ext_random to location of the
+	optimized version of <ext/random>.
+	* include/Makefile.am (ext_headers): Add ${ext_host_headers}.
+	(ext_host_headers): Define.
+	* include/ext/random (simd_fast_mersenne_twister_engine<>
+	::operator==): Don't define function here.
+	* include/ext/random.tcc (simd_fast_mersenne_twister_engine): Don't
+	define code using SSE2 here.  Define generic code only if
+	_GLIBCXX_OPT_HAVE_RANDOM_SFMT_GEN_READ is not defined.
+	(simd_fast_mersenne_twister_engine<>
+	::operator==): Define here if
+	_GLIBCXX_OPT_HAVE_RANDOM_SFMT_OPERATOREQUAL is not defined.
+	* config/cpu/generic/opt/ext/opt_random.h: New file.
+	* config/cpu/i486/opt/ext/opt_random.h: New file.
+	* libsupc++/Makefile.in: Regenerated.
+	* testsuite/Makefile.in: Regenerated.
+	* po/Makefile.in: Regenerated.
+	* configure: Regenerated.
+	* Makefile.in: Regenerated.
+	* doc/Makefile.in: Regenerated.
+	* aclocal.m4: Regenerated.
+	* python/Makefile.in: Regenerated.
+	* include/Makefile.in: Regenerated.
+	* src/c++98/Makefile.in: Regenerated.
+	* src/c++11/Makefile.in: Regenerated.
+	* src/Makefile.in: Regenerated.
+
 2012-09-16  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	* include/ext/random.tcc (__gnu_cxx::rice_distribution<>

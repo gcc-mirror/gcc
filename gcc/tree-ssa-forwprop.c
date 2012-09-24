@@ -33,7 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "expr.h"
 #include "cfgloop.h"
-#include "tree-vectorizer.h"
+#include "optabs.h"
 
 /* This pass propagates the RHS of assignment statements into use
    sites of the LHS of the assignment.  It's basically a specialized
@@ -227,29 +227,15 @@ get_prop_source_stmt (tree name, bool single_use_only, bool *single_use_p)
     if (!is_gimple_assign (def_stmt))
       return NULL;
 
-    /* If def_stmt is not a simple copy, we possibly found it.  */
-    if (!gimple_assign_ssa_name_copy_p (def_stmt))
+    /* If def_stmt is a simple copy, continue looking.  */
+    if (gimple_assign_rhs_code (def_stmt) == SSA_NAME)
+      name = gimple_assign_rhs1 (def_stmt);
+    else
       {
-	tree rhs;
-
 	if (!single_use_only && single_use_p)
 	  *single_use_p = single_use;
 
-	/* We can look through pointer conversions in the search
-	   for a useful stmt for the comparison folding.  */
-	rhs = gimple_assign_rhs1 (def_stmt);
-	if (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def_stmt))
-	    && TREE_CODE (rhs) == SSA_NAME
-	    && POINTER_TYPE_P (TREE_TYPE (gimple_assign_lhs (def_stmt)))
-	    && POINTER_TYPE_P (TREE_TYPE (rhs)))
-	  name = rhs;
-	else
-	  return def_stmt;
-      }
-    else
-      {
-	/* Continue searching the def of the copy source name.  */
-	name = gimple_assign_rhs1 (def_stmt);
+	return def_stmt;
       }
   } while (1);
 }
@@ -2854,14 +2840,24 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
     return false;
 
   if (maybe_ident)
-    {
-      gimple_assign_set_rhs_from_tree (gsi, orig);
-    }
+    gimple_assign_set_rhs_from_tree (gsi, orig);
   else
     {
-      op2 = vect_gen_perm_mask (type, sel);
-      if (!op2)
+      tree mask_type, *mask_elts;
+
+      if (!can_vec_perm_p (TYPE_MODE (type), false, sel))
 	return false;
+      mask_type
+	= build_vector_type (build_nonstandard_integer_type (elem_size, 1),
+			     nelts);
+      if (GET_MODE_CLASS (TYPE_MODE (mask_type)) != MODE_VECTOR_INT
+	  || GET_MODE_SIZE (TYPE_MODE (mask_type))
+	     != GET_MODE_SIZE (TYPE_MODE (type)))
+	return false;
+      mask_elts = XALLOCAVEC (tree, nelts);
+      for (i = 0; i < nelts; i++)
+	mask_elts[i] = build_int_cst (TREE_TYPE (mask_type), sel[i]);
+      op2 = build_vector (mask_type, mask_elts);
       gimple_assign_set_rhs_with_ops_1 (gsi, VEC_PERM_EXPR, orig, orig, op2);
     }
   update_stmt (gsi_stmt (*gsi));

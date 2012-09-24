@@ -3653,7 +3653,7 @@ try_split (rtx pat, rtx trial, int last)
 	}
     }
 
-  tem = emit_insn_after_setloc (seq, trial, INSN_LOCATOR (trial));
+  tem = emit_insn_after_setloc (seq, trial, INSN_LOCATION (trial));
 
   delete_insn (trial);
   if (has_barrier)
@@ -3689,7 +3689,7 @@ make_insn_raw (rtx pattern)
   PATTERN (insn) = pattern;
   INSN_CODE (insn) = -1;
   REG_NOTES (insn) = NULL;
-  INSN_LOCATOR (insn) = curr_insn_locator ();
+  INSN_LOCATION (insn) = curr_insn_location ();
   BLOCK_FOR_INSN (insn) = NULL;
 
 #ifdef ENABLE_RTL_CHECKING
@@ -3722,7 +3722,7 @@ make_debug_insn_raw (rtx pattern)
   PATTERN (insn) = pattern;
   INSN_CODE (insn) = -1;
   REG_NOTES (insn) = NULL;
-  INSN_LOCATOR (insn) = curr_insn_locator ();
+  INSN_LOCATION (insn) = curr_insn_location ();
   BLOCK_FOR_INSN (insn) = NULL;
 
   return insn;
@@ -3742,7 +3742,7 @@ make_jump_insn_raw (rtx pattern)
   INSN_CODE (insn) = -1;
   REG_NOTES (insn) = NULL;
   JUMP_LABEL (insn) = NULL;
-  INSN_LOCATOR (insn) = curr_insn_locator ();
+  INSN_LOCATION (insn) = curr_insn_location ();
   BLOCK_FOR_INSN (insn) = NULL;
 
   return insn;
@@ -3762,7 +3762,7 @@ make_call_insn_raw (rtx pattern)
   INSN_CODE (insn) = -1;
   REG_NOTES (insn) = NULL;
   CALL_INSN_FUNCTION_USAGE (insn) = NULL;
-  INSN_LOCATOR (insn) = curr_insn_locator ();
+  INSN_LOCATION (insn) = curr_insn_location ();
   BLOCK_FOR_INSN (insn) = NULL;
 
   return insn;
@@ -4435,8 +4435,8 @@ emit_pattern_after_setloc (rtx pattern, rtx after, int loc,
   after = NEXT_INSN (after);
   while (1)
     {
-      if (active_insn_p (after) && !INSN_LOCATOR (after))
-	INSN_LOCATOR (after) = loc;
+      if (active_insn_p (after) && !INSN_LOCATION (after))
+	INSN_LOCATION (after) = loc;
       if (after == last)
 	break;
       after = NEXT_INSN (after);
@@ -4459,62 +4459,62 @@ emit_pattern_after (rtx pattern, rtx after, bool skip_debug_insns,
       prev = PREV_INSN (prev);
 
   if (INSN_P (prev))
-    return emit_pattern_after_setloc (pattern, after, INSN_LOCATOR (prev),
+    return emit_pattern_after_setloc (pattern, after, INSN_LOCATION (prev),
 				      make_raw);
   else
     return emit_pattern_after_noloc (pattern, after, NULL, make_raw);
 }
 
-/* Like emit_insn_after_noloc, but set INSN_LOCATOR according to LOC.  */
+/* Like emit_insn_after_noloc, but set INSN_LOCATION according to LOC.  */
 rtx
 emit_insn_after_setloc (rtx pattern, rtx after, int loc)
 {
   return emit_pattern_after_setloc (pattern, after, loc, make_insn_raw);
 }
 
-/* Like emit_insn_after_noloc, but set INSN_LOCATOR according to AFTER.  */
+/* Like emit_insn_after_noloc, but set INSN_LOCATION according to AFTER.  */
 rtx
 emit_insn_after (rtx pattern, rtx after)
 {
   return emit_pattern_after (pattern, after, true, make_insn_raw);
 }
 
-/* Like emit_jump_insn_after_noloc, but set INSN_LOCATOR according to LOC.  */
+/* Like emit_jump_insn_after_noloc, but set INSN_LOCATION according to LOC.  */
 rtx
 emit_jump_insn_after_setloc (rtx pattern, rtx after, int loc)
 {
   return emit_pattern_after_setloc (pattern, after, loc, make_jump_insn_raw);
 }
 
-/* Like emit_jump_insn_after_noloc, but set INSN_LOCATOR according to AFTER.  */
+/* Like emit_jump_insn_after_noloc, but set INSN_LOCATION according to AFTER.  */
 rtx
 emit_jump_insn_after (rtx pattern, rtx after)
 {
   return emit_pattern_after (pattern, after, true, make_jump_insn_raw);
 }
 
-/* Like emit_call_insn_after_noloc, but set INSN_LOCATOR according to LOC.  */
+/* Like emit_call_insn_after_noloc, but set INSN_LOCATION according to LOC.  */
 rtx
 emit_call_insn_after_setloc (rtx pattern, rtx after, int loc)
 {
   return emit_pattern_after_setloc (pattern, after, loc, make_call_insn_raw);
 }
 
-/* Like emit_call_insn_after_noloc, but set INSN_LOCATOR according to AFTER.  */
+/* Like emit_call_insn_after_noloc, but set INSN_LOCATION according to AFTER.  */
 rtx
 emit_call_insn_after (rtx pattern, rtx after)
 {
   return emit_pattern_after (pattern, after, true, make_call_insn_raw);
 }
 
-/* Like emit_debug_insn_after_noloc, but set INSN_LOCATOR according to LOC.  */
+/* Like emit_debug_insn_after_noloc, but set INSN_LOCATION according to LOC.  */
 rtx
 emit_debug_insn_after_setloc (rtx pattern, rtx after, int loc)
 {
   return emit_pattern_after_setloc (pattern, after, loc, make_debug_insn_raw);
 }
 
-/* Like emit_debug_insn_after_noloc, but set INSN_LOCATOR according to AFTER.  */
+/* Like emit_debug_insn_after_noloc, but set INSN_LOCATION according to AFTER.  */
 rtx
 emit_debug_insn_after (rtx pattern, rtx after)
 {
@@ -4544,8 +4544,8 @@ emit_pattern_before_setloc (rtx pattern, rtx before, int loc, bool insnp,
     first = NEXT_INSN (first);
   while (1)
     {
-      if (active_insn_p (first) && !INSN_LOCATOR (first))
-	INSN_LOCATOR (first) = loc;
+      if (active_insn_p (first) && !INSN_LOCATION (first))
+	INSN_LOCATION (first) = loc;
       if (first == last)
 	break;
       first = NEXT_INSN (first);
@@ -4569,7 +4569,7 @@ emit_pattern_before (rtx pattern, rtx before, bool skip_debug_insns,
       next = PREV_INSN (next);
 
   if (INSN_P (next))
-    return emit_pattern_before_setloc (pattern, before, INSN_LOCATOR (next),
+    return emit_pattern_before_setloc (pattern, before, INSN_LOCATION (next),
 				       insnp, make_raw);
   else
     return emit_pattern_before_noloc (pattern, before,
@@ -4577,7 +4577,7 @@ emit_pattern_before (rtx pattern, rtx before, bool skip_debug_insns,
                                       NULL, make_raw);
 }
 
-/* Like emit_insn_before_noloc, but set INSN_LOCATOR according to LOC.  */
+/* Like emit_insn_before_noloc, but set INSN_LOCATION according to LOC.  */
 rtx
 emit_insn_before_setloc (rtx pattern, rtx before, int loc)
 {
@@ -4585,14 +4585,14 @@ emit_insn_before_setloc (rtx pattern, rtx before, int loc)
 				     make_insn_raw);
 }
 
-/* Like emit_insn_before_noloc, but set INSN_LOCATOR according to BEFORE.  */
+/* Like emit_insn_before_noloc, but set INSN_LOCATION according to BEFORE.  */
 rtx
 emit_insn_before (rtx pattern, rtx before)
 {
   return emit_pattern_before (pattern, before, true, true, make_insn_raw);
 }
 
-/* like emit_insn_before_noloc, but set INSN_LOCATOR according to LOC.  */
+/* like emit_insn_before_noloc, but set INSN_LOCATION according to LOC.  */
 rtx
 emit_jump_insn_before_setloc (rtx pattern, rtx before, int loc)
 {
@@ -4600,7 +4600,7 @@ emit_jump_insn_before_setloc (rtx pattern, rtx before, int loc)
 				     make_jump_insn_raw);
 }
 
-/* Like emit_jump_insn_before_noloc, but set INSN_LOCATOR according to BEFORE.  */
+/* Like emit_jump_insn_before_noloc, but set INSN_LOCATION according to BEFORE.  */
 rtx
 emit_jump_insn_before (rtx pattern, rtx before)
 {
@@ -4608,7 +4608,7 @@ emit_jump_insn_before (rtx pattern, rtx before)
 			      make_jump_insn_raw);
 }
 
-/* Like emit_insn_before_noloc, but set INSN_LOCATOR according to LOC.  */
+/* Like emit_insn_before_noloc, but set INSN_LOCATION according to LOC.  */
 rtx
 emit_call_insn_before_setloc (rtx pattern, rtx before, int loc)
 {
@@ -4617,7 +4617,7 @@ emit_call_insn_before_setloc (rtx pattern, rtx before, int loc)
 }
 
 /* Like emit_call_insn_before_noloc,
-   but set insn_locator according to BEFORE.  */
+   but set insn_location according to BEFORE.  */
 rtx
 emit_call_insn_before (rtx pattern, rtx before)
 {
@@ -4625,7 +4625,7 @@ emit_call_insn_before (rtx pattern, rtx before)
 			      make_call_insn_raw);
 }
 
-/* Like emit_insn_before_noloc, but set INSN_LOCATOR according to LOC.  */
+/* Like emit_insn_before_noloc, but set INSN_LOCATION according to LOC.  */
 rtx
 emit_debug_insn_before_setloc (rtx pattern, rtx before, int loc)
 {
@@ -4634,7 +4634,7 @@ emit_debug_insn_before_setloc (rtx pattern, rtx before, int loc)
 }
 
 /* Like emit_debug_insn_before_noloc,
-   but set insn_locator according to BEFORE.  */
+   but set insn_location according to BEFORE.  */
 rtx
 emit_debug_insn_before (rtx pattern, rtx before)
 {
@@ -5881,7 +5881,7 @@ emit_copy_of_insn_after (rtx insn, rtx after)
   /* Update LABEL_NUSES.  */
   mark_jump_label (PATTERN (new_rtx), new_rtx, 0);
 
-  INSN_LOCATOR (new_rtx) = INSN_LOCATOR (insn);
+  INSN_LOCATION (new_rtx) = INSN_LOCATION (insn);
 
   /* If the old insn is frame related, then so is the new one.  This is
      primarily needed for IA-64 unwind info which marks epilogue insns,
@@ -5916,249 +5916,65 @@ gen_hard_reg_clobber (enum machine_mode mode, unsigned int regno)
 	    gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (mode, regno)));
 }
 
-/* Data structures representing mapping of INSN_LOCATOR into scope blocks, line
-   numbers and files.  In order to be GGC friendly we need to use separate
-   varrays.  This also slightly improve the memory locality in binary search.
-   The _locs array contains locators where the given property change.  The
-   block_locators_blocks contains the scope block that is used for all insn
-   locator greater than corresponding block_locators_locs value and smaller
-   than the following one.  Similarly for the other properties.  */
-static VEC(int,heap) *block_locators_locs;
-static GTY(()) VEC(tree,gc) *block_locators_blocks;
-static VEC(int,heap) *locations_locators_locs;
-DEF_VEC_A(location_t);
-DEF_VEC_ALLOC_A(location_t,heap);
-static VEC(location_t,heap) *locations_locators_vals;
-int prologue_locator;
-int epilogue_locator;
+location_t prologue_location;
+location_t epilogue_location;
 
 /* Hold current location information and last location information, so the
    datastructures are built lazily only when some instructions in given
    place are needed.  */
 static location_t curr_location, last_location;
-static tree curr_block, last_block;
-static int curr_rtl_loc = -1;
 
-/* Allocate insn locator datastructure.  */
+/* Allocate insn location datastructure.  */
 void
-insn_locators_alloc (void)
+insn_locations_init (void)
 {
-  prologue_locator = epilogue_locator = 0;
-
-  block_locators_locs = VEC_alloc (int, heap, 32);
-  block_locators_blocks = VEC_alloc (tree, gc, 32);
-  locations_locators_locs = VEC_alloc (int, heap, 32);
-  locations_locators_vals = VEC_alloc (location_t, heap, 32);
-
+  prologue_location = epilogue_location = 0;
   curr_location = UNKNOWN_LOCATION;
   last_location = UNKNOWN_LOCATION;
-  curr_block = NULL;
-  last_block = NULL;
-  curr_rtl_loc = 0;
 }
 
 /* At the end of emit stage, clear current location.  */
 void
-insn_locators_finalize (void)
+insn_locations_finalize (void)
 {
-  if (curr_rtl_loc >= 0)
-    epilogue_locator = curr_insn_locator ();
-  curr_rtl_loc = -1;
-}
-
-/* Allocate insn locator datastructure.  */
-void
-insn_locators_free (void)
-{
-  prologue_locator = epilogue_locator = 0;
-
-  VEC_free (int, heap, block_locators_locs);
-  VEC_free (tree,gc, block_locators_blocks);
-  VEC_free (int, heap, locations_locators_locs);
-  VEC_free (location_t, heap, locations_locators_vals);
+  epilogue_location = curr_location;
+  curr_location = UNKNOWN_LOCATION;
 }
 
 /* Set current location.  */
 void
-set_curr_insn_source_location (location_t location)
+set_curr_insn_location (location_t location)
 {
-  /* IV opts calls into RTL expansion to compute costs of operations.  At this
-     time locators are not initialized.  */
-  if (curr_rtl_loc == -1)
-    return;
   curr_location = location;
 }
 
 /* Get current location.  */
 location_t
-get_curr_insn_source_location (void)
+curr_insn_location (void)
 {
   return curr_location;
-}
-
-/* Set current scope block.  */
-void
-set_curr_insn_block (tree b)
-{
-  /* IV opts calls into RTL expansion to compute costs of operations.  At this
-     time locators are not initialized.  */
-  if (curr_rtl_loc == -1)
-    return;
-  if (b)
-    curr_block = b;
-}
-
-/* Get current scope block.  */
-tree
-get_curr_insn_block (void)
-{
-  return curr_block;
-}
-
-/* Return current insn locator.  */
-int
-curr_insn_locator (void)
-{
-  if (curr_rtl_loc == -1 || curr_location == UNKNOWN_LOCATION)
-    return 0;
-  if (last_block != curr_block)
-    {
-      curr_rtl_loc++;
-      VEC_safe_push (int, heap, block_locators_locs, curr_rtl_loc);
-      VEC_safe_push (tree, gc, block_locators_blocks, curr_block);
-      last_block = curr_block;
-    }
-  if (last_location != curr_location)
-    {
-      curr_rtl_loc++;
-      VEC_safe_push (int, heap, locations_locators_locs, curr_rtl_loc);
-      VEC_safe_push (location_t, heap, locations_locators_vals, curr_location);
-      last_location = curr_location;
-    }
-  return curr_rtl_loc;
-}
-
-
-/* Return lexical scope block locator belongs to.  */
-static tree
-locator_scope (int loc)
-{
-  int max = VEC_length (int, block_locators_locs);
-  int min = 0;
-
-  /* When block_locators_locs was initialized, the pro- and epilogue
-     insns didn't exist yet and can therefore not be found this way.
-     But we know that they belong to the outer most block of the
-     current function.
-     Without this test, the prologue would be put inside the block of
-     the first valid instruction in the function and when that first
-     insn is part of an inlined function then the low_pc of that
-     inlined function is messed up.  Likewise for the epilogue and
-     the last valid instruction.  */
-  if (loc == prologue_locator || loc == epilogue_locator)
-    return DECL_INITIAL (cfun->decl);
-
-  if (!max || !loc)
-    return NULL;
-  while (1)
-    {
-      int pos = (min + max) / 2;
-      int tmp = VEC_index (int, block_locators_locs, pos);
-
-      if (tmp <= loc && min != pos)
-	min = pos;
-      else if (tmp > loc && max != pos)
-	max = pos;
-      else
-	{
-	  min = pos;
-	  break;
-	}
-    }
-  return VEC_index (tree, block_locators_blocks, min);
 }
 
 /* Return lexical scope block insn belongs to.  */
 tree
 insn_scope (const_rtx insn)
 {
-  return locator_scope (INSN_LOCATOR (insn));
-}
-
-/* Return line number of the statement specified by the locator.  */
-location_t
-locator_location (int loc)
-{
-  int max = VEC_length (int, locations_locators_locs);
-  int min = 0;
-
-  while (1)
-    {
-      int pos = (min + max) / 2;
-      int tmp = VEC_index (int, locations_locators_locs, pos);
-
-      if (tmp <= loc && min != pos)
-	min = pos;
-      else if (tmp > loc && max != pos)
-	max = pos;
-      else
-	{
-	  min = pos;
-	  break;
-	}
-    }
-  return VEC_index (location_t, locations_locators_vals, min);
-}
-
-/* Return source line of the statement that produced this insn.  */
-int
-locator_line (int loc)
-{
-  expanded_location xloc;
-  if (!loc)
-    return 0;
-  else
-    xloc = expand_location (locator_location (loc));
-  return xloc.line;
+  return LOCATION_BLOCK (INSN_LOCATION (insn));
 }
 
 /* Return line number of the statement that produced this insn.  */
 int
 insn_line (const_rtx insn)
 {
-  return locator_line (INSN_LOCATOR (insn));
-}
-
-/* Return source file of the statement specified by LOC.  */
-const char *
-locator_file (int loc)
-{
-  expanded_location xloc;
-  if (!loc)
-    return 0;
-  else
-    xloc = expand_location (locator_location (loc));
-  return xloc.file;
+  return LOCATION_LINE (INSN_LOCATION (insn));
 }
 
 /* Return source file of the statement that produced this insn.  */
 const char *
 insn_file (const_rtx insn)
 {
-  return locator_file (INSN_LOCATOR (insn));
+  return LOCATION_FILE (INSN_LOCATION (insn));
 }
-
-/* Return true if LOC1 and LOC2 locators have the same location and scope.  */
-bool
-locator_eq (int loc1, int loc2)
-{
-  if (loc1 == loc2)
-    return true;
-  if (locator_location (loc1) != locator_location (loc2))
-    return false;
-  return locator_scope (loc1) == locator_scope (loc2);
-}
-
 
 /* Return true if memory model MODEL requires a pre-operation (release-style)
    barrier or a post-operation (acquire-style) barrier.  While not universal,

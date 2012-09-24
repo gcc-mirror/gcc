@@ -6869,7 +6869,7 @@ s390_chunkify_start (void)
 		prev = prev_nonnote_insn (prev);
 	      if (prev)
 		jump = emit_jump_insn_after_setloc (gen_jump (label), insn,
-						    INSN_LOCATOR (prev));
+						    INSN_LOCATION (prev));
 	      else
 		jump = emit_jump_insn_after_noloc (gen_jump (label), insn);
 	      barrier = emit_barrier_after (jump);

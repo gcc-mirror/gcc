@@ -8647,6 +8647,7 @@ instructions, but allow the compiler to schedule those calls.
 * MIPS Loongson Built-in Functions::
 * Other MIPS Built-in Functions::
 * picoChip Built-in Functions::
+* PowerPC Built-in Functions::
 * PowerPC AltiVec/VSX Built-in Functions::
 * RX Built-in Functions::
 * SPARC VIS Built-in Functions::
@@ -11596,6 +11597,38 @@ GCC defines the preprocessor macro @code{___GCC_HAVE_BUILTIN_MIPS_CACHE}
 when this function is available.
 @end table
 
+@node PowerPC Built-in Functions
+@subsection PowerPC Built-in Functions
+
+These built-in functions are available for the PowerPC family of
+processors:
+@smallexample
+float __builtin_recipdivf (float, float);
+float __builtin_rsqrtf (float);
+double __builtin_recipdiv (double, double);
+double __builtin_rsqrt (double);
+long __builtin_bpermd (long, long);
+uint64_t __builtin_ppc_get_timebase ();
+unsigned long __builtin_ppc_mftb ();
+@end smallexample
+
+The @code{vec_rsqrt}, @code{__builtin_rsqrt}, and
+@code{__builtin_rsqrtf} functions generate multiple instructions to
+implement the reciprocal sqrt functionality using reciprocal sqrt
+estimate instructions.
+
+The @code{__builtin_recipdiv}, and @code{__builtin_recipdivf}
+functions generate multiple instructions to implement division using
+the reciprocal estimate instructions.
+
+The @code{__builtin_ppc_get_timebase} and @code{__builtin_ppc_mftb}
+functions generate instructions to read the Time Base Register.  The
+@code{__builtin_ppc_get_timebase} function may generate multiple
+instructions and always returns the 64 bits of the Time Base Register.
+The @code{__builtin_ppc_mftb} function always generates one instruction and
+returns the Time Base Register value as an unsigned long, throwing away
+the most significant word on 32-bit environments.
+
 @node PowerPC AltiVec/VSX Built-in Functions
 @subsection PowerPC AltiVec Built-in Functions
 
@@ -13652,24 +13685,6 @@ generate the Altivec @samp{LVX} and @samp{STVX} instructions even
 if the VSX instruction set is available.  The @samp{vec_vsx_ld} and
 @samp{vec_vsx_st} builtins will always generate the VSX @samp{LXVD2X},
 @samp{LXVW4X}, @samp{STXVD2X}, and @samp{STXVW4X} instructions.
-
-GCC provides a few other builtins on Powerpc to access certain instructions:
-@smallexample
-float __builtin_recipdivf (float, float);
-float __builtin_rsqrtf (float);
-double __builtin_recipdiv (double, double);
-double __builtin_rsqrt (double);
-long __builtin_bpermd (long, long);
-@end smallexample
-
-The @code{vec_rsqrt}, @code{__builtin_rsqrt}, and
-@code{__builtin_rsqrtf} functions generate multiple instructions to
-implement the reciprocal sqrt functionality using reciprocal sqrt
-estimate instructions.
-
-The @code{__builtin_recipdiv}, and @code{__builtin_recipdivf}
-functions generate multiple instructions to implement division using
-the reciprocal estimate instructions.
 
 @node RX Built-in Functions
 @subsection RX Built-in Functions

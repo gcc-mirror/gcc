@@ -262,6 +262,9 @@
 /* Define to 1 if you have the `strndup' function. */
 #undef HAVE_STRNDUP
 
+/* Define to 1 if you have the `strnlen' function. */
+#undef HAVE_STRNLEN
+
 /* Define to 1 if you have the `strrchr' function. */
 #undef HAVE_STRRCHR
 

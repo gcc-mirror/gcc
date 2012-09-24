@@ -1,3 +1,6 @@
+-- { dg-do compile }
+-- { dg-options "-O" }
+
 with Text_IO; use Text_IO;
 
 package body Concat2 is
@@ -15,4 +18,3 @@ package body Concat2 is
    end;
 
 end Concat2;
-

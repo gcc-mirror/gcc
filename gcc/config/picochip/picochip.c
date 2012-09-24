@@ -3298,16 +3298,16 @@ picochip_reorg (void)
               if (GET_MODE (insn) == TImode)
               {
                 vliw_start = insn;
-                vliw_insn_location = INSN_LOCATOR (insn);
+                vliw_insn_location = INSN_LOCATION (insn);
               }
               if (JUMP_P (insn) || CALL_P(insn))
               {
-                vliw_insn_location = INSN_LOCATOR (insn);
+                vliw_insn_location = INSN_LOCATION (insn);
                 for (insn1 = vliw_start; insn1 != insn ; insn1 = next_real_insn (insn1))
-                  INSN_LOCATOR (insn1) = vliw_insn_location;
+                  INSN_LOCATION (insn1) = vliw_insn_location;
               }
               /* Tag subsequent instructions with the same location. */
-              INSN_LOCATOR (insn) = vliw_insn_location;
+              INSN_LOCATION (insn) = vliw_insn_location;
 	    }
 	}
 

@@ -50,6 +50,8 @@
 #   cpu_defines_dir        location of cpu_defines.h
 #                          defaults to generic.
 #
+#   cpu_opt_ext_random     path name of random.h containing CPU-specific
+#                          optimizations
 #
 #   error_constants_dir    location of error_constants.h
 #                          defaults to os/generic.
@@ -181,6 +183,18 @@ fi
 if test -f ${glibcxx_srcdir}/config/${cpu_include_dir}/cxxabi_tweaks.h ; then
   abi_tweaks_dir=$cpu_include_dir
 fi
+
+
+# Set directory with CPU-specific optimization
+cpu_opt_dir=${cpu_include_dir}/opt
+test -d ${glibcxx_srcdir}/config/${cpu_include_dir}/opt ||
+cpu_opt_dir=cpu/generic/opt
+# For each header with CPU-specific optimizations check whether it
+# exists in ${cpu_opt_dir}.  If not, point the variable at the
+# appropriate file in the generic directory.
+cpu_opt_ext_random=${cpu_opt_dir}/ext/opt_random.h
+test -f ${glibcxx_srcdir}/config/${cpu_opt_ext_random} ||
+cpu_opt_ext_random=cpu/generic/opt/ext/opt_random.h
 
 
 # Set any OS-dependent bits.

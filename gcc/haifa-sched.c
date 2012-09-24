@@ -214,6 +214,9 @@ struct common_sched_info_def *common_sched_info;
 #define FEEDS_BACKTRACK_INSN(INSN) (HID (INSN)->feeds_backtrack_insn)
 #define SHADOW_P(INSN) (HID (INSN)->shadow_p)
 #define MUST_RECOMPUTE_SPEC_P(INSN) (HID (INSN)->must_recompute_spec)
+/* Cached cost of the instruction.  Use insn_cost to get cost of the
+   insn.  -1 here means that the field is not initialized.  */
+#define INSN_COST(INSN)	(HID (INSN)->cost)
 
 /* If INSN_TICK of an instruction is equal to INVALID_TICK,
    then it should be recalculated from scratch.  */
@@ -1115,18 +1118,59 @@ cond_clobbered_p (rtx insn, HARD_REG_SET set_regs)
   return false;
 }
 
+/* This function should be called after modifying the pattern of INSN,
+   to update scheduler data structures as needed.  */
+static void
+update_insn_after_change (rtx insn)
+{
+  sd_iterator_def sd_it;
+  dep_t dep;
+
+  dfa_clear_single_insn_cache (insn);
+
+  sd_it = sd_iterator_start (insn,
+			     SD_LIST_FORW | SD_LIST_BACK | SD_LIST_RES_BACK);
+  while (sd_iterator_cond (&sd_it, &dep))
+    {
+      DEP_COST (dep) = UNKNOWN_DEP_COST;
+      sd_iterator_next (&sd_it);
+    }
+
+  /* Invalidate INSN_COST, so it'll be recalculated.  */
+  INSN_COST (insn) = -1;
+  /* Invalidate INSN_TICK, so it'll be recalculated.  */
+  INSN_TICK (insn) = INVALID_TICK;
+}
+
+DEF_VEC_P(dep_t);
+DEF_VEC_ALLOC_P(dep_t, heap);
+
+/* Two VECs, one to hold dependencies for which pattern replacements
+   need to be applied or restored at the start of the next cycle, and
+   another to hold an integer that is either one, to apply the
+   corresponding replacement, or zero to restore it.  */
+static VEC(dep_t, heap) *next_cycle_replace_deps;
+static VEC(int, heap) *next_cycle_apply;
+
+static void apply_replacement (dep_t, bool);
+static void restore_pattern (dep_t, bool);
+
 /* Look at the remaining dependencies for insn NEXT, and compute and return
    the TODO_SPEC value we should use for it.  This is called after one of
-   NEXT's dependencies has been resolved.  */
+   NEXT's dependencies has been resolved.
+   We also perform pattern replacements for predication, and for broken
+   replacement dependencies.  The latter is only done if FOR_BACKTRACK is
+   false.  */
 
 static ds_t
-recompute_todo_spec (rtx next)
+recompute_todo_spec (rtx next, bool for_backtrack)
 {
   ds_t new_ds;
   sd_iterator_def sd_it;
-  dep_t dep, control_dep = NULL;
+  dep_t dep, modify_dep = NULL;
   int n_spec = 0;
   int n_control = 0;
+  int n_replace = 0;
   bool first_p = true;
 
   if (sd_lists_empty_p (next, SD_LIST_BACK))
@@ -1143,9 +1187,10 @@ recompute_todo_spec (rtx next)
 
   FOR_EACH_DEP (next, SD_LIST_BACK, sd_it, dep)
     {
+      rtx pro = DEP_PRO (dep);
       ds_t ds = DEP_STATUS (dep) & SPECULATIVE;
 
-      if (DEBUG_INSN_P (DEP_PRO (dep)) && !DEBUG_INSN_P (next))
+      if (DEBUG_INSN_P (pro) && !DEBUG_INSN_P (next))
 	continue;
 
       if (ds)
@@ -1160,15 +1205,47 @@ recompute_todo_spec (rtx next)
 	  else
 	    new_ds = ds_merge (new_ds, ds);
 	}
-      if (DEP_TYPE (dep) == REG_DEP_CONTROL)
+      else if (DEP_TYPE (dep) == REG_DEP_CONTROL)
 	{
-	  n_control++;
-	  control_dep = dep;
+	  if (QUEUE_INDEX (pro) != QUEUE_SCHEDULED)
+	    {
+	      n_control++;
+	      modify_dep = dep;
+	    }
+	  DEP_STATUS (dep) &= ~DEP_CANCELLED;
+	}
+      else if (DEP_REPLACE (dep) != NULL)
+	{
+	  if (QUEUE_INDEX (pro) != QUEUE_SCHEDULED)
+	    {
+	      n_replace++;
+	      modify_dep = dep;
+	    }
 	  DEP_STATUS (dep) &= ~DEP_CANCELLED;
 	}
     }
 
-  if (n_control == 1 && n_spec == 0)
+  if (n_replace > 0 && n_control == 0 && n_spec == 0)
+    {
+      if (!dbg_cnt (sched_breakdep))
+	return HARD_DEP;
+      FOR_EACH_DEP (next, SD_LIST_BACK, sd_it, dep)
+	{
+	  struct dep_replacement *desc = DEP_REPLACE (dep);
+	  if (desc != NULL)
+	    {
+	      if (desc->insn == next && !for_backtrack)
+		{
+		  gcc_assert (n_replace == 1);
+		  apply_replacement (dep, true);
+		}
+	      DEP_STATUS (dep) |= DEP_CANCELLED;
+	    }
+	}
+      return 0;
+    }
+  
+  else if (n_control == 1 && n_replace == 0 && n_spec == 0)
     {
       rtx pro, other, new_pat;
       rtx cond = NULL_RTX;
@@ -1182,7 +1259,7 @@ recompute_todo_spec (rtx next)
 	      && PREDICATED_PAT (next) == NULL_RTX))
 	return HARD_DEP;
 
-      pro = DEP_PRO (control_dep);
+      pro = DEP_PRO (modify_dep);
       other = real_insn_for_shadow (pro);
       if (other != NULL_RTX)
 	pro = other;
@@ -1221,7 +1298,7 @@ recompute_todo_spec (rtx next)
 					       PREDICATED_PAT (next));
 	  gcc_assert (success);
 	}
-      DEP_STATUS (control_dep) |= DEP_CANCELLED;
+      DEP_STATUS (modify_dep) |= DEP_CANCELLED;
       return DEP_CONTROL;
     }
 
@@ -1238,11 +1315,12 @@ recompute_todo_spec (rtx next)
      dependencies, so we return HARD_DEP in such a case.  Also fail if
      we have speculative dependencies with not enough points, or more than
      one control dependency.  */
-  if ((n_spec > 0 && n_control > 0)
+  if ((n_spec > 0 && (n_control > 0 || n_replace > 0))
       || (n_spec > 0
 	  /* Too few points?  */
 	  && ds_weak (new_ds) < spec_info->data_weakness_cutoff)
-      || (n_control > 1))
+      || n_control > 0
+      || n_replace > 0)
     return HARD_DEP;
 
   return new_ds;
@@ -1261,10 +1339,6 @@ static rtx last_nondebug_scheduled_insn;
    have a dbg_cnt enabled.  It always points at an insn prior to the
    first unscheduled one.  */
 static rtx nonscheduled_insns_begin;
-
-/* Cached cost of the instruction.  Use below function to get cost of the
-   insn.  -1 here means that the field is not initialized.  */
-#define INSN_COST(INSN)	(HID (INSN)->cost)
 
 /* Compute cost of executing INSN.
    This is the number of cycles between instruction issue and
@@ -1442,6 +1516,9 @@ contributes_to_priority_p (dep_t dep)
   /* Critical path is meaningful in block boundaries only.  */
   if (!current_sched_info->contributes_to_priority (DEP_CON (dep),
 						    DEP_PRO (dep)))
+    return false;
+
+  if (DEP_REPLACE (dep) != NULL)
     return false;
 
   /* If flag COUNT_SPEC_IN_CRITICAL_PATH is set,
@@ -2136,6 +2213,31 @@ model_recompute (rtx insn)
 
   if (print_p)
     fprintf (sched_dump, MODEL_BAR);
+}
+
+/* After DEP, which was cancelled, has been resolved for insn NEXT,
+   check whether the insn's pattern needs restoring.  */
+static bool
+must_restore_pattern_p (rtx next, dep_t dep)
+{
+  if (QUEUE_INDEX (next) == QUEUE_SCHEDULED)
+    return false;
+
+  if (DEP_TYPE (dep) == REG_DEP_CONTROL)
+    {
+      gcc_assert (ORIG_PAT (next) != NULL_RTX);
+      gcc_assert (next == DEP_CON (dep));
+    }
+  else
+    {
+      struct dep_replacement *desc = DEP_REPLACE (dep);
+      if (desc->insn != next)
+	{
+	  gcc_assert (*desc->loc == desc->orig);
+	  return false;
+	}
+    }
+  return true;
 }
 
 /* model_spill_cost (CL, P, P') returns the cost of increasing the
@@ -3736,7 +3838,20 @@ schedule_insn (rtx insn)
 
   check_clobbered_conditions (insn);
 
-  /* Update dependent instructions.  */
+  /* Update dependent instructions.  First, see if by scheduling this insn
+     now we broke a dependence in a way that requires us to change another
+     insn.  */
+  for (sd_it = sd_iterator_start (insn, SD_LIST_SPEC_BACK);
+       sd_iterator_cond (&sd_it, &dep); sd_iterator_next (&sd_it))
+    {
+      struct dep_replacement *desc = DEP_REPLACE (dep);
+      rtx pro = DEP_PRO (dep);
+      if (QUEUE_INDEX (pro) != QUEUE_SCHEDULED
+	  && desc != NULL && desc->insn == pro)
+	apply_replacement (dep, false);
+    }
+
+  /* Go through and resolve forward dependencies.  */
   for (sd_it = sd_iterator_start (insn, SD_LIST_FORW);
        sd_iterator_cond (&sd_it, &dep);)
     {
@@ -3750,17 +3865,8 @@ schedule_insn (rtx insn)
 
       if (cancelled)
 	{
-	  if (QUEUE_INDEX (next) != QUEUE_SCHEDULED)
-	    {
-	      int tick = INSN_TICK (next);
-	      gcc_assert (ORIG_PAT (next) != NULL_RTX);
-	      haifa_change_pattern (next, ORIG_PAT (next));
-	      INSN_TICK (next) = tick;
-	      if (sd_lists_empty_p (next, SD_LIST_BACK))
-		TODO_SPEC (next) = 0;
-	      else if (!sd_lists_empty_p (next, SD_LIST_HARD_BACK))
-		TODO_SPEC (next) = HARD_DEP;
-	    }
+	  if (must_restore_pattern_p (next, dep))
+	    restore_pattern (dep, false);
 	  continue;
 	}
 
@@ -3918,6 +4024,16 @@ struct haifa_saved_data
      to 0 when restoring.  */
   int q_size;
   rtx *insn_queue;
+
+  /* Describe pattern replacements that occurred since this backtrack point
+     was queued.  */
+  VEC (dep_t, heap) *replacement_deps;
+  VEC (int, heap) *replace_apply;
+
+  /* A copy of the next-cycle replacement vectors at the time of the backtrack
+     point.  */
+  VEC (dep_t, heap) *next_cycle_deps;
+  VEC (int, heap) *next_cycle_apply;
 };
 
 /* A record, in reverse order, of all scheduled insns which have delay slots
@@ -3973,6 +4089,11 @@ save_backtrack_point (struct delay_pair *pair,
   save->last_nondebug_scheduled_insn = last_nondebug_scheduled_insn;
 
   save->sched_block = sched_block;
+
+  save->replacement_deps = NULL;
+  save->replace_apply = NULL;
+  save->next_cycle_deps = VEC_copy (dep_t, heap, next_cycle_replace_deps);
+  save->next_cycle_apply = VEC_copy (int, heap, next_cycle_apply);
 
   if (current_sched_info->save_state)
     save->fe_saved_data = (*current_sched_info->save_state) ();
@@ -4043,6 +4164,25 @@ toggle_cancelled_flags (bool set)
     }
 }
 
+/* Undo the replacements that have occurred after backtrack point SAVE
+   was placed.  */
+static void
+undo_replacements_for_backtrack (struct haifa_saved_data *save)
+{
+  while (!VEC_empty (dep_t, save->replacement_deps))
+    {
+      dep_t dep = VEC_pop (dep_t, save->replacement_deps);
+      int apply_p = VEC_pop (int, save->replace_apply);
+
+      if (apply_p)
+	restore_pattern (dep, true);
+      else
+	apply_replacement (dep, true);
+    }
+  VEC_free (dep_t, heap, save->replacement_deps);
+  VEC_free (int, heap, save->replace_apply);
+}
+
 /* Pop entries from the SCHEDULED_INSNS vector up to and including INSN.
    Restore their dependencies to an unresolved state, and mark them as
    queued nowhere.  */
@@ -4108,7 +4248,7 @@ unschedule_insns_until (rtx insn)
 	    haifa_change_pattern (con, ORIG_PAT (con));
 	}
       else if (QUEUE_INDEX (con) != QUEUE_SCHEDULED)
-	TODO_SPEC (con) = recompute_todo_spec (con);
+	TODO_SPEC (con) = recompute_todo_spec (con, true);
     }
   VEC_free (rtx, heap, recompute_vec);
 }
@@ -4135,6 +4275,10 @@ restore_last_backtrack_point (struct sched_block_state *psched_block)
       targetm.sched.set_sched_context (save->be_saved_data);
       targetm.sched.free_sched_context (save->be_saved_data);
     }
+
+  /* Do this first since it clobbers INSN_TICK of the involved
+     instructions.  */
+  undo_replacements_for_backtrack (save);
 
   /* Clear the QUEUE_INDEX of everything in the ready list or one
      of the queues.  */
@@ -4171,7 +4315,7 @@ restore_last_backtrack_point (struct sched_block_state *psched_block)
 	{
 	  rtx insn = first[i];
 	  QUEUE_INDEX (insn) = QUEUE_READY;
-	  TODO_SPEC (insn) = recompute_todo_spec (insn);
+	  TODO_SPEC (insn) = recompute_todo_spec (insn, true);
 	  INSN_TICK (insn) = save->clock_var;
 	}
     }
@@ -4188,7 +4332,7 @@ restore_last_backtrack_point (struct sched_block_state *psched_block)
 	{
 	  rtx x = XEXP (link, 0);
 	  QUEUE_INDEX (x) = i;
-	  TODO_SPEC (x) = recompute_todo_spec (x);
+	  TODO_SPEC (x) = recompute_todo_spec (x, true);
 	  INSN_TICK (x) = save->clock_var + i;
 	}
     }
@@ -4208,6 +4352,10 @@ restore_last_backtrack_point (struct sched_block_state *psched_block)
   free (save->curr_state);
 
   mark_backtrack_feeds (save->delay_pair->i2, 0);
+
+  gcc_assert (VEC_empty (dep_t, next_cycle_replace_deps));
+  next_cycle_replace_deps = VEC_copy (dep_t, heap, save->next_cycle_deps);
+  next_cycle_apply = VEC_copy (int, heap, save->next_cycle_apply);
 
   free (save);
 
@@ -4238,7 +4386,14 @@ free_topmost_backtrack_point (bool reset_tick)
 	  INSN_EXACT_TICK (pair->i2) = INVALID_TICK;
 	  pair = pair->next_same_i1;
 	}
+      undo_replacements_for_backtrack (save);
     }
+  else
+    {
+      VEC_free (dep_t, heap, save->replacement_deps);
+      VEC_free (int, heap, save->replace_apply);
+    }
+
   if (targetm.sched.free_sched_context)
     targetm.sched.free_sched_context (save->be_saved_data);
   if (current_sched_info->restore_state)
@@ -4257,6 +4412,124 @@ free_backtrack_queue (void)
 {
   while (backtrack_queue)
     free_topmost_backtrack_point (false);
+}
+
+/* Apply a replacement described by DESC.  If IMMEDIATELY is false, we
+   may have to postpone the replacement until the start of the next cycle,
+   at which point we will be called again with IMMEDIATELY true.  This is
+   only done for machines which have instruction packets with explicit
+   parallelism however.  */
+static void
+apply_replacement (dep_t dep, bool immediately)
+{
+  struct dep_replacement *desc = DEP_REPLACE (dep);
+  if (!immediately && targetm.sched.exposed_pipeline && reload_completed)
+    {
+      VEC_safe_push (dep_t, heap, next_cycle_replace_deps, dep);
+      VEC_safe_push (int, heap, next_cycle_apply, 1);
+    }
+  else
+    {
+      bool success;
+
+      if (QUEUE_INDEX (desc->insn) == QUEUE_SCHEDULED)
+	return;
+
+      if (sched_verbose >= 5)
+	fprintf (sched_dump, "applying replacement for insn %d\n",
+		 INSN_UID (desc->insn));
+
+      success = validate_change (desc->insn, desc->loc, desc->newval, 0);
+      gcc_assert (success);
+
+      update_insn_after_change (desc->insn);
+      if ((TODO_SPEC (desc->insn) & (HARD_DEP | DEP_POSTPONED)) == 0)
+	fix_tick_ready (desc->insn);
+
+      if (backtrack_queue != NULL)
+	{
+	  VEC_safe_push (dep_t, heap, backtrack_queue->replacement_deps, dep);
+	  VEC_safe_push (int, heap, backtrack_queue->replace_apply, 1);
+	}
+    }
+}
+
+/* We have determined that a pattern involved in DEP must be restored.
+   If IMMEDIATELY is false, we may have to postpone the replacement
+   until the start of the next cycle, at which point we will be called
+   again with IMMEDIATELY true.  */
+static void
+restore_pattern (dep_t dep, bool immediately)
+{
+  rtx next = DEP_CON (dep);
+  int tick = INSN_TICK (next);
+
+  /* If we already scheduled the insn, the modified version is
+     correct.  */
+  if (QUEUE_INDEX (next) == QUEUE_SCHEDULED)
+    return;
+
+  if (!immediately && targetm.sched.exposed_pipeline && reload_completed)
+    {
+      VEC_safe_push (dep_t, heap, next_cycle_replace_deps, dep);
+      VEC_safe_push (int, heap, next_cycle_apply, 0);
+      return;
+    }
+
+
+  if (DEP_TYPE (dep) == REG_DEP_CONTROL)
+    {
+      if (sched_verbose >= 5)
+	fprintf (sched_dump, "restoring pattern for insn %d\n",
+		 INSN_UID (next));
+      haifa_change_pattern (next, ORIG_PAT (next));
+    }
+  else
+    {
+      struct dep_replacement *desc = DEP_REPLACE (dep);
+      bool success;
+
+      if (sched_verbose >= 5)
+	fprintf (sched_dump, "restoring pattern for insn %d\n",
+		 INSN_UID (desc->insn));
+      tick = INSN_TICK (desc->insn);
+
+      success = validate_change (desc->insn, desc->loc, desc->orig, 0);
+      gcc_assert (success);
+      update_insn_after_change (desc->insn);
+      if (backtrack_queue != NULL)
+	{
+	  VEC_safe_push (dep_t, heap, backtrack_queue->replacement_deps, dep);
+	  VEC_safe_push (int, heap, backtrack_queue->replace_apply, 0);
+	}
+    }
+  INSN_TICK (next) = tick;
+  if (TODO_SPEC (next) == DEP_POSTPONED)
+    return;
+
+  if (sd_lists_empty_p (next, SD_LIST_BACK))
+    TODO_SPEC (next) = 0;
+  else if (!sd_lists_empty_p (next, SD_LIST_HARD_BACK))
+    TODO_SPEC (next) = HARD_DEP;
+}
+
+/* Perform pattern replacements that were queued up until the next
+   cycle.  */
+static void
+perform_replacements_new_cycle (void)
+{
+  int i;
+  dep_t dep;
+  FOR_EACH_VEC_ELT (dep_t, next_cycle_replace_deps, i, dep)
+    {
+      int apply_p = VEC_index (int, next_cycle_apply, i);
+      if (apply_p)
+	apply_replacement (dep, true);
+      else
+	restore_pattern (dep, true);
+    }
+  VEC_truncate (dep_t, next_cycle_replace_deps, 0);
+  VEC_truncate (int, next_cycle_apply, 0);
 }
 
 /* Compute INSN_TICK_ESTIMATE for INSN.  PROCESSED is a bitmap of
@@ -4514,6 +4787,30 @@ restore_other_notes (rtx head, basic_block head_bb)
     }
 
   return head;
+}
+
+/* When we know we are going to discard the schedule due to a failed attempt
+   at modulo scheduling, undo all replacements.  */
+static void
+undo_all_replacements (void)
+{
+  rtx insn;
+  int i;
+
+  FOR_EACH_VEC_ELT (rtx, scheduled_insns, i, insn)
+    {
+      sd_iterator_def sd_it;
+      dep_t dep;
+
+      /* See if we must undo a replacement.  */
+      for (sd_it = sd_iterator_start (insn, SD_LIST_RES_FORW);
+	   sd_iterator_cond (&sd_it, &dep); sd_iterator_next (&sd_it))
+	{
+	  struct dep_replacement *desc = DEP_REPLACE (dep);
+	  if (desc != NULL)
+	    validate_change (desc->insn, desc->loc, desc->orig, 0);
+	}
+    }
 }
 
 /* Move insns that became ready to fire from queue to ready list.  */
@@ -5557,6 +5854,10 @@ schedule_block (basic_block *target_bb)
   rtx head = NEXT_INSN (prev_head);
   rtx tail = PREV_INSN (next_tail);
 
+  if ((current_sched_info->flags & DONT_BREAK_DEPENDENCIES) == 0
+      && sched_pressure != SCHED_PRESSURE_MODEL)
+    find_modifiable_mems (head, tail);
+
   /* We used to have code to avoid getting parameters moved from hard
      argument registers into pseudos.
 
@@ -5677,6 +5978,7 @@ schedule_block (basic_block *target_bb)
   /* Loop until all the insns in BB are scheduled.  */
   while ((*current_sched_info->schedule_more_p) ())
     {
+      perform_replacements_new_cycle ();
       do
 	{
 	  start_clock_var = clock_var;
@@ -5893,7 +6195,7 @@ schedule_block (basic_block *target_bb)
 	    /* We normally get here only if we don't want to move
 	       insn from the split block.  */
 	    {
-	      TODO_SPEC (insn) = HARD_DEP;
+	      TODO_SPEC (insn) = DEP_POSTPONED;
 	      goto restart_choose_ready;
 	    }
 
@@ -6004,6 +6306,8 @@ schedule_block (basic_block *target_bb)
 	  gcc_assert (failed);
 
 	  failed_insn = failed->delay_pair->i1;
+	  /* Clear these queues.  */
+	  perform_replacements_new_cycle ();
 	  toggle_cancelled_flags (false);
 	  unschedule_insns_until (failed_insn);
 	  while (failed != backtrack_queue)
@@ -6031,6 +6335,7 @@ schedule_block (basic_block *target_bb)
   if (ls.modulo_epilogue)
     success = true;
  end_schedule:
+  perform_replacements_new_cycle ();
   if (modulo_ii > 0)
     {
       /* Once again, debug insn suckiness: they can be on the ready list
@@ -6069,6 +6374,9 @@ schedule_block (basic_block *target_bb)
 	    }
 	}
     }
+
+  if (!success)
+    undo_all_replacements ();
 
   /* Debug info.  */
   if (sched_verbose)
@@ -6553,14 +6861,15 @@ try_ready (rtx next)
 
   old_ts = TODO_SPEC (next);
 
-  gcc_assert (!(old_ts & ~(SPECULATIVE | HARD_DEP | DEP_CONTROL))
-	      && ((old_ts & HARD_DEP)
+  gcc_assert (!(old_ts & ~(SPECULATIVE | HARD_DEP | DEP_CONTROL | DEP_POSTPONED))
+	      && (old_ts == HARD_DEP
+		  || old_ts == DEP_POSTPONED
 		  || (old_ts & SPECULATIVE)
-		  || (old_ts & DEP_CONTROL)));
+		  || old_ts == DEP_CONTROL));
 
-  new_ts = recompute_todo_spec (next);
+  new_ts = recompute_todo_spec (next, false);
 
-  if (new_ts & HARD_DEP)
+  if (new_ts & (HARD_DEP | DEP_POSTPONED))
     gcc_assert (new_ts == old_ts
 		&& QUEUE_INDEX (next) == QUEUE_NOWHERE);
   else if (current_sched_info->new_ready)
@@ -6628,7 +6937,7 @@ try_ready (rtx next)
 
   TODO_SPEC (next) = new_ts;
 
-  if (new_ts & HARD_DEP)
+  if (new_ts & (HARD_DEP | DEP_POSTPONED))
     {
       /* We can't assert (QUEUE_INDEX (next) == QUEUE_NOWHERE) here because
 	 control-speculative NEXT could have been discarded by sched-rgn.c
@@ -7647,27 +7956,13 @@ fix_recovery_deps (basic_block rec)
 static bool
 haifa_change_pattern (rtx insn, rtx new_pat)
 {
-  sd_iterator_def sd_it;
-  dep_t dep;
   int t;
 
   t = validate_change (insn, &PATTERN (insn), new_pat, 0);
   if (!t)
     return false;
-  dfa_clear_single_insn_cache (insn);
 
-  sd_it = sd_iterator_start (insn,
-			     SD_LIST_FORW | SD_LIST_BACK | SD_LIST_RES_BACK);
-  while (sd_iterator_cond (&sd_it, &dep))
-    {
-      DEP_COST (dep) = UNKNOWN_DEP_COST;
-      sd_iterator_next (&sd_it);
-    }
-
-  /* Invalidate INSN_COST, so it'll be recalculated.  */
-  INSN_COST (insn) = -1;
-  /* Invalidate INSN_TICK, so it'll be recalculated.  */
-  INSN_TICK (insn) = INVALID_TICK;
+  update_insn_after_change (insn);
   return true;
 }
 

@@ -503,6 +503,81 @@ canonicalize_induction_variables (void)
   return 0;
 }
 
+/* Propagate VAL into all uses of SSA_NAME.  */
+
+static void
+propagate_into_all_uses (tree ssa_name, tree val)
+{
+  imm_use_iterator iter;
+  gimple use_stmt;
+
+  FOR_EACH_IMM_USE_STMT (use_stmt, iter, ssa_name)
+    {
+      gimple_stmt_iterator use_stmt_gsi = gsi_for_stmt (use_stmt);
+      use_operand_p use;
+
+      FOR_EACH_IMM_USE_ON_STMT (use, iter)
+	SET_USE (use, val);
+
+      if (is_gimple_assign (use_stmt)
+	  && get_gimple_rhs_class (gimple_assign_rhs_code (use_stmt))
+	     == GIMPLE_SINGLE_RHS)
+	{
+	  tree rhs = gimple_assign_rhs1 (use_stmt);
+
+	  if (TREE_CODE (rhs) == ADDR_EXPR)
+	    recompute_tree_invariant_for_addr_expr (rhs);
+	}
+
+      fold_stmt_inplace (&use_stmt_gsi);
+      update_stmt (use_stmt);
+      maybe_clean_or_replace_eh_stmt (use_stmt, use_stmt);
+    }
+}
+
+/* Propagate constant SSA_NAMEs defined in basic block BB.  */
+
+static void
+propagate_constants_for_unrolling (basic_block bb)
+{
+  gimple_stmt_iterator gsi;
+
+  /* Look for degenerate PHI nodes with constant argument.  */
+  for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); )
+    {
+      gimple phi = gsi_stmt (gsi);
+      tree result = gimple_phi_result (phi);
+      tree arg = gimple_phi_arg_def (phi, 0);
+
+      if (gimple_phi_num_args (phi) == 1 && TREE_CODE (arg) == INTEGER_CST)
+	{
+	  propagate_into_all_uses (result, arg);
+	  gsi_remove (&gsi, true);
+	  release_ssa_name (result);
+	}
+      else
+	gsi_next (&gsi);
+    }
+
+  /* Look for assignments to SSA names with constant RHS.  */
+  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); )
+    {
+      gimple stmt = gsi_stmt (gsi);
+      tree lhs;
+
+      if (is_gimple_assign (stmt)
+	  && (lhs = gimple_assign_lhs (stmt), TREE_CODE (lhs) == SSA_NAME)
+	  && gimple_assign_rhs_code (stmt) == INTEGER_CST)
+	{
+	  propagate_into_all_uses (lhs, gimple_assign_rhs1 (stmt));
+	  gsi_remove (&gsi, true);
+	  release_ssa_name (lhs);
+	}
+      else
+	gsi_next (&gsi);
+    }
+}
+
 /* Unroll LOOPS completely if they iterate just few times.  Unless
    MAY_INCREASE_SIZE is true, perform the unrolling only if the
    size of the code does not increase.  */
@@ -510,6 +585,7 @@ canonicalize_induction_variables (void)
 unsigned int
 tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
 {
+  VEC(loop_p,stack) *father_stack = VEC_alloc (loop_p, stack, 16);
   loop_iterator li;
   struct loop *loop;
   bool changed;
@@ -522,21 +598,50 @@ tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
 
       FOR_EACH_LOOP (li, loop, LI_ONLY_INNERMOST)
 	{
+	  struct loop *loop_father = loop_outer (loop);
+
 	  if (may_increase_size && optimize_loop_for_speed_p (loop)
 	      /* Unroll outermost loops only if asked to do so or they do
 		 not cause code growth.  */
-	      && (unroll_outer
-		  || loop_outer (loop_outer (loop))))
+	      && (unroll_outer || loop_outer (loop_father)))
 	    ul = UL_ALL;
 	  else
 	    ul = UL_NO_GROWTH;
-	  changed |= canonicalize_loop_induction_variables
-		       (loop, false, ul, !flag_tree_loop_ivcanon);
+
+	  if (canonicalize_loop_induction_variables (loop, false, ul,
+						     !flag_tree_loop_ivcanon))
+	    {
+	      changed = true;
+	      /* If we'll continue unrolling, we need to propagate constants
+		 within the new basic blocks to fold away induction variable
+		 computations; otherwise, the size might blow up before the
+		 iteration is complete and the IR eventually cleaned up.  */
+	      if (loop_outer (loop_father) && !loop_father->aux)
+	        {
+		  VEC_safe_push (loop_p, stack, father_stack, loop_father);
+		  loop_father->aux = loop_father;
+		}
+	    }
 	}
 
       if (changed)
 	{
+	  struct loop **iter;
+	  unsigned i;
+
 	  update_ssa (TODO_update_ssa);
+
+	  /* Propagate the constants within the new basic blocks.  */
+	  FOR_EACH_VEC_ELT (loop_p, father_stack, i, iter)
+	    {
+	      unsigned j;
+	      basic_block *body = get_loop_body_in_dom_order (*iter);
+	      for (j = 0; j < (*iter)->num_nodes; j++)
+		propagate_constants_for_unrolling (body[j]);
+	      free (body);
+	      (*iter)->aux = NULL;
+	    }
+	  VEC_truncate (loop_p, father_stack, 0);
 
 	  /* This will take care of removing completely unrolled loops
 	     from the loop structures so we can continue unrolling now
@@ -551,6 +656,8 @@ tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
     }
   while (changed
 	 && ++iteration <= PARAM_VALUE (PARAM_MAX_UNROLL_ITERATIONS));
+
+  VEC_free (loop_p, stack, father_stack);
 
   return 0;
 }

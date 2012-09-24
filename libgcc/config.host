@@ -499,6 +499,9 @@ hppa[12]*-*-hpux11*)
 	extra_parts="libgcc_stub.a"
 	md_unwind_header=pa/hpux-unwind.h
 	;;
+hppa*-*-openbsd*)
+	tmake_file="$tmake_file pa/t-openbsd"
+	;;
 i[34567]86-*-darwin*)
 	tmake_file="$tmake_file i386/t-crtpc i386/t-crtfm"
 	tm_file="$tm_file i386/darwin-lib.h"

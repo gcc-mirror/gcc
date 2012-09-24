@@ -322,6 +322,7 @@ funcs="$funcs strchr"
 funcs="$funcs strdup"
 funcs="$funcs strncasecmp"
 funcs="$funcs strndup"
+funcs="$funcs strnlen"
 funcs="$funcs strrchr"
 funcs="$funcs strstr"
 funcs="$funcs strtod"
@@ -362,8 +363,8 @@ if test "x" = "y"; then
     random realpath rename rindex \
     sbrk setenv setproctitle setrlimit sigsetmask snprintf spawnve spawnvpe \
      stpcpy stpncpy strcasecmp strchr strdup \
-     strerror strncasecmp strndup strrchr strsignal strstr strtod strtol \
-     strtoul strverscmp sysconf sysctl sysmp \
+     strerror strncasecmp strndup strnlen strrchr strsignal strstr strtod \
+     strtol strtoul strverscmp sysconf sysctl sysmp \
     table times tmpnam \
     vasprintf vfprintf vprintf vsprintf \
     wait3 wait4 waitpid)
@@ -442,13 +443,14 @@ if test -n "${with_target_subdir}"; then
     AC_LIBOBJ([stpcpy])
     AC_LIBOBJ([stpncpy])
     AC_LIBOBJ([strndup])
+    AC_LIBOBJ([strnlen])
     AC_LIBOBJ([strverscmp])
     AC_LIBOBJ([vasprintf])
     AC_LIBOBJ([waitpid])
 
     for f in $funcs; do
       case "$f" in
-	asprintf | basename | bcmp | bcopy | bzero | clock | ffs | getpagesize | index | insque | mempcpy | mkstemps | random | rindex | sigsetmask | stpcpy | stpncpy | strdup | strndup | strverscmp | vasprintf | waitpid)
+	asprintf | basename | bcmp | bcopy | bzero | clock | ffs | getpagesize | index | insque | mempcpy | mkstemps | random | rindex | sigsetmask | stpcpy | stpncpy | strdup | strndup | strnlen | strverscmp | vasprintf | waitpid)
 	  ;;
 	*)
 	  n=HAVE_`echo $f | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`

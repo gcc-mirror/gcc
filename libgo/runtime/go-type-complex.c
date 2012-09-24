@@ -32,9 +32,13 @@ __go_type_hash_complex (const void *vkey, uintptr_t key_size)
       cf = ucf.cf;
       cfr = __builtin_crealf (cf);
       cfi = __builtin_cimagf (cf);
-      if (__builtin_isinff (cfr) || __builtin_isinff (cfi)
-	  || __builtin_isnanf (cfr) || __builtin_isnanf (cfi))
+      if (__builtin_isinff (cfr) || __builtin_isinff (cfi))
 	return 0;
+
+      /* NaN != NaN, so the hash code of a NaN is irrelevant.  Make it
+	 random so that not all NaNs wind up in the same place.  */
+      if (__builtin_isnanf (cfr) || __builtin_isnanf (cfi))
+	return runtime_fastrand1 ();
 
       /* Avoid negative zero.  */
       if (cfr == 0 && cfi == 0)
@@ -62,9 +66,11 @@ __go_type_hash_complex (const void *vkey, uintptr_t key_size)
       cd = ucd.cd;
       cdr = __builtin_crealf (cd);
       cdi = __builtin_cimagf (cd);
-      if (__builtin_isinf (cdr) || __builtin_isinf (cdi)
-	  || __builtin_isnan (cdr) || __builtin_isnan (cdi))
+      if (__builtin_isinf (cdr) || __builtin_isinf (cdi))
 	return 0;
+
+      if (__builtin_isnan (cdr) || __builtin_isnan (cdi))
+	return runtime_fastrand1 ();
 
       /* Avoid negative zero.  */
       if (cdr == 0 && cdi == 0)

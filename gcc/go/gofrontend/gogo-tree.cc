@@ -476,7 +476,6 @@ Gogo::write_initialization_function(tree fndecl, tree init_stmt_list)
 
   DECL_SAVED_TREE(fndecl) = init_stmt_list;
 
-  current_function_decl = fndecl;
   if (DECL_STRUCT_FUNCTION(fndecl) == NULL)
     push_struct_function(fndecl);
   else
@@ -487,7 +486,6 @@ Gogo::write_initialization_function(tree fndecl, tree init_stmt_list)
 
   cgraph_add_new_function(fndecl, false);
 
-  current_function_decl = NULL_TREE;
   pop_cfun();
 }
 
@@ -864,17 +862,13 @@ Gogo::write_globals()
 	      // means that we need an fndecl.
 	      if (init_fndecl == NULL_TREE)
 		init_fndecl = this->initialization_function_decl();
-	      current_function_decl = init_fndecl;
 	      if (DECL_STRUCT_FUNCTION(init_fndecl) == NULL)
 		push_struct_function(init_fndecl);
 	      else
 		push_cfun(DECL_STRUCT_FUNCTION(init_fndecl));
-
 	      tree var_decl = is_sink ? NULL_TREE : vec[i];
 	      var_init_tree = no->var_value()->get_init_block(this, NULL,
 							      var_decl);
-
-	      current_function_decl = NULL_TREE;
 	      pop_cfun();
 	    }
 
@@ -994,9 +988,19 @@ Named_object::get_id(Gogo* gogo)
     }
   if (this->is_type())
     {
-      const Named_object* in_function = this->type_value()->in_function();
+      unsigned int index;
+      const Named_object* in_function = this->type_value()->in_function(&index);
       if (in_function != NULL)
-	decl_name += '$' + Gogo::unpack_hidden_name(in_function->name());
+	{
+	  decl_name += '$' + Gogo::unpack_hidden_name(in_function->name());
+	  if (index > 0)
+	    {
+	      char buf[30];
+	      snprintf(buf, sizeof buf, "%u", index);
+	      decl_name += '$';
+	      decl_name += buf;
+	    }
+	}
     }
   return get_identifier_from_string(decl_name);
 }
@@ -1116,15 +1120,12 @@ Named_object::get_tree(Gogo* gogo, Named_object* function)
 		cfun->function_end_locus =
                   func->block()->end_location().gcc_location();
 
-		current_function_decl = decl;
-
 		func->build_tree(gogo, this);
 
 		gimplify_function_tree(decl);
 
 		cgraph_finalize_function(decl, true);
 
-		current_function_decl = NULL_TREE;
 		pop_cfun();
 	      }
 	  }
@@ -2127,8 +2128,7 @@ Gogo::slice_constructor(tree slice_type_tree, tree values, tree count,
 
 tree
 Gogo::interface_method_table_for_type(const Interface_type* interface,
-				      Named_type* type,
-				      bool is_pointer)
+				      Type* type, bool is_pointer)
 {
   const Typed_identifier_list* interface_methods = interface->methods();
   go_assert(!interface_methods->empty());
@@ -2157,7 +2157,9 @@ Gogo::interface_method_table_for_type(const Interface_type* interface,
   // interface.  If the interface has hidden methods, and the named
   // type is defined in a different package, then the interface
   // conversion table will be defined by that other package.
-  if (has_hidden_methods && type->named_object()->package() != NULL)
+  if (has_hidden_methods
+      && type->named_type() != NULL
+      && type->named_type()->named_object()->package() != NULL)
     {
       tree array_type = build_array_type(const_ptr_type_node, NULL);
       tree decl = build_decl(BUILTINS_LOCATION, VAR_DECL, id, array_type);
@@ -2186,13 +2188,20 @@ Gogo::interface_method_table_for_type(const Interface_type* interface,
                                               Linemap::predeclared_location());
   elt->value = fold_convert(const_ptr_type_node, tdp);
 
+  Named_type* nt = type->named_type();
+  Struct_type* st = type->struct_type();
+  go_assert(nt != NULL || st != NULL);
   size_t i = 1;
   for (Typed_identifier_list::const_iterator p = interface_methods->begin();
        p != interface_methods->end();
        ++p, ++i)
     {
       bool is_ambiguous;
-      Method* m = type->method_function(p->name(), &is_ambiguous);
+      Method* m;
+      if (nt != NULL)
+	m = nt->method_function(p->name(), &is_ambiguous);
+      else
+	m = st->method_function(p->name(), &is_ambiguous);
       go_assert(m != NULL);
 
       Named_object* no = m->named_object();

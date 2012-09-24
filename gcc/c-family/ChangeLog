@@ -1,3 +1,13 @@
+2012-09-18 Arnaud Charlet  <charlet@adacore.com>
+
+	* c-ada-spec.c: Style fixes.
+
+2012-09-18 Thomas Quinot  <quinot@adacore.com>
+
+	* c.opt (-fada-spec-parent): Define new command line switch.
+	* c-ada-spec.c (get_ada_package): When -fada-spec-parent
+	is specified, generate binding spec as a child of the specified unit.
+
 2012-09-13  Paolo Carlini  <paolo.carlini@oracle.com>
 	    Manuel López-Ibáñez  <manu@gcc.gnu.org>
 

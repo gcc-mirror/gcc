@@ -1,3 +1,6 @@
+-- { dg-do compile }
+-- { dg-options "-O2 -gnatpn" }
+
 with Ada.Characters.Handling; use Ada.Characters.Handling;
 
 package body Opt20 is

@@ -2712,7 +2712,7 @@ build_tools="build-texinfo build-flex build-bison build-m4 build-fixincludes"
 
 # these libraries are used by various programs built for the host environment
 #
-host_libs="intl libiberty opcodes bfd readline tcl tk itcl libgui zlib libcpp libdecnumber gmp mpfr mpc isl cloog libelf libiconv"
+host_libs="intl libiberty opcodes bfd readline tcl tk itcl libgui zlib libbacktrace libcpp libdecnumber gmp mpfr mpc isl cloog libelf libiconv"
 
 # these tools are built for the host environment
 # Note, the powerpc-eabi build depends on sim occurring before gdb in order to
@@ -2731,6 +2731,7 @@ libgcj="target-libffi \
 # the host libraries and the host tools (which may be a cross compiler)
 # Note that libiberty is not a target library.
 target_libraries="target-libgcc \
+		target-libbacktrace \
 		target-libgloss \
 		target-newlib \
 		target-libgomp \
@@ -2930,7 +2931,7 @@ case "${ENABLE_GOLD}" in
     if test "$is_elf" = "yes"; then
       # Check for target supported by gold.
       case "${target}" in
-        i?86-*-* | x86_64-*-* | sparc*-*-* | powerpc*-*-* | arm*-*-*)
+        i?86-*-* | x86_64-*-* | sparc*-*-* | powerpc*-*-* | arm*-*-* | tilegx*-*-*)
 	  configdirs="$configdirs gold"
 	  if test x${ENABLE_GOLD} = xdefault; then
 	    default_ld=gold
@@ -3158,6 +3159,15 @@ $as_echo "yes" >&6; }
 	fi
     fi
 fi
+
+# Disable libquadmath for some systems.
+case "${target}" in
+  # libquadmath is unused on AIX and libquadmath build process use of
+  # LD_LIBRARY_PATH can break AIX bootstrap.
+  powerpc-*-aix* | rs6000-*-aix*)
+    noconfigdirs="$noconfigdirs target-libquadmath"
+    ;;
+esac
 
 # Disable libssp for some systems.
 case "${target}" in
@@ -3664,7 +3674,7 @@ case "${target}" in
   microblaze*)
     noconfigdirs="$noconfigdirs gprof"
     ;;
-  mips*-sde-elf*)
+  mips*-sde-elf* | mips*-mti-elf*)
     if test x$with_newlib = xyes; then
       noconfigdirs="$noconfigdirs gprof"
     fi
@@ -6705,7 +6715,7 @@ case "${target}" in
   spu-*-*)
     target_makefile_frag="config/mt-spu"
     ;;
-  mips*-sde-elf*)
+  mips*-sde-elf* | mips*-mti-elf*)
     target_makefile_frag="config/mt-sde"
     ;;
   mipsisa*-*-elfoabi*)
@@ -14547,6 +14557,7 @@ compare_exclusions="gcc/cc*-checksum\$(objext) | gcc/ada/*tools/*"
 case "$target" in
   hppa*64*-*-hpux*) ;;
   hppa*-*-hpux*) compare_exclusions="gcc/cc*-checksum\$(objext) | */libgcc/lib2funcs* | gcc/ada/*tools/*" ;;
+  powerpc*-ibm-aix*) compare_exclusions="gcc/cc*-checksum\$(objext) | gcc/ada/*tools/* | *libgomp*\$(objext)" ;;
 esac
 
 

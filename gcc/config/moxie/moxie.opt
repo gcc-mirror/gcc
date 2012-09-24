@@ -25,3 +25,7 @@ Generate big-endian code
 mel
 Target RejectNegative Report Mask(LITTLE_ENDIAN)
 Generate little-endian code
+
+; Ignored by the compiler
+mno-crt0
+Target RejectNegative

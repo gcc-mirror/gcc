@@ -533,11 +533,15 @@ ext_headers = \
 	${ext_srcdir}/vstring.tcc \
 	${ext_srcdir}/vstring_fwd.h \
 	${ext_srcdir}/vstring_util.h \
-	${ext_compat_headers}
+	${ext_compat_headers} \
+	${ext_host_headers}
 
 ext_compat_headers = \
 	${backward_srcdir}/hash_set \
 	${backward_srcdir}/hash_map
+
+ext_host_headers = \
+	${glibcxx_srcdir}/${CPU_OPT_EXT_RANDOM}
 
 tr1_srcdir = ${glibcxx_srcdir}/include/tr1
 tr1_builddir = ./tr1

@@ -5530,7 +5530,7 @@ gen_block_redirect (rtx jump, int addr, int need_block)
 	 NOTE_INSN_BLOCK_END notes between the indirect_jump_scratch and
 	 the jump.  */
 
-      INSN_LOCATOR (insn) = INSN_LOCATOR (jump);
+      INSN_LOCATION (insn) = INSN_LOCATION (jump);
       INSN_CODE (insn) = CODE_FOR_indirect_jump_scratch;
       return insn;
     }
@@ -12225,7 +12225,6 @@ sh_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
      the insns emitted.  Note that use_thunk calls
      assemble_start_function and assemble_end_function.  */
 
-  insn_locators_alloc ();
   insns = get_insns ();
 
   if (optimize > 0)

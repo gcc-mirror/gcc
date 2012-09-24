@@ -6814,9 +6814,9 @@ mep_make_bundle (rtx core, rtx cop)
   /* Derive a location for the bundle.  Individual instructions cannot
      have their own location because there can be no assembler labels
      between CORE and COP.  */
-  INSN_LOCATOR (insn) = INSN_LOCATOR (INSN_LOCATOR (core) ? core : cop);
-  INSN_LOCATOR (core) = 0;
-  INSN_LOCATOR (cop) = 0;
+  INSN_LOCATION (insn) = INSN_LOCATION (INSN_LOCATION (core) ? core : cop);
+  INSN_LOCATION (core) = 0;
+  INSN_LOCATION (cop) = 0;
 
   return insn;
 }
@@ -6913,7 +6913,7 @@ mep_bundle_insns (rtx insns)
 	     whenever the current line changes, set the location info
 	     for INSN to match FIRST.  */
 
-	  INSN_LOCATOR (insn) = INSN_LOCATOR (first);
+	  INSN_LOCATION (insn) = INSN_LOCATION (first);
 
 	  note = PREV_INSN (insn);
 	  while (note && note != first)

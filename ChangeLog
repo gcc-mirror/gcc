@@ -1,3 +1,32 @@
+2012-09-21  Anthony Green  <green@moxielogic.com>
+
+	* config/moxie/moxie.opt: Add -mno-crt0 option.
+	* config/moxie/moxie.h (STARTFILE_SPEC): Handle -mno-crt0 option.
+	* doc/invoke.texi (Option Summary): Document -mno-crt0 option.
+
+2012-09-20  Walter Lee  <walt@tilera.com>
+
+	* configure.ac: Add tilegx to list of targets that support gold.
+	* configure: Regenerate.
+
+2012-09-20  Marek Polacek  <polacek@redhat.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2012-09-19  Steve Ellcey  <sellcey@mips.com>
+
+	* configure.ac: Add mips*-mti-elf* target.
+	* configure: Regenerate.
+
+2012-09-17  Ian Lance Taylor  <iant@google.com>
+
+	* MAINTAINERS (Various Maintainers): Add libbacktrace.
+	* configure.ac (host_libs): Add libbacktrace.
+	(target_libraries): Add libbacktrace.
+	* Makefile.def (host_modules): Add libbacktrace.
+	(target_modules): Likewise.
+	* configure, Makefile.in: Rebuild.
+
 2012-09-14  David Edelsohn  <dje.gcc@gmail.com>
 
 	PR target/38607

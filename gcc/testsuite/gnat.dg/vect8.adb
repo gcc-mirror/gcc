@@ -1,3 +1,6 @@
+-- { dg-do compile }
+-- { dg-options "-w" }
+
 package body Vect8 is
 
    function Foo (V : Vec) return Vec is

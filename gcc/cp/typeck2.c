@@ -787,6 +787,9 @@ check_narrowing (tree type, tree init)
   else if (INTEGRAL_OR_ENUMERATION_TYPE_P (ftype)
 	   && CP_INTEGRAL_TYPE_P (type))
     {
+      if (TREE_CODE (ftype) == ENUMERAL_TYPE)
+	/* Check for narrowing based on the values of the enumeration. */
+	ftype = ENUM_UNDERLYING_TYPE (ftype);
       if ((tree_int_cst_lt (TYPE_MAX_VALUE (type),
 			    TYPE_MAX_VALUE (ftype))
 	   || tree_int_cst_lt (TYPE_MIN_VALUE (ftype),

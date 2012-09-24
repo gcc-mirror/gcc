@@ -4883,7 +4883,6 @@ tilegx_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
      serial except for the tail call, so we're only wasting one cycle.
    */
   insn = get_insns ();
-  insn_locators_alloc ();
   shorten_branches (insn);
   final_start_function (insn, file, 1);
   final (insn, file, 1);

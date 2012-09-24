@@ -28,7 +28,7 @@ language="go"
 
 compilers="go1\$(exeext)"
 
-target_libs="target-libgo target-libffi"
+target_libs="target-libgo target-libffi target-libbacktrace"
 
 # The Go frontend is written in C++, so we need to build the C++
 # compiler during stage 1.

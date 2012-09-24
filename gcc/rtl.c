@@ -435,7 +435,7 @@ rtx_equal_p_cb (const_rtx x, const_rtx y, rtx_equal_p_callback_function cb)
 #ifndef GENERATOR_FILE
 	      if (((code == ASM_OPERANDS && i == 6)
 		   || (code == ASM_INPUT && i == 1))
-		  && locator_eq (XINT (x, i), XINT (y, i)))
+		  && XINT (x, i) == XINT (y, i))
 		break;
 #endif
 	      return 0;
@@ -572,7 +572,7 @@ rtx_equal_p (const_rtx x, const_rtx y)
 #ifndef GENERATOR_FILE
 	      if (((code == ASM_OPERANDS && i == 6)
 		   || (code == ASM_INPUT && i == 1))
-		  && locator_eq (XINT (x, i), XINT (y, i)))
+		  && XINT (x, i) == XINT (y, i))
 		break;
 #endif
 	      return 0;

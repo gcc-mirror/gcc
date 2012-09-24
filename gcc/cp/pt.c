@@ -205,16 +205,18 @@ static tree template_parm_to_arg (tree t);
 static bool arg_from_parm_pack_p (tree, tree);
 static tree current_template_args (void);
 static tree tsubst_template_parm (tree, tree, tsubst_flags_t);
+static tree instantiate_alias_template (tree, tree, tsubst_flags_t);
 
 /* Make the current scope suitable for access checking when we are
    processing T.  T can be FUNCTION_DECL for instantiated function
-   template, or VAR_DECL for static member variable (need by
-   instantiate_decl).  */
+   template, VAR_DECL for static member variable, or TYPE_DECL for
+   alias template (needed by instantiate_decl).  */
 
 static void
 push_access_scope (tree t)
 {
   gcc_assert (TREE_CODE (t) == FUNCTION_DECL
+	      || TREE_CODE (t) == TYPE_DECL
 	      || TREE_CODE (t) == VAR_DECL);
 
   if (DECL_FRIEND_CONTEXT (t))
@@ -10949,10 +10951,10 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  && PRIMARY_TEMPLATE_P (DECL_TI_TEMPLATE (decl)))
 	{
 	  /* DECL represents an alias template and we want to
-	     instantiate it.  Let's substitute our arguments for the
-	     template parameters into the declaration and get the
-	     resulting type.  */
-	  r = tsubst (decl, args, complain, decl);
+	     instantiate it.  */
+	  tree tmpl = most_general_template (DECL_TI_TEMPLATE (decl));
+	  tree gen_args = tsubst (DECL_TI_ARGS (decl), args, complain, in_decl);
+	  r = instantiate_alias_template (tmpl, gen_args, complain);
 	}
       else if (DECL_CLASS_SCOPE_P (decl)
 	       && CLASSTYPE_TEMPLATE_INFO (DECL_CONTEXT (decl))
@@ -13769,7 +13771,8 @@ tsubst_copy_and_build (tree t,
 	      }
 	    if (TREE_CODE (function) == IDENTIFIER_NODE)
 	      {
-		unqualified_name_lookup_error (function);
+		if (complain & tf_error)
+		  unqualified_name_lookup_error (function);
 		release_tree_vector (call_args);
 		RETURN (error_mark_node);
 	      }
@@ -14377,7 +14380,7 @@ recheck_decl_substitution (tree d, tree tmpl, tree args)
   pop_access_scope (d);
 }
 
-/* Instantiate the indicated variable or function template TMPL with
+/* Instantiate the indicated variable, function, or alias template TMPL with
    the template arguments in TARG_PTR.  */
 
 static tree
@@ -14524,6 +14527,35 @@ instantiate_template (tree tmpl, tree orig_args, tsubst_flags_t complain)
   ret = instantiate_template_1 (tmpl, orig_args,  complain);
   timevar_pop (TV_TEMPLATE_INST);
   return ret;
+}
+
+/* Instantiate the alias template TMPL with ARGS.  Also push a template
+   instantiation level, which instantiate_template doesn't do because
+   functions and variables have sufficient context established by the
+   callers.  */
+
+static tree
+instantiate_alias_template (tree tmpl, tree args, tsubst_flags_t complain)
+{
+  struct pending_template *old_last_pend = last_pending_template;
+  struct tinst_level *old_error_tinst = last_error_tinst_level;
+  if (tmpl == error_mark_node || args == error_mark_node)
+    return error_mark_node;
+  tree tinst = build_tree_list (tmpl, args);
+  if (!push_tinst_level (tinst))
+    {
+      ggc_free (tinst);
+      return error_mark_node;
+    }
+  tree r = instantiate_template (tmpl, args, complain);
+  pop_tinst_level ();
+  /* We can't free this if a pending_template entry or last_error_tinst_level
+     is pointing at it.  */
+  if (last_pending_template == old_last_pend
+      && last_error_tinst_level == old_error_tinst)
+    ggc_free (tinst);
+
+  return r;
 }
 
 /* PARM is a template parameter pack for FN.  Returns true iff

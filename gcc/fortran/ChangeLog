@@ -1,3 +1,67 @@
+2012-09-23  Tobias Burnus  <burnus@net-b.de>
+
+	* parse.c (parse_derived): Don't set attr.alloc_comp
+	for pointer components with allocatable subcomps.
+
+	PR fortran/54599
+	* resolve.c (resolve_fl_namelist): Remove superfluous
+	NULL check.
+	* simplify.c (simplify_min_max): Remove unreachable code.
+	* trans-array.c (gfc_trans_create_temp_array): Change
+	a condition into an assert.
+
+	PR fortran/54618
+	* trans-expr.c (gfc_trans_class_init_assign): Guard
+	re-setting of the _data by gfc_conv_expr_present.
+	(gfc_conv_procedure_call): Fix INTENT(OUT) handling
+	for allocatable BT_CLASS.
+
+2012-09-22  Thomas König  <tkoenig@gcc.gnu.org>
+
+	PR fortran/54599
+	* dependency.c (gfc_dep_compare_expr):  Clarify logic,
+	remove dead code.
+
+2012-09-20  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54599
+	* cpp.c (print_line): Properly handle extern C.
+
+2012-09-20  Martin Jambor  <mjambor@suse.cz>
+
+	* trans-decl.c (gfc_get_extern_function_decl): Push NULL cfun.  Do not
+	set and restore current_function_decl.
+	(gfc_init_coarray_decl): Do not set and restore current_function_decl.
+
+2012-09-17  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54608
+	* simplify.c (gfc_simplify_scan, gfc_simplify_verify):
+	Fix handling of BACK=variable.
+
+2012-09-17  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54285
+	* expr.c (gfc_check_pointer_assign): Correctly handle procedure pointers
+	as function results.
+	* primary.c (gfc_match_varspec): Allow to call a PPC with proc-ptr
+	result.
+
+2012-09-17  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54603
+	* trans-expr.c (gfc_trans_subcomponent_assign): Handle
+	proc-pointer components.
+
+2012-09-17  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54599
+	* error.c (error_print): Move increment out of the assert.
+	* interface.c (gfc_compare_derived_types): Add assert.
+	(get_expr_storage_size): Remove always-true logical condition.
+	* resolve.c (resolve_allocate_expr): Fix looping logic.
+	* target-memory.c (gfc_target_expr_size): Add assert.
+
 2012-09-16  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/54594

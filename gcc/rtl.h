@@ -419,6 +419,9 @@ struct GTY((variable_size)) rtvec_def {
 /* Predicate yielding nonzero iff X is an rtx for a constant integer.  */
 #define CONST_INT_P(X) (GET_CODE (X) == CONST_INT)
 
+/* Predicate yielding nonzero iff X is an rtx for a constant fixed-point.  */
+#define CONST_FIXED_P(X) (GET_CODE (X) == CONST_FIXED)
+
 /* Predicate yielding true iff X is an rtx for a double-int
    or floating point constant.  */
 #define CONST_DOUBLE_P(X) (GET_CODE (X) == CONST_DOUBLE)
@@ -760,6 +763,7 @@ extern void rtl_check_failed_flag (const char *, const_rtx, const char *,
 #endif
 
 #define XINT(RTX, N)	(RTL_CHECK2 (RTX, N, 'i', 'n').rt_int)
+#define XUINT(RTX, N)   (RTL_CHECK2 (RTX, N, 'i', 'n').rt_uint)
 #define XSTR(RTX, N)	(RTL_CHECK2 (RTX, N, 's', 'S').rt_str)
 #define XEXP(RTX, N)	(RTL_CHECK2 (RTX, N, 'e', 'u').rt_rtx)
 #define XVEC(RTX, N)	(RTL_CHECK2 (RTX, N, 'E', 'V').rt_rtvec)
@@ -823,13 +827,13 @@ extern void rtl_check_failed_flag (const char *, const_rtx, const char *,
 /* The body of an insn.  */
 #define PATTERN(INSN)	XEXP (INSN, 4)
 
-#define INSN_LOCATOR(INSN) XINT (INSN, 5)
+#define INSN_LOCATION(INSN) XUINT (INSN, 5)
+
+#define INSN_HAS_LOCATION(INSN) (!IS_UNKNOWN_LOCATION (INSN_LOCATION (INSN)))
+
 /* LOCATION of an RTX if relevant.  */
 #define RTL_LOCATION(X) (INSN_P (X) ? \
-			 locator_location (INSN_LOCATOR (X)) \
-			 : UNKNOWN_LOCATION)
-/* LOCATION of current INSN.  */
-#define CURR_INSN_LOCATION (locator_location (curr_insn_locator ()))
+			 INSN_LOCATION (X) : UNKNOWN_LOCATION)
 
 /* Code number of instruction, from when it was recognized.
    -1 means this instruction has not been recognized yet.  */
@@ -1828,12 +1832,8 @@ extern rtx prev_cc0_setter (rtx);
 /* In emit-rtl.c  */
 extern int insn_line (const_rtx);
 extern const char * insn_file (const_rtx);
-extern location_t locator_location (int);
-extern int locator_line (int);
-extern const char * locator_file (int);
-extern bool locator_eq (int, int);
-extern int prologue_locator, epilogue_locator;
 extern tree insn_scope (const_rtx);
+extern location_t prologue_location, epilogue_location;
 
 /* In jump.c */
 extern enum rtx_code reverse_condition (enum rtx_code);
@@ -2671,14 +2671,10 @@ extern const struct rtl_hooks general_rtl_hooks;
 /* Keep this for the nonce.  */
 #define gen_lowpart rtl_hooks.gen_lowpart
 
-extern void insn_locators_alloc (void);
-extern void insn_locators_free (void);
-extern void insn_locators_finalize (void);
-extern void set_curr_insn_source_location (location_t);
-extern location_t get_curr_insn_source_location (void);
-extern void set_curr_insn_block (tree);
-extern tree get_curr_insn_block (void);
-extern int curr_insn_locator (void);
+extern void insn_locations_init (void);
+extern void insn_locations_finalize (void);
+extern void set_curr_insn_location (location_t);
+extern location_t curr_insn_location (void);
 extern bool optimize_insn_for_size_p (void);
 extern bool optimize_insn_for_speed_p (void);
 

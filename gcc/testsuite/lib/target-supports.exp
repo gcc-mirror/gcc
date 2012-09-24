@@ -3097,7 +3097,7 @@ proc check_effective_target_vect_widen_mult_qi_to_hi { } {
 	    set et_vect_widen_mult_qi_to_hi_saved 0
 	}
         if { [istarget powerpc*-*-*]
-              || ([istarget arm*-*-*] && [check_effective_target_arm_neon]) } {
+              || ([istarget arm*-*-*] && [check_effective_target_arm_neon_ok]) } {
             set et_vect_widen_mult_qi_to_hi_saved 1
         }
     }
@@ -3131,7 +3131,7 @@ proc check_effective_target_vect_widen_mult_hi_to_si { } {
 	      || [istarget ia64-*-*]
 	      || [istarget i?86-*-*]
 	      || [istarget x86_64-*-*]
-              || ([istarget arm*-*-*] && [check_effective_target_arm_neon]) } {
+              || ([istarget arm*-*-*] && [check_effective_target_arm_neon_ok]) } {
             set et_vect_widen_mult_hi_to_si_saved 1
         }
     }
@@ -3152,7 +3152,7 @@ proc check_effective_target_vect_widen_mult_qi_to_hi_pattern { } {
     } else {
         set et_vect_widen_mult_qi_to_hi_pattern_saved 0
         if { [istarget powerpc*-*-*]
-              || ([istarget arm*-*-*] && [check_effective_target_arm_neon]) } {
+              || ([istarget arm*-*-*] && [check_effective_target_arm_neon_ok]) } {
             set et_vect_widen_mult_qi_to_hi_pattern_saved 1
         }
     }
@@ -3177,7 +3177,7 @@ proc check_effective_target_vect_widen_mult_hi_to_si_pattern { } {
               || [istarget ia64-*-*]
               || [istarget i?86-*-*]
               || [istarget x86_64-*-*]
-              || ([istarget arm*-*-*] && [check_effective_target_arm_neon]) } {
+              || ([istarget arm*-*-*] && [check_effective_target_arm_neon_ok]) } {
             set et_vect_widen_mult_hi_to_si_pattern_saved 1
         }
     }
@@ -3307,7 +3307,7 @@ proc check_effective_target_vect_pack_trunc { } {
              || [istarget i?86-*-*]
              || [istarget x86_64-*-*]
              || [istarget spu-*-*]
-             || ([istarget arm*-*-*] && [check_effective_target_arm_neon]
+             || ([istarget arm*-*-*] && [check_effective_target_arm_neon_ok]
 		 && [check_effective_target_arm_little_endian]) } {
             set et_vect_pack_trunc_saved 1
         }
@@ -3333,7 +3333,7 @@ proc check_effective_target_vect_unpack { } {
              || [istarget x86_64-*-*] 
              || [istarget spu-*-*]
              || [istarget ia64-*-*]
-             || ([istarget arm*-*-*] && [check_effective_target_arm_neon]
+             || ([istarget arm*-*-*] && [check_effective_target_arm_neon_ok]
 		 && [check_effective_target_arm_little_endian]) } {
             set et_vect_unpack_saved 1
         }
@@ -3751,7 +3751,7 @@ proc check_effective_target_vect_multiple_sizes { } {
     global et_vect_multiple_sizes_saved
 
     set et_vect_multiple_sizes_saved 0
-    if { ([istarget arm*-*-*] && [check_effective_target_arm_neon]) } {
+    if { ([istarget arm*-*-*] && [check_effective_target_arm_neon_ok]) } {
        set et_vect_multiple_sizes_saved 1
     }
     if { ([istarget x86_64-*-*] || [istarget i?86-*-*]) } {

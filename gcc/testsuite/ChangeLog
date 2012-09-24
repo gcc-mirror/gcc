@@ -1,3 +1,230 @@
+2012-09-24  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/52173
+	* gcc.dg/tm/pr52173-1.c: New.
+	* gcc.dg/tm/pr52173-2.c: New.
+
+2012-09-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/pr54669.c: New test.
+
+2012-09-23  Paolo Carlini  <paolo.carlini@oracle.com>
+	    Dominique Dhumieres  <dominiq@lps.ens.fr>
+
+	PR testsuite/54677
+	* g++.dg/cpp0x/decltype32.C: Add -ftemplate-depth=10.
+
+2012-09-23  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54618
+	* gfortran.dg/class_array_14.f90: New.
+
+2012-09-22  Kai Tietz  <ktietz@redhat.com>
+
+	* gcc.dg/tree-ssa/scev-3.c: Add llp64 to xfail.
+	* gcc.dg/tree-ssa/scev-4.c: Likewise.
+
+2012-09-21  Dehao Chen  <dehao@google.com>
+
+	PR go/54649
+	PR tree-optimization/54655
+	* g++.dg/pr54655.C: New testcase.
+
+2012-09-21  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/54647
+	* g++.dg/torture/pr54647.C: New testcase.
+
+2012-09-21  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/54427
+	* c-c++-common/torture/vector-compare-2.c: Add -w.
+
+2012-09-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt20.ads: Move dg directive to...
+	* gnat.dg/opt20.adb: ...here.
+	* gnat.dg/addr1.ad[sb]: Likewise.
+	* gnat.dg/concat2.ad[sb]: Likewise.
+	* gnat.dg/array16.ad[sb]: Likewise.
+	* gnat.dg/atomic5.ad[sb]: Likewise.
+	* gnat.dg/discr29.ad[sb]: Likewise.
+	* gnat.dg/noreturn5.ad[sb]: Likewise.
+	* gnat.dg/vect8.ad[sb]: Likewise.  Add dg-options.
+	* gnat.dg/discr23.ads: Remove dg directive.
+	* gnat.dg/nested_float_packed.ads: Likewise.
+	* gnat.dg/oconst6.ads: Move to...
+	* gnat.dg/specs/oconst6.ads: ...here.
+
+2012-09-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/52432
+	* g++.dg/cpp0x/decltype32.C: Tweak.
+
+2012-09-20  Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.dg/tree-ssa/forwprop-19.c: Check in forwprop1.
+	* gcc.dg/tree-ssa/forwprop-20.c: Check in forwprop1.
+	* gcc.dg/tree-ssa/forwprop-21.c: Check in copyprop1.
+	* gcc.dg/tree-ssa/forwprop-22.c: Check in copyprop1.
+
+2012-09-19  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/54581
+	* g++.dg/cpp0x/decltype-54581.C: New testcase.
+
+2012-09-19  Steve Ellcey  <sellcey@mips.com>
+
+	* gcc.target/mips/pr37362.c: Add mips*-mti-elf exception.
+
+2012-09-19  Tulio Magno Quites Machado Filho  <tuliom@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/ppc-get-timebase.c: New file.
+	* gcc.target/powerpc/ppc-mftb.c: New file.
+
+2012-09-19  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54089
+	* gcc.target/sh/pr54089-1.c (test_11, test_12, test_13, test_14): New
+	functions.
+
+2012-09-19  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54236
+	* gcc.target/sh/pr54236-1.c (test_08): Add one bit left shift case.
+
+2012-09-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.c-torture/execute/20120919-1.c: New test.
+
+2012-09-19  Richard Guenther  <rguenther@suse.de>
+
+	* lib/c-torture.exp (TORTURE_OPTIONS): Add -Og -g.
+
+2012-09-19  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/builtin-unreachable-6.c: Adjust.
+
+2012-09-19  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/builtin-object-size-10.c: Adjust.
+	* gcc.dg/builtin-unreachable-5.c: Adjust.
+	* gcc.dg/tree-ssa/builtin-fprintf-1.c: Adjust.
+	* gcc.dg/tree-ssa/builtin-fprintf-chk-1.c: Adjust.
+	* gcc.dg/tree-ssa/builtin-printf-1.c: Adjust.
+	* gcc.dg/tree-ssa/builtin-printf-chk-1.c: Adjust.
+	* gcc.dg/tree-ssa/builtin-vfprintf-1.c: Adjust.
+	* gcc.dg/tree-ssa/builtin-vfprintf-chk-1.c: Adjust.
+	* gcc.dg/tree-ssa/builtin-vprintf-1.c: Adjust.
+	* gcc.dg/tree-ssa/builtin-vprintf-chk-1.c: Adjust.
+	* gcc.dg/tree-ssa/ssa-ccp-10.c: Adjust.
+	* gcc.dg/vect/vec-scal-opt.c: Adjust.
+	* gcc.dg/vect/vec-scal-opt1.c: Adjust.
+	* gcc.dg/vect/vec-scal-opt2.c: Adjust.
+
+2012-09-19  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/54132
+	* gcc.dg/tree-ssa/ldist-21.c: New testcase.
+	* gcc.dg/torture/pr54132.c: Likewise.
+
+2012-09-19  Terry Guo  <terry.guo@arm.com>
+
+	* lib/gcc-dg.exp (dg_runtest_extra_prunes): New variable to define
+	extra prune rules that will be applied to all tests in a .exp file.
+	(gcc-dg-prune): Use rules defined by the above variable.
+	* gcc.target/arm/arm.exp (dg_runtest_extra_prunes): Skip all the
+	harmless warnings on architecture switch conflict.
+
+2012-09-19  Hans-Peter Nilsson  <hp@axis.com>
+
+	* g++.dg/debug/dwarf2/nested-3.C: Match a sequence
+	of asm-comment characters instead of a single one.
+	* g++.dg/debug/dwarf2/nested-2.C: Similar.
+
+2012-09-18  Janis Johnson  <janisjo@codesourcery.com>
+
+	* gcc.dg/vect/fast-math-pr35982.c: Skip check instead of xfail.
+
+	* gcc.dg/vect/no-vfa-vect-101.c: Skip a check for an irrelevant
+	target instead of xfailing it.
+	* gcc.dg/vect/no-vfa-vect-102.c: Likewise.
+	* gcc.dg/vect/no-vfa-vect-102a.c: Likewise.
+	* gcc.dg/vect/no-vfa-vect-37.c: Likewise.
+	* gcc.dg/vect/no-vfa-vect-79.c: Likewise.
+	* gcc.dg/vect/vect-104.c: Likewise.
+	* gcc.dg/vect/vect-outer-1-big-array.c: Likewise.
+	* gcc.dg/vect/vect-outer-1.c: Likewise.
+	* gcc.dg/vect/vect-outer-1a-big-array.c: Likewise.
+	* gcc.dg/vect/vect-outer-1a.c: Likewise.
+	* gcc.dg/vect/vect-outer-1b-big-array.c: Likewise.
+	* gcc.dg/vect/vect-outer-1b.c: Likewise.
+	* gcc.dg/vect/vect-outer-2b.c: Likewise.
+	* gcc.dg/vect/vect-outer-3a-big-array.c: Likewise.
+	* gcc.dg/vect/vect-outer-3a.c: Likewise.
+	* gcc.dg/vect/vect-outer-3b.c: Likewise.
+	* gcc.dg/vect/vect-reduc-dot-s8b.c: Likewise.
+
+	* lib/target-supports.exp
+	(check_effective_target_vect_widen_mult_qi_to_hi,
+	check_effective_target_vect_widen_mult_hi_to_si,
+	check_effective_target_vect_widen_mult_qi_to_hi_pattern,
+	check_effective_target_vect_widen_mult_hi_to_si_pattern,
+	check_effective_target_vect_pack_trunc,
+	check_effective_target_vect_unpack,
+	check_effective_target_vect_multiple_sizes): Check arm_neon_ok
+	instead of arm_none.
+
+	* gcc.dg/vect/pr52298.c: Remove "dg-do run".
+
+2012-09-18  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* lib/target-supports-dg.exp (check-flags): Add cflags from board
+	config to compiler_flags.
+
+2012-09-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/54592
+	* gcc.target/i386/pr54592.c: New test.
+
+	PR tree-optimization/54610
+	* gcc.target/i386/pr54610.c: New test.
+
+2012-09-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/54575
+	* g++.dg/cpp0x/alias-decl-21.C: New.
+	* g++.dg/cpp0x/alias-decl-22.C: New.
+
+2012-09-17  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54608
+	* gfortran.dg/scan_2.f90: New.
+
+2012-09-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/53661
+	* g++.dg/init/aggr9.C: New.
+
+2012-09-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/loop_optimization12.ad[sb]: New test.
+
+2012-09-17  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54285
+	* gfortran.dg/proc_ptr_result_7.f90: New.
+
+2012-09-17  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54603
+	* gfortran.dg/structure_constructor_11.f90: New.
+
+2012-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/54563
+	* g++.dg/torture/pr54563.C: New test.
+
 2012-09-16  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/54594
@@ -110,13 +337,6 @@
 2012-09-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/pr44194-1.c: Check that there are no memory accesses left.
-
-2012-09-14  Jakub Jelinek  <jakub@redhat.com>
-
-	PR target/54564
-	* config/i386/fmaintrin.h (_mm_fnmadd_sd, _mm_fnmadd_ss,
-	_mm_fnmsub_sd, _mm_fnmsub_ss): Negate the second argument instead
-	of the first.
 
 2012-09-14  Richard Guenther  <rguenther@suse.de>
 

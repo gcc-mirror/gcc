@@ -121,24 +121,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return _M_stateT[_M_pos++];
       }
 
-#ifdef __SSE2__
-      friend bool
-      operator==(const simd_fast_mersenne_twister_engine& __lhs,
-		 const simd_fast_mersenne_twister_engine& __rhs)
-      { __m128i __res = _mm_cmpeq_epi8(__lhs._M_state[0], __rhs._M_state[0]);
-	for (size_t __i = 1; __i < __lhs._M_nstate; ++__i)
-	  __res = _mm_and_si128(__res, _mm_cmpeq_epi8(__lhs._M_state[__i],
-						      __rhs._M_state[__i]));
-	return (_mm_movemask_epi8(__res) == 0xffff
-		&& __lhs._M_pos == __rhs._M_pos); }
-#else
-      friend bool
-      operator==(const simd_fast_mersenne_twister_engine& __lhs,
-		 const simd_fast_mersenne_twister_engine& __rhs)
-      { return (std::equal(__lhs._M_stateT, __lhs._M_stateT + state_size,
-			   __rhs._M_stateT)
-		&& __lhs._M_pos == __rhs._M_pos); }
-#endif
+      template<typename _UIntType_2, size_t __m_2,
+	       size_t __pos1_2, size_t __sl1_2, size_t __sl2_2,
+	       size_t __sr1_2, size_t __sr2_2,
+	       uint32_t __msk1_2, uint32_t __msk2_2,
+	       uint32_t __msk3_2, uint32_t __msk4_2,
+	       uint32_t __parity1_2, uint32_t __parity2_2,
+	       uint32_t __parity3_2, uint32_t __parity4_2>
+	friend bool
+	operator==(const simd_fast_mersenne_twister_engine<_UIntType_2,
+		   __m_2, __pos1_2, __sl1_2, __sl2_2, __sr1_2, __sr2_2,
+		   __msk1_2, __msk2_2, __msk3_2, __msk4_2,
+		   __parity1_2, __parity2_2, __parity3_2, __parity4_2>& __lhs,
+		   const simd_fast_mersenne_twister_engine<_UIntType_2,
+		   __m_2, __pos1_2, __sl1_2, __sl2_2, __sr1_2, __sr2_2,
+		   __msk1_2, __msk2_2, __msk3_2, __msk4_2,
+		   __parity1_2, __parity2_2, __parity3_2, __parity4_2>& __rhs);
 
       template<typename _UIntType_2, size_t __m_2,
 	       size_t __pos1_2, size_t __sl1_2, size_t __sl2_2,
@@ -934,9 +932,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	typedef rice_distribution<result_type> distribution_type;
 
-	param_type(result_type __nu = result_type(0),
-		   result_type __sigma = result_type(1))
-	: _M_nu(__nu), _M_sigma(__sigma)
+	param_type(result_type __nu_val = result_type(0),
+		   result_type __sigma_val = result_type(1))
+	: _M_nu(__nu_val), _M_sigma(__sigma_val)
 	{
 	  _GLIBCXX_DEBUG_ASSERT(_M_nu >= result_type(0));
 	  _GLIBCXX_DEBUG_ASSERT(_M_sigma > result_type(0));
@@ -966,11 +964,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        * @brief Constructors.
        */
       explicit
-      rice_distribution(result_type __nu = result_type(0),
-			result_type __sigma = result_type(1))
-      : _M_param(__nu, __sigma),
-	_M_ndx(__nu, __sigma),
-	_M_ndy(result_type(0), __sigma)
+      rice_distribution(result_type __nu_val = result_type(0),
+			result_type __sigma_val = result_type(1))
+      : _M_param(__nu_val, __sigma_val),
+	_M_ndx(__nu_val, __sigma_val),
+	_M_ndy(result_type(0), __sigma_val)
       { }
 
       explicit
@@ -1141,9 +1139,467 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       const rice_distribution<_RealType1>& __d2)
     { return !(__d1 == __d2); }
 
-_GLIBCXX_END_NAMESPACE_VERSION
-} // namespace std
 
+  /**
+   * @brief A Nakagami continuous distribution for random numbers.
+   *
+   * The formula for the Nakagami probability density function is
+   * @f[
+   *     p(x|\mu,\omega) = \frac{2\mu^\mu}{\Gamma(\mu)\omega^\mu}
+   *                       x^{2\mu-1}e^{-\mu x / \omega}
+   * @f]
+   * where @f$\Gamma(z)@f$ is the gamma function and @f$\mu >= 0.5@f$
+   * and @f$\omega > 0@f$.
+   */
+  template<typename _RealType = double>
+    class
+    nakagami_distribution
+    {
+      static_assert(std::is_floating_point<_RealType>::value,
+		    "template argument not a floating point type");
+
+    public:
+      /** The type of the range of the distribution. */
+      typedef _RealType result_type;
+      /** Parameter type. */
+      struct param_type
+      {
+	typedef nakagami_distribution<result_type> distribution_type;
+
+	param_type(result_type __mu_val = result_type(1),
+		   result_type __omega_val = result_type(1))
+	: _M_mu(__mu_val), _M_omega(__omega_val)
+	{
+	  _GLIBCXX_DEBUG_ASSERT(_M_mu >= result_type(0.5L));
+	  _GLIBCXX_DEBUG_ASSERT(_M_omega > result_type(0));
+	}
+
+	result_type
+	mu() const
+	{ return _M_mu; }
+
+	result_type
+	omega() const
+	{ return _M_omega; }
+
+	friend bool
+	operator==(const param_type& __p1, const param_type& __p2)
+	{ return __p1._M_mu == __p2._M_mu
+              && __p1._M_omega == __p2._M_omega; }
+
+      private:
+	void _M_initialize();
+
+	result_type _M_mu;
+	result_type _M_omega;
+      };
+
+      /**
+       * @brief Constructors.
+       */
+      explicit
+      nakagami_distribution(result_type __mu_val = result_type(1),
+			    result_type __omega_val = result_type(1))
+      : _M_param(__mu_val, __omega_val),
+	_M_gd(__mu_val, __omega_val / __mu_val)
+      { }
+
+      explicit
+      nakagami_distribution(const param_type& __p)
+      : _M_param(__p),
+	_M_gd(__p.mu(), __p.omega() / __p.mu())
+      { }
+
+      /**
+       * @brief Resets the distribution state.
+       */
+      void
+      reset()
+      { _M_gd.reset(); }
+
+      /**
+       * @brief Return the parameters of the distribution.
+       */
+      result_type
+      mu() const
+      { return _M_param.mu(); }
+
+      result_type
+      omega() const
+      { return _M_param.omega(); }
+
+      /**
+       * @brief Returns the parameter set of the distribution.
+       */
+      param_type
+      param() const
+      { return _M_param; }
+
+      /**
+       * @brief Sets the parameter set of the distribution.
+       * @param __param The new parameter set of the distribution.
+       */
+      void
+      param(const param_type& __param)
+      { _M_param = __param; }
+
+      /**
+       * @brief Returns the greatest lower bound value of the distribution.
+       */
+      result_type
+      min() const
+      { return result_type(0); }
+
+      /**
+       * @brief Returns the least upper bound value of the distribution.
+       */
+      result_type
+      max() const
+      { return std::numeric_limits<result_type>::max(); }
+
+      /**
+       * @brief Generating functions.
+       */
+      template<typename _UniformRandomNumberGenerator>
+	result_type
+	operator()(_UniformRandomNumberGenerator& __urng)
+	{ return std::sqrt(this->_M_gd(__urng)); }
+
+      template<typename _UniformRandomNumberGenerator>
+	result_type
+	operator()(_UniformRandomNumberGenerator& __urng,
+		   const param_type& __p)
+        {
+	  typename std::gamma_distribution<result_type>::param_type
+	    __pg(__p.mu(), __p.omega() / __p.mu());
+	  return std::sqrt(this->_M_gd(__pg, __urng));
+	}
+
+      template<typename _ForwardIterator,
+	       typename _UniformRandomNumberGenerator>
+	void
+	__generate(_ForwardIterator __f, _ForwardIterator __t,
+		   _UniformRandomNumberGenerator& __urng)
+	{ this->__generate(__f, __t, __urng, this->param()); }
+
+      template<typename _ForwardIterator,
+	       typename _UniformRandomNumberGenerator>
+	void
+	__generate(_ForwardIterator __f, _ForwardIterator __t,
+		   _UniformRandomNumberGenerator& __urng,
+		   const param_type& __p)
+	{ this->__generate_impl(__f, __t, __urng, __p); }
+
+      template<typename _UniformRandomNumberGenerator>
+	void
+	__generate(result_type* __f, result_type* __t,
+		   _UniformRandomNumberGenerator& __urng,
+		   const param_type& __p)
+	{ this->__generate_impl(__f, __t, __urng, __p); }
+
+      /**
+       * @brief Return true if two Nakagami distributions have
+       *        the same parameters and the sequences that would
+       *        be generated are equal.
+       */
+      friend bool
+      operator==(const nakagami_distribution& __d1,
+		 const nakagami_distribution& __d2)
+      { return (__d1.param() == __d2.param()
+		&& __d1._M_gd == __d2._M_gd); }
+
+      /**
+       * @brief Inserts a %nakagami_distribution random number distribution
+       * @p __x into the output stream @p __os.
+       *
+       * @param __os An output stream.
+       * @param __x  A %nakagami_distribution random number distribution.
+       *
+       * @returns The output stream with the state of @p __x inserted or in
+       * an error state.
+       */
+      template<typename _RealType1, typename _CharT, typename _Traits>
+	friend std::basic_ostream<_CharT, _Traits>&
+	operator<<(std::basic_ostream<_CharT, _Traits>&,
+		   const nakagami_distribution<_RealType1>&);
+
+      /**
+       * @brief Extracts a %nakagami_distribution random number distribution
+       * @p __x from the input stream @p __is.
+       *
+       * @param __is An input stream.
+       * @param __x A %nakagami_distribution random number
+       *            generator engine.
+       *
+       * @returns The input stream with @p __x extracted or in an error state.
+       */
+      template<typename _RealType1, typename _CharT, typename _Traits>
+	friend std::basic_istream<_CharT, _Traits>&
+	operator>>(std::basic_istream<_CharT, _Traits>&,
+		   nakagami_distribution<_RealType1>&);
+
+    private:
+      template<typename _ForwardIterator,
+	       typename _UniformRandomNumberGenerator>
+	void
+	__generate_impl(_ForwardIterator __f, _ForwardIterator __t,
+			_UniformRandomNumberGenerator& __urng,
+			const param_type& __p);
+
+      param_type _M_param;
+
+      std::gamma_distribution<result_type> _M_gd;
+    };
+
+  /**
+   * @brief Return true if two Nakagami distributions are not equal.
+   */
+  template<typename _RealType>
+    inline bool
+    operator!=(const nakagami_distribution<_RealType>& __d1,
+	       const nakagami_distribution<_RealType>& __d2)
+    { return !(__d1 == __d2); }
+
+
+  /**
+   * @brief A Pareto continuous distribution for random numbers.
+   *
+   * The formula for the Pareto cumulative probability function is
+   * @f[
+   *     P(x|\alpha,\mu) = 1 - \left(\frac{\mu}{x}\right)^\alpha
+   * @f]
+   * The formula for the Pareto probability density function is
+   * @f[
+   *     p(x|\alpha,\mu) = \frac{\alpha + 1}{\mu}
+   *                       \left(\frac{\mu}{x}\right)^{\alpha + 1}
+   * @f]
+   * where @f$x >= \mu@f$ and @f$\mu > 0@f$, @f$\alpha > 0@f$.
+   *
+   * <table border=1 cellpadding=10 cellspacing=0>
+   * <caption align=top>Distribution Statistics</caption>
+   * <tr><td>Mean</td><td>@f$\alpha \mu / (\alpha - 1)@f$
+   *              for @f$\alpha > 1@f$</td></tr>
+   * <tr><td>Variance</td><td>@f$\alpha \mu^2 / [(\alpha - 1)^2(\alpha - 2)]@f$
+   *              for @f$\alpha > 2@f$</td></tr>
+   * <tr><td>Range</td><td>@f$[\mu, \infty)@f$</td></tr>
+   * </table>
+   */
+  template<typename _RealType = double>
+    class
+    pareto_distribution
+    {
+      static_assert(std::is_floating_point<_RealType>::value,
+		    "template argument not a floating point type");
+
+    public:
+      /** The type of the range of the distribution. */
+      typedef _RealType result_type;
+      /** Parameter type. */
+      struct param_type
+      {
+	typedef pareto_distribution<result_type> distribution_type;
+
+	param_type(result_type __alpha_val = result_type(1),
+		   result_type __mu_val = result_type(1))
+	: _M_alpha(__alpha_val), _M_mu(__mu_val)
+	{
+	  _GLIBCXX_DEBUG_ASSERT(_M_alpha > result_type(0));
+	  _GLIBCXX_DEBUG_ASSERT(_M_mu > result_type(0));
+	}
+
+	result_type
+	alpha() const
+	{ return _M_alpha; }
+
+	result_type
+	mu() const
+	{ return _M_mu; }
+
+	friend bool
+	operator==(const param_type& __p1, const param_type& __p2)
+	{ return __p1._M_alpha == __p2._M_alpha && __p1._M_mu == __p2._M_mu; }
+
+      private:
+	void _M_initialize();
+
+	result_type _M_alpha;
+	result_type _M_mu;
+      };
+
+      /**
+       * @brief Constructors.
+       */
+      explicit
+      pareto_distribution(result_type __alpha_val = result_type(1),
+			  result_type __mu_val = result_type(1))
+      : _M_param(__alpha_val, __mu_val),
+	_M_ud()
+      { }
+
+      explicit
+      pareto_distribution(const param_type& __p)
+      : _M_param(__p),
+	_M_ud()
+      { }
+
+      /**
+       * @brief Resets the distribution state.
+       */
+      void
+      reset()
+      {
+	_M_ud.reset();
+      }
+
+      /**
+       * @brief Return the parameters of the distribution.
+       */
+      result_type
+      alpha() const
+      { return _M_param.alpha(); }
+
+      result_type
+      mu() const
+      { return _M_param.mu(); }
+
+      /**
+       * @brief Returns the parameter set of the distribution.
+       */
+      param_type
+      param() const
+      { return _M_param; }
+
+      /**
+       * @brief Sets the parameter set of the distribution.
+       * @param __param The new parameter set of the distribution.
+       */
+      void
+      param(const param_type& __param)
+      { _M_param = __param; }
+
+      /**
+       * @brief Returns the greatest lower bound value of the distribution.
+       */
+      result_type
+      min() const
+      { return this->mu(); }
+
+      /**
+       * @brief Returns the least upper bound value of the distribution.
+       */
+      result_type
+      max() const
+      { return std::numeric_limits<result_type>::max(); }
+
+      /**
+       * @brief Generating functions.
+       */
+      template<typename _UniformRandomNumberGenerator>
+	result_type
+	operator()(_UniformRandomNumberGenerator& __urng)
+	{
+	  return this->mu() * std::pow(this->_M_ud(__urng),
+				       -result_type(1) / this->alpha());
+	}
+
+      template<typename _UniformRandomNumberGenerator>
+	result_type
+	operator()(_UniformRandomNumberGenerator& __urng,
+		   const param_type& __p)
+        {
+	  return __p.mu() * std::pow(this->_M_ud(__urng),
+					   -result_type(1) / __p.alpha());
+	}
+
+      template<typename _ForwardIterator,
+	       typename _UniformRandomNumberGenerator>
+	void
+	__generate(_ForwardIterator __f, _ForwardIterator __t,
+		   _UniformRandomNumberGenerator& __urng)
+	{ this->__generate(__f, __t, __urng, this->param()); }
+
+      template<typename _ForwardIterator,
+	       typename _UniformRandomNumberGenerator>
+	void
+	__generate(_ForwardIterator __f, _ForwardIterator __t,
+		   _UniformRandomNumberGenerator& __urng,
+		   const param_type& __p)
+	{ this->__generate_impl(__f, __t, __urng, __p); }
+
+      template<typename _UniformRandomNumberGenerator>
+	void
+	__generate(result_type* __f, result_type* __t,
+		   _UniformRandomNumberGenerator& __urng,
+		   const param_type& __p)
+	{ this->__generate_impl(__f, __t, __urng, __p); }
+
+      /**
+       * @brief Return true if two Pareto distributions have
+       *        the same parameters and the sequences that would
+       *        be generated are equal.
+       */
+      friend bool
+      operator==(const pareto_distribution& __d1,
+		 const pareto_distribution& __d2)
+      { return (__d1.param() == __d2.param()
+		&& __d1._M_ud == __d2._M_ud); }
+
+      /**
+       * @brief Inserts a %pareto_distribution random number distribution
+       * @p __x into the output stream @p __os.
+       *
+       * @param __os An output stream.
+       * @param __x  A %pareto_distribution random number distribution.
+       *
+       * @returns The output stream with the state of @p __x inserted or in
+       * an error state.
+       */
+      template<typename _RealType1, typename _CharT, typename _Traits>
+	friend std::basic_ostream<_CharT, _Traits>&
+	operator<<(std::basic_ostream<_CharT, _Traits>&,
+		   const pareto_distribution<_RealType1>&);
+
+      /**
+       * @brief Extracts a %pareto_distribution random number distribution
+       * @p __x from the input stream @p __is.
+       *
+       * @param __is An input stream.
+       * @param __x A %pareto_distribution random number
+       *            generator engine.
+       *
+       * @returns The input stream with @p __x extracted or in an error state.
+       */
+      template<typename _RealType1, typename _CharT, typename _Traits>
+	friend std::basic_istream<_CharT, _Traits>&
+	operator>>(std::basic_istream<_CharT, _Traits>&,
+		   pareto_distribution<_RealType1>&);
+
+    private:
+      template<typename _ForwardIterator,
+	       typename _UniformRandomNumberGenerator>
+	void
+	__generate_impl(_ForwardIterator __f, _ForwardIterator __t,
+			_UniformRandomNumberGenerator& __urng,
+			const param_type& __p);
+
+      param_type _M_param;
+
+      std::uniform_real_distribution<result_type> _M_ud;
+    };
+
+  /**
+   * @brief Return true if two Pareto distributions are not equal.
+   */
+  template<typename _RealType>
+    inline bool
+    operator!=(const pareto_distribution<_RealType>& __d1,
+	       const pareto_distribution<_RealType>& __d2)
+    { return !(__d1 == __d2); }
+
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace __gnu_cxx
+
+#include "opt_random.h"
 #include "random.tcc"
 
 #endif /* _EXT_RANDOM */

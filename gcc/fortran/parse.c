@@ -2195,7 +2195,8 @@ endType:
       if (c->attr.allocatable
 	  || (c->ts.type == BT_CLASS && c->attr.class_ok
 	      && CLASS_DATA (c)->attr.allocatable)
-	  || (c->ts.type == BT_DERIVED && c->ts.u.derived->attr.alloc_comp))
+	  || (c->ts.type == BT_DERIVED && !c->attr.pointer
+	      && c->ts.u.derived->attr.alloc_comp))
 	{
 	  allocatable = true;
 	  sym->attr.alloc_comp = 1;

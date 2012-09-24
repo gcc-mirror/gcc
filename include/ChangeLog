@@ -1,3 +1,8 @@
+2012-09-18  Florian Weimer  <fweimer@redhat.com>
+
+	PR other/54411
+	* objalloc.h (objalloc_alloc): Do not use fast path on wraparound.
+
 2012-09-06  Cary Coutant  <ccoutant@google.com>
 
 	* dwarf2.def: Edit comment.

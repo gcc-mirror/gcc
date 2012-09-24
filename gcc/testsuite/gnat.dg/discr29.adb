@@ -1,3 +1,5 @@
+-- { dg-do compile }
+
 package body Discr29 is
 
    procedure Proc (R : out Rec3) is

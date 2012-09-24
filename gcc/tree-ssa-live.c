@@ -597,7 +597,7 @@ remove_unused_scope_block_p (tree scope)
    else
    /* Verfify that only blocks with source location set
       are entry points to the inlined functions.  */
-     gcc_assert (BLOCK_SOURCE_LOCATION (scope) == UNKNOWN_LOCATION);
+     gcc_assert (IS_UNKNOWN_LOCATION (BLOCK_SOURCE_LOCATION (scope)));
 
    TREE_USED (scope) = !unused;
    return unused;
@@ -612,6 +612,47 @@ mark_all_vars_used (tree *expr_p)
   walk_tree (expr_p, mark_all_vars_used_1, NULL, NULL);
 }
 
+/* Helper function for clear_unused_block_pointer, called via walk_tree.  */
+
+static tree
+clear_unused_block_pointer_1 (tree *tp, int *, void *)
+{
+  if (EXPR_P (*tp) && TREE_BLOCK (*tp)
+      && !TREE_USED (TREE_BLOCK (*tp)))
+    TREE_SET_BLOCK (*tp, NULL);
+  if (TREE_CODE (*tp) == VAR_DECL && DECL_DEBUG_EXPR_IS_FROM (*tp))
+    {
+      tree debug_expr = DECL_DEBUG_EXPR (*tp);
+      walk_tree (&debug_expr, clear_unused_block_pointer_1, NULL, NULL);
+    }
+  return NULL_TREE;
+}
+
+/* Set all block pointer in debug stmt to NULL if the block is unused,
+   so that they will not be streamed out.  */
+
+static void
+clear_unused_block_pointer ()
+{
+  basic_block bb;
+  gimple_stmt_iterator gsi;
+  FOR_EACH_BB (bb)
+    for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+      {
+	unsigned i;
+	tree b;
+	gimple stmt = gsi_stmt (gsi);
+
+	if (!is_gimple_debug (stmt))
+	  continue;
+	b = gimple_block (stmt);
+	if (b && !TREE_USED (b))
+	  gimple_set_block (stmt, NULL);
+	for (i = 0; i < gimple_num_ops (stmt); i++)
+	  walk_tree (gimple_op_ptr (stmt, i), clear_unused_block_pointer_1,
+		     NULL, NULL);
+      }
+}
 
 /* Dump scope blocks starting at SCOPE to FILE.  INDENT is the
    indentation level and FLAGS is as in print_generic_expr.  */
@@ -625,7 +666,7 @@ dump_scope_block (FILE *file, int indent, tree scope, int flags)
   fprintf (file, "\n%*s{ Scope block #%i%s%s",indent, "" , BLOCK_NUMBER (scope),
   	   TREE_USED (scope) ? "" : " (unused)",
 	   BLOCK_ABSTRACT (scope) ? " (abstract)": "");
-  if (BLOCK_SOURCE_LOCATION (scope) != UNKNOWN_LOCATION)
+  if (!IS_UNKNOWN_LOCATION (BLOCK_SOURCE_LOCATION (scope)))
     {
       expanded_location s = expand_location (BLOCK_SOURCE_LOCATION (scope));
       fprintf (file, " %s:%i", s.file, s.line);
@@ -758,13 +799,18 @@ remove_unused_locals (void)
           FOR_EACH_PHI_ARG (arg_p, phi, i, SSA_OP_ALL_USES)
             {
 	      tree arg = USE_FROM_PTR (arg_p);
+	      int index = PHI_ARG_INDEX_FROM_USE (arg_p);
+	      tree block =
+		LOCATION_BLOCK (gimple_phi_arg_location (phi, index));
+	      if (block != NULL)
+		TREE_USED (block) = true;
 	      mark_all_vars_used (&arg);
             }
         }
 
       FOR_EACH_EDGE (e, ei, bb->succs)
 	if (e->goto_locus)
-	  TREE_USED (e->goto_block) = true;
+	  TREE_USED (LOCATION_BLOCK (e->goto_locus)) = true;
     }
 
   /* We do a two-pass approach about the out-of-scope clobbers.  We want
@@ -836,6 +882,7 @@ remove_unused_locals (void)
     VEC_truncate (tree, cfun->local_decls, dstidx);
 
   remove_unused_scope_block_p (DECL_INITIAL (current_function_decl));
+  clear_unused_block_pointer ();
 
   BITMAP_FREE (usedvars);
 

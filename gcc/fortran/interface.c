@@ -396,11 +396,12 @@ gfc_compare_derived_types (gfc_symbol *derived1, gfc_symbol *derived2)
   if (derived1 == derived2)
     return 1;
 
+  gcc_assert (derived1 && derived2);
+
   /* Special case for comparing derived types across namespaces.  If the
      true names and module names are the same and the module name is
      nonnull, then they are equal.  */
-  if (derived1 != NULL && derived2 != NULL
-      && strcmp (derived1->name, derived2->name) == 0
+  if (strcmp (derived1->name, derived2->name) == 0
       && derived1->module != NULL && derived2->module != NULL
       && strcmp (derived1->module, derived2->module) == 0)
     return 1;
@@ -2267,8 +2268,7 @@ get_expr_storage_size (gfc_expr *e)
 
 	    elements *= (end - start)/stride + 1L;
 	  }
-      else if (ref->type == REF_ARRAY && ref->u.ar.type == AR_FULL
-	       && ref->u.ar.as->lower && ref->u.ar.as->upper)
+      else if (ref->type == REF_ARRAY && ref->u.ar.type == AR_FULL)
 	for (i = 0; i < ref->u.ar.as->rank; i++)
 	  {
 	    if (ref->u.ar.as->lower[i] && ref->u.ar.as->upper[i]
