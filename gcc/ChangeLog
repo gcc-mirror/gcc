@@ -1,3 +1,9 @@
+2012-09-24  Marc Glisse  <marc.glisse@inria.fr>
+
+	* tree-ssa-forwprop.c: Include tree-ssa-propagate.h.
+	(simplify_bitfield_ref): Handle constructors.
+	* Makefile.in (tree-ssa-forwprop.o): Depend on tree-ssa-propagate.h.
+
 2012-09-24  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-pre.c (bitmap_find_leader, create_expression_by_pieces,
