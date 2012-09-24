@@ -1238,15 +1238,18 @@ on particular targets.
 
 A selector is:
 @itemize @bullet
-@item one or more target triplets, possibly including wildcard characters
+@item one or more target triplets, possibly including wildcard characters;
+use @samp{*-*-*} to match any target
 @item a single effective-target keyword (@pxref{Effective-Target Keywords})
 @item a logical expression
 @end itemize
 
-Depending on the
-context, the selector specifies whether a test is skipped and reported
-as unsupported or is expected to fail.  Use @samp{*-*-*} to match any
-target.
+Depending on the context, the selector specifies whether a test is
+skipped and reported as unsupported or is expected to fail.  A context
+that allows either @samp{target} or @samp{xfail} also allows
+@samp{@{ target @var{selector1} xfail @var{selector2} @}}
+to skip the test for targets that don't match @var{selector1} and the
+test to fail for targets that match @var{selector2}.
 
 A selector expression appears within curly braces and uses a single
 logical operator: one of @samp{!}, @samp{&&}, or @samp{||}.  An

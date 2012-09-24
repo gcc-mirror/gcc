@@ -1,3 +1,11 @@
+2012-09-24  Janis Johnson  <janisjo@codesourcery.com>
+
+	* lib/target-supports-dg.exp (dg-require-effective-target,
+	dg-skip-if, dg-xfail-if, dg-xfail-run-if, dg-shouldfail): Call
+	dg-process-target-1 instead of dg-process-target.
+	(dg-process-target-1): Rename from dg-process-target.
+	(dg-process-target): New.
+
 2012-09-24  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/54684

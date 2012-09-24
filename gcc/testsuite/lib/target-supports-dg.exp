@@ -208,7 +208,7 @@ proc dg-require-effective-target { args } {
     
     # Evaluate selector if present.
     if { [llength $args] == 2 } {
-	switch [dg-process-target [lindex $args 1]] {
+	switch [dg-process-target-1 [lindex $args 1]] {
 	    "S" { }
 	    "N" { return }
 	}
@@ -362,7 +362,7 @@ proc dg-skip-if { args } {
     }
 
     set selector [list target [lindex $args 1]]
-    if { [dg-process-target $selector] == "S" } {
+    if { [dg-process-target-1 $selector] == "S" } {
 	if [check-flags $args] {
 	    upvar dg-do-what dg-do-what
             set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
@@ -386,7 +386,7 @@ proc dg-xfail-if { args } {
     }
 
     set selector [list target [lindex $args 1]]
-    if { [dg-process-target $selector] == "S" } {
+    if { [dg-process-target-1 $selector] == "S" } {
 	global compiler_conditional_xfail_data
 
 	# The target list might be an effective-target keyword.  Replace
@@ -421,7 +421,7 @@ proc dg-xfail-run-if { args } {
     }
 
     set selector [list target [lindex $args 1]]
-    if { [dg-process-target $selector] == "S" } {
+    if { [dg-process-target-1 $selector] == "S" } {
 	if [check-flags $args] {
 	    upvar dg-do-what dg-do-what
             set dg-do-what [list [lindex ${dg-do-what} 0] "S" "F"]
@@ -445,7 +445,7 @@ proc dg-shouldfail { args } {
     set args [lreplace $args 0 0]
     if { [llength $args] > 1 } {
 	set selector [list target [lindex $args 1]]
-	if { [dg-process-target $selector] == "S" } {
+	if { [dg-process-target-1 $selector] == "S" } {
 	    # The target matches, now check the flags.
 	    if [check-flags $args] {
 		set shouldfail 1
@@ -460,16 +460,19 @@ proc dg-shouldfail { args } {
 # support use of an effective-target keyword in place of a list of
 # target triplets to xfail or skip a test.
 #
-# selector is one of:
-#    xfail target-triplet-1 ...
-#    xfail effective-target-keyword
-#    xfail selector-expression
-#    target target-triplet-1 ...
-#    target effective-target-keyword
-#    target selector-expression
+# The argument to dg-process-target is the keyword "target" or "xfail"
+# followed by a selector:
+#    target-triplet-1 ...
+#    effective-target-keyword
+#    selector-expression
 #
 # For a target list the result is "S" if the target is selected, "N" otherwise.
 # For an xfail list the result is "F" if the target is affected, "P" otherwise.
+
+# In contexts that allow either "target" or "xfail" the argument can be
+#    target selector1 xfail selector2
+# which returns "N" if selector1 is not selected, otherwise the result of
+# "xfail selector2".
 #
 # A selector expression appears within curly braces and uses a single logical
 # operator: !, &&, or ||.  An operand is another selector expression, an
@@ -529,9 +532,11 @@ if { [info procs saved-dg-process-target] == [list] } {
 	return $answer
     }
 
-    proc dg-process-target { args } {
-	verbose "replacement dg-process-target: `$args'" 2
-	
+    # Evaluate "target selector" or "xfail selector".
+
+    proc dg-process-target-1 { args } {
+	verbose "dg-process-target-1: `$args'" 2
+
 	# Extract the 'what' keyword from the argument list.
 	set selector [string trim [lindex $args 0]]
 	if [regexp "^xfail " $selector] {
@@ -566,5 +571,30 @@ if { [info procs saved-dg-process-target] == [list] } {
 	# The selector is not an effective-target keyword, so process
 	# the list of target triplets.
 	return [saved-dg-process-target $selector]
+    }
+
+    # Intercept calls to the DejaGnu function.  In addition to
+    # processing "target selector" or "xfail selector", handle
+    # "target selector1 xfail selector2".
+
+    proc dg-process-target { args } {
+	verbose "replacement dg-process-target: `$args'" 2
+
+	set selector [string trim [lindex $args 0]]
+
+	# If the argument list contains both 'target' and 'xfail',
+	# process 'target' and, if that succeeds, process 'xfail'.
+	if [regexp "^target .* xfail .*" $selector] {
+	    set xfail_index [string first "xfail" $selector]
+	    set xfail_selector [string range $selector $xfail_index end]
+	    set target_selector [string range $selector 0 $xfail_index-1]
+	    set target_selector [string trim $target_selector]
+	    if { [dg-process-target-1 $target_selector] == "N" } {
+		return "N"
+	    }
+	    return [dg-process-target-1 $xfail_selector]
+	    
+	}
+	return [dg-process-target-1 $selector]
     }
 }
