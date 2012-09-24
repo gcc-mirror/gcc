@@ -1,3 +1,8 @@
+2012-09-24  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/54684
+	* tree-ssa-ccp.c (optimize_unreachable): Properly update stmts.
+
 2012-09-24  Marc Glisse  <marc.glisse@inria.fr>
 
 	* tree-ssa-forwprop.c: Include tree-ssa-propagate.h.
