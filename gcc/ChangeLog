@@ -1,3 +1,12 @@
+2012-09-24  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-pre.c (bitmap_find_leader, create_expression_by_pieces,
+	find_or_generate_expression): Remove dominating stmt argument.
+	(find_leader_in_sets, phi_translate_1, bitmap_find_leader,
+	create_component_ref_by_pieces_1, create_component_ref_by_pieces,
+	do_regular_insertion, do_partial_partial_insertion): Adjust.
+	(compute_avail): Do not set uids.
+
 2012-09-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-streamer-in.c (unpack_ts_type_common_value_fields): Stream in
