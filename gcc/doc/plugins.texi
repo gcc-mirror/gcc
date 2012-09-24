@@ -7,6 +7,30 @@
 @chapter Plugins
 @cindex Plugins
 
+GCC plugin is a loadable module that provides extra
+features to the compiler, which they can further pass
+around as a shareable module.
+
+GCC plugins provide developers with a rich subset of
+the GCC API to allow them to extend GCC as they see fit.
+Whether it is writing an additional optimization pass,
+transforming code, or analyzing information, plugins
+can be quite useful.
+
+@menu
+* Plugins loading::      How can we load plugins.
+* Plugin API::           The APIs for plugins.
+* Plugins pass::         How a plugin interact with the pass manager.
+* Plugins GC::           How a plugin Interact with GCC Garbage Collector.
+* Plugins description::  Giving information about a plugin itself.
+* Plugins attr::         Registering custom attributes or pragmas.
+* Plugins recording::    Recording information about pass execution.
+* Plugins gate::         Controlling which passes are being run.
+* Plugins tracking::     Keeping track of available passes.
+* Plugins building::     How can we build a plugin.
+@end menu
+
+@node Plugins loading
 @section Loading Plugins
 
 Plugins are supported on platforms that support @option{-ldl
@@ -28,6 +52,7 @@ loaded from the @file{plugin} directory, so @option{-fplugin=@var{name}} is
 the same as @option{-fplugin=`gcc -print-file-name=plugin`/@var{name}.so},
 using backquote shell syntax to query the @file{plugin} directory.
 
+@node Plugin API
 @section Plugin API
 
 Plugins are activated by the compiler at specific events as defined in
@@ -213,6 +238,7 @@ pointer as data from GCC), plugins may register their own pragmas
 using functions like @code{c_register_pragma} or
 @code{c_register_pragma_with_expansion}.
 
+@node Plugins pass
 @section Interacting with the pass manager
 
 There needs to be a way to add/reorder/remove passes dynamically. This
@@ -265,6 +291,7 @@ plugin_init (struct plugin_name_args *plugin_info,
 @end smallexample
 
 
+@node Plugins GC
 @section Interacting with the GCC Garbage Collector
 
 Some plugins may want to be informed when GGC (the GCC Garbage
@@ -295,6 +322,7 @@ before using @code{PLUGIN_GGC_MARKING}, @code{PLUGIN_REGISTER_GGC_ROOTS}
 or @code{PLUGIN_REGISTER_GGC_CACHES}.
 
 
+@node Plugins description
 @section Giving information about a plugin
 
 A plugin should give some information to the user about itself. This
@@ -312,6 +340,7 @@ Such a structure is passed as the @code{user_data} by the plugin's
 init routine using @code{register_callback} with the
 @code{PLUGIN_INFO} pseudo-event and a null callback.
 
+@node Plugins attr
 @section Registering custom attributes or pragmas
 
 For analysis (or other) purposes it is useful to be able to add custom
@@ -369,6 +398,7 @@ It is suggested to pass @code{"GCCPLUGIN"} (or a short name identifying
 your plugin) as the ``space'' argument of your pragma.
 
 
+@node Plugins recording
 @section Recording information about pass execution
 
 The event PLUGIN_PASS_EXECUTION passes the pointer to the executed pass
@@ -383,6 +413,7 @@ and/or @code{PLUGIN_EARLY_GIMPLE_PASSES_END} to manipulate global state
 in your plugin(s) in order to get context for the pass execution.
 
 
+@node Plugins gate
 @section Controlling which passes are being run
 
 After the original gate function for a pass is called, its result
@@ -393,6 +424,7 @@ A nonzero value of the gate status means that the pass is to be executed.
 You can both read and write the gate status via the passed pointer.
 
 
+@node Plugins tracking
 @section Keeping track of available passes
 
 When your plugin is loaded, you can inspect the various
@@ -404,6 +436,7 @@ When a pass is first added to one of the pass lists, the event
 @code{gcc_data} pointing to the new pass.
 
 
+@node Plugins building
 @section Building GCC plugins
 
 If plugins are enabled, GCC installs the headers needed to build a
