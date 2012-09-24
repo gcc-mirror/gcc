@@ -12,6 +12,24 @@
 @cindex wpa
 @cindex ltrans
 
+Link Time Optimization (LTO) gives GCC the capability of
+dumping its internal representation (GIMPLE) to disk,
+so that all the different compilation units that make up
+a single executable can be optimized as a single module.
+This expands the scope of inter-procedural optimizations
+to encompass the whole program (or, rather, everything
+that is visible at link time).
+
+@menu
+* LTO Overview::            Overview of LTO.
+* LTO object file layout::  LTO file sections in ELF.
+* IPA::                     Using summary information in IPA passes.
+* WHOPR::                   Whole program assumptions,
+                            linker plugin and symbol visibilities.
+* Internal flags::          Internal flags controlling @code{lto1}.
+@end menu
+
+@node LTO Overview
 @section Design Overview
 
 Link time optimization is implemented as a GCC front end for a
@@ -134,6 +152,7 @@ compilation process.  Additionally, it avoids the need to load the
 whole program into memory.
 
 
+@node LTO object file layout
 @section LTO file sections
 
 LTO information is stored in several ELF sections inside object files.
@@ -246,6 +265,7 @@ format.
 @end itemize
 
 
+@node IPA
 @section Using summary information in IPA passes
 
 Programs are represented internally as a @emph{callgraph} (a
@@ -448,6 +468,7 @@ inter-procedural constant propagation pass and the
 devirtualization pass.  The inliner also uses jump functions to
 perform inlining of callbacks.
 
+@node WHOPR
 @section Whole program assumptions, linker plugin and symbol visibilities
 
 Link-time optimization gives relatively minor benefits when used
@@ -536,6 +557,7 @@ guess based on @option{-fwhole-program}.  Without the linker
 plugin GCC also assumes that symbols are declared @code{hidden}
 and not referred by non-LTO code by default.
 
+@node Internal flags
 @section Internal flags controlling @code{lto1}
 
 The following flags are passed into @command{lto1} and are not
