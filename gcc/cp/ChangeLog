@@ -1,5 +1,7 @@
 2012-09-24  Jason Merrill  <jason@redhat.com>
 
+	* decl.c (get_atexit_node): Remove dead code.
+
 	* Make-lang.in (cp/parser.o): Depend on decl.h.
 
 2012-09-20  Paolo Carlini  <paolo.carlini@oracle.com>
