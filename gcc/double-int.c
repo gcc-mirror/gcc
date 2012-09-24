@@ -23,6 +23,41 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"			/* For SHIFT_COUNT_TRUNCATED.  */
 #include "tree.h"
 
+static int add_double_with_sign (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
+				 unsigned HOST_WIDE_INT, HOST_WIDE_INT,
+				 unsigned HOST_WIDE_INT *, HOST_WIDE_INT *,
+				 bool);
+
+#define add_double(l1,h1,l2,h2,lv,hv) \
+  add_double_with_sign (l1, h1, l2, h2, lv, hv, false)
+
+static int neg_double (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
+		       unsigned HOST_WIDE_INT *, HOST_WIDE_INT *);
+
+static int mul_double_with_sign (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
+				 unsigned HOST_WIDE_INT, HOST_WIDE_INT,
+				 unsigned HOST_WIDE_INT *, HOST_WIDE_INT *,
+				 bool);
+
+static int mul_double_wide_with_sign (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
+				      unsigned HOST_WIDE_INT, HOST_WIDE_INT,
+				      unsigned HOST_WIDE_INT *, HOST_WIDE_INT *,
+				      unsigned HOST_WIDE_INT *, HOST_WIDE_INT *,
+				      bool);
+
+#define mul_double(l1,h1,l2,h2,lv,hv) \
+  mul_double_with_sign (l1, h1, l2, h2, lv, hv, false)
+
+static void lshift_double (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
+			   HOST_WIDE_INT, unsigned int,
+			   unsigned HOST_WIDE_INT *, HOST_WIDE_INT *, bool);
+
+static int div_and_round_double (unsigned, int, unsigned HOST_WIDE_INT,
+				 HOST_WIDE_INT, unsigned HOST_WIDE_INT,
+				 HOST_WIDE_INT, unsigned HOST_WIDE_INT *,
+				 HOST_WIDE_INT *, unsigned HOST_WIDE_INT *,
+				 HOST_WIDE_INT *);
+
 /* We know that A1 + B1 = SUM1, using 2's complement arithmetic and ignoring
    overflow.  Suppose A, B and SUM have the same respective signs as A1, B1,
    and SUM1.  Then this yields nonzero if overflow occurred during the
@@ -75,7 +110,7 @@ decode (HOST_WIDE_INT *words, unsigned HOST_WIDE_INT *low,
    One argument is L1 and H1; the other, L2 and H2.
    The value is stored as two `HOST_WIDE_INT' pieces in *LV and *HV.  */
 
-int
+static int
 add_double_with_sign (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
 		      unsigned HOST_WIDE_INT l2, HOST_WIDE_INT h2,
 		      unsigned HOST_WIDE_INT *lv, HOST_WIDE_INT *hv,
@@ -105,7 +140,7 @@ add_double_with_sign (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
    The argument is given as two `HOST_WIDE_INT' pieces in L1 and H1.
    The value is stored as two `HOST_WIDE_INT' pieces in *LV and *HV.  */
 
-int
+static int
 neg_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
 	    unsigned HOST_WIDE_INT *lv, HOST_WIDE_INT *hv)
 {
@@ -129,7 +164,7 @@ neg_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
    One argument is L1 and H1; the other, L2 and H2.
    The value is stored as two `HOST_WIDE_INT' pieces in *LV and *HV.  */
 
-int
+static int
 mul_double_with_sign (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
 		      unsigned HOST_WIDE_INT l2, HOST_WIDE_INT h2,
 		      unsigned HOST_WIDE_INT *lv, HOST_WIDE_INT *hv,
@@ -143,7 +178,7 @@ mul_double_with_sign (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
 				    unsigned_p);
 }
 
-int
+static int
 mul_double_wide_with_sign (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
 			   unsigned HOST_WIDE_INT l2, HOST_WIDE_INT h2,
 			   unsigned HOST_WIDE_INT *lv, HOST_WIDE_INT *hv,
@@ -269,7 +304,7 @@ rshift_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
    ARITH nonzero specifies arithmetic shifting; otherwise use logical shift.
    Store the value as two `HOST_WIDE_INT' pieces in *LV and *HV.  */
 
-void
+static void
 lshift_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
 	       HOST_WIDE_INT count, unsigned int prec,
 	       unsigned HOST_WIDE_INT *lv, HOST_WIDE_INT *hv, bool arith)
@@ -335,7 +370,7 @@ lshift_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
    Return nonzero if the operation overflows.
    UNS nonzero says do unsigned division.  */
 
-int
+static int
 div_and_round_double (unsigned code, int uns,
 		      /* num == numerator == dividend */
 		      unsigned HOST_WIDE_INT lnum_orig,
@@ -762,6 +797,19 @@ double_int::mul_with_sign (double_int b, bool unsigned_p, bool *overflow) const
   return ret;
 }
 
+double_int
+double_int::wide_mul_with_sign (double_int b, bool unsigned_p,
+				double_int *higher, bool *overflow) const
+
+{
+  double_int lower;
+  *overflow = mul_double_wide_with_sign (low, high, b.low, b.high,
+					 &lower.low, &lower.high,
+					 &higher->low, &higher->high,
+					 unsigned_p);
+  return lower;
+}
+
 /* Returns A + B.  */
 
 double_int
@@ -798,6 +846,19 @@ double_int::operator - (double_int b) const
   return ret;
 }
 
+/* Returns A - B. If the operation overflows via inconsistent sign bits,
+   *OVERFLOW is set to nonzero.  */
+
+double_int
+double_int::sub_with_overflow (double_int b, bool *overflow) const
+{
+  double_int ret;
+  neg_double (b.low, b.high, &ret.low, &ret.high);
+  add_double (low, high, ret.low, ret.high, &ret.low, &ret.high);
+  *overflow = OVERFLOW_SUM_SIGN (ret.high, b.high, high);
+  return ret;
+}
+
 /* Returns -A.  */
 
 double_int
@@ -809,10 +870,31 @@ double_int::operator - () const
   return ret;
 }
 
+double_int
+double_int::neg_with_overflow (bool *overflow) const
+{
+  double_int ret;
+  *overflow = neg_double (low, high, &ret.low, &ret.high);
+  return ret;
+}
+
 /* Returns A / B (computed as unsigned depending on UNS, and rounded as
    specified by CODE).  CODE is enum tree_code in fact, but double_int.h
    must be included before tree.h.  The remainder after the division is
    stored to MOD.  */
+
+double_int
+double_int::divmod_with_overflow (double_int b, bool uns, unsigned code,
+				  double_int *mod, bool *overflow) const
+{
+  const double_int &a = *this;
+  double_int ret;
+
+  *overflow = div_and_round_double (code, uns, a.low, a.high,
+				    b.low, b.high, &ret.low, &ret.high,
+				    &mod->low, &mod->high);
+  return ret;
+}
 
 double_int
 double_int::divmod (double_int b, bool uns, unsigned code,

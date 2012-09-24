@@ -1,3 +1,104 @@
+2012-09-24  Lawrence Crowl  <crowl@google.com>
+
+	* double-int.h (double_int::from_pair): New.
+	(double_int::wide_mul_with_sign): New.
+	(double_int::sub_with_overflow): New.
+	(double_int::neg_with_overflow): New.
+	(double_int::divmod_with_overflow): New.
+	(shwi_to_double_int): Remove.
+	(uhwi_to_double_int): Remove.
+	(double_int_to_shwi): Remove.
+	(double_int_to_uhwi): Remove.
+	(double_int_fits_in_uhwi_p): Remove.
+	(double_int_fits_in_shwi_p): Remove.
+	(double_int_fits_in_hwi_p): Remove.
+	(double_int_mul): Remove.
+	(double_int_mul_with_sign): Remove.
+	(double_int_add): Remove.
+	(double_int_sub): Remove.
+	(double_int_neg): Remove.
+	(double_int_div): Remove.
+	(double_int_sdiv): Remove.
+	(double_int_udiv): Remove.
+	(double_int_mod): Remove.
+	(double_int_smod): Remove.
+	(double_int_umod): Remove.
+	(double_int_divmod): Remove.
+	(double_int_sdivmod): Remove.
+	(double_int_udivmod): Remove.
+	(double_int_multiple_of): Remove.
+	(double_int_setbit): Remove.
+	(double_int_ctz): Remove.
+	(double_int_not): Remove.
+	(double_int_ior): Remove.
+	(double_int_and): Remove.
+	(double_int_and_not): Remove.
+	(double_int_xor): Remove.
+	(double_int_lshift): Remove.
+	(double_int_rshift): Remove.
+	(double_int_lrotate): Remove.
+	(double_int_rrotate): Remove.
+	(double_int_negative_p): Remove.
+	(double_int_cmp): Remove.
+	(double_int_scmp): Remove.
+	(double_int_ucmp): Remove.
+	(double_int_max): Remove.
+	(double_int_smax): Remove.
+	(double_int_umax): Remove.
+	(double_int_min): Remove.
+	(double_int_smin): Remove.
+	(double_int_umin): Remove.
+	(double_int_ext): Remove.
+	(double_int_sext): Remove.
+	(double_int_zext): Remove.
+	(double_int_mask): Remove.
+	(double_int_max_value): Remove.
+	(double_int_min_value): Remove.
+	(double_int_zero_p): Remove.
+	(double_int_one_p): Remove.
+	(double_int_minus_one_p): Remove.
+	(double_int_equal_p): Remove.
+	(double_int_popcount): Remove.
+	(extern add_double_with_sign): Remove.
+	(#define add_double): Remove.
+	(extern neg_double): Remove.
+	(extern mul_double_with_sign): Remove.
+	(extern mul_double_wide_with_sign): Remove.
+	(#define mul_double): Remove.
+	(extern lshift_double): Remove.
+	(extern div_and_round_double): Remove.
+	* double-int.c (add_double_with_sign): Make static.
+	(#defined add_double): Localized from header.
+	(neg_double): Make static.
+	(mul_double_with_sign): Make static.
+	(mul_double_wide_with_sign): Make static.
+	(#defined mul_double): Localized from header.
+	(lshift_double): Make static.
+	(div_and_round_double): Make static.
+	(double_int::wide_mul_with_sign): New.
+	(double_int::sub_with_overflow): New.
+	(double_int::neg_with_overflow): New.
+	(double_int::divmod_with_overflow): New.
+	* emit-rtl.c (init_emit_once): Change to new double_int API.
+	* explow.c (plus_constant): Likewise.
+	* expmed.c (choose_multiplier): Likewise.
+	* fold-const.c (#define OVERFLOW_SUM_SIGN): Remove.
+	(int_const_binop_1): Change to new double_int API.
+	(fold_div_compare): Likewise.
+	(maybe_canonicalize_comparison): Likewise.
+	(pointer_may_wrap_p): Likewise.
+	(fold_negate_const): Likewise.
+	(fold_abs_const): Likewise.
+	* simplify-rtx.c (simplify_const_unary_operation): Likewise.
+	(simplify_const_binary_operation): Likewise.
+	* tree-chrec.c (tree_fold_binomial): Likewise.
+	* tree-vrp.c (extract_range_from_binary_expr_1): Likewise.
+	* config/sparc/sparc.c (sparc_fold_builtin): Likewise.
+	* config/avr/avr.c (avr_double_int_push_digit): Likewise.
+	(avr_map): Likewise.
+	(avr_map_decompose): Likewise.
+	(avr_out_insert_bits): Likewise.
+
 2012-09-24  Janis Johnson  <janisjo@codesourcery.com>
 
 	doc/sourcebuild.texi (Selectors): Document the use of target

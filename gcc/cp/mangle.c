@@ -3119,12 +3119,11 @@ write_array_type (const tree type)
 	{
 	  /* The ABI specifies that we should mangle the number of
 	     elements in the array, not the largest allowed index.  */
-	  double_int dmax
-	    = double_int_add (tree_to_double_int (max), double_int_one);
+	  double_int dmax = tree_to_double_int (max) + double_int_one;
 	  /* Truncate the result - this will mangle [0, SIZE_INT_MAX]
 	     number of elements as zero.  */
-	  dmax = double_int_zext (dmax, TYPE_PRECISION (TREE_TYPE (max)));
-	  gcc_assert (double_int_fits_in_uhwi_p (dmax));
+	  dmax = dmax.zext (TYPE_PRECISION (TREE_TYPE (max)));
+	  gcc_assert (dmax.fits_uhwi ());
 	  write_unsigned_number (dmax.low);
 	}
       else

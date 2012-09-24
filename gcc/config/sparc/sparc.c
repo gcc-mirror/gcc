@@ -10129,35 +10129,30 @@ sparc_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED,
 	  && TREE_CODE (arg1) == VECTOR_CST
 	  && TREE_CODE (arg2) == INTEGER_CST)
 	{
-	  int overflow = 0;
-	  unsigned HOST_WIDE_INT low = TREE_INT_CST_LOW (arg2);
-	  HOST_WIDE_INT high = TREE_INT_CST_HIGH (arg2);
+	  bool overflow = false;
+	  double_int di_arg2 = TREE_INT_CST (arg2);
+	  double_int tmp;
 	  unsigned i;
 
 	  for (i = 0; i < VECTOR_CST_NELTS (arg0); ++i)
 	    {
-	      unsigned HOST_WIDE_INT
-		low0 = TREE_INT_CST_LOW (VECTOR_CST_ELT (arg0, i)),
-		low1 = TREE_INT_CST_LOW (VECTOR_CST_ELT (arg1, i));
-	      HOST_WIDE_INT
-		high0 = TREE_INT_CST_HIGH (VECTOR_CST_ELT (arg0, i));
-	      HOST_WIDE_INT
-		high1 = TREE_INT_CST_HIGH (VECTOR_CST_ELT (arg1, i));
+	      double_int e0 = TREE_INT_CST (VECTOR_CST_ELT (arg0, i));
+	      double_int e1 = TREE_INT_CST (VECTOR_CST_ELT (arg1, i));
 
-	      unsigned HOST_WIDE_INT l;
-	      HOST_WIDE_INT h;
+	      bool neg1_ovf, neg2_ovf, add1_ovf, add2_ovf;
 
-	      overflow |= neg_double (low1, high1, &l, &h);
-	      overflow |= add_double (low0, high0, l, h, &l, &h);
-	      if (h < 0)
-		overflow |= neg_double (l, h, &l, &h);
+	      tmp = e1.neg_with_overflow (&neg1_ovf);
+	      tmp = e0.add_with_sign (tmp, false, &add1_ovf);
+	      if (tmp.is_negative ())
+		tmp = tmp.neg_with_overflow (&neg2_ovf);
 
-	      overflow |= add_double (low, high, l, h, &low, &high);
+	      tmp = di_arg2.add_with_sign (tmp, false, &add2_ovf);
+	      overflow |= neg1_ovf | neg2_ovf | add1_ovf | add2_ovf;
 	    }
 
-	  gcc_assert (overflow == 0);
+	  gcc_assert (!overflow);
 
-	  return build_int_cst_wide (rtype, low, high);
+	  return build_int_cst_wide (rtype, tmp.low, tmp.high);
 	}
 
     default:

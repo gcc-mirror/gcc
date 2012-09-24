@@ -165,17 +165,6 @@ protected_set_expr_location_unshare (tree x, location_t loc)
     }
   return x;
 }
-
-
-/* We know that A1 + B1 = SUM1, using 2's complement arithmetic and ignoring
-   overflow.  Suppose A, B and SUM have the same respective signs as A1, B1,
-   and SUM1.  Then this yields nonzero if overflow occurred during the
-   addition.
-
-   Overflow occurs if A and B have the same sign, but A and SUM differ in
-   sign.  Use `^' to test whether signs differ, and `< 0' to isolate the
-   sign.  */
-#define OVERFLOW_SUM_SIGN(a, b, sum) ((~((a) ^ (b)) & ((a) ^ (sum))) < 0)
 
 /* If ARG2 divides ARG1 with zero remainder, carries out the division
    of type CODE and returns the quotient.
@@ -982,13 +971,7 @@ int_const_binop_1 (enum tree_code code, const_tree arg1, const_tree arg2,
       break;
 
     case MINUS_EXPR:
-/* FIXME(crowl) Remove this code if the replacment works.
-      neg_double (op2.low, op2.high, &res.low, &res.high);
-      add_double (op1.low, op1.high, res.low, res.high,
-		  &res.low, &res.high);
-      overflow = OVERFLOW_SUM_SIGN (res.high, op2.high, op1.high);
-*/
-      res = op1.add_with_sign (-op2, false, &overflow);
+      res = op1.sub_with_overflow (op2, &overflow);
       break;
 
     case MULT_EXPR:
@@ -1035,10 +1018,7 @@ int_const_binop_1 (enum tree_code code, const_tree arg1, const_tree arg2,
 	  res = double_int_one;
 	  break;
 	}
-      overflow = div_and_round_double (code, uns,
-				       op1.low, op1.high, op2.low, op2.high,
-				       &res.low, &res.high,
-				       &tmp.low, &tmp.high);
+      res = op1.divmod_with_overflow (op2, uns, code, &tmp, &overflow);
       break;
 
     case TRUNC_MOD_EXPR:
@@ -1060,10 +1040,7 @@ int_const_binop_1 (enum tree_code code, const_tree arg1, const_tree arg2,
     case ROUND_MOD_EXPR:
       if (op2.is_zero ())
 	return NULL_TREE;
-      overflow = div_and_round_double (code, uns,
-				       op1.low, op1.high, op2.low, op2.high,
-				       &tmp.low, &tmp.high,
-				       &res.low, &res.high);
+      tmp = op1.divmod_with_overflow (op2, uns, code, &res, &overflow);
       break;
 
     case MIN_EXPR:
@@ -6290,15 +6267,12 @@ fold_div_compare (location_t loc,
   double_int val;
   bool unsigned_p = TYPE_UNSIGNED (TREE_TYPE (arg0));
   bool neg_overflow;
-  int overflow;
+  bool overflow;
 
   /* We have to do this the hard way to detect unsigned overflow.
      prod = int_const_binop (MULT_EXPR, arg01, arg1);  */
-  overflow = mul_double_with_sign (TREE_INT_CST_LOW (arg01),
-				   TREE_INT_CST_HIGH (arg01),
-				   TREE_INT_CST_LOW (arg1),
-				   TREE_INT_CST_HIGH (arg1),
-				   &val.low, &val.high, unsigned_p);
+  val = TREE_INT_CST (arg01)
+	.mul_with_sign (TREE_INT_CST (arg1), unsigned_p, &overflow);
   prod = force_fit_type_double (TREE_TYPE (arg00), val, -1, overflow);
   neg_overflow = false;
 
@@ -6309,11 +6283,8 @@ fold_div_compare (location_t loc,
       lo = prod;
 
       /* Likewise hi = int_const_binop (PLUS_EXPR, prod, tmp).  */
-      overflow = add_double_with_sign (TREE_INT_CST_LOW (prod),
-				       TREE_INT_CST_HIGH (prod),
-				       TREE_INT_CST_LOW (tmp),
-				       TREE_INT_CST_HIGH (tmp),
-				       &val.low, &val.high, unsigned_p);
+      val = TREE_INT_CST (prod)
+	    .add_with_sign (TREE_INT_CST (tmp), unsigned_p, &overflow);
       hi = force_fit_type_double (TREE_TYPE (arg00), val,
 				  -1, overflow | TREE_OVERFLOW (prod));
     }
@@ -8691,8 +8662,7 @@ maybe_canonicalize_comparison (location_t loc, enum tree_code code, tree type,
 static bool
 pointer_may_wrap_p (tree base, tree offset, HOST_WIDE_INT bitpos)
 {
-  unsigned HOST_WIDE_INT offset_low, total_low;
-  HOST_WIDE_INT size, offset_high, total_high;
+  double_int di_offset, total;
 
   if (!POINTER_TYPE_P (TREE_TYPE (base)))
     return true;
@@ -8701,28 +8671,22 @@ pointer_may_wrap_p (tree base, tree offset, HOST_WIDE_INT bitpos)
     return true;
 
   if (offset == NULL_TREE)
-    {
-      offset_low = 0;
-      offset_high = 0;
-    }
+    di_offset = double_int_zero;
   else if (TREE_CODE (offset) != INTEGER_CST || TREE_OVERFLOW (offset))
     return true;
   else
-    {
-      offset_low = TREE_INT_CST_LOW (offset);
-      offset_high = TREE_INT_CST_HIGH (offset);
-    }
+    di_offset = TREE_INT_CST (offset);
 
-  if (add_double_with_sign (offset_low, offset_high,
-			    bitpos / BITS_PER_UNIT, 0,
-			    &total_low, &total_high,
-			    true))
+  bool overflow;
+  double_int units = double_int::from_uhwi (bitpos / BITS_PER_UNIT);
+  total = di_offset.add_with_sign (units, true, &overflow);
+  if (overflow)
     return true;
 
-  if (total_high != 0)
+  if (total.high != 0)
     return true;
 
-  size = int_size_in_bytes (TREE_TYPE (TREE_TYPE (base)));
+  HOST_WIDE_INT size = int_size_in_bytes (TREE_TYPE (TREE_TYPE (base)));
   if (size <= 0)
     return true;
 
@@ -8737,7 +8701,7 @@ pointer_may_wrap_p (tree base, tree offset, HOST_WIDE_INT bitpos)
 	size = base_size;
     }
 
-  return total_low > (unsigned HOST_WIDE_INT) size;
+  return total.low > (unsigned HOST_WIDE_INT) size;
 }
 
 /* Subroutine of fold_binary.  This routine performs all of the
@@ -15938,8 +15902,8 @@ fold_negate_const (tree arg0, tree type)
     case INTEGER_CST:
       {
 	double_int val = tree_to_double_int (arg0);
-	int overflow = neg_double (val.low, val.high, &val.low, &val.high);
-
+	bool overflow;
+	val = val.neg_with_overflow (&overflow);
 	t = force_fit_type_double (type, val, 1,
 				   (overflow | TREE_OVERFLOW (arg0))
 				   && !TYPE_UNSIGNED (type));
@@ -15996,9 +15960,8 @@ fold_abs_const (tree arg0, tree type)
 	   its negation.  */
 	else
 	  {
-	    int overflow;
-
-	    overflow = neg_double (val.low, val.high, &val.low, &val.high);
+	    bool overflow;
+	    val = val.neg_with_overflow (&overflow);
 	    t = force_fit_type_double (type, val, -1,
 				       overflow | TREE_OVERFLOW (arg0));
 	  }

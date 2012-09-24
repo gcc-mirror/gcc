@@ -1525,109 +1525,117 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
   else if (width <= HOST_BITS_PER_DOUBLE_INT
 	   && (CONST_DOUBLE_AS_INT_P (op) || CONST_INT_P (op)))
     {
-      unsigned HOST_WIDE_INT l1, lv;
-      HOST_WIDE_INT h1, hv;
+      double_int first, value;
 
       if (CONST_DOUBLE_AS_INT_P (op))
-	l1 = CONST_DOUBLE_LOW (op), h1 = CONST_DOUBLE_HIGH (op);
+	first = double_int::from_pair (CONST_DOUBLE_HIGH (op),
+				       CONST_DOUBLE_LOW (op));
       else
-	l1 = INTVAL (op), h1 = HWI_SIGN_EXTEND (l1);
+	first = double_int::from_shwi (INTVAL (op));
 
       switch (code)
 	{
 	case NOT:
-	  lv = ~ l1;
-	  hv = ~ h1;
+	  value = ~first;
 	  break;
 
 	case NEG:
-	  neg_double (l1, h1, &lv, &hv);
+	  value = -first;
 	  break;
 
 	case ABS:
-	  if (h1 < 0)
-	    neg_double (l1, h1, &lv, &hv);
+	  if (first.is_negative ())
+	    value = -first;
 	  else
-	    lv = l1, hv = h1;
+	    value = first;
 	  break;
 
 	case FFS:
-	  hv = 0;
-	  if (l1 != 0)
-	    lv = ffs_hwi (l1);
-	  else if (h1 != 0)
-	    lv = HOST_BITS_PER_WIDE_INT + ffs_hwi (h1);
+	  value.high = 0;
+	  if (first.low != 0)
+	    value.low = ffs_hwi (first.low);
+	  else if (first.high != 0)
+	    value.low = HOST_BITS_PER_WIDE_INT + ffs_hwi (first.high);
 	  else
-	    lv = 0;
+	    value.low = 0;
 	  break;
 
 	case CLZ:
-	  hv = 0;
-	  if (h1 != 0)
-	    lv = GET_MODE_PRECISION (mode) - floor_log2 (h1) - 1
-	      - HOST_BITS_PER_WIDE_INT;
-	  else if (l1 != 0)
-	    lv = GET_MODE_PRECISION (mode) - floor_log2 (l1) - 1;
-	  else if (! CLZ_DEFINED_VALUE_AT_ZERO (mode, lv))
-	    lv = GET_MODE_PRECISION (mode);
+	  value.high = 0;
+	  if (first.high != 0)
+	    value.low = GET_MODE_PRECISION (mode) - floor_log2 (first.high) - 1
+	              - HOST_BITS_PER_WIDE_INT;
+	  else if (first.low != 0)
+	    value.low = GET_MODE_PRECISION (mode) - floor_log2 (first.low) - 1;
+	  else if (! CLZ_DEFINED_VALUE_AT_ZERO (mode, value.low))
+	    value.low = GET_MODE_PRECISION (mode);
 	  break;
 
 	case CTZ:
-	  hv = 0;
-	  if (l1 != 0)
-	    lv = ctz_hwi (l1);
-	  else if (h1 != 0)
-	    lv = HOST_BITS_PER_WIDE_INT + ctz_hwi (h1);
-	  else if (! CTZ_DEFINED_VALUE_AT_ZERO (mode, lv))
-	    lv = GET_MODE_PRECISION (mode);
+	  value.high = 0;
+	  if (first.low != 0)
+	    value.low = ctz_hwi (first.low);
+	  else if (first.high != 0)
+	    value.low = HOST_BITS_PER_WIDE_INT + ctz_hwi (first.high);
+	  else if (! CTZ_DEFINED_VALUE_AT_ZERO (mode, value.low))
+	    value.low = GET_MODE_PRECISION (mode);
 	  break;
 
 	case POPCOUNT:
-	  hv = 0;
-	  lv = 0;
-	  while (l1)
-	    lv++, l1 &= l1 - 1;
-	  while (h1)
-	    lv++, h1 &= h1 - 1;
+	  value = double_int_zero;
+	  while (first.low)
+	    {
+	      value.low++;
+	      first.low &= first.low - 1;
+	    }
+	  while (first.high)
+	    {
+	      value.low++;
+	      first.high &= first.high - 1;
+	    }
 	  break;
 
 	case PARITY:
-	  hv = 0;
-	  lv = 0;
-	  while (l1)
-	    lv++, l1 &= l1 - 1;
-	  while (h1)
-	    lv++, h1 &= h1 - 1;
-	  lv &= 1;
+	  value = double_int_zero;
+	  while (first.low)
+	    {
+	      value.low++;
+	      first.low &= first.low - 1;
+	    }
+	  while (first.high)
+	    {
+	      value.low++;
+	      first.high &= first.high - 1;
+	    }
+	  value.low &= 1;
 	  break;
 
 	case BSWAP:
 	  {
 	    unsigned int s;
 
-	    hv = 0;
-	    lv = 0;
+	    value = double_int_zero;
 	    for (s = 0; s < width; s += 8)
 	      {
 		unsigned int d = width - s - 8;
 		unsigned HOST_WIDE_INT byte;
 
 		if (s < HOST_BITS_PER_WIDE_INT)
-		  byte = (l1 >> s) & 0xff;
+		  byte = (first.low >> s) & 0xff;
 		else
-		  byte = (h1 >> (s - HOST_BITS_PER_WIDE_INT)) & 0xff;
+		  byte = (first.high >> (s - HOST_BITS_PER_WIDE_INT)) & 0xff;
 
 		if (d < HOST_BITS_PER_WIDE_INT)
-		  lv |= byte << d;
+		  value.low |= byte << d;
 		else
-		  hv |= byte << (d - HOST_BITS_PER_WIDE_INT);
+		  value.high |= byte << (d - HOST_BITS_PER_WIDE_INT);
 	      }
 	  }
 	  break;
 
 	case TRUNCATE:
 	  /* This is just a change-of-mode, so do nothing.  */
-	  lv = l1, hv = h1;
+	  value = first;
 	  break;
 
 	case ZERO_EXTEND:
@@ -1636,8 +1644,7 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
 	  if (op_width > HOST_BITS_PER_WIDE_INT)
 	    return 0;
 
-	  hv = 0;
-	  lv = l1 & GET_MODE_MASK (op_mode);
+	  value = double_int::from_uhwi (first.low & GET_MODE_MASK (op_mode));
 	  break;
 
 	case SIGN_EXTEND:
@@ -1646,11 +1653,11 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
 	    return 0;
 	  else
 	    {
-	      lv = l1 & GET_MODE_MASK (op_mode);
-	      if (val_signbit_known_set_p (op_mode, lv))
-		lv |= ~GET_MODE_MASK (op_mode);
+	      value.low = first.low & GET_MODE_MASK (op_mode);
+	      if (val_signbit_known_set_p (op_mode, value.low))
+		value.low |= ~GET_MODE_MASK (op_mode);
 
-	      hv = HWI_SIGN_EXTEND (lv);
+	      value.high = HWI_SIGN_EXTEND (value.low);
 	    }
 	  break;
 
@@ -1661,7 +1668,7 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
 	  return 0;
 	}
 
-      return immed_double_const (lv, hv, mode);
+      return immed_double_int_const (value, mode);
     }
 
   else if (CONST_DOUBLE_AS_FLOAT_P (op) 
@@ -3578,6 +3585,7 @@ simplify_const_binary_operation (enum rtx_code code, enum machine_mode mode,
       && (CONST_DOUBLE_AS_INT_P (op1) || CONST_INT_P (op1)))
     {
       double_int o0, o1, res, tmp;
+      bool overflow;
 
       o0 = rtx_to_double_int (op0);
       o1 = rtx_to_double_int (op1);
@@ -3599,34 +3607,30 @@ simplify_const_binary_operation (enum rtx_code code, enum machine_mode mode,
 	  break;
 
 	case DIV:
-	  if (div_and_round_double (TRUNC_DIV_EXPR, 0,
-				    o0.low, o0.high, o1.low, o1.high,
-				    &res.low, &res.high,
-				    &tmp.low, &tmp.high))
+          res = o0.divmod_with_overflow (o1, false, TRUNC_DIV_EXPR,
+					 &tmp, &overflow);
+	  if (overflow)
 	    return 0;
 	  break;
 
 	case MOD:
-	  if (div_and_round_double (TRUNC_DIV_EXPR, 0,
-				    o0.low, o0.high, o1.low, o1.high,
-				    &tmp.low, &tmp.high,
-				    &res.low, &res.high))
+          tmp = o0.divmod_with_overflow (o1, false, TRUNC_DIV_EXPR,
+					 &res, &overflow);
+	  if (overflow)
 	    return 0;
 	  break;
 
 	case UDIV:
-	  if (div_and_round_double (TRUNC_DIV_EXPR, 1,
-				    o0.low, o0.high, o1.low, o1.high,
-				    &res.low, &res.high,
-				    &tmp.low, &tmp.high))
+          res = o0.divmod_with_overflow (o1, true, TRUNC_DIV_EXPR,
+					 &tmp, &overflow);
+	  if (overflow)
 	    return 0;
 	  break;
 
 	case UMOD:
-	  if (div_and_round_double (TRUNC_DIV_EXPR, 1,
-				    o0.low, o0.high, o1.low, o1.high,
-				    &tmp.low, &tmp.high,
-				    &res.low, &res.high))
+          tmp = o0.divmod_with_overflow (o1, true, TRUNC_DIV_EXPR,
+					 &res, &overflow);
+	  if (overflow)
 	    return 0;
 	  break;
 

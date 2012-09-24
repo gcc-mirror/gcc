@@ -3392,12 +3392,9 @@ choose_multiplier (unsigned HOST_WIDE_INT d, int n, int precision,
 		   unsigned HOST_WIDE_INT *multiplier_ptr,
 		   int *post_shift_ptr, int *lgup_ptr)
 {
-  HOST_WIDE_INT mhigh_hi, mlow_hi;
-  unsigned HOST_WIDE_INT mhigh_lo, mlow_lo;
+  double_int mhigh, mlow;
   int lgup, post_shift;
   int pow, pow2;
-  unsigned HOST_WIDE_INT nl, dummy1;
-  HOST_WIDE_INT nh, dummy2;
 
   /* lgup = ceil(log2(divisor)); */
   lgup = ceil_log2 (d);
@@ -3413,32 +3410,17 @@ choose_multiplier (unsigned HOST_WIDE_INT d, int n, int precision,
   gcc_assert (pow != HOST_BITS_PER_DOUBLE_INT);
 
   /* mlow = 2^(N + lgup)/d */
- if (pow >= HOST_BITS_PER_WIDE_INT)
-    {
-      nh = (HOST_WIDE_INT) 1 << (pow - HOST_BITS_PER_WIDE_INT);
-      nl = 0;
-    }
-  else
-    {
-      nh = 0;
-      nl = (unsigned HOST_WIDE_INT) 1 << pow;
-    }
-  div_and_round_double (TRUNC_DIV_EXPR, 1, nl, nh, d, (HOST_WIDE_INT) 0,
-			&mlow_lo, &mlow_hi, &dummy1, &dummy2);
+  double_int val = double_int_zero.set_bit (pow);
+  mlow = val.div (double_int::from_uhwi (d), true, TRUNC_DIV_EXPR); 
 
-  /* mhigh = (2^(N + lgup) + 2^N + lgup - precision)/d */
-  if (pow2 >= HOST_BITS_PER_WIDE_INT)
-    nh |= (HOST_WIDE_INT) 1 << (pow2 - HOST_BITS_PER_WIDE_INT);
-  else
-    nl |= (unsigned HOST_WIDE_INT) 1 << pow2;
-  div_and_round_double (TRUNC_DIV_EXPR, 1, nl, nh, d, (HOST_WIDE_INT) 0,
-			&mhigh_lo, &mhigh_hi, &dummy1, &dummy2);
+  /* mhigh = (2^(N + lgup) + 2^(N + lgup - precision))/d */
+  val |= double_int_zero.set_bit (pow2);
+  mhigh = val.div (double_int::from_uhwi (d), true, TRUNC_DIV_EXPR);
 
-  gcc_assert (!mhigh_hi || nh - d < d);
-  gcc_assert (mhigh_hi <= 1 && mlow_hi <= 1);
+  gcc_assert (!mhigh.high || val.high - d < d);
+  gcc_assert (mhigh.high <= 1 && mlow.high <= 1);
   /* Assert that mlow < mhigh.  */
-  gcc_assert (mlow_hi < mhigh_hi
-	      || (mlow_hi == mhigh_hi && mlow_lo < mhigh_lo));
+  gcc_assert (mlow.ult (mhigh));
 
   /* If precision == N, then mlow, mhigh exceed 2^N
      (but they do not exceed 2^(N+1)).  */
@@ -3446,15 +3428,14 @@ choose_multiplier (unsigned HOST_WIDE_INT d, int n, int precision,
   /* Reduce to lowest terms.  */
   for (post_shift = lgup; post_shift > 0; post_shift--)
     {
-      unsigned HOST_WIDE_INT ml_lo = (mlow_hi << (HOST_BITS_PER_WIDE_INT - 1)) | (mlow_lo >> 1);
-      unsigned HOST_WIDE_INT mh_lo = (mhigh_hi << (HOST_BITS_PER_WIDE_INT - 1)) | (mhigh_lo >> 1);
+      int shft = HOST_BITS_PER_WIDE_INT - 1;
+      unsigned HOST_WIDE_INT ml_lo = (mlow.high << shft) | (mlow.low >> 1);
+      unsigned HOST_WIDE_INT mh_lo = (mhigh.high << shft) | (mhigh.low >> 1);
       if (ml_lo >= mh_lo)
 	break;
 
-      mlow_hi = 0;
-      mlow_lo = ml_lo;
-      mhigh_hi = 0;
-      mhigh_lo = mh_lo;
+      mlow = double_int::from_uhwi (ml_lo);
+      mhigh = double_int::from_uhwi (mh_lo);
     }
 
   *post_shift_ptr = post_shift;
@@ -3462,13 +3443,13 @@ choose_multiplier (unsigned HOST_WIDE_INT d, int n, int precision,
   if (n < HOST_BITS_PER_WIDE_INT)
     {
       unsigned HOST_WIDE_INT mask = ((unsigned HOST_WIDE_INT) 1 << n) - 1;
-      *multiplier_ptr = mhigh_lo & mask;
-      return mhigh_lo >= mask;
+      *multiplier_ptr = mhigh.low & mask;
+      return mhigh.low >= mask;
     }
   else
     {
-      *multiplier_ptr = mhigh_lo;
-      return mhigh_hi;
+      *multiplier_ptr = mhigh.low;
+      return mhigh.high;
     }
 }
 

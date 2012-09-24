@@ -404,8 +404,7 @@ gfc_interpret_logical (int kind, unsigned char *buffer, size_t buffer_size,
 {
   tree t = native_interpret_expr (gfc_get_logical_type (kind), buffer,
 				  buffer_size);
-  *logical = double_int_zero_p (tree_to_double_int (t))
-	     ? 0 : 1;
+  *logical = tree_to_double_int (t).is_zero () ? 0 : 1;
   return size_logical (kind);
 }
 
