@@ -1,3 +1,8 @@
+2012-09-24  François Dumont  <fdumont@gcc.gnu.org>
+
+	* testsuite/performance/23_containers/insert_erase/41975.cc: Use
+	__uset_hashtable rather than removed __unordered_set.
+
 2012-09-23  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	Revert:
