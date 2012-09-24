@@ -1,3 +1,7 @@
+2012-09-24  Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.dg/tree-ssa/forwprop-23.c: New testcase.
+
 2012-09-24  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/52173
