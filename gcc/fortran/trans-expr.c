@@ -1667,10 +1667,10 @@ gfc_conv_cst_int_power (gfc_se * se, tree lhs, tree rhs)
 
   /* If exponent is too large, we won't expand it anyway, so don't bother
      with large integer values.  */
-  if (!double_int_fits_in_shwi_p (TREE_INT_CST (rhs)))
+  if (!TREE_INT_CST (rhs).fits_shwi ())
     return 0;
 
-  m = double_int_to_shwi (TREE_INT_CST (rhs));
+  m = TREE_INT_CST (rhs).to_shwi ();
   /* There's no ABS for HOST_WIDE_INT, so here we go. It also takes care
      of the asymmetric range of the integer type.  */
   n = (unsigned HOST_WIDE_INT) (m < 0 ? -m : m);

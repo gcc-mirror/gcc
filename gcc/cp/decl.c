@@ -12462,8 +12462,6 @@ build_enumerator (tree name, tree value, tree enumtype, location_t loc)
 	{
 	  if (TYPE_VALUES (enumtype))
 	    {
-	      HOST_WIDE_INT hi;
-	      unsigned HOST_WIDE_INT lo;
 	      tree prev_value;
 	      bool overflowed;
 
@@ -12479,15 +12477,13 @@ build_enumerator (tree name, tree value, tree enumtype, location_t loc)
 		value = error_mark_node;
 	      else
 		{
-		  overflowed = add_double (TREE_INT_CST_LOW (prev_value),
-					   TREE_INT_CST_HIGH (prev_value),
-					   1, 0, &lo, &hi);
+		  double_int di = TREE_INT_CST (prev_value)
+				  .add_with_sign (double_int_one,
+						  false, &overflowed);
 		  if (!overflowed)
 		    {
-		      double_int di;
 		      tree type = TREE_TYPE (prev_value);
-		      bool pos = (TYPE_UNSIGNED (type) || hi >= 0);
-		      di.low = lo; di.high = hi;
+		      bool pos = TYPE_UNSIGNED (type) || !di.is_negative ();
 		      if (!double_int_fits_to_tree_p (type, di))
 			{
 			  unsigned int itk;

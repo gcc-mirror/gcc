@@ -1,3 +1,10 @@
+2012-09-24  Lawrence Crowl  <crowl@google.com>
+
+	* decl.c (java_init_decl_processing): Change to new double_int API.
+	* jcf-parse.c (get_constant): Likewise.
+	* boehm.c (mark_reference_fields): Likewise.
+	(get_boehm_type_descriptor): Likewise.
+
 2012-07-30  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
 
 	* jcf.h (CPool): Use the "atomic" GTY option for the tags field.

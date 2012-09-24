@@ -10812,10 +10812,10 @@ avr_double_int_push_digit (double_int val, int base,
                            unsigned HOST_WIDE_INT digit)
 {
   val = 0 == base
-    ? double_int_lshift (val, 32, 64, false)
-    : double_int_mul (val, uhwi_to_double_int (base));
+    ? val.llshift (32, 64)
+    : val * double_int::from_uhwi (base);
   
-  return double_int_add (val, uhwi_to_double_int (digit));
+  return val + double_int::from_uhwi (digit);
 }
 
 
@@ -10824,7 +10824,7 @@ avr_double_int_push_digit (double_int val, int base,
 static int
 avr_map (double_int f, int x)
 {
-  return 0xf & double_int_to_uhwi (double_int_rshift (f, 4*x, 64, false));
+  return 0xf & f.lrshift (4*x, 64).to_uhwi ();
 }
 
 
@@ -10997,7 +10997,7 @@ avr_map_decompose (double_int f, const avr_map_op_t *g, bool val_const_p)
          are mapped to 0 and used operands are reloaded to xop[0].  */
 
       xop[0] = all_regs_rtx[24];
-      xop[1] = gen_int_mode (double_int_to_uhwi (f_ginv.map), SImode);
+      xop[1] = gen_int_mode (f_ginv.map.to_uhwi (), SImode);
       xop[2] = all_regs_rtx[25];
       xop[3] = val_used_p ? xop[0] : const0_rtx;
   
@@ -11093,7 +11093,7 @@ avr_out_insert_bits (rtx *op, int *plen)
   else if (flag_print_asm_name)
     fprintf (asm_out_file,
              ASM_COMMENT_START "map = 0x%08" HOST_LONG_FORMAT "x\n",
-             double_int_to_uhwi (map) & GET_MODE_MASK (SImode));
+             map.to_uhwi () & GET_MODE_MASK (SImode));
 
   /* If MAP has fixed points it might be better to initialize the result
      with the bits to be inserted instead of moving all bits by hand.  */

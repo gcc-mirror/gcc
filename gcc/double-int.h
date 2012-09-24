@@ -61,6 +61,7 @@ struct double_int
 
   static double_int from_uhwi (unsigned HOST_WIDE_INT cst);
   static double_int from_shwi (HOST_WIDE_INT cst);
+  static double_int from_pair (HOST_WIDE_INT high, unsigned HOST_WIDE_INT low);
 
   /* No copy assignment operator or destructor to keep the type a POD.  */
 
@@ -105,9 +106,17 @@ struct double_int
 
   /* Arithmetic operation functions.  */
 
+  /* The following operations perform arithmetics modulo 2^precision, so you
+     do not need to call .ext between them, even if you are representing
+     numbers with precision less than HOST_BITS_PER_DOUBLE_INT bits.  */
+
   double_int set_bit (unsigned) const;
   double_int mul_with_sign (double_int, bool unsigned_p, bool *overflow) const;
+  double_int wide_mul_with_sign (double_int, bool unsigned_p,
+				 double_int *higher, bool *overflow) const;
   double_int add_with_sign (double_int, bool unsigned_p, bool *overflow) const;
+  double_int sub_with_overflow (double_int, bool *overflow) const;
+  double_int neg_with_overflow (bool *overflow) const;
 
   double_int operator * (double_int) const;
   double_int operator + (double_int) const;
@@ -131,12 +140,15 @@ struct double_int
   /* You must ensure that double_int::ext is called on the operands
      of the following operations, if the precision of the numbers
      is less than HOST_BITS_PER_DOUBLE_INT bits.  */
+
   double_int div (double_int, bool, unsigned) const;
   double_int sdiv (double_int, unsigned) const;
   double_int udiv (double_int, unsigned) const;
   double_int mod (double_int, bool, unsigned) const;
   double_int smod (double_int, unsigned) const;
   double_int umod (double_int, unsigned) const;
+  double_int divmod_with_overflow (double_int, bool, unsigned,
+				   double_int *, bool *) const;
   double_int divmod (double_int, bool, unsigned, double_int *) const;
   double_int sdivmod (double_int, unsigned, double_int *) const;
   double_int udivmod (double_int, unsigned, double_int *) const;
@@ -199,13 +211,6 @@ double_int::from_shwi (HOST_WIDE_INT cst)
   return r;
 }
 
-/* FIXME(crowl): Remove after converting callers.  */
-static inline double_int
-shwi_to_double_int (HOST_WIDE_INT cst)
-{
-  return double_int::from_shwi (cst);
-}
-
 /* Some useful constants.  */
 /* FIXME(crowl): Maybe remove after converting callers?
    The problem is that a named constant would not be as optimizable,
@@ -229,11 +234,13 @@ double_int::from_uhwi (unsigned HOST_WIDE_INT cst)
   return r;
 }
 
-/* FIXME(crowl): Remove after converting callers.  */
-static inline double_int
-uhwi_to_double_int (unsigned HOST_WIDE_INT cst)
+inline double_int
+double_int::from_pair (HOST_WIDE_INT high, unsigned HOST_WIDE_INT low)
 {
-  return double_int::from_uhwi (cst);
+  double_int r;
+  r.low = low;
+  r.high = high;
+  return r;
 }
 
 inline double_int &
@@ -301,13 +308,6 @@ double_int::to_shwi () const
   return (HOST_WIDE_INT) low;
 }
 
-/* FIXME(crowl): Remove after converting callers.  */
-static inline HOST_WIDE_INT
-double_int_to_shwi (double_int cst)
-{
-  return cst.to_shwi ();
-}
-
 /* Returns value of CST as an unsigned number.  CST must satisfy
    double_int::fits_unsigned.  */
 
@@ -317,177 +317,12 @@ double_int::to_uhwi () const
   return low;
 }
 
-/* FIXME(crowl): Remove after converting callers.  */
-static inline unsigned HOST_WIDE_INT
-double_int_to_uhwi (double_int cst)
-{
-  return cst.to_uhwi ();
-}
-
 /* Returns true if CST fits in unsigned HOST_WIDE_INT.  */
 
 inline bool
 double_int::fits_uhwi () const
 {
   return high == 0;
-}
-
-/* FIXME(crowl): Remove after converting callers.  */
-static inline bool
-double_int_fits_in_uhwi_p (double_int cst)
-{
-  return cst.fits_uhwi ();
-}
-
-/* Returns true if CST fits in signed HOST_WIDE_INT.  */
-
-/* FIXME(crowl): Remove after converting callers.  */
-inline bool
-double_int_fits_in_shwi_p (double_int cst)
-{
-  return cst.fits_shwi ();
-}
-
-/* FIXME(crowl): Remove after converting callers.  */
-inline bool
-double_int_fits_in_hwi_p (double_int cst, bool uns)
-{
-  return cst.fits_hwi (uns);
-}
-
-/* The following operations perform arithmetics modulo 2^precision,
-   so you do not need to call double_int_ext between them, even if
-   you are representing numbers with precision less than
-   HOST_BITS_PER_DOUBLE_INT bits.  */
-
-/* FIXME(crowl): Remove after converting callers.  */
-inline double_int
-double_int_mul (double_int a, double_int b)
-{
-  return a * b;
-}
-
-/* FIXME(crowl): Remove after converting callers.  */
-inline double_int
-double_int_mul_with_sign (double_int a, double_int b,
-			  bool unsigned_p, int *overflow)
-{
-  bool ovf;
-  return a.mul_with_sign (b, unsigned_p, &ovf);
-  *overflow = ovf;
-}
-
-/* FIXME(crowl): Remove after converting callers.  */
-inline double_int
-double_int_add (double_int a, double_int b)
-{
-  return a + b;
-}
-
-/* FIXME(crowl): Remove after converting callers.  */
-inline double_int
-double_int_sub (double_int a, double_int b)
-{
-  return a - b;
-}
-
-/* FIXME(crowl): Remove after converting callers.  */
-inline double_int
-double_int_neg (double_int a)
-{
-  return -a;
-}
-
-/* You must ensure that double_int_ext is called on the operands
-   of the following operations, if the precision of the numbers
-   is less than HOST_BITS_PER_DOUBLE_INT bits.  */
-
-/* FIXME(crowl): Remove after converting callers.  */
-inline double_int
-double_int_div (double_int a, double_int b, bool uns, unsigned code)
-{
-  return a.div (b, uns, code);
-}
-
-/* FIXME(crowl): Remove after converting callers.  */
-inline double_int
-double_int_sdiv (double_int a, double_int b, unsigned code)
-{
-  return a.sdiv (b, code);
-}
-
-/* FIXME(crowl): Remove after converting callers.  */
-inline double_int
-double_int_udiv (double_int a, double_int b, unsigned code)
-{
-  return a.udiv (b, code);
-}
-
-/* FIXME(crowl): Remove after converting callers.  */
-inline double_int
-double_int_mod (double_int a, double_int b, bool uns, unsigned code)
-{
-  return a.mod (b, uns, code);
-}
-
-/* FIXME(crowl): Remove after converting callers.  */
-inline double_int
-double_int_smod (double_int a, double_int b, unsigned code)
-{
-  return a.smod (b, code);
-}
-
-/* FIXME(crowl): Remove after converting callers.  */
-inline double_int
-double_int_umod (double_int a, double_int b, unsigned code)
-{
-  return a.umod (b, code);
-}
-
-/* FIXME(crowl): Remove after converting callers.  */
-inline double_int
-double_int_divmod (double_int a, double_int b, bool uns,
-		   unsigned code, double_int *mod)
-{
-  return a.divmod (b, uns, code, mod);
-}
-
-/* FIXME(crowl): Remove after converting callers.  */
-inline double_int
-double_int_sdivmod (double_int a, double_int b, unsigned code, double_int *mod)
-{
-  return a.sdivmod (b, code, mod);
-}
-
-/* FIXME(crowl): Remove after converting callers.  */
-inline double_int
-double_int_udivmod (double_int a, double_int b, unsigned code, double_int *mod)
-{
-  return a.udivmod (b, code, mod);
-}
-
-/***/
-
-/* FIXME(crowl): Remove after converting callers.  */
-inline bool
-double_int_multiple_of (double_int product, double_int factor,
-                        bool unsigned_p, double_int *multiple)
-{
-  return product.multiple_of (factor, unsigned_p, multiple);
-}
-
-/* FIXME(crowl): Remove after converting callers.  */
-inline double_int
-double_int_setbit (double_int a, unsigned bitpos)
-{
-  return a.set_bit (bitpos);
-}
-
-/* FIXME(crowl): Remove after converting callers.  */
-inline int
-double_int_ctz (double_int a)
-{
-  return a.trailing_zeros ();
 }
 
 /* Logical operations.  */
@@ -503,13 +338,6 @@ double_int::operator ~ () const
   return result;
 }
 
-/* FIXME(crowl): Remove after converting callers.  */
-static inline double_int
-double_int_not (double_int a)
-{
-  return ~a;
-}
-
 /* Returns A | B.  */
 
 inline double_int
@@ -519,13 +347,6 @@ double_int::operator | (double_int b) const
   result.low = low | b.low;
   result.high = high | b.high;
   return result;
-}
-
-/* FIXME(crowl): Remove after converting callers.  */
-static inline double_int
-double_int_ior (double_int a, double_int b)
-{
-  return a | b;
 }
 
 /* Returns A & B.  */
@@ -539,13 +360,6 @@ double_int::operator & (double_int b) const
   return result;
 }
 
-/* FIXME(crowl): Remove after converting callers.  */
-static inline double_int
-double_int_and (double_int a, double_int b)
-{
-  return a & b;
-}
-
 /* Returns A & ~B.  */
 
 inline double_int
@@ -555,13 +369,6 @@ double_int::and_not (double_int b) const
   result.low = low & ~b.low;
   result.high = high & ~b.high;
   return result;
-}
-
-/* FIXME(crowl): Remove after converting callers.  */
-static inline double_int
-double_int_and_not (double_int a, double_int b)
-{
-  return a.and_not (b);
 }
 
 /* Returns A ^ B.  */
@@ -575,164 +382,7 @@ double_int::operator ^ (double_int b) const
   return result;
 }
 
-/* FIXME(crowl): Remove after converting callers.  */
-static inline double_int
-double_int_xor (double_int a, double_int b)
-{
-  return a ^ b;
-}
-
-
-/* Shift operations.  */
-
-/* FIXME(crowl): Remove after converting callers.  */
-inline double_int
-double_int_lshift (double_int a, HOST_WIDE_INT count, unsigned int prec,
-		   bool arith)
-{
-  return a.lshift (count, prec, arith);
-}
-
-/* FIXME(crowl): Remove after converting callers.  */
-inline double_int
-double_int_rshift (double_int a, HOST_WIDE_INT count, unsigned int prec,
-		   bool arith)
-{
-  return a.rshift (count, prec, arith);
-}
-
-/* FIXME(crowl): Remove after converting callers.  */
-inline double_int
-double_int_lrotate (double_int a, HOST_WIDE_INT count, unsigned int prec)
-{
-  return a.lrotate (count, prec);
-}
-
-/* FIXME(crowl): Remove after converting callers.  */
-inline double_int
-double_int_rrotate (double_int a, HOST_WIDE_INT count, unsigned int prec)
-{
-  return a.rrotate (count, prec);
-}
-
-/* Returns true if CST is negative.  Of course, CST is considered to
-   be signed.  */
-
-static inline bool
-double_int_negative_p (double_int cst)
-{
-  return cst.high < 0;
-}
-
-/* FIXME(crowl): Remove after converting callers.  */
-inline int
-double_int_cmp (double_int a, double_int b, bool uns)
-{
-  return a.cmp (b, uns);
-}
-
-/* FIXME(crowl): Remove after converting callers.  */
-inline int
-double_int_scmp (double_int a, double_int b)
-{
-  return a.scmp (b);
-}
-
-/* FIXME(crowl): Remove after converting callers.  */
-inline int
-double_int_ucmp (double_int a, double_int b)
-{
-  return a.ucmp (b);
-}
-
-/* FIXME(crowl): Remove after converting callers.  */
-inline double_int
-double_int_max (double_int a, double_int b, bool uns)
-{
-  return a.max (b, uns);
-}
-
-/* FIXME(crowl): Remove after converting callers.  */
-inline double_int
-double_int_smax (double_int a, double_int b)
-{
-  return a.smax (b);
-}
-
-/* FIXME(crowl): Remove after converting callers.  */
-inline double_int
-double_int_umax (double_int a, double_int b)
-{
-  return a.umax (b);
-}
-
-
-/* FIXME(crowl): Remove after converting callers.  */
-inline double_int
-double_int_min (double_int a, double_int b, bool uns)
-{
-  return a.min (b, uns);
-}
-
-/* FIXME(crowl): Remove after converting callers.  */
-inline double_int
-double_int_smin (double_int a, double_int b)
-{
-  return a.smin (b);
-}
-
-/* FIXME(crowl): Remove after converting callers.  */
-inline double_int
-double_int_umin (double_int a, double_int b)
-{
-  return a.umin (b);
-}
-
 void dump_double_int (FILE *, double_int, bool);
-
-/* Zero and sign extension of numbers in smaller precisions.  */
-
-/* FIXME(crowl): Remove after converting callers.  */
-inline double_int
-double_int_ext (double_int a, unsigned prec, bool uns)
-{ 
-  return a.ext (prec, uns);
-}
-
-/* FIXME(crowl): Remove after converting callers.  */
-inline double_int
-double_int_sext (double_int a, unsigned prec)
-{
-  return a.sext (prec);
-}
-
-/* FIXME(crowl): Remove after converting callers.  */
-inline double_int
-double_int_zext (double_int a, unsigned prec)
-{
-  return a.zext (prec);
-}
-
-/* FIXME(crowl): Remove after converting callers.  */
-inline double_int
-double_int_mask (unsigned prec)
-{
-  return double_int::mask (prec);
-}
-
-/* FIXME(crowl): Remove after converting callers.  */
-inline double_int
-double_int_max_value (unsigned int prec, bool uns)
-{
-  return double_int::max_value (prec, uns);
-}
-
-/* FIXME(crowl): Remove after converting callers.  */
-inline double_int
-double_int_min_value (unsigned int prec, bool uns)
-{
-  return double_int::min_value (prec, uns);
-}
 
 #define ALL_ONES (~((unsigned HOST_WIDE_INT) 0))
 
@@ -748,13 +398,6 @@ double_int::is_zero () const
   return low == 0 && high == 0;
 }
 
-/* FIXME(crowl): Remove after converting callers.  */
-static inline bool
-double_int_zero_p (double_int cst)
-{
-  return cst.is_zero ();
-}
-
 /* Returns true if CST is one.  */
 
 inline bool
@@ -763,26 +406,12 @@ double_int::is_one () const
   return low == 1 && high == 0;
 }
 
-/* FIXME(crowl): Remove after converting callers.  */
-static inline bool
-double_int_one_p (double_int cst)
-{
-  return cst.is_one ();
-}
-
 /* Returns true if CST is minus one.  */
 
 inline bool
 double_int::is_minus_one () const
 {
   return low == ALL_ONES && high == -1;
-}
-
-/* FIXME(crowl): Remove after converting callers.  */
-static inline bool
-double_int_minus_one_p (double_int cst)
-{
-  return cst.is_minus_one ();
 }
 
 /* Returns true if CST is negative.  */
@@ -801,13 +430,6 @@ double_int::operator == (double_int cst2) const
   return low == cst2.low && high == cst2.high;
 }
 
-/* FIXME(crowl): Remove after converting callers.  */
-static inline bool
-double_int_equal_p (double_int cst1, double_int cst2)
-{
-  return cst1 == cst2;
-}
-
 /* Returns true if CST1 != CST2.  */
 
 inline bool
@@ -823,52 +445,6 @@ double_int::popcount () const
 {
   return popcount_hwi (high) + popcount_hwi (low);
 }
-
-/* FIXME(crowl): Remove after converting callers.  */
-static inline int
-double_int_popcount (double_int cst)
-{
-  return cst.popcount ();
-}
-
-
-/* Legacy interface with decomposed high/low parts.  */
-
-/* FIXME(crowl): Remove after converting callers.  */
-extern int add_double_with_sign (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
-				 unsigned HOST_WIDE_INT, HOST_WIDE_INT,
-				 unsigned HOST_WIDE_INT *, HOST_WIDE_INT *,
-				 bool);
-/* FIXME(crowl): Remove after converting callers.  */
-#define add_double(l1,h1,l2,h2,lv,hv) \
-  add_double_with_sign (l1, h1, l2, h2, lv, hv, false)
-/* FIXME(crowl): Remove after converting callers.  */
-extern int neg_double (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
-		       unsigned HOST_WIDE_INT *, HOST_WIDE_INT *);
-/* FIXME(crowl): Remove after converting callers.  */
-extern int mul_double_with_sign (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
-				 unsigned HOST_WIDE_INT, HOST_WIDE_INT,
-				 unsigned HOST_WIDE_INT *, HOST_WIDE_INT *,
-				 bool);
-/* FIXME(crowl): Remove after converting callers.  */
-extern int mul_double_wide_with_sign (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
-				      unsigned HOST_WIDE_INT, HOST_WIDE_INT,
-				      unsigned HOST_WIDE_INT *, HOST_WIDE_INT *,
-				      unsigned HOST_WIDE_INT *, HOST_WIDE_INT *,
-				      bool);
-/* FIXME(crowl): Remove after converting callers.  */
-#define mul_double(l1,h1,l2,h2,lv,hv) \
-  mul_double_with_sign (l1, h1, l2, h2, lv, hv, false)
-/* FIXME(crowl): Remove after converting callers.  */
-extern void lshift_double (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
-			   HOST_WIDE_INT, unsigned int,
-			   unsigned HOST_WIDE_INT *, HOST_WIDE_INT *, bool);
-/* FIXME(crowl): Remove after converting callers.  */
-extern int div_and_round_double (unsigned, int, unsigned HOST_WIDE_INT,
-				 HOST_WIDE_INT, unsigned HOST_WIDE_INT,
-				 HOST_WIDE_INT, unsigned HOST_WIDE_INT *,
-				 HOST_WIDE_INT *, unsigned HOST_WIDE_INT *,
-				 HOST_WIDE_INT *);
 
 
 #ifndef GENERATOR_FILE

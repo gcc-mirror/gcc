@@ -2478,7 +2478,7 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 		  if (tmin.cmp (tmax, uns) < 0)
 		    covers = true;
 		  tmax = tem + double_int_minus_one;
-		  if (double_int_cmp (tmax, tem, uns) > 0)
+		  if (tmax.cmp (tem, uns) > 0)
 		    covers = true;
 		  /* If the anti-range would cover nothing, drop to varying.
 		     Likewise if the anti-range bounds are outside of the
@@ -2632,37 +2632,26 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 	    }
 	  uns = uns0 & uns1;
 
-	  mul_double_wide_with_sign (min0.low, min0.high,
-				     min1.low, min1.high,
-				     &prod0l.low, &prod0l.high,
-				     &prod0h.low, &prod0h.high, true);
+	  bool overflow;
+	  prod0l = min0.wide_mul_with_sign (min1, true, &prod0h, &overflow);
 	  if (!uns0 && min0.is_negative ())
 	    prod0h -= min1;
 	  if (!uns1 && min1.is_negative ())
 	    prod0h -= min0;
 
-	  mul_double_wide_with_sign (min0.low, min0.high,
-				     max1.low, max1.high,
-				     &prod1l.low, &prod1l.high,
-				     &prod1h.low, &prod1h.high, true);
+	  prod1l = min0.wide_mul_with_sign (max1, true, &prod1h, &overflow);
 	  if (!uns0 && min0.is_negative ())
 	    prod1h -= max1;
 	  if (!uns1 && max1.is_negative ())
 	    prod1h -= min0;
 
-	  mul_double_wide_with_sign (max0.low, max0.high,
-				     min1.low, min1.high,
-				     &prod2l.low, &prod2l.high,
-				     &prod2h.low, &prod2h.high, true);
+	  prod2l = max0.wide_mul_with_sign (min1, true, &prod2h, &overflow);
 	  if (!uns0 && max0.is_negative ())
 	    prod2h -= min1;
 	  if (!uns1 && min1.is_negative ())
 	    prod2h -= max0;
 
-	  mul_double_wide_with_sign (max0.low, max0.high,
-				     max1.low, max1.high,
-				     &prod3l.low, &prod3l.high,
-				     &prod3h.low, &prod3h.high, true);
+	  prod3l = max0.wide_mul_with_sign (max1, true, &prod3h, &overflow);
 	  if (!uns0 && max0.is_negative ())
 	    prod3h -= max1;
 	  if (!uns1 && max1.is_negative ())

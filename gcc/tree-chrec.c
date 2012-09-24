@@ -461,8 +461,8 @@ chrec_fold_multiply (tree type,
 static tree
 tree_fold_binomial (tree type, tree n, unsigned int k)
 {
-  unsigned HOST_WIDE_INT lidx, lnum, ldenom, lres, ldum;
-  HOST_WIDE_INT hidx, hnum, hdenom, hres, hdum;
+  double_int num, denom, idx, di_res;
+  bool overflow;
   unsigned int i;
   tree res;
 
@@ -472,59 +472,41 @@ tree_fold_binomial (tree type, tree n, unsigned int k)
   if (k == 1)
     return fold_convert (type, n);
 
+  /* Numerator = n.  */
+  num = TREE_INT_CST (n);
+
   /* Check that k <= n.  */
-  if (TREE_INT_CST_HIGH (n) == 0
-      && TREE_INT_CST_LOW (n) < k)
+  if (num.ult (double_int::from_uhwi (k)))
     return NULL_TREE;
 
-  /* Numerator = n.  */
-  lnum = TREE_INT_CST_LOW (n);
-  hnum = TREE_INT_CST_HIGH (n);
-
   /* Denominator = 2.  */
-  ldenom = 2;
-  hdenom = 0;
+  denom = double_int::from_uhwi (2);
 
   /* Index = Numerator-1.  */
-  if (lnum == 0)
-    {
-      hidx = hnum - 1;
-      lidx = ~ (unsigned HOST_WIDE_INT) 0;
-    }
-  else
-    {
-      hidx = hnum;
-      lidx = lnum - 1;
-    }
+  idx = num - double_int_one;
 
   /* Numerator = Numerator*Index = n*(n-1).  */
-  if (mul_double (lnum, hnum, lidx, hidx, &lnum, &hnum))
+  num = num.mul_with_sign (idx, false, &overflow);
+  if (overflow)
     return NULL_TREE;
 
   for (i = 3; i <= k; i++)
     {
       /* Index--.  */
-      if (lidx == 0)
-	{
-	  hidx--;
-	  lidx = ~ (unsigned HOST_WIDE_INT) 0;
-	}
-      else
-        lidx--;
+      --idx;
 
       /* Numerator *= Index.  */
-      if (mul_double (lnum, hnum, lidx, hidx, &lnum, &hnum))
+      num = num.mul_with_sign (idx, false, &overflow);
+      if (overflow)
 	return NULL_TREE;
 
       /* Denominator *= i.  */
-      mul_double (ldenom, hdenom, i, 0, &ldenom, &hdenom);
+      denom *= double_int::from_uhwi (i);
     }
 
   /* Result = Numerator / Denominator.  */
-  div_and_round_double (EXACT_DIV_EXPR, 1, lnum, hnum, ldenom, hdenom,
-			&lres, &hres, &ldum, &hdum);
-
-  res = build_int_cst_wide (type, lres, hres);
+  di_res = num.div (denom, true, EXACT_DIV_EXPR);
+  res = build_int_cst_wide (type, di_res.low, di_res.high);
   return int_fits_type_p (res, type) ? res : NULL_TREE;
 }
 
