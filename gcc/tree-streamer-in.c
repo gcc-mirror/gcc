@@ -335,6 +335,8 @@ unpack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
   TYPE_NEEDS_CONSTRUCTING (expr) = (unsigned) bp_unpack_value (bp, 1);
   if (RECORD_OR_UNION_TYPE_P (expr))
     TYPE_TRANSPARENT_AGGR (expr) = (unsigned) bp_unpack_value (bp, 1);
+  else if (TREE_CODE (expr) == ARRAY_TYPE)
+    TYPE_NONALIASED_COMPONENT (expr) = (unsigned) bp_unpack_value (bp, 1);
   TYPE_PACKED (expr) = (unsigned) bp_unpack_value (bp, 1);
   TYPE_RESTRICT (expr) = (unsigned) bp_unpack_value (bp, 1);
   TYPE_CONTAINS_PLACEHOLDER_INTERNAL (expr)
