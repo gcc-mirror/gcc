@@ -1,3 +1,10 @@
+2012-09-24  Dehao Chen  <dehao@google.com>
+
+	* tree-cfg.c (move_stmt_op): Reset the expr block only
+	when necessary.
+	(move_block_to_fn): Reset the edge's goto block even
+	when the goto locus is unknown.
+
 2012-09-24  Lawrence Crowl  <crowl@google.com>
 
 	* double-int.h (double_int::from_pair): New.

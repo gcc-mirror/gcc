@@ -6013,7 +6013,9 @@ move_stmt_op (tree *tp, int *walk_subtrees, void *data)
 
   if (EXPR_P (t))
     {
-      if (TREE_BLOCK (t))
+      if (TREE_BLOCK (t) == p->orig_block
+	  || (p->orig_block == NULL_TREE
+	  && TREE_BLOCK (t) == NULL_TREE))
 	TREE_SET_BLOCK (t, p->new_block);
     }
   else if (DECL_P (t) || TREE_CODE (t) == SSA_NAME)
@@ -6315,7 +6317,7 @@ move_block_to_fn (struct function *dest_cfun, basic_block bb,
     }
 
   FOR_EACH_EDGE (e, ei, bb->succs)
-    if (!IS_UNKNOWN_LOCATION (e->goto_locus))
+    if (e->goto_locus != UNKNOWN_LOCATION)
       {
 	tree block = LOCATION_BLOCK (e->goto_locus);
 	if (d->orig_block == NULL_TREE
