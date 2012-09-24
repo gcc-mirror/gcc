@@ -180,6 +180,25 @@ namespace __profile
       using _Base::max_size;
 
       // modifiers:
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      template<typename... _Args>
+	std::pair<iterator, bool>
+	emplace(_Args&&... __args)
+	{
+	  auto __res = _Base::emplace(std::forward<_Args>(__args)...);
+	  return std::pair<iterator, bool>(iterator(__res.first),
+					   __res.second);
+	}
+
+      template<typename... _Args>
+	iterator
+	emplace_hint(const_iterator __pos, _Args&&... __args)
+	{
+	  return iterator(_Base::emplace_hint(__pos,
+					      std::forward<_Args>(__args)...));
+	}
+#endif
+
       std::pair<iterator, bool>
       insert(const value_type& __x)
       {

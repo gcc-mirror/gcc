@@ -1,7 +1,7 @@
 // Set implementation -*- C++ -*-
 
 // Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-// 2011 Free Software Foundation, Inc.
+// 2011, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -395,6 +395,55 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       { _M_t.swap(__x._M_t); }
 
       // insert/erase
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      /**
+       *  @brief Attempts to build and insert an element into the %set.
+       *  @param __args  Arguments used to generate an element.
+       *  @return  A pair, of which the first element is an iterator that points
+       *           to the possibly inserted element, and the second is a bool
+       *           that is true if the element was actually inserted.
+       *
+       *  This function attempts to build and insert an element into the %set.
+       *  A %set relies on unique keys and thus an element is only inserted if
+       *  it is not already present in the %set.
+       *
+       *  Insertion requires logarithmic time.
+       */
+      template<typename... _Args>
+	std::pair<iterator, bool>
+	emplace(_Args&&... __args)
+	{ return _M_t._M_emplace_unique(std::forward<_Args>(__args)...); }
+
+      /**
+       *  @brief Attempts to insert an element into the %set.
+       *  @param  __pos  An iterator that serves as a hint as to where the
+       *                element should be inserted.
+       *  @param  __args  Arguments used to generate the element to be
+       *                 inserted.
+       *  @return An iterator that points to the element with key equivalent to
+       *          the one generated from @a __args (may or may not be the
+       *          element itself).
+       *
+       *  This function is not concerned about whether the insertion took place,
+       *  and thus does not return a boolean like the single-argument emplace()
+       *  does.  Note that the first parameter is only a hint and can
+       *  potentially improve the performance of the insertion process.  A bad
+       *  hint would cause no gains in efficiency.
+       *
+       *  For more on @a hinting, see:
+       *  http://gcc.gnu.org/onlinedocs/libstdc++/manual/bk01pt07ch17.html
+       *
+       *  Insertion requires logarithmic time (if the hint is not taken).
+       */
+      template<typename... _Args>
+	iterator
+	emplace_hint(const_iterator __pos, _Args&&... __args)
+	{
+	  return _M_t._M_emplace_hint_unique(__pos,
+					     std::forward<_Args>(__args)...);
+	}
+#endif
+
       /**
        *  @brief Attempts to insert an element into the %set.
        *  @param  __x  Element to be inserted.
