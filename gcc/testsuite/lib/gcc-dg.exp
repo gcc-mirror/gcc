@@ -745,7 +745,7 @@ proc process-message { msgproc msgprefix dgargs } {
     # Process the dg- directive, including adding the regular expression
     # to the new message entry in dg-messages.
     set msgcnt [llength ${dg-messages}]
-    catch { eval $msgproc $dgargs }
+    eval $msgproc $dgargs
 
     # If the target expression wasn't satisfied there is no new message.
     if { [llength ${dg-messages}] == $msgcnt } {
