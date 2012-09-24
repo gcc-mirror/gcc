@@ -3918,7 +3918,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		  if (fsym && fsym->attr.intent == INTENT_OUT
 		      && (fsym->attr.allocatable
 			  || (fsym->ts.type == BT_CLASS
-			      && CLASS_DATA (e)->attr.allocatable)))
+			      && CLASS_DATA (fsym)->attr.allocatable)))
 		    {
 		      stmtblock_t block;
 		      tree ptr;

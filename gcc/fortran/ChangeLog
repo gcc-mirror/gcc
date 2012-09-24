@@ -1,3 +1,9 @@
+2012-09-24  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54618
+	* trans-expr.c (gfc_conv_procedure_call): Fix INTENT(OUT)
+	handling for allocatable BT_CLASS.
+
 2012-09-24  Lawrence Crowl  <crowl@google.com>
 
 	* trans-expr.c (gfc_conv_cst_int_power): Change to new double_int API.
