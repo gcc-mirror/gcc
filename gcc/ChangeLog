@@ -1,3 +1,10 @@
+2012-09-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-streamer-in.c (unpack_ts_type_common_value_fields): Stream in
+	TYPE_NONALIASED_COMPONENT flag.
+	* tree-streamer-out.c (pack_ts_type_common_value_fields): Stream out
+	TYPE_NONALIASED_COMPONENT flag.
+
 2012-09-24  Jia Liu  <proljc@gmail.com>
 
 	* doc/lto.texi: Separate sections.
