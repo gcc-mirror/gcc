@@ -1,6 +1,7 @@
 2012-09-24  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/54618
+	PR fortran/54690
 	* trans-expr.c (gfc_conv_procedure_call): Fix INTENT(OUT)
 	handling for allocatable BT_CLASS.
 
