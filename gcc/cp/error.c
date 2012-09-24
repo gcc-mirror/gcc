@@ -1348,7 +1348,7 @@ dump_function_decl (tree t, int flags)
       return;
     }
 
-  flags &= ~TFF_UNQUALIFIED_NAME;
+  flags &= ~(TFF_UNQUALIFIED_NAME | TFF_TEMPLATE_NAME);
   if (TREE_CODE (t) == TEMPLATE_DECL)
     t = DECL_TEMPLATE_RESULT (t);
 
