@@ -2333,23 +2333,20 @@ gimple_copy (gimple stmt)
     }
 
   /* Make copy of operands.  */
-  if (num_ops > 0)
+  for (i = 0; i < num_ops; i++)
+    gimple_set_op (copy, i, unshare_expr (gimple_op (stmt, i)));
+
+  if (gimple_has_mem_ops (stmt))
     {
-      for (i = 0; i < num_ops; i++)
-	gimple_set_op (copy, i, unshare_expr (gimple_op (stmt, i)));
+      gimple_set_vdef (copy, gimple_vdef (stmt));
+      gimple_set_vuse (copy, gimple_vuse (stmt));
+    }
 
-      /* Clear out SSA operand vectors on COPY.  */
-      if (gimple_has_ops (stmt))
-	{
-	  gimple_set_def_ops (copy, NULL);
-	  gimple_set_use_ops (copy, NULL);
-	}
-
-      if (gimple_has_mem_ops (stmt))
-	{
-	  gimple_set_vdef (copy, gimple_vdef (stmt));
-	  gimple_set_vuse (copy, gimple_vuse (stmt));
-	}
+  /* Clear out SSA operand vectors on COPY.  */
+  if (gimple_has_ops (stmt))
+    {
+      gimple_set_def_ops (copy, NULL);
+      gimple_set_use_ops (copy, NULL);
 
       /* SSA operands need to be updated.  */
       gimple_set_modified (copy, true);

@@ -1,3 +1,9 @@
+2012-09-24  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/52173
+	* gimple.c (gimple_copy): Properly mark the copy modified
+	if SSA operands are present.
+
 2012-09-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR tree-optimization/54669

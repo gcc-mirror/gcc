@@ -1,3 +1,9 @@
+2012-09-24  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/52173
+	* gcc.dg/tm/pr52173-1.c: New.
+	* gcc.dg/tm/pr52173-2.c: New.
+
 2012-09-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/pr54669.c: New test.
