@@ -1,3 +1,9 @@
+2012-09-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50828
+	* error.c (dump_function_decl): Strip TFF_TEMPLATE_NAME from flags
+	at the outset.
+
 2012-09-24  Jason Merrill  <jason@redhat.com>
 
 	* decl.c (get_atexit_node): Remove dead code.
