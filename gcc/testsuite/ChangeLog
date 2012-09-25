@@ -1,3 +1,8 @@
+2012-09-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/54676
+	* gcc.dg/pr54676.c: New test.
+
 2012-09-25  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/53663

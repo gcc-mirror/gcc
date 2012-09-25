@@ -501,8 +501,19 @@ set_and_canonicalize_value_range (value_range_t *vr, enum value_range_type t,
      to adjust them.  */
   if (tree_int_cst_lt (max, min))
     {
-      tree one = build_int_cst (TREE_TYPE (min), 1);
-      tree tmp = int_const_binop (PLUS_EXPR, max, one);
+      tree one, tmp;
+
+      /* For one bit precision if max < min, then the swapped
+	 range covers all values, so for VR_RANGE it is varying and
+	 for VR_ANTI_RANGE empty range, so drop to varying as well.  */
+      if (TYPE_PRECISION (TREE_TYPE (min)) == 1)
+	{
+	  set_value_range_to_varying (vr);
+	  return;
+	}
+
+      one = build_int_cst (TREE_TYPE (min), 1);
+      tmp = int_const_binop (PLUS_EXPR, max, one);
       max = int_const_binop (MINUS_EXPR, min, one);
       min = tmp;
 
@@ -530,6 +541,24 @@ set_and_canonicalize_value_range (value_range_t *vr, enum value_range_type t,
 	     ???  This could be VR_UNDEFINED instead.  */
 	  set_value_range_to_varying (vr);
 	  return;
+	}
+      else if (TYPE_PRECISION (TREE_TYPE (min)) == 1
+	       && !TYPE_UNSIGNED (TREE_TYPE (min))
+	       && (is_min || is_max))
+	{
+	  /* For signed 1-bit precision, one is not in-range and
+	     thus adding/subtracting it would result in overflows.  */
+	  if (operand_equal_p (min, max, 0))
+	    {
+	      min = max = is_min ? vrp_val_max (TREE_TYPE (min))
+				 : vrp_val_min (TREE_TYPE (min));
+	      t = VR_RANGE;
+	    }
+	  else
+	    {
+	      set_value_range_to_varying (vr);
+	      return;
+	    }
 	}
       else if (is_min
 	       /* As a special exception preserve non-null ranges.  */
