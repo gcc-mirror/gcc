@@ -260,9 +260,9 @@ struct GTY(()) maps_info {
 };
 
 /* Data structure to associate an arbitrary data to a source location.  */
-struct location_adhoc_data {
+struct GTY(()) location_adhoc_data {
   source_location locus;
-  void *data;
+  void * GTY((skip)) data;
 };
 
 struct htab;
@@ -277,11 +277,11 @@ struct htab;
    bits of the integer is used to index the location_adhoc_data array,
    in which the locus and associated data is stored.  */
 
-struct location_adhoc_data_map {
-  struct htab *htab;
+struct GTY(()) location_adhoc_data_map {
+  struct htab * GTY((skip)) htab;
   source_location curr_loc;
-  struct location_adhoc_data *data;
   unsigned int allocated;
+  struct location_adhoc_data GTY((length ("%h.allocated"))) *data;
 };
 
 /* A set of chronological line_map structures.  */
@@ -315,7 +315,7 @@ struct GTY(()) line_maps {
      allocated, for a certain allocation size requested.  */
   line_map_round_alloc_size_func round_alloc_size;
 
-  struct location_adhoc_data_map GTY((skip)) location_adhoc_data_map;
+  struct location_adhoc_data_map location_adhoc_data_map;
 };
 
 /* Returns the pointer to the memory region where information about
@@ -445,6 +445,8 @@ extern source_location get_location_from_adhoc_loc (struct line_maps *,
 #define IS_ADHOC_LOC(LOC) (((LOC) & MAX_SOURCE_LOCATION) != (LOC))
 #define COMBINE_LOCATION_DATA(SET, LOC, BLOCK) \
   get_combined_adhoc_loc ((SET), (LOC), (BLOCK))
+
+extern void rebuild_location_adhoc_htab (struct line_maps *);
 
 /* Initialize a line map set.  */
 extern void linemap_init (struct line_maps *);
