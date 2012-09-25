@@ -1,3 +1,10 @@
+2012-09-25  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/53663
+	* gcc.dg/torture/pr53663-1.c: New testcase.
+	* gcc.dg/torture/pr53663-2.c: Likewise.
+	* gcc.dg/torture/pr53663-3.c: Likewise.
+
 2012-09-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/pr50725.c: Change 'long' to 'long long'.
