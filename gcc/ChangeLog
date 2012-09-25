@@ -1,3 +1,9 @@
+2012-09-25  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/54641
+	* config/avr/t-avr: Use ALL_COMPILERFLAGS instead of ALL_CFLAGS
+	for sources compiled with COMPILER.
+	
 2012-09-25  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/54625
