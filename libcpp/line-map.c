@@ -58,7 +58,7 @@ location_adhoc_data_hash (const void *l)
 {
   const struct location_adhoc_data *lb =
       (const struct location_adhoc_data *) l;
-  return (hashval_t) lb->locus + (size_t) &lb->data;
+  return (hashval_t) lb->locus + (size_t) lb->data;
 }
 
 /* Compare function for location_adhoc_data hashtable.  */
