@@ -15,6 +15,7 @@ volatile float f3 = 0x1.0p-60f;
 volatile double d1 = 1.0;
 volatile double d2 = 0x1.0p-30;
 volatile double d3 = 0x1.0p-60;
+volatile double d3d = 0x1.0p-52;
 volatile float fadd1 = 1.0f + 0x1.0p-30f;
 volatile double dadd2 = 1.0 + 0x1.0p-30 + 0x1.0p-60;
 volatile double dh = 0x1.0p-24;
@@ -35,9 +36,15 @@ test_assign (void)
   if (d != dadd2)
     abort ();
   /* Verify rounding direct to float without double rounding.  */
-  f = d1 + dh + d3;
-  if (f != fha)
-    abort ();
+  if (sizeof(long double) > sizeof(double)  )  {
+    f = d1 + dh + d3;
+    if (f != fha)
+      abort ();
+  } else {
+      f = d1 + dh + d3d;
+      if (f != fha)
+        abort ();
+  }
 }
 
 void
@@ -193,16 +200,28 @@ test_builtin (void)
     abort ();
   if (!__builtin_islessgreater (flt_min * flt_min, 0.0f))
     abort ();
-  if (!__builtin_isgreater (dbl_min * dbl_min, 0.0))
-    abort ();
   if (!__builtin_isgreaterequal (dbl_min * dbl_min, 0.0))
     abort ();
-  if (!__builtin_isless (0.0, dbl_min * dbl_min))
-    abort ();
-  if (__builtin_islessequal (dbl_min * dbl_min, 0.0))
-    abort ();
-  if (!__builtin_islessgreater (dbl_min * dbl_min, 0.0))
-    abort ();
+  if (sizeof(long double) > sizeof(double)  ) {
+    if (!__builtin_isgreater (dbl_min * dbl_min, 0.0))
+      abort ();
+    if (!__builtin_isless (0.0, dbl_min * dbl_min))
+      abort ();
+    if (__builtin_islessequal (dbl_min * dbl_min, 0.0))
+      abort ();
+    if (!__builtin_islessgreater (dbl_min * dbl_min, 0.0))
+      abort ();
+  }
+  else {
+    if (__builtin_isgreater (dbl_min * dbl_min, 0.0))
+      abort ();
+    if (__builtin_isless (0.0, dbl_min * dbl_min))
+      abort ();
+    if (!__builtin_islessequal (dbl_min * dbl_min, 0.0))
+      abort ();
+    if (__builtin_islessgreater (dbl_min * dbl_min, 0.0))
+      abort ();
+  }
 }
 
 int
