@@ -1,3 +1,8 @@
+2012-09-25  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR middle-end/53850
+	* trans-mem.c (expand_call_tm): Handle late built built-ins.
+
 2012-09-25  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR other/54701
