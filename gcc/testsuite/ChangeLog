@@ -1,3 +1,16 @@
+2012-09-25  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	* gcc.target/i386/20030217-1.c: Added check for
+	large_long_double effective target.
+	* gcc.target/i386/387-3.c: Likewise.
+	* gcc.target/i386/387-4.c: Likewise.
+	* gcc.target/i386/pr36578-1.c: Likewise.
+	* gcc.target/i386/excess-precision-1.c: Added new code for the case
+	when long double size is equal double size.
+	* gcc.target/i386/excess-precision-1.c: Likewise.
+	* gcc.target/i386/pr36578-2.c: Likewise.
+	* gcc.target/i386/20030217-2.c: New testcase.
+
 2012-09-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/54676

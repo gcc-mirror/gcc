@@ -38,12 +38,22 @@ test_add (void)
     abort ();
   if (f1 + f2 < fadd1)
     abort ();
-  if (d1 + d2 + d3 == dadd2)
-    abort ();
-  if (!(d1 + d2 + d3 > dadd2))
-    abort ();
-  if (!(d1 + d2 + d3 >= dadd2))
-    abort ();
+  if (sizeof(long double) > sizeof(double)) {
+    if ( d1 + d2 + d3 == dadd2)
+      abort ();
+    if (!(d1 + d2 + d3 > dadd2))
+      abort ();
+    if (!(d1 + d2 + d3 >= dadd2))
+      abort ();
+  }
+  else {
+    if ( d1 + d2 + d3 != dadd2 )
+      abort();
+    if ( d1 + d2 + d3 < dadd2 )
+      abort();
+    if ( d1 + d2 + d3 > dadd2 )
+      abort();
+  }
 }
 
 volatile long double ldsub1 = 1.0l - 0x1.0p-30l;
@@ -90,10 +100,18 @@ test_mul (void)
     abort ();
   if ((0, dbl_min * dbl_min * dbl_min) != dbl_min3)
     abort ();
-  if (dbl_min * dbl_min * dbl_min == 0)
-    abort ();
-  if ((flt_min * flt_min ? dbl_min * dbl_min * dbl_min : 0) == 0)
-    abort ();
+  if (sizeof(long double) > sizeof(double) ) {
+    if (dbl_min * dbl_min * dbl_min == 0)
+      abort ();
+    if ((flt_min * flt_min ? dbl_min * dbl_min * dbl_min : 0) == 0)
+      abort ();
+  }
+  else {
+    if (dbl_min * dbl_min * dbl_min != 0)
+      abort ();
+    if ((flt_min * flt_min ? dbl_min * dbl_min * dbl_min : 1) != 0)
+      abort ();
+  }
   if ((flt_min * flt_min ? : 0) == 0)
     abort ();
 }
