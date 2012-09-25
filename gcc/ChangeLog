@@ -1,5 +1,10 @@
 2012-09-25  Richard Guenther  <rguenther@suse.de>
 
+	* lto-symtab.c (lto_symtab_merge_decls_1): Properly merge
+	all of the chain.
+
+2012-09-25  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/53663
 	* tree-ssa-sccvn.c (vn_reference_lookup_3): Conditional
 	native encode/interpret translation on VN_WALKREWRITE.

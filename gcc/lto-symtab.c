@@ -566,12 +566,12 @@ lto_symtab_merge_decls_1 (symtab_node first)
 
   /* Merge the chain to the single prevailing decl and diagnose
      mismatches.  */
-  lto_symtab_merge_decls_2 (first, diagnosed_p);
+  lto_symtab_merge_decls_2 (prevailing, diagnosed_p);
 
   if (cgraph_dump_file)
     {
       fprintf (cgraph_dump_file, "After resolution:\n");
-      for (e = first; e; e = e->symbol.next_sharing_asm_name)
+      for (e = prevailing; e; e = e->symbol.next_sharing_asm_name)
 	dump_symtab_node (cgraph_dump_file, e);
     }
 
