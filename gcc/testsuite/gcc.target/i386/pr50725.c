@@ -39,7 +39,7 @@ main ()
   if (bar (22) != 24 || bar (20) != 128)
     abort ();
 #ifdef __x86_64__
-  register long r10 __asm__ ("r10") = 0xdeadbeefdeadbeefUL;
+  register long long r10 __asm__ ("r10") = 0xdeadbeefdeadbeefULL;
   asm volatile ("" : "+r" (r10));
 #endif
   if (baz (0, 0, 0, 0, 0, 0, 22) != 24 || baz (0, 0, 0, 0, 0, 0, 20) != 128)

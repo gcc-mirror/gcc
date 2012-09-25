@@ -1,3 +1,7 @@
+2012-09-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr50725.c: Change 'long' to 'long long'.
+
 2012-09-24  Janis Johnson  <janisjo@codesourcery.com>
 
 	* lib/target-supports-dg.exp (dg-require-effective-target,
@@ -498,7 +502,7 @@
 
 2012-09-10  Marc Glisse  <marc.glisse@inria.fr>
 
-        * gcc.dg/tree-ssa/forwprop-20.c: New testcase.
+	* gcc.dg/tree-ssa/forwprop-20.c: New testcase.
 
 2012-09-10  Richard Guenther  <rguenther@suse.de>
 
