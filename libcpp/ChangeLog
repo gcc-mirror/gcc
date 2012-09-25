@@ -1,5 +1,10 @@
 2012-09-25  Dehao Chen  <dehao@google.com>
 
+	PR middle-end/54704
+	* line-map.c (location_adhoc_data_hash): Fix the hash function.
+
+2012-09-25  Dehao Chen  <dehao@google.com>
+
 	PR middle-end/54645
 	* include/line-map.h (location_adhoc_data): Move location_adhoc_data
 	into GC.
