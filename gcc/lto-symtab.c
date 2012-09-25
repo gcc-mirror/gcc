@@ -629,7 +629,8 @@ lto_symtab_merge_cgraph_nodes_1 (symtab_node prevailing)
 
       if (!symtab_real_symbol_p (e))
 	continue;
-      if (symtab_function_p (e))
+      if (symtab_function_p (e)
+	  && !DECL_BUILT_IN (e->symbol.decl))
 	lto_cgraph_replace_node (cgraph (e), cgraph (prevailing));
       if (symtab_variable_p (e))
 	lto_varpool_replace_node (varpool (e), varpool (prevailing));

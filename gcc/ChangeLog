@@ -1,3 +1,9 @@
+2012-09-25  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/54625
+	* lto-symtab.c (lto_symtab_merge_cgraph_nodes_1): Do not merge
+	cgraph nodes for builtins.
+
 2012-09-25  Dehao Chen  <dehao@google.com>
 
 	PR middle-end/54645
