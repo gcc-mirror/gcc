@@ -1,5 +1,9 @@
 2012-09-25  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/54676
+	* tree-vrp.c (set_and_canonicalize_value_range): Handle
+	one bit precision properly.
+
 	PR other/54692
 	* configure.ac (CFLAGS, CXXFLAGS): Remove -Ofast or -Og
 	properly.
