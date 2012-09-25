@@ -1,3 +1,18 @@
+2012-09-24  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* include/ext/random: Add __gnu_cxx::k_distribution<> class.
+	* include/ext/random.tcc: Add out-of-line functions for
+	__gnu_cxx::k_distribution<>.
+	* testsuite/ext/random/k_distribution/operators/equal.cc: New file.
+	* testsuite/ext/random/k_distribution/operators/serialize.cc: New file.
+	* testsuite/ext/random/k_distribution/operators/inequal.cc: New file.
+	* testsuite/ext/random/k_distribution/cons/parms.cc: New file.
+	* testsuite/ext/random/k_distribution/cons/default.cc: New file.
+	* testsuite/ext/random/k_distribution/requirements/typedefs.cc:
+	New file.
+	* testsuite/ext/random/k_distribution/requirements/
+	explicit_instantiation/1.cc: New file.
+
 2012-09-24  François Dumont  <fdumont@gcc.gnu.org>
 
 	PR libstdc++/44436
