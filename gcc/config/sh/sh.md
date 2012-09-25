@@ -3817,12 +3817,58 @@ label:
 			      GEN_INT (56), GEN_INT (8));
 })
 
+(define_expand "rotrsi3"
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(rotatert:SI (match_operand:SI 1 "arith_reg_operand")
+		     (match_operand:SI 2 "const_int_operand")))]
+  "TARGET_SH1"
+{
+  HOST_WIDE_INT ival = INTVAL (operands[2]);
+  if (ival == 1)
+    {
+      emit_insn (gen_rotrsi3_1 (operands[0], operands[1]));
+      DONE;
+    }
+
+  FAIL;
+})
+
+(define_insn "rotrsi3_1"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+	(rotatert:SI (match_operand:SI 1 "arith_reg_operand" "0")
+		     (const_int 1)))
+   (set (reg:SI T_REG)
+	(and:SI (match_dup 1) (const_int 1)))]
+  "TARGET_SH1"
+  "rotr	%0"
+  [(set_attr "type" "arith")])
+
+;; A slimplified version of rotr for combine.
+(define_insn "*rotrsi3_1"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+	(rotatert:SI (match_operand:SI 1 "arith_reg_operand" "0")
+		     (const_int 1)))
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH1"
+  "rotr	%0"
+  [(set_attr "type" "arith")])
+
 (define_insn "rotlsi3_1"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
 	(rotate:SI (match_operand:SI 1 "arith_reg_operand" "0")
 		   (const_int 1)))
    (set (reg:SI T_REG)
 	(lshiftrt:SI (match_dup 1) (const_int 31)))]
+  "TARGET_SH1"
+  "rotl	%0"
+  [(set_attr "type" "arith")])
+
+;; A simplified version of rotl for combine.
+(define_insn "*rotlsi3_1"
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+	(rotate:SI (match_operand:SI 1 "arith_reg_operand" "0")
+		   (const_int 1)))
+   (clobber (reg:SI T_REG))]
   "TARGET_SH1"
   "rotl	%0"
   [(set_attr "type" "arith")])
@@ -3845,9 +3891,9 @@ label:
   [(set_attr "type" "arith")])
 
 (define_expand "rotlsi3"
-  [(set (match_operand:SI 0 "arith_reg_dest" "")
-	(rotate:SI (match_operand:SI 1 "arith_reg_operand" "")
-		   (match_operand:SI 2 "immediate_operand" "")))]
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(rotate:SI (match_operand:SI 1 "arith_reg_operand")
+		   (match_operand:SI 2 "const_int_operand")))]
   "TARGET_SH1"
 {
   static const char rot_tab[] = {
@@ -3857,12 +3903,8 @@ label:
     002, 002, 010, 000, 000, 000, 000, 000,
   };
 
-  int count, choice;
-
-  if (!CONST_INT_P (operands[2]))
-    FAIL;
-  count = INTVAL (operands[2]);
-  choice = rot_tab[count];
+  int count = INTVAL (operands[2]);
+  int choice = rot_tab[count];
   if (choice & 010 && SH_DYNAMIC_SHIFT_COST <= 1)
     FAIL;
   choice &= 7;
@@ -3908,12 +3950,12 @@ label:
   [(set_attr "type" "arith")])
 
 (define_expand "rotlhi3"
-  [(set (match_operand:HI 0 "arith_reg_operand" "")
-	(rotate:HI (match_operand:HI 1 "arith_reg_operand" "")
-		   (match_operand:HI 2 "immediate_operand" "")))]
+  [(set (match_operand:HI 0 "arith_reg_operand")
+	(rotate:HI (match_operand:HI 1 "arith_reg_operand")
+		   (match_operand:HI 2 "const_int_operand")))]
   "TARGET_SH1"
 {
-  if (!CONST_INT_P (operands[2]) || INTVAL (operands[2]) != 8)
+  if (INTVAL (operands[2]) != 8)
     FAIL;
 })
 
@@ -3950,11 +3992,7 @@ label:
 {
   if (INTVAL (operands[2]) > 1)
     {
-      /* use plus_constant function ?? */
-      const int shift_count = INTVAL (operands[2]) - 1;
-      const rtx shift_count_rtx = GEN_INT (shift_count);
-      rtx shift_res = gen_reg_rtx (SImode);
-
+      const rtx shift_count = GEN_INT (INTVAL (operands[2]) - 1);
       rtx prev_set_t_insn = NULL_RTX;
       rtx tmp_t_reg = NULL_RTX;
 
@@ -3963,10 +4001,24 @@ label:
 	 shift insn before that insn, to remove the T_REG dependency.
 	 If the insn that sets the T_REG cannot be found, store the T_REG
 	 in a temporary reg and restore it after the shift.  */
-      if (sh_lshrsi_clobbers_t_reg_p (shift_count_rtx)
-	  && ! sh_dynamicalize_shift_p (shift_count_rtx))
+      if (sh_lshrsi_clobbers_t_reg_p (shift_count)
+	  && ! sh_dynamicalize_shift_p (shift_count))
 	{
 	  prev_set_t_insn = prev_nonnote_insn_bb (curr_insn);
+
+	  /* Skip the nott insn, which was probably inserted by the splitter
+	     of *rotcr_neg_t.  Don't use one of the recog functions
+	     here during insn splitting, since that causes problems in later
+	     passes.  */
+	  if (prev_set_t_insn != NULL_RTX)
+	    {
+	      rtx pat = PATTERN (prev_set_t_insn);
+	      if (GET_CODE (pat) == SET
+		  && t_reg_operand (XEXP (pat, 0), SImode)
+		  && negt_reg_operand (XEXP (pat, 1), SImode))
+	      prev_set_t_insn = prev_nonnote_insn_bb (prev_set_t_insn);
+	    }
+
 	  if (! (prev_set_t_insn != NULL_RTX
 		 && reg_set_p (get_t_reg_rtx (), prev_set_t_insn)
 		 && ! reg_referenced_p (get_t_reg_rtx (),
@@ -3978,14 +4030,15 @@ label:
 	    } 
 	}
 
-      rtx shift_rtx = gen_lshrsi3 (shift_res, operands[1], shift_count_rtx);
-      operands[1] = shift_res;
+      rtx shift_result = gen_reg_rtx (SImode);
+      rtx shift_insn = gen_lshrsi3 (shift_result, operands[1], shift_count);
+      operands[1] = shift_result;
 
       /* Emit the shift insn before the insn that sets T_REG, if possible.  */
       if (prev_set_t_insn != NULL_RTX)
-	emit_insn_before (shift_rtx, prev_set_t_insn);
+	emit_insn_before (shift_insn, prev_set_t_insn);
       else
-	emit_insn (shift_rtx);
+	emit_insn (shift_insn);
 
       /* Restore T_REG if it has been saved before.  */
       if (tmp_t_reg != NULL_RTX)
@@ -4006,6 +4059,20 @@ label:
   emit_insn (gen_rotcr (operands[0], operands[1], operands[3]));
   DONE;
 })
+
+;; If combine tries the same as above but with swapped operands, split
+;; it so that it will try the pattern above.
+(define_split
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(ior:SI (ashift:SI (match_operand:SI 1 "arith_reg_or_t_reg_operand")
+			   (const_int 31))
+		(lshiftrt:SI (match_operand:SI 2 "arith_reg_operand")
+			     (match_operand:SI 3 "const_int_operand"))))]
+  "TARGET_SH1 && can_create_pseudo_p ()"
+  [(parallel [(set (match_dup 0)
+		   (ior:SI (lshiftrt:SI (match_dup 2) (match_dup 3))
+			   (ashift:SI (match_dup 1) (const_int 31))))
+	      (clobber (reg:SI T_REG))])])
 
 ;; rotcr combine bridge pattern which will make combine try out more
 ;; complex patterns.
@@ -4038,6 +4105,41 @@ label:
   emit_insn (gen_shll (tmp, operands[1]));
   emit_insn (gen_rotcr (operands[0], operands[2], get_t_reg_rtx ()));
   DONE;
+})
+
+;; rotcr combine patterns for rotating in the negated T_REG value.
+(define_insn_and_split "*rotcr_neg_t"
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(ior:SI (match_operand:SI 1 "negt_reg_shl31_operand")
+		(lshiftrt:SI (match_operand:SI 2 "arith_reg_operand")
+			     (match_operand:SI 3 "const_int_operand"))))
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH1"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(parallel [(set (match_dup 0)
+		   (ior:SI (lshiftrt:SI (match_dup 2) (match_dup 3))
+			   (ashift:SI (reg:SI T_REG) (const_int 31))))
+	      (clobber (reg:SI T_REG))])]
+{
+  emit_insn (gen_nott (get_t_reg_rtx ()));
+})
+
+(define_insn_and_split "*rotcr_neg_t"
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(ior:SI (lshiftrt:SI (match_operand:SI 1 "arith_reg_operand")
+			     (match_operand:SI 2 "const_int_operand"))
+		(match_operand:SI 3 "negt_reg_shl31_operand")))
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH1"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(parallel [(set (match_dup 0)
+		   (ior:SI (lshiftrt:SI (match_dup 1) (match_dup 2))
+			   (ashift:SI (reg:SI T_REG) (const_int 31))))
+	      (clobber (reg:SI T_REG))])]
+{
+  emit_insn (gen_nott (get_t_reg_rtx ()));
 })
 
 ;; . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -10718,6 +10820,53 @@ label:
    (set (reg:SI T_REG) (eq:SI (match_dup 0) (const_int 0)))]
 {
   operands[0] = gen_reg_rtx (SImode);
+})
+
+;; Store T bit as MSB in a reg.
+;; T = 0: 0x00000000 -> reg
+;; T = 1: 0x80000000 -> reg
+(define_insn_and_split "*movt_msb"
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(mult:SI (match_operand:SI 1 "t_reg_operand")
+		 (const_int -2147483648)))  ;; 0xffffffff80000000
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH1"
+  "#"
+  "&& 1"
+  [(set (match_dup 0) (ashift:SI (reg:SI T_REG) (const_int 31)))])
+
+;; Store inverted T bit as MSB in a reg.
+;; T = 0: 0x80000000 -> reg
+;; T = 1: 0x00000000 -> reg
+;; On SH2A we can get away without clobbering the T_REG.
+(define_insn_and_split "*negt_msb"
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(match_operand:SI 1 "negt_reg_shl31_operand"))]
+  "TARGET_SH2A"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(const_int 0)]
+{
+  rtx tmp = gen_reg_rtx (SImode);
+  emit_insn (gen_movrt (tmp, get_t_reg_rtx ()));
+  emit_insn (gen_rotrsi3 (operands[0], tmp, const1_rtx));
+  DONE;
+})
+
+(define_insn_and_split "*negt_msb"
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(match_operand:SI 1 "negt_reg_shl31_operand"))
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH1 && !TARGET_SH2A"
+  "#"
+  "&& can_create_pseudo_p ()"
+  [(const_int 0)]
+{
+  rtx tmp = gen_reg_rtx (SImode);
+  emit_move_insn (tmp, get_t_reg_rtx ());
+  emit_insn (gen_cmpeqsi_t (tmp, const0_rtx));
+  emit_insn (gen_rotcr (operands[0], tmp, get_t_reg_rtx ()));
+  DONE;
 })
 
 ;; The *cset_zero patterns convert optimizations such as
