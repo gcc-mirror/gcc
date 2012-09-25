@@ -1033,3 +1033,41 @@
 (define_predicate "arith_reg_or_t_reg_operand"
   (ior (match_operand 0 "arith_reg_operand")
        (match_operand 0 "t_reg_operand")))
+
+;; A predicate describing the negated value of the T bit register shifted
+;; left by 31.
+(define_predicate "negt_reg_shl31_operand"
+  (match_code "plus,minus,if_then_else")
+{
+  /* (plus:SI (mult:SI (match_operand:SI 1 "t_reg_operand")
+		       (const_int -2147483648))  ;; 0xffffffff80000000
+	      (const_int -2147483648))
+  */
+  if (GET_CODE (op) == PLUS && satisfies_constraint_Jhb (XEXP (op, 1))
+      && GET_CODE (XEXP (op, 0)) == MULT
+      && t_reg_operand (XEXP (XEXP (op, 0), 0), SImode)
+      && satisfies_constraint_Jhb (XEXP (XEXP (op, 0), 1)))
+    return true;
+
+  /* (minus:SI (const_int -2147483648)  ;; 0xffffffff80000000
+	       (mult:SI (match_operand:SI 1 "t_reg_operand")
+			(const_int -2147483648)))
+  */
+  if (GET_CODE (op) == MINUS
+      && satisfies_constraint_Jhb (XEXP (op, 0))
+      && GET_CODE (XEXP (op, 1)) == MULT
+      && t_reg_operand (XEXP (XEXP (op, 1), 0), SImode)
+      && satisfies_constraint_Jhb (XEXP (XEXP (op, 1), 1)))
+    return true;
+
+  /*  (if_then_else:SI (match_operand:SI 1 "t_reg_operand")
+		       (const_int 0)
+		       (const_int -2147483648))  ;; 0xffffffff80000000
+  */
+  if (GET_CODE (op) == IF_THEN_ELSE && t_reg_operand (XEXP (op, 0), SImode)
+      && satisfies_constraint_Z (XEXP (op, 1))
+      && satisfies_constraint_Jhb (XEXP (op, 2)))
+    return true;
+
+  return false;
+})

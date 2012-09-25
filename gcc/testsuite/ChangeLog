@@ -1,3 +1,13 @@
+2012-09-25  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54089
+	* gcc.target/sh/pr54089-1.c (test_15, test_16, test_17, test_18,
+	test_19, test_20, test_21, test_22, test_23): New functions.
+	* gcc.target/sh/pr54089-4.c: New.
+	* gcc.target/sh/pr54089-5.c: New.
+	* gcc.target/sh/pr54089-6.c: New.
+	* gcc.target/sh/pr54089-7.c: New.
+
 2012-09-25  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/54625

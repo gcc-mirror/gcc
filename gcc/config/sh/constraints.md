@@ -33,6 +33,7 @@
 ;;  J16: 0xffffffff00000000 | 0x00000000ffffffff
 ;;  Jmb: 0x000000FF
 ;;  Jmw: 0x0000FFFF
+;;  Jhb: 0x80000000
 ;;  Kxx: unsigned xx bit
 ;;  M: 1
 ;;  N: 0
@@ -147,6 +148,11 @@
   "Low word mask constant 0x0000FFFF"
   (and (match_code "const_int")
        (match_test "ival == 0xFFFF")))
+
+(define_constraint "Jhb"
+  "Highest bit constant"
+  (and (match_code "const_int")
+       (match_test "(ival & 0xFFFFFFFF) == 0x80000000")))
 
 (define_constraint "K03"
   "An unsigned 3-bit constant, as used in SH2A bclr, bset, etc."

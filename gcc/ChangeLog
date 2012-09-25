@@ -1,3 +1,16 @@
+2012-09-25  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54089
+	* config/sh/constraints.md (Jhb): New constraint.
+	* config/sh/predicates.md (negt_reg_shl31_operand): New predicate.
+	* config/sh/sh.md (rotrsi3): New expander.
+	(rotrsi3_1, *rotrsi3_1, *rotlsi3_1): New insns.
+	(rotlsi3, rotlhi3): Use const_int_operand predicate instead of
+	immediate_operand and remove CONST_INT_P checks in expansion code.
+	(*rotcr): Cleanup variable usage.  Handle preceding nott insn.  Add
+	split with swapped operands.
+	(*rotcr_neg_t, *movt_msb, *negt_msb): New insns and splits.
+
 2012-09-25  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR middle-end/53850
@@ -1066,7 +1079,7 @@
 2012-09-14  Christian Bruel  <christian.bruel@st.com>
 
 	* config/sh/predicates.md (t_reg_operand): Check REG_P for SUBREG.
-	* config/sh/sh.c (sequence_insn_p: Check INSNP_P for SEQUENCE.
+	* config/sh/sh.c (sequence_insn_p): Check INSNP_P for SEQUENCE.
 
 2012-09-14  Jakub Jelinek  <jakub@redhat.com>
 
