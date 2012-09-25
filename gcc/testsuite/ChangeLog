@@ -1,3 +1,10 @@
+2012-09-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54526
+	* g++.dg/cpp0x/parse2.C: New.
+	* g++.dg/parse/error11.C: Adjust.
+	* g++.dg/parse/error12.C: Likewise.
+
 2012-09-25  Igor Zamyatin  <igor.zamyatin@intel.com>
 
 	* gcc.target/i386/20030217-1.c: Added check for
