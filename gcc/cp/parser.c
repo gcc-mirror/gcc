@@ -12479,9 +12479,11 @@ cp_parser_template_id (cp_parser *parser,
 	  return error_mark_node;
 	}
       /* Otherwise, emit an error about the invalid digraph, but continue
-	 parsing because we got our argument list.  */
-      if (permerror (next_token->location,
-		     "%<<::%> cannot begin a template-argument list"))
+	 parsing because we got our argument list.  In C++11 do not emit
+	 any error, per 2.5/3.  */
+      if (cxx_dialect < cxx0x
+	  && permerror (next_token->location,
+			"%<<::%> cannot begin a template-argument list"))
 	{
 	  static bool hint = false;
 	  inform (next_token->location,
@@ -12489,8 +12491,9 @@ cp_parser_template_id (cp_parser *parser,
 		  " Insert whitespace between %<<%> and %<::%>");
 	  if (!hint && !flag_permissive)
 	    {
-	      inform (next_token->location, "(if you use %<-fpermissive%>"
-		      " G++ will accept your code)");
+	      inform (next_token->location, "(if you use %<-fpermissive%> "
+		      "or %<-std=c++11%>, or %<-std=gnu++11%> G++ will "
+		      "accept your code)");
 	      hint = true;
 	    }
 	}
