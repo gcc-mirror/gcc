@@ -1,3 +1,9 @@
+2012-09-25  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR other/54701
+	* config/avr/avr.c (avr_map_decompose): Use double_int::from_uhwi
+	instead of uhwi_to_double_int.
+
 2012-09-25  Richard Guenther  <rguenther@suse.de>
 
 	* lto-symtab.c (lto_symtab_merge_decls_1): Properly merge
