@@ -1,3 +1,13 @@
+2012-09-25  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/54625
+	* gcc.dg/lto/pr54702_0.c: New testcase.
+	* gcc.dg/lto/pr54702_1.c: Likewise.
+	* gcc.dg/lto/pr54625-1_0.c: Likewise.
+	* gcc.dg/lto/pr54625-1_1.C: Likewise.
+	* gcc.dg/lto/pr54625-2_0.c: Likewise.
+	* gcc.dg/lto/pr54625-2_1.C: Likewise.
+
 2012-09-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/54526
