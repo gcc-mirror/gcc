@@ -550,6 +550,7 @@ avr_set_current_function (tree decl)
   if (decl == NULL_TREE
       || current_function_decl == NULL_TREE
       || current_function_decl == error_mark_node
+      || ! cfun->machine
       || cfun->machine->attributes_checked_p)
     return;
 
