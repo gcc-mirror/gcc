@@ -1,7 +1,7 @@
 2012-09-25  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR other/54701
-	* config/avr/avr-log.c (avr_double_int_pop_digit): Reerite using
+	* config/avr/avr-log.c (avr_double_int_pop_digit): Rewrite using
 	double_int::udivmod.
 
 2012-09-25  Georg-Johann Lay  <avr@gjlay.de>
