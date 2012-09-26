@@ -89,12 +89,6 @@ namespace std _GLIBCXX_VISIBILITY(default)
 	return __result;
       }
 
-    template<typename _Tp>
-      bool _Power_of_2(_Tp __x)
-      {
-	return ((__x - 1) & __x) == 0;
-      };
-
   _GLIBCXX_END_NAMESPACE_VERSION
   } // namespace __detail
 

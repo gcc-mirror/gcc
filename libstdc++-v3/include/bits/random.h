@@ -149,6 +149,14 @@ _GLIBCXX_END_NAMESPACE_VERSION
       __mod(_Tp __x)
       { return _Mod<_Tp, __m, __a, __c>::__calc(__x); }
 
+    /* Determine whether number is a power of 2.  */
+    template<typename _Tp>
+      inline bool
+      _Power_of_2(_Tp __x)
+      {
+	return ((__x - 1) & __x) == 0;
+      };
+
     /*
      * An adaptor class for converting the output of any Generator into
      * the input for a specific Distribution.
