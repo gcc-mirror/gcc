@@ -8611,18 +8611,18 @@ Similar to @code{__builtin_powi}, except the argument and return types
 are @code{long double}.
 @end deftypefn
 
-@deftypefn {Built-in Function} int16_t __builtin_bswap16 (int16_t x)
+@deftypefn {Built-in Function} uint16_t __builtin_bswap16 (uint16_t x)
 Returns @var{x} with the order of the bytes reversed; for example,
 @code{0xaabb} becomes @code{0xbbaa}.  Byte here always means
 exactly 8 bits.
 @end deftypefn
 
-@deftypefn {Built-in Function} int32_t __builtin_bswap32 (int32_t x)
+@deftypefn {Built-in Function} uint32_t __builtin_bswap32 (uint32_t x)
 Similar to @code{__builtin_bswap16}, except the argument and return types
 are 32-bit.
 @end deftypefn
 
-@deftypefn {Built-in Function} int64_t __builtin_bswap64 (int64_t x)
+@deftypefn {Built-in Function} uint64_t __builtin_bswap64 (uint64_t x)
 Similar to @code{__builtin_bswap32}, except the argument and return types
 are 64-bit.
 @end deftypefn
