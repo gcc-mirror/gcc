@@ -1,3 +1,9 @@
+2012-09-26  Akira Takahashi  <faithandbrave@gmail.com>
+
+	PR libstdc++/53515
+	* include/bits/stl_iterator_base_funcs.h (__advance(_InputIterator&,
+	_Distance, input_iterator_tag)): Add _GLIBCXX_DEBUG_ASSERT(__n >= 0).
+
 2012-09-26  Ulrich Drepper  <drepper@gmail.com>
 
 	Optimize bulk mode for normal_distribution<double> for SSE3.
