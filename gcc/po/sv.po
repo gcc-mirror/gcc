@@ -8,10 +8,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 4.7.1\n"
+"Project-Id-Version: gcc 4.7.2\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2012-09-19 14:50+0000\n"
-"PO-Revision-Date: 2012-06-25 13:11+0200\n"
+"PO-Revision-Date: 2012-09-26 23:19+0200\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -7605,10 +7605,8 @@ msgid "Follow Renesas (formerly Hitachi) / SuperH calling conventions"
 msgstr "Följ Renesas (tidigare Hitachi) / SuperH-anropskonventioner"
 
 #: config/sh/sh.opt:274
-#, fuzzy
-#| msgid "Increase the IEEE compliance for floating-point code"
 msgid "Increase the IEEE compliance for floating-point comparisons"
-msgstr "Öka efterföljden av IEEE för flyttalskod"
+msgstr "Öka efterföljden av IEEE för flyttalsjämförelser"
 
 #: config/sh/sh.opt:278
 msgid "Enable the use of the indexed addressing mode for SHmedia32/SHcompact"
@@ -12070,7 +12068,7 @@ msgstr "booleskt uttryck förväntades"
 
 #: go/gofrontend/statements.cc:4198
 msgid "cannot type switch on non-interface value"
-msgstr ""
+msgstr "kan inte göra en typ-switch på något som inte är ett gränssnittsvärde"
 
 #: go/gofrontend/statements.cc:4320
 msgid "incompatible types in send"
@@ -45104,9 +45102,3 @@ msgstr "%<-fobjc-sjlj-exceptions%> ignoreras för %<-fnext-runtime%> när %<-fob
 #, gcc-internal-format
 msgid "creating selector for nonexistent method %qE"
 msgstr "skapar selektor för icke existerande metod %qE"
-
-#~ msgid "invalid unsafe.Pointer conversion"
-#~ msgstr "ogiltiga unsafe.Pointer-konvertering"
-
-#~ msgid "both %<const%> and %<constexpr%> cannot be used here"
-#~ msgstr "man kan inte använda både %<const%> och %<constexpr%> här"
