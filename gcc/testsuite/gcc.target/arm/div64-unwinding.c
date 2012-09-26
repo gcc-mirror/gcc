@@ -1,6 +1,7 @@
 /* Performing a 64-bit division should not pull in the unwinder.  */
 
-/* { dg-do run } */
+/* The test is expected to fail for GNU/Linux; see PR54723.  */
+/* { dg-do run { xfail *-*-linux* } } */
 /* { dg-options "-O0" } */
 
 #include <stdlib.h>
