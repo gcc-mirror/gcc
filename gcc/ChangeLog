@@ -1,3 +1,7 @@
+2012-09-26  Ian Lance Taylor  <iant@google.com>
+
+	* diagnostic.c (bt_callback): Cast pc when calling fprintf.
+
 2012-09-26  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/54674
