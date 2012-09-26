@@ -364,7 +364,7 @@ bt_callback (void *data, uintptr_t pc, const char *filename, int lineno,
     }
 
   fprintf (stderr, "0x%lx %s\n\t%s:%d\n",
-	   pc,
+	   (unsigned long) pc,
 	   function == NULL ? "???" : function,
 	   filename == NULL ? "???" : filename,
 	   lineno);
