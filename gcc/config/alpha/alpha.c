@@ -1043,7 +1043,8 @@ alpha_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
    We can simplify the test since we know that the address must be valid.  */
 
 static bool
-alpha_mode_dependent_address_p (const_rtx addr)
+alpha_mode_dependent_address_p (const_rtx addr,
+				addr_space_t as ATTRIBUTE_UNUSED)
 {
   return GET_CODE (addr) == AND;
 }

@@ -874,7 +874,7 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
 	 if we are not changing the meaning of the address. */
       if (GET_CODE (op) == MEM
 	  && !MEM_VOLATILE_P (op)
-	  && !mode_dependent_address_p (XEXP (op, 0)))
+	  && !mode_dependent_address_p (XEXP (op, 0), MEM_ADDR_SPACE (op)))
 	return rtl_hooks.gen_lowpart_no_emit (mode, op);
 
       break;
@@ -5615,7 +5615,7 @@ simplify_subreg (enum machine_mode outermode, rtx op,
      or if we would be widening it.  */
 
   if (MEM_P (op)
-      && ! mode_dependent_address_p (XEXP (op, 0))
+      && ! mode_dependent_address_p (XEXP (op, 0), MEM_ADDR_SPACE (op))
       /* Allow splitting of volatile memory references in case we don't
          have instruction to move the whole thing.  */
       && (! MEM_VOLATILE_P (op)
@@ -5773,7 +5773,8 @@ simplify_subreg (enum machine_mode outermode, rtx op,
       && (INTVAL (XEXP (op, 1)) % GET_MODE_BITSIZE (outermode)) == 0
       && INTVAL (XEXP (op, 1)) > 0
       && INTVAL (XEXP (op, 1)) < GET_MODE_BITSIZE (innermode)
-      && ! mode_dependent_address_p (XEXP (XEXP (op, 0), 0))
+      && ! mode_dependent_address_p (XEXP (XEXP (op, 0), 0),
+				     MEM_ADDR_SPACE (XEXP (op, 0)))
       && ! MEM_VOLATILE_P (XEXP (op, 0))
       && byte == subreg_lowpart_offset (outermode, innermode)
       && (GET_MODE_SIZE (outermode) >= UNITS_PER_WORD

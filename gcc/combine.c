@@ -5424,7 +5424,8 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int in_dest,
 	 of the address.  */
       if (MEM_P (SUBREG_REG (x))
 	  && (MEM_VOLATILE_P (SUBREG_REG (x))
-	      || mode_dependent_address_p (XEXP (SUBREG_REG (x), 0))))
+	      || mode_dependent_address_p (XEXP (SUBREG_REG (x), 0),
+					   MEM_ADDR_SPACE (SUBREG_REG (x)))))
 	return gen_rtx_CLOBBER (mode, const0_rtx);
 
       /* Note that we cannot do any narrowing for non-constants since
@@ -7054,7 +7055,8 @@ make_extraction (enum machine_mode mode, rtx inner, HOST_WIDE_INT pos,
 		 may not be aligned, for one thing).  */
 	      && GET_MODE_PRECISION (inner_mode) >= GET_MODE_PRECISION (tmode)
 	      && (inner_mode == tmode
-		  || (! mode_dependent_address_p (XEXP (inner, 0))
+		  || (! mode_dependent_address_p (XEXP (inner, 0),
+						  MEM_ADDR_SPACE (inner))
 		      && ! MEM_VOLATILE_P (inner))))))
     {
       /* If INNER is a MEM, make a new MEM that encompasses just the desired
@@ -7233,7 +7235,7 @@ make_extraction (enum machine_mode mode, rtx inner, HOST_WIDE_INT pos,
       /* If we have to change the mode of memory and cannot, the desired mode
 	 is EXTRACTION_MODE.  */
       if (inner_mode != wanted_inner_mode
-	  && (mode_dependent_address_p (XEXP (inner, 0))
+	  && (mode_dependent_address_p (XEXP (inner, 0), MEM_ADDR_SPACE (inner))
 	      || MEM_VOLATILE_P (inner)
 	      || pos_rtx))
 	wanted_inner_mode = extraction_mode;
@@ -7271,7 +7273,7 @@ make_extraction (enum machine_mode mode, rtx inner, HOST_WIDE_INT pos,
       && ! pos_rtx
       && GET_MODE_SIZE (wanted_inner_mode) < GET_MODE_SIZE (is_mode)
       && MEM_P (inner)
-      && ! mode_dependent_address_p (XEXP (inner, 0))
+      && ! mode_dependent_address_p (XEXP (inner, 0), MEM_ADDR_SPACE (inner))
       && ! MEM_VOLATILE_P (inner))
     {
       int offset = 0;
@@ -9883,7 +9885,8 @@ simplify_shift_const_1 (enum rtx_code code, enum machine_mode result_mode,
 	     minus the width of a smaller mode, we can do this with a
 	     SIGN_EXTEND or ZERO_EXTEND from the narrower memory location.  */
 	  if ((code == ASHIFTRT || code == LSHIFTRT)
-	      && ! mode_dependent_address_p (XEXP (varop, 0))
+	      && ! mode_dependent_address_p (XEXP (varop, 0),
+					     MEM_ADDR_SPACE (varop))
 	      && ! MEM_VOLATILE_P (varop)
 	      && (tmode = mode_for_size (GET_MODE_BITSIZE (mode) - count,
 					 MODE_INT, 1)) != BLKmode)
@@ -10702,7 +10705,8 @@ gen_lowpart_for_combine (enum machine_mode omode, rtx x)
 
       /* Refuse to work on a volatile memory ref or one with a mode-dependent
 	 address.  */
-      if (MEM_VOLATILE_P (x) || mode_dependent_address_p (XEXP (x, 0)))
+      if (MEM_VOLATILE_P (x)
+	  || mode_dependent_address_p (XEXP (x, 0), MEM_ADDR_SPACE (x)))
 	goto fail;
 
       /* If we want to refer to something bigger than the original memref,

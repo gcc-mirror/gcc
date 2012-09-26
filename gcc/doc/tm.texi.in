@@ -5536,7 +5536,8 @@ address;  but often a machine-dependent strategy can generate better code.
 @end defmac
 
 @hook TARGET_MODE_DEPENDENT_ADDRESS_P
-This hook returns @code{true} if memory address @var{addr} can have
+This hook returns @code{true} if memory address @var{addr} in address
+space @var{addrspace} can have
 different meanings depending on the machine mode of the memory
 reference it is used for or if the address is valid for some modes
 but not others.

@@ -671,7 +671,8 @@ xstormy16_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
    or pre-decrement address.  */
 
 static bool
-xstormy16_mode_dependent_address_p (const_rtx x)
+xstormy16_mode_dependent_address_p (const_rtx x,
+				    addr_space_t as ATTRIBUTE_UNUSED)
 {
   if (LEGITIMATE_ADDRESS_CONST_INT_P (x, 0)
       && ! LEGITIMATE_ADDRESS_CONST_INT_P (x, 6))

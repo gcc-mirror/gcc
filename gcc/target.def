@@ -1413,7 +1413,7 @@ DEFHOOK
 DEFHOOK
 (mode_dependent_address_p,
  "",
- bool, (const_rtx addr),
+ bool, (const_rtx addr, addr_space_t addrspace),
  default_mode_dependent_address_p)
 
 /* Given an invalid address X for a given machine mode, try machine-specific
