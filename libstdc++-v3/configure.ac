@@ -433,6 +433,7 @@ OS_INC_SRCDIR=config/${os_include_dir}
 ERROR_CONSTANTS_SRCDIR=config/${error_constants_dir}
 ABI_TWEAKS_SRCDIR=config/${abi_tweaks_dir}
 CPU_OPT_EXT_RANDOM=config/${cpu_opt_ext_random}
+CPU_OPT_BITS_RANDOM=config/${cpu_opt_bits_random}
 AC_SUBST(ATOMICITY_SRCDIR)
 AC_SUBST(ATOMIC_WORD_SRCDIR)
 AC_SUBST(ATOMIC_FLAGS)
@@ -441,6 +442,7 @@ AC_SUBST(ABI_TWEAKS_SRCDIR)
 AC_SUBST(OS_INC_SRCDIR)
 AC_SUBST(ERROR_CONSTANTS_SRCDIR)
 AC_SUBST(CPU_OPT_EXT_RANDOM)
+AC_SUBST(CPU_OPT_BITS_RANDOM)
 
 
 # Determine cross-compile flags and AM_CONDITIONALs.

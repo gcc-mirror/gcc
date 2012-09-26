@@ -1,4 +1,4 @@
-// Optimizations for random number extensions, generic version -*- C++ -*-
+// Optimizations for random number handling, generic version -*- C++ -*-
 
 // Copyright (C) 2012 Free Software Foundation, Inc.
 //
@@ -22,17 +22,17 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-/** @file ext/opt_random.h
+/** @file bits/opt_random.h
  *  This is an internal header file, included by other library headers.
- *  Do not attempt to use it directly. @headername{ext/random}
+ *  Do not attempt to use it directly. @headername{random}
  */
 
-#ifndef _EXT_OPT_RANDOM_H
-#define _EXT_OPT_RANDOM_H 1
+#ifndef _BITS_OPT_RANDOM_H
+#define _BITS_OPT_RANDOM_H 1
 
 #pragma GCC system_header
 
 
 
 
-#endif // _EXT_OPT_RANDOM_H
+#endif // _BITS_OPT_RANDOM_H
