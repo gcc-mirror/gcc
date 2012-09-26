@@ -782,7 +782,8 @@
    "(INTVAL (operands[1]) == 8 || INTVAL (operands[1]) == 16)
    && INTVAL (operands[2]) % INTVAL (operands[1]) == 0
    && (REG_P (operands[0])
-       || ! mode_dependent_address_p (XEXP (operands[0], 0)))"
+       || ! mode_dependent_address_p (XEXP (operands[0], 0),
+				       MEM_ADDR_SPACE (operands[0])))"
   "*
 {
   if (REG_P (operands[0]))
@@ -810,7 +811,8 @@
   "(INTVAL (operands[2]) == 8 || INTVAL (operands[2]) == 16)
    && INTVAL (operands[3]) % INTVAL (operands[2]) == 0
    && (REG_P (operands[1])
-       || ! mode_dependent_address_p (XEXP (operands[1], 0)))"
+       || ! mode_dependent_address_p (XEXP (operands[1], 0),
+				      MEM_ADDR_SPACE (operands[1])))"
   "*
 {
   if (REG_P (operands[1]))
@@ -837,7 +839,8 @@
   "(INTVAL (operands[2]) == 8 || INTVAL (operands[2]) == 16)
    && INTVAL (operands[3]) % INTVAL (operands[2]) == 0
    && (REG_P (operands[1])
-       || ! mode_dependent_address_p (XEXP (operands[1], 0)))"
+       || ! mode_dependent_address_p (XEXP (operands[1], 0),
+				      MEM_ADDR_SPACE (operands[1])))"
   "*
 {
   if (REG_P (operands[1]))
@@ -960,7 +963,8 @@
       || INTVAL (operands[2]) + INTVAL (operands[3]) > 32
       || side_effects_p (operands[1])
       || (MEM_P (operands[1])
-	  && mode_dependent_address_p (XEXP (operands[1], 0))))
+	  && mode_dependent_address_p (XEXP (operands[1], 0),
+				       MEM_ADDR_SPACE (operands[1]))))
     return \"extv %3,%2,%1,%0\";
   if (INTVAL (operands[2]) == 8)
     return \"rotl %R3,%1,%0\;cvtbl %0,%0\";
@@ -988,7 +992,8 @@
       || INTVAL (operands[2]) + INTVAL (operands[3]) > 32
       || side_effects_p (operands[1])
       || (MEM_P (operands[1])
-	  && mode_dependent_address_p (XEXP (operands[1], 0))))
+	  && mode_dependent_address_p (XEXP (operands[1], 0),
+				       MEM_ADDR_SPACE (operands[1]))))
     return \"extzv %3,%2,%1,%0\";
   if (INTVAL (operands[2]) == 8)
     return \"rotl %R3,%1,%0\;movzbl %0,%0\";

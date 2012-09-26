@@ -99,7 +99,8 @@
 (define_memory_constraint "Q"
    "operand is a MEM that does not have a mode-dependent address."
    (and (match_code "mem")
-	(match_test "!mode_dependent_address_p (XEXP (op, 0))")))
+	(match_test "!mode_dependent_address_p (XEXP (op, 0),
+					        MEM_ADDR_SPACE (op))")))
 
 (define_memory_constraint "B"
     ""

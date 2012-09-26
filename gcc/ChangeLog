@@ -1,3 +1,40 @@
+2012-09-26  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR middle-end/54635
+	* doc/tm.texi.in (TARGET_MODE_DEPENDENT_ADDRESS_P): Document new
+	parameter addrspace.
+	* doc/tm.texi: Regenerate.
+	* target.def (mode_dependent_address_p): Add addr_space_t parameter.
+	* targhooks.h (default_mode_dependent_address_p): Ditto.
+	* targhooks.c (default_mode_dependent_address_p): Ditto.
+	* expr.c (convert_move): Pass address space to mode_dependent_address_p.
+	* combine.c (combine_simplify_rtx): Ditto.
+	(make_extraction): Ditto.
+	(simplify_shift_const_1): Ditto.
+	(gen_lowpart_for_combine): Ditto.
+	* lower-subreg.c (simple_move_operand): Ditto.
+	* recog.c (simplify_while_replacing): Ditto.
+	(offsettable_address_addr_space_p): Ditto.
+	(mode_dependent_address_p): Ditto.
+	* simplify-rtx.c (simplify_unary_operation_1): Ditto.
+	(simplify_subreg): Ditto.
+	* config/m68k/m68k.md: Ditto.
+	* config/vax/vax.md: Ditto.
+	* config/vax/constraints.md (Q): Ditto.
+	* config/vax/predicates.md (indexed_memory_operand): Ditto.
+	* config/alpha/alpha.c (alpha_mode_dependent_address_p): Add
+	unused addr_space_t parameter.
+	* config/avr/avr.c (avr_mode_dependent_address_p): Ditto.
+	* config/h8300/h8300.c (h8300_mode_dependent_address_p): Ditto.
+	* config/m32r/m32r.c (m32r_mode_dependent_address_p): Ditto.
+	* config/rs6000/rs6000.c (rs6000_mode_dependent_address_p): Ditto.
+	* config/rx/rx.c (rx_mode_dependent_address_p): Ditto.
+	* config/sparc/sparc.c (sparc_mode_dependent_address_p): Ditto.
+	* config/stormy16/stormy16.c (xstormy16_mode_dependent_address_p):
+	Ditto.
+	* config/vax/vax.c (vax_mode_dependent_address_p): Ditto.
+	* config/xtensa/xtensa.c (xtensa_mode_dependent_address_p): Ditto.
+
 2012-09-26  Christophe Lyon <christophe.lyon@linaro.org>
 
 	* tree-ssa-math-opts.c (bswap_stats): Add found_16bit field.

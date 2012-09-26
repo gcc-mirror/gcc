@@ -62,7 +62,7 @@ static void  block_move_call (rtx, rtx, rtx);
 static int   m32r_is_insn (rtx);
 static bool  m32r_legitimate_address_p (enum machine_mode, rtx, bool);
 static rtx   m32r_legitimize_address (rtx, rtx, enum machine_mode);
-static bool  m32r_mode_dependent_address_p (const_rtx);
+static bool  m32r_mode_dependent_address_p (const_rtx, addr_space_t);
 static tree  m32r_handle_model_attribute (tree *, tree, tree, int, bool *);
 static void  m32r_print_operand (FILE *, rtx, int);
 static void  m32r_print_operand_address (FILE *, rtx);
@@ -2011,7 +2011,7 @@ m32r_legitimize_address (rtx x, rtx orig_x ATTRIBUTE_UNUSED,
 /* Worker function for TARGET_MODE_DEPENDENT_ADDRESS_P.  */
 
 static bool
-m32r_mode_dependent_address_p (const_rtx addr)
+m32r_mode_dependent_address_p (const_rtx addr, addr_space_t as ATTRIBUTE_UNUSED)
 {
   if (GET_CODE (addr) == LO_SUM)
     return true;

@@ -2166,7 +2166,8 @@ h8300_get_index (rtx x, enum machine_mode mode, int *size)
    (the amount of decrement or increment being the length of the operand).  */
 
 static bool
-h8300_mode_dependent_address_p (const_rtx addr)
+h8300_mode_dependent_address_p (const_rtx addr,
+				addr_space_t as ATTRIBUTE_UNUSED)
 {
   if (GET_CODE (addr) == PLUS
       && h8300_get_index (XEXP (addr, 0), VOIDmode, 0) != XEXP (addr, 0))

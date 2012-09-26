@@ -1633,7 +1633,7 @@ avr_cannot_modify_jumps_p (void)
       with mov<mode> expanders in avr.md.  */
 
 static bool
-avr_mode_dependent_address_p (const_rtx addr)
+avr_mode_dependent_address_p (const_rtx addr, addr_space_t as ATTRIBUTE_UNUSED)
 {
   return GET_MODE (addr) != Pmode;
 }

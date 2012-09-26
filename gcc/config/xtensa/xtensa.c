@@ -126,7 +126,7 @@ static rtx fixup_subreg_mem (rtx);
 static struct machine_function * xtensa_init_machine_status (void);
 static rtx xtensa_legitimize_tls_address (rtx);
 static rtx xtensa_legitimize_address (rtx, rtx, enum machine_mode);
-static bool xtensa_mode_dependent_address_p (const_rtx);
+static bool xtensa_mode_dependent_address_p (const_rtx, addr_space_t);
 static bool xtensa_return_in_msb (const_tree);
 static void printx (FILE *, signed int);
 static void xtensa_function_epilogue (FILE *, HOST_WIDE_INT);
@@ -1961,7 +1961,8 @@ xtensa_legitimize_address (rtx x,
    by default.  */
 
 static bool
-xtensa_mode_dependent_address_p (const_rtx addr)
+xtensa_mode_dependent_address_p (const_rtx addr,
+				 addr_space_t as ATTRIBUTE_UNUSED)
 {
   return constantpool_address_p (addr);
 }

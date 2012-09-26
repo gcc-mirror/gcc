@@ -1183,7 +1183,7 @@
 ;; "*addhq3" "*adduhq3"
 ;; "*addha3" "*adduha3"
 (define_insn "*add<mode>3"
-  [(set (match_operand:ALL2 0 "register_operand"                     "=r,d,!w    ,d")
+  [(set (match_operand:ALL2 0 "register_operand"                    "=?r,d,!w    ,d")
         (plus:ALL2 (match_operand:ALL2 1 "register_operand"          "%0,0,0     ,0")
                    (match_operand:ALL2 2 "nonmemory_or_const_operand" "r,s,IJ YIJ,n Ynn")))]
   ""

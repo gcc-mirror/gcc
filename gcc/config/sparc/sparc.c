@@ -567,7 +567,7 @@ static rtx sparc_legitimize_tls_address (rtx);
 static rtx sparc_legitimize_pic_address (rtx, rtx);
 static rtx sparc_legitimize_address (rtx, rtx, enum machine_mode);
 static rtx sparc_delegitimize_address (rtx);
-static bool sparc_mode_dependent_address_p (const_rtx);
+static bool sparc_mode_dependent_address_p (const_rtx, addr_space_t);
 static bool sparc_pass_by_reference (cumulative_args_t,
 				     enum machine_mode, const_tree, bool);
 static void sparc_function_arg_advance (cumulative_args_t,
@@ -4045,7 +4045,8 @@ sparc_legitimize_reload_address (rtx x, enum machine_mode mode,
 
 
 static bool
-sparc_mode_dependent_address_p (const_rtx addr)
+sparc_mode_dependent_address_p (const_rtx addr,
+				addr_space_t as ATTRIBUTE_UNUSED)
 {
   if (flag_pic && GET_CODE (addr) == PLUS)
     {
