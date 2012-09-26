@@ -1,5 +1,7 @@
 2012-09-26  Janis Johnson  <janisjo@codesourcery.com>
 
+	* gcc.target/arm/div64-unwinding.c: XFAIL for GNU/Linux.
+
 	* gcc.target/arm/mmx-2.c: Specify -mcpu=iwmmxt.
 
 	* gcc.target/arm/combine-movs.c: Use effective target arm_thumb2.
