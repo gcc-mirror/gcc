@@ -1,3 +1,9 @@
+2012-09-26  Dehao Chen  <dehao@google.com>
+
+	 * tree-ssa-live.c (clear_unused_block_pointer): Use explicitit (void)
+	for function parameter.
+	(remove_unused_locals): Don't use LOCATION_BLOCK if it is NULL.
+
 2012-09-26  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* doc/extend.texi (bswap Builtins): Change signed types to unsigned
@@ -131,12 +137,6 @@
 	PR lto/54625
 	* lto-symtab.c (lto_symtab_merge_cgraph_nodes_1): Do not merge
 	cgraph nodes for builtins.
-
-2012-09-25  Dehao Chen  <dehao@google.com>
-
-	PR middle-end/54645
-	* c-family/c-pch.c (c_common_read_pch): Rebuild the location_adhoc_data
-	map when read in the pch.
 
 2012-09-25  Jakub Jelinek  <jakub@redhat.com>
 

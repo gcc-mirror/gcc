@@ -627,7 +627,7 @@ clear_unused_block_pointer_1 (tree *tp, int *, void *)
    so that they will not be streamed out.  */
 
 static void
-clear_unused_block_pointer ()
+clear_unused_block_pointer (void)
 {
   basic_block bb;
   gimple_stmt_iterator gsi;
@@ -814,7 +814,7 @@ remove_unused_locals (void)
         }
 
       FOR_EACH_EDGE (e, ei, bb->succs)
-	if (e->goto_locus)
+	if (LOCATION_BLOCK (e->goto_locus) != NULL)
 	  TREE_USED (LOCATION_BLOCK (e->goto_locus)) = true;
     }
 
