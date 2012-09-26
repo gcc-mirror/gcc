@@ -5,7 +5,7 @@
 /* { dg-skip-if "Test is specific to ARM mode" { arm*-*-* } { "-mthumb" } { "" } } */
 /* { dg-require-effective-target arm32 } */
 /* { dg-require-effective-target arm_iwmmxt_ok } */
-/* { dg-options "-flax-vector-conversions -std=gnu99" } */
+/* { dg-options "-mcpu=iwmmxt -flax-vector-conversions -std=gnu99" } */
 
 /* Internal data types for implementing the intrinsics.  */
 typedef int __v2si __attribute__ ((vector_size (8)));
