@@ -2567,14 +2567,14 @@ The following will run each testsuite eight times using the @samp{arm-sim}
 target, as if you had specified all possible combinations yourself:
 
 @smallexample
---target_board=arm-sim/-mhard-float/-O1
---target_board=arm-sim/-mhard-float/-O2
---target_board=arm-sim/-mhard-float/-O3
---target_board=arm-sim/-mhard-float
---target_board=arm-sim/-msoft-float/-O1
---target_board=arm-sim/-msoft-float/-O2
---target_board=arm-sim/-msoft-float/-O3
---target_board=arm-sim/-msoft-float
+--target_board='arm-sim/-mhard-float/-O1 \
+                arm-sim/-mhard-float/-O2 \
+                arm-sim/-mhard-float/-O3 \
+                arm-sim/-mhard-float \
+                arm-sim/-msoft-float/-O1 \
+                arm-sim/-msoft-float/-O2 \
+                arm-sim/-msoft-float/-O3 \
+                arm-sim/-msoft-float'
 @end smallexample
 
 They can be combined as many times as you wish, in arbitrary ways.  This
