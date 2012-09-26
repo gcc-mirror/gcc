@@ -1,3 +1,8 @@
+2012-09-26  Steve Ellcey  <sellcey@mips.com>
+
+	PR c/37303
+	* gcc.dg/pr37303.c: Check for rdata or rodata.
+
 2012-09-26  Christophe Lyon <christophe.lyon@linaro.org>
 
 	* gcc.target/arm/builtin-bswap16-1.c: New testcase.
