@@ -1,3 +1,9 @@
+2012-09-26  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/54674
+	* gimple-ssa-strength-reduction.c (analyze_increments): Don't
+	introduce a multiplication with a pointer operand.
+
 2012-09-26  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR middle-end/54635
