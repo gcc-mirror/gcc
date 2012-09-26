@@ -44825,6 +44825,14 @@ all-stage3-gcc: maybe-all-stage3-zlib
 all-stage4-gcc: maybe-all-stage4-zlib
 all-stageprofile-gcc: maybe-all-stageprofile-zlib
 all-stagefeedback-gcc: maybe-all-stagefeedback-zlib
+all-gcc: all-libbacktrace
+
+all-stage1-gcc: all-stage1-libbacktrace
+all-stage2-gcc: all-stage2-libbacktrace
+all-stage3-gcc: all-stage3-libbacktrace
+all-stage4-gcc: all-stage4-libbacktrace
+all-stageprofile-gcc: all-stageprofile-libbacktrace
+all-stagefeedback-gcc: all-stagefeedback-libbacktrace
 all-gcc: all-libcpp
 
 all-stage1-gcc: all-stage1-libcpp

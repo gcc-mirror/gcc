@@ -1,3 +1,8 @@
+2012-09-26  Ian Lance Taylor  <iant@google.com>
+
+	* Makefile.def: Make all-gcc depend on all-libbacktrace.
+	* Makefile.in: Rebuild.
+
 2012-09-21  Anthony Green  <green@moxielogic.com>
 
 	* config/moxie/moxie.opt: Add -mno-crt0 option.
