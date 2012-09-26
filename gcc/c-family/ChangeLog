@@ -1,3 +1,9 @@
+2012-09-25  Dehao Chen  <dehao@google.com>
+
+	PR middle-end/54645
+	* c-family/c-pch.c (c_common_read_pch): Rebuild the location_adhoc_data
+	map when read in the pch.
+
 2012-09-18 Arnaud Charlet  <charlet@adacore.com>
 
 	* c-ada-spec.c: Style fixes.
