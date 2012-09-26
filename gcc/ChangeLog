@@ -1,3 +1,16 @@
+2012-09-26  Ian Lance Taylor  <iant@google.com>
+
+	* diagnostic.c: Include "demangle.h" and "backtrace.h".
+	(bt_stop): New static array.
+	(bt_callback, bt_err_callback): New static functions.
+	(diagnostic_action_after_output): Call backtrace_full for DK_ICE.
+	* Makefile.in (BACKTRACE): New variable.
+	(BACKTRACEINC, LIBBACKTRACE): New variables.
+	(BACKTRACE_H): New variable.
+	(LIBDEPS, LIBS): Add $(LIBBACKTRACE).
+	(INCLUDES): Add $(BACKTRACEINC).
+	(diagnostic.o): Depend upon $(DEMANGLE_H) and $(BACKTRACE_H).
+
 2012-09-25  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/51274

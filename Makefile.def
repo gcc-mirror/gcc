@@ -305,6 +305,7 @@ dependencies = { module=all-gcc; on=all-build-flex; };
 dependencies = { module=all-gcc; on=all-build-libiberty; };
 dependencies = { module=all-gcc; on=all-build-fixincludes; };
 dependencies = { module=all-gcc; on=all-zlib; };
+dependencies = { module=all-gcc; on=all-libbacktrace; hard=true; };
 dependencies = { module=all-gcc; on=all-libcpp; hard=true; };
 dependencies = { module=all-gcc; on=all-libdecnumber; hard=true; };
 dependencies = { module=all-gcc; on=all-libiberty; };

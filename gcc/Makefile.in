@@ -346,6 +346,11 @@ DECNUMFMT = $(srcdir)/../libdecnumber/$(enable_decimal_float)
 DECNUMINC = -I$(DECNUM) -I$(DECNUMFMT) -I../libdecnumber
 LIBDECNUMBER = ../libdecnumber/libdecnumber.a
 
+# The backtrace library.
+BACKTRACE = $(srcdir)/../libbacktrace
+BACKTRACEINC = -I$(BACKTRACE)
+LIBBACKTRACE = ../libbacktrace/.libs/libbacktrace.a
+
 # Target to use when installing include directory.  Either
 # install-headers-tar, install-headers-cpio or install-headers-cp.
 INSTALL_HEADERS_DIR = @build_install_headers_dir@
@@ -906,6 +911,7 @@ OPTS_H = $(INPUT_H) $(VEC_H) opts.h
 DECNUM_H = $(DECNUM)/decContext.h $(DECNUM)/decDPD.h $(DECNUM)/decNumber.h \
 	$(DECNUMFMT)/decimal32.h $(DECNUMFMT)/decimal64.h \
 	$(DECNUMFMT)/decimal128.h $(DECNUMFMT)/decimal128Local.h
+BACKTRACE_H = $(BACKTRACE)/backtrace.h
 MKDEPS_H = $(srcdir)/../libcpp/include/mkdeps.h
 SYMTAB_H = $(srcdir)/../libcpp/include/symtab.h $(OBSTACK_H)
 CPP_ID_DATA_H = $(CPPLIB_H) $(srcdir)/../libcpp/include/cpp-id-data.h
@@ -988,7 +994,7 @@ BUILD_LIBIBERTY = $(build_libobjdir)/libiberty/libiberty.a
 
 # Dependencies on the intl and portability libraries.
 LIBDEPS= libcommon.a $(CPPLIB) $(LIBIBERTY) $(LIBINTL_DEP) $(LIBICONV_DEP) \
-	$(LIBDECNUMBER)
+	$(LIBDECNUMBER) $(LIBBACKTRACE)
 
 # Likewise, for use in the tools that must run on this machine
 # even if we are cross-building GCC.
@@ -996,8 +1002,8 @@ BUILD_LIBDEPS= $(BUILD_LIBIBERTY)
 
 # How to link with both our special library facilities
 # and the system's installed libraries.
-LIBS = @LIBS@ libcommon.a $(CPPLIB) $(LIBINTL) $(LIBICONV) $(LIBIBERTY) \
-	$(LIBDECNUMBER) $(HOST_LIBS)
+LIBS = @LIBS@ libcommon.a $(CPPLIB) $(LIBINTL) $(LIBICONV) $(LIBBACKTRACE) \
+	$(LIBIBERTY) $(LIBDECNUMBER) $(HOST_LIBS)
 BACKENDLIBS = $(CLOOGLIBS) $(GMPLIBS) $(PLUGINLIBS) $(HOST_LIBS) \
 	$(ZLIB)
 # Any system libraries needed just for GNAT.
@@ -1029,7 +1035,7 @@ BUILD_ERRORS = build/errors.o
 # libintl.h will be found in ../intl if we are using the included libintl.
 INCLUDES = -I. -I$(@D) -I$(srcdir) -I$(srcdir)/$(@D) \
 	   -I$(srcdir)/../include @INCINTL@ \
-	   $(CPPINC) $(GMPINC) $(DECNUMINC) \
+	   $(CPPINC) $(GMPINC) $(DECNUMINC) $(BACKTRACEINC) \
 	   $(CLOOGINC) $(ISLINC)
 
 .c.o:
@@ -2614,7 +2620,8 @@ fold-const.o : fold-const.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(GGC_H) $(TM_P_H) langhooks.h $(MD5_H) intl.h $(TARGET_H) \
    $(GIMPLE_H) realmpfr.h $(TREE_FLOW_H)
 diagnostic.o : diagnostic.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-   version.h $(INPUT_H) intl.h $(DIAGNOSTIC_H) diagnostic.def
+   version.h $(DEMANGLE_H) $(INPUT_H) intl.h $(BACKTRACE_H) $(DIAGNOSTIC_H) \
+   diagnostic.def
 opts.o : opts.c $(OPTS_H) $(OPTIONS_H) $(DIAGNOSTIC_CORE_H) $(CONFIG_H) $(SYSTEM_H) \
    coretypes.h $(TM_H) \
    $(DIAGNOSTIC_H) insn-attr-common.h intl.h $(COMMON_TARGET_H) \
