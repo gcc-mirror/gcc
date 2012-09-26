@@ -1,3 +1,9 @@
+2012-09-25  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/51274
+	PR target/53087
+	* gcc.target/powerpc/ppc-ne0-1.c: New.
+
 2012-09-25  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/54089
