@@ -2028,6 +2028,17 @@ analyze_increments (slsr_cand_t first_dep, enum machine_mode mode, bool speed)
 
 	incr_vec[i].cost = COST_INFINITE;
 
+      /* If we need to add an initializer, make sure we don't introduce
+	 a multiply by a pointer type, which can happen in certain cast
+	 scenarios.  FIXME: When cleaning up these cast issues, we can
+         afford to introduce the multiply provided we cast out to an
+         unsigned int of appropriate size.  */
+      else if (!incr_vec[i].initializer
+	       && TREE_CODE (first_dep->stride) != INTEGER_CST
+	       && POINTER_TYPE_P (TREE_TYPE (first_dep->stride)))
+
+	incr_vec[i].cost = COST_INFINITE;
+
       /* For any other increment, if this is a multiply candidate, we
 	 must introduce a temporary T and initialize it with
 	 T_0 = stride * increment.  When optimizing for speed, walk the
