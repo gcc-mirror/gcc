@@ -1,3 +1,8 @@
+2012-09-27  Meador Inge  <meadori@codesourcery.com>
+
+	* gcc-ar.c (main): Handle the returning of the sub-process error
+	code correctly.
+
 2012-09-27  Ulrich Weigand  <ulrich.weigand@linaro.org>
 
 	* lower-subreg.c (enum classify_move_insn): Rename
