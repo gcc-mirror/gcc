@@ -31,6 +31,174 @@
 
 	* config/cpu/generic/opt/ext/opt_random.h: Fix comment.
 
+2012-09-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* doc/xml/manual/status_cxx2011.xml: Update vs PR 44436.
+
+2012-09-24  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* include/ext/random: Add __gnu_cxx::k_distribution<> class.
+	* include/ext/random.tcc: Add out-of-line functions for
+	__gnu_cxx::k_distribution<>.
+	* testsuite/ext/random/k_distribution/operators/equal.cc: New file.
+	* testsuite/ext/random/k_distribution/operators/serialize.cc: New file.
+	* testsuite/ext/random/k_distribution/operators/inequal.cc: New file.
+	* testsuite/ext/random/k_distribution/cons/parms.cc: New file.
+	* testsuite/ext/random/k_distribution/cons/default.cc: New file.
+	* testsuite/ext/random/k_distribution/requirements/typedefs.cc:
+	New file.
+	* testsuite/ext/random/k_distribution/requirements/
+	explicit_instantiation/1.cc: New file.
+
+2012-09-24  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/44436
+	* include/bits/stl_tree.h
+	(_Rb_tree<>::_M_insert_): Take _Base_ptr rather than
+	_Const_Base_ptr.
+	(_Rb_tree<>::_M_insert_node): New.
+	(_Rb_tree<>::_M_get_insert_unique_pos): New, search code of
+	_M_insert_unique method.
+	(_Rb_tree<>::_M_insert_unique): Use latter.
+	(_Rb_tree<>::_M_emplace_unique): New, likewise.
+	(_Rb_tree<>::_M_get_insert_equal_pos): New, search code of
+	_M_insert_equal method.
+	(_Rb_tree<>::_M_insert_equal): Use latter.
+	(_Rb_tree<>::_M_emplace_equal): New, likewise.
+	(_Rb_tree<>::_M_get_insert_hint_unique_pos): New, search code of
+	_M_insert_unique_ method.
+	(_Rb_tree<>::_M_insert_unique_): Use latter.
+	(_Rb_tree<>::_M_emplace_hint_unique): New, likewise.
+	(_Rb_tree<>::_M_get_insert_hint_equal_pos): New, search code of
+	_M_insert_equal_ method.
+	(_Rb_tree<>::_M_insert_equal_): Use latter.
+	(_Rb_tree<>::_M_emplace_hint_equal): New, likewise.
+	(_Rb_tree<>::_M_insert_lower): Remove first _Base_ptr parameter,
+	useless as always null.
+	* include/bits/stl_map.h: Include <tuple> in C++11.
+	(map<>::operator[](const key_type&)): Use
+	_Rb_tree<>::_M_emplace_hint_unique in C++11.
+	(map<>::operator[](key_type&&)): Likewise.
+	(map<>::emplace): New.
+	(map<>::emplace_hint): New.
+	* include/bits/stl_multimap.h (multimap<>::emplace): New.
+	(multimap<>::emplace_hint): New.
+	* include/bits/stl_set.h (set<>::emplace): New.
+	(set<>::emplace_hint): New.
+	* include/bits/stl_multiset.h (multiset<>::emplace): New.
+	(multiset<>::emplace_hint): New.
+	* include/debug/map.h (std::__debug::map<>::emplace): New.
+	(std::__debug::map<>::emplace_hint): New.
+	* include/debug/multimap.h (std::__debug::multimap<>::emplace):
+	New.
+	(std::__debug::multimap<>::emplace_hint): New.
+	* include/debug/set.h (std::__debug::set<>::emplace): New.
+	(std::__debug::set<>::emplace_hint): New.
+	* include/debug/multiset.h (std::__debug::multiset<>::emplace):
+	New.
+	(std::__debug::multiset<>::emplace_hint): New.
+	* include/profile/map.h (std::__profile::map<>::emplace): New.
+	(std::__profile::map<>::emplace_hint): New.
+	* include/profile/multimap.h (std::__profile::multimap<>::emplace):
+	New.
+	(std::__profile::multimap<>::emplace_hint): New.
+	* include/profile/set.h (std::__profile::set<>::emplace): New.
+	(std::__profile::set<>::emplace_hint): New.
+	* include/profile/multiset.h (std::__profile::multiset<>::emplace):
+	New.
+	(std::__profile::multiset<>::emplace_hint): New.
+	* testsuite/util/testsuite_container_traits.h: Signal that emplace
+	and emplace_hint are available on std::map, std::multimap,
+	std::set and std::multiset in C++11.
+	* testsuite/23_containers/map/operators/2.cc: New.
+	* testsuite/23_containers/map/modifiers/emplace/1.cc: New.
+	* testsuite/23_containers/multimap/modifiers/emplace/1.cc: New.
+	* testsuite/23_containers/set/modifiers/emplace/1.cc: New.
+	* testsuite/23_containers/multiset/modifiers/emplace/1.cc: New.
+
+2012-09-24  François Dumont  <fdumont@gcc.gnu.org>
+
+	* testsuite/performance/23_containers/insert_erase/41975.cc: Use
+	__uset_hashtable rather than removed __unordered_set.
+
+2012-09-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	Revert:
+	2012-09-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/stl_algobase.h (max, min): Use conditional operator.
+
+2012-09-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR libstdc++/54675
+	* include/ext/random: Avoid the badname __alpha (and, for
+	consistency, __mu, __nu, __sigma and __omega too).
+	* include/bits/random.tcc: Likewise.
+
+2012-09-21  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* include/ext/random: Add __gnu_cxx::pareto_distribution<> class.
+	* include/ext/random.tcc: Add out-of-line functions for
+	__gnu_cxx::pareto_distribution<>.
+	* testsuite/ext/random/pareto_distribution/operators/equal.cc: New file.
+	* testsuite/ext/random/pareto_distribution/operators/serialize.cc:
+	New file.
+	* testsuite/ext/random/pareto_distribution/operators/inequal.cc:
+	New file.
+	* testsuite/ext/random/pareto_distribution/cons/parms.cc: New file.
+	* testsuite/ext/random/pareto_distribution/cons/default.cc: New file.
+	* testsuite/ext/random/pareto_distribution/requirements/typedefs.cc:
+	New file.
+	* testsuite/ext/random/pareto_distribution/requirements/
+	explicit_instantiation/1.cc: New file.
+
+2012-09-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/stl_algobase.h (max, min): Use conditional operator.
+
+2012-09-18  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/28811
+	PR libstdc++/54482
+	* configure.ac (glibcxx_lt_pic_flag,
+	glibcxx_compiler_pic_flag,
+	glibcxx_compiler_shared_flag): New. Use them.
+	(lt_prog_compiler_pic_CXX): Set via glibcxx_*_flag(s) above.
+	(pic_mode): Set to default.
+	(PIC_CXXFLAGS): Remove.
+	* Makefile.am (PICFLAG, PICFLAG_FOR_TARGET): Remove. Comment.
+	* libsupc++/Makefile.am: Use glibcxx_ld_pic_flag and
+	glibcxx_compiler_shared_flag. Comment.
+	* src/c++11/Makefile.am: Same.
+	* src/c++98/Makefile.am: Same.
+	* src/Makefile.am: Use glibcxx_compiler_pic_flag.
+
+	* Makefile.in: Regenerated.
+	* aclocal.m4: Same.
+	* configure: Same.
+	* doc/Makefile.in: Same.
+	* include/Makefile.in: Same.
+	* libsupc++/Makefile.in: Same.
+	* po/Makefile.in: Same.
+	* python/Makefile.in: Same.
+	* src/Makefile.in: Same.
+	* src/c++11/Makefile.in: Same.
+	* src/c++98/Makefile.in: Same.
+	* testsuite/Makefile.in: Same.
+
+	* src/c++11/compatibility-atomic-c++0x.cc: Use
+	_GLIBCXX_SHARED instead of PIC to designate shared-only
+	code blocks.
+	* src/c++11/compatibility-c++0x.cc: Same.
+	* src/c++11/compatibility-thread-c++0x.cc: Same.
+	* src/c++98/compatibility-list-2.cc: Same.
+	* src/c++98/compatibility.cc: : Same.
+
+	* testsuite/17_intro/shared_with_static_deps.cc: New.
+
+	* doc/xml/manual/build_hacking.xml: Separate configure from
+	make/build issues, add build details.
+
 2012-09-18  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	* include/ext/random: Add __gnu_cxx::nakagami_distribution<> class.
@@ -212,9 +380,9 @@
 2012-09-06  Thiago Macieira  <thiago.macieira@intel.com>
 
 	PR libstdc++/54172
-        * libsupc++/guard.cc (__cxa_guard_acquire): Exit the loop earlier if
-        we detect that another thread has had success. Don't compare_exchange
-        from a finished state back to a waiting state. Comment.
+	* libsupc++/guard.cc (__cxa_guard_acquire): Exit the loop earlier if
+	we detect that another thread has had success. Don't compare_exchange
+	from a finished state back to a waiting state. Comment.
 
 2012-09-05  François Dumont  <fdumont@gcc.gnu.org>
 
