@@ -27,19 +27,10 @@ GLIBCXX_7.0 {
     # Names inside the 'extern' block are demangled names.
     extern "C++"
     {
+      std::*;
       std::__7::*;
-      std::*
+      std::random_device::*
     };
-
-    # locale
-    _ZNSt3__79has_facetINS_*;
-
-    # hash 
-    _ZNSt8__detail3__712__prime_listE;
-    _ZNSt3tr18__detail3__712__prime_listE;
-
-    # thread/mutex/condition_variable/future
-    __once_proxy;
 
     # operator new(size_t)
     _Znw[jmy];
@@ -64,13 +55,33 @@ GLIBCXX_7.0 {
     # function-scope static objects requires a guard variable.
     _ZGVNSt*;
 
-    _ZTT*;
-    _ZTV*;
+    # construction vtable
+    _ZTCNSt*;
 
-    _ZTI*;
-    _ZTS*;
+    # VTT structure
+    _ZTTNSt*;
 
-    _ZTv0_n*;
+    # vtable
+    _ZTVNSt*;
+
+    # thunk
+    _ZTv0_n24_NS*;
+
+    # typeinfo structure
+    _ZTINSt*;
+
+    # typeinfo name
+    _ZTSNSt*;
+
+    # locale
+    _ZNSt3__79has_facetINS_*;
+
+    # hash 
+    _ZNSt8__detail3__712__prime_listE;
+    _ZNSt3tr18__detail3__712__prime_listE;
+
+    # thread/mutex/condition_variable/future
+    __once_proxy;
 
     # std::__detail::_List_node_base
     _ZNSt8__detail3__715_List_node_base7_M_hook*;

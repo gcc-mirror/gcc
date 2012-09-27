@@ -1,3 +1,9 @@
+2012-09-26  Benjamin Kosnik  <bkoz@redhat.com>
+
+       PR libstdc++/54314
+       * config/abi/pre/gnu.ver: Add vtable exports.
+       * config/abi/pre/gnu-versioned-namespace.ver: Same.
+
 2012-09-26  Akira Takahashi  <faithandbrave@gmail.com>
 
 	PR libstdc++/53515
