@@ -64,7 +64,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      return;
 	  }
 
-	constexpr uint64_t __maskval = UINT64_C(0xfffffffffffff);
+	constexpr uint64_t __maskval = 0xfffffffffffffull;
 	static const __m128i __mask = _mm_set1_epi64x(__maskval);
 	static const __m128i __two = _mm_set1_epi64x(0x4000000000000000ull);
 	static const __m128d __three = _mm_set1_pd(3.0);
