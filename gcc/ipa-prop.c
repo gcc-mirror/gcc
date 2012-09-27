@@ -3165,7 +3165,7 @@ ipa_write_jump_function (struct output_block *ob,
       break;
     case IPA_JF_CONST:
       gcc_assert (
-	  IS_UNKNOWN_LOCATION (EXPR_LOCATION (jump_func->value.constant)));
+	  EXPR_LOCATION (jump_func->value.constant) == UNKNOWN_LOCATION);
       stream_write_tree (ob, jump_func->value.constant, true);
       break;
     case IPA_JF_PASS_THROUGH:

@@ -1412,7 +1412,7 @@ output_node_opt_summary (struct output_block *ob,
          mechanism to store function local declarations into summaries.  */
       gcc_assert (parm);
       streamer_write_uhwi (ob, parm_num);
-      gcc_assert (IS_UNKNOWN_LOCATION (EXPR_LOCATION (map->new_tree)));
+      gcc_assert (EXPR_LOCATION (map->new_tree) == UNKNOWN_LOCATION);
       stream_write_tree (ob, map->new_tree, true);
       bp = bitpack_create (ob->main_stream);
       bp_pack_value (&bp, map->replace_p, 1);

@@ -1123,7 +1123,7 @@ branch_prob (void)
 	     is not computed twice.  */
 	  if (last
 	      && gimple_has_location (last)
-	      && !IS_UNKNOWN_LOCATION (e->goto_locus)
+	      && LOCATION_LOCUS (e->goto_locus) != UNKNOWN_LOCATION
 	      && !single_succ_p (bb)
 	      && (LOCATION_FILE (e->goto_locus)
 	          != LOCATION_FILE (gimple_location (last))
@@ -1344,7 +1344,8 @@ branch_prob (void)
 
 	  /* Notice GOTO expressions eliminated while constructing the CFG.  */
 	  if (single_succ_p (bb)
-	      && !IS_UNKNOWN_LOCATION (single_succ_edge (bb)->goto_locus))
+	      && LOCATION_LOCUS (single_succ_edge (bb)->goto_locus)
+		 != UNKNOWN_LOCATION)
 	    {
 	      expanded_location curr_location
 		= expand_location (single_succ_edge (bb)->goto_locus);

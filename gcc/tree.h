@@ -1612,7 +1612,8 @@ struct GTY(()) tree_constructor {
 #define EXPR_LOCATION(NODE) \
   (CAN_HAVE_LOCATION_P ((NODE)) ? (NODE)->exp.locus : UNKNOWN_LOCATION)
 #define SET_EXPR_LOCATION(NODE, LOCUS) EXPR_CHECK ((NODE))->exp.locus = (LOCUS)
-#define EXPR_HAS_LOCATION(NODE) (!IS_UNKNOWN_LOCATION (EXPR_LOCATION (NODE)))
+#define EXPR_HAS_LOCATION(NODE) (LOCATION_LOCUS (EXPR_LOCATION (NODE))	\
+  != UNKNOWN_LOCATION)
 /* The location to be used in a diagnostic about this expression.  Do not
    use this macro if the location will be assigned to other expressions.  */
 #define EXPR_LOC_OR_HERE(NODE) (EXPR_HAS_LOCATION (NODE) ? (NODE)->exp.locus : input_location)
@@ -1791,7 +1792,8 @@ extern void protected_set_expr_location (tree, location_t);
 					      OMP_CLAUSE_PRIVATE,	\
 	                                      OMP_CLAUSE_COPYPRIVATE), 0)
 #define OMP_CLAUSE_HAS_LOCATION(NODE) \
-  (!IS_UNKNOWN_LOCATION ((OMP_CLAUSE_CHECK (NODE))->omp_clause.locus))
+  (LOCATION_LOCUS ((OMP_CLAUSE_CHECK (NODE))->omp_clause.locus)		\
+  != UNKNOWN_LOCATION)
 #define OMP_CLAUSE_LOCATION(NODE)  (OMP_CLAUSE_CHECK (NODE))->omp_clause.locus
 
 /* True on an OMP_SECTION statement that was the last lexical member.
@@ -5535,7 +5537,7 @@ function_args_iter_next (function_args_iterator *i)
 static inline bool
 inlined_function_outer_scope_p (const_tree block)
 {
- return !IS_UNKNOWN_LOCATION (BLOCK_SOURCE_LOCATION (block));
+ return LOCATION_LOCUS (BLOCK_SOURCE_LOCATION (block)) != UNKNOWN_LOCATION;
 }
 
 /* Loop over all function arguments of FNTYPE.  In each iteration, PTR is set
