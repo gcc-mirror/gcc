@@ -1,3 +1,10 @@
+2012-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/54703
+	* simplify-rtx.c (simplify_binary_operation_1): Perform
+	(x - (x & y)) -> (x & ~y) optimization only for integral
+	modes.
+
 2012-09-27  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c/53024
