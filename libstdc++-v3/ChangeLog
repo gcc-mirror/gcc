@@ -1,3 +1,8 @@
+2012-09-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/54727
+	* config/cpu/i486/opt/bits/opt_random.h: Avoid UINT64_C.
+
 2012-09-26  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/ext/random: Add include checks for c++11 and <cstdint>.
