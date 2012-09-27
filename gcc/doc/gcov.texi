@@ -555,7 +555,7 @@ file suffix with either @file{.gcno}, or @file{.gcda}.  The files
 contain coverage and profile data stored in a platform-independent format.
 The @file{.gcno} files are placed in the same directory as the object
 file.  By default, the @file{.gcda} files are also stored in the same
-directory as the object file, but the GCC @option{-profile-dir} option
+directory as the object file, but the GCC @option{-fprofile-dir} option
 may be used to store the @file{.gcda} files in a separate directory.
 
 The @file{.gcno} notes file is generated when the source file is compiled

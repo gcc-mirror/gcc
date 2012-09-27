@@ -1,3 +1,7 @@
+2012-09-27  Marek Polacek  <polacek@redhat.com>
+
+	* doc/gcov.texi (Gcov Data Files): Fix a typo.
+
 2012-09-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/54703
