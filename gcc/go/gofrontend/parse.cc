@@ -2723,7 +2723,11 @@ Parse::composite_lit(Type* type, int depth, Location location)
 	}
       else
 	{
-	  error_at(this->location(), "expected %<,%> or %<}%>");
+	  if (token->is_op(OPERATOR_SEMICOLON))
+	    error_at(this->location(),
+		     "need trailing comma before newline in composite literal");
+	  else
+	    error_at(this->location(), "expected %<,%> or %<}%>");
 
 	  this->gogo_->mark_locals_used();
 	  int depth = 0;
