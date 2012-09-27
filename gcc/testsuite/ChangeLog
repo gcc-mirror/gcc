@@ -1,3 +1,9 @@
+2012-09-27  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/54709
+	* gcc.dg/lto/pr54709_0.c: New testcase.
+	* gcc.dg/lto/pr54709_1.c: Likewise.
+
 2012-09-26  Janis Johnson  <janisjo@codesourcery.com>
 
 	* gcc.target/arm/div64-unwinding.c: XFAIL for GNU/Linux.

@@ -1,3 +1,15 @@
+2012-09-27  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/54709
+	* lto-symtab.c (resolution_guessed_p): Remove.
+	(set_resolution_guessed): Likewise.
+	(lto_symtab_register_decl): Remove assert.
+	(lto_symtab_resolve_symbols): Do not alter symbol resolutions
+	and return the prevailing symbol, checking for multiple prevailing
+	symbols here.
+	(lto_symtab_merge_decls_1): Use the result from
+	lto_symtab_resolve_symbols.  Do not alter symbol resolutions.
+
 2012-09-26  Steve Ellcey  <sellcey@mips.com>
 
 	PR web/54711
