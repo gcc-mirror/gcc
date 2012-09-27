@@ -31,12 +31,17 @@
 
 #pragma GCC system_header
 
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
+# include <bits/c++0x_warning.h>
+#else
+
 #include <random>
 #include <array>
 #ifdef __SSE2__
 # include <x86intrin.h>
 #endif
 
+#ifdef _GLIBCXX_USE_C99_STDINT_TR1
 
 namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
@@ -1846,4 +1851,8 @@ _GLIBCXX_END_NAMESPACE_VERSION
 #include "opt_random.h"
 #include "random.tcc"
 
-#endif /* _EXT_RANDOM */
+#endif // _GLIBCXX_USE_C99_STDINT_TR1
+
+#endif // __GXX_EXPERIMENTAL_CXX0X__
+
+#endif // _EXT_RANDOM
