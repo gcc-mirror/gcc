@@ -1,3 +1,10 @@
+2012-09-26  Ian Lance Taylor  <iant@google.com>
+
+	* gcc-interface/Makefile.in (LIBBACKTRACE): New variable.
+	(LIBS): Add $(LIBBACKTRACE).
+	(LIBDEPS): Add $(LIBBACKTRACE).
+	(TOOLS_LIBS): Add ../../../libbacktrace/.libs/libbacktrace.a.
+
 2012-09-10  Diego Novillo  <dnovillo@google.com>
 
 	* gcc-interface/decl.c (build_subst_list): Adjust call to VEC_safe_push.

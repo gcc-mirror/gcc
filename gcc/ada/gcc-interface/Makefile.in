@@ -240,15 +240,20 @@ ALL_COMPILERFLAGS = $(ALL_CFLAGS)
 # This is where we get libiberty.a from.
 LIBIBERTY = ../../libiberty/libiberty.a
 
+# We need to link against libbacktrace because diagnostic.c in
+# libcommon.a uses it.
+LIBBACKTRACE = ../../libbacktrace/.libs/libbacktrace.a
+
 # How to link with both our special library facilities
 # and the system's installed libraries.
-LIBS = $(LIBINTL) $(LIBICONV) $(LIBIBERTY) $(SYSLIBS)
-LIBDEPS = $(LIBINTL_DEP) $(LIBICONV_DEP) $(LIBIBERTY)
+LIBS = $(LIBINTL) $(LIBICONV) $(LIBBACKTRACE) $(LIBIBERTY) $(SYSLIBS)
+LIBDEPS = $(LIBINTL_DEP) $(LIBICONV_DEP) $(LIBBACKTRACE) $(LIBIBERTY)
 # Default is no TGT_LIB; one might be passed down or something
 TGT_LIB =
 TOOLS_LIBS = targext.o link.o ../../ggc-none.o ../../libcommon-target.a \
   ../../libcommon.a ../../../libcpp/libcpp.a $(LIBGNAT) $(LIBINTL) $(LIBICONV) \
-  ../../../libiberty/libiberty.a $(SYSLIBS) $(TGT_LIB)
+  ../../../libbacktrace/.libs/libbacktrace.a ../../../libiberty/libiberty.a \
+  $(SYSLIBS) $(TGT_LIB)
 
 # Convert the target variable into a space separated list of architecture,
 # manufacturer, and operating system and assign each of those to its own
