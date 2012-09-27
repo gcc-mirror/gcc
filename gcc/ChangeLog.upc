@@ -6,7 +6,7 @@
 	Add support for collective de-allocation functions:
 	upc_all_free and upc_all_lock_free.
 	Consult gcc/upc/ChangeLog, libgupc/ChangeLog,
-	libgupc/testsuite/ChangeLog for details.
+	libgupc/testsuite/libgupc.upc/intrepid/ChangeLog for details.
 
 2012-09-24 Gary Funck  <gary@intrepid.com>
 

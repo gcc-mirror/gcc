@@ -83,10 +83,10 @@ test31 (void)
   printf ("elapsed: %0.5g ref: %0.5g error: %0.5g\n",
           total_elapsed_sec, ref_elapsed_sec, ref_pct_err);
 #endif
-  if (ref_pct_err > 1.0)
+  if (ref_pct_err > 3.0)
     {
-      fprintf (stderr, "upc_tick differ from reference by "
-               "more than 1%% on thread %d\n"
+      fprintf (stderr, "upc_tick differs from reference by "
+               "more than 3%% on thread %d\n"
 	       "measured error is: %0.1f%%\n",
 	       MYTHREAD, ref_pct_err);
       abort ();

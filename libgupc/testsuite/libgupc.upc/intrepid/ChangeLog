@@ -1,5 +1,9 @@
 2012-09-26  Gary Funck  <gary@intrepid.com>
 
+	* test31.upc: Make the timing check more tolerant.
+
+2012-09-26  Gary Funck  <gary@intrepid.com>
+
 	* test17.upc: Call upc_all_lock_free.
 	* test18.upc: Call upc_all_free, upc_all_lock_free,
 	  and call upc_alloc instead of deprecated upc_local_alloc.
