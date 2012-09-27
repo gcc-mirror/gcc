@@ -1,3 +1,9 @@
+2012-09-27  Ian Lance Taylor  <iant@google.com>
+
+	PR other/54726
+	* elf.c (backtrace_initialize): Set *fileln_fn, not
+	state->fileln_fn.
+
 2012-09-19  Ian Lance Taylor  <iant@google.com>
 
 	* configure.ac: Only use GCC_CHECK_UNWIND_GETIPINFO when compiled
