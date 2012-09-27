@@ -634,7 +634,7 @@ backtrace_initialize (struct backtrace_state *state, int descriptor,
     {
       if (!backtrace_close (descriptor, error_callback, data))
 	goto fail;
-      state->fileline_fn = elf_nodebug;
+      *fileline_fn = elf_nodebug;
       state->fileline_data = NULL;
       return 1;
     }
