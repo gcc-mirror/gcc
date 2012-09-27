@@ -49,16 +49,21 @@ extern void upc_memset (upc_shared_ptr_t dest, int c, size_t n);
 
 extern upc_shared_ptr_t upc_global_alloc (size_t, size_t);
 extern upc_shared_ptr_t upc_all_alloc (size_t, size_t);
-extern upc_shared_ptr_t upc_local_alloc (size_t, size_t);
 extern upc_shared_ptr_t upc_alloc (size_t);
 extern void upc_free (upc_shared_ptr_t);
+extern void upc_all_free (upc_shared_ptr_t);
 
 extern upc_shared_ptr_t upc_lock_alloc (void);
 extern void upc_lock_free (upc_shared_ptr_t);
+extern void upc_all_lock_free (upc_shared_ptr_t);
 extern upc_shared_ptr_t upc_all_lock_alloc (void);
 extern upc_shared_ptr_t upc_global_lock_alloc (void);
 extern void upc_lock (upc_shared_ptr_t);
 extern int upc_lock_attempt (upc_shared_ptr_t);
 extern void upc_unlock (upc_shared_ptr_t);
+
+typedef uint64_t upc_tick_t;
+extern upc_tick_t upc_ticks_now(void);
+extern uint64_t upc_ticks_to_ns(upc_tick_t ticks);
 
 #endif /* _UPC_LIB_H_ */

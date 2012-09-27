@@ -104,3 +104,13 @@ upc_freeg (shared void *ptr, const char *filename, int linenum)
   GUPCR_CLEAR_ERR_LOC();
   p_end (GASP_UPC_FREE, &ptr);
 }
+
+void
+upc_all_freeg (shared void *ptr, const char *filename, int linenum)
+{
+  p_start (GASP_UPC_FREE, &ptr);
+  GUPCR_SET_ERR_LOC();
+  upc_all_free (ptr);
+  GUPCR_CLEAR_ERR_LOC();
+  p_end (GASP_UPC_FREE, &ptr);
+}

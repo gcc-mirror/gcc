@@ -70,6 +70,7 @@ test21 ()
 	  abort ();
 	}
     }
+  upc_all_free (ptr);
   upc_barrier;
 }
 

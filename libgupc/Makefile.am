@@ -27,7 +27,8 @@ LINK = $(LIBTOOL) --tag CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
 
 UPC_HDRS = include/gasp.h include/gasp_upc.h include/gcc-upc.h \
            include/pupc.h include/upc_collective.h include/upc.h \
-           include/upc_relaxed.h include/upc_strict.h
+           include/upc_relaxed.h include/upc_strict.h \
+           include/upc_tick.h
 
 libsubinclude_HEADERS = $(UPC_HDRS)
 nodist_noinst_HEADERS =
@@ -121,7 +122,8 @@ UPC_RUNTIME_SRC += smp/upc_access.c smp/upc_accessg.c smp/upc_access.h \
 	smp/upc_lib.h smp/upc_lock.c smp/upc_main.c smp/upc_mem.c \
 	smp/upc_mem.h smp/upc_numa.h $(UPC_NUMA_SUP) smp/upc_pgm_info.c \
 	smp/upc_pts.h smp/upc_pupc.c smp/upc_pupc.h smp/upc_sup.h \
-	smp/upc_sync.h smp/upc_sysdep.c smp/upc_sysdep.h smp/upc_vm.c
+	smp/upc_sync.h smp/upc_sysdep.c smp/upc_sysdep.h \
+	smp/upc_tick.c smp/upc_vm.c
 
 UPC_RUNTIME_SRC_INLINE = config.h smp/upc_access.c smp/upc_access.h \
         smp/upc_config.h smp/upc_defs.h smp/upc_mem.h smp/upc_pts.h \

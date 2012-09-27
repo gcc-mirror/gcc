@@ -215,6 +215,8 @@ upc_cpp_builtins (cpp_reader * pfile)
     }
   /* Collectives are supported. */
   cpp_define (parse_in, "__UPC_COLLECTIVE__=1");
+  /* Wall-clock timers are supported. */
+  cpp_define (parse_in, "__UPC_TICK__=1");
   /* If debugging or instrumentation is enabled,
      then disable inlining of the runtime.  */
   if (flag_upc_debug || flag_upc_instrument)

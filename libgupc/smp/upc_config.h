@@ -42,6 +42,17 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <unistd.h>
 #include <sys/types.h>
 
+#if TIME_WITH_SYS_TIME
+# include <sys/time.h>
+# include <time.h>
+#else
+# if HAVE_SYS_TIME_H
+#  include <sys/time.h>
+# else
+#  include <time.h>
+# endif
+#endif
+
 #ifdef __sgi__
 #include <ulocks.h>
 #include <sys/sysmp.h>

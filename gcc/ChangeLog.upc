@@ -1,3 +1,13 @@
+2012-09-26  Gary Funck  <gary@intrepid.com>
+
+	Implement support for various UPC version 1.3 specification
+	additions and changes. Deprecate support for upc_local_alloc.
+	Add support for upc_tick (wall-clock timer) library.
+	Add support for collective de-allocation functions:
+	upc_all_free and upc_all_lock_free.
+	Consult gcc/upc/ChangeLog, libgupc/ChangeLog,
+	libgupc/testsuite/ChangeLog for details.
+
 2012-09-24 Gary Funck  <gary@intrepid.com>
 
         Merge trunk version 191658 into gupc branch.

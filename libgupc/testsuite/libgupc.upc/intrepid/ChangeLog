@@ -1,3 +1,16 @@
+2012-09-26  Gary Funck  <gary@intrepid.com>
+
+	* test17.upc: Call upc_all_lock_free.
+	* test18.upc: Call upc_all_free, upc_all_lock_free,
+	  and call upc_alloc instead of deprecated upc_local_alloc.
+	* test19.upc: Call upc_all_free.
+	* test20.upc: Call upc_all_free.
+	* test21.upc: Call upc_all_free.
+	* test22.upc: Call upc_alloc instead of deprecated upc_local_alloc.
+	* test24.upc: Call upc_alloc instead of deprecated upc_local_alloc.
+	* test28.upc: Call upc_all_lock_free.
+	* test31.upc: New.  Test UPC wall-clock timer (upc_tick) library.
+
 2012-08-14  Gary Funck  <gary@intrepid.com>
 
 	* test29.upc: handle sprintf overflow on systems that

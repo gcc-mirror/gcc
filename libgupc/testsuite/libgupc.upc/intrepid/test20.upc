@@ -83,6 +83,8 @@ test20 ()
           abort ();
 	}
     }
+  upc_all_free (sh0);
+  upc_all_free (sh1);
   upc_barrier;
   if (MYTHREAD == 0)
     printf ("test20: block copy via upc_memget test passed.\n");

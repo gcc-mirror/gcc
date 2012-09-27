@@ -56,6 +56,12 @@ upc_global_lock_alloc ()
 }
 
 void
+upc_all_lock_free(upc_shared_ptr_t ptr)
+{
+  upc_all_free (ptr);
+}
+
+void
 upc_lock_free(upc_shared_ptr_t ptr)
 {
   upc_free (ptr);

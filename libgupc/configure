@@ -8514,6 +8514,7 @@ $as_echo_n "checking for $compiler option to produce PIC... " >&6; }
 	# AIX 5 now supports IA64 processor
 	lt_prog_compiler_static='-Bstatic'
       fi
+      lt_prog_compiler_pic='-fPIC'
       ;;
 
     amigaos*)
@@ -11460,7 +11461,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11463 "configure"
+#line 11464 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11566,7 +11567,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11569 "configure"
+#line 11570 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -13780,14 +13781,15 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_rt_clock_gettime" >&5
 $as_echo "$ac_cv_lib_rt_clock_gettime" >&6; }
 if test "x$ac_cv_lib_rt_clock_gettime" = x""yes; then :
-  saved_LIBS="$LIBS"
-     LIBS="-lrt $LIBS"
+  ac_cv_func_clock_gettime="yes"
+fi
+
+  if test $ac_cv_func_clock_gettime = yes; then
+    LIBS="-lrt $LIBS"
 
 $as_echo "#define HAVE_CLOCK_GETTIME 1" >>confdefs.h
 
-     LIBS=$saved_LIBS
-fi
-
+  fi
 fi
 
 # See if we support thread-local storage.

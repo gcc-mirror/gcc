@@ -1,6 +1,6 @@
-/* Copyright (c) 2006, 2007, 2008, 2009, 2010, 2011, 2012
+/* Copyright (C) 2012
    Free Software Foundation, Inc. 
-   This file is part of the UPC runtime library test suite.
+   This file is part of the UPC runtime Library.
    Written by Gary Funck <gary@intrepid.com>
    and Nenad Vukicevic <nenad@intrepid.com>
 
@@ -25,47 +25,55 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-#include <upc.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include "upc_config.h"
+#include "upc_sysdep.h"
+#include "upc_defs.h"
+#include "upc_lib.h"
 
-#define ALLOC_SIZE 0x100000	/* 1mb at the time */
-#define NALLOC 5
+#if HAVE_CLOCK_GETTIME
+#ifdef CLOCK_MONOTONIC_RAW
+/* System clock id passed to clock_gettime. CLOCK_MONOTONIC_RAW
+   is preferred.  It has been available in the Linux kernel
+   since version 2.6.28 */
+#define SYS_RT_CLOCK_ID CLOCK_MONOTONIC_RAW
+#else
+#define SYS_RT_CLOCK_ID CLOCK_MONOTONIC
+#endif
 
-void
-test22 ()
+upc_tick_t
+upc_ticks_now (void)
 {
-  shared char *x[NALLOC];
-  shared char *y;
-  int cnt = 0;
-  int i;
-
-  y = upc_global_alloc (1, 0x100);
-  for (i=0; i < NALLOC; i++)
+  struct timespec ts;
+  upc_tick_t t;
+  if (clock_gettime (SYS_RT_CLOCK_ID, &ts) != 0)
     {
-      x[i] = upc_alloc (ALLOC_SIZE);
-      if (x[i]) cnt++;
-    }
-  if (cnt != 5) 
-    {
-      fprintf (stderr, "test22: Error: Thread %d allocated "
-               "only %d local buffers.\n", MYTHREAD, cnt);
+      perror ("clock_gettime");
       abort ();
     }
-  for (i=0; i < NALLOC; i++)
-    {
-      upc_free(x[i]);
-    }
-  upc_barrier;
-  if (!MYTHREAD)
-    printf ("test22: heap local allocation - passed.\n");
-  upc_barrier;
-  upc_free(y);
+  t = (upc_tick_t) ts.tv_sec * 1000000000LL + (upc_tick_t) ts.tv_nsec;
+  return t;
 }
 
-int
-main ()
+#else /* !HAVE_CLOCK_GETTIME */
+
+upc_tick_t
+upc_ticks_now (void)
 {
-  test22 ();
-  return 0;
+  struct timeval tv;
+  upc_tick_t t;
+  if (gettimeofday (&tv, NULL) != 0)
+    {
+      perror ("gettimeofday");
+      abort ();
+    }
+  t = tv.tv_sec * 1000000000 + tv.tv_usec * 1000;
+  return t;
+}
+
+#endif
+
+uint64_t
+upc_ticks_to_ns (upc_tick_t ticks)
+{
+  return ticks;
 }

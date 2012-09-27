@@ -1,6 +1,6 @@
-/* Copyright (c) 2006, 2007, 2008, 2009, 2010, 2011, 2012
+/* Copyright (C) 2012
    Free Software Foundation, Inc. 
-   This file is part of the UPC runtime library test suite.
+   This file is part of the UPC runtime Library.
    Written by Gary Funck <gary@intrepid.com>
    and Nenad Vukicevic <nenad@intrepid.com>
 
@@ -25,47 +25,18 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-#include <upc.h>
-#include <stdio.h>
-#include <stdlib.h>
+#ifndef _UPC_TICK_H_
+#define _UPC_TICK_H_ 1
 
-#define ALLOC_SIZE 0x100000	/* 1mb at the time */
-#define NALLOC 5
+/* Required, for uint64_t.  */
+#include <stdint.h>
 
-void
-test22 ()
-{
-  shared char *x[NALLOC];
-  shared char *y;
-  int cnt = 0;
-  int i;
+typedef uint64_t upc_tick_t;
 
-  y = upc_global_alloc (1, 0x100);
-  for (i=0; i < NALLOC; i++)
-    {
-      x[i] = upc_alloc (ALLOC_SIZE);
-      if (x[i]) cnt++;
-    }
-  if (cnt != 5) 
-    {
-      fprintf (stderr, "test22: Error: Thread %d allocated "
-               "only %d local buffers.\n", MYTHREAD, cnt);
-      abort ();
-    }
-  for (i=0; i < NALLOC; i++)
-    {
-      upc_free(x[i]);
-    }
-  upc_barrier;
-  if (!MYTHREAD)
-    printf ("test22: heap local allocation - passed.\n");
-  upc_barrier;
-  upc_free(y);
-}
+#define     UPC_TICK_MIN 0ULL
+#define     UPC_TICK_MAX 0xffffffffffffffffULL
 
-int
-main ()
-{
-  test22 ();
-  return 0;
-}
+extern upc_tick_t upc_ticks_now();
+extern uint64_t upc_ticks_to_ns(upc_tick_t ticks);
+
+#endif /* _UPC_TICK_H_ */

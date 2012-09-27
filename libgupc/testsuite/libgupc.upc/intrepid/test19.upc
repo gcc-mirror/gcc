@@ -126,7 +126,7 @@ test19()
     }
   upc_barrier;
   /* clean up */
-  if (!MYTHREAD && global_ptr) upc_free (global_ptr);
+  upc_all_free (global_ptr);
   upc_barrier;
   /* The following test proceeds in two phases. The first is an
      allocation phase, where about 2/3's of the time the threads

@@ -384,18 +384,6 @@ upc_all_alloc (size_t nblocks, size_t nbytes)
   return mem;
 }
 
-/* upc_local_alloc is deprecated, but supported in this implementation. */
-
-shared void *
-upc_local_alloc (size_t nblocks, size_t nbytes)
-{
-  size_t alloc_size = nblocks * nbytes;
-  shared void *mem = NULL;
-  if (alloc_size)
-    mem = __upc_local_alloc (alloc_size);
-  return mem;
-}
-
 shared void *
 upc_alloc (size_t nbytes)
 {
@@ -403,6 +391,21 @@ upc_alloc (size_t nbytes)
   if (nbytes)
     mem = __upc_local_alloc (nbytes);
   return mem;
+}
+
+void
+upc_all_free (shared void *ptr)
+{
+  if (ptr)
+    {
+      const int thread = (int)upc_threadof (ptr);
+      upc_barrier -1;
+      /* Check for errors only on thread 0.  */
+      if ((MYTHREAD == 0) && (thread >= THREADS))
+        __upc_fatal ("upc_all_free() called with invalid shared pointer");
+      if (thread == MYTHREAD)
+        upc_free (ptr);
+    }
 }
 
 void

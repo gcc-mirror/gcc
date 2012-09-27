@@ -59,6 +59,7 @@ test17()
       ptr = ptr + 1;
       upc_unlock (lock);
     }
+  upc_all_lock_free (lock);
   upc_barrier;
   if (MYTHREAD == 0)
     {

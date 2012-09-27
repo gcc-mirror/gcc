@@ -76,6 +76,7 @@ test28 ()
       A[ix++] = ix_prev;
       upc_unlock (lock);
     }
+  upc_all_lock_free (lock);
   upc_barrier;
   if (MYTHREAD == 0)
     {

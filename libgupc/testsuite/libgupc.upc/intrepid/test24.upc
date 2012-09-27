@@ -220,7 +220,7 @@ test24()
 	    {
 	      int c = char_code (nxt_thread, size);
 	      shared [] char *s;
-	      s = upc_local_alloc (1, size);
+	      s = upc_alloc (size);
 	      if (!s)
 	        {
 		  fprintf (stderr, "%d: Error: upc_all_alloc() failed\n",

@@ -324,12 +324,12 @@ AC_LINK_IFELSE(
 # At least for glibc, clock_gettime is in librt.  But don't pull that
 # in if it still doesn't give us the function we want.
 if test $ac_cv_func_clock_gettime = no; then
-  AC_CHECK_LIB(rt, clock_gettime,
-    [saved_LIBS="$LIBS"
-     LIBS="-lrt $LIBS"
-     AC_DEFINE(HAVE_CLOCK_GETTIME, 1,
-	       [Define to 1 if you have the `clock_gettime' function.])
-     LIBS=$saved_LIBS])
+  AC_CHECK_LIB(rt, clock_gettime,[ac_cv_func_clock_gettime="yes"])
+  if test $ac_cv_func_clock_gettime = yes; then
+    LIBS="-lrt $LIBS"
+    AC_DEFINE(HAVE_CLOCK_GETTIME, 1,
+	      [Define to 1 if you have the `clock_gettime' function.])
+  fi
 fi
 
 # See if we support thread-local storage.

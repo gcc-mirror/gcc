@@ -1,3 +1,28 @@
+2012-09-26  Gary Funck  <gary@intrepid.com>
+
+	* collectives/upc_coll_sort.upc: Remove reference to
+	deprecated upc_local_alloc function.
+	* configure.ac: Revert - do not restore saved LIBS value
+	when checking for librt.
+	* configure: Re-generate.
+	* include/upc.h (upc_all_free, upc_all_freeg, upc_all_lock_free,
+	upc_all_lock_freeg): New. Define collective de-allocation functions.
+	(upc_local_allocg, upc_local_alloc): Add "deprecated" attribute.
+	* include/upc_tick.h: New. Define wall/clock timer library functions.
+	* Makefile.am (include/upc_tick.h, smp/upc_tick.c): New.
+	* Makefile.in: Re-generate.
+	* smp/upc_allocg.upc (upc_all_freeg): New.
+	* smp/upc_alloc.upc (upc_local_alloc): Delete.
+	(upc_all_free): New.
+	* smp/upc_config.h: Include time-related system header files.
+	* smp/upc_libg.c (upc_all_lock_freeg): New.
+	* smp/upc_lib.h (upc_local_alloc): Delete prototype.
+	(upc_all_free, upc_all_lock_free): New prototype.
+	(upc_tick_t): New typedef.
+	(upc_ticks_now, upc_ticks_to_ns): New prototype.
+	* smp/upc_lock.c (upc_all_lock_free): New.
+	* smp/upc_tick.c: New.
+
 2012-09-20  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* smp/upc_main.c (__upc_monitor_threads): Install

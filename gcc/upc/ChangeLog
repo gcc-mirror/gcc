@@ -1,3 +1,7 @@
+2012-09-26  Gary Funck  <gary@intrepid.com>
+
+	* upc-act.c (upc_cpp_builtins): Pre-define __UPC_TICK__.
+
 2012-08-29  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* gupc.texi: Add description for -fupc-pre-include.

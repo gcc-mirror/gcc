@@ -90,11 +90,7 @@ upc_all_sort (shared void *A,
     upc_barrier;
 
   if (MYTHREAD == 0)
-#ifdef __UPC_VERSION__		// UPC version 1.1 or higher
     tmp = upc_alloc (elem_size);
-#else // deprecated version is used
-    tmp = upc_local_alloc (1, elem_size);
-#endif
 
   // Thread 0 does a bubble sort.
   if (MYTHREAD == 0)

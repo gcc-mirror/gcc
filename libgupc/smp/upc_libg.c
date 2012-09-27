@@ -80,6 +80,16 @@ upc_global_lock_allocg (const char *filename, int linenum)
 }
 
 void
+upc_all_lock_freeg (upc_shared_ptr_t ptr, const char *filename, int linenum)
+{
+  p_start (GASP_UPC_LOCK_FREE, &ptr);
+  GUPCR_SET_ERR_LOC();
+  upc_all_lock_free(ptr);
+  GUPCR_CLEAR_ERR_LOC();
+  p_end (GASP_UPC_LOCK_FREE, &ptr);
+}
+
+void
 upc_lock_freeg (upc_shared_ptr_t ptr, const char *filename, int linenum)
 {
   p_start (GASP_UPC_LOCK_FREE, &ptr);

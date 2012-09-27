@@ -375,6 +375,7 @@ bug235_test()
           abort ();
         }
     }
+  upc_all_free (p1);
 }
 
 /* bug 236: bugzilla/bug1126.upc fails to compile -
@@ -859,8 +860,8 @@ test18()
   shared_ptr_to_local_int = &local_int;
   got = *shared_ptr_to_local_int;
   upc_unlock (lock);
+  upc_all_lock_free (lock);
   upc_barrier;
-  if (MYTHREAD == 0) upc_lock_free (lock);
   expected = 99;
   if (got != expected)
     {
@@ -1022,7 +1023,7 @@ test18()
     int i1, i2, i3, i4, i5, i6;
     shared [] double *p;
     double got, expected;
-    bug106_u = upc_local_alloc (10, sizeof(bug106_u_t));
+    bug106_u = upc_alloc (10 * sizeof(bug106_u_t));
     j = 0;
     for (i1 = 0; i1 < 10; ++i1)
       for (i2 = 0; i2 < 9; ++i2)
