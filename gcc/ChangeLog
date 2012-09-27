@@ -1,3 +1,16 @@
+2012-09-27  Ulrich Weigand  <ulrich.weigand@linaro.org>
+
+	* lower-subreg.c (enum classify_move_insn): Rename
+	SIMPLE_PSEUDO_REG_MOVE to DECOMPOSABLE_SIMPLE_MOVE.
+	(find_decomposable_subregs): Update.
+	(decompose_multiword_subregs): Add DECOMPOSE_COPIES parameter.
+	Only mark pseudo-to-pseudo copies as DECOMPOSABLE_SIMPLE_MOVE
+	if that parameter is true.
+	(rest_of_handle_lower_subreg): Call decompose_multiword_subregs
+	with DECOMPOSE_COPIES false.
+	(rest_of_handle_lower_subreg2): Call decompose_multiword_subregs
+	with DECOMPOSE_COPIES true.
+
 2012-09-27  Marek Polacek  <polacek@redhat.com>
 
 	* doc/gcov.texi (Gcov Data Files): Fix a typo.
