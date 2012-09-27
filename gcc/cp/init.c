@@ -2235,8 +2235,7 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
     {
       tree inner_nelts = array_type_nelts_top (elt_type);
       tree inner_nelts_cst = maybe_constant_value (inner_nelts);
-      if (TREE_CONSTANT (inner_nelts_cst)
-	  && TREE_CODE (inner_nelts_cst) == INTEGER_CST)
+      if (TREE_CODE (inner_nelts_cst) == INTEGER_CST)
 	{
 	  bool overflow;
 	  double_int result = TREE_INT_CST (inner_nelts_cst)
