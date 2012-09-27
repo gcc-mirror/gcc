@@ -1,3 +1,31 @@
+2012-09-27  Dehao Chen  <dehao@google.com>
+
+	* tree.h (tree_constructor): Remove IS_UNKNOWN_LOCATION.
+	(extern void protected_set_expr_location): Likewise.
+	(function_args_iter_next): Likewise.
+	(inlined_function_outer_scope_p): Likewise.
+	* input.h (IS_UNKNOWN_LOCATION): Likewise.
+	* fold-const.c (expr_location_or): Likewise.
+	* lto-cgraph.c (output_node_opt_summary): Likewise.
+	* dwarf2out.c (add_src_coords_attributes): Likewise.
+	* tree-eh.c (lower_try_finally_dup_block): Likewise.
+	* profile.c (branch_prob):
+	* cfgexpand.c (expand_gimple_cond): Likewise.
+	(expand_gimple_basic_block): Likewise.
+	(construct_exit_block): Likewise.
+	(gimple_expand_cfg): Likewise.
+	* cfgcleanup.c (try_forward_edges): Likewise.
+	* tree-ssa-live.c (remove_unused_scope_block_p): Likewise.
+	(dump_scope_block): Likewise.
+	* ipa-prop.c (ipa_write_jump_function): Likewise.
+	* rtl.h (extern void rtl_check_failed_flag): Likewise.
+	* gimple.h (gimple_set_location): Likewise.
+	(gimple_has_location): Likewise.
+	* cfgrtl.c (unique_locus_on_edge_between_p): Likewise.
+	(force_nonfallthru_and_redirect): Likewise.
+	(fixup_reorder_chain): Likewise.
+	(cfg_layout_merge_blocks): Likewise.
+
 2012-09-27  Meador Inge  <meadori@codesourcery.com>
 
 	* gcc-ar.c (main): Handle the returning of the sub-process error

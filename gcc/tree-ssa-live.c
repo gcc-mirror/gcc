@@ -597,7 +597,8 @@ remove_unused_scope_block_p (tree scope)
    else
    /* Verfify that only blocks with source location set
       are entry points to the inlined functions.  */
-     gcc_assert (IS_UNKNOWN_LOCATION (BLOCK_SOURCE_LOCATION (scope)));
+     gcc_assert (LOCATION_LOCUS (BLOCK_SOURCE_LOCATION (scope))
+		 == UNKNOWN_LOCATION);
 
    TREE_USED (scope) = !unused;
    return unused;
@@ -671,7 +672,7 @@ dump_scope_block (FILE *file, int indent, tree scope, int flags)
   fprintf (file, "\n%*s{ Scope block #%i%s%s",indent, "" , BLOCK_NUMBER (scope),
   	   TREE_USED (scope) ? "" : " (unused)",
 	   BLOCK_ABSTRACT (scope) ? " (abstract)": "");
-  if (!IS_UNKNOWN_LOCATION (BLOCK_SOURCE_LOCATION (scope)))
+  if (LOCATION_LOCUS (BLOCK_SOURCE_LOCATION (scope)) != UNKNOWN_LOCATION)
     {
       expanded_location s = expand_location (BLOCK_SOURCE_LOCATION (scope));
       fprintf (file, " %s:%i", s.file, s.line);

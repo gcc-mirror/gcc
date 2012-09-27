@@ -723,7 +723,7 @@ unique_locus_on_edge_between_p (basic_block a, basic_block b)
   const location_t goto_locus = EDGE_SUCC (a, 0)->goto_locus;
   rtx insn, end;
 
-  if (IS_UNKNOWN_LOCATION (goto_locus))
+  if (LOCATION_LOCUS (goto_locus) == UNKNOWN_LOCATION)
     return false;
 
   /* First scan block A backward.  */
@@ -1477,10 +1477,7 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
   else
     jump_block = e->src;
 
-  if (!IS_UNKNOWN_LOCATION (e->goto_locus))
-    loc = e->goto_locus;
-  else
-    loc = 0;
+  loc = e->goto_locus;
   e->flags &= ~EDGE_FALLTHRU;
   if (target == EXIT_BLOCK_PTR)
     {
@@ -3335,7 +3332,7 @@ fixup_reorder_chain (void)
         edge_iterator ei;
 
         FOR_EACH_EDGE (e, ei, bb->succs)
-	  if (!IS_UNKNOWN_LOCATION (e->goto_locus)
+	  if (LOCATION_LOCUS (e->goto_locus) != UNKNOWN_LOCATION
 	      && !(e->flags & EDGE_ABNORMAL))
 	    {
 	      edge e2;
@@ -3385,7 +3382,7 @@ fixup_reorder_chain (void)
 		 well, this can prevent other such blocks from being created
 		 in subsequent iterations of the loop.  */
 	      for (ei2 = ei_start (dest->preds); (e2 = ei_safe_edge (ei2)); )
-		if (!IS_UNKNOWN_LOCATION (e2->goto_locus)
+		if (LOCATION_LOCUS (e2->goto_locus) != UNKNOWN_LOCATION
 		    && !(e2->flags & (EDGE_ABNORMAL | EDGE_FALLTHRU))
 		    && e->goto_locus == e2->goto_locus)
 		  redirect_edge_and_branch (e2, nb);
@@ -4087,7 +4084,8 @@ cfg_layout_merge_blocks (basic_block a, basic_block b)
     }
 
   /* If B was a forwarder block, propagate the locus on the edge.  */
-  if (forwarder_p && IS_UNKNOWN_LOCATION (EDGE_SUCC (b, 0)->goto_locus))
+  if (forwarder_p
+      && LOCATION_LOCUS (EDGE_SUCC (b, 0)->goto_locus) != UNKNOWN_LOCATION)
     EDGE_SUCC (b, 0)->goto_locus = EDGE_SUCC (a, 0)->goto_locus;
 
   if (dump_file)

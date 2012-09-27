@@ -1240,7 +1240,7 @@ gimple_set_location (gimple g, location_t location)
 static inline bool
 gimple_has_location (const_gimple g)
 {
-  return !IS_UNKNOWN_LOCATION (gimple_location (g));
+  return LOCATION_LOCUS (gimple_location (g)) != UNKNOWN_LOCATION;
 }
 
 
