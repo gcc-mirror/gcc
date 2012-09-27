@@ -6820,7 +6820,8 @@ corresponding mode of @code{foo} will be @acronym{V4SI}.
 
 The @code{vector_size} attribute is only applicable to integral and
 float scalars, although arrays, pointers, and function return values
-are allowed in conjunction with this construct.
+are allowed in conjunction with this construct. Only power of two
+sizes are currently allowed.
 
 All the basic integer types can be used as base types, both as signed
 and as unsigned: @code{char}, @code{short}, @code{int}, @code{long},
@@ -6857,7 +6858,7 @@ minus or complement operators on a vector type is a vector whose
 elements are the negative or complemented values of the corresponding
 elements in the operand.
 
-In C it is possible to use shifting operators @code{<<}, @code{>>} on
+It is possible to use shifting operators @code{<<}, @code{>>} on
 integer-type vectors. The operation is defined as following: @code{@{a0,
 a1, @dots{}, an@} >> @{b0, b1, @dots{}, bn@} == @{a0 >> b0, a1 >> b1,
 @dots{}, an >> bn@}}@. Vector operands must have the same number of
@@ -6888,7 +6889,7 @@ invoke undefined behavior at runtime.  Warnings for out of bound
 accesses for vector subscription can be enabled with
 @option{-Warray-bounds}.
 
-In GNU C vector comparison is supported within standard comparison
+Vector comparison is supported with standard comparison
 operators: @code{==, !=, <, <=, >, >=}. Comparison operands can be
 vector expressions of integer-type or real-type. Comparison between
 integer-type vectors and real-type vectors are not supported.  The

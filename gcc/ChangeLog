@@ -1,3 +1,10 @@
+2012-09-27  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c/53024
+	PR c++/54427
+	* doc/extend.texi (Vector Extensions): C++ improvements.
+	Power of 2 size requirement.
+
 2012-09-27  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/54709
