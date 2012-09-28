@@ -1666,3 +1666,121 @@ loop_exits_from_bb_p (struct loop *loop, basic_block bb)
 
   return false;
 }
+
+/* Scale the profile estiamte within loop by SCALE.
+   If ITERATION_BOUND is non-zero, scale even further if loop is predicted
+   to iterate too many times.  */
+void
+scale_loop_profile (struct loop *loop, int scale, int iteration_bound)
+{
+  gcov_type iterations = expected_loop_iterations_unbounded (loop);
+  basic_block *bbs;
+  unsigned int i;
+  edge e;
+  edge_iterator ei;
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, ";; Scaling loop %i with scale %f, "
+	     "bounding iterations to %i from guessed %i\n",
+	     loop->num, (double)scale / REG_BR_PROB_BASE,
+	     iteration_bound, (int)iterations);
+
+  /* See if loop is predicted to iterate too many times.  */
+  if (iteration_bound && iterations > 0
+      && RDIV (iterations * scale, REG_BR_PROB_BASE) > iteration_bound)
+    {
+      /* Fixing loop profile for different trip count is not trivial; the exit
+	 probabilities has to be updated to match and frequencies propagated down
+	 to the loop body.
+
+	 We fully update only the simple case of loop with single exit that is
+	 either from the latch or BB just before latch and leads from BB with
+	 simple conditional jump.   This is OK for use in vectorizer.  */
+      e = single_exit (loop);
+      if (e)
+	{
+	  edge other_e;
+	  int freq_delta;
+	  gcov_type count_delta;
+
+          FOR_EACH_EDGE (other_e, ei, e->src->succs)
+	    if (!(other_e->flags & (EDGE_ABNORMAL | EDGE_FAKE))
+		&& e != other_e)
+	      break;
+
+	  /* Probability of exit must be 1/iterations.  */
+	  freq_delta = EDGE_FREQUENCY (e);
+	  e->probability = REG_BR_PROB_BASE / iteration_bound;
+	  other_e->probability = inverse_probability (e->probability);
+	  freq_delta -= EDGE_FREQUENCY (e);
+
+	  /* Adjust counts accordingly.  */
+	  count_delta = e->count;
+	  e->count = apply_probability (e->src->count, e->probability);
+	  other_e->count = apply_probability (e->src->count, other_e->probability);
+	  count_delta -= e->count;
+
+	  /* If latch exists, change its frequency and count, since we changed
+	     probability of exit.  Theoretically we should update everything from
+	     source of exit edge to latch, but for vectorizer this is enough.  */
+	  if (loop->latch
+	      && loop->latch != e->src)
+	    {
+	      loop->latch->frequency += freq_delta;
+	      if (loop->latch->frequency < 0)
+		loop->latch->frequency = 0;
+	      loop->latch->count += count_delta;
+	      if (loop->latch->count < 0)
+		loop->latch->count = 0;
+	    }
+	}
+
+      /* Roughly speaking we want to reduce the loop body profile by the
+	 the difference of loop iterations.  We however can do better if
+	 we look at the actual profile, if it is available.  */
+      scale = RDIV (iteration_bound * scale, iterations);
+      if (loop->header->count)
+	{
+	  gcov_type count_in = 0;
+
+	  FOR_EACH_EDGE (e, ei, loop->header->preds)
+	    if (e->src != loop->latch)
+	      count_in += e->count;
+
+	  if (count_in != 0)
+	    scale = RDIV (count_in * iteration_bound * REG_BR_PROB_BASE, loop->header->count);
+	}
+      else if (loop->header->frequency)
+	{
+	  int freq_in = 0;
+
+	  FOR_EACH_EDGE (e, ei, loop->header->preds)
+	    if (e->src != loop->latch)
+	      freq_in += EDGE_FREQUENCY (e);
+
+	  if (freq_in != 0)
+	    scale = RDIV (freq_in * iteration_bound * REG_BR_PROB_BASE, loop->header->frequency);
+	}
+      if (!scale)
+	scale = 1;
+    }
+
+  if (scale == REG_BR_PROB_BASE)
+    return;
+
+  /* Scale the actual probabilities.  */
+  bbs = get_loop_body (loop);
+  for (i = 0; i < loop->num_nodes; i++)
+    {
+      basic_block bb = bbs[i];
+
+      bb->count = RDIV (bb->count * scale, REG_BR_PROB_BASE);
+      bb->frequency = RDIV (bb->frequency * scale, REG_BR_PROB_BASE);
+      FOR_EACH_EDGE (e, ei, bb->succs)
+	e->count = RDIV (e->count * scale, REG_BR_PROB_BASE);
+    }
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, ";; guessed iterations are now %i\n",
+	     (int)expected_loop_iterations_unbounded (loop));
+  free (bbs);
+}

@@ -931,7 +931,8 @@ slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *loop, edge e)
 static edge
 slpeel_add_loop_guard (basic_block guard_bb, tree cond,
 		       gimple_seq cond_expr_stmt_list,
-		       basic_block exit_bb, basic_block dom_bb)
+		       basic_block exit_bb, basic_block dom_bb,
+		       int probability)
 {
   gimple_stmt_iterator gsi;
   edge new_e, enter_e;
@@ -956,6 +957,12 @@ slpeel_add_loop_guard (basic_block guard_bb, tree cond,
 
   /* Add new edge to connect guard block to the merge/loop-exit block.  */
   new_e = make_edge (guard_bb, exit_bb, EDGE_TRUE_VALUE);
+
+  new_e->count = guard_bb->count;
+  new_e->probability = probability;
+  new_e->count = apply_probability (enter_e->count, probability);
+  enter_e->count -= new_e->count;
+  enter_e->probability = inverse_probability (probability);
   set_immediate_dominator (CDI_DOMINATORS, exit_bb, dom_bb);
   return new_e;
 }
@@ -1038,7 +1045,8 @@ static void
 set_prologue_iterations (basic_block bb_before_first_loop,
 			 tree *first_niters,
 			 struct loop *loop,
-			 unsigned int th)
+			 unsigned int th,
+			 int probability)
 {
   edge e;
   basic_block cond_bb, then_bb;
@@ -1067,7 +1075,15 @@ set_prologue_iterations (basic_block bb_before_first_loop,
   e_true->flags &= ~EDGE_FALLTHRU;
   e_true->flags |= EDGE_TRUE_VALUE;
 
+  e_true->probability = probability;
+  e_false->probability = inverse_probability (probability);
+  e_true->count = apply_probability (cond_bb->count, probability);
+  e_false->count = cond_bb->count - e_true->count;
+  then_bb->frequency = EDGE_FREQUENCY (e_true);
+  then_bb->count = e_true->count;
+
   e_fallthru = EDGE_SUCC (then_bb, 0);
+  e_fallthru->count = then_bb->count;
 
   gsi = gsi_last_bb (cond_bb);
   cost_pre_condition =
@@ -1126,6 +1142,8 @@ set_prologue_iterations (basic_block bb_before_first_loop,
 			  prologue generation or whether cost model check
 			  has not occurred during prologue generation and hence
 			  needs to occur during epilogue generation.
+   - BOUND1 is the upper bound on number of iterations of the first loop (if known)
+   - BOUND2 is the upper bound on number of iterations of the second loop (if known)
 
 
    Output:
@@ -1153,7 +1171,8 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop,
 			       edge e, tree *first_niters,
 			       tree niters, bool update_first_loop_count,
 			       unsigned int th, bool check_profitability,
-			       tree cond_expr, gimple_seq cond_expr_stmt_list)
+			       tree cond_expr, gimple_seq cond_expr_stmt_list,
+			       int bound1, int bound2)
 {
   struct loop *new_loop = NULL, *first_loop, *second_loop;
   edge skip_e;
@@ -1166,6 +1185,13 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop,
   edge exit_e = single_exit (loop);
   LOC loop_loc;
   tree cost_pre_condition = NULL_TREE;
+  /* There are many aspects to how likely the first loop is going to be executed.
+     Without histogram we can't really do good job.  Simply set it to
+     2/3, so the first loop is not reordered to the end of function and
+     the hot path through stays short.  */
+  int first_guard_probability = 2 * REG_BR_PROB_BASE / 3;
+  int second_guard_probability = 2 * REG_BR_PROB_BASE / 3;
+  int probability_of_second_loop;
 
   if (!slpeel_can_duplicate_loop_p (loop, e))
     return NULL;
@@ -1341,6 +1367,21 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop,
   bb_before_first_loop = split_edge (loop_preheader_edge (first_loop));
   bb_before_second_loop = split_edge (single_exit (first_loop));
 
+  probability_of_second_loop = (inverse_probability (first_guard_probability)
+			        + combine_probabilities (second_guard_probability,
+                                                         first_guard_probability));
+  /* Theoretically preheader edge of first loop and exit edge should have
+     same frequencies.  Loop exit probablities are however easy to get wrong.
+     It is safer to copy value from original loop entry.  */
+  bb_before_second_loop->frequency
+     = apply_probability (bb_before_first_loop->frequency,
+			  probability_of_second_loop);
+  bb_before_second_loop->count
+     = apply_probability (bb_before_first_loop->count,
+			  probability_of_second_loop);
+  single_succ_edge (bb_before_second_loop)->count
+     = bb_before_second_loop->count;
+
   /* Epilogue peeling.  */
   if (!update_first_loop_count)
     {
@@ -1374,7 +1415,7 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop,
     {
       if (check_profitability)
 	set_prologue_iterations (bb_before_first_loop, first_niters,
-				 loop, th);
+				 loop, th, first_guard_probability);
 
       pre_condition =
 	fold_build2 (LE_EXPR, boolean_type_node, *first_niters,
@@ -1383,7 +1424,10 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop,
 
   skip_e = slpeel_add_loop_guard (bb_before_first_loop, pre_condition,
 				  cond_expr_stmt_list,
-                                  bb_before_second_loop, bb_before_first_loop);
+                                  bb_before_second_loop, bb_before_first_loop,
+				  inverse_probability (first_guard_probability));
+  scale_loop_profile (first_loop, first_guard_probability,
+		      check_profitability && (int)th > bound1 ? th : bound1);
   slpeel_update_phi_nodes_for_guard1 (skip_e, first_loop,
 				      first_loop == new_loop,
 				      &new_exit_bb);
@@ -1421,7 +1465,9 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop,
   pre_condition =
 	fold_build2 (EQ_EXPR, boolean_type_node, *first_niters, niters);
   skip_e = slpeel_add_loop_guard (bb_between_loops, pre_condition, NULL,
-                                  bb_after_second_loop, bb_before_first_loop);
+                                  bb_after_second_loop, bb_before_first_loop,
+				  inverse_probability (second_guard_probability));
+  scale_loop_profile (second_loop, probability_of_second_loop, bound2);
   slpeel_update_phi_nodes_for_guard2 (skip_e, second_loop,
                                      second_loop == new_loop, &new_exit_bb);
 
@@ -1882,7 +1928,8 @@ vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo, tree *ratio,
   new_loop = slpeel_tree_peel_loop_to_edge (loop, single_exit (loop),
                                             &ratio_mult_vf_name, ni_name, false,
                                             th, check_profitability,
-					    cond_expr, cond_expr_stmt_list);
+					    cond_expr, cond_expr_stmt_list,
+					    0, LOOP_VINFO_VECT_FACTOR (loop_vinfo));
   gcc_assert (new_loop);
   gcc_assert (loop_num == loop->num);
 #ifdef ENABLE_CHECKING
@@ -1951,7 +1998,7 @@ vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo, tree *ratio,
    use TYPE_VECTOR_SUBPARTS.  */
 
 static tree
-vect_gen_niters_for_prolog_loop (loop_vec_info loop_vinfo, tree loop_niters)
+vect_gen_niters_for_prolog_loop (loop_vec_info loop_vinfo, tree loop_niters, int *bound)
 {
   struct data_reference *dr = LOOP_VINFO_UNALIGNED_DR (loop_vinfo);
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
@@ -1977,6 +2024,7 @@ vect_gen_niters_for_prolog_loop (loop_vec_info loop_vinfo, tree loop_niters)
         fprintf (vect_dump, "known peeling = %d.", npeel);
 
       iters = build_int_cst (niters_type, npeel);
+      *bound = LOOP_PEELING_FOR_ALIGNMENT (loop_vinfo);
     }
   else
     {
@@ -2015,6 +2063,7 @@ vect_gen_niters_for_prolog_loop (loop_vec_info loop_vinfo, tree loop_niters)
 	iters = fold_build2 (MINUS_EXPR, type, nelements_tree, elem_misalign);
       iters = fold_build2 (BIT_AND_EXPR, type, iters, nelements_minus_1);
       iters = fold_convert (niters_type, iters);
+      *bound = nelements;
     }
 
   /* Create:  prolog_loop_niters = min (iters, loop_niters) */
@@ -2107,6 +2156,7 @@ vect_do_peeling_for_alignment (loop_vec_info loop_vinfo,
   tree wide_prolog_niters;
   struct loop *new_loop;
   int max_iter;
+  int bound = 0;
 
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "=== vect_do_peeling_for_alignment ===");
@@ -2115,13 +2165,16 @@ vect_do_peeling_for_alignment (loop_vec_info loop_vinfo,
 
   ni_name = vect_build_loop_niters (loop_vinfo, NULL);
   niters_of_prolog_loop = vect_gen_niters_for_prolog_loop (loop_vinfo,
-							   ni_name);
+							   ni_name,
+							   &bound);
 
   /* Peel the prolog loop and iterate it niters_of_prolog_loop.  */
   new_loop =
     slpeel_tree_peel_loop_to_edge (loop, loop_preheader_edge (loop),
 				   &niters_of_prolog_loop, ni_name, true,
-				   th, check_profitability, NULL_TREE, NULL);
+				   th, check_profitability, NULL_TREE, NULL,
+				   bound,
+				   0);
 
   gcc_assert (new_loop);
 #ifdef ENABLE_CHECKING

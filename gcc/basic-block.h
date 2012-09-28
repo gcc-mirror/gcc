@@ -478,11 +478,10 @@ struct edge_list
 #define BRANCH_EDGE(bb)			(EDGE_SUCC ((bb), 0)->flags & EDGE_FALLTHRU \
 					 ? EDGE_SUCC ((bb), 1) : EDGE_SUCC ((bb), 0))
 
+#define RDIV(X,Y) (((X) + (Y) / 2) / (Y))
 /* Return expected execution frequency of the edge E.  */
-#define EDGE_FREQUENCY(e)		(((e)->src->frequency \
-					  * (e)->probability \
-					  + REG_BR_PROB_BASE / 2) \
-					 / REG_BR_PROB_BASE)
+#define EDGE_FREQUENCY(e)		RDIV ((e)->src->frequency * (e)->probability, \
+					      REG_BR_PROB_BASE)
 
 /* Return nonzero if edge is critical.  */
 #define EDGE_CRITICAL_P(e)		(EDGE_COUNT ((e)->src->succs) >= 2 \
@@ -910,4 +909,40 @@ extern void default_rtl_profile (void);
 /* In profile.c.  */
 extern gcov_working_set_t *find_working_set(unsigned pct_times_10);
 
+/* Check tha probability is sane.  */
+
+static inline void
+check_probability (int prob)
+{
+  gcc_checking_assert (prob >= 0 && prob <= REG_BR_PROB_BASE);
+}
+
+/* Given PROB1 and PROB2, return PROB1*PROB2/REG_BR_PROB_BASE. 
+   Used to combine BB probabilities.  */
+
+static inline int
+combine_probabilities (int prob1, int prob2)
+{
+  check_probability (prob1);
+  check_probability (prob2);
+  return RDIV (prob1 * prob2, REG_BR_PROB_BASE);
+}
+
+/* Apply probability PROB on frequency or count FREQ.  */
+
+static inline gcov_type
+apply_probability (gcov_type freq, int prob)
+{
+  check_probability (prob);
+  return RDIV (freq * prob, REG_BR_PROB_BASE);
+}
+
+/* Return inverse probability for PROB.  */
+
+static inline int
+inverse_probability (int prob1)
+{
+  check_probability (prob1);
+  return REG_BR_PROB_BASE - prob1;
+}
 #endif /* GCC_BASIC_BLOCK_H */
