@@ -1,3 +1,31 @@
+2012-09-28  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_PARALLEL): Remove ENABLE_PARALLEL.
+	* include/Makefile.am: Same.
+	* src/c++98/Makefile.am: Same.
+	* src/Makefile.am: Same.
+	* Makefile.in: Regenerated.
+	* aclocal.m4: Same.
+	* configure: Same.
+	* doc/Makefile.in: Same.
+	* include/Makefile.in: Same.
+	* libsupc++/Makefile.in: Same.
+	* po/Makefile.in: Same.
+	* python/Makefile.in: Same.
+	* src/Makefile.in: Same.
+	* testsuite/Makefile.in: Same.
+	* src/c++11/Makefile.in: Same.
+	* src/c++98/Makefile.in: Same.
+
+	* src/c++98/compatibility-debug_list-2.cc: Update comments.
+	* src/c++98/compatibility-debug_list.cc: Same.
+	* src/c++98/compatibility-list-2.cc: Renamed to src/c++98/list-aux-2.cc
+	* src/c++98/compatibility-list.cc: Renamed to src/c++98/list-aux.cc
+	* src/c++98/compatibility-parallel_list-2.cc: Renamed to
+	src/c++98/list_associated-2.cc.
+	* src/c++98/compatibility-parallel_list.cc: Renamed to
+	src/c++98/list_associated.cc.
+
 2012-09-27  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/54727

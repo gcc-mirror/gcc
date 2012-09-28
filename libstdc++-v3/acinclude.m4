@@ -2173,7 +2173,6 @@ AC_DEFUN([GLIBCXX_ENABLE_PARALLEL], [
 
   AC_MSG_CHECKING([for parallel mode support])
   AC_MSG_RESULT([$enable_parallel])
-  GLIBCXX_CONDITIONAL(ENABLE_PARALLEL, test $enable_parallel = yes)
 ])
 
 

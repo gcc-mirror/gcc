@@ -1,6 +1,6 @@
 // Compatibility symbols for previous versions, debug list -*- C++ -*-
 
-// Copyright (C) 2010, 2011 Free Software Foundation, Inc.
+// Copyright (C) 2010, 2011, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,4 +25,4 @@
 #define _GLIBCXX_BEGIN_NAMESPACE_COMPAT namespace __norm {
 #define _GLIBCXX_END_NAMESPACE_COMPAT }
 
-#include "compatibility-list.cc"
+#include "list-aux.cc"
