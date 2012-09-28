@@ -3,6 +3,8 @@
 // license that can be found in the LICENSE file.
 
 #include "runtime.h"
+#include "arch.h"
+#include "malloc.h"
 #include "go-type.h"
 
 #define	NOSELGEN	1
@@ -88,7 +90,7 @@ runtime_makechan_c(ChanType *t, int64 hint)
 	
 	elem = t->__element_type;
 
-	if(hint < 0 || (int32)hint != hint || (elem->__size > 0 && (uintptr)hint > ((uintptr)-1) / elem->__size))
+	if(hint < 0 || (int32)hint != hint || (elem->__size > 0 && (uintptr)hint > MaxMem / elem->__size))
 		runtime_panicstring("makechan: size out of range");
 
 	n = sizeof(*c);
