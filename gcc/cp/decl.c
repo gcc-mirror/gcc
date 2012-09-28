@@ -3326,7 +3326,9 @@ make_typename_type (tree context, tree name, enum tag_types tag_type,
   
   if (DECL_ARTIFICIAL (t) || !(complain & tf_keep_type_decl))
     t = TREE_TYPE (t);
-  
+
+  maybe_record_typedef_use (t);
+
   return t;
 }
 
