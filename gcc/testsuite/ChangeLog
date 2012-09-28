@@ -1,5 +1,10 @@
 2012-09-25  Dodji Seketeli  <dodji@redhat.com>
 
+	PR c++/29028 - Missed unused warning on using declaration
+	* g++.dg/warn/Wunused-var-18.C: New test.
+
+2012-09-25  Dodji Seketeli  <dodji@redhat.com>
+
 	PR c++/53551 - -Wunused-local-typedefs misses uses
 	* g++.dg/warn/Wunused-local-typedefs-2.C: New test.
 
