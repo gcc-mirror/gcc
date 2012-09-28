@@ -102,6 +102,7 @@ extern int adjust_insn_length (rtx insn, int len);
 extern const char* output_reload_inhi (rtx*, rtx, int*);
 extern const char* output_reload_insisf (rtx*, rtx, int*);
 extern const char* avr_out_reload_inpsi (rtx*, rtx, int*);
+extern const char* avr_out_lpm (rtx, rtx*, int*);
 extern void notice_update_cc (rtx body, rtx insn);
 extern int reg_unused_after (rtx insn, rtx reg);
 extern int _reg_unused_after (rtx insn, rtx reg);
