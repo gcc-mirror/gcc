@@ -7987,9 +7987,6 @@ avr_pgm_check_var_decl (tree node)
 
   if (reason)
     {
-      avr_edump ("%?: %s, %d, %d\n",
-                 avr_addrspace[as].name,
-                 avr_addrspace[as].segment, avr_current_device->n_flash);
       if (avr_addrspace[as].segment >= avr_current_device->n_flash)
         {
           if (TYPE_P (node))

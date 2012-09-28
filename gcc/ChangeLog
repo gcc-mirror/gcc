@@ -1,5 +1,9 @@
 2012-09-28  Georg-Johann Lay  <avr@gjlay.de>
 
+	* config/avr/avr.c (avr_pgm_check_var_decl): Fix non-error diagnostic.
+
+2012-09-28  Georg-Johann Lay  <avr@gjlay.de>
+
 	PR rtl-optimization/52543
 	* config/avr/avr.c (avr_mode_dependent_address_p): Return true for
 	all non-generic address spaces.
