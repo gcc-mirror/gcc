@@ -1,3 +1,9 @@
+2012-09-20  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR bootstrap/54688
+	* sched-deps.c (parse_add_or_inc): Remove MINUS handling.  Take
+	STACK_GROWS_DOWNWARD into account.
+
 2012-09-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/54716

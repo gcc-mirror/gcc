@@ -4600,8 +4600,7 @@ parse_add_or_inc (struct mem_inc_info *mii, rtx insn, bool before_mem)
   if (!REG_P (SET_DEST (pat)))
     return false;
 
-  if (GET_CODE (SET_SRC (pat)) != PLUS
-      && GET_CODE (SET_SRC (pat)) != MINUS)
+  if (GET_CODE (SET_SRC (pat)) != PLUS)
     return false;
 
   mii->inc_insn = insn;
@@ -4629,9 +4628,14 @@ parse_add_or_inc (struct mem_inc_info *mii, rtx insn, bool before_mem)
     }
 
   if (regs_equal && REGNO (SET_DEST (pat)) == STACK_POINTER_REGNUM)
-    /* Note that the sign has already been reversed for !before_mem.  */
-    return mii->inc_constant > 0;
-
+    {
+      /* Note that the sign has already been reversed for !before_mem.  */
+#ifdef STACK_GROWS_DOWNWARD
+      return mii->inc_constant > 0;
+#else
+      return mii->inc_constant < 0;
+#endif
+    }
   return true;
 }
 
