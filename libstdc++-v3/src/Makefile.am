@@ -38,21 +38,16 @@ else
 ldbl_compat_sources =
 endif
 
-if ENABLE_PARALLEL
+
 parallel_compat_sources = \
 	compatibility-parallel_list.cc  compatibility-parallel_list-2.cc
-else
-parallel_compat_sources =
-endif
+
 
 cxx98_sources = \
 	compatibility.cc \
 	compatibility-debug_list.cc \
 	compatibility-debug_list-2.cc \
-	compatibility-list.cc \
-	compatibility-list-2.cc \
-	${ldbl_compat_sources} \
-	${parallel_compat_sources}
+	${ldbl_compat_sources} 
 
 cxx11_sources = \
 	compatibility-c++0x.cc \
@@ -78,18 +73,6 @@ libstdc___la_LDFLAGS = \
 
 libstdc___la_LINK = $(CXXLINK) $(libstdc___la_LDFLAGS)
 
-
-# Use special rules for parallel mode compilation.
-PARALLEL_FLAGS = -fopenmp -D_GLIBCXX_PARALLEL -I$(glibcxx_builddir)/../libgomp
-compatibility-parallel_list.lo: compatibility-parallel_list.cc
-	$(LTCXXCOMPILE) -c $<
-compatibility-parallel_list.o: compatibility-parallel_list.cc
-	$(CXXCOMPILE) -c $<
-
-compatibility-parallel_list-2.lo: compatibility-parallel_list-2.cc
-	$(LTCXXCOMPILE) -c $<
-compatibility-parallel_list-2.o: compatibility-parallel_list-2.cc
-	$(CXXCOMPILE) -c $<
 
 # Use special rules for compatibility-ldbl.cc compilation, as we need to
 # pass -mlong-double-64.

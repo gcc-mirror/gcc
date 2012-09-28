@@ -1,6 +1,7 @@
-// Compatibility symbols for previous versions, parallel list -*- C++ -*-
 
-// Copyright (C) 2010, 2011 Free Software Foundation, Inc.
+// Default definitions when using namespace associations, list -*- C++ -*-
+
+// Copyright (C) 2010, 2011, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,4 +26,4 @@
 #define _GLIBCXX_BEGIN_NAMESPACE_COMPAT namespace __cxx1998 {
 #define _GLIBCXX_END_NAMESPACE_COMPAT }
 
-#include "compatibility-list.cc"
+#include "list-aux.cc"

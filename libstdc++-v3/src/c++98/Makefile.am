@@ -82,11 +82,6 @@ c++locale.cc: ${glibcxx_srcdir}/$(CLOCALE_CC)
 basic_file.cc: ${glibcxx_srcdir}/$(BASIC_FILE_CC)
 	$(LN_S) ${glibcxx_srcdir}/$(BASIC_FILE_CC) ./$@ || true
 
-if ENABLE_PARALLEL
-parallel_sources = parallel_settings.cc
-else
-parallel_sources =
-endif
 
 if ENABLE_EXTERN_TEMPLATE
 XTEMPLATE_FLAGS = -fno-implicit-templates
@@ -108,6 +103,8 @@ XTEMPLATE_FLAGS =
 inst_sources =
 endif
 
+parallel_sources = parallel_settings.cc
+
 # Sources present in the src directory, always present.
 sources = \
 	bitmap_allocator.cc \
@@ -124,6 +121,10 @@ sources = \
 	ios_init.cc \
 	ios_locale.cc \
 	list.cc \
+	list-aux.cc \
+	list-aux-2.cc \
+	list_associated.cc \
+	list_associated-2.cc \
 	locale.cc \
 	locale_init.cc \
 	locale_facets.cc \

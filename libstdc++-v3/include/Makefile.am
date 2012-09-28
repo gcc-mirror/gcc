@@ -737,7 +737,6 @@ debug_headers = \
 # Parallel mode headers
 parallel_srcdir = ${glibcxx_srcdir}/include/parallel
 parallel_builddir = ./parallel
-if ENABLE_PARALLEL
 parallel_headers = \
 	${parallel_srcdir}/algo.h \
 	${parallel_srcdir}/algobase.h \
@@ -782,9 +781,6 @@ parallel_headers = \
 	${parallel_srcdir}/types.h \
 	${parallel_srcdir}/unique_copy.h \
 	${parallel_srcdir}/workstealing.h
-else
-parallel_headers =
-endif
 
 # Profile mode headers
 profile_srcdir = ${glibcxx_srcdir}/include/profile
@@ -1283,10 +1279,8 @@ install-headers:
 	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${debug_builddir}
 	for file in ${debug_headers}; do \
 	  $(INSTALL_DATA) $${file} $(DESTDIR)${gxx_include_dir}/${debug_builddir}; done
-	parallel_headers_install='${parallel_headers}';\
-	test -z "$$parallel_headers_install" || \
-	  $(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${parallel_builddir};\
-	for file in $$parallel_headers_install; do \
+	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${parallel_builddir}
+	for file in ${parallel_headers}; do \
 	  $(INSTALL_DATA) $${file} $(DESTDIR)${gxx_include_dir}/${parallel_builddir}; done
 	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${profile_builddir}
 	for file in ${profile_headers}; do \
