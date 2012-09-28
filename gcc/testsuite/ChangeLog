@@ -1,3 +1,10 @@
+2012-09-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/54713
+	* gcc.c-torture/compile/pr54713-1.c: New test.
+	* gcc.c-torture/compile/pr54713-2.c: New test.
+	* gcc.c-torture/compile/pr54713-3.c: New test.
+
 2012-09-27  Janis Johnson  <janisjo@codesourcery.com>
 
 	* gcc.target/arm/unsigned-extend-1.c: Omit -march option.
