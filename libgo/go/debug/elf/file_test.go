@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package elf_test
+package elf
 
 import (
 	"debug/dwarf"
-	. "debug/elf"
 	"encoding/binary"
 	"net"
 	"os"

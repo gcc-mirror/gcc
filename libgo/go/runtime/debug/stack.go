@@ -8,7 +8,6 @@ package debug
 
 import (
 	"bytes"
-	_ "debug/elf"
 	"fmt"
 	"io/ioutil"
 	"os"

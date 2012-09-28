@@ -6,64 +6,56 @@
 
 #include "config.h"
 
-#include "unwind.h"
+#include "backtrace.h"
 
 #include "runtime.h"
 
-/* Argument passed to backtrace function.  */
+/* Argument passed to callback function.  */
 
 struct callers_data
 {
-  int skip;
   uintptr *pcbuf;
   int index;
   int max;
 };
 
-static _Unwind_Reason_Code
-backtrace (struct _Unwind_Context *context, void *varg)
+/* Callback function for backtrace_simple.  Just collect the PC
+   values.  Return zero to continue, non-zero to stop.  */
+
+static int
+callback (void *data, uintptr_t pc)
 {
-  struct callers_data *arg = (struct callers_data *) varg;
-  uintptr pc;
-  int ip_before_insn = 0;
+  struct callers_data *arg = (struct callers_data *) data;
 
-#ifdef HAVE_GETIPINFO
-  pc = _Unwind_GetIPInfo (context, &ip_before_insn);
-#else
-  pc = _Unwind_GetIP (context);
-#endif
-
-  /* FIXME: If PC is in the __morestack routine, we should ignore
-     it.  */
-
-  if (arg->skip > 0)
-    --arg->skip;
-  else if (arg->index >= arg->max)
-    return _URC_END_OF_STACK;
-  else
-    {
-      /* Here PC will be the return address.  We actually want the
-	 address of the call instruction, so back up one byte and
-	 count on the lookup routines handling that correctly.  */
-      if (!ip_before_insn)
-	--pc;
-      arg->pcbuf[arg->index] = pc;
-      ++arg->index;
-    }
-  return _URC_NO_REASON;
+  arg->pcbuf[arg->index] = pc;
+  ++arg->index;
+  return arg->index >= arg->max;
 }
+
+/* Error callback.  */
+
+static void
+error_callback (void *data __attribute__ ((unused)),
+		const char *msg, int errnum)
+{
+  if (errnum != 0)
+    runtime_printf ("%s errno %d\n", msg, errnum);
+  runtime_throw (msg);
+}
+
+/* Gather caller PC's.  */
 
 int32
 runtime_callers (int32 skip, uintptr *pcbuf, int32 m)
 {
-  struct callers_data arg;
+  struct callers_data data;
 
-  arg.skip = skip + 1;
-  arg.pcbuf = pcbuf;
-  arg.index = 0;
-  arg.max = m;
-  _Unwind_Backtrace (backtrace, &arg);
-  return arg.index;
+  data.pcbuf = pcbuf;
+  data.index = 0;
+  data.max = m;
+  backtrace_simple (__go_get_backtrace_state (), skip + 1, callback,
+		    error_callback, &data);
+  return data.index;
 }
 
 int Callers (int, struct __go_open_array)

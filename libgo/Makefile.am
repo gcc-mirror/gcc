@@ -39,7 +39,8 @@ ACLOCAL_AMFLAGS = -I ./config -I ../config
 
 AM_CFLAGS = -fexceptions -fplan9-extensions $(SPLIT_STACK) $(WARN_CFLAGS) \
 	$(STRINGOPS_FLAG) $(OSCFLAGS) \
-	-I $(srcdir)/../libgcc -I $(MULTIBUILDTOP)../../gcc/include
+	-I $(srcdir)/../libgcc -I $(srcdir)/../libbacktrace \
+	-I $(MULTIBUILDTOP)../../gcc/include
 
 if USING_SPLIT_STACK
 AM_LDFLAGS = -XCClinker $(SPLIT_STACK)
@@ -1062,8 +1063,7 @@ go_debug_dwarf_files = \
 	go/debug/dwarf/unit.go
 go_debug_elf_files = \
 	go/debug/elf/elf.go \
-	go/debug/elf/file.go \
-	go/debug/elf/runtime.go
+	go/debug/elf/file.go
 go_debug_gosym_files = \
 	go/debug/gosym/pclntab.go \
 	go/debug/gosym/symtab.go
@@ -1782,7 +1782,8 @@ libgo_la_SOURCES = $(runtime_files)
 libgo_la_LDFLAGS = $(PTHREAD_CFLAGS) $(AM_LDFLAGS)
 
 libgo_la_LIBADD = \
-	$(libgo_go_objs) $(LIBFFI) $(PTHREAD_LIBS) $(MATH_LIBS) $(NET_LIBS)
+	$(libgo_go_objs) ../libbacktrace/libbacktrace.la \
+	$(LIBFFI) $(PTHREAD_LIBS) $(MATH_LIBS) $(NET_LIBS)
 
 libgobegin_a_SOURCES = \
 	runtime/go-main.c

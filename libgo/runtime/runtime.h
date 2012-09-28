@@ -517,6 +517,8 @@ void	__go_register_gc_roots(struct root_list*);
 // the stacks are allocated by the splitstack library.
 extern uintptr runtime_stacks_sys;
 
-extern _Bool __go_file_line (uintptr, String*, String*, int *);
+struct backtrace_state;
+extern struct backtrace_state *__go_get_backtrace_state(void);
+extern _Bool __go_file_line(uintptr, String*, String*, int *);
 
 int32 getproccount(void);

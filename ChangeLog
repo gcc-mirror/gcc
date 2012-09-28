@@ -1,3 +1,9 @@
+2012-09-28  Ian Lance Taylor  <iant@google.com>
+
+	* Makefile.def: Make all-target-libgo depend on
+	all-target-libbacktrace.
+	* Makefile.in: Rebuild.
+
 2012-09-26  Ian Lance Taylor  <iant@google.com>
 
 	* Makefile.def: Make all-gcc depend on all-libbacktrace.

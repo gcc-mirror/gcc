@@ -169,7 +169,8 @@ am__DEPENDENCIES_2 = bufio.lo bytes.lo bytes/index.lo crypto.lo \
 	text/tabwriter.lo text/template.lo text/template/parse.lo \
 	testing/iotest.lo testing/quick.lo unicode/utf16.lo \
 	unicode/utf8.lo
-libgo_la_DEPENDENCIES = $(am__DEPENDENCIES_2) $(am__DEPENDENCIES_1) \
+libgo_la_DEPENDENCIES = $(am__DEPENDENCIES_2) \
+	../libbacktrace/libbacktrace.la $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1)
 @LIBGO_IS_LINUX_FALSE@am__objects_1 = lock_sema.lo thread-sema.lo
@@ -435,7 +436,8 @@ AM_CPPFLAGS = -I $(srcdir)/runtime $(LIBFFIINCS) $(PTHREAD_CFLAGS)
 ACLOCAL_AMFLAGS = -I ./config -I ../config
 AM_CFLAGS = -fexceptions -fplan9-extensions $(SPLIT_STACK) $(WARN_CFLAGS) \
 	$(STRINGOPS_FLAG) $(OSCFLAGS) \
-	-I $(srcdir)/../libgcc -I $(MULTIBUILDTOP)../../gcc/include
+	-I $(srcdir)/../libgcc -I $(srcdir)/../libbacktrace \
+	-I $(MULTIBUILDTOP)../../gcc/include
 
 @USING_SPLIT_STACK_TRUE@AM_LDFLAGS = -XCClinker $(SPLIT_STACK)
 
@@ -1287,8 +1289,7 @@ go_debug_dwarf_files = \
 
 go_debug_elf_files = \
 	go/debug/elf/elf.go \
-	go/debug/elf/file.go \
-	go/debug/elf/runtime.go
+	go/debug/elf/file.go
 
 go_debug_gosym_files = \
 	go/debug/gosym/pclntab.go \
@@ -1932,7 +1933,8 @@ libgo_go_objs = \
 libgo_la_SOURCES = $(runtime_files)
 libgo_la_LDFLAGS = $(PTHREAD_CFLAGS) $(AM_LDFLAGS)
 libgo_la_LIBADD = \
-	$(libgo_go_objs) $(LIBFFI) $(PTHREAD_LIBS) $(MATH_LIBS) $(NET_LIBS)
+	$(libgo_go_objs) ../libbacktrace/libbacktrace.la \
+	$(LIBFFI) $(PTHREAD_LIBS) $(MATH_LIBS) $(NET_LIBS)
 
 libgobegin_a_SOURCES = \
 	runtime/go-main.c
