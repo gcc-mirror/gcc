@@ -1,5 +1,8 @@
 2012-09-28  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/54716
+	* gcc.target/i386/xorps-sse2.c: Remove xfails.
+
 	PR tree-optimization/54713
 	* gcc.c-torture/compile/pr54713-1.c: New test.
 	* gcc.c-torture/compile/pr54713-2.c: New test.

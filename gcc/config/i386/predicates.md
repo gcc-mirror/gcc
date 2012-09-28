@@ -777,6 +777,12 @@
   (ior (match_operand 0 "nonimmediate_operand")
        (match_operand 0 "const0_operand")))
 
+;; Return true when OP is either nonimmediate operand, or any
+;; CONST_VECTOR.
+(define_predicate "nonimmediate_or_const_vector_operand"
+  (ior (match_operand 0 "nonimmediate_operand")
+       (match_code "const_vector")))
+
 ;; Return true when OP is nonimmediate or standard SSE constant.
 (define_predicate "nonimmediate_or_sse_const_operand"
   (match_operand 0 "general_operand")

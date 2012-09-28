@@ -16490,6 +16490,82 @@ ix86_expand_binary_operator (enum rtx_code code, enum machine_mode mode,
     emit_move_insn (operands[0], dst);
 }
 
+/* Expand vector logical operation CODE (AND, IOR, XOR) in MODE with
+   the given OPERANDS.  */
+
+void
+ix86_expand_vector_logical_operator (enum rtx_code code, enum machine_mode mode,
+				     rtx operands[])
+{
+  rtx op1 = NULL_RTX, op2 = NULL_RTX;
+  if (GET_CODE (operands[1]) == SUBREG)
+    {
+      op1 = operands[1];
+      op2 = operands[2];
+    }
+  else if (GET_CODE (operands[2]) == SUBREG)
+    {
+      op1 = operands[2];
+      op2 = operands[1];
+    }
+  /* Optimize (__m128i) d | (__m128i) e and similar code
+     when d and e are float vectors into float vector logical
+     insn.  In C/C++ without using intrinsics there is no other way
+     to express vector logical operation on float vectors than
+     to cast them temporarily to integer vectors.  */
+  if (op1
+      && !TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL
+      && ((GET_CODE (op2) == SUBREG || GET_CODE (op2) == CONST_VECTOR))
+      && GET_MODE_CLASS (GET_MODE (SUBREG_REG (op1))) == MODE_VECTOR_FLOAT
+      && GET_MODE_SIZE (GET_MODE (SUBREG_REG (op1))) == GET_MODE_SIZE (mode)
+      && SUBREG_BYTE (op1) == 0
+      && (GET_CODE (op2) == CONST_VECTOR
+	  || (GET_MODE (SUBREG_REG (op1)) == GET_MODE (SUBREG_REG (op2))
+	      && SUBREG_BYTE (op2) == 0))
+      && can_create_pseudo_p ())
+    {
+      rtx dst;
+      switch (GET_MODE (SUBREG_REG (op1)))
+	{
+	case V4SFmode:
+	case V8SFmode:
+	case V2DFmode:
+	case V4DFmode:
+	  dst = gen_reg_rtx (GET_MODE (SUBREG_REG (op1)));
+	  if (GET_CODE (op2) == CONST_VECTOR)
+	    {
+	      op2 = gen_lowpart (GET_MODE (dst), op2);
+	      op2 = force_reg (GET_MODE (dst), op2);
+	    }
+	  else
+	    {
+	      op1 = operands[1];
+	      op2 = SUBREG_REG (operands[2]);
+	      if (!nonimmediate_operand (op2, GET_MODE (dst)))
+		op2 = force_reg (GET_MODE (dst), op2);
+	    }
+	  op1 = SUBREG_REG (op1);
+	  if (!nonimmediate_operand (op1, GET_MODE (dst)))
+	    op1 = force_reg (GET_MODE (dst), op1);
+	  emit_insn (gen_rtx_SET (VOIDmode, dst,
+				  gen_rtx_fmt_ee (code, GET_MODE (dst),
+						  op1, op2)));
+	  emit_move_insn (operands[0], gen_lowpart (mode, dst));
+	  return;
+	default:
+	  break;
+	}
+    }
+  if (!nonimmediate_operand (operands[1], mode))
+    operands[1] = force_reg (mode, operands[1]);
+  if (!nonimmediate_operand (operands[2], mode))
+    operands[2] = force_reg (mode, operands[2]);
+  ix86_fixup_binary_operands_no_copy (code, mode, operands);
+  emit_insn (gen_rtx_SET (VOIDmode, operands[0],
+			  gen_rtx_fmt_ee (code, mode, operands[1],
+					  operands[2])));
+}
+
 /* Return TRUE or FALSE depending on whether the binary operator meets the
    appropriate constraints.  */
 

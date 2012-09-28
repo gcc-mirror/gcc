@@ -1,5 +1,14 @@
 2012-09-28  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/54716
+	* config/i386/predicates.md (nonimmediate_or_const_vector_operand):
+	New predicate.
+	* config/i386/i386.c (ix86_expand_vector_logical_operator): New
+	function.
+	* config/i386/i386-protos.h (ix86_expand_vector_logical_operator): New
+	prototype.
+	* config/i386/sse.md (<code><mode>3 VI logic): Use it.
+
 	PR tree-optimization/54713
 	* fold-const.c (vec_cst_ctor_to_array): Give up if vector CONSTRUCTOR
 	has vector elements.
