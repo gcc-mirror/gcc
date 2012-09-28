@@ -2870,7 +2870,7 @@ avr_out_lpm_no_lpmx (rtx insn, rtx *xop, int *plen)
    If PLEN != 0 set *PLEN to the length in words of the instruction sequence.
    Return "".  */
 
-static const char*
+const char*
 avr_out_lpm (rtx insn, rtx *op, int *plen)
 {
   rtx xop[7];
@@ -7526,6 +7526,7 @@ adjust_insn_length (rtx insn, int len)
     case ADJUST_LEN_MOV32: output_movsisf (insn, op, &len); break;
     case ADJUST_LEN_MOVMEM: avr_out_movmem (insn, op, &len); break;
     case ADJUST_LEN_XLOAD: avr_out_xload (insn, op, &len); break;
+    case ADJUST_LEN_LPM: avr_out_lpm (insn, op, &len); break;
 
     case ADJUST_LEN_SFRACT: avr_out_fract (insn, op, true, &len); break;
     case ADJUST_LEN_UFRACT: avr_out_fract (insn, op, false, &len); break;

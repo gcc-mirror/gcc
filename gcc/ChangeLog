@@ -1,3 +1,12 @@
+2012-09-28  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.md (adjust_len): Add lpm.
+	(reload_in<mode>): Use avr_out_lpm for output.  Use "lpm" for
+	adjust_len.
+	* config/avr/avr-protos.h (avr_out_lpm): New prototype.
+	* config/avr/avr.c (avr_out_lpm): Make global.
+	(adjust_insn_length): Handle ADJUST_LEN_LPM.
+
 2012-09-28  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/47799
