@@ -172,7 +172,8 @@ Caller (int skip)
   if (n < 1)
     return ret;
   ret.pc = pc;
-  ret.ok = __go_file_line (pc, &fn, &ret.file, &ret.line);
+  __go_file_line (pc, &fn, &ret.file, &ret.line);
+  ret.ok = 1;
   return ret;
 }
 
