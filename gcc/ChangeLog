@@ -1,3 +1,28 @@
+2012-09-28  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR rtl-optimization/52543
+	* config/avr/avr.c (avr_mode_dependent_address_p): Return true for
+	all non-generic address spaces.
+	(TARGET_SECONDARY_RELOAD): New hook define to...
+	(avr_secondary_reload): ...this new static function.
+	* config/avr/avr.md (reload_in<mode>): New insns.
+
+	Undo r185605 (mostly):
+	* config/avr/avr-protos.h (avr_load_lpm): Remove.
+	* config/avr/avr.c (avr_load_libgcc_p): Don't restrict to __flash loads.
+	(avr_out_lpm): Also handle loads > 1 byte.
+	(avr_load_lpm): Remove.
+	(avr_find_unused_d_reg): New static function.
+	(avr_out_lpm_no_lpmx): New static function.
+	(adjust_insn_length): Remove ADJUST_LEN_LOAD_LPM.
+	* config/avr/avr.md (unspec): Remove UNSPEC_LPM.
+	(load_<mode>_libgcc): Use MEM instead of UNSPEC_LPM.
+	(load_<mode>, load_<mode>_clobber): Remove.
+	(mov<mode>): For multi-byte move from non-generic
+	16-bit address spaces: Expand to *mov<mode> again.
+	(load<mode>_libgcc): New expander.
+	(split-lpmx): Remove split.
+
 2012-09-27  Dehao Chen  <dehao@google.com>
 
 	* tree.h (tree_constructor): Remove IS_UNKNOWN_LOCATION.
