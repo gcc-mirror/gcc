@@ -1,3 +1,7 @@
+2012-09-28  Richard Guenther  <rguenther@suse.de>
+
+	* cgraph.h (symtab_node_base): Re-order and pack fields.
+
 2012-09-28  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.c (avr_pgm_check_var_decl): Fix non-error diagnostic.
