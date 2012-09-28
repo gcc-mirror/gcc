@@ -823,7 +823,6 @@ input_function (tree fn_decl, struct data_in *data_in,
   gimple *stmts;
   basic_block bb;
   struct cgraph_node *node;
-  tree args, narg, oarg;
 
   fn = DECL_STRUCT_FUNCTION (fn_decl);
   tag = streamer_read_record_start (ib);
@@ -833,22 +832,6 @@ input_function (tree fn_decl, struct data_in *data_in,
   lto_tag_check (tag, LTO_function);
 
   input_struct_function_base (fn, data_in, ib);
-
-  /* Read all function arguments.  We need to re-map them here to the
-     arguments of the merged function declaration.  */
-  args = stream_read_tree (ib, data_in);
-  for (oarg = args, narg = DECL_ARGUMENTS (fn_decl);
-       oarg && narg;
-       oarg = TREE_CHAIN (oarg), narg = TREE_CHAIN (narg))
-    {
-      unsigned ix;
-      bool res;
-      res = streamer_tree_cache_lookup (data_in->reader_cache, oarg, &ix);
-      gcc_assert (res);
-      /* Replace the argument in the streamer cache.  */
-      streamer_tree_cache_insert_at (data_in->reader_cache, narg, ix);
-    }
-  gcc_assert (!oarg && !narg);
 
   /* Read all the SSA names.  */
   input_ssa_names (ib, data_in, fn);
