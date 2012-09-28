@@ -617,26 +617,32 @@ poplevel (int keep, int reverse, int functionbody)
   /* Before we remove the declarations first check for unused variables.  */
   if ((warn_unused_variable || warn_unused_but_set_variable)
       && !processing_template_decl)
-    for (decl = getdecls (); decl; decl = TREE_CHAIN (decl))
-      if (TREE_CODE (decl) == VAR_DECL
-	  && (! TREE_USED (decl) || !DECL_READ_P (decl))
-	  && ! DECL_IN_SYSTEM_HEADER (decl)
-	  && DECL_NAME (decl) && ! DECL_ARTIFICIAL (decl)
-	  && TREE_TYPE (decl) != error_mark_node
-	  && (!CLASS_TYPE_P (TREE_TYPE (decl))
-	      || !TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (decl))))
-	{
-	  if (! TREE_USED (decl))
-	    warning (OPT_Wunused_variable, "unused variable %q+D", decl);
-	  else if (DECL_CONTEXT (decl) == current_function_decl
-		   && TREE_CODE (TREE_TYPE (decl)) != REFERENCE_TYPE
-		   && errorcount == unused_but_set_errorcount)
-	    {
-	      warning (OPT_Wunused_but_set_variable,
-		       "variable %q+D set but not used", decl); 
-	      unused_but_set_errorcount = errorcount;
-	    }
-	}
+    for (tree d = getdecls (); d; d = TREE_CHAIN (d))
+      {
+	/* There are cases where D itself is a TREE_LIST.  See in
+	   push_local_binding where the list of decls returned by
+	   getdecls is built.  */
+	decl = TREE_CODE (d) == TREE_LIST ? TREE_VALUE (d) : d;
+	if (TREE_CODE (decl) == VAR_DECL
+	    && (! TREE_USED (decl) || !DECL_READ_P (decl))
+	    && ! DECL_IN_SYSTEM_HEADER (decl)
+	    && DECL_NAME (decl) && ! DECL_ARTIFICIAL (decl)
+	    && TREE_TYPE (decl) != error_mark_node
+	    && (!CLASS_TYPE_P (TREE_TYPE (decl))
+		|| !TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (decl))))
+	  {
+	    if (! TREE_USED (decl))
+	      warning (OPT_Wunused_variable, "unused variable %q+D", decl);
+	    else if (DECL_CONTEXT (decl) == current_function_decl
+		     && TREE_CODE (TREE_TYPE (decl)) != REFERENCE_TYPE
+		     && errorcount == unused_but_set_errorcount)
+	      {
+		warning (OPT_Wunused_but_set_variable,
+			 "variable %q+D set but not used", decl);
+		unused_but_set_errorcount = errorcount;
+	      }
+	  }
+      }
 
   /* Remove declarations for all the DECLs in this level.  */
   for (link = decls; link; link = TREE_CHAIN (link))

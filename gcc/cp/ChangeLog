@@ -1,5 +1,11 @@
 2012-09-25  Dodji Seketeli  <dodji@redhat.com>
 
+	PR c++/29028 - Missed unused warning on using declaration
+	* decl.c (poplevel<warn_unused*>): Do not forget that some local
+	bindings are represented by a TREE_LIST.
+
+2012-09-25  Dodji Seketeli  <dodji@redhat.com>
+
 	PR c++/53551 - -Wunused-local-typedefs misses uses
 	* decl.c (make_typename_type): Record the use of typedefs.
 
