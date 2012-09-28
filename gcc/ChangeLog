@@ -1,3 +1,13 @@
+2012-09-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/54713
+	* fold-const.c (vec_cst_ctor_to_array): Give up if vector CONSTRUCTOR
+	has vector elements.
+	(fold_ternary_loc) <case BIT_FIELD_REF>: Likewise.
+	* tree-vect-generic.c (vector_element): Don't rely on CONSTRUCTOR elts
+	indexes.  Use BIT_FIELD_REF if CONSTRUCTOR has vector elements.
+	(lower_vec_perm): Use NULL_TREE CONSTRUCTOR indexes.
+
 2012-09-28  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.md (adjust_len): Add lpm.

@@ -9559,7 +9559,7 @@ vec_cst_ctor_to_array (tree arg, tree *elts)
       constructor_elt *elt;
 
       FOR_EACH_VEC_ELT (constructor_elt, CONSTRUCTOR_ELTS (arg), i, elt)
-	if (i >= nelts)
+	if (i >= nelts || TREE_CODE (TREE_TYPE (elt->value)) == VECTOR_TYPE)
 	  return false;
 	else
 	  elts[i] = elt->value;
@@ -14030,22 +14030,35 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 		      unsigned i;
 		      if (CONSTRUCTOR_NELTS (arg0) == 0)
 			return build_constructor (type, NULL);
-		      vals = VEC_alloc (constructor_elt, gc, n);
-		      for (i = 0; i < n && idx + i < CONSTRUCTOR_NELTS (arg0);
-			   ++i)
-			CONSTRUCTOR_APPEND_ELT (vals, NULL_TREE,
-						CONSTRUCTOR_ELT
-						  (arg0, idx + i)->value);
-		      return build_constructor (type, vals);
+		      if (TREE_CODE (TREE_TYPE (CONSTRUCTOR_ELT (arg0,
+								 0)->value))
+			  != VECTOR_TYPE)
+			{
+			  vals = VEC_alloc (constructor_elt, gc, n);
+			  for (i = 0;
+			       i < n && idx + i < CONSTRUCTOR_NELTS (arg0);
+			       ++i)
+			    CONSTRUCTOR_APPEND_ELT (vals, NULL_TREE,
+						    CONSTRUCTOR_ELT
+						      (arg0, idx + i)->value);
+			  return build_constructor (type, vals);
+			}
 		    }
 		}
 	      else if (n == 1)
 		{
 		  if (TREE_CODE (arg0) == VECTOR_CST)
 		    return VECTOR_CST_ELT (arg0, idx);
-		  else if (idx < CONSTRUCTOR_NELTS (arg0))
-		    return CONSTRUCTOR_ELT (arg0, idx)->value;
-		  return build_zero_cst (type);
+		  else if (CONSTRUCTOR_NELTS (arg0) == 0)
+		    return build_zero_cst (type);
+		  else if (TREE_CODE (TREE_TYPE (CONSTRUCTOR_ELT (arg0,
+								  0)->value))
+			   != VECTOR_TYPE)
+		    {
+		      if (idx < CONSTRUCTOR_NELTS (arg0))
+			return CONSTRUCTOR_ELT (arg0, idx)->value;
+		      return build_zero_cst (type);
+		    }
 		}
 	    }
 	}
