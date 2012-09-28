@@ -42,6 +42,7 @@ main(int ac, char **av)
   const char *err_msg;
   const char **nargv;
   bool is_ar = !strcmp (PERSONALITY, "ar");
+  int exit_code = FATAL_EXIT_CODE;
 
   exe_name = PERSONALITY;
 #ifdef CROSS_DIRECTORY_STRUCTURE
@@ -96,6 +97,20 @@ main(int ac, char **av)
 		     NULL,NULL,  &status, &err);
   if (err_msg) 
     fprintf(stderr, "Error running %s: %s\n", exe_name, err_msg);
+  else if (status)
+    {
+      if (WIFSIGNALED (status))
+	{
+	  int sig = WTERMSIG (status);
+	  fprintf (stderr, "%s terminated with signal %d [%s]%s\n",
+		   exe_name, sig, strsignal(sig),
+		   WCOREDUMP(status) ? ", core dumped" : "");
+	}
+      else if (WIFEXITED (status))
+	exit_code = WEXITSTATUS (status);
+    }
+  else
+    exit_code = SUCCESS_EXIT_CODE;
 
-  return err;
+  return exit_code;
 }

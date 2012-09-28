@@ -1,3 +1,11 @@
+2012-09-28  Meador Inge  <meadori@codesourcery.com>
+
+	Backport from mainline
+	2012-09-27  Meador Inge  <meadori@codesourcery.com>
+
+	* gcc-ar.c (main): Handle the returning of the sub-process error
+	code correctly.
+
 2012-09-28  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backport from 2012-09-28 trunk r191821.
