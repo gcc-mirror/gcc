@@ -1,3 +1,8 @@
+2012-09-28  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backport from 2012-09-28 trunk r191821.
+	* config/avr/avr.c (avr_pgm_check_var_decl): Fix non-error diagnostic.
+
 2012-09-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/54703
