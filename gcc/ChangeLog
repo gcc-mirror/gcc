@@ -1,3 +1,17 @@
+2012-09-28  Jan Hubicka  <jh@suse.cz>
+
+	* basic-block.h (RDIV): Define.
+	(EDGE_FREQUENCY): Simplify.
+	(check_probability, combine_probabilities, apply_probability,
+	inverse_probability): New.
+	* cfgloop.c (scale_loop_profile): New function.
+	* cfgloop.h (scale_loop_profile): Declare.
+	(slpeel_add_loop_guard): Add probability parameter.
+	(set_prologue_iterations): Add probability parameter.
+	(slpeel_tree_peel_loop_to_edge): Add bound1 and bound2 parameters;
+	update probabilities correctly.
+	(vect_do_peeling_for_alignment, vect_gen_niters_for_prolog_loop): New.
+
 2012-09-20  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR bootstrap/54688
