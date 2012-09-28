@@ -1,3 +1,8 @@
+2012-09-28  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/54372 - unused attribute inactive on dependant entities
+	* c-c++-common/Wunused-local-typedefs-2.c: New test.
+
 2012-09-25  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/29028 - Missed unused warning on using declaration
