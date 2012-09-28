@@ -1,5 +1,12 @@
 2012-09-27  Ian Lance Taylor  <iant@google.com>
 
+	PR bootstrap/54732
+	* configure.ac: Add no-dependencies to AM_INIT_AUTOMAKE.
+	* Makefile.am: Add dependencies for all objects.
+	* configure, aclocal.m4, Makefile.in: Rebuild.
+
+2012-09-27  Ian Lance Taylor  <iant@google.com>
+
 	PR other/54726
 	* elf.c (backtrace_initialize): Set *fileln_fn, not
 	state->fileln_fn.
