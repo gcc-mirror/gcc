@@ -3313,16 +3313,10 @@ Case_clauses::Case_clause::lower(Block* b, Temporary_statement* val_temp,
 	   p != this->cases_->end();
 	   ++p)
 	{
-	  Expression* this_cond;
-	  if (val_temp == NULL)
-	    this_cond = *p;
-	  else
-	    {
-	      Expression* ref = Expression::make_temporary_reference(val_temp,
-								     loc);
-	      this_cond = Expression::make_binary(OPERATOR_EQEQ, ref, *p, loc);
-	    }
-
+	  Expression* ref = Expression::make_temporary_reference(val_temp,
+								 loc);
+	  Expression* this_cond = Expression::make_binary(OPERATOR_EQEQ, ref,
+							  *p, loc);
 	  if (cond == NULL)
 	    cond = this_cond;
 	  else
@@ -3866,15 +3860,12 @@ Switch_statement::do_lower(Gogo*, Named_object*, Block* enclosing,
       return Statement::make_statement(val, true);
     }
 
-  Temporary_statement* val_temp;
-  if (this->val_ == NULL)
-    val_temp = NULL;
-  else
-    {
-      // var val_temp VAL_TYPE = VAL
-      val_temp = Statement::make_temporary(NULL, this->val_, loc);
-      b->add_statement(val_temp);
-    }
+  // var val_temp VAL_TYPE = VAL
+  Expression* val = this->val_;
+  if (val == NULL)
+    val = Expression::make_boolean(true, loc);
+  Temporary_statement* val_temp = Statement::make_temporary(NULL, val, loc);
+  b->add_statement(val_temp);
 
   this->clauses_->lower(b, val_temp, this->break_label());
 
