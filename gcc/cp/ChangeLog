@@ -1,3 +1,8 @@
+2012-09-25  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/53551 - -Wunused-local-typedefs misses uses
+	* decl.c (make_typename_type): Record the use of typedefs.
+
 2012-09-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* init.c (build_new_1): Don't test TREE_CONSTANT
