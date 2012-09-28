@@ -1,3 +1,9 @@
+2012-09-28  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/54372 - unused attribute inactive on dependant entities
+	* decl2.c (is_late_template_attribute): "unused" attribute is to
+    	be applied at compile time.
+
 2012-09-25  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/29028 - Missed unused warning on using declaration
