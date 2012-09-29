@@ -1,3 +1,12 @@
+2012-09-29  Marc Glisse  <marc.glisse@inria.fr>
+
+	* tree.c (truth_type_for): New function.
+	* tree.h (truth_type_for): Declare.
+	* gimple-fold.c (and_comparisons_1): Call it.
+	(or_comparisons_1): Likewise.
+	* tree-ssa-forwprop.c (forward_propagate_into_cond): Don't use
+	boolean_type_node for vectors.
+
 2012-09-28  Jan Hubicka  <jh@suse.cz>
 
 	* basic-block.h (RDIV): Define.
