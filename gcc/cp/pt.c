@@ -13783,7 +13783,8 @@ tsubst_copy_and_build (tree t,
 	  mark_used (function);
 
 	if (TREE_CODE (function) == OFFSET_REF)
-	  ret = build_offset_ref_call_from_tree (function, &call_args);
+	  ret = build_offset_ref_call_from_tree (function, &call_args,
+						 complain);
 	else if (TREE_CODE (function) == COMPONENT_REF)
 	  {
 	    tree instance = TREE_OPERAND (function, 0);

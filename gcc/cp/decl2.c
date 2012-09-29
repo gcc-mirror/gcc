@@ -4087,7 +4087,8 @@ cp_write_global_declarations (void)
    ARGS.  */
 
 tree
-build_offset_ref_call_from_tree (tree fn, VEC(tree,gc) **args)
+build_offset_ref_call_from_tree (tree fn, VEC(tree,gc) **args,
+				 tsubst_flags_t complain)
 {
   tree orig_fn;
   VEC(tree,gc) *orig_args = NULL;
@@ -4115,7 +4116,7 @@ build_offset_ref_call_from_tree (tree fn, VEC(tree,gc) **args)
       if (TREE_CODE (TREE_TYPE (fn)) == METHOD_TYPE)
 	{
 	  if (TREE_CODE (fn) == DOTSTAR_EXPR)
-	    object = cp_build_addr_expr (object, tf_warning_or_error);
+	    object = cp_build_addr_expr (object, complain);
 	  VEC_safe_insert (tree, gc, *args, 0, object);
 	}
       /* Now that the arguments are done, transform FN.  */
@@ -4130,17 +4131,17 @@ build_offset_ref_call_from_tree (tree fn, VEC(tree,gc) **args)
 	void B::g() { (this->*p)(); }  */
   if (TREE_CODE (fn) == OFFSET_REF)
     {
-      tree object_addr = cp_build_addr_expr (object, tf_warning_or_error);
+      tree object_addr = cp_build_addr_expr (object, complain);
       fn = TREE_OPERAND (fn, 1);
       fn = get_member_function_from_ptrfunc (&object_addr, fn,
-					     tf_warning_or_error);
+					     complain);
       VEC_safe_insert (tree, gc, *args, 0, object_addr);
     }
 
   if (CLASS_TYPE_P (TREE_TYPE (fn)))
-    expr = build_op_call (fn, args, tf_warning_or_error);
+    expr = build_op_call (fn, args, complain);
   else
-    expr = cp_build_function_call_vec (fn, args, tf_warning_or_error);
+    expr = cp_build_function_call_vec (fn, args, complain);
   if (processing_template_decl && expr != error_mark_node)
     expr = build_min_non_dep_call_vec (expr, orig_fn, orig_args);
 

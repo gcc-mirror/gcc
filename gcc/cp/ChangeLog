@@ -1,3 +1,12 @@
+2012-09-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54738
+	* decl2.c (build_offset_ref_call_from_tree): Add tsubst_flags_t
+	parameter.
+	* pt.c (tsubst_copy_and_build): Adjust.
+	* parser.c (cp_parser_postfix_expression): Likewise.
+	* cp-tree.h: Adjust declaration.
+
 2012-09-28  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/54372 - unused attribute inactive on dependant entities
