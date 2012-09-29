@@ -24,7 +24,9 @@
 
 /** @file parallel/compatibility.h
  *  @brief Compatibility layer, mostly concerned with atomic operations.
- *  This file is a GNU parallel extension to the Standard C++ Library.
+ *
+ *  This file is a GNU parallel extension to the Standard C++ Library
+ *  and contains implementation details for the library's internal use.
  */
 
 // Written by Felix Putze.
@@ -35,19 +37,8 @@
 #include <parallel/types.h>
 #include <parallel/base.h>
 
-#if defined(__SUNPRO_CC) && defined(__sparc)
-#include <sys/atomic.h>
-#endif
-
 #if !defined(_WIN32) || defined (__CYGWIN__)
 #include <sched.h>
-#endif
-
-#if defined(_MSC_VER)
-#include <Windows.h>
-#include <intrin.h>
-#undef max
-#undef min
 #endif
 
 #ifdef __MINGW32__
@@ -60,30 +51,7 @@ __attribute((dllimport)) void __attribute__((stdcall)) Sleep (unsigned long);
 
 namespace __gnu_parallel
 {
-#if defined(__ICC)
-  template<typename _MustBeInt = int>
-  int32_t __faa32(int32_t* __x, int32_t __inc)
-  {
-    asm volatile("lock xadd %0,%1"
-                 : "=__r" (__inc), "=__m" (*__x)
-                 : "0" (__inc)
-                 : "memory");
-    return __inc;
-  }
-#if defined(__x86_64)
-  template<typename _MustBeInt = int>
-  int64_t __faa64(int64_t* __x, int64_t __inc)
-  {
-    asm volatile("lock xadd %0,%1"
-                 : "=__r" (__inc), "=__m" (*__x)
-                 : "0" (__inc)
-                 : "memory");
-    return __inc;
-  }
-#endif
-#endif
-
-  // atomic functions only work on integers
+  // These atomic functions only work on integers
 
   /** @brief Add a value to a variable, atomically.
    *
@@ -94,34 +62,7 @@ namespace __gnu_parallel
   inline int32_t
   __fetch_and_add_32(volatile int32_t* __ptr, int32_t __addend)
   {
-#if defined(__ICC)      //x86 version
-    return _InterlockedExchangeAdd((void*)__ptr, __addend);
-#elif defined(__ECC)    //IA-64 version
-    return _InterlockedExchangeAdd((void*)__ptr, __addend);
-#elif defined(__ICL) || defined(_MSC_VER)
-    return _InterlockedExchangeAdd(reinterpret_cast<volatile long*>(__ptr),
-                                   __addend);
-#elif defined(__GNUC__)
     return __atomic_fetch_add(__ptr, __addend, __ATOMIC_ACQ_REL);
-#elif defined(__SUNPRO_CC) && defined(__sparc)
-    volatile int32_t __before, __after;
-    do
-      {
-        __before = *__ptr;
-        __after = __before + __addend;
-      } while (atomic_cas_32((volatile unsigned int*)__ptr, __before,
-                             __after) != __before);
-    return __before;
-#else   //fallback, slow
-#pragma message("slow __fetch_and_add_32")
-    int32_t __res;
-#pragma omp critical
-    {
-      __res = *__ptr;
-      *(__ptr) += __addend;
-    }
-    return __res;
-#endif
   }
 
   /** @brief Add a value to a variable, atomically.
@@ -133,34 +74,14 @@ namespace __gnu_parallel
   inline int64_t
   __fetch_and_add_64(volatile int64_t* __ptr, int64_t __addend)
   {
-#if defined(__ICC) && defined(__x86_64) //x86 version
-    return __faa64<int>((int64_t*)__ptr, __addend);
-#elif defined(__ECC)    //IA-64 version
-    return _InterlockedExchangeAdd64((void*)__ptr, __addend);
-#elif defined(__ICL) || defined(_MSC_VER)
-#ifndef _WIN64
-    _GLIBCXX_PARALLEL_ASSERT(false);    //not available in this case
-    return 0;
-#else
-    return _InterlockedExchangeAdd64(__ptr, __addend);
-#endif
-#elif defined(__GNUC__) && defined(__x86_64)
+#if defined(__x86_64)
     return __atomic_fetch_add(__ptr, __addend, __ATOMIC_ACQ_REL);
-#elif defined(__GNUC__) && defined(__i386) &&                   \
+#elif defined(__i386) &&                   \
   (defined(__i686) || defined(__pentium4) || defined(__athlon)  \
    || defined(__k8) || defined(__core2))
     return __atomic_fetch_add(__ptr, __addend, __ATOMIC_ACQ_REL);
-#elif defined(__SUNPRO_CC) && defined(__sparc)
-    volatile int64_t __before, __after;
-    do
-      {
-        __before = *__ptr;
-        __after = __before + __addend;
-      } while (atomic_cas_64((volatile unsigned long long*)__ptr, __before,
-                             __after) != __before);
-    return __before;
 #else   //fallback, slow
-#if defined(__GNUC__) && defined(__i386)
+#if defined(__i386)
     // XXX doesn'__t work with -march=native
     //#warning "please compile with -march=i686 or better"
 #endif
@@ -195,39 +116,6 @@ namespace __gnu_parallel
       _GLIBCXX_PARALLEL_ASSERT(false);
   }
 
-
-#if defined(__ICC)
-
-  template<typename _MustBeInt = int>
-  inline int32_t
-  __cas32(volatile int32_t* __ptr, int32_t __old, int32_t __nw)
-  {
-    int32_t __before;
-    __asm__ __volatile__("lock; cmpxchgl %1,%2"
-                         : "=a"(__before)
-                         : "q"(__nw), "__m"(*(volatile long long*)(__ptr)),
-                               "0"(__old)
-                         : "memory");
-    return __before;
-  }
-
-#if defined(__x86_64)
-  template<typename _MustBeInt = int>
-  inline int64_t
-  __cas64(volatile int64_t *__ptr, int64_t __old, int64_t __nw)
-  {
-    int64_t __before;
-    __asm__ __volatile__("lock; cmpxchgq %1,%2"
-                         : "=a"(__before)
-                         : "q"(__nw), "__m"(*(volatile long long*)(__ptr)),
-                               "0"(__old)
-                         : "memory");
-    return __before;
-  }
-#endif
-
-#endif
-
   /** @brief Compare @c *__ptr and @c __comparand. If equal, let @c
    * *__ptr=__replacement and return @c true, return @c false otherwise.
    *
@@ -240,37 +128,9 @@ namespace __gnu_parallel
   __compare_and_swap_32(volatile int32_t* __ptr, int32_t __comparand,
                         int32_t __replacement)
   {
-#if defined(__ICC)      //x86 version
-    return _InterlockedCompareExchange((void*)__ptr, __replacement,
-                                       __comparand) == __comparand;
-#elif defined(__ECC)    //IA-64 version
-    return _InterlockedCompareExchange((void*)__ptr, __replacement,
-                                       __comparand) == __comparand;
-#elif defined(__ICL) || defined(_MSC_VER)
-    return _InterlockedCompareExchange(
-               reinterpret_cast<volatile long*>(__ptr),
-               __replacement, __comparand)
-             == __comparand;
-#elif defined(__GNUC__)
     return __atomic_compare_exchange_n(__ptr, &__comparand, __replacement,
 				       false, __ATOMIC_ACQ_REL,
 				       __ATOMIC_RELAXED);
-#elif defined(__SUNPRO_CC) && defined(__sparc)
-    return atomic_cas_32((volatile unsigned int*)__ptr, __comparand,
-                         __replacement) == __comparand;
-#else
-#pragma message("slow __compare_and_swap_32")
-    bool __res = false;
-#pragma omp critical
-    {
-      if (*__ptr == __comparand)
-        {
-          *__ptr = __replacement;
-          __res = true;
-        }
-    }
-    return __res;
-#endif
   }
 
   /** @brief Compare @c *__ptr and @c __comparand. If equal, let @c
@@ -285,35 +145,18 @@ namespace __gnu_parallel
   __compare_and_swap_64(volatile int64_t* __ptr, int64_t __comparand,
                         int64_t __replacement)
   {
-#if defined(__ICC) && defined(__x86_64) //x86 version
-    return __cas64<int>(__ptr, __comparand, __replacement) == __comparand;
-#elif defined(__ECC)    //IA-64 version
-    return _InterlockedCompareExchange64((void*)__ptr, __replacement,
-                                         __comparand) == __comparand;
-#elif defined(__ICL) || defined(_MSC_VER)
-#ifndef _WIN64
-    _GLIBCXX_PARALLEL_ASSERT(false);    //not available in this case
-    return 0;
-#else
-    return _InterlockedCompareExchange64(__ptr, __replacement,
-                                         __comparand) == __comparand;
-#endif
-
-#elif defined(__GNUC__) && defined(__x86_64)
+#if defined(__x86_64)
     return __atomic_compare_exchange_n(__ptr, &__comparand, __replacement,
 				       false, __ATOMIC_ACQ_REL,
 				       __ATOMIC_RELAXED);
-#elif defined(__GNUC__) && defined(__i386) &&                   \
+#elif defined(__i386) &&                   \
   (defined(__i686) || defined(__pentium4) || defined(__athlon)  \
    || defined(__k8) || defined(__core2))
     return __atomic_compare_exchange_n(__ptr, &__comparand, __replacement,
 				       false, __ATOMIC_ACQ_REL,
 				       __ATOMIC_RELAXED);
-#elif defined(__SUNPRO_CC) && defined(__sparc)
-    return atomic_cas_64((volatile unsigned long long*)__ptr,
-                         __comparand, __replacement) == __comparand;
 #else
-#if defined(__GNUC__) && defined(__i386)
+#if defined(__i386)
     // XXX -march=native
     //#warning "please compile with -march=i686 or better"
 #endif
@@ -337,7 +180,8 @@ namespace __gnu_parallel
    *  Implementation is heavily platform-dependent.
    *  @param __ptr Pointer to signed integer.
    *  @param __comparand Compare value.
-   *  @param __replacement Replacement value. */
+   *  @param __replacement Replacement value.
+   */
   template<typename _Tp>
   inline bool
   __compare_and_swap(volatile _Tp* __ptr, _Tp __comparand, _Tp __replacement)
@@ -355,7 +199,8 @@ namespace __gnu_parallel
   }
 
   /** @brief Yield the control to another thread, without waiting for
-      the end to the time slice. */
+   *  the end of the time slice.
+   */
   inline void
   __yield()
   {
