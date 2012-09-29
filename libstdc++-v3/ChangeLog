@@ -1,5 +1,25 @@
 2012-09-28  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* fragment.am (CONFIG_CXXFLAGS): Remove EXTRA_CXX_FLAGS.
+	* libsupc++/Makefile.am (LTCXXCOMPILE): Add EXTRA_CXX_FLAGS here.
+	* src/Makefile.am: Same.
+	* src/c++98/Makefile.am: Same.
+	* src/c++11/Makefile.am: Same.
+	* Makefile.in: Regenerated.
+	* src/Makefile.am: Same.
+	* src/c++11/Makefile.in: Same.
+	* src/c++98/Makefile.in: Same.
+	* include/Makefile.in: Same.
+	* po/Makefile.in: Same.
+	* python/Makefile.in: Same.
+	* testsuite/Makefile.in: Same.
+
+2012-09-28  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* src/c++98/Makefile.am: Fixup PARALLEL_FLAGS.
+
+2012-09-28  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* acinclude.m4 (GLIBCXX_ENABLE_PARALLEL): Remove ENABLE_PARALLEL.
 	* include/Makefile.am: Same.
 	* src/c++98/Makefile.am: Same.

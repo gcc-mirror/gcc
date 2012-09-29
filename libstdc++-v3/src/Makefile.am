@@ -154,14 +154,14 @@ AM_CXXFLAGS = \
 # placed after --tag CXX lest things CXX undo the affect of
 # disable-shared.
 
-# 2) Need to explicitly set LTCXXCOMPILE so that AM_CXXFLAGS is
+# 2) Need to explicitly set LTCXXCOMPILE so that EXTRA_CXX_FLAGS is
 # last. (That way, things like -O2 passed down from the toplevel can
-# be overridden by --enable-debug.)
+# be overridden by --enable-debug and --enable-cxx-flags.)
 LTCXXCOMPILE = \
 	$(LIBTOOL) --tag CXX \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=compile $(CXX) $(INCLUDES) \
-	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
+	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(EXTRA_CXX_FLAGS)
 
 LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
 
