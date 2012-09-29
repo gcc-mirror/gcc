@@ -1,3 +1,7 @@
+2012-09-28  Jan Hubicka  <jh@suse.cz>
+
+	* function.c (dup_block_and_redirect): Update profile.
+
 2012-09-29  Andreas Tobler  <andreast@fgznet.ch>
 
 	* config.gcc: Replace 'host' with 'target' when configuring for

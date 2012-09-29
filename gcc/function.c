@@ -5668,6 +5668,15 @@ dup_block_and_redirect (basic_block bb, basic_block copy_bb, rtx before,
   for (ei = ei_start (bb->preds); (e = ei_safe_edge (ei)); )
     if (!bitmap_bit_p (need_prologue, e->src->index))
       {
+	int freq = EDGE_FREQUENCY (e);
+	copy_bb->count += e->count;
+	copy_bb->frequency += EDGE_FREQUENCY (e);
+	e->dest->count -= e->count;
+	if (e->dest->count < 0)
+	  e->dest->count = 0;
+	e->dest->frequency -= freq;
+	if (e->dest->frequency < 0)
+	  e->dest->frequency = 0;
 	redirect_edge_and_branch_force (e, copy_bb);
 	continue;
       }
