@@ -1,3 +1,8 @@
+2012-09-29  Andreas Tobler  <andreast@fgznet.ch>
+
+	* config.gcc: Replace 'host' with 'target' when configuring for
+	powerpc64*-*-freebsd.
+
 2012-09-29  Marc Glisse  <marc.glisse@inria.fr>
 
 	* tree.c (truth_type_for): New function.
