@@ -9,12 +9,6 @@
 	* Makefile.def: Make all-gcc depend on all-libbacktrace.
 	* Makefile.in: Rebuild.
 
-2012-09-21  Anthony Green  <green@moxielogic.com>
-
-	* config/moxie/moxie.opt: Add -mno-crt0 option.
-	* config/moxie/moxie.h (STARTFILE_SPEC): Handle -mno-crt0 option.
-	* doc/invoke.texi (Option Summary): Document -mno-crt0 option.
-
 2012-09-20  Walter Lee  <walt@tilera.com>
 
 	* configure.ac: Add tilegx to list of targets that support gold.

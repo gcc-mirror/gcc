@@ -541,6 +541,12 @@
 	* optabs.c (prepare_cmp_insn): Expand comparison of the result
 	of memcmp through generic comparison expansion code.
 
+2012-09-21  Anthony Green  <green@moxielogic.com>
+
+	* config/moxie/moxie.opt: Add -mno-crt0 option.
+	* config/moxie/moxie.h (STARTFILE_SPEC): Handle -mno-crt0 option.
+	* doc/invoke.texi (Option Summary): Document -mno-crt0 option.
+
 2012-09-21  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	PR bootstrap/54642
