@@ -1,5 +1,9 @@
 2012-09-28  Jan Hubicka  <jh@suse.cz>
 
+	* tree-call-cdce.c (shrink_wrap_one_built_in_call): Update profile.
+
+2012-09-28  Jan Hubicka  <jh@suse.cz>
+
 	* function.c (dup_block_and_redirect): Update profile.
 
 2012-09-29  Andreas Tobler  <andreast@fgznet.ch>
