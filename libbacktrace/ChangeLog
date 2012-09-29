@@ -1,3 +1,10 @@
+2012-09-29  Ian Lance Taylor  <iant@google.com>
+
+	PR other/54749
+	* fileline.c (fileline_initialize): Pass errnum as -1 when
+	reporting that we could not read executable information after a
+	previous failure.
+
 2012-09-27  Ian Lance Taylor  <iant@google.com>
 
 	PR bootstrap/54732
