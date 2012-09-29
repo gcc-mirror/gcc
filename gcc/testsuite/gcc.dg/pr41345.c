@@ -1,6 +1,7 @@
 /* PR bootstrap/41345 */
 /* { dg-do compile } */
 /* { dg-options "-O2 -g -fcompare-debug" } */
+/* { dg-xfail-if "" { powerpc-ibm-aix* } { "*" } { "" } } */
 
 void
 foo (int *x)

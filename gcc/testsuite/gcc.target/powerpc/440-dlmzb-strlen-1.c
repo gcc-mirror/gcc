@@ -1,6 +1,7 @@
 /* Test generation of dlmzb for strlen on 440.  */
 /* Origin: Joseph Myers <joseph@codesourcery.com> */
 /* { dg-do compile } */
+/* { dg-skip-if "" { powerpc*-*-aix* } { "*" } { "" } } */
 /* { dg-require-effective-target ilp32 } */
 /* { dg-options "-O2 -mcpu=440" } */
 

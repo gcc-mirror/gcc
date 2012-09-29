@@ -1,6 +1,7 @@
 /* PR debug/43942 */
 /* { dg-do compile } */
 /* { dg-options "-O2 -fcompare-debug" } */
+/* { dg-xfail-if "" { powerpc-ibm-aix* } { "*" } { "" } } */
 
 extern int f1 (int);
 

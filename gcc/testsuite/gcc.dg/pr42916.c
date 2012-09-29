@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O1 -funroll-loops -ftree-vectorize -fcompare-debug" } */
+/* { dg-xfail-if "" { powerpc-ibm-aix* } { "*" } { "" } } */
 
 int seed;
 
