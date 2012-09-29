@@ -1,3 +1,9 @@
+2012-09-29  Thomas König  <tkoenig@gcc.gnu.org>
+
+	PR fortran/52724
+	* list_read.c (next_char):  Handle kind=4 characters.
+	* unix.c (open_internal4):  Correct lenth of internal file.
+
 2012-09-14  David Edelsohn  <dje.gcc@gmail.com>
 
 	* configure: Regenerated.
