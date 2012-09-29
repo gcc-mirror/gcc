@@ -1,10 +1,13 @@
 // $G $D/recursive1.go && $G $D/$F.go
 
+// NOTE: This test is not run by 'run.go' and so not run by all.bash.
+// To run this test you must use the ./run shell script.
+
 // Copyright 2012 The Go Authors.  All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// Check that the mutually recursive types in recursive1.go made it
+// Test that the mutually recursive types in recursive1.go made it
 // intact and with the same meaning, by assigning to or using them.
 
 package main

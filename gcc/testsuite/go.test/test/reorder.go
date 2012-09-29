@@ -1,10 +1,10 @@
-// $G $D/$F.go && $L $F.$A && ./$A.out
+// run
 
 // Copyright 2011 The Go Authors.  All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// Check reordering of assignments.
+// Test reordering of assignments.
 
 package main
 
@@ -19,6 +19,7 @@ func main() {
 	p6()
 	p7()
 	p8()
+	p9()
 }
 
 var gx []int
@@ -118,4 +119,12 @@ func p8() {
 
 	i := 0
 	i, x[i], x[5] = 1, 100, 500
+}
+
+func p9() {
+	m := make(map[int]int)
+	m[0] = len(m)
+	if m[0] != 0 {
+		panic(m[0])
+	}
 }

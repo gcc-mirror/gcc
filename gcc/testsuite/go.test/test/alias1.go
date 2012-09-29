@@ -1,13 +1,13 @@
-// $G $D/$F.go && $L $F.$A && ./$A.out
+// run
 
 // Copyright 2011 The Go Authors.  All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package main
-
 // Test that dynamic interface checks treat byte=uint8
 // and rune=int or rune=int32.
+
+package main
 
 func main() {
 	var x interface{}

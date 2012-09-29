@@ -1,3 +1,7 @@
+2012-09-29  Ian Lance Taylor  <iant@google.com>
+
+	* go.test/go-test.exp: Update for latest version of Go testsuite.
+
 2012-09-29  Thomas König  <tkoenig@gcc.gnu.org>
 
 	PR fortran/52724

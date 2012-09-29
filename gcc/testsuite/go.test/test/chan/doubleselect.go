@@ -1,11 +1,12 @@
-// $G $D/$F.go && $L $F.$A && ./$A.out
+// run
 
 // Copyright 2009 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// This test is designed to flush out the case where two cases of a select can
+// Test the situation in which two cases of a select can
 // both end up running. See http://codereview.appspot.com/180068.
+
 package main
 
 import (

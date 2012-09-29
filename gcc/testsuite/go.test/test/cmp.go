@@ -1,8 +1,10 @@
-// $G $D/$F.go && $L $F.$A && ./$A.out
+// run
 
 // Copyright 2009 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
+
+// Test equality and inequality operations.
 
 package main
 
@@ -280,6 +282,25 @@ func main() {
 		istrue(iz != y)
 		isfalse(ix != z)
 		isfalse(iz != x)
+	}
+	
+	// structs with _ fields
+	{
+		var x = struct {
+			x int
+			_ []int
+			y float64
+			_ float64
+			z int
+		}{
+			x: 1, y: 2, z: 3,
+		}
+		var ix interface{} = x
+		
+		istrue(x == x)
+		istrue(x == ix)
+		istrue(ix == x)
+		istrue(ix == ix)
 	}
 
 	// arrays
