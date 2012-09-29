@@ -32,7 +32,6 @@
 	* g++.dg/opt/pr48549.C: Same.
 	* g++.dg/other/pr42685.C: Same.
 	* c-c++-common/pr43942.c: Same.
-	
 
 2012-09-29  Ian Lance Taylor  <iant@google.com>
 
