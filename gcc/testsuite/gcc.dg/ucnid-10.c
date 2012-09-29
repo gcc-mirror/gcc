@@ -3,6 +3,7 @@
 /* { dg-do compile } */
 /* { dg-options "-std=gnu99 -fextended-identifiers" } */
 /* { dg-require-ascii-locale "" } */
+/* { dg-xfail-if "" { powerpc-ibm-aix* } { "*" } { "" } } */
 
 #pragma pack(push)
 #pragma pack(pop, \u00f3) /* { dg-warning "pop, \\\\U000000f3.*push, \\\\U000000f3" } */

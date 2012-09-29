@@ -1,6 +1,7 @@
 // { dg-do compile }
 // { dg-options "-O -fpartial-inlining -flto -fconserve-stack -fcompare-debug" }
 // { dg-require-effective-target lto }
+// { dg-xfail-if "" { powerpc-ibm-aix* } { "*" } { "" } }
 
 void end (int, int) __attribute__ ((__noreturn__));
 

@@ -1,6 +1,7 @@
 /* PR debug/43670 */
 /* { dg-do compile } */
 /* { dg-options "-O -ftree-vrp -fcompare-debug" } */
+/* { dg-xfail-if "" { powerpc-ibm-aix* } { "*" } { "" } } */
 
 extern void abort (void);
 

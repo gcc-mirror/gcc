@@ -1,6 +1,7 @@
 /* PR debug/47684 */
 /* { dg-do compile } */
 /* { dg-options "-O3 -fcompare-debug" } */
+/* { dg-xfail-if "" { powerpc-ibm-aix* } { "*" } { "" } } */
 
 int in[8][4];
 int out[4];
