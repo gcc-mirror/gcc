@@ -65,6 +65,45 @@ fix = {
 };
 
 
+/* On AIX when _LARGE_FILES is defined fcntl.h defines open to
+ * open64 and creat to creat64.  This fixes fcntl.h to
+ * undef those defines and use __asm__ to alias the symbols if
+ * building with g++ and -D_LARGE_FILES
+ */
+fix = {
+    hackname  = AAB_aix_fcntl;
+    files     = fcntl.h;
+    select    = "define open[ \t]open64";
+    mach      = "*-*-aix*";
+    test-text = ''; /* no way to test */
+
+    c_fix     = wrap;
+
+    c_fix_arg = "";
+
+    c_fix_arg = <<- _EOArg_
+
+	#if defined __GNUG__ && defined _LARGE_FILES && defined __cplusplus
+	#define __need__aix_fcntl_h_fix
+	#ifdef __need__aix_fcntl_h_fix
+	#undef open
+	#undef creat
+	#undef openat
+	/* Alias the symbols using asm */
+	extern "C" {
+	extern int open(const char *, int, ...) __asm__("open64");
+	extern int creat(const char *, mode_t) __asm__("creat64");
+	#if (_XOPEN_SOURCE >= 700)
+	extern int openat(int, const char *, int, ...) __asm__("open64at");
+	#endif
+	}
+	#endif
+	#endif
+
+	_EOArg_;
+};
+
+
 /*
  *  On Mac OS 10.3.9, the 'long double' functions are available in
  *  libSystem, but are not prototyped in math.h.
