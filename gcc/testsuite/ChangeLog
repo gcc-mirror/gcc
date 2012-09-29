@@ -1,3 +1,8 @@
+2012-09-29  Thomas König  <tkoenig@gcc.gnu.org>
+
+	PR fortran/52724
+	* gfortran.dg/internal_readwrite_3.f90:  New test.
+
 2012-09-28  Dodji Seketeli  <dodji@redhat.com>
 
 	* g++.dg/warn/Wunused-local-typedefs-3.C: Move the c++-only test
