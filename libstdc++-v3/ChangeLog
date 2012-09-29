@@ -1,4 +1,4 @@
-2012-09-27  Jonathan Wakely  <jwakely.gcc@gmail.com>
+2012-09-29  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/34106
 	* include/parallel/compatibility.h: Remove non-GCC code.
