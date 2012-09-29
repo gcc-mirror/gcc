@@ -1,10 +1,14 @@
-// $G $F.go && $L $F.$A && ./$A.out
+// run
 
 // Copyright 2009 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// Test switch statements.
+
 package main
+
+import "os"
 
 func assert(cond bool, msg string) {
 	if !cond {
@@ -278,5 +282,57 @@ func main() {
 	case nil:
 		assert(false, "m should not be nil")
 	default:
+	}
+
+	// switch on interface.
+	switch i := interface{}("hello"); i {
+	case 42:
+		assert(false, `i should be "hello"`)
+	case "hello":
+		assert(true, "hello")
+	default:
+		assert(false, `i should be "hello"`)
+	}
+
+	// switch on implicit bool converted to interface
+	// was broken: see issue 3980
+	switch i := interface{}(true); {
+	case i:
+		assert(true, "true")
+	case false:
+		assert(false, "i should be true")
+	default:
+		assert(false, "i should be true")
+	}
+
+	// switch on array.
+	switch ar := [3]int{1, 2, 3}; ar {
+	case [3]int{1,2,3}:
+		assert(true, "[1 2 3]")
+	case [3]int{4,5,6}:
+		assert(false, "ar should be [1 2 3]")
+	default:
+		assert(false, "ar should be [1 2 3]")
+	}
+
+	// switch on channel
+	switch c1, c2 := make(chan int), make(chan int); c1 {
+	case nil:
+		assert(false, "c1 did not match itself")
+	case c2:
+		assert(false, "c1 did not match itself")
+	case c1:
+		assert(true, "chan")
+	default:
+		assert(false, "c1 did not match itself")
+	}
+
+	i := 0
+	switch x := 5; {
+		case i < x:
+			os.Exit(0)
+		case i == x:
+		case i > x:
+			os.Exit(1)
 	}
 }

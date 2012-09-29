@@ -1,10 +1,10 @@
-// $G $D/$F.go && $L $F.$A && ./$A.out
+// run
 
 // Copyright 2011 The Go Authors.  All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// divide corner cases
+// Test divide corner cases.
 
 package main
 

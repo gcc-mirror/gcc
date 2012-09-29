@@ -1,4 +1,4 @@
-// errchk $G $D/$F.go
+// errorcheck
 
 // Copyright 2010 The Go Authors.  All rights reserved.
 // Use of this source code is governed by a BSD-style
@@ -16,6 +16,6 @@ type I2 interface {
 }
 
 
-var i1 I1 = i2 // GC_ERROR "missing m method|need type assertion"
+var i1 I1 = i2
 var i2 I2
 var i2a I2 = i1

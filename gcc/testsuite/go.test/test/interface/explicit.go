@@ -1,10 +1,11 @@
-// errchk $G -e $D/$F.go
+// errorcheck
 
 // Copyright 2009 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// Static error messages about interface conversions.
+// Verify compiler messages about erroneous static interface conversions.
+// Does not compile.
 
 package main
 
@@ -13,6 +14,10 @@ type T struct {
 }
 
 var t *T
+
+type X int
+
+func (x *X) M() {}
 
 type I interface {
 	M()
@@ -39,7 +44,7 @@ func main() {
 	// because i has an extra method
 	// that t does not, so i cannot contain a t.
 	i = t // ERROR "incompatible|missing M method"
-	t = i // ERROR "incompatible|need type assertion"
+	t = i // ERROR "incompatible|assignment$"
 
 	i = i2 // ok
 	i2 = i // ERROR "incompatible|missing N method"
@@ -64,6 +69,8 @@ type Int int
 func (Int) M(float64) {}
 
 var _ = m.(Int) // ERROR "impossible type assertion"
+
+var _ = m.(X) // ERROR "pointer receiver"
 
 var ii int
 var jj Int

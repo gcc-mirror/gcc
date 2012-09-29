@@ -1,14 +1,18 @@
-// $G $F.go && $L $F.$A && ./$A.out
+// run
 
 // Copyright 2009 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// Test maps, almost exhaustively.
+
 package main
 
 import (
 	"fmt"
+	"math"
 	"strconv"
+	"time"
 )
 
 const count = 100
@@ -26,6 +30,12 @@ func P(a []string) string {
 }
 
 func main() {
+	testbasic()
+	testfloat()
+	testnan()
+}
+
+func testbasic() {
 	// Test a map literal.
 	mlit := map[string]int{"0": 0, "1": 1, "2": 2, "3": 3, "4": 4}
 	for i := 0; i < len(mlit); i++ {
@@ -479,7 +489,7 @@ func main() {
 
 		mipM[i][i]++
 		if mipM[i][i] != (i+1)+1 {
-			fmt.Printf("update mipM[%d][%d] = %i\n", i, i, mipM[i][i])
+			fmt.Printf("update mipM[%d][%d] = %d\n", i, i, mipM[i][i])
 		}
 	}
 
@@ -487,5 +497,197 @@ func main() {
 	var mnil map[string]int
 	for _, _ = range mnil {
 		panic("range mnil")
+	}
+}
+
+func testfloat() {
+	// Test floating point numbers in maps.
+	// Two map keys refer to the same entry if the keys are ==.
+	// The special cases, then, are that +0 == -0 and that NaN != NaN.
+
+	{
+		var (
+			pz   = float32(0)
+			nz   = math.Float32frombits(1 << 31)
+			nana = float32(math.NaN())
+			nanb = math.Float32frombits(math.Float32bits(nana) ^ 2)
+		)
+
+		m := map[float32]string{
+			pz:   "+0",
+			nana: "NaN",
+			nanb: "NaN",
+		}
+		if m[pz] != "+0" {
+			fmt.Println("float32 map cannot read back m[+0]:", m[pz])
+		}
+		if m[nz] != "+0" {
+			fmt.Println("float32 map does not treat", pz, "and", nz, "as equal for read")
+			fmt.Println("float32 map does not treat -0 and +0 as equal for read")
+		}
+		m[nz] = "-0"
+		if m[pz] != "-0" {
+			fmt.Println("float32 map does not treat -0 and +0 as equal for write")
+		}
+		if _, ok := m[nana]; ok {
+			fmt.Println("float32 map allows NaN lookup (a)")
+		}
+		if _, ok := m[nanb]; ok {
+			fmt.Println("float32 map allows NaN lookup (b)")
+		}
+		if len(m) != 3 {
+			fmt.Println("float32 map should have 3 entries:", m)
+		}
+		m[nana] = "NaN"
+		m[nanb] = "NaN"
+		if len(m) != 5 {
+			fmt.Println("float32 map should have 5 entries:", m)
+		}
+	}
+
+	{
+		var (
+			pz   = float64(0)
+			nz   = math.Float64frombits(1 << 63)
+			nana = float64(math.NaN())
+			nanb = math.Float64frombits(math.Float64bits(nana) ^ 2)
+		)
+
+		m := map[float64]string{
+			pz:   "+0",
+			nana: "NaN",
+			nanb: "NaN",
+		}
+		if m[nz] != "+0" {
+			fmt.Println("float64 map does not treat -0 and +0 as equal for read")
+		}
+		m[nz] = "-0"
+		if m[pz] != "-0" {
+			fmt.Println("float64 map does not treat -0 and +0 as equal for write")
+		}
+		if _, ok := m[nana]; ok {
+			fmt.Println("float64 map allows NaN lookup (a)")
+		}
+		if _, ok := m[nanb]; ok {
+			fmt.Println("float64 map allows NaN lookup (b)")
+		}
+		if len(m) != 3 {
+			fmt.Println("float64 map should have 3 entries:", m)
+		}
+		m[nana] = "NaN"
+		m[nanb] = "NaN"
+		if len(m) != 5 {
+			fmt.Println("float64 map should have 5 entries:", m)
+		}
+	}
+
+	{
+		var (
+			pz   = complex64(0)
+			nz   = complex(0, math.Float32frombits(1<<31))
+			nana = complex(5, float32(math.NaN()))
+			nanb = complex(5, math.Float32frombits(math.Float32bits(float32(math.NaN()))^2))
+		)
+
+		m := map[complex64]string{
+			pz:   "+0",
+			nana: "NaN",
+			nanb: "NaN",
+		}
+		if m[nz] != "+0" {
+			fmt.Println("complex64 map does not treat -0 and +0 as equal for read")
+		}
+		m[nz] = "-0"
+		if m[pz] != "-0" {
+			fmt.Println("complex64 map does not treat -0 and +0 as equal for write")
+		}
+		if _, ok := m[nana]; ok {
+			fmt.Println("complex64 map allows NaN lookup (a)")
+		}
+		if _, ok := m[nanb]; ok {
+			fmt.Println("complex64 map allows NaN lookup (b)")
+		}
+		if len(m) != 3 {
+			fmt.Println("complex64 map should have 3 entries:", m)
+		}
+		m[nana] = "NaN"
+		m[nanb] = "NaN"
+		if len(m) != 5 {
+			fmt.Println("complex64 map should have 5 entries:", m)
+		}
+	}
+
+	{
+		var (
+			pz   = complex128(0)
+			nz   = complex(0, math.Float64frombits(1<<63))
+			nana = complex(5, float64(math.NaN()))
+			nanb = complex(5, math.Float64frombits(math.Float64bits(float64(math.NaN()))^2))
+		)
+
+		m := map[complex128]string{
+			pz:   "+0",
+			nana: "NaN",
+			nanb: "NaN",
+		}
+		if m[nz] != "+0" {
+			fmt.Println("complex128 map does not treat -0 and +0 as equal for read")
+		}
+		m[nz] = "-0"
+		if m[pz] != "-0" {
+			fmt.Println("complex128 map does not treat -0 and +0 as equal for write")
+		}
+		if _, ok := m[nana]; ok {
+			fmt.Println("complex128 map allows NaN lookup (a)")
+		}
+		if _, ok := m[nanb]; ok {
+			fmt.Println("complex128 map allows NaN lookup (b)")
+		}
+		if len(m) != 3 {
+			fmt.Println("complex128 map should have 3 entries:", m)
+		}
+		m[nana] = "NaN"
+		m[nanb] = "NaN"
+		if len(m) != 5 {
+			fmt.Println("complex128 map should have 5 entries:", m)
+		}
+	}
+}
+
+func testnan() {
+	// Test that NaNs in maps don't go quadratic.
+	t := func(n int) time.Duration {
+		t0 := time.Now()
+		m := map[float64]int{}
+		nan := math.NaN()
+		for i := 0; i < n; i++ {
+			m[nan] = 1
+		}
+		if len(m) != n {
+			panic("wrong size map after nan insertion")
+		}
+		return time.Since(t0)
+	}
+
+	// Depending on the machine and OS, this test might be too fast
+	// to measure with accurate enough granularity. On failure,
+	// make it run longer, hoping that the timing granularity
+	// is eventually sufficient.
+
+	n := 30000 // 0.02 seconds on a MacBook Air
+	fails := 0
+	for {
+		t1 := t(n)
+		t2 := t(2 * n)
+		// should be 2x (linear); allow up to 3x
+		if t2 < 3*t1 {
+			return
+		}
+		fails++
+		if fails == 4 {
+			fmt.Printf("too slow: %d inserts: %v; %d inserts: %v\n", n, t1, 2*n, t2)
+			return
+		}
+		n *= 2
 	}
 }

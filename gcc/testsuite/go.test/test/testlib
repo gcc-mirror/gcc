@@ -1,0 +1,61 @@
+# Copyright 2012 The Go Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
+# These function names are also known to
+# (and are the plan for transitioning to) run.go.
+
+compile() {
+	$G $D/$F.go
+}
+
+compiledir() {
+	for gofile in $D/$F.dir/*.go
+	do
+		$G -I. "$gofile" || return 1
+	done
+}
+
+build() {
+	$G $D/$F.go && $L $F.$A
+}
+
+runoutput() {
+	go run "$D/$F.go" > tmp.go
+	go run tmp.go
+}
+
+run() {
+	gofiles=""
+	ingo=true
+	while $ingo; do
+		case "$1" in
+		*.go)
+			gofiles="$gofiles $1"
+			shift
+			;;
+		*)
+			ingo=false
+			;;
+		esac
+	done
+
+	$G $D/$F.go $gofiles && $L $F.$A && ./$A.out "$@"
+}
+
+cmpout() {
+	$G $D/$F.go && $L $F.$A && ./$A.out 2>&1 | cmp - $D/$F.out
+}
+
+errorcheck() {
+	zero=""
+	if [ "$1" = "-0" ]; then
+		zero="-0"
+		shift
+	fi
+	errchk $zero $G -e $* $D/$F.go
+}
+
+skip() {
+	true
+}

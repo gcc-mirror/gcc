@@ -1,8 +1,10 @@
-// $G $D/$F.go && $L $F.$A && ./$A.out
+// run
 
 // Copyright 2009 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
+
+// Test concurrency primitives: classical inefficient concurrent prime sieve.
 
 // Generate primes up to 100 using channels, checking the results.
 // This sieve consists of a linear chain of divisibility filters,

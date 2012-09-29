@@ -1,10 +1,10 @@
-// $G $D/$F.go && $L $F.$A && ./$A.out
+// run
 
 // Copyright 2010 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// Tests verifying the semantics of the select statement
+// Test the semantics of the select statement
 // for basic empty/non-empty cases.
 
 package main
@@ -197,13 +197,13 @@ func main() {
 	})
 	testBlock(never, func() {
 		select {
-		case x := <-closedch:
+		case x := (<-closedch):
 			_ = x
 		}
 	})
 	testBlock(never, func() {
 		select {
-		case x, ok := <-closedch:
+		case x, ok := (<-closedch):
 			_, _ = x, ok
 		}
 	})
