@@ -1,7 +1,7 @@
 ! { dg-do compile }
-! verify that the compiler catches the error in the call to c_f_pointer 
-! because it is missing the required SHAPE parameter.  the SHAPE parameter 
-! is optional, in general, but must exist if given a fortran pointer 
+! Verify that the compiler catches the error in the call to c_f_pointer 
+! because it is missing the required SHAPE argument. The SHAPE argument 
+! is optional, in general, but must exist if given a Fortran pointer 
 ! to a non-zero rank object.  --Rickett, 09.26.06
 module c_f_pointer_shape_test
 contains
@@ -13,7 +13,8 @@ contains
     type(c_ptr), value :: cPtr
     
     myArrayPtr => myArray
-    call c_f_pointer(cPtr, myArrayPtr) ! { dg-error "Missing SHAPE parameter" }
+    call c_f_pointer(cPtr, myArrayPtr) ! { dg-error "Missing SHAPE argument" }
   end subroutine test_0
 end module c_f_pointer_shape_test
 
+! { dg-final { cleanup-modules "c_f_pointer_shape_test" } }

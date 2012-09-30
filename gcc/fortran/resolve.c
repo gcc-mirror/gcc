@@ -3532,36 +3532,45 @@ gfc_iso_c_sub_interface (gfc_code *c, gfc_symbol *sym)
 	{
 	  if (c->ext.actual != NULL && c->ext.actual->next != NULL)
 	    {
-	      if (c->ext.actual->expr->ts.type != BT_DERIVED
-		  || c->ext.actual->expr->ts.u.derived->intmod_sym_id
-		     != ISOCBINDING_PTR)
+	      gfc_actual_arglist *arg1 = c->ext.actual;
+	      gfc_actual_arglist *arg2 = c->ext.actual->next;
+	      gfc_actual_arglist *arg3 = c->ext.actual->next->next;
+
+	      /* Check first argument (CPTR).  */
+	      if (arg1->expr->ts.type != BT_DERIVED
+		  || arg1->expr->ts.u.derived->intmod_sym_id != ISOCBINDING_PTR)
 		{
-		  gfc_error ("Argument at %L to C_F_POINTER shall have the type"
-			     " C_PTR", &c->ext.actual->expr->where);
+		  gfc_error ("Argument CPTR to C_F_POINTER at %L shall have "
+			     "the type C_PTR", &arg1->expr->where);
 		  m = MATCH_ERROR;
 		}
 
-	      /* Make sure we got a third arg if the second arg has non-zero
-		 rank.	We must also check that the type and rank are
+	      /* Check second argument (FPTR).  */
+	      if (arg2->expr->ts.type == BT_CLASS)
+		{
+		  gfc_error ("Argument FPTR to C_F_POINTER at %L must not be "
+			     "polymorphic", &arg2->expr->where);
+		  m = MATCH_ERROR;
+		}
+
+	      /* Make sure we got a third arg (SHAPE) if the second arg has
+		 non-zero rank. We must also check that the type and rank are
 		 correct since we short-circuit this check in
 		 gfc_procedure_use() (called above to sort actual args).  */
-	      if (c->ext.actual->next->expr->rank != 0)
+	      if (arg2->expr->rank != 0)
 		{
-		  if(c->ext.actual->next->next == NULL 
-		     || c->ext.actual->next->next->expr == NULL)
+		  if (arg3 == NULL || arg3->expr == NULL)
 		    {
 		      m = MATCH_ERROR;
-		      gfc_error ("Missing SHAPE parameter for call to %s "
-				 "at %L", sym->name, &(c->loc));
+		      gfc_error ("Missing SHAPE argument for call to %s at %L", 
+				 sym->name, &c->loc);
 		    }
-		  else if (c->ext.actual->next->next->expr->ts.type
-			   != BT_INTEGER
-			   || c->ext.actual->next->next->expr->rank != 1)
+		  else if (arg3->expr->ts.type != BT_INTEGER
+			   || arg3->expr->rank != 1)
 		    {
 		      m = MATCH_ERROR;
-		      gfc_error ("SHAPE parameter for call to %s at %L must "
-				 "be a rank 1 INTEGER array", sym->name,
-				 &(c->loc));
+		      gfc_error ("SHAPE argument for call to %s at %L must be "
+				 "a rank 1 INTEGER array", sym->name, &c->loc);
 		    }
 		}
 	    }
