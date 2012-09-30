@@ -1,3 +1,13 @@
+2012-09-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* reorg.c (relax_delay_slots): Use delay_insn consistently.
+
+	* config/sparc/sparc.c (gen_stack_pointer_dec): Delete.
+	(sparc_expand_epilogue): Use gen_stack_pointer_inc and adjust.
+	(sparc_flat_expand_epilogue): Likewise.
+	(emit_and_preserve): Likewise.
+	(sparc_fold_builtin): Fix thinko in latest change.
+
 2012-09-30  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* config/m68k/m68k.md: Add names to bitfield insert and extract
