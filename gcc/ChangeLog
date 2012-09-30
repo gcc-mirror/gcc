@@ -1,3 +1,11 @@
+2012-09-30  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* config/m68k/m68k.md: Add names to bitfield insert and extract
+	insns.
+	(*insv_8_16_reg): Remove constraints and conditions that assume
+	that operand 0 could be a MEM.
+	(*extzv_8_16_reg, *extv_8_16_reg): Likewise, for operand 1.
+
 2012-09-30  Jan Hubicka  <jh@suse.cz>
 
 	* cfgloop.c (scale_loop_profile): Move to...
