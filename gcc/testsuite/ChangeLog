@@ -1,3 +1,8 @@
+2012-09-30  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/54083
+	* gcc.dg/torture/pr53922.c: Skip on 32-bit hppa-*-hpux*.
+
 2012-09-30  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* gcc.dg/ucnid-8.c: Update line number.
