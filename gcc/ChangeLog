@@ -1,3 +1,10 @@
+2012-09-30  Jan Hubicka  <jh@suse.cz>
+
+	* cfgloop.c (scale_loop_profile): Move to...
+	* cfgloopmanip.c (scale_loop_profile): .. here; use
+	scale_loop_frequencies.
+	(loopify): Use RDIV.
+
 2012-09-28  Jan Hubicka  <jh@suse.cz>
 
 	* tree-call-cdce.c (shrink_wrap_one_built_in_call): Update profile.

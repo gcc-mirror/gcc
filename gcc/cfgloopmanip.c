@@ -39,8 +39,6 @@ static bool fix_bb_placement (basic_block);
 static void fix_bb_placements (basic_block, bool *);
 static void unloop (struct loop *, bool *);
 
-#define RDIV(X,Y) (((X) + (Y) / 2) / (Y))
-
 /* Checks whether basic block BB is dominated by DATA.  */
 static bool
 rpe_enum_p (const_basic_block bb, const void *data)
@@ -462,6 +460,7 @@ add_loop (struct loop *loop, struct loop *outer)
 }
 
 /* Multiply all frequencies in LOOP by NUM/DEN.  */
+
 void
 scale_loop_frequencies (struct loop *loop, int num, int den)
 {
@@ -470,6 +469,113 @@ scale_loop_frequencies (struct loop *loop, int num, int den)
   bbs = get_loop_body (loop);
   scale_bbs_frequencies_int (bbs, loop->num_nodes, num, den);
   free (bbs);
+}
+
+/* Multiply all frequencies in LOOP by SCALE/REG_BR_PROB_BASE.
+   If ITERATION_BOUND is non-zero, scale even further if loop is predicted
+   to iterate too many times.  */
+
+void
+scale_loop_profile (struct loop *loop, int scale, int iteration_bound)
+{
+  gcov_type iterations = expected_loop_iterations_unbounded (loop);
+  edge e;
+  edge_iterator ei;
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, ";; Scaling loop %i with scale %f, "
+	     "bounding iterations to %i from guessed %i\n",
+	     loop->num, (double)scale / REG_BR_PROB_BASE,
+	     iteration_bound, (int)iterations);
+
+  /* See if loop is predicted to iterate too many times.  */
+  if (iteration_bound && iterations > 0
+      && RDIV (iterations * scale, REG_BR_PROB_BASE) > iteration_bound)
+    {
+      /* Fixing loop profile for different trip count is not trivial; the exit
+	 probabilities has to be updated to match and frequencies propagated down
+	 to the loop body.
+
+	 We fully update only the simple case of loop with single exit that is
+	 either from the latch or BB just before latch and leads from BB with
+	 simple conditional jump.   This is OK for use in vectorizer.  */
+      e = single_exit (loop);
+      if (e)
+	{
+	  edge other_e;
+	  int freq_delta;
+	  gcov_type count_delta;
+
+          FOR_EACH_EDGE (other_e, ei, e->src->succs)
+	    if (!(other_e->flags & (EDGE_ABNORMAL | EDGE_FAKE))
+		&& e != other_e)
+	      break;
+
+	  /* Probability of exit must be 1/iterations.  */
+	  freq_delta = EDGE_FREQUENCY (e);
+	  e->probability = REG_BR_PROB_BASE / iteration_bound;
+	  other_e->probability = inverse_probability (e->probability);
+	  freq_delta -= EDGE_FREQUENCY (e);
+
+	  /* Adjust counts accordingly.  */
+	  count_delta = e->count;
+	  e->count = apply_probability (e->src->count, e->probability);
+	  other_e->count = apply_probability (e->src->count, other_e->probability);
+	  count_delta -= e->count;
+
+	  /* If latch exists, change its frequency and count, since we changed
+	     probability of exit.  Theoretically we should update everything from
+	     source of exit edge to latch, but for vectorizer this is enough.  */
+	  if (loop->latch
+	      && loop->latch != e->src)
+	    {
+	      loop->latch->frequency += freq_delta;
+	      if (loop->latch->frequency < 0)
+		loop->latch->frequency = 0;
+	      loop->latch->count += count_delta;
+	      if (loop->latch->count < 0)
+		loop->latch->count = 0;
+	    }
+	}
+
+      /* Roughly speaking we want to reduce the loop body profile by the
+	 the difference of loop iterations.  We however can do better if
+	 we look at the actual profile, if it is available.  */
+      scale = RDIV (iteration_bound * scale, iterations);
+      if (loop->header->count)
+	{
+	  gcov_type count_in = 0;
+
+	  FOR_EACH_EDGE (e, ei, loop->header->preds)
+	    if (e->src != loop->latch)
+	      count_in += e->count;
+
+	  if (count_in != 0)
+	    scale = RDIV (count_in * iteration_bound * REG_BR_PROB_BASE, loop->header->count);
+	}
+      else if (loop->header->frequency)
+	{
+	  int freq_in = 0;
+
+	  FOR_EACH_EDGE (e, ei, loop->header->preds)
+	    if (e->src != loop->latch)
+	      freq_in += EDGE_FREQUENCY (e);
+
+	  if (freq_in != 0)
+	    scale = RDIV (freq_in * iteration_bound * REG_BR_PROB_BASE, loop->header->frequency);
+	}
+      if (!scale)
+	scale = 1;
+    }
+
+  if (scale == REG_BR_PROB_BASE)
+    return;
+
+  /* Scale the actual probabilities.  */
+  scale_loop_frequencies (loop, scale, REG_BR_PROB_BASE);
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, ";; guessed iterations are now %i\n",
+	     (int)expected_loop_iterations_unbounded (loop));
 }
 
 /* Recompute dominance information for basic blocks outside LOOP.  */
@@ -772,7 +878,7 @@ loopify (edge latch_edge, edge header_edge,
       switch_bb->count = cnt;
       FOR_EACH_EDGE (e, ei, switch_bb->succs)
 	{
-	  e->count = (switch_bb->count * e->probability) / REG_BR_PROB_BASE;
+	  e->count = RDIV (switch_bb->count * e->probability, REG_BR_PROB_BASE);
 	}
     }
   scale_loop_frequencies (loop, false_scale, REG_BR_PROB_BASE);
