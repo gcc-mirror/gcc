@@ -15,5 +15,5 @@ foo2 (int z, int x)
       return z;
     }
   else
-    return x + z;
+    return x - z;
 }
