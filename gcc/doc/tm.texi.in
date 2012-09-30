@@ -10814,6 +10814,8 @@ filling of delay slots can result in branches being redirected, and this
 may in turn cause a branch offset to overflow.
 @end defmac
 
+@hook TARGET_CAN_FOLLOW_JUMP
+
 @hook TARGET_COMMUTATIVE_P
 This target hook returns @code{true} if @var{x} is considered to be commutative.
 Usually, this is just COMMUTATIVE_P (@var{x}), but the HP PA doesn't consider
