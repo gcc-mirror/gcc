@@ -1,3 +1,10 @@
+2012-09-30  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54667
+	* gfortran.dg/c_funloc_tests_6.f90: Modified error message.
+	* gfortran.dg/c_f_pointer_shape_test.f90: Ditto.
+	* gfortran.dg/c_f_pointer_tests_5.f90: New.
+
 2012-09-30  Janus Weil  <janus@gcc.gnu.org> 
 
 	* gfortran.dg/allocate_derived_1.f90: Re-enable class array checks,

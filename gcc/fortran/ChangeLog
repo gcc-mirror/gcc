@@ -1,3 +1,10 @@
+2012-09-30  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54667
+	* intrinsic.texi (C_F_POINTER): Fix description.
+	* resolve.c (gfc_iso_c_sub_interface): Add a check for FPTR argument
+	of C_F_POINTER. Modify two error messages. Cleanup.
+
 2012-09-24  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/54618
