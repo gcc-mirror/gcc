@@ -4976,18 +4976,6 @@ gen_stack_pointer_inc (rtx increment)
 				    increment));
 }
 
-/* Generate a decrement for the stack pointer.  */
-
-static rtx
-gen_stack_pointer_dec (rtx decrement)
-{
-  return gen_rtx_SET (VOIDmode,
-		      stack_pointer_rtx,
-		      gen_rtx_MINUS (Pmode,
-				     stack_pointer_rtx,
-				     decrement));
-}
-
 /* Expand the function prologue.  The prologue is responsible for reserving
    storage for the frame, saving the call-saved registers and loading the
    GOT register if needed.  */
@@ -5258,17 +5246,17 @@ sparc_expand_epilogue (bool for_eh)
   else if (sparc_leaf_function_p)
     {
       if (size <= 4096)
-	emit_insn (gen_stack_pointer_dec (GEN_INT (-size)));
+	emit_insn (gen_stack_pointer_inc (GEN_INT (size)));
       else if (size <= 8192)
 	{
-	  emit_insn (gen_stack_pointer_dec (GEN_INT (-4096)));
-	  emit_insn (gen_stack_pointer_dec (GEN_INT (4096 - size)));
+	  emit_insn (gen_stack_pointer_inc (GEN_INT (4096)));
+	  emit_insn (gen_stack_pointer_inc (GEN_INT (size - 4096)));
 	}
       else
 	{
 	  rtx reg = gen_rtx_REG (Pmode, 1);
-	  emit_move_insn (reg, GEN_INT (-size));
-	  emit_insn (gen_stack_pointer_dec (reg));
+	  emit_move_insn (reg, GEN_INT (size));
+	  emit_insn (gen_stack_pointer_inc (reg));
 	}
     }
 }
@@ -5318,17 +5306,17 @@ sparc_flat_expand_epilogue (bool for_eh)
       emit_insn (gen_blockage ());
 
       if (size <= 4096)
-	emit_insn (gen_stack_pointer_dec (GEN_INT (-size)));
+	emit_insn (gen_stack_pointer_inc (GEN_INT (size)));
       else if (size <= 8192)
 	{
-	  emit_insn (gen_stack_pointer_dec (GEN_INT (-4096)));
-	  emit_insn (gen_stack_pointer_dec (GEN_INT (4096 - size)));
+	  emit_insn (gen_stack_pointer_inc (GEN_INT (4096)));
+	  emit_insn (gen_stack_pointer_inc (GEN_INT (size - 4096)));
 	}
       else
 	{
 	  rtx reg = gen_rtx_REG (Pmode, 1);
-	  emit_move_insn (reg, GEN_INT (-size));
-	  emit_insn (gen_stack_pointer_dec (reg));
+	  emit_move_insn (reg, GEN_INT (size));
+	  emit_insn (gen_stack_pointer_inc (reg));
 	}
     }
 }
@@ -10131,7 +10119,7 @@ sparc_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED,
 	  && TREE_CODE (arg2) == INTEGER_CST)
 	{
 	  bool overflow = false;
-	  double_int di_arg2 = TREE_INT_CST (arg2);
+	  double_int result = TREE_INT_CST (arg2);
 	  double_int tmp;
 	  unsigned i;
 
@@ -10147,13 +10135,13 @@ sparc_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED,
 	      if (tmp.is_negative ())
 		tmp = tmp.neg_with_overflow (&neg2_ovf);
 
-	      tmp = di_arg2.add_with_sign (tmp, false, &add2_ovf);
+	      result = result.add_with_sign (tmp, false, &add2_ovf);
 	      overflow |= neg1_ovf | neg2_ovf | add1_ovf | add2_ovf;
 	    }
 
 	  gcc_assert (!overflow);
 
-	  return build_int_cst_wide (rtype, tmp.low, tmp.high);
+	  return build_int_cst_wide (rtype, result.low, result.high);
 	}
 
     default:
@@ -10454,7 +10442,7 @@ emit_and_preserve (rtx seq, rtx reg, rtx reg2)
     = gen_rtx_MEM (word_mode, plus_constant (Pmode, stack_pointer_rtx,
 					     SPARC_STACK_BIAS + offset));
 
-  emit_insn (gen_stack_pointer_dec (GEN_INT (size)));
+  emit_insn (gen_stack_pointer_inc (GEN_INT (-size)));
   emit_insn (gen_rtx_SET (VOIDmode, slot, reg));
   if (reg2)
     emit_insn (gen_rtx_SET (VOIDmode,

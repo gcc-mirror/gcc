@@ -3432,9 +3432,8 @@ relax_delay_slots (rtx first)
 	    reorg_redirect_jump (insn, other_target);
 	}
 
-      /* Now look only at cases where we have filled a delay slot.  */
-      if (!NONJUMP_INSN_P (insn)
-	  || GET_CODE (PATTERN (insn)) != SEQUENCE)
+      /* Now look only at cases where we have a filled delay slot.  */
+      if (!NONJUMP_INSN_P (insn) || GET_CODE (PATTERN (insn)) != SEQUENCE)
 	continue;
 
       pat = PATTERN (insn);
@@ -3494,9 +3493,8 @@ relax_delay_slots (rtx first)
 	}
 
       /* Now look only at the cases where we have a filled JUMP_INSN.  */
-      if (!JUMP_P (XVECEXP (PATTERN (insn), 0, 0))
-	  || ! (condjump_p (XVECEXP (PATTERN (insn), 0, 0))
-		|| condjump_in_parallel_p (XVECEXP (PATTERN (insn), 0, 0))))
+      if (!JUMP_P (delay_insn)
+	  || !(condjump_p (delay_insn) || condjump_in_parallel_p (delay_insn)))
 	continue;
 
       target_label = JUMP_LABEL (delay_insn);
