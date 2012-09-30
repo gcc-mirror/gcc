@@ -1,5 +1,11 @@
 2012-09-30  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* include/ext/ropeimpl.h (__uninitialized_fill_n_a): Fix using
+	declaration.
+	* testsuite/ext/rope/5.cc: New.
+
+2012-09-30  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	PR libstdc++/54577
 	* doc/xml/manual/status_cxx2011.xml: N2350 changes are missing from
 	sequence containers.
