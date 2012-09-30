@@ -1,3 +1,8 @@
+2012-09-30  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* gcc.dg/ucnid-8.c: Update line number.
+	* gcc.dg/torture/pr51106-2.c: Likewise.
+
 2012-09-30  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/54667

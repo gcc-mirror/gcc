@@ -12,4 +12,4 @@ lab:
   return 0;
 }
 
-/* { dg-warning "probably doesn.t match constraints" "" { target *-*-* } 8 } */
+/* { dg-warning "probably doesn.t match constraints" "" { target *-*-* } 9 } */
