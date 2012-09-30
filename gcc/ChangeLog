@@ -1,3 +1,15 @@
+2012-09-30  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	PR rtl-optimization/38449:
+	* hooks.c (hook_bool_const_rtx_const_rtx_true): New function.
+	* hooks.h (hook_bool_const_rtx_const_rtx_true): Declare.
+	* target.def: Merge in definitions and documentation for
+	TARGET_CAN_FOLLOW_JUMP.
+	* doc/tm.texi.in: Add documentation locations for the above.
+	* doc/tm.texi: Regenerate.
+	* reorg.c (follow_jumps): New parameters jump and crossing.
+	Changed all callers.
+
 2012-09-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* reorg.c (relax_delay_slots): Use delay_insn consistently.

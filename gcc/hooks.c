@@ -117,6 +117,14 @@ hook_bool_mode_rtx_true (enum machine_mode mode ATTRIBUTE_UNUSED,
   return true;
 }
 
+/* Generic hook that takes (rtx, rtx) and returns true.  */
+bool
+hook_bool_const_rtx_const_rtx_true (const_rtx follower ATTRIBUTE_UNUSED,
+				    const_rtx followee ATTRIBUTE_UNUSED)
+{
+  return true;
+}
+
 /* Generic hook that takes (enum machine_mode, unsigned HOST_WIDE_INT)
    and returns false.  */
 bool
