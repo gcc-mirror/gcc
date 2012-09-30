@@ -1,3 +1,7 @@
+2012-09-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pad-10.c (foo2): Return x - z.
+
 2012-09-30  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* gcc.target/mips/pr37362.c: Fix target selector.
@@ -19,7 +23,7 @@
 	* gfortran.dg/c_f_pointer_shape_test.f90: Ditto.
 	* gfortran.dg/c_f_pointer_tests_5.f90: New.
 
-2012-09-30  Janus Weil  <janus@gcc.gnu.org> 
+2012-09-30  Janus Weil  <janus@gcc.gnu.org>
 
 	* gfortran.dg/allocate_derived_1.f90: Re-enable class array checks,
 	partially reverting r170092.
@@ -79,7 +83,7 @@
 2012-09-28  Dodji Seketeli  <dodji@redhat.com>
 
 	* g++.dg/warn/Wunused-local-typedefs-3.C: Move the c++-only test
-    	gcc/testsuite/c-c++-common/Wunused-local-typedefs-2.c to here.
+	gcc/testsuite/c-c++-common/Wunused-local-typedefs-2.c to here.
 
 	PR c++/54372 - unused attribute inactive on dependant entities
 	* c-c++-common/Wunused-local-typedefs-2.c: New test.
