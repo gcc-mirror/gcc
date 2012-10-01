@@ -291,10 +291,10 @@ package Sem is
 
    --  Scope based suppress checks for the predefined checks (from initial
    --  command line arguments, or from Suppress pragmas not including an entity
-   --  entity name) are recorded in the Sem.Suppress variable, and all that is
-   --  necessary is to save the state of this variable on scope entry, and
-   --  restore it on scope exit. This mechanism allows for fast checking of
-   --  the scope suppress state without needing complex data structures.
+   --  name) are recorded in the Sem.Scope_Suppress variable, and all that
+   --  is necessary is to save the state of this variable on scope entry, and
+   --  restore it on scope exit. This mechanism allows for fast checking of the
+   --  scope suppress state without needing complex data structures.
 
    --  Entity based checks, from Suppress/Unsuppress pragmas giving an
    --  Entity_Id and scope based checks for non-predefined checks (introduced
@@ -322,11 +322,11 @@ package Sem is
    --  This variable contains the current scope based settings of the suppress
    --  switches. It is initialized from Suppress_Options in Gnat1drv, and then
    --  modified by pragma Suppress. On entry to each scope, the current setting
-   --  is saved the scope stack, and then restored on exit from the scope. This
-   --  record may be rapidly checked to determine the current status of a check
-   --  if no specific entity is involved or if the specific entity involved is
-   --  one for which no specific Suppress/Unsuppress pragma has been set (as
-   --  indicated by the Checks_May_Be_Suppressed flag being set).
+   --  is saved on the scope stack, and then restored on exit from the scope.
+   --  This record may be rapidly checked to determine the current status of
+   --  a check if no specific entity is involved or if the specific entity
+   --  involved is one for which no specific Suppress/Unsuppress pragma has
+   --  been set (as indicated by the Checks_May_Be_Suppressed flag being set).
 
    --  This scheme is a little complex, but serves the purpose of enabling
    --  a very rapid check in the common case where no entity specific pragma

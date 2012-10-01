@@ -11761,7 +11761,7 @@ package body Sem_Prag is
          ---------------------
 
          --  pragma Overflow_Checks
-         --    ([General => ] MODE [, [Assertions => ] MODE);
+         --    ([General => ] MODE [, [Assertions => ] MODE]);
 
          --  MODE := SUPPRESSED | CHECKED | MINIMIZED | ELIMINATED
 

@@ -741,7 +741,7 @@ package Types is
    type Suppress_Record is record
       Suppress : Suppress_Array;
       --  Indicates suppression status of each possible check. Note: there
-      --  is an entry for Overflow_Checks in this array, but it is never used.
+      --  is an entry for Overflow_Check in this array, but it is never used.
       --  Instead we use the more detailed information in the two components
       --  that follow this one (Overflow_Checks_General/Assertions).
 
@@ -750,8 +750,8 @@ package Types is
       --  general expressions outside assertions.
 
       Overflow_Checks_Assertions : Overflow_Check_Type;
-      --  This field  indicates the mode of overflow checking to be applied to
-      --  any expressions occuring inside assertions.
+      --  This field indicates the mode of overflow checking to be applied to
+      --  any expression occuring inside assertions.
    end record;
 
    Suppress_All : constant Suppress_Record :=
