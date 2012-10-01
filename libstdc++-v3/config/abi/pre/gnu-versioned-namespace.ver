@@ -62,15 +62,18 @@ GLIBCXX_7.0 {
     _ZTTNSt*;
 
     # vtable
+    _ZTVSt*;
     _ZTVNSt*;
 
     # thunk
     _ZTv0_n24_NS*;
 
     # typeinfo structure
+    _ZTISt*;
     _ZTINSt*;
 
     # typeinfo name
+    _ZTSSt*;
     _ZTSNSt*;
 
     # locale
