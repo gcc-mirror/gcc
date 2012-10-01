@@ -2152,9 +2152,7 @@ package body Sem_Ch3 is
          --  explicitly checked that all required types are properly frozen,
          --  and we do not cause general freezing here. This special circuit
          --  is used when the encountered body is marked as having already
-         --  been analyzed (although we must take into account the special
-         --  case of the internally generated subprogram _postconditions,
-         --  may not have been analyzed yet)
+         --  been analyzed.
 
          --  In all other cases (bodies that come from source, and expander
          --  generated bodies that have not been analyzed yet), freeze all
@@ -2170,11 +2168,6 @@ package body Sem_Ch3 is
                                           N_Task_Body)
                        or else
                      Nkind (Next_Node) in N_Body_Stub)
-           and then not
-             (Ada_Version = Ada_2012
-                and then Nkind (Next_Node) = N_Subprogram_Body
-                and then Chars (Defining_Entity (Next_Node))
-                           = Name_uPostconditions)
          then
             Adjust_D;
             Freeze_All (Freeze_From, D);
