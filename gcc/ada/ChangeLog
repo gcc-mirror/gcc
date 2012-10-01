@@ -1,5 +1,10 @@
 2012-10-01  Arnaud Charlet  <charlet@adacore.com>
 
+	* gcc-interface/Make-lang.in: Update dependencies.
+	(GCC_LINK): Add -static-libstdc++.
+
+2012-10-01  Arnaud Charlet  <charlet@adacore.com>
+
 	* a-catizo.adb, a-stwiun.adb, a-cdlili.adb, a-cihama.adb, a-direct.adb,
 	a-coinve.adb, a-calend.adb, a-ciorse.adb, a-coorma.adb, a-cfdlli.adb,
 	a-stzunb-shared.adb, a-cfhase.adb, bindgen.adb, ceinfo.adb, a-tags.adb,
