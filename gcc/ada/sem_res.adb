@@ -5314,15 +5314,7 @@ package body Sem_Res is
       --  Check that this is not a call to a protected procedure or entry from
       --  within a protected function.
 
-      if Ekind (Current_Scope) = E_Function
-        and then Ekind (Scope (Current_Scope)) = E_Protected_Type
-        and then Ekind (Nam) /= E_Function
-        and then Scope (Nam) = Scope (Current_Scope)
-      then
-         Error_Msg_N ("within protected function, protected " &
-           "object is constant", N);
-         Error_Msg_N ("\cannot call operation that may modify it", N);
-      end if;
+      Check_Internal_Protected_Use (N, Nam);
 
       --  Freeze the subprogram name if not in a spec-expression. Note that we
       --  freeze procedure calls as well as function calls. Procedure calls are
@@ -6732,6 +6724,7 @@ package body Sem_Res is
       end if;
 
       Resolve_Actuals (N, Nam);
+      Check_Internal_Protected_Use (N, Nam);
 
       --  Create a call reference to the entry
 

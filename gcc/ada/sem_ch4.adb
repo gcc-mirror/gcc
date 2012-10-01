@@ -5612,8 +5612,24 @@ package body Sem_Ch4 is
             return;
          end if;
 
+         --  If the right operand has a type compatible with T1, check for an
+         --  acceptable interpretation, unless T1 is limited (no predefined
+         --  equality available), or this is use of a "/=" for a tagged type.
+         --  In the latter case, possible interpretations of equality need to
+         --  be considered, we don't want the default inequality declared in
+         --  Standard to be chosen, and the "/=" will be rewritten as a
+         --  negation of "=" (see the end of Analyze_Equality_Op). This ensures
+         --  that that rewriting happens during analysis rather than being
+         --  delayed until expansion (this is needed for ASIS, which only sees
+         --  the unexpanded tree). Note that if the node is N_Op_Ne, but Op_Id
+         --  is Name_Op_Eq then we still proceed with the interpretation,
+         --  because that indicates the potential rewriting case where the
+         --  interpretation to consider is actually "=" and the node may be
+         --  about to be rewritten by Analyze_Equality_Op.
+
          if T1 /= Standard_Void_Type
            and then Has_Compatible_Type (R, T1)
+
            and then
              ((not Is_Limited_Type (T1)
                 and then not Is_Limited_Composite (T1))
@@ -5622,6 +5638,11 @@ package body Sem_Ch4 is
                  (Is_Array_Type (T1)
                    and then not Is_Limited_Type (Component_Type (T1))
                    and then Available_Full_View_Of_Component (T1)))
+
+           and then
+             (Nkind (N) /= N_Op_Ne
+               or else not Is_Tagged_Type (T1)
+               or else Chars (Op_Id) = Name_Op_Eq)
          then
             if Found
               and then Base_Type (T1) /= Base_Type (T_F)

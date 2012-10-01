@@ -214,6 +214,14 @@ package body Validsw is
             when 'V' =>
                Validity_Check_Valid_Scalars_On_Params := False;
 
+            --  Note: The following two flags are not set when "-gnatVa" is in
+            --  effect because the associated checks are deemed too aggressive.
+
+            --     Validity_Check_Non_Overlapping_Params
+            --     Validity_Check_Valid_Scalars_On_Params
+
+            --  and in any case these do not belong as validity checks ???
+
             when 'a' =>
                Validity_Check_Components              := True;
                Validity_Check_Copies                  := True;
@@ -221,13 +229,11 @@ package body Validsw is
                Validity_Check_Floating_Point          := True;
                Validity_Check_In_Out_Params           := True;
                Validity_Check_In_Params               := True;
-               Validity_Check_Non_Overlapping_Params  := True;
                Validity_Check_Operands                := True;
                Validity_Check_Parameters              := True;
                Validity_Check_Returns                 := True;
                Validity_Check_Subscripts              := True;
                Validity_Check_Tests                   := True;
-               Validity_Check_Valid_Scalars_On_Params := True;
 
             when 'n' =>
                Validity_Check_Components              := False;

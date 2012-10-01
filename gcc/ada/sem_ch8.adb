@@ -1456,9 +1456,10 @@ package body Sem_Ch8 is
       New_S   : Entity_Id;
       Is_Body : Boolean)
    is
-      Nam   : constant Node_Id := Name (N);
-      Sel   : constant Node_Id := Selector_Name (Nam);
-      Old_S : Entity_Id;
+      Nam       : constant Node_Id := Name (N);
+      Sel       : constant Node_Id := Selector_Name (Nam);
+      Is_Actual : constant Boolean := Present (Corresponding_Formal_Spec (N));
+      Old_S     : Entity_Id;
 
    begin
       if Entity (Sel) = Any_Id then
@@ -1489,14 +1490,32 @@ package body Sem_Ch8 is
 
          Inherit_Renamed_Profile (New_S, Old_S);
 
-         --  The prefix can be an arbitrary expression that yields a task type,
-         --  so it must be resolved.
+         --  The prefix can be an arbitrary expression that yields a task or
+         --  protected object, so it must be resolved.
 
          Resolve (Prefix (Nam), Scope (Old_S));
       end if;
 
       Set_Convention (New_S, Convention (Old_S));
       Set_Has_Completion (New_S, Inside_A_Generic);
+
+      --  AI05-0225: If the renamed entity is a procedure or entry of a
+      --  protected object, the target object must be a variable.
+
+      if Ekind (Scope (Old_S)) in Protected_Kind
+        and then Ekind (New_S) = E_Procedure
+        and then not Is_Variable (Prefix (Nam))
+      then
+         if Is_Actual then
+            Error_Msg_N
+              ("target object of protected operation used as actual for "
+               & "formal procedure must be a variable", Nam);
+         else
+            Error_Msg_N
+              ("target object of protected operation renamed as procedure, "
+               & "must be a variable", Nam);
+         end if;
+      end if;
 
       if Is_Body then
          Check_Frozen_Renaming (N, New_S);
@@ -2571,6 +2590,8 @@ package body Sem_Ch8 is
          else
             Generate_Reference (Old_S, Nam);
          end if;
+
+         Check_Internal_Protected_Use (N, Old_S);
 
          --  For a renaming-as-body, require subtype conformance, but if the
          --  declaration being completed has not been frozen, then inherit the

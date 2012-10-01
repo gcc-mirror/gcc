@@ -4917,8 +4917,8 @@ package body Exp_Ch3 is
 
            and then not
              (Nkind (Object_Definition (N)) = N_Identifier
-                and then
-              Present (Equivalent_Type (Entity (Object_Definition (N)))))
+               and then
+                 Present (Equivalent_Type (Entity (Object_Definition (N)))))
          then
             pragma Assert (Is_Class_Wide_Type (Typ));
 

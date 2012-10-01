@@ -1191,6 +1191,50 @@ package body Sem_Util is
       end if;
    end Check_Implicit_Dereference;
 
+   ----------------------------------
+   -- Check_Internal_Protected_Use --
+   ----------------------------------
+
+   procedure Check_Internal_Protected_Use (N : Node_Id; Nam : Entity_Id) is
+      S    : Entity_Id;
+      Prot : Entity_Id;
+
+   begin
+      S := Current_Scope;
+      while Present (S) loop
+         if S = Standard_Standard then
+            return;
+
+         elsif Ekind (S) = E_Function
+           and then Ekind (Scope (S)) = E_Protected_Type
+         then
+            Prot := Scope (S);
+            exit;
+         end if;
+
+         S := Scope (S);
+      end loop;
+
+      if Scope (Nam) = Prot and then Ekind (Nam) /= E_Function then
+         if Nkind (N) = N_Subprogram_Renaming_Declaration then
+            Error_Msg_N
+              ("within protected function cannot use protected "
+               & "procedure in renaming or as generic actual", N);
+
+         elsif Nkind (N) = N_Attribute_Reference then
+            Error_Msg_N
+              ("within protected function cannot take access of "
+               & " protected procedure", N);
+
+         else
+            Error_Msg_N
+              ("within protected function, protected object is constant", N);
+            Error_Msg_N
+              ("\cannot call operation that may modify it", N);
+         end if;
+      end if;
+   end Check_Internal_Protected_Use;
+
    ---------------------------------------
    -- Check_Later_Vs_Basic_Declarations --
    ---------------------------------------
