@@ -1,3 +1,9 @@
+2012-10-01  Marc Glisse  <marc.glisse@inria.fr>
+
+	* simplify-rtx.c (simplify_binary_operation_1) <VEC_SELECT>:
+	Detect the identity.
+	<VEC_CONCAT>: Handle VEC_SELECTs from the same vector.
+
 2012-10-01  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/50457

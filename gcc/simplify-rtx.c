@@ -3246,6 +3246,23 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 	      return gen_rtx_CONST_VECTOR (mode, v);
 	    }
 
+	  /* Recognize the identity.  */
+	  if (GET_MODE (trueop0) == mode)
+	    {
+	      bool maybe_ident = true;
+	      for (int i = 0; i < XVECLEN (trueop1, 0); i++)
+		{
+		  rtx j = XVECEXP (trueop1, 0, i);
+		  if (!CONST_INT_P (j) || INTVAL (j) != i)
+		    {
+		      maybe_ident = false;
+		      break;
+		    }
+		}
+	      if (maybe_ident)
+		return trueop0;
+	    }
+
 	  /* If we build {a,b} then permute it, build the result directly.  */
 	  if (XVECLEN (trueop1, 0) == 2
 	      && CONST_INT_P (XVECEXP (trueop1, 0, 0))
@@ -3370,6 +3387,24 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 	      }
 
 	    return gen_rtx_CONST_VECTOR (mode, v);
+	  }
+
+	/* Try to merge VEC_SELECTs from the same vector into a single one.  */
+	if (GET_CODE (trueop0) == VEC_SELECT
+	    && GET_CODE (trueop1) == VEC_SELECT
+	    && rtx_equal_p (XEXP (trueop0, 0), XEXP (trueop1, 0)))
+	  {
+	    rtx par0 = XEXP (trueop0, 1);
+	    rtx par1 = XEXP (trueop1, 1);
+	    int len0 = XVECLEN (par0, 0);
+	    int len1 = XVECLEN (par1, 0);
+	    rtvec vec = rtvec_alloc (len0 + len1);
+	    for (int i = 0; i < len0; i++)
+	      RTVEC_ELT (vec, i) = XVECEXP (par0, 0, i);
+	    for (int i = 0; i < len1; i++)
+	      RTVEC_ELT (vec, len0 + i) = XVECEXP (par1, 0, i);
+	    return simplify_gen_binary (VEC_SELECT, mode, XEXP (trueop0, 0),
+					gen_rtx_PARALLEL (VOIDmode, vec));
 	  }
       }
       return 0;
