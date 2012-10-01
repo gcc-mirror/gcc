@@ -1791,6 +1791,8 @@ package body Checks is
       --  Do not generate the checks in Ada 83, 95 or 05 mode because they
       --  require an Ada 2012 construct.
 
+      --  Why??? these pragmas and attributes are available in all ada modes
+
       if Ada_Version_Explicit < Ada_2012 then
          return;
       end if;
@@ -1932,9 +1934,11 @@ package body Checks is
       --  Extract the subprogram specification and declaration nodes
 
       Subp_Spec := Parent (Subp);
+
       if Nkind (Subp_Spec) = N_Defining_Program_Unit_Name then
          Subp_Spec := Parent (Subp_Spec);
       end if;
+
       Subp_Decl := Parent (Subp_Spec);
 
       --  Do not generate checks in Ada 83 or 95 because the pragmas involved
@@ -1960,6 +1964,9 @@ package body Checks is
       --  A subprogram may already have a pre or post condition pragma. Look
       --  through the its contract and recover the pre and post conditions (if
       --  available).
+
+      --  So what??? you can have multiple such pragmas, this is unnecessary
+      --  complexity being added for no purpose???
 
       if Present (Contract (Subp)) then
          declare
@@ -2080,6 +2087,9 @@ package body Checks is
       --  Do not process subprograms where pre and post conditions do not make
       --  sense.
 
+      --  More detail here of why these specific conditions are needed???
+      --  And remember to document them ???
+
       if not Comes_From_Source (Subp)
         or else Is_Imported (Subp)
         or else Is_Intrinsic_Subprogram (Subp)
@@ -2127,6 +2137,7 @@ package body Checks is
 
    procedure Apply_Predicate_Check (N : Node_Id; Typ : Entity_Id) is
       S : Entity_Id;
+
    begin
       if Present (Predicate_Function (Typ)) then
 
@@ -2134,17 +2145,12 @@ package body Checks is
          --  subprograms, such as TSS functions.
 
          S := Current_Scope;
-         while Present (S)
-           and then not Is_Subprogram (S)
-         loop
+         while Present (S) and then not Is_Subprogram (S) loop
             S := Scope (S);
          end loop;
 
-         if Present (S)
-           and then Get_TSS_Name (S) /= TSS_Null
-         then
+         if Present (S) and then Get_TSS_Name (S) /= TSS_Null then
             return;
-
          else
             Insert_Action (N,
               Make_Predicate_Check (Typ, Duplicate_Subexpr (N)));

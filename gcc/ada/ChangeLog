@@ -1,5 +1,29 @@
 2012-10-01  Thomas Quinot  <quinot@adacore.com>
 
+	* gnatcmd.adb, make.adb (Scan_Make_Arg, Inspect_Switches): Recognize
+	and reject an invalid parameter passed to -vP.
+
+2012-10-01  Yannick Moy  <moy@adacore.com>
+
+	* sem_warn.adb (Check_Infinite_Loop_Warning/Test_Ref): Improve
+	the detection of modifications to the loop variable by noting
+	that, if the type of variable is elementary and the condition
+	does not contain a function call, then the condition cannot be
+	modified by side-effects from a procedure call.
+
+2012-10-01  Robert Dewar  <dewar@adacore.com>
+
+	* checks.adb: Add comments.
+
+2012-10-01  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): Improve condition catching
+	never-ending recursion. The previous condition erroneously disabled
+	silently the expansion of the class-wide interface object
+	initialization in cases not involving the recursion.
+
+2012-10-01  Thomas Quinot  <quinot@adacore.com>
+
 	* make.adb: Minor documentation fix: error messages are sent to
 	stderr, not stdout.
 
