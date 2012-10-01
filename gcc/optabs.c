@@ -7733,10 +7733,15 @@ maybe_emit_op (const struct atomic_op_functions *optab, rtx target, rtx mem,
    CODE is the operation being performed (OP)
    MEMMODEL is the memory model variant to use.
    AFTER is true to return the result of the operation (OP_fetch).
-   AFTER is false to return the value before the operation (fetch_OP).  */
-rtx
-expand_atomic_fetch_op (rtx target, rtx mem, rtx val, enum rtx_code code,
-			enum memmodel model, bool after)
+   AFTER is false to return the value before the operation (fetch_OP).  
+
+   This function will *only* generate instructions if there is a direct
+   optab. No compare and swap loops or libcalls will be generated. */
+
+static rtx
+expand_atomic_fetch_op_no_fallback (rtx target, rtx mem, rtx val,
+				    enum rtx_code code, enum memmodel model,
+				    bool after)
 {
   enum machine_mode mode = GET_MODE (mem);
   struct atomic_op_functions optab;
@@ -7809,13 +7814,66 @@ expand_atomic_fetch_op (rtx target, rtx mem, rtx val, enum rtx_code code,
 	}
     }
 
+  /* No direct opcode can be generated.  */
+  return NULL_RTX;
+}
+
+
+
+/* This function expands an atomic fetch_OP or OP_fetch operation:
+   TARGET is an option place to stick the return value.  const0_rtx indicates
+   the result is unused. 
+   atomically fetch MEM, perform the operation with VAL and return it to MEM.
+   CODE is the operation being performed (OP)
+   MEMMODEL is the memory model variant to use.
+   AFTER is true to return the result of the operation (OP_fetch).
+   AFTER is false to return the value before the operation (fetch_OP).  */
+rtx
+expand_atomic_fetch_op (rtx target, rtx mem, rtx val, enum rtx_code code,
+			enum memmodel model, bool after)
+{
+  enum machine_mode mode = GET_MODE (mem);
+  rtx result;
+  bool unused_result = (target == const0_rtx);
+
+  result = expand_atomic_fetch_op_no_fallback (target, mem, val, code, model,
+					       after);
+  
+  if (result)
+    return result;
+
+  /* Add/sub can be implemented by doing the reverse operation with -(val).  */
+  if (code == PLUS || code == MINUS)
+    {
+      rtx tmp;
+      enum rtx_code reverse = (code == PLUS ? MINUS : PLUS);
+
+      start_sequence ();
+      tmp = expand_simple_unop (mode, NEG, val, NULL_RTX, true);
+      result = expand_atomic_fetch_op_no_fallback (target, mem, tmp, reverse,
+						   model, after);
+      if (result)
+	{
+	  /* PLUS worked so emit the insns and return.  */
+	  tmp = get_insns ();
+	  end_sequence ();
+	  emit_insn (tmp);
+          return result;
+	}
+
+      /* PLUS did not work, so throw away the negation code and continue.  */
+      end_sequence ();
+    }
+
   /* Try the __sync libcalls only if we can't do compare-and-swap inline.  */
   if (!can_compare_and_swap_p (mode, false))
     {
       rtx libfunc;
       bool fixup = false;
       enum rtx_code orig_code = code;
+      struct atomic_op_functions optab;
 
+      get_atomic_op_for_code (&optab, code);
       libfunc = optab_libfunc (after ? optab.fetch_after
 			       : optab.fetch_before, mode);
       if (libfunc == NULL

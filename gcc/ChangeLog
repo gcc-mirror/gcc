@@ -1,3 +1,11 @@
+2012-10-01  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR target/54087
+	* optabs.c (expand_atomic_fetch_op_no_fallback): New.  Factored code
+	from expand_atomic_fetch_op.
+	(expand_atomic_fetch_op):  Try atomic_{add|sub} operations in terms of
+	the other one if direct opcode fails.
+
 2012-10-01  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR rtl-optimization/54457

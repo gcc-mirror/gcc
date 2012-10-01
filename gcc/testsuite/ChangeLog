@@ -1,3 +1,9 @@
+2012-10-01  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR target/54087
+	* gcc.dg/pr54087.c:  New testcase for atomic_sub -> atomic_add when
+	atomic_sub fails.
+
 2012-10-01  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR rtl-optimization/54457
