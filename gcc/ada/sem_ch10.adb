@@ -1822,7 +1822,7 @@ package body Sem_Ch10 is
                      Set_Corresponding_Stub (Unit (Comp_Unit), N);
 
                      --  Collect SCO information for loaded subunit if we are
-                     --  in the main unit).
+                     --  in the main unit.
 
                      if Generate_SCO
                        and then

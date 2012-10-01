@@ -387,7 +387,7 @@ procedure XOSCons is
                   Info.Value_Len  := Info.Text_Value'Length;
                end if;
 
-               if Info.Constant_Name.all = "sizeof_unsigned_int" then
+               if Info.Constant_Name.all = "SIZEOF_unsigned_int" then
                   Size_Of_Unsigned_Int :=
                     8 * Integer (Info.Int_Value.Abs_Value);
                end if;
