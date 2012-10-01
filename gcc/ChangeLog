@@ -1,3 +1,11 @@
+2012-10-01  Dehao Chen  <dehao@google.com>
+
+	PR middle-end/54759
+	* gcc/tree-vect-loop-manip.c (slpeel_make_loop_iterate_ntimes): Use
+	LOCATION_LOCUS to compare with UNKNOWN_LOCATION.
+	(slpeel_tree_peel_loop_to_edge): Likewise.
+	* gcc/tree-vectorizer.c (vectorize_loops): Likewise.
+
 2012-10-01  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR target/54087
