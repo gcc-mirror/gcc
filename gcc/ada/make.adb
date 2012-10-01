@@ -410,7 +410,7 @@ package body Make is
    --  Delete all temp files created by Gnatmake and call Osint.Fail, with the
    --  parameter S (see osint.ads). This is called from the Prj hierarchy and
    --  the MLib hierarchy. This subprogram also prints current error messages
-   --  on stdout (ie finalizes errout)
+   --  (ie finalizes Errutil).
 
    --------------------------
    -- Obsolete Executables --

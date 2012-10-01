@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -636,9 +636,12 @@ package body Prj.Part is
 
          --  Now, check the projects directly imported by the main project.
          --  Remove from the potentially virtual any project extended by one
-         --  of these imported projects. For non extending imported projects,
-         --  check that they do not belong to the project tree of the project
-         --  being "extended-all" by the main project.
+         --  of these imported projects.
+
+         --  For non extending imported projects, check that they do not belong
+         --  to the project tree of the project being "extended-all" by the
+         --  main project.
+         --  Where is this check performed???
 
          declare
             With_Clause : Project_Node_Id;

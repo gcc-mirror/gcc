@@ -2043,8 +2043,7 @@ package body Prj.Env is
                   --  $prefix/$target/lib/gnat
 
                   Add_Str_To_Name_Buffer
-                    (Path_Separator & Prefix.all &
-                     Target_Name);
+                    (Path_Separator & Prefix.all & Target_Name);
 
                   --  Note: Target_Name has a trailing / when it comes from
                   --  Sdefault.

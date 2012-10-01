@@ -1,3 +1,46 @@
+2012-10-01  Thomas Quinot  <quinot@adacore.com>
+
+	* make.adb: Minor documentation fix: error messages are sent to
+	stderr, not stdout.
+
+2012-10-01  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* checks.ads, checks.adb (Apply_Parameter_Aliasing_Checks): New routine.
+	(Apply_Parameter_Validity_Checks): New routines.
+	* exp_ch6.adb (Expand_Call): Add aliasing checks to detect
+	overlapping objects.
+	* freeze.adb: Add with and use clauses for Checks and Validsw.
+	(Freeze_Entity): Add checks to detect proper initialization
+	of scalars.
+	* sem_ch4.adb: Add with and use clauses for Checks and Validsw.
+	(Analyze_Call): Add aliasing checks to detect overlapping objects.
+	* sem_ch13.adb: Add with and use clauses for Validsw.
+	(Analyze_Aspect_Specifications): Add checks to detect proper
+	initialization of scalars.
+	* sem_prag.adb (Chain_PPC): Correct the extraction of the
+	subprogram name.
+	* sem_util.adb (Is_Object_Reference): Attribute 'Result now
+	produces an object.
+	* usage.adb (Usage): Add usage lines for validity switches 'l',
+	'L', 'v' and 'V'.
+	* validsw.adb (Reset_Validity_Check_Options): Include
+	processing for flags Validity_Check_Non_Overlapping_Params and
+	Validity_Check_Valid_Scalars_On_Params. Code reformatting.
+	(Save_Validity_Check_Options): Include processing
+	for flags Validity_Check_Non_Overlapping_Params
+	and Validity_Check_Valid_Scalars_On_Params.
+	(Set_Validity_Check_Options): Add processing for validity switches
+	'a', 'l', 'L', 'n', 'v' and 'V'. Code reformatting.
+	* validsw.ads: Add new flags Validity_Check_Non_Overlapping_Params
+	and Validity_Check_Valid_Scalars_On_Params along with comments
+	on usage.
+
+2012-10-01  Thomas Quinot  <quinot@adacore.com>
+
+	* namet.ads, xsnamest.adb, prj-env.adb, sem_warn.adb,
+	errout.ads: Minor reformatting.
+	* prj-part.adb: Add comment.
+
 2012-10-01  Robert Dewar  <dewar@adacore.com>
 
 	* sinfo.ads, exp_aggr.adb, sem_ch13.adb: Minor reformatting.

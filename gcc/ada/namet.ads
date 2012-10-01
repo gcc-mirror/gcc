@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,11 +47,11 @@ package Namet is
 
 --  The forms of the entries are as follows:
 
---    Identifiers Stored with upper case letters folded to lower case. Upper
---                       half (16#80# bit set) and wide characters are stored
---                       in an encoded form (Uhh for upper half char, Whhhh
---                       for wide characters, WWhhhhhhhh as provided by the
---                       routine Store_Encoded_Character, where hh are hex
+--    Identifiers        Stored with upper case letters folded to lower case.
+--                       Upper half (16#80# bit set) and wide characters are
+--                       stored in an encoded form (Uhh for upper half char,
+--                       Whhhh for wide characters, WWhhhhhhhh as provided by
+--                       the routine Store_Encoded_Character, where hh are hex
 --                       digits for the character code using lower case a-f).
 --                       Normally the use of U or W in other internal names is
 --                       avoided, but these letters may be used in internal

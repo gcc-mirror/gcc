@@ -24,6 +24,7 @@
 ------------------------------------------------------------------------------
 
 with Atree;    use Atree;
+with Checks;   use Checks;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
@@ -64,6 +65,7 @@ with Tbuild;   use Tbuild;
 with Ttypes;   use Ttypes;
 with Uintp;    use Uintp;
 with Urealp;   use Urealp;
+with Validsw;  use Validsw;
 
 package body Freeze is
 
@@ -2653,6 +2655,14 @@ package body Freeze is
                return No_List;
             end if;
          end;
+      end if;
+
+      --  Add checks to detect proper initialization of scalars
+
+      if Is_Subprogram (E)
+        and then Validity_Check_Valid_Scalars_On_Params
+      then
+         Apply_Parameter_Validity_Checks (E);
       end if;
 
       --  Deal with delayed aspect specifications. The analysis of the

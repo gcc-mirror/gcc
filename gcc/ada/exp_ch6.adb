@@ -3404,6 +3404,13 @@ package body Exp_Ch6 is
 
       Expand_Actuals (Call_Node, Subp);
 
+      --  Now that we have all parameters, add aliasing checks to detect
+      --  overlapping objects.
+
+      if Validity_Check_Non_Overlapping_Params then
+         Apply_Parameter_Aliasing_Checks (N);
+      end if;
+
       --  If the subprogram is a renaming, or if it is inherited, replace it in
       --  the call with the name of the actual subprogram being called. If this
       --  is a dispatching call, the run-time decides what to call. The Alias

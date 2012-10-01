@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -153,6 +153,21 @@ package Checks is
    --  and unconstrained aliased objects). For the case of unconstrained
    --  formals, the check is performed only if the corresponding actual is
    --  constrained, i.e., whether Lhs'Constrained is True.
+
+   procedure Apply_Parameter_Aliasing_Checks (Call : Node_Id);
+   --  Given a subprogram call Call, introduce a check to verify that none of
+   --  the actual parameters overlap.
+
+   procedure Apply_Parameter_Validity_Checks (Subp : Entity_Id);
+   --  Given a subprogram Subp, add both a pre and post condition pragmas that
+   --  verify the validity of formal parameters and function results.
+
+   procedure Apply_Parameter_Validity_Checks
+     (Subp : Entity_Id;
+      Prag : Node_Id);
+   --  Given a subprogram Subp and a pre or post condition pragma Prag, augment
+   --  the expression of the pragma to verify the validity of qualifying formal
+   --  parameter and function results.
 
    procedure Apply_Predicate_Check (N : Node_Id; Typ : Entity_Id);
    --  N is an expression to which a predicate check may need to be applied
