@@ -1731,7 +1731,7 @@ cgraph_set_const_flag (struct cgraph_node *node, bool readonly, bool looping)
 static bool
 cgraph_set_pure_flag_1 (struct cgraph_node *node, void *data)
 {
-  /* Static pureructors and destructors without a side effect can be
+  /* Static constructors and destructors without a side effect can be
      optimized out.  */
   if (data && !((size_t)data & 2))
     {
