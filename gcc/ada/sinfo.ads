@@ -668,9 +668,8 @@ package Sinfo is
    --  Compile_Time_Known_Aggregate (Flag18-Sem)
    --    Present in N_Aggregate nodes. Set for aggregates which can be fully
    --    evaluated at compile time without raising constraint error. Such
-   --    aggregates can be passed as is to Gigi without any expansion. See
-   --    Exp_Aggr for the specific conditions under which an aggregate has this
-   --    flag set.
+   --    aggregates can be passed as is the back end without any expansion.
+   --    See Exp_Aggr for specific conditions under which this flag gets set.
 
    --  Componentwise_Assignment (Flag14-Sem)
    --    Present in N_Assignment_Statement nodes. Set for a record assignment

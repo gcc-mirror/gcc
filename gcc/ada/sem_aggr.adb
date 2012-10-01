@@ -1726,6 +1726,9 @@ package body Sem_Aggr is
       Discard : Node_Id;
       pragma Warnings (Off, Discard);
 
+      Delete_Choice : Boolean;
+      --  Used when replacing a subtype choice with predicate by a list
+
       Aggr_Low  : Node_Id := Empty;
       Aggr_High : Node_Id := Empty;
       --  The actual low and high bounds of this sub-aggregate
@@ -1766,6 +1769,8 @@ package body Sem_Aggr is
          Assoc := First (Component_Associations (N));
          while Present (Assoc) loop
             Choice := First (Choices (Assoc));
+            Delete_Choice := False;
+
             while Present (Choice) loop
                if Nkind (Choice) = N_Others_Choice then
                   Others_Present := True;
@@ -1792,10 +1797,56 @@ package body Sem_Aggr is
                      Error_Msg_N
                        ("(Ada 83) illegal context for OTHERS choice", N);
                   end if;
+
+               elsif Is_Entity_Name (Choice) then
+                  Analyze (Choice);
+
+                  declare
+                     E      : constant Entity_Id := Entity (Choice);
+                     New_Cs : List_Id;
+                     P      : Node_Id;
+                     C      : Node_Id;
+
+                  begin
+                     if Is_Type (E) and then Has_Predicates (E) then
+                        Freeze_Before (N, E);
+
+                        --  If the subtype has a static predicate, replace the
+                        --  original choice with the list of individual values
+                        --  covered by the predicate.
+
+                        if Present (Static_Predicate (E)) then
+                           Delete_Choice := True;
+
+                           New_Cs := New_List;
+                           P := First (Static_Predicate (E));
+                           while Present (P) loop
+                              C := New_Copy (P);
+                              Set_Sloc (C, Sloc (Choice));
+                              Append_To (New_Cs, C);
+                              Next (P);
+                           end loop;
+
+                           Insert_List_After (Choice, New_Cs);
+                        end if;
+                     end if;
+                  end;
                end if;
 
                Nb_Choices := Nb_Choices + 1;
-               Next (Choice);
+
+               declare
+                  C : constant Node_Id := Choice;
+
+               begin
+                  Next (Choice);
+
+                  if Delete_Choice then
+                     Remove (C);
+                     Nb_Choices := Nb_Choices - 1;
+                     Delete_Choice := False;
+                  end if;
+               end;
             end loop;
 
             Next (Assoc);
@@ -1998,6 +2049,7 @@ package body Sem_Aggr is
                   Nb_Discrete_Choices := Nb_Discrete_Choices + 1;
                   Table (Nb_Discrete_Choices).Choice_Lo := Low;
                   Table (Nb_Discrete_Choices).Choice_Hi := High;
+                  Table (Nb_Discrete_Choices).Choice_Node := Choice;
 
                   Next (Choice);
 
@@ -2115,7 +2167,7 @@ package body Sem_Aggr is
                   then
                      Error_Msg_N
                        ("duplicate choice values in array aggregate",
-                        Table (J).Choice_Hi);
+                        Table (J).Choice_Node);
                      return Failure;
 
                   elsif not Others_Present then

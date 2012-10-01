@@ -1208,6 +1208,7 @@ package Snames is
    Name_Leading_Required_Switches          : constant Name_Id := N + $;
    Name_Leading_Switches                   : constant Name_Id := N + $;
    Name_Lib_Subdir                         : constant Name_Id := N + $;
+   Name_Link_Lib_Subdir                    : constant Name_Id := N + $;
    Name_Library                            : constant Name_Id := N + $;
    Name_Library_Ali_Dir                    : constant Name_Id := N + $;
    Name_Library_Auto_Init                  : constant Name_Id := N + $;

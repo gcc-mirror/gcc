@@ -2379,6 +2379,18 @@ package body Sem_Ch9 is
             end;
          end if;
       end if;
+
+      --  AI05-0225: the target protected object of a requeue must be a
+      --  variable. This is a binding interpretation that applies to all
+      --  versions of the language.
+
+      if Present (Target_Obj)
+        and then Ekind (Scope (Entry_Id)) in Protected_Kind
+        and then not Is_Variable (Target_Obj)
+      then
+         Error_Msg_N
+           ("target protected object of requeue must be a variable", N);
+      end if;
    end Analyze_Requeue;
 
    ------------------------------
