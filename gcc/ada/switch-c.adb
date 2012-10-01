@@ -128,9 +128,8 @@ package body Switch.C is
 
       --  Handle switches that do not start with -gnat
 
-      if Ptr + 3 > Max
-        or else Switch_Chars (Ptr .. Ptr + 3) /= "gnat"
-      then
+      if Ptr + 3 > Max or else Switch_Chars (Ptr .. Ptr + 3) /= "gnat" then
+
          --  There are two front-end switches that do not start with -gnat:
          --  -I, --RTS
 
@@ -755,10 +754,77 @@ package body Switch.C is
 
             when 'o' =>
                Ptr := Ptr + 1;
-               Suppress_Options.Suppress (Overflow_Check) := False;
-               Suppress_Options.Overflow_Checks_General := Check_All;
-               Suppress_Options.Overflow_Checks_Assertions := Check_All;
-               Opt.Enable_Overflow_Checks := True;
+
+               --  Case of no digits after the -gnato
+
+               if Ptr > Max or else Switch_Chars (Ptr) not in '0' .. '3' then
+                  Suppress_Options.Overflow_Checks_General    := Checked;
+                  Suppress_Options.Overflow_Checks_Assertions := Checked;
+
+               --  At least one digit after the -gnato
+
+               else
+                  --  Handle first digit after -gnato
+
+                  case Switch_Chars (Ptr) is
+                     when '0' =>
+                        Suppress_Options.Overflow_Checks_General :=
+                          Suppressed;
+
+                     when '1' =>
+                        Suppress_Options.Overflow_Checks_General :=
+                          Checked;
+
+                     when '2' =>
+                        Suppress_Options.Overflow_Checks_General :=
+                          Minimized;
+
+                     when '3' =>
+                        Suppress_Options.Overflow_Checks_General :=
+                          Eliminated;
+
+                     when others =>
+                        raise Program_Error;
+                  end case;
+
+                  Ptr := Ptr + 1;
+
+                  --  Only one digit after -gnato, set assertions mode to
+                  --  be the same as general mode.
+
+                  if Ptr > Max
+                    or else Switch_Chars (Ptr) not in '0' .. '3'
+                  then
+                     Suppress_Options.Overflow_Checks_Assertions :=
+                       Suppress_Options.Overflow_Checks_General;
+
+                  --  Process second digit after -gnato
+
+                  else
+                     case Switch_Chars (Ptr) is
+                        when '0' =>
+                           Suppress_Options.Overflow_Checks_Assertions :=
+                             Suppressed;
+
+                        when '1' =>
+                           Suppress_Options.Overflow_Checks_Assertions :=
+                             Checked;
+
+                        when '2' =>
+                           Suppress_Options.Overflow_Checks_Assertions :=
+                             Minimized;
+
+                        when '3' =>
+                           Suppress_Options.Overflow_Checks_Assertions :=
+                             Eliminated;
+
+                        when others =>
+                           raise Program_Error;
+                     end case;
+
+                     Ptr := Ptr + 1;
+                  end if;
+               end if;
 
             --  Processing for O switch
 
@@ -793,13 +859,12 @@ package body Switch.C is
                         Suppress_Options.Suppress (J) := True;
                      end if;
 
-                     Suppress_Options.Overflow_Checks_General    := Suppress;
-                     Suppress_Options.Overflow_Checks_Assertions := Suppress;
+                     Suppress_Options.Overflow_Checks_General    := Suppressed;
+                     Suppress_Options.Overflow_Checks_Assertions := Suppressed;
                   end loop;
 
-                  Validity_Checks_On         := False;
-                  Opt.Suppress_Checks        := True;
-                  Opt.Enable_Overflow_Checks := False;
+                  Validity_Checks_On  := False;
+                  Opt.Suppress_Checks := True;
                end if;
 
             --  Processing for P switch

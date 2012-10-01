@@ -638,11 +638,6 @@ package body Prj.Part is
          --  Remove from the potentially virtual any project extended by one
          --  of these imported projects.
 
-         --  For non extending imported projects, check that they do not belong
-         --  to the project tree of the project being "extended-all" by the
-         --  main project.
-         --  Where is this check performed???
-
          declare
             With_Clause : Project_Node_Id;
             Imported    : Project_Node_Id := Empty_Node;

@@ -743,6 +743,16 @@ package body Sem_Eval is
    begin
       Diff.all := No_Uint;
 
+      --  In preanalysis mode, always return Unknown, it is too early to be
+      --  thinking we know the result of a comparison, save that judgment for
+      --  the full analysis. This is particularly important in the case of
+      --  pre and postconditions, which otherwise can be prematurely collapsed
+      --  into having True or False conditions when this is inappropriate.
+
+      if not Full_Analysis then
+         return Unknown;
+      end if;
+
       --  If either operand could raise constraint error, then we cannot
       --  know the result at compile time (since CE may be raised!)
 

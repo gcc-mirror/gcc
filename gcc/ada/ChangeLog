@@ -1,3 +1,50 @@
+2012-10-01  Vincent Celier  <celier@adacore.com>
+
+	* make.adb (Scan_Make_Arg): Only test for "vP" of the option
+	includes at least 3 characters.
+	* gnatcmd.adb (GNATCmd): Ditto.
+
+2012-10-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch7.adb, sinfo.ads: Add comments.
+
+2012-10-01  Robert Dewar  <dewar@adacore.com>
+
+	* checks.adb: Remove reference to Enable_Overflow_Checks Use
+	Suppress_Options rather than Scope_Suppress.
+	* gnat1drv.adb (Adjust_Global_Switches): Handle new overflow
+	settings (Adjust_Global_Switches): Initialize Scope_Suppress
+	from Suppress_Options.
+	* opt.adb: Remove Enable_Overflow_Checks (use Suppress_Options
+	instead).
+	* opt.ads: Remove Overflow_Checks_Unsuppressed (not used)
+	Remove Enable_Overflow_Checks (use Suppress_Options instead)
+	Suppress_Options is now current setting (replaces Scope_Suppress).
+	* osint.adb (Initialize): Deal with initializing overflow
+	checking.
+	* par-prag.adb: Add dummy entry for pragma Overflow_Checks.
+	* sem.adb (Semantics): Save and restore In_Assertion_Expr Use
+	Suppress_Options instead of Scope_Suppress.
+	* sem.ads (In_Assertion_Expr): New flag (Scope_Suppress):
+	Removed, use Suppress_Options instead.
+	* sem_eval.adb (Compile_Time_Compare): Return Unknown in
+	preanalysis mode.
+	* sem_prag.adb (Process_Suppress_Unsuppress): Setting of
+	Overflow_Checks_Unsuppressed removed (not used anywhere!)
+	(Analyze_Pragma, case Check): Set In_Assertion_Expression
+	(Analyze_Pragma, case Overflow_Checks): Implement new pragma
+	* snames.ads-tmpl: Add names needed for handling pragma
+	Overflow_Checks
+	* switch-c.adb (Scan_Front_End_Switches) Handle -gnato? and
+	-gnato?? where ? is 0-3
+	* types.ads: Updates and fixes to comment on Suppress_Record.
+
+2012-10-01  Vincent Celier  <celier@adacore.com>
+
+	* prj-part.adb (Parse): Remove incorrect comment about checking
+	imported non extending projects from and "extending all"
+	one. Minor correction.
+
 2012-10-01  Robert Dewar  <dewar@adacore.com>
 
 	* make.adb, exp_ch3.adb: Minor reformatting.

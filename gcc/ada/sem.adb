@@ -33,6 +33,7 @@ with Fname;    use Fname;
 with Lib;      use Lib;
 with Lib.Load; use Lib.Load;
 with Nlists;   use Nlists;
+with Opt;      use Opt;
 with Output;   use Output;
 with Restrict; use Restrict;
 with Sem_Attr; use Sem_Attr;
@@ -1353,13 +1354,14 @@ package body Sem is
       --  these variables, and also that such calls do not disturb the settings
       --  for units being analyzed at a higher level.
 
-      S_Current_Sem_Unit : constant Unit_Number_Type := Current_Sem_Unit;
-      S_Full_Analysis    : constant Boolean          := Full_Analysis;
-      S_GNAT_Mode        : constant Boolean          := GNAT_Mode;
-      S_Global_Dis_Names : constant Boolean          := Global_Discard_Names;
-      S_In_Spec_Expr     : constant Boolean          := In_Spec_Expression;
-      S_Inside_A_Generic : constant Boolean          := Inside_A_Generic;
-      S_Outer_Gen_Scope  : constant Entity_Id        := Outer_Generic_Scope;
+      S_Current_Sem_Unit  : constant Unit_Number_Type := Current_Sem_Unit;
+      S_Full_Analysis     : constant Boolean          := Full_Analysis;
+      S_GNAT_Mode         : constant Boolean          := GNAT_Mode;
+      S_Global_Dis_Names  : constant Boolean          := Global_Discard_Names;
+      S_In_Assertion_Expr : constant Nat              := In_Assertion_Expr;
+      S_In_Spec_Expr      : constant Boolean          := In_Spec_Expression;
+      S_Inside_A_Generic  : constant Boolean          := Inside_A_Generic;
+      S_Outer_Gen_Scope   : constant Entity_Id        := Outer_Generic_Scope;
 
       Generic_Main : constant Boolean :=
                        Nkind (Unit (Cunit (Main_Unit)))
@@ -1453,6 +1455,7 @@ package body Sem is
 
       Full_Analysis      := True;
       Inside_A_Generic   := False;
+      In_Assertion_Expr  := 0;
       In_Spec_Expression := False;
 
       Set_Comes_From_Source_Default (False);
@@ -1526,6 +1529,7 @@ package body Sem is
       Full_Analysis        := S_Full_Analysis;
       Global_Discard_Names := S_Global_Dis_Names;
       GNAT_Mode            := S_GNAT_Mode;
+      In_Assertion_Expr    := S_In_Assertion_Expr;
       In_Spec_Expression   := S_In_Spec_Expr;
       Inside_A_Generic     := S_Inside_A_Generic;
       Outer_Generic_Scope  := S_Outer_Gen_Scope;

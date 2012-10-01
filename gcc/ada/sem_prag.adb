@@ -286,7 +286,9 @@ package body Sem_Prag is
       --  Preanalyze the boolean expression, we treat this as a spec expression
       --  (i.e. similar to a default expression).
 
+      In_Assertion_Expr := In_Assertion_Expr + 1;
       Preanalyze_Spec_Expression (Get_Pragma_Arg (Arg1), Standard_Boolean);
+      In_Assertion_Expr := In_Assertion_Expr - 1;
 
       --  In ASIS mode, for a pragma generated from a source aspect, also
       --  analyze the original aspect expression.
@@ -5672,12 +5674,11 @@ package body Sem_Prag is
 
          if C = All_Checks or else C = Overflow_Check then
             if Suppress_Case then
-               Scope_Suppress.Overflow_Checks_General    := Suppress;
-               Scope_Suppress.Overflow_Checks_Assertions := Suppress;
+               Scope_Suppress.Overflow_Checks_General    := Suppressed;
+               Scope_Suppress.Overflow_Checks_Assertions := Suppressed;
             else
-               Scope_Suppress.Overflow_Checks_General    := Check_All;
-               Scope_Suppress.Overflow_Checks_Assertions := Check_All;
-               Opt.Overflow_Checks_Unsuppressed := True;
+               Scope_Suppress.Overflow_Checks_General    := Minimized;
+               Scope_Suppress.Overflow_Checks_Assertions := Minimized;
             end if;
          end if;
 
@@ -6799,7 +6800,7 @@ package body Sem_Prag is
          -- Assertion_Policy --
          ----------------------
 
-         --  pragma Assertion_Policy (Check | Disable |Ignore)
+         --  pragma Assertion_Policy (Check | Disable | Ignore)
 
          when Pragma_Assertion_Policy => Assertion_Policy : declare
             Policy : Node_Id;
@@ -7289,7 +7290,9 @@ package body Sem_Prag is
             --  Check is active
 
             else
+               In_Assertion_Expr := In_Assertion_Expr + 1;
                Analyze_And_Resolve (Expr, Any_Boolean);
+               In_Assertion_Expr := In_Assertion_Expr - 1;
             end if;
          end Check;
 
@@ -11753,6 +11756,76 @@ package body Sem_Prag is
             Optimize_Alignment_Local := True;
          end Optimize_Alignment;
 
+         ---------------------
+         -- Overflow_Checks --
+         ---------------------
+
+         --  pragma Overflow_Checks
+         --    ([General => ] MODE [, [Assertions => ] MODE);
+
+         --  MODE := SUPPRESSED | CHECKED | MINIMIZED | ELIMINATED
+
+         when Pragma_Overflow_Checks => Overflow_Checks : declare
+            function Get_Check_Mode
+              (Name : Name_Id;
+               Arg  : Node_Id) return Overflow_Check_Type;
+            --  Function to process one pragma argument, Arg. If an identifier
+            --  is present, it must be Name. Check type is returned if a valid
+            --  argument exists, otherwise an error is signalled.
+
+            --------------------
+            -- Get_Check_Mode --
+            --------------------
+
+            function Get_Check_Mode
+              (Name : Name_Id;
+               Arg  : Node_Id) return Overflow_Check_Type
+            is
+               Argx : constant Node_Id := Get_Pragma_Arg (Arg);
+
+            begin
+               Check_Optional_Identifier (Arg, Name);
+               Check_Arg_Is_Identifier (Argx);
+
+               if Chars (Argx) = Name_Suppressed then
+                  return Suppressed;
+               elsif Chars (Argx) = Name_Checked then
+                  return Checked;
+               elsif Chars (Argx) = Name_Minimized then
+                  return Minimized;
+               elsif Chars (Argx) = Name_Eliminated then
+                  return Eliminated;
+               else
+                  Error_Pragma_Arg ("invalid argument for pragma%", Argx);
+               end if;
+            end Get_Check_Mode;
+
+         --  Start of processing for Overflow_Checks
+
+         begin
+            GNAT_Pragma;
+            Check_At_Least_N_Arguments (1);
+            Check_At_Most_N_Arguments (2);
+
+            --  Process first argument
+
+            Suppress_Options.Overflow_Checks_General :=
+              Get_Check_Mode (Name_General, Arg1);
+
+            --  Case of only one argument
+
+            if Arg_Count = 1 then
+               Scope_Suppress.Overflow_Checks_Assertions :=
+                 Scope_Suppress.Overflow_Checks_General;
+
+            --  Case of two arguments present
+
+            else
+               Scope_Suppress.Overflow_Checks_Assertions  :=
+                 Get_Check_Mode (Name_Assertions, Arg2);
+            end if;
+         end Overflow_Checks;
+
          -------------
          -- Ordered --
          -------------
@@ -15173,6 +15246,7 @@ package body Sem_Prag is
       Pragma_Obsolescent                    =>  0,
       Pragma_Optimize                       => -1,
       Pragma_Optimize_Alignment             => -1,
+      Pragma_Overflow_Checks                =>  0,
       Pragma_Ordered                        =>  0,
       Pragma_Pack                           =>  0,
       Pragma_Page                           => -1,

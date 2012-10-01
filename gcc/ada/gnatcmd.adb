@@ -848,6 +848,9 @@ procedure GNATCmd is
       Unit  : Unit_Index;
       Path  : Path_Name_Type;
 
+      Files_File     : Ada.Text_IO.File_Type;
+      Temp_File_Name : Path_Name_Type;
+
    begin
       if GN_Path = null then
          Put_Line (Standard_Error, "could not locate " & GN_Name);
@@ -856,7 +859,7 @@ procedure GNATCmd is
 
       --  Create the temp file
 
-      Tempdir.Create_Temp_File (FD, Name);
+      Prj.Env.Create_Temp_File (Project_Tree.Shared, FD, Name, "files");
 
       --  And close it, because on VMS Spawn with a file descriptor created
       --  with Create_Temp_File does not redirect output.
@@ -904,8 +907,19 @@ procedure GNATCmd is
          raise Error_Exit;
 
       else
-         --  Get each file name in the file, find its path and add it the
-         --  list of arguments.
+         --  Create a temporary file to put the list of files in the closure
+
+         Tempdir.Create_Temp_File (FD, Temp_File_Name);
+         Last_Switches.Increment_Last;
+         Last_Switches.Table (Last_Switches.Last) :=
+           new String'("-files=" & Get_Name_String (Temp_File_Name));
+
+         Close (FD);
+
+         Open (Files_File, Out_File, Get_Name_String (Temp_File_Name));
+
+         --  Get each file name in the file, find its path and add it the list
+         --  of arguments.
 
          while not End_Of_File (File) loop
             Get_Line (File, Line, Last);
@@ -933,17 +947,15 @@ procedure GNATCmd is
                Unit := Units_Htable.Get_Next (Project_Tree.Units_HT);
             end loop;
 
-            Last_Switches.Increment_Last;
-
             if Path /= No_Path then
-               Last_Switches.Table (Last_Switches.Last) :=
-                  new String'(Get_Name_String (Path));
+               Put_Line (Files_File, Get_Name_String (Path));
 
             else
-               Last_Switches.Table (Last_Switches.Last) :=
-                 new String'(Line (1 .. Last));
+               Put_Line (Files_File, Line (1 .. Last));
             end if;
          end loop;
+
+         Close (Files_File);
 
          begin
             if not Keep_Temporary_Files then
@@ -1769,7 +1781,9 @@ begin
 
                   --  -vPx  Specify verbosity while parsing project files
 
-                  elsif Argv (Argv'First + 1 .. Argv'First + 2) = "vP" then
+                  elsif Argv'Length >= 3
+                    and then  Argv (Argv'First + 1 .. Argv'First + 2) = "vP"
+                  then
                      if Argv'Length = 4
                           and then Argv (Argv'Last) in '0' .. '2'
                      then
@@ -2055,6 +2069,11 @@ begin
            or else The_Command = Link
            or else The_Command = Elim
          then
+            if Project.Object_Directory.Name = No_Path then
+               Fail ("project " & Get_Name_String (Project.Display_Name) &
+                     " has no object directory");
+            end if;
+
             Change_Dir (Get_Name_String (Project.Object_Directory.Name));
          end if;
 
