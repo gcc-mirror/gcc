@@ -5888,7 +5888,10 @@ package body Sem_Res is
          end;
       end if;
 
-      Analyze_Dimension (N);
+      --  Check the dimensions of the actuals in the call. For function calls,
+      --  propagate the dimensions from the returned type to N.
+
+      Analyze_Dimension_Call (N, Nam);
 
       --  All done, evaluate call and deal with elaboration issues
 

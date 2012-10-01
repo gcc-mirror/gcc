@@ -2055,6 +2055,13 @@ package body Checks is
 
          if Present (S) and then Get_TSS_Name (S) /= TSS_Null then
             return;
+
+         --  Check certainly does not apply within the predicate function
+         --  itself, else we have a infinite recursion.
+
+         elsif S = Predicate_Function (Typ) then
+            return;
+
          else
             Insert_Action (N,
               Make_Predicate_Check (Typ, Duplicate_Subexpr (N)));

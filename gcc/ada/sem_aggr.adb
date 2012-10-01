@@ -47,6 +47,7 @@ with Sem_Cat;  use Sem_Cat;
 with Sem_Ch3;  use Sem_Ch3;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Ch13; use Sem_Ch13;
+with Sem_Dim;  use Sem_Dim;
 with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
@@ -2549,6 +2550,10 @@ package body Sem_Aggr is
              Duplicate_Subexpr (High_Bound (Aggregate_Bounds (N))));
       end if;
 
+      --  Check the dimensions of each component in the array aggregate.
+
+      Analyze_Dimension_Array_Aggregate (N, Component_Typ);
+
       return Success;
    end Resolve_Array_Aggregate;
 
@@ -3225,8 +3230,9 @@ package body Sem_Aggr is
       -----------------------
 
       procedure Resolve_Aggr_Expr (Expr : Node_Id; Component : Node_Id) is
-         New_C     : Entity_Id := Component;
          Expr_Type : Entity_Id := Empty;
+         New_C     : Entity_Id := Component;
+         New_Expr  : Node_Id;
 
          function Has_Expansion_Delayed (Expr : Node_Id) return Boolean;
          --  If the expression is an aggregate (possibly qualified) then its
@@ -3380,10 +3386,17 @@ package body Sem_Aggr is
          end if;
 
          if Relocate then
-            Add_Association (New_C, Relocate_Node (Expr), New_Assoc_List);
+            New_Expr := Relocate_Node (Expr);
+
+            --  Since New_Expr is not gonna be analyzed later on, we need to
+            --  propagate here the dimensions form Expr to New_Expr.
+
+            Move_Dimensions (Expr, New_Expr);
          else
-            Add_Association (New_C, Expr, New_Assoc_List);
+            New_Expr := Expr;
          end if;
+
+         Add_Association (New_C, New_Expr, New_Assoc_List);
       end Resolve_Aggr_Expr;
 
    --  Start of processing for Resolve_Record_Aggregate
@@ -4490,6 +4503,10 @@ package body Sem_Aggr is
 
          Rewrite (N, New_Aggregate);
       end Step_8;
+
+      --  Check the dimensions of the components in the record aggregate.
+
+      Analyze_Dimension_Extension_Or_Record_Aggregate (N);
    end Resolve_Record_Aggregate;
 
    -----------------------------

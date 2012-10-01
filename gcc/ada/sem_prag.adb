@@ -3629,9 +3629,18 @@ package body Sem_Prag is
                Generate_Reference (E, Id, 'i');
             end if;
 
-            --  Loop through the homonyms of the pragma argument's entity
+            --  If the pragma comes from from an aspect, it only applies
+            --   to the given entity, not its homonyms.
+
+            if From_Aspect_Specification (N) then
+               return;
+            end if;
+
+            --  Otherwise Loop through the homonyms of the pragma argument's
+            --  entity, an apply convention to those in the current scope.
 
             E1 := Ent;
+
             loop
                E1 := Homonym (E1);
                exit when No (E1) or else Scope (E1) /= Current_Scope;
@@ -3659,10 +3668,6 @@ package body Sem_Prag is
                      Generate_Reference (E1, Id, 'b');
                   end if;
                end if;
-
-               --  For aspect case, do NOT apply to homonyms
-
-               exit when From_Aspect_Specification (N);
             end loop;
          end if;
       end Process_Convention;
@@ -4528,10 +4533,12 @@ package body Sem_Prag is
            or else Is_Generic_Subprogram (Def_Id)
          then
             --  If the name is overloaded, pragma applies to all of the denoted
-            --  entities in the same declarative part.
+            --  entities in the same declarative part, unless the pragma comes
+            --  from an aspect specification.
 
             Hom_Id := Def_Id;
             while Present (Hom_Id) loop
+
                Def_Id := Get_Base_Subprogram (Hom_Id);
 
                --  Ignore inherited subprograms because the pragma will apply
@@ -4640,6 +4647,9 @@ package body Sem_Prag is
                   --  Such homonyms might be present in the context of other
                   --  units being compiled.
 
+                  exit;
+
+               elsif From_Aspect_Specification (N) then
                   exit;
 
                else

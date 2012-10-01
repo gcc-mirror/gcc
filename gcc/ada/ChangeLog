@@ -1,3 +1,91 @@
+2012-10-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Process_Convention, Process_Import_Or_Interface):
+	Adjust test so that when the pragma comes from an aspect
+	specification it only applies to the entity in the original
+	declaration.
+
+2012-10-01  Thomas Quinot  <quinot@adacore.com>
+
+	* gnat_ugn.texi: Document new command line switch -fada-spec-parent.
+
+2012-10-01  Thomas Quinot  <quinot@adacore.com>
+
+	* s-oscons-tmplt.c, g-socket.ads: Minor code improvement: use gcc
+	builtin __alignof__ to get the alignment of struct fd_set.
+
+2012-10-01  Vincent Pucci  <pucci@adacore.com>
+
+	* exp_ch6.adb (Expand_Call): Remove call to
+	Remove_Dimension_In_Call.
+	* sem_aggr.adb (Resolve_Array_Aggregate): Analyze dimension of
+	components in array aggregate.
+	(Resolve_Aggr_Expr): Propagate dimensions from the original expression
+	Expr to the new created expression New_Expr when resolving the
+	expression of a component in record aggregates.
+	(Resolve_Record_Aggregate): Analyze
+	dimension of components in record (or extension) aggregate.
+	* sem_ch6.adb (Analyze_Subprogram_Specification): Analyze
+	dimension of formals with default expressions in subprogram
+	specification.
+	* sem_ch8.adb (Analyze_Expanded_Name): Analyze dimension of
+	expanded names.
+	(Find_Selected_Component): Analyze dimension of selected component.
+	* sem_dim.adb: Several dimension error messages reformatting.
+	(Dimensions_Msg_Of): New flag Description_Needed in order to
+	differentiate two different sort of dimension error messages.
+	(Dim_Warning_For_Numeric_Literal): New routine.
+	(Exists): New routine.
+	(Move_Dimensions): Routine spec moved to spec file.
+	* sem_dim.ads (String_From_Numeric_Literal): New routine.
+	(Analyze_Dimension): Analyze dimension only when the
+	node comes from source.  Dimension analysis for expanded names added.
+	(Analyze_Dimension_Array_Aggregate): New routine.
+	(Analyze_Dimension_Call): New routine.
+	(Analyze_Dimension_Component_Declaration): Warning if default
+	expression is a numeric literal.
+	(Analyze_Dimension_Extension_Or_Record_Aggregate): New routine.
+	(Analyze_Dimension_Formals): New routine.
+	(Analyze_Dimension_Object_Declaration): Warning if default
+	expression is a numeric literal.
+	(Symbol_Of): Return either the dimension subtype symbol or the
+	dimension symbol built by From_Dim_To_Str_Of_Unit_Symbols.
+	* sem_dim.ads (Analyze_Dimension_Array_Aggregate): New routine.
+	(Analyze_Dimension_Call): New routine.
+	(Analyze_Dimension_Extension_Or_Record_Aggregate): New routine.
+	(Analyze_Dimension_Formals): New routine.
+	(Move_Dimensions): Moved from sem_dim.adb.
+	* s-dimmks.ads: Turn off the warnings for dimensioned object
+	declaration.  Dimensioned subtypes sorted in alphabetical
+	order. New subtypes Area, Speed, Volume.
+	* s-dmotpr.ads: Turn off the warnings for dimensioned object
+	declaration.
+	* sem_res.adb (Resolve_Call): Analyze dimension for calls.
+
+2012-10-01  Thomas Quinot  <quinot@adacore.com>
+
+	* Make-generated.in: Minor cleanup of all targets: use
+	MOVE_IF_CHANGE to put generated files in place, to avoid useless
+	recompilations.
+
+2012-10-01  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.adb (Expand_Dispatching_Call): For functions returning
+	interface types add an implicit conversion to the returned object
+	to force the displacement of the pointer to the returned object
+	to reference the corresponding secondary dispatch table. This
+	is needed to handle well combined calls involving secondary
+	dispatch tables (for example Obj.Prim1.Prim2).
+	* exp_ch4.adb (Expand_Allocator_Expression): Declare internal
+	access type as access to constant or access to variable depending
+	on the context. Found working in this ticket.
+
+2012-10-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* checks.adb (Apply_Predicate_Check): Do not apply check to
+	actual of predicate checking procedure, to prevent infinite
+	recursion.
+
 2012-10-01  Arnaud Charlet  <charlet@adacore.com>
 
 	* gcc-interface/Make-lang.in: Update dependencies.

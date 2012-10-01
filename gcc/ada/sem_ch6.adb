@@ -3450,6 +3450,10 @@ package body Sem_Ch6 is
          Push_Scope (Designator);
          Process_Formals (Formals, N);
 
+         --  Check dimensions in N for formals with default expression
+
+         Analyze_Dimension_Formals (N, Formals);
+
          --  Ada 2005 (AI-345): If this is an overriding operation of an
          --  inherited interface operation, and the controlling type is
          --  a synchronized type, replace the type with its corresponding

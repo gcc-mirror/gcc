@@ -577,6 +577,8 @@ package body Sem_Ch8 is
       else
          Find_Expanded_Name (N);
       end if;
+
+      Analyze_Dimension (N);
    end Analyze_Expanded_Name;
 
    ---------------------------------------
@@ -6153,6 +6155,8 @@ package body Sem_Ch8 is
 
          Analyze_Selected_Component (N);
       end if;
+
+      Analyze_Dimension (N);
    end Find_Selected_Component;
 
    ---------------
