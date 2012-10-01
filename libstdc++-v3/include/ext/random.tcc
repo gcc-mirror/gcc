@@ -732,7 +732,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      __px(__p.nu(), __p.sigma()), __py(result_type(0), __p.sigma());
 	    result_type __x = this->_M_ndx(__px, __urng);
 	    result_type __y = this->_M_ndy(__py, __urng);
+#if _GLIBCXX_USE_C99_MATH_TR1
 	    *__f++ = std::hypot(__x, __y);
+#else
+	    *__f++ = std::sqrt(__x * __x + __y * __y);
+#endif
 	  }
       }
 
