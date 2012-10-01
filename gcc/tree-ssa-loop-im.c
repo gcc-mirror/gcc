@@ -638,29 +638,22 @@ outermost_indep_loop (struct loop *outer, struct loop *loop, mem_ref_p ref)
 static tree *
 simple_mem_ref_in_stmt (gimple stmt, bool *is_store)
 {
-  tree *lhs;
-  enum tree_code code;
+  tree *lhs, *rhs;
 
-  /* Recognize MEM = (SSA_NAME | invariant) and SSA_NAME = MEM patterns.  */
-  if (gimple_code (stmt) != GIMPLE_ASSIGN)
+  /* Recognize SSA_NAME = MEM and MEM = (SSA_NAME | invariant) patterns.  */
+  if (!gimple_assign_single_p (stmt))
     return NULL;
 
-  code = gimple_assign_rhs_code (stmt);
-
   lhs = gimple_assign_lhs_ptr (stmt);
+  rhs = gimple_assign_rhs1_ptr (stmt);
 
-  if (TREE_CODE (*lhs) == SSA_NAME)
+  if (TREE_CODE (*lhs) == SSA_NAME && gimple_vuse (stmt))
     {
-      if (get_gimple_rhs_class (code) != GIMPLE_SINGLE_RHS
-	  || !is_gimple_addressable (gimple_assign_rhs1 (stmt)))
-	return NULL;
-
       *is_store = false;
-      return gimple_assign_rhs1_ptr (stmt);
+      return rhs;
     }
-  else if (code == SSA_NAME
-	   || (get_gimple_rhs_class (code) == GIMPLE_SINGLE_RHS
-	       && is_gimple_min_invariant (gimple_assign_rhs1 (stmt))))
+  else if (gimple_vdef (stmt)
+	   && (TREE_CODE (*rhs) == SSA_NAME || is_gimple_min_invariant (*rhs)))
     {
       *is_store = true;
       return lhs;

@@ -1,3 +1,10 @@
+2012-10-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree.h (copy_mem_ref_info): Delete.
+	* tree-ssa-address.c (copy_mem_ref_info): Likewise.
+	(maybe_fold_tmr): Copy flags manually.
+	* tree-ssa-loop-im.c (simple_mem_ref_in_stmt): Rewrite.
+
 2012-10-01  Marc Glisse  <marc.glisse@inria.fr>
 
 	* simplify-rtx.c (simplify_binary_operation_1) <VEC_SELECT>:
