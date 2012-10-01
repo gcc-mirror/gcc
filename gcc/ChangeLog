@@ -1,3 +1,10 @@
+2012-10-01  Richard Guenther  <rguenther@suse.de>
+
+	* builtins.def (ATTR_MATHFN_FPROUNDING): Do not use no-vops
+	with -frounding-math.
+	* builtin-attrs.def (ATTR_PURE_NOTHROW_NOVOPS_LIST): Remove.
+	(ATTR_PURE_NOTHROW_NOVOPS_LEAF_LIST): Likewise.
+
 2012-10-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree.h (copy_mem_ref_info): Delete.
