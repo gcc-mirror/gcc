@@ -6266,7 +6266,6 @@ tree target_for_debug_bind (tree);
 
 /* In tree-ssa-address.c.  */
 extern tree tree_mem_ref_addr (tree, tree);
-extern void copy_mem_ref_info (tree, tree);
 extern void copy_ref_info (tree, tree);
 
 /* In tree-vrp.c */

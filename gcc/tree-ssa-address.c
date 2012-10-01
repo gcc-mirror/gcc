@@ -821,16 +821,6 @@ get_address_description (tree op, struct mem_address *addr)
   addr->offset = TMR_OFFSET (op);
 }
 
-/* Copies the additional information attached to target_mem_ref FROM to TO.  */
-
-void
-copy_mem_ref_info (tree to, tree from)
-{
-  /* And the info about the original reference.  */
-  TREE_SIDE_EFFECTS (to) = TREE_SIDE_EFFECTS (from);
-  TREE_THIS_VOLATILE (to) = TREE_THIS_VOLATILE (from);
-}
-
 /* Copies the reference information from OLD_REF to NEW_REF, where
    NEW_REF should be either a MEM_REF or a TARGET_MEM_REF.  */
 
@@ -901,7 +891,7 @@ maybe_fold_tmr (tree ref)
 {
   struct mem_address addr;
   bool changed = false;
-  tree ret, off;
+  tree new_ref, off;
 
   get_address_description (ref, &addr);
 
@@ -962,10 +952,11 @@ maybe_fold_tmr (tree ref)
      ended up folding it, always create a new TARGET_MEM_REF regardless
      if it is valid in this for on the target - the propagation result
      wouldn't be anyway.  */
-  ret = create_mem_ref_raw (TREE_TYPE (ref),
-			    TREE_TYPE (addr.offset), &addr, false);
-  copy_mem_ref_info (ret, ref);
-  return ret;
+  new_ref = create_mem_ref_raw (TREE_TYPE (ref),
+			        TREE_TYPE (addr.offset), &addr, false);
+  TREE_SIDE_EFFECTS (new_ref) = TREE_SIDE_EFFECTS (ref);
+  TREE_THIS_VOLATILE (new_ref) = TREE_THIS_VOLATILE (ref);
+  return new_ref;
 }
 
 /* Dump PARTS to FILE.  */
