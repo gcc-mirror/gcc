@@ -1769,19 +1769,27 @@ begin
 
                   --  -vPx  Specify verbosity while parsing project files
 
-                  elsif Argv'Length = 4
-                    and then Argv (Argv'First + 1 .. Argv'First + 2) = "vP"
-                  then
-                     case Argv (Argv'Last) is
-                        when '0' =>
-                           Current_Verbosity := Prj.Default;
-                        when '1' =>
-                           Current_Verbosity := Prj.Medium;
-                        when '2' =>
-                           Current_Verbosity := Prj.High;
-                        when others =>
-                           Fail ("Invalid switch: " & Argv.all);
-                     end case;
+                  elsif Argv (Argv'First + 1 .. Argv'First + 2) = "vP" then
+                     if Argv'Length = 4
+                          and then Argv (Argv'Last) in '0' .. '2'
+                     then
+                        case Argv (Argv'Last) is
+                           when '0' =>
+                              Current_Verbosity := Prj.Default;
+                           when '1' =>
+                              Current_Verbosity := Prj.Medium;
+                           when '2' =>
+                              Current_Verbosity := Prj.High;
+                           when others =>
+
+                              --  Cannot happen
+
+                              raise Program_Error;
+                        end case;
+                     else
+                        Fail ("invalid verbosity level: "
+                                & Argv (Argv'First + 3 .. Argv'Last));
+                     end if;
 
                      Remove_Switch (Arg_Num);
 

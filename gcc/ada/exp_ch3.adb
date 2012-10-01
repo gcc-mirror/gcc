@@ -4910,8 +4910,15 @@ package body Exp_Ch3 is
          --  Expr's type, both types share the same dispatch table and there is
          --  no need to displace the pointer.
 
-         elsif Comes_From_Source (N)
-           and then Is_Interface (Typ)
+         elsif Is_Interface (Typ)
+
+           --  Avoid never-ending recursion because if Equivalent_Type is set
+           --  then we've done it already and must not do it again!
+
+           and then not
+             (Nkind (Object_Definition (N)) = N_Identifier
+                and then
+              Present (Equivalent_Type (Entity (Object_Definition (N)))))
          then
             pragma Assert (Is_Class_Wide_Type (Typ));
 
