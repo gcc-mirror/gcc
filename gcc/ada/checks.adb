@@ -6548,7 +6548,7 @@ package body Checks is
 
             when N_Op_Abs =>
                Lo := Uint_0;
-               Hi := UI_Max (UI_Abs (Rlo), UI_Abs (Rhi));
+               Hi := UI_Max (abs Rlo, abs Rhi);
 
             --  Addition
 
@@ -6564,7 +6564,79 @@ package body Checks is
             --  Exponentiation
 
             when N_Op_Expon =>
-               raise Program_Error;
+
+               --  Discard negative values for the exponent, since they will
+               --  simply result in an exception in any case.
+
+               if Rhi < 0 then
+                  Rhi := Uint_0;
+               elsif Rlo < 0 then
+                  Rlo := Uint_0;
+               end if;
+
+               --  Estimate number of bits in result before we go computing
+               --  giant useless bounds. Basically the number of bits in the
+               --  result is the number of bits in the base multiplied by the
+               --  value of the exponent. If this is big enough that the result
+               --  definitely won't fit in Long_Long_Integer, switch to bignum
+               --  mode immediately, and avoid computing giant bounds.
+
+               --  The comparison here is approximate, but conservative, it
+               --  only clicks on cases that are sure to exceed the bounds.
+
+               if Num_Bits (UI_Max (abs Llo, abs Lhi)) * Rhi + 1 > 100 then
+                  Lo := No_Uint;
+                  Hi := No_Uint;
+
+               --  If right operand is zero then result is 1
+
+               elsif Rhi = 0 then
+                  Lo := Uint_1;
+                  Hi := Uint_1;
+
+               else
+                  --  High bound comes either from exponentiation of largest
+                  --  positive value to largest exponent value, or from the
+                  --  exponentiation of most negative value to an odd exponent.
+
+                  declare
+                     Hi1, Hi2 : Uint;
+
+                  begin
+                     if Lhi >= 0 then
+                        Hi1 := Lhi ** Rhi;
+                     else
+                        Hi1 := Uint_0;
+                     end if;
+
+                     if Llo < 0 then
+                        if Rhi mod 2 = 0 then
+                           Hi2 := Llo ** (Rhi - 1);
+                        else
+                           Hi2 := Llo ** Rhi;
+                        end if;
+                     else
+                        Hi2 := Uint_0;
+                     end if;
+
+                     Hi := UI_Max (Hi1, Hi2);
+                  end;
+
+                  --  Result can only be negative if base can be negative
+
+                  if Llo < 0 then
+                     if UI_Mod (Rhi, 2) = 0 then
+                        Lo := Llo ** (Rhi - 1);
+                     else
+                        Lo := Llo ** Rhi;
+                     end if;
+
+                  --  Otherwise low bound is minimium ** minimum
+
+                  else
+                     Lo := Llo ** Rlo;
+                  end if;
+               end if;
 
             --  Negation
 
@@ -6623,13 +6695,13 @@ package body Checks is
 
             when others =>
                raise Program_Error;
-
          end case;
       end if;
 
       --  Case where we do the operation in Bignum mode. This happens either
       --  because one of our operands is in Bignum mode already, or because
-      --  the computed bounds are outside the bounds of Long_Long_Integer.
+      --  the computed bounds are outside the bounds of Long_Long_Integer,
+      --  which in some cases can be indicated by Hi and Lo being No_Uint.
 
       --  Note: we could do better here and in some cases switch back from
       --  Bignum mode to normal mode, e.g. big mod 2 must be in the range
@@ -6641,20 +6713,12 @@ package body Checks is
 
       if Lo = No_Uint or else Lo < LLLo or else Hi > LLHi then
 
-         --  In MINIMIZED mode, just give up and apply an overflow check
+         --  In MINIMIZED mode, note that an overflow check is required
          --  Note that we know we don't have a Bignum, since Bignums only
          --  appear in Eliminated mode.
 
          if Check_Mode = Minimized then
-            pragma Assert (Lo /= No_Uint);
             Enable_Overflow_Check (N);
-
-            --  It's fine to just return here, we may generate an overflow
-            --  exception, but this is the case in MINIMIZED mode where we
-            --  can't avoid this possibility.
-
-            Apply_Arithmetic_Overflow_Normal (N);
-            return;
 
          --  Otherwise we are in ELIMINATED mode, switch to bignum
 
@@ -6721,38 +6785,64 @@ package body Checks is
                    Name                   => New_Occurrence_Of (Fent, Loc),
                    Parameter_Associations => Args));
                Analyze_And_Resolve (N, RTE (RE_Bignum));
+               return;
             end;
          end if;
 
       --  Otherwise we are in range of Long_Long_Integer, so no overflow
-      --  check is required, at least not yet. Adjust the operands to
-      --  Long_Long_Integer and mark the result type as Long_Long_Integer.
+      --  check is required, at least not yet.
 
       else
-         --  Convert right or only operand to Long_Long_Integer, except that
-         --  we do not touch the exponentiation right operand.
-
-         if Nkind (N) /= N_Op_Expon then
-            Convert_To_And_Rewrite (LLIB, Right_Opnd (N));
-         end if;
-
-         --  Convert left operand to Long_Long_Integer for binary case
-
-         if Binary then
-            Convert_To_And_Rewrite (LLIB, Left_Opnd (N));
-         end if;
-
-         --  Reset node to unanalyzed
-
-         Set_Analyzed (N, False);
-         Set_Etype (N, Empty);
-         Set_Entity (N, Empty);
          Set_Do_Overflow_Check (N, False);
+      end if;
 
-         --  Now analyze this new node with checks off (since we know that
-         --  we do not need an overflow check).
+      --  Here we will do the operation in Long_Long_Integer. We do this even
+      --  if we know an overflow check is required, better to do this in long
+      --  long integer mode, since we are less likely to overflow!
 
+      --  Convert right or only operand to Long_Long_Integer, except that
+      --  we do not touch the exponentiation right operand.
+
+      if Nkind (N) /= N_Op_Expon then
+         Convert_To_And_Rewrite (LLIB, Right_Opnd (N));
+      end if;
+
+      --  Convert left operand to Long_Long_Integer for binary case
+
+      if Binary then
+         Convert_To_And_Rewrite (LLIB, Left_Opnd (N));
+      end if;
+
+      --  Reset node to unanalyzed
+
+      Set_Analyzed (N, False);
+      Set_Etype (N, Empty);
+      Set_Entity (N, Empty);
+
+      --  Now analyze this new node
+
+      --  If no overflow check, suppress all checks
+
+      if not Do_Overflow_Check (N) then
          Analyze_And_Resolve (N, LLIB, Suppress => All_Checks);
+
+      --  If an overflow check is required, do it in normal CHECKED mode.
+      --  That avoids an infinite recursion, makes sure we get a normal
+      --  overflow check, and also completes expansion of Exponentiation.
+
+      else
+         declare
+            SG : constant Overflow_Check_Type :=
+                   Scope_Suppress.Overflow_Checks_General;
+            SA : constant Overflow_Check_Type :=
+                   Scope_Suppress.Overflow_Checks_Assertions;
+         begin
+            Scope_Suppress.Overflow_Checks_General    := Checked;
+            Scope_Suppress.Overflow_Checks_Assertions := Checked;
+            Analyze_And_Resolve (N, LLIB);
+            Scope_Suppress.Overflow_Checks_General    := SG;
+            Scope_Suppress.Overflow_Checks_Assertions := SA;
+         end;
       end if;
    end Minimize_Eliminate_Overflow_Checks;
 
