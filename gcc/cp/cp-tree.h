@@ -2271,12 +2271,13 @@ struct GTY((variable_size)) lang_decl {
 
 /* Nonzero for a VAR_DECL means that the variable's initialization (if
    any) has been processed.  (In general, DECL_INITIALIZED_P is
-   !DECL_EXTERN, but static data members may be initialized even if
+   !DECL_EXTERNAL, but static data members may be initialized even if
    not defined.)  */
 #define DECL_INITIALIZED_P(NODE) \
    (TREE_LANG_FLAG_1 (VAR_DECL_CHECK (NODE)))
 
-/* Nonzero for a VAR_DECL iff an explicit initializer was provided.  */
+/* Nonzero for a VAR_DECL iff an explicit initializer was provided
+   or a non-trivial constructor is called.  */
 #define DECL_NONTRIVIALLY_INITIALIZED_P(NODE)	\
    (TREE_LANG_FLAG_3 (VAR_DECL_CHECK (NODE)))
 
