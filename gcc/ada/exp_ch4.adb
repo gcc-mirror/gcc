@@ -3708,7 +3708,6 @@ package body Exp_Ch4 is
            (N      => Cnode,
             Msg    => "concatenation result upper bound out of range?",
             Reason => CE_Range_Check_Failed);
-         --  Set_Etype (Cnode, Atyp);
    end Expand_Concatenate;
 
    ---------------------------------------------------
@@ -7134,7 +7133,7 @@ package body Exp_Ch4 is
                 Reason => PE_Unchecked_Union_Restriction));
 
             --  Prevent Gigi from generating incorrect code by rewriting the
-            --  equality as a standard False.
+            --  equality as a standard False. (is this documented somewhere???)
 
             Rewrite (N,
               New_Occurrence_Of (Standard_False, Loc));
@@ -7161,7 +7160,7 @@ package body Exp_Ch4 is
                    Reason => PE_Unchecked_Union_Restriction));
 
                --  Prevent Gigi from generating incorrect code by rewriting
-               --  the equality as a standard False.
+               --  the equality as a standard False (documented where???).
 
                Rewrite (N,
                  New_Occurrence_Of (Standard_False, Loc));
@@ -7258,6 +7257,23 @@ package body Exp_Ch4 is
             Analyze_And_Resolve (N, Typ);
             return;
          end;
+      end if;
+
+      --  Normally we complete expansion of exponentiation (e.g. converting
+      --  to multplications) right here, but there is one exception to this.
+      --  If we have a signed integer type and the overflow checking mode
+      --  is MINIMIZED or ELIMINATED and overflow checking is activated, then
+      --  we don't yet want to expand, since that will intefere with handling
+      --  of extended precision intermediate value. In this situation we just
+      --  apply the arithmetic overflow check, and then the overflow check
+      --  circuit will re-expand the exponentiation node in CHECKED mode.
+
+      if Is_Signed_Integer_Type (Rtyp)
+        and then Overflow_Check_Mode (Typ) in Minimized_Or_Eliminated
+        and then Do_Overflow_Check (N)
+      then
+         Apply_Arithmetic_Overflow_Check (N);
+         return;
       end if;
 
       --  Test for case of known right argument
@@ -10157,7 +10173,7 @@ package body Exp_Ch4 is
          then
             --  To prevent Gigi from generating illegal code, we generate a
             --  Program_Error node, but we give it the target type of the
-            --  conversion.
+            --  conversion (is this requirement documented somewhere ???)
 
             declare
                PE : constant Node_Id := Make_Raise_Program_Error (Loc,

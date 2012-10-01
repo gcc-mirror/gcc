@@ -81,7 +81,7 @@ package body System.Bignums is
    function Compare
      (X, Y         : Digit_Vector;
       X_Neg, Y_Neg : Boolean) return Compare_Result
-   with Pre => X'First = 1 and then X'Last = 1;
+   with Pre => X'First = 1 and then Y'First = 1;
    --  Compare (X with sign X_Neg) with (Y with sign Y_Neg), and return the
    --  result of the signed comparison.
 

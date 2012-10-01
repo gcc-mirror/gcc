@@ -1,5 +1,23 @@
 2012-10-01  Robert Dewar  <dewar@adacore.com>
 
+	* checks.adb (Minimize_Eliminate_Overflow_Checks): Changes
+	for exponentiation.
+	* exp_ch4.adb (Expand_N_Op_Expon): Changes for Minimize/Eliminate
+	overflow checks.
+	* s-bignum.adb (Compare): Fix bad precondition.
+
+2012-10-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Build_Derived_Record_Type): If the derived
+	type has new discriminantss that constrain inherited ones, use
+	the discriminant type in the original declaration to check for
+	conformance, because in the presence of array components with a
+	smaller range that are constrained by the origina discriminant,
+	the compiler will have created a narrower subtype for that
+	discriminant.
+
+2012-10-01  Robert Dewar  <dewar@adacore.com>
+
 	* checks.adb (Apply_Arithmetic_Overflow_Minimized_Eliminated):
 	Handle case of appearing in range in membership test.
 	* exp_ch4.adb (Expand_Membership_Minimize_Eliminate_Overflow):
