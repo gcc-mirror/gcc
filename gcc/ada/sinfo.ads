@@ -408,14 +408,6 @@ package Sinfo is
    --       Do_Overflow_Check        (Flag17-Sem) set if overflow check needed
    --       Has_Private_View         (Flag11-Sem) set in generic units.
 
-   --       Note on use of entity field. This field is set during analysis
-   --       and is used in carrying out semantic checking, but it has no
-   --       significance to the back end, which is driven by the Etype's
-   --       of the operands, and the Etype of the result. During processing
-   --       in the exapander for overflow checks, these types may be modified
-   --       and there is no point in trying to set a proper Entity value, so
-   --       it just gets cleared to Empty in this situation.
-
    --    "plus fields for unary operator"
    --       Chars                    (Name1)      Name_Id for the operator
    --       Right_Opnd               (Node3)      right operand expression
@@ -423,8 +415,6 @@ package Sinfo is
    --       Associated_Node          (Node4-Sem)  for generic processing
    --       Do_Overflow_Check        (Flag17-Sem) set if overflow check needed
    --       Has_Private_View         (Flag11-Sem) set in generic units.
-
-   --       See note on use of Entity field above (same situation).
 
    --    "plus fields for expression"
    --       Paren_Count                           number of parentheses levels

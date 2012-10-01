@@ -1064,6 +1064,9 @@ package body Checks is
       Loc : constant Source_Ptr := Sloc (Op);
       P   : constant Node_Id    := Parent (Op);
 
+      LLIB : constant Entity_Id := Base_Type (Standard_Long_Long_Integer);
+      --  Operands and results are of this type when we convert
+
       Result_Type : constant Entity_Id := Etype (Op);
       --  Original result type
 
@@ -1109,7 +1112,7 @@ package body Checks is
 
       --  Bignum case
 
-      elsif Etype (Op) = RTE (RE_Bignum) then
+      elsif Is_RTE (Etype (Op), RE_Bignum) then
 
          --  We need a sequence that looks like
 
@@ -1118,7 +1121,7 @@ package body Checks is
          --    declare
          --       M   : Mark_Id := SS_Mark;
          --    begin
-         --       Rnn := Long_Long_Integer (From_Bignum (Op));
+         --       Rnn := Long_Long_Integer'Base (From_Bignum (Op));
          --       SS_Release (M);
          --    end;
 
@@ -1132,14 +1135,14 @@ package body Checks is
 
          --      A,B,C : Integer;
          --      ...
-         --      X := Long_Long_Integer (A * (B ** C));
+         --      X := Long_Long_Integer'Base (A * (B ** C));
 
          --  Now the product may fit in Long_Long_Integer but not in Integer.
          --  In Minimize/Eliminate mode, we don't want to introduce an overflow
          --  exception for this intermediate value.
 
          declare
-            Blk  : constant Node_Id  := Make_Bignum_Block (Loc);
+            Blk : constant Node_Id  := Make_Bignum_Block (Loc);
             Rnn : constant Entity_Id := Make_Temporary (Loc, 'R', Op);
             RHS : Node_Id;
 
@@ -1149,7 +1152,7 @@ package body Checks is
             RHS := Convert_From_Bignum (Op);
 
             if Nkind (P) /= N_Type_Conversion then
-               RHS := Convert_To (Result_Type, Op);
+               Convert_To_And_Rewrite (Result_Type, RHS);
                Rtype := Result_Type;
 
                --  Interesting question, do we need a check on that conversion
@@ -1158,7 +1161,7 @@ package body Checks is
                --  looked at later ???
 
             else
-               Rtype := Standard_Long_Long_Integer;
+               Rtype := LLIB;
             end if;
 
             Insert_Before
@@ -1177,10 +1180,10 @@ package body Checks is
             Analyze_And_Resolve (Op);
          end;
 
-         --  Here if the result is Long_Long_Integer
+         --  Here we know the result is Long_Long_Integer'Base
 
       else
-         pragma Assert (Etype (Op) = Standard_Long_Long_Integer);
+         pragma Assert (Etype (Op) = LLIB);
 
          --  All we need to do here is to convert the result to the proper
          --  result type. As explained above for the Bignum case, we can
@@ -6466,6 +6469,9 @@ package body Checks is
       Llo, Lhi : Uint;
       --  Ranges of values for left operand
 
+      LLIB : constant Entity_Id := Base_Type (Standard_Long_Long_Integer);
+      --  Operands and results are of this type when we convert
+
       LLLo, LLHi : Uint;
       --  Bounds of Long_Long_Integer
 
@@ -6559,7 +6565,27 @@ package body Checks is
             --  Multiplication
 
             when N_Op_Multiply =>
-               raise Program_Error;
+
+               --  Possible bounds of multiplication must come from multiplying
+               --  end values of the input ranges (four possibilities).
+
+               declare
+                  Mrk : constant Uintp.Save_Mark := Mark;
+                  --  Mark so we can release the Ev values
+
+                  Ev1 : constant Uint := Llo * Rlo;
+                  Ev2 : constant Uint := Llo * Rhi;
+                  Ev3 : constant Uint := Lhi * Rlo;
+                  Ev4 : constant Uint := Lhi * Rhi;
+
+               begin
+                  Lo := UI_Min (UI_Min (Ev1, Ev2), UI_Min (Ev3, Ev4));
+                  Hi := UI_Max (UI_Max (Ev1, Ev2), UI_Max (Ev3, Ev4));
+
+                  --  Release the Ev values
+
+                  Release_And_Save (Mrk, Lo, Hi);
+               end;
 
             --  Plus operator (affirmation)
 
@@ -6595,8 +6621,8 @@ package body Checks is
       --  0 .. 1, but the cases are rare and it is not worth the effort.
       --  Failing to do this switching back is only an efficiency issue.
 
-      LLLo := Intval (Type_Low_Bound  (Standard_Long_Long_Integer));
-      LLHi := Intval (Type_High_Bound (Standard_Long_Long_Integer));
+      LLLo := Intval (Type_Low_Bound  (LLIB));
+      LLHi := Intval (Type_High_Bound (LLIB));
 
       if Lo = No_Uint or else Lo < LLLo or else Hi > LLHi then
 
@@ -6688,26 +6714,30 @@ package body Checks is
       --  Long_Long_Integer and mark the result type as Long_Long_Integer.
 
       else
-         Convert_To_And_Rewrite
-           (Standard_Long_Long_Integer, Right_Opnd (N));
+         --  Convert right or only operand to Long_Long_Integer, except that
+         --  we do not touch the exponentiation right operand.
 
-         if Binary then
-            Convert_To_And_Rewrite
-              (Standard_Long_Long_Integer, Left_Opnd (N));
+         if Nkind (N) /= N_Op_Expon then
+            Convert_To_And_Rewrite (LLIB, Right_Opnd (N));
          end if;
 
-         Set_Etype (N, Standard_Long_Long_Integer);
+         --  Convert left operand to Long_Long_Integer for binary case
 
-         --  Clear entity field, since we have modified the type and mark
-         --  the node as analyzed to prevent junk infinite recursion
+         if Binary then
+            Convert_To_And_Rewrite (LLIB, Left_Opnd (N));
+         end if;
 
+         --  Reset node to unanalyzed
+
+         Set_Analyzed (N, False);
+         Set_Etype (N, Empty);
          Set_Entity (N, Empty);
-         Set_Analyzed (N, True);
-
-         --  Turn off the overflow check flag, since this is precisely the
-         --  case where we have avoided an intermediate overflow check.
-
          Set_Do_Overflow_Check (N, False);
+
+         --  Now analyze this new node with checks off (since we know that
+         --  we do not need an overflow check).
+
+         Analyze_And_Resolve (N, LLIB, Suppress => All_Checks);
       end if;
    end Minimize_Eliminate_Overflow_Checks;
 

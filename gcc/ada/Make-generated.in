@@ -93,10 +93,9 @@ $(ADA_GEN_SUBDIR)/s-oscons.ads : $(ADA_GEN_SUBDIR)/s-oscons-tmplt.c $(ADA_GEN_SU
 		$(RM) s-oscons-tmplt.i s-oscons-tmplt.s ; \
 		$(OSCONS_CPP) ; \
 		$(OSCONS_EXTRACT) ; \
-		./xoscons ; \
-		$(RM) ../../s-oscons.ads ; \
-		$(MOVE_IF_CHANGE) s-oscons.ads $(ADA_GEN_SUBDIR)/s-oscons.ads ; \
-		$(MOVE_IF_CHANGE) s-oscons.h $(ADA_GEN_SUBDIR)/s-oscons.h)
+		./xoscons ) ; \
+		$(MOVE_IF_CHANGE) $(ADA_GEN_SUBDIR)/bldtools/oscons/s-oscons.ads $(ADA_GEN_SUBDIR)/s-oscons.ads ; \
+		$(MOVE_IF_CHANGE) $(ADA_GEN_SUBDIR)/bldtools/oscons/s-oscons.h $(ADA_GEN_SUBDIR)/s-oscons.h
 
 $(ADA_GEN_SUBDIR)/sdefault.adb: $(ADA_GEN_SUBDIR)/stamp-sdefault ; @true
 $(ADA_GEN_SUBDIR)/stamp-sdefault : $(srcdir)/version.c Makefile

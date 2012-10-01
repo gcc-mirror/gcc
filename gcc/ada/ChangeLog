@@ -1,5 +1,24 @@
 2012-10-01  Robert Dewar  <dewar@adacore.com>
 
+	* checks.adb (Minimize_Eliminate_Checks): Changes from testing.
+	(Apply_Arithmetic_Overflow_Minimized_Eliminated): Changes
+	from testing.
+	* sinfo.ads: Remove note on not setting Entity field in overflow
+	case since this is no longer true.
+	* Makefile.rtl: Add s-bignum.o
+
+2012-10-01  Thomas Quinot  <quinot@adacore.com>
+
+	* Make-generated.in: Correction to previous change for s-oscons
+	target.
+
+2012-10-01  Thomas Quinot  <quinot@adacore.com>
+
+	* s-bignum.adb (Allocate_Bignum): Reorganize to kill strict
+	aliasing warning.
+
+2012-10-01  Robert Dewar  <dewar@adacore.com>
+
 	* checks.adb (Overflow_Check_Mode): New function
 	(Apply_Overflow_Check): New procedure (Is_Check_Suppressed):
 	Moved here from Sem, Overflow_Check case now specially treated.
