@@ -340,7 +340,7 @@ package body Ada.Containers.Indefinite_Ordered_Multisets is
 
    function Ceiling (Container : Set; Item : Element_Type) return Cursor is
       Node : constant Node_Access :=
-               Element_Keys.Ceiling (Container.Tree, Item);
+        Element_Keys.Ceiling (Container.Tree, Item);
 
    begin
       if Node = null then
@@ -503,8 +503,7 @@ package body Ada.Containers.Indefinite_Ordered_Multisets is
    end Difference;
 
    function Difference (Left, Right : Set) return Set is
-      Tree : constant Tree_Type :=
-               Set_Ops.Difference (Left.Tree, Right.Tree);
+      Tree : constant Tree_Type := Set_Ops.Difference (Left.Tree, Right.Tree);
    begin
       return Set'(Controlled with Tree);
    end Difference;
@@ -601,8 +600,7 @@ package body Ada.Containers.Indefinite_Ordered_Multisets is
    ----------
 
    function Find (Container : Set; Item : Element_Type) return Cursor is
-      Node : constant Node_Access :=
-               Element_Keys.Find (Container.Tree, Item);
+      Node : constant Node_Access := Element_Keys.Find (Container.Tree, Item);
 
    begin
       if Node = null then
@@ -677,8 +675,7 @@ package body Ada.Containers.Indefinite_Ordered_Multisets is
    -----------
 
    function Floor (Container : Set; Item : Element_Type) return Cursor is
-      Node : constant Node_Access :=
-               Element_Keys.Floor (Container.Tree, Item);
+      Node : constant Node_Access := Element_Keys.Floor (Container.Tree, Item);
 
    begin
       if Node = null then
@@ -753,8 +750,7 @@ package body Ada.Containers.Indefinite_Ordered_Multisets is
       -------------
 
       function Ceiling (Container : Set; Key : Key_Type) return Cursor is
-         Node : constant Node_Access :=
-                  Key_Keys.Ceiling (Container.Tree, Key);
+         Node : constant Node_Access := Key_Keys.Ceiling (Container.Tree, Key);
 
       begin
          if Node = null then
@@ -803,8 +799,7 @@ package body Ada.Containers.Indefinite_Ordered_Multisets is
       -------------
 
       function Element (Container : Set; Key : Key_Type) return Element_Type is
-         Node : constant Node_Access :=
-                  Key_Keys.Find (Container.Tree, Key);
+         Node : constant Node_Access := Key_Keys.Find (Container.Tree, Key);
 
       begin
          if Node = null then
@@ -1259,7 +1254,7 @@ package body Ada.Containers.Indefinite_Ordered_Multisets is
 
    function Intersection (Left, Right : Set) return Set is
       Tree : constant Tree_Type :=
-               Set_Ops.Intersection (Left.Tree, Right.Tree);
+        Set_Ops.Intersection (Left.Tree, Right.Tree);
    begin
       return Set'(Controlled with Tree);
    end Intersection;

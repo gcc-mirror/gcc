@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2010-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2010-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1003,7 +1003,7 @@ package body Ada.Containers.Formal_Ordered_Maps is
 
       declare
          Node : constant Count_Type :=
-                  Tree_Operations.Previous (Container, Position.Node);
+           Tree_Operations.Previous (Container, Position.Node);
 
       begin
          if Node = 0 then

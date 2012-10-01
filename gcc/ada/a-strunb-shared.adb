@@ -486,7 +486,7 @@ package body Ada.Strings.Unbounded is
 
    function Aligned_Max_Length (Max_Length : Natural) return Natural is
       Static_Size : constant Natural :=
-                      Empty_Shared_String'Size / Standard'Storage_Unit;
+        Empty_Shared_String'Size / Standard'Storage_Unit;
       --  Total size of all static components
 
    begin

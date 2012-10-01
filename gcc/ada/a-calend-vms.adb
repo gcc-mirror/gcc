@@ -141,7 +141,7 @@ package body Ada.Calendar is
    --  UTC, it must be increased to include all leap seconds.
 
    Ada_High_And_Leaps : constant OS_Time :=
-                          Ada_High + OS_Time (Leap_Seconds_Count) * Mili;
+     Ada_High + OS_Time (Leap_Seconds_Count) * Mili;
 
    --  Two constants used in the calculations of elapsed leap seconds.
    --  End_Of_Time is later than Ada_High in time zone -28. Start_Of_Time
@@ -221,9 +221,9 @@ package body Ada.Calendar is
       --  The bound of type Duration expressed as time
 
       Dur_High : constant OS_Time :=
-                   OS_Time (To_Relative_Time (Duration'Last));
+        OS_Time (To_Relative_Time (Duration'Last));
       Dur_Low  : constant OS_Time :=
-                   OS_Time (To_Relative_Time (Duration'First));
+        OS_Time (To_Relative_Time (Duration'First));
 
       Res_M : OS_Time;
 

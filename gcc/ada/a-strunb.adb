@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -785,14 +785,13 @@ package body Ada.Strings.Unbounded is
       if Chunk_Size > S_Length - Source.Last then
          declare
             New_Size : constant Positive :=
-                         S_Length + Chunk_Size + (S_Length / Growth_Factor);
+              S_Length + Chunk_Size + (S_Length / Growth_Factor);
 
             New_Rounded_Up_Size : constant Positive :=
-                                    ((New_Size - 1) / Min_Mul_Alloc + 1) *
-                                       Min_Mul_Alloc;
+              ((New_Size - 1) / Min_Mul_Alloc + 1) * Min_Mul_Alloc;
 
             Tmp : constant String_Access :=
-                    new String (1 .. New_Rounded_Up_Size);
+              new String (1 .. New_Rounded_Up_Size);
 
          begin
             Tmp (1 .. Source.Last) := Source.Reference (1 .. Source.Last);

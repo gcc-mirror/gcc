@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -182,7 +182,7 @@ package body Ada.Sequential_IO is
          then
             declare
                RsizS : constant SSE.Storage_Offset :=
-                         SSE.Storage_Offset (Rsiz - 1);
+                 SSE.Storage_Offset (Rsiz - 1);
 
                type SA is new SSE.Storage_Array (0 .. RsizS);
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2007-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2007-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -87,7 +87,7 @@ package body Ada.Command_Line.Response_File is
          if Last_Arg = Arguments'Last then
             declare
                New_Arguments : constant Argument_List_Access :=
-                                 new Argument_List (1 .. Arguments'Last * 2);
+                 new Argument_List (1 .. Arguments'Last * 2);
             begin
                New_Arguments (Arguments'Range) := Arguments.all;
                Arguments.all := (others => null);
@@ -421,10 +421,9 @@ package body Ada.Command_Line.Response_File is
 
                      declare
                         Inc_File_Name     : constant String :=
-                                              Arguments (Arg)
-                                              (2 .. Arguments (Arg)'Last);
+                          Arguments (Arg) (2 .. Arguments (Arg)'Last);
                         Current_Arguments : constant Argument_List :=
-                                              Arguments (1 .. Last_Arg);
+                          Arguments (1 .. Last_Arg);
                      begin
                         Recurse (Inc_File_Name);
 
@@ -433,10 +432,10 @@ package body Ada.Command_Line.Response_File is
 
                         declare
                            New_Arguments : constant Argument_List :=
-                                             Arguments (1 .. Last_Arg);
+                             Arguments (1 .. Last_Arg);
                            New_Last_Arg  : constant Positive :=
-                                             Current_Arguments'Length +
-                                             New_Arguments'Length - 1;
+                             Current_Arguments'Length +
+                             New_Arguments'Length - 1;
 
                         begin
                            --  Grow Arguments if it is not large enough

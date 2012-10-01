@@ -231,8 +231,8 @@ package body Ada.Containers.Hashed_Maps is
          L  : Natural renames HT.Lock;
       begin
          return R : constant Constant_Reference_Type :=
-                      (Element => Position.Node.Element'Access,
-                       Control => (Controlled with Position.Container))
+           (Element => Position.Node.Element'Access,
+            Control => (Controlled with Position.Container))
          do
             B := B + 1;
             L := L + 1;
@@ -257,9 +257,8 @@ package body Ada.Containers.Hashed_Maps is
          L  : Natural renames HT.Lock;
       begin
          return R : constant Constant_Reference_Type :=
-                      (Element => Node.Element'Access,
-                       Control =>
-                         (Controlled with Container'Unrestricted_Access))
+           (Element => Node.Element'Access,
+            Control => (Controlled with Container'Unrestricted_Access))
          do
             B := B + 1;
             L := L + 1;
@@ -312,9 +311,9 @@ package body Ada.Containers.Hashed_Maps is
      (Source : Node_Access) return Node_Access
    is
       Target : constant Node_Access :=
-                 new Node_Type'(Key     => Source.Key,
-                                Element => Source.Element,
-                                Next    => null);
+        new Node_Type'(Key     => Source.Key,
+                       Element => Source.Element,
+                       Next    => null);
    begin
       return Target;
    end Copy_Node;
@@ -774,8 +773,7 @@ package body Ada.Containers.Hashed_Maps is
       B  : Natural renames Container'Unrestricted_Access.all.HT.Busy;
    begin
       return It : constant Iterator :=
-                    (Limited_Controlled with
-                       Container => Container'Unrestricted_Access)
+        (Limited_Controlled with Container => Container'Unrestricted_Access)
       do
          B := B + 1;
       end return;
@@ -981,8 +979,8 @@ package body Ada.Containers.Hashed_Maps is
          L  : Natural renames HT.Lock;
       begin
          return R : constant Reference_Type :=
-                      (Element => Position.Node.Element'Access,
-                       Control => (Controlled with Position.Container))
+           (Element => Position.Node.Element'Access,
+            Control => (Controlled with Position.Container))
          do
             B := B + 1;
             L := L + 1;
@@ -1007,9 +1005,8 @@ package body Ada.Containers.Hashed_Maps is
          L  : Natural renames HT.Lock;
       begin
          return R : constant Reference_Type :=
-                      (Element => Node.Element'Access,
-                       Control =>
-                         (Controlled with Container'Unrestricted_Access))
+           (Element => Node.Element'Access,
+            Control => (Controlled with Container'Unrestricted_Access))
          do
             B := B + 1;
             L := L + 1;

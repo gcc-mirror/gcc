@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -290,10 +290,9 @@ package body Ada.Text_IO.Fixed_IO is
                    and then Num'Small * 10.0**Scale < 10.0);
 
    Exact : constant Boolean :=
-            Float'Floor (Num'Small) = Float'Ceiling (Num'Small)
-              or else Float'Floor (1.0 / Num'Small) =
-                                Float'Ceiling (1.0 / Num'Small)
-              or else Num'Small >= 10.0**Max_Digits;
+     Float'Floor (Num'Small) = Float'Ceiling (Num'Small)
+       or else Float'Floor (1.0 / Num'Small) = Float'Ceiling (1.0 / Num'Small)
+       or else Num'Small >= 10.0**Max_Digits;
    --  True iff a numerator and denominator can be calculated such that
    --  their ratio exactly represents the small of Num.
 
@@ -387,11 +386,11 @@ package body Ada.Text_IO.Fixed_IO is
       Exp  : Field := Default_Exp)
    is
       Fore : constant Integer :=
-               To'Length
-                 - 1                      -- Decimal point
-                 - Field'Max (1, Aft)     -- Decimal part
-                 - Boolean'Pos (Exp /= 0) -- Exponent indicator
-                 - Exp;                   -- Exponent
+        To'Length
+          - 1                      -- Decimal point
+          - Field'Max (1, Aft)     -- Decimal part
+          - Boolean'Pos (Exp /= 0) -- Exponent indicator
+          - Exp;                   -- Exponent
 
       Last : Natural;
 

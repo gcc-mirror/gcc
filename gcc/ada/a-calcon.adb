@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---        Copyright (C) 2008-2009  Free Software Foundation, Inc.           --
+--        Copyright (C) 2008-2012, Free Software Foundation, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -140,7 +140,7 @@ package body Ada.Calendar.Conversions is
 
    function To_Unix_Time (Ada_Time : Time) return long is
       Val : constant Long_Integer :=
-              Conversion_Operations.To_Unix_Time (Ada_Time);
+        Conversion_Operations.To_Unix_Time (Ada_Time);
    begin
       return long (Val);
    end To_Unix_Time;

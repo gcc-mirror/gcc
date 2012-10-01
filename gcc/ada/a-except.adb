@@ -1026,10 +1026,9 @@ package body Ada.Exceptions is
       Prefix             : constant String := "adjust/finalize raised ";
       Orig_Msg           : constant String := Exception_Message (X);
       Orig_Prefix_Length : constant Natural :=
-                             Integer'Min (Prefix'Length, Orig_Msg'Length);
+        Integer'Min (Prefix'Length, Orig_Msg'Length);
       Orig_Prefix        : String renames Orig_Msg
-                            (Orig_Msg'First ..
-                             Orig_Msg'First + Orig_Prefix_Length - 1);
+        (Orig_Msg'First ..  Orig_Msg'First + Orig_Prefix_Length - 1);
    begin
       --  Message already has proper prefix, just re-reraise
 

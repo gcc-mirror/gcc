@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,7 +41,7 @@ package body Eval_Fat is
    type Radix_Power_Table is array (Int range 1 .. 4) of Int;
 
    Radix_Powers : constant Radix_Power_Table :=
-                    (Radix ** 1, Radix ** 2, Radix ** 3, Radix ** 4);
+     (Radix ** 1, Radix ** 2, Radix ** 3, Radix ** 4);
 
    -----------------------
    -- Local Subprograms --
@@ -188,7 +188,7 @@ package body Eval_Fat is
       --  True iff Fraction is even
 
       Most_Significant_Digit : constant UI :=
-                                 Radix ** (Machine_Mantissa_Value (RT) - 1);
+        Radix ** (Machine_Mantissa_Value (RT) - 1);
 
       Uintp_Mark : Uintp.Save_Mark;
       --  The code is divided into blocks that systematically release

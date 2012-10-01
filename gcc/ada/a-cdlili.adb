@@ -264,9 +264,8 @@ package body Ada.Containers.Doubly_Linked_Lists is
          L : Natural renames C.Lock;
       begin
          return R : constant Constant_Reference_Type :=
-                      (Element => Position.Node.Element'Access,
-                       Control =>
-                         (Controlled with Container'Unrestricted_Access))
+           (Element => Position.Node.Element'Access,
+            Control => (Controlled with Container'Unrestricted_Access))
          do
             B := B + 1;
             L := L + 1;
@@ -750,7 +749,7 @@ package body Ada.Containers.Doubly_Linked_Lists is
 
          procedure Sort (Front, Back : Node_Access) is
             Pivot : constant Node_Access :=
-                      (if Front = null then Container.First else Front.Next);
+              (if Front = null then Container.First else Front.Next);
          begin
             if Pivot /= Back then
                Partition (Pivot, Back);
@@ -997,9 +996,9 @@ package body Ada.Containers.Doubly_Linked_Lists is
       --  for a reverse iterator, Container.Last is the beginning.
 
       return It : constant Iterator :=
-                    Iterator'(Limited_Controlled with
-                                Container => Container'Unrestricted_Access,
-                                Node      => null)
+        Iterator'(Limited_Controlled with
+                    Container => Container'Unrestricted_Access,
+                    Node      => null)
       do
          B := B + 1;
       end return;
@@ -1044,9 +1043,9 @@ package body Ada.Containers.Doubly_Linked_Lists is
       --  is a forward or reverse iteration.
 
       return It : constant Iterator :=
-                    Iterator'(Limited_Controlled with
-                                Container => Container'Unrestricted_Access,
-                                Node      => Start.Node)
+        Iterator'(Limited_Controlled with
+                    Container => Container'Unrestricted_Access,
+                    Node      => Start.Node)
       do
          B := B + 1;
       end return;
@@ -1385,8 +1384,8 @@ package body Ada.Containers.Doubly_Linked_Lists is
          L : Natural renames C.Lock;
       begin
          return R : constant Reference_Type :=
-                      (Element => Position.Node.Element'Access,
-                       Control => (Controlled with Position.Container))
+           (Element => Position.Node.Element'Access,
+            Control => (Controlled with Position.Container))
          do
             B := B + 1;
             L := L + 1;

@@ -1009,10 +1009,10 @@ package body Ada.Exceptions is
       Prefix             : constant String := "adjust/finalize raised ";
       Orig_Msg           : constant String := Exception_Message (X);
       Orig_Prefix_Length : constant Natural :=
-                             Integer'Min (Prefix'Length, Orig_Msg'Length);
+        Integer'Min (Prefix'Length, Orig_Msg'Length);
       Orig_Prefix        : String renames Orig_Msg
-                             (Orig_Msg'First ..
-                              Orig_Msg'First + Orig_Prefix_Length - 1);
+        (Orig_Msg'First ..
+         Orig_Msg'First + Orig_Prefix_Length - 1);
    begin
       --  Message already has the proper prefix, just re-raise
 
@@ -1446,9 +1446,9 @@ package body Ada.Exceptions is
      (File : System.Address; Line, Column, Index, First, Last : Integer)
    is
       Msg : constant String :=
-              Rmsg_05 (Rmsg_05'First .. Rmsg_05'Last - 1) & ASCII.LF &
-              "index " & Image (Index) & " not in " & Image (First) &
-              ".." & Image (Last) & ASCII.NUL;
+        Rmsg_05 (Rmsg_05'First .. Rmsg_05'Last - 1) & ASCII.LF &
+        "index " & Image (Index) & " not in " & Image (First) &
+        ".." & Image (Last) & ASCII.NUL;
    begin
       Raise_Constraint_Error_Msg (File, Line, Column, Msg'Address);
    end Rcheck_CE_Index_Check_Ext;
@@ -1457,9 +1457,9 @@ package body Ada.Exceptions is
      (File : System.Address; Line, Column, Index, First, Last : Integer)
    is
       Msg : constant String :=
-              Rmsg_06 (Rmsg_06'First .. Rmsg_06'Last - 1) & ASCII.LF &
-              "value " & Image (Index) & " not in " & Image (First) &
-              ".." & Image (Last) & ASCII.NUL;
+        Rmsg_06 (Rmsg_06'First .. Rmsg_06'Last - 1) & ASCII.LF &
+        "value " & Image (Index) & " not in " & Image (First) &
+        ".." & Image (Last) & ASCII.NUL;
    begin
       Raise_Constraint_Error_Msg (File, Line, Column, Msg'Address);
    end Rcheck_CE_Invalid_Data_Ext;
@@ -1468,9 +1468,9 @@ package body Ada.Exceptions is
      (File : System.Address; Line, Column, Index, First, Last : Integer)
    is
       Msg : constant String :=
-              Rmsg_12 (Rmsg_12'First .. Rmsg_12'Last - 1) & ASCII.LF &
-              "value " & Image (Index) & " not in " & Image (First) &
-              ".." & Image (Last) & ASCII.NUL;
+        Rmsg_12 (Rmsg_12'First .. Rmsg_12'Last - 1) & ASCII.LF &
+        "value " & Image (Index) & " not in " & Image (First) &
+        ".." & Image (Last) & ASCII.NUL;
    begin
       Raise_Constraint_Error_Msg (File, Line, Column, Msg'Address);
    end Rcheck_CE_Range_Check_Ext;

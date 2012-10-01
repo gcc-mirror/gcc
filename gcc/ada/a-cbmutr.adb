@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2011, Free Software Foundation, Inc.           --
+--             Copyright (C) 2011-2012, Free Software Foundation, Inc.      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1903,9 +1903,9 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       end if;
 
       return It : constant Child_Iterator :=
-                    Child_Iterator'(Limited_Controlled with
-                                      Container => C,
-                                      Subtree   => Parent.Node)
+        Child_Iterator'(Limited_Controlled with
+                          Container => C,
+                          Subtree   => Parent.Node)
       do
          B := B + 1;
       end return;
@@ -1931,9 +1931,9 @@ package body Ada.Containers.Bounded_Multiway_Trees is
          B : Natural renames Position.Container.Busy;
       begin
          return It : constant Subtree_Iterator :=
-                       (Limited_Controlled with
-                          Container => Position.Container,
-                          Subtree   => Position.Node)
+           (Limited_Controlled with
+              Container => Position.Container,
+              Subtree   => Position.Node)
          do
             B := B + 1;
          end return;

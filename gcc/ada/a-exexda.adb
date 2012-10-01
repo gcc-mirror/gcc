@@ -220,7 +220,7 @@ package body Exception_Data is
       N : Integer_Address;
 
       H : constant array (Integer range 0 .. 15) of Character :=
-                                                         "0123456789abcdef";
+        "0123456789abcdef";
    begin
       P := S'Last;
       N := To_Integer (A);
@@ -659,7 +659,7 @@ package body Exception_Data is
       Message : String)
    is
       Len   : constant Natural :=
-                Natural'Min (Message'Length, Exception_Msg_Max_Length);
+        Natural'Min (Message'Length, Exception_Msg_Max_Length);
       First : constant Integer := Message'First;
    begin
       Excep.Exception_Raised := False;
@@ -689,7 +689,7 @@ package body Exception_Data is
       --  call become inoffensive.
 
       Wrapper : constant Traceback_Decorator_Wrapper_Call :=
-                  Traceback_Decorator_Wrapper;
+        Traceback_Decorator_Wrapper;
 
    begin
       if Wrapper = null then

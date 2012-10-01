@@ -2135,8 +2135,7 @@ package body Bindgen is
       --  function Get_Ada_Main_Name for details on the form of the name.
 
       Needs_Library_Finalization : constant Boolean :=
-                                     not Configurable_Run_Time_On_Target
-                                       and then Has_Finalizer;
+        not Configurable_Run_Time_On_Target and then Has_Finalizer;
       --  For restricted run-time libraries (ZFP and Ravenscar) tasks are
       --  non-terminating, so we do not want finalization.
 
@@ -2658,7 +2657,7 @@ package body Bindgen is
    function Get_Ada_Main_Name return String is
       Suffix : constant String := "_00";
       Name   : String (1 .. Opt.Ada_Main_Name.all'Length + Suffix'Length) :=
-                 Opt.Ada_Main_Name.all & Suffix;
+        Opt.Ada_Main_Name.all & Suffix;
       Nlen   : Natural;
 
    begin
@@ -2945,9 +2944,9 @@ package body Bindgen is
          loop
             declare
                Inum : constant Int :=
-                        Interrupt_States.Table (K).Interrupt_Id;
+                 Interrupt_States.Table (K).Interrupt_Id;
                Stat : constant Character :=
-                        Interrupt_States.Table (K).Interrupt_State;
+                 Interrupt_States.Table (K).Interrupt_State;
 
             begin
                while IS_Pragma_Settings.Last < Inum loop
