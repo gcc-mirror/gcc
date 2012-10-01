@@ -5724,6 +5724,28 @@ simplify_subreg (enum machine_mode outermode, rtx op,
 	return CONST0_RTX (outermode);
     }
 
+  /* Simplify (subreg:SI (op:DI ((x:DI) (y:DI)), 0)
+     to (op:SI (subreg:SI (x:DI) 0) (subreg:SI (x:DI) 0)), where
+     the outer subreg is effectively a truncation to the original mode.  */
+  if ((GET_CODE (op) == PLUS
+       || GET_CODE (op) == MINUS
+       || GET_CODE (op) == MULT)
+      && SCALAR_INT_MODE_P (outermode)
+      && SCALAR_INT_MODE_P (innermode)
+      && GET_MODE_PRECISION (outermode) < GET_MODE_PRECISION (innermode)
+      && byte == subreg_lowpart_offset (outermode, innermode))
+    {
+      rtx op0 = simplify_gen_subreg (outermode, XEXP (op, 0),
+                                     innermode, byte);
+      if (op0)
+        {
+          rtx op1 = simplify_gen_subreg (outermode, XEXP (op, 1),
+                                         innermode, byte);
+          if (op1)
+            return simplify_gen_binary (GET_CODE (op), outermode, op0, op1);
+        }
+    }
+
   /* Simplify (subreg:QI (lshiftrt:SI (sign_extend:SI (x:QI)) C), 0) into
      to (ashiftrt:QI (x:QI) C), where C is a suitable small constant and
      the outer subreg is effectively a truncation to the original mode.  */
