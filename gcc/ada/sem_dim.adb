@@ -336,6 +336,9 @@ package body Sem_Dim is
    function Is_Invalid (Position : Dimension_Position) return Boolean;
    --  Return True if Pos denotes the invalid position
 
+   procedure Move_Dimensions (From : Node_Id; To : Node_Id);
+   --  Copy dimension vector of From to To and delete dimension vector of From
+
    procedure Remove_Dimensions (N : Node_Id);
    --  Remove the dimension vector of node N
 
@@ -1718,10 +1721,6 @@ package body Sem_Dim is
                Error_Dim_Msg_For_Component_Declaration (N, Etyp, Expr);
             end if;
          end if;
-
-         --  Removal of dimensions in expression
-
-         Remove_Dimensions (Expr);
       end if;
    end Analyze_Dimension_Component_Declaration;
 
@@ -2198,6 +2197,25 @@ package body Sem_Dim is
 
       end case;
    end Analyze_Dimension_Unary_Op;
+
+   ---------------------
+   -- Copy_Dimensions --
+   ---------------------
+
+   procedure Copy_Dimensions (From, To : Node_Id) is
+      Dims_Of_From : constant Dimension_Type := Dimensions_Of (From);
+
+   begin
+      if Ada_Version < Ada_2012 then
+         return;
+      end if;
+
+      --  Copy the dimension of 'From to 'To'
+
+      if Exists (Dims_Of_From) then
+         Set_Dimensions (To, Dims_Of_From);
+      end if;
+   end Copy_Dimensions;
 
    --------------------------
    -- Create_Rational_From --
@@ -3221,8 +3239,6 @@ package body Sem_Dim is
    ---------------------
 
    procedure Move_Dimensions (From, To : Node_Id) is
-      Dims_Of_From : constant Dimension_Type := Dimensions_Of (From);
-
    begin
       if Ada_Version < Ada_2012 then
          return;
@@ -3230,10 +3246,8 @@ package body Sem_Dim is
 
       --  Copy the dimension of 'From to 'To' and remove dimension of 'From'
 
-      if Exists (Dims_Of_From) then
-         Set_Dimensions (To, Dims_Of_From);
-         Remove_Dimensions (From);
-      end if;
+      Copy_Dimensions   (From, To);
+      Remove_Dimensions (From);
    end Move_Dimensions;
 
    ------------

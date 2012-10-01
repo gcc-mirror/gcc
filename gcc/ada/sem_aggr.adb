@@ -2933,6 +2933,14 @@ package body Sem_Aggr is
       --  An error message is emitted if the components taking their value from
       --  the others choice do not have same type.
 
+      function New_Copy_Tree_And_Copy_Dimensions
+        (Source    : Node_Id;
+         Map       : Elist_Id   := No_Elist;
+         New_Sloc  : Source_Ptr := No_Location;
+         New_Scope : Entity_Id  := Empty) return Node_Id;
+      --  Same as New_Copy_Tree (defined in Sem_Util), except that this routine
+      --  also copies the dimensions of Source to the returned node.
+
       procedure Resolve_Aggr_Expr (Expr : Node_Id; Component : Node_Id);
       --  Analyzes and resolves expression Expr against the Etype of the
       --  Component. This routine also applies all appropriate checks to Expr.
@@ -3134,7 +3142,7 @@ package body Sem_Aggr is
 
                         if Expander_Active then
                            return
-                             New_Copy_Tree
+                             New_Copy_Tree_And_Copy_Dimensions
                                (Expression (Parent (Compon)),
                                 New_Sloc => Sloc (Assoc));
                         else
@@ -3153,7 +3161,9 @@ package body Sem_Aggr is
                         Others_Etype := Etype (Compon);
 
                         if Expander_Active then
-                           return New_Copy_Tree (Expression (Assoc));
+                           return
+                             New_Copy_Tree_And_Copy_Dimensions
+                               (Expression (Assoc));
                         else
                            return Expression (Assoc);
                         end if;
@@ -3189,18 +3199,20 @@ package body Sem_Aggr is
                         --  order to create a proper association for the
                         --  expanded aggregate.
 
-                        Expr := New_Copy_Tree (Expression (Parent (Compon)));
-
                         --  Component may have no default, in which case the
                         --  expression is empty and the component is default-
                         --  initialized, but an association for the component
                         --  exists, and it is not covered by an others clause.
 
-                        return Expr;
+                        return
+                          New_Copy_Tree_And_Copy_Dimensions
+                            (Expression (Parent (Compon)));
 
                      else
                         if Present (Next (Selector_Name)) then
-                           Expr := New_Copy_Tree (Expression (Assoc));
+                           Expr :=
+                             New_Copy_Tree_And_Copy_Dimensions
+                               (Expression (Assoc));
                         else
                            Expr := Expression (Assoc);
                         end if;
@@ -3224,6 +3236,25 @@ package body Sem_Aggr is
 
          return Expr;
       end Get_Value;
+
+      ---------------------------------------
+      -- New_Copy_Tree_And_Copy_Dimensions --
+      ---------------------------------------
+
+      function New_Copy_Tree_And_Copy_Dimensions
+        (Source    : Node_Id;
+         Map       : Elist_Id   := No_Elist;
+         New_Sloc  : Source_Ptr := No_Location;
+         New_Scope : Entity_Id  := Empty) return Node_Id
+      is
+         New_Copy : constant Node_Id :=
+                      New_Copy_Tree (Source, Map, New_Sloc, New_Scope);
+      begin
+         --  Move the dimensions of Source to New_Copy
+
+         Copy_Dimensions (Source, New_Copy);
+         return New_Copy;
+      end New_Copy_Tree_And_Copy_Dimensions;
 
       -----------------------
       -- Resolve_Aggr_Expr --
@@ -3391,7 +3422,7 @@ package body Sem_Aggr is
             --  Since New_Expr is not gonna be analyzed later on, we need to
             --  propagate here the dimensions form Expr to New_Expr.
 
-            Move_Dimensions (Expr, New_Expr);
+            Copy_Dimensions (Expr, New_Expr);
 
          else
             New_Expr := Expr;
@@ -3986,7 +4017,7 @@ package body Sem_Aggr is
                  and then Present (Expression (Parent (Component)))
                then
                   Expr :=
-                    New_Copy_Tree
+                    New_Copy_Tree_And_Copy_Dimensions
                       (Expression (Parent (Component)),
                        New_Scope => Current_Scope,
                        New_Sloc  => Sloc (N));
