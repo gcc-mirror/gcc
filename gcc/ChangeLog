@@ -1,3 +1,8 @@
+2012-10-01  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	PR target/54746
+	* config/s390/s390.c (s390_option_override): Add missing break.
+
 2012-09-30  Sharad Singhai  <singhai@google.com>
 
 	* dumpfile.c: New file with parts moved from tree-dump.c.
