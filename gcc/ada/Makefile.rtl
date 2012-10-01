@@ -481,6 +481,7 @@ GNATRTL_NONTASKING_OBJS= \
   s-atocou$(objext) \
   s-atopri$(objext) \
   s-auxdec$(objext) \
+  s-bignum$(objext) \
   s-bitops$(objext) \
   s-boarop$(objext) \
   s-bytswa$(objext) \

@@ -37,8 +37,6 @@ with System;                  use System;
 with System.Secondary_Stack;  use System.Secondary_Stack;
 with System.Storage_Elements; use System.Storage_Elements;
 
-with Unchecked_Conversion;
-
 package body System.Bignums is
 
    use Interfaces;
@@ -205,25 +203,12 @@ package body System.Bignums is
    function Allocate_Bignum (Len : Length) return Bignum is
       Addr : Address;
 
-      --  The following definitions are to allow us to set the discriminant
-
-      type Header is record
-         Len : Length;
-         Neg : Boolean;
-      end record;
-
-      for Header use record
-         Len at 0 range 0 .. 23;
-         Neg at 3 range 0 .. 7;
-      end record;
-
-      type Header_Ptr is access all Header;
-
-      function To_Header_Ptr is new Unchecked_Conversion (Address, Header_Ptr);
-      function To_Bignum     is new Unchecked_Conversion (Address, Bignum);
-
    begin
-      if True then
+      --  Change the if False here to if True to get allocation on the heap
+      --  instead of the secondary stack, which is convenient for debugging
+      --  System.Bignum itself.
+
+      if False then
          declare
             B : Bignum;
          begin
@@ -231,10 +216,34 @@ package body System.Bignums is
             return B;
          end;
 
+      --  Normal case of allocation on the secondary stack
+
       else
+         --  Note: The approach used here is designed to avoid strict aliasing
+         --  warnings that appeared previously using unchecked conversion.
+
          SS_Allocate (Addr, Storage_Offset (4 + 4 * Len));
-         To_Header_Ptr (Addr).Len := Len;
-         return To_Bignum (Addr);
+
+         declare
+            B : Bignum;
+            for B'Address use Addr'Address;
+            pragma Import (Ada, B);
+
+            BD : Bignum_Data (Len);
+            for BD'Address use Addr;
+            pragma Import (Ada, BD);
+
+            --  Expose a writable view of discriminant BD.Len so that we can
+            --  initialize it.
+
+            BL : Length;
+            for BL'Address use BD.Len'Address;
+            pragma Import (Ada, BL);
+
+         begin
+            BL := Len;
+            return B;
+         end;
       end if;
    end Allocate_Bignum;
 
