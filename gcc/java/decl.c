@@ -617,7 +617,7 @@ java_init_decl_processing (void)
   decimal_int_max = build_int_cstu (unsigned_int_type_node, 0x80000000);
   decimal_long_max
     = double_int_to_tree (unsigned_long_type_node,
-			  double_int_setbit (double_int_zero, 64));
+			  double_int_zero.set_bit (64));
 
   long_zero_node = build_int_cst (long_type_node, 0);
 

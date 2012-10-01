@@ -197,12 +197,10 @@ procedure Gnat1drv is
                                            Alignment_Check   => True,
                                            Division_Check    => True,
                                            Elaboration_Check => True,
-                                           Overflow_Check    => True,
                                            others            => False),
-            Overflow_Checks_General    => Suppress,
-            Overflow_Checks_Assertions => Suppress);
+            Overflow_Checks_General    => Suppressed,
+            Overflow_Checks_Assertions => Suppressed);
 
-         Enable_Overflow_Checks     := False;
          Dynamic_Elaboration_Checks := False;
 
          --  Kill debug of generated code, since it messes up sloc values
@@ -330,23 +328,29 @@ procedure Gnat1drv is
          Exception_Mechanism := Back_End_Exceptions;
       end if;
 
-      --  Set proper status for overflow checks. We turn on overflow checks if
-      --  -gnatp was not specified, and either -gnato is set or the back-end
-      --  takes care of overflow checks. Otherwise we suppress overflow checks
-      --  by default (since front end checks are expensive).
+      --  Set proper status for overflow checks. If already set (by -gnato or
+      --  -gnatp) then we have nothing to do.
 
-      if not Opt.Suppress_Checks
-        and then (Opt.Enable_Overflow_Checks
-                    or else
-                      (Targparm.Backend_Divide_Checks_On_Target
-                        and
-                       Targparm.Backend_Overflow_Checks_On_Target))
+      if Opt.Suppress_Options.Overflow_Checks_General /= Not_Set then
+         null;
+
+      --  If we have backend divide and overflow checks, then by default
+      --  overflow checks are minimized, which is a reasonable setting.
+
+      elsif Targparm.Backend_Divide_Checks_On_Target
+              and
+            Targparm.Backend_Overflow_Checks_On_Target
       then
-         Suppress_Options.Suppress (Overflow_Check) := False;
+         Suppress_Options.Overflow_Checks_General    := Minimized;
+         Suppress_Options.Overflow_Checks_Assertions := Minimized;
+
+      --  Otherwise for now, default is checks are suppressed. This is likely
+      --  to change in the future, but for now this is the compatible behavior
+      --  with previous versions of GNAT.
+
       else
-         Suppress_Options.Suppress (Overflow_Check)  := True;
-         Suppress_Options.Overflow_Checks_General    := Check_All;
-         Suppress_Options.Overflow_Checks_Assertions := Check_All;
+         Suppress_Options.Overflow_Checks_General    := Suppressed;
+         Suppress_Options.Overflow_Checks_Assertions := Suppressed;
       end if;
 
       --  Set default for atomic synchronization. As this synchronization
@@ -437,8 +441,7 @@ procedure Gnat1drv is
          --  Turn off alignment checks.
          --  Turn off validity checking.
 
-         Suppress_Options := Suppress_All;
-         Enable_Overflow_Checks := False;
+         Suppress_Options           := Suppress_All;
          Dynamic_Elaboration_Checks := False;
          Reset_Validity_Check_Options;
 
@@ -517,6 +520,12 @@ procedure Gnat1drv is
             Inline_Level := 2;
          end if;
       end if;
+
+      --  Finally capture adjusted value of Suppress_Options as the initial
+      --  value for Scope_Suppress, which will be modified as we move from
+      --  scope to scope (by Suppress/Unsuppress/Overflow_Checks pragmas).
+
+      Sem.Scope_Suppress := Opt.Suppress_Options;
    end Adjust_Global_Switches;
 
    --------------------

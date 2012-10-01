@@ -610,6 +610,7 @@ glibcxx_toolexeclibdir
 glibcxx_toolexecdir
 gxx_include_dir
 glibcxx_prefixdir
+CPU_OPT_BITS_RANDOM
 CPU_OPT_EXT_RANDOM
 ERROR_CONSTANTS_SRCDIR
 OS_INC_SRCDIR
@@ -671,8 +672,6 @@ python_mod_dir
 ENABLE_EXTERN_TEMPLATE_FALSE
 ENABLE_EXTERN_TEMPLATE_TRUE
 EXTRA_CXX_FLAGS
-ENABLE_PARALLEL_FALSE
-ENABLE_PARALLEL_TRUE
 GLIBCXX_BUILD_DEBUG_FALSE
 GLIBCXX_BUILD_DEBUG_TRUE
 DEBUG_FLAGS
@@ -11513,7 +11512,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11516 "configure"
+#line 11515 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11619,7 +11618,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11622 "configure"
+#line 11621 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15033,7 +15032,7 @@ fi
     #
     # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
     cat > conftest.$ac_ext << EOF
-#line 15036 "configure"
+#line 15035 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -15368,7 +15367,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15371 "configure"
+#line 15370 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15403,7 +15402,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15406 "configure"
+#line 15405 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15438,7 +15437,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15441 "configure"
+#line 15440 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -15474,7 +15473,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15477 "configure"
+#line 15476 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -15553,7 +15552,7 @@ $as_echo "$as_me: WARNING: Performance of certain classes will degrade as a resu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15556 "configure"
+#line 15555 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -15595,7 +15594,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15598 "configure"
+#line 15597 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -15629,7 +15628,7 @@ $as_echo "$enable_int128" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15632 "configure"
+#line 15631 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -17238,7 +17237,6 @@ $as_echo "$as_me: target-libgomp not built" >&6;}
 $as_echo_n "checking for parallel mode support... " >&6; }
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_parallel" >&5
 $as_echo "$enable_parallel" >&6; }
-
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for extra compiler flags for building" >&5
 $as_echo_n "checking for extra compiler flags for building... " >&6; }
@@ -71643,6 +71641,8 @@ OS_INC_SRCDIR=config/${os_include_dir}
 ERROR_CONSTANTS_SRCDIR=config/${error_constants_dir}
 ABI_TWEAKS_SRCDIR=config/${abi_tweaks_dir}
 CPU_OPT_EXT_RANDOM=config/${cpu_opt_ext_random}
+CPU_OPT_BITS_RANDOM=config/${cpu_opt_bits_random}
+
 
 
 
@@ -71716,15 +71716,6 @@ fi
 else
   GLIBCXX_BUILD_DEBUG_TRUE='#'
   GLIBCXX_BUILD_DEBUG_FALSE=
-fi
-
-
-    if test $enable_parallel = yes; then
-  ENABLE_PARALLEL_TRUE=
-  ENABLE_PARALLEL_FALSE='#'
-else
-  ENABLE_PARALLEL_TRUE='#'
-  ENABLE_PARALLEL_FALSE=
 fi
 
 
@@ -72184,10 +72175,6 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${GLIBCXX_BUILD_DEBUG_TRUE}" && test -z "${GLIBCXX_BUILD_DEBUG_FALSE}"; then
   as_fn_error "conditional \"GLIBCXX_BUILD_DEBUG\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${ENABLE_PARALLEL_TRUE}" && test -z "${ENABLE_PARALLEL_FALSE}"; then
-  as_fn_error "conditional \"ENABLE_PARALLEL\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${ENABLE_EXTERN_TEMPLATE_TRUE}" && test -z "${ENABLE_EXTERN_TEMPLATE_FALSE}"; then

@@ -1043,9 +1043,9 @@ get_constant (JCF *jcf, int index)
 	double_int val;
 
 	num = JPOOL_UINT (jcf, index);
-	val = double_int_lshift (uhwi_to_double_int (num), 32, 64, false);
+	val = double_int::from_uhwi (num).llshift (32, 64);
 	num = JPOOL_UINT (jcf, index + 1);
-	val = double_int_ior (val, uhwi_to_double_int (num));
+	val |= double_int::from_uhwi (num);
 
 	value = double_int_to_tree (long_type_node, val);
 	break;

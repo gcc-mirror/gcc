@@ -2235,14 +2235,13 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
     {
       tree inner_nelts = array_type_nelts_top (elt_type);
       tree inner_nelts_cst = maybe_constant_value (inner_nelts);
-      if (TREE_CONSTANT (inner_nelts_cst)
-	  && TREE_CODE (inner_nelts_cst) == INTEGER_CST)
+      if (TREE_CODE (inner_nelts_cst) == INTEGER_CST)
 	{
-	  double_int result;
-	  if (mul_double (TREE_INT_CST_LOW (inner_nelts_cst),
-			  TREE_INT_CST_HIGH (inner_nelts_cst),
-			  inner_nelts_count.low, inner_nelts_count.high,
-			  &result.low, &result.high))
+	  bool overflow;
+	  double_int result = TREE_INT_CST (inner_nelts_cst)
+			      .mul_with_sign (inner_nelts_count,
+					      false, &overflow);
+	  if (overflow)
 	    {
 	      if (complain & tf_error)
 		error ("integer overflow in array size");
@@ -2344,8 +2343,8 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
       /* Maximum available size in bytes.  Half of the address space
 	 minus the cookie size.  */
       double_int max_size
-	= double_int_lshift (double_int_one, TYPE_PRECISION (sizetype) - 1,
-			     HOST_BITS_PER_DOUBLE_INT, false);
+	= double_int_one.llshift (TYPE_PRECISION (sizetype) - 1,
+				  HOST_BITS_PER_DOUBLE_INT);
       /* Size of the inner array elements. */
       double_int inner_size;
       /* Maximum number of outer elements which can be allocated. */
@@ -2355,22 +2354,21 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
       gcc_assert (TREE_CODE (size) == INTEGER_CST);
       cookie_size = targetm.cxx.get_cookie_size (elt_type);
       gcc_assert (TREE_CODE (cookie_size) == INTEGER_CST);
-      gcc_checking_assert (double_int_ucmp
-			   (TREE_INT_CST (cookie_size), max_size) < 0);
+      gcc_checking_assert (TREE_INT_CST (cookie_size).ult (max_size));
       /* Unconditionally substract the cookie size.  This decreases the
 	 maximum object size and is safe even if we choose not to use
 	 a cookie after all.  */
-      max_size = double_int_sub (max_size, TREE_INT_CST (cookie_size));
-      if (mul_double (TREE_INT_CST_LOW (size), TREE_INT_CST_HIGH (size),
-		      inner_nelts_count.low, inner_nelts_count.high,
-		      &inner_size.low, &inner_size.high)
-	  || double_int_ucmp (inner_size, max_size) > 0)
+      max_size -= TREE_INT_CST (cookie_size);
+      bool overflow;
+      inner_size = TREE_INT_CST (size)
+		   .mul_with_sign (inner_nelts_count, false, &overflow);
+      if (overflow || inner_size.ugt (max_size))
 	{
 	  if (complain & tf_error)
 	    error ("size of array is too large");
 	  return error_mark_node;
 	}
-      max_outer_nelts = double_int_udiv (max_size, inner_size, TRUNC_DIV_EXPR);
+      max_outer_nelts = max_size.udiv (inner_size, TRUNC_DIV_EXPR);
       /* Only keep the top-most seven bits, to simplify encoding the
 	 constant in the instruction stream.  */
       {
@@ -2378,10 +2376,8 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
 	  - (max_outer_nelts.high ? clz_hwi (max_outer_nelts.high)
 	     : (HOST_BITS_PER_WIDE_INT + clz_hwi (max_outer_nelts.low)));
 	max_outer_nelts
-	  = double_int_lshift (double_int_rshift
-			       (max_outer_nelts, shift,
-				HOST_BITS_PER_DOUBLE_INT, false),
-			       shift, HOST_BITS_PER_DOUBLE_INT, false);
+	  = max_outer_nelts.lrshift (shift, HOST_BITS_PER_DOUBLE_INT)
+	    .llshift (shift, HOST_BITS_PER_DOUBLE_INT);
       }
       max_outer_nelts_tree = double_int_to_tree (sizetype, max_outer_nelts);
 

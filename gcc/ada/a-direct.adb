@@ -216,8 +216,7 @@ package body Ada.Directories is
 
             Norm    : constant String := Normalize_Pathname (Name);
             Last_DS : constant Natural :=
-                        Strings.Fixed.Index
-                          (Name, Dir_Seps, Going => Strings.Backward);
+              Strings.Fixed.Index (Name, Dir_Seps, Going => Strings.Backward);
 
          begin
             if Last_DS = 0 then
@@ -755,7 +754,7 @@ package body Ada.Directories is
                  Target => Path_String_Access);
 
             Path_Access : constant Path_String_Access :=
-                            Address_To_Access (Filename_Addr);
+              Address_To_Access (Filename_Addr);
 
          begin
             Last := Filename_Len;
@@ -767,9 +766,7 @@ package body Ada.Directories is
          if Match (Name (1 .. Last), Search.Value.Pattern) then
             declare
                Full_Name : constant String :=
-                             Compose
-                               (To_String
-                                  (Search.Value.Name), Name (1 .. Last));
+                 Compose (To_String (Search.Value.Name), Name (1 .. Last));
                Found     : Boolean := False;
 
             begin
@@ -1159,8 +1156,7 @@ package body Ada.Directories is
 
       function Simple_Name_Internal (Path : String) return String is
          Cut_Start : Natural :=
-                       Strings.Fixed.Index
-                         (Path, Dir_Seps, Going => Strings.Backward);
+           Strings.Fixed.Index (Path, Dir_Seps, Going => Strings.Backward);
          Cut_End   : Natural;
 
       begin
@@ -1176,7 +1172,7 @@ package body Ada.Directories is
             BN : constant String := Path (Cut_Start .. Cut_End);
 
             Has_Drive_Letter : constant Boolean :=
-                                 OS_Lib.Path_Separator /= ':';
+              OS_Lib.Path_Separator /= ':';
             --  If Path separator is not ':' then we are on a DOS based OS
             --  where this character is used as a drive letter separator.
 

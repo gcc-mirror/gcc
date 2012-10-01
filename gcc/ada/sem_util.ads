@@ -170,6 +170,12 @@ package Sem_Util is
    --  checks whether T is a reference type, and if so it adds an interprettion
    --  to Expr whose type is the designated type of the reference_discriminant.
 
+   procedure Check_Internal_Protected_Use (N : Node_Id; Nam : Entity_Id);
+   --  Within a protected function, the current object is a constant, and
+   --  internal calls to a procedure or entry are illegal. Similarly, other
+   --  uses of a protected procedure in a renaming or a generic instantiation
+   --  in the context of a protected function are illegal (AI05-0225).
+
    procedure Check_Later_Vs_Basic_Declarations
      (Decls          : List_Id;
       During_Parsing : Boolean);

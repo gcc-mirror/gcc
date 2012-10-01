@@ -63,7 +63,7 @@ fileline_initialize (struct backtrace_state *state,
 
   if (failed)
     {
-      error_callback (data, "failed to read executable information", 0);
+      error_callback (data, "failed to read executable information", -1);
       return 0;
     }
 

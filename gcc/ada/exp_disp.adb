@@ -1068,6 +1068,32 @@ package body Exp_Disp is
       --  to avoid the generation of spurious warnings under ZFP run-time.
 
       Analyze_And_Resolve (Call_Node, Call_Typ, Suppress => All_Checks);
+
+      --  For functions returning interface types add implicit conversion to
+      --  force the displacement of the pointer to the object to reference
+      --  the corresponding secondary dispatch table. This is needed to
+      --  handle well nested calls through secondary dispatch tables
+      --  (for example Obj.Prim1.Prim2).
+
+      if Is_Interface (Res_Typ) then
+         Rewrite (Call_Node,
+           Make_Type_Conversion (Loc,
+             Subtype_Mark => New_Occurrence_Of (Res_Typ, Loc),
+             Expression => Relocate_Node (Call_Node)));
+         Set_Etype (Call_Node, Res_Typ);
+         Expand_Interface_Conversion (Call_Node, Is_Static => False);
+         Force_Evaluation (Call_Node);
+
+         pragma Assert (Nkind (Call_Node) = N_Explicit_Dereference
+           and then Nkind (Prefix (Call_Node)) = N_Identifier
+           and then Nkind (Parent (Entity (Prefix (Call_Node))))
+                             = N_Object_Declaration);
+         Set_Assignment_OK (Parent (Entity (Prefix (Call_Node))));
+
+         if Nkind (Parent (Call_Node)) = N_Object_Declaration then
+            Set_Assignment_OK (Parent (Call_Node));
+         end if;
+      end if;
    end Expand_Dispatching_Call;
 
    ---------------------------------

@@ -102,6 +102,9 @@ package body Par_SCO is
    --  excluding OR and AND) and returns True if so, False otherwise, it does
    --  no other processing.
 
+   function To_Source_Location (S : Source_Ptr) return Source_Location;
+   --  Converts Source_Ptr value to Source_Location (line/col) format
+
    procedure Process_Decisions
      (N           : Node_Id;
       T           : Character;
@@ -137,6 +140,9 @@ package body Par_SCO is
       --  Node providing the Sloc(s) for the dominance marker
    end record;
    No_Dominant : constant Dominant_Info := (' ', Empty);
+
+   procedure Record_Instance (Id : Instance_Id; Inst_Sloc : Source_Ptr);
+   --  Add one entry from the instance table to the corresponding SCO table
 
    procedure Traverse_Declarations_Or_Statements
      (L : List_Id;
@@ -696,15 +702,36 @@ package body Par_SCO is
       Debug_Put_SCOs;
    end pscos;
 
+   ---------------------
+   -- Record_Instance --
+   ---------------------
+
+   procedure Record_Instance (Id : Instance_Id; Inst_Sloc : Source_Ptr) is
+      Inst_Src  : constant Source_File_Index :=
+                    Get_Source_File_Index (Inst_Sloc);
+   begin
+      SCO_Instance_Table.Append
+        ((Inst_Dep_Num       => Dependency_Num (Unit (Inst_Src)),
+          Inst_Loc           => To_Source_Location (Inst_Sloc),
+          Enclosing_Instance => SCO_Instance_Index (Instance (Inst_Src))));
+      pragma Assert
+        (SCO_Instance_Table.Last = SCO_Instance_Index (Id));
+   end Record_Instance;
+
    ----------------
    -- SCO_Output --
    ----------------
 
    procedure SCO_Output is
+      procedure Populate_SCO_Instance_Table is
+        new Sinput.Iterate_On_Instances (Record_Instance);
+
    begin
       if Debug_Flag_Dot_OO then
          dsco;
       end if;
+
+      Populate_SCO_Instance_Table;
 
       --  Sort the unit tables based on dependency numbers
 
@@ -949,26 +976,6 @@ package body Par_SCO is
       Pragma_Sloc : Source_Ptr := No_Location;
       Pragma_Name : Pragma_Id  := Unknown_Pragma)
    is
-      function To_Source_Location (S : Source_Ptr) return Source_Location;
-      --  Converts Source_Ptr value to Source_Location (line/col) format
-
-      ------------------------
-      -- To_Source_Location --
-      ------------------------
-
-      function To_Source_Location (S : Source_Ptr) return Source_Location is
-      begin
-         if S = No_Location then
-            return No_Source_Location;
-         else
-            return
-              (Line => Get_Logical_Line_Number (S),
-               Col  => Get_Column_Number (S));
-         end if;
-      end To_Source_Location;
-
-   --  Start of processing for Set_Table_Entry
-
    begin
       SCO_Table.Append
         ((C1          => C1,
@@ -979,6 +986,21 @@ package body Par_SCO is
           Pragma_Sloc => Pragma_Sloc,
           Pragma_Name => Pragma_Name));
    end Set_Table_Entry;
+
+   ------------------------
+   -- To_Source_Location --
+   ------------------------
+
+   function To_Source_Location (S : Source_Ptr) return Source_Location is
+   begin
+      if S = No_Location then
+         return No_Source_Location;
+      else
+         return
+           (Line => Get_Logical_Line_Number (S),
+            Col  => Get_Column_Number (S));
+      end if;
+   end To_Source_Location;
 
    -----------------------------------------
    -- Traverse_Declarations_Or_Statements --

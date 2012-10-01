@@ -1050,14 +1050,13 @@ vector_element (gimple_stmt_iterator *gsi, tree vect, tree idx, tree *ptmpvec)
 
       if (TREE_CODE (vect) == VECTOR_CST)
 	return VECTOR_CST_ELT (vect, index);
-      else if (TREE_CODE (vect) == CONSTRUCTOR)
+      else if (TREE_CODE (vect) == CONSTRUCTOR
+	       && (CONSTRUCTOR_NELTS (vect) == 0
+		   || TREE_CODE (TREE_TYPE (CONSTRUCTOR_ELT (vect, 0)->value))
+		      != VECTOR_TYPE))
         {
-          unsigned i;
-          tree elt_i, elt_v;
-
-	  FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (vect), i, elt_i, elt_v)
-            if (operand_equal_p (elt_i, idx, 0))
-              return elt_v;
+	  if (index < CONSTRUCTOR_NELTS (vect))
+	    return CONSTRUCTOR_ELT (vect, index)->value;
           return build_zero_cst (vect_elt_type);
         }
       else
@@ -1215,7 +1214,7 @@ lower_vec_perm (gimple_stmt_iterator *gsi)
 	    t = v0_val;
         }
 
-      CONSTRUCTOR_APPEND_ELT (v, si, t);
+      CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, t);
     }
 
   constr = build_constructor (vect_type, v);

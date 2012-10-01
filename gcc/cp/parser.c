@@ -5749,7 +5749,8 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 		     || TREE_CODE (postfix_expression) == MEMBER_REF
 		     || TREE_CODE (postfix_expression) == DOTSTAR_EXPR)
 	      postfix_expression = (build_offset_ref_call_from_tree
-				    (postfix_expression, &args));
+				    (postfix_expression, &args,
+				     tf_warning_or_error));
 	    else if (idk == CP_ID_KIND_QUALIFIED)
 	      /* A call to a static class member, or a namespace-scope
 		 function.  */
@@ -12479,9 +12480,11 @@ cp_parser_template_id (cp_parser *parser,
 	  return error_mark_node;
 	}
       /* Otherwise, emit an error about the invalid digraph, but continue
-	 parsing because we got our argument list.  */
-      if (permerror (next_token->location,
-		     "%<<::%> cannot begin a template-argument list"))
+	 parsing because we got our argument list.  In C++11 do not emit
+	 any error, per 2.5/3.  */
+      if (cxx_dialect < cxx0x
+	  && permerror (next_token->location,
+			"%<<::%> cannot begin a template-argument list"))
 	{
 	  static bool hint = false;
 	  inform (next_token->location,
@@ -12489,8 +12492,9 @@ cp_parser_template_id (cp_parser *parser,
 		  " Insert whitespace between %<<%> and %<::%>");
 	  if (!hint && !flag_permissive)
 	    {
-	      inform (next_token->location, "(if you use %<-fpermissive%>"
-		      " G++ will accept your code)");
+	      inform (next_token->location, "(if you use %<-fpermissive%> "
+		      "or %<-std=c++11%>, or %<-std=gnu++11%> G++ will "
+		      "accept your code)");
 	      hint = true;
 	    }
 	}

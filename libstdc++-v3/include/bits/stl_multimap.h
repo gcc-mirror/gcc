@@ -108,7 +108,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       __glibcxx_class_requires(_Tp, _SGIAssignableConcept)
       __glibcxx_class_requires4(_Compare, bool, _Key, _Key,
 				_BinaryFunctionConcept)
-      __glibcxx_class_requires2(value_type, _Alloc_value_type, _SameTypeConcept)	
+      __glibcxx_class_requires2(value_type, _Alloc_value_type, _SameTypeConcept)
 
     public:
       class value_compare
@@ -433,6 +433,59 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       { return _M_t.max_size(); }
 
       // modifiers
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      /**
+       *  @brief Build and insert a std::pair into the %multimap.
+       *
+       *  @param __args  Arguments used to generate a new pair instance (see
+       *	        std::piecewise_contruct for passing arguments to each
+       *	        part of the pair constructor).
+       *
+       *  @return An iterator that points to the inserted (key,value) pair.
+       *
+       *  This function builds and inserts a (key, value) %pair into the
+       *  %multimap.
+       *  Contrary to a std::map the %multimap does not rely on unique keys and
+       *  thus multiple pairs with the same key can be inserted.
+       *
+       *  Insertion requires logarithmic time.
+       */
+      template<typename... _Args>
+	iterator
+	emplace(_Args&&... __args)
+	{ return _M_t._M_emplace_equal(std::forward<_Args>(__args)...); }
+
+      /**
+       *  @brief Builds and inserts a std::pair into the %multimap.
+       *
+       *  @param  __pos  An iterator that serves as a hint as to where the pair
+       *                should be inserted.
+       *  @param  __args  Arguments used to generate a new pair instance (see
+       *	         std::piecewise_contruct for passing arguments to each
+       *	         part of the pair constructor).
+       *  @return An iterator that points to the inserted (key,value) pair.
+       *
+       *  This function inserts a (key, value) pair into the %multimap.
+       *  Contrary to a std::map the %multimap does not rely on unique keys and
+       *  thus multiple pairs with the same key can be inserted.
+       *  Note that the first parameter is only a hint and can potentially
+       *  improve the performance of the insertion process.  A bad hint would
+       *  cause no gains in efficiency.
+       *
+       *  For more on @a hinting, see:
+       *  http://gcc.gnu.org/onlinedocs/libstdc++/manual/bk01pt07ch17.html
+       *
+       *  Insertion requires logarithmic time (if the hint is not taken).
+       */
+      template<typename... _Args>
+	iterator
+	emplace_hint(const_iterator __pos, _Args&&... __args)
+	{
+	  return _M_t._M_emplace_hint_equal(__pos,
+					    std::forward<_Args>(__args)...);
+	}
+#endif
+
       /**
        *  @brief Inserts a std::pair into the %multimap.
        *  @param  __x  Pair to be inserted (see std::make_pair for easy creation

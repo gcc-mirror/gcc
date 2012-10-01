@@ -43,28 +43,10 @@ enum symtab_type
 struct GTY(()) symtab_node_base
 {
   /* Type of the symbol.  */
-  enum symtab_type type;
-  tree decl;
-  struct ipa_ref_list ref_list;
-  /* Circular list of nodes in the same comdat group if non-NULL.  */
-  symtab_node same_comdat_group;
-  /* Ordering of all symtab entries.  */
-  int order;
-  enum ld_plugin_symbol_resolution resolution;
-  /* File stream where this node is being written to.  */
-  struct lto_file_decl_data * lto_file_data;
+  ENUM_BITFIELD (symtab_type) type : 8;
 
-  /* Linked list of symbol table entries starting with symtab_nodes.  */
-  symtab_node next;
-  symtab_node previous;
-  /* Linked list of symbols with the same asm name.  There may be multiple
-     entries for single symbol name in the case of LTO resolutions,
-     existence of inline clones, or duplicated declaration. The last case
-     is a long standing bug frontends and builtin handling. */
-  symtab_node next_sharing_asm_name;
-  symtab_node previous_sharing_asm_name;
-
-  PTR GTY ((skip)) aux;
+  /* The symbols resolution.  */
+  ENUM_BITFIELD (ld_plugin_symbol_resolution) resolution : 8;
 
   /* Set when function has address taken.
      In current implementation it imply needed flag. */
@@ -80,6 +62,32 @@ struct GTY(()) symtab_node_base
   /* Needed variables might become dead by optimization.  This flag
      forces the variable to be output even if it appears dead otherwise.  */
   unsigned force_output : 1;
+
+  /* Ordering of all symtab entries.  */
+  int order;
+
+  tree decl;
+
+  /* Vectors of referring and referenced entities.  */
+  struct ipa_ref_list ref_list;
+
+  /* Circular list of nodes in the same comdat group if non-NULL.  */
+  symtab_node same_comdat_group;
+
+  /* File stream where this node is being written to.  */
+  struct lto_file_decl_data * lto_file_data;
+
+  /* Linked list of symbol table entries starting with symtab_nodes.  */
+  symtab_node next;
+  symtab_node previous;
+  /* Linked list of symbols with the same asm name.  There may be multiple
+     entries for single symbol name in the case of LTO resolutions,
+     existence of inline clones, or duplicated declaration. The last case
+     is a long standing bug frontends and builtin handling. */
+  symtab_node next_sharing_asm_name;
+  symtab_node previous_sharing_asm_name;
+
+  PTR GTY ((skip)) aux;
 };
 
 enum availability

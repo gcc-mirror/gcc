@@ -340,6 +340,7 @@ c_common_read_pch (cpp_reader *pfile, const char *name,
 
   gt_pch_restore (f);
   cpp_set_line_map (pfile, line_table);
+  rebuild_location_adhoc_htab (line_table);
 
   timevar_push (TV_PCH_CPP_RESTORE);
   if (cpp_read_state (pfile, name, f, smd) != 0)

@@ -902,7 +902,7 @@ package body System.Generic_Array_Operations is
    is
    begin
       return R : Result_Vector (Right'Range (2)) do
-         if Left'Length /= Right'Length (2) then
+         if Left'Length /= Right'Length (1) then
             raise Constraint_Error with
               "incompatible dimensions in vector-matrix multiplication";
          end if;
@@ -913,7 +913,7 @@ package body System.Generic_Array_Operations is
 
             begin
                for K in Right'Range (1) loop
-                  S := S + Left (J - Right'First (1)
+                  S := S + Left (K - Right'First (1)
                                    + Left'First) * Right (K, J);
                end loop;
 

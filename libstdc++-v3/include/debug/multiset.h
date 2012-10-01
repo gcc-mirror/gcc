@@ -194,6 +194,25 @@ namespace __debug
       using _Base::max_size;
 
       // modifiers:
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      template<typename... _Args>
+	iterator
+	emplace(_Args&&... __args)
+	{
+	  return iterator(_Base::emplace(std::forward<_Args>(__args)...), this);
+	}
+
+      template<typename... _Args>
+	iterator
+	emplace_hint(const_iterator __pos, _Args&&... __args)
+	{
+	  __glibcxx_check_insert(__pos);
+	  return iterator(_Base::emplace_hint(__pos.base(),
+					      std::forward<_Args>(__args)...),
+			  this);
+	}
+#endif
+
       iterator
       insert(const value_type& __x)
       { return iterator(_Base::insert(__x), this); }

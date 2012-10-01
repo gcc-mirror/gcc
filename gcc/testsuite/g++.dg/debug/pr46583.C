@@ -1,6 +1,7 @@
 // PR debug/46583
 // { dg-do compile }
 // { dg-options "-O -fno-inline -fipa-cp -fipa-cp-clone -fcompare-debug" }
+// { dg-xfail-if "" { powerpc-ibm-aix* } { "*" } { "" } }
 
 template < typename = unsigned long >struct A
 {

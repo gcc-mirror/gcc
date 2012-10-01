@@ -564,6 +564,7 @@ package body Impunit is
     ("a-cbprqu", T),  -- Ada.Containers.Bounded_Priority_Queues
     ("a-extiin", T),  -- Ada.Execution_Time.Interrupts
     ("a-iteint", T),  -- Ada.Iterator_Interfaces
+    ("a-locale", T),  -- Ada.Locales
     ("a-synbar", T),  -- Ada.Synchronous_Barriers
     ("a-undesu", T),  -- Ada.Unchecked_Deallocate_Subpool
 

@@ -773,8 +773,13 @@ shrink_wrap_one_built_in_call (gimple bi_call)
                                           EDGE_FALSE_VALUE);
 
   bi_call_in_edge0->probability = REG_BR_PROB_BASE * ERR_PROB;
+  bi_call_in_edge0->count =
+      apply_probability (guard_bb0->count,
+			 bi_call_in_edge0->probability);
   join_tgt_in_edge_fall_thru->probability =
-      REG_BR_PROB_BASE - bi_call_in_edge0->probability;
+      inverse_probability (bi_call_in_edge0->probability);
+  join_tgt_in_edge_fall_thru->count =
+      guard_bb0->count - bi_call_in_edge0->count;
 
   /* Code generation for the rest of the conditions  */
   guard_bb = guard_bb0;
@@ -804,8 +809,12 @@ shrink_wrap_one_built_in_call (gimple bi_call)
       bi_call_in_edge = make_edge (guard_bb, bi_call_bb, EDGE_TRUE_VALUE);
 
       bi_call_in_edge->probability = REG_BR_PROB_BASE * ERR_PROB;
+      bi_call_in_edge->count =
+	  apply_probability (guard_bb->count,
+			     bi_call_in_edge->probability);
       guard_bb_in_edge->probability =
-          REG_BR_PROB_BASE - bi_call_in_edge->probability;
+          inverse_probability (bi_call_in_edge->probability);
+      guard_bb_in_edge->count = guard_bb->count - bi_call_in_edge->count;
     }
 
   VEC_free (gimple, heap, conds);

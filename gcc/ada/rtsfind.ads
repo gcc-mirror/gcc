@@ -213,6 +213,7 @@ package Rtsfind is
       System_Assertions,
       System_Atomic_Primitives,
       System_Aux_DEC,
+      System_Bignums,
       System_Bit_Ops,
       System_Boolean_Array_Operations,
       System_Byte_Swapping,
@@ -759,6 +760,28 @@ package Rtsfind is
      RE_Type_Class_Task,                 -- System.Aux_DEC
      RE_Type_Class_Address,              -- System.Aux_DEC
 
+     RE_Big_Abs,                         -- System.Bignums
+     RE_Big_Add,                         -- System.Bignums
+     RE_Big_Div,                         -- System.Bignums
+     RE_Big_Exp,                         -- System.Bignums
+     RE_Big_Mod,                         -- System.Bignums
+     RE_Big_Mul,                         -- System.Bignums
+     RE_Big_Neg,                         -- System.Bignums
+     RE_Big_Rem,                         -- System.Bignums
+     RE_Big_Sub,                         -- System.Bignums
+
+     RE_Big_EQ,                          -- System.Bignums
+     RE_Big_GE,                          -- System.Bignums
+     RE_Big_GT,                          -- System.Bignums
+     RE_Big_LE,                          -- System.Bignums
+     RE_Big_LT,                          -- System.Bignums
+     RE_Big_NE,                          -- System.Bignums
+
+     RE_Bignum,                          -- System.Bignums
+     RE_Bignum_In_LLI_Range,             -- System.Bignums
+     RE_To_Bignum,                       -- System.Bignums
+     RE_From_Bignum,                     -- System.Bignums
+
      RE_Bit_And,                         -- System.Bit_Ops
      RE_Bit_Eq,                          -- System.Bit_Ops
      RE_Bit_Not,                         -- System.Bit_Ops
@@ -783,18 +806,14 @@ package Rtsfind is
      RE_Compare_Array_S8_Unaligned,      -- System.Compare_Array_Signed_8
 
      RE_Compare_Array_S16,               -- System.Compare_Array_Signed_16
-
      RE_Compare_Array_S32,               -- System.Compare_Array_Signed_16
-
      RE_Compare_Array_S64,               -- System.Compare_Array_Signed_16
 
      RE_Compare_Array_U8,                -- System.Compare_Array_Unsigned_8
      RE_Compare_Array_U8_Unaligned,      -- System.Compare_Array_Unsigned_8
 
      RE_Compare_Array_U16,               -- System.Compare_Array_Unsigned_16
-
      RE_Compare_Array_U32,               -- System.Compare_Array_Unsigned_16
-
      RE_Compare_Array_U64,               -- System.Compare_Array_Unsigned_16
 
      RE_Str_Concat_2,                    -- System.Concat_2
@@ -1984,6 +2003,28 @@ package Rtsfind is
      RE_Type_Class_Access                => System_Aux_DEC,
      RE_Type_Class_Task                  => System_Aux_DEC,
      RE_Type_Class_Address               => System_Aux_DEC,
+
+     RE_Big_Abs                          => System_Bignums,
+     RE_Big_Add                          => System_Bignums,
+     RE_Big_Div                          => System_Bignums,
+     RE_Big_Exp                          => System_Bignums,
+     RE_Big_Mod                          => System_Bignums,
+     RE_Big_Mul                          => System_Bignums,
+     RE_Big_Neg                          => System_Bignums,
+     RE_Big_Rem                          => System_Bignums,
+     RE_Big_Sub                          => System_Bignums,
+
+     RE_Big_EQ                           => System_Bignums,
+     RE_Big_GE                           => System_Bignums,
+     RE_Big_GT                           => System_Bignums,
+     RE_Big_LE                           => System_Bignums,
+     RE_Big_LT                           => System_Bignums,
+     RE_Big_NE                           => System_Bignums,
+
+     RE_Bignum                           => System_Bignums,
+     RE_Bignum_In_LLI_Range              => System_Bignums,
+     RE_To_Bignum                        => System_Bignums,
+     RE_From_Bignum                      => System_Bignums,
 
      RE_Bit_And                          => System_Bit_Ops,
      RE_Bit_Eq                           => System_Bit_Ops,

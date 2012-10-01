@@ -32,21 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 /* Vector to keep track of external variables we've seen so far.  */
 VEC(tree,gc) *lto_global_var_decls;
 
-/* Return true if the resolution was guessed and not obtained from
-   the file.  */
-static inline bool
-resolution_guessed_p (symtab_node node)
-{
-  return node->symbol.aux != NULL;
-}
-
-/* Set guessed flag for NODE.  */
-static inline void
-set_resolution_guessed (symtab_node node, bool value)
-{
-  node->symbol.aux = (void *)(size_t)value;
-}
-
 /* Registers DECL with the LTO symbol table as having resolution RESOLUTION
    and read from FILE_DATA. */
 
@@ -78,7 +63,6 @@ lto_symtab_register_decl (tree decl,
     {
       node->symbol.resolution = resolution;
       gcc_assert (node->symbol.lto_file_data == file_data);
-      gcc_assert (!resolution_guessed_p (node));
     }
 }
 
@@ -303,7 +287,7 @@ lto_symtab_resolve_can_prevail_p (symtab_node e)
 /* Resolve the symbol with the candidates in the chain *SLOT and store
    their resolutions.  */
 
-static void
+static symtab_node
 lto_symtab_resolve_symbols (symtab_node first)
 {
   symtab_node e;
@@ -315,27 +299,33 @@ lto_symtab_resolve_symbols (symtab_node first)
 	&& (e->symbol.resolution == LDPR_PREVAILING_DEF_IRONLY
 	    || e->symbol.resolution == LDPR_PREVAILING_DEF_IRONLY_EXP
 	    || e->symbol.resolution == LDPR_PREVAILING_DEF))
-      prevailing = e;
+      {
+	prevailing = e;
+	break;
+      }
 
   /* If the chain is already resolved there is nothing else to do.  */
   if (prevailing)
-    return;
+    {
+      /* Assert it's the only one.  */
+      for (e = prevailing->symbol.next_sharing_asm_name; e; e = e->symbol.next_sharing_asm_name)
+	if (symtab_real_symbol_p (e)
+	    && (e->symbol.resolution == LDPR_PREVAILING_DEF_IRONLY
+		|| e->symbol.resolution == LDPR_PREVAILING_DEF_IRONLY_EXP
+		|| e->symbol.resolution == LDPR_PREVAILING_DEF))
+	  fatal_error ("multiple prevailing defs for %qE",
+		       DECL_NAME (prevailing->symbol.decl));
+      return prevailing;
+    }
 
   /* Find the single non-replaceable prevailing symbol and
      diagnose ODR violations.  */
   for (e = first; e; e = e->symbol.next_sharing_asm_name)
     {
       if (!lto_symtab_resolve_can_prevail_p (e))
-	{
-	  e->symbol.resolution = LDPR_RESOLVED_IR;
-          set_resolution_guessed (e, true);
-	  continue;
-	}
+	continue;
 
-      /* Set a default resolution - the final prevailing one will get
-         adjusted later.  */
-      e->symbol.resolution = LDPR_PREEMPTED_IR;
-      set_resolution_guessed (e, true);
+      /* If we have a non-replaceable definition it prevails.  */
       if (!lto_symtab_resolve_replaceable_p (e))
 	{
 	  if (prevailing)
@@ -349,12 +339,12 @@ lto_symtab_resolve_symbols (symtab_node first)
 	}
     }
   if (prevailing)
-    goto found;
+    return prevailing;
 
   /* Do a second round choosing one from the replaceable prevailing decls.  */
   for (e = first; e; e = e->symbol.next_sharing_asm_name)
     {
-      if (e->symbol.resolution != LDPR_PREEMPTED_IR
+      if (!lto_symtab_resolve_can_prevail_p (e)
 	  || !symtab_real_symbol_p (e))
 	continue;
 
@@ -386,25 +376,7 @@ lto_symtab_resolve_symbols (symtab_node first)
 	prevailing = e;
     }
 
-  if (!prevailing)
-    return;
-
-found:
-  /* If current lto files represent the whole program,
-    it is correct to use LDPR_PREVALING_DEF_IRONLY.
-    If current lto files are part of whole program, internal
-    resolver doesn't know if it is LDPR_PREVAILING_DEF
-    or LDPR_PREVAILING_DEF_IRONLY.  Use IRONLY conforms to
-    using -fwhole-program.  Otherwise, it doesn't
-    matter using either LDPR_PREVAILING_DEF or
-    LDPR_PREVAILING_DEF_IRONLY
-    
-    FIXME: above workaround due to gold plugin makes some
-    variables IRONLY, which are indeed PREVAILING_DEF in
-    resolution file.  These variables still need manual
-    externally_visible attribute.  */
-    prevailing->symbol.resolution = LDPR_PREVAILING_DEF_IRONLY;
-    set_resolution_guessed (prevailing, true);
+  return prevailing;
 }
 
 /* Merge all decls in the symbol table chain to the prevailing decl and
@@ -478,27 +450,7 @@ lto_symtab_merge_decls_1 (symtab_node first)
 
   /* Compute the symbol resolutions.  This is a no-op when using the
      linker plugin and resolution was decided by the linker.  */
-  lto_symtab_resolve_symbols (first);
-
-  /* Find the prevailing decl.  */
-  for (prevailing = first;
-       prevailing
-       && (!symtab_real_symbol_p (prevailing)
-	   || (prevailing->symbol.resolution != LDPR_PREVAILING_DEF_IRONLY
-	       && prevailing->symbol.resolution != LDPR_PREVAILING_DEF_IRONLY_EXP
-	       && prevailing->symbol.resolution != LDPR_PREVAILING_DEF));
-       prevailing = prevailing->symbol.next_sharing_asm_name)
-    ;
-
-  /* Assert it's the only one.  */
-  if (prevailing)
-    for (e = prevailing->symbol.next_sharing_asm_name; e; e = e->symbol.next_sharing_asm_name)
-      if (symtab_real_symbol_p (e)
-	  && (e->symbol.resolution == LDPR_PREVAILING_DEF_IRONLY
-	      || e->symbol.resolution == LDPR_PREVAILING_DEF_IRONLY_EXP
-	      || e->symbol.resolution == LDPR_PREVAILING_DEF))
-	fatal_error ("multiple prevailing defs for %qE",
-		     DECL_NAME (prevailing->symbol.decl));
+  prevailing = lto_symtab_resolve_symbols (first);
 
   /* If there's not a prevailing symbol yet it's an external reference.
      Happens a lot during ltrans.  Choose the first symbol with a
@@ -566,29 +518,14 @@ lto_symtab_merge_decls_1 (symtab_node first)
 
   /* Merge the chain to the single prevailing decl and diagnose
      mismatches.  */
-  lto_symtab_merge_decls_2 (first, diagnosed_p);
+  lto_symtab_merge_decls_2 (prevailing, diagnosed_p);
 
   if (cgraph_dump_file)
     {
       fprintf (cgraph_dump_file, "After resolution:\n");
-      for (e = first; e; e = e->symbol.next_sharing_asm_name)
+      for (e = prevailing; e; e = e->symbol.next_sharing_asm_name)
 	dump_symtab_node (cgraph_dump_file, e);
     }
-
-  /* Store resolution decision into the callgraph.  
-     In LTRANS don't overwrite information we stored into callgraph at
-     WPA stage.
-
-     Do not bother to store guessed decisions.  Generic code knows how
-     to handle UNKNOWN relocation well.
-
-     The problem with storing guessed decision is whether to use
-     PREVAILING_DEF, PREVAILING_DEF_IRONLY, PREVAILING_DEF_IRONLY_EXP.
-     First one would disable some whole program optimizations, while
-     ther second would imply to many whole program assumptions.  */
-  if (resolution_guessed_p (prevailing))
-    prevailing->symbol.resolution = LDPR_UNKNOWN;
-  return;
 }
 
 /* Resolve and merge all symbol table chains to a prevailing decl.  */
@@ -629,7 +566,8 @@ lto_symtab_merge_cgraph_nodes_1 (symtab_node prevailing)
 
       if (!symtab_real_symbol_p (e))
 	continue;
-      if (symtab_function_p (e))
+      if (symtab_function_p (e)
+	  && !DECL_BUILT_IN (e->symbol.decl))
 	lto_cgraph_replace_node (cgraph (e), cgraph (prevailing));
       if (symtab_variable_p (e))
 	lto_varpool_replace_node (varpool (e), varpool (prevailing));

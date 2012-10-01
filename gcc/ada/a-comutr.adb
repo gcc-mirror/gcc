@@ -484,9 +484,8 @@ package body Ada.Containers.Multiway_Trees is
          L : Natural renames C.Lock;
       begin
          return R : constant Constant_Reference_Type :=
-                      (Element => Position.Node.Element'Access,
-                       Control =>
-                         (Controlled with Container'Unrestricted_Access))
+           (Element => Position.Node.Element'Access,
+            Control => (Controlled with Container'Unrestricted_Access))
          do
             B := B + 1;
             L := L + 1;
@@ -1009,7 +1008,7 @@ package body Ada.Containers.Multiway_Trees is
       Item      : Element_Type) return Cursor
    is
       N : constant Tree_Node_Access :=
-            Find_In_Children (Root_Node (Container), Item);
+        Find_In_Children (Root_Node (Container), Item);
    begin
       if N = null then
          return No_Element;
@@ -1537,9 +1536,9 @@ package body Ada.Containers.Multiway_Trees is
       end if;
 
       return It : constant Child_Iterator :=
-                    (Limited_Controlled with
-                       Container => C,
-                       Subtree   => Parent.Node)
+        (Limited_Controlled with
+           Container => C,
+           Subtree   => Parent.Node)
       do
          B := B + 1;
       end return;
@@ -1565,9 +1564,9 @@ package body Ada.Containers.Multiway_Trees is
          B : Natural renames Position.Container.Busy;
       begin
          return It : constant Subtree_Iterator :=
-                       (Limited_Controlled with
-                          Container => Position.Container,
-                          Subtree   => Position.Node)
+           (Limited_Controlled with
+              Container => Position.Container,
+              Subtree   => Position.Node)
          do
             B := B + 1;
          end return;
@@ -2006,10 +2005,10 @@ package body Ada.Containers.Multiway_Trees is
         (Parent : Tree_Node_Access) return Tree_Node_Access
       is
          Subtree : constant Tree_Node_Access :=
-                     new Tree_Node_Type'
-                           (Parent  => Parent,
-                            Element => Element_Type'Input (Stream),
-                            others  => <>);
+           new Tree_Node_Type'
+             (Parent  => Parent,
+              Element => Element_Type'Input (Stream),
+              others  => <>);
 
       begin
          Read_Count := Read_Count + 1;
@@ -2102,8 +2101,8 @@ package body Ada.Containers.Multiway_Trees is
          L : Natural renames C.Lock;
       begin
          return R : constant Reference_Type :=
-                      (Element => Position.Node.Element'Access,
-                       Control => (Controlled with Position.Container))
+           (Element => Position.Node.Element'Access,
+            Control => (Controlled with Position.Container))
          do
             B := B + 1;
             L := L + 1;

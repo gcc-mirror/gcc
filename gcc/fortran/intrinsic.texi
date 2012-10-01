@@ -2362,9 +2362,8 @@ end program main
 
 @table @asis
 @item @emph{Description}:
-@code{C_F_POINTER(CPTR, FPTR[, SHAPE])} Assign the target the C pointer
-@var{CPTR} to the Fortran pointer @var{FPTR} and specify its
-shape.
+@code{C_F_POINTER(CPTR, FPTR[, SHAPE])} assigns the target of the C pointer
+@var{CPTR} to the Fortran pointer @var{FPTR} and specifies its shape.
 
 @item @emph{Standard}:
 Fortran 2003 and later

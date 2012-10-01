@@ -24,6 +24,7 @@
 ------------------------------------------------------------------------------
 
 with Atree;    use Atree;
+with Checks;   use Checks;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
@@ -2653,6 +2654,15 @@ package body Freeze is
                return No_List;
             end if;
          end;
+      end if;
+
+      --  Add checks to detect proper initialization of scalars and overlapping
+      --  storage of subprogram parameters.
+
+      if Is_Subprogram (E)
+        and then (Check_Aliasing_Of_Parameters or Check_Validity_Of_Parameters)
+      then
+         Apply_Parameter_Aliasing_And_Validity_Checks (E);
       end if;
 
       --  Deal with delayed aspect specifications. The analysis of the

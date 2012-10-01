@@ -501,8 +501,19 @@ set_and_canonicalize_value_range (value_range_t *vr, enum value_range_type t,
      to adjust them.  */
   if (tree_int_cst_lt (max, min))
     {
-      tree one = build_int_cst (TREE_TYPE (min), 1);
-      tree tmp = int_const_binop (PLUS_EXPR, max, one);
+      tree one, tmp;
+
+      /* For one bit precision if max < min, then the swapped
+	 range covers all values, so for VR_RANGE it is varying and
+	 for VR_ANTI_RANGE empty range, so drop to varying as well.  */
+      if (TYPE_PRECISION (TREE_TYPE (min)) == 1)
+	{
+	  set_value_range_to_varying (vr);
+	  return;
+	}
+
+      one = build_int_cst (TREE_TYPE (min), 1);
+      tmp = int_const_binop (PLUS_EXPR, max, one);
       max = int_const_binop (MINUS_EXPR, min, one);
       min = tmp;
 
@@ -530,6 +541,24 @@ set_and_canonicalize_value_range (value_range_t *vr, enum value_range_type t,
 	     ???  This could be VR_UNDEFINED instead.  */
 	  set_value_range_to_varying (vr);
 	  return;
+	}
+      else if (TYPE_PRECISION (TREE_TYPE (min)) == 1
+	       && !TYPE_UNSIGNED (TREE_TYPE (min))
+	       && (is_min || is_max))
+	{
+	  /* For signed 1-bit precision, one is not in-range and
+	     thus adding/subtracting it would result in overflows.  */
+	  if (operand_equal_p (min, max, 0))
+	    {
+	      min = max = is_min ? vrp_val_max (TREE_TYPE (min))
+				 : vrp_val_min (TREE_TYPE (min));
+	      t = VR_RANGE;
+	    }
+	  else
+	    {
+	      set_value_range_to_varying (vr);
+	      return;
+	    }
 	}
       else if (is_min
 	       /* As a special exception preserve non-null ranges.  */
@@ -2478,7 +2507,7 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 		  if (tmin.cmp (tmax, uns) < 0)
 		    covers = true;
 		  tmax = tem + double_int_minus_one;
-		  if (double_int_cmp (tmax, tem, uns) > 0)
+		  if (tmax.cmp (tem, uns) > 0)
 		    covers = true;
 		  /* If the anti-range would cover nothing, drop to varying.
 		     Likewise if the anti-range bounds are outside of the
@@ -2632,37 +2661,26 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 	    }
 	  uns = uns0 & uns1;
 
-	  mul_double_wide_with_sign (min0.low, min0.high,
-				     min1.low, min1.high,
-				     &prod0l.low, &prod0l.high,
-				     &prod0h.low, &prod0h.high, true);
+	  bool overflow;
+	  prod0l = min0.wide_mul_with_sign (min1, true, &prod0h, &overflow);
 	  if (!uns0 && min0.is_negative ())
 	    prod0h -= min1;
 	  if (!uns1 && min1.is_negative ())
 	    prod0h -= min0;
 
-	  mul_double_wide_with_sign (min0.low, min0.high,
-				     max1.low, max1.high,
-				     &prod1l.low, &prod1l.high,
-				     &prod1h.low, &prod1h.high, true);
+	  prod1l = min0.wide_mul_with_sign (max1, true, &prod1h, &overflow);
 	  if (!uns0 && min0.is_negative ())
 	    prod1h -= max1;
 	  if (!uns1 && max1.is_negative ())
 	    prod1h -= min0;
 
-	  mul_double_wide_with_sign (max0.low, max0.high,
-				     min1.low, min1.high,
-				     &prod2l.low, &prod2l.high,
-				     &prod2h.low, &prod2h.high, true);
+	  prod2l = max0.wide_mul_with_sign (min1, true, &prod2h, &overflow);
 	  if (!uns0 && max0.is_negative ())
 	    prod2h -= min1;
 	  if (!uns1 && min1.is_negative ())
 	    prod2h -= max0;
 
-	  mul_double_wide_with_sign (max0.low, max0.high,
-				     max1.low, max1.high,
-				     &prod3l.low, &prod3l.high,
-				     &prod3h.low, &prod3h.high, true);
+	  prod3l = max0.wide_mul_with_sign (max1, true, &prod3h, &overflow);
 	  if (!uns0 && max0.is_negative ())
 	    prod3h -= max1;
 	  if (!uns1 && max1.is_negative ())

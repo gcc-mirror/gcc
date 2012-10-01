@@ -89,14 +89,11 @@ am__installdirs = "$(DESTDIR)$(toolexeclibdir)"
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 @GLIBCXX_LDBL_COMPAT_TRUE@am__objects_1 = compatibility-ldbl.lo
-@ENABLE_PARALLEL_TRUE@am__objects_2 = compatibility-parallel_list.lo \
-@ENABLE_PARALLEL_TRUE@	compatibility-parallel_list-2.lo
-am__objects_3 = compatibility.lo compatibility-debug_list.lo \
-	compatibility-debug_list-2.lo compatibility-list.lo \
-	compatibility-list-2.lo $(am__objects_1) $(am__objects_2)
-am__objects_4 = compatibility-c++0x.lo compatibility-atomic-c++0x.lo \
+am__objects_2 = compatibility.lo compatibility-debug_list.lo \
+	compatibility-debug_list-2.lo $(am__objects_1)
+am__objects_3 = compatibility-c++0x.lo compatibility-atomic-c++0x.lo \
 	compatibility-thread-c++0x.lo
-am_libstdc___la_OBJECTS = $(am__objects_3) $(am__objects_4)
+am_libstdc___la_OBJECTS = $(am__objects_2) $(am__objects_3)
 libstdc___la_OBJECTS = $(am_libstdc___la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp =
@@ -150,6 +147,7 @@ CNUMERIC_CC = @CNUMERIC_CC@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CPU_DEFINES_SRCDIR = @CPU_DEFINES_SRCDIR@
+CPU_OPT_BITS_RANDOM = @CPU_OPT_BITS_RANDOM@
 CPU_OPT_EXT_RANDOM = @CPU_OPT_EXT_RANDOM@
 CSTDIO_H = @CSTDIO_H@
 CTIME_CC = @CTIME_CC@
@@ -325,7 +323,7 @@ toolexeclibdir = $(glibcxx_toolexeclibdir)
 # These bits are all figured out from configure.  Look in acinclude.m4
 # or configure.ac to see how they are set.  See GLIBCXX_EXPORT_FLAGS.
 CONFIG_CXXFLAGS = \
-	$(SECTION_FLAGS) $(HWCAP_FLAGS) $(EXTRA_CXX_FLAGS) -frandom-seed=$@
+	$(SECTION_FLAGS) $(HWCAP_FLAGS) -frandom-seed=$@
 
 WARN_CXXFLAGS = \
 	$(WARN_FLAGS) $(WERROR_FLAG) -fdiagnostics-show-location=once 
@@ -339,18 +337,14 @@ SUBDIRS = c++98 c++11
 toolexeclib_LTLIBRARIES = libstdc++.la
 @GLIBCXX_LDBL_COMPAT_FALSE@ldbl_compat_sources = 
 @GLIBCXX_LDBL_COMPAT_TRUE@ldbl_compat_sources = compatibility-ldbl.cc
-@ENABLE_PARALLEL_FALSE@parallel_compat_sources = 
-@ENABLE_PARALLEL_TRUE@parallel_compat_sources = \
-@ENABLE_PARALLEL_TRUE@	compatibility-parallel_list.cc  compatibility-parallel_list-2.cc
+parallel_compat_sources = \
+	compatibility-parallel_list.cc  compatibility-parallel_list-2.cc
 
 cxx98_sources = \
 	compatibility.cc \
 	compatibility-debug_list.cc \
 	compatibility-debug_list-2.cc \
-	compatibility-list.cc \
-	compatibility-list-2.cc \
-	${ldbl_compat_sources} \
-	${parallel_compat_sources}
+	${ldbl_compat_sources} 
 
 cxx11_sources = \
 	compatibility-c++0x.cc \
@@ -374,9 +368,6 @@ libstdc___la_LDFLAGS = \
 	-version-info $(libtool_VERSION) ${version_arg} -lm
 
 libstdc___la_LINK = $(CXXLINK) $(libstdc___la_LDFLAGS)
-
-# Use special rules for parallel mode compilation.
-PARALLEL_FLAGS = -fopenmp -D_GLIBCXX_PARALLEL -I$(glibcxx_builddir)/../libgomp
 
 # A note on compatibility and static libraries.
 # 
@@ -434,14 +425,14 @@ AM_CXXFLAGS = \
 # placed after --tag CXX lest things CXX undo the affect of
 # disable-shared.
 
-# 2) Need to explicitly set LTCXXCOMPILE so that AM_CXXFLAGS is
+# 2) Need to explicitly set LTCXXCOMPILE so that EXTRA_CXX_FLAGS is
 # last. (That way, things like -O2 passed down from the toplevel can
-# be overridden by --enable-debug.)
+# be overridden by --enable-debug and --enable-cxx-flags.)
 LTCXXCOMPILE = \
 	$(LIBTOOL) --tag CXX \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=compile $(CXX) $(INCLUDES) \
-	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
+	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(EXTRA_CXX_FLAGS)
 
 LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
 
@@ -831,15 +822,6 @@ uninstall-am: uninstall-toolexeclibLTLIBRARIES
 
 vpath % $(top_srcdir)/src/c++98
 vpath % $(top_srcdir)/src/c++11
-compatibility-parallel_list.lo: compatibility-parallel_list.cc
-	$(LTCXXCOMPILE) -c $<
-compatibility-parallel_list.o: compatibility-parallel_list.cc
-	$(CXXCOMPILE) -c $<
-
-compatibility-parallel_list-2.lo: compatibility-parallel_list-2.cc
-	$(LTCXXCOMPILE) -c $<
-compatibility-parallel_list-2.o: compatibility-parallel_list-2.cc
-	$(CXXCOMPILE) -c $<
 
 # Use special rules for compatibility-ldbl.cc compilation, as we need to
 # pass -mlong-double-64.

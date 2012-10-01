@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 2007-2011, Free Software Foundation, Inc.          --
+--         Copyright (C) 2007-2012, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -91,7 +91,7 @@ package body Ada.Execution_Time is
 
    function Clock
      (T : Ada.Task_Identification.Task_Id :=
-            Ada.Task_Identification.Current_Task) return CPU_Time
+        Ada.Task_Identification.Current_Task) return CPU_Time
    is
       Hundreds_Nano_In_Sec : constant Long_Long_Float := 1.0E7;
 

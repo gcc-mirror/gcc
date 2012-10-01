@@ -16,8 +16,7 @@ MODULE m
 
   TYPE t2
   CONTAINS
-! FIXME: uncomment and dejagnuify once class arrays are enabled
-!    PROCEDURE, PASS :: nonscalar ! { "must be scalar" }
+    PROCEDURE, PASS :: nonscalar ! { dg-error "must be scalar" }
     PROCEDURE, PASS :: is_pointer ! { dg-error "must not be POINTER" }
     PROCEDURE, PASS :: is_allocatable ! { dg-error "must not be ALLOCATABLE" }
   END TYPE t2
@@ -27,9 +26,9 @@ CONTAINS
   SUBROUTINE myproc ()
   END SUBROUTINE myproc
 
-!  SUBROUTINE nonscalar (me)
-!    CLASS(t2), INTENT(IN) :: me(:)
-!  END SUBROUTINE nonscalar
+  SUBROUTINE nonscalar (me)
+    CLASS(t2), INTENT(IN) :: me(:)
+  END SUBROUTINE nonscalar
 
   SUBROUTINE is_pointer (me)
     CLASS(t2), POINTER, INTENT(IN) :: me

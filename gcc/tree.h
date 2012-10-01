@@ -1707,7 +1707,8 @@ struct GTY(()) tree_constructor {
 #define EXPR_LOCATION(NODE) \
   (CAN_HAVE_LOCATION_P ((NODE)) ? (NODE)->exp.locus : UNKNOWN_LOCATION)
 #define SET_EXPR_LOCATION(NODE, LOCUS) EXPR_CHECK ((NODE))->exp.locus = (LOCUS)
-#define EXPR_HAS_LOCATION(NODE) (!IS_UNKNOWN_LOCATION (EXPR_LOCATION (NODE)))
+#define EXPR_HAS_LOCATION(NODE) (LOCATION_LOCUS (EXPR_LOCATION (NODE))	\
+  != UNKNOWN_LOCATION)
 /* The location to be used in a diagnostic about this expression.  Do not
    use this macro if the location will be assigned to other expressions.  */
 #define EXPR_LOC_OR_HERE(NODE) (EXPR_HAS_LOCATION (NODE) ? (NODE)->exp.locus : input_location)
@@ -1886,7 +1887,8 @@ extern void protected_set_expr_location (tree, location_t);
 					      OMP_CLAUSE_PRIVATE,	\
 	                                      OMP_CLAUSE_COPYPRIVATE), 0)
 #define OMP_CLAUSE_HAS_LOCATION(NODE) \
-  (!IS_UNKNOWN_LOCATION ((OMP_CLAUSE_CHECK (NODE))->omp_clause.locus))
+  (LOCATION_LOCUS ((OMP_CLAUSE_CHECK (NODE))->omp_clause.locus)		\
+  != UNKNOWN_LOCATION)
 #define OMP_CLAUSE_LOCATION(NODE)  (OMP_CLAUSE_CHECK (NODE))->omp_clause.locus
 
 /* True on an OMP_SECTION statement that was the last lexical member.
@@ -2736,7 +2738,7 @@ struct function;
 #define DECL_SOURCE_LINE(NODE) LOCATION_LINE (DECL_SOURCE_LOCATION (NODE))
 #define DECL_SOURCE_COLUMN(NODE) LOCATION_COLUMN (DECL_SOURCE_LOCATION (NODE))
 #define DECL_IS_BUILTIN(DECL) \
-  (DECL_SOURCE_LOCATION (DECL) <= BUILTINS_LOCATION)
+  (LOCATION_LOCUS (DECL_SOURCE_LOCATION (DECL)) <= BUILTINS_LOCATION)
 
 /*  For FIELD_DECLs, this is the RECORD_TYPE, UNION_TYPE, or
     QUAL_UNION_TYPE node that the field is a member of.  For VAR_DECL,
@@ -4916,6 +4918,7 @@ extern tree make_unsigned_type (int);
 extern tree signed_or_unsigned_type_for (int, tree);
 extern tree signed_type_for (tree);
 extern tree unsigned_type_for (tree);
+extern tree truth_type_for (tree);
 extern void initialize_sizetypes (void);
 extern void fixup_unsigned_type (tree);
 extern tree build_pointer_type_for_mode (tree, enum machine_mode, bool);
@@ -5694,7 +5697,7 @@ function_args_iter_next (function_args_iterator *i)
 static inline bool
 inlined_function_outer_scope_p (const_tree block)
 {
- return !IS_UNKNOWN_LOCATION (BLOCK_SOURCE_LOCATION (block));
+ return LOCATION_LOCUS (BLOCK_SOURCE_LOCATION (block)) != UNKNOWN_LOCATION;
 }
 
 /* Loop over all function arguments of FNTYPE.  In each iteration, PTR is set
@@ -6422,7 +6425,6 @@ tree target_for_debug_bind (tree);
 
 /* In tree-ssa-address.c.  */
 extern tree tree_mem_ref_addr (tree, tree);
-extern void copy_mem_ref_info (tree, tree);
 extern void copy_ref_info (tree, tree);
 
 /* In tree-vrp.c */

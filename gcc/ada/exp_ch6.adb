@@ -2392,10 +2392,6 @@ package body Exp_Ch6 is
          Expand_Put_Call_With_Symbol (Call_Node);
       end if;
 
-      --  Remove the dimensions of every parameters in call
-
-      Remove_Dimension_In_Call (N);
-
       --  Ignore if previous error
 
       if Nkind (Call_Node) in N_Has_Etype

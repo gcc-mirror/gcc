@@ -62,6 +62,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm-constrs.h"
 #include "opts.h"
 
+#include <sstream>
+#include <vector>
 #include <algorithm>
 
 int code_for_indirect_jump_scratch = CODE_FOR_indirect_jump_scratch;
@@ -596,6 +598,110 @@ static const struct attribute_spec sh_attribute_table[] =
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
+
+/* Information on the currently selected atomic model.
+   This is initialized in sh_option_override.  */
+static sh_atomic_model selected_atomic_model_;
+
+const sh_atomic_model&
+selected_atomic_model (void)
+{
+  return selected_atomic_model_;
+}
+
+static sh_atomic_model
+parse_validate_atomic_model_option (const char* str)
+{
+  const char* model_names[sh_atomic_model::num_models];
+  model_names[sh_atomic_model::none] = "none";
+  model_names[sh_atomic_model::soft_gusa] = "soft-gusa";
+  model_names[sh_atomic_model::hard_llcs] = "hard-llcs";
+  model_names[sh_atomic_model::soft_tcb] = "soft-tcb";
+  model_names[sh_atomic_model::soft_imask] = "soft-imask";
+
+  sh_atomic_model ret;
+  ret.type = sh_atomic_model::none;
+  ret.strict = false;
+  ret.tcb_gbr_offset = -1;
+
+  /* Handle empty string as 'none'.  */
+  if (str == NULL || *str == '\0')
+    return ret;
+
+#define err_ret(...) do { error (__VA_ARGS__); return ret; } while (0)
+
+  std::vector<std::string> tokens;
+  for (std::stringstream ss (str); ss.good (); )
+  {
+    tokens.push_back (std::string ());
+    std::getline (ss, tokens.back (), ',');
+  }
+
+  if (tokens.empty ())
+    err_ret ("invalid atomic model option");
+
+  /* The first token must be the atomic model name.  */
+  {
+    for (size_t i = 0; i < sh_atomic_model::num_models; ++i)
+      if (tokens.front () == model_names[i])
+	{
+	  ret.type = (sh_atomic_model::enum_type)i;
+	  goto got_mode_name;
+	}
+
+    err_ret ("invalid atomic model name \"%s\"", tokens.front ().c_str ());
+got_mode_name:;
+  }
+
+  /* Go through the remaining tokens.  */
+  for (size_t i = 1; i < tokens.size (); ++i)
+    {
+      if (tokens[i] == "strict")
+	ret.strict = true;
+      else if (tokens[i].find ("gbr-offset=") == 0)
+	{
+	  std::string offset_str = tokens[i].substr (strlen ("gbr-offset="));
+	  ret.tcb_gbr_offset = integral_argument (offset_str.c_str ());
+	  if (offset_str.empty () || ret.tcb_gbr_offset == -1)
+	    err_ret ("could not parse gbr-offset value \"%s\" in atomic model "
+		     "option", offset_str.c_str ());
+	}
+      else
+	err_ret ("unknown parameter \"%s\" in atomic model option",
+	         tokens[i].c_str ());
+    }
+
+  /* Check that the selection makes sense.  */
+  if (TARGET_SHMEDIA && ret.type != sh_atomic_model::none)
+    err_ret ("atomic operations are not supported on SHmedia");
+
+  if (ret.type == sh_atomic_model::soft_gusa && !TARGET_SH3)
+    err_ret ("atomic model %s is only available on SH3 and SH4 targets",
+	     model_names[ret.type]);
+
+  if (ret.type == sh_atomic_model::hard_llcs && !TARGET_SH4A)
+    err_ret ("atomic model %s is only available on SH4A targets",
+	     model_names[ret.type]);
+
+  if (ret.type == sh_atomic_model::soft_tcb && ret.tcb_gbr_offset == -1)
+    err_ret ("atomic model %s requires gbr-offset parameter", 
+	     model_names[ret.type]);
+
+  if (ret.type == sh_atomic_model::soft_tcb
+      && (ret.tcb_gbr_offset < 0 || ret.tcb_gbr_offset > 1020
+          || (ret.tcb_gbr_offset & 3) != 0))
+    err_ret ("invalid gbr-offset value \"%d\" for atomic model %s; it must be "
+	     "a multiple of 4 in the range 0-1020", ret.tcb_gbr_offset,
+	     model_names[ret.type]);
+
+  if (ret.type == sh_atomic_model::soft_imask && TARGET_USERMODE)
+    err_ret ("cannot use atomic model %s in user mode", model_names[ret.type]);
+
+  return ret;
+
+#undef err_ret
+}
+
 /* Implement TARGET_OPTION_OVERRIDE macro.  Validate and override 
    various options, and do some machine dependent initialization.  */
 static void
@@ -907,12 +1013,10 @@ sh_option_override (void)
   if (flag_strict_volatile_bitfields < 0 && abi_version_at_least(2))
     flag_strict_volatile_bitfields = 1;
 
-  /* Make sure that only one atomic mode is selected and that the selection
-     is valid for the current target CPU.  */
-  if (TARGET_SOFT_ATOMIC && TARGET_HARD_ATOMIC)
-    error ("-msoft-atomic and -mhard-atomic cannot be used at the same time");
-  if (TARGET_HARD_ATOMIC && ! TARGET_SH4A_ARCH)
-    error ("-mhard-atomic is only available for SH4A targets");
+  /* Parse atomic model option and make sure it is valid for the current
+     target CPU.  */
+  selected_atomic_model_
+    = parse_validate_atomic_model_option (sh_atomic_model_str);
 }
 
 /* Print the operand address in x to the stream.  */

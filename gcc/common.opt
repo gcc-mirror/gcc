@@ -141,9 +141,6 @@ bool use_gnu_debug_info_extensions
 Variable
 unsigned int initial_max_fld_align = TARGET_DEFAULT_PACK_STRUCT
 
-Variable
-enum vect_verbosity_levels user_vect_verbosity_level = MAX_VERBOSITY_LEVEL
-
 ; Type of stack check.
 Variable
 enum stack_check_type flag_stack_check = NO_STACK_CHECK
@@ -1536,6 +1533,14 @@ fomit-frame-pointer
 Common Report Var(flag_omit_frame_pointer) Optimization
 When possible do not generate stack frames
 
+fopt-info
+Common Report Var(flag_opt_info) Optimization
+Enable all optimization info dumps on stderr
+
+fopt-info-
+Common Joined RejectNegative Var(common_deferred_options) Defer
+-fopt-info[-<type>=filename]	Dump compiler optimization details
+
 foptimize-register-move
 Common Report Var(flag_regmove) Optimization
 Do the full register move optimization pass
@@ -2195,6 +2200,10 @@ ftree-vectorize
 Common Report Var(flag_tree_vectorize) Optimization
 Enable loop vectorization on trees
 
+ftree-vectorizer-verbose=
+Common RejectNegative Joined UInteger Var(common_deferred_options) Defer
+-ftree-vectorizer-verbose=<number>	This switch is deprecated. Use -fopt-info instead.
+
 ftree-slp-vectorize
 Common Report Var(flag_tree_slp_vectorize) Init(2) Optimization
 Enable basic block vectorization (SLP) on trees
@@ -2206,10 +2215,6 @@ Enable use of cost model in vectorization
 ftree-vect-loop-version
 Common Report Var(flag_tree_vect_loop_version) Init(1) Optimization
 Enable loop versioning when doing loop vectorization on trees
-
-ftree-vectorizer-verbose=
-Common RejectNegative Joined UInteger
--ftree-vectorizer-verbose=<number>	Set the verbosity level of the vectorizer
 
 ftree-scev-cprop
 Common Report Var(flag_tree_scev_cprop) Init(1) Optimization

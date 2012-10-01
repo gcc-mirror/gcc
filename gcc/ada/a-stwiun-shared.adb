@@ -486,11 +486,11 @@ package body Ada.Strings.Wide_Unbounded is
 
    function Aligned_Max_Length (Max_Length : Natural) return Natural is
       Static_Size  : constant Natural :=
-                       Empty_Shared_Wide_String'Size / Standard'Storage_Unit;
+        Empty_Shared_Wide_String'Size / Standard'Storage_Unit;
       --  Total size of all static components
 
       Element_Size : constant Natural :=
-                       Wide_Character'Size / Standard'Storage_Unit;
+        Wide_Character'Size / Standard'Storage_Unit;
 
    begin
       return

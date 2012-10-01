@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-require-weak "" } */
+/* { dg-skip-if "No undefined weak" { hppa*-*-hpux* && { ! lp64 } } { "*" } { "" } } */
 
 int x(int a)
 {

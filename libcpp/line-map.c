@@ -58,7 +58,7 @@ location_adhoc_data_hash (const void *l)
 {
   const struct location_adhoc_data *lb =
       (const struct location_adhoc_data *) l;
-  return (hashval_t) lb->locus + (size_t) &lb->data;
+  return (hashval_t) lb->locus + (size_t) lb->data;
 }
 
 /* Compare function for location_adhoc_data hashtable.  */
@@ -80,6 +80,19 @@ location_adhoc_data_update (void **slot, void *data)
 {
   *((char **) slot) += *((long long *) data);
   return 1;
+}
+
+/* Rebuild the hash table from the location adhoc data.  */
+
+void
+rebuild_location_adhoc_htab (struct line_maps *set)
+{
+  unsigned i;
+  set->location_adhoc_data_map.htab =
+      htab_create (100, location_adhoc_data_hash, location_adhoc_data_eq, NULL);
+  for (i = 0; i < set->location_adhoc_data_map.curr_loc; i++)
+    htab_find_slot (set->location_adhoc_data_map.htab,
+		    set->location_adhoc_data_map.data + i, INSERT);
 }
 
 /* Combine LOCUS and DATA to a combined adhoc loc.  */
@@ -109,14 +122,21 @@ get_combined_adhoc_loc (struct line_maps *set,
 	{
 	  char *orig_data = (char *) set->location_adhoc_data_map.data;
 	  long long offset;
-	  set->location_adhoc_data_map.allocated *= 2;
-	  set->location_adhoc_data_map.data =
-	      XRESIZEVEC (struct location_adhoc_data,
-			  set->location_adhoc_data_map.data,
-			  set->location_adhoc_data_map.allocated);
+	  line_map_realloc reallocator
+	      = set->reallocator ? set->reallocator : xrealloc;
+
+	  if (set->location_adhoc_data_map.allocated == 0)
+	    set->location_adhoc_data_map.allocated = 128;
+	  else
+	    set->location_adhoc_data_map.allocated *= 2;
+	  set->location_adhoc_data_map.data = (struct location_adhoc_data *)
+	      reallocator (set->location_adhoc_data_map.data,
+			   set->location_adhoc_data_map.allocated
+			   * sizeof (struct location_adhoc_data));
 	  offset = (char *) (set->location_adhoc_data_map.data) - orig_data;
-	  htab_traverse (set->location_adhoc_data_map.htab,
-			 location_adhoc_data_update, &offset);
+	  if (set->location_adhoc_data_map.allocated > 128)
+	    htab_traverse (set->location_adhoc_data_map.htab,
+			   location_adhoc_data_update, &offset);
 	}
       *slot = set->location_adhoc_data_map.data
 	      + set->location_adhoc_data_map.curr_loc;
@@ -144,24 +164,10 @@ get_location_from_adhoc_loc (struct line_maps *set, source_location loc)
   return set->location_adhoc_data_map.data[loc & MAX_SOURCE_LOCATION].locus;
 }
 
-/* Initialize the location_adhoc_data structure.  */
-
-static void
-location_adhoc_data_init (struct line_maps *set)
-{
-  set->location_adhoc_data_map.htab =
-      htab_create (100, location_adhoc_data_hash, location_adhoc_data_eq, NULL);
-  set->location_adhoc_data_map.curr_loc = 0;
-  set->location_adhoc_data_map.allocated = 100;
-  set->location_adhoc_data_map.data = XNEWVEC (struct location_adhoc_data, 100);
-}
-
 /* Finalize the location_adhoc_data structure.  */
 void
 location_adhoc_data_fini (struct line_maps *set)
 {
-  set->location_adhoc_data_map.allocated = 0;
-  XDELETEVEC (set->location_adhoc_data_map.data);
   htab_delete (set->location_adhoc_data_map.htab);
 }
 
@@ -173,7 +179,8 @@ linemap_init (struct line_maps *set)
   memset (set, 0, sizeof (struct line_maps));
   set->highest_location = RESERVED_LOCATION_COUNT - 1;
   set->highest_line = RESERVED_LOCATION_COUNT - 1;
-  location_adhoc_data_init (set);
+  set->location_adhoc_data_map.htab =
+      htab_create (100, location_adhoc_data_hash, location_adhoc_data_eq, NULL);
 }
 
 /* Check for and warn about line_maps entered but not exited.  */

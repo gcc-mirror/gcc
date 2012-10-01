@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                            (Windows Version)                             --
 --                                                                          --
---          Copyright (C) 2004-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,11 +37,11 @@ with Ada.Characters.Latin_1; use Ada.Characters.Latin_1;
 package body Ada.Directories.Validity is
 
    Invalid_Character : constant array (Character) of Boolean :=
-                         (NUL .. US | '\'       => True,
-                          '/' | ':' | '*' | '?' => True,
-                          '"' | '<' | '>' | '|' => True,
-                          DEL .. NBSP           => True,
-                          others                => False);
+     (NUL .. US | '\'       => True,
+      '/' | ':' | '*' | '?' => True,
+      '"' | '<' | '>' | '|' => True,
+      DEL .. NBSP           => True,
+      others                => False);
 
    ---------------------------------
    -- Is_Path_Name_Case_Sensitive --

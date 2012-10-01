@@ -3,6 +3,7 @@
 /* { dg-do compile } */
 /* { dg-options "-std=c99 -fextended-identifiers" } */
 /* { dg-require-ascii-locale "" } */
+/* { dg-xfail-if "" { "powerpc-ibm-aix*" } { "*" } { "" } } */
 
 void *p = &\u00e9; /* { dg-error "'\\\\U000000e9' undeclared" } */
 void *q = &\u1e00; /* { dg-error "'\\\\U00001e00' undeclared" } */

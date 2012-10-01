@@ -7,7 +7,7 @@
 --                                  B o d y                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---                     Copyright (C) 1995-2010, AdaCore                     --
+--                     Copyright (C) 1995-2012, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -78,7 +78,7 @@ package body Ada.Calendar.Delays is
       --  cause overflow.
 
       Safe_T : constant Time :=
-                 (if T > Safe_Ada_High then Safe_Ada_High else T);
+        (if T > Safe_Ada_High then Safe_Ada_High else T);
 
    begin
       return OSP.To_Duration (OSP.OS_Time (Safe_T), OSP.Absolute_Calendar);

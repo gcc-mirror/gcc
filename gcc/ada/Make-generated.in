@@ -18,6 +18,7 @@ ifeq ($(origin MOVE_IF_CHANGE), undefined)
 MOVE_IF_CHANGE=mv -f
 endif
 
+.PHONY: ada_extra_files
 ada_extra_files : $(ADA_GEN_SUBDIR)/treeprs.ads $(ADA_GEN_SUBDIR)/einfo.h $(ADA_GEN_SUBDIR)/sinfo.h $(ADA_GEN_SUBDIR)/nmake.adb \
 	$(ADA_GEN_SUBDIR)/nmake.ads $(ADA_GEN_SUBDIR)/snames.ads $(ADA_GEN_SUBDIR)/snames.adb $(ADA_GEN_SUBDIR)/snames.h
 
@@ -27,19 +28,22 @@ $(ADA_GEN_SUBDIR)/treeprs.ads : $(ADA_GEN_SUBDIR)/treeprs.adt $(ADA_GEN_SUBDIR)/
 	-$(MKDIR) $(ADA_GEN_SUBDIR)/bldtools/treeprs
 	$(RM) $(addprefix $(ADA_GEN_SUBDIR)/bldtools/treeprs/,$(notdir $^))
 	$(CP) $^ $(ADA_GEN_SUBDIR)/bldtools/treeprs
-	(cd $(ADA_GEN_SUBDIR)/bldtools/treeprs; gnatmake -q xtreeprs ; ./xtreeprs ../../treeprs.ads )
+	(cd $(ADA_GEN_SUBDIR)/bldtools/treeprs; gnatmake -q xtreeprs ; ./xtreeprs treeprs.ads )
+	$(MOVE_IF_CHANGE) $(ADA_GEN_SUBDIR)/bldtools/treeprs/treeprs.ads $(ADA_GEN_SUBDIR)/treeprs.ads
 
 $(ADA_GEN_SUBDIR)/einfo.h : $(ADA_GEN_SUBDIR)/einfo.ads $(ADA_GEN_SUBDIR)/einfo.adb $(ADA_GEN_SUBDIR)/xeinfo.adb $(ADA_GEN_SUBDIR)/ceinfo.adb
 	-$(MKDIR) $(ADA_GEN_SUBDIR)/bldtools/einfo
 	$(RM) $(addprefix $(ADA_GEN_SUBDIR)/bldtools/einfo/,$(notdir $^))
 	$(CP) $^ $(ADA_GEN_SUBDIR)/bldtools/einfo
-	(cd $(ADA_GEN_SUBDIR)/bldtools/einfo; gnatmake -q xeinfo ; ./xeinfo ../../einfo.h )
+	(cd $(ADA_GEN_SUBDIR)/bldtools/einfo; gnatmake -q xeinfo ; ./xeinfo einfo.h )
+	$(MOVE_IF_CHANGE) $(ADA_GEN_SUBDIR)/bldtools/einfo/einfo.h $(ADA_GEN_SUBDIR)/einfo.h
 
 $(ADA_GEN_SUBDIR)/sinfo.h : $(ADA_GEN_SUBDIR)/sinfo.ads $(ADA_GEN_SUBDIR)/sinfo.adb $(ADA_GEN_SUBDIR)/xsinfo.adb $(ADA_GEN_SUBDIR)/csinfo.adb
 	-$(MKDIR) $(ADA_GEN_SUBDIR)/bldtools/sinfo
 	$(RM) $(addprefix $(ADA_GEN_SUBDIR)/bldtools/sinfo/,$(notdir $^))
 	$(CP) $^ $(ADA_GEN_SUBDIR)/bldtools/sinfo
-	(cd $(ADA_GEN_SUBDIR)/bldtools/sinfo; gnatmake -q xsinfo ; ./xsinfo ../../sinfo.h )
+	(cd $(ADA_GEN_SUBDIR)/bldtools/sinfo; gnatmake -q xsinfo ; ./xsinfo sinfo.h )
+	$(MOVE_IF_CHANGE) $(ADA_GEN_SUBDIR)/bldtools/sinfo/sinfo.h $(ADA_GEN_SUBDIR)/sinfo.h
 
 $(ADA_GEN_SUBDIR)/snames.h $(ADA_GEN_SUBDIR)/snames.ads $(ADA_GEN_SUBDIR)/snames.adb : $(ADA_GEN_SUBDIR)/stamp-snames ; @true
 $(ADA_GEN_SUBDIR)/stamp-snames : $(ADA_GEN_SUBDIR)/snames.ads-tmpl $(ADA_GEN_SUBDIR)/snames.adb-tmpl $(ADA_GEN_SUBDIR)/snames.h-tmpl $(ADA_GEN_SUBDIR)/xsnamest.adb $(ADA_GEN_SUBDIR)/xutil.ads $(ADA_GEN_SUBDIR)/xutil.adb
@@ -52,17 +56,46 @@ $(ADA_GEN_SUBDIR)/stamp-snames : $(ADA_GEN_SUBDIR)/snames.ads-tmpl $(ADA_GEN_SUB
 	$(MOVE_IF_CHANGE) $(ADA_GEN_SUBDIR)/bldtools/snamest/snames.nh $(ADA_GEN_SUBDIR)/snames.h
 	touch $(ADA_GEN_SUBDIR)/stamp-snames
 
-$(ADA_GEN_SUBDIR)/nmake.adb : $(ADA_GEN_SUBDIR)/sinfo.ads $(ADA_GEN_SUBDIR)/nmake.adt $(ADA_GEN_SUBDIR)/xnmake.adb $(ADA_GEN_SUBDIR)/xutil.ads $(ADA_GEN_SUBDIR)/xutil.adb
-	-$(MKDIR) $(ADA_GEN_SUBDIR)/bldtools/nmake_b
-	$(RM) $(addprefix $(ADA_GEN_SUBDIR)/bldtools/nmake_b/,$(notdir $^))
-	$(CP) $^ $(ADA_GEN_SUBDIR)/bldtools/nmake_b
-	(cd $(ADA_GEN_SUBDIR)/bldtools/nmake_b; gnatmake -q xnmake ; ./xnmake -b ../../nmake.adb )
+$(ADA_GEN_SUBDIR)/nmake.adb $(ADA_GEN_SUBDIR)/nmake.ads: $(ADA_GEN_SUBDIR)/stamp-nmake ; @true
+$(ADA_GEN_SUBDIR)/stamp-nmake: $(ADA_GEN_SUBDIR)/sinfo.ads $(ADA_GEN_SUBDIR)/nmake.adt $(ADA_GEN_SUBDIR)/xnmake.adb $(ADA_GEN_SUBDIR)/xutil.ads $(ADA_GEN_SUBDIR)/xutil.adb
+	-$(MKDIR) $(ADA_GEN_SUBDIR)/bldtools/nmake
+	$(RM) $(addprefix $(ADA_GEN_SUBDIR)/bldtools/nmake/,$(notdir $^))
+	$(CP) $^ $(ADA_GEN_SUBDIR)/bldtools/nmake
+	(cd $(ADA_GEN_SUBDIR)/bldtools/nmake; gnatmake -q xnmake ; ./xnmake -b nmake.adb ; ./xnmake -s nmake.ads)
+	$(MOVE_IF_CHANGE) $(ADA_GEN_SUBDIR)/bldtools/nmake/nmake.ads $(ADA_GEN_SUBDIR)/nmake.ads
+	$(MOVE_IF_CHANGE) $(ADA_GEN_SUBDIR)/bldtools/nmake/nmake.adb $(ADA_GEN_SUBDIR)/nmake.adb
+	touch $(ADA_GEN_SUBDIR)/stamp-nmake
 
-$(ADA_GEN_SUBDIR)/nmake.ads :  $(ADA_GEN_SUBDIR)/sinfo.ads $(ADA_GEN_SUBDIR)/nmake.adt $(ADA_GEN_SUBDIR)/xnmake.adb $(ADA_GEN_SUBDIR)/nmake.adb $(ADA_GEN_SUBDIR)/xutil.ads $(ADA_GEN_SUBDIR)/xutil.adb
-	-$(MKDIR) $(ADA_GEN_SUBDIR)/bldtools/nmake_s
-	$(RM) $(addprefix $(ADA_GEN_SUBDIR)/bldtools/nmake_s/,$(notdir $^))
-	$(CP) $^ $(ADA_GEN_SUBDIR)/bldtools/nmake_s
-	(cd $(ADA_GEN_SUBDIR)/bldtools/nmake_s; gnatmake -q xnmake ; ./xnmake -s ../../nmake.ads )
+ifeq ($(strip $(filter-out alpha64 ia64 dec hp vms% openvms% alphavms%,$(subst -, ,$(host)))),)
+OSCONS_CPP=../../../$(DECC) -E /comment=as_is -DNATIVE \
+             -DTARGET='""$(target)""' s-oscons-tmplt.c
+
+OSCONS_EXTRACT=../../../$(DECC) -DNATIVE \
+                 -DTARGET='""$(target)""' s-oscons-tmplt.c ; \
+  ld -o s-oscons-tmplt.exe s-oscons-tmplt.obj; \
+  ./s-oscons-tmplt.exe > s-oscons-tmplt.s
+
+else
+# GCC_FOR_TARGET has paths relative to the gcc directory, so we need to adjust
+# for running it from $(ADA_GEN_SUBDIR)/bldtools/oscons
+OSCONS_CC=`echo "$(GCC_FOR_TARGET)" \
+  | sed -e 's^\./xgcc^../../../xgcc^' -e 's^-B./^-B../../../^'`
+OSCONS_CPP=$(OSCONS_CC) $(GNATLIBCFLAGS) -E -C \
+  -DTARGET=\"$(target)\" s-oscons-tmplt.c > s-oscons-tmplt.i
+OSCONS_EXTRACT=$(OSCONS_CC) -S s-oscons-tmplt.i
+endif
+
+$(ADA_GEN_SUBDIR)/s-oscons.ads : $(ADA_GEN_SUBDIR)/s-oscons-tmplt.c $(ADA_GEN_SUBDIR)/gsocket.h $(ADA_GEN_SUBDIR)/xoscons.adb $(ADA_GEN_SUBDIR)/xutil.ads $(ADA_GEN_SUBDIR)/xutil.adb
+	-$(MKDIR) $(ADA_GEN_SUBDIR)/bldtools/oscons
+	$(RM) $(addprefix $(ADA_GEN_SUBDIR)/bldtools/oscons/,$(notdir $^))
+	$(CP) $^ $(ADA_GEN_SUBDIR)/bldtools/oscons
+	(cd $(ADA_GEN_SUBDIR)/bldtools/oscons ; gnatmake -q xoscons ; \
+		$(RM) s-oscons-tmplt.i s-oscons-tmplt.s ; \
+		$(OSCONS_CPP) ; \
+		$(OSCONS_EXTRACT) ; \
+		./xoscons ) ; \
+		$(MOVE_IF_CHANGE) $(ADA_GEN_SUBDIR)/bldtools/oscons/s-oscons.ads $(ADA_GEN_SUBDIR)/s-oscons.ads ; \
+		$(MOVE_IF_CHANGE) $(ADA_GEN_SUBDIR)/bldtools/oscons/s-oscons.h $(ADA_GEN_SUBDIR)/s-oscons.h
 
 $(ADA_GEN_SUBDIR)/sdefault.adb: $(ADA_GEN_SUBDIR)/stamp-sdefault ; @true
 $(ADA_GEN_SUBDIR)/stamp-sdefault : $(srcdir)/version.c Makefile

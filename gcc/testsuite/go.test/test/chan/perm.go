@@ -1,8 +1,12 @@
-// errchk $G -e $D/$F.go
+// errorcheck
 
 // Copyright 2009 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
+
+// Test various correct and incorrect permutations of send-only,
+// receive-only, and bidirectional channels.
+// Does not compile.
 
 package main
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -259,7 +259,6 @@ package body Opt is
       Tree_Read_Bool (Debug_Pragmas_Disabled);
       Tree_Read_Bool (Debug_Pragmas_Enabled);
       Tree_Read_Int  (Int (Default_Pool));
-      Tree_Read_Bool (Enable_Overflow_Checks);
       Tree_Read_Bool (Full_List);
 
       Ada_Version_Config :=
@@ -326,7 +325,6 @@ package body Opt is
       Tree_Write_Bool (Debug_Pragmas_Disabled);
       Tree_Write_Bool (Debug_Pragmas_Enabled);
       Tree_Write_Int  (Int (Default_Pool));
-      Tree_Write_Bool (Enable_Overflow_Checks);
       Tree_Write_Bool (Full_List);
       Tree_Write_Int  (Int (Version_String'Length));
       Tree_Write_Data (Version_String'Address, Version_String'Length);

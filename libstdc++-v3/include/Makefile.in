@@ -97,6 +97,7 @@ CNUMERIC_CC = @CNUMERIC_CC@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CPU_DEFINES_SRCDIR = @CPU_DEFINES_SRCDIR@
+CPU_OPT_BITS_RANDOM = @CPU_OPT_BITS_RANDOM@
 CPU_OPT_EXT_RANDOM = @CPU_OPT_EXT_RANDOM@
 CSTDIO_H = @CSTDIO_H@
 CTIME_CC = @CTIME_CC@
@@ -272,7 +273,7 @@ toolexeclibdir = $(glibcxx_toolexeclibdir)
 # These bits are all figured out from configure.  Look in acinclude.m4
 # or configure.ac to see how they are set.  See GLIBCXX_EXPORT_FLAGS.
 CONFIG_CXXFLAGS = \
-	$(SECTION_FLAGS) $(HWCAP_FLAGS) $(EXTRA_CXX_FLAGS) -frandom-seed=$@
+	$(SECTION_FLAGS) $(HWCAP_FLAGS) -frandom-seed=$@
 
 WARN_CXXFLAGS = \
 	$(WARN_FLAGS) $(WERROR_FLAG) -fdiagnostics-show-location=once 
@@ -430,7 +431,11 @@ bits_headers = \
 	${bits_srcdir}/valarray_array.tcc \
 	${bits_srcdir}/valarray_before.h \
 	${bits_srcdir}/valarray_after.h \
-	${bits_srcdir}/vector.tcc
+	${bits_srcdir}/vector.tcc \
+	${bits_host_headers}
+
+bits_host_headers = \
+	${glibcxx_srcdir}/${CPU_OPT_BITS_RANDOM}
 
 bits_sup_srcdir = ${glibcxx_srcdir}/libsupc++
 bits_sup_headers = \
@@ -984,51 +989,50 @@ debug_headers = \
 # Parallel mode headers
 parallel_srcdir = ${glibcxx_srcdir}/include/parallel
 parallel_builddir = ./parallel
-@ENABLE_PARALLEL_FALSE@parallel_headers = 
-@ENABLE_PARALLEL_TRUE@parallel_headers = \
-@ENABLE_PARALLEL_TRUE@	${parallel_srcdir}/algo.h \
-@ENABLE_PARALLEL_TRUE@	${parallel_srcdir}/algobase.h \
-@ENABLE_PARALLEL_TRUE@	${parallel_srcdir}/algorithm \
-@ENABLE_PARALLEL_TRUE@	${parallel_srcdir}/algorithmfwd.h \
-@ENABLE_PARALLEL_TRUE@	${parallel_srcdir}/balanced_quicksort.h \
-@ENABLE_PARALLEL_TRUE@	${parallel_srcdir}/base.h \
-@ENABLE_PARALLEL_TRUE@	${parallel_srcdir}/basic_iterator.h \
-@ENABLE_PARALLEL_TRUE@	${parallel_srcdir}/checkers.h \
-@ENABLE_PARALLEL_TRUE@	${parallel_srcdir}/compatibility.h \
-@ENABLE_PARALLEL_TRUE@	${parallel_srcdir}/compiletime_settings.h \
-@ENABLE_PARALLEL_TRUE@	${parallel_srcdir}/equally_split.h \
-@ENABLE_PARALLEL_TRUE@	${parallel_srcdir}/features.h \
-@ENABLE_PARALLEL_TRUE@	${parallel_srcdir}/find.h \
-@ENABLE_PARALLEL_TRUE@	${parallel_srcdir}/find_selectors.h \
-@ENABLE_PARALLEL_TRUE@	${parallel_srcdir}/for_each.h \
-@ENABLE_PARALLEL_TRUE@	${parallel_srcdir}/for_each_selectors.h \
-@ENABLE_PARALLEL_TRUE@	${parallel_srcdir}/iterator.h \
-@ENABLE_PARALLEL_TRUE@	${parallel_srcdir}/list_partition.h \
-@ENABLE_PARALLEL_TRUE@	${parallel_srcdir}/losertree.h \
-@ENABLE_PARALLEL_TRUE@	${parallel_srcdir}/merge.h \
-@ENABLE_PARALLEL_TRUE@	${parallel_srcdir}/multiseq_selection.h \
-@ENABLE_PARALLEL_TRUE@	${parallel_srcdir}/multiway_merge.h \
-@ENABLE_PARALLEL_TRUE@	${parallel_srcdir}/multiway_mergesort.h \
-@ENABLE_PARALLEL_TRUE@	${parallel_srcdir}/numeric \
-@ENABLE_PARALLEL_TRUE@	${parallel_srcdir}/numericfwd.h \
-@ENABLE_PARALLEL_TRUE@	${parallel_srcdir}/omp_loop.h \
-@ENABLE_PARALLEL_TRUE@	${parallel_srcdir}/omp_loop_static.h \
-@ENABLE_PARALLEL_TRUE@	${parallel_srcdir}/par_loop.h \
-@ENABLE_PARALLEL_TRUE@	${parallel_srcdir}/parallel.h \
-@ENABLE_PARALLEL_TRUE@	${parallel_srcdir}/partial_sum.h \
-@ENABLE_PARALLEL_TRUE@	${parallel_srcdir}/partition.h \
-@ENABLE_PARALLEL_TRUE@	${parallel_srcdir}/queue.h \
-@ENABLE_PARALLEL_TRUE@	${parallel_srcdir}/quicksort.h \
-@ENABLE_PARALLEL_TRUE@	${parallel_srcdir}/random_number.h \
-@ENABLE_PARALLEL_TRUE@	${parallel_srcdir}/random_shuffle.h \
-@ENABLE_PARALLEL_TRUE@	${parallel_srcdir}/search.h \
-@ENABLE_PARALLEL_TRUE@	${parallel_srcdir}/set_operations.h \
-@ENABLE_PARALLEL_TRUE@	${parallel_srcdir}/settings.h \
-@ENABLE_PARALLEL_TRUE@	${parallel_srcdir}/sort.h \
-@ENABLE_PARALLEL_TRUE@	${parallel_srcdir}/tags.h \
-@ENABLE_PARALLEL_TRUE@	${parallel_srcdir}/types.h \
-@ENABLE_PARALLEL_TRUE@	${parallel_srcdir}/unique_copy.h \
-@ENABLE_PARALLEL_TRUE@	${parallel_srcdir}/workstealing.h
+parallel_headers = \
+	${parallel_srcdir}/algo.h \
+	${parallel_srcdir}/algobase.h \
+	${parallel_srcdir}/algorithm \
+	${parallel_srcdir}/algorithmfwd.h \
+	${parallel_srcdir}/balanced_quicksort.h \
+	${parallel_srcdir}/base.h \
+	${parallel_srcdir}/basic_iterator.h \
+	${parallel_srcdir}/checkers.h \
+	${parallel_srcdir}/compatibility.h \
+	${parallel_srcdir}/compiletime_settings.h \
+	${parallel_srcdir}/equally_split.h \
+	${parallel_srcdir}/features.h \
+	${parallel_srcdir}/find.h \
+	${parallel_srcdir}/find_selectors.h \
+	${parallel_srcdir}/for_each.h \
+	${parallel_srcdir}/for_each_selectors.h \
+	${parallel_srcdir}/iterator.h \
+	${parallel_srcdir}/list_partition.h \
+	${parallel_srcdir}/losertree.h \
+	${parallel_srcdir}/merge.h \
+	${parallel_srcdir}/multiseq_selection.h \
+	${parallel_srcdir}/multiway_merge.h \
+	${parallel_srcdir}/multiway_mergesort.h \
+	${parallel_srcdir}/numeric \
+	${parallel_srcdir}/numericfwd.h \
+	${parallel_srcdir}/omp_loop.h \
+	${parallel_srcdir}/omp_loop_static.h \
+	${parallel_srcdir}/par_loop.h \
+	${parallel_srcdir}/parallel.h \
+	${parallel_srcdir}/partial_sum.h \
+	${parallel_srcdir}/partition.h \
+	${parallel_srcdir}/queue.h \
+	${parallel_srcdir}/quicksort.h \
+	${parallel_srcdir}/random_number.h \
+	${parallel_srcdir}/random_shuffle.h \
+	${parallel_srcdir}/search.h \
+	${parallel_srcdir}/set_operations.h \
+	${parallel_srcdir}/settings.h \
+	${parallel_srcdir}/sort.h \
+	${parallel_srcdir}/tags.h \
+	${parallel_srcdir}/types.h \
+	${parallel_srcdir}/unique_copy.h \
+	${parallel_srcdir}/workstealing.h
 
 
 # Profile mode headers
@@ -1669,10 +1673,8 @@ install-headers:
 	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${debug_builddir}
 	for file in ${debug_headers}; do \
 	  $(INSTALL_DATA) $${file} $(DESTDIR)${gxx_include_dir}/${debug_builddir}; done
-	parallel_headers_install='${parallel_headers}';\
-	test -z "$$parallel_headers_install" || \
-	  $(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${parallel_builddir};\
-	for file in $$parallel_headers_install; do \
+	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${parallel_builddir}
+	for file in ${parallel_headers}; do \
 	  $(INSTALL_DATA) $${file} $(DESTDIR)${gxx_include_dir}/${parallel_builddir}; done
 	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${profile_builddir}
 	for file in ${profile_headers}; do \

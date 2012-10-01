@@ -191,11 +191,12 @@ package Aspects is
    --  The following array indicates aspects that accept 'Class
 
    Class_Aspect_OK : constant array (Aspect_Id) of Boolean :=
-                       (Aspect_Invariant     => True,
-                        Aspect_Pre           => True,
-                        Aspect_Predicate     => True,
-                        Aspect_Post          => True,
-                        others               => False);
+                       (Aspect_Invariant      => True,
+                        Aspect_Pre            => True,
+                        Aspect_Predicate      => True,
+                        Aspect_Post           => True,
+                        Aspect_Type_Invariant => True,
+                        others                => False);
 
    --  The following array indicates aspects that a subtype inherits from
    --  its base type. True means that the subtype inherits the aspect from

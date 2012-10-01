@@ -743,6 +743,16 @@ package body Sem_Eval is
    begin
       Diff.all := No_Uint;
 
+      --  In preanalysis mode, always return Unknown, it is too early to be
+      --  thinking we know the result of a comparison, save that judgment for
+      --  the full analysis. This is particularly important in the case of
+      --  pre and postconditions, which otherwise can be prematurely collapsed
+      --  into having True or False conditions when this is inappropriate.
+
+      if not Full_Analysis then
+         return Unknown;
+      end if;
+
       --  If either operand could raise constraint error, then we cannot
       --  know the result at compile time (since CE may be raised!)
 
@@ -3238,6 +3248,37 @@ package body Sem_Eval is
          end;
       end if;
    end Eval_Slice;
+
+   ---------------------------------
+   -- Eval_Static_Predicate_Check --
+   ---------------------------------
+
+   function Eval_Static_Predicate_Check
+     (N   : Node_Id;
+      Typ : Entity_Id) return Boolean
+   is
+      Loc  : constant Source_Ptr := Sloc (N);
+      Pred : constant List_Id := Static_Predicate (Typ);
+      Test : Node_Id;
+   begin
+      if No (Pred) then
+         return True;
+      end if;
+
+      --  The static predicate is a list of alternatives in the proper format
+      --  for an Ada 2012 membership test. If the argument is a literal, the
+      --  membership test can be evaluated statically. The caller transforms
+      --  a result of False into a static contraint error.
+
+      Test := Make_In (Loc,
+         Left_Opnd    => New_Copy_Tree (N),
+         Right_Opnd   => Empty,
+         Alternatives => Pred);
+      Analyze_And_Resolve (Test, Standard_Boolean);
+
+      return Nkind (Test) = N_Identifier
+        and then Entity (Test) = Standard_True;
+   end Eval_Static_Predicate_Check;
 
    -------------------------
    -- Eval_String_Literal --

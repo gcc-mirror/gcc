@@ -856,7 +856,7 @@ package body Sem_Ch13 is
    --  Start of processing for Analyze_Aspects_At_Freeze_Point
 
    begin
-      --  Must be visible in current scope.
+      --  Must be visible in current scope
 
       if not Scope_Within_Or_Same (Current_Scope, Scope (E)) then
          return;
@@ -5051,7 +5051,7 @@ package body Sem_Ch13 is
                --  at the end of the private part and has the wrong visibility.
 
                Set_Parent (Exp, N);
-               Preanalyze_Spec_Expression (Exp, Standard_Boolean);
+               Preanalyze_Assert_Expression (Exp, Standard_Boolean);
 
                --  Build first two arguments for Check pragma
 
@@ -5188,9 +5188,6 @@ package body Sem_Ch13 is
                  Statements => Stmts));
 
          --  Insert procedure declaration and spec at the appropriate points.
-         --  Skip this if there are no private declarations (that's an error
-         --  that will be diagnosed elsewhere, and there is no point in having
-         --  an invariant procedure set if the full declaration is missing).
 
          if Present (Private_Decls) then
 
@@ -5214,6 +5211,19 @@ package body Sem_Ch13 is
             if In_Private_Part (Current_Scope) then
                Analyze (PBody);
             end if;
+
+         --  If there are no private declarations this may be an error that
+         --  will be diagnosed elsewhere. However, if this is a non-private
+         --  type that inherits invariants, it needs no completion and there
+         --  may be no private part. In this case insert invariant procedure
+         --  at end of current declarative list, and analyze at once, given
+         --  that the type is about to be frozen.
+
+         elsif not Is_Private_Type (Typ) then
+            Append_To (Visible_Decls, PDecl);
+            Append_To (Visible_Decls, PBody);
+            Analyze (PDecl);
+            Analyze (PBody);
          end if;
       end if;
    end Build_Invariant_Procedure;
@@ -5222,16 +5232,16 @@ package body Sem_Ch13 is
    -- Build_Predicate_Function --
    ------------------------------
 
-   --  The procedure that is constructed here has the form
+   --  The procedure that is constructed here has the form:
 
-   --  function typPredicate (Ixxx : typ) return Boolean is
-   --  begin
-   --     return
-   --        exp1 and then exp2 and then ...
-   --        and then typ1Predicate (typ1 (Ixxx))
-   --        and then typ2Predicate (typ2 (Ixxx))
-   --        and then ...;
-   --  end typPredicate;
+   --    function typPredicate (Ixxx : typ) return Boolean is
+   --    begin
+   --       return
+   --          exp1 and then exp2 and then ...
+   --          and then typ1Predicate (typ1 (Ixxx))
+   --          and then typ2Predicate (typ2 (Ixxx))
+   --          and then ...;
+   --    end typPredicate;
 
    --  Here exp1, and exp2 are expressions from Predicate pragmas. Note that
    --  this is the point at which these expressions get analyzed, providing the
@@ -7966,18 +7976,20 @@ package body Sem_Ch13 is
                      (Entity (Rep_Item), Aspect_Rep_Item (Rep_Item));
       end Is_Pragma_Or_Corr_Pragma_Present_In_Rep_Item;
 
+   --  Start of processing for Inherit_Aspects_At_Freeze_Point
+
    begin
       --  A representation item is either subtype-specific (Size and Alignment
       --  clauses) or type-related (all others).  Subtype-specific aspects may
-      --  differ for different subtypes of the same type.(RM 13.1.8)
+      --  differ for different subtypes of the same type (RM 13.1.8).
 
       --  A derived type inherits each type-related representation aspect of
       --  its parent type that was directly specified before the declaration of
-      --  the derived type. (RM 13.1.15)
+      --  the derived type (RM 13.1.15).
 
       --  A derived subtype inherits each subtype-specific representation
       --  aspect of its parent subtype that was directly specified before the
-      --  declaration of the derived type .(RM 13.1.15)
+      --  declaration of the derived type (RM 13.1.15).
 
       --  The general processing involves inheriting a representation aspect
       --  from a parent type whenever the first rep item (aspect specification,
@@ -7986,11 +7998,11 @@ package body Sem_Ch13 is
       --  directly specified to Typ but to one of its parents.
 
       --  ??? Note that, for now, just a limited number of representation
-      --  aspects have been inherited here so far. Many of them are still
-      --  inherited in Sem_Ch3. This will be fixed soon. Here is a
-      --  non-exhaustive list of aspects that likely also need to be moved to
-      --  this routine: Alignment, Component_Alignment, Component_Size,
-      --  Machine_Radix, Object_Size, Pack, Predicates,
+      --  aspects have been inherited here so far. Many of them are
+      --  still inherited in Sem_Ch3. This will be fixed soon. Here is
+      --  a non- exhaustive list of aspects that likely also need to
+      --  be moved to this routine: Alignment, Component_Alignment,
+      --  Component_Size, Machine_Radix, Object_Size, Pack, Predicates,
       --  Preelaborable_Initialization, RM_Size and Small.
 
       if Nkind (Parent (Typ)) = N_Private_Extension_Declaration then
@@ -8029,7 +8041,7 @@ package body Sem_Ch13 is
          Set_Is_Volatile (Typ);
       end if;
 
-      --  Default_Component_Value.
+      --  Default_Component_Value
 
       if Is_Array_Type (Typ)
         and then Has_Rep_Item (Typ, Name_Default_Component_Value, False)
@@ -8040,7 +8052,7 @@ package body Sem_Ch13 is
              (Entity (Get_Rep_Item (Typ, Name_Default_Component_Value))));
       end if;
 
-      --  Default_Value.
+      --  Default_Value
 
       if Is_Scalar_Type (Typ)
         and then Has_Rep_Item (Typ, Name_Default_Value, False)
@@ -8135,6 +8147,7 @@ package body Sem_Ch13 is
             --  Record type specific aspects
 
             if Is_Record_Type (Typ) then
+
                --  Bit_Order
 
                if not Has_Rep_Item (Typ, Name_Bit_Order, False)

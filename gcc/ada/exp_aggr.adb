@@ -239,12 +239,13 @@ package body Exp_Aggr is
    --  N is the N_Aggregate node to be expanded.
 
    function Is_Two_Dim_Packed_Array (Typ : Entity_Id) return Boolean;
-
    --  For two-dimensional packed aggregates with constant bounds and constant
    --  components, it is preferable to pack the inner aggregates because the
    --  whole matrix can then be presented to the back-end as a one-dimensional
    --  list of literals. This is much more efficient than expanding into single
-   --  component assignments.
+   --  component assignments. This function determines if the type Typ is for
+   --  an array that is suitable for this optimization: it returns True if Typ
+   --  is a two dimensional bit packed array with component size 1, 2, or 4.
 
    function Late_Expansion
      (N      : Node_Id;
@@ -320,17 +321,13 @@ package body Exp_Aggr is
       --  components.
 
       Max_Aggr_Size : constant Nat :=
-                        5000 + (2 ** 24 - 5000) *
-                          Boolean'Pos
-                            (Restriction_Active (No_Elaboration_Code)
-                               or else
-                             Restriction_Active (No_Implicit_Loops)
-                               or else
-                             Is_Two_Dim_Packed_Array (Typ)
-                               or else
-                             ((Ekind (Current_Scope) = E_Package
-                               and then
-                                 Static_Elaboration_Desired (Current_Scope))));
+        5000 + (2 ** 24 - 5000) *
+          Boolean'Pos
+            (Restriction_Active (No_Elaboration_Code)
+             or else Restriction_Active (No_Implicit_Loops)
+             or else Is_Two_Dim_Packed_Array (Typ)
+             or else ((Ekind (Current_Scope) = E_Package
+                       and then Static_Elaboration_Desired (Current_Scope))));
 
       function Component_Count (T : Entity_Id) return Int;
       --  The limit is applied to the total number of components that the
@@ -362,9 +359,9 @@ package body Exp_Aggr is
          elsif Is_Array_Type (T) then
             declare
                Lo : constant Node_Id :=
-                      Type_Low_Bound (Etype (First_Index (T)));
+                 Type_Low_Bound (Etype (First_Index (T)));
                Hi : constant Node_Id :=
-                      Type_High_Bound (Etype (First_Index (T)));
+                 Type_High_Bound (Etype (First_Index (T)));
 
                Siz : constant Int := Component_Count (Component_Type (T));
 
@@ -422,9 +419,8 @@ package body Exp_Aggr is
          then
             declare
                Index_Type : constant Entity_Id :=
-                              Etype
-                                (First_Index
-                                   (Etype (Defining_Identifier (Parent (N)))));
+                 Etype
+                   (First_Index (Etype (Defining_Identifier (Parent (N)))));
                Indx       : Node_Id;
 
             begin
@@ -2525,8 +2521,7 @@ package body Exp_Aggr is
         and then CPP_Num_Prims (Typ) > 0
       then
          Invoke_Constructor : declare
-            CPP_Parent : constant Entity_Id :=
-                           Enclosing_CPP_Parent (Typ);
+            CPP_Parent : constant Entity_Id := Enclosing_CPP_Parent (Typ);
 
             procedure Invoke_IC_Proc (T : Entity_Id);
             --  Recursive routine used to climb to parents. Required because
@@ -2719,19 +2714,18 @@ package body Exp_Aggr is
                      SubE : constant Entity_Id := Make_Temporary (Loc, 'T');
 
                      SubD : constant Node_Id :=
-                              Make_Subtype_Declaration (Loc,
-                                Defining_Identifier => SubE,
-                                Subtype_Indication  =>
-                                  Make_Subtype_Indication (Loc,
-                                    Subtype_Mark =>
-                                      New_Reference_To
-                                        (Etype (Comp_Type), Loc),
-                                    Constraint =>
-                                      Make_Index_Or_Discriminant_Constraint
-                                        (Loc,
-                                         Constraints => New_List (
-                                          New_Copy_Tree
-                                            (Aggregate_Bounds (Expr_Q))))));
+                       Make_Subtype_Declaration (Loc,
+                         Defining_Identifier => SubE,
+                         Subtype_Indication  =>
+                           Make_Subtype_Indication (Loc,
+                             Subtype_Mark =>
+                               New_Reference_To (Etype (Comp_Type), Loc),
+                             Constraint =>
+                               Make_Index_Or_Discriminant_Constraint
+                                 (Loc,
+                                  Constraints => New_List (
+                                    New_Copy_Tree
+                                      (Aggregate_Bounds (Expr_Q))))));
 
                      --  Create a temporary array of the above subtype which
                      --  will be used to capture the aggregate assignments.
@@ -2739,10 +2733,9 @@ package body Exp_Aggr is
                      TmpE : constant Entity_Id := Make_Temporary (Loc, 'A', N);
 
                      TmpD : constant Node_Id :=
-                              Make_Object_Declaration (Loc,
-                                Defining_Identifier => TmpE,
-                                Object_Definition   =>
-                                  New_Reference_To (SubE, Loc));
+                       Make_Object_Declaration (Loc,
+                         Defining_Identifier => TmpE,
+                         Object_Definition   => New_Reference_To (SubE, Loc));
 
                   begin
                      Set_No_Initialization (TmpD);
@@ -2963,9 +2956,8 @@ package body Exp_Aggr is
       Temp : constant Entity_Id  := Defining_Identifier (Decl);
 
       Occ  : constant Node_Id :=
-               Unchecked_Convert_To (Typ,
-                 Make_Explicit_Dereference (Loc,
-                   New_Reference_To (Temp, Loc)));
+        Unchecked_Convert_To (Typ,
+          Make_Explicit_Dereference (Loc, New_Reference_To (Temp, Loc)));
 
    begin
       if Is_Array_Type (Typ) then
@@ -3548,7 +3540,7 @@ package body Exp_Aggr is
 
                            declare
                               P : constant Entity_Id :=
-                                    Cunit_Entity (Current_Sem_Unit);
+                                Cunit_Entity (Current_Sem_Unit);
 
                            begin
                               --  Check if duplication OK and if so continue
@@ -3847,7 +3839,7 @@ package body Exp_Aggr is
       --  possible, provided other conditions are met on the LHS.
 
       Others_Present : array (1 .. Aggr_Dimension) of Boolean :=
-                         (others => False);
+        (others => False);
       --  If Others_Present (J) is True, then there is an others choice
       --  in one of the sub-aggregates of N at dimension J.
 
@@ -5792,11 +5784,10 @@ package body Exp_Aggr is
             elsif Tagged_Type_Expansion then
                declare
                   Tag_Name  : constant Node_Id :=
-                                New_Occurrence_Of
-                                  (First_Tag_Component (Typ), Loc);
+                    New_Occurrence_Of (First_Tag_Component (Typ), Loc);
                   Typ_Tag   : constant Entity_Id := RTE (RE_Tag);
                   Conv_Node : constant Node_Id :=
-                                Unchecked_Convert_To (Typ_Tag, Tag_Value);
+                    Unchecked_Convert_To (Typ_Tag, Tag_Value);
 
                begin
                   Set_Etype (Conv_Node, Typ_Tag);
@@ -5924,8 +5915,7 @@ package body Exp_Aggr is
    begin
       return Number_Dimensions (Typ) = 2
         and then Is_Bit_Packed_Array (Typ)
-        and then
-          (C = 1 or else C = 2 or else C = 4);
+        and then (C = 1 or else C = 2 or else C = 4);
    end Is_Two_Dim_Packed_Array;
 
    --------------------

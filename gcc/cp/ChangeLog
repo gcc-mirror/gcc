@@ -1,3 +1,70 @@
+2012-09-30  Sharad Singhai  <singhai@google.com>
+
+	* decl2.c (cp_write_global_declarations): Use a different method
+	to determine if the dump has ben initialized.
+
+2012-09-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54738
+	* decl2.c (build_offset_ref_call_from_tree): Add tsubst_flags_t
+	parameter.
+	* pt.c (tsubst_copy_and_build): Adjust.
+	* parser.c (cp_parser_postfix_expression): Likewise.
+	* cp-tree.h: Adjust declaration.
+
+2012-09-28  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/54372 - unused attribute inactive on dependant entities
+	* decl2.c (is_late_template_attribute): "unused" attribute is to
+    	be applied at compile time.
+
+2012-09-25  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/29028 - Missed unused warning on using declaration
+	* decl.c (poplevel<warn_unused*>): Do not forget that some local
+	bindings are represented by a TREE_LIST.
+
+2012-09-25  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/53551 - -Wunused-local-typedefs misses uses
+	* decl.c (make_typename_type): Record the use of typedefs.
+
+2012-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* init.c (build_new_1): Don't test TREE_CONSTANT
+	of INTEGER_CST.
+
+2012-09-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54526
+	* parser.c (cp_parser_template_id): In C++11 mode simply accept
+	X<::A>.
+
+2012-09-25  Zhenqiang Chen <zhenqiang.chen@linaro.org>
+
+	PR c++/50970
+	* typeck.c (cp_build_binary_op): Check side effects before generating
+	pfn and delta related expressions.
+
+2012-09-24  Lawrence Crowl  <crowl@google.com>
+
+	* init.c (build_new_1): Change to new double_int API.
+	* decl.c (build_enumerator): Likewise.
+	* typeck2.c (process_init_constructor_array): Likewise.
+	* mangle.c (write_array_type): Likewise.
+
+2012-09-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50828
+	* error.c (dump_function_decl): Strip TFF_TEMPLATE_NAME from flags
+	at the outset.
+
+2012-09-24  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (get_atexit_node): Remove dead code.
+
+	* Make-lang.in (cp/parser.o): Depend on decl.h.
+
 2012-09-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/52432
@@ -304,6 +371,14 @@
 	(ATTR_IS_DEPENDENT): Likewise.
 	(ARGUMENT_PACK_INCOMPLETE_P): Use TREE_ADDRESSABLE instead of
 	TREE_LANG_FLAG_0 on TREE_VECs.
+
+2012-08-20  Florian Weimer  <fweimer@redhat.com>
+
+	PR c++/19351
+	* call.c (build_operator_new_call): Add size_check argument and
+	evaluate it.
+	* cp-tree.h (build_operator_new_call): Adjust declaration.
+	* init.c (build_new_1): Compute array size check and apply it.
 
 2012-08-20  Paolo Carlini  <paolo.carlini@oracle.com>
 

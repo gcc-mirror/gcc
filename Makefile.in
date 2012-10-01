@@ -45323,6 +45323,14 @@ all-stage3-gcc: maybe-all-stage3-zlib
 all-stage4-gcc: maybe-all-stage4-zlib
 all-stageprofile-gcc: maybe-all-stageprofile-zlib
 all-stagefeedback-gcc: maybe-all-stagefeedback-zlib
+all-gcc: all-libbacktrace
+
+all-stage1-gcc: all-stage1-libbacktrace
+all-stage2-gcc: all-stage2-libbacktrace
+all-stage3-gcc: all-stage3-libbacktrace
+all-stage4-gcc: all-stage4-libbacktrace
+all-stageprofile-gcc: all-stageprofile-libbacktrace
+all-stagefeedback-gcc: all-stagefeedback-libbacktrace
 all-gcc: all-libcpp
 
 all-stage1-gcc: all-stage1-libcpp
@@ -45838,6 +45846,7 @@ configure-target-fastjar: maybe-configure-target-zlib
 all-target-fastjar: maybe-all-target-zlib
 configure-target-libgo: maybe-configure-target-libffi
 configure-target-libgo: maybe-all-target-libstdc++-v3
+all-target-libgo: maybe-all-target-libbacktrace
 all-target-libgo: maybe-all-target-libffi
 configure-target-libjava: maybe-configure-target-zlib
 configure-target-libjava: maybe-configure-target-boehm-gc

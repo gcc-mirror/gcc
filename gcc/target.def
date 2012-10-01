@@ -1350,6 +1350,17 @@ DEFHOOK
  bool, (void),
  hook_bool_void_false)
 
+/* True if FOLLOWER may be modified to follow FOLLOWEE.  */
+DEFHOOK
+(can_follow_jump,
+ "FOLLOWER and FOLLOWEE are JUMP_INSN instructions;\
+  return true if FOLLOWER may be modified to follow FOLLOWEE;\
+  false, if it can't.\
+  For example, on some targets, certain kinds of branches can't be made to\
+  follow through a hot/cold partitioning.",
+ bool, (const_rtx follower, const_rtx followee),
+ hook_bool_const_rtx_const_rtx_true)
+
 /* Return a register class for which branch target register
    optimizations should be applied.  */
 DEFHOOK
@@ -1413,7 +1424,7 @@ DEFHOOK
 DEFHOOK
 (mode_dependent_address_p,
  "",
- bool, (const_rtx addr),
+ bool, (const_rtx addr, addr_space_t addrspace),
  default_mode_dependent_address_p)
 
 /* Given an invalid address X for a given machine mode, try machine-specific

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -378,7 +378,7 @@ package body Ada.Containers.Bounded_Ordered_Sets is
 
    function Ceiling (Container : Set; Item : Element_Type) return Cursor is
       Node : constant Count_Type :=
-               Element_Keys.Ceiling (Container, Item);
+        Element_Keys.Ceiling (Container, Item);
    begin
       return (if Node = 0 then No_Element
               else Cursor'(Container'Unrestricted_Access, Node));
@@ -720,7 +720,7 @@ package body Ada.Containers.Bounded_Ordered_Sets is
 
       function Ceiling (Container : Set; Key : Key_Type) return Cursor is
          Node : constant Count_Type :=
-                  Key_Keys.Ceiling (Container, Key);
+           Key_Keys.Ceiling (Container, Key);
       begin
          return (if Node = 0 then No_Element
                  else Cursor'(Container'Unrestricted_Access, Node));
@@ -1334,9 +1334,9 @@ package body Ada.Containers.Bounded_Ordered_Sets is
       --  for a reverse iterator, Container.Last is the beginning.
 
       return It : constant Iterator :=
-                    Iterator'(Limited_Controlled with
-                                Container => Container'Unrestricted_Access,
-                                Node      => 0)
+        Iterator'(Limited_Controlled with
+                    Container => Container'Unrestricted_Access,
+                    Node      => 0)
       do
          B := B + 1;
       end return;
@@ -1382,9 +1382,9 @@ package body Ada.Containers.Bounded_Ordered_Sets is
       --  is a forward or reverse iteration.)
 
       return It : constant Iterator :=
-                    Iterator'(Limited_Controlled with
-                                Container => Container'Unrestricted_Access,
-                                Node      => Start.Node)
+        Iterator'(Limited_Controlled with
+                    Container => Container'Unrestricted_Access,
+                    Node      => Start.Node)
       do
          B := B + 1;
       end return;
@@ -1487,7 +1487,7 @@ package body Ada.Containers.Bounded_Ordered_Sets is
 
       declare
          Node : constant Count_Type :=
-                  Tree_Operations.Next (Position.Container.all, Position.Node);
+           Tree_Operations.Next (Position.Container.all, Position.Node);
 
       begin
          if Node = 0 then
@@ -1548,9 +1548,7 @@ package body Ada.Containers.Bounded_Ordered_Sets is
 
       declare
          Node : constant Count_Type :=
-                  Tree_Operations.Previous
-                    (Position.Container.all,
-                     Position.Node);
+           Tree_Operations.Previous (Position.Container.all, Position.Node);
       begin
          return (if Node = 0 then No_Element
                  else Cursor'(Position.Container, Node));

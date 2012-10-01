@@ -33,6 +33,7 @@ with Fname;    use Fname;
 with Lib;      use Lib;
 with Lib.Load; use Lib.Load;
 with Nlists;   use Nlists;
+with Opt;      use Opt;
 with Output;   use Output;
 with Restrict; use Restrict;
 with Sem_Attr; use Sem_Attr;
@@ -729,6 +730,20 @@ package body Sem is
             Scope_Suppress := Svg;
          end;
 
+      elsif Suppress = Overflow_Check then
+         declare
+            Svg : constant Overflow_Check_Type :=
+                    Scope_Suppress.Overflow_Checks_General;
+            Sva : constant Overflow_Check_Type :=
+                    Scope_Suppress.Overflow_Checks_Assertions;
+         begin
+            Scope_Suppress.Overflow_Checks_General    := Suppressed;
+            Scope_Suppress.Overflow_Checks_Assertions := Suppressed;
+            Analyze (N);
+            Scope_Suppress.Overflow_Checks_General    := Svg;
+            Scope_Suppress.Overflow_Checks_Assertions := Sva;
+         end;
+
       else
          declare
             Svg : constant Boolean := Scope_Suppress.Suppress (Suppress);
@@ -766,6 +781,20 @@ package body Sem is
             Scope_Suppress := Suppress_All;
             Analyze_List (L);
             Scope_Suppress := Svg;
+         end;
+
+      elsif Suppress = Overflow_Check then
+         declare
+            Svg : constant Overflow_Check_Type :=
+                    Scope_Suppress.Overflow_Checks_General;
+            Sva : constant Overflow_Check_Type :=
+                    Scope_Suppress.Overflow_Checks_Assertions;
+         begin
+            Scope_Suppress.Overflow_Checks_General    := Suppressed;
+            Scope_Suppress.Overflow_Checks_Assertions := Suppressed;
+            Analyze_List (L);
+            Scope_Suppress.Overflow_Checks_General    := Svg;
+            Scope_Suppress.Overflow_Checks_Assertions := Sva;
          end;
 
       else
@@ -1217,59 +1246,6 @@ package body Sem is
       end if;
    end Insert_List_Before_And_Analyze;
 
-   -------------------------
-   -- Is_Check_Suppressed --
-   -------------------------
-
-   function Is_Check_Suppressed (E : Entity_Id; C : Check_Id) return Boolean is
-
-      Ptr : Suppress_Stack_Entry_Ptr;
-
-   begin
-      --  First search the local entity suppress stack. We search this from the
-      --  top of the stack down so that we get the innermost entry that applies
-      --  to this case if there are nested entries.
-
-      Ptr := Local_Suppress_Stack_Top;
-      while Ptr /= null loop
-         if (Ptr.Entity = Empty or else Ptr.Entity = E)
-           and then (Ptr.Check = All_Checks or else Ptr.Check = C)
-         then
-            return Ptr.Suppress;
-         end if;
-
-         Ptr := Ptr.Prev;
-      end loop;
-
-      --  Now search the global entity suppress table for a matching entry.
-      --  We also search this from the top down so that if there are multiple
-      --  pragmas for the same entity, the last one applies (not clear what
-      --  or whether the RM specifies this handling, but it seems reasonable).
-
-      Ptr := Global_Suppress_Stack_Top;
-      while Ptr /= null loop
-         if (Ptr.Entity = Empty or else Ptr.Entity = E)
-           and then (Ptr.Check = All_Checks or else Ptr.Check = C)
-         then
-            return Ptr.Suppress;
-         end if;
-
-         Ptr := Ptr.Prev;
-      end loop;
-
-      --  If we did not find a matching entry, then use the normal scope
-      --  suppress value after all (actually this will be the global setting
-      --  since it clearly was not overridden at any point). For a predefined
-      --  check, we test the specific flag. For a user defined check, we check
-      --  the All_Checks flag.
-
-      if C in Predefined_Check_Id then
-         return Scope_Suppress.Suppress (C);
-      else
-         return Scope_Suppress.Suppress (All_Checks);
-      end if;
-   end Is_Check_Suppressed;
-
    ----------
    -- Lock --
    ----------
@@ -1353,13 +1329,14 @@ package body Sem is
       --  these variables, and also that such calls do not disturb the settings
       --  for units being analyzed at a higher level.
 
-      S_Current_Sem_Unit : constant Unit_Number_Type := Current_Sem_Unit;
-      S_Full_Analysis    : constant Boolean          := Full_Analysis;
-      S_GNAT_Mode        : constant Boolean          := GNAT_Mode;
-      S_Global_Dis_Names : constant Boolean          := Global_Discard_Names;
-      S_In_Spec_Expr     : constant Boolean          := In_Spec_Expression;
-      S_Inside_A_Generic : constant Boolean          := Inside_A_Generic;
-      S_Outer_Gen_Scope  : constant Entity_Id        := Outer_Generic_Scope;
+      S_Current_Sem_Unit  : constant Unit_Number_Type := Current_Sem_Unit;
+      S_Full_Analysis     : constant Boolean          := Full_Analysis;
+      S_GNAT_Mode         : constant Boolean          := GNAT_Mode;
+      S_Global_Dis_Names  : constant Boolean          := Global_Discard_Names;
+      S_In_Assertion_Expr : constant Nat              := In_Assertion_Expr;
+      S_In_Spec_Expr      : constant Boolean          := In_Spec_Expression;
+      S_Inside_A_Generic  : constant Boolean          := Inside_A_Generic;
+      S_Outer_Gen_Scope   : constant Entity_Id        := Outer_Generic_Scope;
 
       Generic_Main : constant Boolean :=
                        Nkind (Unit (Cunit (Main_Unit)))
@@ -1453,6 +1430,7 @@ package body Sem is
 
       Full_Analysis      := True;
       Inside_A_Generic   := False;
+      In_Assertion_Expr  := 0;
       In_Spec_Expression := False;
 
       Set_Comes_From_Source_Default (False);
@@ -1526,6 +1504,7 @@ package body Sem is
       Full_Analysis        := S_Full_Analysis;
       Global_Discard_Names := S_Global_Dis_Names;
       GNAT_Mode            := S_GNAT_Mode;
+      In_Assertion_Expr    := S_In_Assertion_Expr;
       In_Spec_Expression   := S_In_Spec_Expr;
       Inside_A_Generic     := S_Inside_A_Generic;
       Outer_Generic_Scope  := S_Outer_Gen_Scope;

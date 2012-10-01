@@ -2,6 +2,7 @@
    are parsed correctly.  */
 /* { dg-do run } */
 /* { dg-options "-std=c99" } */
+/* { dg-require-effective-target large_long_double } */
 
 long double d = 0x0.0000003ffffffff00000p-16357L;
 long double e = 0x0.0000003ffffffff00000p-16356L;

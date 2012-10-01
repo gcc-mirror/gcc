@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -82,7 +82,7 @@ package body Ada.Dynamic_Priorities is
    procedure Set_Priority
      (Priority : System.Any_Priority;
       T        : Ada.Task_Identification.Task_Id :=
-                   Ada.Task_Identification.Current_Task)
+        Ada.Task_Identification.Current_Task)
    is
       Target        : constant Task_Id := Convert_Ids (T);
       Error_Message : constant String := "Trying to set the priority of a ";

@@ -173,7 +173,11 @@ bits_headers = \
 	${bits_srcdir}/valarray_array.tcc \
 	${bits_srcdir}/valarray_before.h \
 	${bits_srcdir}/valarray_after.h \
-	${bits_srcdir}/vector.tcc
+	${bits_srcdir}/vector.tcc \
+	${bits_host_headers}
+
+bits_host_headers = \
+	${glibcxx_srcdir}/${CPU_OPT_BITS_RANDOM}
 
 bits_sup_srcdir = ${glibcxx_srcdir}/libsupc++
 bits_sup_headers = \
@@ -733,7 +737,6 @@ debug_headers = \
 # Parallel mode headers
 parallel_srcdir = ${glibcxx_srcdir}/include/parallel
 parallel_builddir = ./parallel
-if ENABLE_PARALLEL
 parallel_headers = \
 	${parallel_srcdir}/algo.h \
 	${parallel_srcdir}/algobase.h \
@@ -778,9 +781,6 @@ parallel_headers = \
 	${parallel_srcdir}/types.h \
 	${parallel_srcdir}/unique_copy.h \
 	${parallel_srcdir}/workstealing.h
-else
-parallel_headers =
-endif
 
 # Profile mode headers
 profile_srcdir = ${glibcxx_srcdir}/include/profile
@@ -1279,10 +1279,8 @@ install-headers:
 	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${debug_builddir}
 	for file in ${debug_headers}; do \
 	  $(INSTALL_DATA) $${file} $(DESTDIR)${gxx_include_dir}/${debug_builddir}; done
-	parallel_headers_install='${parallel_headers}';\
-	test -z "$$parallel_headers_install" || \
-	  $(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${parallel_builddir};\
-	for file in $$parallel_headers_install; do \
+	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${parallel_builddir}
+	for file in ${parallel_headers}; do \
 	  $(INSTALL_DATA) $${file} $(DESTDIR)${gxx_include_dir}/${parallel_builddir}; done
 	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${profile_builddir}
 	for file in ${profile_headers}; do \

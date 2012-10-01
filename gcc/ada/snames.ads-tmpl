@@ -408,6 +408,7 @@ package Snames is
    Name_No_Strict_Aliasing             : constant Name_Id := N + $; -- GNAT
    Name_Normalize_Scalars              : constant Name_Id := N + $;
    Name_Optimize_Alignment             : constant Name_Id := N + $; -- GNAT
+   Name_Overflow_Checks                : constant Name_Id := N + $; -- GNAT
    Name_Persistent_BSS                 : constant Name_Id := N + $; -- GNAT
    Name_Polling                        : constant Name_Id := N + $; -- GNAT
    Name_Priority_Specific_Dispatching  : constant Name_Id := N + $; -- Ada 05
@@ -651,6 +652,7 @@ package Snames is
 
    Name_As_Is                          : constant Name_Id := N + $;
    Name_Assertion                      : constant Name_Id := N + $;
+   Name_Assertions                     : constant Name_Id := N + $;
    Name_Attribute_Name                 : constant Name_Id := N + $;
    Name_Body_File_Name                 : constant Name_Id := N + $;
    Name_Boolean_Entry_Barriers         : constant Name_Id := N + $;
@@ -658,6 +660,8 @@ package Snames is
    Name_By_Entry                       : constant Name_Id := N + $;
    Name_By_Protected_Procedure         : constant Name_Id := N + $;
    Name_Casing                         : constant Name_Id := N + $;
+   Name_Check_All                      : constant Name_Id := N + $;
+   Name_Checked                        : constant Name_Id := N + $;
    Name_Code                           : constant Name_Id := N + $;
    Name_Component                      : constant Name_Id := N + $;
    Name_Component_Size_4               : constant Name_Id := N + $;
@@ -667,6 +671,7 @@ package Snames is
    Name_Disable                        : constant Name_Id := N + $;
    Name_Dot_Replacement                : constant Name_Id := N + $;
    Name_Dynamic                        : constant Name_Id := N + $;
+   Name_Eliminated                     : constant Name_Id := N + $;
    Name_Ensures                        : constant Name_Id := N + $;
    Name_Entity                         : constant Name_Id := N + $;
    Name_Entry_Count                    : constant Name_Id := N + $;
@@ -676,6 +681,7 @@ package Snames is
    Name_Form                           : constant Name_Id := N + $;
    Name_G_Float                        : constant Name_Id := N + $;
    Name_Gcc                            : constant Name_Id := N + $;
+   Name_General                        : constant Name_Id := N + $;
    Name_Gnat                           : constant Name_Id := N + $;
    Name_GPL                            : constant Name_Id := N + $;
    Name_IEEE_Float                     : constant Name_Id := N + $;
@@ -689,6 +695,7 @@ package Snames is
    Name_Max_Size                       : constant Name_Id := N + $;
    Name_Mechanism                      : constant Name_Id := N + $;
    Name_Message                        : constant Name_Id := N + $;
+   Name_Minimized                      : constant Name_Id := N + $;
    Name_Mixedcase                      : constant Name_Id := N + $;
    Name_Mode                           : constant Name_Id := N + $;
    Name_Modified_GPL                   : constant Name_Id := N + $;
@@ -727,6 +734,7 @@ package Snames is
    Name_Static                         : constant Name_Id := N + $;
    Name_Stack_Size                     : constant Name_Id := N + $;
    Name_Subunit_File_Name              : constant Name_Id := N + $;
+   Name_Suppressed                     : constant Name_Id := N + $;
    Name_Task_Stack_Size_Default        : constant Name_Id := N + $;
    Name_Task_Type                      : constant Name_Id := N + $;
    Name_Time_Slicing_Enabled           : constant Name_Id := N + $;
@@ -1208,6 +1216,7 @@ package Snames is
    Name_Leading_Required_Switches          : constant Name_Id := N + $;
    Name_Leading_Switches                   : constant Name_Id := N + $;
    Name_Lib_Subdir                         : constant Name_Id := N + $;
+   Name_Link_Lib_Subdir                    : constant Name_Id := N + $;
    Name_Library                            : constant Name_Id := N + $;
    Name_Library_Ali_Dir                    : constant Name_Id := N + $;
    Name_Library_Auto_Init                  : constant Name_Id := N + $;
@@ -1655,6 +1664,7 @@ package Snames is
       Pragma_No_Strict_Aliasing,
       Pragma_Normalize_Scalars,
       Pragma_Optimize_Alignment,
+      Pragma_Overflow_Checks,
       Pragma_Persistent_BSS,
       Pragma_Polling,
       Pragma_Priority_Specific_Dispatching,

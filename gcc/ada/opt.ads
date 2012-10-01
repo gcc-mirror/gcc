@@ -270,6 +270,11 @@ package Opt is
    --  Set to True to build, bind and link all the sources of a project file
    --  (switch -B)
 
+   Check_Aliasing_Of_Parameters : Boolean := False;
+   --  GNAT
+   --  Set to True to detect whether subprogram parameters and function results
+   --  alias the same object(s).
+
    Check_Object_Consistency : Boolean := False;
    --  GNATBIND, GNATMAKE
    --  Set to True to check whether every object file is consistent with
@@ -315,8 +320,13 @@ package Opt is
 
    Check_Unreferenced_Formals : Boolean := False;
    --  GNAT
-   --  Set True to check for unreferenced formals. This is turned on by
+   --  Set to True to check for unreferenced formals. This is turned on by
    --  -gnatwa/wf/wu and turned off by -gnatwA/wF/wU.
+
+   Check_Validity_Of_Parameters : Boolean := False;
+   --  GNAT
+   --  Set to True to check for proper scalar initialization of subprogram
+   --  parameters on both entry and exit. Turned on by??? turned off by???
 
    Check_Withs : Boolean := False;
    --  GNAT
@@ -486,11 +496,6 @@ package Opt is
    --  GNAT
    --  Set to True to generate full elaboration warnings (-gnatwl)
 
-   Enable_Overflow_Checks : Boolean := False;
-   --  GNAT
-   --  Set to True if -gnato (enable overflow checks) switch is set,
-   --  but not -gnatp.
-
    Error_Msg_Line_Length : Nat := 0;
    --  GNAT
    --  Records the error message line length limit. If this is set to zero,
@@ -643,9 +648,14 @@ package Opt is
 
    Generate_SCO : Boolean := False;
    --  GNAT
-   --  True when switch -gnateS is used. When True, Source Coverage Obligation
-   --  (SCO) information is generated and output in the ALI file. See unit
-   --  Par_SCO for full details.
+   --  True when switch -fdump-scos (or -gnateS) is used. When True, Source
+   --  Coverage Obligation (SCO) information is generated and output in the ALI
+   --  file. See unit Par_SCO for full details.
+
+   Generate_SCO_Instance_Table : Boolean := False;
+   --  GNAT
+   --  True when switch -fdebug-instances is used. When True, a table of
+   --  instances is included in SCOs.
 
    Generating_Code : Boolean := False;
    --  GNAT
@@ -1068,12 +1078,6 @@ package Opt is
    --  True if output of list of objects is requested (-O switch set). List is
    --  output under the given filename, or standard output if not specified.
 
-   Overflow_Checks_Unsuppressed : Boolean := False;
-   --  GNAT
-   --  This flag is True if there has been at least one pragma with the
-   --  effect of unsuppressing overflow checks, meaning that a more careful
-   --  check of the current mode is required.
-
    Persistent_BSS_Mode : Boolean := False;
    --  GNAT
    --  True if a Persistent_BSS configuration pragma is in effect, causing
@@ -1252,10 +1256,10 @@ package Opt is
 
    Suppress_Options : Suppress_Record;
    --  GNAT
-   --  Flags set True to suppress corresponding check, i.e. add an implicit
-   --  pragma Suppress at the outer level of each unit compiled. Note that
-   --  these suppress actions can be overridden by the use of the Unsuppress
-   --  pragma. This variable is initialized by Osint.Initialize.
+   --  Indicates outer level setting of check suppression. This initializes
+   --  the settings of the outer scope level in any unit compiled. This is
+   --  initialized by Osint.Initialize, and further initialized by the
+   --  Adjust_Global_Switches flag in Gnat1drv.
 
    Suppress_Back_Annotation : Boolean := False;
    --  GNAT

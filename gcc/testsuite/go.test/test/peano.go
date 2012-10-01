@@ -1,8 +1,11 @@
-// $G $F.go && $L $F.$A && ./$A.out
+// run
 
 // Copyright 2009 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
+
+// Test that heavy recursion works. Simple torture test for
+// segmented stacks: do math in unary by recursion.
 
 package main
 

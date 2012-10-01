@@ -47,7 +47,7 @@ end subroutine test
 program myTest
 type t
 end type t
-type(t), allocatable :: a[:]
+class(t), allocatable :: a[:]
  allocate (t :: a) ! { dg-error "Coarray specification required in ALLOCATE statement" }
 allocate (t :: a[*]) ! OK
 end program myTest

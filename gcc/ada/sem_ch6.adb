@@ -3450,6 +3450,10 @@ package body Sem_Ch6 is
          Push_Scope (Designator);
          Process_Formals (Formals, N);
 
+         --  Check dimensions in N for formals with default expression
+
+         Analyze_Dimension_Formals (N, Formals);
+
          --  Ada 2005 (AI-345): If this is an overriding operation of an
          --  inherited interface operation, and the controlling type is
          --  a synchronized type, replace the type with its corresponding
@@ -11087,6 +11091,9 @@ package body Sem_Ch6 is
       --  references to parameters of the inherited subprogram to point to the
       --  corresponding parameters of the current subprogram.
 
+      procedure Insert_After_Last_Declaration (Nod : Node_Id);
+      --  Insert node Nod after the last declaration of the context
+
       function Invariants_Or_Predicates_Present return Boolean;
       --  Determines if any invariants or predicates are present for any OUT
       --  or IN OUT parameters of the subprogram, or (for a function) if the
@@ -11100,9 +11107,6 @@ package body Sem_Ch6 is
       --  contains the declaration of the private type). A True value means
       --  that an invariant check is required (for an IN OUT parameter, or
       --  the returned value of a function.
-
-      function Last_Implicit_Declaration return Node_Id;
-      --  Return the last internally-generated declaration of N
 
       -------------
       -- Grab_CC --
@@ -11281,6 +11285,21 @@ package body Sem_Ch6 is
          return CP;
       end Grab_PPC;
 
+      -----------------------------------
+      -- Insert_After_Last_Declaration --
+      -----------------------------------
+
+      procedure Insert_After_Last_Declaration (Nod : Node_Id) is
+         Decls : constant List_Id := Declarations (N);
+
+      begin
+         if No (Decls) then
+            Set_Declarations (N, New_List (Nod));
+         else
+            Append_To (Decls, Nod);
+         end if;
+      end Insert_After_Last_Declaration;
+
       --------------------------------------
       -- Invariants_Or_Predicates_Present --
       --------------------------------------
@@ -11342,9 +11361,13 @@ package body Sem_Ch6 is
          --  If the subprogram declaration is not a list member, it must be
          --  an Init_Proc, in which case we want to consider it to be a
          --  public subprogram, since we do get initializations to deal with.
+         --  Other internally generated subprograms are not public.
 
-         if not Is_List_Member (DD) then
+         if not Is_List_Member (DD) and then Is_Init_Proc (DD) then
             return True;
+
+         elsif not Comes_From_Source (DD) then
+            return False;
 
          --  Otherwise we test whether the subprogram is declared in the
          --  visible declarations of the package containing the type.
@@ -11353,50 +11376,6 @@ package body Sem_Ch6 is
             return TL = List_Containing (DD);
          end if;
       end Is_Public_Subprogram_For;
-
-      -------------------------------
-      -- Last_Implicit_Declaration --
-      -------------------------------
-
-      function Last_Implicit_Declaration return Node_Id is
-         Loc   : constant Source_Ptr := Sloc (N);
-         Decls : List_Id := Declarations (N);
-         Decl  : Node_Id;
-         Succ  : Node_Id;
-
-      begin
-         if No (Decls) then
-            Decls := New_List (Make_Null_Statement (Loc));
-            Set_Declarations (N, Decls);
-
-         elsif Is_Empty_List (Declarations (N)) then
-            Append_To (Decls, Make_Null_Statement (Loc));
-         end if;
-
-         --  Implicit and source declarations may be interspersed. Search for
-         --  the last implicit declaration which is either succeeded by a
-         --  source construct or is the last node in the declarative list.
-
-         Decl := First (Declarations (N));
-         while Present (Decl) loop
-            Succ := Next (Decl);
-
-            --  The current declaration is the last one, do not return Empty
-
-            if No (Succ) then
-               exit;
-
-            --  The successor is a source construct
-
-            elsif Comes_From_Source (Succ) then
-               exit;
-            end if;
-
-            Next (Decl);
-         end loop;
-
-         return Decl;
-      end Last_Implicit_Declaration;
 
    --  Start of processing for Process_PPCs
 
@@ -11803,7 +11782,26 @@ package body Sem_Ch6 is
             --  The entity for the _Postconditions procedure
 
          begin
-            Insert_After (Last_Implicit_Declaration,
+            --  Insert the corresponding body of a post condition pragma after
+            --  the last declaration of the context. This ensures that the body
+            --  will not cause any premature freezing as it may mention types:
+
+            --    procedure Proc (Obj : Array_Typ) is
+            --       procedure _postconditions is
+            --       begin
+            --          ... Obj ...
+            --       end _postconditions;
+
+            --       subtype T is Array_Typ (Obj'First (1) .. Obj'Last (1));
+            --    begin
+
+            --  In the example above, Obj is of type T but the incorrect
+            --  placement of _postconditions will cause a crash in gigi due to
+            --  an out of order reference. The body of _postconditions must be
+            --  placed after the declaration of Temp to preserve correct
+            --  visibility.
+
+            Insert_After_Last_Declaration (
               Make_Subprogram_Body (Loc,
                 Specification =>
                   Make_Procedure_Specification (Loc,

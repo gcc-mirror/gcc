@@ -356,7 +356,7 @@ package body Exception_Propagation is
 
          declare
             GNAT_Occurrence : constant GNAT_GCC_Exception_Access :=
-                                To_GNAT_GCC_Exception (GCC_Exception);
+              To_GNAT_GCC_Exception (GCC_Exception);
          begin
             Excep.all := GNAT_Occurrence.Occurrence;
 

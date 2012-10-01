@@ -1,3 +1,223 @@
+2012-10-01  Daniel Krugler  <daniel.kruegler@googlemail.com>
+
+	* include/std/type_traits (result_of): Provide "SFINAE-friendly"
+	(see N3436) implementation.
+	* testsuite/20_util/result_of/sfinae_friendly_1.cc: New.
+	* testsuite/20_util/result_of/sfinae_friendly_2.cc: Likewise.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc: Tweak
+	dg-error line numbers.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc:
+	Likewise.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Likewise.
+
+2012-09-30  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/doxygen/user.cfg.in: Update to doxygen 1.8.2.
+
+2012-09-30  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/ext/ropeimpl.h (__uninitialized_fill_n_a): Fix using
+	declaration.
+	* testsuite/ext/rope/5.cc: New.
+
+2012-09-30  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/54577
+	* doc/xml/manual/status_cxx2011.xml: N2350 changes are missing from
+	sequence containers.
+	* doc/html/*: Regenerate.
+
+2012-09-29  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/34106
+	* include/parallel/compatibility.h: Remove non-GCC code.
+
+2012-09-28  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* fragment.am (CONFIG_CXXFLAGS): Remove EXTRA_CXX_FLAGS.
+	* libsupc++/Makefile.am (LTCXXCOMPILE): Add EXTRA_CXX_FLAGS here.
+	* src/Makefile.am: Same.
+	* src/c++98/Makefile.am: Same.
+	* src/c++11/Makefile.am: Same.
+	* Makefile.in: Regenerated.
+	* src/Makefile.am: Same.
+	* src/c++11/Makefile.in: Same.
+	* src/c++98/Makefile.in: Same.
+	* include/Makefile.in: Same.
+	* po/Makefile.in: Same.
+	* python/Makefile.in: Same.
+	* testsuite/Makefile.in: Same.
+
+2012-09-28  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* src/c++98/Makefile.am: Fixup PARALLEL_FLAGS.
+
+2012-09-28  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_PARALLEL): Remove ENABLE_PARALLEL.
+	* include/Makefile.am: Same.
+	* src/c++98/Makefile.am: Same.
+	* src/Makefile.am: Same.
+	* Makefile.in: Regenerated.
+	* aclocal.m4: Same.
+	* configure: Same.
+	* doc/Makefile.in: Same.
+	* include/Makefile.in: Same.
+	* libsupc++/Makefile.in: Same.
+	* po/Makefile.in: Same.
+	* python/Makefile.in: Same.
+	* src/Makefile.in: Same.
+	* testsuite/Makefile.in: Same.
+	* src/c++11/Makefile.in: Same.
+	* src/c++98/Makefile.in: Same.
+
+	* src/c++98/compatibility-debug_list-2.cc: Update comments.
+	* src/c++98/compatibility-debug_list.cc: Same.
+	* src/c++98/compatibility-list-2.cc: Renamed to src/c++98/list-aux-2.cc
+	* src/c++98/compatibility-list.cc: Renamed to src/c++98/list-aux.cc
+	* src/c++98/compatibility-parallel_list-2.cc: Renamed to
+	src/c++98/list_associated-2.cc.
+	* src/c++98/compatibility-parallel_list.cc: Renamed to
+	src/c++98/list_associated.cc.
+
+2012-09-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/54727
+	* config/cpu/i486/opt/bits/opt_random.h: Avoid UINT64_C.
+
+2012-09-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/ext/random: Add include checks for c++11 and <cstdint>.
+
+2012-09-26  Benjamin Kosnik  <bkoz@redhat.com>
+
+       PR libstdc++/54314
+       * config/abi/pre/gnu.ver: Add vtable exports.
+       * config/abi/pre/gnu-versioned-namespace.ver: Same.
+
+2012-09-26  Akira Takahashi  <faithandbrave@gmail.com>
+
+	PR libstdc++/53515
+	* include/bits/stl_iterator_base_funcs.h (__advance(_InputIterator&,
+	_Distance, input_iterator_tag)): Add _GLIBCXX_DEBUG_ASSERT(__n >= 0).
+
+2012-09-26  Ulrich Drepper  <drepper@gmail.com>
+
+	Optimize bulk mode for normal_distribution<double> for SSE3.
+	* configure.host: Define cpu_opt_bits_random.
+	* configure.ac: Substitute CPU_OPT_BITS_RANDOM.
+	* include/Makefile.am (bits_headers): Add ${bits_host_headers}.
+	(bits_host_headers): Define.
+	* include/bits/random.tcc: Move __details::_Power_of_2 to...
+	* include/bits/random.h: ...here.
+	* include/std/random: Include <bits/opt_random.h>.
+	* config/cpu/i486/opt/bits/opt_random.h: New file.
+	* config/cpu/generic/opt/bits/opt_random.h: New file.
+	* configure: Regenerated.
+	* Makefile.in: Regenerated.
+	* aclocal.m4: Regenerated.
+	* doc/Makefile.in: Regenerated.
+	* include/Makefile.in: Regenerated.
+	* libsupc++/Makefile.in: Regenerated.
+	* po/Makefile.in: Regenerated.
+	* python/Makefile.in: Regenerated.
+	* src/Makefile.in: Regenerated.
+	* src/c++11/Makefile.in: Regenerated.
+	* src/c++98/Makefile.in: Regenerated.
+	* testsuite/Makefile.in: Regenerated.
+
+	* config/cpu/generic/opt/ext/opt_random.h: Fix comment.
+
+2012-09-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* doc/xml/manual/status_cxx2011.xml: Update vs PR 44436.
+
+2012-09-24  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* include/ext/random: Add __gnu_cxx::k_distribution<> class.
+	* include/ext/random.tcc: Add out-of-line functions for
+	__gnu_cxx::k_distribution<>.
+	* testsuite/ext/random/k_distribution/operators/equal.cc: New file.
+	* testsuite/ext/random/k_distribution/operators/serialize.cc: New file.
+	* testsuite/ext/random/k_distribution/operators/inequal.cc: New file.
+	* testsuite/ext/random/k_distribution/cons/parms.cc: New file.
+	* testsuite/ext/random/k_distribution/cons/default.cc: New file.
+	* testsuite/ext/random/k_distribution/requirements/typedefs.cc:
+	New file.
+	* testsuite/ext/random/k_distribution/requirements/
+	explicit_instantiation/1.cc: New file.
+
+2012-09-24  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/44436
+	* include/bits/stl_tree.h
+	(_Rb_tree<>::_M_insert_): Take _Base_ptr rather than
+	_Const_Base_ptr.
+	(_Rb_tree<>::_M_insert_node): New.
+	(_Rb_tree<>::_M_get_insert_unique_pos): New, search code of
+	_M_insert_unique method.
+	(_Rb_tree<>::_M_insert_unique): Use latter.
+	(_Rb_tree<>::_M_emplace_unique): New, likewise.
+	(_Rb_tree<>::_M_get_insert_equal_pos): New, search code of
+	_M_insert_equal method.
+	(_Rb_tree<>::_M_insert_equal): Use latter.
+	(_Rb_tree<>::_M_emplace_equal): New, likewise.
+	(_Rb_tree<>::_M_get_insert_hint_unique_pos): New, search code of
+	_M_insert_unique_ method.
+	(_Rb_tree<>::_M_insert_unique_): Use latter.
+	(_Rb_tree<>::_M_emplace_hint_unique): New, likewise.
+	(_Rb_tree<>::_M_get_insert_hint_equal_pos): New, search code of
+	_M_insert_equal_ method.
+	(_Rb_tree<>::_M_insert_equal_): Use latter.
+	(_Rb_tree<>::_M_emplace_hint_equal): New, likewise.
+	(_Rb_tree<>::_M_insert_lower): Remove first _Base_ptr parameter,
+	useless as always null.
+	* include/bits/stl_map.h: Include <tuple> in C++11.
+	(map<>::operator[](const key_type&)): Use
+	_Rb_tree<>::_M_emplace_hint_unique in C++11.
+	(map<>::operator[](key_type&&)): Likewise.
+	(map<>::emplace): New.
+	(map<>::emplace_hint): New.
+	* include/bits/stl_multimap.h (multimap<>::emplace): New.
+	(multimap<>::emplace_hint): New.
+	* include/bits/stl_set.h (set<>::emplace): New.
+	(set<>::emplace_hint): New.
+	* include/bits/stl_multiset.h (multiset<>::emplace): New.
+	(multiset<>::emplace_hint): New.
+	* include/debug/map.h (std::__debug::map<>::emplace): New.
+	(std::__debug::map<>::emplace_hint): New.
+	* include/debug/multimap.h (std::__debug::multimap<>::emplace):
+	New.
+	(std::__debug::multimap<>::emplace_hint): New.
+	* include/debug/set.h (std::__debug::set<>::emplace): New.
+	(std::__debug::set<>::emplace_hint): New.
+	* include/debug/multiset.h (std::__debug::multiset<>::emplace):
+	New.
+	(std::__debug::multiset<>::emplace_hint): New.
+	* include/profile/map.h (std::__profile::map<>::emplace): New.
+	(std::__profile::map<>::emplace_hint): New.
+	* include/profile/multimap.h (std::__profile::multimap<>::emplace):
+	New.
+	(std::__profile::multimap<>::emplace_hint): New.
+	* include/profile/set.h (std::__profile::set<>::emplace): New.
+	(std::__profile::set<>::emplace_hint): New.
+	* include/profile/multiset.h (std::__profile::multiset<>::emplace):
+	New.
+	(std::__profile::multiset<>::emplace_hint): New.
+	* testsuite/util/testsuite_container_traits.h: Signal that emplace
+	and emplace_hint are available on std::map, std::multimap,
+	std::set and std::multiset in C++11.
+	* testsuite/23_containers/map/operators/2.cc: New.
+	* testsuite/23_containers/map/modifiers/emplace/1.cc: New.
+	* testsuite/23_containers/multimap/modifiers/emplace/1.cc: New.
+	* testsuite/23_containers/set/modifiers/emplace/1.cc: New.
+	* testsuite/23_containers/multiset/modifiers/emplace/1.cc: New.
+
+2012-09-24  François Dumont  <fdumont@gcc.gnu.org>
+
+	* testsuite/performance/23_containers/insert_erase/41975.cc: Use
+	__uset_hashtable rather than removed __unordered_set.
+
 2012-09-23  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	Revert:
@@ -257,9 +477,9 @@
 2012-09-06  Thiago Macieira  <thiago.macieira@intel.com>
 
 	PR libstdc++/54172
-        * libsupc++/guard.cc (__cxa_guard_acquire): Exit the loop earlier if
-        we detect that another thread has had success. Don't compare_exchange
-        from a finished state back to a waiting state. Comment.
+	* libsupc++/guard.cc (__cxa_guard_acquire): Exit the loop earlier if
+	we detect that another thread has had success. Don't compare_exchange
+	from a finished state back to a waiting state. Comment.
 
 2012-09-05  François Dumont  <fdumont@gcc.gnu.org>
 

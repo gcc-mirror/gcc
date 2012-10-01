@@ -4159,18 +4159,23 @@ cp_build_binary_op (location_t location,
 	  if (TARGET_PTRMEMFUNC_VBIT_LOCATION
 	      == ptrmemfunc_vbit_in_delta)
 	    {
-	      tree pfn0 = pfn_from_ptrmemfunc (op0);
-	      tree delta0 = delta_from_ptrmemfunc (op0);
-	      tree e1 = cp_build_binary_op (location,
-					    EQ_EXPR,
-	  			            pfn0,	
-				      	    build_zero_cst (TREE_TYPE (pfn0)),
-					    complain);
-	      tree e2 = cp_build_binary_op (location,
-					    BIT_AND_EXPR, 
-					    delta0,
-				            integer_one_node,
-					    complain);
+	      tree pfn0, delta0, e1, e2;
+
+	      if (TREE_SIDE_EFFECTS (op0))
+		op0 = save_expr (op0);
+
+	      pfn0 = pfn_from_ptrmemfunc (op0);
+	      delta0 = delta_from_ptrmemfunc (op0);
+	      e1 = cp_build_binary_op (location,
+				       EQ_EXPR,
+	  			       pfn0,
+				       build_zero_cst (TREE_TYPE (pfn0)),
+				       complain);
+	      e2 = cp_build_binary_op (location,
+				       BIT_AND_EXPR,
+				       delta0,
+				       integer_one_node,
+				       complain);
 	      
 	      if ((complain & tf_warning)
 		  && c_inhibit_evaluation_warnings == 0

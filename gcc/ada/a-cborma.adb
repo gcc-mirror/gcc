@@ -980,9 +980,9 @@ package body Ada.Containers.Bounded_Ordered_Maps is
       --  for a reverse iterator, Container.Last is the beginning.
 
       return It : constant Iterator :=
-                    (Limited_Controlled with
-                       Container => Container'Unrestricted_Access,
-                       Node      => 0)
+        (Limited_Controlled with
+           Container => Container'Unrestricted_Access,
+           Node      => 0)
       do
          B := B + 1;
       end return;
@@ -1029,9 +1029,9 @@ package body Ada.Containers.Bounded_Ordered_Maps is
       --  is a forward or reverse iteration.)
 
       return It : constant Iterator :=
-                    (Limited_Controlled with
-                       Container => Container'Unrestricted_Access,
-                       Node      => Start.Node)
+        (Limited_Controlled with
+           Container => Container'Unrestricted_Access,
+           Node      => Start.Node)
       do
          B := B + 1;
       end return;
@@ -1174,7 +1174,7 @@ package body Ada.Containers.Bounded_Ordered_Maps is
          M : Map renames Position.Container.all;
 
          Node : constant Count_Type :=
-                  Tree_Operations.Next (M, Position.Node);
+           Tree_Operations.Next (M, Position.Node);
 
       begin
          if Node = 0 then
@@ -1233,7 +1233,7 @@ package body Ada.Containers.Bounded_Ordered_Maps is
          M : Map renames Position.Container.all;
 
          Node : constant Count_Type :=
-                  Tree_Operations.Previous (M, Position.Node);
+           Tree_Operations.Previous (M, Position.Node);
 
       begin
          if Node = 0 then

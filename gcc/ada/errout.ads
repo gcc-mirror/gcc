@@ -230,7 +230,7 @@ package Errout is
    --      one (the plus one is because the number is stored 0-origin and
    --      displayed 1-origin).
 
-   --    Insertion character ^ (Carret: insert integer value)
+   --    Insertion character ^ (Caret: insert integer value)
    --      The character ^ is replaced by the decimal conversion of the Uint
    --      value stored in Error_Msg_Uint_1, with a possible leading minus.
    --      A second ^ may occur in the message, in which case it is replaced

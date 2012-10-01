@@ -2296,8 +2296,31 @@ expand_call_tm (struct tm_region *region,
     }
 
   node = cgraph_get_node (fn_decl);
-  /* All calls should have cgraph here. */
-  gcc_assert (node);
+  /* All calls should have cgraph here.  */
+  if (!node)
+    {
+      /* We can have a nodeless call here if some pass after IPA-tm
+	 added uninstrumented calls.  For example, loop distribution
+	 can transform certain loop constructs into __builtin_mem*
+	 calls.  In this case, see if we have a suitable TM
+	 replacement and fill in the gaps.  */
+      gcc_assert (DECL_BUILT_IN_CLASS (fn_decl) == BUILT_IN_NORMAL);
+      enum built_in_function code = DECL_FUNCTION_CODE (fn_decl);
+      gcc_assert (code == BUILT_IN_MEMCPY
+		  || code == BUILT_IN_MEMMOVE
+		  || code == BUILT_IN_MEMSET);
+
+      tree repl = find_tm_replacement_function (fn_decl);
+      if (repl)
+	{
+	  gimple_call_set_fndecl (stmt, repl);
+	  update_stmt (stmt);
+	  node = cgraph_create_node (repl);
+	  node->local.tm_may_enter_irr = false;
+	  return expand_call_tm (region, gsi);
+	}
+      gcc_unreachable ();
+    }
   if (node->local.tm_may_enter_irr)
     transaction_subcode_ior (region, GTMA_MAY_ENTER_IRREVOCABLE);
 

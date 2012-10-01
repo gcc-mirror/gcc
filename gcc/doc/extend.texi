@@ -6820,7 +6820,8 @@ corresponding mode of @code{foo} will be @acronym{V4SI}.
 
 The @code{vector_size} attribute is only applicable to integral and
 float scalars, although arrays, pointers, and function return values
-are allowed in conjunction with this construct.
+are allowed in conjunction with this construct. Only power of two
+sizes are currently allowed.
 
 All the basic integer types can be used as base types, both as signed
 and as unsigned: @code{char}, @code{short}, @code{int}, @code{long},
@@ -6857,7 +6858,7 @@ minus or complement operators on a vector type is a vector whose
 elements are the negative or complemented values of the corresponding
 elements in the operand.
 
-In C it is possible to use shifting operators @code{<<}, @code{>>} on
+It is possible to use shifting operators @code{<<}, @code{>>} on
 integer-type vectors. The operation is defined as following: @code{@{a0,
 a1, @dots{}, an@} >> @{b0, b1, @dots{}, bn@} == @{a0 >> b0, a1 >> b1,
 @dots{}, an >> bn@}}@. Vector operands must have the same number of
@@ -6888,7 +6889,7 @@ invoke undefined behavior at runtime.  Warnings for out of bound
 accesses for vector subscription can be enabled with
 @option{-Warray-bounds}.
 
-In GNU C vector comparison is supported within standard comparison
+Vector comparison is supported with standard comparison
 operators: @code{==, !=, <, <=, >, >=}. Comparison operands can be
 vector expressions of integer-type or real-type. Comparison between
 integer-type vectors and real-type vectors are not supported.  The
@@ -8611,18 +8612,18 @@ Similar to @code{__builtin_powi}, except the argument and return types
 are @code{long double}.
 @end deftypefn
 
-@deftypefn {Built-in Function} int16_t __builtin_bswap16 (int16_t x)
+@deftypefn {Built-in Function} uint16_t __builtin_bswap16 (uint16_t x)
 Returns @var{x} with the order of the bytes reversed; for example,
 @code{0xaabb} becomes @code{0xbbaa}.  Byte here always means
 exactly 8 bits.
 @end deftypefn
 
-@deftypefn {Built-in Function} int32_t __builtin_bswap32 (int32_t x)
+@deftypefn {Built-in Function} uint32_t __builtin_bswap32 (uint32_t x)
 Similar to @code{__builtin_bswap16}, except the argument and return types
 are 32-bit.
 @end deftypefn
 
-@deftypefn {Built-in Function} int64_t __builtin_bswap64 (int64_t x)
+@deftypefn {Built-in Function} uint64_t __builtin_bswap64 (uint64_t x)
 Similar to @code{__builtin_bswap32}, except the argument and return types
 are 64-bit.
 @end deftypefn

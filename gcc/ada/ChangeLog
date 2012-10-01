@@ -1,3 +1,640 @@
+2012-10-01  Vincent Pucci  <pucci@adacore.com>
+
+	* sem_aggr.adb (New_Copy_Tree_And_Copy_Dimensions): New routine.
+	(Resolve_Record_Aggregate): New_Copy_Tree calls replaced by
+	New_Copy_Tree_And_Copy_Dimensions calls. Move_Dimensions call
+	replaced by Copy_Dimensions call.
+	* sem_dim.adb (Analyze_Dimension_Component_Declaration): Don't
+	remove the dimensions of expression in component declaration anymore.
+	(Copy_Dimensions): New routine.
+	(Move_Dimensions): Add call to Copy_Dimensions.
+	* sem_dim.ads (Copy_Dimensions): New routine.
+	(Move_Dimensions): Spec moved to body of Sem_Dim.
+
+2012-10-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* checks.adb (Apply_Predicate_Check): If the predicate is a
+	static one and the operand is static, evaluate the predicate at
+	compile time.
+	* sem_eval.ads, sem_eval.adb (Eval_Static_Predicate_Check): new
+	procedure, to evaluate a static predicate check whenever possible.
+	* sem_res.adb (Resolve_Type_Conversion): Apply predicate check
+	on the conversion if the target type has predicates.
+
+2012-10-01  Vincent Pucci  <pucci@adacore.com>
+
+	* sem_dim.adb (Has_Symbols): Complain if parameter Symbol has been
+	provided by the user in the dimension output call.
+
+2012-10-01  Robert Dewar  <dewar@adacore.com>
+
+	* checks.adb (Apply_Divide_Checks): New name for
+	Apply_Divide_Check (Minimize_Eliminate_Overflow_Checks):
+	Add code to handle division (and rem and mod) properly.
+	(Apply_Division_Check): New procedure (Apply_Divide_Checks):
+	Use Apply_Division_Check (Apply_Divide_Checks): Use
+	Apply_Arithmetic_Overflow_Minimized_Eliminated.
+	* checks.ads (Apply_Divide_Checks): New name for
+	Apply_Divide_Check, also add clearer documentation for this
+	routine and put in alfa order.
+	* exp_ch4.adb (Apply_Divide_Checks): New name for
+	Apply_Divide_Check.
+	* s-bignum.adb (To_Bignum): Handle largest negative integer
+	properly.
+	* sem.adb (Analyze): Handle overflow suppression correctly
+	(Analyze_List): Handle overflow suppression correctly
+	* sem_res.adb (Analyze_And_Resolve): Handle overflow suppression
+	correctly.
+
+2012-10-01  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* s-oscons-tmplt.c, g-socket.ads: Revert previous change, breaks VMS.
+
+2012-10-01  Robert Dewar  <dewar@adacore.com>
+
+	* checks.adb (Minimize_Eliminate_Overflow_Checks): Changes
+	for exponentiation.
+	* exp_ch4.adb (Expand_N_Op_Expon): Changes for Minimize/Eliminate
+	overflow checks.
+	* s-bignum.adb (Compare): Fix bad precondition.
+
+2012-10-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Build_Derived_Record_Type): If the derived
+	type has new discriminantss that constrain inherited ones, use
+	the discriminant type in the original declaration to check for
+	conformance, because in the presence of array components with a
+	smaller range that are constrained by the origina discriminant,
+	the compiler will have created a narrower subtype for that
+	discriminant.
+
+2012-10-01  Robert Dewar  <dewar@adacore.com>
+
+	* checks.adb (Apply_Arithmetic_Overflow_Minimized_Eliminated):
+	Handle case of appearing in range in membership test.
+	* exp_ch4.adb (Expand_Membership_Minimize_Eliminate_Overflow):
+	New procedure (Expand_N_In): Use
+	Expand_Membership_Minimize_Eliminate_Overflow.
+	* rtsfind.ads: Add RE_Bignum_In_LLI_Range.
+	* s-bignum.ads, s-bignum.adb (Bignum_In_LLI_Range): New function.
+	* sinfo.ads, sinfo.adb (No_Minimize_Eliminate): New flag.
+
+2012-10-01  Robert Dewar  <dewar@adacore.com>
+
+	* uintp.ads: Minor reformatting.
+
+2012-10-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* checks.adb: Improve warning message.
+
+2012-10-01  Robert Dewar  <dewar@adacore.com>
+
+	* checks.adb: Minor reformatting.
+
+2012-10-01  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): Suppress tag
+	assignment for initializations that are aggregates.
+
+2012-10-01  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb (Expand_Compare_Minimize_Eliminate_Overflow):
+	New procedure.
+
+2012-10-01  Robert Dewar  <dewar@adacore.com>
+
+	* checks.adb (Minimize_Eliminate_Checks): Changes from testing.
+	(Apply_Arithmetic_Overflow_Minimized_Eliminated): Changes
+	from testing.
+	* sinfo.ads: Remove note on not setting Entity field in overflow
+	case since this is no longer true.
+	* Makefile.rtl: Add s-bignum.o
+
+2012-10-01  Thomas Quinot  <quinot@adacore.com>
+
+	* Make-generated.in: Correction to previous change for s-oscons
+	target.
+
+2012-10-01  Thomas Quinot  <quinot@adacore.com>
+
+	* s-bignum.adb (Allocate_Bignum): Reorganize to kill strict
+	aliasing warning.
+
+2012-10-01  Robert Dewar  <dewar@adacore.com>
+
+	* checks.adb (Overflow_Check_Mode): New function
+	(Apply_Overflow_Check): New procedure (Is_Check_Suppressed):
+	Moved here from Sem, Overflow_Check case now specially treated.
+	* checks.ads (Overflow_Check_Mode): New function
+	(Is_Check_Suppressed): Moved here from Sem (more logical)
+	* exp_ch4.adb (Substitute_Valid_Check): Suppress warning about
+	optimization if we are in MINIMIZED or ELIMINATED overflow
+	checking mode and within an assertiom expression.
+	* rtsfind.ads: Add entries for Bignum stuff.
+	* s-bignum.ads, s-bignum.adb: New files.
+	* sem.ads, sem.adb (Is_Check_Suppressed): Moved to Checks, more logical.
+	* sem_prag.adb (Process_Suppress_Unsuppress): New behavior for
+	Unsuppress of Overflow_Check (sets Checked instead of Minimized)
+	* sem_res.adb: Update comments.
+	* sinfo.ads (N_Op): Add documentation on overflow handling.
+	* tbuild.ads, tbuild.adb (Convert_To_And_Rewrite): New procedure.
+	* types.ads (Minimized_Or_Eliminated): New subtype.
+
+2012-10-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* layout.adb (Layout_Type): Do not set twice the address size
+	on an access-to-unconstrained array if Debug_Flag_6 is set.
+
+2012-10-01  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch3.adb (Analyze_Declarations): Remove the specialized
+	code which prevents freezing when the declarative list contains
+	a _postconditions body. This is no longer needed because the
+	body is now inserted at the end of the declarations.
+	* sem_ch6.adb (Insert_After_Last_Declaration): New routine.
+	(Insert_Before_First_Source_Declaration): Removed.
+	(Process_PPCs): Insert the _postconditions body at the end of
+	the declarative list to prevent premature freezing of types that
+	appear in the declarations.
+
+2012-10-01  Robert Dewar  <dewar@adacore.com>
+
+	* sem_aggr.adb, sem_dim.adb: Minor reformatting.
+
+2012-10-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Process_Convention, Process_Import_Or_Interface):
+	Adjust test so that when the pragma comes from an aspect
+	specification it only applies to the entity in the original
+	declaration.
+
+2012-10-01  Thomas Quinot  <quinot@adacore.com>
+
+	* gnat_ugn.texi: Document new command line switch -fada-spec-parent.
+
+2012-10-01  Thomas Quinot  <quinot@adacore.com>
+
+	* s-oscons-tmplt.c, g-socket.ads: Minor code improvement: use gcc
+	builtin __alignof__ to get the alignment of struct fd_set.
+
+2012-10-01  Vincent Pucci  <pucci@adacore.com>
+
+	* exp_ch6.adb (Expand_Call): Remove call to
+	Remove_Dimension_In_Call.
+	* sem_aggr.adb (Resolve_Array_Aggregate): Analyze dimension of
+	components in array aggregate.
+	(Resolve_Aggr_Expr): Propagate dimensions from the original expression
+	Expr to the new created expression New_Expr when resolving the
+	expression of a component in record aggregates.
+	(Resolve_Record_Aggregate): Analyze
+	dimension of components in record (or extension) aggregate.
+	* sem_ch6.adb (Analyze_Subprogram_Specification): Analyze
+	dimension of formals with default expressions in subprogram
+	specification.
+	* sem_ch8.adb (Analyze_Expanded_Name): Analyze dimension of
+	expanded names.
+	(Find_Selected_Component): Analyze dimension of selected component.
+	* sem_dim.adb: Several dimension error messages reformatting.
+	(Dimensions_Msg_Of): New flag Description_Needed in order to
+	differentiate two different sort of dimension error messages.
+	(Dim_Warning_For_Numeric_Literal): New routine.
+	(Exists): New routine.
+	(Move_Dimensions): Routine spec moved to spec file.
+	* sem_dim.ads (String_From_Numeric_Literal): New routine.
+	(Analyze_Dimension): Analyze dimension only when the
+	node comes from source.  Dimension analysis for expanded names added.
+	(Analyze_Dimension_Array_Aggregate): New routine.
+	(Analyze_Dimension_Call): New routine.
+	(Analyze_Dimension_Component_Declaration): Warning if default
+	expression is a numeric literal.
+	(Analyze_Dimension_Extension_Or_Record_Aggregate): New routine.
+	(Analyze_Dimension_Formals): New routine.
+	(Analyze_Dimension_Object_Declaration): Warning if default
+	expression is a numeric literal.
+	(Symbol_Of): Return either the dimension subtype symbol or the
+	dimension symbol built by From_Dim_To_Str_Of_Unit_Symbols.
+	* sem_dim.ads (Analyze_Dimension_Array_Aggregate): New routine.
+	(Analyze_Dimension_Call): New routine.
+	(Analyze_Dimension_Extension_Or_Record_Aggregate): New routine.
+	(Analyze_Dimension_Formals): New routine.
+	(Move_Dimensions): Moved from sem_dim.adb.
+	* s-dimmks.ads: Turn off the warnings for dimensioned object
+	declaration.  Dimensioned subtypes sorted in alphabetical
+	order. New subtypes Area, Speed, Volume.
+	* s-dmotpr.ads: Turn off the warnings for dimensioned object
+	declaration.
+	* sem_res.adb (Resolve_Call): Analyze dimension for calls.
+
+2012-10-01  Thomas Quinot  <quinot@adacore.com>
+
+	* Make-generated.in: Minor cleanup of all targets: use
+	MOVE_IF_CHANGE to put generated files in place, to avoid useless
+	recompilations.
+
+2012-10-01  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.adb (Expand_Dispatching_Call): For functions returning
+	interface types add an implicit conversion to the returned object
+	to force the displacement of the pointer to the returned object
+	to reference the corresponding secondary dispatch table. This
+	is needed to handle well combined calls involving secondary
+	dispatch tables (for example Obj.Prim1.Prim2).
+	* exp_ch4.adb (Expand_Allocator_Expression): Declare internal
+	access type as access to constant or access to variable depending
+	on the context. Found working in this ticket.
+
+2012-10-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* checks.adb (Apply_Predicate_Check): Do not apply check to
+	actual of predicate checking procedure, to prevent infinite
+	recursion.
+
+2012-10-01  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/Make-lang.in: Update dependencies.
+	(GCC_LINK): Add -static-libstdc++.
+
+2012-10-01  Arnaud Charlet  <charlet@adacore.com>
+
+	* a-catizo.adb, a-stwiun.adb, a-cdlili.adb, a-cihama.adb, a-direct.adb,
+	a-coinve.adb, a-calend.adb, a-ciorse.adb, a-coorma.adb, a-cfdlli.adb,
+	a-stzunb-shared.adb, a-cfhase.adb, bindgen.adb, ceinfo.adb, a-tags.adb,
+	einfo.adb, checks.adb, eval_fat.adb, a-cborma.adb, a-stwifi.adb,
+	a-tifiio.adb, a-textio.adb, a-cidlli.adb, a-strunb-shared.adb,
+	a-cimutr.adb, a-calcon.adb, a-exexpr-gcc.adb, a-ciormu.adb,
+	a-stzunb.adb, a-stzsea.adb, a-ngelfu.adb, a-stzfix.adb,
+	a-cihase.adb, a-cohama.adb, a-exetim-posix.adb, a-dirval-vms.adb,
+	a-caldel-vms.adb, a-coorse.adb, errout.adb,
+	a-except.adb, butil.adb, a-dirval-mingw.adb, a-cforma.adb,
+	a-except-2005.adb, a-wtedit.adb, cstand.adb, a-stwiun-shared.adb,
+	a-cbhama.adb, a-direio.adb, clean.adb, a-cborse.adb, back_end.adb,
+	binde.adb, a-exexda.adb, a-comutr.adb, a-ciorma.adb, a-cobove.adb,
+	a-coormu.adb, a-teioed.adb, a-convec.adb, a-wtenau.adb, exp_aggr.adb,
+	a-ztedit.adb, a-cohase.adb, a-exetim-mingw.adb, bcheck.adb,
+	a-dynpri.adb, a-cfhama.adb, a-calfor.adb, a-cbdlli.adb,
+	a-crdlli.adb, a-cbmutr.adb, a-sequio.adb, a-ngcoar.adb, a-cforse.adb,
+	a-strunb.adb, a-calend-vms.adb, a-clrefi.adb, a-cofove.adb,
+	a-ztenau.adb, a-strfix.adb, a-cbhase.adb, a-stzsup.adb: Minor
+	reformatting.
+
+2012-10-01  Vincent Pucci  <pucci@adacore.com>
+
+	* s-gearop.adb (Vector_Matrix_Product): Dimensions check fixed. Index
+	of Left in S evaluation fixed.
+
+2012-10-01  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Analyze_Declarations): Avoid
+	premature freezing caused by the internally generated subprogram
+	_postconditions.
+	* checks.adb (Expr_Known_Valid): Float literals are assumed to be valid
+	in VM targets.
+
+2012-10-01  Thomas Quinot  <quinot@adacore.com>
+
+	* sinput.ads, sinput.adb, sinput-l.adb sinput-c.adb (Sinput): New
+	Instances table, tracking all generic instantiations. Source file
+	attribute Instance replaces previous Instantiation attribute with an
+	index into the Instances table.
+	(Iterate_On_Instances): New generic procedure.
+	(Create_Instantiation_Source): Record instantiations in Instances.
+	(Tree_Read, Tree_Write): Read/write the instance table.
+	* scils.ads, scos.adb (SCO_Instance_Table): New table, contains
+	information copied from Sinput.Instance_Table, but self-contained
+	within the SCO data structures.
+	* par_sco.ads, par_sco.adb (To_Source_Location): Move to library level.
+	(Record_Instance): New subprogram, used by...
+	(Populate_SCO_Instance_Table): New subprogram to fill
+	the SCO instance table from the Sinput one (called by SCO_Output).
+	* opt.ads (Generate_SCO_Instance_Table): New option.
+	* put_scos.adb (Write_Instance_Table): New subprogram, used by...
+	(Put_SCOs): Dump the instance table at the end of SCO information
+	if requested.
+	* get_scos.adb (Get_SCOs): Read SCO_Instance_Table.
+	* types.h: Add declaration for Instance_Id.
+	* back_end.adb (Call_Back_End): Pass instance ids in source file
+	information table.
+	(Scan_Back_End_Switches): -fdebug-instances sets
+	Opt.Generate_SCO_Instance_Table.
+	* gcc-interface/gigi.h: File_Info_Type includes instance id.
+	* gcc-interface/trans.c: Under -fdebug-instances, set instance
+	id in line map from same in file info.
+
+2012-10-01  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_elab.adb: Minor reformatting
+	(Check_Elab_Call): Minor fix to debugging code
+	(add special circuit for the valid case where a 'Access attribute
+	reference is passed to Check_Elab_Call).
+
+2012-10-01  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch3.adb: Minor reformatting.
+
+2012-10-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch3.ads (Build_Array_Invariant_Proc): moved to body.
+	* exp_ch3.adb (Build_Array_Invariant_Proc,
+	Build_Record_Invariant_Proc): transform into functions.
+	(Insert_Component_Invariant_Checks): for composite types that have
+	components with specified invariants, build a checking procedure,
+	and make into the invariant procedure of the composite type,
+	or incorporate it into the user- defined invariant procedure if
+	one has been created.
+	* sem_ch3.adb (Array_Type_Declaration): Checking for invariants
+	on the component type is defered to the expander.
+
+2012-10-01  Thomas Quinot  <quinot@adacore.com>
+
+	* xsnamest.adb, namet.h, sem_ch10.adb, s-oscons-tmplt.c,
+	xoscons.adb: Minor reformatting.
+
+2012-10-01  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* checks.adb (Apply_Parameter_Aliasing_And_Validity_Checks):
+	Do not process subprogram renaminds because a) those cannot
+	have PPC pragmas b) the renamed entity already has the PPCs.
+	(Build_PPC_Pragma): Prepend a PPC pragma for consistency with
+	Process_PPCs.
+	* sem_ch6.adb (Last_Implicit_Declaration): Removed.
+	(Process_PPCs): Insert a post condition body at the start of the
+	declarative region of the related subprogram. This way the body
+	will not freeze anything it shouldn't.
+
+2012-10-01  Robert Dewar  <dewar@adacore.com>
+
+	* freeze.adb, sem_ch6.adb, opt.ads, sem_ch13.adb,
+	exp_ch3.adb: Minor reformatting.
+
+2012-10-01  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* checks.adb (Build_PPC_Pragma): A PPC pragma can now be properly
+	associated with a subprogram body.
+
+2012-10-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* aspects.ads: Type_Invariant'class is a valid aspect.
+	* sem_ch6.adb (Is_Public_Subprogram_For): with the exception of
+	initialization procedures, subprograms that do not come from
+	source are not public for the purpose of invariant checking.
+	* sem_ch13.adb (Build_Invariant_Procedure): Handle properly the
+	case of a non-private type in a package without a private part,
+	when the type inherits invariants from its ancestor.
+
+2012-10-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch3.adb (Build_Record_Invariant_Proc): new procedure to
+	generate a checking procedure for record types that may have
+	components whose types have type invariants declared.
+
+2012-10-01  Vincent Pucci  <pucci@adacore.com>
+
+	* system-solaris-sparcv9.ads, system-mingw.ads, system-vms_64.ads: Flag
+	Support_Atomic_Primitives set to True.
+
+2012-10-01  Robert Dewar  <dewar@adacore.com>
+
+	* impunit.adb: Ada.Locales is a language defined unit.
+
+2012-10-01  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* checks.adb (Apply_Parameter_Aliasing_Checks): Removed.
+	(Apply_Parameter_Aliasing_And_Validity_Checks): New routine.
+	(Apply_Parameter_Validity_Checks): Removed.
+	* checks.ads (Apply_Parameter_Aliasing_Checks): Removed.
+	(Apply_Parameter_Aliasing_And_Validity_Checks): New routine.
+	(Apply_Parameter_Validity_Checks): Removed.
+	* exp_ch6.adb (Expand_Call): Remove the generation of parameter
+	aliasing checks.
+	* freeze.adb: Remove with and use clauses for Validsw.
+	(Freeze_Entity): Update the guard and generation of aliasing
+	and scalar initialization checks for subprogram parameters.
+	* opt.ads: Add new flags Check_Aliasing_Of_Parameters and
+	Check_Validity_Of_Parameters along with comments on usage.
+	* sem_attr.adb (Analyze_Attribute): Pragma Overlaps_Storage is
+	no longer an Ada 2012 feature.
+	* sem_ch4.adb: Remove with and use clauses for Checks and Validsw.
+	(Analyze_Call): Remove the generation of aliasing checks for
+	subprogram parameters.
+	* sem_ch13.adb: Remove with and use clauses for Validsw.
+	(Analyze_Aspect_Specifications): Remove the generation of scalar
+	initialization checks.
+	* switch-c.adb (Scan_Front_End_Switches): Add processing for
+	-gnateA and -gnateV.
+	* usage.adb (Usage): Add information on switches -gnateA and
+	-gnateV. Remove information on validity switches 'l', 'L',
+	'v' and 'V'.
+	* validsw.adb (Reset_Validity_Check_Options): Remove the
+	reset of flags Validity_Check_Non_Overlapping_Params
+	and Validity_Check_Valid_Scalars_On_Params.
+	(Save_Validity_Check_Options): Remove the processing
+	for flags Validity_Check_Non_Overlapping_Params
+	and Validity_Check_Valid_Scalars_On_Params.
+	(Set_Validity_Check_Options): Remove the processing
+	for flags Validity_Check_Non_Overlapping_Params and
+	Validity_Check_Valid_Scalars_On_Params.
+	* validsw.ads: Remove flags Validity_Check_Non_Overlapping_Params
+	and Validity_Check_Valid_Scalars_On_Params along with their
+	comments on usage.
+
+2012-10-01  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch13.adb (Add_Invariants): Analyze the invariant expression
+	as an assertion expression.
+	* sem_ch3.adb / sem_ch3.ads (Preanalyze_Assert_Expression):
+	New procedure that wraps a call to Preanalyze_Spec_Expression
+	for assertion expressions, so that In_Assertion_Expr can be
+	properly adjusted.
+	* sem_prag.adb (Analyze_PPC_In_Decl_Part
+	Check_Precondition_Postcondition Preanalyze_CTC_Args): Call the
+	new Preanalyze_Assert_Expression.
+
+2012-10-01  Robert Dewar  <dewar@adacore.com>
+
+	* checks.ads: Minor reformatting.
+
+2012-10-01  Yannick Moy  <moy@adacore.com>
+
+	* types.ads, sem_prag.adb, sem.ads: Correct minor typos in comments.
+
+2012-10-01  Vincent Celier  <celier@adacore.com>
+
+	* make.adb (Scan_Make_Arg): Only test for "vP" of the option
+	includes at least 3 characters.
+	* gnatcmd.adb (GNATCmd): Ditto.
+
+2012-10-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch7.adb, sinfo.ads: Add comments.
+
+2012-10-01  Robert Dewar  <dewar@adacore.com>
+
+	* checks.adb: Remove reference to Enable_Overflow_Checks Use
+	Suppress_Options rather than Scope_Suppress.
+	* gnat1drv.adb (Adjust_Global_Switches): Handle new overflow
+	settings (Adjust_Global_Switches): Initialize Scope_Suppress
+	from Suppress_Options.
+	* opt.adb: Remove Enable_Overflow_Checks (use Suppress_Options
+	instead).
+	* opt.ads: Remove Overflow_Checks_Unsuppressed (not used)
+	Remove Enable_Overflow_Checks (use Suppress_Options instead)
+	Suppress_Options is now current setting (replaces Scope_Suppress).
+	* osint.adb (Initialize): Deal with initializing overflow
+	checking.
+	* par-prag.adb: Add dummy entry for pragma Overflow_Checks.
+	* sem.adb (Semantics): Save and restore In_Assertion_Expr Use
+	Suppress_Options instead of Scope_Suppress.
+	* sem.ads (In_Assertion_Expr): New flag (Scope_Suppress):
+	Removed, use Suppress_Options instead.
+	* sem_eval.adb (Compile_Time_Compare): Return Unknown in
+	preanalysis mode.
+	* sem_prag.adb (Process_Suppress_Unsuppress): Setting of
+	Overflow_Checks_Unsuppressed removed (not used anywhere!)
+	(Analyze_Pragma, case Check): Set In_Assertion_Expression
+	(Analyze_Pragma, case Overflow_Checks): Implement new pragma
+	* snames.ads-tmpl: Add names needed for handling pragma
+	Overflow_Checks
+	* switch-c.adb (Scan_Front_End_Switches) Handle -gnato? and
+	-gnato?? where ? is 0-3
+	* types.ads: Updates and fixes to comment on Suppress_Record.
+
+2012-10-01  Vincent Celier  <celier@adacore.com>
+
+	* prj-part.adb (Parse): Remove incorrect comment about checking
+	imported non extending projects from and "extending all"
+	one. Minor correction.
+
+2012-10-01  Robert Dewar  <dewar@adacore.com>
+
+	* make.adb, exp_ch3.adb: Minor reformatting.
+
+2012-10-01  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* validsw.adb (Save_Validity_Check_Options): Do not set
+	Validity_Check_Non_Overlapping_Params and
+	Validity_Check_Valid_Scalars_On_Params when -gnatVa is present
+	because the related checks are deemed too aggressive.
+
+2012-10-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.ads sem_util.adb (Check_Internal_Protected_Use):
+	reject use of protected procedure or entry within the body of
+	a protected function of the same protected type, when usage is
+	a call, an actual in an instantiation, a or prefix of 'Access.
+	* sem_ch8.adb (Analyze_Subprogram_Renaming): Verify that target
+	object in renaming of protected procedure is a variable, and
+	apply Check_Internal_Protected_Use.
+	* sem_res.adb (Analyze_Call, Analyze_Entry_Call): apply
+	Check_Internal_Protected_Use rather than on-line code.
+	* sem_attr.adb (Analyze_Access_Attribute): Verify that target
+	object in accsss to protected procedure is a variable, and apply
+	Check_Internal_Protected_Use.
+
+2012-10-01  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch4.adb (Find_Equality_Types.Try_One_Interp): Exclude the
+	predefined interpretation from consideration if it's for a "/="
+	operator of a tagged type. This will allow Analyze_Equality_Op to
+	rewrite the "/=" as a logical negation of a call to the appropriate
+	dispatching equality function. This needs to be done during
+	analysis rather than expansion for the benefit of ASIS, which
+	otherwise gets the unresolved N_Op_Ne operator from Standard.
+
+2012-10-01  Thomas Quinot  <quinot@adacore.com>
+
+	* gnatcmd.adb, make.adb (Scan_Make_Arg, Inspect_Switches): Recognize
+	and reject an invalid parameter passed to -vP.
+
+2012-10-01  Yannick Moy  <moy@adacore.com>
+
+	* sem_warn.adb (Check_Infinite_Loop_Warning/Test_Ref): Improve
+	the detection of modifications to the loop variable by noting
+	that, if the type of variable is elementary and the condition
+	does not contain a function call, then the condition cannot be
+	modified by side-effects from a procedure call.
+
+2012-10-01  Robert Dewar  <dewar@adacore.com>
+
+	* checks.adb: Add comments.
+
+2012-10-01  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): Improve condition catching
+	never-ending recursion. The previous condition erroneously disabled
+	silently the expansion of the class-wide interface object
+	initialization in cases not involving the recursion.
+
+2012-10-01  Thomas Quinot  <quinot@adacore.com>
+
+	* make.adb: Minor documentation fix: error messages are sent to
+	stderr, not stdout.
+
+2012-10-01  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* checks.ads, checks.adb (Apply_Parameter_Aliasing_Checks): New routine.
+	(Apply_Parameter_Validity_Checks): New routines.
+	* exp_ch6.adb (Expand_Call): Add aliasing checks to detect
+	overlapping objects.
+	* freeze.adb: Add with and use clauses for Checks and Validsw.
+	(Freeze_Entity): Add checks to detect proper initialization
+	of scalars.
+	* sem_ch4.adb: Add with and use clauses for Checks and Validsw.
+	(Analyze_Call): Add aliasing checks to detect overlapping objects.
+	* sem_ch13.adb: Add with and use clauses for Validsw.
+	(Analyze_Aspect_Specifications): Add checks to detect proper
+	initialization of scalars.
+	* sem_prag.adb (Chain_PPC): Correct the extraction of the
+	subprogram name.
+	* sem_util.adb (Is_Object_Reference): Attribute 'Result now
+	produces an object.
+	* usage.adb (Usage): Add usage lines for validity switches 'l',
+	'L', 'v' and 'V'.
+	* validsw.adb (Reset_Validity_Check_Options): Include
+	processing for flags Validity_Check_Non_Overlapping_Params and
+	Validity_Check_Valid_Scalars_On_Params. Code reformatting.
+	(Save_Validity_Check_Options): Include processing
+	for flags Validity_Check_Non_Overlapping_Params
+	and Validity_Check_Valid_Scalars_On_Params.
+	(Set_Validity_Check_Options): Add processing for validity switches
+	'a', 'l', 'L', 'n', 'v' and 'V'. Code reformatting.
+	* validsw.ads: Add new flags Validity_Check_Non_Overlapping_Params
+	and Validity_Check_Valid_Scalars_On_Params along with comments
+	on usage.
+
+2012-10-01  Thomas Quinot  <quinot@adacore.com>
+
+	* namet.ads, xsnamest.adb, prj-env.adb, sem_warn.adb,
+	errout.ads: Minor reformatting.
+	* prj-part.adb: Add comment.
+
+2012-10-01  Robert Dewar  <dewar@adacore.com>
+
+	* sinfo.ads, exp_aggr.adb, sem_ch13.adb: Minor reformatting.
+
+2012-10-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb (Resolve_Array_Aggregate): Handle properly
+	component associations given by subtypes that have static
+	predicates.  Improve error message for overlapping ranges in
+	array aggregates.
+
+2012-10-01  Pascal Obry  <obry@adacore.com>
+
+	* snames.ads-tmpl (Name_Link_Lib_Subdir): New constant.
+
+2012-10-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch9.adb (Analyze_Requeue): The target of a requeue
+	statement on a protected entry must be a variable. This is part
+	of AI05-0225.
+
+2012-09-26  Ian Lance Taylor  <iant@google.com>
+
+	* gcc-interface/Makefile.in (LIBBACKTRACE): New variable.
+	(LIBS): Add $(LIBBACKTRACE).
+	(LIBDEPS): Add $(LIBBACKTRACE).
+	(TOOLS_LIBS): Add ../../../libbacktrace/.libs/libbacktrace.a.
+
 2012-09-10  Diego Novillo  <dnovillo@google.com>
 
 	* gcc-interface/decl.c (build_subst_list): Adjust call to VEC_safe_push.

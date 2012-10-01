@@ -1655,11 +1655,12 @@ package body Osint is
       Src_Search_Directories.Init;
       Lib_Search_Directories.Init;
 
-      --  Start off by setting all suppress options to False, these will
-      --  be reset later (turning some on if -gnato is not specified, and
-      --  turning all of them on if -gnatp is specified).
+      --  Start off by setting all suppress options, to False. The special
+      --  overflow fields are set to Not_Set (they will be set by -gnatp, or
+      --  by -gnato, or, if neither of these appear, in Adjust_Global_Switches
+      --  in Gnat1drv.
 
-      Suppress_Options := ((others => False), Check_All, Check_All);
+      Suppress_Options := ((others => False), Not_Set, Not_Set);
 
       --  Reserve the first slot in the search paths table. This is the
       --  directory of the main source file or main library file and is filled

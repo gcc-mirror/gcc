@@ -167,6 +167,11 @@ begin
    Write_Switch_Char ("Dnn");
    Write_Line ("Debug expanded generated code (max line length = nn)");
 
+   --  Line for -gnateA switch
+
+   Write_Switch_Char ("eA");
+   Write_Line ("Aliasing checks on subprogram parameters");
+
    --  Line for -gnatec switch
 
    Write_Switch_Char ("ec=?");
@@ -226,6 +231,11 @@ begin
 
    Write_Switch_Char ("eS");
    Write_Line ("Generate SCO (Source Coverage Obligation) information");
+
+   --  Line for -gnateV switch
+
+   Write_Switch_Char ("eV");
+   Write_Line ("Validity checks on subprogram parameters");
 
    --  Line for -gnatE switch
 

@@ -1,8 +1,8 @@
 /* Test that we generate xorps when the result is used in FP math.  */
 /* { dg-do compile } */
 /* { dg-options "-O -msse2 -mno-sse3" } */
-/* { dg-final { scan-assembler "xorps\[ \t\]" { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-not "pxor" { xfail *-*-* } } } */
+/* { dg-final { scan-assembler "xorps\[ \t\]" } } */
+/* { dg-final { scan-assembler-not "pxor" } } */
 
 #define vector __attribute__ ((vector_size (16)))
 

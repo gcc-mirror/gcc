@@ -50,8 +50,11 @@
 #   cpu_defines_dir        location of cpu_defines.h
 #                          defaults to generic.
 #
-#   cpu_opt_ext_random     path name of random.h containing CPU-specific
+#   cpu_opt_bits_random    path name of random.h containing CPU-specific
 #                          optimizations
+#
+#   cpu_opt_ext_random     path name of random.h containing CPU-specific
+#                          optimizations for extensions
 #
 #   error_constants_dir    location of error_constants.h
 #                          defaults to os/generic.
@@ -195,6 +198,10 @@ cpu_opt_dir=cpu/generic/opt
 cpu_opt_ext_random=${cpu_opt_dir}/ext/opt_random.h
 test -f ${glibcxx_srcdir}/config/${cpu_opt_ext_random} ||
 cpu_opt_ext_random=cpu/generic/opt/ext/opt_random.h
+
+cpu_opt_bits_random=${cpu_opt_dir}/bits/opt_random.h
+test -f ${glibcxx_srcdir}/config/${cpu_opt_ext_random} ||
+cpu_opt_ext_random=cpu/generic/opt/bits/opt_random.h
 
 
 # Set any OS-dependent bits.

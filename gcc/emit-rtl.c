@@ -5764,11 +5764,10 @@ init_emit_once (void)
       FCONST1(mode).data.high = 0;
       FCONST1(mode).data.low = 0;
       FCONST1(mode).mode = mode;
-      lshift_double (1, 0, GET_MODE_FBIT (mode),
-                     HOST_BITS_PER_DOUBLE_INT,
-                     &FCONST1(mode).data.low,
-		     &FCONST1(mode).data.high,
-                     SIGNED_FIXED_POINT_MODE_P (mode));
+      FCONST1(mode).data
+	= double_int_one.lshift (GET_MODE_FBIT (mode),
+				 HOST_BITS_PER_DOUBLE_INT,
+				 SIGNED_FIXED_POINT_MODE_P (mode));
       const_tiny_rtx[1][(int) mode] = CONST_FIXED_FROM_FIXED_VALUE (
 				      FCONST1 (mode), mode);
     }
@@ -5787,11 +5786,10 @@ init_emit_once (void)
       FCONST1(mode).data.high = 0;
       FCONST1(mode).data.low = 0;
       FCONST1(mode).mode = mode;
-      lshift_double (1, 0, GET_MODE_FBIT (mode),
-                     HOST_BITS_PER_DOUBLE_INT,
-                     &FCONST1(mode).data.low,
-		     &FCONST1(mode).data.high,
-                     SIGNED_FIXED_POINT_MODE_P (mode));
+      FCONST1(mode).data
+	= double_int_one.lshift (GET_MODE_FBIT (mode),
+				 HOST_BITS_PER_DOUBLE_INT,
+				 SIGNED_FIXED_POINT_MODE_P (mode));
       const_tiny_rtx[1][(int) mode] = CONST_FIXED_FROM_FIXED_VALUE (
 				      FCONST1 (mode), mode);
     }

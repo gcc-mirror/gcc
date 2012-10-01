@@ -2,6 +2,7 @@
 /* { dg-do run } */
 /* { dg-options "-msse2 -mfpmath=sse" } */
 /* { dg-require-effective-target sse2 } */
+/* { dg-require-effective-target large_long_double } */
 
 #include "sse2-check.h"
 

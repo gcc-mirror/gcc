@@ -144,15 +144,12 @@ avr_log_set_caller_f (const char *caller)
 static unsigned
 avr_double_int_pop_digit (double_int *cst, unsigned base)
 {
-  unsigned HOST_WIDE_INT resl, reml;
-  HOST_WIDE_INT resh, remh;
+  double_int drem;
 
-  div_and_round_double (FLOOR_DIV_EXPR, true, cst->low, cst->high, base, 0,
-			&resl, &resh, &reml, &remh);
-  cst->high = resh;
-  cst->low = resl;
+  *cst = cst->udivmod (double_int::from_uhwi (base), (int) FLOOR_DIV_EXPR,
+                       &drem);
 
-  return reml;
+  return (unsigned) drem.to_uhwi();
 }
 
 

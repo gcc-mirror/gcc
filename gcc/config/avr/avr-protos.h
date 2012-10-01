@@ -75,8 +75,6 @@ extern const char *avr_out_ashlpsi3 (rtx, rtx*, int*);
 extern const char *avr_out_ashrpsi3 (rtx, rtx*, int*);
 extern const char *avr_out_lshrpsi3 (rtx, rtx*, int*);
 
-extern const char* avr_load_lpm (rtx, rtx*, int*);
-
 extern bool avr_rotate_bytes (rtx operands[]);
 
 extern const char* avr_out_fract (rtx, rtx[], bool, int*);
@@ -104,6 +102,7 @@ extern int adjust_insn_length (rtx insn, int len);
 extern const char* output_reload_inhi (rtx*, rtx, int*);
 extern const char* output_reload_insisf (rtx*, rtx, int*);
 extern const char* avr_out_reload_inpsi (rtx*, rtx, int*);
+extern const char* avr_out_lpm (rtx, rtx*, int*);
 extern void notice_update_cc (rtx body, rtx insn);
 extern int reg_unused_after (rtx insn, rtx reg);
 extern int _reg_unused_after (rtx insn, rtx reg);

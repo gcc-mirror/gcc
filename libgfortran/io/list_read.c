@@ -199,9 +199,16 @@ next_char (st_parameter_dt *dtp)
 
   if (is_internal_unit (dtp))
     {
-      char cc;
-      length = sread (dtp->u.p.current_unit->s, &cc, 1);
-      c = cc;
+      /* Check for kind=4 internal unit.  */
+      if (dtp->common.unit)
+       length = sread (dtp->u.p.current_unit->s, &c, sizeof (gfc_char4_t));
+      else
+       {
+         char cc;
+         length = sread (dtp->u.p.current_unit->s, &cc, 1);
+         c = cc;
+       }
+
       if (length < 0)
 	{
 	  generate_error (&dtp->common, LIBERROR_OS, NULL);

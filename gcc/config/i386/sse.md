@@ -6264,10 +6264,13 @@
 (define_expand "<code><mode>3"
   [(set (match_operand:VI 0 "register_operand")
 	(any_logic:VI
-	  (match_operand:VI 1 "nonimmediate_operand")
-	  (match_operand:VI 2 "nonimmediate_operand")))]
+	  (match_operand:VI 1 "nonimmediate_or_const_vector_operand")
+	  (match_operand:VI 2 "nonimmediate_or_const_vector_operand")))]
   "TARGET_SSE"
-  "ix86_fixup_binary_operands_no_copy (<CODE>, <MODE>mode, operands);")
+{
+  ix86_expand_vector_logical_operator (<CODE>, <MODE>mode, operands);
+  DONE;
+})
 
 (define_insn "*<code><mode>3"
   [(set (match_operand:VI 0 "register_operand" "=x,x")

@@ -1,7 +1,7 @@
 // Multiset implementation -*- C++ -*-
 
 // Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
-// 2011 Free Software Foundation, Inc.
+// 2011, 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -392,6 +392,54 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       { _M_t.swap(__x._M_t); }
 
       // insert/erase
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      /**
+       *  @brief Builds and inserts an element into the %multiset.
+       *  @param  __args  Arguments used to generate the element instance to be
+       *                 inserted.
+       *  @return An iterator that points to the inserted element.
+       *
+       *  This function inserts an element into the %multiset.  Contrary
+       *  to a std::set the %multiset does not rely on unique keys and thus
+       *  multiple copies of the same element can be inserted.
+       *
+       *  Insertion requires logarithmic time.
+       */
+      template<typename... _Args>
+	iterator
+	emplace(_Args&&... __args)
+	{ return _M_t._M_emplace_equal(std::forward<_Args>(__args)...); }
+
+      /**
+       *  @brief Builds and inserts an element into the %multiset.
+       *  @param  __pos  An iterator that serves as a hint as to where the
+       *                element should be inserted.
+       *  @param  __args  Arguments used to generate the element instance to be
+       *                 inserted.
+       *  @return An iterator that points to the inserted element.
+       *
+       *  This function inserts an element into the %multiset.  Contrary
+       *  to a std::set the %multiset does not rely on unique keys and thus
+       *  multiple copies of the same element can be inserted.
+       *
+       *  Note that the first parameter is only a hint and can potentially
+       *  improve the performance of the insertion process.  A bad hint would
+       *  cause no gains in efficiency.
+       *
+       *  See http://gcc.gnu.org/onlinedocs/libstdc++/manual/bk01pt07ch17.html
+       *  for more on @a hinting.
+       *
+       *  Insertion requires logarithmic time (if the hint is not taken).
+       */
+      template<typename... _Args>
+	iterator
+	emplace_hint(const_iterator __pos, _Args&&... __args)
+	{
+	  return _M_t._M_emplace_hint_equal(__pos,
+					    std::forward<_Args>(__args)...);
+	}
+#endif
+
       /**
        *  @brief Inserts an element into the %multiset.
        *  @param  __x  Element to be inserted.

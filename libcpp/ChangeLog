@@ -1,3 +1,22 @@
+2012-09-25  Dehao Chen  <dehao@google.com>
+
+	PR middle-end/54704
+	* line-map.c (location_adhoc_data_hash): Fix the hash function.
+
+2012-09-25  Dehao Chen  <dehao@google.com>
+
+	PR middle-end/54645
+	* include/line-map.h (location_adhoc_data): Move location_adhoc_data
+	into GC.
+	(location_adhoc_data_map): Likewise.
+	(line_maps): Likewise.
+	(rebuild_location_adhoc_htab): New Function.
+	* line-map.c (+rebuild_location_adhoc_htab): new Funcion.
+	(get_combined_adhoc_loc): Move location_adhoc_data into GC.
+	(location_adhoc_data_fini): Likewise.
+	(linemap_init): Likewise.
+	(location_adhoc_data_init): Remove Function.
+
 2012-09-19  Dehao Chen  <dehao@google.com>
 
 	* include/line-map.h (MAX_SOURCE_LOCATION): New value.

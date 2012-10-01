@@ -11,6 +11,7 @@ import (
 	"os"
 	"runtime"
 	"runtime/pprof"
+	"time"
 	"unsafe"
 )
 
@@ -30,6 +31,7 @@ var (
 	heap        *Object
 	calls       [20]int
 	numobjects  int64
+	memstats    runtime.MemStats
 )
 
 func buildHeap() {
@@ -55,10 +57,10 @@ func buildTree(objsize, size float64, depth int) (*Object, float64) {
 
 func gc() {
 	runtime.GC()
-	runtime.UpdateMemStats()
-	pause := runtime.MemStats.PauseTotalNs
-	inuse := runtime.MemStats.Alloc
-	free := runtime.MemStats.TotalAlloc - inuse
+	runtime.ReadMemStats(&memstats)
+	pause := memstats.PauseTotalNs
+	inuse := memstats.Alloc
+	free := memstats.TotalAlloc - inuse
 	fmt.Printf("gc pause: %8.3f ms; collect: %8.0f MB; heapsize: %8.0f MB\n",
 		float64(pause-lastPauseNs)/1e6,
 		float64(free-lastFree)/1048576,
@@ -71,9 +73,9 @@ func main() {
 	flag.Parse()
 	buildHeap()
 	runtime.GOMAXPROCS(*cpus)
-	runtime.UpdateMemStats()
-	lastPauseNs = runtime.MemStats.PauseTotalNs
-	lastFree = runtime.MemStats.TotalAlloc - runtime.MemStats.Alloc
+	runtime.ReadMemStats(&memstats)
+	lastPauseNs = memstats.PauseTotalNs
+	lastFree = memstats.TotalAlloc - memstats.Alloc
 	if *cpuprofile != "" {
 		f, err := os.Create(*cpuprofile)
 		if err != nil {
@@ -82,7 +84,12 @@ func main() {
 		pprof.StartCPUProfile(f)
 		defer pprof.StopCPUProfile()
 	}
-	for i := 0; i < 10; i++ {
+	const N = 10
+	var t0 time.Time
+	for i := 0; i < N; i++ {
+		t0 = time.Now()
 		gc()
 	}
+	// Standard gotest benchmark output, collected by build dashboard.
+	gcstats("BenchmarkTree2", N, time.Now().Sub(t0))
 }

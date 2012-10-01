@@ -82,11 +82,6 @@ c++locale.cc: ${glibcxx_srcdir}/$(CLOCALE_CC)
 basic_file.cc: ${glibcxx_srcdir}/$(BASIC_FILE_CC)
 	$(LN_S) ${glibcxx_srcdir}/$(BASIC_FILE_CC) ./$@ || true
 
-if ENABLE_PARALLEL
-parallel_sources = parallel_settings.cc
-else
-parallel_sources =
-endif
 
 if ENABLE_EXTERN_TEMPLATE
 XTEMPLATE_FLAGS = -fno-implicit-templates
@@ -108,6 +103,8 @@ XTEMPLATE_FLAGS =
 inst_sources =
 endif
 
+parallel_sources = parallel_settings.cc
+
 # Sources present in the src directory, always present.
 sources = \
 	bitmap_allocator.cc \
@@ -124,6 +121,10 @@ sources = \
 	ios_init.cc \
 	ios_locale.cc \
 	list.cc \
+	list-aux.cc \
+	list-aux-2.cc \
+	list_associated.cc \
+	list_associated-2.cc \
 	locale.cc \
 	locale_init.cc \
 	locale_facets.cc \
@@ -160,7 +161,7 @@ concept-inst.o: concept-inst.cc
 	$(CXXCOMPILE) -D_GLIBCXX_CONCEPT_CHECKS -fimplicit-templates -c $<
 
 # Use special rules for parallel mode compilation.
-PARALLEL_FLAGS = -fopenmp -D_GLIBCXX_PARALLEL -I$(glibcxx_builddir)/../libgomp
+PARALLEL_FLAGS = -D_GLIBCXX_PARALLEL 
 parallel_settings.lo: parallel_settings.cc
 	$(LTCXXCOMPILE) $(PARALLEL_FLAGS) -c $<
 parallel_settings.o: parallel_settings.cc
@@ -202,14 +203,14 @@ AM_MAKEFLAGS = \
 # placed after --tag CXX lest things CXX undo the affect of
 # disable-shared.
 
-# 2) Need to explicitly set LTCXXCOMPILE so that AM_CXXFLAGS is
+# 2) Need to explicitly set LTCXXCOMPILE so that EXTRA_CXX_FLAGS is
 # last. (That way, things like -O2 passed down from the toplevel can
 # be overridden by --enable-debug.)
 LTCXXCOMPILE = \
 	$(LIBTOOL) --tag CXX --tag disable-shared \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=compile $(CXX) $(TOPLEVEL_INCLUDES) \
-	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
+	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(EXTRA_CXX_FLAGS)
 
 LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
 

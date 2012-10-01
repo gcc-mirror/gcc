@@ -713,5 +713,6 @@ extern void unroll_and_peel_loops (int);
 extern void doloop_optimize_loops (void);
 extern void move_loop_invariants (void);
 extern bool finite_loop_p (struct loop *);
+extern void scale_loop_profile (struct loop *loop, int scale, int iteration_bound);
 
 #endif /* GCC_CFGLOOP_H */

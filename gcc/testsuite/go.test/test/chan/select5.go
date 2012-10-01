@@ -1,13 +1,14 @@
-// $G $D/$F.go && $L $F.$A && ./$A.out >tmp.go &&
-// $G tmp.go && $L tmp.$A && ./$A.out || echo BUG: select5
-// rm -f tmp.go
+// runoutput
 
 // Copyright 2011 The Go Authors.  All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
 // Generate test of channel operations and simple selects.
-// Only doing one real send or receive at a time, but phrased
+// The output of this program is compiled and run to do the
+// actual test.
+
+// Each test does only one real send or receive at a time, but phrased
 // in various ways that the compiler may or may not rewrite
 // into simpler expressions.
 

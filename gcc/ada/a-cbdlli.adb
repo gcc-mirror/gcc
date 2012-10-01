@@ -902,7 +902,7 @@ package body Ada.Containers.Bounded_Doubly_Linked_Lists is
 
          procedure Sort (Front, Back : Count_Type) is
             Pivot : constant Count_Type :=
-                      (if Front = 0 then Container.First else N (Front).Next);
+              (if Front = 0 then Container.First else N (Front).Next);
          begin
             if Pivot /= Back then
                Partition (Pivot, Back);
@@ -1160,9 +1160,9 @@ package body Ada.Containers.Bounded_Doubly_Linked_Lists is
       --  for a reverse iterator, Container.Last is the beginning.
 
       return It : constant Iterator :=
-                    Iterator'(Limited_Controlled with
-                                Container => Container'Unrestricted_Access,
-                                Node      => 0)
+        Iterator'(Limited_Controlled with
+                    Container => Container'Unrestricted_Access,
+                    Node      => 0)
       do
          B := B + 1;
       end return;
@@ -1209,9 +1209,9 @@ package body Ada.Containers.Bounded_Doubly_Linked_Lists is
       --  is a forward or reverse iteration.
 
       return It : constant Iterator :=
-                    Iterator'(Limited_Controlled with
-                                Container => Container'Unrestricted_Access,
-                                Node      => Start.Node)
+        Iterator'(Limited_Controlled with
+                    Container => Container'Unrestricted_Access,
+                    Node      => Start.Node)
       do
          B := B + 1;
       end return;

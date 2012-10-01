@@ -1,3 +1,249 @@
+2012-10-01  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR target/54087
+	* gcc.dg/pr54087.c:  New testcase for atomic_sub -> atomic_add when
+	atomic_sub fails.
+
+2012-10-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/54457
+	* gcc.target/i386/pr54457.c: New test.
+
+2012-10-01  Ulrich Weigand  <ulrich.weigand@linaro.org>
+
+	* gcc.dg/lower-subreg-1.c: Disable on arm*-*-* targets.
+
+2012-10-01  Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.target/i386/vect-rebuild.c: New testcase.
+
+2012-09-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pad-10.c (foo2): Return x - z.
+
+2012-09-30  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc.target/mips/pr37362.c: Fix target selector.
+
+2012-09-30  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/54083
+	* gcc.dg/torture/pr53922.c: Skip on 32-bit hppa-*-hpux*.
+
+2012-09-30  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* gcc.dg/ucnid-8.c: Update line number.
+	* gcc.dg/torture/pr51106-2.c: Likewise.
+
+2012-09-30  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54667
+	* gfortran.dg/c_funloc_tests_6.f90: Modified error message.
+	* gfortran.dg/c_f_pointer_shape_test.f90: Ditto.
+	* gfortran.dg/c_f_pointer_tests_5.f90: New.
+
+2012-09-30  Janus Weil  <janus@gcc.gnu.org>
+
+	* gfortran.dg/allocate_derived_1.f90: Re-enable class array checks,
+	partially reverting r170092.
+	* gfortran.dg/class_7.f03: Ditto.
+	* gfortran.dg/coarray_14.f90: Ditto.
+	* gfortran.dg/typebound_proc_13.f03: Ditto.
+
+2012-09-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54738
+	* g++.dg/cpp0x/sfinae42.C: New.
+
+2012-09-29  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/405-dlmzb-strlen-1.c: Skip on AIX.
+	* gcc.target/powerpc/440-dlmzb-strlen-1.c: Same.
+	* gcc.dg/ucnid-5.c: Remove XFAIL on AIX.
+	* gcc.dg/pr42629.c: XFAIL on AIX.
+	* gcc.dg/pr47684.c: Same.
+	* gcc.dg/pr43670.c: Same.
+	* gcc.dg/pr42916.c: Same.
+	* gcc.dg/pr45449.c: Same.
+	* gcc.dg/pr50017.c: Same.
+	* gcc.dg/pr42728.c: Same.
+	* gcc.dg/pr47881.c: Same.
+	* gcc.dg/pr44023.c: Same.
+	* gcc.dg/pr41345.c: Same.
+	* gcc.dg/pr42630.c: Same.
+	* gcc.dg/pr44971.c: Same.
+	* gcc.dg/pr46771.c: Same.
+	* gcc.dg/ucnid-8.c: Same.
+	* gcc.dg/ucnid-10.c: Same.
+	* gcc.dg/ucnid-13.c: Same.
+	* gcc.dg/torture/pr51106-2.c: Same.
+	* gcc.dg/pr48768.c: Same.
+	* gcc.dg/pr42631.c: Same.
+	* gcc.dg/pr43084.c: Same.
+	* gcc.dg/ucnid-7.c: Same.
+	* gcc.dg/pr42889.c: Same.
+	* gcc.dg/pr41241.c: Same.
+	* gcc.dg/pr42719.c: Same.
+	* g++.dg/debug/pr46583.C: Same.
+	* g++.dg/debug/pr47106.C: Same.
+	* g++.dg/opt/pr48549.C: Same.
+	* g++.dg/other/pr42685.C: Same.
+	* c-c++-common/pr43942.c: Same.
+
+2012-09-29  Ian Lance Taylor  <iant@google.com>
+
+	* go.test/go-test.exp: Update for latest version of Go testsuite.
+
+2012-09-29  Thomas König  <tkoenig@gcc.gnu.org>
+
+	PR fortran/52724
+	* gfortran.dg/internal_readwrite_3.f90:  New test.
+
+2012-09-28  Dodji Seketeli  <dodji@redhat.com>
+
+	* g++.dg/warn/Wunused-local-typedefs-3.C: Move the c++-only test
+	gcc/testsuite/c-c++-common/Wunused-local-typedefs-2.c to here.
+
+	PR c++/54372 - unused attribute inactive on dependant entities
+	* c-c++-common/Wunused-local-typedefs-2.c: New test.
+
+2012-09-25  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/29028 - Missed unused warning on using declaration
+	* g++.dg/warn/Wunused-var-18.C: New test.
+
+2012-09-25  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/53551 - -Wunused-local-typedefs misses uses
+	* g++.dg/warn/Wunused-local-typedefs-2.C: New test.
+
+2012-09-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/54716
+	* gcc.target/i386/xorps-sse2.c: Remove xfails.
+
+	PR tree-optimization/54713
+	* gcc.c-torture/compile/pr54713-1.c: New test.
+	* gcc.c-torture/compile/pr54713-2.c: New test.
+	* gcc.c-torture/compile/pr54713-3.c: New test.
+
+2012-09-27  Janis Johnson  <janisjo@codesourcery.com>
+
+	* gcc.target/arm/unsigned-extend-1.c: Omit -march option.
+
+2012-09-27  Ulrich Weigand  <ulrich.weigand@linaro.org>
+
+	* gcc.dg/lower-subreg-1.c: Disable on arm-*-* targets.
+
+2012-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/54703
+	* gcc.target/i386/pr54703.c: New test.
+
+2012-09-27  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/54709
+	* gcc.dg/lto/pr54709_0.c: New testcase.
+	* gcc.dg/lto/pr54709_1.c: Likewise.
+
+2012-09-26  Janis Johnson  <janisjo@codesourcery.com>
+
+	* gcc.target/arm/div64-unwinding.c: XFAIL for GNU/Linux.
+
+	* gcc.target/arm/mmx-2.c: Specify -mcpu=iwmmxt.
+
+	* gcc.target/arm/combine-movs.c: Use effective target arm_thumb2.
+
+	* gcc.target/arm/pr42879.c: Handle big-endian.
+
+2012-09-26  Steve Ellcey  <sellcey@mips.com>
+
+	PR c/37303
+	* gcc.dg/pr37303.c: Check for rdata or rodata.
+
+2012-09-26  Christophe Lyon <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/builtin-bswap16-1.c: New testcase.
+
+2012-09-25  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/51274
+	PR target/53087
+	* gcc.target/powerpc/ppc-ne0-1.c: New.
+
+2012-09-25  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54089
+	* gcc.target/sh/pr54089-1.c (test_15, test_16, test_17, test_18,
+	test_19, test_20, test_21, test_22, test_23): New functions.
+	* gcc.target/sh/pr54089-4.c: New.
+	* gcc.target/sh/pr54089-5.c: New.
+	* gcc.target/sh/pr54089-6.c: New.
+	* gcc.target/sh/pr54089-7.c: New.
+
+2012-09-25  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/54625
+	* gcc.dg/lto/pr54702_0.c: New testcase.
+	* gcc.dg/lto/pr54702_1.c: Likewise.
+	* gcc.dg/lto/pr54625-1_0.c: Likewise.
+	* gcc.dg/lto/pr54625-1_1.C: Likewise.
+	* gcc.dg/lto/pr54625-2_0.c: Likewise.
+	* gcc.dg/lto/pr54625-2_1.C: Likewise.
+
+2012-09-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54526
+	* g++.dg/cpp0x/parse2.C: New.
+	* g++.dg/parse/error11.C: Adjust.
+	* g++.dg/parse/error12.C: Likewise.
+
+2012-09-25  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	* gcc.target/i386/20030217-1.c: Added check for
+	large_long_double effective target.
+	* gcc.target/i386/387-3.c: Likewise.
+	* gcc.target/i386/387-4.c: Likewise.
+	* gcc.target/i386/pr36578-1.c: Likewise.
+	* gcc.target/i386/excess-precision-1.c: Added new code for the case
+	when long double size is equal double size.
+	* gcc.target/i386/excess-precision-1.c: Likewise.
+	* gcc.target/i386/pr36578-2.c: Likewise.
+	* gcc.target/i386/20030217-2.c: New testcase.
+
+2012-09-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/54676
+	* gcc.dg/pr54676.c: New test.
+
+2012-09-25  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/53663
+	* gcc.dg/torture/pr53663-1.c: New testcase.
+	* gcc.dg/torture/pr53663-2.c: Likewise.
+	* gcc.dg/torture/pr53663-3.c: Likewise.
+
+2012-09-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr50725.c: Change 'long' to 'long long'.
+
+2012-09-24  Janis Johnson  <janisjo@codesourcery.com>
+
+	* lib/target-supports-dg.exp (dg-require-effective-target,
+	dg-skip-if, dg-xfail-if, dg-xfail-run-if, dg-shouldfail): Call
+	dg-process-target-1 instead of dg-process-target.
+	(dg-process-target-1): Rename from dg-process-target.
+	(dg-process-target): New.
+
+2012-09-24  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/54684
+	* g++.dg/torture/pr54684.C: New testcase.
+
+2012-09-24  Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.dg/tree-ssa/forwprop-23.c: New testcase.
+
 2012-09-24  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/52173
@@ -481,7 +727,7 @@
 
 2012-09-10  Marc Glisse  <marc.glisse@inria.fr>
 
-        * gcc.dg/tree-ssa/forwprop-20.c: New testcase.
+	* gcc.dg/tree-ssa/forwprop-20.c: New testcase.
 
 2012-09-10  Richard Guenther  <rguenther@suse.de>
 

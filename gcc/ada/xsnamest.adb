@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -120,6 +120,10 @@ procedure XSnamesT is
       --  Build the definition for the current macro (Names are integers
       --  offset to N, while other items are enumeration values).
 
+      ----------------
+      -- Make_Value --
+      ----------------
+
       function Make_Value (V : Integer) return String is
       begin
          if S = Name then
@@ -128,6 +132,8 @@ procedure XSnamesT is
             return "" & V;
          end if;
       end Make_Value;
+
+   --  Start of processing for Output_Header_Line
 
    begin
       --  Skip all the #define for S-prefixed symbols in the header.
@@ -223,10 +229,11 @@ begin
             Output_Header_Line (Prag);
          end if;
       else
-         Oval := Lpad (V (Val), 3, '0');
 
          if Match (Name0, "Last_") then
             Oval := Lpad (V (Val - 1), 3, '0');
+         else
+            Oval := Lpad (V (Val), 3, '0');
          end if;
 
          Put_Line

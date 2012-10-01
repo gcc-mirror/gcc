@@ -4062,7 +4062,6 @@ package body Sem_Attr is
       ----------------------
 
       when Attribute_Overlaps_Storage =>
-         Check_Ada_2012_Attribute;
          Check_E1;
 
          --  Both arguments must be objects of any type
@@ -9003,6 +9002,21 @@ package body Sem_Attr is
                then
                   Accessibility_Message;
                   return;
+
+               --  AI05-0225: If the context is not an access to protected
+               --  function, the prefix must be a variable, given that it may
+               --  be used subsequently in a protected call.
+
+               elsif Nkind (P) = N_Selected_Component
+                 and then not Is_Variable (Prefix (P))
+                 and then Ekind (Entity (Selector_Name (P))) /= E_Function
+               then
+                  Error_Msg_N
+                    ("target object of access to protected procedure "
+                      & "must be variable", N);
+
+               elsif Is_Entity_Name (P) then
+                  Check_Internal_Protected_Use (N, Entity (P));
                end if;
 
             elsif Ekind_In (Btyp, E_Access_Subprogram_Type,

@@ -1,3 +1,23 @@
+2012-09-29  Ian Lance Taylor  <iant@google.com>
+
+	PR other/54749
+	* fileline.c (fileline_initialize): Pass errnum as -1 when
+	reporting that we could not read executable information after a
+	previous failure.
+
+2012-09-27  Ian Lance Taylor  <iant@google.com>
+
+	PR bootstrap/54732
+	* configure.ac: Add no-dependencies to AM_INIT_AUTOMAKE.
+	* Makefile.am: Add dependencies for all objects.
+	* configure, aclocal.m4, Makefile.in: Rebuild.
+
+2012-09-27  Ian Lance Taylor  <iant@google.com>
+
+	PR other/54726
+	* elf.c (backtrace_initialize): Set *fileln_fn, not
+	state->fileln_fn.
+
 2012-09-19  Ian Lance Taylor  <iant@google.com>
 
 	* configure.ac: Only use GCC_CHECK_UNWIND_GETIPINFO when compiled

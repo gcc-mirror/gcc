@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -48,7 +48,7 @@ use type System.Direct_IO.Count;
 package body Ada.Direct_IO is
 
    Zeroes : constant System.Storage_Elements.Storage_Array :=
-              (1 .. System.Storage_Elements.Storage_Offset (Bytes) => 0);
+     (1 .. System.Storage_Elements.Storage_Offset (Bytes) => 0);
    --  Buffer used to fill out partial records
 
    package FCB renames System.File_Control_Block;

@@ -286,7 +286,7 @@ package body Sem_Prag is
       --  Preanalyze the boolean expression, we treat this as a spec expression
       --  (i.e. similar to a default expression).
 
-      Preanalyze_Spec_Expression (Get_Pragma_Arg (Arg1), Standard_Boolean);
+      Preanalyze_Assert_Expression (Get_Pragma_Arg (Arg1), Standard_Boolean);
 
       --  In ASIS mode, for a pragma generated from a source aspect, also
       --  analyze the original aspect expression.
@@ -294,7 +294,7 @@ package body Sem_Prag is
       if ASIS_Mode
         and then Present (Corresponding_Aspect (N))
       then
-         Preanalyze_Spec_Expression
+         Preanalyze_Assert_Expression
            (Expression (Corresponding_Aspect (N)), Standard_Boolean);
       end if;
 
@@ -2057,6 +2057,10 @@ package body Sem_Prag is
                S := Defining_Entity (PO);
             else
                S := Defining_Unit_Name (Specification (PO));
+
+               if Nkind (S) = N_Defining_Program_Unit_Name then
+                  S := Defining_Identifier (S);
+               end if;
             end if;
 
             --  Note: we do not analyze the pragma at this point. Instead we
@@ -2172,7 +2176,7 @@ package body Sem_Prag is
             then
                --  Analyze pragma expression for correctness and for ASIS use
 
-               Preanalyze_Spec_Expression
+               Preanalyze_Assert_Expression
                  (Get_Pragma_Arg (Arg1), Standard_Boolean);
 
                --  In ASIS mode, for a pragma generated from a source aspect,
@@ -2181,7 +2185,7 @@ package body Sem_Prag is
                if ASIS_Mode
                  and then Present (Corresponding_Aspect (N))
                then
-                  Preanalyze_Spec_Expression
+                  Preanalyze_Assert_Expression
                     (Expression (Corresponding_Aspect (N)), Standard_Boolean);
                end if;
             end if;
@@ -3625,9 +3629,18 @@ package body Sem_Prag is
                Generate_Reference (E, Id, 'i');
             end if;
 
-            --  Loop through the homonyms of the pragma argument's entity
+            --  If the pragma comes from from an aspect, it only applies
+            --   to the given entity, not its homonyms.
+
+            if From_Aspect_Specification (N) then
+               return;
+            end if;
+
+            --  Otherwise Loop through the homonyms of the pragma argument's
+            --  entity, an apply convention to those in the current scope.
 
             E1 := Ent;
+
             loop
                E1 := Homonym (E1);
                exit when No (E1) or else Scope (E1) /= Current_Scope;
@@ -3655,10 +3668,6 @@ package body Sem_Prag is
                      Generate_Reference (E1, Id, 'b');
                   end if;
                end if;
-
-               --  For aspect case, do NOT apply to homonyms
-
-               exit when From_Aspect_Specification (N);
             end loop;
          end if;
       end Process_Convention;
@@ -4524,10 +4533,12 @@ package body Sem_Prag is
            or else Is_Generic_Subprogram (Def_Id)
          then
             --  If the name is overloaded, pragma applies to all of the denoted
-            --  entities in the same declarative part.
+            --  entities in the same declarative part, unless the pragma comes
+            --  from an aspect specification.
 
             Hom_Id := Def_Id;
             while Present (Hom_Id) loop
+
                Def_Id := Get_Base_Subprogram (Hom_Id);
 
                --  Ignore inherited subprograms because the pragma will apply
@@ -4636,6 +4647,9 @@ package body Sem_Prag is
                   --  Such homonyms might be present in the context of other
                   --  units being compiled.
 
+                  exit;
+
+               elsif From_Aspect_Specification (N) then
                   exit;
 
                else
@@ -5668,12 +5682,11 @@ package body Sem_Prag is
 
          if C = All_Checks or else C = Overflow_Check then
             if Suppress_Case then
-               Scope_Suppress.Overflow_Checks_General    := Suppress;
-               Scope_Suppress.Overflow_Checks_Assertions := Suppress;
+               Scope_Suppress.Overflow_Checks_General    := Suppressed;
+               Scope_Suppress.Overflow_Checks_Assertions := Suppressed;
             else
-               Scope_Suppress.Overflow_Checks_General    := Check_All;
-               Scope_Suppress.Overflow_Checks_Assertions := Check_All;
-               Opt.Overflow_Checks_Unsuppressed := True;
+               Scope_Suppress.Overflow_Checks_General    := Checked;
+               Scope_Suppress.Overflow_Checks_Assertions := Checked;
             end if;
          end if;
 
@@ -6768,7 +6781,8 @@ package body Sem_Prag is
 
             --    pragma Check (Assertion, condition [, msg]);
 
-            --  So rewrite pragma in this manner, and analyze the result
+            --  So rewrite pragma in this manner, transfer the message
+            --  argument if present, and analyze the result
 
             Expr := Get_Pragma_Arg (Arg1);
             Newa := New_List (
@@ -6780,8 +6794,7 @@ package body Sem_Prag is
 
             if Arg_Count > 1 then
                Check_Optional_Identifier (Arg2, Name_Message);
-               Analyze_And_Resolve (Get_Pragma_Arg (Arg2), Standard_String);
-               Append_To (Newa, Relocate_Node (Arg2));
+               Append_To (Newa, New_Copy_Tree (Arg2));
             end if;
 
             Rewrite (N,
@@ -6795,7 +6808,7 @@ package body Sem_Prag is
          -- Assertion_Policy --
          ----------------------
 
-         --  pragma Assertion_Policy (Check | Disable |Ignore)
+         --  pragma Assertion_Policy (Check | Disable | Ignore)
 
          when Pragma_Assertion_Policy => Assertion_Policy : declare
             Policy : Node_Id;
@@ -7285,7 +7298,9 @@ package body Sem_Prag is
             --  Check is active
 
             else
+               In_Assertion_Expr := In_Assertion_Expr + 1;
                Analyze_And_Resolve (Expr, Any_Boolean);
+               In_Assertion_Expr := In_Assertion_Expr - 1;
             end if;
          end Check;
 
@@ -11749,6 +11764,76 @@ package body Sem_Prag is
             Optimize_Alignment_Local := True;
          end Optimize_Alignment;
 
+         ---------------------
+         -- Overflow_Checks --
+         ---------------------
+
+         --  pragma Overflow_Checks
+         --    ([General => ] MODE [, [Assertions => ] MODE]);
+
+         --  MODE := SUPPRESSED | CHECKED | MINIMIZED | ELIMINATED
+
+         when Pragma_Overflow_Checks => Overflow_Checks : declare
+            function Get_Check_Mode
+              (Name : Name_Id;
+               Arg  : Node_Id) return Overflow_Check_Type;
+            --  Function to process one pragma argument, Arg. If an identifier
+            --  is present, it must be Name. Check type is returned if a valid
+            --  argument exists, otherwise an error is signalled.
+
+            --------------------
+            -- Get_Check_Mode --
+            --------------------
+
+            function Get_Check_Mode
+              (Name : Name_Id;
+               Arg  : Node_Id) return Overflow_Check_Type
+            is
+               Argx : constant Node_Id := Get_Pragma_Arg (Arg);
+
+            begin
+               Check_Optional_Identifier (Arg, Name);
+               Check_Arg_Is_Identifier (Argx);
+
+               if Chars (Argx) = Name_Suppressed then
+                  return Suppressed;
+               elsif Chars (Argx) = Name_Checked then
+                  return Checked;
+               elsif Chars (Argx) = Name_Minimized then
+                  return Minimized;
+               elsif Chars (Argx) = Name_Eliminated then
+                  return Eliminated;
+               else
+                  Error_Pragma_Arg ("invalid argument for pragma%", Argx);
+               end if;
+            end Get_Check_Mode;
+
+         --  Start of processing for Overflow_Checks
+
+         begin
+            GNAT_Pragma;
+            Check_At_Least_N_Arguments (1);
+            Check_At_Most_N_Arguments (2);
+
+            --  Process first argument
+
+            Suppress_Options.Overflow_Checks_General :=
+              Get_Check_Mode (Name_General, Arg1);
+
+            --  Case of only one argument
+
+            if Arg_Count = 1 then
+               Scope_Suppress.Overflow_Checks_Assertions :=
+                 Scope_Suppress.Overflow_Checks_General;
+
+            --  Case of two arguments present
+
+            else
+               Scope_Suppress.Overflow_Checks_Assertions  :=
+                 Get_Check_Mode (Name_Assertions, Arg2);
+            end if;
+         end Overflow_Checks;
+
          -------------
          -- Ordered --
          -------------
@@ -15169,6 +15254,7 @@ package body Sem_Prag is
       Pragma_Obsolescent                    =>  0,
       Pragma_Optimize                       => -1,
       Pragma_Optimize_Alignment             => -1,
+      Pragma_Overflow_Checks                =>  0,
       Pragma_Ordered                        =>  0,
       Pragma_Pack                           =>  0,
       Pragma_Page                           => -1,
@@ -15454,27 +15540,27 @@ package body Sem_Prag is
       --  expressions (i.e. similar to a default expression).
 
       if Present (Arg_Req) then
-         Preanalyze_Spec_Expression
+         Preanalyze_Assert_Expression
            (Get_Pragma_Arg (Arg_Req), Standard_Boolean);
 
          --  In ASIS mode, for a pragma generated from a source aspect, also
          --  analyze the original aspect expression.
 
          if ASIS_Mode and then Present (Corresponding_Aspect (N)) then
-            Preanalyze_Spec_Expression
+            Preanalyze_Assert_Expression
               (Original_Node (Get_Pragma_Arg (Arg_Req)), Standard_Boolean);
          end if;
       end if;
 
       if Present (Arg_Ens) then
-         Preanalyze_Spec_Expression
+         Preanalyze_Assert_Expression
            (Get_Pragma_Arg (Arg_Ens), Standard_Boolean);
 
          --  In ASIS mode, for a pragma generated from a source aspect, also
          --  analyze the original aspect expression.
 
          if ASIS_Mode and then Present (Corresponding_Aspect (N)) then
-            Preanalyze_Spec_Expression
+            Preanalyze_Assert_Expression
               (Original_Node (Get_Pragma_Arg (Arg_Ens)), Standard_Boolean);
          end if;
       end if;

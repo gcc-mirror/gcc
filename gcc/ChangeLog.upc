@@ -1,3 +1,7 @@
+2012-10-01 Gary Funck  <gary@intrepid.com>
+
+        Merge trunk version 191931 into gupc branch.
+
 2012-09-26  Gary Funck  <gary@intrepid.com>
 
 	Implement support for various UPC version 1.3 specification

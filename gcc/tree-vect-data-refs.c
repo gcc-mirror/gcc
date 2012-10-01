@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "dumpfile.h"
 #include "tm.h"
 #include "ggc.h"
 #include "tree.h"
@@ -59,23 +60,26 @@ vect_lanes_optab_supported_p (const char *name, convert_optab optab,
 
   if (array_mode == BLKmode)
     {
-      if (vect_print_dump_info (REPORT_DETAILS))
-	fprintf (vect_dump, "no array mode for %s[" HOST_WIDE_INT_PRINT_DEC "]",
-		 GET_MODE_NAME (mode), count);
+      if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location, 
+                         "no array mode for %s[" HOST_WIDE_INT_PRINT_DEC "]",
+                         GET_MODE_NAME (mode), count);
       return false;
     }
 
   if (convert_optab_handler (optab, array_mode, mode) == CODE_FOR_nothing)
     {
-      if (vect_print_dump_info (REPORT_DETAILS))
-	fprintf (vect_dump, "cannot use %s<%s><%s>",
-		 name, GET_MODE_NAME (array_mode), GET_MODE_NAME (mode));
+      if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+                         "cannot use %s<%s><%s>", name,
+                         GET_MODE_NAME (array_mode), GET_MODE_NAME (mode));
       return false;
     }
 
-  if (vect_print_dump_info (REPORT_DETAILS))
-    fprintf (vect_dump, "can use %s<%s><%s>",
-	     name, GET_MODE_NAME (array_mode), GET_MODE_NAME (mode));
+  if (dump_kind_p (MSG_NOTE))
+    dump_printf_loc (MSG_NOTE, vect_location,
+                     "can use %s<%s><%s>", name, GET_MODE_NAME (array_mode),
+                     GET_MODE_NAME (mode));
 
   return true;
 }
@@ -435,12 +439,13 @@ vect_check_interleaving (struct data_reference *dra,
       if (diff_mod_size == 0)
 	{
 	  vect_update_interleaving_chain (drb, dra);
-	  if (vect_print_dump_info (REPORT_DR_DETAILS))
+	  if (dump_kind_p (MSG_NOTE))
 	    {
-	      fprintf (vect_dump, "Detected interleaving ");
-	      print_generic_expr (vect_dump, DR_REF (dra), TDF_SLIM);
-	      fprintf (vect_dump, " and ");
-	      print_generic_expr (vect_dump, DR_REF (drb), TDF_SLIM);
+	      dump_printf_loc (MSG_NOTE, vect_location,
+                               "Detected interleaving ");
+	      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (dra));
+	      dump_printf (MSG_NOTE,  " and ");
+	      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (drb));
 	    }
 	  return true;
 	}
@@ -457,12 +462,13 @@ vect_check_interleaving (struct data_reference *dra,
       if (diff_mod_size == 0)
 	{
 	  vect_update_interleaving_chain (dra, drb);
-	  if (vect_print_dump_info (REPORT_DR_DETAILS))
+	  if (dump_kind_p (MSG_NOTE))
 	    {
-	      fprintf (vect_dump, "Detected interleaving ");
-	      print_generic_expr (vect_dump, DR_REF (dra), TDF_SLIM);
-	      fprintf (vect_dump, " and ");
-	      print_generic_expr (vect_dump, DR_REF (drb), TDF_SLIM);
+	      dump_printf_loc (MSG_NOTE, vect_location,
+                               "Detected interleaving ");
+	      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (dra));
+	      dump_printf (MSG_NOTE,  " and ");
+	      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (drb));
 	    }
 	  return true;
 	}
@@ -518,26 +524,29 @@ vect_mark_for_runtime_alias_test (ddr_p ddr, loop_vec_info loop_vinfo)
   if ((unsigned) PARAM_VALUE (PARAM_VECT_MAX_VERSION_FOR_ALIAS_CHECKS) == 0)
     return false;
 
-  if (vect_print_dump_info (REPORT_DR_DETAILS))
+  if (dump_kind_p (MSG_NOTE))
     {
-      fprintf (vect_dump, "mark for run-time aliasing test between ");
-      print_generic_expr (vect_dump, DR_REF (DDR_A (ddr)), TDF_SLIM);
-      fprintf (vect_dump, " and ");
-      print_generic_expr (vect_dump, DR_REF (DDR_B (ddr)), TDF_SLIM);
+      dump_printf_loc (MSG_NOTE, vect_location,
+                       "mark for run-time aliasing test between ");
+      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (DDR_A (ddr)));
+      dump_printf (MSG_NOTE,  " and ");
+      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (DDR_B (ddr)));
     }
 
   if (optimize_loop_nest_for_size_p (loop))
     {
-      if (vect_print_dump_info (REPORT_DR_DETAILS))
-	fprintf (vect_dump, "versioning not supported when optimizing for size.");
+      if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location, 
+                         "versioning not supported when optimizing for size.");
       return false;
     }
 
   /* FORNOW: We don't support versioning with outer-loop vectorization.  */
   if (loop->inner)
     {
-      if (vect_print_dump_info (REPORT_DR_DETAILS))
-	fprintf (vect_dump, "versioning not yet supported for outer-loops.");
+      if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location, 
+                         "versioning not yet supported for outer-loops.");
       return false;
     }
 
@@ -546,9 +555,10 @@ vect_mark_for_runtime_alias_test (ddr_p ddr, loop_vec_info loop_vinfo)
   if (TREE_CODE (DR_STEP (DDR_A (ddr))) != INTEGER_CST
       || TREE_CODE (DR_STEP (DDR_B (ddr))) != INTEGER_CST)
     {
-      if (vect_print_dump_info (REPORT_DR_DETAILS))
-	fprintf (vect_dump, "versioning not yet supported for non-constant "
-		 "step");
+      if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location, 
+                         "versioning not yet supported for non-constant "
+                         "step");
       return false;
     }
 
@@ -601,13 +611,16 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
 
       if (loop_vinfo)
         {
-          if (vect_print_dump_info (REPORT_DR_DETAILS))
+          if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
             {
-              fprintf (vect_dump, "versioning for alias required: "
-                                  "can't determine dependence between ");
-              print_generic_expr (vect_dump, DR_REF (dra), TDF_SLIM);
-              fprintf (vect_dump, " and ");
-              print_generic_expr (vect_dump, DR_REF (drb), TDF_SLIM);
+              dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+                               "versioning for alias required: "
+                               "can't determine dependence between ");
+              dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
+                                 DR_REF (dra));
+              dump_printf (MSG_MISSED_OPTIMIZATION, " and ");
+              dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
+                                 DR_REF (drb));
             }
 
           /* Add to list of ddrs that need to be tested at run-time.  */
@@ -624,12 +637,13 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
       if (DR_IS_READ (dra) && DR_IS_READ (drb))
         return false;
 
-      if (vect_print_dump_info (REPORT_DR_DETAILS))
+      if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
         {
-          fprintf (vect_dump, "can't determine dependence between ");
-          print_generic_expr (vect_dump, DR_REF (dra), TDF_SLIM);
-          fprintf (vect_dump, " and ");
-          print_generic_expr (vect_dump, DR_REF (drb), TDF_SLIM);
+          dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+                           "can't determine dependence between ");
+          dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM, DR_REF (dra));
+          dump_printf (MSG_MISSED_OPTIMIZATION,  " and ");
+          dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM, DR_REF (drb));
         }
 
       /* We do not vectorize basic blocks with write-write dependencies.  */
@@ -652,31 +666,34 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
       if (dra != drb && vect_check_interleaving (dra, drb))
         return false;
 
-      if (vect_print_dump_info (REPORT_DR_DETAILS))
+      if (dump_kind_p (MSG_NOTE))
         {
-          fprintf (vect_dump, "determined dependence between ");
-          print_generic_expr (vect_dump, DR_REF (dra), TDF_SLIM);
-          fprintf (vect_dump, " and ");
-          print_generic_expr (vect_dump, DR_REF (drb), TDF_SLIM);
+          dump_printf_loc (MSG_NOTE, vect_location,
+                           "determined dependence between ");
+          dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (dra));
+          dump_printf (MSG_NOTE, " and ");
+          dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (drb));
         }
 
       /* Do not vectorize basic blcoks with write-write dependences.  */
       if (DR_IS_WRITE (dra) && DR_IS_WRITE (drb))
         return true;
 
-      /* Check if this dependence is allowed in basic block vectorization.  */ 
+      /* Check if this dependence is allowed in basic block vectorization.  */
       return vect_drs_dependent_in_basic_block (dra, drb);
     }
 
   /* Loop-based vectorization and known data dependence.  */
   if (DDR_NUM_DIST_VECTS (ddr) == 0)
     {
-      if (vect_print_dump_info (REPORT_DR_DETAILS))
+      if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
         {
-          fprintf (vect_dump, "versioning for alias required: bad dist vector for ");
-          print_generic_expr (vect_dump, DR_REF (dra), TDF_SLIM);
-          fprintf (vect_dump, " and ");
-          print_generic_expr (vect_dump, DR_REF (drb), TDF_SLIM);
+          dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location, 
+                           "versioning for alias required: "
+                           "bad dist vector for ");
+          dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM, DR_REF (dra));
+          dump_printf (MSG_MISSED_OPTIMIZATION,  " and ");
+          dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM, DR_REF (drb));
         }
       /* Add to list of ddrs that need to be tested at run-time.  */
       return !vect_mark_for_runtime_alias_test (ddr, loop_vinfo);
@@ -687,17 +704,19 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
     {
       int dist = dist_v[loop_depth];
 
-      if (vect_print_dump_info (REPORT_DR_DETAILS))
-	fprintf (vect_dump, "dependence distance  = %d.", dist);
+      if (dump_kind_p (MSG_NOTE))
+	dump_printf_loc (MSG_NOTE, vect_location,
+                         "dependence distance  = %d.", dist);
 
       if (dist == 0)
 	{
-	  if (vect_print_dump_info (REPORT_DR_DETAILS))
+	  if (dump_kind_p (MSG_NOTE))
 	    {
-	      fprintf (vect_dump, "dependence distance == 0 between ");
-	      print_generic_expr (vect_dump, DR_REF (dra), TDF_SLIM);
-	      fprintf (vect_dump, " and ");
-	      print_generic_expr (vect_dump, DR_REF (drb), TDF_SLIM);
+	      dump_printf_loc (MSG_NOTE, vect_location, 
+                               "dependence distance == 0 between ");
+	      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (dra));
+	      dump_printf (MSG_NOTE, " and ");
+	      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (drb));
 	    }
 
           /* For interleaving, mark that there is a read-write dependency if
@@ -718,8 +737,9 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
 	  /* If DDR_REVERSED_P the order of the data-refs in DDR was
 	     reversed (to make distance vector positive), and the actual
 	     distance is negative.  */
-	  if (vect_print_dump_info (REPORT_DR_DETAILS))
-	    fprintf (vect_dump, "dependence distance negative.");
+	  if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+                             "dependence distance negative.");
 	  continue;
 	}
 
@@ -729,27 +749,30 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
 	  /* The dependence distance requires reduction of the maximal
 	     vectorization factor.  */
 	  *max_vf = abs (dist);
-	  if (vect_print_dump_info (REPORT_DR_DETAILS))
-	    fprintf (vect_dump, "adjusting maximal vectorization factor to %i",
-		     *max_vf);
+	  if (dump_kind_p (MSG_NOTE))
+	    dump_printf_loc (MSG_NOTE, vect_location,
+                             "adjusting maximal vectorization factor to %i",
+                             *max_vf);
 	}
 
       if (abs (dist) >= *max_vf)
 	{
 	  /* Dependence distance does not create dependence, as far as
 	     vectorization is concerned, in this case.  */
-	  if (vect_print_dump_info (REPORT_DR_DETAILS))
-	    fprintf (vect_dump, "dependence distance >= VF.");
+	  if (dump_kind_p (MSG_NOTE))
+	    dump_printf_loc (MSG_NOTE, vect_location,
+                             "dependence distance >= VF.");
 	  continue;
 	}
 
-      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
+      if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
 	{
-	  fprintf (vect_dump, "not vectorized, possible dependence "
-    		              "between data-refs ");
-	  print_generic_expr (vect_dump, DR_REF (dra), TDF_SLIM);
-	  fprintf (vect_dump, " and ");
-	  print_generic_expr (vect_dump, DR_REF (drb), TDF_SLIM);
+	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+                       "not vectorized, possible dependence "
+                       "between data-refs ");
+	  dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (dra));
+	  dump_printf (MSG_NOTE,  " and ");
+	  dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (drb));
 	}
 
       return true;
@@ -772,9 +795,9 @@ vect_analyze_data_ref_dependences (loop_vec_info loop_vinfo,
   VEC (ddr_p, heap) *ddrs = NULL;
   struct data_dependence_relation *ddr;
 
-  if (vect_print_dump_info (REPORT_DETAILS))
-    fprintf (vect_dump, "=== vect_analyze_dependences ===");
-
+  if (dump_kind_p (MSG_NOTE))
+    dump_printf_loc (MSG_NOTE, vect_location,
+                     "=== vect_analyze_dependences ===");
   if (loop_vinfo)
     ddrs = LOOP_VINFO_DDRS (loop_vinfo);
   else
@@ -814,8 +837,9 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
   tree misalign;
   tree aligned_to, alignment;
 
-  if (vect_print_dump_info (REPORT_DETAILS))
-    fprintf (vect_dump, "vect_compute_data_ref_alignment:");
+  if (dump_kind_p (MSG_NOTE))
+    dump_printf_loc (MSG_NOTE, vect_location,
+                     "vect_compute_data_ref_alignment:");
 
   if (loop_vinfo)
     loop = LOOP_VINFO_LOOP (loop_vinfo);
@@ -846,16 +870,18 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
 
       if (dr_step % GET_MODE_SIZE (TYPE_MODE (vectype)) == 0)
         {
-          if (vect_print_dump_info (REPORT_ALIGNMENT))
-            fprintf (vect_dump, "inner step divides the vector-size.");
+          if (dump_kind_p (MSG_NOTE))
+            dump_printf_loc (MSG_NOTE, vect_location,
+                             "inner step divides the vector-size.");
 	  misalign = STMT_VINFO_DR_INIT (stmt_info);
 	  aligned_to = STMT_VINFO_DR_ALIGNED_TO (stmt_info);
 	  base_addr = STMT_VINFO_DR_BASE_ADDRESS (stmt_info);
         }
       else
 	{
-	  if (vect_print_dump_info (REPORT_ALIGNMENT))
-	    fprintf (vect_dump, "inner step doesn't divide the vector-size.");
+	  if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+                             "inner step doesn't divide the vector-size.");
 	  misalign = NULL_TREE;
 	}
     }
@@ -872,8 +898,9 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
 
       if (dr_step % GET_MODE_SIZE (TYPE_MODE (vectype)) != 0)
 	{
-	  if (vect_print_dump_info (REPORT_ALIGNMENT))
-	    fprintf (vect_dump, "SLP: step doesn't divide the vector-size.");
+	  if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location, 
+                             "SLP: step doesn't divide the vector-size.");
 	  misalign = NULL_TREE;
 	}
     }
@@ -884,10 +911,11 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
   if ((aligned_to && tree_int_cst_compare (aligned_to, alignment) < 0)
       || !misalign)
     {
-      if (vect_print_dump_info (REPORT_ALIGNMENT))
+      if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
 	{
-	  fprintf (vect_dump, "Unknown alignment for access: ");
-	  print_generic_expr (vect_dump, base, TDF_SLIM);
+	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+                           "Unknown alignment for access: ");
+	  dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM, base);
 	}
       return true;
     }
@@ -913,10 +941,11 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
       if (!vect_can_force_dr_alignment_p (base, TYPE_ALIGN (vectype))
 	  || (TREE_STATIC (base) && flag_section_anchors))
 	{
-	  if (vect_print_dump_info (REPORT_DETAILS))
+	  if (dump_kind_p (MSG_NOTE))
 	    {
-	      fprintf (vect_dump, "can't force alignment of ref: ");
-	      print_generic_expr (vect_dump, ref, TDF_SLIM);
+	      dump_printf_loc (MSG_NOTE, vect_location,
+                               "can't force alignment of ref: ");
+	      dump_generic_expr (MSG_NOTE, TDF_SLIM, ref);
 	    }
 	  return true;
 	}
@@ -924,10 +953,10 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
       /* Force the alignment of the decl.
 	 NOTE: This is the only change to the code we make during
 	 the analysis phase, before deciding to vectorize the loop.  */
-      if (vect_print_dump_info (REPORT_DETAILS))
+      if (dump_kind_p (MSG_NOTE))
         {
-          fprintf (vect_dump, "force alignment of ");
-          print_generic_expr (vect_dump, ref, TDF_SLIM);
+          dump_printf_loc (MSG_NOTE, vect_location, "force alignment of ");
+          dump_generic_expr (MSG_NOTE, TDF_SLIM, ref);
         }
 
       DECL_ALIGN (base) = TYPE_ALIGN (vectype);
@@ -958,17 +987,19 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
   if (!host_integerp (misalign, 1))
     {
       /* Negative or overflowed misalignment value.  */
-      if (vect_print_dump_info (REPORT_DETAILS))
-	fprintf (vect_dump, "unexpected misalign value");
+      if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+                         "unexpected misalign value");
       return false;
     }
 
   SET_DR_MISALIGNMENT (dr, TREE_INT_CST_LOW (misalign));
 
-  if (vect_print_dump_info (REPORT_DETAILS))
+  if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
     {
-      fprintf (vect_dump, "misalign = %d bytes of ref ", DR_MISALIGNMENT (dr));
-      print_generic_expr (vect_dump, ref, TDF_SLIM);
+      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+                       "misalign = %d bytes of ref ", DR_MISALIGNMENT (dr));
+      dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM, ref);
     }
 
   return true;
@@ -1064,8 +1095,8 @@ vect_update_misalignment_for_peel (struct data_reference *dr,
       return;
     }
 
-  if (vect_print_dump_info (REPORT_DETAILS))
-    fprintf (vect_dump, "Setting misalignment to -1.");
+  if (dump_kind_p (MSG_NOTE))
+    dump_printf_loc (MSG_NOTE, vect_location, "Setting misalignment to -1.");
   SET_DR_MISALIGNMENT (dr, -1);
 }
 
@@ -1111,22 +1142,25 @@ vect_verify_datarefs_alignment (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
       supportable_dr_alignment = vect_supportable_dr_alignment (dr, false);
       if (!supportable_dr_alignment)
         {
-          if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
+          if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
             {
               if (DR_IS_READ (dr))
-                fprintf (vect_dump,
-                         "not vectorized: unsupported unaligned load.");
+                dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+                                 "not vectorized: unsupported unaligned load.");
               else
-                fprintf (vect_dump,
-                         "not vectorized: unsupported unaligned store.");
+                dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+                                 "not vectorized: unsupported unaligned "
+                                 "store.");
 
-              print_generic_expr (vect_dump, DR_REF (dr), TDF_SLIM);
+              dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
+                                 DR_REF (dr));
             }
           return false;
         }
       if (supportable_dr_alignment != dr_aligned
-          && vect_print_dump_info (REPORT_ALIGNMENT))
-        fprintf (vect_dump, "Vectorizing an unaligned access.");
+          && dump_kind_p (MSG_NOTE))
+        dump_printf_loc (MSG_NOTE, vect_location,
+                         "Vectorizing an unaligned access.");
     }
   return true;
 }
@@ -1181,15 +1215,18 @@ vector_alignment_reachable_p (struct data_reference *dr)
     {
       HOST_WIDE_INT elmsize =
 		int_cst_value (TYPE_SIZE_UNIT (TREE_TYPE (vectype)));
-      if (vect_print_dump_info (REPORT_DETAILS))
+      if (dump_kind_p (MSG_NOTE))
 	{
-	  fprintf (vect_dump, "data size =" HOST_WIDE_INT_PRINT_DEC, elmsize);
-	  fprintf (vect_dump, ". misalignment = %d. ", DR_MISALIGNMENT (dr));
+	  dump_printf_loc (MSG_NOTE, vect_location, 
+                           "data size =" HOST_WIDE_INT_PRINT_DEC, elmsize);
+	  dump_printf (MSG_NOTE, 
+                       ". misalignment = %d. ", DR_MISALIGNMENT (dr));
 	}
       if (DR_MISALIGNMENT (dr) % elmsize)
 	{
-	  if (vect_print_dump_info (REPORT_DETAILS))
-	    fprintf (vect_dump, "data size does not divide the misalignment.\n");
+	  if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location, 
+                             "data size does not divide the misalignment.\n");
 	  return false;
 	}
     }
@@ -1198,8 +1235,9 @@ vector_alignment_reachable_p (struct data_reference *dr)
     {
       tree type = TREE_TYPE (DR_REF (dr));
       bool is_packed = not_size_aligned (DR_REF (dr));
-      if (vect_print_dump_info (REPORT_DETAILS))
-	fprintf (vect_dump, "Unknown misalignment, is_packed = %d",is_packed);
+      if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location, 
+                         "Unknown misalignment, is_packed = %d",is_packed);
       if (targetm.vectorize.vector_alignment_reachable (type, is_packed))
 	return true;
       else
@@ -1231,9 +1269,10 @@ vect_get_data_access_cost (struct data_reference *dr,
   else
     vect_get_store_cost (dr, ncopies, inside_cost, body_cost_vec);
 
-  if (vect_print_dump_info (REPORT_COST))
-    fprintf (vect_dump, "vect_get_data_access_cost: inside_cost = %d, "
-             "outside_cost = %d.", *inside_cost, *outside_cost);
+  if (dump_kind_p (MSG_NOTE))
+    dump_printf_loc (MSG_NOTE, vect_location,
+                     "vect_get_data_access_cost: inside_cost = %d, "
+                     "outside_cost = %d.", *inside_cost, *outside_cost);
 }
 
 
@@ -1528,8 +1567,9 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
   unsigned int nelements, mis, same_align_drs_max = 0;
   stmt_vector_for_cost body_cost_vec = NULL;
 
-  if (vect_print_dump_info (REPORT_DETAILS))
-    fprintf (vect_dump, "=== vect_enhance_data_refs_alignment ===");
+  if (dump_kind_p (MSG_NOTE))
+    dump_printf_loc (MSG_NOTE, vect_location,
+                     "=== vect_enhance_data_refs_alignment ===");
 
   /* While cost model enhancements are expected in the future, the high level
      view of the code at this time is as follows:
@@ -1582,8 +1622,9 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 	 and so we can't generate the new base for the pointer.  */
       if (STMT_VINFO_STRIDE_LOAD_P (stmt_info))
 	{
-	  if (vect_print_dump_info (REPORT_DETAILS))
-	    fprintf (vect_dump, "strided load prevents peeling");
+	  if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+                             "strided load prevents peeling");
 	  do_peeling = false;
 	  break;
 	}
@@ -1697,9 +1738,9 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
         {
           if (!aligned_access_p (dr))
             {
-              if (vect_print_dump_info (REPORT_DETAILS))
-                fprintf (vect_dump, "vector alignment may not be reachable");
-
+              if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
+                dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location, 
+                                 "vector alignment may not be reachable");
               break;
             }
         }
@@ -1838,8 +1879,9 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 	  if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
 	    npeel /= GROUP_SIZE (stmt_info);
 
-          if (vect_print_dump_info (REPORT_DETAILS))
-            fprintf (vect_dump, "Try peeling by %d", npeel);
+          if (dump_kind_p (MSG_NOTE))
+            dump_printf_loc (MSG_NOTE, vect_location,
+                             "Try peeling by %d", npeel);
         }
 
       /* Ensure that all data refs can be vectorized after the peel.  */
@@ -1909,12 +1951,13 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
           else
             LOOP_PEELING_FOR_ALIGNMENT (loop_vinfo) = DR_MISALIGNMENT (dr0);
 	  SET_DR_MISALIGNMENT (dr0, 0);
-	  if (vect_print_dump_info (REPORT_ALIGNMENT))
-            fprintf (vect_dump, "Alignment of access forced using peeling.");
-
-          if (vect_print_dump_info (REPORT_DETAILS))
-            fprintf (vect_dump, "Peeling for alignment will be applied.");
-
+	  if (dump_kind_p (MSG_NOTE))
+            {
+              dump_printf_loc (MSG_NOTE, vect_location,
+                               "Alignment of access forced using peeling.");
+              dump_printf_loc (MSG_NOTE, vect_location,
+                               "Peeling for alignment will be applied.");
+            }
 	  /* We've delayed passing the inside-loop peeling costs to the
 	     target cost model until we were sure peeling would happen.
 	     Do so now.  */
@@ -2034,12 +2077,14 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
           stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
           dr = STMT_VINFO_DATA_REF (stmt_info);
 	  SET_DR_MISALIGNMENT (dr, 0);
-	  if (vect_print_dump_info (REPORT_ALIGNMENT))
-            fprintf (vect_dump, "Alignment of access forced using versioning.");
+	  if (dump_kind_p (MSG_NOTE))
+            dump_printf_loc (MSG_NOTE, vect_location, 
+                             "Alignment of access forced using versioning.");
         }
 
-      if (vect_print_dump_info (REPORT_DETAILS))
-        fprintf (vect_dump, "Versioning for alignment will be applied.");
+      if (dump_kind_p (MSG_NOTE))
+        dump_printf_loc (MSG_NOTE, vect_location, 
+                         "Versioning for alignment will be applied.");
 
       /* Peeling and versioning can't be done together at this time.  */
       gcc_assert (! (do_peeling && do_versioning));
@@ -2103,8 +2148,9 @@ vect_find_same_alignment_drs (struct data_dependence_relation *ddr,
     {
       int dist = dist_v[loop_depth];
 
-      if (vect_print_dump_info (REPORT_DR_DETAILS))
-	fprintf (vect_dump, "dependence distance  = %d.", dist);
+      if (dump_kind_p (MSG_NOTE))
+	dump_printf_loc (MSG_NOTE, vect_location,
+                         "dependence distance  = %d.", dist);
 
       /* Same loop iteration.  */
       if (dist == 0
@@ -2113,14 +2159,15 @@ vect_find_same_alignment_drs (struct data_dependence_relation *ddr,
 	  /* Two references with distance zero have the same alignment.  */
 	  VEC_safe_push (dr_p, heap, STMT_VINFO_SAME_ALIGN_REFS (stmtinfo_a), drb);
 	  VEC_safe_push (dr_p, heap, STMT_VINFO_SAME_ALIGN_REFS (stmtinfo_b), dra);
-	  if (vect_print_dump_info (REPORT_ALIGNMENT))
-	    fprintf (vect_dump, "accesses have the same alignment.");
-	  if (vect_print_dump_info (REPORT_DR_DETAILS))
+	  if (dump_kind_p (MSG_NOTE))
 	    {
-	      fprintf (vect_dump, "dependence distance modulo vf == 0 between ");
-	      print_generic_expr (vect_dump, DR_REF (dra), TDF_SLIM);
-	      fprintf (vect_dump, " and ");
-	      print_generic_expr (vect_dump, DR_REF (drb), TDF_SLIM);
+              dump_printf_loc (MSG_NOTE, vect_location,
+                               "accesses have the same alignment.");
+	      dump_printf (MSG_NOTE,
+                           "dependence distance modulo vf == 0 between ");
+	      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (dra));
+	      dump_printf (MSG_NOTE,  " and ");
+	      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (drb));
 	    }
 	}
     }
@@ -2136,8 +2183,9 @@ bool
 vect_analyze_data_refs_alignment (loop_vec_info loop_vinfo,
                                   bb_vec_info bb_vinfo)
 {
-  if (vect_print_dump_info (REPORT_DETAILS))
-    fprintf (vect_dump, "=== vect_analyze_data_refs_alignment ===");
+  if (dump_kind_p (MSG_NOTE))
+    dump_printf_loc (MSG_NOTE, vect_location,
+                     "=== vect_analyze_data_refs_alignment ===");
 
   /* Mark groups of data references with same alignment using
      data dependence information.  */
@@ -2153,9 +2201,10 @@ vect_analyze_data_refs_alignment (loop_vec_info loop_vinfo,
 
   if (!vect_compute_data_refs_alignment (loop_vinfo, bb_vinfo))
     {
-      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
-	fprintf (vect_dump,
-		 "not vectorized: can't calculate alignment for data ref.");
+      if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location, 
+                         "not vectorized: can't calculate alignment "
+                         "for data ref.");
       return false;
     }
 
@@ -2205,24 +2254,27 @@ vect_analyze_group_access (struct data_reference *dr)
 	{
 	  GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)) = stmt;
 	  GROUP_SIZE (vinfo_for_stmt (stmt)) = groupsize;
-	  if (vect_print_dump_info (REPORT_DR_DETAILS))
+	  if (dump_kind_p (MSG_NOTE))
 	    {
-	      fprintf (vect_dump, "Detected single element interleaving ");
-	      print_generic_expr (vect_dump, DR_REF (dr), TDF_SLIM);
-	      fprintf (vect_dump, " step ");
-	      print_generic_expr (vect_dump, step, TDF_SLIM);
+	      dump_printf_loc (MSG_NOTE, vect_location, 
+                               "Detected single element interleaving ");
+	      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (dr));
+	      dump_printf (MSG_NOTE, " step ");
+	      dump_generic_expr (MSG_NOTE, TDF_SLIM, step);
 	    }
 
 	  if (loop_vinfo)
 	    {
-	      if (vect_print_dump_info (REPORT_DETAILS))
-		fprintf (vect_dump, "Data access with gaps requires scalar "
-				    "epilogue loop");
+	      if (dump_kind_p (MSG_NOTE))
+		dump_printf_loc (MSG_NOTE, vect_location,
+                                 "Data access with gaps requires scalar "
+                                 "epilogue loop");
               if (loop->inner)
                 {
-                  if (vect_print_dump_info (REPORT_DETAILS))
-                    fprintf (vect_dump, "Peeling for outer loop is not"
-                                        " supported");
+                  if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
+                    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+                                     "Peeling for outer loop is not"
+                                     " supported");
                   return false;
                 }
 
@@ -2232,10 +2284,11 @@ vect_analyze_group_access (struct data_reference *dr)
 	  return true;
 	}
 
-      if (vect_print_dump_info (REPORT_DETAILS))
+      if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
         {
- 	  fprintf (vect_dump, "not consecutive access ");
-          print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
+ 	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+                           "not consecutive access ");
+          dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
         }
 
       if (bb_vinfo)
@@ -2244,7 +2297,7 @@ vect_analyze_group_access (struct data_reference *dr)
           STMT_VINFO_VECTORIZABLE (vinfo_for_stmt (DR_STMT (dr))) = false;
           return true;
         }
-    
+
       return false;
     }
 
@@ -2271,8 +2324,9 @@ vect_analyze_group_access (struct data_reference *dr)
             {
               if (DR_IS_WRITE (data_ref))
                 {
-                  if (vect_print_dump_info (REPORT_DETAILS))
-                    fprintf (vect_dump, "Two store stmts share the same dr.");
+                  if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
+                    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location, 
+                                     "Two store stmts share the same dr.");
                   return false;
                 }
 
@@ -2281,9 +2335,9 @@ vect_analyze_group_access (struct data_reference *dr)
               if (GROUP_READ_WRITE_DEPENDENCE (vinfo_for_stmt (next))
                   || GROUP_READ_WRITE_DEPENDENCE (vinfo_for_stmt (prev)))
                 {
-                  if (vect_print_dump_info (REPORT_DETAILS))
-                    fprintf (vect_dump,
-                             "READ_WRITE dependence in interleaving.");
+                  if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
+                    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location, 
+                                     "READ_WRITE dependence in interleaving.");
                   return false;
                 }
 
@@ -2301,8 +2355,9 @@ vect_analyze_group_access (struct data_reference *dr)
           next_step = DR_STEP (STMT_VINFO_DATA_REF (vinfo_for_stmt (next)));
           if (tree_int_cst_compare (step, next_step))
             {
-              if (vect_print_dump_info (REPORT_DETAILS))
-                fprintf (vect_dump, "not consecutive access in interleaving");
+              if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
+                dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location, 
+                                 "not consecutive access in interleaving");
               return false;
             }
 
@@ -2317,8 +2372,9 @@ vect_analyze_group_access (struct data_reference *dr)
 	      slp_impossible = true;
 	      if (DR_IS_WRITE (data_ref))
 		{
-		  if (vect_print_dump_info (REPORT_DETAILS))
-		    fprintf (vect_dump, "interleaved store with gaps");
+                  if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
+                    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location, 
+                                     "interleaved store with gaps");
 		  return false;
 		}
 
@@ -2345,10 +2401,11 @@ vect_analyze_group_access (struct data_reference *dr)
          greater than STEP.  */
       if (dr_step && dr_step < count_in_bytes + gaps * type_size)
         {
-          if (vect_print_dump_info (REPORT_DETAILS))
+          if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
             {
-              fprintf (vect_dump, "interleaving size is greater than step for ");
-              print_generic_expr (vect_dump, DR_REF (dr), TDF_SLIM);
+              dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location, 
+                               "interleaving size is greater than step for ");
+              dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM, DR_REF (dr));
             }
           return false;
         }
@@ -2367,8 +2424,9 @@ vect_analyze_group_access (struct data_reference *dr)
             }
           else
             {
-              if (vect_print_dump_info (REPORT_DETAILS))
-                fprintf (vect_dump, "interleaved store with gaps");
+              if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
+                dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location, 
+                                 "interleaved store with gaps");
               return false;
             }
         }
@@ -2376,13 +2434,14 @@ vect_analyze_group_access (struct data_reference *dr)
       /* Check that STEP is a multiple of type size.  */
       if (dr_step && (dr_step % type_size) != 0)
         {
-          if (vect_print_dump_info (REPORT_DETAILS))
+          if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
             {
-              fprintf (vect_dump, "step is not a multiple of type size: step ");
-              print_generic_expr (vect_dump, step, TDF_SLIM);
-              fprintf (vect_dump, " size ");
-              print_generic_expr (vect_dump, TYPE_SIZE_UNIT (scalar_type),
-                                  TDF_SLIM);
+              dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+                               "step is not a multiple of type size: step ");
+              dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM, step);
+              dump_printf (MSG_MISSED_OPTIMIZATION, " size ");
+              dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
+                                 TYPE_SIZE_UNIT (scalar_type));
             }
           return false;
         }
@@ -2391,8 +2450,9 @@ vect_analyze_group_access (struct data_reference *dr)
         groupsize = count;
 
       GROUP_SIZE (vinfo_for_stmt (stmt)) = groupsize;
-      if (vect_print_dump_info (REPORT_DETAILS))
-        fprintf (vect_dump, "Detected interleaving of size %d", (int)groupsize);
+      if (dump_kind_p (MSG_NOTE))
+        dump_printf_loc (MSG_NOTE, vect_location, 
+                         "Detected interleaving of size %d", (int)groupsize);
 
       /* SLP: create an SLP data structure for every interleaving group of
 	 stores for further analysis in vect_analyse_slp.  */
@@ -2409,13 +2469,15 @@ vect_analyze_group_access (struct data_reference *dr)
       /* There is a gap in the end of the group.  */
       if (groupsize - last_accessed_element > 0 && loop_vinfo)
 	{
-	  if (vect_print_dump_info (REPORT_DETAILS))
-	    fprintf (vect_dump, "Data access with gaps requires scalar "
-				"epilogue loop");
+	  if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+                             "Data access with gaps requires scalar "
+                             "epilogue loop");
           if (loop->inner)
             {
-              if (vect_print_dump_info (REPORT_DETAILS))
-                fprintf (vect_dump, "Peeling for outer loop is not supported");
+              if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
+                dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location, 
+                                 "Peeling for outer loop is not supported");
               return false;
             }
 
@@ -2446,8 +2508,9 @@ vect_analyze_data_ref_access (struct data_reference *dr)
 
   if (loop_vinfo && !step)
     {
-      if (vect_print_dump_info (REPORT_DETAILS))
-	fprintf (vect_dump, "bad data-ref access in loop");
+      if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location, 
+                         "bad data-ref access in loop");
       return false;
     }
 
@@ -2468,8 +2531,9 @@ vect_analyze_data_ref_access (struct data_reference *dr)
       step = STMT_VINFO_DR_STEP (stmt_info);
       if (integer_zerop (step))
 	{
-	  if (vect_print_dump_info (REPORT_ALIGNMENT))
-	    fprintf (vect_dump, "zero step in outer loop.");
+	  if (dump_kind_p (MSG_NOTE))
+	    dump_printf_loc (MSG_NOTE, vect_location,
+                             "zero step in outer loop.");
 	  if (DR_IS_READ (dr))
   	    return true;
 	  else
@@ -2493,8 +2557,9 @@ vect_analyze_data_ref_access (struct data_reference *dr)
 
   if (loop && nested_in_vect_loop_p (loop, stmt))
     {
-      if (vect_print_dump_info (REPORT_ALIGNMENT))
-	fprintf (vect_dump, "grouped access in outer loop.");
+      if (dump_kind_p (MSG_NOTE))
+	dump_printf_loc (MSG_NOTE, vect_location,
+                         "grouped access in outer loop.");
       return false;
     }
 
@@ -2523,8 +2588,9 @@ vect_analyze_data_ref_accesses (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
   VEC (data_reference_p, heap) *datarefs;
   struct data_reference *dr;
 
-  if (vect_print_dump_info (REPORT_DETAILS))
-    fprintf (vect_dump, "=== vect_analyze_data_ref_accesses ===");
+  if (dump_kind_p (MSG_NOTE))
+    dump_printf_loc (MSG_NOTE, vect_location,
+                     "=== vect_analyze_data_ref_accesses ===");
 
   if (loop_vinfo)
     datarefs = LOOP_VINFO_DATAREFS (loop_vinfo);
@@ -2535,8 +2601,9 @@ vect_analyze_data_ref_accesses (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
     if (STMT_VINFO_VECTORIZABLE (vinfo_for_stmt (DR_STMT (dr))) 
         && !vect_analyze_data_ref_access (dr))
       {
-	if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
-	  fprintf (vect_dump, "not vectorized: complicated access pattern.");
+	if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
+	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location, 
+                           "not vectorized: complicated access pattern.");
 
         if (bb_vinfo)
           {
@@ -2564,8 +2631,9 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
     LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo);
   unsigned i, j;
 
-  if (vect_print_dump_info (REPORT_DETAILS))
-    fprintf (vect_dump, "=== vect_prune_runtime_alias_test_list ===");
+  if (dump_kind_p (MSG_NOTE))
+    dump_printf_loc (MSG_NOTE, vect_location,
+                     "=== vect_prune_runtime_alias_test_list ===");
 
   for (i = 0; i < VEC_length (ddr_p, ddrs); )
     {
@@ -2581,16 +2649,17 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
 
 	  if (vect_vfa_range_equal (ddr_i, ddr_j))
 	    {
-	      if (vect_print_dump_info (REPORT_DR_DETAILS))
+	      if (dump_kind_p (MSG_NOTE))
 		{
-		  fprintf (vect_dump, "found equal ranges ");
-		  print_generic_expr (vect_dump, DR_REF (DDR_A (ddr_i)), TDF_SLIM);
-		  fprintf (vect_dump, ", ");
-		  print_generic_expr (vect_dump, DR_REF (DDR_B (ddr_i)), TDF_SLIM);
-		  fprintf (vect_dump, " and ");
-		  print_generic_expr (vect_dump, DR_REF (DDR_A (ddr_j)), TDF_SLIM);
-		  fprintf (vect_dump, ", ");
-		  print_generic_expr (vect_dump, DR_REF (DDR_B (ddr_j)), TDF_SLIM);
+		  dump_printf_loc (MSG_NOTE, vect_location,
+                                   "found equal ranges ");
+		  dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (DDR_A (ddr_i)));
+		  dump_printf (MSG_NOTE,  ", ");
+		  dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (DDR_B (ddr_i)));
+		  dump_printf (MSG_NOTE,  " and ");
+		  dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (DDR_A (ddr_j)));
+		  dump_printf (MSG_NOTE,  ", ");
+		  dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (DDR_B (ddr_j)));
 		}
 	      found = true;
 	      break;
@@ -2608,11 +2677,11 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
   if (VEC_length (ddr_p, ddrs) >
        (unsigned) PARAM_VALUE (PARAM_VECT_MAX_VERSION_FOR_ALIAS_CHECKS))
     {
-      if (vect_print_dump_info (REPORT_DR_DETAILS))
+      if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
 	{
-	  fprintf (vect_dump,
-		   "disable versioning for alias - max number of generated "
-		   "checks exceeded.");
+	  dump_printf_loc (MSG_MISSED_OPTIMIZATION,  vect_location, 
+                           "disable versioning for alias - max number of "
+                           "generated checks exceeded.");
 	}
 
       VEC_truncate (ddr_p, LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo), 0);
@@ -2895,8 +2964,9 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
   tree scalar_type;
   bool res, stop_bb_analysis = false;
 
-  if (vect_print_dump_info (REPORT_DETAILS))
-    fprintf (vect_dump, "=== vect_analyze_data_refs ===\n");
+  if (dump_kind_p (MSG_NOTE))
+    dump_printf_loc (MSG_NOTE, vect_location,
+                     "=== vect_analyze_data_refs ===\n");
 
   if (loop_vinfo)
     {
@@ -2909,9 +2979,10 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
 
       if (!res)
 	{
-	  if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
-	    fprintf (vect_dump, "not vectorized: loop contains function calls"
-		     " or data references that cannot be analyzed");
+	  if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location, 
+                             "not vectorized: loop contains function calls"
+                             " or data references that cannot be analyzed");
 	  return false;
 	}
 
@@ -2940,9 +3011,11 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
       if (!compute_all_dependences (BB_VINFO_DATAREFS (bb_vinfo),
 				    &BB_VINFO_DDRS (bb_vinfo), NULL, true))
 	{
-	  if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
-	    fprintf (vect_dump, "not vectorized: basic block contains function"
-		     " calls or data references that cannot be analyzed");
+	  if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location, 
+                             "not vectorized: basic block contains function"
+                             " calls or data references that cannot be"
+                             " analyzed");
 	  return false;
 	}
 
@@ -2962,9 +3035,9 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
 
       if (!dr || !DR_REF (dr))
         {
-          if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
-	    fprintf (vect_dump, "not vectorized: unhandled data-ref ");
-
+          if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+                             "not vectorized: unhandled data-ref ");
           return false;
         }
 
@@ -3008,11 +3081,12 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
 
 	  if (!gather)
 	    {
-	      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
+	      if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
 		{
-		  fprintf (vect_dump, "not vectorized: data ref analysis "
-				      "failed ");
-		  print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
+		  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location, 
+                                   "not vectorized: data ref analysis "
+                                   "failed ");
+		  dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
 		}
 
 	      if (bb_vinfo)
@@ -3028,9 +3102,10 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
 
       if (TREE_CODE (DR_BASE_ADDRESS (dr)) == INTEGER_CST)
         {
-          if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
-            fprintf (vect_dump, "not vectorized: base addr of dr is a "
-                     "constant");
+          if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
+            dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+                             "not vectorized: base addr of dr is a "
+                             "constant");
 
           if (bb_vinfo)
             {
@@ -3046,10 +3121,11 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
 
       if (TREE_THIS_VOLATILE (DR_REF (dr)))
         {
-          if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
+          if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
             {
-              fprintf (vect_dump, "not vectorized: volatile type ");
-              print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
+              dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+                               "not vectorized: volatile type ");
+              dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
             }
 
           if (bb_vinfo)
@@ -3064,11 +3140,12 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
 
       if (stmt_can_throw_internal (stmt))
         {
-          if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
+          if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
             {
-              fprintf (vect_dump, "not vectorized: statement can throw an "
-                       "exception ");
-              print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
+              dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+                               "not vectorized: statement can throw an "
+                               "exception ");
+              dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
             }
 
           if (bb_vinfo)
@@ -3086,11 +3163,12 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
       if (TREE_CODE (DR_REF (dr)) == COMPONENT_REF
 	  && DECL_BIT_FIELD (TREE_OPERAND (DR_REF (dr), 1)))
 	{
-          if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
+          if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
             {
-              fprintf (vect_dump, "not vectorized: statement is bitfield "
-                       "access ");
-              print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
+              dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+                               "not vectorized: statement is bitfield "
+                               "access ");
+              dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
             }
 
           if (bb_vinfo)
@@ -3111,10 +3189,11 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
 
       if (is_gimple_call (stmt))
 	{
-	  if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
+	  if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
 	    {
-	      fprintf (vect_dump, "not vectorized: dr in a call ");
-	      print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
+	      dump_printf_loc (MSG_MISSED_OPTIMIZATION,  vect_location,
+                               "not vectorized: dr in a call ");
+	      dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
 	    }
 
 	  if (bb_vinfo)
@@ -3153,10 +3232,11 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
           tree inner_base = build_fold_indirect_ref
                                 (fold_build_pointer_plus (base, init));
 
-	  if (vect_print_dump_info (REPORT_DETAILS))
+	  if (dump_kind_p (MSG_NOTE))
 	    {
-	      fprintf (vect_dump, "analyze in outer-loop: ");
-	      print_generic_expr (vect_dump, inner_base, TDF_SLIM);
+	      dump_printf_loc (MSG_NOTE, vect_location,
+                               "analyze in outer-loop: ");
+	      dump_generic_expr (MSG_NOTE, TDF_SLIM, inner_base);
 	    }
 
 	  outer_base = get_inner_reference (inner_base, &pbitsize, &pbitpos,
@@ -3165,8 +3245,9 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
 
 	  if (pbitpos % BITS_PER_UNIT != 0)
 	    {
-	      if (vect_print_dump_info (REPORT_DETAILS))
-		fprintf (vect_dump, "failed: bit offset alignment.\n");
+	      if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+                                 "failed: bit offset alignment.\n");
 	      return false;
 	    }
 
@@ -3174,8 +3255,9 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
 	  if (!simple_iv (loop, loop_containing_stmt (stmt), outer_base,
                           &base_iv, false))
 	    {
-	      if (vect_print_dump_info (REPORT_DETAILS))
-		fprintf (vect_dump, "failed: evolution of base is not affine.\n");
+	      if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location, 
+                                 "failed: evolution of base is not affine.\n");
 	      return false;
 	    }
 
@@ -3196,8 +3278,9 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
 	  else if (!simple_iv (loop, loop_containing_stmt (stmt), poffset,
                                &offset_iv, false))
 	    {
-	      if (vect_print_dump_info (REPORT_DETAILS))
-	        fprintf (vect_dump, "evolution of offset is not affine.\n");
+	      if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
+	        dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location, 
+                                 "evolution of offset is not affine.\n");
 	      return false;
 	    }
 
@@ -3220,28 +3303,36 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
 	  STMT_VINFO_DR_ALIGNED_TO (stmt_info) =
 				size_int (highest_pow2_factor (offset_iv.base));
 
-	  if (vect_print_dump_info (REPORT_DETAILS))
+          if (dump_kind_p (MSG_NOTE))
 	    {
-	      fprintf (vect_dump, "\touter base_address: ");
-	      print_generic_expr (vect_dump, STMT_VINFO_DR_BASE_ADDRESS (stmt_info), TDF_SLIM);
-	      fprintf (vect_dump, "\n\touter offset from base address: ");
-	      print_generic_expr (vect_dump, STMT_VINFO_DR_OFFSET (stmt_info), TDF_SLIM);
-	      fprintf (vect_dump, "\n\touter constant offset from base address: ");
-	      print_generic_expr (vect_dump, STMT_VINFO_DR_INIT (stmt_info), TDF_SLIM);
-	      fprintf (vect_dump, "\n\touter step: ");
-	      print_generic_expr (vect_dump, STMT_VINFO_DR_STEP (stmt_info), TDF_SLIM);
-	      fprintf (vect_dump, "\n\touter aligned to: ");
-	      print_generic_expr (vect_dump, STMT_VINFO_DR_ALIGNED_TO (stmt_info), TDF_SLIM);
+	      dump_printf_loc (MSG_NOTE, vect_location,
+                               "\touter base_address: ");
+	      dump_generic_expr (MSG_NOTE, TDF_SLIM,
+                                 STMT_VINFO_DR_BASE_ADDRESS (stmt_info));
+	      dump_printf (MSG_NOTE, "\n\touter offset from base address: ");
+	      dump_generic_expr (MSG_NOTE, TDF_SLIM,
+                                 STMT_VINFO_DR_OFFSET (stmt_info));
+	      dump_printf (MSG_NOTE,
+                           "\n\touter constant offset from base address: ");
+	      dump_generic_expr (MSG_NOTE, TDF_SLIM,
+                                 STMT_VINFO_DR_INIT (stmt_info));
+	      dump_printf (MSG_NOTE, "\n\touter step: ");
+	      dump_generic_expr (MSG_NOTE, TDF_SLIM,
+                                 STMT_VINFO_DR_STEP (stmt_info));
+	      dump_printf (MSG_NOTE, "\n\touter aligned to: ");
+	      dump_generic_expr (MSG_NOTE, TDF_SLIM,
+                                 STMT_VINFO_DR_ALIGNED_TO (stmt_info));
 	    }
 	}
 
       if (STMT_VINFO_DATA_REF (stmt_info))
         {
-          if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
+          if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
             {
-              fprintf (vect_dump,
-                       "not vectorized: more than one data ref in stmt: ");
-              print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
+              dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+                               "not vectorized: more than one data ref "
+                               "in stmt: ");
+              dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
             }
 
           if (bb_vinfo)
@@ -3264,13 +3355,14 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
                 get_vectype_for_scalar_type (scalar_type);
       if (!STMT_VINFO_VECTYPE (stmt_info))
         {
-          if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
+          if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
             {
-              fprintf (vect_dump,
-                       "not vectorized: no vectype for stmt: ");
-              print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
-              fprintf (vect_dump, " scalar_type: ");
-              print_generic_expr (vect_dump, scalar_type, TDF_DETAILS);
+              dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location, 
+                               "not vectorized: no vectype for stmt: ");
+              dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
+              dump_printf (MSG_MISSED_OPTIMIZATION, " scalar_type: ");
+              dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_DETAILS,
+                                 scalar_type);
             }
 
           if (bb_vinfo)
@@ -3314,11 +3406,12 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
 	    {
 	      STMT_VINFO_DATA_REF (stmt_info) = NULL;
 	      free_data_ref (dr);
-	      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
+	      if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
 		{
-		  fprintf (vect_dump,
-			   "not vectorized: not suitable for gather load ");
-		  print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
+		  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location, 
+                                   "not vectorized: not suitable for gather "
+                                   "load ");
+		  dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
 		}
 	      return false;
 	    }
@@ -3366,12 +3459,12 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
 
 	  if (bad)
 	    {
-	      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
+	      if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
 		{
-		  fprintf (vect_dump,
-			   "not vectorized: data dependence conflict"
-			   " prevents gather load");
-		  print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
+		  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location, 
+                                   "not vectorized: data dependence conflict"
+                                   " prevents gather load");
+		  dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
 		}
 	      return false;
 	    }
@@ -3387,11 +3480,12 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
 	      = vect_check_strided_load (stmt, loop_vinfo, NULL, NULL);
 	  if (!strided_load)
 	    {
-	      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
+	      if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
 		{
-		  fprintf (vect_dump,
-			   "not vectorized: not suitable for strided load ");
-		  print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
+		  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location, 
+                                   "not vectorized: not suitable for strided "
+                                   "load ");
+		  dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
 		}
 	      return false;
 	    }
@@ -3574,10 +3668,10 @@ vect_create_addr_base_for_vector_ref (gimple stmt,
 	mark_ptr_info_alignment_unknown (SSA_NAME_PTR_INFO (vec_stmt));
     }
 
-  if (vect_print_dump_info (REPORT_DETAILS))
+  if (dump_kind_p (MSG_NOTE))
     {
-      fprintf (vect_dump, "created ");
-      print_generic_expr (vect_dump, vec_stmt, TDF_SLIM);
+      dump_printf_loc (MSG_NOTE, vect_location, "created ");
+      dump_generic_expr (MSG_NOTE, TDF_SLIM, vec_stmt);
     }
 
   return vec_stmt;
@@ -3696,20 +3790,21 @@ vect_create_data_ref_ptr (gimple stmt, tree aggr_type, struct loop *at_loop,
      in LOOP.  */
   base_name = build_fold_indirect_ref (unshare_expr (DR_BASE_ADDRESS (dr)));
 
-  if (vect_print_dump_info (REPORT_DETAILS))
+  if (dump_kind_p (MSG_NOTE))
     {
       tree data_ref_base = base_name;
-      fprintf (vect_dump, "create %s-pointer variable to type: ",
-	       tree_code_name[(int) TREE_CODE (aggr_type)]);
-      print_generic_expr (vect_dump, aggr_type, TDF_SLIM);
+      dump_printf_loc (MSG_NOTE, vect_location,
+                       "create %s-pointer variable to type: ",
+                       tree_code_name[(int) TREE_CODE (aggr_type)]);
+      dump_generic_expr (MSG_NOTE, TDF_SLIM, aggr_type);
       if (TREE_CODE (data_ref_base) == VAR_DECL
           || TREE_CODE (data_ref_base) == ARRAY_REF)
-        fprintf (vect_dump, "  vectorizing an array ref: ");
+        dump_printf (MSG_NOTE, "  vectorizing an array ref: ");
       else if (TREE_CODE (data_ref_base) == COMPONENT_REF)
-        fprintf (vect_dump, "  vectorizing a record based array ref: ");
+        dump_printf (MSG_NOTE, "  vectorizing a record based array ref: ");
       else if (TREE_CODE (data_ref_base) == SSA_NAME)
-        fprintf (vect_dump, "  vectorizing a pointer ref: ");
-      print_generic_expr (vect_dump, base_name, TDF_SLIM);
+        dump_printf (MSG_NOTE, "  vectorizing a pointer ref: ");
+      dump_generic_expr (MSG_NOTE, TDF_SLIM, base_name);
     }
 
   /* (1) Create the new aggregate-pointer variable.  */
@@ -4025,9 +4120,10 @@ vect_grouped_store_supported (tree vectype, unsigned HOST_WIDE_INT count)
   /* vect_permute_store_chain requires the group size to be a power of two.  */
   if (exact_log2 (count) == -1)
     {
-      if (vect_print_dump_info (REPORT_DETAILS))
-	fprintf (vect_dump, "the size of the group of accesses"
-		 " is not a power of 2");
+      if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+                         "the size of the group of accesses"
+                         " is not a power of 2");
       return false;
     }
 
@@ -4050,8 +4146,9 @@ vect_grouped_store_supported (tree vectype, unsigned HOST_WIDE_INT count)
 	}
     }
 
-  if (vect_print_dump_info (REPORT_DETAILS))
-    fprintf (vect_dump, "interleave op not supported by target.");
+  if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
+    dump_printf (MSG_MISSED_OPTIMIZATION,
+                 "interleave op not supported by target.");
   return false;
 }
 
@@ -4467,9 +4564,10 @@ vect_grouped_load_supported (tree vectype, unsigned HOST_WIDE_INT count)
   /* vect_permute_load_chain requires the group size to be a power of two.  */
   if (exact_log2 (count) == -1)
     {
-      if (vect_print_dump_info (REPORT_DETAILS))
-	fprintf (vect_dump, "the size of the group of accesses"
-		 " is not a power of 2");
+      if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+                         "the size of the group of accesses"
+                         " is not a power of 2");
       return false;
     }
 
@@ -4490,8 +4588,9 @@ vect_grouped_load_supported (tree vectype, unsigned HOST_WIDE_INT count)
 	}
     }
 
-  if (vect_print_dump_info (REPORT_DETAILS))
-    fprintf (vect_dump, "extract even/odd not supported by target");
+  if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
+    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+                     "extract even/odd not supported by target");
   return false;
 }
 

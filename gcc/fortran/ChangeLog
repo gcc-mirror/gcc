@@ -1,3 +1,22 @@
+2012-09-30  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54667
+	* intrinsic.texi (C_F_POINTER): Fix description.
+	* resolve.c (gfc_iso_c_sub_interface): Add a check for FPTR argument
+	of C_F_POINTER. Modify two error messages. Cleanup.
+
+2012-09-24  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54618
+	PR fortran/54690
+	* trans-expr.c (gfc_conv_procedure_call): Fix INTENT(OUT)
+	handling for allocatable BT_CLASS.
+
+2012-09-24  Lawrence Crowl  <crowl@google.com>
+
+	* trans-expr.c (gfc_conv_cst_int_power): Change to new double_int API.
+	* target-memory.c (gfc_interpret_logical): Likewise.
+
 2012-09-23  Tobias Burnus  <burnus@net-b.de>
 
 	* parse.c (parse_derived): Don't set attr.alloc_comp

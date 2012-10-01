@@ -79,7 +79,6 @@
 package testing
 
 import (
-	_ "debug/elf"
 	"flag"
 	"fmt"
 	"os"

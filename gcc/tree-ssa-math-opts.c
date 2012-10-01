@@ -154,6 +154,9 @@ static struct
 
 static struct
 {
+  /* Number of hand-written 16-bit bswaps found.  */
+  int found_16bit;
+
   /* Number of hand-written 32-bit bswaps found.  */
   int found_32bit;
 
@@ -1803,9 +1806,9 @@ static unsigned int
 execute_optimize_bswap (void)
 {
   basic_block bb;
-  bool bswap32_p, bswap64_p;
+  bool bswap16_p, bswap32_p, bswap64_p;
   bool changed = false;
-  tree bswap32_type = NULL_TREE, bswap64_type = NULL_TREE;
+  tree bswap16_type = NULL_TREE, bswap32_type = NULL_TREE, bswap64_type = NULL_TREE;
 
   if (BITS_PER_UNIT != 8)
     return 0;
@@ -1813,17 +1816,25 @@ execute_optimize_bswap (void)
   if (sizeof (HOST_WIDEST_INT) < 8)
     return 0;
 
+  bswap16_p = (builtin_decl_explicit_p (BUILT_IN_BSWAP16)
+	       && optab_handler (bswap_optab, HImode) != CODE_FOR_nothing);
   bswap32_p = (builtin_decl_explicit_p (BUILT_IN_BSWAP32)
 	       && optab_handler (bswap_optab, SImode) != CODE_FOR_nothing);
   bswap64_p = (builtin_decl_explicit_p (BUILT_IN_BSWAP64)
 	       && (optab_handler (bswap_optab, DImode) != CODE_FOR_nothing
 		   || (bswap32_p && word_mode == SImode)));
 
-  if (!bswap32_p && !bswap64_p)
+  if (!bswap16_p && !bswap32_p && !bswap64_p)
     return 0;
 
   /* Determine the argument type of the builtins.  The code later on
      assumes that the return and argument type are the same.  */
+  if (bswap16_p)
+    {
+      tree fndecl = builtin_decl_explicit (BUILT_IN_BSWAP16);
+      bswap16_type = TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (fndecl)));
+    }
+
   if (bswap32_p)
     {
       tree fndecl = builtin_decl_explicit (BUILT_IN_BSWAP32);
@@ -1863,6 +1874,13 @@ execute_optimize_bswap (void)
 
 	  switch (type_size)
 	    {
+	    case 16:
+	      if (bswap16_p)
+		{
+		  fndecl = builtin_decl_explicit (BUILT_IN_BSWAP16);
+		  bswap_type = bswap16_type;
+		}
+	      break;
 	    case 32:
 	      if (bswap32_p)
 		{
@@ -1890,7 +1908,9 @@ execute_optimize_bswap (void)
 	    continue;
 
 	  changed = true;
-	  if (type_size == 32)
+	  if (type_size == 16)
+	    bswap_stats.found_16bit++;
+	  else if (type_size == 32)
 	    bswap_stats.found_32bit++;
 	  else
 	    bswap_stats.found_64bit++;
@@ -1935,6 +1955,8 @@ execute_optimize_bswap (void)
 	}
     }
 
+  statistics_counter_event (cfun, "16-bit bswap implementations found",
+			    bswap_stats.found_16bit);
   statistics_counter_event (cfun, "32-bit bswap implementations found",
 			    bswap_stats.found_32bit);
   statistics_counter_event (cfun, "64-bit bswap implementations found",

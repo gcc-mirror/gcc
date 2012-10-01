@@ -1838,7 +1838,7 @@ expand_gimple_cond (basic_block bb, gimple stmt)
       jumpif_1 (code, op0, op1, label_rtx_for_bb (true_edge->dest),
 		true_edge->probability);
       maybe_dump_rtl_for_gimple_stmt (stmt, last);
-      if (!IS_UNKNOWN_LOCATION (true_edge->goto_locus))
+      if (true_edge->goto_locus != UNKNOWN_LOCATION)
 	set_curr_insn_location (true_edge->goto_locus);
       false_edge->flags |= EDGE_FALLTHRU;
       maybe_cleanup_end_of_block (false_edge, last);
@@ -1849,7 +1849,7 @@ expand_gimple_cond (basic_block bb, gimple stmt)
       jumpifnot_1 (code, op0, op1, label_rtx_for_bb (false_edge->dest),
 		   false_edge->probability);
       maybe_dump_rtl_for_gimple_stmt (stmt, last);
-      if (!IS_UNKNOWN_LOCATION (false_edge->goto_locus))
+      if (false_edge->goto_locus != UNKNOWN_LOCATION)
 	set_curr_insn_location (false_edge->goto_locus);
       true_edge->flags |= EDGE_FALLTHRU;
       maybe_cleanup_end_of_block (true_edge, last);
@@ -1859,7 +1859,7 @@ expand_gimple_cond (basic_block bb, gimple stmt)
   jumpif_1 (code, op0, op1, label_rtx_for_bb (true_edge->dest),
 	    true_edge->probability);
   last = get_last_insn ();
-  if (!IS_UNKNOWN_LOCATION (false_edge->goto_locus))
+  if (false_edge->goto_locus != UNKNOWN_LOCATION)
     set_curr_insn_location (false_edge->goto_locus);
   emit_jump (label_rtx_for_bb (false_edge->dest));
 
@@ -1885,7 +1885,7 @@ expand_gimple_cond (basic_block bb, gimple stmt)
 
   maybe_dump_rtl_for_gimple_stmt (stmt, last2);
 
-  if (!IS_UNKNOWN_LOCATION (true_edge->goto_locus))
+  if (true_edge->goto_locus != UNKNOWN_LOCATION)
     {
       set_curr_insn_location (true_edge->goto_locus);
       true_edge->goto_locus = curr_insn_location ();
@@ -3973,7 +3973,7 @@ expand_gimple_basic_block (basic_block bb)
   /* Expand implicit goto and convert goto_locus.  */
   FOR_EACH_EDGE (e, ei, bb->succs)
     {
-      if (!IS_UNKNOWN_LOCATION (e->goto_locus))
+      if (e->goto_locus != UNKNOWN_LOCATION)
 	set_curr_insn_location (e->goto_locus);
       if ((e->flags & EDGE_FALLTHRU) && e->dest != bb->next_bb)
 	{
@@ -4094,7 +4094,7 @@ construct_exit_block (void)
 
   /* Make sure the locus is set to the end of the function, so that
      epilogue line numbers and warnings are set properly.  */
-  if (!IS_UNKNOWN_LOCATION (cfun->function_end_locus))
+  if (LOCATION_LOCUS (cfun->function_end_locus) != UNKNOWN_LOCATION)
     input_location = cfun->function_end_locus;
 
   /* Generate rtl for function exit.  */
@@ -4318,7 +4318,7 @@ gimple_expand_cfg (void)
   if (!DECL_IS_BUILTIN (current_function_decl))
     {
       /* Eventually, all FEs should explicitly set function_start_locus.  */
-      if (IS_UNKNOWN_LOCATION (cfun->function_start_locus))
+      if (LOCATION_LOCUS (cfun->function_start_locus) == UNKNOWN_LOCATION)
        set_curr_insn_location
          (DECL_SOURCE_LOCATION (current_function_decl));
       else

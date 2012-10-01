@@ -617,26 +617,32 @@ poplevel (int keep, int reverse, int functionbody)
   /* Before we remove the declarations first check for unused variables.  */
   if ((warn_unused_variable || warn_unused_but_set_variable)
       && !processing_template_decl)
-    for (decl = getdecls (); decl; decl = TREE_CHAIN (decl))
-      if (TREE_CODE (decl) == VAR_DECL
-	  && (! TREE_USED (decl) || !DECL_READ_P (decl))
-	  && ! DECL_IN_SYSTEM_HEADER (decl)
-	  && DECL_NAME (decl) && ! DECL_ARTIFICIAL (decl)
-	  && TREE_TYPE (decl) != error_mark_node
-	  && (!CLASS_TYPE_P (TREE_TYPE (decl))
-	      || !TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (decl))))
-	{
-	  if (! TREE_USED (decl))
-	    warning (OPT_Wunused_variable, "unused variable %q+D", decl);
-	  else if (DECL_CONTEXT (decl) == current_function_decl
-		   && TREE_CODE (TREE_TYPE (decl)) != REFERENCE_TYPE
-		   && errorcount == unused_but_set_errorcount)
-	    {
-	      warning (OPT_Wunused_but_set_variable,
-		       "variable %q+D set but not used", decl); 
-	      unused_but_set_errorcount = errorcount;
-	    }
-	}
+    for (tree d = getdecls (); d; d = TREE_CHAIN (d))
+      {
+	/* There are cases where D itself is a TREE_LIST.  See in
+	   push_local_binding where the list of decls returned by
+	   getdecls is built.  */
+	decl = TREE_CODE (d) == TREE_LIST ? TREE_VALUE (d) : d;
+	if (TREE_CODE (decl) == VAR_DECL
+	    && (! TREE_USED (decl) || !DECL_READ_P (decl))
+	    && ! DECL_IN_SYSTEM_HEADER (decl)
+	    && DECL_NAME (decl) && ! DECL_ARTIFICIAL (decl)
+	    && TREE_TYPE (decl) != error_mark_node
+	    && (!CLASS_TYPE_P (TREE_TYPE (decl))
+		|| !TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (decl))))
+	  {
+	    if (! TREE_USED (decl))
+	      warning (OPT_Wunused_variable, "unused variable %q+D", decl);
+	    else if (DECL_CONTEXT (decl) == current_function_decl
+		     && TREE_CODE (TREE_TYPE (decl)) != REFERENCE_TYPE
+		     && errorcount == unused_but_set_errorcount)
+	      {
+		warning (OPT_Wunused_but_set_variable,
+			 "variable %q+D set but not used", decl);
+		unused_but_set_errorcount = errorcount;
+	      }
+	  }
+      }
 
   /* Remove declarations for all the DECLs in this level.  */
   for (link = decls; link; link = TREE_CHAIN (link))
@@ -3326,7 +3332,9 @@ make_typename_type (tree context, tree name, enum tag_types tag_type,
   
   if (DECL_ARTIFICIAL (t) || !(complain & tf_keep_type_decl))
     t = TREE_TYPE (t);
-  
+
+  maybe_record_typedef_use (t);
+
   return t;
 }
 
@@ -6515,7 +6523,6 @@ get_atexit_node (void)
       fn_type = build_function_type_list (integer_type_node,
 					  argtype0, argtype1, argtype2,
 					  NULL_TREE);
-      fn_ptr_type = build_pointer_type (fn_type);
       if (use_aeabi_atexit)
 	name = "__aeabi_atexit";
       else
@@ -12463,8 +12470,6 @@ build_enumerator (tree name, tree value, tree enumtype, location_t loc)
 	{
 	  if (TYPE_VALUES (enumtype))
 	    {
-	      HOST_WIDE_INT hi;
-	      unsigned HOST_WIDE_INT lo;
 	      tree prev_value;
 	      bool overflowed;
 
@@ -12480,15 +12485,13 @@ build_enumerator (tree name, tree value, tree enumtype, location_t loc)
 		value = error_mark_node;
 	      else
 		{
-		  overflowed = add_double (TREE_INT_CST_LOW (prev_value),
-					   TREE_INT_CST_HIGH (prev_value),
-					   1, 0, &lo, &hi);
+		  double_int di = TREE_INT_CST (prev_value)
+				  .add_with_sign (double_int_one,
+						  false, &overflowed);
 		  if (!overflowed)
 		    {
-		      double_int di;
 		      tree type = TREE_TYPE (prev_value);
-		      bool pos = (TYPE_UNSIGNED (type) || hi >= 0);
-		      di.low = lo; di.high = hi;
+		      bool pos = TYPE_UNSIGNED (type) || !di.is_negative ();
 		      if (!double_int_fits_to_tree_p (type, di))
 			{
 			  unsigned int itk;

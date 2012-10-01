@@ -1,8 +1,13 @@
-2012-09-21  Anthony Green  <green@moxielogic.com>
+2012-09-28  Ian Lance Taylor  <iant@google.com>
 
-	* config/moxie/moxie.opt: Add -mno-crt0 option.
-	* config/moxie/moxie.h (STARTFILE_SPEC): Handle -mno-crt0 option.
-	* doc/invoke.texi (Option Summary): Document -mno-crt0 option.
+	* Makefile.def: Make all-target-libgo depend on
+	all-target-libbacktrace.
+	* Makefile.in: Rebuild.
+
+2012-09-26  Ian Lance Taylor  <iant@google.com>
+
+	* Makefile.def: Make all-gcc depend on all-libbacktrace.
+	* Makefile.in: Rebuild.
 
 2012-09-20  Walter Lee  <walt@tilera.com>
 

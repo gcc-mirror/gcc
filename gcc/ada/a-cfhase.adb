@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2010-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2010-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -226,7 +226,7 @@ package body Ada.Containers.Formal_Hashed_Sets is
       Capacity : Count_Type := 0) return Set
    is
       C      : constant Count_Type :=
-                 Count_Type'Max (Capacity, Source.Capacity);
+        Count_Type'Max (Capacity, Source.Capacity);
       H      : Hash_Type;
       N      : Count_Type;
       Target : Set (C, Source.Modulus);
@@ -470,7 +470,7 @@ package body Ada.Containers.Formal_Hashed_Sets is
          L_Node : Node_Type) return Boolean
       is
          R_Index : constant Hash_Type :=
-                     Element_Keys.Index (R_HT, L_Node.Element);
+           Element_Keys.Index (R_HT, L_Node.Element);
          R_Node  : Count_Type := R_HT.Buckets (R_Index);
          RN      : Nodes_Type renames R_HT.Nodes;
 
@@ -979,7 +979,7 @@ package body Ada.Containers.Formal_Hashed_Sets is
    function Left (Container : Set; Position : Cursor) return Set is
       Curs : Cursor := Position;
       C    : Set (Container.Capacity, Container.Modulus) :=
-               Copy (Container, Container.Capacity);
+        Copy (Container, Container.Capacity);
       Node : Count_Type;
 
    begin
@@ -1280,7 +1280,7 @@ package body Ada.Containers.Formal_Hashed_Sets is
    function Right (Container : Set; Position : Cursor) return Set is
       Curs : Cursor := First (Container);
       C    : Set (Container.Capacity, Container.Modulus) :=
-               Copy (Container, Container.Capacity);
+        Copy (Container, Container.Capacity);
       Node : Count_Type;
 
    begin

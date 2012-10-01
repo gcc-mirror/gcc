@@ -2445,7 +2445,7 @@ package body Errout is
          if Sloc (Error_Msg_Node_1) > Standard_Location then
             declare
                Iloc : constant Source_Ptr :=
-                        Instantiation_Location (Sloc (Error_Msg_Node_1));
+                 Instantiation_Location (Sloc (Error_Msg_Node_1));
 
             begin
                if Iloc /= No_Location
@@ -2938,7 +2938,7 @@ package body Errout is
                   if Is_Itype (Ent) then
                      declare
                         Assoc : constant Node_Id :=
-                                  Associated_Node_For_Itype (Ent);
+                          Associated_Node_For_Itype (Ent);
 
                      begin
                         if Nkind (Assoc) in N_Subprogram_Specification then

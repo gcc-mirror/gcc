@@ -88,6 +88,22 @@ package body Exp_Ch3 is
    --  used for attachment of any actions required in its construction.
    --  It also supplies the source location used for the procedure.
 
+   function Build_Array_Invariant_Proc
+     (A_Type : Entity_Id;
+      Nod    : Node_Id) return Node_Id;
+   --  If the component of type of array type has invariants, build procedure
+   --  that checks invariant on all components of the array. Ada 2012 specifies
+   --  that an invariant on some type T must be applied to in-out parameters
+   --  and return values that include a part of type T. If the array type has
+   --  an otherwise specified invariant, the component check procedure is
+   --  called from within the user-specified invariant. Otherwise this becomes
+   --  the invariant procedure for the array type.
+
+   function Build_Record_Invariant_Proc
+     (R_Type : Entity_Id;
+      Nod    : Node_Id) return Node_Id;
+   --  Ditto for record types.
+
    function Build_Discriminant_Formals
      (Rec_Id : Entity_Id;
       Use_Dl : Boolean) return List_Id;
@@ -179,6 +195,14 @@ package body Exp_Ch3 is
    procedure Freeze_Stream_Operations (N : Node_Id; Typ : Entity_Id);
    --  Treat user-defined stream operations as renaming_as_body if the
    --  subprogram they rename is not frozen when the type is frozen.
+
+   procedure Insert_Component_Invariant_Checks
+     (N   : Node_Id;
+     Typ  : Entity_Id;
+     Proc : Node_Id);
+   --  If a composite type has invariants and also has components with defined
+   --  invariants. the component invariant procedure is inserted into the user-
+   --  defined invariant procedure and added to the checks to be performed.
 
    procedure Initialization_Warning (E : Entity_Id);
    --  If static elaboration of the package is requested, indicate
@@ -635,7 +659,7 @@ package body Exp_Ch3 is
       --  but it properly belongs with the array type declaration. However, if
       --  the freeze node is for a subtype of a type declared in another unit
       --  it seems preferable to use the freeze node as the source location of
-      --  of the init proc. In any case this is preferable for gcov usage, and
+      --  the init proc. In any case this is preferable for gcov usage, and
       --  the Sloc is not otherwise used by the compiler.
 
       if In_Open_Scopes (Scope (A_Type)) then
@@ -784,7 +808,10 @@ package body Exp_Ch3 is
    -- Build_Array_Invariant_Proc --
    --------------------------------
 
-   procedure Build_Array_Invariant_Proc (A_Type : Entity_Id; Nod : Node_Id) is
+   function Build_Array_Invariant_Proc
+     (A_Type : Entity_Id;
+      Nod    : Node_Id) return Node_Id
+   is
       Loc : constant Source_Ptr := Sloc (Nod);
 
       Object_Name : constant Name_Id := New_Internal_Name ('I');
@@ -878,9 +905,7 @@ package body Exp_Ch3 is
 
       Proc_Id :=
         Make_Defining_Identifier (Loc,
-           Chars => New_External_Name (Chars (A_Type), "Invariant"));
-      Set_Has_Invariants (Proc_Id);
-      Set_Invariant_Procedure (A_Type, Proc_Id);
+           Chars => New_External_Name (Chars (A_Type), "CInvariant"));
 
       Body_Stmts := Check_One_Dimension (1);
 
@@ -908,10 +933,7 @@ package body Exp_Ch3 is
          Set_Debug_Info_Off (Proc_Id);
       end if;
 
-      --  The procedure body is placed after the freeze node for the type.
-
-      Insert_After (Nod, Proc_Body);
-      Analyze (Proc_Body);
+      return Proc_Body;
    end Build_Array_Invariant_Proc;
 
    --------------------------------
@@ -3611,6 +3633,175 @@ package body Exp_Ch3 is
       end if;
    end Build_Record_Init_Proc;
 
+   --------------------------------
+   -- Build_Record_Invariant_Proc --
+   --------------------------------
+
+   function Build_Record_Invariant_Proc
+     (R_Type : Entity_Id;
+      Nod    : Node_Id) return Node_Id
+   is
+      Loc : constant Source_Ptr := Sloc (Nod);
+
+      Object_Name : constant Name_Id := New_Internal_Name ('I');
+      --  Name for argument of invariant procedure
+
+      Object_Entity : constant Node_Id :=
+        Make_Defining_Identifier (Loc, Object_Name);
+      --  The procedure declaration entity for the argument
+
+      Invariant_Found : Boolean;
+      --  Set if any component needs an invariant check.
+
+      Proc_Id   : Entity_Id;
+      Proc_Body : Node_Id;
+      Stmts     : List_Id;
+      Type_Def  : Node_Id;
+
+      function Build_Invariant_Checks (Comp_List : Node_Id) return List_Id;
+      --  Recursive procedure that generates a list of checks for components
+      --  that need it, and recurses through variant parts when present.
+
+      function Build_Component_Invariant_Call (Comp : Entity_Id)
+      return Node_Id;
+      --  Build call to invariant procedure for a record component.
+
+      ------------------------------------
+      -- Build_Component_Invariant_Call --
+      ------------------------------------
+
+      function Build_Component_Invariant_Call (Comp : Entity_Id)
+      return Node_Id
+      is
+         Sel_Comp : Node_Id;
+
+      begin
+         Invariant_Found := True;
+         Sel_Comp :=
+           Make_Selected_Component (Loc,
+             Prefix      => New_Occurrence_Of (Object_Entity, Loc),
+             Selector_Name => New_Occurrence_Of (Comp, Loc));
+
+         return
+           Make_Procedure_Call_Statement (Loc,
+             Name                   =>
+               New_Occurrence_Of
+                 (Invariant_Procedure (Etype (Comp)), Loc),
+             Parameter_Associations => New_List (Sel_Comp));
+      end Build_Component_Invariant_Call;
+
+      ----------------------------
+      -- Build_Invariant_Checks --
+      ----------------------------
+
+      function Build_Invariant_Checks (Comp_List : Node_Id) return List_Id is
+         Decl     : Node_Id;
+         Id       : Entity_Id;
+         Stmts    : List_Id;
+
+      begin
+         Stmts := New_List;
+         Decl := First_Non_Pragma (Component_Items (Comp_List));
+         while Present (Decl) loop
+            if Nkind (Decl) = N_Component_Declaration then
+               Id  := Defining_Identifier (Decl);
+
+               if Has_Invariants (Etype (Id)) then
+                  Append_To (Stmts, Build_Component_Invariant_Call (Id));
+               end if;
+            end if;
+
+            Next (Decl);
+         end loop;
+
+         if Present (Variant_Part (Comp_List)) then
+            declare
+               Variant_Alts  : constant List_Id := New_List;
+               Var_Loc       : Source_Ptr;
+               Variant       : Node_Id;
+               Variant_Stmts : List_Id;
+
+            begin
+               Variant :=
+                 First_Non_Pragma (Variants (Variant_Part (Comp_List)));
+               while Present (Variant) loop
+                  Variant_Stmts :=
+                    Build_Invariant_Checks (Component_List (Variant));
+                  Var_Loc := Sloc (Variant);
+                  Append_To (Variant_Alts,
+                    Make_Case_Statement_Alternative (Var_Loc,
+                      Discrete_Choices =>
+                        New_Copy_List (Discrete_Choices (Variant)),
+                      Statements => Variant_Stmts));
+
+                  Next_Non_Pragma (Variant);
+               end loop;
+
+               --  The expression in the case statement is the reference to
+               --  the discriminant of the target object.
+
+               Append_To (Stmts,
+                 Make_Case_Statement (Var_Loc,
+                   Expression =>
+                     Make_Selected_Component (Var_Loc,
+                      Prefix => New_Occurrence_Of (Object_Entity, Var_Loc),
+                      Selector_Name => New_Occurrence_Of
+                        (Entity
+                          (Name (Variant_Part (Comp_List))), Var_Loc)),
+                      Alternatives => Variant_Alts));
+            end;
+         end if;
+
+         return Stmts;
+      end Build_Invariant_Checks;
+
+   --  Start of processing for Build_Record_Invariant_Proc
+
+   begin
+      Invariant_Found := False;
+      Type_Def := Type_Definition (Parent (R_Type));
+
+      if Nkind (Type_Def) = N_Record_Definition
+        and then not Null_Present (Type_Def)
+      then
+         Stmts := Build_Invariant_Checks (Component_List (Type_Def));
+      else
+         return Empty;
+      end if;
+
+      if not Invariant_Found then
+         return Empty;
+      end if;
+
+      Proc_Id :=
+        Make_Defining_Identifier (Loc,
+           Chars => New_External_Name (Chars (R_Type), "Invariant"));
+
+      Proc_Body :=
+        Make_Subprogram_Body (Loc,
+          Specification =>
+            Make_Procedure_Specification (Loc,
+              Defining_Unit_Name       => Proc_Id,
+              Parameter_Specifications => New_List (
+                Make_Parameter_Specification (Loc,
+                  Defining_Identifier => Object_Entity,
+                  Parameter_Type      => New_Occurrence_Of (R_Type, Loc)))),
+
+          Declarations               => Empty_List,
+          Handled_Statement_Sequence =>
+            Make_Handled_Sequence_Of_Statements (Loc,
+              Statements => Stmts));
+
+      Set_Ekind          (Proc_Id, E_Procedure);
+      Set_Is_Public      (Proc_Id, Is_Public (R_Type));
+      Set_Is_Internal    (Proc_Id);
+      Set_Has_Completion (Proc_Id);
+
+      return Proc_Body;
+      --  Insert_After (Nod, Proc_Body);
+      --  Analyze (Proc_Body);
+   end Build_Record_Invariant_Proc;
+
    ----------------------------
    -- Build_Slice_Assignment --
    ----------------------------
@@ -4910,8 +5101,15 @@ package body Exp_Ch3 is
          --  Expr's type, both types share the same dispatch table and there is
          --  no need to displace the pointer.
 
-         elsif Comes_From_Source (N)
-           and then Is_Interface (Typ)
+         elsif Is_Interface (Typ)
+
+           --  Avoid never-ending recursion because if Equivalent_Type is set
+           --  then we've done it already and must not do it again!
+
+           and then not
+             (Nkind (Object_Definition (N)) = N_Identifier
+               and then
+                 Present (Equivalent_Type (Entity (Object_Definition (N)))))
          then
             pragma Assert (Is_Class_Wide_Type (Typ));
 
@@ -5195,6 +5393,8 @@ package body Exp_Ch3 is
               and then not Is_CPP_Class (Typ)
               and then Tagged_Type_Expansion
               and then Nkind (Expr) /= N_Aggregate
+              and then (Nkind (Expr) /= N_Qualified_Expression
+                         or else Nkind (Expression (Expr)) /= N_Aggregate)
             then
                declare
                   Full_Typ : constant Entity_Id := Underlying_Type (Typ);
@@ -5662,7 +5862,11 @@ package body Exp_Ch3 is
       end if;
 
       if Has_Invariants (Component_Type (Base)) then
-         Build_Array_Invariant_Proc (Base, N);
+
+         --  Generate component invariant checking procedure.
+
+         Insert_Component_Invariant_Checks
+           (N, Base, Build_Array_Invariant_Proc (Base, N));
       end if;
    end Expand_Freeze_Array_Type;
 
@@ -6630,6 +6834,12 @@ package body Exp_Ch3 is
             end loop;
          end;
       end if;
+
+      --  Check whether individual components have a defined invariant,
+      --  and add the corresponding component invariant checks.
+
+      Insert_Component_Invariant_Checks
+        (N, Def_Id, Build_Record_Invariant_Proc (Def_Id, N));
    end Expand_Freeze_Record_Type;
 
    ------------------------------
@@ -7393,6 +7603,63 @@ package body Exp_Ch3 is
 
       return Is_RTU (S1, System) or else Is_RTU (S1, Ada);
    end In_Runtime;
+
+   ---------------------------------------
+   -- Insert_Component_Invariant_Checks --
+   ---------------------------------------
+
+   procedure Insert_Component_Invariant_Checks
+     (N   : Node_Id;
+     Typ  : Entity_Id;
+     Proc : Node_Id)
+   is
+      Loc     : constant Source_Ptr := Sloc (Typ);
+      Proc_Id : Entity_Id;
+
+   begin
+      if Present (Proc) then
+         Proc_Id := Defining_Entity (Proc);
+
+         if not Has_Invariants (Typ) then
+            Set_Has_Invariants (Typ);
+            Set_Has_Invariants (Proc_Id);
+            Set_Invariant_Procedure (Typ, Proc_Id);
+            Insert_After (N, Proc);
+            Analyze (Proc);
+
+         else
+
+            --  Find already created invariant body, insert body of component
+            --  invariant proc in it, and add call after other checks.
+
+            declare
+               Bod : Node_Id;
+               Inv_Id : constant Entity_Id := Invariant_Procedure (Typ);
+               Call   : constant Node_Id :=
+                 Make_Procedure_Call_Statement (Loc,
+                   Name => New_Occurrence_Of (Proc_Id, Loc),
+                   Parameter_Associations =>
+                     New_List
+                       (New_Reference_To (First_Formal (Inv_Id), Loc)));
+
+            begin
+
+               --  The invariant  body has not been analyzed yet, so we do a
+               --  sequential search forward, and retrieve it by name.
+
+               Bod := Next (N);
+               while Present (Bod) loop
+                  exit when Nkind (Bod) = N_Subprogram_Body
+                    and then Chars (Defining_Entity (Bod)) = Chars (Inv_Id);
+                  Next (Bod);
+               end loop;
+
+               Append_To (Declarations (Bod), Proc);
+               Append_To (Statements (Handled_Statement_Sequence (Bod)), Call);
+            end;
+         end if;
+      end if;
+   end Insert_Component_Invariant_Checks;
 
    ----------------------------
    -- Initialization_Warning --

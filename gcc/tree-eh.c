@@ -885,7 +885,7 @@ lower_try_finally_dup_block (gimple_seq seq, struct leh_state *outer_state,
   for (gsi = gsi_start (new_seq); !gsi_end_p (gsi); gsi_next (&gsi))
     {
       gimple stmt = gsi_stmt (gsi);
-      if (IS_UNKNOWN_LOCATION (gimple_location (stmt)))
+      if (LOCATION_LOCUS (gimple_location (stmt)) == UNKNOWN_LOCATION)
 	{
 	  tree block = gimple_block (stmt);
 	  gimple_set_location (stmt, loc);

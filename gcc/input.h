@@ -56,9 +56,6 @@ extern location_t input_location;
 #define LOCATION_BLOCK(LOC) \
   ((tree) ((IS_ADHOC_LOC (LOC)) ? get_data_from_adhoc_loc (line_table, (LOC)) \
   : NULL))
-#define IS_UNKNOWN_LOCATION(LOC) \
-  ((IS_ADHOC_LOC (LOC)) ? get_location_from_adhoc_loc (line_table, LOC) == 0 \
-  : (LOC) == 0)
 
 #define input_line LOCATION_LINE (input_location)
 #define input_filename LOCATION_FILE (input_location)

@@ -40,8 +40,9 @@ namespace
       const int nb = 200000;
       start_counters(time, resource);
 
-      std::__unordered_set<int, std::hash<int>, std::equal_to<int>,
-			   std::allocator<int>, use_cache> us;
+      std::__uset_hashtable<int, std::hash<int>, std::equal_to<int>,
+			    std::allocator<int>,
+			    std::__uset_traits<use_cache>> us;
       for (int i = 0; i != nb; ++i)
 	us.insert(i);
 
@@ -125,9 +126,10 @@ namespace
 
       start_counters(time, resource);
 
-      std::__unordered_set<std::string, std::hash<std::string>,
-			   std::equal_to<std::string>,
-			   std::allocator<std::string>, use_cache> us;
+      std::__uset_hashtable<std::string, std::hash<std::string>,
+			    std::equal_to<std::string>,
+			    std::allocator<std::string>,
+			    std::__uset_traits<use_cache>> us;
       for (int i = 0; i != nb; ++i)
 	us.insert(strs[i]);
 

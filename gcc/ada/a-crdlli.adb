@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -562,7 +562,7 @@ package body Ada.Containers.Restricted_Doubly_Linked_Lists is
 
          procedure Sort (Front, Back : Count_Type) is
             Pivot : constant Count_Type :=
-                      (if Front = 0 then Container.First else N (Front).Next);
+              (if Front = 0 then Container.First else N (Front).Next);
          begin
             if Pivot /= Back then
                Partition (Pivot, Back);

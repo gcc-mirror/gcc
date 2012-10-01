@@ -299,7 +299,7 @@ simple_move_operand (rtx x)
 
   if (MEM_P (x)
       && (MEM_VOLATILE_P (x)
-	  || mode_dependent_address_p (XEXP (x, 0))))
+	  || mode_dependent_address_p (XEXP (x, 0), MEM_ADDR_SPACE (x))))
     return false;
 
   return true;
@@ -440,9 +440,9 @@ enum classify_move_insn
 {
   /* Not a simple move from one location to another.  */
   NOT_SIMPLE_MOVE,
-  /* A simple move from one pseudo-register to another.  */
-  SIMPLE_PSEUDO_REG_MOVE,
-  /* A simple move involving a non-pseudo-register.  */
+  /* A simple move we want to decompose.  */
+  DECOMPOSABLE_SIMPLE_MOVE,
+  /* Any other simple move.  */
   SIMPLE_MOVE
 };
 
@@ -518,7 +518,7 @@ find_decomposable_subregs (rtx *px, void *data)
 
 	 If this is not a simple copy from one location to another,
 	 then we can not decompose this register.  If this is a simple
-	 copy from one pseudo-register to another, and the mode is right
+	 copy we want to decompose, and the mode is right,
 	 then we mark the register as decomposable.
 	 Otherwise we don't say anything about this register --
 	 it could be decomposed, but whether that would be
@@ -537,7 +537,7 @@ find_decomposable_subregs (rtx *px, void *data)
 	    case NOT_SIMPLE_MOVE:
 	      bitmap_set_bit (non_decomposable_context, regno);
 	      break;
-	    case SIMPLE_PSEUDO_REG_MOVE:
+	    case DECOMPOSABLE_SIMPLE_MOVE:
 	      if (MODES_TIEABLE_P (GET_MODE (x), word_mode))
 		bitmap_set_bit (decomposable_context, regno);
 	      break;
@@ -553,7 +553,7 @@ find_decomposable_subregs (rtx *px, void *data)
       enum classify_move_insn cmi_mem = NOT_SIMPLE_MOVE;
 
       /* Any registers used in a MEM do not participate in a
-	 SIMPLE_MOVE or SIMPLE_PSEUDO_REG_MOVE.  Do our own recursion
+	 SIMPLE_MOVE or DECOMPOSABLE_SIMPLE_MOVE.  Do our own recursion
 	 here, and return -1 to block the parent's recursion.  */
       for_each_rtx (&XEXP (x, 0), find_decomposable_subregs, &cmi_mem);
       return -1;
@@ -1336,11 +1336,11 @@ dump_choices (bool speed_p, const char *description)
 }
 
 /* Look for registers which are always accessed via word-sized SUBREGs
-   or via copies.  Decompose these registers into several word-sized
-   pseudo-registers.  */
+   or -if DECOMPOSE_COPIES is true- via copies.  Decompose these
+   registers into several word-sized pseudo-registers.  */
 
 static void
-decompose_multiword_subregs (void)
+decompose_multiword_subregs (bool decompose_copies)
 {
   unsigned int max;
   basic_block bb;
@@ -1438,8 +1438,15 @@ decompose_multiword_subregs (void)
 	    cmi = NOT_SIMPLE_MOVE;
 	  else
 	    {
+	      /* We mark pseudo-to-pseudo copies as decomposable during the
+		 second pass only.  The first pass is so early that there is
+		 good chance such moves will be optimized away completely by
+		 subsequent optimizations anyway.
+
+		 However, we call find_pseudo_copy even during the first pass
+		 so as to properly set up the reg_copy_graph.  */
 	      if (find_pseudo_copy (set))
-		cmi = SIMPLE_PSEUDO_REG_MOVE;
+		cmi = decompose_copies? DECOMPOSABLE_SIMPLE_MOVE : SIMPLE_MOVE;
 	      else
 		cmi = SIMPLE_MOVE;
 	    }
@@ -1640,7 +1647,7 @@ gate_handle_lower_subreg (void)
 static unsigned int
 rest_of_handle_lower_subreg (void)
 {
-  decompose_multiword_subregs ();
+  decompose_multiword_subregs (false);
   return 0;
 }
 
@@ -1649,7 +1656,7 @@ rest_of_handle_lower_subreg (void)
 static unsigned int
 rest_of_handle_lower_subreg2 (void)
 {
-  decompose_multiword_subregs ();
+  decompose_multiword_subregs (true);
   return 0;
 }
 

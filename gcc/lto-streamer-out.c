@@ -125,7 +125,7 @@ static bool
 tree_is_indexable (tree t)
 {
   if (TREE_CODE (t) == PARM_DECL)
-    return false;
+    return true;
   else if (TREE_CODE (t) == VAR_DECL && decl_function_context (t)
 	   && !TREE_STATIC (t))
     return false;
@@ -237,6 +237,7 @@ lto_output_tree_ref (struct output_block *ob, tree expr)
     case VAR_DECL:
     case DEBUG_EXPR_DECL:
       gcc_assert (decl_function_context (expr) == NULL || TREE_STATIC (expr));
+    case PARM_DECL:
       streamer_write_record_start (ob, LTO_global_decl_ref);
       lto_output_var_decl_index (ob->decl_state, ob->main_stream, expr);
       break;
@@ -805,9 +806,6 @@ output_function (struct cgraph_node *node)
   streamer_write_record_start (ob, LTO_function);
 
   output_struct_function_base (ob, fn);
-
-  /* Output the head of the arguments list.  */
-  stream_write_tree (ob, DECL_ARGUMENTS (function), true);
 
   /* Output all the SSA names used in the function.  */
   output_ssa_names (ob, fn);

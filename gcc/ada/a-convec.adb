@@ -85,10 +85,10 @@ package body Ada.Containers.Vectors is
 
          declare
             RE : Elements_Array renames
-                   Right.Elements.EA (Index_Type'First .. Right.Last);
+              Right.Elements.EA (Index_Type'First .. Right.Last);
 
             Elements : constant Elements_Access :=
-                         new Elements_Type'(Right.Last, RE);
+              new Elements_Type'(Right.Last, RE);
 
          begin
             return (Controlled with Elements, Right.Last, 0, 0);
@@ -101,7 +101,7 @@ package body Ada.Containers.Vectors is
                    Left.Elements.EA (Index_Type'First .. Left.Last);
 
             Elements : constant Elements_Access :=
-                         new Elements_Type'(Left.Last, LE);
+              new Elements_Type'(Left.Last, LE);
 
          begin
             return (Controlled with Elements, Left.Last, 0, 0);
@@ -198,13 +198,13 @@ package body Ada.Containers.Vectors is
 
       declare
          LE : Elements_Array renames
-                Left.Elements.EA (Index_Type'First .. Left.Last);
+           Left.Elements.EA (Index_Type'First .. Left.Last);
 
          RE : Elements_Array renames
-                Right.Elements.EA (Index_Type'First .. Right.Last);
+           Right.Elements.EA (Index_Type'First .. Right.Last);
 
          Elements : constant Elements_Access :=
-                      new Elements_Type'(Last, LE & RE);
+           new Elements_Type'(Last, LE & RE);
 
       begin
          return (Controlled with Elements, Last, 0, 0);
@@ -223,9 +223,9 @@ package body Ada.Containers.Vectors is
       if Left.Is_Empty then
          declare
             Elements : constant Elements_Access :=
-                         new Elements_Type'
-                               (Last => Index_Type'First,
-                                EA   => (others => Right));
+              new Elements_Type'
+                (Last => Index_Type'First,
+                 EA   => (others => Right));
 
          begin
             return (Controlled with Elements, Index_Type'First, 0, 0);
@@ -253,7 +253,7 @@ package body Ada.Containers.Vectors is
            Left.Elements.EA (Index_Type'First .. Left.Last);
 
          Elements : constant Elements_Access :=
-                      new Elements_Type'(Last => Last, EA => LE & Right);
+           new Elements_Type'(Last => Last, EA => LE & Right);
 
       begin
          return (Controlled with Elements, Last, 0, 0);
@@ -272,9 +272,9 @@ package body Ada.Containers.Vectors is
       if Right.Is_Empty then
          declare
             Elements : constant Elements_Access :=
-                         new Elements_Type'
-                               (Last => Index_Type'First,
-                                EA   => (others => Left));
+              new Elements_Type'
+                (Last => Index_Type'First,
+                 EA   => (others => Left));
 
          begin
             return (Controlled with Elements, Index_Type'First, 0, 0);
@@ -302,9 +302,9 @@ package body Ada.Containers.Vectors is
                 Right.Elements.EA (Index_Type'First .. Right.Last);
 
          Elements : constant Elements_Access :=
-                      new Elements_Type'
-                        (Last => Last,
-                         EA   => Left & RE);
+           new Elements_Type'
+             (Last => Last,
+              EA   => Left & RE);
 
       begin
          return (Controlled with Elements, Last, 0, 0);
@@ -332,9 +332,9 @@ package body Ada.Containers.Vectors is
          Last : constant Index_Type := Index_Type'First + 1;
 
          Elements : constant Elements_Access :=
-                      new Elements_Type'
-                            (Last => Last,
-                             EA   => (Left, Right));
+           new Elements_Type'
+             (Last => Last,
+              EA   => (Left, Right));
 
       begin
          return (Controlled with Elements, Last, 0, 0);
@@ -519,10 +519,8 @@ package body Ada.Containers.Vectors is
          L : Natural renames C.Lock;
       begin
          return R : constant Constant_Reference_Type :=
-                      (Element =>
-                         Container.Elements.EA (Position.Index)'Access,
-                       Control =>
-                         (Controlled with Container'Unrestricted_Access))
+           (Element => Container.Elements.EA (Position.Index)'Access,
+            Control => (Controlled with Container'Unrestricted_Access))
          do
             B := B + 1;
             L := L + 1;
@@ -544,9 +542,8 @@ package body Ada.Containers.Vectors is
             L : Natural renames C.Lock;
          begin
             return R : constant Constant_Reference_Type :=
-                         (Element => Container.Elements.EA (Index)'Access,
-                          Control =>
-                            (Controlled with Container'Unrestricted_Access))
+              (Element => Container.Elements.EA (Index)'Access,
+               Control => (Controlled with Container'Unrestricted_Access))
             do
                B := B + 1;
                L := L + 1;
@@ -2253,9 +2250,9 @@ package body Ada.Containers.Vectors is
       --  for a reverse iterator, Container.Last is the beginning.
 
       return It : constant Iterator :=
-                    (Limited_Controlled with
-                       Container => V,
-                       Index     => No_Index)
+        (Limited_Controlled with
+           Container => V,
+           Index     => No_Index)
       do
          B := B + 1;
       end return;
@@ -2306,9 +2303,9 @@ package body Ada.Containers.Vectors is
       --  is a forward or reverse iteration.
 
       return It : constant Iterator :=
-                    (Limited_Controlled with
-                       Container => V,
-                       Index     => Start.Index)
+        (Limited_Controlled with
+           Container => V,
+           Index     => Start.Index)
       do
          B := B + 1;
       end return;
@@ -2664,9 +2661,8 @@ package body Ada.Containers.Vectors is
          L : Natural renames C.Lock;
       begin
          return R : constant Reference_Type :=
-                      (Element =>
-                         Container.Elements.EA (Position.Index)'Access,
-                       Control => (Controlled with Position.Container))
+           (Element => Container.Elements.EA (Position.Index)'Access,
+            Control => (Controlled with Position.Container))
          do
             B := B + 1;
             L := L + 1;
@@ -2688,9 +2684,8 @@ package body Ada.Containers.Vectors is
             L : Natural renames C.Lock;
          begin
             return R : constant Reference_Type :=
-                         (Element => Container.Elements.EA (Index)'Access,
-                          Control =>
-                            (Controlled with Container'Unrestricted_Access))
+              (Element => Container.Elements.EA (Index)'Access,
+               Control => (Controlled with Container'Unrestricted_Access))
             do
                B := B + 1;
                L := L + 1;
@@ -3150,7 +3145,7 @@ package body Ada.Containers.Vectors is
       Index     : Index_Type := Index_Type'Last) return Extended_Index
    is
       Last : constant Index_Type'Base :=
-               Index_Type'Min (Container.Last, Index);
+        Index_Type'Min (Container.Last, Index);
 
    begin
       for Indx in reverse Index_Type'First .. Last loop

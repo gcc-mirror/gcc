@@ -138,11 +138,16 @@ along with GCC; see the file COPYING3.  If not see
 #define TARGET_INIT_LIBFUNCS  sh_init_sync_libfuncs
 
 #undef SUBTARGET_OVERRIDE_OPTIONS
-#define SUBTARGET_OVERRIDE_OPTIONS			\
-  do							\
-    {							\
-      /* Defaulting to -msoft-atomic.  */		\
-      if (global_options_set.x_TARGET_SOFT_ATOMIC == 0)	\
-	TARGET_SOFT_ATOMIC = 1;				\
-    }							\
+#define SUBTARGET_OVERRIDE_OPTIONS					\
+  do									\
+    {									\
+      /* Set default atomic model if it hasn't been specified.  */	\
+      if (global_options_set.x_sh_atomic_model_str == 0)		\
+	{								\
+	  if (TARGET_SH3)						\
+	    sh_atomic_model_str = "soft-gusa";				\
+	  else if (TARGET_SH1)						\
+	    sh_atomic_model_str = "soft-imask";				\
+	}								\
+    }									\
   while (0)

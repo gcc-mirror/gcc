@@ -1394,11 +1394,10 @@ particular release.
       <entry/>
     </row>
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>23.2.4</entry>
       <entry>Associative containers</entry>
-      <entry>Partial</entry>
-      <entry>Missing emplace members</entry>
+      <entry>Y</entry>
+      <entry/>
     </row>
     <row>
       <entry>23.2.5</entry>
@@ -1419,10 +1418,12 @@ particular release.
       <entry/>
     </row>
     <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>23.3.3</entry>
       <entry>Class template <code>deque</code></entry>
-      <entry>Y</entry>
-      <entry/>
+      <entry>Partial</entry>
+      <entry><code>insert</code> and <code>erase</code> members do not
+             take <code>const_iterator</code> arguments (N2350).</entry>
     </row>
     <row>
       <entry>23.3.4</entry>
@@ -1431,22 +1432,28 @@ particular release.
       <entry/>
     </row>
     <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>23.3.5</entry>
       <entry>Class template <code>list</code></entry>
-      <entry>Y</entry>
-      <entry/>
+      <entry>Partial</entry>
+      <entry><code>insert</code> and <code>erase</code> members do not
+             take <code>const_iterator</code> arguments (N2350).</entry>
     </row>
     <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>23.3.6</entry>
       <entry>Class template <code>vector</code></entry>
-      <entry>Y</entry>
-      <entry/>
+      <entry>Partial</entry>
+      <entry><code>insert</code> and <code>erase</code> members do not
+             take <code>const_iterator</code> arguments (N2350).</entry>
     </row>
     <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>23.3.7</entry>
       <entry>Class <code>vector&lt;bool&gt;</code></entry>
-      <entry>Y</entry>
-      <entry/>
+      <entry>Partial</entry>
+      <entry><code>insert</code> and <code>erase</code> members do not
+             take <code>const_iterator</code> arguments (N2350).</entry>
     </row>
     <row>
       <entry>23.4</entry>

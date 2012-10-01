@@ -668,9 +668,8 @@ package Sinfo is
    --  Compile_Time_Known_Aggregate (Flag18-Sem)
    --    Present in N_Aggregate nodes. Set for aggregates which can be fully
    --    evaluated at compile time without raising constraint error. Such
-   --    aggregates can be passed as is to Gigi without any expansion. See
-   --    Exp_Aggr for the specific conditions under which an aggregate has this
-   --    flag set.
+   --    aggregates can be passed as is the back end without any expansion.
+   --    See Exp_Aggr for specific conditions under which this flag gets set.
 
    --  Componentwise_Assignment (Flag14-Sem)
    --    Present in N_Assignment_Statement nodes. Set for a record assignment
@@ -1545,6 +1544,11 @@ package Sinfo is
    --    declaration has an expression, this flag means that this expression
    --    should not be taken into account (needed for in place initialization
    --    with aggregates).
+
+   --  No_Minimize_Eliminate (Flag17-Sem)
+   --    This flag is present in membership operator nodes (N_In/N_Not_In).
+   --    It is used to indicate that processing for extended overflow checking
+   --    modes is not required (this is used to prevent infinite recursion).
 
    --  No_Truncation (Flag17-Sem)
    --    Present in N_Unchecked_Type_Conversion node. This flag has an effect
@@ -3676,6 +3680,7 @@ package Sinfo is
       --  Left_Opnd (Node2)
       --  Right_Opnd (Node3)
       --  Alternatives (List4) (set to No_List if only one set alternative)
+      --  No_Minimize_Eliminate (Flag17)
       --  plus fields for expression
 
       --  N_Not_In
@@ -3683,6 +3688,7 @@ package Sinfo is
       --  Left_Opnd (Node2)
       --  Right_Opnd (Node3)
       --  Alternatives (List4) (set to No_List if only one set alternative)
+      --  No_Minimize_Eliminate (Flag17)
       --  plus fields for expression
 
       --------------------
@@ -3849,6 +3855,22 @@ package Sinfo is
       --  case of multiply/divide/rem/mod operations, Gigi will only see fixed
       --  point operands if the Treat_Fixed_As_Integer flag is set and will
       --  thus treat these nodes in identical manner, ignoring small values.
+
+      --  Note on overflow handling: When the overflow checking mode is set to
+      --  MINIMIZED or ELIMINATED, nodes for signed arithmetic operations may
+      --  be modified to use a larger type for the operands and result. In
+      --  these cases, the back end does not need the Entity field anyway, so
+      --  there is no point in setting it. In fact we reuse the Entity field to
+      --  record the possible range of the result. Entity points to an N_Range
+      --  node whose Low_Bound and High_Bound fields point to integer literal
+      --  nodes containing the computed bounds. These range nodes are only set
+      --  for intermediate nodes whose parents are themselves either arithmetic
+      --  operators, or comparison or membership tests. The computed ranges are
+      --  then used in processing the parent operation. In the case where the
+      --  computed range exceeds that of Long_Long_Integer, and we are running
+      --  in ELIMINATED mode, the operator node will be changed to be a call to
+      --  the appropriate routine in System.Bignums, and in this case we forget
+      --  about keeping track of the range.
 
       ---------------------------------
       -- 4.5.9 Quantified Expression --
@@ -4289,6 +4311,14 @@ package Sinfo is
 
       --  Note: Exception_Junk is set for the wrapping blocks created during
       --  local raise optimization (Exp_Ch11.Expand_Local_Exception_Handlers).
+
+      --  Note: from a control flow viewpoint, a block statement defines an
+      --  extended basic block, i.e. the entry of the block dominates every
+      --  statement in the sequence. When generating new statements with
+      --  exception handlers in the expander at the end of a sequence that
+      --  comes from source code, it can be necessary to wrap them all in a
+      --  block statement in order to expose the implicit control flow to
+      --  gigi and thus prevent it from issuing bogus control flow warnings.
 
       --  N_Block_Statement
       --  Sloc points to DECLARE or BEGIN
@@ -8771,6 +8801,9 @@ package Sinfo is
    function No_Initialization
      (N : Node_Id) return Boolean;    -- Flag13
 
+   function No_Minimize_Eliminate
+     (N : Node_Id) return Boolean;    -- Flag17
+
    function No_Truncation
      (N : Node_Id) return Boolean;    -- Flag17
 
@@ -9742,6 +9775,9 @@ package Sinfo is
 
    procedure Set_No_Initialization
      (N : Node_Id; Val : Boolean := True);    -- Flag13
+
+   procedure Set_No_Minimize_Eliminate
+     (N : Node_Id; Val : Boolean := True);    -- Flag17
 
    procedure Set_No_Truncation
      (N : Node_Id; Val : Boolean := True);    -- Flag17
@@ -11994,6 +12030,7 @@ package Sinfo is
    pragma Inline (No_Elaboration_Check);
    pragma Inline (No_Entities_Ref_In_Spec);
    pragma Inline (No_Initialization);
+   pragma Inline (No_Minimize_Eliminate);
    pragma Inline (No_Truncation);
    pragma Inline (Null_Present);
    pragma Inline (Null_Exclusion_Present);
@@ -12314,6 +12351,7 @@ package Sinfo is
    pragma Inline (Set_No_Elaboration_Check);
    pragma Inline (Set_No_Entities_Ref_In_Spec);
    pragma Inline (Set_No_Initialization);
+   pragma Inline (Set_No_Minimize_Eliminate);
    pragma Inline (Set_No_Truncation);
    pragma Inline (Set_Null_Present);
    pragma Inline (Set_Null_Exclusion_Present);

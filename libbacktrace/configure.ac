@@ -42,7 +42,16 @@ AC_USE_SYSTEM_EXTENSIONS
 libtool_VERSION=1:0:0
 AC_SUBST(libtool_VERSION)
 
-AM_INIT_AUTOMAKE([1.11.1 foreign no-dist no-define -Wall -Wno-portability])
+# 1.11.1: Require that version of automake.
+# foreign: Don't require README, INSTALL, NEWS, etc.
+# no-define: Don't define PACKAGE and VERSION.
+# no-dependencies: Don't generate automatic dependencies.
+#    (because it breaks when using bootstrap-lean, since some of the
+#    headers are gone at "make install" time).
+# -Wall: Issue all automake warnings.
+# -Wno-portability: Don't warn about constructs supported by GNU make.
+#    (because GCC requires GNU make anyhow).
+AM_INIT_AUTOMAKE([1.11.1 foreign no-dist no-define no-dependencies -Wall -Wno-portability])
 
 AM_MAINTAINER_MODE
 

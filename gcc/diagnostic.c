@@ -27,8 +27,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "version.h"
+#include "demangle.h"
 #include "input.h"
 #include "intl.h"
+#include "backtrace.h"
 #include "diagnostic.h"
 
 #define pedantic_warning_kind(DC)			\
@@ -296,6 +298,99 @@ diagnostic_show_locus (diagnostic_context * context,
   pp_set_prefix (context->printer, saved_prefix);
 }
 
+/* Functions at which to stop the backtrace print.  It's not
+   particularly helpful to print the callers of these functions.  */
+
+static const char * const bt_stop[] =
+{
+  "main",
+  "toplev_main",
+  "execute_one_pass",
+  "compile_file",
+};
+
+/* A callback function passed to the backtrace_full function.  */
+
+static int
+bt_callback (void *data, uintptr_t pc, const char *filename, int lineno,
+	     const char *function)
+{
+  int *pcount = (int *) data;
+
+  /* If we don't have any useful information, don't print
+     anything.  */
+  if (filename == NULL && function == NULL)
+    return 0;
+
+  /* Skip functions in diagnostic.c.  */
+  if (*pcount == 0
+      && filename != NULL
+      && strcmp (lbasename(filename), "diagnostic.c") == 0)
+    return 0;
+
+  /* Print up to 20 functions.  We could make this a --param, but
+     since this is only for debugging just use a constant for now.  */
+  if (*pcount >= 20)
+    {
+      /* Returning a non-zero value stops the backtrace.  */
+      return 1;
+    }
+  ++*pcount;
+
+  char *alc = NULL;
+  if (function != NULL)
+    {
+      char *str = cplus_demangle_v3 (function,
+				     (DMGL_VERBOSE | DMGL_ANSI
+				      | DMGL_GNU_V3 | DMGL_PARAMS));
+      if (str != NULL)
+	{
+	  alc = str;
+	  function = str;
+	}
+
+      for (size_t i = 0; i < ARRAY_SIZE (bt_stop); ++i)
+	{
+	  size_t len = strlen (bt_stop[i]);
+	  if (strncmp (function, bt_stop[i], len) == 0
+	      && (function[len] == '\0' || function[len] == '('))
+	    {
+	      if (alc != NULL)
+		free (alc);
+	      /* Returning a non-zero value stops the backtrace.  */
+	      return 1;
+	    }
+	}
+    }
+
+  fprintf (stderr, "0x%lx %s\n\t%s:%d\n",
+	   (unsigned long) pc,
+	   function == NULL ? "???" : function,
+	   filename == NULL ? "???" : filename,
+	   lineno);
+
+  if (alc != NULL)
+    free (alc);
+
+  return 0;
+}
+
+/* A callback function passed to the backtrace_full function.  This is
+   called if backtrace_full has an error.  */
+
+static void
+bt_err_callback (void *data ATTRIBUTE_UNUSED, const char *msg, int errnum)
+{
+  if (errnum < 0)
+    {
+      /* This means that no debug info was available.  Just quietly
+	 skip printing backtrace info.  */
+      return;
+    }
+  fprintf (stderr, "%s%s%s\n", msg, errnum == 0 ? "" : ": ",
+	   errnum == 0 ? "" : xstrerror (errnum));
+}
+
 /* Take any action which is expected to happen after the diagnostic
    is written out.  This function does not always return.  */
 static void
@@ -334,13 +429,27 @@ diagnostic_action_after_output (diagnostic_context *context,
       break;
 
     case DK_ICE:
-      if (context->abort_on_error)
-	real_abort ();
+      {
+	struct backtrace_state *state =
+	  backtrace_create_state (NULL, 0, bt_err_callback, NULL);
+	int count = 0;
+	if (state != NULL)
+	  backtrace_full (state, 2, bt_callback, bt_err_callback,
+			  (void *) &count);
 
-      fnotice (stderr, "Please submit a full bug report,\n"
-	       "with preprocessed source if appropriate.\n"
-	       "See %s for instructions.\n", bug_report_url);
-      exit (ICE_EXIT_CODE);
+	if (context->abort_on_error)
+	  real_abort ();
+
+	fnotice (stderr, "Please submit a full bug report,\n"
+		 "with preprocessed source if appropriate.\n");
+	if (count > 0)
+	  fnotice (stderr,
+		   ("Please include the complete backtrace "
+		    "with any bug report.\n"));
+	fnotice (stderr, "See %s for instructions.\n", bug_report_url);
+
+	exit (ICE_EXIT_CODE);
+      }
 
     case DK_FATAL:
       if (context->abort_on_error)

@@ -410,7 +410,7 @@ package body Make is
    --  Delete all temp files created by Gnatmake and call Osint.Fail, with the
    --  parameter S (see osint.ads). This is called from the Prj hierarchy and
    --  the MLib hierarchy. This subprogram also prints current error messages
-   --  on stdout (ie finalizes errout)
+   --  (i.e. finalizes Errutil).
 
    --------------------------
    -- Obsolete Executables --
@@ -7825,11 +7825,12 @@ package body Make is
 
          --  -vPx  (verbosity of the parsing of the project files)
 
-         elsif Argv'Last = 4
-           and then Argv (2 .. 3) = "vP"
-           and then Argv (4) in '0' .. '2'
-         then
-            if And_Save then
+         elsif Argv'Length >= 3 and then Argv (2 .. 3) = "vP" then
+            if Argv'Last /= 4 or else Argv (4) not in '0' .. '2' then
+               Make_Failed
+                 ("invalid verbosity level " & Argv (4 .. Argv'Last));
+
+            elsif And_Save then
                case Argv (4) is
                   when '0' =>
                      Current_Verbosity := Prj.Default;

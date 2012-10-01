@@ -5612,8 +5612,9 @@ It is not necessary for this macro to come up with a legitimate
 address;  but often a machine-dependent strategy can generate better code.
 @end defmac
 
-@deftypefn {Target Hook} bool TARGET_MODE_DEPENDENT_ADDRESS_P (const_rtx @var{addr})
-This hook returns @code{true} if memory address @var{addr} can have
+@deftypefn {Target Hook} bool TARGET_MODE_DEPENDENT_ADDRESS_P (const_rtx @var{addr}, addr_space_t @var{addrspace})
+This hook returns @code{true} if memory address @var{addr} in address
+space @var{addrspace} can have
 different meanings depending on the machine mode of the memory
 reference it is used for or if the address is valid for some modes
 but not others.
@@ -11037,6 +11038,10 @@ On some targets, branches may have a limited range.  Optimizing the
 filling of delay slots can result in branches being redirected, and this
 may in turn cause a branch offset to overflow.
 @end defmac
+
+@deftypefn {Target Hook} bool TARGET_CAN_FOLLOW_JUMP (const_rtx @var{follower}, const_rtx @var{followee})
+FOLLOWER and FOLLOWEE are JUMP_INSN instructions;  return true if FOLLOWER may be modified to follow FOLLOWEE;  false, if it can't.  For example, on some targets, certain kinds of branches can't be made to  follow through a hot/cold partitioning.
+@end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_COMMUTATIVE_P (const_rtx @var{x}, int @var{outer_code})
 This target hook returns @code{true} if @var{x} is considered to be commutative.

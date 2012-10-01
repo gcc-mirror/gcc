@@ -11,7 +11,6 @@ package pprof
 import (
 	"bufio"
 	"bytes"
-	_ "debug/elf"
 	"fmt"
 	"io"
 	"runtime"
