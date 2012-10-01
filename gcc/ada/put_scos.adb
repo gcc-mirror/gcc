@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Opt;     use Opt;
 with Par_SCO; use Par_SCO;
 with SCOs;    use SCOs;
 with Snames;  use Snames;
@@ -33,6 +34,9 @@ procedure Put_SCOs is
 
    procedure Write_SCO_Initiate (SU : SCO_Unit_Index);
    --  Start SCO line for unit SU, also emitting SCO unit header if necessary
+
+   procedure Write_Instance_Table;
+   --  Output the SCO table of instances
 
    procedure Output_Range (T : SCO_Table_Entry);
    --  Outputs T.From and T.To in line:col-line:col format
@@ -75,6 +79,33 @@ procedure Put_SCOs is
          Write_Info_Char (S (J));
       end loop;
    end Output_String;
+
+   --------------------------
+   -- Write_Instance_Table --
+   --------------------------
+
+   procedure Write_Instance_Table is
+   begin
+      for J in 1 .. SCO_Instance_Table.Last loop
+         declare
+            SIE : SCO_Instance_Table_Entry
+                    renames SCO_Instance_Table.Table (J);
+         begin
+            Output_String ("C i ");
+            Write_Info_Nat (Nat (J));
+            Write_Info_Char (' ');
+            Write_Info_Nat (SIE.Inst_Dep_Num);
+            Write_Info_Char ('|');
+            Output_Source_Location (SIE.Inst_Loc);
+
+            if SIE.Enclosing_Instance > 0 then
+               Write_Info_Char (' ');
+               Write_Info_Nat (Nat (SIE.Enclosing_Instance));
+            end if;
+            Write_Info_Terminate;
+         end;
+      end loop;
+   end Write_Instance_Table;
 
    ------------------------
    -- Write_SCO_Initiate --
@@ -270,4 +301,8 @@ begin
          end loop;
       end;
    end loop;
+
+   if Opt.Generate_SCO_Instance_Table then
+      Write_Instance_Table;
+   end if;
 end Put_SCOs;

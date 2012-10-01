@@ -225,7 +225,7 @@ begin
 
       case C is
 
-         --  Header entry
+         --  Header or instance table entry
 
          when ' ' =>
 
@@ -236,26 +236,71 @@ begin
                  SCO_Table.Last;
             end if;
 
-            --  Scan out dependency number and file name
-
-            Skip_Spaces;
-            Dnum := Get_Int;
-
             Skip_Spaces;
 
-            N := 0;
-            while Nextc > ' ' loop
-               N := N + 1;
-               Buf (N) := Getc;
-            end loop;
+            case Nextc is
 
-            --  Make new unit table entry (will fill in To later)
+               --  Instance table entry
 
-            SCO_Unit_Table.Append (
-              (File_Name => new String'(Buf (1 .. N)),
-               Dep_Num   => Dnum,
-               From      => SCO_Table.Last + 1,
-               To        => 0));
+               when 'i' =>
+                  declare
+                     Inum : SCO_Instance_Index;
+                  begin
+                     Skipc;
+                     Skip_Spaces;
+
+                     Inum := SCO_Instance_Index (Get_Int);
+                     SCO_Instance_Table.Increment_Last;
+                     pragma Assert (SCO_Instance_Table.Last = Inum);
+
+                     Skip_Spaces;
+                     declare
+                        SIE : SCO_Instance_Table_Entry
+                                renames SCO_Instance_Table.Table (Inum);
+                     begin
+                        SIE.Inst_Dep_Num := Get_Int;
+                        C := Getc;
+                        pragma Assert (C = '|');
+                        Get_Source_Location (SIE.Inst_Loc);
+
+                        if not At_EOL then
+                           Skip_Spaces;
+                           SIE.Enclosing_Instance :=
+                             SCO_Instance_Index (Get_Int);
+                           pragma Assert (SIE.Enclosing_Instance in
+                                            SCO_Instance_Table.First
+                                         .. SCO_Instance_Table.Last);
+                        end if;
+                     end;
+                  end;
+
+               --  Unit header
+
+               when '0' .. '9' =>
+                  --  Scan out dependency number and file name
+
+                  Dnum := Get_Int;
+
+                  Skip_Spaces;
+
+                  N := 0;
+                  while Nextc > ' ' loop
+                     N := N + 1;
+                     Buf (N) := Getc;
+                  end loop;
+
+                  --  Make new unit table entry (will fill in To later)
+
+                  SCO_Unit_Table.Append (
+                    (File_Name => new String'(Buf (1 .. N)),
+                     Dep_Num   => Dnum,
+                     From      => SCO_Table.Last + 1,
+                     To        => 0));
+
+                     when others =>
+                        raise Program_Error;
+
+            end case;
 
          --  Statement entry
 

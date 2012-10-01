@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2011, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2012, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -129,6 +129,9 @@ typedef Text_Ptr Source_Ptr;
 
 /* Used for Sloc in all nodes in the representation of package Standard.  */
 #define Standard_Location -2
+
+/* Instance identifiers */
+typedef Nat Instance_Id;
 
 /* Type used for union of all possible ID values covering all ranges */
 typedef int Union_Id;

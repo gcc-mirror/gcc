@@ -1,3 +1,57 @@
+2012-10-01  Vincent Pucci  <pucci@adacore.com>
+
+	* s-gearop.adb (Vector_Matrix_Product): Dimensions check fixed. Index
+	of Left in S evaluation fixed.
+
+2012-10-01  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Analyze_Declarations): Avoid
+	premature freezing caused by the internally generated subprogram
+	_postconditions.
+	* checks.adb (Expr_Known_Valid): Float literals are assumed to be valid
+	in VM targets.
+
+2012-10-01  Thomas Quinot  <quinot@adacore.com>
+
+	* sinput.ads, sinput.adb, sinput-l.adb sinput-c.adb (Sinput): New
+	Instances table, tracking all generic instantiations. Source file
+	attribute Instance replaces previous Instantiation attribute with an
+	index into the Instances table.
+	(Iterate_On_Instances): New generic procedure.
+	(Create_Instantiation_Source): Record instantiations in Instances.
+	(Tree_Read, Tree_Write): Read/write the instance table.
+	* scils.ads, scos.adb (SCO_Instance_Table): New table, contains
+	information copied from Sinput.Instance_Table, but self-contained
+	within the SCO data structures.
+	* par_sco.ads, par_sco.adb (To_Source_Location): Move to library level.
+	(Record_Instance): New subprogram, used by...
+	(Populate_SCO_Instance_Table): New subprogram to fill
+	the SCO instance table from the Sinput one (called by SCO_Output).
+	* opt.ads (Generate_SCO_Instance_Table): New option.
+	* put_scos.adb (Write_Instance_Table): New subprogram, used by...
+	(Put_SCOs): Dump the instance table at the end of SCO information
+	if requested.
+	* get_scos.adb (Get_SCOs): Read SCO_Instance_Table.
+	* types.h: Add declaration for Instance_Id.
+	* back_end.adb (Call_Back_End): Pass instance ids in source file
+	information table.
+	(Scan_Back_End_Switches): -fdebug-instances sets
+	Opt.Generate_SCO_Instance_Table.
+	* gcc-interface/gigi.h: File_Info_Type includes instance id.
+	* gcc-interface/trans.c: Under -fdebug-instances, set instance
+	id in line map from same in file info.
+
+2012-10-01  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_elab.adb: Minor reformatting
+	(Check_Elab_Call): Minor fix to debugging code
+	(add special circuit for the valid case where a 'Access attribute
+	reference is passed to Check_Elab_Call).
+
+2012-10-01  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch3.adb: Minor reformatting.
+
 2012-10-01  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch3.ads (Build_Array_Invariant_Proc): moved to body.

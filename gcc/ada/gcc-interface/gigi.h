@@ -228,7 +228,8 @@ extern const char *ref_filename;
 struct File_Info_Type
 {
   File_Name_Type File_Name;
-  Nat Num_Source_Lines;
+  Instance_Id    Instance;
+  Nat            Num_Source_Lines;
 };
 
 #ifdef __cplusplus

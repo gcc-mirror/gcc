@@ -83,6 +83,9 @@ package Sinput is
       Preproc);
       --  Source file with preprocessing commands to be preprocessed
 
+   type Instance_Id is new Nat;
+   No_Instance_Id : constant Instance_Id;
+
    ----------------------------
    -- Source License Control --
    ----------------------------
@@ -198,6 +201,12 @@ package Sinput is
    --    Only processing in Sprint that generates this file is permitted to
    --    set this field.
 
+   --  Instance : Instance_Id (read-only)
+   --    For entries corresponding to a generic instantiation, unique
+   --    identifier denoting the full chain of nested instantiations. Set to
+   --    No_Instance_Id for the case of a normal, non-instantiation entry.
+   --    See below for details on the handling of generic instantiations.
+
    --  License : License_Type;
    --    License status of source file
 
@@ -249,16 +258,16 @@ package Sinput is
    --    This value is used for formatting of error messages, and also is used
    --    in the detection of keywords misused as identifiers.
 
-   --  Instantiation : Source_Ptr;
-   --    Source file location of the instantiation if this source file entry
-   --    represents a generic instantiation. Set to No_Location for the case
-   --    of a normal non-instantiation entry. See section below for details.
+   --  Inlined_Call : Source_Ptr;
+   --    Source file location of the subprogram call if this source file entry
+   --    represents an inlined body. Set to No_Location otherwise.
    --    This field is read-only for clients.
 
    --  Inlined_Body : Boolean;
    --    This can only be set True if Instantiation has a value other than
    --    No_Location. If true it indicates that the instantiation is actually
    --    an instance of an inlined body.
+   --    ??? Redundant, always equal to (Inlined_Call /= No_Location)
 
    --  Template : Source_File_Index; (read-only)
    --    Source file index of the source file containing the template if this
@@ -289,7 +298,8 @@ package Sinput is
    function Full_Ref_Name     (S : SFI) return File_Name_Type;
    function Identifier_Casing (S : SFI) return Casing_Type;
    function Inlined_Body      (S : SFI) return Boolean;
-   function Instantiation     (S : SFI) return Source_Ptr;
+   function Inlined_Call      (S : SFI) return Source_Ptr;
+   function Instance          (S : SFI) return Instance_Id;
    function Keyword_Casing    (S : SFI) return Casing_Type;
    function Last_Source_Line  (S : SFI) return Physical_Line_Number;
    function License           (S : SFI) return License_Type;
@@ -408,16 +418,30 @@ package Sinput is
    --  to point to the same text, because of the virtual origin pointers used
    --  in the source table.
 
-   --  The Instantiation field of this source file index entry, usually set
-   --  to No_Source_File, instead contains the Sloc of the instantiation. In
-   --  the case of nested instantiations, this Sloc may itself refer to an
-   --  instantiation, so the complete chain can be traced.
+   --  The Instantiation_Id field of this source file index entry, set
+   --  to No_Instance_Id for normal entries, instead contains a value that
+   --  uniquely identifies a particular instantiation, and the associated
+   --  entry in the Instances table. The source location of the instantiation
+   --  can be retrieved using function Instantiation below. In the case of
+   --  nested instantiations, the Instances table can be used to trace the
+   --  complete chain of nested instantiations.
 
-   --  Two routines are used to build these special entries in the source
-   --  file table. Create_Instantiation_Source is first called to build
+   --  Two routines are used to build the special instance entries in the
+   --  source file table. Create_Instantiation_Source is first called to build
    --  the virtual source table entry for the instantiation, and then the
    --  Sloc values in the copy are adjusted using Adjust_Instantiation_Sloc.
    --  See child unit Sinput.L for details on these two routines.
+
+   generic
+      with procedure Process (Id : Instance_Id; Inst_Sloc : Source_Ptr);
+   procedure Iterate_On_Instances;
+   --  Execute Process for each entry in the instance table
+
+   function Instantiation (S : SFI) return Source_Ptr;
+   --  For a source file entry that represents an inlined body, source location
+   --  of the inlined call. Otherwise, for a source file entry that represents
+   --  a generic instantiation, source location of the instantiation. Returns
+   --  No_Location in all other cases.
 
    -----------------
    -- Global Data --
@@ -722,25 +746,37 @@ package Sinput is
 
 private
    pragma Inline (File_Name);
-   pragma Inline (First_Mapped_Line);
    pragma Inline (Full_File_Name);
-   pragma Inline (Identifier_Casing);
-   pragma Inline (Instantiation);
-   pragma Inline (Keyword_Casing);
-   pragma Inline (Last_Source_Line);
-   pragma Inline (Last_Source_File);
+   pragma Inline (File_Type);
+   pragma Inline (Reference_Name);
+   pragma Inline (Full_Ref_Name);
+   pragma Inline (Debug_Source_Name);
+   pragma Inline (Full_Debug_Name);
+   pragma Inline (Instance);
    pragma Inline (License);
    pragma Inline (Num_SRef_Pragmas);
-   pragma Inline (Num_Source_Files);
-   pragma Inline (Num_Source_Lines);
-   pragma Inline (Reference_Name);
-   pragma Inline (Set_Keyword_Casing);
-   pragma Inline (Set_Identifier_Casing);
+   pragma Inline (First_Mapped_Line);
+   pragma Inline (Source_Text);
    pragma Inline (Source_First);
    pragma Inline (Source_Last);
-   pragma Inline (Source_Text);
-   pragma Inline (Template);
    pragma Inline (Time_Stamp);
+   pragma Inline (Source_Checksum);
+   pragma Inline (Last_Source_Line);
+   pragma Inline (Keyword_Casing);
+   pragma Inline (Identifier_Casing);
+   pragma Inline (Inlined_Call);
+   pragma Inline (Inlined_Body);
+   pragma Inline (Template);
+   pragma Inline (Unit);
+
+   pragma Inline (Set_Keyword_Casing);
+   pragma Inline (Set_Identifier_Casing);
+
+   pragma Inline (Last_Source_File);
+   pragma Inline (Num_Source_Files);
+   pragma Inline (Num_Source_Lines);
+
+   No_Instance_Id : constant Instance_Id := 0;
 
    -------------------------
    -- Source_Lines Tables --
@@ -781,6 +817,7 @@ private
       Full_Debug_Name   : File_Name_Type;
       Full_File_Name    : File_Name_Type;
       Full_Ref_Name     : File_Name_Type;
+      Instance          : Instance_Id;
       Num_SRef_Pragmas  : Nat;
       First_Mapped_Line : Logical_Line_Number;
       Source_Text       : Source_Buffer_Ptr;
@@ -788,11 +825,11 @@ private
       Source_Last       : Source_Ptr;
       Source_Checksum   : Word;
       Last_Source_Line  : Physical_Line_Number;
-      Instantiation     : Source_Ptr;
       Template          : Source_File_Index;
       Unit              : Unit_Number_Type;
       Time_Stamp        : Time_Stamp_Type;
       File_Type         : Type_Of_File;
+      Inlined_Call      : Source_Ptr;
       Inlined_Body      : Boolean;
       License           : License_Type;
       Keyword_Casing    : Casing_Type;
@@ -839,17 +876,18 @@ private
       Full_Debug_Name     at 12 range 0 .. 31;
       Full_File_Name      at 16 range 0 .. 31;
       Full_Ref_Name       at 20 range 0 .. 31;
+      Instance            at 48 range 0 .. 31;
       Num_SRef_Pragmas    at 24 range 0 .. 31;
       First_Mapped_Line   at 28 range 0 .. 31;
       Source_First        at 32 range 0 .. 31;
       Source_Last         at 36 range 0 .. 31;
       Source_Checksum     at 40 range 0 .. 31;
       Last_Source_Line    at 44 range 0 .. 31;
-      Instantiation       at 48 range 0 .. 31;
       Template            at 52 range 0 .. 31;
       Unit                at 56 range 0 .. 31;
       Time_Stamp          at 60 range 0 .. 8 * Time_Stamp_Length - 1;
       File_Type           at 74 range 0 .. 7;
+      Inlined_Call        at 88 range 0 .. 31;
       Inlined_Body        at 75 range 0 .. 7;
       License             at 76 range 0 .. 7;
       Keyword_Casing      at 77 range 0 .. 7;
@@ -860,12 +898,12 @@ private
       --  The following fields are pointers, so we have to specialize their
       --  lengths using pointer size, obtained above as Standard'Address_Size.
 
-      Source_Text         at 88 range 0      .. AS - 1;
-      Lines_Table         at 88 range AS     .. AS * 2 - 1;
-      Logical_Lines_Table at 88 range AS * 2 .. AS * 3 - 1;
+      Source_Text         at 92 range 0      .. AS - 1;
+      Lines_Table         at 92 range AS     .. AS * 2 - 1;
+      Logical_Lines_Table at 92 range AS * 2 .. AS * 3 - 1;
    end record;
 
-   for Source_File_Record'Size use 88 * 8 + AS * 3;
+   for Source_File_Record'Size use 92 * 8 + AS * 3;
    --  This ensures that we did not leave out any fields
 
    package Source_File is new Table.Table (
@@ -875,6 +913,17 @@ private
      Table_Initial        => Alloc.Source_File_Initial,
      Table_Increment      => Alloc.Source_File_Increment,
      Table_Name           => "Source_File");
+
+   --  Auxiliary table containing source location of instantiations. Index 0
+   --  is used for code that does not come from an instance.
+
+   package Instances is new Table.Table (
+     Table_Component_Type => Source_Ptr,
+     Table_Index_Type     => Instance_Id,
+     Table_Low_Bound      => 0,
+     Table_Initial        => Alloc.Source_File_Initial,
+     Table_Increment      => Alloc.Source_File_Increment,
+     Table_Name           => "Instances");
 
    -----------------
    -- Subprograms --

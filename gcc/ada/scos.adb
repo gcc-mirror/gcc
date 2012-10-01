@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2009-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2009-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,6 +33,7 @@ package body SCOs is
    begin
       SCO_Table.Init;
       SCO_Unit_Table.Init;
+      SCO_Instance_Table.Init;
 
       --  Set dummy zeroth entry for sort routine, real entries start at 1
 
