@@ -255,7 +255,7 @@ void
 statistics_init (void)
 {
   statistics_dump_file = dump_begin (statistics_dump_nr, NULL);
-  statistics_dump_flags = get_dump_file_info (statistics_dump_nr)->flags;
+  statistics_dump_flags = get_dump_file_info (statistics_dump_nr)->pflags;
 }
 
 /* Lookup or add a statistics counter in the hashtable HASH with ID, VAL

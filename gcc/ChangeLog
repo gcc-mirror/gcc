@@ -1,3 +1,48 @@
+2012-09-30  Sharad Singhai  <singhai@google.com>
+
+	* doc/invoke.texi: Add documentation for the new -fopt-info option.
+	* tree-dump.c: Move general dump file related functionality into
+	dumpfile.c. Remove unneeded headers.
+	* tree-dump.h: Move function declarations into dumpfile.h.
+	* dumpfile.h: Include "line-map.h". Add defines for MSG flags.
+	(struct dump_file_info): Move here from tree-dump.c.  Rename flags
+	to pflags, state to pstate, stream to pstream, filename to
+	pfilename. All callers updated. Add alt_flags, alt_state,
+	alt_filenmae, alt_stream.
+	* tree-vectorizer.c: Include "dumpfile.h". Remove vect_dump.
+	(vect_set_dump_settings): Remove.
+	(vect_print_dump_info): Ditto.
+	* tree-vectorizer.h: Remove declaration of vect_dump and
+	vect_print_dump_info.
+	* tree-vect-loop.c: Include "dumpfile.h". Use new dump style.
+	* tree-vect-data-refs.c: Ditto.
+	* tree-vect-stmts.c: Ditto.
+	* tree-vect-slp.c: Ditto.
+	* tree-vect-patterns.c: Ditto.
+	* tree-vect-loop-manip.c: Ditto.
+	* testsuite/gcc.target/i386/vect-double-1.c: Fix test.
+	* opts.c (vect_set_verbosity_level): Remove.
+	(common_handle_option): Handle -fopt-info flag. Deprecate
+	-ftree-vectorizer-verbose.
+	* tree-parloops.c (gather_scalar_reductions): Remove reference to
+	vect_dump.
+	* flag-types.h: Remove vect_verbosity_levels.
+	* common.opt: Add -fopt-info. Deprecate -ftree-vectorizer-verbose.
+	* opts-global.c (dump_remap_tree_vectorizer_verbose): New function.
+	(handle_common_deferred_options): Handle -fopt-info and
+	-ftree-vectorizer-verbose.
+	* Makefile.in: Add dumpfile.o.
+	(tree-dump.o): Update dependencies.
+	(tree-vect-loop.o): Ditto.
+	(tree-vect-loop-manip.o): Ditto.
+	(tree-vect-slp.o): Ditto.
+	(tree-vect-stmts.o): Ditto.
+	(tree-vectorizer.o): Ditto.
+	(opts.o): Ditto.
+	* passes.c (finish_optimization_passes): Instead of using
+	dump_begin/dump_end, use dump_start/dump_finish. Do not use dump_file.
+	(pass_init_dump_file): Ditto.
+
 2012-09-30  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	PR rtl-optimization/38449:

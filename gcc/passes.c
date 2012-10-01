@@ -231,27 +231,23 @@ finish_optimization_passes (void)
   timevar_push (TV_DUMP);
   if (profile_arc_flag || flag_test_coverage || flag_branch_probabilities)
     {
-      dump_file = dump_begin (pass_profile.pass.static_pass_number, NULL);
+      dump_start (pass_profile.pass.static_pass_number, NULL);
       end_branch_prob ();
-      if (dump_file)
-	dump_end (pass_profile.pass.static_pass_number, dump_file);
+      dump_finish (pass_profile.pass.static_pass_number);
     }
 
   if (optimize > 0)
     {
-      dump_file = dump_begin (pass_combine.pass.static_pass_number, NULL);
-      if (dump_file)
-	{
-	  dump_combine_total_stats (dump_file);
-          dump_end (pass_combine.pass.static_pass_number, dump_file);
-	}
+      dump_start (pass_profile.pass.static_pass_number, NULL);
+      print_combine_total_stats ();
+      dump_finish (pass_combine.pass.static_pass_number);
     }
 
   /* Do whatever is necessary to finish printing the graphs.  */
   if (graph_dump_format != no_graph)
     for (i = TDI_end; (dfi = get_dump_file_info (i)) != NULL; ++i)
       if (dump_initialized_p (i)
-	  && (dfi->flags & TDF_GRAPH) != 0
+	  && (dfi->pflags & TDF_GRAPH) != 0
 	  && (name = get_dump_file_name (i)) != NULL)
 	{
 	  finish_graph_dump_file (name);
@@ -1238,9 +1234,9 @@ register_pass (struct register_pass_info *pass_info)
       else
         tdi = TDI_rtl_all;
       /* Check if dump-all flag is specified.  */
-      if (get_dump_file_info (tdi)->state)
+      if (get_dump_file_info (tdi)->pstate)
         get_dump_file_info (added_pass_nodes->pass->static_pass_number)
-            ->state = get_dump_file_info (tdi)->state;
+            ->pstate = get_dump_file_info (tdi)->pstate;
       XDELETE (added_pass_nodes);
       added_pass_nodes = next_node;
     }
@@ -1945,7 +1941,7 @@ pass_init_dump_file (struct opt_pass *pass)
     {
       bool initializing_dump = !dump_initialized_p (pass->static_pass_number);
       dump_file_name = get_dump_file_name (pass->static_pass_number);
-      dump_file = dump_begin (pass->static_pass_number, &dump_flags);
+      dump_start (pass->static_pass_number, &dump_flags);
       if (dump_file && current_function_decl)
         dump_function_header (dump_file, current_function_decl, dump_flags);
       return initializing_dump;
@@ -1967,11 +1963,7 @@ pass_fini_dump_file (struct opt_pass *pass)
       dump_file_name = NULL;
     }
 
-  if (dump_file)
-    {
-      dump_end (pass->static_pass_number, dump_file);
-      dump_file = NULL;
-    }
+  dump_finish (pass->static_pass_number);
 }
 
 /* After executing the pass, apply expected changes to the function
@@ -2213,7 +2205,7 @@ execute_one_pass (struct opt_pass *pass)
       && (cfun->curr_properties & (PROP_cfg | PROP_rtl))
 	  == (PROP_cfg | PROP_rtl))
     {
-      get_dump_file_info (pass->static_pass_number)->flags |= TDF_GRAPH;
+      get_dump_file_info (pass->static_pass_number)->pflags |= TDF_GRAPH;
       dump_flags |= TDF_GRAPH;
       clean_graph_dump_file (dump_file_name);
     }

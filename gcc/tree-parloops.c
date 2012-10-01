@@ -1944,7 +1944,6 @@ gather_scalar_reductions (loop_p loop, htab_t reduction_list)
   gimple_stmt_iterator gsi;
   loop_vec_info simple_loop_info;
 
-  vect_dump = NULL;
   simple_loop_info = vect_analyze_loop_form (loop);
 
   for (gsi = gsi_start_phis (loop->header); !gsi_end_p (gsi); gsi_next (&gsi))

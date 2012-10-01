@@ -1,3 +1,8 @@
+2012-09-30  Sharad Singhai  <singhai@google.com>
+
+	* decl2.c (cp_write_global_declarations): Use a different method
+	to determine if the dump has ben initialized.
+
 2012-09-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/54738

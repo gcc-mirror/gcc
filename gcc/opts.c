@@ -139,19 +139,6 @@ set_struct_debug_option (struct gcc_options *opts, location_t loc,
     }
 }
 
-/* Handle -ftree-vectorizer-verbose=VAL for options OPTS.  */
-
-static void
-vect_set_verbosity_level (struct gcc_options *opts, int val)
-{
-   if (val < MAX_VERBOSITY_LEVEL)
-     opts->x_user_vect_verbosity_level = (enum vect_verbosity_levels) val;
-   else
-     opts->x_user_vect_verbosity_level
-      = (enum vect_verbosity_levels) (MAX_VERBOSITY_LEVEL - 1);
-}
-
-
 /* Strip off a legitimate source ending from the input string NAME of
    length LEN.  Rather than having to know the names used by all of
    our front ends, we strip off an ending of a period followed by
@@ -1559,6 +1546,11 @@ common_handle_option (struct gcc_options *opts,
       diagnostic_set_caret_max_width (dc, value);
       break;
 
+    case OPT_fopt_info:
+    case OPT_fopt_info_:
+      /* Deferred.  */
+      break;
+
     case OPT_fpack_struct_:
       if (value <= 0 || (value & (value - 1)) || value > 16)
 	error_at (loc,
@@ -1694,7 +1686,9 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_ftree_vectorizer_verbose_:
-      vect_set_verbosity_level (opts, value);
+      /* -ftree-vectorizer-verbose is deprecated. It is defined in
+         -terms of fopt-info=N. */
+      /* Deferred.  */
       break;
 
     case OPT_g:

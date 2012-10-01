@@ -848,9 +848,8 @@ known_alignment_for_access_p (struct data_reference *data_ref_info)
   return (DR_MISALIGNMENT (data_ref_info) != -1);
 }
 
-/* vect_dump will be set to stderr or dump_file if exist.  */
-extern FILE *vect_dump;
-extern LOC vect_loop_location;
+/* Source location */
+extern LOC vect_location;
 
 /*-----------------------------------------------------------------*/
 /* Function prototypes.                                            */
@@ -1012,7 +1011,5 @@ void vect_pattern_recog (loop_vec_info, bb_vec_info);
 
 /* In tree-vectorizer.c.  */
 unsigned vectorize_loops (void);
-/* Vectorization debug information */
-extern bool vect_print_dump_info (enum vect_verbosity_levels);
 
 #endif  /* GCC_TREE_VECTORIZER_H  */
