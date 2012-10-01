@@ -202,6 +202,13 @@ c-common.h, not after.
 #define VAR_OR_FUNCTION_DECL_CHECK(NODE) \
   TREE_CHECK2(NODE,VAR_DECL,FUNCTION_DECL)
 
+#define TYPE_FUNCTION_OR_TEMPLATE_DECL_CHECK(NODE) \
+  TREE_CHECK3(NODE,TYPE_DECL,TEMPLATE_DECL,FUNCTION_DECL)
+
+#define TYPE_FUNCTION_OR_TEMPLATE_DECL_P(NODE) \
+  (TREE_CODE (NODE) == TYPE_DECL || TREE_CODE (NODE) == TEMPLATE_DECL \
+   || TREE_CODE (NODE) == FUNCTION_DECL)
+
 #define VAR_FUNCTION_OR_PARM_DECL_CHECK(NODE) \
   TREE_CHECK3(NODE,VAR_DECL,FUNCTION_DECL,PARM_DECL)
 
@@ -1875,8 +1882,8 @@ struct GTY(()) lang_decl_base {
   unsigned initialized_in_class : 1;	   /* var or fn */
   unsigned repo_available_p : 1;	   /* var or fn */
   unsigned threadprivate_or_deleted_p : 1; /* var or fn */
-  unsigned anticipated_p : 1;		   /* fn or type */
-  unsigned friend_attr : 1;		   /* fn or type */
+  unsigned anticipated_p : 1;		   /* fn, type or template */
+  unsigned friend_attr : 1;		   /* fn, type or template */
   unsigned template_conv_p : 1;		   /* var or template */
   unsigned odr_used : 1;		   /* var or fn */
   unsigned u2sel : 1;
@@ -2293,7 +2300,9 @@ struct GTY((variable_size)) lang_decl {
 
 /* Nonzero for DECL means that this decl is just a friend declaration,
    and should not be added to the list of members for this class.  */
-#define DECL_FRIEND_P(NODE) (DECL_LANG_SPECIFIC (NODE)->u.base.friend_attr)
+#define DECL_FRIEND_P(NODE) \
+  (DECL_LANG_SPECIFIC (TYPE_FUNCTION_OR_TEMPLATE_DECL_CHECK (NODE)) \
+   ->u.base.friend_attr)
 
 /* A TREE_LIST of the types which have befriended this FUNCTION_DECL.  */
 #define DECL_BEFRIENDING_CLASSES(NODE) \
@@ -3101,7 +3110,8 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    declared inside a class.  In the latter case DECL_HIDDEN_FRIEND_P
    will be set.  */
 #define DECL_ANTICIPATED(NODE) \
-  (DECL_LANG_SPECIFIC (DECL_COMMON_CHECK (NODE))->u.base.anticipated_p)
+  (DECL_LANG_SPECIFIC (TYPE_FUNCTION_OR_TEMPLATE_DECL_CHECK (NODE)) \
+   ->u.base.anticipated_p)
 
 /* Nonzero if NODE is a FUNCTION_DECL which was declared as a friend
    within a class but has not been declared in the surrounding scope.
