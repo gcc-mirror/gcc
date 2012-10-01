@@ -248,9 +248,9 @@ package Uintp is
    --  not in Char_Code range.
 
    function Num_Bits (Input : Uint) return Nat;
-   --  Approximate number of binary bits in given universal integer.
-   --  This function is used for capacity checks, and it can be one
-   --  bit off without affecting its usage.
+   --  Approximate number of binary bits in given universal integer. This
+   --  function is used for capacity checks, and it can be one bit off
+   --  without affecting its usage.
 
    ---------------------
    -- Output Routines --
@@ -258,8 +258,8 @@ package Uintp is
 
    type UI_Format is (Hex, Decimal, Auto);
    --  Used to determine whether UI_Image/UI_Write output is in hexadecimal
-   --  or decimal format. Auto, the default setting, lets the routine make
-   --  a decision based on the value.
+   --  or decimal format. Auto, the default setting, lets the routine make a
+   --  decision based on the value.
 
    UI_Image_Max    : constant := 48; -- Enough for a 128-bit number
    UI_Image_Buffer : String (1 .. UI_Image_Max);
@@ -271,8 +271,8 @@ package Uintp is
    --  followed by the value in UI_Image_Buffer. The form of the value is an
    --  integer literal in either decimal (no base) or hexadecimal (base 16)
    --  format. If Hex is True on entry, then hex mode is forced, otherwise
-   --  UI_Image makes a guess at which output format is more convenient. The
-   --  value must fit in UI_Image_Buffer. If necessary, the result is an
+   --  UI_Image makes a guess at which output format is more convenient.
+   --  The value must fit in UI_Image_Buffer. If necessary, the result is an
    --  approximation of the proper value, using an exponential format. The
    --  image of No_Uint is output as a single question mark.
 
@@ -280,9 +280,9 @@ package Uintp is
    --  Writes a representation of Uint, consisting of a possible minus sign,
    --  followed by the value to the output file. The form of the value is an
    --  integer literal in either decimal (no base) or hexadecimal (base 16)
-   --  format as appropriate. UI_Format shows which format to use. Auto,
-   --  the default, asks UI_Write to make a guess at which output format
-   --  will be more convenient to read.
+   --  format as appropriate. UI_Format shows which format to use. Auto, the
+   --  default, asks UI_Write to make a guess at which output format will be
+   --  more convenient to read.
 
    procedure pid (Input : Uint);
    pragma Export (Ada, pid);
@@ -355,11 +355,11 @@ package Uintp is
    -- Mark/Release Processing --
    -----------------------------
 
-   --  The space used by Uint data is not automatically reclaimed. However,
-   --  a mark-release regime is implemented which allows storage to be
-   --  released back to a previously noted mark. This is used for example
-   --  when doing comparisons, where only intermediate results get stored
-   --  that do not need to be saved for future use.
+   --  The space used by Uint data is not automatically reclaimed. However, a
+   --  mark-release regime is implemented which allows storage to be released
+   --  back to a previously noted mark. This is used for example when doing
+   --  comparisons, where only intermediate results get stored that do not
+   --  need to be saved for future use.
 
    type Save_Mark is private;
 
@@ -370,18 +370,16 @@ package Uintp is
    --  Release storage allocated since mark was noted
 
    procedure Release_And_Save (M : Save_Mark; UI : in out Uint);
-   --  Like Release, except that the given Uint value (which is typically
-   --  among the data being released) is recopied after the release, so
-   --  that it is the most recent item, and UI is updated to point to
-   --  its copied location.
+   --  Like Release, except that the given Uint value (which is typically among
+   --  the data being released) is recopied after the release, so that it is
+   --  the most recent item, and UI is updated to point to its copied location.
 
    procedure Release_And_Save (M : Save_Mark; UI1, UI2 : in out Uint);
    --  Like Release, except that the given Uint values (which are typically
-   --  among the data being released) are recopied after the release, so
-   --  that they are the most recent items, and UI1 and UI2 are updated if
-   --  necessary to point to the copied locations. This routine is careful
-   --  to do things in the right order, so that the values do not clobber
-   --  one another.
+   --  among the data being released) are recopied after the release, so that
+   --  they are the most recent items, and UI1 and UI2 are updated if necessary
+   --  to point to the copied locations. This routine is careful to do things
+   --  in the right order, so that the values do not clobber one another.
 
    -----------------------------------
    -- Representation of Uint Values --
@@ -499,15 +497,14 @@ private
    type UI_Vector is array (Pos range <>) of Int;
    --  Vector containing the integer values of a Uint value
 
-   --  Note: An earlier version of this package used pointers of arrays
-   --  of Ints (dynamically allocated) for the Uint type. The change
-   --  leads to a few less natural idioms used throughout this code, but
-   --  eliminates all uses of the heap except for the table package itself.
-   --  For example, Uint parameters are often converted to UI_Vectors for
-   --  internal manipulation. This is done by creating the local UI_Vector
-   --  using the function N_Digits on the Uint to find the size needed for
-   --  the vector, and then calling Init_Operand to copy the values out
-   --  of the table into the vector.
+   --  Note: An earlier version of this package used pointers of arrays of Ints
+   --  (dynamically allocated) for the Uint type. The change leads to a few
+   --  less natural idioms used throughout this code, but eliminates all uses
+   --  of the heap except for the table package itself. For example, Uint
+   --  parameters are often converted to UI_Vectors for internal manipulation.
+   --  This is done by creating the local UI_Vector using the function N_Digits
+   --  on the Uint to find the size needed for the vector, and then calling
+   --  Init_Operand to copy the values out of the table into the vector.
 
    type Uint_Entry is record
       Length : Pos;

@@ -91,6 +91,10 @@ package System.Bignums is
    --  Perform indicated comparison on bignums, returning result as Boolean.
    --  No exception raised for any input arguments.
 
+   function Bignum_In_LLI_Range (X : Bignum) return Boolean;
+   --  Returns True if the Bignum value is in the range of Long_Long_Integer,
+   --  so that a call to From_Bignum is guaranteed not to raise an exception.
+
    function To_Bignum (X : Long_Long_Integer) return Bignum;
    --  Convert Long_Long_Integer to Bignum. No exception can be raised for any
    --  input argument.

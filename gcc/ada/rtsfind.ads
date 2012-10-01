@@ -778,6 +778,7 @@ package Rtsfind is
      RE_Big_NE,                          -- System.Bignums
 
      RE_Bignum,                          -- System.Bignums
+     RE_Bignum_In_LLI_Range,             -- System.Bignums
      RE_To_Bignum,                       -- System.Bignums
      RE_From_Bignum,                     -- System.Bignums
 
@@ -2021,6 +2022,7 @@ package Rtsfind is
      RE_Big_NE                           => System_Bignums,
 
      RE_Bignum                           => System_Bignums,
+     RE_Bignum_In_LLI_Range              => System_Bignums,
      RE_To_Bignum                        => System_Bignums,
      RE_From_Bignum                      => System_Bignums,
 

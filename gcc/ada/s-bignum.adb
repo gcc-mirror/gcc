@@ -963,6 +963,33 @@ package body System.Bignums is
       raise Constraint_Error with "expression value out of range";
    end From_Bignum;
 
+   -------------------------
+   -- Bignum_In_LLI_Range --
+   -------------------------
+
+   function Bignum_In_LLI_Range (X : Bignum) return Boolean is
+   begin
+      --  If length is 0 or 1, definitely fits
+
+      if X.Len <= 1 then
+         return True;
+
+      --  If length is greater than 2, definitely does not fit
+
+      elsif X.Len > 2 then
+         return False;
+
+      --  Length is 2, more tests needed
+
+      else
+         declare
+            Mag : constant DD := X.D (1) & X.D (2);
+         begin
+            return Mag < 2 ** 63 or else (X.Neg and then Mag = 2 ** 63);
+         end;
+      end if;
+   end Bignum_In_LLI_Range;
+
    ---------------
    -- Normalize --
    ---------------

@@ -164,6 +164,12 @@ package body Exp_Ch4 is
    --  concatenation. The operands can be of any appropriate type, and can
    --  include both arrays and singleton elements.
 
+   procedure Expand_Membership_Minimize_Eliminate_Overflow (N : Node_Id);
+   --  N is an N_In membership test mode, with the overflow check mode
+   --  set to Minimized or Eliminated, and the type of the left operand
+   --  is a signed integer type. This is a case where top level processing
+   --  is required to handle overflow checks in subtrees.
+
    procedure Fixup_Universal_Fixed_Operation (N : Node_Id);
    --  N is a N_Op_Divide or N_Op_Multiply node whose result is universal
    --  fixed. We do not have such a type at runtime, so the purpose of this
@@ -875,7 +881,7 @@ package body Exp_Ch4 is
          end;
       end if;
 
-      --  Would be nice to comment the branches of this very long if ???
+      --  Case of tagged type or type requiring finalization
 
       if Is_Tagged_Type (T) or else Needs_Finalization (T) then
          if Is_CPP_Constructor_Call (Exp) then
@@ -3705,6 +3711,332 @@ package body Exp_Ch4 is
          --  Set_Etype (Cnode, Atyp);
    end Expand_Concatenate;
 
+   ---------------------------------------------------
+   -- Expand_Membership_Minimize_Eliminate_Overflow --
+   ---------------------------------------------------
+
+   procedure Expand_Membership_Minimize_Eliminate_Overflow (N : Node_Id) is
+      pragma Assert (Nkind (N) = N_In);
+      --  Despite the name, this routine applies only to N_In, not to
+      --  N_Not_In. The latter is always rewritten as not (X in Y).
+
+      Loc   : constant Source_Ptr := Sloc (N);
+      Lop   : constant Node_Id    := Left_Opnd (N);
+      Rop   : constant Node_Id    := Right_Opnd (N);
+      Ltype : constant Entity_Id  := Etype (Lop);
+      Rtype : constant Entity_Id  := Etype (Rop);
+
+      Restype : constant Entity_Id := Etype (N);
+      --  Save result type
+
+      Lo, Hi : Uint;
+      --  Bounds in Minimize calls, not used yet ???
+
+      LLIB : constant Entity_Id := Base_Type (Standard_Long_Long_Integer);
+      --  Entity for Long_Long_Integer'Base (Standard should export this???)
+
+   begin
+      Minimize_Eliminate_Overflow_Checks (Lop, Lo, Hi);
+
+      --  If right operand is a subtype name, and the subtype name has no
+      --  predicate, then we can just replace the right operand with an
+      --  explicit range T'First .. T'Last, and use the explicit range code.
+
+      if Nkind (Rop) /= N_Range and then No (Predicate_Function (Rtype)) then
+         Rewrite (Rop,
+           Make_Range (Loc,
+             Low_Bound =>
+               Make_Attribute_Reference (Loc,
+                 Attribute_Name => Name_First,
+                 Prefix         => New_Reference_To (Rtype, Loc)),
+
+             High_Bound =>
+               Make_Attribute_Reference (Loc,
+                 Attribute_Name => Name_Last,
+                 Prefix         => New_Reference_To (Rtype, Loc))));
+         Analyze_And_Resolve (Rop, Rtype, Suppress => All_Checks);
+      end if;
+
+      --  Here for the explicit range case. Note that the bounds of the range
+      --  have not been processed for minimized or eliminated checks.
+
+      if Nkind (Rop) = N_Range then
+         Minimize_Eliminate_Overflow_Checks (Low_Bound (Rop),  Lo, Hi);
+         Minimize_Eliminate_Overflow_Checks (High_Bound (Rop), Lo, Hi);
+
+         --  We have A in B .. C, treated as  A >= B and then A <= C
+
+         --  Bignum case
+
+         if Is_RTE (Ltype, RE_Bignum)
+           or else Is_RTE (Etype (Low_Bound (Rop)), RE_Bignum)
+           or else Is_RTE (Etype (High_Bound (Rop)), RE_Bignum)
+         then
+            declare
+               Blk    : constant Node_Id   := Make_Bignum_Block (Loc);
+               Bnn    : constant Entity_Id := Make_Temporary (Loc, 'B', N);
+               Lopnd  : constant Node_Id   := Convert_To_Bignum (Lop);
+               Lbound : constant Node_Id   :=
+                          Convert_To_Bignum (Low_Bound (Rop));
+               Hbound : constant Node_Id   :=
+                          Convert_To_Bignum (High_Bound (Rop));
+
+            --  Now we insert code that looks like
+
+            --    Bnn : Boolean;
+
+            --    declare
+            --       M : Mark_Id := SS_Mark;
+            --       L : Bignum  := Lopnd;
+            --    begin
+            --       Bnn := Big_GE (L, Lbound) and then Big_LE (L, Hbound)
+            --       SS_Release (M);
+            --    end;
+
+            --  and rewrite the membership test as a reference to Bnn
+
+            begin
+               Insert_After
+                 (Last (Declarations (Blk)),
+                  Make_Object_Declaration (Loc,
+                    Defining_Identifier => Bnn,
+                    Object_Definition   =>
+                      New_Occurrence_Of (RTE (RE_Bignum), Loc),
+                    Expression          => Lopnd));
+
+               Insert_Before
+                 (First (Statements (Handled_Statement_Sequence (Blk))),
+                  Make_Assignment_Statement (Loc,
+                    Name       => New_Occurrence_Of (Bnn, Loc),
+                    Expression =>
+                      Make_And_Then (Loc,
+                        Left_Opnd =>
+                          Make_Function_Call (Loc,
+                            Name                   =>
+                              New_Occurrence_Of (RTE (RE_Big_GE), Loc),
+                            Parameter_Associations => New_List (Lbound)),
+                        Right_Opnd =>
+                          Make_Function_Call (Loc,
+                            Name                   =>
+                              New_Occurrence_Of (RTE (RE_Big_GE), Loc),
+                            Parameter_Associations => New_List (Hbound)))));
+
+               Insert_Actions (N, New_List (
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => Bnn,
+                   Object_Definition   =>
+                     New_Occurrence_Of (Standard_Boolean, Loc)),
+                 Blk));
+
+               Rewrite (N, New_Occurrence_Of (Bnn, Loc));
+               Analyze_And_Resolve (N);
+               return;
+            end;
+
+         --  Here if no bignums around
+
+         else
+            --  Case where types are all the same
+
+            if Ltype = Etype (Low_Bound (Rop))
+                 and then
+               Ltype = Etype (High_Bound (Rop))
+            then
+               null;
+
+            --  If types are not all the same, it means that we have rewritten
+            --  at least one of them to be of type Long_Long_Integer, and we
+            --  will convert the other operands to Long_Long_Integer.
+
+            else
+               Convert_To_And_Rewrite (LLIB, Lop);
+               Analyze_And_Resolve (Lop, LLIB, Suppress => All_Checks);
+
+               Convert_To_And_Rewrite (LLIB, Low_Bound (Rop));
+               Convert_To_And_Rewrite (LLIB, High_Bound (Rop));
+               Set_Analyzed (Rop, False);
+               Analyze_And_Resolve (Rop, LLIB, Suppress => All_Checks);
+            end if;
+
+            --  Now the three operands are of the same signed integer type,
+            --  so we can use the normal expansion routine for membership.
+
+            Set_No_Minimize_Eliminate (N);
+            Expand_N_In (N);
+         end if;
+
+      --  Right operand is a subtype name and the subtype has a predicate. We
+      --  have to make sure predicate is checked, and for that we need to use
+      --  the standard N_In circuitry with appropriate types.
+
+      else
+         pragma Assert (Present (Predicate_Function (Rtype)));
+
+         --  If types are "right", just call Expand_N_In preventing recursion
+
+         if Base_Type (Ltype) = Base_Type (Rtype) then
+            Set_No_Minimize_Eliminate (N);
+            Expand_N_In (N);
+
+         --  Bignum case
+
+         elsif Is_RTE (Ltype, RE_Bignum) then
+
+            --  For X in T, we want to insert code that looks like
+
+            --    Bnn : Boolean;
+
+            --    declare
+            --       M   : Mark_Id := SS_Mark;
+            --       Lnn : Long_Long_Integer'Base
+            --       Nnn : Bignum;
+
+            --    begin
+            --      Nnn := X;
+
+            --      if not Bignum_In_LLI_Range (Nnn) then
+            --         Bnn := False;
+            --      else
+            --         Lnn := From_Bignum (Nnn);
+            --         Bnn := Lnn in T'Base and then T'Base (Lnn) in T;
+            --      end if;
+            --
+            --       SS_Release (M);
+            --    end;
+
+            --  And then rewrite the original membership as a reference to Bnn.
+            --  A bit gruesome, but here goes.
+
+            declare
+               Blk    : constant Node_Id   := Make_Bignum_Block (Loc);
+               Bnn    : constant Entity_Id := Make_Temporary (Loc, 'B', N);
+               Lnn    : constant Entity_Id := Make_Temporary (Loc, 'L', N);
+               Nnn    : constant Entity_Id := Make_Temporary (Loc, 'N', N);
+               Nin    : Node_Id;
+
+            begin
+               --  The last membership test is marked to prevent recursion
+
+               Nin :=
+                 Make_In (Loc,
+                   Left_Opnd =>
+                     Convert_To (Base_Type (Rtype),
+                       New_Occurrence_Of (Lnn, Loc)),
+                   Right_Opnd => New_Occurrence_Of (Rtype, Loc));
+               Set_No_Minimize_Eliminate (Nin);
+
+               --  Now decorate the block
+
+               Insert_After
+                 (Last (Declarations (Blk)),
+                  Make_Object_Declaration (Loc,
+                    Defining_Identifier => Lnn,
+                    Object_Definition   => New_Occurrence_Of (LLIB, Loc)));
+
+               Insert_After
+                 (Last (Declarations (Blk)),
+                  Make_Object_Declaration (Loc,
+                    Defining_Identifier => Nnn,
+                    Object_Definition   =>
+                      New_Occurrence_Of (RTE (RE_Bignum), Loc)));
+
+               Insert_List_Before
+                 (First (Statements (Handled_Statement_Sequence (Blk))),
+                  New_List (
+                    Make_Assignment_Statement (Loc,
+                      Name       => New_Occurrence_Of (Nnn, Loc),
+                      Expression => Relocate_Node (Lop)),
+
+                    Make_If_Statement (Loc,
+                      Condition =>
+                        Make_Function_Call (Loc,
+                          Name =>
+                            New_Occurrence_Of
+                              (RTE (RE_Bignum_In_LLI_Range), Loc),
+                          Parameter_Associations => New_List (
+                            New_Occurrence_Of (Nnn, Loc))),
+
+                      Then_Statements => New_List (
+                        Make_Assignment_Statement (Loc,
+                          Name       => New_Occurrence_Of (Bnn, Loc),
+                          Expression =>
+                            New_Occurrence_Of (Standard_False, Loc))),
+
+                      Else_Statements => New_List (
+                        Make_Assignment_Statement (Loc,
+                          Name => New_Occurrence_Of (Lnn, Loc),
+                          Expression =>
+                            Make_Function_Call (Loc,
+                              Name                   =>
+                                New_Occurrence_Of (RTE (RE_From_Bignum), Loc),
+                              Parameter_Associations => New_List (
+                                  New_Occurrence_Of (Nnn, Loc)))),
+
+                        Make_Assignment_Statement (Loc,
+                          Name => New_Occurrence_Of (Bnn, Loc),
+                          Expression =>
+                            Make_And_Then (Loc,
+                              Left_Opnd =>
+                                Make_In (Loc,
+                                  Left_Opnd  =>
+                                    New_Occurrence_Of (Lnn, Loc),
+                                  Right_Opnd =>
+                                    New_Occurrence_Of
+                                      (Base_Type (Rtype), Loc)),
+                              Right_Opnd => Nin))))));
+
+               Insert_Actions (N, New_List (
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => Bnn,
+                   Object_Definition   =>
+                     New_Occurrence_Of (Standard_Boolean, Loc)),
+                 Blk));
+
+               Rewrite (N, New_Occurrence_Of (Bnn, Loc));
+               Analyze_And_Resolve (N);
+               return;
+            end;
+
+         --  Not bignum case, but types don't match (this means we rewrote the
+         --  left operand to be Long_Long_Integer.
+
+         else
+            pragma Assert (Base_Type (Ltype) = LLIB);
+
+            --  We rewrite the membership test as
+
+            --    Lop in T'Base and then T'Base (Lop) in T
+
+            declare
+               Nin : Node_Id;
+
+            begin
+               --  The last membership test is marked to prevent recursion
+
+               Nin :=
+                 Make_In (Loc,
+                   Left_Opnd =>
+                     Convert_To (Base_Type (Rtype), Duplicate_Subexpr (Lop)),
+                   Right_Opnd => New_Occurrence_Of (Rtype, Loc));
+               Set_No_Minimize_Eliminate (Nin);
+
+               --  Now do the rewrite
+
+               Rewrite (N,
+                 Make_And_Then (Loc,
+                   Left_Opnd =>
+                     Make_In (Loc,
+                       Left_Opnd  => Lop,
+                       Right_Opnd =>
+                         New_Occurrence_Of (Base_Type (Ltype), Loc)),
+                   Right_Opnd => Nin));
+
+               Analyze_And_Resolve (N, Restype, Suppress => All_Checks);
+            end;
+         end if;
+      end if;
+   end Expand_Membership_Minimize_Eliminate_Overflow;
+
    ------------------------
    -- Expand_N_Allocator --
    ------------------------
@@ -5130,6 +5462,18 @@ package body Exp_Ch4 is
       Ltyp := Etype (Left_Opnd  (N));
       Rtyp := Etype (Right_Opnd (N));
 
+      --  If Minimize/Eliminate overflow mode and type is a signed integer
+      --  type, then expand with a separate procedure. Note the use of the
+      --  flag No_Minimize_Eliminate to prevent infinite recursion.
+
+      if Overflow_Check_Mode (Empty) in Minimized_Or_Eliminated
+        and then Is_Signed_Integer_Type (Ltyp)
+        and then not No_Minimize_Eliminate (N)
+      then
+         Expand_Membership_Minimize_Eliminate_Overflow (N);
+         return;
+      end if;
+
       --  Check case of explicit test for an expression in range of its
       --  subtype. This is suspicious usage and we replace it with a 'Valid
       --  test and give a warning. For floating point types however, this is a
@@ -5225,9 +5569,9 @@ package body Exp_Ch4 is
               and then Expr_Value (Type_High_Bound (Ltyp)) = Expr_Value (Hi)
               and then Expr_Value (Type_Low_Bound  (Ltyp)) = Expr_Value (Lo)
 
-               --  Kill warnings in instances, since they may be cases where we
-               --  have a test in the generic that makes sense with some types
-               --  and not with other types.
+              --  Kill warnings in instances, since they may be cases where we
+              --  have a test in the generic that makes sense with some types
+              --  and not with other types.
 
               and then not In_Instance
             then
@@ -5388,8 +5732,8 @@ package body Exp_Ch4 is
             --  type if they come from the original type definition. Also this
             --  way we get all the processing above for an explicit range.
 
-               --  Don't do this for predicated types, since in this case we
-               --  want to check the predicate!
+            --  Don't do this for predicated types, since in this case we
+            --  want to check the predicate!
 
             elsif Is_Scalar_Type (Typ) then
                if No (Predicate_Function (Typ)) then
@@ -5398,12 +5742,12 @@ package body Exp_Ch4 is
                       Low_Bound =>
                         Make_Attribute_Reference (Loc,
                           Attribute_Name => Name_First,
-                          Prefix => New_Reference_To (Typ, Loc)),
+                          Prefix         => New_Reference_To (Typ, Loc)),
 
                       High_Bound =>
                         Make_Attribute_Reference (Loc,
                           Attribute_Name => Name_Last,
-                          Prefix => New_Reference_To (Typ, Loc))));
+                          Prefix         => New_Reference_To (Typ, Loc))));
                   Analyze_And_Resolve (N, Restyp);
                end if;
 
@@ -5423,7 +5767,7 @@ package body Exp_Ch4 is
                    Reason => PE_Unchecked_Union_Restriction));
 
                --  Prevent Gigi from generating incorrect code by rewriting the
-               --  test as False.
+               --  test as False. What is this undocumented thing about ???
 
                Rewrite (N, New_Occurrence_Of (Standard_False, Loc));
                goto Leave;
