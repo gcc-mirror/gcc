@@ -1,3 +1,8 @@
+2012-10-01  Tom de Vries  <tom@codesourcery.com>
+
+	* var-tracking.c (set_dv_changed): Add an 'inline' function specifier to
+	the prototype.
+
 2012-10-01  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	PR target/54746

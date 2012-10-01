@@ -555,7 +555,7 @@ static void dump_vars (htab_t);
 static void dump_dataflow_set (dataflow_set *);
 static void dump_dataflow_sets (void);
 
-static void set_dv_changed (decl_or_value, bool);
+static inline void set_dv_changed (decl_or_value, bool);
 static void variable_was_changed (variable, dataflow_set *);
 static void **set_slot_part (dataflow_set *, rtx, void **,
 			     decl_or_value, HOST_WIDE_INT,
