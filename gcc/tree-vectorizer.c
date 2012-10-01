@@ -106,7 +106,8 @@ vectorize_loops (void)
       {
 	loop_vec_info loop_vinfo;
 	vect_location = find_loop_location (loop);
-        if (vect_location != UNKNOWN_LOC && dump_kind_p (MSG_ALL))
+        if (LOCATION_LOCUS (vect_location) != UNKNOWN_LOC
+	    && dump_kind_p (MSG_ALL))
 	  dump_printf (MSG_ALL, "\nAnalyzing loop at %s:%d\n",
                        LOC_FILE (vect_location), LOC_LINE (vect_location));
 
@@ -116,7 +117,8 @@ vectorize_loops (void)
 	if (!loop_vinfo || !LOOP_VINFO_VECTORIZABLE_P (loop_vinfo))
 	  continue;
 
-        if (vect_location != UNKNOWN_LOC && dump_kind_p (MSG_ALL))
+        if (LOCATION_LOCUS (vect_location) != UNKNOWN_LOC
+	    && dump_kind_p (MSG_ALL))
           dump_printf (MSG_ALL, "\n\nVectorizing loop at %s:%d\n",
                        LOC_FILE (vect_location), LOC_LINE (vect_location));
 	vect_transform_loop (loop_vinfo);

@@ -794,8 +794,9 @@ slpeel_make_loop_iterate_ntimes (struct loop *loop, tree niters)
   loop_loc = find_loop_location (loop);
   if (dump_kind_p (MSG_NOTE))
     {
-      dump_printf (MSG_NOTE, "\nloop at %s:%d: ", LOC_FILE (loop_loc),
-                   LOC_LINE (loop_loc));
+      if (LOCATION_LOCUS (loop_loc) != UNKNOWN_LOC)
+	dump_printf (MSG_NOTE, "\nloop at %s:%d: ", LOC_FILE (loop_loc),
+		     LOC_LINE (loop_loc));
       dump_gimple_stmt (MSG_NOTE, TDF_SLIM, cond_stmt, 0);
     }
   loop->nb_iterations = niters;
