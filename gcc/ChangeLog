@@ -1,5 +1,40 @@
 2012-09-30  Sharad Singhai  <singhai@google.com>
 
+	* dumpfile.c: New file with parts moved from tree-dump.c.
+	(pflags): New variable.
+	(alt_flags): Ditto.
+	(alt_dump_file): Ditto.
+	(dump_files):  Update to include additional fields.
+	(struct dump_option_value_info): Add additional entries.
+	(get_dump_file_name): Use command line filename if available.
+	(dump_open_alternate_stream): New function.
+	(dump_loc): Ditto.
+	(dump_gimple_stmt): Ditto.
+	(dump_gimple_stmt_loc): Ditto.
+	(dump_generic_expr): Ditto.
+	(dump_generic_expr_loc): Ditto.
+	(dump_printf): Ditto.
+	(dump_printf_loc): Ditto.
+	(dump_start): Ditto.
+	(dump_finish): Ditto.
+	(dump_begin): Ditto.
+	(dump_enabled_p): Return true if either of the dump types is enabled.
+	(dump_initialized_p): Return true if either type of dump is initialized.
+	(dump_end): Do not close standard streams.
+	(dump_enable_all): Handle filenames for regular dumps.
+	(dump_switch_p_1): Handle command-line dump filenames.
+	(opt_info_enable_all): New function.
+	(opt_info_switch_p_1): Ditto.
+	(opt_info_switch_p): Ditto.
+	(dump_kind_p): Ditto.
+	(dump_basic_block): Ditto.
+	(dump_combine_total_stats): Ditto.
+	(dump_remap_tree_vectorizer_verbose): Ditto.
+	* gimple-pretty-print.h: Rename dump_gimple_stmt to
+	pp_gimple_stmt_1.  All callers updated.
+
+2012-09-30  Sharad Singhai  <singhai@google.com>
+
 	* doc/invoke.texi: Add documentation for the new -fopt-info option.
 	* tree-dump.c: Move general dump file related functionality into
 	dumpfile.c. Remove unneeded headers.
