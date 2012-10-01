@@ -140,6 +140,10 @@ package body Exp_Ch4 is
    procedure Expand_Short_Circuit_Operator (N : Node_Id);
    --  Common expansion processing for short-circuit boolean operators
 
+   procedure Expand_Compare_Minimize_Eliminate_Overflow (N : Node_Id);
+   --  Deal with comparison in Minimize/Eliminate overflow mode. This is where
+   --  we allow comparison of "out of range" values.
+
    function Expand_Composite_Equality
      (Nod    : Node_Id;
       Typ    : Entity_Id;
@@ -2275,6 +2279,237 @@ package body Exp_Ch4 is
          end if;
       end;
    end Expand_Boolean_Operator;
+
+   ------------------------------------------------
+   -- Expand_Compare_Minimize_Eliminate_Overflow --
+   ------------------------------------------------
+
+   procedure Expand_Compare_Minimize_Eliminate_Overflow (N : Node_Id) is
+      Loc : constant Source_Ptr := Sloc (N);
+
+      Llo, Lhi : Uint;
+      Rlo, Rhi : Uint;
+
+      LLIB : constant Entity_Id := Base_Type (Standard_Long_Long_Integer);
+      --  Entity for Long_Long_Integer'Base
+
+      Check : constant Overflow_Check_Type := Overflow_Check_Mode (Empty);
+      --  Current checking mode
+
+      procedure Set_True;
+      procedure Set_False;
+      --  These procedures rewrite N with an occurrence of Standard_True or
+      --  Standard_False, and then makes a call to Warn_On_Known_Condition.
+
+      ---------------
+      -- Set_False --
+      ---------------
+
+      procedure Set_False is
+      begin
+         Rewrite (N, New_Occurrence_Of (Standard_False, Loc));
+         Warn_On_Known_Condition (N);
+      end Set_False;
+
+      --------------
+      -- Set_True --
+      --------------
+
+      procedure Set_True is
+      begin
+         Rewrite (N, New_Occurrence_Of (Standard_True, Loc));
+         Warn_On_Known_Condition (N);
+      end Set_True;
+
+   --  Start of processing for Expand_Compare_Minimize_Eliminate_Overflow
+
+   begin
+      --  Nothing to do unless we have a comparison operator with operands
+      --  that are signed integer types, and we are operating in either
+      --  MINIMIZED or ELIMINATED overflow checking mode.
+
+      if Nkind (N) not in N_Op_Compare
+        or else Check not in Minimized_Or_Eliminated
+        or else not Is_Signed_Integer_Type (Etype (Left_Opnd (N)))
+      then
+         return;
+      end if;
+
+      --  OK, this is the case we are interested in. First step is to process
+      --  our operands using the Minimize_Eliminate circuitry which applies
+      --  this processing to the two operand subtrees.
+
+      Minimize_Eliminate_Overflow_Checks (Left_Opnd (N),  Llo, Lhi);
+      Minimize_Eliminate_Overflow_Checks (Right_Opnd (N), Rlo, Rhi);
+
+      --  See if the range information decides the result of the comparison
+
+      case N_Op_Compare (Nkind (N)) is
+         when N_Op_Eq =>
+            if Llo = Lhi and then Rlo = Rhi and then Llo = Rlo then
+               Set_True;
+            elsif Llo > Rhi or else Rlo > Lhi then
+               Set_False;
+            end if;
+
+         when N_Op_Ge =>
+            if Llo >= Rhi then
+               Set_True;
+            elsif Lhi < Rlo then
+               Set_False;
+            end if;
+
+         when N_Op_Gt =>
+            if Llo > Rhi then
+               Set_True;
+            elsif Lhi <= Rlo then
+               Set_False;
+            end if;
+
+         when N_Op_Le =>
+            if Llo > Rhi then
+               Set_False;
+            elsif Lhi <= Rlo then
+               Set_True;
+            end if;
+
+         when N_Op_Lt =>
+            if Llo >= Rhi then
+               Set_True;
+            elsif Lhi < Rlo then
+               Set_False;
+            end if;
+
+         when N_Op_Ne =>
+            if Llo = Lhi and then Rlo = Rhi and then Llo = Rlo then
+               Set_True;
+            elsif Llo > Rhi or else Rlo > Lhi then
+               Set_False;
+            end if;
+      end case;
+
+      --  All done if we did the rewrite
+
+      if Nkind (N) not in N_Op_Compare then
+         return;
+      end if;
+
+      --  Otherwise, time to do the comparison
+
+      declare
+         Ltype : constant Entity_Id := Etype (Left_Opnd (N));
+         Rtype : constant Entity_Id := Etype (Right_Opnd (N));
+
+      begin
+         --  If the two operands have the same signed integer type we are
+         --  all set, nothing more to do. This is the case where either
+         --  both operands were unchanged, or we rewrote both of them to
+         --  be Long_Long_Integer.
+
+         --  Note: Entity for the comparison may be wrong, but it's not worth
+         --  the effort to change it, since the back end does not use it.
+
+         if Is_Signed_Integer_Type (Ltype)
+           and then Base_Type (Ltype) = Base_Type (Rtype)
+         then
+            return;
+
+         --  Here if bignums are involved (can only happen in ELIMINATED mode)
+
+         elsif Is_RTE (Ltype, RE_Bignum) or else Is_RTE (Rtype, RE_Bignum) then
+            declare
+               Left  : Node_Id := Left_Opnd (N);
+               Right : Node_Id := Right_Opnd (N);
+               --  Bignum references for left and right operands
+
+            begin
+               if not Is_RTE (Ltype, RE_Bignum) then
+                  Left := Convert_To_Bignum (Left);
+               elsif not Is_RTE (Rtype, RE_Bignum) then
+                  Right := Convert_To_Bignum (Right);
+               end if;
+
+               --  We need a sequence that looks like
+
+               --    Bnn : Boolean;
+
+               --    declare
+               --       M : Mark_Id := SS_Mark;
+               --    begin
+               --       Bnn := Big_xx (Left, Right); (xx = EQ, NT etc)
+               --       SS_Release (M);
+               --    end;
+
+               --  This block is inserted (using Insert_Actions), and then the
+               --  node is replaced with a reference to Bnn.
+
+               declare
+                  Blk : constant Node_Id  := Make_Bignum_Block (Loc);
+                  Bnn : constant Entity_Id := Make_Temporary (Loc, 'B', N);
+                  Ent : RE_Id;
+
+               begin
+                  case N_Op_Compare (Nkind (N)) is
+                     when N_Op_Eq => Ent := RE_Big_EQ;
+                     when N_Op_Ge => Ent := RE_Big_GE;
+                     when N_Op_Gt => Ent := RE_Big_GT;
+                     when N_Op_Le => Ent := RE_Big_LE;
+                     when N_Op_Lt => Ent := RE_Big_LT;
+                     when N_Op_Ne => Ent := RE_Big_NE;
+                  end case;
+
+                  --  Insert assignment to Bnn
+
+                  Insert_Before
+                    (First (Statements (Handled_Statement_Sequence (Blk))),
+                     Make_Assignment_Statement (Loc,
+                       Name       => New_Occurrence_Of (Bnn, Loc),
+                       Expression =>
+                         Make_Function_Call (Loc,
+                           Name                   =>
+                             New_Occurrence_Of (RTE (Ent), Loc),
+                           Parameter_Associations => New_List (Left, Right))));
+
+                  --  Insert actions (declaration of Bnn and block)
+
+                  Insert_Actions (N, New_List (
+                    Make_Object_Declaration (Loc,
+                      Defining_Identifier => Bnn,
+                      Object_Definition   =>
+                        New_Occurrence_Of (Standard_Boolean, Loc)),
+                    Blk));
+
+                  --  Rewrite node with reference to Bnn
+
+                  Rewrite (N, New_Occurrence_Of (Bnn, Loc));
+                  Analyze_And_Resolve (N);
+               end;
+            end;
+
+         --  No bignums involved, but types are different, so we must have
+         --  rewritten one of the operands as a Long_Long_Integer but not
+         --  the other one.
+
+         --  If left operand is Long_Long_Integer, convert right operand
+         --  and we are done (with a comparison of two Long_Long_Integers).
+
+         elsif Ltype = LLIB then
+            Convert_To_And_Rewrite (LLIB, Right_Opnd (N));
+            Analyze_And_Resolve (Right_Opnd (N), LLIB, Suppress => All_Checks);
+            return;
+
+         --  If right operand is Long_Long_Integer, convert left operand
+         --  and we are done (with a comparison of two Long_Long_Integers).
+
+         --  This is the only remaining possibility
+
+         else pragma Assert (Rtype = LLIB);
+            Convert_To_And_Rewrite (LLIB, Left_Opnd (N));
+            Analyze_And_Resolve (Left_Opnd (N), LLIB, Suppress => All_Checks);
+            return;
+         end if;
+      end;
+   end Expand_Compare_Minimize_Eliminate_Overflow;
 
    -------------------------------
    -- Expand_Composite_Equality --
@@ -6367,6 +6602,8 @@ package body Exp_Ch4 is
    begin
       Binary_Op_Validity_Checks (N);
 
+      --  Deal with private types
+
       if Ekind (Typl) = E_Private_Type then
          Typl := Underlying_Type (Typl);
       elsif Ekind (Typl) = E_Private_Subtype then
@@ -6384,6 +6621,15 @@ package body Exp_Ch4 is
       end if;
 
       Typl := Base_Type (Typl);
+
+      --  Deal with overflow checks in MINIMIZED/ELIMINATED mode and if that
+      --  results in not having a comparison operation any more, we are done.
+
+      Expand_Compare_Minimize_Eliminate_Overflow (N);
+
+      if Nkind (N) /= N_Op_Eq then
+         return;
+      end if;
 
       --  Boolean types (requiring handling of non-standard case)
 
@@ -6955,10 +7201,23 @@ package body Exp_Ch4 is
    begin
       Binary_Op_Validity_Checks (N);
 
+      --  Deal with overflow checks in MINIMIZED/ELIMINATED mode and if that
+      --  results in not having a comparison operation any more, we are done.
+
+      Expand_Compare_Minimize_Eliminate_Overflow (N);
+
+      if Nkind (N) /= N_Op_Ge then
+         return;
+      end if;
+
+      --  Array type case
+
       if Is_Array_Type (Typ1) then
          Expand_Array_Comparison (N);
          return;
       end if;
+
+      --  Deal with boolean operands
 
       if Is_Boolean_Type (Typ1) then
          Adjust_Condition (Op1);
@@ -6992,10 +7251,23 @@ package body Exp_Ch4 is
    begin
       Binary_Op_Validity_Checks (N);
 
+      --  Deal with overflow checks in MINIMIZED/ELIMINATED mode and if that
+      --  results in not having a comparison operation any more, we are done.
+
+      Expand_Compare_Minimize_Eliminate_Overflow (N);
+
+      if Nkind (N) /= N_Op_Gt then
+         return;
+      end if;
+
+      --  Deal with array type operands
+
       if Is_Array_Type (Typ1) then
          Expand_Array_Comparison (N);
          return;
       end if;
+
+      --  Deal with boolean type operands
 
       if Is_Boolean_Type (Typ1) then
          Adjust_Condition (Op1);
@@ -7029,10 +7301,23 @@ package body Exp_Ch4 is
    begin
       Binary_Op_Validity_Checks (N);
 
+      --  Deal with overflow checks in MINIMIZED/ELIMINATED mode and if that
+      --  results in not having a comparison operation any more, we are done.
+
+      Expand_Compare_Minimize_Eliminate_Overflow (N);
+
+      if Nkind (N) /= N_Op_Le then
+         return;
+      end if;
+
+      --  Deal with array type operands
+
       if Is_Array_Type (Typ1) then
          Expand_Array_Comparison (N);
          return;
       end if;
+
+      --  Deal with Boolean type operands
 
       if Is_Boolean_Type (Typ1) then
          Adjust_Condition (Op1);
@@ -7066,10 +7351,23 @@ package body Exp_Ch4 is
    begin
       Binary_Op_Validity_Checks (N);
 
+      --  Deal with overflow checks in MINIMIZED/ELIMINATED mode and if that
+      --  results in not having a comparison operation any more, we are done.
+
+      Expand_Compare_Minimize_Eliminate_Overflow (N);
+
+      if Nkind (N) /= N_Op_Lt then
+         return;
+      end if;
+
+      --  Deal with array type operands
+
       if Is_Array_Type (Typ1) then
          Expand_Array_Comparison (N);
          return;
       end if;
+
+      --  Deal with Boolean type operands
 
       if Is_Boolean_Type (Typ1) then
          Adjust_Condition (Op1);
@@ -7446,6 +7744,15 @@ package body Exp_Ch4 is
         and then Sloc (Entity (N)) = Standard_Location
       then
          Binary_Op_Validity_Checks (N);
+
+         --  Deal with overflow checks in MINIMIZED/ELIMINATED mode and if
+         --  that results in not having a /= opertion any more, we are done.
+
+         Expand_Compare_Minimize_Eliminate_Overflow (N);
+
+         if Nkind (N) /= N_Op_Ne then
+            return;
+         end if;
 
          --  Boolean types (requiring handling of non-standard case)
 

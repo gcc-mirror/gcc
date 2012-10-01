@@ -5393,6 +5393,8 @@ package body Exp_Ch3 is
               and then not Is_CPP_Class (Typ)
               and then Tagged_Type_Expansion
               and then Nkind (Expr) /= N_Aggregate
+              and then (Nkind (Expr) /= N_Qualified_Expression
+                         or else Nkind (Expression (Expr)) /= N_Aggregate)
             then
                declare
                   Full_Typ : constant Entity_Id := Underlying_Type (Typ);

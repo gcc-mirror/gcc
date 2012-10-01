@@ -1114,12 +1114,12 @@ package body Checks is
 
       elsif Is_RTE (Etype (Op), RE_Bignum) then
 
-         --  We need a sequence that looks like
+         --  We need a sequence that looks like:
 
          --    Rnn : Result_Type;
 
          --    declare
-         --       M   : Mark_Id := SS_Mark;
+         --       M : Mark_Id := SS_Mark;
          --    begin
          --       Rnn := Long_Long_Integer'Base (From_Bignum (Op));
          --       SS_Release (M);

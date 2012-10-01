@@ -1,5 +1,19 @@
 2012-10-01  Robert Dewar  <dewar@adacore.com>
 
+	* checks.adb: Minor reformatting.
+
+2012-10-01  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): Suppress tag
+	assignment for initializations that are aggregates.
+
+2012-10-01  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb (Expand_Compare_Minimize_Eliminate_Overflow):
+	New procedure.
+
+2012-10-01  Robert Dewar  <dewar@adacore.com>
+
 	* checks.adb (Minimize_Eliminate_Checks): Changes from testing.
 	(Apply_Arithmetic_Overflow_Minimized_Eliminated): Changes
 	from testing.
