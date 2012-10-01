@@ -8792,6 +8792,9 @@ set_up_extended_ref_temp (tree decl, tree expr, VEC(tree,gc) **cleanups,
   TARGET_EXPR_INITIAL (expr)
     = extend_ref_init_temps (decl, TARGET_EXPR_INITIAL (expr), cleanups);
 
+  /* Any reference temp has a non-trivial initializer.  */
+  DECL_NONTRIVIALLY_INITIALIZED_P (var) = true;
+
   /* If the initializer is constant, put it in DECL_INITIAL so we get
      static initialization and use in constant expressions.  */
   init = maybe_constant_init (expr);

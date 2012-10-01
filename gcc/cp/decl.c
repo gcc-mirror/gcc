@@ -2679,8 +2679,7 @@ decl_jump_unsafe (tree decl)
 
   type = strip_array_types (type);
 
-  if (type_has_nontrivial_default_init (TREE_TYPE (decl))
-      || DECL_NONTRIVIALLY_INITIALIZED_P (decl))
+  if (DECL_NONTRIVIALLY_INITIALIZED_P (decl))
     return 2;
 
   if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (decl)))
@@ -5580,6 +5579,11 @@ check_initializer (tree decl, tree init, int flags, VEC(tree,gc) **cleanups)
 	       && CP_AGGREGATE_TYPE_P (type)))
 	{
 	  init_code = build_aggr_init_full_exprs (decl, init, flags);
+
+	  /* A constructor call is a non-trivial initializer even if
+	     it isn't explicitly written.  */
+	  if (TREE_SIDE_EFFECTS (init_code))
+	    DECL_NONTRIVIALLY_INITIALIZED_P (decl) = true;
 
 	  /* If this is a constexpr initializer, expand_default_init will
 	     have returned an INIT_EXPR rather than a CALL_EXPR.  In that

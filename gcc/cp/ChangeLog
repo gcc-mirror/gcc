@@ -1,5 +1,12 @@
 2012-10-01  Jason Merrill  <jason@redhat.com>
 
+	* decl.c (check_initializer): Set DECL_NONTRIVIALLY_INITIALIZED_P
+	for a constructor call.
+	(decl_jump_unsafe): So don't bother checking
+	type_has_nontrivial_default_init.
+	* call.c (set_up_extended_ref_temp): Set
+	DECL_NONTRIVIALLY_INITIALIZED_P.
+
 	* cp-tree.h (TYPE_FUNCTION_OR_TEMPLATE_DECL_CHECK): New.
 	(DECL_FRIEND_P, DECL_ANTICIPATED): Use it.
 	(TYPE_FUNCTION_OR_TEMPLATE_DECL_P): New.
