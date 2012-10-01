@@ -4599,6 +4599,13 @@ package body Checks is
       then
          return True;
 
+      --  Real literals are assumed to be valid in VM targets
+
+      elsif VM_Target /= No_VM
+        and then Nkind (Expr) = N_Real_Literal
+      then
+         return True;
+
       --  If we have a type conversion or a qualification of a known valid
       --  value, then the result will always be valid.
 

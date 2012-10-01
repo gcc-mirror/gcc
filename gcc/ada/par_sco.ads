@@ -61,9 +61,9 @@ package Par_SCO is
    --  True if Loc is the source location of a disabled pragma
 
    procedure SCO_Output;
-   --  Outputs SCO lines for all units, with appropriate section headers, for
-   --  unit U in the ALI file, as recorded by previous calls to SCO_Record,
-   --  possibly modified by calls to Set_SCO_Condition.
+   --  Outputs SCO lines for all units, with appropriate section headers, as
+   --  recorded by previous calls to SCO_Record, possibly modified by calls to
+   --  Set_SCO_Condition.
 
    procedure dsco;
    --  Debug routine to dump internal SCO table. This is a raw format dump

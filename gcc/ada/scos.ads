@@ -246,7 +246,7 @@ package SCOs is
 
    --    For each decision, a decision line is generated with the form:
 
-   --      C* sloc expression [chaining]
+   --      C* sloc expression
 
    --    Here * is one of the following characters:
 
@@ -308,35 +308,6 @@ package SCOs is
    --    condition, and that is true even if the Ada 2005 set membership
    --    form is used, e.g. A in (2,7,11.15).
 
-   --    The expression can be followed by chaining indicators of the form
-   --    Tsloc-range or Fsloc-range, where the sloc-range is that of some
-   --    entry on a CS line.
-
-   --    T* is present when the statement with the given sloc range is executed
-   --    if, and only if, the decision evaluates to TRUE.
-
-   --    F* is present when the statement with the given sloc range is executed
-   --    if, and only if, the decision evaluates to FALSE.
-
-   --    For an IF statement or ELSIF part, a T chaining indicator is always
-   --    present, with the sloc range of the first statement in the
-   --    corresponding sequence.
-
-   --    For an ELSE part, the last decision in the IF statement (that of the
-   --    last ELSIF part, if any, or that of the IF statement if there is no
-   --    ELSIF part) has an F chaining indicator with the sloc range of the
-   --    first statement in the sequence of the ELSE part.
-
-   --    For a WHILE loop, a T chaining indicator is always present, with the
-   --    sloc range of the first statement in the loop, but no F chaining
-   --    indicator is ever present.
-
-   --    For an EXIT WHEN statement, an F chaining indicator is present if
-   --    there is an immediately following sequence in the same sequence of
-   --    statements.
-
-   --    In all other cases, chaining indicators are omitted
-
    --    Implementation permission: a SCO generator is permitted to emit a
    --    narrower SLOC range for a condition if the corresponding code
    --    generation circuitry ensures that all debug information for the code
@@ -359,6 +330,19 @@ package SCOs is
    --    Note: up to 6 entries can appear on a single CC line. If more than 6
    --    entries appear in one logical statement sequence, continuation lines
    --    are marked by Cc and appear immediately after the CC line.
+
+   --  Generic instances
+
+   --    A table of all generic instantiations in the compilation is generated
+   --    whose entries have the form:
+
+   --      C i index dependency-number|sloc [enclosing]
+
+   --    Where index is the 1-based index of the entry in the table,
+   --    dependency-number and sloc indicate the source location of the
+   --    instantiation, and enclosing is the index of the enclosing
+   --    instantiation in the table (for a nested instantiation), or is
+   --    omitted for an outer instantiation.
 
    --  Disabled pragmas
 
@@ -471,12 +455,6 @@ package SCOs is
    --      To   = ending source location
    --      Last = False for all but the last entry, True for last entry
 
-   --    Element (chaining indicator)
-   --      C1   = 'H' (cHain)
-   --      C2   = 'T' or 'F' (chaining on decision true/false)
-   --      From = starting source location of chained statement
-   --      To   = ending source location of chained statement
-
    --    Note: the sequence starting with a decision, and continuing with
    --    operators and elements up to and including the first one labeled with
    --    Last = True, indicate the sequence to be output on one decision line.
@@ -512,6 +490,27 @@ package SCOs is
      Table_Component_Type => SCO_Unit_Table_Entry,
      Table_Index_Type     => SCO_Unit_Index,
      Table_Low_Bound      => 0, -- see note above on sorting
+     Table_Initial        => 20,
+     Table_Increment      => 200);
+
+   -----------------------
+   -- Generic instances --
+   -----------------------
+
+   type SCO_Instance_Index is new Nat;
+
+   type SCO_Instance_Table_Entry is record
+      Inst_Dep_Num : Nat;
+      Inst_Loc     : Source_Location;
+      --  File and source location of instantiation
+
+      Enclosing_Instance : SCO_Instance_Index;
+   end record;
+
+   package SCO_Instance_Table is new GNAT.Table (
+     Table_Component_Type => SCO_Instance_Table_Entry,
+     Table_Index_Type     => SCO_Instance_Index,
+     Table_Low_Bound      => 1,
      Table_Initial        => 20,
      Table_Increment      => 200);
 

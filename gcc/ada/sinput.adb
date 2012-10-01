@@ -477,7 +477,25 @@ package body Sinput is
       First_Time_Around  := True;
 
       Source_File.Init;
+
+      Instances.Init;
+      Instances.Append (No_Location);
+      pragma Assert (Instances.Last = No_Instance_Id);
    end Initialize;
+
+   -------------------
+   -- Instantiation --
+   -------------------
+
+   function Instantiation (S : SFI) return Source_Ptr is
+      SIE : Source_File_Record renames Source_File.Table (S);
+   begin
+      if SIE.Inlined_Body then
+         return SIE.Inlined_Call;
+      else
+         return Instances.Table (SIE.Instance);
+      end if;
+   end Instantiation;
 
    -------------------------
    -- Instantiation_Depth --
@@ -510,6 +528,17 @@ package body Sinput is
    begin
       return Instantiation (Get_Source_File_Index (S));
    end Instantiation_Location;
+
+   --------------------------
+   -- Iterate_On_Instances --
+   --------------------------
+
+   procedure Iterate_On_Instances is
+   begin
+      for J in 1 .. Instances.Last loop
+         Process (J, Instances.Table (J));
+      end loop;
+   end Iterate_On_Instances;
 
    ----------------------
    -- Last_Source_File --
@@ -852,7 +881,7 @@ package body Sinput is
                Tmp1 : Source_Buffer_Ptr;
 
             begin
-               if S.Instantiation /= No_Location then
+               if S.Instance /= No_Instance_Id then
                   null;
 
                else
@@ -887,9 +916,10 @@ package body Sinput is
       Source_Cache_First := 1;
       Source_Cache_Last  := 0;
 
-      --  Read in source file table
+      --  Read in source file table and instance table
 
       Source_File.Tree_Read;
+      Instances.Tree_Read;
 
       --  The pointers we read in there for the source buffer and lines
       --  table pointers are junk. We now read in the actual data that
@@ -904,7 +934,7 @@ package body Sinput is
             --  we share the data for the generic template entry. Since the
             --  template always occurs first, we can safely refer to its data.
 
-            if S.Instantiation /= No_Location then
+            if S.Instance /= No_Instance_Id then
                declare
                   ST : Source_File_Record renames
                          Source_File.Table (S.Template);
@@ -1004,6 +1034,7 @@ package body Sinput is
    procedure Tree_Write is
    begin
       Source_File.Tree_Write;
+      Instances.Tree_Write;
 
       --  The pointers we wrote out there for the source buffer and lines
       --  table pointers are junk, we now write out the actual data that
@@ -1018,7 +1049,7 @@ package body Sinput is
             --  shared with the generic template. When the tree is read, the
             --  pointers must be set, but no extra data needs to be written.
 
-            if S.Instantiation /= No_Location then
+            if S.Instance /= No_Instance_Id then
                null;
 
             --  For the normal case, write out the data of the tables
@@ -1131,6 +1162,11 @@ package body Sinput is
       return Source_File.Table (S).Debug_Source_Name;
    end Debug_Source_Name;
 
+   function Instance (S : SFI) return Instance_Id is
+   begin
+      return Source_File.Table (S).Instance;
+   end Instance;
+
    function File_Name (S : SFI) return File_Name_Type is
    begin
       return Source_File.Table (S).File_Name;
@@ -1171,10 +1207,10 @@ package body Sinput is
       return Source_File.Table (S).Inlined_Body;
    end Inlined_Body;
 
-   function Instantiation (S : SFI) return Source_Ptr is
+   function Inlined_Call (S : SFI) return Source_Ptr is
    begin
-      return Source_File.Table (S).Instantiation;
-   end Instantiation;
+      return Source_File.Table (S).Inlined_Call;
+   end Inlined_Call;
 
    function Keyword_Casing (S : SFI) return Casing_Type is
    begin
