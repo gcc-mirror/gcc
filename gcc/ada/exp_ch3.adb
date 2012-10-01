@@ -3626,7 +3626,7 @@ package body Exp_Ch3 is
       --  Name for argument of invariant procedure
 
       Object_Entity : constant Node_Id :=
-                        Make_Defining_Identifier (Loc, Object_Name);
+        Make_Defining_Identifier (Loc, Object_Name);
       --  The procedure declaration entity for the argument
 
       Invariant_Found : Boolean;
@@ -3681,10 +3681,10 @@ package body Exp_Ch3 is
       begin
          Stmts := New_List;
          Decl := First_Non_Pragma (Component_Items (Comp_List));
-
          while Present (Decl) loop
             if Nkind (Decl) = N_Component_Declaration then
                Id  := Defining_Identifier (Decl);
+
                if Has_Invariants (Etype (Id)) then
                   Append_To (Stmts, Build_Component_Invariant_Call (Id));
                end if;
@@ -3734,14 +3734,16 @@ package body Exp_Ch3 is
          return Stmts;
       end Build_Invariant_Checks;
 
+   --  Start of processing for Build_Record_Invariant_Proc
+
    begin
       Invariant_Found := False;
       Type_Def := Type_Definition (Parent (R_Type));
+
       if Nkind (Type_Def) = N_Record_Definition
-        and then  not Null_Present (Type_Def)
+        and then not Null_Present (Type_Def)
       then
-         Stmts :=
-           Build_Invariant_Checks (Component_List (Type_Def));
+         Stmts := Build_Invariant_Checks (Component_List (Type_Def));
       else
          return;
       end if;
