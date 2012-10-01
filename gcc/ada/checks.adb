@@ -2250,11 +2250,20 @@ package body Checks is
          if Present (S) and then Get_TSS_Name (S) /= TSS_Null then
             return;
 
-         --  Check certainly does not apply within the predicate function
-         --  itself, else we have a infinite recursion.
+         --  If the check appears within the predicate function itself, it
+         --  means that the user specified a check whose formal is the
+         --  predicated subtype itself, rather than some covering type. This
+         --  is likely to be a common error, and thus deserves a warning.
 
          elsif S = Predicate_Function (Typ) then
-            return;
+            Error_Msg_N
+              ("predicate check includes a function call that "
+               & "requires a predicate check?", Parent (N));
+            Error_Msg_N
+              ("\this will result in infinite recursion?", Parent (N));
+            Insert_Action (N,
+               Make_Raise_Storage_Error
+                 (Sloc (N), Reason => SE_Infinite_Recursion));
 
          else
             Insert_Action (N,

@@ -1,3 +1,7 @@
+2012-10-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* checks.adb: Improve warning message.
+
 2012-10-01  Robert Dewar  <dewar@adacore.com>
 
 	* checks.adb: Minor reformatting.
