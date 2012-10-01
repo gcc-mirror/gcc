@@ -2660,8 +2660,7 @@ package body Freeze is
       --  storage of subprogram parameters.
 
       if Is_Subprogram (E)
-        and then (Check_Aliasing_Of_Parameters
-                    or else Check_Validity_Of_Parameters)
+        and then (Check_Aliasing_Of_Parameters or Check_Validity_Of_Parameters)
       then
          Apply_Parameter_Aliasing_And_Validity_Checks (E);
       end if;

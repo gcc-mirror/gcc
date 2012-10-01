@@ -1,3 +1,13 @@
+2012-10-01  Robert Dewar  <dewar@adacore.com>
+
+	* freeze.adb, sem_ch6.adb, opt.ads, sem_ch13.adb,
+	exp_ch3.adb: Minor reformatting.
+
+2012-10-01  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* checks.adb (Build_PPC_Pragma): A PPC pragma can now be properly
+	associated with a subprogram body.
+
 2012-10-01  Ed Schonberg  <schonberg@adacore.com>
 
 	* aspects.ads: Type_Invariant'class is a valid aspect.

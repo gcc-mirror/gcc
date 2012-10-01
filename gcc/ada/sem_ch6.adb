@@ -11344,9 +11344,7 @@ package body Sem_Ch6 is
          --  public subprogram, since we do get initializations to deal with.
          --  Other internally generated subprograms are not public.
 
-         if not Is_List_Member (DD)
-           and then Is_Init_Proc (DD)
-         then
+         if not Is_List_Member (DD) and then Is_Init_Proc (DD) then
             return True;
 
          elsif not Comes_From_Source (DD) then
