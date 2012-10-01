@@ -1,3 +1,11 @@
+2012-10-01  Robert Dewar  <dewar@adacore.com>
+
+	* checks.ads: Minor reformatting.
+
+2012-10-01  Yannick Moy  <moy@adacore.com>
+
+	* types.ads, sem_prag.adb, sem.ads: Correct minor typos in comments.
+
 2012-10-01  Vincent Celier  <celier@adacore.com>
 
 	* make.adb (Scan_Make_Arg): Only test for "vP" of the option
