@@ -44,7 +44,7 @@ package body Ada.Calendar.Time_Zones is
 
    function UTC_Time_Offset (Date : Time := Clock) return Time_Offset is
       Offset_L : constant Long_Integer :=
-                   Time_Zones_Operations.UTC_Time_Offset (Date);
+        Time_Zones_Operations.UTC_Time_Offset (Date);
       Offset   : Time_Offset;
 
    begin

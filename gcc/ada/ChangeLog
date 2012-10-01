@@ -1,3 +1,26 @@
+2012-10-01  Arnaud Charlet  <charlet@adacore.com>
+
+	* a-catizo.adb, a-stwiun.adb, a-cdlili.adb, a-cihama.adb, a-direct.adb,
+	a-coinve.adb, a-calend.adb, a-ciorse.adb, a-coorma.adb, a-cfdlli.adb,
+	a-stzunb-shared.adb, a-cfhase.adb, bindgen.adb, ceinfo.adb, a-tags.adb,
+	einfo.adb, checks.adb, eval_fat.adb, a-cborma.adb, a-stwifi.adb,
+	a-tifiio.adb, a-textio.adb, a-cidlli.adb, a-strunb-shared.adb,
+	a-cimutr.adb, a-calcon.adb, a-exexpr-gcc.adb, a-ciormu.adb,
+	a-stzunb.adb, a-stzsea.adb, a-ngelfu.adb, a-stzfix.adb,
+	a-cihase.adb, a-cohama.adb, a-exetim-posix.adb, a-dirval-vms.adb,
+	a-caldel-vms.adb, a-coorse.adb, errout.adb,
+	a-except.adb, butil.adb, a-dirval-mingw.adb, a-cforma.adb,
+	a-except-2005.adb, a-wtedit.adb, cstand.adb, a-stwiun-shared.adb,
+	a-cbhama.adb, a-direio.adb, clean.adb, a-cborse.adb, back_end.adb,
+	binde.adb, a-exexda.adb, a-comutr.adb, a-ciorma.adb, a-cobove.adb,
+	a-coormu.adb, a-teioed.adb, a-convec.adb, a-wtenau.adb, exp_aggr.adb,
+	a-ztedit.adb, a-cohase.adb, a-exetim-mingw.adb, bcheck.adb,
+	a-dynpri.adb, a-cfhama.adb, a-calfor.adb, a-cbdlli.adb,
+	a-crdlli.adb, a-cbmutr.adb, a-sequio.adb, a-ngcoar.adb, a-cforse.adb,
+	a-strunb.adb, a-calend-vms.adb, a-clrefi.adb, a-cofove.adb,
+	a-ztenau.adb, a-strfix.adb, a-cbhase.adb, a-stzsup.adb: Minor
+	reformatting.
+
 2012-10-01  Vincent Pucci  <pucci@adacore.com>
 
 	* s-gearop.adb (Vector_Matrix_Product): Dimensions check fixed. Index

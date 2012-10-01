@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2010-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2010-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -53,7 +53,7 @@ package body Ada.Containers.Formal_Vectors is
 
          declare
             E : constant Elements_Array (1 .. Length (Right)) :=
-                  Right.Elements (1 .. RN);
+              Right.Elements (1 .. RN);
          begin
             return (Length (Right), E, Last => Right.Last, others => <>);
          end;
@@ -62,7 +62,7 @@ package body Ada.Containers.Formal_Vectors is
       if RN = 0 then
          declare
             E : constant Elements_Array (1 .. Length (Left)) :=
-                  Left.Elements (1 .. LN);
+              Left.Elements (1 .. LN);
          begin
             return (Length (Left), E, Last => Left.Last, others => <>);
          end;
@@ -370,7 +370,7 @@ package body Ada.Containers.Formal_Vectors is
 
                New_Last_As_Int : constant Int'Base := Old_Last_As_Int - N;
                New_Last        : constant Index_Type :=
-                                   Index_Type (New_Last_As_Int);
+                 Index_Type (New_Last_As_Int);
 
                KK : constant Int := New_Last_As_Int - Int (No_Index);
                K  : constant Count_Type := Count_Type (KK);
@@ -867,7 +867,7 @@ package body Ada.Containers.Formal_Vectors is
 
       declare
          Dst_Last_As_Int : constant Int'Base :=
-                             Int (Before) + Int (N) - 1 - Int (No_Index);
+           Int (Before) + Int (N) - 1 - Int (No_Index);
 
          Dst_Last : constant Count_Type := Count_Type (Dst_Last_As_Int);
 
@@ -902,7 +902,7 @@ package body Ada.Containers.Formal_Vectors is
                     Container.Elements (Dst_Last + 1 .. Length (Container));
 
             Index_As_Int : constant Int'Base :=
-                             Dst_Last_As_Int - Src'Length + 1;
+              Dst_Last_As_Int - Src'Length + 1;
 
             Index : constant Count_Type := Count_Type (Index_As_Int);
 
@@ -1775,7 +1775,7 @@ package body Ada.Containers.Formal_Vectors is
 
       declare
          Last_As_Int : constant Int'Base :=
-                         Int (Index_Type'First) + Int (Length) - 1;
+           Int (Index_Type'First) + Int (Length) - 1;
       begin
          Container.Last := Index_Type'Base (Last_As_Int);
       end;

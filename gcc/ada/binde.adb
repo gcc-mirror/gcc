@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -427,8 +427,8 @@ package body Binde is
       elsif Is_Waiting_Body (U1) and then Is_Waiting_Body (U2) then
          declare
             Result : constant Boolean :=
-                       UNR.Table (Corresponding_Spec (U1)).Elab_Position >
-                       UNR.Table (Corresponding_Spec (U2)).Elab_Position;
+              UNR.Table (Corresponding_Spec (U1)).Elab_Position >
+              UNR.Table (Corresponding_Spec (U2)).Elab_Position;
          begin
             if Debug_Flag_B then
                if Result then
@@ -483,8 +483,8 @@ package body Binde is
          then
             declare
                Result : constant Boolean :=
-                          UNR.Table (Corresponding_Body (U1)).Num_Pred <
-                          UNR.Table (Corresponding_Body (U2)).Num_Pred;
+                 UNR.Table (Corresponding_Body (U1)).Num_Pred <
+                 UNR.Table (Corresponding_Body (U2)).Num_Pred;
             begin
                if Debug_Flag_B then
                   if Result then
@@ -902,8 +902,7 @@ package body Binde is
          then
             declare
                Info : constant Int :=
-                        Get_Name_Table_Info
-                          (Withs.Table (W).Uname);
+                 Get_Name_Table_Info (Withs.Table (W).Uname);
 
             begin
                --  If the unit is unknown, for some unknown reason, fail
@@ -913,11 +912,10 @@ package body Binde is
                if Info = 0 or else Unit_Id (Info) = No_Unit_Id then
                   declare
                      Withed       : String :=
-                                      Get_Name_String (Withs.Table (W).Uname);
+                       Get_Name_String (Withs.Table (W).Uname);
                      Last_Withed  : Natural := Withed'Last;
                      Withing      : String :=
-                                      Get_Name_String
-                                        (Units.Table (Before).Uname);
+                       Get_Name_String (Units.Table (Before).Uname);
                      Last_Withing : Natural := Withing'Last;
                      Spec_Body    : String  := " (Spec)";
 
@@ -1520,8 +1518,8 @@ package body Binde is
       elsif Is_Waiting_Body (U1) and then Is_Waiting_Body (U2) then
          declare
             Result : constant Boolean :=
-                       UNR.Table (Corresponding_Spec (U1)).Elab_Position <
-                       UNR.Table (Corresponding_Spec (U2)).Elab_Position;
+              UNR.Table (Corresponding_Spec (U1)).Elab_Position <
+              UNR.Table (Corresponding_Spec (U2)).Elab_Position;
          begin
             if Debug_Flag_B then
                if Result then
@@ -1580,8 +1578,8 @@ package body Binde is
          then
             declare
                Result : constant Boolean :=
-                          UNR.Table (Corresponding_Body (U1)).Num_Pred >=
-                          UNR.Table (Corresponding_Body (U2)).Num_Pred;
+                 UNR.Table (Corresponding_Body (U1)).Num_Pred >=
+                 UNR.Table (Corresponding_Body (U2)).Num_Pred;
             begin
                if Debug_Flag_B then
                   if Result then

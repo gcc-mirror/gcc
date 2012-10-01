@@ -739,8 +739,8 @@ package body Ada.Containers.Bounded_Hashed_Maps is
 
    begin
       return It : constant Iterator :=
-                    (Limited_Controlled with
-                       Container => Container'Unrestricted_Access)
+        (Limited_Controlled with
+           Container => Container'Unrestricted_Access)
       do
          B := B + 1;
       end return;

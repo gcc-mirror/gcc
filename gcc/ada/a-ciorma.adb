@@ -399,9 +399,8 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
          L : Natural renames T.Lock;
       begin
          return R : constant Constant_Reference_Type :=
-                      (Element => Position.Node.Element.all'Access,
-                       Control =>
-                         (Controlled with Container'Unrestricted_Access))
+           (Element => Position.Node.Element.all'Access,
+            Control => (Controlled with Container'Unrestricted_Access))
          do
             B := B + 1;
             L := L + 1;
@@ -430,9 +429,8 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
          L : Natural renames T.Lock;
       begin
          return R : constant Constant_Reference_Type :=
-                      (Element => Node.Element.all'Access,
-                       Control =>
-                         (Controlled with Container'Unrestricted_Access))
+           (Element => Node.Element.all'Access,
+            Control => (Controlled with Container'Unrestricted_Access))
          do
             B := B + 1;
             L := L + 1;
@@ -1014,9 +1012,9 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
       --  for a reverse iterator, Container.Last is the beginning.
 
       return It : constant Iterator :=
-                    (Limited_Controlled with
-                       Container => Container'Unrestricted_Access,
-                       Node      => null)
+        (Limited_Controlled with
+           Container => Container'Unrestricted_Access,
+           Node      => null)
       do
          B := B + 1;
       end return;
@@ -1064,9 +1062,9 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
       --  is a forward or reverse iteration.
 
       return It : constant Iterator :=
-                    (Limited_Controlled with
-                       Container => Container'Unrestricted_Access,
-                       Node      => Start.Node)
+        (Limited_Controlled with
+           Container => Container'Unrestricted_Access,
+           Node      => Start.Node)
       do
          B := B + 1;
       end return;
@@ -1204,7 +1202,7 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
 
       declare
          Node : constant Node_Access :=
-                  Tree_Operations.Next (Position.Node);
+           Tree_Operations.Next (Position.Node);
       begin
          return (if Node = null then No_Element
                  else Cursor'(Position.Container, Node));
@@ -1260,7 +1258,7 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
 
       declare
          Node : constant Node_Access :=
-                  Tree_Operations.Previous (Position.Node);
+           Tree_Operations.Previous (Position.Node);
       begin
          return (if Node = null then No_Element
                  else Cursor'(Position.Container, Node));
@@ -1437,8 +1435,8 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
          L : Natural renames T.Lock;
       begin
          return R : constant Reference_Type :=
-                      (Element => Position.Node.Element.all'Access,
-                       Control => (Controlled with Position.Container))
+           (Element => Position.Node.Element.all'Access,
+            Control => (Controlled with Position.Container))
          do
             B := B + 1;
             L := L + 1;
@@ -1467,9 +1465,8 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
          L : Natural renames T.Lock;
       begin
          return R : constant Reference_Type :=
-                      (Element => Node.Element.all'Access,
-                       Control =>
-                         (Controlled with Container'Unrestricted_Access))
+           (Element => Node.Element.all'Access,
+            Control => (Controlled with Container'Unrestricted_Access))
          do
             B := B + 1;
             L := L + 1;
@@ -1486,8 +1483,7 @@ package body Ada.Containers.Indefinite_Ordered_Maps is
       Key       : Key_Type;
       New_Item  : Element_Type)
    is
-      Node : constant Node_Access :=
-               Key_Ops.Find (Container.Tree, Key);
+      Node : constant Node_Access := Key_Ops.Find (Container.Tree, Key);
 
       K : Key_Access;
       E : Element_Access;

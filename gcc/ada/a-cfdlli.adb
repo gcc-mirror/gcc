@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2010-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2010-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -989,9 +989,9 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
       --  for a reverse iterator, Container.Last is the beginning.
 
       return It : constant Iterator :=
-                    Iterator'(Ada.Finalization.Limited_Controlled with
-                                Container => Container'Unrestricted_Access,
-                                Node      => 0)
+        Iterator'(Ada.Finalization.Limited_Controlled with
+                    Container => Container'Unrestricted_Access,
+                    Node      => 0)
       do
          B := B + 1;
       end return;
@@ -1029,9 +1029,9 @@ package body Ada.Containers.Formal_Doubly_Linked_Lists is
       --  is a forward or reverse iteration.
 
       return It : constant Iterator :=
-                    Iterator'(Ada.Finalization.Limited_Controlled with
-                                Container => Container'Unrestricted_Access,
-                                Node      => Start.Node)
+        Iterator'(Ada.Finalization.Limited_Controlled with
+                    Container => Container'Unrestricted_Access,
+                    Node      => Start.Node)
       do
          B := B + 1;
       end return;

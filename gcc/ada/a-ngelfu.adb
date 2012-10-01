@@ -971,7 +971,7 @@ package body Ada.Numerics.Generic_Elementary_Functions is
       G : constant Float_Type'Base := Y * Y;
 
       Float_Type_Digits_15_Or_More : constant Boolean :=
-                                       Float_Type'Digits > 14;
+        Float_Type'Digits > 14;
 
    begin
       if X < Half_Log_Epsilon then

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -71,8 +71,7 @@ package body Ada.Strings.Wide_Wide_Search is
      (Source  : Wide_Wide_String;
       Pattern : Wide_Wide_String;
       Mapping : Wide_Wide_Maps.Wide_Wide_Character_Mapping :=
-                  Wide_Wide_Maps.Identity)
-      return Natural
+        Wide_Wide_Maps.Identity) return Natural
    is
       PL1 : constant Integer := Pattern'Length - 1;
       Num : Natural;
@@ -267,8 +266,7 @@ package body Ada.Strings.Wide_Wide_Search is
       Pattern : Wide_Wide_String;
       Going   : Direction := Forward;
       Mapping : Wide_Wide_Maps.Wide_Wide_Character_Mapping :=
-                  Wide_Wide_Maps.Identity)
-      return Natural
+        Wide_Wide_Maps.Identity) return Natural
    is
       PL1 : constant Integer := Pattern'Length - 1;
       Cur : Natural;
@@ -479,8 +477,7 @@ package body Ada.Strings.Wide_Wide_Search is
       From    : Positive;
       Going   : Direction := Forward;
       Mapping : Wide_Wide_Maps.Wide_Wide_Character_Mapping :=
-                  Wide_Wide_Maps.Identity)
-      return Natural
+        Wide_Wide_Maps.Identity) return Natural
    is
    begin
       if Going = Forward then

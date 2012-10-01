@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -280,7 +280,7 @@ package body Bcheck is
 
                Check_Policy : declare
                   Policy : constant Character :=
-                             ALIs.Table (A1).Task_Dispatching_Policy;
+                    ALIs.Table (A1).Task_Dispatching_Policy;
 
                begin
                   for A2 in A1 + 1 .. ALIs.Last loop
@@ -337,10 +337,10 @@ package body Bcheck is
             end record;
 
             PSD_Table  : array (0 .. Max_Prio) of Specific_Dispatching_Entry :=
-                           (others => Specific_Dispatching_Entry'
-                              (Dispatching_Policy => ' ',
-                               Afile              => No_ALI_Id,
-                               Loc                => 0));
+              (others => Specific_Dispatching_Entry'
+                 (Dispatching_Policy => ' ',
+                  Afile              => No_ALI_Id,
+                  Loc                => 0));
             --  Array containing an entry per priority containing the location
             --  where there is a Priority_Specific_Dispatching pragma that
             --  applies to the priority.
@@ -943,9 +943,7 @@ package body Bcheck is
 
       for ND in No_Deps.First .. No_Deps.Last loop
          declare
-            ND_Unit : constant Name_Id :=
-                        No_Deps.Table (ND).No_Dep_Unit;
-
+            ND_Unit : constant Name_Id := No_Deps.Table (ND).No_Dep_Unit;
          begin
             for J in ALIs.First .. ALIs.Last loop
                declare
@@ -1019,7 +1017,7 @@ package body Bcheck is
                      if AFN /= No_File then
                         declare
                            WAI : constant ALI_Id :=
-                                   ALI_Id (Get_Name_Table_Info (AFN));
+                             ALI_Id (Get_Name_Table_Info (AFN));
                            WTE : ALIs_Record renames ALIs.Table (WAI);
 
                         begin

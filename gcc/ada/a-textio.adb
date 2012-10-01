@@ -2118,8 +2118,7 @@ package body Ada.Text_IO is
       end Has_Translated_Characters;
 
       Needs_Binary_Write : constant Boolean :=
-                             text_translation_required
-                               and then Has_Translated_Characters;
+        text_translation_required and then Has_Translated_Characters;
 
    --  Start of processing for Write
 

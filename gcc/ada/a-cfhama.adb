@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2010-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2010-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -202,7 +202,7 @@ package body Ada.Containers.Formal_Hashed_Maps is
       Capacity : Count_Type := 0) return Map
    is
       C      : constant Count_Type :=
-                 Count_Type'Max (Capacity, Source.Capacity);
+        Count_Type'Max (Capacity, Source.Capacity);
       H      : Hash_Type;
       N      : Count_Type;
       Target : Map (C, Source.Modulus);
@@ -407,8 +407,7 @@ package body Ada.Containers.Formal_Hashed_Maps is
    ----------
 
    function Find (Container : Map; Key : Key_Type) return Cursor is
-      Node : constant Count_Type :=
-               Key_Ops.Find (Container, Key);
+      Node : constant Count_Type := Key_Ops.Find (Container, Key);
 
    begin
       if Node = 0 then
@@ -700,7 +699,7 @@ package body Ada.Containers.Formal_Hashed_Maps is
    function Left (Container : Map; Position : Cursor) return Map is
       Curs : Cursor;
       C    : Map (Container.Capacity, Container.Modulus) :=
-               Copy (Container, Container.Capacity);
+        Copy (Container, Container.Capacity);
       Node : Count_Type;
 
    begin
@@ -1026,7 +1025,7 @@ package body Ada.Containers.Formal_Hashed_Maps is
    function Right (Container : Map; Position : Cursor) return Map is
       Curs : Cursor := First (Container);
       C    : Map (Container.Capacity, Container.Modulus) :=
-               Copy (Container, Container.Capacity);
+        Copy (Container, Container.Capacity);
       Node : Count_Type;
 
    begin

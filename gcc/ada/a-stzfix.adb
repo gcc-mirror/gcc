@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,7 +43,7 @@ package body Ada.Strings.Wide_Wide_Fixed is
       Pattern : Wide_Wide_String;
       Going   : Direction := Forward;
       Mapping : Wide_Wide_Maps.Wide_Wide_Character_Mapping :=
-                  Wide_Wide_Maps.Identity)
+        Wide_Wide_Maps.Identity)
       return Natural
    renames Ada.Strings.Wide_Wide_Search.Index;
 
@@ -68,7 +68,7 @@ package body Ada.Strings.Wide_Wide_Fixed is
       From    : Positive;
       Going   : Direction := Forward;
       Mapping : Wide_Wide_Maps.Wide_Wide_Character_Mapping :=
-                  Wide_Wide_Maps.Identity)
+        Wide_Wide_Maps.Identity)
       return Natural
    renames Ada.Strings.Wide_Wide_Search.Index;
 
@@ -104,7 +104,7 @@ package body Ada.Strings.Wide_Wide_Fixed is
      (Source  : Wide_Wide_String;
       Pattern : Wide_Wide_String;
       Mapping : Wide_Wide_Maps.Wide_Wide_Character_Mapping :=
-                  Wide_Wide_Maps.Identity)
+        Wide_Wide_Maps.Identity)
       return Natural
    renames Ada.Strings.Wide_Wide_Search.Count;
 
@@ -413,9 +413,9 @@ package body Ada.Strings.Wide_Wide_Fixed is
       else
          declare
             Result_Length : constant Natural :=
-                              Natural'Max
-                                (Source'Length,
-                                 Position - Source'First + New_Item'Length);
+              Natural'Max
+                (Source'Length,
+                 Position - Source'First + New_Item'Length);
 
             Result : Wide_Wide_String (1 .. Result_Length);
 
@@ -457,15 +457,15 @@ package body Ada.Strings.Wide_Wide_Fixed is
       if High >= Low then
          declare
             Front_Len : constant Integer :=
-                          Integer'Max (0, Low - Source'First);
+              Integer'Max (0, Low - Source'First);
             --  Length of prefix of Source copied to result
 
             Back_Len : constant Integer :=
-                         Integer'Max (0, Source'Last - High);
+              Integer'Max (0, Source'Last - High);
             --  Length of suffix of Source copied to result
 
             Result_Length : constant Integer :=
-                              Front_Len + By'Length + Back_Len;
+              Front_Len + By'Length + Back_Len;
             --  Length of result
 
             Result : Wide_Wide_String (1 .. Result_Length);
@@ -626,7 +626,7 @@ package body Ada.Strings.Wide_Wide_Fixed is
       else
          declare
             Result : constant Wide_Wide_String (1 .. High - Low + 1) :=
-                       Source (Low .. High);
+              Source (Low .. High);
 
          begin
             return Result;

@@ -698,8 +698,7 @@ package body Ada.Strings.Wide_Wide_Superbounded is
      (Source  : Super_String;
       Pattern : Wide_Wide_String;
       Mapping : Wide_Wide_Maps.Wide_Wide_Character_Mapping :=
-                  Wide_Wide_Maps.Identity)
-      return Natural
+        Wide_Wide_Maps.Identity) return Natural
    is
    begin
       return
@@ -939,8 +938,7 @@ package body Ada.Strings.Wide_Wide_Superbounded is
       Pattern : Wide_Wide_String;
       Going   : Strings.Direction := Strings.Forward;
       Mapping : Wide_Wide_Maps.Wide_Wide_Character_Mapping :=
-                  Wide_Wide_Maps.Identity)
-      return Natural
+        Wide_Wide_Maps.Identity) return Natural
    is
    begin
       return Wide_Wide_Search.Index
@@ -976,8 +974,7 @@ package body Ada.Strings.Wide_Wide_Superbounded is
       From    : Positive;
       Going   : Direction := Forward;
       Mapping : Wide_Wide_Maps.Wide_Wide_Character_Mapping :=
-                  Wide_Wide_Maps.Identity)
-      return Natural
+        Wide_Wide_Maps.Identity) return Natural
    is
    begin
       return Wide_Wide_Search.Index

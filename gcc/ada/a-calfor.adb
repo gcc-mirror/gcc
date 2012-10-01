@@ -213,7 +213,7 @@ package body Ada.Calendar.Formatting is
 
       Result : String := "0000-00-00 00:00:00.00";
       Last   : constant Positive :=
-                 Result'Last - (if Include_Time_Fraction then 0 else 3);
+        Result'Last - (if Include_Time_Fraction then 0 else 3);
 
    begin
       Split (Date, Year, Month, Day,

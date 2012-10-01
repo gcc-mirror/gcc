@@ -397,9 +397,8 @@ package body Checks is
       Internal_Static_Sloc : constant Source_Ptr := Static_Sloc;
 
       Checks_On : constant Boolean :=
-                    (not Index_Checks_Suppressed (Suppress_Typ))
-                       or else
-                    (not Range_Checks_Suppressed (Suppress_Typ));
+        (not Index_Checks_Suppressed (Suppress_Typ))
+         or else (not Range_Checks_Suppressed (Suppress_Typ));
 
    begin
       --  For now we just return if Checks_On is false, however this should
@@ -792,7 +791,7 @@ package body Checks is
       then
          declare
             Target_Type : constant Entity_Id :=
-                            Base_Type (Entity (Subtype_Mark (Parent (N))));
+              Base_Type (Entity (Subtype_Mark (Parent (N))));
 
             Llo, Lhi : Uint;
             Rlo, Rhi : Uint;
@@ -1279,7 +1278,7 @@ package body Checks is
       then
          declare
             Alloc_Typ : constant Entity_Id :=
-                          Entity (Expression (Original_Node (N)));
+              Entity (Expression (Original_Node (N)));
 
          begin
             if Alloc_Typ = T_Typ
@@ -1341,8 +1340,7 @@ package body Checks is
                then
                   declare
                      Type_Def : constant Node_Id :=
-                                 Type_Definition
-                                   (Original_Node (Parent (T_Typ)));
+                       Type_Definition (Original_Node (Parent (T_Typ)));
                   begin
                      if Nkind (Type_Def) = N_Derived_Type_Definition
                        and then Is_Entity_Name (Subtype_Indication (Type_Def))
@@ -1576,7 +1574,7 @@ package body Checks is
       Loc         : constant Source_Ptr := Sloc (Ck_Node);
       Expr_Type   : constant Entity_Id  := Base_Type (Etype (Ck_Node));
       Target_Base : constant Entity_Id  :=
-                      Implementation_Base_Type (Target_Typ);
+        Implementation_Base_Type (Target_Typ);
 
       Par : constant Node_Id := Parent (Ck_Node);
       pragma Assert (Nkind (Par) = N_Type_Conversion);
@@ -1584,9 +1582,9 @@ package body Checks is
 
       Truncate  : constant Boolean := Float_Truncate (Par);
       Max_Bound : constant Uint :=
-                    UI_Expon
-                      (Machine_Radix_Value (Expr_Type),
-                       Machine_Mantissa_Value (Expr_Type) - 1) - 1;
+        UI_Expon
+          (Machine_Radix_Value (Expr_Type),
+           Machine_Mantissa_Value (Expr_Type) - 1) - 1;
 
       --  Largest bound, so bound plus or minus half is a machine number of F
 
@@ -2394,9 +2392,8 @@ package body Checks is
 
       Loc         : constant Source_Ptr := Sloc (Ck_Node);
       Checks_On   : constant Boolean :=
-                      (not Index_Checks_Suppressed (Target_Typ))
-                        or else
-                      (not Length_Checks_Suppressed (Target_Typ));
+        (not Index_Checks_Suppressed (Target_Typ))
+         or else (not Length_Checks_Suppressed (Target_Typ));
 
    begin
       if not Full_Expander_Active then
@@ -2502,9 +2499,8 @@ package body Checks is
 
       Loc       : constant Source_Ptr := Sloc (Ck_Node);
       Checks_On : constant Boolean :=
-                    (not Index_Checks_Suppressed (Target_Typ))
-                      or else
-                    (not Range_Checks_Suppressed (Target_Typ));
+        (not Index_Checks_Suppressed (Target_Typ))
+         or else (not Range_Checks_Suppressed (Target_Typ));
 
    begin
       if not Full_Expander_Active or else not Checks_On then
@@ -2657,8 +2653,8 @@ package body Checks is
             --  fixed point values must be read as integral values.
 
             Float_To_Int : constant Boolean :=
-                             Is_Floating_Point_Type (Expr_Type)
-                               and then Is_Integer_Type (Target_Type);
+              Is_Floating_Point_Type (Expr_Type)
+              and then Is_Integer_Type (Target_Type);
 
          begin
             if not Overflow_Checks_Suppressed (Target_Base)
@@ -2714,7 +2710,7 @@ package body Checks is
 
             New_Constraints : constant Elist_Id := New_Elmt_List;
             Old_Constraints : constant Elist_Id :=
-                                Discriminant_Constraint (Expr_Type);
+              Discriminant_Constraint (Expr_Type);
 
          begin
             Constraint := First_Elmt (Stored_Constraint (Target_Type));
@@ -4799,11 +4795,11 @@ package body Checks is
       Sel  : constant Node_Id    := Selector_Name (N);
 
       Orig_Comp : constant Entity_Id :=
-                    Original_Record_Component (Entity (Sel));
+        Original_Record_Component (Entity (Sel));
       --  The original component to be checked
 
       Discr_Fct : constant Entity_Id :=
-                    Discriminant_Checking_Func (Orig_Comp);
+        Discriminant_Checking_Func (Orig_Comp);
       --  The discriminant checking function
 
       Discr : Entity_Id;
@@ -5596,9 +5592,8 @@ package body Checks is
 
       Check_Node : Node_Id;
       Checks_On  : constant Boolean :=
-                     (not Index_Checks_Suppressed (Suppress_Typ))
-                       or else
-                     (not Range_Checks_Suppressed (Suppress_Typ));
+        (not Index_Checks_Suppressed (Suppress_Typ))
+         or else (not Range_Checks_Suppressed (Suppress_Typ));
 
    begin
       --  For now we just return if Checks_On is false, however this should be
@@ -7361,8 +7356,8 @@ package body Checks is
 
                Out_Of_Range  : Boolean;
                Static_Bounds : constant Boolean :=
-                                 Compile_Time_Known_Value (LB)
-                                   and Compile_Time_Known_Value (UB);
+                 Compile_Time_Known_Value (LB)
+                 and Compile_Time_Known_Value (UB);
 
             begin
                --  Following range tests should use Sem_Eval routine ???

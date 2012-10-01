@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -73,7 +73,7 @@ package body Clean is
    --  Changed to "b__" for VMS in the body of the package.
 
    Project_Tree : constant Project_Tree_Ref :=
-                    new Project_Tree_Data (Is_Root_Tree => True);
+     new Project_Tree_Data (Is_Root_Tree => True);
    --  The project tree
 
    Object_Directory_Path : String_Access := null;
@@ -319,7 +319,7 @@ package body Clean is
       --  The name of the archive dependency file for this project
 
       Obj_Dir : constant String :=
-                  Get_Name_String (Project.Object_Directory.Display_Name);
+        Get_Name_String (Project.Object_Directory.Display_Name);
 
    begin
       Change_Dir (Obj_Dir);
@@ -463,7 +463,7 @@ package body Clean is
 
                declare
                   Obj_Dir : constant String :=
-                              Dir_Name (Get_Name_String (Full_Lib_File));
+                    Dir_Name (Get_Name_String (Full_Lib_File));
                   Obj     : constant String := Object_File_Name (Lib_File);
                   Adt     : constant String := Tree_File_Name   (Lib_File);
                   Asm     : constant String := Assembly_File_Name (Lib_File);
@@ -489,9 +489,9 @@ package body Clean is
                   for J in 1 .. Sources.Last loop
                      declare
                         Deb : constant String :=
-                                Debug_File_Name (Sources.Table (J));
+                          Debug_File_Name (Sources.Table (J));
                         Rep : constant String :=
-                                Repinfo_File_Name (Sources.Table (J));
+                          Repinfo_File_Name (Sources.Table (J));
 
                      begin
                         if Is_Regular_File (Obj_Dir & Dir_Separator & Deb) then
@@ -513,9 +513,9 @@ package body Clean is
          if not Compile_Only then
             declare
                Source     : constant File_Name_Type :=
-                              Strip_Suffix (Main_Lib_File);
+                 Strip_Suffix (Main_Lib_File);
                Executable : constant String :=
-                              Get_Name_String (Executable_Name (Source));
+                 Get_Name_String (Executable_Name (Source));
             begin
                if Is_Regular_File (Executable) then
                   Delete ("", Executable);
@@ -548,7 +548,7 @@ package body Clean is
       then
          declare
             Directory : constant String :=
-                        Get_Name_String (Project.Library_Src_Dir.Display_Name);
+              Get_Name_String (Project.Library_Src_Dir.Display_Name);
 
          begin
             Change_Dir (Directory);
@@ -631,9 +631,9 @@ package body Clean is
 
       Lib_Filename : constant String := Get_Name_String (Project.Library_Name);
       DLL_Name     : String :=
-                       DLL_Prefix & Lib_Filename & "." & DLL_Ext;
+        DLL_Prefix & Lib_Filename & "." & DLL_Ext;
       Archive_Name : String :=
-                       "lib" & Lib_Filename & "." & Archive_Ext;
+        "lib" & Lib_Filename & "." & Archive_Ext;
       Direc        : Dir_Type;
 
       Name : String (1 .. 200);
@@ -656,11 +656,9 @@ package body Clean is
 
          declare
             Lib_Directory     : constant String :=
-                                  Get_Name_String
-                                    (Project.Library_Dir.Display_Name);
+              Get_Name_String (Project.Library_Dir.Display_Name);
             Lib_ALI_Directory : constant String :=
-                                  Get_Name_String
-                                    (Project.Library_ALI_Dir.Display_Name);
+              Get_Name_String (Project.Library_ALI_Dir.Display_Name);
 
          begin
             Canonical_Case_File_Name (Archive_Name);
@@ -863,8 +861,7 @@ package body Clean is
          if Project.Object_Directory /= No_Path_Information then
             declare
                Obj_Dir : constant String :=
-                           Get_Name_String
-                             (Project.Object_Directory.Display_Name);
+                 Get_Name_String (Project.Object_Directory.Display_Name);
 
             begin
                Change_Dir (Obj_Dir);
@@ -933,17 +930,17 @@ package body Clean is
 
                         declare
                            Asm : constant String :=
-                                   Assembly_File_Name (Lib_File);
+                             Assembly_File_Name (Lib_File);
                            ALI : constant String :=
-                                   ALI_File_Name      (Lib_File);
+                             ALI_File_Name      (Lib_File);
                            Obj : constant String :=
-                                   Object_File_Name   (Lib_File);
+                             Object_File_Name   (Lib_File);
                            Adt : constant String :=
-                                   Tree_File_Name     (Lib_File);
+                             Tree_File_Name     (Lib_File);
                            Deb : constant String :=
-                                   Debug_File_Name    (File_Name1);
+                             Debug_File_Name    (File_Name1);
                            Rep : constant String :=
-                                   Repinfo_File_Name  (File_Name1);
+                             Repinfo_File_Name  (File_Name1);
                            Del : Boolean := True;
 
                         begin
@@ -1010,9 +1007,9 @@ package body Clean is
                               if File_Name2 /= No_File then
                                  declare
                                     Deb : constant String :=
-                                            Debug_File_Name (File_Name2);
+                                      Debug_File_Name (File_Name2);
                                     Rep : constant String :=
-                                            Repinfo_File_Name (File_Name2);
+                                      Repinfo_File_Name (File_Name2);
 
                                  begin
                                     if Is_Regular_File (Deb) then
@@ -1155,7 +1152,7 @@ package body Clean is
       then
          declare
             Exec_Dir : constant String :=
-                         Get_Name_String (Project.Exec_Directory.Display_Name);
+              Get_Name_String (Project.Exec_Directory.Display_Name);
 
          begin
             Change_Dir (Exec_Dir);
@@ -1173,7 +1170,7 @@ package body Clean is
 
                   declare
                      Exec_File_Name : constant String :=
-                                        Get_Name_String (Executable);
+                       Get_Name_String (Executable);
 
                   begin
                      if Is_Absolute_Path (Name => Exec_File_Name) then

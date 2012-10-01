@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1091,7 +1091,7 @@ package body Ada.Wide_Wide_Text_IO.Editing is
 
    function Pic_String (Pic : Picture) return String is
       Temp : String (1 .. Pic.Contents.Picture.Length) :=
-                              Pic.Contents.Picture.Expanded;
+        Pic.Contents.Picture.Expanded;
    begin
       for J in Temp'Range loop
          if Temp (J) = 'b' then
