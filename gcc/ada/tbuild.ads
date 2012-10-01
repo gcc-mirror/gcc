@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,6 +47,12 @@ package Tbuild is
    --  If an N_Type_Conversion node is required, Relocate_Node is used on
    --  Exp. This means that it is safe to replace a node by a Convert_To
    --  of itself to some other type.
+
+   procedure Convert_To_And_Rewrite (Typ : Entity_Id; Expr : Node_Id);
+   pragma Inline (Convert_To_And_Rewrite);
+   --  Like the function, except that there is an extra step of calling
+   --  Rewrite on the Expr node and replacing it with the converted result.
+   --  As noted above, this is safe, because Relocate_Node is called.
 
    procedure Discard_Node (N : Node_Or_Entity_Id);
    pragma Inline (Discard_Node);

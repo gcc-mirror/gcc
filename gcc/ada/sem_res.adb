@@ -4965,10 +4965,7 @@ package body Sem_Res is
            ("operation should be qualified or explicitly converted", N);
       end if;
 
-      --  Set overflow and division checking bit. Much cleverer code needed
-      --  here eventually and perhaps the Resolve routines should be separated
-      --  for the various arithmetic operations, since they will need
-      --  different processing. ???
+      --  Set overflow and division checking bit
 
       if Nkind (N) in N_Op then
          if not Overflow_Checks_Suppressed (Etype (N)) then

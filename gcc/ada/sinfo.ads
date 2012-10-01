@@ -408,6 +408,14 @@ package Sinfo is
    --       Do_Overflow_Check        (Flag17-Sem) set if overflow check needed
    --       Has_Private_View         (Flag11-Sem) set in generic units.
 
+   --       Note on use of entity field. This field is set during analysis
+   --       and is used in carrying out semantic checking, but it has no
+   --       significance to the back end, which is driven by the Etype's
+   --       of the operands, and the Etype of the result. During processing
+   --       in the exapander for overflow checks, these types may be modified
+   --       and there is no point in trying to set a proper Entity value, so
+   --       it just gets cleared to Empty in this situation.
+
    --    "plus fields for unary operator"
    --       Chars                    (Name1)      Name_Id for the operator
    --       Right_Opnd               (Node3)      right operand expression
@@ -415,6 +423,8 @@ package Sinfo is
    --       Associated_Node          (Node4-Sem)  for generic processing
    --       Do_Overflow_Check        (Flag17-Sem) set if overflow check needed
    --       Has_Private_View         (Flag11-Sem) set in generic units.
+
+   --       See note on use of Entity field above (same situation).
 
    --    "plus fields for expression"
    --       Paren_Count                           number of parentheses levels
@@ -3848,6 +3858,22 @@ package Sinfo is
       --  case of multiply/divide/rem/mod operations, Gigi will only see fixed
       --  point operands if the Treat_Fixed_As_Integer flag is set and will
       --  thus treat these nodes in identical manner, ignoring small values.
+
+      --  Note on overflow handling: When the overflow checking mode is set to
+      --  MINIMIZED or ELIMINATED, nodes for signed arithmetic operations may
+      --  be modified to use a larger type for the operands and result. In
+      --  these cases, the back end does not need the Entity field anyway, so
+      --  there is no point in setting it. In fact we reuse the Entity field to
+      --  record the possible range of the result. Entity points to an N_Range
+      --  node whose Low_Bound and High_Bound fields point to integer literal
+      --  nodes containing the computed bounds. These range nodes are only set
+      --  for intermediate nodes whose parents are themselves either arithmetic
+      --  operators, or comparison or membership tests. The computed ranges are
+      --  then used in processing the parent operation. In the case where the
+      --  computed range exceeds that of Long_Long_Integer, and we are running
+      --  in ELIMINATED mode, the operator node will be changed to be a call to
+      --  the appropriate routine in System.Bignums, and in this case we forget
+      --  about keeping track of the range.
 
       ---------------------------------
       -- 4.5.9 Quantified Expression --

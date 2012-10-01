@@ -735,6 +735,11 @@ package Types is
       --  overflow. Again the final value of an expression must fit in the base
       --  type of the whole expression.
 
+   subtype Minimized_Or_Eliminated is
+     Overflow_Check_Type range Minimized .. Eliminated;
+   --  Definte subtypes so that clients don't need to know ordering. Note that
+   --  Overflow_Check_Type is not marked as an ordered enumeration type.
+
    --  The following structure captures the state of check suppression or
    --  activation at a particular point in the program execution.
 
