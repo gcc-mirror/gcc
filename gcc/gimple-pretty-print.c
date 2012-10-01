@@ -69,7 +69,7 @@ maybe_init_pretty_print (FILE *file)
 }
 
 
-/* Emit a newline and SPC indentantion spaces to BUFFER.  */
+/* Emit a newline and SPC indentation spaces to BUFFER.  */
 
 static void
 newline_and_indent (pretty_printer *buffer, int spc)
@@ -89,20 +89,20 @@ debug_gimple_stmt (gimple gs)
 }
 
 
-/* Dump GIMPLE statement G to FILE using SPC indentantion spaces and
-   FLAGS as in dump_gimple_stmt.  */
+/* Print GIMPLE statement G to FILE using SPC indentation spaces and
+   FLAGS as in pp_gimple_stmt_1.  */
 
 void
 print_gimple_stmt (FILE *file, gimple g, int spc, int flags)
 {
   maybe_init_pretty_print (file);
-  dump_gimple_stmt (&buffer, g, spc, flags);
+  pp_gimple_stmt_1 (&buffer, g, spc, flags);
   pp_newline_and_flush (&buffer);
 }
 
 
-/* Dump GIMPLE statement G to FILE using SPC indentantion spaces and
-   FLAGS as in dump_gimple_stmt.  Print only the right-hand side
+/* Print GIMPLE statement G to FILE using SPC indentation spaces and
+   FLAGS as in pp_gimple_stmt_1.  Print only the right-hand side
    of the statement.  */
 
 void
@@ -110,12 +110,12 @@ print_gimple_expr (FILE *file, gimple g, int spc, int flags)
 {
   flags |= TDF_RHS_ONLY;
   maybe_init_pretty_print (file);
-  dump_gimple_stmt (&buffer, g, spc, flags);
+  pp_gimple_stmt_1 (&buffer, g, spc, flags);
 }
 
 
-/* Print the GIMPLE sequence SEQ on BUFFER using SPC indentantion
-   spaces and FLAGS as in dump_gimple_stmt.
+/* Print the GIMPLE sequence SEQ on BUFFER using SPC indentation
+   spaces and FLAGS as in pp_gimple_stmt_1.
    The caller is responsible for calling pp_flush on BUFFER to finalize
    the pretty printer.  */
 
@@ -128,15 +128,15 @@ dump_gimple_seq (pretty_printer *buffer, gimple_seq seq, int spc, int flags)
     {
       gimple gs = gsi_stmt (i);
       INDENT (spc);
-      dump_gimple_stmt (buffer, gs, spc, flags);
+      pp_gimple_stmt_1 (buffer, gs, spc, flags);
       if (!gsi_one_before_end_p (i))
 	pp_newline (buffer);
     }
 }
 
 
-/* Dump GIMPLE sequence SEQ to FILE using SPC indentantion spaces and
-   FLAGS as in dump_gimple_stmt.  */
+/* Print GIMPLE sequence SEQ to FILE using SPC indentation spaces and
+   FLAGS as in pp_gimple_stmt_1.  */
 
 void
 print_gimple_seq (FILE *file, gimple_seq seq, int spc, int flags)
@@ -245,7 +245,7 @@ dump_gimple_fmt (pretty_printer *buffer, int spc, int flags,
 
 
 /* Helper for dump_gimple_assign.  Print the unary RHS of the
-   assignment GS.  BUFFER, SPC and FLAGS are as in dump_gimple_stmt.  */
+   assignment GS.  BUFFER, SPC and FLAGS are as in pp_gimple_stmt_1.  */
 
 static void
 dump_unary_rhs (pretty_printer *buffer, gimple gs, int spc, int flags)
@@ -329,7 +329,7 @@ dump_unary_rhs (pretty_printer *buffer, gimple gs, int spc, int flags)
 
 
 /* Helper for dump_gimple_assign.  Print the binary RHS of the
-   assignment GS.  BUFFER, SPC and FLAGS are as in dump_gimple_stmt.  */
+   assignment GS.  BUFFER, SPC and FLAGS are as in pp_gimple_stmt_1.  */
 
 static void
 dump_binary_rhs (pretty_printer *buffer, gimple gs, int spc, int flags)
@@ -385,7 +385,7 @@ dump_binary_rhs (pretty_printer *buffer, gimple gs, int spc, int flags)
 }
 
 /* Helper for dump_gimple_assign.  Print the ternary RHS of the
-   assignment GS.  BUFFER, SPC and FLAGS are as in dump_gimple_stmt.  */
+   assignment GS.  BUFFER, SPC and FLAGS are as in pp_gimple_stmt_1.  */
 
 static void
 dump_ternary_rhs (pretty_printer *buffer, gimple gs, int spc, int flags)
@@ -470,7 +470,7 @@ dump_ternary_rhs (pretty_printer *buffer, gimple gs, int spc, int flags)
 
 
 /* Dump the gimple assignment GS.  BUFFER, SPC and FLAGS are as in
-   dump_gimple_stmt.  */
+   pp_gimple_stmt_1.  */
 
 static void
 dump_gimple_assign (pretty_printer *buffer, gimple gs, int spc, int flags)
@@ -529,7 +529,7 @@ dump_gimple_assign (pretty_printer *buffer, gimple gs, int spc, int flags)
 
 
 /* Dump the return statement GS.  BUFFER, SPC and FLAGS are as in
-   dump_gimple_stmt.  */
+   pp_gimple_stmt_1.  */
 
 static void
 dump_gimple_return (pretty_printer *buffer, gimple gs, int spc, int flags)
@@ -616,7 +616,7 @@ pp_points_to_solution (pretty_printer *buffer, struct pt_solution *pt)
 }
 
 /* Dump the call statement GS.  BUFFER, SPC and FLAGS are as in
-   dump_gimple_stmt.  */
+   pp_gimple_stmt_1.  */
 
 static void
 dump_gimple_call (pretty_printer *buffer, gimple gs, int spc, int flags)
@@ -749,7 +749,7 @@ dump_gimple_call (pretty_printer *buffer, gimple gs, int spc, int flags)
 
 
 /* Dump the switch statement GS.  BUFFER, SPC and FLAGS are as in
-   dump_gimple_stmt.  */
+   pp_gimple_stmt_1.  */
 
 static void
 dump_gimple_switch (pretty_printer *buffer, gimple gs, int spc, int flags)
@@ -782,7 +782,7 @@ dump_gimple_switch (pretty_printer *buffer, gimple gs, int spc, int flags)
 
 
 /* Dump the gimple conditional GS.  BUFFER, SPC and FLAGS are as in
-   dump_gimple_stmt.  */
+   pp_gimple_stmt_1.  */
 
 static void
 dump_gimple_cond (pretty_printer *buffer, gimple gs, int spc, int flags)
@@ -1573,7 +1573,7 @@ dump_gimple_asm (pretty_printer *buffer, gimple gs, int spc, int flags)
 }
 
 
-/* Dump a PHI node PHI.  BUFFER, SPC and FLAGS are as in dump_gimple_stmt.
+/* Dump a PHI node PHI.  BUFFER, SPC and FLAGS are as in pp_gimple_stmt_1.
    The caller is responsible for calling pp_flush on BUFFER to finalize
    pretty printer.  */
 
@@ -1807,7 +1807,7 @@ dump_gimple_omp_atomic_store (pretty_printer *buffer, gimple gs, int spc,
 
 
 /* Dump all the memory operands for statement GS.  BUFFER, SPC and
-   FLAGS are as in dump_gimple_stmt.  */
+   FLAGS are as in pp_gimple_stmt_1.  */
 
 static void
 dump_gimple_mem_ops (pretty_printer *buffer, gimple gs, int spc, int flags)
@@ -1838,13 +1838,13 @@ dump_gimple_mem_ops (pretty_printer *buffer, gimple gs, int spc, int flags)
 }
 
 
-/* Dump the gimple statement GS on the pretty printer BUFFER, SPC
+/* Print the gimple statement GS on the pretty printer BUFFER, SPC
    spaces of indent.  FLAGS specifies details to show in the dump (see
    TDF_* in dumpfile.h).  The caller is responsible for calling
    pp_flush on BUFFER to finalize the pretty printer.  */
 
 void
-dump_gimple_stmt (pretty_printer *buffer, gimple gs, int spc, int flags)
+pp_gimple_stmt_1 (pretty_printer *buffer, gimple gs, int spc, int flags)
 {
   if (!gs)
     return;
@@ -2253,7 +2253,7 @@ gimple_dump_bb_buff (pretty_printer *buffer, basic_block bb, int indent,
       curr_indent = gimple_code (stmt) == GIMPLE_LABEL ? label_indent : indent;
 
       INDENT (curr_indent);
-      dump_gimple_stmt (buffer, stmt, curr_indent, flags);
+      pp_gimple_stmt_1 (buffer, stmt, curr_indent, flags);
       pp_newline_and_flush (buffer);
       gcc_checking_assert (DECL_STRUCT_FUNCTION (current_function_decl));
       dump_histograms_for_stmt (DECL_STRUCT_FUNCTION (current_function_decl),
