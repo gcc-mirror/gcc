@@ -1,3 +1,19 @@
+2012-10-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* aspects.ads: Type_Invariant'class is a valid aspect.
+	* sem_ch6.adb (Is_Public_Subprogram_For): with the exception of
+	initialization procedures, subprograms that do not come from
+	source are not public for the purpose of invariant checking.
+	* sem_ch13.adb (Build_Invariant_Procedure): Handle properly the
+	case of a non-private type in a package without a private part,
+	when the type inherits invariants from its ancestor.
+
+2012-10-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch3.adb (Build_Record_Invariant_Proc): new procedure to
+	generate a checking procedure for record types that may have
+	components whose types have type invariants declared.
+
 2012-10-01  Vincent Pucci  <pucci@adacore.com>
 
 	* system-solaris-sparcv9.ads, system-mingw.ads, system-vms_64.ads: Flag

@@ -5188,9 +5188,6 @@ package body Sem_Ch13 is
                  Statements => Stmts));
 
          --  Insert procedure declaration and spec at the appropriate points.
-         --  Skip this if there are no private declarations (that's an error
-         --  that will be diagnosed elsewhere, and there is no point in having
-         --  an invariant procedure set if the full declaration is missing).
 
          if Present (Private_Decls) then
 
@@ -5214,6 +5211,19 @@ package body Sem_Ch13 is
             if In_Private_Part (Current_Scope) then
                Analyze (PBody);
             end if;
+
+         --  If there are no private declarations this may be an error that
+         --  will be diagnosed elsewhere. However, if this is a non-private
+         --  type that inherits invariants, it needs no completion and there
+         --  may be no private part. In this case insert invariant procedure
+         --  at end of current declarative list, and analyze at once, given
+         --  that the type is about to be frozen.
+
+         elsif not Is_Private_Type (Typ) then
+            Append_To (Visible_Decls, PDecl);
+            Append_To (Visible_Decls, PBody);
+            Analyze (PDecl);
+            Analyze (PBody);
          end if;
       end if;
    end Build_Invariant_Procedure;
