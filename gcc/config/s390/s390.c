@@ -1579,6 +1579,7 @@ s390_option_override (void)
       break;
     case PROCESSOR_2097_Z10:
       s390_cost = &z10_cost;
+      break;
     case PROCESSOR_2817_Z196:
       s390_cost = &z196_cost;
       break;
