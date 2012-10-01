@@ -172,7 +172,7 @@ endif
 # Strip -Werror during linking for the LTO bootstrap
 GCC_LINKERFLAGS = $(filter-out -Werror, $(ALL_LINKERFLAGS))
 
-GCC_LINK=$(LINKER) $(GCC_LINKERFLAGS) -static-libgcc $(LDFLAGS)
+GCC_LINK=$(LINKER) $(GCC_LINKERFLAGS) -static-libgcc -static-libstdc++ $(LDFLAGS)
 
 # Lists of files for various purposes.
 
@@ -4069,7 +4069,7 @@ ada/sinput-l.o : ada/ada.ads ada/a-except.ads ada/a-unccon.ads \
    ada/s-stoele.adb ada/s-string.ads ada/s-traent.ads ada/s-unstyp.ads \
    ada/s-utf_32.ads ada/s-wchcon.ads ada/table.ads ada/table.adb \
    ada/tree_io.ads ada/types.ads ada/uintp.ads ada/unchconv.ads \
-   ada/unchdeal.ads ada/urealp.ads ada/widechar.ads 
+   ada/unchdeal.ads ada/urealp.ads ada/widechar.ads ada/nmake.ads
 
 ada/sinput.o : ada/ada.ads ada/a-except.ads ada/a-unccon.ads \
    ada/a-uncdea.ads ada/alloc.ads ada/aspects.ads ada/atree.ads \
