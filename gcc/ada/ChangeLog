@@ -1,3 +1,18 @@
+2012-10-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* checks.adb (Apply_Predicate_Check): If the predicate is a
+	static one and the operand is static, evaluate the predicate at
+	compile time.
+	* sem_eval.ads, sem_eval.adb (Eval_Static_Predicate_Check): new
+	procedure, to evaluate a static predicate check whenever possible.
+	* sem_res.adb (Resolve_Type_Conversion): Apply predicate check
+	on the conversion if the target type has predicates.
+
+2012-10-01  Vincent Pucci  <pucci@adacore.com>
+
+	* sem_dim.adb (Has_Symbols): Complain if parameter Symbol has been
+	provided by the user in the dimension output call.
+
 2012-10-01  Robert Dewar  <dewar@adacore.com>
 
 	* checks.adb (Apply_Divide_Checks): New name for
