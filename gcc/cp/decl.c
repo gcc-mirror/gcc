@@ -3829,7 +3829,6 @@ cp_make_fname_decl (location_t loc, tree id, int type_dep)
 
   /* As we're using pushdecl_with_scope, we must set the context.  */
   DECL_CONTEXT (decl) = current_function_decl;
-  DECL_PRETTY_FUNCTION_P (decl) = type_dep;
 
   TREE_STATIC (decl) = 1;
   TREE_READONLY (decl) = 1;
