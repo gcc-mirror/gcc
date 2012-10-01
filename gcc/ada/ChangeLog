@@ -1,3 +1,16 @@
+2012-10-01  Vincent Pucci  <pucci@adacore.com>
+
+	* sem_aggr.adb (New_Copy_Tree_And_Copy_Dimensions): New routine.
+	(Resolve_Record_Aggregate): New_Copy_Tree calls replaced by
+	New_Copy_Tree_And_Copy_Dimensions calls. Move_Dimensions call
+	replaced by Copy_Dimensions call.
+	* sem_dim.adb (Analyze_Dimension_Component_Declaration): Don't
+	remove the dimensions of expression in component declaration anymore.
+	(Copy_Dimensions): New routine.
+	(Move_Dimensions): Add call to Copy_Dimensions.
+	* sem_dim.ads (Copy_Dimensions): New routine.
+	(Move_Dimensions): Spec moved to body of Sem_Dim.
+
 2012-10-01  Ed Schonberg  <schonberg@adacore.com>
 
 	* checks.adb (Apply_Predicate_Check): If the predicate is a

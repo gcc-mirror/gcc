@@ -162,6 +162,9 @@ package Sem_Dim is
    --  For sub spec N, issue a warning for each dimensioned formal with a
    --  literal default value in the list of formals Formals.
 
+   procedure Copy_Dimensions (From, To : Node_Id);
+   --  Copy dimension vector of From to To.
+
    procedure Eval_Op_Expon_For_Dimensioned_Type
      (N    : Node_Id;
       Btyp : Entity_Id);
@@ -182,9 +185,6 @@ package Sem_Dim is
    function Is_Dim_IO_Package_Instantiation (N : Node_Id) return Boolean;
    --  Return True if N is a package instantiation of System.Dim.Integer_IO or
    --  of System.Dim.Float_IO.
-
-   procedure Move_Dimensions (From : Node_Id; To : Node_Id);
-   --  Copy dimension vector of From to To, delete dimension vector of From
 
    procedure Remove_Dimension_In_Statement (Stmt : Node_Id);
    --  Remove the dimensions associated with Stmt
