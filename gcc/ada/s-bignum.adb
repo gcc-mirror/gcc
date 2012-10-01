@@ -1024,9 +1024,20 @@ package body System.Bignums is
       if X = 0 then
          R := Allocate_Bignum (0);
 
+      --  One word result
+
       elsif X in -(2 ** 32 - 1) .. +(2 ** 32 - 1) then
          R := Allocate_Bignum (1);
          R.D (1) := SD (abs (X));
+
+      --  Largest negative number annoyance
+
+      elsif X = Long_Long_Integer'First then
+         R := Allocate_Bignum (2);
+         R.D (1) := 2 ** 31;
+         R.D (2) := 0;
+
+      --  Normal two word case
 
       else
          R := Allocate_Bignum (2);

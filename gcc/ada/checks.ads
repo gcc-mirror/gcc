@@ -166,6 +166,13 @@ package Checks is
    --  formals, the check is performed only if the corresponding actual is
    --  constrained, i.e., whether Lhs'Constrained is True.
 
+   procedure Apply_Divide_Checks (N : Node_Id);
+   --  The node kind is N_Op_Divide, N_Op_Mod, or N_Op_Rem if either of the
+   --  flags Do_Division_Check or Do_Overflow_Check is set, then this routine
+   --  ensures that the appropriate checks are made. Note that overflow can
+   --  occur in the signed case for the case of the largest negative number
+   --  divided by minus one.
+
    procedure Apply_Parameter_Aliasing_And_Validity_Checks (Subp : Entity_Id);
    --  Given a subprogram Subp, add both a pre and post condition pragmas that
    --  detect aliased objects and verify the proper initialization of scalars
@@ -175,12 +182,6 @@ package Checks is
    --  N is an expression to which a predicate check may need to be applied
    --  for Typ, if Typ has a predicate function. The check is applied only
    --  if the type of N does not match Typ.
-
-   procedure Apply_Divide_Check (N : Node_Id);
-   --  The node kind is N_Op_Divide, N_Op_Mod, or N_Op_Rem. An appropriate
-   --  check is generated to ensure that the right operand is non-zero. In
-   --  the divide case, we also check that we do not have the annoying case
-   --  of the largest negative number divided by minus one.
 
    procedure Apply_Type_Conversion_Checks (N : Node_Id);
    --  N is an N_Type_Conversion node. A type conversion actually involves

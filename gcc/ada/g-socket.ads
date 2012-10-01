@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2001-2012, AdaCore                     --
+--                     Copyright (C) 2001-2011, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1155,7 +1155,10 @@ private
 
    type Fd_Set is
      new System.Storage_Elements.Storage_Array (1 .. SOSC.SIZEOF_fd_set);
-   for Fd_Set'Alignment use SOSC.ALIGNOF_fd_set;
+   for Fd_Set'Alignment use Interfaces.C.long'Alignment;
+   --  Set conservative alignment so that our Fd_Sets are always adequately
+   --  aligned for the underlying data type (which is implementation defined
+   --  and may be an array of C long integers).
 
    type Fd_Set_Access is access all Fd_Set;
    pragma Convention (C, Fd_Set_Access);

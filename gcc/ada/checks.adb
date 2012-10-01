@@ -193,14 +193,6 @@ package body Checks is
    -- Local Subprograms --
    -----------------------
 
-   procedure Apply_Float_Conversion_Check
-     (Ck_Node    : Node_Id;
-      Target_Typ : Entity_Id);
-   --  The checks on a conversion from a floating-point type to an integer
-   --  type are delicate. They have to be performed before conversion, they
-   --  have to raise an exception when the operand is a NaN, and rounding must
-   --  be taken into account to determine the safe bounds of the operand.
-
    procedure Apply_Arithmetic_Overflow_Normal (N : Node_Id);
    --  Used to apply arithmetic overflow checks for all cases except operators
    --  on signed arithmetic types in Minimized/Eliminate case (for which we
@@ -210,6 +202,24 @@ package body Checks is
    --  Used to apply arithmetic overflow checks for the case where the overflow
    --  checking mode is Minimized or Eliminated (and the Do_Overflow_Check flag
    --  is known to be set) and we have an signed integer arithmetic op.
+
+   procedure Apply_Division_Check
+     (N   : Node_Id;
+      Rlo : Uint;
+      Rhi : Uint;
+      ROK : Boolean);
+   --  N is an N_Op_Div, N_Op_Rem, or N_Op_Mod node. This routine applies
+   --  division checks as required if the Do_Division_Check flag is set.
+   --  Rlo and Rhi give the possible range of the right operand, these values
+   --  can be referenced and trusted only if ROK is set True.
+
+   procedure Apply_Float_Conversion_Check
+     (Ck_Node    : Node_Id;
+      Target_Typ : Entity_Id);
+   --  The checks on a conversion from a floating-point type to an integer
+   --  type are delicate. They have to be performed before conversion, they
+   --  have to raise an exception when the operand is a NaN, and rounding must
+   --  be taken into account to determine the safe bounds of the operand.
 
    procedure Apply_Selected_Length_Checks
      (Ck_Node    : Node_Id;
@@ -1641,15 +1651,18 @@ package body Checks is
           Reason    => CE_Discriminant_Check_Failed));
    end Apply_Discriminant_Check;
 
-   ------------------------
-   -- Apply_Divide_Check --
-   ------------------------
+   -------------------------
+   -- Apply_Divide_Checks --
+   -------------------------
 
-   procedure Apply_Divide_Check (N : Node_Id) is
+   procedure Apply_Divide_Checks (N : Node_Id) is
       Loc   : constant Source_Ptr := Sloc (N);
       Typ   : constant Entity_Id  := Etype (N);
       Left  : constant Node_Id    := Left_Opnd (N);
       Right : constant Node_Id    := Right_Opnd (N);
+
+      Mode : constant Overflow_Check_Type := Overflow_Check_Mode (Typ);
+      --  Current overflow checking mode
 
       LLB : Uint;
       Llo : Uint;
@@ -1657,20 +1670,105 @@ package body Checks is
       LOK : Boolean;
       Rlo : Uint;
       Rhi : Uint;
-      ROK   : Boolean;
+      ROK : Boolean;
 
       pragma Warnings (Off, Lhi);
       --  Don't actually use this value
 
    begin
+      --  If we are operating in MINIMIZED or ELIMINATED mode, and the
+      --  Do_Overflow_Check flag is set and we are operating on signed
+      --  integer types, then the only thing this routine does is to call
+      --  Apply_Arithmetic_Overflow_Minimized_Eliminated. That procedure will
+      --  (possibly later on during recursive downward calls), make sure that
+      --  any needed overflow and division checks are properly applied.
+
+      if Mode in Minimized_Or_Eliminated
+        and then Do_Overflow_Check (N)
+        and then Is_Signed_Integer_Type (Typ)
+      then
+         Apply_Arithmetic_Overflow_Minimized_Eliminated (N);
+         return;
+      end if;
+
+      --  Proceed here in SUPPRESSED or CHECKED modes
+
       if Full_Expander_Active
         and then not Backend_Divide_Checks_On_Target
         and then Check_Needed (Right, Division_Check)
       then
          Determine_Range (Right, ROK, Rlo, Rhi, Assume_Valid => True);
 
+         --  Deal with division check
+
+         if Do_Division_Check (N)
+           and then not Division_Checks_Suppressed (Typ)
+         then
+            Apply_Division_Check (N, Rlo, Rhi, ROK);
+         end if;
+
+         --  Deal with overflow check
+
+         if Do_Overflow_Check (N) and then Mode /= Suppressed then
+
+            --  Test for extremely annoying case of xxx'First divided by -1
+            --  for division of signed integer types (only overflow case).
+
+            if Nkind (N) = N_Op_Divide
+              and then Is_Signed_Integer_Type (Typ)
+            then
+               Determine_Range (Left, LOK, Llo, Lhi, Assume_Valid => True);
+               LLB := Expr_Value (Type_Low_Bound (Base_Type (Typ)));
+
+               if ((not ROK) or else (Rlo <= (-1) and then (-1) <= Rhi))
+                     and then
+                  ((not LOK) or else (Llo = LLB))
+               then
+                  Insert_Action (N,
+                    Make_Raise_Constraint_Error (Loc,
+                      Condition =>
+                        Make_And_Then (Loc,
+                          Left_Opnd  =>
+                            Make_Op_Eq (Loc,
+                              Left_Opnd  =>
+                                Duplicate_Subexpr_Move_Checks (Left),
+                              Right_Opnd => Make_Integer_Literal (Loc, LLB)),
+
+                          Right_Opnd =>
+                            Make_Op_Eq (Loc,
+                              Left_Opnd  => Duplicate_Subexpr (Right),
+                              Right_Opnd => Make_Integer_Literal (Loc, -1))),
+
+                      Reason => CE_Overflow_Check_Failed));
+               end if;
+            end if;
+         end if;
+      end if;
+   end Apply_Divide_Checks;
+
+   --------------------------
+   -- Apply_Division_Check --
+   --------------------------
+
+   procedure Apply_Division_Check
+     (N   : Node_Id;
+      Rlo : Uint;
+      Rhi : Uint;
+      ROK : Boolean)
+   is
+      pragma Assert (Do_Division_Check (N));
+
+      Loc   : constant Source_Ptr := Sloc (N);
+      Right : constant Node_Id    := Right_Opnd (N);
+
+   begin
+      if Full_Expander_Active
+        and then not Backend_Divide_Checks_On_Target
+        and then Check_Needed (Right, Division_Check)
+      then
          --  See if division by zero possible, and if so generate test. This
-         --  part of the test is not controlled by the -gnato switch.
+         --  part of the test is not controlled by the -gnato switch, since
+         --  it is a Division_Check and not an Overflow_Check.
 
          if Do_Division_Check (N) then
             if (not ROK) or else (Rlo <= 0 and then 0 <= Rhi) then
@@ -1683,41 +1781,8 @@ package body Checks is
                    Reason => CE_Divide_By_Zero));
             end if;
          end if;
-
-         --  Test for extremely annoying case of xxx'First divided by -1
-
-         if Do_Overflow_Check (N) then
-            if Nkind (N) = N_Op_Divide
-              and then Is_Signed_Integer_Type (Typ)
-            then
-               Determine_Range (Left, LOK, Llo, Lhi, Assume_Valid => True);
-               LLB := Expr_Value (Type_Low_Bound (Base_Type (Typ)));
-
-               if ((not ROK) or else (Rlo <= (-1) and then (-1) <= Rhi))
-                 and then
-                 ((not LOK) or else (Llo = LLB))
-               then
-                  Insert_Action (N,
-                    Make_Raise_Constraint_Error (Loc,
-                      Condition =>
-                        Make_And_Then (Loc,
-
-                           Make_Op_Eq (Loc,
-                             Left_Opnd  =>
-                               Duplicate_Subexpr_Move_Checks (Left),
-                             Right_Opnd => Make_Integer_Literal (Loc, LLB)),
-
-                           Make_Op_Eq (Loc,
-                             Left_Opnd =>
-                               Duplicate_Subexpr (Right),
-                             Right_Opnd =>
-                               Make_Integer_Literal (Loc, -1))),
-                      Reason => CE_Overflow_Check_Failed));
-               end if;
-            end if;
-         end if;
       end if;
-   end Apply_Divide_Check;
+   end Apply_Division_Check;
 
    ----------------------------------
    -- Apply_Float_Conversion_Check --
@@ -6496,6 +6561,36 @@ package body Checks is
       OK : Boolean;
       --  Used in call to Determine_Range
 
+      procedure Max (A : in out Uint; B : Uint);
+      --  If A is No_Uint, sets A to B, else to UI_Max (A, B);
+
+      procedure Min (A : in out Uint; B : Uint);
+      --  If A is No_Uint, sets A to B, else to UI_Min (A, B);
+
+      ---------
+      -- Max --
+      ---------
+
+      procedure Max (A : in out Uint; B : Uint) is
+      begin
+         if A = No_Uint or else B > A then
+            A := B;
+         end if;
+      end Max;
+
+      ---------
+      -- Min --
+      ---------
+
+      procedure Min (A : in out Uint; B : Uint) is
+      begin
+         if A = No_Uint or else B < A then
+            A := B;
+         end if;
+      end Min;
+
+   --  Start of processing for Minimize_Eliminate_Overflow_Checks
+
    begin
       --  Case where we do not have an arithmetic operator.
 
@@ -6559,7 +6654,148 @@ package body Checks is
             --  Division
 
             when N_Op_Divide =>
-               raise Program_Error;
+
+               --  Following seems awfully complex, can it be simplified ???
+
+               Hi := No_Uint;
+               Lo := No_Uint;
+
+               declare
+                  S : Uint;
+
+               begin
+                  --  First work on finding big absolute result values. These
+                  --  come from dividing large numbers (which we have in Llo
+                  --  and Lhi) by small values, which we need to figure out.
+
+                  --  Case where right operand can be positive
+
+                  if Rhi > 0 then
+
+                     --  Find smallest positive divisor
+
+                     if Rlo > 0 then
+                        S := Rlo;
+                     else
+                        S := Uint_1;
+                     end if;
+
+                     --  Big negative value divided by small positive value
+                     --  generates a candidate for lowest possible result.
+
+                     if Llo < 0 then
+                        Min (Lo, Llo / S);
+                     end if;
+
+                     --  Big positive value divided by small positive value
+                     --  generates a candidate for highest possible result.
+
+                     if Lhi > 0 then
+                        Max (Hi, Lhi / S);
+                     end if;
+                  end if;
+
+                  --  Case where right operand can be negative
+
+                  if Rlo < 0 then
+
+                     --  Find smallest absolute value negative divisor
+
+                     if Rhi < 0 then
+                        S := Rhi;
+                     else
+                        S := -Uint_1;
+                     end if;
+
+                     --  Big negative value divided by small negative value
+                     --  generates a candidate for largest possible result.
+
+                     if Llo < 0 then
+                        Max (Hi, Llo / S);
+                     end if;
+
+                     --  Big positive value divided by small negative value
+                     --  generates a candidate for lowest possible result.
+
+                     if Lhi > 0 then
+                        Min (Lo, Lhi / S);
+                     end if;
+                  end if;
+
+                  --  Now work on finding small absolute result values. These
+                  --  come from dividing small numbers, which we need to figure
+                  --  out, by large values (which we have in Rlo, Rhi).
+
+                  --  Case where left operand can be positive
+
+                  if Lhi > 0 then
+
+                     --  Find smallest positive dividend
+
+                     if Llo > 0 then
+                        S := Llo;
+                     else
+                        S := Uint_1;
+                     end if;
+
+                     --  Small positive values divided by large negative values
+                     --  generate candidates for low results.
+
+                     if Rlo < 0 then
+                        Min (Lo, S / Rlo);
+                     end if;
+
+                     --  Small positive values divided by large positive values
+                     --  generate candidates for high results.
+
+                     if Rhi > 0 then
+                        Max (Hi, S / Rhi);
+                     end if;
+                  end if;
+
+                  --  Case where left operand can be negative
+
+                  if Llo < 0 then
+
+                     --  Find smallest absolute value negative dividend
+
+                     if Lhi < 0 then
+                        S := Lhi;
+                     else
+                        S := -Uint_1;
+                     end if;
+
+                     --  Small negative value divided by large negative value
+                     --  generates a candidate for highest possible result.
+
+                     if Rlo < 0 then
+                        Max (Hi, Rlo / S);
+                     end if;
+
+                     --  Small negative value divided by large positive value
+                     --  generates a candidate for lowest possible result.
+
+                     if Rhi > 0 then
+                        Min (Lo, Rhi / S);
+                     end if;
+                  end if;
+
+                  --  Finally, if neither Lo or Hi set (happens if the right
+                  --  operand is always zero for example), then set 0 .. 0.
+
+                  if Lo = No_Uint and then Hi = No_Uint then
+                     Lo := Uint_0;
+                     Hi := Uint_0;
+
+                  --  If one bound set and not the other copy
+
+                  elsif Lo = No_Uint then
+                     Lo := Hi;
+
+                  elsif Hi = No_Uint then
+                     Hi := Lo;
+                  end if;
+               end;
 
             --  Exponentiation
 
@@ -6647,7 +6883,26 @@ package body Checks is
             --  Mod
 
             when N_Op_Mod =>
-               raise Program_Error;
+               declare
+                  Maxabs : constant Uint := UI_Max (abs Rlo, abs Rhi);
+                  --  This is the maximum absolute value of the result
+
+               begin
+                  Lo := Uint_0;
+                  Hi := Uint_0;
+
+                  --  The result depends only on the sign and magnitude of
+                  --  the right operand, it does not depend on the sign or
+                  --  magnitude of the left operand.
+
+                  if Rlo < 0 then
+                     Lo := -Maxabs;
+                  end if;
+
+                  if Rhi > 0 then
+                     Hi := Maxabs;
+                  end if;
+               end;
 
             --  Multiplication
 
@@ -6683,7 +6938,29 @@ package body Checks is
             --  Remainder
 
             when N_Op_Rem =>
-               raise Program_Error;
+               declare
+                  Maxabs : constant Uint := UI_Max (abs Rlo, abs Rhi);
+                  --  This is the maximum absolute value of the result. Note
+                  --  that the result range does not depend on the sign of B.
+
+               begin
+                  Lo := Uint_0;
+                  Hi := Uint_0;
+
+                  --  Case of left operand negative, which results in a range
+                  --  of -Maxabs .. 0 for those negative values. If there are
+                  --  no negative values then Lo value of result is always 0.
+
+                  if Llo < 0 then
+                     Lo := -Maxabs;
+                  end if;
+
+                  --  Case of left operand positive
+
+                  if Lhi > 0 then
+                     Hi := Maxabs;
+                  end if;
+               end;
 
             --  Subtract
 
@@ -6819,16 +7096,21 @@ package body Checks is
       Set_Etype (N, Empty);
       Set_Entity (N, Empty);
 
-      --  Now analyze this new node
+      --  Now analyze this new node. This reanalysis will complete processing
+      --  for the node. In particular we will complete the expansion of an
+      --  exponentiation operator (e.g. changing A ** 2 to A * A), and also
+      --  we will complete any division checks (since we have not changed the
+      --  setting of the Do_Division_Check flag).
 
-      --  If no overflow check, suppress all checks
+      --  If no overflow check, suppress overflow check to avoid an infinite
+      --  recursion into this procedure.
 
       if not Do_Overflow_Check (N) then
-         Analyze_And_Resolve (N, LLIB, Suppress => All_Checks);
+         Analyze_And_Resolve (N, LLIB, Suppress => Overflow_Check);
 
       --  If an overflow check is required, do it in normal CHECKED mode.
-      --  That avoids an infinite recursion, makes sure we get a normal
-      --  overflow check, and also completes expansion of Exponentiation.
+      --  That avoids an infinite recursion, making sure we get a normal
+      --  overflow check.
 
       else
          declare

@@ -322,7 +322,7 @@ package body Sem_Res is
       Resolve (N, Typ);
    end Analyze_And_Resolve;
 
-   --  Version withs check(s) suppressed
+   --  Versions with check(s) suppressed
 
    procedure Analyze_And_Resolve
      (N        : Node_Id;
@@ -339,6 +339,20 @@ package body Sem_Res is
             Scope_Suppress := Suppress_All;
             Analyze_And_Resolve (N, Typ);
             Scope_Suppress := Svg;
+         end;
+
+      elsif Suppress = Overflow_Check then
+         declare
+            Svg : constant Overflow_Check_Type :=
+                    Scope_Suppress.Overflow_Checks_General;
+            Sva : constant Overflow_Check_Type :=
+                    Scope_Suppress.Overflow_Checks_Assertions;
+         begin
+            Scope_Suppress.Overflow_Checks_General    := Suppressed;
+            Scope_Suppress.Overflow_Checks_Assertions := Suppressed;
+            Analyze_And_Resolve (N, Typ);
+            Scope_Suppress.Overflow_Checks_General    := Svg;
+            Scope_Suppress.Overflow_Checks_Assertions := Sva;
          end;
 
       else
@@ -379,6 +393,20 @@ package body Sem_Res is
             Scope_Suppress := Suppress_All;
             Analyze_And_Resolve (N);
             Scope_Suppress := Svg;
+         end;
+
+      elsif Suppress = Overflow_Check then
+         declare
+            Svg : constant Overflow_Check_Type :=
+                    Scope_Suppress.Overflow_Checks_General;
+            Sva : constant Overflow_Check_Type :=
+                    Scope_Suppress.Overflow_Checks_Assertions;
+         begin
+            Scope_Suppress.Overflow_Checks_General    := Suppressed;
+            Scope_Suppress.Overflow_Checks_Assertions := Suppressed;
+            Analyze_And_Resolve (N);
+            Scope_Suppress.Overflow_Checks_General    := Svg;
+            Scope_Suppress.Overflow_Checks_Assertions := Sva;
          end;
 
       else
