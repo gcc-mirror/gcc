@@ -4062,7 +4062,6 @@ package body Sem_Attr is
       ----------------------
 
       when Attribute_Overlaps_Storage =>
-         Check_Ada_2012_Attribute;
          Check_E1;
 
          --  Both arguments must be objects of any type

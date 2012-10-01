@@ -82,13 +82,6 @@ package Validsw is
    --  Validity_Checks, then the initial value of all IN parameters
    --  will be checked at the point of call of a procedure or function.
 
-   Validity_Check_Non_Overlapping_Params : Boolean := False;
-   --  Controls the validity checking of IN, IN OUT and OUT parameters in terms
-   --  of overlapping storage. If this switch is set to True using -gnatVl or
-   --  an 'l' in the argument of a pragma Validity_Checks, each subprogram call
-   --  is preceded by a sequence of checks which ensure that actual parameters
-   --  do not alias the same object or space.
-
    Validity_Check_Operands : Boolean := False;
    --  Controls validity checking of operands. If this switch is set to
    --  True using -gnatVo or an 'o' in the argument of a Validity_Checks
@@ -123,13 +116,6 @@ package Validsw is
    --  tests in IF, WHILE, and EXIT statements, and in entry guards). If this
    --  switch is set to True using -gnatVt, or a 't' in the argument of a
    --  Validity_Checks pragma, then all such conditions are validity checked.
-
-   Validity_Check_Valid_Scalars_On_Params : Boolean := False;
-   --  Controls validity checking of parameters with respect to properly
-   --  initialized scalars. If this switch is set to True using -gnatVv, or a
-   --  'v' in the argument of pragma Validity_Checks, each IN, IN OUT and OUT
-   --  parameter along with possible function result is checked on entry and
-   --  exit of a subprogram for properly initialized scalars.
 
    Force_Validity_Checks : Boolean := False;
    --  Normally, operands that do not come from source (i.e. cases of expander

@@ -270,6 +270,11 @@ package Opt is
    --  Set to True to build, bind and link all the sources of a project file
    --  (switch -B)
 
+   Check_Aliasing_Of_Parameters : Boolean := False;
+   --  GNAT
+   --  Set to True to detect whether subprogram parameters and function results
+   --  alias the same object(s).
+
    Check_Object_Consistency : Boolean := False;
    --  GNATBIND, GNATMAKE
    --  Set to True to check whether every object file is consistent with
@@ -315,8 +320,13 @@ package Opt is
 
    Check_Unreferenced_Formals : Boolean := False;
    --  GNAT
-   --  Set True to check for unreferenced formals. This is turned on by
+   --  Set to True to check for unreferenced formals. This is turned on by
    --  -gnatwa/wf/wu and turned off by -gnatwA/wF/wU.
+
+   Check_Validity_Of_Parameters : Boolean := False;
+   --  GNAT
+   --  Set to True to check for proper scalar initialization of subprogram
+   --  parameters on both entry and exit.
 
    Check_Withs : Boolean := False;
    --  GNAT
