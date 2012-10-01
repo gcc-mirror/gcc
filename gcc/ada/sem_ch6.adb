@@ -11342,9 +11342,15 @@ package body Sem_Ch6 is
          --  If the subprogram declaration is not a list member, it must be
          --  an Init_Proc, in which case we want to consider it to be a
          --  public subprogram, since we do get initializations to deal with.
+         --  Other internally generated subprograms are not public.
 
-         if not Is_List_Member (DD) then
+         if not Is_List_Member (DD)
+           and then Is_Init_Proc (DD)
+         then
             return True;
+
+         elsif not Comes_From_Source (DD) then
+            return False;
 
          --  Otherwise we test whether the subprogram is declared in the
          --  visible declarations of the package containing the type.
