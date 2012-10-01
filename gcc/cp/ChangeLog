@@ -1,5 +1,10 @@
 2012-10-01  Jason Merrill  <jason@redhat.com>
 
+	* cp-tree.h (TYPE_FUNCTION_OR_TEMPLATE_DECL_CHECK): New.
+	(DECL_FRIEND_P, DECL_ANTICIPATED): Use it.
+	(TYPE_FUNCTION_OR_TEMPLATE_DECL_P): New.
+	* name-lookup.c (hidden_name_p): Use it.
+
 	* cp-tree.h (DECL_PRETTY_FUNCTION_P): Just look at the name.
 	* decl.c (cp_make_fname_decl): Adjust.
 
