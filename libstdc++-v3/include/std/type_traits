@@ -1,7 +1,6 @@
 // C++11 type_traits -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012
-// Free Software Foundation, Inc.
+// Copyright (C) 2007-2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -1819,89 +1818,171 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Signature>
     class result_of;
 
-  template<typename _MemPtr, typename _Arg>
-    struct _Result_of_memobj;
+  // sfinae-friendly result_of implementation. We use enable_if to transport
+  // both the result information (as the member type) and the failure
+  // information (no member type).
 
-  template<typename _Res, typename _Class, typename _Arg>
-    struct _Result_of_memobj<_Res _Class::*, _Arg>
+  template<typename _Tp>
+    using __success_type = enable_if<true, _Tp>;
+
+  using __failure_type = enable_if<false>;
+
+  // [func.require] paragraph 1 bullet 1:
+  struct __result_of_memfun_ref_impl
+  {
+    template<typename _Fp, typename _Tp1, typename... _Args>
+      static __success_type<decltype(
+      (std::declval<_Tp1>().*std::declval<_Fp>())(std::declval<_Args>()...)
+      )> _S_test(int);
+
+    template<typename...>
+      static __failure_type _S_test(...);
+  };
+
+  template<typename _MemPtr, typename _Arg, typename... _Args>
+    struct __result_of_memfun_ref
+    : private __result_of_memfun_ref_impl
     {
-    private:
-      typedef _Res _Class::* _Func;
-
-      template<typename _Tp>
-	static _Tp _S_get(const _Class&);
-      template<typename _Tp>
-	static _Tp _S_get(const volatile _Class&);
-      template<typename _Tp>
-	static decltype(*std::declval<_Tp>()) _S_get(...);
-        
-    public:
-      typedef
-        decltype(_S_get<_Arg>(std::declval<_Arg>()).*std::declval<_Func>())
-        __type;
+      typedef decltype(_S_test<_MemPtr, _Arg, _Args...>(0)) type;
     };
 
-  template<typename _MemPtr, typename _Arg, typename... _ArgTypes>
-    struct _Result_of_memfun;
+  // [func.require] paragraph 1 bullet 2:
+  struct __result_of_memfun_deref_impl
+  {
+    template<typename _Fp, typename _Tp1, typename... _Args>
+      static __success_type<decltype(
+      ((*std::declval<_Tp1>()).*std::declval<_Fp>())(std::declval<_Args>()...)
+      )> _S_test(int);
+
+    template<typename...>
+      static __failure_type _S_test(...);
+  };
+
+  template<typename _MemPtr, typename _Arg, typename... _Args>
+    struct __result_of_memfun_deref
+    : private __result_of_memfun_deref_impl
+    {
+      typedef decltype(_S_test<_MemPtr, _Arg, _Args...>(0)) type;
+    };
+
+  // [func.require] paragraph 1 bullet 3:
+  struct __result_of_memobj_ref_impl
+  {
+    template<typename _Fp, typename _Tp1>
+      static __success_type<decltype(
+      std::declval<_Tp1>().*std::declval<_Fp>()
+      )> _S_test(int);
+
+    template<typename, typename>
+      static __failure_type _S_test(...);
+  };
+
+  template<typename _MemPtr, typename _Arg>
+    struct __result_of_memobj_ref
+    : private __result_of_memobj_ref_impl
+    {
+      typedef decltype(_S_test<_MemPtr, _Arg>(0)) type;
+    };
+
+  // [func.require] paragraph 1 bullet 4:
+  struct __result_of_memobj_deref_impl
+  {
+    template<typename _Fp, typename _Tp1>
+      static __success_type<decltype(
+      (*std::declval<_Tp1>()).*std::declval<_Fp>()
+      )> _S_test(int);
+
+    template<typename, typename>
+      static __failure_type _S_test(...);
+  };
+
+  template<typename _MemPtr, typename _Arg>
+    struct __result_of_memobj_deref
+    : private __result_of_memobj_deref_impl
+    {
+      typedef decltype(_S_test<_MemPtr, _Arg>(0)) type;
+    };
+
+  template<typename _MemPtr, typename _Arg>
+    struct __result_of_memobj;
+
+  template<typename _Res, typename _Class, typename _Arg>
+    struct __result_of_memobj<_Res _Class::*, _Arg>
+    {
+      typedef typename remove_cv<typename remove_reference<
+        _Arg>::type>::type _Argval;
+      typedef _Res _Class::* _MemPtr;
+      typedef typename conditional<__or_<is_same<_Argval, _Class>,
+        is_base_of<_Class, _Argval>>::value,
+        __result_of_memobj_ref<_MemPtr, _Arg>,
+        __result_of_memobj_deref<_MemPtr, _Arg>
+      >::type::type type;
+    };
+
+  template<typename _MemPtr, typename _Arg, typename... _Args>
+    struct __result_of_memfun;
 
   template<typename _Res, typename _Class, typename _Arg, typename... _Args>
-    struct _Result_of_memfun<_Res _Class::*, _Arg, _Args...>
+    struct __result_of_memfun<_Res _Class::*, _Arg, _Args...>
     {
-    private:
-      typedef _Res _Class::* _Func;
-
-      template<typename _Tp>
-	static _Tp _S_get(const _Class&);
-      template<typename _Tp>
-	static _Tp _S_get(const volatile _Class&);
-      template<typename _Tp>
-	static decltype(*std::declval<_Tp>()) _S_get(...);
-        
-    public:
-      typedef
-        decltype((_S_get<_Arg>(std::declval<_Arg>()).*std::declval<_Func>())
-            (std::declval<_Args>()...) )
-        __type;
+      typedef typename remove_cv<typename remove_reference<
+        _Arg>::type>::type _Argval;
+      typedef _Res _Class::* _MemPtr;
+      typedef typename conditional<__or_<is_same<_Argval, _Class>,
+        is_base_of<_Class, _Argval>>::value,
+        __result_of_memfun_ref<_MemPtr, _Arg, _Args...>,
+        __result_of_memfun_deref<_MemPtr, _Arg, _Args...>
+      >::type::type type;
     };
 
   template<bool, bool, typename _Functor, typename... _ArgTypes>
-    struct _Result_of_impl;
-
-  template<typename _Functor, typename... _ArgTypes>
-    struct _Result_of_impl<false, false, _Functor, _ArgTypes...>
+    struct __result_of_impl
     {
-      typedef
-        decltype( std::declval<_Functor>()(std::declval<_ArgTypes>()...) )
-        __type;
+      typedef __failure_type type;
     };
 
   template<typename _MemPtr, typename _Arg>
-    struct _Result_of_impl<true, false, _MemPtr, _Arg>
-    : _Result_of_memobj<typename decay<_MemPtr>::type, _Arg>
+    struct __result_of_impl<true, false, _MemPtr, _Arg>
+    : public __result_of_memobj<typename decay<_MemPtr>::type, _Arg>
     { };
 
-  template<typename _MemPtr, typename _Arg, typename... _ArgTypes>
-    struct _Result_of_impl<false, true, _MemPtr, _Arg, _ArgTypes...>
-    : _Result_of_memfun<typename decay<_MemPtr>::type, _Arg, _ArgTypes...>
+  template<typename _MemPtr, typename _Arg, typename... _Args>
+    struct __result_of_impl<false, true, _MemPtr, _Arg, _Args...>
+    : public __result_of_memfun<typename decay<_MemPtr>::type, _Arg, _Args...>
     { };
+
+  // [func.require] paragraph 1 bullet 5:
+  struct __result_of_other_impl
+  {
+    template<typename _Fn, typename... _Args>
+      static __success_type<decltype(
+      std::declval<_Fn>()(std::declval<_Args>()...)
+      )> _S_test(int);
+
+    template<typename...>
+      static __failure_type _S_test(...);
+  };
+
+  template<typename _Functor, typename... _ArgTypes>
+    struct __result_of_impl<false, false, _Functor, _ArgTypes...>
+    : private __result_of_other_impl
+    {
+      typedef decltype(_S_test<_Functor, _ArgTypes...>(0)) type;
+    };
 
   template<typename _Functor, typename... _ArgTypes>
     struct result_of<_Functor(_ArgTypes...)>
-    : _Result_of_impl<is_member_object_pointer<
-                        typename remove_reference<_Functor>::type >::value,
-                      is_member_function_pointer<
-			typename remove_reference<_Functor>::type >::value,
-		      _Functor, _ArgTypes...>
-    {
-      typedef typename _Result_of_impl<
-	is_member_object_pointer<
-	  typename remove_reference<_Functor>::type >::value,
+    : public __result_of_impl<
+        is_member_object_pointer<
+          typename remove_reference<_Functor>::type
+        >::value,
         is_member_function_pointer<
-	  typename remove_reference<_Functor>::type >::value,
-       	_Functor, _ArgTypes...>::__type
-	type;
-    };
-
+          typename remove_reference<_Functor>::type
+        >::value,
+	    _Functor, _ArgTypes...
+      >::type
+    { };
+	
   /**
    *  Use SFINAE to determine if the type _Tp has a publicly-accessible
    *  member type _NTYPE.
