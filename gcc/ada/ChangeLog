@@ -1,3 +1,39 @@
+2012-10-01  Robert Dewar  <dewar@adacore.com>
+
+	* make.adb, exp_ch3.adb: Minor reformatting.
+
+2012-10-01  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* validsw.adb (Save_Validity_Check_Options): Do not set
+	Validity_Check_Non_Overlapping_Params and
+	Validity_Check_Valid_Scalars_On_Params when -gnatVa is present
+	because the related checks are deemed too aggressive.
+
+2012-10-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.ads sem_util.adb (Check_Internal_Protected_Use):
+	reject use of protected procedure or entry within the body of
+	a protected function of the same protected type, when usage is
+	a call, an actual in an instantiation, a or prefix of 'Access.
+	* sem_ch8.adb (Analyze_Subprogram_Renaming): Verify that target
+	object in renaming of protected procedure is a variable, and
+	apply Check_Internal_Protected_Use.
+	* sem_res.adb (Analyze_Call, Analyze_Entry_Call): apply
+	Check_Internal_Protected_Use rather than on-line code.
+	* sem_attr.adb (Analyze_Access_Attribute): Verify that target
+	object in accsss to protected procedure is a variable, and apply
+	Check_Internal_Protected_Use.
+
+2012-10-01  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch4.adb (Find_Equality_Types.Try_One_Interp): Exclude the
+	predefined interpretation from consideration if it's for a "/="
+	operator of a tagged type. This will allow Analyze_Equality_Op to
+	rewrite the "/=" as a logical negation of a call to the appropriate
+	dispatching equality function. This needs to be done during
+	analysis rather than expansion for the benefit of ASIS, which
+	otherwise gets the unresolved N_Op_Ne operator from Standard.
+
 2012-10-01  Thomas Quinot  <quinot@adacore.com>
 
 	* gnatcmd.adb, make.adb (Scan_Make_Arg, Inspect_Switches): Recognize
