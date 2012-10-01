@@ -286,9 +286,7 @@ package body Sem_Prag is
       --  Preanalyze the boolean expression, we treat this as a spec expression
       --  (i.e. similar to a default expression).
 
-      In_Assertion_Expr := In_Assertion_Expr + 1;
-      Preanalyze_Spec_Expression (Get_Pragma_Arg (Arg1), Standard_Boolean);
-      In_Assertion_Expr := In_Assertion_Expr - 1;
+      Preanalyze_Assert_Expression (Get_Pragma_Arg (Arg1), Standard_Boolean);
 
       --  In ASIS mode, for a pragma generated from a source aspect, also
       --  analyze the original aspect expression.
@@ -296,7 +294,7 @@ package body Sem_Prag is
       if ASIS_Mode
         and then Present (Corresponding_Aspect (N))
       then
-         Preanalyze_Spec_Expression
+         Preanalyze_Assert_Expression
            (Expression (Corresponding_Aspect (N)), Standard_Boolean);
       end if;
 
@@ -2178,7 +2176,7 @@ package body Sem_Prag is
             then
                --  Analyze pragma expression for correctness and for ASIS use
 
-               Preanalyze_Spec_Expression
+               Preanalyze_Assert_Expression
                  (Get_Pragma_Arg (Arg1), Standard_Boolean);
 
                --  In ASIS mode, for a pragma generated from a source aspect,
@@ -2187,7 +2185,7 @@ package body Sem_Prag is
                if ASIS_Mode
                  and then Present (Corresponding_Aspect (N))
                then
-                  Preanalyze_Spec_Expression
+                  Preanalyze_Assert_Expression
                     (Expression (Corresponding_Aspect (N)), Standard_Boolean);
                end if;
             end if;
@@ -6773,7 +6771,8 @@ package body Sem_Prag is
 
             --    pragma Check (Assertion, condition [, msg]);
 
-            --  So rewrite pragma in this manner, and analyze the result
+            --  So rewrite pragma in this manner, transfer the message
+            --  argument if present, and analyze the result
 
             Expr := Get_Pragma_Arg (Arg1);
             Newa := New_List (
@@ -6785,8 +6784,7 @@ package body Sem_Prag is
 
             if Arg_Count > 1 then
                Check_Optional_Identifier (Arg2, Name_Message);
-               Analyze_And_Resolve (Get_Pragma_Arg (Arg2), Standard_String);
-               Append_To (Newa, Relocate_Node (Arg2));
+               Append_To (Newa, New_Copy_Tree (Arg2));
             end if;
 
             Rewrite (N,
@@ -15532,27 +15530,27 @@ package body Sem_Prag is
       --  expressions (i.e. similar to a default expression).
 
       if Present (Arg_Req) then
-         Preanalyze_Spec_Expression
+         Preanalyze_Assert_Expression
            (Get_Pragma_Arg (Arg_Req), Standard_Boolean);
 
          --  In ASIS mode, for a pragma generated from a source aspect, also
          --  analyze the original aspect expression.
 
          if ASIS_Mode and then Present (Corresponding_Aspect (N)) then
-            Preanalyze_Spec_Expression
+            Preanalyze_Assert_Expression
               (Original_Node (Get_Pragma_Arg (Arg_Req)), Standard_Boolean);
          end if;
       end if;
 
       if Present (Arg_Ens) then
-         Preanalyze_Spec_Expression
+         Preanalyze_Assert_Expression
            (Get_Pragma_Arg (Arg_Ens), Standard_Boolean);
 
          --  In ASIS mode, for a pragma generated from a source aspect, also
          --  analyze the original aspect expression.
 
          if ASIS_Mode and then Present (Corresponding_Aspect (N)) then
-            Preanalyze_Spec_Expression
+            Preanalyze_Assert_Expression
               (Original_Node (Get_Pragma_Arg (Arg_Ens)), Standard_Boolean);
          end if;
       end if;

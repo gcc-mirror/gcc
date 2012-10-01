@@ -19306,6 +19306,17 @@ package body Sem_Ch3 is
       end if;
    end Check_Anonymous_Access_Components;
 
+   ----------------------------------
+   -- Preanalyze_Assert_Expression --
+   ----------------------------------
+
+   procedure Preanalyze_Assert_Expression (N : Node_Id; T : Entity_Id) is
+   begin
+      In_Assertion_Expr := In_Assertion_Expr + 1;
+      Preanalyze_Spec_Expression (N, T);
+      In_Assertion_Expr := In_Assertion_Expr - 1;
+   end Preanalyze_Assert_Expression;
+
    --------------------------------
    -- Preanalyze_Spec_Expression --
    --------------------------------

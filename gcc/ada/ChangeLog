@@ -1,3 +1,15 @@
+2012-10-01  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch13.adb (Add_Invariants): Analyze the invariant expression
+	as an assertion expression.
+	* sem_ch3.adb / sem_ch3.ads (Preanalyze_Assert_Expression):
+	New procedure that wraps a call to Preanalyze_Spec_Expression
+	for assertion expressions, so that In_Assertion_Expr can be
+	properly adjusted.
+	* sem_prag.adb (Analyze_PPC_In_Decl_Part
+	Check_Precondition_Postcondition Preanalyze_CTC_Args): Call the
+	new Preanalyze_Assert_Expression.
+
 2012-10-01  Robert Dewar  <dewar@adacore.com>
 
 	* checks.ads: Minor reformatting.
