@@ -88,6 +88,22 @@ package body Exp_Ch3 is
    --  used for attachment of any actions required in its construction.
    --  It also supplies the source location used for the procedure.
 
+   function Build_Array_Invariant_Proc
+     (A_Type : Entity_Id;
+      Nod    : Node_Id) return Node_Id;
+   --  If the component of type of array type has invariants, build procedure
+   --  that checks invariant on all components of the array. Ada 2012 specifies
+   --  that an invariant on some type T must be applied to in-out parameters
+   --  and return values that include a part of type T. If the array type has
+   --  an otherwise specified invariant, the component check procedure is
+   --  called from within the user-specified invariant. Otherwise this becomes
+   --  the invariant procedure for the array type.
+
+   function Build_Record_Invariant_Proc
+     (R_Type : Entity_Id;
+      Nod    : Node_Id) return Node_Id;
+   --  Ditto for record types.
+
    function Build_Discriminant_Formals
      (Rec_Id : Entity_Id;
       Use_Dl : Boolean) return List_Id;
@@ -117,10 +133,6 @@ package body Exp_Ch3 is
    procedure Build_Record_Init_Proc (N : Node_Id; Rec_Ent : Entity_Id);
    --  Build record initialization procedure. N is the type declaration
    --  node, and Rec_Ent is the corresponding entity for the record type.
-
-   procedure Build_Record_Invariant_Proc (R_Type : Entity_Id; Nod : Node_Id);
-   --  If the record type has components whose types have invariant, build
-   --  an invariant procedure for the record type itself.
 
    procedure Build_Slice_Assignment (Typ : Entity_Id);
    --  Build assignment procedure for one-dimensional arrays of controlled
@@ -183,6 +195,14 @@ package body Exp_Ch3 is
    procedure Freeze_Stream_Operations (N : Node_Id; Typ : Entity_Id);
    --  Treat user-defined stream operations as renaming_as_body if the
    --  subprogram they rename is not frozen when the type is frozen.
+
+   procedure Insert_Component_Invariant_Checks
+     (N   : Node_Id;
+     Typ  : Entity_Id;
+     Proc : Node_Id);
+   --  If a composite type has invariants and also has components with defined
+   --  invariants. the component invariant procedure is inserted into the user-
+   --  defined invariant procedure and added to the checks to be performed.
 
    procedure Initialization_Warning (E : Entity_Id);
    --  If static elaboration of the package is requested, indicate
@@ -788,7 +808,10 @@ package body Exp_Ch3 is
    -- Build_Array_Invariant_Proc --
    --------------------------------
 
-   procedure Build_Array_Invariant_Proc (A_Type : Entity_Id; Nod : Node_Id) is
+   function Build_Array_Invariant_Proc
+     (A_Type : Entity_Id;
+      Nod    : Node_Id) return Node_Id
+   is
       Loc : constant Source_Ptr := Sloc (Nod);
 
       Object_Name : constant Name_Id := New_Internal_Name ('I');
@@ -882,9 +905,7 @@ package body Exp_Ch3 is
 
       Proc_Id :=
         Make_Defining_Identifier (Loc,
-           Chars => New_External_Name (Chars (A_Type), "Invariant"));
-      Set_Has_Invariants (Proc_Id);
-      Set_Invariant_Procedure (A_Type, Proc_Id);
+           Chars => New_External_Name (Chars (A_Type), "CInvariant"));
 
       Body_Stmts := Check_One_Dimension (1);
 
@@ -912,10 +933,7 @@ package body Exp_Ch3 is
          Set_Debug_Info_Off (Proc_Id);
       end if;
 
-      --  The procedure body is placed after the freeze node for the type.
-
-      Insert_After (Nod, Proc_Body);
-      Analyze (Proc_Body);
+      return Proc_Body;
    end Build_Array_Invariant_Proc;
 
    --------------------------------
@@ -3619,7 +3637,10 @@ package body Exp_Ch3 is
    -- Build_Record_Invariant_Proc --
    --------------------------------
 
-   procedure Build_Record_Invariant_Proc (R_Type : Entity_Id; Nod : Node_Id) is
+   function Build_Record_Invariant_Proc
+     (R_Type : Entity_Id;
+      Nod    : Node_Id) return Node_Id
+   is
       Loc : constant Source_Ptr := Sloc (Nod);
 
       Object_Name : constant Name_Id := New_Internal_Name ('I');
@@ -3745,19 +3766,16 @@ package body Exp_Ch3 is
       then
          Stmts := Build_Invariant_Checks (Component_List (Type_Def));
       else
-         return;
+         return Empty;
       end if;
 
       if not Invariant_Found then
-         return;
+         return Empty;
       end if;
 
       Proc_Id :=
         Make_Defining_Identifier (Loc,
            Chars => New_External_Name (Chars (R_Type), "Invariant"));
-      Set_Has_Invariants (Proc_Id);
-      Set_Has_Invariants (R_Type);
-      Set_Invariant_Procedure (R_Type, Proc_Id);
 
       Proc_Body :=
         Make_Subprogram_Body (Loc,
@@ -3779,10 +3797,9 @@ package body Exp_Ch3 is
       Set_Is_Internal    (Proc_Id);
       Set_Has_Completion (Proc_Id);
 
-      --  The procedure body is placed after the freeze node for the type.
-
-      Insert_After (Nod, Proc_Body);
-      Analyze (Proc_Body);
+      return Proc_Body;
+      --  Insert_After (Nod, Proc_Body);
+      --  Analyze (Proc_Body);
    end Build_Record_Invariant_Proc;
 
    ----------------------------
@@ -5843,7 +5860,11 @@ package body Exp_Ch3 is
       end if;
 
       if Has_Invariants (Component_Type (Base)) then
-         Build_Array_Invariant_Proc (Base, N);
+
+         --  Generate component invariant checking procedure.
+
+         Insert_Component_Invariant_Checks
+           (N, Base, Build_Array_Invariant_Proc (Base, N));
       end if;
    end Expand_Freeze_Array_Type;
 
@@ -6812,9 +6833,11 @@ package body Exp_Ch3 is
          end;
       end if;
 
-      if not Has_Invariants (Def_Id) then
-         Build_Record_Invariant_Proc (Def_Id, N);
-      end if;
+      --  Check whether individual components have a defined invariant,
+      --  and add the corresponding component invariant checks.
+
+      Insert_Component_Invariant_Checks
+        (N, Def_Id, Build_Record_Invariant_Proc (Def_Id, N));
    end Expand_Freeze_Record_Type;
 
    ------------------------------
@@ -7578,6 +7601,63 @@ package body Exp_Ch3 is
 
       return Is_RTU (S1, System) or else Is_RTU (S1, Ada);
    end In_Runtime;
+
+   ---------------------------------------
+   -- Insert_Component_Invariant_Checks --
+   ---------------------------------------
+
+   procedure Insert_Component_Invariant_Checks
+     (N   : Node_Id;
+     Typ  : Entity_Id;
+     Proc : Node_Id)
+   is
+      Loc     : constant Source_Ptr := Sloc (Typ);
+      Proc_Id : Entity_Id;
+
+   begin
+      if Present (Proc) then
+         Proc_Id := Defining_Entity (Proc);
+
+         if not Has_Invariants (Typ) then
+            Set_Has_Invariants (Typ);
+            Set_Has_Invariants (Proc_Id);
+            Set_Invariant_Procedure (Typ, Proc_Id);
+            Insert_After (N, Proc);
+            Analyze (Proc);
+
+         else
+
+            --  Find already created invariant body, insert body of component
+            --  invariant proc in it, and add call after other checks.
+
+            declare
+               Bod : Node_Id;
+               Inv_Id : constant Entity_Id := Invariant_Procedure (Typ);
+               Call   : constant Node_Id :=
+                 Make_Procedure_Call_Statement (Loc,
+                   Name => New_Occurrence_Of (Proc_Id, Loc),
+                   Parameter_Associations =>
+                     New_List
+                       (New_Reference_To (First_Formal (Inv_Id), Loc)));
+
+            begin
+
+               --  The invariant  body has not been analyzed yet, so we do a
+               --  sequential search forward, and retrieve it by name.
+
+               Bod := Next (N);
+               while Present (Bod) loop
+                  exit when Nkind (Bod) = N_Subprogram_Body
+                    and then Chars (Defining_Entity (Bod)) = Chars (Inv_Id);
+                  Next (Bod);
+               end loop;
+
+               Append_To (Declarations (Bod), Proc);
+               Append_To (Statements (Handled_Statement_Sequence (Bod)), Call);
+            end;
+         end if;
+      end if;
+   end Insert_Component_Invariant_Checks;
 
    ----------------------------
    -- Initialization_Warning --

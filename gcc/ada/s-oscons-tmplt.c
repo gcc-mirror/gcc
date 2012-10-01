@@ -288,8 +288,12 @@ C("Target_OS", OS_Type, TARGET_OS, "")
 #define Target_Name TARGET
 CST(Target_Name, "")
 
-#define sizeof_unsigned_int sizeof (unsigned int)
-CND(sizeof_unsigned_int, "Size of unsigned int")
+/**
+ ** Note: the name of the following constant is recognized specially by
+ **  xoscons (case sensitive).
+ **/
+#define SIZEOF_unsigned_int sizeof (unsigned int)
+CND(SIZEOF_unsigned_int, "Size of unsigned int")
 
 /*
 

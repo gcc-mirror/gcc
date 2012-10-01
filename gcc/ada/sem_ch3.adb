@@ -4974,12 +4974,9 @@ package body Sem_Ch3 is
             Subtype_Indication (Component_Def));
       end if;
 
-      --  Ada 2012: if the element type has invariants we must create an
-      --  invariant procedure for the array type as well.
-
-      if Has_Invariants (Element_Type) then
-         Set_Has_Invariants (T);
-      end if;
+      --  There may be an invariant declared for the component type, but
+      --  the construction of the component invariant checking procedure
+      --  takes place during expansion.
    end Array_Type_Declaration;
 
    ------------------------------------------------------

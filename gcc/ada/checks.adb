@@ -1918,7 +1918,7 @@ package body Checks is
                Set_Declarations (Subp_Decl, Decls);
             end if;
 
-            Append_To (Decls, Prag);
+            Prepend_To (Decls, Prag);
 
             --  Ensure the proper visibility of the subprogram body and its
             --  parameters.
@@ -1970,6 +1970,11 @@ package body Checks is
          --  subprograms.
 
         or else Nkind (Subp_Decl) = N_Abstract_Subprogram_Declaration
+
+         --  Do not consider subprogram renaminds because the renamed entity
+         --  already has the proper PPC pragmas.
+
+        or else Nkind (Subp_Decl) = N_Subprogram_Renaming_Declaration
 
          --  Do not process null procedures because there is no benefit of
          --  adding the checks to a no action routine.

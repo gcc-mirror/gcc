@@ -46,12 +46,6 @@ package Exp_Ch3 is
    procedure Expand_Record_Extension (T : Entity_Id; Def : Node_Id);
    --  Add a field _parent in the extension part of the record
 
-   procedure Build_Array_Invariant_Proc (A_Type : Entity_Id; Nod : Node_Id);
-   --  If the component of type of array type has invariants, build procedure
-   --  that checks invariant on all components of the array. Ada 2012 specifies
-   --  that an invariant on some type T must be applied to in-out parameters
-   --  and return values that include a part of type T.
-
    procedure Build_Discr_Checking_Funcs (N : Node_Id);
    --  Builds function which checks whether the component name is consistent
    --  with the current discriminants. N is the full type declaration node,

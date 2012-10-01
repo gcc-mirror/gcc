@@ -229,10 +229,11 @@ begin
             Output_Header_Line (Prag);
          end if;
       else
-         Oval := Lpad (V (Val), 3, '0');
 
          if Match (Name0, "Last_") then
             Oval := Lpad (V (Val - 1), 3, '0');
+         else
+            Oval := Lpad (V (Val), 3, '0');
          end if;
 
          Put_Line

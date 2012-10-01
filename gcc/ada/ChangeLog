@@ -1,3 +1,33 @@
+2012-10-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch3.ads (Build_Array_Invariant_Proc): moved to body.
+	* exp_ch3.adb (Build_Array_Invariant_Proc,
+	Build_Record_Invariant_Proc): transform into functions.
+	(Insert_Component_Invariant_Checks): for composite types that have
+	components with specified invariants, build a checking procedure,
+	and make into the invariant procedure of the composite type,
+	or incorporate it into the user- defined invariant procedure if
+	one has been created.
+	* sem_ch3.adb (Array_Type_Declaration): Checking for invariants
+	on the component type is defered to the expander.
+
+2012-10-01  Thomas Quinot  <quinot@adacore.com>
+
+	* xsnamest.adb, namet.h, sem_ch10.adb, s-oscons-tmplt.c,
+	xoscons.adb: Minor reformatting.
+
+2012-10-01  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* checks.adb (Apply_Parameter_Aliasing_And_Validity_Checks):
+	Do not process subprogram renaminds because a) those cannot
+	have PPC pragmas b) the renamed entity already has the PPCs.
+	(Build_PPC_Pragma): Prepend a PPC pragma for consistency with
+	Process_PPCs.
+	* sem_ch6.adb (Last_Implicit_Declaration): Removed.
+	(Process_PPCs): Insert a post condition body at the start of the
+	declarative region of the related subprogram. This way the body
+	will not freeze anything it shouldn't.
+
 2012-10-01  Robert Dewar  <dewar@adacore.com>
 
 	* freeze.adb, sem_ch6.adb, opt.ads, sem_ch13.adb,
