@@ -1,3 +1,11 @@
+2012-10-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/54457
+	* simplify-rtx.c (simplify_subreg):
+	Simplify (subreg:M (op:N ((x:N) (y:N)), 0)
+	to (op:M (subreg:M (x:N) 0) (subreg:M (x:N) 0)), where
+	the outer subreg is effectively a truncation to the original mode M.
+
 2012-10-01  Richard Guenther  <rguenther@suse.de>
 
 	* builtins.def (ATTR_MATHFN_FPROUNDING): Do not use no-vops
@@ -299,7 +307,8 @@
 
 	Undo r185605 (mostly):
 	* config/avr/avr-protos.h (avr_load_lpm): Remove.
-	* config/avr/avr.c (avr_load_libgcc_p): Don't restrict to __flash loads.
+	* config/avr/avr.c (avr_load_libgcc_p): Don't restrict to __flash
+	loads.
 	(avr_out_lpm): Also handle loads > 1 byte.
 	(avr_load_lpm): Remove.
 	(avr_find_unused_d_reg): New static function.
@@ -367,8 +376,7 @@
 
 	PR target/54703
 	* simplify-rtx.c (simplify_binary_operation_1): Perform
-	(x - (x & y)) -> (x & ~y) optimization only for integral
-	modes.
+	(x - (x & y)) -> (x & ~y) optimization only for integral modes.
 
 2012-09-27  Marc Glisse  <marc.glisse@inria.fr>
 
@@ -527,7 +535,7 @@
 	PR target/54641
 	* config/avr/t-avr: Use ALL_COMPILERFLAGS instead of ALL_CFLAGS
 	for sources compiled with COMPILER.
-	
+
 2012-09-25  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/54625
@@ -541,8 +549,7 @@
 	one bit precision properly.
 
 	PR other/54692
-	* configure.ac (CFLAGS, CXXFLAGS): Remove -Ofast or -Og
-	properly.
+	* configure.ac (CFLAGS, CXXFLAGS): Remove -Ofast or -Og properly.
 	* configure: Regenerated.
 
 2012-09-25  Georg-Johann Lay  <avr@gjlay.de>
@@ -564,8 +571,7 @@
 
 2012-09-24  Dehao Chen  <dehao@google.com>
 
-	* tree-cfg.c (move_stmt_op): Reset the expr block only
-	when necessary.
+	* tree-cfg.c (move_stmt_op): Reset the expr block only when necessary.
 	(move_block_to_fn): Reset the edge's goto block even
 	when the goto locus is unknown.
 
@@ -672,7 +678,7 @@
 
 2012-09-24  Janis Johnson  <janisjo@codesourcery.com>
 
-	doc/sourcebuild.texi (Selectors): Document the use of target
+	* doc/sourcebuild.texi (Selectors): Document the use of target
 	and xfail used together.
 
 2012-09-24  Richard Guenther  <rguenther@suse.de>

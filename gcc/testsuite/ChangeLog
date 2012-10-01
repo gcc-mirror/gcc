@@ -1,3 +1,8 @@
+2012-10-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/54457
+	* gcc.target/i386/pr54457.c: New test.
+
 2012-10-01  Ulrich Weigand  <ulrich.weigand@linaro.org>
 
 	* gcc.dg/lower-subreg-1.c: Disable on arm*-*-* targets.
