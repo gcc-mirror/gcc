@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -245,6 +245,10 @@ package Sem_Ch3 is
    --  details. N is the expression to be analyzed, T is the expected type.
    --  This mechanism is also used for aspect specifications that have an
    --  expression parameter that needs similar preanalysis.
+
+   procedure Preanalyze_Assert_Expression (N : Node_Id; T : Entity_Id);
+   --  Wrapper on Preanalyze_Spec_Expression for assertion expressions, so that
+   --  In_Assertion_Expr can be properly adjusted.
 
    procedure Process_Full_View (N : Node_Id; Full_T, Priv_T : Entity_Id);
    --  Process some semantic actions when the full view of a private type is

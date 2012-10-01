@@ -5058,7 +5058,7 @@ package body Sem_Ch13 is
                --  at the end of the private part and has the wrong visibility.
 
                Set_Parent (Exp, N);
-               Preanalyze_Spec_Expression (Exp, Standard_Boolean);
+               Preanalyze_Assert_Expression (Exp, Standard_Boolean);
 
                --  Build first two arguments for Check pragma
 
