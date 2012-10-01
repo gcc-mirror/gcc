@@ -293,7 +293,9 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
   tree int64_type = gnat_type_for_size (64, 0);
   struct elab_info *info;
   int i;
+#ifdef ORDINARY_MAP_INSTANCE
   struct line_map *map;
+#endif
 
   max_gnat_nodes = max_gnat_node;
 
@@ -326,9 +328,9 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
 
       /* We create the line map for a source file at once, with a fixed number
 	 of columns chosen to avoid jumping over the next power of 2.  */
-      map = (struct line_map *) linemap_add
-                                  (line_table, LC_ENTER, 0, filename, 1);
+      linemap_add (line_table, LC_ENTER, 0, filename, 1);
 #ifdef ORDINARY_MAP_INSTANCE
+      map = LINEMAPS_ORDINARY_MAP_AT (line_table, i);
       if (flag_debug_instances)
         ORDINARY_MAP_INSTANCE(map) = file_info_ptr[i].Instance;
 #endif
