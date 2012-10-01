@@ -2535,7 +2535,7 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type,
   int is_class = false;
   tree name = TYPE_NAME (TREE_TYPE (t));
   tree decl_name = DECL_NAME (t);
-  bool dump_internal = get_dump_file_info (TDI_ada)->flags & TDF_RAW;
+  bool dump_internal = get_dump_file_info (TDI_ada)->pflags & TDF_RAW;
   tree orig = NULL_TREE;
 
   if (cpp_check && cpp_check (t, IS_TEMPLATE))
