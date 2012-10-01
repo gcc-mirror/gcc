@@ -58,6 +58,7 @@
 #include "tm-constrs.h"
 #include "opts.h"
 #include "tree-vectorizer.h"
+#include "dumpfile.h"
 #if TARGET_XCOFF
 #include "xcoffout.h"  /* get declarations of xcoff_*_section_name */
 #endif
@@ -3518,11 +3519,11 @@ rs6000_density_test (rs6000_cost_data *data)
       && vec_cost + not_vec_cost > DENSITY_SIZE_THRESHOLD)
     {
       data->cost[vect_body] = vec_cost * (100 + DENSITY_PENALTY) / 100;
-      if (vect_print_dump_info (REPORT_DETAILS))
-	fprintf (vect_dump,
-		 "density %d%%, cost %d exceeds threshold, penalizing "
-		 "loop body cost by %d%%", density_pct, 
-		 vec_cost + not_vec_cost, DENSITY_PENALTY);
+      if (dump_kind_p (MSG_NOTE))
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "density %d%%, cost %d exceeds threshold, penalizing "
+			 "loop body cost by %d%%", density_pct,
+			 vec_cost + not_vec_cost, DENSITY_PENALTY);
     }
 }
 
