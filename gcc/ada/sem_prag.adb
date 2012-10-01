@@ -2057,6 +2057,10 @@ package body Sem_Prag is
                S := Defining_Entity (PO);
             else
                S := Defining_Unit_Name (Specification (PO));
+
+               if Nkind (S) = N_Defining_Program_Unit_Name then
+                  S := Defining_Identifier (S);
+               end if;
             end if;
 
             --  Note: we do not analyze the pragma at this point. Instead we

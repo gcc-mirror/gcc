@@ -103,7 +103,7 @@ package body Sem_Warn is
    --       and then Has_Warnings_Off (E)
 
    --  This way if some-other-predicate is false, we avoid a false indication
-   --  that a Warnings (Off,E) pragma was useful in preventing a warning.
+   --  that a Warnings (Off, E) pragma was useful in preventing a warning.
 
    --  The second rule is that if both Has_Unmodified and Has_Warnings_Off, or
    --  Has_Unreferenced and Has_Warnings_Off are called, make sure that the

@@ -1774,6 +1774,353 @@ package body Checks is
         (Ck_Node, Target_Typ, Source_Typ, Do_Static => False);
    end Apply_Length_Check;
 
+   -------------------------------------
+   -- Apply_Parameter_Aliasing_Checks --
+   -------------------------------------
+
+   procedure Apply_Parameter_Aliasing_Checks (Call : Node_Id) is
+      Loc        : constant Source_Ptr := Sloc (Call);
+      Actual     : Node_Id;
+      Actual_Typ : Entity_Id;
+      Check      : Node_Id;
+      Cond       : Node_Id := Empty;
+      Param      : Node_Id;
+      Param_Typ  : Entity_Id;
+
+   begin
+      --  Do not generate the checks in Ada 83, 95 or 05 mode because they
+      --  require an Ada 2012 construct.
+
+      if Ada_Version_Explicit < Ada_2012 then
+         return;
+      end if;
+
+      --  Inspect all pairs of parameters
+
+      Actual := First_Actual (Call);
+      while Present (Actual) loop
+         Actual_Typ := Base_Type (Etype (Actual));
+
+         if Nkind (Actual) = N_Identifier
+           and then Is_Object_Reference (Actual)
+         then
+            Param := Next_Actual (Actual);
+            while Present (Param) loop
+               Param_Typ := Base_Type (Etype (Param));
+
+               if Nkind (Param) = N_Identifier
+                 and then Is_Object_Reference (Param)
+                 and then Actual_Typ = Param_Typ
+               then
+                  --  Generate:
+                  --    Actual'Overlaps_Storage (Param)
+
+                  Check :=
+                   Make_Attribute_Reference (Loc,
+                      Prefix         =>
+                        New_Reference_To (Entity (Actual), Loc),
+                      Attribute_Name => Name_Overlaps_Storage,
+                      Expressions    =>
+                        New_List (New_Reference_To (Entity (Param), Loc)));
+
+                  if No (Cond) then
+                     Cond := Check;
+                  else
+                     Cond :=
+                       Make_And_Then (Loc,
+                         Left_Opnd  => Cond,
+                         Right_Opnd => Check);
+                  end if;
+               end if;
+
+               Next_Actual (Param);
+            end loop;
+         end if;
+
+         Next_Actual (Actual);
+      end loop;
+
+      --  Raise Program_Error when the actuals overlap
+
+      if Present (Cond) then
+         Insert_Action (Call,
+           Make_Raise_Program_Error (Loc,
+             Condition => Cond,
+             Reason    => PE_Explicit_Raise));
+      end if;
+   end Apply_Parameter_Aliasing_Checks;
+
+   -------------------------------------
+   -- Apply_Parameter_Validity_Checks --
+   -------------------------------------
+
+   procedure Apply_Parameter_Validity_Checks (Subp : Entity_Id) is
+      Subp_Decl : Node_Id;
+      Subp_Spec : Node_Id;
+
+      procedure Create_PPC_Pragma (Prag : in out Node_Id; Nam : Name_Id);
+      --  Create a pre or post condition pragma with name Nam
+
+      -----------------------
+      -- Create_PPC_Pragma --
+      -----------------------
+
+      procedure Create_PPC_Pragma (Prag : in out Node_Id; Nam : Name_Id) is
+         Loc   : constant Source_Ptr := Sloc (Subp);
+         Assoc : Node_Id;
+
+      begin
+         Prag :=
+           Make_Pragma (Loc,
+             Pragma_Identifier            => Make_Identifier (Loc, Nam),
+             Class_Present                =>
+               Is_Abstract_Subprogram (Subp)
+                 or else (Nkind (Subp_Spec) = N_Procedure_Specification
+                            and then Null_Present (Subp_Spec)),
+             Pragma_Argument_Associations => New_List (
+               Make_Pragma_Argument_Association (Loc,
+                 Chars      => Name_Check,
+                 Expression => Empty)));
+
+         --  Emulate the behavior of a from-aspect pragma
+
+         Set_From_Aspect_Specification (Prag);
+
+         --  Process all formals and a possible function result
+
+         Apply_Parameter_Validity_Checks (Subp, Prag);
+         Assoc := First (Pragma_Argument_Associations (Prag));
+
+         --  Insert the pragma in the tree only when the related subprogram
+         --  has eligible formals and function result that produced validity
+         --  checks.
+
+         if Present (Expression (Assoc)) then
+
+            --  Add a message unless exception messages are suppressed
+
+            if not Exception_Locations_Suppressed then
+               Append_To (Pragma_Argument_Associations (Prag),
+                 Make_Pragma_Argument_Association (Loc,
+                   Chars      => Name_Message,
+                   Expression =>
+                     Make_String_Literal (Loc,
+                       Strval => "failed " & Get_Name_String (Nam) &
+                                  " from " & Build_Location_String (Loc))));
+            end if;
+
+            --  Insert the pragma in the tree
+
+            if Nkind (Parent (Subp_Decl)) = N_Compilation_Unit then
+               Add_Global_Declaration (Prag);
+            else
+               Insert_After (Subp_Decl, Prag);
+            end if;
+
+            Analyze (Prag);
+         end if;
+      end Create_PPC_Pragma;
+
+      --  Local variables
+
+      Post : Node_Id := Empty;
+      Pre  : Node_Id := Empty;
+
+   --  Start of processing for Apply_Parameter_Validity_Checks
+
+   begin
+      --  Extract the subprogram specification and declaration nodes
+
+      Subp_Spec := Parent (Subp);
+      if Nkind (Subp_Spec) = N_Defining_Program_Unit_Name then
+         Subp_Spec := Parent (Subp_Spec);
+      end if;
+      Subp_Decl := Parent (Subp_Spec);
+
+      --  Do not generate checks in Ada 83 or 95 because the pragmas involved
+      --  are not allowed in those modes.
+
+      if Ada_Version_Explicit < Ada_2005 then
+         return;
+
+      --  Do not process subprograms where pre and post conditions do not make
+      --  sense.
+
+      elsif not Comes_From_Source (Subp)
+        or else Is_Imported (Subp)
+        or else Is_Intrinsic_Subprogram (Subp)
+        or else Is_Formal_Subprogram (Subp)
+        or else not Nkind_In (Subp_Decl, N_Abstract_Subprogram_Declaration,
+                                         N_Generic_Subprogram_Declaration,
+                                         N_Subprogram_Declaration)
+      then
+         return;
+      end if;
+
+      --  A subprogram may already have a pre or post condition pragma. Look
+      --  through the its contract and recover the pre and post conditions (if
+      --  available).
+
+      if Present (Contract (Subp)) then
+         declare
+            Nam  : Name_Id;
+            Prag : Node_Id;
+
+         begin
+            Prag := Spec_PPC_List (Contract (Subp));
+            while Present (Prag) loop
+               Nam := Pragma_Name (Prag);
+
+               if Nam = Name_Precondition then
+                  Pre := Prag;
+               elsif Nam = Name_Postcondition then
+                  Post := Prag;
+               end if;
+
+               Prag := Next_Pragma (Prag);
+            end loop;
+         end;
+      end if;
+
+      --  Generate the missing pre or post condition pragmas
+
+      if No (Pre) then
+         Create_PPC_Pragma (Pre, Name_Precondition);
+      end if;
+
+      if No (Post) then
+         Create_PPC_Pragma (Post, Name_Postcondition);
+      end if;
+   end Apply_Parameter_Validity_Checks;
+
+   -------------------------------------
+   -- Apply_Parameter_Validity_Checks --
+   -------------------------------------
+
+   procedure Apply_Parameter_Validity_Checks
+     (Subp : Entity_Id;
+      Prag : Node_Id)
+   is
+      Loc      : constant Source_Ptr := Sloc (Subp);
+      Prag_Nam : constant Name_Id    := Pragma_Name (Prag);
+      Formal   : Entity_Id;
+
+      procedure Add_Validity_Check
+        (Context    : Entity_Id;
+         For_Result : Boolean := False);
+      --  Add a single validity check to a pre or post condition which verifies
+      --  that Context has properly initialized scalars. Set flag For_Result to
+      --  verify the result of a function.
+
+      ------------------------
+      -- Add_Validity_Check --
+      ------------------------
+
+      procedure Add_Validity_Check
+        (Context    : Entity_Id;
+         For_Result : Boolean := False)
+      is
+         Assoc : constant Node_Id   :=
+                   First (Pragma_Argument_Associations (Prag));
+         Expr  : constant Node_Id   := Expression (Assoc);
+         Typ   : constant Entity_Id := Etype (Context);
+         Check : Node_Id;
+         Nam   : Name_Id;
+
+      begin
+         --  Pick the proper version of 'Valid depending on the type of the
+         --  context. If the context is not eligible for such a check, return.
+
+         if Is_Scalar_Type (Typ) then
+            Nam := Name_Valid;
+         elsif not No_Scalar_Parts (Typ) then
+            Nam := Name_Valid_Scalars;
+         else
+            return;
+         end if;
+
+         --  Step 1: Create the expression to verify the validity of the
+         --  context.
+
+         Check := New_Reference_To (Context, Loc);
+
+         --  When processing a function result, use 'Result. Generate
+         --    Context'Result
+
+         if For_Result then
+            Check :=
+              Make_Attribute_Reference (Loc,
+                Prefix         => Check,
+                Attribute_Name => Name_Result);
+         end if;
+
+         --  Generate:
+         --    Context['Result]'Valid[_Scalars]
+
+         Check :=
+           Make_Attribute_Reference (Loc,
+             Prefix         => Check,
+             Attribute_Name => Nam);
+
+         --  Step 2: Associate the check with the related pragma
+
+         if No (Expr) then
+            Set_Expression (Assoc, Check);
+         else
+            Set_Expression (Assoc,
+              Make_And_Then (Loc,
+                Left_Opnd  => Expr,
+                Right_Opnd => Check));
+         end if;
+      end Add_Validity_Check;
+
+   --  Start of processing for Apply_Parameter_Validity_Checks
+
+   begin
+      --  Do not process subprograms where pre and post conditions do not make
+      --  sense.
+
+      if not Comes_From_Source (Subp)
+        or else Is_Imported (Subp)
+        or else Is_Intrinsic_Subprogram (Subp)
+      then
+         return;
+      end if;
+
+      --  Generate the following validity checks for each formal parameter:
+      --
+      --    mode IN     - Pre       => Formal'Valid[_Scalars]
+      --    mode IN OUT - Pre, Post => Formal'Valid[_Scalars]
+      --    mode    OUT -      Post => Formal'Valid[_Scalars]
+
+      Formal := First_Formal (Subp);
+      while Present (Formal) loop
+         if Prag_Nam = Name_Precondition
+           and then Ekind_In (Formal, E_In_Parameter, E_In_Out_Parameter)
+         then
+            Add_Validity_Check (Formal);
+         end if;
+
+         if Prag_Nam = Name_Postcondition
+           and then Ekind_In (Formal, E_In_Out_Parameter, E_Out_Parameter)
+         then
+            Add_Validity_Check (Formal);
+         end if;
+
+         Next_Formal (Formal);
+      end loop;
+
+      --  Generate the following validy check for a function result:
+      --
+      --    Post => Sub'Result'Valid[_Scalars]
+
+      if Prag_Nam = Name_Postcondition
+        and then Ekind_In (Subp, E_Function, E_Generic_Function)
+      then
+         Add_Validity_Check (Subp, For_Result => True);
+      end if;
+   end Apply_Parameter_Validity_Checks;
+
    ---------------------------
    -- Apply_Predicate_Check --
    ---------------------------
