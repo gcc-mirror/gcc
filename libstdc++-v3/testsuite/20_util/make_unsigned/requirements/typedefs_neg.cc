@@ -3,8 +3,7 @@
 
 // 2007-05-03  Benjamin Kosnik  <bkoz@redhat.com>
 //
-// Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012
-// Free Software Foundation, Inc.
+// Copyright (C) 2007-2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -43,11 +42,11 @@ void test01()
   typedef make_unsigned<float>::type  		test5_type;
 }
 
-// { dg-error "does not name a type" "" { target *-*-* } 34 }
-// { dg-error "required from here" "" { target *-*-* } 36 }
-// { dg-error "required from here" "" { target *-*-* } 38 }
-// { dg-error "required from here" "" { target *-*-* } 41 }
-// { dg-error "required from here" "" { target *-*-* } 43 }
+// { dg-error "does not name a type" "" { target *-*-* } 33 }
+// { dg-error "required from here" "" { target *-*-* } 35 }
+// { dg-error "required from here" "" { target *-*-* } 37 }
+// { dg-error "required from here" "" { target *-*-* } 40 }
+// { dg-error "required from here" "" { target *-*-* } 42 }
 
-// { dg-error "invalid use of incomplete type" "" { target *-*-* } 1520 }
-// { dg-error "declaration of" "" { target *-*-* } 1484 }
+// { dg-error "invalid use of incomplete type" "" { target *-*-* } 1519 }
+// { dg-error "declaration of" "" { target *-*-* } 1483 }
