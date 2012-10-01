@@ -56,7 +56,6 @@ c-common.h, not after.
       AGGR_INIT_VIA_CTOR_P (in AGGR_INIT_EXPR)
       PTRMEM_OK_P (in ADDR_EXPR, OFFSET_REF, SCOPE_REF)
       PAREN_STRING_LITERAL (in STRING_CST)
-      DECL_PRETTY_FUNCTION_P (in VAR_DECL)
       KOENIG_LOOKUP_P (in CALL_EXPR)
       STATEMENT_LIST_NO_SCOPE (in STATEMENT_LIST).
       EXPR_STMT_STMT_EXPR_RESULT (in EXPR_STMT)
@@ -2410,7 +2409,8 @@ struct GTY((variable_size)) lang_decl {
 /* Nonzero if this DECL is the __PRETTY_FUNCTION__ variable in a
    template function.  */
 #define DECL_PRETTY_FUNCTION_P(NODE) \
-  (TREE_LANG_FLAG_0 (VAR_DECL_CHECK (NODE)))
+  (DECL_NAME (NODE) \
+   && !strcmp (IDENTIFIER_POINTER (DECL_NAME (NODE)), "__PRETTY_FUNCTION__"))
 
 /* The _TYPE context in which this _DECL appears.  This field holds the
    class where a virtual function instance is actually defined.  */
