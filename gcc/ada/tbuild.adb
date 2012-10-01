@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -128,6 +128,15 @@ package body Tbuild is
          return Result;
       end if;
    end Convert_To;
+
+   ----------------------------
+   -- Convert_To_And_Rewrite --
+   ----------------------------
+
+   procedure Convert_To_And_Rewrite (Typ : Entity_Id; Expr : Node_Id) is
+   begin
+      Rewrite (Expr, Convert_To (Typ, Expr));
+   end Convert_To_And_Rewrite;
 
    ------------------
    -- Discard_List --

@@ -4867,9 +4867,16 @@ package body Exp_Ch4 is
 
          Analyze_And_Resolve (N, Restyp);
 
-         Error_Msg_N ("?explicit membership test may be optimized away", N);
-         Error_Msg_N -- CODEFIX
-           ("\?use ''Valid attribute instead", N);
+         --  Give warning unless overflow checking is MINIMIZED or ELIMINATED,
+         --  in which case, this usage makes sense, and in any case, we have
+         --  actually eliminated the danger of optimization above.
+
+         if Overflow_Check_Mode (Restyp) not in Minimized_Or_Eliminated then
+            Error_Msg_N ("?explicit membership test may be optimized away", N);
+            Error_Msg_N -- CODEFIX
+              ("\?use ''Valid attribute instead", N);
+         end if;
+
          return;
       end Substitute_Valid_Check;
 

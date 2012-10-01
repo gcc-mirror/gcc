@@ -5685,8 +5685,8 @@ package body Sem_Prag is
                Scope_Suppress.Overflow_Checks_General    := Suppressed;
                Scope_Suppress.Overflow_Checks_Assertions := Suppressed;
             else
-               Scope_Suppress.Overflow_Checks_General    := Minimized;
-               Scope_Suppress.Overflow_Checks_Assertions := Minimized;
+               Scope_Suppress.Overflow_Checks_General    := Checked;
+               Scope_Suppress.Overflow_Checks_Assertions := Checked;
             end if;
          end if;
 

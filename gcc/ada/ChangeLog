@@ -1,3 +1,28 @@
+2012-10-01  Robert Dewar  <dewar@adacore.com>
+
+	* checks.adb (Overflow_Check_Mode): New function
+	(Apply_Overflow_Check): New procedure (Is_Check_Suppressed):
+	Moved here from Sem, Overflow_Check case now specially treated.
+	* checks.ads (Overflow_Check_Mode): New function
+	(Is_Check_Suppressed): Moved here from Sem (more logical)
+	* exp_ch4.adb (Substitute_Valid_Check): Suppress warning about
+	optimization if we are in MINIMIZED or ELIMINATED overflow
+	checking mode and within an assertiom expression.
+	* rtsfind.ads: Add entries for Bignum stuff.
+	* s-bignum.ads, s-bignum.adb: New files.
+	* sem.ads, sem.adb (Is_Check_Suppressed): Moved to Checks, more logical.
+	* sem_prag.adb (Process_Suppress_Unsuppress): New behavior for
+	Unsuppress of Overflow_Check (sets Checked instead of Minimized)
+	* sem_res.adb: Update comments.
+	* sinfo.ads (N_Op): Add documentation on overflow handling.
+	* tbuild.ads, tbuild.adb (Convert_To_And_Rewrite): New procedure.
+	* types.ads (Minimized_Or_Eliminated): New subtype.
+
+2012-10-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* layout.adb (Layout_Type): Do not set twice the address size
+	on an access-to-unconstrained array if Debug_Flag_6 is set.
+
 2012-10-01  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_ch3.adb (Analyze_Declarations): Remove the specialized

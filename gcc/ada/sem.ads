@@ -641,13 +641,6 @@ package Sem is
    --  This function returns True if an explicit pragma Suppress for check C
    --  is present in the package defining E.
 
-   function Is_Check_Suppressed (E : Entity_Id; C : Check_Id) return Boolean;
-   --  This function is called if Checks_May_Be_Suppressed (E) is True to
-   --  determine whether check C is suppressed either on the entity E or
-   --  as the result of a scope suppress pragma. If Checks_May_Be_Suppressed
-   --  is False, then the status of the check can be determined simply by
-   --  examining Scope_Checks (C), so this routine is not called in that case.
-
    procedure Preanalyze (N : Node_Id);
    --  Performs a pre-analysis of node N. During pre-analysis no expansion is
    --  carried out for N or its children. For more info on pre-analysis read

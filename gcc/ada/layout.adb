@@ -2448,6 +2448,7 @@ package body Layout is
             and then
               Nkind (Type_Definition (Parent (Desig_Type)))
                  = N_Unconstrained_Array_Definition
+            and then not Debug_Flag_6
          then
             Init_Size (E, 2 * System_Address_Size);
 
