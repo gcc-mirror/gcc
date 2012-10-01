@@ -1,3 +1,64 @@
+2012-10-01  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/50457
+	* config/sh/sh.opt (matomic-model): New option.
+	(msoft-atomic): Mark as deprecated and alias to matomic-model=soft-gusa.
+	(mhard-atomic): Delete.
+	* config/sh/predicates.md (gbr_displacement): New predicate.
+	* config/sh/sh-protos.h (sh_atomic_model): New struct.
+	(selected_atomic_model): New declaration.
+	(TARGET_ATOMIC_ANY, TARGET_ATOMIC_STRICT, TARGET_ATOMIC_SOFT_GUSA,
+	TARGET_ATOMIC_HARD_LLCS, TARGET_ATOMIC_SOFT_TCB,
+	TARGET_ATOMIC_SOFT_TCB_GBR_OFFSET_RTX, TARGET_ATOMIC_SOFT_IMASK):
+	New macros.
+	* config/sh/linux.h (SUBTARGET_OVERRIDE_OPTIONS): Adapt setting to
+	default atomic model.
+	* config/sh/sh.c (selected_atomic_model_): New global variable.
+	(selected_atomic_model, parse_validate_atomic_model_option): New
+	functions.
+	(sh_option_override): Replace atomic selection checks with call to
+	parse_validate_atomic_model_option.
+	* config/sh/sh.h (TARGET_ANY_ATOMIC, UNSUPPORTED_ATOMIC_OPTIONS,
+	UNSUPPORTED_HARD_ATOMIC_CPU): Delete.
+	(DRIVER_SELF_SPECS): Remove atomic checks.
+	config/sh/sync.md: Update documentation comments.
+	(atomic_compare_and_swap<mode>, atomic_exchange<mode>,
+	atomic_fetch_<fetchop_name><mode>, atomic_fetch_nand<mode>,
+	atomic_<fetchop_name>_fetch<mode>, atomic_nand_fetch<mode>): Use
+	TARGET_ATOMIC_ANY as condition.  Add TARGET_ATOMIC_STRICT check for
+	SH4A case.  Handle new TARGET_ATOMIC_SOFT_TCB and
+	TARGET_ATOMIC_SOFT_IMASK cases.
+	(atomic_test_and_set): Handle new TARGET_ATOMIC_SOFT_TCB and
+	TARGET_ATOMIC_SOFT_IMASK cases.
+	(atomic_compare_and_swapsi_hard, atomic_exchangesi_hard,
+	atomic_fetch_<fetchop_name>si_hard, atomic_fetch_nandsi_hard,
+	atomic_<fetchop_name>_fetchsi_hard, atomic_nand_fetchsi_hard):
+	Add TARGET_ATOMIC_STRICT check.
+	(atomic_compare_and_swap<mode>_hard, atomic_exchange<mode>_hard,
+	atomic_fetch_<fetchop_name><mode>_hard, atomic_fetch_nand<mode>_hard,
+	atomic_<fetchop_name>_fetch<mode>_hard, atomic_nand_fetch<mode>_hard,
+	atomic_test_and_set_hard): Use TARGET_ATOMIC_HARD_LLCS condition.
+	(atomic_compare_and_swap<mode>_soft, atomic_exchange<mode>_soft,
+	atomic_fetch_<fetchop_name><mode>_soft, atomic_fetch_nand<mode>_soft,
+	atomic_<fetchop_name>_fetch<mode>_soft, atomic_nand_fetch<mode>_soft,
+	atomic_test_and_set_soft): Append _gusa to the insn names and use
+	TARGET_ATOMIC_SOFT_GUSA as condition.
+	(atomic_compare_and_swap<mode>_soft_tcb, atomic_exchange<mode>_soft_tcb,
+	atomic_fetch_<fetchop_name><mode>_soft_tcb,
+	atomic_fetch_nand<mode>_soft_tcb,
+	atomic_<fetchop_name>_fetch<mode>_soft_tcb,
+	atomic_nand_fetch<mode>_soft_tcb, atomic_test_and_set_soft_tcb):
+	New insns.
+	(atomic_compare_and_swap<mode>_soft_imask,
+	atomic_exchange<mode>_soft_imask,
+	atomic_fetch_<fetchop_name><mode>_soft_imask,
+	atomic_fetch_nand<mode>_soft_imask,
+	atomic_<fetchop_name>_fetch<mode>_soft_imask,
+	atomic_nand_fetch<mode>_soft_imask, atomic_test_and_set_soft_imask):
+	New insns.
+	* doc/invoke.texi (SH Options): Document new matomic-model option.
+	Remove msoft-atomic and mhard-atomic options.
+
 2012-10-01  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	PR target/54746

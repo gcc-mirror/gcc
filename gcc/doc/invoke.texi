@@ -893,7 +893,8 @@ See RS/6000 and PowerPC Options.
 -mspace -mprefergot  -musermode -multcost=@var{number} -mdiv=@var{strategy} @gol
 -mdivsi3_libfunc=@var{name} -mfixed-range=@var{register-range} @gol
 -mindexed-addressing -mgettrcost=@var{number} -mpt-fixed @gol
--maccumulate-outgoing-args -minvalid-symbols -msoft-atomic -mhard-atomic @gol
+-maccumulate-outgoing-args -minvalid-symbols @gol
+-matomic-model=@var{atomic-model} @gol
 -mbranch-cost=@var{num} -mzdcbranch -mno-zdcbranch -mcbranchdi -mcmpeqdi @gol
 -mfused-madd -mno-fused-madd -mfsca -mno-fsca -mfsrra -mno-fsrra @gol
 -mpretend-cmove -mtas}
@@ -18297,26 +18298,67 @@ Dump instruction size and location in the assembly code.
 This option is deprecated.  It pads structures to multiple of 4 bytes,
 which is incompatible with the SH ABI@.
 
-@item -msoft-atomic
-@opindex msoft-atomic
-Generate GNU/Linux compatible gUSA software atomic sequences for the atomic
-built-in functions.  The generated atomic sequences require support from the 
-interrupt / exception handling code of the system and are only suitable for
-single-core systems.  They will not operate correctly on multi-core systems.
-This option is enabled by default when the target is @code{sh-*-linux*}.
-When the target is SH4A, this option will also partially utilize the hardware
-atomic instructions @code{movli.l} and @code{movco.l} to create more
-efficient code.
-For details on the atomic built-in functions see @ref{__atomic Builtins}.
+@item -matomic-model=@var{model}
+@opindex matomic-model=@var{model}
+Sets the model of atomic operations and additional parameters as a comma
+separated list.  For details on the atomic built-in functions see
+@ref{__atomic Builtins}.  The following models and parameters are supported:
 
-@item -mhard-atomic
-@opindex hard-atomic
-Generate hardware atomic sequences for the atomic built-in functions.  This
-is only available on SH4A and is suitable for multi-core systems.  Code
-compiled with this option will also be compatible with gUSA aware
-interrupt / exception handling systems.  In contrast to the
-@option{-msoft-atomic} option this will only use the instructions
-@code{movli.l} and @code{movco.l} to create atomic sequences.
+@table @samp
+
+@item none
+Disable compiler generated atomic sequences and emit library calls for atomic
+operations.  This is the default if the target is not @code{sh-*-linux*}.
+
+@item soft-gusa
+Generate GNU/Linux compatible gUSA software atomic sequences for the atomic
+built-in functions.  The generated atomic sequences require additional support
+from the interrupt/exception handling code of the system and are only suitable
+for SH3* and SH4* single-core systems.  This option is enabled by default when
+the target is @code{sh-*-linux*} and SH3* or SH4*.  When the target is SH4A,
+this option will also partially utilize the hardware atomic instructions
+@code{movli.l} and @code{movco.l} to create more efficient code, unless
+@samp{strict} is specified.  
+
+@item soft-tcb
+Generate software atomic sequences that use a variable in the thread control
+block.  This is a variation of the gUSA sequences which can also be used on
+SH1* and SH2* targets.  The generated atomic sequences require additional
+support from the interrupt/exception handling code of the system and are only
+suitable for single-core systems.  When using this model, the @samp{gbr-offset=}
+parameter has to be specified as well.
+
+@item soft-imask
+Generate software atomic sequences that temporarily disable interrupts by
+setting @code{SR.IMASK = 1111}.  This model works only when the program runs
+in privileged mode and is only suitable for single-core systems.  Additional
+support from the interrupt/exception handling code of the system is not
+required.  This model is enabled by default when the target is
+@code{sh-*-linux*} and SH1* or SH2*.
+
+@item hard-llcs
+Generate hardware atomic sequences using the @code{movli.l} and @code{movco.l}
+instructions only.  This is only available on SH4A and is suitable for
+multi-core systems.  Since the hardware instructions support only 32 bit atomic
+variables access to 8 or 16 bit variables is emulated with 32 bit accesses.
+Code compiled with this option will also be compatible with other software
+atomic model interrupt/exception handling systems if executed on an SH4A
+system.  Additional support from the interrupt/exception handling code of the
+system is not required for this model.
+
+@item gbr-offset=
+This parameter specifies the offset in bytes of the variable in the thread
+control block structure that should be used by the generated atomic sequences
+when the @samp{soft-tcb} model has been selected.  For other models this
+parameter is ignored.  The specified value must be an integer multiple of four
+and in the range 0-1020.
+
+@item strict
+This parameter prevents mixed usage of multiple atomic models, even though they
+would be compatible, and will make the compiler generate atomic sequences of the
+specified model only.
+
+@end table
 
 @item -mtas
 @opindex mtas
