@@ -1091,6 +1091,12 @@ package body Checks is
       if Is_Signed_Integer_Arithmetic_Op (P)
         or else Nkind (Op) in N_Membership_Test
         or else Nkind (Op) in N_Op_Compare
+
+        --  We may also be a range operand in a membership test
+
+        or else (Nkind (Op) = N_Range
+                  and then Nkind (Parent (Op)) in N_Membership_Test)
+
       then
          return;
       end if;

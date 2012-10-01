@@ -2235,6 +2235,15 @@ package body Sinfo is
       return Flag13 (N);
    end No_Initialization;
 
+   function No_Minimize_Eliminate
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_In
+        or else NT (N).Nkind = N_Not_In);
+      return Flag17 (N);
+   end No_Minimize_Eliminate;
+
    function No_Truncation
       (N : Node_Id) return Boolean is
    begin
@@ -5287,6 +5296,15 @@ package body Sinfo is
         or else NT (N).Nkind = N_Object_Declaration);
       Set_Flag13 (N, Val);
    end Set_No_Initialization;
+
+   procedure Set_No_Minimize_Eliminate
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_In
+        or else NT (N).Nkind = N_Not_In);
+      Set_Flag17 (N, Val);
+   end Set_No_Minimize_Eliminate;
 
    procedure Set_No_Truncation
       (N : Node_Id; Val : Boolean := True) is

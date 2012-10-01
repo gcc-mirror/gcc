@@ -1545,6 +1545,11 @@ package Sinfo is
    --    should not be taken into account (needed for in place initialization
    --    with aggregates).
 
+   --  No_Minimize_Eliminate (Flag17-Sem)
+   --    This flag is present in membership operator nodes (N_In/N_Not_In).
+   --    It is used to indicate that processing for extended overflow checking
+   --    modes is not required (this is used to prevent infinite recursion).
+
    --  No_Truncation (Flag17-Sem)
    --    Present in N_Unchecked_Type_Conversion node. This flag has an effect
    --    only if the RM_Size of the source is greater than the RM_Size of the
@@ -3675,6 +3680,7 @@ package Sinfo is
       --  Left_Opnd (Node2)
       --  Right_Opnd (Node3)
       --  Alternatives (List4) (set to No_List if only one set alternative)
+      --  No_Minimize_Eliminate (Flag17)
       --  plus fields for expression
 
       --  N_Not_In
@@ -3682,6 +3688,7 @@ package Sinfo is
       --  Left_Opnd (Node2)
       --  Right_Opnd (Node3)
       --  Alternatives (List4) (set to No_List if only one set alternative)
+      --  No_Minimize_Eliminate (Flag17)
       --  plus fields for expression
 
       --------------------
@@ -8794,6 +8801,9 @@ package Sinfo is
    function No_Initialization
      (N : Node_Id) return Boolean;    -- Flag13
 
+   function No_Minimize_Eliminate
+     (N : Node_Id) return Boolean;    -- Flag17
+
    function No_Truncation
      (N : Node_Id) return Boolean;    -- Flag17
 
@@ -9765,6 +9775,9 @@ package Sinfo is
 
    procedure Set_No_Initialization
      (N : Node_Id; Val : Boolean := True);    -- Flag13
+
+   procedure Set_No_Minimize_Eliminate
+     (N : Node_Id; Val : Boolean := True);    -- Flag17
 
    procedure Set_No_Truncation
      (N : Node_Id; Val : Boolean := True);    -- Flag17
@@ -12017,6 +12030,7 @@ package Sinfo is
    pragma Inline (No_Elaboration_Check);
    pragma Inline (No_Entities_Ref_In_Spec);
    pragma Inline (No_Initialization);
+   pragma Inline (No_Minimize_Eliminate);
    pragma Inline (No_Truncation);
    pragma Inline (Null_Present);
    pragma Inline (Null_Exclusion_Present);
@@ -12337,6 +12351,7 @@ package Sinfo is
    pragma Inline (Set_No_Elaboration_Check);
    pragma Inline (Set_No_Entities_Ref_In_Spec);
    pragma Inline (Set_No_Initialization);
+   pragma Inline (Set_No_Minimize_Eliminate);
    pragma Inline (Set_No_Truncation);
    pragma Inline (Set_Null_Present);
    pragma Inline (Set_Null_Exclusion_Present);

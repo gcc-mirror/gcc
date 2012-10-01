@@ -1,3 +1,18 @@
+2012-10-01  Robert Dewar  <dewar@adacore.com>
+
+	* checks.adb (Apply_Arithmetic_Overflow_Minimized_Eliminated):
+	Handle case of appearing in range in membership test.
+	* exp_ch4.adb (Expand_Membership_Minimize_Eliminate_Overflow):
+	New procedure (Expand_N_In): Use
+	Expand_Membership_Minimize_Eliminate_Overflow.
+	* rtsfind.ads: Add RE_Bignum_In_LLI_Range.
+	* s-bignum.ads, s-bignum.adb (Bignum_In_LLI_Range): New function.
+	* sinfo.ads, sinfo.adb (No_Minimize_Eliminate): New flag.
+
+2012-10-01  Robert Dewar  <dewar@adacore.com>
+
+	* uintp.ads: Minor reformatting.
+
 2012-10-01  Ed Schonberg  <schonberg@adacore.com>
 
 	* checks.adb: Improve warning message.
