@@ -33,18 +33,16 @@ package body Validsw is
 
    procedure Reset_Validity_Check_Options is
    begin
-      Validity_Check_Components              := False;
-      Validity_Check_Copies                  := False;
-      Validity_Check_Default                 := True;
-      Validity_Check_Floating_Point          := False;
-      Validity_Check_In_Out_Params           := False;
-      Validity_Check_In_Params               := False;
-      Validity_Check_Non_Overlapping_Params  := False;
-      Validity_Check_Operands                := False;
-      Validity_Check_Returns                 := False;
-      Validity_Check_Subscripts              := False;
-      Validity_Check_Tests                   := False;
-      Validity_Check_Valid_Scalars_On_Params := False;
+      Validity_Check_Components     := False;
+      Validity_Check_Copies         := False;
+      Validity_Check_Default        := True;
+      Validity_Check_Floating_Point := False;
+      Validity_Check_In_Out_Params  := False;
+      Validity_Check_In_Params      := False;
+      Validity_Check_Operands       := False;
+      Validity_Check_Returns        := False;
+      Validity_Check_Subscripts     := False;
+      Validity_Check_Tests          := False;
    end Reset_Validity_Check_Options;
 
    ---------------------------------
@@ -80,13 +78,11 @@ package body Validsw is
       Add ('e', Validity_Check_Components);
       Add ('f', Validity_Check_Floating_Point);
       Add ('i', Validity_Check_In_Params);
-      Add ('l', Validity_Check_Non_Overlapping_Params);
       Add ('m', Validity_Check_In_Out_Params);
       Add ('o', Validity_Check_Operands);
       Add ('r', Validity_Check_Returns);
       Add ('s', Validity_Check_Subscripts);
       Add ('t', Validity_Check_Tests);
-      Add ('v', Validity_Check_Valid_Scalars_On_Params);
    end Save_Validity_Check_Options;
 
    ----------------------------------------
@@ -137,119 +133,97 @@ package body Validsw is
          case C is
 
             when 'c' =>
-               Validity_Check_Copies                  := True;
+               Validity_Check_Copies         := True;
 
             when 'd' =>
-               Validity_Check_Default                 := True;
+               Validity_Check_Default        := True;
 
             when 'e' =>
-               Validity_Check_Components              := True;
+               Validity_Check_Components     := True;
 
             when 'f' =>
-               Validity_Check_Floating_Point          := True;
+               Validity_Check_Floating_Point := True;
 
             when 'i' =>
-               Validity_Check_In_Params               := True;
-
-            when 'l' =>
-               Validity_Check_Non_Overlapping_Params  := True;
+               Validity_Check_In_Params      := True;
 
             when 'm' =>
-               Validity_Check_In_Out_Params           := True;
+               Validity_Check_In_Out_Params  := True;
 
             when 'o' =>
-               Validity_Check_Operands                := True;
+               Validity_Check_Operands       := True;
 
             when 'p' =>
-               Validity_Check_Parameters              := True;
+               Validity_Check_Parameters     := True;
 
             when 'r' =>
-               Validity_Check_Returns                 := True;
+               Validity_Check_Returns        := True;
 
             when 's' =>
-               Validity_Check_Subscripts              := True;
+               Validity_Check_Subscripts     := True;
 
             when 't' =>
-               Validity_Check_Tests                   := True;
-
-            when 'v' =>
-               Validity_Check_Valid_Scalars_On_Params := True;
+               Validity_Check_Tests          := True;
 
             when 'C' =>
-               Validity_Check_Copies                  := False;
+               Validity_Check_Copies         := False;
 
             when 'D' =>
-               Validity_Check_Default                 := False;
+               Validity_Check_Default        := False;
 
             when 'E' =>
-               Validity_Check_Components              := False;
+               Validity_Check_Components     := False;
 
             when 'F' =>
-               Validity_Check_Floating_Point          := False;
+               Validity_Check_Floating_Point := False;
 
             when 'I' =>
-               Validity_Check_In_Params               := False;
-
-            when 'L' =>
-               Validity_Check_Non_Overlapping_Params  := False;
+               Validity_Check_In_Params      := False;
 
             when 'M' =>
-               Validity_Check_In_Out_Params           := False;
+               Validity_Check_In_Out_Params  := False;
 
             when 'O' =>
-               Validity_Check_Operands                := False;
+               Validity_Check_Operands       := False;
 
             when 'P' =>
-               Validity_Check_Parameters              := False;
+               Validity_Check_Parameters     := False;
 
             when 'R' =>
-               Validity_Check_Returns                 := False;
+               Validity_Check_Returns        := False;
 
             when 'S' =>
-               Validity_Check_Subscripts              := False;
+               Validity_Check_Subscripts     := False;
 
             when 'T' =>
-               Validity_Check_Tests                   := False;
-
-            when 'V' =>
-               Validity_Check_Valid_Scalars_On_Params := False;
-
-            --  Note: The following two flags are not set when "-gnatVa" is in
-            --  effect because the associated checks are deemed too aggressive.
-
-            --     Validity_Check_Non_Overlapping_Params
-            --     Validity_Check_Valid_Scalars_On_Params
-
-            --  and in any case these do not belong as validity checks ???
+               Validity_Check_Tests          := False;
 
             when 'a' =>
-               Validity_Check_Components              := True;
-               Validity_Check_Copies                  := True;
-               Validity_Check_Default                 := True;
-               Validity_Check_Floating_Point          := True;
-               Validity_Check_In_Out_Params           := True;
-               Validity_Check_In_Params               := True;
-               Validity_Check_Operands                := True;
-               Validity_Check_Parameters              := True;
-               Validity_Check_Returns                 := True;
-               Validity_Check_Subscripts              := True;
-               Validity_Check_Tests                   := True;
+               Validity_Check_Components     := True;
+               Validity_Check_Copies         := True;
+               Validity_Check_Default        := True;
+               Validity_Check_Floating_Point := True;
+               Validity_Check_In_Out_Params  := True;
+               Validity_Check_In_Params      := True;
+               Validity_Check_Operands       := True;
+               Validity_Check_Parameters     := True;
+               Validity_Check_Returns        := True;
+               Validity_Check_Subscripts     := True;
+               Validity_Check_Tests          := True;
 
             when 'n' =>
-               Validity_Check_Components              := False;
-               Validity_Check_Copies                  := False;
-               Validity_Check_Default                 := False;
-               Validity_Check_Floating_Point          := False;
-               Validity_Check_In_Out_Params           := False;
-               Validity_Check_In_Params               := False;
-               Validity_Check_Non_Overlapping_Params  := False;
-               Validity_Check_Operands                := False;
-               Validity_Check_Parameters              := False;
-               Validity_Check_Returns                 := False;
-               Validity_Check_Subscripts              := False;
-               Validity_Check_Tests                   := False;
-               Validity_Check_Valid_Scalars_On_Params := False;
-               Validity_Checks_On                     := False;
+               Validity_Check_Components     := False;
+               Validity_Check_Copies         := False;
+               Validity_Check_Default        := False;
+               Validity_Check_Floating_Point := False;
+               Validity_Check_In_Out_Params  := False;
+               Validity_Check_In_Params      := False;
+               Validity_Check_Operands       := False;
+               Validity_Check_Parameters     := False;
+               Validity_Check_Returns        := False;
+               Validity_Check_Subscripts     := False;
+               Validity_Check_Tests          := False;
+               Validity_Checks_On            := False;
 
             when ' ' =>
                null;

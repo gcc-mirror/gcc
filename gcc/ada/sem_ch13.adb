@@ -63,7 +63,6 @@ with Targparm; use Targparm;
 with Ttypes;   use Ttypes;
 with Tbuild;   use Tbuild;
 with Urealp;   use Urealp;
-with Validsw;  use Validsw;
 with Warnsw;   use Warnsw;
 
 with GNAT.Heap_Sort_G;
@@ -1522,12 +1521,6 @@ package body Sem_Ch13 is
                         Make_Pragma_Argument_Association (Eloc,
                           Chars      => Name_Check,
                           Expression => Relocate_Node (Expr))));
-
-                  --  Add checks to detect proper initialization of scalars
-
-                  if Validity_Check_Valid_Scalars_On_Params then
-                     Apply_Parameter_Validity_Checks (E, Aitem);
-                  end if;
 
                   --  Add message unless exception messages are suppressed
 

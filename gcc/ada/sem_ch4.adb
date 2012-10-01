@@ -25,7 +25,6 @@
 
 with Aspects;  use Aspects;
 with Atree;    use Atree;
-with Checks;   use Checks;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
@@ -63,7 +62,6 @@ with Sinfo;    use Sinfo;
 with Snames;   use Snames;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
-with Validsw;  use Validsw;
 
 package body Sem_Ch4 is
 
@@ -1244,15 +1242,6 @@ package body Sem_Ch4 is
          end if;
 
          End_Interp_List;
-      end if;
-
-      --  Add aliasing checks to detect overlapping objects. Process the call
-      --  now in case expansion is disabled.
-
-      if not Expander_Active
-        and then Validity_Check_Non_Overlapping_Params
-      then
-         Apply_Parameter_Aliasing_Checks (N);
       end if;
    end Analyze_Call;
 

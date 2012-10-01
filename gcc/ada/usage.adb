@@ -167,6 +167,11 @@ begin
    Write_Switch_Char ("Dnn");
    Write_Line ("Debug expanded generated code (max line length = nn)");
 
+   --  Line for -gnateA switch
+
+   Write_Switch_Char ("eA");
+   Write_Line ("Aliasing checks on subprogram parameters");
+
    --  Line for -gnatec switch
 
    Write_Switch_Char ("ec=?");
@@ -226,6 +231,11 @@ begin
 
    Write_Switch_Char ("eS");
    Write_Line ("Generate SCO (Source Coverage Obligation) information");
+
+   --  Line for -gnateV switch
+
+   Write_Switch_Char ("eV");
+   Write_Line ("Validity checks on subprogram parameters");
 
    --  Line for -gnatE switch
 
@@ -399,8 +409,6 @@ begin
    Write_Line ("        F    turn off checking for floating-point");
    Write_Line ("        i    turn on checking for in params");
    Write_Line ("        I    turn off checking for in params");
-   Write_Line ("        l    turn on checking for non-overlapping params");
-   Write_Line ("        L    turn off checking for non-overlapping params");
    Write_Line ("        m    turn on checking for in out params");
    Write_Line ("        M    turn off checking for in out params");
    Write_Line ("        o    turn on checking for operators/attributes");
@@ -413,8 +421,6 @@ begin
    Write_Line ("        S    turn off checking for subscripts");
    Write_Line ("        t    turn on checking for tests");
    Write_Line ("        T    turn off checking for tests");
-   Write_Line ("        v    turn on checking for 'Valid_Scalars on params");
-   Write_Line ("        V    turn off checking for 'Valid_Scalars on params");
    Write_Line ("        n    turn off all validity checks (including RM)");
 
    --  Lines for -gnatw switch

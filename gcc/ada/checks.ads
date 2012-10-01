@@ -154,20 +154,10 @@ package Checks is
    --  formals, the check is performed only if the corresponding actual is
    --  constrained, i.e., whether Lhs'Constrained is True.
 
-   procedure Apply_Parameter_Aliasing_Checks (Call : Node_Id);
-   --  Given a subprogram call Call, introduce a check to verify that none of
-   --  the actual parameters overlap.
-
-   procedure Apply_Parameter_Validity_Checks (Subp : Entity_Id);
+   procedure Apply_Parameter_Aliasing_And_Validity_Checks (Subp : Entity_Id);
    --  Given a subprogram Subp, add both a pre and post condition pragmas that
-   --  verify the validity of formal parameters and function results.
-
-   procedure Apply_Parameter_Validity_Checks
-     (Subp : Entity_Id;
-      Prag : Node_Id);
-   --  Given a subprogram Subp and a pre or post condition pragma Prag, augment
-   --  the expression of the pragma to verify the validity of qualifying formal
-   --  parameter and function results.
+   --  detect aliased objects and verify the proper initialization of scalars
+   --  in parameters and function results.
 
    procedure Apply_Predicate_Check (N : Node_Id; Typ : Entity_Id);
    --  N is an expression to which a predicate check may need to be applied

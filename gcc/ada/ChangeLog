@@ -1,3 +1,53 @@
+2012-10-01  Vincent Pucci  <pucci@adacore.com>
+
+	* system-solaris-sparcv9.ads, system-mingw.ads, system-vms_64.ads: Flag
+	Support_Atomic_Primitives set to True.
+
+2012-10-01  Robert Dewar  <dewar@adacore.com>
+
+	* impunit.adb: Ada.Locales is a language defined unit.
+
+2012-10-01  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* checks.adb (Apply_Parameter_Aliasing_Checks): Removed.
+	(Apply_Parameter_Aliasing_And_Validity_Checks): New routine.
+	(Apply_Parameter_Validity_Checks): Removed.
+	* checks.ads (Apply_Parameter_Aliasing_Checks): Removed.
+	(Apply_Parameter_Aliasing_And_Validity_Checks): New routine.
+	(Apply_Parameter_Validity_Checks): Removed.
+	* exp_ch6.adb (Expand_Call): Remove the generation of parameter
+	aliasing checks.
+	* freeze.adb: Remove with and use clauses for Validsw.
+	(Freeze_Entity): Update the guard and generation of aliasing
+	and scalar initialization checks for subprogram parameters.
+	* opt.ads: Add new flags Check_Aliasing_Of_Parameters and
+	Check_Validity_Of_Parameters along with comments on usage.
+	* sem_attr.adb (Analyze_Attribute): Pragma Overlaps_Storage is
+	no longer an Ada 2012 feature.
+	* sem_ch4.adb: Remove with and use clauses for Checks and Validsw.
+	(Analyze_Call): Remove the generation of aliasing checks for
+	subprogram parameters.
+	* sem_ch13.adb: Remove with and use clauses for Validsw.
+	(Analyze_Aspect_Specifications): Remove the generation of scalar
+	initialization checks.
+	* switch-c.adb (Scan_Front_End_Switches): Add processing for
+	-gnateA and -gnateV.
+	* usage.adb (Usage): Add information on switches -gnateA and
+	-gnateV. Remove information on validity switches 'l', 'L',
+	'v' and 'V'.
+	* validsw.adb (Reset_Validity_Check_Options): Remove the
+	reset of flags Validity_Check_Non_Overlapping_Params
+	and Validity_Check_Valid_Scalars_On_Params.
+	(Save_Validity_Check_Options): Remove the processing
+	for flags Validity_Check_Non_Overlapping_Params
+	and Validity_Check_Valid_Scalars_On_Params.
+	(Set_Validity_Check_Options): Remove the processing
+	for flags Validity_Check_Non_Overlapping_Params and
+	Validity_Check_Valid_Scalars_On_Params.
+	* validsw.ads: Remove flags Validity_Check_Non_Overlapping_Params
+	and Validity_Check_Valid_Scalars_On_Params along with their
+	comments on usage.
+
 2012-10-01  Yannick Moy  <moy@adacore.com>
 
 	* sem_ch13.adb (Add_Invariants): Analyze the invariant expression

@@ -380,6 +380,12 @@ package body Switch.C is
                      Enable_Switch_Storing;
                      Ptr := Ptr + 1;
 
+                  --  -gnateA (aliasing checks on parameters)
+
+                  when 'A' =>
+                     Ptr := Ptr + 1;
+                     Check_Aliasing_Of_Parameters := True;
+
                   --  -gnatec (configuration pragmas)
 
                   when 'c' =>
@@ -566,6 +572,22 @@ package body Switch.C is
                   when 'P' =>
                      Treat_Categorization_Errors_As_Warnings := True;
 
+                  --  -gnateS (generate SCO information)
+
+                  --  Include Source Coverage Obligation information in ALI
+                  --  files for the benefit of source coverage analysis tools
+                  --  (xcov).
+
+                  when 'S' =>
+                     Generate_SCO := True;
+                     Ptr := Ptr + 1;
+
+                  --  -gnateV (validity checks on parameters)
+
+                  when 'V' =>
+                     Ptr := Ptr + 1;
+                     Check_Validity_Of_Parameters := True;
+
                   --  -gnatez (final delimiter of explicit switches)
 
                   --  All switches that come after -gnatez have been added by
@@ -575,16 +597,6 @@ package body Switch.C is
                   when 'z' =>
                      Store_Switch := False;
                      Disable_Switch_Storing;
-                     Ptr := Ptr + 1;
-
-                  --  -gnateS (generate SCO information)
-
-                  --  Include Source Coverage Obligation information in ALI
-                  --  files for the benefit of source coverage analysis tools
-                  --  (xcov).
-
-                  when 'S' =>
-                     Generate_SCO := True;
                      Ptr := Ptr + 1;
 
                   --  All other -gnate? switches are unassigned

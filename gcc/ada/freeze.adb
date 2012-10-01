@@ -65,7 +65,6 @@ with Tbuild;   use Tbuild;
 with Ttypes;   use Ttypes;
 with Uintp;    use Uintp;
 with Urealp;   use Urealp;
-with Validsw;  use Validsw;
 
 package body Freeze is
 
@@ -2657,12 +2656,14 @@ package body Freeze is
          end;
       end if;
 
-      --  Add checks to detect proper initialization of scalars
+      --  Add checks to detect proper initialization of scalars and overlapping
+      --  storage of subprogram parameters.
 
       if Is_Subprogram (E)
-        and then Validity_Check_Valid_Scalars_On_Params
+        and then (Check_Aliasing_Of_Parameters
+                    or else Check_Validity_Of_Parameters)
       then
-         Apply_Parameter_Validity_Checks (E);
+         Apply_Parameter_Aliasing_And_Validity_Checks (E);
       end if;
 
       --  Deal with delayed aspect specifications. The analysis of the
