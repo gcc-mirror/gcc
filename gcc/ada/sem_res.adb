@@ -9713,6 +9713,22 @@ package body Sem_Res is
             end if;
          end;
       end if;
+
+      --  Ada 2012: if target type has predicates, the result requires a
+      --  predicate check. If the context is a call to another predicate
+      --  check we must prevent infinite recursion.
+
+      if Has_Predicates (Target_Typ) then
+         if Nkind (Parent (N)) = N_Function_Call
+           and then Present (Name (Parent (N)))
+           and then Has_Predicates (Entity (Name (Parent (N))))
+         then
+            null;
+
+         else
+            Apply_Predicate_Check (N, Target_Typ);
+         end if;
+      end if;
    end Resolve_Type_Conversion;
 
    ----------------------

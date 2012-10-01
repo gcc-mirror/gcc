@@ -2337,6 +2337,23 @@ package body Checks is
                  (Sloc (N), Reason => SE_Infinite_Recursion));
 
          else
+
+            --  If the predicate is a static predicate and the operand is
+            --  static, the predicate must be evaluated statically. If the
+            --  evaluation fails this is a static constraint error.
+
+            if Is_OK_Static_Expression (N) then
+               if  Present (Static_Predicate (Typ)) then
+                  if Eval_Static_Predicate_Check (N, Typ) then
+                     return;
+                  else
+                     Error_Msg_NE
+                       ("static expression fails static predicate check on&",
+                          N, Typ);
+                  end if;
+               end if;
+            end if;
+
             Insert_Action (N,
               Make_Predicate_Check (Typ, Duplicate_Subexpr (N)));
          end if;

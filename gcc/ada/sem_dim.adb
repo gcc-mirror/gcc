@@ -2703,7 +2703,8 @@ package body Sem_Dim is
       -----------------
 
       function Has_Symbols return Boolean is
-         Actual : Node_Id;
+         Actual     : Node_Id;
+         Actual_Str : Node_Id;
 
       begin
          Actual := First (Actuals);
@@ -2711,16 +2712,49 @@ package body Sem_Dim is
          --  Look for a symbols parameter association in the list of actuals
 
          while Present (Actual) loop
-            if Nkind (Actual) = N_Parameter_Association
+            --  Positional parameter association case when the actual is a
+            --  string literal.
+
+            if Nkind (Actual) = N_String_Literal then
+               Actual_Str := Actual;
+
+            --  Named parameter association case when the selector name is
+            --  Symbol.
+
+            elsif Nkind (Actual) = N_Parameter_Association
               and then Chars (Selector_Name (Actual)) = Name_Symbol
             then
+               Actual_Str := Explicit_Actual_Parameter (Actual);
+
+            --  Ignore all other cases
+
+            else
+               Actual_Str := Empty;
+            end if;
+
+            if Present (Actual_Str) then
                --  Return True if the actual comes from source or if the string
                --  of symbols doesn't have the default value (i.e. it is "").
 
-               return Comes_From_Source (Actual)
-                 or else
-                   String_Length
-                     (Strval (Explicit_Actual_Parameter (Actual))) /= 0;
+               if Comes_From_Source (Actual)
+                 or else String_Length (Strval (Actual_Str)) /= 0
+               then
+                  --  Complain only if the actual comes from source or if it
+                  --  hasn't been fully analyzed yet.
+
+                  if Comes_From_Source (Actual)
+                    or else not Analyzed (Actual)
+                  then
+                     Error_Msg_N ("Symbol parameter should not be provided",
+                                  Actual);
+                     Error_Msg_N ("\reserved for compiler use only", Actual);
+                  end if;
+
+                  return True;
+
+               else
+                  return False;
+               end if;
             end if;
 
             Next (Actual);
