@@ -36,7 +36,9 @@ with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
+with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
+with Sinput;   use Sinput;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
@@ -190,6 +192,7 @@ package body Sem_Dim is
 
    OK_For_Dimension : constant array (Node_Kind) of Boolean :=
      (N_Attribute_Reference       => True,
+      N_Expanded_Name             => True,
       N_Defining_Identifier       => True,
       N_Function_Call             => True,
       N_Identifier                => True,
@@ -235,14 +238,6 @@ package body Sem_Dim is
    --  Subroutine of Analyze_Dimension for extended return statement. Check
    --  that the dimensions of the returned type and of the returned object
    --  match.
-
-   procedure Analyze_Dimension_Function_Call (N : Node_Id);
-   --  Subroutine of Analyze_Dimension for function call. General case:
-   --  propagate the dimensions from the returned type to N. Elementary
-   --  function case (Ada.Numerics.Generic_Elementary_Functions): If N
-   --  is a Sqrt call, then evaluate the resulting dimensions as half the
-   --  dimensions of the parameter. Otherwise, verify that each parameters
-   --  are dimensionless.
 
    procedure Analyze_Dimension_Has_Etype (N : Node_Id);
    --  Subroutine of Analyze_Dimension for a subset of N_Has_Etype denoted by
@@ -292,9 +287,17 @@ package body Sem_Dim is
    function Dimensions_Of (N : Node_Id) return Dimension_Type;
    --  Return the dimension vector of node N
 
-   function Dimensions_Msg_Of (N : Node_Id) return String;
-   --  Given a node, return "has dimension" followed by the dimension symbols
-   --  of N or "is dimensionless" if N is dimensionless.
+   function Dimensions_Msg_Of
+      (N                  : Node_Id;
+       Description_Needed : Boolean := False) return String;
+   --  Given a node N, return the dimension symbols of N, preceded by "has
+   --  dimension" if Description_Needed. if N is dimensionless, return "[]", or
+   --  "is dimensionless" if Description_Needed.
+
+   procedure Dim_Warning_For_Numeric_Literal (N : Node_Id; Typ : Entity_Id);
+   --  Issue a warning on the given numeric literal N to indicate the
+   --  compilateur made the assumption that the literal is not dimensionless
+   --  but has the dimension of Typ.
 
    procedure Eval_Op_Expon_With_Rational_Exponent
      (N              : Node_Id;
@@ -303,6 +306,9 @@ package body Sem_Dim is
 
    function Exists (Dim : Dimension_Type) return Boolean;
    --  Returns True iff Dim does not denote the null dimension
+
+   function Exists (Str : String_Id) return Boolean;
+   --  Returns True iff Str does not denote No_String
 
    function Exists (Sys : System_Type) return Boolean;
    --  Returns True iff Sys does not denote the null system
@@ -330,9 +336,6 @@ package body Sem_Dim is
    function Is_Invalid (Position : Dimension_Position) return Boolean;
    --  Return True if Pos denotes the invalid position
 
-   procedure Move_Dimensions (From : Node_Id; To : Node_Id);
-   --  Copy dimension vector of From to To, delete dimension vector of From
-
    procedure Remove_Dimensions (N : Node_Id);
    --  Remove the dimension vector of node N
 
@@ -341,6 +344,10 @@ package body Sem_Dim is
 
    procedure Set_Symbol (E : Entity_Id; Val : String_Id);
    --  Associate a symbol representation of a dimension vector with a subtype
+
+   function String_From_Numeric_Literal (N : Node_Id) return String_Id;
+   --  Return the string that corresponds to the numeric litteral N as it
+   --  appears in the source.
 
    function Symbol_Of (E : Entity_Id) return String_Id;
    --  E denotes a subtype with a dimension. Return the symbol representation
@@ -1122,14 +1129,16 @@ package body Sem_Dim is
 
    procedure Analyze_Dimension (N : Node_Id) is
    begin
-      --  Aspect is an Ada 2012 feature
+      --  Aspect is an Ada 2012 feature. Note that there is no need to check
+      --  dimensions for nodes that don't come from source.
 
-      if Ada_Version < Ada_2012 then
+      if Ada_Version < Ada_2012
+        or else not Comes_From_Source (N)
+      then
          return;
       end if;
 
       case Nkind (N) is
-
          when N_Assignment_Statement =>
             Analyze_Dimension_Assignment_Statement (N);
 
@@ -1142,10 +1151,8 @@ package body Sem_Dim is
          when N_Extended_Return_Statement =>
             Analyze_Dimension_Extended_Return_Statement (N);
 
-         when N_Function_Call =>
-            Analyze_Dimension_Function_Call (N);
-
          when N_Attribute_Reference       |
+              N_Expanded_Name             |
               N_Identifier                |
               N_Indexed_Component         |
               N_Qualified_Expression      |
@@ -1177,6 +1184,95 @@ package body Sem_Dim is
       end case;
    end Analyze_Dimension;
 
+   ---------------------------------------
+   -- Analyze_Dimension_Array_Aggregate --
+   ---------------------------------------
+
+   procedure Analyze_Dimension_Array_Aggregate
+     (N        : Node_Id;
+      Comp_Typ : Entity_Id)
+   is
+      Comp_Ass         : constant List_Id        := Component_Associations (N);
+      Dims_Of_Comp_Typ : constant Dimension_Type := Dimensions_Of (Comp_Typ);
+      Exps             : constant List_Id        := Expressions (N);
+
+      Comp : Node_Id;
+      Expr : Node_Id;
+
+      Error_Detected : Boolean := False;
+      --  This flag is used in order to indicate if an error has been detected
+      --  so far by the compiler in this routine.
+
+   begin
+      --  Aspect is an Ada 2012 feature. Nothing to do here if the component
+      --  base type is not a dimensioned type.
+
+      --  Note that here the original node must come from source since the
+      --  original array aggregate may not have been entirely decorated.
+
+      if Ada_Version < Ada_2012
+        or else not Comes_From_Source (Original_Node (N))
+        or else not Has_Dimension_System (Base_Type (Comp_Typ))
+      then
+         return;
+      end if;
+
+      --  Check whether there is any positional component association
+
+      if Is_Empty_List (Exps) then
+         Comp := First (Comp_Ass);
+      else
+         Comp := First (Exps);
+      end if;
+
+      while Present (Comp) loop
+         --  Get the expression from the component
+
+         if Nkind (Comp) = N_Component_Association then
+            Expr := Expression (Comp);
+         else
+            Expr := Comp;
+         end if;
+
+         --  Issue an error if the dimensions of the component type and the
+         --  dimensions of the component mismatch.
+
+         --  Note that we must ensure the expression has been fully analyzed
+         --  since it may not be decorated at this point. We also don't want to
+         --  issue the same error message multiple times on the same expression
+         --  (may happen when an aggregate is converted into a positional
+         --  aggregate).
+
+         if Comes_From_Source (Original_Node (Expr))
+           and then Present (Etype (Expr))
+           and then Dimensions_Of (Expr) /= Dims_Of_Comp_Typ
+           and then Sloc (Comp) /= Sloc (Prev (Comp))
+         then
+            --  Check if an error has already been encountered so far
+
+            if not Error_Detected then
+               Error_Msg_N ("dimensions mismatch in array aggregate", N);
+               Error_Detected := True;
+            end if;
+
+            Error_Msg_N ("\expected dimension " &
+                         Dimensions_Msg_Of (Comp_Typ) & ", found " &
+                         Dimensions_Msg_Of (Expr),
+                         Expr);
+         end if;
+
+         --  Look at the named components right after the positional components
+
+         if not Present (Next (Comp))
+           and then List_Containing (Comp) = Exps
+         then
+            Comp := First (Comp_Ass);
+         else
+            Next (Comp);
+         end if;
+      end loop;
+   end Analyze_Dimension_Array_Aggregate;
+
    --------------------------------------------
    -- Analyze_Dimension_Assignment_Statement --
    --------------------------------------------
@@ -1205,8 +1301,8 @@ package body Sem_Dim is
       is
       begin
          Error_Msg_N ("dimensions mismatch in assignment", N);
-         Error_Msg_N ("\left-hand side " & Dimensions_Msg_Of (Lhs), N);
-         Error_Msg_N ("\right-hand side " & Dimensions_Msg_Of (Rhs), N);
+         Error_Msg_N ("\left-hand side " & Dimensions_Msg_Of (Lhs, True), N);
+         Error_Msg_N ("\right-hand side " & Dimensions_Msg_Of (Rhs, True), N);
       end Error_Dim_Msg_For_Assignment_Statement;
 
    --  Start of processing for Analyze_Dimension_Assignment
@@ -1241,8 +1337,8 @@ package body Sem_Dim is
                        "dimensions",
                        N,
                        Entity (N));
-         Error_Msg_N ("\left operand " & Dimensions_Msg_Of (L), N);
-         Error_Msg_N ("\right operand " & Dimensions_Msg_Of (R), N);
+         Error_Msg_N ("\left operand " & Dimensions_Msg_Of (L, True), N);
+         Error_Msg_N ("\right operand " & Dimensions_Msg_Of (R, True), N);
       end Error_Dim_Msg_For_Binary_Op;
 
    --  Start of processing for Analyze_Dimension_Binary_Op
@@ -1390,6 +1486,174 @@ package body Sem_Dim is
       end if;
    end Analyze_Dimension_Binary_Op;
 
+   ----------------------------
+   -- Analyze_Dimension_Call --
+   ----------------------------
+
+   procedure Analyze_Dimension_Call (N : Node_Id; Nam : Entity_Id) is
+      Actuals        : constant List_Id := Parameter_Associations (N);
+      Actual         : Node_Id;
+      Dims_Of_Formal : Dimension_Type;
+      Formal         : Node_Id;
+      Formal_Typ     : Entity_Id;
+
+      Error_Detected : Boolean := False;
+      --  This flag is used in order to indicate if an error has been detected
+      --  so far by the compiler in this routine.
+
+   begin
+      --  Aspect is an Ada 2012 feature. Nothing to do here if the list of
+      --  actuals is empty.Note that there is no need to check dimensions for
+      --  calls that don't come from source.
+
+      if Ada_Version < Ada_2012
+        or else not Comes_From_Source (N)
+        or else Is_Empty_List (Actuals)
+      then
+         return;
+      end if;
+
+      --  Special processing for elementary functions
+
+      --  For Sqrt call, the resulting dimensions equal to half the dimensions
+      --  of the actual. For all other elementary calls, this routine check
+      --  that every actual is dimensionless.
+
+      if Nkind (N) = N_Function_Call then
+         Elementary_Function_Calls : declare
+            Dims_Of_Call : Dimension_Type;
+            Ent          : Entity_Id := Nam;
+
+            function Is_Elementary_Function_Entity
+              (Sub_Id : Entity_Id) return Boolean;
+            --  Given Sub_Id, the original subprogram entity, return True if
+            --  call is to an elementary function
+            --  (see Ada.Numerics.Generic_Elementary_Functions).
+
+            -----------------------------------
+            -- Is_Elementary_Function_Entity --
+            -----------------------------------
+
+            function Is_Elementary_Function_Entity
+              (Sub_Id : Entity_Id) return Boolean
+            is
+               Loc : constant Source_Ptr := Sloc (Sub_Id);
+
+            begin
+               --  Is function entity in
+               --  Ada.Numerics.Generic_Elementary_Functions?
+
+               return
+                 Loc > No_Location
+                   and then
+                     Is_RTU
+                       (Cunit_Entity (Get_Source_Unit (Loc)),
+                         Ada_Numerics_Generic_Elementary_Functions);
+            end Is_Elementary_Function_Entity;
+
+         begin
+            --  Get the original subprogram entity following the renaming chain
+
+            if Present (Alias (Ent)) then
+               Ent := Alias (Ent);
+            end if;
+
+            --  Check the call is an Elementary function call
+
+            if Is_Elementary_Function_Entity (Ent) then
+               --  Sqrt function call case
+
+               if Chars (Ent) = Name_Sqrt then
+                  Dims_Of_Call := Dimensions_Of (First_Actual (N));
+
+                  --  Eavluates the resulting dimensions (i.e. half the
+                  --  dimensions of the actual).
+
+                  if Exists (Dims_Of_Call) then
+                     for Position in Dims_Of_Call'Range loop
+                        Dims_Of_Call (Position) :=
+                          Dims_Of_Call (Position) *
+                            Rational'(Numerator   => 1,
+                                      Denominator => 2);
+                     end loop;
+
+                     Set_Dimensions (N, Dims_Of_Call);
+                  end if;
+
+               --  All other elementary functions case. Note that every actual
+               --  here should be dimensionless.
+
+               else
+                  Actual := First_Actual (N);
+
+                  while Present (Actual) loop
+                     if Exists (Dimensions_Of (Actual)) then
+                        --  Check if an error has already been encountered so
+                        --  far.
+
+                        if not Error_Detected then
+                           Error_Msg_NE ("dimensions mismatch in call of&",
+                                         N, Name (N));
+                           Error_Detected := True;
+                        end if;
+
+                        Error_Msg_N ("\expected dimension [], found " &
+                                     Dimensions_Msg_Of (Actual),
+                                     Actual);
+                     end if;
+
+                     Next_Actual (Actual);
+                  end loop;
+               end if;
+
+               --  Nothing more to do for elementary functions
+
+               return;
+            end if;
+         end Elementary_Function_Calls;
+      end if;
+
+      --  General case. Check, for each parameter, the dimensions of the actual
+      --  and its corresponding formal match. Otherwise, complain.
+
+      Actual  := First_Actual (N);
+      Formal  := First_Formal (Nam);
+
+      while Present (Formal) loop
+         Formal_Typ     := Etype (Formal);
+         Dims_Of_Formal := Dimensions_Of (Formal_Typ);
+
+         --  If the formal is not dimensionless, check dimensions of formal and
+         --  actual match. Otherwise, complain.
+
+         if Exists (Dims_Of_Formal)
+           and then Dimensions_Of (Actual) /= Dims_Of_Formal
+         then
+            --  Check if an error has already been encountered so far
+
+            if not Error_Detected then
+               Error_Msg_NE ("dimensions mismatch in& call", N, Name (N));
+               Error_Detected := True;
+            end if;
+
+            Error_Msg_N ("\expected dimension " &
+                         Dimensions_Msg_Of (Formal_Typ) & ", found " &
+                         Dimensions_Msg_Of (Actual),
+                         Actual);
+         end if;
+
+         Next_Actual (Actual);
+         Next_Formal (Formal);
+      end loop;
+
+      --  For function calls, propagate the dimensions from the returned type
+      --  to the function call.
+
+      if Nkind (N) = N_Function_Call then
+         Analyze_Dimension_Has_Etype (N);
+      end if;
+   end Analyze_Dimension_Call;
+
    ---------------------------------------------
    -- Analyze_Dimension_Component_Declaration --
    ---------------------------------------------
@@ -1418,21 +1682,38 @@ package body Sem_Dim is
          Expr : Node_Id) is
       begin
          Error_Msg_N ("dimensions mismatch in component declaration", N);
-         Error_Msg_N ("\component type " & Dimensions_Msg_Of (Etyp), N);
-         Error_Msg_N ("\component expression " & Dimensions_Msg_Of (Expr), N);
+         Error_Msg_N ("\expected dimension " &
+                      Dimensions_Msg_Of (Etyp) & ", found " &
+                      Dimensions_Msg_Of (Expr),
+                      Expr);
       end Error_Dim_Msg_For_Component_Declaration;
 
    --  Start of processing for Analyze_Dimension_Component_Declaration
 
    begin
+      --  Expression is present
+
       if Present (Expr) then
          Dims_Of_Expr := Dimensions_Of (Expr);
 
-         --  Return an error if the dimension of the expression and the
-         --  dimension of the type mismatch.
+         --  Check dimensions match
 
          if Dims_Of_Etyp /= Dims_Of_Expr then
-            Error_Dim_Msg_For_Component_Declaration (N, Etyp, Expr);
+            --  Numeric literal case. Issue a warning if the object type is not
+            --  dimensionless to indicate the literal is treated as if its
+            --  dimension matches the type dimension.
+
+            if Nkind_In (Original_Node (Expr),
+                             N_Real_Literal,
+                             N_Integer_Literal)
+            then
+               Dim_Warning_For_Numeric_Literal (Expr, Etyp);
+
+            --  Issue a dimension mismatch error for all other cases
+
+            else
+               Error_Dim_Msg_For_Component_Declaration (N, Etyp, Expr);
+            end if;
          end if;
 
          --  Removal of dimensions in expression
@@ -1446,38 +1727,36 @@ package body Sem_Dim is
    -------------------------------------------------
 
    procedure Analyze_Dimension_Extended_Return_Statement (N : Node_Id) is
-      Return_Ent            : constant Entity_Id :=
-                                Return_Statement_Entity (N);
-      Return_Etyp           : constant Entity_Id :=
-                                Etype (Return_Applies_To (Return_Ent));
-      Dims_Of_Return_Etyp   : constant Dimension_Type :=
-                                Dimensions_Of (Return_Etyp);
-      Return_Obj_Decls      : constant List_Id :=
-                                Return_Object_Declarations (N);
-      Dims_Of_Return_Obj_Id : Dimension_Type;
-      Return_Obj_Decl       : Node_Id;
-      Return_Obj_Id         : Entity_Id;
+      Return_Ent       : constant Entity_Id := Return_Statement_Entity (N);
+      Return_Etyp      : constant Entity_Id :=
+                           Etype (Return_Applies_To (Return_Ent));
+      Return_Obj_Decls : constant List_Id := Return_Object_Declarations (N);
+      Return_Obj_Decl  : Node_Id;
+      Return_Obj_Id    : Entity_Id;
+      Return_Obj_Typ   : Entity_Id;
 
       procedure Error_Dim_Msg_For_Extended_Return_Statement
-        (N             : Node_Id;
-         Return_Etyp   : Entity_Id;
-         Return_Obj_Id : Entity_Id);
+        (N              : Node_Id;
+         Return_Etyp    : Entity_Id;
+         Return_Obj_Typ : Entity_Id);
       --  Error using Error_Msg_N at node N. Output the dimensions of the
-      --  returned type Return_Etyp and the returned object Return_Obj_Id of N.
+      --  returned type Return_Etyp and the returned object type Return_Obj_Typ
+      --  of N.
 
       -------------------------------------------------
       -- Error_Dim_Msg_For_Extended_Return_Statement --
       -------------------------------------------------
 
       procedure Error_Dim_Msg_For_Extended_Return_Statement
-        (N             : Node_Id;
-         Return_Etyp   : Entity_Id;
-         Return_Obj_Id : Entity_Id)
+        (N              : Node_Id;
+         Return_Etyp    : Entity_Id;
+         Return_Obj_Typ : Entity_Id)
       is
       begin
          Error_Msg_N ("dimensions mismatch in extended return statement", N);
-         Error_Msg_N ("\returned type " & Dimensions_Msg_Of (Return_Etyp), N);
-         Error_Msg_N ("\returned object " & Dimensions_Msg_Of (Return_Obj_Id),
+         Error_Msg_N ("\expected dimension " &
+                      Dimensions_Msg_Of (Return_Etyp) & ", found " &
+                      Dimensions_Msg_Of (Return_Obj_Typ),
                       N);
       end Error_Dim_Msg_For_Extended_Return_Statement;
 
@@ -1486,16 +1765,21 @@ package body Sem_Dim is
    begin
       if Present (Return_Obj_Decls) then
          Return_Obj_Decl := First (Return_Obj_Decls);
+
          while Present (Return_Obj_Decl) loop
             if Nkind (Return_Obj_Decl) = N_Object_Declaration then
-               Return_Obj_Id := Defining_Identifier (Return_Obj_Decl);
+               Return_Obj_Id  := Defining_Identifier (Return_Obj_Decl);
 
                if Is_Return_Object (Return_Obj_Id) then
-                  Dims_Of_Return_Obj_Id := Dimensions_Of (Return_Obj_Id);
+                  Return_Obj_Typ := Etype (Return_Obj_Id);
 
-                  if Dims_Of_Return_Etyp /= Dims_Of_Return_Obj_Id then
+                  --  Issue an error message if dimensions mismatch
+
+                  if Dimensions_Of (Return_Etyp) /=
+                       Dimensions_Of (Return_Obj_Typ)
+                  then
                      Error_Dim_Msg_For_Extended_Return_Statement
-                       (N, Return_Etyp, Return_Obj_Id);
+                       (N, Return_Etyp, Return_Obj_Typ);
                      return;
                   end if;
                end if;
@@ -1506,106 +1790,121 @@ package body Sem_Dim is
       end if;
    end Analyze_Dimension_Extended_Return_Statement;
 
-   -------------------------------------
-   -- Analyze_Dimension_Function_Call --
-   -------------------------------------
+   -----------------------------------------------------
+   -- Analyze_Dimension_Extension_Or_Record_Aggregate --
+   -----------------------------------------------------
 
-   --  Propagate the dimensions from the returned type to the call node. Note
-   --  that there is a special treatment for elementary function calls. Indeed
-   --  for Sqrt call, the resulting dimensions equal to half the dimensions of
-   --  the actual, and for other elementary calls, this routine check that
-   --  every actuals are dimensionless.
+   procedure Analyze_Dimension_Extension_Or_Record_Aggregate (N : Node_Id) is
+      Comp     : Node_Id := First (Component_Associations (N));
+      Comp_Id  : Entity_Id;
+      Comp_Typ : Entity_Id;
+      Expr     : Node_Id;
 
-   procedure Analyze_Dimension_Function_Call (N : Node_Id) is
-      Actuals        : constant List_Id := Parameter_Associations (N);
-      Name_Call      : constant Node_Id := Name (N);
-      Actual         : Node_Id;
-      Dims_Of_Actual : Dimension_Type;
-      Dims_Of_Call   : Dimension_Type;
-      Ent            : Entity_Id;
-
-      function Is_Elementary_Function_Entity (E : Entity_Id) return Boolean;
-      --  Given E, the original subprogram entity, return True if call is to an
-      --  elementary function (see Ada.Numerics.Generic_Elementary_Functions).
-
-      -----------------------------------
-      -- Is_Elementary_Function_Entity --
-      -----------------------------------
-
-      function Is_Elementary_Function_Entity (E : Entity_Id) return Boolean is
-         Loc : constant Source_Ptr := Sloc (E);
-
-      begin
-         --  Is function entity in Ada.Numerics.Generic_Elementary_Functions?
-
-         return
-           Loc > No_Location
-             and then
-               Is_RTU
-                (Cunit_Entity (Get_Source_Unit (Loc)),
-                 Ada_Numerics_Generic_Elementary_Functions);
-      end Is_Elementary_Function_Entity;
-
-   --  Start of processing for Analyze_Dimension_Function_Call
+      Error_Detected : Boolean := False;
+      --  This flag is used in order to indicate if an error has been detected
+      --  so far by the compiler in this routine.
 
    begin
-      --  Look for elementary function call
+      --  Aspect is an Ada 2012 feature. Note that there is no need to check
+      --  dimensions for aggregates that don't come from source.
 
-      if Is_Entity_Name (Name_Call) then
-         Ent := Entity (Name_Call);
-
-         --  Get the original subprogram entity following the renaming chain
-
-         if Present (Alias (Ent)) then
-            Ent := Alias (Ent);
-         end if;
-
-         --  Elementary function case
-
-         if Is_Elementary_Function_Entity (Ent) then
-
-         --  Sqrt function call case
-
-            if Chars (Ent) = Name_Sqrt then
-               Dims_Of_Call := Dimensions_Of (First (Actuals));
-
-               if Exists (Dims_Of_Call) then
-                  for Position in Dims_Of_Call'Range loop
-                     Dims_Of_Call (Position) :=
-                       Dims_Of_Call (Position) * Rational'(Numerator   => 1,
-                                                           Denominator => 2);
-                  end loop;
-
-                  Set_Dimensions (N, Dims_Of_Call);
-               end if;
-
-            --  All other elementary functions case. Note that every actual
-            --  here should be dimensionless.
-
-            else
-               Actual := First (Actuals);
-               while Present (Actual) loop
-                  Dims_Of_Actual := Dimensions_Of (Actual);
-
-                  if Exists (Dims_Of_Actual) then
-                     Error_Msg_NE ("parameter of& must be dimensionless",
-                                   Actual, Name_Call);
-                     Error_Msg_N ("\parameter " & Dimensions_Msg_Of (Actual),
-                                  Actual);
-                  end if;
-
-                  Next (Actual);
-               end loop;
-            end if;
-
-            return;
-         end if;
+      if Ada_Version < Ada_2012
+        or else not Comes_From_Source (N)
+      then
+         return;
       end if;
 
-      --  Other cases
+      while Present (Comp) loop
+         Comp_Id  := Entity (First (Choices (Comp)));
+         Comp_Typ := Etype (Comp_Id);
 
-      Analyze_Dimension_Has_Etype (N);
-   end Analyze_Dimension_Function_Call;
+         --  Check the component type is either a dimensioned type or a
+         --  dimensioned subtype.
+
+         if Has_Dimension_System (Base_Type (Comp_Typ)) then
+            Expr := Expression (Comp);
+
+            --  Issue an error if the dimensions of the component type and the
+            --  dimensions of the component mismatch.
+
+            if Dimensions_Of (Expr) /= Dimensions_Of (Comp_Typ) then
+               --  Check if an error has already been encountered so far
+
+               if not Error_Detected then
+                  --  Extension aggregate case
+
+                  if Nkind (N) = N_Extension_Aggregate then
+                     Error_Msg_N ("dimensions mismatch in extension aggregate",
+                                  N);
+
+                  --  Record aggregate case
+
+                  else
+                     Error_Msg_N ("dimensions mismatch in record aggregate",
+                                  N);
+                  end if;
+
+                  Error_Detected := True;
+               end if;
+
+               Error_Msg_N ("\expected dimension " &
+                            Dimensions_Msg_Of (Comp_Typ) & ", found " &
+                            Dimensions_Msg_Of (Expr),
+                            Comp);
+            end if;
+         end if;
+
+         Next (Comp);
+      end loop;
+   end Analyze_Dimension_Extension_Or_Record_Aggregate;
+
+   -------------------------------
+   -- Analyze_Dimension_Formals --
+   -------------------------------
+
+   procedure Analyze_Dimension_Formals (N : Node_Id; Formals : List_Id) is
+      Dims_Of_Typ : Dimension_Type;
+      Formal      : Node_Id;
+      Typ         : Entity_Id;
+
+   begin
+      --  Aspect is an Ada 2012 feature. Note that there is no need to check
+      --  dimensions for sub specs that don't come from source.
+
+      if Ada_Version < Ada_2012
+        or else not Comes_From_Source (N)
+      then
+         return;
+      end if;
+
+      Formal := First (Formals);
+
+      while Present (Formal) loop
+         Typ         := Parameter_Type (Formal);
+         Dims_Of_Typ := Dimensions_Of  (Typ);
+
+         if Exists (Dims_Of_Typ) then
+            declare
+               Expr : constant Node_Id := Expression (Formal);
+
+            begin
+               --  Issue a warning if Expr is a numeric literal and if its
+               --  dimensions differ with the dimensions of the formal type.
+
+               if Present (Expr)
+                 and then Dims_Of_Typ /= Dimensions_Of (Expr)
+                 and then Nkind_In (Original_Node (Expr),
+                                       N_Real_Literal,
+                                       N_Integer_Literal)
+               then
+                  Dim_Warning_For_Numeric_Literal (Expr, Etype (Typ));
+               end if;
+            end;
+         end if;
+
+         Next (Formal);
+      end loop;
+   end Analyze_Dimension_Formals;
 
    ---------------------------------
    -- Analyze_Dimension_Has_Etype --
@@ -1691,8 +1990,10 @@ package body Sem_Dim is
          Expr : Node_Id) is
       begin
          Error_Msg_N ("dimensions mismatch in object declaration", N);
-         Error_Msg_N ("\object type " & Dimensions_Msg_Of (Etyp), N);
-         Error_Msg_N ("\object expression " & Dimensions_Msg_Of (Expr), N);
+         Error_Msg_N ("\expected dimension " &
+                      Dimensions_Msg_Of (Etyp) & ", found " &
+                      Dimensions_Msg_Of (Expr),
+                      Expr);
       end Error_Dim_Msg_For_Object_Declaration;
 
    --  Start of processing for Analyze_Dimension_Object_Declaration
@@ -1703,22 +2004,29 @@ package body Sem_Dim is
       if Present (Expr) then
          Dim_Of_Expr := Dimensions_Of (Expr);
 
-         --  Case when expression is not a literal and when dimensions of the
-         --  expression and of the type mismatch
+         --  Check dimensions match
 
-         if not Nkind_In (Original_Node (Expr),
+         if Dim_Of_Expr /= Dim_Of_Etyp then
+            --  Numeric literal case. Issue a warning if the object type is not
+            --  dimensionless to indicate the literal is treated as if its
+            --  dimension matches the type dimension.
+
+            if Nkind_In (Original_Node (Expr),
                              N_Real_Literal,
                              N_Integer_Literal)
-           and then Dim_Of_Expr /= Dim_Of_Etyp
-         then
-            --  Propagate the dimension from the expression to the object
-            --  entity when the object is a constant whose type is a
-            --  dimensioned type.
+            then
+               Dim_Warning_For_Numeric_Literal (Expr, Etyp);
 
-            if Constant_Present (N) and then not Exists (Dim_Of_Etyp) then
+            --  Case where the object is a constant whose type is a dimensioned
+            --  type.
+
+            elsif Constant_Present (N) and then not Exists (Dim_Of_Etyp) then
+               --  Propagate the dimension from the expression to the object
+               --  entity
+
                Set_Dimensions (Id, Dim_Of_Expr);
 
-            --  Otherwise, issue an error message
+            --  For all other cases, issue an error message
 
             else
                Error_Dim_Msg_For_Object_Declaration (N, Etyp, Expr);
@@ -1755,11 +2063,11 @@ package body Sem_Dim is
          Sub_Mark     : Node_Id;
          Renamed_Name : Node_Id) is
       begin
-         Error_Msg_N ("dimensions mismatch in object renaming declaration",
-                      N);
-         Error_Msg_N ("\type " & Dimensions_Msg_Of (Sub_Mark), N);
-         Error_Msg_N ("\renamed object " & Dimensions_Msg_Of (Renamed_Name),
-                      N);
+         Error_Msg_N ("dimensions mismatch in object renaming declaration", N);
+         Error_Msg_N ("\expected dimension " &
+                      Dimensions_Msg_Of (Sub_Mark) & ", found " &
+                      Dimensions_Msg_Of (Renamed_Name),
+                      Renamed_Name);
       end Error_Dim_Msg_For_Object_Renaming_Declaration;
 
    --  Start of processing for Analyze_Dimension_Object_Renaming_Declaration
@@ -1802,8 +2110,10 @@ package body Sem_Dim is
       is
       begin
          Error_Msg_N ("dimensions mismatch in return statement", N);
-         Error_Msg_N ("\returned type " & Dimensions_Msg_Of (Return_Etyp), N);
-         Error_Msg_N ("\returned expression " & Dimensions_Msg_Of (Expr), N);
+         Error_Msg_N ("\expected dimension " &
+                      Dimensions_Msg_Of (Return_Etyp) & ", found " &
+                      Dimensions_Msg_Of (Expr),
+                      Expr);
       end Error_Dim_Msg_For_Simple_Return_Statement;
 
    --  Start of processing for Analyze_Dimension_Simple_Return_Statement
@@ -1838,7 +2148,8 @@ package body Sem_Dim is
             --  it cannot inherit a dimension from its subtype.
 
             if Exists (Dims_Of_Id) then
-               Error_Msg_N ("subtype& already" & Dimensions_Msg_Of (Id), N);
+               Error_Msg_N ("subtype& already" & Dimensions_Msg_Of (Id, True),
+                            N);
             else
                Set_Dimensions (Id, Dims_Of_Etyp);
                Set_Symbol (Id, Symbol_Of (Etyp));
@@ -2011,7 +2322,10 @@ package body Sem_Dim is
    -- Dimensions_Msg_Of --
    -----------------------
 
-   function Dimensions_Msg_Of (N : Node_Id) return String is
+   function Dimensions_Msg_Of
+      (N                  : Node_Id;
+       Description_Needed : Boolean := False) return String
+   is
       Dims_Of_N      : constant Dimension_Type := Dimensions_Of (N);
       Dimensions_Msg : Name_Id;
       System         : System_Type;
@@ -2021,13 +2335,32 @@ package body Sem_Dim is
 
       Name_Len := 0;
 
+      --  N is not dimensionless
+
       if Exists (Dims_Of_N) then
          System := System_Of (Base_Type (Etype (N)));
-         Add_Str_To_Name_Buffer ("has dimension ");
+
+         --  When Description_Needed, add to string "has dimension " before the
+         --  actual dimension.
+
+         if Description_Needed then
+            Add_Str_To_Name_Buffer ("has dimension ");
+         end if;
+
          Add_String_To_Name_Buffer
            (From_Dim_To_Str_Of_Dim_Symbols (Dims_Of_N, System, True));
-      else
+
+      --  N is dimensionless
+
+      --  When Description_Needed, return "is dimensionless"
+
+      elsif Description_Needed then
          Add_Str_To_Name_Buffer ("is dimensionless");
+
+      --  Otherwise, return "[]"
+
+      else
+         Add_Str_To_Name_Buffer ("[]");
       end if;
 
       Dimensions_Msg := Name_Find;
@@ -2044,6 +2377,27 @@ package body Sem_Dim is
    begin
       return Dimension_Table_Range (Key mod 511);
    end Dimension_Table_Hash;
+
+   -------------------------------------
+   -- Dim_Warning_For_Numeric_Literal --
+   -------------------------------------
+
+   procedure Dim_Warning_For_Numeric_Literal (N : Node_Id; Typ : Entity_Id) is
+   begin
+      --  Initialize name buffer
+
+      Name_Len := 0;
+
+      Add_String_To_Name_Buffer (String_From_Numeric_Literal (N));
+
+      --  Insert a blank between the literal and the symbol
+      Add_Str_To_Name_Buffer    (" ");
+
+      Add_String_To_Name_Buffer (Symbol_Of (Typ));
+
+      Error_Msg_Name_1 := Name_Find;
+      Error_Msg_N ("?assumed to be%%", N);
+   end Dim_Warning_For_Numeric_Literal;
 
    ----------------------------------------
    -- Eval_Op_Expon_For_Dimensioned_Type --
@@ -2243,6 +2597,11 @@ package body Sem_Dim is
       return Dim /= Null_Dimension;
    end Exists;
 
+   function Exists (Str : String_Id) return Boolean is
+   begin
+      return Str /= No_String;
+   end Exists;
+
    function Exists (Sys : System_Type) return Boolean is
    begin
       return Sys /= Null_System;
@@ -2311,7 +2670,7 @@ package body Sem_Dim is
       Dims_Of_Actual : Dimension_Type;
       Etyp           : Entity_Id;
       New_Str_Lit    : Node_Id := Empty;
-      System         : System_Type;
+      Symbols        : String_Id;
 
       Is_Put_Dim_Of : Boolean := False;
       --  This flag is used in order to differentiate routines Put and
@@ -2463,10 +2822,10 @@ package body Sem_Dim is
             --  by the routine From_Dim_To_Str_Of_Dim_Symbols.
 
             if Exists (Dims_Of_Actual) then
-               System := System_Of (Base_Type (Etyp));
                New_Str_Lit :=
                  Make_String_Literal (Loc,
-                   From_Dim_To_Str_Of_Dim_Symbols (Dims_Of_Actual, System));
+                   From_Dim_To_Str_Of_Dim_Symbols
+                     (Dims_Of_Actual, System_Of (Base_Type (Etyp))));
 
             --  If dimensionless, the output is []
 
@@ -2481,25 +2840,24 @@ package body Sem_Dim is
             --  Add the symbol as a suffix of the value if the subtype has a
             --  unit symbol or if the parameter is not dimensionless.
 
-            if Symbol_Of (Etyp) /= No_String then
+            if Exists (Symbol_Of (Etyp)) then
+               Symbols := Symbol_Of (Etyp);
+
+            else
+               Symbols := From_Dim_To_Str_Of_Unit_Symbols
+                            (Dims_Of_Actual, System_Of (Base_Type (Etyp)));
+            end if;
+
+            --  Check Symbols exists
+
+            if Exists (Symbols) then
                Start_String;
 
                --  Put a space between the value and the dimension
 
                Store_String_Char (' ');
-               Store_String_Chars (Symbol_Of (Etyp));
+               Store_String_Chars (Symbols);
                New_Str_Lit := Make_String_Literal (Loc, End_String);
-
-            --  Check that the item is not dimensionless
-
-            --  Create the new String_Literal with the new String_Id generated
-            --  by the routine From_Dim_To_Str_Of_Unit_Symbols.
-
-            elsif Exists (Dims_Of_Actual) then
-               System := System_Of (Base_Type (Etyp));
-               New_Str_Lit :=
-                 Make_String_Literal (Loc,
-                   From_Dim_To_Str_Of_Unit_Symbols (Dims_Of_Actual, System));
             end if;
          end if;
 
@@ -2672,13 +3030,15 @@ package body Sem_Dim is
       First_Dim : Boolean := True;
 
    begin
+      --  Return No_String if dimensionless
+
+      if not Exists (Dims) then
+         return No_String;
+      end if;
+
       --  Initialization of the new String_Id
 
       Start_String;
-
-      --  Put a space between the value and the symbols
-
-      Store_String_Char (' ');
 
       for Position in Dimension_Type'Range loop
          Dim_Power := Dims (Position);
@@ -2823,6 +3183,10 @@ package body Sem_Dim is
       Dims_Of_From : constant Dimension_Type := Dimensions_Of (From);
 
    begin
+      if Ada_Version < Ada_2012 then
+         return;
+      end if;
+
       --  Copy the dimension of 'From to 'To' and remove dimension of 'From'
 
       if Exists (Dims_Of_From) then
@@ -2860,26 +3224,6 @@ package body Sem_Dim is
          Dimension_Table.Remove (N);
       end if;
    end Remove_Dimensions;
-
-   ------------------------------
-   -- Remove_Dimension_In_Call --
-   ------------------------------
-
-   procedure Remove_Dimension_In_Call (Call : Node_Id) is
-      Actual : Node_Id;
-
-   begin
-      if Ada_Version < Ada_2012 then
-         return;
-      end if;
-
-      Actual := First (Parameter_Associations (Call));
-
-      while Present (Actual) loop
-         Remove_Dimensions (Actual);
-         Next (Actual);
-      end loop;
-   end Remove_Dimension_In_Call;
 
    -----------------------------------
    -- Remove_Dimension_In_Statement --
@@ -2935,13 +3279,86 @@ package body Sem_Dim is
       Symbol_Table.Set (E, Val);
    end Set_Symbol;
 
+   ---------------------------------
+   -- String_From_Numeric_Literal --
+   ---------------------------------
+
+   function String_From_Numeric_Literal (N : Node_Id) return String_Id is
+      Loc     : constant Source_Ptr        := Sloc (N);
+      Sbuffer : constant Source_Buffer_Ptr :=
+                  Source_Text (Get_Source_File_Index (Loc));
+      Src_Ptr : Source_Ptr := Loc;
+      C       : Character  := Sbuffer (Src_Ptr);
+         --  Current source program character
+
+      function Belong_To_Numeric_Literal (C : Character) return Boolean;
+      --  Return True if C belongs to a numeric literal
+
+      -------------------------------
+      -- Belong_To_Numeric_Literal --
+      -------------------------------
+
+      function Belong_To_Numeric_Literal (C : Character) return Boolean is
+      begin
+         case C is
+            when '0' .. '9' |
+                 '_'        |
+                 '.'        |
+                 'e'        |
+                 '#'        |
+                 'A'        |
+                 'B'        |
+                 'C'        |
+                 'D'        |
+                 'E'        |
+                 'F'        =>
+               return True;
+
+            --  Make sure '+' or '-' is part of an exponent.
+
+            when '+'  | '-' =>
+               declare
+                  Prev_C : constant Character := Sbuffer (Src_Ptr - 1);
+               begin
+                  return Prev_C = 'e' or else Prev_C = 'E';
+               end;
+
+            --  All other character doesn't belong to a numeric literal
+
+            when others     =>
+               return False;
+         end case;
+      end Belong_To_Numeric_Literal;
+
+   --  Start of processing for String_From_Numeric_Literal
+
+   begin
+      Start_String;
+
+      while Belong_To_Numeric_Literal (C) loop
+         Store_String_Char (C);
+         Src_Ptr := Src_Ptr + 1;
+         C       := Sbuffer (Src_Ptr);
+      end loop;
+
+      return End_String;
+   end String_From_Numeric_Literal;
+
    ---------------
    -- Symbol_Of --
    ---------------
 
    function Symbol_Of (E : Entity_Id) return String_Id is
+      Subtype_Symbol : constant String_Id := Symbol_Table.Get (E);
+
    begin
-      return Symbol_Table.Get (E);
+      if Subtype_Symbol /= No_String then
+         return Subtype_Symbol;
+
+      else
+         return From_Dim_To_Str_Of_Unit_Symbols
+                  (Dimensions_Of (E), System_Of (Base_Type (E)));
+      end if;
    end Symbol_Of;
 
    -----------------------
@@ -2971,5 +3388,4 @@ package body Sem_Dim is
 
       return Null_System;
    end System_Of;
-
 end Sem_Dim;

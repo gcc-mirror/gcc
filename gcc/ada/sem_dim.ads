@@ -108,16 +108,19 @@ package Sem_Dim is
 
    procedure Analyze_Dimension (N : Node_Id);
    --  N may denote any of the following contexts:
+   --    * aggregate
    --    * assignment statement
    --    * attribute reference
    --    * binary operator
+   --    * call
    --    * compontent declaration
    --    * extended return statement
-   --    * function call
+   --    * expanded name
    --    * identifier
    --    * indexed component
    --    * object declaration
    --    * object renaming declaration
+   --    * procedure call statement
    --    * qualified expression
    --    * selected component
    --    * simple return statement
@@ -128,6 +131,36 @@ package Sem_Dim is
    --    * unchecked type conversion
    --  Depending on the context, ensure that all expressions and entities
    --  involved do not violate the rules of a system.
+
+   procedure Analyze_Dimension_Array_Aggregate
+     (N        : Node_Id;
+      Comp_Typ : Entity_Id);
+   --  Check, for each component of the array aggregate denoted by N, the
+   --  dimensions of the component expression match the dimensions of the
+   --  component type Comp_Typ.
+
+   procedure Analyze_Dimension_Call (N : Node_Id; Nam : Entity_Id);
+   --  This routine is split in two steps. Note the second step applies only to
+   --  function calls.
+   --  Step 1. Dimension checking:
+   --    * General case: check the dimensions of each actual parameter match
+   --      the dimensions of the corresponding formal parameter.
+   --    * Elementary function case: check each actual is dimensionless except
+   --      for Sqrt call.
+   --  Step 2. Dimension propagation (only for functions):
+   --    * General case: propagate the dimensions from the returned type to the
+   --      function call.
+   --    * Sqrt case: the resulting dimensions equal to half the dimensions of
+   --      the actual
+
+   procedure Analyze_Dimension_Extension_Or_Record_Aggregate (N : Node_Id);
+   --  Check, for each component of the extension or record aggregate denoted
+   --  by N, the dimensions of the component expression match the dimensions of
+   --  the component type.
+
+   procedure Analyze_Dimension_Formals (N : Node_Id; Formals : List_Id);
+   --  For sub spec N, issue a warning for each dimensioned formal with a
+   --  literal default value in the list of formals Formals.
 
    procedure Eval_Op_Expon_For_Dimensioned_Type
      (N    : Node_Id;
@@ -150,8 +183,8 @@ package Sem_Dim is
    --  Return True if N is a package instantiation of System.Dim.Integer_IO or
    --  of System.Dim.Float_IO.
 
-   procedure Remove_Dimension_In_Call (Call : Node_Id);
-   --  Remove the dimensions from all formal parameters of Call
+   procedure Move_Dimensions (From : Node_Id; To : Node_Id);
+   --  Copy dimension vector of From to To, delete dimension vector of From
 
    procedure Remove_Dimension_In_Statement (Stmt : Node_Id);
    --  Remove the dimensions associated with Stmt

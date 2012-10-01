@@ -38,6 +38,9 @@ package System.Dim.Mks.Other_Prefixes is
 
    --  SI prefixes for Meter
 
+   pragma Warnings (Off);
+   --  Turn off the all the dimension warnings
+
    ym  : constant Length := 1.0E-24;  -- yocto
    zm  : constant Length := 1.0E-21;  -- zepto
    am  : constant Length := 1.0E-18;  -- atto
@@ -165,4 +168,5 @@ package System.Dim.Mks.Other_Prefixes is
    Zecd : constant Luminous_Intensity := 1.0E+21;  -- zetta
    Yocd : constant Luminous_Intensity := 1.0E+24;  -- yotta
 
+   pragma Warnings (On);
 end System.Dim.Mks.Other_Prefixes;

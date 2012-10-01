@@ -1089,7 +1089,8 @@ package body Exp_Ch4 is
                      Make_Access_To_Object_Definition (Loc,
                        All_Present            => True,
                        Null_Exclusion_Present => False,
-                       Constant_Present       => False,
+                       Constant_Present       =>
+                         Is_Access_Constant (Etype (N)),
                        Subtype_Indication     =>
                          New_Reference_To (Etype (Exp), Loc)));
 
