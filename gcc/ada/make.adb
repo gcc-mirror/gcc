@@ -7825,7 +7825,7 @@ package body Make is
 
          --  -vPx  (verbosity of the parsing of the project files)
 
-         elsif Argv (2 .. 3) = "vP" then
+         elsif Argv'Length >= 3 and then Argv (2 .. 3) = "vP" then
             if Argv'Last /= 4 or else Argv (4) not in '0' .. '2' then
                Make_Failed
                  ("invalid verbosity level " & Argv (4 .. Argv'Last));

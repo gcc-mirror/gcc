@@ -3912,19 +3912,6 @@ package body Checks is
       --  the computed expression is in the range Lor .. Hir. We can use this
       --  to restrict the possible range of results.
 
-      --  If one of the computed bounds is outside the range of the base type,
-      --  the expression may raise an exception and we had better indicate that
-      --  the evaluation has failed, at least if checks are enabled.
-
-      if OK1
-        and then Enable_Overflow_Checks
-        and then not Is_Entity_Name (N)
-        and then (Lor < Lo or else Hir > Hi)
-      then
-         OK := False;
-         return;
-      end if;
-
       if OK1 then
 
          --  If the refined value of the low bound is greater than the type
@@ -6184,10 +6171,20 @@ package body Checks is
 
    function Overflow_Checks_Suppressed (E : Entity_Id) return Boolean is
    begin
+      --  Check overflow suppressed on entity
+
       if Present (E) and then Checks_May_Be_Suppressed (E) then
-         return Is_Check_Suppressed (E, Overflow_Check);
+         if Is_Check_Suppressed (E, Overflow_Check) then
+            return True;
+         end if;
+      end if;
+
+      --  Else return appropriate scope setting
+
+      if In_Assertion_Expr = 0 then
+         return Scope_Suppress.Overflow_Checks_General = Suppressed;
       else
-         return Scope_Suppress.Suppress (Overflow_Check);
+         return Scope_Suppress.Overflow_Checks_Assertions = Suppressed;
       end if;
    end Overflow_Checks_Suppressed;
 

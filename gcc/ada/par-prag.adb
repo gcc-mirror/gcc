@@ -1199,6 +1199,7 @@ begin
            Pragma_Ordered                        |
            Pragma_Optimize                       |
            Pragma_Optimize_Alignment             |
+           Pragma_Overflow_Checks                |
            Pragma_Pack                           |
            Pragma_Passive                        |
            Pragma_Preelaborable_Initialization   |

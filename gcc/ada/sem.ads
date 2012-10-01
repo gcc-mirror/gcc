@@ -203,7 +203,6 @@
 
 with Alloc;
 with Einfo;  use Einfo;
-with Opt;    use Opt;
 with Table;
 with Types;  use Types;
 
@@ -242,6 +241,15 @@ package Sem is
    --  is deleted after analysis. Itypes generated in deleted code must be
    --  frozen from start, because the tree on which they depend will not
    --  be available at the freeze point.
+
+   In_Assertion_Expr : Nat := 0;
+   --  This is set non-zero if we are within the expression of an assertion
+   --  pragma or aspect. It is a counter which is incremented at the start
+   --  of expanding such an expression, and decremented on completion of
+   --  expanding that expression. Probably a boolean would be good enough,
+   --  since we think that such expressions cannot nest, but that might not
+   --  be true in the future (e.g. if let expressions are added to Ada) so
+   --  we prepare for that future possibility by making it a counter.
 
    In_Inlined_Body : Boolean := False;
    --  Switch to indicate that we are analyzing and resolving an inlined body.
@@ -310,13 +318,13 @@ package Sem is
    --  that are applicable to all entities. A similar search is needed for any
    --  non-predefined check even if no specific entity is involved.
 
-   Scope_Suppress : Suppress_Record := Suppress_Options;
+   Scope_Suppress : Suppress_Record;
    --  This variable contains the current scope based settings of the suppress
-   --  switches. It is initialized from the options as shown, and then modified
-   --  by pragma Suppress. On entry to each scope, the current setting is saved
-   --  the scope stack, and then restored on exit from the scope. This record
-   --  may be rapidly checked to determine the current status of a check if
-   --  no specific entity is involved or if the specific entity involved is
+   --  switches. It is initialized from Suppress_Options in Gnat1drv, and then
+   --  modified by pragma Suppress. On entry to each scope, the current setting
+   --  is saved the scope stack, and then restored on exit from the scope. This
+   --  record may be rapidly checked to determine the current status of a check
+   --  if no specific entity is involved or if the specific entity involved is
    --  one for which no specific Suppress/Unsuppress pragma has been set (as
    --  indicated by the Checks_May_Be_Suppressed flag being set).
 
