@@ -1,3 +1,19 @@
+2012-10-01  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch3.adb (Analyze_Declarations): Remove the specialized
+	code which prevents freezing when the declarative list contains
+	a _postconditions body. This is no longer needed because the
+	body is now inserted at the end of the declarations.
+	* sem_ch6.adb (Insert_After_Last_Declaration): New routine.
+	(Insert_Before_First_Source_Declaration): Removed.
+	(Process_PPCs): Insert the _postconditions body at the end of
+	the declarative list to prevent premature freezing of types that
+	appear in the declarations.
+
+2012-10-01  Robert Dewar  <dewar@adacore.com>
+
+	* sem_aggr.adb, sem_dim.adb: Minor reformatting.
+
 2012-10-01  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_prag.adb (Process_Convention, Process_Import_Or_Interface):

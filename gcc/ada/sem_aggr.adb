@@ -2550,7 +2550,7 @@ package body Sem_Aggr is
              Duplicate_Subexpr (High_Bound (Aggregate_Bounds (N))));
       end if;
 
-      --  Check the dimensions of each component in the array aggregate.
+      --  Check the dimensions of each component in the array aggregate
 
       Analyze_Dimension_Array_Aggregate (N, Component_Typ);
 
@@ -3392,6 +3392,7 @@ package body Sem_Aggr is
             --  propagate here the dimensions form Expr to New_Expr.
 
             Move_Dimensions (Expr, New_Expr);
+
          else
             New_Expr := Expr;
          end if;
@@ -4504,7 +4505,7 @@ package body Sem_Aggr is
          Rewrite (N, New_Aggregate);
       end Step_8;
 
-      --  Check the dimensions of the components in the record aggregate.
+      --  Check the dimensions of the components in the record aggregate
 
       Analyze_Dimension_Extension_Or_Record_Aggregate (N);
    end Resolve_Record_Aggregate;

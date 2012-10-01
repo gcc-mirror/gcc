@@ -11091,8 +11091,8 @@ package body Sem_Ch6 is
       --  references to parameters of the inherited subprogram to point to the
       --  corresponding parameters of the current subprogram.
 
-      procedure Insert_Before_First_Source_Declaration (Nod : Node_Id);
-      --  Insert node Nod before the first source declaration of the context
+      procedure Insert_After_Last_Declaration (Nod : Node_Id);
+      --  Insert node Nod after the last declaration of the context
 
       function Invariants_Or_Predicates_Present return Boolean;
       --  Determines if any invariants or predicates are present for any OUT
@@ -11285,35 +11285,20 @@ package body Sem_Ch6 is
          return CP;
       end Grab_PPC;
 
-      --------------------------------------------
-      -- Insert_Before_First_Source_Declaration --
-      --------------------------------------------
+      -----------------------------------
+      -- Insert_After_Last_Declaration --
+      -----------------------------------
 
-      procedure Insert_Before_First_Source_Declaration (Nod : Node_Id) is
+      procedure Insert_After_Last_Declaration (Nod : Node_Id) is
          Decls : constant List_Id := Declarations (N);
-         Decl  : Node_Id;
 
       begin
          if No (Decls) then
             Set_Declarations (N, New_List (Nod));
          else
-            Decl := First (Decls);
-
-            while Present (Decl) loop
-               if Comes_From_Source (Decl) then
-                  exit;
-               end if;
-
-               Next (Decl);
-            end loop;
-
-            if No (Decl) then
-               Append_To (Decls, Nod);
-            else
-               Insert_Before (Decl, Nod);
-            end if;
+            Append_To (Decls, Nod);
          end if;
-      end Insert_Before_First_Source_Declaration;
+      end Insert_After_Last_Declaration;
 
       --------------------------------------
       -- Invariants_Or_Predicates_Present --
@@ -11797,12 +11782,26 @@ package body Sem_Ch6 is
             --  The entity for the _Postconditions procedure
 
          begin
-            --  Insert the corresponding body of a post condition pragma before
-            --  the first source declaration of the context. This ensures that
-            --  any [sub]types generated in relation to the formals of the
-            --  subprogram are still visible in the _postcondition body.
+            --  Insert the corresponding body of a post condition pragma after
+            --  the last declaration of the context. This ensures that the body
+            --  will not cause any premature freezing as it may mention types:
 
-            Insert_Before_First_Source_Declaration (
+            --    procedure Proc (Obj : Array_Typ) is
+            --       procedure _postconditions is
+            --       begin
+            --          ... Obj ...
+            --       end _postconditions;
+
+            --       subtype T is Array_Typ (Obj'First (1) .. Obj'Last (1));
+            --    begin
+
+            --  In the example above, Obj is of type T but the incorrect
+            --  placement of _postconditions will cause a crash in gigi due to
+            --  an out of order reference. The body of _postconditions must be
+            --  placed after the declaration of Temp to preserve correct
+            --  visibility.
+
+            Insert_After_Last_Declaration (
               Make_Subprogram_Body (Loc,
                 Specification =>
                   Make_Procedure_Specification (Loc,

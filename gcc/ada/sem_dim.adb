@@ -1132,9 +1132,7 @@ package body Sem_Dim is
       --  Aspect is an Ada 2012 feature. Note that there is no need to check
       --  dimensions for nodes that don't come from source.
 
-      if Ada_Version < Ada_2012
-        or else not Comes_From_Source (N)
-      then
+      if Ada_Version < Ada_2012 or else not Comes_From_Source (N) then
          return;
       end if;
 
@@ -1226,6 +1224,7 @@ package body Sem_Dim is
       end if;
 
       while Present (Comp) loop
+
          --  Get the expression from the component
 
          if Nkind (Comp) = N_Component_Association then
@@ -1255,10 +1254,12 @@ package body Sem_Dim is
                Error_Detected := True;
             end if;
 
-            Error_Msg_N ("\expected dimension " &
-                         Dimensions_Msg_Of (Comp_Typ) & ", found " &
-                         Dimensions_Msg_Of (Expr),
-                         Expr);
+            Error_Msg_N
+              ("\expected dimension "
+                & Dimensions_Msg_Of (Comp_Typ)
+                & ", found "
+                & Dimensions_Msg_Of (Expr),
+               Expr);
          end if;
 
          --  Look at the named components right after the positional components
@@ -1301,7 +1302,7 @@ package body Sem_Dim is
       is
       begin
          Error_Msg_N ("dimensions mismatch in assignment", N);
-         Error_Msg_N ("\left-hand side " & Dimensions_Msg_Of (Lhs, True), N);
+         Error_Msg_N ("\left-hand side "  & Dimensions_Msg_Of (Lhs, True), N);
          Error_Msg_N ("\right-hand side " & Dimensions_Msg_Of (Rhs, True), N);
       end Error_Dim_Msg_For_Assignment_Statement;
 
@@ -1337,7 +1338,7 @@ package body Sem_Dim is
                        "dimensions",
                        N,
                        Entity (N));
-         Error_Msg_N ("\left operand " & Dimensions_Msg_Of (L, True), N);
+         Error_Msg_N ("\left operand "  & Dimensions_Msg_Of (L, True), N);
          Error_Msg_N ("\right operand " & Dimensions_Msg_Of (R, True), N);
       end Error_Dim_Msg_For_Binary_Op;
 
@@ -1551,6 +1552,8 @@ package body Sem_Dim is
                          Ada_Numerics_Generic_Elementary_Functions);
             end Is_Elementary_Function_Entity;
 
+         --  Start of processing for Elementary_Function_Calls
+
          begin
             --  Get the original subprogram entity following the renaming chain
 
@@ -1561,6 +1564,7 @@ package body Sem_Dim is
             --  Check the call is an Elementary function call
 
             if Is_Elementary_Function_Entity (Ent) then
+
                --  Sqrt function call case
 
                if Chars (Ent) = Name_Sqrt then
@@ -1585,11 +1589,10 @@ package body Sem_Dim is
 
                else
                   Actual := First_Actual (N);
-
                   while Present (Actual) loop
                      if Exists (Dimensions_Of (Actual)) then
-                        --  Check if an error has already been encountered so
-                        --  far.
+
+                        --  Check if error has already been encountered so far
 
                         if not Error_Detected then
                            Error_Msg_NE ("dimensions mismatch in call of&",
@@ -1682,9 +1685,10 @@ package body Sem_Dim is
          Expr : Node_Id) is
       begin
          Error_Msg_N ("dimensions mismatch in component declaration", N);
-         Error_Msg_N ("\expected dimension " &
-                      Dimensions_Msg_Of (Etyp) & ", found " &
-                      Dimensions_Msg_Of (Expr),
+         Error_Msg_N ("\expected dimension "
+                       & Dimensions_Msg_Of (Etyp)
+                       & ", found "
+                       & Dimensions_Msg_Of (Expr),
                       Expr);
       end Error_Dim_Msg_For_Component_Declaration;
 
@@ -1703,9 +1707,8 @@ package body Sem_Dim is
             --  dimensionless to indicate the literal is treated as if its
             --  dimension matches the type dimension.
 
-            if Nkind_In (Original_Node (Expr),
-                             N_Real_Literal,
-                             N_Integer_Literal)
+            if Nkind_In (Original_Node (Expr), N_Real_Literal,
+                                               N_Integer_Literal)
             then
                Dim_Warning_For_Numeric_Literal (Expr, Etyp);
 
@@ -1729,7 +1732,7 @@ package body Sem_Dim is
    procedure Analyze_Dimension_Extended_Return_Statement (N : Node_Id) is
       Return_Ent       : constant Entity_Id := Return_Statement_Entity (N);
       Return_Etyp      : constant Entity_Id :=
-                           Etype (Return_Applies_To (Return_Ent));
+        Etype (Return_Applies_To (Return_Ent));
       Return_Obj_Decls : constant List_Id := Return_Object_Declarations (N);
       Return_Obj_Decl  : Node_Id;
       Return_Obj_Id    : Entity_Id;
@@ -1754,9 +1757,10 @@ package body Sem_Dim is
       is
       begin
          Error_Msg_N ("dimensions mismatch in extended return statement", N);
-         Error_Msg_N ("\expected dimension " &
-                      Dimensions_Msg_Of (Return_Etyp) & ", found " &
-                      Dimensions_Msg_Of (Return_Obj_Typ),
+         Error_Msg_N ("\expected dimension "
+                       & Dimensions_Msg_Of (Return_Etyp)
+                       & ", found "
+                       & Dimensions_Msg_Of (Return_Obj_Typ),
                       N);
       end Error_Dim_Msg_For_Extended_Return_Statement;
 
@@ -1765,10 +1769,9 @@ package body Sem_Dim is
    begin
       if Present (Return_Obj_Decls) then
          Return_Obj_Decl := First (Return_Obj_Decls);
-
          while Present (Return_Obj_Decl) loop
             if Nkind (Return_Obj_Decl) = N_Object_Declaration then
-               Return_Obj_Id  := Defining_Identifier (Return_Obj_Decl);
+               Return_Obj_Id := Defining_Identifier (Return_Obj_Decl);
 
                if Is_Return_Object (Return_Obj_Id) then
                   Return_Obj_Typ := Etype (Return_Obj_Id);
@@ -1795,7 +1798,7 @@ package body Sem_Dim is
    -----------------------------------------------------
 
    procedure Analyze_Dimension_Extension_Or_Record_Aggregate (N : Node_Id) is
-      Comp     : Node_Id := First (Component_Associations (N));
+      Comp     : Node_Id;
       Comp_Id  : Entity_Id;
       Comp_Typ : Entity_Id;
       Expr     : Node_Id;
@@ -1808,12 +1811,11 @@ package body Sem_Dim is
       --  Aspect is an Ada 2012 feature. Note that there is no need to check
       --  dimensions for aggregates that don't come from source.
 
-      if Ada_Version < Ada_2012
-        or else not Comes_From_Source (N)
-      then
+      if Ada_Version < Ada_2012 or else not Comes_From_Source (N) then
          return;
       end if;
 
+      Comp := First (Component_Associations (N));
       while Present (Comp) loop
          Comp_Id  := Entity (First (Choices (Comp)));
          Comp_Typ := Etype (Comp_Id);
@@ -1828,29 +1830,33 @@ package body Sem_Dim is
             --  dimensions of the component mismatch.
 
             if Dimensions_Of (Expr) /= Dimensions_Of (Comp_Typ) then
+
                --  Check if an error has already been encountered so far
 
                if not Error_Detected then
+
                   --  Extension aggregate case
 
                   if Nkind (N) = N_Extension_Aggregate then
-                     Error_Msg_N ("dimensions mismatch in extension aggregate",
-                                  N);
+                     Error_Msg_N
+                       ("dimensions mismatch in extension aggregate", N);
 
                   --  Record aggregate case
 
                   else
-                     Error_Msg_N ("dimensions mismatch in record aggregate",
-                                  N);
+                     Error_Msg_N
+                       ("dimensions mismatch in record aggregate", N);
                   end if;
 
                   Error_Detected := True;
                end if;
 
-               Error_Msg_N ("\expected dimension " &
-                            Dimensions_Msg_Of (Comp_Typ) & ", found " &
-                            Dimensions_Msg_Of (Expr),
-                            Comp);
+               Error_Msg_N
+                 ("\expected dimension "
+                   & Dimensions_Msg_Of (Comp_Typ)
+                   & ", found "
+                   & Dimensions_Msg_Of (Expr),
+                  Comp);
             end if;
          end if;
 
@@ -1871,14 +1877,11 @@ package body Sem_Dim is
       --  Aspect is an Ada 2012 feature. Note that there is no need to check
       --  dimensions for sub specs that don't come from source.
 
-      if Ada_Version < Ada_2012
-        or else not Comes_From_Source (N)
-      then
+      if Ada_Version < Ada_2012 or else not Comes_From_Source (N) then
          return;
       end if;
 
       Formal := First (Formals);
-
       while Present (Formal) loop
          Typ         := Parameter_Type (Formal);
          Dims_Of_Typ := Dimensions_Of  (Typ);
@@ -1893,9 +1896,8 @@ package body Sem_Dim is
 
                if Present (Expr)
                  and then Dims_Of_Typ /= Dimensions_Of (Expr)
-                 and then Nkind_In (Original_Node (Expr),
-                                       N_Real_Literal,
-                                       N_Integer_Literal)
+                 and then Nkind_In (Original_Node (Expr), N_Real_Literal,
+                                                          N_Integer_Literal)
                then
                   Dim_Warning_For_Numeric_Literal (Expr, Etype (Typ));
                end if;
@@ -1990,10 +1992,12 @@ package body Sem_Dim is
          Expr : Node_Id) is
       begin
          Error_Msg_N ("dimensions mismatch in object declaration", N);
-         Error_Msg_N ("\expected dimension " &
-                      Dimensions_Msg_Of (Etyp) & ", found " &
-                      Dimensions_Msg_Of (Expr),
-                      Expr);
+         Error_Msg_N
+           ("\expected dimension "
+             & Dimensions_Msg_Of (Etyp)
+             & ", found "
+             & Dimensions_Msg_Of (Expr),
+            Expr);
       end Error_Dim_Msg_For_Object_Declaration;
 
    --  Start of processing for Analyze_Dimension_Object_Declaration
@@ -2007,22 +2011,21 @@ package body Sem_Dim is
          --  Check dimensions match
 
          if Dim_Of_Expr /= Dim_Of_Etyp then
+
             --  Numeric literal case. Issue a warning if the object type is not
             --  dimensionless to indicate the literal is treated as if its
             --  dimension matches the type dimension.
 
-            if Nkind_In (Original_Node (Expr),
-                             N_Real_Literal,
-                             N_Integer_Literal)
+            if Nkind_In (Original_Node (Expr), N_Real_Literal,
+                                               N_Integer_Literal)
             then
                Dim_Warning_For_Numeric_Literal (Expr, Etyp);
 
-            --  Case where the object is a constant whose type is a dimensioned
-            --  type.
+            --  Case of object is a constant whose type is a dimensioned type
 
             elsif Constant_Present (N) and then not Exists (Dim_Of_Etyp) then
-               --  Propagate the dimension from the expression to the object
-               --  entity
+
+               --  Propagate dimension from expression to object entity
 
                Set_Dimensions (Id, Dim_Of_Expr);
 
@@ -2064,10 +2067,12 @@ package body Sem_Dim is
          Renamed_Name : Node_Id) is
       begin
          Error_Msg_N ("dimensions mismatch in object renaming declaration", N);
-         Error_Msg_N ("\expected dimension " &
-                      Dimensions_Msg_Of (Sub_Mark) & ", found " &
-                      Dimensions_Msg_Of (Renamed_Name),
-                      Renamed_Name);
+         Error_Msg_N
+           ("\expected dimension "
+             & Dimensions_Msg_Of (Sub_Mark)
+             & ", found "
+             & Dimensions_Msg_Of (Renamed_Name),
+            Renamed_Name);
       end Error_Dim_Msg_For_Object_Renaming_Declaration;
 
    --  Start of processing for Analyze_Dimension_Object_Renaming_Declaration
@@ -2110,10 +2115,12 @@ package body Sem_Dim is
       is
       begin
          Error_Msg_N ("dimensions mismatch in return statement", N);
-         Error_Msg_N ("\expected dimension " &
-                      Dimensions_Msg_Of (Return_Etyp) & ", found " &
-                      Dimensions_Msg_Of (Expr),
-                      Expr);
+         Error_Msg_N
+           ("\expected dimension "
+             & Dimensions_Msg_Of (Return_Etyp)
+             & ", found "
+             & Dimensions_Msg_Of (Expr),
+            Expr);
       end Error_Dim_Msg_For_Simple_Return_Statement;
 
    --  Start of processing for Analyze_Dimension_Simple_Return_Statement
@@ -2148,8 +2155,9 @@ package body Sem_Dim is
             --  it cannot inherit a dimension from its subtype.
 
             if Exists (Dims_Of_Id) then
-               Error_Msg_N ("subtype& already" & Dimensions_Msg_Of (Id, True),
-                            N);
+               Error_Msg_N
+                 ("subtype& already" & Dimensions_Msg_Of (Id, True), N);
+
             else
                Set_Dimensions (Id, Dims_Of_Etyp);
                Set_Symbol (Id, Symbol_Of (Etyp));
@@ -2842,7 +2850,6 @@ package body Sem_Dim is
 
             if Exists (Symbol_Of (Etyp)) then
                Symbols := Symbol_Of (Etyp);
-
             else
                Symbols := From_Dim_To_Str_Of_Unit_Symbols
                             (Dims_Of_Actual, System_Of (Base_Type (Etyp)));
@@ -3334,7 +3341,6 @@ package body Sem_Dim is
 
    begin
       Start_String;
-
       while Belong_To_Numeric_Literal (C) loop
          Store_String_Char (C);
          Src_Ptr := Src_Ptr + 1;
@@ -3350,11 +3356,9 @@ package body Sem_Dim is
 
    function Symbol_Of (E : Entity_Id) return String_Id is
       Subtype_Symbol : constant String_Id := Symbol_Table.Get (E);
-
    begin
       if Subtype_Symbol /= No_String then
          return Subtype_Symbol;
-
       else
          return From_Dim_To_Str_Of_Unit_Symbols
                   (Dimensions_Of (E), System_Of (Base_Type (E)));
@@ -3388,4 +3392,5 @@ package body Sem_Dim is
 
       return Null_System;
    end System_Of;
+
 end Sem_Dim;
