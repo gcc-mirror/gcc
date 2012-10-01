@@ -856,7 +856,7 @@ package body Sem_Ch13 is
    --  Start of processing for Analyze_Aspects_At_Freeze_Point
 
    begin
-      --  Must be visible in current scope.
+      --  Must be visible in current scope
 
       if not Scope_Within_Or_Same (Current_Scope, Scope (E)) then
          return;
@@ -7966,18 +7966,20 @@ package body Sem_Ch13 is
                      (Entity (Rep_Item), Aspect_Rep_Item (Rep_Item));
       end Is_Pragma_Or_Corr_Pragma_Present_In_Rep_Item;
 
+   --  Start of processing for Inherit_Aspects_At_Freeze_Point
+
    begin
       --  A representation item is either subtype-specific (Size and Alignment
       --  clauses) or type-related (all others).  Subtype-specific aspects may
-      --  differ for different subtypes of the same type.(RM 13.1.8)
+      --  differ for different subtypes of the same type (RM 13.1.8).
 
       --  A derived type inherits each type-related representation aspect of
       --  its parent type that was directly specified before the declaration of
-      --  the derived type. (RM 13.1.15)
+      --  the derived type (RM 13.1.15).
 
       --  A derived subtype inherits each subtype-specific representation
       --  aspect of its parent subtype that was directly specified before the
-      --  declaration of the derived type .(RM 13.1.15)
+      --  declaration of the derived type (RM 13.1.15).
 
       --  The general processing involves inheriting a representation aspect
       --  from a parent type whenever the first rep item (aspect specification,
@@ -7986,11 +7988,11 @@ package body Sem_Ch13 is
       --  directly specified to Typ but to one of its parents.
 
       --  ??? Note that, for now, just a limited number of representation
-      --  aspects have been inherited here so far. Many of them are still
-      --  inherited in Sem_Ch3. This will be fixed soon. Here is a
-      --  non-exhaustive list of aspects that likely also need to be moved to
-      --  this routine: Alignment, Component_Alignment, Component_Size,
-      --  Machine_Radix, Object_Size, Pack, Predicates,
+      --  aspects have been inherited here so far. Many of them are
+      --  still inherited in Sem_Ch3. This will be fixed soon. Here is
+      --  a non- exhaustive list of aspects that likely also need to
+      --  be moved to this routine: Alignment, Component_Alignment,
+      --  Component_Size, Machine_Radix, Object_Size, Pack, Predicates,
       --  Preelaborable_Initialization, RM_Size and Small.
 
       if Nkind (Parent (Typ)) = N_Private_Extension_Declaration then
@@ -8029,7 +8031,7 @@ package body Sem_Ch13 is
          Set_Is_Volatile (Typ);
       end if;
 
-      --  Default_Component_Value.
+      --  Default_Component_Value
 
       if Is_Array_Type (Typ)
         and then Has_Rep_Item (Typ, Name_Default_Component_Value, False)
@@ -8040,7 +8042,7 @@ package body Sem_Ch13 is
              (Entity (Get_Rep_Item (Typ, Name_Default_Component_Value))));
       end if;
 
-      --  Default_Value.
+      --  Default_Value
 
       if Is_Scalar_Type (Typ)
         and then Has_Rep_Item (Typ, Name_Default_Value, False)
@@ -8135,6 +8137,7 @@ package body Sem_Ch13 is
             --  Record type specific aspects
 
             if Is_Record_Type (Typ) then
+
                --  Bit_Order
 
                if not Has_Rep_Item (Typ, Name_Bit_Order, False)

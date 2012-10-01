@@ -1,3 +1,24 @@
+2012-10-01  Robert Dewar  <dewar@adacore.com>
+
+	* sinfo.ads, exp_aggr.adb, sem_ch13.adb: Minor reformatting.
+
+2012-10-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb (Resolve_Array_Aggregate): Handle properly
+	component associations given by subtypes that have static
+	predicates.  Improve error message for overlapping ranges in
+	array aggregates.
+
+2012-10-01  Pascal Obry  <obry@adacore.com>
+
+	* snames.ads-tmpl (Name_Link_Lib_Subdir): New constant.
+
+2012-10-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch9.adb (Analyze_Requeue): The target of a requeue
+	statement on a protected entry must be a variable. This is part
+	of AI05-0225.
+
 2012-09-26  Ian Lance Taylor  <iant@google.com>
 
 	* gcc-interface/Makefile.in (LIBBACKTRACE): New variable.
