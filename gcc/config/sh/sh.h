@@ -172,9 +172,6 @@ do { \
   (TARGET_SH1 && ! TARGET_SH2E && ! TARGET_SH5 \
    && ! (TARGET_HITACHI || sh_attr_renesas_p (FUN_DECL)))
 
-/* Nonzero if either soft or hard atomics are enabled.  */
-#define TARGET_ANY_ATOMIC (TARGET_SOFT_ATOMIC | TARGET_HARD_ATOMIC)
-
 #ifndef TARGET_CPU_DEFAULT
 #define TARGET_CPU_DEFAULT SELECT_SH1
 #define SUPPORT_SH1 1
@@ -436,20 +433,8 @@ do { \
 "%{m2a*:%eSH2a does not support little-endian}}"
 #endif
 
-#define UNSUPPORTED_ATOMIC_OPTIONS \
-"%{msoft-atomic:%{mhard-atomic:%e-msoft-atomic and -mhard-atomic cannot be \
-used at the same time}}"
-
-#if TARGET_CPU_DEFAULT & MASK_SH4A
-#define UNSUPPORTED_HARD_ATOMIC_CPU ""
-#else
-#define UNSUPPORTED_HARD_ATOMIC_CPU \
-"%{!m4a*:%{mhard-atomic:%e-mhard-atomic is only available for SH4A targets}}"
-#endif
-
 #undef DRIVER_SELF_SPECS
-#define DRIVER_SELF_SPECS UNSUPPORTED_SH2A, UNSUPPORTED_ATOMIC_OPTIONS,\
-			  UNSUPPORTED_HARD_ATOMIC_CPU
+#define DRIVER_SELF_SPECS UNSUPPORTED_SH2A
 
 #define ASSEMBLER_DIALECT assembler_dialect
 

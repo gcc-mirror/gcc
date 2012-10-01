@@ -22,9 +22,12 @@
 ;; Atomic integer operations for the Renesas / SuperH SH CPUs.
 ;;
 ;; On SH CPUs atomic integer operations can be done either in 'software' or
-;; in 'hardware', where true hardware support was introduced with the SH4A.
-;; In addition to that all SH CPUs support the 'tas.b' instruction, which
-;; can be optionally used to implement the 'atomic_test_and_set' builtin.
+;; in 'hardware' in various styles.  True hardware support was introduced
+;; with the SH4A.  Some SH2A dual-core models (e.g. SH7205) also come with
+;; 'semaphore' hardware registers, but these are currently unsupported.
+;; All SH CPUs support the 'tas.b' instruction, which can be optionally used
+;; to implement the 'atomic_test_and_set' builtin.
+;; The following atomic options and models are supported.
 ;;
 ;; tas.b atomic_test_and_set (-mtas)
 ;;
@@ -37,7 +40,7 @@
 ;; other atomic operations.
 ;;
 ;;
-;; Hardware Atomics (-mhard-atomic, SH4A only)
+;; Hardware Atomics (-matomic-model=hard-llcs; SH4A only)
 ;;
 ;; Hardware atomics implement all atomic operations using the 'movli.l' and
 ;; 'movco.l' instructions that are availble on SH4A.  On multi-core hardware
@@ -48,7 +51,7 @@
 ;; larger code.
 ;;
 ;;
-;; Software Atomics (-msoft-atomic)
+;; gUSA Software Atomics (-matomic-model=soft-gusa; SH3*, SH4* only)
 ;;
 ;; On single-core systems there can only be one execution context running
 ;; at a given point in time.  This allows the usage of rewindable atomic
@@ -68,9 +71,8 @@
 ;;	  interrupted_pc = atomic_entrypoint;
 ;;
 ;; This method is also known as gUSA ("g" User Space Atomicity) and the
-;; Linux kernel for SH3/SH4 implements support for such software
-;; atomic sequences.  However, it can also be implemented in freestanding
-;; environments.
+;; Linux kernel for SH3/SH4 implements support for such software atomic
+;; sequences.  It can also be implemented in freestanding environments.
 ;;
 ;; For this the following atomic sequence ABI is used.
 ;;
@@ -111,16 +113,72 @@
 ;; For correct operation the atomic sequences must not be rewound after
 ;; they have passed the write-back instruction.
 ;;
+;; This is model works only on SH3* and SH4* because the stack pointer (r15)
+;; is set to an invalid pointer temporarily.  SH1* and SH2* CPUs will try
+;; to push SR and PC registers on the stack when an interrupt / exception
+;; occurs, and thus require the stack pointer (r15) always to be valid.
+;;
+;;
+;; TCB Software Atomics (-matomic-model=soft-tcb)
+;;
+;; This model is a variation of the gUSA model.  The concept of rewindable
+;; atomic sequences is the same, but it does not use the stack pointer (r15)
+;; for signaling the 'is in atomic sequence' condition.  Instead, a variable
+;; in the thread control block (TCB) is set to hold the exit point of the
+;; atomic sequence.  This assumes that the GBR is used as a thread pointer
+;; register.  The offset of the variable in the TCB to be used must be
+;; specified with an additional option 'gbr-offset', such as:
+;;	-matomic-model=soft-tcb,gbr-offset=4
+;;
+;; For this model the following atomic sequence ABI is used.
+;; 
+;; @(#x,gbr) == 0:  Execution context is not in an atomic sequence.
+;;
+;; @(#x,gbr) != 0:  Execution context is in an atomic sequence.  In this
+;;		    case the following applies:
+;;
+;;		    @(#x,gbr):	PC of the first instruction after the atomic
+;;				write-back instruction (exit point).
+;;
+;;		    r1:		Negative byte length of the atomic sequence.
+;;				The entry point PC of the sequence can be
+;;				determined by doing @(#x,gbr) + r1
+;;
+;; Note: #x is the user specified gbr-offset.
+;;
+;;
+;; Interrupt-Flipping Software Atomics (-matomic-model=soft-imask)
+;;
+;; This model achieves atomicity by temporarily disabling interrupts for
+;; the duration of the atomic sequence.  This works only when the program
+;; runs in privileged mode but does not require any support from the
+;; interrupt / exception handling code.  There is no particular ABI.
+;; To disable interrupts the SR.IMASK bits are set to '1111'.
+;; This method is not as efficient as the other software atomic models,
+;; since loading and storing SR (in order to flip interrupts on / off)
+;; requires using multi-cycle instructions.  Moreover, it can potentially
+;; increase the interrupt latency which might be important for hard-realtime
+;; applications.
+;;
+;;
+;; Compatibility Notes
+;;
+;; On single-core SH4A CPUs software atomic aware interrupt / exception code
+;; is actually compatible with user code that utilizes hardware atomics.
+;; Since SImode hardware atomic sequences are more compact on SH4A they are
+;; always used, regardless of the selected atomic model.  This atomic model
+;; mixing can be disabled by setting the 'strict' flag, like:
+;;	-matomic-model=soft-gusa,strict
+;;
+;; The software atomic models are generally compatible with each other,
+;; but the interrupt / exception handling code has to support both gUSA and
+;; TCB models.
+;;
 ;; The current atomic support is limited to QImode, HImode and SImode 
 ;; atomic operations.  DImode operations could also be implemented but
 ;; would require some ABI modifications to support multiple-instruction
 ;; write-back.  This is because SH1/SH2/SH3/SH4 does not have a DImode
 ;; store instruction.  DImode stores must be split into two SImode stores.
-;;
-;; On single-core SH4A CPUs software atomic aware interrupt / exception code
-;; is actually compatible with user code that utilizes hardware atomics.
-;; Since SImode hardware atomic sequences are more compact on SH4A they are
-;; always used, regardless of the selected atomic mode.
 
 (define_c_enum "unspec" [
   UNSPEC_ATOMIC
@@ -158,7 +216,7 @@
    (match_operand:SI 5 "const_int_operand" "")		;; is_weak
    (match_operand:SI 6 "const_int_operand" "")		;; success model
    (match_operand:SI 7 "const_int_operand" "")]		;; failure model
-  "TARGET_ANY_ATOMIC && !TARGET_SHMEDIA"
+  "TARGET_ATOMIC_ANY"
 {
   rtx addr = force_reg (Pmode, XEXP (operands[2], 0));
   rtx old_val = gen_lowpart (SImode, operands[1]);
@@ -166,12 +224,22 @@
   rtx new_val = operands[4];
   rtx atomic_insn;
 
-  if (TARGET_HARD_ATOMIC || (TARGET_SH4A_ARCH && <MODE>mode == SImode))
+  if (TARGET_ATOMIC_HARD_LLCS
+      || (TARGET_SH4A_ARCH && <MODE>mode == SImode && !TARGET_ATOMIC_STRICT))
     atomic_insn = gen_atomic_compare_and_swap<mode>_hard (old_val, addr,
 							  exp_val, new_val);
+  else if (TARGET_ATOMIC_SOFT_GUSA)
+    atomic_insn = gen_atomic_compare_and_swap<mode>_soft_gusa (old_val, addr,
+		      exp_val, new_val);
+  else if (TARGET_ATOMIC_SOFT_TCB)
+    atomic_insn = gen_atomic_compare_and_swap<mode>_soft_tcb (old_val, addr,
+		      exp_val, new_val, TARGET_ATOMIC_SOFT_TCB_GBR_OFFSET_RTX);
+  else if (TARGET_ATOMIC_SOFT_IMASK)
+    atomic_insn = gen_atomic_compare_and_swap<mode>_soft_imask (old_val, addr,
+		      exp_val, new_val);
   else
-    atomic_insn = gen_atomic_compare_and_swap<mode>_soft (old_val, addr,
-							  exp_val, new_val);
+    FAIL;
+
   emit_insn (atomic_insn);
 
   if (<MODE>mode == QImode)
@@ -196,7 +264,8 @@
    (set (reg:SI T_REG)
 	(unspec_volatile:SI [(const_int 0)] UNSPECV_CMPXCHG_3))
    (clobber (reg:SI R0_REG))]
-  "TARGET_ANY_ATOMIC && TARGET_SH4A_ARCH"
+  "TARGET_ATOMIC_HARD_LLCS
+   || (TARGET_SH4A_ARCH && TARGET_ATOMIC_ANY && !TARGET_ATOMIC_STRICT)"
 {
   return "\r0:	movli.l	@%1,r0"		"\n"
 	 "	cmp/eq	%2,r0"		"\n"
@@ -224,7 +293,7 @@
    (clobber (match_scratch:SI 4 "=&r"))
    (clobber (match_scratch:SI 5 "=&r"))
    (clobber (match_scratch:SI 6 "=1"))]
-  "TARGET_HARD_ATOMIC && TARGET_SH4A_ARCH"
+  "TARGET_ATOMIC_HARD_LLCS"
 {
   return "\r	mov	#-4,%5"			"\n"
 	 "	<i124extend_insn>	%2,%4"	"\n"
@@ -245,7 +314,7 @@
 }
   [(set_attr "length" "30")])
 
-(define_insn "atomic_compare_and_swap<mode>_soft"
+(define_insn "atomic_compare_and_swap<mode>_soft_gusa"
   [(set (match_operand:SI 0 "register_operand" "=&u")
 	(unspec_volatile:SI
 	  [(mem:QIHISI (match_operand:SI 1 "register_operand" "u"))
@@ -259,7 +328,7 @@
    (clobber (match_scratch:SI 4 "=&u"))
    (clobber (reg:SI R0_REG))
    (clobber (reg:SI R1_REG))]
-  "TARGET_SOFT_ATOMIC && !TARGET_SHMEDIA"
+  "TARGET_ATOMIC_SOFT_GUSA"
 {
   return "\r	mova	1f,r0"			"\n"
 	 "	<i124extend_insn>	%2,%4"	"\n"
@@ -274,6 +343,86 @@
 }
   [(set_attr "length" "20")])
 
+(define_insn "atomic_compare_and_swap<mode>_soft_tcb"
+  [(set (match_operand:SI 0 "register_operand" "=&r")
+	(unspec_volatile:SI
+	  [(mem:QIHISI (match_operand:SI 1 "register_operand" "r"))
+	   (match_operand:QIHISI 2 "register_operand" "r")
+	   (match_operand:QIHISI 3 "register_operand" "r")]
+	  UNSPECV_CMPXCHG_1))
+   (set (mem:QIHISI (match_dup 1))
+	(unspec_volatile:QIHISI [(const_int 0)] UNSPECV_CMPXCHG_2))
+   (set (reg:SI T_REG)
+	(unspec_volatile:SI [(const_int 0)] UNSPECV_CMPXCHG_3))
+   (use (match_operand:SI 4 "gbr_displacement"))
+   (clobber (match_scratch:SI 5 "=&r"))
+   (clobber (reg:SI R0_REG))
+   (clobber (reg:SI R1_REG))]
+  "TARGET_ATOMIC_SOFT_TCB"
+{
+  return "\r	mova	1f,r0"			"\n"
+	 "	.align 2"			"\n"
+	 "	<i124extend_insn>	%2,%5"	"\n"
+	 "	mov	#(0f-1f),r1"		"\n"
+	 "	mov.l	r0,@(%O4,gbr)"		"\n"
+	 "0:	mov.<bwl>	@%1,%0"		"\n"
+	 "	mov	#0,r0"			"\n"
+	 "	cmp/eq	%0,%5"			"\n"
+	 "	bf	1f"			"\n"
+	 "	mov.<bwl>	%3,@%1"		"\n"
+	 "1:	mov.l	r0,@(%O4,gbr)";
+}
+  [(set_attr "length" "22")])
+
+(define_insn "atomic_compare_and_swap<mode>_soft_imask"
+  [(set (match_operand:SI 0 "register_operand" "=&z")
+	(unspec_volatile:SI
+	  [(mem:QIHISI (match_operand:SI 1 "register_operand" "r"))
+	   (match_operand:QIHISI 2 "register_operand" "r")
+	   (match_operand:QIHISI 3 "register_operand" "r")]
+	  UNSPECV_CMPXCHG_1))
+   (set (mem:QIHISI (match_dup 1))
+	(unspec_volatile:QIHISI [(const_int 0)] UNSPECV_CMPXCHG_2))
+   (set (reg:SI T_REG)
+	(unspec_volatile:SI [(const_int 0)] UNSPECV_CMPXCHG_3))
+   (clobber (match_scratch:SI 4 "=&r"))
+   (clobber (match_scratch:SI 5 "=&r"))]
+  "TARGET_ATOMIC_SOFT_IMASK"
+{
+  /* The comparison result is supposed to be in T_REG.
+     Notice that restoring SR will overwrite the T_REG.  We handle this by
+     rotating the T_REG into the saved SR before restoring SR.  On SH2A we
+     can do one insn shorter by using the bst insn.  */
+  if (!TARGET_SH2A)
+    return "\r	stc	sr,%0"			"\n"
+	   "	<i124extend_insn>	%2,%4"	"\n"
+	   "	mov	%0,%5"			"\n"
+	   "	or	#0xF0,%0"		"\n"
+	   "	shlr	%5"			"\n"
+	   "	ldc	%0,sr"			"\n"
+	   "	mov.<bwl>	@%1,%0"		"\n"
+	   "	cmp/eq	%4,%0"			"\n"
+	   "	bf	1f"			"\n"
+	   "	mov.<bwl>	%3,@%1"		"\n"
+	   "1:	rotcl	%5"			"\n"
+	   "	ldc	%5,sr";
+  else
+    return "\r	stc	sr,%0"			"\n"
+	   "	<i124extend_insn>	%2,%4"	"\n"
+	   "	mov	%0,%5"			"\n"
+	   "	or	#0xF0,%0"		"\n"
+	   "	ldc	%0,sr"			"\n"
+	   "	mov.<bwl>	@%1,%0"		"\n"
+	   "	cmp/eq	%4,%0"			"\n"
+	   "	bst	#0,%5"			"\n"
+	   "	bf	1f"			"\n"
+	   "	mov.<bwl>	%3,@%1"		"\n"
+	   "1:	ldc	%5,sr";
+}
+  [(set (attr "length") (if_then_else (match_test "!TARGET_SH2A")
+				      (const_string "24")
+				      (const_string "22")))])
+
 ;;------------------------------------------------------------------------------
 ;; read - write - return old value
 
@@ -282,16 +431,24 @@
    (match_operand:QIHISI 1 "memory_operand" "")		;; memory
    (match_operand:QIHISI 2 "atomic_arith_operand" "")	;; newval input
    (match_operand:SI 3 "const_int_operand" "")]		;; memory model
-  "TARGET_ANY_ATOMIC && !TARGET_SHMEDIA"
+  "TARGET_ATOMIC_ANY"
 {
   rtx addr = force_reg (Pmode, XEXP (operands[1], 0));
   rtx val = operands[2];
   rtx atomic_insn;
 
-  if (TARGET_HARD_ATOMIC || (TARGET_SH4A_ARCH && <MODE>mode == SImode))
+  if (TARGET_ATOMIC_HARD_LLCS
+      || (TARGET_SH4A_ARCH && <MODE>mode == SImode && !TARGET_ATOMIC_STRICT))
     atomic_insn = gen_atomic_exchange<mode>_hard (operands[0], addr, val);
+  else if (TARGET_ATOMIC_SOFT_GUSA)
+    atomic_insn = gen_atomic_exchange<mode>_soft_gusa (operands[0], addr, val);
+  else if (TARGET_ATOMIC_SOFT_TCB)
+    atomic_insn = gen_atomic_exchange<mode>_soft_tcb (operands[0], addr, val,
+		      TARGET_ATOMIC_SOFT_TCB_GBR_OFFSET_RTX);
+  else if (TARGET_ATOMIC_SOFT_IMASK)
+    atomic_insn = gen_atomic_exchange<mode>_soft_imask (operands[0], addr, val);
   else
-    atomic_insn = gen_atomic_exchange<mode>_soft (operands[0], addr, val);
+    FAIL;
 
   emit_insn (atomic_insn);
 
@@ -311,7 +468,8 @@
 	(unspec:SI
 	  [(match_operand:SI 2 "arith_operand" "rI08")] UNSPEC_ATOMIC))
    (clobber (reg:SI R0_REG))]
-  "TARGET_ANY_ATOMIC && TARGET_SH4A_ARCH"
+  "TARGET_ATOMIC_HARD_LLCS
+   || (TARGET_SH4A_ARCH && TARGET_ATOMIC_ANY && !TARGET_ATOMIC_STRICT)"
 {
   return "\r0:	movli.l	@%1,r0"		"\n"
 	 "	mov	r0,%0"		"\n"
@@ -330,7 +488,7 @@
    (clobber (reg:SI R0_REG))
    (clobber (match_scratch:SI 3 "=&r"))
    (clobber (match_scratch:SI 4 "=1"))]
-  "TARGET_HARD_ATOMIC && TARGET_SH4A_ARCH"
+  "TARGET_ATOMIC_HARD_LLCS"
 {
   return "\r	mov	#-4,%3"			"\n"
 	 "	and	%1,%3"			"\n"
@@ -347,7 +505,7 @@
 }
   [(set_attr "length" "24")])
 
-(define_insn "atomic_exchange<mode>_soft"
+(define_insn "atomic_exchange<mode>_soft_gusa"
   [(set (match_operand:QIHISI 0 "register_operand" "=&u")
 	(mem:QIHISI (match_operand:SI 1 "register_operand" "u")))
    (set (mem:QIHISI (match_dup 1))
@@ -355,7 +513,7 @@
 	  [(match_operand:QIHISI 2 "register_operand" "u")] UNSPEC_ATOMIC))
    (clobber (reg:SI R0_REG))
    (clobber (reg:SI R1_REG))]
-  "TARGET_SOFT_ATOMIC && !TARGET_SHMEDIA"
+  "TARGET_ATOMIC_SOFT_GUSA"
 {
   return "\r	mova	1f,r0"			"\n"
 	 "	.align 2"			"\n"
@@ -364,6 +522,47 @@
 	 "0:	mov.<bwl>	@%1,%0"		"\n"
 	 "	mov.<bwl>	%2,@%1"		"\n"
 	 "1:	mov	r1,r15";
+}
+  [(set_attr "length" "14")])
+
+(define_insn "atomic_exchange<mode>_soft_tcb"
+  [(set (match_operand:QIHISI 0 "register_operand" "=&r")
+	(mem:QIHISI (match_operand:SI 1 "register_operand" "r")))
+   (set (mem:QIHISI (match_dup 1))
+	(unspec:QIHISI
+	  [(match_operand:QIHISI 2 "register_operand" "r")] UNSPEC_ATOMIC))
+   (clobber (reg:SI R0_REG))
+   (clobber (reg:SI R1_REG))
+   (use (match_operand:SI 3 "gbr_displacement"))]
+  "TARGET_ATOMIC_SOFT_TCB"
+{
+  return "\r	mova	1f,r0"			"\n"
+	 "	mov	#(0f-1f),r1"		"\n"
+	 "	.align 2"			"\n"
+	 "	mov.l	r0,@(%O3,gbr)"		"\n"
+	 "0:	mov.<bwl>	@%1,%0"		"\n"
+	 "	mov	#0,r0"			"\n"
+	 "	mov.<bwl>	%2,@%1"		"\n"
+	 "1:	mov.l	r0,@(%O3,gbr)";
+}
+  [(set_attr "length" "16")])
+
+(define_insn "atomic_exchange<mode>_soft_imask"
+  [(set (match_operand:QIHISI 0 "register_operand" "=&z")
+	(mem:QIHISI (match_operand:SI 1 "register_operand" "r")))
+   (set (mem:QIHISI (match_dup 1))
+	(unspec:QIHISI
+	  [(match_operand:QIHISI 2 "register_operand" "r")] UNSPEC_ATOMIC))
+   (clobber (match_scratch:SI 3 "=&r"))]
+  "TARGET_ATOMIC_SOFT_IMASK"
+{
+  return "\r	stc	sr,%0"			"\n"
+	 "	mov	%0,%3"			"\n"
+	 "	or	#0xF0,%0"		"\n"
+	 "	ldc	%0,sr"			"\n"
+	 "	mov.<bwl>	@%1,%0"		"\n"
+	 "	mov.<bwl>	%2,@%1"		"\n"
+	 "	ldc	%3,sr";
 }
   [(set_attr "length" "14")])
 
@@ -379,18 +578,27 @@
 	     (match_operand:QIHISI 2 "<fetchop_predicate>" ""))]
 	  UNSPEC_ATOMIC))
    (match_operand:SI 3 "const_int_operand" "")]
-  "TARGET_ANY_ATOMIC && !TARGET_SHMEDIA"
+  "TARGET_ATOMIC_ANY"
 {
   rtx addr = force_reg (Pmode, XEXP (operands[1], 0));
   rtx atomic_insn;
 
-  if (TARGET_HARD_ATOMIC || (TARGET_SH4A_ARCH && <MODE>mode == SImode))
+  if (TARGET_ATOMIC_HARD_LLCS
+      || (TARGET_SH4A_ARCH && <MODE>mode == SImode && !TARGET_ATOMIC_STRICT))
     atomic_insn = gen_atomic_fetch_<fetchop_name><mode>_hard (operands[0], addr,
 							      operands[2]);
+  else if (TARGET_ATOMIC_SOFT_GUSA)
+    atomic_insn = gen_atomic_fetch_<fetchop_name><mode>_soft_gusa (operands[0],
+		      addr, operands[2]);
+  else if (TARGET_ATOMIC_SOFT_TCB)
+    atomic_insn = gen_atomic_fetch_<fetchop_name><mode>_soft_tcb (operands[0],
+		      addr, operands[2], TARGET_ATOMIC_SOFT_TCB_GBR_OFFSET_RTX);
+  else if (TARGET_ATOMIC_SOFT_IMASK)
+    atomic_insn = gen_atomic_fetch_<fetchop_name><mode>_soft_imask (operands[0],
+		      addr, operands[2]);
   else
-    atomic_insn = gen_atomic_fetch_<fetchop_name><mode>_soft (operands[0],
-							      addr,
-							      operands[2]);
+    FAIL;
+
   emit_insn (atomic_insn);
 
   if (<MODE>mode == QImode)
@@ -411,7 +619,8 @@
 	     (match_operand:SI 2 "<fetchop_predicate>" "<fetchop_constraint>"))]
 	  UNSPEC_ATOMIC))
    (clobber (reg:SI R0_REG))]
-  "TARGET_ANY_ATOMIC && TARGET_SH4A_ARCH"
+  "TARGET_ATOMIC_HARD_LLCS
+   || (TARGET_SH4A_ARCH && TARGET_ATOMIC_ANY && !TARGET_ATOMIC_STRICT)"
 {
   return "\r0:	movli.l	@%1,r0"		"\n"
 	 "	mov	r0,%0"		"\n"
@@ -432,7 +641,7 @@
    (clobber (reg:SI R0_REG))
    (clobber (match_scratch:SI 3 "=&r"))
    (clobber (match_scratch:SI 4 "=1"))]
-  "TARGET_HARD_ATOMIC && TARGET_SH4A_ARCH"
+  "TARGET_ATOMIC_HARD_LLCS"
 {
   return "\r	mov	#-4,%3"			"\n"
 	 "	and	%1,%3"			"\n"
@@ -451,7 +660,7 @@
 }
   [(set_attr "length" "28")])
 
-(define_insn "atomic_fetch_<fetchop_name><mode>_soft"
+(define_insn "atomic_fetch_<fetchop_name><mode>_soft_gusa"
   [(set (match_operand:QIHISI 0 "register_operand" "=&u")
 	(mem:QIHISI (match_operand:SI 1 "register_operand" "u")))
    (set (mem:QIHISI (match_dup 1))
@@ -462,7 +671,7 @@
    (clobber (match_scratch:QIHISI 3 "=&u"))
    (clobber (reg:SI R0_REG))
    (clobber (reg:SI R1_REG))]
-  "TARGET_SOFT_ATOMIC && !TARGET_SHMEDIA"
+  "TARGET_ATOMIC_SOFT_GUSA"
 {
   return "\r	mova	1f,r0"			"\n"
 	 "	.align 2"			"\n"
@@ -476,6 +685,57 @@
 }
   [(set_attr "length" "18")])
 
+(define_insn "atomic_fetch_<fetchop_name><mode>_soft_tcb"
+  [(set (match_operand:QIHISI 0 "register_operand" "=&r")
+	(mem:QIHISI (match_operand:SI 1 "register_operand" "r")))
+   (set (mem:QIHISI (match_dup 1))
+	(unspec:QIHISI
+	  [(FETCHOP:QIHISI (mem:QIHISI (match_dup 1))
+	     (match_operand:QIHISI 2 "register_operand" "r"))]
+	  UNSPEC_ATOMIC))
+   (use (match_operand:SI 3 "gbr_displacement"))
+   (clobber (match_scratch:QIHISI 4 "=&r"))
+   (clobber (reg:SI R0_REG))
+   (clobber (reg:SI R1_REG))]
+  "TARGET_ATOMIC_SOFT_TCB"
+{
+  return "\r	mova	1f,r0"			"\n"
+	 "	mov	#(0f-1f),r1"		"\n"
+	 "	.align 2"			"\n"
+	 "	mov.l	r0,@(%O3,gbr)"		"\n"
+	 "0:	mov.<bwl>	@%1,%0"		"\n"
+	 "	mov	#0,r0"			"\n"
+	 "	mov	%0,%4"			"\n"
+	 "	<fetchop_name>	%2,%4"		"\n"
+	 "	mov.<bwl>	%4,@%1"		"\n"
+	 "1:	mov.l	r0,@(%O3,gbr)";
+}
+  [(set_attr "length" "20")])
+
+(define_insn "atomic_fetch_<fetchop_name><mode>_soft_imask"
+  [(set (match_operand:QIHISI 0 "register_operand" "=&z")
+	(mem:QIHISI (match_operand:SI 1 "register_operand" "r")))
+   (set (mem:QIHISI (match_dup 1))
+	(unspec:QIHISI
+	  [(FETCHOP:QIHISI (mem:QIHISI (match_dup 1))
+	     (match_operand:QIHISI 2 "register_operand" "r"))]
+	  UNSPEC_ATOMIC))
+   (clobber (match_scratch:QIHISI 3 "=&r"))
+   (clobber (match_scratch:SI 4 "=&r"))]
+  "TARGET_ATOMIC_SOFT_IMASK"
+{
+  return "\r	stc	sr,%0"			"\n"
+	 "	mov	%0,%4"			"\n"
+	 "	or	#0xF0,%0"		"\n"
+	 "	ldc	%0,sr"			"\n"
+	 "	mov.<bwl>	@%1,%0"		"\n"
+	 "	mov	%0,%3"			"\n"
+	 "	<fetchop_name>	%2,%3"		"\n"
+	 "	mov.<bwl>	%3,@%1"		"\n"
+	 "	ldc	%4,sr";
+}
+  [(set_attr "length" "18")])
+
 (define_expand "atomic_fetch_nand<mode>"
   [(set (match_operand:QIHISI 0 "register_operand" "")
 	(match_operand:QIHISI 1 "memory_operand" ""))
@@ -485,17 +745,26 @@
 		       (match_operand:QIHISI 2 "atomic_logical_operand" "")))]
 	  UNSPEC_ATOMIC))
    (match_operand:SI 3 "const_int_operand" "")]
-  "TARGET_ANY_ATOMIC && !TARGET_SHMEDIA"
+  "TARGET_ATOMIC_ANY"
 {
   rtx addr = force_reg (Pmode, XEXP (operands[1], 0));
   rtx atomic_insn;
 
-  if (TARGET_HARD_ATOMIC || (TARGET_SH4A_ARCH && <MODE>mode == SImode))
+  if (TARGET_ATOMIC_HARD_LLCS
+      || (TARGET_SH4A_ARCH && <MODE>mode == SImode && !TARGET_ATOMIC_STRICT))
     atomic_insn = gen_atomic_fetch_nand<mode>_hard (operands[0], addr,
 						    operands[2]);
+  else if (TARGET_ATOMIC_SOFT_GUSA)
+    atomic_insn = gen_atomic_fetch_nand<mode>_soft_gusa (operands[0], addr,
+							 operands[2]);
+  else if (TARGET_ATOMIC_SOFT_TCB)
+    atomic_insn = gen_atomic_fetch_nand<mode>_soft_tcb (operands[0], addr,
+		      operands[2], TARGET_ATOMIC_SOFT_TCB_GBR_OFFSET_RTX);
+  else if (TARGET_ATOMIC_SOFT_IMASK)
+    atomic_insn = gen_atomic_fetch_nand<mode>_soft_imask (operands[0], addr,
+							  operands[2]);
   else
-    atomic_insn = gen_atomic_fetch_nand<mode>_soft (operands[0], addr,
-						    operands[2]);
+    FAIL;
 
   emit_insn (atomic_insn);
 
@@ -517,7 +786,8 @@
 		   (match_operand:SI 2 "logical_operand" "rK08")))]
 	  UNSPEC_ATOMIC))
    (clobber (reg:SI R0_REG))]
-  "TARGET_ANY_ATOMIC && TARGET_SH4A_ARCH"
+  "TARGET_ATOMIC_HARD_LLCS
+   || (TARGET_SH4A_ARCH && TARGET_ATOMIC_ANY && !TARGET_ATOMIC_STRICT)"
 {
   return "\r0:	movli.l	@%1,r0"		"\n"
 	 "	mov	r0,%0"		"\n"
@@ -539,7 +809,7 @@
    (clobber (reg:SI R0_REG))
    (clobber (match_scratch:SI 3 "=&r"))
    (clobber (match_scratch:SI 4 "=1"))]
-  "TARGET_HARD_ATOMIC && TARGET_SH4A_ARCH"
+  "TARGET_ATOMIC_HARD_LLCS"
 {
   return "\r	mov	#-4,%3"			"\n"
 	 "	and	%1,%3"			"\n"
@@ -559,7 +829,7 @@
 }
   [(set_attr "length" "30")])
 
-(define_insn "atomic_fetch_nand<mode>_soft"
+(define_insn "atomic_fetch_nand<mode>_soft_gusa"
   [(set (match_operand:QIHISI 0 "register_operand" "=&u")
 	(mem:QIHISI (match_operand:SI 1 "register_operand" "u")))
    (set (mem:QIHISI (match_dup 1))
@@ -570,7 +840,7 @@
    (clobber (match_scratch:QIHISI 3 "=&u"))
    (clobber (reg:SI R0_REG))
    (clobber (reg:SI R1_REG))]
-  "TARGET_SOFT_ATOMIC && !TARGET_SHMEDIA"
+  "TARGET_ATOMIC_SOFT_GUSA"
 {
   return "\r	mova	1f,r0"			"\n"
 	 "	mov	r15,r1"			"\n"
@@ -582,6 +852,59 @@
 	 "	not	%3,%3"			"\n"
 	 "	mov.<bwl>	%3,@%1"		"\n"
 	 "1:	mov	r1,r15";
+}
+  [(set_attr "length" "20")])
+
+(define_insn "atomic_fetch_nand<mode>_soft_tcb"
+  [(set (match_operand:QIHISI 0 "register_operand" "=&r")
+	(mem:QIHISI (match_operand:SI 1 "register_operand" "r")))
+   (set (mem:QIHISI (match_dup 1))
+	(unspec:QIHISI
+	  [(not:QIHISI (and:QIHISI (mem:QIHISI (match_dup 1))
+	     (match_operand:QIHISI 2 "register_operand" "r")))]
+	  UNSPEC_ATOMIC))
+   (use (match_operand:SI 3 "gbr_displacement"))
+   (clobber (match_scratch:QIHISI 4 "=&r"))
+   (clobber (reg:SI R0_REG))
+   (clobber (reg:SI R1_REG))]
+  "TARGET_ATOMIC_SOFT_TCB"
+{
+  return "\r	mova	1f,r0"			"\n"
+	 "	.align 2"			"\n"
+	 "	mov	#(0f-1f),r1"		"\n"
+	 "	mov.l	r0,@(%O3,gbr)"		"\n"
+	 "0:	mov.<bwl>	@%1,%0"		"\n"
+	 "	mov	#0,r0"			"\n"
+	 "	mov	%2,%4"			"\n"
+	 "	and	%0,%4"			"\n"
+	 "	not	%4,%4"			"\n"
+	 "	mov.<bwl>	%4,@%1"		"\n"
+	 "1:	mov.l	r0,@(%O3,gbr)";
+}
+  [(set_attr "length" "22")])
+
+(define_insn "atomic_fetch_nand<mode>_soft_imask"
+  [(set (match_operand:QIHISI 0 "register_operand" "=&z")
+	(mem:QIHISI (match_operand:SI 1 "register_operand" "r")))
+   (set (mem:QIHISI (match_dup 1))
+	(unspec:QIHISI
+	  [(not:QIHISI (and:QIHISI (mem:QIHISI (match_dup 1))
+	     (match_operand:QIHISI 2 "register_operand" "r")))]
+	  UNSPEC_ATOMIC))
+   (clobber (match_scratch:QIHISI 3 "=&r"))
+   (clobber (match_scratch:SI 4 "=&r"))]
+  "TARGET_ATOMIC_SOFT_IMASK"
+{
+  return "\r	stc	sr,%0"			"\n"
+	 "	mov	%0,%4"			"\n"
+	 "	or	#0xF0,%0"		"\n"
+	 "	ldc	%0,sr"			"\n"
+	 "	mov.<bwl>	@%1,%0"		"\n"
+	 "	mov	%2,%3"			"\n"
+	 "	and	%0,%3"			"\n"
+	 "	not	%3,%3"			"\n"
+	 "	mov.<bwl>	%3,@%1"		"\n"
+	 "	stc	%4,sr";
 }
   [(set_attr "length" "20")])
 
@@ -598,17 +921,27 @@
 	  [(FETCHOP:QIHISI (match_dup 1) (match_dup 2))]
 	  UNSPEC_ATOMIC))
    (match_operand:SI 3 "const_int_operand" "")]
-  "TARGET_ANY_ATOMIC && !TARGET_SHMEDIA"
+  "TARGET_ATOMIC_ANY"
 {
   rtx addr = force_reg (Pmode, XEXP (operands[1], 0));
   rtx atomic_insn;
 
-  if (TARGET_HARD_ATOMIC || (TARGET_SH4A_ARCH && <MODE>mode == SImode))
+  if (TARGET_ATOMIC_HARD_LLCS
+      || (TARGET_SH4A_ARCH && <MODE>mode == SImode && !TARGET_ATOMIC_STRICT))
     atomic_insn = gen_atomic_<fetchop_name>_fetch<mode>_hard (operands[0], addr,
 							      operands[2]);
+  else if (TARGET_ATOMIC_SOFT_GUSA)
+    atomic_insn = gen_atomic_<fetchop_name>_fetch<mode>_soft_gusa (operands[0],
+		      addr, operands[2]);
+  else if (TARGET_ATOMIC_SOFT_TCB)
+    atomic_insn = gen_atomic_<fetchop_name>_fetch<mode>_soft_tcb (operands[0],
+		      addr, operands[2], TARGET_ATOMIC_SOFT_TCB_GBR_OFFSET_RTX);
+  else if (TARGET_ATOMIC_SOFT_IMASK)
+    atomic_insn = gen_atomic_<fetchop_name>_fetch<mode>_soft_imask (operands[0],
+		      addr, operands[2]);
   else
-    atomic_insn = gen_atomic_<fetchop_name>_fetch<mode>_soft (operands[0], addr,
-							      operands[2]);
+    FAIL;
+
   emit_insn (atomic_insn);
 
   if (<MODE>mode == QImode)
@@ -629,7 +962,8 @@
 	(unspec:SI
 	  [(FETCHOP:SI (mem:SI (match_dup 1)) (match_dup 2))]
 	  UNSPEC_ATOMIC))]
-  "TARGET_ANY_ATOMIC && TARGET_SH4A_ARCH"
+  "TARGET_ATOMIC_HARD_LLCS
+   || (TARGET_SH4A_ARCH && TARGET_ATOMIC_ANY && !TARGET_ATOMIC_STRICT)"
 {
   return "\r0:	movli.l	@%1,%0"		"\n"
 	 "	<fetchop_name>	%2,%0"	"\n"
@@ -647,11 +981,10 @@
 	(unspec:QIHI
 	  [(FETCHOP:QIHI (mem:QIHI (match_dup 1)) (match_dup 2))]
 	  UNSPEC_ATOMIC))
-
    (clobber (reg:SI R0_REG))
    (clobber (match_scratch:SI 3 "=&r"))
    (clobber (match_scratch:SI 4 "=1"))]
-  "TARGET_HARD_ATOMIC && TARGET_SH4A_ARCH"
+  "TARGET_ATOMIC_HARD_LLCS"
 {
   return "\r	mov	#-4,%3"			"\n"
 	 "	and	%1,%3"			"\n"
@@ -670,7 +1003,7 @@
 }
   [(set_attr "length" "28")])
 
-(define_insn "atomic_<fetchop_name>_fetch<mode>_soft"
+(define_insn "atomic_<fetchop_name>_fetch<mode>_soft_gusa"
   [(set (match_operand:QIHISI 0 "register_operand" "=&u")
 	(FETCHOP:QIHISI
 	  (mem:QIHISI (match_operand:SI 1 "register_operand" "u"))
@@ -681,7 +1014,7 @@
 	  UNSPEC_ATOMIC))
    (clobber (reg:SI R0_REG))
    (clobber (reg:SI R1_REG))]
-  "TARGET_SOFT_ATOMIC && !TARGET_SHMEDIA"
+  "TARGET_ATOMIC_SOFT_GUSA"
 {
   return "\r	mova	1f,r0"			"\n"
 	 "	mov	r15,r1"			"\n"
@@ -691,6 +1024,55 @@
 	 "	<fetchop_name>	%2,%0"		"\n"
 	 "	mov.<bwl>	%0,@%1"		"\n"
 	 "1:	mov	r1,r15";
+}
+  [(set_attr "length" "16")])
+
+(define_insn "atomic_<fetchop_name>_fetch<mode>_soft_tcb"
+  [(set (match_operand:QIHISI 0 "register_operand" "=&r")
+	(FETCHOP:QIHISI
+	  (mem:QIHISI (match_operand:SI 1 "register_operand" "r"))
+	  (match_operand:QIHISI 2 "register_operand" "r")))
+   (set (mem:QIHISI (match_dup 1))
+	(unspec:QIHISI
+	  [(FETCHOP:QIHISI (mem:QIHISI (match_dup 1)) (match_dup 2))]
+	  UNSPEC_ATOMIC))
+   (clobber (reg:SI R0_REG))
+   (clobber (reg:SI R1_REG))
+   (use (match_operand:SI 3 "gbr_displacement"))]
+  "TARGET_ATOMIC_SOFT_TCB"
+{
+  return "\r	mova	1f,r0"			"\n"
+	 "	.align 2"			"\n"
+	 "	mov	#(0f-1f),r1"		"\n"
+	 "	mov.l	r0,@(%O3,gbr)"		"\n"
+	 "0:	mov.<bwl>	@%1,%0"		"\n"
+	 "	mov	#0,r0"			"\n"
+	 "	<fetchop_name>	%2,%0"		"\n"
+	 "	mov.<bwl>	%0,@%1"		"\n"
+	 "1:	mov.l	r0,@(%O3,gbr)";
+}
+  [(set_attr "length" "18")])
+
+(define_insn "atomic_<fetchop_name>_fetch<mode>_soft_imask"
+  [(set (match_operand:QIHISI 0 "register_operand" "=&z")
+	(FETCHOP:QIHISI
+	  (mem:QIHISI (match_operand:SI 1 "register_operand" "r"))
+	  (match_operand:QIHISI 2 "register_operand" "r")))
+   (set (mem:QIHISI (match_dup 1))
+	(unspec:QIHISI
+	  [(FETCHOP:QIHISI (mem:QIHISI (match_dup 1)) (match_dup 2))]
+	  UNSPEC_ATOMIC))
+   (clobber (match_scratch:SI 3 "=&r"))]
+  "TARGET_ATOMIC_SOFT_IMASK"
+{
+  return "\r	stc	sr,%0"			"\n"
+	 "	mov	%0,%3"			"\n"
+	 "	or	#0xF0,%0"		"\n"
+	 "	ldc	%0,sr"			"\n"
+	 "	mov.<bwl>	@%1,%0"		"\n"
+	 "	<fetchop_name>	%2,%0"		"\n"
+	 "	mov.<bwl>	%0,@%1"		"\n"
+	 "	ldc	%3,sr";
 }
   [(set_attr "length" "16")])
 
@@ -704,17 +1086,27 @@
 	  [(not:QIHISI (and:QIHISI (match_dup 1) (match_dup 2)))]
 	  UNSPEC_ATOMIC))
    (match_operand:SI 3 "const_int_operand" "")]
-  "TARGET_ANY_ATOMIC && !TARGET_SHMEDIA"
+  "TARGET_ATOMIC_ANY"
 {
   rtx addr = force_reg (Pmode, XEXP (operands[1], 0));
   rtx atomic_insn;
 
-  if (TARGET_HARD_ATOMIC || (TARGET_SH4A_ARCH && <MODE>mode == SImode))
+  if (TARGET_ATOMIC_HARD_LLCS
+      || (TARGET_SH4A_ARCH && <MODE>mode == SImode && !TARGET_ATOMIC_STRICT))
     atomic_insn = gen_atomic_nand_fetch<mode>_hard (operands[0], addr,
 						    operands[2]);
+  else if (TARGET_ATOMIC_SOFT_GUSA)
+    atomic_insn = gen_atomic_nand_fetch<mode>_soft_gusa (operands[0], addr,
+							 operands[2]);
+  else if (TARGET_ATOMIC_SOFT_TCB)
+    atomic_insn = gen_atomic_nand_fetch<mode>_soft_tcb (operands[0], addr,
+		      operands[2], TARGET_ATOMIC_SOFT_TCB_GBR_OFFSET_RTX);
+  else if (TARGET_ATOMIC_SOFT_IMASK)
+    atomic_insn = gen_atomic_nand_fetch<mode>_soft_imask (operands[0], addr,
+							  operands[2]);
   else
-    atomic_insn = gen_atomic_nand_fetch<mode>_soft (operands[0], addr,
-						    operands[2]);
+    FAIL;
+
   emit_insn (atomic_insn);
 
   if (<MODE>mode == QImode)
@@ -734,7 +1126,8 @@
 	(unspec:SI
 	  [(not:SI (and:SI (mem:SI (match_dup 1)) (match_dup 2)))]
 	  UNSPEC_ATOMIC))]
-  "TARGET_ANY_ATOMIC && TARGET_SH4A_ARCH"
+  "TARGET_ATOMIC_HARD_LLCS
+   || (TARGET_SH4A_ARCH && TARGET_ATOMIC_ANY && !TARGET_ATOMIC_STRICT)"
 {
   return "\r0:	movli.l	@%1,%0"		"\n"
 	 "	and	%2,%0"		"\n"
@@ -756,7 +1149,7 @@
    (clobber (reg:SI R0_REG))
    (clobber (match_scratch:SI 3 "=&r"))
    (clobber (match_scratch:SI 4 "=1"))]
-  "TARGET_HARD_ATOMIC && TARGET_SH4A_ARCH"
+  "TARGET_ATOMIC_HARD_LLCS"
 {
   return "\r	mov	#-4,%3"			"\n"
 	 "	and	%1,%3"			"\n"
@@ -775,7 +1168,7 @@
 }
   [(set_attr "length" "28")])
 
-(define_insn "atomic_nand_fetch<mode>_soft"
+(define_insn "atomic_nand_fetch<mode>_soft_gusa"
   [(set (match_operand:QIHISI 0 "register_operand" "=&u")
 	(not:QIHISI (and:QIHISI
 	  (mem:QIHISI (match_operand:SI 1 "register_operand" "u"))
@@ -786,7 +1179,7 @@
 	  UNSPEC_ATOMIC))
    (clobber (reg:SI R0_REG))
    (clobber (reg:SI R1_REG))]
-  "TARGET_SOFT_ATOMIC && !TARGET_SHMEDIA"
+  "TARGET_ATOMIC_SOFT_GUSA"
 {
   return "\r	mova	1f,r0"			"\n"
 	 "	.align 2"			"\n"
@@ -800,6 +1193,57 @@
 }
   [(set_attr "length" "18")])
 
+(define_insn "atomic_nand_fetch<mode>_soft_tcb"
+  [(set (match_operand:QIHISI 0 "register_operand" "=&r")
+	(not:QIHISI (and:QIHISI
+	  (mem:QIHISI (match_operand:SI 1 "register_operand" "r"))
+	  (match_operand:QIHISI 2 "register_operand" "r"))))
+   (set (mem:QIHISI (match_dup 1))
+	(unspec:QIHISI
+	  [(not:QIHISI (and:QIHISI (mem:QIHISI (match_dup 1)) (match_dup 2)))]
+	  UNSPEC_ATOMIC))
+   (clobber (reg:SI R0_REG))
+   (clobber (reg:SI R1_REG))
+   (use (match_operand:SI 3 "gbr_displacement"))]
+  "TARGET_ATOMIC_SOFT_TCB"
+{
+  return "\r	mova	1f,r0"			"\n"
+	 "	mov	#(0f-1f),r1"		"\n"
+	 "	.align 2"			"\n"
+	 "	mov.l	r0,@(%O3,gbr)"		"\n"
+	 "0:	mov.<bwl>	@%1,%0"		"\n"
+	 "	mov	#0,r0"			"\n"
+	 "	and	%2,%0"			"\n"
+	 "	not	%0,%0"			"\n"
+	 "	mov.<bwl>	%0,@%1"		"\n"
+	 "1:	mov.l	r0,@(%O3,gbr)";
+}
+  [(set_attr "length" "20")])
+
+(define_insn "atomic_nand_fetch<mode>_soft_imask"
+  [(set (match_operand:QIHISI 0 "register_operand" "=&z")
+	(not:QIHISI (and:QIHISI
+	  (mem:QIHISI (match_operand:SI 1 "register_operand" "r"))
+	  (match_operand:QIHISI 2 "register_operand" "r"))))
+   (set (mem:QIHISI (match_dup 1))
+	(unspec:QIHISI
+	  [(not:QIHISI (and:QIHISI (mem:QIHISI (match_dup 1)) (match_dup 2)))]
+	  UNSPEC_ATOMIC))
+   (clobber (match_scratch:SI 3 "=&r"))]
+  "TARGET_ATOMIC_SOFT_IMASK"
+{
+  return "\r	stc	sr,%0"			"\n"
+	 "	mov	%0,%3"			"\n"
+	 "	or	#0xF0,%0"		"\n"
+	 "	ldc	%0,sr"			"\n"
+	 "	mov.<bwl>	@%1,%0"		"\n"
+	 "	and	%2,%0"			"\n"
+	 "	not	%0,%0"			"\n"
+	 "	mov.<bwl>	%0,@%1"		"\n"
+	 "	ldc	%3,sr";
+}
+  [(set_attr "length" "18")])
+
 ;;------------------------------------------------------------------------------
 ;; read - test against zero - or with 0x80 - write - return test result
 
@@ -807,7 +1251,7 @@
   [(match_operand:SI 0 "register_operand" "")		;; bool result output
    (match_operand:QI 1 "memory_operand" "")		;; memory
    (match_operand:SI 2 "const_int_operand" "")]		;; model
-  "(TARGET_ANY_ATOMIC || TARGET_ENABLE_TAS) && !TARGET_SHMEDIA"
+  "(TARGET_ATOMIC_ANY || TARGET_ENABLE_TAS) && !TARGET_SHMEDIA"
 {
   rtx addr = force_reg (Pmode, XEXP (operands[1], 0));
 
@@ -818,10 +1262,17 @@
       rtx val = gen_int_mode (targetm.atomic_test_and_set_trueval, QImode);
       val = force_reg (QImode, val);
 
-      if (TARGET_HARD_ATOMIC)
+      if (TARGET_ATOMIC_HARD_LLCS)
 	  emit_insn (gen_atomic_test_and_set_hard (addr, val));
+      else if (TARGET_ATOMIC_SOFT_GUSA)
+	  emit_insn (gen_atomic_test_and_set_soft_gusa (addr, val));
+      else if (TARGET_ATOMIC_SOFT_TCB)
+	  emit_insn (gen_atomic_test_and_set_soft_tcb (addr, val,
+			 TARGET_ATOMIC_SOFT_TCB_GBR_OFFSET_RTX));
+      else if (TARGET_ATOMIC_SOFT_IMASK)
+	  emit_insn (gen_atomic_test_and_set_soft_imask (addr, val));
       else
-	  emit_insn (gen_atomic_test_and_set_soft (addr, val));
+	FAIL;
     }
 
   /* The result of the test op is the inverse of what we are
@@ -841,7 +1292,7 @@
   "tas.b	@%0"
   [(set_attr "insn_class" "co_group")])
 
-(define_insn "atomic_test_and_set_soft"
+(define_insn "atomic_test_and_set_soft_gusa"
   [(set (reg:SI T_REG)
 	(eq:SI (mem:QI (match_operand:SI 0 "register_operand" "u"))
 	       (const_int 0)))
@@ -850,7 +1301,7 @@
    (clobber (match_scratch:QI 2 "=&u"))
    (clobber (reg:SI R0_REG))
    (clobber (reg:SI R1_REG))]
-  "TARGET_SOFT_ATOMIC && !TARGET_ENABLE_TAS && !TARGET_SHMEDIA"
+  "TARGET_ATOMIC_SOFT_GUSA && !TARGET_ENABLE_TAS"
 {
   return "\r	mova	1f,r0"		"\n"
 	 "	.align 2"		"\n"
@@ -860,6 +1311,51 @@
 	 "	mov.b	%1,@%0"		"\n"
 	 "1:	mov	r1,r15"		"\n"
 	 "	tst	%2,%2";
+}
+  [(set_attr "length" "16")])
+
+(define_insn "atomic_test_and_set_soft_tcb"
+  [(set (reg:SI T_REG)
+	(eq:SI (mem:QI (match_operand:SI 0 "register_operand" "r"))
+	       (const_int 0)))
+   (set (mem:QI (match_dup 0))
+	(unspec:QI [(match_operand:QI 1 "register_operand" "r")] UNSPEC_ATOMIC))
+   (use (match_operand:SI 2 "gbr_displacement"))
+   (clobber (match_scratch:QI 3 "=&r"))
+   (clobber (reg:SI R0_REG))
+   (clobber (reg:SI R1_REG))]
+  "TARGET_ATOMIC_SOFT_TCB && !TARGET_ENABLE_TAS"
+{
+  return "\r	mova	1f,r0"		"\n"
+	 "	mov	#(0f-1f),r1"	"\n"
+	 "	.align 2"		"\n"
+	 "	mov.l	r0,@(%O2,gbr)"	"\n"
+	 "0:	mov.b	@%0,%3"		"\n"
+	 "	mov	#0,r0"		"\n"
+	 "	mov.b	%1,@%0"		"\n"
+	 "1:	mov.l	r0,@(%O2,gbr)"	"\n"
+	 "	tst	%3,%3";
+}
+  [(set_attr "length" "18")])
+
+(define_insn "atomic_test_and_set_soft_imask"
+  [(set (reg:SI T_REG)
+	(eq:SI (mem:QI (match_operand:SI 0 "register_operand" "r"))
+	       (const_int 0)))
+   (set (mem:QI (match_dup 0))
+	(unspec:QI [(match_operand:QI 1 "register_operand" "r")] UNSPEC_ATOMIC))
+   (clobber (match_scratch:SI 2 "=&r"))
+   (clobber (reg:SI R0_REG))]
+  "TARGET_ATOMIC_SOFT_IMASK && !TARGET_ENABLE_TAS"
+{
+  return "\r	stc	sr,r0"		"\n"
+	 "	mov	r0,%2"		"\n"
+	 "	or	#0xF0,r0"	"\n"
+	 "	ldc	r0,sr"		"\n"
+	 "	mov.b	@%0,r0"		"\n"
+	 "	mov.b	%1,@%0"		"\n"
+	 "	stc	%2,sr"		"\n"
+	 "	tst	r0,r0";
 }
   [(set_attr "length" "16")])
 
@@ -873,7 +1369,7 @@
    (clobber (match_scratch:SI 2 "=&r"))
    (clobber (match_scratch:SI 3 "=&r"))
    (clobber (match_scratch:SI 4 "=0"))]
-  "TARGET_HARD_ATOMIC && !TARGET_ENABLE_TAS && TARGET_SH4A_ARCH"
+  "TARGET_ATOMIC_HARD_LLCS && !TARGET_ENABLE_TAS"
 {
   return "\r	mov	#-4,%2"		"\n"
 	 "	and	%0,%2"		"\n"

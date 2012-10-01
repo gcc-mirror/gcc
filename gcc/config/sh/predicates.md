@@ -1071,3 +1071,19 @@
 
   return false;
 })
+
+;; A predicate that determines whether a given constant is a valid
+;; displacement for a gbr load/store of the specified mode.
+(define_predicate "gbr_displacement"
+  (match_code "const_int")
+{
+  const int mode_sz = GET_MODE_SIZE (mode);
+  const int move_sz = mode_sz > GET_MODE_SIZE (SImode)
+				? GET_MODE_SIZE (SImode)
+				: mode_sz;
+  int max_disp = 255 * move_sz;
+  if (mode_sz > move_sz)
+    max_disp -= mode_sz - move_sz;
+
+  return INTVAL (op) >= 0 && INTVAL (op) <= max_disp;
+})
