@@ -6584,7 +6584,7 @@ package body Exp_Ch4 is
       --  Non-fixed point cases, do integer zero divide and overflow checks
 
       elsif Is_Integer_Type (Typ) then
-         Apply_Divide_Check (N);
+         Apply_Divide_Checks (N);
 
       --  Deal with Vax_Float
 
@@ -7836,7 +7836,7 @@ package body Exp_Ch4 is
 
       else
          if Is_Integer_Type (Etype (N)) then
-            Apply_Divide_Check (N);
+            Apply_Divide_Checks (N);
          end if;
 
          --  Apply optimization x mod 1 = 0. We don't really need that with
@@ -8469,7 +8469,7 @@ package body Exp_Ch4 is
       Binary_Op_Validity_Checks (N);
 
       if Is_Integer_Type (Etype (N)) then
-         Apply_Divide_Check (N);
+         Apply_Divide_Checks (N);
       end if;
 
       --  Apply optimization x rem 1 = 0. We don't really need that with gcc,

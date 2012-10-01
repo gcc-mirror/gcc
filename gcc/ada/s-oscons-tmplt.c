@@ -1292,7 +1292,7 @@ CNS(MAX_tv_sec, "")
 }
 /*
 
-   --  Sizes and alignments of various data types
+   --  Sizes of various data types
 */
 
 #define SIZEOF_sockaddr_in (sizeof (struct sockaddr_in))
@@ -1306,9 +1306,6 @@ CND(SIZEOF_sockaddr_in6, "struct sockaddr_in6")
 
 #define SIZEOF_fd_set (sizeof (fd_set))
 CND(SIZEOF_fd_set, "fd_set");
-#define ALIGNOF_fd_set (__alignof__ (fd_set))
-CND(ALIGNOF_fd_set, "");
-
 CND(FD_SETSIZE, "Max fd value");
 
 #define SIZEOF_struct_hostent (sizeof (struct hostent))

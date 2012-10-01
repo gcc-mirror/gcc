@@ -1,5 +1,29 @@
 2012-10-01  Robert Dewar  <dewar@adacore.com>
 
+	* checks.adb (Apply_Divide_Checks): New name for
+	Apply_Divide_Check (Minimize_Eliminate_Overflow_Checks):
+	Add code to handle division (and rem and mod) properly.
+	(Apply_Division_Check): New procedure (Apply_Divide_Checks):
+	Use Apply_Division_Check (Apply_Divide_Checks): Use
+	Apply_Arithmetic_Overflow_Minimized_Eliminated.
+	* checks.ads (Apply_Divide_Checks): New name for
+	Apply_Divide_Check, also add clearer documentation for this
+	routine and put in alfa order.
+	* exp_ch4.adb (Apply_Divide_Checks): New name for
+	Apply_Divide_Check.
+	* s-bignum.adb (To_Bignum): Handle largest negative integer
+	properly.
+	* sem.adb (Analyze): Handle overflow suppression correctly
+	(Analyze_List): Handle overflow suppression correctly
+	* sem_res.adb (Analyze_And_Resolve): Handle overflow suppression
+	correctly.
+
+2012-10-01  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* s-oscons-tmplt.c, g-socket.ads: Revert previous change, breaks VMS.
+
+2012-10-01  Robert Dewar  <dewar@adacore.com>
+
 	* checks.adb (Minimize_Eliminate_Overflow_Checks): Changes
 	for exponentiation.
 	* exp_ch4.adb (Expand_N_Op_Expon): Changes for Minimize/Eliminate
