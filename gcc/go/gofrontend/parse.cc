@@ -3315,6 +3315,61 @@ Parse::unary_expr(bool may_be_sink, bool may_be_composite_lit,
 		  bool* is_type_switch)
 {
   const Token* token = this->peek_token();
+
+  // There is a complex parse for <- chan.  The choices are
+  // Convert x to type <- chan int:
+  //   (<- chan int)(x)         
+  // Receive from (x converted to type chan <- chan int):
+  //   (<- chan <- chan int (x))
+  // Convert x to type <- chan (<- chan int).
+  //   (<- chan <- chan int)(x)
+  if (token->is_op(OPERATOR_CHANOP))
+    {
+      Location location = token->location();
+      if (this->advance_token()->is_keyword(KEYWORD_CHAN))
+	{
+	  Expression* expr = this->primary_expr(false, may_be_composite_lit,
+						NULL);
+	  if (expr->is_error_expression())
+	    return expr;
+	  else if (!expr->is_type_expression())
+	    return Expression::make_receive(expr, location);
+	  else
+	    {
+	      if (expr->type()->is_error_type())
+		return expr;
+
+	      // We picked up "chan TYPE", but it is not a type
+	      // conversion.
+	      Channel_type* ct = expr->type()->channel_type();
+	      if (ct == NULL)
+		{
+		  // This is probably impossible.
+		  error_at(location, "expected channel type");
+		  return Expression::make_error(location);
+		}
+	      else if (ct->may_receive())
+		{
+		  // <- chan TYPE.
+		  Type* t = Type::make_channel_type(false, true,
+						    ct->element_type());
+		  return Expression::make_type(t, location);
+		}
+	      else
+		{
+		  // <- chan <- TYPE.  Because we skipped the leading
+		  // <-, we parsed this as chan <- TYPE.  With the
+		  // leading <-, we parse it as <- chan (<- TYPE).
+		  Type *t = this->reassociate_chan_direction(ct, location);
+		  return Expression::make_type(t, location);
+		}
+	    }
+	}
+
+      this->unget_token(Token::make_operator_token(OPERATOR_CHANOP, location));
+      token = this->peek_token();
+    }
+
   if (token->is_op(OPERATOR_PLUS)
       || token->is_op(OPERATOR_MINUS)
       || token->is_op(OPERATOR_NOT)
@@ -3326,14 +3381,6 @@ Parse::unary_expr(bool may_be_sink, bool may_be_composite_lit,
       Location location = token->location();
       Operator op = token->op();
       this->advance_token();
-
-      if (op == OPERATOR_CHANOP
-	  && this->peek_token()->is_keyword(KEYWORD_CHAN))
-	{
-	  // This is "<- chan" which must be the start of a type.
-	  this->unget_token(Token::make_operator_token(op, location));
-	  return Expression::make_type(this->type(), location);
-	}
 
       Expression* expr = this->unary_expr(false, may_be_composite_lit, NULL);
       if (expr->is_error_expression())
@@ -3352,6 +3399,32 @@ Parse::unary_expr(bool may_be_sink, bool may_be_composite_lit,
   else
     return this->primary_expr(may_be_sink, may_be_composite_lit,
 			      is_type_switch);
+}
+
+// This is called for the obscure case of
+//   (<- chan <- chan int)(x)
+// In unary_expr we remove the leading <- and parse the remainder,
+// which gives us
+//   chan <- (chan int)
+// When we add the leading <- back in, we really want
+//   <- chan (<- chan int)
+// This means that we need to reassociate.
+
+Type*
+Parse::reassociate_chan_direction(Channel_type *ct, Location location)
+{
+  Channel_type* ele = ct->element_type()->channel_type();
+  if (ele == NULL)
+    {
+      error_at(location, "parse error");
+      return Type::make_error_type();
+    }
+  Type* sub = ele;
+  if (ele->may_send())
+    sub = Type::make_channel_type(false, true, ele->element_type());
+  else
+    sub = this->reassociate_chan_direction(ele, location);
+  return Type::make_channel_type(false, true, sub);
 }
 
 // Statement =
