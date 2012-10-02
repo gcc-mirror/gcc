@@ -1,3 +1,11 @@
+2012-10-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interfaces/decl.c (elaborate_expression_1): Use the variable for
+	bounds of loop iteraration scheme only for locally defined subtypes.
+
+	* gcc-interface/trans.c (gigi): Fix formatting.
+	(build_return_expr): Apply the NRV optimization only for BLKmode.
+
 2012-10-02  Robert Dewar  <dewar@adacore.com>
 
 	* par_sco.adb, sem_ch3.adb, layout.adb, exp_ch7.adb, exp_imgv.adb,
