@@ -1,8 +1,7 @@
 /* RTEMS threads compatibility routines for libgcc2 and libobjc.
    by: Rosimildo da Silva( rdasilva@connecttel.com ) */
 /* Compile this one with gcc.  */
-/* Copyright (C) 1997, 1999, 2000, 2002, 2003, 2005, 2008, 2009
-   Free Software Foundation, Inc.
+/* Copyright (C) 1997-2012 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -148,6 +147,14 @@ static inline int
 __gthread_recursive_mutex_unlock (__gthread_recursive_mutex_t *__mutex)
 {
     return rtems_gxx_recursive_mutex_unlock( __mutex );
+}
+
+static inline int
+__gthread_recursive_mutex_destroy (__gthread_recursive_mutex_t *__mutex)
+{
+  /* This requires that recursive and non-recursive mutexes have the same
+     representation.  */
+    return rtems_gxx_mutex_destroy (__mutex );
 }
 
 #ifdef __cplusplus
