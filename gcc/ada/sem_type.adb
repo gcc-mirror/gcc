@@ -741,7 +741,6 @@ package body Sem_Type is
    ------------
 
    function Covers (T1, T2 : Entity_Id) return Boolean is
-
       BT1 : Entity_Id;
       BT2 : Entity_Id;
 

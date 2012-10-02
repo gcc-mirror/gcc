@@ -42,7 +42,7 @@ package body System.Bignums is
    use Interfaces;
    --  So that operations on Unsigned_32 are available
 
-   type DD is mod SD'Modulus ** 2;
+   type DD is mod Base ** 2;
    --  Double length digit used for intermediate computations
 
    function MSD (X : DD) return SD is (SD (X / Base));
@@ -361,7 +361,12 @@ package body System.Bignums is
       if Y.Neg then
          raise Constraint_Error with "exponentiation to negative power";
 
-      --  0 ** X is always 0
+      --  X ** 0 is always 1 (including 0 ** 0, so do this test first)
+
+      elsif Y.Len = 0 then
+         return Normalize (One_Data);
+
+      --  0 ** X is always 0 (for X non-zero)
 
       elsif X.Len = 0 then
          return Normalize (Zero_Data);
@@ -380,12 +385,12 @@ package body System.Bignums is
       elsif Y.Len > 1 then
          raise Storage_Error with "exponentiation result is too large";
 
-      --  Special case (+/-)2 ** K, where K is 31 or less using a shift
+      --  Special case (+/-)2 ** K, where K is 1 .. 31 using a shift
 
       elsif X.Len = 1 and then X.D (1) = 2 and then Y.D (1) < 32 then
          declare
             D : constant Digit_Vector (1 .. 1) :=
-                  (1 => Shift_Left (SD'(1), Natural (Y.D (1) - 1)));
+                  (1 => Shift_Left (SD'(1), Natural (Y.D (1))));
          begin
             return Normalize (D, X.Neg);
          end;
@@ -492,7 +497,7 @@ package body System.Bignums is
             declare
                T1 : constant Bignum := Big_Sub (Y, R);
             begin
-               T1.Neg := X.Neg;
+               T1.Neg := Y.Neg;
                Free_Bignum (R);
                return T1;
             end;
@@ -597,7 +602,7 @@ package body System.Bignums is
 
    function Big_Sub (X, Y : Bignum) return Bignum is
    begin
-      --  If right operand zero, return left operand
+      --  If right operand zero, return left operand (avoiding sharing)
 
       if Y.Len = 0 then
          return Normalize (X.D, X.Neg);
@@ -668,13 +673,13 @@ package body System.Bignums is
          Quotient  := Normalize (Zero_Data);
          return;
 
-      --  If both X and Y are comfortably less than 2**63-1, we can just use
-      --  Long_Long_Integer arithmetic. Note it is good not to do an accurate
-      --  range check here since -2**63 / -1 overflows!
+      --  If both X and Y are less than 2**63-1, we can use Long_Long_Integer
+      --  arithmetic. Note it is good not to do an accurate range check against
+      --  Long_Long_Integer since -2**63 / -1 overflows!
 
-      elsif (X.Len <= 1 or else (X.Len = 2 and then X.D (1) <= 2**31))
+      elsif (X.Len <= 1 or else (X.Len = 2 and then X.D (1) < 2**31))
               and then
-            (Y.Len <= 1 or else (Y.Len = 2 and then Y.D (1) <= 2**31))
+            (Y.Len <= 1 or else (Y.Len = 2 and then Y.D (1) < 2**31))
       then
          declare
             A : constant LLI := abs (From_Bignum (X));

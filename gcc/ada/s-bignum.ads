@@ -31,11 +31,16 @@
 
 --  This package provides arbitrary precision signed integer arithmetic for
 --  use in computing intermediate values in expressions for the case where
---  pragma Overflow_Check (Eliminate) is in effect.
+--  pragma Overflow_Check (Eliminated) is in effect.
 
 with Interfaces;
 
 package System.Bignums is
+
+   pragma Assert (Long_Long_Integer'Size = 64);
+   --  This package assumes that Long_Long_Integer size is 64 bit (i.e. that it
+   --  has a range of -2**63 to 2**63-1). The front end ensures that the mode
+   --  ELIMINATED is not allowed for overflow checking if this is not the case.
 
    subtype Length is Natural range 0 .. 2 ** 23 - 1;
    --  Represent number of words in Digit_Vector
@@ -65,6 +70,10 @@ package System.Bignums is
    end record;
 
    type Bignum is access all Bignum_Data;
+   --  This the type that is used externally. Possibly this could be a private
+   --  type, but we leave the structure exposed for now. For one thing it helps
+   --  with debugging. Note that this package never shares an allocated Bignum
+   --  value, so for example for X + 0, a copy of X is returned, not X itself.
 
    --  Note: none of the subprograms in this package modify the Bignum_Data
    --  records referenced by Bignum arguments of mode IN.

@@ -33,6 +33,7 @@ with Osint;    use Osint;
 with Opt;      use Opt;
 with Validsw;  use Validsw;
 with Stylesw;  use Stylesw;
+with Ttypes;   use Ttypes;
 with Warnsw;   use Warnsw;
 
 with Ada.Unchecked_Deallocation;
@@ -49,6 +50,10 @@ package body Switch.C is
    procedure Free is
       new Ada.Unchecked_Deallocation (String_List, String_List_Access);
    --  Avoid using System.Strings.Free, which also frees the designated strings
+
+   function Get_Overflow_Mode (C : Character) return Overflow_Check_Type;
+   --  Given a digit in the range 0 .. 3, returns the corresponding value of
+   --  Overflow_Check_Type. Raises program error if C is outside this range.
 
    function Switch_Subsequently_Cancelled
      (C        : String;
@@ -72,7 +77,6 @@ package body Switch.C is
          declare
             New_Symbol_Definitions : constant String_List_Access :=
               new String_List (1 .. 2 * Preprocessing_Symbol_Last);
-
          begin
             New_Symbol_Definitions (Preprocessing_Symbol_Defs'Range) :=
               Preprocessing_Symbol_Defs.all;
@@ -85,6 +89,37 @@ package body Switch.C is
       Preprocessing_Symbol_Defs (Preprocessing_Symbol_Last) :=
         new String'(Def);
    end Add_Symbol_Definition;
+
+   -----------------------
+   -- Get_Overflow_Mode --
+   -----------------------
+
+   function Get_Overflow_Mode (C : Character) return Overflow_Check_Type is
+   begin
+      case C is
+         when '0' =>
+            return Suppressed;
+
+         when '1' =>
+            return Checked;
+
+         when '2' =>
+            return Minimized;
+
+         --  Eliminated allowed only if Long_Long_Integer is 64 bits (since
+         --  the current implementation of System.Bignums assumes this).
+
+         when '3' =>
+            if Standard_Long_Long_Integer_Size /= 64 then
+               Bad_Switch ("-gnato3 not implemented for this configuration");
+            else
+               return Eliminated;
+            end if;
+
+         when others =>
+            raise Program_Error;
+      end case;
+   end Get_Overflow_Mode;
 
    -----------------------------
    -- Scan_Front_End_Switches --
@@ -778,27 +813,8 @@ package body Switch.C is
                else
                   --  Handle first digit after -gnato
 
-                  case Switch_Chars (Ptr) is
-                     when '0' =>
-                        Suppress_Options.Overflow_Checks_General :=
-                          Suppressed;
-
-                     when '1' =>
-                        Suppress_Options.Overflow_Checks_General :=
-                          Checked;
-
-                     when '2' =>
-                        Suppress_Options.Overflow_Checks_General :=
-                          Minimized;
-
-                     when '3' =>
-                        Suppress_Options.Overflow_Checks_General :=
-                          Eliminated;
-
-                     when others =>
-                        raise Program_Error;
-                  end case;
-
+                  Suppress_Options.Overflow_Checks_General :=
+                    Get_Overflow_Mode (Switch_Chars (Ptr));
                   Ptr := Ptr + 1;
 
                   --  Only one digit after -gnato, set assertions mode to
@@ -813,27 +829,8 @@ package body Switch.C is
                   --  Process second digit after -gnato
 
                   else
-                     case Switch_Chars (Ptr) is
-                        when '0' =>
-                           Suppress_Options.Overflow_Checks_Assertions :=
-                             Suppressed;
-
-                        when '1' =>
-                           Suppress_Options.Overflow_Checks_Assertions :=
-                             Checked;
-
-                        when '2' =>
-                           Suppress_Options.Overflow_Checks_Assertions :=
-                             Minimized;
-
-                        when '3' =>
-                           Suppress_Options.Overflow_Checks_Assertions :=
-                             Eliminated;
-
-                        when others =>
-                           raise Program_Error;
-                     end case;
-
+                     Suppress_Options.Overflow_Checks_Assertions :=
+                       Get_Overflow_Mode (Switch_Chars (Ptr));
                      Ptr := Ptr + 1;
                   end if;
                end if;
