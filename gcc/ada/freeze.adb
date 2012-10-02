@@ -2571,8 +2571,15 @@ package body Freeze is
       --  It is improper to freeze an external entity within a generic because
       --  its freeze node will appear in a non-valid context. The entity will
       --  be frozen in the proper scope after the current generic is analyzed.
+      --  However, aspects must be analyzed because they may be queried later
+      --  within the generic itself, and the corresponding pragma or attribute
+      --  definition has not been analyzed yet.
 
       elsif Inside_A_Generic and then External_Ref_In_Generic (Test_E) then
+         if Has_Delayed_Aspects (E) then
+            Analyze_Aspects_At_Freeze_Point (E);
+         end if;
+
          return No_List;
 
       --  AI05-0213: A formal incomplete type does not freeze the actual. In
