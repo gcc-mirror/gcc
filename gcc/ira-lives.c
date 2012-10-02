@@ -849,9 +849,10 @@ single_reg_class (const char *constraints, rtx op, rtx equiv_const)
 	  next_cl = (c == 'r'
 		     ? GENERAL_REGS
 		     : REG_CLASS_FROM_CONSTRAINT (c, constraints));
-	  if ((cl != NO_REGS && next_cl != cl)
-	      || (ira_class_hard_regs_num[next_cl]
-		  > ira_reg_class_max_nregs[next_cl][GET_MODE (op)]))
+	  if (cl == NO_REGS
+	      ? ira_class_singleton[next_cl][GET_MODE (op)] < 0
+	      : (ira_class_singleton[cl][GET_MODE (op)]
+		 != ira_class_singleton[next_cl][GET_MODE (op)]))
 	    return NO_REGS;
 	  cl = next_cl;
 	  break;
@@ -861,10 +862,10 @@ single_reg_class (const char *constraints, rtx op, rtx equiv_const)
 	  next_cl
 	    = single_reg_class (recog_data.constraints[c - '0'],
 				recog_data.operand[c - '0'], NULL_RTX);
-	  if ((cl != NO_REGS && next_cl != cl)
-	      || next_cl == NO_REGS
-	      || (ira_class_hard_regs_num[next_cl]
-		  > ira_reg_class_max_nregs[next_cl][GET_MODE (op)]))
+	  if (cl == NO_REGS
+	      ? ira_class_singleton[next_cl][GET_MODE (op)] < 0
+	      : (ira_class_singleton[cl][GET_MODE (op)]
+		 != ira_class_singleton[next_cl][GET_MODE (op)]))
 	    return NO_REGS;
 	  cl = next_cl;
 	  break;
@@ -939,13 +940,14 @@ ira_implicitly_set_insn_hard_regs (HARD_REG_SET *set)
 		  cl = (c == 'r'
 			? GENERAL_REGS
 			: REG_CLASS_FROM_CONSTRAINT (c, p));
-		  if (cl != NO_REGS
+		  if (cl != NO_REGS)
+		    {
 		      /* There is no register pressure problem if all of the
 			 regs in this class are fixed.  */
-		      && ira_class_hard_regs_num[cl] != 0
-		      && (ira_class_hard_regs_num[cl]
-			  <= ira_reg_class_max_nregs[cl][mode]))
-		    IOR_HARD_REG_SET (*set, reg_class_contents[cl]);
+		      int regno = ira_class_singleton[cl][mode];
+		      if (regno >= 0)
+			add_to_hard_reg_set (set, mode, regno);
+		    }
 		  break;
 		}
 	}
@@ -989,8 +991,7 @@ process_single_reg_class_operands (bool in_p, int freq)
 
 	  operand_a = ira_curr_regno_allocno_map[regno];
 	  aclass = ALLOCNO_CLASS (operand_a);
-	  if (ira_class_subset_p[cl][aclass]
-	      && ira_class_hard_regs_num[cl] != 0)
+	  if (ira_class_subset_p[cl][aclass])
 	    {
 	      /* View the desired allocation of OPERAND as:
 
@@ -1004,7 +1005,8 @@ process_single_reg_class_operands (bool in_p, int freq)
 	      HOST_WIDE_INT offset;
 
 	      xmode = recog_data.operand_mode[i];
-	      xregno = ira_class_hard_regs[cl][0];
+	      xregno = ira_class_singleton[cl][xmode];
+	      gcc_assert (xregno >= 0);
 	      ymode = ALLOCNO_MODE (operand_a);
 	      offset = subreg_lowpart_offset (ymode, xmode);
 	      yregno = simplify_subreg_regno (xregno, xmode, offset, ymode);
