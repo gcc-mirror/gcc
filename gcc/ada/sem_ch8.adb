@@ -5021,10 +5021,15 @@ package body Sem_Ch8 is
 
             Set_Entity_Or_Discriminal (N, E);
 
+            --  The name may designate a generalized reference, in which case
+            --  the dereference interpretation will be included.
+
             if Ada_Version >= Ada_2012
               and then
                 (Nkind (Parent (N)) in N_Subexpr
-                  or else Nkind (Parent (N)) = N_Object_Declaration)
+                  or else
+                    Nkind_In (Parent (N), N_Object_Declaration,
+                                          N_Assignment_Statement))
             then
                Check_Implicit_Dereference (N, Etype (E));
             end if;
