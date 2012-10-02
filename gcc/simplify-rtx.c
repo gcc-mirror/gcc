@@ -873,6 +873,7 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
       /* A truncate of a memory is just loading the low part of the memory
 	 if we are not changing the meaning of the address. */
       if (GET_CODE (op) == MEM
+	  && !VECTOR_MODE_P (mode)
 	  && !MEM_VOLATILE_P (op)
 	  && !mode_dependent_address_p (XEXP (op, 0), MEM_ADDR_SPACE (op)))
 	return rtl_hooks.gen_lowpart_no_emit (mode, op);
