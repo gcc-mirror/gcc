@@ -3,6 +3,14 @@
 	Backported from mainline
 	2012-10-02  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR target/54785
+	* doc/invoke.texi: Document -mprefer-avx128.
+
+2012-10-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backported from mainline
+	2012-10-02  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR target/54741
 	*  config/i386/driver-i386.c (XCR_XFEATURE_ENABLED_MASK): New.
 	(XSTATE_FP): Likewise.
