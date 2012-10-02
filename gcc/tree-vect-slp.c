@@ -2345,6 +2345,7 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
   enum tree_code code = gimple_expr_code (stmt);
   gimple def_stmt;
   struct loop *loop;
+  gimple_seq ctor_seq = NULL;
 
   if (STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_reduction_def
       && reduc_index != -1)
@@ -2503,11 +2504,27 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
 
           /* Create 'vect_ = {op0,op1,...,opn}'.  */
           number_of_places_left_in_vector--;
-	  if (constant_p
-	      && !types_compatible_p (TREE_TYPE (vector_type), TREE_TYPE (op)))
+	  if (!types_compatible_p (TREE_TYPE (vector_type), TREE_TYPE (op)))
 	    {
-	      op = fold_unary (VIEW_CONVERT_EXPR, TREE_TYPE (vector_type), op);
-	      gcc_assert (op && CONSTANT_CLASS_P (op));
+	      if (constant_p)
+		{
+		  op = fold_unary (VIEW_CONVERT_EXPR,
+				   TREE_TYPE (vector_type), op);
+		  gcc_assert (op && CONSTANT_CLASS_P (op));
+		}
+	      else
+		{
+		  tree new_temp
+		    = make_ssa_name (TREE_TYPE (vector_type), NULL);
+		  gimple init_stmt;
+		  op = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (vector_type),
+			       op);		  
+		  init_stmt
+		    = gimple_build_assign_with_ops (VIEW_CONVERT_EXPR,
+						    new_temp, op, NULL_TREE);
+		  gimple_seq_add_stmt (&ctor_seq, init_stmt);
+		  op = new_temp;
+		}
 	    }
 	  elts[number_of_places_left_in_vector] = op;
 
@@ -2529,6 +2546,15 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
               VEC_quick_push (tree, voprnds,
                               vect_init_vector (stmt, vec_cst,
 						vector_type, NULL));
+	      if (ctor_seq != NULL)
+		{
+		  gimple init_stmt
+		    = SSA_NAME_DEF_STMT (VEC_last (tree, voprnds));
+		  gimple_stmt_iterator gsi = gsi_for_stmt (init_stmt);
+		  gsi_insert_seq_before_without_update (&gsi, ctor_seq,
+							GSI_SAME_STMT);
+		  ctor_seq = NULL;
+		}
             }
         }
     }

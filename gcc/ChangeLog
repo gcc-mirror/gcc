@@ -1,3 +1,17 @@
+2012-10-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/54713
+	* expr.c (categorize_ctor_elements_1): Don't assume purpose is
+	non-NULL.
+	* tree-cfg.c (verify_gimple_assign_single): Add verification of
+	vector CONSTRUCTORs.
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): For VECTOR_TYPE
+	CONSTRUCTORs, don't do anything if element type is VECTOR_TYPE,
+	and don't check index.
+	* tree-vect-slp.c (vect_get_constant_vectors): VIEW_CONVERT_EXPR
+	ctor elements first if their type isn't compatible with vector
+	element type.
+
 2012-10-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree.h (DECL_NONLOCAL_FRAME): New macro.
