@@ -1,3 +1,14 @@
+2012-10-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Case_Expression): Do not introduce
+	indirections when the type of the alternatives is an access type:
+	more efficient, and removes anomalies when an alternative is
+	statically null.
+
+2012-10-02  Robert Dewar  <dewar@adacore.com>
+
+	* aspects.ads: Minor comment addition (Invariant is a GNAT aspect).
+
 2012-10-02  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch7.adb, sem_dim.adb, sem_dim.ads, prj-part.adb, checks.adb,
