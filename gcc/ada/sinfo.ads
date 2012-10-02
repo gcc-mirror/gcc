@@ -12439,10 +12439,4 @@ package Sinfo is
    --  Rename N_Return_Statement to be N_Simple_Return_Statement. Clients
    --  should refer to N_Simple_Return_Statement.
 
-   N_Parameterized_Expression : constant Node_Kind := N_Expression_Function;
-   --  Old name for expression function (used during Ada 2012 transition)
-
-   N_Conditional_Expression : Node_Kind renames N_If_Expression;
-   --  Old name for if expression (used during Ada 2012 transition)
-
 end Sinfo;
