@@ -1,3 +1,8 @@
+2012-10-02  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54778
+	* interface.c (matching_typebound_op): Check for 'class_ok' attribute.
+
 2012-09-30  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/54667
