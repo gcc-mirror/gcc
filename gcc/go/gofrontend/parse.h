@@ -14,6 +14,7 @@ class Named_object;
 class Type;
 class Typed_identifier;
 class Typed_identifier_list;
+class Channel_type;
 class Function_type;
 class Block;
 class Expression;
@@ -229,6 +230,7 @@ class Parse
   bool expression_may_start_here();
   Expression* unary_expr(bool may_be_sink, bool may_be_composite_lit,
 			 bool* is_type_switch);
+  Type* reassociate_chan_direction(Channel_type*, Location);
   Expression* qualified_expr(Expression*, Location);
   Expression* id_to_expression(const std::string&, Location);
   void statement(Label*);
