@@ -7242,11 +7242,11 @@ package body Exp_Ch4 is
       Exptyp : constant Entity_Id  := Etype (Exp);
       Ovflo  : constant Boolean    := Do_Overflow_Check (N);
       Expv   : Uint;
-      Xnode  : Node_Id;
       Temp   : Node_Id;
       Rent   : RE_Id;
       Ent    : Entity_Id;
       Etyp   : Entity_Id;
+      Xnode  : Node_Id;
 
    begin
       Binary_Op_Validity_Checks (N);
@@ -7301,7 +7301,8 @@ package body Exp_Ch4 is
          return;
       end if;
 
-      --  Test for case of known right argument
+      --  Test for case of known right argument where we can replace the
+      --  exponentiation by an equivalent expression using multiplication.
 
       if Compile_Time_Known_Value (Exp) then
          Expv := Expr_Value (Exp);
@@ -7355,27 +7356,34 @@ package body Exp_Ch4 is
                    Right_Opnd  => Duplicate_Subexpr_No_Checks (Base));
 
             --  X ** 4  ->
+
+            --  do
             --    En : constant base'type := base * base;
-            --    ...
+            --  in
             --    En * En
 
-            else -- Expv = 4
+            else
+               pragma Assert (Expv = 4);
                Temp := Make_Temporary (Loc, 'E', Base);
 
-               Insert_Actions (N, New_List (
-                 Make_Object_Declaration (Loc,
-                   Defining_Identifier => Temp,
-                   Constant_Present    => True,
-                   Object_Definition   => New_Reference_To (Typ, Loc),
+               Xnode :=
+                 Make_Expression_With_Actions (Loc,
+                   Actions    => New_List (
+                     Make_Object_Declaration (Loc,
+                       Defining_Identifier => Temp,
+                       Constant_Present    => True,
+                       Object_Definition   => New_Reference_To (Typ, Loc),
+                       Expression =>
+                         Make_Op_Multiply (Loc,
+                           Left_Opnd  =>
+                             Duplicate_Subexpr (Base),
+                           Right_Opnd =>
+                             Duplicate_Subexpr_No_Checks (Base)))),
+
                    Expression =>
                      Make_Op_Multiply (Loc,
-                       Left_Opnd  => Duplicate_Subexpr (Base),
-                       Right_Opnd => Duplicate_Subexpr_No_Checks (Base)))));
-
-               Xnode :=
-                 Make_Op_Multiply (Loc,
-                   Left_Opnd  => New_Reference_To (Temp, Loc),
-                   Right_Opnd => New_Reference_To (Temp, Loc));
+                       Left_Opnd  => New_Reference_To (Temp, Loc),
+                       Right_Opnd => New_Reference_To (Temp, Loc)));
             end if;
 
             Rewrite (N, Xnode);

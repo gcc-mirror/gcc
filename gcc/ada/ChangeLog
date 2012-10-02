@@ -1,5 +1,26 @@
 2012-10-02  Robert Dewar  <dewar@adacore.com>
 
+	* exp_ch4.adb (Expand_N_Op_Expon): Use expression with actions
+	for x ** 4.
+
+2012-10-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb: (Analyze_Iterator_Specification): If container
+	has a variable indexing aspect, the element is a variable and
+	is modifiable in the loop. This check is also performed when the
+	loop is expanded, but it must be done in semantic analysis when
+	expansion is disabled, for example for ASIS usage.
+
+2012-10-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* lib-xref.adb (Generate_Reference): If a child subprogram
+	has no previous spec, treat a reference to its formals (such
+	as a parameter association) as coming from source in order to
+	generate the proper references and enable gps navigation between
+	reference and declaration.
+
+2012-10-02  Robert Dewar  <dewar@adacore.com>
+
 	* checks.adb (Apply_Arithmetic_Overflow_Checked_Suppressed):
 	New name for Apply_Arithmetic_Overflow_Normal
 	(Apply_Arithmetic_Overflow_Minimized_Eliminated):
