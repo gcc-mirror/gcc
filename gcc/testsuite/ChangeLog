@@ -1,3 +1,22 @@
+2012-10-02  Sharad Singhai  <singhai@google.com>
+
+	PR testsuite/54772
+	* gfortran.dg/vect/vect.exp: Change verbose vectorizor dump options
+	to fix test failures caused by r191883.
+	* gcc.dg/tree-ssa/gen-vect-11.c: Likewise.
+	* gcc.dg/tree-ssa/gen-vect-2.c: Likewise.
+	* gcc.dg/tree-ssa/gen-vect-32.c: Likewise.
+	* gcc.dg/tree-ssa/gen-vect-25.c: Likewise.
+	* gcc.dg/tree-ssa/gen-vect-11a.c: Likewise.
+	* gcc.dg/tree-ssa/gen-vect-26.c: Likewise.
+	* gcc.dg/tree-ssa/gen-vect-11b.c: Likewise.
+	* gcc.dg/tree-ssa/gen-vect-11c.c: Likewise.
+	* gcc.dg/tree-ssa/gen-vect-28.c: Likewise.
+
+2012-09-30  Sharad Singhai  <singhai@google.com>
+
+	* testsuite/gcc.target/i386/vect-double-1.c: Fix test.
+
 2012-10-01  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR target/54087
