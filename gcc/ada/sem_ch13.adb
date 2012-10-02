@@ -888,6 +888,15 @@ package body Sem_Ch13 is
                     Aspect_Default_Component_Value =>
                   Analyze_Aspect_Default_Value (ASN);
 
+               --  Ditto for iterator aspects, because the corresponding
+               --  attributes may not have been analyzed yet.
+
+               when Aspect_Constant_Indexing |
+                    Aspect_Variable_Indexing |
+                    Aspect_Default_Iterator  |
+                    Aspect_Iterator_Element  =>
+                  Analyze (Expression (ASN));
+
                when others =>
                   null;
             end case;

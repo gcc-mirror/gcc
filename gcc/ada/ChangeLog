@@ -1,3 +1,24 @@
+2012-10-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* types.h (N_Return_Statement): Delete.
+	* gcc-interface/trans.c (gnat_to_gnu): Replace N_Return_Statement with
+	N_Simple_Return_Statement.
+
+2012-10-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Freeze_Entity): in a generic context, aspects must
+	be analyzed because they may be queried subsequently within the
+	generic unit, even if no other freezing actions are generated
+	for an entity.
+	* sem_ch13.adb (Analyze_Aspects_At_Freeze_Point): iterator
+	aspects must be analyzed because they are delayed aspects and
+	the corresponding attribute definition clause may not have been
+	analyzed yet.
+
+2012-10-02  Yannick Moy  <moy@adacore.com>
+
+	* gnat_rm.texi: Minor editing.
+
 2012-10-02  Robert Dewar  <dewar@adacore.com>
 
 	* sinfo.adb, sinfo.ads, sem_util.adb, sem_util.ads, types.h,

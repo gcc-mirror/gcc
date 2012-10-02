@@ -6241,7 +6241,7 @@ gnat_to_gnu (Node_Id gnat_node)
 		   : VEC_last (loop_info, gnu_loop_stack)->label));
       break;
 
-    case N_Return_Statement:
+    case N_Simple_Return_Statement:
       {
 	tree gnu_ret_obj, gnu_ret_val;
 
