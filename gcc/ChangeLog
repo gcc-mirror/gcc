@@ -1,3 +1,16 @@
+2012-10-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backported from mainline
+	2012-10-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/54741
+	*  config/i386/driver-i386.c (XCR_XFEATURE_ENABLED_MASK): New.
+	(XSTATE_FP): Likewise.
+	(XSTATE_SSE): Likewise.
+	(XSTATE_YMM): Likewise.
+	(host_detect_local_cpu): Disable AVX, FMA, FMA4 and XOP if SSE
+	and YMM states aren't supported.
+
 2012-09-21  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/54638

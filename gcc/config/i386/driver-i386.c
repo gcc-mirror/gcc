@@ -1,5 +1,5 @@
 /* Subroutines for the gcc driver.
-   Copyright (C) 2006, 2007, 2008, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2006-2012 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -398,6 +398,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
   unsigned int has_fma = 0, has_fma4 = 0, has_xop = 0;
   unsigned int has_bmi = 0, has_tbm = 0;
   unsigned int has_rdrnd = 0, has_f16c = 0, has_fsgsbase = 0;
+  unsigned int has_osxsave = 0;
 
   bool arch;
 
@@ -439,6 +440,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
   has_sse4_1 = ecx & bit_SSE4_1;
   has_sse4_2 = ecx & bit_SSE4_2;
   has_avx = ecx & bit_AVX;
+  has_osxsave = ecx & bit_OSXSAVE;
   has_cmpxchg16b = ecx & bit_CMPXCHG16B;
   has_movbe = ecx & bit_MOVBE;
   has_popcnt = ecx & bit_POPCNT;
@@ -459,6 +461,25 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       __cpuid_count (7, 0, eax, ebx, ecx, edx);
 
       has_fsgsbase = ebx & bit_FSGSBASE;
+    }
+
+  /* Get XCR_XFEATURE_ENABLED_MASK register with xgetbv.  */
+#define XCR_XFEATURE_ENABLED_MASK	0x0
+#define XSTATE_FP			0x1
+#define XSTATE_SSE			0x2
+#define XSTATE_YMM			0x4
+  if (has_osxsave)
+    asm (".byte 0x0f; .byte 0x01; .byte 0xd0"
+	 : "=a" (eax), "=d" (edx)
+	 : "c" (XCR_XFEATURE_ENABLED_MASK));
+
+  /* Check if SSE and YMM states are supported.  */
+  if ((eax & (XSTATE_SSE | XSTATE_YMM)) == (XSTATE_SSE | XSTATE_YMM))
+    {
+      has_avx = 0;
+      has_fma = 0;
+      has_fma4 = 0;
+      has_xop = 0;
     }
 
   /* Check cpuid level of extended features.  */
