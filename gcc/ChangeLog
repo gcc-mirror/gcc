@@ -1,5 +1,14 @@
 2012-10-02  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* ira-int.h (target_ira_int): Add x_ira_useful_class_mode_regs.
+	(ira_useful_class_mode_regs): New macro.
+	* ira.c (clarify_prohibited_class_mode_regs): Set up
+	ira_useful_class_mode_regs.
+	* ira-color.c (setup_profitable_hard_regs): Use it to initialise
+	profitable_hard_regs.
+
+2012-10-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* ira.h (target_ira): Add x_ira_class_singleton.
 	(ira_class_singleton): New macro.
 	* ira.c (setup_prohibited_class_mode_regs): Set up ira_class_singleton.
