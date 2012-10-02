@@ -1293,23 +1293,12 @@
 
 ;; Combiner patterns for unsigned byte-add.
 
-(define_insn "*baddu_si_eb"
+(define_insn "*baddu_si"
   [(set (match_operand:SI 0 "register_operand" "=d")
         (zero_extend:SI
-	 (subreg:QI
-	  (plus:SI (match_operand:SI 1 "register_operand" "d")
-		   (match_operand:SI 2 "register_operand" "d")) 3)))]
-  "ISA_HAS_BADDU && BYTES_BIG_ENDIAN"
-  "baddu\\t%0,%1,%2"
-  [(set_attr "alu_type" "add")])
-
-(define_insn "*baddu_si_el"
-  [(set (match_operand:SI 0 "register_operand" "=d")
-        (zero_extend:SI
-	 (subreg:QI
-	  (plus:SI (match_operand:SI 1 "register_operand" "d")
-		   (match_operand:SI 2 "register_operand" "d")) 0)))]
-  "ISA_HAS_BADDU && !BYTES_BIG_ENDIAN"
+	 (plus:QI (match_operand:QI 1 "register_operand" "d")
+		  (match_operand:QI 2 "register_operand" "d"))))]
+  "ISA_HAS_BADDU"
   "baddu\\t%0,%1,%2"
   [(set_attr "alu_type" "add")])
 
