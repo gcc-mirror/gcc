@@ -37,6 +37,7 @@ with Freeze;   use Freeze;
 with Lib;      use Lib;
 with Lib.Xref; use Lib.Xref;
 with Nlists;   use Nlists;
+with Nmake;    use Nmake;
 with Output;   use Output;
 with Opt;      use Opt;
 with Restrict; use Restrict;

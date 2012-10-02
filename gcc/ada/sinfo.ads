@@ -4799,10 +4799,6 @@ package Sinfo is
       -- 6.5  Return Statement --
       ---------------------------
 
-      --  RETURN_STATEMENT ::= return [EXPRESSION]; -- Ada 95
-
-      --  In Ada 2005, we have:
-
       --  SIMPLE_RETURN_STATEMENT ::= return [EXPRESSION];
 
       --  EXTENDED_RETURN_STATEMENT ::=
@@ -4813,11 +4809,12 @@ package Sinfo is
 
       --  RETURN_SUBTYPE_INDICATION ::= SUBTYPE_INDICATION | ACCESS_DEFINITION
 
-      --  So in Ada 2005, RETURN_STATEMENT is no longer a nonterminal, but
-      --  "return statement" is defined in 6.5 to mean a
-      --  SIMPLE_RETURN_STATEMENT or an EXTENDED_RETURN_STATEMENT.
+      --  The term "return statement" is defined in 6.5 to mean either a
+      --  SIMPLE_RETURN_STATEMENT or an EXTENDED_RETURN_STATEMENT. We avoid
+      --  the use of this term, since it used to mean someting else in earlier
+      --  versions of Ada.
 
-      --  N_Return_Statement
+      --  N_Simple_Return_Statement
       --  Sloc points to RETURN
       --  Return_Statement_Entity (Node5-Sem)
       --  Expression (Node3) (set to Empty if no expression present)
@@ -4826,12 +4823,6 @@ package Sinfo is
       --  Do_Tag_Check (Flag13-Sem)
       --  By_Ref (Flag5-Sem)
       --  Comes_From_Extended_Return_Statement (Flag18-Sem)
-
-      --  N_Return_Statement represents a simple_return_statement, and is
-      --  renamed to be N_Simple_Return_Statement below. Clients should refer
-      --  to N_Simple_Return_Statement. We retain N_Return_Statement because
-      --  that's how gigi knows it. See also renaming of Make_Return_Statement
-      --  as Make_Simple_Return_Statement in Sem_Util.
 
       --  Note: Return_Statement_Entity points to an E_Return_Statement
 
@@ -7785,7 +7776,7 @@ package Sinfo is
       N_Null_Statement,
       N_Raise_Statement,
       N_Requeue_Statement,
-      N_Return_Statement, -- renamed as N_Simple_Return_Statement below
+      N_Simple_Return_Statement,
       N_Extended_Return_Statement,
       N_Selective_Accept,
       N_Timed_Entry_Call,
@@ -10942,7 +10933,7 @@ package Sinfo is
         4 => False,   --  Next_Named_Actual (Node4-Sem)
         5 => False),  --  unused
 
-     N_Return_Statement =>
+     N_Simple_Return_Statement =>
        (1 => False,   --  Storage_Pool (Node1-Sem)
         2 => False,   --  Procedure_To_Call (Node2-Sem)
         3 => True,    --  Expression (Node3)
@@ -12435,8 +12426,8 @@ package Sinfo is
    --  These synonyms are to aid in transition, they should eventually be
    --  removed when all remaining references to the obsolete name are gone.
 
-   N_Simple_Return_Statement : constant Node_Kind := N_Return_Statement;
-   --  Rename N_Return_Statement to be N_Simple_Return_Statement. Clients
+   N_Return_Statement : constant Node_Kind := N_Simple_Return_Statement;
+   --  Rename N_Simple_Return_Statement to be N_Return_Statement. Clients
    --  should refer to N_Simple_Return_Statement.
 
 end Sinfo;

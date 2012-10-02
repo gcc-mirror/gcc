@@ -4781,31 +4781,31 @@ package body Exp_Ch6 is
             else
                pragma Assert
                  (Nkind
-                    (First
-                       (Statements (Handled_Statement_Sequence (Orig_Bod))))
+                   (First
+                     (Statements (Handled_Statement_Sequence (Orig_Bod))))
                   = N_Block_Statement);
 
                declare
                   Blk_Stmt    : constant Node_Id :=
                     First
                       (Statements
-                           (Handled_Statement_Sequence (Orig_Bod)));
+                        (Handled_Statement_Sequence (Orig_Bod)));
                   First_Stmt  : constant Node_Id :=
                     First
                       (Statements
-                           (Handled_Statement_Sequence (Blk_Stmt)));
+                        (Handled_Statement_Sequence (Blk_Stmt)));
                   Second_Stmt : constant Node_Id := Next (First_Stmt);
 
                begin
                   pragma Assert
                     (Nkind (First_Stmt) = N_Procedure_Call_Statement
-                       and then Nkind (Second_Stmt) = Sinfo.N_Return_Statement
-                       and then No (Next (Second_Stmt)));
+                      and then Nkind (Second_Stmt) = N_Simple_Return_Statement
+                      and then No (Next (Second_Stmt)));
 
                   Bod :=
                     Copy_Generic_Node
                       (First
-                         (Statements (Handled_Statement_Sequence (Orig_Bod))),
+                        (Statements (Handled_Statement_Sequence (Orig_Bod))),
                        Empty, Instantiating => True);
                   Blk := Bod;
 
@@ -5129,8 +5129,8 @@ package body Exp_Ch6 is
          --  Remove the return statement
 
          pragma Assert
-           (Nkind (Last (Statements (Handled_Statement_Sequence (Blk))))
-            = Sinfo.N_Return_Statement);
+           (Nkind (Last (Statements (Handled_Statement_Sequence (Blk)))) =
+                                                   N_Simple_Return_Statement);
 
          Remove (Last (Statements (Handled_Statement_Sequence (Blk))));
       end if;

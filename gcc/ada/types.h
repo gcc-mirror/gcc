@@ -384,3 +384,6 @@ typedef Int Mechanism_Type;
 #define SE_Object_Too_Large                34
 
 #define LAST_REASON_CODE                   34
+
+#define N_Return_Statement N_Simple_Return_Statement
+/* temporary synonym for transition */

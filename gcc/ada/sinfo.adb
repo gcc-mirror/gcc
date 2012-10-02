@@ -370,7 +370,7 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Extended_Return_Statement
-        or else NT (N).Nkind = N_Return_Statement);
+        or else NT (N).Nkind = N_Simple_Return_Statement);
       return Flag5 (N);
    end By_Ref;
 
@@ -427,7 +427,7 @@ package body Sinfo is
      (N : Node_Id) return Boolean is
    begin
       pragma Assert (False
-        or else NT (N).Nkind = N_Return_Statement);
+        or else NT (N).Nkind = N_Simple_Return_Statement);
       return Flag18 (N);
    end Comes_From_Extended_Return_Statement;
 
@@ -958,7 +958,7 @@ package body Sinfo is
         or else NT (N).Nkind = N_Extended_Return_Statement
         or else NT (N).Nkind = N_Function_Call
         or else NT (N).Nkind = N_Procedure_Call_Statement
-        or else NT (N).Nkind = N_Return_Statement
+        or else NT (N).Nkind = N_Simple_Return_Statement
         or else NT (N).Nkind = N_Type_Conversion);
       return Flag13 (N);
    end Do_Tag_Check;
@@ -1234,7 +1234,7 @@ package body Sinfo is
         or else NT (N).Nkind = N_Pragma_Argument_Association
         or else NT (N).Nkind = N_Qualified_Expression
         or else NT (N).Nkind = N_Raise_Statement
-        or else NT (N).Nkind = N_Return_Statement
+        or else NT (N).Nkind = N_Simple_Return_Statement
         or else NT (N).Nkind = N_Type_Conversion
         or else NT (N).Nkind = N_Unchecked_Expression
         or else NT (N).Nkind = N_Unchecked_Type_Conversion);
@@ -2537,7 +2537,7 @@ package body Sinfo is
         or else NT (N).Nkind = N_Allocator
         or else NT (N).Nkind = N_Extended_Return_Statement
         or else NT (N).Nkind = N_Free_Statement
-        or else NT (N).Nkind = N_Return_Statement);
+        or else NT (N).Nkind = N_Simple_Return_Statement);
       return Node2 (N);
    end Procedure_To_Call;
 
@@ -2670,7 +2670,7 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Extended_Return_Statement
-        or else NT (N).Nkind = N_Return_Statement);
+        or else NT (N).Nkind = N_Simple_Return_Statement);
       return Node5 (N);
    end Return_Statement_Entity;
 
@@ -2862,7 +2862,7 @@ package body Sinfo is
         or else NT (N).Nkind = N_Allocator
         or else NT (N).Nkind = N_Extended_Return_Statement
         or else NT (N).Nkind = N_Free_Statement
-        or else NT (N).Nkind = N_Return_Statement);
+        or else NT (N).Nkind = N_Simple_Return_Statement);
       return Node1 (N);
    end Storage_Pool;
 
@@ -3443,7 +3443,7 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Extended_Return_Statement
-        or else NT (N).Nkind = N_Return_Statement);
+        or else NT (N).Nkind = N_Simple_Return_Statement);
       Set_Flag5 (N, Val);
    end Set_By_Ref;
 
@@ -3500,7 +3500,7 @@ package body Sinfo is
      (N : Node_Id; Val : Boolean := True) is
    begin
       pragma Assert (False
-        or else NT (N).Nkind = N_Return_Statement);
+        or else NT (N).Nkind = N_Simple_Return_Statement);
       Set_Flag18 (N, Val);
    end Set_Comes_From_Extended_Return_Statement;
 
@@ -4031,7 +4031,7 @@ package body Sinfo is
         or else NT (N).Nkind = N_Extended_Return_Statement
         or else NT (N).Nkind = N_Function_Call
         or else NT (N).Nkind = N_Procedure_Call_Statement
-        or else NT (N).Nkind = N_Return_Statement
+        or else NT (N).Nkind = N_Simple_Return_Statement
         or else NT (N).Nkind = N_Type_Conversion);
       Set_Flag13 (N, Val);
    end Set_Do_Tag_Check;
@@ -4298,7 +4298,7 @@ package body Sinfo is
         or else NT (N).Nkind = N_Pragma_Argument_Association
         or else NT (N).Nkind = N_Qualified_Expression
         or else NT (N).Nkind = N_Raise_Statement
-        or else NT (N).Nkind = N_Return_Statement
+        or else NT (N).Nkind = N_Simple_Return_Statement
         or else NT (N).Nkind = N_Type_Conversion
         or else NT (N).Nkind = N_Unchecked_Expression
         or else NT (N).Nkind = N_Unchecked_Type_Conversion);
@@ -5601,7 +5601,7 @@ package body Sinfo is
         or else NT (N).Nkind = N_Allocator
         or else NT (N).Nkind = N_Extended_Return_Statement
         or else NT (N).Nkind = N_Free_Statement
-        or else NT (N).Nkind = N_Return_Statement);
+        or else NT (N).Nkind = N_Simple_Return_Statement);
       Set_Node2 (N, Val); -- semantic field, no parent set
    end Set_Procedure_To_Call;
 
@@ -5734,7 +5734,7 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Extended_Return_Statement
-        or else NT (N).Nkind = N_Return_Statement);
+        or else NT (N).Nkind = N_Simple_Return_Statement);
       Set_Node5 (N, Val); -- semantic field, no parent set
    end Set_Return_Statement_Entity;
 
@@ -5926,7 +5926,7 @@ package body Sinfo is
         or else NT (N).Nkind = N_Allocator
         or else NT (N).Nkind = N_Extended_Return_Statement
         or else NT (N).Nkind = N_Free_Statement
-        or else NT (N).Nkind = N_Return_Statement);
+        or else NT (N).Nkind = N_Simple_Return_Statement);
       Set_Node1 (N, Val); -- semantic field, no parent set
    end Set_Storage_Pool;
 

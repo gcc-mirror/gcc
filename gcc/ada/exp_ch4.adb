@@ -10006,7 +10006,7 @@ package body Exp_Ch4 is
                --  of the object designated by the result value identifies T.
                --  Constraint_Error is raised if this check fails.
 
-               if Nkind (Parent (N)) = Sinfo.N_Return_Statement then
+               if Nkind (Parent (N)) = N_Simple_Return_Statement then
                   declare
                      Func     : Entity_Id;
                      Func_Typ : Entity_Id;
