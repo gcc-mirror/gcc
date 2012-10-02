@@ -4147,7 +4147,8 @@ MODE ::= SUPPRESSED | CHECKED | MINIMIZED | ELIMINATED
 
 @noindent
 This pragma sets the current overflow mode to the given mode. For details
-of the meaning of these modes, see section on overflow checking in the
+of the meaning of these modes, please refer to the
+``Overflow Check Handling in GNAT'' appendix in the
 @value{EDITION} User's Guide. If only the @code{General} parameter is present,
 the given mode applies to all expressions. If both parameters are present,
 the @code{General} mode applies to expressions outside assertions, and
@@ -4169,6 +4170,7 @@ The pragma @code{Suppress (Overflow_Check)} sets mode
    General => Suppressed
 @end smallexample
 
+@noindent
 suppressing all overflow checking within and outside
 assertions.
 
@@ -4178,8 +4180,10 @@ The pragam @code{Unsuppress (Overflow_Check)} sets mode
    General => Checked
 @end smallexample
 
+@noindent
 which causes overflow checking of all intermediate overflows.
 This applies both inside and outside assertions.
+
 
 @node Pragma Passive
 @unnumberedsec Pragma Passive

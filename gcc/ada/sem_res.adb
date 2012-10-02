@@ -7162,7 +7162,7 @@ package body Sem_Res is
       --  a constraint check.
 
       if Is_Scalar_Type (Then_Typ)
-        and then Then_Typ /= Typ
+        and then Base_Type (Then_Typ) /= Base_Type (Typ)
       then
          Rewrite (Then_Expr, Convert_To (Typ, Then_Expr));
          Analyze_And_Resolve (Then_Expr, Typ);
