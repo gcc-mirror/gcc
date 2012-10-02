@@ -1808,6 +1808,13 @@ package body Sem_Ch5 is
                   return;
                else
                   Set_Etype (Def_Id, Entity (Element));
+
+                  --  If the container has a variable indexing aspect, the
+                  --  element is a variable and is modifiable in the loop.
+
+                  if Present (Find_Aspect (Typ, Aspect_Variable_Indexing)) then
+                     Set_Ekind (Def_Id, E_Variable);
+                  end if;
                end if;
             end;
 
