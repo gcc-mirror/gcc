@@ -1,5 +1,21 @@
 2012-10-02  Robert Dewar  <dewar@adacore.com>
 
+	* par_sco.adb, sem_ch3.adb, layout.adb, exp_ch7.adb, exp_imgv.adb,
+	exp_util.adb, exp_util.ads, exp_attr.adb, sinfo.adb, sinfo.ads,
+	exp_ch9.adb, style.ads, scos.ads, debug.adb, einfo.ads, scng.adb,
+	checks.adb, checks.ads, sem.adb, par-ch4.adb, sem_util.adb, types.h,
+	sem_res.adb, expander.adb, scans.ads, par.adb, exp_ch2.adb,
+	gnat1drv.adb, stylesw.ads, sem_elab.adb, exp_ch4.adb, exp_ch4.ads,
+	exp_ch6.adb, sem_ch4.adb, sem_ch4.ads, sem_ch6.adb,
+	opt.ads, sem_eval.adb, sem_eval.ads, exp_intr.adb, sprint.adb,
+	sprint.ads, styleg.ads: Change name Conditional_Expression to
+	If_Expression.
+	* gcc-interface/trans.c (gnat_to_gnu): Replace
+	N_Conditional_Expression by N_If_Expression.
+	* gcc-interface/Make-lang.in: Update dependencies.
+
+2012-10-02  Robert Dewar  <dewar@adacore.com>
+
 	* exp_ch4.adb (Expand_N_Op_Expon): Use expression with actions
 	for x ** 4.
 

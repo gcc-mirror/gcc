@@ -178,11 +178,11 @@ package body Sem_Res is
    procedure Resolve_Case_Expression           (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Character_Literal         (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Comparison_Op             (N : Node_Id; Typ : Entity_Id);
-   procedure Resolve_Conditional_Expression    (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Entity_Name               (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Equality_Op               (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Explicit_Dereference      (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Expression_With_Actions   (N : Node_Id; Typ : Entity_Id);
+   procedure Resolve_If_Expression             (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Indexed_Component         (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Integer_Literal           (N : Node_Id; Typ : Entity_Id);
    procedure Resolve_Logical_Op                (N : Node_Id; Typ : Entity_Id);
@@ -834,7 +834,7 @@ package body Sem_Res is
                          N_And_Then,
                          N_Case_Expression,
                          N_Case_Statement,
-                         N_Conditional_Expression,
+                         N_If_Expression,
                          N_If_Statement)
          then
             return False;
@@ -2342,7 +2342,7 @@ package body Sem_Res is
                elsif Nkind (N) = N_Character_Literal then
                   Set_Etype (N, Expr_Type);
 
-               elsif Nkind (N) = N_Conditional_Expression then
+               elsif Nkind (N) = N_If_Expression then
                   Set_Etype (N, Expr_Type);
 
                --  AI05-0139-2: Expression is overloaded because type has
@@ -2744,9 +2744,6 @@ package body Sem_Res is
             when N_Character_Literal
                              => Resolve_Character_Literal        (N, Ctx_Type);
 
-            when N_Conditional_Expression
-                             => Resolve_Conditional_Expression   (N, Ctx_Type);
-
             when N_Expanded_Name
                              => Resolve_Entity_Name              (N, Ctx_Type);
 
@@ -2764,6 +2761,9 @@ package body Sem_Res is
 
             when N_Identifier
                              => Resolve_Entity_Name              (N, Ctx_Type);
+
+            when N_If_Expression
+                             => Resolve_If_Expression            (N, Ctx_Type);
 
             when N_Indexed_Component
                              => Resolve_Indexed_Component        (N, Ctx_Type);
@@ -6128,75 +6128,6 @@ package body Sem_Res is
       Eval_Relational_Op (N);
    end Resolve_Comparison_Op;
 
-   ------------------------------------
-   -- Resolve_Conditional_Expression --
-   ------------------------------------
-
-   procedure Resolve_Conditional_Expression (N : Node_Id; Typ : Entity_Id) is
-      Condition : constant Node_Id := First (Expressions (N));
-      Then_Expr : constant Node_Id := Next (Condition);
-      Else_Expr : Node_Id          := Next (Then_Expr);
-      Else_Typ  : Entity_Id;
-      Then_Typ  : Entity_Id;
-
-   begin
-      Resolve (Condition, Any_Boolean);
-      Resolve (Then_Expr, Typ);
-      Then_Typ := Etype (Then_Expr);
-
-      --  When the "then" expression is of a scalar type different from the
-      --  result type, then insert a conversion to ensure the generation of
-      --  a constraint check.
-
-      if Is_Scalar_Type (Then_Typ)
-        and then Then_Typ /= Typ
-      then
-         Rewrite (Then_Expr, Convert_To (Typ, Then_Expr));
-         Analyze_And_Resolve (Then_Expr, Typ);
-      end if;
-
-      --  If ELSE expression present, just resolve using the determined type
-
-      if Present (Else_Expr) then
-         Resolve (Else_Expr, Typ);
-         Else_Typ := Etype (Else_Expr);
-
-         if Is_Scalar_Type (Else_Typ)
-           and then Else_Typ /= Typ
-         then
-            Rewrite (Else_Expr, Convert_To (Typ, Else_Expr));
-            Analyze_And_Resolve (Else_Expr, Typ);
-         end if;
-
-      --  If no ELSE expression is present, root type must be Standard.Boolean
-      --  and we provide a Standard.True result converted to the appropriate
-      --  Boolean type (in case it is a derived boolean type).
-
-      elsif Root_Type (Typ) = Standard_Boolean then
-         Else_Expr :=
-           Convert_To (Typ, New_Occurrence_Of (Standard_True, Sloc (N)));
-         Analyze_And_Resolve (Else_Expr, Typ);
-         Append_To (Expressions (N), Else_Expr);
-
-      else
-         Error_Msg_N ("can only omit ELSE expression in Boolean case", N);
-         Append_To (Expressions (N), Error);
-      end if;
-
-      Set_Etype (N, Typ);
-      Eval_Conditional_Expression (N);
-
-      --  If we still have a conditional expression, and overflow checks are
-      --  enabled in MINIMIZED or ELIMINATED modes, then set Do_Overflow_Check
-      --  to ensure that we handle overflow for dependent expressions.
-
-      if Nkind (N) = N_Conditional_Expression
-        and then Overflow_Check_Mode (Typ) in Minimized_Or_Eliminated
-      then
-         Set_Do_Overflow_Check (N);
-      end if;
-   end Resolve_Conditional_Expression;
-
    -----------------------------------------
    -- Resolve_Discrete_Subtype_Indication --
    -----------------------------------------
@@ -6863,12 +6794,12 @@ package body Sem_Res is
       R : constant Node_Id   := Right_Opnd (N);
       T : Entity_Id := Find_Unique_Type (L, R);
 
-      procedure Check_Conditional_Expression (Cond : Node_Id);
-      --  The resolution rule for conditional expressions requires that each
-      --  such must have a unique type. This means that if several dependent
-      --  expressions are of a non-null anonymous access type, and the context
-      --  does not impose an expected type (as can be the case in an equality
-      --  operation) the expression must be rejected.
+      procedure Check_If_Expression (Cond : Node_Id);
+      --  The resolution rule for if expressions requires that each such must
+      --  have a unique type. This means that if several dependent expressions
+      --  are of a non-null anonymous access type, and the context does not
+      --  impose an expected type (as can be the case in an equality operation)
+      --  the expression must be rejected.
 
       function Find_Unique_Access_Type return Entity_Id;
       --  In the case of allocators, make a last-ditch attempt to find a single
@@ -6876,27 +6807,26 @@ package body Sem_Res is
       --  dubious, and of no interest to any real code, but c48008a makes it
       --  all worthwhile.
 
-      ----------------------------------
-      -- Check_Conditional_Expression --
-      ----------------------------------
+      -------------------------
+      -- Check_If_Expression --
+      -------------------------
 
-      procedure Check_Conditional_Expression (Cond : Node_Id) is
+      procedure Check_If_Expression (Cond : Node_Id) is
          Then_Expr : Node_Id;
          Else_Expr : Node_Id;
 
       begin
-         if Nkind (Cond) = N_Conditional_Expression then
+         if Nkind (Cond) = N_If_Expression then
             Then_Expr := Next (First (Expressions (Cond)));
             Else_Expr := Next (Then_Expr);
 
             if Nkind (Then_Expr) /= N_Null
               and then Nkind (Else_Expr) /= N_Null
             then
-               Error_Msg_N
-                 ("cannot determine type of conditional expression", Cond);
+               Error_Msg_N ("cannot determine type of if expression", Cond);
             end if;
          end if;
-      end Check_Conditional_Expression;
+      end Check_If_Expression;
 
       -----------------------------
       -- Find_Unique_Access_Type --
@@ -6972,9 +6902,11 @@ package body Sem_Res is
                return;
             end if;
 
-         --  Conditional expressions must have a single type, and if the
-         --  context does not impose one the dependent expressions cannot
-         --  be anonymous access types.
+         --  If expressions must have a single type, and if the context does
+         --  not impose one the dependent expressions cannot be anonymous
+         --  access types.
+
+         --  Why no similar processing for case expressions???
 
          elsif Ada_Version >= Ada_2012
            and then Ekind_In (Etype (L), E_Anonymous_Access_Type,
@@ -6982,8 +6914,8 @@ package body Sem_Res is
            and then Ekind_In (Etype (R), E_Anonymous_Access_Type,
                                          E_Anonymous_Access_Subprogram_Type)
          then
-            Check_Conditional_Expression (L);
-            Check_Conditional_Expression (R);
+            Check_If_Expression (L);
+            Check_If_Expression (R);
          end if;
 
          Resolve (L, T);
@@ -6994,6 +6926,7 @@ package body Sem_Res is
          --  operands have equal static bounds.
 
          if Is_Array_Type (T) then
+
             --  Protect call to Matching_Static_Array_Bounds to avoid costly
             --  operation if not needed.
 
@@ -7207,6 +7140,75 @@ package body Sem_Res is
    begin
       Set_Etype (N, Typ);
    end Resolve_Expression_With_Actions;
+
+   ---------------------------
+   -- Resolve_If_Expression --
+   ---------------------------
+
+   procedure Resolve_If_Expression (N : Node_Id; Typ : Entity_Id) is
+      Condition : constant Node_Id := First (Expressions (N));
+      Then_Expr : constant Node_Id := Next (Condition);
+      Else_Expr : Node_Id          := Next (Then_Expr);
+      Else_Typ  : Entity_Id;
+      Then_Typ  : Entity_Id;
+
+   begin
+      Resolve (Condition, Any_Boolean);
+      Resolve (Then_Expr, Typ);
+      Then_Typ := Etype (Then_Expr);
+
+      --  When the "then" expression is of a scalar type different from the
+      --  result type, then insert a conversion to ensure the generation of
+      --  a constraint check.
+
+      if Is_Scalar_Type (Then_Typ)
+        and then Then_Typ /= Typ
+      then
+         Rewrite (Then_Expr, Convert_To (Typ, Then_Expr));
+         Analyze_And_Resolve (Then_Expr, Typ);
+      end if;
+
+      --  If ELSE expression present, just resolve using the determined type
+
+      if Present (Else_Expr) then
+         Resolve (Else_Expr, Typ);
+         Else_Typ := Etype (Else_Expr);
+
+         if Is_Scalar_Type (Else_Typ)
+           and then Else_Typ /= Typ
+         then
+            Rewrite (Else_Expr, Convert_To (Typ, Else_Expr));
+            Analyze_And_Resolve (Else_Expr, Typ);
+         end if;
+
+      --  If no ELSE expression is present, root type must be Standard.Boolean
+      --  and we provide a Standard.True result converted to the appropriate
+      --  Boolean type (in case it is a derived boolean type).
+
+      elsif Root_Type (Typ) = Standard_Boolean then
+         Else_Expr :=
+           Convert_To (Typ, New_Occurrence_Of (Standard_True, Sloc (N)));
+         Analyze_And_Resolve (Else_Expr, Typ);
+         Append_To (Expressions (N), Else_Expr);
+
+      else
+         Error_Msg_N ("can only omit ELSE expression in Boolean case", N);
+         Append_To (Expressions (N), Error);
+      end if;
+
+      Set_Etype (N, Typ);
+      Eval_If_Expression (N);
+
+      --  If we still have a if expression, and overflow checks are enabled in
+      --  MINIMIZED or ELIMINATED modes, then set Do_Overflow_Check to ensure
+      --  that we handle overflow for dependent expressions.
+
+      if Nkind (N) = N_If_Expression
+        and then Overflow_Check_Mode (Typ) in Minimized_Or_Eliminated
+      then
+         Set_Do_Overflow_Check (N);
+      end if;
+   end Resolve_If_Expression;
 
    -------------------------------
    -- Resolve_Indexed_Component --

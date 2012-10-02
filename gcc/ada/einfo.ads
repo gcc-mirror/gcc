@@ -3681,7 +3681,7 @@ package Einfo is
 --    Status_Flag_Or_Transient_Decl (Node15)
 --       Present in variables and constants. Applies to objects that require
 --       special treatment by the finalization machinery. Such examples are
---       extended return results, conditional expression results and objects
+--       extended return results, if and case expression results and objects
 --       inside N_Expression_With_Actions nodes. The attribute contains the
 --       entity of a flag which specifies particular behavior over a region
 --       of code or the declaration of a "hook" object.

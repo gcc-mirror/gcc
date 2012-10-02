@@ -168,9 +168,6 @@ package body Sem is
          when N_Component_Declaration =>
             Analyze_Component_Declaration (N);
 
-         when N_Conditional_Expression =>
-            Analyze_Conditional_Expression (N);
-
          when N_Conditional_Entry_Call =>
             Analyze_Conditional_Entry_Call (N);
 
@@ -278,6 +275,9 @@ package body Sem is
 
          when N_Identifier =>
             Analyze_Identifier (N);
+
+         when N_If_Expression =>
+            Analyze_If_Expression (N);
 
          when N_If_Statement =>
             Analyze_If_Statement (N);

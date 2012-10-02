@@ -268,8 +268,8 @@ package Stylesw is
 
    Style_Check_Xtra_Parens : Boolean := False;
    --  This can be set True by using the -gnatyx switch. If true, then it is
-   --  not allowed to enclose entire conditional expressions in parentheses
-   --  (C style).
+   --  not allowed to enclose entire expressions in tests in parentheses
+   --  (C style), e.g. if (x = y) then ... is not allowed.
 
    Style_Max_Line_Length : Int := 0;
    --  Value used to check maximum line length. Gets reset as a result of

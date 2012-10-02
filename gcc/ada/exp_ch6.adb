@@ -4049,7 +4049,10 @@ package body Exp_Ch6 is
          Context := Parent (N);
          while Present (Context) loop
 
-            if Nkind (Context) = N_Conditional_Expression then
+            --  The following could use a comment (and why is N_Case_Expression
+            --  not treated in a similar manner ???
+
+            if Nkind (Context) = N_If_Expression then
                exit;
 
             --  Stop the search when reaching any statement because we have
@@ -4092,13 +4095,15 @@ package body Exp_Ch6 is
 
       Remove_Side_Effects (N);
 
-      --  The function call is part of a conditional expression alternative.
-      --  The temporary result must live as long as the conditional expression
-      --  itself, otherwise it will be finalized too early. Mark the transient
-      --  as processed to avoid untimely finalization.
+      --  The function call is part of an if expression dependent expression.
+      --  The temporary result must live as long as the if expression itself,
+      --  otherwise it will be finalized too early. Mark the transient as
+      --  processed to avoid untimely finalization.
+
+      --  Why no special handling for case expressions here ???
 
       if Present (Context)
-        and then Nkind (Context) = N_Conditional_Expression
+        and then Nkind (Context) = N_If_Expression
         and then Nkind (N) = N_Explicit_Dereference
       then
          Set_Is_Processed_Transient (Entity (Prefix (N)));

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -182,9 +182,6 @@ package body Expander is
                   when N_Conditional_Entry_Call =>
                      Expand_N_Conditional_Entry_Call (N);
 
-                  when N_Conditional_Expression =>
-                     Expand_N_Conditional_Expression (N);
-
                   when N_Delay_Relative_Statement =>
                      Expand_N_Delay_Relative_Statement (N);
 
@@ -247,6 +244,9 @@ package body Expander is
 
                   when N_Identifier =>
                      Expand_N_Identifier (N);
+
+                  when N_If_Expression =>
+                     Expand_N_If_Expression (N);
 
                   when N_Indexed_Component =>
                      Expand_N_Indexed_Component (N);

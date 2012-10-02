@@ -3293,11 +3293,11 @@ package body Exp_Util is
                   return;
                end if;
 
-            --  Then or Else operand of conditional expression. Add actions to
-            --  Then_Actions or Else_Actions field as appropriate. The actions
-            --  will be moved further out when the conditional is expanded.
+            --  Then or Else dependent expression of an if expression. Add
+            --  actions to Then_Actions or Else_Actions field as appropriate.
+            --  The actions will be moved further out when the if is expanded.
 
-            when N_Conditional_Expression =>
+            when N_If_Expression =>
                declare
                   ThenX : constant Node_Id := Next (First (Expressions (P)));
                   ElseX : constant Node_Id := Next (ThenX);
@@ -3311,9 +3311,9 @@ package body Exp_Util is
                      null;
 
                   --  Actions belong to the then expression, temporarily place
-                  --  them as Then_Actions of the conditional expr. They will
-                  --  be moved to the proper place later when the conditional
-                  --  expression is expanded.
+                  --  them as Then_Actions of the if expression. They will be
+                  --  moved to the proper place later when the if expression
+                  --  is expanded.
 
                   elsif N = ThenX then
                      if Present (Then_Actions (P)) then
@@ -3326,10 +3326,10 @@ package body Exp_Util is
 
                      return;
 
-                  --  Actions belong to the else expression, temporarily
-                  --  place them as Else_Actions of the conditional expr.
-                  --  They will be moved to the proper place later when
-                  --  the conditional expression is expanded.
+                  --  Actions belong to the else expression, temporarily place
+                  --  them as Else_Actions of the if expression. They will be
+                  --  moved to the proper place later when the if expression
+                  --  is expanded.
 
                   elsif N = ElseX then
                      if Present (Else_Actions (P)) then
@@ -7187,8 +7187,8 @@ package body Exp_Util is
             then
                return True;
 
-            --  Processing for intermediate results of conditional expressions
-            --  where one of the alternatives uses a controlled function call.
+            --  Processing for intermediate results of if expressions where
+            --  one of the alternatives uses a controlled function call.
 
             elsif Is_Access_Type (Obj_Typ)
               and then Present (Status_Flag_Or_Transient_Decl (Obj_Id))

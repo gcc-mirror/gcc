@@ -10194,7 +10194,7 @@ package body Exp_Ch9 is
 
          if Present (Condition (Alt)) then
             Expr :=
-              Make_Conditional_Expression (Eloc, New_List (
+              Make_If_Expression (Eloc, New_List (
                 Condition (Alt),
                 Entry_Index_Expression (Eloc, Eent, Index, Scope (Eent)),
                 New_Reference_To (RTE (RE_Null_Task_Entry), Eloc)));
@@ -10582,7 +10582,7 @@ package body Exp_Ch9 is
       --  In the above declaration, null-body is True if the corresponding
       --  accept has no body, and false otherwise. The entry is either the
       --  entry index expression if there is no guard, or if a guard is
-      --  present, then a conditional expression of the form:
+      --  present, then an if expression of the form:
 
       --    (if guard then entry-index else Null_Task_Entry)
 
@@ -10753,7 +10753,7 @@ package body Exp_Ch9 is
          --  Simple_Mode; otherwise use Terminate_Mode.
 
          if Present (Condition (Terminate_Alt)) then
-            Select_Mode := Make_Conditional_Expression (Loc,
+            Select_Mode := Make_If_Expression (Loc,
               New_List (Condition (Terminate_Alt),
                         New_Reference_To (RTE (RE_Terminate_Mode), Loc),
                         New_Reference_To (RTE (RE_Simple_Mode), Loc)));

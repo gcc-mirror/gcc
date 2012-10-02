@@ -381,7 +381,7 @@ procedure Gnat1drv is
 
       --  Set switch indicating if back end can handle limited types, and
       --  guarantee that no incorrect copies are made (e.g. in the context
-      --  of a conditional expression).
+      --  of an if or case expression).
 
       --  Debug flag -gnatd.L decisively sets usage on
 

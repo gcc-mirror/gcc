@@ -138,7 +138,7 @@ package Checks is
    --  Handle overflow checking for an arithmetic operator. Also handles the
    --  cases of ELIMINATED and MINIMIZED overflow checking mode. If the mode
    --  is one of the latter two, then this routine can also be called with
-   --  a conditional expression node to make sure that we properly handle
+   --  an if or case expression node to make sure that we properly handle
    --  overflow checking for dependent expressions. This routine handles
    --  front end vs back end overflow checks (in the front end case it expands
    --  the necessary check). Note that divide is handled separately using

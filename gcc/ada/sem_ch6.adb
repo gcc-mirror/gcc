@@ -8659,10 +8659,6 @@ package body Sem_Ch6 is
                    and then
                  FCE (Expression (E1), Expression (E2));
 
-            when N_Conditional_Expression =>
-               return
-                 FCL (Expressions (E1), Expressions (E2));
-
             when N_Explicit_Dereference =>
                return
                  FCE (Prefix (E1), Prefix (E2));
@@ -8681,6 +8677,10 @@ package body Sem_Ch6 is
                    and then
                  FCL (Parameter_Associations (E1),
                       Parameter_Associations (E2));
+
+            when N_If_Expression =>
+               return
+                 FCL (Expressions (E1), Expressions (E2));
 
             when N_Indexed_Component =>
                return

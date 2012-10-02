@@ -1964,11 +1964,11 @@ package body Layout is
          pragma Warnings (Off, SO_Ref);
 
          RM_Siz_Expr : Node_Id := Empty;
-         --  Expression for the evolving RM_Siz value. This is typically a
-         --  conditional expression which involves tests of discriminant values
-         --  that are formed as references to the entity V. At the end of
-         --  scanning all the components, a suitable function is constructed
-         --  in which V is the parameter.
+         --  Expression for the evolving RM_Siz value. This is typically an if
+         --  expression which involves tests of discriminant values that are
+         --  formed as references to the entity V. At the end of scanning all
+         --  the components, a suitable function is constructed in which V is
+         --  the parameter.
 
          -----------------------
          -- Local Subprograms --
@@ -2212,7 +2212,7 @@ package body Layout is
                         end if;
 
                         RM_Siz_Expr :=
-                          Make_Conditional_Expression (Loc,
+                          Make_If_Expression (Loc,
                             Expressions =>
                               New_List
                                 (Dtest, Bits_To_SU (RM_SizV), RM_Siz_Expr));

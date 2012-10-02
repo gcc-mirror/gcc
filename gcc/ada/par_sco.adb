@@ -112,9 +112,9 @@ package body Par_SCO is
    --  If N is Empty, has no effect. Otherwise scans the tree for the node N,
    --  to output any decisions it contains. T is one of IEGPWX (for context of
    --  expression: if/exit when/entry guard/pragma/while/expression). If T is
-   --  other than X, the node N is the conditional expression involved, and a
-   --  decision is always present (at the very least a simple decision is
-   --  present at the top level).
+   --  other than X, the node N is the if expression involved, and a decision
+   --  is always present (at the very least a simple decision is present at the
+   --  top level).
 
    procedure Process_Decisions
      (L           : List_Id;
@@ -614,12 +614,15 @@ package body Par_SCO is
 
             --  Case expression
 
+            --  Really hard to believe this is correct given the special
+            --  handling for if expressions below ???
+
             when N_Case_Expression =>
                return OK; -- ???
 
-            --  Conditional expression, processed like an if statement
+            --  If expression, processed like an if statement
 
-            when N_Conditional_Expression =>
+            when N_If_Expression =>
                declare
                   Cond : constant Node_Id := First (Expressions (N));
                   Thnx : constant Node_Id := Next (Cond);

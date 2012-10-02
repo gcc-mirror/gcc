@@ -33,10 +33,10 @@ package Sem_Ch4  is
    procedure Analyze_Case_Expression           (N : Node_Id);
    procedure Analyze_Comparison_Op             (N : Node_Id);
    procedure Analyze_Concatenation             (N : Node_Id);
-   procedure Analyze_Conditional_Expression    (N : Node_Id);
    procedure Analyze_Equality_Op               (N : Node_Id);
    procedure Analyze_Explicit_Dereference      (N : Node_Id);
    procedure Analyze_Expression_With_Actions   (N : Node_Id);
+   procedure Analyze_If_Expression             (N : Node_Id);
    procedure Analyze_Logical_Op                (N : Node_Id);
    procedure Analyze_Membership_Op             (N : Node_Id);
    procedure Analyze_Mod                       (N : Node_Id);

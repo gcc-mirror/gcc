@@ -1570,79 +1570,6 @@ package body Sem_Ch4 is
       Operator_Check (N);
    end Analyze_Concatenation_Rest;
 
-   ------------------------------------
-   -- Analyze_Conditional_Expression --
-   ------------------------------------
-
-   procedure Analyze_Conditional_Expression (N : Node_Id) is
-      Condition : constant Node_Id := First (Expressions (N));
-      Then_Expr : constant Node_Id := Next (Condition);
-      Else_Expr : Node_Id;
-
-   begin
-      --  Defend against error of missing expressions from previous error
-
-      if No (Then_Expr) then
-         return;
-      end if;
-
-      Check_SPARK_Restriction ("conditional expression is not allowed", N);
-
-      Else_Expr := Next (Then_Expr);
-
-      if Comes_From_Source (N) then
-         Check_Compiler_Unit (N);
-      end if;
-
-      Analyze_Expression (Condition);
-      Analyze_Expression (Then_Expr);
-
-      if Present (Else_Expr) then
-         Analyze_Expression (Else_Expr);
-      end if;
-
-      --  If then expression not overloaded, then that decides the type
-
-      if not Is_Overloaded (Then_Expr) then
-         Set_Etype (N, Etype (Then_Expr));
-
-      --  Case where then expression is overloaded
-
-      else
-         declare
-            I  : Interp_Index;
-            It : Interp;
-
-         begin
-            Set_Etype (N, Any_Type);
-
-            --  Shouldn't the following statement be down in the ELSE of the
-            --  following loop? ???
-
-            Get_First_Interp (Then_Expr, I, It);
-
-            --  if no Else_Expression the conditional must be boolean
-
-            if No (Else_Expr) then
-               Set_Etype (N, Standard_Boolean);
-
-            --  Else_Expression Present. For each possible intepretation of
-            --  the Then_Expression, add it only if the Else_Expression has
-            --  a compatible type.
-
-            else
-               while Present (It.Nam) loop
-                  if Has_Compatible_Type (Else_Expr, It.Typ) then
-                     Add_One_Interp (N, It.Typ, It.Typ);
-                  end if;
-
-                  Get_Next_Interp (I, It);
-               end loop;
-            end if;
-         end;
-      end if;
-   end Analyze_Conditional_Expression;
-
    -------------------------
    -- Analyze_Equality_Op --
    -------------------------
@@ -1980,6 +1907,79 @@ package body Sem_Ch4 is
       Analyze_Expression (Expression (N));
       Set_Etype (N, Etype (Expression (N)));
    end Analyze_Expression_With_Actions;
+
+   ---------------------------
+   -- Analyze_If_Expression --
+   ---------------------------
+
+   procedure Analyze_If_Expression (N : Node_Id) is
+      Condition : constant Node_Id := First (Expressions (N));
+      Then_Expr : constant Node_Id := Next (Condition);
+      Else_Expr : Node_Id;
+
+   begin
+      --  Defend against error of missing expressions from previous error
+
+      if No (Then_Expr) then
+         return;
+      end if;
+
+      Check_SPARK_Restriction ("if expression is not allowed", N);
+
+      Else_Expr := Next (Then_Expr);
+
+      if Comes_From_Source (N) then
+         Check_Compiler_Unit (N);
+      end if;
+
+      Analyze_Expression (Condition);
+      Analyze_Expression (Then_Expr);
+
+      if Present (Else_Expr) then
+         Analyze_Expression (Else_Expr);
+      end if;
+
+      --  If then expression not overloaded, then that decides the type
+
+      if not Is_Overloaded (Then_Expr) then
+         Set_Etype (N, Etype (Then_Expr));
+
+      --  Case where then expression is overloaded
+
+      else
+         declare
+            I  : Interp_Index;
+            It : Interp;
+
+         begin
+            Set_Etype (N, Any_Type);
+
+            --  Shouldn't the following statement be down in the ELSE of the
+            --  following loop? ???
+
+            Get_First_Interp (Then_Expr, I, It);
+
+            --  if no Else_Expression the conditional must be boolean
+
+            if No (Else_Expr) then
+               Set_Etype (N, Standard_Boolean);
+
+            --  Else_Expression Present. For each possible intepretation of
+            --  the Then_Expression, add it only if the Else_Expression has
+            --  a compatible type.
+
+            else
+               while Present (It.Nam) loop
+                  if Has_Compatible_Type (Else_Expr, It.Typ) then
+                     Add_One_Interp (N, It.Typ, It.Typ);
+                  end if;
+
+                  Get_Next_Interp (I, It);
+               end loop;
+            end if;
+         end;
+      end if;
+   end Analyze_If_Expression;
 
    ------------------------------------
    -- Analyze_Indexed_Component_Form --
