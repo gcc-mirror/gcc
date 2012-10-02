@@ -1,3 +1,8 @@
+2012-10-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Find_Direct_Name): The left-hand side of an
+	assignment may designate a generalized reference.
+
 2012-10-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* types.h (N_Return_Statement): Delete.
