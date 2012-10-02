@@ -823,7 +823,10 @@ package Sinfo is
    --    See also the description of Do_Range_Check for this case. The only
    --    attribute references which use this flag are Pred and Succ, where it
    --    means that the result should be checked for going outside the base
-   --    range. Note that this flag is not set for modular types.
+   --    range. Note that this flag is not set for modular types. This flag is
+   --    also set on conditional expression nodes if we are operating in either
+   --    MINIMIZED or ELIMINATED overflow checking mode (to make sure that we
+   --    properly process overflow checking for dependent expressions).
 
    --  Do_Range_Check (Flag9-Sem)
    --    This flag is set on an expression which appears in a context where a
@@ -3859,18 +3862,91 @@ package Sinfo is
       --  Note on overflow handling: When the overflow checking mode is set to
       --  MINIMIZED or ELIMINATED, nodes for signed arithmetic operations may
       --  be modified to use a larger type for the operands and result. In
-      --  these cases, the back end does not need the Entity field anyway, so
-      --  there is no point in setting it. In fact we reuse the Entity field to
-      --  record the possible range of the result. Entity points to an N_Range
-      --  node whose Low_Bound and High_Bound fields point to integer literal
-      --  nodes containing the computed bounds. These range nodes are only set
-      --  for intermediate nodes whose parents are themselves either arithmetic
-      --  operators, or comparison or membership tests. The computed ranges are
-      --  then used in processing the parent operation. In the case where the
-      --  computed range exceeds that of Long_Long_Integer, and we are running
-      --  in ELIMINATED mode, the operator node will be changed to be a call to
-      --  the appropriate routine in System.Bignums, and in this case we forget
-      --  about keeping track of the range.
+      --  the case where the computed range exceeds that of Long_Long_Integer,
+      --  and we are running in ELIMINATED mode, the operator node will be
+      --  changed to be a call to the appropriate routine in System.Bignums.
+
+      ------------------------------------
+      -- 4.5.7  Conditional Expressions --
+      ------------------------------------
+
+      --  CONDITIONAL_EXPRESSION ::= IF_EXPRESSION | CASE_EXPRESSION
+
+      --------------------------
+      -- 4.5.7  If Expression --
+      ----------------------------
+
+      --  IF_EXPRESSION ::=
+      --    if CONDITION then DEPENDENT_EXPRESSION
+      --                {elsif CONDITION then DEPENDENT_EXPRESSION}
+      --                [else DEPENDENT_EXPRESSION]
+
+      --  DEPENDENT_EXPRESSION ::= EXPRESSION
+
+      --  Note: if we have (IF x1 THEN x2 ELSIF x3 THEN x4 ELSE x5) then it
+      --  is represented as (IF x1 THEN x2 ELSE (IF x3 THEN x4 ELSE x5)) and
+      --  the Is_Elsif flag is set on the inner conditional expression.
+
+      --  Note: to be consistent with the grammar, the following node should
+      --  really be named N_If_Expression, but historically it was always
+      --  N_Conditional_Expression, so it would be a bit of an earthquake
+      --  to change, and actually conditional expression seems a bit clearer
+      --  than if expression in typical contexts, so we decide to leave it!
+
+      --  N_Conditional_Expression
+      --  Sloc points to IF or ELSIF keyword
+      --  Expressions (List1)
+      --  Then_Actions (List2-Sem)
+      --  Else_Actions (List3-Sem)
+      --  Is_Elsif (Flag13) (set if comes from ELSIF)
+      --  Do_Overflow_Check (Flag17-Sem)
+      --  plus fields for expression
+
+      --  Expressions here is a three-element list, whose first element is the
+      --  condition, the second element is the dependent expression after THEN
+      --  and the third element is the dependent expression after the ELSE
+      --  (explicitly set to True if missing).
+
+      --  Note: the Then_Actions and Else_Actions fields are always set to
+      --  No_List in the tree passed to Gigi. These fields are used only
+      --  for temporary processing purposes in the expander.
+
+      ----------------------------
+      -- 4.5.7  Case Expression --
+      ----------------------------
+
+      --  CASE_EXPRESSION ::=
+      --    case SELECTING_EXPRESSION is
+      --      CASE_EXPRESSION_ALTERNATIVE
+      --      {CASE_EXPRESSION_ALTERNATIVE}
+
+      --  Note that the Alternatives cannot include pragmas (this contrasts
+      --  with the situation of case statements where pragmas are allowed).
+
+      --  N_Case_Expression
+      --  Sloc points to CASE
+      --  Expression (Node3) (the selecting expression)
+      --  Alternatives (List4) (the case expression alternatives)
+      --  Do_Overflow_Check (Flag17-Sem)
+
+      ----------------------------------------
+      -- 4.5.7  Case Expression Alternative --
+      ----------------------------------------
+
+      --  CASE_EXPRESSION_ALTERNATIVE ::=
+      --    when DISCRETE_CHOICE_LIST =>
+      --      DEPENDENT_EXPRESSION
+
+      --  N_Case_Expression_Alternative
+      --  Sloc points to WHEN
+      --  Actions (List1)
+      --  Discrete_Choices (List4)
+      --  Expression (Node3)
+
+      --  Note: The Actions field temporarily holds any actions associated with
+      --  evaluation of the Expression. During expansion of the case expression
+      --  these actions are wrapped into an N_Expressions_With_Actions node
+      --  replacing the original expression.
 
       ---------------------------------
       -- 4.5.9 Quantified Expression --
@@ -6877,86 +6953,9 @@ package Sinfo is
    --  show this syntax.
 
    --  Note: Case_Expression and Conditional_Expression is in this section for
-   --  now, since they are extensions. We will move them to their appropriate
-   --  places when they are officially approved as extensions (and then we will
-   --  know what the exact grammar and place in the Reference Manual is!)
-
-      ---------------------
-      -- Case Expression --
-      ---------------------
-
-      --  CASE_EXPRESSION ::=
-      --    case EXPRESSION is
-      --      CASE_EXPRESSION_ALTERNATIVE
-      --      {CASE_EXPRESSION_ALTERNATIVE}
-
-      --  Note that the Alternatives cannot include pragmas (this contrasts
-      --  with the situation of case statements where pragmas are allowed).
-
-      --  N_Case_Expression
-      --  Sloc points to CASE
-      --  Expression (Node3)
-      --  Alternatives (List4)
-
-      ---------------------------------
-      -- Case Expression Alternative --
-      ---------------------------------
-
-      --  CASE_STATEMENT_ALTERNATIVE ::=
-      --    when DISCRETE_CHOICE_LIST =>
-      --      EXPRESSION
-
-      --  N_Case_Expression_Alternative
-      --  Sloc points to WHEN
-      --  Actions (List1)
-      --  Discrete_Choices (List4)
-      --  Expression (Node3)
-
-      --  Note: The Actions field temporarily holds any actions associated with
-      --  evaluation of the Expression. During expansion of the case expression
-      --  these actions are wrapped into an N_Expressions_With_Actions node
-      --  replacing the original expression.
-
-      ----------------------------
-      -- Conditional Expression --
-      ----------------------------
-
-      --  This node is used to represent an expression corresponding to the
-      --  C construct (condition ? then-expression : else_expression), where
-      --  Expressions is a three element list, whose first expression is the
-      --  condition, and whose second and third expressions are the then and
-      --  else expressions respectively.
-
-      --  Note: the Then_Actions and Else_Actions fields are always set to
-      --  No_List in the tree passed to Gigi. These fields are used only
-      --  for temporary processing purposes in the expander.
-
-      --  The Ada language does not permit conditional expressions, however
-      --  this is under discussion as a possible extension by the ARG, and we
-      --  have implemented a form of this capability in GNAT under control of
-      --  the -gnatX switch. The syntax is:
-
-      --  CONDITIONAL_EXPRESSION ::=
-      --    if EXPRESSION then EXPRESSION
-      --                  {elsif EXPRESSION then EXPRESSION}
-      --                  [else EXPRESSION]
-
-      --  And we add the additional constructs
-
-      --  PRIMARY ::= ( CONDITIONAL_EXPRESSION )
-      --  PRAGMA_ARGUMENT_ASSOCIATION ::= CONDITIONAL_EXPRESSION
-
-      --  Note: if we have (IF x1 THEN x2 ELSIF x3 THEN x4 ELSE x5) then it
-      --  is represented as (IF x1 THEN x2 ELSE (IF x3 THEN x4 ELSE x5)) and
-      --  the Is_Elsif flag is set on the inner conditional expression.
-
-      --  N_Conditional_Expression
-      --  Sloc points to IF or ELSIF keyword
-      --  Expressions (List1)
-      --  Then_Actions (List2-Sem)
-      --  Else_Actions (List3-Sem)
-      --  Is_Elsif (Flag13) (set if comes from ELSIF)
-      --  plus fields for expression
+   --  historical reasons, since they were initially extensions. Now that they
+   --  are an official part of Ada 2012, we should move them to the appropriate
+   --  section of this package. ???
 
       --------------
       -- Contract --

@@ -1,3 +1,22 @@
+2012-10-02  Robert Dewar  <dewar@adacore.com>
+
+	* checks.adb (Apply_Arithmetic_Overflow_Checked_Suppressed):
+	New name for Apply_Arithmetic_Overflow_Normal
+	(Apply_Arithmetic_Overflow_Minimized_Eliminated):
+	Add handling for conditional expressions
+	(Is_Signed_Integer_Arithmetic_Op): Now includes conditional
+	expressions (Minimize_Eliminate_Overflow_Checks): Handle
+	conditional expressions.
+	* checks.ads: Minor comment fixes.
+	* exp_ch4.adb (Expand_N_Case_Expression): Call
+	Apply_Arithmetic_Overflow_Check (Expand_N_Conditional_Expression):
+	Call Apply_Arithmetic_Overflow_Check
+	* s-bignum.adb (Normalize): Remove incorrect precondition.
+	* sem_res.adb (Resolve_Case_Expression): Set Do_Overflow_Check
+	flag (Resolve_Conditional_Expression): Set Do_Overflow_Check flag.
+	* sinfo.adb: Add Do_Overflow_Check for conditional expressions.
+	* sinfo.ads: Minor documentation updates.
+
 2012-10-02  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch4.adb (Expand_N_Case_Expression): Do not introduce

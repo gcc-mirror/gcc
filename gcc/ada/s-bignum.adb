@@ -104,8 +104,7 @@ package body System.Bignums is
 
    function Normalize
      (X   : Digit_Vector;
-      Neg : Boolean := False) return Bignum
-   with Pre  => X'First = 1;
+      Neg : Boolean := False) return Bignum;
    --  Given a digit vector and sign, allocate and construct a Bignum value.
    --  Note that X may have leading zeroes which must be removed, and if the
    --  result is zero, the sign is forced positive.

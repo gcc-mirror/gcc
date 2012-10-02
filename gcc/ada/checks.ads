@@ -135,13 +135,14 @@ package Checks is
    --  larger than the overlaid object.
 
    procedure Apply_Arithmetic_Overflow_Check (N : Node_Id);
-   --  Given a binary arithmetic operator (+ - *) expand a software integer
-   --  overflow check using range checks on a larger checking type or a call
-   --  to an appropriate runtime routine. This is used for all three operators
-   --  for the signed integer case, and for +/- in the fixed-point case. The
-   --  check is expanded only if Software_Overflow_Checking is enabled and
-   --  Do_Overflow_Check is set on node N. Note that divide is handled
-   --  separately using Apply_Arithmetic_Divide_Overflow_Check.
+   --  Handle overflow checking for an arithmetic operator. Also handles the
+   --  cases of ELIMINATED and MINIMIZED overflow checking mode. If the mode
+   --  is one of the latter two, then this routine can also be called with
+   --  a conditional expression node to make sure that we properly handle
+   --  overflow checking for dependent expressions. This routine handles
+   --  front end vs back end overflow checks (in the front end case it expands
+   --  the necessary check). Note that divide is handled separately using
+   --  Apply_Arithmetic_Divide_Overflow_Check.
 
    procedure Apply_Constraint_Check
      (N          : Node_Id;

@@ -193,15 +193,17 @@ package body Checks is
    -- Local Subprograms --
    -----------------------
 
-   procedure Apply_Arithmetic_Overflow_Normal (N : Node_Id);
+   procedure Apply_Arithmetic_Overflow_Checked_Suppressed (N : Node_Id);
    --  Used to apply arithmetic overflow checks for all cases except operators
    --  on signed arithmetic types in Minimized/Eliminate case (for which we
-   --  call Apply_Arithmetic_Overflow_Minimized_Eliminated below).
+   --  call Apply_Arithmetic_Overflow_Minimized_Eliminated below). N is always
+   --  a signed integer arithmetic operator (conditional expression excluded).
 
    procedure Apply_Arithmetic_Overflow_Minimized_Eliminated (Op : Node_Id);
    --  Used to apply arithmetic overflow checks for the case where the overflow
    --  checking mode is Minimized or Eliminated (and the Do_Overflow_Check flag
-   --  is known to be set) and we have an signed integer arithmetic op.
+   --  is known to be set) and we have an signed integer arithmetic op (which
+   --  includes the case of conditional expressions).
 
    procedure Apply_Division_Check
      (N   : Node_Id;
@@ -311,8 +313,10 @@ package body Checks is
 
    function Is_Signed_Integer_Arithmetic_Op (N : Node_Id) return Boolean;
    --  Returns True if node N is for an arithmetic operation with signed
-   --  integer operands. This is the kind of node for which special handling
-   --  applies in MINIMIZED or EXTENDED overflow checking mode.
+   --  integer operands. This includes unary and binary operators, and also
+   --  if and case expression nodes where the dependent expressions are of
+   --  a signed integer type. These are the kinds of nodes for which special
+   --  handling applies in MINIMIZED or EXTENDED overflow checking mode.
 
    function Range_Or_Validity_Checks_Suppressed
      (Expr : Node_Id) return Boolean;
@@ -767,7 +771,7 @@ package body Checks is
         or else not Do_Overflow_Check (N)
         or else not Is_Signed_Integer_Arithmetic_Op (N)
       then
-         Apply_Arithmetic_Overflow_Normal (N);
+         Apply_Arithmetic_Overflow_Checked_Suppressed (N);
 
       --  Otherwise use the new routine for Minimized/Eliminated modes for
       --  the case of a signed integer arithmetic op, with Do_Overflow_Check
@@ -778,9 +782,9 @@ package body Checks is
       end if;
    end Apply_Arithmetic_Overflow_Check;
 
-   --------------------------------------
-   -- Apply_Arithmetic_Overflow_Normal --
-   --------------------------------------
+   --------------------------------------------------
+   -- Apply_Arithmetic_Overflow_Checked_Suppressed --
+   --------------------------------------------------
 
    --  This routine is called only if the type is an integer type, and a
    --  software arithmetic overflow check may be needed for op (add, subtract,
@@ -798,7 +802,7 @@ package body Checks is
    --  Note: we also call this routine if we decide in the MINIMIZED case
    --  to give up and just generate an overflow check without any fuss.
 
-   procedure Apply_Arithmetic_Overflow_Normal (N : Node_Id) is
+   procedure Apply_Arithmetic_Overflow_Checked_Suppressed (N : Node_Id) is
       Loc   : constant Source_Ptr := Sloc (N);
       Typ   : constant Entity_Id  := Etype (N);
       Rtyp  : constant Entity_Id  := Root_Type (Typ);
@@ -1061,7 +1065,7 @@ package body Checks is
          when RE_Not_Available =>
             return;
       end;
-   end Apply_Arithmetic_Overflow_Normal;
+   end Apply_Arithmetic_Overflow_Checked_Suppressed;
 
    ----------------------------------------------------
    -- Apply_Arithmetic_Overflow_Minimized_Eliminated --
@@ -1081,7 +1085,7 @@ package body Checks is
       --  Original result type
 
       Check_Mode : constant Overflow_Check_Type :=
-        Overflow_Check_Mode (Etype (Op));
+                     Overflow_Check_Mode (Etype (Op));
       pragma Assert (Check_Mode in Minimized_Or_Eliminated);
 
       Lo, Hi : Uint;
@@ -1090,7 +1094,7 @@ package body Checks is
    begin
       --  Nothing to do if our parent is one of the following:
 
-      --    Another signed integer arithmetic operation
+      --    Another signed integer arithmetic op
       --    A membership operation
       --    A comparison operation
 
@@ -1111,7 +1115,7 @@ package body Checks is
          return;
       end if;
 
-      --  Otherwise, we have a top level arithmetic operator node, and this
+      --  Otherwise, we have a top level arithmetic operation node, and this
       --  is where we commence the special processing for minimize/eliminate.
       --  This is the case where we tell the machinery not to move into Bignum
       --  mode at this top level (of course the top level operation will still
@@ -3799,7 +3803,7 @@ package body Checks is
       Loc : constant Source_Ptr := Sloc (N);
 
    begin
-      --  Nothing to do if Bignum already
+      --  Nothing to do if Bignum already except call Relocate_Node
 
       if Is_RTE (Etype (N), RE_Bignum) then
          return Relocate_Node (N);
@@ -6254,6 +6258,13 @@ package body Checks is
               N_Op_Rem   | N_Op_Subtract =>
             return Is_Signed_Integer_Type (Etype (N));
 
+         when N_Conditional_Expression |
+              N_Case_Expression        =>
+            return Is_Signed_Integer_Type (Etype (N));
+
+         when N_Case_Expression_Alternative =>
+            return Is_Signed_Integer_Type (Etype (Parent (N)));
+
          when others =>
             return False;
       end case;
@@ -6677,7 +6688,9 @@ package body Checks is
       Hi        : out Uint;
       Top_Level : Boolean)
    is
-      pragma Assert (Is_Signed_Integer_Type (Etype (N)));
+      Rtyp : constant Entity_Id := Etype (N);
+      pragma Assert (Is_Signed_Integer_Type (Rtyp));
+      --  Result type, must be a signed integer type
 
       Check_Mode : constant Overflow_Check_Type := Overflow_Check_Mode (Empty);
       pragma Assert (Check_Mode in Minimized_Or_Eliminated);
@@ -6685,15 +6698,16 @@ package body Checks is
       Loc : constant Source_Ptr := Sloc (N);
 
       Rlo, Rhi : Uint;
-      --  Ranges of values for right operand
+      --  Ranges of values for right operand (operator case)
 
       Llo, Lhi : Uint;
-      --  Ranges of values for left operand
+      --  Ranges of values for left operand (operator case)
 
       LLIB : constant Entity_Id := Base_Type (Standard_Long_Long_Integer);
       --  Operands and results are of this type when we convert
 
-      LLLo, LLHi : Uint;
+      LLLo : constant Uint := Intval (Type_Low_Bound  (LLIB));
+      LLHi : constant Uint := Intval (Type_High_Bound (LLIB));
       --  Bounds of Long_Long_Integer
 
       Binary : constant Boolean := Nkind (N) in N_Binary_Op;
@@ -6705,13 +6719,40 @@ package body Checks is
       Bignum_Operands : Boolean;
       --  Set True if one or more operands is already of type Bignum, meaning
       --  that for sure (regardless of Top_Level setting) we are committed to
-      --  doing the operation in Bignum mode.
+      --  doing the operation in Bignum mode (or in the case of a case or if
+      --  expression, converting all the dependent expressions to bignum).
+
+      Long_Long_Integer_Operands : Boolean;
+      --  Set True if one r more operands is already of type Long_Loong_Integer
+      --  which means that if the result is known to be in the result type
+      --  range, then we must convert such operands back to the result type.
+      --  This switch is properly set only when Bignum_Operands is False.
+
+      function In_Result_Range return Boolean;
+      --  Returns True iff Lo .. Hi are within range of the result type
 
       procedure Max (A : in out Uint; B : Uint);
       --  If A is No_Uint, sets A to B, else to UI_Max (A, B);
 
       procedure Min (A : in out Uint; B : Uint);
       --  If A is No_Uint, sets A to B, else to UI_Min (A, B);
+
+      ---------------------
+      -- In_Result_Range --
+      ---------------------
+
+      function In_Result_Range return Boolean is
+      begin
+         if Is_Static_Subtype (Etype (N)) then
+            return Lo >= Expr_Value (Type_Low_Bound  (Rtyp))
+                     and then
+                   Hi <= Expr_Value (Type_High_Bound (Rtyp));
+         else
+            return Lo >= Expr_Value (Type_Low_Bound  (Base_Type (Rtyp)))
+                     and then
+                   Hi <= Expr_Value (Type_High_Bound (Base_Type (Rtyp)));
+         end if;
+      end In_Result_Range;
 
       ---------
       -- Max --
@@ -6738,7 +6779,7 @@ package body Checks is
    --  Start of processing for Minimize_Eliminate_Overflow_Checks
 
    begin
-      --  Case where we do not have an arithmetic operator
+      --  Case where we do not have a signed integer arithmetic operation
 
       if not Is_Signed_Integer_Arithmetic_Op (N) then
 
@@ -6762,18 +6803,168 @@ package body Checks is
 
          return;
 
-      --  If we have an arithmetic oeprator we make recursive calls on the
+      --  Processing for if expression
+
+      elsif Nkind (N) = N_Conditional_Expression then
+         declare
+            Then_DE : constant Node_Id := Next (First (Expressions (N)));
+            Else_DE : constant Node_Id := Next (Then_DE);
+
+         begin
+            Bignum_Operands := False;
+
+            Minimize_Eliminate_Overflow_Checks
+              (Then_DE, Lo, Hi, Top_Level => False);
+
+            if Lo = No_Uint then
+               Bignum_Operands := True;
+            end if;
+
+            Minimize_Eliminate_Overflow_Checks
+              (Else_DE, Rlo, Rhi, Top_Level => False);
+
+            if Rlo = No_Uint then
+               Bignum_Operands := True;
+            else
+               Long_Long_Integer_Operands :=
+                 Etype (Then_DE) = LLIB or else Etype (Else_DE) = LLIB;
+
+               Min (Lo, Rlo);
+               Max (Hi, Rhi);
+            end if;
+
+            --  If at least one of our operands is now bignum, we must rebuild
+            --  the if expression to use bignum operands. We will analyze the
+            --  rebuilt if expression with overflow checks off, since once we
+            --  are in bignum mode, we are all done with overflow checks!
+
+            if Bignum_Operands then
+               Rewrite (N,
+                 Make_Conditional_Expression (Loc,
+                   Expressions => New_List (
+                     Remove_Head (Expressions (N)),
+                     Convert_To_Bignum (Then_DE),
+                     Convert_To_Bignum (Else_DE)),
+                   Is_Elsif    => Is_Elsif (N)));
+
+               Analyze_And_Resolve
+                 (N, RTE (RE_Bignum), Suppress => Overflow_Check);
+
+            --  If we have no Long_Long_Integer operands, then we are in result
+            --  range, since it means that none of our operands felt the need
+            --  to worry about overflow (otherwise it would have already been
+            --  converted to long long integer or bignum).
+
+            elsif not Long_Long_Integer_Operands then
+               Set_Do_Overflow_Check (N, False);
+
+            --  Otherwise convert us to long long integer mode. Note that we
+            --  don't need any further overflow checking at this level.
+
+            else
+               Convert_To_And_Rewrite (LLIB, Then_DE);
+               Convert_To_And_Rewrite (LLIB, Else_DE);
+               Set_Etype (N, LLIB);
+               Set_Do_Overflow_Check (N, False);
+            end if;
+         end;
+
+         return;
+
+      --  Here for case expression
+
+      elsif Nkind (N) = N_Case_Expression then
+         Bignum_Operands := False;
+         Long_Long_Integer_Operands := False;
+         Lo := No_Uint;
+         Hi := No_Uint;
+
+         declare
+            Alt      : Node_Id;
+            New_Alts : List_Id;
+            New_Exp  : Node_Id;
+            Rtype    : Entity_Id;
+
+         begin
+            --  Loop through expressions applying recursive call
+
+            Alt := First (Alternatives (N));
+            while Present (Alt) loop
+               declare
+                  Aexp : constant Node_Id := Expression (Alt);
+
+               begin
+                  Minimize_Eliminate_Overflow_Checks
+                    (Aexp, Lo, Hi, Top_Level => False);
+
+                  if Lo = No_Uint then
+                     Bignum_Operands := True;
+                  elsif Etype (Aexp) = LLIB then
+                     Long_Long_Integer_Operands := True;
+                  end if;
+               end;
+
+               Next (Alt);
+            end loop;
+
+            --  If we have no bignum or long long integer operands, it means
+            --  that none of our dependent expressions could raise overflow.
+            --  In this case, we simply return with no changes except for
+            --  resetting the overflow flag, since we are done with overflow
+            --  checks for this node. We will reset the Analyzed flag so that
+            --  we will properly reexpand and get the needed expansion for
+            --  the case expression.
+
+            if not (Bignum_Operands or else Long_Long_Integer_Operands) then
+               Set_Do_Overflow_Check (N, False);
+               Set_Analyzed (N, False);
+
+            --  Otherwise we are going to rebuild the case expression using
+            --  either bignum or long long integer operands throughout.
+
+            else
+               New_Alts := New_List;
+               Alt := First (Alternatives (N));
+               while Present (Alt) loop
+                  if Bignum_Operands then
+                     New_Exp := Convert_To_Bignum (Expression (Alt));
+                     Rtype   := RTE (RE_Bignum);
+                  else
+                     New_Exp := Convert_To (LLIB, Expression (Alt));
+                     Rtype   := LLIB;
+                  end if;
+
+                  Append_To (New_Alts,
+                    Make_Case_Expression_Alternative (Sloc (Alt),
+                      Actions          => No_List,
+                      Discrete_Choices => Discrete_Choices (Alt),
+                      Expression       => New_Exp));
+
+                  Next (Alt);
+               end loop;
+
+               Rewrite (N,
+                 Make_Case_Expression (Loc,
+                   Expression   => Expression (N),
+                   Alternatives => New_Alts));
+
+               Analyze_And_Resolve (N, Rtype, Suppress => Overflow_Check);
+            end if;
+         end;
+
+         return;
+      end if;
+
+      --  If we have an arithmetic operator we make recursive calls on the
       --  operands to get the ranges (and to properly process the subtree
       --  that lies below us!)
 
-      else
-         Minimize_Eliminate_Overflow_Checks
-           (Right_Opnd (N), Rlo, Rhi, Top_Level => False);
+      Minimize_Eliminate_Overflow_Checks
+        (Right_Opnd (N), Rlo, Rhi, Top_Level => False);
 
-         if Binary then
-            Minimize_Eliminate_Overflow_Checks
-              (Left_Opnd (N), Llo, Lhi, Top_Level => False);
-         end if;
+      if Binary then
+         Minimize_Eliminate_Overflow_Checks
+           (Left_Opnd (N), Llo, Lhi, Top_Level => False);
       end if;
 
       --  If either operand is a bignum, then result will be a bignum
@@ -6787,6 +6978,10 @@ package body Checks is
 
       else
          Bignum_Operands := False;
+
+         Long_Long_Integer_Operands :=
+           Etype (Right_Opnd (N)) = LLIB
+             or else (Binary and then Etype (Left_Opnd (N)) = LLIB);
 
          case Nkind (N) is
 
@@ -7136,9 +7331,6 @@ package body Checks is
       --  0 .. 1, but the cases are rare and it is not worth the effort.
       --  Failing to do this switching back is only an efficiency issue.
 
-      LLLo := Intval (Type_Low_Bound  (LLIB));
-      LLHi := Intval (Type_High_Bound (LLIB));
-
       if Lo = No_Uint or else Lo < LLLo or else Hi > LLHi then
 
          --  OK, we are definitely outside the range of Long_Long_Integer. The
@@ -7246,6 +7438,14 @@ package body Checks is
 
       else
          Set_Do_Overflow_Check (N, False);
+      end if;
+
+      --  If Result is in range of the result type, and we don't have any
+      --  Long_Long_Integer operands, then overflow checking is not needed
+      --  and we have nothing to do (we have already reset Do_Overflow_Check).
+
+      if In_Result_Range and not Long_Long_Integer_Operands then
+         return;
       end if;
 
       --  Here we will do the operation in Long_Long_Integer. We do this even
