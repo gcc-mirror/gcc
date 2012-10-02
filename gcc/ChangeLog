@@ -1,3 +1,8 @@
+2012-10-02  Andrew Pinski  <apinski@cavium.com>
+
+	* simplify-rtx.c (simplify_unary_operation_1 <case TRUNCATE>):
+	Don't optimize a truncate of a mem if it is a vector mode.
+
 2012-10-02  Alexandre Oliva <aoliva@redhat.com>
 
 	PR debug/54551
