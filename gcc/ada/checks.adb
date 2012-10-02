@@ -2040,18 +2040,166 @@ package body Checks is
         (Ck_Node, Target_Typ, Source_Typ, Do_Static => False);
    end Apply_Length_Check;
 
-   --------------------------------------------------
-   -- Apply_Parameter_Aliasing_And_Validity_Checks --
-   --------------------------------------------------
+   -------------------------------------
+   -- Apply_Parameter_Aliasing_Checks --
+   -------------------------------------
 
-   procedure Apply_Parameter_Aliasing_And_Validity_Checks (Subp : Entity_Id) is
-      Subp_Decl : Node_Id;
-
-      procedure Add_Aliasing_Check
+   procedure Apply_Parameter_Aliasing_Checks
+     (Call : Node_Id;
+      Subp : Entity_Id)
+   is
+      function May_Cause_Aliasing
         (Formal_1 : Entity_Id;
-         Formal_2 : Entity_Id);
-      --  Add a single 'Overlapping_Storage check to a post condition pragma
-      --  which verifies that Formal_1 is not aliasing Formal_2.
+         Formal_2 : Entity_Id) return Boolean;
+      --  Determine whether two formal parameters can alias each other
+      --  depending on their modes.
+
+      function Original_Actual (N : Node_Id) return Node_Id;
+      --  The expander may replace an actual with a temporary for the sake of
+      --  side effect removal. The temporary may hide a potential aliasing as
+      --  it does not share the address of the actual. This routine attempts
+      --  to retrieve the original actual.
+
+      ------------------------
+      -- May_Cause_Aliasing --
+      ------------------------
+
+      function May_Cause_Aliasing
+        (Formal_1 : Entity_Id;
+         Formal_2 : Entity_Id) return Boolean
+      is
+      begin
+         --  The following combination cannot lead to aliasing
+
+         --     Formal 1    Formal 2
+         --     IN          IN
+
+         if Ekind (Formal_1) = E_In_Parameter
+           and then Ekind (Formal_2) = E_In_Parameter
+         then
+            return False;
+
+         --  The following combinations may lead to aliasing
+
+         --     Formal 1    Formal 2
+         --     IN          OUT
+         --     IN          IN OUT
+         --     OUT         IN
+         --     OUT         IN OUT
+         --     OUT         OUT
+
+         else
+            return True;
+         end if;
+      end May_Cause_Aliasing;
+
+      ---------------------
+      -- Original_Actual --
+      ---------------------
+
+      function Original_Actual (N : Node_Id) return Node_Id is
+      begin
+         if Nkind (N) = N_Type_Conversion then
+            return Expression (N);
+
+         --  The expander created a temporary to capture the result of a type
+         --  conversion where the expression is the real actual.
+
+         elsif Nkind (N) = N_Identifier
+           and then Present (Original_Node (N))
+           and then Nkind (Original_Node (N)) = N_Type_Conversion
+         then
+            return Expression (Original_Node (N));
+         end if;
+
+         return N;
+      end Original_Actual;
+
+      --  Local variables
+
+      Loc      : constant Source_Ptr := Sloc (Call);
+      Actual_1 : Node_Id;
+      Actual_2 : Node_Id;
+      Check    : Node_Id;
+      Cond     : Node_Id;
+      Formal_1 : Entity_Id;
+      Formal_2 : Entity_Id;
+
+   --  Start of processing for Apply_Parameter_Aliasing_Checks
+
+   begin
+      Cond := Empty;
+
+      Actual_1 := First_Actual (Call);
+      Formal_1 := First_Formal (Subp);
+      while Present (Actual_1) and then Present (Formal_1) loop
+
+         --  Ensure that the actual is an object that is not passed by value.
+         --  Elementary types are always passed by value, therefore actuals of
+         --  such types cannot lead to aliasing.
+
+         if Is_Object_Reference (Original_Actual (Actual_1))
+           and then not Is_Elementary_Type (Etype (Original_Actual (Actual_1)))
+         then
+            Actual_2 := Next_Actual (Actual_1);
+            Formal_2 := Next_Formal (Formal_1);
+            while Present (Actual_2) and then Present (Formal_2) loop
+
+               --  The other actual we are testing against must also denote
+               --  a non pass-by-value object. Generate the check only when
+               --  the mode of the two formals may lead to aliasing.
+
+               if Is_Object_Reference (Original_Actual (Actual_2))
+                 and then not
+                   Is_Elementary_Type (Etype (Original_Actual (Actual_2)))
+                 and then May_Cause_Aliasing (Formal_1, Formal_2)
+               then
+                  --  Generate:
+                  --    Actual_1'Overlaps_Storage (Actual_2)
+
+                  Check :=
+                    Make_Attribute_Reference (Loc,
+                      Prefix         =>
+                        New_Copy_Tree (Original_Actual (Actual_1)),
+                      Attribute_Name => Name_Overlaps_Storage,
+                      Expressions    =>
+                        New_List (New_Copy_Tree (Original_Actual (Actual_2))));
+
+                  if No (Cond) then
+                     Cond := Check;
+                  else
+                     Cond :=
+                       Make_And_Then (Loc,
+                         Left_Opnd  => Cond,
+                         Right_Opnd => Check);
+                  end if;
+               end if;
+
+               Next_Actual (Actual_2);
+               Next_Formal (Formal_2);
+            end loop;
+         end if;
+
+         Next_Actual (Actual_1);
+         Next_Formal (Formal_1);
+      end loop;
+
+      --  Place the check right before the call
+
+      if Present (Cond) then
+         Insert_Action (Call,
+           Make_Raise_Program_Error (Loc,
+             Condition => Cond,
+             Reason    => PE_Explicit_Raise));
+      end if;
+   end Apply_Parameter_Aliasing_Checks;
+
+   -------------------------------------
+   -- Apply_Parameter_Validity_Checks --
+   -------------------------------------
+
+   procedure Apply_Parameter_Validity_Checks (Subp : Entity_Id) is
+      Subp_Decl : Node_Id;
 
       procedure Add_Validity_Check
         (Context    : Entity_Id;
@@ -2064,24 +2212,6 @@ package body Checks is
       procedure Build_PPC_Pragma (PPC_Nam : Name_Id; Check : Node_Id);
       --  Create a pre or post condition pragma with name PPC_Nam which
       --  tests expression Check.
-
-      ------------------------
-      -- Add_Aliasing_Check --
-      ------------------------
-
-      procedure Add_Aliasing_Check
-        (Formal_1 : Entity_Id;
-         Formal_2 : Entity_Id)
-      is
-         Loc : constant Source_Ptr := Sloc (Subp);
-
-      begin
-         Build_PPC_Pragma (Name_Postcondition,
-           Make_Attribute_Reference (Loc,
-             Prefix         => New_Reference_To (Formal_1, Loc),
-             Attribute_Name => Name_Overlaps_Storage,
-             Expressions    => New_List (New_Reference_To (Formal_2, Loc))));
-      end Add_Aliasing_Check;
 
       ------------------------
       -- Add_Validity_Check --
@@ -2204,10 +2334,9 @@ package body Checks is
       --  Local variables
 
       Formal    : Entity_Id;
-      Pair      : Entity_Id;
       Subp_Spec : Node_Id;
 
-   --  Start of processing for Apply_Parameter_Aliasing_And_Validity_Checks
+   --  Start of processing for Apply_Parameter_Validity_Checks
 
    begin
       --  Extract the subprogram specification and declaration nodes
@@ -2274,20 +2403,6 @@ package body Checks is
             end if;
          end if;
 
-         --  Generate the following aliasing checks for every pair of formal
-         --  parameters:
-
-         --    Formal'Overlapping_Storage (Pair)
-
-         if Check_Aliasing_Of_Parameters then
-            Pair := Next_Formal (Formal);
-            while Present (Pair) loop
-               Add_Aliasing_Check (Formal, Pair);
-
-               Next_Formal (Pair);
-            end loop;
-         end if;
-
          Next_Formal (Formal);
       end loop;
 
@@ -2301,7 +2416,7 @@ package body Checks is
       then
          Add_Validity_Check (Subp, Name_Postcondition, True);
       end if;
-   end Apply_Parameter_Aliasing_And_Validity_Checks;
+   end Apply_Parameter_Validity_Checks;
 
    ---------------------------
    -- Apply_Predicate_Check --

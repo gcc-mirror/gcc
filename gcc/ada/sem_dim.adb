@@ -1154,6 +1154,7 @@ package body Sem_Dim is
 
          when N_Attribute_Reference       |
               N_Expanded_Name             |
+              N_Function_Call             |
               N_Identifier                |
               N_Indexed_Component         |
               N_Qualified_Expression      |
@@ -1651,13 +1652,6 @@ package body Sem_Dim is
          Next_Actual (Actual);
          Next_Formal (Formal);
       end loop;
-
-      --  For function calls, propagate the dimensions from the returned type
-      --  to the function call.
-
-      if Nkind (N) = N_Function_Call then
-         Analyze_Dimension_Has_Etype (N);
-      end if;
    end Analyze_Dimension_Call;
 
    ---------------------------------------------
@@ -1913,21 +1907,34 @@ package body Sem_Dim is
 
    procedure Analyze_Dimension_Has_Etype (N : Node_Id) is
       Etyp         : constant Entity_Id := Etype (N);
-      Dims_Of_Etyp : constant Dimension_Type := Dimensions_Of (Etyp);
+      Dims_Of_Etyp : Dimension_Type := Dimensions_Of (Etyp);
 
    begin
-      --  Propagation of the dimensions from the type
+      --  General case. Propagation of the dimensions from the type
 
       if Exists (Dims_Of_Etyp) then
          Set_Dimensions (N, Dims_Of_Etyp);
 
-      --  Propagation of the dimensions from the entity for identifier whose
-      --  entity is a non-dimensionless consant.
+      --  Identifier case. Propagate the dimensions from the entity for
+      --  identifier whose entity is a non-dimensionless consant.
 
       elsif Nkind (N) = N_Identifier
         and then Exists (Dimensions_Of (Entity (N)))
       then
          Set_Dimensions (N, Dimensions_Of (Entity (N)));
+
+      --  Attribute reference case. Propagate the dimensions from the prefix.
+
+      elsif Nkind (N) = N_Attribute_Reference
+        and then Has_Dimension_System (Base_Type (Etyp))
+      then
+         Dims_Of_Etyp := Dimensions_Of (Prefix (N));
+
+         --  Check the prefix is not dimensionless
+
+         if Exists (Dims_Of_Etyp) then
+            Set_Dimensions (N, Dims_Of_Etyp);
+         end if;
       end if;
 
       --  Removal of dimensions in expression

@@ -500,6 +500,10 @@ package body Sem_Ch6 is
       end if;
 
       Analyze_Call (N);
+
+      --  Propagate the dimensions from the returned type, if necessary
+
+      Analyze_Dimension (N);
    end Analyze_Function_Call;
 
    -----------------------------
