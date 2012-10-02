@@ -87,6 +87,11 @@ package Makeutl is
       Last   : in out Natural);
    --  Add a string to a list of strings
 
+   function Absolute_Path
+     (Path    : Path_Name_Type;
+      Project : Project_Id) return String;
+   --  Returns an absolute path for a configuration pragmas file
+
    function Create_Binder_Mapping_File
      (Project_Tree : Project_Tree_Ref) return Path_Name_Type;
    --  Create a binder mapping file and returns its path name

@@ -1925,12 +1925,18 @@ package body Sem_Dim is
          Set_Dimensions (N, Dims_Of_Etyp);
 
       --  Identifier case. Propagate the dimensions from the entity for
-      --  identifier whose entity is a non-dimensionless consant.
+      --  identifier whose entity is a non-dimensionless constant.
 
-      elsif Nkind (N) = N_Identifier
-        and then Exists (Dimensions_Of (Entity (N)))
-      then
-         Set_Dimensions (N, Dimensions_Of (Entity (N)));
+      elsif Nkind (N) = N_Identifier then
+         Analyze_Dimension_Identifier : declare
+            Id : constant Entity_Id := Entity (N);
+         begin
+            if Ekind (Id) = E_Constant
+              and then Exists (Dimensions_Of (Id))
+            then
+               Set_Dimensions (N, Dimensions_Of (Id));
+            end if;
+         end Analyze_Dimension_Identifier;
 
       --  Attribute reference case. Propagate the dimensions from the prefix.
 

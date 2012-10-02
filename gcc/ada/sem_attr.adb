@@ -4053,6 +4053,7 @@ package body Sem_Attr is
             P_Type := Base_Type (P_Type);
             Set_Etype (N, P_Type);
             Set_Etype (P, P_Type);
+            Analyze_Dimension (N);
             Expand (N);
          end if;
       end Old;

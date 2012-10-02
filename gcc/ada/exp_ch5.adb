@@ -3039,10 +3039,18 @@ package body Exp_Ch5 is
                Cursor := Make_Temporary (Loc, 'I');
 
                --  For an container element iterator, the iterator type
-               --  is obtained from the corresponding aspect.
+               --  is obtained from the corresponding aspect, whose return
+               --  type is descended from the corresponding interface type
+               --  in some instance of Ada.Iterator_Interfaces. The actuals
+               --  of that instantiation are Cursor and Has_Element.
 
                Iter_Type := Etype (Default_Iter);
-               Pack := Scope (Iter_Type);
+
+               --  The iterator type, which is a class_wide type,  may itself
+               --  be derived locally, so the desired instantiation is the
+               --  scope of the root type of the iterator type.
+
+               Pack := Scope (Root_Type (Etype (Iter_Type)));
 
                --  Rewrite domain of iteration as a call to the default
                --  iterator for the container type. If the container is
