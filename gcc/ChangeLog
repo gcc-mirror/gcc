@@ -1,5 +1,39 @@
 2012-10-02  Alexandre Oliva <aoliva@redhat.com>
 
+	PR debug/54551
+	* Makefile.in (VALTRACK_H): Add hash-table.h.
+	* valtrack.h: Include hash-table.h.
+	(struct dead_debug_global_entry): New.
+	(struct dead_debug_hash_descr): New.
+	(struct dead_debug_global): New.
+	(struct dead_debug): Rename to...
+	(struct dead_debug_local): ... this.  Adjust all uses.
+	(dead_debug_global_init, dead_debug_global_finish): New.
+	(dead_debug_init): Rename to...
+	(dead_debug_local_init): ... this.  Adjust all callers.
+	(dead_debug_finish): Rename to...
+	(dead_debug_local_finish): ... this.  Adjust all callers.
+	* valtrack.c (dead_debug_global_init): New.
+	(dead_debug_init): Rename to...
+	(dead_debug_local_init): ... this.  Take global parameter.
+	Save it and initialize used bitmap from it.
+	(dead_debug_global_find, dead_debug_global_insert): New.
+	(dead_debug_global_replace_temp): New.
+	(dead_debug_promote_uses): New.
+	(dead_debug_finish): Rename to...
+	(dead_debug_local_finish): ... this.  Promote remaining uses.
+	(dead_debug_global_finish): New.
+	(dead_debug_add): Try to replace global temps first.
+	(dead_debug_insert_temp): Support global replacements.
+	* dce.c (word_dce_process_block, dce_process_block): Add
+	global_debug parameter.  Pass it on.
+	(fast_dce): Initialize, pass on and finalize global_debug.
+	* df-problems.c (df_set_unused_notes_for_mw): Adjusted.
+	(df_create_unused_notes, df_note_bb_compute): Likewise.
+	(df_note_compute): Justify local-only dead debug analysis.
+
+2012-10-02  Alexandre Oliva <aoliva@redhat.com>
+
 	PR debug/53135
 	* dwarf2out.c (value_format): Use block4 for dw_val_class_loc
 	when needed.

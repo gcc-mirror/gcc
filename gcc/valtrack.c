@@ -182,14 +182,108 @@ propagate_for_debug (rtx insn, rtx last, rtx dest, rtx src,
 }
 
 /* Initialize DEBUG to an empty list, and clear USED, if given.  */
+
 void
-dead_debug_init (struct dead_debug *debug, bitmap used)
+dead_debug_global_init (struct dead_debug_global *debug, bitmap used)
 {
-  debug->head = NULL;
   debug->used = used;
-  debug->to_rescan = NULL;
   if (used)
     bitmap_clear (used);
+}
+
+/* Initialize DEBUG to an empty list, and clear USED, if given.  Link
+   back to GLOBAL, if given, and bring in used bits from it.  */
+
+void
+dead_debug_local_init (struct dead_debug_local *debug, bitmap used,
+		       struct dead_debug_global *global)
+{
+  if (!used && global && global->used)
+    used = BITMAP_ALLOC (NULL);
+
+  debug->head = NULL;
+  debug->global = global;
+  debug->used = used;
+  debug->to_rescan = NULL;
+
+  if (used)
+    {
+      if (global && global->used)
+	bitmap_copy (used, global->used);
+      else
+	bitmap_clear (used);
+    }
+}
+
+/* Locate the entry for REG in GLOBAL->htab.  */
+
+static dead_debug_global_entry *
+dead_debug_global_find (struct dead_debug_global *global, rtx reg)
+{
+  dead_debug_global_entry temp_entry;
+  temp_entry.reg = reg;
+
+  dead_debug_global_entry *entry = global->htab.find (&temp_entry);
+  gcc_checking_assert (entry && entry->reg == temp_entry.reg);
+  gcc_checking_assert (entry->dtemp);
+
+  return entry;
+}
+
+/* Insert an entry mapping REG to DTEMP in GLOBAL->htab.  */
+
+static void
+dead_debug_global_insert (struct dead_debug_global *global, rtx reg, rtx dtemp)
+{
+  dead_debug_global_entry temp_entry;
+  temp_entry.reg = reg;
+  temp_entry.dtemp = dtemp;
+
+  if (!global->htab.is_created ())
+    global->htab.create (31);
+
+  dead_debug_global_entry **slot = global->htab.find_slot (&temp_entry, INSERT);
+  gcc_checking_assert (!*slot);
+  *slot = XNEW (dead_debug_global_entry);
+  **slot = temp_entry;
+}
+
+/* If UREGNO, referenced by USE, is a pseudo marked as used in GLOBAL,
+   replace it with with a USE of the debug temp recorded for it, and
+   return TRUE.  Otherwise, just return FALSE.
+
+   If PTO_RESCAN is given, instead of rescanning modified INSNs right
+   away, add their UIDs to the bitmap, allocating one of *PTO_RESCAN
+   is NULL.  */
+
+static bool
+dead_debug_global_replace_temp (struct dead_debug_global *global,
+				df_ref use, unsigned int uregno,
+				bitmap *pto_rescan)
+{
+  if (!global || uregno < FIRST_PSEUDO_REGISTER
+      || !global->used
+      || !bitmap_bit_p (global->used, uregno))
+    return false;
+
+  gcc_checking_assert (REGNO (*DF_REF_REAL_LOC (use)) == uregno);
+
+  dead_debug_global_entry *entry
+    = dead_debug_global_find (global, *DF_REF_REAL_LOC (use));
+  gcc_checking_assert (GET_CODE (entry->reg) == REG
+		       && REGNO (entry->reg) == uregno);
+
+  *DF_REF_REAL_LOC (use) = entry->dtemp;
+  if (!pto_rescan)
+    df_insn_rescan (DF_REF_INSN (use));
+  else
+    {
+      if (!*pto_rescan)
+	*pto_rescan = BITMAP_ALLOC (NULL);
+      bitmap_set_bit (*pto_rescan, INSN_UID (DF_REF_INSN (use)));
+    }
+
+  return true;
 }
 
 /* Reset all debug uses in HEAD, and clear DEBUG->to_rescan bits of
@@ -199,7 +293,8 @@ dead_debug_init (struct dead_debug *debug, bitmap used)
    will be removed, and only then rescanned.  */
 
 static void
-dead_debug_reset_uses (struct dead_debug *debug, struct dead_debug_use *head)
+dead_debug_reset_uses (struct dead_debug_local *debug,
+		       struct dead_debug_use *head)
 {
   bool got_head = (debug->head == head);
   bitmap rescan;
@@ -258,14 +353,56 @@ dead_debug_reset_uses (struct dead_debug *debug, struct dead_debug_use *head)
   BITMAP_FREE (rescan);
 }
 
+/* Promote pending local uses of pseudos in DEBUG to global
+   substitutions.  Uses of non-pseudos are left alone for
+   resetting.  */
+
+static void
+dead_debug_promote_uses (struct dead_debug_local *debug)
+{
+  for (struct dead_debug_use *head = debug->head, **headp = &debug->head;
+       head; head = *headp)
+    {
+      rtx reg = *DF_REF_REAL_LOC (head->use);
+
+      if (GET_CODE (reg) != REG
+	  || REGNO (reg) < FIRST_PSEUDO_REGISTER)
+	{
+	  headp = &head->next;
+	  continue;
+	}
+
+      if (!debug->global->used)
+	debug->global->used = BITMAP_ALLOC (NULL);
+
+      if (bitmap_set_bit (debug->global->used, REGNO (reg)))
+	dead_debug_global_insert (debug->global, reg,
+				  make_debug_expr_from_rtl (reg));
+
+      if (!dead_debug_global_replace_temp (debug->global, head->use,
+					   REGNO (reg), &debug->to_rescan))
+	{
+	  headp = &head->next;
+	  continue;
+	}
+      
+      *headp = head->next;
+      XDELETE (head);
+    }
+}
+
 /* Reset all debug insns with pending uses.  Release the bitmap in it,
    unless it is USED.  USED must be the same bitmap passed to
-   dead_debug_init.  */
+   dead_debug_local_init.  */
+
 void
-dead_debug_finish (struct dead_debug *debug, bitmap used)
+dead_debug_local_finish (struct dead_debug_local *debug, bitmap used)
 {
   if (debug->used != used)
     BITMAP_FREE (debug->used);
+
+  if (debug->global)
+    dead_debug_promote_uses (debug);
 
   dead_debug_reset_uses (debug, debug->head);
 
@@ -284,11 +421,30 @@ dead_debug_finish (struct dead_debug *debug, bitmap used)
     }
 }
 
-/* Add USE to DEBUG.  It must be a dead reference to UREGNO in a debug
-   insn.  Create a bitmap for DEBUG as needed.  */
+/* Release GLOBAL->used unless it is the same as USED.  Release the
+   mapping hash table if it was initialized.  */
+
 void
-dead_debug_add (struct dead_debug *debug, df_ref use, unsigned int uregno)
+dead_debug_global_finish (struct dead_debug_global *global, bitmap used)
 {
+  if (global->used != used)
+    BITMAP_FREE (global->used);
+
+  if (global->htab.is_created ())
+    global->htab.dispose ();
+}
+
+/* Add USE to DEBUG, or substitute it right away if it's a pseudo in
+   the global substitution list.  USE must be a dead reference to
+   UREGNO in a debug insn.  Create a bitmap for DEBUG as needed.  */
+
+void
+dead_debug_add (struct dead_debug_local *debug, df_ref use, unsigned int uregno)
+{
+  if (dead_debug_global_replace_temp (debug->global, use, uregno,
+				      &debug->to_rescan))
+    return;
+
   struct dead_debug_use *newddu = XNEW (struct dead_debug_use);
 
   newddu->use = use;
@@ -305,26 +461,34 @@ dead_debug_add (struct dead_debug *debug, df_ref use, unsigned int uregno)
 }
 
 /* If UREGNO is referenced by any entry in DEBUG, emit a debug insn
-   before or after INSN (depending on WHERE), that binds a debug temp
-   to the widest-mode use of UREGNO, if WHERE is *_WITH_REG, or the
-   value stored in UREGNO by INSN otherwise, and replace all uses of
-   UREGNO in DEBUG with uses of the debug temp.  INSN must be where
-   UREGNO dies, if WHERE is *_BEFORE_*, or where it is set otherwise.
-   Return the number of debug insns emitted.  */
+   before or after INSN (depending on WHERE), that binds a (possibly
+   global) debug temp to the widest-mode use of UREGNO, if WHERE is
+   *_WITH_REG, or the value stored in UREGNO by INSN otherwise, and
+   replace all uses of UREGNO in DEBUG with uses of the debug temp.
+   INSN must be where UREGNO dies, if WHERE is *_BEFORE_*, or where it
+   is set otherwise.  Return the number of debug insns emitted.  */
+
 int
-dead_debug_insert_temp (struct dead_debug *debug, unsigned int uregno,
+dead_debug_insert_temp (struct dead_debug_local *debug, unsigned int uregno,
 			rtx insn, enum debug_temp_where where)
 {
   struct dead_debug_use **tailp = &debug->head;
   struct dead_debug_use *cur;
   struct dead_debug_use *uses = NULL;
   struct dead_debug_use **usesp = &uses;
-  rtx reg = NULL;
+  rtx reg = NULL_RTX;
   rtx breg;
-  rtx dval;
+  rtx dval = NULL_RTX;
   rtx bind;
+  bool global;
 
-  if (!debug->used || !bitmap_clear_bit (debug->used, uregno))
+  if (!debug->used)
+    return 0;
+
+  global = (debug->global && debug->global->used
+	    && bitmap_bit_p (debug->global->used, uregno));
+
+  if (!global && !bitmap_clear_bit (debug->used, uregno))
     return 0;
 
   /* Move all uses of uregno from debug->head to uses, setting mode to
@@ -359,10 +523,21 @@ dead_debug_insert_temp (struct dead_debug *debug, unsigned int uregno,
   if (reg == NULL)
     {
       gcc_checking_assert (!uses);
-      return 0;
+      if (!global)
+	return 0;
     }
 
-  gcc_checking_assert (uses);
+  if (global)
+    {
+      if (!reg)
+	reg = regno_reg_rtx[uregno];
+      dead_debug_global_entry *entry
+	= dead_debug_global_find (debug->global, reg);
+      gcc_checking_assert (entry->reg == reg);
+      dval = entry->dtemp;
+    }
+
+  gcc_checking_assert (uses || global);
 
   breg = reg;
   /* Recover the expression INSN stores in REG.  */
@@ -464,8 +639,9 @@ dead_debug_insert_temp (struct dead_debug *debug, unsigned int uregno,
 	}
     }
 
-  /* Create DEBUG_EXPR (and DEBUG_EXPR_DECL).  */
-  dval = make_debug_expr_from_rtl (reg);
+  if (!global)
+    /* Create DEBUG_EXPR (and DEBUG_EXPR_DECL).  */
+    dval = make_debug_expr_from_rtl (reg);
 
   /* Emit a debug bind insn before the insn in which reg dies.  */
   bind = gen_rtx_VAR_LOCATION (GET_MODE (reg),
