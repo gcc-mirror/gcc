@@ -612,6 +612,7 @@ FORMAT_FILE
 BACKTRACE_SUPPORTS_THREADS
 PIC_FLAG
 WARN_FLAGS
+EXTRA_FLAGS
 BACKTRACE_FILE
 multi_basedir
 OTOOL64
@@ -11080,7 +11081,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11083 "configure"
+#line 11084 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11186,7 +11187,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11189 "configure"
+#line 11190 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11485,6 +11486,12 @@ else
 fi
 
 
+fi
+
+
+EXTRA_FLAGS=
+if test "x$GCC" = "xyes"; then
+  EXTRA_FLAGS=-funwind-tables
 fi
 
 

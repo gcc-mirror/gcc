@@ -96,6 +96,12 @@ else
 fi
 AC_SUBST(BACKTRACE_FILE)
 
+EXTRA_FLAGS=
+if test "x$GCC" = "xyes"; then
+  EXTRA_FLAGS=-funwind-tables
+fi
+AC_SUBST(EXTRA_FLAGS)
+
 ACX_PROG_CC_WARNING_OPTS([-W -Wall -Wwrite-strings -Wstrict-prototypes \
 			  -Wmissing-prototypes -Wold-style-definition \
 			  -Wmissing-format-attribute -Wcast-qual],
