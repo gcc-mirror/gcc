@@ -15,8 +15,8 @@
 2012-10-01  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (toplevel): Include dumpfile.h.
-	(rs6000_density_test): Rework to accomidate 09-30 change by Sharad
-	Singhai.
+	(rs6000_density_test): Rework to accomidate 09-30 change by
+	Sharad Singhai.
 
 	* config/rs6000/t-rs6000 (rs6000.o): Add dumpfile.h dependency.
 
@@ -68,7 +68,8 @@
 
 	PR target/50457
 	* config/sh/sh.opt (matomic-model): New option.
-	(msoft-atomic): Mark as deprecated and alias to matomic-model=soft-gusa.
+	(msoft-atomic): Mark as deprecated and alias to
+	matomic-model=soft-gusa.
 	(mhard-atomic): Delete.
 	* config/sh/predicates.md (gbr_displacement): New predicate.
 	* config/sh/sh-protos.h (sh_atomic_model): New struct.
@@ -109,7 +110,8 @@
 	atomic_<fetchop_name>_fetch<mode>_soft, atomic_nand_fetch<mode>_soft,
 	atomic_test_and_set_soft): Append _gusa to the insn names and use
 	TARGET_ATOMIC_SOFT_GUSA as condition.
-	(atomic_compare_and_swap<mode>_soft_tcb, atomic_exchange<mode>_soft_tcb,
+	(atomic_compare_and_swap<mode>_soft_tcb,
+	atomic_exchange<mode>_soft_tcb,
 	atomic_fetch_<fetchop_name><mode>_soft_tcb,
 	atomic_fetch_nand<mode>_soft_tcb,
 	atomic_<fetchop_name>_fetch<mode>_soft_tcb,
@@ -151,7 +153,8 @@
 	(dump_finish): Ditto.
 	(dump_begin): Ditto.
 	(dump_enabled_p): Return true if either of the dump types is enabled.
-	(dump_initialized_p): Return true if either type of dump is initialized.
+	(dump_initialized_p): Return true if either type of dump is
+	initialized.
 	(dump_end): Do not close standard streams.
 	(dump_enable_all): Handle filenames for regular dumps.
 	(dump_switch_p_1): Handle command-line dump filenames.
@@ -470,7 +473,8 @@
 	* target.def (mode_dependent_address_p): Add addr_space_t parameter.
 	* targhooks.h (default_mode_dependent_address_p): Ditto.
 	* targhooks.c (default_mode_dependent_address_p): Ditto.
-	* expr.c (convert_move): Pass address space to mode_dependent_address_p.
+	* expr.c (convert_move): Pass address space to
+	mode_dependent_address_p.
 	* combine.c (combine_simplify_rtx): Ditto.
 	(make_extraction): Ditto.
 	(simplify_shift_const_1): Ditto.

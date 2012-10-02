@@ -1,9 +1,9 @@
 2012-10-02  Uros Bizjak  <ubizjak@gmail.com>
 
-        PR other/54761
-        * configure.ac (EXTRA_FLAGS): New.
+	PR other/54761
+	* configure.ac (EXTRA_FLAGS): New.
 	* Makefile.am (AM_FLAGS): Add $(EXTRA_FLAGS).
-        * configure, Makefile.in: Regenerate.
+	* configure, Makefile.in: Regenerate.
 
 2012-09-29  Ian Lance Taylor  <iant@google.com>
 
