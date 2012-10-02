@@ -4346,7 +4346,7 @@ an assertion.
 Enable numeric overflow checking (which is not normally enabled by
 default). Note that division by zero is a separate check that is not
 controlled by this switch (division by zero checking is on by default).
-The checking mode is set to CHECKED (equivalent to @option{-gnato11}).
+The checking mode is set to CHECKED (equivalent to @option{^-gnato11^/OVERFLOW_CHECKS=11^}).
 
 @item -gnatp
 @cindex @option{-gnatp} (@command{gcc})

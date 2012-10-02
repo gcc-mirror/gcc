@@ -1,3 +1,36 @@
+2012-10-02  Bob Duff  <duff@adacore.com>
+
+	* checks.adb (Apply_Predicate_Check): Disable check in -gnatc mode.
+
+2012-10-02  Vincent Pucci  <pucci@adacore.com>
+
+	* sem_ch6.adb (Analyze_Function_Call): Dimension propagation
+	for function calls moved to Analyze_Dimension_Call.
+	* sem_dim.adb (Analyze_Dimension_Call): Properly propagate the
+	dimensions from the returned type for function calls.
+
+2012-10-02  Vincent Celier  <celier@adacore.com>
+
+	* gnatcmd.adb: Take into account any configuration pragma file
+	in the project files for gnat pretty/stub/metric.
+
+2012-10-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Check_Indexing_Functions): Refine several tests
+	on the legality of indexing aspects: Constant_Indexing functions
+	do not have to return a reference type, and given an indexing
+	aspect Func, not all overloadings of Func in the current scope
+	need to be indexing functions.
+
+2012-10-02  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* gnat_ugn.texi: Adjust docs for overflow checks to be VMS-friendly.
+
+2012-10-02  Vincent Celier  <celier@adacore.com>
+
+	* switch-m.adb (Normalize_Compiler_Switches): Recognize switches
+	-gnatox and -gnatoxx when x=0/1/2/3.
+
 2012-10-02  Vincent Pucci  <pucci@adacore.com>
 
 	* sem_ch4.adb (Analyze_Indexed_Component_Form): Dimension
