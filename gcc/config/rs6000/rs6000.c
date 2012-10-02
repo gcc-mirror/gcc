@@ -2726,10 +2726,6 @@ rs6000_option_override_internal (bool global_init_p)
 	  else
 	    rs6000_altivec_abi = 1;
 	}
-
-      /* Enable VRSAVE for AltiVec ABI, unless explicitly overridden.  */
-      if (!global_options_set.x_TARGET_ALTIVEC_VRSAVE)
-	TARGET_ALTIVEC_VRSAVE = rs6000_altivec_abi;
     }
 
   /* Set the Darwin64 ABI as default for 64-bit Darwin.  
@@ -17843,7 +17839,8 @@ rs6000_stack_info (void)
   else
     info_ptr->spe_gp_size = 0;
 
-  if (TARGET_ALTIVEC_ABI)
+  /* Set VRSAVE register if it is saved and restored.  */
+  if (TARGET_ALTIVEC_ABI && TARGET_ALTIVEC_VRSAVE)
     info_ptr->vrsave_mask = compute_vrsave_mask ();
   else
     info_ptr->vrsave_mask = 0;
