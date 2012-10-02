@@ -1,3 +1,35 @@
+2012-10-02  Vincent Pucci  <pucci@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Check dimension for attribute
+	Old before it gets expanded.
+	* sem_dim.adb (Analyze_Dimension_Has_Etype): Correctly propagate
+	dimensions for identifier.
+
+2012-10-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb (Expand_Iterator_Loop): Handle properly the case
+	where the iterator type is derived locally from an instantiation
+	of Ada.Iterators_Interface.
+	* exp_ch7.adb (Establish_Transient_Scope): Do not create a
+	transient scope if within the expansion of an iterator loop,
+	because a transient block already exists.
+
+2012-10-02  Vincent Celier  <celier@adacore.com>
+
+	* gnatcmd.adb: Use absolute path for configuration pragmas files
+	* make.adb (Configuration_Pragmas_Switch.Absolute_Path): Moved
+	to Makeutl.
+	* makeutl.ads, makeutl.adb (Absolute_Path): New function, moved from
+	make.adb.
+
+2012-10-02  Vincent Celier  <celier@adacore.com>
+
+	* prj-part.adb (Post_Parse_Context_Clause): Resurrect Boolean
+	parameter In_Limited.  Check for circularity also if In_Limited
+	is True.
+	(Parse_Single_Project): Call Post_Parse_Context_Clause with
+	In_Limited parameter.
+
 2012-10-02  Bob Duff  <duff@adacore.com>
 
 	* checks.adb (Apply_Predicate_Check): Disable check in -gnatc mode.

@@ -216,6 +216,7 @@ package body Prj.Part is
    procedure Post_Parse_Context_Clause
      (Context_Clause    : With_Id;
       In_Tree           : Project_Node_Tree_Ref;
+      In_Limited        : Boolean;
       Limited_Withs     : Boolean;
       Imported_Projects : in out Project_Node_Id;
       Project_Directory : Path_Name_Type;
@@ -827,6 +828,7 @@ package body Prj.Part is
    procedure Post_Parse_Context_Clause
      (Context_Clause    : With_Id;
       In_Tree           : Project_Node_Tree_Ref;
+      In_Limited        : Boolean;
       Limited_Withs     : Boolean;
       Imported_Projects : in out Project_Node_Id;
       Project_Directory : Path_Name_Type;
@@ -941,7 +943,9 @@ package body Prj.Part is
                   --  If we have one, get the project id of the limited
                   --  imported project file, and do not parse it.
 
-                  if Limited_Withs and then Project_Stack.Last > 1 then
+                  if (In_Limited or else Limited_Withs) and then
+                     Project_Stack.Last > 1
+                  then
                      declare
                         Canonical_Path_Name : Path_Name_Type;
 
@@ -975,7 +979,7 @@ package body Prj.Part is
                         Path_Name_Id      => Imported_Path_Name_Id,
                         Extended          => False,
                         From_Extended     => From_Extended,
-                        In_Limited        => Limited_Withs,
+                        In_Limited        => In_Limited or else Limited_Withs,
                         Packages_To_Check => Packages_To_Check,
                         Depth             => Depth,
                         Current_Dir       => Current_Dir,
@@ -1577,6 +1581,7 @@ package body Prj.Part is
             Post_Parse_Context_Clause
               (In_Tree           => In_Tree,
                Context_Clause    => First_With,
+               In_Limited        => In_Limited,
                Limited_Withs     => False,
                Imported_Projects => Imported_Projects,
                Project_Directory => Project_Directory,
@@ -1936,6 +1941,7 @@ package body Prj.Part is
          Post_Parse_Context_Clause
            (In_Tree           => In_Tree,
             Context_Clause    => First_With,
+            In_Limited        => In_Limited,
             Limited_Withs     => True,
             Imported_Projects => Imported_Projects,
             Project_Directory => Project_Directory,

@@ -3790,44 +3790,6 @@ package body Make is
       Result : Argument_List (1 .. 3);
       Last   : Natural := 0;
 
-      function Absolute_Path
-        (Path    : Path_Name_Type;
-         Project : Project_Id) return String;
-      --  Returns an absolute path for a configuration pragmas file
-
-      -------------------
-      -- Absolute_Path --
-      -------------------
-
-      function Absolute_Path
-        (Path    : Path_Name_Type;
-         Project : Project_Id) return String
-      is
-      begin
-         Get_Name_String (Path);
-
-         declare
-            Path_Name : constant String := Name_Buffer (1 .. Name_Len);
-
-         begin
-            if Is_Absolute_Path (Path_Name) then
-               return Path_Name;
-
-            else
-               declare
-                  Parent_Directory : constant String :=
-                                       Get_Name_String
-                                         (Project.Directory.Display_Name);
-
-               begin
-                  return Parent_Directory & Path_Name;
-               end;
-            end if;
-         end;
-      end Absolute_Path;
-
-   --  Start of processing for Configuration_Pragmas_Switch
-
    begin
       Prj.Env.Create_Config_Pragmas_File
         (For_Project, Project_Tree);
