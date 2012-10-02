@@ -1,10 +1,25 @@
 2012-10-02  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* types.h: Minor cosmetic fix.
+
+2012-10-02  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interfaces/decl.c (elaborate_expression_1): Use the variable for
 	bounds of loop iteraration scheme only for locally defined subtypes.
 
 	* gcc-interface/trans.c (gigi): Fix formatting.
 	(build_return_expr): Apply the NRV optimization only for BLKmode.
+
+2012-10-02  Robert Dewar  <dewar@adacore.com>
+
+	* sinfo.ads: Remove refs of N_Conditional_Expression and
+	N_Parameterized_Expression.
+
+2012-10-02  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_aggr.adb (Get_Component_Val): Rewrite code that computes
+	justification of bits in enclosing word in an attempt to make
+	it clearer.
 
 2012-10-02  Robert Dewar  <dewar@adacore.com>
 
