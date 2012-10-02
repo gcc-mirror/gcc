@@ -11078,6 +11078,12 @@ package body Sem_Ch6 is
       Plist : List_Id := No_List;
       --  List of generated postconditions
 
+      procedure Check_Access_Invariants (E : Entity_Id);
+      --  If the subprogram returns an access to a type with invariants, or
+      --  has access parameters whose designated type has an invariant, then
+      --  under the same visibility conditions as for other invariant checks,
+      --  the type invariant must be applied to the returned value.
+
       function Grab_CC return Node_Id;
       --  Prag contains an analyzed contract case pragma. This function copies
       --  relevant components of the pragma, creates the corresponding Check
@@ -11107,6 +11113,43 @@ package body Sem_Ch6 is
       --  contains the declaration of the private type). A True value means
       --  that an invariant check is required (for an IN OUT parameter, or
       --  the returned value of a function.
+
+      -----------------------------
+      -- Check_Access_Invariants --
+      -----------------------------
+
+      procedure Check_Access_Invariants (E : Entity_Id) is
+         Call : Node_Id;
+         Obj  : Node_Id;
+         Typ  : Entity_Id;
+
+      begin
+         if Is_Access_Type (Etype (E))
+           and then not Is_Access_Constant (Etype (E))
+         then
+            Typ := Designated_Type (Etype (E));
+
+            if Has_Invariants (Typ)
+              and then Present (Invariant_Procedure (Typ))
+              and then Is_Public_Subprogram_For (Typ)
+            then
+               Obj :=
+                 Make_Explicit_Dereference (Loc,
+                   Prefix => New_Occurrence_Of (E, Loc));
+               Set_Etype (Obj, Typ);
+
+               Call := Make_Invariant_Call (Obj);
+
+               Append_To (Plist,
+                 Make_If_Statement (Loc,
+                   Condition =>
+                     Make_Op_Ne (Loc,
+                       Left_Opnd   => Make_Null (Loc),
+                       Right_Opnd  => New_Occurrence_Of (E, Loc)),
+                   Then_Statements => New_List (Call)));
+            end if;
+         end if;
+      end Check_Access_Invariants;
 
       -------------
       -- Grab_CC --
@@ -11308,10 +11351,17 @@ package body Sem_Ch6 is
          Formal : Entity_Id;
 
       begin
-         --  Check function return result
+         --  Check function return result. If result is an access type there
+         --  may be invariants on the designated type.
 
          if Ekind (Designator) /= E_Procedure
            and then Has_Invariants (Etype (Designator))
+         then
+            return True;
+
+         elsif Ekind (Designator) /= E_Procedure
+           and then Is_Access_Type (Etype (Designator))
+           and then Has_Invariants (Designated_Type (Etype (Designator)))
          then
             return True;
          end if;
@@ -11321,9 +11371,13 @@ package body Sem_Ch6 is
          Formal := First_Formal (Designator);
          while Present (Formal) loop
             if Ekind (Formal) /= E_In_Parameter
-              and then
-                (Has_Invariants (Etype (Formal))
-                  or else Present (Predicate_Function (Etype (Formal))))
+              and then (Has_Invariants (Etype (Formal))
+                         or else Present (Predicate_Function (Etype (Formal))))
+            then
+               return True;
+
+            elsif Is_Access_Type (Etype (Formal))
+              and then Has_Invariants (Designated_Type (Etype (Formal)))
             then
                return True;
             end if;
@@ -11731,6 +11785,10 @@ package body Sem_Ch6 is
                   Append_To (Plist,
                     Make_Invariant_Call (New_Occurrence_Of (Rent, Loc)));
                end if;
+
+               --  Same if return value is an access to type with invariants.
+
+               Check_Access_Invariants (Rent);
             end;
 
          --  Procedure rather than a function
@@ -11750,7 +11808,9 @@ package body Sem_Ch6 is
          begin
             Formal := First_Formal (Designator);
             while Present (Formal) loop
-               if Ekind (Formal) /= E_In_Parameter then
+               if Ekind (Formal) /= E_In_Parameter
+                 or else Is_Access_Type (Etype (Formal))
+               then
                   Ftype := Etype (Formal);
 
                   if Has_Invariants (Ftype)
@@ -11761,6 +11821,8 @@ package body Sem_Ch6 is
                        Make_Invariant_Call
                          (New_Occurrence_Of (Formal, Loc)));
                   end if;
+
+                  Check_Access_Invariants (Formal);
 
                   if Present (Predicate_Function (Ftype)) then
                      Append_To (Plist,

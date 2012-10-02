@@ -1,3 +1,24 @@
+2012-10-02  Robert Dewar  <dewar@adacore.com>
+
+	* sem_dim.adb: Minor code reorganization.
+	* sem_dim.ads: Add comment.
+
+2012-10-02  Robert Dewar  <dewar@adacore.com>
+
+	* checks.ads, exp_ch4.adb, checks.adb
+	(Minimize_Eliminate_Overflow_Checks): Add Top_Level parameter to avoid
+	unnecessary conversions to Bignum.
+	Minor reformatting.
+
+2012-10-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Process_PPCs): Generate invariant checks for a
+	return value whose type is an access type and whose designated
+	type has invariants. Ditto for in-out parameters and in-parameters
+	of an access type.
+	* exp_ch3.adb (Build_Component_Invariant_Call): Add invariant check
+	for an access component whose designated type has invariants.
+
 2012-10-01  Vincent Pucci  <pucci@adacore.com>
 
 	* sem_aggr.adb (New_Copy_Tree_And_Copy_Dimensions): New routine.

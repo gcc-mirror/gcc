@@ -2345,8 +2345,10 @@ package body Exp_Ch4 is
       --  our operands using the Minimize_Eliminate circuitry which applies
       --  this processing to the two operand subtrees.
 
-      Minimize_Eliminate_Overflow_Checks (Left_Opnd (N),  Llo, Lhi);
-      Minimize_Eliminate_Overflow_Checks (Right_Opnd (N), Rlo, Rhi);
+      Minimize_Eliminate_Overflow_Checks
+        (Left_Opnd (N),  Llo, Lhi, Top_Level => False);
+      Minimize_Eliminate_Overflow_Checks
+        (Right_Opnd (N), Rlo, Rhi, Top_Level => False);
 
       --  See if the range information decides the result of the comparison
 
@@ -3735,7 +3737,7 @@ package body Exp_Ch4 is
       --  Entity for Long_Long_Integer'Base (Standard should export this???)
 
    begin
-      Minimize_Eliminate_Overflow_Checks (Lop, Lo, Hi);
+      Minimize_Eliminate_Overflow_Checks (Lop, Lo, Hi, Top_Level => False);
 
       --  If right operand is a subtype name, and the subtype name has no
       --  predicate, then we can just replace the right operand with an
@@ -3760,8 +3762,10 @@ package body Exp_Ch4 is
       --  have not been processed for minimized or eliminated checks.
 
       if Nkind (Rop) = N_Range then
-         Minimize_Eliminate_Overflow_Checks (Low_Bound (Rop),  Lo, Hi);
-         Minimize_Eliminate_Overflow_Checks (High_Bound (Rop), Lo, Hi);
+         Minimize_Eliminate_Overflow_Checks
+           (Low_Bound (Rop),  Lo, Hi, Top_Level => False);
+         Minimize_Eliminate_Overflow_Checks
+           (High_Bound (Rop), Lo, Hi, Top_Level => False);
 
          --  We have A in B .. C, treated as  A >= B and then A <= C
 

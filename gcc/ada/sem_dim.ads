@@ -163,7 +163,8 @@ package Sem_Dim is
    --  literal default value in the list of formals Formals.
 
    procedure Copy_Dimensions (From, To : Node_Id);
-   --  Copy dimension vector of From to To.
+   --  Copy dimension vector of From to To
+   --  We should say what the requirements on From and To are here ???
 
    procedure Eval_Op_Expon_For_Dimensioned_Type
      (N    : Node_Id;
