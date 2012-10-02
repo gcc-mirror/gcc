@@ -1,3 +1,12 @@
+2012-10-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Is_Empty_Range): Use bounds of index type
+	to determine whether an array is empty when optimizing
+	a quantified expression over a null range. Use of RM_Size
+	was incorrect. Analyze condition before constant-folding the
+	expression to catch potential errors. Modify the error message
+	to avoid mathematical terminology.
+
 2012-10-02  Robert Dewar  <dewar@adacore.com>
 
 	* usage.adb, gnat_rm.texi, vms_data.ads: Add entry for

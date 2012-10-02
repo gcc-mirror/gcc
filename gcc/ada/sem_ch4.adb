@@ -3404,27 +3404,37 @@ package body Sem_Ch4 is
    procedure Analyze_Quantified_Expression (N : Node_Id) is
       QE_Scop : Entity_Id;
 
-      function  Is_Empty_Range (Typ : Entity_Id) return Boolean;
+      function Is_Empty_Range (Typ : Entity_Id) return Boolean;
       --  If the iterator is part of a quantified expression, and the range is
       --  known to be statically empty, emit a warning and replace expression
-      --  with its static value.
+      --  with its static value. Returns True if the replacement occurs.
 
-      function  Is_Empty_Range (Typ : Entity_Id) return Boolean is
-         Loc     : constant Source_Ptr := Sloc (N);
+      --------------------
+      -- Is_Empty_Range --
+      --------------------
+
+      function Is_Empty_Range (Typ : Entity_Id) return Boolean is
+         Loc : constant Source_Ptr := Sloc (N);
 
       begin
          if Is_Array_Type (Typ)
-           and then Size_Known_At_Compile_Time (Typ)
-           and then RM_Size (Typ) = 0
+           and then Compile_Time_Known_Bounds (Typ)
+           and then
+             (Expr_Value (Type_Low_Bound (Etype (First_Index (Typ))))
+               > Expr_Value (Type_High_Bound (Etype (First_Index (Typ)))))
          then
+            Preanalyze_And_Resolve (Condition (N), Standard_Boolean);
+
             if All_Present (N) then
-               Error_Msg_N ("?universal quantified expression "
-               & "over a null range has value True", N);
+               Error_Msg_N
+                 ("?quantified expression with ALL "
+                  & "over a null range has value True", N);
                Rewrite (N, New_Occurrence_Of (Standard_True, Loc));
 
             else
-               Error_Msg_N ("?existential quantified expression "
-               & "over a null range has value False", N);
+               Error_Msg_N
+                 ("?quantified expression with SOME "
+                  & "over a null range has value False", N);
                Rewrite (N, New_Occurrence_Of (Standard_False, Loc));
             end if;
 
@@ -3435,6 +3445,8 @@ package body Sem_Ch4 is
             return False;
          end if;
       end Is_Empty_Range;
+
+   --  Start of processing for Analyze_Quantified_Expression
 
    begin
       Check_SPARK_Restriction ("quantified expression is not allowed", N);
