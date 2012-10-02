@@ -208,6 +208,7 @@ AdaCore@*
 * Platform-Specific Information for the Run-Time Libraries::
 * Example of Binder Output File::
 * Elaboration Order Handling in GNAT::
+* Overflow Check Handling in GNAT::
 * Conditional Compilation::
 * Inline Assembler::
 * Compatibility and Porting Guide::
@@ -611,6 +612,13 @@ Elaboration Order Handling in GNAT
 * Summary of Procedures for Elaboration Control::
 * Other Elaboration Order Considerations::
 
+Overflow Check Handling in GNAT
+* Background::
+* Overflow Checking Modes in GNAT::
+* Specifying the Desired Mode::
+* Default Settings::
+* Implementation Notes::
+
 Conditional Compilation
 * Use of Boolean Constants::
 * Debugging - A Special Case::
@@ -889,6 +897,10 @@ output file for a sample program.
 @item
 @ref{Elaboration Order Handling in GNAT}, describes how GNAT helps
 you deal with elaboration order issues.
+
+@item
+@ref{Overflow Check Handling in GNAT}, describes how GNAT helps
+you deal with arithmetic overflow issues.
 
 @item
 @ref{Conditional Compilation}, describes how to model conditional compilation,
@@ -4327,26 +4339,35 @@ inlining, but that is no longer the case.
 
 @item -gnato??
 @cindex @option{-gnato??} (@command{gcc})
-Set default overflow cheecking mode. If ?? is a single digit, in the
-range 0-3, it sets the overflow checking mode for all expressions,
-including those outside and within assertions. The meaning of nnn is:
+Set default overflow checking mode. Here `@code{??}' is two digits, a
+single digit, or nothing. Each digit is one of the digits `@code{0}'
+through `@code{3}':
 
-  0   suppress overflow checks (SUPPRESSED)
-  1   all intermediate overflows checked (CHECKED)
-  2   minimize intermediate overflows (MINIMIZED)
-  3   eliminate intermediate overflows (ELIMINATED)
+@itemize @bullet
+@item   @code{0}:
+suppress overflow checks (@code{SUPPRESSED})
+@item   @code{1}:
+all intermediate overflows checked (@code{CHECKED})
+@item   @code{2}:
+minimize intermediate overflows (@code{MINIMIZED})
+@item   @code{3}:
+eliminate intermediate overflows (@code{ELIMINATED})
+@end itemize
 
-Otherwise ?? can be two digits, both 0-3, and in this case the first
-digit sets the mode (using the above code) for expressions outside an
-assertion, and the second digit sets the mode for expressions within
-an assertion.
+If only one digit appears then it applies to all
+cases; if two digits are given, then the first applies outside
+assertions, and the second within assertions.
 
-@item -gnato
-@cindex @option{-gnato} (@command{gcc})
-Enable numeric overflow checking (which is not normally enabled by
-default). Note that division by zero is a separate check that is not
+If no digits follow the @option{-gnato}, then it is equivalent to
+@option{-gnato11},
+causing all intermediate overflows to be checked.
+
+The default if no option @option{-gnato} is given is that overflows are not
+checked, which is equivalent to @option{-gnato00}.
+Note that division by zero is a separate check that is not
 controlled by this switch (division by zero checking is on by default).
-The checking mode is set to CHECKED (equivalent to @option{^-gnato11^/OVERFLOW_CHECKS=11^}).
+
+See also @ref{Specifying the Desired Mode}.
 
 @item -gnatp
 @cindex @option{-gnatp} (@command{gcc})
@@ -6881,78 +6902,103 @@ The @option{-gnatp} switch has no effect if a subsequent
 @findex Suppress
 This switch cancels the effect of a previous @option{gnatp} switch.
 
-@item -gnato
-@cindex @option{-gnato} (@command{gcc})
+@item -gnato??
+@cindex @option{-gnato??} (@command{gcc})
 @cindex Overflow checks
 @cindex Check, overflow
-Enables overflow checking for integer operations.
-This causes GNAT to generate slower and larger executable
-programs by adding code to check for overflow (resulting in raising
-@code{Constraint_Error} as required by standard Ada
-semantics). These overflow checks correspond to situations in which
-the true value of the result of an operation may be outside the base
-range of the result type. The following example shows the distinction:
+In @code{CHECKED} and @code{MINIMIZED} modes (@option{-gnato1} and
+@option{-gnato2}), it enables overflow checking for integer operations.
+In @code{ELIMINATED} mode (@option{-gnato3}), it enables arbitrary
+precision arithmetic for integer operations. In all these modes, this
+causes @value{EDITION} to generate slower and larger executable programs
+by adding code to either check for overflow (resulting in raising
+@code{Constraint_Error} as required by standard Ada semantics) or avoid
+overflows. In mode @code{CHECKED}, overflow checks correspond to
+situations in which the true value of the result of an operation may be
+outside the base range of the result type. In mode @code{MINIMIZED},
+overflow checks correspond to situations in which the true value of the
+result of an operation may be outside the largest available machine
+integer type (@code{Long_Long_Integer}). The following example shows the
+distinction:
 
 @smallexample @c ada
-X1 : Integer := "Integer'Last";
-X2 : Integer range 1 .. 5 := "5";
-X3 : Integer := "Integer'Last";
-X4 : Integer range 1 .. 5 := "5";
-F  : Float := "2.0E+20";
-@dots{}
-X1 := X1 + 1;
-X2 := X2 + 1;
-X3 := Integer (F);
-X4 := Integer (F);
+procedure Add_And_Subtract (X : in out Integer; Y, Z : in Integer) is
+begin
+   X := X + Y - Z;
+end Add_And_Subtract;
+
+X1 : Integer := Integer'Last;
+X2 : Integer range 1 .. 5 := 5;
+
+Add_And_Subtract (X1, 1, 0);  --  first addition and subtraction
+Add_And_Subtract (X1, 1, 1);  --  second addition and subtraction
+Add_And_Subtract (X2, 1, 0);  --  third addition and subtraction
+Add_And_Subtract (X2, 1, 1);  --  fourth addition and subtraction
 @end smallexample
 
 @noindent
-Note that if explicit values are assigned at compile time, the
-compiler may be able to detect overflow at compile time, in which case
-no actual run-time checking code is required, and Constraint_Error
-will be raised unconditionally, with or without
-@option{-gnato}. That's why the assigned values in the above fragment
-are in quotes, the meaning is "assign a value not known to the
-compiler that happens to be equal to ...". The remaining discussion
-assumes that the compiler cannot detect the values at compile time.
+Note that if explicit values are assigned at compile time, the compiler
+may be able to detect overflow at compile time, in which case no actual
+run-time checking code is required, and @code{Constraint_Error} will be
+raised unconditionally, with or without @option{-gnato}.
 
-Here the first addition results in a value that is outside the base range
-of Integer, and hence requires an overflow check for detection of the
-constraint error. Thus the first assignment to @code{X1} raises a
-@code{Constraint_Error} exception only if @option{-gnato} is set.
+The first addition results in a value that is outside the base range of
+@code{Integer}. In mode @code{CHECKED}, this raises
+@code{Constraint_Error} at run time. In mode @code{MINIMIZED}, the
+addition and subtraction are performed in type @code{Long_Long_Integer},
+which is 64 bits for most machines. The compiler detects that no
+overflow check is needed on these operations. The program still raises
+@code{Constraint_Error} at run time because the resulting value is too
+large to be assigned to @code{X}. The assignment results in a violation
+of the explicit range constraint; such range checks are performed by
+default, and are unaffected by @option{-gnato??}.  In mode
+@code{ELIMINATED}, the compiler uses type @code{Long_Long_Integer} for
+intermediate computations, as this type is sufficient here to avoid all
+overflows. When it is not sufficient, the compiler uses instead a
+library for multiple-precision arithmetic, which may cause a significant
+run-time overhead. The program still raises @code{Constraint_Error} at
+run time when assigning to @code{X}.
 
-The second increment operation results in a violation of the explicit
-range constraint; such range checks are performed by default, and are
-unaffected by @option{-gnato}.
+The second addition results in a value that is outside the base range of
+@code{Integer}. In mode @code{CHECKED}, this raises
+@code{Constraint_Error} at run time, like in the previous case. In mode
+@code{MINIMIZED}, the addition and subtraction are performed in type
+@code{Long_Long_Integer}, resulting in a final value that fits in an
+@code{Integer}. Thus, no @code{Constraint_Error} is raised. In mode
+@code{ELIMINATED}, the compiler generates the same code as in mode
+@code{MINIMIZED}, which avoids all overflows.
 
-The two conversions of @code{F} both result in values that are outside
-the base range of type @code{Integer} and thus will raise
-@code{Constraint_Error} exceptions only if @option{-gnato} is used.
-The fact that the result of the second conversion is assigned to
-variable @code{X4} with a restricted range is irrelevant, since the problem
-is in the conversion, not the assignment.
+The third addition and subtraction result in an intermediate value and a
+result well in the base range of @code{Integer}, so no
+@code{Constraint_Error} exception is raised at run time in any
+mode. However, the copy to @code{X2} when returning from the call to
+@code{Add_And_Subtract} fails the range check for the type of
+@code{X2}. Hence, a @code{Constraint_Error} exception is raised at run
+time in all modes.
 
-Basically the rule is that in the default mode (@option{-gnato} not
-used), the generated code assures that all integer variables stay
-within their declared ranges, or within the base range if there is
-no declared range. This prevents any serious problems like indexes
-out of range for array operations.
+The fourth addition and subtraction result in an intermediate value and
+a result well in the base range of @code{Integer}, and in a final value
+that fits in the type of @code{X2}. Hence, no exception is raised at run
+time in any mode.
 
-What is not checked in default mode is an overflow that results in
-an in-range, but incorrect value. In the above example, the assignments
-to @code{X1}, @code{X2}, @code{X3} all give results that are within the
-range of the target variable, but the result is wrong in the sense that
-it is too large to be represented correctly. Typically the assignment
-to @code{X1} will result in wrap around to the largest negative number.
-The conversions of @code{F} will result in some @code{Integer} value
-and if that integer value is out of the @code{X4} range then the
-subsequent assignment would generate an exception.
+Basically the rule is that in the default mode (@option{-gnato??} not
+used), the generated code assures that all integer variables stay within
+their declared ranges, or within the base range if there is no declared
+range. This prevents any serious problems like indexes out of range for
+array operations.
+
+What is not checked in default mode is an overflow that results in an
+in-range, but incorrect value. In the above example, the first
+assignment to @code{X1} gives a result that is within the range of the
+target variable, but the result is wrong in the sense that it is too
+large to be represented correctly. Typically the assignment to @code{X1}
+will result in wrap around to the largest negative number.
 
 @findex Machine_Overflows
-Note that the @option{-gnato} switch does not affect the code generated
+Note that the @option{-gnato??} switch does not affect the code generated
 for any floating-point operations; it applies only to integer
-semantics).
-For floating-point, GNAT has the @code{Machine_Overflows}
+semantics.
+For floating-point, @value{EDITION} has the @code{Machine_Overflows}
 attribute set to @code{False} and the normal mode of operation is to
 generate IEEE NaN and infinite values on overflow or invalid operations
 (such as dividing 0.0 by 0.0).
@@ -6965,12 +7011,12 @@ subscript), or a wild jump (from an out of range case value). Overflow
 checking is also quite expensive in time and space, since in general it
 requires the use of double length arithmetic.
 
-Note again that @option{-gnato} is off by default, so overflow checking is
+Note again that the default is @option{-gnato00}, so overflow checking is
 not performed in default mode. This means that out of the box, with the
-default settings, GNAT does not do all the checks expected from the
+default settings, @value{EDITION} does not do all the checks expected from the
 language description in the Ada Reference Manual. If you want all constraint
 checks to be performed, as described in this Manual, then you must
-explicitly use the -gnato switch either on the @command{gnatmake} or
+explicitly use the @option{-gnato??} switch either on the @command{gnatmake} or
 @command{gcc} command.
 
 @item -gnatE
@@ -25480,6 +25526,420 @@ and figuring out which is correct, and then adding the necessary
 @code{Elaborate} or @code{Elaborate_All} pragmas to ensure the desired order.
 
 
+@c **********************************
+@node Overflow Check Handling in GNAT
+@appendix Overflow Check Handling in GNAT
+@cindex Overflow checks
+@cindex Checks (overflow)
+@c **********************************
+
+@menu
+* Background::
+* Overflow Checking Modes in GNAT::
+* Specifying the Desired Mode::
+* Default Settings::
+* Implementation Notes::
+@end menu
+
+
+@node Background
+@section Background
+
+@noindent
+Overflow checks are checks that the compiler may make to ensure
+that intermediate results are not out of range. For example:
+
+@smallexample @c ada
+   A : Integer;
+   ...
+   A := A + 1;
+@end smallexample
+
+@noindent
+if @code{A} has the value @code{Integer'Last}, then the addition may cause
+overflow since the result is out of range of the type @code{Integer}.
+In this case @code{Constraint_Error} will be raised if checks are
+enabled.
+
+A trickier situation arises in examples like the following:
+
+@smallexample @c ada
+  A, C : Integer;
+  ...
+  A := (A + 1) + C;
+@end smallexample
+
+@noindent
+where @code{A} is @code{Integer'Last} and @code{C} is @code{-1}.
+Now the final result of the expression on the right hand side is
+@code{Integer'Last} which is in range, but the question arises whether the
+intermediate addition of @code{(A + 1)} raises an overflow error.
+
+The (perhaps surprising) answer is that the Ada language
+definition does not answer this question. Instead it leaves
+it up to the implementation to do one of two things:
+
+@itemize @bullet
+@item
+raise an exception (@code{Constraint_Error}), or
+
+@item
+yield the correct mathematical result which is then used in
+subsequent operations.
+@end itemize
+
+@noindent
+If the compiler chooses the first approach, then the assignment of this
+example will indeed raise @code{Constraint_Error}. But if the compiler
+chooses the second approach, then it can perform both additions yielding
+the correct mathematical result, which is in range, so no exception
+will be raised.
+
+Note that in the first example an
+exception will be raised in either case, since if the compiler
+gives the correct mathematical result for the addition, it will
+be out of range of the target type of the assignment, and thus
+fails the range check.
+
+This lack of specified behavior in the handling of overflow for
+intermediate results is a source of non-portability, and can thus
+be problematic when programs are ported. Most typically this arises
+in a situation where the original compiler did not raise an exception,
+and then the application is moved to a compiler where the check is
+performed on the intermediate result and an unexpected exception is
+raised.
+
+Furthermore, when using Ada 2012's preconditions and other
+assertion forms, another issue arises. Consider:
+
+@smallexample @c ada
+     procedure P (A, B : Integer) with
+       Pre => A + B <= Integer'Last;
+@end smallexample
+
+@noindent
+One often wants to regard arithmetic in a context like this from
+a mathematical point of view. So for example, if the two actual parameters
+for a call to @code{P} are both @code{Integer'Last}, then
+the precondition should be regarded as False. If we are executing
+in a mode with run-time checks enabled for preconditions, then we would
+like this precondition to fail, rather than raising an exception
+because of the intermediate overflow.
+
+However, the language definition leaves the specification of
+whether the above condition fails (raising @code{Assert_Error}) or
+causes an intermediate overflow (raising @code{Constraint_Error})
+up to the implementation.
+
+The situation is worse in a case such as the following:
+
+@smallexample @c ada
+     procedure Q (A, B, C : Integer) with
+       Pre => A + B + C <= Integer'Last;
+@end smallexample
+
+@noindent
+Consider the call
+
+@smallexample @c ada
+     Q (A => Integer'Last, B => 1, C => -1);
+@end smallexample
+
+@noindent
+From a mathematical point of view the precondition
+is True, but at run time we may (but are not guaranteed to) get an
+exception raised because of the intermediate overflow (and we really
+would prefer this precondition to be considered True at run time).
+
+@node Overflow Checking Modes in GNAT
+@section Overflow Checking Modes in GNAT
+
+@noindent
+To deal with the portability issue, and with the problem of
+mathematical versus run-time intepretation of the expressions in
+assertions, GNAT provides comprehensive control over the handling
+of intermediate overflow. GNAT can operate in four modes, and
+furthemore, permits separate selection of operating modes for
+the expressions within assertions (here the term ``assertions''
+is used in the technical sense, which includes preconditions and so forth)
+and for expressions appearing outside assertions.
+
+The four modes are:
+
+@itemize @bullet
+@item   @i{Checks suppressed} (@code{SUPPRESSED})
+
+     This is the normal defined language mode, as specified by a pragma
+     @code{Suppress (Overflow_Check)}. If any intermediate overflow occurs,
+     then the program execution is erroneous, which means that anything
+     could happen. Note in particular, that the result of evaluating
+     a precondition may be plain wrong if there is an intermediate
+     overflow, as in our examples above.
+
+@item   @i{All intermediate overflows checked} (@code{CHECKED})
+
+     In this mode, all intermediate results for predefined arithmetic
+     operators must be in range of the base type. If this is not the
+     case a constraint error is raised. This is the normal default mode
+     specified by use of the pragma @code{Unsuppress (Overflow_Check)}.
+
+@item   @i{Most intermediate overflows avoided} (@code{MINIMIZED})
+
+     In this mode, the compiler attempts to avoid intermediate overflows by
+     using @code{Long_Long_Integer} as the type in which arithmetic is
+     performed for predefined arithmetic operators. This is slightly more
+     expensive at
+     run time (compared to suppressing intermediate overflow checks), though
+     the cost is minimal on modern 64-bit machines. For the examples given
+     earlier, no intermediate overflows would have resulted in exceptions,
+     since the intermediate results are all in the range of
+     @code{Long_Long_Integer} (typically 64-bits on nearly all implementations
+     of GNAT).
+
+     However, there are cases where @code{Long_Long_Integer} is not large
+     enough, consider the following example:
+
+@smallexample @c ada
+       procedure R (A, B, C, D : Integer) with
+         Pre => (A**2 * B**2) / (C**2 * D**2) <= 10;
+@end smallexample
+
+     where @code{A} = @code{B} = @code{C} = @code{D} = @code{Integer'Last}.
+     Now the intermediate results are
+     out of the range of @code{Long_Long_Integer} even though the final result
+     is in range and the precondition is True (from a mathematical point
+     of view). In such a case, operating in this mode, an exception will
+     be raised for the intermediate overflow (which is why this mode
+     says @i{most} intermediate overflows are avoided).
+
+@item   @i{All intermediate overflows avoided} (@code{ELIMINATED})
+
+     In this mode, the compiler  avoids all intermediate overflows
+     by using arbitrary precision arithmetic as required. In this
+     mode, the above example with @code{A**2 * B**2} would
+     not cause intermediate overflow, because the intermediate result
+     would be evaluated using sufficient precision, and the result
+     of evaluating the precondition would be True.
+
+     This mode has the advantage of avoiding any intermediate
+     overflows, but at the expense of significant run-time overhead,
+     including the use of a library (included automatically in this
+     mode) for multiple-precision arithmetic.
+
+     This mode provides cleaner semantics for assertions, since now
+     the run-time behavior emulates true arithmetic behavior for the
+     predefined arithmetic operators, meaning that there is never a
+     conflict between the mathematical view of the assertion, and its
+     run-time behavior.
+@end itemize
+
+@noindent
+  Note that these modes apply only to the evaluation of predefined
+  arithmetic, membership, and comparison operators for signed integer
+  aritmetic.
+
+  For fixed-point arithmetic, checks can be suppressed. But if checks
+  are enabled (any of the three non-suppress modes will enable checks),
+  then fixed-point values are always checked for overflow against the
+  base type for intermediate expressions.
+
+  For floating-point, on nearly all architectures, @code{Machine_Overflows}
+  is False, and IEEE infinities are generated, so overflow exceptions
+  are never raised. If you want to avoid infinities, and check that
+  final results of expressions are in range, then you can declare a
+  constrained floating-point type, and range checks will be carried
+  out in the normal manner (with infinite values always failing all
+  range checks).
+
+
+@c -------------------------
+@node Specifying the Desired Mode
+@section Specifying the Desired Mode
+
+@noindent
+The desired mode of overflow checking can be specified using
+either the @code{Overflow_Checks} pragma or an equivalent compiler switch.
+The pragma has the form
+@cindex pragma @code{Overflow_Checks}
+
+@smallexample @c ada
+    pragma Overflow_Checks ([General =>] MODE [, [Assertions =>] MODE]);
+@end smallexample
+
+@noindent
+where @code{MODE} is one of
+
+@itemize @bullet
+@item   @code{SUPPRESSED}: suppress overflow checks
+@item   @code{CHECKED}:  all intermediate overflows checked
+@item   @code{MINIMIZED}: minimize intermediate overflows
+@item   @code{ELIMINATED}: eliminate intermediate overflows
+@end itemize
+
+@noindent
+The case is ignored, so @code{MINIMIZED}, @code{Minimized} and
+@code{minimized} all have the same effect.
+
+If only the @code{General} parameter is present, then the given @code{MODE}
+applies
+to expressions both within and outside assertions. If both arguments
+are present, then @code{General} applies to expressions outside assertions,
+and @code{Assertions} applies to expressions within assertions. For example:
+
+@smallexample @c ada
+   pragma Overflow_Checks
+     (General => Minimized, Assertions => Eliminated);
+@end smallexample
+
+@noindent
+specifies that general expressions outside assertions be evaluated
+in ``minimize intermediate overflows'' mode, and expressions within
+assertions be evaluated in ``eliminate intermediate overflows'' mode.
+This is often a reasonable choice, avoiding excessive overhead
+outside assertions, but assuring a high degree of portability
+when importing code from another compiler, while incurring
+the extra overhead for assertion expressions to ensure that
+the behavior at run time matches the expected mathematical
+behavior.
+
+The @code{Overflow_Checks} pragma has the same scoping and placement
+rules as pragma @code{Suppress}, so it can occur either as a
+configuration pragma, specifying a default for the whole
+program, or in a declarative scope, where it applies to the
+remaining declarations and statements in that scope.
+
+Additionally, a compiler switch @option{-gnato?} or @option{-gnato??}
+can be used to control the checking mode default (which can be subsequently
+overridden using the pragma form).
+@cindex @option{-gnato?} (gcc)
+@cindex @option{-gnato??} (gcc)
+
+Here `@code{?}' is one of the digits `@code{0}' through `@code{3}':
+
+@itemize @bullet
+@item   @code{0}:
+suppress overflow checks (@code{SUPPRESSED})
+@item   @code{1}:
+all intermediate overflows checked (@code{CHECKED})
+@item   @code{2}:
+minimize intermediate overflows (@code{MINIMIZED})
+@item   @code{3}:
+eliminate intermediate overflows (@code{ELIMINATED})
+@end itemize
+
+@noindent
+As with the pragma, if only one digit appears then it applies to all
+cases; if two digits are given, then the first applies outside
+assertions, and the second within assertions. Thus the equivalent
+of the example pragma above would be @option{-gnato23}.
+
+If no digits follow the @option{-gnato}, then it is equivalent to
+@option{-gnato11},
+causing all intermediate overflows to be checked.
+
+
+@c -------------------------
+@node Default Settings
+@section Default Settings
+
+The default mode for overflow checks is
+
+@smallexample
+   General => Suppressed
+@end smallexample
+
+@noindent
+which suppresses checks inside and outside assertions,
+This retains compatibility with previous versions of
+GNAT which suppressed overflow checks by default.
+
+The switch @option{-gnato} (with no digits following) is equivalent to
+@cindex @option{-gnato} (gcc)
+
+@smallexample
+   General => Checked
+@end smallexample
+
+@noindent
+which causes overflow checking of all intermediate overflows
+both inside and outside assertions. This provides compatibility
+with this switch as implemented in previous versions of GNAT.
+
+The pragma @code{Suppress (Overflow_Check)} sets mode
+
+@smallexample
+   General => Suppressed
+@end smallexample
+
+@noindent
+suppressing all overflow checking within and outside
+assertions.
+@cindex @code{Overflow_Check} (argument to pragma Suppress)
+
+The pragam @code{Unsuppress (Overflow_Check)} sets mode
+
+@smallexample
+   General => Checked
+@end smallexample
+
+@noindent
+which causes overflow checking of all intermediate overflows.
+This applies both inside and outside assertions.
+@cindex @code{Overflow_Check} (argument to pragma Unsuppress)
+
+
+@c -------------------------
+@node Implementation Notes
+@section Implementation Notes
+
+In practice on typical 64-bit machines, the @code{MINIMIZED} mode is
+reasonably efficient, and can be generally used. It also helps
+to ensure compatibility with code imported from some other
+compiler to GNAT.
+
+Setting all intermediate overflows checking (@code{CHECKED} mode)
+makes sense if you want to
+make sure that your code is compatible with any other possible
+Ada implementation. This may be useful in ensuring portability
+for code that is to be exported to some other compiler than GNAT.
+It is also appropriate if you intend to turn off checks for
+the final delivered software, since in @code{SUPPRESSED} mode, the
+assumption is that all intermediate results are in range. In
+this situation, it is likely that you are also suppressing
+assertions in the final executable, so in that case it does not
+matter which mode is selected for assertions during development.
+
+The Ada standard allows the reassociation of expressions at
+the same precedence level if no parentheses are present. For
+example, @w{@code{A+B+C}} parses as though it were @w{@code{(A+B)+C}}, but
+the compiler can reintepret this as @w{@code{A+(B+C)}}, possibly
+introducing or eliminating an overflow exception. The GNAT
+compiler never takes advantage of this freedom, and the
+expression @w{@code{A+B+C}} will be evaluated as @w{@code{(A+B)+C}}.
+If you need the other order, you can write the parentheses
+explicitly @w{@code{A+(B+C)}} and GNAT will respect this order.
+
+The use of @code{ELIMINATED} mode will cause the compiler to
+automatically include an appropriate arbitrary precision
+integer arithmetic package. The compiler will make calls
+to this package, though only in cases where it cannot be
+sure that @code{Long_Long_Integer} is sufficient to guard against
+intermediate overflows. This package does not use dynamic
+alllocation, but it does use the secondary stack, so an
+appropriate secondary stack package must be present (this
+is always true for standard full Ada, but may require
+specific steps for restricted run times such as ZFP).
+
+Although @code{ELIMINATED} mode causes expressions to use arbitrary
+precision arithmetic, avoiding overflow, the final result
+must be in an appropriate range. This is true even if the
+final result is of type @code{[Long_[Long_]]Integer'Base}, which
+still has the same bounds as its associated constrained
+type at run-time.
+
+Currently, the @code{ELIMINATED} mode is only available on target
+platforms for which @code{Long_Long_Integer} is 64-bits (nearly all GNAT
+platforms).
 
 @c *******************************
 @node Conditional Compilation

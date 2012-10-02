@@ -11773,6 +11773,9 @@ package body Sem_Prag is
 
          --  MODE := SUPPRESSED | CHECKED | MINIMIZED | ELIMINATED
 
+         --  Note: MINIMIZED is allowed only if Long_Long_Integer'Size is 64
+         --  since System.Bignums makes this assumption.
+
          when Pragma_Overflow_Checks => Overflow_Checks : declare
             function Get_Check_Mode
               (Name : Name_Id;
@@ -11797,12 +11800,21 @@ package body Sem_Prag is
 
                if Chars (Argx) = Name_Suppressed then
                   return Suppressed;
+
                elsif Chars (Argx) = Name_Checked then
                   return Checked;
+
                elsif Chars (Argx) = Name_Minimized then
                   return Minimized;
+
                elsif Chars (Argx) = Name_Eliminated then
-                  return Eliminated;
+                  if Ttypes.Standard_Long_Long_Integer_Size /= 64 then
+                     Error_Pragma_Arg
+                       ("Eliminated not implemented on this target", Argx);
+                  else
+                     return Eliminated;
+                  end if;
+
                else
                   Error_Pragma_Arg ("invalid argument for pragma%", Argx);
                end if;

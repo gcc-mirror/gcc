@@ -1,5 +1,25 @@
 2012-10-02  Robert Dewar  <dewar@adacore.com>
 
+	* s-bignum.adb (Big_Exp): 0**0 should be 1, not 0.
+	(Big_Exp): Fix possible error for (-1)**0.
+	(Big_Exp): Fix error in computing 2**K for small K.
+	(Big_Mod): Fix wrong sign for negative operands.
+	(Div_Rem): Fix bad results for operands close to 2**63.
+	* s-bignum.ads: Add documentation and an assertion to require
+	LLI size to be 64 bits.
+	* sem_prag.adb (Analyze_Pragma, case Overflow_Checks): Do not
+	allow ELIMINATED if LLI'Size is other than 64 bits.
+	* switch-c.adb (Scan_Switches): Do not allow -gnato3 if LLI'Size
+	is not 64 bits.
+	* switch.ads (Bad_Switch): Add missing pragma No_Return.
+	* gnat_ugn.texi: Added appendix on Overflow Check Handling in GNAT.
+
+2012-10-02  Robert Dewar  <dewar@adacore.com>
+
+	* sem_type.adb: Minor reformatting.
+
+2012-10-02  Robert Dewar  <dewar@adacore.com>
+
 	* sem_ch8.adb: Minor reformatting.
 
 2012-10-02  Javier Miranda  <miranda@adacore.com>
