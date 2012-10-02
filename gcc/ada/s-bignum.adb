@@ -98,7 +98,7 @@ package body System.Bignums is
 
    procedure Free_Bignum (X : Bignum) is null;
    --  Called to free a Bignum value used in intermediate computations. In
-   --  this implementation using the secondary stack, does nothing at all,
+   --  this implementation using the secondary stack, it does nothing at all,
    --  because we rely on Mark/Release, but it may be of use for some
    --  alternative implementation.
 
@@ -115,12 +115,12 @@ package body System.Bignums is
 
    function Add (X, Y : Digit_Vector; X_Neg, Y_Neg : Boolean) return Bignum is
    begin
-      --  If signs are the same we are doing an addition, it is convenient to
-      --  ensure that the first operand is the longer of the two,
+      --  If signs are the same, we are doing an addition, it is convenient to
+      --  ensure that the first operand is the longer of the two.
 
       if X_Neg = Y_Neg then
          if X'Last < Y'Last then
-            return Add (Y => X, X => Y, X_Neg => Y_Neg, Y_Neg => X_Neg);
+            return Add (X => Y, Y => X, X_Neg => Y_Neg, Y_Neg => X_Neg);
 
          --  Here signs are the same, and the first operand is the longer
 
@@ -151,9 +151,9 @@ package body System.Bignums is
             end;
          end if;
 
-         --  Signs are different so really this is an subtraction, we want to
-         --  make sure that the largest magnitude operand is the first one, and
-         --  then the result will have the sign of the first operand.
+      --  Signs are different so really this is a subtraction, we want to make
+      --  sure that the largest magnitude operand is the first one, and then
+      --  the result will have the sign of the first operand.
 
       else
          declare
@@ -164,7 +164,7 @@ package body System.Bignums is
                return Normalize (Zero_Data);
 
             elsif CR = LT then
-               return Add (Y => X, X => Y, X_Neg => Y_Neg, Y_Neg => X_Neg);
+               return Add (X => Y, Y => X, X_Neg => Y_Neg, Y_Neg => X_Neg);
 
             else
                pragma Assert (X_Neg /= Y_Neg and then CR = GT);
@@ -173,7 +173,7 @@ package body System.Bignums is
 
                declare
                   Diff : Digit_Vector (1 .. X'Length);
-                  RD    : DD;
+                  RD   : DD;
 
                begin
                   RD := 0;
@@ -401,7 +401,7 @@ package body System.Bignums is
    -- Big_EQ --
    ------------
 
-   function Big_EQ  (X, Y : Bignum) return Boolean is
+   function Big_EQ (X, Y : Bignum) return Boolean is
    begin
       return Compare (X.D, Y.D, X.Neg, Y.Neg) = EQ;
    end Big_EQ;
@@ -410,7 +410,7 @@ package body System.Bignums is
    -- Big_GE --
    ------------
 
-   function Big_GE  (X, Y : Bignum) return Boolean is
+   function Big_GE (X, Y : Bignum) return Boolean is
    begin
       return Compare (X.D, Y.D, X.Neg, Y.Neg) /= LT;
    end Big_GE;
@@ -419,7 +419,7 @@ package body System.Bignums is
    -- Big_GT --
    ------------
 
-   function Big_GT  (X, Y : Bignum) return Boolean is
+   function Big_GT (X, Y : Bignum) return Boolean is
    begin
       return Compare (X.D, Y.D, X.Neg, Y.Neg) = GT;
    end Big_GT;
@@ -428,7 +428,7 @@ package body System.Bignums is
    -- Big_LE --
    ------------
 
-   function Big_LE  (X, Y : Bignum) return Boolean is
+   function Big_LE (X, Y : Bignum) return Boolean is
    begin
       return Compare (X.D, Y.D, X.Neg, Y.Neg) /= GT;
    end Big_LE;
@@ -437,7 +437,7 @@ package body System.Bignums is
    -- Big_LT --
    ------------
 
-   function Big_LT  (X, Y : Bignum) return Boolean is
+   function Big_LT (X, Y : Bignum) return Boolean is
    begin
       return Compare (X.D, Y.D, X.Neg, Y.Neg) = LT;
    end Big_LT;
@@ -465,7 +465,7 @@ package body System.Bignums is
    --   13    -5      -2        3       -13   -5      -3       -3
    --   14    -5      -1        4       -14   -5      -4       -4
 
-   function Big_Mod  (X, Y : Bignum) return Bignum is
+   function Big_Mod (X, Y : Bignum) return Bignum is
       Q, R : Bignum;
 
    begin
@@ -474,7 +474,7 @@ package body System.Bignums is
       if X.Neg = Y.Neg then
          return Big_Rem (X, Y);
 
-      --  Case where mod is different
+      --  Case where Mod is different
 
       else
          --  Do division
@@ -546,7 +546,7 @@ package body System.Bignums is
    -- Big_NE --
    ------------
 
-   function Big_NE  (X, Y : Bignum) return Boolean is
+   function Big_NE (X, Y : Bignum) return Boolean is
    begin
       return Compare (X.D, Y.D, X.Neg, Y.Neg) /= EQ;
    end Big_NE;
@@ -583,11 +583,11 @@ package body System.Bignums is
    --   13    -5     3      -13   -5     -3
    --   14    -5     4      -14   -5     -4
 
-   function Big_Rem  (X, Y : Bignum) return Bignum is
+   function Big_Rem (X, Y : Bignum) return Bignum is
       Q, R : Bignum;
    begin
       Div_Rem (X, Y, Q, R, Discard_Quotient => True);
-      R.Neg :=  R.Len > 0 and then X.Neg;
+      R.Neg := R.Len > 0 and then X.Neg;
       return R;
    end Big_Rem;
 
@@ -665,10 +665,10 @@ package body System.Bignums is
 
       if Compare (X.D, Y.D, False, False) = LT then
          Remainder := Normalize (X.D);
-         Quotient := Normalize (Zero_Data);
+         Quotient  := Normalize (Zero_Data);
          return;
 
-      --  If both X and Y are comfortably less than 2**63-1 we can just use
+      --  If both X and Y are comfortably less than 2**63-1, we can just use
       --  Long_Long_Integer arithmetic. Note it is good not to do an accurate
       --  range check here since -2**63 / -1 overflows!
 
@@ -703,7 +703,7 @@ package body System.Bignums is
                ND := ND rem Div;
             end loop;
 
-            Quotient := Normalize (Result);
+            Quotient  := Normalize (Result);
             Remdr (1) := SD (ND);
             Remainder := Normalize (Remdr);
             return;
@@ -1007,7 +1007,7 @@ package body System.Bignums is
       end loop;
 
       B := Allocate_Bignum (X'Last - J + 1);
-      B.Neg :=  B.Len > 0 and then Neg;
+      B.Neg := B.Len > 0 and then Neg;
       B.D := X (J .. X'Last);
       return B;
    end Normalize;

@@ -439,7 +439,7 @@ package body Prj.Util is
 
       --  Local declarations
 
-      Iter : Source_Iterator := For_Each_Source (Tree, Project);
+      Iter : Source_Iterator;
       Sid  : Source_Id;
       ALI  : ALI_Id;
 
@@ -451,6 +451,12 @@ package body Prj.Util is
    --  Start of processing for For_Interface_Sources
 
    begin
+      if Project.Qualifier = Aggregate_Library then
+         Iter := For_Each_Source (Tree);
+      else
+         Iter := For_Each_Source (Tree, Project);
+      end if;
+
       --  First look at each spec, check if the body is needed
 
       loop
