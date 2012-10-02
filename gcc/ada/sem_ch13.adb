@@ -1919,7 +1919,7 @@ package body Sem_Ch13 is
       procedure Check_Indexing_Functions;
       --  Check that the function in Constant_Indexing or Variable_Indexing
       --  attribute has the proper type structure. If the name is overloaded,
-      --  check that all interpretations are legal.
+      --  check that some interpretation is legal.
 
       procedure Check_Iterator_Functions;
       --  Check that there is a single function in Default_Iterator attribute
@@ -2070,6 +2070,7 @@ package body Sem_Ch13 is
       ------------------------------
 
       procedure Check_Indexing_Functions is
+         Indexing_Found : Boolean;
 
          procedure Check_One_Function (Subp : Entity_Id);
          --  Check one possible interpretation
@@ -2085,29 +2086,38 @@ package body Sem_Ch13 is
                                    Aspect_Iterator_Element);
 
          begin
-            if not Check_Primitive_Function (Subp) then
+            if not Check_Primitive_Function (Subp)
+              and then not Is_Overloaded (Expr)
+            then
                Error_Msg_NE
                  ("aspect Indexing requires a function that applies to type&",
-                   Subp, Ent);
+                    Subp, Ent);
             end if;
 
             --  An indexing function must return either the default element of
-            --  the container, or a reference type.
+            --  the container, or a reference type. For variable indexing it
+            --  must be latter.
 
             if Present (Default_Element) then
                Analyze (Default_Element);
                if Is_Entity_Name (Default_Element)
                  and then Covers (Entity (Default_Element), Etype (Subp))
                then
+                  Indexing_Found := True;
                   return;
                end if;
             end if;
 
-            --  Otherwise the return type must be a reference type.
+            --  For variable_indexing the return type must be a reference type.
 
-            if not Has_Implicit_Dereference (Etype (Subp)) then
+            if Attr = Name_Variable_Indexing
+              and then not Has_Implicit_Dereference (Etype (Subp))
+            then
                Error_Msg_N
                  ("function for indexing must return a reference type", Subp);
+
+            else
+               Indexing_Found := True;
             end if;
          end Check_One_Function;
 
@@ -2129,6 +2139,7 @@ package body Sem_Ch13 is
                It : Interp;
 
             begin
+               Indexing_Found := False;
                Get_First_Interp (Expr, I, It);
                while Present (It.Nam) loop
 
@@ -2142,6 +2153,11 @@ package body Sem_Ch13 is
 
                   Get_Next_Interp (I, It);
                end loop;
+               if not Indexing_Found then
+                  Error_Msg_NE (
+                   "aspect Indexing requires a function that applies to type&",
+                     Expr, Ent);
+               end if;
             end;
          end if;
       end Check_Indexing_Functions;

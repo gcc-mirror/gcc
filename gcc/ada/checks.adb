@@ -2459,11 +2459,15 @@ package body Checks is
          else
             --  If the predicate is a static predicate and the operand is
             --  static, the predicate must be evaluated statically. If the
-            --  evaluation fails this is a static constraint error.
+            --  evaluation fails this is a static constraint error. This check
+            --  is disabled in -gnatc mode, because the compiler is incapable
+            --  of evaluating static expressions in that case.
 
             if Is_OK_Static_Expression (N) then
                if Present (Static_Predicate (Typ)) then
-                  if Eval_Static_Predicate_Check (N, Typ) then
+                  if Operating_Mode < Generate_Code or else
+                    Eval_Static_Predicate_Check (N, Typ)
+                  then
                      return;
                   else
                      Error_Msg_NE

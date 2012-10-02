@@ -2311,10 +2311,15 @@ begin
                     (new String'("-gnatem=" & Get_Name_String (M_File)));
                end if;
 
-               --  For gnatcheck, also indicate a global configuration pragmas
-               --  file and, if -U is not used, a local one.
+               --  For gnatcheck, gnatpp, gnatstub and gnatmetric, also
+               --  indicate a global configuration pragmas file and, if -U
+               --  is not used, a local one.
 
-               if The_Command = Check then
+               if The_Command = Check  or else
+                  The_Command = Pretty or else
+                  The_Command = Stub   or else
+                  The_Command = Metric
+               then
                   declare
                      Pkg  : constant Prj.Package_Id :=
                               Prj.Util.Value_Of
