@@ -4080,6 +4080,7 @@ package body Sem_Aggr is
                      --  We build a partially initialized aggregate with the
                      --  values of the discriminants and box initialization
                      --  for the rest, if other components are present.
+
                      --  The type of the aggregate is the known subtype of
                      --  the component. The capture of discriminants must
                      --  be recursive because subcomponents may be constrained
@@ -4434,9 +4435,8 @@ package body Sem_Aggr is
                   Next (New_Assoc);
                end loop;
 
-               --  If no association, this is not a legal component of
-               --  of the type in question, except if its association
-               --  is provided with a box.
+               --  If no association, this is not a legal component of the type
+               --  in question, unless its association is provided with a box.
 
                if No (New_Assoc) then
                   if Box_Present (Parent (Selectr)) then

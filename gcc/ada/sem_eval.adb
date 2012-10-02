@@ -3260,6 +3260,7 @@ package body Sem_Eval is
       Loc  : constant Source_Ptr := Sloc (N);
       Pred : constant List_Id := Static_Predicate (Typ);
       Test : Node_Id;
+
    begin
       if No (Pred) then
          return True;

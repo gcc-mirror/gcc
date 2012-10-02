@@ -2206,13 +2206,14 @@ package body Sem_Dim is
       Dims_Of_From : constant Dimension_Type := Dimensions_Of (From);
 
    begin
+      --  Ignore if not Ada 2012 or beyond
+
       if Ada_Version < Ada_2012 then
          return;
-      end if;
 
-      --  Copy the dimension of 'From to 'To'
+      --  For Ada 2012, Copy the dimension of 'From to 'To'
 
-      if Exists (Dims_Of_From) then
+      elsif Exists (Dims_Of_From) then
          Set_Dimensions (To, Dims_Of_From);
       end if;
    end Copy_Dimensions;
@@ -2730,14 +2731,14 @@ package body Sem_Dim is
          --  Look for a symbols parameter association in the list of actuals
 
          while Present (Actual) loop
+
             --  Positional parameter association case when the actual is a
             --  string literal.
 
             if Nkind (Actual) = N_String_Literal then
                Actual_Str := Actual;
 
-            --  Named parameter association case when the selector name is
-            --  Symbol.
+            --  Named parameter association case when selector name is Symbol
 
             elsif Nkind (Actual) = N_Parameter_Association
               and then Chars (Selector_Name (Actual)) = Name_Symbol
@@ -2751,6 +2752,7 @@ package body Sem_Dim is
             end if;
 
             if Present (Actual_Str) then
+
                --  Return True if the actual comes from source or if the string
                --  of symbols doesn't have the default value (i.e. it is "").
 
@@ -3206,7 +3208,8 @@ package body Sem_Dim is
 
       return
         Is_RTU (E, System_Dim_Float_IO)
-          or Is_RTU (E, System_Dim_Integer_IO);
+          or else
+        Is_RTU (E, System_Dim_Integer_IO);
    end Is_Dim_IO_Package_Entity;
 
    -------------------------------------

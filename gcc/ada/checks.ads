@@ -260,9 +260,10 @@ package Checks is
    --  parameter is used to supply Sloc values for the constructed tree.
 
    procedure Minimize_Eliminate_Overflow_Checks
-     (N  : Node_Id;
-      Lo : out Uint;
-      Hi : out Uint);
+     (N         : Node_Id;
+      Lo        : out Uint;
+      Hi        : out Uint;
+      Top_Level : Boolean);
    --  This is the main routine for handling MINIMIZED and ELIMINATED overflow
    --  checks. On entry N is a node whose result is a signed integer subtype.
    --  If the node is an artihmetic operation, then a range analysis is carried
@@ -321,6 +322,16 @@ package Checks is
    --
    --  Note that if Bignum values appear, the caller must take care of doing
    --  the appropriate mark/release operation on the secondary stack.
+   --
+   --  Top_Level is used to avoid inefficient unnecessary transitions into the
+   --  Bignum domain. If Top_Level is True, it means that the caller will have
+   --  to convert any Bignum value back to Long_Long_Integer, checking that the
+   --  value is in range. This is the normal case for a top level operator in
+   --  a subexpression. There is no point in going into Bignum mode to avoid an
+   --  overflow just so we can check for overflow the next moment. For calls
+   --  from comparisons and membership tests, and for all recursive calls, we
+   --  do want to transition into the Bignum domain if necessary. Note that
+   --  this setting is only relevant in ELIMINATED mode.
 
    -------------------------------------------------------
    -- Control and Optimization of Range/Overflow Checks --

@@ -1113,8 +1113,11 @@ package body Checks is
 
       --  Otherwise, we have a top level arithmetic operator node, and this
       --  is where we commence the special processing for minimize/eliminate.
+      --  This is the case where we tell the machinery not to move into Bignum
+      --  mode at this top level (of course the top level operation will still
+      --  be in Bignum mode if either of its operands are of type Bignum).
 
-      Minimize_Eliminate_Overflow_Checks (Op, Lo, Hi);
+      Minimize_Eliminate_Overflow_Checks (Op, Lo, Hi, Top_Level => True);
 
       --  That call may but does not necessarily change the result type of Op.
       --  It is the job of this routine to undo such changes, so that at the
@@ -2333,23 +2336,24 @@ package body Checks is
             Error_Msg_N
               ("\this will result in infinite recursion?", Parent (N));
             Insert_Action (N,
-               Make_Raise_Storage_Error
-                 (Sloc (N), Reason => SE_Infinite_Recursion));
+              Make_Raise_Storage_Error (Sloc (N),
+                Reason => SE_Infinite_Recursion));
+
+         --  Here for normal case of predicate active.
 
          else
-
             --  If the predicate is a static predicate and the operand is
             --  static, the predicate must be evaluated statically. If the
             --  evaluation fails this is a static constraint error.
 
             if Is_OK_Static_Expression (N) then
-               if  Present (Static_Predicate (Typ)) then
+               if Present (Static_Predicate (Typ)) then
                   if Eval_Static_Predicate_Check (N, Typ) then
                      return;
                   else
                      Error_Msg_NE
                        ("static expression fails static predicate check on&",
-                          N, Typ);
+                        N, Typ);
                   end if;
                end if;
             end if;
@@ -6549,9 +6553,10 @@ package body Checks is
    ----------------------------------------
 
    procedure Minimize_Eliminate_Overflow_Checks
-     (N  : Node_Id;
-      Lo : out Uint;
-      Hi : out Uint)
+     (N         : Node_Id;
+      Lo        : out Uint;
+      Hi        : out Uint;
+      Top_Level : Boolean)
    is
       pragma Assert (Is_Signed_Integer_Type (Etype (N)));
 
@@ -6577,6 +6582,11 @@ package body Checks is
 
       OK : Boolean;
       --  Used in call to Determine_Range
+
+      Bignum_Operands : Boolean;
+      --  Set True if one or more operands is already of type Bignum, meaning
+      --  that for sure (regardless of Top_Level setting) we are committed to
+      --  doing the operation in Bignum mode.
 
       procedure Max (A : in out Uint; B : Uint);
       --  If A is No_Uint, sets A to B, else to UI_Max (A, B);
@@ -6609,7 +6619,7 @@ package body Checks is
    --  Start of processing for Minimize_Eliminate_Overflow_Checks
 
    begin
-      --  Case where we do not have an arithmetic operator.
+      --  Case where we do not have an arithmetic operator
 
       if not Is_Signed_Integer_Arithmetic_Op (N) then
 
@@ -6638,10 +6648,12 @@ package body Checks is
       --  that lies below us!)
 
       else
-         Minimize_Eliminate_Overflow_Checks (Right_Opnd (N), Rlo, Rhi);
+         Minimize_Eliminate_Overflow_Checks
+           (Right_Opnd (N), Rlo, Rhi, Top_Level => False);
 
          if Binary then
-            Minimize_Eliminate_Overflow_Checks (Left_Opnd (N), Llo, Lhi);
+            Minimize_Eliminate_Overflow_Checks
+              (Left_Opnd (N), Llo, Lhi, Top_Level => False);
          end if;
       end if;
 
@@ -6650,10 +6662,13 @@ package body Checks is
       if Rlo = No_Uint or else (Binary and then Llo = No_Uint) then
          Lo := No_Uint;
          Hi := No_Uint;
+         Bignum_Operands := True;
 
       --  Otherwise compute result range
 
       else
+         Bignum_Operands := False;
+
          case Nkind (N) is
 
             --  Absolute value
@@ -7007,14 +7022,33 @@ package body Checks is
 
       if Lo = No_Uint or else Lo < LLLo or else Hi > LLHi then
 
-         --  In MINIMIZED mode, note that an overflow check is required
-         --  Note that we know we don't have a Bignum, since Bignums only
-         --  appear in Eliminated mode.
+         --  OK, we are definitely outside the range of Long_Long_Integer. The
+         --  question is whether to move into Bignum mode, or remain the domain
+         --  of Long_Long_Integer, signalling that an overflow check is needed.
 
-         if Check_Mode = Minimized then
+         --  Obviously in MINIMIZED mode we stay with LLI, since we are not in
+         --  the Bignum business. In ELIMINATED mode, we will normally move
+         --  into Bignum mode, but there is an exception if neither of our
+         --  operands is Bignum now, and we are at the top level (Top_Level
+         --  set True). In this case, there is no point in moving into Bignum
+         --  mode to prevent overflow if the caller will immediately convert
+         --  the Bignum value back to LLI with an overflow check. It's more
+         --  efficient to stay in LLI mode with an overflow check.
+
+         if Check_Mode = Minimized
+           or else (Top_Level and not Bignum_Operands)
+         then
             Enable_Overflow_Check (N);
 
-         --  Otherwise we are in ELIMINATED mode, switch to bignum
+            --  Since we are doing an overflow check, the result has to be in
+            --  Long_Long_Integer mode, so adjust the possible range to reflect
+            --  this. Note these calls also change No_Uint values from the top
+            --  level case to LLI bounds.
+
+            Max (Lo, LLLo);
+            Min (Hi, LLHi);
+
+         --  Otherwise we are in ELIMINATED mode and we switch to Bignum mode
 
          else
             pragma Assert (Check_Mode = Eliminated);
@@ -7079,6 +7113,11 @@ package body Checks is
                    Name                   => New_Occurrence_Of (Fent, Loc),
                    Parameter_Associations => Args));
                Analyze_And_Resolve (N, RTE (RE_Bignum));
+
+               --  Indicate result is Bignum mode
+
+               Lo := No_Uint;
+               Hi := No_Uint;
                return;
             end;
          end if;
