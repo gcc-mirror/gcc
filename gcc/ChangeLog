@@ -1,3 +1,9 @@
+2012-10-02  Alexandre Oliva <aoliva@redhat.com>
+
+	PR debug/54177
+	* var-tracking.c (vt_add_function_parameter): Bail if
+	var_lowpart fails.
+
 2012-10-02  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/54741
