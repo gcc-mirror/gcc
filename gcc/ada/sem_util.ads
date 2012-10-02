@@ -28,7 +28,6 @@
 with Einfo;   use Einfo;
 with Exp_Tss; use Exp_Tss;
 with Namet;   use Namet;
-with Nmake;   use Nmake;
 with Snames;  use Snames;
 with Types;   use Types;
 with Uintp;   use Uintp;
@@ -1093,28 +1092,12 @@ package Sem_Util is
    --  statement in Statements (HSS) that has Comes_From_Source set. If no
    --  such statement exists, Empty is returned.
 
-   function Make_Simple_Return_Statement
-     (Sloc       : Source_Ptr;
-      Expression : Node_Id := Empty) return Node_Id
-     renames Make_Return_Statement;
-   --  See Sinfo. We rename Make_Return_Statement to the correct Ada 2005
-   --  terminology here. Clients should use Make_Simple_Return_Statement.
-
    function Matching_Static_Array_Bounds
      (L_Typ : Node_Id;
       R_Typ : Node_Id) return Boolean;
    --  L_Typ and R_Typ are two array types. Returns True when they have the
    --  same number of dimensions, and the same static bounds for each index
    --  position.
-
-   Make_Return_Statement : constant := -2 ** 33;
-   --  Attempt to prevent accidental uses of Make_Return_Statement. If this
-   --  and the one in Nmake are both potentially use-visible, it will cause
-   --  a compilation error. Note that type and value are irrelevant.
-
-   N_Return_Statement : constant := -2 ** 33;
-   --  Attempt to prevent accidental uses of N_Return_Statement; similar to
-   --  Make_Return_Statement above.
 
    procedure Mark_Coextensions (Context_Nod : Node_Id; Root_Nod : Node_Id);
    --  Given a node which designates the context of analysis and an origin in
