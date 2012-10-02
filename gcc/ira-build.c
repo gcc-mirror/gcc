@@ -3047,11 +3047,10 @@ update_conflict_hard_reg_costs (void)
     {
       reg_class_t aclass = ALLOCNO_CLASS (a);
       reg_class_t pref = reg_preferred_class (ALLOCNO_REGNO (a));
-
-      if (reg_class_size[(int) pref] != 1)
+      int singleton = ira_class_singleton[pref][ALLOCNO_MODE (a)];
+      if (singleton < 0)
 	continue;
-      index = ira_class_hard_reg_index[(int) aclass]
-				      [ira_class_hard_regs[(int) pref][0]];
+      index = ira_class_hard_reg_index[(int) aclass][singleton];
       if (index < 0)
 	continue;
       if (ALLOCNO_CONFLICT_HARD_REG_COSTS (a) == NULL

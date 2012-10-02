@@ -1,3 +1,18 @@
+2012-10-02  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* ira.h (target_ira): Add x_ira_class_singleton.
+	(ira_class_singleton): New macro.
+	* ira.c (setup_prohibited_class_mode_regs): Set up ira_class_singleton.
+	* ira-build.c (update_conflict_hard_reg_costs): Use
+	ira_class_singleton to check for classes with a single
+	allocatable register.
+	* ira-lives.c (ira_implicitly_set_insn_hard_regs): Likewise.
+	(single_reg_class): Likewise.  When more than one class is specified,
+	check whether they have the same singleton register.
+	(process_single_reg_class_operands): Require single_reg_class
+	to return NO_REGS or a class with a single allocatable register.
+	Obtain that register from ira_class_singleton.
+
 2012-10-02  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_option_override_internal): If
