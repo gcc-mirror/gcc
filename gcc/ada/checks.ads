@@ -173,10 +173,16 @@ package Checks is
    --  occur in the signed case for the case of the largest negative number
    --  divided by minus one.
 
-   procedure Apply_Parameter_Aliasing_And_Validity_Checks (Subp : Entity_Id);
+   procedure Apply_Parameter_Aliasing_Checks
+     (Call : Node_Id;
+      Subp : Entity_Id);
+   --  Given a subprogram call Call, add a check to verify that none of the
+   --  actuals overlap. Subp denotes the subprogram being called.
+
+   procedure Apply_Parameter_Validity_Checks (Subp : Entity_Id);
    --  Given a subprogram Subp, add both a pre and post condition pragmas that
-   --  detect aliased objects and verify the proper initialization of scalars
-   --  in parameters and function results.
+   --  verify the proper initialization of scalars in parameters and function
+   --  results.
 
    procedure Apply_Predicate_Check (N : Node_Id; Typ : Entity_Id);
    --  N is an expression to which a predicate check may need to be applied

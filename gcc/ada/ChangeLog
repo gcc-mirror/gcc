@@ -1,3 +1,30 @@
+2012-10-02  Vincent Pucci  <pucci@adacore.com>
+
+	* sem_ch4.adb (Analyze_Indexed_Component_Form): Dimension
+	analysis for indexed components added.
+	* sem_ch6.adb (Analyze_Function_Call): Dimension propagation
+	for function calls added.
+	* sem_dim.adb (Analyze_Dimension): Call to
+	Analyze_Dimension_Has_Etype when N is a function call.
+	(Analyze_Dimension_Call): Don't propagate anymore the dimensions
+	for function calls since this is now treated separately in
+	Analyze_Dimension_Has_Etype.
+	(Analyze_Dimension_Has_Etype): For
+	attribute references, propagate the dimensions from the prefix.
+	* sem_dim.ads (Copy_Dimensions): Fix comment.
+
+2012-10-02  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* checks.ads, checks.adb (Apply_Parameter_Aliasing_Checks): New routine.
+	(Apply_Parameter_Aliasing_And_Validity_Checks): This routine
+	has been split into two.
+	(Apply_Parameter_Validity_Checks): New routine.
+	* exp_ch6.adb (Expand_Call): Add checks to verify that actuals
+	do not overlap. The checks are made on the caller side to overcome
+	issues of parameter passing mechanisms.
+	* freeze.adb (Freeze_Entity): Update call to
+	Apply_Parameter_Aliasing_And_Validity_Checks.
+
 2012-10-02  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch4.adb (Is_Empty_Range): Use bounds of index type

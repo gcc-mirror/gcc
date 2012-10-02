@@ -2656,13 +2656,13 @@ package body Freeze is
          end;
       end if;
 
-      --  Add checks to detect proper initialization of scalars and overlapping
-      --  storage of subprogram parameters.
+      --  Add checks to detect proper initialization of scalars that may appear
+      --  as subprogram parameters.
 
       if Is_Subprogram (E)
-        and then (Check_Aliasing_Of_Parameters or Check_Validity_Of_Parameters)
+        and then Check_Validity_Of_Parameters
       then
-         Apply_Parameter_Aliasing_And_Validity_Checks (E);
+         Apply_Parameter_Validity_Checks (E);
       end if;
 
       --  Deal with delayed aspect specifications. The analysis of the

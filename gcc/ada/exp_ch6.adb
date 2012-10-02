@@ -3400,6 +3400,14 @@ package body Exp_Ch6 is
 
       Expand_Actuals (Call_Node, Subp);
 
+      --  Verify that the actuals do not share storage. This check must be done
+      --  on the caller side rather that inside the subprogram to avoid issues
+      --  of parameter passing.
+
+      if Check_Aliasing_Of_Parameters then
+         Apply_Parameter_Aliasing_Checks (Call_Node, Subp);
+      end if;
+
       --  If the subprogram is a renaming, or if it is inherited, replace it in
       --  the call with the name of the actual subprogram being called. If this
       --  is a dispatching call, the run-time decides what to call. The Alias
