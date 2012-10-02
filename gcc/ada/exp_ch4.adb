@@ -4797,7 +4797,7 @@ package body Exp_Ch4 is
       --  wrong for unconstrained types (since the bounds may not be the
       --  same in all branches). Furthermore it involves an extra copy
       --  for large objects. So we take care of this by using the following
-      --  modified expansion for non-scalar types:
+      --  modified expansion for non-elementary types:
 
       --    do
       --       type Pnn is access all typ;
@@ -4820,7 +4820,7 @@ package body Exp_Ch4 is
 
       --  Scalar case
 
-      if Is_Scalar_Type (Typ) then
+      if Is_Elementary_Type (Typ) then
          Ttyp := Typ;
 
       else
@@ -4855,7 +4855,7 @@ package body Exp_Ch4 is
             --  As described above, take Unrestricted_Access for case of non-
             --  scalar types, to avoid big copies, and special cases.
 
-            if not Is_Scalar_Type (Typ) then
+            if not Is_Elementary_Type (Typ) then
                Aexp :=
                  Make_Attribute_Reference (Aloc,
                    Prefix         => Relocate_Node (Aexp),
@@ -4890,7 +4890,7 @@ package body Exp_Ch4 is
 
       --  Construct and return final expression with actions
 
-      if Is_Scalar_Type (Typ) then
+      if Is_Elementary_Type (Typ) then
          Fexp := New_Occurrence_Of (Tnn, Loc);
       else
          Fexp :=

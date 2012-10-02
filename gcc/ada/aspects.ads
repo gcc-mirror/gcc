@@ -95,7 +95,7 @@ package Aspects is
       Aspect_Implicit_Dereference,
       Aspect_Input,
       Aspect_Interrupt_Priority,
-      Aspect_Invariant,
+      Aspect_Invariant,                     -- GNAT
       Aspect_Iterator_Element,
       Aspect_Link_Name,
       Aspect_Machine_Radix,
