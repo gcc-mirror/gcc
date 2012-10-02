@@ -1023,10 +1023,9 @@ setup_profitable_hard_regs (void)
 	CLEAR_HARD_REG_SET (data->profitable_hard_regs);
       else
 	{
+	  mode = ALLOCNO_MODE (a);
 	  COPY_HARD_REG_SET (data->profitable_hard_regs,
-			     reg_class_contents[aclass]);
-	  AND_COMPL_HARD_REG_SET (data->profitable_hard_regs,
-				  ira_no_alloc_regs);
+			     ira_useful_class_mode_regs[aclass][mode]);
 	  nobj = ALLOCNO_NUM_OBJECTS (a);
 	  for (k = 0; k < nobj; k++)
 	    {

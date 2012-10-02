@@ -1495,29 +1495,36 @@ clarify_prohibited_class_mode_regs (void)
 
   for (cl = (int) N_REG_CLASSES - 1; cl >= 0; cl--)
     for (j = 0; j < NUM_MACHINE_MODES; j++)
-      for (k = ira_class_hard_regs_num[cl] - 1; k >= 0; k--)
-	{
-	  hard_regno = ira_class_hard_regs[cl][k];
-	  if (TEST_HARD_REG_BIT (ira_prohibited_class_mode_regs[cl][j], hard_regno))
-	    continue;
-	  nregs = hard_regno_nregs[hard_regno][j];
-          if (hard_regno + nregs > FIRST_PSEUDO_REGISTER)
-            {
-              SET_HARD_REG_BIT (ira_prohibited_class_mode_regs[cl][j],
-                                hard_regno);
-               continue;
-            }
-	  pclass = ira_pressure_class_translate[REGNO_REG_CLASS (hard_regno)];
-	  for (nregs-- ;nregs >= 0; nregs--)
-	    if (((enum reg_class) pclass
-		 != ira_pressure_class_translate[REGNO_REG_CLASS
-						 (hard_regno + nregs)]))
+      {
+	CLEAR_HARD_REG_SET (ira_useful_class_mode_regs[cl][j]);
+	for (k = ira_class_hard_regs_num[cl] - 1; k >= 0; k--)
+	  {
+	    hard_regno = ira_class_hard_regs[cl][k];
+	    if (TEST_HARD_REG_BIT (ira_prohibited_class_mode_regs[cl][j], hard_regno))
+	      continue;
+	    nregs = hard_regno_nregs[hard_regno][j];
+	    if (hard_regno + nregs > FIRST_PSEUDO_REGISTER)
 	      {
 		SET_HARD_REG_BIT (ira_prohibited_class_mode_regs[cl][j],
 				  hard_regno);
-		break;
+		 continue;
 	      }
-	}
+	    pclass = ira_pressure_class_translate[REGNO_REG_CLASS (hard_regno)];
+	    for (nregs-- ;nregs >= 0; nregs--)
+	      if (((enum reg_class) pclass
+		   != ira_pressure_class_translate[REGNO_REG_CLASS
+						   (hard_regno + nregs)]))
+		{
+		  SET_HARD_REG_BIT (ira_prohibited_class_mode_regs[cl][j],
+				    hard_regno);
+		  break;
+		}
+	    if (!TEST_HARD_REG_BIT (ira_prohibited_class_mode_regs[cl][j],
+				    hard_regno))
+	      add_to_hard_reg_set (&ira_useful_class_mode_regs[cl][j],
+				   (enum machine_mode) j, hard_regno);
+	  }
+      }
 }
 
 /* Allocate and initialize IRA_REGISTER_MOVE_COST, IRA_MAY_MOVE_IN_COST
