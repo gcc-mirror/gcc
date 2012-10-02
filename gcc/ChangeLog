@@ -1,5 +1,11 @@
 2012-10-02  Alexandre Oliva <aoliva@redhat.com>
 
+	PR debug/53135
+	* dwarf2out.c (value_format): Use block4 for dw_val_class_loc
+	when needed.
+
+2012-10-02  Alexandre Oliva <aoliva@redhat.com>
+
 	PR debug/54177
 	* var-tracking.c (vt_add_function_parameter): Bail if
 	var_lowpart fails.
