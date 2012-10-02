@@ -1,3 +1,7 @@
+2012-10-02   Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* check_GNU_style.sh: Remove temporay file upon exit.
+
 2012-09-26  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* contrib-list.mk (LIST): Remove arm-freebsd6, arm-linux,
