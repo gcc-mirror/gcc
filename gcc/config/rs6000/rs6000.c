@@ -2446,21 +2446,34 @@ rs6000_option_override_internal (bool global_init_p)
       rs6000_cpu_index = cpu_index = main_target_opt->x_rs6000_cpu_index;
       have_cpu = true;
     }
+  else if (implicit_cpu)
+    {
+      rs6000_cpu_index = cpu_index = rs6000_cpu_name_lookup (implicit_cpu);
+      have_cpu = true;
+    }
   else
     {
-      const char *default_cpu =
-        (implicit_cpu ? implicit_cpu
-         : (TARGET_POWERPC64 ? "powerpc64" : "powerpc"));
-
+      const char *default_cpu = (TARGET_POWERPC64 ? "powerpc64" : "powerpc");
       rs6000_cpu_index = cpu_index = rs6000_cpu_name_lookup (default_cpu);
-      have_cpu = implicit_cpu != 0;
+      have_cpu = false;
     }
 
   gcc_assert (cpu_index >= 0);
 
-  target_flags &= ~set_masks;
-  target_flags |= (processor_target_table[cpu_index].target_enable
-		   & set_masks);
+  /* If we have a cpu, either through an explicit -mcpu=<xxx> or if the
+     compiler was configured with --with-cpu=<xxx>, replace all of the ISA bits
+     with those from the cpu, except for options that were explicitly set.  If
+     we don't have a cpu, do not override the target bits set in
+     TARGET_DEFAULT.  */
+  if (have_cpu)
+    {
+      target_flags &= ~set_masks;
+      target_flags |= (processor_target_table[cpu_index].target_enable
+		       & set_masks);
+    }
+  else
+    target_flags |= (processor_target_table[cpu_index].target_enable
+		     & ~target_flags_explicit);
 
   if (rs6000_tune_index >= 0)
     tune_index = rs6000_tune_index;
