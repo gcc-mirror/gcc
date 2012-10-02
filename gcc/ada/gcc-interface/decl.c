@@ -6346,6 +6346,7 @@ elaborate_expression_1 (tree gnu_expr, Entity_Id gnat_entity, tree gnu_name,
   use_variable = expr_variable_p
 		 && (expr_global_p
 		     || (!optimize
+		         && definition
 			 && Is_Itype (gnat_entity)
 			 && Nkind (Associated_Node_For_Itype (gnat_entity))
 			    == N_Loop_Parameter_Specification));
