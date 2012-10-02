@@ -5941,6 +5941,16 @@ package body Sem_Res is
 
       Set_Etype (N, Typ);
       Eval_Case_Expression (N);
+
+      --  If we still have a case expression, and overflow checks are enabled
+      --  in MINIMIZED or ELIMINATED modes, then set Do_Overflow_Check to
+      --  ensure that we handle overflow for dependent expressions.
+
+      if Nkind (N) = N_Case_Expression
+        and then Overflow_Check_Mode (Typ) in Minimized_Or_Eliminated
+      then
+         Set_Do_Overflow_Check (N);
+      end if;
    end Resolve_Case_Expression;
 
    -------------------------------
@@ -6134,8 +6144,9 @@ package body Sem_Res is
       Resolve (Then_Expr, Typ);
       Then_Typ := Etype (Then_Expr);
 
-      --  When the "then" and "else" expressions are of a scalar type, insert
-      --  a conversion to ensure the generation of a constraint check.
+      --  When the "then" expression is of a scalar type different from the
+      --  result type, then insert a conversion to ensure the generation of
+      --  a constraint check.
 
       if Is_Scalar_Type (Then_Typ)
         and then Then_Typ /= Typ
@@ -6174,6 +6185,16 @@ package body Sem_Res is
 
       Set_Etype (N, Typ);
       Eval_Conditional_Expression (N);
+
+      --  If we still have a conditional expression, and overflow checks are
+      --  enabled in MINIMIZED or ELIMINATED modes, then set Do_Overflow_Check
+      --  to ensure that we handle overflow for dependent expressions.
+
+      if Nkind (N) = N_Conditional_Expression
+        and then Overflow_Check_Mode (Typ) in Minimized_Or_Eliminated
+      then
+         Set_Do_Overflow_Check (N);
+      end if;
    end Resolve_Conditional_Expression;
 
    -----------------------------------------

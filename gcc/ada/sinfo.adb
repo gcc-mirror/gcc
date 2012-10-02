@@ -927,6 +927,8 @@ package body Sinfo is
       pragma Assert (False
         or else NT (N).Nkind in N_Op
         or else NT (N).Nkind = N_Attribute_Reference
+        or else NT (N).Nkind = N_Case_Expression
+        or else NT (N).Nkind = N_Conditional_Expression
         or else NT (N).Nkind = N_Type_Conversion);
       return Flag17 (N);
    end Do_Overflow_Check;
@@ -3998,6 +4000,8 @@ package body Sinfo is
       pragma Assert (False
         or else NT (N).Nkind in N_Op
         or else NT (N).Nkind = N_Attribute_Reference
+        or else NT (N).Nkind = N_Case_Expression
+        or else NT (N).Nkind = N_Conditional_Expression
         or else NT (N).Nkind = N_Type_Conversion);
       Set_Flag17 (N, Val);
    end Set_Do_Overflow_Check;

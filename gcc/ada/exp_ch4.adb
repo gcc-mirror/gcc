@@ -4776,6 +4776,18 @@ package body Exp_Ch4 is
       Fexp    : Node_Id;
 
    begin
+      --  If Do_Overflow_Check is set, it means we are in MINIMIZED/ELIMINATED
+      --  mode, and all we do is to call Apply_Arithmetic_Overflow_Check to
+      --  ensure proper overflow handling for the dependent expressions. The
+      --  checks circuitry will rewrite the case expression in this case with
+      --  Do_Overflow_Checks off. so that when that rewritten node arrives back
+      --  here, then we will do the full expansion.
+
+      if Do_Overflow_Check (N) then
+         Apply_Arithmetic_Overflow_Check (N);
+         return;
+      end if;
+
       --  We expand
 
       --    case X is when A => AX, when B => BX ...
@@ -5204,6 +5216,15 @@ package body Exp_Ch4 is
          --  the same approach as a C conditional expression.
 
       else
+         --  If Do_Overflow_Check is set it means we have a signed intger type
+         --  in MINIMIZED or ELIMINATED mode, so we apply an overflow check to
+         --  the if expression (to make sure that overflow checking is properly
+         --  handled for dependent expressions).
+
+         if Do_Overflow_Check (N) then
+            Apply_Arithmetic_Overflow_Check (N);
+         end if;
+
          return;
       end if;
 
