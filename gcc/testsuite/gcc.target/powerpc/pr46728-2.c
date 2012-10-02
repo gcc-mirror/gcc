@@ -27,5 +27,5 @@ main (int argc, char *argv[])
 }
 
 
-/* { dg-final { scan-assembler-times "fsqrt" 4 { target powerpc*-*-* } } } */
+/* { dg-final { scan-assembler-times "fsqrt|xssqrtdp" 4 { target powerpc*-*-* } } } */
 /* { dg-final { scan-assembler-not "pow" { target powerpc*-*-* } } } */
