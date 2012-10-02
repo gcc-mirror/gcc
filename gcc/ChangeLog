@@ -2,6 +2,7 @@
 
 	Backported from mainline
 	2012-10-02  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR target/54785
 	* doc/invoke.texi: Document -mprefer-avx128.
 
