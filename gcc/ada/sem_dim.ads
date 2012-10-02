@@ -164,7 +164,7 @@ package Sem_Dim is
 
    procedure Copy_Dimensions (From, To : Node_Id);
    --  Copy dimension vector of node From to node To. Note that To must be a
-   --  node that is allowed to contain a dimension. (See OK_For_Dimension in
+   --  node that is allowed to contain a dimension (see OK_For_Dimension in
    --  body of Sem_Dim).
 
    procedure Eval_Op_Expon_For_Dimensioned_Type

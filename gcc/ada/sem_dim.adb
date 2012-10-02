@@ -1519,6 +1519,7 @@ package body Sem_Dim is
       --  Check the dimensions of the actuals, if any
 
       if not Is_Empty_List (Actuals) then
+
          --  Special processing for elementary functions
 
          --  For Sqrt call, the resulting dimensions equal to half the
@@ -1532,9 +1533,9 @@ package body Sem_Dim is
 
                function Is_Elementary_Function_Entity
                  (Sub_Id : Entity_Id) return Boolean;
-               --  Given Sub_Id, the original subprogram entity, return True if
-               --  call is to an elementary function
-               --  (see Ada.Numerics.Generic_Elementary_Functions).
+               --  Given Sub_Id, the original subprogram entity, return True
+               --  if call is to an elementary function (see Ada.Numerics.
+               --  Generic_Elementary_Functions).
 
                -----------------------------------
                -- Is_Elementary_Function_Entity --
@@ -1546,8 +1547,7 @@ package body Sem_Dim is
                   Loc : constant Source_Ptr := Sloc (Sub_Id);
 
                begin
-                  --  Is function entity in
-                  --  Ada.Numerics.Generic_Elementary_Functions?
+                  --  Is entity in Ada.Numerics.Generic_Elementary_Functions?
 
                   return
                     Loc > No_Location
@@ -1560,8 +1560,7 @@ package body Sem_Dim is
             --  Start of processing for Elementary_Function_Calls
 
             begin
-               --  Get the original subprogram entity following the renaming
-               --  chain.
+               --  Get original subprogram entity following the renaming chain
 
                if Present (Alias (Ent)) then
                   Ent := Alias (Ent);
@@ -1570,6 +1569,7 @@ package body Sem_Dim is
                --  Check the call is an Elementary function call
 
                if Is_Elementary_Function_Entity (Ent) then
+
                   --  Sqrt function call case
 
                   if Chars (Ent) = Name_Sqrt then
@@ -1582,8 +1582,7 @@ package body Sem_Dim is
                         for Position in Dims_Of_Call'Range loop
                            Dims_Of_Call (Position) :=
                              Dims_Of_Call (Position) *
-                               Rational'(Numerator   => 1,
-                                         Denominator => 2);
+                               Rational'(Numerator => 1, Denominator => 2);
                         end loop;
 
                         Set_Dimensions (N, Dims_Of_Call);
@@ -1597,8 +1596,7 @@ package body Sem_Dim is
                      while Present (Actual) loop
                         if Exists (Dimensions_Of (Actual)) then
 
-                           --  Check if error has already been encountered so
-                           --  far.
+                           --  Check if error has already been encountered
 
                            if not Error_Detected then
                               Error_Msg_NE ("dimensions mismatch in call of&",
@@ -1645,10 +1643,9 @@ package body Sem_Dim is
                   Error_Detected := True;
                end if;
 
-               Error_Msg_N ("\expected dimension " &
-                            Dimensions_Msg_Of (Formal_Typ) & ", found " &
-                            Dimensions_Msg_Of (Actual),
-                            Actual);
+               Error_Msg_N
+                 ("\expected dimension " & Dimensions_Msg_Of (Formal_Typ)
+                  & ", found " & Dimensions_Msg_Of (Actual), Actual);
             end if;
 
             Next_Actual (Actual);
@@ -1916,7 +1913,7 @@ package body Sem_Dim is
 
    procedure Analyze_Dimension_Has_Etype (N : Node_Id) is
       Etyp         : constant Entity_Id := Etype (N);
-      Dims_Of_Etyp : Dimension_Type := Dimensions_Of (Etyp);
+      Dims_Of_Etyp : Dimension_Type     := Dimensions_Of (Etyp);
 
    begin
       --  General case. Propagation of the dimensions from the type
@@ -1955,7 +1952,6 @@ package body Sem_Dim is
       --  Removal of dimensions in expression
 
       case Nkind (N) is
-
          when N_Attribute_Reference |
               N_Indexed_Component   =>
             declare
@@ -1981,7 +1977,6 @@ package body Sem_Dim is
             Remove_Dimensions (Selector_Name (N));
 
          when others => null;
-
       end case;
    end Analyze_Dimension_Has_Etype;
 

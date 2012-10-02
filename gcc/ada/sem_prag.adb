@@ -11817,7 +11817,7 @@ package body Sem_Prag is
 
             --  Process first argument
 
-            Suppress_Options.Overflow_Checks_General :=
+            Scope_Suppress.Overflow_Checks_General :=
               Get_Check_Mode (Name_General, Arg1);
 
             --  Case of only one argument

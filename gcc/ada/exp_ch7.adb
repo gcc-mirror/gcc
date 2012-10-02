@@ -3643,8 +3643,8 @@ package body Exp_Ch7 is
       --  iterator specification, where a block is created for the expression
       --  that build the container.
 
-      elsif Nkind (Wrap_Node) = N_Iteration_Scheme
-        or else Nkind (Wrap_Node) = N_Iterator_Specification
+      elsif Nkind_In (Wrap_Node, N_Iteration_Scheme,
+                                 N_Iterator_Specification)
       then
          null;
 

@@ -7808,6 +7808,10 @@ package body Exp_Ch4 is
    begin
       Binary_Op_Validity_Checks (N);
 
+      if Is_Integer_Type (Etype (N)) then
+         Apply_Divide_Checks (N);
+      end if;
+
       Determine_Range (Right, ROK, Rlo, Rhi, Assume_Valid => True);
       Determine_Range (Left,  LOK, Llo, Lhi, Assume_Valid => True);
 
@@ -7839,10 +7843,6 @@ package body Exp_Ch4 is
       --  Otherwise, normal mod processing
 
       else
-         if Is_Integer_Type (Etype (N)) then
-            Apply_Divide_Checks (N);
-         end if;
-
          --  Apply optimization x mod 1 = 0. We don't really need that with
          --  gcc, but it is useful with other back ends (e.g. AAMP), and is
          --  certainly harmless.
@@ -7870,32 +7870,39 @@ package body Exp_Ch4 is
          --  the mod value is always 0, and we can just ignore the left operand
          --  completely in this case.
 
-         --  The operand type may be private (e.g. in the expansion of an
-         --  intrinsic operation) so we must use the underlying type to get the
-         --  bounds, and convert the literals explicitly.
+         --  This only applies if we still have a mod operator. Skip if we
+         --  have already rewritten this (e.g. in the case of eliminated
+         --  overflow checks which have driven us into bignum mode).
 
-         LLB :=
-           Expr_Value
-             (Type_Low_Bound (Base_Type (Underlying_Type (Etype (Left)))));
+         if Nkind (N) = N_Op_Mod then
 
-         if ((not ROK) or else (Rlo <= (-1) and then (-1) <= Rhi))
-           and then
-            ((not LOK) or else (Llo = LLB))
-         then
-            Rewrite (N,
-              Make_Conditional_Expression (Loc,
-                Expressions => New_List (
-                  Make_Op_Eq (Loc,
-                    Left_Opnd => Duplicate_Subexpr (Right),
-                    Right_Opnd =>
-                      Unchecked_Convert_To (Typ,
-                        Make_Integer_Literal (Loc, -1))),
-                  Unchecked_Convert_To (Typ,
-                    Make_Integer_Literal (Loc, Uint_0)),
-                  Relocate_Node (N))));
+            --  The operand type may be private (e.g. in the expansion of an
+            --  intrinsic operation) so we must use the underlying type to get
+            --  the bounds, and convert the literals explicitly.
 
-            Set_Analyzed (Next (Next (First (Expressions (N)))));
-            Analyze_And_Resolve (N, Typ);
+            LLB :=
+              Expr_Value
+                (Type_Low_Bound (Base_Type (Underlying_Type (Etype (Left)))));
+
+            if ((not ROK) or else (Rlo <= (-1) and then (-1) <= Rhi))
+              and then
+                ((not LOK) or else (Llo = LLB))
+            then
+               Rewrite (N,
+                 Make_Conditional_Expression (Loc,
+                   Expressions => New_List (
+                     Make_Op_Eq (Loc,
+                       Left_Opnd => Duplicate_Subexpr (Right),
+                       Right_Opnd =>
+                         Unchecked_Convert_To (Typ,
+                           Make_Integer_Literal (Loc, -1))),
+                     Unchecked_Convert_To (Typ,
+                       Make_Integer_Literal (Loc, Uint_0)),
+                     Relocate_Node (N))));
+
+               Set_Analyzed (Next (Next (First (Expressions (N)))));
+               Analyze_And_Resolve (N, Typ);
+            end if;
          end if;
       end if;
    end Expand_N_Op_Mod;

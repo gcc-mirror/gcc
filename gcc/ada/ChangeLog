@@ -1,3 +1,25 @@
+2012-10-02  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch7.adb, sem_dim.adb, sem_dim.ads, prj-part.adb, checks.adb,
+	freeze.adb, sem_ch4.adb, sem_ch13.adb: Minor reformatting.
+
+2012-10-02  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma, case Overflow_Checks): Fix
+	typo preventing proper processing of Overflow_Checks pragmas
+	for general case.
+
+2012-10-02  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Op_Mod): Fix crash in ELIMINATED overflow
+	checks mode when bignum mode is used.
+
+2012-10-02  Robert Dewar  <dewar@adacore.com>
+
+	* stylesw.ads, gnat_ugn.texi: Document new style rule for NOT IN.
+	* par-ch4.adb (P_Relational_Operator): Add style check for NOT IN.
+	* style.ads, styleg.adb, styleg.ads (Check_Not_In): New procedure.
+
 2012-10-02  Vincent Pucci  <pucci@adacore.com>
 
 	* sem_attr.adb (Analyze_Attribute): Check dimension for attribute

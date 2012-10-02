@@ -2706,7 +2706,16 @@ package body Ch4 is
 
       Scan; -- past operator token
 
+      --  Deal with NOT IN, if previous token was NOT, we must have IN now
+
       if Prev_Token = Tok_Not then
+
+         --  Style check, for NOT IN, we require one space between NOT and IN
+
+         if Style_Check and then Token = Tok_In then
+            Style.Check_Not_In;
+         end if;
+
          T_In;
       end if;
 

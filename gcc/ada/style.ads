@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -154,6 +154,11 @@ package Style is
    --  the current line, used to check for appropriate line terminator and to
    --  check the line length (Len is the length of the current line). Note that
    --  the terminator may be the EOF character.
+
+   procedure Check_Not_In
+     renames Style_Inst.Check_Not_In;
+   --  Called with Scan_Ptr pointing to an IN token, and Prev_Token_Ptr
+   --  pointing to a NOT token. Used to check proper layout of NOT IN.
 
    procedure Check_Pragma_Name
      renames Style_Inst.Check_Pragma_Name;
