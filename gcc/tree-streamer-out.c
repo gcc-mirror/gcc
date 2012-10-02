@@ -181,6 +181,9 @@ pack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
       bp_pack_value (bp, expr->decl_common.off_align, 8);
     }
 
+  if (TREE_CODE (expr) == VAR_DECL)
+    bp_pack_value (bp, DECL_NONLOCAL_FRAME (expr), 1);
+
   if (TREE_CODE (expr) == RESULT_DECL
       || TREE_CODE (expr) == PARM_DECL
       || TREE_CODE (expr) == VAR_DECL)
