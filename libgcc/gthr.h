@@ -1,7 +1,6 @@
 /* Threads compatibility routines for libgcc2.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 1997, 1998, 2004, 2008, 2009, 2011
-   Free Software Foundation, Inc.
+/* Copyright (C) 1997-2012 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -73,6 +72,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
      int __gthread_setspecific (__gthread_key_t key, const void *ptr)
 
      int __gthread_mutex_destroy (__gthread_mutex_t *mutex);
+     int __gthread_recursive_mutex_destroy (__gthread_recursive_mutex_t *mutex);
 
      int __gthread_mutex_lock (__gthread_mutex_t *mutex);
      int __gthread_mutex_trylock (__gthread_mutex_t *mutex);

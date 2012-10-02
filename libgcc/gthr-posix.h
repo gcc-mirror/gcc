@@ -832,6 +832,12 @@ __gthread_recursive_mutex_unlock (__gthread_recursive_mutex_t *__mutex)
   return __gthread_mutex_unlock (__mutex);
 }
 
+static inline int
+__gthread_recursive_mutex_destroy (__gthread_recursive_mutex_t *__mutex)
+{
+  return __gthread_mutex_destroy (__mutex);
+}
+
 #ifdef _GTHREAD_USE_COND_INIT_FUNC
 static inline void
 __gthread_cond_init_function (__gthread_cond_t *__cond)

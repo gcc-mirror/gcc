@@ -1,3 +1,15 @@
+2012-10-02  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR other/53889
+	* include/std/mutex (__recursive_mutex_base::~__recursive_mutex_base):
+	Use __gthread_recursive_mutex_destroy.
+	(__recursive_mutex_base::_S_destroy): Remove.
+	(__recursive_mutex_base::_S_destroy_win32): Likewise.
+	* include/ext/concurrence.h (__recursive_mutex::~__recursive_mutex):
+	Use __gthread_recursive_mutex_destroy.
+	(__recursive_mutex::_S_destroy): Remove.
+	(__recursive_mutex::_S_destroy_win32): Likewise.
+
 2012-10-01  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* config/abi/pre/gnu-versioned-namespace.ver: Add more

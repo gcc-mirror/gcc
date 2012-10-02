@@ -1,3 +1,19 @@
+2012-10-02  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR other/53889
+	* gthr.h (__gthread_recursive_mutex_destroy): Document new required
+	function.
+	* gthr-posix.h (__gthread_recursive_mutex_destroy): Define.
+	* gthr-single.h (__gthread_recursive_mutex_destroy): Likewise.
+	* config/gthr-rtems.h (__gthread_recursive_mutex_destroy): Likewise.
+	* config/gthr-vxworks.h (__gthread_recursive_mutex_destroy): Likewise.
+	* config/i386/gthr-win32.h (__gthread_recursive_mutex_destroy):
+	Likewise.
+	* config/mips/gthr-mipssde.h (__gthread_recursive_mutex_destroy):
+	Likewise.
+	* config/pa/gthr-dce.h (__gthread_recursive_mutex_destroy): Likewise.
+	* config/s390/gthr-tpf.h (__gthread_recursive_mutex_destroy): Likewise.
+
 2012-09-19  Mark Kettenis  <kettenis@openbsd.org>
 
         * config.host (hppa-*-openbsd*): New target.

@@ -1,6 +1,6 @@
 /* MIPS SDE threads compatibility routines for libgcc2 and libobjc.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+/* Copyright (C) 2006-2012 Free Software Foundation, Inc.
    Contributed by Nigel Stephens <nigel@mips.com>
 
 This file is part of GCC.
@@ -220,6 +220,13 @@ __gthread_recursive_mutex_unlock (__gthread_recursive_mutex_t *__mutex)
 	   __gthrw_(__sdethread_mutex_unlock) (&__mutex->actual);
 	}
     }
+  return 0;
+}
+
+static inline int
+__gthread_recursive_mutex_destroy (__gthread_recursive_mutex_t
+                                   * UNUSED(__mutex))
+{
   return 0;
 }
 

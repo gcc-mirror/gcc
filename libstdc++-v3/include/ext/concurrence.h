@@ -219,7 +219,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     ~__recursive_mutex()
     {
       if (__gthread_active_p())
-	_S_destroy(&_M_mutex);
+	__gthread_recursive_mutex_destroy(&_M_mutex);
     }
 #endif
 
@@ -247,43 +247,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     __gthread_recursive_mutex_t* gthread_recursive_mutex(void)
     { return &_M_mutex; }
-
-#if __GTHREADS && ! defined __GTHREAD_RECURSIVE_MUTEX_INIT
-    // FIXME: gthreads doesn't define __gthread_recursive_mutex_destroy
-    // so we need to obtain a __gthread_mutex_t to destroy
-  private:
-    template<typename _Mx, typename _Rm>
-      static void
-      _S_destroy_win32(_Mx* __mx, _Rm const* __rmx)
-      {
-        __mx->counter = __rmx->counter;
-        __mx->sema = __rmx->sema;
-        __gthread_mutex_destroy(__mx);
-      }
-
-    // matches a gthr-win32.h recursive mutex
-    template<typename _Rm>
-      static typename __enable_if<(bool)sizeof(&_Rm::sema), void>::__type
-      _S_destroy(_Rm* __mx)
-      {
-        __gthread_mutex_t __tmp;
-        _S_destroy_win32(&__tmp, __mx);
-      }
-
-    // matches a recursive mutex with a member 'actual'
-    template<typename _Rm>
-      static typename __enable_if<(bool)sizeof(&_Rm::actual), void>::__type
-      _S_destroy(_Rm* __mx)
-      { __gthread_mutex_destroy(&__mx->actual); }
-
-    // matches when there's only one mutex type
-    template<typename _Rm>
-      static typename
-      __enable_if<std::__are_same<_Rm, __gthread_mutex_t>::__value,
-        void>::__type
-      _S_destroy(_Rm* __mx)
-      { __gthread_mutex_destroy(__mx); }
-#endif
   };
 
   /// Scoped lock idiom.
