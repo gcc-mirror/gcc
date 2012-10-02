@@ -3404,6 +3404,38 @@ package body Sem_Ch4 is
    procedure Analyze_Quantified_Expression (N : Node_Id) is
       QE_Scop : Entity_Id;
 
+      function  Is_Empty_Range (Typ : Entity_Id) return Boolean;
+      --  If the iterator is part of a quantified expression, and the range is
+      --  known to be statically empty, emit a warning and replace expression
+      --  with its static value.
+
+      function  Is_Empty_Range (Typ : Entity_Id) return Boolean is
+         Loc     : constant Source_Ptr := Sloc (N);
+
+      begin
+         if Is_Array_Type (Typ)
+           and then Size_Known_At_Compile_Time (Typ)
+           and then RM_Size (Typ) = 0
+         then
+            if All_Present (N) then
+               Error_Msg_N ("?universal quantified expression "
+               & "over a null range has value True", N);
+               Rewrite (N, New_Occurrence_Of (Standard_True, Loc));
+
+            else
+               Error_Msg_N ("?existential quantified expression "
+               & "over a null range has value False", N);
+               Rewrite (N, New_Occurrence_Of (Standard_False, Loc));
+            end if;
+
+            Analyze (N);
+            return True;
+
+         else
+            return False;
+         end if;
+      end Is_Empty_Range;
+
    begin
       Check_SPARK_Restriction ("quantified expression is not allowed", N);
 
@@ -3425,6 +3457,13 @@ package body Sem_Ch4 is
 
       if Present (Iterator_Specification (N)) then
          Preanalyze (Iterator_Specification (N));
+
+         if Is_Entity_Name (Name (Iterator_Specification (N)))
+           and then Is_Empty_Range (Etype (Name (Iterator_Specification (N))))
+         then
+            return;
+         end if;
+
       else
          Preanalyze (Loop_Parameter_Specification (N));
       end if;

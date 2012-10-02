@@ -179,6 +179,7 @@ Implementation Defined Pragmas
 * Pragma Obsolescent::
 * Pragma Optimize_Alignment::
 * Pragma Ordered::
+* Pragma Overflow_Checks::
 * Pragma Passive::
 * Pragma Persistent_BSS::
 * Pragma Polling::
@@ -916,6 +917,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Obsolescent::
 * Pragma Optimize_Alignment::
 * Pragma Ordered::
+* Pragma Overflow_Checks::
 * Pragma Passive::
 * Pragma Persistent_BSS::
 * Pragma Polling::
@@ -4126,6 +4128,53 @@ as unordered, and will generate warnings for inappropriate uses.
 
 For additional information please refer to the description of the
 @option{-gnatw.u} switch in the @value{EDITION} User's Guide.
+
+@node Pragma Overflow_Checks
+@unnumberedsec Pragma Overflow_Checks
+@findex Overflow checks
+@findex pragma @code{Overflow_Checks}
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Overflow_Checks
+ (  [General    =>] MODE
+  [,[Assertions =>] MODE]);
+
+MODE ::= SUPPRESSED | CHECKED | MINIMIZED | ELIMINATED
+@end smallexample
+
+@noindent
+This pragma sets the current overflow mode to the given mode. For details
+of the meaning of these modes, see section on overflow checking in the
+GNAT users guide. If only the @code{General} parameter is present, the
+given mode applies to all expressions. If both parameters are present,
+the @code{General} mode applies to expressions outside assertions, and
+the @code{Eliminated} mode applies to expressions within assertions.
+
+The case of the @code{MODE} parameter is ignored,
+so @code{MINIMIZED}, @code{Minimized} and
+@code{minimized} all have the same effect.
+
+The @code{Overflow_Checks} pragma has the same scoping and placement
+rules as pragma @code{Suppress}, so it can occur either as a
+configuration pragma, specifying a default for the whole
+program, or in a declarative scope, where it applies to the
+remaining declarations and statements in that scope.
+
+The pragma @code{Suppress (Overflow_Check)} sets mode
+
+   General => Suppressed
+
+suppressing all overflow checking within and outside
+assertions.
+
+The pragam @code{Unsuppress (Overflow_Check)} sets mode
+
+   General => Checked
+
+which causes overflow checking of all intermediate overflows.
+This applies both inside and outside assertions.
 
 @node Pragma Passive
 @unnumberedsec Pragma Passive

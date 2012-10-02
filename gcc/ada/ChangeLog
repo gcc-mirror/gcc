@@ -1,5 +1,20 @@
 2012-10-02  Robert Dewar  <dewar@adacore.com>
 
+	* usage.adb, gnat_rm.texi, vms_data.ads: Add entry for
+	/OVERFLOW_CHECKS=?? generating -gnato?? for control
+	of extended overflow checking.
+	* ug_words: Add entry for -gnato?? for /OVERFLOW_CHECKS=??
+	* gnat_ugn.texi: Add documentation for -gnato?? for control of overflow
+	checking mode.
+
+2012-10-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Analyze_Quantified_Expression): If the iterator in
+	a quantified expression is statically known to be null (e.g. a
+	array with an empty index type) emit a warning.
+
+2012-10-02  Robert Dewar  <dewar@adacore.com>
+
 	* sem_dim.adb: Minor code reorganization.
 	* sem_dim.ads: Add comment.
 

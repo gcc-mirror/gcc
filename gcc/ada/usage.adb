@@ -319,7 +319,15 @@ begin
    --  Line for -gnato switch
 
    Write_Switch_Char ("o");
-   Write_Line ("Enable overflow checking (off by default)");
+   Write_Line ("Enable overflow checking mode to CHECKED (off by default)");
+
+   --  Line for -gnato? switch
+
+   Write_Switch_Char ("o?");
+   Write_Line ("Set SUPPRESSED/CHECKED/MINIMIZED/ELIMINATED (?=0/1/2/3) mode");
+
+   Write_Switch_Char ("o??");
+   Write_Line ("Set mode for general/assertion expressions separately");
 
    --  Line for -gnatO switch
 

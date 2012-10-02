@@ -4325,11 +4325,28 @@ of GNAT other than the JGNAT, .NET or GNAAMP versions), then the use of
 Historically front end inlining was more extensive than the gcc back end
 inlining, but that is no longer the case.
 
+@item -gnato??
+@cindex @option{-gnato??} (@command{gcc})
+Set default overflow cheecking mode. If ?? is a single digit, in the
+range 0-3, it sets the overflow checking mode for all expressions,
+including those outside and within assertions. The meaning of nnn is:
+
+  0   suppress overflow checks (SUPPRESSED)
+  1   all intermediate overflows checked (CHECKED)
+  2   minimize intermediate overflows (MINIMIZED)
+  3   eliminate intermediate overflows (ELIMINATED)
+
+Otherwise ?? can be two digits, both 0-3, and in this case the first
+digit sets the mode (using the above code) for expressions outside an
+assertion, and the second digit sets the mode for expressions within
+an assertion.
+
 @item -gnato
 @cindex @option{-gnato} (@command{gcc})
 Enable numeric overflow checking (which is not normally enabled by
 default). Note that division by zero is a separate check that is not
 controlled by this switch (division by zero checking is on by default).
+The checking mode is set to CHECKED (equivalent to @option{-gnato11}).
 
 @item -gnatp
 @cindex @option{-gnatp} (@command{gcc})
