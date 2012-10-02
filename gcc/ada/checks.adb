@@ -197,13 +197,14 @@ package body Checks is
    --  Used to apply arithmetic overflow checks for all cases except operators
    --  on signed arithmetic types in Minimized/Eliminate case (for which we
    --  call Apply_Arithmetic_Overflow_Minimized_Eliminated below). N is always
-   --  a signed integer arithmetic operator (conditional expression excluded).
+   --  a signed integer arithmetic operator (if and case expressions are not
+   --  included for this case).
 
    procedure Apply_Arithmetic_Overflow_Minimized_Eliminated (Op : Node_Id);
    --  Used to apply arithmetic overflow checks for the case where the overflow
    --  checking mode is Minimized or Eliminated (and the Do_Overflow_Check flag
    --  is known to be set) and we have an signed integer arithmetic op (which
-   --  includes the case of conditional expressions).
+   --  includes the case of if and case expressions).
 
    procedure Apply_Division_Check
      (N   : Node_Id;
@@ -6258,8 +6259,7 @@ package body Checks is
               N_Op_Rem   | N_Op_Subtract =>
             return Is_Signed_Integer_Type (Etype (N));
 
-         when N_Conditional_Expression |
-              N_Case_Expression        =>
+         when N_If_Expression | N_Case_Expression =>
             return Is_Signed_Integer_Type (Etype (N));
 
          when N_Case_Expression_Alternative =>
@@ -6338,11 +6338,11 @@ package body Checks is
                   return False;
                end if;
 
-               --  Similarly, if we are in a conditional expression and not
-               --  part of the condition, then we return False, since neither
-               --  the THEN or ELSE expressions will always be elaborated.
+               --  Similarly, if we are in an if expression and not part of the
+               --  condition, then we return False, since neither the THEN or
+               --  ELSE dependent expressions will always be elaborated.
 
-               if Nkind (P) = N_Conditional_Expression
+               if Nkind (P) = N_If_Expression
                  and then N /= First (Expressions (P))
                then
                   return False;
@@ -6350,7 +6350,7 @@ package body Checks is
 
                --  If we are in a case expression, and not part of the
                --  expression, then we return False, since a particular
-               --  branch may not always be elaborated
+               --  dependent expression may not always be elaborated
 
                if Nkind (P) = N_Case_Expression
                  and then N /= Expression (P)
@@ -6805,7 +6805,7 @@ package body Checks is
 
       --  Processing for if expression
 
-      elsif Nkind (N) = N_Conditional_Expression then
+      elsif Nkind (N) = N_If_Expression then
          declare
             Then_DE : constant Node_Id := Next (First (Expressions (N)));
             Else_DE : constant Node_Id := Next (Then_DE);
@@ -6840,7 +6840,7 @@ package body Checks is
 
             if Bignum_Operands then
                Rewrite (N,
-                 Make_Conditional_Expression (Loc,
+                 Make_If_Expression (Loc,
                    Expressions => New_List (
                      Remove_Head (Expressions (N)),
                      Convert_To_Bignum (Then_DE),
@@ -8021,10 +8021,10 @@ package body Checks is
       if Is_Array_Type (T_Typ) and then Is_Array_Type (S_Typ) then
          if Is_Constrained (T_Typ) then
 
-            --  The checking code to be generated will freeze the
-            --  corresponding array type. However, we must freeze the
-            --  type now, so that the freeze node does not appear within
-            --  the generated conditional expression, but ahead of it.
+            --  The checking code to be generated will freeze the corresponding
+            --  array type. However, we must freeze the type now, so that the
+            --  freeze node does not appear within the generated if expression,
+            --  but ahead of it.
 
             Freeze_Before (Ck_Node, T_Typ);
 

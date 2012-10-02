@@ -252,7 +252,7 @@ package SCOs is
 
    --      E  decision in EXIT WHEN statement
    --      G  decision in entry guard
-   --      I  decision in IF statement or conditional expression
+   --      I  decision in IF statement or if expression
    --      P  decision in pragma Assert/Check/Pre_Condition/Post_Condition
    --      W  decision in WHILE iteration scheme
    --      X  decision appearing in some other expression context

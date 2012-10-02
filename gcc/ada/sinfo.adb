@@ -928,7 +928,7 @@ package body Sinfo is
         or else NT (N).Nkind in N_Op
         or else NT (N).Nkind = N_Attribute_Reference
         or else NT (N).Nkind = N_Case_Expression
-        or else NT (N).Nkind = N_Conditional_Expression
+        or else NT (N).Nkind = N_If_Expression
         or else NT (N).Nkind = N_Type_Conversion);
       return Flag17 (N);
    end Do_Overflow_Check;
@@ -1008,7 +1008,7 @@ package body Sinfo is
       (N : Node_Id) return List_Id is
    begin
       pragma Assert (False
-        or else NT (N).Nkind = N_Conditional_Expression);
+        or else NT (N).Nkind = N_If_Expression);
       return List3 (N);
    end Else_Actions;
 
@@ -1247,8 +1247,8 @@ package body Sinfo is
       pragma Assert (False
         or else NT (N).Nkind = N_Aggregate
         or else NT (N).Nkind = N_Attribute_Reference
-        or else NT (N).Nkind = N_Conditional_Expression
         or else NT (N).Nkind = N_Extension_Aggregate
+        or else NT (N).Nkind = N_If_Expression
         or else NT (N).Nkind = N_Indexed_Component);
       return List1 (N);
    end Expressions;
@@ -1745,7 +1745,7 @@ package body Sinfo is
      (N : Node_Id) return Boolean is
    begin
       pragma Assert (False
-        or else NT (N).Nkind = N_Conditional_Expression);
+        or else NT (N).Nkind = N_If_Expression);
       return Flag13 (N);
    end Is_Elsif;
 
@@ -2990,7 +2990,7 @@ package body Sinfo is
       (N : Node_Id) return List_Id is
    begin
       pragma Assert (False
-        or else NT (N).Nkind = N_Conditional_Expression);
+        or else NT (N).Nkind = N_If_Expression);
       return List2 (N);
    end Then_Actions;
 
@@ -4001,7 +4001,7 @@ package body Sinfo is
         or else NT (N).Nkind in N_Op
         or else NT (N).Nkind = N_Attribute_Reference
         or else NT (N).Nkind = N_Case_Expression
-        or else NT (N).Nkind = N_Conditional_Expression
+        or else NT (N).Nkind = N_If_Expression
         or else NT (N).Nkind = N_Type_Conversion);
       Set_Flag17 (N, Val);
    end Set_Do_Overflow_Check;
@@ -4081,7 +4081,7 @@ package body Sinfo is
       (N : Node_Id; Val : List_Id) is
    begin
       pragma Assert (False
-        or else NT (N).Nkind = N_Conditional_Expression);
+        or else NT (N).Nkind = N_If_Expression);
       Set_List3 (N, Val); -- semantic field, no parent set
    end Set_Else_Actions;
 
@@ -4311,8 +4311,8 @@ package body Sinfo is
       pragma Assert (False
         or else NT (N).Nkind = N_Aggregate
         or else NT (N).Nkind = N_Attribute_Reference
-        or else NT (N).Nkind = N_Conditional_Expression
         or else NT (N).Nkind = N_Extension_Aggregate
+        or else NT (N).Nkind = N_If_Expression
         or else NT (N).Nkind = N_Indexed_Component);
       Set_List1_With_Parent (N, Val);
    end Set_Expressions;
@@ -4809,7 +4809,7 @@ package body Sinfo is
      (N : Node_Id; Val : Boolean := True) is
    begin
       pragma Assert (False
-        or else NT (N).Nkind = N_Conditional_Expression);
+        or else NT (N).Nkind = N_If_Expression);
       Set_Flag13 (N, Val);
    end Set_Is_Elsif;
 
@@ -6054,7 +6054,7 @@ package body Sinfo is
       (N : Node_Id; Val : List_Id) is
    begin
       pragma Assert (False
-        or else NT (N).Nkind = N_Conditional_Expression);
+        or else NT (N).Nkind = N_If_Expression);
       Set_List2 (N, Val); -- semantic field, no parent set
    end Set_Then_Actions;
 

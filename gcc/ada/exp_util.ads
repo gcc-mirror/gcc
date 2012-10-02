@@ -72,8 +72,8 @@ package Exp_Util is
    --    For actions appearing in the then or else expression of a conditional
    --    expression, these actions are similarly placed in the node, using the
    --    Then_Actions or Else_Actions field as appropriate. Once again the
-   --    expansion of the N_Conditional_Expression node rewrites the node so
-   --    that the actions can be normally positioned.
+   --    expansion of the N_If_Expression node rewrites the node so that the
+   --    actions can be positioned normally.
 
    --  Basically what we do is to climb up to the tree looking for the
    --  proper insertion point, as described by one of the above cases,

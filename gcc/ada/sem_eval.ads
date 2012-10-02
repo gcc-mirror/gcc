@@ -296,8 +296,8 @@ package Sem_Eval is
    procedure Eval_Case_Expression        (N : Node_Id);
    procedure Eval_Character_Literal      (N : Node_Id);
    procedure Eval_Concatenation          (N : Node_Id);
-   procedure Eval_Conditional_Expression (N : Node_Id);
    procedure Eval_Entity_Name            (N : Node_Id);
+   procedure Eval_If_Expression          (N : Node_Id);
    procedure Eval_Indexed_Component      (N : Node_Id);
    procedure Eval_Integer_Literal        (N : Node_Id);
    procedure Eval_Logical_Op             (N : Node_Id);
@@ -439,7 +439,7 @@ private
    pragma Inline (Eval_Actual);
    pragma Inline (Eval_Allocator);
    pragma Inline (Eval_Character_Literal);
-   pragma Inline (Eval_Conditional_Expression);
+   pragma Inline (Eval_If_Expression);
    pragma Inline (Eval_Indexed_Component);
    pragma Inline (Eval_Named_Integer);
    pragma Inline (Eval_Named_Real);

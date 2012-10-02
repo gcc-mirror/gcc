@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1063,9 +1063,9 @@ package body Exp_Imgv is
    --  for depending on the element type for typI.
 
    --  Finally if Discard_Names is in effect for an enumeration type, then
-   --  a special conditional expression is built that yields the space needed
-   --  for the decimal representation of the largest pos value in the subtype.
-   --  See code below for details.
+   --  a special if expression is built that yields the space needed for the
+   --  decimal representation of the largest pos value in the subtype. See
+   --  code below for details.
 
    procedure Expand_Width_Attribute (N : Node_Id; Attr : Atype := Normal) is
       Loc     : constant Source_Ptr := Sloc (N);
@@ -1134,7 +1134,7 @@ package body Exp_Imgv is
 
       elsif Is_Real_Type (Rtyp) then
          Rewrite (N,
-           Make_Conditional_Expression (Loc,
+           Make_If_Expression (Loc,
              Expressions => New_List (
 
                Make_Op_Gt (Loc,
@@ -1214,8 +1214,8 @@ package body Exp_Imgv is
                              Prefix         => New_Occurrence_Of (Ptyp, Loc),
                              Attribute_Name => Name_Last))))));
 
-               --  OK, now we need to build the conditional expression. First
-               --  get the value of M, the largest possible value needed.
+               --  OK, now we need to build the if expression. First get the
+               --  value of M, the largest possible value needed.
 
                P := UI_To_Int
                       (Enumeration_Pos (Entity (Type_High_Bound (Rtyp))));
@@ -1238,7 +1238,7 @@ package body Exp_Imgv is
                   K := K - 1;
 
                   Cexpr :=
-                    Make_Conditional_Expression (Loc,
+                    Make_If_Expression (Loc,
                       Expressions => New_List (
                         Make_Op_Lt (Loc,
                           Left_Opnd  => New_Occurrence_Of (Tnn, Loc),
@@ -1252,7 +1252,7 @@ package body Exp_Imgv is
 
                Rewrite (N,
                  Convert_To (Typ,
-                   Make_Conditional_Expression (Loc,
+                   Make_If_Expression (Loc,
                      Expressions => New_List (
                        Make_Op_Eq (Loc,
                          Left_Opnd  =>

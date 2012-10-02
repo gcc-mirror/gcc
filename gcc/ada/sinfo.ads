@@ -824,7 +824,7 @@ package Sinfo is
    --    attribute references which use this flag are Pred and Succ, where it
    --    means that the result should be checked for going outside the base
    --    range. Note that this flag is not set for modular types. This flag is
-   --    also set on conditional expression nodes if we are operating in either
+   --    also set on if and case expression nodes if we are operating in either
    --    MINIMIZED or ELIMINATED overflow checking mode (to make sure that we
    --    properly process overflow checking for dependent expressions).
 
@@ -908,12 +908,12 @@ package Sinfo is
    --    boolean is required.
 
    --  Else_Actions (List3-Sem)
-   --    This field is present in conditional expression nodes. During code
+   --    This field is present in if expression nodes. During code
    --    expansion we use the Insert_Actions procedure (in Exp_Util) to insert
    --    actions at an appropriate place in the tree to get elaborated at the
-   --    right time. For conditional expressions, we have to be sure that the
-   --    actions for the Else branch are only elaborated if the condition is
-   --    False. The Else_Actions field is used as a temporary parking place for
+   --    right time. For if expressions, we have to be sure that the actions
+   --    for the Else branch are only elaborated if the condition is False.
+   --    The Else_Actions field is used as a temporary parking place for
    --    these actions. The final tree is always rewritten to eliminate the
    --    need for this field, so in the tree passed to Gigi, this field is
    --    always set to No_List.
@@ -1761,12 +1761,12 @@ package Sinfo is
    --    do size validation for.
 
    --  Then_Actions (List3-Sem)
-   --    This field is present in conditional expression nodes. During code
-   --    expansion we use the Insert_Actions procedure (in Exp_Util) to insert
-   --    actions at an appropriate place in the tree to get elaborated at the
-   --    right time. For conditional expressions, we have to be sure that the
-   --    actions for the Then branch are only elaborated if the condition is
-   --    True. The Then_Actions field is used as a temporary parking place for
+   --    This field is present in if expression nodes. During code expansion
+   --    we use the Insert_Actions procedure (in Exp_Util) to insert actions
+   --    at an appropriate place in the tree to get elaborated at the right
+   --    time. For if expressions, we have to be sure that the actions for
+   --    for the Then branch are only elaborated if the condition is True.
+   --    The Then_Actions field is used as a temporary parking place for
    --    these actions. The final tree is always rewritten to eliminate the
    --    need for this field, so in the tree passed to Gigi, this field is
    --    always set to No_List.
@@ -3885,15 +3885,9 @@ package Sinfo is
 
       --  Note: if we have (IF x1 THEN x2 ELSIF x3 THEN x4 ELSE x5) then it
       --  is represented as (IF x1 THEN x2 ELSE (IF x3 THEN x4 ELSE x5)) and
-      --  the Is_Elsif flag is set on the inner conditional expression.
+      --  the Is_Elsif flag is set on the inner if expression.
 
-      --  Note: to be consistent with the grammar, the following node should
-      --  really be named N_If_Expression, but historically it was always
-      --  N_Conditional_Expression, so it would be a bit of an earthquake
-      --  to change, and actually conditional expression seems a bit clearer
-      --  than if expression in typical contexts, so we decide to leave it!
-
-      --  N_Conditional_Expression
+      --  N_If_Expression
       --  Sloc points to IF or ELSIF keyword
       --  Expressions (List1)
       --  Then_Actions (List2-Sem)
@@ -6952,11 +6946,6 @@ package Sinfo is
    --  reconstructed tree printed by Sprint, and the node descriptions here
    --  show this syntax.
 
-   --  Note: Case_Expression and Conditional_Expression is in this section for
-   --  historical reasons, since they were initially extensions. Now that they
-   --  are an official part of Ada 2012, we should move them to the appropriate
-   --  section of this package. ???
-
       --------------
       -- Contract --
       --------------
@@ -7639,12 +7628,6 @@ package Sinfo is
       N_And_Then,
       N_Or_Else,
 
-      --  N_Subexpr, N_Has_Etype
-
-      N_Conditional_Expression,
-      N_Explicit_Dereference,
-      N_Expression_With_Actions,
-
       --  N_Subexpr, N_Has_Etype, N_Subprogram_Call
 
       N_Function_Call,
@@ -7652,6 +7635,9 @@ package Sinfo is
 
       --  N_Subexpr, N_Has_Etype
 
+      N_Explicit_Dereference,
+      N_Expression_With_Actions,
+      N_If_Expression,
       N_Indexed_Component,
       N_Integer_Literal,
       N_Null,
@@ -11586,7 +11572,7 @@ package Sinfo is
         4 => True,    --  Pragmas_Before (List4)
         5 => False),  --  unused
 
-     N_Conditional_Expression =>
+     N_If_Expression =>
        (1 => True,    --  Expressions (List1)
         2 => False,   --  Then_Actions (List2-Sem)
         3 => False,   --  Else_Actions (List3-Sem)
@@ -12454,6 +12440,9 @@ package Sinfo is
    --  should refer to N_Simple_Return_Statement.
 
    N_Parameterized_Expression : constant Node_Kind := N_Expression_Function;
-   --  Old name for expression functions (used during Ada 2012 transition)
+   --  Old name for expression function (used during Ada 2012 transition)
+
+   N_Conditional_Expression : Node_Kind renames N_If_Expression;
+   --  Old name for if expression (used during Ada 2012 transition)
 
 end Sinfo;

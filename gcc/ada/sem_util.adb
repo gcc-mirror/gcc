@@ -2250,9 +2250,9 @@ package body Sem_Util is
                Msgs := False;
                exit;
 
-            --  Conditional expression
+            --  If expression
 
-            elsif Nkind (P) = N_Conditional_Expression then
+            elsif Nkind (P) = N_If_Expression then
                declare
                   Cond : constant Node_Id := First (Expressions (P));
                   Texp : constant Node_Id := Next (Cond);
@@ -12146,13 +12146,15 @@ package body Sem_Util is
       begin
          Desc := N;
 
+         --  Seems dubious that case expressions are not handled here ???
+
          P := Parent (N);
          while Present (P) loop
             if         Nkind (P) = N_If_Statement
               or else  Nkind (P) = N_Case_Statement
               or else (Nkind (P) in N_Short_Circuit
                          and then Desc = Right_Opnd (P))
-              or else (Nkind (P) = N_Conditional_Expression
+              or else (Nkind (P) = N_If_Expression
                          and then Desc /= First (Expressions (P)))
               or else  Nkind (P) = N_Exception_Handler
               or else  Nkind (P) = N_Selective_Accept

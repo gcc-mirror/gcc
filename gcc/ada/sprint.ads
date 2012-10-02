@@ -48,7 +48,6 @@ package Sprint is
 
    --    Allocator                           new xxx [storage_pool = xxx]
    --    Cleanup action                      at end procedure name;
-   --    Conditional expression              (if expr then expr else expr)
    --    Conversion wi Float_Truncate        target^(source)
    --    Convert wi Conversion_OK            target?(source)
    --    Convert wi Rounded_Result           target@(source)

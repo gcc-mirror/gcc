@@ -3391,7 +3391,7 @@ package body Exp_Ch4 is
          Low_Bound := Opnd_Low_Bound (1);
 
       --  OK, we don't know the lower bound, we have to build a horrible
-      --  conditional expression node of the form
+      --  if expression node of the form
 
       --     if Cond1'Length /= 0 then
       --        Opnd1 low bound
@@ -3422,7 +3422,7 @@ package body Exp_Ch4 is
 
                else
                   return
-                    Make_Conditional_Expression (Loc,
+                    Make_If_Expression (Loc,
                       Expressions => New_List (
 
                         Make_Op_Ne (Loc,
@@ -3476,7 +3476,7 @@ package body Exp_Ch4 is
 
       if Result_May_Be_Null then
          Low_Bound :=
-           Make_Conditional_Expression (Loc,
+           Make_If_Expression (Loc,
              Expressions => New_List (
                Make_Op_Eq (Loc,
                  Left_Opnd  => New_Copy (Aggr_Length (NN)),
@@ -3485,7 +3485,7 @@ package body Exp_Ch4 is
                Low_Bound));
 
          High_Bound :=
-           Make_Conditional_Expression (Loc,
+           Make_If_Expression (Loc,
              Expressions => New_List (
                Make_Op_Eq (Loc,
                  Left_Opnd  => New_Copy (Aggr_Length (NN)),
@@ -4630,8 +4630,8 @@ package body Exp_Ch4 is
                end;
 
                --  We set the allocator as analyzed so that when we analyze
-               --  the conditional expression node, we do not get an unwanted
-               --  recursive expansion of the allocator expression.
+               --  the if expression node, we do not get an unwanted recursive
+               --  expansion of the allocator expression.
 
                Set_Analyzed (N, True);
                Nod := Relocate_Node (N);
@@ -4918,348 +4918,6 @@ package body Exp_Ch4 is
       Analyze_And_Resolve (N, Typ);
    end Expand_N_Case_Expression;
 
-   -------------------------------------
-   -- Expand_N_Conditional_Expression --
-   -------------------------------------
-
-   --  Deal with limited types and condition actions
-
-   procedure Expand_N_Conditional_Expression (N : Node_Id) is
-      function Create_Alternative
-        (Loc     : Source_Ptr;
-         Temp_Id : Entity_Id;
-         Flag_Id : Entity_Id;
-         Expr    : Node_Id) return List_Id;
-      --  Build the statements of a "then" or "else" conditional expression
-      --  alternative. Temp_Id is the conditional expression result, Flag_Id
-      --  is a finalization flag created to service expression Expr.
-
-      function Is_Controlled_Function_Call (Expr : Node_Id) return Boolean;
-      --  Determine if expression Expr is a rewritten controlled function call
-
-      ------------------------
-      -- Create_Alternative --
-      ------------------------
-
-      function Create_Alternative
-        (Loc     : Source_Ptr;
-         Temp_Id : Entity_Id;
-         Flag_Id : Entity_Id;
-         Expr    : Node_Id) return List_Id
-      is
-         Result : constant List_Id := New_List;
-
-      begin
-         --  Generate:
-         --    Fnn := True;
-
-         if Present (Flag_Id)
-           and then not Is_Controlled_Function_Call (Expr)
-         then
-            Append_To (Result,
-              Make_Assignment_Statement (Loc,
-                Name       => New_Reference_To (Flag_Id, Loc),
-                Expression => New_Reference_To (Standard_True, Loc)));
-         end if;
-
-         --  Generate:
-         --    Cnn := <expr>'Unrestricted_Access;
-
-         Append_To (Result,
-           Make_Assignment_Statement (Loc,
-             Name       => New_Reference_To (Temp_Id, Loc),
-             Expression =>
-               Make_Attribute_Reference (Loc,
-                 Prefix         => Relocate_Node (Expr),
-                 Attribute_Name => Name_Unrestricted_Access)));
-
-         return Result;
-      end Create_Alternative;
-
-      ---------------------------------
-      -- Is_Controlled_Function_Call --
-      ---------------------------------
-
-      function Is_Controlled_Function_Call (Expr : Node_Id) return Boolean is
-      begin
-         return
-           Nkind (Original_Node (Expr)) = N_Function_Call
-             and then Needs_Finalization (Etype (Expr));
-      end Is_Controlled_Function_Call;
-
-      --  Local variables
-
-      Loc    : constant Source_Ptr := Sloc (N);
-      Cond   : constant Node_Id    := First (Expressions (N));
-      Thenx  : constant Node_Id    := Next (Cond);
-      Elsex  : constant Node_Id    := Next (Thenx);
-      Typ    : constant Entity_Id  := Etype (N);
-
-      Actions : List_Id;
-      Cnn     : Entity_Id;
-      Decl    : Node_Id;
-      Expr    : Node_Id;
-      New_If  : Node_Id;
-      New_N   : Node_Id;
-
-   begin
-      --  Fold at compile time if condition known. We have already folded
-      --  static conditional expressions, but it is possible to fold any
-      --  case in which the condition is known at compile time, even though
-      --  the result is non-static.
-
-      --  Note that we don't do the fold of such cases in Sem_Elab because
-      --  it can cause infinite loops with the expander adding a conditional
-      --  expression, and Sem_Elab circuitry removing it repeatedly.
-
-      if Compile_Time_Known_Value (Cond) then
-         if Is_True (Expr_Value (Cond)) then
-            Expr := Thenx;
-            Actions := Then_Actions (N);
-         else
-            Expr := Elsex;
-            Actions := Else_Actions (N);
-         end if;
-
-         Remove (Expr);
-
-         if Present (Actions) then
-
-            --  If we are not allowed to use Expression_With_Actions, just skip
-            --  the optimization, it is not critical for correctness.
-
-            if not Use_Expression_With_Actions then
-               goto Skip_Optimization;
-            end if;
-
-            Rewrite (N,
-              Make_Expression_With_Actions (Loc,
-                Expression => Relocate_Node (Expr),
-                Actions    => Actions));
-            Analyze_And_Resolve (N, Typ);
-
-         else
-            Rewrite (N, Relocate_Node (Expr));
-         end if;
-
-         --  Note that the result is never static (legitimate cases of static
-         --  conditional expressions were folded in Sem_Eval).
-
-         Set_Is_Static_Expression (N, False);
-         return;
-      end if;
-
-      <<Skip_Optimization>>
-
-      --  If the type is limited or unconstrained, we expand as follows to
-      --  avoid any possibility of improper copies.
-
-      --  Note: it may be possible to avoid this special processing if the
-      --  back end uses its own mechanisms for handling by-reference types ???
-
-      --      type Ptr is access all Typ;
-      --      Cnn : Ptr;
-      --      if cond then
-      --         <<then actions>>
-      --         Cnn := then-expr'Unrestricted_Access;
-      --      else
-      --         <<else actions>>
-      --         Cnn := else-expr'Unrestricted_Access;
-      --      end if;
-
-      --  and replace the conditional expression by a reference to Cnn.all.
-
-      --  This special case can be skipped if the back end handles limited
-      --  types properly and ensures that no incorrect copies are made.
-
-      if Is_By_Reference_Type (Typ)
-        and then not Back_End_Handles_Limited_Types
-      then
-         declare
-            Flag_Id : Entity_Id;
-            Ptr_Typ : Entity_Id;
-
-         begin
-            Flag_Id := Empty;
-
-            --  At least one of the conditional expression alternatives uses a
-            --  controlled function to provide the result. Create a status flag
-            --  to signal the finalization machinery that Cnn needs special
-            --  handling.
-
-            if Is_Controlled_Function_Call (Thenx)
-                 or else
-               Is_Controlled_Function_Call (Elsex)
-            then
-               Flag_Id := Make_Temporary (Loc, 'F');
-
-               Insert_Action (N,
-                 Make_Object_Declaration (Loc,
-                   Defining_Identifier => Flag_Id,
-                   Object_Definition   =>
-                     New_Reference_To (Standard_Boolean, Loc),
-                   Expression          =>
-                     New_Reference_To (Standard_False, Loc)));
-            end if;
-
-            --  Generate:
-            --    type Ann is access all Typ;
-
-            Ptr_Typ := Make_Temporary (Loc, 'A');
-
-            Insert_Action (N,
-              Make_Full_Type_Declaration (Loc,
-                Defining_Identifier => Ptr_Typ,
-                Type_Definition     =>
-                  Make_Access_To_Object_Definition (Loc,
-                    All_Present        => True,
-                    Subtype_Indication => New_Reference_To (Typ, Loc))));
-
-            --  Generate:
-            --    Cnn : Ann;
-
-            Cnn := Make_Temporary (Loc, 'C', N);
-            Set_Ekind (Cnn, E_Variable);
-            Set_Status_Flag_Or_Transient_Decl (Cnn, Flag_Id);
-
-            Decl :=
-               Make_Object_Declaration (Loc,
-                 Defining_Identifier => Cnn,
-                 Object_Definition   => New_Occurrence_Of (Ptr_Typ, Loc));
-
-            New_If :=
-              Make_Implicit_If_Statement (N,
-                Condition       => Relocate_Node (Cond),
-                Then_Statements =>
-                  Create_Alternative (Sloc (Thenx), Cnn, Flag_Id, Thenx),
-                Else_Statements =>
-                  Create_Alternative (Sloc (Elsex), Cnn, Flag_Id, Elsex));
-
-            New_N :=
-              Make_Explicit_Dereference (Loc,
-                Prefix => New_Occurrence_Of (Cnn, Loc));
-         end;
-
-      --  For other types, we only need to expand if there are other actions
-      --  associated with either branch.
-
-      elsif Present (Then_Actions (N)) or else Present (Else_Actions (N)) then
-
-         --  We have two approaches to handling this. If we are allowed to use
-         --  N_Expression_With_Actions, then we can just wrap the actions into
-         --  the appropriate expression.
-
-         if Use_Expression_With_Actions then
-            if Present (Then_Actions (N)) then
-               Rewrite (Thenx,
-                 Make_Expression_With_Actions (Sloc (Thenx),
-                   Actions    => Then_Actions (N),
-                   Expression => Relocate_Node (Thenx)));
-               Set_Then_Actions (N, No_List);
-               Analyze_And_Resolve (Thenx, Typ);
-            end if;
-
-            if Present (Else_Actions (N)) then
-               Rewrite (Elsex,
-                 Make_Expression_With_Actions (Sloc (Elsex),
-                   Actions    => Else_Actions (N),
-                   Expression => Relocate_Node (Elsex)));
-               Set_Else_Actions (N, No_List);
-               Analyze_And_Resolve (Elsex, Typ);
-            end if;
-
-            return;
-
-            --  if we can't use N_Expression_With_Actions nodes, then we insert
-            --  the following sequence of actions (using Insert_Actions):
-
-            --      Cnn : typ;
-            --      if cond then
-            --         <<then actions>>
-            --         Cnn := then-expr;
-            --      else
-            --         <<else actions>>
-            --         Cnn := else-expr
-            --      end if;
-
-            --  and replace the conditional expression by a reference to Cnn
-
-         else
-            Cnn := Make_Temporary (Loc, 'C', N);
-
-            Decl :=
-              Make_Object_Declaration (Loc,
-                Defining_Identifier => Cnn,
-                Object_Definition   => New_Occurrence_Of (Typ, Loc));
-
-            New_If :=
-              Make_Implicit_If_Statement (N,
-                Condition       => Relocate_Node (Cond),
-
-                Then_Statements => New_List (
-                  Make_Assignment_Statement (Sloc (Thenx),
-                    Name       => New_Occurrence_Of (Cnn, Sloc (Thenx)),
-                    Expression => Relocate_Node (Thenx))),
-
-                Else_Statements => New_List (
-                  Make_Assignment_Statement (Sloc (Elsex),
-                    Name       => New_Occurrence_Of (Cnn, Sloc (Elsex)),
-                    Expression => Relocate_Node (Elsex))));
-
-            Set_Assignment_OK (Name (First (Then_Statements (New_If))));
-            Set_Assignment_OK (Name (First (Else_Statements (New_If))));
-
-            New_N := New_Occurrence_Of (Cnn, Loc);
-         end if;
-
-         --  If no actions then no expansion needed, gigi will handle it using
-         --  the same approach as a C conditional expression.
-
-      else
-         --  If Do_Overflow_Check is set it means we have a signed intger type
-         --  in MINIMIZED or ELIMINATED mode, so we apply an overflow check to
-         --  the if expression (to make sure that overflow checking is properly
-         --  handled for dependent expressions).
-
-         if Do_Overflow_Check (N) then
-            Apply_Arithmetic_Overflow_Check (N);
-         end if;
-
-         return;
-      end if;
-
-      --  Fall through here for either the limited expansion, or the case of
-      --  inserting actions for non-limited types. In both these cases, we must
-      --  move the SLOC of the parent If statement to the newly created one and
-      --  change it to the SLOC of the expression which, after expansion, will
-      --  correspond to what is being evaluated.
-
-      if Present (Parent (N))
-        and then Nkind (Parent (N)) = N_If_Statement
-      then
-         Set_Sloc (New_If, Sloc (Parent (N)));
-         Set_Sloc (Parent (N), Loc);
-      end if;
-
-      --  Make sure Then_Actions and Else_Actions are appropriately moved
-      --  to the new if statement.
-
-      if Present (Then_Actions (N)) then
-         Insert_List_Before
-           (First (Then_Statements (New_If)), Then_Actions (N));
-      end if;
-
-      if Present (Else_Actions (N)) then
-         Insert_List_Before
-           (First (Else_Statements (New_If)), Else_Actions (N));
-      end if;
-
-      Insert_Action (N, Decl);
-      Insert_Action (N, New_If);
-      Rewrite (N, New_N);
-      Analyze_And_Resolve (N, Typ);
-   end Expand_N_Conditional_Expression;
-
    -----------------------------------
    -- Expand_N_Explicit_Dereference --
    -----------------------------------
@@ -5426,6 +5084,348 @@ package body Exp_Ch4 is
          Next (Decl);
       end loop;
    end Expand_N_Expression_With_Actions;
+
+   ----------------------------
+   -- Expand_N_If_Expression --
+   ----------------------------
+
+   --  Deal with limited types and condition actions
+
+   procedure Expand_N_If_Expression (N : Node_Id) is
+      function Create_Alternative
+        (Loc     : Source_Ptr;
+         Temp_Id : Entity_Id;
+         Flag_Id : Entity_Id;
+         Expr    : Node_Id) return List_Id;
+      --  Build the statements of a "then" or "else" dependent expression
+      --  alternative. Temp_Id is the if expression result, Flag_Id is a
+      --  finalization flag created to service expression Expr.
+
+      function Is_Controlled_Function_Call (Expr : Node_Id) return Boolean;
+      --  Determine if expression Expr is a rewritten controlled function call
+
+      ------------------------
+      -- Create_Alternative --
+      ------------------------
+
+      function Create_Alternative
+        (Loc     : Source_Ptr;
+         Temp_Id : Entity_Id;
+         Flag_Id : Entity_Id;
+         Expr    : Node_Id) return List_Id
+      is
+         Result : constant List_Id := New_List;
+
+      begin
+         --  Generate:
+         --    Fnn := True;
+
+         if Present (Flag_Id)
+           and then not Is_Controlled_Function_Call (Expr)
+         then
+            Append_To (Result,
+              Make_Assignment_Statement (Loc,
+                Name       => New_Reference_To (Flag_Id, Loc),
+                Expression => New_Reference_To (Standard_True, Loc)));
+         end if;
+
+         --  Generate:
+         --    Cnn := <expr>'Unrestricted_Access;
+
+         Append_To (Result,
+           Make_Assignment_Statement (Loc,
+             Name       => New_Reference_To (Temp_Id, Loc),
+             Expression =>
+               Make_Attribute_Reference (Loc,
+                 Prefix         => Relocate_Node (Expr),
+                 Attribute_Name => Name_Unrestricted_Access)));
+
+         return Result;
+      end Create_Alternative;
+
+      ---------------------------------
+      -- Is_Controlled_Function_Call --
+      ---------------------------------
+
+      function Is_Controlled_Function_Call (Expr : Node_Id) return Boolean is
+      begin
+         return
+           Nkind (Original_Node (Expr)) = N_Function_Call
+             and then Needs_Finalization (Etype (Expr));
+      end Is_Controlled_Function_Call;
+
+      --  Local variables
+
+      Loc    : constant Source_Ptr := Sloc (N);
+      Cond   : constant Node_Id    := First (Expressions (N));
+      Thenx  : constant Node_Id    := Next (Cond);
+      Elsex  : constant Node_Id    := Next (Thenx);
+      Typ    : constant Entity_Id  := Etype (N);
+
+      Actions : List_Id;
+      Cnn     : Entity_Id;
+      Decl    : Node_Id;
+      Expr    : Node_Id;
+      New_If  : Node_Id;
+      New_N   : Node_Id;
+
+   begin
+      --  Fold at compile time if condition known. We have already folded
+      --  static if expressions, but it is possible to fold any case in which
+      --  the condition is known at compile time, even though the result is
+      --  non-static.
+
+      --  Note that we don't do the fold of such cases in Sem_Elab because
+      --  it can cause infinite loops with the expander adding a conditional
+      --  expression, and Sem_Elab circuitry removing it repeatedly.
+
+      if Compile_Time_Known_Value (Cond) then
+         if Is_True (Expr_Value (Cond)) then
+            Expr := Thenx;
+            Actions := Then_Actions (N);
+         else
+            Expr := Elsex;
+            Actions := Else_Actions (N);
+         end if;
+
+         Remove (Expr);
+
+         if Present (Actions) then
+
+            --  If we are not allowed to use Expression_With_Actions, just skip
+            --  the optimization, it is not critical for correctness.
+
+            if not Use_Expression_With_Actions then
+               goto Skip_Optimization;
+            end if;
+
+            Rewrite (N,
+              Make_Expression_With_Actions (Loc,
+                Expression => Relocate_Node (Expr),
+                Actions    => Actions));
+            Analyze_And_Resolve (N, Typ);
+
+         else
+            Rewrite (N, Relocate_Node (Expr));
+         end if;
+
+         --  Note that the result is never static (legitimate cases of static
+         --  if expressions were folded in Sem_Eval).
+
+         Set_Is_Static_Expression (N, False);
+         return;
+      end if;
+
+      <<Skip_Optimization>>
+
+      --  If the type is limited or unconstrained, we expand as follows to
+      --  avoid any possibility of improper copies.
+
+      --  Note: it may be possible to avoid this special processing if the
+      --  back end uses its own mechanisms for handling by-reference types ???
+
+      --      type Ptr is access all Typ;
+      --      Cnn : Ptr;
+      --      if cond then
+      --         <<then actions>>
+      --         Cnn := then-expr'Unrestricted_Access;
+      --      else
+      --         <<else actions>>
+      --         Cnn := else-expr'Unrestricted_Access;
+      --      end if;
+
+      --  and replace the if expression by a reference to Cnn.all.
+
+      --  This special case can be skipped if the back end handles limited
+      --  types properly and ensures that no incorrect copies are made.
+
+      if Is_By_Reference_Type (Typ)
+        and then not Back_End_Handles_Limited_Types
+      then
+         declare
+            Flag_Id : Entity_Id;
+            Ptr_Typ : Entity_Id;
+
+         begin
+            Flag_Id := Empty;
+
+            --  At least one of the if expression dependent expressions uses a
+            --  controlled function to provide the result. Create a status flag
+            --  to signal the finalization machinery that Cnn needs special
+            --  handling.
+
+            if Is_Controlled_Function_Call (Thenx)
+                 or else
+               Is_Controlled_Function_Call (Elsex)
+            then
+               Flag_Id := Make_Temporary (Loc, 'F');
+
+               Insert_Action (N,
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => Flag_Id,
+                   Object_Definition   =>
+                     New_Reference_To (Standard_Boolean, Loc),
+                   Expression          =>
+                     New_Reference_To (Standard_False, Loc)));
+            end if;
+
+            --  Generate:
+            --    type Ann is access all Typ;
+
+            Ptr_Typ := Make_Temporary (Loc, 'A');
+
+            Insert_Action (N,
+              Make_Full_Type_Declaration (Loc,
+                Defining_Identifier => Ptr_Typ,
+                Type_Definition     =>
+                  Make_Access_To_Object_Definition (Loc,
+                    All_Present        => True,
+                    Subtype_Indication => New_Reference_To (Typ, Loc))));
+
+            --  Generate:
+            --    Cnn : Ann;
+
+            Cnn := Make_Temporary (Loc, 'C', N);
+            Set_Ekind (Cnn, E_Variable);
+            Set_Status_Flag_Or_Transient_Decl (Cnn, Flag_Id);
+
+            Decl :=
+               Make_Object_Declaration (Loc,
+                 Defining_Identifier => Cnn,
+                 Object_Definition   => New_Occurrence_Of (Ptr_Typ, Loc));
+
+            New_If :=
+              Make_Implicit_If_Statement (N,
+                Condition       => Relocate_Node (Cond),
+                Then_Statements =>
+                  Create_Alternative (Sloc (Thenx), Cnn, Flag_Id, Thenx),
+                Else_Statements =>
+                  Create_Alternative (Sloc (Elsex), Cnn, Flag_Id, Elsex));
+
+            New_N :=
+              Make_Explicit_Dereference (Loc,
+                Prefix => New_Occurrence_Of (Cnn, Loc));
+         end;
+
+      --  For other types, we only need to expand if there are other actions
+      --  associated with either branch.
+
+      elsif Present (Then_Actions (N)) or else Present (Else_Actions (N)) then
+
+         --  We have two approaches to handling this. If we are allowed to use
+         --  N_Expression_With_Actions, then we can just wrap the actions into
+         --  the appropriate expression.
+
+         if Use_Expression_With_Actions then
+            if Present (Then_Actions (N)) then
+               Rewrite (Thenx,
+                 Make_Expression_With_Actions (Sloc (Thenx),
+                   Actions    => Then_Actions (N),
+                   Expression => Relocate_Node (Thenx)));
+               Set_Then_Actions (N, No_List);
+               Analyze_And_Resolve (Thenx, Typ);
+            end if;
+
+            if Present (Else_Actions (N)) then
+               Rewrite (Elsex,
+                 Make_Expression_With_Actions (Sloc (Elsex),
+                   Actions    => Else_Actions (N),
+                   Expression => Relocate_Node (Elsex)));
+               Set_Else_Actions (N, No_List);
+               Analyze_And_Resolve (Elsex, Typ);
+            end if;
+
+            return;
+
+            --  if we can't use N_Expression_With_Actions nodes, then we insert
+            --  the following sequence of actions (using Insert_Actions):
+
+            --      Cnn : typ;
+            --      if cond then
+            --         <<then actions>>
+            --         Cnn := then-expr;
+            --      else
+            --         <<else actions>>
+            --         Cnn := else-expr
+            --      end if;
+
+            --  and replace the if expression by a reference to Cnn
+
+         else
+            Cnn := Make_Temporary (Loc, 'C', N);
+
+            Decl :=
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Cnn,
+                Object_Definition   => New_Occurrence_Of (Typ, Loc));
+
+            New_If :=
+              Make_Implicit_If_Statement (N,
+                Condition       => Relocate_Node (Cond),
+
+                Then_Statements => New_List (
+                  Make_Assignment_Statement (Sloc (Thenx),
+                    Name       => New_Occurrence_Of (Cnn, Sloc (Thenx)),
+                    Expression => Relocate_Node (Thenx))),
+
+                Else_Statements => New_List (
+                  Make_Assignment_Statement (Sloc (Elsex),
+                    Name       => New_Occurrence_Of (Cnn, Sloc (Elsex)),
+                    Expression => Relocate_Node (Elsex))));
+
+            Set_Assignment_OK (Name (First (Then_Statements (New_If))));
+            Set_Assignment_OK (Name (First (Else_Statements (New_If))));
+
+            New_N := New_Occurrence_Of (Cnn, Loc);
+         end if;
+
+         --  If no actions then no expansion needed, gigi will handle it using
+         --  the same approach as a C conditional expression.
+
+      else
+         --  If Do_Overflow_Check is set it means we have a signed intger type
+         --  in MINIMIZED or ELIMINATED mode, so we apply an overflow check to
+         --  the if expression (to make sure that overflow checking is properly
+         --  handled for dependent expressions).
+
+         if Do_Overflow_Check (N) then
+            Apply_Arithmetic_Overflow_Check (N);
+         end if;
+
+         return;
+      end if;
+
+      --  Fall through here for either the limited expansion, or the case of
+      --  inserting actions for non-limited types. In both these cases, we must
+      --  move the SLOC of the parent If statement to the newly created one and
+      --  change it to the SLOC of the expression which, after expansion, will
+      --  correspond to what is being evaluated.
+
+      if Present (Parent (N))
+        and then Nkind (Parent (N)) = N_If_Statement
+      then
+         Set_Sloc (New_If, Sloc (Parent (N)));
+         Set_Sloc (Parent (N), Loc);
+      end if;
+
+      --  Make sure Then_Actions and Else_Actions are appropriately moved
+      --  to the new if statement.
+
+      if Present (Then_Actions (N)) then
+         Insert_List_Before
+           (First (Then_Statements (New_If)), Then_Actions (N));
+      end if;
+
+      if Present (Else_Actions (N)) then
+         Insert_List_Before
+           (First (Else_Statements (New_If)), Else_Actions (N));
+      end if;
+
+      Insert_Action (N, Decl);
+      Insert_Action (N, New_If);
+      Rewrite (N, New_N);
+      Analyze_And_Resolve (N, Typ);
+   end Expand_N_If_Expression;
 
    -----------------
    -- Expand_N_In --
@@ -7918,7 +7918,7 @@ package body Exp_Ch4 is
                 ((not LOK) or else (Llo = LLB))
             then
                Rewrite (N,
-                 Make_Conditional_Expression (Loc,
+                 Make_If_Expression (Loc,
                    Expressions => New_List (
                      Make_Op_Eq (Loc,
                        Left_Opnd => Duplicate_Subexpr (Right),
@@ -8552,7 +8552,7 @@ package body Exp_Ch4 is
 
       if Lneg and Rneg then
          Rewrite (N,
-           Make_Conditional_Expression (Loc,
+           Make_If_Expression (Loc,
              Expressions => New_List (
                Make_Op_Eq (Loc,
                  Left_Opnd  => Duplicate_Subexpr (Right),

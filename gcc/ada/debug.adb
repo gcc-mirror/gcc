@@ -129,7 +129,7 @@ package body Debug is
    --  d.I  SCIL generation mode
    --  d.J  Disable parallel SCIL generation mode
    --  d.K  Alfa detection only mode for gnat2why
-   --  d.L  Depend on back end for limited types in conditional expressions
+   --  d.L  Depend on back end for limited types in if and case expressions
    --  d.M
    --  d.N  Add node to all entities
    --  d.O  Dump internal SCO tables

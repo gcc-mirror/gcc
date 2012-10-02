@@ -1188,7 +1188,7 @@ package body Sem_Elab is
 
       --  Nothing to do if this is a call already rewritten for elab checking
 
-      elsif Nkind (Parent (N)) = N_Conditional_Expression then
+      elsif Nkind (Parent (N)) = N_If_Expression then
          return;
 
       --  Nothing to do if inside a generic template
@@ -2935,7 +2935,8 @@ package body Sem_Elab is
       --  the context of the call has already been analyzed, an insertion
       --  will not work if it depends on subsequent expansion (e.g. a call in
       --  a branch of a short-circuit). In that case we replace the call with
-      --  a conditional expression, or with a Raise if it is unconditional.
+      --  an if expression, or with a Raise if it is unconditional.
+
       --  Unfortunately this does not work if the call has a dynamic size,
       --  because gigi regards it as a dynamic-sized temporary. If such a call
       --  appears in a short-circuit expression, the elaboration check will be
@@ -2972,14 +2973,14 @@ package body Sem_Elab is
                   Reloc_N := Relocate_Node (N);
                   Save_Interps (N, Reloc_N);
                   Rewrite (N,
-                    Make_Conditional_Expression (Loc,
+                    Make_If_Expression (Loc,
                       Expressions => New_List (C, Reloc_N, R)));
                end if;
 
                Analyze_And_Resolve (N, Typ);
 
                --  If the original call requires a range check, so does the
-               --  conditional expression.
+               --  if expression.
 
                if Chk then
                   Enable_Range_Check (N);

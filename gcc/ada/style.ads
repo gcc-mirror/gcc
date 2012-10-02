@@ -190,8 +190,8 @@ package Style is
 
    procedure Check_Xtra_Parens (Loc : Source_Ptr)
      renames Style_Inst.Check_Xtra_Parens;
-   --  Called after scanning a conditional expression that has at least one
-   --  level of parentheses around the entire expression.
+   --  Called after scanning an if, case or quantified expression that has at
+   --  least one level of parentheses around the entire expression.
 
    function Mode_In_Check return Boolean
      renames Style_Inst.Mode_In_Check;

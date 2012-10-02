@@ -1892,8 +1892,8 @@ package body Exp_Ch7 is
                then
                   Processing_Actions (Has_No_Init => True);
 
-               --  Process intermediate results of conditional expression with
-               --  one of the alternatives using a controlled function call.
+               --  Process intermediate results of an if expression with one
+               --  of the alternatives using a controlled function call.
 
                elsif Is_Access_Type (Obj_Typ)
                  and then Present (Status_Flag_Or_Transient_Decl (Obj_Id))

@@ -694,17 +694,12 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       --  keyword, and returns pointing to the terminating right parent,
       --  semicolon, or comma, but does not consume this terminating token.
 
-      function P_Conditional_Expression return Node_Id;
-      --  Scans out a conditional expression. Called with Token pointing to
-      --  the IF keyword, and returns pointing to the terminating right paren,
-      --  semicolon or comma, but does not consume this terminating token.
-
       function P_Expression_If_OK return Node_Id;
       --  Scans out an expression allowing an unparenthesized case expression,
-      --  conditional expression, or quantified expression to appear without
-      --  enclosing parentheses. However, if such an expression is not preceded
-      --  by a left paren, and followed by a right paren, an error message will
-      --  be output noting that parenthesization is required.
+      --  if expression, or quantified expression to appear without enclosing
+      --  parentheses. However, if such an expression is not preceded by a left
+      --  paren, and followed by a right paren, an error message will be output
+      --  noting that parenthesization is required.
 
       function P_Expression_No_Right_Paren return Node_Id;
       --  Scans out an expression in contexts where the expression cannot be
@@ -717,6 +712,11 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       --  However, if such an expression is not preceded by a left paren, and
       --  followed by a right paren, an error message will be output noting
       --  that parenthesization is required.
+
+      function P_If_Expression return Node_Id;
+      --  Scans out an if expression. Called with Token pointing to the
+      --  IF keyword, and returns pointing to the terminating right paren,
+      --  semicolon or comma, but does not consume this terminating token.
 
       function P_Qualified_Expression (Subtype_Mark : Node_Id) return Node_Id;
       --  This routine scans out a qualified expression when the caller has

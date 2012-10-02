@@ -1872,15 +1872,74 @@ package body Sem_Eval is
       end;
    end Eval_Concatenation;
 
-   ---------------------------------
-   -- Eval_Conditional_Expression --
-   ---------------------------------
+   ----------------------
+   -- Eval_Entity_Name --
+   ----------------------
 
-   --  We can fold to a static expression if the condition and both constituent
+   --  This procedure is used for identifiers and expanded names other than
+   --  named numbers (see Eval_Named_Integer, Eval_Named_Real. These are
+   --  static if they denote a static constant (RM 4.9(6)) or if the name
+   --  denotes an enumeration literal (RM 4.9(22)).
+
+   procedure Eval_Entity_Name (N : Node_Id) is
+      Def_Id : constant Entity_Id := Entity (N);
+      Val    : Node_Id;
+
+   begin
+      --  Enumeration literals are always considered to be constants
+      --  and cannot raise constraint error (RM 4.9(22)).
+
+      if Ekind (Def_Id) = E_Enumeration_Literal then
+         Set_Is_Static_Expression (N);
+         return;
+
+      --  A name is static if it denotes a static constant (RM 4.9(5)), and
+      --  we also copy Raise_Constraint_Error. Notice that even if non-static,
+      --  it does not violate 10.2.1(8) here, since this is not a variable.
+
+      elsif Ekind (Def_Id) = E_Constant then
+
+         --  Deferred constants must always be treated as nonstatic
+         --  outside the scope of their full view.
+
+         if Present (Full_View (Def_Id))
+           and then not In_Open_Scopes (Scope (Def_Id))
+         then
+            Val := Empty;
+         else
+            Val := Constant_Value (Def_Id);
+         end if;
+
+         if Present (Val) then
+            Set_Is_Static_Expression
+              (N, Is_Static_Expression (Val)
+                    and then Is_Static_Subtype (Etype (Def_Id)));
+            Set_Raises_Constraint_Error (N, Raises_Constraint_Error (Val));
+
+            if not Is_Static_Expression (N)
+              and then not Is_Generic_Type (Etype (N))
+            then
+               Validate_Static_Object_Name (N);
+            end if;
+
+            return;
+         end if;
+      end if;
+
+      --  Fall through if the name is not static
+
+      Validate_Static_Object_Name (N);
+   end Eval_Entity_Name;
+
+   ------------------------
+   -- Eval_If_Expression --
+   ------------------------
+
+   --  We can fold to a static expression if the condition and both dependent
    --  expressions are static. Otherwise, the only required processing is to do
    --  the check for non-static context for the then and else expressions.
 
-   procedure Eval_Conditional_Expression (N : Node_Id) is
+   procedure Eval_If_Expression (N : Node_Id) is
       Condition  : constant Node_Id := First (Expressions (N));
       Then_Expr  : constant Node_Id := Next (Condition);
       Else_Expr  : constant Node_Id := Next (Then_Expr);
@@ -1949,66 +2008,7 @@ package body Sem_Eval is
       end if;
 
       Set_Is_Static_Expression (N, Rstat);
-   end Eval_Conditional_Expression;
-
-   ----------------------
-   -- Eval_Entity_Name --
-   ----------------------
-
-   --  This procedure is used for identifiers and expanded names other than
-   --  named numbers (see Eval_Named_Integer, Eval_Named_Real. These are
-   --  static if they denote a static constant (RM 4.9(6)) or if the name
-   --  denotes an enumeration literal (RM 4.9(22)).
-
-   procedure Eval_Entity_Name (N : Node_Id) is
-      Def_Id : constant Entity_Id := Entity (N);
-      Val    : Node_Id;
-
-   begin
-      --  Enumeration literals are always considered to be constants
-      --  and cannot raise constraint error (RM 4.9(22)).
-
-      if Ekind (Def_Id) = E_Enumeration_Literal then
-         Set_Is_Static_Expression (N);
-         return;
-
-      --  A name is static if it denotes a static constant (RM 4.9(5)), and
-      --  we also copy Raise_Constraint_Error. Notice that even if non-static,
-      --  it does not violate 10.2.1(8) here, since this is not a variable.
-
-      elsif Ekind (Def_Id) = E_Constant then
-
-         --  Deferred constants must always be treated as nonstatic
-         --  outside the scope of their full view.
-
-         if Present (Full_View (Def_Id))
-           and then not In_Open_Scopes (Scope (Def_Id))
-         then
-            Val := Empty;
-         else
-            Val := Constant_Value (Def_Id);
-         end if;
-
-         if Present (Val) then
-            Set_Is_Static_Expression
-              (N, Is_Static_Expression (Val)
-                    and then Is_Static_Subtype (Etype (Def_Id)));
-            Set_Raises_Constraint_Error (N, Raises_Constraint_Error (Val));
-
-            if not Is_Static_Expression (N)
-              and then not Is_Generic_Type (Etype (N))
-            then
-               Validate_Static_Object_Name (N);
-            end if;
-
-            return;
-         end if;
-      end if;
-
-      --  Fall through if the name is not static
-
-      Validate_Static_Object_Name (N);
-   end Eval_Entity_Name;
+   end Eval_If_Expression;
 
    ----------------------------
    -- Eval_Indexed_Component --

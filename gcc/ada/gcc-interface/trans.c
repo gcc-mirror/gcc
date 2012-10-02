@@ -5977,7 +5977,7 @@ gnat_to_gnu (Node_Id gnat_node)
       }
       break;
 
-    case N_Conditional_Expression:
+    case N_If_Expression:
       {
 	tree gnu_cond = gnat_to_gnu (First (Expressions (gnat_node)));
 	tree gnu_true = gnat_to_gnu (Next (First (Expressions (gnat_node))));
