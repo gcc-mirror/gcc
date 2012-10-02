@@ -12,7 +12,7 @@
 #     notice, this list of conditions and the following disclaimer in
 #     the documentation and/or other materials provided with the
 #     distribution.  
-    
+
 #     (3) The name of the author may not be used to
 #     endorse or promote products derived from this software without
 #     specific prior written permission.
@@ -34,7 +34,7 @@ ACLOCAL_AMFLAGS = -I .. -I ../config
 AM_CPPFLAGS = -I $(top_srcdir)/../include -I $(top_srcdir)/../libgcc \
 	-I ../libgcc -I ../gcc/include -I $(MULTIBUILDTOP)../../gcc/include
 
-AM_CFLAGS = $(WARN_FLAGS) $(PIC_FLAG)
+AM_CFLAGS = $(EXTRA_FLAGS) $(WARN_FLAGS) $(PIC_FLAG)
 
 noinst_LTLIBRARIES = libbacktrace.la
 
