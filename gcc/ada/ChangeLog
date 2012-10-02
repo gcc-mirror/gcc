@@ -1,3 +1,41 @@
+2012-10-02  Ben Brosgol  <brosgol@adacore.com>
+
+	* gnat_rm.texi: Minor editing.
+
+2012-10-02  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Function_Return): Reject a return
+	expression whose type is a local access to subprogram type.
+
+2012-10-02  Robert Dewar  <dewar@adacore.com>
+
+	* sem_eval.adb: Minor improvement to Compile_Time_Compare.
+
+2012-10-02  Robert Dewar  <dewar@adacore.com>
+
+	* checks.adb (Apply_Arithmetic_Overflow_Minimized_Eliminated):
+	Fix base type problem that resulted in improper conversion.
+	(Minimize_Eliminate_Overflow_Checks): Properly handle top
+	level case to avoid unnecessary conversion to bignum or LLI.
+	(Minimize_Eliminate_Overflow_Checks): Implement uniform two phase
+	approach for arithmetic operators and for if/case expressions.
+	* checks.ads: Minor comment fix.
+	* exp_ch4.adb (Minimized_Eliminated_Overflow_Check): New function,
+	implements a uniform way of treating minimized/eliminated checks in
+	two phases.
+	(Expand_Compare_Minimize_Eliminate_Overflow): Fix cut and
+	paste error resulting in wrong results for less than in some
+	cases.	(Expand_Membership_Minimize_Eliminate_Overflow):
+	Fix error caused by incorrect capture of operand types.
+	(Expand_Membership_Minimize_Eliminate_Overflow): Fix error in
+	handling of bignum case.
+	(Expand_N_Case_Expression): Implement
+	proper two phase handling (Expand_N_If_Expression): Implement
+	proper two phase handling (Expand_N_Op_Abs): Implement proper
+	two phase handling ditto for all other arithmetic operators
+	* sem_res.adb (Resolve_If_Expression): Avoid introducing
+	unneeded conversions.
+
 2012-10-02  Robert Dewar  <dewar@adacore.com>
 
 	* s-bignum.adb (Big_Exp): 0**0 should be 1, not 0.

@@ -949,21 +949,31 @@ package body Sem_Eval is
             LLo, LHi : Uint;
             RLo, RHi : Uint;
 
+            Single : Boolean;
+            --  True if each range is a single point
+
          begin
             Determine_Range (L, LOK, LLo, LHi, Assume_Valid);
             Determine_Range (R, ROK, RLo, RHi, Assume_Valid);
 
             if LOK and ROK then
+               Single := (LLo = LHi) and then (RLo = RHi);
+
                if LHi < RLo then
+                  if Single and Assume_Valid then
+                     Diff.all := RLo - LLo;
+                  end if;
+
                   return LT;
 
                elsif RHi < LLo then
+                  if Single and Assume_Valid then
+                     Diff.all := LLo - RLo;
+                  end if;
+
                   return GT;
 
-               elsif LLo = LHi
-                 and then RLo = RHi
-                 and then LLo = RLo
-               then
+               elsif Single and then LLo = RLo then
 
                   --  If the range includes a single literal and we can assume
                   --  validity then the result is known even if an operand is

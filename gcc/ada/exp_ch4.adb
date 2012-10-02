@@ -212,6 +212,21 @@ package body Exp_Ch4 is
    --  constrained type (the caller has ensured this by using
    --  Convert_To_Actual_Subtype if necessary).
 
+   function Minimized_Eliminated_Overflow_Check (N : Node_Id) return Boolean;
+   --  For signed arithmetic operations with Do_Overflow_Check set when the
+   --  current overflow mode is MINIMIZED or ELIMINATED, we need to make a
+   --  call to Apply_Arithmetic_Overflow_Checks as the first thing we do. We
+   --  then return. We count on the recursive apparatus for overflow checks
+   --  to call us back with an equivalent operation that does not have the
+   --  Do_Overflow_Check flag set, and that is when we will proceed with the
+   --  expansion of the operator (e.g. converting X+0 to X, or X**2 to X*X).
+   --  We cannot do these optimizations without first making this check, since
+   --  there may be operands further down the tree that are relying on the
+   --  recursive calls triggered by the top level nodes to properly process
+   --  overflow checking and remaining expansion on these nodes. Note that
+   --  this call back may be skipped if the operation is done in Bignum mode
+   --  but that's fine, since the Bignum call takes care of everything.
+
    procedure Optimize_Length_Comparison (N : Node_Id);
    --  Given an expression, if it is of the form X'Length op N (or the other
    --  way round), where N is known at compile time to be 0 or 1, and X is a
@@ -2383,9 +2398,9 @@ package body Exp_Ch4 is
 
          when N_Op_Lt =>
             if Llo >= Rhi then
-               Set_True;
-            elsif Lhi < Rlo then
                Set_False;
+            elsif Lhi < Rlo then
+               Set_True;
             end if;
 
          when N_Op_Ne =>
@@ -3721,11 +3736,14 @@ package body Exp_Ch4 is
       --  Despite the name, this routine applies only to N_In, not to
       --  N_Not_In. The latter is always rewritten as not (X in Y).
 
-      Loc   : constant Source_Ptr := Sloc (N);
-      Lop   : constant Node_Id    := Left_Opnd (N);
-      Rop   : constant Node_Id    := Right_Opnd (N);
-      Ltype : constant Entity_Id  := Etype (Lop);
-      Rtype : constant Entity_Id  := Etype (Rop);
+      Loc : constant Source_Ptr := Sloc (N);
+      Lop : constant Node_Id    := Left_Opnd (N);
+      Rop : constant Node_Id    := Right_Opnd (N);
+
+      --  Note: there are many referencs to Etype (Lop) and Etype (Rop). It
+      --  is thus tempting to capture these values, but due to the rewrites
+      --  that occur as a result of overflow checking, these values change
+      --  as we go along, and it is safe just to always use Etype explicitly.
 
       Restype : constant Entity_Id := Etype (N);
       --  Save result type
@@ -3743,19 +3761,24 @@ package body Exp_Ch4 is
       --  predicate, then we can just replace the right operand with an
       --  explicit range T'First .. T'Last, and use the explicit range code.
 
-      if Nkind (Rop) /= N_Range and then No (Predicate_Function (Rtype)) then
-         Rewrite (Rop,
-           Make_Range (Loc,
-             Low_Bound =>
-               Make_Attribute_Reference (Loc,
-                 Attribute_Name => Name_First,
-                 Prefix         => New_Reference_To (Rtype, Loc)),
-
-             High_Bound =>
-               Make_Attribute_Reference (Loc,
-                 Attribute_Name => Name_Last,
-                 Prefix         => New_Reference_To (Rtype, Loc))));
-         Analyze_And_Resolve (Rop, Rtype, Suppress => All_Checks);
+      if Nkind (Rop) /= N_Range
+        and then No (Predicate_Function (Etype (Rop)))
+      then
+         declare
+            Rtyp : constant Entity_Id := Etype (Rop);
+         begin
+            Rewrite (Rop,
+              Make_Range (Loc,
+                Low_Bound =>
+                  Make_Attribute_Reference (Loc,
+                    Attribute_Name => Name_First,
+                    Prefix         => New_Reference_To (Rtyp, Loc)),
+                High_Bound =>
+                  Make_Attribute_Reference (Loc,
+                    Attribute_Name => Name_Last,
+                    Prefix         => New_Reference_To (Rtyp, Loc))));
+            Analyze_And_Resolve (Rop, Rtyp, Suppress => All_Checks);
+         end;
       end if;
 
       --  Here for the explicit range case. Note that the bounds of the range
@@ -3763,7 +3786,7 @@ package body Exp_Ch4 is
 
       if Nkind (Rop) = N_Range then
          Minimize_Eliminate_Overflow_Checks
-           (Low_Bound (Rop),  Lo, Hi, Top_Level => False);
+           (Low_Bound (Rop), Lo, Hi, Top_Level => False);
          Minimize_Eliminate_Overflow_Checks
            (High_Bound (Rop), Lo, Hi, Top_Level => False);
 
@@ -3771,7 +3794,7 @@ package body Exp_Ch4 is
 
          --  Bignum case
 
-         if Is_RTE (Ltype, RE_Bignum)
+         if Is_RTE (Etype (Lop), RE_Bignum)
            or else Is_RTE (Etype (Low_Bound (Rop)), RE_Bignum)
            or else Is_RTE (Etype (High_Bound (Rop)), RE_Bignum)
          then
@@ -3841,9 +3864,9 @@ package body Exp_Ch4 is
          else
             --  Case where types are all the same
 
-            if Ltype = Etype (Low_Bound (Rop))
+            if Base_Type (Etype (Lop)) = Base_Type (Etype (Low_Bound (Rop)))
                  and then
-               Ltype = Etype (High_Bound (Rop))
+               Base_Type (Etype (Lop)) = Base_Type (Etype (High_Bound (Rop)))
             then
                null;
 
@@ -3862,7 +3885,8 @@ package body Exp_Ch4 is
             end if;
 
             --  Now the three operands are of the same signed integer type,
-            --  so we can use the normal expansion routine for membership.
+            --  so we can use the normal expansion routine for membership,
+            --  setting the flag to prevent recursion into this procedure.
 
             Set_No_Minimize_Eliminate (N);
             Expand_N_In (N);
@@ -3873,17 +3897,17 @@ package body Exp_Ch4 is
       --  the standard N_In circuitry with appropriate types.
 
       else
-         pragma Assert (Present (Predicate_Function (Rtype)));
+         pragma Assert (Present (Predicate_Function (Etype (Rop))));
 
          --  If types are "right", just call Expand_N_In preventing recursion
 
-         if Base_Type (Ltype) = Base_Type (Rtype) then
+         if Base_Type (Etype (Lop)) = Base_Type (Etype (Rop)) then
             Set_No_Minimize_Eliminate (N);
             Expand_N_In (N);
 
          --  Bignum case
 
-         elsif Is_RTE (Ltype, RE_Bignum) then
+         elsif Is_RTE (Etype (Lop), RE_Bignum) then
 
             --  For X in T, we want to insert code that looks like
 
@@ -3911,11 +3935,11 @@ package body Exp_Ch4 is
             --  A bit gruesome, but here goes.
 
             declare
-               Blk    : constant Node_Id   := Make_Bignum_Block (Loc);
-               Bnn    : constant Entity_Id := Make_Temporary (Loc, 'B', N);
-               Lnn    : constant Entity_Id := Make_Temporary (Loc, 'L', N);
-               Nnn    : constant Entity_Id := Make_Temporary (Loc, 'N', N);
-               Nin    : Node_Id;
+               Blk : constant Node_Id   := Make_Bignum_Block (Loc);
+               Bnn : constant Entity_Id := Make_Temporary (Loc, 'B', N);
+               Lnn : constant Entity_Id := Make_Temporary (Loc, 'L', N);
+               Nnn : constant Entity_Id := Make_Temporary (Loc, 'N', N);
+               Nin : Node_Id;
 
             begin
                --  The last membership test is marked to prevent recursion
@@ -3923,9 +3947,9 @@ package body Exp_Ch4 is
                Nin :=
                  Make_In (Loc,
                    Left_Opnd =>
-                     Convert_To (Base_Type (Rtype),
+                     Convert_To (Base_Type (Etype (Rop)),
                        New_Occurrence_Of (Lnn, Loc)),
-                   Right_Opnd => New_Occurrence_Of (Rtype, Loc));
+                   Right_Opnd => New_Occurrence_Of (Etype (Rop), Loc));
                Set_No_Minimize_Eliminate (Nin);
 
                --  Now decorate the block
@@ -3985,7 +4009,7 @@ package body Exp_Ch4 is
                                     New_Occurrence_Of (Lnn, Loc),
                                   Right_Opnd =>
                                     New_Occurrence_Of
-                                      (Base_Type (Rtype), Loc)),
+                                      (Base_Type (Etype (Rop)), Loc)),
                               Right_Opnd => Nin))))));
 
                Insert_Actions (N, New_List (
@@ -4001,10 +4025,10 @@ package body Exp_Ch4 is
             end;
 
          --  Not bignum case, but types don't match (this means we rewrote the
-         --  left operand to be Long_Long_Integer.
+         --  left operand to be Long_Long_Integer).
 
          else
-            pragma Assert (Base_Type (Ltype) = LLIB);
+            pragma Assert (Base_Type (Etype (Lop)) = LLIB);
 
             --  We rewrite the membership test as
 
@@ -4019,8 +4043,9 @@ package body Exp_Ch4 is
                Nin :=
                  Make_In (Loc,
                    Left_Opnd =>
-                     Convert_To (Base_Type (Rtype), Duplicate_Subexpr (Lop)),
-                   Right_Opnd => New_Occurrence_Of (Rtype, Loc));
+                     Convert_To (Base_Type (Etype (Rop)),
+                       Duplicate_Subexpr (Lop)),
+                   Right_Opnd => New_Occurrence_Of (Etype (Rop), Loc));
                Set_No_Minimize_Eliminate (Nin);
 
                --  Now do the rewrite
@@ -4031,7 +4056,7 @@ package body Exp_Ch4 is
                      Make_In (Loc,
                        Left_Opnd  => Lop,
                        Right_Opnd =>
-                         New_Occurrence_Of (Base_Type (Ltype), Loc)),
+                         New_Occurrence_Of (Base_Type (Etype (Lop)), Loc)),
                    Right_Opnd => Nin));
 
                Analyze_And_Resolve (N, Restype, Suppress => All_Checks);
@@ -4776,14 +4801,9 @@ package body Exp_Ch4 is
       Fexp    : Node_Id;
 
    begin
-      --  If Do_Overflow_Check is set, it means we are in MINIMIZED/ELIMINATED
-      --  mode, and all we do is to call Apply_Arithmetic_Overflow_Check to
-      --  ensure proper overflow handling for the dependent expressions. The
-      --  checks circuitry will rewrite the case expression in this case with
-      --  Do_Overflow_Checks off. so that when that rewritten node arrives back
-      --  here, then we will do the full expansion.
+      --  Check for MINIMIZED/ELIMINATED overflow mode
 
-      if Do_Overflow_Check (N) then
+      if Minimized_Eliminated_Overflow_Check (N) then
          Apply_Arithmetic_Overflow_Check (N);
          return;
       end if;
@@ -5170,6 +5190,13 @@ package body Exp_Ch4 is
       New_N   : Node_Id;
 
    begin
+      --  Check for MINIMIZED/ELIMINATED overflow mode
+
+      if Minimized_Eliminated_Overflow_Check (N) then
+         Apply_Arithmetic_Overflow_Check (N);
+         return;
+      end if;
+
       --  Fold at compile time if condition known. We have already folded
       --  static if expressions, but it is possible to fold any case in which
       --  the condition is known at compile time, even though the result is
@@ -5383,15 +5410,6 @@ package body Exp_Ch4 is
          --  the same approach as a C conditional expression.
 
       else
-         --  If Do_Overflow_Check is set it means we have a signed intger type
-         --  in MINIMIZED or ELIMINATED mode, so we apply an overflow check to
-         --  the if expression (to make sure that overflow checking is properly
-         --  handled for dependent expressions).
-
-         if Do_Overflow_Check (N) then
-            Apply_Arithmetic_Overflow_Check (N);
-         end if;
-
          return;
       end if;
 
@@ -5500,18 +5518,35 @@ package body Exp_Ch4 is
 
       --  Check case of explicit test for an expression in range of its
       --  subtype. This is suspicious usage and we replace it with a 'Valid
-      --  test and give a warning. For floating point types however, this is a
-      --  standard way to check for finite numbers, and using 'Valid would
-      --  typically be a pessimization. Also skip this test for predicated
-      --  types, since it is perfectly reasonable to check if a value meets
-      --  its predicate.
+      --  test and give a warning for scalar types.
 
       if Is_Scalar_Type (Ltyp)
+
+        --  Only relevant for source comparisons
+
+        and then Comes_From_Source (N)
+
+        --  In floating-point this is a standard way to check for finite values
+        --  and using 'Valid would typically be a pessimization.
+
         and then not Is_Floating_Point_Type (Ltyp)
+
+        --  Don't give the message unless right operand is a type entity and
+        --  the type of the left operand matches this type. Note that this
+        --  eliminates the cases where MINIMIZED/ELIMINATED mode overflow
+        --  checks have changed the type of the left operand.
+
         and then Nkind (Rop) in N_Has_Entity
         and then Ltyp = Entity (Rop)
-        and then Comes_From_Source (N)
+
+        --  Skip in VM mode, where we have no sense of invalid values. The
+        --  warning still seems relevant, but not important enough to worry.
+
         and then VM_Target = No_VM
+
+        --  Skip this for predicated types, where such expressions are a
+        --  reasonable way of testing if something meets the predicate.
+
         and then not (Is_Discrete_Type (Ltyp)
                        and then Present (Predicate_Function (Ltyp)))
       then
@@ -5564,15 +5599,30 @@ package body Exp_Ch4 is
             --  Could use some individual comments for this complex test ???
 
             if Is_Scalar_Type (Ltyp)
+
+              --  And left operand is X'First where X matches left operand
+              --  type (this eliminates cases of type mismatch, including
+              --  the cases where ELIMINATED/MINIMIZED mode has changed the
+              --  type of the left operand.
+
               and then Nkind (Lo_Orig) = N_Attribute_Reference
               and then Attribute_Name (Lo_Orig) = Name_First
               and then Nkind (Prefix (Lo_Orig)) in N_Has_Entity
               and then Entity (Prefix (Lo_Orig)) = Ltyp
+
+            --  Same tests for right operand
+
               and then Nkind (Hi_Orig) = N_Attribute_Reference
               and then Attribute_Name (Hi_Orig) = Name_Last
               and then Nkind (Prefix (Hi_Orig)) in N_Has_Entity
               and then Entity (Prefix (Hi_Orig)) = Ltyp
+
+              --  Relevant only for source cases
+
               and then Comes_From_Source (N)
+
+              --  Omit for VM cases, where we don't have invalid values
+
               and then VM_Target = No_VM
             then
                Substitute_Valid_Check;
@@ -6331,6 +6381,13 @@ package body Exp_Ch4 is
    begin
       Unary_Op_Validity_Checks (N);
 
+      --  Check for MINIMIZED/ELIMINATED overflow mode
+
+      if Minimized_Eliminated_Overflow_Check (N) then
+         Apply_Arithmetic_Overflow_Check (N);
+         return;
+      end if;
+
       --  Deal with software overflow checking
 
       if not Backend_Overflow_Checks_On_Target
@@ -6373,6 +6430,13 @@ package body Exp_Ch4 is
 
    begin
       Binary_Op_Validity_Checks (N);
+
+      --  Check for MINIMIZED/ELIMINATED overflow mode
+
+      if Minimized_Eliminated_Overflow_Check (N) then
+         Apply_Arithmetic_Overflow_Check (N);
+         return;
+      end if;
 
       --  N + 0 = 0 + N = N for integer types
 
@@ -6515,6 +6579,15 @@ package body Exp_Ch4 is
 
    begin
       Binary_Op_Validity_Checks (N);
+
+      --  Check for MINIMIZED/ELIMINATED overflow mode
+
+      if Minimized_Eliminated_Overflow_Check (N) then
+         Apply_Arithmetic_Overflow_Check (N);
+         return;
+      end if;
+
+      --  Otherwise proceed with expansion of division
 
       if Rknow then
          Rval := Expr_Value (Ropnd);
@@ -7284,19 +7357,9 @@ package body Exp_Ch4 is
          end;
       end if;
 
-      --  Normally we complete expansion of exponentiation (e.g. converting
-      --  to multplications) right here, but there is one exception to this.
-      --  If we have a signed integer type and the overflow checking mode
-      --  is MINIMIZED or ELIMINATED and overflow checking is activated, then
-      --  we don't yet want to expand, since that will intefere with handling
-      --  of extended precision intermediate value. In this situation we just
-      --  apply the arithmetic overflow check, and then the overflow check
-      --  circuit will re-expand the exponentiation node in CHECKED mode.
+      --  Check for MINIMIZED/ELIMINATED overflow mode
 
-      if Is_Signed_Integer_Type (Rtyp)
-        and then Overflow_Check_Mode (Typ) in Minimized_Or_Eliminated
-        and then Do_Overflow_Check (N)
-      then
+      if Minimized_Eliminated_Overflow_Check (N) then
          Apply_Arithmetic_Overflow_Check (N);
          return;
       end if;
@@ -7792,6 +7855,13 @@ package body Exp_Ch4 is
    begin
       Unary_Op_Validity_Checks (N);
 
+      --  Check for MINIMIZED/ELIMINATED overflow mode
+
+      if Minimized_Eliminated_Overflow_Check (N) then
+         Apply_Arithmetic_Overflow_Check (N);
+         return;
+      end if;
+
       if not Backend_Overflow_Checks_On_Target
          and then Is_Signed_Integer_Type (Etype (N))
          and then Do_Overflow_Check (N)
@@ -7819,10 +7889,11 @@ package body Exp_Ch4 is
    procedure Expand_N_Op_Mod (N : Node_Id) is
       Loc   : constant Source_Ptr := Sloc (N);
       Typ   : constant Entity_Id  := Etype (N);
-      Left  : constant Node_Id    := Left_Opnd (N);
-      Right : constant Node_Id    := Right_Opnd (N);
       DOC   : constant Boolean    := Do_Overflow_Check (N);
       DDC   : constant Boolean    := Do_Division_Check (N);
+
+      Left  : Node_Id;
+      Right : Node_Id;
 
       LLB : Uint;
       Llo : Uint;
@@ -7837,9 +7908,28 @@ package body Exp_Ch4 is
    begin
       Binary_Op_Validity_Checks (N);
 
+      --  Check for MINIMIZED/ELIMINATED overflow mode
+
+      if Minimized_Eliminated_Overflow_Check (N) then
+         Apply_Arithmetic_Overflow_Check (N);
+         return;
+      end if;
+
       if Is_Integer_Type (Etype (N)) then
          Apply_Divide_Checks (N);
+
+         --  All done if we don't have a MOD any more, which can happen as a
+         --  result of overflow expansion in MINIMIZED or ELIMINATED modes.
+
+         if Nkind (N) /= N_Op_Mod then
+            return;
+         end if;
       end if;
+
+      --  Proceed with expansion of mod operator
+
+      Left  := Left_Opnd (N);
+      Right := Right_Opnd (N);
 
       Determine_Range (Right, ROK, Rlo, Rhi, Assume_Valid => True);
       Determine_Range (Left,  LOK, Llo, Lhi, Assume_Valid => True);
@@ -7959,6 +8049,13 @@ package body Exp_Ch4 is
 
    begin
       Binary_Op_Validity_Checks (N);
+
+      --  Check for MINIMIZED/ELIMINATED overflow mode
+
+      if Minimized_Eliminated_Overflow_Check (N) then
+         Apply_Arithmetic_Overflow_Check (N);
+         return;
+      end if;
 
       --  Special optimizations for integer types
 
@@ -8482,6 +8579,13 @@ package body Exp_Ch4 is
    procedure Expand_N_Op_Plus (N : Node_Id) is
    begin
       Unary_Op_Validity_Checks (N);
+
+      --  Check for MINIMIZED/ELIMINATED overflow mode
+
+      if Minimized_Eliminated_Overflow_Check (N) then
+         Apply_Arithmetic_Overflow_Check (N);
+         return;
+      end if;
    end Expand_N_Op_Plus;
 
    ---------------------
@@ -8492,8 +8596,8 @@ package body Exp_Ch4 is
       Loc : constant Source_Ptr := Sloc (N);
       Typ : constant Entity_Id  := Etype (N);
 
-      Left  : constant Node_Id := Left_Opnd (N);
-      Right : constant Node_Id := Right_Opnd (N);
+      Left  : Node_Id;
+      Right : Node_Id;
 
       Lo : Uint;
       Hi : Uint;
@@ -8508,9 +8612,28 @@ package body Exp_Ch4 is
    begin
       Binary_Op_Validity_Checks (N);
 
+      --  Check for MINIMIZED/ELIMINATED overflow mode
+
+      if Minimized_Eliminated_Overflow_Check (N) then
+         Apply_Arithmetic_Overflow_Check (N);
+         return;
+      end if;
+
       if Is_Integer_Type (Etype (N)) then
          Apply_Divide_Checks (N);
+
+         --  All done if we don't have a REM any more, which can happen as a
+         --  result of overflow expansion in MINIMIZED or ELIMINATED modes.
+
+         if Nkind (N) /= N_Op_Rem then
+            return;
+         end if;
       end if;
+
+      --  Proceed with expansion of REM
+
+      Left  := Left_Opnd (N);
+      Right := Right_Opnd (N);
 
       --  Apply optimization x rem 1 = 0. We don't really need that with gcc,
       --  but it is useful with other back ends (e.g. AAMP), and is certainly
@@ -8623,6 +8746,13 @@ package body Exp_Ch4 is
 
    begin
       Binary_Op_Validity_Checks (N);
+
+      --  Check for MINIMIZED/ELIMINATED overflow mode
+
+      if Minimized_Eliminated_Overflow_Check (N) then
+         Apply_Arithmetic_Overflow_Check (N);
+         return;
+      end if;
 
       --  N - 0 = N for integer types
 
@@ -11626,6 +11756,18 @@ package body Exp_Ch4 is
       return Func_Body;
    end Make_Boolean_Array_Op;
 
+   -----------------------------------------
+   -- Minimized_Eliminated_Overflow_Check --
+   -----------------------------------------
+
+   function Minimized_Eliminated_Overflow_Check (N : Node_Id) return Boolean is
+   begin
+      return
+        Is_Signed_Integer_Type (Etype (N))
+          and then Do_Overflow_Check (N)
+          and then Overflow_Check_Mode (Empty) in Minimized_Or_Eliminated;
+   end Minimized_Eliminated_Overflow_Check;
+
    --------------------------------
    -- Optimize_Length_Comparison --
    --------------------------------
@@ -12216,7 +12358,7 @@ package body Exp_Ch4 is
          end if;
       end Is_Safe_Operand;
 
-   --  Start of processing for Is_Safe_In_Place_Array_Op
+   --  Start of processing for Safe_In_Place_Array_Op
 
    begin
       --  Skip this processing if the component size is different from system

@@ -142,7 +142,7 @@ package Checks is
    --  overflow checking for dependent expressions. This routine handles
    --  front end vs back end overflow checks (in the front end case it expands
    --  the necessary check). Note that divide is handled separately using
-   --  Apply_Arithmetic_Divide_Overflow_Check.
+   --  Apply_Divide_Checks.
 
    procedure Apply_Constraint_Check
      (N          : Node_Id;
