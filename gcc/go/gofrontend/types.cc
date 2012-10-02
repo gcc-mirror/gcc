@@ -4919,14 +4919,15 @@ Struct_type::write_equal_function(Gogo* gogo, Named_type* name)
 void
 Struct_type::do_reflection(Gogo* gogo, std::string* ret) const
 {
-  ret->append("struct { ");
+  ret->append("struct {");
 
   for (Struct_field_list::const_iterator p = this->fields_->begin();
        p != this->fields_->end();
        ++p)
     {
       if (p != this->fields_->begin())
-	ret->append("; ");
+	ret->push_back(';');
+      ret->push_back(' ');
       if (p->is_anonymous())
 	ret->push_back('?');
       else
@@ -4959,7 +4960,10 @@ Struct_type::do_reflection(Gogo* gogo, std::string* ret) const
 	}
     }
 
-  ret->append(" }");
+  if (!this->fields_->empty())
+    ret->push_back(' ');
+
+  ret->push_back('}');
 }
 
 // Mangled name.
@@ -8390,6 +8394,7 @@ Named_type::do_reflection(Gogo* gogo, std::string* ret) const
     }
   if (this->in_function_ != NULL)
     {
+      ret->push_back('\t');
       ret->append(Gogo::unpack_hidden_name(this->in_function_->name()));
       ret->push_back('$');
       if (this->in_function_index_ > 0)
@@ -8399,6 +8404,7 @@ Named_type::do_reflection(Gogo* gogo, std::string* ret) const
 	  ret->append(buf);
 	  ret->push_back('$');
 	}
+      ret->push_back('\t');
     }
   ret->append(Gogo::unpack_hidden_name(this->named_object_->name()));
 }
