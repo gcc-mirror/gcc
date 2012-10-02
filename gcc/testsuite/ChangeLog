@@ -1,3 +1,8 @@
+2012-10-02  Alexandre Oliva <aoliva@redhat.com>
+
+	PR debug/54551
+	* gcc.dg/guality/pr54551.c: New.
+
 2012-10-02  Pat Haugen <pthaugen@us.ibm.com>
 
 	* gcc.target/powerpc/pr46728-1.c: Accept xssqrtdp.
