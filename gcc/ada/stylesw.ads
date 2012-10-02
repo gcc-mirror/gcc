@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -254,6 +254,8 @@ package Stylesw is
    --    by a non-blank character.
    --
    --    A unary plus or minus may not be followed by a space
+   --
+   --    There must be one blank (and no other white space) between NOT and IN
    --
    --    A vertical bar must be surrounded by spaces
    --

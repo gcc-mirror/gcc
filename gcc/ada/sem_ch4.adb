@@ -3422,8 +3422,8 @@ package body Sem_Ch4 is
          if Is_Array_Type (Typ)
            and then Compile_Time_Known_Bounds (Typ)
            and then
-             (Expr_Value (Type_Low_Bound (Etype (First_Index (Typ))))
-               > Expr_Value (Type_High_Bound (Etype (First_Index (Typ)))))
+             (Expr_Value (Type_Low_Bound  (Etype (First_Index (Typ)))) >
+              Expr_Value (Type_High_Bound (Etype (First_Index (Typ)))))
          then
             Preanalyze_And_Resolve (Condition (N), Standard_Boolean);
 

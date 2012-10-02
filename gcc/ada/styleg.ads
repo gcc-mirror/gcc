@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -116,6 +116,10 @@ package Styleg is
    --  Called with Scan_Ptr pointing to the first line terminator terminating
    --  the current line, used to check for appropriate line terminator usage.
    --  The parameter Len is the length of the current line.
+
+   procedure Check_Not_In;
+   --  Called with Scan_Ptr pointing to an IN token, and Prev_Token_Ptr
+   --  pointing to a NOT token. Used to check proper layout of NOT IN.
 
    procedure Check_Pragma_Name;
    --  The current token is a pragma identifier. Check that it is spelled

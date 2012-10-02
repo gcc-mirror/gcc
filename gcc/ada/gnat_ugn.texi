@@ -6730,6 +6730,10 @@ A unary plus or minus may not be followed by a space.
 A vertical bar must be surrounded by spaces.
 @end itemize
 
+@item
+Exactly one blank (and no other white space) must appear between
+a @code{not} token and a following @code{in} token.
+
 @item ^u^UNNECESSARY_BLANK_LINES^
 @emph{Check unnecessary blank lines.}
 Unnecessary blank lines are not allowed. A blank line is considered

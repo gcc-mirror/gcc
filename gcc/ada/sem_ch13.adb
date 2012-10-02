@@ -2073,7 +2073,8 @@ package body Sem_Ch13 is
          Indexing_Found : Boolean;
 
          procedure Check_One_Function (Subp : Entity_Id);
-         --  Check one possible interpretation
+         --  Check one possible interpretation. Sets Indexing_Found True if an
+         --  indexing function is found.
 
          ------------------------
          -- Check_One_Function --
@@ -2096,10 +2097,11 @@ package body Sem_Ch13 is
 
             --  An indexing function must return either the default element of
             --  the container, or a reference type. For variable indexing it
-            --  must be latter.
+            --  must be the latter.
 
             if Present (Default_Element) then
                Analyze (Default_Element);
+
                if Is_Entity_Name (Default_Element)
                  and then Covers (Entity (Default_Element), Etype (Subp))
                then
@@ -2108,7 +2110,7 @@ package body Sem_Ch13 is
                end if;
             end if;
 
-            --  For variable_indexing the return type must be a reference type.
+            --  For variable_indexing the return type must be a reference type
 
             if Attr = Name_Variable_Indexing
               and then not Has_Implicit_Dereference (Etype (Subp))
@@ -2153,10 +2155,11 @@ package body Sem_Ch13 is
 
                   Get_Next_Interp (I, It);
                end loop;
+
                if not Indexing_Found then
-                  Error_Msg_NE (
-                   "aspect Indexing requires a function that applies to type&",
-                     Expr, Ent);
+                  Error_Msg_NE
+                    ("aspect Indexing requires a function that "
+                     & "applies to type&", Expr, Ent);
                end if;
             end;
          end if;
