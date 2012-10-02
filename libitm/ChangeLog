@@ -1,3 +1,9 @@
+2012-10-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/x86/target.h (struct gtm_jmpbuf): Merge x86_64
+	and ia32 declarations some more.
+	* config/x86/sjlj.S (_ITM_beginTransaction): Move ret to common code.
+
 2012-09-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/43620

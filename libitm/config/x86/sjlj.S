@@ -74,7 +74,6 @@ SYM(_ITM_beginTransaction):
 	call	SYM(GTM_begin_transaction)
 	addq	$56, %rsp
 	cfi_def_cfa_offset(8)
-	ret
 #else
 	leal	4(%esp), %ecx
 	movl	4(%esp), %eax
@@ -99,8 +98,8 @@ SYM(_ITM_beginTransaction):
 #endif
 	addl	$28, %esp
 	cfi_def_cfa_offset(4)
-	ret
 #endif
+	ret
 	cfi_endproc
 
 	TYPE(_ITM_beginTransaction)

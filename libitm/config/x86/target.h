@@ -24,11 +24,11 @@
 
 namespace GTM HIDDEN {
 
-#ifdef __x86_64__
 /* ??? This doesn't work for Win64.  */
 typedef struct gtm_jmpbuf
 {
   void *cfa;
+#ifdef __x86_64__
   unsigned long long rbx;
   unsigned long long rbp;
   unsigned long long r12;
@@ -36,18 +36,14 @@ typedef struct gtm_jmpbuf
   unsigned long long r14;
   unsigned long long r15;
   unsigned long long rip;
-} gtm_jmpbuf;
 #else
-typedef struct gtm_jmpbuf
-{
-  void *cfa;
   unsigned long ebx;
   unsigned long esi;
   unsigned long edi;
   unsigned long ebp;
   unsigned long eip;
-} gtm_jmpbuf;
 #endif
+} gtm_jmpbuf;
 
 /* x86 doesn't require strict alignment for the basic types.  */
 #define STRICT_ALIGNMENT 0
