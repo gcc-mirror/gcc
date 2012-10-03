@@ -118,3 +118,9 @@ Specifies whether interrupt functions should save and restore the accumulator re
 mpid
 Target Mask(PID)
 Enables Position-Independent-Data (PID) mode.
+
+;---------------------------------------------------
+
+mwarn-multiple-fast-interrupts
+Target Report Var(rx_warn_multiple_fast_interrupts) Init(1) Warning
+Warn when multiple, different, fast interrupt handlers are in the compilation unit.

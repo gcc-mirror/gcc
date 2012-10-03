@@ -859,6 +859,7 @@ See RS/6000 and PowerPC Options.
 -mmax-constant-size=@gol
 -mint-register=@gol
 -mpid@gol
+-mno-warn-multiple-fast-interrupts@gol
 -msave-acc-in-interrupts}
 
 @emph{S/390 and zSeries Options}
@@ -17874,6 +17875,15 @@ command line.
 
 By default this feature is not enabled.  The default can be restored
 via the @option{-mno-pid} command-line option.
+
+@item -mno-warn-multiple-fast-interrupts
+@itemx -mwarn-multiple-fast-interrupts
+@opindex mno-warn-multiple-fast-interrupts
+@opindex mwarn-multiple-fast-interrupts
+Prevents GCC from issuing a warning message if it finds more than one
+fast interrupt handler when it is compiling a file.  The default is to
+issue a warning for each extra fast interrupt handler found, as the RX
+only supports one such interrupt.
 
 @end table
 

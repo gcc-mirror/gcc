@@ -1,8 +1,20 @@
+2012-10-03  Nick Clifton  <nickc@redhat.com>
+
+	* config/rx/rx.c (struct decl_chain): New local structure.
+	(warned_decls): New local variable.  Contains a stack of decls for
+	which warnings have been issued.
+	(add_warned_decl): Adds a decl to the stack.
+	(already_warned): Returns true if a given decl is on the stack.
+	(rx_set_current_function): Issue a warning if multiple fast
+	interrupt handlers are defined.
+	* config/rx/rx.opt (mwarn-multiple-fast-interrupts): New option.
+	* doc/invoke.texi: Document the option.
+
 2012-09-03  Mark Kettenis  <kettenis@openbsd.org>
 
 	* config.gcc (*-*-openbsd4.[3-9]|*-*-openbsd[5-9]*): Set
 	default_use_cxa_atexit to yes.
-		
+
 2012-10-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/54792
