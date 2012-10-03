@@ -7682,6 +7682,7 @@ cxx_eval_constant_expression (const constexpr_call *call, tree t,
 	    /* Check that the LHS is constant and then discard it.  */
 	    cxx_eval_constant_expression (call, op0, allow_non_constant,
 					  false, non_constant_p);
+	    op1 = TREE_OPERAND (t, 1);
 	    r = cxx_eval_constant_expression (call, op1, allow_non_constant,
 					      addr, non_constant_p);
 	  }
