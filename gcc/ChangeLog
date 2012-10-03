@@ -1,3 +1,11 @@
+2012-10-03  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backported from mainline
+	2012-10-03  Andrew W. Nosenko <andrew.w.nosenko@gmail.com>
+
+	*  config/i386/driver-i386.c (host_detect_local_cpu): Fix logic
+	in SSE and YMM state support check for -march=native.
+
 2012-10-02  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backported from mainline

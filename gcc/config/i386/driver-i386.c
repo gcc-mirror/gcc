@@ -474,7 +474,8 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	 : "c" (XCR_XFEATURE_ENABLED_MASK));
 
   /* Check if SSE and YMM states are supported.  */
-  if ((eax & (XSTATE_SSE | XSTATE_YMM)) == (XSTATE_SSE | XSTATE_YMM))
+  if (!has_osxsave
+      || (eax & (XSTATE_SSE | XSTATE_YMM)) != (XSTATE_SSE | XSTATE_YMM))
     {
       has_avx = 0;
       has_fma = 0;
