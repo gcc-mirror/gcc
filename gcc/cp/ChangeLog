@@ -1,3 +1,10 @@
+2012-10-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/54777
+	* semantics.c (cxx_eval_constant_expression) <case COMPOUND_EXPR>: If
+	not ignoring the second operand, pass the original second operand
+	and not one with stripped nops to cxx_eval_constant_expression.
+
 2012-10-01  Jason Merrill  <jason@redhat.com>
 
 	* decl.c (check_initializer): Set DECL_NONTRIVIALLY_INITIALIZED_P
