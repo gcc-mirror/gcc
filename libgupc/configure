@@ -15090,17 +15090,16 @@ if test "${enable_upc_backtrace+set}" = set; then :
     *)
       as_fn_error "--enable-upc-backtrace accepts only yes or no" "$LINENO" 5
     esac
-    upc_backtrace=$enableval
 
 else
 
-    upc_backtrace=yes
+    enable_upc_backtrace=yes
 
 fi
 
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $upc_backtrace" >&5
-$as_echo "$upc_backtrace" >&6; }
-  if test "$upc_backtrace" = yes; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_upc_backtrace" >&5
+$as_echo "$enable_upc_backtrace" >&6; }
+  if test "$enable_upc_backtrace" = yes; then
 
 $as_echo "#define HAVE_UPC_BACKTRACE 1" >>confdefs.h
 
@@ -15255,7 +15254,8 @@ $as_echo "$upc_backtrace_signal" >&6; }
   fi
 
   # UPC source file/line backtrace requires BFD library
-  # Specify a location for BFD lib
+  if test "$enable_upc_backtrace" = yes; then
+    # Specify a location for BFD lib
 
 # Check whether --with-bfd was given.
 if test "${with_bfd+set}" = set; then :
@@ -15275,25 +15275,25 @@ if test "${with_bfd_lib+set}" = set; then :
 fi
 
 
-  if test "x$with_bfd" != x; then
-    bfdlibs="-L$with_bfd/lib $bfdlibs"
-    bfdinc="-I$with_bfd/include $bfdinc"
-  fi
-  if test "x$with_bfd_include" != x; then
-    bfdinc="-I$with_bfd_include $bfdinc"
-  fi
-  if test "x$with_bfd_lib" != x; then
-    bfdlibs="-L$with_bfd_lib $bfdlibs"
-  fi
+    if test "x$with_bfd" != x; then
+      bfdlibs="-L$with_bfd/lib $bfdlibs"
+      bfdinc="-I$with_bfd/include $bfdinc"
+    fi
+    if test "x$with_bfd_include" != x; then
+      bfdinc="-I$with_bfd_include $bfdinc"
+    fi
+    if test "x$with_bfd_lib" != x; then
+      bfdlibs="-L$with_bfd_lib $bfdlibs"
+    fi
 
-  have_bfd=yes
-  saved_CFLAGS="$CFLAGS"
-  saved_LIBS="$LIBS"
-  CFLAGS="$CFLAGS $bfdinc"
-  LIBS="$LIBS -lbfd -ldl"
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for the libbfd" >&5
+    have_bfd=yes
+    saved_CFLAGS="$CFLAGS"
+    saved_LIBS="$LIBS"
+    CFLAGS="$CFLAGS $bfdinc"
+    LIBS="$LIBS -lbfd -ldl"
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for the libbfd" >&5
 $as_echo_n "checking for the libbfd... " >&6; }
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 	#include <bfd.h>
@@ -15317,48 +15317,49 @@ $as_echo "no" >&6; }; have_bfd=no
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
-  CFLAGS="$saved_CFLAGS"
-  LIBS="$saved_LIBS"
+    CFLAGS="$saved_CFLAGS"
+    LIBS="$saved_LIBS"
 
-  if test "$have_bfd" = "yes"; then
+    if test "$have_bfd" = "yes"; then
 
 $as_echo "#define HAVE_LIBBFD 1" >>confdefs.h
 
-  fi
-
-  # Check for "-rdynamic" for UPC backtrace
-  case "${host}" in
-    *-*-darwin*)
-      if test x$build = x$host; then
-        export_sym_check="nm${exeext} -g"
-      elif test x$host = x$target; then
-        export_sym_check="$gcc_cv_nm -g"
-      else
-        export_sym_check=
-      fi
-    ;;
-    *)
-      if test x$build = x$host; then
-        export_sym_check="objdump${exeext} -T"
-      elif test x$host = x$target; then
-        export_sym_check="$gcc_cv_objdump -T"
-      else
-        export_sym_check=
-      fi
-    ;;
-  esac
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for -rdynamic" >&5
-$as_echo_n "checking for -rdynamic... " >&6; }
-  if test "x$export_sym_check" != x; then
-    echo "int main() {return 0;} int foobar() {return 0;}" > conftest.c
-    ${CC} ${CFLAGS} ${LDFLAGS} -rdynamic conftest.c \
-      -o conftest > /dev/null 2>&1
-    if $export_sym_check conftest | grep foobar > /dev/null; then
-      have_rdynamic=yes
     fi
-  fi
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_rdynamic" >&5
+
+    # Check for "-rdynamic" for UPC backtrace
+    case "${host}" in
+      *-*-darwin*)
+        if test x$build = x$host; then
+          export_sym_check="nm${exeext} -g"
+        elif test x$host = x$target; then
+          export_sym_check="$gcc_cv_nm -g"
+        else
+          export_sym_check=
+        fi
+      ;;
+      *)
+        if test x$build = x$host; then
+          export_sym_check="objdump${exeext} -T"
+        elif test x$host = x$target; then
+          export_sym_check="$gcc_cv_objdump -T"
+        else
+          export_sym_check=
+        fi
+      ;;
+    esac
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for -rdynamic" >&5
+$as_echo_n "checking for -rdynamic... " >&6; }
+    if test "x$export_sym_check" != x; then
+      echo "int main() {return 0;} int foobar() {return 0;}" > conftest.c
+      ${CC} ${CFLAGS} ${LDFLAGS} -rdynamic conftest.c \
+        -o conftest > /dev/null 2>&1
+      if $export_sym_check conftest | grep foobar > /dev/null; then
+        have_rdynamic=yes
+      fi
+    fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_rdynamic" >&5
 $as_echo "$have_rdynamic" >&6; }
+  fi
 
 fi #### End: SMP runtime configuration
 
@@ -15447,7 +15448,7 @@ else
   LIBGUPC_GUM_FALSE=
 fi
 
- if test "$upc_backtrace" = "yes"; then
+ if test "$enable_upc_backtrace" = "yes"; then
   LIBGUPC_BACKTRACE_TRUE=
   LIBGUPC_BACKTRACE_FALSE='#'
 else

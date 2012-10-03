@@ -51,6 +51,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /** Full path of the executable program.  */
 static char __upc_abs_execname[PATH_MAX];
 
+/** Backtrace on faults enabled flag.  */
+static int bt_enabled = 0;
+
 /** 
  * GLIBC backtrace.
  *
@@ -92,10 +95,10 @@ __upc_backtrace (void)
         strcpy (tracefile, file_env);
       else
         {
-	  strcpy (tracefile, "trace");
-          len = 5;
+	  strcpy (tracefile, "backtrace");
+          len = 9;
 	}
-      len = snprintf (&tracefile[len], 128, "-%d.%d", getpid (), MYTHREAD);
+      len = snprintf (&tracefile[len], 128, ".%d", MYTHREAD);
       traceout = fopen (tracefile, "w");
       if (!traceout)
 	__upc_fatal ("Cannot open file for backtrace log");
@@ -154,19 +157,11 @@ __upc_backtrace (void)
 void
 __upc_fatal_backtrace (void)
 {
-  char *env;
-  int bt_enabled = 0;
-
-  /* By default UPC backtrace is disabled. It is enabled by setting
-     the environment variable UPC_BACKTRACE=1. */
-  env = getenv (GUPCR_BACKTRACE_ENV);
-  if (env)
-    bt_enabled = atoi (env);
-  
   if (bt_enabled)
     {
 #ifdef HAVE_UPC_BACKTRACE_GDB
   	{
+	  char *env;
 	  const char *gdb;
           char pid_buf[GUPCR_BACKTRACE_PID_BUFLEN];
           int child_pid;
@@ -276,33 +271,23 @@ __upc_backtrace_handler (int sig __attribute__ ((unused)),
 
 /**
  * Backtrace fault handler.
+ *
+ * A fault happened and backtrace is enabled. Allow for only
+ * one thread to print the backtrace. The restore signal
+ * handlers to their default and return ensures that 
+ * signal terminates the thread and allows for the monitor
+ * thread to terminate all the other threads..
  */
 static void
-__upc_fault_handler (int sig,
+__upc_fault_handler (int sig __attribute__ ((unused)),
 	  	     siginfo_t *siginfo __attribute__ ((unused)),
 		     void *context __attribute__ ((unused)))
 {
-   
-    switch (sig)
-      {
-	case SIGABRT:
-	  __upc_fatal ("Abort signal.");
-	  break;
-	case SIGILL:
-	  __upc_fatal ("Illegal instruction.");
-	  break;
-	case SIGSEGV:
-	  __upc_fatal ("Segmentation fault.");
-	  break;
-	case SIGBUS:
-	  __upc_fatal ("BUS error.");
-	  break;
-	case SIGFPE:
-	  __upc_fatal ("FP exception.");
-	  break;
-	default:
-	  __upc_fatal ("Unknown signal.");
-      }
+  upc_info_p u = __upc_info;
+  if (u)
+    __upc_acquire_lock (&u->lock);
+  __upc_backtrace_restore_handlers ();
+  __upc_fatal_backtrace ();
 }
 
 /**
@@ -311,6 +296,7 @@ __upc_fault_handler (int sig,
 void
 __upc_backtrace_init (const char *execname)
 {
+  char *env;
   /* Find the full path for the executable. On linux systems we
      might be able to read "/proc/self/exe" to the get the full
      executable path. But, it is not portable. */
@@ -336,28 +322,29 @@ __upc_backtrace_init (const char *execname)
     }
   }
 #endif
-  {
-    /* Install signal handlers. */
-    struct sigaction act;
-    memset (&act, '\0', sizeof(act));
-    act.sa_sigaction = &__upc_fault_handler;
-    act.sa_flags = SA_SIGINFO;
-    if (sigaction(SIGABRT, &act, NULL) < 0) {
-      perror ("unable to install SIGABRT handler");
+
+  /* Install signal handlers only if backtrace is enabled.  */
+  env = getenv (GUPCR_BACKTRACE_ENV);
+  if (env)
+    bt_enabled = atoi (env);
+  
+  if (bt_enabled)
+    {
+      struct sigaction act;
+      memset (&act, '\0', sizeof(act));
+      act.sa_sigaction = &__upc_fault_handler;
+      act.sa_flags = SA_SIGINFO;
+      if (sigaction(SIGABRT, &act, NULL) < 0)
+        perror ("unable to install SIGABRT handler");
+      if (sigaction(SIGILL, &act, NULL) < 0)
+        perror ("unable to install SIGILL handler");
+      if (sigaction(SIGSEGV, &act, NULL) < 0)
+        perror ("unable to install SIGSEGV handler");
+      if (sigaction(SIGBUS, &act, NULL) < 0)
+        perror ("unable to install SIGBUS handler");
+      if (sigaction(SIGFPE, &act, NULL) < 0)
+        perror ("unable to install SIGFPE handler");
     }
-    if (sigaction(SIGILL, &act, NULL) < 0) {
-      perror ("unable to install SIGILL handler");
-    }
-    if (sigaction(SIGSEGV, &act, NULL) < 0) {
-      perror ("unable to install SIGSEGV handler");
-    }
-    if (sigaction(SIGBUS, &act, NULL) < 0) {
-      perror ("unable to install SIGBUS handler");
-    }
-    if (sigaction(SIGFPE, &act, NULL) < 0) {
-      perror ("unable to install SIGFPE handler");
-    }
-  }
 }
 
 /**

@@ -672,13 +672,12 @@ if test "$upc_runtime_model" = "smp"; then
     *)
       AC_MSG_ERROR([--enable-upc-backtrace accepts only yes or no])
     esac
-    upc_backtrace=$enableval
   ],
   [
-    upc_backtrace=yes
+    enable_upc_backtrace=yes
   ])
-  AC_MSG_RESULT($upc_backtrace)
-  if test "$upc_backtrace" = yes; then
+  AC_MSG_RESULT($enable_upc_backtrace)
+  if test "$enable_upc_backtrace" = yes; then
     AC_DEFINE(HAVE_UPC_BACKTRACE, 1,
       [Define to 1 if UPC backtrace is enabled.])
   fi
@@ -766,83 +765,85 @@ if test "$upc_runtime_model" = "smp"; then
   fi
 
   # UPC source file/line backtrace requires BFD library
-  # Specify a location for BFD lib
-  AC_ARG_WITH(bfd,
-  [AS_HELP_STRING([--with-bfd=PATH],
+  if test "$enable_upc_backtrace" = yes; then
+    # Specify a location for BFD lib
+    AC_ARG_WITH(bfd,
+    [AS_HELP_STRING([--with-bfd=PATH],
                 [specify prefix directory for the installed BFD library
                  needed to provide extended UPC backtrace information
                  (source file name and line numbers); equivalent to
                  --with-bfd-include=PATH/include
                  plus --with-bfd-lib=PATH/lib])])
-  AC_ARG_WITH(bfd-include,
-  [AS_HELP_STRING([--with-bfd-include=PATH],
+    AC_ARG_WITH(bfd-include,
+    [AS_HELP_STRING([--with-bfd-include=PATH],
                 [specify directory for installed BFD include files])])
-  AC_ARG_WITH(bfd-lib,
-  [AS_HELP_STRING([--with-bfd-lib=PATH],
+    AC_ARG_WITH(bfd-lib,
+    [AS_HELP_STRING([--with-bfd-lib=PATH],
                 [specify directory for the installed BFD library])])
 
-  if test "x$with_bfd" != x; then
-    bfdlibs="-L$with_bfd/lib $bfdlibs"
-    bfdinc="-I$with_bfd/include $bfdinc"
-  fi
-  if test "x$with_bfd_include" != x; then
-    bfdinc="-I$with_bfd_include $bfdinc"
-  fi
-  if test "x$with_bfd_lib" != x; then
-    bfdlibs="-L$with_bfd_lib $bfdlibs"
-  fi
+    if test "x$with_bfd" != x; then
+      bfdlibs="-L$with_bfd/lib $bfdlibs"
+      bfdinc="-I$with_bfd/include $bfdinc"
+    fi
+    if test "x$with_bfd_include" != x; then
+      bfdinc="-I$with_bfd_include $bfdinc"
+    fi
+    if test "x$with_bfd_lib" != x; then
+      bfdlibs="-L$with_bfd_lib $bfdlibs"
+    fi
 
-  have_bfd=yes
-  saved_CFLAGS="$CFLAGS"
-  saved_LIBS="$LIBS"
-  CFLAGS="$CFLAGS $bfdinc"
-  LIBS="$LIBS -lbfd -ldl"
-  AC_MSG_CHECKING([for the libbfd])
-  AC_TRY_LINK([
+    have_bfd=yes
+    saved_CFLAGS="$CFLAGS"
+    saved_LIBS="$LIBS"
+    CFLAGS="$CFLAGS $bfdinc"
+    LIBS="$LIBS -lbfd -ldl"
+    AC_MSG_CHECKING([for the libbfd])
+    AC_TRY_LINK([
 	#include <bfd.h>
 	bfd_error_type error;
 	void foo () { error = bfd_get_error (); }
 	],[ ],
-    [AC_MSG_RESULT([yes])], [AC_MSG_RESULT([no]); have_bfd=no ])
-  CFLAGS="$saved_CFLAGS"
-  LIBS="$saved_LIBS"
+      [AC_MSG_RESULT([yes])], [AC_MSG_RESULT([no]); have_bfd=no ])
+    CFLAGS="$saved_CFLAGS"
+    LIBS="$saved_LIBS"
 
-  if test "$have_bfd" = "yes"; then
-    AC_DEFINE(HAVE_LIBBFD, 1,
-      [Use BFD library for improved backtrace.])
-  fi
-
-  # Check for "-rdynamic" for UPC backtrace
-  case "${host}" in
-    *-*-darwin*)
-      if test x$build = x$host; then
-        export_sym_check="nm${exeext} -g"
-      elif test x$host = x$target; then
-        export_sym_check="$gcc_cv_nm -g"
-      else
-        export_sym_check=
-      fi
-    ;;
-    *)
-      if test x$build = x$host; then
-        export_sym_check="objdump${exeext} -T"
-      elif test x$host = x$target; then
-        export_sym_check="$gcc_cv_objdump -T"
-      else
-        export_sym_check=
-      fi
-    ;;
-  esac
-  AC_MSG_CHECKING([for -rdynamic])
-  if test "x$export_sym_check" != x; then
-    echo "int main() {return 0;} int foobar() {return 0;}" > conftest.c
-    ${CC} ${CFLAGS} ${LDFLAGS} -rdynamic conftest.c \
-      -o conftest > /dev/null 2>&1
-    if $export_sym_check conftest | grep foobar > /dev/null; then
-      have_rdynamic=yes
+    if test "$have_bfd" = "yes"; then
+      AC_DEFINE(HAVE_LIBBFD, 1,
+        [Use BFD library for improved backtrace.])
     fi
+
+    # Check for "-rdynamic" for UPC backtrace
+    case "${host}" in
+      *-*-darwin*)
+        if test x$build = x$host; then
+          export_sym_check="nm${exeext} -g"
+        elif test x$host = x$target; then
+          export_sym_check="$gcc_cv_nm -g"
+        else
+          export_sym_check=
+        fi
+      ;;
+      *)
+        if test x$build = x$host; then
+          export_sym_check="objdump${exeext} -T"
+        elif test x$host = x$target; then
+          export_sym_check="$gcc_cv_objdump -T"
+        else
+          export_sym_check=
+        fi
+      ;;
+    esac
+    AC_MSG_CHECKING([for -rdynamic])
+    if test "x$export_sym_check" != x; then
+      echo "int main() {return 0;} int foobar() {return 0;}" > conftest.c
+      ${CC} ${CFLAGS} ${LDFLAGS} -rdynamic conftest.c \
+        -o conftest > /dev/null 2>&1
+      if $export_sym_check conftest | grep foobar > /dev/null; then
+        have_rdynamic=yes
+      fi
+    fi
+    AC_MSG_RESULT([$have_rdynamic])
   fi
-  AC_MSG_RESULT([$have_rdynamic])
 
 fi #### End: SMP runtime configuration
 
@@ -883,7 +884,7 @@ AM_CONDITIONAL(LIBGUPC_PTHREADS, [test "$targ_runtime_pthreads" = "yes"])
 AM_CONDITIONAL(LIBGUPC_AFFINITY, [test "$upc_affinity" = "yes"])
 AM_CONDITIONAL(LIBGUPC_NUMA, [test "$upc_numa" = "yes"])
 AM_CONDITIONAL(LIBGUPC_GUM, [test "$upc_gum_debug" = "yes"])
-AM_CONDITIONAL(LIBGUPC_BACKTRACE, [test "$upc_backtrace" = "yes"])
+AM_CONDITIONAL(LIBGUPC_BACKTRACE, [test "$enable_upc_backtrace" = "yes"])
 AM_CONDITIONAL(LIBGUPC_BACKTRACE_SUP, [test "$have_bfd" = "yes"])
 
 AH_TOP(

@@ -1,3 +1,18 @@
+2012-10-02  nenad Vukicevic  <nenad@intrepid.com>
+
+	* configure.ac: Check for backtrace additional libraries only
+	if backtrace is enabled.
+	* configure: Regenerate.
+	* smp/upc_backtrace.c (__upc_backtrace): Change default trace
+	file to 'backtrace.THREAD-ID'.
+	(__upc-bactrace_init): Install backtrace signal handler only
+	if backtrace is enabled for faults.
+	(__upc_fault_handler): Do not announce signals, just restore
+	signals, print backtrace, and return.  This causes a signal to
+	be taken again, but this time monitor thread is informed.
+	(__upc_fatal_backtrace): No need to check env variable as signal
+	handler is conditionally installed.
+
 2012-09-26  Gary Funck  <gary@intrepid.com>
 
 	* collectives/upc_coll_sort.upc: Remove reference to
