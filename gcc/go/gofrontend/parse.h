@@ -206,8 +206,11 @@ class Parse
 				 Expression*, bool is_coloneq,
 				 Location);
   Named_object* init_var(const Typed_identifier&, Type*, Expression*,
-			 bool is_coloneq, bool type_from_init, bool* is_new);
+			 bool is_coloneq, bool type_from_init, bool* is_new,
+			 Expression_list* vars, Expression_list* vals);
   Named_object* create_dummy_global(Type*, Expression*, Location);
+  void finish_init_vars(Expression_list* vars, Expression_list* vals,
+			Location);
   void simple_var_decl_or_assignment(const std::string&, Location,
 				     bool may_be_composite_lit,
 				     Range_clause*, Type_switch*);
