@@ -619,8 +619,17 @@ parse_validate_atomic_model_option (const char* str)
   model_names[sh_atomic_model::soft_tcb] = "soft-tcb";
   model_names[sh_atomic_model::soft_imask] = "soft-imask";
 
+  const char* model_cdef_names[sh_atomic_model::num_models];
+  model_cdef_names[sh_atomic_model::none] = "NONE";
+  model_cdef_names[sh_atomic_model::soft_gusa] = "SOFT_GUSA";
+  model_cdef_names[sh_atomic_model::hard_llcs] = "HARD_LLCS";
+  model_cdef_names[sh_atomic_model::soft_tcb] = "SOFT_TCB";
+  model_cdef_names[sh_atomic_model::soft_imask] = "SOFT_IMASK";
+
   sh_atomic_model ret;
   ret.type = sh_atomic_model::none;
+  ret.name = model_names[sh_atomic_model::none];
+  ret.cdef_name = model_cdef_names[sh_atomic_model::none];
   ret.strict = false;
   ret.tcb_gbr_offset = -1;
 
@@ -646,6 +655,8 @@ parse_validate_atomic_model_option (const char* str)
       if (tokens.front () == model_names[i])
 	{
 	  ret.type = (sh_atomic_model::enum_type)i;
+	  ret.name = model_names[i];
+	  ret.cdef_name = model_cdef_names[i];
 	  goto got_mode_name;
 	}
 
@@ -677,25 +688,23 @@ got_mode_name:;
 
   if (ret.type == sh_atomic_model::soft_gusa && !TARGET_SH3)
     err_ret ("atomic model %s is only available on SH3 and SH4 targets",
-	     model_names[ret.type]);
+	     ret.name);
 
   if (ret.type == sh_atomic_model::hard_llcs && !TARGET_SH4A)
-    err_ret ("atomic model %s is only available on SH4A targets",
-	     model_names[ret.type]);
+    err_ret ("atomic model %s is only available on SH4A targets", ret.name);
 
   if (ret.type == sh_atomic_model::soft_tcb && ret.tcb_gbr_offset == -1)
-    err_ret ("atomic model %s requires gbr-offset parameter", 
-	     model_names[ret.type]);
+    err_ret ("atomic model %s requires gbr-offset parameter", ret.name);
 
   if (ret.type == sh_atomic_model::soft_tcb
       && (ret.tcb_gbr_offset < 0 || ret.tcb_gbr_offset > 1020
           || (ret.tcb_gbr_offset & 3) != 0))
     err_ret ("invalid gbr-offset value \"%d\" for atomic model %s; it must be "
 	     "a multiple of 4 in the range 0-1020", ret.tcb_gbr_offset,
-	     model_names[ret.type]);
+	     ret.name);
 
   if (ret.type == sh_atomic_model::soft_imask && TARGET_USERMODE)
-    err_ret ("cannot use atomic model %s in user mode", model_names[ret.type]);
+    err_ret ("cannot use atomic model %s in user mode", ret.name);
 
   return ret;
 
