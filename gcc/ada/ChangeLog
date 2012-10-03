@@ -1,3 +1,29 @@
+2012-10-03  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch6.adb: Minor typo fix.
+
+2012-10-03  Robert Dewar  <dewar@adacore.com>
+
+	* checks.adb (Apply_Arithmetic_Overflow_Minimized_Eliminated):
+	Set Top_Level properly (to False) for operand of range of
+	membership test.
+	* exp_ch4.adb (Expand_Membership_Minimize_Eliminate_Overflow):
+	Fix crash with -gnato3 and membership operations.
+	(Expand_Membership_Minimize_Eliminate_Overflow): Fix error message
+	and wrong results for -gnato3 large expression and predicated
+	subtype.
+	(Expand_Membership_Minimize_Eliminate_Overflow): Use
+	expression action node to avoid using insert actions (bombs in
+	some cases).
+	(Expand_Compare_Minimize_Eliminate_Overflow): Use expression action
+	node to avoid using insert actions (bombs in some cases).
+
+2012-10-03  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.adb (Set_CPP_Constructors_Old): Handle constructor of
+	untagged type that has all its parameters with defaults and hence it
+	covers the default constructor.
+
 2012-10-03  Yannick Moy  <moy@adacore.com>
 
 	* checks.adb, sem_prag.adb, s-bignum.ads: Minor typo fixes.

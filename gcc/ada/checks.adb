@@ -1101,17 +1101,16 @@ package body Checks is
 
       --  In all these cases, we will process at the higher level (and then
       --  this node will be processed during the downwards recursion that
-      --  is part of the processing in Minimize_Eliminate_Overflow_Checks.
+      --  is part of the processing in Minimize_Eliminate_Overflow_Checks).
 
       if Is_Signed_Integer_Arithmetic_Op (P)
-        or else Nkind (Op) in N_Membership_Test
-        or else Nkind (Op) in N_Op_Compare
+        or else Nkind (P) in N_Membership_Test
+        or else Nkind (P) in N_Op_Compare
 
         --  We may also be a range operand in a membership test
 
-        or else (Nkind (Op) = N_Range
-                  and then Nkind (Parent (Op)) in N_Membership_Test)
-
+        or else (Nkind (P) = N_Range
+                  and then Nkind (Parent (P)) in N_Membership_Test)
       then
          return;
       end if;
