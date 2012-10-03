@@ -1,3 +1,11 @@
+2012-10-03  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/50457
+	* config/sh/linux-atomic.S: Delete.
+	* config/sh/linux-atomic.c: New.
+	* config/sh/t-linux (LIB2ADD): Replace linux-atomic.S with
+	linux-atomic.c.  Add cflags to disable warnings.
+
 2012-10-02  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR other/53889
@@ -16,8 +24,8 @@
 
 2012-09-19  Mark Kettenis  <kettenis@openbsd.org>
 
-        * config.host (hppa-*-openbsd*): New target.
-        * config/pa/t-openbsd: New file.
+	* config.host (hppa-*-openbsd*): New target.
+	* config/pa/t-openbsd: New file.
 
 2012-09-15  Georg-Johann Lay  <avr@gjlay.de>
 
@@ -50,9 +58,9 @@
 
 2012-09-07  Teresa Johnson  <tejohnson@google.com>
 
-        PR gcov-profile/54487
+	PR gcov-profile/54487
 	* libgcc/libgcov.c (gcov_exit): Avoid warning on histogram
-        differences.
+	differences.
 
 2012-09-05  Georg-Johann Lay  <avr@gjlay.de>
 

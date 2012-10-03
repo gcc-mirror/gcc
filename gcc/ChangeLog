@@ -1,3 +1,16 @@
+2012-10-03  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/50457
+	* config/sh/sh.c (parse_validate_atomic_model_option): Handle name
+	strings in sh_atomic_model.
+	* config/sh/sh.h (TARGET_CPU_CPP_BUILTINS): Move macro implementation
+	to ...
+	* config/sh/sh-c.c (sh_cpu_cpp_builtins): ... this new function.
+	Add __SH1__ and __SH2__ defines.  Add __SH_ATOMIC_MODEL_*__ define.
+	* config/sh/sh-protos.h (sh_atomic_model): Add name and cdef_name
+	variables.
+	(sh_cpu_cpp_builtins): Declare new function.
+
 2012-10-03  Dehao Chen  <dehao@google.com>
 
 	PR middle-end/54782
