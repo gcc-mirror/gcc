@@ -1,3 +1,12 @@
+2012-10-03  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Allocator_Expression): Minor code
+	reorganization and cleanup. Done to ensure proper management of
+	the C++ constructor covering tagged and untagged types and also
+	non-default constructors.
+	* exp_ch6.ads, exp_ch6.adb (Make_CPP_Constructor_Call_In_Allocator):
+	New subprogram.
+
 2012-10-03  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_ch6.adb: Minor typo fix.

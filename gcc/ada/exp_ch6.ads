@@ -205,6 +205,16 @@ package Exp_Ch6 is
    --  for which Is_Build_In_Place_Call is True, or an N_Qualified_Expression
    --  node applied to such a function call.
 
+   procedure Make_CPP_Constructor_Call_In_Allocator
+     (Allocator     : Node_Id;
+      Function_Call : Node_Id);
+   --  Handle a call to a CPP constructor that occurs as the expression that
+   --  initializes an allocator, by passing access to the allocated object as
+   --  an additional parameter of the constructor call. A new access object is
+   --  declared that is initialized to the result of the allocator, passed to
+   --  the constructor, and the allocator is rewritten to refer to that access
+   --  object. Function_Call must denote a call to a CPP_Constructor function.
+
    function Needs_BIP_Alloc_Form (Func_Id : Entity_Id) return Boolean;
    --  Ada 2005 (AI-318-02): Return True if the function needs an implicit
    --  BIP_Alloc_Form parameter (see type BIP_Formal_Kind).
