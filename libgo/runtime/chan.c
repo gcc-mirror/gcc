@@ -87,7 +87,7 @@ runtime_makechan_c(ChanType *t, int64 hint)
 	Hchan *c;
 	int32 n;
 	const Type *elem;
-	
+
 	elem = t->__element_type;
 
 	if(hint < 0 || (int32)hint != hint || (elem->__size > 0 && (uintptr)hint > MaxMem / elem->__size))
@@ -191,7 +191,7 @@ runtime_chansend(ChanType *t, Hchan *c, byte *ep, bool *pres)
 	sg = dequeue(&c->recvq);
 	if(sg != nil) {
 		runtime_unlock(c);
-		
+
 		gp = sg->g;
 		gp->param = sg;
 		if(sg->elem != nil)
@@ -530,7 +530,7 @@ runtime_selectnbrecv(ChanType *t, byte *v, Hchan *c)
 
 	runtime_chanrecv(t, c, v, &selected, nil);
 	return selected;
-}	
+}
 
 // func selectnbrecv2(elem *any, ok *bool, c chan any) bool
 //
@@ -562,7 +562,7 @@ runtime_selectnbrecv2(ChanType *t, byte *v, _Bool *received, Hchan *c)
 	if(received != nil)
 		*received = r;
 	return selected;
-}	
+}
 
 // For reflect:
 //	func chansend(c chan, val iword, nb bool) (selected bool)
@@ -578,7 +578,7 @@ reflect_chansend(ChanType *t, Hchan *c, uintptr val, _Bool nb)
 	bool selected;
 	bool *sp;
 	byte *vp;
-	
+
 	if(nb) {
 		selected = false;
 		sp = (bool*)&selected;
@@ -697,7 +697,7 @@ runtime_selectsend(Select *sel, Hchan *c, void *elem, int index)
 	// nil cases do not compete
 	if(c == nil)
 		return;
-	
+
 	selectsend(sel, c, index, elem);
 }
 
@@ -706,7 +706,7 @@ selectsend(Select *sel, Hchan *c, int index, void *elem)
 {
 	int32 i;
 	Scase *cas;
-	
+
 	i = sel->ncase;
 	if(i >= sel->tcase)
 		runtime_throw("selectsend: too many cases");
@@ -977,7 +977,7 @@ loop:
 		case CaseRecv:
 			enqueue(&c->recvq, sg);
 			break;
-		
+
 		case CaseSend:
 			enqueue(&c->sendq, sg);
 			break;

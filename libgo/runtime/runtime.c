@@ -106,11 +106,15 @@ static byte**	argv;
 extern Slice os_Args asm ("os.Args");
 extern Slice syscall_Envs asm ("syscall.Envs");
 
+void (*runtime_sysargs)(int32, uint8**);
+
 void
 runtime_args(int32 c, byte **v)
 {
 	argc = c;
 	argv = v;
+	if(runtime_sysargs != nil)
+		runtime_sysargs(c, v);
 }
 
 void
@@ -234,7 +238,7 @@ runtime_showframe(const unsigned char *s)
 	
 	if(traceback < 0)
 		traceback = runtime_gotraceback();
-	return traceback > 1 || (__builtin_strchr((const char*)s, '.') != nil && __builtin_memcmp(s, "runtime.", 7) != 0);
+	return traceback > 1 || (s != nil && __builtin_strchr((const char*)s, '.') != nil && __builtin_memcmp(s, "runtime.", 7) != 0);
 }
 
 bool

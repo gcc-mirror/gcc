@@ -536,7 +536,7 @@ Found:
 			return p, err
 		}
 
-		pkg := string(pf.Name.Name)
+		pkg := pf.Name.Name
 		if pkg == "documentation" {
 			continue
 		}
@@ -570,7 +570,7 @@ Found:
 				if !ok {
 					continue
 				}
-				quoted := string(spec.Path.Value)
+				quoted := spec.Path.Value
 				path, err := strconv.Unquote(quoted)
 				if err != nil {
 					log.Panicf("%s: parser returned invalid quoted string: <%s>", filename, quoted)
@@ -678,7 +678,7 @@ func (ctxt *Context) shouldBuild(content []byte) bool {
 		}
 		line = bytes.TrimSpace(line)
 		if len(line) == 0 { // Blank line
-			end = cap(content) - cap(line) // &line[0] - &content[0]
+			end = len(content) - len(p)
 			continue
 		}
 		if !bytes.HasPrefix(line, slashslash) { // Not comment line

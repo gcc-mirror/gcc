@@ -24,12 +24,13 @@
 
 	where T, T1 and T2 can be marshaled by encoding/gob.
 	These requirements apply even if a different codec is used.
-	(In future, these requirements may soften for custom codecs.)
+	(In the future, these requirements may soften for custom codecs.)
 
 	The method's first argument represents the arguments provided by the caller; the
 	second argument represents the result parameters to be returned to the caller.
 	The method's return value, if non-nil, is passed back as a string that the client
-	sees as if created by errors.New.
+	sees as if created by errors.New.  If an error is returned, the reply parameter
+	will not be sent back to the client.
 
 	The server may handle requests on a single connection by calling ServeConn.  More
 	typically it will create a network listener and call Accept or, for an HTTP
@@ -181,7 +182,7 @@ type Response struct {
 
 // Server represents an RPC Server.
 type Server struct {
-	mu         sync.Mutex // protects the serviceMap
+	mu         sync.RWMutex // protects the serviceMap
 	serviceMap map[string]*service
 	reqLock    sync.Mutex // protects freeReq
 	freeReq    *Request
@@ -538,9 +539,9 @@ func (server *Server) readRequestHeader(codec ServerCodec) (service *service, mt
 		return
 	}
 	// Look up the request.
-	server.mu.Lock()
+	server.mu.RLock()
 	service = server.serviceMap[serviceMethod[0]]
-	server.mu.Unlock()
+	server.mu.RUnlock()
 	if service == nil {
 		err = errors.New("rpc: can't find service " + req.ServiceMethod)
 		return

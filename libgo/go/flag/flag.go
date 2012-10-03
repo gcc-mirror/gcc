@@ -33,7 +33,7 @@
 
 	After parsing, the arguments after the flag are available as the
 	slice flag.Args() or individually as flag.Arg(i).
-	The arguments are indexed from 0 up to flag.NArg().
+	The arguments are indexed from 0 through flag.NArg()-1.
 
 	Command line flag syntax:
 		-flag
@@ -707,7 +707,7 @@ func (f *FlagSet) parseOne() (bool, error) {
 	if fv, ok := flag.Value.(*boolValue); ok { // special case: doesn't need an arg
 		if has_value {
 			if err := fv.Set(value); err != nil {
-				f.failf("invalid boolean value %q for  -%s: %v", value, name, err)
+				return false, f.failf("invalid boolean value %q for  -%s: %v", value, name, err)
 			}
 		} else {
 			fv.Set("true")
