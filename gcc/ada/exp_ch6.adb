@@ -9121,6 +9121,96 @@ package body Exp_Ch6 is
       end if;
    end Make_Build_In_Place_Call_In_Object_Declaration;
 
+   --------------------------------------------
+   -- Make_CPP_Constructor_Call_In_Allocator --
+   --------------------------------------------
+
+   procedure Make_CPP_Constructor_Call_In_Allocator
+     (Allocator     : Node_Id;
+      Function_Call : Node_Id)
+   is
+      Loc         : constant Source_Ptr := Sloc (Function_Call);
+      Acc_Type    : constant Entity_Id := Etype (Allocator);
+      Function_Id : constant Entity_Id := Entity (Name (Function_Call));
+      Result_Subt : constant Entity_Id := Available_View (Etype (Function_Id));
+
+      New_Allocator     : Node_Id;
+      Return_Obj_Access : Entity_Id;
+      Tmp_Obj           : Node_Id;
+
+   begin
+      pragma Assert (Nkind (Allocator) = N_Allocator
+                       and then Nkind (Function_Call) = N_Function_Call);
+      pragma Assert (Convention (Function_Id) = Convention_CPP
+                       and then Is_Constructor (Function_Id));
+      pragma Assert (Is_Constrained (Underlying_Type (Result_Subt)));
+
+      --  Replace the initialized allocator of form "new T'(Func (...))" with
+      --  an uninitialized allocator of form "new T", where T is the result
+      --  subtype of the called function. The call to the function is handled
+      --  separately further below.
+
+      New_Allocator :=
+        Make_Allocator (Loc,
+          Expression => New_Reference_To (Result_Subt, Loc));
+      Set_No_Initialization (New_Allocator);
+
+      --  Copy attributes to new allocator. Note that the new allocator
+      --  logically comes from source if the original one did, so copy the
+      --  relevant flag. This ensures proper treatment of the restriction
+      --  No_Implicit_Heap_Allocations in this case.
+
+      Set_Storage_Pool      (New_Allocator, Storage_Pool      (Allocator));
+      Set_Procedure_To_Call (New_Allocator, Procedure_To_Call (Allocator));
+      Set_Comes_From_Source (New_Allocator, Comes_From_Source (Allocator));
+
+      Rewrite (Allocator, New_Allocator);
+
+      --  Create a new access object and initialize it to the result of the
+      --  new uninitialized allocator. Note: we do not use Allocator as the
+      --  Related_Node of Return_Obj_Access in call to Make_Temporary below
+      --  as this would create a sort of infinite "recursion".
+
+      Return_Obj_Access := Make_Temporary (Loc, 'R');
+      Set_Etype (Return_Obj_Access, Acc_Type);
+
+      --  Generate:
+      --    Rnnn : constant ptr_T := new (T);
+      --    Init (Rnn.all,...);
+
+      Tmp_Obj :=
+        Make_Object_Declaration (Loc,
+          Defining_Identifier => Return_Obj_Access,
+          Constant_Present    => True,
+          Object_Definition   => New_Reference_To (Acc_Type, Loc),
+          Expression          => Relocate_Node (Allocator));
+      Insert_Action (Allocator, Tmp_Obj);
+
+      Insert_List_After_And_Analyze (Tmp_Obj,
+        Build_Initialization_Call (Loc,
+          Id_Ref =>
+            Make_Explicit_Dereference (Loc,
+              Prefix => New_Reference_To (Return_Obj_Access, Loc)),
+          Typ => Etype (Function_Id),
+          Constructor_Ref => Function_Call));
+
+      --  Finally, replace the allocator node with a reference to the result of
+      --  the function call itself (which will effectively be an access to the
+      --  object created by the allocator).
+
+      Rewrite (Allocator, New_Reference_To (Return_Obj_Access, Loc));
+
+      --  Ada 2005 (AI-251): If the type of the allocator is an interface then
+      --  generate an implicit conversion to force displacement of the "this"
+      --  pointer.
+
+      if Is_Interface (Designated_Type (Acc_Type)) then
+         Rewrite (Allocator, Convert_To (Acc_Type, Relocate_Node (Allocator)));
+      end if;
+
+      Analyze_And_Resolve (Allocator, Acc_Type);
+   end Make_CPP_Constructor_Call_In_Allocator;
+
    -----------------------------------
    -- Needs_BIP_Finalization_Master --
    -----------------------------------
