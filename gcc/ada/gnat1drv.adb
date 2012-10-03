@@ -334,6 +334,12 @@ procedure Gnat1drv is
       if Opt.Suppress_Options.Overflow_Checks_General /= Not_Set then
          null;
 
+      --  By default suppress overflow checks in -gnatg mode
+
+      elsif GNAT_Mode then
+         Suppress_Options.Overflow_Checks_General    := Suppressed;
+         Suppress_Options.Overflow_Checks_Assertions := Suppressed;
+
       --  If we have backend divide and overflow checks, then by default
       --  overflow checks are minimized, which is a reasonable setting.
 

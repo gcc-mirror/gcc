@@ -7404,6 +7404,16 @@ package body Checks is
 
       elsif Top_Level
         and then not (Bignum_Operands or Long_Long_Integer_Operands)
+
+        --  One further refinement. If we are at the top level, but our parent
+        --  is a type conversion, then go into bignum or long long integer node
+        --  since the result will be converted to that type directly without
+        --  going through the result type, and we may avoid an overflow. This
+        --  is the case for example of Long_Long_Integer (A ** 4), where A is
+        --  of type Integer, and the result A ** 4 fits in Long_Long_Integer
+        --  but does not fit in Integer.
+
+        and then Nkind (Parent (N)) /= N_Type_Conversion
       then
          --  Here we will keep the original types, but we do need an overflow
          --  check, so we will set Do_Overflow_Check to True (actually it is
@@ -7561,12 +7571,6 @@ package body Checks is
 
       if Nkind (N) = N_Op_Expon and then Etype (Right_Opnd (N)) = LLIB then
          Convert_To_And_Rewrite (Standard_Natural, Right_Opnd (N));
-
-         --  Now Long_Long_Integer_Operands may have to be reset if that was
-         --  the only long long integer operand, i.e. we now have long long
-         --  integer operands only if the left operand is long long integer.
-
-         Long_Long_Integer_Operands := Etype (Left_Opnd (N)) = LLIB;
       end if;
 
       --  Here we will do the operation in Long_Long_Integer. We do this even

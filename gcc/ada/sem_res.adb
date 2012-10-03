@@ -9624,6 +9624,13 @@ package body Sem_Res is
             then
                null;
 
+            --  Never warn on conversion to Long_Long_Integer'Base since
+            --  that is most likely an artifact of the extended overflow
+            --  checking and comes from complex expanded code.
+
+            elsif Orig_T = Base_Type (Standard_Long_Long_Integer) then
+               null;
+
             --  Here we give the redundant conversion warning. If it is an
             --  entity, give the name of the entity in the message. If not,
             --  just mention the expression.

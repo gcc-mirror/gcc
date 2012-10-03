@@ -1,3 +1,23 @@
+2012-10-03  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (New_Overloaded_Entity): call
+	Append_Inherited_Subprogram when appropriate.
+	* sem_dim.adb (Analyze_Dimension_Call): Do not perform dimensional
+	analysis if call has previous semantic error.
+	* sem_util.ads, sem_util.adb (Append_Inherited_Subprogram):
+	new subprogram to handle properly the visibility of inherited
+	operations that are primitives of a type extension, when the
+	parent type and operations are declared in the same visible part.
+
+2012-10-03  Robert Dewar  <dewar@adacore.com>
+
+	* checks.adb (Minimize_Eliminate_Overflow_Checks): Properly
+	handle case of top level expression within type conversion
+	* gnat1drv.adb (Adjust_Global_Switches): Set SUPPRESSED as
+	default for overflow checking for -gnatg mode (includes run-time).
+	* sem_res.adb (Resolve_Type_Conversion): Avoid bogus warnings
+	about redundant conversions from MINIMIZED/EXTENDED mode checking
+
 2012-10-03  Javier Miranda  <miranda@adacore.com>
 
 	* exp_ch4.adb (Expand_N_Allocator_Expression): Minor code

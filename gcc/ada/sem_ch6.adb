@@ -8063,7 +8063,12 @@ package body Sem_Ch6 is
 
       Set_Homonym (S, E);
 
-      Append_Entity (S, Current_Scope);
+      if Is_Inherited_Operation (S) then
+         Append_Inherited_Subprogram (S);
+      else
+         Append_Entity (S, Current_Scope);
+      end if;
+
       Set_Public_Status (S);
 
       if Debug_Flag_E then
