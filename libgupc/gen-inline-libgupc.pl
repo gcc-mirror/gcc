@@ -38,7 +38,7 @@ my $tfile = shift @ARGV;
 open TEMPLATE, "<$tfile" or die "can't open template file: $tfile";
 my %bufs = ();
 my $buf;
-my $input_file;
+my $input_file = '';
 # Read the input files listed in @ARGV
 while (<>)
 {
@@ -47,7 +47,6 @@ while (<>)
       !defined ($buf)
         or die "missing '//end ${buf}': $input_file\n";
       $input_file = $ARGV;
-      warn "file: $input_file\n";
     }
   chomp;
   if (m{^//begin\s+(\w+)\s*$})
