@@ -1,3 +1,9 @@
+2012-10-03  Ian Lance Taylor  <iant@google.com>
+
+	* dwarf.c (read_uleb128): Fix overflow test.
+	(read_sleb128): Likewise.
+	(build_address_map): Don't change unit_buf.start.
+
 2012-10-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR other/54761
