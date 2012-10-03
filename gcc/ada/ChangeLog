@@ -1,3 +1,19 @@
+2012-10-03  Yannick Moy  <moy@adacore.com>
+
+	* checks.adb, sem_prag.adb, s-bignum.ads: Minor typo fixes.
+
+2012-10-03  Thomas Quinot  <quinot@adacore.com>
+
+	* g-socket.adb (Connect_Socket, version with timeout): When the
+	newly-connected socket is reported as available for writing, check
+	whether it has a pending asynchronous error prior to returning.
+
+2012-10-03  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Check_Conformance): Additional info when subtype
+	conformance fails, due to a missing null exclusion indicatar in
+	a formal that must match a controlling access formal.
+
 2012-10-02  Ben Brosgol  <brosgol@adacore.com>
 
 	* gnat_rm.texi: Minor editing.
