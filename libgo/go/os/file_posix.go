@@ -13,17 +13,6 @@ import (
 
 func sigpipe() // implemented in package runtime
 
-func epipecheck(file *File, e error) {
-	if e == syscall.EPIPE {
-		file.nepipe++
-		if file.nepipe >= 10 {
-			sigpipe()
-		}
-	} else {
-		file.nepipe = 0
-	}
-}
-
 // Link creates newname as a hard link to the oldname file.
 // If there is an error, it will be of type *LinkError.
 func Link(oldname, newname string) error {

@@ -386,17 +386,18 @@ func testTcpConnectionCloses(t *testing.T, req string, h Handler) {
 	}
 
 	r := bufio.NewReader(conn)
-	_, err = ReadResponse(r, &Request{Method: "GET"})
+	res, err := ReadResponse(r, &Request{Method: "GET"})
 	if err != nil {
 		t.Fatal("ReadResponse error:", err)
 	}
 
-	success := make(chan bool)
+	didReadAll := make(chan bool, 1)
 	go func() {
 		select {
 		case <-time.After(5 * time.Second):
-			t.Fatal("body not closed after 5s")
-		case <-success:
+			t.Error("body not closed after 5s")
+			return
+		case <-didReadAll:
 		}
 	}()
 
@@ -404,8 +405,11 @@ func testTcpConnectionCloses(t *testing.T, req string, h Handler) {
 	if err != nil {
 		t.Fatal("read error:", err)
 	}
+	didReadAll <- true
 
-	success <- true
+	if !res.Close {
+		t.Errorf("Response.Close = false; want true")
+	}
 }
 
 // TestServeHTTP10Close verifies that HTTP/1.0 requests won't be kept alive.
@@ -1105,6 +1109,38 @@ func TestServerBufferedChunking(t *testing.T) {
 	if !bytes.HasSuffix(conn.writeBuf.Bytes(), []byte("\r\n\r\n3\r\nxyz\r\n0\r\n\r\n")) {
 		t.Errorf("response didn't end with a single 3 byte 'xyz' chunk; got:\n%q",
 			conn.writeBuf.Bytes())
+	}
+}
+
+// TestContentLengthZero tests that for both an HTTP/1.0 and HTTP/1.1
+// request (both keep-alive), when a Handler never writes any
+// response, the net/http package adds a "Content-Length: 0" response
+// header.
+func TestContentLengthZero(t *testing.T) {
+	ts := httptest.NewServer(HandlerFunc(func(rw ResponseWriter, req *Request) {}))
+	defer ts.Close()
+
+	for _, version := range []string{"HTTP/1.0", "HTTP/1.1"} {
+		conn, err := net.Dial("tcp", ts.Listener.Addr().String())
+		if err != nil {
+			t.Fatalf("error dialing: %v", err)
+		}
+		_, err = fmt.Fprintf(conn, "GET / %v\r\nConnection: keep-alive\r\nHost: foo\r\n\r\n", version)
+		if err != nil {
+			t.Fatalf("error writing: %v", err)
+		}
+		req, _ := NewRequest("GET", "/", nil)
+		res, err := ReadResponse(bufio.NewReader(conn), req)
+		if err != nil {
+			t.Fatalf("error reading response: %v", err)
+		}
+		if te := res.TransferEncoding; len(te) > 0 {
+			t.Errorf("For version %q, Transfer-Encoding = %q; want none", version, te)
+		}
+		if cl := res.ContentLength; cl != 0 {
+			t.Errorf("For version %q, Content-Length = %v; want 0", version, cl)
+		}
+		conn.Close()
 	}
 }
 

@@ -715,6 +715,7 @@ go_net_files = \
 	go/net/lookup_unix.go \
 	go/net/mac.go \
 	go/net/net.go \
+	go/net/net_posix.go \
 	go/net/parse.go \
 	go/net/pipe.go \
 	go/net/port.go \
