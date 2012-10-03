@@ -1,3 +1,9 @@
+2012-10-03  Alexandre Oliva <aoliva@redhat.com>
+
+	PR debug/53135
+	* dwarf2out.c (value_format): Use block4 for dw_val_class_loc
+	when needed.
+
 2012-10-02  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backported from mainline
