@@ -11773,7 +11773,7 @@ package body Sem_Prag is
 
          --  MODE := SUPPRESSED | CHECKED | MINIMIZED | ELIMINATED
 
-         --  Note: MINIMIZED is allowed only if Long_Long_Integer'Size is 64
+         --  Note: ELIMINATED is allowed only if Long_Long_Integer'Size is 64
          --  since System.Bignums makes this assumption.
 
          when Pragma_Overflow_Checks => Overflow_Checks : declare

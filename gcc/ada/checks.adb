@@ -195,15 +195,15 @@ package body Checks is
 
    procedure Apply_Arithmetic_Overflow_Checked_Suppressed (N : Node_Id);
    --  Used to apply arithmetic overflow checks for all cases except operators
-   --  on signed arithmetic types in Minimized/Eliminate case (for which we
+   --  on signed arithmetic types in MINIMIZED/ELIMINATED case (for which we
    --  call Apply_Arithmetic_Overflow_Minimized_Eliminated below). N is always
    --  a signed integer arithmetic operator (if and case expressions are not
    --  included for this case).
 
    procedure Apply_Arithmetic_Overflow_Minimized_Eliminated (Op : Node_Id);
    --  Used to apply arithmetic overflow checks for the case where the overflow
-   --  checking mode is Minimized or Eliminated (and the Do_Overflow_Check flag
-   --  is known to be set) and we have an signed integer arithmetic op (which
+   --  checking mode is MINIMIZED or ELIMINATED (and the Do_Overflow_Check flag
+   --  is known to be set) and we have a signed integer arithmetic op (which
    --  includes the case of if and case expressions).
 
    procedure Apply_Division_Check
@@ -317,7 +317,7 @@ package body Checks is
    --  integer operands. This includes unary and binary operators, and also
    --  if and case expression nodes where the dependent expressions are of
    --  a signed integer type. These are the kinds of nodes for which special
-   --  handling applies in MINIMIZED or EXTENDED overflow checking mode.
+   --  handling applies in MINIMIZED or ELIMINATED overflow checking mode.
 
    function Range_Or_Validity_Checks_Suppressed
      (Expr : Node_Id) return Boolean;
@@ -774,7 +774,7 @@ package body Checks is
       then
          Apply_Arithmetic_Overflow_Checked_Suppressed (N);
 
-      --  Otherwise use the new routine for Minimized/Eliminated modes for
+      --  Otherwise use the new routine for MINIMIZED/ELIMINATED modes for
       --  the case of a signed integer arithmetic op, with Do_Overflow_Check
       --  set True, and the checking mode is Minimized_Or_Eliminated.
 
@@ -4468,7 +4468,7 @@ package body Checks is
       end if;
 
       --  Remainder of processing is for Checked case, and is unchanged from
-      --  earlier versions preceding the addition of Minimized/Eliminated.
+      --  earlier versions preceding the addition of MINIMIZED/ELIMINATED.
 
       --  Nothing to do if the range of the result is known OK. We skip this
       --  for conversions, since the caller already did the check, and in any

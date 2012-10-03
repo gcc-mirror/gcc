@@ -70,10 +70,11 @@ package System.Bignums is
    end record;
 
    type Bignum is access all Bignum_Data;
-   --  This the type that is used externally. Possibly this could be a private
-   --  type, but we leave the structure exposed for now. For one thing it helps
-   --  with debugging. Note that this package never shares an allocated Bignum
-   --  value, so for example for X + 0, a copy of X is returned, not X itself.
+   --  This is the type that is used externally. Possibly this could be a
+   --  private type, but we leave the structure exposed for now. For one
+   --  thing it helps with debugging. Note that this package never shares
+   --  an allocated Bignum value, so for example for X + 0, a copy of X is
+   --  returned, not X itself.
 
    --  Note: none of the subprograms in this package modify the Bignum_Data
    --  records referenced by Bignum arguments of mode IN.
