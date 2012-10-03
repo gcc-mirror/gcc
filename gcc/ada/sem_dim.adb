@@ -1508,10 +1508,12 @@ package body Sem_Dim is
 
    begin
       --  Aspect is an Ada 2012 feature. Note that there is no need to check
-      --  dimensions for calls that don't come from source.
+      --  dimensions for calls that don't come from source, or those that may
+      --  have semantic errors.
 
       if Ada_Version < Ada_2012
         or else not Comes_From_Source (N)
+        or else Error_Posted (N)
       then
          return;
       end if;

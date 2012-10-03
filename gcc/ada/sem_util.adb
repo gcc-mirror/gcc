@@ -279,6 +279,63 @@ package body Sem_Util is
       return Alignment (E) * System_Storage_Unit;
    end Alignment_In_Bits;
 
+   ---------------------------------
+   -- Append_Inherited_Subprogram --
+   ---------------------------------
+
+   procedure Append_Inherited_Subprogram (S : Entity_Id) is
+      Par : constant Entity_Id := Alias (S);
+      --  The parent subprogram
+
+      Scop : constant Entity_Id := Scope (Par);
+      --  The scope of definition of the parent subprogram
+
+      Typ : constant Entity_Id := Defining_Entity (Parent (S));
+      --  The derived type of which S is a primitive operation
+
+      Decl   : Node_Id;
+      Next_E : Entity_Id;
+
+   begin
+      if Ekind (Current_Scope) = E_Package
+        and then In_Private_Part (Current_Scope)
+        and then Has_Private_Declaration (Typ)
+        and then Is_Tagged_Type (Typ)
+        and then Scop = Current_Scope
+      then
+         --  The inherited operation is available at the earliest place after
+         --  the derived type declaration ( RM 7.3.1 (6/1)). This is only
+         --  relevant for type extensions. If the parent operation appears
+         --  after the type extension, the operation is not visible.
+
+         Decl := First
+                   (Visible_Declarations
+                     (Specification (Unit_Declaration_Node (Current_Scope))));
+         while Present (Decl) loop
+            if Nkind (Decl) = N_Private_Extension_Declaration
+              and then Defining_Entity (Decl) = Typ
+            then
+               if Sloc (Decl) > Sloc (Par) then
+                  Next_E := Next_Entity (Par);
+                  Set_Next_Entity (Par, S);
+                  Set_Next_Entity (S, Next_E);
+                  return;
+
+               else
+                  exit;
+               end if;
+            end if;
+
+            Next (Decl);
+         end loop;
+      end if;
+
+      --  If partial view is not a type extension, or it appears before the
+      --  subprogram declaration, insert normally at end of entity list.
+
+      Append_Entity (S, Current_Scope);
+   end Append_Inherited_Subprogram;
+
    -----------------------------------------
    -- Apply_Compile_Time_Constraint_Error --
    -----------------------------------------

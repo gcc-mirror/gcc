@@ -63,6 +63,12 @@ package Sem_Util is
    --  Otherwise Uint_0 is returned, indicating that the alignment of the
    --  entity is not yet known to the compiler.
 
+   procedure Append_Inherited_Subprogram (S : Entity_Id);
+   --  If the parent of the operation is declared in the visible part of
+   --  the current scope, the inherited operation is visible even though the
+   --  derived type that inherits the operation may be completed in the private
+   --  part of the current package.
+
    procedure Apply_Compile_Time_Constraint_Error
      (N      : Node_Id;
       Msg    : String;
