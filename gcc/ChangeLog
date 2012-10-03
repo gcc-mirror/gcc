@@ -1,5 +1,11 @@
 2012-10-03  Oleg Endo  <olegendo@gcc.gnu.org>
 
+	PR target/51244
+	* config/sh/sh.md (*mov_t_msb_neg): New insn and two accompanying
+	unnamed split patterns.
+
+2012-10-03  Oleg Endo  <olegendo@gcc.gnu.org>
+
 	PR target/50457
 	* config/sh/sh.c (parse_validate_atomic_model_option): Handle name
 	strings in sh_atomic_model.
