@@ -1,3 +1,8 @@
+2012-10-03  Andrew W. Nosenko <andrew.w.nosenko@gmail.com>
+
+	*  config/i386/driver-i386.c (host_detect_local_cpu): Fix logic
+	in SSE and YMM state support check for -march=native.
+
 2012-10-03  Nick Clifton  <nickc@redhat.com>
 
 	* config/rx/rx.c (struct decl_chain): New local structure.
