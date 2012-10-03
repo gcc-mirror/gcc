@@ -1,3 +1,12 @@
+2012-09-27  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* reginfo.c (max_regno_since_last_resize): New.
+	(reg_preferred_class, reg_alternate_class): Add assert.
+	(allocate_reg_info): Initialize allocated reg info.
+	(resize_reg_info): Make bigger reg_info and initialize new memory.
+	(reginfo_init): Initialize max_regno_since_last_resize.
+	(setup_reg_classes): Change assert.
+
 2012-10-03  Andrew W. Nosenko <andrew.w.nosenko@gmail.com>
 
 	*  config/i386/driver-i386.c (host_detect_local_cpu): Fix logic
