@@ -4816,10 +4816,10 @@ find_mem (struct mem_inc_info *mii, rtx *address_of_x)
 void
 find_modifiable_mems (rtx head, rtx tail)
 {
-  rtx insn;
+  rtx insn, next_tail = NEXT_INSN (tail);
   int success_in_block = 0;
 
-  for (insn = head; insn != tail; insn = NEXT_INSN (insn))
+  for (insn = head; insn != next_tail; insn = NEXT_INSN (insn))
     {
       struct mem_inc_info mii;
 
