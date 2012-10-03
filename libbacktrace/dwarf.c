@@ -524,10 +524,12 @@ read_uleb128 (struct dwarf_buf *buf)
 {
   uint64_t ret;
   unsigned int shift;
+  int overflow;
   unsigned char b;
 
   ret = 0;
   shift = 0;
+  overflow = 0;
   do
     {
       const unsigned char *p;
@@ -536,13 +538,16 @@ read_uleb128 (struct dwarf_buf *buf)
       if (!advance (buf, 1))
 	return 0;
       b = *p;
-      ret |= ((uint64_t) (b & 0x7f)) << shift;
+      if (shift < 64)
+	ret |= ((uint64_t) (b & 0x7f)) << shift;
+      else if (!overflow)
+	{
+	  dwarf_buf_error (buf, "LEB128 overflows uint64_t");
+	  overflow = 1;
+	}
       shift += 7;
     }
   while ((b & 0x80) != 0);
-
-  if (shift > 64)
-    dwarf_buf_error (buf, "LEB128 overflows uint64_5");
 
   return ret;
 }
@@ -554,10 +559,12 @@ read_sleb128 (struct dwarf_buf *buf)
 {
   uint64_t val;
   unsigned int shift;
+  int overflow;
   unsigned char b;
 
   val = 0;
   shift = 0;
+  overflow = 0;
   do
     {
       const unsigned char *p;
@@ -566,15 +573,18 @@ read_sleb128 (struct dwarf_buf *buf)
       if (!advance (buf, 1))
 	return 0;
       b = *p;
-      val |= ((uint64_t) (b & 0x7f)) << shift;
+      if (shift < 64)
+	val |= ((uint64_t) (b & 0x7f)) << shift;
+      else if (!overflow)
+	{
+	  dwarf_buf_error (buf, "signed LEB128 overflows uint64_t");
+	  overflow = 1;
+	}
       shift += 7;
     }
   while ((b & 0x80) != 0);
 
-  if (shift > 64)
-    dwarf_buf_error (buf, "signed LEB128 overflows uint64_t");
-
-  if ((b & 0x40) != 0)
+  if ((b & 0x40) != 0 && shift < 64)
     val |= ((uint64_t) -1) << shift;
 
   return (int64_t) val;
@@ -1262,7 +1272,6 @@ build_address_map (struct backtrace_state *state,
 	}
 
       unit_buf = info;
-      unit_buf.start = info.buf;
       unit_buf.left = len;
 
       if (!advance (&info, len))
