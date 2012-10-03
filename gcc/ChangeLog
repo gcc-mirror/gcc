@@ -1,4 +1,4 @@
-2012-09-27  Vladimir Makarov  <vmakarov@redhat.com>
+2012-10-03  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* reginfo.c (max_regno_since_last_resize): New.
 	(reg_preferred_class, reg_alternate_class): Add assert.
