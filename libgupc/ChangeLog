@@ -1,3 +1,8 @@
+2012-10-03  Gary Funck  <gary@intrepid.com>
+
+	* gen-inline-libgupc.pl: Add logic to check for //begin
+	directives with no matching end.
+
 2012-10-02  nenad Vukicevic  <nenad@intrepid.com>
 
 	* configure.ac: Check for backtrace additional libraries only

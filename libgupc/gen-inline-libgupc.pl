@@ -38,14 +38,22 @@ my $tfile = shift @ARGV;
 open TEMPLATE, "<$tfile" or die "can't open template file: $tfile";
 my %bufs = ();
 my $buf;
+my $input_file;
 # Read the input files listed in @ARGV
 while (<>)
 {
+  if ($input_file ne $ARGV)
+    {
+      !defined ($buf)
+        or die "missing '//end ${buf}': $input_file\n";
+      $input_file = $ARGV;
+      warn "file: $input_file\n";
+    }
   chomp;
   if (m{^//begin\s+(\w+)\s*$})
     {
       die "nested buffers not supported,"
-          . " last buffer is: $buf"
+          . " last buffer is '$buf': $input_file\n"
           if defined ($buf);
       $buf = $1;
       next;
@@ -53,9 +61,9 @@ while (<>)
   elsif (m{^//end\s+(\w+)\s*$})
     {
       my $endbuf = $1;
-      die "no matching begin for buffer: $endbuf"
+      die "no matching begin for buffer '$endbuf': $input_file\n"
           if !defined($buf);
-      die "buffer mismatch: $buf != $endbuf"
+      die "buffer mismatch, '$buf' != '$endbuf': $input_file\n"
           if $buf ne $endbuf;
       $buf = undef;
       next;
@@ -65,6 +73,8 @@ while (<>)
       $bufs{$buf} .= "$_\n";
     }
 }
+!defined ($buf)
+  or die "missing '//end ${buf}': $input_file\n";
 my $inline_attr = "__attribute__((__always_inline__))\nstatic inline";
 for $buf (keys %bufs)
 {
