@@ -1,3 +1,8 @@
+2012-10-03  Dehao Chen  <dehao@google.com>
+
+	PR middle-end/54782
+	* tree-cfg.c (move_block_to_fn): Update lexical block for phi_args.
+
 2012-10-03  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* reginfo.c (max_regno_since_last_resize): New.
