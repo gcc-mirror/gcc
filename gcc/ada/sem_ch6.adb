@@ -5764,7 +5764,7 @@ package body Sem_Ch6 is
                     and then TSS_Name /= TSS_Stream_Output
                   then
                      --  Here we have a definite conformance error. It is worth
-                     --  special casesing the error message for the case of a
+                     --  special casing the error message for the case of a
                      --  controlling formal (which excludes null).
 
                      if Is_Controlling_Formal (New_Formal) then

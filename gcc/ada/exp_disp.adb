@@ -8459,6 +8459,8 @@ package body Exp_Disp is
          P     : Node_Id;
          Parms : List_Id;
 
+         Covers_Default_Constructor : Entity_Id := Empty;
+
       begin
          --  Look for the constructor entities
 
@@ -8490,7 +8492,8 @@ package body Exp_Disp is
                            Make_Defining_Identifier (Loc,
                              Chars (Defining_Identifier (P))),
                          Parameter_Type =>
-                           New_Copy_Tree (Parameter_Type (P))));
+                           New_Copy_Tree (Parameter_Type (P)),
+                         Expression => New_Copy_Tree (Expression (P))));
                      Next (P);
                   end loop;
                end if;
@@ -8508,6 +8511,17 @@ package body Exp_Disp is
                Set_Convention     (Init, Convention_CPP);
                Set_Is_Public      (Init);
                Set_Has_Completion (Init);
+
+               --  If this constructor has parameters and all its parameters
+               --  have defaults then it covers the default constructor. The
+               --  semantic analyzer ensures that only one constructor with
+               --  defaults covers the default constructor.
+
+               if Present (Parameter_Specifications (Parent (E)))
+                 and then Needs_No_Actuals (E)
+               then
+                  Covers_Default_Constructor := Init;
+               end if;
             end if;
 
             Next_Entity (E);
@@ -8518,6 +8532,49 @@ package body Exp_Disp is
 
          if not Found then
             Set_Is_Abstract_Type (Typ);
+         end if;
+
+         --  Handle constructor that has all its parameters with defaults and
+         --  hence it covers the default constructor. We generate a wrapper IP
+         --  which calls the covering constructor.
+
+         if Present (Covers_Default_Constructor) then
+            declare
+               Body_Stmts        : List_Id;
+               Wrapper_Id        : Entity_Id;
+               Wrapper_Body_Node : Node_Id;
+            begin
+               Loc := Sloc (Covers_Default_Constructor);
+
+               Body_Stmts := New_List (
+                 Make_Procedure_Call_Statement (Loc,
+                   Name => New_Reference_To (Covers_Default_Constructor, Loc),
+                   Parameter_Associations => New_List (
+                     Make_Identifier (Loc, Name_uInit))));
+
+               Wrapper_Id := Make_Defining_Identifier (Loc,
+                 Make_Init_Proc_Name (Typ));
+
+               Wrapper_Body_Node :=
+                 Make_Subprogram_Body (Loc,
+                   Specification =>
+                     Make_Procedure_Specification (Loc,
+                       Defining_Unit_Name => Wrapper_Id,
+                       Parameter_Specifications => New_List (
+                         Make_Parameter_Specification (Loc,
+                           Defining_Identifier =>
+                             Make_Defining_Identifier (Loc, Name_uInit),
+                           Parameter_Type =>
+                             New_Reference_To (Typ, Loc)))),
+                   Declarations => No_List,
+                   Handled_Statement_Sequence =>
+                     Make_Handled_Sequence_Of_Statements (Loc,
+                       Statements => Body_Stmts,
+                       Exception_Handlers => No_List));
+
+               Discard_Node (Wrapper_Body_Node);
+               Set_Init_Proc (Typ, Wrapper_Id);
+            end;
          end if;
       end Set_CPP_Constructors_Old;
 
