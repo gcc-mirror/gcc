@@ -10,12 +10,15 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"mime"
+	"mime/multipart"
 	"net"
 	. "net/http"
 	"net/http/httptest"
 	"net/url"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"regexp"
 	"runtime"
@@ -25,21 +28,29 @@ import (
 )
 
 const (
-	testFile       = "testdata/file"
-	testFileLength = 11
+	testFile    = "testdata/file"
+	testFileLen = 11
 )
 
+type wantRange struct {
+	start, end int64 // range [start,end)
+}
+
 var ServeFileRangeTests = []struct {
-	start, end int
-	r          string
-	code       int
+	r      string
+	code   int
+	ranges []wantRange
 }{
-	{0, testFileLength, "", StatusOK},
-	{0, 5, "0-4", StatusPartialContent},
-	{2, testFileLength, "2-", StatusPartialContent},
-	{testFileLength - 5, testFileLength, "-5", StatusPartialContent},
-	{3, 8, "3-7", StatusPartialContent},
-	{0, 0, "20-", StatusRequestedRangeNotSatisfiable},
+	{r: "", code: StatusOK},
+	{r: "bytes=0-4", code: StatusPartialContent, ranges: []wantRange{{0, 5}}},
+	{r: "bytes=2-", code: StatusPartialContent, ranges: []wantRange{{2, testFileLen}}},
+	{r: "bytes=-5", code: StatusPartialContent, ranges: []wantRange{{testFileLen - 5, testFileLen}}},
+	{r: "bytes=3-7", code: StatusPartialContent, ranges: []wantRange{{3, 8}}},
+	{r: "bytes=20-", code: StatusRequestedRangeNotSatisfiable},
+	{r: "bytes=0-0,-2", code: StatusPartialContent, ranges: []wantRange{{0, 1}, {testFileLen - 2, testFileLen}}},
+	{r: "bytes=0-1,5-8", code: StatusPartialContent, ranges: []wantRange{{0, 2}, {5, 9}}},
+	{r: "bytes=0-1,5-", code: StatusPartialContent, ranges: []wantRange{{0, 2}, {5, testFileLen}}},
+	{r: "bytes=0-,1-,2-,3-,4-", code: StatusOK}, // ignore wasteful range request
 }
 
 func TestServeFile(t *testing.T) {
@@ -65,33 +76,81 @@ func TestServeFile(t *testing.T) {
 
 	// straight GET
 	_, body := getBody(t, "straight get", req)
-	if !equal(body, file) {
+	if !bytes.Equal(body, file) {
 		t.Fatalf("body mismatch: got %q, want %q", body, file)
 	}
 
 	// Range tests
-	for i, rt := range ServeFileRangeTests {
-		req.Header.Set("Range", "bytes="+rt.r)
-		if rt.r == "" {
-			req.Header["Range"] = nil
+	for _, rt := range ServeFileRangeTests {
+		if rt.r != "" {
+			req.Header.Set("Range", rt.r)
 		}
-		r, body := getBody(t, fmt.Sprintf("test %d", i), req)
-		if r.StatusCode != rt.code {
-			t.Errorf("range=%q: StatusCode=%d, want %d", rt.r, r.StatusCode, rt.code)
+		resp, body := getBody(t, fmt.Sprintf("range test %q", rt.r), req)
+		if resp.StatusCode != rt.code {
+			t.Errorf("range=%q: StatusCode=%d, want %d", rt.r, resp.StatusCode, rt.code)
 		}
 		if rt.code == StatusRequestedRangeNotSatisfiable {
 			continue
 		}
-		h := fmt.Sprintf("bytes %d-%d/%d", rt.start, rt.end-1, testFileLength)
-		if rt.r == "" {
-			h = ""
+		wantContentRange := ""
+		if len(rt.ranges) == 1 {
+			rng := rt.ranges[0]
+			wantContentRange = fmt.Sprintf("bytes %d-%d/%d", rng.start, rng.end-1, testFileLen)
 		}
-		cr := r.Header.Get("Content-Range")
-		if cr != h {
-			t.Errorf("header mismatch: range=%q: got %q, want %q", rt.r, cr, h)
+		cr := resp.Header.Get("Content-Range")
+		if cr != wantContentRange {
+			t.Errorf("range=%q: Content-Range = %q, want %q", rt.r, cr, wantContentRange)
 		}
-		if !equal(body, file[rt.start:rt.end]) {
-			t.Errorf("body mismatch: range=%q: got %q, want %q", rt.r, body, file[rt.start:rt.end])
+		ct := resp.Header.Get("Content-Type")
+		if len(rt.ranges) == 1 {
+			rng := rt.ranges[0]
+			wantBody := file[rng.start:rng.end]
+			if !bytes.Equal(body, wantBody) {
+				t.Errorf("range=%q: body = %q, want %q", rt.r, body, wantBody)
+			}
+			if strings.HasPrefix(ct, "multipart/byteranges") {
+				t.Errorf("range=%q content-type = %q; unexpected multipart/byteranges", rt.r)
+			}
+		}
+		if len(rt.ranges) > 1 {
+			typ, params, err := mime.ParseMediaType(ct)
+			if err != nil {
+				t.Errorf("range=%q content-type = %q; %v", rt.r, ct, err)
+				continue
+			}
+			if typ != "multipart/byteranges" {
+				t.Errorf("range=%q content-type = %q; want multipart/byteranges", rt.r)
+				continue
+			}
+			if params["boundary"] == "" {
+				t.Errorf("range=%q content-type = %q; lacks boundary", rt.r, ct)
+			}
+			if g, w := resp.ContentLength, int64(len(body)); g != w {
+				t.Errorf("range=%q Content-Length = %d; want %d", rt.r, g, w)
+			}
+			mr := multipart.NewReader(bytes.NewReader(body), params["boundary"])
+			for ri, rng := range rt.ranges {
+				part, err := mr.NextPart()
+				if err != nil {
+					t.Fatalf("range=%q, reading part index %d: %v", rt.r, ri, err)
+				}
+				body, err := ioutil.ReadAll(part)
+				if err != nil {
+					t.Fatalf("range=%q, reading part index %d body: %v", rt.r, ri, err)
+				}
+				wantContentRange = fmt.Sprintf("bytes %d-%d/%d", rng.start, rng.end-1, testFileLen)
+				wantBody := file[rng.start:rng.end]
+				if !bytes.Equal(body, wantBody) {
+					t.Errorf("range=%q: body = %q, want %q", rt.r, body, wantBody)
+				}
+				if g, w := part.Header.Get("Content-Range"), wantContentRange; g != w {
+					t.Errorf("range=%q: part Content-Range = %q; want %q", rt.r, g, w)
+				}
+			}
+			_, err = mr.NextPart()
+			if err != io.EOF {
+				t.Errorf("range=%q; expected final error io.EOF; got %v", err)
+			}
 		}
 	}
 }
@@ -276,6 +335,11 @@ func TestServeFileMimeType(t *testing.T) {
 }
 
 func TestServeFileFromCWD(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		// TODO(brainman): find out why this test is broken
+		t.Logf("Temporarily skipping test on Windows; see http://golang.org/issue/3917")
+		return
+	}
 	ts := httptest.NewServer(HandlerFunc(func(w ResponseWriter, r *Request) {
 		ServeFile(w, r, "fs_test.go")
 	}))
@@ -323,6 +387,139 @@ func TestServeIndexHtml(t *testing.T) {
 		}
 		res.Body.Close()
 	}
+}
+
+func TestFileServerZeroByte(t *testing.T) {
+	ts := httptest.NewServer(FileServer(Dir(".")))
+	defer ts.Close()
+
+	res, err := Get(ts.URL + "/..\x00")
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		t.Fatal("reading Body:", err)
+	}
+	if res.StatusCode == 200 {
+		t.Errorf("got status 200; want an error. Body is:\n%s", string(b))
+	}
+}
+
+type fakeFileInfo struct {
+	dir      bool
+	basename string
+	modtime  time.Time
+	ents     []*fakeFileInfo
+	contents string
+}
+
+func (f *fakeFileInfo) Name() string       { return f.basename }
+func (f *fakeFileInfo) Sys() interface{}   { return nil }
+func (f *fakeFileInfo) ModTime() time.Time { return f.modtime }
+func (f *fakeFileInfo) IsDir() bool        { return f.dir }
+func (f *fakeFileInfo) Size() int64        { return int64(len(f.contents)) }
+func (f *fakeFileInfo) Mode() os.FileMode {
+	if f.dir {
+		return 0755 | os.ModeDir
+	}
+	return 0644
+}
+
+type fakeFile struct {
+	io.ReadSeeker
+	fi   *fakeFileInfo
+	path string // as opened
+}
+
+func (f *fakeFile) Close() error               { return nil }
+func (f *fakeFile) Stat() (os.FileInfo, error) { return f.fi, nil }
+func (f *fakeFile) Readdir(count int) ([]os.FileInfo, error) {
+	if !f.fi.dir {
+		return nil, os.ErrInvalid
+	}
+	var fis []os.FileInfo
+	for _, fi := range f.fi.ents {
+		fis = append(fis, fi)
+	}
+	return fis, nil
+}
+
+type fakeFS map[string]*fakeFileInfo
+
+func (fs fakeFS) Open(name string) (File, error) {
+	name = path.Clean(name)
+	f, ok := fs[name]
+	if !ok {
+		println("fake filesystem didn't find file", name)
+		return nil, os.ErrNotExist
+	}
+	return &fakeFile{ReadSeeker: strings.NewReader(f.contents), fi: f, path: name}, nil
+}
+
+func TestDirectoryIfNotModified(t *testing.T) {
+	const indexContents = "I am a fake index.html file"
+	fileMod := time.Unix(1000000000, 0).UTC()
+	fileModStr := fileMod.Format(TimeFormat)
+	dirMod := time.Unix(123, 0).UTC()
+	indexFile := &fakeFileInfo{
+		basename: "index.html",
+		modtime:  fileMod,
+		contents: indexContents,
+	}
+	fs := fakeFS{
+		"/": &fakeFileInfo{
+			dir:     true,
+			modtime: dirMod,
+			ents:    []*fakeFileInfo{indexFile},
+		},
+		"/index.html": indexFile,
+	}
+
+	ts := httptest.NewServer(FileServer(fs))
+	defer ts.Close()
+
+	res, err := Get(ts.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(b) != indexContents {
+		t.Fatalf("Got body %q; want %q", b, indexContents)
+	}
+	res.Body.Close()
+
+	lastMod := res.Header.Get("Last-Modified")
+	if lastMod != fileModStr {
+		t.Fatalf("initial Last-Modified = %q; want %q", lastMod, fileModStr)
+	}
+
+	req, _ := NewRequest("GET", ts.URL, nil)
+	req.Header.Set("If-Modified-Since", lastMod)
+
+	res, err = DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res.StatusCode != 304 {
+		t.Fatalf("Code after If-Modified-Since request = %v; want 304", res.StatusCode)
+	}
+	res.Body.Close()
+
+	// Advance the index.html file's modtime, but not the directory's.
+	indexFile.modtime = indexFile.modtime.Add(1 * time.Hour)
+
+	res, err = DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res.StatusCode != 200 {
+		t.Fatalf("Code after second If-Modified-Since request = %v; want 200; res is %#v", res.StatusCode, res)
+	}
+	res.Body.Close()
 }
 
 func TestServeContent(t *testing.T) {
@@ -463,16 +660,4 @@ func TestLinuxSendfileChild(*testing.T) {
 	if err != nil {
 		panic(err)
 	}
-}
-
-func equal(a, b []byte) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	for i := range a {
-		if a[i] != b[i] {
-			return false
-		}
-	}
-	return true
 }

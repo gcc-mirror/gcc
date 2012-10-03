@@ -128,7 +128,7 @@ func index(item interface{}, indices ...interface{}) (interface{}, error) {
 			if x := v.MapIndex(index); x.IsValid() {
 				v = x
 			} else {
-				v = reflect.Zero(v.Type().Key())
+				v = reflect.Zero(v.Type().Elem())
 			}
 		default:
 			return nil, fmt.Errorf("can't index item of type %s", index.Type())
@@ -154,7 +154,7 @@ func length(item interface{}) (int, error) {
 
 // Function invocation
 
-// call returns the result of evaluating the the first argument as a function.
+// call returns the result of evaluating the first argument as a function.
 // The function must return 1 result, or 2 results, the second of which is an error.
 func call(fn interface{}, args ...interface{}) (interface{}, error) {
 	v := reflect.ValueOf(fn)
