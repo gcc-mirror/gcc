@@ -8,7 +8,7 @@
 /* { dg-final { scan-assembler-times "div0s" 25 } } */
 /* { dg-final { scan-assembler-not "tst" } } */
 
-// typedef unsigned char bool;
+typedef unsigned char bool;
 
 int other_func_a (int, int);
 int other_func_b (int, int);
