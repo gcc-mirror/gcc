@@ -1,5 +1,18 @@
 2012-10-04  Robert Dewar  <dewar@adacore.com>
 
+	* sem_res.adb (Resolve_Set_Membership): Warn on duplicates.
+
+2012-10-04  Emmanuel Briot  <briot@adacore.com>
+
+	* g-comlin.adb (Getopt): Fix value of Full_Switch returned in case of
+	invalid switch.
+
+2012-10-04  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/Make-lang.in: Update dependencies.
+
+2012-10-04  Robert Dewar  <dewar@adacore.com>
+
 	* sem_eval.adb (Fold_Str, Fold_Uint, Fold_Ureal): Reset static
 	expression state after Resolve call.
 
