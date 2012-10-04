@@ -243,6 +243,8 @@ format_lex (void)
     {
     case '-':
       negative_flag = 1;
+      /* Falls through.  */
+
     case '+':
       c = next_char_not_space (&error);
       if (!ISDIGIT (c))
@@ -4117,6 +4119,7 @@ gfc_free_wait (gfc_wait *wait)
   gfc_free_expr (wait->iostat);
   gfc_free_expr (wait->iomsg);
   gfc_free_expr (wait->id);
+  free (wait);
 }
 
 
