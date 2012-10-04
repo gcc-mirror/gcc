@@ -503,6 +503,19 @@ proc cleanup-stack-usage { } {
     }
 }
 
+# Remove an Ada spec file for the current test.
+proc cleanup-ada-spec { } {
+    set testcase [testname-for-summary]
+    remove-build-file "[get_ada_spec_filename $testcase]"
+
+    # Clean up files for additional source files.
+    if [info exists additional_sources] {
+	foreach srcfile $additional_sources {
+	    remove-build-file "[get_ada_spec_filename $srcfile]"
+	}
+    }
+}
+
 # Remove all dump files with the provided suffix.
 proc cleanup-dump { suffix } {
     set testcase [testname-for-summary]

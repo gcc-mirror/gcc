@@ -1,5 +1,14 @@
 2012-10-04  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* lib/gcc-dg.exp (cleanup-ada-spec): New procedure.
+	* lib/scanasm.exp (get_ada_spec_filename): Likewise.
+	(scan-ada-spec): Likewise.
+	(scan-ada-spec-not): Likewise.
+	* gcc.dg/dump-ada-spec-1.c: New test.
+	* g++.dg/other/dump-ada-spec-1.C: Likewise.
+
+2012-10-04  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc.dg/lto/20120723_0.c: Skip on SPARC 32-bit.
 
 2012-10-04  Florian Weimer  <fweimer@redhat.com>
