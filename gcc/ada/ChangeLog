@@ -1,3 +1,18 @@
+2012-10-04  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.adb (Set_CPP_Constructors_Old): Removed.
+	(Set_CPP_Constructors): Code cleanup.
+
+2012-10-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch10.adb (Is_Ancestor_Unit): Make global, for use elsewhere.
+	(Install_Private_with_Clauses): if clause is private and limited,
+	do not install the limited view if the library unit is an ancestor
+	of the unit being compiled.  This unusual configuration occurs
+	when compiling a unit DDP, when an ancestor P of DDP has a
+	private limited with clause on a descendant of P that is itself
+	an ancestor of DDP.
+
 2012-10-04  Vincent Celier  <celier@adacore.com>
 
 	* prj-proc.adb (Process_Package_Declaration): Use project
