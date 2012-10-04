@@ -1,3 +1,10 @@
+2012-10-04  Tobias Burnus  <burnus@net-b.de>
+
+	* gcc.c (record_temp_file, add_sysrooted_prefix, process_command,
+	do_self_spec, compare_debug_dump_opt_spec_function): Plug memleaks.
+	(do_spec_1): Ditto, fix out-of-bound access.
+	* opts.c (common_handle_option): Plug memleak.
+
 2012-10-04  Jason Merrill  <jason@redhat.com>
 
 	* config/darwin.c (darwin_assemble_visibility): Treat
