@@ -1,3 +1,7 @@
+2012-10-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/lto/20120723_0.c: Skip on SPARC 32-bit.
+
 2012-10-04  Florian Weimer  <fweimer@redhat.com>
 
 	* c-c++-common/cpp/diagnostic-pragma-1.c: New testcase.
