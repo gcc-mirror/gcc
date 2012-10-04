@@ -6636,7 +6636,7 @@ fi
 # Disable exceptions and RTTI if building with g++
 noexception_flags=
 save_CFLAGS="$CFLAGS"
-for real_option in -fno-exceptions -fno-rtti; do
+for real_option in -fno-exceptions -fno-rtti -fasynchronous-unwind-tables; do
   # Do the check with the no- prefix removed since gcc silently
   # accepts any -Wno-* option on purpose
   case $real_option in

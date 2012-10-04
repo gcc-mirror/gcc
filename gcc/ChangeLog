@@ -1,3 +1,8 @@
+2012-10-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* configure.ac (noexception_flags): Add -fasynchronous-unwind-tables.
+	* configure: Regenerate.
+
 2012-10-04  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.c (sh_can_use_simple_return_p): Return false for
@@ -188,9 +193,8 @@
 	* tree-ssa-sccvn.c (vn_reference_lookup_3): For VECTOR_TYPE
 	CONSTRUCTORs, don't do anything if element type is VECTOR_TYPE,
 	and don't check index.
-	* tree-vect-slp.c (vect_get_constant_vectors): VIEW_CONVERT_EXPR
-	ctor elements first if their type isn't compatible with vector
-	element type.
+	* tree-vect-slp.c (vect_get_constant_vectors): VIEW_CONVERT_EXPR ctor
+	elements first if their type isn't compatible with vector element type.
 
 2012-10-02  Eric Botcazou  <ebotcazou@adacore.com>
 
