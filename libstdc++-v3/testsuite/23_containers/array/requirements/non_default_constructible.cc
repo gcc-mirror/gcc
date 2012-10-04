@@ -1,6 +1,7 @@
-// { dg-options "-std=gnu++0x" }
-//
-// Copyright (C) 2011-2012 Free Software Foundation, Inc.
+// { dg-options "-std=gnu++11" }
+// { dg-do compile }
+
+// Copyright (C) 2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,30 +19,30 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <array>
-#include <testsuite_hooks.h>
+#include <typeindex>
+#include <typeinfo>
 
-void
-test01() 
+template < typename ...Types >
+union super_union;
+
+template < >
+union super_union<>
 {
-  bool test __attribute__((unused)) = true;
+  static  auto optioned_types() -> std::array<std::type_index, 0>
+  { return std::array<std::type_index, 0>{ {} }; }
+};
 
-  const size_t len = 0;
-  typedef std::array<int, len> array_type;
-
-  // 1: ?
-  array_type a = { };
-
-  // 2
-  array_type b;
-
-  // 3
-  // begin() == end()
-  VERIFY( a.begin() == a.end() );
-  VERIFY( b.begin() == b.end() );
-}
-
-int main()
+template < typename Head, typename ...Tail >
+union super_union<Head, Tail...>
 {
-  test01();
-  return 0;
-}
+  static
+  auto optioned_types() -> std::array<std::type_index, 1 + sizeof...(Tail)>
+  {
+    using std::type_index;
+
+    return { {type_index(typeid(Head)), type_index(typeid(Tail))...} };
+  }
+
+  Head                  data;
+  super_union<Tail...>  rest;
+};
