@@ -1,3 +1,7 @@
+2012-10-04  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* btest.c (f23): Avoid uninitialized variable warning.
+	
 2012-10-04  Ian Lance Taylor  <iant@google.com>
 
 	* dwarf.c: If the system header files do not declare strnlen,
