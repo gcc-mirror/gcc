@@ -5325,6 +5325,7 @@ gfc_match_select_type (void)
   char name[GFC_MAX_SYMBOL_LEN];
   bool class_array;
   gfc_symbol *sym;
+  gfc_namespace *parent_ns;
 
   m = gfc_match_label ();
   if (m == MATCH_ERROR)
@@ -5404,7 +5405,9 @@ gfc_match_select_type (void)
   return MATCH_YES;
   
 cleanup:
-  gfc_current_ns = gfc_current_ns->parent;
+  parent_ns = gfc_current_ns->parent;
+  gfc_free_namespace (gfc_current_ns);
+  gfc_current_ns = parent_ns;
   return m;
 }
 

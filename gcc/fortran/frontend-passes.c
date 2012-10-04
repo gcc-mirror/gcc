@@ -1177,7 +1177,7 @@ optimize_trim (gfc_expr *e)
   /* Set the end of the reference to the call to len_trim.  */
 
   ref->u.ss.end = fcn;
-  gcc_assert (*rr == NULL);
+  gcc_assert (rr != NULL && *rr == NULL);
   *rr = ref;
   return true;
 }

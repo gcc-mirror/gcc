@@ -543,7 +543,7 @@ match_level_2 (gfc_expr **result)
 static match
 match_level_3 (gfc_expr **result)
 {
-  gfc_expr *all, *e, *total;
+  gfc_expr *all, *e, *total = NULL;
   locus where;
   match m;
 
@@ -560,12 +560,12 @@ match_level_3 (gfc_expr **result)
 
       m = match_level_2 (&e);
       if (m == MATCH_NO)
-	{
-	  gfc_error (expression_syntax);
-	  gfc_free_expr (all);
-	}
+	gfc_error (expression_syntax);
       if (m != MATCH_YES)
-	return MATCH_ERROR;
+	{
+	  gfc_free_expr (all);
+	  return MATCH_ERROR;
+	}
 
       total = gfc_concat (all, e);
       if (total == NULL)

@@ -449,7 +449,7 @@ gfc_compare_derived_types (gfc_symbol *derived1, gfc_symbol *derived2)
       /* Make sure that link lists do not put this function into an 
 	 endless recursive loop!  */
       if (!(dt1->ts.type == BT_DERIVED && derived1 == dt1->ts.u.derived)
-	    && !(dt1->ts.type == BT_DERIVED && derived1 == dt1->ts.u.derived)
+	    && !(dt2->ts.type == BT_DERIVED && derived2 == dt2->ts.u.derived)
 	    && gfc_compare_types (&dt1->ts, &dt2->ts) == 0)
 	return 0;
 
@@ -641,8 +641,12 @@ gfc_check_operator_interface (gfc_symbol *sym, gfc_intrinsic_op op,
 				&& op != INTRINSIC_NOT)
       || (args == 2 && op == INTRINSIC_NOT))
     {
-      gfc_error ("Operator interface at %L has the wrong number of arguments",
-		 &sym->declared_at);
+      if (op == INTRINSIC_ASSIGN)
+	gfc_error ("Assignment operator interface at %L must have "
+		   "two arguments", &sym->declared_at);
+      else
+	gfc_error ("Operator interface at %L has the wrong number of arguments",
+		   &sym->declared_at);
       return false;
     }
 
@@ -654,12 +658,6 @@ gfc_check_operator_interface (gfc_symbol *sym, gfc_intrinsic_op op,
 	{
 	  gfc_error ("Assignment operator interface at %L must be "
 		     "a SUBROUTINE", &sym->declared_at);
-	  return false;
-	}
-      if (args != 2)
-	{
-	  gfc_error ("Assignment operator interface at %L must have "
-		     "two arguments", &sym->declared_at);
 	  return false;
 	}
 
@@ -2149,7 +2147,7 @@ get_sym_storage_size (gfc_symbol *sym)
     return 0;
   for (i = 0; i < sym->as->rank; i++)
     {
-      if (!sym->as || sym->as->upper[i]->expr_type != EXPR_CONSTANT
+      if (sym->as->upper[i]->expr_type != EXPR_CONSTANT
 	  || sym->as->lower[i]->expr_type != EXPR_CONSTANT)
 	return 0;
 
@@ -2224,9 +2222,7 @@ get_expr_storage_size (gfc_expr *e)
 	  continue;
 	}
 
-      if (ref->type == REF_ARRAY && ref->u.ar.type == AR_SECTION
-	  && ref->u.ar.start && ref->u.ar.end && ref->u.ar.stride
-	  && ref->u.ar.as->upper)
+      if (ref->type == REF_ARRAY && ref->u.ar.type == AR_SECTION)
 	for (i = 0; i < ref->u.ar.dimen; i++)
 	  {
 	    long int start, end, stride;

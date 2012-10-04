@@ -2445,7 +2445,7 @@ gfc_get_derived_type (gfc_symbol * derived)
 	  || c->ts.u.derived->backend_decl == NULL)
 	c->ts.u.derived->backend_decl = gfc_get_derived_type (c->ts.u.derived);
 
-      if (c->ts.u.derived && c->ts.u.derived->attr.is_iso_c)
+      if (c->ts.u.derived->attr.is_iso_c)
         {
           /* Need to copy the modified ts from the derived type.  The
              typespec was modified because C_PTR/C_FUNPTR are translated
