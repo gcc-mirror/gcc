@@ -8447,152 +8447,49 @@ package body Exp_Disp is
 
    procedure Set_CPP_Constructors (Typ : Entity_Id) is
 
-      procedure Set_CPP_Constructors_Old (Typ : Entity_Id);
-      --  For backward compatibility this routine handles CPP constructors
-      --  of non-tagged types.
+      function Gen_Parameters_Profile (E : Entity_Id) return List_Id;
+      --  Duplicate the parameters profile of the imported C++ constructor
+      --  adding an access to the object as an additional parameter.
 
-      procedure Set_CPP_Constructors_Old (Typ : Entity_Id) is
-         Loc   : Source_Ptr;
-         Init  : Entity_Id;
-         E     : Entity_Id;
-         Found : Boolean := False;
-         P     : Node_Id;
+      function Gen_Parameters_Profile (E : Entity_Id) return List_Id is
+         Loc   : constant Source_Ptr := Sloc (E);
          Parms : List_Id;
-
-         Covers_Default_Constructor : Entity_Id := Empty;
+         P     : Node_Id;
 
       begin
-         --  Look for the constructor entities
+         Parms :=
+           New_List (
+             Make_Parameter_Specification (Loc,
+               Defining_Identifier =>
+                 Make_Defining_Identifier (Loc, Name_uInit),
+               Parameter_Type      => New_Reference_To (Typ, Loc)));
 
-         E := Next_Entity (Typ);
-         while Present (E) loop
-            if Ekind (E) = E_Function
-              and then Is_Constructor (E)
-            then
-               --  Create the init procedure
-
-               Found := True;
-               Loc   := Sloc (E);
-               Init  := Make_Defining_Identifier (Loc,
-                          Make_Init_Proc_Name (Typ));
-               Parms :=
-                 New_List (
-                   Make_Parameter_Specification (Loc,
-                     Defining_Identifier =>
-                       Make_Defining_Identifier (Loc, Name_X),
-                     Parameter_Type =>
-                       New_Reference_To (Typ, Loc)));
-
-               if Present (Parameter_Specifications (Parent (E))) then
-                  P := First (Parameter_Specifications (Parent (E)));
-                  while Present (P) loop
-                     Append_To (Parms,
-                       Make_Parameter_Specification (Loc,
-                         Defining_Identifier =>
-                           Make_Defining_Identifier (Loc,
-                             Chars (Defining_Identifier (P))),
-                         Parameter_Type =>
-                           New_Copy_Tree (Parameter_Type (P)),
-                         Expression => New_Copy_Tree (Expression (P))));
-                     Next (P);
-                  end loop;
-               end if;
-
-               Discard_Node (
-                 Make_Subprogram_Declaration (Loc,
-                   Make_Procedure_Specification (Loc,
-                     Defining_Unit_Name => Init,
-                     Parameter_Specifications => Parms)));
-
-               Set_Init_Proc (Typ, Init);
-               Set_Is_Imported    (Init);
-               Set_Is_Constructor (Init);
-               Set_Interface_Name (Init, Interface_Name (E));
-               Set_Convention     (Init, Convention_CPP);
-               Set_Is_Public      (Init);
-               Set_Has_Completion (Init);
-
-               --  If this constructor has parameters and all its parameters
-               --  have defaults then it covers the default constructor. The
-               --  semantic analyzer ensures that only one constructor with
-               --  defaults covers the default constructor.
-
-               if Present (Parameter_Specifications (Parent (E)))
-                 and then Needs_No_Actuals (E)
-               then
-                  Covers_Default_Constructor := Init;
-               end if;
-            end if;
-
-            Next_Entity (E);
-         end loop;
-
-         --  If there are no constructors, mark the type as abstract since we
-         --  won't be able to declare objects of that type.
-
-         if not Found then
-            Set_Is_Abstract_Type (Typ);
+         if Present (Parameter_Specifications (Parent (E))) then
+            P := First (Parameter_Specifications (Parent (E)));
+            while Present (P) loop
+               Append_To (Parms,
+                 Make_Parameter_Specification (Loc,
+                   Defining_Identifier =>
+                     Make_Defining_Identifier (Loc,
+                       Chars => Chars (Defining_Identifier (P))),
+                   Parameter_Type      => New_Copy_Tree (Parameter_Type (P)),
+                   Expression          => New_Copy_Tree (Expression (P))));
+               Next (P);
+            end loop;
          end if;
 
-         --  Handle constructor that has all its parameters with defaults and
-         --  hence it covers the default constructor. We generate a wrapper IP
-         --  which calls the covering constructor.
-
-         if Present (Covers_Default_Constructor) then
-            declare
-               Body_Stmts        : List_Id;
-               Wrapper_Id        : Entity_Id;
-               Wrapper_Body_Node : Node_Id;
-            begin
-               Loc := Sloc (Covers_Default_Constructor);
-
-               Body_Stmts := New_List (
-                 Make_Procedure_Call_Statement (Loc,
-                   Name => New_Reference_To (Covers_Default_Constructor, Loc),
-                   Parameter_Associations => New_List (
-                     Make_Identifier (Loc, Name_uInit))));
-
-               Wrapper_Id := Make_Defining_Identifier (Loc,
-                 Make_Init_Proc_Name (Typ));
-
-               Wrapper_Body_Node :=
-                 Make_Subprogram_Body (Loc,
-                   Specification =>
-                     Make_Procedure_Specification (Loc,
-                       Defining_Unit_Name => Wrapper_Id,
-                       Parameter_Specifications => New_List (
-                         Make_Parameter_Specification (Loc,
-                           Defining_Identifier =>
-                             Make_Defining_Identifier (Loc, Name_uInit),
-                           Parameter_Type =>
-                             New_Reference_To (Typ, Loc)))),
-                   Declarations => No_List,
-                   Handled_Statement_Sequence =>
-                     Make_Handled_Sequence_Of_Statements (Loc,
-                       Statements => Body_Stmts,
-                       Exception_Handlers => No_List));
-
-               Discard_Node (Wrapper_Body_Node);
-               Set_Init_Proc (Typ, Wrapper_Id);
-            end;
-         end if;
-      end Set_CPP_Constructors_Old;
+         return Parms;
+      end Gen_Parameters_Profile;
 
       --  Local variables
 
-      Loc   : Source_Ptr;
-      E     : Entity_Id;
-      Found : Boolean := False;
-      P     : Node_Id;
-      Parms : List_Id;
-
-      Constructor_Decl_Node : Node_Id;
-      Constructor_Id        : Entity_Id;
-      Wrapper_Id            : Entity_Id;
-      Wrapper_Body_Node     : Node_Id;
-      Actuals               : List_Id;
-      Body_Stmts            : List_Id;
-      Init_Tags_List        : List_Id;
+      Loc     : Source_Ptr;
+      E       : Entity_Id;
+      Found   : Boolean := False;
+      IP      : Entity_Id;
+      IP_Body : Node_Id;
+      P       : Node_Id;
+      Parms   : List_Id;
 
       Covers_Default_Constructor : Entity_Id := Empty;
 
@@ -8600,22 +8497,6 @@ package body Exp_Disp is
 
    begin
       pragma Assert (Is_CPP_Class (Typ));
-
-      --  For backward compatibility the compiler accepts C++ classes
-      --  imported through non-tagged record types. In such case the
-      --  wrapper of the C++ constructor is useless because the _tag
-      --  component is not available.
-
-      --  Example:
-      --     type Root is limited record ...
-      --     pragma Import (CPP, Root);
-      --     function New_Root return Root;
-      --     pragma CPP_Constructor (New_Root, ... );
-
-      if not Is_Tagged_Type (Typ) then
-         Set_CPP_Constructors_Old (Typ);
-         return;
-      end if;
 
       --  Look for the constructor entities
 
@@ -8626,156 +8507,167 @@ package body Exp_Disp is
          then
             Found := True;
             Loc   := Sloc (E);
+            Parms := Gen_Parameters_Profile (E);
+            IP    :=
+              Make_Defining_Identifier (Loc,
+                Chars => Make_Init_Proc_Name (Typ));
 
-            --  Generate the declaration of the imported C++ constructor
+            --  Case 1: Constructor of non-tagged type
 
-            Parms :=
-              New_List (
-                Make_Parameter_Specification (Loc,
-                  Defining_Identifier =>
-                    Make_Defining_Identifier (Loc, Name_uInit),
-                  Parameter_Type =>
-                    New_Reference_To (Typ, Loc)));
+            --  If the C++ class has no virtual methods then the matching Ada
+            --  type is a non-tagged record type. In such case there is no need
+            --  to generate a wrapper of the C++ constructor because the _tag
+            --  component is not available.
 
-            if Present (Parameter_Specifications (Parent (E))) then
-               P := First (Parameter_Specifications (Parent (E)));
-               while Present (P) loop
-                  Append_To (Parms,
-                    Make_Parameter_Specification (Loc,
-                      Defining_Identifier =>
-                        Make_Defining_Identifier (Loc,
-                          Chars (Defining_Identifier (P))),
-                      Parameter_Type => New_Copy_Tree (Parameter_Type (P))));
-                  Next (P);
-               end loop;
+            if not Is_Tagged_Type (Typ) then
+               Discard_Node
+                 (Make_Subprogram_Declaration (Loc,
+                    Specification =>
+                      Make_Procedure_Specification (Loc,
+                        Defining_Unit_Name       => IP,
+                        Parameter_Specifications => Parms)));
+
+               Set_Init_Proc (Typ, IP);
+               Set_Is_Imported    (IP);
+               Set_Is_Constructor (IP);
+               Set_Interface_Name (IP, Interface_Name (E));
+               Set_Convention     (IP, Convention_CPP);
+               Set_Is_Public      (IP);
+               Set_Has_Completion (IP);
+
+            --  Case 2: Constructor of a tagged type
+
+            --  In this case we generate the IP as a wrapper of the the
+            --  C++ constructor because IP must also save copy of the _tag
+            --  generated in the C++ side. The copy of the _tag is used by
+            --  Build_CPP_Init_Procedure to elaborate derivations of C++ types.
+
+            --  Generate:
+            --     procedure IP (_init : Typ; ...) is
+            --        procedure ConstructorP (_init : Typ; ...);
+            --        pragma Import (ConstructorP);
+            --     begin
+            --        ConstructorP (_init, ...);
+            --        if Typ._tag = null then
+            --           Typ._tag := _init._tag;
+            --        end if;
+            --     end IP;
+
+            else
+               declare
+                  Body_Stmts            : constant List_Id := New_List;
+                  Constructor_Id        : Entity_Id;
+                  Constructor_Decl_Node : Node_Id;
+                  Init_Tags_List        : List_Id;
+
+               begin
+                  Constructor_Id := Make_Temporary (Loc, 'P');
+
+                  Constructor_Decl_Node :=
+                    Make_Subprogram_Declaration (Loc,
+                      Make_Procedure_Specification (Loc,
+                        Defining_Unit_Name => Constructor_Id,
+                        Parameter_Specifications => Parms));
+
+                  Set_Is_Imported    (Constructor_Id);
+                  Set_Is_Constructor (Constructor_Id);
+                  Set_Interface_Name (Constructor_Id, Interface_Name (E));
+                  Set_Convention     (Constructor_Id, Convention_CPP);
+                  Set_Is_Public      (Constructor_Id);
+                  Set_Has_Completion (Constructor_Id);
+
+                  --  Build the init procedure as a wrapper of this constructor
+
+                  Parms := Gen_Parameters_Profile (E);
+
+                  --  Invoke the C++ constructor
+
+                  declare
+                     Actuals : constant List_Id := New_List;
+
+                  begin
+                     P := First (Parms);
+                     while Present (P) loop
+                        Append_To (Actuals,
+                          New_Reference_To (Defining_Identifier (P), Loc));
+                        Next (P);
+                     end loop;
+
+                     Append_To (Body_Stmts,
+                       Make_Procedure_Call_Statement (Loc,
+                         Name => New_Reference_To (Constructor_Id, Loc),
+                         Parameter_Associations => Actuals));
+                  end;
+
+                  --  Initialize copies of C++ primary and secondary tags
+
+                  Init_Tags_List := New_List;
+
+                  declare
+                     Tag_Elmt : Elmt_Id;
+                     Tag_Comp : Node_Id;
+
+                  begin
+                     Tag_Elmt := First_Elmt (Access_Disp_Table (Typ));
+                     Tag_Comp := First_Tag_Component (Typ);
+
+                     while Present (Tag_Elmt)
+                       and then Is_Tag (Node (Tag_Elmt))
+                     loop
+                        --  Skip the following assertion with primary tags
+                        --  because Related_Type is not set on primary tag
+                        --  components
+
+                        pragma Assert
+                          (Tag_Comp = First_Tag_Component (Typ)
+                             or else Related_Type (Node (Tag_Elmt))
+                                       = Related_Type (Tag_Comp));
+
+                        Append_To (Init_Tags_List,
+                          Make_Assignment_Statement (Loc,
+                            Name =>
+                              New_Reference_To (Node (Tag_Elmt), Loc),
+                            Expression =>
+                              Make_Selected_Component (Loc,
+                                Prefix        =>
+                                  Make_Identifier (Loc, Name_uInit),
+                                Selector_Name =>
+                                  New_Reference_To (Tag_Comp, Loc))));
+
+                        Tag_Comp := Next_Tag_Component (Tag_Comp);
+                        Next_Elmt (Tag_Elmt);
+                     end loop;
+                  end;
+
+                  Append_To (Body_Stmts,
+                    Make_If_Statement (Loc,
+                      Condition =>
+                        Make_Op_Eq (Loc,
+                          Left_Opnd =>
+                            New_Reference_To
+                              (Node (First_Elmt (Access_Disp_Table (Typ))),
+                               Loc),
+                          Right_Opnd =>
+                            Unchecked_Convert_To (RTE (RE_Tag),
+                              New_Reference_To (RTE (RE_Null_Address), Loc))),
+                      Then_Statements => Init_Tags_List));
+
+                  IP_Body :=
+                    Make_Subprogram_Body (Loc,
+                      Specification =>
+                        Make_Procedure_Specification (Loc,
+                          Defining_Unit_Name => IP,
+                          Parameter_Specifications => Parms),
+                      Declarations => New_List (Constructor_Decl_Node),
+                      Handled_Statement_Sequence =>
+                        Make_Handled_Sequence_Of_Statements (Loc,
+                          Statements => Body_Stmts,
+                          Exception_Handlers => No_List));
+
+                  Discard_Node (IP_Body);
+                  Set_Init_Proc (Typ, IP);
+               end;
             end if;
-
-            Constructor_Id := Make_Temporary (Loc, 'P');
-
-            Constructor_Decl_Node :=
-              Make_Subprogram_Declaration (Loc,
-                Make_Procedure_Specification (Loc,
-                  Defining_Unit_Name => Constructor_Id,
-                  Parameter_Specifications => Parms));
-
-            Set_Is_Imported    (Constructor_Id);
-            Set_Is_Constructor (Constructor_Id);
-            Set_Interface_Name (Constructor_Id, Interface_Name (E));
-            Set_Convention     (Constructor_Id, Convention_CPP);
-            Set_Is_Public      (Constructor_Id);
-            Set_Has_Completion (Constructor_Id);
-
-            --  Build the wrapper of this constructor
-
-            Parms :=
-              New_List (
-                Make_Parameter_Specification (Loc,
-                  Defining_Identifier =>
-                    Make_Defining_Identifier (Loc, Name_uInit),
-                  Parameter_Type =>
-                    New_Reference_To (Typ, Loc)));
-
-            if Present (Parameter_Specifications (Parent (E))) then
-               P := First (Parameter_Specifications (Parent (E)));
-               while Present (P) loop
-                  Append_To (Parms,
-                    Make_Parameter_Specification (Loc,
-                      Defining_Identifier =>
-                        Make_Defining_Identifier (Loc,
-                          Chars (Defining_Identifier (P))),
-                      Parameter_Type      =>
-                        New_Copy_Tree (Parameter_Type (P)),
-                      Expression          => New_Copy_Tree (Expression (P))));
-                  Next (P);
-               end loop;
-            end if;
-
-            Body_Stmts := New_List;
-
-            --  Invoke the C++ constructor
-
-            Actuals := New_List;
-
-            P := First (Parms);
-            while Present (P) loop
-               Append_To (Actuals,
-                 New_Reference_To (Defining_Identifier (P), Loc));
-               Next (P);
-            end loop;
-
-            Append_To (Body_Stmts,
-              Make_Procedure_Call_Statement (Loc,
-                Name => New_Reference_To (Constructor_Id, Loc),
-                Parameter_Associations => Actuals));
-
-            --  Initialize copies of C++ primary and secondary tags
-
-            Init_Tags_List := New_List;
-
-            declare
-               Tag_Elmt : Elmt_Id;
-               Tag_Comp : Node_Id;
-
-            begin
-               Tag_Elmt := First_Elmt (Access_Disp_Table (Typ));
-               Tag_Comp := First_Tag_Component (Typ);
-
-               while Present (Tag_Elmt)
-                 and then Is_Tag (Node (Tag_Elmt))
-               loop
-                  --  Skip the following assertion with primary tags because
-                  --  Related_Type is not set on primary tag components
-
-                  pragma Assert (Tag_Comp = First_Tag_Component (Typ)
-                    or else Related_Type (Node (Tag_Elmt))
-                              = Related_Type (Tag_Comp));
-
-                  Append_To (Init_Tags_List,
-                    Make_Assignment_Statement (Loc,
-                      Name =>
-                        New_Reference_To (Node (Tag_Elmt), Loc),
-                      Expression =>
-                        Make_Selected_Component (Loc,
-                          Prefix        =>
-                            Make_Identifier (Loc, Name_uInit),
-                          Selector_Name =>
-                            New_Reference_To (Tag_Comp, Loc))));
-
-                     Tag_Comp := Next_Tag_Component (Tag_Comp);
-                  Next_Elmt (Tag_Elmt);
-               end loop;
-            end;
-
-            Append_To (Body_Stmts,
-              Make_If_Statement (Loc,
-                Condition =>
-                  Make_Op_Eq (Loc,
-                    Left_Opnd =>
-                      New_Reference_To
-                        (Node (First_Elmt (Access_Disp_Table (Typ))),
-                         Loc),
-                    Right_Opnd =>
-                      Unchecked_Convert_To (RTE (RE_Tag),
-                        New_Reference_To (RTE (RE_Null_Address), Loc))),
-                Then_Statements => Init_Tags_List));
-
-            Wrapper_Id := Make_Defining_Identifier (Loc,
-                            Make_Init_Proc_Name (Typ));
-
-            Wrapper_Body_Node :=
-              Make_Subprogram_Body (Loc,
-                Specification =>
-                  Make_Procedure_Specification (Loc,
-                    Defining_Unit_Name => Wrapper_Id,
-                    Parameter_Specifications => Parms),
-                Declarations => New_List (Constructor_Decl_Node),
-                Handled_Statement_Sequence =>
-                  Make_Handled_Sequence_Of_Statements (Loc,
-                    Statements => Body_Stmts,
-                    Exception_Handlers => No_List));
-
-            Discard_Node (Wrapper_Body_Node);
-            Set_Init_Proc (Typ, Wrapper_Id);
 
             --  If this constructor has parameters and all its parameters
             --  have defaults then it covers the default constructor. The
@@ -8785,7 +8677,7 @@ package body Exp_Disp is
             if Present (Parameter_Specifications (Parent (E)))
               and then Needs_No_Actuals (E)
             then
-               Covers_Default_Constructor := Wrapper_Id;
+               Covers_Default_Constructor := IP;
             end if;
          end if;
 
@@ -8804,39 +8696,42 @@ package body Exp_Disp is
       --  which calls the covering constructor.
 
       if Present (Covers_Default_Constructor) then
-         Loc := Sloc (Covers_Default_Constructor);
+         declare
+            Body_Stmts : List_Id;
 
-         Body_Stmts := New_List (
-           Make_Procedure_Call_Statement (Loc,
-             Name                   =>
-               New_Reference_To (Covers_Default_Constructor, Loc),
-             Parameter_Associations => New_List (
-               Make_Identifier (Loc, Name_uInit))));
+         begin
+            Loc := Sloc (Covers_Default_Constructor);
 
-         Wrapper_Id :=
-           Make_Defining_Identifier (Loc, Make_Init_Proc_Name (Typ));
+            Body_Stmts := New_List (
+              Make_Procedure_Call_Statement (Loc,
+                Name                   =>
+                  New_Reference_To (Covers_Default_Constructor, Loc),
+                Parameter_Associations => New_List (
+                  Make_Identifier (Loc, Name_uInit))));
 
-         Wrapper_Body_Node :=
-           Make_Subprogram_Body (Loc,
-             Specification              =>
-               Make_Procedure_Specification (Loc,
-                 Defining_Unit_Name       => Wrapper_Id,
-                 Parameter_Specifications => New_List (
-                   Make_Parameter_Specification (Loc,
-                     Defining_Identifier =>
-                       Make_Defining_Identifier (Loc, Name_uInit),
-                     Parameter_Type      =>
-                       New_Reference_To (Typ, Loc)))),
+            IP := Make_Defining_Identifier (Loc, Make_Init_Proc_Name (Typ));
 
-             Declarations               => No_List,
+            IP_Body :=
+              Make_Subprogram_Body (Loc,
+                Specification              =>
+                  Make_Procedure_Specification (Loc,
+                    Defining_Unit_Name       => IP,
+                    Parameter_Specifications => New_List (
+                      Make_Parameter_Specification (Loc,
+                        Defining_Identifier =>
+                          Make_Defining_Identifier (Loc, Name_uInit),
+                        Parameter_Type      => New_Reference_To (Typ, Loc)))),
 
-             Handled_Statement_Sequence =>
-               Make_Handled_Sequence_Of_Statements (Loc,
-                 Statements         => Body_Stmts,
-                 Exception_Handlers => No_List));
+                Declarations               => No_List,
 
-         Discard_Node (Wrapper_Body_Node);
-         Set_Init_Proc (Typ, Wrapper_Id);
+                Handled_Statement_Sequence =>
+                  Make_Handled_Sequence_Of_Statements (Loc,
+                    Statements         => Body_Stmts,
+                    Exception_Handlers => No_List));
+
+            Discard_Node (IP_Body);
+            Set_Init_Proc (Typ, IP);
+         end;
       end if;
 
       --  If the CPP type has constructors then it must import also the default
