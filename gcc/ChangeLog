@@ -1,3 +1,32 @@
+2012-10-04  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	* config/i386/i386.c (ix86_dep_by_shift_count_body) : Add
+	check on reload_completed since it can be invoked before
+	register allocation phase in pre-reload schedule.
+	(ia32_multipass_dfa_lookahead) : Do not use dfa_lookahead for pre-reload
+	schedule to save compile time.
+	(ix86_sched_reorder) : Do not perform ready list reordering for pre-reload
+	schedule to save compile time.
+	(insn_is_function_arg) : New function. Returns true if lhs of insn is
+	HW function argument register.
+	(add_parameter_dependencies) : New function. Add output dependencies
+	for chain of function adjacent arguments if only there is a move to
+	likely spilled HW registers. Return first argument if at least one
+	dependence was added or NULL otherwise.
+	(avoid_func_arg_motion) : New function. Add output or anti dependency
+	from insn to first_arg to restrict code motion.
+	(add_dependee_for_func_arg) : New function. Avoid cross block motion of
+	function argument through adding dependency from the first non-jump
+	insn in bb.
+	(ix86_dependencies_evaluation_hook) : New function. Hook for pre-reload schedule:
+	avoid motion of function arguments passed in passed in likely spilled
+	HW registers.
+	(ix86_adjust_priority) : New function. Hook for pre-reload schedule: set priority
+	of moves from likely spilled HW registers to maximum to schedule them
+	as soon as possible.
+	(ix86_sched_init_global): Do not perform multipass scheduling for pre-reload
+	schedule to save compile time.
+
 2012-10-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	* configure.ac (noexception_flags): Add -fasynchronous-unwind-tables.
