@@ -799,6 +799,14 @@ fdollars-in-identifiers
 C ObjC C++ ObjC++
 Permit '$' as an identifier character
 
+fdump-ada-spec
+C ObjC C++ ObjC++ RejectNegative Var(flag_dump_ada_spec)
+Write all declarations as Ada code transitively
+
+fdump-ada-spec-slim
+C ObjC C++ ObjC++ RejectNegative Var(flag_dump_ada_spec_slim)
+Write all declarations as Ada code for the given file only
+
 felide-constructors
 C++ ObjC++ Var(flag_elide_constructors) Init(1)
 

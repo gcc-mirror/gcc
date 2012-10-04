@@ -1,3 +1,8 @@
+2012-10-04  Arnaud Charlet  <charlet@adacore.com>
+
+	* c-decl.c (c_write_global_declarations): Fix handling of
+	-fdump-ada-spec*.
+
 2012-09-30  Sharad Singhai  <singhai@google.com>
 
 	* c-decl.c (c_write_global_declarations): Use a different method

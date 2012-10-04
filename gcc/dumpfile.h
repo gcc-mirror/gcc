@@ -37,7 +37,6 @@ enum tree_dump_index
   TDI_nested,			/* dump each function after unnesting it */
   TDI_vcg,			/* create a VCG graph file for each
 				   function's flowgraph.  */
-  TDI_ada,                      /* dump declarations in Ada syntax.  */
   TDI_tree_all,                 /* enable all the GENERIC/GIMPLE dumps.  */
   TDI_rtl_all,                  /* enable all the RTL dumps.  */
   TDI_ipa_all,                  /* enable all the IPA dumps.  */

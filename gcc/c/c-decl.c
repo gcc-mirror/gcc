@@ -10079,10 +10079,10 @@ c_write_global_declarations (void)
   gcc_assert (!current_scope);
 
   /* Handle -fdump-ada-spec[-slim]. */
-  if (dump_initialized_p (TDI_ada))
+  if (flag_dump_ada_spec || flag_dump_ada_spec_slim)
     {
       /* Build a table of files to generate specs for */
-      if (get_dump_file_info (TDI_ada)->pflags & TDF_SLIM)
+      if (flag_dump_ada_spec_slim)
 	collect_source_ref (main_input_filename);
       else
 	for_each_global_decl (collect_source_ref_cb);

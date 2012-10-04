@@ -1,3 +1,8 @@
+2012-10-04  Arnaud Charlet  <charlet@adacore.com>
+        
+        * decl2.c (cp_write_global_declarations): Fix handling of
+        -fdump-ada-spec*.
+
 2012-10-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/54777
