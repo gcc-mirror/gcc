@@ -1,3 +1,8 @@
+2012-10-04  Basile Starynkevitch  <basile@starynkevitch.net>
+
+        * gengtype.c (walk_type): Emit mark_hook when inside a
+          struct of a union member.
+
 2012-10-04  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/predicates.md (flash_operand): New predicate.
