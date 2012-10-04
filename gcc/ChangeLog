@@ -1,3 +1,8 @@
+2012-10-04  Jeff Law  <law@redhat.com>
+
+	* PR target/50356
+	* config/h8300/h8300.c (h8300_rtx_costs): Fix typo in CONST_INT case.
+
 2012-10-04  Jason Merrill  <jason@redhat.com>
 
 	* config/rs6000/rs6000.c (rs6000_code_end): Protect the use of
