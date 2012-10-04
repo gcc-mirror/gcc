@@ -1,6 +1,12 @@
 2012-10-04  Richard Guenther  <rguenther@suse.de>
 
-	PR lto/47788
+	PR middle-end/54735
+	* tree-ssa-pre.c (do_pre): Make sure to update virtual SSA form before
+	cleaning up the CFG.
+
+2012-10-04  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/47799
 	* tree-streamer-out.c (write_ts_block_tree_pointers): For
 	inlined functions outer scopes write the ultimate origin
 	as BLOCK_ABSTRACT_ORIGIN and BLOCK_SOURCE_LOCATION.
