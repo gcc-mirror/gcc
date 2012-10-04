@@ -1,3 +1,8 @@
+2012-10-04  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/54735
+	* g++.dg/torture/pr54735.C: New testcase.
+
 2012-10-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/54739
