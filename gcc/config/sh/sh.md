@@ -835,9 +835,13 @@
 
 (define_insn_and_split "*cmp_div0s_1"
   [(set (match_operand:SI 0 "arith_reg_dest" "")
-	(ge:SI (xor:SI (match_operand:SI 1 "arith_reg_operand" "")
-		       (match_operand:SI 2 "arith_reg_operand" ""))
-	       (const_int 0)))
+;;	(ge:SI (xor:SI (match_operand:SI 1 "arith_reg_operand" "")
+;;		       (match_operand:SI 2 "arith_reg_operand" ""))
+;;	       (const_int 0)))
+	(xor:SI (lshiftrt:SI (match_operand:SI 1 "arith_reg_operand")
+			     (const_int 31))
+		(ge:SI (match_operand:SI 2 "arith_reg_operand")
+		       (const_int 0))))
    (clobber (reg:SI T_REG))]
   "TARGET_SH1"
   "#"
@@ -853,9 +857,13 @@
 
 (define_insn_and_split "*cmp_div0s_1"
   [(set (reg:SI T_REG)
-	(ge:SI (xor:SI (match_operand:SI 0 "arith_reg_operand" "")
-		       (match_operand:SI 1 "arith_reg_operand" ""))
-	       (const_int 0)))]
+;;	(ge:SI (xor:SI (match_operand:SI 0 "arith_reg_operand" "")
+;;		       (match_operand:SI 1 "arith_reg_operand" ""))
+;;	       (const_int 0)))]
+	(eq:SI (lshiftrt:SI (match_operand:SI 0 "arith_reg_operand")
+			    (const_int 31))
+	       (ge:SI (match_operand:SI 1 "arith_reg_operand")
+		      (const_int 0))))]
   "TARGET_SH1"
   "#"
   "&& can_create_pseudo_p ()"
@@ -1002,9 +1010,13 @@
 
 (define_insn_and_split "*cbranch_div0s"
   [(set (pc)
-	(if_then_else (ge (xor:SI (match_operand:SI 0 "arith_reg_operand" "")
-				  (match_operand:SI 1 "arith_reg_operand" ""))
-			  (const_int 0))
+;;	(if_then_else (ge (xor:SI (match_operand:SI 0 "arith_reg_operand" "")
+;;				  (match_operand:SI 1 "arith_reg_operand" ""))
+;;			  (const_int 0))
+	(if_then_else (eq (lshiftrt:SI (match_operand:SI 0 "arith_reg_operand")
+				       (const_int 31))
+			  (ge:SI (match_operand:SI 1 "arith_reg_operand")
+				 (const_int 0)))
 		      (label_ref (match_operand 2))
 		      (pc)))
    (clobber (reg:SI T_REG))]
@@ -10668,6 +10680,19 @@ label:
    sh_emit_compare_and_set (operands, SImode);
    DONE;
 })
+
+;; The *cstoresi pattern is for combine, so that it can apply some
+;; comparison canonicalization if it hasn't been done before.
+(define_insn_and_split "*cstoresi"
+  [(set (match_operand:SI 0 "arith_reg_dest")
+	(ge:SI (match_operand:SI 1 "arith_reg_operand")
+	       (const_int 0)))
+   (clobber (reg:SI T_REG))]
+  "TARGET_SH1"
+  "#"
+  "&& 1"
+  [(set (reg:SI T_REG) (ge:SI (match_dup 1) (const_int 0)))
+   (set (match_dup 0) (reg:SI T_REG))])
 
 (define_expand "cstoredi4"
   [(set (match_operand:SI 0 "register_operand" "=r")
