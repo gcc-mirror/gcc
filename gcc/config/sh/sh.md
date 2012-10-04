@@ -10460,6 +10460,13 @@ label:
   ""
 {
   sh_expand_epilogue (false);
+  if (TARGET_SHMEDIA
+      || (TARGET_SHCOMPACT
+	  && (crtl->args.info.call_cookie & CALL_COOKIE_RET_TRAMP (1))))
+    {
+      emit_jump_insn (gen_return ());
+      DONE;
+    }
 })
 
 (define_expand "eh_return"
