@@ -2839,7 +2839,7 @@ walk_type (type_p t, struct walk_type_data *d)
 	    struct_mark_hook = o->info.string;
 
 	if (struct_mark_hook)
-	  oprintf (d->of, "%*s%s (&%s));\n",
+	  oprintf (d->of, "%*s%s (&%s);\n",
 		   d->indent, "", struct_mark_hook, oldval);
 
 	d->prev_val[2] = oldval;
