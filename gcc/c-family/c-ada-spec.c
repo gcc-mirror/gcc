@@ -2535,7 +2535,6 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type,
   int is_class = false;
   tree name = TYPE_NAME (TREE_TYPE (t));
   tree decl_name = DECL_NAME (t);
-  bool dump_internal = get_dump_file_info (TDI_ada)->pflags & TDF_RAW;
   tree orig = NULL_TREE;
 
   if (cpp_check && cpp_check (t, IS_TEMPLATE))
@@ -2705,8 +2704,7 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type,
     }
   else
     {
-      if (!dump_internal
-	  && TREE_CODE (t) == VAR_DECL
+      if (TREE_CODE (t) == VAR_DECL
 	  && decl_name
 	  && *IDENTIFIER_POINTER (decl_name) == '_')
 	return 0;
@@ -2796,8 +2794,7 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type,
 
       /* If this function has an entry in the dispatch table, we cannot
 	 omit it.  */
-      if (!dump_internal && !DECL_VINDEX (t)
-	  && *IDENTIFIER_POINTER (decl_name) == '_')
+      if (!DECL_VINDEX (t) && *IDENTIFIER_POINTER (decl_name) == '_')
 	{
 	  if (IDENTIFIER_POINTER (decl_name)[1] == '_')
 	    return 0;

@@ -1,3 +1,7 @@
+2012-10-04  Arnaud Charlet  <charlet@adacore.com>
+
+	* dumpfile.h, dumpfile.c: Remove TDI_ada.
+
 2012-10-04  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	* config/i386/i386.c (ix86_dep_by_shift_count_body) : Add
