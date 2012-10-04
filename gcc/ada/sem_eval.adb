@@ -37,6 +37,7 @@ with Namet;    use Namet;
 with Nmake;    use Nmake;
 with Nlists;   use Nlists;
 with Opt;      use Opt;
+with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Cat;  use Sem_Cat;
@@ -5419,10 +5420,12 @@ package body Sem_Eval is
             return;
          end if;
 
-         --  Type must be scalar or string type
+         --  Type must be scalar or string type (but allow Bignum, since this
+         --  is really a scalar type from our point of view in this diagnosis).
 
          if not Is_Scalar_Type (Typ)
            and then not Is_String_Type (Typ)
+           and then not Is_RTE (Typ, RE_Bignum)
          then
             Error_Msg_N
               ("static expression must have scalar or string type " &
@@ -5539,7 +5542,14 @@ package body Sem_Eval is
 
          when N_Function_Call =>
             Why_Not_Static_List (Parameter_Associations (N));
-            Error_Msg_N ("non-static function call (RM 4.9(6,18))!", N);
+
+            --  Complain about non-static function call unless we have Bignum
+            --  which means that the underlying expression is really some
+            --  scalar arithmetic operation.
+
+            if not Is_RTE (Typ, RE_Bignum) then
+               Error_Msg_N ("non-static function call (RM 4.9(6,18))!", N);
+            end if;
 
          when N_Parameter_Association =>
             Why_Not_Static (Explicit_Actual_Parameter (N));

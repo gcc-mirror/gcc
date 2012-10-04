@@ -299,6 +299,12 @@ package Sem_Util is
    --  create a new compatible record type. Loc is the source location assigned
    --  to the created nodes.
 
+   function Corresponding_Generic_Type (T : Entity_Id) return Entity_Id;
+   --  If a type is a generic actual type, return the corresponding formal in
+   --  the generic parent unit. There is no direct link in the tree for this
+   --  attribute, except in the case of formal private and derived types.
+   --  Possible optimization???
+
    function Current_Entity (N : Node_Id) return Entity_Id;
    pragma Inline (Current_Entity);
    --  Find the currently visible definition for a given identifier, that is to
