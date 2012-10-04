@@ -737,7 +737,9 @@ package Types is
 
    subtype Minimized_Or_Eliminated is
      Overflow_Check_Type range Minimized .. Eliminated;
-   --  Definte subtypes so that clients don't need to know ordering. Note that
+   subtype Suppressed_Or_Checked is
+     Overflow_Check_Type range Suppressed .. Checked;
+   --  Define subtypes so that clients don't need to know ordering. Note that
    --  Overflow_Check_Type is not marked as an ordered enumeration type.
 
    --  The following structure captures the state of check suppression or
