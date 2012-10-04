@@ -17520,9 +17520,16 @@ ix86_dep_by_shift_count_body (const_rtx set_body, const_rtx use_body)
       rtx shift_count = XEXP (shift_rtx, 1);
 
       /* Return true if shift count is dest of SET_BODY.  */
-      if (REG_P (shift_count)
-	  && true_regnum (set_dest) == true_regnum (shift_count))
-	return true;
+      if (REG_P (shift_count))
+	{
+	  /* Add check since it can be invoked before register
+	     allocation in pre-reload schedule.  */
+	  if (reload_completed
+	      && true_regnum (set_dest) == true_regnum (shift_count))
+	    return true;
+	  else if (REGNO(set_dest) == REGNO(shift_count))
+	    return true;
+	}
     }
 
   return false;
@@ -24278,7 +24285,10 @@ ia32_multipass_dfa_lookahead (void)
       /* Generally, we want haifa-sched:max_issue() to look ahead as far
 	 as many instructions can be executed on a cycle, i.e.,
 	 issue_rate.  I wonder why tuning for many CPUs does not do this.  */
-      return ix86_issue_rate ();
+      if (reload_completed)
+        return ix86_issue_rate ();
+      /* Don't use lookahead for pre-reload schedule to save compile time.  */
+      return 0;
 
     default:
       return 0;
@@ -24310,6 +24320,9 @@ ix86_sched_reorder(FILE *dump, int sched_verbose, rtx *ready, int *pn_ready,
 
   /* Do reodering for Atom only.  */
   if (ix86_tune != PROCESSOR_ATOM)
+    return issue_rate;
+  /* Do not perform ready list reodering for pre-reload schedule pass.  */
+  if (!reload_completed)
     return issue_rate;
   /* Nothing to do if ready list contains only 1 instruction.  */
   if (n_ready <= 1)
@@ -24393,7 +24406,198 @@ ix86_sched_reorder(FILE *dump, int sched_verbose, rtx *ready, int *pn_ready,
   return issue_rate;
 }
 
-
+static bool
+ix86_class_likely_spilled_p (reg_class_t);
+
+/* Returns true if lhs of insn is HW function argument register and set up
+   is_spilled to true if it is likely spilled HW register.  */
+static bool
+insn_is_function_arg (rtx insn, bool* is_spilled)
+{
+  rtx dst;
+
+  if (!NONDEBUG_INSN_P (insn))
+    return false;
+  insn = PATTERN (insn);
+  if (GET_CODE (insn) == PARALLEL)
+    insn = XVECEXP (insn, 0, 0);
+  if (GET_CODE (insn) != SET)
+    return false;
+  dst = SET_DEST (insn);
+  if (REG_P (dst) && HARD_REGISTER_P (dst)
+      && ix86_function_arg_regno_p (REGNO (dst)))
+    {
+      /* Is it likely spilled HW register?  */
+      if (!TEST_HARD_REG_BIT (fixed_reg_set, REGNO (dst))
+	  && ix86_class_likely_spilled_p (REGNO_REG_CLASS (REGNO (dst))))
+	*is_spilled = true;
+      return true;
+    }
+  return false;
+}
+
+/* Add output dependencies for chain of function adjacent arguments if only
+   there is a move to likely spilled HW register.  Return first argument
+   if at least one dependence was added or NULL otherwise.  */
+static rtx
+add_parameter_dependencies (rtx call, rtx head)
+{
+  rtx insn;
+  rtx last = call;
+  rtx first_arg = NULL;
+  bool is_spilled = false;
+
+  /* Find nearest to call argument passing instruction.  */
+  while (true)
+    {
+      last = PREV_INSN (last);
+      if (last == head)
+	return NULL;
+      if (!NONDEBUG_INSN_P (last))
+	continue;
+      if (insn_is_function_arg (last, &is_spilled))
+	break;
+      return NULL;
+    }
+
+  first_arg = last;
+  while (true)
+    {
+      insn = PREV_INSN (last);
+      if (!INSN_P (insn))
+	break;
+      if (insn == head)
+	break;
+      if (!NONDEBUG_INSN_P (insn))
+	{
+	  last = insn;
+	  continue;
+	}
+      if (insn_is_function_arg (insn, &is_spilled))
+	{
+	  /* Add output depdendence between two function arguments if chain
+	     of output arguments contains likely spilled HW registers.  */
+	  if (is_spilled)
+	    add_dependence (last, insn, REG_DEP_OUTPUT);
+	  first_arg = last = insn;
+	}
+      else
+	break;
+    }
+  if (!is_spilled)
+    return NULL;
+  return first_arg;
+}
+
+/* Add output or anti dependency from insn to first_arg to restrict its code
+   motion.  */
+static void
+avoid_func_arg_motion (rtx first_arg, rtx insn)
+{
+  rtx set;
+  rtx tmp;
+
+  set = single_set (insn);
+  if (!set)
+    return;
+  tmp = SET_DEST (set);
+  if (REG_P (tmp))
+    {
+      /* Add output dependency to the first function argument.  */
+      add_dependence (first_arg, insn, REG_DEP_OUTPUT);
+      return;
+    }
+  /* Add anti dependency.  */
+  add_dependence (first_arg, insn, REG_DEP_ANTI);
+}
+
+/* Avoid cross block motion of function argument through adding dependency
+   from the first non-jump instruction in bb.  */
+static void
+add_dependee_for_func_arg (rtx arg, basic_block bb)
+{
+  rtx insn = BB_END (bb);
+
+  while (insn)
+    {
+      if (NONDEBUG_INSN_P (insn) && NONJUMP_INSN_P (insn))
+	{
+	  rtx set = single_set (insn);
+	  if (set)
+	    {
+	      avoid_func_arg_motion (arg, insn);
+	      return;
+	    }
+	}
+      if (insn == BB_HEAD (bb))
+	return;
+      insn = PREV_INSN (insn);
+    }
+}
+
+/* Hook for pre-reload schedule - avoid motion of function arguments
+   passed in likely spilled HW registers.  */
+static void
+ix86_dependencies_evaluation_hook (rtx head, rtx tail)
+{
+  rtx insn;
+  rtx first_arg = NULL;
+  if (reload_completed)
+    return;
+  for (insn = tail; insn != head; insn = PREV_INSN (insn))
+    if (INSN_P (insn) && CALL_P (insn))
+      {
+	first_arg = add_parameter_dependencies (insn, head);
+	if (first_arg)
+	  {
+	    /* Check if first argument has dependee out of its home block.  */
+	    sd_iterator_def sd_it1;
+	    dep_t dep1;
+	    FOR_EACH_DEP (first_arg, SD_LIST_BACK, sd_it1, dep1)
+	      {
+		rtx dee;
+		dee = DEP_PRO (dep1);
+		if (!NONDEBUG_INSN_P (dee))
+		  continue;
+		if (BLOCK_FOR_INSN (dee) != BLOCK_FOR_INSN (first_arg))
+		  /* Must add dependee for first argument in dee's block.  */
+		  add_dependee_for_func_arg (first_arg, BLOCK_FOR_INSN (dee));
+	      }
+	    insn = first_arg;
+	  }
+      }
+    else if (first_arg)
+      avoid_func_arg_motion (first_arg, insn);
+}
+
+/* Hook for pre-reload schedule - set priority of moves from likely spilled
+   HW registers to maximum, to schedule them at soon as possible. These are
+   moves from function argument registers at the top of the function entry
+   and moves from function return value registers after call.  */
+static int
+ix86_adjust_priority (rtx insn, int priority)
+{
+  rtx set;
+
+  if (reload_completed)
+    return priority;
+
+  if (!NONDEBUG_INSN_P (insn))
+    return priority;
+
+  set = single_set (insn);
+  if (set)
+    {
+      rtx tmp = SET_SRC (set);
+      if (REG_P (tmp)
+          && HARD_REGISTER_P (tmp)
+          && !TEST_HARD_REG_BIT (fixed_reg_set, REGNO (tmp))
+          && ix86_class_likely_spilled_p (REGNO_REG_CLASS (REGNO (tmp))))
+	return current_sched_info->sched_max_insns_priority;
+    }
+
+  return priority;
+}
 
 /* Model decoder of Core 2/i7.
    Below hooks for multipass scheduling (see haifa-sched.c:max_issue)
@@ -24606,27 +24810,32 @@ ix86_sched_init_global (FILE *dump ATTRIBUTE_UNUSED,
     case PROCESSOR_CORE2_64:
     case PROCESSOR_COREI7_32:
     case PROCESSOR_COREI7_64:
-      targetm.sched.dfa_post_advance_cycle
-	= core2i7_dfa_post_advance_cycle;
-      targetm.sched.first_cycle_multipass_init
-	= core2i7_first_cycle_multipass_init;
-      targetm.sched.first_cycle_multipass_begin
-	= core2i7_first_cycle_multipass_begin;
-      targetm.sched.first_cycle_multipass_issue
-	= core2i7_first_cycle_multipass_issue;
-      targetm.sched.first_cycle_multipass_backtrack
-	= core2i7_first_cycle_multipass_backtrack;
-      targetm.sched.first_cycle_multipass_end
-	= core2i7_first_cycle_multipass_end;
-      targetm.sched.first_cycle_multipass_fini
-	= core2i7_first_cycle_multipass_fini;
+      /* Do not perform multipass scheduling for pre-reload schedule
+         to save compile time.  */
+      if (reload_completed)
+	{
+	  targetm.sched.dfa_post_advance_cycle
+	    = core2i7_dfa_post_advance_cycle;
+	  targetm.sched.first_cycle_multipass_init
+	    = core2i7_first_cycle_multipass_init;
+	  targetm.sched.first_cycle_multipass_begin
+	    = core2i7_first_cycle_multipass_begin;
+	  targetm.sched.first_cycle_multipass_issue
+	    = core2i7_first_cycle_multipass_issue;
+	  targetm.sched.first_cycle_multipass_backtrack
+	    = core2i7_first_cycle_multipass_backtrack;
+	  targetm.sched.first_cycle_multipass_end
+	    = core2i7_first_cycle_multipass_end;
+	  targetm.sched.first_cycle_multipass_fini
+	    = core2i7_first_cycle_multipass_fini;
 
-      /* Set decoder parameters.  */
-      core2i7_secondary_decoder_max_insn_size = 8;
-      core2i7_ifetch_block_size = 16;
-      core2i7_ifetch_block_max_insns = 6;
-      break;
-
+	  /* Set decoder parameters.  */
+	  core2i7_secondary_decoder_max_insn_size = 8;
+	  core2i7_ifetch_block_size = 16;
+	  core2i7_ifetch_block_max_insns = 6;
+	  break;
+	}
+      /* ... Fall through ...  */
     default:
       targetm.sched.dfa_post_advance_cycle = NULL;
       targetm.sched.first_cycle_multipass_init = NULL;
@@ -39687,6 +39896,10 @@ ix86_enum_va_list (int idx, const char **pname, tree *ptree)
 #define TARGET_SCHED_REASSOCIATION_WIDTH ix86_reassociation_width
 #undef TARGET_SCHED_REORDER
 #define TARGET_SCHED_REORDER ix86_sched_reorder
+#undef TARGET_SCHED_ADJUST_PRIORITY
+#define TARGET_SCHED_ADJUST_PRIORITY ix86_adjust_priority
+#undef TARGET_SCHED_DEPENDENCIES_EVALUATION_HOOK
+#define TARGET_SCHED_DEPENDENCIES_EVALUATION_HOOK ix86_dependencies_evaluation_hook
 
 /* The size of the dispatch window is the total number of bytes of
    object code allowed in a window.  */
