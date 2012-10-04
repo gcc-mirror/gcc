@@ -1,3 +1,11 @@
+2012-10-04  Jason Merrill  <jason@redhat.com>
+
+	* config/darwin.c (darwin_assemble_visibility): Treat
+	VISIBILITY_INTERNAL as hidden.
+
+	* config/darwin-c.c (find_subframework_file): Add missing const.
+	(framework_construct_pathname): Likewise.
+
 2012-10-04  Florian Weimer  <fweimer@redhat.com>
 
 	* doc/cpp.texi (Pragmas): Document #pragma GCC warning, #pragma
