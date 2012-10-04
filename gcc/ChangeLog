@@ -1,3 +1,14 @@
+2012-10-04  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/47788
+	* tree-streamer-out.c (write_ts_block_tree_pointers): For
+	inlined functions outer scopes write the ultimate origin
+	as BLOCK_ABSTRACT_ORIGIN and BLOCK_SOURCE_LOCATION.
+	Do not stream the fragment chains.
+	* tree-streamer-in.c (lto_input_ts_block_tree_pointers): Likewise.
+	* dwarf2out.c (gen_subprogram_die): Handle NULL DECL_INITIAL.
+	(dwarf2out_decl): Always output DECL_ABSTRACT function decls.
+
 2012-10-04  Arnaud Charlet  <charlet@adacore.com>
 
 	* dumpfile.h, dumpfile.c: Remove TDI_ada.
