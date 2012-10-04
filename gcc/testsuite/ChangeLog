@@ -1,3 +1,8 @@
+2012-10-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53403
+	* g++.dg/template/friend53.C
+
 2012-10-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* lib/gcc-dg.exp (cleanup-ada-spec): New procedure.
