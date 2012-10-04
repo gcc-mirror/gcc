@@ -1988,7 +1988,10 @@ record_temp_file (const char *filename, int always_delete, int fail_delete)
       struct temp_file *temp;
       for (temp = failure_delete_queue; temp; temp = temp->next)
 	if (! filename_cmp (name, temp->name))
-	  goto already2;
+	  {
+	    free (name);
+	    goto already2;
+	  }
 
       temp = XNEW (struct temp_file);
       temp->next = failure_delete_queue;
@@ -2462,8 +2465,11 @@ add_sysrooted_prefix (struct path_prefix *pprefix, const char *prefix,
 	sysroot_no_trailing_dir_separator[sysroot_len - 1] = '\0';
 
       if (target_sysroot_suffix)
-	  prefix = concat (target_sysroot_suffix, prefix, NULL);
-      prefix = concat (sysroot_no_trailing_dir_separator, prefix, NULL);
+	prefix = concat (sysroot_no_trailing_dir_separator,
+			 target_sysroot_suffix, prefix, NULL);
+      else
+	prefix = concat (sysroot_no_trailing_dir_separator, prefix, NULL);
+
       free (sysroot_no_trailing_dir_separator);
 
       /* We have to override this because GCC's notion of sysroot
@@ -3571,7 +3577,7 @@ process_command (unsigned int decoded_options_count,
 {
   const char *temp;
   char *temp1;
-  const char *tooldir_prefix;
+  char *tooldir_prefix, *tooldir_prefix2;
   char *(*get_relative_prefix) (const char *, const char *,
 				const char *) = NULL;
   struct cl_option_handlers handlers;
@@ -3920,15 +3926,16 @@ process_command (unsigned int decoded_options_count,
     }
 
   gcc_assert (!IS_ABSOLUTE_PATH (tooldir_base_prefix));
-  tooldir_prefix = concat (tooldir_base_prefix, spec_machine,
-			   dir_separator_str, NULL);
+  tooldir_prefix2 = concat (tooldir_base_prefix, spec_machine,
+			    dir_separator_str, NULL);
 
   /* Look for tools relative to the location from which the driver is
      running, or, if that is not available, the configured prefix.  */
   tooldir_prefix
     = concat (gcc_exec_prefix ? gcc_exec_prefix : standard_exec_prefix,
 	      spec_machine, dir_separator_str,
-	      spec_version, dir_separator_str, tooldir_prefix, NULL);
+	      spec_version, dir_separator_str, tooldir_prefix2, NULL);
+  free (tooldir_prefix2);
 
   add_prefix (&exec_prefixes,
 	      concat (tooldir_prefix, "bin", dir_separator_str, NULL),
@@ -3936,6 +3943,7 @@ process_command (unsigned int decoded_options_count,
   add_prefix (&startfile_prefixes,
 	      concat (tooldir_prefix, "lib", dir_separator_str, NULL),
 	      "BINUTILS", PREFIX_PRIORITY_LAST, 0, 1);
+  free (tooldir_prefix);
 
 #if defined(TARGET_SYSTEM_ROOT_RELOCATABLE) && !defined(VMS)
   /* If the normal TARGET_SYSTEM_ROOT is inside of $exec_prefix,
@@ -4319,6 +4327,7 @@ do_self_spec (const char *spec)
 				       argbuf_copy,
 				       CL_DRIVER, &decoded_options,
 				       &decoded_options_count);
+      free (argbuf_copy);
 
       set_option_handlers (&handlers);
 
@@ -4740,8 +4749,8 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 		    memcpy (tmp, save_temps_prefix, save_temps_length);
 		    memcpy (tmp + save_temps_length, suffix, suffix_length);
 		    tmp[save_temps_length + suffix_length] = '\0';
-		    temp_filename = save_string (tmp,
-						 temp_filename_length + 1);
+		    temp_filename = save_string (tmp, save_temps_length
+						      + suffix_length);
 		    obstack_grow (&obstack, temp_filename,
 				  temp_filename_length);
 		    arg_going = 1;
@@ -5055,6 +5064,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 
 	      /* This option is new; add it.  */
 	      add_linker_option (string, strlen (string));
+	      free (string);
 	    }
 	    break;
 
@@ -8186,7 +8196,7 @@ static const char *
 compare_debug_dump_opt_spec_function (int arg,
 				      const char **argv ATTRIBUTE_UNUSED)
 {
-  const char *ret;
+  char *ret;
   char *name;
   int which;
   static char random_seed[HOST_BITS_PER_WIDE_INT / 4 + 3];
@@ -8240,8 +8250,12 @@ compare_debug_dump_opt_spec_function (int arg,
     }
 
   if (*random_seed)
-    ret = concat ("%{!frandom-seed=*:-frandom-seed=", random_seed, "} ",
-		  ret, NULL);
+    {
+      char *tmp = ret;
+      ret = concat ("%{!frandom-seed=*:-frandom-seed=", random_seed, "} ",
+		    ret, NULL);
+      free (tmp);
+    }
 
   if (which)
     *random_seed = 0;

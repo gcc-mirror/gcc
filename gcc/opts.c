@@ -1475,6 +1475,8 @@ common_handle_option (struct gcc_options *opts,
 	strip_off_ending (tmp, strlen (tmp));
 	if (tmp[0])
 	  opts->x_aux_base_name = tmp;
+	else
+	  free (tmp);
       }
       break;
 
