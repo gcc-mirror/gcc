@@ -17329,7 +17329,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
      a BLOCK node representing the function's outermost pair of curly braces,
      and any blocks used for the base and member initializers of a C++
      constructor function.  */
-  if (! declaration && TREE_CODE (outer_scope) != ERROR_MARK)
+  if (! declaration && outer_scope && TREE_CODE (outer_scope) != ERROR_MARK)
     {
       int call_site_note_count = 0;
       int tail_call_site_note_count = 0;
@@ -19622,8 +19622,14 @@ dwarf2out_decl (tree decl)
 	 inline" functions as DECL_EXTERNAL, but we need to generate DWARF for
 	 them anyway. Note that the C++ front-end also plays some similar games
 	 for inline function definitions appearing within include files which
-	 also contain `#pragma interface' pragmas.  */
-      if (DECL_INITIAL (decl) == NULL_TREE)
+	 also contain `#pragma interface' pragmas.
+
+	 If we are called from dwarf2out_abstract_function output a DIE
+	 anyway.  We can end up here this way with early inlining and LTO
+	 where the inlined function is output in a different LTRANS unit
+	 or not at all.  */
+      if (DECL_INITIAL (decl) == NULL_TREE
+	  && ! DECL_ABSTRACT (decl))
 	return;
 
       /* If we're a nested function, initially use a parent of NULL; if we're
