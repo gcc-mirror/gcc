@@ -1,3 +1,18 @@
+2012-10-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/53248
+	* include/std/array (__array_traits<>): Add.
+	(array<>): Allow for zero-size arrays of non default-constructible
+	elements.
+	* testsuite/23_containers/array/requirements/
+	non_default_constructible.cc: New.
+	* testsuite/23_containers/array/requirements/zero_sized_arrays.cc:
+	Adjust.
+	* testsuite/23_containers/array/tuple_interface/get_neg.cc: Adjust
+	dg-error line numbers.
+	* testsuite/23_containers/array/tuple_interface/tuple_element_neg.cc:
+	Likewise.
+
 2012-10-02  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR other/53889
