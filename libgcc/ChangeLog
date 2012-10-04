@@ -1,3 +1,10 @@
+2012-10-04  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/33135
+	* config/sh/t-sh (HOST_LIBGCC2_CFLAGS): Delete.
+	* config/sh/t-netbsd (HOST_LIBGCC2_CFLAGS): Delete.
+	* config/sh/t-linux (HOST_LIBGCC2_CFLAGS): Remove mieee option.
+
 2012-10-03  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/50457
