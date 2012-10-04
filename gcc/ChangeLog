@@ -1,3 +1,10 @@
+2012-10-04  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c (sh_can_use_simple_return_p): Return false for
+	SHmedia	and SHcompact using call cookie.
+	* config/sh/sh.md (epilogue): Emit non-inlined return insns for
+	SHmedia	and SHcompact using call cookie.
+
 2012-10-03  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/51244

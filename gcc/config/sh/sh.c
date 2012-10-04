@@ -13134,6 +13134,12 @@ sh_can_use_simple_return_p (void)
   HARD_REG_SET live_regs_mask;
   int d;
 
+  /* Some targets require special return insns.  */
+  if (TARGET_SHMEDIA
+      || (TARGET_SHCOMPACT
+	  && (crtl->args.info.call_cookie & CALL_COOKIE_RET_TRAMP (1))))
+    return false;
+
   if (! reload_completed || frame_pointer_needed)
     return false;
 
