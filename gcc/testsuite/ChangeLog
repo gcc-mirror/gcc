@@ -1,3 +1,7 @@
+2012-10-04  Florian Weimer  <fweimer@redhat.com>
+
+	* c-c++-common/cpp/diagnostic-pragma-1.c: New testcase.
+
 2012-10-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/54323

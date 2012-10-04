@@ -1,3 +1,8 @@
+2012-10-04  Florian Weimer  <fweimer@redhat.com>
+
+	* doc/cpp.texi (Pragmas): Document #pragma GCC warning, #pragma
+	GCC error.
+
 2012-10-04  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/54735

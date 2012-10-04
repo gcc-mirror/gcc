@@ -1,3 +1,10 @@
+2012-10-04  Florian Weimer  <fweimer@redhat.com>
+
+	* directives.c (do_pragma_warning_or_error): New.
+	(do_pragma_warning): New.
+	(do_pragma_error): New.
+	(_cpp_init_internal_pragmas): Register new pragmas.
+
 2012-09-25  Dehao Chen  <dehao@google.com>
 
 	PR middle-end/54704

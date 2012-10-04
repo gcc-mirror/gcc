@@ -1,7 +1,5 @@
 /* CPP Library. (Directive handling.)
-   Copyright (C) 1986, 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005,
-   2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+   Copyright (C) 1986-2012 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -118,6 +116,9 @@ static void do_pragma_once (cpp_reader *);
 static void do_pragma_poison (cpp_reader *);
 static void do_pragma_system_header (cpp_reader *);
 static void do_pragma_dependency (cpp_reader *);
+static void do_pragma_warning_or_error (cpp_reader *, bool error);
+static void do_pragma_warning (cpp_reader *);
+static void do_pragma_error (cpp_reader *);
 static void do_linemarker (cpp_reader *);
 static const cpp_token *get_token_no_padding (cpp_reader *);
 static const cpp_token *get__Pragma_string (cpp_reader *);
@@ -1263,6 +1264,8 @@ _cpp_init_internal_pragmas (cpp_reader *pfile)
   register_pragma_internal (pfile, "GCC", "system_header",
 			    do_pragma_system_header);
   register_pragma_internal (pfile, "GCC", "dependency", do_pragma_dependency);
+  register_pragma_internal (pfile, "GCC", "warning", do_pragma_warning);
+  register_pragma_internal (pfile, "GCC", "error", do_pragma_error);
 }
 
 /* Return the number of registered pragmas in PE.  */
@@ -1632,6 +1635,42 @@ do_pragma_dependency (cpp_reader *pfile)
     }
 
   free ((void *) fname);
+}
+
+/* Issue a diagnostic with the message taken from the pragma.  If
+   ERROR is true, the diagnostic is a warning, otherwise, it is an
+   error.  */
+static void
+do_pragma_warning_or_error (cpp_reader *pfile, bool error)
+{
+  const cpp_token *tok = _cpp_lex_token (pfile);
+  cpp_string str;
+  if (tok->type != CPP_STRING
+      || !cpp_interpret_string_notranslate (pfile, &tok->val.str, 1, &str,
+					    CPP_STRING)
+      || str.len == 0)
+    {
+      cpp_error (pfile, CPP_DL_ERROR, "invalid \"#pragma GCC %s\" directive",
+		 error ? "error" : "warning");
+      return;
+    }
+  cpp_error (pfile, error ? CPP_DL_ERROR : CPP_DL_WARNING,
+	     "%s", str.text);
+  free ((void *)str.text);
+}
+
+/* Issue a warning diagnostic.  */
+static void
+do_pragma_warning (cpp_reader *pfile)
+{
+  do_pragma_warning_or_error (pfile, false);
+}
+
+/* Issue an error diagnostic.  */
+static void
+do_pragma_error (cpp_reader *pfile)
+{
+  do_pragma_warning_or_error (pfile, true);
 }
 
 /* Get a token but skip padding.  */
