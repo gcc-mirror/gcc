@@ -1,3 +1,8 @@
+2012-10-04  Jason Merrill  <jason@redhat.com>
+
+	* config/rs6000/rs6000.c (rs6000_code_end): Protect the use of
+	ASM_WEAKEN_DECL with #if RS6000_WEAK.
+
 2012-10-04  Basile Starynkevitch  <basile@starynkevitch.net>
 
         * gengtype.c (walk_type): Emit mark_hook when inside a

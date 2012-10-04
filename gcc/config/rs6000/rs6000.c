@@ -28295,6 +28295,7 @@ rs6000_code_end (void)
   TREE_PUBLIC (decl) = 1;
   TREE_STATIC (decl) = 1;
 
+#if RS6000_WEAK
   if (USE_HIDDEN_LINKONCE)
     {
       DECL_COMDAT_GROUP (decl) = DECL_ASSEMBLER_NAME (decl);
@@ -28307,6 +28308,7 @@ rs6000_code_end (void)
       ASM_DECLARE_FUNCTION_NAME (asm_out_file, name, decl);
     }
   else
+#endif
     {
       switch_to_section (text_section);
       ASM_OUTPUT_LABEL (asm_out_file, name);
