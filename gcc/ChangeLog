@@ -1,3 +1,9 @@
+2012-10-04  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/predicates.md (flash_operand): New predicate.
+	* config/avr/avr.md (reload_in<mode>): Use it in operand 1 instead
+	of memory_operand.
+
 2012-10-04  Tobias Burnus  <burnus@net-b.de>
 
 	* gcc.c (record_temp_file, add_sysrooted_prefix, process_command,
@@ -115,7 +121,7 @@
 
 2012-10-03  Andrew W. Nosenko <andrew.w.nosenko@gmail.com>
 
-	*  config/i386/driver-i386.c (host_detect_local_cpu): Fix logic
+	* config/i386/driver-i386.c (host_detect_local_cpu): Fix logic
 	in SSE and YMM state support check for -march=native.
 
 2012-10-03  Nick Clifton  <nickc@redhat.com>
@@ -199,7 +205,7 @@
 2012-10-02  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/54741
-	*  config/i386/driver-i386.c (XCR_XFEATURE_ENABLED_MASK): New.
+	* config/i386/driver-i386.c (XCR_XFEATURE_ENABLED_MASK): New.
 	(XSTATE_FP): Likewise.
 	(XSTATE_SSE): Likewise.
 	(XSTATE_YMM): Likewise.
