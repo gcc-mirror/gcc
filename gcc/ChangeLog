@@ -3,7 +3,7 @@
 	Backported from mainline
 	2012-10-03  Andrew W. Nosenko <andrew.w.nosenko@gmail.com>
 
-	*  config/i386/driver-i386.c (host_detect_local_cpu): Fix logic
+	* config/i386/driver-i386.c (host_detect_local_cpu): Fix logic
 	in SSE and YMM state support check for -march=native.
 
 2012-10-02  H.J. Lu  <hongjiu.lu@intel.com>
@@ -20,7 +20,7 @@
 	2012-10-02  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/54741
-	*  config/i386/driver-i386.c (XCR_XFEATURE_ENABLED_MASK): New.
+	* config/i386/driver-i386.c (XCR_XFEATURE_ENABLED_MASK): New.
 	(XSTATE_FP): Likewise.
 	(XSTATE_SSE): Likewise.
 	(XSTATE_YMM): Likewise.
