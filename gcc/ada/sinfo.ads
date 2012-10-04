@@ -12419,15 +12419,4 @@ package Sinfo is
    pragma Inline (Set_Was_Originally_Stub);
    pragma Inline (Set_Withed_Body);
 
-   --------------
-   -- Synonyms --
-   --------------
-
-   --  These synonyms are to aid in transition, they should eventually be
-   --  removed when all remaining references to the obsolete name are gone.
-
-   N_Return_Statement : constant Node_Kind := N_Simple_Return_Statement;
-   --  Rename N_Simple_Return_Statement to be N_Return_Statement. Clients
-   --  should refer to N_Simple_Return_Statement.
-
 end Sinfo;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2002-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -292,8 +292,8 @@ package body Prep is
          Result.Value := End_String;
       end if;
 
-      --  Now, check the syntax of the symbol (we don't allow accented and
-      --  wide characters)
+      --  Now, check the syntax of the symbol (we don't allow accented or
+      --  wide characters).
 
       if Name_Buffer (1) not in 'a' .. 'z'
         and then Name_Buffer (1) not in 'A' .. 'Z'
@@ -356,7 +356,7 @@ package body Prep is
    begin
       --  Always return False when not inside an #if statement
 
-      if Pp_States.Last = Ground then
+      if Opt.No_Deletion or else Pp_States.Last = Ground then
          return False;
       else
          return Pp_States.Table (Pp_States.Last).Deleting;

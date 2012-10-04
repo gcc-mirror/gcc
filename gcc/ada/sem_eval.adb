@@ -199,7 +199,7 @@ package body Sem_Eval is
    --  Tests to see if expression N whose single operand is Op1 is foldable,
    --  i.e. the operand value is known at compile time. If the operation is
    --  foldable, then Fold is True on return, and Stat indicates whether
-   --  the result is static (i.e. both operands were static). Note that it
+   --  the result is static (i.e. the operand was static). Note that it
    --  is quite possible for Fold to be True, and Stat to be False, since
    --  there are cases in which we know the value of an operand even though
    --  it is not technically static (e.g. the static lower bound of a range
@@ -233,7 +233,7 @@ package body Sem_Eval is
       Stat : out Boolean;
       Fold : out Boolean);
    --  Same processing, except applies to an expression N with two operands
-   --  Op1 and Op2.
+   --  Op1 and Op2. The result is static only if both operands are static.
 
    function Test_In_Range
      (N            : Node_Id;
@@ -241,11 +241,11 @@ package body Sem_Eval is
       Assume_Valid : Boolean;
       Fixed_Int    : Boolean;
       Int_Real     : Boolean) return Range_Membership;
-   --  Common processing for Is_In_Range and Is_Out_Of_Range:
-   --  Returns In_Range or Out_Of_Range if it can be guaranteed at compile time
-   --  that expression N is known to be in or out of range of the subtype Typ.
-   --  If not compile time known, Unknown is returned.
-   --  See documentation of Is_In_Range for complete description of parameters.
+   --  Common processing for Is_In_Range and Is_Out_Of_Range: Returns In_Range
+   --  or Out_Of_Range if it can be guaranteed at compile time that expression
+   --  N is known to be in or out of range of the subtype Typ. If not compile
+   --  time known, Unknown is returned. See documentation of Is_In_Range for
+   --  complete description of parameters.
 
    procedure To_Bits (U : Uint; B : out Bits);
    --  Converts a Uint value to a bit string of length B'Length
@@ -4046,12 +4046,18 @@ package body Sem_Eval is
 
       --  We now have the literal with the right value, both the actual type
       --  and the expected type of this literal are taken from the expression
-      --  that was evaluated.
+      --  that was evaluated. So now we do the Analyze and Resolve.
+
+      --  Note that we have to reset Is_Static_Expression both after the
+      --  analyze step (because Resolve will evaluate the literal, which
+      --  will cause semantic errors if it is marked as static), and after
+      --  the Resolve step (since Resolve in some cases sets this flag).
 
       Analyze (N);
       Set_Is_Static_Expression (N, Static);
       Set_Etype (N, Typ);
       Resolve (N);
+      Set_Is_Static_Expression (N, Static);
    end Fold_Str;
 
    ---------------
@@ -4100,12 +4106,18 @@ package body Sem_Eval is
 
       --  We now have the literal with the right value, both the actual type
       --  and the expected type of this literal are taken from the expression
-      --  that was evaluated.
+      --  that was evaluated. So now we do the Analyze and Resolve.
+
+      --  Note that we have to reset Is_Static_Expression both after the
+      --  analyze step (because Resolve will evaluate the literal, which
+      --  will cause semantic errors if it is marked as static), and after
+      --  the Resolve step (since Resolve in some cases sets this flag).
 
       Analyze (N);
       Set_Is_Static_Expression (N, Static);
       Set_Etype (N, Typ);
       Resolve (N);
+      Set_Is_Static_Expression (N, Static);
    end Fold_Uint;
 
    ----------------
@@ -4135,12 +4147,20 @@ package body Sem_Eval is
 
       Set_Original_Entity (N, Ent);
 
-      --  Both the actual and expected type comes from the original expression
+      --  We now have the literal with the right value, both the actual type
+      --  and the expected type of this literal are taken from the expression
+      --  that was evaluated. So now we do the Analyze and Resolve.
+
+      --  Note that we have to reset Is_Static_Expression both after the
+      --  analyze step (because Resolve will evaluate the literal, which
+      --  will cause semantic errors if it is marked as static), and after
+      --  the Resolve step (since Resolve in some cases sets this flag).
 
       Analyze (N);
       Set_Is_Static_Expression (N, Static);
       Set_Etype (N, Typ);
       Resolve (N);
+      Set_Is_Static_Expression (N, Static);
    end Fold_Ureal;
 
    ---------------

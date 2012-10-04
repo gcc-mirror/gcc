@@ -137,7 +137,6 @@ package body Bindgen is
    --     Num_Interrupt_States          : Integer;
    --     Unreserve_All_Interrupts      : Integer;
    --     Exception_Tracebacks          : Integer;
-   --     Zero_Cost_Exceptions          : Integer;
    --     Detect_Blocking               : Integer;
    --     Default_Stack_Size            : Integer;
    --     Leap_Seconds_Support          : Integer;
@@ -215,9 +214,6 @@ package body Bindgen is
    --  in the bind and to zero otherwise. Note that on some targets exception
    --  tracebacks are provided by default, so a value of zero for this
    --  parameter does not necessarily mean no trace backs are available.
-
-   --  Zero_Cost_Exceptions is set to one if zero cost exceptions are used for
-   --  this partition, and to zero if longjmp/setjmp exceptions are used.
 
    --  Detect_Blocking indicates whether pragma Detect_Blocking is active or
    --  not. A value of zero indicates that the pragma is not present, while a
@@ -607,9 +603,6 @@ package body Bindgen is
                  """__gl_exception_tracebacks"");");
          end if;
 
-         WBI ("      Zero_Cost_Exceptions : Integer;");
-         WBI ("      pragma Import (C, Zero_Cost_Exceptions, " &
-              """__gl_zero_cost_exceptions"");");
          WBI ("      Detect_Blocking : Integer;");
          WBI ("      pragma Import (C, Detect_Blocking, " &
               """__gl_detect_blocking"");");
@@ -802,17 +795,6 @@ package body Bindgen is
          if Exception_Tracebacks then
             WBI ("      Exception_Tracebacks := 1;");
          end if;
-
-         Set_String ("      Zero_Cost_Exceptions := ");
-
-         if Zero_Cost_Exceptions_Specified then
-            Set_String ("1");
-         else
-            Set_String ("0");
-         end if;
-
-         Set_String (";");
-         Write_Statement_Buffer;
 
          Set_String ("      Detect_Blocking := ");
 

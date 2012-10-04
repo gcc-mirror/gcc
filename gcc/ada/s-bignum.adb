@@ -341,6 +341,17 @@ package body System.Bignums is
                begin
                   Free_Bignum (XY2);
 
+                  --  Raise storage error if intermediate value is getting too
+                  --  large, which we arbitrarily define as 200 words for now!
+
+                  if XY2S.Len > 200 then
+                     Free_Bignum (XY2S);
+                     raise Storage_Error with
+                       "exponentiation result is too large";
+                  end if;
+
+                  --  Otherwise take care of even/odd cases
+
                   if (Y and 1) = 0 then
                      return XY2S;
 

@@ -14802,10 +14802,17 @@ package body Sem_Prag is
                            loop
                               Set_Warnings_Off
                                 (E, (Chars (Get_Pragma_Arg (Arg1)) =
-                                                              Name_Off));
+                                      Name_Off));
+
+                              --  For OFF case, make entry in warnings off
+                              --  pragma table for later processing. But we do
+                              --  not do that within an instance, since these
+                              --  warnings are about what is needed in the
+                              --  template, not an instance of it.
 
                               if Chars (Get_Pragma_Arg (Arg1)) = Name_Off
                                 and then Warn_On_Warnings_Off
+                                and then not In_Instance
                               then
                                  Warnings_Off_Pragmas.Append ((N, E));
                               end if;
