@@ -1,3 +1,26 @@
+2012-10-04  Vincent Celier  <celier@adacore.com>
+
+	* prj-proc.adb (Process_Package_Declaration): Use project
+	directory display path name as the value of 'Project_Dir.
+
+2012-10-04  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_util.adb (Build_Allocate_Deallocate_Proc): The subpool can be
+	given by an arbitrary name, so copy the tree to make the call's actual.
+
+2012-10-04  Robert Dewar  <dewar@adacore.com>
+
+	* s-exnllf.adb, s-exnllf.ads: Minor reformatting.
+
+2012-10-04  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch6.adb: Minor reformatting.
+
+2012-10-04  Pascal Obry  <obry@adacore.com>
+
+	* projects.texi: Use consistently @command{} when referencing
+	commands. Fix typos.
+
 2012-10-03  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch6.adb (New_Overloaded_Entity): call

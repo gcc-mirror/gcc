@@ -710,8 +710,11 @@ package body Exp_Util is
                Subpool := Subpool_Handle_Name (Expr);
             end if;
 
+            --  If a subpool is present it can be an arbitrary name, so make
+            --  the actual by copying the tree.
+
             if Present (Subpool) then
-               Append_To (Actuals, New_Reference_To (Entity (Subpool), Loc));
+               Append_To (Actuals, New_Copy_Tree (Subpool, New_Sloc => Loc));
             else
                Append_To (Actuals, Make_Null (Loc));
             end if;
