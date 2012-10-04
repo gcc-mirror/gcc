@@ -34,6 +34,7 @@ with Exp_Pakd; use Exp_Pakd;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Elists;   use Elists;
+with Expander; use Expander;
 with Eval_Fat; use Eval_Fat;
 with Freeze;   use Freeze;
 with Lib;      use Lib;
@@ -1272,8 +1273,7 @@ package body Checks is
             Apply_Range_Check (N, Typ);
          end if;
 
-      elsif (Is_Record_Type (Typ)
-               or else Is_Private_Type (Typ))
+      elsif (Is_Record_Type (Typ) or else Is_Private_Type (Typ))
         and then Has_Discriminants (Base_Type (Typ))
         and then Is_Constrained (Typ)
       then
@@ -6709,10 +6709,12 @@ package body Checks is
    --  to be done in bignum mode), and the determined ranges of the operands.
 
    --  After possible rewriting of a constituent subexpression node, a call is
-   --  made to reanalyze the node after setting Analyzed to False. To avoid a
-   --  recursive call into the whole overflow apparatus, and important rule for
-   --  this reanalysis call is that either Do_Overflow_Check must be False, or
-   --  if it is set, then the overflow checking mode must be temporarily set
+   --  made to either reexpand the node (if nothing has changed) or reanalyze
+   --  the node (if it has been modified by the overflow check processing).
+   --  The Analyzed_flag is set False before the reexpand/reanalyze. To avoid
+   --  a recursive call into the whole overflow apparatus, and important rule
+   --  for this call is that either Do_Overflow_Check must be False, or if
+   --  it is set, then the overflow checking mode must be temporarily set
    --  to Checked/Suppressed. Either step will avoid the unwanted recursion.
 
    procedure Minimize_Eliminate_Overflow_Checks
@@ -6760,6 +6762,17 @@ package body Checks is
       --  which means that if the result is known to be in the result type
       --  range, then we must convert such operands back to the result type.
       --  This switch is properly set only when Bignum_Operands is False.
+
+      procedure Reexpand (C : Suppressed_Or_Checked);
+      --  This is called when we have not modifed the node, so we do not need
+      --  to reanalyze it. But we do want to reexpand it in either CHECKED
+      --  or SUPPRESSED mode (as indicated by the argument C) to get proper
+      --  expansion. It is important that we reset the mode to SUPPRESSED or
+      --  CHECKED, since if we leave it in MINIMIZED or ELIMINATED mode we
+      --  would reenter this routine recursively which would not be good!
+      --  Note that this is not just an optimization, testing has showed up
+      --  several complex cases in which renalyzing an already analyzed node
+      --  causes incorrect behavior.
 
       function In_Result_Range return Boolean;
       --  Returns True iff Lo .. Hi are within range of the result type
@@ -6812,6 +6825,24 @@ package body Checks is
             A := B;
          end if;
       end Min;
+
+      --------------
+      -- Reexpand --
+      --------------
+
+      procedure Reexpand (C : Suppressed_Or_Checked) is
+         Svg : constant Overflow_Check_Type :=
+                 Scope_Suppress.Overflow_Checks_General;
+         Sva : constant Overflow_Check_Type :=
+                 Scope_Suppress.Overflow_Checks_Assertions;
+      begin
+         Scope_Suppress.Overflow_Checks_General    := C;
+         Scope_Suppress.Overflow_Checks_Assertions := C;
+         Set_Analyzed (N, False);
+         Expand (N);
+         Scope_Suppress.Overflow_Checks_General    := Svg;
+         Scope_Suppress.Overflow_Checks_Assertions := Sva;
+      end Reexpand;
 
    --  Start of processing for Minimize_Eliminate_Overflow_Checks
 
@@ -6890,13 +6921,13 @@ package body Checks is
             --  If we have no Long_Long_Integer operands, then we are in result
             --  range, since it means that none of our operands felt the need
             --  to worry about overflow (otherwise it would have already been
-            --  converted to long long integer or bignum). We reanalyze to
-            --  complete the expansion of the if expression
+            --  converted to long long integer or bignum). We reexpand to
+            --  complete the expansion of the if expression (but we do not
+            --  need to reanalyze).
 
             elsif not Long_Long_Integer_Operands then
                Set_Do_Overflow_Check (N, False);
-               Set_Analyzed (N, False);
-               Analyze_And_Resolve (N, Suppress => Overflow_Check);
+               Reexpand (Suppressed);
 
             --  Otherwise convert us to long long integer mode. Note that we
             --  don't need any further overflow checking at this level.
@@ -6953,14 +6984,13 @@ package body Checks is
             --  that none of our dependent expressions could raise overflow.
             --  In this case, we simply return with no changes except for
             --  resetting the overflow flag, since we are done with overflow
-            --  checks for this node. We will reset the Analyzed flag so that
-            --  we will properly reexpand and get the needed expansion for
-            --  the case expression.
+            --  checks for this node. We will reexpand to get the needed
+            --  expansion for the case expression, but we do not need to
+            --  renalyze, since nothing has changed.
 
             if not (Bignum_Operands or Long_Long_Integer_Operands) then
                Set_Do_Overflow_Check (N, False);
-               Set_Analyzed (N, False);
-               Analyze_And_Resolve (N, Suppress => Overflow_Check);
+               Reexpand (Suppressed);
 
             --  Otherwise we are going to rebuild the case expression using
             --  either bignum or long long integer operands throughout.
@@ -7381,18 +7411,20 @@ package body Checks is
          end case;
       end if;
 
-      --  If we know we are in the result range, and we do not have Bignum
-      --  operands or Long_Long_Integer operands, we can just renalyze with
-      --  overflow checks turned off (since we know we cannot have overflow).
-      --  As always the reanalysis is required to complete expansion of the
-      --  operator, and we prevent recursion by suppressing the check.
+      --  Here for the case where we have not rewritten anything (no bignum
+      --  operands or long long integer operands), and we know the result If we
+      --  know we are in the result range, and we do not have Bignum operands
+      --  or Long_Long_Integer operands, we can just reexpand with overflow
+      --  checks turned off (since we know we cannot have overflow). As always
+      --  the reexpansion is required to complete expansion of the operator,
+      --  but we do not need to reanalyze, and we prevent recursion by
+      --  suppressing the check,
 
       if not (Bignum_Operands or Long_Long_Integer_Operands)
         and then In_Result_Range
       then
          Set_Do_Overflow_Check (N, False);
-         Set_Analyzed (N, False);
-         Analyze_And_Resolve (N, Suppress => Overflow_Check);
+         Reexpand (Suppressed);
          return;
 
       --  Here we know that we are not in the result range, and in the general
@@ -7427,20 +7459,10 @@ package body Checks is
          --  eliminated overflow processing which is not what we want. Here
          --  we are at the top level, and we need a check against the result
          --  mode (i.e. we want to use Checked mode). So do exactly that!
+         --  Also, we have not modified the node, so this is a case where
+         --  we need to reexpand, but not reanalyze.
 
-         declare
-            Svg : constant Overflow_Check_Type :=
-                    Scope_Suppress.Overflow_Checks_General;
-            Sva : constant Overflow_Check_Type :=
-                    Scope_Suppress.Overflow_Checks_Assertions;
-         begin
-            Scope_Suppress.Overflow_Checks_General    := Checked;
-            Scope_Suppress.Overflow_Checks_Assertions := Checked;
-            Analyze_And_Resolve (N);
-            Scope_Suppress.Overflow_Checks_General    := Svg;
-            Scope_Suppress.Overflow_Checks_Assertions := Sva;
-         end;
-
+         Reexpand (Checked);
          return;
 
       --  Cases where we do the operation in Bignum mode. This happens either

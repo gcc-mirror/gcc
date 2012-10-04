@@ -1,3 +1,15 @@
+2012-10-04  Robert Dewar  <dewar@adacore.com>
+
+	* checks.adb (Minimize_Eliminate_Overflow_Checks): Dont reanalyze
+	if/case expression if nothing has changed (just reexpand). Stops
+	case expression from generating incorrect temporary.
+	* exp_ch4.adb (Expand_Compare_Minimize_Eliminate_Overflow):
+	Fix cut and paste typo for range analysis in NE (not equal) case.
+	* sem_eval.adb (Compile_Time_Compare): Small optimization to
+	catch some more cases.
+	* types.ads (Suppressed_Or_Checked): New subtype of
+	Overflow_Check_Type.
+
 2012-10-04  Javier Miranda  <miranda@adacore.com>
 
 	* exp_disp.adb (Set_CPP_Constructors_Old): Removed.

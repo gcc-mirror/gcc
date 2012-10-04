@@ -2331,7 +2331,7 @@ package body Exp_Ch4 is
          when N_Op_Eq =>
             if Llo = Lhi and then Rlo = Rhi and then Llo = Rlo then
                Set_True;
-            elsif Llo > Rhi or else Rlo > Lhi then
+            elsif Llo > Rhi or else Lhi < Rlo then
                Set_False;
             end if;
 
@@ -2365,9 +2365,9 @@ package body Exp_Ch4 is
 
          when N_Op_Ne =>
             if Llo = Lhi and then Rlo = Rhi and then Llo = Rlo then
-               Set_True;
-            elsif Llo > Rhi or else Rlo > Lhi then
                Set_False;
+            elsif Llo > Rhi or else Lhi < Rlo then
+               Set_True;
             end if;
       end case;
 
