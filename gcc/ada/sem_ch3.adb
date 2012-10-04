@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Checks;   use Checks;
 with Debug;    use Debug;
@@ -14805,6 +14806,11 @@ package body Sem_Ch3 is
       New_Id   : Entity_Id;
       Prev_Par : Node_Id;
 
+      procedure Check_Duplicate_Aspects;
+      --  Check that aspects specified in a completion have not been specified
+      --  already in the partial view. Type_Invariant and others can be
+      --  specified on either view but never on both.
+
       procedure Tag_Mismatch;
       --  Diagnose a tagged partial view whose full view is untagged.
       --  We post the message on the full view, with a reference to
@@ -14812,6 +14818,38 @@ package body Sem_Ch3 is
       --  or incomplete, and these are handled in a different manner,
       --  so we determine the position of the error message from the
       --  respective slocs of both.
+
+      -----------------------------
+      -- Check_Duplicate_Aspects --
+      -----------------------------
+      procedure Check_Duplicate_Aspects is
+         Prev_Aspects   : constant List_Id := Aspect_Specifications (Prev_Par);
+         Full_Aspects   : constant List_Id := Aspect_Specifications (N);
+         F_Spec, P_Spec : Node_Id;
+
+      begin
+         if Present (Prev_Aspects) and then Present (Full_Aspects) then
+            F_Spec := First (Full_Aspects);
+            while Present (F_Spec) loop
+               P_Spec := First (Prev_Aspects);
+               while Present (P_Spec) loop
+                  if
+                    Chars (Identifier (P_Spec)) = Chars (Identifier (F_Spec))
+                  then
+                     Error_Msg_N
+                       ("aspect already specified in private declaration",
+                         F_Spec);
+                     Remove (F_Spec);
+                     return;
+                  end if;
+
+                  Next (P_Spec);
+               end loop;
+
+               Next (F_Spec);
+            end loop;
+         end if;
+      end Check_Duplicate_Aspects;
 
       ------------------
       -- Tag_Mismatch --
@@ -15020,6 +15058,10 @@ package body Sem_Ch3 is
             if not In_Private_Part (Current_Scope) then
                Error_Msg_N
                  ("declaration of full view must appear in private part", N);
+            end if;
+
+            if Ada_Version >= Ada_2012 then
+               Check_Duplicate_Aspects;
             end if;
 
             Copy_And_Swap (Prev, Id);

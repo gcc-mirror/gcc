@@ -968,6 +968,12 @@ package Opt is
    --  in this variable (e.g. 2 = select second unit in file). A value of
    --  zero indicates that we are in normal (one unit per file) mode.
 
+   No_Deletion : Boolean := False;
+   --  GNATPREP
+   --  Set by preprocessor switch -a. Do not eliminate any source text. Implies
+   --  Undefined_Symbols_Are_False. Useful to perform a syntax check on all
+   --  branches of #if constructs.
+
    No_Main_Subprogram : Boolean := False;
    --  GNATMAKE, GNATBIND
    --  Set to True if compilation/binding of a program without main

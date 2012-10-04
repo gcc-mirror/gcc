@@ -1,3 +1,46 @@
+2012-10-04  Robert Dewar  <dewar@adacore.com>
+
+	* sem_eval.adb (Fold_Str, Fold_Uint, Fold_Ureal): Reset static
+	expression state after Resolve call.
+
+2012-10-04  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma. case Warnngs): Don't make entry
+	in the table for Warnings Off pragmas if within an instance.
+
+2012-10-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch9.adb (Analyze_Entry_Body): Transfer
+	Has_Pragma_Unreferenced flag from entry formal to corresponding
+	entity in body, to prevent spurious warnings when pragma is
+	present.
+
+2012-10-04  Robert Dewar  <dewar@adacore.com>
+
+	* s-bignum.adb (Big_Exp): Raise Storage_Error for ludicrously
+	large results.
+
+2012-10-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Check_Duplicate_Aspects): Diagnose properly
+	aspects that appear in the partial and the full view of a type.
+
+2012-10-04  Robert Dewar  <dewar@adacore.com>
+
+	* sinfo.ads (N_Return_Statement): Removed.
+
+2012-10-04  Tristan Gingold  <gingold@adacore.com>
+
+	* init.c (__gl_zero_cost_exceptions): Comment it as not used
+	anymore.
+	* bindgen.adb (Gen_Adainit): Do not emit Zero_Cost_Exceptions
+	anymore.
+
+2012-10-04  Thomas Quinot  <quinot@adacore.com>
+
+	* prep.adb, prepcomp.adb, gprep.adb, opt.ads: New preprocessor switch
+	-a (all source text preserved).
+
 2012-10-04  Vincent Celier  <celier@adacore.com>
 
 	* prj-proc.adb (Recursive_Process): Use project directory
