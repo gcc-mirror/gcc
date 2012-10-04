@@ -44,8 +44,22 @@ POSSIBILITY OF SUCH DAMAGE.  */
 #include "internal.h"
 
 #if !defined(HAVE_DECL_STRNLEN) || !HAVE_DECL_STRNLEN
-/* The function is defined in libiberty if needed.  */
-extern size_t strnlen (const char *, size_t);
+
+/* If strnlen is not declared, provide our own version.  */
+
+static size_t
+xstrnlen (const char *s, size_t maxlen)
+{
+  size_t i;
+
+  for (i = 0; i < maxlen; ++i)
+    if (s[i] == '\0')
+      break;
+  return i;
+}
+
+#define strnlen xstrnlen
+
 #endif
 
 /* A buffer to read DWARF info.  */
