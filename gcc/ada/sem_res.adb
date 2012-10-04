@@ -7685,10 +7685,11 @@ package body Sem_Res is
       ----------------------------
 
       procedure Resolve_Set_Membership is
-         Alt : Node_Id;
+         Alt  : Node_Id;
+         Ltyp : constant Entity_Id := Etype (L);
 
       begin
-         Resolve (L, Etype (L));
+         Resolve (L, Ltyp);
 
          Alt := First (Alternatives (N));
          while Present (Alt) loop
@@ -7699,11 +7700,51 @@ package body Sem_Res is
             if not Is_Entity_Name (Alt)
               or else not Is_Type (Entity (Alt))
             then
-               Resolve (Alt, Etype (L));
+               Resolve (Alt, Ltyp);
             end if;
 
             Next (Alt);
          end loop;
+
+         --  Check for duplicates for discrete case
+
+         if Is_Discrete_Type (Ltyp) then
+            declare
+               type Ent is record
+                  Alt : Node_Id;
+                  Val : Uint;
+               end record;
+
+               Alts  : array (0 .. List_Length (Alternatives (N))) of Ent;
+               Nalts : Nat;
+
+            begin
+               --  Loop checking duplicates. This is quadratic, but giant sets
+               --  are unlikely in this context so it's a reasonable choice.
+
+               Nalts := 0;
+               Alt := First (Alternatives (N));
+               while Present (Alt) loop
+                  if Is_Static_Expression (Alt)
+                    and then (Nkind_In (Alt, N_Integer_Literal,
+                                         N_Character_Literal)
+                               or else Nkind (Alt) in N_Has_Entity)
+                  then
+                     Nalts := Nalts + 1;
+                     Alts (Nalts) := (Alt, Expr_Value (Alt));
+
+                     for J in 1 .. Nalts - 1 loop
+                        if Alts (J).Val = Alts (Nalts).Val then
+                           Error_Msg_Sloc := Sloc (Alts (J).Alt);
+                           Error_Msg_N ("duplicate of value given#?", Alt);
+                        end if;
+                     end loop;
+                  end if;
+
+                  Alt := Next (Alt);
+               end loop;
+            end;
+         end if;
       end Resolve_Set_Membership;
 
    --  Start of processing for Resolve_Membership_Op
