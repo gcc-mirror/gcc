@@ -1217,8 +1217,8 @@ package body Exp_Ch6 is
                  and then
                    Present (Effective_Extra_Accessibility (Entity (Lhs)))
                then
-                  --  Copyback target is an Ada 2012 stand-alone object
-                  --  of an anonymous access type
+                  --  Copyback target is an Ada 2012 stand-alone object of an
+                  --  anonymous access type.
 
                   pragma Assert (Ada_Version >= Ada_2012);
 
@@ -3046,7 +3046,7 @@ package body Exp_Ch6 is
                   Set_Last_Assignment (Ent, Sav);
                   Set_Is_Known_Valid (Ent, False);
 
-                  --  For all other cases, just kill the current values
+               --  For all other cases, just kill the current values
 
                else
                   Kill_Current_Values (Ent);
@@ -3201,7 +3201,7 @@ package body Exp_Ch6 is
          end;
       end if;
 
-      --  If we are expanding a rhs of an assignment we need to check if tag
+      --  If we are expanding the RHS of an assignment we need to check if tag
       --  propagation is needed. You might expect this processing to be in
       --  Analyze_Assignment but has to be done earlier (bottom-up) because the
       --  assignment might be transformed to a declaration for an unconstrained
@@ -4219,9 +4219,7 @@ package body Exp_Ch6 is
          Ret : Node_Id;
 
       begin
-         if Is_Entity_Name (N)
-           and then Present (Entity (N))
-         then
+         if Is_Entity_Name (N) and then Present (Entity (N)) then
             E := Entity (N);
 
             if Is_Formal (E)
