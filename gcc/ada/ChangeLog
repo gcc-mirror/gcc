@@ -1,3 +1,26 @@
+2012-10-04  Vincent Celier  <celier@adacore.com>
+
+	* prj-proc.adb (Recursive_Process): Use project directory
+	display path name as the value of 'Project_Dir.
+
+2012-10-04  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb (Expand_Compare_Minimize_Eliminate_Overflow):
+	Deal with case where we get a bignum operand and cannot do a
+	range analysis.
+	* sem_eval.adb (Why_Not_Static): Deal with bignum operands
+
+2012-10-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Find_Unary_Types): Within an instance, an
+	interpretation that involves a predefied arithmetic operator is
+	not a candidate if the corresponding generic formal type is not
+	a numeric type.
+	* sem_util.ads, sem_util.adb (Corresonding_Generic_Type): If a
+	type is a generic actual type within an instance, return the
+	corresponding formal in the generic unit, otherwise return
+	Any_Type.
+
 2012-10-04  Robert Dewar  <dewar@adacore.com>
 
 	* checks.adb (Minimize_Eliminate_Overflow_Checks): Dont reanalyze

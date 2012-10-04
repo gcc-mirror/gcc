@@ -2325,9 +2325,12 @@ package body Exp_Ch4 is
       Minimize_Eliminate_Overflow_Checks
         (Right_Opnd (N), Rlo, Rhi, Top_Level => False);
 
-      --  See if the range information decides the result of the comparison
+      --  See if the range information decides the result of the comparison.
+      --  We can only do this if we in fact have full range information (which
+      --  won't be the case if either operand is bignum at this stage).
 
-      case N_Op_Compare (Nkind (N)) is
+      if Llo /= No_Uint and then Rlo /= No_Uint then
+         case N_Op_Compare (Nkind (N)) is
          when N_Op_Eq =>
             if Llo = Lhi and then Rlo = Rhi and then Llo = Rlo then
                Set_True;
@@ -2369,12 +2372,13 @@ package body Exp_Ch4 is
             elsif Llo > Rhi or else Lhi < Rlo then
                Set_True;
             end if;
-      end case;
+         end case;
 
-      --  All done if we did the rewrite
+         --  All done if we did the rewrite
 
-      if Nkind (N) not in N_Op_Compare then
-         return;
+         if Nkind (N) not in N_Op_Compare then
+            return;
+         end if;
       end if;
 
       --  Otherwise, time to do the comparison

@@ -2850,7 +2850,7 @@ package body Prj.Proc is
             Add_Attributes
               (Project,
                Name,
-               Name_Id (Project.Directory.Name),
+               Name_Id (Project.Directory.Display_Name),
                In_Tree.Shared,
                Project.Decl,
                Prj.Attr.Attribute_First,

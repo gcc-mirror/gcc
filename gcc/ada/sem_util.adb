@@ -2489,6 +2489,45 @@ package body Sem_Util is
       return Plist;
    end Copy_Parameter_List;
 
+   --------------------------------
+   -- Corresponding_Generic_Type --
+   --------------------------------
+
+   function Corresponding_Generic_Type (T : Entity_Id) return Entity_Id is
+      Inst : Entity_Id;
+      Gen  : Entity_Id;
+      Typ  : Entity_Id;
+
+   begin
+      if not Is_Generic_Actual_Type (T) then
+         return Any_Type;
+
+      else
+         Inst := Scope (T);
+
+         if Is_Wrapper_Package (Inst) then
+            Inst := Related_Instance (Inst);
+         end if;
+
+         Gen  :=
+           Generic_Parent
+             (Specification (Unit_Declaration_Node (Inst)));
+
+         --  Generic actual has the same name as the corresponding formal
+
+         Typ := First_Entity (Gen);
+         while Present (Typ) loop
+            if Chars (Typ) = Chars (T) then
+               return Typ;
+            end if;
+
+            Next_Entity (Typ);
+         end loop;
+
+         return Any_Type;
+      end if;
+   end Corresponding_Generic_Type;
+
    --------------------
    -- Current_Entity --
    --------------------
