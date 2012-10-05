@@ -1,3 +1,9 @@
+2012-10-05  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/54811
+	* tree-ssa-live.c (clear_unused_block_pointer_1): Look at
+	DECL_DEBUG_EXPR again.
+
 2012-10-05  Jan Hubicka  <jh@suse.cz>
 	    Jakub Jelinek  <jakub@redhat.com>
 
