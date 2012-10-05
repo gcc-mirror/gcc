@@ -1,5 +1,9 @@
 2012-10-05  Jakub Jelinek  <jakub@redhat.com>
 
+	* tree-inline.c (expand_call_inline): Move VAR_DECLs with
+	PARM_DECL origins from remapped DECL_INITIAL's BLOCK_VARS
+	into id->block's BLOCK_VARS.
+
 	PR debug/54519
 	* ipa-split.c (split_function): Add debug args and
 	debug source and normal stmts for args_to_skip which are

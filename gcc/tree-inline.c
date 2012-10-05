@@ -3952,7 +3952,29 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
   initialize_inlined_parameters (id, stmt, fn, bb);
 
   if (DECL_INITIAL (fn))
-    prepend_lexical_block (id->block, remap_blocks (DECL_INITIAL (fn), id));
+    {
+      tree *var;
+
+      prepend_lexical_block (id->block, remap_blocks (DECL_INITIAL (fn), id));
+      gcc_checking_assert (BLOCK_SUBBLOCKS (id->block)
+			   && (BLOCK_CHAIN (BLOCK_SUBBLOCKS (id->block))
+			       == NULL_TREE));
+      /* Move vars for PARM_DECLs from DECL_INITIAL block to id->block,
+	 otherwise for DWARF DW_TAG_formal_parameter will not be children of
+	 DW_TAG_inlined_subroutine, but of a DW_TAG_lexical_block
+	 under it.  The parameters can be then evaluated in the debugger,
+	 but don't show in backtraces.  */
+      for (var = &BLOCK_VARS (BLOCK_SUBBLOCKS (id->block)); *var; )
+	if (TREE_CODE (DECL_ORIGIN (*var)) == PARM_DECL)
+	  {
+	    tree v = *var;
+	    *var = TREE_CHAIN (v);
+	    TREE_CHAIN (v) = BLOCK_VARS (id->block);
+	    BLOCK_VARS (id->block) = v;
+	  }
+	else
+	  var = &TREE_CHAIN (*var);
+    }
 
   /* Return statements in the function body will be replaced by jumps
      to the RET_LABEL.  */
