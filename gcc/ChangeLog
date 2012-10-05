@@ -1,3 +1,7 @@
+2012-10-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.md: Fix indentations of insn C snippets.
+
 2012-10-05  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/54811
@@ -4335,7 +4339,7 @@
 
 2012-08-17  Nick Clifton  <nickc@redhat.com>
 
-	* config/fr30/fr30.md  (cbranchsi4): Remove mode from comparison.
+	* config/fr30/fr30.md (cbranchsi4): Remove mode from comparison.
 	(branch_true): Likewise.
 	(branch_false): Likewise.
 
@@ -17959,7 +17963,7 @@
 	* config/arm/linux-eabi.h (GLIBC_DYNAMIC_LINKER_SOFT_FLOAT): Define.
 	(GLIBC_DYNAMIC_LINKER_HARD_FLOAT): Define.
 	(GLIBC_DYNAMIC_LINKER_DEFAULT): Define.
-	(GLIBC_DYNAMIC_LINKER):	Redefine to use the hard float path.
+	(GLIBC_DYNAMIC_LINKER): Redefine to use the hard float path.
 
 2012-04-25  Sriraman Tallam  <tmsriram@google.com>
 
