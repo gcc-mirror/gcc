@@ -727,6 +727,13 @@ package Errout is
    --  This routine can only be called during semantic analysis. It may not
    --  be called during parsing.
 
+   procedure Cascaded_Error;
+   --  When an anomaly is detected, many semantic routines silently bail out,
+   --  assuming that the anomaly was caused by a previously detected error.
+   --  This routine should be called in these cases, and will raise an
+   --  exception if no serious error has been detected. This ensure that the
+   --  anomaly is never allowed to go unnoticed.
+
    procedure Change_Error_Text (Error_Id : Error_Msg_Id; New_Msg : String);
    --  The error message text of the message identified by Id is replaced by
    --  the given text. This text may contain insertion characters in the

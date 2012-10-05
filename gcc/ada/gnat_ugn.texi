@@ -28212,8 +28212,14 @@ success. It should be possible to use @code{GetLastError} and
 features are not used, but it is not guaranteed to work.
 
 @item
-It is not possible to link against Microsoft libraries except for
+It is not possible to link against Microsoft C++ libraries except for
 import libraries. Interfacing must be done by the mean of DLLs.
+
+@item
+It is possible to link against Microsoft C libraries. Yet the preferred
+solution is to use C/C++ compiler that comes with @value{EDITION}, since it
+doesn't require having two different development environments and makes the
+inter-language debugging experience smoother.
 
 @item
 When the compilation environment is located on FAT32 drives, users may
@@ -28302,14 +28308,14 @@ application that contains a mix of Ada and C/C++, the choice of your
 Windows C/C++ development environment conditions your overall
 interoperability strategy.
 
-If you use @command{gcc} to compile the non-Ada part of your application,
-there are no Windows-specific restrictions that affect the overall
-interoperability with your Ada code. If you do want to use the
-Microsoft tools for your non-Ada code, you have two choices:
+If you use @command{gcc} or Microsoft C to compile the non-Ada part of
+your application, there are no Windows-specific restrictions that
+affect the overall interoperability with your Ada code. If you do want
+to use the Microsoft tools for your C++ code, you have two choices:
 
 @enumerate
 @item
-Encapsulate your non-Ada code in a DLL to be linked with your Ada
+Encapsulate your C++ code in a DLL to be linked with your Ada
 application. In this case, use the Microsoft or whatever environment to
 build the DLL and use GNAT to build your executable
 (@pxref{Using DLLs with GNAT}).

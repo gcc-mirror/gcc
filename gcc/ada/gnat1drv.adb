@@ -328,11 +328,16 @@ procedure Gnat1drv is
          Exception_Mechanism := Back_End_Exceptions;
       end if;
 
-      --  Set proper status for overflow checks. If already set (by -gnato or
-      --  -gnatp) then we have nothing to do.
+      --  Set proper status for overflow checks
+
+      --  If already set (by - gnato or -gnatp) then we have nothing to do
 
       if Opt.Suppress_Options.Overflow_Checks_General /= Not_Set then
          null;
+
+      --  Otherwise set appropriate default mode. Note: at present we set
+      --  SUPPRESSED in all three of the following cases. They are separated
+      --  because in the future we may make different choices.
 
       --  By default suppress overflow checks in -gnatg mode
 
@@ -341,16 +346,18 @@ procedure Gnat1drv is
          Suppress_Options.Overflow_Checks_Assertions := Suppressed;
 
       --  If we have backend divide and overflow checks, then by default
-      --  overflow checks are minimized, which is a reasonable setting.
+      --  overflow checks are suppressed. Historically this code used to
+      --  activate overflow checks, although no target currently has these
+      --  flags set, so this was dead code anyway.
 
       elsif Targparm.Backend_Divide_Checks_On_Target
               and
             Targparm.Backend_Overflow_Checks_On_Target
       then
-         Suppress_Options.Overflow_Checks_General    := Minimized;
-         Suppress_Options.Overflow_Checks_Assertions := Minimized;
+         Suppress_Options.Overflow_Checks_General    := Suppressed;
+         Suppress_Options.Overflow_Checks_Assertions := Suppressed;
 
-      --  Otherwise for now, default is checks are suppressed. This is likely
+      --  Otherwise for now, default is checks are suppressed. This is subject
       --  to change in the future, but for now this is the compatible behavior
       --  with previous versions of GNAT.
 

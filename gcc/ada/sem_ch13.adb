@@ -4902,6 +4902,48 @@ package body Sem_Ch13 is
       end if;
    end Analyze_Record_Representation_Clause;
 
+   -------------------------------------------
+   -- Build_Invariant_Procedure_Declaration --
+   -------------------------------------------
+
+   function Build_Invariant_Procedure_Declaration
+     (Typ : Entity_Id) return Node_Id
+   is
+      Loc           : constant Source_Ptr := Sloc (Typ);
+      Object_Entity : constant Entity_Id :=
+        Make_Defining_Identifier (Loc, New_Internal_Name ('I'));
+      Spec          : Node_Id;
+      SId           : Entity_Id;
+
+   begin
+      Set_Etype (Object_Entity, Typ);
+
+      --  Check for duplicate definiations.
+
+      if Has_Invariants (Typ)
+        and then Present (Invariant_Procedure (Typ))
+      then
+         return Empty;
+      end if;
+
+      SId := Make_Defining_Identifier (Loc,
+         Chars => New_External_Name (Chars (Typ), "Invariant"));
+      Set_Has_Invariants (SId);
+      Set_Has_Invariants (Typ);
+      Set_Ekind (SId, E_Procedure);
+      Set_Invariant_Procedure (Typ, SId);
+
+      Spec :=
+        Make_Procedure_Specification (Loc,
+          Defining_Unit_Name       => SId,
+          Parameter_Specifications => New_List (
+            Make_Parameter_Specification (Loc,
+              Defining_Identifier => Object_Entity,
+              Parameter_Type      => New_Occurrence_Of (Typ, Loc))));
+
+      return Make_Subprogram_Declaration (Loc, Specification => Spec);
+   end Build_Invariant_Procedure_Declaration;
+
    -------------------------------
    -- Build_Invariant_Procedure --
    -------------------------------
@@ -4936,12 +4978,11 @@ package body Sem_Ch13 is
       --  "inherited" to the exception message and generating an informational
       --  message about the inheritance of an invariant.
 
-      Object_Name : constant Name_Id := New_Internal_Name ('I');
+      Object_Name : Name_Id;
       --  Name for argument of invariant procedure
 
-      Object_Entity : constant Node_Id :=
-                        Make_Defining_Identifier (Loc, Object_Name);
-      --  The procedure declaration entity for the argument
+      Object_Entity : Node_Id;
+      --  The entity of the formal for the procedure
 
       --------------------
       -- Add_Invariants --
@@ -5140,7 +5181,29 @@ package body Sem_Ch13 is
       Stmts := No_List;
       PDecl := Empty;
       PBody := Empty;
-      Set_Etype (Object_Entity, Typ);
+      SId   := Empty;
+
+      --  If the aspect specification exists for some view of the type, the
+      --  declaration for the procedure has been created.
+
+      if Has_Invariants (Typ) then
+         SId := Invariant_Procedure (Typ);
+      end if;
+
+      if Present (SId) then
+         PDecl := Unit_Declaration_Node (SId);
+
+      else
+         PDecl := Build_Invariant_Procedure_Declaration (Typ);
+      end if;
+
+      --  Recover formal of procedure, for use in the calls to invariant
+      --  functions (including inherited ones).
+
+      Object_Entity :=
+        Defining_Identifier
+          (First (Parameter_Specifications (Specification (PDecl))));
+      Object_Name := Chars (Object_Entity);
 
       --  Add invariants for the current type
 
@@ -5174,38 +5237,7 @@ package body Sem_Ch13 is
 
       if Stmts /= No_List then
 
-         --  Build procedure declaration
-
-         SId :=
-           Make_Defining_Identifier (Loc,
-             Chars => New_External_Name (Chars (Typ), "Invariant"));
-         Set_Has_Invariants (SId);
-         Set_Invariant_Procedure (Typ, SId);
-
-         Spec :=
-           Make_Procedure_Specification (Loc,
-             Defining_Unit_Name       => SId,
-             Parameter_Specifications => New_List (
-               Make_Parameter_Specification (Loc,
-                 Defining_Identifier => Object_Entity,
-                 Parameter_Type      => New_Occurrence_Of (Typ, Loc))));
-
-         PDecl := Make_Subprogram_Declaration (Loc, Specification => Spec);
-
-         --  Build procedure body
-
-         SId :=
-           Make_Defining_Identifier (Loc,
-             Chars => New_External_Name (Chars (Typ), "Invariant"));
-
-         Spec :=
-           Make_Procedure_Specification (Loc,
-             Defining_Unit_Name       => SId,
-             Parameter_Specifications => New_List (
-               Make_Parameter_Specification (Loc,
-                 Defining_Identifier =>
-                   Make_Defining_Identifier (Loc, Object_Name),
-                 Parameter_Type => New_Occurrence_Of (Typ, Loc))));
+         Spec  := Copy_Separate_Tree (Specification (PDecl));
 
          PBody :=
            Make_Subprogram_Body (Loc,
@@ -5216,14 +5248,18 @@ package body Sem_Ch13 is
                  Statements => Stmts));
 
          --  Insert procedure declaration and spec at the appropriate points.
+         --  If declaration is already analyzed, it was processed by the
+         --  generated pragma.
 
          if Present (Private_Decls) then
 
             --  The spec goes at the end of visible declarations, but they have
             --  already been analyzed, so we need to explicitly do the analyze.
 
-            Append_To (Visible_Decls, PDecl);
-            Analyze (PDecl);
+            if not Analyzed (PDecl) then
+               Append_To (Visible_Decls, PDecl);
+               Analyze (PDecl);
+            end if;
 
             --  The body goes at the end of the private declarations, which we
             --  have not analyzed yet, so we do not need to perform an explicit
@@ -5523,6 +5559,7 @@ package body Sem_Ch13 is
            Make_Defining_Identifier (Loc,
              Chars => New_External_Name (Chars (Typ), "Predicate"));
          Set_Has_Predicates (SId);
+         Set_Ekind (SId, E_Function);
          Set_Predicate_Function (Typ, SId);
 
          --  The predicate function is shared between views of a type.

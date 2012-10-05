@@ -1629,6 +1629,15 @@ package body Sem_Dim is
          Formal := First_Formal (Nam);
 
          while Present (Formal) loop
+
+            --  A missing corresponding actual indicates that the analysis of
+            --  the call was aborted due to a previous error.
+
+            if No (Actual) then
+               Cascaded_Error;
+               return;
+            end if;
+
             Formal_Typ     := Etype (Formal);
             Dims_Of_Formal := Dimensions_Of (Formal_Typ);
 
