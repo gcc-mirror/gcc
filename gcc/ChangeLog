@@ -1,3 +1,11 @@
+2012-10-04  Jan Hubicka  <jh@suse.cz>
+
+	* tree-vectorizer.h (vect_estimate_min_profitable_iters): Remove.
+	* tree-vect-loop.c (vect_estimate_min_profitable_iters): Declare here.
+	(vect_analyze_loop_operations): Use loop count estimate to rule out
+	unprofitable vectorization.
+	(vect_estimate_min_profitable_iters): Return ret_min_profitable_estimate.
+
 2012-10-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/54810
