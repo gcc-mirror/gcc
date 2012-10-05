@@ -1,3 +1,12 @@
+2012-10-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/c_global/cstdlib: Remove redundant pasto code protected
+	by __GXX_EXPERIMENTAL_CXX0X__.
+	* include/c_global/cwctype: Likewise.
+	* include/c_global/ccomplex: Remove uses of obsolete macro
+	_GLIBCXX_INCLUDE_AS_TR1.
+	* include/c_global/cfloat: Likewise.
+
 2012-10-05  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR libstdc++/54686
