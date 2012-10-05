@@ -1,3 +1,20 @@
+2012-10-05  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch7.adb: Minor reformatting.
+
+2012-10-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma, case Persistent_BSS): check for
+	a duplicate pragma before Rep_Item_Too_Late to prevent spurious
+	messages about duplicate pragmas.
+
+2012-10-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_util.adb (Find_Init_Call): If the successor of the
+	object declaration is a block, check whether it contains the
+	initialization call, because it may have been created by actuals
+	that use the secondary stack.
+
 2012-10-05  Thomas Quinot  <quinot@adacore.com>
 
 	* sem_dim.adb, errout.adb, errout.ads (Analyze_Dimension_Call): Add
