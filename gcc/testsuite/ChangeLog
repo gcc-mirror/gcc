@@ -1,3 +1,13 @@
+2012-10-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/54519
+	* gcc.dg/guality/pr54519-1.c: New test.
+	* gcc.dg/guality/pr54519-2.c: New test.
+	* gcc.dg/guality/pr54519-3.c: New test.
+	* gcc.dg/guality/pr54519-4.c: New test.
+	* gcc.dg/guality/pr54519-5.c: New test.
+	* gcc.dg/guality/pr54519-6.c: New test.
+
 2012-10-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/50893
