@@ -213,7 +213,7 @@ case ${host} in
   esac
   ;;
 *-*-openbsd*)
-  tmake_file="$tmake_file t-crtstuff-pic t-libgcc-pic"
+  tmake_file="$tmake_file t-crtstuff-pic t-libgcc-pic t-eh-dw2-dip"
   case ${target_thread_file} in
     posix)
       tmake_file="$tmake_file t-openbsd-thread"
