@@ -135,7 +135,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif // _GLIBCXX_USE_WCHAR_T
 
   inline long
-  abs(long __i) { return labs(__i); }
+  abs(long __i) { return __builtin_labs(__i); }
+
+#ifdef _GLIBCXX_USE_LONG_LONG
+  inline long long
+  abs(long long __x) { return __builtin_llabs (__x); }
+#endif
+
+#if !defined(__STRICT_ANSI__) && defined(_GLIBCXX_USE_INT128)
+  inline __int128
+  abs(__int128 __x) { return __x >= 0 ? __x : -__x; }
+#endif
 
   inline ldiv_t
   div(long __i, long __j) { return ldiv(__i, __j); }
@@ -167,9 +177,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if !_GLIBCXX_USE_C99_DYNAMIC
   using ::_Exit;
 #endif
-
-  inline long long
-  abs(long long __x) { return __x >= 0 ? __x : -__x; }
 
 #if !_GLIBCXX_USE_C99_LONG_LONG_DYNAMIC
   using ::llabs;
@@ -205,7 +212,6 @@ namespace std
   using ::__gnu_cxx::lldiv_t;
 #endif
   using ::__gnu_cxx::_Exit;
-  using ::__gnu_cxx::abs;
 #if !_GLIBCXX_USE_C99_LONG_LONG_DYNAMIC
   using ::__gnu_cxx::llabs;
   using ::__gnu_cxx::div;

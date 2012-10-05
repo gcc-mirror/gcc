@@ -1,3 +1,12 @@
+2012-10-05  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR libstdc++/54686
+	* include/c_std/cstdlib (abs(long long)): Define with
+	__builtin_llabs when we have long long.
+	(abs(long)): Use __builtin_labs.
+	(abs(__int128)): Define when we have __int128.
+	* testsuite/26_numerics/headers/cstdlib/54686.c: New file.
+
 2012-10-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/53248
