@@ -1,3 +1,8 @@
+2012-10-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/33763
+	* c-c++-common/pr33763.c: New test.
+
 2012-09-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/addr1.ads: Move dg directive to...

@@ -3809,6 +3809,12 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
 	goto egress;
 
       if (lookup_attribute ("always_inline", DECL_ATTRIBUTES (fn))
+          /* For extern inline functions that get redefined we always
+	     silently ignored always_inline flag. Better behaviour would
+	     be to be able to keep both bodies and use extern inline body
+	     for inlining, but we can't do that because frontends overwrite
+	     the body.  */
+	  && !cg_edge->callee->local.redefined_extern_inline
 	  /* Avoid warnings during early inline pass. */
 	  && cgraph_global_info_ready)
 	{
