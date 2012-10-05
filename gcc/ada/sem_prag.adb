@@ -12130,6 +12130,11 @@ package body Sem_Prag is
                Ent := Entity (Get_Pragma_Arg (Arg1));
                Decl := Parent (Ent);
 
+               --  Check for duplication before inserting in list of
+               --  representation items.
+
+               Check_Duplicate_Pragma (Ent);
+
                if Rep_Item_Too_Late (Ent, N) then
                   return;
                end if;
@@ -12144,8 +12149,6 @@ package body Sem_Prag is
                     ("object type for pragma% is not potentially persistent",
                      Arg1);
                end if;
-
-               Check_Duplicate_Pragma (Ent);
 
                Prag :=
                  Make_Linker_Section_Pragma

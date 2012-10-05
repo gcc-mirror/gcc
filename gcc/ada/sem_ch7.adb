@@ -1390,11 +1390,13 @@ package body Sem_Ch7 is
          then
             declare
                ASN : Node_Id;
+
             begin
                ASN := First (Aspect_Specifications (Parent (E)));
                while Present (ASN) loop
                   if Chars (Identifier (ASN)) = Name_Invariant
-                    or else Chars (Identifier (ASN)) = Name_Type_Invariant
+                       or else
+                     Chars (Identifier (ASN)) = Name_Type_Invariant
                   then
                      Build_Invariant_Procedure (E, N);
                      exit;
