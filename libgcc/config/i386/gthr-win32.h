@@ -538,7 +538,7 @@ __gthread_recursive_mutex_unlock (__gthread_recursive_mutex_t *__mutex)
 }
 
 static inline int
-__gthread_recursive_mutex_destroy (__gthread_recursive_mutex_t *mutex)
+__gthread_recursive_mutex_destroy (__gthread_recursive_mutex_t *__mutex)
 {
   return __gthr_win32_recursive_mutex_destroy (__mutex);
 }
@@ -769,9 +769,9 @@ __gthread_recursive_mutex_unlock (__gthread_recursive_mutex_t *__mutex)
 }
 
 static inline int
-__gthread_recursive_mutex_destroy (__gthread_recursive_mutex_t *mutex)
+__gthread_recursive_mutex_destroy (__gthread_recursive_mutex_t *__mutex)
 {
-  CloseHandle ((HANDLE) mutex->sema);
+  CloseHandle ((HANDLE) __mutex->sema);
   return 0;
 }
 

@@ -1,3 +1,9 @@
+2012-10-05  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR other/53889
+	* config/i386/gthr-win32.h (__gthread_recursive_mutex_destroy):
+	Fix parameter names.
+
 2012-10-04  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/33135
@@ -22,6 +28,8 @@
 	* gthr-single.h (__gthread_recursive_mutex_destroy): Likewise.
 	* config/gthr-rtems.h (__gthread_recursive_mutex_destroy): Likewise.
 	* config/gthr-vxworks.h (__gthread_recursive_mutex_destroy): Likewise.
+	* config/i386/gthr-win32.c (__gthread_win32_recursive_mutex_destroy):
+	Likewise.
 	* config/i386/gthr-win32.h (__gthread_recursive_mutex_destroy):
 	Likewise.
 	* config/mips/gthr-mipssde.h (__gthread_recursive_mutex_destroy):
