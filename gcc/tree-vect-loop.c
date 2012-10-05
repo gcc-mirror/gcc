@@ -140,6 +140,8 @@ along with GCC; see the file COPYING3.  If not see
    http://gcc.gnu.org/projects/tree-ssa/vectorization.html
 */
 
+static void vect_estimate_min_profitable_iters (loop_vec_info, int *, int *);
+
 /* Function vect_determine_vectorization_factor
 
    Determine the vectorization factor (VF).  VF is the number of data elements
@@ -1287,6 +1289,8 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo, bool slp)
   unsigned int th;
   bool only_slp_in_loop = true, ok;
   HOST_WIDE_INT max_niter;
+  HOST_WIDE_INT estimated_niter;
+  int min_profitable_estimate;
 
   if (dump_kind_p (MSG_NOTE))
     dump_printf_loc (MSG_NOTE, vect_location,
@@ -1490,7 +1494,8 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo, bool slp)
      vector stmts depends on VF.  */
   vect_update_slp_costs_according_to_vf (loop_vinfo);
 
-  min_profitable_iters = vect_estimate_min_profitable_iters (loop_vinfo);
+  vect_estimate_min_profitable_iters (loop_vinfo, &min_profitable_iters,
+				      &min_profitable_estimate);
   LOOP_VINFO_COST_MODEL_MIN_ITERS (loop_vinfo) = min_profitable_iters;
 
   if (min_profitable_iters < 0)
@@ -1507,6 +1512,7 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo, bool slp)
 
   min_scalar_loop_bound = ((PARAM_VALUE (PARAM_MIN_VECT_LOOP_BOUND)
                             * vectorization_factor) - 1);
+
 
   /* Use the cost model only if it is more conservative than user specified
      threshold.  */
@@ -1528,6 +1534,23 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo, bool slp)
 			 "not vectorized: iteration count smaller than user "
 			 "specified loop bound parameter or minimum profitable "
 			 "iterations (whichever is more conservative).");
+      return false;
+    }
+
+  if ((estimated_niter = estimated_stmt_executions_int (loop)) != -1
+      && ((unsigned HOST_WIDE_INT) estimated_niter
+          <= MAX (th, (unsigned)min_profitable_estimate)))
+    {
+      if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "not vectorized: estimated iteration count too "
+                         "small.");
+      if (dump_kind_p (MSG_NOTE))
+        dump_printf_loc (MSG_NOTE, vect_location,
+			 "not vectorized: estimated iteration count smaller "
+                         "than specified loop bound parameter or minimum "
+                         "profitable iterations (whichever is more "
+                         "conservative).");
       return false;
     }
 
@@ -2603,15 +2626,15 @@ vect_get_known_peeling_cost (loop_vec_info loop_vinfo, int peel_iters_prologue,
 
    Return the number of iterations required for the vector version of the
    loop to be profitable relative to the cost of the scalar version of the
-   loop.
+   loop.  */
 
-   TODO: Take profile info into account before making vectorization
-   decisions, if available.  */
-
-int
-vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
+static void
+vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
+				    int *ret_min_profitable_niters,
+				    int *ret_min_profitable_estimate)
 {
   int min_profitable_iters;
+  int min_profitable_estimate;
   int peel_iters_prologue;
   int peel_iters_epilogue;
   unsigned vec_inside_cost = 0;
@@ -2628,7 +2651,9 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
   if (!flag_vect_cost_model)
     {
       dump_printf_loc (MSG_NOTE, vect_location, "cost model disabled.");
-      return 0;
+      *ret_min_profitable_niters = 0;
+      *ret_min_profitable_estimate = 0;
+      return;
     }
 
   /* Requires loop versioning tests to handle misalignment.  */
@@ -2863,7 +2888,9 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
 			 "divided by the scalar iteration cost = %d "
 			 "is greater or equal to the vectorization factor = %d.",
 			 vec_inside_cost, scalar_single_iter_cost, vf);
-      return -1;
+      *ret_min_profitable_niters = -1;
+      *ret_min_profitable_estimate = -1;
+      return;
     }
 
   if (dump_kind_p (MSG_NOTE))
@@ -2879,6 +2906,8 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
                    scalar_single_iter_cost);
       dump_printf (MSG_NOTE, "  Scalar outside cost: %d\n",
                    scalar_outside_cost);
+      dump_printf (MSG_NOTE, "  Vector outside cost: %d\n",
+                   vec_outside_cost);
       dump_printf (MSG_NOTE, "  prologue iterations: %d\n",
                    peel_iters_prologue);
       dump_printf (MSG_NOTE, "  epilogue iterations: %d\n",
@@ -2898,9 +2927,35 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
 
   if (dump_kind_p (MSG_NOTE))
     dump_printf_loc (MSG_NOTE, vect_location,
-                     "  Profitability threshold = %d\n", min_profitable_iters);
+                     "  Runtime profitability threshold = %d\n", min_profitable_iters);
 
-  return min_profitable_iters;
+  *ret_min_profitable_niters = min_profitable_iters;
+
+  /* Calculate number of iterations required to make the vector version
+     profitable, relative to the loop bodies only.
+
+     Non-vectorized variant is SIC * niters and it must win over vector
+     variant on the expected loop trip count.  The following condition must hold true:
+     SIC * niters > VIC * ((niters-PL_ITERS-EP_ITERS)/VF) + VOC + SOC  */
+
+  if (vec_outside_cost <= 0)
+    min_profitable_estimate = 1;
+  else
+    {
+      min_profitable_estimate = ((vec_outside_cost + scalar_outside_cost) * vf
+				 - vec_inside_cost * peel_iters_prologue
+				 - vec_inside_cost * peel_iters_epilogue)
+				 / ((scalar_single_iter_cost * vf)
+				   - vec_inside_cost);
+    }
+  min_profitable_estimate --;
+  min_profitable_estimate = MAX (min_profitable_estimate, min_profitable_iters);
+  if (dump_kind_p (MSG_NOTE))
+    dump_printf_loc (MSG_NOTE, vect_location,
+                     "  Static estimate profitability threshold = %d\n",
+                      min_profitable_iters);
+
+  *ret_min_profitable_estimate = min_profitable_estimate;
 }
 
 
