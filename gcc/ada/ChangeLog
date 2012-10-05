@@ -1,3 +1,43 @@
+2012-10-05  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_dim.adb, errout.adb, errout.ads (Analyze_Dimension_Call): Add
+	guard against abnormal tree resulting from a previously diagnosed
+	illegality.
+
+2012-10-05  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* freeze.adb (Freeze_Expression): Rename local variable Cspc to Spec
+	and update all refs to it. Do not freeze an entity outside a subprogram
+	body when the original context is an expression function.
+
+2012-10-05  Robert Dewar  <dewar@adacore.com>
+
+	* gnat1drv.adb (Adjust_Global_Switches): Default for overflow checking
+	is suppressed, even if backend overflow/divide checks are enabled.
+
+2012-10-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* einfo.adb (Set_Invariant_Procedure, Set_Predicate_Function):
+	chain properly subprograms on Subprograms_For_Type list.
+	* sem_ch13.ads; (Build_Invariant_Procedure_Declaration): new
+	procedure, to create declaration for invariant procedure
+	independently of the construction of the body, so that it can
+	be called within expression functions.
+	* sem_ch13.adb (Build_Invariant_Procedure): code cleanup. The
+	declaration may already have been generated at the point an
+	explicit invariant aspect is encountered.
+	* sem_prag.adb; (Analyze_Pragma, case Invariant): create declaration
+	for invariant procedure.
+	* sem_ch7.adb (Analyze_Package_Specification): clean up call to
+	build invariant procedure.
+	(Preserve_Full_Attributes): propagate information about invariants
+	if they appear on a completion,
+
+2012-10-05  Pascal Obry  <obry@adacore.com>
+
+	* gnat_ugn.texi: Update documentation to lift Microsoft C
+	restriction.
+
 2012-10-05  Robert Dewar  <dewar@adacore.com>
 
 	* sem_util.adb (Has_One_Matching_Field): Handle case of lone

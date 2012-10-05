@@ -5156,43 +5156,63 @@ package body Freeze is
                --  subprogram body that we are inside.
 
                if In_Exp_Body (Parent_P) then
-
-                  --  However, we *do* want to freeze at this point if we have
-                  --  an entity to freeze, and that entity is declared *inside*
-                  --  the body of the expander generated procedure. This case
-                  --  is recognized by the scope of the type, which is either
-                  --  the spec for some enclosing body, or (in the case of
-                  --  init_procs, for which there are no separate specs) the
-                  --  current scope.
-
                   declare
                      Subp : constant Node_Id := Parent (Parent_P);
-                     Cspc : Entity_Id;
+                     Spec : Entity_Id;
 
                   begin
-                     if Nkind (Subp) = N_Subprogram_Body then
-                        Cspc := Corresponding_Spec (Subp);
+                     --  Freeze the entity only when it is declared inside the
+                     --  body of the expander generated procedure. This case
+                     --  is recognized by the scope of the entity or its type,
+                     --  which is either the spec for some enclosing body, or
+                     --  (in the case of init_procs, for which there are no
+                     --  separate specs) the current scope.
 
-                        if (Present (Typ) and then Scope (Typ) = Cspc)
+                     if Nkind (Subp) = N_Subprogram_Body then
+                        Spec := Corresponding_Spec (Subp);
+
+                        if (Present (Typ) and then Scope (Typ) = Spec)
                              or else
-                           (Present (Nam) and then Scope (Nam) = Cspc)
+                           (Present (Nam) and then Scope (Nam) = Spec)
                         then
                            exit;
 
                         elsif Present (Typ)
                           and then Scope (Typ) = Current_Scope
-                          and then Current_Scope = Defining_Entity (Subp)
+                          and then Defining_Entity (Subp) = Current_Scope
                         then
                            exit;
                         end if;
                      end if;
+
+                     --  An expression function may act as a completion of
+                     --  a function declaration. As such, it can reference
+                     --  entities declared between the two views:
+
+                     --     Hidden [];                             -- 1
+                     --     function F return ...;
+                     --     private
+                     --        function Hidden return ...;
+                     --        function F return ... is (Hidden);  -- 2
+
+                     --  Refering to the example above, freezing the expression
+                     --  of F (2) would place Hidden's freeze node (1) in the
+                     --  wrong place. Avoid explicit freezing and let the usual
+                     --  scenarios do the job - for example, reaching the end
+                     --  of the private declarations.
+
+                     if Nkind (Original_Node (Subp)) =
+                                                N_Expression_Function
+                     then
+                        null;
+
+                     --  Freeze outside the body
+
+                     else
+                        Parent_P := Parent (Parent_P);
+                        Freeze_Outside := True;
+                     end if;
                   end;
-
-                  --  If not that exception to the exception, then this is
-                  --  where we delay the freeze till outside the body.
-
-                  Parent_P := Parent (Parent_P);
-                  Freeze_Outside := True;
 
                --  Here if normal case where we are in handled statement
                --  sequence and want to do the insertion right there.
