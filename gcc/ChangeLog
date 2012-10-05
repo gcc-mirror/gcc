@@ -1,3 +1,13 @@
+2012-10-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/54519
+	* ipa-split.c (split_function): Add debug args and
+	debug source and normal stmts for args_to_skip which are
+	gimple regs.
+	* tree-inline.c (copy_debug_stmt): When inlining, adjust
+	source debug bind stmts to debug binds of corresponding
+	DEBUG_EXPR_DECL.
+
 2012-10-05  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.md: Fix indentations of insn C snippets.
