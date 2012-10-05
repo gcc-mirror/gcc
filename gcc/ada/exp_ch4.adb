@@ -7084,7 +7084,7 @@ package body Exp_Ch4 is
       Typl := Base_Type (Typl);
 
       --  Deal with overflow checks in MINIMIZED/ELIMINATED mode and if that
-      --  results in not having a comparison operation anymore, we are done.
+      --  means we no longer have a comparison operation, we are all done.
 
       Expand_Compare_Minimize_Eliminate_Overflow (N);
 
@@ -7678,7 +7678,7 @@ package body Exp_Ch4 is
       Binary_Op_Validity_Checks (N);
 
       --  Deal with overflow checks in MINIMIZED/ELIMINATED mode and if that
-      --  results in not having a comparison operation anymore, we are done.
+      --  means we no longer have a comparison operation, we are all done.
 
       Expand_Compare_Minimize_Eliminate_Overflow (N);
 
@@ -7728,7 +7728,7 @@ package body Exp_Ch4 is
       Binary_Op_Validity_Checks (N);
 
       --  Deal with overflow checks in MINIMIZED/ELIMINATED mode and if that
-      --  results in not having a comparison operation anymore, we are done.
+      --  means we no longer have a comparison operation, we are all done.
 
       Expand_Compare_Minimize_Eliminate_Overflow (N);
 
@@ -7778,7 +7778,7 @@ package body Exp_Ch4 is
       Binary_Op_Validity_Checks (N);
 
       --  Deal with overflow checks in MINIMIZED/ELIMINATED mode and if that
-      --  results in not having a comparison operation anymore, we are done.
+      --  means we no longer have a comparison operation, we are all done.
 
       Expand_Compare_Minimize_Eliminate_Overflow (N);
 
@@ -7828,7 +7828,7 @@ package body Exp_Ch4 is
       Binary_Op_Validity_Checks (N);
 
       --  Deal with overflow checks in MINIMIZED/ELIMINATED mode and if that
-      --  results in not having a comparison operation anymore, we are done.
+      --  means we no longer have a comparison operation, we are all done.
 
       Expand_Compare_Minimize_Eliminate_Overflow (N);
 
@@ -8263,7 +8263,7 @@ package body Exp_Ch4 is
          Binary_Op_Validity_Checks (N);
 
          --  Deal with overflow checks in MINIMIZED/ELIMINATED mode and if
-         --  that results in not having a /= operation anymore, we are done.
+         --  means we no longer have a /= operation, we are all done.
 
          Expand_Compare_Minimize_Eliminate_Overflow (N);
 

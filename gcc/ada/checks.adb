@@ -1207,10 +1207,9 @@ package body Checks is
             Analyze_And_Resolve (Op);
          end;
 
-      --  Here we know the result is Long_Long_Integer'Base,
-      --  or that it has been rewritten because the parent
-      --  is a conversion (see Conversion_Optimization in
-      --  Apply_Arithmetic_Overflow_Checked_Suppressed).
+      --  Here we know the result is Long_Long_Integer'Base, of that it has
+      --  been rewritten because the parent operation is a conversion. See
+      --  Conversion_Optimization.Apply_Arithmetic_Overflow_Checked_Suppressed.
 
       else
          pragma Assert

@@ -1905,11 +1905,11 @@ package body System.Tasking.Stages is
       C := All_Tasks_List;
       P := null;
       while C /= null loop
-         --  If Free_On_Termination is set, do nothing here, and let
-         --  the task free itself if not already done, otherwise we
-         --  risk a race condition where Vulnerable_Free_Task is called
-         --  in the loop below, while the task calls Free_Task itself,
-         --  in Terminate_Task.
+
+         --  If Free_On_Termination is set, do nothing here, and let the
+         --  task free itself if not already done, otherwise we risk a race
+         --  condition where Vulnerable_Free_Task is called in the loop below,
+         --  while the task calls Free_Task itself, in Terminate_Task.
 
          if C.Common.Parent = Self_ID
            and then C.Master_of_Task >= CM
