@@ -2170,8 +2170,25 @@ finish_call_expr (tree fn, VEC(tree,gc) **args, bool disallow_virtual,
 	result = resolve_overloaded_builtin (input_location, fn, *args);
 
       if (!result)
-	/* A call to a namespace-scope function.  */
-	result = build_new_function_call (fn, args, koenig_p, complain);
+	{
+	  if (warn_sizeof_pointer_memaccess
+	      && !VEC_empty(tree, *args)
+	      && TREE_CODE (VEC_last(tree, *args)) == SIZEOF_EXPR
+	      && !processing_template_decl)
+	    {
+	      tree sizeof_arg = VEC_last(tree, *args);
+	      if (SIZEOF_EXPR_TYPE_P (sizeof_arg))
+		sizeof_arg = TREE_TYPE (TREE_OPERAND (sizeof_arg, 0));
+	      else
+		sizeof_arg = TREE_OPERAND (sizeof_arg, 0);
+	      sizeof_pointer_memaccess_warning
+		(EXPR_LOCATION (VEC_last(tree, *args)), fn, *args,
+		 sizeof_arg, same_type_ignoring_top_level_qualifiers_p);
+	    }
+
+	  /* A call to a namespace-scope function.  */
+	  result = build_new_function_call (fn, args, koenig_p, complain);
+	}
     }
   else if (TREE_CODE (fn) == PSEUDO_DTOR_EXPR)
     {
@@ -7723,6 +7740,21 @@ cxx_eval_constant_expression (const constexpr_call *call, tree t,
 				     non_constant_p);
       break;
 
+    case SIZEOF_EXPR:
+      if (SIZEOF_EXPR_TYPE_P (t))
+	r = cxx_sizeof_or_alignof_type (TREE_TYPE (TREE_OPERAND (t, 0)),
+					SIZEOF_EXPR, false);
+      else if (TYPE_P (TREE_OPERAND (t, 0)))
+	r = cxx_sizeof_or_alignof_type (TREE_OPERAND (t, 0), SIZEOF_EXPR,
+					false);
+      else
+	r = cxx_sizeof_or_alignof_expr (TREE_OPERAND (t, 0), SIZEOF_EXPR,
+					false);
+      if (r == error_mark_node)
+	r = size_one_node;
+      VERIFY_CONSTANT (r);
+      break;
+
     case COMPOUND_EXPR:
       {
 	/* check_return_expr sometimes wraps a TARGET_EXPR in a
@@ -8106,12 +8138,6 @@ potential_constant_expression_1 (tree t, bool want_rval, tsubst_flags_t flags)
   enum { any = false, rval = true };
   int i;
   tree tmp;
-
-  /* C++98 has different rules for the form of a constant expression that
-     are enforced in the parser, so we can assume that anything that gets
-     this far is suitable.  */
-  if (cxx_dialect < cxx0x)
-    return true;
 
   if (t == error_mark_node)
     return false;
@@ -8633,6 +8659,9 @@ potential_constant_expression_1 (tree t, bool want_rval, tsubst_flags_t flags)
       return false;
 
     default:
+      if (objc_is_property_ref (t))
+	return false;
+
       sorry ("unexpected AST of kind %s", tree_code_name[TREE_CODE (t)]);
       gcc_unreachable();
       return false;

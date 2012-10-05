@@ -1,3 +1,8 @@
+2012-10-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/20_util/shared_ptr/cons/43820_neg.cc: Adjust line
+	numbers.
+
 2012-10-05  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR libstdc++/54686

@@ -1,6 +1,6 @@
 /* Implementation of subroutines for the GNU C++ pretty-printer.
    Copyright (C) 2003, 2004, 2005, 2007, 2008,
-   2009, 2010, 2011 Free Software Foundation, Inc.
+   2009, 2010, 2011, 2012 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -798,7 +798,13 @@ pp_cxx_unary_expression (cxx_pretty_printer *pp, tree t)
     case ALIGNOF_EXPR:
       pp_cxx_ws_string (pp, code == SIZEOF_EXPR ? "sizeof" : "__alignof__");
       pp_cxx_whitespace (pp);
-      if (TYPE_P (TREE_OPERAND (t, 0)))
+      if (TREE_CODE (t) == SIZEOF_EXPR && SIZEOF_EXPR_TYPE_P (t))
+	{
+	  pp_cxx_left_paren (pp);
+	  pp_cxx_type_id (pp, TREE_TYPE (TREE_OPERAND (t, 0)));
+	  pp_cxx_right_paren (pp);
+	}
+      else if (TYPE_P (TREE_OPERAND (t, 0)))
 	{
 	  pp_cxx_left_paren (pp);
 	  pp_cxx_type_id (pp, TREE_OPERAND (t, 0));

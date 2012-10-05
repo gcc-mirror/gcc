@@ -2160,39 +2160,40 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	  DECL_ARGUMENTS (olddecl) = DECL_ARGUMENTS (newdecl);
 	  DECL_RESULT (olddecl) = DECL_RESULT (newdecl);
 	}
+      /* If redeclaring a builtin function, it stays built in
+	 if newdecl is a gnu_inline definition, or if newdecl is just
+	 a declaration.  */
+      if (DECL_BUILT_IN (olddecl)
+	  && (new_defines_function ? GNU_INLINE_P (newdecl) : types_match))
+	{
+	  DECL_BUILT_IN_CLASS (newdecl) = DECL_BUILT_IN_CLASS (olddecl);
+	  DECL_FUNCTION_CODE (newdecl) = DECL_FUNCTION_CODE (olddecl);
+	  /* If we're keeping the built-in definition, keep the rtl,
+	     regardless of declaration matches.  */
+	  COPY_DECL_RTL (olddecl, newdecl);
+	  if (DECL_BUILT_IN_CLASS (newdecl) == BUILT_IN_NORMAL)
+	    {
+	      enum built_in_function fncode = DECL_FUNCTION_CODE (newdecl);
+	      switch (fncode)
+		{
+		  /* If a compatible prototype of these builtin functions
+		     is seen, assume the runtime implements it with the
+		     expected semantics.  */
+		case BUILT_IN_STPCPY:
+		  if (builtin_decl_explicit_p (fncode))
+		    set_builtin_decl_implicit_p (fncode, true);
+		  break;
+		default:
+		  break;
+		}
+	    }
+	}
       if (new_defines_function)
 	/* If defining a function declared with other language
 	   linkage, use the previously declared language linkage.  */
 	SET_DECL_LANGUAGE (newdecl, DECL_LANGUAGE (olddecl));
       else if (types_match)
 	{
-	  /* If redeclaring a builtin function, and not a definition,
-	     it stays built in.  */
-	  if (DECL_BUILT_IN (olddecl))
-	    {
-	      DECL_BUILT_IN_CLASS (newdecl) = DECL_BUILT_IN_CLASS (olddecl);
-	      DECL_FUNCTION_CODE (newdecl) = DECL_FUNCTION_CODE (olddecl);
-	      /* If we're keeping the built-in definition, keep the rtl,
-		 regardless of declaration matches.  */
-	      COPY_DECL_RTL (olddecl, newdecl);
-	      if (DECL_BUILT_IN_CLASS (newdecl) == BUILT_IN_NORMAL)
-		{
-		  enum built_in_function fncode = DECL_FUNCTION_CODE (newdecl);
-		  switch (fncode)
-		    {
-		      /* If a compatible prototype of these builtin functions
-			 is seen, assume the runtime implements it with the
-			 expected semantics.  */
-		    case BUILT_IN_STPCPY:
-		      if (builtin_decl_explicit_p (fncode))
-			set_builtin_decl_implicit_p (fncode, true);
-		      break;
-		    default:
-		      break;
-		    }
-		}
-	    }
-
 	  DECL_RESULT (newdecl) = DECL_RESULT (olddecl);
 	  /* Don't clear out the arguments if we're just redeclaring a
 	     function.  */
@@ -7931,6 +7932,36 @@ stabilize_vla_size (tree size)
   struct pointer_set_t *pset = pointer_set_create ();
   /* Break out any function calls into temporary variables.  */
   cp_walk_tree (&size, stabilize_save_expr_r, pset, pset);
+  pointer_set_destroy (pset);
+}
+
+/* Helper function for compute_array_index_type.  Look for SIZEOF_EXPR
+   not inside of SAVE_EXPR and fold them.  */
+
+static tree
+fold_sizeof_expr_r (tree *expr_p, int *walk_subtrees, void *data)
+{
+  tree expr = *expr_p;
+  if (TREE_CODE (expr) == SAVE_EXPR || TYPE_P (expr))
+    *walk_subtrees = 0;
+  else if (TREE_CODE (expr) == SIZEOF_EXPR)
+    {
+      *(bool *)data = true;
+      if (SIZEOF_EXPR_TYPE_P (expr))
+	expr = cxx_sizeof_or_alignof_type (TREE_TYPE (TREE_OPERAND (expr, 0)),
+					   SIZEOF_EXPR, false);
+      else if (TYPE_P (TREE_OPERAND (expr, 0)))
+	expr = cxx_sizeof_or_alignof_type (TREE_OPERAND (expr, 0), SIZEOF_EXPR,
+					   false);
+      else
+        expr = cxx_sizeof_or_alignof_expr (TREE_OPERAND (expr, 0), SIZEOF_EXPR,
+					   false);
+      if (expr == error_mark_node)
+        expr = size_one_node;
+      *expr_p = expr;
+      *walk_subtrees = 0;
+    }
+  return NULL;
 }
 
 /* Given the SIZE (i.e., number of elements) in an array, compute an
@@ -8126,8 +8157,21 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
       processing_template_decl = saved_processing_template_decl;
 
       if (!TREE_CONSTANT (itype))
-	/* A variable sized array.  */
-	itype = variable_size (itype);
+	{
+	  /* A variable sized array.  */
+	  itype = variable_size (itype);
+	  if (TREE_CODE (itype) != SAVE_EXPR)
+	    {
+	      /* Look for SIZEOF_EXPRs in itype and fold them, otherwise
+		 they might survive till gimplification.  */
+	      tree newitype = itype;
+	      bool found = false;
+	      cp_walk_tree_without_duplicates (&newitype,
+					       fold_sizeof_expr_r, &found);
+	      if (found)
+		itype = variable_size (fold (newitype));
+	    }
+	}
       /* Make sure that there was no overflow when creating to a signed
 	 index type.  (For example, on a 32-bit machine, an array with
 	 size 2^32 - 1 is too big.)  */

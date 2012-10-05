@@ -2312,7 +2312,9 @@ dump_expr (tree t, int flags)
 	}
       pp_cxx_whitespace (cxx_pp);
       pp_cxx_left_paren (cxx_pp);
-      if (TYPE_P (TREE_OPERAND (t, 0)))
+      if (TREE_CODE (t) == SIZEOF_EXPR && SIZEOF_EXPR_TYPE_P (t))
+	dump_type (TREE_TYPE (TREE_OPERAND (t, 0)), flags);
+      else if (TYPE_P (TREE_OPERAND (t, 0)))
 	dump_type (TREE_OPERAND (t, 0), flags);
       else
 	dump_expr (TREE_OPERAND (t, 0), flags);
