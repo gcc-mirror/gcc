@@ -1,3 +1,7 @@
+2012-10-05  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* config/pa/pa.md: Adjust unamed HImode add insn pattern.
+
 2012-10-05  Jan Hubicka  <jh@suse.cz>
 	    Jakub Jelinek  <jakub@redhat.com>
 
