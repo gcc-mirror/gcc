@@ -1,5 +1,14 @@
 2012-10-05  Jakub Jelinek  <jakub@redhat.com>
 
+	* g++.dg/torture/Wsizeof-pointer-memaccess1.C: New test.
+	* g++.dg/torture/Wsizeof-pointer-memaccess2.C: New test.
+	* g++.dg/warn/Wsign-compare-5.C: New test.
+	* g++.dg/warn/Wsizeof-pointer-memaccess-1.C: New test.
+	* g++.dg/warn/Wnull-conversion-1.C: For c++11 add dg-error.
+	* g++.dg/ext/builtin30.C: New test.
+	* g++.dg/ext/vla12.C: New test.
+	* gcc.dg/builtins-85.c: New test.
+
 	PR debug/54519
 	* gcc.dg/guality/pr54519-1.c: New test.
 	* gcc.dg/guality/pr54519-2.c: New test.

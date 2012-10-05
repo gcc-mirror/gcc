@@ -1,3 +1,38 @@
+2012-10-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (SIZEOF_EXPR_TYPE_P): Define.
+	* tree.c (cp_tree_equal): Handle SIZEOF_EXPR with
+	SIZEOF_EXPR_TYPE_P.
+	* mangle.c (write_expression): Likewise.
+	* cxx-pretty-print.c (pp_cxx_unary_expression): Likewise.
+	* error.c (dump_expr): Likewise.
+	* parser.c (cp_parser_unary_expression): For sizeof call
+	cxx_sizeof_or_alignof_{type,expr} just for diagnostics and
+	return SIZEOF_EXPR with the operand.
+	* pt.c (tsubst_copy, tsubst_copy_and_build): For SIZEOF_EXPR,
+	call cxx_sizeof_or_alignof_{type,expr} for diagnostics, but
+	return SIZEOF_EXPR with tsubsted operand.
+	(value_dependent_expression_p): Handle SIZEOF_EXPR with
+	SIZEOF_EXPR_TYPE_P.
+	(instantiation_dependent_r): Likewise.
+	* call.c (null_ptr_cst_p): Call maybe_constant_value for C++98.
+	* semantics.c (finish_call_expr): Call
+	sizeof_pointer_memaccess_warning if needed.
+	(cxx_eval_constant_expression): Handle SIZEOF_EXPR.
+	(potential_constant_expression_1): Remove early exit for
+	C++98.  Handle PROPERTY_REF.
+	* decl.c (duplicate_decls): When redeclaring a builtin function,
+	keep the merged decl builtin also if newdecl is a gnu_inline
+	inline definition.
+	(fold_sizeof_expr_r): New function.
+	(compute_array_index_type): Fold SIZEOF_EXPRs in itype.
+	* cp-gimplify.c (cp_genericize_r): Fold SIZEOF_EXPR.
+	* typeck.c (cp_build_binary_op): For warn_for_sign_compare
+	try harder using maybe_constant_value to get INTEGER_CSTs.
+
+	* decl.c (stabilize_vla_size): Call pointer_set_destroy
+	at the end.
+
 2012-10-04  Arnaud Charlet  <charlet@adacore.com>
         
         * decl2.c (cp_write_global_declarations): Fix handling of

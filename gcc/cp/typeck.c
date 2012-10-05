@@ -4624,7 +4624,14 @@ cp_build_binary_op (location_t location,
 	  && !enum_cast_to_int (orig_op0)
 	  && !enum_cast_to_int (orig_op1))
 	{
-	  warn_for_sign_compare (location, orig_op0, orig_op1, op0, op1, 
+	  tree oop0 = maybe_constant_value (orig_op0);
+	  tree oop1 = maybe_constant_value (orig_op1);
+
+	  if (TREE_CODE (oop0) != INTEGER_CST)
+	    oop0 = orig_op0;
+	  if (TREE_CODE (oop1) != INTEGER_CST)
+	    oop1 = orig_op1;
+	  warn_for_sign_compare (location, oop0, oop1, op0, op1, 
 				 result_type, resultcode);
 	}
     }

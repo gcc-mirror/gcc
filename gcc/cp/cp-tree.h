@@ -78,6 +78,7 @@ c-common.h, not after.
       OVL_ARG_DEPENDENT (in OVERLOAD)
       PACK_EXPANSION_LOCAL_P (in *_PACK_EXPANSION)
       TINFO_RECHECK_ACCESS_P (in TEMPLATE_INFO)
+      SIZEOF_EXPR_TYPE_P (in SIZEOF_EXPR)
    1: IDENTIFIER_VIRTUAL_P (in IDENTIFIER_NODE)
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
@@ -4054,6 +4055,10 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    an NSDMI, and should be re-evaluated when used in a constructor.  */
 #define CONVERT_EXPR_VBASE_PATH(NODE) \
   TREE_LANG_FLAG_0 (CONVERT_EXPR_CHECK (NODE))
+
+/* True if SIZEOF_EXPR argument is type.  */
+#define SIZEOF_EXPR_TYPE_P(NODE) \
+  TREE_LANG_FLAG_0 (SIZEOF_EXPR_CHECK (NODE))
 
 /* An enumeration of the kind of tags that C++ accepts.  */
 enum tag_types {
