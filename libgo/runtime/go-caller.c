@@ -98,7 +98,12 @@ __go_get_backtrace_state ()
 {
   runtime_lock (&back_state_lock);
   if (back_state == NULL)
-    back_state = backtrace_create_state (NULL, 1, error_callback, NULL);
+    {
+      const char *filename;
+
+      filename = (const char *) runtime_progname ();
+      back_state = backtrace_create_state (filename, 1, error_callback, NULL);
+    }
   runtime_unlock (&back_state_lock);
   return back_state;
 }
