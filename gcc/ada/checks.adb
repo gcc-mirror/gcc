@@ -1209,7 +1209,7 @@ package body Checks is
 
       --  Here we know the result is Long_Long_Integer'Base, of that it has
       --  been rewritten because the parent operation is a conversion. See
-      --  Conversion_Optimization.Apply_Arithmetic_Overflow_Checked_Suppressed.
+      --  Apply_Arithmetic_Overflow_Checked_Suppressed.Conversion_Optimization.
 
       else
          pragma Assert
@@ -7087,147 +7087,80 @@ package body Checks is
 
             when N_Op_Divide =>
 
-               --  Following seems awfully complex, can it be simplified ???
+               --  If the right operand can only be zero, set 0..0
 
-               Hi := No_Uint;
-               Lo := No_Uint;
+               if Rlo = 0 and then Rhi = 0 then
+                  Lo := Uint_0;
+                  Hi := Uint_0;
 
-               declare
-                  S : Uint;
+               --  Possible bounds of division must come from dividing end
+               --  values of the input ranges (four possibilities), provided
+               --  zero is not included in the possible values of the right
+               --  operand.
 
-               begin
-                  --  First work on finding big absolute result values. These
-                  --  come from dividing large numbers (which we have in Llo
-                  --  and Lhi) by small values, which we need to figure out.
+               --  Otherwise, we just consider two intervals of values for
+               --  the right operand: the interval of negative values (up to
+               --  -1) and the interval of positive values (starting at 1).
+               --  Since division by 1 is the identity, and division by -1
+               --  is negation, we get all possible bounds of division in that
+               --  case by considering:
+               --    - all values from the division of end values of input
+               --      ranges;
+               --    - the end values of the left operand;
+               --    - the negation of the end values of the left operand.
 
-                  --  Case where right operand can be positive
+               else
+                  declare
+                     Mrk : constant Uintp.Save_Mark := Mark;
+                     --  Mark so we can release the RR and Ev values
 
-                  if Rhi > 0 then
+                     Ev1 : Uint;
+                     Ev2 : Uint;
+                     Ev3 : Uint;
+                     Ev4 : Uint;
 
-                     --  Find smallest positive divisor
+                  begin
+                     --  Discard extreme values of zero for the divisor, since
+                     --  they will simply result in an exception in any case.
 
-                     if Rlo > 0 then
-                        S := Rlo;
-                     else
-                        S := Uint_1;
+                     if Rlo = 0 then
+                        Rlo := Uint_1;
+                     elsif Rhi = 0 then
+                        Rhi := -Uint_1;
                      end if;
 
-                     --  Big negative value divided by small positive value
-                     --  generates a candidate for lowest possible result.
+                     --  Compute possible bounds coming from dividing end
+                     --  values of the input ranges.
 
-                     if Llo < 0 then
-                        Min (Lo, Llo / S);
+                     Ev1 := Llo / Rlo;
+                     Ev2 := Llo / Rhi;
+                     Ev3 := Lhi / Rlo;
+                     Ev4 := Lhi / Rhi;
+
+                     Lo := UI_Min (UI_Min (Ev1, Ev2), UI_Min (Ev3, Ev4));
+                     Hi := UI_Max (UI_Max (Ev1, Ev2), UI_Max (Ev3, Ev4));
+
+                     --  If the right operand can be both negative or positive,
+                     --  include the end values of the left operand in the
+                     --  extreme values, as well as their negation.
+
+                     if Rlo < 0 and then Rhi > 0 then
+                        Ev1 := Llo;
+                        Ev2 := -Llo;
+                        Ev3 := Lhi;
+                        Ev4 := -Lhi;
+
+                        Min (Lo,
+                             UI_Min (UI_Min (Ev1, Ev2), UI_Min (Ev3, Ev4)));
+                        Max (Hi,
+                             UI_Max (UI_Max (Ev1, Ev2), UI_Max (Ev3, Ev4)));
                      end if;
 
-                     --  Big positive value divided by small positive value
-                     --  generates a candidate for highest possible result.
+                     --  Release the RR and Ev values
 
-                     if Lhi > 0 then
-                        Max (Hi, Lhi / S);
-                     end if;
-                  end if;
-
-                  --  Case where right operand can be negative
-
-                  if Rlo < 0 then
-
-                     --  Find smallest absolute value negative divisor
-
-                     if Rhi < 0 then
-                        S := Rhi;
-                     else
-                        S := -Uint_1;
-                     end if;
-
-                     --  Big negative value divided by small negative value
-                     --  generates a candidate for largest possible result.
-
-                     if Llo < 0 then
-                        Max (Hi, Llo / S);
-                     end if;
-
-                     --  Big positive value divided by small negative value
-                     --  generates a candidate for lowest possible result.
-
-                     if Lhi > 0 then
-                        Min (Lo, Lhi / S);
-                     end if;
-                  end if;
-
-                  --  Now work on finding small absolute result values. These
-                  --  come from dividing small numbers, which we need to figure
-                  --  out, by large values (which we have in Rlo, Rhi).
-
-                  --  Case where left operand can be positive
-
-                  if Lhi > 0 then
-
-                     --  Find smallest positive dividend
-
-                     if Llo > 0 then
-                        S := Llo;
-                     else
-                        S := Uint_1;
-                     end if;
-
-                     --  Small positive values divided by large negative values
-                     --  generate candidates for low results.
-
-                     if Rlo < 0 then
-                        Min (Lo, S / Rlo);
-                     end if;
-
-                     --  Small positive values divided by large positive values
-                     --  generate candidates for high results.
-
-                     if Rhi > 0 then
-                        Max (Hi, S / Rhi);
-                     end if;
-                  end if;
-
-                  --  Case where left operand can be negative
-
-                  if Llo < 0 then
-
-                     --  Find smallest absolute value negative dividend
-
-                     if Lhi < 0 then
-                        S := Lhi;
-                     else
-                        S := -Uint_1;
-                     end if;
-
-                     --  Small negative value divided by large negative value
-                     --  generates a candidate for highest possible result.
-
-                     if Rlo < 0 then
-                        Max (Hi, Rlo / S);
-                     end if;
-
-                     --  Small negative value divided by large positive value
-                     --  generates a candidate for lowest possible result.
-
-                     if Rhi > 0 then
-                        Min (Lo, Rhi / S);
-                     end if;
-                  end if;
-
-                  --  Finally, if neither Lo or Hi set (happens if the right
-                  --  operand is always zero for example), then set 0 .. 0.
-
-                  if Lo = No_Uint and then Hi = No_Uint then
-                     Lo := Uint_0;
-                     Hi := Uint_0;
-
-                  --  If one bound set and not the other copy
-
-                  elsif Lo = No_Uint then
-                     Lo := Hi;
-
-                  elsif Hi = No_Uint then
-                     Hi := Lo;
-                  end if;
-               end;
+                     Release_And_Save (Mrk, Lo, Hi);
+                  end;
+               end if;
 
             --  Exponentiation
 
@@ -7264,14 +7197,15 @@ package body Checks is
 
                else
                   --  High bound comes either from exponentiation of largest
-                  --  positive value to largest exponent value, or from the
-                  --  exponentiation of most negative value to an odd exponent.
+                  --  positive value to largest exponent value, or from
+                  --  the exponentiation of most negative value to an
+                  --  even exponent.
 
                   declare
                      Hi1, Hi2 : Uint;
 
                   begin
-                     if Lhi >= 0 then
+                     if Lhi > 0 then
                         Hi1 := Lhi ** Rhi;
                      else
                         Hi1 := Uint_0;
@@ -7279,9 +7213,9 @@ package body Checks is
 
                      if Llo < 0 then
                         if Rhi mod 2 = 0 then
-                           Hi2 := Llo ** (Rhi - 1);
-                        else
                            Hi2 := Llo ** Rhi;
+                        else
+                           Hi2 := Llo ** (Rhi - 1);
                         end if;
                      else
                         Hi2 := Uint_0;
@@ -7316,7 +7250,7 @@ package body Checks is
 
             when N_Op_Mod =>
                declare
-                  Maxabs : constant Uint := UI_Max (abs Rlo, abs Rhi);
+                  Maxabs : constant Uint := UI_Max (abs Rlo, abs Rhi) - 1;
                   --  This is the maximum absolute value of the result
 
                begin
@@ -7371,9 +7305,10 @@ package body Checks is
 
             when N_Op_Rem =>
                declare
-                  Maxabs : constant Uint := UI_Max (abs Rlo, abs Rhi);
+                  Maxabs : constant Uint := UI_Max (abs Rlo, abs Rhi) - 1;
                   --  This is the maximum absolute value of the result. Note
-                  --  that the result range does not depend on the sign of B.
+                  --  that the result range does not depend on the sign of the
+                  --  right operand.
 
                begin
                   Lo := Uint_0;

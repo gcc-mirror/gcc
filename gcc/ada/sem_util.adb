@@ -13622,7 +13622,9 @@ package body Sem_Util is
       function Has_One_Matching_Field return Boolean;
       --  Determines if Expec_Type is a record type with a single component or
       --  discriminant whose type matches the found type or is one dimensional
-      --  array whose component type matches the found type.
+      --  array whose component type matches the found type. In the case of
+      --  one discriminant, we ignore the variant parts. That's not accurate,
+      --  but good enough for the warning.
 
       ----------------------------
       -- Has_One_Matching_Field --
@@ -13664,10 +13666,10 @@ package body Sem_Util is
                if No (E) then
                   return False;
 
-               elsif (Ekind (E) /= E_Discriminant
-                       and then Ekind (E) /= E_Component)
+               elsif not Ekind_In (E, E_Discriminant, E_Component)
                  or else (Chars (E) = Name_uTag
-                           or else Chars (E) = Name_uParent)
+                            or else
+                          Chars (E) = Name_uParent)
                then
                   Next_Entity (E);
 
@@ -13679,7 +13681,10 @@ package body Sem_Util is
             if not Covers (Etype (E), Found_Type) then
                return False;
 
-            elsif Present (Next_Entity (E)) then
+            elsif Present (Next_Entity (E))
+              and then (Ekind (E) = E_Component
+                         or else Ekind (Next_Entity (E)) = E_Discriminant)
+            then
                return False;
 
             else
