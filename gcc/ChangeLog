@@ -1,3 +1,16 @@
+2012-10-05  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/sh.c (builtin_description): Add is_enabled member.
+	(shmedia_builtin_p): New function.
+	(bdesc): Use shmedia_builtin_p for existing built-ins.
+	(sh_media_init_builtins, sh_init_builtins): Merge into single function
+	sh_init_builtins.  Add is_enabled checking.  Move variable declarations
+	to where they are actually used.
+	(sh_media_builtin_decl, sh_builtin_decl): Merge into single function
+	sh_builtin_decl.  Add is_enabled checking.
+	(sh_expand_builtin): Move variable declarations to where they are
+	actually used.
+
 2012-10-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-inline.c (expand_call_inline): Move VAR_DECLs with
