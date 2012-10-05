@@ -1,3 +1,12 @@
+2012-10-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/54810
+	* tree-vrp.c (register_edge_assert_for_2): Handle
+	NAME = (unsigned) NAME2; if (NAME cmp CST) for
+	narrowing casts to unsigned integral type like
+	NAME = NAME2 & CST2; if (NAME cmp CST) where CST2
+	is the max value of the unsigned integral type.
+
 2012-10-04  Jeff Law  <law@redhat.com>
 
 	* PR target/50356

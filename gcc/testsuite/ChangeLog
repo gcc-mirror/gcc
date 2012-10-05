@@ -1,3 +1,8 @@
+2012-10-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/54810
+	* gcc.dg/tree-ssa/vrp85.c: New test.
+
 2012-10-04  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gcc.dg/ucnid-7.c: Skip on AIX.
