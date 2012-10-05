@@ -117,6 +117,12 @@ runtime_args(int32 c, byte **v)
 		runtime_sysargs(c, v);
 }
 
+byte*
+runtime_progname()
+{
+  return argc == 0 ? nil : argv[0];
+}
+
 void
 runtime_goargs(void)
 {

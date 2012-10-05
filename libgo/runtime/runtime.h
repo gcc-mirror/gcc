@@ -520,5 +520,6 @@ extern uintptr runtime_stacks_sys;
 struct backtrace_state;
 extern struct backtrace_state *__go_get_backtrace_state(void);
 extern _Bool __go_file_line(uintptr, String*, String*, int *);
+extern byte* runtime_progname();
 
 int32 getproccount(void);
