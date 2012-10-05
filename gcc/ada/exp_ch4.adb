@@ -141,8 +141,8 @@ package body Exp_Ch4 is
    --  Common expansion processing for short-circuit boolean operators
 
    procedure Expand_Compare_Minimize_Eliminate_Overflow (N : Node_Id);
-   --  Deal with comparison in Minimize/Eliminate overflow mode. This is where
-   --  we allow comparison of "out of range" values.
+   --  Deal with comparison in MINIMIZED/ELIMINATED overflow mode. This is
+   --  where we allow comparison of "out of range" values.
 
    function Expand_Composite_Equality
      (Nod    : Node_Id;
@@ -165,10 +165,10 @@ package body Exp_Ch4 is
    --  include both arrays and singleton elements.
 
    procedure Expand_Membership_Minimize_Eliminate_Overflow (N : Node_Id);
-   --  N is an N_In membership test mode, with the overflow check mode
-   --  set to Minimized or Eliminated, and the type of the left operand
-   --  is a signed integer type. This is a case where top level processing
-   --  is required to handle overflow checks in subtrees.
+   --  N is an N_In membership test mode, with the overflow check mode set to
+   --  MINIMIZED or ELIMINATED, and the type of the left operand is a signed
+   --  integer type. This is a case where top level processing is required to
+   --  handle overflow checks in subtrees.
 
    procedure Fixup_Universal_Fixed_Operation (N : Node_Id);
    --  N is a N_Op_Divide or N_Op_Multiply node whose result is universal
@@ -5524,7 +5524,7 @@ package body Exp_Ch4 is
       Ltyp := Etype (Left_Opnd  (N));
       Rtyp := Etype (Right_Opnd (N));
 
-      --  If Minimize/Eliminate overflow mode and type is a signed integer
+      --  If MINIMIZED/ELIMINATED overflow mode and type is a signed integer
       --  type, then expand with a separate procedure. Note the use of the
       --  flag No_Minimize_Eliminate to prevent infinite recursion.
 
@@ -7084,7 +7084,7 @@ package body Exp_Ch4 is
       Typl := Base_Type (Typl);
 
       --  Deal with overflow checks in MINIMIZED/ELIMINATED mode and if that
-      --  results in not having a comparison operation any more, we are done.
+      --  results in not having a comparison operation anymore, we are done.
 
       Expand_Compare_Minimize_Eliminate_Overflow (N);
 
@@ -7678,7 +7678,7 @@ package body Exp_Ch4 is
       Binary_Op_Validity_Checks (N);
 
       --  Deal with overflow checks in MINIMIZED/ELIMINATED mode and if that
-      --  results in not having a comparison operation any more, we are done.
+      --  results in not having a comparison operation anymore, we are done.
 
       Expand_Compare_Minimize_Eliminate_Overflow (N);
 
@@ -7728,7 +7728,7 @@ package body Exp_Ch4 is
       Binary_Op_Validity_Checks (N);
 
       --  Deal with overflow checks in MINIMIZED/ELIMINATED mode and if that
-      --  results in not having a comparison operation any more, we are done.
+      --  results in not having a comparison operation anymore, we are done.
 
       Expand_Compare_Minimize_Eliminate_Overflow (N);
 
@@ -7778,7 +7778,7 @@ package body Exp_Ch4 is
       Binary_Op_Validity_Checks (N);
 
       --  Deal with overflow checks in MINIMIZED/ELIMINATED mode and if that
-      --  results in not having a comparison operation any more, we are done.
+      --  results in not having a comparison operation anymore, we are done.
 
       Expand_Compare_Minimize_Eliminate_Overflow (N);
 
@@ -7828,7 +7828,7 @@ package body Exp_Ch4 is
       Binary_Op_Validity_Checks (N);
 
       --  Deal with overflow checks in MINIMIZED/ELIMINATED mode and if that
-      --  results in not having a comparison operation any more, we are done.
+      --  results in not having a comparison operation anymore, we are done.
 
       Expand_Compare_Minimize_Eliminate_Overflow (N);
 
@@ -8263,7 +8263,7 @@ package body Exp_Ch4 is
          Binary_Op_Validity_Checks (N);
 
          --  Deal with overflow checks in MINIMIZED/ELIMINATED mode and if
-         --  that results in not having a /= opertion any more, we are done.
+         --  that results in not having a /= operation anymore, we are done.
 
          Expand_Compare_Minimize_Eliminate_Overflow (N);
 

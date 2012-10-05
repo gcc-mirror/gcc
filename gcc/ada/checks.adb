@@ -765,9 +765,9 @@ package body Checks is
    procedure Apply_Arithmetic_Overflow_Check (N : Node_Id) is
    begin
       --  Use old routine in almost all cases (the only case we are treating
-      --  specially is the case of an signed integer arithmetic op with the
+      --  specially is the case of a signed integer arithmetic op with the
       --  Do_Overflow_Check flag set on the node, and the overflow checking
-      --  mode is either Minimized_Or_Eliminated.
+      --  mode is MINIMIZED or ELIMINATED).
 
       if Overflow_Check_Mode (Etype (N)) not in Minimized_Or_Eliminated
         or else not Do_Overflow_Check (N)
@@ -775,9 +775,9 @@ package body Checks is
       then
          Apply_Arithmetic_Overflow_Checked_Suppressed (N);
 
-      --  Otherwise use the new routine for MINIMIZED/ELIMINATED modes for
-      --  the case of a signed integer arithmetic op, with Do_Overflow_Check
-      --  set True, and the checking mode is Minimized_Or_Eliminated.
+      --  Otherwise use the new routine for the case of a signed integer
+      --  arithmetic op, with Do_Overflow_Check set to True, and the checking
+      --  mode is MINIMIZED or ELIMINATED.
 
       else
          Apply_Arithmetic_Overflow_Minimized_Eliminated (N);
@@ -797,7 +797,7 @@ package body Checks is
 
    --  This is used in SUPPRESSED/CHECKED modes. It is identical to the
    --  code for these cases before the big overflow earthquake, thus ensuring
-   --  that in these modes we have compatible behavior (and realibility) to
+   --  that in these modes we have compatible behavior (and reliability) to
    --  what was there before. It is also called for types other than signed
    --  integers, and if the Do_Overflow_Check flag is off.
 
@@ -805,9 +805,9 @@ package body Checks is
    --  to give up and just generate an overflow check without any fuss.
 
    procedure Apply_Arithmetic_Overflow_Checked_Suppressed (N : Node_Id) is
-      Loc   : constant Source_Ptr := Sloc (N);
-      Typ   : constant Entity_Id  := Etype (N);
-      Rtyp  : constant Entity_Id  := Root_Type (Typ);
+      Loc  : constant Source_Ptr := Sloc (N);
+      Typ  : constant Entity_Id  := Etype (N);
+      Rtyp : constant Entity_Id  := Root_Type (Typ);
 
    begin
       --  An interesting special case. If the arithmetic operation appears as
@@ -1117,10 +1117,11 @@ package body Checks is
       end if;
 
       --  Otherwise, we have a top level arithmetic operation node, and this
-      --  is where we commence the special processing for minimize/eliminate.
-      --  This is the case where we tell the machinery not to move into Bignum
-      --  mode at this top level (of course the top level operation will still
-      --  be in Bignum mode if either of its operands are of type Bignum).
+      --  is where we commence the special processing for MINIMIZED/ELIMINATED
+      --  modes. This is the case where we tell the machinery not to move into
+      --  Bignum mode at this top level (of course the top level operation
+      --  will still be in Bignum mode if either of its operands are of type
+      --  Bignum).
 
       Minimize_Eliminate_Overflow_Checks (Op, Lo, Hi, Top_Level => True);
 
@@ -1164,8 +1165,8 @@ package body Checks is
          --      X := Long_Long_Integer'Base (A * (B ** C));
 
          --  Now the product may fit in Long_Long_Integer but not in Integer.
-         --  In Minimize/Eliminate mode, we don't want to introduce an overflow
-         --  exception for this intermediate value.
+         --  In MINIMIZED/ELIMINATED mode, we don't want to introduce an
+         --  overflow exception for this intermediate value.
 
          declare
             Blk : constant Node_Id  := Make_Bignum_Block (Loc);
@@ -1206,9 +1207,10 @@ package body Checks is
             Analyze_And_Resolve (Op);
          end;
 
-         --  Here we know the result is Long_Long_Integer'Base, or that it
-         --  has been rewritten because the parent is a conversion (see
-         --  Apply_Arithmetic_Overflow_Check.Conversion_Optimization).
+      --  Here we know the result is Long_Long_Integer'Base,
+      --  or that it has been rewritten because the parent
+      --  is a conversion (see Conversion_Optimization in
+      --  Apply_Arithmetic_Overflow_Checked_Suppressed).
 
       else
          pragma Assert
@@ -3813,8 +3815,8 @@ package body Checks is
       if Is_RTE (Etype (N), RE_Bignum) then
          return Relocate_Node (N);
 
-         --  Otherwise construct call to To_Bignum, converting the operand to
-         --  the required Long_Long_Integer form.
+      --  Otherwise construct call to To_Bignum, converting the operand to the
+      --  required Long_Long_Integer form.
 
       else
          pragma Assert (Is_Signed_Integer_Type (Etype (N)));
@@ -4442,13 +4444,14 @@ package body Checks is
          return;
       end if;
 
-      --  This is the point at which processing for CHECKED mode diverges from
-      --  processing for MINIMIZED/ELIMINATED mode. This divergence is probably
-      --  more extreme that it needs to be, but what is going on here is that
-      --  when we introduced MINIMIZED/ELININATED modes, we wanted to leave the
-      --  processing for CHECKED mode untouched. There were two reasons for
-      --  this. First it avoided any incomptible change of behavior. Second,
-      --  it guaranteed that CHECKED mode continued to be legacy reliable.
+      --  This is the point at which processing for CHECKED mode diverges
+      --  from processing for MINIMIZED/ELIMINATED modes. This divergence is
+      --  probably more extreme that it needs to be, but what is going on here
+      --  is that when we introduced MINIMIZED/ELIMINATED modes, we wanted
+      --  to leave the processing for CHECKED mode untouched. There were
+      --  two reasons for this. First it avoided any incompatible change of
+      --  behavior. Second, it guaranteed that CHECKED mode continued to be
+      --  legacy reliable.
 
       --  The big difference is that in CHECKED mode there is a fair amount of
       --  circuitry to try to avoid setting the Do_Overflow_Check flag if we
@@ -6691,9 +6694,9 @@ package body Checks is
    --  recursive calls to process operands. This processing may involve the use
    --  of bignum or long long integer arithmetic, which will change the types
    --  of operands and results. That's why we can't do this bottom up (since
-   --  it would intefere with semantic analysis).
+   --  it would interfere with semantic analysis).
 
-   --  What happens is that if Minimized/Eliminated mode is in effect then
+   --  What happens is that if MINIMIZED/ELIMINATED mode is in effect then
    --  the operator expansion routines, as well as the expansion routines
    --  for if/case expression test the Do_Overflow_Check flag and if it is
    --  set they (for the moment) do nothing except call the routine to apply
@@ -6710,12 +6713,12 @@ package body Checks is
 
    --  After possible rewriting of a constituent subexpression node, a call is
    --  made to either reexpand the node (if nothing has changed) or reanalyze
-   --  the node (if it has been modified by the overflow check processing).
-   --  The Analyzed_flag is set False before the reexpand/reanalyze. To avoid
-   --  a recursive call into the whole overflow apparatus, and important rule
+   --  the node (if it has been modified by the overflow check processing). The
+   --  Analyzed_Flag is set to False before the reexpand/reanalyze. To avoid
+   --  a recursive call into the whole overflow apparatus, an important rule
    --  for this call is that either Do_Overflow_Check must be False, or if
    --  it is set, then the overflow checking mode must be temporarily set
-   --  to Checked/Suppressed. Either step will avoid the unwanted recursion.
+   --  to CHECKED/SUPPRESSED. Either step will avoid the unwanted recursion.
 
    procedure Minimize_Eliminate_Overflow_Checks
      (N         : Node_Id;
@@ -6755,33 +6758,33 @@ package body Checks is
       --  Set True if one or more operands is already of type Bignum, meaning
       --  that for sure (regardless of Top_Level setting) we are committed to
       --  doing the operation in Bignum mode (or in the case of a case or if
-      --  expression, converting all the dependent expressions to bignum).
+      --  expression, converting all the dependent expressions to Bignum).
 
       Long_Long_Integer_Operands : Boolean;
-      --  Set True if one r more operands is already of type Long_Loong_Integer
+      --  Set True if one or more operands is already of type Long_Long_Integer
       --  which means that if the result is known to be in the result type
       --  range, then we must convert such operands back to the result type.
       --  This switch is properly set only when Bignum_Operands is False.
 
       procedure Reexpand (C : Suppressed_Or_Checked);
-      --  This is called when we have not modifed the node, so we do not need
-      --  to reanalyze it. But we do want to reexpand it in either CHECKED
-      --  or SUPPRESSED mode (as indicated by the argument C) to get proper
+      --  This is called when we have not modified the node, so we do not need
+      --  to reanalyze it. But we do want to reexpand it in either SUPPRESSED
+      --  or CHECKED mode (as indicated by the argument C) to get proper
       --  expansion. It is important that we reset the mode to SUPPRESSED or
       --  CHECKED, since if we leave it in MINIMIZED or ELIMINATED mode we
       --  would reenter this routine recursively which would not be good!
       --  Note that this is not just an optimization, testing has showed up
-      --  several complex cases in which renalyzing an already analyzed node
+      --  several complex cases in which reanalyzing an already analyzed node
       --  causes incorrect behavior.
 
       function In_Result_Range return Boolean;
       --  Returns True iff Lo .. Hi are within range of the result type
 
       procedure Max (A : in out Uint; B : Uint);
-      --  If A is No_Uint, sets A to B, else to UI_Max (A, B);
+      --  If A is No_Uint, sets A to B, else to UI_Max (A, B)
 
       procedure Min (A : in out Uint; B : Uint);
-      --  If A is No_Uint, sets A to B, else to UI_Min (A, B);
+      --  If A is No_Uint, sets A to B, else to UI_Min (A, B)
 
       ---------------------
       -- In_Result_Range --
@@ -6858,7 +6861,7 @@ package body Checks is
 
          Determine_Range (N, OK, Lo, Hi, Assume_Valid => False);
 
-         --  If Deterine_Range did not work (can this in fact happen? Not
+         --  If Determine_Range did not work (can this in fact happen? Not
          --  clear but might as well protect), use type bounds.
 
          if not OK then
@@ -6901,8 +6904,8 @@ package body Checks is
                Max (Hi, Rhi);
             end if;
 
-            --  If at least one of our operands is now bignum, we must rebuild
-            --  the if expression to use bignum operands. We will analyze the
+            --  If at least one of our operands is now Bignum, we must rebuild
+            --  the if expression to use Bignum operands. We will analyze the
             --  rebuilt if expression with overflow checks off, since once we
             --  are in bignum mode, we are all done with overflow checks!
 
@@ -6952,8 +6955,6 @@ package body Checks is
       elsif Nkind (N) = N_Case_Expression then
          Bignum_Operands := False;
          Long_Long_Integer_Operands := False;
-         Lo := No_Uint;
-         Hi := No_Uint;
 
          declare
             Alt : Node_Id;
@@ -6986,7 +6987,7 @@ package body Checks is
             --  resetting the overflow flag, since we are done with overflow
             --  checks for this node. We will reexpand to get the needed
             --  expansion for the case expression, but we do not need to
-            --  renalyze, since nothing has changed.
+            --  reanalyze, since nothing has changed.
 
             if not (Bignum_Operands or Long_Long_Integer_Operands) then
                Set_Do_Overflow_Check (N, False);
@@ -7057,7 +7058,7 @@ package body Checks is
       --  don't need to do any range analysis. As previously discussed we could
       --  do range analysis in such cases, but it could mean working with giant
       --  numbers at compile time for very little gain (the number of cases
-      --  in which we could slip back from bignum mode are small).
+      --  in which we could slip back from bignum mode is small).
 
       if Rlo = No_Uint or else (Binary and then Llo = No_Uint) then
          Lo := No_Uint;
@@ -7068,10 +7069,6 @@ package body Checks is
 
       else
          Bignum_Operands := False;
-
-         Long_Long_Integer_Operands :=
-           Etype (Right_Opnd (N)) = LLIB
-             or else (Binary and then Etype (Left_Opnd (N)) = LLIB);
 
          case Nkind (N) is
 
@@ -7297,13 +7294,13 @@ package body Checks is
                   --  Result can only be negative if base can be negative
 
                   if Llo < 0 then
-                     if UI_Mod (Rhi, 2) = 0 then
+                     if Rhi mod 2 = 0 then
                         Lo := Llo ** (Rhi - 1);
                      else
                         Lo := Llo ** Rhi;
                      end if;
 
-                  --  Otherwise low bound is minimium ** minimum
+                  --  Otherwise low bound is minimum ** minimum
 
                   else
                      Lo := Llo ** Rlo;
@@ -7412,13 +7409,13 @@ package body Checks is
       end if;
 
       --  Here for the case where we have not rewritten anything (no bignum
-      --  operands or long long integer operands), and we know the result If we
-      --  know we are in the result range, and we do not have Bignum operands
-      --  or Long_Long_Integer operands, we can just reexpand with overflow
-      --  checks turned off (since we know we cannot have overflow). As always
-      --  the reexpansion is required to complete expansion of the operator,
-      --  but we do not need to reanalyze, and we prevent recursion by
-      --  suppressing the check,
+      --  operands or long long integer operands), and we know the result.
+      --  If we know we are in the result range, and we do not have Bignum
+      --  operands or Long_Long_Integer operands, we can just reexpand with
+      --  overflow checks turned off (since we know we cannot have overflow).
+      --  As always the reexpansion is required to complete expansion of the
+      --  operator, but we do not need to reanalyze, and we prevent recursion
+      --  by suppressing the check.
 
       if not (Bignum_Operands or Long_Long_Integer_Operands)
         and then In_Result_Range
@@ -7428,11 +7425,12 @@ package body Checks is
          return;
 
       --  Here we know that we are not in the result range, and in the general
-      --  we will move into either the Bignum or Long_Long_Integer domain to
-      --  compute the result. However, there is one exception. If we are at the
-      --  top level, and we do not have Bignum or Long_Long_Integer operands,
-      --  we will have to immediately convert the result back to the result
-      --  type, so there is no point in Bignum/Long_Long_Integer fiddling.
+      --  case we will move into either the Bignum or Long_Long_Integer domain
+      --  to compute the result. However, there is one exception. If we are
+      --  at the top level, and we do not have Bignum or Long_Long_Integer
+      --  operands, we will have to immediately convert the result back to
+      --  the result type, so there is no point in Bignum/Long_Long_Integer
+      --  fiddling.
 
       elsif Top_Level
         and then not (Bignum_Operands or Long_Long_Integer_Operands)
@@ -7455,8 +7453,8 @@ package body Checks is
          Set_Analyzed (N, False);
 
          --  One subtlety. We can't just go ahead and do an analyze operation
-         --  here because it will cause recursion into the whole minimized/
-         --  eliminated overflow processing which is not what we want. Here
+         --  here because it will cause recursion into the whole MINIMIZED/
+         --  ELIMINATED overflow processing which is not what we want. Here
          --  we are at the top level, and we need a check against the result
          --  mode (i.e. we want to use Checked mode). So do exactly that!
          --  Also, we have not modified the node, so this is a case where

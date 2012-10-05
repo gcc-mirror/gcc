@@ -53,7 +53,7 @@ package body Switch.C is
 
    function Get_Overflow_Mode (C : Character) return Overflow_Check_Type;
    --  Given a digit in the range 0 .. 3, returns the corresponding value of
-   --  Overflow_Check_Type. Raises program error if C is outside this range.
+   --  Overflow_Check_Type. Raises Program_Error if C is outside this range.
 
    function Switch_Subsequently_Cancelled
      (C        : String;
@@ -867,10 +867,10 @@ package body Switch.C is
                      then
                         Suppress_Options.Suppress (J) := True;
                      end if;
-
-                     Suppress_Options.Overflow_Checks_General    := Suppressed;
-                     Suppress_Options.Overflow_Checks_Assertions := Suppressed;
                   end loop;
+
+                  Suppress_Options.Overflow_Checks_General    := Suppressed;
+                  Suppress_Options.Overflow_Checks_Assertions := Suppressed;
 
                   Validity_Checks_On  := False;
                   Opt.Suppress_Checks := True;

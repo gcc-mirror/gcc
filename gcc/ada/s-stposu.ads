@@ -325,6 +325,9 @@ private
    --    is controlled. When set to True, the machinery generates additional
    --    data.
 
+   procedure Detach (N : not null SP_Node_Ptr);
+   --  Unhook a subpool node from an arbitrary subpool list
+
    overriding procedure Finalize (Controller : in out Pool_Controller);
    --  Buffer routine, calls Finalize_Pool
 
@@ -332,11 +335,6 @@ private
    --  Iterate over all subpools of Pool, detach them one by one and finalize
    --  their masters. This action first detaches a controlled object from a
    --  particular master, then invokes its Finalize_Address primitive.
-
-   procedure Finalize_Subpool (Subpool : not null Subpool_Handle);
-   --  Finalize all controlled objects chained on Subpool's master. Remove the
-   --  subpool from its owner's list. Deallocate the associated doubly linked
-   --  list node.
 
    function Header_Size_With_Padding
      (Alignment : System.Storage_Elements.Storage_Count)
