@@ -2881,15 +2881,17 @@
   [(set_attr "type" "store")
    (set_attr "length" "4")])
 
-(define_insn ""
-  [(set (match_operand:HI 0 "register_operand" "=r")
-	(plus:HI (match_operand:HI 1 "register_operand" "r")
-		 (match_operand 2 "const_int_operand" "J")))]
+(define_insn "addhi3"
+  [(set (match_operand:HI 0 "register_operand" "=r,r")
+	(plus:HI (match_operand:HI 1 "register_operand" "%r,r")
+		 (match_operand:HI 2 "arith14_operand" "r,J")))]
   ""
-  "ldo %2(%1),%0"
-  [(set_attr "type" "binary")
+  "@
+   {addl|add,l} %1,%2,%0
+   ldo %2(%1),%0"
+  [(set_attr "type" "binary,binary")
    (set_attr "pa_combine_type" "addmove")
-   (set_attr "length" "4")])
+   (set_attr "length" "4,4")])
 
 (define_expand "movqi"
   [(set (match_operand:QI 0 "general_operand" "")

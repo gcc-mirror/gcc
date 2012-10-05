@@ -1,3 +1,7 @@
+2012-10-05  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* config/pa/pa.md: Adjust unamed HImode add insn pattern.
+
 2012-10-05  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* config/sh/sh.c (builtin_description): Add is_enabled member.
