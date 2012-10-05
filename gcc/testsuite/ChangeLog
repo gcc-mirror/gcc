@@ -1,3 +1,14 @@
+2012-10-04  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.dg/ucnid-7.c: Skip on AIX.
+	* gcc.dg/ucnid-8.c: Same.
+	* gcc.dg/ucnid-10.c: Same.
+	* gcc.dg/ucnid-13.c: Same.
+	* gcc.dg/attr-alias-3.c: Same.
+	* gcc.dg/attr-alias-5.c: Same.
+	* gcc.dg/torture/pr51106-2.c: Same.
+	* gcc.dg/vmx/3b-13.c: Use valid splat index.
+	
 2012-10-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/52233
