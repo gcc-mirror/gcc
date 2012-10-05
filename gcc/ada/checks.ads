@@ -320,7 +320,7 @@ package Checks is
    --
    --    Overflow checks are applied to the operands of a comparison operation.
    --    In this case, the comparison is done on the result Long_Long_Integer
-   --    or Bignum values, without raising any exception.
+   --    or Bignum values, without raising any exceptions.
    --
    --    Overflow checks are applied to the left operand of a membership test.
    --    In this case no exception is raised if a Long_Long_Integer or Bignum
