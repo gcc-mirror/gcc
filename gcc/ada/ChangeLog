@@ -1,3 +1,33 @@
+2012-10-05  Yannick Moy  <moy@adacore.com>
+
+	* switch-c.adb, checks.adb, checks.ads, sem_prag.adb, exp_ch4.adb,
+	osint.adb: Minor correction of typos, and special case for Alfa mode.
+
+2012-10-05  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* s-spsufi.adb: Add with clause for Ada.Unchecked_Deallocation.
+	Add with and use clauses for System.Finalization_Masters.
+	(Finalize_And_Deallocate): Add an instance of
+	Ada.Unchecked_Deallocation. Merge the code from the now obsolete
+	Finalize_Subpool into this routine.
+	* s-spsufi.ads: Add pragma Preelaborate.
+	* s-stposu.adb: Remove with clause for
+	Ada.Unchecked_Deallocation; Add with and use clauses for
+	System.Storage_Pools.Subpools.Finalization; (Finalize_Pool):
+	Update the comment on all actions takes with respect to a subpool
+	finalization. Finalize and deallocate each individual subpool.
+	(Finalize_Subpool): Removed.
+	(Free): Removed;
+	(Detach): Move from package body to spec.
+	* s-stposu.ads (Detach): Move from package body to spec.
+	(Finalize_Subpool): Removed.
+
+2012-10-05  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-tassta.adb: Update comments.
+	(Vulnerable_Complete_Master): If Free_On_Termination is set, do
+	nothing, and let the task free itself if not already done.
+
 2012-10-04  Robert Dewar  <dewar@adacore.com>
 
 	* sem_res.adb (Resolve_Set_Membership): Warn on duplicates.

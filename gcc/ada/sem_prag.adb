@@ -11798,8 +11798,16 @@ package body Sem_Prag is
                Check_Optional_Identifier (Arg, Name);
                Check_Arg_Is_Identifier (Argx);
 
+               --  Do not suppress overflow checks for formal verification.
+               --  Instead, require that a check is inserted so that formal
+               --  verification can detect wraparound errors.
+
                if Chars (Argx) = Name_Suppressed then
-                  return Suppressed;
+                  if Alfa_Mode then
+                     return Checked;
+                  else
+                     return Suppressed;
+                  end if;
 
                elsif Chars (Argx) = Name_Checked then
                   return Checked;

@@ -223,7 +223,7 @@ package Checks is
    --  Returns result of converting node N to Bignum. The returned value is not
    --  analyzed, the caller takes responsibility for this. Node N must be a
    --  subexpression node of a signed integer type or Bignum type (if it is
-   --  already a Bignnum, the returned value is Relocate_Node (N).
+   --  already a Bignum, the returned value is Relocate_Node (N)).
 
    procedure Determine_Range
      (N            : Node_Id;
@@ -273,7 +273,7 @@ package Checks is
       Top_Level : Boolean);
    --  This is the main routine for handling MINIMIZED and ELIMINATED overflow
    --  checks. On entry N is a node whose result is a signed integer subtype.
-   --  If the node is an artihmetic operation, then a range analysis is carried
+   --  If the node is an arithmetic operation, then a range analysis is carried
    --  out, and there are three possibilities:
    --
    --    The node is left unchanged (apart from expansion of an exponentiation
@@ -289,13 +289,13 @@ package Checks is
    --
    --  In the first two cases, Lo and Hi are set to the bounds of the possible
    --  range of results, computed as accurately as possible. In the third case
-   --  Lo and Hi are set to No_Uint (there are some cases where we cold get an
+   --  Lo and Hi are set to No_Uint (there are some cases where we could get an
    --  advantage from keeping result ranges for Bignum values, but it could use
    --  a lot of space and is very unlikely to be valuable).
    --
    --  If the node is not an arithmetic operation, then it is unchanged but
    --  Lo and Hi are still set (to the bounds of the result subtype if nothing
-   --  better can be determined.
+   --  better can be determined).
    --
    --  Note: this function is recursive, if called with an arithmetic operator,
    --  recursive calls are made to process the operands using this procedure.
@@ -310,8 +310,8 @@ package Checks is
    --  with a Long_Long_Integer left operand and an Integer right operand, and
    --  we would get a semantic error.
    --
-   --  The routine is called in three situations if we are operating in
-   --  either MINIMIZED or ELIMINATED modes.
+   --  The routine is called in three situations if we are operating in either
+   --  MINIMIZED or ELIMINATED modes.
    --
    --    Overflow checks applied to the top node of an expression tree when
    --    that node is an arithmetic operator. In this case the result is
@@ -320,7 +320,7 @@ package Checks is
    --
    --    Overflow checks are applied to the operands of a comparison operation.
    --    In this case, the comparison is done on the result Long_Long_Integer
-   --    or Bignum values, without raising any exceptions.
+   --    or Bignum values, without raising any exception.
    --
    --    Overflow checks are applied to the left operand of a membership test.
    --    In this case no exception is raised if a Long_Long_Integer or Bignum
@@ -328,7 +328,7 @@ package Checks is
    --    just that the result of IN is false in that case).
    --
    --  Note that if Bignum values appear, the caller must take care of doing
-   --  the appropriate mark/release operation on the secondary stack.
+   --  the appropriate mark/release operations on the secondary stack.
    --
    --  Top_Level is used to avoid inefficient unnecessary transitions into the
    --  Bignum domain. If Top_Level is True, it means that the caller will have

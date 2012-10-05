@@ -1658,7 +1658,7 @@ package body Osint is
       --  Start off by setting all suppress options, to False. The special
       --  overflow fields are set to Not_Set (they will be set by -gnatp, or
       --  by -gnato, or, if neither of these appear, in Adjust_Global_Switches
-      --  in Gnat1drv.
+      --  in Gnat1drv).
 
       Suppress_Options := ((others => False), Not_Set, Not_Set);
 
