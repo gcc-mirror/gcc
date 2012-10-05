@@ -1,7 +1,7 @@
 /* PR target/51106 */
 /* { dg-do "compile" } */
 /* { dg-skip-if "RTL error" { "*-*-*" } { "-fno-fat-lto-objects" } { "" } } */
-/* { dg-xfail-if "" { powerpc-ibm-aix* } { "*" } { "" } } */
+/* { dg-skip-if "" { powerpc-ibm-aix* } { "*" } { "" } } */
 
 int
 bar (int x)

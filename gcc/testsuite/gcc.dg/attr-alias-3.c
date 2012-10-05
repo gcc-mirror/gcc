@@ -1,5 +1,5 @@
 // { dg-do link }
-// { dg-xfail-if "" { "powerpc-ibm-aix*" } { "*" } { "" } }
+// { dg-skip-if "" { "powerpc-ibm-aix*" } { "*" } { "" } }
 // { dg-require-alias "" }
 // { dg-options "-O2 -fno-common" }
 
