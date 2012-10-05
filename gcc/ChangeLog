@@ -1,3 +1,10 @@
+2012-10-05  Jan Hubicka  <jh@suse.cz>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/33763
+	* tree-inline.c (expand_call_inline): Silently ignore always_inline
+	attribute for redefined extern inline functions.
+
 2012-10-04  Jan Hubicka  <jh@suse.cz>
 
 	* tree-vectorizer.h (vect_estimate_min_profitable_iters): Remove.
