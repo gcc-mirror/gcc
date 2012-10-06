@@ -175,6 +175,7 @@
   (UNSPECV_WINDOW_END	10)
   (UNSPECV_CONST_END	11)
   (UNSPECV_EH_RETURN	12)
+  (UNSPECV_GBR		13)
 ])
 
 ;; -------------------------------------------------------------------------
@@ -10029,13 +10030,37 @@ label:
   DONE;
 })
 
-(define_insn "load_gbr"
-  [(set (match_operand:SI 0 "register_operand" "=r") (reg:SI GBR_REG))
-   (use (reg:SI GBR_REG))]
+;;------------------------------------------------------------------------------
+;; Thread pointer getter and setter.
+;;
+;; On SH the thread pointer is kept in the GBR.
+;; These patterns are usually expanded from the respective built-in functions.
+(define_expand "get_thread_pointer"
+  [(set (match_operand:SI 0 "register_operand") (reg:SI GBR_REG))]
+  "TARGET_SH1")
+
+;; The store_gbr insn can also be used on !TARGET_SH1 for doing TLS accesses.
+(define_insn "store_gbr"
+  [(set (match_operand:SI 0 "register_operand" "=r") (reg:SI GBR_REG))]
   ""
   "stc	gbr,%0"
   [(set_attr "type" "tls_load")])
 
+(define_expand "set_thread_pointer"
+  [(set (reg:SI GBR_REG)
+	(unspec_volatile:SI [(match_operand:SI 0 "register_operand")]
+	 UNSPECV_GBR))]
+  "TARGET_SH1")
+
+(define_insn "load_gbr"
+  [(set (reg:SI GBR_REG)
+	(unspec_volatile:SI [(match_operand:SI 0 "register_operand" "r")]
+	 UNSPECV_GBR))]
+  "TARGET_SH1"
+  "ldc	%0,gbr"
+  [(set_attr "type" "move")])
+
+;;------------------------------------------------------------------------------
 ;; case instruction for switch statements.
 
 ;; Operand 0 is index

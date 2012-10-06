@@ -1887,7 +1887,7 @@ prepare_move_operands (rtx operands[], enum machine_mode mode)
 
 	    case TLS_MODEL_LOCAL_EXEC:
 	      tmp2 = gen_reg_rtx (Pmode);
-	      emit_insn (gen_load_gbr (tmp2));
+	      emit_insn (gen_store_gbr (tmp2));
 	      tmp = gen_reg_rtx (Pmode);
 	      emit_insn (gen_symTPOFF2reg (tmp, op1));
 
@@ -11521,6 +11521,12 @@ shmedia_builtin_p (void)
   return TARGET_SHMEDIA;
 }
 
+static bool
+sh1_builtin_p (void)
+{
+  return TARGET_SH1;
+}
+
 /* describe number and signedness of arguments; arg[0] == result
    (1: unsigned, 2: signed, 4: don't care, 8: pointer 0: no argument */
 /* 9: 64-bit pointer, 10: 32-bit pointer */
@@ -11578,6 +11584,8 @@ static const char signature_args[][4] =
   { 1, 1, 1, 1 },
 #define SH_BLTIN_PV 23
   { 0, 8 },
+#define SH_BLTIN_VP 24
+  { 8, 0 },
 };
 /* mcmv: operands considered unsigned.  */
 /* mmulsum_wq, msad_ubq: result considered unsigned long long.  */
@@ -11753,6 +11761,12 @@ static struct builtin_description bdesc[] =
     CODE_FOR_byterev,	"__builtin_sh_media_BYTEREV", SH_BLTIN_2, 0 },
   { shmedia_builtin_p,
     CODE_FOR_prefetch,	"__builtin_sh_media_PREFO", SH_BLTIN_PSSV, 0 },
+
+  { sh1_builtin_p,
+    CODE_FOR_get_thread_pointer, "__builtin_thread_pointer", SH_BLTIN_VP, 0 },
+  { sh1_builtin_p,
+    CODE_FOR_set_thread_pointer, "__builtin_set_thread_pointer",
+    SH_BLTIN_PV, 0 },
 };
 
 static void

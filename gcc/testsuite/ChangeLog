@@ -1,3 +1,8 @@
+2012-10-06  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54760
+	* gcc.target/sh/pr54760-1.c: New.
+
 2012-10-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/torture/Wsizeof-pointer-memaccess1.C: New test.
