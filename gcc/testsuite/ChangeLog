@@ -1,3 +1,8 @@
+2012-10-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54249
+	* g++.dg/cpp0x/stddef.C: New.
+
 2012-10-06  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/54832

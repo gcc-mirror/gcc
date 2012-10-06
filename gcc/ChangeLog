@@ -1,3 +1,9 @@
+2012-10-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54249
+	* ginclude/stddef.h: In C++11 mode declare nullptr_t in the global
+	namespace.
+
 2012-10-06  Jan Hubicka  <jh@suse.cz>
 
 	PR lto/53831
@@ -23,7 +29,7 @@
 
 2012-10-06  Jan Hubicka  <jh@suse.cz>
 
-	PR lto/54790 
+	PR lto/54790
 	* lto-streamer.h (lto_symtab_register_decl, lto_symtab_get_resolution,
 	lto_mark_nothrow_fndecl, lto_fixup_nothrow_decls): Remove.
 	* lto-symtab.c (lto_symtab_register_decl): Remove.
