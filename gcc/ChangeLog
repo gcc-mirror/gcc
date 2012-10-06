@@ -1,5 +1,9 @@
 2012-10-05  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
+	PR rtl-optimization/54739
+	* config/pa/pa.md: Remove DImode and, not and, ior and xor patterns
+	for 32-bit targets.  Adjust expanders.
+
 	* config/pa/pa.md: Adjust unamed HImode add insn pattern.
 
 2012-10-05  Oleg Endo  <olegendo@gcc.gnu.org>
