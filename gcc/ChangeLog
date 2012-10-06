@@ -1,3 +1,8 @@
+2012-10-06  Dehao Chen  <dehao@google.com>
+
+	PR debug/54826
+	* gimple-low.c (lower_stmt): Set the block for call args.
+
 2012-10-06  Jan Hubicka  <jh@suse.cz>
 
 	* doc/invoke.texi (-fprofile-report): Document.
