@@ -1894,7 +1894,7 @@ dump_profile_report (void)
   int last_freq_in = 0, last_count_in = 0, last_freq_out = 0, last_count_out = 0;
   gcov_type last_time = 0, last_size = 0;
   double rel_time_change, rel_size_change;
-  int last_reported;
+  int last_reported = 0;
 
   if (!profile_record)
     return;
