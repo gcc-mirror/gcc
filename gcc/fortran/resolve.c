@@ -12022,6 +12022,7 @@ resolve_fl_derived0 (gfc_symbol *sym)
 		  c->attr.pointer = ifc->result->attr.pointer;
 		  c->attr.dimension = ifc->result->attr.dimension;
 		  c->as = gfc_copy_array_spec (ifc->result->as);
+		  c->attr.class_ok = ifc->result->attr.class_ok;
 		}
 	      else
 		{   
@@ -12030,6 +12031,7 @@ resolve_fl_derived0 (gfc_symbol *sym)
 		  c->attr.pointer = ifc->attr.pointer;
 		  c->attr.dimension = ifc->attr.dimension;
 		  c->as = gfc_copy_array_spec (ifc->as);
+		  c->attr.class_ok = ifc->attr.class_ok;
 		}
 	      c->ts.interface = ifc;
 	      c->attr.function = ifc->attr.function;
@@ -12041,7 +12043,6 @@ resolve_fl_derived0 (gfc_symbol *sym)
 	      c->attr.recursive = ifc->attr.recursive;
 	      c->attr.always_explicit = ifc->attr.always_explicit;
 	      c->attr.ext_attr |= ifc->attr.ext_attr;
-	      c->attr.class_ok = ifc->attr.class_ok;
 	      /* Replace symbols in array spec.  */
 	      if (c->as)
 		{
