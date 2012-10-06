@@ -1778,6 +1778,209 @@ execute_function_dump (void *data ATTRIBUTE_UNUSED)
     }
 }
 
+/* Make statistic about profile consistency.  */
+
+struct profile_record
+{
+  int num_mismatched_freq_in[2];
+  int num_mismatched_freq_out[2];
+  int num_mismatched_count_in[2];
+  int num_mismatched_count_out[2];
+  bool run;
+  gcov_type time[2];
+  int size[2];
+};
+
+static struct profile_record *profile_record;
+
+static void
+check_profile_consistency (int index, int subpass, bool run)
+{
+  basic_block bb;
+  edge_iterator ei;
+  edge e;
+  int sum;
+  gcov_type lsum;
+
+  if (index == -1)
+    return;
+  if (!profile_record)
+    profile_record = XCNEWVEC (struct profile_record,
+			       passes_by_id_size);
+  gcc_assert (index < passes_by_id_size && index >= 0);
+  gcc_assert (subpass < 2);
+  profile_record[index].run |= run;
+
+  FOR_ALL_BB (bb)
+   {
+      if (bb != EXIT_BLOCK_PTR_FOR_FUNCTION (cfun)
+	  && profile_status != PROFILE_ABSENT)
+	{
+	  sum = 0;
+	  FOR_EACH_EDGE (e, ei, bb->succs)
+	    sum += e->probability;
+	  if (EDGE_COUNT (bb->succs) && abs (sum - REG_BR_PROB_BASE) > 100)
+	    profile_record[index].num_mismatched_freq_out[subpass]++;
+	  lsum = 0;
+	  FOR_EACH_EDGE (e, ei, bb->succs)
+	    lsum += e->count;
+	  if (EDGE_COUNT (bb->succs)
+	      && (lsum - bb->count > 100 || lsum - bb->count < -100))
+	    profile_record[index].num_mismatched_count_out[subpass]++;
+	}
+      if (bb != ENTRY_BLOCK_PTR_FOR_FUNCTION (cfun)
+	  && profile_status != PROFILE_ABSENT)
+	{
+	  sum = 0;
+	  FOR_EACH_EDGE (e, ei, bb->preds)
+	    sum += EDGE_FREQUENCY (e);
+	  if (abs (sum - bb->frequency) > 100
+	      || (MAX (sum, bb->frequency) > 10
+		  && abs ((sum - bb->frequency) * 100 / (MAX (sum, bb->frequency) + 1)) > 10))
+	    profile_record[index].num_mismatched_freq_in[subpass]++;
+	  lsum = 0;
+	  FOR_EACH_EDGE (e, ei, bb->preds)
+	    lsum += e->count;
+	  if (lsum - bb->count > 100 || lsum - bb->count < -100)
+	    profile_record[index].num_mismatched_count_in[subpass]++;
+	}
+      if (bb == ENTRY_BLOCK_PTR_FOR_FUNCTION (cfun)
+	  || bb == EXIT_BLOCK_PTR_FOR_FUNCTION (cfun))
+	continue;
+      if ((cfun && (cfun->curr_properties & PROP_trees)))
+	{
+	  gimple_stmt_iterator i;
+
+	  for (i = gsi_start_bb (bb); !gsi_end_p (i); gsi_next (&i))
+	    {
+	      profile_record[index].size[subpass]
+		 += estimate_num_insns (gsi_stmt (i), &eni_size_weights);
+	      if (profile_status == PROFILE_READ)
+		profile_record[index].time[subpass]
+		   += estimate_num_insns (gsi_stmt (i),
+					  &eni_time_weights) * bb->count;
+	      else if (profile_status == PROFILE_GUESSED)
+		profile_record[index].time[subpass]
+		   += estimate_num_insns (gsi_stmt (i),
+					  &eni_time_weights) * bb->frequency;
+	    }
+	}
+      else if (cfun && (cfun->curr_properties & PROP_rtl))
+	{
+	  rtx insn;
+	  for (insn = NEXT_INSN (BB_HEAD (bb)); insn && insn != NEXT_INSN (BB_END (bb));
+	       insn = NEXT_INSN (insn))
+	    if (INSN_P (insn))
+	      {
+		profile_record[index].size[subpass]
+		   += insn_rtx_cost (PATTERN (insn), false);
+		if (profile_status == PROFILE_READ)
+		  profile_record[index].time[subpass]
+		     += insn_rtx_cost (PATTERN (insn), true) * bb->count;
+		else if (profile_status == PROFILE_GUESSED)
+		  profile_record[index].time[subpass]
+		     += insn_rtx_cost (PATTERN (insn), true) * bb->frequency;
+	      }
+	}
+   }
+}
+
+/* Output profile consistency.  */
+
+void
+dump_profile_report (void)
+{
+  int i, j;
+  int last_freq_in = 0, last_count_in = 0, last_freq_out = 0, last_count_out = 0;
+  gcov_type last_time, last_size;
+  double rel_time_change, rel_size_change;
+  int last_reported;
+
+  if (!profile_record)
+    return;
+  fprintf (stderr, "\nProfile consistency report:\n\n");
+  fprintf (stderr, "Pass name                        |mismatch in |mismated out|Overall\n");
+  fprintf (stderr, "                                 |freq count  |freq count  |size   time\n");
+	   
+  for (i = 0; i < passes_by_id_size; i++)
+    for (j = 0 ; j < 2; j++)
+      if (profile_record[i].run)
+	{
+	  if (last_time)
+	    rel_time_change = (profile_record[i].time[j]
+			       - (double)last_time) * 100 / (double)last_time;
+	  else
+	    rel_time_change = 0;
+	  if (last_size)
+	    rel_size_change = (profile_record[i].size[j]
+			       - (double)last_size) * 100 / (double)last_size;
+	  else
+	    rel_size_change = 0;
+
+	  if (profile_record[i].num_mismatched_freq_in[j] != last_freq_in
+	      || profile_record[i].num_mismatched_freq_out[j] != last_freq_out
+	      || profile_record[i].num_mismatched_count_in[j] != last_count_in
+	      || profile_record[i].num_mismatched_count_out[j] != last_count_out
+	      || rel_time_change || rel_size_change)
+	    {
+	      last_reported = i;
+              fprintf (stderr, "%-20s %s",
+		       passes_by_id [i]->name,
+		       j ? "(after TODO)" : "            ");
+	      if (profile_record[i].num_mismatched_freq_in[j] != last_freq_in)
+		fprintf (stderr, "| %+5i",
+		         profile_record[i].num_mismatched_freq_in[j]
+			  - last_freq_in);
+	      else
+		fprintf (stderr, "|      ");
+	      if (profile_record[i].num_mismatched_count_in[j] != last_count_in)
+		fprintf (stderr, " %+5i",
+		         profile_record[i].num_mismatched_count_in[j]
+			  - last_count_in);
+	      else
+		fprintf (stderr, "      ");
+	      if (profile_record[i].num_mismatched_freq_out[j] != last_freq_out)
+		fprintf (stderr, "| %+5i",
+		         profile_record[i].num_mismatched_freq_out[j]
+			  - last_freq_out);
+	      else
+		fprintf (stderr, "|      ");
+	      if (profile_record[i].num_mismatched_count_out[j] != last_count_out)
+		fprintf (stderr, " %+5i",
+		         profile_record[i].num_mismatched_count_out[j]
+			  - last_count_out);
+	      else
+		fprintf (stderr, "      ");
+
+	      /* Size/time units change across gimple and RTL.  */
+	      if (i == pass_expand.pass.static_pass_number)
+		fprintf (stderr, "|----------");
+	      else
+		{
+		  if (rel_size_change)
+		    fprintf (stderr, "| %+8.4f%%", rel_size_change);
+		  else
+		    fprintf (stderr, "|          ");
+		  if (rel_time_change)
+		    fprintf (stderr, " %+8.4f%%", rel_time_change);
+		}
+	      fprintf (stderr, "\n");
+	      last_freq_in = profile_record[i].num_mismatched_freq_in[j];
+	      last_freq_out = profile_record[i].num_mismatched_freq_out[j];
+	      last_count_in = profile_record[i].num_mismatched_count_in[j];
+	      last_count_out = profile_record[i].num_mismatched_count_out[j];
+	    }
+	  else if (j && last_reported != i)
+	    {
+	      last_reported = i;
+              fprintf (stderr, "%-20s ------------|            |            |\n",
+		       passes_by_id [i]->name);
+	    }
+	  last_time = profile_record[i].time[j];
+	  last_size = profile_record[i].size[j];
+	}
+}
+
 /* Perform all TODO actions that ought to be done on each function.  */
 
 static void
@@ -2042,9 +2245,14 @@ execute_one_ipa_transform_pass (struct cgraph_node *node,
   if (pass->tv_id != TV_NONE)
     timevar_pop (pass->tv_id);
 
+  if (profile_report && cfun && (cfun->curr_properties & PROP_cfg))
+    check_profile_consistency (pass->static_pass_number, 0, true);
+
   /* Run post-pass cleanup and verification.  */
   execute_todo (todo_after);
   verify_interpass_invariants ();
+  if (profile_report && cfun && (cfun->curr_properties & PROP_cfg))
+    check_profile_consistency (pass->static_pass_number, 1, true);
 
   do_per_function (execute_function_dump, NULL);
   pass_fini_dump_file (pass);
@@ -2144,6 +2352,13 @@ execute_one_pass (struct opt_pass *pass)
 
   if (!gate_status)
     {
+      /* Run so passes selectively disabling themselves on a given function
+	 are not miscounted.  */
+      if (profile_report && cfun && (cfun->curr_properties & PROP_cfg))
+	{
+          check_profile_consistency (pass->static_pass_number, 0, false);
+          check_profile_consistency (pass->static_pass_number, 1, false);
+	}
       current_pass = NULL;
       return false;
     }
@@ -2210,8 +2425,14 @@ execute_one_pass (struct opt_pass *pass)
       clean_graph_dump_file (dump_file_name);
     }
 
+  if (profile_report && cfun && (cfun->curr_properties & PROP_cfg))
+    check_profile_consistency (pass->static_pass_number, 0, true);
+
   /* Run post-pass cleanup and verification.  */
   execute_todo (todo_after | pass->todo_flags_finish);
+  if (profile_report && cfun && (cfun->curr_properties & PROP_cfg))
+    check_profile_consistency (pass->static_pass_number, 1, true);
+
   verify_interpass_invariants ();
   do_per_function (execute_function_dump, NULL);
   if (pass->type == IPA_PASS)
