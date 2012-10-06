@@ -269,7 +269,7 @@
 	* config/rx/rx.opt (mwarn-multiple-fast-interrupts): New option.
 	* doc/invoke.texi: Document the option.
 
-2012-09-03  Mark Kettenis  <kettenis@openbsd.org>
+2012-10-03  Mark Kettenis  <kettenis@openbsd.org>
 
 	* config.gcc (*-*-openbsd4.[3-9]|*-*-openbsd[5-9]*): Set
 	default_use_cxa_atexit to yes.
