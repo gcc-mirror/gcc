@@ -1892,7 +1892,7 @@ dump_profile_report (void)
 {
   int i, j;
   int last_freq_in = 0, last_count_in = 0, last_freq_out = 0, last_count_out = 0;
-  gcov_type last_time, last_size;
+  gcov_type last_time = 0, last_size = 0;
   double rel_time_change, rel_size_change;
   int last_reported;
 
@@ -1900,7 +1900,7 @@ dump_profile_report (void)
     return;
   fprintf (stderr, "\nProfile consistency report:\n\n");
   fprintf (stderr, "Pass name                        |mismatch in |mismated out|Overall\n");
-  fprintf (stderr, "                                 |freq count  |freq count  |size   time\n");
+  fprintf (stderr, "                                 |freq count  |freq count  |size      time\n");
 	   
   for (i = 0; i < passes_by_id_size; i++)
     for (j = 0 ; j < 2; j++)
