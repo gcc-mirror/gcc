@@ -1,3 +1,9 @@
+2012-10-06  Andreas Schwab  <schwab@linux-m68k.org>
+
+	PR rtl-optimization/54739
+	* config/m68k/m68k.md (anddi3, iordi3, xordi3, one_cmpldi2):
+	Remove.
+
 2012-10-06  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/54760
