@@ -425,6 +425,14 @@ lower_stmt (gimple_stmt_iterator *gsi, struct lower_data *data)
     case GIMPLE_CALL:
       {
 	tree decl = gimple_call_fndecl (stmt);
+	unsigned i;
+
+	for (i = 0; i < gimple_call_num_args (stmt); i++)
+	  {
+	    tree arg = gimple_call_arg (stmt, i);
+	    if (EXPR_P (arg))
+	      TREE_SET_BLOCK (arg, data->block);
+	  }
 
 	if (decl
 	    && DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL
