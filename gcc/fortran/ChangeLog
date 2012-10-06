@@ -1,3 +1,11 @@
+2012-10-06  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/45521
+	* interface.c (generic_correspondence): Implement additional
+	distinguishability criteria of F08.
+	(compare_actual_formal): Reject data object as actual argument for
+	procedure formal argument.
+
 2012-10-04  Tobias Burnus  <burnus@net-b.de>
 
 	* expr.c (scalarize_intrinsic_call): Plug memory leak.

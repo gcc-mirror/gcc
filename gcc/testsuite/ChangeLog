@@ -1,3 +1,10 @@
+2012-10-06  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/45521
+	* gfortran.dg/generic_25.f90: New.
+	* gfortran.dg/generic_26.f90: New.
+	* gfortran.dg/generic_27.f90: New.
+
 2012-10-06  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/54760

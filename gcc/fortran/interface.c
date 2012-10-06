@@ -932,9 +932,9 @@ count_types_test (gfc_formal_arglist *f1, gfc_formal_arglist *f2,
 }
 
 
-/* Perform the correspondence test in rule 3 of section F03:16.2.3.
-   Returns zero if no argument is found that satisfies rule 3, nonzero
-   otherwise. 'p1' and 'p2' are the PASS arguments of both procedures
+/* Perform the correspondence test in rule (3) of F08:C1215.
+   Returns zero if no argument is found that satisfies this rule,
+   nonzero otherwise. 'p1' and 'p2' are the PASS arguments of both procedures
    (if applicable).
 
    This test is also not symmetric in f1 and f2 and must be called
@@ -942,13 +942,13 @@ count_types_test (gfc_formal_arglist *f1, gfc_formal_arglist *f2,
    argument list with keywords.  For example:
 
    INTERFACE FOO
-       SUBROUTINE F1(A, B)
-	   INTEGER :: A ; REAL :: B
-       END SUBROUTINE F1
+     SUBROUTINE F1(A, B)
+       INTEGER :: A ; REAL :: B
+     END SUBROUTINE F1
 
-       SUBROUTINE F2(B, A)
-	   INTEGER :: A ; REAL :: B
-       END SUBROUTINE F1
+     SUBROUTINE F2(B, A)
+       INTEGER :: A ; REAL :: B
+     END SUBROUTINE F1
    END INTERFACE FOO
 
    At this point, 'CALL FOO(A=1, B=1.0)' is ambiguous.  */
@@ -973,7 +973,10 @@ generic_correspondence (gfc_formal_arglist *f1, gfc_formal_arglist *f2,
 	f2 = f2->next;
 
       if (f2 != NULL && (compare_type_rank (f1->sym, f2->sym)
-			 || compare_type_rank (f2->sym, f1->sym)))
+			 || compare_type_rank (f2->sym, f1->sym))
+	  && !((gfc_option.allow_std & GFC_STD_F2008)
+	       && ((f1->sym->attr.allocatable && f2->sym->attr.pointer)
+		   || (f2->sym->attr.allocatable && f1->sym->attr.pointer))))
 	goto next;
 
       /* Now search for a disambiguating keyword argument starting at
@@ -984,7 +987,10 @@ generic_correspondence (gfc_formal_arglist *f1, gfc_formal_arglist *f2,
 	    continue;
 
 	  sym = find_keyword_arg (g->sym->name, f2_save);
-	  if (sym == NULL || !compare_type_rank (g->sym, sym))
+	  if (sym == NULL || !compare_type_rank (g->sym, sym)
+	      || ((gfc_option.allow_std & GFC_STD_F2008)
+		  && ((sym->attr.allocatable && g->sym->attr.pointer)
+		      || (sym->attr.pointer && g->sym->attr.allocatable))))
 	    return 1;
 	}
 
@@ -2551,8 +2557,8 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 
      skip_size_check:
 
-      /* Satisfy 12.4.1.3 by ensuring that a procedure pointer actual argument
-	 is provided for a procedure pointer formal argument.  */
+      /* Satisfy F03:12.4.1.3 by ensuring that a procedure pointer actual
+         argument is provided for a procedure pointer formal argument.  */
       if (f->sym->attr.proc_pointer
 	  && !((a->expr->expr_type == EXPR_VARIABLE
 		&& a->expr->symtree->n.sym->attr.proc_pointer)
@@ -2566,11 +2572,10 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	  return 0;
 	}
 
-      /* Satisfy 12.4.1.2 by ensuring that a procedure actual argument is
+      /* Satisfy F03:12.4.1.3 by ensuring that a procedure actual argument is
 	 provided for a procedure formal argument.  */
-      if (a->expr->ts.type != BT_PROCEDURE && !gfc_is_proc_ptr_comp (a->expr)
-	  && a->expr->expr_type == EXPR_VARIABLE
-	  && f->sym->attr.flavor == FL_PROCEDURE)
+      if (f->sym->attr.flavor == FL_PROCEDURE
+	  && gfc_expr_attr (a->expr).flavor != FL_PROCEDURE)
 	{
 	  if (where)
 	    gfc_error ("Expected a procedure for argument '%s' at %L",
