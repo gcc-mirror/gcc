@@ -648,6 +648,9 @@
 /* Define to 1 if you have the `scalbnl' function. */
 #undef HAVE_SCALBNL
 
+/* Define to 1 if you have the `secure_getenv' function. */
+#undef HAVE_SECURE_GETENV
+
 /* Define to 1 if you have the `setmode' function. */
 #undef HAVE_SETMODE
 
