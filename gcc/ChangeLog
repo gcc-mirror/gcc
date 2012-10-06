@@ -1,3 +1,16 @@
+2012-10-06  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54760
+	* config/sh/sh.md (define_constants): Add UNSPECV_GBR.
+	(get_thread_pointer, set_thread_pointer): New expanders.
+	(load_gbr): Rename to store_gbr.  Remove GBR_REG use.
+	(store_gbr): New insn.
+	* config/sh/sh.c (prepare_move_operands): Use gen_store_gbr instead of
+	gen_load_gbr in TLS_MODEL_LOCAL_EXEC case.
+	(sh1_builtin_p): New function.
+	(signature_args): Add SH_BLTIN_VP.
+	(bdesc): Add __builtin_thread_pointer and __builtin_set_thread_pointer.
+
 2012-10-05  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR rtl-optimization/54739
