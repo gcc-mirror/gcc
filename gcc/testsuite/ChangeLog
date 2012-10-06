@@ -1,3 +1,8 @@
+2012-10-06  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54832
+	* gfortran.dg/typebound_operator_17.f90: New.
+
 2012-10-06  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/lto/resolutions_0.c: New testcase.
