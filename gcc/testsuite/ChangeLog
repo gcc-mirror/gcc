@@ -1,3 +1,7 @@
+2012-10-06  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/lto/resolutions_0.c: New testcase.
+
 2012-10-06  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/45521

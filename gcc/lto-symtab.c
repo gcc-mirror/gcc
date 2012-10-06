@@ -32,40 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 /* Vector to keep track of external variables we've seen so far.  */
 VEC(tree,gc) *lto_global_var_decls;
 
-/* Registers DECL with the LTO symbol table as having resolution RESOLUTION
-   and read from FILE_DATA. */
-
-void
-lto_symtab_register_decl (tree decl,
-			  ld_plugin_symbol_resolution_t resolution,
-			  struct lto_file_decl_data *file_data)
-{
-  symtab_node node;
-
-  /* Check that declarations reaching this function do not have
-     properties inconsistent with having external linkage.  If any of
-     these asertions fail, then the object file reader has failed to
-     detect these cases and issue appropriate error messages.  */
-  gcc_assert (decl
-	      && TREE_PUBLIC (decl)
-	      && (TREE_CODE (decl) == VAR_DECL
-		  || TREE_CODE (decl) == FUNCTION_DECL)
-	      && DECL_ASSEMBLER_NAME_SET_P (decl));
-  if (TREE_CODE (decl) == VAR_DECL
-      && DECL_INITIAL (decl))
-    gcc_assert (!DECL_EXTERNAL (decl)
-		|| (TREE_STATIC (decl) && TREE_READONLY (decl)));
-  if (TREE_CODE (decl) == FUNCTION_DECL)
-    gcc_assert (!DECL_ABSTRACT (decl));
-
-  node = symtab_get_node (decl);
-  if (node)
-    {
-      node->symbol.resolution = resolution;
-      gcc_assert (node->symbol.lto_file_data == file_data);
-    }
-}
-
 /* Replace the cgraph node NODE with PREVAILING_NODE in the cgraph, merging
    all edges and removing the old node.  */
 

@@ -1,3 +1,10 @@
+2012-10-06  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/54790 
+	* lto-streamer.h (lto_symtab_register_decl, lto_symtab_get_resolution,
+	lto_mark_nothrow_fndecl, lto_fixup_nothrow_decls): Remove.
+	* lto-symtab.c (lto_symtab_register_decl): Remove.
+
 2012-10-06  Andreas Schwab  <schwab@linux-m68k.org>
 
 	PR rtl-optimization/54739
