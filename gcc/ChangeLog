@@ -1,3 +1,9 @@
+2012-10-06  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/53831
+	PR lto/54776
+	* lto-streamer-out.c (produce_symtab): Cleanup; drop v1 API hack.
+
 2012-10-06  Dehao Chen  <dehao@google.com>
 
 	PR debug/54826

@@ -5,6 +5,12 @@
 
 2012-10-06  Jan Hubicka  <jh@suse.cz>
 
+	PR lto/53831
+	PR lto/54776
+	* g++.dg/lto/v1-plugin-api-not-supported.C: New testcase.
+
+2012-10-06  Jan Hubicka  <jh@suse.cz>
+
 	* gcc.dg/lto/resolutions_0.c: New testcase.
 
 2012-10-06  Janus Weil  <janus@gcc.gnu.org>
