@@ -1,3 +1,10 @@
+2012-10-06  Mark Kettenis  <kettenis@openbsd.org>
+
+	* config.host (*-*-openbsd*): Add t-eh-dw2-dip to tmake_file.
+	* unwind-dw2-fde-dip.c: Don't include <elf.h> on OpenBSD.
+	(USE_PT_GNU_EH_FRAME): Define for OpenBSD.
+	(ElfW): Likewise.
+				
 2012-09-20  Release Manager
 
 	* GCC 4.7.2 released.
