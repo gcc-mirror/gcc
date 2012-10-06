@@ -1,5 +1,17 @@
 2012-10-06  Jan Hubicka  <jh@suse.cz>
 
+	* doc/invoke.texi (-fprofile-report): Document.
+	* common.opt (-fprofile-report): New option.
+	* toplev.c (finalize): Call dump_profile_report.
+	* toplev.h (profile_report): Declare.
+	* passes.c (profile_record): New static var.
+	(check_profile_consistency): New function.
+	(dump_profile_record): New function.
+	(execute_one_ipa_transform_pass): Call check_profile_consistency.
+	(execute_one_pass): Likewise.
+
+2012-10-06  Jan Hubicka  <jh@suse.cz>
+
 	PR lto/54790 
 	* lto-streamer.h (lto_symtab_register_decl, lto_symtab_get_resolution,
 	lto_mark_nothrow_fndecl, lto_fixup_nothrow_decls): Remove.
