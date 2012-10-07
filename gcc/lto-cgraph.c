@@ -72,13 +72,17 @@ enum LTO_symtab_tags
   LTO_symtab_last_tag
 };
 
-/* Create a new symtab encoder.  */
+/* Create a new symtab encoder.
+   if FOR_INPUT, the encoder allocate only datastructures needed
+   to read the symtab.  */
 
 lto_symtab_encoder_t
-lto_symtab_encoder_new (void)
+lto_symtab_encoder_new (bool for_input)
 {
   lto_symtab_encoder_t encoder = XCNEW (struct lto_symtab_encoder_d);
-  encoder->map = pointer_map_create ();
+
+  if (!for_input)
+    encoder->map = pointer_map_create ();
   encoder->nodes = NULL;
   return encoder;
 }
@@ -90,7 +94,8 @@ void
 lto_symtab_encoder_delete (lto_symtab_encoder_t encoder)
 {
    VEC_free (lto_encoder_entry, heap, encoder->nodes);
-   pointer_map_destroy (encoder->map);
+   if (encoder->map)
+     pointer_map_destroy (encoder->map);
    free (encoder);
 }
 
@@ -105,6 +110,15 @@ lto_symtab_encoder_encode (lto_symtab_encoder_t encoder,
 {
   int ref;
   void **slot;
+
+  if (!encoder->map)
+    {
+      lto_encoder_entry entry = {node, false, false, false};
+
+      ref = VEC_length (lto_encoder_entry, encoder->nodes);
+      VEC_safe_push (lto_encoder_entry, heap, encoder->nodes, entry);
+      return ref;
+    }
 
   slot = pointer_map_contains (encoder->map, node);
   if (!slot || !*slot)
@@ -688,7 +702,7 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
   lto_symtab_encoder_t encoder;
   lto_symtab_encoder_iterator lsei;
 
-  encoder = lto_symtab_encoder_new ();
+  encoder = lto_symtab_encoder_new (false);
 
   /* Go over all entries in the IN_ENCODER and duplicate them to
      ENCODER. At the same time insert masters of clones so
@@ -1316,7 +1330,7 @@ input_symtab (void)
       if (!ib) 
 	fatal_error ("cannot find LTO cgraph in %s", file_data->file_name);
       input_profile_summary (ib, file_data);
-      file_data->symtab_node_encoder = lto_symtab_encoder_new ();
+      file_data->symtab_node_encoder = lto_symtab_encoder_new (true);
       nodes = input_cgraph_1 (file_data, ib);
       lto_destroy_simple_input_block (file_data, LTO_section_symtab_nodes,
 				      ib, data, len);

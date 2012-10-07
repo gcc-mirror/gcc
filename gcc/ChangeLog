@@ -1,3 +1,12 @@
+2012-10-07  Jan Hubicka  <jh@suse.cz>
+
+	* lto-cgraph.c (lto_symtab_encoder_new): New parameter FOR_INPUT.
+	(lto_symtab_encoder_delete): Update.
+	(lto_symtab_encoder_encode): Update.
+	(compute_ltrans_boundary): Update.
+	(input_symtab): Update.
+ 	* lto-streamer.h (lto_symtab_encoder_new): Update.
+
 2012-10-07  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/mips-protos.h (mips_split_type): New enum.

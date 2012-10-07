@@ -99,7 +99,7 @@ static ltrans_partition
 new_partition (const char *name)
 {
   ltrans_partition part = XCNEW (struct ltrans_partition_def);
-  part->encoder = lto_symtab_encoder_new ();
+  part->encoder = lto_symtab_encoder_new (false);
   part->name = name;
   part->insns = 0;
   VEC_safe_push (ltrans_partition, heap, ltrans_partitions, part);
