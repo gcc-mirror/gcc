@@ -1,3 +1,44 @@
+2012-10-07  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips-protos.h (mips_split_type): New enum.
+	(mips_split_64bit_move_p, mips_split_doubleword_move): Delete.
+	(mips_split_move_p, mips_split_move, mips_split_move_insn_p)
+	(mips_split_move_insn): Declare.
+	* config/mips/mips.c (mips_tuning_info): New variable.
+	(mips_load_store_insns): Use mips_split_move_insn_p instead of
+	mips_split_64bit_move_p.
+	(mips_emit_move_or_split, mips_mult_move_p): New functions.
+	(mips_split_64bit_move_p): Rename to...
+	(mips_split_move_p): ...this and take a mips_split_type argument.
+	Generalize to all moves.  Call mips_mult_move_p.
+	(mips_split_doubleword_move): Rename to...
+	(mips_split_move): ...this and take a mips_split_type argument.
+	Assert that mips_split_move_p holds.
+	(mips_insn_split_type, mips_split_move_insn_p, mips_split_move_insn):
+	New functions.
+	(mips_output_move): Use mips_split_move_p instead of
+	mips_split_64bit_move_p.  Handle MULT $0, $0 moves.
+	(mips_save_reg): Use mips_emit_move_or_split.
+	(mips_sim_reset): Assign to curr_state.  Call targetm.sched.init
+	and advance_state.
+	(mips_sim_init): Call targetm.sched.init_dfa_pre_cycle_insn and
+	targetm.sched.init_dfa_post_cycle_insn, if defined.
+	(mips_sim_next_cycle): Assign to curr_state.  Use advance_state
+	instead of state_transition.
+	(mips_sim_issue_insn): Assign to curr_state.  Use
+	targetm.sched.variable_issue to see how many more insns
+	can be issued.
+	(mips_seq_time, mips_mult_zero_zero_cost)
+	(mips_set_fast_mult_zero_zero_p, mips_set_tuning_info)
+	(mips_expand_to_rtl_hook): New functions.
+	(TARGET_EXPAND_TO_RTL_HOOK): Define.
+	* config/mips/mips.md (move_type): Add imul.
+	(type): Map imul move_types to imul.
+	(*movdi_32bit, *movti): Add imul alternatives.
+	Use mips_split_move_insn_p and mips_split_move_insn instead of
+	mips_split_64bit_move_p and mips_split_doubleword_move in move
+	splitters.
+
 2012-10-06  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.c (print_operand) ['A']: Delete.

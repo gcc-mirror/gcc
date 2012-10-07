@@ -173,6 +173,25 @@ enum mips_call_type {
   MIPS_CALL_EPILOGUE
 };
 
+/* Controls the conditions under which certain instructions are split.
+
+   SPLIT_IF_NECESSARY
+	Only perform splits that are necessary for correctness
+	(because no unsplit version exists).
+
+   SPLIT_FOR_SPEED
+	Perform splits that are necessary for correctness or
+	beneficial for code speed.
+
+   SPLIT_FOR_SIZE
+	Perform splits that are necessary for correctness or
+	beneficial for code size.  */
+enum mips_split_type {
+  SPLIT_IF_NECESSARY,
+  SPLIT_FOR_SPEED,
+  SPLIT_FOR_SIZE
+};
+
 extern bool mips_symbolic_constant_p (rtx, enum mips_symbol_context,
 				      enum mips_symbol_type *);
 extern int mips_regno_mode_ok_for_base_p (int, enum machine_mode, bool);
@@ -212,8 +231,10 @@ extern int m16_simm8_8 (rtx, enum machine_mode);
 extern int m16_nsimm8_8 (rtx, enum machine_mode);
 
 extern rtx mips_subword (rtx, bool);
-extern bool mips_split_64bit_move_p (rtx, rtx);
-extern void mips_split_doubleword_move (rtx, rtx);
+extern bool mips_split_move_p (rtx, rtx, enum mips_split_type);
+extern void mips_split_move (rtx, rtx, enum mips_split_type);
+extern bool mips_split_move_insn_p (rtx, rtx, rtx);
+extern void mips_split_move_insn (rtx, rtx, rtx);
 extern const char *mips_output_move (rtx, rtx);
 extern bool mips_cfun_has_cprestore_slot_p (void);
 extern bool mips_cprestore_address_p (rtx, bool);
