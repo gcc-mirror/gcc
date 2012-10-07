@@ -7990,7 +7990,7 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
 	   NOP_EXPR with TREE_SIDE_EFFECTS; don't fold in that case.  */;
       else
 	{
-	  size = fold_non_dependent_expr (size);
+	  size = fold_non_dependent_expr_sfinae (size, complain);
 
 	  if (CLASS_TYPE_P (type)
 	      && CLASSTYPE_LITERAL_P (type))

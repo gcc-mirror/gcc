@@ -5020,7 +5020,7 @@ redeclare_class_template (tree type, tree parms)
 /* Simplify EXPR if it is a non-dependent expression.  Returns the
    (possibly simplified) expression.  */
 
-static tree
+tree
 fold_non_dependent_expr_sfinae (tree expr, tsubst_flags_t complain)
 {
   if (expr == NULL_TREE)
@@ -14287,7 +14287,8 @@ tsubst_copy_and_build (tree t,
          FIXME stop folding in cp_parser_initializer_clause.  */
       gcc_assert (TREE_CONSTANT (t));
       {
-	tree r = get_target_expr (RECUR (TARGET_EXPR_INITIAL (t)));
+	tree r = get_target_expr_sfinae (RECUR (TARGET_EXPR_INITIAL (t)),
+					 complain);
 	TREE_CONSTANT (r) = true;
 	RETURN (r);
       }
