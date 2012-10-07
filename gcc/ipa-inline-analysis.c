@@ -3312,14 +3312,12 @@ do_estimate_edge_time (struct cgraph_edge *edge)
   VEC_free (tree, heap, known_binfos);
   VEC_free (ipa_agg_jump_function_p, heap, known_aggs);
 
-  ret = (((gcov_type)time
-	   - es->call_stmt_time) * edge->frequency
-	 + CGRAPH_FREQ_BASE / 2) / CGRAPH_FREQ_BASE;
+  ret = RDIV ((gcov_type)time * edge->frequency,
+	      CGRAPH_FREQ_BASE);
 
   /* When caching, update the cache entry.  */
   if (edge_growth_cache)
     {
-      int ret_size;
       if ((int)VEC_length (edge_growth_cache_entry, edge_growth_cache)
 	  <= edge->uid)
 	VEC_safe_grow_cleared (edge_growth_cache_entry, heap, edge_growth_cache,
@@ -3327,10 +3325,8 @@ do_estimate_edge_time (struct cgraph_edge *edge)
       VEC_index (edge_growth_cache_entry, edge_growth_cache, edge->uid).time
 	= ret + (ret >= 0);
 
-      ret_size = size - es->call_stmt_size;
-      gcc_checking_assert (es->call_stmt_size);
       VEC_index (edge_growth_cache_entry, edge_growth_cache, edge->uid).size
-	= ret_size + (ret_size >= 0);
+	= size + (size >= 0);
       VEC_index (edge_growth_cache_entry, edge_growth_cache, edge->uid).hints
 	= hints + 1;
     }
@@ -3338,11 +3334,11 @@ do_estimate_edge_time (struct cgraph_edge *edge)
 }
 
 
-/* Estimate the growth of the caller when inlining EDGE.
+/* Return estimated callee growth after inlining EDGE.
    Only to be called via estimate_edge_size.  */
 
 int
-do_estimate_edge_growth (struct cgraph_edge *edge)
+do_estimate_edge_size (struct cgraph_edge *edge)
 {
   int size;
   struct cgraph_node *callee;
@@ -3375,8 +3371,7 @@ do_estimate_edge_growth (struct cgraph_edge *edge)
   VEC_free (tree, heap, known_vals);
   VEC_free (tree, heap, known_binfos);
   VEC_free (ipa_agg_jump_function_p, heap, known_aggs);
-  gcc_checking_assert (inline_edge_summary (edge)->call_stmt_size);
-  return size - inline_edge_summary (edge)->call_stmt_size;
+  return size;
 }
 
 
