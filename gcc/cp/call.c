@@ -4777,7 +4777,7 @@ build_conditional_expr_1 (tree arg1, tree arg2, tree arg3,
 	 but now we sometimes wrap them in NOP_EXPRs so the test would
 	 fail.  */
       if (CLASS_TYPE_P (TREE_TYPE (result)))
-	result = get_target_expr (result);
+	result = get_target_expr_sfinae (result, complain);
       /* If this expression is an rvalue, but might be mistaken for an
 	 lvalue, we must add a NON_LVALUE_EXPR.  */
       result = rvalue (result);
@@ -5883,7 +5883,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	field = next_initializable_field (DECL_CHAIN (field));
 	CONSTRUCTOR_APPEND_ELT (vec, field, size_int (len));
 	new_ctor = build_constructor (totype, vec);
-	return get_target_expr (new_ctor);
+	return get_target_expr_sfinae (new_ctor, complain);
       }
 
     case ck_aggr:
@@ -5899,7 +5899,8 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	  return fold_if_not_in_template (expr);
 	}
       expr = reshape_init (totype, expr, complain);
-      return get_target_expr (digest_init (totype, expr, complain));
+      return get_target_expr_sfinae (digest_init (totype, expr, complain),
+				     complain);
 
     default:
       break;

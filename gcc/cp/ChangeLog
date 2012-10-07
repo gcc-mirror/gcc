@@ -1,5 +1,20 @@
 2012-10-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* pt.c (fold_non_dependent_expr_sfinae): Remove static specifier.
+	(tsubst_copy_and_build): Use get_target_expr_sfinae.
+	* call.c (build_conditional_expr_1, convert_like_real): Likewise.
+	* cvt.c (build_up_reference): Likewise.
+	(ocp_convert): Use abstract_virtuals_error_sfinae.
+	(build_up_reference): Propagate complain to cp_build_addr_expr.
+	* decl.c (compute_array_index_type): Use fold_non_dependent_expr_sfinae.
+	* cp-tree.h: Update declarations.
+
+	* cvt.c	(build_expr_type_conversion): Tidy.
+
+	* tree.c (stabilize_aggr_init): Change to static.
+
+2012-10-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/51422
 	* semantics.c (is_normal_capture_proxy): Return true for
 	error_mark_node as DECL_VALUE_EXPR.

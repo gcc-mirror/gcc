@@ -3557,7 +3557,7 @@ stabilize_call (tree call, tree *initp)
    arguments, while, upon return, *INITP contains an expression to
    compute the arguments.  */
 
-void
+static void
 stabilize_aggr_init (tree call, tree *initp)
 {
   tree inits = NULL_TREE;
