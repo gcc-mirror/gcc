@@ -14687,17 +14687,6 @@ print_operand (FILE *file, rtx x, int code)
     {
       /* %a is output_address.  */
 
-    case 'A':
-      /* If X is a constant integer whose low-order 5 bits are zero,
-	 write 'l'.  Otherwise, write 'r'.  This is a kludge to fix a bug
-	 in the AIX assembler where "sri" with a zero shift count
-	 writes a trash instruction.  */
-      if (GET_CODE (x) == CONST_INT && (INTVAL (x) & 31) == 0)
-	putc ('l', file);
-      else
-	putc ('r', file);
-      return;
-
     case 'b':
       /* If constant, low-order 16 bits of constant, unsigned.
 	 Otherwise, write normally.  */
