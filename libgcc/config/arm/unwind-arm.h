@@ -67,7 +67,7 @@ extern "C" {
 
   static inline _Unwind_Reason_Code
   __gnu_unwind_24bit (_Unwind_Context * context __attribute__ ((unused)),
-                      _Unwind_Context *_uw data __attribute__ ((unused)),
+                      _uw data __attribute__ ((unused)),
                       int compact __attribute__ ((unused)))
     {
       return _URC_FAILURE;
