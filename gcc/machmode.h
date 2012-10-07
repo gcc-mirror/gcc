@@ -217,6 +217,11 @@ extern const unsigned char mode_inner[NUM_MACHINE_MODES];
 #define GET_MODE_UNIT_BITSIZE(MODE) \
   ((unsigned short) (GET_MODE_UNIT_SIZE (MODE) * BITS_PER_UNIT))
 
+#define GET_MODE_UNIT_PRECISION(MODE)		\
+  (GET_MODE_INNER (MODE) == VOIDmode		\
+   ? GET_MODE_PRECISION (MODE)			\
+   : GET_MODE_PRECISION (GET_MODE_INNER (MODE)))
+
 /* Get the number of units in the object.  */
 
 extern const unsigned char mode_nunits[NUM_MACHINE_MODES];

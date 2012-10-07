@@ -1,3 +1,17 @@
+2012-10-07  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* machmode.h (GET_MODE_UNIT_PRECISION): New macro.
+	* simplify-rtx.c (simplify_truncation): New function,
+	extracted from simplify_subreg and (in small part) from
+	simplify_unary_operation_1.
+	(simplify_unary_operation_1) <TRUNCATE>: Use it.  Remove sign bit
+	test for !TRULY_NOOP_TRUNCATION_MODES_P.
+	(simplify_subreg): Use simplify_truncate for lowpart subregs
+	where both the inner and outer modes are scalar integers.
+	* config/mips/mips.c (mips_truncated_op_cost): New function.
+	(mips_rtx_costs): Adjust test for BADDU.
+	* config/mips/mips.md (*baddu_di<mode>): Push truncates to operands.
+
 2012-10-07  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-inline-analysis.c (do_estimate_edge_time): Return actual

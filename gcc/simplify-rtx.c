@@ -564,6 +564,212 @@ simplify_replace_rtx (rtx x, const_rtx old_rtx, rtx new_rtx)
   return simplify_replace_fn_rtx (x, old_rtx, 0, new_rtx);
 }
 
+/* Try to simplify a MODE truncation of OP, which has OP_MODE.
+   Only handle cases where the truncated value is inherently an rvalue.
+
+   RTL provides two ways of truncating a value:
+
+   1. a lowpart subreg.  This form is only a truncation when both
+      the outer and inner modes (here MODE and OP_MODE respectively)
+      are scalar integers, and only then when the subreg is used as
+      an rvalue.
+
+      It is only valid to form such truncating subregs if the
+      truncation requires no action by the target.  The onus for
+      proving this is on the creator of the subreg -- e.g. the
+      caller to simplify_subreg or simplify_gen_subreg -- and typically
+      involves either TRULY_NOOP_TRUNCATION_MODES_P or truncated_to_mode.
+
+   2. a TRUNCATE.  This form handles both scalar and compound integers.
+
+   The first form is preferred where valid.  However, the TRUNCATE
+   handling in simplify_unary_operation turns the second form into the
+   first form when TRULY_NOOP_TRUNCATION_MODES_P or truncated_to_mode allow,
+   so it is generally safe to form rvalue truncations using:
+
+      simplify_gen_unary (TRUNCATE, ...)
+
+   and leave simplify_unary_operation to work out which representation
+   should be used.
+
+   Because of the proof requirements on (1), simplify_truncation must
+   also use simplify_gen_unary (TRUNCATE, ...) to truncate parts of OP,
+   regardless of whether the outer truncation came from a SUBREG or a
+   TRUNCATE.  For example, if the caller has proven that an SImode
+   truncation of:
+
+      (and:DI X Y)
+
+   is a no-op and can be represented as a subreg, it does not follow
+   that SImode truncations of X and Y are also no-ops.  On a target
+   like 64-bit MIPS that requires SImode values to be stored in
+   sign-extended form, an SImode truncation of:
+
+      (and:DI (reg:DI X) (const_int 63))
+
+   is trivially a no-op because only the lower 6 bits can be set.
+   However, X is still an arbitrary 64-bit number and so we cannot
+   assume that truncating it too is a no-op.  */
+
+static rtx
+simplify_truncation (enum machine_mode mode, rtx op,
+		     enum machine_mode op_mode)
+{
+  unsigned int precision = GET_MODE_UNIT_PRECISION (mode);
+  unsigned int op_precision = GET_MODE_UNIT_PRECISION (op_mode);
+  gcc_assert (precision <= op_precision);
+
+  /* Optimize truncations of zero and sign extended values.  */
+  if (GET_CODE (op) == ZERO_EXTEND
+      || GET_CODE (op) == SIGN_EXTEND)
+    {
+      /* There are three possibilities.  If MODE is the same as the
+	 origmode, we can omit both the extension and the subreg.
+	 If MODE is not larger than the origmode, we can apply the
+	 truncation without the extension.  Finally, if the outermode
+	 is larger than the origmode, we can just extend to the appropriate
+	 mode.  */
+      enum machine_mode origmode = GET_MODE (XEXP (op, 0));
+      if (mode == origmode)
+	return XEXP (op, 0);
+      else if (precision <= GET_MODE_UNIT_PRECISION (origmode))
+	return simplify_gen_unary (TRUNCATE, mode,
+				   XEXP (op, 0), origmode);
+      else
+	return simplify_gen_unary (GET_CODE (op), mode,
+				   XEXP (op, 0), origmode);
+    }
+
+  /* Simplify (truncate:SI (op:DI (x:DI) (y:DI)))
+     to (op:SI (truncate:SI (x:DI)) (truncate:SI (x:DI))).  */
+  if (GET_CODE (op) == PLUS
+      || GET_CODE (op) == MINUS
+      || GET_CODE (op) == MULT)
+    {
+      rtx op0 = simplify_gen_unary (TRUNCATE, mode, XEXP (op, 0), op_mode);
+      if (op0)
+	{
+	  rtx op1 = simplify_gen_unary (TRUNCATE, mode, XEXP (op, 1), op_mode);
+	  if (op1)
+	    return simplify_gen_binary (GET_CODE (op), mode, op0, op1);
+	}
+    }
+
+  /* Simplify (truncate:QI (lshiftrt:SI (sign_extend:SI (x:QI)) C)) into
+     to (ashiftrt:QI (x:QI) C), where C is a suitable small constant and
+     the outer subreg is effectively a truncation to the original mode.  */
+  if ((GET_CODE (op) == LSHIFTRT
+       || GET_CODE (op) == ASHIFTRT)
+      /* Ensure that OP_MODE is at least twice as wide as MODE
+	 to avoid the possibility that an outer LSHIFTRT shifts by more
+	 than the sign extension's sign_bit_copies and introduces zeros
+	 into the high bits of the result.  */
+      && 2 * precision <= op_precision
+      && CONST_INT_P (XEXP (op, 1))
+      && GET_CODE (XEXP (op, 0)) == SIGN_EXTEND
+      && GET_MODE (XEXP (XEXP (op, 0), 0)) == mode
+      && INTVAL (XEXP (op, 1)) < precision)
+    return simplify_gen_binary (ASHIFTRT, mode,
+				XEXP (XEXP (op, 0), 0), XEXP (op, 1));
+
+  /* Likewise (truncate:QI (lshiftrt:SI (zero_extend:SI (x:QI)) C)) into
+     to (lshiftrt:QI (x:QI) C), where C is a suitable small constant and
+     the outer subreg is effectively a truncation to the original mode.  */
+  if ((GET_CODE (op) == LSHIFTRT
+       || GET_CODE (op) == ASHIFTRT)
+      && CONST_INT_P (XEXP (op, 1))
+      && GET_CODE (XEXP (op, 0)) == ZERO_EXTEND
+      && GET_MODE (XEXP (XEXP (op, 0), 0)) == mode
+      && INTVAL (XEXP (op, 1)) < precision)
+    return simplify_gen_binary (LSHIFTRT, mode,
+				XEXP (XEXP (op, 0), 0), XEXP (op, 1));
+
+  /* Likewise (truncate:QI (ashift:SI (zero_extend:SI (x:QI)) C)) into
+     to (ashift:QI (x:QI) C), where C is a suitable small constant and
+     the outer subreg is effectively a truncation to the original mode.  */
+  if (GET_CODE (op) == ASHIFT
+      && CONST_INT_P (XEXP (op, 1))
+      && (GET_CODE (XEXP (op, 0)) == ZERO_EXTEND
+	  || GET_CODE (XEXP (op, 0)) == SIGN_EXTEND)
+      && GET_MODE (XEXP (XEXP (op, 0), 0)) == mode
+      && INTVAL (XEXP (op, 1)) < precision)
+    return simplify_gen_binary (ASHIFT, mode,
+				XEXP (XEXP (op, 0), 0), XEXP (op, 1));
+
+  /* Recognize a word extraction from a multi-word subreg.  */
+  if ((GET_CODE (op) == LSHIFTRT
+       || GET_CODE (op) == ASHIFTRT)
+      && SCALAR_INT_MODE_P (mode)
+      && SCALAR_INT_MODE_P (op_mode)
+      && precision >= BITS_PER_WORD
+      && 2 * precision <= op_precision
+      && CONST_INT_P (XEXP (op, 1))
+      && (INTVAL (XEXP (op, 1)) & (precision - 1)) == 0
+      && INTVAL (XEXP (op, 1)) >= 0
+      && INTVAL (XEXP (op, 1)) < op_precision)
+    {
+      int byte = subreg_lowpart_offset (mode, op_mode);
+      int shifted_bytes = INTVAL (XEXP (op, 1)) / BITS_PER_UNIT;
+      return simplify_gen_subreg (mode, XEXP (op, 0), op_mode,
+				  (WORDS_BIG_ENDIAN
+				   ? byte - shifted_bytes
+				   : byte + shifted_bytes));
+    }
+
+  /* If we have a TRUNCATE of a right shift of MEM, make a new MEM
+     and try replacing the TRUNCATE and shift with it.  Don't do this
+     if the MEM has a mode-dependent address.  */
+  if ((GET_CODE (op) == LSHIFTRT
+       || GET_CODE (op) == ASHIFTRT)
+      && SCALAR_INT_MODE_P (op_mode)
+      && MEM_P (XEXP (op, 0))
+      && CONST_INT_P (XEXP (op, 1))
+      && (INTVAL (XEXP (op, 1)) % GET_MODE_BITSIZE (mode)) == 0
+      && INTVAL (XEXP (op, 1)) > 0
+      && INTVAL (XEXP (op, 1)) < GET_MODE_BITSIZE (op_mode)
+      && ! mode_dependent_address_p (XEXP (XEXP (op, 0), 0),
+				     MEM_ADDR_SPACE (XEXP (op, 0)))
+      && ! MEM_VOLATILE_P (XEXP (op, 0))
+      && (GET_MODE_SIZE (mode) >= UNITS_PER_WORD
+	  || WORDS_BIG_ENDIAN == BYTES_BIG_ENDIAN))
+    {
+      int byte = subreg_lowpart_offset (mode, op_mode);
+      int shifted_bytes = INTVAL (XEXP (op, 1)) / BITS_PER_UNIT;
+      return adjust_address_nv (XEXP (op, 0), mode,
+				(WORDS_BIG_ENDIAN
+				 ? byte - shifted_bytes
+				 : byte + shifted_bytes));
+    }
+
+  /* (truncate:SI (OP:DI ({sign,zero}_extend:DI foo:SI))) is
+     (OP:SI foo:SI) if OP is NEG or ABS.  */
+  if ((GET_CODE (op) == ABS
+       || GET_CODE (op) == NEG)
+      && (GET_CODE (XEXP (op, 0)) == SIGN_EXTEND
+	  || GET_CODE (XEXP (op, 0)) == ZERO_EXTEND)
+      && GET_MODE (XEXP (XEXP (op, 0), 0)) == mode)
+    return simplify_gen_unary (GET_CODE (op), mode,
+			       XEXP (XEXP (op, 0), 0), mode);
+
+  /* (truncate:A (subreg:B (truncate:C X) 0)) is
+     (truncate:A X).  */
+  if (GET_CODE (op) == SUBREG
+      && SCALAR_INT_MODE_P (mode)
+      && SCALAR_INT_MODE_P (op_mode)
+      && SCALAR_INT_MODE_P (GET_MODE (SUBREG_REG (op)))
+      && GET_CODE (SUBREG_REG (op)) == TRUNCATE
+      && subreg_lowpart_p (op))
+    return simplify_gen_unary (TRUNCATE, mode, XEXP (SUBREG_REG (op), 0),
+			       GET_MODE (XEXP (SUBREG_REG (op), 0)));
+
+  /* (truncate:A (truncate:B X)) is (truncate:A X).  */
+  if (GET_CODE (op) == TRUNCATE)
+    return simplify_gen_unary (TRUNCATE, mode, XEXP (op, 0),
+			       GET_MODE (XEXP (op, 0)));
+
+  return NULL_RTX;
+}
+
 /* Try to simplify a unary operation CODE whose output mode is to be
    MODE with input operand OP whose mode was originally OP_MODE.
    Return zero if no simplification can be made.  */
@@ -815,50 +1021,34 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
       break;
 
     case TRUNCATE:
-      /* We can't handle truncation to a partial integer mode here
-         because we don't know the real bitsize of the partial
-         integer mode.  */
+      /* Don't optimize (lshiftrt (mult ...)) as it would interfere
+	 with the umulXi3_highpart patterns.  */
+      if (GET_CODE (op) == LSHIFTRT
+	  && GET_CODE (XEXP (op, 0)) == MULT)
+	break;
+
       if (GET_MODE_CLASS (mode) == MODE_PARTIAL_INT)
-        break;
+	{
+	  if (TRULY_NOOP_TRUNCATION_MODES_P (mode, GET_MODE (op)))
+	    return rtl_hooks.gen_lowpart_no_emit (mode, op);
+	  /* We can't handle truncation to a partial integer mode here
+	     because we don't know the real bitsize of the partial
+	     integer mode.  */
+	  break;
+	}
 
-      /* (truncate:SI ({sign,zero}_extend:DI foo:SI)) == foo:SI.  */
-      if ((GET_CODE (op) == SIGN_EXTEND
-	   || GET_CODE (op) == ZERO_EXTEND)
-	  && GET_MODE (XEXP (op, 0)) == mode)
-	return XEXP (op, 0);
-
-      /* (truncate:SI (OP:DI ({sign,zero}_extend:DI foo:SI))) is
-	 (OP:SI foo:SI) if OP is NEG or ABS.  */
-      if ((GET_CODE (op) == ABS
-	   || GET_CODE (op) == NEG)
-	  && (GET_CODE (XEXP (op, 0)) == SIGN_EXTEND
-	      || GET_CODE (XEXP (op, 0)) == ZERO_EXTEND)
-	  && GET_MODE (XEXP (XEXP (op, 0), 0)) == mode)
-	return simplify_gen_unary (GET_CODE (op), mode,
-				   XEXP (XEXP (op, 0), 0), mode);
-
-      /* (truncate:A (subreg:B (truncate:C X) 0)) is
-	 (truncate:A X).  */
-      if (GET_CODE (op) == SUBREG
-	  && GET_CODE (SUBREG_REG (op)) == TRUNCATE
-	  && subreg_lowpart_p (op))
-	return simplify_gen_unary (TRUNCATE, mode, XEXP (SUBREG_REG (op), 0),
-				   GET_MODE (XEXP (SUBREG_REG (op), 0)));
+      if (GET_MODE (op) != VOIDmode)
+	{
+	  temp = simplify_truncation (mode, op, GET_MODE (op));
+	  if (temp)
+	    return temp;
+	}
 
       /* If we know that the value is already truncated, we can
-         replace the TRUNCATE with a SUBREG.  Note that this is also
-         valid if TRULY_NOOP_TRUNCATION is false for the corresponding
-         modes we just have to apply a different definition for
-         truncation.  But don't do this for an (LSHIFTRT (MULT ...))
-         since this will cause problems with the umulXi3_highpart
-         patterns.  */
-      if ((TRULY_NOOP_TRUNCATION_MODES_P (mode, GET_MODE (op))
-	   ? (num_sign_bit_copies (op, GET_MODE (op))
-	      > (unsigned int) (GET_MODE_PRECISION (GET_MODE (op))
-				- GET_MODE_PRECISION (mode)))
-	   : truncated_to_mode (mode, op))
-	  && ! (GET_CODE (op) == LSHIFTRT
-		&& GET_CODE (XEXP (op, 0)) == MULT))
+	 replace the TRUNCATE with a SUBREG.  */
+      if (GET_MODE_NUNITS (mode) == 1
+	  && (TRULY_NOOP_TRUNCATION_MODES_P (mode, GET_MODE (op))
+	      || truncated_to_mode (mode, op)))
 	return rtl_hooks.gen_lowpart_no_emit (mode, op);
 
       /* A truncate of a comparison can be replaced with a subreg if
@@ -5596,14 +5786,6 @@ simplify_subreg (enum machine_mode outermode, rtx op,
       return NULL_RTX;
     }
 
-  /* Merge implicit and explicit truncations.  */
-
-  if (GET_CODE (op) == TRUNCATE
-      && GET_MODE_SIZE (outermode) < GET_MODE_SIZE (innermode)
-      && subreg_lowpart_offset (outermode, innermode) == byte)
-    return simplify_gen_unary (TRUNCATE, outermode, XEXP (op, 0),
-			       GET_MODE (XEXP (op, 0)));
-
   /* SUBREG of a hard register => just change the register number
      and/or mode.  If the hard register is not valid in that mode,
      suppress this simplification.  If the hard register is the stack,
@@ -5689,160 +5871,23 @@ simplify_subreg (enum machine_mode outermode, rtx op,
       return NULL_RTX;
     }
 
-  /* Optimize SUBREG truncations of zero and sign extended values.  */
-  if ((GET_CODE (op) == ZERO_EXTEND
-       || GET_CODE (op) == SIGN_EXTEND)
-      && SCALAR_INT_MODE_P (innermode)
-      && GET_MODE_PRECISION (outermode) < GET_MODE_PRECISION (innermode))
+  /* A SUBREG resulting from a zero extension may fold to zero if
+     it extracts higher bits that the ZERO_EXTEND's source bits.  */
+  if (GET_CODE (op) == ZERO_EXTEND)
     {
       unsigned int bitpos = subreg_lsb_1 (outermode, innermode, byte);
-
-      /* If we're requesting the lowpart of a zero or sign extension,
-	 there are three possibilities.  If the outermode is the same
-	 as the origmode, we can omit both the extension and the subreg.
-	 If the outermode is not larger than the origmode, we can apply
-	 the truncation without the extension.  Finally, if the outermode
-	 is larger than the origmode, but both are integer modes, we
-	 can just extend to the appropriate mode.  */
-      if (bitpos == 0)
-	{
-	  enum machine_mode origmode = GET_MODE (XEXP (op, 0));
-	  if (outermode == origmode)
-	    return XEXP (op, 0);
-	  if (GET_MODE_PRECISION (outermode) <= GET_MODE_PRECISION (origmode))
-	    return simplify_gen_subreg (outermode, XEXP (op, 0), origmode,
-					subreg_lowpart_offset (outermode,
-							       origmode));
-	  if (SCALAR_INT_MODE_P (outermode))
-	    return simplify_gen_unary (GET_CODE (op), outermode,
-				       XEXP (op, 0), origmode);
-	}
-
-      /* A SUBREG resulting from a zero extension may fold to zero if
-	 it extracts higher bits that the ZERO_EXTEND's source bits.  */
-      if (GET_CODE (op) == ZERO_EXTEND
-	  && bitpos >= GET_MODE_PRECISION (GET_MODE (XEXP (op, 0))))
+      if (bitpos >= GET_MODE_PRECISION (GET_MODE (XEXP (op, 0))))
 	return CONST0_RTX (outermode);
     }
 
-  /* Simplify (subreg:SI (op:DI ((x:DI) (y:DI)), 0)
-     to (op:SI (subreg:SI (x:DI) 0) (subreg:SI (x:DI) 0)), where
-     the outer subreg is effectively a truncation to the original mode.  */
-  if ((GET_CODE (op) == PLUS
-       || GET_CODE (op) == MINUS
-       || GET_CODE (op) == MULT)
-      && SCALAR_INT_MODE_P (outermode)
+  if (SCALAR_INT_MODE_P (outermode)
       && SCALAR_INT_MODE_P (innermode)
       && GET_MODE_PRECISION (outermode) < GET_MODE_PRECISION (innermode)
       && byte == subreg_lowpart_offset (outermode, innermode))
     {
-      rtx op0 = simplify_gen_subreg (outermode, XEXP (op, 0),
-                                     innermode, byte);
-      if (op0)
-        {
-          rtx op1 = simplify_gen_subreg (outermode, XEXP (op, 1),
-                                         innermode, byte);
-          if (op1)
-            return simplify_gen_binary (GET_CODE (op), outermode, op0, op1);
-        }
-    }
-
-  /* Simplify (subreg:QI (lshiftrt:SI (sign_extend:SI (x:QI)) C), 0) into
-     to (ashiftrt:QI (x:QI) C), where C is a suitable small constant and
-     the outer subreg is effectively a truncation to the original mode.  */
-  if ((GET_CODE (op) == LSHIFTRT
-       || GET_CODE (op) == ASHIFTRT)
-      && SCALAR_INT_MODE_P (outermode)
-      && SCALAR_INT_MODE_P (innermode)
-      /* Ensure that OUTERMODE is at least twice as wide as the INNERMODE
-	 to avoid the possibility that an outer LSHIFTRT shifts by more
-	 than the sign extension's sign_bit_copies and introduces zeros
-	 into the high bits of the result.  */
-      && (2 * GET_MODE_PRECISION (outermode)) <= GET_MODE_PRECISION (innermode)
-      && CONST_INT_P (XEXP (op, 1))
-      && GET_CODE (XEXP (op, 0)) == SIGN_EXTEND
-      && GET_MODE (XEXP (XEXP (op, 0), 0)) == outermode
-      && INTVAL (XEXP (op, 1)) < GET_MODE_PRECISION (outermode)
-      && subreg_lsb_1 (outermode, innermode, byte) == 0)
-    return simplify_gen_binary (ASHIFTRT, outermode,
-				XEXP (XEXP (op, 0), 0), XEXP (op, 1));
-
-  /* Likewise (subreg:QI (lshiftrt:SI (zero_extend:SI (x:QI)) C), 0) into
-     to (lshiftrt:QI (x:QI) C), where C is a suitable small constant and
-     the outer subreg is effectively a truncation to the original mode.  */
-  if ((GET_CODE (op) == LSHIFTRT
-       || GET_CODE (op) == ASHIFTRT)
-      && SCALAR_INT_MODE_P (outermode)
-      && SCALAR_INT_MODE_P (innermode)
-      && GET_MODE_PRECISION (outermode) < GET_MODE_PRECISION (innermode)
-      && CONST_INT_P (XEXP (op, 1))
-      && GET_CODE (XEXP (op, 0)) == ZERO_EXTEND
-      && GET_MODE (XEXP (XEXP (op, 0), 0)) == outermode
-      && INTVAL (XEXP (op, 1)) < GET_MODE_PRECISION (outermode)
-      && subreg_lsb_1 (outermode, innermode, byte) == 0)
-    return simplify_gen_binary (LSHIFTRT, outermode,
-				XEXP (XEXP (op, 0), 0), XEXP (op, 1));
-
-  /* Likewise (subreg:QI (ashift:SI (zero_extend:SI (x:QI)) C), 0) into
-     to (ashift:QI (x:QI) C), where C is a suitable small constant and
-     the outer subreg is effectively a truncation to the original mode.  */
-  if (GET_CODE (op) == ASHIFT
-      && SCALAR_INT_MODE_P (outermode)
-      && SCALAR_INT_MODE_P (innermode)
-      && GET_MODE_PRECISION (outermode) < GET_MODE_PRECISION (innermode)
-      && CONST_INT_P (XEXP (op, 1))
-      && (GET_CODE (XEXP (op, 0)) == ZERO_EXTEND
-	  || GET_CODE (XEXP (op, 0)) == SIGN_EXTEND)
-      && GET_MODE (XEXP (XEXP (op, 0), 0)) == outermode
-      && INTVAL (XEXP (op, 1)) < GET_MODE_PRECISION (outermode)
-      && subreg_lsb_1 (outermode, innermode, byte) == 0)
-    return simplify_gen_binary (ASHIFT, outermode,
-				XEXP (XEXP (op, 0), 0), XEXP (op, 1));
-
-  /* Recognize a word extraction from a multi-word subreg.  */
-  if ((GET_CODE (op) == LSHIFTRT
-       || GET_CODE (op) == ASHIFTRT)
-      && SCALAR_INT_MODE_P (innermode)
-      && GET_MODE_PRECISION (outermode) >= BITS_PER_WORD
-      && GET_MODE_PRECISION (innermode) >= (2 * GET_MODE_PRECISION (outermode))
-      && CONST_INT_P (XEXP (op, 1))
-      && (INTVAL (XEXP (op, 1)) & (GET_MODE_PRECISION (outermode) - 1)) == 0
-      && INTVAL (XEXP (op, 1)) >= 0
-      && INTVAL (XEXP (op, 1)) < GET_MODE_PRECISION (innermode)
-      && byte == subreg_lowpart_offset (outermode, innermode))
-    {
-      int shifted_bytes = INTVAL (XEXP (op, 1)) / BITS_PER_UNIT;
-      return simplify_gen_subreg (outermode, XEXP (op, 0), innermode,
-				  (WORDS_BIG_ENDIAN
-				   ? byte - shifted_bytes
-				   : byte + shifted_bytes));
-    }
-
-  /* If we have a lowpart SUBREG of a right shift of MEM, make a new MEM
-     and try replacing the SUBREG and shift with it.  Don't do this if
-     the MEM has a mode-dependent address or if we would be widening it.  */
-
-  if ((GET_CODE (op) == LSHIFTRT
-       || GET_CODE (op) == ASHIFTRT)
-      && SCALAR_INT_MODE_P (innermode)
-      && MEM_P (XEXP (op, 0))
-      && CONST_INT_P (XEXP (op, 1))
-      && GET_MODE_SIZE (outermode) < GET_MODE_SIZE (GET_MODE (op))
-      && (INTVAL (XEXP (op, 1)) % GET_MODE_BITSIZE (outermode)) == 0
-      && INTVAL (XEXP (op, 1)) > 0
-      && INTVAL (XEXP (op, 1)) < GET_MODE_BITSIZE (innermode)
-      && ! mode_dependent_address_p (XEXP (XEXP (op, 0), 0),
-				     MEM_ADDR_SPACE (XEXP (op, 0)))
-      && ! MEM_VOLATILE_P (XEXP (op, 0))
-      && byte == subreg_lowpart_offset (outermode, innermode)
-      && (GET_MODE_SIZE (outermode) >= UNITS_PER_WORD
-	  || WORDS_BIG_ENDIAN == BYTES_BIG_ENDIAN))
-    {
-      int shifted_bytes = INTVAL (XEXP (op, 1)) / BITS_PER_UNIT;
-      return adjust_address_nv (XEXP (op, 0), outermode,
-				(WORDS_BIG_ENDIAN
-				 ? byte - shifted_bytes
-				 : byte + shifted_bytes));
+      rtx tem = simplify_truncation (outermode, op, innermode);
+      if (tem)
+	return tem;
     }
 
   return NULL_RTX;
