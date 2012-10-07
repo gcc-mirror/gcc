@@ -2544,7 +2544,7 @@ ipa_write_summaries (void)
   if (!flag_generate_lto || seen_error ())
     return;
 
-  encoder = lto_symtab_encoder_new ();
+  encoder = lto_symtab_encoder_new (false);
 
   /* Create the callgraph set in the same order used in
      cgraph_expand_all_functions.  This mostly facilitates debugging,

@@ -1,3 +1,9 @@
+2012-10-07  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (read_cgraph_and_symbols): Release type merging hash early;
+	release input encoders.
+	* lto-partition.c (new_partition): Update for new lto_symtab_encoder_new.
+
 2012-10-06  Jan Hubicka  <jh@suse.cz>
 
 	PR lto/54790 

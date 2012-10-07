@@ -833,7 +833,7 @@ void lto_output_location (struct output_block *, location_t);
 
 
 /* In lto-cgraph.c  */
-lto_symtab_encoder_t lto_symtab_encoder_new (void);
+lto_symtab_encoder_t lto_symtab_encoder_new (bool);
 int lto_symtab_encoder_encode (lto_symtab_encoder_t, symtab_node);
 void lto_symtab_encoder_delete (lto_symtab_encoder_t);
 bool lto_symtab_encoder_delete_node (lto_symtab_encoder_t, symtab_node);
