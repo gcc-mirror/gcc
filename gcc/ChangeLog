@@ -1,5 +1,17 @@
 2012-10-07  Jan Hubicka  <jh@suse.cz>
 
+	* ipa-inline-analysis.c (do_estimate_edge_time): Return actual
+	time spent by the inlined sequence.
+	(do_estimate_edge_growth): Rename to ...
+	(do_estimate_edge_time): ... this one; return size of inlined
+	sequence.
+	* ipa-inline.h (do_estimate_edge_size): New.
+	(do_estimate_edge_growth): Remove.
+	(estimate_edge_size): New function.
+	(estimate_edge_growth): Use it.
+
+2012-10-07  Jan Hubicka  <jh@suse.cz>
+
 	* lto-cgraph.c (lto_symtab_encoder_new): New parameter FOR_INPUT.
 	(lto_symtab_encoder_delete): Update.
 	(lto_symtab_encoder_encode): Update.
