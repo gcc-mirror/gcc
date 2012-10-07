@@ -1306,9 +1306,8 @@
 (define_insn "*baddu_di<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=d")
         (zero_extend:GPR
-	 (truncate:QI
-	  (plus:DI (match_operand:DI 1 "register_operand" "d")
-		   (match_operand:DI 2 "register_operand" "d")))))]
+	 (plus:QI (truncate:QI (match_operand:DI 1 "register_operand" "d"))
+		  (truncate:QI (match_operand:DI 2 "register_operand" "d")))))]
   "ISA_HAS_BADDU && TARGET_64BIT"
   "baddu\\t%0,%1,%2"
   [(set_attr "alu_type" "add")])
