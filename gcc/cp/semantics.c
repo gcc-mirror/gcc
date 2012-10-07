@@ -3,8 +3,7 @@
    building RTL.  These routines are used both during actual parsing
    and during the instantiation of template functions.
 
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
-		 2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
+   Copyright (C) 1998-2012 Free Software Foundation, Inc.
    Written by Mark Mitchell (mmitchell@usa.net) based on code found
    formerly in parse.y and pt.c.
 
@@ -9005,14 +9004,15 @@ is_capture_proxy (tree decl)
 bool
 is_normal_capture_proxy (tree decl)
 {
-  tree val;
-
   if (!is_capture_proxy (decl))
     /* It's not a capture proxy.  */
     return false;
 
   /* It is a capture proxy, is it a normal capture?  */
-  val = DECL_VALUE_EXPR (decl);
+  tree val = DECL_VALUE_EXPR (decl);
+  if (val == error_mark_node)
+    return true;
+
   gcc_assert (TREE_CODE (val) == COMPONENT_REF);
   val = TREE_OPERAND (val, 1);
   return DECL_NORMAL_CAPTURE_P (val);

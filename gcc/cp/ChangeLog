@@ -1,3 +1,9 @@
+2012-10-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51422
+	* semantics.c (is_normal_capture_proxy): Return true for
+	error_mark_node as DECL_VALUE_EXPR.
+
 2012-10-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* cp-tree.h (SIZEOF_EXPR_TYPE_P): Define.
