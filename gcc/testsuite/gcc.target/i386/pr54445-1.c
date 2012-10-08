@@ -1,5 +1,6 @@
-/* { dg-do run } */
+/* { dg-do run { target tls_runtime } } */
 /* { dg-options "-O2" } */
+/* { dg-add-options tls } */
 
 __thread unsigned char tls_array[64];
 

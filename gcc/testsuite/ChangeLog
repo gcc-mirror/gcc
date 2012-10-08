@@ -1,3 +1,7 @@
+2012-10-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/pr54445-1.c: Require tls_runtime, add tls options.
+
 2012-10-08  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/gomp/tls-5.C: New.
