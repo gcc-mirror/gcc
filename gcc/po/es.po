@@ -1,4 +1,4 @@
-# Mensajes en español para gcc-4.7.1.
+# Mensajes en español para gcc-4.7.2.
 # Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
 # Cristian Othón Martínez Vera <cfuga@cfuga.mx>, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012
@@ -7,10 +7,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 4.7.1\n"
+"Project-Id-Version: gcc 4.7.2\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2012-09-19 14:50+0000\n"
-"PO-Revision-Date: 2012-06-22 13:49-0500\n"
+"PO-Revision-Date: 2012-09-24 13:50-0500\n"
 "Last-Translator: Cristian Othón Martínez Vera <cfuga@cfuga.mx>\n"
 "Language-Team: Spanish <es@li.org>\n"
 "Language: es\n"
@@ -7589,10 +7589,8 @@ msgid "Follow Renesas (formerly Hitachi) / SuperH calling conventions"
 msgstr "Sigue las convenciones de llamada Renesas (anteriormente Hitachi) / SuperH"
 
 #: config/sh/sh.opt:274
-#, fuzzy
-#| msgid "Increase the IEEE compliance for floating-point code"
 msgid "Increase the IEEE compliance for floating-point comparisons"
-msgstr "Incrementa el cumplimiento con IEEE para el código de coma flotante"
+msgstr "Incrementa el cumplimiento con IEEE para las comparaciones de coma flotante"
 
 #: config/sh/sh.opt:278
 msgid "Enable the use of the indexed addressing mode for SHmedia32/SHcompact"
@@ -12044,7 +12042,7 @@ msgstr "se esperaba una expresión booleana"
 
 #: go/gofrontend/statements.cc:4198
 msgid "cannot type switch on non-interface value"
-msgstr ""
+msgstr "no se puede cambiar el tipo en valores que no son de interfaz"
 
 #: go/gofrontend/statements.cc:4320
 msgid "incompatible types in send"
