@@ -211,9 +211,13 @@ proc gcc-dg-test { prog do_what extra_tool_flags } {
 proc gcc-dg-prune { system text } {
     global additional_prunes
 
+    # Extra prune rules that will apply to tests defined in a .exp file.
+    # Always remember to clear it in .exp file after executed all tests.
+    global dg_runtest_extra_prunes
+
     set text [prune_gcc_output $text]
 
-    foreach p $additional_prunes {
+    foreach p "$additional_prunes $dg_runtest_extra_prunes" {
 	if { [string length $p] > 0 } {
 	    # Following regexp matches a complete line containing $p.
 	    regsub -all "(^|\n)\[^\n\]*$p\[^\n\]*" $text "" text
@@ -672,6 +676,7 @@ if { [info procs saved-dg-test] == [list] } {
 	    set additional_files ""
 	    set additional_sources ""
 	    set additional_prunes ""
+	    set dg_runtest_extra_prunes ""
 	    set shouldfail 0
 	    if [info exists compiler_conditional_xfail_data] {
 		unset compiler_conditional_xfail_data
@@ -809,3 +814,4 @@ proc gdb-exists { args } {
 }
 
 set additional_prunes ""
+set dg_runtest_extra_prunes ""
