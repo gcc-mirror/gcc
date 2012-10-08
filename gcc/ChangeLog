@@ -1,3 +1,10 @@
+2012-10-08  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/mmix/mmix.c (mmix_output_octa): Don't assume
+	HOST_WIDEST_INT_PRINT_HEX starts with "0x".  Instead use
+	HOST_WIDE_INT_PRINT_HEX_PURE, falling back to
+	HOST_WIDEST_INT_PRINT_UNSIGNED.
+
 2012-10-07  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* machmode.h (GET_MODE_UNIT_PRECISION): New macro.
