@@ -509,14 +509,14 @@
 			 (and (eq_attr "cpu" "pentiumpro")
 			      (and (eq_attr "memory" "none")
 				   (and (eq_attr "mode" "SF")
-					(eq_attr "type" "sseadd"))))
+					(eq_attr "type" "sseadd,sseadd1"))))
 			 "decodern,p1")
 
 (define_insn_reservation "ppro_sse_add_SF_load" 3
 			 (and (eq_attr "cpu" "pentiumpro")
 			      (and (eq_attr "memory" "load")
 				   (and (eq_attr "mode" "SF")
-					(eq_attr "type" "sseadd"))))
+					(eq_attr "type" "sseadd,sseadd1"))))
 			 "decoder0,p2+p1")
 
 (define_insn_reservation "ppro_sse_cmp_SF" 3
@@ -619,14 +619,14 @@
 			 (and (eq_attr "cpu" "pentiumpro")
 			      (and (eq_attr "memory" "none")
 				   (and (eq_attr "mode" "V4SF")
-					(eq_attr "type" "sseadd"))))
+					(eq_attr "type" "sseadd,sseadd1"))))
 			 "decoder0,p1*2")
 
 (define_insn_reservation "ppro_sse_add_V4SF_load" 3
 			 (and (eq_attr "cpu" "pentiumpro")
 			      (and (eq_attr "memory" "load")
 				   (and (eq_attr "mode" "V4SF")
-					(eq_attr "type" "sseadd"))))
+					(eq_attr "type" "sseadd,sseadd1"))))
 			 "decoder0,(p2+p1)*2")
 
 (define_insn_reservation "ppro_sse_cmp_V4SF" 3

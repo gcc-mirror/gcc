@@ -807,47 +807,47 @@
 			 "athlon-direct,athlon-fpsched,athlon-fadd")
 (define_insn_reservation "athlon_sseadd_load" 4
 			 (and (eq_attr "cpu" "athlon")
-			      (and (eq_attr "type" "sseadd")
+			      (and (eq_attr "type" "sseadd,sseadd1")
 				   (and (eq_attr "mode" "SF,DF,DI")
 					(eq_attr "memory" "load"))))
 			 "athlon-direct,athlon-fpload,athlon-fadd")
 (define_insn_reservation "athlon_sseadd_load_k8" 6
 			 (and (eq_attr "cpu" "k8,generic64,amdfam10")
-			      (and (eq_attr "type" "sseadd")
+			      (and (eq_attr "type" "sseadd,sseadd1")
 				   (and (eq_attr "mode" "SF,DF,DI")
 					(eq_attr "memory" "load"))))
 			 "athlon-direct,athlon-fploadk8,athlon-fadd")
 (define_insn_reservation "athlon_sseadd" 4
 			 (and (eq_attr "cpu" "athlon,k8,generic64,amdfam10")
-			      (and (eq_attr "type" "sseadd")
+			      (and (eq_attr "type" "sseadd,sseadd1")
 				   (eq_attr "mode" "SF,DF,DI")))
 			 "athlon-direct,athlon-fpsched,athlon-fadd")
 (define_insn_reservation "athlon_sseaddvector_load" 5
 			 (and (eq_attr "cpu" "athlon")
-			      (and (eq_attr "type" "sseadd")
+			      (and (eq_attr "type" "sseadd,sseadd1")
 				   (eq_attr "memory" "load")))
 			 "athlon-vector,athlon-fpload2,(athlon-fadd*2)")
 (define_insn_reservation "athlon_sseaddvector_load_k8" 7
 			 (and (eq_attr "cpu" "k8,generic64")
-			      (and (eq_attr "type" "sseadd")
+			      (and (eq_attr "type" "sseadd,sseadd1")
 				   (eq_attr "memory" "load")))
 			 "athlon-double,athlon-fpload2k8,(athlon-fadd*2)")
 (define_insn_reservation "athlon_sseaddvector_load_amdfam10" 6
 			 (and (eq_attr "cpu" "amdfam10")
-			      (and (eq_attr "type" "sseadd")
+			      (and (eq_attr "type" "sseadd,sseadd1")
 				   (eq_attr "memory" "load")))
 			 "athlon-direct,athlon-fploadk8,athlon-fadd")
 (define_insn_reservation "athlon_sseaddvector" 5
 			 (and (eq_attr "cpu" "athlon")
-			      (eq_attr "type" "sseadd"))
+			      (eq_attr "type" "sseadd,sseadd1"))
 			 "athlon-vector,athlon-fpsched,(athlon-fadd*2)")
 (define_insn_reservation "athlon_sseaddvector_k8" 5
 			 (and (eq_attr "cpu" "k8,generic64")
-			      (eq_attr "type" "sseadd"))
+			      (eq_attr "type" "sseadd,sseadd1"))
 			 "athlon-double,athlon-fpsched,(athlon-fadd*2)")
 (define_insn_reservation "athlon_sseaddvector_amdfam10" 4
 			 (and (eq_attr "cpu" "amdfam10")
-			      (eq_attr "type" "sseadd"))
+			      (eq_attr "type" "sseadd,sseadd1"))
 			 "athlon-direct,athlon-fpsched,athlon-fadd")
 
 ;; Conversions behaves very irregularly and the scheduling is critical here.

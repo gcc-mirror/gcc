@@ -697,24 +697,24 @@
 ;; SSE MUL, ADD, and MULADD.
 (define_insn_reservation "bdver1_ssemuladd_load_256" 11
 			 (and (eq_attr "cpu" "bdver1,bdver2")
-			      (and (eq_attr "type" "ssemul,sseadd,ssemuladd")
+			      (and (eq_attr "type" "ssemul,sseadd,sseadd1,ssemuladd")
 				   (and (eq_attr "mode" "V8SF,V4DF")
 					(eq_attr "memory" "load"))))
 			 "bdver1-double,bdver1-fpload,bdver1-ffma")
 (define_insn_reservation "bdver1_ssemuladd_256" 7
 			 (and (eq_attr "cpu" "bdver1,bdver2")
-			      (and (eq_attr "type" "ssemul,sseadd,ssemuladd")
+			      (and (eq_attr "type" "ssemul,sseadd,sseadd1,ssemuladd")
 				   (and (eq_attr "mode" "V8SF,V4DF")
 					(eq_attr "memory" "none"))))
 			 "bdver1-double,bdver1-fpsched,bdver1-ffma")
 (define_insn_reservation "bdver1_ssemuladd_load" 10
 			 (and (eq_attr "cpu" "bdver1,bdver2")
-			      (and (eq_attr "type" "ssemul,sseadd,ssemuladd")
+			      (and (eq_attr "type" "ssemul,sseadd,sseadd1,ssemuladd")
 				   (eq_attr "memory" "load")))
 			 "bdver1-direct,bdver1-fpload,bdver1-ffma")
 (define_insn_reservation "bdver1_ssemuladd" 6
 			 (and (eq_attr "cpu" "bdver1,bdver2")
-			      (and (eq_attr "type" "ssemul,sseadd,ssemuladd")
+			      (and (eq_attr "type" "ssemul,sseadd,sseadd1,ssemuladd")
 				   (eq_attr "memory" "none")))
 			 "bdver1-direct,bdver1-fpsched,bdver1-ffma")
 (define_insn_reservation "bdver1_sseimul_load" 8
