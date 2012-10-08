@@ -9,3 +9,4 @@ void bar(char *p, int n)
 }
 
 /* { dg-final { scan-tree-dump "generated memmove" "ldist" } } */
+/* { dg-final { cleanup-tree-dump "ldist" } } */

@@ -25,4 +25,4 @@ void f(int x, int y)
    the testcase around too much.  */
 /* { dg-final { scan-ipa-dump-times "block 5, loop depth 0, count 0, freq \[6-9\]\[0-9\]\[0-9\]\[0-9\]" 1 "profile_estimate" } } */
 
-/* { dg-final { cleanup-tree-dump "profile_estimate" } } */
+/* { dg-final { cleanup-ipa-dump "profile_estimate" } } */
