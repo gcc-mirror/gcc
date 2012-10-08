@@ -3849,11 +3849,7 @@ compute_avail (void)
 			  || code == VEC_COND_EXPR)
 			continue;
 
-		      vn_nary_op_lookup_pieces (gimple_num_ops (stmt) - 1,
-						code,
-						gimple_expr_type (stmt),
-						gimple_assign_rhs1_ptr (stmt),
-						&nary);
+		      vn_nary_op_lookup_stmt (stmt, &nary);
 		      if (!nary)
 			continue;
 

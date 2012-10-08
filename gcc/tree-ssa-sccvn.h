@@ -51,7 +51,7 @@ typedef const struct vn_nary_op_s *const_vn_nary_op_t;
 static inline size_t
 sizeof_vn_nary_op (unsigned int length)
 {
-  return sizeof (struct vn_nary_op_s) + sizeof (tree) * (length - 1);
+  return sizeof (struct vn_nary_op_s) + sizeof (tree) * length - sizeof (tree);
 }
 
 /* Phi nodes in the hashtable consist of their non-VN_TOP phi
