@@ -1,3 +1,8 @@
+2012-10-08  Jason Merrill  <jason@redhat.com>
+
+	* config/rs6000/rs6000.c (rs6000_code_end): Protect the use of
+	ASM_WEAKEN_DECL with #if RS6000_WEAK.
+
 2012-10-08  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/54825
