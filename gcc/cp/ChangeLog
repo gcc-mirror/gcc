@@ -1,3 +1,82 @@
+2012-10-08  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/53528 C++11 attribute support
+	* cp-tree.h (enum cpp0x_warn_str::CPP0X_ATTRIBUTES): New member.
+	(enum cp_decl_spec::ds_std_attribute): New enumerator.
+	(struct cp_decl_specifier_seq::std_attributes): New field.
+	(cxx_alignas_expr, warn_misplaced_attr_for_class_type): Declare
+	new functions.
+	(check_tag_decl): Take an extra parameter for explicit
+	instantiations.
+	* decl.c (warn_misplaced_attr_for_class_type): Extract from ...
+	(check_tag_decl): ... here.  Add check for c++11 attributes being
+	applied to an explicit instantiation.  Take an extra parameter for
+	explicit instantiations.
+	(grokdeclarator): Make sure a c++11 attribute after an array
+	declarator appertains to the array, an attribute after a function
+	declarator appertains to the function type, an attribute after a
+	declarator-id appertains to the entity being declared, and an
+	attribute after a pointer declarator appertain to the pointer.
+	* decl2.c (is_late_template_attribute): Use get_attribute_name.
+	* error.c (maybe_warn_cpp0x): Support
+	CPP0X_GENERALIZED_ATTRIBUTES.
+	* parser.c (cp_next_tokens_can_be_attribute_p)
+	(cp_next_tokens_can_be_gnu_attribute_p)
+	(cp_next_tokens_can_be_std_attribute_p)
+	(cp_nth_tokens_can_be_attribute_p)
+	(cp_nth_tokens_can_be_gnu_attribute_p)
+	(cp_nth_tokens_can_be_std_attribute_p)
+	(cp_parser_gnu_attribute_list, cp_parser_std_attribute)
+	(cp_parser_std_attribute_spec, cp_parser_std_attribute_spec_seq)
+	(cp_parser_attributes_opt, cp_parser_std_attribute_list): New
+	static functions.
+	(cp_parser_gnu_attributes_opt): Replace cp_parser_attributes_opt.
+	(cp_parser_gnu_attribute_list): Replace cp_parser_attribute_list.
+	(cp_parser_postfix_expression): Disallow "[[" tokens here.
+	(cp_parser_label_for_labeled_statement): Use take an extra
+	parameter for attributes.
+	(cp_parser_block_declaration): Use
+	cp_nth_tokens_can_be_std_attribute_p here.
+	(cp_parser_decl_specifier_seq): Likewise.  Store C++11 attributes
+	that appears in in decl specifiers in cp_decl_specifier_seq::std_attributes.
+	declaration.  Emit proper warning about misplaced c++11 attributes
+	for class type.
+	(cp_parser_explicit_instantiation): Adjust call to check_tag_decl.
+	(cp_parser_init_declarator):  Parsing attributes here is no more a
+	GNU extension in c++-11.
+	(cp_parser_type_specifier_seq): Use
+	cp_next_tokens_can_be_attribute_p.
+	(cp_parser_direct_declarator): Likewise.  Hang c++11 attributes
+	following the declarator to its syntactic construct.  It'll later
+	be applied to the proper appertaining entity by grokdeclarator.
+	(cp_parser_ptr_operator): Likewise.
+	(make_declarator): Initialize cp_declarator::std_attribute.
+	(make_pointer_declarator, make_reference_declarator)
+	(make_ptrmem_declarator, cp_parser_make_indirect_declarator): Take
+	attributes that appertain to the pointer/reference in argument.
+	(cp_parser_ptr_operator): Take an out parameter for c++11
+	attributes.  Update comments.
+	(cp_parser_new_declarator_opt)
+	(cp_parser_conversion_declarator_opt): Adjust.
+	(cp_parser_declarator): Likewise.  Handle C++11 attributes.
+	Rename attributes to gnu_attribute for better legibility.
+	(cp_parser_simple_declaration): Update comment.
+	(cp_parser_class_specifier_1): Parse GNU attributes specifically
+	(cp_parser_enum_specifier): Accept only gnu attributes after the
+	specifier.
+	(cp_parser_member_declaration): Don't clear attributes -- intended
+	for the entity being declared -- too early because check_tag_decl
+	needs them.
+	(cp_parser_statement): Update comment.  Parse optional c++11
+	attributes at the beginning of the relevant kind of statements and
+	ignore them, for now, unless when calling
+	cp_parser_label_for_labeled_statement.
+	(cp_parser_label_for_labeled_statement): Take c++11 attributes
+	in parameter.
+	* semantics.c (potential_constant_expression_1): Likewise.
+	* typeck.c (fundamental_alignment_p, cxx_alignas_expr): New public
+	functions.
+
 2012-10-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* pt.c (fold_non_dependent_expr_sfinae): Remove static specifier.

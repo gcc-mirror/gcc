@@ -4350,7 +4350,7 @@ comp_type_attributes (const_tree type1, const_tree type2)
       const struct attribute_spec *as;
       const_tree attr;
 
-      as = lookup_attribute_spec (TREE_PURPOSE (a));
+      as = lookup_attribute_spec (get_attribute_name (a));
       if (!as || as->affects_type_identity == false)
         continue;
 
@@ -4364,7 +4364,7 @@ comp_type_attributes (const_tree type1, const_tree type2)
 	{
 	  const struct attribute_spec *as;
 
-	  as = lookup_attribute_spec (TREE_PURPOSE (a));
+	  as = lookup_attribute_spec (get_attribute_name (a));
 	  if (!as || as->affects_type_identity == false)
 	    continue;
 
@@ -5287,11 +5287,12 @@ private_lookup_attribute (const char *attr_name, size_t attr_len, tree list)
 {
   while (list)
     {
-      size_t ident_len = IDENTIFIER_LENGTH (TREE_PURPOSE (list));
+      size_t ident_len = IDENTIFIER_LENGTH (get_attribute_name (list));
 
       if (ident_len == attr_len)
 	{
-	  if (strcmp (attr_name, IDENTIFIER_POINTER (TREE_PURPOSE (list))) == 0)
+	  if (!strcmp (attr_name,
+		       IDENTIFIER_POINTER (get_attribute_name (list))))
 	    break;
 	}
       /* TODO: If we made sure that attributes were stored in the
@@ -5299,7 +5300,7 @@ private_lookup_attribute (const char *attr_name, size_t attr_len, tree list)
 	 to '__text__') then we could avoid the following case.  */
       else if (ident_len == attr_len + 4)
 	{
-	  const char *p = IDENTIFIER_POINTER (TREE_PURPOSE (list));
+	  const char *p = IDENTIFIER_POINTER (get_attribute_name (list));
 	  if (p[0] == '_' && p[1] == '_'
 	      && p[ident_len - 2] == '_' && p[ident_len - 1] == '_'
 	      && strncmp (attr_name, p + 2, attr_len) == 0)
@@ -5329,10 +5330,11 @@ lookup_ident_attribute (tree attr_identifier, tree list)
 
   while (list)
     {
-      gcc_checking_assert (TREE_CODE (TREE_PURPOSE (list)) == IDENTIFIER_NODE);
+      gcc_checking_assert (TREE_CODE (get_attribute_name (list))
+			   == IDENTIFIER_NODE);
 
       /* Identifiers can be compared directly for equality.  */
-      if (attr_identifier == TREE_PURPOSE (list))
+      if (attr_identifier == get_attribute_name (list))
 	break;
 
       /* If they are not equal, they may still be one in the form
@@ -5342,11 +5344,11 @@ lookup_ident_attribute (tree attr_identifier, tree list)
 	 the fact that we're comparing identifiers. :-)  */
       {
 	size_t attr_len = IDENTIFIER_LENGTH (attr_identifier);
-	size_t ident_len = IDENTIFIER_LENGTH (TREE_PURPOSE (list));
+	size_t ident_len = IDENTIFIER_LENGTH (get_attribute_name (list));
 
 	if (ident_len == attr_len + 4)
 	  {
-	    const char *p = IDENTIFIER_POINTER (TREE_PURPOSE (list));
+	    const char *p = IDENTIFIER_POINTER (get_attribute_name (list));
 	    const char *q = IDENTIFIER_POINTER (attr_identifier);
 	    if (p[0] == '_' && p[1] == '_'
 		&& p[ident_len - 2] == '_' && p[ident_len - 1] == '_'
@@ -5355,7 +5357,7 @@ lookup_ident_attribute (tree attr_identifier, tree list)
 	  }
 	else if (ident_len + 4 == attr_len)
 	  {
-	    const char *p = IDENTIFIER_POINTER (TREE_PURPOSE (list));
+	    const char *p = IDENTIFIER_POINTER (get_attribute_name (list));
 	    const char *q = IDENTIFIER_POINTER (attr_identifier);
 	    if (q[0] == '_' && q[1] == '_'
 		&& q[attr_len - 2] == '_' && q[attr_len - 1] == '_'
@@ -5385,7 +5387,7 @@ remove_attribute (const char *attr_name, tree list)
       tree l = *p;
       /* TODO: If we were storing attributes in normalized form, here
 	 we could use a simple strcmp().  */
-      if (private_is_attribute_p (attr_name, attr_len, TREE_PURPOSE (l)))
+      if (private_is_attribute_p (attr_name, attr_len, get_attribute_name (l)))
 	*p = TREE_CHAIN (l);
       else
 	p = &TREE_CHAIN (l);
@@ -5422,9 +5424,11 @@ merge_attributes (tree a1, tree a2)
 	  for (; a2 != 0; a2 = TREE_CHAIN (a2))
 	    {
 	      tree a;
-	      for (a = lookup_ident_attribute (TREE_PURPOSE (a2), attributes);
+	      for (a = lookup_ident_attribute (get_attribute_name (a2),
+					       attributes);
 		   a != NULL_TREE && !attribute_value_equal (a, a2);
-		   a = lookup_ident_attribute (TREE_PURPOSE (a2), TREE_CHAIN (a)))
+		   a = lookup_ident_attribute (get_attribute_name (a2),
+					       TREE_CHAIN (a)))
 		;
 	      if (a == NULL_TREE)
 		{
@@ -6346,7 +6350,7 @@ attribute_hash_list (const_tree list, hashval_t hashcode)
   for (tail = list; tail; tail = TREE_CHAIN (tail))
     /* ??? Do we want to add in TREE_VALUE too? */
     hashcode = iterative_hash_object
-      (IDENTIFIER_HASH_VALUE (TREE_PURPOSE (tail)), hashcode);
+      (IDENTIFIER_HASH_VALUE (get_attribute_name (tail)), hashcode);
   return hashcode;
 }
 
@@ -6383,7 +6387,7 @@ attribute_list_contained (const_tree l1, const_tree l2)
   /* Maybe the lists are similar.  */
   for (t1 = l1, t2 = l2;
        t1 != 0 && t2 != 0
-        && TREE_PURPOSE (t1) == TREE_PURPOSE (t2)
+        && get_attribute_name (t1) == get_attribute_name (t2)
         && TREE_VALUE (t1) == TREE_VALUE (t2);
        t1 = TREE_CHAIN (t1), t2 = TREE_CHAIN (t2))
     ;
@@ -6398,9 +6402,9 @@ attribute_list_contained (const_tree l1, const_tree l2)
       /* This CONST_CAST is okay because lookup_attribute does not
 	 modify its argument and the return value is assigned to a
 	 const_tree.  */
-      for (attr = lookup_ident_attribute (TREE_PURPOSE (t2), CONST_CAST_TREE(l1));
+      for (attr = lookup_ident_attribute (get_attribute_name (t2), CONST_CAST_TREE(l1));
 	   attr != NULL_TREE && !attribute_value_equal (t2, attr);
-	   attr = lookup_ident_attribute (TREE_PURPOSE (t2), TREE_CHAIN (attr)))
+	   attr = lookup_ident_attribute (get_attribute_name (t2), TREE_CHAIN (attr)))
 	;
 
       if (attr == NULL_TREE)

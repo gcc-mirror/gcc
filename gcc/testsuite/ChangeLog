@@ -1,3 +1,64 @@
+2012-10-08  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/53528 C++11 attribute support
+	* g++.dg/cpp0x/gen-attrs-1.C: New test.
+	* g++.dg/cpp0x/gen-attrs-2.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-2-1.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-3.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-4.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-5.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-6.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-7.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-8.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-9.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-10.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-11.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-12.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-13.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-14.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-15.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-16.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-17.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-18.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-19.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-20.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-21.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-22.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-23.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-24.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-25.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-26.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-27.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-28.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-29.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-30.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-31.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-32.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-33.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-34.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-35.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-36.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-36-1.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-37.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-38.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-39.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-39-1.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-40.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-41.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-42.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-43.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-44.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-45.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-46.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-47.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-47-1.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-48.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-49.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-50.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-51.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-52.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-53.C: Likewise.
+
 2012-10-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/tree-ssa/slsr-30.c: Use correct cleanup directive.

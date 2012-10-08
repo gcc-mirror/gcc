@@ -1,3 +1,15 @@
+2012-10-08  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/53528 C++11 attribute support
+	* c-common.h (bitfield_p, cxx_fundamental_alignment_p): Declare
+	new functions.
+	* c-common.c (check_cxx_fundamental_alignment_constraints): New
+	static function.
+	(handle_aligned_attribute): In choose strictest alignment
+	among many.  Use new check_cxx_fundamental_alignment_constraints.
+	(handle_transparent_union_attribute): In c++11 attribute syntax,
+	don't look through typedefs.
+
 2012-10-04  Arnaud Charlet  <charlet@adacore.com>
 
 	* c-ada-spec.c (print_ada_declaration): Remove handling of TDF_RAW.

@@ -1701,6 +1701,56 @@ cxx_sizeof_or_alignof_expr (tree e, enum tree_code op, bool complain)
   else
     return cxx_alignof_expr (e, complain? tf_warning_or_error : tf_none);
 }
+
+/*  Build a representation of an expression 'alignas(E).'  Return the
+    folded integer value of E if it is an integral constant expression
+    that resolves to a valid alignment.  If E depends on a template
+    parameter, return a syntactic representation tree of kind
+    ALIGNOF_EXPR.  Otherwise, return an error_mark_node if the
+    expression is ill formed, or NULL_TREE if E is NULL_TREE.  */
+
+tree
+cxx_alignas_expr (tree e)
+{
+  if (e == NULL_TREE || e == error_mark_node
+      || (!TYPE_P (e) && !require_potential_rvalue_constant_expression (e)))
+    return e;
+  
+  if (TYPE_P (e))
+    /* [dcl.align]/3:
+       
+	   When the alignment-specifier is of the form
+	   alignas(type-id ), it shall have the same effect as
+	   alignas( alignof(type-id )).  */
+
+    return cxx_sizeof_or_alignof_type (e, ALIGNOF_EXPR, false);
+  
+
+  /* If we reach this point, it means the alignas expression if of
+     the form "alignas(assignment-expression)", so we should follow
+     what is stated by [dcl.align]/2.  */
+
+  e = mark_rvalue_use (e);
+
+  /* [dcl.align]/2 says:
+
+         the assignment-expression shall be an integral constant
+	 expression.  */
+  
+  e = fold_non_dependent_expr (e);
+  if (value_dependent_expression_p (e))
+    /* Leave value-dependent expression alone for now. */;
+  else
+    e = cxx_constant_value (e);
+
+  if (e == NULL_TREE
+      || e == error_mark_node
+      || TREE_CODE (e) != INTEGER_CST)
+    return error_mark_node;
+
+  return e;
+}
+
 
 /* EXPR is being used in a context that is not a function call.
    Enforce:

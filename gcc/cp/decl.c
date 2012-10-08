@@ -4132,13 +4132,32 @@ fixup_anonymous_aggr (tree t)
     }
 }
 
+/* Warn for an attribute located at LOCATION that appertains to the
+   class type CLASS_TYPE that has not been properly placed after its
+   class-key, in it class-specifier.  */
+
+void
+warn_misplaced_attr_for_class_type (source_location location,
+				    tree class_type)
+{
+  gcc_assert (TAGGED_TYPE_P (class_type));
+
+  warning_at (location, OPT_Wattributes,
+	      "attribute ignored in declaration "
+	      "of %q#T", class_type);
+  inform (location,
+	  "attribute for %q#T must follow the %qs keyword",
+	  class_type, class_key_or_enum_as_string (class_type));
+}
+
 /* Make sure that a declaration with no declarator is well-formed, i.e.
    just declares a tagged type or anonymous union.
 
    Returns the type declared; or NULL_TREE if none.  */
 
 tree
-check_tag_decl (cp_decl_specifier_seq *declspecs)
+check_tag_decl (cp_decl_specifier_seq *declspecs,
+		bool explicit_type_instantiation_p)
 {
   int saw_friend = decl_spec_seq_has_spec_p (declspecs, ds_friend);
   int saw_typedef = decl_spec_seq_has_spec_p (declspecs, ds_typedef);
@@ -4247,10 +4266,22 @@ check_tag_decl (cp_decl_specifier_seq *declspecs)
 	/* For a template class (an explicit instantiation), use the
 	   current location.  */
 	loc = input_location;
-      warning_at (loc, OPT_Wattributes, "attribute ignored in declaration "
-		  "of %q#T", declared_type);
-      inform (loc, "attribute for %q#T must follow the %qs keyword",
-	      declared_type, class_key_or_enum_as_string (declared_type));
+
+      if (explicit_type_instantiation_p)
+	/* [dcl.attr.grammar]/4:
+
+	       No attribute-specifier-seq shall appertain to an explicit
+	       instantiation.  */
+	{
+	  warning_at (loc, OPT_Wattributes,
+		      "attribute ignored in explicit instantiation %q#T",
+		      declared_type);
+	  inform (loc,
+		  "no attribute can be applied to "
+		  "an explicit instantiation");
+	}
+      else
+	warn_misplaced_attr_for_class_type (loc, declared_type);
     }
 
   return declared_type;
@@ -4272,7 +4303,8 @@ check_tag_decl (cp_decl_specifier_seq *declspecs)
 tree
 shadow_tag (cp_decl_specifier_seq *declspecs)
 {
-  tree t = check_tag_decl (declspecs);
+  tree t = check_tag_decl (declspecs,
+			   /*explicit_type_instantiation_p=*/false);
 
   if (!t)
     return NULL_TREE;
@@ -9178,6 +9210,15 @@ grokdeclarator (const cp_declarator *declarator,
 	}
     }
 
+  if (declspecs->std_attributes)
+    {
+      /* Apply the c++11 attributes to the type preceding them.  */
+      source_location saved_loc = input_location;
+      input_location = declspecs->locations[ds_std_attribute];
+      decl_attributes (&type, declspecs->std_attributes, 0);
+      input_location = saved_loc;
+    }
+
   /* Determine the type of the entity declared by recurring on the
      declarator.  */
   for (; declarator; declarator = declarator->declarator)
@@ -9215,6 +9256,13 @@ grokdeclarator (const cp_declarator *declarator,
 	case cdk_array:
 	  type = create_array_type_for_decl (dname, type,
 					     declarator->u.array.bounds);
+	  if (declarator->std_attributes)
+	    /* [dcl.array]/1:
+
+	       The optional attribute-specifier-seq appertains to the
+	       array.  */
+	    returned_attrs = chainon (returned_attrs,
+				      declarator->std_attributes);
 	  break;
 
 	case cdk_function:
@@ -9411,6 +9459,13 @@ grokdeclarator (const cp_declarator *declarator,
 	      }
 
 	    type = build_function_type (type, arg_types);
+	    if (declarator->std_attributes)
+	      /* [dcl.fct]/2:
+
+		 The optional attribute-specifier-seq appertains to
+		 the function type.  */
+	      decl_attributes (&type, declarator->std_attributes,
+			       0);
 	  }
 	  break;
 
@@ -9573,6 +9628,17 @@ grokdeclarator (const cp_declarator *declarator,
 					   declarator->u.pointer.qualifiers);
 	      type_quals = cp_type_quals (type);
 	    }
+
+	  /* Apply C++11 attributes to the pointer, and not to the
+	     type pointed to.  This is unlike what is done for GNU
+	     attributes above.  It is to comply with [dcl.ptr]/1:
+
+		 [the optional attribute-specifier-seq (7.6.1) appertains
+		  to the pointer and not to the object pointed to].  */
+	  if (declarator->std_attributes)
+	    decl_attributes (&type, declarator->std_attributes,
+			     0);
+
 	  ctype = NULL_TREE;
 	  break;
 
@@ -9697,6 +9763,13 @@ grokdeclarator (const cp_declarator *declarator,
       else
 	attrlist = &returned_attrs;
     }
+
+  if (declarator
+      && declarator->kind == cdk_id
+      && declarator->std_attributes)
+    /* [dcl.meaning]/1: The optional attribute-specifier-seq following
+       a declarator-id appertains to the entity that is declared.  */
+    *attrlist = chainon (*attrlist, declarator->std_attributes);
 
   /* Handle parameter packs. */
   if (parameter_pack_p)

@@ -418,7 +418,9 @@ typedef enum cpp0x_warn_str
   /* user defined literals */
   CPP0X_USER_DEFINED_LITERALS,
   /* delegating constructors */
-  CPP0X_DELEGATING_CTORS
+  CPP0X_DELEGATING_CTORS,
+  /* C++11 attributes */
+  CPP0X_ATTRIBUTES
 } cpp0x_warn_str;
   
 /* The various kinds of operation used by composite_pointer_type. */
@@ -4684,6 +4686,7 @@ typedef enum cp_decl_spec {
   ds_type_spec,
   ds_redefined_builtin_type_spec,
   ds_attribute,
+  ds_std_attribute,
   ds_storage_class,
   ds_long_long,
   ds_last /* This enumerator must always be the last one.  */
@@ -4702,6 +4705,8 @@ typedef struct cp_decl_specifier_seq {
   tree type;
   /* The attributes, if any, provided with the specifier sequence.  */
   tree attributes;
+  /* The c++11 attributes that follows the type specifier.  */
+  tree std_attributes;
   /* If non-NULL, a built-in type that the user attempted to redefine
      to some other type.  */
   tree redefined_builtin_type;
@@ -4770,8 +4775,14 @@ struct cp_declarator {
      to indicate this is a parameter pack.  */
   BOOL_BITFIELD parameter_pack_p : 1;
   location_t id_loc; /* Currently only set for cdk_id and cdk_function. */
-  /* Attributes that apply to this declarator.  */
+  /* GNU Attributes that apply to this declarator.  If the declarator
+     is a pointer or a reference, these attribute apply to the type
+     pointed to.  */
   tree attributes;
+  /* Standard C++11 attributes that apply to this declarator.  If the
+     declarator is a pointer or a reference, these attributes apply
+     to the pointer, rather than to the type pointed to.  */
+  tree std_attributes;
   /* For all but cdk_id and cdk_error, the contained declarator.  For
      cdk_id and cdk_error, guaranteed to be NULL.  */
   cp_declarator *declarator;
@@ -5068,7 +5079,9 @@ extern tree build_cp_library_fn_ptr		(const char *, tree);
 extern tree push_library_fn			(tree, tree, tree);
 extern tree push_void_library_fn		(tree, tree);
 extern tree push_throw_library_fn		(tree, tree);
-extern tree check_tag_decl			(cp_decl_specifier_seq *);
+extern void warn_misplaced_attr_for_class_type  (source_location location,
+						 tree class_type);
+extern tree check_tag_decl			(cp_decl_specifier_seq *, bool);
 extern tree shadow_tag				(cp_decl_specifier_seq *);
 extern tree groktypename			(cp_decl_specifier_seq *, const cp_declarator *, bool);
 extern tree start_decl				(const cp_declarator *, cp_decl_specifier_seq *, int, tree, tree, tree *);
@@ -5829,6 +5842,7 @@ extern int comp_cv_qualification		(const_tree, const_tree);
 extern int comp_cv_qual_signature		(tree, tree);
 extern tree cxx_sizeof_or_alignof_expr		(tree, enum tree_code, bool);
 extern tree cxx_sizeof_or_alignof_type		(tree, enum tree_code, bool);
+extern tree cxx_alignas_expr                    (tree);
 extern tree cxx_sizeof_nowarn                   (tree);
 extern tree is_bitfield_expr_with_lowered_type  (const_tree);
 extern tree unlowered_expr_type                 (const_tree);
