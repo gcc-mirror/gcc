@@ -544,16 +544,14 @@
 (define_insn_reservation  "atom_sse_4" 1
   (and (eq_attr "cpu" "atom")
        (and (eq_attr "type" "sse")
-            (ior (eq_attr "atom_sse_attr" "fence")
-                 (eq_attr "atom_sse_attr" "prefetch"))))
+            (eq_attr "atom_sse_attr" "fence,prefetch")))
   "atom-simple-0")
 
 ;; rcpps, rsqrtss, sqrt, ldmxcsr
 (define_insn_reservation  "atom_sse_5" 7
   (and (eq_attr "cpu" "atom")
        (and (eq_attr "type" "sse")
-            (ior (ior (eq_attr "atom_sse_attr" "sqrt")
-                      (eq_attr "atom_sse_attr" "mxcsr"))
+            (ior (eq_attr "atom_sse_attr" "sqrt,mxcsr")
                  (and (eq_attr "atom_sse_attr" "rcp")
                       (eq_attr "mode" "V4SF")))))
   "atom-complex, atom-all-eu*6")

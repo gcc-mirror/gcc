@@ -1,3 +1,8 @@
+2012-10-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/atom.md (atom_sse_4): Merge atom_sse_attr attibutes.
+	(atom_sse_5): Ditto.
+
 2012-10-08  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR target/54400
@@ -149,7 +154,8 @@
 
 	PR target/54685
 	* config/sh/sh.md (one_cmplsi2): Make insn_and_split.  Add manual
-	combine matching for an insn sequence where a ge:SI pattern can be used.
+	combine matching for an insn sequence where a ge:SI pattern
+	can be used.
 
 2012-10-08  Dodji Seketeli  <dodji@redhat.com>
 
