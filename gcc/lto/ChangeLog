@@ -1,3 +1,8 @@
+2012-10-08  Tobias Burnus  <burnus@net-b.de>
+
+	* lto.c (lto_wpa_write_files, read_cgraph_and_symbols):
+	Free lto_file struct after closing the file.
+
 2012-10-08  Jan Hubicka  <jh@suse.cz>
 
 	* lto/lto.c (remember_with_vars): Also fixup INTEGER_CST.

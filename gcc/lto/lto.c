@@ -2674,6 +2674,7 @@ lto_wpa_write_files (void)
 
       lto_set_current_out_file (NULL);
       lto_obj_file_close (file);
+      free (file);
       part->encoder = NULL;
 
       len = strlen (temp_filename);
@@ -2690,6 +2691,7 @@ lto_wpa_write_files (void)
     fatal_error ("closing LTRANS output list %s: %m", ltrans_output_list);
 
   free_ltrans_partitions();
+  free (temp_filename);
 
   timevar_pop (TV_WHOPR_WPA_IO);
 }
@@ -2952,6 +2954,7 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
       if (!file_data)
 	{
 	  lto_obj_file_close (current_lto_file);
+	  free (current_lto_file);
 	  current_lto_file = NULL;
 	  break;
 	}
@@ -2959,6 +2962,7 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
       decl_data[last_file_ix++] = file_data;
 
       lto_obj_file_close (current_lto_file);
+      free (current_lto_file);
       current_lto_file = NULL;
       ggc_collect ();
     }
