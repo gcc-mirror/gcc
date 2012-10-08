@@ -11139,10 +11139,12 @@ section on @code{EIND} and linker stubs below.
 
 @item -mshort-calls
 @opindex mshort-calls
+This option has been deprecated and will be removed in GCC 4.8.
+See @code{-mrelax} for a replacement.
+
 Use @code{RCALL}/@code{RJMP} instructions even on devices with
 16@tie{}KiB or more of program memory, i.e.@: on devices that
 have the @code{CALL} and @code{JMP} instructions.
-See also the @code{-mrelax} command line option.
 
 @item -msp8
 @opindex msp8
