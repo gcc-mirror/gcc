@@ -1,3 +1,9 @@
+2012-10-08  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54685
+	* config/sh/sh.md (one_cmplsi2): Make insn_and_split.  Add manual
+	combine matching for an insn sequence where a ge:SI pattern can be used.
+
 2012-10-08  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/53528 C++11 attribute support
