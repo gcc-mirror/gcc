@@ -1,3 +1,9 @@
+2012-10-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/tree-ssa/slsr-30.c: Use correct cleanup directive.
+	* gcc.dg/tree-ssa/attr-hotcold-2.c: Likewise.
+	* gcc.dg/tree-ssa/ldist-21.c: Add missing cleanup directive.
+
 2012-10-08  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/54760
