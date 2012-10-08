@@ -1,5 +1,10 @@
 2012-10-08  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/tls/thread_local3.C: New.
+	* g++.dg/tls/thread_local4.C: New.
+	* g++.dg/tls/thread_local5.C: New.
+	* g++.dg/tls/thread_local6.C: New.
+
 	* g++.dg/tls/init-2.C: Tweak errors.
 	* g++.dg/tls/thread_local1.C: New.
 	* g++.dg/tls/thread_local2.C: New.

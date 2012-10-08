@@ -1531,6 +1531,10 @@ CXXABI_1.3.6 {
 
 } CXXABI_1.3.5;
 
+CXXABI_1.3.7 {
+    __cxa_thread_atexit;
+} CXXABI_1.3.6;
+
 
 # Symbols in the support library (libsupc++) supporting transactional memory.
 CXXABI_TM_1 {

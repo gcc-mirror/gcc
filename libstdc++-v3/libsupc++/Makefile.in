@@ -90,7 +90,7 @@ am__installdirs = "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(bitsdir)" \
 	"$(DESTDIR)$(stddir)"
 LTLIBRARIES = $(noinst_LTLIBRARIES) $(toolexeclib_LTLIBRARIES)
 libsupc___la_LIBADD =
-am__objects_1 = array_type_info.lo atexit_arm.lo bad_alloc.lo \
+am__objects_1 = array_type_info.lo atexit_arm.lo atexit_thread.lo bad_alloc.lo \
 	bad_cast.lo bad_typeid.lo class_type_info.lo del_op.lo \
 	del_opnt.lo del_opv.lo del_opvnt.lo dyncast.lo eh_alloc.lo \
 	eh_arm.lo eh_aux_runtime.lo eh_call.lo eh_catch.lo \
@@ -362,6 +362,7 @@ headers = $(std_HEADERS) $(bits_HEADERS)
 sources = \
 	array_type_info.cc \
 	atexit_arm.cc \
+	atexit_thread.cc \
 	bad_alloc.cc \
 	bad_cast.cc \
 	bad_typeid.cc \
@@ -798,6 +799,11 @@ eh_throw.o: eh_throw.cc
 guard.lo: guard.cc
 	$(LTCXXCOMPILE) -std=gnu++0x -c $<
 guard.o: guard.cc
+	$(CXXCOMPILE) -std=gnu++0x -c $<
+
+atexit_thread.lo: atexit_thread.cc
+	$(LTCXXCOMPILE) -std=gnu++0x -c $<
+atexit_thread.o: atexit_thread.cc
 	$(CXXCOMPILE) -std=gnu++0x -c $<
 
 nested_exception.lo: nested_exception.cc

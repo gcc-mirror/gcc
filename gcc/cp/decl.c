@@ -6575,6 +6575,24 @@ get_atexit_node (void)
   return atexit_node;
 }
 
+/* Like get_atexit_node, but for thread-local cleanups.  */
+
+static tree
+get_thread_atexit_node (void)
+{
+  /* The declaration for `__cxa_thread_atexit' is:
+
+     int __cxa_thread_atexit (void (*)(void *), void *, void *) */
+  tree fn_type = build_function_type_list (integer_type_node,
+					   get_atexit_fn_ptr_type (),
+					   ptr_type_node, ptr_type_node,
+					   NULL_TREE);
+
+  /* Now, build the function declaration.  */
+  tree atexit_fndecl = build_library_fn_ptr ("__cxa_thread_atexit", fn_type);
+  return decay_conversion (atexit_fndecl, tf_warning_or_error);
+}
+
 /* Returns the __dso_handle VAR_DECL.  */
 
 static tree
@@ -6666,23 +6684,27 @@ tree
 register_dtor_fn (tree decl)
 {
   tree cleanup;
+  tree addr;
   tree compound_stmt;
   tree fcall;
   tree type;
-  bool use_dtor;
-  tree arg0, arg1 = NULL_TREE, arg2 = NULL_TREE;
+  bool ob_parm, dso_parm, use_dtor;
+  tree arg0, arg1, arg2;
+  tree atex_node;
 
   type = TREE_TYPE (decl);
   if (TYPE_HAS_TRIVIAL_DESTRUCTOR (type))
     return void_zero_node;
 
-  /* If we're using "__cxa_atexit" (or "__aeabi_atexit"), and DECL is
-     a class object, we can just pass the destructor to
-     "__cxa_atexit"; we don't have to build a temporary function to do
-     the cleanup.  */
-  use_dtor = (flag_use_cxa_atexit 
-	      && !targetm.cxx.use_atexit_for_cxa_atexit ()
-	      && CLASS_TYPE_P (type));
+  /* If we're using "__cxa_atexit" (or "__cxa_thread_atexit" or
+     "__aeabi_atexit"), and DECL is a class object, we can just pass the
+     destructor to "__cxa_atexit"; we don't have to build a temporary
+     function to do the cleanup.  */
+  ob_parm = (DECL_THREAD_LOCAL_P (decl)
+	     || (flag_use_cxa_atexit
+		 && !targetm.cxx.use_atexit_for_cxa_atexit ()));
+  dso_parm = ob_parm;
+  use_dtor = ob_parm && CLASS_TYPE_P (type);
   if (use_dtor)
     {
       int idx;
@@ -6720,44 +6742,48 @@ register_dtor_fn (tree decl)
       end_cleanup_fn ();
     }
 
-  if (DECL_THREAD_LOCAL_P (decl))
-    /* We don't have a thread-local atexit yet.  FIXME write one using
-       pthread_key_create and friends.  */
-    sorry ("thread-local variable %q#D with non-trivial "
-	   "destructor", decl);
-
   /* Call atexit with the cleanup function.  */
   mark_used (cleanup);
   cleanup = build_address (cleanup);
-  if (flag_use_cxa_atexit && !targetm.cxx.use_atexit_for_cxa_atexit ())
-    {
-      tree addr;
 
-      if (use_dtor)
-	{
-	  /* We must convert CLEANUP to the type that "__cxa_atexit"
-	     expects.  */
-	  cleanup = build_nop (get_atexit_fn_ptr_type (), cleanup);
-	  /* "__cxa_atexit" will pass the address of DECL to the
-	     cleanup function.  */
-	  mark_used (decl);
-	  addr = build_address (decl);
-	  /* The declared type of the parameter to "__cxa_atexit" is
-	     "void *".  For plain "T*", we could just let the
-	     machinery in cp_build_function_call convert it -- but if the
-	     type is "cv-qualified T *", then we need to convert it
-	     before passing it in, to avoid spurious errors.  */
-	  addr = build_nop (ptr_type_node, addr);
-	}
-      else
-	/* Since the cleanup functions we build ignore the address
-	   they're given, there's no reason to pass the actual address
-	   in, and, in general, it's cheaper to pass NULL than any
-	   other value.  */
-	addr = null_pointer_node;
-      arg2 = cp_build_addr_expr (get_dso_handle_node (),
-				 tf_warning_or_error);
-      if (targetm.cxx.use_aeabi_atexit ())
+  if (DECL_THREAD_LOCAL_P (decl))
+    atex_node = get_thread_atexit_node ();
+  else
+    atex_node = get_atexit_node ();
+
+  if (use_dtor)
+    {
+      /* We must convert CLEANUP to the type that "__cxa_atexit"
+	 expects.  */
+      cleanup = build_nop (get_atexit_fn_ptr_type (), cleanup);
+      /* "__cxa_atexit" will pass the address of DECL to the
+	 cleanup function.  */
+      mark_used (decl);
+      addr = build_address (decl);
+      /* The declared type of the parameter to "__cxa_atexit" is
+	 "void *".  For plain "T*", we could just let the
+	 machinery in cp_build_function_call convert it -- but if the
+	 type is "cv-qualified T *", then we need to convert it
+	 before passing it in, to avoid spurious errors.  */
+      addr = build_nop (ptr_type_node, addr);
+    }
+  else if (ob_parm)
+    /* Since the cleanup functions we build ignore the address
+       they're given, there's no reason to pass the actual address
+       in, and, in general, it's cheaper to pass NULL than any
+       other value.  */
+    addr = null_pointer_node;
+
+  if (dso_parm)
+    arg2 = cp_build_addr_expr (get_dso_handle_node (),
+			       tf_warning_or_error);
+  else
+    arg2 = NULL_TREE;
+
+  if (ob_parm)
+    {
+      if (!DECL_THREAD_LOCAL_P (decl)
+	  && targetm.cxx.use_aeabi_atexit ())
 	{
 	  arg1 = cleanup;
 	  arg0 = addr;
@@ -6769,8 +6795,11 @@ register_dtor_fn (tree decl)
 	}
     }
   else
-    arg0 = cleanup;
-  return cp_build_function_call_nary (get_atexit_node (), tf_warning_or_error,
+    {
+      arg0 = cleanup;
+      arg1 = NULL_TREE;
+    }
+  return cp_build_function_call_nary (atex_node, tf_warning_or_error,
 				      arg0, arg1, arg2, NULL_TREE);
 }
 

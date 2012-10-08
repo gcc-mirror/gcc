@@ -134,6 +134,10 @@ namespace __cxxabiv1
   int
   __cxa_finalize(void*);
 
+  // TLS destruction.
+  int
+  __cxa_thread_atexit(void (*)(void*), void*, void *) _GLIBCXX_NOTHROW;
+
   // Pure virtual functions.
   void
   __cxa_pure_virtual(void) __attribute__ ((__noreturn__));

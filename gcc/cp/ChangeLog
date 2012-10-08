@@ -1,5 +1,8 @@
 2012-10-08  Jason Merrill  <jason@redhat.com>
 
+	* decl.c (get_thread_atexit_node): New.
+	(register_dtor_fn): Use it for TLS.
+
 	Partial implementation of C++11 thread_local.
 	* decl.c (cp_finish_decl): Remove errors about non-trivial
 	initialization and destruction of TLS variables.
