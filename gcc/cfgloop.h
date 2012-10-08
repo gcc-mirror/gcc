@@ -386,9 +386,6 @@ struct niter_desc
   /* Number of iterations if constant.  */
   unsigned HOST_WIDEST_INT niter;
 
-  /* Upper bound on the number of iterations.  */
-  unsigned HOST_WIDEST_INT niter_max;
-
   /* Assumptions under that the rest of the information is valid.  */
   rtx assumptions;
 

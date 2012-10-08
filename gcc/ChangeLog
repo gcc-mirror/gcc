@@ -1,3 +1,33 @@
+2012-10-08  Jan Hubicka  <jh@suse.cz>
+
+	* loop-unswitch.c (unswitch_single_loop): Use
+	estimated_loop_iterations_int to prevent unswitching when loop
+	is known to not roll.
+	* tree-ssa-loop-niter.c (estimated_loop_iterations): Do not segfault
+	when SCEV is not initialized.
+	(max_loop_iterations): Likewise.
+	* tree-ssa-loop-unswitch.c (tree_ssa_unswitch_loops): Use
+	estimated_loop_iterations_int to prevent unswithcing when
+	loop is known to not roll.
+	* tree-scalar-evolution.c (scev_initialized_p): New function.
+	* tree-scalar-evolution.h (scev_initialized_p): Likewise.
+	* loop-unroll.c (decide_peel_once_rolling): Use
+	max_loop_iterations_int.
+	(unroll_loop_constant_iterations): Update
+	nb_iterations_upper_bound and nb_iterations_estimate.
+	(decide_unroll_runtime_iterations): Use
+	estimated_loop_iterations or max_loop_iterations;
+	(unroll_loop_runtime_iterations): fix profile updating.
+	(decide_peel_simple): Use estimated_loop_iterations
+	and max_loop_iterations.
+	(decide_unroll_stupid): Use estimated_loop_iterations
+	ad max_loop_iterations.
+	* loop-doloop.c (doloop_modify): Use max_loop_iterations_int.
+	(doloop_optimize): Likewise.
+	* loop-iv.c (iv_number_of_iterations): Use record_niter_bound.
+	(find_simple_exit): Likewise.
+	* cfgloop.h (struct niter_desc): Remove niter_max.
+
 2012-10-08  Marek Polacek  <polacek@redhat.com>
 
 	PR debug/54831

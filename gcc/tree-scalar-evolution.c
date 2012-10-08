@@ -3124,6 +3124,14 @@ scev_initialize (void)
     }
 }
 
+/* Return true if SCEV is initialized.  */
+
+bool
+scev_initialized_p (void)
+{
+  return scalar_evolution_info != NULL;
+}
+
 /* Cleans up the information cached by the scalar evolutions analysis
    in the hash table.  */
 
