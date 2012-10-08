@@ -9242,6 +9242,11 @@ The minimal probability of speculation success (in percents), so that
 speculative insns are scheduled.
 The default value is 40.
 
+@item sched-spec-state-edge-prob-cutoff
+The minimum probability an edge must have for the scheduler to save its
+state across it.
+The default value is 10.
+
 @item sched-mem-true-dep-cost
 Minimal distance (in CPU cycles) between store and load targeting same
 memory locations.  The default value is 1.

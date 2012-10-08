@@ -611,6 +611,11 @@ DEFPARAM(PARAM_SCHED_SPEC_PROB_CUTOFF,
          "The minimal probability of speculation success (in percents), so that speculative insn will be scheduled.",
          40, 0, 100)
 
+DEFPARAM(PARAM_SCHED_STATE_EDGE_PROB_CUTOFF,
+         "sched-state-edge-prob-cutoff",
+         "The minimum probability an edge must have for the scheduler to save its state across it.",
+         10, 0, 100)
+
 DEFPARAM(PARAM_SELSCHED_MAX_LOOKAHEAD,
          "selsched-max-lookahead",
          "The maximum size of the lookahead window of selective scheduling",

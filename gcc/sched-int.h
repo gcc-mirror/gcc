@@ -1321,7 +1321,7 @@ extern int dep_cost (dep_t);
 extern int set_priorities (rtx, rtx);
 
 extern void sched_setup_bb_reg_pressure_info (basic_block, rtx);
-extern bool schedule_block (basic_block *);
+extern bool schedule_block (basic_block *, state_t);
 
 extern int cycle_issued_insns;
 extern int issue_rate;

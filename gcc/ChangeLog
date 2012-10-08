@@ -1,3 +1,17 @@
+2012-10-08  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* sched-int.h (schedule_block): Adjust declaration.
+	* sched-rgn.c (bb_state_array, bb_state): New static variables.
+	(sched_rgn_init): Initialize them.
+	(sched_rgn_free): Free them.
+	(schedule_region): Save scheduling state for future blocks, and
+	pass such state to schedule_block.
+	* params.def (PARAM_SCHED_STATE_EDGE_PROB_CUTOFF): New.
+	* doc/invoke.texi (--param): Document it.
+	* haifa-sched.c (schedule_block): New arg init_state.  Use it to
+	initialize state if nonnull.  All callers changed.
+	Call advance_one_cycle after scheduling.
+
 2012-10-08  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/54854
