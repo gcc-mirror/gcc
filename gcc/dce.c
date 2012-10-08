@@ -704,7 +704,10 @@ init_dce (bool fast)
   if (!df_in_progress)
     {
       if (!fast)
-	df_chain_add_problem (DF_UD_CHAIN);
+	{
+	  df_set_flags (DF_RD_PRUNE_DEAD_DEFS);
+	  df_chain_add_problem (DF_UD_CHAIN);
+	}
       df_analyze ();
     }
 

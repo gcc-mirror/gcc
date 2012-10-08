@@ -1994,10 +1994,7 @@ df_dump_region (FILE *file)
       EXECUTE_IF_SET_IN_BITMAP (df->blocks_to_analyze, 0, bb_index, bi)
 	{
 	  basic_block bb = BASIC_BLOCK (bb_index);
-
-	  df_print_bb_index (bb, file);
-	  df_dump_top (bb, file);
-	  df_dump_bottom (bb, file);
+	  dump_bb (file, bb, 0, TDF_DETAILS);
 	}
       fprintf (file, "\n");
     }
@@ -2035,10 +2032,9 @@ df_dump_start (FILE *file)
 }
 
 
-/* Dump the top of the block information for BB.  */
-
-void
-df_dump_top (basic_block bb, FILE *file)
+/* Dump the top or bottom of the block information for BB.  */
+static void
+df_dump_bb_problem_data (basic_block bb, FILE *file, bool top)
 {
   int i;
 
@@ -2050,18 +2046,39 @@ df_dump_top (basic_block bb, FILE *file)
       struct dataflow *dflow = df->problems_in_order[i];
       if (dflow->computed)
 	{
-	  df_dump_bb_problem_function bbfun = dflow->problem->dump_top_fun;
+	  df_dump_bb_problem_function bbfun;
+
+	  if (top)
+	    bbfun = dflow->problem->dump_top_fun;
+	  else
+	    bbfun = dflow->problem->dump_bottom_fun;
+
 	  if (bbfun)
 	    bbfun (bb, file);
 	}
     }
 }
 
+/* Dump the top of the block information for BB.  */
+
+void
+df_dump_top (basic_block bb, FILE *file)
+{
+  df_dump_bb_problem_data (bb, file, /*top=*/true);
+}
 
 /* Dump the bottom of the block information for BB.  */
 
 void
 df_dump_bottom (basic_block bb, FILE *file)
+{
+  df_dump_bb_problem_data (bb, file, /*top=*/false);
+}
+
+
+/* Dump information about INSN just before or after dumping INSN itself.  */
+static void
+df_dump_insn_problem_data (const_rtx insn, FILE *file, bool top)
 {
   int i;
 
@@ -2073,11 +2090,33 @@ df_dump_bottom (basic_block bb, FILE *file)
       struct dataflow *dflow = df->problems_in_order[i];
       if (dflow->computed)
 	{
-	  df_dump_bb_problem_function bbfun = dflow->problem->dump_bottom_fun;
-	  if (bbfun)
-	    bbfun (bb, file);
+	  df_dump_insn_problem_function insnfun;
+
+	  if (top)
+	    insnfun = dflow->problem->dump_insn_top_fun;
+	  else
+	    insnfun = dflow->problem->dump_insn_bottom_fun;
+
+	  if (insnfun)
+	    insnfun (insn, file);
 	}
     }
+}
+
+/* Dump information about INSN before dumping INSN itself.  */
+
+void
+df_dump_insn_top (const_rtx insn, FILE *file)
+{
+  df_dump_insn_problem_data (insn,  file, /*top=*/true);
+}
+
+/* Dump information about INSN after dumping INSN itself.  */
+
+void
+df_dump_insn_bottom (const_rtx insn, FILE *file)
+{
+  df_dump_insn_problem_data (insn,  file, /*top=*/false);
 }
 
 
