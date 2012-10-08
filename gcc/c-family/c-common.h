@@ -789,6 +789,7 @@ extern bool keyword_begins_type_specifier (enum rid);
 extern bool keyword_is_storage_class_specifier (enum rid);
 extern bool keyword_is_type_qualifier (enum rid);
 extern bool keyword_is_decl_specifier (enum rid);
+extern bool cxx_fundamental_alignment_p (unsigned);
 
 #define c_sizeof(LOC, T)  c_sizeof_or_alignof_type (LOC, T, true, 1)
 #define c_alignof(LOC, T) c_sizeof_or_alignof_type (LOC, T, false, 1)

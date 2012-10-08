@@ -484,6 +484,7 @@ const struct c_common_resword c_common_reswords[] =
   { "__underlying_type", RID_UNDERLYING_TYPE, D_CXXONLY },
   { "__volatile",	RID_VOLATILE,	0 },
   { "__volatile__",	RID_VOLATILE,	0 },
+  { "alignas",		RID_ALIGNAS,	D_CXXONLY | D_CXX0X | D_CXXWARN },
   { "alignof",		RID_ALIGNOF,	D_CXXONLY | D_CXX0X | D_CXXWARN },
   { "asm",		RID_ASM,	D_ASM },
   { "auto",		RID_AUTO,	0 },
@@ -6665,7 +6666,9 @@ handle_transparent_union_attribute (tree *node, tree name,
 
   *no_add_attrs = true;
 
-  if (TREE_CODE (*node) == TYPE_DECL)
+
+  if (TREE_CODE (*node) == TYPE_DECL
+      && ! (flags & ATTR_FLAG_CXX11))
     node = &TREE_TYPE (*node);
   type = *node;
 
@@ -7137,6 +7140,89 @@ check_user_alignment (const_tree align, bool allow_zero)
   return i;
 }
 
+/* 
+   If in c++-11, check if the c++-11 alignment constraint with respect
+   to fundamental alignment (in [dcl.align]) are satisfied.  If not in
+   c++-11 mode, does nothing.
+
+   [dcl.align]2/ says:
+
+   [* if the constant expression evaluates to a fundamental alignment,
+   the alignment requirement of the declared entity shall be the
+   specified fundamental alignment.
+
+   * if the constant expression evaluates to an extended alignment
+   and the implementation supports that alignment in the context
+   of the declaration, the alignment of the declared entity shall
+   be that alignment
+
+   * if the constant expression evaluates to an extended alignment
+   and the implementation does not support that alignment in the
+   context of the declaration, the program is ill-formed].  */
+
+static bool
+check_cxx_fundamental_alignment_constraints (tree node,
+					     unsigned align_log,
+					     int flags)
+{
+  bool alignment_too_large_p = false;
+  unsigned requested_alignment = 1U << align_log;
+  unsigned max_align = 0;
+
+  if ((!(flags & ATTR_FLAG_CXX11) && !warn_cxx_compat)
+      || (node == NULL_TREE || node == error_mark_node))
+    return true;
+
+  if (cxx_fundamental_alignment_p (requested_alignment))
+    return true;
+
+  if (DECL_P (node))
+    {
+      if (TREE_STATIC (node))
+	{
+	  /* For file scope variables and static members, the target
+	     supports alignments that are at most
+	     MAX_OFILE_ALIGNMENT.  */
+	  if (requested_alignment > (max_align = MAX_OFILE_ALIGNMENT))
+	    alignment_too_large_p = true;
+	}
+      else
+	{
+#ifdef BIGGEST_FIELD_ALIGNMENT
+#define MAX_TARGET_FIELD_ALIGNMENT BIGGEST_FIELD_ALIGNMENT
+#else
+#define MAX_TARGET_FIELD_ALIGNMENT BIGGEST_ALIGNMENT
+#endif
+	  /* For non-static members, the target supports either
+	     alignments that at most either BIGGEST_FIELD_ALIGNMENT
+	     if it is defined or BIGGEST_ALIGNMENT.  */
+	  max_align = MAX_TARGET_FIELD_ALIGNMENT;
+	  if (TREE_CODE (node) == FIELD_DECL
+	      && requested_alignment > (max_align = MAX_TARGET_FIELD_ALIGNMENT))
+	    alignment_too_large_p = true;
+#undef MAX_TARGET_FIELD_ALIGNMENT
+	  /* For stack variables, the target supports at most
+	     MAX_STACK_ALIGNMENT.  */
+	  else if (decl_function_context (node) != NULL
+		   && requested_alignment > (max_align = MAX_STACK_ALIGNMENT))
+	    alignment_too_large_p = true;
+	}
+    }
+  else if (TYPE_P (node))
+    {
+      /* Let's be liberal for types.  */
+      if (requested_alignment > (max_align = BIGGEST_ALIGNMENT))
+	alignment_too_large_p = true;
+    }
+
+  if (alignment_too_large_p)
+    pedwarn (input_location, OPT_Wattributes,
+	     "requested alignment %d is larger than %d",
+	     requested_alignment, max_align);
+
+  return !alignment_too_large_p;
+}
+
 /* Handle a "aligned" attribute; arguments as in
    struct attribute_spec.handler.  */
 
@@ -7160,7 +7246,8 @@ handle_aligned_attribute (tree *node, tree ARG_UNUSED (name), tree args,
   else if (TYPE_P (*node))
     type = node, is_type = 1;
 
-  if ((i = check_user_alignment (align_expr, false)) == -1)
+  if ((i = check_user_alignment (align_expr, false)) == -1
+      || !check_cxx_fundamental_alignment_constraints (*node, i, flags))
     *no_add_attrs = true;
   else if (is_type)
     {
@@ -7190,6 +7277,17 @@ handle_aligned_attribute (tree *node, tree ARG_UNUSED (name), tree args,
       error ("alignment may not be specified for %q+D", decl);
       *no_add_attrs = true;
     }
+  else if (DECL_USER_ALIGN (decl)
+	   && DECL_ALIGN (decl) > (1U << i) * BITS_PER_UNIT)
+    /* C++-11 [dcl.align/4]:
+
+           When multiple alignment-specifiers are specified for an
+	   entity, the alignment requirement shall be set to the
+	   strictest specified alignment.
+
+      This formally comes from the c++11 specification but we are
+      doing it for the GNU attribute syntax as well.  */
+    *no_add_attrs = true;
   else if (TREE_CODE (decl) == FUNCTION_DECL
 	   && DECL_ALIGN (decl) > (1U << i) * BITS_PER_UNIT)
     {
@@ -11152,6 +11250,24 @@ convert_vector_to_pointer_for_subscript (location_t loc,
       *vecp = build1 (ADDR_EXPR, type1, *vecp);
       *vecp = convert (type, *vecp);
     }
+}
+
+/* Return true iff ALIGN is an integral constant that is a fundamental
+   alignment, as defined by [basic.align] in the c++-11
+   specifications.
+
+   That is:
+
+       [A fundamental alignment is represented by an alignment less than or
+        equal to the greatest alignment supported by the implementation
+        in all contexts, which is equal to
+        alignof(max_align_t)].  */
+
+bool
+cxx_fundamental_alignment_p  (unsigned align)
+{
+  return (align <=  MAX (TYPE_ALIGN (long_long_integer_type_node),
+			 TYPE_ALIGN (long_double_type_node)));
 }
 
 #include "gt-c-family-c-common.h"

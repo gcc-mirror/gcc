@@ -1,3 +1,35 @@
+2012-10-08  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/53528 C++11 attribute support
+	* plugin.h (register_scoped_attributes): Declare new function.
+	* tree.h (enu attribute_flags::ATTR_FLAG_CXX_11): New flag.
+	(lookup_scoped_attribute_spec, cxx_11_attribute_p)
+	(get_attribute_name, get_attribute_namespace): Declare new functions.
+	(struct attribute_spec): Remove const qualifier from the members.
+	* tree.c (comp_type_attributes, private_lookup_attribute)
+	(lookup_ident_attribute, remove_attribute, merge_attribute)
+	(attribute_hash_list, attribute_list_contained): Use
+	get_attribute_name.
+	* attribs.c (decl_attributes): Don't crash on error_mark_node.
+	Forbid c++11 attributes appertaining to type-specifiers.
+	(attribute_hash): Remove global variable.
+	(attributes_table): New global variable.
+	(find_attribute_namespace, register_scoped_attribute): New static
+	functions.
+	(register_scoped_attributes, lookup_scoped_attribute_spec)
+	(cxx11_attribute_p, get_attribute_name, get_attribute_namespace):
+	New public functions.
+	(init_attributes): Register all the GNU attributes into the "gnu"
+	namespace.
+	(register_attribute): Use register_scoped_attribute to register
+	the attribute into the "gnu" namespace.
+	(lookup_attribute_spec): Use lookup_scoped_attribute_spec to
+	lookup the attribute in the "gnu" namespace.
+	(decl_attributes): Use new get_attribute_namespace and
+	lookup_scoped_attribute_spec to consider attribute namespaces when
+	looking up attributes.  When operating in c++-11 mode, pass flag
+	ATTR_FLAG_CXX11 to the spec handler.
+
 2012-10-08  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/54815

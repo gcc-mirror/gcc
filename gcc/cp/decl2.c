@@ -1091,7 +1091,7 @@ grokbitfield (const cp_declarator *declarator,
 static bool
 is_late_template_attribute (tree attr, tree decl)
 {
-  tree name = TREE_PURPOSE (attr);
+  tree name = get_attribute_name (attr);
   tree args = TREE_VALUE (attr);
   const struct attribute_spec *spec = lookup_attribute_spec (name);
   tree arg;
