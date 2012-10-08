@@ -1,3 +1,10 @@
+2012-10-08  Jason Merrill  <jason@redhat.com>
+
+	* libsupc++/cxxabi.h: Declare __cxa_thread_atexit.
+	* libsupc++/atexit_thread.cc: New.
+	* libsupc++/Makefile.am (nested_exception.lo): Add it.
+	* config/abi/pre/gnu.ver: Add __cxa_thread_atexit.
+
 2012-10-07  Matthias Klose  <doko@ubuntu.com>
 
 	* testsuite/28_regex/algorithms/match/basic: Remove empty directory.
