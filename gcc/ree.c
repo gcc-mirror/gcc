@@ -868,6 +868,7 @@ find_and_remove_re (void)
 
   /* Construct DU chain to get all reaching definitions of each
      extension instruction.  */
+  df_set_flags (DF_RD_PRUNE_DEAD_DEFS);
   df_chain_add_problem (DF_UD_CHAIN + DF_DU_CHAIN);
   df_analyze ();
   df_set_flags (DF_DEFER_INSN_RESCAN);

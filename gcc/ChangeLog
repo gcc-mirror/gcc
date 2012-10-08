@@ -1,3 +1,46 @@
+2012-10-08  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* bitmap.h (bitmap_and_into): Update prototype.
+	* bitmap.c (bitmap_and_into): Return true if the target bitmap
+	changed, false otherwise.
+
+	* df.h (df_dump_insn_problem_function): New function type.
+	(struct df_problem): Add two functions, to dump just before and
+	just after an insn.
+	(DF_RD_PRUNE_DEAD_DEFS): New changable flag.
+	(df_dump_insn_top, df_dump_insn_bottom): New prototypes.
+	* df-core (df_dump_region): Use dump_bb.
+	(df_dump_bb_problem_data): New function.
+	(df_dump_top, df_dump_bottom): Rewrite using df_dump_bb_problem_data.
+	(df_dump_insn_problem_data): New function.
+	(df_dump_insn_top, df_dump_insn_bottom): New functions.
+	* df-scan.c (problem_SCAN): Add NULL fields for new members.
+	* df-problems.c (df_rd_local_compute): Ignore hard registers if
+	DF_NO_HARD_REGS is in effect.
+	(df_rd_transfer_function): If DF_RD_PRUNE_DEAD_DEFS is in effect,
+	prune reaching defs using the LR problem.
+	(df_rd_start_dump): Fix dumping of DEFs map.
+	(df_rd_dump_defs_set): New function.
+	(df_rd_top_dump, df_rd_bottom_dump): Use it.
+	(problem_RD): Add NULL fields for new members.
+	(problem_LR, problem_LIVE): Likewise.
+	(df_chain_bb_dump): New function.
+	(df_chain_top_dump): Dump only for artificial DEFs and USEs,
+	using df_chain_bb_dump.
+	(df_chain_bottom_dump): Likewise.
+	(df_chain_insn_top_dump, df_chain_insn_bottom_dump): New functions.
+	(problem_CHAIN): Add them as new members.
+	(problem_WORD_LR, problem_NOTE): Add NULL fields for new members.
+	(problem_MD): Likewise.
+	* cfgrtl.c (rtl_dump_bb): Use df_dump_insn_top and df_dump_insn_bottom.
+	(print_rtl_with_bb): Likewise.
+
+	* dce.c (init_dce): Use DF_RD_PRUNE_DEAD_DEFS.
+	* loop-invariant.c (find_defs): Likewise.
+	* loop-iv.c (iv_analysis_loop_init): Likewise.
+	* ree.c (find_and_remove_re): Likewise.
+	* web.c (web_main): Likewise.
+
 2012-10-08  Jason Merrill  <jason@redhat.com>
 
 	* config/rs6000/rs6000.c (rs6000_code_end): Protect the use of
@@ -319,7 +362,7 @@
 
 2012-10-04  Jeff Law  <law@redhat.com>
 
-	* PR target/50356
+	PR target/50356
 	* config/h8300/h8300.c (h8300_rtx_costs): Fix typo in CONST_INT case.
 
 2012-10-04  Jason Merrill  <jason@redhat.com>
@@ -329,8 +372,8 @@
 
 2012-10-04  Basile Starynkevitch  <basile@starynkevitch.net>
 
-        * gengtype.c (walk_type): Emit mark_hook when inside a
-          struct of a union member.
+	* gengtype.c (walk_type): Emit mark_hook when inside a
+	struct of a union member.
 
 2012-10-04  Georg-Johann Lay  <avr@gjlay.de>
 

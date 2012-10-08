@@ -293,6 +293,7 @@ iv_analysis_loop_init (struct loop *loop)
      the problem back.  */
   df_remove_problem (df_chain);
   df_process_deferred_rescans ();
+  df_set_flags (DF_RD_PRUNE_DEAD_DEFS);
   df_chain_add_problem (DF_UD_CHAIN);
   df_note_add_problem ();
   df_set_blocks (blocks);
