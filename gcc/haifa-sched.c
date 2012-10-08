@@ -5840,7 +5840,7 @@ verify_shadows (void)
    region.  */
 
 bool
-schedule_block (basic_block *target_bb)
+schedule_block (basic_block *target_bb, state_t init_state)
 {
   int i;
   bool success = modulo_ii == 0;
@@ -5875,7 +5875,10 @@ schedule_block (basic_block *target_bb)
   if (sched_verbose)
     dump_new_block_header (0, *target_bb, head, tail);
 
-  state_reset (curr_state);
+  if (init_state == NULL)
+    state_reset (curr_state);
+  else
+    memcpy (curr_state, init_state, dfa_state_size);
 
   /* Clear the ready list.  */
   ready.first = ready.veclen - 1;
@@ -6335,6 +6338,7 @@ schedule_block (basic_block *target_bb)
   if (ls.modulo_epilogue)
     success = true;
  end_schedule:
+  advance_one_cycle ();
   perform_replacements_new_cycle ();
   if (modulo_ii > 0)
     {

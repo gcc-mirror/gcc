@@ -124,6 +124,9 @@ int current_blocks;
 static basic_block *bblst_table;
 static int bblst_size, bblst_last;
 
+static char *bb_state_array;
+static state_t *bb_state;
+
 /* Target info declarations.
 
    The block currently being scheduled is referred to as the "target" block,
@@ -2982,9 +2985,21 @@ schedule_region (int rgn)
       curr_bb = first_bb;
       if (dbg_cnt (sched_block))
         {
-          schedule_block (&curr_bb);
+	  edge f;
+
+          schedule_block (&curr_bb, bb_state[first_bb->index]);
           gcc_assert (EBB_FIRST_BB (bb) == first_bb);
           sched_rgn_n_insns += sched_n_insns;
+	  f = find_fallthru_edge (last_bb->succs);
+	  if (f && f->probability * 100 / REG_BR_PROB_BASE >=
+	      PARAM_VALUE (PARAM_SCHED_STATE_EDGE_PROB_CUTOFF))
+	    {
+	      memcpy (bb_state[f->dest->index], curr_state,
+		      dfa_state_size);
+	      if (sched_verbose >= 5)
+		fprintf (sched_dump, "saving state for edge %d->%d\n",
+			 f->src->index, f->dest->index);
+	    }
         }
       else
         {
@@ -3017,6 +3032,8 @@ schedule_region (int rgn)
 void
 sched_rgn_init (bool single_blocks_p)
 {
+  int i;
+
   min_spec_prob = ((PARAM_VALUE (PARAM_MIN_SPEC_PROB) * REG_BR_PROB_BASE)
 		    / 100);
 
@@ -3027,6 +3044,23 @@ sched_rgn_init (bool single_blocks_p)
 
   CONTAINING_RGN (ENTRY_BLOCK) = -1;
   CONTAINING_RGN (EXIT_BLOCK) = -1;
+
+  if (!sel_sched_p ())
+    {
+      bb_state_array = (char *) xmalloc (last_basic_block * dfa_state_size);
+      bb_state = XNEWVEC (state_t, last_basic_block);
+      for (i = 0; i < last_basic_block; i++)
+	{
+	  bb_state[i] = (state_t) (bb_state_array + i * dfa_state_size);
+      
+	  state_reset (bb_state[i]);
+	}
+    }
+  else
+    {
+      bb_state_array = NULL;
+      bb_state = NULL;
+    }
 
   /* Compute regions for scheduling.  */
   if (single_blocks_p
@@ -3064,6 +3098,9 @@ sched_rgn_init (bool single_blocks_p)
 void
 sched_rgn_finish (void)
 {
+  free (bb_state_array);
+  free (bb_state);
+
   /* Reposition the prologue and epilogue notes in case we moved the
      prologue/epilogue insns.  */
   if (reload_completed)
