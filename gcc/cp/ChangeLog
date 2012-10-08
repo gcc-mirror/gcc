@@ -1,3 +1,8 @@
+2012-10-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/54858
+	* tree.c (cp_tree_equal): Handle FIELD_DECL.
+
 2012-10-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/54777

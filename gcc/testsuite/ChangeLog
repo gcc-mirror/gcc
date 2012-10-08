@@ -1,3 +1,8 @@
+2012-10-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/54858
+	* g++.dg/template/pr54858.C: New test.
+
 2012-10-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/33763
