@@ -1,3 +1,11 @@
+2012-10-08  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-pre.c (postorder_num): New global.
+	(compute_antic): Initialize all blocks and adjust for
+	generic postorder.
+	(my_rev_post_order_compute): Remove.
+	(init_pre): Use inverted_post_order_compute.
+
 2012-10-08  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* sched-int.h (schedule_block): Adjust declaration.
