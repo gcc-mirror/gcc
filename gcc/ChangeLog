@@ -37,8 +37,7 @@
 	* ipa-inline-analysis.c (do_estimate_edge_time): Return actual
 	time spent by the inlined sequence.
 	(do_estimate_edge_growth): Rename to ...
-	(do_estimate_edge_time): ... this one; return size of inlined
-	sequence.
+	(do_estimate_edge_time): ... this one; return size of inlined sequence.
 	* ipa-inline.h (do_estimate_edge_size): New.
 	(do_estimate_edge_growth): Remove.
 	(estimate_edge_size): New function.
@@ -51,7 +50,7 @@
 	(lto_symtab_encoder_encode): Update.
 	(compute_ltrans_boundary): Update.
 	(input_symtab): Update.
- 	* lto-streamer.h (lto_symtab_encoder_new): Update.
+	* lto-streamer.h (lto_symtab_encoder_new): Update.
 
 2012-10-07  Richard Sandiford  <rdsandiford@googlemail.com>
 
@@ -81,8 +80,7 @@
 	(mips_sim_next_cycle): Assign to curr_state.  Use advance_state
 	instead of state_transition.
 	(mips_sim_issue_insn): Assign to curr_state.  Use
-	targetm.sched.variable_issue to see how many more insns
-	can be issued.
+	targetm.sched.variable_issue to see how many more insns can be issued.
 	(mips_seq_time, mips_mult_zero_zero_cost)
 	(mips_set_fast_mult_zero_zero_p, mips_set_tuning_info)
 	(mips_expand_to_rtl_hook): New functions.
@@ -145,8 +143,7 @@
 2012-10-06  Andreas Schwab  <schwab@linux-m68k.org>
 
 	PR rtl-optimization/54739
-	* config/m68k/m68k.md (anddi3, iordi3, xordi3, one_cmpldi2):
-	Remove.
+	* config/m68k/m68k.md (anddi3, iordi3, xordi3, one_cmpldi2): Remove.
 
 2012-10-06  Oleg Endo  <olegendo@gcc.gnu.org>
 
@@ -189,12 +186,10 @@
 	into id->block's BLOCK_VARS.
 
 	PR debug/54519
-	* ipa-split.c (split_function): Add debug args and
-	debug source and normal stmts for args_to_skip which are
-	gimple regs.
-	* tree-inline.c (copy_debug_stmt): When inlining, adjust
-	source debug bind stmts to debug binds of corresponding
-	DEBUG_EXPR_DECL.
+	* ipa-split.c (split_function): Add debug args and debug source
+	and normal stmts for args_to_skip which are gimple regs.
+	* tree-inline.c (copy_debug_stmt): When inlining, adjust source
+	debug bind stmts to debug binds of corresponding DEBUG_EXPR_DECL.
 
 2012-10-05  Georg-Johann Lay  <avr@gjlay.de>
 
@@ -219,7 +214,8 @@
 	* tree-vect-loop.c (vect_estimate_min_profitable_iters): Declare here.
 	(vect_analyze_loop_operations): Use loop count estimate to rule out
 	unprofitable vectorization.
-	(vect_estimate_min_profitable_iters): Return ret_min_profitable_estimate.
+	(vect_estimate_min_profitable_iters): Return
+	ret_min_profitable_estimate.
 
 2012-10-05  Jakub Jelinek  <jakub@redhat.com>
 
@@ -297,10 +293,10 @@
 	* config/i386/i386.c (ix86_dep_by_shift_count_body) : Add
 	check on reload_completed since it can be invoked before
 	register allocation phase in pre-reload schedule.
-	(ia32_multipass_dfa_lookahead) : Do not use dfa_lookahead for pre-reload
-	schedule to save compile time.
-	(ix86_sched_reorder) : Do not perform ready list reordering for pre-reload
-	schedule to save compile time.
+	(ia32_multipass_dfa_lookahead) : Do not use dfa_lookahead for
+	pre-reload schedule to save compile time.
+	(ix86_sched_reorder) : Do not perform ready list reordering for
+	pre-reload schedule to save compile time.
 	(insn_is_function_arg) : New function. Returns true if lhs of insn is
 	HW function argument register.
 	(add_parameter_dependencies) : New function. Add output dependencies
@@ -312,14 +308,14 @@
 	(add_dependee_for_func_arg) : New function. Avoid cross block motion of
 	function argument through adding dependency from the first non-jump
 	insn in bb.
-	(ix86_dependencies_evaluation_hook) : New function. Hook for pre-reload schedule:
-	avoid motion of function arguments passed in passed in likely spilled
-	HW registers.
-	(ix86_adjust_priority) : New function. Hook for pre-reload schedule: set priority
-	of moves from likely spilled HW registers to maximum to schedule them
-	as soon as possible.
-	(ix86_sched_init_global): Do not perform multipass scheduling for pre-reload
-	schedule to save compile time.
+	(ix86_dependencies_evaluation_hook) : New function. Hook for
+	pre-reload schedule: avoid motion of function arguments passed in
+	likely spilled HW registers.
+	(ix86_adjust_priority) : New function. Hook for pre-reload schedule:
+	set priority of moves from likely spilled HW registers to maximum to
+	schedule them as soon as possible.
+	(ix86_sched_init_global): Do not perform multipass scheduling for
+	pre-reload schedule to save compile time.
 
 2012-10-04  Uros Bizjak  <ubizjak@gmail.com>
 
