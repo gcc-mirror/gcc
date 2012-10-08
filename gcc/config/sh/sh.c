@@ -3610,6 +3610,10 @@ static int
 sh_address_cost (rtx x, enum machine_mode mode,
 		 addr_space_t as ATTRIBUTE_UNUSED, bool speed ATTRIBUTE_UNUSED)
 {
+  /* 'GBR + 0'.  Account one more because of R0 restriction.  */
+  if (REG_P (x) && REGNO (x) == GBR_REG)
+    return 2;
+
   /* Simple reg, post-inc, pre-dec addressing.  */
   if (REG_P (x) || GET_CODE (x) == POST_INC || GET_CODE (x) == PRE_DEC)
     return 1;
@@ -3618,6 +3622,11 @@ sh_address_cost (rtx x, enum machine_mode mode,
   if (GET_CODE (x) == PLUS
       && REG_P (XEXP (x, 0)) && CONST_INT_P (XEXP (x, 1)))
     {
+      /* 'GBR + disp'.  Account one more because of R0 restriction.  */
+      if (REGNO (XEXP (x, 0)) == GBR_REG
+	  && gbr_displacement (XEXP (x, 1), mode))
+	return 2;
+
       const HOST_WIDE_INT offset = INTVAL (XEXP (x, 1));
 
       if (offset == 0)
@@ -10185,11 +10194,16 @@ sh_legitimate_index_p (enum machine_mode mode, rtx op, bool consider_sh2a,
 	  REG+disp
 	  REG+r0
 	  REG++
-	  --REG  */
+	  --REG
+	  GBR
+	  GBR+disp  */
 
 static bool
 sh_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
 {
+  if (REG_P (x) && REGNO (x) == GBR_REG)
+    return true;
+
   if (MAYBE_BASE_REGISTER_RTX_P (x, strict))
     return true;
   else if ((GET_CODE (x) == POST_INC || GET_CODE (x) == PRE_DEC)
@@ -10201,6 +10215,9 @@ sh_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
     {
       rtx xop0 = XEXP (x, 0);
       rtx xop1 = XEXP (x, 1);
+
+      if (REG_P (xop0) && REGNO (xop0) == GBR_REG)
+	return gbr_displacement (xop1, mode);
 
       if (GET_MODE_SIZE (mode) <= 8
 	  && MAYBE_BASE_REGISTER_RTX_P (xop0, strict)
@@ -13014,6 +13031,17 @@ sh_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
 {
   enum reg_class rclass = (enum reg_class) rclass_i;
 
+  if (MEM_P (x) && GET_CODE (XEXP (x, 0)) == PLUS
+      && REG_P (XEXP (XEXP (x, 0), 0))
+      && REGNO (XEXP (XEXP (x, 0), 0)) == GBR_REG)
+    return rclass == R0_REGS ? NO_REGS : R0_REGS;
+
+  if (MEM_P (x) && REG_P (XEXP (x, 0)) && REGNO (XEXP (x, 0)) == GBR_REG)
+    return rclass == R0_REGS ? NO_REGS : R0_REGS;
+
+  if (REG_P (x) && REGNO (x) == GBR_REG)
+    return NO_REGS;
+
   if (in_p)
     {
       if (REGCLASS_HAS_FP_REG (rclass)
@@ -13246,6 +13274,152 @@ sh_can_use_simple_return_p (void)
    return false;
 
   return true;
+}
+
+/*------------------------------------------------------------------------------
+  Address mode optimization support code
+*/
+
+typedef HOST_WIDE_INT disp_t;
+static const disp_t MIN_DISP = HOST_WIDE_INT_MIN;
+static const disp_t MAX_DISP = HOST_WIDE_INT_MAX;
+static const disp_t INVALID_DISP = MAX_DISP;
+
+/* A memory reference which is described by a base register and a
+   displacement.  */
+class base_reg_disp
+{
+public:
+  base_reg_disp (rtx br, disp_t d);
+
+  bool is_reg (void) const;
+  bool is_disp (void) const;
+  rtx reg (void) const;
+  disp_t disp (void) const;
+
+private:
+  rtx reg_;
+  disp_t disp_;
+};
+
+inline
+base_reg_disp::base_reg_disp (rtx br, disp_t d)
+: reg_ (br), disp_ (d)
+{
+}
+ 
+inline bool
+base_reg_disp::is_reg (void) const
+{
+  return reg_ != NULL_RTX && disp_ != INVALID_DISP;
+}
+
+inline bool
+base_reg_disp::is_disp (void) const
+{
+  return reg_ == NULL_RTX && disp_ != INVALID_DISP;
+}
+
+inline rtx
+base_reg_disp::reg (void) const
+{
+  return reg_;
+}
+
+inline disp_t
+base_reg_disp::disp (void) const
+{
+  return disp_;
+}
+
+/* Find the base register and calculate the displacement for a given
+   address rtx 'x'.
+   This is done by walking the insn list backwards and following SET insns
+   that set the value of the specified reg 'x'.  */
+static base_reg_disp
+sh_find_base_reg_disp (rtx insn, rtx x, disp_t disp = 0, rtx base_reg = NULL)
+{
+  if (REG_P (x))
+    {
+      if (REGNO (x) == GBR_REG)
+	return base_reg_disp (x, disp);
+
+      /* We've reached a hard-reg.  This is probably the point where
+	 function args are copied to pseudos.  Do not go any further and
+	 stick to the pseudo.  If the original mem addr was in a hard reg
+	 from the beginning, it will become the base reg.  */
+      if (REGNO (x) < FIRST_PSEUDO_REGISTER)
+	return base_reg_disp (base_reg != NULL ? base_reg : x, disp);
+
+      /* Try to find the previous insn that sets the reg.  */
+      for (rtx i = prev_nonnote_insn (insn); i != NULL;
+	   i = prev_nonnote_insn (i))
+	{
+	  if (!NONJUMP_INSN_P (i))
+	    continue;
+
+	  rtx p = PATTERN (i);
+	  if (p != NULL && GET_CODE (p) == SET && REG_P (XEXP (p, 0))
+	      && REGNO (XEXP (p, 0)) == REGNO (x))
+	    {
+	      /* If the recursion can't find out any more details about the
+		 source of the set, then this reg becomes our new base reg.  */
+	      return sh_find_base_reg_disp (i, XEXP (p, 1), disp, XEXP (p, 0));
+	    }
+	}
+
+    /* When here, no previous insn was found that sets the reg.
+       The input reg is already the base reg.  */
+    return base_reg_disp (x, disp);
+  }
+
+  else if (GET_CODE (x) == PLUS)
+    {
+      base_reg_disp left_val = sh_find_base_reg_disp (insn, XEXP (x, 0));
+      base_reg_disp right_val = sh_find_base_reg_disp (insn, XEXP (x, 1));
+
+      /* Either left or right val must be a reg.
+	 We don't handle the case of 'reg + reg' here.  */
+      if (left_val.is_reg () && right_val.is_disp ())
+	return base_reg_disp (left_val.reg (), left_val.disp ()
+					       + right_val.disp () + disp);
+      else if (right_val.is_reg () && left_val.is_disp ())
+	return base_reg_disp (right_val.reg (), right_val.disp ()
+						+ left_val.disp () + disp);
+      else
+	return base_reg_disp (base_reg, disp);
+    }
+
+  else if (CONST_INT_P (x))
+    return base_reg_disp (NULL, disp + INTVAL (x));
+
+  /* Didn't find anything useful.  */
+  return base_reg_disp (base_reg, disp);
+}
+
+/* Given an insn and a memory operand, try to find an equivalent GBR
+   based memory address and return the corresponding new memory address.
+   Return NULL_RTX if not found.  */
+rtx
+sh_find_equiv_gbr_addr (rtx insn, rtx mem)
+{
+  if (!MEM_P (mem))
+    return NULL_RTX;
+
+  /* Leave post/pre inc/dec or any other side effect addresses alone.  */
+  if (side_effects_p (XEXP (mem, 0)))
+    return NULL_RTX;
+
+  base_reg_disp gbr_disp = sh_find_base_reg_disp (insn, XEXP (mem, 0));
+
+  if (gbr_disp.is_reg () && REGNO (gbr_disp.reg ()) == GBR_REG)
+    {
+      rtx disp = GEN_INT (gbr_disp.disp ());
+      if (gbr_displacement (disp, GET_MODE (mem)))
+	return gen_rtx_PLUS (SImode, gen_rtx_REG (SImode, GBR_REG), disp);
+    }
+
+  return NULL_RTX;
 }
 
 #include "gt-sh.h"

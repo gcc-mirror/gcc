@@ -161,7 +161,7 @@ extern bool sh_vector_mode_supported_p (enum machine_mode);
 extern bool sh_cfun_trap_exit_p (void);
 extern void sh_canonicalize_comparison (enum rtx_code&, rtx&, rtx&,
 					enum machine_mode mode = VOIDmode);
-
+extern rtx sh_find_equiv_gbr_addr (rtx cur_insn, rtx mem);
 #endif /* RTX_CODE */
 
 extern void sh_cpu_cpp_builtins (cpp_reader* pfile);
