@@ -1,3 +1,8 @@
+2012-10-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/54858
+	* tree.c (cp_tree_equal): Handle FIELD_DECL.
+
 2012-10-08  Jason Merrill  <jason@redhat.com>
 
 	Allow dynamic initialization of thread_locals.
