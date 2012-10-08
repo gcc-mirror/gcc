@@ -1216,25 +1216,105 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "V4DF")])
 
-(define_insn "sse3_h<plusminus_insn>v2df3"
+(define_expand "sse3_haddv2df3"
+  [(set (match_operand:V2DF 0 "register_operand")
+	(vec_concat:V2DF
+	  (plus:DF
+	    (vec_select:DF
+	      (match_operand:V2DF 1 "register_operand")
+	      (parallel [(const_int 0)]))
+	    (vec_select:DF (match_dup 1) (parallel [(const_int 1)])))
+	  (plus:DF
+	    (vec_select:DF
+	      (match_operand:V2DF 2 "nonimmediate_operand")
+	      (parallel [(const_int 0)]))
+	    (vec_select:DF (match_dup 2) (parallel [(const_int 1)])))))]
+  "TARGET_SSE3")
+
+(define_insn "*sse3_haddv2df3"
   [(set (match_operand:V2DF 0 "register_operand" "=x,x")
 	(vec_concat:V2DF
-	  (plusminus:DF
+	  (plus:DF
+	    (vec_select:DF
+	      (match_operand:V2DF 1 "register_operand" "0,x")
+	      (parallel [(match_operand:SI 3 "const_0_to_1_operand")]))
+	    (vec_select:DF
+	      (match_dup 1)
+	      (parallel [(match_operand:SI 4 "const_0_to_1_operand")])))
+	  (plus:DF
+	    (vec_select:DF
+	      (match_operand:V2DF 2 "nonimmediate_operand" "xm,xm")
+	      (parallel [(match_operand:SI 5 "const_0_to_1_operand")]))
+	    (vec_select:DF
+	      (match_dup 2)
+	      (parallel [(match_operand:SI 6 "const_0_to_1_operand")])))))]
+  "TARGET_SSE3
+   && INTVAL (operands[3]) != INTVAL (operands[4])
+   && INTVAL (operands[5]) != INTVAL (operands[6])"
+  "@
+   haddpd\t{%2, %0|%0, %2}
+   vhaddpd\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "isa" "noavx,avx")
+   (set_attr "type" "sseadd")
+   (set_attr "prefix" "orig,vex")
+   (set_attr "mode" "V2DF")])
+
+(define_insn "sse3_hsubv2df3"
+  [(set (match_operand:V2DF 0 "register_operand" "=x,x")
+	(vec_concat:V2DF
+	  (minus:DF
 	    (vec_select:DF
 	      (match_operand:V2DF 1 "register_operand" "0,x")
 	      (parallel [(const_int 0)]))
 	    (vec_select:DF (match_dup 1) (parallel [(const_int 1)])))
-	  (plusminus:DF
+	  (minus:DF
 	    (vec_select:DF
 	      (match_operand:V2DF 2 "nonimmediate_operand" "xm,xm")
 	      (parallel [(const_int 0)]))
 	    (vec_select:DF (match_dup 2) (parallel [(const_int 1)])))))]
   "TARGET_SSE3"
   "@
-   h<plusminus_mnemonic>pd\t{%2, %0|%0, %2}
-   vh<plusminus_mnemonic>pd\t{%2, %1, %0|%0, %1, %2}"
+   hsubpd\t{%2, %0|%0, %2}
+   vhsubpd\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sseadd")
+   (set_attr "prefix" "orig,vex")
+   (set_attr "mode" "V2DF")])
+
+(define_insn "*sse3_haddv2df3_low"
+  [(set (match_operand:DF 0 "register_operand" "=x,x")
+	(plus:DF
+	  (vec_select:DF
+	    (match_operand:V2DF 1 "register_operand" "0,x")
+	    (parallel [(match_operand:SI 2 "const_0_to_1_operand")]))
+	  (vec_select:DF
+	    (match_dup 1)
+	    (parallel [(match_operand:SI 3 "const_0_to_1_operand")]))))]
+  "TARGET_SSE3
+   && INTVAL (operands[2]) != INTVAL (operands[3])"
+  "@
+   haddpd\t{%0, %0|%0, %0}
+   vhaddpd\t{%1, %1, %0|%0, %1, %1}"
+  [(set_attr "isa" "noavx,avx")
+   (set_attr "type" "sseadd1")
+   (set_attr "prefix" "orig,vex")
+   (set_attr "mode" "V2DF")])
+
+(define_insn "*sse3_hsubv2df3_low"
+  [(set (match_operand:DF 0 "register_operand" "=x,x")
+	(minus:DF
+	  (vec_select:DF
+	    (match_operand:V2DF 1 "register_operand" "0,x")
+	    (parallel [(const_int 0)]))
+	  (vec_select:DF
+	    (match_dup 1)
+	    (parallel [(const_int 1)]))))]
+  "TARGET_SSE3"
+  "@
+   hsubpd\t{%0, %0|%0, %0}
+   vhsubpd\t{%1, %1, %0|%0, %1, %1}"
+  [(set_attr "isa" "noavx,avx")
+   (set_attr "type" "sseadd1")
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "V2DF")])
 

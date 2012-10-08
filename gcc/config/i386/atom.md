@@ -596,7 +596,7 @@
 ;; no memory simple
 (define_insn_reservation  "atom_sseadd" 5
   (and (eq_attr "cpu" "atom")
-       (and (eq_attr "type" "sseadd")
+       (and (eq_attr "type" "sseadd,sseadd1")
             (and (eq_attr "memory" "none")
                  (and (eq_attr "mode" "!V2DF")
                       (eq_attr "atom_unit" "!complex")))))
@@ -605,7 +605,7 @@
 ;; memory simple
 (define_insn_reservation  "atom_sseadd_mem" 5
   (and (eq_attr "cpu" "atom")
-       (and (eq_attr "type" "sseadd")
+       (and (eq_attr "type" "sseadd,sseadd1")
             (and (eq_attr "memory" "!none")
                  (and (eq_attr "mode" "!V2DF")
                       (eq_attr "atom_unit" "!complex")))))
@@ -614,7 +614,7 @@
 ;; maxps, minps, *pd, hadd, hsub
 (define_insn_reservation  "atom_sseadd_3" 8
   (and (eq_attr "cpu" "atom")
-       (and (eq_attr "type" "sseadd")
+       (and (eq_attr "type" "sseadd,sseadd1")
             (ior (eq_attr "mode" "V2DF") (eq_attr "atom_unit" "complex"))))
   "atom-complex, atom-all-eu*7")
 
