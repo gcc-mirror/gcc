@@ -696,6 +696,12 @@ d_dump (struct demangle_component *dc, int indent)
     case DEMANGLE_COMPONENT_PACK_EXPANSION:
       printf ("pack expansion\n");
       break;
+    case DEMANGLE_COMPONENT_TLS_INIT:
+      printf ("tls init function\n");
+      break;
+    case DEMANGLE_COMPONENT_TLS_WRAPPER:
+      printf ("tls wrapper function\n");
+      break;
     }
 
   d_dump (d_left (dc), indent + 2);
@@ -832,6 +838,8 @@ d_make_comp (struct d_info *di, enum demangle_component_type type,
     case DEMANGLE_COMPONENT_COVARIANT_THUNK:
     case DEMANGLE_COMPONENT_JAVA_CLASS:
     case DEMANGLE_COMPONENT_GUARD:
+    case DEMANGLE_COMPONENT_TLS_INIT:
+    case DEMANGLE_COMPONENT_TLS_WRAPPER:
     case DEMANGLE_COMPONENT_REFTEMP:
     case DEMANGLE_COMPONENT_HIDDEN_ALIAS:
     case DEMANGLE_COMPONENT_TRANSACTION_CLONE:
@@ -1866,6 +1874,14 @@ d_special_name (struct d_info *di)
 	case 'J':
 	  return d_make_comp (di, DEMANGLE_COMPONENT_JAVA_CLASS,
 			      cplus_demangle_type (di), NULL);
+
+	case 'H':
+	  return d_make_comp (di, DEMANGLE_COMPONENT_TLS_INIT,
+			      d_name (di), NULL);
+
+	case 'W':
+	  return d_make_comp (di, DEMANGLE_COMPONENT_TLS_WRAPPER,
+			      d_name (di), NULL);
 
 	default:
 	  return NULL;
@@ -4069,6 +4085,16 @@ d_print_comp (struct d_print_info *dpi, int options,
 
     case DEMANGLE_COMPONENT_GUARD:
       d_append_string (dpi, "guard variable for ");
+      d_print_comp (dpi, options, d_left (dc));
+      return;
+
+    case DEMANGLE_COMPONENT_TLS_INIT:
+      d_append_string (dpi, "TLS init function for ");
+      d_print_comp (dpi, options, d_left (dc));
+      return;
+
+    case DEMANGLE_COMPONENT_TLS_WRAPPER:
+      d_append_string (dpi, "TLS wrapper function for ");
       d_print_comp (dpi, options, d_left (dc));
       return;
 

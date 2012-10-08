@@ -1,5 +1,23 @@
 2012-10-08  Jason Merrill  <jason@redhat.com>
 
+	Allow dynamic initialization of thread_locals.
+	* decl.c: Define tls_aggregates.
+	(expand_static_init): Remove sorry.  Add to tls_aggregates.
+	* cp-tree.h: Declare tls_aggregates.
+	* call.c (set_up_extended_ref_temp): Add to tls_aggregates.
+	* decl2.c (var_needs_tls_wrapper): New.
+	(var_defined_without_dynamic_init): New.
+	(get_tls_init_fn, get_tls_wrapper_fn): New.
+	(generate_tls_wrapper, handle_tls_init): New.
+	(cp_write_global_declarations): Call handle_tls_init and
+	enerate_tls_wrapper.
+	* mangle.c (write_guarded_var_name): Split out from..
+	(mangle_guard_variable): ...here.
+	(mangle_tls_init_fn, mangle_tls_wrapper_fn): Use it.
+	(decl_tls_wrapper_p): New.
+	* semantics.c (finish_id_expression): Replace use of thread_local
+	variable with a call to its wrapper.
+
 	* decl.c (get_thread_atexit_node): New.
 	(register_dtor_fn): Use it for TLS.
 

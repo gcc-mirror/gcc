@@ -169,6 +169,9 @@ tree global_scope_name;
    in the TREE_PURPOSE slot.  */
 tree static_aggregates;
 
+/* Like static_aggregates, but for thread_local variables.  */
+tree tls_aggregates;
+
 /* -- end of C++ */
 
 /* A node for the integer constant 2.  */
@@ -6838,16 +6841,6 @@ expand_static_init (tree decl, tree init)
       return;
     }
 
-  if (DECL_THREAD_LOCAL_P (decl) && !DECL_FUNCTION_SCOPE_P (decl))
-    {
-      /* We haven't implemented dynamic initialization of non-local
-	 thread-local storage yet.  FIXME transform to singleton
-	 function.  */
-      sorry ("thread-local variable %qD with dynamic initialization outside "
-	     "function scope", decl);
-      return;
-    }
-
   if (DECL_FUNCTION_SCOPE_P (decl))
     {
       /* Emit code to perform this initialization but once.  */
@@ -6976,6 +6969,8 @@ expand_static_init (tree decl, tree init)
 	  finish_if_stmt (if_stmt);
 	}
     }
+  else if (DECL_THREAD_LOCAL_P (decl))
+    tls_aggregates = tree_cons (init, decl, tls_aggregates);
   else
     static_aggregates = tree_cons (init, decl, static_aggregates);
 }

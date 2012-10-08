@@ -3270,7 +3270,17 @@ finish_id_expression (tree id_expression,
 	  *non_integral_constant_expression_p = true;
 	}
 
-      if (scope)
+      tree wrap;
+      if (TREE_CODE (decl) == VAR_DECL
+	  && !cp_unevaluated_operand
+	  && DECL_THREAD_LOCAL_P (decl)
+	  && (wrap = get_tls_wrapper_fn (decl)))
+	{
+	  /* Replace an evaluated use of the thread_local variable with
+	     a call to its wrapper.  */
+	  decl = build_cxx_call (wrap, 0, NULL, tf_warning_or_error);
+	}
+      else if (scope)
 	{
 	  decl = (adjust_result_of_qualified_name_lookup
 		  (decl, scope, current_nonlambda_class_type()));
