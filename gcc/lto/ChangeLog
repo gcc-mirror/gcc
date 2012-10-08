@@ -1,3 +1,9 @@
+2012-10-08  Jan Hubicka  <jh@suse.cz>
+
+	* lto/lto.c (remember_with_vars): Also fixup INTEGER_CST.
+	(fixup_integer_cst): New functoin.
+	(lto_ft_type): Fixup BASETYPE of methods and offsets.
+
 2012-10-07  Jan Hubicka  <jh@suse.cz>
 
 	* lto.c (read_cgraph_and_symbols): Release type merging hash early;
