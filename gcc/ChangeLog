@@ -1,3 +1,11 @@
+2012-10-08  Marek Polacek  <polacek@redhat.com>
+
+	PR debug/54831
+	* var-tracking.c (vt_add_function_parameter): Use condition instead
+	of gcc_assert.
+
+	* testsuite/g++.dg/debug/pr54831.C: New test.
+
 2012-10-08  Dehao Chen  <dehao@google.com>
 
 	* predict.c (predict_loops): Predict for short-circuit conditions.
