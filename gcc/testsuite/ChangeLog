@@ -1,3 +1,9 @@
+2012-10-08  Dehao Chen  <dehao@google.com>
+
+	* g++.dg/predict-loop-exit-1.C: New.
+	* g++.dg/predict-loop-exit-2.C: New.
+	* g++.dg/predict-loop-exit-3.C: New.
+
 2012-10-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.target/i386/pr54445-1.c: Require tls_runtime, add tls options.

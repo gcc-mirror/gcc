@@ -1,3 +1,8 @@
+2012-10-08  Dehao Chen  <dehao@google.com>
+
+	* predict.c (predict_loops): Predict for short-circuit conditions.
+	(predict_extra_loop_exits): New Function.
+
 2012-10-08  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* bitmap.h (bitmap_and_into): Update prototype.
