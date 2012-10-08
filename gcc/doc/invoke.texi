@@ -505,7 +505,7 @@ Objective-C and Objective-C++ Dialects}.
 
 @emph{AVR Options}
 @gccoptlist{-mmcu=@var{mcu} -maccumulate-args -mbranch-cost=@var{cost} @gol
--mcall-prologues -mint8 -mno-interrupts -mrelax -mshort-calls @gol
+-mcall-prologues -mint8 -mno-interrupts -mrelax @gol
 -mstrict-X -mtiny-stack}
 
 @emph{Blackfin Options}
@@ -11296,13 +11296,6 @@ differ from instructions in the assembler code.
 Relaxing must be turned on if linker stubs are needed, see the
 section on @code{EIND} and linker stubs below.
 
-@item -mshort-calls
-@opindex mshort-calls
-Use @code{RCALL}/@code{RJMP} instructions even on devices with
-16@tie{}KiB or more of program memory, i.e.@: on devices that
-have the @code{CALL} and @code{JMP} instructions.
-See also the @code{-mrelax} command line option.
-
 @item -msp8
 @opindex msp8
 Treat the stack pointer register as an 8-bit register,
@@ -11565,7 +11558,7 @@ The device has a hardware multiplier.
 @item __AVR_HAVE_JMP_CALL__
 The device has the @code{JMP} and @code{CALL} instructions.
 This is the case for devices with at least 16@tie{}KiB of program
-memory and if @code{-mshort-calls} is not set.
+memory.
 
 @item __AVR_HAVE_EIJMP_EICALL__
 @item __AVR_3_BYTE_PC__

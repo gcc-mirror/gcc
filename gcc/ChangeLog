@@ -1,3 +1,11 @@
+2012-10-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/54854
+	* doc/invoke.texi (AVR Options): Remove -mshort-calls.
+	* config/avr/avr.opt (-mshort-calls): Remove option.
+	* config/avr/avr.h (AVR_HAVE_JMP_CALL): Don't depend on
+	TARGET_SHORT_CALLS.
+
 2012-10-08  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/54685
