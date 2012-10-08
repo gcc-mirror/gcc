@@ -8860,8 +8860,14 @@ set_up_extended_ref_temp (tree decl, tree expr, VEC(tree,gc) **cleanups,
     {
       rest_of_decl_compilation (var, /*toplev=*/1, at_eof);
       if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
-	static_aggregates = tree_cons (NULL_TREE, var,
-				       static_aggregates);
+	{
+	  if (DECL_THREAD_LOCAL_P (var))
+	    tls_aggregates = tree_cons (NULL_TREE, var,
+					tls_aggregates);
+	  else
+	    static_aggregates = tree_cons (NULL_TREE, var,
+					   static_aggregates);
+	}
     }
 
   *initp = init;

@@ -4385,6 +4385,8 @@ extern int at_eof;
    in the TREE_VALUE slot and the initializer is stored in the
    TREE_PURPOSE slot.  */
 extern GTY(()) tree static_aggregates;
+/* Likewise, for thread local storage.  */
+extern GTY(()) tree tls_aggregates;
 
 enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, TYPENAME_FLAG };
 
@@ -5197,6 +5199,7 @@ extern tree cp_build_parm_decl			(tree, tree);
 extern tree get_guard				(tree);
 extern tree get_guard_cond			(tree);
 extern tree set_guard				(tree);
+extern tree get_tls_wrapper_fn			(tree);
 extern void mark_needed				(tree);
 extern bool decl_needed_p			(tree);
 extern void note_vague_linkage_fn		(tree);
@@ -5992,6 +5995,9 @@ extern tree mangle_ctor_vtbl_for_type		(tree, tree);
 extern tree mangle_thunk			(tree, int, tree, tree);
 extern tree mangle_conv_op_name_for_type	(tree);
 extern tree mangle_guard_variable		(tree);
+extern tree mangle_tls_init_fn			(tree);
+extern tree mangle_tls_wrapper_fn		(tree);
+extern bool decl_tls_wrapper_p			(tree);
 extern tree mangle_ref_init_variable		(tree);
 
 /* in dump.c */

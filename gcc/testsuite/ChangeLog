@@ -1,5 +1,25 @@
 2012-10-08  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/gomp/tls-5.C: New.
+	* g++.dg/gomp/tls-wrap1.C: New.
+	* g++.dg/gomp/tls-wrap2.C: New.
+	* g++.dg/gomp/tls-wrap3.C: New.
+	* g++.dg/gomp/tls-wrap4.C: New.
+	* g++.dg/gomp/tls-wrapper-cse.C: New.
+	* g++.dg/tls/thread_local-cse.C: New.
+	* g++.dg/tls/thread_local-order1.C: New.
+	* g++.dg/tls/thread_local-order2.C: New.
+	* g++.dg/tls/thread_local-wrap1.C: New.
+	* g++.dg/tls/thread_local-wrap2.C: New.
+	* g++.dg/tls/thread_local-wrap3.C: New.
+	* g++.dg/tls/thread_local-wrap4.C: New.
+	* g++.dg/tls/thread_local2g.C: New.
+	* g++.dg/tls/thread_local3g.C: New.
+	* g++.dg/tls/thread_local4g.C: New.
+	* g++.dg/tls/thread_local5g.C: New.
+	* g++.dg/tls/thread_local6g.C: New.
+	* g++.dg/tls/thread_local7g.C: New.
+
 	* g++.dg/tls/thread_local3.C: New.
 	* g++.dg/tls/thread_local4.C: New.
 	* g++.dg/tls/thread_local5.C: New.

@@ -1,3 +1,8 @@
+2012-10-08  Jason Merrill  <jason@redhat.com>
+
+	* demangle.h (enum demangle_component_type): Add
+	DEMANGLE_COMPONENT_TLS_INIT and DEMANGLE_COMPONENT_TLS_WRAPPER.
+
 2012-09-18  Florian Weimer  <fweimer@redhat.com>
 
 	PR other/54411
