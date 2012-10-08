@@ -1,5 +1,13 @@
 2012-10-08  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/54825
+	* tree-ssa-sccvn.c (vn_nary_length_from_stmt): Handle BIT_FIELD_REF.
+	(init_vn_nary_op_from_stmt): Likewise.
+	* tree-ssa-pre.c (compute_avail): Use vn_nary_op_lookup_stmt.
+	* tree-ssa-sccvn.h (sizeof_vn_nary_op): Avoid overflow.
+
+2012-10-08  Richard Guenther  <rguenther@suse.de>
+
 	* tree-ssa-pre.c (postorder_num): New global.
 	(compute_antic): Initialize all blocks and adjust for
 	generic postorder.
