@@ -1,3 +1,7 @@
+2012-10-08  Jason Merrill  <jason@redhat.com>
+
+	* c-common.c (c_common_reswords): Add thread_local.
+
 2012-10-08  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/53528 C++11 attribute support

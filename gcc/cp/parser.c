@@ -2248,12 +2248,12 @@ static tree cp_parser_trait_expr
 static bool cp_parser_declares_only_class_p
   (cp_parser *);
 static void cp_parser_set_storage_class
-  (cp_parser *, cp_decl_specifier_seq *, enum rid, location_t);
+  (cp_parser *, cp_decl_specifier_seq *, enum rid, cp_token *);
 static void cp_parser_set_decl_spec_type
-  (cp_decl_specifier_seq *, tree, location_t, bool);
+  (cp_decl_specifier_seq *, tree, cp_token *, bool);
 static void set_and_check_decl_spec_loc
   (cp_decl_specifier_seq *decl_specs,
-   cp_decl_spec ds, source_location location);
+   cp_decl_spec ds, cp_token *);
 static bool cp_parser_friend_p
   (const cp_decl_specifier_seq *);
 static void cp_parser_required_error
@@ -10821,7 +10821,7 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 
               /* Set the storage class anyway.  */
               cp_parser_set_storage_class (parser, decl_specs, RID_AUTO,
-					   token->location);
+					   token);
             }
           else
 	    /* C++0x auto type-specifier.  */
@@ -10835,7 +10835,7 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 	  /* Consume the token.  */
 	  cp_lexer_consume_token (parser->lexer);
           cp_parser_set_storage_class (parser, decl_specs, token->keyword,
-				       token->location);
+				       token);
 	  break;
 	case RID_THREAD:
 	  /* Consume the token.  */
@@ -10855,7 +10855,7 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 	error ("decl-specifier invalid in condition");
 
       if (ds != ds_last)
-	set_and_check_decl_spec_loc (decl_specs, ds, token->location);
+	set_and_check_decl_spec_loc (decl_specs, ds, token);
 
       /* Constructors are a special case.  The `S' in `S()' is not a
 	 decl-specifier; it is the beginning of the declarator.  */
@@ -11004,7 +11004,7 @@ cp_parser_function_specifier_opt (cp_parser* parser,
   switch (token->keyword)
     {
     case RID_INLINE:
-      set_and_check_decl_spec_loc (decl_specs, ds_inline, token->location);
+      set_and_check_decl_spec_loc (decl_specs, ds_inline, token);
       break;
 
     case RID_VIRTUAL:
@@ -11013,11 +11013,11 @@ cp_parser_function_specifier_opt (cp_parser* parser,
 	 A member function template shall not be virtual.  */
       if (PROCESSING_REAL_TEMPLATE_DECL_P ())
 	error_at (token->location, "templates may not be %<virtual%>");
-      set_and_check_decl_spec_loc (decl_specs, ds_virtual, token->location);
+      set_and_check_decl_spec_loc (decl_specs, ds_virtual, token);
       break;
 
     case RID_EXPLICIT:
-      set_and_check_decl_spec_loc (decl_specs, ds_explicit, token->location);
+      set_and_check_decl_spec_loc (decl_specs, ds_explicit, token);
       break;
 
     default:
@@ -13525,7 +13525,7 @@ cp_parser_type_specifier (cp_parser* parser,
 	  if (decl_specs)
 	    cp_parser_set_decl_spec_type (decl_specs,
 					  type_spec,
-					  token->location,
+					  token,
 					  /*type_definition_p=*/true);
 	  return type_spec;
 	}
@@ -13554,7 +13554,7 @@ cp_parser_type_specifier (cp_parser* parser,
 	  if (decl_specs)
 	    cp_parser_set_decl_spec_type (decl_specs,
 					  type_spec,
-					  token->location,
+					  token,
 					  /*type_definition_p=*/true);
 	  return type_spec;
 	}
@@ -13576,7 +13576,7 @@ cp_parser_type_specifier (cp_parser* parser,
       if (decl_specs)
 	cp_parser_set_decl_spec_type (decl_specs,
 				      type_spec,
-				      token->location,
+				      token,
 				      /*type_definition_p=*/false);
       return type_spec;
 
@@ -13612,7 +13612,7 @@ cp_parser_type_specifier (cp_parser* parser,
     {
       if (decl_specs)
 	{
-	  set_and_check_decl_spec_loc (decl_specs, ds, token->location);
+	  set_and_check_decl_spec_loc (decl_specs, ds, token);
 	  decl_specs->any_specifiers_p = true;
 	}
       return cp_lexer_consume_token (parser->lexer)->u.value;
@@ -13703,7 +13703,7 @@ cp_parser_simple_type_specifier (cp_parser* parser,
       type = boolean_type_node;
       break;
     case RID_SHORT:
-      set_and_check_decl_spec_loc (decl_specs, ds_short, token->location);
+      set_and_check_decl_spec_loc (decl_specs, ds_short, token);
       type = short_integer_type_node;
       break;
     case RID_INT:
@@ -13720,15 +13720,15 @@ cp_parser_simple_type_specifier (cp_parser* parser,
       break;
     case RID_LONG:
       if (decl_specs)
-	set_and_check_decl_spec_loc (decl_specs, ds_long, token->location);
+	set_and_check_decl_spec_loc (decl_specs, ds_long, token);
       type = long_integer_type_node;
       break;
     case RID_SIGNED:
-      set_and_check_decl_spec_loc (decl_specs, ds_signed, token->location);
+      set_and_check_decl_spec_loc (decl_specs, ds_signed, token);
       type = integer_type_node;
       break;
     case RID_UNSIGNED:
-      set_and_check_decl_spec_loc (decl_specs, ds_unsigned, token->location);
+      set_and_check_decl_spec_loc (decl_specs, ds_unsigned, token);
       type = unsigned_type_node;
       break;
     case RID_FLOAT:
@@ -13766,7 +13766,7 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 
       if (decl_specs)
 	cp_parser_set_decl_spec_type (decl_specs, type,
-				      token->location,
+				      token,
 				      /*type_definition_p=*/false);
 
       return type;
@@ -13775,7 +13775,7 @@ cp_parser_simple_type_specifier (cp_parser* parser,
       type = cp_parser_trait_expr (parser, RID_UNDERLYING_TYPE);
       if (decl_specs)
 	cp_parser_set_decl_spec_type (decl_specs, type,
-				      token->location,
+				      token,
 				      /*type_definition_p=*/false);
 
       return type;
@@ -13785,7 +13785,7 @@ cp_parser_simple_type_specifier (cp_parser* parser,
       type = cp_parser_trait_expr (parser, token->keyword);
       if (decl_specs)
        cp_parser_set_decl_spec_type (decl_specs, type,
-                                     token->location,
+                                     token,
                                      /*type_definition_p=*/false);
       return type;
     default:
@@ -13800,7 +13800,7 @@ cp_parser_simple_type_specifier (cp_parser* parser,
       type = token->u.value;
       if (decl_specs)
 	cp_parser_set_decl_spec_type (decl_specs, type,
-				      token->location,
+				      token,
 				      /*type_definition_p=*/false);
       cp_lexer_consume_token (parser->lexer);
       return type;
@@ -13817,7 +13817,7 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 	      && token->keyword != RID_LONG))
 	cp_parser_set_decl_spec_type (decl_specs,
 				      type,
-				      token->location,
+				      token,
 				      /*type_definition_p=*/false);
       if (decl_specs)
 	decl_specs->any_specifiers_p = true;
@@ -13894,7 +13894,7 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 	type = NULL_TREE;
       if (type && decl_specs)
 	cp_parser_set_decl_spec_type (decl_specs, type,
-				      token->location,
+				      token,
 				      /*type_definition_p=*/false);
     }
 
@@ -15245,21 +15245,24 @@ static tree
 cp_parser_alias_declaration (cp_parser* parser)
 {
   tree id, type, decl, pushed_scope = NULL_TREE, attributes;
-  location_t id_location, using_location, attrs_location = 0;
+  location_t id_location;
   cp_declarator *declarator;
   cp_decl_specifier_seq decl_specs;
   bool member_p;
   const char *saved_message = NULL;
 
   /* Look for the `using' keyword.  */
-  using_location = cp_lexer_peek_token (parser->lexer)->location;
-  cp_parser_require_keyword (parser, RID_USING, RT_USING);
+  cp_token *using_token
+    = cp_parser_require_keyword (parser, RID_USING, RT_USING);
+  if (using_token == NULL)
+    return error_mark_node;
+
   id_location = cp_lexer_peek_token (parser->lexer)->location;
   id = cp_parser_identifier (parser);
   if (id == error_mark_node)
     return error_mark_node;
 
-  attrs_location = cp_lexer_peek_token (parser->lexer)->location;
+  cp_token *attrs_token = cp_lexer_peek_token (parser->lexer);
   attributes = cp_parser_attributes_opt (parser);
   if (attributes == error_mark_node)
     return error_mark_node;
@@ -15316,14 +15319,14 @@ cp_parser_alias_declaration (cp_parser* parser)
       decl_specs.attributes = attributes;
       set_and_check_decl_spec_loc (&decl_specs,
 				   ds_attribute,
-				   attrs_location);
+				   attrs_token);
     }
   set_and_check_decl_spec_loc (&decl_specs,
 			       ds_typedef,
-			       using_location);
+			       using_token);
   set_and_check_decl_spec_loc (&decl_specs,
 			       ds_alias,
-			       using_location);
+			       using_token);
 
   declarator = make_id_declarator (NULL_TREE, id, sfk_none);
   declarator->id_loc = id_location;
@@ -22585,13 +22588,13 @@ static void
 cp_parser_set_storage_class (cp_parser *parser,
 			     cp_decl_specifier_seq *decl_specs,
 			     enum rid keyword,
-			     location_t location)
+			     cp_token *token)
 {
   cp_storage_class storage_class;
 
   if (parser->in_unbraced_linkage_specification_p)
     {
-      error_at (location, "invalid use of %qD in linkage specification",
+      error_at (token->location, "invalid use of %qD in linkage specification",
 		ridpointers[keyword]);
       return;
     }
@@ -22602,11 +22605,11 @@ cp_parser_set_storage_class (cp_parser *parser,
     }
 
   if ((keyword == RID_EXTERN || keyword == RID_STATIC)
-      && decl_spec_seq_has_spec_p (decl_specs, ds_thread))
+      && decl_spec_seq_has_spec_p (decl_specs, ds_thread)
+      && decl_specs->gnu_thread_keyword_p)
     {
-      error_at (decl_specs->locations[ds_thread],
+      pedwarn (decl_specs->locations[ds_thread], 0,
 		"%<__thread%> before %qD", ridpointers[keyword]);
-      decl_specs->locations[ds_thread] = 0;
     }
 
   switch (keyword)
@@ -22630,7 +22633,7 @@ cp_parser_set_storage_class (cp_parser *parser,
       gcc_unreachable ();
     }
   decl_specs->storage_class = storage_class;
-  set_and_check_decl_spec_loc (decl_specs, ds_storage_class, location);
+  set_and_check_decl_spec_loc (decl_specs, ds_storage_class, token);
 
   /* A storage class specifier cannot be applied alongside a typedef 
      specifier. If there is a typedef specifier present then set 
@@ -22646,7 +22649,7 @@ cp_parser_set_storage_class (cp_parser *parser,
 static void
 cp_parser_set_decl_spec_type (cp_decl_specifier_seq *decl_specs,
 			      tree type_spec,
-			      location_t location,
+			      cp_token *token,
 			      bool type_definition_p)
 {
   decl_specs->any_specifiers_p = true;
@@ -22671,12 +22674,12 @@ cp_parser_set_decl_spec_type (cp_decl_specifier_seq *decl_specs,
       decl_specs->redefined_builtin_type = type_spec;
       set_and_check_decl_spec_loc (decl_specs,
 				   ds_redefined_builtin_type_spec,
-				   location);
+				   token);
       if (!decl_specs->type)
 	{
 	  decl_specs->type = type_spec;
 	  decl_specs->type_definition_p = false;
-	  set_and_check_decl_spec_loc (decl_specs,ds_type_spec, location);
+	  set_and_check_decl_spec_loc (decl_specs,ds_type_spec, token);
 	}
     }
   else if (decl_specs->type)
@@ -22686,8 +22689,17 @@ cp_parser_set_decl_spec_type (cp_decl_specifier_seq *decl_specs,
       decl_specs->type = type_spec;
       decl_specs->type_definition_p = type_definition_p;
       decl_specs->redefined_builtin_type = NULL_TREE;
-      set_and_check_decl_spec_loc (decl_specs, ds_type_spec, location);
+      set_and_check_decl_spec_loc (decl_specs, ds_type_spec, token);
     }
+}
+
+/* True iff TOKEN is the GNU keyword __thread.  */
+
+static bool
+token_is__thread (cp_token *token)
+{
+  gcc_assert (token->keyword == RID_THREAD);
+  return !strcmp (IDENTIFIER_POINTER (token->u.value), "__thread");
 }
 
 /* Set the location for a declarator specifier and check if it is
@@ -22704,15 +22716,21 @@ cp_parser_set_decl_spec_type (cp_decl_specifier_seq *decl_specs,
 
 static void
 set_and_check_decl_spec_loc (cp_decl_specifier_seq *decl_specs,
-			     cp_decl_spec ds, source_location location)
+			     cp_decl_spec ds, cp_token *token)
 {
   gcc_assert (ds < ds_last);
 
   if (decl_specs == NULL)
     return;
 
+  source_location location = token->location;
+
   if (decl_specs->locations[ds] == 0)
-    decl_specs->locations[ds] = location;
+    {
+      decl_specs->locations[ds] = location;
+      if (ds == ds_thread)
+	decl_specs->gnu_thread_keyword_p = token_is__thread (token);
+    }
   else
     {
       if (ds == ds_long)
@@ -22727,6 +22745,15 @@ set_and_check_decl_spec_loc (cp_decl_specifier_seq *decl_specs,
 			     OPT_Wlong_long, 
 			     "ISO C++ 1998 does not support %<long long%>");
 	    }
+	}
+      else if (ds == ds_thread)
+	{
+	  bool gnu = token_is__thread (token);
+	  if (gnu != decl_specs->gnu_thread_keyword_p)
+	    error_at (location,
+		      "both %<__thread%> and %<thread_local%> specified");
+	  else
+	    error_at (location, "duplicate %qD", token->u.value);
 	}
       else
 	{
@@ -22745,8 +22772,7 @@ set_and_check_decl_spec_loc (cp_decl_specifier_seq *decl_specs,
 	    "typedef",
 	    "using",
             "constexpr",
-	    "__complex",
-	    "__thread"
+	    "__complex"
 	  };
 	  error_at (location,
 		    "duplicate %qs", decl_spec_names[ds]);
@@ -24587,7 +24613,7 @@ cp_parser_objc_class_ivars (cp_parser* parser)
 	  declspecs.storage_class = sc_none;
 	}
 
-      /* __thread.  */
+      /* thread_local.  */
       if (decl_spec_seq_has_spec_p (&declspecs, ds_thread))
 	{
 	  cp_parser_error (parser, "invalid type for instance variable");
@@ -25166,7 +25192,7 @@ cp_parser_objc_struct_declaration (cp_parser *parser)
       declspecs.storage_class = sc_none;
     }
   
-  /* __thread.  */
+  /* thread_local.  */
   if (decl_spec_seq_has_spec_p (&declspecs, ds_thread))
     {
       cp_parser_error (parser, "invalid type for property");

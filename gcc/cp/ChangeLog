@@ -1,3 +1,25 @@
+2012-10-08  Jason Merrill  <jason@redhat.com>
+
+	Partial implementation of C++11 thread_local.
+	* decl.c (cp_finish_decl): Remove errors about non-trivial
+	initialization and destruction of TLS variables.
+	(register_dtor_fn): Add sorry about TLS variables.
+	(expand_static_init): Add sorry about non-local TLS variables,
+	or error with __thread.
+	Don't emit thread-safety guards for local TLS variables.
+	(grokdeclarator): thread_local in a function implies static.
+	* decl.h: Adjust prototype.
+	* decl2.c (get_guard): Copy DECL_TLS_MODEL.
+	* parser.c (cp_parser_set_storage_class, cp_parser_set_decl_spec_type)
+	(set_and_check_decl_spec_loc): Take the token rather than the location.
+	Distinguish between __thread and thread_local.
+	(cp_parser_set_storage_class): Don't complain about thread_local before
+	extern/static.
+	(token_is__thread): New.
+	* call.c (make_temporary_var_for_ref_to_temp): Handle TLS.
+	* cp-tree.h (DECL_GNU_TLS_P): New.
+	(cp_decl_specifier_seq): Add gnu_thread_keyword_p.
+
 2012-10-08  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/53528 C++11 attribute support
