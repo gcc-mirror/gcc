@@ -3012,9 +3012,23 @@ estimate_numbers_of_iterations_loop (struct loop *loop)
 bool
 estimated_loop_iterations (struct loop *loop, double_int *nit)
 {
-  estimate_numbers_of_iterations_loop (loop);
+  /* When SCEV information is available, try to update loop iterations
+     estimate.  Otherwise just return whatever we recorded earlier.  */
+  if (scev_initialized_p ())
+    estimate_numbers_of_iterations_loop (loop);
+
+  /* Even if the bound is not recorded, possibly we can derrive one from
+     profile.  */
   if (!loop->any_estimate)
-    return false;
+    {
+      if (loop->header->count)
+	{
+          *nit = gcov_type_to_double_int
+		   (expected_loop_iterations_unbounded (loop) + 1);
+	  return true;
+	}
+      return false;
+    }
 
   *nit = loop->nb_iterations_estimate;
   return true;
@@ -3027,7 +3041,10 @@ estimated_loop_iterations (struct loop *loop, double_int *nit)
 bool
 max_loop_iterations (struct loop *loop, double_int *nit)
 {
-  estimate_numbers_of_iterations_loop (loop);
+  /* When SCEV information is available, try to update loop iterations
+     estimate.  Otherwise just return whatever we recorded earlier.  */
+  if (scev_initialized_p ())
+    estimate_numbers_of_iterations_loop (loop);
   if (!loop->any_upper_bound)
     return false;
 

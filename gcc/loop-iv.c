@@ -2294,10 +2294,6 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
 
   desc->const_iter = false;
   desc->niter_expr = NULL_RTX;
-  desc->niter_max = 0;
-  if (loop->any_upper_bound
-      && loop->nb_iterations_upper_bound.fits_uhwi ())
-    desc->niter_max = loop->nb_iterations_upper_bound.low;
 
   cond = GET_CODE (condition);
   gcc_assert (COMPARISON_P (condition));
@@ -2567,9 +2563,8 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
 			 ? iv0.base
 			 : mode_mmin);
 	  max = (up - down) / inc + 1;
-	  if (!desc->niter_max
-	      || max < desc->niter_max)
-	    desc->niter_max = max;
+	  record_niter_bound (loop, double_int::from_shwi (max),
+			      false, true);
 
 	  if (iv0.step == const0_rtx)
 	    {
@@ -2780,14 +2775,16 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
       unsigned HOST_WIDEST_INT val = INTVAL (desc->niter_expr);
 
       desc->const_iter = true;
-      desc->niter_max = desc->niter = val & GET_MODE_MASK (desc->mode);
+      desc->niter = val & GET_MODE_MASK (desc->mode);
+      record_niter_bound (loop, double_int::from_shwi (desc->niter),
+			  false, true);
     }
   else
     {
       max = determine_max_iter (loop, desc, old_niter);
-      if (!desc->niter_max
-	  || max < desc->niter_max)
-	desc->niter_max = max;
+      gcc_assert (max);
+      record_niter_bound (loop, double_int::from_shwi (max),
+			  false, true);
 
       /* simplify_using_initial_values does a copy propagation on the registers
 	 in the expression for the number of iterations.  This prolongs life
@@ -2812,7 +2809,8 @@ zero_iter_simplify:
 zero_iter:
   desc->const_iter = true;
   desc->niter = 0;
-  desc->niter_max = 0;
+  record_niter_bound (loop, double_int_zero,
+		      true, true);
   desc->noloop_assumptions = NULL_RTX;
   desc->niter_expr = const0_rtx;
   return;
@@ -2946,9 +2944,10 @@ find_simple_exit (struct loop *loop, struct niter_desc *desc)
 	  print_rtl (dump_file, desc->niter_expr);
       	  fprintf (dump_file, "\n");
 
-	  fprintf (dump_file, "  upper bound: ");
-	  fprintf (dump_file, HOST_WIDEST_INT_PRINT_DEC, desc->niter_max);
-      	  fprintf (dump_file, "\n");
+	  fprintf (dump_file, "  upper bound: %li\n",
+		   (long)max_loop_iterations_int (loop));
+	  fprintf (dump_file, "  realistic bound: %li\n",
+		   (long)estimated_loop_iterations_int (loop));
 	}
       else
 	fprintf (dump_file, "Loop %d is not simple.\n", loop->num);

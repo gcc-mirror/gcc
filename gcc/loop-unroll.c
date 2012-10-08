@@ -341,7 +341,8 @@ decide_peel_once_rolling (struct loop *loop, int flags ATTRIBUTE_UNUSED)
       || desc->assumptions
       || desc->infinite
       || !desc->const_iter
-      || desc->niter != 0)
+      || (desc->niter != 0
+	  && max_loop_iterations_int (loop) != 0))
     {
       if (dump_file)
 	fprintf (dump_file,
@@ -695,7 +696,13 @@ unroll_loop_constant_iterations (struct loop *loop)
 
 	  desc->noloop_assumptions = NULL_RTX;
 	  desc->niter -= exit_mod;
-	  desc->niter_max -= exit_mod;
+	  loop->nb_iterations_upper_bound -= double_int::from_uhwi (exit_mod);
+	  if (loop->any_estimate
+	      && double_int::from_uhwi (exit_mod).ule
+	           (loop->nb_iterations_estimate))
+	    loop->nb_iterations_estimate -= double_int::from_uhwi (exit_mod);
+	  else
+	    loop->any_estimate = false;
 	}
 
       SET_BIT (wont_exit, 1);
@@ -733,7 +740,12 @@ unroll_loop_constant_iterations (struct loop *loop)
   	    apply_opt_in_copies (opt_info, exit_mod + 1, false, false);
 
 	  desc->niter -= exit_mod + 1;
-	  desc->niter_max -= exit_mod + 1;
+	  if (loop->any_estimate
+	      && double_int::from_uhwi (exit_mod + 1).ule
+	           (loop->nb_iterations_estimate))
+	    loop->nb_iterations_estimate -= double_int::from_uhwi (exit_mod + 1);
+	  else
+	    loop->any_estimate = false;
 	  desc->noloop_assumptions = NULL_RTX;
 
 	  SET_BIT (wont_exit, 0);
@@ -782,7 +794,15 @@ unroll_loop_constant_iterations (struct loop *loop)
     }
 
   desc->niter /= max_unroll + 1;
-  desc->niter_max /= max_unroll + 1;
+  loop->nb_iterations_upper_bound
+    = loop->nb_iterations_upper_bound.udiv (double_int::from_uhwi (exit_mod
+								   + 1),
+					    FLOOR_DIV_EXPR);
+  if (loop->any_estimate)
+    loop->nb_iterations_estimate
+      = loop->nb_iterations_estimate.udiv (double_int::from_uhwi (exit_mod
+							          + 1),
+				           FLOOR_DIV_EXPR);
   desc->niter_expr = GEN_INT (desc->niter);
 
   /* Remove the edges.  */
@@ -803,6 +823,7 @@ decide_unroll_runtime_iterations (struct loop *loop, int flags)
 {
   unsigned nunroll, nunroll_by_av, i;
   struct niter_desc *desc;
+  double_int iterations;
 
   if (!(flags & UAP_UNROLL))
     {
@@ -856,9 +877,10 @@ decide_unroll_runtime_iterations (struct loop *loop, int flags)
     }
 
   /* If we have profile feedback, check whether the loop rolls.  */
-  if ((loop->header->count
-       && expected_loop_iterations (loop) < 2 * nunroll)
-      || desc->niter_max < 2 * nunroll)
+  if ((estimated_loop_iterations (loop, &iterations)
+       || max_loop_iterations (loop, &iterations))
+      && iterations.fits_shwi ()
+      && iterations.to_shwi () <= 2 * nunroll)
     {
       if (dump_file)
 	fprintf (dump_file, ";; Not unrolling loop, doesn't roll\n");
@@ -1092,6 +1114,7 @@ unroll_loop_runtime_iterations (struct loop *loop)
       single_pred_edge (swtch)->probability = REG_BR_PROB_BASE - p;
       e = make_edge (swtch, preheader,
 		     single_succ_edge (swtch)->flags & EDGE_IRREDUCIBLE_LOOP);
+      e->count = RDIV (preheader->count * REG_BR_PROB_BASE, p);
       e->probability = p;
     }
 
@@ -1111,6 +1134,7 @@ unroll_loop_runtime_iterations (struct loop *loop)
       single_succ_edge (swtch)->probability = REG_BR_PROB_BASE - p;
       e = make_edge (swtch, preheader,
 		     single_succ_edge (swtch)->flags & EDGE_IRREDUCIBLE_LOOP);
+      e->count = RDIV (preheader->count * REG_BR_PROB_BASE, p);
       e->probability = p;
     }
 
@@ -1172,13 +1196,26 @@ unroll_loop_runtime_iterations (struct loop *loop)
   desc->niter_expr =
     simplify_gen_binary (UDIV, desc->mode, old_niter,
 			 GEN_INT (max_unroll + 1));
-  desc->niter_max /= max_unroll + 1;
+  loop->nb_iterations_upper_bound
+    = loop->nb_iterations_upper_bound.udiv (double_int::from_uhwi (max_unroll
+								   + 1),
+					    FLOOR_DIV_EXPR);
+  if (loop->any_estimate)
+    loop->nb_iterations_estimate
+      = loop->nb_iterations_estimate.udiv (double_int::from_uhwi (max_unroll
+							          + 1),
+				           FLOOR_DIV_EXPR);
   if (exit_at_end)
     {
       desc->niter_expr =
 	simplify_gen_binary (MINUS, desc->mode, desc->niter_expr, const1_rtx);
       desc->noloop_assumptions = NULL_RTX;
-      desc->niter_max--;
+      --loop->nb_iterations_upper_bound;
+      if (loop->any_estimate
+	  && loop->nb_iterations_estimate != double_int_zero)
+	--loop->nb_iterations_estimate;
+      else
+	loop->any_estimate = false;
     }
 
   if (dump_file)
@@ -1196,6 +1233,7 @@ decide_peel_simple (struct loop *loop, int flags)
 {
   unsigned npeel;
   struct niter_desc *desc;
+  double_int iterations;
 
   if (!(flags & UAP_PEEL))
     {
@@ -1239,23 +1277,30 @@ decide_peel_simple (struct loop *loop, int flags)
       return;
     }
 
-  if (loop->header->count)
+  /* If we have realistic estimate on number of iterations, use it.  */
+  if (estimated_loop_iterations (loop, &iterations))
     {
-      unsigned niter = expected_loop_iterations (loop);
-      if (niter + 1 > npeel)
+      if (!iterations.fits_shwi ()
+	  || iterations.to_shwi () + 1 > npeel)
 	{
 	  if (dump_file)
 	    {
 	      fprintf (dump_file, ";; Not peeling loop, rolls too much (");
 	      fprintf (dump_file, HOST_WIDEST_INT_PRINT_DEC,
-		       (HOST_WIDEST_INT) (niter + 1));
+		       (HOST_WIDEST_INT) (iterations.to_shwi () + 1));
 	      fprintf (dump_file, " iterations > %d [maximum peelings])\n",
 		       npeel);
 	    }
 	  return;
 	}
-      npeel = niter + 1;
+      npeel = iterations.to_shwi () + 1;
     }
+  /* If we have small enough bound on iterations, we can still peel (completely
+     unroll).  */
+  else if (max_loop_iterations (loop, &iterations)
+           && iterations.fits_shwi ()
+           && iterations.to_shwi () + 1 <= npeel)
+    npeel = iterations.to_shwi () + 1;
   else
     {
       /* For now we have no good heuristics to decide whether loop peeling
@@ -1349,6 +1394,7 @@ decide_unroll_stupid (struct loop *loop, int flags)
 {
   unsigned nunroll, nunroll_by_av, i;
   struct niter_desc *desc;
+  double_int iterations;
 
   if (!(flags & UAP_UNROLL_ALL))
     {
@@ -1401,9 +1447,10 @@ decide_unroll_stupid (struct loop *loop, int flags)
     }
 
   /* If we have profile feedback, check whether the loop rolls.  */
-  if ((loop->header->count
-       && expected_loop_iterations (loop) < 2 * nunroll)
-      || desc->niter_max < 2 * nunroll)
+  if ((estimated_loop_iterations (loop, &iterations)
+       || max_loop_iterations (loop, &iterations))
+      && iterations.fits_shwi ()
+      && iterations.to_shwi () <= 2 * nunroll)
     {
       if (dump_file)
 	fprintf (dump_file, ";; Not unrolling loop, doesn't roll\n");
