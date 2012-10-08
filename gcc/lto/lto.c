@@ -1408,10 +1408,35 @@ remember_with_vars (tree t)
 	    (tt) = GIMPLE_REGISTER_TYPE (tt); \
 	  if (VAR_OR_FUNCTION_DECL_P (tt) && TREE_PUBLIC (tt)) \
 	    remember_with_vars (t); \
+	  if (TREE_CODE (tt) == INTEGER_CST) \
+	    (tt) = fixup_integer_cst (tt); \
 	} \
     } while (0)
 
 static void lto_fixup_types (tree);
+
+/* Return integer_cst T with updated type.  */
+
+static tree
+fixup_integer_cst (tree t)
+{
+  tree type = GIMPLE_REGISTER_TYPE (TREE_TYPE (t));
+
+  if (type == TREE_TYPE (t))
+    return t;
+
+  /* If overflow was set, streamer_read_integer_cst
+     produced local copy of T. */
+  if (TREE_OVERFLOW (t))
+    {
+      TREE_TYPE (t) = type;
+      return t;
+    }
+  else
+  /* Otherwise produce new shared node for the new type.  */
+    return build_int_cst_wide (type, TREE_INT_CST_LOW (t),
+			       TREE_INT_CST_HIGH (t));
+}
 
 /* Fix up fields of a tree_typed T.  */
 
