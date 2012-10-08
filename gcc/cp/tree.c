@@ -2559,6 +2559,7 @@ cp_tree_equal (tree t1, tree t2)
 
     case VAR_DECL:
     case CONST_DECL:
+    case FIELD_DECL:
     case FUNCTION_DECL:
     case TEMPLATE_DECL:
     case IDENTIFIER_NODE:
