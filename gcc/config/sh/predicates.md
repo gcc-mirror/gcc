@@ -409,6 +409,14 @@
   if (MEM_P (op))
     {
       rtx inside = XEXP (op, 0);
+
+      /* Disallow mems with GBR address here.  They have to go through
+	 separate special patterns.  */
+      if ((REG_P (inside) && REGNO (inside) == GBR_REG)
+	  || (GET_CODE (inside) == PLUS && REG_P (XEXP (inside, 0))
+	      && REGNO (XEXP (inside, 0)) == GBR_REG))
+	return 0;
+
       if (GET_CODE (inside) == CONST)
 	inside = XEXP (inside, 0);
 
@@ -465,6 +473,17 @@
 {
   if (t_reg_operand (op, mode))
     return 0;
+
+  if (MEM_P (op))
+    {
+      rtx inside = XEXP (op, 0);
+      /* Disallow mems with GBR address here.  They have to go through
+	 separate special patterns.  */
+      if ((REG_P (inside) && REGNO (inside) == GBR_REG)
+	  || (GET_CODE (inside) == PLUS && REG_P (XEXP (inside, 0))
+	      && REGNO (XEXP (inside, 0)) == GBR_REG))
+	return 0;
+    }
 
   /* Only pre dec allowed.  */
   if (MEM_P (op) && GET_CODE (XEXP (op, 0)) == POST_INC)

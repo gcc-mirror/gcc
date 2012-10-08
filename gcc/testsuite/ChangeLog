@@ -1,3 +1,9 @@
+2012-10-08  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54760
+	* gcc.target/sh/pr54760-2.c: New.
+	* gcc.target/sh/pr54760-3.c: New.
+
 2012-10-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51422

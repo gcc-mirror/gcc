@@ -1,3 +1,16 @@
+2012-10-08  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54760
+	* config/sh/sh.md (*mov<mode>_gbr_load, *mov<mode>_gbr_store): New
+	insns and accompanying unnamed splits.
+	* config/sh/predicates.md (general_movsrc_operand,
+	general_movdst_operand): Reject GBR addresses.
+	* config/sh/sh-protos.h (sh_find_equiv_gbr_addr): New declaration.
+	* config/sh/sh.c (sh_address_cost, sh_legitimate_address_p,
+	sh_secondary_reload): Handle GBR addresses.
+	(base_reg_disp): New class.
+	(sh_find_base_reg_disp, sh_find_equiv_gbr_addr): New functions.
+
 2012-10-08  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/mmix/mmix.c (mmix_output_octa): Don't assume
