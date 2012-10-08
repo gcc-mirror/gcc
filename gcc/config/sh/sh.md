@@ -5189,11 +5189,61 @@ label:
   "neg	%1,%0"
   [(set_attr "type" "arith")])
 
-(define_insn "one_cmplsi2"
+(define_insn_and_split "one_cmplsi2"
   [(set (match_operand:SI 0 "arith_reg_dest" "=r")
 	(not:SI (match_operand:SI 1 "arith_reg_operand" "r")))]
   "TARGET_SH1"
   "not	%1,%0"
+  "&& can_create_pseudo_p ()"
+  [(set (reg:SI T_REG) (ge:SI (match_dup 1) (const_int 0)))
+   (set (match_dup 0) (reg:SI T_REG))]
+{
+/* PR 54685
+   If the result of 'unsigned int <= 0x7FFFFFFF' ends up as the following
+   sequence:
+
+     (set (reg0) (not:SI (reg0) (reg1)))
+     (parallel [(set (reg2) (lshiftrt:SI (reg0) (const_int 31)))
+		(clobber (reg:SI T_REG))])
+
+   ... match and combine the sequence manually in the split pass after the
+   combine pass.  Notice that combine does try the target pattern of this
+   split, but if the pattern is added it interferes with other patterns, in
+   particular with the div0s comparisons.
+   This could also be done with a peephole but doing it here before register
+   allocation can save one temporary.
+   When we're here, the not:SI pattern obviously has been matched already
+   and we only have to see whether the following insn is the left shift.  */
+
+  rtx i = next_nonnote_insn_bb (curr_insn);
+  if (i == NULL_RTX || !NONJUMP_INSN_P (i))
+    FAIL;
+
+  rtx p = PATTERN (i);
+  if (GET_CODE (p) != PARALLEL || XVECLEN (p, 0) != 2)
+    FAIL;
+
+  rtx p0 = XVECEXP (p, 0, 0);
+  rtx p1 = XVECEXP (p, 0, 1);
+
+  if (/* (set (reg2) (lshiftrt:SI (reg0) (const_int 31)))  */
+      GET_CODE (p0) == SET
+      && GET_CODE (XEXP (p0, 1)) == LSHIFTRT
+      && REG_P (XEXP (XEXP (p0, 1), 0))
+      && REGNO (XEXP (XEXP (p0, 1), 0)) == REGNO (operands[0])
+      && CONST_INT_P (XEXP (XEXP (p0, 1), 1))
+      && INTVAL (XEXP (XEXP (p0, 1), 1)) == 31
+
+      /* (clobber (reg:SI T_REG))  */
+      && GET_CODE (p1) == CLOBBER && REG_P (XEXP (p1, 0))
+      && REGNO (XEXP (p1, 0)) == T_REG)
+    {
+      operands[0] = XEXP (p0, 0);
+      set_insn_deleted (i);
+    }
+  else
+    FAIL;
+}
   [(set_attr "type" "arith")])
 
 (define_expand "one_cmpldi2"
