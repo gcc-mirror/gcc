@@ -1,3 +1,8 @@
+2012-10-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54194
+	* tree.h: Add EXPR_LOC_OR_LOC.
+
 2012-10-09  Nick Clifton  <nickc@redhat.com>
 
 	PR rtl-optimization/54739

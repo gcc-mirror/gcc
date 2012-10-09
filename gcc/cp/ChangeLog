@@ -1,3 +1,10 @@
+2012-10-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54194
+	* typeck.c (build_x_binary_op): Update warn_about_parentheses call.
+	* parser.c (cp_parser_binary_expression): Use SET_EXPR_LOCATION
+	on current.lhs.
+
 2012-10-09  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/54427

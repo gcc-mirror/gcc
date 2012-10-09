@@ -3254,7 +3254,8 @@ parser_build_binary_op (location_t location, enum tree_code code,
   /* Check for cases such as x+y<<z which users are likely
      to misinterpret.  */
   if (warn_parentheses)
-    warn_about_parentheses (code, code1, arg1.value, code2, arg2.value);
+    warn_about_parentheses (input_location, code,
+			    code1, arg1.value, code2, arg2.value);
 
   if (warn_logical_op)
     warn_logical_operator (input_location, code, TREE_TYPE (result.value),
