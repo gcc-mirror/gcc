@@ -1,3 +1,9 @@
+2012-10-09  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/54754
+	* include/parallel/compatibility.h: Use atomic built-ins when they are
+	lock-free.
+
 2012-10-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	* testsuite/util/testsuite_abi.cc (check_version): Add CXXABI_1.3.7.
