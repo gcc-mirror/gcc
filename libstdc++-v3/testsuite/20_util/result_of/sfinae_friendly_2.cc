@@ -23,16 +23,16 @@
 #include <type_traits>
 #include <string>
 
-struct eat { template<class T> eat(T const &) {} };
+struct eat { template<typename T> eat(T const &) {} };
 struct not_incrementable {};
 
 struct inc {
- template<class T>
+ template<typename T>
  auto operator()(T t) const -> decltype(t++)
  { return t++; }
 };
 
-template<class A>
+template<typename A>
 typename std::result_of<inc(A)>::type // sfinae here
 try_inc(A a) {
   return inc()(a);
@@ -43,10 +43,10 @@ try_inc(eat) {
   return not_incrementable();
 }
 
-template<class>
+template<typename>
 struct never { static const bool value = false; };
 
-template<class T>
+template<typename T>
 struct Fail
 {
   static_assert(never<T>::value, "duh");
@@ -55,16 +55,16 @@ struct Fail
 
 struct Fun
 {
-  template<class T>
+  template<typename T>
   typename Fail<T>::type operator()(T)
   { return 0; }
 };
 
-template<class T>
+template<typename T>
 typename std::result_of<Fun(T)>::type foo(T)
 { return 0; }
 
-template<class>
+template<typename>
 int foo(...)
 { return 0; }
 

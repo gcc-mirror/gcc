@@ -29,23 +29,27 @@
 // Helper types:
 struct has_type_impl
 {
-  template<class T, class = typename T::type>
+  template<typename T, typename = typename T::type>
   static std::true_type test(int);
 
-  template<class>
+  template<typename>
   static std::false_type test(...);
 };
 
-template<class T>
-struct has_type : decltype(has_type_impl::test<T>(0))
+template<typename T>
+struct has_type : public decltype(has_type_impl::test<T>(0))
 {};
 
-template<class T, class Res>
-struct is_expected_type : std::is_same<typename T::type, Res>
+template<typename T, typename Res>
+struct is_expected_type : public std::is_same<typename T::type, Res>
 {};
 
-template<class T, class Res>
-struct is_type : std::__and_<has_type<T>, is_expected_type<T, Res>>
+template<typename P1, typename P2>
+struct and_ : public std::conditional<P1::value, P2, std::false_type>::type
+{};
+
+template<typename T, typename Res>
+struct is_type : public and_<has_type<T>, is_expected_type<T, Res>>
 {};
 
 // Types under inspection:
@@ -76,18 +80,18 @@ typedef void (B::*base_func_void)() const;
 typedef bool (B::*base_func_bool_int)(int) const volatile;
 
 struct ident_functor {
-  template<class T>
+  template<typename T>
   T operator()(T&& x);
 };
 
-template<class Ret = void>
+template<typename Ret = void>
 struct variable_functor {
-  template<class... T>
+  template<typename... T>
   Ret operator()(T&&...);
 };
 
 struct ident_functor_noref {
-  template<class T>
+  template<typename T>
   typename std::remove_reference<T>::type operator()(T&& x);
 };
 
@@ -136,26 +140,26 @@ public:
   bool operator()(std::nullptr_t);
 };
 
-template<class T>
+template<typename T>
 struct ImplicitTo {
   operator T();
 };
 
-template<class>
+template<typename>
 struct never { static const bool value = false; };
 
-template<class T>
+template<typename T>
 struct BrokenTrait {
   static_assert(never<T>::value, "Error!");
   typedef T type;
 };
 
-template<class T>
+template<typename T>
 struct BadSmartPtr : T {
   T& operator*() const noexcept(typename BrokenTrait<T>::type());
 };
 
-template<class Ret>
+template<typename Ret>
 using FuncEllipses = Ret(...);
 
 static_assert(is_type<std::result_of<S(int)>, short>::value, "Error!");
