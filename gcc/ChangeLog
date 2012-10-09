@@ -1,3 +1,8 @@
+2012-10-09  Nick Clifton  <nickc@redhat.com>
+
+	PR target/54661
+	* config/mcore/mcore.c (mcore_output_movedouble): Fix typo.
+
 2012-10-09  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/54427
