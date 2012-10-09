@@ -1,3 +1,21 @@
+2012-10-09  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
+
+	PR middle-end/53397
+	* tree-ssa-loop-prefetch.c (gather_memory_references_ref):
+	Perform non constant step prefetching in inner loop, only
+	when it is invariant in the entire loop nest.
+	* tree-ssa-loop-prefetch.c (dump_mem_details): New function to dump
+	base, step and delta values of memeory reference analysed for
+	 prefetching.
+	* tree-ssa-loop-prefetch.c (dump_mem_ref): Call dump_mem_details
+	to print base, step and delta values of memory reference.	
+	* cfgloop.h (loop_outermost): New function that returns outermost
+	loop for a given loop in a loop nest.
+	* testsuite/gcc.dg/pr53397-1.c: New test case
+	Checks we are prefecthing for loop invariant steps
+	* testsuite/gcc.dg/pr53397-2.c: New test case
+	Checks we are not prefecthing for loop variant steps
+
 2012-10-09  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/54837

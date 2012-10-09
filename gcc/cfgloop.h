@@ -712,4 +712,18 @@ extern void move_loop_invariants (void);
 extern bool finite_loop_p (struct loop *);
 extern void scale_loop_profile (struct loop *loop, int scale, int iteration_bound);
 
+/* Returns the outermost loop of the loop nest that contains LOOP.*/
+static inline struct loop *
+loop_outermost (struct loop *loop)
+{
+  
+  unsigned n = VEC_length (loop_p, loop->superloops);
+
+  if (n <= 1)
+    return loop;
+
+  return VEC_index (loop_p, loop->superloops, 1);
+}
+
+
 #endif /* GCC_CFGLOOP_H */
