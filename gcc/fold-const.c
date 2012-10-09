@@ -12857,7 +12857,7 @@ fold_binary_loc (location_t loc,
 		  arg00 = fold_convert_loc (loc, itype, arg00);
 		}
 	      return fold_build2_loc (loc, code == EQ_EXPR ? GE_EXPR : LT_EXPR,
-				  type, arg00, build_int_cst (itype, 0));
+				  type, arg00, build_zero_cst (itype));
 	    }
 	}
 

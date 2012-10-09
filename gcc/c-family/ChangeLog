@@ -1,3 +1,11 @@
+2012-10-09  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/54427
+	* c-common.c (scalar_to_vector): Moved from c-typeck.c. Support
+	more operations. Make error messages optional.
+	* c-common.h (enum stv_conv): Moved from c-typeck.c.
+	(scalar_to_vector): Declare.
+
 2012-10-08  Jason Merrill  <jason@redhat.com>
 
 	* c-common.c (c_common_reswords): Add thread_local.

@@ -11253,6 +11253,109 @@ convert_vector_to_pointer_for_subscript (location_t loc,
     }
 }
 
+/* Determine which of the operands, if any, is a scalar that needs to be
+   converted to a vector, for the range of operations.  */
+enum stv_conv
+scalar_to_vector (location_t loc, enum tree_code code, tree op0, tree op1,
+		  bool complain)
+{
+  tree type0 = TREE_TYPE (op0);
+  tree type1 = TREE_TYPE (op1);
+  bool integer_only_op = false;
+  enum stv_conv ret = stv_firstarg;
+
+  gcc_assert (TREE_CODE (type0) == VECTOR_TYPE
+	      || TREE_CODE (type1) == VECTOR_TYPE);
+  switch (code)
+    {
+      /* Most GENERIC binary expressions require homogeneous arguments.
+	 LSHIFT_EXPR and RSHIFT_EXPR are exceptions and accept a first
+	 argument that is a vector and a second one that is a scalar, so
+	 we never return stv_secondarg for them.  */
+      case RSHIFT_EXPR:
+      case LSHIFT_EXPR:
+	if (TREE_CODE (type0) == INTEGER_TYPE
+	    && TREE_CODE (TREE_TYPE (type1)) == INTEGER_TYPE)
+	  {
+	    if (unsafe_conversion_p (TREE_TYPE (type1), op0, false))
+	      {
+		if (complain)
+		  error_at (loc, "conversion of scalar %qT to vector %qT "
+			    "involves truncation", type0, type1);
+		return stv_error;
+	      }
+	    else
+	      return stv_firstarg;
+	  }
+	break;
+
+      case BIT_IOR_EXPR:
+      case BIT_XOR_EXPR:
+      case BIT_AND_EXPR:
+	integer_only_op = true;
+	/* ... fall through ...  */
+
+      case PLUS_EXPR:
+      case MINUS_EXPR:
+      case MULT_EXPR:
+      case TRUNC_DIV_EXPR:
+      case CEIL_DIV_EXPR:
+      case FLOOR_DIV_EXPR:
+      case ROUND_DIV_EXPR:
+      case EXACT_DIV_EXPR:
+      case TRUNC_MOD_EXPR:
+      case FLOOR_MOD_EXPR:
+      case RDIV_EXPR:
+      case EQ_EXPR:
+      case NE_EXPR:
+      case LE_EXPR:
+      case GE_EXPR:
+      case LT_EXPR:
+      case GT_EXPR:
+      /* What about UNLT_EXPR?  */
+	if (TREE_CODE (type0) == VECTOR_TYPE)
+	  {
+	    tree tmp;
+	    ret = stv_secondarg;
+	    /* Swap TYPE0 with TYPE1 and OP0 with OP1  */
+	    tmp = type0; type0 = type1; type1 = tmp;
+	    tmp = op0; op0 = op1; op1 = tmp;
+	  }
+
+	if (TREE_CODE (type0) == INTEGER_TYPE
+	    && TREE_CODE (TREE_TYPE (type1)) == INTEGER_TYPE)
+	  {
+	    if (unsafe_conversion_p (TREE_TYPE (type1), op0, false))
+	      {
+		if (complain)
+		  error_at (loc, "conversion of scalar %qT to vector %qT "
+			    "involves truncation", type0, type1);
+		return stv_error;
+	      }
+	    return ret;
+	  }
+	else if (!integer_only_op
+		    /* Allow integer --> real conversion if safe.  */
+		 && (TREE_CODE (type0) == REAL_TYPE
+		     || TREE_CODE (type0) == INTEGER_TYPE)
+		 && SCALAR_FLOAT_TYPE_P (TREE_TYPE (type1)))
+	  {
+	    if (unsafe_conversion_p (TREE_TYPE (type1), op0, false))
+	      {
+		if (complain)
+		  error_at (loc, "conversion of scalar %qT to vector %qT "
+			    "involves truncation", type0, type1);
+		return stv_error;
+	      }
+	    return ret;
+	  }
+      default:
+	break;
+    }
+
+  return stv_nothing;
+}
+
 /* Return true iff ALIGN is an integral constant that is a fundamental
    alignment, as defined by [basic.align] in the c++-11
    specifications.
