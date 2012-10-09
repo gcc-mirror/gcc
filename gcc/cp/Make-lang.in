@@ -293,7 +293,7 @@ cp/typeck.o: cp/typeck.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) \
   c-family/c-objc.h
 cp/class.o: cp/class.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) toplev.h \
   $(TARGET_H) convert.h $(CGRAPH_H) dumpfile.h gt-cp-class.h \
-  $(SPLAY_TREE_H) pointer-set.h
+  $(SPLAY_TREE_H) pointer-set.h $(HASH_TABLE_H)
 cp/call.o: cp/call.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) toplev.h \
   $(DIAGNOSTIC_CORE_H) intl.h gt-cp-call.h convert.h $(TARGET_H) langhooks.h \
   $(TIMEVAR_H) c-family/c-objc.h
@@ -309,7 +309,7 @@ cp/search.o: cp/search.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) toplev.h \
   intl.h
 cp/tree.o: cp/tree.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) \
   $(TREE_INLINE_H) $(REAL_H) gt-cp-tree.h \
-  $(TARGET_H) debug.h $(CGRAPH_H) $(SPLAY_TREE_H) $(GIMPLE_H)
+  $(TARGET_H) debug.h $(CGRAPH_H) $(SPLAY_TREE_H) $(GIMPLE_H) $(HASH_TABLE_H)
 cp/ptree.o: cp/ptree.c $(CXX_TREE_H) $(TM_H)
 cp/rtti.o: cp/rtti.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) convert.h \
   $(TARGET_H) $(C_PRAGMA_H) gt-cp-rtti.h intl.h
@@ -327,7 +327,7 @@ cp/repo.o: cp/repo.c $(CXX_TREE_H) $(TM_H) toplev.h $(DIAGNOSTIC_CORE_H) \
 cp/semantics.o: cp/semantics.c $(CXX_TREE_H) $(TM_H) toplev.h \
   $(FLAGS_H) $(RTL_H) $(TIMEVAR_H) \
   $(TREE_INLINE_H) $(CGRAPH_H) $(TARGET_H) $(C_COMMON_H) $(GIMPLE_H) \
-  bitmap.h gt-cp-semantics.h c-family/c-objc.h
+  bitmap.h gt-cp-semantics.h c-family/c-objc.h $(HASH_TABLE_H)
 cp/dump.o: cp/dump.c $(CXX_TREE_H) $(TM_H) $(TREE_DUMP_H)
 cp/optimize.o: cp/optimize.c $(CXX_TREE_H) $(TM_H) \
   input.h $(PARAMS_H) debug.h $(TREE_INLINE_H) $(GIMPLE_H) \

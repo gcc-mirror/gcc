@@ -1,3 +1,10 @@
+2012-10-01  Lawrence Crowl  <crowl@google.com>
+
+	* Make-lang.in (JAVA_OBJS): Add dependence on hash-table.o.
+	(JCFDUMP_OBJS): Add dependence on hash-table.o.
+	(jcf-io.o): Add dependence on hash-table.h.
+	* jcf-io.c (memoized_class_lookups): Change to use type-safe hash table.
+
 2012-09-24  Lawrence Crowl  <crowl@google.com>
 
 	* decl.c (java_init_decl_processing): Change to new double_int API.

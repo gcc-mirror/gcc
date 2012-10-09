@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dumpfile.h"
 #include "splay-tree.h"
 #include "pointer-set.h"
+#include "hash-table.h"
 
 /* The number of nested classes being processed.  If we are not in the
    scope of any class, this is zero.  */
@@ -6465,12 +6466,9 @@ fixed_type_or_null (tree instance, int *nonnull, int *cdtorp)
       else if (TREE_CODE (TREE_TYPE (instance)) == REFERENCE_TYPE)
 	{
 	  /* We only need one hash table because it is always left empty.  */
-	  static htab_t ht;
-	  if (!ht)
-	    ht = htab_create (37, 
-			      htab_hash_pointer,
-			      htab_eq_pointer,
-			      /*htab_del=*/NULL);
+	  static hash_table <pointer_hash <tree_node> > ht;
+	  if (!ht.is_created ())
+	    ht.create (37); 
 
 	  /* Reference variables should be references to objects.  */
 	  if (nonnull)
@@ -6482,15 +6480,15 @@ fixed_type_or_null (tree instance, int *nonnull, int *cdtorp)
 	  if (TREE_CODE (instance) == VAR_DECL
 	      && DECL_INITIAL (instance)
 	      && !type_dependent_expression_p_push (DECL_INITIAL (instance))
-	      && !htab_find (ht, instance))
+	      && !ht.find (instance))
 	    {
 	      tree type;
-	      void **slot;
+	      tree_node **slot;
 
-	      slot = htab_find_slot (ht, instance, INSERT);
+	      slot = ht.find_slot (instance, INSERT);
 	      *slot = instance;
 	      type = RECUR (DECL_INITIAL (instance));
-	      htab_remove_elt (ht, instance);
+	      ht.remove_elt (instance);
 
 	      return type;
 	    }

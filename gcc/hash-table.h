@@ -223,15 +223,15 @@ public:
   void create (size_t initial_slots);
   bool is_created ();
   void dispose ();
-  T *find (T *comparable);
-  T *find_with_hash (T *comparable, hashval_t hash);
-  T **find_slot (T *comparable, enum insert_option insert);
-  T **find_slot_with_hash (T *comparable, hashval_t hash,
+  T *find (const T *comparable);
+  T *find_with_hash (const T *comparable, hashval_t hash);
+  T **find_slot (const T *comparable, enum insert_option insert);
+  T **find_slot_with_hash (const T *comparable, hashval_t hash,
 				   enum insert_option insert);
   void empty ();
   void clear_slot (T **slot);
-  void remove_elt (T *comparable);
-  void remove_elt_with_hash (T *comparable, hashval_t hash);
+  void remove_elt (const T *comparable);
+  void remove_elt_with_hash (const T *comparable, hashval_t hash);
   size_t size();
   size_t elements();
   double collisions();
@@ -273,7 +273,7 @@ hash_table <Descr, Allocator>::is_created ()
 template <typename Descr,
 	  template <typename Type> class Allocator>
 inline typename Descr::T *
-hash_table <Descr, Allocator>::find (T *comparable)
+hash_table <Descr, Allocator>::find (const T *comparable)
 {
   return find_with_hash (comparable, Descr::hash (comparable));
 }
@@ -285,7 +285,7 @@ template <typename Descr,
 	  template <typename Type> class Allocator>
 inline typename Descr::T **
 hash_table <Descr, Allocator>
-::find_slot (T *comparable, enum insert_option insert)
+::find_slot (const T *comparable, enum insert_option insert)
 {
   return find_slot_with_hash (comparable, Descr::hash (comparable), insert);
 }
@@ -297,7 +297,7 @@ template <typename Descr,
 	  template <typename Type> class Allocator>
 inline void
 hash_table <Descr, Allocator>
-::remove_elt (T *comparable)
+::remove_elt (const T *comparable)
 {
   remove_elt_with_hash (comparable, Descr::hash (comparable));
 }
@@ -495,7 +495,7 @@ template <typename Descr,
 	  template <typename Type> class Allocator>
 typename Descr::T *
 hash_table <Descr, Allocator>
-::find_with_hash (T *comparable, hashval_t hash)
+::find_with_hash (const T *comparable, hashval_t hash)
 {
   hashval_t index, hash2;
   size_t size;
@@ -538,7 +538,7 @@ template <typename Descr,
 	  template <typename Type> class Allocator>
 typename Descr::T **
 hash_table <Descr, Allocator>
-::find_slot_with_hash (T *comparable, hashval_t hash,
+::find_slot_with_hash (const T *comparable, hashval_t hash,
 		       enum insert_option insert)
 {
   T **first_deleted_slot;
@@ -609,7 +609,7 @@ template <typename Descr,
 void
 hash_table <Descr, Allocator>::empty ()
 {
-  size_t size = htab_size (htab);
+  size_t size = htab->size;
   T **entries = htab->entries;
   int i;
 
@@ -651,7 +651,7 @@ hash_table <Descr, Allocator>
 
   Descr::remove (*slot);
 
-  *slot = HTAB_DELETED_ENTRY;
+  *slot = static_cast <T *> (HTAB_DELETED_ENTRY);
   htab->n_deleted++;
 }
 
@@ -664,7 +664,7 @@ template <typename Descr,
 	  template <typename Type> class Allocator>
 void
 hash_table <Descr, Allocator>
-::remove_elt_with_hash (T *comparable, hashval_t hash)
+::remove_elt_with_hash (const T *comparable, hashval_t hash)
 {
   T **slot;
 

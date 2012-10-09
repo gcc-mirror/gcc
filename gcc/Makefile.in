@@ -2617,8 +2617,8 @@ tree-diagnostic.o : tree-diagnostic.c $(CONFIG_H) $(SYSTEM_H) coretypes.h dumpfi
    $(TREE_H) $(DIAGNOSTIC_H) tree-diagnostic.h langhooks.h $(LANGHOOKS_DEF_H) \
    $(VEC_H) $(TREE_PRETTY_PRINT_H)
 fold-const.o : fold-const.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-   $(TREE_H) $(FLAGS_H) $(DIAGNOSTIC_CORE_H) $(HASHTAB_H) $(EXPR_H) $(RTL_H) \
-   $(GGC_H) $(TM_P_H) langhooks.h $(MD5_H) intl.h $(TARGET_H) \
+   $(TREE_H) $(FLAGS_H) $(DIAGNOSTIC_CORE_H) $(HASH_TABLE_H) $(EXPR_H) \
+   $(RTL_H) $(GGC_H) $(TM_P_H) langhooks.h $(MD5_H) intl.h $(TARGET_H) \
    $(GIMPLE_H) realmpfr.h $(TREE_FLOW_H)
 diagnostic.o : diagnostic.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    version.h $(DEMANGLE_H) $(INPUT_H) intl.h $(BACKTRACE_H) $(DIAGNOSTIC_H) \
@@ -2930,7 +2930,7 @@ dse.o : dse.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    $(TREE_H) $(TM_P_H) $(REGS_H) hard-reg-set.h $(FLAGS_H) insn-config.h \
    $(RECOG_H) $(EXPR_H) $(DF_H) cselib.h $(DBGCNT_H) \
    $(TREE_PASS_H) alloc-pool.h $(ALIAS_H) $(OPTABS_H) $(TARGET_H) \
-   $(BITMAP_H) $(PARAMS_H) $(TREE_FLOW_H)
+   $(BITMAP_H) $(PARAMS_H) $(TREE_FLOW_H) $(HASH_TABLE_H)
 fwprop.o : fwprop.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    $(DIAGNOSTIC_CORE_H) insn-config.h $(RECOG_H) $(FLAGS_H) $(OBSTACK_H) $(BASIC_BLOCK_H) \
    $(DF_H) alloc-pool.h $(TREE_PASS_H) $(TARGET_H) \
@@ -3059,7 +3059,7 @@ auto-inc-dec.o : auto-inc-dec.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(REGS_H) $(FLAGS_H) $(FUNCTION_H) $(EXCEPT_H) $(DIAGNOSTIC_CORE_H) $(RECOG_H) \
    $(EXPR_H) $(TREE_PASS_H) $(DF_H) $(DBGCNT_H) $(TARGET_H)
 cfg.o : cfg.c $(CONFIG_H) $(SYSTEM_H) coretypes.h dumpfile.h $(DIAGNOSTIC_CORE_H) \
-   $(GGC_H) $(OBSTACK_H) alloc-pool.h $(HASHTAB_H) $(CFGLOOP_H) $(TREE_H) \
+   $(GGC_H) $(OBSTACK_H) alloc-pool.h $(HASH_TABLE_H) $(CFGLOOP_H) $(TREE_H) \
    $(BASIC_BLOCK_H)
 cfghooks.o: cfghooks.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    $(TREE_H) $(BASIC_BLOCK_H) $(TREE_FLOW_H) $(TIMEVAR_H) toplev.h $(DIAGNOSTIC_CORE_H) $(CFGLOOP_H)

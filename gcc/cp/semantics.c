@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "gimple.h"
 #include "bitmap.h"
+#include "hash-table.h"
 
 /* There routines provide a modular interface to perform many parsing
    operations.  They may therefore be used during actual parsing, or
@@ -3837,7 +3838,7 @@ struct nrv_data
 {
   tree var;
   tree result;
-  htab_t visited;
+  hash_table <pointer_hash <tree_node> > visited;
 };
 
 /* Helper function for walk_tree, used by finalize_nrv below.  */
@@ -3846,7 +3847,7 @@ static tree
 finalize_nrv_r (tree* tp, int* walk_subtrees, void* data)
 {
   struct nrv_data *dp = (struct nrv_data *)data;
-  void **slot;
+  tree_node **slot;
 
   /* No need to walk into types.  There wouldn't be any need to walk into
      non-statements, except that we have to consider STMT_EXPRs.  */
@@ -3885,7 +3886,7 @@ finalize_nrv_r (tree* tp, int* walk_subtrees, void* data)
   /* Avoid walking into the same tree more than once.  Unfortunately, we
      can't just use walk_tree_without duplicates because it would only call
      us for the first occurrence of dp->var in the function body.  */
-  slot = htab_find_slot (dp->visited, *tp, INSERT);
+  slot = dp->visited.find_slot (*tp, INSERT);
   if (*slot)
     *walk_subtrees = 0;
   else
@@ -3917,9 +3918,9 @@ finalize_nrv (tree *tp, tree var, tree result)
 
   data.var = var;
   data.result = result;
-  data.visited = htab_create (37, htab_hash_pointer, htab_eq_pointer, NULL);
+  data.visited.create (37);
   cp_walk_tree (tp, finalize_nrv_r, &data, 0);
-  htab_delete (data.visited);
+  data.visited.dispose ();
 }
 
 /* Create CP_OMP_CLAUSE_INFO for clause C.  Returns true if it is invalid.  */
