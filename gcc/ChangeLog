@@ -63,8 +63,6 @@
 	* var-tracking.c (vt_add_function_parameter): Use condition instead
 	of gcc_assert.
 
-	* testsuite/g++.dg/debug/pr54831.C: New test.
-
 2012-10-08  Dehao Chen  <dehao@google.com>
 
 	* predict.c (predict_loops): Predict for short-circuit conditions.
@@ -200,8 +198,7 @@
 	PR target/54815
 	* config/avr/avr.md (*add<mode>3, add<mode>3, addpsi3): Make
 	constraint alternative "r,0,r" slighly more expensive.
-	(sub<mode>3,
-	(andqi3, andhi3, andpsi3, andsi3): Ditto.
+	(sub<mode>3, andqi3, andhi3, andpsi3, andsi3): Ditto.
 	(iorqi3, iorhi3, iorpsi3, iorsi3): Ditto.
 	(xorhi3, xorpsi3, xorsi3): Ditto.
 
@@ -18594,7 +18591,6 @@
 	(IX86_BUILTIN_CPU_IS): New enum value.
 	(IX86_BUILTIN_CPU_SUPPORTS): New enum value.
 	* config/i386/i386-builtin-types.def: New function type.
-	* testsuite/gcc.target/builtin_target.c: New testcase.
 	* doc/extend.texi: Document builtins.
 
 2012-04-24  Olivier Hainque  <hainque@adacore.com>
