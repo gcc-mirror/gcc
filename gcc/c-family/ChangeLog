@@ -1,3 +1,10 @@
+2012-10-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54194
+	* c-common.c (warn_about_parentheses): Add location_t parameter;
+	use EXPR_LOC_OR_LOC.
+	* c-common.h: Update declaration.
+
 2012-10-09  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/54427

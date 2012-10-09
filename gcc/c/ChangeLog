@@ -1,3 +1,9 @@
+2012-10-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54194
+	* c-typeck.c (parser_build_binary_op): Update warn_about_parentheses
+	call.
+
 2012-10-09  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/54427

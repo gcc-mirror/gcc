@@ -7472,6 +7472,8 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
 					 rhs, rhs_type, &overload,
 					 tf_warning_or_error);
       current.lhs_type = current.tree_type;
+      if (EXPR_P (current.lhs))
+	SET_EXPR_LOCATION (current.lhs, current.loc);
 
       /* If the binary operator required the use of an overloaded operator,
 	 then this expression cannot be an integral constant-expression.
