@@ -12,15 +12,11 @@
 	when it is invariant in the entire loop nest.
 	* tree-ssa-loop-prefetch.c (dump_mem_details): New function to dump
 	base, step and delta values of memeory reference analysed for
-	 prefetching.
+	prefetching.
 	* tree-ssa-loop-prefetch.c (dump_mem_ref): Call dump_mem_details
-	to print base, step and delta values of memory reference.	
+	to print base, step and delta values of memory reference.
 	* cfgloop.h (loop_outermost): New function that returns outermost
 	loop for a given loop in a loop nest.
-	* testsuite/gcc.dg/pr53397-1.c: New test case
-	Checks we are prefecthing for loop invariant steps
-	* testsuite/gcc.dg/pr53397-2.c: New test case
-	Checks we are not prefecthing for loop variant steps
 
 2012-10-09  Richard Guenther  <rguenther@suse.de>
 
@@ -61,8 +57,7 @@
 2012-10-09  Nick Clifton  <nickc@redhat.com>
 
 	PR rtl-optimization/54739
-	* config/mcore/mcore.md: (anddi3, iordi3, xordi3): Delete
-	patterns.
+	* config/mcore/mcore.md: (anddi3, iordi3, xordi3): Delete patterns.
 
 	PR target/54661
 	* config/mcore/mcore.c (mcore_output_movedouble): Fix typo.
@@ -89,7 +84,7 @@
 	* config/i386/atom.md: Likewise.
 	* config/i386/ppro.md: Likewise.
 	* config/i386/bdver1.md: Likewise.
-	* config/i386/sse.md (sse3_h<plusminus_insn>v2df3): split into...
+	* config/i386/sse.md (sse3_h<plusminus_insn>v2df3): Split into...
 	(sse3_haddv2df3): ... expander.
 	(*sse3_haddv2df3): ... define_insn. Accept permuted operands.
 	(sse3_hsubv2df3): ... define_insn.
