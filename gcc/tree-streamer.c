@@ -232,20 +232,6 @@ streamer_tree_cache_lookup (struct streamer_tree_cache_d *cache, tree t,
 }
 
 
-/* Return the tree node at slot IX in CACHE.  */
-
-tree
-streamer_tree_cache_get (struct streamer_tree_cache_d *cache, unsigned ix)
-{
-  gcc_assert (cache);
-
-  /* Make sure we're not requesting something we don't have.  */
-  gcc_assert (ix < VEC_length (tree, cache->nodes));
-
-  return VEC_index (tree, cache->nodes, ix);
-}
-
-
 /* Record NODE in CACHE.  */
 
 static void
