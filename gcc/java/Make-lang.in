@@ -83,10 +83,10 @@ JAVA_OBJS = java/class.o java/decl.o java/expr.o \
   java/zextract.o java/jcf-io.o java/win32-host.o java/jcf-parse.o java/mangle.o \
   java/mangle_name.o java/builtins.o java/resource.o \
   java/jcf-depend.o \
-  java/jcf-path.o java/boehm.o java/java-gimplify.o
+  java/jcf-path.o java/boehm.o java/java-gimplify.o hash-table.o
 
 JCFDUMP_OBJS = java/jcf-dump.o java/jcf-io.o java/jcf-depend.o java/jcf-path.o \
-		java/win32-host.o java/zextract.o ggc-none.o
+		java/win32-host.o java/zextract.o ggc-none.o hash-table.o
 
 JVGENMAIN_OBJS = java/jvgenmain.o java/mangle_name.o
 
@@ -326,7 +326,7 @@ java/java-gimplify.o: java/java-gimplify.c $(CONFIG_H) $(SYSTEM_H) \
 # jcf-io.o needs $(ZLIBINC) added to cflags.
 CFLAGS-java/jcf-io.o += $(ZLIBINC)
 java/jcf-io.o: java/jcf-io.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-  $(JAVA_TREE_H) java/zipfile.h
+  $(JAVA_TREE_H) java/zipfile.h $(HASH_TABLE_H)
 
 # jcf-path.o needs a -D.
 CFLAGS-java/jcf-path.o += \

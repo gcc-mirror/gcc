@@ -1,3 +1,19 @@
+2012-10-09  Lawrence Crowl  <crowl@google.com>
+
+	* Makefile.in (fold-const.o): Add depencence on hash-table.h.
+	(dse.o): Likewise.
+	(cfg.o): Likewise.
+	* fold-const.c (fold_checksum_tree): Change to new type-safe hash table.
+	* (print_fold_checksum): Likewise.
+	* cfg.c (var bb_original): Likewise.
+	* (var bb_copy): Likewise.
+	* (var loop_copy): Likewise.
+	* hash-table.h (template hash_table): Constify parameters for find...
+	and remove_elt... member functions.
+        (hash_table::empty) Correct size expression.
+        (hash_table::clear_slot) Correct deleted entry assignment.
+	* dse.c (var rtx_group_table): Change to new type-safe hash table.
+
 2012-10-09  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* basic-block. (profile_record): New struct, moved from passes.c.

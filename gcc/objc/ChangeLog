@@ -1,3 +1,10 @@
+2012-10-01  Lawrence Crowl  <crowl@google.com>
+
+	* Make-lang.in (OBJC_OBJS): Add dependence on hash-table.o.
+	(objc-act.o): Add dependence on hash-table.h.
+	* objc-act.c (objc_detect_field_duplicates): Change to new type-safe
+	hash table.
+
 2012-06-29  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* Make-ang.in: Adjust for move of C front-end files.

@@ -1,3 +1,13 @@
+2012-10-09  Lawrence Crowl  <crowl@google.com>
+
+	* Make-lang.in (class.o): Add dependence on hash-table.h.
+	(tree.o): Likewise.
+	(semantics.o): Likewise.
+	* class.c (fixed_type_or_null): Change to new type-safe hash table.
+	* tree.c (verify_stmt_tree): Likewise.
+	(verify_stmt_tree_r): Likewise.
+	* semantics.c (struct nrv_data): Likewise.
+
 2012-10-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/54194

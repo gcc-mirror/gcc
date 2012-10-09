@@ -1,3 +1,9 @@
+2012-10-09  Lawrence Crowl  <crowl@google.com>
+
+	* Make-lang.in (c-decl.o): Add dependence on hash-table.h.
+	* c-decl.c (detect_field_duplicates_hash): Change to new type-safe
+	hash table.
+
 2012-10-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/54194

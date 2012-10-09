@@ -51,7 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "cgraph.h"
 #include "tree-iterator.h"
-#include "hashtab.h"
+#include "hash-table.h"
 #include "langhooks-def.h"
 /* Different initialization, code gen and meta data generation for each
    runtime.  */
@@ -3824,18 +3824,23 @@ objc_get_class_ivars (tree class_name)
    allows us to store keys in the hashtable, without values (it looks
    more like a set).  So, we store the DECLs, but define equality as
    DECLs having the same name, and hash as the hash of the name.  */
-static hashval_t
-hash_instance_variable (const PTR p)
+
+struct decl_name_hash : typed_noop_remove <tree_node>
 {
-  const_tree q = (const_tree)p;
+  typedef tree_node T;
+  static inline hashval_t hash (const T *);
+  static inline bool equal (const T *, const T *);
+};
+
+inline hashval_t
+decl_name_hash::hash (const T *q)
+{
   return (hashval_t) ((intptr_t)(DECL_NAME (q)) >> 3);
 }
 
-static int
-eq_instance_variable (const PTR p1, const PTR p2)
+inline bool
+decl_name_hash::equal (const T *a, const T *b)
 {
-  const_tree a = (const_tree)p1;
-  const_tree b = (const_tree)p2;
   return DECL_NAME (a) == DECL_NAME (b);
 }
 
@@ -3916,8 +3921,8 @@ objc_detect_field_duplicates (bool check_superclasses_only)
 	  {
 	    /* First, build the hashtable by putting all the instance
 	       variables of superclasses in it.  */
-	    htab_t htab = htab_create (37, hash_instance_variable,
-				       eq_instance_variable, NULL);
+	    hash_table <decl_name_hash> htab;
+	    htab.create (37);
 	    tree interface;
 	    for (interface = lookup_interface (CLASS_SUPER_NAME
 					       (objc_interface_context));
@@ -3930,7 +3935,7 @@ objc_detect_field_duplicates (bool check_superclasses_only)
 		  {
 		    if (DECL_NAME (ivar) != NULL_TREE)
 		      {
-			void **slot = htab_find_slot (htab, ivar, INSERT);
+			tree_node **slot = htab.find_slot (ivar, INSERT);
 			/* Do not check for duplicate instance
 			   variables in superclasses.  Errors have
 			   already been generated.  */
@@ -3950,7 +3955,7 @@ objc_detect_field_duplicates (bool check_superclasses_only)
 		  {
 		    if (DECL_NAME (ivar) != NULL_TREE)
 		      {
-			tree duplicate_ivar = (tree)(htab_find (htab, ivar));
+			tree duplicate_ivar = htab.find (ivar);
 			if (duplicate_ivar != HTAB_EMPTY_ENTRY)
 			  {
 			    error_at (DECL_SOURCE_LOCATION (ivar),
@@ -3977,7 +3982,7 @@ objc_detect_field_duplicates (bool check_superclasses_only)
 		  {
 		    if (DECL_NAME (ivar) != NULL_TREE)
 		      {
-			void **slot = htab_find_slot (htab, ivar, INSERT);
+			tree_node **slot = htab.find_slot (ivar, INSERT);
 			if (*slot)
 			  {
 			    tree duplicate_ivar = (tree)(*slot);
@@ -3994,7 +3999,7 @@ objc_detect_field_duplicates (bool check_superclasses_only)
 		      }
 		  }
 	      }
-	    htab_delete (htab);
+	    htab.dispose ();
 	    return true;
 	  }
       }
