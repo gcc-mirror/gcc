@@ -1,5 +1,9 @@
 2012-10-09  Nick Clifton  <nickc@redhat.com>
 
+	PR rtl-optimization/54739
+	* config/mcore/mcore.md: (anddi3, iordi3, xordi3): Delete
+	patterns.
+
 	PR target/54661
 	* config/mcore/mcore.c (mcore_output_movedouble): Fix typo.
 

@@ -465,33 +465,6 @@
   ""
   "xor	%0,%2")
 
-; these patterns give better code then gcc invents if
-; left to its own devices
-
-(define_insn "anddi3"
-  [(set (match_operand:DI 0 "mcore_arith_reg_operand" "=r")
-	(and:DI (match_operand:DI 1 "mcore_arith_reg_operand" "%0")
-		(match_operand:DI 2 "mcore_arith_reg_operand" "r")))]
-  ""
-  "and	%0,%2\;and	%R0,%R2"
-  [(set_attr "length" "4")])
-
-(define_insn "iordi3"
-  [(set (match_operand:DI 0 "mcore_arith_reg_operand" "=r")
-	(ior:DI (match_operand:DI 1 "mcore_arith_reg_operand" "%0")
-		(match_operand:DI 2 "mcore_arith_reg_operand" "r")))]
-  ""
-  "or	%0,%2\;or	%R0,%R2"
-  [(set_attr "length" "4")])
-
-(define_insn "xordi3"
-  [(set (match_operand:DI 0 "mcore_arith_reg_operand" "=r")
-	(xor:DI (match_operand:DI 1 "mcore_arith_reg_operand" "%0")
-		(match_operand:DI 2 "mcore_arith_reg_operand" "r")))]
-  ""
-  "xor	%0,%2\;xor	%R0,%R2"
-  [(set_attr "length" "4")])
-
 ;; -------------------------------------------------------------------------
 ;; Shifts and rotates
 ;; -------------------------------------------------------------------------
