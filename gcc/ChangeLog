@@ -1,3 +1,16 @@
+2012-10-09  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* basic-block. (profile_record): New struct, moved from passes.c.
+	* cfghooks.h (struct cfg_hooks) <account_profile_record>: New hook.
+	(account_profile_record): New prototype.
+	* cfghooks.c (account_profile_record): New function.
+	* tree-cfg.c (gimple_account_profile_record): New function
+	(gimple_cfg_hooks): Add it.
+	* cfgrtl.c (rtl_account_profile_record): New function
+	(rtl_cfg_hooks, cfg_layout_rtl_cfg_hooks): Add it.
+	* passes.c (check_profile_consistency): Simplify.  Move IR-dependent
+	code around using cfghooks machinery.
+
 2012-10-09  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/54760

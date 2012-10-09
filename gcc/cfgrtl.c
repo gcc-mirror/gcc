@@ -4452,6 +4452,28 @@ rtl_duplicate_bb (basic_block bb)
   return bb;
 }
 
+/* Do book-keeping of basic block BB for the profile consistency checker.
+   If AFTER_PASS is 0, do pre-pass accounting, or if AFTER_PASS is 1
+   then do post-pass accounting.  Store the counting in RECORD.  */
+static void
+rtl_account_profile_record (basic_block bb, int after_pass,
+			    struct profile_record *record)
+{
+  rtx insn;
+  FOR_BB_INSNS (bb, insn)
+    if (INSN_P (insn))
+      {
+	record->size[after_pass]
+	  += insn_rtx_cost (PATTERN (insn), false);
+	if (profile_status == PROFILE_READ)
+	  record->time[after_pass]
+	    += insn_rtx_cost (PATTERN (insn), true) * bb->count;
+	else if (profile_status == PROFILE_GUESSED)
+	  record->time[after_pass]
+	    += insn_rtx_cost (PATTERN (insn), true) * bb->frequency;
+      }
+}
+
 /* Implementation of CFG manipulation for linearized RTL.  */
 struct cfg_hooks rtl_cfg_hooks = {
   "rtl",
@@ -4486,6 +4508,7 @@ struct cfg_hooks rtl_cfg_hooks = {
   NULL, /* flush_pending_stmts */
   rtl_block_empty_p, /* block_empty_p */
   rtl_split_block_before_cond_jump, /* split_block_before_cond_jump */
+  rtl_account_profile_record,
 };
 
 /* Implementation of CFG manipulation for cfg layout RTL, where
@@ -4526,6 +4549,7 @@ struct cfg_hooks cfg_layout_rtl_cfg_hooks = {
   NULL, /* flush_pending_stmts */  
   rtl_block_empty_p, /* block_empty_p */
   rtl_split_block_before_cond_jump, /* split_block_before_cond_jump */
+  rtl_account_profile_record,
 };
 
 #include "gt-cfgrtl.h"
