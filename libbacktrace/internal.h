@@ -215,21 +215,22 @@ extern int backtrace_initialize (struct backtrace_state *state,
 				 void *data,
 				 fileline *fileline_fn);
 
-/* Prepare to read file/line information from DWARF debug data.  */
+/* Add file/line information for a DWARF module.  */
 
-extern int backtrace_dwarf_initialize (struct backtrace_state *state,
-				       const unsigned char* dwarf_info,
-				       size_t dwarf_info_size,
-				       const unsigned char *dwarf_line,
-				       size_t dwarf_line_size,
-				       const unsigned char *dwarf_abbrev,
-				       size_t dwarf_abbrev_size,
-				       const unsigned char *dwarf_ranges,
-				       size_t dwarf_range_size,
-				       const unsigned char *dwarf_str,
-				       size_t dwarf_str_size,
-				       int is_bigendian,
-				       backtrace_error_callback error_callback,
-				       void *data, fileline *fileline_fn);
+extern int backtrace_dwarf_add (struct backtrace_state *state,
+				uintptr_t base_address,
+				const unsigned char* dwarf_info,
+				size_t dwarf_info_size,
+				const unsigned char *dwarf_line,
+				size_t dwarf_line_size,
+				const unsigned char *dwarf_abbrev,
+				size_t dwarf_abbrev_size,
+				const unsigned char *dwarf_ranges,
+				size_t dwarf_range_size,
+				const unsigned char *dwarf_str,
+				size_t dwarf_str_size,
+				int is_bigendian,
+				backtrace_error_callback error_callback,
+				void *data, fileline *fileline_fn);
 
 #endif
