@@ -1,6 +1,6 @@
 /* Output routines for Motorola MCore processor
    Copyright (C) 1993, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008,
-   2009, 2010, 2011 Free Software Foundation, Inc.
+   2009, 2010, 2011, 2012 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -1342,7 +1342,7 @@ mcore_output_movedouble (rtx operands[], enum machine_mode mode ATTRIBUTE_UNUSED
 	}
       else if (GET_CODE (src) == MEM)
 	{
-	  rtx memexp = memexp = XEXP (src, 0);
+	  rtx memexp = XEXP (src, 0);
 	  int dstreg = REGNO (dst);
 	  int basereg = -1;
 	  
