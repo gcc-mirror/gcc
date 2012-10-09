@@ -26,6 +26,11 @@
 	PR c++/54858
 	* g++.dg/template/pr54858.C: New test.
 
+2012-10-08  Marek Polacek  <polacek@redhat.com>
+
+	PR debug/54831
+	* g++.dg/debug/pr54831.C: New test.
+
 2012-10-08  Dehao Chen  <dehao@google.com>
 
 	* g++.dg/predict-loop-exit-1.C: New.
@@ -328,7 +333,7 @@
 
 2012-09-30  Sharad Singhai  <singhai@google.com>
 
-	* testsuite/gcc.target/i386/vect-double-1.c: Fix test.
+	* gcc.target/i386/vect-double-1.c: Fix test.
 
 2012-10-01  Andrew MacLeod  <amacleod@redhat.com>
 
@@ -434,7 +439,7 @@
 2012-09-28  Dodji Seketeli  <dodji@redhat.com>
 
 	* g++.dg/warn/Wunused-local-typedefs-3.C: Move the c++-only test
-	gcc/testsuite/c-c++-common/Wunused-local-typedefs-2.c to here.
+	c-c++-common/Wunused-local-typedefs-2.c to here.
 
 	PR c++/54372 - unused attribute inactive on dependant entities
 	* c-c++-common/Wunused-local-typedefs-2.c: New test.
@@ -874,7 +879,7 @@
 
 	PR c++/54427
 	* g++.dg/other/vector-compare.C: New testcase.
-	* gcc/testsuite/c-c++-common/vector-compare-3.c: New testcase.
+	* c-c++-common/vector-compare-3.c: New testcase.
 	* gcc.dg/vector-shift.c: Move ...
 	* c-c++-common/vector-shift.c: ... here.
 	* gcc.dg/vector-shift1.c: Move ...
@@ -994,7 +999,6 @@
 
 2012-09-11  Christophe Lyon  <christophe.lyon@linaro.org>
 
-	gcc/testsuite/
 	* gcc.target/arm/neon-vset_lanes8.c, gcc.target/arm/pr51835.c,
 	gcc.target/arm/pr48252.c: Fix for big-endian support.
 
@@ -2183,7 +2187,7 @@
 2012-08-03  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	PR target/54156
-	* testsuite/gcc.dg/vect/pr53773.c: Change to use optimized dump.
+	* gcc.dg/vect/pr53773.c: Change to use optimized dump.
 
 2012-08-03  Mikael Morin  <mikael@gcc.gnu.org>
 
@@ -2262,9 +2266,9 @@
 2012-08-01  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	PR tree-optimization/46556
-	* testsuite/gcc.dg/tree-ssa/slsr-27.c: New.
-	* testsuite/gcc.dg/tree-ssa/slsr-28.c: New.
-	* testsuite/gcc.dg/tree-ssa/slsr-29.c: New.
+	* gcc.dg/tree-ssa/slsr-27.c: New.
+	* gcc.dg/tree-ssa/slsr-28.c: New.
+	* gcc.dg/tree-ssa/slsr-29.c: New.
 
 2012-07-31  Janus Weil  <janus@gcc.gnu.org>
 
@@ -2283,7 +2287,7 @@
 2012-07-31  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	PR tree-optimization/53773
-	* testsuite/gcc.dg/vect/pr53773.c: New test.
+	* gcc.dg/vect/pr53773.c: New test.
 
 2012-07-31  Nick Clifton  <nickc@redhat.com>
 
@@ -2790,7 +2794,7 @@
 2012-07-13  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR c++/53531
-	* testsuite/g++.dg/cpp0x/variadic135.C: New.
+	* g++.dg/cpp0x/variadic135.C: New.
 
 2012-07-12  Jason Merrill  <jason@redhat.com>
 
@@ -2891,12 +2895,12 @@
 
 	PR target/48941
 	PR target/51980
-	* gcc/testsuite/gcc.target/arm/neon/vtrnf32.c: Update.
-	* gcc/testsuite/gcc.target/arm/neon/vtrns32.c: Update.
-	* gcc/testsuite/gcc.target/arm/neon/vtrnu32.c: Update.
-	* gcc/testsuite/gcc.target/arm/neon/vzipf32.c: Update.
-	* gcc/testsuite/gcc.target/arm/neon/vzips32.c: Update.
-	* gcc/testsuite/gcc.target/arm/neon/vzipu32.c: Update.
+	* gcc.target/arm/neon/vtrnf32.c: Update.
+	* gcc.target/arm/neon/vtrns32.c: Update.
+	* gcc.target/arm/neon/vtrnu32.c: Update.
+	* gcc.target/arm/neon/vzipf32.c: Update.
+	* gcc.target/arm/neon/vzips32.c: Update.
+	* gcc.target/arm/neon/vzipu32.c: Update.
 
 2012-07-05  Mikael Morin  <mikael@gcc.gnu.org>
 
@@ -3235,7 +3239,7 @@
 	* gcc.target/arm/ftest-armv7em-thumb.c: Likewise.
 	* gcc.target/arm/ftest-armv7r-arm.c Likewise.
 	* gcc.target/arm/ftest-armv7r-thumb.c Likewise.
-	* gcc/testsuite/lib/target-supports.exp
+	* lib/target-supports.exp
 	(check_effective_target_arm_arch_FUNC): Add support for more
 	architectures.
 	(add_options_for_arm_arch_FUNC): Likewise.
@@ -3278,8 +3282,8 @@
 
 2012-06-21  Steven Bosscher  <steven@gcc.gnu.org>
 
-	* testsuite/gcc.dg/pch/ident-1.c: New test.
-	* testsuite/gcc.dg/pch/ident-1.hs: Header file for new test.
+	* gcc.dg/pch/ident-1.c: New test.
+	* gcc.dg/pch/ident-1.hs: Header file for new test.
 
 2012-06-21  Michael Matz  <matz@suse.de>
 
@@ -4342,7 +4346,7 @@
 	accross macro expansion.
 	* gcc.dg/binary-constants-3.c: Likewise.
 	* gcc.dg/cpp/sysmac2.c: Likewise.
-	* testsuite/gcc.dg/nofixed-point-2.c: Adjust for more precise
+	* gcc.dg/nofixed-point-2.c: Adjust for more precise
 	location.
 	* gcc.dg/cpp/syshdr3.c: New test.
 	* gcc.dg/cpp/syshdr3.h: New header for the new test above.
@@ -4845,7 +4849,7 @@
 	* gcc.dg/c99-const-expr-9.c: Likewise.
 	* gcc.dg/cpp/direct2.c: Likewise.  Adjust.
 	* gcc.dg/cpp/direct2s.c: Likewise.
-	* gcc/testsuite/gcc.dg/cpp/pr28709.c: Likewise.
+	* gcc.dg/cpp/pr28709.c: Likewise.
 	* gcc.dg/cpp/pragma-diagnostic-1.c: Likewise.
 	* gcc.dg/dfp/composite-type.c: Likewise.
 	* gcc.dg/uninit-6-O0.c: Adjust the test case and force it to run
@@ -4953,7 +4957,7 @@
 
 2012-04-25  Sriraman Tallam  <tmsriram@google.com>
 
-	* testsuite/gcc.target/i386/builtin_target.c: Check avx2.
+	* gcc.target/i386/builtin_target.c: Check avx2.
 
 2012-04-26  Alan Modra  <amodra@gmail.com>
 
@@ -5023,6 +5027,10 @@
 	PR c++/52363
 	* g++.dg/cpp0x/sfinae35.C: New.
 	* g++.dg/cpp0x/sfinae36.C: Likewise.
+
+2012-04-24  Sriraman Tallam  <tmsriram@google.com>
+
+	* gcc.target/builtin_target.c: New testcase.
 
 2012-04-24  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
@@ -7011,8 +7019,8 @@
 2012-02-09  Bin Cheng  <bin.cheng@arm.com>
 
 	PR middle-end/51867
-	* testsuite/c-c++-common/dfp/signbit-2.c: Change '-O0' to '-O1'.
-	* testsuite/gcc.dg/pr51867.c: New test.
+	* c-c++-common/dfp/signbit-2.c: Change '-O0' to '-O1'.
+	* gcc.dg/pr51867.c: New test.
 
 2012-02-09  Ian Lance Taylor  <iant@google.com>
 
@@ -7256,8 +7264,8 @@
 	    Tom de Vries  <tom@codesourcery.com>
 
 	PR middle-end/51998
-	* testsuite/gcc.dg/alias-12.c: New testcase.
-	* testsuite/gcc.dg/alias-13.c: New testcase.
+	* gcc.dg/alias-12.c: New testcase.
+	* gcc.dg/alias-13.c: New testcase.
 
 2012-02-02  Jakub Jelinek  <jakub@redhat.com>
 
