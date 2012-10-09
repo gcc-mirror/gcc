@@ -1,5 +1,10 @@
 2012-10-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/53763
+	* g++.dg/cpp0x/decltype43.C: New.
+
+2012-10-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/54194
 	* g++.dg/warn/Wparentheses-26.C: Adjust.
 	* g++.dg/warn/Wparentheses-27.C: New.
