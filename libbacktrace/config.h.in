@@ -10,6 +10,9 @@
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 
+/* Define if dl_iterate_phdr is available. */
+#undef HAVE_DL_ITERATE_PHDR
+
 /* Define to 1 if you have the fcntl function */
 #undef HAVE_FCNTL
 
@@ -18,6 +21,9 @@
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
+
+/* Define to 1 if you have the <link.h> header file. */
+#undef HAVE_LINK_H
 
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H

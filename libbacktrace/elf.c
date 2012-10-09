@@ -36,8 +36,35 @@ POSSIBILITY OF SUCH DAMAGE.  */
 #include <string.h>
 #include <sys/types.h>
 
+#ifdef HAVE_DL_ITERATE_PHDR
+#include <link.h>
+#endif
+
 #include "backtrace.h"
 #include "internal.h"
+
+#ifndef HAVE_DL_ITERATE_PHDR
+
+/* Dummy version of dl_iterate_phdr for systems that don't have it.  */
+
+#define dl_phdr_info x_dl_phdr_info
+#define dl_iterate_phdr x_dl_iterate_phdr
+
+struct dl_phdr_info
+{
+  uintptr_t dlpi_addr;
+  const char *dlpi_name;
+};
+
+static int
+dl_iterate_phdr (int (*callback) (struct dl_phdr_info *,
+				  size_t, void *) ATTRIBUTE_UNUSED,
+		 void *data ATTRIBUTE_UNUSED)
+{
+  return 0;
+}
+
+#endif /* ! defined (HAVE_DL_ITERATE_PHDR) */
 
 /* The configure script must tell us whether we are 32-bit or 64-bit
    ELF.  We could make this code test and support either possibility,
@@ -48,6 +75,33 @@ POSSIBILITY OF SUCH DAMAGE.  */
 #if BACKTRACE_ELF_SIZE != 32 && BACKTRACE_ELF_SIZE != 64
 #error "Unknown BACKTRACE_ELF_SIZE"
 #endif
+
+/* <link.h> might #include <elf.h> which might define our constants
+   with slightly different values.  Undefine them to be safe.  */
+
+#undef EI_NIDENT
+#undef EI_MAG0
+#undef EI_MAG1
+#undef EI_MAG2
+#undef EI_MAG3
+#undef EI_CLASS
+#undef EI_DATA
+#undef EI_VERSION
+#undef ELF_MAG0
+#undef ELF_MAG1
+#undef ELF_MAG2
+#undef ELF_MAG3
+#undef ELFCLASS32
+#undef ELFCLASS64
+#undef ELFDATA2LSB
+#undef ELFDATA2MSB
+#undef EV_CURRENT
+#undef SHN_LORESERVE
+#undef SHN_XINDEX
+#undef SHT_SYMTAB
+#undef SHT_STRTAB
+#undef SHT_DYNSYM
+#undef STT_FUNC
 
 /* Basic types.  */
 
@@ -214,6 +268,8 @@ struct elf_symbol
 
 struct elf_syminfo_data
 {
+  /* Symbols for the next module.  */
+  struct elf_syminfo_data *next;
   /* The ELF symbols, sorted by address.  */
   struct elf_symbol *symbols;
   /* The number of symbols.  */
@@ -337,10 +393,56 @@ elf_initialize_syminfo (struct backtrace_state *state,
   qsort (elf_symbols, elf_symbol_count, sizeof (struct elf_symbol),
 	 elf_symbol_compare);
 
+  sdata->next = NULL;
   sdata->symbols = elf_symbols;
   sdata->count = elf_symbol_count;
 
   return 1;
+}
+
+/* Add EDATA to the list in STATE.  */
+
+static void
+elf_add_syminfo_data (struct backtrace_state *state,
+		      struct elf_syminfo_data *edata)
+{
+  if (!state->threaded)
+    {
+      struct elf_syminfo_data **pp;
+
+      for (pp = (struct elf_syminfo_data **) &state->syminfo_data;
+	   *pp != NULL;
+	   pp = &(*pp)->next)
+	;
+      *pp = edata;
+    }
+  else
+    {
+      while (1)
+	{
+	  struct elf_syminfo_data **pp;
+
+	  pp = (struct elf_syminfo_data **) &state->syminfo_data;
+
+	  while (1)
+	    {
+	      struct elf_syminfo_data *p;
+
+	      /* Atomic load.  */
+	      p = *pp;
+	      while (!__sync_bool_compare_and_swap (pp, p, p))
+		p = *pp;
+
+	      if (p == NULL)
+		break;
+
+	      pp = &p->next;
+	    }
+
+	  if (__sync_bool_compare_and_swap (pp, NULL, edata))
+	    break;
+	}
+    }
 }
 
 /* Return the symbol name and value for a PC.  */
@@ -364,14 +466,12 @@ elf_syminfo (struct backtrace_state *state, uintptr_t pc,
     callback (data, pc, sym->name, sym->address);
 }
 
-/* Initialize the backtrace data we need from an ELF executable.  At
-   the ELF level, all we need to do is find the debug info
-   sections.  */
+/* Add the backtrace data for one ELF file.  */
 
-int
-backtrace_initialize (struct backtrace_state *state, int descriptor,
-		      backtrace_error_callback error_callback,
-		      void *data, fileline *fileline_fn)
+static int
+elf_add (struct backtrace_state *state, int descriptor, uintptr_t base_address,
+	 backtrace_error_callback error_callback, void *data,
+	 fileline *fileline_fn, int *found_sym, int *found_dwarf)
 {
   struct backtrace_view ehdr_view;
   Elf_Ehdr ehdr;
@@ -399,6 +499,9 @@ backtrace_initialize (struct backtrace_state *state, int descriptor,
   off_t max_offset;
   struct backtrace_view debug_view;
   int debug_view_valid;
+
+  *found_sym = 0;
+  *found_dwarf = 0;
 
   shdrs_view_valid = 0;
   names_view_valid = 0;
@@ -516,6 +619,8 @@ backtrace_initialize (struct backtrace_state *state, int descriptor,
   dynsym_shndx = 0;
 
   memset (sections, 0, sizeof sections);
+
+  /* Look for the symbol table.  */
   for (i = 1; i < shnum; ++i)
     {
       const Elf_Shdr *shdr;
@@ -552,12 +657,7 @@ backtrace_initialize (struct backtrace_state *state, int descriptor,
 
   if (symtab_shndx == 0)
     symtab_shndx = dynsym_shndx;
-  if (symtab_shndx == 0)
-    {
-      state->syminfo_fn = elf_nosyms;
-      state->syminfo_data = NULL;
-    }
-  else
+  if (symtab_shndx != 0)
     {
       const Elf_Shdr *symtab_shdr;
       unsigned int strtab_shndx;
@@ -604,8 +704,9 @@ backtrace_initialize (struct backtrace_state *state, int descriptor,
 	 string table permanently.  */
       backtrace_release_view (state, &symtab_view, error_callback, data);
 
-      state->syminfo_fn = elf_syminfo;
-      state->syminfo_data = sdata;
+      *found_sym = 1;
+
+      elf_add_syminfo_data (state, sdata);
     }
 
   /* FIXME: Need to handle compressed debug sections.  */
@@ -635,7 +736,6 @@ backtrace_initialize (struct backtrace_state *state, int descriptor,
       if (!backtrace_close (descriptor, error_callback, data))
 	goto fail;
       *fileline_fn = elf_nodebug;
-      state->fileline_data = NULL;
       return 1;
     }
 
@@ -654,20 +754,22 @@ backtrace_initialize (struct backtrace_state *state, int descriptor,
     sections[i].data = ((const unsigned char *) debug_view.data
 			+ (sections[i].offset - min_offset));
 
-  if (!backtrace_dwarf_initialize (state,
-				   sections[DEBUG_INFO].data,
-				   sections[DEBUG_INFO].size,
-				   sections[DEBUG_LINE].data,
-				   sections[DEBUG_LINE].size,
-				   sections[DEBUG_ABBREV].data,
-				   sections[DEBUG_ABBREV].size,
-				   sections[DEBUG_RANGES].data,
-				   sections[DEBUG_RANGES].size,
-				   sections[DEBUG_STR].data,
-				   sections[DEBUG_STR].size,
-				   ehdr.e_ident[EI_DATA] == ELFDATA2MSB,
-				   error_callback, data, fileline_fn))
+  if (!backtrace_dwarf_add (state, base_address,
+			    sections[DEBUG_INFO].data,
+			    sections[DEBUG_INFO].size,
+			    sections[DEBUG_LINE].data,
+			    sections[DEBUG_LINE].size,
+			    sections[DEBUG_ABBREV].data,
+			    sections[DEBUG_ABBREV].size,
+			    sections[DEBUG_RANGES].data,
+			    sections[DEBUG_RANGES].size,
+			    sections[DEBUG_STR].data,
+			    sections[DEBUG_STR].size,
+			    ehdr.e_ident[EI_DATA] == ELFDATA2MSB,
+			    error_callback, data, fileline_fn))
     goto fail;
+
+  *found_dwarf = 1;
 
   return 1;
 
@@ -685,4 +787,116 @@ backtrace_initialize (struct backtrace_state *state, int descriptor,
   if (descriptor != -1)
     backtrace_close (descriptor, error_callback, data);
   return 0;
+}
+
+/* Data passed to phdr_callback.  */
+
+struct phdr_data
+{
+  struct backtrace_state *state;
+  backtrace_error_callback error_callback;
+  void *data;
+  fileline *fileline_fn;
+  int *found_sym;
+  int *found_dwarf;
+};
+
+/* Callback passed to dl_iterate_phdr.  Load debug info from shared
+   libraries.  */
+
+static int
+phdr_callback (struct dl_phdr_info *info, size_t size ATTRIBUTE_UNUSED,
+	       void *pdata)
+{
+  struct phdr_data *pd = (struct phdr_data *) pdata;
+  int descriptor;
+  fileline elf_fileline_fn;
+  int found_dwarf;
+
+  /* There is not much we can do if we don't have the module name.  If
+     the base address is 0, this is probably the executable, which we
+     already loaded.  */
+  if (info->dlpi_name == NULL
+      || info->dlpi_name[0] == '\0'
+      || info->dlpi_addr == 0)
+    return 0;
+
+  descriptor = backtrace_open (info->dlpi_name, pd->error_callback, pd->data);
+  if (descriptor < 0)
+    return 0;
+
+  if (elf_add (pd->state, descriptor, info->dlpi_addr, pd->error_callback,
+	       pd->data, &elf_fileline_fn, pd->found_sym, &found_dwarf))
+    {
+      if (found_dwarf)
+	{
+	  *pd->found_dwarf = 1;
+	  *pd->fileline_fn = elf_fileline_fn;
+	}
+    }
+
+  return 0;
+}
+
+/* Initialize the backtrace data we need from an ELF executable.  At
+   the ELF level, all we need to do is find the debug info
+   sections.  */
+
+int
+backtrace_initialize (struct backtrace_state *state, int descriptor,
+		      backtrace_error_callback error_callback,
+		      void *data, fileline *fileline_fn)
+{
+  int found_sym;
+  int found_dwarf;
+  syminfo elf_syminfo_fn;
+  fileline elf_fileline_fn;
+  struct phdr_data pd;
+
+  if (!elf_add (state, descriptor, 0, error_callback, data, &elf_fileline_fn,
+		&found_sym, &found_dwarf))
+    return 0;
+
+  pd.state = state;
+  pd.error_callback = error_callback;
+  pd.data = data;
+  pd.fileline_fn = fileline_fn;
+  pd.found_sym = &found_sym;
+  pd.found_dwarf = &found_dwarf;
+
+  dl_iterate_phdr (phdr_callback, (void *) &pd);
+
+  elf_syminfo_fn = found_sym ? elf_syminfo : elf_nosyms;
+  if (!state->threaded)
+    {
+      if (state->syminfo_fn == NULL || found_sym)
+	state->syminfo_fn = elf_syminfo_fn;
+    }
+  else
+    {
+      __sync_bool_compare_and_swap (&state->syminfo_fn, NULL, elf_syminfo_fn);
+      if (found_sym)
+	__sync_bool_compare_and_swap (&state->syminfo_fn, elf_nosyms,
+				      elf_syminfo_fn);
+    }
+
+  if (!state->threaded)
+    {
+      if (state->fileline_fn == NULL || state->fileline_fn == elf_nodebug)
+	*fileline_fn = elf_fileline_fn;
+    }
+  else
+    {
+      fileline current_fn;
+
+      /* Atomic load.  */
+      current_fn = state->fileline_fn;
+      while (!__sync_bool_compare_and_swap (&state->fileline_fn, current_fn,
+					    current_fn))
+	current_fn = state->fileline_fn;
+      if (current_fn == NULL || current_fn == elf_nodebug)
+	*fileline_fn = elf_fileline_fn;
+    }
+
+  return 1;
 }
