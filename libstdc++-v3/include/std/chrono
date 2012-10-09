@@ -69,33 +69,53 @@ namespace std _GLIBCXX_VISIBILITY(default)
   }
 
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
-  // 20.11.4.3 specialization of common_type (for duration)
+
+  // 20.11.4.3 specialization of common_type (for duration, sfinae-friendly)
+  
+  template<typename _CT, typename _Period1, typename _Period2>
+    struct __duration_common_type_wrapper
+    {
+    private:
+      typedef __static_gcd<_Period1::num, _Period2::num> __gcd_num;
+      typedef __static_gcd<_Period1::den, _Period2::den> __gcd_den;
+      typedef typename _CT::type __cr;
+      typedef ratio<__gcd_num::value,
+        (_Period1::den / __gcd_den::value) * _Period2::den> __r;
+    public:
+      typedef __success_type<chrono::duration<__cr, __r>> type;
+    };
+
+  template<typename _Period1, typename _Period2>
+    struct __duration_common_type_wrapper<__failure_type, _Period1, _Period2>
+    { typedef __failure_type type; };
+
   template<typename _Rep1, typename _Period1, typename _Rep2, typename _Period2>
     struct common_type<chrono::duration<_Rep1, _Period1>,
-		       chrono::duration<_Rep2, _Period2>>
-    {
-    private:
-      typedef __static_gcd<_Period1::num, _Period2::num> 	__gcd_num;
-      typedef __static_gcd<_Period1::den, _Period2::den> 	__gcd_den;
-      typedef typename common_type<_Rep1, _Rep2>::type		__cr;
-      typedef ratio<__gcd_num::value,
-		    (_Period1::den / __gcd_den::value) * _Period2::den> __r;
+             chrono::duration<_Rep2, _Period2>>
+    : public __duration_common_type_wrapper<typename __member_type_wrapper<
+             common_type<_Rep1, _Rep2>>::type, _Period1, _Period2>::type
+    { };
 
-    public:
-      typedef chrono::duration<__cr, __r> 			type;
+  // 20.11.4.3 specialization of common_type (for time_point, sfinae-friendly)
+  
+  template<typename _CT, typename _Clock>
+    struct __timepoint_common_type_wrapper
+    {
+      typedef __success_type<chrono::time_point<_Clock, typename _CT::type>>
+        type;
     };
 
-  // 20.11.4.3 specialization of common_type (for time_point)
-  template<typename _Clock, typename _Dur1, typename _Dur2>
-    struct common_type<chrono::time_point<_Clock, _Dur1>,
-		       chrono::time_point<_Clock, _Dur2>>
-    {
-    private:
-      typedef typename common_type<_Dur1, _Dur2>::type 		__ct;
+  template<typename _Clock>
+    struct __timepoint_common_type_wrapper<__failure_type, _Clock>
+    { typedef __failure_type type; };
 
-    public:
-      typedef chrono::time_point<_Clock, __ct> 			type;
-    };
+  template<typename _Clock, typename _Duration1, typename _Duration2>
+    struct common_type<chrono::time_point<_Clock, _Duration1>,
+             chrono::time_point<_Clock, _Duration2>>
+    : public __timepoint_common_type_wrapper<typename __member_type_wrapper<
+             common_type<_Duration1, _Duration2>>::type, _Clock>::type
+    { };
+
 _GLIBCXX_END_NAMESPACE_VERSION
 
   namespace chrono
