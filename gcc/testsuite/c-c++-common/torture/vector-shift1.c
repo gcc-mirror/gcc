@@ -1,3 +1,4 @@
+/* { dg-do run } */
 #define vector __attribute__((vector_size(8*sizeof(short))))
 
 int main (int argc, char *argv[]) {

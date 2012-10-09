@@ -1,3 +1,21 @@
+2012-10-09  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/54427
+	* c-c++-common/vector-scalar.c: New testcase.
+	* g++.dg/ext/vector18.C: New testcase.
+	* g++.dg/ext/vector5.C: This is not an error anymore.
+	* gcc.dg/init-vec-1.c: Move ...
+	* c-c++-common/init-vec-1.c: ... here. Adapt error message.
+	* gcc.c-torture/execute/vector-shift1.c: Move ...
+	* c-c++-common/torture/vector-shift1.c: ... here.
+	* gcc.dg/scal-to-vec1.c: Move ...
+	* c-c++-common/scal-to-vec1.c: ... here. Avoid narrowing for
+	C++11. Adapt error messages.
+	* gcc.dg/convert-vec-1.c: Move ...
+	* c-c++-common/convert-vec-1.c: ... here.
+	* gcc.dg/scal-to-vec2.c: Move ...
+	* c-c++-common/scal-to-vec2.c: ... here.
+
 2012-10-08  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR target/54400

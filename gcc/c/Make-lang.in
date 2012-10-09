@@ -192,5 +192,5 @@ c/c-parser.o : c/c-parser.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 c/c-typeck.o : c/c-typeck.c c/c-lang.h $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 	$(TREE_H) $(C_TREE_H) $(TARGET_H) $(FLAGS_H) intl.h \
 	langhooks.h tree-iterator.h $(BITMAP_H) $(GIMPLE_H) \
-	c-family/c-objc.h
+	c-family/c-objc.h c-family/c-common.h
 

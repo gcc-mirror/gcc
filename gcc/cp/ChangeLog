@@ -1,3 +1,10 @@
+2012-10-09  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/54427
+	* typeck.c (cp_build_binary_op): Handle mixed scalar-vector
+	operations.
+	[LSHIFT_EXPR, RSHIFT_EXPR]: Likewise.
+
 2012-10-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/54858

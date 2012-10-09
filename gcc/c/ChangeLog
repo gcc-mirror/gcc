@@ -1,3 +1,12 @@
+2012-10-09  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/54427
+	* c-typeck.c: Include c-common.h.
+	(enum stv_conv): Moved to c-common.h.
+	(scalar_to_vector): Moved to c-common.c.
+	(build_binary_op): Adapt to scalar_to_vector's new prototype.
+	* Make-lang.in: c-typeck.c depends on c-common.h.
+
 2012-10-04  Arnaud Charlet  <charlet@adacore.com>
 
 	* c-decl.c (c_write_global_declarations): Fix handling of

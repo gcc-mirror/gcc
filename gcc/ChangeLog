@@ -1,3 +1,9 @@
+2012-10-09  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/54427
+	* fold-const.c (fold_binary_loc): Use build_zero_cst instead of
+	build_int_cst for a potential vector.
+
 2012-10-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/atom.md (atom_sse_4): Merge atom_sse_attr attibutes.
