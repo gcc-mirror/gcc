@@ -7591,6 +7591,30 @@ gimple_lv_add_condition_to_bb (basic_block first_head ATTRIBUTE_UNUSED,
   e0->flags |= EDGE_FALSE_VALUE;
 }
 
+
+/* Do book-keeping of basic block BB for the profile consistency checker.
+   If AFTER_PASS is 0, do pre-pass accounting, or if AFTER_PASS is 1
+   then do post-pass accounting.  Store the counting in RECORD.  */
+static void
+gimple_account_profile_record (basic_block bb, int after_pass,
+			       struct profile_record *record)
+{
+  gimple_stmt_iterator i;
+  for (i = gsi_start_bb (bb); !gsi_end_p (i); gsi_next (&i))
+    {
+      record->size[after_pass]
+	+= estimate_num_insns (gsi_stmt (i), &eni_size_weights);
+      if (profile_status == PROFILE_READ)
+	record->time[after_pass]
+	  += estimate_num_insns (gsi_stmt (i),
+				 &eni_time_weights) * bb->count;
+      else if (profile_status == PROFILE_GUESSED)
+	record->time[after_pass]
+	  += estimate_num_insns (gsi_stmt (i),
+				 &eni_time_weights) * bb->frequency;
+    }
+}
+
 struct cfg_hooks gimple_cfg_hooks = {
   "gimple",
   gimple_verify_flow_info,
@@ -7624,6 +7648,7 @@ struct cfg_hooks gimple_cfg_hooks = {
   flush_pending_stmts, 		/* flush_pending_stmts */  
   gimple_empty_block_p,           /* block_empty_p */
   gimple_split_block_before_cond_jump, /* split_block_before_cond_jump */
+  gimple_account_profile_record,
 };
 
 

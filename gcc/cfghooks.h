@@ -145,6 +145,9 @@ struct cfg_hooks
   /* Split a basic block if it ends with a conditional branch and if
      the other part of the block is not empty.  */
   basic_block (*split_block_before_cond_jump) (basic_block);
+
+  /* Do book-keeping of a basic block for the profile consistency checker.  */
+  void (*account_profile_record) (basic_block, int, struct profile_record *);
 };
 
 extern void verify_flow_info (void);
@@ -197,6 +200,8 @@ extern bool can_copy_bbs_p (basic_block *, unsigned);
 extern void copy_bbs (basic_block *, unsigned, basic_block *,
 		      edge *, unsigned, edge *, struct loop *,
 		      basic_block);
+
+void account_profile_record (struct profile_record *, int);
 
 extern void cfg_layout_initialize (unsigned int);
 extern void cfg_layout_finalize (void);

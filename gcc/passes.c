@@ -1778,30 +1778,16 @@ execute_function_dump (void *data ATTRIBUTE_UNUSED)
     }
 }
 
-/* Make statistic about profile consistency.  */
-
-struct profile_record
-{
-  int num_mismatched_freq_in[2];
-  int num_mismatched_freq_out[2];
-  int num_mismatched_count_in[2];
-  int num_mismatched_count_out[2];
-  bool run;
-  gcov_type time[2];
-  int size[2];
-};
-
 static struct profile_record *profile_record;
 
+/* Do profile consistency book-keeping for the pass with static number INDEX.
+   If SUBPASS is zero, we run _before_ the pass, and if SUBPASS is one, then
+   we run _after_ the pass.  RUN is true if the pass really runs, or FALSE
+   if we are only book-keeping on passes that may have selectively disabled
+   themselves on a given function.  */
 static void
 check_profile_consistency (int index, int subpass, bool run)
 {
-  basic_block bb;
-  edge_iterator ei;
-  edge e;
-  int sum;
-  gcov_type lsum;
-
   if (index == -1)
     return;
   if (!profile_record)
@@ -1810,79 +1796,7 @@ check_profile_consistency (int index, int subpass, bool run)
   gcc_assert (index < passes_by_id_size && index >= 0);
   gcc_assert (subpass < 2);
   profile_record[index].run |= run;
-
-  FOR_ALL_BB (bb)
-   {
-      if (bb != EXIT_BLOCK_PTR_FOR_FUNCTION (cfun)
-	  && profile_status != PROFILE_ABSENT)
-	{
-	  sum = 0;
-	  FOR_EACH_EDGE (e, ei, bb->succs)
-	    sum += e->probability;
-	  if (EDGE_COUNT (bb->succs) && abs (sum - REG_BR_PROB_BASE) > 100)
-	    profile_record[index].num_mismatched_freq_out[subpass]++;
-	  lsum = 0;
-	  FOR_EACH_EDGE (e, ei, bb->succs)
-	    lsum += e->count;
-	  if (EDGE_COUNT (bb->succs)
-	      && (lsum - bb->count > 100 || lsum - bb->count < -100))
-	    profile_record[index].num_mismatched_count_out[subpass]++;
-	}
-      if (bb != ENTRY_BLOCK_PTR_FOR_FUNCTION (cfun)
-	  && profile_status != PROFILE_ABSENT)
-	{
-	  sum = 0;
-	  FOR_EACH_EDGE (e, ei, bb->preds)
-	    sum += EDGE_FREQUENCY (e);
-	  if (abs (sum - bb->frequency) > 100
-	      || (MAX (sum, bb->frequency) > 10
-		  && abs ((sum - bb->frequency) * 100 / (MAX (sum, bb->frequency) + 1)) > 10))
-	    profile_record[index].num_mismatched_freq_in[subpass]++;
-	  lsum = 0;
-	  FOR_EACH_EDGE (e, ei, bb->preds)
-	    lsum += e->count;
-	  if (lsum - bb->count > 100 || lsum - bb->count < -100)
-	    profile_record[index].num_mismatched_count_in[subpass]++;
-	}
-      if (bb == ENTRY_BLOCK_PTR_FOR_FUNCTION (cfun)
-	  || bb == EXIT_BLOCK_PTR_FOR_FUNCTION (cfun))
-	continue;
-      if ((cfun && (cfun->curr_properties & PROP_trees)))
-	{
-	  gimple_stmt_iterator i;
-
-	  for (i = gsi_start_bb (bb); !gsi_end_p (i); gsi_next (&i))
-	    {
-	      profile_record[index].size[subpass]
-		 += estimate_num_insns (gsi_stmt (i), &eni_size_weights);
-	      if (profile_status == PROFILE_READ)
-		profile_record[index].time[subpass]
-		   += estimate_num_insns (gsi_stmt (i),
-					  &eni_time_weights) * bb->count;
-	      else if (profile_status == PROFILE_GUESSED)
-		profile_record[index].time[subpass]
-		   += estimate_num_insns (gsi_stmt (i),
-					  &eni_time_weights) * bb->frequency;
-	    }
-	}
-      else if (cfun && (cfun->curr_properties & PROP_rtl))
-	{
-	  rtx insn;
-	  for (insn = NEXT_INSN (BB_HEAD (bb)); insn && insn != NEXT_INSN (BB_END (bb));
-	       insn = NEXT_INSN (insn))
-	    if (INSN_P (insn))
-	      {
-		profile_record[index].size[subpass]
-		   += insn_rtx_cost (PATTERN (insn), false);
-		if (profile_status == PROFILE_READ)
-		  profile_record[index].time[subpass]
-		     += insn_rtx_cost (PATTERN (insn), true) * bb->count;
-		else if (profile_status == PROFILE_GUESSED)
-		  profile_record[index].time[subpass]
-		     += insn_rtx_cost (PATTERN (insn), true) * bb->frequency;
-	      }
-	}
-   }
+  account_profile_record (&profile_record[index], subpass);
 }
 
 /* Output profile consistency.  */

@@ -1324,3 +1324,57 @@ split_block_before_cond_jump (basic_block bb)
   return cfg_hooks->split_block_before_cond_jump (bb);
 }
 
+/* Work-horse for passes.c:check_profile_consistency.
+   Do book-keeping of the CFG for the profile consistency checker.
+   If AFTER_PASS is 0, do pre-pass accounting, or if AFTER_PASS is 1
+   then do post-pass accounting.  Store the counting in RECORD.  */
+
+void
+account_profile_record (struct profile_record *record, int after_pass)
+{
+  basic_block bb;
+  edge_iterator ei;
+  edge e;
+  int sum;
+  gcov_type lsum;
+
+  FOR_ALL_BB (bb)
+   {
+      if (bb != EXIT_BLOCK_PTR_FOR_FUNCTION (cfun)
+	  && profile_status != PROFILE_ABSENT)
+	{
+	  sum = 0;
+	  FOR_EACH_EDGE (e, ei, bb->succs)
+	    sum += e->probability;
+	  if (EDGE_COUNT (bb->succs) && abs (sum - REG_BR_PROB_BASE) > 100)
+	    record->num_mismatched_freq_out[after_pass]++;
+	  lsum = 0;
+	  FOR_EACH_EDGE (e, ei, bb->succs)
+	    lsum += e->count;
+	  if (EDGE_COUNT (bb->succs)
+	      && (lsum - bb->count > 100 || lsum - bb->count < -100))
+	    record->num_mismatched_count_out[after_pass]++;
+	}
+      if (bb != ENTRY_BLOCK_PTR_FOR_FUNCTION (cfun)
+	  && profile_status != PROFILE_ABSENT)
+	{
+	  sum = 0;
+	  FOR_EACH_EDGE (e, ei, bb->preds)
+	    sum += EDGE_FREQUENCY (e);
+	  if (abs (sum - bb->frequency) > 100
+	      || (MAX (sum, bb->frequency) > 10
+		  && abs ((sum - bb->frequency) * 100 / (MAX (sum, bb->frequency) + 1)) > 10))
+	    record->num_mismatched_freq_in[after_pass]++;
+	  lsum = 0;
+	  FOR_EACH_EDGE (e, ei, bb->preds)
+	    lsum += e->count;
+	  if (lsum - bb->count > 100 || lsum - bb->count < -100)
+	    record->num_mismatched_count_in[after_pass]++;
+	}
+      if (bb == ENTRY_BLOCK_PTR_FOR_FUNCTION (cfun)
+	  || bb == EXIT_BLOCK_PTR_FOR_FUNCTION (cfun))
+	continue;
+      gcc_assert (cfg_hooks->account_profile_record);
+      cfg_hooks->account_profile_record(bb, after_pass, record);
+   }
+}
