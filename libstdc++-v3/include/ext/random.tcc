@@ -37,6 +37,7 @@ namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 
   template<typename _UIntType, size_t __m,
 	   size_t __pos1, size_t __sl1, size_t __sl2,
@@ -402,6 +403,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __is;
     }
 
+#endif // __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 
   /**
    * Iteration method due to M.D. J<o:>hnk.

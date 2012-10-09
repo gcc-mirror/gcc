@@ -1736,6 +1736,57 @@ proc check_v3_target_static_libstdcxx { } {
     return $et_static_libstdcxx
 }
 
+proc check_v3_target_little_endian { } {
+    global cxxflags
+    global DEFAULT_CXXFLAGS
+    global et_little_endian
 
+    global tool
+
+    if { ![info exists et_little_endian_target_name] } {
+        set et_little_endian_target_name ""
+    }
+
+    # If the target has changed since we set the cached value, clear it.
+    set current_target [current_target_name]
+    if { $current_target != $et_little_endian_target_name } {
+        verbose "check_v3_target_little_endian: `$et_little_endian_target_name'" 2
+        set et_little_endian_target_name $current_target
+        if [info exists et_little_endian] {
+            verbose "check_v3_target_little_endian: removing cached result" 2
+            unset et_little_endian
+        }
+    }
+
+    if [info exists et_little_endian] {
+        verbose "check_v3_target_little_endian: using cached result" 2
+    } else {
+        set et_little_endian 0
+	
+        set src little_endian[pid].cc
+
+        set f [open $src "w"]
+        puts $f "#if __BYTE_ORDER__ != __ORDER_LITTLE_ENDIAN__"
+        puts $f "#  error Not little endian"
+        puts $f "#endif"
+        close $f
+
+        set cxxflags_saved $cxxflags
+        set cxxflags "$cxxflags $DEFAULT_CXXFLAGS -Werror"
+
+        set lines [v3_target_compile $src /dev/null preprocess ""]
+        set cxxflags $cxxflags_saved
+        file delete $src
+
+        if [string match "" $lines] {
+            # No error message, preprocessing succeeded.
+            set et_little_endian 1
+        } else {
+            verbose "check_v3_target_little_endian: compilation failed" 2
+        }
+    }
+    verbose "check_v3_target_little_endian: $et_little_endian" 2
+    return $et_little_endian
+}
 
 set additional_prunes ""

@@ -1,3 +1,29 @@
+2012-10-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/54869
+	* include/ext/random (simd_fast_mersenne_twister_engine): Provide
+	only for little endian targets.
+	* include/ext/random.tcc: Likewise.
+	* config/cpu/i486/opt/ext/opt_random.h: Likewise.
+	* testsuite/lib/libstdc++.exp (check_v3_target_little_endian): Add.
+	* testsuite/lib/dg-options.exp (dg-require-little-endian): Add.
+	* testsuite/ext/random/simd_fast_mersenne_twister_engine/
+	operators/equal.cc: Use the latter.
+	* testsuite/ext/random/simd_fast_mersenne_twister_engine/
+	operators/serialize.cc: Likewise.
+	* testsuite/ext/random/simd_fast_mersenne_twister_engine/
+	operators/inequal.cc: Likewise.
+	* testsuite/ext/random/simd_fast_mersenne_twister_engine/
+	cons/copy.cc: Likewise.
+	* testsuite/ext/random/simd_fast_mersenne_twister_engine/
+	cons/seed1.cc: Likewise.
+	* testsuite/ext/random/simd_fast_mersenne_twister_engine/
+	cons/seed2.cc: Likewise.
+	* testsuite/ext/random/simd_fast_mersenne_twister_engine/
+	cons/default.cc: Likewise.
+	* testsuite/ext/random/simd_fast_mersenne_twister_engine/
+	cons/seed_seq.cc: Likewise.
+
 2012-10-09  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/54754
