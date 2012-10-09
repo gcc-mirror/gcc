@@ -1,3 +1,7 @@
+2012-10-09  Steve Ellcey  <sellcey@mips.com>
+
+	* gcc.target/ext_ins.c: Modify f2 to aviod uninitialized data.
+
 2012-10-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/53763
