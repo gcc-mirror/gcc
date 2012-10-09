@@ -216,6 +216,7 @@ package body Prj.Part is
    procedure Post_Parse_Context_Clause
      (Context_Clause    : With_Id;
       In_Tree           : Project_Node_Tree_Ref;
+      In_Limited        : Boolean;
       Limited_Withs     : Boolean;
       Imported_Projects : in out Project_Node_Id;
       Project_Directory : Path_Name_Type;
@@ -227,10 +228,12 @@ package body Prj.Part is
       Env               : in out Environment);
    --  Parse the imported projects that have been stored in table Withs, if
    --  any. From_Extended is used for the call to Parse_Single_Project below.
+   --
    --  When In_Limited is True, the importing path includes at least one
    --  "limited with". When Limited_Withs is False, only non limited withed
    --  projects are parsed. When Limited_Withs is True, only limited withed
    --  projects are parsed.
+   --
    --  Is_Config_File should be set to True if the project represents a config
    --  file (.cgpr) since some specific checks apply.
 
@@ -827,6 +830,7 @@ package body Prj.Part is
    procedure Post_Parse_Context_Clause
      (Context_Clause    : With_Id;
       In_Tree           : Project_Node_Tree_Ref;
+      In_Limited        : Boolean;
       Limited_Withs     : Boolean;
       Imported_Projects : in out Project_Node_Id;
       Project_Directory : Path_Name_Type;
@@ -941,7 +945,9 @@ package body Prj.Part is
                   --  If we have one, get the project id of the limited
                   --  imported project file, and do not parse it.
 
-                  if Limited_Withs and then Project_Stack.Last > 1 then
+                  if (In_Limited or Limited_Withs)
+                    and then Project_Stack.Last > 1
+                  then
                      declare
                         Canonical_Path_Name : Path_Name_Type;
 
@@ -965,7 +971,7 @@ package body Prj.Part is
                      end;
                   end if;
 
-                  --  Parse the imported project, if its project id is unknown
+                  --  Parse the imported project if its project id is unknown
 
                   if No (Withed_Project) then
                      Parse_Single_Project
@@ -975,7 +981,7 @@ package body Prj.Part is
                         Path_Name_Id      => Imported_Path_Name_Id,
                         Extended          => False,
                         From_Extended     => From_Extended,
-                        In_Limited        => Limited_Withs,
+                        In_Limited        => In_Limited or Limited_Withs,
                         Packages_To_Check => Packages_To_Check,
                         Depth             => Depth,
                         Current_Dir       => Current_Dir,
@@ -1577,6 +1583,7 @@ package body Prj.Part is
             Post_Parse_Context_Clause
               (In_Tree           => In_Tree,
                Context_Clause    => First_With,
+               In_Limited        => In_Limited,
                Limited_Withs     => False,
                Imported_Projects => Imported_Projects,
                Project_Directory => Project_Directory,
@@ -1936,6 +1943,7 @@ package body Prj.Part is
          Post_Parse_Context_Clause
            (In_Tree           => In_Tree,
             Context_Clause    => First_With,
+            In_Limited        => In_Limited,
             Limited_Withs     => True,
             Imported_Projects => Imported_Projects,
             Project_Directory => Project_Directory,

@@ -1,3 +1,99 @@
+2012-10-07  Matthias Klose  <doko@ubuntu.com>
+
+	* testsuite/28_regex/algorithms/match/basic: Remove empty directory.
+	* testsuite/28_regex/algorithms/match/extended: Likewise.
+	* testsuite/28_regex/algorithms/match: Likewise.
+
+2012-10-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/52764
+	* include/c_global/cstdint: Remove __STDC_LIMIT_MACROS and
+	__STDC_CONSTANT_MACROS related macros.
+
+2012-10-06  Joe Seymour  <jseymour@codesourcery.com>
+
+	* include/tr2/dynamic_bitset: Fix cxxabi_forced.h include path.
+
+2012-10-05  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/28_regex/algorithms/match: Rename to...
+	* testsuite/28_regex/algorithms/regex_match: ...this.
+	* testsuite/28_regex/basic_regex/regex.cc: Rename to...
+	* testsuite/28_regex/basic_regex/ctors/basic/default.cc: ...this.
+	* testsuite/util/testsuite_regex.h: New.
+	* testsuite/28_regex/basic_regex/ctors/basic/raw_string.cc: New.
+
+2012-10-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/20_util/shared_ptr/cons/43820_neg.cc: Adjust line
+	numbers.
+
+2012-10-05  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR libstdc++/54686
+	* include/c_global/cstdlib (abs(long long)): Define with
+	__builtin_llabs when we have long long.
+	(abs(long)): Use __builtin_labs.
+	(abs(__int128)): Define when we have __int128.
+
+2012-10-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/c_global/cstdlib: Remove redundant pasto code protected
+	by __GXX_EXPERIMENTAL_CXX0X__.
+	* include/c_global/cwctype: Likewise.
+	* include/c_global/ccomplex: Remove uses of obsolete macro
+	_GLIBCXX_INCLUDE_AS_TR1.
+	* include/c_global/cfloat: Likewise.
+
+2012-10-05  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR libstdc++/54686
+	* include/c_std/cstdlib (abs(long long)): Define with
+	__builtin_llabs when we have long long.
+	(abs(long)): Use __builtin_labs.
+	(abs(__int128)): Define when we have __int128.
+	* testsuite/26_numerics/headers/cstdlib/54686.c: New file.
+
+2012-10-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/53248
+	* include/std/array (__array_traits<>): Add.
+	(array<>): Allow for zero-size arrays of non default-constructible
+	elements.
+	* testsuite/23_containers/array/requirements/
+	non_default_constructible.cc: New.
+	* testsuite/23_containers/array/requirements/zero_sized_arrays.cc:
+	Adjust.
+	* testsuite/23_containers/array/tuple_interface/get_neg.cc: Adjust
+	dg-error line numbers.
+	* testsuite/23_containers/array/tuple_interface/tuple_element_neg.cc:
+	Likewise.
+
+2012-10-02  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR other/53889
+	* include/std/mutex (__recursive_mutex_base::~__recursive_mutex_base):
+	Use __gthread_recursive_mutex_destroy.
+	(__recursive_mutex_base::_S_destroy): Remove.
+	(__recursive_mutex_base::_S_destroy_win32): Likewise.
+	* include/ext/concurrence.h (__recursive_mutex::~__recursive_mutex):
+	Use __gthread_recursive_mutex_destroy.
+	(__recursive_mutex::_S_destroy): Remove.
+	(__recursive_mutex::_S_destroy_win32): Likewise.
+
+2012-10-01  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* config/abi/pre/gnu-versioned-namespace.ver: Add more
+	typeinfo/vtable exports.
+
+2012-10-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/54757
+	* include/ext/random (rice_distribution<>::operator()): Use std::hypot
+	only if _GLIBCXX_USE_C99_MATH_TR1.
+	* include/ext/random.tcc (rice_distribution<>::__generate_impl):
+	Likewise.
+
 2012-10-01  Daniel Krugler  <daniel.kruegler@googlemail.com>
 
 	* include/std/type_traits (result_of): Provide "SFINAE-friendly"

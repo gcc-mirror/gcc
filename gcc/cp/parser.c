@@ -6383,17 +6383,19 @@ cp_parser_unary_expression (cp_parser *parser, bool address_p, bool cast_p,
 	case RID_ALIGNOF:
 	case RID_SIZEOF:
 	  {
-	    tree operand;
+	    tree operand, ret;
 	    enum tree_code op;
+	    location_t first_loc;
 
 	    op = keyword == RID_ALIGNOF ? ALIGNOF_EXPR : SIZEOF_EXPR;
 	    /* Consume the token.  */
 	    cp_lexer_consume_token (parser->lexer);
+	    first_loc = cp_lexer_peek_token (parser->lexer)->location;
 	    /* Parse the operand.  */
 	    operand = cp_parser_sizeof_operand (parser, keyword);
 
 	    if (TYPE_P (operand))
-	      return cxx_sizeof_or_alignof_type (operand, op, true);
+	      ret = cxx_sizeof_or_alignof_type (operand, op, true);
 	    else
 	      {
 		/* ISO C++ defines alignof only with types, not with
@@ -6404,8 +6406,29 @@ cp_parser_unary_expression (cp_parser *parser, bool address_p, bool cast_p,
 			   "ISO C++ does not allow %<alignof%> "
 			   "with a non-type");
 
-		return cxx_sizeof_or_alignof_expr (operand, op, true);
+		ret = cxx_sizeof_or_alignof_expr (operand, op, true);
 	      }
+	    /* For SIZEOF_EXPR, just issue diagnostics, but keep
+	       SIZEOF_EXPR with the original operand.  */
+	    if (op == SIZEOF_EXPR && ret != error_mark_node)
+	      {
+		if (TREE_CODE (ret) != SIZEOF_EXPR || TYPE_P (operand))
+		  {
+		    if (!processing_template_decl && TYPE_P (operand))
+		      {
+			ret = build_min (SIZEOF_EXPR, size_type_node,
+					 build1 (NOP_EXPR, operand,
+						 error_mark_node));
+			SIZEOF_EXPR_TYPE_P (ret) = 1;
+		      }
+		    else
+		      ret = build_min (SIZEOF_EXPR, size_type_node, operand);
+		    TREE_SIDE_EFFECTS (ret) = 0;
+		    TREE_READONLY (ret) = 1;
+		  }
+		SET_EXPR_LOCATION (ret, first_loc);
+	      }
+	    return ret;
 	  }
 
 	case RID_NEW:

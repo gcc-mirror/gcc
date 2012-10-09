@@ -21,4 +21,4 @@ f (int s, long c)
 }
 
 /* { dg-final { scan-tree-dump-times " \\* " 3 "dom2" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */
+/* { dg-final { cleanup-tree-dump "dom2" } } */

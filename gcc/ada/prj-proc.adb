@@ -1588,7 +1588,7 @@ package body Prj.Proc is
                   Add_Attributes
                     (Project,
                      Project.Name,
-                     Name_Id (Project.Directory.Name),
+                     Name_Id (Project.Directory.Display_Name),
                      Shared,
                      Shared.Packages.Table (New_Pkg).Decl,
                      First_Attribute_Of
@@ -2850,7 +2850,7 @@ package body Prj.Proc is
             Add_Attributes
               (Project,
                Name,
-               Name_Id (Project.Directory.Name),
+               Name_Id (Project.Directory.Display_Name),
                In_Tree.Shared,
                Project.Decl,
                Prj.Attr.Attribute_First,

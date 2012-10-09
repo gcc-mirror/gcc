@@ -1,4 +1,4 @@
-/* Copyright (C) 2008, 2009 Free Software Foundation, Inc.
+/* Copyright (C) 2008-2012 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -91,7 +91,8 @@ typedef __UINTPTR_TYPE__ uintptr_t;
 typedef __INTMAX_TYPE__ intmax_t;
 typedef __UINTMAX_TYPE__ uintmax_t;
 
-#if !defined __cplusplus || defined __STDC_LIMIT_MACROS
+#if (!defined __cplusplus || __cplusplus >= 201103L \
+     || defined __STDC_LIMIT_MACROS)
 
 /* 7.18.2 Limits of specified-width integer types */
 
@@ -229,9 +230,11 @@ typedef __UINTMAX_TYPE__ uintmax_t;
 #undef WINT_MIN
 #define WINT_MIN __WINT_MIN__
 
-#endif /* !defined __cplusplus || defined __STDC_LIMIT_MACROS */
+#endif /* (!defined __cplusplus || __cplusplus >= 201103L
+	   || defined __STDC_LIMIT_MACROS)  */
 
-#if !defined __cplusplus || defined __STDC_CONSTANT_MACROS
+#if (!defined __cplusplus || __cplusplus >= 201103L \
+     || defined __STDC_CONSTANT_MACROS)
 
 #undef INT8_C
 #define INT8_C(c) __INT8_C(c)
@@ -254,6 +257,7 @@ typedef __UINTMAX_TYPE__ uintmax_t;
 #undef UINTMAX_C
 #define UINTMAX_C(c) __UINTMAX_C(c)
 
-#endif /* !defined __cplusplus || defined __STDC_CONSTANT_MACROS */
+#endif /* (!defined __cplusplus || __cplusplus >= 201103L
+	   || defined __STDC_CONSTANT_MACROS) */
 
 #endif /* _GCC_STDINT_H */

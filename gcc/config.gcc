@@ -709,6 +709,11 @@ case ${target} in
     *-*-openbsd2.*|*-*-openbsd3.[012])
       tm_defines="${tm_defines} HAS_LIBC_R=1" ;;
   esac
+  case ${target} in
+    *-*-openbsd4.[3-9]|*-*-openbsd[5-9]*)
+      default_use_cxa_atexit=yes
+      ;;
+  esac
   ;;
 *-*-rtems*)
   case ${enable_threads} in

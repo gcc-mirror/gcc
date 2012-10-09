@@ -37,6 +37,10 @@ test $# -eq 0 && usage
 
 tmp=check_GNU_style.tmp
 
+# Remove $tmp on exit and various signals.
+trap "rm -f $tmp" 0
+trap "rm -f $tmp ; exit 1" 1 2 3 5 9 13 15
+
 # Grep
 g (){
     msg="$1"

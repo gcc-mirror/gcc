@@ -1033,7 +1033,7 @@ names in lower case)
 After building an application or a library it is often required to
 install it into the development environment. This installation is
 required if the library is to be used by another application for
-example. The @code{gprinstall} tool provide an easy way to install
+example. The @command{gprinstall} tool provide an easy way to install
 libraries, executable or object code generated durting the build. The
 @b{Install} package can be used to change the default locations.
 
@@ -1963,11 +1963,10 @@ included in the library.
 @c ---------------------------------------------
 
 @noindent
-When using project files, library installation is part of the library build
-process. Thus no further action is needed in order to make use of the
-libraries that are built as part of the general application build. A usable
-version of the library is installed in the directory specified by the
-@code{Library_Dir} attribute of the library project file.
+When using project files, a usable version of the library is created in the
+directory specified by the @code{Library_Dir} attribute of the library
+project file. Thus no further action is needed in order to make use of
+the libraries that are built as part of the general application build.
 
 You may want to install a library in a context different from where the library
 is built. This situation arises with third party suppliers, who may want
@@ -1975,6 +1974,12 @@ to distribute a library in binary form where the user is not expected to be
 able to recompile the library. The simplest option in this case is to provide
 a project file slightly different from the one used to build the library, by
 using the @code{externally_built} attribute. @ref{Using Library Projects}
+
+Another option is to use @command{gprinstall} to install the library in a
+different context than the build location. A project to use this library is
+generated automatically by @command{gprinstall} which also copy, in the install
+location, the minimum set of sources needed to use the library.
+@ref{Installation}
 
 @c ---------------------------------------------
 @node Project Extension
@@ -2243,8 +2248,8 @@ Very often, modules will build their own executables (for testing
 purposes for instance), or libraries (for easier reuse in various
 contexts).
 
-However, if you build your project through gnatmake or gprbuild, using
-a syntax similar to
+However, if you build your project through @command{gnatmake} or
+@command{gprbuild}, using a syntax similar to
 
 @smallexample
    gprbuild -PA.gpr
@@ -2252,9 +2257,9 @@ a syntax similar to
 
 this will only rebuild the main programs of project A, not those of the
 imported projects B and C. Therefore you have to spawn several
-gnatmake commands, one per project, to build all executables.
+@command{gnatmake} commands, one per project, to build all executables.
 This is a little inconvenient, but more importantly is inefficient
-because gnatmake needs to do duplicate work to ensure that sources are
+because @command{gnatmake} needs to do duplicate work to ensure that sources are
 up-to-date, and cannot easily compile things in parallel when using
 the -j switch.
 
@@ -2295,14 +2300,14 @@ that are built independently from each other (but can be built in
 parallel). For instance, you have a project tree rooted at A, and
 another one (which might share some subprojects) rooted at B.
 
-Using only gprbuild, you could do
+Using only @command{gprbuild}, you could do
 
 @smallexample
   gprbuild -PA.gpr
   gprbuild -PB.gpr
 @end smallexample
 
-to build both. But again, gprbuild has to do some duplicate work for
+to build both. But again, @command{gprbuild} has to do some duplicate work for
 those files that are shared between the two, and cannot truly build
 things in parallel efficiently.
 
@@ -2316,7 +2321,7 @@ sources.
 
 This scenario is particularly useful in environments like VxWorks 653
 where the applications running in the multiple partitions can be built
-in parallel through a single gprbuild command. This also works nicely
+in parallel through a single @command{gprbuild} command. This also works nicely
 with Annex E.
 
 @c ---------------------------------------------
@@ -2324,9 +2329,9 @@ with Annex E.
 @subsection Define a build environment
 @c ---------------------------------------------
 
-The environment variables at the time you launch gprbuild or gprbuild
-will influence the view these tools have of the project (PATH to find
-the compiler, ADA_PROJECT_PATH or GPR_PROJECT_PATH to find the
+The environment variables at the time you launch @command{gprbuild} or
+@command{gnatmake} will influence the view these tools have of the project
+(PATH to find the compiler, ADA_PROJECT_PATH or GPR_PROJECT_PATH to find the
 projects, environment variables that are referenced in project files
 through the "external" statement,...). Several command line switches
 can be used to override those (-X or -aP), but on some systems and
@@ -2382,19 +2387,19 @@ end MyProject;
 @subsection Performance improvements in builder
 @c --------------------------------------------
 
-The loading of aggregate projects is optimized in gprbuild and
-gnatmake, so that all files are searched for only once on the disk
+The loading of aggregate projects is optimized in @command{gprbuild} and
+@command{gnatmake}, so that all files are searched for only once on the disk
 (thus reducing the number of system calls and contributing to faster
 compilation times especially on systems with sources on remote
-servers). As part of the loading, gprbuild and gnatmake compute how
-and where a source file should be compiled, and even if it is found
+servers). As part of the loading, @command{gprbuild} and @command{gnatmake}
+compute how and where a source file should be compiled, and even if it is found
 several times in the aggregated projects it will be compiled only
 once.
 
 Since there is no ambiguity as to which switches should be used, files
 can be compiled in parallel (through the usual -j switch) and this can
 be done while maximizing the use of CPUs (compared to launching
-multiple gprbuild and gnatmake commands in parallel).
+multiple @command{gprbuild} and @command{gnatmake} commands in parallel).
 
 @c -------------------------------------
 @node Syntax of aggregate projects
@@ -2577,15 +2582,15 @@ These override the value given by the attribute, so that
 users can override the value set in the (presumably shared
 with others in his team) aggregate project.
 
-@item The -X command line switch to gprbuild and gnatmake
+@item The -X command line switch to @command{gprbuild} and @command{gnatmake}
 
 This always takes precedence.
 
 @end itemize
 
 This attribute is only taken into account in the main aggregate
-project (i.e. the one specified on the command line to gprbuild or
-natmake), and ignored in other aggregate projects. It is invalid
+project (i.e. the one specified on the command line to @command{gprbuild} or
+@command{gnatmake}), and ignored in other aggregate projects. It is invalid
 in standard projects.
 The goal is to have a consistent value in all
 projects that are built through the aggregate, which would not
@@ -2610,8 +2615,8 @@ are valid:
 @item @b{Switches}:
 @cindex @code{Switches}
 This attribute gives the list of switches to use for the builder
-(gprbuild or gnatmake), depending on the language of the main file.
-For instance,
+(@command{gprbuild} or @command{gnatmake}), depending on the language of the
+main file. For instance,
 
 @smallexample @c projectfile
 for Switches ("Ada") use ("-d", "-p");
@@ -2995,7 +3000,7 @@ from other project or library project files.
 @item @b{library}: a library project must declare both attributes
   @code{Library_Name} and @code{Library_Dir}.
 @item @b{configuration}: a configuration project cannot be in a project tree.
-  It describes compilers and other tools to @code{gprbuild}.
+  It describes compilers and other tools to @command{gprbuild}.
 @end table
 
 @c ---------------------------------------------
@@ -3263,7 +3268,7 @@ Here are some specific examples:
 @noindent
 An external value is an expression whose value is obtained from the command
 that invoked the processing of the current project file (typically a
-gnatmake or gprbuild command).
+@command{gnatmake} or @command{gprbuild} command).
 
 There are two kinds of external values, one that returns a single string, and
 one that returns a string list.
@@ -3878,11 +3883,12 @@ Follow all symbolic links when processing project files.
 
 @item ^--subdirs^/SUBDIRS^=<subdir>
 @cindex @option{^--subdirs^/SUBDIRS^=} (gnatmake and gnatclean)
-This switch is recognized by gnatmake and gnatclean. It indicate that the real
-directories (except the source directories) are the subdirectories <subdir>
-of the directories specified in the project files. This applies in particular
-to object directories, library directories and exec directories. If the
-subdirectories do not exist, they are created automatically.
+This switch is recognized by @command{gnatmake} and @command{gnatclean}. It
+indicate that the real directories (except the source directories) are the
+subdirectories <subdir> of the directories specified in the project files.
+This applies in particular to object directories, library directories and
+exec directories. If the subdirectories do not exist, they are created
+automatically.
 
 @end table
 
@@ -4592,7 +4598,7 @@ e.g.@: @code{"wtx"} or @code{"vxworks"}.
 This is an associative array attribute, whose domain is a language name. Its
 value is  string that denotes the command to be used to invoke the compiler.
 The value of @code{Compiler_Command ("Ada")} is expected to be compatible with
-gnatmake, in particular in the handling of switches.
+@command{gnatmake}, in particular in the handling of switches.
 
 @item Debugger_Command
 This is simple attribute, Its value is a string that specifies the name of

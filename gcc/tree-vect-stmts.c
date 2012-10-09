@@ -3657,6 +3657,7 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
       if (dump_kind_p (MSG_MISSED_OPTIMIZATION))
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
                          "not worthwhile without SIMD support.");
+      return false;
     }
 
   if (!vec_stmt) /* transformation not required.  */

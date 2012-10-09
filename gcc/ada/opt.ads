@@ -230,11 +230,12 @@ package Opt is
    Back_End_Handles_Limited_Types : Boolean;
    --  This flag is set true if the back end can properly handle limited or
    --  other by reference types, and avoid copies. If this flag is False, then
-   --  the front end does special expansion for conditional expressions to make
+   --  the front end does special expansion for if/case expressions to make
    --  sure that no copy occurs. If the flag is True, then the expansion for
-   --  conditional expressions relies on the back end properly handling things.
+   --  if and case expressions relies on the back end properly handling things.
    --  Currently the default is False for all cases (set in gnat1drv). The
-   --  default can be modified using -gnatd.L (sets the flag True).
+   --  default can be modified using -gnatd.L (sets the flag True). This is
+   --  used to test the possibility of having the backend handle this.
 
    Bind_Alternate_Main_Name : Boolean := False;
    --  GNATBIND
@@ -966,6 +967,12 @@ package Opt is
    --  sequence of units in the current source file, using the value stored
    --  in this variable (e.g. 2 = select second unit in file). A value of
    --  zero indicates that we are in normal (one unit per file) mode.
+
+   No_Deletion : Boolean := False;
+   --  GNATPREP
+   --  Set by preprocessor switch -a. Do not eliminate any source text. Implies
+   --  Undefined_Symbols_Are_False. Useful to perform a syntax check on all
+   --  branches of #if constructs.
 
    No_Main_Subprogram : Boolean := False;
    --  GNATMAKE, GNATBIND

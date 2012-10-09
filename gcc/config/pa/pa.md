@@ -2881,15 +2881,17 @@
   [(set_attr "type" "store")
    (set_attr "length" "4")])
 
-(define_insn ""
-  [(set (match_operand:HI 0 "register_operand" "=r")
-	(plus:HI (match_operand:HI 1 "register_operand" "r")
-		 (match_operand 2 "const_int_operand" "J")))]
+(define_insn "addhi3"
+  [(set (match_operand:HI 0 "register_operand" "=r,r")
+	(plus:HI (match_operand:HI 1 "register_operand" "%r,r")
+		 (match_operand:HI 2 "arith14_operand" "r,J")))]
   ""
-  "ldo %2(%1),%0"
-  [(set_attr "type" "binary")
+  "@
+   {addl|add,l} %1,%2,%0
+   ldo %2(%1),%0"
+  [(set_attr "type" "binary,binary")
    (set_attr "pa_combine_type" "addmove")
-   (set_attr "length" "4")])
+   (set_attr "length" "4,4")])
 
 (define_expand "movqi"
   [(set (match_operand:QI 0 "general_operand" "")
@@ -5621,22 +5623,8 @@
   [(set (match_operand:DI 0 "register_operand" "")
 	(and:DI (match_operand:DI 1 "register_operand" "")
 		(match_operand:DI 2 "and_operand" "")))]
-  ""
-  "
-{
-  /* Both operands must be register operands.  */
-  if (!TARGET_64BIT && !register_operand (operands[2], DImode))
-    FAIL;
-}")
-
-(define_insn ""
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(and:DI (match_operand:DI 1 "register_operand" "%r")
-		(match_operand:DI 2 "register_operand" "r")))]
-  "!TARGET_64BIT"
-  "and %1,%2,%0\;and %R1,%R2,%R0"
-  [(set_attr "type" "binary")
-   (set_attr "length" "8")])
+  "TARGET_64BIT"
+  "")
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r,r")
@@ -5662,15 +5650,6 @@
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(and:DI (not:DI (match_operand:DI 1 "register_operand" "r"))
 		(match_operand:DI 2 "register_operand" "r")))]
-  "!TARGET_64BIT"
-  "andcm %2,%1,%0\;andcm %R2,%R1,%R0"
-  [(set_attr "type" "binary")
-   (set_attr "length" "8")])
-
-(define_insn ""
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(and:DI (not:DI (match_operand:DI 1 "register_operand" "r"))
-		(match_operand:DI 2 "register_operand" "r")))]
   "TARGET_64BIT"
   "andcm %2,%1,%0"
   [(set_attr "type" "binary")
@@ -5689,22 +5668,8 @@
   [(set (match_operand:DI 0 "register_operand" "")
 	(ior:DI (match_operand:DI 1 "register_operand" "")
 		(match_operand:DI 2 "reg_or_cint_ior_operand" "")))]
-  ""
-  "
-{
-  /* Both operands must be register operands.  */
-  if (!TARGET_64BIT && !register_operand (operands[2], DImode))
-    FAIL;
-}")
-
-(define_insn ""
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(ior:DI (match_operand:DI 1 "register_operand" "%r")
-		(match_operand:DI 2 "register_operand" "r")))]
-  "!TARGET_64BIT"
-  "or %1,%2,%0\;or %R1,%R2,%R0"
-  [(set_attr "type" "binary")
-   (set_attr "length" "8")])
+  "TARGET_64BIT"
+  "")
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r,r")
@@ -5754,19 +5719,8 @@
   [(set (match_operand:DI 0 "register_operand" "")
 	(xor:DI (match_operand:DI 1 "register_operand" "")
 		(match_operand:DI 2 "register_operand" "")))]
-  ""
-  "
-{
-}")
-
-(define_insn ""
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(xor:DI (match_operand:DI 1 "register_operand" "%r")
-		(match_operand:DI 2 "register_operand" "r")))]
-  "!TARGET_64BIT"
-  "xor %1,%2,%0\;xor %R1,%R2,%R0"
-  [(set_attr "type" "binary")
-   (set_attr "length" "8")])
+  "TARGET_64BIT"
+  "")
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")

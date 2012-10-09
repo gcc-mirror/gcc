@@ -265,6 +265,24 @@ static const char *const mips_fp_conditions[] = {
   MIPS_FP_CONDITIONS (STRINGIFY)
 };
 
+/* Tuning information that is automatically derived from other sources
+   (such as the scheduler).  */
+static struct {
+  /* The architecture and tuning settings that this structure describes.  */
+  enum processor arch;
+  enum processor tune;
+
+  /* True if this structure describes MIPS16 settings.  */
+  bool mips16_p;
+
+  /* True if the structure has been initialized.  */
+  bool initialized_p;
+
+  /* True if "MULT $0, $0" is preferable to "MTLO $0; MTHI $0"
+     when optimizing for speed.  */
+  bool fast_mult_zero_zero_p;
+} mips_tuning_info;
+
 /* Information about a function's frame layout.  */
 struct GTY(())  mips_frame_info {
   /* The size of the frame in bytes.  */
@@ -2395,11 +2413,11 @@ mips_load_store_insns (rtx mem, rtx insn)
   mode = GET_MODE (mem);
 
   /* Try to prove that INSN does not need to be split.  */
-  might_split_p = true;
-  if (GET_MODE_BITSIZE (mode) == 64)
+  might_split_p = GET_MODE_SIZE (mode) > UNITS_PER_WORD;
+  if (might_split_p)
     {
       set = single_set (insn);
-      if (set && !mips_split_64bit_move_p (SET_DEST (set), SET_SRC (set)))
+      if (set && !mips_split_move_insn_p (SET_DEST (set), SET_SRC (set), insn))
 	might_split_p = false;
     }
 
@@ -2439,6 +2457,18 @@ mips_emit_move (rtx dest, rtx src)
   return (can_create_pseudo_p ()
 	  ? emit_move_insn (dest, src)
 	  : emit_move_insn_1 (dest, src));
+}
+
+/* Emit a move from SRC to DEST, splitting compound moves into individual
+   instructions.  SPLIT_TYPE is the type of split to perform.  */
+
+static void
+mips_emit_move_or_split (rtx dest, rtx src, enum mips_split_type split_type)
+{
+  if (mips_split_move_p (dest, src, split_type))
+    mips_split_move (dest, src, split_type);
+  else
+    mips_emit_move (dest, src);
 }
 
 /* Emit an instruction of the form (set TARGET (CODE OP0)).  */
@@ -3527,6 +3557,17 @@ mips_set_reg_reg_cost (enum machine_mode mode)
     }
 }
 
+/* Return the cost of an operand X that can be trucated for free.
+   SPEED says whether we're optimizing for size or speed.  */
+
+static int
+mips_truncated_op_cost (rtx x, bool speed)
+{
+  if (GET_CODE (x) == TRUNCATE)
+    x = XEXP (x, 0);
+  return set_src_cost (x, speed);
+}
+
 /* Implement TARGET_RTX_COSTS.  */
 
 static bool
@@ -3907,12 +3948,13 @@ mips_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
     case ZERO_EXTEND:
       if (outer_code == SET
 	  && ISA_HAS_BADDU
-	  && (GET_CODE (XEXP (x, 0)) == TRUNCATE
-	      || GET_CODE (XEXP (x, 0)) == SUBREG)
 	  && GET_MODE (XEXP (x, 0)) == QImode
-	  && GET_CODE (XEXP (XEXP (x, 0), 0)) == PLUS)
+	  && GET_CODE (XEXP (x, 0)) == PLUS)
 	{
-	  *total = set_src_cost (XEXP (XEXP (x, 0), 0), speed);
+	  rtx plus = XEXP (x, 0);
+	  *total = (COSTS_N_INSNS (1)
+		    + mips_truncated_op_cost (XEXP (plus, 0), speed)
+		    + mips_truncated_op_cost (XEXP (plus, 1), speed));
 	  return true;
 	}
       *total = mips_zero_extend_cost (mode, XEXP (x, 0));
@@ -4107,39 +4149,60 @@ mips_subword (rtx op, bool high_p)
   return simplify_gen_subreg (word_mode, op, mode, byte);
 }
 
-/* Return true if a 64-bit move from SRC to DEST should be split into two.  */
+/* Return true if SRC should be moved into DEST using "MULT $0, $0".
+   SPLIT_TYPE is the condition under which moves should be split.  */
+
+static bool
+mips_mult_move_p (rtx dest, rtx src, enum mips_split_type split_type)
+{
+  return ((split_type != SPLIT_FOR_SPEED
+	   || mips_tuning_info.fast_mult_zero_zero_p)
+	  && src == const0_rtx
+	  && REG_P (dest)
+	  && GET_MODE_SIZE (GET_MODE (dest)) == 2 * UNITS_PER_WORD
+	  && (ISA_HAS_DSP_MULT
+	      ? ACC_REG_P (REGNO (dest))
+	      : MD_REG_P (REGNO (dest))));
+}
+
+/* Return true if a move from SRC to DEST should be split into two.
+   SPLIT_TYPE describes the split condition.  */
 
 bool
-mips_split_64bit_move_p (rtx dest, rtx src)
+mips_split_move_p (rtx dest, rtx src, enum mips_split_type split_type)
 {
-  if (TARGET_64BIT)
+  /* Check whether the move can be done using some variant of MULT $0,$0.  */
+  if (mips_mult_move_p (dest, src, split_type))
     return false;
 
   /* FPR-to-FPR moves can be done in a single instruction, if they're
      allowed at all.  */
-  if (FP_REG_RTX_P (src) && FP_REG_RTX_P (dest))
+  unsigned int size = GET_MODE_SIZE (GET_MODE (dest));
+  if (size == 8 && FP_REG_RTX_P (src) && FP_REG_RTX_P (dest))
     return false;
 
   /* Check for floating-point loads and stores.  */
-  if (ISA_HAS_LDC1_SDC1)
+  if (size == 8 && ISA_HAS_LDC1_SDC1)
     {
       if (FP_REG_RTX_P (dest) && MEM_P (src))
 	return false;
       if (FP_REG_RTX_P (src) && MEM_P (dest))
 	return false;
     }
-  return true;
+
+  /* Otherwise split all multiword moves.  */
+  return size > UNITS_PER_WORD;
 }
 
-/* Split a doubleword move from SRC to DEST.  On 32-bit targets,
-   this function handles 64-bit moves for which mips_split_64bit_move_p
-   holds.  For 64-bit targets, this function handles 128-bit moves.  */
+/* Split a move from SRC to DEST, given that mips_split_move_p holds.
+   SPLIT_TYPE describes the split condition.  */
 
 void
-mips_split_doubleword_move (rtx dest, rtx src)
+mips_split_move (rtx dest, rtx src, enum mips_split_type split_type)
 {
   rtx low_dest;
 
+  gcc_checking_assert (mips_split_move_p (dest, src, split_type));
   if (FP_REG_RTX_P (dest) || FP_REG_RTX_P (src))
     {
       if (!TARGET_64BIT && GET_MODE (dest) == DImode)
@@ -4194,6 +4257,41 @@ mips_split_doubleword_move (rtx dest, rtx src)
 	}
     }
 }
+
+/* Return the split type for instruction INSN.  */
+
+static enum mips_split_type
+mips_insn_split_type (rtx insn)
+{
+  basic_block bb = BLOCK_FOR_INSN (insn);
+  if (bb)
+    {
+      if (optimize_bb_for_speed_p (bb))
+	return SPLIT_FOR_SPEED;
+      else
+	return SPLIT_FOR_SIZE;
+    }
+  /* Once CFG information has been removed, we should trust the optimization
+     decisions made by previous passes and only split where necessary.  */
+  return SPLIT_IF_NECESSARY;
+}
+
+/* Return true if a move from SRC to DEST in INSN should be split.  */
+
+bool
+mips_split_move_insn_p (rtx dest, rtx src, rtx insn)
+{
+  return mips_split_move_p (dest, src, mips_insn_split_type (insn));
+}
+
+/* Split a move from SRC to DEST in INSN, given that mips_split_move_insn_p
+   holds.  */
+
+void
+mips_split_move_insn (rtx dest, rtx src, rtx insn)
+{
+  mips_split_move (dest, src, mips_insn_split_type (insn));
+}
 
 /* Return the appropriate instructions to move SRC into DEST.  Assume
    that SRC is operand 1 and DEST is operand 0.  */
@@ -4211,7 +4309,7 @@ mips_output_move (rtx dest, rtx src)
   mode = GET_MODE (dest);
   dbl_p = (GET_MODE_SIZE (mode) == 8);
 
-  if (dbl_p && mips_split_64bit_move_p (dest, src))
+  if (mips_split_move_p (dest, src, SPLIT_IF_NECESSARY))
     return "#";
 
   if ((src_code == REG && GP_REG_P (REGNO (src)))
@@ -4221,6 +4319,14 @@ mips_output_move (rtx dest, rtx src)
 	{
 	  if (GP_REG_P (REGNO (dest)))
 	    return "move\t%0,%z1";
+
+	  if (mips_mult_move_p (dest, src, SPLIT_IF_NECESSARY))
+	    {
+	      if (ISA_HAS_DSP_MULT)
+		return "mult\t%q0,%.,%.";
+	      else
+		return "mult\t%.,%.";
+	    }
 
 	  /* Moves to HI are handled by special .md insns.  */
 	  if (REGNO (dest) == LO_REGNUM)
@@ -10432,10 +10538,7 @@ mips_save_reg (rtx reg, rtx mem)
     {
       rtx x1, x2;
 
-      if (mips_split_64bit_move_p (mem, reg))
-	mips_split_doubleword_move (mem, reg);
-      else
-	mips_emit_move (mem, reg);
+      mips_emit_move_or_split (mem, reg, SPLIT_IF_NECESSARY);
 
       x1 = mips_frame_set (mips_subword (mem, false),
 			   mips_subword (reg, false));
@@ -14895,10 +14998,15 @@ struct mips_sim {
 static void
 mips_sim_reset (struct mips_sim *state)
 {
+  curr_state = state->dfa_state;
+
   state->time = 0;
   state->insns_left = state->issue_rate;
   memset (&state->last_set, 0, sizeof (state->last_set));
-  state_reset (state->dfa_state);
+  state_reset (curr_state);
+
+  targetm.sched.init (0, false, 0);
+  advance_state (curr_state);
 }
 
 /* Initialize STATE before its first use.  DFA_STATE points to an
@@ -14907,6 +15015,12 @@ mips_sim_reset (struct mips_sim *state)
 static void
 mips_sim_init (struct mips_sim *state, state_t dfa_state)
 {
+  if (targetm.sched.init_dfa_pre_cycle_insn)
+    targetm.sched.init_dfa_pre_cycle_insn ();
+
+  if (targetm.sched.init_dfa_post_cycle_insn)
+    targetm.sched.init_dfa_post_cycle_insn ();
+
   state->issue_rate = mips_issue_rate ();
   state->dfa_state = dfa_state;
   mips_sim_reset (state);
@@ -14917,9 +15031,11 @@ mips_sim_init (struct mips_sim *state, state_t dfa_state)
 static void
 mips_sim_next_cycle (struct mips_sim *state)
 {
+  curr_state = state->dfa_state;
+
   state->time++;
   state->insns_left = state->issue_rate;
-  state_transition (state->dfa_state, 0);
+  advance_state (curr_state);
 }
 
 /* Advance simulation state STATE until instruction INSN can read
@@ -15025,8 +15141,11 @@ mips_sim_record_set (rtx x, const_rtx pat ATTRIBUTE_UNUSED, void *data)
 static void
 mips_sim_issue_insn (struct mips_sim *state, rtx insn)
 {
-  state_transition (state->dfa_state, insn);
-  state->insns_left--;
+  curr_state = state->dfa_state;
+
+  state_transition (curr_state, insn);
+  state->insns_left = targetm.sched.variable_issue (0, false, insn,
+						    state->insns_left);
 
   mips_sim_insn = insn;
   note_stores (PATTERN (insn), mips_sim_record_set, state);
@@ -15076,6 +15195,109 @@ mips_sim_finish_insn (struct mips_sim *state, rtx insn)
     default:
       break;
     }
+}
+
+/* Use simulator state STATE to calculate the execution time of
+   instruction sequence SEQ.  */
+
+static unsigned int
+mips_seq_time (struct mips_sim *state, rtx seq)
+{
+  mips_sim_reset (state);
+  for (rtx insn = seq; insn; insn = NEXT_INSN (insn))
+    {
+      mips_sim_wait_insn (state, insn);
+      mips_sim_issue_insn (state, insn);
+    }
+  return state->time;
+}
+
+/* Return the execution-time cost of mips_tuning_info.fast_mult_zero_zero_p
+   setting SETTING, using STATE to simulate instruction sequences.  */
+
+static unsigned int
+mips_mult_zero_zero_cost (struct mips_sim *state, bool setting)
+{
+  mips_tuning_info.fast_mult_zero_zero_p = setting;
+  start_sequence ();
+
+  enum machine_mode dword_mode = TARGET_64BIT ? TImode : DImode;
+  rtx hilo = gen_rtx_REG (dword_mode, MD_REG_FIRST);
+  mips_emit_move_or_split (hilo, const0_rtx, SPLIT_FOR_SPEED);
+
+  /* If the target provides mulsidi3_32bit then that's the most likely
+     consumer of the result.  Test for bypasses.  */
+  if (dword_mode == DImode && HAVE_maddsidi4)
+    {
+      rtx gpr = gen_rtx_REG (SImode, GP_REG_FIRST + 4);
+      emit_insn (gen_maddsidi4 (hilo, gpr, gpr, hilo));
+    }
+
+  unsigned int time = mips_seq_time (state, get_insns ());
+  end_sequence ();
+  return time;
+}
+
+/* Check the relative speeds of "MULT $0,$0" and "MTLO $0; MTHI $0"
+   and set up mips_tuning_info.fast_mult_zero_zero_p accordingly.
+   Prefer MULT -- which is shorter -- in the event of a tie.  */
+
+static void
+mips_set_fast_mult_zero_zero_p (struct mips_sim *state)
+{
+  if (TARGET_MIPS16)
+    /* No MTLO or MTHI available.  */
+    mips_tuning_info.fast_mult_zero_zero_p = true;
+  else
+    {
+      unsigned int true_time = mips_mult_zero_zero_cost (state, true);
+      unsigned int false_time = mips_mult_zero_zero_cost (state, false);
+      mips_tuning_info.fast_mult_zero_zero_p = (true_time <= false_time);
+    }
+}
+
+/* Set up costs based on the current architecture and tuning settings.  */
+
+static void
+mips_set_tuning_info (void)
+{
+  if (mips_tuning_info.initialized_p
+      && mips_tuning_info.arch == mips_arch
+      && mips_tuning_info.tune == mips_tune
+      && mips_tuning_info.mips16_p == TARGET_MIPS16)
+    return;
+
+  mips_tuning_info.arch = mips_arch;
+  mips_tuning_info.tune = mips_tune;
+  mips_tuning_info.mips16_p = TARGET_MIPS16;
+  mips_tuning_info.initialized_p = true;
+
+  dfa_start ();
+
+  struct mips_sim state;
+  mips_sim_init (&state, alloca (state_size ()));
+
+  mips_set_fast_mult_zero_zero_p (&state);
+
+  dfa_finish ();
+}
+
+/* Implement TARGET_EXPAND_TO_RTL_HOOK.  */
+
+static void
+mips_expand_to_rtl_hook (void)
+{
+  /* We need to call this at a point where we can safely create sequences
+     of instructions, so TARGET_OVERRIDE_OPTIONS is too early.  We also
+     need to call it at a point where the DFA infrastructure is not
+     already in use, so we can't just call it lazily on demand.
+
+     At present, mips_tuning_info is only needed during post-expand
+     RTL passes such as split_insns, so this hook should be early enough.
+     We may need to move the call elsewhere if mips_tuning_info starts
+     to be used for other things (such as rtx_costs, or expanders that
+     could be called during gimple optimization).  */
+  mips_set_tuning_info ();
 }
 
 /* The VR4130 pipeline issues aligned pairs of instructions together,
@@ -17748,6 +17970,8 @@ mips_expand_vec_minmax (rtx target, rtx op0, rtx op1,
 #undef  TARGET_PREFERRED_RELOAD_CLASS
 #define TARGET_PREFERRED_RELOAD_CLASS mips_preferred_reload_class
 
+#undef TARGET_EXPAND_TO_RTL_HOOK
+#define TARGET_EXPAND_TO_RTL_HOOK mips_expand_to_rtl_hook
 #undef TARGET_ASM_FILE_START
 #define TARGET_ASM_FILE_START mips_file_start
 #undef TARGET_ASM_FILE_START_FILE_DIRECTIVE

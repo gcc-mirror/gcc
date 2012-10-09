@@ -1,6 +1,6 @@
 // TR2 <dynamic_bitset> -*- C++ -*-
 
-// Copyright (C) 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
+// Copyright (C) 2009-2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -39,7 +39,7 @@
 #include <bits/functexcept.h>   // For invalid_argument, out_of_range,
 				// overflow_error
 #include <iosfwd>
-#include <cxxabi_forced.h>
+#include <bits/cxxabi_forced.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

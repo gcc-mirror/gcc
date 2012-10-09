@@ -1154,6 +1154,7 @@ package body Sem_Dim is
 
          when N_Attribute_Reference       |
               N_Expanded_Name             |
+              N_Function_Call             |
               N_Identifier                |
               N_Indexed_Component         |
               N_Qualified_Expression      |
@@ -1506,154 +1507,164 @@ package body Sem_Dim is
       --  so far by the compiler in this routine.
 
    begin
-      --  Aspect is an Ada 2012 feature. Nothing to do here if the list of
-      --  actuals is empty.Note that there is no need to check dimensions for
-      --  calls that don't come from source.
+      --  Aspect is an Ada 2012 feature. Note that there is no need to check
+      --  dimensions for calls that don't come from source, or those that may
+      --  have semantic errors.
 
       if Ada_Version < Ada_2012
         or else not Comes_From_Source (N)
-        or else Is_Empty_List (Actuals)
+        or else Error_Posted (N)
       then
          return;
       end if;
 
-      --  Special processing for elementary functions
+      --  Check the dimensions of the actuals, if any
 
-      --  For Sqrt call, the resulting dimensions equal to half the dimensions
-      --  of the actual. For all other elementary calls, this routine check
-      --  that every actual is dimensionless.
+      if not Is_Empty_List (Actuals) then
 
-      if Nkind (N) = N_Function_Call then
-         Elementary_Function_Calls : declare
-            Dims_Of_Call : Dimension_Type;
-            Ent          : Entity_Id := Nam;
+         --  Special processing for elementary functions
 
-            function Is_Elementary_Function_Entity
-              (Sub_Id : Entity_Id) return Boolean;
-            --  Given Sub_Id, the original subprogram entity, return True if
-            --  call is to an elementary function
-            --  (see Ada.Numerics.Generic_Elementary_Functions).
+         --  For Sqrt call, the resulting dimensions equal to half the
+         --  dimensions of the actual. For all other elementary calls, this
+         --  routine check that every actual is dimensionless.
 
-            -----------------------------------
-            -- Is_Elementary_Function_Entity --
-            -----------------------------------
+         if Nkind (N) = N_Function_Call then
+            Elementary_Function_Calls : declare
+               Dims_Of_Call : Dimension_Type;
+               Ent          : Entity_Id := Nam;
 
-            function Is_Elementary_Function_Entity
-              (Sub_Id : Entity_Id) return Boolean
-            is
-               Loc : constant Source_Ptr := Sloc (Sub_Id);
+               function Is_Elementary_Function_Entity
+                 (Sub_Id : Entity_Id) return Boolean;
+               --  Given Sub_Id, the original subprogram entity, return True
+               --  if call is to an elementary function (see Ada.Numerics.
+               --  Generic_Elementary_Functions).
+
+               -----------------------------------
+               -- Is_Elementary_Function_Entity --
+               -----------------------------------
+
+               function Is_Elementary_Function_Entity
+                 (Sub_Id : Entity_Id) return Boolean
+               is
+                  Loc : constant Source_Ptr := Sloc (Sub_Id);
+
+               begin
+                  --  Is entity in Ada.Numerics.Generic_Elementary_Functions?
+
+                  return
+                    Loc > No_Location
+                      and then
+                        Is_RTU
+                          (Cunit_Entity (Get_Source_Unit (Loc)),
+                            Ada_Numerics_Generic_Elementary_Functions);
+               end Is_Elementary_Function_Entity;
+
+            --  Start of processing for Elementary_Function_Calls
 
             begin
-               --  Is function entity in
-               --  Ada.Numerics.Generic_Elementary_Functions?
+               --  Get original subprogram entity following the renaming chain
 
-               return
-                 Loc > No_Location
-                   and then
-                     Is_RTU
-                       (Cunit_Entity (Get_Source_Unit (Loc)),
-                         Ada_Numerics_Generic_Elementary_Functions);
-            end Is_Elementary_Function_Entity;
-
-         --  Start of processing for Elementary_Function_Calls
-
-         begin
-            --  Get the original subprogram entity following the renaming chain
-
-            if Present (Alias (Ent)) then
-               Ent := Alias (Ent);
-            end if;
-
-            --  Check the call is an Elementary function call
-
-            if Is_Elementary_Function_Entity (Ent) then
-
-               --  Sqrt function call case
-
-               if Chars (Ent) = Name_Sqrt then
-                  Dims_Of_Call := Dimensions_Of (First_Actual (N));
-
-                  --  Eavluates the resulting dimensions (i.e. half the
-                  --  dimensions of the actual).
-
-                  if Exists (Dims_Of_Call) then
-                     for Position in Dims_Of_Call'Range loop
-                        Dims_Of_Call (Position) :=
-                          Dims_Of_Call (Position) *
-                            Rational'(Numerator   => 1,
-                                      Denominator => 2);
-                     end loop;
-
-                     Set_Dimensions (N, Dims_Of_Call);
-                  end if;
-
-               --  All other elementary functions case. Note that every actual
-               --  here should be dimensionless.
-
-               else
-                  Actual := First_Actual (N);
-                  while Present (Actual) loop
-                     if Exists (Dimensions_Of (Actual)) then
-
-                        --  Check if error has already been encountered so far
-
-                        if not Error_Detected then
-                           Error_Msg_NE ("dimensions mismatch in call of&",
-                                         N, Name (N));
-                           Error_Detected := True;
-                        end if;
-
-                        Error_Msg_N ("\expected dimension [], found " &
-                                     Dimensions_Msg_Of (Actual),
-                                     Actual);
-                     end if;
-
-                     Next_Actual (Actual);
-                  end loop;
+               if Present (Alias (Ent)) then
+                  Ent := Alias (Ent);
                end if;
 
-               --  Nothing more to do for elementary functions
+               --  Check the call is an Elementary function call
 
-               return;
-            end if;
-         end Elementary_Function_Calls;
-      end if;
+               if Is_Elementary_Function_Entity (Ent) then
 
-      --  General case. Check, for each parameter, the dimensions of the actual
-      --  and its corresponding formal match. Otherwise, complain.
+                  --  Sqrt function call case
 
-      Actual  := First_Actual (N);
-      Formal  := First_Formal (Nam);
+                  if Chars (Ent) = Name_Sqrt then
+                     Dims_Of_Call := Dimensions_Of (First_Actual (N));
 
-      while Present (Formal) loop
-         Formal_Typ     := Etype (Formal);
-         Dims_Of_Formal := Dimensions_Of (Formal_Typ);
+                     --  Evaluates the resulting dimensions (i.e. half the
+                     --  dimensions of the actual).
 
-         --  If the formal is not dimensionless, check dimensions of formal and
-         --  actual match. Otherwise, complain.
+                     if Exists (Dims_Of_Call) then
+                        for Position in Dims_Of_Call'Range loop
+                           Dims_Of_Call (Position) :=
+                             Dims_Of_Call (Position) *
+                               Rational'(Numerator => 1, Denominator => 2);
+                        end loop;
 
-         if Exists (Dims_Of_Formal)
-           and then Dimensions_Of (Actual) /= Dims_Of_Formal
-         then
-            --  Check if an error has already been encountered so far
+                        Set_Dimensions (N, Dims_Of_Call);
+                     end if;
 
-            if not Error_Detected then
-               Error_Msg_NE ("dimensions mismatch in& call", N, Name (N));
-               Error_Detected := True;
-            end if;
+                  --  All other elementary functions case. Note that every
+                  --  actual here should be dimensionless.
 
-            Error_Msg_N ("\expected dimension " &
-                         Dimensions_Msg_Of (Formal_Typ) & ", found " &
-                         Dimensions_Msg_Of (Actual),
-                         Actual);
+                  else
+                     Actual := First_Actual (N);
+                     while Present (Actual) loop
+                        if Exists (Dimensions_Of (Actual)) then
+
+                           --  Check if error has already been encountered
+
+                           if not Error_Detected then
+                              Error_Msg_NE ("dimensions mismatch in call of&",
+                                            N, Name (N));
+                              Error_Detected := True;
+                           end if;
+
+                           Error_Msg_N ("\expected dimension [], found " &
+                                        Dimensions_Msg_Of (Actual),
+                                        Actual);
+                        end if;
+
+                        Next_Actual (Actual);
+                     end loop;
+                  end if;
+
+                  --  Nothing more to do for elementary functions
+
+                  return;
+               end if;
+            end Elementary_Function_Calls;
          end if;
 
-         Next_Actual (Actual);
-         Next_Formal (Formal);
-      end loop;
+         --  General case. Check, for each parameter, the dimensions of the
+         --  actual and its corresponding formal match. Otherwise, complain.
+
+         Actual := First_Actual (N);
+         Formal := First_Formal (Nam);
+
+         while Present (Formal) loop
+
+            --  A missing corresponding actual indicates that the analysis of
+            --  the call was aborted due to a previous error.
+
+            if No (Actual) then
+               Cascaded_Error;
+               return;
+            end if;
+
+            Formal_Typ     := Etype (Formal);
+            Dims_Of_Formal := Dimensions_Of (Formal_Typ);
+
+            --  If the formal is not dimensionless, check dimensions of formal
+            --  and actual match. Otherwise, complain.
+
+            if Exists (Dims_Of_Formal)
+              and then Dimensions_Of (Actual) /= Dims_Of_Formal
+            then
+               --  Check if an error has already been encountered so far
+
+               if not Error_Detected then
+                  Error_Msg_NE ("dimensions mismatch in& call", N, Name (N));
+                  Error_Detected := True;
+               end if;
+
+               Error_Msg_N
+                 ("\expected dimension " & Dimensions_Msg_Of (Formal_Typ)
+                  & ", found " & Dimensions_Msg_Of (Actual), Actual);
+            end if;
+
+            Next_Actual (Actual);
+            Next_Formal (Formal);
+         end loop;
+      end if;
 
       --  For function calls, propagate the dimensions from the returned type
-      --  to the function call.
 
       if Nkind (N) = N_Function_Call then
          Analyze_Dimension_Has_Etype (N);
@@ -1913,27 +1924,45 @@ package body Sem_Dim is
 
    procedure Analyze_Dimension_Has_Etype (N : Node_Id) is
       Etyp         : constant Entity_Id := Etype (N);
-      Dims_Of_Etyp : constant Dimension_Type := Dimensions_Of (Etyp);
+      Dims_Of_Etyp : Dimension_Type     := Dimensions_Of (Etyp);
 
    begin
-      --  Propagation of the dimensions from the type
+      --  General case. Propagation of the dimensions from the type
 
       if Exists (Dims_Of_Etyp) then
          Set_Dimensions (N, Dims_Of_Etyp);
 
-      --  Propagation of the dimensions from the entity for identifier whose
-      --  entity is a non-dimensionless consant.
+      --  Identifier case. Propagate the dimensions from the entity for
+      --  identifier whose entity is a non-dimensionless constant.
 
-      elsif Nkind (N) = N_Identifier
-        and then Exists (Dimensions_Of (Entity (N)))
+      elsif Nkind (N) = N_Identifier then
+         Analyze_Dimension_Identifier : declare
+            Id : constant Entity_Id := Entity (N);
+         begin
+            if Ekind (Id) = E_Constant
+              and then Exists (Dimensions_Of (Id))
+            then
+               Set_Dimensions (N, Dimensions_Of (Id));
+            end if;
+         end Analyze_Dimension_Identifier;
+
+      --  Attribute reference case. Propagate the dimensions from the prefix.
+
+      elsif Nkind (N) = N_Attribute_Reference
+        and then Has_Dimension_System (Base_Type (Etyp))
       then
-         Set_Dimensions (N, Dimensions_Of (Entity (N)));
+         Dims_Of_Etyp := Dimensions_Of (Prefix (N));
+
+         --  Check the prefix is not dimensionless
+
+         if Exists (Dims_Of_Etyp) then
+            Set_Dimensions (N, Dims_Of_Etyp);
+         end if;
       end if;
 
       --  Removal of dimensions in expression
 
       case Nkind (N) is
-
          when N_Attribute_Reference |
               N_Indexed_Component   =>
             declare
@@ -1959,7 +1988,6 @@ package body Sem_Dim is
             Remove_Dimensions (Selector_Name (N));
 
          when others => null;
-
       end case;
    end Analyze_Dimension_Has_Etype;
 
@@ -2206,13 +2234,14 @@ package body Sem_Dim is
       Dims_Of_From : constant Dimension_Type := Dimensions_Of (From);
 
    begin
+      --  Ignore if not Ada 2012 or beyond
+
       if Ada_Version < Ada_2012 then
          return;
-      end if;
 
-      --  Copy the dimension of 'From to 'To'
+      --  For Ada 2012, Copy the dimension of 'From to 'To'
 
-      if Exists (Dims_Of_From) then
+      elsif Exists (Dims_Of_From) then
          Set_Dimensions (To, Dims_Of_From);
       end if;
    end Copy_Dimensions;
@@ -2730,14 +2759,14 @@ package body Sem_Dim is
          --  Look for a symbols parameter association in the list of actuals
 
          while Present (Actual) loop
+
             --  Positional parameter association case when the actual is a
             --  string literal.
 
             if Nkind (Actual) = N_String_Literal then
                Actual_Str := Actual;
 
-            --  Named parameter association case when the selector name is
-            --  Symbol.
+            --  Named parameter association case when selector name is Symbol
 
             elsif Nkind (Actual) = N_Parameter_Association
               and then Chars (Selector_Name (Actual)) = Name_Symbol
@@ -2751,6 +2780,7 @@ package body Sem_Dim is
             end if;
 
             if Present (Actual_Str) then
+
                --  Return True if the actual comes from source or if the string
                --  of symbols doesn't have the default value (i.e. it is "").
 
@@ -3206,7 +3236,8 @@ package body Sem_Dim is
 
       return
         Is_RTU (E, System_Dim_Float_IO)
-          or Is_RTU (E, System_Dim_Integer_IO);
+          or else
+        Is_RTU (E, System_Dim_Integer_IO);
    end Is_Dim_IO_Package_Entity;
 
    -------------------------------------

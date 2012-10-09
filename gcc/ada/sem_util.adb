@@ -37,6 +37,7 @@ with Freeze;   use Freeze;
 with Lib;      use Lib;
 with Lib.Xref; use Lib.Xref;
 with Nlists;   use Nlists;
+with Nmake;    use Nmake;
 with Output;   use Output;
 with Opt;      use Opt;
 with Restrict; use Restrict;
@@ -277,6 +278,63 @@ package body Sem_Util is
    begin
       return Alignment (E) * System_Storage_Unit;
    end Alignment_In_Bits;
+
+   ---------------------------------
+   -- Append_Inherited_Subprogram --
+   ---------------------------------
+
+   procedure Append_Inherited_Subprogram (S : Entity_Id) is
+      Par : constant Entity_Id := Alias (S);
+      --  The parent subprogram
+
+      Scop : constant Entity_Id := Scope (Par);
+      --  The scope of definition of the parent subprogram
+
+      Typ : constant Entity_Id := Defining_Entity (Parent (S));
+      --  The derived type of which S is a primitive operation
+
+      Decl   : Node_Id;
+      Next_E : Entity_Id;
+
+   begin
+      if Ekind (Current_Scope) = E_Package
+        and then In_Private_Part (Current_Scope)
+        and then Has_Private_Declaration (Typ)
+        and then Is_Tagged_Type (Typ)
+        and then Scop = Current_Scope
+      then
+         --  The inherited operation is available at the earliest place after
+         --  the derived type declaration ( RM 7.3.1 (6/1)). This is only
+         --  relevant for type extensions. If the parent operation appears
+         --  after the type extension, the operation is not visible.
+
+         Decl := First
+                   (Visible_Declarations
+                     (Specification (Unit_Declaration_Node (Current_Scope))));
+         while Present (Decl) loop
+            if Nkind (Decl) = N_Private_Extension_Declaration
+              and then Defining_Entity (Decl) = Typ
+            then
+               if Sloc (Decl) > Sloc (Par) then
+                  Next_E := Next_Entity (Par);
+                  Set_Next_Entity (Par, S);
+                  Set_Next_Entity (S, Next_E);
+                  return;
+
+               else
+                  exit;
+               end if;
+            end if;
+
+            Next (Decl);
+         end loop;
+      end if;
+
+      --  If partial view is not a type extension, or it appears before the
+      --  subprogram declaration, insert normally at end of entity list.
+
+      Append_Entity (S, Current_Scope);
+   end Append_Inherited_Subprogram;
 
    -----------------------------------------
    -- Apply_Compile_Time_Constraint_Error --
@@ -2250,9 +2308,9 @@ package body Sem_Util is
                Msgs := False;
                exit;
 
-            --  Conditional expression
+            --  If expression
 
-            elsif Nkind (P) = N_Conditional_Expression then
+            elsif Nkind (P) = N_If_Expression then
                declare
                   Cond : constant Node_Id := First (Expressions (P));
                   Texp : constant Node_Id := Next (Cond);
@@ -2430,6 +2488,45 @@ package body Sem_Util is
 
       return Plist;
    end Copy_Parameter_List;
+
+   --------------------------------
+   -- Corresponding_Generic_Type --
+   --------------------------------
+
+   function Corresponding_Generic_Type (T : Entity_Id) return Entity_Id is
+      Inst : Entity_Id;
+      Gen  : Entity_Id;
+      Typ  : Entity_Id;
+
+   begin
+      if not Is_Generic_Actual_Type (T) then
+         return Any_Type;
+
+      else
+         Inst := Scope (T);
+
+         if Is_Wrapper_Package (Inst) then
+            Inst := Related_Instance (Inst);
+         end if;
+
+         Gen  :=
+           Generic_Parent
+             (Specification (Unit_Declaration_Node (Inst)));
+
+         --  Generic actual has the same name as the corresponding formal
+
+         Typ := First_Entity (Gen);
+         while Present (Typ) loop
+            if Chars (Typ) = Chars (T) then
+               return Typ;
+            end if;
+
+            Next_Entity (Typ);
+         end loop;
+
+         return Any_Type;
+      end if;
+   end Corresponding_Generic_Type;
 
    --------------------
    -- Current_Entity --
@@ -12146,13 +12243,15 @@ package body Sem_Util is
       begin
          Desc := N;
 
+         --  Seems dubious that case expressions are not handled here ???
+
          P := Parent (N);
          while Present (P) loop
             if         Nkind (P) = N_If_Statement
               or else  Nkind (P) = N_Case_Statement
               or else (Nkind (P) in N_Short_Circuit
                          and then Desc = Right_Opnd (P))
-              or else (Nkind (P) = N_Conditional_Expression
+              or else (Nkind (P) = N_If_Expression
                          and then Desc /= First (Expressions (P)))
               or else  Nkind (P) = N_Exception_Handler
               or else  Nkind (P) = N_Selective_Accept
@@ -13523,7 +13622,9 @@ package body Sem_Util is
       function Has_One_Matching_Field return Boolean;
       --  Determines if Expec_Type is a record type with a single component or
       --  discriminant whose type matches the found type or is one dimensional
-      --  array whose component type matches the found type.
+      --  array whose component type matches the found type. In the case of
+      --  one discriminant, we ignore the variant parts. That's not accurate,
+      --  but good enough for the warning.
 
       ----------------------------
       -- Has_One_Matching_Field --
@@ -13565,10 +13666,10 @@ package body Sem_Util is
                if No (E) then
                   return False;
 
-               elsif (Ekind (E) /= E_Discriminant
-                       and then Ekind (E) /= E_Component)
+               elsif not Ekind_In (E, E_Discriminant, E_Component)
                  or else (Chars (E) = Name_uTag
-                           or else Chars (E) = Name_uParent)
+                            or else
+                          Chars (E) = Name_uParent)
                then
                   Next_Entity (E);
 
@@ -13580,7 +13681,10 @@ package body Sem_Util is
             if not Covers (Etype (E), Found_Type) then
                return False;
 
-            elsif Present (Next_Entity (E)) then
+            elsif Present (Next_Entity (E))
+              and then (Ekind (E) = E_Component
+                         or else Ekind (Next_Entity (E)) = E_Discriminant)
+            then
                return False;
 
             else

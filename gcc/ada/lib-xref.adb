@@ -945,6 +945,13 @@ package body Lib.Xref is
          then
             Ent := E;
 
+         --  Ditto for the formals of such a subprogram
+
+         elsif Is_Overloadable (Scope (E))
+           and then Is_Child_Unit (Scope (E))
+         then
+            Ent := E;
+
          --  Record components of discriminated subtypes or derived types must
          --  be treated as references to the original component.
 

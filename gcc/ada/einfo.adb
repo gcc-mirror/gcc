@@ -7113,6 +7113,7 @@ package body Einfo is
 
       S := Subprograms_For_Type (Id);
       Set_Subprograms_For_Type (Id, V);
+      Set_Subprograms_For_Type (V, S);
 
       while Present (S) loop
          if Has_Invariants (S) then
@@ -7121,8 +7122,6 @@ package body Einfo is
             S := Subprograms_For_Type (S);
          end if;
       end loop;
-
-      Set_Subprograms_For_Type (Id, V);
    end Set_Invariant_Procedure;
 
    ----------------------------
@@ -7137,6 +7136,7 @@ package body Einfo is
 
       S := Subprograms_For_Type (Id);
       Set_Subprograms_For_Type (Id, V);
+      Set_Subprograms_For_Type (V, S);
 
       while Present (S) loop
          if Has_Predicates (S) then
@@ -7145,8 +7145,6 @@ package body Einfo is
             S := Subprograms_For_Type (S);
          end if;
       end loop;
-
-      Set_Subprograms_For_Type (Id, V);
    end Set_Predicate_Function;
 
    -----------------

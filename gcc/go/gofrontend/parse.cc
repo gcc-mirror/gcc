@@ -1631,12 +1631,16 @@ Parse::init_vars(const Typed_identifier_list* til, Type* type,
 
   // Note that INIT was already parsed with the old name bindings, so
   // we don't have to worry that it will accidentally refer to the
-  // newly declared variables.
+  // newly declared variables.  But we do have to worry about a mix of
+  // newly declared variables and old variables if the old variables
+  // appear in the initializations.
 
   Expression_list::const_iterator pexpr;
   if (init != NULL)
     pexpr = init->begin();
   bool any_new = false;
+  Expression_list* vars = new Expression_list();
+  Expression_list* vals = new Expression_list();
   for (Typed_identifier_list::const_iterator p = til->begin();
        p != til->end();
        ++p)
@@ -1644,7 +1648,7 @@ Parse::init_vars(const Typed_identifier_list* til, Type* type,
       if (init != NULL)
 	go_assert(pexpr != init->end());
       this->init_var(*p, type, init == NULL ? NULL : *pexpr, is_coloneq,
-		     false, &any_new);
+		     false, &any_new, vars, vals);
       if (init != NULL)
 	++pexpr;
     }
@@ -1652,6 +1656,7 @@ Parse::init_vars(const Typed_identifier_list* til, Type* type,
     go_assert(pexpr == init->end());
   if (is_coloneq && !any_new)
     error_at(location, "variables redeclared but no variable is new");
+  this->finish_init_vars(vars, vals, location);
 }
 
 // See if we need to initialize a list of variables from a function
@@ -1674,13 +1679,15 @@ Parse::init_vars_from_call(const Typed_identifier_list* vars, Type* type,
   Named_object* first_var = NULL;
   unsigned int index = 0;
   bool any_new = false;
+  Expression_list* ivars = new Expression_list();
+  Expression_list* ivals = new Expression_list();
   for (Typed_identifier_list::const_iterator pv = vars->begin();
        pv != vars->end();
        ++pv, ++index)
     {
       Expression* init = Expression::make_call_result(call, index);
       Named_object* no = this->init_var(*pv, type, init, is_coloneq, false,
-					&any_new);
+					&any_new, ivars, ivals);
 
       if (this->gogo_->in_global_scope() && no->is_variable())
 	{
@@ -1699,6 +1706,8 @@ Parse::init_vars_from_call(const Typed_identifier_list* vars, Type* type,
 
   if (is_coloneq && !any_new)
     error_at(location, "variables redeclared but no variable is new");
+
+  this->finish_init_vars(ivars, ivals, location);
 
   return true;
 }
@@ -1725,7 +1734,7 @@ Parse::init_vars_from_map(const Typed_identifier_list* vars, Type* type,
   Typed_identifier_list::const_iterator p = vars->begin();
   Expression* init = type == NULL ? index : NULL;
   Named_object* val_no = this->init_var(*p, type, init, is_coloneq,
-					type == NULL, &any_new);
+					type == NULL, &any_new, NULL, NULL);
   if (type == NULL && any_new && val_no->is_variable())
     val_no->var_value()->set_type_from_init_tuple();
   Expression* val_var = Expression::make_var_reference(val_no, location);
@@ -1735,7 +1744,7 @@ Parse::init_vars_from_map(const Typed_identifier_list* vars, Type* type,
   if (var_type == NULL)
     var_type = Type::lookup_bool_type();
   Named_object* no = this->init_var(*p, var_type, NULL, is_coloneq, false,
-				    &any_new);
+				    &any_new, NULL, NULL);
   Expression* present_var = Expression::make_var_reference(no, location);
 
   if (is_coloneq && !any_new)
@@ -1790,7 +1799,7 @@ Parse::init_vars_from_receive(const Typed_identifier_list* vars, Type* type,
   Typed_identifier_list::const_iterator p = vars->begin();
   Expression* init = type == NULL ? receive : NULL;
   Named_object* val_no = this->init_var(*p, type, init, is_coloneq,
-					type == NULL, &any_new);
+					type == NULL, &any_new, NULL, NULL);
   if (type == NULL && any_new && val_no->is_variable())
     val_no->var_value()->set_type_from_init_tuple();
   Expression* val_var = Expression::make_var_reference(val_no, location);
@@ -1800,7 +1809,7 @@ Parse::init_vars_from_receive(const Typed_identifier_list* vars, Type* type,
   if (var_type == NULL)
     var_type = Type::lookup_bool_type();
   Named_object* no = this->init_var(*p, var_type, NULL, is_coloneq, false,
-				    &any_new);
+				    &any_new, NULL, NULL);
   Expression* received_var = Expression::make_var_reference(no, location);
 
   if (is_coloneq && !any_new)
@@ -1857,7 +1866,7 @@ Parse::init_vars_from_type_guard(const Typed_identifier_list* vars,
   if (var_type == NULL)
     var_type = type_guard->type();
   Named_object* val_no = this->init_var(*p, var_type, NULL, is_coloneq, false,
-					&any_new);
+					&any_new, NULL, NULL);
   Expression* val_var = Expression::make_var_reference(val_no, location);
 
   ++p;
@@ -1865,7 +1874,7 @@ Parse::init_vars_from_type_guard(const Typed_identifier_list* vars,
   if (var_type == NULL)
     var_type = Type::lookup_bool_type();
   Named_object* no = this->init_var(*p, var_type, NULL, is_coloneq, false,
-				    &any_new);
+				    &any_new, NULL, NULL);
   Expression* ok_var = Expression::make_var_reference(no, location);
 
   Expression* texpr = type_guard->expr();
@@ -1904,7 +1913,8 @@ Parse::init_vars_from_type_guard(const Typed_identifier_list* vars,
 
 Named_object*
 Parse::init_var(const Typed_identifier& tid, Type* type, Expression* init,
-		bool is_coloneq, bool type_from_init, bool* is_new)
+		bool is_coloneq, bool type_from_init, bool* is_new,
+		Expression_list* vars, Expression_list* vals)
 {
   Location location = tid.location();
 
@@ -1946,9 +1956,9 @@ Parse::init_var(const Typed_identifier& tid, Type* type, Expression* init,
 	  // like v, ok := x.(int).
 	  if (!type_from_init && init != NULL)
 	    {
-	      Expression *v = Expression::make_var_reference(no, location);
-	      Statement *s = Statement::make_assignment(v, init, location);
-	      this->gogo_->add_statement(s);
+	      go_assert(vars != NULL && vals != NULL);
+	      vars->push_back(Expression::make_var_reference(no, location));
+	      vals->push_back(init);
 	    }
 	  return no;
 	}
@@ -1981,6 +1991,36 @@ Parse::create_dummy_global(Type* type, Expression* init,
   snprintf(buf, sizeof buf, "_.%d", count);
   ++count;
   return this->gogo_->add_variable(buf, var);
+}
+
+// Finish the variable initialization by executing any assignments to
+// existing variables when using :=.  These must be done as a tuple
+// assignment in case of something like n, a, b := 1, b, a.
+
+void
+Parse::finish_init_vars(Expression_list* vars, Expression_list* vals,
+			Location location)
+{
+  if (vars->empty())
+    {
+      delete vars;
+      delete vals;
+    }
+  else if (vars->size() == 1)
+    {
+      go_assert(!this->gogo_->in_global_scope());
+      this->gogo_->add_statement(Statement::make_assignment(vars->front(),
+							    vals->front(),
+							    location));
+      delete vars;
+      delete vals;
+    }
+  else
+    {
+      go_assert(!this->gogo_->in_global_scope());
+      this->gogo_->add_statement(Statement::make_tuple_assignment(vars, vals,
+								  location));
+    }
 }
 
 // SimpleVarDecl = identifier ":=" Expression .
@@ -3315,6 +3355,61 @@ Parse::unary_expr(bool may_be_sink, bool may_be_composite_lit,
 		  bool* is_type_switch)
 {
   const Token* token = this->peek_token();
+
+  // There is a complex parse for <- chan.  The choices are
+  // Convert x to type <- chan int:
+  //   (<- chan int)(x)         
+  // Receive from (x converted to type chan <- chan int):
+  //   (<- chan <- chan int (x))
+  // Convert x to type <- chan (<- chan int).
+  //   (<- chan <- chan int)(x)
+  if (token->is_op(OPERATOR_CHANOP))
+    {
+      Location location = token->location();
+      if (this->advance_token()->is_keyword(KEYWORD_CHAN))
+	{
+	  Expression* expr = this->primary_expr(false, may_be_composite_lit,
+						NULL);
+	  if (expr->is_error_expression())
+	    return expr;
+	  else if (!expr->is_type_expression())
+	    return Expression::make_receive(expr, location);
+	  else
+	    {
+	      if (expr->type()->is_error_type())
+		return expr;
+
+	      // We picked up "chan TYPE", but it is not a type
+	      // conversion.
+	      Channel_type* ct = expr->type()->channel_type();
+	      if (ct == NULL)
+		{
+		  // This is probably impossible.
+		  error_at(location, "expected channel type");
+		  return Expression::make_error(location);
+		}
+	      else if (ct->may_receive())
+		{
+		  // <- chan TYPE.
+		  Type* t = Type::make_channel_type(false, true,
+						    ct->element_type());
+		  return Expression::make_type(t, location);
+		}
+	      else
+		{
+		  // <- chan <- TYPE.  Because we skipped the leading
+		  // <-, we parsed this as chan <- TYPE.  With the
+		  // leading <-, we parse it as <- chan (<- TYPE).
+		  Type *t = this->reassociate_chan_direction(ct, location);
+		  return Expression::make_type(t, location);
+		}
+	    }
+	}
+
+      this->unget_token(Token::make_operator_token(OPERATOR_CHANOP, location));
+      token = this->peek_token();
+    }
+
   if (token->is_op(OPERATOR_PLUS)
       || token->is_op(OPERATOR_MINUS)
       || token->is_op(OPERATOR_NOT)
@@ -3326,14 +3421,6 @@ Parse::unary_expr(bool may_be_sink, bool may_be_composite_lit,
       Location location = token->location();
       Operator op = token->op();
       this->advance_token();
-
-      if (op == OPERATOR_CHANOP
-	  && this->peek_token()->is_keyword(KEYWORD_CHAN))
-	{
-	  // This is "<- chan" which must be the start of a type.
-	  this->unget_token(Token::make_operator_token(op, location));
-	  return Expression::make_type(this->type(), location);
-	}
 
       Expression* expr = this->unary_expr(false, may_be_composite_lit, NULL);
       if (expr->is_error_expression())
@@ -3352,6 +3439,32 @@ Parse::unary_expr(bool may_be_sink, bool may_be_composite_lit,
   else
     return this->primary_expr(may_be_sink, may_be_composite_lit,
 			      is_type_switch);
+}
+
+// This is called for the obscure case of
+//   (<- chan <- chan int)(x)
+// In unary_expr we remove the leading <- and parse the remainder,
+// which gives us
+//   chan <- (chan int)
+// When we add the leading <- back in, we really want
+//   <- chan (<- chan int)
+// This means that we need to reassociate.
+
+Type*
+Parse::reassociate_chan_direction(Channel_type *ct, Location location)
+{
+  Channel_type* ele = ct->element_type()->channel_type();
+  if (ele == NULL)
+    {
+      error_at(location, "parse error");
+      return Type::make_error_type();
+    }
+  Type* sub = ele;
+  if (ele->may_send())
+    sub = Type::make_channel_type(false, true, ele->element_type());
+  else
+    sub = this->reassociate_chan_direction(ele, location);
+  return Type::make_channel_type(false, true, sub);
 }
 
 // Statement =
@@ -5040,7 +5153,8 @@ Parse::range_clause_decl(const Typed_identifier_list* til,
   bool any_new = false;
 
   const Typed_identifier* pti = &til->front();
-  Named_object* no = this->init_var(*pti, NULL, expr, true, true, &any_new);
+  Named_object* no = this->init_var(*pti, NULL, expr, true, true, &any_new,
+				    NULL, NULL);
   if (any_new && no->is_variable())
     no->var_value()->set_type_from_range_index();
   p_range_clause->index = Expression::make_var_reference(no, location);
@@ -5051,7 +5165,7 @@ Parse::range_clause_decl(const Typed_identifier_list* til,
     {
       pti = &til->back();
       bool is_new = false;
-      no = this->init_var(*pti, NULL, expr, true, true, &is_new);
+      no = this->init_var(*pti, NULL, expr, true, true, &is_new, NULL, NULL);
       if (is_new && no->is_variable())
 	no->var_value()->set_type_from_range_value();
       if (is_new)

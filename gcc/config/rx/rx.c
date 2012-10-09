@@ -1256,6 +1256,41 @@ rx_conditional_register_usage (void)
     }
 }
 
+struct decl_chain
+{
+  tree fndecl;
+  struct decl_chain * next;
+};
+
+/* Stack of decls for which we have issued warnings.  */
+static struct decl_chain * warned_decls = NULL;
+
+static void
+add_warned_decl (tree fndecl)
+{
+  struct decl_chain * warned = (struct decl_chain *) xmalloc (sizeof * warned);
+
+  warned->fndecl = fndecl;
+  warned->next = warned_decls;
+  warned_decls = warned;
+}
+
+/* Returns TRUE if FNDECL is on our list of warned about decls.  */
+
+static bool
+already_warned (tree fndecl)
+{
+  struct decl_chain * warned;
+
+  for (warned = warned_decls;
+       warned != NULL;
+       warned = warned->next)
+    if (warned->fndecl == fndecl)
+      return true;
+
+  return false;
+}
+
 /* Perform any actions necessary before starting to compile FNDECL.
    For the RX we use this to make sure that we have the correct
    set of register masks selected.  If FNDECL is NULL then we are
@@ -1286,6 +1321,24 @@ rx_set_current_function (tree fndecl)
     {
       use_fixed_regs = current_is_fast_interrupt;
       target_reinit ();
+    }
+
+  if (current_is_fast_interrupt && rx_warn_multiple_fast_interrupts)
+    {
+      /* We do not warn about the first fast interrupt routine that
+	 we see.  Instead we just push it onto the stack.  */
+      if (warned_decls == NULL)
+	add_warned_decl (fndecl);
+
+      /* Otherwise if this fast interrupt is one for which we have
+	 not already issued a warning, generate one and then push
+	 it onto the stack as well.  */
+      else if (! already_warned (fndecl))
+	{
+	  warning (0, "multiple fast interrupt routines seen: %qE and %qE",
+		   fndecl, warned_decls->fndecl);
+	  add_warned_decl (fndecl);
+	}
     }
 
   rx_previous_fndecl = fndecl;

@@ -185,6 +185,7 @@ caller-save.c		Jeff Law		law@redhat.com
 callgraph		Jan Hubicka		jh@suse.cz
 debugging code		Jim Wilson		wilson@tuliptree.org
 dwarf debugging code	Jason Merrill		jason@redhat.com
+dwarf debugging code	Cary Coutant		ccoutant@google.com
 c++ runtime libs	Paolo Carlini		paolo.carlini@oracle.com
 c++ runtime libs	Gabriel Dos Reis	gdr@integrable-solutions.net
 c++ runtime libs	Ulrich Drepper		drepper@gmail.com
@@ -342,6 +343,7 @@ R. Kelley Cook					kcook@gcc.gnu.org
 Christian Cornelssen				ccorn@cs.tu-berlin.de
 François-Xavier Coudert				fxcoudert@gcc.gnu.org
 Cary Coutant					ccoutant@google.com
+Lawrence Crowl					crowl@google.com
 Ian Dall					ian@beware.dropbear.id.au
 David Daney					david.daney@caviumnetworks.com
 Bud Davis					jmdavis@link.com

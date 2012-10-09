@@ -1905,7 +1905,16 @@ package body System.Tasking.Stages is
       C := All_Tasks_List;
       P := null;
       while C /= null loop
-         if C.Common.Parent = Self_ID and then C.Master_of_Task >= CM then
+
+         --  If Free_On_Termination is set, do nothing here, and let the
+         --  task free itself if not already done, otherwise we risk a race
+         --  condition where Vulnerable_Free_Task is called in the loop below,
+         --  while the task calls Free_Task itself, in Terminate_Task.
+
+         if C.Common.Parent = Self_ID
+           and then C.Master_of_Task >= CM
+           and then not C.Free_On_Termination
+         then
             if P /= null then
                P.Common.All_Tasks_Link := C.Common.All_Tasks_Link;
             else
@@ -2088,9 +2097,7 @@ package body System.Tasking.Stages is
    --  is called from Expunge_Unactivated_Tasks.
 
    --  For tasks created by elaboration of task object declarations it is
-   --  called from the finalization code of the Task_Wrapper procedure. It is
-   --  also called from Ada.Unchecked_Deallocation, for objects that are or
-   --  contain tasks.
+   --  called from the finalization code of the Task_Wrapper procedure.
 
    procedure Vulnerable_Free_Task (T : Task_Id) is
    begin

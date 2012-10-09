@@ -216,6 +216,9 @@ unpack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
       expr->decl_common.off_align = bp_unpack_value (bp, 8);
     }
 
+  if (TREE_CODE (expr) == VAR_DECL)
+    DECL_NONLOCAL_FRAME (expr) = (unsigned) bp_unpack_value (bp, 1);
+
   if (TREE_CODE (expr) == RESULT_DECL
       || TREE_CODE (expr) == PARM_DECL
       || TREE_CODE (expr) == VAR_DECL)
@@ -789,22 +792,22 @@ static void
 lto_input_ts_block_tree_pointers (struct lto_input_block *ib,
 				  struct data_in *data_in, tree expr)
 {
-  /* Do not stream BLOCK_SOURCE_LOCATION.  We cannot handle debug information
-     for early inlining so drop it on the floor instead of ICEing in
-     dwarf2out.c.  */
   BLOCK_VARS (expr) = streamer_read_chain (ib, data_in);
-
-  /* Do not stream BLOCK_NONLOCALIZED_VARS.  We cannot handle debug information
-     for early inlining so drop it on the floor instead of ICEing in
-     dwarf2out.c.  */
 
   BLOCK_SUPERCONTEXT (expr) = stream_read_tree (ib, data_in);
 
-  /* Do not stream BLOCK_ABSTRACT_ORIGIN.  We cannot handle debug information
-     for early inlining so drop it on the floor instead of ICEing in
+  /* Stream BLOCK_ABSTRACT_ORIGIN and BLOCK_SOURCE_LOCATION for
+     the limited cases we can handle - those that represent inlined
+     function scopes.  For the rest them on the floor instead of ICEing in
      dwarf2out.c.  */
-  BLOCK_FRAGMENT_ORIGIN (expr) = stream_read_tree (ib, data_in);
-  BLOCK_FRAGMENT_CHAIN (expr) = stream_read_tree (ib, data_in);
+  BLOCK_ABSTRACT_ORIGIN (expr) = stream_read_tree (ib, data_in);
+  BLOCK_SOURCE_LOCATION (expr) = lto_input_location (ib, data_in);
+  /* Do not stream BLOCK_NONLOCALIZED_VARS.  We cannot handle debug information
+     for early inlined BLOCKs so drop it on the floor instead of ICEing in
+     dwarf2out.c.  */
+
+  /* BLOCK_FRAGMENT_ORIGIN and BLOCK_FRAGMENT_CHAIN is not live at LTO
+     streaming time.  */
 
   /* We re-compute BLOCK_SUBBLOCKS of our parent here instead
      of streaming it.  For non-BLOCK BLOCK_SUPERCONTEXTs we still

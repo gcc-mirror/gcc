@@ -1347,12 +1347,13 @@ package VMS_Data is
    --                      if the /CHECKS qualifier is not present on the
    --                      command line. Same as /NOCHECKS.
    --
-   --     OVERFLOW        Enables overflow checking for integer operations and
-   --                     checks for access before elaboration on subprogram
-   --                     calls. This causes GNAT to generate slower and larger
-   --                     executable programs by adding code to check for both
-   --                     overflow and division by zero (resulting in raising
-   --                     "Constraint_Error" as required by Ada semantics).
+   --     OVERFLOW        Enables overflow checking in CHECKED mode for integer
+   --                     operations and checks for access before elaboration
+   --                     on subprogram calls. This causes GNAT to generate
+   --                     slower and larger executable programs by adding code
+   --                     to check for both overflow and division by zero
+   --                     (resulting in raising "Constraint_Error" as required
+   --                     by Ada semantics).
    --                     Similarly, GNAT does not generate elaboration check
    --                     by default, and you must specify this keyword to
    --                     enable them.
@@ -2107,6 +2108,24 @@ package VMS_Data is
    --   fname where the period is replace by an underline. For example, if
    --   file xyz.adb is compiled with -gnatl=.lst, then the output is written
    --   to file xyz.adb_lst.
+
+   S_GCC_Overflo : aliased constant S := "/OVERFLOW_CHECKS=#"              &
+                                             "-gnato#";
+   --        /OVERFLOW_CHECKS=nn
+   --
+   --   Set default overflow cheecking mode. If nn is a single digit, in the
+   --   range 0-3, it sets the overflow checking mode for all expressions,
+   --   including those outside and within assertions. The meaning of nnn is:
+   --
+   --     0   suppress overflow checks (SUPPRESSED)
+   --     1   all intermediate overflows checked (CHECKED)
+   --     2   minimize intermediate overflows (MINIMIZED)
+   --     3   eliminate intermediate overflows (ELIMINATED)
+   --
+   --   Otherwise nn can be two digits, both 0-3, and in this case the first
+   --   digit sets the mode (using the above code) for expressions outside an
+   --   assertion, and the second digit sets the mode for expressions within
+   --   an assertion.
 
    S_GCC_Pointer : aliased constant S := "/POINTER_SIZE="                  &
                                             "64 "                          &
@@ -3622,6 +3641,7 @@ package VMS_Data is
                      S_GCC_NoWarnP 'Access,
                      S_GCC_Opt     'Access,
                      S_GCC_OptX    'Access,
+                     S_GCC_Overflo 'Access,
                      S_GCC_Pointer 'Access,
                      S_GCC_Polling 'Access,
                      S_GCC_Project 'Access,

@@ -427,6 +427,13 @@ typedef struct {
 #endif
 #endif /* C11 or C++11.  */
 
+#if defined(__cplusplus) && __cplusplus >= 201103L
+#ifndef _GXX_NULLPTR_T
+#define _GXX_NULLPTR_T
+  typedef decltype(nullptr) nullptr_t;
+#endif
+#endif /* C++11.  */
+
 #endif /* _STDDEF_H was defined this time */
 
 #endif /* !_STDDEF_H && !_STDDEF_H_ && !_ANSI_STDDEF_H && !__STDDEF_H__

@@ -20,10 +20,10 @@ gwrite(const void *v, int32 n)
 		runtime_write(2, v, n);
 		return;
 	}
-	
+
 	if(g->writenbuf == 0)
 		return;
-	
+
 	if(n > g->writenbuf)
 		n = g->writenbuf;
 	runtime_memmove(g->writebuf, v, n);

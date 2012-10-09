@@ -816,6 +816,20 @@ struct target_ira_int {
      values for given mode are zero.  */
   HARD_REG_SET x_ira_prohibited_class_mode_regs[N_REG_CLASSES][NUM_MACHINE_MODES];
 
+  /* Index [CL][M] contains R if R appears somewhere in a register of the form:
+
+         (reg:M R'), R' not in x_ira_prohibited_class_mode_regs[CL][M]
+
+     For example, if:
+
+     - (reg:M 2) is valid and occupies two registers;
+     - register 2 belongs to CL; and
+     - register 3 belongs to the same pressure class as CL
+
+     then (reg:M 2) contributes to [CL][M] and registers 2 and 3 will be
+     in the set.  */
+  HARD_REG_SET x_ira_useful_class_mode_regs[N_REG_CLASSES][NUM_MACHINE_MODES];
+
   /* The value is number of elements in the subsequent array.  */
   int x_ira_important_classes_num;
 
@@ -902,6 +916,8 @@ extern struct target_ira_int *this_target_ira_int;
   (this_target_ira_int->x_ira_class_hard_reg_index)
 #define ira_prohibited_class_mode_regs \
   (this_target_ira_int->x_ira_prohibited_class_mode_regs)
+#define ira_useful_class_mode_regs \
+  (this_target_ira_int->x_ira_useful_class_mode_regs)
 #define ira_important_classes_num \
   (this_target_ira_int->x_ira_important_classes_num)
 #define ira_important_classes \

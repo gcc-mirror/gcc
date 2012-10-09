@@ -55,6 +55,14 @@ struct sh_atomic_model
       happen on SH4A.  */
   bool strict;
   enum_type type;
+
+  /* Name string as it was specified on the command line.  */
+  const char* name;
+
+  /* Name string as it is used in C/C++ defines.  */
+  const char* cdef_name;
+
+  /* GBR offset variable for TCB model.  */
   int tcb_gbr_offset;
 };
 
@@ -153,8 +161,10 @@ extern bool sh_vector_mode_supported_p (enum machine_mode);
 extern bool sh_cfun_trap_exit_p (void);
 extern void sh_canonicalize_comparison (enum rtx_code&, rtx&, rtx&,
 					enum machine_mode mode = VOIDmode);
-
+extern rtx sh_find_equiv_gbr_addr (rtx cur_insn, rtx mem);
 #endif /* RTX_CODE */
+
+extern void sh_cpu_cpp_builtins (cpp_reader* pfile);
 
 extern const char *output_jump_label_table (void);
 extern rtx get_t_reg_rtx (void);

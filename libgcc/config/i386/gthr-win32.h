@@ -1,8 +1,7 @@
 /* Threads compatibility routines for libgcc2 and libobjc.  */
 /* Compile this one with gcc.  */
 
-/* Copyright (C) 1999, 2000, 2002, 2003, 2004, 2005, 2008, 2009
-   Free Software Foundation, Inc.
+/* Copyright (C) 1999-2012 Free Software Foundation, Inc.
    Contributed by Mumit Khan <khan@xraylith.wisc.edu>.
 
 This file is part of GCC.
@@ -430,6 +429,8 @@ extern int
   __gthr_win32_recursive_mutex_trylock (__gthread_recursive_mutex_t *);
 extern int __gthr_win32_recursive_mutex_unlock (__gthread_recursive_mutex_t *);
 extern void __gthr_win32_mutex_destroy (__gthread_mutex_t *);
+extern int
+  __gthr_win32_recursive_mutex_destroy (__gthread_recursive_mutex_t *);
 
 static inline int
 __gthread_once (__gthread_once_t *__once, void (*__func) (void))
@@ -534,6 +535,12 @@ __gthread_recursive_mutex_unlock (__gthread_recursive_mutex_t *__mutex)
     return __gthr_win32_recursive_mutex_unlock (__mutex);
   else
     return 0;
+}
+
+static inline int
+__gthread_recursive_mutex_destroy (__gthread_recursive_mutex_t *__mutex)
+{
+  return __gthr_win32_recursive_mutex_destroy (__mutex);
 }
 
 #else /* ! __GTHREAD_HIDE_WIN32API */
@@ -758,6 +765,13 @@ __gthread_recursive_mutex_unlock (__gthread_recursive_mutex_t *__mutex)
 	    return ReleaseSemaphore (__mutex->sema, 1, NULL) ? 0 : 1;
 	}
     }
+  return 0;
+}
+
+static inline int
+__gthread_recursive_mutex_destroy (__gthread_recursive_mutex_t *__mutex)
+{
+  CloseHandle ((HANDLE) __mutex->sema);
   return 0;
 }
 

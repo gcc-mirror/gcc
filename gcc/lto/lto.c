@@ -1692,6 +1692,19 @@ get_resolution (struct data_in *data_in, unsigned index)
     return LDPR_UNKNOWN;
 }
 
+/* Map assigning declarations their resolutions.  */
+static pointer_map_t *resolution_map;
+
+/* We need to record resolutions until symbol table is read.  */
+static void
+register_resolution (tree decl, enum ld_plugin_symbol_resolution resolution)
+{
+  if (resolution == LDPR_UNKNOWN)
+    return;
+  if (!resolution_map)
+    resolution_map = pointer_map_create ();
+  *pointer_map_insert (resolution_map, decl) = (void *)(size_t)resolution;
+}
 
 /* Register DECL with the global symbol table and change its
    name if necessary to avoid name clashes for static globals across
@@ -1730,8 +1743,7 @@ lto_register_var_decl_in_symtab (struct data_in *data_in, tree decl)
       unsigned ix;
       if (!streamer_tree_cache_lookup (data_in->reader_cache, decl, &ix))
 	gcc_unreachable ();
-      lto_symtab_register_decl (decl, get_resolution (data_in, ix),
-				data_in->file_data);
+      register_resolution (decl, get_resolution (data_in, ix));
     }
 }
 
@@ -1789,8 +1801,7 @@ lto_register_function_decl_in_symtab (struct data_in *data_in, tree decl)
       unsigned ix;
       if (!streamer_tree_cache_lookup (data_in->reader_cache, decl, &ix))
 	gcc_unreachable ();
-      lto_symtab_register_decl (decl, get_resolution (data_in, ix),
-				data_in->file_data);
+      register_resolution (decl, get_resolution (data_in, ix));
     }
 }
 
@@ -2935,6 +2946,17 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   if (resolution_file_name)
     fclose (resolution);
 
+  /* Free gimple type merging datastructures.  */
+  htab_delete (gimple_types);
+  gimple_types = NULL;
+  htab_delete (type_hash_cache);
+  type_hash_cache = NULL;
+  free (type_pair_cache);
+  type_pair_cache = NULL;
+  gimple_type_leader = NULL;
+  free_gimple_type_tables ();
+  ggc_collect ();
+
   /* Set the hooks so that all of the ipa passes can read in their data.  */
   lto_set_in_hooks (all_file_decl_data, get_section_data, free_section_data);
 
@@ -2946,6 +2968,24 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   timevar_push (TV_IPA_LTO_CGRAPH_IO);
   /* Read the symtab.  */
   input_symtab ();
+
+  /* Store resolutions into the symbol table.  */
+  if (resolution_map)
+    {
+      void **res;
+      symtab_node snode;
+
+      FOR_EACH_SYMBOL (snode)
+	if (symtab_real_symbol_p (snode)
+	    && (res = pointer_map_contains (resolution_map,
+				            snode->symbol.decl)))
+	  snode->symbol.resolution
+	    = (enum ld_plugin_symbol_resolution)(size_t)*res;
+
+      pointer_map_destroy (resolution_map);
+      resolution_map = NULL;
+    }
+  
   timevar_pop (TV_IPA_LTO_CGRAPH_IO);
 
   if (!quiet_flag)
@@ -2960,18 +3000,10 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   if (seen_error ())
     fatal_error ("errors during merging of translation units");
 
-  /* Fixup all decls and types and free the type hash tables.  */
+  /* Fixup all decls.  */
   lto_fixup_decls (all_file_decl_data);
   htab_delete (tree_with_vars);
   tree_with_vars = NULL;
-  htab_delete (gimple_types);
-  gimple_types = NULL;
-  htab_delete (type_hash_cache);
-  type_hash_cache = NULL;
-  free (type_pair_cache);
-  type_pair_cache = NULL;
-  gimple_type_leader = NULL;
-  free_gimple_type_tables ();
   ggc_collect ();
 
   timevar_pop (TV_IPA_LTO_DECL_MERGE);
@@ -2985,6 +3017,13 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
     ipa_read_optimization_summaries ();
   else
     ipa_read_summaries ();
+
+  for (i = 0; all_file_decl_data[i]; i++)
+    {
+      gcc_assert (all_file_decl_data[i]->symtab_node_encoder);
+      lto_symtab_encoder_delete (all_file_decl_data[i]->symtab_node_encoder);
+      all_file_decl_data[i]->symtab_node_encoder = NULL;
+    }
 
   /* Finally merge the cgraph according to the decl merging decisions.  */
   timevar_push (TV_IPA_LTO_CGRAPH_MERGE);

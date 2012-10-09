@@ -181,6 +181,9 @@ pack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
       bp_pack_value (bp, expr->decl_common.off_align, 8);
     }
 
+  if (TREE_CODE (expr) == VAR_DECL)
+    bp_pack_value (bp, DECL_NONLOCAL_FRAME (expr), 1);
+
   if (TREE_CODE (expr) == RESULT_DECL
       || TREE_CODE (expr) == PARM_DECL
       || TREE_CODE (expr) == VAR_DECL)
@@ -682,21 +685,32 @@ write_ts_exp_tree_pointers (struct output_block *ob, tree expr, bool ref_p)
 static void
 write_ts_block_tree_pointers (struct output_block *ob, tree expr, bool ref_p)
 {
-  /* Do not stream BLOCK_SOURCE_LOCATION.  We cannot handle debug information
-     for early inlining so drop it on the floor instead of ICEing in
-     dwarf2out.c.  */
   streamer_write_chain (ob, BLOCK_VARS (expr), ref_p);
 
+  stream_write_tree (ob, BLOCK_SUPERCONTEXT (expr), ref_p);
+
+  /* Stream BLOCK_ABSTRACT_ORIGIN and BLOCK_SOURCE_LOCATION for
+     the limited cases we can handle - those that represent inlined
+     function scopes.  For the rest them on the floor instead of ICEing in
+     dwarf2out.c.  */
+  if (inlined_function_outer_scope_p (expr))
+    {
+      tree ultimate_origin = block_ultimate_origin (expr);
+      stream_write_tree (ob, ultimate_origin, ref_p);
+      lto_output_location (ob, BLOCK_SOURCE_LOCATION (expr));
+    }
+  else
+    {
+      stream_write_tree (ob, NULL_TREE, ref_p);
+      lto_output_location (ob, UNKNOWN_LOCATION);
+    }
   /* Do not stream BLOCK_NONLOCALIZED_VARS.  We cannot handle debug information
-     for early inlining so drop it on the floor instead of ICEing in
+     for early inlined BLOCKs so drop it on the floor instead of ICEing in
      dwarf2out.c.  */
 
-  stream_write_tree (ob, BLOCK_SUPERCONTEXT (expr), ref_p);
-  /* Do not stream BLOCK_ABSTRACT_ORIGIN.  We cannot handle debug information
-     for early inlining so drop it on the floor instead of ICEing in
-     dwarf2out.c.  */
-  stream_write_tree (ob, BLOCK_FRAGMENT_ORIGIN (expr), ref_p);
-  stream_write_tree (ob, BLOCK_FRAGMENT_CHAIN (expr), ref_p);
+  /* BLOCK_FRAGMENT_ORIGIN and BLOCK_FRAGMENT_CHAIN is not live at LTO
+     streaming time.  */
+
   /* Do not output BLOCK_SUBBLOCKS.  Instead on streaming-in this
      list is re-constructed from BLOCK_SUPERCONTEXT.  */
 }

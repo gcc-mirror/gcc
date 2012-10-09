@@ -1,7 +1,59 @@
+2012-10-07  Matthias Klose  <doko@ubuntu.com>
+
+	* config/arm/unwind-arm.h (__gnu_unwind_24bit): Mark parameters
+	as unused.
+	(_Unwind_decode_typeinfo_ptr): Mark base as unused.
+
+2012-10-06  Mark Kettenis  <kettenis@openbsd.org>
+
+	* config.host (*-*-openbsd*): Add t-eh-dw2-dip to tmake_file.
+	* unwind-dw2-fde-dip.c: Don't include <elf.h> on OpenBSD.
+	(USE_PT_GNU_EH_FRAME): Define for OpenBSD.
+	(ElfW): Likewise.
+
+2012-10-05  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR other/53889
+	* config/i386/gthr-win32.h (__gthread_recursive_mutex_destroy):
+	Fix parameter names.
+
+2012-10-04  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/33135
+	* config/sh/t-sh (HOST_LIBGCC2_CFLAGS): Delete.
+	* config/sh/t-netbsd (HOST_LIBGCC2_CFLAGS): Delete.
+	* config/sh/t-linux (HOST_LIBGCC2_CFLAGS): Remove mieee option.
+
+2012-10-03  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/50457
+	* config/sh/linux-atomic.S: Delete.
+	* config/sh/linux-atomic.c: New.
+	* config/sh/t-linux (LIB2ADD): Replace linux-atomic.S with
+	linux-atomic.c.  Add cflags to disable warnings.
+
+2012-10-02  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR other/53889
+	* gthr.h (__gthread_recursive_mutex_destroy): Document new required
+	function.
+	* gthr-posix.h (__gthread_recursive_mutex_destroy): Define.
+	* gthr-single.h (__gthread_recursive_mutex_destroy): Likewise.
+	* config/gthr-rtems.h (__gthread_recursive_mutex_destroy): Likewise.
+	* config/gthr-vxworks.h (__gthread_recursive_mutex_destroy): Likewise.
+	* config/i386/gthr-win32.c (__gthread_win32_recursive_mutex_destroy):
+	Likewise.
+	* config/i386/gthr-win32.h (__gthread_recursive_mutex_destroy):
+	Likewise.
+	* config/mips/gthr-mipssde.h (__gthread_recursive_mutex_destroy):
+	Likewise.
+	* config/pa/gthr-dce.h (__gthread_recursive_mutex_destroy): Likewise.
+	* config/s390/gthr-tpf.h (__gthread_recursive_mutex_destroy): Likewise.
+
 2012-09-19  Mark Kettenis  <kettenis@openbsd.org>
 
-        * config.host (hppa-*-openbsd*): New target.
-        * config/pa/t-openbsd: New file.
+	* config.host (hppa-*-openbsd*): New target.
+	* config/pa/t-openbsd: New file.
 
 2012-09-15  Georg-Johann Lay  <avr@gjlay.de>
 
@@ -34,9 +86,9 @@
 
 2012-09-07  Teresa Johnson  <tejohnson@google.com>
 
-        PR gcov-profile/54487
+	PR gcov-profile/54487
 	* libgcc/libgcov.c (gcov_exit): Avoid warning on histogram
-        differences.
+	differences.
 
 2012-09-05  Georg-Johann Lay  <avr@gjlay.de>
 

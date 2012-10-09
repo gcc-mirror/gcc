@@ -3634,6 +3634,15 @@ This pragma takes no arguments.  It causes the rest of the code in the
 current file to be treated as if it came from a system header.
 @xref{System Headers}.
 
+@item #pragma GCC warning
+@itemx #pragma GCC error
+@code{#pragma GCC warning "message"} causes the preprocessor to issue
+a warning diagnostic with the text @samp{message}.  The message
+contained in the pragma must be a single string literal.  Similarly,
+@code{#pragma GCC error "message"} issues an error message.  Unlike
+the @samp{#warning} and @samp{#error} directives, these pragmas can be
+embedded in preprocessor macros using @samp{_Pragma}.
+
 @end ftable
 
 @node Other Directives

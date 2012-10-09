@@ -1285,11 +1285,9 @@ produce_symtab (struct output_block *ob)
   struct streamer_tree_cache_d *cache = ob->writer_cache;
   char *section_name = lto_get_section_name (LTO_section_symtab, NULL, NULL);
   struct pointer_set_t *seen;
-  struct cgraph_node *node;
-  struct varpool_node *vnode;
   struct lto_output_stream stream;
   lto_symtab_encoder_t encoder = ob->decl_state->symtab_node_encoder;
-  int i;
+  lto_symtab_encoder_iterator lsei;
 
   lto_begin_section (section_name, false);
   free (section_name);
@@ -1297,78 +1295,26 @@ produce_symtab (struct output_block *ob)
   seen = pointer_set_create ();
   memset (&stream, 0, sizeof (stream));
 
-  /* Write all functions. 
-     First write all defined functions and then write all used functions.
-     This is done so only to handle duplicated symbols in cgraph.  */
-  for (i = 0; i < lto_symtab_encoder_size (encoder); i++)
+  /* Write the symbol table.
+     First write everything defined and then all declarations.
+     This is neccesary to handle cases where we have duplicated symbols.  */
+  for (lsei = lsei_start (encoder);
+       !lsei_end_p (lsei); lsei_next (&lsei))
     {
-      if (!symtab_function_p (lto_symtab_encoder_deref (encoder, i)))
-	continue;
-      node = cgraph (lto_symtab_encoder_deref (encoder, i));
-      if (DECL_EXTERNAL (node->symbol.decl))
-	continue;
-      if (DECL_COMDAT (node->symbol.decl)
-	  && cgraph_comdat_can_be_unshared_p (node))
-	continue;
-      if ((node->alias && !node->thunk.alias) || node->global.inlined_to)
-	continue;
-      write_symbol (cache, &stream, node->symbol.decl, seen, false);
-    }
-  for (i = 0; i < lto_symtab_encoder_size (encoder); i++)
-    {
-      if (!symtab_function_p (lto_symtab_encoder_deref (encoder, i)))
-	continue;
-      node = cgraph (lto_symtab_encoder_deref (encoder, i));
-      if (!DECL_EXTERNAL (node->symbol.decl))
-	continue;
-      /* We keep around unused extern inlines in order to be able to inline
-	 them indirectly or via vtables.  Do not output them to symbol
-	 table: they end up being undefined and just consume space.  */
-      if (!node->symbol.address_taken && !node->callers)
-	continue;
-      if (DECL_COMDAT (node->symbol.decl)
-	  && cgraph_comdat_can_be_unshared_p (node))
-	continue;
-      if ((node->alias && !node->thunk.alias) || node->global.inlined_to)
-	continue;
-      write_symbol (cache, &stream, node->symbol.decl, seen, false);
-    }
+      symtab_node node = lsei_node (lsei);
 
-  /* Write all variables.  */
-  for (i = 0; i < lto_symtab_encoder_size (encoder); i++)
-    {
-      if (!symtab_variable_p (lto_symtab_encoder_deref (encoder, i)))
+      if (!symtab_real_symbol_p (node) || DECL_EXTERNAL (node->symbol.decl))
 	continue;
-      vnode = varpool (lto_symtab_encoder_deref (encoder, i));
-      if (DECL_EXTERNAL (vnode->symbol.decl))
-	continue;
-      /* COMDAT virtual tables can be unshared.  Do not declare them
-	 in the LTO symbol table to prevent linker from forcing them
-	 into the output. */
-      if (DECL_COMDAT (vnode->symbol.decl)
-	  && !vnode->symbol.force_output
-	  && vnode->finalized 
-	  && DECL_VIRTUAL_P (vnode->symbol.decl))
-	continue;
-      if (vnode->alias && !vnode->alias_of)
-	continue;
-      write_symbol (cache, &stream, vnode->symbol.decl, seen, false);
+      write_symbol (cache, &stream, node->symbol.decl, seen, false);
     }
-  for (i = 0; i < lto_symtab_encoder_size (encoder); i++)
+  for (lsei = lsei_start (encoder);
+       !lsei_end_p (lsei); lsei_next (&lsei))
     {
-      if (!symtab_variable_p (lto_symtab_encoder_deref (encoder, i)))
+      symtab_node node = lsei_node (lsei);
+
+      if (!symtab_real_symbol_p (node) || !DECL_EXTERNAL (node->symbol.decl))
 	continue;
-      vnode = varpool (lto_symtab_encoder_deref (encoder, i));
-      if (!DECL_EXTERNAL (vnode->symbol.decl))
-	continue;
-      if (DECL_COMDAT (vnode->symbol.decl)
-	  && !vnode->symbol.force_output
-	  && vnode->finalized 
-	  && DECL_VIRTUAL_P (vnode->symbol.decl))
-	continue;
-      if (vnode->alias && !vnode->alias_of)
-	continue;
-      write_symbol (cache, &stream, vnode->symbol.decl, seen, false);
+      write_symbol (cache, &stream, node->symbol.decl, seen, false);
     }
 
   lto_write_stream (&stream);

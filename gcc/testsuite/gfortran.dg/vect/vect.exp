@@ -26,7 +26,7 @@ set DEFAULT_VECTCFLAGS ""
 
 # These flags are used for all targets.
 lappend DEFAULT_VECTCFLAGS "-O2" "-ftree-vectorize" "-fno-vect-cost-model" \
-  "-ftree-vectorizer-verbose=4" "-fdump-tree-vect-stats"
+  "-fdump-tree-vect-details"
 
 # If the target system supports vector instructions, the default action
 # for a test is 'run', otherwise it's 'compile'.  Save current default.

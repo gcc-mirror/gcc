@@ -486,7 +486,7 @@ f23 (int f1line, int f2line)
 		case 2:
 		  expected = "test3";
 		  break;
-		case 3:
+		default:
 		  assert (0);
 		}
 

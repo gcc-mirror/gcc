@@ -2311,10 +2311,15 @@ begin
                     (new String'("-gnatem=" & Get_Name_String (M_File)));
                end if;
 
-               --  For gnatcheck, also indicate a global configuration pragmas
-               --  file and, if -U is not used, a local one.
+               --  For gnatcheck, gnatpp, gnatstub and gnatmetric, also
+               --  indicate a global configuration pragmas file and, if -U
+               --  is not used, a local one.
 
-               if The_Command = Check then
+               if The_Command = Check  or else
+                  The_Command = Pretty or else
+                  The_Command = Stub   or else
+                  The_Command = Metric
+               then
                   declare
                      Pkg  : constant Prj.Package_Id :=
                               Prj.Util.Value_Of
@@ -2347,9 +2352,14 @@ begin
                      if Variable /= Nil_Variable_Value
                        and then Length_Of_Name (Variable.Value) /= 0
                      then
-                        Add_To_Carg_Switches
-                          (new String'
-                             ("-gnatec=" & Get_Name_String (Variable.Value)));
+                        declare
+                           Path : constant String :=
+                             Absolute_Path
+                               (Path_Name_Type (Variable.Value), Project);
+                        begin
+                           Add_To_Carg_Switches
+                             (new String'("-gnatec=" & Path));
+                        end;
                      end if;
                   end;
 
@@ -2387,10 +2397,14 @@ begin
                         if Variable /= Nil_Variable_Value
                           and then Length_Of_Name (Variable.Value) /= 0
                         then
-                           Add_To_Carg_Switches
-                             (new String'
-                                ("-gnatec=" &
-                                 Get_Name_String (Variable.Value)));
+                           declare
+                              Path : constant String :=
+                                Absolute_Path
+                                  (Path_Name_Type (Variable.Value), Project);
+                           begin
+                              Add_To_Carg_Switches
+                                (new String'("-gnatec=" & Path));
+                           end;
                         end if;
                      end;
                   end if;

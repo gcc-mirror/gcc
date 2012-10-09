@@ -296,8 +296,8 @@ package Sem_Eval is
    procedure Eval_Case_Expression        (N : Node_Id);
    procedure Eval_Character_Literal      (N : Node_Id);
    procedure Eval_Concatenation          (N : Node_Id);
-   procedure Eval_Conditional_Expression (N : Node_Id);
    procedure Eval_Entity_Name            (N : Node_Id);
+   procedure Eval_If_Expression          (N : Node_Id);
    procedure Eval_Indexed_Component      (N : Node_Id);
    procedure Eval_Integer_Literal        (N : Node_Id);
    procedure Eval_Logical_Op             (N : Node_Id);
@@ -320,7 +320,7 @@ package Sem_Eval is
    function Eval_Static_Predicate_Check
      (N  : Node_Id;
      Typ : Entity_Id) return Boolean;
-   --  Evaluate a static predicate check applied to a scalar literal.
+   --  Evaluate a static predicate check applied to a scalar literal
 
    procedure Fold_Str (N : Node_Id; Val : String_Id; Static : Boolean);
    --  Rewrite N with a new N_String_Literal node as the result of the compile
@@ -439,7 +439,7 @@ private
    pragma Inline (Eval_Actual);
    pragma Inline (Eval_Allocator);
    pragma Inline (Eval_Character_Literal);
-   pragma Inline (Eval_Conditional_Expression);
+   pragma Inline (Eval_If_Expression);
    pragma Inline (Eval_Indexed_Component);
    pragma Inline (Eval_Named_Integer);
    pragma Inline (Eval_Named_Real);

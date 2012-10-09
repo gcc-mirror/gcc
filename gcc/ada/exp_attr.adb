@@ -3324,13 +3324,13 @@ package body Exp_Attr is
          --    Furthermore, (-value - 1) can be expressed as -(value + 1)
          --    which we can compute using the integer base type.
 
-         --  Once this is done we analyze the conditional expression without
-         --  range checks, because we know everything is in range, and we
-         --  want to prevent spurious warnings on either branch.
+         --  Once this is done we analyze the if expression without range
+         --  checks, because we know everything is in range, and we want
+         --  to prevent spurious warnings on either branch.
 
          else
             Rewrite (N,
-              Make_Conditional_Expression (Loc,
+              Make_If_Expression (Loc,
                 Expressions => New_List (
                   Make_Op_Ge (Loc,
                     Left_Opnd  => Duplicate_Subexpr (Arg),
@@ -3500,7 +3500,7 @@ package body Exp_Attr is
               Right_Opnd => Y_Addr);
 
          Rewrite (N,
-           Make_Conditional_Expression (Loc,
+           Make_If_Expression (Loc,
              New_List (
                Cond,
 
@@ -5643,8 +5643,8 @@ package body Exp_Attr is
 
             Analyze_And_Resolve (N, Standard_Boolean);
 
-         --  For record types, we build a big conditional expression, applying
-         --  Valid or Valid_Scalars as appropriate to all relevant components.
+         --  For record types, we build a big if expression, applying Valid or
+         --  Valid_Scalars as appropriate to all relevant components.
 
          elsif (Is_Record_Type (Ptyp) or else Has_Discriminants (Ptyp))
            and then not No_Scalar_Parts (Ptyp)

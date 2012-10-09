@@ -2374,6 +2374,31 @@ copy_debug_stmt (gimple stmt, copy_body_data *id)
       gimple_debug_source_bind_set_var (stmt, t);
       walk_tree (gimple_debug_source_bind_get_value_ptr (stmt),
 		 remap_gimple_op_r, &wi, NULL);
+      /* When inlining and source bind refers to one of the optimized
+	 away parameters, change the source bind into normal debug bind
+	 referring to the corresponding DEBUG_EXPR_DECL that should have
+	 been bound before the call stmt.  */
+      t = gimple_debug_source_bind_get_value (stmt);
+      if (t != NULL_TREE
+	  && TREE_CODE (t) == PARM_DECL
+	  && id->gimple_call)
+	{
+	  VEC(tree, gc) **debug_args = decl_debug_args_lookup (id->src_fn);
+	  unsigned int i;
+	  if (debug_args != NULL)
+	    {
+	      for (i = 0; i < VEC_length (tree, *debug_args); i += 2)
+		if (VEC_index (tree, *debug_args, i) == DECL_ORIGIN (t)
+		    && TREE_CODE (VEC_index (tree, *debug_args, i + 1))
+		       == DEBUG_EXPR_DECL)
+		  {
+		    t = VEC_index (tree, *debug_args, i + 1);
+		    stmt->gsbase.subcode = GIMPLE_DEBUG_BIND;
+		    gimple_debug_bind_set_value (stmt, t);
+		    break;
+		  }
+	    }
+	}      
     }
 
   processing_debug_stmt = 0;
@@ -3814,6 +3839,12 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
 	goto egress;
 
       if (lookup_attribute ("always_inline", DECL_ATTRIBUTES (fn))
+          /* For extern inline functions that get redefined we always
+	     silently ignored always_inline flag. Better behaviour would
+	     be to be able to keep both bodies and use extern inline body
+	     for inlining, but we can't do that because frontends overwrite
+	     the body.  */
+	  && !cg_edge->callee->local.redefined_extern_inline
 	  /* Avoid warnings during early inline pass. */
 	  && cgraph_global_info_ready
 	  /* PR 20090218-1_0.c. Body can be provided by another module. */
@@ -3921,7 +3952,29 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
   initialize_inlined_parameters (id, stmt, fn, bb);
 
   if (DECL_INITIAL (fn))
-    prepend_lexical_block (id->block, remap_blocks (DECL_INITIAL (fn), id));
+    {
+      tree *var;
+
+      prepend_lexical_block (id->block, remap_blocks (DECL_INITIAL (fn), id));
+      gcc_checking_assert (BLOCK_SUBBLOCKS (id->block)
+			   && (BLOCK_CHAIN (BLOCK_SUBBLOCKS (id->block))
+			       == NULL_TREE));
+      /* Move vars for PARM_DECLs from DECL_INITIAL block to id->block,
+	 otherwise for DWARF DW_TAG_formal_parameter will not be children of
+	 DW_TAG_inlined_subroutine, but of a DW_TAG_lexical_block
+	 under it.  The parameters can be then evaluated in the debugger,
+	 but don't show in backtraces.  */
+      for (var = &BLOCK_VARS (BLOCK_SUBBLOCKS (id->block)); *var; )
+	if (TREE_CODE (DECL_ORIGIN (*var)) == PARM_DECL)
+	  {
+	    tree v = *var;
+	    *var = TREE_CHAIN (v);
+	    TREE_CHAIN (v) = BLOCK_VARS (id->block);
+	    BLOCK_VARS (id->block) = v;
+	  }
+	else
+	  var = &TREE_CHAIN (*var);
+    }
 
   /* Return statements in the function body will be replaced by jumps
      to the RET_LABEL.  */

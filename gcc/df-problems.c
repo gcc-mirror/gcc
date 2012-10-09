@@ -2892,7 +2892,7 @@ static void
 df_set_unused_notes_for_mw (rtx insn, struct df_mw_hardreg *mws,
 			    bitmap live, bitmap do_not_gen,
 			    bitmap artificial_uses,
-			    struct dead_debug *debug)
+			    struct dead_debug_local *debug)
 {
   unsigned int r;
 
@@ -3021,7 +3021,7 @@ df_set_dead_notes_for_mw (rtx insn, struct df_mw_hardreg *mws,
 static void
 df_create_unused_note (rtx insn, df_ref def,
 		       bitmap live, bitmap artificial_uses,
-		       struct dead_debug *debug)
+		       struct dead_debug_local *debug)
 {
   unsigned int dregno = DF_REF_REGNO (def);
 
@@ -3060,9 +3060,9 @@ df_note_bb_compute (unsigned int bb_index,
   rtx insn;
   df_ref *def_rec;
   df_ref *use_rec;
-  struct dead_debug debug;
+  struct dead_debug_local debug;
 
-  dead_debug_init (&debug, NULL);
+  dead_debug_local_init (&debug, NULL, NULL);
 
   bitmap_copy (live, df_get_live_out (bb));
   bitmap_clear (artificial_uses);
@@ -3268,7 +3268,7 @@ df_note_bb_compute (unsigned int bb_index,
 	}
     }
 
-  dead_debug_finish (&debug, NULL);
+  dead_debug_local_finish (&debug, NULL);
 }
 
 
@@ -3286,6 +3286,11 @@ df_note_compute (bitmap all_blocks)
 
   EXECUTE_IF_SET_IN_BITMAP (all_blocks, 0, bb_index, bi)
   {
+    /* ??? Unlike fast DCE, we don't use global_debug for uses of dead
+       pseudos in debug insns because we don't always (re)visit blocks
+       with death points after visiting dead uses.  Even changing this
+       loop to postorder would still leave room for visiting a death
+       point before visiting a subsequent debug use.  */
     df_note_bb_compute (bb_index, &live, &do_not_gen, &artificial_uses);
   }
 

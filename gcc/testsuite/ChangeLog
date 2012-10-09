@@ -1,3 +1,199 @@
+2012-10-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/tree-ssa/slsr-30.c: Use correct cleanup directive.
+	* gcc.dg/tree-ssa/attr-hotcold-2.c: Likewise.
+	* gcc.dg/tree-ssa/ldist-21.c: Add missing cleanup directive.
+
+2012-10-08  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54760
+	* gcc.target/sh/pr54760-2.c: New.
+	* gcc.target/sh/pr54760-3.c: New.
+
+2012-10-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51422
+	* g++.dg/cpp0x/lambda/lambda-ice8.C: New.
+
+2012-10-07  Richard Sandiford  <rdsandiford@googlemail.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gcc.target/mips/madd-9.c: Force code to be tuned for the 4kc
+	and test that the accumulator is initialized using MULT.
+	* gcc.target/mips/mips32-dsp-accinit-1.c: New test.
+	* gcc.target/mips/mips32-dsp-accinit-2.c: Likewise.
+
+2012-10-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/52764
+	* g++.dg/cpp0x/stdint.C: New.
+
+2012-10-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54249
+	* g++.dg/cpp0x/stddef.C: New.
+
+2012-10-06  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54832
+	* gfortran.dg/typebound_operator_17.f90: New.
+
+2012-10-06  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/53831
+	PR lto/54776
+	* g++.dg/lto/v1-plugin-api-not-supported.C: New testcase.
+
+2012-10-06  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/lto/resolutions_0.c: New testcase.
+
+2012-10-06  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/45521
+	* gfortran.dg/generic_25.f90: New.
+	* gfortran.dg/generic_26.f90: New.
+	* gfortran.dg/generic_27.f90: New.
+
+2012-10-06  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54760
+	* gcc.target/sh/pr54760-1.c: New.
+
+2012-10-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/torture/Wsizeof-pointer-memaccess1.C: New test.
+	* g++.dg/torture/Wsizeof-pointer-memaccess2.C: New test.
+	* g++.dg/warn/Wsign-compare-5.C: New test.
+	* g++.dg/warn/Wsizeof-pointer-memaccess-1.C: New test.
+	* g++.dg/warn/Wnull-conversion-1.C: For c++11 add dg-error.
+	* g++.dg/ext/builtin30.C: New test.
+	* g++.dg/ext/vla12.C: New test.
+	* gcc.dg/builtins-85.c: New test.
+
+	PR debug/54519
+	* gcc.dg/guality/pr54519-1.c: New test.
+	* gcc.dg/guality/pr54519-2.c: New test.
+	* gcc.dg/guality/pr54519-3.c: New test.
+	* gcc.dg/guality/pr54519-4.c: New test.
+	* gcc.dg/guality/pr54519-5.c: New test.
+	* gcc.dg/guality/pr54519-6.c: New test.
+
+2012-10-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50893
+	* g++.dg/cpp0x/defaulted38.C: New.
+
+2012-10-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/33763
+	* c-c++-common/pr33763.c: New test.
+
+	PR tree-optimization/54810
+	* gcc.dg/tree-ssa/vrp85.c: New test.
+
+2012-10-04  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.dg/ucnid-7.c: Skip on AIX.
+	* gcc.dg/ucnid-8.c: Same.
+	* gcc.dg/ucnid-10.c: Same.
+	* gcc.dg/ucnid-13.c: Same.
+	* gcc.dg/attr-alias-3.c: Same.
+	* gcc.dg/attr-alias-5.c: Same.
+	* gcc.dg/torture/pr51106-2.c: Same.
+	* gcc.dg/vmx/3b-13.c: Use valid splat index.
+
+2012-10-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/52233
+	* g++.dg/cpp0x/alias-decl-23.C: New.
+
+2012-10-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53403
+	* g++.dg/template/friend53.C: New.
+
+2012-10-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* lib/gcc-dg.exp (cleanup-ada-spec): New procedure.
+	* lib/scanasm.exp (get_ada_spec_filename): Likewise.
+	(scan-ada-spec): Likewise.
+	(scan-ada-spec-not): Likewise.
+	* gcc.dg/dump-ada-spec-1.c: New test.
+	* g++.dg/other/dump-ada-spec-1.C: Likewise.
+
+2012-10-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/lto/20120723_0.c: Skip on SPARC 32-bit.
+
+2012-10-04  Florian Weimer  <fweimer@redhat.com>
+
+	* c-c++-common/cpp/diagnostic-pragma-1.c: New testcase.
+
+2012-10-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54323
+	* g++.dg/cpp0x/pr54323.C: New.
+
+2012-10-04  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/54735
+	* g++.dg/torture/pr54735.C: New testcase.
+
+2012-10-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/54739
+	* gcc.dg/lower-subreg-1.c: Also skip on SPARC.
+
+2012-10-03  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/51244
+	* gcc.target/sh/pr51244-12.c: New.
+
+2012-10-03  Dehao Chen  <dehao@google.com>
+
+	PR middle-end/54782
+	* gcc.dg/pr54782.c: New test.
+
+2012-10-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/54777
+	* g++.dg/cpp0x/constexpr-ref4.C: New test.
+
+2012-10-02  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54778
+	* gfortran.dg/class_53.f90: New.
+
+2012-10-02  Alexandre Oliva <aoliva@redhat.com>
+
+	PR debug/54551
+	* gcc.dg/guality/pr54551.c: New.
+
+2012-10-02  Pat Haugen <pthaugen@us.ibm.com>
+
+	* gcc.target/powerpc/pr46728-1.c: Accept xssqrtdp.
+	* gcc.target/powerpc/pr46728-2.c: Likewise.
+
+2012-10-02  Sharad Singhai  <singhai@google.com>
+
+	PR testsuite/54772
+	* gfortran.dg/vect/vect.exp: Change verbose vectorizor dump options
+	to fix test failures caused by r191883.
+	* gcc.dg/tree-ssa/gen-vect-11.c: Likewise.
+	* gcc.dg/tree-ssa/gen-vect-2.c: Likewise.
+	* gcc.dg/tree-ssa/gen-vect-32.c: Likewise.
+	* gcc.dg/tree-ssa/gen-vect-25.c: Likewise.
+	* gcc.dg/tree-ssa/gen-vect-11a.c: Likewise.
+	* gcc.dg/tree-ssa/gen-vect-26.c: Likewise.
+	* gcc.dg/tree-ssa/gen-vect-11b.c: Likewise.
+	* gcc.dg/tree-ssa/gen-vect-11c.c: Likewise.
+	* gcc.dg/tree-ssa/gen-vect-28.c: Likewise.
+
+2012-09-30  Sharad Singhai  <singhai@google.com>
+
+	* testsuite/gcc.target/i386/vect-double-1.c: Fix test.
+
 2012-10-01  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR target/54087

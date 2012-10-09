@@ -1,8 +1,12 @@
 LIB1ASMFUNCS_CACHE = _ic_invalidate _ic_invalidate_array
 
-LIB2ADD = $(srcdir)/config/sh/linux-atomic.S
+LIB2ADD = $(srcdir)/config/sh/linux-atomic.c
 
-HOST_LIBGCC2_CFLAGS += -mieee -DNO_FPSCR_VALUES
+HOST_LIBGCC2_CFLAGS += -DNO_FPSCR_VALUES
+
+# Silence atomic built-in related warnings in linux-atomic.c.
+# Unfortunately the conflicting types warning can't be disabled selectively.
+HOST_LIBGCC2_CFLAGS += -w -Wno-sync-nand
 
 # Override t-slibgcc-elf-ver to export some libgcc symbols with
 # the symbol versions that glibc used, and hide some lib1func

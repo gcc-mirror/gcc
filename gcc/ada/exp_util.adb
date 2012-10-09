@@ -710,8 +710,11 @@ package body Exp_Util is
                Subpool := Subpool_Handle_Name (Expr);
             end if;
 
+            --  If a subpool is present it can be an arbitrary name, so make
+            --  the actual by copying the tree.
+
             if Present (Subpool) then
-               Append_To (Actuals, New_Reference_To (Entity (Subpool), Loc));
+               Append_To (Actuals, New_Copy_Tree (Subpool, New_Sloc => Loc));
             else
                Append_To (Actuals, Make_Null (Loc));
             end if;
@@ -2163,6 +2166,7 @@ package body Exp_Util is
      (Var        : Entity_Id;
       Rep_Clause : Node_Id) return Node_Id
    is
+      Par : constant Node_Id   := Parent (Var);
       Typ : constant Entity_Id := Etype (Var);
 
       Init_Proc : Entity_Id;
@@ -2201,6 +2205,7 @@ package body Exp_Util is
 
    begin
       if not Has_Non_Null_Base_Init_Proc (Typ) then
+
          --  No init proc for the type, so obviously no call to be found
 
          return Empty;
@@ -2210,7 +2215,7 @@ package body Exp_Util is
 
       --  First scan the list containing the declaration of Var
 
-      Init_Call := Find_Init_Call_In_List (From => Next (Parent (Var)));
+      Init_Call := Find_Init_Call_In_List (From => Next (Par));
 
       --  If not found, also look on Var's freeze actions list, if any, since
       --  the init call may have been moved there (case of an address clause
@@ -2219,6 +2224,23 @@ package body Exp_Util is
       if No (Init_Call) and then Present (Freeze_Node (Var)) then
          Init_Call :=
            Find_Init_Call_In_List (First (Actions (Freeze_Node (Var))));
+      end if;
+
+      --  If the initialization call has actuals that use the secondary stack,
+      --  the call may have been wrapped into a temporary block, in which case
+      --  the block itself has to be removed.
+
+      if No (Init_Call) and then Nkind (Next (Par)) = N_Block_Statement then
+         declare
+            Blk : constant Node_Id := Next (Par);
+         begin
+            if Present
+                 (Find_Init_Call_In_List
+                   (First (Statements (Handled_Statement_Sequence (Blk)))))
+            then
+               Init_Call := Blk;
+            end if;
+         end;
       end if;
 
       return Init_Call;
@@ -3293,11 +3315,11 @@ package body Exp_Util is
                   return;
                end if;
 
-            --  Then or Else operand of conditional expression. Add actions to
-            --  Then_Actions or Else_Actions field as appropriate. The actions
-            --  will be moved further out when the conditional is expanded.
+            --  Then or Else dependent expression of an if expression. Add
+            --  actions to Then_Actions or Else_Actions field as appropriate.
+            --  The actions will be moved further out when the if is expanded.
 
-            when N_Conditional_Expression =>
+            when N_If_Expression =>
                declare
                   ThenX : constant Node_Id := Next (First (Expressions (P)));
                   ElseX : constant Node_Id := Next (ThenX);
@@ -3311,9 +3333,9 @@ package body Exp_Util is
                      null;
 
                   --  Actions belong to the then expression, temporarily place
-                  --  them as Then_Actions of the conditional expr. They will
-                  --  be moved to the proper place later when the conditional
-                  --  expression is expanded.
+                  --  them as Then_Actions of the if expression. They will be
+                  --  moved to the proper place later when the if expression
+                  --  is expanded.
 
                   elsif N = ThenX then
                      if Present (Then_Actions (P)) then
@@ -3326,10 +3348,10 @@ package body Exp_Util is
 
                      return;
 
-                  --  Actions belong to the else expression, temporarily
-                  --  place them as Else_Actions of the conditional expr.
-                  --  They will be moved to the proper place later when
-                  --  the conditional expression is expanded.
+                  --  Actions belong to the else expression, temporarily place
+                  --  them as Else_Actions of the if expression. They will be
+                  --  moved to the proper place later when the if expression
+                  --  is expanded.
 
                   elsif N = ElseX then
                      if Present (Else_Actions (P)) then
@@ -7187,8 +7209,8 @@ package body Exp_Util is
             then
                return True;
 
-            --  Processing for intermediate results of conditional expressions
-            --  where one of the alternatives uses a controlled function call.
+            --  Processing for intermediate results of if expressions where
+            --  one of the alternatives uses a controlled function call.
 
             elsif Is_Access_Type (Obj_Typ)
               and then Present (Status_Flag_Or_Transient_Decl (Obj_Id))

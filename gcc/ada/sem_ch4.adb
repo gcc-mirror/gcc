@@ -1570,79 +1570,6 @@ package body Sem_Ch4 is
       Operator_Check (N);
    end Analyze_Concatenation_Rest;
 
-   ------------------------------------
-   -- Analyze_Conditional_Expression --
-   ------------------------------------
-
-   procedure Analyze_Conditional_Expression (N : Node_Id) is
-      Condition : constant Node_Id := First (Expressions (N));
-      Then_Expr : constant Node_Id := Next (Condition);
-      Else_Expr : Node_Id;
-
-   begin
-      --  Defend against error of missing expressions from previous error
-
-      if No (Then_Expr) then
-         return;
-      end if;
-
-      Check_SPARK_Restriction ("conditional expression is not allowed", N);
-
-      Else_Expr := Next (Then_Expr);
-
-      if Comes_From_Source (N) then
-         Check_Compiler_Unit (N);
-      end if;
-
-      Analyze_Expression (Condition);
-      Analyze_Expression (Then_Expr);
-
-      if Present (Else_Expr) then
-         Analyze_Expression (Else_Expr);
-      end if;
-
-      --  If then expression not overloaded, then that decides the type
-
-      if not Is_Overloaded (Then_Expr) then
-         Set_Etype (N, Etype (Then_Expr));
-
-      --  Case where then expression is overloaded
-
-      else
-         declare
-            I  : Interp_Index;
-            It : Interp;
-
-         begin
-            Set_Etype (N, Any_Type);
-
-            --  Shouldn't the following statement be down in the ELSE of the
-            --  following loop? ???
-
-            Get_First_Interp (Then_Expr, I, It);
-
-            --  if no Else_Expression the conditional must be boolean
-
-            if No (Else_Expr) then
-               Set_Etype (N, Standard_Boolean);
-
-            --  Else_Expression Present. For each possible intepretation of
-            --  the Then_Expression, add it only if the Else_Expression has
-            --  a compatible type.
-
-            else
-               while Present (It.Nam) loop
-                  if Has_Compatible_Type (Else_Expr, It.Typ) then
-                     Add_One_Interp (N, It.Typ, It.Typ);
-                  end if;
-
-                  Get_Next_Interp (I, It);
-               end loop;
-            end if;
-         end;
-      end if;
-   end Analyze_Conditional_Expression;
-
    -------------------------
    -- Analyze_Equality_Op --
    -------------------------
@@ -1980,6 +1907,79 @@ package body Sem_Ch4 is
       Analyze_Expression (Expression (N));
       Set_Etype (N, Etype (Expression (N)));
    end Analyze_Expression_With_Actions;
+
+   ---------------------------
+   -- Analyze_If_Expression --
+   ---------------------------
+
+   procedure Analyze_If_Expression (N : Node_Id) is
+      Condition : constant Node_Id := First (Expressions (N));
+      Then_Expr : constant Node_Id := Next (Condition);
+      Else_Expr : Node_Id;
+
+   begin
+      --  Defend against error of missing expressions from previous error
+
+      if No (Then_Expr) then
+         return;
+      end if;
+
+      Check_SPARK_Restriction ("if expression is not allowed", N);
+
+      Else_Expr := Next (Then_Expr);
+
+      if Comes_From_Source (N) then
+         Check_Compiler_Unit (N);
+      end if;
+
+      Analyze_Expression (Condition);
+      Analyze_Expression (Then_Expr);
+
+      if Present (Else_Expr) then
+         Analyze_Expression (Else_Expr);
+      end if;
+
+      --  If then expression not overloaded, then that decides the type
+
+      if not Is_Overloaded (Then_Expr) then
+         Set_Etype (N, Etype (Then_Expr));
+
+      --  Case where then expression is overloaded
+
+      else
+         declare
+            I  : Interp_Index;
+            It : Interp;
+
+         begin
+            Set_Etype (N, Any_Type);
+
+            --  Shouldn't the following statement be down in the ELSE of the
+            --  following loop? ???
+
+            Get_First_Interp (Then_Expr, I, It);
+
+            --  if no Else_Expression the conditional must be boolean
+
+            if No (Else_Expr) then
+               Set_Etype (N, Standard_Boolean);
+
+            --  Else_Expression Present. For each possible intepretation of
+            --  the Then_Expression, add it only if the Else_Expression has
+            --  a compatible type.
+
+            else
+               while Present (It.Nam) loop
+                  if Has_Compatible_Type (Else_Expr, It.Typ) then
+                     Add_One_Interp (N, It.Typ, It.Typ);
+                  end if;
+
+                  Get_Next_Interp (I, It);
+               end loop;
+            end if;
+         end;
+      end if;
+   end Analyze_If_Expression;
 
    ------------------------------------
    -- Analyze_Indexed_Component_Form --
@@ -2386,6 +2386,8 @@ package body Sem_Ch4 is
             Process_Indexed_Component_Or_Slice;
          end if;
       end if;
+
+      Analyze_Dimension (N);
    end Analyze_Indexed_Component_Form;
 
    ------------------------
@@ -3404,6 +3406,50 @@ package body Sem_Ch4 is
    procedure Analyze_Quantified_Expression (N : Node_Id) is
       QE_Scop : Entity_Id;
 
+      function Is_Empty_Range (Typ : Entity_Id) return Boolean;
+      --  If the iterator is part of a quantified expression, and the range is
+      --  known to be statically empty, emit a warning and replace expression
+      --  with its static value. Returns True if the replacement occurs.
+
+      --------------------
+      -- Is_Empty_Range --
+      --------------------
+
+      function Is_Empty_Range (Typ : Entity_Id) return Boolean is
+         Loc : constant Source_Ptr := Sloc (N);
+
+      begin
+         if Is_Array_Type (Typ)
+           and then Compile_Time_Known_Bounds (Typ)
+           and then
+             (Expr_Value (Type_Low_Bound  (Etype (First_Index (Typ)))) >
+              Expr_Value (Type_High_Bound (Etype (First_Index (Typ)))))
+         then
+            Preanalyze_And_Resolve (Condition (N), Standard_Boolean);
+
+            if All_Present (N) then
+               Error_Msg_N
+                 ("?quantified expression with ALL "
+                  & "over a null range has value True", N);
+               Rewrite (N, New_Occurrence_Of (Standard_True, Loc));
+
+            else
+               Error_Msg_N
+                 ("?quantified expression with SOME "
+                  & "over a null range has value False", N);
+               Rewrite (N, New_Occurrence_Of (Standard_False, Loc));
+            end if;
+
+            Analyze (N);
+            return True;
+
+         else
+            return False;
+         end if;
+      end Is_Empty_Range;
+
+   --  Start of processing for Analyze_Quantified_Expression
+
    begin
       Check_SPARK_Restriction ("quantified expression is not allowed", N);
 
@@ -3425,6 +3471,13 @@ package body Sem_Ch4 is
 
       if Present (Iterator_Specification (N)) then
          Preanalyze (Iterator_Specification (N));
+
+         if Is_Entity_Name (Name (Iterator_Specification (N)))
+           and then Is_Empty_Range (Etype (Name (Iterator_Specification (N))))
+         then
+            return;
+         end if;
+
       else
          Preanalyze (Loop_Parameter_Specification (N));
       end if;
@@ -5835,14 +5888,36 @@ package body Sem_Ch4 is
    begin
       if not Is_Overloaded (R) then
          if Is_Numeric_Type (Etype (R)) then
-            Add_One_Interp (N, Op_Id, Base_Type (Etype (R)));
+
+            --  In an instance a generic actual may be a numeric type even if
+            --  the formal in the generic unit was not. In that case, the
+            --  predefined operator was not a possible interpretation in the
+            --  generic, and cannot be one in the instance.
+
+            if In_Instance
+              and then
+                not Is_Numeric_Type (Corresponding_Generic_Type (Etype (R)))
+            then
+               null;
+            else
+               Add_One_Interp (N, Op_Id, Base_Type (Etype (R)));
+            end if;
          end if;
 
       else
          Get_First_Interp (R, Index, It);
          while Present (It.Typ) loop
             if Is_Numeric_Type (It.Typ) then
-               Add_One_Interp (N, Op_Id, Base_Type (It.Typ));
+               if In_Instance
+                 and then
+                   not Is_Numeric_Type
+                     (Corresponding_Generic_Type (Etype (It.Typ)))
+               then
+                  null;
+
+               else
+                  Add_One_Interp (N, Op_Id, Base_Type (It.Typ));
+               end if;
             end if;
 
             Get_Next_Interp (Index, It);

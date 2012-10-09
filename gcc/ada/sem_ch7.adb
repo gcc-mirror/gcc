@@ -28,6 +28,7 @@
 --  handling of private and full declarations, and the construction of dispatch
 --  tables for tagged types.
 
+with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
@@ -1387,7 +1388,23 @@ package body Sem_Ch7 is
            and then Nkind (Parent (E)) = N_Full_Type_Declaration
            and then Has_Aspects (Parent (E))
          then
-            Build_Invariant_Procedure (E, N);
+            declare
+               ASN : Node_Id;
+
+            begin
+               ASN := First (Aspect_Specifications (Parent (E)));
+               while Present (ASN) loop
+                  if Chars (Identifier (ASN)) = Name_Invariant
+                       or else
+                     Chars (Identifier (ASN)) = Name_Type_Invariant
+                  then
+                     Build_Invariant_Procedure (E, N);
+                     exit;
+                  end if;
+
+                  Next (ASN);
+               end loop;
+            end;
          end if;
 
          Next_Entity (E);
@@ -2142,6 +2159,14 @@ package body Sem_Ch7 is
          end if;
 
          Set_Freeze_Node (Priv, Freeze_Node (Full));
+
+         --  Propagate information of type invariants, which may be specified
+         --  for the full view.
+
+         if Has_Invariants (Full) and not Has_Invariants (Priv) then
+            Set_Has_Invariants (Priv);
+            Set_Subprograms_For_Type (Priv, Subprograms_For_Type (Full));
+         end if;
 
          if Is_Tagged_Type (Priv)
            and then Is_Tagged_Type (Full)

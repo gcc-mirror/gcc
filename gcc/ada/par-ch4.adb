@@ -553,7 +553,7 @@ package body Ch4 is
          --      case of a name which can be extended in the normal manner.
          --      This case is handled by LP_State_Name or LP_State_Expr.
 
-         --      Note: conditional expressions (without an extra level of
+         --      Note: if and case expressions (without an extra level of
          --      parentheses) are permitted in this context).
 
          --   (..., identifier => expression , ...)
@@ -1233,21 +1233,21 @@ package body Ch4 is
       Lparen_Sloc := Token_Ptr;
       T_Left_Paren;
 
-      --  Conditional expression case
+      --  If expression
 
       if Token = Tok_If then
-         Expr_Node := P_Conditional_Expression;
+         Expr_Node := P_If_Expression;
          T_Right_Paren;
          return Expr_Node;
 
-      --  Case expression case
+      --  Case expression
 
       elsif Token = Tok_Case then
          Expr_Node := P_Case_Expression;
          T_Right_Paren;
          return Expr_Node;
 
-      --  Quantified expression case
+      --  Quantified expression
 
       elsif Token = Tok_For then
          Expr_Node := P_Quantified_Expression;
@@ -1258,12 +1258,12 @@ package body Ch4 is
       --  is distinctly unpleasant, but it saves a lot of fiddling in scanning
       --  out the discrete choice list.
 
-      --  Deal with expression and extension aggregate cases first
+      --  Deal with expression and extension aggregates first
 
       elsif Token /= Tok_Others then
          Save_Scan_State (Scan_State); -- at start of expression
 
-         --  Deal with (NULL RECORD) case
+         --  Deal with (NULL RECORD)
 
          if Token = Tok_Null then
             Scan; -- past NULL
@@ -1287,7 +1287,7 @@ package body Ch4 is
             Expr_Node := P_Expression_Or_Range_Attribute_If_OK;
          end if;
 
-         --  Extension aggregate case
+         --  Extension aggregate
 
          if Token = Tok_With then
             if Nkind (Expr_Node) = N_Attribute_Reference
@@ -1329,7 +1329,7 @@ package body Ch4 is
                Expr_Node := Empty;
             end if;
 
-         --  Expression case
+         --  Expression
 
          elsif Token = Tok_Right_Paren or else Token in Token_Class_Eterm then
             if Nkind (Expr_Node) = N_Attribute_Reference
@@ -1350,13 +1350,13 @@ package body Ch4 is
             T_Right_Paren; -- past right paren (error message if none)
             return Expr_Node;
 
-         --  Normal aggregate case
+         --  Normal aggregate
 
          else
             Aggregate_Node := New_Node (N_Aggregate, Lparen_Sloc);
          end if;
 
-      --  Others case
+      --  Others
 
       else
          Aggregate_Node := New_Node (N_Aggregate, Lparen_Sloc);
@@ -2454,7 +2454,7 @@ package body Ch4 is
             when Tok_Pragma =>
                P_Pragmas_Misplaced;
 
-            --  Deal with IF (possible unparenthesized conditional expression)
+            --  Deal with IF (possible unparenthesized if expression)
 
             when Tok_If =>
 
@@ -2462,7 +2462,7 @@ package body Ch4 is
                --  the start of a new line, then we consider we have a missing
                --  operand. If in Ada 2012 and the IF is not properly indented
                --  for a statement, we prefer to issue a message about an ill-
-               --  parenthesized conditional expression.
+               --  parenthesized if expression.
 
                if Token_Is_At_Start_Of_Line
                  and then not
@@ -2473,13 +2473,12 @@ package body Ch4 is
                   Error_Msg_AP ("missing operand");
                   return Error;
 
-               --  If this looks like a conditional expression, then treat it
-               --  that way with an error message.
+               --  If this looks like an if expression, then treat it that way
+               --  with an error message.
 
                elsif Ada_Version >= Ada_2012 then
-                  Error_Msg_SC
-                    ("conditional expression must be parenthesized");
-                  return P_Conditional_Expression;
+                  Error_Msg_SC ("if expression must be parenthesized");
+                  return P_If_Expression;
 
                --  Otherwise treat as misused identifier
 
@@ -2706,7 +2705,16 @@ package body Ch4 is
 
       Scan; -- past operator token
 
+      --  Deal with NOT IN, if previous token was NOT, we must have IN now
+
       if Prev_Token = Tok_Not then
+
+         --  Style check, for NOT IN, we require one space between NOT and IN
+
+         if Style_Check and then Token = Tok_In then
+            Style.Check_Not_In;
+         end if;
+
          T_In;
       end if;
 
@@ -2965,21 +2973,21 @@ package body Ch4 is
       return Case_Alt_Node;
    end P_Case_Expression_Alternative;
 
-   ------------------------------
-   -- P_Conditional_Expression --
-   ------------------------------
+   ---------------------
+   -- P_If_Expression --
+   ---------------------
 
-   function P_Conditional_Expression return Node_Id is
+   function P_If_Expression return Node_Id is
       Exprs : constant List_Id    := New_List;
       Loc   : constant Source_Ptr := Token_Ptr;
       Expr  : Node_Id;
       State : Saved_Scan_State;
 
    begin
-      Inside_Conditional_Expression := Inside_Conditional_Expression + 1;
+      Inside_If_Expression := Inside_If_Expression + 1;
 
       if Token = Tok_If and then Ada_Version < Ada_2012 then
-         Error_Msg_SC ("|conditional expression is an Ada 2012 feature");
+         Error_Msg_SC ("|if expression is an Ada 2012 feature");
          Error_Msg_SC ("\|unit must be compiled with -gnat2012 switch");
       end if;
 
@@ -3008,7 +3016,7 @@ package body Ch4 is
       --  Scan out ELSIF sequence if present
 
       if Token = Tok_Elsif then
-         Expr := P_Conditional_Expression;
+         Expr := P_If_Expression;
          Set_Is_Elsif (Expr);
          Append_To (Exprs, Expr);
 
@@ -3030,8 +3038,7 @@ package body Ch4 is
       --  If we have an END IF, diagnose as not needed
 
       if Token = Tok_End then
-         Error_Msg_SC
-           ("`END IF` not allowed at end of conditional expression");
+         Error_Msg_SC ("`END IF` not allowed at end of if expression");
          Scan; -- past END
 
          if Token = Tok_If then
@@ -3039,14 +3046,14 @@ package body Ch4 is
          end if;
       end if;
 
-      Inside_Conditional_Expression := Inside_Conditional_Expression - 1;
+      Inside_If_Expression := Inside_If_Expression - 1;
 
-      --  Return the Conditional_Expression node
+      --  Return the If_Expression node
 
       return
-        Make_Conditional_Expression (Loc,
+        Make_If_Expression (Loc,
           Expressions => Exprs);
-   end P_Conditional_Expression;
+   end P_If_Expression;
 
    -----------------------
    -- P_Membership_Test --
@@ -3104,18 +3111,16 @@ package body Ch4 is
          Result := P_Case_Expression;
 
          if not (Lparen and then Token = Tok_Right_Paren) then
-            Error_Msg_N
-              ("case expression must be parenthesized!", Result);
+            Error_Msg_N ("case expression must be parenthesized!", Result);
          end if;
 
-      --  Conditional expression
+      --  If expression
 
       elsif Token = Tok_If then
-         Result := P_Conditional_Expression;
+         Result := P_If_Expression;
 
          if not (Lparen and then Token = Tok_Right_Paren) then
-            Error_Msg_N
-              ("conditional expression must be parenthesized!", Result);
+            Error_Msg_N ("if expression must be parenthesized!", Result);
          end if;
 
       --  Quantified expression

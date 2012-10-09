@@ -128,6 +128,7 @@ private
 
    procedure Bad_Switch (Switch : Character);
    procedure Bad_Switch (Switch : String);
+   pragma No_Return (Bad_Switch);
    --  Fail with an appropriate message when a switch is not recognized
 
 end Switch;

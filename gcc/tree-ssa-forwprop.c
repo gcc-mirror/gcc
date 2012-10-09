@@ -571,7 +571,7 @@ forward_propagate_into_cond (gimple_stmt_iterator *gsi_p)
       if (TREE_CODE_CLASS (code) == tcc_comparison)
 	tmp = fold_build2_loc (gimple_location (def_stmt),
 			       code,
-			       boolean_type_node,
+			       TREE_TYPE (cond),
 			       gimple_assign_rhs1 (def_stmt),
 			       gimple_assign_rhs2 (def_stmt));
       else if ((code == BIT_NOT_EXPR

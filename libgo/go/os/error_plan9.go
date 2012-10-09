@@ -5,21 +5,36 @@
 package os
 
 func isExist(err error) bool {
-	if pe, ok := err.(*PathError); ok {
+	switch pe := err.(type) {
+	case nil:
+		return false
+	case *PathError:
+		err = pe.Err
+	case *LinkError:
 		err = pe.Err
 	}
 	return contains(err.Error(), " exists")
 }
 
 func isNotExist(err error) bool {
-	if pe, ok := err.(*PathError); ok {
+	switch pe := err.(type) {
+	case nil:
+		return false
+	case *PathError:
+		err = pe.Err
+	case *LinkError:
 		err = pe.Err
 	}
 	return contains(err.Error(), "does not exist")
 }
 
 func isPermission(err error) bool {
-	if pe, ok := err.(*PathError); ok {
+	switch pe := err.(type) {
+	case nil:
+		return false
+	case *PathError:
+		err = pe.Err
+	case *LinkError:
 		err = pe.Err
 	}
 	return contains(err.Error(), "permission denied")

@@ -1892,8 +1892,8 @@ package body Exp_Ch7 is
                then
                   Processing_Actions (Has_No_Init => True);
 
-               --  Process intermediate results of conditional expression with
-               --  one of the alternatives using a controlled function call.
+               --  Process intermediate results of an if expression with one
+               --  of the alternatives using a controlled function call.
 
                elsif Is_Access_Type (Obj_Typ)
                  and then Present (Status_Flag_Or_Transient_Decl (Obj_Id))
@@ -3639,9 +3639,13 @@ package body Exp_Ch7 is
       --  If the node to wrap is an iteration_scheme, the expression is
       --  one of the bounds, and the expansion will make an explicit
       --  declaration for it (see Analyze_Iteration_Scheme, sem_ch5.adb),
-      --  so do not apply any transformations here.
+      --  so do not apply any transformations here. Same for an Ada 2012
+      --  iterator specification, where a block is created for the expression
+      --  that build the container.
 
-      elsif Nkind (Wrap_Node) = N_Iteration_Scheme then
+      elsif Nkind_In (Wrap_Node, N_Iteration_Scheme,
+                                 N_Iterator_Specification)
+      then
          null;
 
       --  In formal verification mode, if the node to wrap is a pragma check,

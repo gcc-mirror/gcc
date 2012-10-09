@@ -332,7 +332,7 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
 #ifdef ORDINARY_MAP_INSTANCE
       map = LINEMAPS_ORDINARY_MAP_AT (line_table, i);
       if (flag_debug_instances)
-        ORDINARY_MAP_INSTANCE(map) = file_info_ptr[i].Instance;
+	ORDINARY_MAP_INSTANCE (map) = file_info_ptr[i].Instance;
 #endif
       linemap_line_start (line_table, file_info_ptr[i].Num_Source_Lines, 252);
       linemap_position_for_column (line_table, 252 - 1);
@@ -3158,6 +3158,7 @@ build_return_expr (tree ret_obj, tree ret_val)
       if (optimize
 	  && AGGREGATE_TYPE_P (operation_type)
 	  && !TYPE_IS_FAT_POINTER_P (operation_type)
+	  && TYPE_MODE (operation_type) == BLKmode
 	  && aggregate_value_p (operation_type, current_function_decl))
 	{
 	  /* Recognize the temporary created for a return value with variable
@@ -5977,7 +5978,7 @@ gnat_to_gnu (Node_Id gnat_node)
       }
       break;
 
-    case N_Conditional_Expression:
+    case N_If_Expression:
       {
 	tree gnu_cond = gnat_to_gnu (First (Expressions (gnat_node)));
 	tree gnu_true = gnat_to_gnu (Next (First (Expressions (gnat_node))));
@@ -6240,7 +6241,7 @@ gnat_to_gnu (Node_Id gnat_node)
 		   : VEC_last (loop_info, gnu_loop_stack)->label));
       break;
 
-    case N_Return_Statement:
+    case N_Simple_Return_Statement:
       {
 	tree gnu_ret_obj, gnu_ret_val;
 

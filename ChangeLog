@@ -1,3 +1,11 @@
+2012-10-04  Lawrence Crowl  <crowl@google.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2012-10-01  Cary Coutant  <ccoutant@google.com>
+
+	* MAINTAINERS: Add myself as dwarf debugging code maintainer.
+
 2012-09-28  Ian Lance Taylor  <iant@google.com>
 
 	* Makefile.def: Make all-target-libgo depend on

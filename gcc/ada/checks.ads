@@ -135,13 +135,14 @@ package Checks is
    --  larger than the overlaid object.
 
    procedure Apply_Arithmetic_Overflow_Check (N : Node_Id);
-   --  Given a binary arithmetic operator (+ - *) expand a software integer
-   --  overflow check using range checks on a larger checking type or a call
-   --  to an appropriate runtime routine. This is used for all three operators
-   --  for the signed integer case, and for +/- in the fixed-point case. The
-   --  check is expanded only if Software_Overflow_Checking is enabled and
-   --  Do_Overflow_Check is set on node N. Note that divide is handled
-   --  separately using Apply_Arithmetic_Divide_Overflow_Check.
+   --  Handle overflow checking for an arithmetic operator. Also handles the
+   --  cases of ELIMINATED and MINIMIZED overflow checking mode. If the mode
+   --  is one of the latter two, then this routine can also be called with
+   --  an if or case expression node to make sure that we properly handle
+   --  overflow checking for dependent expressions. This routine handles
+   --  front end vs back end overflow checks (in the front end case it expands
+   --  the necessary check). Note that divide is handled separately using
+   --  Apply_Divide_Checks.
 
    procedure Apply_Constraint_Check
      (N          : Node_Id;
@@ -173,10 +174,16 @@ package Checks is
    --  occur in the signed case for the case of the largest negative number
    --  divided by minus one.
 
-   procedure Apply_Parameter_Aliasing_And_Validity_Checks (Subp : Entity_Id);
+   procedure Apply_Parameter_Aliasing_Checks
+     (Call : Node_Id;
+      Subp : Entity_Id);
+   --  Given a subprogram call Call, add a check to verify that none of the
+   --  actuals overlap. Subp denotes the subprogram being called.
+
+   procedure Apply_Parameter_Validity_Checks (Subp : Entity_Id);
    --  Given a subprogram Subp, add both a pre and post condition pragmas that
-   --  detect aliased objects and verify the proper initialization of scalars
-   --  in parameters and function results.
+   --  verify the proper initialization of scalars in parameters and function
+   --  results.
 
    procedure Apply_Predicate_Check (N : Node_Id; Typ : Entity_Id);
    --  N is an expression to which a predicate check may need to be applied
@@ -216,7 +223,7 @@ package Checks is
    --  Returns result of converting node N to Bignum. The returned value is not
    --  analyzed, the caller takes responsibility for this. Node N must be a
    --  subexpression node of a signed integer type or Bignum type (if it is
-   --  already a Bignnum, the returned value is Relocate_Node (N).
+   --  already a Bignum, the returned value is Relocate_Node (N)).
 
    procedure Determine_Range
      (N            : Node_Id;
@@ -260,12 +267,13 @@ package Checks is
    --  parameter is used to supply Sloc values for the constructed tree.
 
    procedure Minimize_Eliminate_Overflow_Checks
-     (N  : Node_Id;
-      Lo : out Uint;
-      Hi : out Uint);
+     (N         : Node_Id;
+      Lo        : out Uint;
+      Hi        : out Uint;
+      Top_Level : Boolean);
    --  This is the main routine for handling MINIMIZED and ELIMINATED overflow
    --  checks. On entry N is a node whose result is a signed integer subtype.
-   --  If the node is an artihmetic operation, then a range analysis is carried
+   --  If the node is an arithmetic operation, then a range analysis is carried
    --  out, and there are three possibilities:
    --
    --    The node is left unchanged (apart from expansion of an exponentiation
@@ -281,13 +289,13 @@ package Checks is
    --
    --  In the first two cases, Lo and Hi are set to the bounds of the possible
    --  range of results, computed as accurately as possible. In the third case
-   --  Lo and Hi are set to No_Uint (there are some cases where we cold get an
+   --  Lo and Hi are set to No_Uint (there are some cases where we could get an
    --  advantage from keeping result ranges for Bignum values, but it could use
    --  a lot of space and is very unlikely to be valuable).
    --
    --  If the node is not an arithmetic operation, then it is unchanged but
    --  Lo and Hi are still set (to the bounds of the result subtype if nothing
-   --  better can be determined.
+   --  better can be determined).
    --
    --  Note: this function is recursive, if called with an arithmetic operator,
    --  recursive calls are made to process the operands using this procedure.
@@ -302,8 +310,8 @@ package Checks is
    --  with a Long_Long_Integer left operand and an Integer right operand, and
    --  we would get a semantic error.
    --
-   --  The routine is called in three situations if we are operating in
-   --  either MINIMIZED or ELIMINATED modes.
+   --  The routine is called in three situations if we are operating in either
+   --  MINIMIZED or ELIMINATED modes.
    --
    --    Overflow checks applied to the top node of an expression tree when
    --    that node is an arithmetic operator. In this case the result is
@@ -320,7 +328,17 @@ package Checks is
    --    just that the result of IN is false in that case).
    --
    --  Note that if Bignum values appear, the caller must take care of doing
-   --  the appropriate mark/release operation on the secondary stack.
+   --  the appropriate mark/release operations on the secondary stack.
+   --
+   --  Top_Level is used to avoid inefficient unnecessary transitions into the
+   --  Bignum domain. If Top_Level is True, it means that the caller will have
+   --  to convert any Bignum value back to Long_Long_Integer, checking that the
+   --  value is in range. This is the normal case for a top level operator in
+   --  a subexpression. There is no point in going into Bignum mode to avoid an
+   --  overflow just so we can check for overflow the next moment. For calls
+   --  from comparisons and membership tests, and for all recursive calls, we
+   --  do want to transition into the Bignum domain if necessary. Note that
+   --  this setting is only relevant in ELIMINATED mode.
 
    -------------------------------------------------------
    -- Control and Optimization of Range/Overflow Checks --

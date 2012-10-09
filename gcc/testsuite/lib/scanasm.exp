@@ -184,6 +184,38 @@ proc scan-stack-usage-not { args } {
     dg-scan "scan-file-not" 0 $testcase $output_file $args
 }
 
+# Return the filename of the Ada spec corresponding to the argument.
+
+proc get_ada_spec_filename { testcase } {
+    # The name might include a list of options; extract the file name.
+    set filename  [lindex $testcase 0]
+    set tailname  [file tail $filename]
+    set extension [string trimleft [file extension $tailname] {.}]
+    set rootname  [regsub -all {\-} [file rootname $tailname] {_}]
+
+    return [string tolower "${rootname}_${extension}.ads"]
+}
+
+# Look for a pattern in the .ads file produced by the compiler.  See
+# dg-scan for details.
+
+proc scan-ada-spec { args } {
+    set testcase  [testname-for-summary]
+    set output_file "[get_ada_spec_filename $testcase]"
+
+    dg-scan "scan-file" 1 $testcase $output_file $args
+}
+
+# Check that a pattern is not present in the .ads file produced by the
+# compiler.  See dg-scan for details.
+
+proc scan-ada-spec-not { args } {
+    set testcase  [testname-for-summary]
+    set output_file "[get_ada_spec_filename $testcase]"
+
+    dg-scan "scan-file-not" 0 $testcase $output_file $args
+}
+
 # Call pass if pattern is present given number of times, otherwise fail.
 proc scan-assembler-times { args } {
     if { [llength $args] < 2 } {

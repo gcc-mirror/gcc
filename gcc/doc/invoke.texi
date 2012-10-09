@@ -388,7 +388,7 @@ Objective-C and Objective-C++ Dialects}.
 -fno-toplevel-reorder -fno-trapping-math -fno-zero-initialized-in-bss @gol
 -fomit-frame-pointer -foptimize-register-move -foptimize-sibling-calls @gol
 -fpartial-inlining -fpeel-loops -fpredictive-commoning @gol
--fprefetch-loop-arrays @gol
+-fprefetch-loop-arrays -fprofile-report @gol
 -fprofile-correction -fprofile-dir=@var{path} -fprofile-generate @gol
 -fprofile-generate=@var{path} @gol
 -fprofile-use -fprofile-use=@var{path} -fprofile-values @gol
@@ -630,7 +630,7 @@ Objective-C and Objective-C++ Dialects}.
 -mincoming-stack-boundary=@var{num} @gol
 -mcld -mcx16 -msahf -mmovbe -mcrc32 @gol
 -mrecip -mrecip=@var{opt} @gol
--mvzeroupper @gol
+-mvzeroupper -mprefer-avx128 @gol
 -mmmx  -msse  -msse2 -msse3 -mssse3 -msse4.1 -msse4.2 -msse4 -mavx @gol
 -mavx2 -maes -mpclmul -mfsgsbase -mrdrnd -mf16c -mfma @gol
 -msse4a -m3dnow -mpopcnt -mabm -mbmi -mtbm -mfma4 -mxop -mlzcnt @gol
@@ -859,6 +859,7 @@ See RS/6000 and PowerPC Options.
 -mmax-constant-size=@gol
 -mint-register=@gol
 -mpid@gol
+-mno-warn-multiple-fast-interrupts@gol
 -msave-acc-in-interrupts}
 
 @emph{S/390 and zSeries Options}
@@ -5151,6 +5152,11 @@ allocation for the WPA phase only.
 @opindex fpost-ipa-mem-report
 Makes the compiler print some statistics about permanent memory
 allocation before or after interprocedural optimization.
+
+@item -fprofile-report
+@opindex fprofile-report
+Makes the compiler print some statistics about consistency of the
+(estimated) profile and effect of individual passes.
 
 @item -fstack-usage
 @opindex fstack-usage
@@ -13926,6 +13932,11 @@ before a transfer of control flow out of the function to minimize
 the AVX to SSE transition penalty as well as remove unnecessary @code{zeroupper}
 intrinsics.
 
+@item -mprefer-avx128
+@opindex mprefer-avx128
+This option instructs GCC to use 128-bit AVX instructions instead of
+256-bit AVX instructions in the auto-vectorizer.
+
 @item -mcx16
 @opindex mcx16
 This option enables GCC to generate @code{CMPXCHG16B} instructions.
@@ -17869,6 +17880,15 @@ command line.
 
 By default this feature is not enabled.  The default can be restored
 via the @option{-mno-pid} command-line option.
+
+@item -mno-warn-multiple-fast-interrupts
+@itemx -mwarn-multiple-fast-interrupts
+@opindex mno-warn-multiple-fast-interrupts
+@opindex mwarn-multiple-fast-interrupts
+Prevents GCC from issuing a warning message if it finds more than one
+fast interrupt handler when it is compiling a file.  The default is to
+issue a warning for each extra fast interrupt handler found, as the RX
+only supports one such interrupt.
 
 @end table
 

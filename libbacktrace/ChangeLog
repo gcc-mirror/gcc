@@ -1,3 +1,25 @@
+2012-10-04  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* btest.c (f23): Avoid uninitialized variable warning.
+	
+2012-10-04  Ian Lance Taylor  <iant@google.com>
+
+	* dwarf.c: If the system header files do not declare strnlen,
+	provide our own version.
+
+2012-10-03  Ian Lance Taylor  <iant@google.com>
+
+	* dwarf.c (read_uleb128): Fix overflow test.
+	(read_sleb128): Likewise.
+	(build_address_map): Don't change unit_buf.start.
+
+2012-10-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR other/54761
+	* configure.ac (EXTRA_FLAGS): New.
+	* Makefile.am (AM_FLAGS): Add $(EXTRA_FLAGS).
+	* configure, Makefile.in: Regenerate.
+
 2012-09-29  Ian Lance Taylor  <iant@google.com>
 
 	PR other/54749

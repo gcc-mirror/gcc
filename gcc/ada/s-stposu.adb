@@ -29,14 +29,17 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Exceptions;              use Ada.Exceptions;
+with Ada.Exceptions;           use Ada.Exceptions;
 with Ada.Unchecked_Conversion;
-with Ada.Unchecked_Deallocation;
+
 with System.Address_Image;
 with System.Finalization_Masters; use System.Finalization_Masters;
 with System.IO;                   use System.IO;
 with System.Soft_Links;           use System.Soft_Links;
 with System.Storage_Elements;     use System.Storage_Elements;
+
+with System.Storage_Pools.Subpools.Finalization;
+use  System.Storage_Pools.Subpools.Finalization;
 
 package body System.Storage_Pools.Subpools is
 
@@ -50,11 +53,6 @@ package body System.Storage_Pools.Subpools is
 
    procedure Attach (N : not null SP_Node_Ptr; L : not null SP_Node_Ptr);
    --  Attach a subpool node to a pool
-
-   procedure Free is new Ada.Unchecked_Deallocation (SP_Node, SP_Node_Ptr);
-
-   procedure Detach (N : not null SP_Node_Ptr);
-   --  Unhook a subpool node from an arbitrary subpool list
 
    -----------------------------------
    -- Adjust_Controlled_Dereference --
@@ -544,9 +542,10 @@ package body System.Storage_Pools.Subpools is
          --    2) Remove the the subpool from the owner's list of subpools
          --    3) Deallocate the doubly linked list node associated with the
          --       subpool.
+         --    4) Call Deallocate_Subpool
 
          begin
-            Finalize_Subpool (Curr_Ptr.Subpool);
+            Finalize_And_Deallocate (Curr_Ptr.Subpool);
 
          exception
             when Fin_Occur : others =>
@@ -564,32 +563,6 @@ package body System.Storage_Pools.Subpools is
          Reraise_Occurrence (Ex_Occur);
       end if;
    end Finalize_Pool;
-
-   ----------------------
-   -- Finalize_Subpool --
-   ----------------------
-
-   procedure Finalize_Subpool (Subpool : not null Subpool_Handle) is
-   begin
-      --  Do nothing if the subpool was never used
-
-      if Subpool.Owner = null or else Subpool.Node = null then
-         return;
-      end if;
-
-      --  Clean up all controlled objects chained on the subpool's master
-
-      Finalize (Subpool.Master);
-
-      --  Remove the subpool from its owner's list of subpools
-
-      Detach (Subpool.Node);
-
-      --  Destroy the associated doubly linked list node which was created in
-      --  Set_Pool_Of_Subpool.
-
-      Free (Subpool.Node);
-   end Finalize_Subpool;
 
    ------------------------------
    -- Header_Size_With_Padding --

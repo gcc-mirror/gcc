@@ -1,8 +1,6 @@
 // -*- C++ -*- forwarding header.
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010, 2011
-// Free Software Foundation, Inc.
+// Copyright (C) 1997-2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -137,10 +135,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #ifndef __CORRECT_ISO_CPP_STDLIB_H_PROTO
   inline long
-  abs(long __i) { return labs(__i); }
+  abs(long __i) { return __builtin_labs(__i); }
 
   inline ldiv_t
   div(long __i, long __j) { return ldiv(__i, __j); }
+#endif
+
+#ifdef _GLIBCXX_USE_LONG_LONG
+  inline long long
+  abs(long long __x) { return __builtin_llabs (__x); }
+#endif
+
+#if !defined(__STRICT_ANSI__) && defined(_GLIBCXX_USE_INT128)
+  inline __int128
+  abs(__int128 __x) { return __x >= 0 ? __x : -__x; }
 #endif
 
 _GLIBCXX_END_NAMESPACE_VERSION
@@ -170,9 +178,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if !_GLIBCXX_USE_C99_DYNAMIC
   using ::_Exit;
 #endif
-
-  inline long long
-  abs(long long __x) { return __x >= 0 ? __x : -__x; }
 
 #if !_GLIBCXX_USE_C99_LONG_LONG_DYNAMIC
   using ::llabs;
@@ -208,7 +213,6 @@ namespace std
   using ::__gnu_cxx::lldiv_t;
 #endif
   using ::__gnu_cxx::_Exit;
-  using ::__gnu_cxx::abs;
 #if !_GLIBCXX_USE_C99_LONG_LONG_DYNAMIC
   using ::__gnu_cxx::llabs;
   using ::__gnu_cxx::div;
@@ -220,35 +224,6 @@ namespace std
   using ::__gnu_cxx::strtoull;
   using ::__gnu_cxx::strtold;
 } // namespace std
-
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-
-namespace std
-{
-#if !_GLIBCXX_USE_C99_LONG_LONG_DYNAMIC
-  // types
-  using std::lldiv_t;
-
-  // functions
-  using std::llabs;
-  using std::lldiv;
-#endif
-
-  using std::atoll;
-  using std::strtoll;
-  using std::strtoull;
-
-  using std::strtof;
-  using std::strtold;
-
-  // overloads
-  using std::abs;
-#if !_GLIBCXX_USE_C99_LONG_LONG_DYNAMIC
-  using std::div;
-#endif
-} // namespace std
-
-#endif // __GXX_EXPERIMENTAL_CXX0X__
 
 #endif // _GLIBCXX_USE_C99
 

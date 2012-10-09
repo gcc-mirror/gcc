@@ -201,7 +201,7 @@ void estimate_ipcp_clone_size_and_time (struct cgraph_node *,
 int do_estimate_growth (struct cgraph_node *);
 void inline_merge_summary (struct cgraph_edge *edge);
 void inline_update_overall_summary (struct cgraph_node *node);
-int do_estimate_edge_growth (struct cgraph_edge *edge);
+int do_estimate_edge_size (struct cgraph_edge *edge);
 int do_estimate_edge_time (struct cgraph_edge *edge);
 inline_hints do_estimate_edge_hints (struct cgraph_edge *edge);
 void initialize_growth_caches (void);
@@ -245,20 +245,31 @@ estimate_growth (struct cgraph_node *node)
 }
 
 
-/* Return estimated callee growth after inlining EDGE.  */
+/* Return estimated size of the inline sequence of EDGE.  */
 
 static inline int
-estimate_edge_growth (struct cgraph_edge *edge)
+estimate_edge_size (struct cgraph_edge *edge)
 {
   int ret;
   if ((int)VEC_length (edge_growth_cache_entry, edge_growth_cache) <= edge->uid
       || !(ret = VEC_index (edge_growth_cache_entry,
 			    edge_growth_cache,
 			    edge->uid).size))
-    return do_estimate_edge_growth (edge);
+    return do_estimate_edge_size (edge);
   return ret - (ret > 0);
 }
 
+/* Return estimated callee growth after inlining EDGE.  */
+
+static inline int
+estimate_edge_growth (struct cgraph_edge *edge)
+{
+#ifdef ENABLE_CHECKING
+  gcc_checking_assert (inline_edge_summary (edge)->call_stmt_size);
+#endif
+  return (estimate_edge_size (edge)
+	  - inline_edge_summary (edge)->call_stmt_size);
+}
 
 /* Return estimated callee runtime increase after inlning
    EDGE.  */

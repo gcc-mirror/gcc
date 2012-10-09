@@ -1654,6 +1654,10 @@ fprofile-values
 Common Report Var(flag_profile_values)
 Insert code to profile values of expressions
 
+fprofile-report
+Common Report Var(profile_report)
+Report on consistency of profile
+
 frandom-seed
 Common Var(common_deferred_options) Defer
 

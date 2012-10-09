@@ -2602,6 +2602,10 @@ cp_tree_equal (tree t1, tree t2)
 	tree o1 = TREE_OPERAND (t1, 0);
 	tree o2 = TREE_OPERAND (t2, 0);
 
+	if (SIZEOF_EXPR_TYPE_P (t1))
+	  o1 = TREE_TYPE (o1);
+	if (SIZEOF_EXPR_TYPE_P (t2))
+	  o2 = TREE_TYPE (o2);
 	if (TREE_CODE (o1) != TREE_CODE (o2))
 	  return false;
 	if (TYPE_P (o1))
@@ -3553,7 +3557,7 @@ stabilize_call (tree call, tree *initp)
    arguments, while, upon return, *INITP contains an expression to
    compute the arguments.  */
 
-void
+static void
 stabilize_aggr_init (tree call, tree *initp)
 {
   tree inits = NULL_TREE;

@@ -839,6 +839,8 @@ static struct reg_pref *reg_pref;
 
 /* Current size of reg_info.  */
 static int reg_info_size;
+/* Max_reg_num still last resize_reg_info call.  */
+static int max_regno_since_last_resize;
 
 /* Return the reg_class in which pseudo reg number REGNO is best allocated.
    This function is sometimes called before the info has been computed.
@@ -849,6 +851,7 @@ reg_preferred_class (int regno)
   if (reg_pref == 0)
     return GENERAL_REGS;
 
+  gcc_assert (regno < reg_info_size);
   return (enum reg_class) reg_pref[regno].prefclass;
 }
 
@@ -858,6 +861,7 @@ reg_alternate_class (int regno)
   if (reg_pref == 0)
     return ALL_REGS;
 
+  gcc_assert (regno < reg_info_size);
   return (enum reg_class) reg_pref[regno].altclass;
 }
 
@@ -868,45 +872,64 @@ reg_allocno_class (int regno)
   if (reg_pref == 0)
     return NO_REGS;
 
+  gcc_assert (regno < reg_info_size);
   return (enum reg_class) reg_pref[regno].allocnoclass;
 }
 
 
 
-/* Allocate space for reg info.  */
+/* Allocate space for reg info and initilize it.  */
 static void
 allocate_reg_info (void)
 {
-  reg_info_size = max_reg_num ();
+  int i;
+
+  max_regno_since_last_resize = max_reg_num ();
+  reg_info_size = max_regno_since_last_resize * 3 / 2 + 1;
   gcc_assert (! reg_pref && ! reg_renumber);
   reg_renumber = XNEWVEC (short, reg_info_size);
   reg_pref = XCNEWVEC (struct reg_pref, reg_info_size);
   memset (reg_renumber, -1, reg_info_size * sizeof (short));
+  for (i = 0; i < reg_info_size; i++)
+    {
+      reg_pref[i].prefclass = GENERAL_REGS;
+      reg_pref[i].altclass = ALL_REGS;
+      reg_pref[i].allocnoclass = GENERAL_REGS;
+    }
 }
 
 
-/* Resize reg info. The new elements will be uninitialized.  Return
-   TRUE if new elements (for new pseudos) were added.  */
+/* Resize reg info. The new elements will be initialized.  Return TRUE
+   if new pseudos were added since the last call.  */
 bool
 resize_reg_info (void)
 {
-  int old;
+  int old, i;
+  bool change_p;
 
   if (reg_pref == NULL)
     {
       allocate_reg_info ();
       return true;
     }
-  if (reg_info_size == max_reg_num ())
-    return false;
+  change_p = max_regno_since_last_resize != max_reg_num ();
+  max_regno_since_last_resize = max_reg_num ();
+  if (reg_info_size >= max_reg_num ())
+    return change_p;
   old = reg_info_size;
-  reg_info_size = max_reg_num ();
+  reg_info_size = max_reg_num () * 3 / 2 + 1;
   gcc_assert (reg_pref && reg_renumber);
   reg_renumber = XRESIZEVEC (short, reg_renumber, reg_info_size);
   reg_pref = XRESIZEVEC (struct reg_pref, reg_pref, reg_info_size);
   memset (reg_pref + old, -1,
 	  (reg_info_size - old) * sizeof (struct reg_pref));
   memset (reg_renumber + old, -1, (reg_info_size - old) * sizeof (short));
+  for (i = old; i < reg_info_size; i++)
+    {
+      reg_pref[i].prefclass = GENERAL_REGS;
+      reg_pref[i].altclass = ALL_REGS;
+      reg_pref[i].allocnoclass = GENERAL_REGS;
+    }
   return true;
 }
 
@@ -938,6 +961,7 @@ reginfo_init (void)
   /* This prevents dump_reg_info from losing if called
      before reginfo is run.  */
   reg_pref = NULL;
+  reg_info_size = max_regno_since_last_resize = 0;
   /* No more global register variables may be declared.  */
   no_global_reg_vars = 1;
   return 1;
@@ -964,7 +988,7 @@ struct rtl_opt_pass pass_reginfo_init =
 
 
 
-/* Set up preferred, alternate, and cover classes for REGNO as
+/* Set up preferred, alternate, and allocno classes for REGNO as
    PREFCLASS, ALTCLASS, and ALLOCNOCLASS.  */
 void
 setup_reg_classes (int regno,
@@ -973,7 +997,7 @@ setup_reg_classes (int regno,
 {
   if (reg_pref == NULL)
     return;
-  gcc_assert (reg_info_size == max_reg_num ());
+  gcc_assert (reg_info_size >= max_reg_num ());
   reg_pref[regno].prefclass = prefclass;
   reg_pref[regno].altclass = altclass;
   reg_pref[regno].allocnoclass = allocnoclass;

@@ -123,7 +123,7 @@ package body GNAT.Sockets is
    function Resolve_Error
      (Error_Value : Integer;
       From_Errno  : Boolean := True) return Error_Type;
-   --  Associate an enumeration value (error_type) to en error value (errno).
+   --  Associate an enumeration value (error_type) to an error value (errno).
    --  From_Errno prevents from mixing h_errno with errno.
 
    function To_Name   (N  : String) return Name_Type;
@@ -702,6 +702,13 @@ package body GNAT.Sockets is
       Req : Request_Type;
       --  Used to set Socket to non-blocking I/O
 
+      Conn_Err : aliased Integer;
+      --  Error status of the socket after completion of select(2)
+
+      Res           : C.int;
+      Conn_Err_Size : aliased C.int := Conn_Err'Size / 8;
+      --  For getsockopt(2) call
+
    begin
       if Selector /= null and then not Is_Open (Selector.all) then
          raise Program_Error with "closed selector";
@@ -735,10 +742,32 @@ package body GNAT.Sockets is
          Selector => Selector,
          Status   => Status);
 
+      --  Check error condition (the asynchronous connect may have terminated
+      --  with an error, e.g. ECONNREFUSED) if select(2) completed.
+
+      if Status = Completed then
+         Res := C_Getsockopt
+           (C.int (Socket), SOSC.SOL_SOCKET, SOSC.SO_ERROR,
+            Conn_Err'Address, Conn_Err_Size'Access);
+
+         if Res /= 0 then
+            Conn_Err := Socket_Errno;
+         end if;
+
+      else
+         Conn_Err := 0;
+      end if;
+
       --  Reset the socket to blocking I/O
 
       Req := (Name => Non_Blocking_IO, Enabled => False);
       Control_Socket (Socket, Request => Req);
+
+      --  Report error condition if any
+
+      if Conn_Err /= 0 then
+         Raise_Socket_Error (Conn_Err);
+      end if;
    end Connect_Socket;
 
    --------------------

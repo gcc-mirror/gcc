@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -60,6 +60,7 @@ package body Prepcomp is
       Undef_False  : Boolean        := False;
       Always_Blank : Boolean        := False;
       Comments     : Boolean        := False;
+      No_Deletion  : Boolean        := False;
       List_Symbols : Boolean        := False;
       Processed    : Boolean        := False;
    end record;
@@ -73,6 +74,7 @@ package body Prepcomp is
       Undef_False  => False,
       Always_Blank => False,
       Comments     => False,
+      No_Deletion  => False,
       List_Symbols => False,
       Processed    => False);
 
@@ -330,6 +332,16 @@ package body Prepcomp is
                --  significant.
 
                case Sinput.Source (Token_Ptr) is
+                  when 'a' =>
+
+                     --  All source text preserved (also implies -u)
+
+                     if Name_Len = 1 then
+                        Current_Data.No_Deletion := True;
+                        Current_Data.Undef_False := True;
+                        OK := True;
+                     end if;
+
                   when 'u' =>
 
                      --  Undefined symbol are False
@@ -581,15 +593,15 @@ package body Prepcomp is
 
       --  Set the preprocessing flags according to the preprocessing data
 
-      if Current_Data.Comments and then not Current_Data.Always_Blank then
+      if Current_Data.Comments and not Current_Data.Always_Blank then
          Comment_Deleted_Lines := True;
          Blank_Deleted_Lines   := False;
-
       else
          Comment_Deleted_Lines := False;
          Blank_Deleted_Lines   := True;
       end if;
 
+      No_Deletion                 := Current_Data.No_Deletion;
       Undefined_Symbols_Are_False := Current_Data.Undef_False;
       List_Preprocessing_Symbols  := Current_Data.List_Symbols;
 

@@ -1,3 +1,88 @@
+2012-10-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* pt.c (fold_non_dependent_expr_sfinae): Remove static specifier.
+	(tsubst_copy_and_build): Use get_target_expr_sfinae.
+	* call.c (build_conditional_expr_1, convert_like_real): Likewise.
+	* cvt.c (build_up_reference): Likewise.
+	(ocp_convert): Use abstract_virtuals_error_sfinae.
+	(build_up_reference): Propagate complain to cp_build_addr_expr.
+	* decl.c (compute_array_index_type): Use fold_non_dependent_expr_sfinae.
+	* cp-tree.h: Update declarations.
+
+	* cvt.c	(build_expr_type_conversion): Tidy.
+
+	* tree.c (stabilize_aggr_init): Change to static.
+
+2012-10-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51422
+	* semantics.c (is_normal_capture_proxy): Return true for
+	error_mark_node as DECL_VALUE_EXPR.
+
+2012-10-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (SIZEOF_EXPR_TYPE_P): Define.
+	* tree.c (cp_tree_equal): Handle SIZEOF_EXPR with
+	SIZEOF_EXPR_TYPE_P.
+	* mangle.c (write_expression): Likewise.
+	* cxx-pretty-print.c (pp_cxx_unary_expression): Likewise.
+	* error.c (dump_expr): Likewise.
+	* parser.c (cp_parser_unary_expression): For sizeof call
+	cxx_sizeof_or_alignof_{type,expr} just for diagnostics and
+	return SIZEOF_EXPR with the operand.
+	* pt.c (tsubst_copy, tsubst_copy_and_build): For SIZEOF_EXPR,
+	call cxx_sizeof_or_alignof_{type,expr} for diagnostics, but
+	return SIZEOF_EXPR with tsubsted operand.
+	(value_dependent_expression_p): Handle SIZEOF_EXPR with
+	SIZEOF_EXPR_TYPE_P.
+	(instantiation_dependent_r): Likewise.
+	* call.c (null_ptr_cst_p): Call maybe_constant_value for C++98.
+	* semantics.c (finish_call_expr): Call
+	sizeof_pointer_memaccess_warning if needed.
+	(cxx_eval_constant_expression): Handle SIZEOF_EXPR.
+	(potential_constant_expression_1): Remove early exit for
+	C++98.  Handle PROPERTY_REF.
+	* decl.c (duplicate_decls): When redeclaring a builtin function,
+	keep the merged decl builtin also if newdecl is a gnu_inline
+	inline definition.
+	(fold_sizeof_expr_r): New function.
+	(compute_array_index_type): Fold SIZEOF_EXPRs in itype.
+	* cp-gimplify.c (cp_genericize_r): Fold SIZEOF_EXPR.
+	* typeck.c (cp_build_binary_op): For warn_for_sign_compare
+	try harder using maybe_constant_value to get INTEGER_CSTs.
+
+	* decl.c (stabilize_vla_size): Call pointer_set_destroy
+	at the end.
+
+2012-10-04  Arnaud Charlet  <charlet@adacore.com>
+        
+        * decl2.c (cp_write_global_declarations): Fix handling of
+        -fdump-ada-spec*.
+
+2012-10-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/54777
+	* semantics.c (cxx_eval_constant_expression) <case COMPOUND_EXPR>: If
+	not ignoring the second operand, pass the original second operand
+	and not one with stripped nops to cxx_eval_constant_expression.
+
+2012-10-01  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (check_initializer): Set DECL_NONTRIVIALLY_INITIALIZED_P
+	for a constructor call.
+	(decl_jump_unsafe): So don't bother checking
+	type_has_nontrivial_default_init.
+	* call.c (set_up_extended_ref_temp): Set
+	DECL_NONTRIVIALLY_INITIALIZED_P.
+
+	* cp-tree.h (TYPE_FUNCTION_OR_TEMPLATE_DECL_CHECK): New.
+	(DECL_FRIEND_P, DECL_ANTICIPATED): Use it.
+	(TYPE_FUNCTION_OR_TEMPLATE_DECL_P): New.
+	* name-lookup.c (hidden_name_p): Use it.
+
+	* cp-tree.h (DECL_PRETTY_FUNCTION_P): Just look at the name.
+	* decl.c (cp_make_fname_decl): Adjust.
+
 2012-09-30  Sharad Singhai  <singhai@google.com>
 
 	* decl2.c (cp_write_global_declarations): Use a different method

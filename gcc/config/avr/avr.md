@@ -395,7 +395,7 @@
 ;; Secondary input reload from non-generic 16-bit address spaces
 (define_insn "reload_in<mode>"
   [(set (match_operand:MOVMODE 0 "register_operand"   "=r")
-        (match_operand:MOVMODE 1 "memory_operand"      "m"))
+        (match_operand:MOVMODE 1 "flash_operand"       "m"))
    (clobber (match_operand:QI 2 "d_register_operand"  "=d"))]
   ;; Fixme: The insn condition must not test the address space.
   ;;   Because the gen tools refuse to generate insns for address spaces
@@ -1177,7 +1177,7 @@
 ;; "*addhq3" "*adduhq3"
 ;; "*addha3" "*adduha3"
 (define_insn "*add<mode>3"
-  [(set (match_operand:ALL2 0 "register_operand"                    "=?r,d,!w    ,d")
+  [(set (match_operand:ALL2 0 "register_operand"                   "=??r,d,!w    ,d")
         (plus:ALL2 (match_operand:ALL2 1 "register_operand"          "%0,0,0     ,0")
                    (match_operand:ALL2 2 "nonmemory_or_const_operand" "r,s,IJ YIJ,n Ynn")))]
   ""
@@ -1244,7 +1244,7 @@
 ;; "addsq3" "addusq3"
 ;; "addsa3" "addusa3"
 (define_insn "add<mode>3"
-  [(set (match_operand:ALL4 0 "register_operand"            "=r,d ,r")
+  [(set (match_operand:ALL4 0 "register_operand"          "=??r,d ,r")
         (plus:ALL4 (match_operand:ALL4 1 "register_operand" "%0,0 ,0")
                    (match_operand:ALL4 2 "nonmemory_operand" "r,i ,n Ynn")))
    (clobber (match_scratch:QI 3                             "=X,X ,&d"))]
@@ -1302,7 +1302,7 @@
    (set_attr "cc" "set_n")])
 
 (define_insn "addpsi3"
-  [(set (match_operand:PSI 0 "register_operand"           "=r,d ,d,r")
+  [(set (match_operand:PSI 0 "register_operand"         "=??r,d ,d,r")
         (plus:PSI (match_operand:PSI 1 "register_operand" "%0,0 ,0,0")
                   (match_operand:PSI 2 "nonmemory_operand" "r,s ,n,n")))
    (clobber (match_scratch:QI 3                           "=X,X ,X,&d"))]
@@ -1356,7 +1356,7 @@
 ;; "subqi3"
 ;; "subqq3" "subuqq3"
 (define_insn "sub<mode>3"
-  [(set (match_operand:ALL1 0 "register_operand"                      "=r,d    ,r  ,r  ,r  ,r")
+  [(set (match_operand:ALL1 0 "register_operand"                    "=??r,d    ,r  ,r  ,r  ,r")
         (minus:ALL1 (match_operand:ALL1 1 "register_operand"           "0,0    ,0  ,0  ,0  ,0")
                     (match_operand:ALL1 2 "nonmemory_or_const_operand" "r,n Ynn,Y01,Ym1,Y02,Ym2")))]
   ""
@@ -1374,7 +1374,7 @@
 ;; "subhq3" "subuhq3"
 ;; "subha3" "subuha3"
 (define_insn "sub<mode>3"
-  [(set (match_operand:ALL2 0 "register_operand"                      "=r,d    ,*r")
+  [(set (match_operand:ALL2 0 "register_operand"                    "=??r,d    ,*r")
         (minus:ALL2 (match_operand:ALL2 1 "register_operand"           "0,0    ,0")
                     (match_operand:ALL2 2 "nonmemory_or_const_operand" "r,i Ynn,Ynn")))
    (clobber (match_scratch:QI 3                                       "=X,X    ,&d"))]
@@ -1411,7 +1411,7 @@
 ;; "subsq3" "subusq3"
 ;; "subsa3" "subusa3"
 (define_insn "sub<mode>3"
-  [(set (match_operand:ALL4 0 "register_operand"                      "=r,d    ,r")
+  [(set (match_operand:ALL4 0 "register_operand"                    "=??r,d    ,r")
         (minus:ALL4 (match_operand:ALL4 1 "register_operand"           "0,0    ,0")
                     (match_operand:ALL4 2 "nonmemory_or_const_operand" "r,n Ynn,Ynn")))
    (clobber (match_scratch:QI 3                                       "=X,X    ,&d"))]
@@ -2932,7 +2932,7 @@
 ; and
 
 (define_insn "andqi3"
-  [(set (match_operand:QI 0 "register_operand" "=r,d")
+  [(set (match_operand:QI 0 "register_operand"       "=??r,d")
         (and:QI (match_operand:QI 1 "register_operand" "%0,0")
                 (match_operand:QI 2 "nonmemory_operand" "r,i")))]
   ""
@@ -2943,7 +2943,7 @@
    (set_attr "cc" "set_zn,set_zn")])
 
 (define_insn "andhi3"
-  [(set (match_operand:HI 0 "register_operand"         "=r,d,d,r  ,r")
+  [(set (match_operand:HI 0 "register_operand"       "=??r,d,d,r  ,r")
         (and:HI (match_operand:HI 1 "register_operand" "%0,0,0,0  ,0")
                 (match_operand:HI 2 "nonmemory_operand" "r,s,n,Ca2,n")))
    (clobber (match_scratch:QI 3                        "=X,X,X,X  ,&d"))]
@@ -2961,7 +2961,7 @@
    (set_attr "cc" "set_n,set_n,clobber,clobber,clobber")])
 
 (define_insn "andpsi3"
-  [(set (match_operand:PSI 0 "register_operand"          "=r,d,r  ,r")
+  [(set (match_operand:PSI 0 "register_operand"        "=??r,d,r  ,r")
         (and:PSI (match_operand:PSI 1 "register_operand" "%0,0,0  ,0")
                  (match_operand:PSI 2 "nonmemory_operand" "r,n,Ca3,n")))
    (clobber (match_scratch:QI 3                          "=X,X,X  ,&d"))]
@@ -2979,7 +2979,7 @@
    (set_attr "cc" "set_n,clobber,clobber,clobber")])
 
 (define_insn "andsi3"
-  [(set (match_operand:SI 0 "register_operand"         "=r,d,r  ,r")
+  [(set (match_operand:SI 0 "register_operand"       "=??r,d,r  ,r")
         (and:SI (match_operand:SI 1 "register_operand" "%0,0,0  ,0")
                 (match_operand:SI 2 "nonmemory_operand" "r,n,Ca4,n")))
    (clobber (match_scratch:QI 3                        "=X,X,X  ,&d"))]
@@ -3014,7 +3014,7 @@
 ;; ior
 
 (define_insn "iorqi3"
-  [(set (match_operand:QI 0 "register_operand" "=r,d")
+  [(set (match_operand:QI 0 "register_operand"       "=??r,d")
         (ior:QI (match_operand:QI 1 "register_operand" "%0,0")
                 (match_operand:QI 2 "nonmemory_operand" "r,i")))]
   ""
@@ -3025,7 +3025,7 @@
    (set_attr "cc" "set_zn,set_zn")])
 
 (define_insn "iorhi3"
-  [(set (match_operand:HI 0 "register_operand"         "=r,d,d,r  ,r")
+  [(set (match_operand:HI 0 "register_operand"       "=??r,d,d,r  ,r")
         (ior:HI (match_operand:HI 1 "register_operand" "%0,0,0,0  ,0")
                 (match_operand:HI 2 "nonmemory_operand" "r,s,n,Co2,n")))
    (clobber (match_scratch:QI 3                        "=X,X,X,X  ,&d"))]
@@ -3043,7 +3043,7 @@
    (set_attr "cc" "set_n,set_n,clobber,clobber,clobber")])
 
 (define_insn "iorpsi3"
-  [(set (match_operand:PSI 0 "register_operand"          "=r,d,r  ,r")
+  [(set (match_operand:PSI 0 "register_operand"        "=??r,d,r  ,r")
         (ior:PSI (match_operand:PSI 1 "register_operand" "%0,0,0  ,0")
                  (match_operand:PSI 2 "nonmemory_operand" "r,n,Co3,n")))
    (clobber (match_scratch:QI 3                          "=X,X,X  ,&d"))]
@@ -3061,7 +3061,7 @@
    (set_attr "cc" "set_n,clobber,clobber,clobber")])
 
 (define_insn "iorsi3"
-  [(set (match_operand:SI 0 "register_operand"         "=r,d,r  ,r")
+  [(set (match_operand:SI 0 "register_operand"       "=??r,d,r  ,r")
         (ior:SI (match_operand:SI 1 "register_operand" "%0,0,0  ,0")
                 (match_operand:SI 2 "nonmemory_operand" "r,n,Co4,n")))
    (clobber (match_scratch:QI 3                        "=X,X,X  ,&d"))]
@@ -3092,7 +3092,7 @@
    (set_attr "cc" "set_zn")])
 
 (define_insn "xorhi3"
-  [(set (match_operand:HI 0 "register_operand"         "=r,r  ,r")
+  [(set (match_operand:HI 0 "register_operand"       "=??r,r  ,r")
         (xor:HI (match_operand:HI 1 "register_operand" "%0,0  ,0")
                 (match_operand:HI 2 "nonmemory_operand" "r,Cx2,n")))
    (clobber (match_scratch:QI 3                        "=X,X  ,&d"))]
@@ -3108,7 +3108,7 @@
    (set_attr "cc" "set_n,clobber,clobber")])
 
 (define_insn "xorpsi3"
-  [(set (match_operand:PSI 0 "register_operand"          "=r,r  ,r")
+  [(set (match_operand:PSI 0 "register_operand"        "=??r,r  ,r")
         (xor:PSI (match_operand:PSI 1 "register_operand" "%0,0  ,0")
                  (match_operand:PSI 2 "nonmemory_operand" "r,Cx3,n")))
    (clobber (match_scratch:QI 3                          "=X,X  ,&d"))]
@@ -3126,7 +3126,7 @@
    (set_attr "cc" "set_n,clobber,clobber")])
 
 (define_insn "xorsi3"
-  [(set (match_operand:SI 0 "register_operand"         "=r,r  ,r")
+  [(set (match_operand:SI 0 "register_operand"       "=??r,r  ,r")
         (xor:SI (match_operand:SI 1 "register_operand" "%0,0  ,0")
                 (match_operand:SI 2 "nonmemory_operand" "r,Cx4,n")))
    (clobber (match_scratch:QI 3                        "=X,X  ,&d"))]
@@ -4167,13 +4167,13 @@
   "reload_completed"
   [(set (match_dup 2) (match_dup 1))
    (set (match_dup 3) (const_int 0))]
-{
-  unsigned int low_off = subreg_lowpart_offset (QImode, HImode);
-  unsigned int high_off = subreg_highpart_offset (QImode, HImode);
+  {
+    unsigned int low_off = subreg_lowpart_offset (QImode, HImode);
+    unsigned int high_off = subreg_highpart_offset (QImode, HImode);
 
-  operands[2] = simplify_gen_subreg (QImode, operands[0], HImode, low_off);
-  operands[3] = simplify_gen_subreg (QImode, operands[0], HImode, high_off);
-})
+    operands[2] = simplify_gen_subreg (QImode, operands[0], HImode, low_off);
+    operands[3] = simplify_gen_subreg (QImode, operands[0], HImode, high_off);
+  })
 
 (define_insn_and_split "zero_extendqipsi2"
   [(set (match_operand:PSI 0 "register_operand" "=r")
@@ -4198,13 +4198,13 @@
   "reload_completed"
   [(set (match_dup 2) (zero_extend:HI (match_dup 1)))
    (set (match_dup 3) (const_int 0))]
-{
-  unsigned int low_off = subreg_lowpart_offset (HImode, SImode);
-  unsigned int high_off = subreg_highpart_offset (HImode, SImode);
+  {
+    unsigned int low_off = subreg_lowpart_offset (HImode, SImode);
+    unsigned int high_off = subreg_highpart_offset (HImode, SImode);
 
-  operands[2] = simplify_gen_subreg (HImode, operands[0], SImode, low_off);
-  operands[3] = simplify_gen_subreg (HImode, operands[0], SImode, high_off);
-})
+    operands[2] = simplify_gen_subreg (HImode, operands[0], SImode, low_off);
+    operands[3] = simplify_gen_subreg (HImode, operands[0], SImode, high_off);
+  })
 
 (define_insn_and_split "zero_extendhipsi2"
   [(set (match_operand:PSI 0 "register_operand"                               "=r")
@@ -4248,13 +4248,13 @@
   "reload_completed"
   [(set (match_dup 2) (match_dup 1))
    (set (match_dup 3) (const_int 0))]
-{
-  unsigned int low_off = subreg_lowpart_offset (HImode, SImode);
-  unsigned int high_off = subreg_highpart_offset (HImode, SImode);
+  {
+    unsigned int low_off = subreg_lowpart_offset (HImode, SImode);
+    unsigned int high_off = subreg_highpart_offset (HImode, SImode);
 
-  operands[2] = simplify_gen_subreg (HImode, operands[0], SImode, low_off);
-  operands[3] = simplify_gen_subreg (HImode, operands[0], SImode, high_off);
-})
+    operands[2] = simplify_gen_subreg (HImode, operands[0], SImode, low_off);
+    operands[3] = simplify_gen_subreg (HImode, operands[0], SImode, high_off);
+  })
 
 (define_insn_and_split "zero_extendpsisi2"
   [(set (match_operand:SI 0 "register_operand"                                "=r")
@@ -4277,13 +4277,13 @@
   "reload_completed"
   [(set (match_dup 2) (zero_extend:SI (match_dup 1)))
    (set (match_dup 3) (const_int 0))]
-{
-  unsigned int low_off = subreg_lowpart_offset (SImode, DImode);
-  unsigned int high_off = subreg_highpart_offset (SImode, DImode);
+  {
+    unsigned int low_off = subreg_lowpart_offset (SImode, DImode);
+    unsigned int high_off = subreg_highpart_offset (SImode, DImode);
 
-  operands[2] = simplify_gen_subreg (SImode, operands[0], DImode, low_off);
-  operands[3] = simplify_gen_subreg (SImode, operands[0], DImode, high_off);
-})
+    operands[2] = simplify_gen_subreg (SImode, operands[0], DImode, low_off);
+    operands[3] = simplify_gen_subreg (SImode, operands[0], DImode, high_off);
+  })
 
 (define_insn_and_split "zero_extendhidi2"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -4293,13 +4293,13 @@
   "reload_completed"
   [(set (match_dup 2) (zero_extend:SI (match_dup 1)))
    (set (match_dup 3) (const_int 0))]
-{
-  unsigned int low_off = subreg_lowpart_offset (SImode, DImode);
-  unsigned int high_off = subreg_highpart_offset (SImode, DImode);
+  {
+    unsigned int low_off = subreg_lowpart_offset (SImode, DImode);
+    unsigned int high_off = subreg_highpart_offset (SImode, DImode);
 
-  operands[2] = simplify_gen_subreg (SImode, operands[0], DImode, low_off);
-  operands[3] = simplify_gen_subreg (SImode, operands[0], DImode, high_off);
-})
+    operands[2] = simplify_gen_subreg (SImode, operands[0], DImode, low_off);
+    operands[3] = simplify_gen_subreg (SImode, operands[0], DImode, high_off);
+  })
 
 (define_insn_and_split "zero_extendsidi2"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -4309,13 +4309,13 @@
   "reload_completed"
   [(set (match_dup 2) (match_dup 1))
    (set (match_dup 3) (const_int 0))]
-{
-  unsigned int low_off = subreg_lowpart_offset (SImode, DImode);
-  unsigned int high_off = subreg_highpart_offset (SImode, DImode);
+  {
+    unsigned int low_off = subreg_lowpart_offset (SImode, DImode);
+    unsigned int high_off = subreg_highpart_offset (SImode, DImode);
 
-  operands[2] = simplify_gen_subreg (SImode, operands[0], DImode, low_off);
-  operands[3] = simplify_gen_subreg (SImode, operands[0], DImode, high_off);
-})
+    operands[2] = simplify_gen_subreg (SImode, operands[0], DImode, low_off);
+    operands[3] = simplify_gen_subreg (SImode, operands[0], DImode, high_off);
+  })
 
 ;;<=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=><=>
 ;; compare

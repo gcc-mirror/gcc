@@ -715,6 +715,9 @@ struct GTY(()) tree_base {
 
        SSA_NAME_IS_DEFAULT_DEF in
            SSA_NAME
+
+       DECL_NONLOCAL_FRAME in
+	   VAR_DECL
 */
 
 struct GTY(()) tree_typed {
@@ -3389,8 +3392,13 @@ extern void decl_fini_priority_insert (tree, priority_type);
    libraries.  */
 #define MAX_RESERVED_INIT_PRIORITY 100
 
+/* In a VAR_DECL, nonzero if this is a global variable for VOPs.  */
 #define VAR_DECL_IS_VIRTUAL_OPERAND(NODE) \
   (VAR_DECL_CHECK (NODE)->base.u.bits.saturating_flag)
+
+/* In a VAR_DECL, nonzero if this is a non-local frame structure.  */
+#define DECL_NONLOCAL_FRAME(NODE)  \
+  (VAR_DECL_CHECK (NODE)->base.default_def_flag)
 
 struct GTY(()) tree_var_decl {
   struct tree_decl_with_vis common;

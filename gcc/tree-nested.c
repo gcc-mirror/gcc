@@ -235,6 +235,7 @@ get_frame_type (struct nesting_info *info)
 
       info->frame_type = type;
       info->frame_decl = create_tmp_var_for (info, type, "FRAME");
+      DECL_NONLOCAL_FRAME (info->frame_decl) = 1;
 
       /* ??? Always make it addressable for now, since it is meant to
 	 be pointed to by the static chain pointer.  This pessimizes

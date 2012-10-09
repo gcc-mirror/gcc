@@ -6167,21 +6167,30 @@ package body Exp_Aggr is
             Expr : Node_Id;
             --  Next expression from positional parameters of aggregate
 
+            Left_Justified : Boolean;
+            --  Set True if we are filling the high order bits of the target
+            --  value (i.e. the value is left justified).
+
          begin
             --  For little endian, we fill up the low order bits of the target
             --  value. For big endian we fill up the high order bits of the
             --  target value (which is a left justified modular value).
 
-            --  Above comment needs extending for the code below, which is by
-            --  the way incomprehensible, I have no idea what a xor b xor c
-            --  means, and it hurts my brain to try to figure it out???
-            --  Let's introduce a new variable, perhaps Effectively_Big_Endian
-            --  and compute it with clearer code ???
+            Left_Justified := Bytes_Big_Endian;
 
-            if Bytes_Big_Endian
-              xor Debug_Flag_8
-              xor Reverse_Storage_Order (Base_Type (Typ))
-            then
+            --  Switch justification if using -gnatd8
+
+            if Debug_Flag_8 then
+               Left_Justified := not Left_Justified;
+            end if;
+
+            --  Switch justfification if reverse storage order
+
+            if Reverse_Storage_Order (Base_Type (Typ)) then
+               Left_Justified := not Left_Justified;
+            end if;
+
+            if Left_Justified then
                Shift := Csiz * (Len - 1);
                Incr  := -Csiz;
             else

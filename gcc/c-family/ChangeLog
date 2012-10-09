@@ -1,7 +1,13 @@
+2012-10-04  Arnaud Charlet  <charlet@adacore.com>
+
+	* c-ada-spec.c (print_ada_declaration): Remove handling of TDF_RAW.
+	* c.opt (-fdump-ada-spec, -fdump-ada-spec-slim): Move switch definition
+	out of dumpfile.h.
+
 2012-09-25  Dehao Chen  <dehao@google.com>
 
 	PR middle-end/54645
-	* c-family/c-pch.c (c_common_read_pch): Rebuild the location_adhoc_data
+	* c-pch.c (c_common_read_pch): Rebuild the location_adhoc_data
 	map when read in the pch.
 
 2012-09-18 Arnaud Charlet  <charlet@adacore.com>

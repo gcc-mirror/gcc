@@ -10329,6 +10329,7 @@ package body Sem_Prag is
          when Pragma_Invariant => Invariant : declare
             Type_Id : Node_Id;
             Typ     : Entity_Id;
+            PDecl   : Node_Id;
 
             Discard : Boolean;
             pragma Unreferenced (Discard);
@@ -10380,8 +10381,13 @@ package body Sem_Prag is
 
             --  Note that the type has at least one invariant, and also that
             --  it has inheritable invariants if we have Invariant'Class.
+            --  Build the corresponding invariant procedure declaration, so
+            --  that calls to it can be generated before the body is built
+            --  (for example wihin an expression function).
 
-            Set_Has_Invariants (Typ);
+            PDecl := Build_Invariant_Procedure_Declaration (Typ);
+            Insert_After (N, PDecl);
+            Analyze (PDecl);
 
             if Class_Present (N) then
                Set_Has_Inheritable_Invariants (Typ);
@@ -11773,6 +11779,9 @@ package body Sem_Prag is
 
          --  MODE := SUPPRESSED | CHECKED | MINIMIZED | ELIMINATED
 
+         --  Note: ELIMINATED is allowed only if Long_Long_Integer'Size is 64
+         --  since System.Bignums makes this assumption.
+
          when Pragma_Overflow_Checks => Overflow_Checks : declare
             function Get_Check_Mode
               (Name : Name_Id;
@@ -11795,14 +11804,31 @@ package body Sem_Prag is
                Check_Optional_Identifier (Arg, Name);
                Check_Arg_Is_Identifier (Argx);
 
+               --  Do not suppress overflow checks for formal verification.
+               --  Instead, require that a check is inserted so that formal
+               --  verification can detect wraparound errors.
+
                if Chars (Argx) = Name_Suppressed then
-                  return Suppressed;
+                  if Alfa_Mode then
+                     return Checked;
+                  else
+                     return Suppressed;
+                  end if;
+
                elsif Chars (Argx) = Name_Checked then
                   return Checked;
+
                elsif Chars (Argx) = Name_Minimized then
                   return Minimized;
+
                elsif Chars (Argx) = Name_Eliminated then
-                  return Eliminated;
+                  if Ttypes.Standard_Long_Long_Integer_Size /= 64 then
+                     Error_Pragma_Arg
+                       ("Eliminated not implemented on this target", Argx);
+                  else
+                     return Eliminated;
+                  end if;
+
                else
                   Error_Pragma_Arg ("invalid argument for pragma%", Argx);
                end if;
@@ -11817,7 +11843,7 @@ package body Sem_Prag is
 
             --  Process first argument
 
-            Suppress_Options.Overflow_Checks_General :=
+            Scope_Suppress.Overflow_Checks_General :=
               Get_Check_Mode (Name_General, Arg1);
 
             --  Case of only one argument
@@ -12104,6 +12130,11 @@ package body Sem_Prag is
                Ent := Entity (Get_Pragma_Arg (Arg1));
                Decl := Parent (Ent);
 
+               --  Check for duplication before inserting in list of
+               --  representation items.
+
+               Check_Duplicate_Pragma (Ent);
+
                if Rep_Item_Too_Late (Ent, N) then
                   return;
                end if;
@@ -12118,8 +12149,6 @@ package body Sem_Prag is
                     ("object type for pragma% is not potentially persistent",
                      Arg1);
                end if;
-
-               Check_Duplicate_Pragma (Ent);
 
                Prag :=
                  Make_Linker_Section_Pragma
@@ -14790,10 +14819,17 @@ package body Sem_Prag is
                            loop
                               Set_Warnings_Off
                                 (E, (Chars (Get_Pragma_Arg (Arg1)) =
-                                                              Name_Off));
+                                      Name_Off));
+
+                              --  For OFF case, make entry in warnings off
+                              --  pragma table for later processing. But we do
+                              --  not do that within an instance, since these
+                              --  warnings are about what is needed in the
+                              --  template, not an instance of it.
 
                               if Chars (Get_Pragma_Arg (Arg1)) = Name_Off
                                 and then Warn_On_Warnings_Off
+                                and then not In_Instance
                               then
                                  Warnings_Off_Pragmas.Append ((N, E));
                               end if;

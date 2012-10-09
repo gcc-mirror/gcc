@@ -390,6 +390,11 @@ func (w *response) WriteHeader(code int) {
 	if !w.req.ProtoAtLeast(1, 0) {
 		return
 	}
+
+	if w.closeAfterReply && !hasToken(w.header.Get("Connection"), "close") {
+		w.header.Set("Connection", "close")
+	}
+
 	proto := "HTTP/1.0"
 	if w.req.ProtoAtLeast(1, 1) {
 		proto = "HTTP/1.1"
@@ -508,8 +513,16 @@ func (w *response) Write(data []byte) (n int, err error) {
 }
 
 func (w *response) finishRequest() {
-	// If this was an HTTP/1.0 request with keep-alive and we sent a Content-Length
-	// back, we can make this a keep-alive response ...
+	// If the handler never wrote any bytes and never sent a Content-Length
+	// response header, set the length explicitly to zero. This helps
+	// HTTP/1.0 clients keep their "keep-alive" connections alive, and for
+	// HTTP/1.1 clients is just as good as the alternative: sending a
+	// chunked response and immediately sending the zero-length EOF chunk.
+	if w.written == 0 && w.header.Get("Content-Length") == "" {
+		w.header.Set("Content-Length", "0")
+	}
+	// If this was an HTTP/1.0 request with keep-alive and we sent a
+	// Content-Length back, we can make this a keep-alive response ...
 	if w.req.wantsHttp10KeepAlive() {
 		sentLength := w.header.Get("Content-Length") != ""
 		if sentLength && w.header.Get("Connection") == "keep-alive" {
@@ -817,13 +830,13 @@ func RedirectHandler(url string, code int) Handler {
 // patterns and calls the handler for the pattern that
 // most closely matches the URL.
 //
-// Patterns named fixed, rooted paths, like "/favicon.ico",
+// Patterns name fixed, rooted paths, like "/favicon.ico",
 // or rooted subtrees, like "/images/" (note the trailing slash).
 // Longer patterns take precedence over shorter ones, so that
 // if there are handlers registered for both "/images/"
 // and "/images/thumbnails/", the latter handler will be
 // called for paths beginning "/images/thumbnails/" and the
-// former will receiver requests for any other paths in the
+// former will receive requests for any other paths in the
 // "/images/" subtree.
 //
 // Patterns may optionally begin with a host name, restricting matches to
@@ -917,11 +930,13 @@ func (mux *ServeMux) handler(r *Request) Handler {
 // ServeHTTP dispatches the request to the handler whose
 // pattern most closely matches the request URL.
 func (mux *ServeMux) ServeHTTP(w ResponseWriter, r *Request) {
-	// Clean path to canonical form and redirect.
-	if p := cleanPath(r.URL.Path); p != r.URL.Path {
-		w.Header().Set("Location", p)
-		w.WriteHeader(StatusMovedPermanently)
-		return
+	if r.Method != "CONNECT" {
+		// Clean path to canonical form and redirect.
+		if p := cleanPath(r.URL.Path); p != r.URL.Path {
+			w.Header().Set("Location", p)
+			w.WriteHeader(StatusMovedPermanently)
+			return
+		}
 	}
 	mux.handler(r).ServeHTTP(w, r)
 }

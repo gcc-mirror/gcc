@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -255,6 +255,8 @@ package Stylesw is
    --
    --    A unary plus or minus may not be followed by a space
    --
+   --    There must be one blank (and no other white space) between NOT and IN
+   --
    --    A vertical bar must be surrounded by spaces
    --
    --  Note that a requirement that a token be preceded by a space is met by
@@ -266,8 +268,8 @@ package Stylesw is
 
    Style_Check_Xtra_Parens : Boolean := False;
    --  This can be set True by using the -gnatyx switch. If true, then it is
-   --  not allowed to enclose entire conditional expressions in parentheses
-   --  (C style).
+   --  not allowed to enclose entire expressions in tests in parentheses
+   --  (C style), e.g. if (x = y) then ... is not allowed.
 
    Style_Max_Line_Length : Int := 0;
    --  Value used to check maximum line length. Gets reset as a result of

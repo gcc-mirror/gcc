@@ -1,3 +1,19 @@
+2012-10-06  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* configure.ac: Check for presence of secure_getenv.
+	* libgfortran.h: Use HAVE_SECURE_GETENV.
+	* Makefile.in: Regenerated.
+	* aclocal.m4: Regenerated.
+	* config.h.in: Regenerated.
+	* configure: Regenerated.
+
+2012-10-06  Thomas König  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/54736
+	* runtime/environ.c (search_unit):  Correct logic
+	for binary search.
+	(mark_single):  Fix index errors.
+
 2012-09-29  Thomas König  <tkoenig@gcc.gnu.org>
 
 	PR fortran/52724

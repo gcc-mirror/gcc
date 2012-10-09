@@ -1,6 +1,6 @@
 // { dg-options "-std=gnu++0x" }
 //
-// Copyright (C) 2011 Free Software Foundation, Inc.
+// Copyright (C) 2011-2012 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -38,18 +38,6 @@ test01()
   // begin() == end()
   VERIFY( a.begin() == a.end() );
   VERIFY( b.begin() == b.end() );
-
-  // 4: ?
-  // begin() == end() == unique value.
-  {
-    typedef std::array<long, len> array_type1;
-    typedef std::array<char, len> array_type2;
-    array_type1 one;
-    array_type2 two;
-    void* v1 = one.begin();
-    void* v2 = two.begin();
-    VERIFY( v1 != v2 );
-  }
 }
 
 int main()

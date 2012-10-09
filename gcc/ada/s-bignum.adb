@@ -42,7 +42,7 @@ package body System.Bignums is
    use Interfaces;
    --  So that operations on Unsigned_32 are available
 
-   type DD is mod SD'Modulus ** 2;
+   type DD is mod Base ** 2;
    --  Double length digit used for intermediate computations
 
    function MSD (X : DD) return SD is (SD (X / Base));
@@ -98,14 +98,13 @@ package body System.Bignums is
 
    procedure Free_Bignum (X : Bignum) is null;
    --  Called to free a Bignum value used in intermediate computations. In
-   --  this implementation using the secondary stack, does nothing at all,
+   --  this implementation using the secondary stack, it does nothing at all,
    --  because we rely on Mark/Release, but it may be of use for some
    --  alternative implementation.
 
    function Normalize
      (X   : Digit_Vector;
-      Neg : Boolean := False) return Bignum
-   with Pre  => X'First = 1;
+      Neg : Boolean := False) return Bignum;
    --  Given a digit vector and sign, allocate and construct a Bignum value.
    --  Note that X may have leading zeroes which must be removed, and if the
    --  result is zero, the sign is forced positive.
@@ -116,12 +115,12 @@ package body System.Bignums is
 
    function Add (X, Y : Digit_Vector; X_Neg, Y_Neg : Boolean) return Bignum is
    begin
-      --  If signs are the same we are doing an addition, it is convenient to
-      --  ensure that the first operand is the longer of the two,
+      --  If signs are the same, we are doing an addition, it is convenient to
+      --  ensure that the first operand is the longer of the two.
 
       if X_Neg = Y_Neg then
          if X'Last < Y'Last then
-            return Add (Y => X, X => Y, X_Neg => Y_Neg, Y_Neg => X_Neg);
+            return Add (X => Y, Y => X, X_Neg => Y_Neg, Y_Neg => X_Neg);
 
          --  Here signs are the same, and the first operand is the longer
 
@@ -152,9 +151,9 @@ package body System.Bignums is
             end;
          end if;
 
-         --  Signs are different so really this is an subtraction, we want to
-         --  make sure that the largest magnitude operand is the first one, and
-         --  then the result will have the sign of the first operand.
+      --  Signs are different so really this is a subtraction, we want to make
+      --  sure that the largest magnitude operand is the first one, and then
+      --  the result will have the sign of the first operand.
 
       else
          declare
@@ -165,7 +164,7 @@ package body System.Bignums is
                return Normalize (Zero_Data);
 
             elsif CR = LT then
-               return Add (Y => X, X => Y, X_Neg => Y_Neg, Y_Neg => X_Neg);
+               return Add (X => Y, Y => X, X_Neg => Y_Neg, Y_Neg => X_Neg);
 
             else
                pragma Assert (X_Neg /= Y_Neg and then CR = GT);
@@ -174,7 +173,7 @@ package body System.Bignums is
 
                declare
                   Diff : Digit_Vector (1 .. X'Length);
-                  RD    : DD;
+                  RD   : DD;
 
                begin
                   RD := 0;
@@ -342,6 +341,17 @@ package body System.Bignums is
                begin
                   Free_Bignum (XY2);
 
+                  --  Raise storage error if intermediate value is getting too
+                  --  large, which we arbitrarily define as 200 words for now!
+
+                  if XY2S.Len > 200 then
+                     Free_Bignum (XY2S);
+                     raise Storage_Error with
+                       "exponentiation result is too large";
+                  end if;
+
+                  --  Otherwise take care of even/odd cases
+
                   if (Y and 1) = 0 then
                      return XY2S;
 
@@ -362,7 +372,12 @@ package body System.Bignums is
       if Y.Neg then
          raise Constraint_Error with "exponentiation to negative power";
 
-      --  0 ** X is always 0
+      --  X ** 0 is always 1 (including 0 ** 0, so do this test first)
+
+      elsif Y.Len = 0 then
+         return Normalize (One_Data);
+
+      --  0 ** X is always 0 (for X non-zero)
 
       elsif X.Len = 0 then
          return Normalize (Zero_Data);
@@ -381,12 +396,12 @@ package body System.Bignums is
       elsif Y.Len > 1 then
          raise Storage_Error with "exponentiation result is too large";
 
-      --  Special case (+/-)2 ** K, where K is 31 or less using a shift
+      --  Special case (+/-)2 ** K, where K is 1 .. 31 using a shift
 
       elsif X.Len = 1 and then X.D (1) = 2 and then Y.D (1) < 32 then
          declare
             D : constant Digit_Vector (1 .. 1) :=
-                  (1 => Shift_Left (SD'(1), Natural (Y.D (1) - 1)));
+                  (1 => Shift_Left (SD'(1), Natural (Y.D (1))));
          begin
             return Normalize (D, X.Neg);
          end;
@@ -402,7 +417,7 @@ package body System.Bignums is
    -- Big_EQ --
    ------------
 
-   function Big_EQ  (X, Y : Bignum) return Boolean is
+   function Big_EQ (X, Y : Bignum) return Boolean is
    begin
       return Compare (X.D, Y.D, X.Neg, Y.Neg) = EQ;
    end Big_EQ;
@@ -411,7 +426,7 @@ package body System.Bignums is
    -- Big_GE --
    ------------
 
-   function Big_GE  (X, Y : Bignum) return Boolean is
+   function Big_GE (X, Y : Bignum) return Boolean is
    begin
       return Compare (X.D, Y.D, X.Neg, Y.Neg) /= LT;
    end Big_GE;
@@ -420,7 +435,7 @@ package body System.Bignums is
    -- Big_GT --
    ------------
 
-   function Big_GT  (X, Y : Bignum) return Boolean is
+   function Big_GT (X, Y : Bignum) return Boolean is
    begin
       return Compare (X.D, Y.D, X.Neg, Y.Neg) = GT;
    end Big_GT;
@@ -429,7 +444,7 @@ package body System.Bignums is
    -- Big_LE --
    ------------
 
-   function Big_LE  (X, Y : Bignum) return Boolean is
+   function Big_LE (X, Y : Bignum) return Boolean is
    begin
       return Compare (X.D, Y.D, X.Neg, Y.Neg) /= GT;
    end Big_LE;
@@ -438,7 +453,7 @@ package body System.Bignums is
    -- Big_LT --
    ------------
 
-   function Big_LT  (X, Y : Bignum) return Boolean is
+   function Big_LT (X, Y : Bignum) return Boolean is
    begin
       return Compare (X.D, Y.D, X.Neg, Y.Neg) = LT;
    end Big_LT;
@@ -466,7 +481,7 @@ package body System.Bignums is
    --   13    -5      -2        3       -13   -5      -3       -3
    --   14    -5      -1        4       -14   -5      -4       -4
 
-   function Big_Mod  (X, Y : Bignum) return Bignum is
+   function Big_Mod (X, Y : Bignum) return Bignum is
       Q, R : Bignum;
 
    begin
@@ -475,7 +490,7 @@ package body System.Bignums is
       if X.Neg = Y.Neg then
          return Big_Rem (X, Y);
 
-      --  Case where mod is different
+      --  Case where Mod is different
 
       else
          --  Do division
@@ -493,7 +508,7 @@ package body System.Bignums is
             declare
                T1 : constant Bignum := Big_Sub (Y, R);
             begin
-               T1.Neg := X.Neg;
+               T1.Neg := Y.Neg;
                Free_Bignum (R);
                return T1;
             end;
@@ -547,7 +562,7 @@ package body System.Bignums is
    -- Big_NE --
    ------------
 
-   function Big_NE  (X, Y : Bignum) return Boolean is
+   function Big_NE (X, Y : Bignum) return Boolean is
    begin
       return Compare (X.D, Y.D, X.Neg, Y.Neg) /= EQ;
    end Big_NE;
@@ -584,11 +599,11 @@ package body System.Bignums is
    --   13    -5     3      -13   -5     -3
    --   14    -5     4      -14   -5     -4
 
-   function Big_Rem  (X, Y : Bignum) return Bignum is
+   function Big_Rem (X, Y : Bignum) return Bignum is
       Q, R : Bignum;
    begin
       Div_Rem (X, Y, Q, R, Discard_Quotient => True);
-      R.Neg :=  R.Len > 0 and then X.Neg;
+      R.Neg := R.Len > 0 and then X.Neg;
       return R;
    end Big_Rem;
 
@@ -598,7 +613,7 @@ package body System.Bignums is
 
    function Big_Sub (X, Y : Bignum) return Bignum is
    begin
-      --  If right operand zero, return left operand
+      --  If right operand zero, return left operand (avoiding sharing)
 
       if Y.Len = 0 then
          return Normalize (X.D, X.Neg);
@@ -666,16 +681,16 @@ package body System.Bignums is
 
       if Compare (X.D, Y.D, False, False) = LT then
          Remainder := Normalize (X.D);
-         Quotient := Normalize (Zero_Data);
+         Quotient  := Normalize (Zero_Data);
          return;
 
-      --  If both X and Y are comfortably less than 2**63-1 we can just use
-      --  Long_Long_Integer arithmetic. Note it is good not to do an accurate
-      --  range check here since -2**63 / -1 overflows!
+      --  If both X and Y are less than 2**63-1, we can use Long_Long_Integer
+      --  arithmetic. Note it is good not to do an accurate range check against
+      --  Long_Long_Integer since -2**63 / -1 overflows!
 
-      elsif (X.Len <= 1 or else (X.Len = 2 and then X.D (1) <= 2**31))
+      elsif (X.Len <= 1 or else (X.Len = 2 and then X.D (1) < 2**31))
               and then
-            (Y.Len <= 1 or else (Y.Len = 2 and then Y.D (1) <= 2**31))
+            (Y.Len <= 1 or else (Y.Len = 2 and then Y.D (1) < 2**31))
       then
          declare
             A : constant LLI := abs (From_Bignum (X));
@@ -704,7 +719,7 @@ package body System.Bignums is
                ND := ND rem Div;
             end loop;
 
-            Quotient := Normalize (Result);
+            Quotient  := Normalize (Result);
             Remdr (1) := SD (ND);
             Remainder := Normalize (Remdr);
             return;
@@ -1008,7 +1023,7 @@ package body System.Bignums is
       end loop;
 
       B := Allocate_Bignum (X'Last - J + 1);
-      B.Neg :=  B.Len > 0 and then Neg;
+      B.Neg := B.Len > 0 and then Neg;
       B.D := X (J .. X'Last);
       return B;
    end Normalize;

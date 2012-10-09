@@ -177,7 +177,7 @@ package body Exp_Ch2 is
          if Nkind (CV) in N_Subexpr then
             Val := CV;
 
-         --  Case of Current_Value is a conditional expression reference
+         --  Case of Current_Value is an if expression reference
 
          else
             Get_Current_Value_Condition (N, Op, Val);

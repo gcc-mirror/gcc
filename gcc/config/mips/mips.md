@@ -204,7 +204,7 @@
 ;; the split instructions; in some cases, it is more appropriate for the
 ;; scheduling type to be "multi" instead.
 (define_attr "move_type"
-  "unknown,load,fpload,store,fpstore,mtc,mfc,mtlo,mflo,move,fmove,
+  "unknown,load,fpload,store,fpstore,mtc,mfc,mtlo,mflo,imul,move,fmove,
    const,constN,signext,ext_ins,logical,arith,sll0,andi,loadpool,
    shift_shift"
   (const_string "unknown"))
@@ -369,6 +369,7 @@
 	 (eq_attr "move_type" "mflo") (const_string "mflo")
 
 	 ;; These types of move are always single insns.
+	 (eq_attr "move_type" "imul") (const_string "imul")
 	 (eq_attr "move_type" "fmove") (const_string "fmove")
 	 (eq_attr "move_type" "loadpool") (const_string "load")
 	 (eq_attr "move_type" "signext") (const_string "signext")
@@ -1293,32 +1294,20 @@
 
 ;; Combiner patterns for unsigned byte-add.
 
-(define_insn "*baddu_si_eb"
+(define_insn "*baddu_si"
   [(set (match_operand:SI 0 "register_operand" "=d")
         (zero_extend:SI
-	 (subreg:QI
-	  (plus:SI (match_operand:SI 1 "register_operand" "d")
-		   (match_operand:SI 2 "register_operand" "d")) 3)))]
-  "ISA_HAS_BADDU && BYTES_BIG_ENDIAN"
-  "baddu\\t%0,%1,%2"
-  [(set_attr "alu_type" "add")])
-
-(define_insn "*baddu_si_el"
-  [(set (match_operand:SI 0 "register_operand" "=d")
-        (zero_extend:SI
-	 (subreg:QI
-	  (plus:SI (match_operand:SI 1 "register_operand" "d")
-		   (match_operand:SI 2 "register_operand" "d")) 0)))]
-  "ISA_HAS_BADDU && !BYTES_BIG_ENDIAN"
+	 (plus:QI (match_operand:QI 1 "register_operand" "d")
+		  (match_operand:QI 2 "register_operand" "d"))))]
+  "ISA_HAS_BADDU"
   "baddu\\t%0,%1,%2"
   [(set_attr "alu_type" "add")])
 
 (define_insn "*baddu_di<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=d")
         (zero_extend:GPR
-	 (truncate:QI
-	  (plus:DI (match_operand:DI 1 "register_operand" "d")
-		   (match_operand:DI 2 "register_operand" "d")))))]
+	 (plus:QI (truncate:QI (match_operand:DI 1 "register_operand" "d"))
+		  (truncate:QI (match_operand:DI 2 "register_operand" "d")))))]
   "ISA_HAS_BADDU && TARGET_64BIT"
   "baddu\\t%0,%1,%2"
   [(set_attr "alu_type" "add")])
@@ -4254,14 +4243,17 @@
    (set_attr "mode" "<MODE>")])
 
 (define_insn "*movdi_32bit"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=d,d,d,m,*a,*d,*f,*f,*d,*m,*B*C*D,*B*C*D,*d,*m")
-	(match_operand:DI 1 "move_operand" "d,i,m,d,*J*d,*a,*J*d,*m,*f,*f,*d,*m,*B*C*D,*B*C*D"))]
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=d,d,d,m,*a,*a,*d,*f,*f,*d,*m,*B*C*D,*B*C*D,*d,*m")
+	(match_operand:DI 1 "move_operand" "d,i,m,d,*J,*d,*a,*J*d,*m,*f,*f,*d,*m,*B*C*D,*B*C*D"))]
   "!TARGET_64BIT && !TARGET_MIPS16
    && (register_operand (operands[0], DImode)
        || reg_or_0_operand (operands[1], DImode))"
   { return mips_output_move (operands[0], operands[1]); }
-  [(set_attr "move_type" "move,const,load,store,mtlo,mflo,mtc,fpload,mfc,fpstore,mtc,fpload,mfc,fpstore")
-   (set_attr "mode" "DI")])
+  [(set_attr "move_type" "move,const,load,store,imul,mtlo,mflo,mtc,fpload,mfc,fpstore,mtc,fpload,mfc,fpstore")
+   (set (attr "mode")
+   	(if_then_else (eq_attr "move_type" "imul")
+		      (const_string "SI")
+		      (const_string "DI")))])
 
 (define_insn "*movdi_32bit_mips16"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=d,y,d,d,d,d,m,*d")
@@ -4707,15 +4699,18 @@
 })
 
 (define_insn "*movti"
-  [(set (match_operand:TI 0 "nonimmediate_operand" "=d,d,d,m,*a,*d")
-	(match_operand:TI 1 "move_operand" "d,i,m,dJ,*d*J,*a"))]
+  [(set (match_operand:TI 0 "nonimmediate_operand" "=d,d,d,m,*a,*a,*d")
+	(match_operand:TI 1 "move_operand" "d,i,m,dJ,*J,*d,*a"))]
   "TARGET_64BIT
    && !TARGET_MIPS16
    && (register_operand (operands[0], TImode)
        || reg_or_0_operand (operands[1], TImode))"
-  "#"
-  [(set_attr "move_type" "move,const,load,store,mtlo,mflo")
-   (set_attr "mode" "TI")])
+  { return mips_output_move (operands[0], operands[1]); }
+  [(set_attr "move_type" "move,const,load,store,imul,mtlo,mflo")
+   (set (attr "mode")
+   	(if_then_else (eq_attr "move_type" "imul")
+		      (const_string "SI")
+		      (const_string "TI")))])
 
 (define_insn "*movti_mips16"
   [(set (match_operand:TI 0 "nonimmediate_operand" "=d,y,d,d,d,d,m,*d")
@@ -4765,21 +4760,20 @@
 (define_split
   [(set (match_operand:MOVE64 0 "nonimmediate_operand")
 	(match_operand:MOVE64 1 "move_operand"))]
-  "reload_completed && !TARGET_64BIT
-   && mips_split_64bit_move_p (operands[0], operands[1])"
+  "reload_completed && mips_split_move_insn_p (operands[0], operands[1], insn)"
   [(const_int 0)]
 {
-  mips_split_doubleword_move (operands[0], operands[1]);
+  mips_split_move_insn (operands[0], operands[1], curr_insn);
   DONE;
 })
 
 (define_split
   [(set (match_operand:MOVE128 0 "nonimmediate_operand")
 	(match_operand:MOVE128 1 "move_operand"))]
-  "TARGET_64BIT && reload_completed"
+  "reload_completed && mips_split_move_insn_p (operands[0], operands[1], insn)"
   [(const_int 0)]
 {
-  mips_split_doubleword_move (operands[0], operands[1]);
+  mips_split_move_insn (operands[0], operands[1], curr_insn);
   DONE;
 })
 

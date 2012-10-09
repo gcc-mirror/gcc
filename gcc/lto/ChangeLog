@@ -1,3 +1,17 @@
+2012-10-07  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (read_cgraph_and_symbols): Release type merging hash early;
+	release input encoders.
+	* lto-partition.c (new_partition): Update for new lto_symtab_encoder_new.
+
+2012-10-06  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/54790 
+	* lto.c (resolution_map): New static var.
+	(register_resolution): New function.
+	(lto_register_var_decl_in_symtab): Use it.
+	(read_cgraph_and_symbols): Copy resolutions into the symtab.
+
 2012-09-20  Martin Jambor  <mjambor@suse.cz>
 
 	* lto.c (lto_materialize_function): Call push_struct_function and

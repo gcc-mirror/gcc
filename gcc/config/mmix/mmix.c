@@ -2499,18 +2499,8 @@ mmix_output_shiftvalue_op_from_str (FILE *stream,
 static void
 mmix_output_octa (FILE *stream, HOST_WIDEST_INT value, int do_begin_end)
 {
-  /* Snipped from final.c:output_addr_const.  We need to avoid the
-     presumed universal "0x" prefix.  We can do it by replacing "0x" with
-     "#0" here; we must avoid a space in the operands and no, the zero
-     won't cause the number to be assumed in octal format.  */
-  char hex_format[sizeof (HOST_WIDEST_INT_PRINT_HEX)];
-
   if (do_begin_end)
     fprintf (stream, "\tOCTA ");
-
-  strcpy (hex_format, HOST_WIDEST_INT_PRINT_HEX);
-  hex_format[0] = '#';
-  hex_format[1] = '0';
 
   /* Provide a few alternative output formats depending on the number, to
      improve legibility of assembler output.  */
@@ -2520,8 +2510,13 @@ mmix_output_octa (FILE *stream, HOST_WIDEST_INT value, int do_begin_end)
   else if (value > (HOST_WIDEST_INT) 0
 	   && value < ((HOST_WIDEST_INT) 1 << 31) * 2)
     fprintf (stream, "#%x", (unsigned int) value);
-  else
-    fprintf (stream, hex_format, value);
+  else if (sizeof (HOST_WIDE_INT) == sizeof (HOST_WIDEST_INT))
+    /* We need to avoid the not-so-universal "0x" prefix; we need the
+       pure hex-digits together with the mmixal "#" hex prefix.  */
+    fprintf (stream, "#" HOST_WIDE_INT_PRINT_HEX_PURE,
+	     (HOST_WIDE_INT) value);
+  else /* Need to avoid the hex output; there's no ...WIDEST...HEX_PURE.  */
+    fprintf (stream, HOST_WIDEST_INT_PRINT_UNSIGNED, value);
 
   if (do_begin_end)
     fprintf (stream, "\n");

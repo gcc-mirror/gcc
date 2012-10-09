@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -763,6 +763,24 @@ package body Styleg is
          Blank_Lines := 0;
       end if;
    end Check_Line_Terminator;
+
+   ------------------
+   -- Check_Not_In --
+   ------------------
+
+   --  In check tokens mode, only one space between NOT and IN
+
+   procedure Check_Not_In is
+   begin
+      if Style_Check_Tokens then
+         if Source (Token_Ptr - 1) /= ' '
+           or else Token_Ptr - Prev_Token_Ptr /= 4
+         then -- CODEFIX?
+            Error_Msg
+              ("(style) single space must separate NOT and IN", Token_Ptr - 1);
+         end if;
+      end if;
+   end Check_Not_In;
 
    --------------------------
    -- Check_No_Space_After --

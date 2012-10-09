@@ -2,12 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---        S Y S T E M . S T O R A G E _ P O O L S . S U B P O O L S .       --
---                          F I N A L I Z A T I O N                         --
+--                SYSTEM.STORAGE_POOLS.SUBPOOLS.FINALIZATION                --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2011, Free Software Foundation, Inc.           --
+--          Copyright (C) 2011-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,6 +32,11 @@
 pragma Compiler_Unit;
 
 package System.Storage_Pools.Subpools.Finalization is
+
+   --  The pragma is needed because package System.Storage_Pools.Subpools which
+   --  is already preelaborated now depends on this unit.
+
+   pragma Preelaborate;
 
    procedure Finalize_And_Deallocate (Subpool : in out Subpool_Handle);
    --  This routine performs the following actions:

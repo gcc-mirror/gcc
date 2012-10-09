@@ -1,3 +1,41 @@
+2012-10-06  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54832
+	* resolve.c (resolve_fl_derived0): Correctly copy the 'class_ok'
+	attribute for proc-ptr components with RESULT variable.
+
+2012-10-06  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/45521
+	* interface.c (generic_correspondence): Implement additional
+	distinguishability criteria of F08.
+	(compare_actual_formal): Reject data object as actual argument for
+	procedure formal argument.
+
+2012-10-04  Tobias Burnus  <burnus@net-b.de>
+
+	* expr.c (scalarize_intrinsic_call): Plug memory leak.
+	* frontend-passes.c (gcc_assert): Extend assert.
+	* interface.c (gfc_compare_derived_types): Fix comparison.
+	(gfc_check_operator_interface): Move up to make this error
+	message reachable.
+	(get_sym_storage_size): Remove always-true checks.
+	* io.c (format_lex): Add comment.
+	(gfc_free_wait): Free memory.
+	* match.c (gfc_match_select_type): Ditto. 
+	* matchexpr.c (match_level_3): Ditto.
+	* primary.c (match_string_constant): Ditto.
+	(match_actual_arg): Check return value.
+	* resolve.c (gfc_resolve_substring_charlen,
+	resolve_typebound_generic_call, resolve_typebound_function,
+	resolve_typebound_subroutine): Free memory.
+	* trans-types.c (gfc_get_derived_type): Remove always-true check.
+
+2012-10-02  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54778
+	* interface.c (matching_typebound_op): Check for 'class_ok' attribute.
+
 2012-09-30  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/54667

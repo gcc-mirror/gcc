@@ -603,7 +603,7 @@ package body Exp_Intr is
       --    end if;
 
       Rewrite (N,
-        Make_Conditional_Expression (Loc,
+        Make_If_Expression (Loc,
           Expressions => New_List (
             Make_Op_Lt (Loc,
               Left_Opnd  => Duplicate_Subexpr (Opnd),
@@ -611,7 +611,7 @@ package body Exp_Intr is
 
             New_Occurrence_Of (Standard_True, Loc),
 
-            Make_Conditional_Expression (Loc,
+            Make_If_Expression (Loc,
              Expressions => New_List (
                Make_Op_Gt (Loc,
                  Left_Opnd  => Duplicate_Subexpr_No_Checks (Opnd),
@@ -1311,7 +1311,7 @@ package body Exp_Intr is
       Obj := Make_Explicit_Dereference (Loc, Relocate_Node (Arg));
 
       Rewrite (N,
-        Make_Conditional_Expression (Loc,
+        Make_If_Expression (Loc,
           Expressions => New_List (
             Make_Op_Eq (Loc,
               Left_Opnd => New_Copy_Tree (Arg),

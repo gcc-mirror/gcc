@@ -1,6 +1,7 @@
 /* C++-specific tree lowering bits; see also c-gimplify.c and tree-gimple.c.
 
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011,
+   2012
    Free Software Foundation, Inc.
    Contributed by Jason Merrill <jason@redhat.com>
 
@@ -1119,6 +1120,22 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
     genericize_break_stmt (stmt_p);
   else if (TREE_CODE (stmt) == OMP_FOR)
     genericize_omp_for_stmt (stmt_p, walk_subtrees, data);
+  else if (TREE_CODE (stmt) == SIZEOF_EXPR)
+    {
+      if (SIZEOF_EXPR_TYPE_P (stmt))
+	*stmt_p
+	  = cxx_sizeof_or_alignof_type (TREE_TYPE (TREE_OPERAND (stmt, 0)),
+					SIZEOF_EXPR, false);
+      else if (TYPE_P (TREE_OPERAND (stmt, 0)))
+	*stmt_p = cxx_sizeof_or_alignof_type (TREE_OPERAND (stmt, 0),
+					      SIZEOF_EXPR, false);
+      else
+	*stmt_p = cxx_sizeof_or_alignof_expr (TREE_OPERAND (stmt, 0),
+					      SIZEOF_EXPR, false);
+      if (*stmt_p == error_mark_node)
+	*stmt_p = size_one_node;
+      return NULL;
+    }    
 
   pointer_set_insert (p_set, *stmt_p);
 

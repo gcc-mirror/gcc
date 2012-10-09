@@ -1,6 +1,6 @@
 /* Threads compatibility routines for libgcc2 and libobjc.
    Compile this one with gcc.
-   Copyright (C) 2004, 2005, 2008, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2004-2012 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -225,5 +225,10 @@ __gthread_recursive_mutex_init_function (__gthread_recursive_mutex_t *__mutex)
   return 0;
 }
 
+static inline int
+__gthread_recursive_mutex_destroy (__gthread_recursive_mutex_t *__mutex)
+{
+  return __gthread_mutex_destroy (__mutex);
+}
 
 #endif /* ! GCC_GTHR_TPF_H */

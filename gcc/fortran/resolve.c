@@ -4964,7 +4964,11 @@ gfc_resolve_substring_charlen (gfc_expr *e)
     end = NULL;
 
   if (!start || !end)
-    return;
+    {
+      gfc_free_expr (start);
+      gfc_free_expr (end);
+      return;
+    }
 
   /* Length = (end - start +1).  */
   e->ts.u.cl->length = gfc_subtract (end, start);
@@ -6004,7 +6008,10 @@ resolve_typebound_generic_call (gfc_expr* e, const char **name)
 	      gfc_expr* po;
 	      po = extract_compcall_passed_object (e);
 	      if (!po)
-		return FAILURE;
+		{
+		  gfc_free_actual_arglist (args);
+		  return FAILURE;
+		}
 
 	      gcc_assert (g->specific->pass_arg_num > 0);
 	      gcc_assert (!g->specific->error);
@@ -6253,7 +6260,10 @@ resolve_typebound_function (gfc_expr* e)
   /* Treat the call as if it is a typebound procedure, in order to roll
      out the correct name for the specific function.  */
   if (resolve_compcall (e, &name) == FAILURE)
-    return FAILURE;
+    {
+      gfc_free_ref_list (new_ref);
+      return FAILURE;
+    }
   ts = e->ts;
 
   if (overridable)
@@ -6374,7 +6384,10 @@ resolve_typebound_subroutine (gfc_code *code)
     }
 
   if (resolve_typebound_call (code, &name) == FAILURE)
-    return FAILURE;
+    {
+      gfc_free_ref_list (new_ref);
+      return FAILURE;
+    }
   ts = code->expr1->ts;
 
   if (overridable)
@@ -12009,6 +12022,7 @@ resolve_fl_derived0 (gfc_symbol *sym)
 		  c->attr.pointer = ifc->result->attr.pointer;
 		  c->attr.dimension = ifc->result->attr.dimension;
 		  c->as = gfc_copy_array_spec (ifc->result->as);
+		  c->attr.class_ok = ifc->result->attr.class_ok;
 		}
 	      else
 		{   
@@ -12017,6 +12031,7 @@ resolve_fl_derived0 (gfc_symbol *sym)
 		  c->attr.pointer = ifc->attr.pointer;
 		  c->attr.dimension = ifc->attr.dimension;
 		  c->as = gfc_copy_array_spec (ifc->as);
+		  c->attr.class_ok = ifc->attr.class_ok;
 		}
 	      c->ts.interface = ifc;
 	      c->attr.function = ifc->attr.function;
@@ -12028,7 +12043,6 @@ resolve_fl_derived0 (gfc_symbol *sym)
 	      c->attr.recursive = ifc->attr.recursive;
 	      c->attr.always_explicit = ifc->attr.always_explicit;
 	      c->attr.ext_attr |= ifc->attr.ext_attr;
-	      c->attr.class_ok = ifc->attr.class_ok;
 	      /* Replace symbols in array spec.  */
 	      if (c->as)
 		{

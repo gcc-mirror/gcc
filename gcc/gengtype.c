@@ -2810,6 +2810,7 @@ walk_type (type_p t, struct walk_type_data *d)
 	const char *oldval = d->val;
 	const char *oldprevval1 = d->prev_val[1];
 	const char *oldprevval2 = d->prev_val[2];
+	const char *struct_mark_hook = NULL;
 	const int union_p = t->kind == TYPE_UNION;
 	int seen_default_p = 0;
 	options_p o;
@@ -2833,6 +2834,13 @@ walk_type (type_p t, struct walk_type_data *d)
 	  if (!desc && strcmp (o->name, "desc") == 0
 	      && o->kind == OPTION_STRING)
 	    desc = o->info.string;
+	  else if (!struct_mark_hook && strcmp (o->name, "mark_hook") == 0
+		   && o->kind == OPTION_STRING)
+	    struct_mark_hook = o->info.string;
+
+	if (struct_mark_hook)
+	  oprintf (d->of, "%*s%s (&%s);\n",
+		   d->indent, "", struct_mark_hook, oldval);
 
 	d->prev_val[2] = oldval;
 	d->prev_val[1] = oldprevval2;

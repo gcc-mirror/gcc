@@ -2,12 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---        S Y S T E M . S T O R A G E _ P O O L S . S U B P O O L S .       --
---                          F I N A L I Z A T I O N                         --
+--                SYSTEM.STORAGE_POOLS.SUBPOOLS.FINALIZATION                --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2011, Free Software Foundation, Inc.           --
+--          Copyright (C) 2011-2012, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,6 +29,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Ada.Unchecked_Deallocation;
+
+with System.Finalization_Masters; use System.Finalization_Masters;
+
 package body System.Storage_Pools.Subpools.Finalization is
 
    -----------------------------
@@ -37,6 +40,8 @@ package body System.Storage_Pools.Subpools.Finalization is
    -----------------------------
 
    procedure Finalize_And_Deallocate (Subpool : in out Subpool_Handle) is
+      procedure Free is new Ada.Unchecked_Deallocation (SP_Node, SP_Node_Ptr);
+
    begin
       --  Do nothing if the subpool was never created or never used. The latter
       --  case may arise with an array of subpool implementations.
@@ -48,9 +53,18 @@ package body System.Storage_Pools.Subpools.Finalization is
          return;
       end if;
 
-      --  Clean up all controlled objects allocated through the subpool
+      --  Clean up all controlled objects chained on the subpool's master
 
-      Finalize_Subpool (Subpool);
+      Finalize (Subpool.Master);
+
+      --  Remove the subpool from its owner's list of subpools
+
+      Detach (Subpool.Node);
+
+      --  Destroy the associated doubly linked list node which was created in
+      --  Set_Pool_Of_Subpools.
+
+      Free (Subpool.Node);
 
       --  Dispatch to the user-defined implementation of Deallocate_Subpool
 

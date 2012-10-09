@@ -3674,20 +3674,43 @@ package body Exp_Ch3 is
       return Node_Id
       is
          Sel_Comp : Node_Id;
+         Typ      : Entity_Id;
+         Call     : Node_Id;
 
       begin
          Invariant_Found := True;
+         Typ := Etype (Comp);
+
          Sel_Comp :=
            Make_Selected_Component (Loc,
              Prefix      => New_Occurrence_Of (Object_Entity, Loc),
              Selector_Name => New_Occurrence_Of (Comp, Loc));
 
-         return
+         if Is_Access_Type (Typ) then
+            Sel_Comp := Make_Explicit_Dereference (Loc, Sel_Comp);
+            Typ := Designated_Type (Typ);
+         end if;
+
+         Call :=
            Make_Procedure_Call_Statement (Loc,
              Name                   =>
-               New_Occurrence_Of
-                 (Invariant_Procedure (Etype (Comp)), Loc),
+               New_Occurrence_Of (Invariant_Procedure (Typ), Loc),
              Parameter_Associations => New_List (Sel_Comp));
+
+         if Is_Access_Type (Etype (Comp)) then
+            Call :=
+              Make_If_Statement (Loc,
+                Condition =>
+                  Make_Op_Ne (Loc,
+                    Left_Opnd   => Make_Null (Loc),
+                    Right_Opnd  =>
+                       Make_Selected_Component (Loc,
+                         Prefix      => New_Occurrence_Of (Object_Entity, Loc),
+                         Selector_Name => New_Occurrence_Of (Comp, Loc))),
+                Then_Statements => New_List (Call));
+         end if;
+
+         return Call;
       end Build_Component_Invariant_Call;
 
       ----------------------------
@@ -3706,7 +3729,16 @@ package body Exp_Ch3 is
             if Nkind (Decl) = N_Component_Declaration then
                Id  := Defining_Identifier (Decl);
 
-               if Has_Invariants (Etype (Id)) then
+               if Has_Invariants (Etype (Id))
+                 and then In_Open_Scopes (Scope (R_Type))
+               then
+                  Append_To (Stmts, Build_Component_Invariant_Call (Id));
+
+               elsif Is_Access_Type (Etype (Id))
+                 and then not Is_Access_Constant (Etype (Id))
+                 and then Has_Invariants (Designated_Type (Etype (Id)))
+                 and then In_Open_Scopes (Scope (Designated_Type (Etype (Id))))
+               then
                   Append_To (Stmts, Build_Component_Invariant_Call (Id));
                end if;
             end if;
@@ -5861,9 +5893,14 @@ package body Exp_Ch3 is
          Build_Array_Init_Proc (Base, N);
       end if;
 
-      if Has_Invariants (Component_Type (Base)) then
-
-         --  Generate component invariant checking procedure.
+      if Has_Invariants (Component_Type (Base))
+        and then In_Open_Scopes (Scope (Component_Type (Base)))
+      then
+         --  Generate component invariant checking procedure. This is only
+         --  relevant if the array type is within the scope of the component
+         --  type. Otherwise an array object can only be built using the public
+         --  subprograms for the component type, and calls to those will have
+         --  invariant checks.
 
          Insert_Component_Invariant_Checks
            (N, Base, Build_Array_Invariant_Proc (Base, N));

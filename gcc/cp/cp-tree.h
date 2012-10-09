@@ -56,7 +56,6 @@ c-common.h, not after.
       AGGR_INIT_VIA_CTOR_P (in AGGR_INIT_EXPR)
       PTRMEM_OK_P (in ADDR_EXPR, OFFSET_REF, SCOPE_REF)
       PAREN_STRING_LITERAL (in STRING_CST)
-      DECL_PRETTY_FUNCTION_P (in VAR_DECL)
       KOENIG_LOOKUP_P (in CALL_EXPR)
       STATEMENT_LIST_NO_SCOPE (in STATEMENT_LIST).
       EXPR_STMT_STMT_EXPR_RESULT (in EXPR_STMT)
@@ -79,6 +78,7 @@ c-common.h, not after.
       OVL_ARG_DEPENDENT (in OVERLOAD)
       PACK_EXPANSION_LOCAL_P (in *_PACK_EXPANSION)
       TINFO_RECHECK_ACCESS_P (in TEMPLATE_INFO)
+      SIZEOF_EXPR_TYPE_P (in SIZEOF_EXPR)
    1: IDENTIFIER_VIRTUAL_P (in IDENTIFIER_NODE)
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
@@ -202,6 +202,13 @@ c-common.h, not after.
 
 #define VAR_OR_FUNCTION_DECL_CHECK(NODE) \
   TREE_CHECK2(NODE,VAR_DECL,FUNCTION_DECL)
+
+#define TYPE_FUNCTION_OR_TEMPLATE_DECL_CHECK(NODE) \
+  TREE_CHECK3(NODE,TYPE_DECL,TEMPLATE_DECL,FUNCTION_DECL)
+
+#define TYPE_FUNCTION_OR_TEMPLATE_DECL_P(NODE) \
+  (TREE_CODE (NODE) == TYPE_DECL || TREE_CODE (NODE) == TEMPLATE_DECL \
+   || TREE_CODE (NODE) == FUNCTION_DECL)
 
 #define VAR_FUNCTION_OR_PARM_DECL_CHECK(NODE) \
   TREE_CHECK3(NODE,VAR_DECL,FUNCTION_DECL,PARM_DECL)
@@ -1876,8 +1883,8 @@ struct GTY(()) lang_decl_base {
   unsigned initialized_in_class : 1;	   /* var or fn */
   unsigned repo_available_p : 1;	   /* var or fn */
   unsigned threadprivate_or_deleted_p : 1; /* var or fn */
-  unsigned anticipated_p : 1;		   /* fn or type */
-  unsigned friend_attr : 1;		   /* fn or type */
+  unsigned anticipated_p : 1;		   /* fn, type or template */
+  unsigned friend_attr : 1;		   /* fn, type or template */
   unsigned template_conv_p : 1;		   /* var or template */
   unsigned odr_used : 1;		   /* var or fn */
   unsigned u2sel : 1;
@@ -2265,12 +2272,13 @@ struct GTY((variable_size)) lang_decl {
 
 /* Nonzero for a VAR_DECL means that the variable's initialization (if
    any) has been processed.  (In general, DECL_INITIALIZED_P is
-   !DECL_EXTERN, but static data members may be initialized even if
+   !DECL_EXTERNAL, but static data members may be initialized even if
    not defined.)  */
 #define DECL_INITIALIZED_P(NODE) \
    (TREE_LANG_FLAG_1 (VAR_DECL_CHECK (NODE)))
 
-/* Nonzero for a VAR_DECL iff an explicit initializer was provided.  */
+/* Nonzero for a VAR_DECL iff an explicit initializer was provided
+   or a non-trivial constructor is called.  */
 #define DECL_NONTRIVIALLY_INITIALIZED_P(NODE)	\
    (TREE_LANG_FLAG_3 (VAR_DECL_CHECK (NODE)))
 
@@ -2294,7 +2302,9 @@ struct GTY((variable_size)) lang_decl {
 
 /* Nonzero for DECL means that this decl is just a friend declaration,
    and should not be added to the list of members for this class.  */
-#define DECL_FRIEND_P(NODE) (DECL_LANG_SPECIFIC (NODE)->u.base.friend_attr)
+#define DECL_FRIEND_P(NODE) \
+  (DECL_LANG_SPECIFIC (TYPE_FUNCTION_OR_TEMPLATE_DECL_CHECK (NODE)) \
+   ->u.base.friend_attr)
 
 /* A TREE_LIST of the types which have befriended this FUNCTION_DECL.  */
 #define DECL_BEFRIENDING_CLASSES(NODE) \
@@ -2410,7 +2420,8 @@ struct GTY((variable_size)) lang_decl {
 /* Nonzero if this DECL is the __PRETTY_FUNCTION__ variable in a
    template function.  */
 #define DECL_PRETTY_FUNCTION_P(NODE) \
-  (TREE_LANG_FLAG_0 (VAR_DECL_CHECK (NODE)))
+  (DECL_NAME (NODE) \
+   && !strcmp (IDENTIFIER_POINTER (DECL_NAME (NODE)), "__PRETTY_FUNCTION__"))
 
 /* The _TYPE context in which this _DECL appears.  This field holds the
    class where a virtual function instance is actually defined.  */
@@ -3101,7 +3112,8 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    declared inside a class.  In the latter case DECL_HIDDEN_FRIEND_P
    will be set.  */
 #define DECL_ANTICIPATED(NODE) \
-  (DECL_LANG_SPECIFIC (DECL_COMMON_CHECK (NODE))->u.base.anticipated_p)
+  (DECL_LANG_SPECIFIC (TYPE_FUNCTION_OR_TEMPLATE_DECL_CHECK (NODE)) \
+   ->u.base.anticipated_p)
 
 /* Nonzero if NODE is a FUNCTION_DECL which was declared as a friend
    within a class but has not been declared in the surrounding scope.
@@ -4043,6 +4055,10 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    an NSDMI, and should be re-evaluated when used in a constructor.  */
 #define CONVERT_EXPR_VBASE_PATH(NODE) \
   TREE_LANG_FLAG_0 (CONVERT_EXPR_CHECK (NODE))
+
+/* True if SIZEOF_EXPR argument is type.  */
+#define SIZEOF_EXPR_TYPE_P(NODE) \
+  TREE_LANG_FLAG_0 (SIZEOF_EXPR_CHECK (NODE))
 
 /* An enumeration of the kind of tags that C++ accepts.  */
 enum tag_types {
@@ -5395,6 +5411,7 @@ extern tree build_non_dependent_expr		(tree);
 extern void make_args_non_dependent		(VEC(tree,gc) *);
 extern bool reregister_specialization		(tree, tree, tree);
 extern tree fold_non_dependent_expr		(tree);
+extern tree fold_non_dependent_expr_sfinae	(tree, tsubst_flags_t);
 extern bool alias_type_or_template_p            (tree);
 extern bool alias_template_specialization_p     (tree);
 extern bool explicit_class_specialization_p     (tree);
@@ -5684,7 +5701,6 @@ extern void lang_check_failed			(const char *, int,
 						 const char *) ATTRIBUTE_NORETURN;
 extern tree stabilize_expr			(tree, tree *);
 extern void stabilize_call			(tree, tree *);
-extern void stabilize_aggr_init			(tree, tree *);
 extern bool stabilize_init			(tree, tree *);
 extern tree add_stmt_to_compound		(tree, tree);
 extern void init_tree				(void);

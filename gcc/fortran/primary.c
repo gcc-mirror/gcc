@@ -1087,6 +1087,7 @@ got_delim:
 
       if (!gfc_check_character_range (c, kind))
 	{
+	  gfc_free_expr (e);
 	  gfc_error ("Character '%s' in string at %C is not representable "
 		     "in character kind %d", gfc_print_wide_char (c), kind);
 	  return MATCH_ERROR;
@@ -1507,8 +1508,9 @@ match_actual_arg (gfc_expr **result)
 
 	  if (sym->attr.in_common && !sym->attr.proc_pointer)
 	    {
-	      gfc_add_flavor (&sym->attr, FL_VARIABLE, sym->name,
-			      &sym->declared_at);
+	      if (gfc_add_flavor (&sym->attr, FL_VARIABLE, sym->name,
+				  &sym->declared_at) == FAILURE)
+		return MATCH_ERROR;
 	      break;
 	    }
 

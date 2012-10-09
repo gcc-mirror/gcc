@@ -1217,8 +1217,8 @@ package body Exp_Ch6 is
                  and then
                    Present (Effective_Extra_Accessibility (Entity (Lhs)))
                then
-                  --  Copyback target is an Ada 2012 stand-alone object
-                  --  of an anonymous access type
+                  --  Copyback target is an Ada 2012 stand-alone object of an
+                  --  anonymous access type.
 
                   pragma Assert (Ada_Version >= Ada_2012);
 
@@ -3046,7 +3046,7 @@ package body Exp_Ch6 is
                   Set_Last_Assignment (Ent, Sav);
                   Set_Is_Known_Valid (Ent, False);
 
-                  --  For all other cases, just kill the current values
+               --  For all other cases, just kill the current values
 
                else
                   Kill_Current_Values (Ent);
@@ -3201,7 +3201,7 @@ package body Exp_Ch6 is
          end;
       end if;
 
-      --  If we are expanding a rhs of an assignment we need to check if tag
+      --  If we are expanding the RHS of an assignment we need to check if tag
       --  propagation is needed. You might expect this processing to be in
       --  Analyze_Assignment but has to be done earlier (bottom-up) because the
       --  assignment might be transformed to a declaration for an unconstrained
@@ -3399,6 +3399,14 @@ package body Exp_Ch6 is
       --  the various expansion activities for actuals is carried out.
 
       Expand_Actuals (Call_Node, Subp);
+
+      --  Verify that the actuals do not share storage. This check must be done
+      --  on the caller side rather that inside the subprogram to avoid issues
+      --  of parameter passing.
+
+      if Check_Aliasing_Of_Parameters then
+         Apply_Parameter_Aliasing_Checks (Call_Node, Subp);
+      end if;
 
       --  If the subprogram is a renaming, or if it is inherited, replace it in
       --  the call with the name of the actual subprogram being called. If this
@@ -4041,7 +4049,10 @@ package body Exp_Ch6 is
          Context := Parent (N);
          while Present (Context) loop
 
-            if Nkind (Context) = N_Conditional_Expression then
+            --  The following could use a comment (and why is N_Case_Expression
+            --  not treated in a similar manner ???
+
+            if Nkind (Context) = N_If_Expression then
                exit;
 
             --  Stop the search when reaching any statement because we have
@@ -4084,13 +4095,15 @@ package body Exp_Ch6 is
 
       Remove_Side_Effects (N);
 
-      --  The function call is part of a conditional expression alternative.
-      --  The temporary result must live as long as the conditional expression
-      --  itself, otherwise it will be finalized too early. Mark the transient
-      --  as processed to avoid untimely finalization.
+      --  The function call is part of an if expression dependent expression.
+      --  The temporary result must live as long as the if expression itself,
+      --  otherwise it will be finalized too early. Mark the transient as
+      --  processed to avoid untimely finalization.
+
+      --  Why no special handling for case expressions here ???
 
       if Present (Context)
-        and then Nkind (Context) = N_Conditional_Expression
+        and then Nkind (Context) = N_If_Expression
         and then Nkind (N) = N_Explicit_Dereference
       then
          Set_Is_Processed_Transient (Entity (Prefix (N)));
@@ -4206,9 +4219,7 @@ package body Exp_Ch6 is
          Ret : Node_Id;
 
       begin
-         if Is_Entity_Name (N)
-           and then Present (Entity (N))
-         then
+         if Is_Entity_Name (N) and then Present (Entity (N)) then
             E := Entity (N);
 
             if Is_Formal (E)
@@ -4768,31 +4779,31 @@ package body Exp_Ch6 is
             else
                pragma Assert
                  (Nkind
-                    (First
-                       (Statements (Handled_Statement_Sequence (Orig_Bod))))
+                   (First
+                     (Statements (Handled_Statement_Sequence (Orig_Bod))))
                   = N_Block_Statement);
 
                declare
                   Blk_Stmt    : constant Node_Id :=
                     First
                       (Statements
-                           (Handled_Statement_Sequence (Orig_Bod)));
+                        (Handled_Statement_Sequence (Orig_Bod)));
                   First_Stmt  : constant Node_Id :=
                     First
                       (Statements
-                           (Handled_Statement_Sequence (Blk_Stmt)));
+                        (Handled_Statement_Sequence (Blk_Stmt)));
                   Second_Stmt : constant Node_Id := Next (First_Stmt);
 
                begin
                   pragma Assert
                     (Nkind (First_Stmt) = N_Procedure_Call_Statement
-                       and then Nkind (Second_Stmt) = Sinfo.N_Return_Statement
-                       and then No (Next (Second_Stmt)));
+                      and then Nkind (Second_Stmt) = N_Simple_Return_Statement
+                      and then No (Next (Second_Stmt)));
 
                   Bod :=
                     Copy_Generic_Node
                       (First
-                         (Statements (Handled_Statement_Sequence (Orig_Bod))),
+                        (Statements (Handled_Statement_Sequence (Orig_Bod))),
                        Empty, Instantiating => True);
                   Blk := Bod;
 
@@ -5116,8 +5127,8 @@ package body Exp_Ch6 is
          --  Remove the return statement
 
          pragma Assert
-           (Nkind (Last (Statements (Handled_Statement_Sequence (Blk))))
-            = Sinfo.N_Return_Statement);
+           (Nkind (Last (Statements (Handled_Statement_Sequence (Blk)))) =
+                                                   N_Simple_Return_Statement);
 
          Remove (Last (Statements (Handled_Statement_Sequence (Blk))));
       end if;
@@ -9107,6 +9118,96 @@ package body Exp_Ch6 is
          Set_Etype (Defining_Identifier (Object_Decl), Result_Subt);
       end if;
    end Make_Build_In_Place_Call_In_Object_Declaration;
+
+   --------------------------------------------
+   -- Make_CPP_Constructor_Call_In_Allocator --
+   --------------------------------------------
+
+   procedure Make_CPP_Constructor_Call_In_Allocator
+     (Allocator     : Node_Id;
+      Function_Call : Node_Id)
+   is
+      Loc         : constant Source_Ptr := Sloc (Function_Call);
+      Acc_Type    : constant Entity_Id := Etype (Allocator);
+      Function_Id : constant Entity_Id := Entity (Name (Function_Call));
+      Result_Subt : constant Entity_Id := Available_View (Etype (Function_Id));
+
+      New_Allocator     : Node_Id;
+      Return_Obj_Access : Entity_Id;
+      Tmp_Obj           : Node_Id;
+
+   begin
+      pragma Assert (Nkind (Allocator) = N_Allocator
+                       and then Nkind (Function_Call) = N_Function_Call);
+      pragma Assert (Convention (Function_Id) = Convention_CPP
+                       and then Is_Constructor (Function_Id));
+      pragma Assert (Is_Constrained (Underlying_Type (Result_Subt)));
+
+      --  Replace the initialized allocator of form "new T'(Func (...))" with
+      --  an uninitialized allocator of form "new T", where T is the result
+      --  subtype of the called function. The call to the function is handled
+      --  separately further below.
+
+      New_Allocator :=
+        Make_Allocator (Loc,
+          Expression => New_Reference_To (Result_Subt, Loc));
+      Set_No_Initialization (New_Allocator);
+
+      --  Copy attributes to new allocator. Note that the new allocator
+      --  logically comes from source if the original one did, so copy the
+      --  relevant flag. This ensures proper treatment of the restriction
+      --  No_Implicit_Heap_Allocations in this case.
+
+      Set_Storage_Pool      (New_Allocator, Storage_Pool      (Allocator));
+      Set_Procedure_To_Call (New_Allocator, Procedure_To_Call (Allocator));
+      Set_Comes_From_Source (New_Allocator, Comes_From_Source (Allocator));
+
+      Rewrite (Allocator, New_Allocator);
+
+      --  Create a new access object and initialize it to the result of the
+      --  new uninitialized allocator. Note: we do not use Allocator as the
+      --  Related_Node of Return_Obj_Access in call to Make_Temporary below
+      --  as this would create a sort of infinite "recursion".
+
+      Return_Obj_Access := Make_Temporary (Loc, 'R');
+      Set_Etype (Return_Obj_Access, Acc_Type);
+
+      --  Generate:
+      --    Rnnn : constant ptr_T := new (T);
+      --    Init (Rnn.all,...);
+
+      Tmp_Obj :=
+        Make_Object_Declaration (Loc,
+          Defining_Identifier => Return_Obj_Access,
+          Constant_Present    => True,
+          Object_Definition   => New_Reference_To (Acc_Type, Loc),
+          Expression          => Relocate_Node (Allocator));
+      Insert_Action (Allocator, Tmp_Obj);
+
+      Insert_List_After_And_Analyze (Tmp_Obj,
+        Build_Initialization_Call (Loc,
+          Id_Ref =>
+            Make_Explicit_Dereference (Loc,
+              Prefix => New_Reference_To (Return_Obj_Access, Loc)),
+          Typ => Etype (Function_Id),
+          Constructor_Ref => Function_Call));
+
+      --  Finally, replace the allocator node with a reference to the result of
+      --  the function call itself (which will effectively be an access to the
+      --  object created by the allocator).
+
+      Rewrite (Allocator, New_Reference_To (Return_Obj_Access, Loc));
+
+      --  Ada 2005 (AI-251): If the type of the allocator is an interface then
+      --  generate an implicit conversion to force displacement of the "this"
+      --  pointer.
+
+      if Is_Interface (Designated_Type (Acc_Type)) then
+         Rewrite (Allocator, Convert_To (Acc_Type, Relocate_Node (Allocator)));
+      end if;
+
+      Analyze_And_Resolve (Allocator, Acc_Type);
+   end Make_CPP_Constructor_Call_In_Allocator;
 
    -----------------------------------
    -- Needs_BIP_Finalization_Master --

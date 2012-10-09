@@ -1,5 +1,5 @@
 /* SCC value numbering for trees
-   Copyright (C) 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012
    Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dan@dberlin.org>
 
@@ -1639,8 +1639,12 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
 		  if (i < CONSTRUCTOR_NELTS (ctor))
 		    {
 		      constructor_elt *elt = CONSTRUCTOR_ELT (ctor, i);
-		      if (compare_tree_int (elt->index, i) == 0)
-			val = elt->value;
+		      if (TREE_CODE (TREE_TYPE (rhs1)) == VECTOR_TYPE)
+			{
+			  if (TREE_CODE (TREE_TYPE (elt->value))
+			      != VECTOR_TYPE)
+			    val = elt->value;
+			}
 		    }
 		}
 	      if (val)

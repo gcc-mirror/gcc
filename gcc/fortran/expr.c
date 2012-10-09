@@ -2059,6 +2059,8 @@ scalarize_intrinsic_call (gfc_expr *e)
 
   free_expr0 (e);
   *e = *expr;
+  /* Free "expr" but not the pointers it contains.  */
+  free (expr);
   gfc_free_expr (old);
   return SUCCESS;
 

@@ -2742,13 +2742,13 @@ package body Scng is
                end if;
 
                --  Check THEN/ELSE style rules. These do not apply to AND THEN
-               --  or OR ELSE, and do not apply in conditional expressions.
+               --  or OR ELSE, and do not apply in if expressions.
 
                if (Token = Tok_Then and then Prev_Token /= Tok_And)
                     or else
                   (Token = Tok_Else and then Prev_Token /= Tok_Or)
                then
-                  if Inside_Conditional_Expression = 0 then
+                  if Inside_If_Expression = 0 then
                      Style.Check_Separate_Stmt_Lines;
                   end if;
                end if;
