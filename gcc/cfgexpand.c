@@ -3521,22 +3521,13 @@ expand_debug_source_expr (tree exp)
 	    && !DECL_INCOMING_RTL (exp)
 	    && DECL_ABSTRACT_ORIGIN (current_function_decl))
 	  {
-	    tree aexp = exp;
-	    if (DECL_ABSTRACT_ORIGIN (exp))
-	      aexp = DECL_ABSTRACT_ORIGIN (exp);
+	    tree aexp = DECL_ORIGIN (exp);
 	    if (DECL_CONTEXT (aexp)
 		== DECL_ABSTRACT_ORIGIN (current_function_decl))
 	      {
 		VEC(tree, gc) **debug_args;
 		unsigned int ix;
 		tree ddecl;
-#ifdef ENABLE_CHECKING
-		tree parm;
-		for (parm = DECL_ARGUMENTS (current_function_decl);
-		     parm; parm = DECL_CHAIN (parm))
-		  gcc_assert (parm != exp
-			      && DECL_ABSTRACT_ORIGIN (parm) != aexp);
-#endif
 		debug_args = decl_debug_args_lookup (current_function_decl);
 		if (debug_args != NULL)
 		  {

@@ -1,5 +1,11 @@
 2012-10-09  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/54837
+	* cfgexpand.c (expand_debug_source_expr): Move checking
+	code conditional on a found decl_debug_args vector.
+
+2012-10-09  Richard Guenther  <rguenther@suse.de>
+
 	* tree-streamer.c (streamer_tree_cache_get): Move ...
 	* tree-streamer.h (streamer_tree_cache_get): ... here as inline.
 
