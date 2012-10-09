@@ -93,8 +93,16 @@ bool streamer_tree_cache_insert_at (struct streamer_tree_cache_d *, tree,
 void streamer_tree_cache_append (struct streamer_tree_cache_d *, tree);
 bool streamer_tree_cache_lookup (struct streamer_tree_cache_d *, tree,
 				 unsigned *);
-tree streamer_tree_cache_get (struct streamer_tree_cache_d *, unsigned);
 struct streamer_tree_cache_d *streamer_tree_cache_create (void);
 void streamer_tree_cache_delete (struct streamer_tree_cache_d *);
+
+/* Return the tree node at slot IX in CACHE.  */
+
+static inline tree
+streamer_tree_cache_get (struct streamer_tree_cache_d *cache, unsigned ix)
+{
+  return VEC_index (tree, cache->nodes, ix);
+}
+
 
 #endif  /* GCC_TREE_STREAMER_H  */
