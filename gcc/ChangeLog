@@ -1,3 +1,10 @@
+2012-10-09  Tobias Burnus  <burnus@net-b.de>
+
+	* lto-cgraph.c (input_node_opt_summary): Remove unused code.
+	* lto-opts.c (append_to_collect_gcc_options): Fix condition.
+	* lto-symtab.c (lto_cgraph_replace_node): Don't xstrdup string
+	which is passed to fprintf.
+
 2012-10-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/54194
