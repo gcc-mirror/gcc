@@ -1,3 +1,16 @@
+2012-10-09  Jan Hubicka  <jh@suse.cz>
+
+	* loop-unroll.c (unroll_loop_constant_iterations): Add
+	update of loop->nb_iterations_upper_bound I missed in my previous
+	commit; use TRUNC_DIV_EXPR instead of FLOOR_DIV_EXPR to divide
+	iteration count.
+	(decide_unroll_runtime_iterations): Avoid overflow.
+	(unroll_loop_runtime_iterations): Use TRUNC_DIV_EXPR instead of
+	FLOOR_DIV_EXPR to update iteration bounds.
+	(decide_peel_simple): Avoid integer overflow when deciding
+	on number of peelings.
+	(decide_unroll_stupid): Likewise.
+
 2012-10-09  Tobias Burnus  <burnus@net-b.de>
 
 	* lto-cgraph.c (input_node_opt_summary): Remove unused code.

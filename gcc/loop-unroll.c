@@ -740,6 +740,7 @@ unroll_loop_constant_iterations (struct loop *loop)
   	    apply_opt_in_copies (opt_info, exit_mod + 1, false, false);
 
 	  desc->niter -= exit_mod + 1;
+	  loop->nb_iterations_upper_bound -= double_int::from_uhwi (exit_mod + 1);
 	  if (loop->any_estimate
 	      && double_int::from_uhwi (exit_mod + 1).ule
 	           (loop->nb_iterations_estimate))
@@ -795,14 +796,14 @@ unroll_loop_constant_iterations (struct loop *loop)
 
   desc->niter /= max_unroll + 1;
   loop->nb_iterations_upper_bound
-    = loop->nb_iterations_upper_bound.udiv (double_int::from_uhwi (exit_mod
+    = loop->nb_iterations_upper_bound.udiv (double_int::from_uhwi (max_unroll
 								   + 1),
-					    FLOOR_DIV_EXPR);
+					    TRUNC_DIV_EXPR);
   if (loop->any_estimate)
     loop->nb_iterations_estimate
-      = loop->nb_iterations_estimate.udiv (double_int::from_uhwi (exit_mod
+      = loop->nb_iterations_estimate.udiv (double_int::from_uhwi (max_unroll
 							          + 1),
-				           FLOOR_DIV_EXPR);
+				           TRUNC_DIV_EXPR);
   desc->niter_expr = GEN_INT (desc->niter);
 
   /* Remove the edges.  */
@@ -876,11 +877,10 @@ decide_unroll_runtime_iterations (struct loop *loop, int flags)
       return;
     }
 
-  /* If we have profile feedback, check whether the loop rolls.  */
+  /* Check whether the loop rolls.  */
   if ((estimated_loop_iterations (loop, &iterations)
        || max_loop_iterations (loop, &iterations))
-      && iterations.fits_shwi ()
-      && iterations.to_shwi () <= 2 * nunroll)
+      && iterations.ult (double_int::from_shwi (2 * nunroll)))
     {
       if (dump_file)
 	fprintf (dump_file, ";; Not unrolling loop, doesn't roll\n");
@@ -1199,12 +1199,12 @@ unroll_loop_runtime_iterations (struct loop *loop)
   loop->nb_iterations_upper_bound
     = loop->nb_iterations_upper_bound.udiv (double_int::from_uhwi (max_unroll
 								   + 1),
-					    FLOOR_DIV_EXPR);
+					    TRUNC_DIV_EXPR);
   if (loop->any_estimate)
     loop->nb_iterations_estimate
       = loop->nb_iterations_estimate.udiv (double_int::from_uhwi (max_unroll
 							          + 1),
-				           FLOOR_DIV_EXPR);
+				           TRUNC_DIV_EXPR);
   if (exit_at_end)
     {
       desc->niter_expr =
@@ -1280,8 +1280,7 @@ decide_peel_simple (struct loop *loop, int flags)
   /* If we have realistic estimate on number of iterations, use it.  */
   if (estimated_loop_iterations (loop, &iterations))
     {
-      if (!iterations.fits_shwi ()
-	  || iterations.to_shwi () + 1 > npeel)
+      if (double_int::from_shwi (npeel).ule (iterations))
 	{
 	  if (dump_file)
 	    {
@@ -1298,8 +1297,7 @@ decide_peel_simple (struct loop *loop, int flags)
   /* If we have small enough bound on iterations, we can still peel (completely
      unroll).  */
   else if (max_loop_iterations (loop, &iterations)
-           && iterations.fits_shwi ()
-           && iterations.to_shwi () + 1 <= npeel)
+           && iterations.ult (double_int::from_shwi (npeel)))
     npeel = iterations.to_shwi () + 1;
   else
     {
@@ -1446,11 +1444,10 @@ decide_unroll_stupid (struct loop *loop, int flags)
       return;
     }
 
-  /* If we have profile feedback, check whether the loop rolls.  */
+  /* Check whether the loop rolls.  */
   if ((estimated_loop_iterations (loop, &iterations)
        || max_loop_iterations (loop, &iterations))
-      && iterations.fits_shwi ()
-      && iterations.to_shwi () <= 2 * nunroll)
+      && iterations.ult (double_int::from_shwi (2 * nunroll)))
     {
       if (dump_file)
 	fprintf (dump_file, ";; Not unrolling loop, doesn't roll\n");
