@@ -1,3 +1,9 @@
+2012-10-09  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/54760
+	* doc/extend.texi (Target Builtins): Add SH built-in section.
+	Document __builtin_thread_pointer and __builtin_set_thread_pointer.
+
 2012-10-09  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
 
 	PR middle-end/53397
