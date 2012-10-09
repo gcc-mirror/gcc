@@ -47,6 +47,8 @@ namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+
   /* Mersenne twister implementation optimized for vector operations.
    *
    * Reference: http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/SFMT/
@@ -380,6 +382,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					    0x3bd2b64bU, 0x0c64b1e4U>
     sfmt216091_64;
 
+#endif // __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 
   /**
    * @brief A beta continuous distribution for random numbers.
