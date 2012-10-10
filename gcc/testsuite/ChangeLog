@@ -1,3 +1,7 @@
+2012-10-10  Dehao Chen  <dehao@google.com>
+
+	* g++.dg/debug/dwarf2/deallocator.C: Cover more deallocator cases.
+
 2012-10-10  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/52480

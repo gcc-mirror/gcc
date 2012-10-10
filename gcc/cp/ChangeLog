@@ -1,3 +1,7 @@
+2012-10-10  Dehao Chen  <dehao@google.com>
+
+	* cp-gimplify.c (cp_genericize_r): Set location for TRY expr.
+
 2012-10-09  Lawrence Crowl  <crowl@google.com>
 
 	* Make-lang.in (class.o): Add dependence on hash-table.h.

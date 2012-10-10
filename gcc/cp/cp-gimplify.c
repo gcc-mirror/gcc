@@ -948,11 +948,12 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
      to lower this construct before scanning it, so we need to lower these
      before doing anything else.  */
   else if (TREE_CODE (stmt) == CLEANUP_STMT)
-    *stmt_p = build2 (CLEANUP_EH_ONLY (stmt) ? TRY_CATCH_EXPR
-					     : TRY_FINALLY_EXPR,
-		      void_type_node,
-		      CLEANUP_BODY (stmt),
-		      CLEANUP_EXPR (stmt));
+    *stmt_p = build2_loc (EXPR_LOCATION (stmt),
+			  CLEANUP_EH_ONLY (stmt) ? TRY_CATCH_EXPR
+						 : TRY_FINALLY_EXPR,
+			  void_type_node,
+			  CLEANUP_BODY (stmt),
+			  CLEANUP_EXPR (stmt));
 
   else if (TREE_CODE (stmt) == IF_STMT)
     {
