@@ -148,10 +148,9 @@ tree_is_indexable (tree t)
    After outputting bitpack, lto_output_location_data has
    to be done to output actual data.  */
 
-static inline void
-lto_output_location_bitpack (struct bitpack_d *bp,
-			     struct output_block *ob,
-			     location_t loc)
+void
+lto_output_location (struct output_block *ob, struct bitpack_d *bp,
+		     location_t loc)
 {
   expanded_location xloc;
 
@@ -179,25 +178,6 @@ lto_output_location_bitpack (struct bitpack_d *bp,
   if (ob->current_col != xloc.column)
     bp_pack_var_len_unsigned (bp, xloc.column);
   ob->current_col = xloc.column;
-}
-
-
-/* Emit location LOC to output block OB.
-   If the output_location streamer hook exists, call it.
-   Otherwise, when bitpack is handy, it is more space efficient to call
-   lto_output_location_bitpack with existing bitpack.  */
-
-void
-lto_output_location (struct output_block *ob, location_t loc)
-{
-  if (streamer_hooks.output_location)
-    streamer_hooks.output_location (ob, loc);
-  else
-    {
-      struct bitpack_d bp = bitpack_create (ob->main_stream);
-      lto_output_location_bitpack (&bp, ob, loc);
-      streamer_write_bitpack (&bp);
-    }
 }
 
 
@@ -333,7 +313,7 @@ lto_write_tree (struct output_block *ob, tree expr, bool ref_p)
   /* Pack all the non-pointer fields in EXPR into a bitpack and write
      the resulting bitpack.  */
   bp = bitpack_create (ob->main_stream);
-  streamer_pack_tree_bitfields (&bp, expr);
+  streamer_pack_tree_bitfields (ob, &bp, expr);
   streamer_write_bitpack (&bp);
 
   /* Write all the pointer fields in EXPR.  */
@@ -505,7 +485,9 @@ output_eh_region (struct output_block *ob, eh_region r)
   else if (r->type == ERT_MUST_NOT_THROW)
     {
       stream_write_tree (ob, r->u.must_not_throw.failure_decl, true);
-      lto_output_location (ob, r->u.must_not_throw.failure_loc);
+      bitpack_d bp = bitpack_create (ob->main_stream);
+      stream_output_location (ob, &bp, r->u.must_not_throw.failure_loc);
+      streamer_write_bitpack (&bp);
     }
 
   if (r->landing_pads)
@@ -751,10 +733,6 @@ output_struct_function_base (struct output_block *ob, struct function *fn)
   FOR_EACH_VEC_ELT (tree, fn->local_decls, i, t)
     stream_write_tree (ob, t, true);
 
-  /* Output the function start and end loci.  */
-  lto_output_location (ob, fn->function_start_locus);
-  lto_output_location (ob, fn->function_end_locus);
-
   /* Output current IL state of the function.  */
   streamer_write_uhwi (ob, fn->curr_properties);
 
@@ -774,6 +752,11 @@ output_struct_function_base (struct output_block *ob, struct function *fn)
   bp_pack_value (&bp, fn->calls_setjmp, 1);
   bp_pack_value (&bp, fn->va_list_fpr_size, 8);
   bp_pack_value (&bp, fn->va_list_gpr_size, 8);
+
+  /* Output the function start and end loci.  */
+  stream_output_location (ob, &bp, fn->function_start_locus);
+  stream_output_location (ob, &bp, fn->function_end_locus);
+
   streamer_write_bitpack (&bp);
 }
 

@@ -145,7 +145,6 @@ pack_ts_fixed_cst_value_fields (struct bitpack_d *bp, tree expr)
   bp_pack_var_len_int (bp, fv.data.high);
 }
 
-
 /* Pack all the non-pointer fields of the TS_DECL_COMMON structure
    of expression EXPR into bitpack BP.  */
 
@@ -299,10 +298,18 @@ pack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
    of expression EXPR into bitpack BP.  */
 
 static void
-pack_ts_block_value_fields (struct bitpack_d *bp, tree expr)
+pack_ts_block_value_fields (struct output_block *ob,
+			    struct bitpack_d *bp, tree expr)
 {
   bp_pack_value (bp, BLOCK_ABSTRACT (expr), 1);
   /* BLOCK_NUMBER is recomputed.  */
+  /* Stream BLOCK_SOURCE_LOCATION for the limited cases we can handle - those
+     that represent inlined function scopes.
+     For the rest them on the floor instead of ICEing in dwarf2out.c.  */
+  if (inlined_function_outer_scope_p (expr))
+    stream_output_location (ob, bp, BLOCK_SOURCE_LOCATION (expr));
+  else
+    stream_output_location (ob, bp, UNKNOWN_LOCATION);
 }
 
 /* Pack all the non-pointer fields of the TS_TRANSLATION_UNIT_DECL structure
@@ -317,7 +324,8 @@ pack_ts_translation_unit_decl_value_fields (struct bitpack_d *bp ATTRIBUTE_UNUSE
 /* Pack all the bitfields in EXPR into a bit pack.  */
 
 void
-streamer_pack_tree_bitfields (struct bitpack_d *bp, tree expr)
+streamer_pack_tree_bitfields (struct output_block *ob,
+			      struct bitpack_d *bp, tree expr)
 {
   enum tree_code code;
 
@@ -332,6 +340,9 @@ streamer_pack_tree_bitfields (struct bitpack_d *bp, tree expr)
 
   if (CODE_CONTAINS_STRUCT (code, TS_FIXED_CST))
     pack_ts_fixed_cst_value_fields (bp, expr);
+
+  if (CODE_CONTAINS_STRUCT (code, TS_DECL_MINIMAL))
+    stream_output_location (ob, bp, DECL_SOURCE_LOCATION (expr));
 
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_COMMON))
     pack_ts_decl_common_value_fields (bp, expr);
@@ -348,8 +359,11 @@ streamer_pack_tree_bitfields (struct bitpack_d *bp, tree expr)
   if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))
     pack_ts_type_common_value_fields (bp, expr);
 
+  if (CODE_CONTAINS_STRUCT (code, TS_EXP))
+    stream_output_location (ob, bp, EXPR_LOCATION (expr));
+
   if (CODE_CONTAINS_STRUCT (code, TS_BLOCK))
-    pack_ts_block_value_fields (bp, expr);
+    pack_ts_block_value_fields (ob, bp, expr);
 
   if (CODE_CONTAINS_STRUCT (code, TS_TRANSLATION_UNIT_DECL))
     pack_ts_translation_unit_decl_value_fields (bp, expr);
@@ -476,7 +490,6 @@ write_ts_decl_minimal_tree_pointers (struct output_block *ob, tree expr,
 {
   stream_write_tree (ob, DECL_NAME (expr), ref_p);
   stream_write_tree (ob, DECL_CONTEXT (expr), ref_p);
-  lto_output_location (ob, LOCATION_LOCUS (DECL_SOURCE_LOCATION (expr)));
 }
 
 
@@ -673,7 +686,6 @@ write_ts_exp_tree_pointers (struct output_block *ob, tree expr, bool ref_p)
   streamer_write_hwi (ob, TREE_OPERAND_LENGTH (expr));
   for (i = 0; i < TREE_OPERAND_LENGTH (expr); i++)
     stream_write_tree (ob, TREE_OPERAND (expr, i), ref_p);
-  lto_output_location (ob, LOCATION_LOCUS (EXPR_LOCATION (expr)));
   stream_write_tree (ob, TREE_BLOCK (expr), ref_p);
 }
 
@@ -689,21 +701,16 @@ write_ts_block_tree_pointers (struct output_block *ob, tree expr, bool ref_p)
 
   stream_write_tree (ob, BLOCK_SUPERCONTEXT (expr), ref_p);
 
-  /* Stream BLOCK_ABSTRACT_ORIGIN and BLOCK_SOURCE_LOCATION for
-     the limited cases we can handle - those that represent inlined
-     function scopes.  For the rest them on the floor instead of ICEing in
-     dwarf2out.c.  */
+  /* Stream BLOCK_ABSTRACT_ORIGIN for the limited cases we can handle - those
+     that represent inlined function scopes.
+     For the rest them on the floor instead of ICEing in dwarf2out.c.  */
   if (inlined_function_outer_scope_p (expr))
     {
       tree ultimate_origin = block_ultimate_origin (expr);
       stream_write_tree (ob, ultimate_origin, ref_p);
-      lto_output_location (ob, BLOCK_SOURCE_LOCATION (expr));
     }
   else
-    {
-      stream_write_tree (ob, NULL_TREE, ref_p);
-      lto_output_location (ob, UNKNOWN_LOCATION);
-    }
+    stream_write_tree (ob, NULL_TREE, ref_p);
   /* Do not stream BLOCK_NONLOCALIZED_VARS.  We cannot handle debug information
      for early inlined BLOCKs so drop it on the floor instead of ICEing in
      dwarf2out.c.  */

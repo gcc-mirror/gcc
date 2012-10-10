@@ -809,7 +809,7 @@ extern struct data_in *lto_data_in_create (struct lto_file_decl_data *,
 				    VEC(ld_plugin_symbol_resolution_t,heap) *);
 extern void lto_data_in_delete (struct data_in *);
 extern void lto_input_data_block (struct lto_input_block *, void *, size_t);
-location_t lto_input_location (struct lto_input_block *, struct data_in *);
+location_t lto_input_location (struct bitpack_d *, struct data_in *);
 tree lto_input_tree_ref (struct lto_input_block *, struct data_in *,
 			 struct function *, enum LTO_tags);
 void lto_tag_check_set (enum LTO_tags, int, ...);
@@ -829,7 +829,7 @@ void lto_output_decl_state_streams (struct output_block *,
 void lto_output_decl_state_refs (struct output_block *,
 			         struct lto_output_stream *,
 			         struct lto_out_decl_state *);
-void lto_output_location (struct output_block *, location_t);
+void lto_output_location (struct output_block *, struct bitpack_d *, location_t);
 
 
 /* In lto-cgraph.c  */

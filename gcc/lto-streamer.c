@@ -387,4 +387,6 @@ lto_streamer_hooks_init (void)
   streamer_hooks_init ();
   streamer_hooks.write_tree = lto_output_tree;
   streamer_hooks.read_tree = lto_input_tree;
+  streamer_hooks.input_location = lto_input_location;
+  streamer_hooks.output_location = lto_output_location;
 }

@@ -53,7 +53,8 @@ input_phi (struct lto_input_block *ib, basic_block bb, struct data_in *data_in,
     {
       tree def = stream_read_tree (ib, data_in);
       int src_index = streamer_read_uhwi (ib);
-      location_t arg_loc = lto_input_location (ib, data_in);
+      bitpack_d bp = streamer_read_bitpack (ib);
+      location_t arg_loc = stream_input_location (&bp, data_in);
       basic_block sbb = BASIC_BLOCK_FOR_FUNCTION (fn, src_index);
 
       edge e = NULL;
@@ -99,7 +100,7 @@ input_gimple_stmt (struct lto_input_block *ib, struct data_in *data_in,
   stmt->gsbase.subcode = bp_unpack_var_len_unsigned (&bp);
 
   /* Read location information.  */
-  gimple_set_location (stmt, lto_input_location (ib, data_in));
+  gimple_set_location (stmt, stream_input_location (&bp, data_in));
 
   /* Read lexical block reference.  */
   gimple_set_block (stmt, stream_read_tree (ib, data_in));

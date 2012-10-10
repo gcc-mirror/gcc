@@ -43,7 +43,9 @@ output_phi (struct output_block *ob, gimple phi)
     {
       stream_write_tree (ob, gimple_phi_arg_def (phi, i), true);
       streamer_write_uhwi (ob, gimple_phi_arg_edge (phi, i)->src->index);
-      lto_output_location (ob, gimple_phi_arg_location (phi, i));
+      bitpack_d bp = bitpack_create (ob->main_stream);
+      stream_output_location (ob, &bp, gimple_phi_arg_location (phi, i));
+      streamer_write_bitpack (&bp);
     }
 }
 
@@ -71,10 +73,10 @@ output_gimple_stmt (struct output_block *ob, gimple stmt)
     bp_pack_value (&bp, gimple_assign_nontemporal_move_p (stmt), 1);
   bp_pack_value (&bp, gimple_has_volatile_ops (stmt), 1);
   bp_pack_var_len_unsigned (&bp, stmt->gsbase.subcode);
-  streamer_write_bitpack (&bp);
 
   /* Emit location information for the statement.  */
-  lto_output_location (ob, LOCATION_LOCUS (gimple_location (stmt)));
+  stream_output_location (ob, &bp, LOCATION_LOCUS (gimple_location (stmt)));
+  streamer_write_bitpack (&bp);
 
   /* Emit the lexical block holding STMT.  */
   stream_write_tree (ob, gimple_block (stmt), true);
