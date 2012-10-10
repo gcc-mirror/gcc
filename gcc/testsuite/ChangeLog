@@ -1,3 +1,8 @@
+2012-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/54877
+	* gcc.dg/torture/pr54877.c: New test.
+
 2012-10-10  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
 
 	PR testsuite/53397
