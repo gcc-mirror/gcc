@@ -1,3 +1,10 @@
+2012-10-10  Jack Howarth  <howarth@bromo.med.uc.edu>
+	    Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* config/os/bsd/darwin/os_defines.h: Define _GLIBCXX_USE_NANOSLEEP
+	and _GLIBCXX_USE_SCHED_YIELD.
+	* acinclude.m4 (GLIBCXX_ENABLE_LIBSTDCXX_TIME): Add comment.
+
 2012-10-10  Mark Kettenis  <kettenis@openbsd.org>
 
 	* configure.host (*-*-openbsd*) Set cpu_include_dir.
