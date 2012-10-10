@@ -1,5 +1,10 @@
 2012-10-09  Ian Lance Taylor  <iant@google.com>
 
+	* dwarf.c (dwarf_fileline): Add cast to avoid warning.
+	(backtrace_dwarf_add): Likewise.
+
+2012-10-09  Ian Lance Taylor  <iant@google.com>
+
 	Add support for tracing through shared libraries.
 	* configure.ac: Check for link.h and dl_iterate_phdr.
 	* elf.c: #include <link.h> if system has dl_iterate_phdr.  #undef
