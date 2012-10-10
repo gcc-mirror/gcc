@@ -1,3 +1,8 @@
+2012-10-10  Arnaud Charlet  <charlet@adacore.com>
+
+PR ada/54845
+	* c-ada-spec.c (print_ada_struct_decl): Increase buf size.
+
 2012-10-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/54194

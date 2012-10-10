@@ -3068,7 +3068,7 @@ print_ada_struct_decl (pretty_printer *buffer, tree node, tree type,
   tree tmp;
   int is_union =
     TREE_CODE (node) == UNION_TYPE || TREE_CODE (node) == QUAL_UNION_TYPE;
-  char buf[16];
+  char buf[32];
   int field_num = 0;
   int field_spc = spc + INDENT_INCR;
   int need_semicolon;
