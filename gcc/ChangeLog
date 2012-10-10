@@ -1,3 +1,9 @@
+2012-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/54877
+	* tree-vect-loop.c (vect_is_simple_reduction_1): For MINUS_EXPR
+	use make_ssa_name instead of copy_ssa_name.
+
 2012-10-10  Richard Biener  <rguenther@suse.de>
 
 	* lto-streamer-in.c (lto_input_location_bitpack): Rename to ...
