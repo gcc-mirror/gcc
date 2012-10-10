@@ -214,7 +214,7 @@ static GTY(()) section *toc_section;
 
 struct builtin_description
 {
-  const unsigned int mask;
+  const HOST_WIDE_INT mask;
   const enum insn_code icode;
   const char *const name;
   const enum rs6000_builtins code;
@@ -288,7 +288,7 @@ typedef rtx (*gen_2arg_fn_t) (rtx, rtx, rtx);
 /* Pointer to function (in rs6000-c.c) that can define or undefine target
    macros that have changed.  Languages that don't support the preprocessor
    don't link in rs6000-c.c, so we can't call it directly.  */
-void (*rs6000_target_modify_macros_ptr) (bool, int, unsigned);
+void (*rs6000_target_modify_macros_ptr) (bool, HOST_WIDE_INT, HOST_WIDE_INT);
 
 
 /* Target cpu costs.  */
@@ -894,7 +894,7 @@ struct processor_costs ppca2_cost = {
 struct rs6000_builtin_info_type {
   const char *name;
   const enum insn_code icode;
-  const unsigned mask;
+  const HOST_WIDE_INT mask;
   const unsigned attr;
 };
 
@@ -1015,6 +1015,11 @@ bool (*rs6000_cannot_change_mode_class_ptr) (enum machine_mode,
   = rs6000_cannot_change_mode_class;
 
 const int INSN_NOT_AVAILABLE = -1;
+
+static void rs6000_print_isa_options (FILE *, int, const char *,
+				      HOST_WIDE_INT);
+static void rs6000_print_builtin_options (FILE *, int, const char *,
+					  HOST_WIDE_INT);
 
 /* Hash table stuff for keeping track of TOC entries.  */
 
@@ -1505,7 +1510,7 @@ struct rs6000_ptt
 {
   const char *const name;		/* Canonical processor name.  */
   const enum processor_type processor;	/* Processor type enum value.  */
-  const int target_enable;		/* Target flags to enable.  */
+  const HOST_WIDE_INT target_enable;	/* Target flags to enable.  */
 };
 
 static struct rs6000_ptt const processor_target_table[] =
@@ -1716,9 +1721,10 @@ rs6000_debug_reg_print (int first_regno, int last_regno, const char *reg_name)
     }
 }
 
-#define DEBUG_FMT_D "%-32s= %d\n"
-#define DEBUG_FMT_X "%-32s= 0x%x\n"
-#define DEBUG_FMT_S "%-32s= %s\n"
+#define DEBUG_FMT_ID "%-32s= "
+#define DEBUG_FMT_D   DEBUG_FMT_ID "%d\n"
+#define DEBUG_FMT_WX  DEBUG_FMT_ID "%#.12" HOST_WIDE_INT_PRINT "x: "
+#define DEBUG_FMT_S   DEBUG_FMT_ID "%s\n"
 
 /* Print various interesting information with -mdebug=reg.  */
 static void
@@ -1729,11 +1735,13 @@ rs6000_debug_reg_global (void)
   int m;
   char costly_num[20];
   char nop_num[20];
+  char flags_buffer[40];
   const char *costly_str;
   const char *nop_str;
   const char *trace_str;
   const char *abi_str;
   const char *cmodel_str;
+  struct cl_target_option cl_opts;
 
   /* Map enum rs6000_vector to string.  */
   static const char *rs6000_debug_vector_unit[] = {
@@ -1813,12 +1821,42 @@ rs6000_debug_reg_global (void)
     }
 
   if (rs6000_cpu_index >= 0)
-    fprintf (stderr, DEBUG_FMT_S, "cpu",
-	     processor_target_table[rs6000_cpu_index].name);
+    {
+      const char *name = processor_target_table[rs6000_cpu_index].name;
+      HOST_WIDE_INT flags
+	= processor_target_table[rs6000_cpu_index].target_enable;
+
+      sprintf (flags_buffer, "-mcpu=%s flags", name);
+      rs6000_print_isa_options (stderr, 0, flags_buffer, flags);
+    }
+  else
+    fprintf (stderr, DEBUG_FMT_S, "cpu", "<none>");
 
   if (rs6000_tune_index >= 0)
-    fprintf (stderr, DEBUG_FMT_S, "tune",
-	     processor_target_table[rs6000_tune_index].name);
+    {
+      const char *name = processor_target_table[rs6000_tune_index].name;
+      HOST_WIDE_INT flags
+	= processor_target_table[rs6000_tune_index].target_enable;
+
+      sprintf (flags_buffer, "-mtune=%s flags", name);
+      rs6000_print_isa_options (stderr, 0, flags_buffer, flags);
+    }
+  else
+    fprintf (stderr, DEBUG_FMT_S, "tune", "<none>");
+
+  cl_target_option_save (&cl_opts, &global_options);
+  rs6000_print_isa_options (stderr, 0, "target_flags", target_flags);
+
+  rs6000_print_isa_options (stderr, 0, "target_flags_explicit",
+			    target_flags_explicit);
+
+  rs6000_print_builtin_options (stderr, 0, "rs6000_builtin_mask",
+				rs6000_builtin_mask);
+
+  rs6000_print_isa_options (stderr, 0, "TARGET_DEFAULT", TARGET_DEFAULT);
+
+  fprintf (stderr, DEBUG_FMT_S, "--with-cpu default",
+	   OPTION_TARGET_CPU_DEFAULT ? OPTION_TARGET_CPU_DEFAULT : "<none>");
 
   switch (rs6000_sched_costly_dep)
     {
@@ -1936,7 +1974,15 @@ rs6000_debug_reg_global (void)
   if (rs6000_float_gprs)
     fprintf (stderr, DEBUG_FMT_S, "float_gprs", "true");
 
+  if (TARGET_LINK_STACK)
+    fprintf (stderr, DEBUG_FMT_S, "link_stack", "true");
+
+  fprintf (stderr, DEBUG_FMT_S, "plt-format",
+	   TARGET_SECURE_PLT ? "secure" : "bss");
+  fprintf (stderr, DEBUG_FMT_S, "struct-return",
+	   aix_struct_return ? "aix" : "sysv");
   fprintf (stderr, DEBUG_FMT_S, "always_hint", tf[!!rs6000_always_hint]);
+  fprintf (stderr, DEBUG_FMT_S, "sched_groups", tf[!!rs6000_sched_groups]);
   fprintf (stderr, DEBUG_FMT_S, "align_branch",
 	   tf[!!rs6000_align_branch_targets]);
   fprintf (stderr, DEBUG_FMT_D, "tls_size", rs6000_tls_size);
@@ -1948,7 +1994,6 @@ rs6000_debug_reg_global (void)
 	   (int)END_BUILTINS);
   fprintf (stderr, DEBUG_FMT_D, "Number of rs6000 builtins",
 	   (int)RS6000_BUILTIN_COUNT);
-  fprintf (stderr, DEBUG_FMT_X, "Builtin mask", rs6000_builtin_mask);
 }
 
 /* Initialize the various global tables that are based on register size.  */
@@ -2354,7 +2399,7 @@ darwin_rs6000_override_options (void)
    bits, and some options like SPE and PAIRED are no longer in
    target_flags.  */
 
-unsigned
+HOST_WIDE_INT
 rs6000_builtin_mask_calculate (void)
 {
   return (((TARGET_ALTIVEC)		    ? RS6000_BTM_ALTIVEC  : 0)
@@ -2381,7 +2426,7 @@ rs6000_option_override_internal (bool global_init_p)
   /* The default cpu requested at configure time, if any.  */
   const char *implicit_cpu = OPTION_TARGET_CPU_DEFAULT;
 
-  int set_masks;
+  HOST_WIDE_INT set_masks;
   int cpu_index;
   int tune_index;
   struct cl_target_option *main_target_opt
@@ -3176,11 +3221,12 @@ rs6000_option_override_internal (bool global_init_p)
      target_flags.  */
   rs6000_builtin_mask = rs6000_builtin_mask_calculate ();
   if (TARGET_DEBUG_BUILTIN || TARGET_DEBUG_TARGET)
-    fprintf (stderr, "new builtin mask = 0x%x%s%s%s%s\n", rs6000_builtin_mask,
-	     (rs6000_builtin_mask & RS6000_BTM_ALTIVEC) ? ", altivec" : "",
-	     (rs6000_builtin_mask & RS6000_BTM_VSX)     ? ", vsx"     : "",
-	     (rs6000_builtin_mask & RS6000_BTM_PAIRED)  ? ", paired"  : "",
-	     (rs6000_builtin_mask & RS6000_BTM_SPE)     ? ", spe" : "");
+    {
+      fprintf (stderr,
+	       "new builtin mask = " HOST_WIDE_INT_PRINT_HEX ", ",
+	       rs6000_builtin_mask);
+      rs6000_print_builtin_options (stderr, 0, NULL, rs6000_builtin_mask);
+    }
 
   /* Initialize all of the registers.  */
   rs6000_init_hard_regno_mode_ok (global_init_p);
@@ -10442,7 +10488,7 @@ altivec_expand_dst_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
 			    bool *expandedp)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+  enum rs6000_builtins fcode = (enum rs6000_builtins) DECL_FUNCTION_CODE (fndecl);
   tree arg0, arg1, arg2;
   enum machine_mode mode0, mode1;
   rtx pat, op0, op1, op2;
@@ -10844,7 +10890,7 @@ static rtx
 paired_expand_builtin (tree exp, rtx target, bool * expandedp)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
-  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+  enum rs6000_builtins fcode = (enum rs6000_builtins) DECL_FUNCTION_CODE (fndecl);
   const struct builtin_description *d;
   size_t i;
 
@@ -10909,7 +10955,7 @@ spe_expand_builtin (tree exp, rtx target, bool *expandedp)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
   tree arg1, arg0;
-  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+  enum rs6000_builtins fcode = (enum rs6000_builtins) DECL_FUNCTION_CODE (fndecl);
   enum insn_code icode;
   enum machine_mode tmode, mode0;
   rtx pat, op0;
@@ -11274,7 +11320,7 @@ rs6000_invalid_builtin (enum rs6000_builtins fncode)
 {
   size_t uns_fncode = (size_t)fncode;
   const char *name = rs6000_builtin_info[uns_fncode].name;
-  unsigned fnmask = rs6000_builtin_info[uns_fncode].mask;
+  HOST_WIDE_INT fnmask = rs6000_builtin_info[uns_fncode].mask;
 
   gcc_assert (name != NULL);
   if ((fnmask & RS6000_BTM_CELL) != 0)
@@ -11311,7 +11357,7 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
   size_t i;
   rtx ret;
   bool success;
-  unsigned mask = rs6000_builtin_info[uns_fcode].mask;
+  HOST_WIDE_INT mask = rs6000_builtin_info[uns_fcode].mask;
   bool func_valid_p = ((rs6000_builtin_mask & mask) == mask);
 
   if (TARGET_DEBUG_BUILTIN)
@@ -11694,7 +11740,7 @@ rs6000_init_builtins (void)
 static tree
 rs6000_builtin_decl (unsigned code, bool initialize_p ATTRIBUTE_UNUSED)
 {
-  unsigned fnmask;
+  HOST_WIDE_INT fnmask;
 
   if (code >= RS6000_BUILTIN_COUNT)
     return error_mark_node;
@@ -12566,7 +12612,7 @@ rs6000_common_init_builtins (void)
   tree v2si_ftype_qi = NULL_TREE;
   tree v2si_ftype_v2si_qi = NULL_TREE;
   tree v2si_ftype_int_qi = NULL_TREE;
-  unsigned builtin_mask = rs6000_builtin_mask;
+  HOST_WIDE_INT builtin_mask = rs6000_builtin_mask;
 
   if (!TARGET_PAIRED_FLOAT)
     {
@@ -12588,7 +12634,7 @@ rs6000_common_init_builtins (void)
   for (i = 0; i < ARRAY_SIZE (bdesc_3arg); i++, d++)
     {
       tree type;
-      unsigned mask = d->mask;
+      HOST_WIDE_INT mask = d->mask;
 
       if ((mask & builtin_mask) != mask)
 	{
@@ -12629,7 +12675,7 @@ rs6000_common_init_builtins (void)
     {
       enum machine_mode mode0, mode1, mode2;
       tree type;
-      unsigned mask = d->mask;
+      HOST_WIDE_INT mask = d->mask;
 
       if ((mask & builtin_mask) != mask)
 	{
@@ -12692,7 +12738,7 @@ rs6000_common_init_builtins (void)
     {
       enum machine_mode mode0, mode1;
       tree type;
-      unsigned mask = d->mask;
+      HOST_WIDE_INT mask = d->mask;
 
       if ((mask & builtin_mask) != mask)
 	{
@@ -25246,7 +25292,7 @@ rs6000_darwin_file_start (void)
   {
     const char *arg;
     const char *name;
-    int if_set;
+    HOST_WIDE_INT if_set;
   } mapping[] = {
     { "ppc64", "ppc64", MASK_64BIT },
     { "970", "ppc970", MASK_PPC_GPOPT | MASK_MFCRF | MASK_POWERPC64 },
@@ -27379,7 +27425,7 @@ rs6000_final_prescan_insn (rtx insn, rtx *operand ATTRIBUTE_UNUSED,
 
 struct rs6000_opt_mask {
   const char *name;		/* option name */
-  int mask;			/* mask to set */
+  HOST_WIDE_INT mask;		/* mask to set */
   bool invert;			/* invert sense of mask */
   bool valid_target;		/* option is a target option */
 };
@@ -27531,7 +27577,7 @@ rs6000_inner_target_options (tree args, bool attr_p)
 	      for (i = 0; i < ARRAY_SIZE (rs6000_opt_masks); i++)
 		if (strcmp (r, rs6000_opt_masks[i].name) == 0)
 		  {
-		    int mask = rs6000_opt_masks[i].mask;
+		    HOST_WIDE_INT mask = rs6000_opt_masks[i].mask;
 
 		    if (!rs6000_opt_masks[i].valid_target)
 		      not_valid_p = true;
@@ -27755,8 +27801,8 @@ rs6000_pragma_target_parse (tree args, tree pop_target)
   tree prev_tree = build_target_option_node ();
   tree cur_tree;
   struct cl_target_option *prev_opt, *cur_opt;
-  unsigned prev_bumask, cur_bumask, diff_bumask;
-  int prev_flags, cur_flags, diff_flags;
+  HOST_WIDE_INT prev_flags, cur_flags, diff_flags;
+  HOST_WIDE_INT prev_bumask, cur_bumask, diff_bumask;
 
   if (TARGET_DEBUG_TARGET)
     {
@@ -27934,37 +27980,91 @@ static void
 rs6000_function_specific_print (FILE *file, int indent,
 				struct cl_target_option *ptr)
 {
+  rs6000_print_isa_options (file, indent, "Isa options set",
+			    ptr->x_target_flags);
+
+  rs6000_print_isa_options (file, indent, "Isa options explicit",
+			    ptr->rs6000_target_flags_explicit);
+}
+
+/* Helper function to print the current isa or misc options on a line.  */
+
+static void
+rs6000_print_options_internal (FILE *file,
+			       int indent,
+			       const char *string,
+			       HOST_WIDE_INT flags,
+			       const char *prefix,
+			       const struct rs6000_opt_mask *opts,
+			       size_t num_elements)
+{
   size_t i;
-  int flags = ptr->x_target_flags;
-  unsigned bu_mask = ptr->x_rs6000_builtin_mask;
+  size_t start_column = 0;
+  size_t cur_column;
+  size_t max_column = 76;
+  const char *comma = "";
+  const char *nl = "\n";
 
-  /* Print the various mask options.  */
-  for (i = 0; i < ARRAY_SIZE (rs6000_opt_masks); i++)
-    if ((flags & rs6000_opt_masks[i].mask) != 0)
-      {
-	flags &= ~ rs6000_opt_masks[i].mask;
-	fprintf (file, "%*s-m%s%s\n", indent, "",
-		 rs6000_opt_masks[i].invert ? "no-" : "",
-		 rs6000_opt_masks[i].name);
-      }
+  if (indent)
+    start_column += fprintf (file, "%*s", indent, "");
 
-  /* Print the various options that are variables.  */
-  for (i = 0; i < ARRAY_SIZE (rs6000_opt_vars); i++)
+  if (!flags)
     {
-      size_t j = rs6000_opt_vars[i].target_offset;
-      if (((signed char *) ptr)[j])
-	fprintf (file, "%*s-m%s\n", indent, "",
-		 rs6000_opt_vars[i].name);
+      fprintf (stderr, DEBUG_FMT_S, string, "<none>");
+      return;
     }
 
-  /* Print the various builtin flags.  */
-  fprintf (file, "%*sbuiltin mask = 0x%x\n", indent, "", bu_mask);
-  for (i = 0; i < ARRAY_SIZE (rs6000_builtin_mask_names); i++)
-    if ((bu_mask & rs6000_builtin_mask_names[i].mask) != 0)
-      {
-	fprintf (file, "%*s%s builtins supported\n", indent, "",
-		 rs6000_builtin_mask_names[i].name);
-      }
+  start_column += fprintf (stderr, DEBUG_FMT_WX, string, flags);
+
+  /* Print the various mask options.  */
+  cur_column = start_column;
+  for (i = 0; i < num_elements; i++)
+    {
+      if ((flags & opts[i].mask) != 0)
+	{
+	  const char *no_str = rs6000_opt_masks[i].invert ? "no-" : "";
+	  size_t len = (strlen (comma)
+			+ strlen (prefix)
+			+ strlen (no_str)
+			+ strlen (rs6000_opt_masks[i].name));
+
+	  cur_column += len;
+	  if (cur_column > max_column)
+	    {
+	      fprintf (stderr, ", \\\n%*s", (int)start_column, "");
+	      cur_column = start_column + len;
+	      comma = "";
+	      nl = "\n\n";
+	    }
+
+	  fprintf (file, "%s%s%s%s", comma, prefix, no_str,
+		   rs6000_opt_masks[i].name);
+	  flags &= ~ opts[i].mask;
+	  comma = ", ";
+	}
+    }
+
+  fputs (nl, file);
+}
+
+/* Helper function to print the current isa options on a line.  */
+
+static void
+rs6000_print_isa_options (FILE *file, int indent, const char *string,
+			  HOST_WIDE_INT flags)
+{
+  rs6000_print_options_internal (file, indent, string, flags, "-m",
+				 &rs6000_opt_masks[0],
+				 ARRAY_SIZE (rs6000_opt_masks));
+}
+
+static void
+rs6000_print_builtin_options (FILE *file, int indent, const char *string,
+			      HOST_WIDE_INT flags)
+{
+  rs6000_print_options_internal (file, indent, string, flags, "",
+				 &rs6000_builtin_mask_names[0],
+				 ARRAY_SIZE (rs6000_builtin_mask_names));
 }
 
 

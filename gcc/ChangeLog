@@ -1,3 +1,64 @@
+2012-10-10  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (altivec_expand_dst_builtin): Fix signed
+	vs. unsigned warnings by using enum type for function code.
+	(paired_expand_builtin): Likewise.
+	(spe_expand_builtin): Likewise.
+
+	* config/rs6000/rs6000-c.c (rs6000_target_modify_macros): Change
+	builtin mask, target flags masks type to HOST_WIDE_INT in
+	preparation for growing the number of ISA switches from 31 to 63.
+
+	* config/rs6000/rs6000.opt (rs6000_builtin_mask): Make mask type
+	HOST_WIDE_INT.
+
+	* config/rs6000/rs6000.c (struct builtin_description): Make
+	builtin mask field HOST_WIDE_INT.  Make target flags field
+	HOST_WIDE_INT in preparation for growing the # of ISA switches.
+	(struct rs6000_builtin_info_type): Likewise.
+	(struct rs6000_ptt): Likewise.
+	(rs6000_builtin_mask_calculate): Likewise.
+	(rs6000_invalid_builtin): Likewise.
+	(rs6000_builtin_decl): Likewise.
+	(rs6000_common_init_builtins): Likewise.
+	(rs6000_darwin_file_start): Likewise.
+	(rs6000_final_prescan_insn): Likewise.
+	(rs6000_inner_target_options): Likewise.
+	(build_target_option_node): Likewise.
+	(rs6000_function_specific_print): Likewise.
+	(DEBUG_FMT_W): New format for printing HOST_WIDE_INT in hex.
+
+	* config/rs6000/rs6000-protos.h (rs6000_builtin_mask_calculate):
+	Make target flags, builtin masks arguments/return values
+	HOST_WIDE_INT in preparation for growing the number of ISA from 31
+	to 63.
+	(rs6000_target_modify_macros): Likewise.
+	(rs6000_target_modify_macros_ptr): Likewise.
+
+	* config/rs6000/rs6000.c (DEBUG_FMT_ID): Move "-32s" to a separate
+	define and change DEBUG_FMT_<x> to use it.
+	(DEBUG_FMT_D): Likewise.
+	(DEBUG_FMT_S): Likewise.
+	(DEBUG_FMT_X): Delete, no longer used.
+	(DEBUG_FMT_W): Likewise.
+	(DEBUG_FMT_WX): New debug format for printing options in a
+	friendly fashion.
+	(rs6000_debug_reg_global): If -mdebug=reg, print all of the
+	options in target_flags and target_flags_explicit.  Print the
+	default options for -mcpu=<xxx>, -mtune=<xxx>, and the default
+	options.  Adjust printing out the builtin options.
+	(rs6000_option_override_internal): Change printing the builtin
+	options to use rs6000_print_builtin_options.
+	(rs6000_function_specific_print): Change to use
+	rs6000_print_isa_options to print ISA flags.
+	(rs6000_print_options_internal): New function for expanded
+	-mdebug=reg option printing to print both the ISA options, and the
+	builtins that are enabled.
+	(rs6000_print_isa_options): New function to print the ISA
+	options.
+	(rs6000_print_builtin_options): New function to print the builtin
+	functions enabled.
+
 2012-10-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/51109
