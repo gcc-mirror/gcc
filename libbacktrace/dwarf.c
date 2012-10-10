@@ -2763,7 +2763,7 @@ dwarf_fileline (struct backtrace_state *state, uintptr_t pc,
     {
       struct dwarf_data **pp;
 
-      pp = (struct dwarf_data **) &state->fileline_data;
+      pp = (struct dwarf_data **) (void *) &state->fileline_data;
       while (1)
 	{
 	  ddata = *pp;
@@ -2884,7 +2884,7 @@ backtrace_dwarf_add (struct backtrace_state *state,
     {
       struct dwarf_data **pp;
 
-      for (pp = (struct dwarf_data **) &state->fileline_data;
+      for (pp = (struct dwarf_data **) (void *) &state->fileline_data;
 	   *pp != NULL;
 	   pp = &(*pp)->next)
 	;
@@ -2896,7 +2896,7 @@ backtrace_dwarf_add (struct backtrace_state *state,
 	{
 	  struct dwarf_data **pp;
 
-	  pp = (struct dwarf_data **) &state->fileline_data;
+	  pp = (struct dwarf_data **) (void *) &state->fileline_data;
 
 	  while (1)
 	    {
