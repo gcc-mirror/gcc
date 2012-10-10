@@ -1,3 +1,10 @@
+2012-10-10  Dodji Seketeli  <dodji@redhat.com>
+
+	* parser (cp_parser_statement): Parse c++11 attributes
+	tentatively.
+	(cp_parser_std_attribute_spec_seq): Do not warn too early about
+	using c++11 attributes in non c++11 mode.
+
 2012-10-10  Dehao Chen  <dehao@google.com>
 
 	* cp-gimplify.c (cp_genericize_r): Set location for TRY expr.
