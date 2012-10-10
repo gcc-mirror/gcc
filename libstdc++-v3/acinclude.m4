@@ -1862,6 +1862,9 @@ AC_DEFUN([GLIBCXX_ENABLE_CLOCALE], [
       darwin* | freebsd*)
 	enable_clocale_flag=darwin
 	;;
+      openbsd*)
+	enable_clocale_flag=newlib
+	;;
       *)
 	if test x"$with_newlib" = x"yes"; then
 	  enable_clocale_flag=newlib
