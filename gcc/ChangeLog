@@ -1,3 +1,8 @@
+2012-10-10  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.h (PRINT_OPERAND_PUNCT_VALID_P):
+	Delete '.'.
+
 2012-10-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/54877
