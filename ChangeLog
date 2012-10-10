@@ -1,3 +1,7 @@
+2012-10-10  Richard Biener  <rguenther@suse.de>
+
+	* MAINTAINERS: Adjust for changed surename.
+
 2012-10-04  Lawrence Crowl  <crowl@google.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.

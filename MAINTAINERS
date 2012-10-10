@@ -21,7 +21,7 @@ Maintainers
 			Global Reviewers
 
 Richard Earnshaw				richard.earnshaw@arm.com
-Richard Guenther				rguenther@suse.de
+Richard Biener					rguenther@suse.de
 Richard Henderson				rth@redhat.com
 Jakub Jelinek					jakub@redhat.com
 Geoffrey Keating				geoffk@geoffk.org
@@ -227,7 +227,7 @@ middle-end		Jeff Law		law@redhat.com
 middle-end		Roger Sayle		roger@eyesopen.com
 middle-end		Ian Lance Taylor	ian@airs.com
 middle-end		Diego Novillo		dnovillo@google.com
-middle-end		Richard Guenther	rguenther@suse.de
+middle-end		Richard Biener		rguenther@suse.de
 tree-ssa		Diego Novillo		dnovillo@google.com
 tree-ssa		Andrew MacLeod		amacleod@redhat.com
 PRE			Daniel Berlin		dberlin@dberlin.org
@@ -244,7 +244,7 @@ reload			Bernd Schmidt		bernds@codesourcery.com
 dfp.c, related		Ben Elliston		bje@gnu.org
 RTL optimizers		Eric Botcazou		ebotcazou@libertysurf.fr
 RTL optimizers		Richard Sandiford	rdsandiford@googlemail.com
-auto-vectorizer		Richard Guenther	rguenther@suse.de
+auto-vectorizer		Richard Biener		rguenther@suse.de
 auto-vectorizer		Zdenek Dvorak		ook@ucw.cz
 loop infrastructure	Zdenek Dvorak		ook@ucw.cz
 OpenMP			Jakub Jelinek		jakub@redhat.com
@@ -284,7 +284,7 @@ libcpp			Tom Tromey		tromey@redhat.com
 loop optimizer		Zdenek Dvorak		ook@ucw.cz
 loop optimizer		Daniel Berlin		dberlin@dberlin.org
 LTO			Diego Novillo		dnovillo@google.com
-LTO			Richard Guenther	rguenther@suse.de
+LTO			Richard Biener		rguenther@suse.de
 LTO plugin		Cary Coutant		ccoutant@google.com
 Plugin			Diego Novillo		dnovillo@google.com
 Plugin			Le-Chun Wu		lcwu@google.com
