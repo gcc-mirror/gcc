@@ -5,7 +5,8 @@
 /* { dg-skip-if "requires register frequencies" { *-*-* } { "-O0" "-Os" } { "" } } */
 
 /* Check that the zero-initialization of the accumulator feeding into
-   the madd is done by means of a mult instruction instead of mthi/mtlo.  */
+   the madd is done by means of an mthi & mtlo pair instead of a
+   "mult $0,$0" instruction.  */
 
 NOMIPS16 long long f (int n, int *v, int m)
 {
