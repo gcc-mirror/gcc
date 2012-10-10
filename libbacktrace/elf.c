@@ -105,25 +105,25 @@ dl_iterate_phdr (int (*callback) (struct dl_phdr_info *,
 
 /* Basic types.  */
 
-typedef uint16_t Elf_Half;
-typedef uint32_t Elf_Word;
-typedef int32_t  Elf_Sword;
+typedef uint16_t b_elf_half;    /* Elf_Half.  */
+typedef uint32_t b_elf_word;    /* Elf_Word.  */
+typedef int32_t  b_elf_sword;   /* Elf_Sword.  */
 
 #if BACKTRACE_ELF_SIZE == 32
 
-typedef uint32_t Elf_Addr;
-typedef uint32_t Elf_Off;
+typedef uint32_t b_elf_addr;    /* Elf_Addr.  */
+typedef uint32_t b_elf_off;     /* Elf_Off.  */
 
-typedef uint32_t Elf_WXword;
+typedef uint32_t b_elf_wxword;  /* 32-bit Elf_Word, 64-bit ELF_Xword.  */
 
 #else
 
-typedef uint64_t Elf_Addr;
-typedef uint64_t Elf_Off;
-typedef uint64_t Elf_Xword;
-typedef int64_t  Elf_Sxword;
+typedef uint64_t b_elf_addr;    /* Elf_Addr.  */
+typedef uint64_t b_elf_off;     /* Elf_Off.  */
+typedef uint64_t b_elf_xword;   /* Elf_Xword.  */
+typedef int64_t  b_elf_sxword;  /* Elf_Sxword.  */
 
-typedef uint64_t Elf_WXword;
+typedef uint64_t b_elf_wxword;  /* 32-bit Elf_Word, 64-bit ELF_Xword.  */
 
 #endif
 
@@ -133,20 +133,20 @@ typedef uint64_t Elf_WXword;
 
 typedef struct {
   unsigned char	e_ident[EI_NIDENT];	/* ELF "magic number" */
-  Elf_Half	e_type;			/* Identifies object file type */
-  Elf_Half	e_machine;		/* Specifies required architecture */
-  Elf_Word	e_version;		/* Identifies object file version */
-  Elf_Addr	e_entry;		/* Entry point virtual address */
-  Elf_Off	e_phoff;		/* Program header table file offset */
-  Elf_Off	e_shoff;		/* Section header table file offset */
-  Elf_Word	e_flags;		/* Processor-specific flags */
-  Elf_Half	e_ehsize;		/* ELF header size in bytes */
-  Elf_Half	e_phentsize;		/* Program header table entry size */
-  Elf_Half	e_phnum;		/* Program header table entry count */
-  Elf_Half	e_shentsize;		/* Section header table entry size */
-  Elf_Half	e_shnum;		/* Section header table entry count */
-  Elf_Half	e_shstrndx;		/* Section header string table index */
-} Elf_Ehdr;
+  b_elf_half	e_type;			/* Identifies object file type */
+  b_elf_half	e_machine;		/* Specifies required architecture */
+  b_elf_word	e_version;		/* Identifies object file version */
+  b_elf_addr	e_entry;		/* Entry point virtual address */
+  b_elf_off	e_phoff;		/* Program header table file offset */
+  b_elf_off	e_shoff;		/* Section header table file offset */
+  b_elf_word	e_flags;		/* Processor-specific flags */
+  b_elf_half	e_ehsize;		/* ELF header size in bytes */
+  b_elf_half	e_phentsize;		/* Program header table entry size */
+  b_elf_half	e_phnum;		/* Program header table entry count */
+  b_elf_half	e_shentsize;		/* Section header table entry size */
+  b_elf_half	e_shnum;		/* Section header table entry count */
+  b_elf_half	e_shstrndx;		/* Section header string table index */
+} b_elf_ehdr;  /* Elf_Ehdr.  */
 
 #define EI_MAG0 0
 #define EI_MAG1 1
@@ -170,17 +170,17 @@ typedef struct {
 #define EV_CURRENT 1
 
 typedef struct {
-  Elf_Word	sh_name;		/* Section name, index in string tbl */
-  Elf_Word	sh_type;		/* Type of section */
-  Elf_WXword	sh_flags;		/* Miscellaneous section attributes */
-  Elf_Addr	sh_addr;		/* Section virtual addr at execution */
-  Elf_Off	sh_offset;		/* Section file offset */
-  Elf_WXword	sh_size;		/* Size of section in bytes */
-  Elf_Word	sh_link;		/* Index of another section */
-  Elf_Word	sh_info;		/* Additional section information */
-  Elf_WXword	sh_addralign;		/* Section alignment */
-  Elf_WXword	sh_entsize;		/* Entry size if section holds table */
-} Elf_Shdr;
+  b_elf_word	sh_name;		/* Section name, index in string tbl */
+  b_elf_word	sh_type;		/* Type of section */
+  b_elf_wxword	sh_flags;		/* Miscellaneous section attributes */
+  b_elf_addr	sh_addr;		/* Section virtual addr at execution */
+  b_elf_off	sh_offset;		/* Section file offset */
+  b_elf_wxword	sh_size;		/* Size of section in bytes */
+  b_elf_word	sh_link;		/* Index of another section */
+  b_elf_word	sh_info;		/* Additional section information */
+  b_elf_wxword	sh_addralign;		/* Section alignment */
+  b_elf_wxword	sh_entsize;		/* Entry size if section holds table */
+} b_elf_shdr;  /* Elf_Shdr.  */
 
 #define SHN_LORESERVE	0xFF00		/* Begin range of reserved indices */
 #define SHN_XINDEX	0xFFFF		/* Section index is held elsewhere */
@@ -193,25 +193,25 @@ typedef struct {
 
 typedef struct
 {
-  Elf_Word	st_name;		/* Symbol name, index in string tbl */
-  Elf_Addr	st_value;		/* Symbol value */
-  Elf_Word	st_size;		/* Symbol size */
+  b_elf_word	st_name;		/* Symbol name, index in string tbl */
+  b_elf_addr	st_value;		/* Symbol value */
+  b_elf_word	st_size;		/* Symbol size */
   unsigned char	st_info;		/* Symbol binding and type */
   unsigned char	st_other;		/* Visibility and other data */
-  Elf_Half	st_shndx;		/* Symbol section index */
-} Elf_Sym;
+  b_elf_half	st_shndx;		/* Symbol section index */
+} b_elf_sym;  /* Elf_Sym.  */
 
 #else /* BACKTRACE_ELF_SIZE != 32 */
 
 typedef struct
 {
-  Elf_Word	st_name;		/* Symbol name, index in string tbl */
+  b_elf_word	st_name;		/* Symbol name, index in string tbl */
   unsigned char	st_info;		/* Symbol binding and type */
   unsigned char	st_other;		/* Visibility and other data */
-  Elf_Half	st_shndx;		/* Symbol section index */
-  Elf_Addr	st_value;		/* Symbol value */
-  Elf_Xword	st_size;		/* Symbol size */
-} Elf_Sym;
+  b_elf_half	st_shndx;		/* Symbol section index */
+  b_elf_addr	st_value;		/* Symbol value */
+  b_elf_xword	st_size;		/* Symbol size */
+} b_elf_sym;  /* Elf_Sym.  */
 
 #endif /* BACKTRACE_ELF_SIZE != 32 */
 
@@ -346,17 +346,17 @@ elf_initialize_syminfo (struct backtrace_state *state,
 			void *data, struct elf_syminfo_data *sdata)
 {
   size_t sym_count;
-  const Elf_Sym *sym;
+  const b_elf_sym *sym;
   size_t elf_symbol_count;
   size_t elf_symbol_size;
   struct elf_symbol *elf_symbols;
   size_t i;
   unsigned int j;
 
-  sym_count = symtab_size / sizeof (Elf_Sym);
+  sym_count = symtab_size / sizeof (b_elf_sym);
 
   /* We only care about function symbols.  Count them.  */
-  sym = (const Elf_Sym *) symtab_data;
+  sym = (const b_elf_sym *) symtab_data;
   elf_symbol_count = 0;
   for (i = 0; i < sym_count; ++i, ++sym)
     {
@@ -371,7 +371,7 @@ elf_initialize_syminfo (struct backtrace_state *state,
   if (elf_symbols == NULL)
     return 0;
 
-  sym = (const Elf_Sym *) symtab_data;
+  sym = (const b_elf_sym *) symtab_data;
   j = 0;
   for (i = 0; i < sym_count; ++i, ++sym)
     {
@@ -474,14 +474,14 @@ elf_add (struct backtrace_state *state, int descriptor, uintptr_t base_address,
 	 fileline *fileline_fn, int *found_sym, int *found_dwarf)
 {
   struct backtrace_view ehdr_view;
-  Elf_Ehdr ehdr;
+  b_elf_ehdr ehdr;
   off_t shoff;
   unsigned int shnum;
   unsigned int shstrndx;
   struct backtrace_view shdrs_view;
   int shdrs_view_valid;
-  const Elf_Shdr *shdrs;
-  const Elf_Shdr *shstrhdr;
+  const b_elf_shdr *shdrs;
+  const b_elf_shdr *shstrhdr;
   size_t shstr_size;
   off_t shstr_off;
   struct backtrace_view names_view;
@@ -558,13 +558,13 @@ elf_add (struct backtrace_state *state, int descriptor, uintptr_t base_address,
       && shoff != 0)
     {
       struct backtrace_view shdr_view;
-      const Elf_Shdr *shdr;
+      const b_elf_shdr *shdr;
 
       if (!backtrace_get_view (state, descriptor, shoff, sizeof shdr,
 			       error_callback, data, &shdr_view))
 	goto fail;
 
-      shdr = (const Elf_Shdr *) shdr_view.data;
+      shdr = (const b_elf_shdr *) shdr_view.data;
 
       if (shnum == 0)
 	shnum = shdr->sh_size;
@@ -596,12 +596,12 @@ elf_add (struct backtrace_state *state, int descriptor, uintptr_t base_address,
 
   /* Read the section headers, skipping the first one.  */
 
-  if (!backtrace_get_view (state, descriptor, shoff + sizeof (Elf_Shdr),
-			   (shnum - 1) * sizeof (Elf_Shdr),
+  if (!backtrace_get_view (state, descriptor, shoff + sizeof (b_elf_shdr),
+			   (shnum - 1) * sizeof (b_elf_shdr),
 			   error_callback, data, &shdrs_view))
     goto fail;
   shdrs_view_valid = 1;
-  shdrs = (const Elf_Shdr *) shdrs_view.data;
+  shdrs = (const b_elf_shdr *) shdrs_view.data;
 
   /* Read the section names.  */
 
@@ -623,7 +623,7 @@ elf_add (struct backtrace_state *state, int descriptor, uintptr_t base_address,
   /* Look for the symbol table.  */
   for (i = 1; i < shnum; ++i)
     {
-      const Elf_Shdr *shdr;
+      const b_elf_shdr *shdr;
       unsigned int sh_name;
       const char *name;
       int j;
@@ -659,9 +659,9 @@ elf_add (struct backtrace_state *state, int descriptor, uintptr_t base_address,
     symtab_shndx = dynsym_shndx;
   if (symtab_shndx != 0)
     {
-      const Elf_Shdr *symtab_shdr;
+      const b_elf_shdr *symtab_shdr;
       unsigned int strtab_shndx;
-      const Elf_Shdr *strtab_shdr;
+      const b_elf_shdr *strtab_shdr;
       struct elf_syminfo_data *sdata;
 
       symtab_shdr = &shdrs[symtab_shndx - 1];

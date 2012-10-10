@@ -1,3 +1,8 @@
+2012-10-10  Ian Lance Taylor  <iant@google.com>
+
+	* elf.c: Rename all Elf typedefs to start with b_elf, and be all
+	lower case.
+
 2012-10-10  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* elf.c (elf_add_syminfo_data): Add casts to avoid warning.
