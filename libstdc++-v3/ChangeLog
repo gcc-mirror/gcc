@@ -1,3 +1,14 @@
+2012-10-10  Mark Kettenis  <kettenis@openbsd.org>
+
+	* configure.host (*-*-openbsd*) Set cpu_include_dir.
+	* config/os/bsd/openbsd/ctype_base.h: New file.
+	* config/os/bsd/openbsd/ctype_configure_char.cc: New file.
+	* config/os/bsd/openbsd/ctype_inline.h: New file.
+	* config/os/bsd/openbsd/os_defines.h: New file.
+	* acinclude.m4 (GLIBCXX_ENABLE_CLOCALE): Use newlib locale model
+	for OpenBSD.
+	* configure: Regenerated.
+
 2012-10-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/std/type_traits (__do_common_type_impl): Revert for now
