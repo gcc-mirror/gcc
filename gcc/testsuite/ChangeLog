@@ -1,3 +1,9 @@
+2012-10-10  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/52480
+	* gcc.target/sh/sh4a-bitmovua.c: Compact skip-if list.
+	Add runtime tests.
+
 2012-10-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/53307
