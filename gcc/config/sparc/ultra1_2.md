@@ -255,7 +255,7 @@
   2
   (and (and
          (eq_attr "cpu" "ultrasparc")
-         (eq_attr "type" "fga"))
+         (eq_attr "type" "fga,visl,vismv"))
        (eq_attr "fptype" "single"))
   "us1_fpa + us1_fp_single + us1_slotany, nothing")
 
@@ -265,7 +265,7 @@
   2
   (and (and
          (eq_attr "cpu" "ultrasparc")
-         (eq_attr "type" "fga"))
+         (eq_attr "type" "fga,visl,vismv"))
        (eq_attr "fptype" "double"))
   "us1_fpa + us1_fp_double + us1_slotany, nothing")
 
@@ -294,7 +294,7 @@
 (define_insn_reservation "us1_pdist"
   4
   (and (eq_attr "cpu" "ultrasparc")
-       (eq_attr "type" "fgm_pdist"))
+       (eq_attr "type" "pdist"))
   "us1_fpm + us1_fp_double + us1_slotany, nothing*3")
 
 (define_bypass 3 "us1_pdist" "us1_fga_double,us1_fga_single")
