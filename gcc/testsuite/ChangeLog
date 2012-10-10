@@ -131,6 +131,11 @@
 	* g++.dg/tls/thread_local2.C: New.
 	* g++.dg/tls/thread_local7.C: New.
 
+2012-10-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/54866
+	* gcc.target/i386/long-double-80-7.c: Add -msse2 to dg-options.
+
 2012-10-08  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/54685
