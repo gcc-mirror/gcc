@@ -1,4 +1,4 @@
-;; Copyright (C) 2010, Free Software Foundation, Inc.
+;; Copyright (C) 2010, 2012 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -78,8 +78,6 @@
 (define_cpu_unit "bdver1-agu0" "bdver1_agu")
 (define_cpu_unit "bdver1-agu1" "bdver1_agu")
 (define_reservation "bdver1-agu" "(bdver1-agu0 | bdver1-agu1)")
-
-(define_cpu_unit "bdver1-mult" "bdver1_mult")
 
 (define_cpu_unit "bdver1-load0" "bdver1_load")
 (define_cpu_unit "bdver1-load1" "bdver1_load")

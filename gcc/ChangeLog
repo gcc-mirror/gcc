@@ -1,5 +1,8 @@
 2012-10-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/51109
+	* config/i386/bdver1.md (bdver1-mult): Remove.
+
 	PR middle-end/54879
 	* combine.c (count_rtxs): Use RTX_BIN_ARITH resp. RTX_COMM_ARITH
 	instead of '2' resp. 'c' for GET_RTX_CLASS comparisons.
@@ -17,7 +20,7 @@
 2012-10-10  Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
 
 	PR target/51109
-	* gcc/config/i386/bdver1.md (bdver1_int): Automaton has been
+	* config/i386/bdver1.md (bdver1_int): Automaton has been
 	split to reduce state transitions.
 
 2012-10-10  Richard Biener  <rguenther@suse.de>
