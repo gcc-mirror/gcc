@@ -1,6 +1,7 @@
 2012-10-10  Jack Howarth  <howarth@bromo.med.uc.edu>
 	    Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	PR libstdc++/54847
 	* config/os/bsd/darwin/os_defines.h: Define _GLIBCXX_USE_NANOSLEEP
 	and _GLIBCXX_USE_SCHED_YIELD.
 	* acinclude.m4 (GLIBCXX_ENABLE_LIBSTDCXX_TIME): Add comment.
