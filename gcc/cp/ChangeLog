@@ -1,3 +1,15 @@
+2012-10-09  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/53540 - using fails to be equivalent to typedef
+	* cp-tree.h (TYPE_TEMPLATE_INFO): For an alias that is not an
+	instance of alias template, don't look for its TEMPLATE_INFO in
+	its declaration.
+	(alias_template_specialization_p): Take const_tree.
+	* pt.c (alias_template_specialization_p): Take a const_tree.
+	Don't call primary_template_instantiation_p.
+	(primary_template_instantiation_p): Call
+	alias_template_specialization_p.
+
 2012-10-10  Dodji Seketeli  <dodji@redhat.com>
 
 	* parser (cp_parser_statement): Parse c++11 attributes

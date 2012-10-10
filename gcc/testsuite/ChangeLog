@@ -1,3 +1,8 @@
+2012-10-09  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/53540 - using fails to be equivalent to typedef
+	* g++.dg/cpp0x/alias-decl-24.C: New test.
+
 2012-10-10  Dodji Seketeli  <dodji@redhat.com>
 
 	* g++.dg/cpp0x/gen-attrs-8.C: Update the test to reflect the fact

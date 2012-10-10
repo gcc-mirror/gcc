@@ -2929,10 +2929,7 @@ primary_template_instantiation_p (const_tree t)
   else if (CLASS_TYPE_P (t) && !TYPE_DECL_ALIAS_P (TYPE_NAME (t)))
     return CLASSTYPE_TEMPLATE_INSTANTIATION (t)
 	   && PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (t));
-  else if (TYPE_P (t)
-	   && TYPE_TEMPLATE_INFO (t)
-	   && PRIMARY_TEMPLATE_P (TYPE_TI_TEMPLATE (t))
-	   && DECL_TEMPLATE_INSTANTIATION (TYPE_NAME (t)))
+  else if (alias_template_specialization_p (t))
     return true;
   return false;
 }
@@ -5077,11 +5074,14 @@ alias_type_or_template_p (tree t)
 /* Return TRUE iff is a specialization of an alias template.  */
 
 bool
-alias_template_specialization_p (tree t)
+alias_template_specialization_p (const_tree t)
 {
   if (t == NULL_TREE)
     return false;
-  return (primary_template_instantiation_p (t)
+  
+  return (TYPE_P (t)
+	  && TYPE_TEMPLATE_INFO (t)
+	  && PRIMARY_TEMPLATE_P (TYPE_TI_TEMPLATE (t))
 	  && DECL_ALIAS_TEMPLATE_P (TYPE_TI_TEMPLATE (t)));
 }
 
@@ -10945,10 +10945,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     {
       tree decl = TYPE_NAME (t);
 
-      if (TYPE_DECL_ALIAS_P (decl)
-	  && DECL_LANG_SPECIFIC (decl)
-	  && DECL_TEMPLATE_INFO (decl)
-	  && PRIMARY_TEMPLATE_P (DECL_TI_TEMPLATE (decl)))
+      if (alias_template_specialization_p (t))
 	{
 	  /* DECL represents an alias template and we want to
 	     instantiate it.  */
