@@ -1,7 +1,7 @@
 /* Verify that we generate movua to load unaligned 32-bit values on SH4A.  */
-/* { dg-do compile { target "sh*-*-*" } } */
-/* { dg-options "-O" } */
-/* { dg-skip-if "" { "sh*-*-*" } { "*" } { "-m4a" "-m4a-single" "-m4a-single-only" "-m4a-nofpu" } }  */
+/* { dg-do run { target "sh*-*-*" } } */
+/* { dg-options "-O1 -save-temps -fno-inline" } */
+/* { dg-skip-if "" { "sh*-*-*" } { "*" } { "-m4a*" } }  */
 /* { dg-final { scan-assembler-times "movua.l" 6 } } */
 
 /* Aligned.  */
@@ -64,4 +64,28 @@ unsigned long long g4() {
   return y4.d;
 }
 
+#include <assert.h>
 
+int
+main (void)
+{
+  x1.d = 0x12345678;
+  assert (f1 () == 0x12345678);
+
+  x2.d = 0x12345678;
+  assert (f2 () == 0x12345678);
+
+  x3.d = 0x12345678;
+  assert (f3 () == 0x12345678);
+
+  y_1.d = 0x12345678;
+  assert (g1 () == 0x12345678);
+
+  y2.d = 0x12345678;
+  assert (g2 () == 0x12345678);
+
+  y3.d = 0x12345678;
+  assert (g3 () == 0x12345678);
+
+  return 0;
+}

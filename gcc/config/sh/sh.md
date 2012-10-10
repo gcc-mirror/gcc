@@ -12706,7 +12706,7 @@ label:
    }
   if (TARGET_SH4A_ARCH
       && INTVAL (operands[2]) == 32
-      && INTVAL (operands[3]) == -24 * (BITS_BIG_ENDIAN != BYTES_BIG_ENDIAN)
+      && INTVAL (operands[3]) == 0
       && MEM_P (operands[1]) && MEM_ALIGN (operands[1]) < 32)
     {
       rtx src = adjust_address (operands[1], BLKmode, 0);
@@ -12738,7 +12738,7 @@ label:
     }
   if (TARGET_SH4A_ARCH
       && INTVAL (operands[2]) == 32
-      && INTVAL (operands[3]) == -24 * (BITS_BIG_ENDIAN != BYTES_BIG_ENDIAN)
+      && INTVAL (operands[3]) == 0
       && MEM_P (operands[1]) && MEM_ALIGN (operands[1]) < 32)
     {
       rtx src = adjust_address (operands[1], BLKmode, 0);

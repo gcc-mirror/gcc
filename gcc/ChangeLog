@@ -1,3 +1,9 @@
+2012-10-10  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/52480
+	* config/sh/sh.md (extv, extzv): Check that operands[3] is zero,
+	regardless of the endianness.
+
 2012-10-09  Lawrence Crowl  <crowl@google.com>
 
 	* Makefile.in (fold-const.o): Add depencence on hash-table.h.
