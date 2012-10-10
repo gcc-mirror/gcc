@@ -410,7 +410,7 @@ elf_add_syminfo_data (struct backtrace_state *state,
     {
       struct elf_syminfo_data **pp;
 
-      for (pp = (struct elf_syminfo_data **) &state->syminfo_data;
+      for (pp = (struct elf_syminfo_data **) (void *) &state->syminfo_data;
 	   *pp != NULL;
 	   pp = &(*pp)->next)
 	;
@@ -422,7 +422,7 @@ elf_add_syminfo_data (struct backtrace_state *state,
 	{
 	  struct elf_syminfo_data **pp;
 
-	  pp = (struct elf_syminfo_data **) &state->syminfo_data;
+	  pp = (struct elf_syminfo_data **) (void *) &state->syminfo_data;
 
 	  while (1)
 	    {
