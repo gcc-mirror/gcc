@@ -1,3 +1,9 @@
+2012-10-10  Dodji Seketeli  <dodji@redhat.com>
+
+	PR middle-end/54860 - Make sure attributes hash table is created
+	* attribs.c (register_scoped_attributes): Ensure the attribute
+	hash table is created.
+
 2012-10-10  Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
 
 	PR target/51109

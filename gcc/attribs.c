@@ -146,7 +146,8 @@ register_scoped_attributes (const struct attribute_spec * attributes,
       memset (&sa, 0, sizeof (sa));
       sa.ns = ns;
       sa.attributes = VEC_alloc (attribute_spec, heap, 64);
-      result = VEC_safe_push (scoped_attributes, heap, attributes_table, sa);      
+      result = VEC_safe_push (scoped_attributes, heap, attributes_table, sa);
+      result->attribute_hash = htab_create (200, hash_attr, eq_attr, NULL);
     }
 
   /* Really add the attributes to their namespace now.  */
@@ -284,8 +285,7 @@ register_scoped_attribute (const struct attribute_spec *attr,
 
   gcc_assert (attr != NULL && name_space != NULL);
 
-  if (name_space->attribute_hash == NULL)
-   name_space->attribute_hash = htab_create (200, hash_attr, eq_attr, NULL);
+  gcc_assert (name_space->attribute_hash != NULL);
 
   str.str = attr->name;
   str.length = strlen (str.str);
