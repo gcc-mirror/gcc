@@ -179,7 +179,6 @@ unpack_ts_fixed_cst_value_fields (struct bitpack_d *bp, tree expr)
   TREE_FIXED_CST_PTR (expr) = fp;
 }
 
-
 /* Unpack all the non-pointer fields of the TS_DECL_COMMON structure
    of expression EXPR from bitpack BP.  */
 
@@ -355,10 +354,12 @@ unpack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
    of expression EXPR from bitpack BP.  */
 
 static void
-unpack_ts_block_value_fields (struct bitpack_d *bp, tree expr)
+unpack_ts_block_value_fields (struct data_in *data_in,
+			      struct bitpack_d *bp, tree expr)
 {
   BLOCK_ABSTRACT (expr) = (unsigned) bp_unpack_value (bp, 1);
   /* BLOCK_NUMBER is recomputed.  */
+  BLOCK_SOURCE_LOCATION (expr) = stream_input_location (bp, data_in);
 }
 
 /* Unpack all the non-pointer fields of the TS_TRANSLATION_UNIT_DECL
@@ -372,7 +373,7 @@ unpack_ts_translation_unit_decl_value_fields (struct bitpack_d *bp ATTRIBUTE_UNU
 /* Unpack all the non-pointer fields in EXPR into a bit pack.  */
 
 static void
-unpack_value_fields (struct bitpack_d *bp, tree expr)
+unpack_value_fields (struct data_in *data_in, struct bitpack_d *bp, tree expr)
 {
   enum tree_code code;
 
@@ -387,6 +388,9 @@ unpack_value_fields (struct bitpack_d *bp, tree expr)
 
   if (CODE_CONTAINS_STRUCT (code, TS_FIXED_CST))
     unpack_ts_fixed_cst_value_fields (bp, expr);
+
+  if (CODE_CONTAINS_STRUCT (code, TS_DECL_MINIMAL))
+    DECL_SOURCE_LOCATION (expr) = stream_input_location (bp, data_in);
 
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_COMMON))
     unpack_ts_decl_common_value_fields (bp, expr);
@@ -403,8 +407,11 @@ unpack_value_fields (struct bitpack_d *bp, tree expr)
   if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))
     unpack_ts_type_common_value_fields (bp, expr);
 
+  if (CODE_CONTAINS_STRUCT (code, TS_EXP))
+    SET_EXPR_LOCATION (expr, stream_input_location (bp, data_in));
+
   if (CODE_CONTAINS_STRUCT (code, TS_BLOCK))
-    unpack_ts_block_value_fields (bp, expr);
+    unpack_ts_block_value_fields (data_in, bp, expr);
 
   if (CODE_CONTAINS_STRUCT (code, TS_TRANSLATION_UNIT_DECL))
     unpack_ts_translation_unit_decl_value_fields (bp, expr);
@@ -416,7 +423,8 @@ unpack_value_fields (struct bitpack_d *bp, tree expr)
    bitfield values that the writer may have written.  */
 
 struct bitpack_d
-streamer_read_tree_bitfields (struct lto_input_block *ib, tree expr)
+streamer_read_tree_bitfields (struct lto_input_block *ib,
+			      struct data_in *data_in, tree expr)
 {
   enum tree_code code;
   struct bitpack_d bp;
@@ -431,7 +439,7 @@ streamer_read_tree_bitfields (struct lto_input_block *ib, tree expr)
 		 lto_tree_code_to_tag (TREE_CODE (expr)));
 
   /* Unpack all the value fields from BP.  */
-  unpack_value_fields (&bp, expr);
+  unpack_value_fields (data_in, &bp, expr);
 
   return bp;
 }
@@ -563,7 +571,6 @@ lto_input_ts_decl_minimal_tree_pointers (struct lto_input_block *ib,
 {
   DECL_NAME (expr) = stream_read_tree (ib, data_in);
   DECL_CONTEXT (expr) = stream_read_tree (ib, data_in);
-  DECL_SOURCE_LOCATION (expr) = lto_input_location (ib, data_in);
 }
 
 
@@ -770,7 +777,6 @@ lto_input_ts_exp_tree_pointers (struct lto_input_block *ib,
 			        struct data_in *data_in, tree expr)
 {
   int i, length;
-  location_t loc;
 
   length = streamer_read_hwi (ib);
   gcc_assert (length == TREE_OPERAND_LENGTH (expr));
@@ -778,8 +784,6 @@ lto_input_ts_exp_tree_pointers (struct lto_input_block *ib,
   for (i = 0; i < length; i++)
     TREE_OPERAND (expr, i) = stream_read_tree (ib, data_in);
 
-  loc = lto_input_location (ib, data_in);
-  SET_EXPR_LOCATION (expr, loc);
   TREE_SET_BLOCK (expr, stream_read_tree (ib, data_in));
 }
 
@@ -801,7 +805,6 @@ lto_input_ts_block_tree_pointers (struct lto_input_block *ib,
      function scopes.  For the rest them on the floor instead of ICEing in
      dwarf2out.c.  */
   BLOCK_ABSTRACT_ORIGIN (expr) = stream_read_tree (ib, data_in);
-  BLOCK_SOURCE_LOCATION (expr) = lto_input_location (ib, data_in);
   /* Do not stream BLOCK_NONLOCALIZED_VARS.  We cannot handle debug information
      for early inlined BLOCKs so drop it on the floor instead of ICEing in
      dwarf2out.c.  */

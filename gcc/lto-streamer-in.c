@@ -138,8 +138,8 @@ clear_line_info (struct data_in *data_in)
 
 /* Read a location bitpack from input block IB.  */
 
-static location_t
-lto_input_location_bitpack (struct data_in *data_in, struct bitpack_d *bp)
+location_t
+lto_input_location (struct bitpack_d *bp, struct data_in *data_in)
 {
   bool file_change, line_change, column_change;
   unsigned len;
@@ -175,26 +175,6 @@ lto_input_location_bitpack (struct data_in *data_in, struct bitpack_d *bp)
     linemap_line_start (line_table, data_in->current_line, data_in->current_col);
 
   return linemap_position_for_column (line_table, data_in->current_col);
-}
-
-
-/* Read a location from input block IB.
-   If the input_location streamer hook exists, call it.
-   Otherwise, proceed with reading the location from the
-   expanded location bitpack.  */
-
-location_t
-lto_input_location (struct lto_input_block *ib, struct data_in *data_in)
-{
-  if (streamer_hooks.input_location)
-    return streamer_hooks.input_location (ib, data_in);
-  else
-    {
-      struct bitpack_d bp;
-
-      bp = streamer_read_bitpack (ib);
-      return lto_input_location_bitpack (data_in, &bp);
-    }
 }
 
 
@@ -368,9 +348,13 @@ input_eh_region (struct lto_input_block *ib, struct data_in *data_in, int ix)
 	break;
 
       case LTO_ert_must_not_throw:
-	r->type = ERT_MUST_NOT_THROW;
-	r->u.must_not_throw.failure_decl = stream_read_tree (ib, data_in);
-	r->u.must_not_throw.failure_loc = lto_input_location (ib, data_in);
+	{
+	  r->type = ERT_MUST_NOT_THROW;
+	  r->u.must_not_throw.failure_decl = stream_read_tree (ib, data_in);
+	  bitpack_d bp = streamer_read_bitpack (ib);
+	  r->u.must_not_throw.failure_loc
+	   = stream_input_location (&bp, data_in);
+	}
 	break;
 
       default:
@@ -786,10 +770,6 @@ input_struct_function_base (struct function *fn, struct data_in *data_in,
 	}
     }
 
-  /* Input the function start and end loci.  */
-  fn->function_start_locus = lto_input_location (ib, data_in);
-  fn->function_end_locus = lto_input_location (ib, data_in);
-
   /* Input the current IL state of the function.  */
   fn->curr_properties = streamer_read_uhwi (ib);
 
@@ -809,6 +789,10 @@ input_struct_function_base (struct function *fn, struct data_in *data_in,
   fn->calls_setjmp = bp_unpack_value (&bp, 1);
   fn->va_list_fpr_size = bp_unpack_value (&bp, 8);
   fn->va_list_gpr_size = bp_unpack_value (&bp, 8);
+
+  /* Input the function start and end loci.  */
+  fn->function_start_locus = stream_input_location (&bp, data_in);
+  fn->function_end_locus = stream_input_location (&bp, data_in);
 }
 
 
@@ -1041,7 +1025,7 @@ lto_read_tree (struct lto_input_block *ib, struct data_in *data_in,
   /* Read all the bitfield values in RESULT.  Note that for LTO, we
      only write language-independent bitfields, so no more unpacking is
      needed.  */
-  streamer_read_tree_bitfields (ib, result);
+  streamer_read_tree_bitfields (ib, data_in, result);
 
   /* Read all the pointer fields in RESULT.  */
   streamer_read_tree_body (ib, data_in, result);

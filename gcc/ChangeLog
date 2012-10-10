@@ -1,3 +1,41 @@
+2012-10-10  Richard Biener  <rguenther@suse.de>
+
+	* lto-streamer-in.c (lto_input_location_bitpack): Rename to ...
+	(lto_input_location): ... this.  Kill original.
+	(input_eh_region): Adjust.
+	(input_struct_function_base): Likewise.
+	(lto_read_tree): Likewise.
+	* lto-streamer-out.c (lto_output_location_bitpack): Rename to ...
+	(lto_output_location): ... this.  Kill original.
+	(lto_write_tree): Adjust.
+	(output_eh_region): Likewise.
+	(output_struct_function_base): Likewise.
+	* lto-streamer.c (lto_streamer_hooks_init): Initialize location
+	hooks.
+	* lto-streamer.h (lto_input_location): Adjust prototype.
+	(lto_output_location): Likewise.
+	* streamer-hooks.h (struct streamer_hooks): Adjust prototype
+	of input_location and output_location hooks.
+	(stream_input_location): New define.
+	(stream_output_location): Likewise.
+	* tree-streamer-in.c (unpack_ts_block_value_fields): Adjust.
+	(unpack_value_fields): Likewise.
+	(streamer_read_tree_bitfields): Likewise.
+	(lto_input_ts_decl_minimal_tree_pointers): Likewise.
+	(lto_input_ts_exp_tree_pointers): Likewise.
+	(lto_input_ts_block_tree_pointers): Likewise.
+	* tree-streamer-out.c (pack_ts_block_value_fields): Adjust.
+	(streamer_pack_tree_bitfields): Likewise.
+	(write_ts_decl_minimal_tree_pointers): Likewise.
+	(write_ts_exp_tree_pointers): Likewise.
+	(write_ts_block_tree_pointers): Likewise.
+	* gimple-streamer-in.c (input_phi): Adjust.
+	(input_gimple_stmt): Likewise.
+	* gimple-streamer-out.c (output_phi): Adjust.
+	(output_gimple_stmt): Likewise.
+	* tree-streamer.h (streamer_read_tree_bitfields): Adjust prototype.
+	(streamer_pack_tree_bitfields): Likewise.
+
 2012-10-10  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (altivec_expand_dst_builtin): Fix signed
