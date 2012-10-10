@@ -1,5 +1,9 @@
 2012-10-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/54879
+	* combine.c (count_rtxs): Use RTX_BIN_ARITH resp. RTX_COMM_ARITH
+	instead of '2' resp. 'c' for GET_RTX_CLASS comparisons.
+
 	PR middle-end/54862
 	* simplify-rtx.c (simplify_truncation): Compare UINTVAL instead of
 	INTVAL of second argument with precision resp. op_precision.

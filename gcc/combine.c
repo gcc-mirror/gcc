@@ -12015,8 +12015,8 @@ count_rtxs (rtx x)
   const char *fmt;
   int i, j, ret = 1;
 
-  if (GET_RTX_CLASS (code) == '2'
-      || GET_RTX_CLASS (code) == 'c')
+  if (GET_RTX_CLASS (code) == RTX_BIN_ARITH
+      || GET_RTX_CLASS (code) == RTX_COMM_ARITH)
     {
       rtx x0 = XEXP (x, 0);
       rtx x1 = XEXP (x, 1);
@@ -12024,15 +12024,15 @@ count_rtxs (rtx x)
       if (x0 == x1)
 	return 1 + 2 * count_rtxs (x0);
 
-      if ((GET_RTX_CLASS (GET_CODE (x1)) == '2'
-	   || GET_RTX_CLASS (GET_CODE (x1)) == 'c')
+      if ((GET_RTX_CLASS (GET_CODE (x1)) == RTX_BIN_ARITH
+	   || GET_RTX_CLASS (GET_CODE (x1)) == RTX_COMM_ARITH)
 	  && (x0 == XEXP (x1, 0) || x0 == XEXP (x1, 1)))
 	return 2 + 2 * count_rtxs (x0)
 	       + count_rtxs (x == XEXP (x1, 0)
 			     ? XEXP (x1, 1) : XEXP (x1, 0));
 
-      if ((GET_RTX_CLASS (GET_CODE (x0)) == '2'
-	   || GET_RTX_CLASS (GET_CODE (x0)) == 'c')
+      if ((GET_RTX_CLASS (GET_CODE (x0)) == RTX_BIN_ARITH
+	   || GET_RTX_CLASS (GET_CODE (x0)) == RTX_COMM_ARITH)
 	  && (x1 == XEXP (x0, 0) || x1 == XEXP (x0, 1)))
 	return 2 + 2 * count_rtxs (x1)
 	       + count_rtxs (x == XEXP (x0, 0)
