@@ -1,3 +1,9 @@
+2012-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/54862
+	* simplify-rtx.c (simplify_truncation): Compare UINTVAL instead of
+	INTVAL of second argument with precision resp. op_precision.
+
 2012-10-10  Dodji Seketeli  <dodji@redhat.com>
 
 	PR middle-end/54860 - Make sure attributes hash table is created
