@@ -1,3 +1,10 @@
+2012-10-10  Dodji Seketeli  <dodji@redhat.com>
+
+	* g++.dg/cpp0x/gen-attrs-8.C: Update the test to reflect the fact
+	that c++11 attributes to types are ignored for now.
+	* g++.dg/cpp0x/gen-attrs-36.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-37.C: Likewise
+
 2012-10-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/53741
