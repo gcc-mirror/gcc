@@ -55,21 +55,6 @@ void __sfp_handle_exceptions (int);
       __sfp_handle_exceptions (_fex);		\
   } while (0);
 
-#define FP_RND_NEAREST		0
-#define FP_RND_ZERO		0xc00
-#define FP_RND_PINF		0x800
-#define FP_RND_MINF		0x400
-
-#define FP_RND_MASK		0xc00
-
-#define _FP_DECL_EX \
-  unsigned short _fcw __attribute__ ((unused)) = FP_RND_NEAREST
-
-#define FP_INIT_ROUNDMODE				\
-  do {							\
-    __asm__ __volatile__ ("fnstcw\t%0" : "=m" (_fcw));	\
-  } while (0)
-
 #define FP_ROUNDMODE		(_fcw & FP_RND_MASK)
 
 #define	__LITTLE_ENDIAN	1234
