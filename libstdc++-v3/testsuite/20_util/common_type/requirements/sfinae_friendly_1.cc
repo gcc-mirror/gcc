@@ -172,7 +172,7 @@ static_assert(is_type<std::common_type<int, int, int>, int>(), "");
 static_assert(is_type<std::common_type<int, int, int, int>, int>(), "");
 static_assert(is_type<std::common_type<int, int, int, int, int>, int>(), "");
 static_assert(is_type<std::common_type<S, S>, S>(), "");
-static_assert(is_type<std::common_type<const S, const S>, S>(), "");
+static_assert(is_type<std::common_type<const S, const S>, const S>(), "");
 static_assert(is_type<std::common_type<std::initializer_list<int>,
 	      std::initializer_list<int>>, std::initializer_list<int>>(), "");
 static_assert(is_type<std::common_type<B, D>, B>(), "");
@@ -188,10 +188,10 @@ static_assert(is_type<std::common_type<void*, const volatile int*>,
 static_assert(is_type<std::common_type<void, void>, void>(), "");
 static_assert(is_type<std::common_type<const void, const void>, void>(), "");
 static_assert(is_type<std::common_type<int&, int&&>, int>(), "");
-static_assert(is_type<std::common_type<int&, int&>, int>(), "");
+static_assert(is_type<std::common_type<int&, int&>, int&>(), "");
 static_assert(is_type<std::common_type<int&&, int&&>, int>(), "");
-static_assert(is_type<std::common_type<U&, const U&&>, U>(), "");
-static_assert(is_type<std::common_type<U&, U&>, U>(), "");
+static_assert(is_type<std::common_type<U&, const U&&>, const U>(), "");
+static_assert(is_type<std::common_type<U&, U&>, U&>(), "");
 static_assert(is_type<std::common_type<U&&, U&&>, U>(), "");
 static_assert(is_type<std::common_type<int B::*, int D::*>, int D::*>(), "");
 static_assert(is_type<std::common_type<int D::*, int B::*>, int D::*>(), "");
@@ -204,14 +204,14 @@ static_assert(is_type<std::common_type<int (B::*)() const, int (D::*)() const>,
 static_assert(is_type<std::common_type<int[3], int[3]>, int*>(), "");
 static_assert(is_type<std::common_type<int[1], const int[3]>,
 	      const int*>(), "");
-static_assert(is_type<std::common_type<void(), void()>, void(*)()>(), "");
-static_assert(is_type<std::common_type<void(&)(), void(&)()>, void(*)()>(), "");
+static_assert(is_type<std::common_type<void(), void()>, void(&)()>(), "");
+static_assert(is_type<std::common_type<void(&)(), void(&)()>, void(&)()>(), "");
 static_assert(is_type<std::common_type<void(&)(), void(&&)()>,
-	      void(*)()>(), "");
+	      void(&)()>(), "");
 static_assert(is_type<std::common_type<void(&&)(), void(&)()>,
-	      void(*)()>(), "");
+	      void(&)()>(), "");
 static_assert(is_type<std::common_type<void(&&)(), void(&&)()>,
-	      void(*)()>(), "");
+	      void(&)()>(), "");
 static_assert(is_type<std::common_type<ImplicitTo<int>, int>, int>(), "");
 static_assert(is_type<std::common_type<ImplicitTo<int>, ImplicitTo<int>>,
 	      ImplicitTo<int>>(), "");
@@ -222,7 +222,7 @@ static_assert(is_type<std::common_type<ExplicitTo<int>, ExplicitTo<int>>,
 static_assert(is_type<std::common_type<decltype(lmd1), decltype(lmd1)>,
 	      decltype(lmd1)>(), "");
 static_assert(is_type<std::common_type<decltype(lmd1)&, decltype(lmd1)&>,
-	      decltype(lmd1)>(), "");
+	      decltype(lmd1)&>(), "");
 static_assert(is_type<std::common_type<decltype(lmd1)&, decltype(lmd2)&>,
 	      void(*)(int, double)>(), "");
 static_assert(is_type<std::common_type<decltype(nullptr), void*>, void*>(), "");
@@ -237,9 +237,9 @@ static_assert(is_type<std::common_type<decltype(nullptr), int (B::*)() const>,
 	      int (B::*)() const>(), "");
 static_assert(is_type<std::common_type<decltype(nullptr), const int B::*>,
 	      const int B::*>(), "");
-static_assert(is_type<std::common_type<Abstract&, Abstract&>, Abstract>(), "");
-static_assert(is_type<std::common_type<Ukn&, Ukn&>, Ukn>(), "");
-static_assert(is_type<std::common_type<ImplicitTo<B&>, B&>, B>(), "");
+static_assert(is_type<std::common_type<Abstract&, Abstract&>, Abstract&>(), "");
+static_assert(is_type<std::common_type<Ukn&, Ukn&>, Ukn&>(), "");
+static_assert(is_type<std::common_type<ImplicitTo<B&>, B&>, B&>(), "");
 static_assert(is_type<std::common_type<ImplicitTo<B&>&, B&&>, B>(), "");
 static_assert(is_type<std::common_type<UConv1, const Abstract*&>,
 	      const Abstract*>(), "");
@@ -328,7 +328,7 @@ void test(int i)
   static_assert(is_type<std::common_type<decltype(local_lmd1)&,
 		        decltype(local_lmd1)>, decltype(local_lmd1)>(), "");
   static_assert(is_type<std::common_type<decltype(local_lmd1)&,
-			decltype(local_lmd1)&>, decltype(local_lmd1)>(), "");
+			decltype(local_lmd1)&>, decltype(local_lmd1)&>(), "");
 
   static_assert(!has_type<std::common_type<decltype(local_lmd1),
 		decltype(lmd1)>>(), "");
