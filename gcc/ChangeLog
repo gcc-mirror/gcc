@@ -1,3 +1,38 @@
+2012-10-10  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config.gcc: Enable zEC12 for with-arch and with-tune
+          configure switches.
+	* common/config/s390/s390-common.c (processor_flags_table): Add
+	zEC12 entry.
+	* config/s390/2827.md: New file.
+	* config/s390/s390-opts.h (enum processor_type): Add
+	PROCESSOR_2827_ZEC12.
+	* config/s390/s390.h (enum processor_flags): Add PF_ZEC12.
+	(TARGET_CPU_ZEC12, TARGET_ZEC12): New macro definitions.
+	* config/s390/s390.c (zEC12_cost): New definition.
+	(s390_option_override): Set costs for zEC12.
+	Set parameter defaults for zEC12.
+	(legitimate_reload_fp_constant_p): Adjust comment.
+	(preferred_la_operand_p): Adjust comment.
+	(s390_expand_insv): Generate insv pattern without CC clobber for
+	zEC12.
+	(s390_adjust_priority): Add zEC12 check.
+	(s390_issue_rate): Return 2 for zEC12.
+	(s390_reorg): Enable code optimizations for zEC12.
+	(s390_sched_reorder): Reorder insns according to OOO attributes.
+	(s390_get_sched_attrmask): New function.
+	(s390_sched_score): New function.
+	(s390_sched_variable_issue): Update s390_sched_state.
+	(s390_sched_init): Reset s390_sched_state.
+	(s390_loop_unroll_adjust): Enable for zEC12.
+	* config/s390/s390.opt: Add zEC12 processor type value.
+	* config/s390/s390.md: Enable mnemonic attribute.
+	(attr cpu, cpu_facility): Add zEC12.
+	Include 2827.md.
+	("*insv<mode>_zEC12", "*insv<mode>_zEC12_noshift")
+	("*load_and_trap<mode>"): New insn definition.
+	("*cmp_and_trap_unsigned_int<mode>"): Add clt and clgt.
+
 2012-10-09  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/sparc.md (type attribute): Add new types 'visl'

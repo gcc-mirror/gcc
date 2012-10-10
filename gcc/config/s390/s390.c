@@ -253,6 +253,38 @@ struct processor_costs z196_cost =
   COSTS_N_INSNS (160),   /* DSGR cracked */
 };
 
+static const
+struct processor_costs zEC12_cost =
+{
+  COSTS_N_INSNS (7),     /* M     */
+  COSTS_N_INSNS (5),     /* MGHI  */
+  COSTS_N_INSNS (5),     /* MH    */
+  COSTS_N_INSNS (5),     /* MHI   */
+  COSTS_N_INSNS (7),     /* ML    */
+  COSTS_N_INSNS (7),     /* MR    */
+  COSTS_N_INSNS (6),     /* MS    */
+  COSTS_N_INSNS (8),     /* MSG   */
+  COSTS_N_INSNS (6),     /* MSGF  */
+  COSTS_N_INSNS (6),     /* MSGFR */
+  COSTS_N_INSNS (8),     /* MSGR  */
+  COSTS_N_INSNS (6),     /* MSR   */
+  COSTS_N_INSNS (1) ,    /* multiplication in DFmode */
+  COSTS_N_INSNS (40),    /* MXBR B+40 */
+  COSTS_N_INSNS (100),   /* SQXBR B+100 */
+  COSTS_N_INSNS (42),    /* SQDBR B+42 */
+  COSTS_N_INSNS (28),    /* SQEBR B+28 */
+  COSTS_N_INSNS (1),     /* MADBR B */
+  COSTS_N_INSNS (1),     /* MAEBR B */
+  COSTS_N_INSNS (131),   /* DXBR B+131 */
+  COSTS_N_INSNS (29),    /* DDBR */
+  COSTS_N_INSNS (22),    /* DEBR */
+  COSTS_N_INSNS (160),   /* DLGR cracked */
+  COSTS_N_INSNS (160),   /* DLR cracked */
+  COSTS_N_INSNS (160),   /* DR expanded */
+  COSTS_N_INSNS (160),   /* DSGFR cracked */
+  COSTS_N_INSNS (160),   /* DSGR cracked */
+};
+
 extern int reload_completed;
 
 /* Kept up to date using the SCHED_VARIABLE_ISSUE hook.  */
@@ -1584,6 +1616,9 @@ s390_option_override (void)
     case PROCESSOR_2817_Z196:
       s390_cost = &z196_cost;
       break;
+    case PROCESSOR_2827_ZEC12:
+      s390_cost = &zEC12_cost;
+      break;
     default:
       s390_cost = &z900_cost;
     }
@@ -1608,7 +1643,8 @@ s390_option_override (void)
 #endif
 
   if (s390_tune == PROCESSOR_2097_Z10
-      || s390_tune == PROCESSOR_2817_Z196)
+      || s390_tune == PROCESSOR_2817_Z196
+      || s390_tune == PROCESSOR_2827_ZEC12)
     {
       maybe_set_param_value (PARAM_MAX_UNROLLED_INSNS, 100,
 			     global_options.x_param_values,
@@ -2894,7 +2930,8 @@ static bool
 legitimate_reload_fp_constant_p (rtx op)
 {
   /* Accept floating-point zero operands if the load zero instruction
-     can be used.  */
+     can be used.  Prior to z196 the load fp zero instruction caused a
+     performance penalty if the result is used as BFP number.  */
   if (TARGET_Z196
       && GET_CODE (op) == CONST_DOUBLE
       && s390_float_const_zero_p (op))
@@ -3303,7 +3340,9 @@ preferred_la_operand_p (rtx op1, rtx op2)
     return false;
 
   /* Avoid LA instructions with index register on z196; it is
-     preferable to use regular add instructions when possible.  */
+     preferable to use regular add instructions when possible.
+     Starting with zEC12 the la with index register is "uncracked"
+     again.  */
   if (addr.indx && s390_tune == PROCESSOR_2817_Z196)
     return false;
 
@@ -4717,8 +4756,13 @@ s390_expand_insv (rtx dest, rtx op1, rtx op2, rtx src)
 
       op = gen_rtx_ZERO_EXTRACT (mode, dest, op1, op2),
       op = gen_rtx_SET (VOIDmode, op, src);
-      clobber = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCmode, CC_REGNUM));
-      emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, op, clobber)));
+
+      if (!TARGET_ZEC12)
+	{
+	  clobber = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCmode, CC_REGNUM));
+	  op = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, op, clobber));
+	}
+      emit_insn (op);
 
       return true;
     }
@@ -5710,7 +5754,8 @@ s390_adjust_priority (rtx insn ATTRIBUTE_UNUSED, int priority)
   if (s390_tune != PROCESSOR_2084_Z990
       && s390_tune != PROCESSOR_2094_Z9_109
       && s390_tune != PROCESSOR_2097_Z10
-      && s390_tune != PROCESSOR_2817_Z196)
+      && s390_tune != PROCESSOR_2817_Z196
+      && s390_tune != PROCESSOR_2827_ZEC12)
     return priority;
 
   switch (s390_safe_attr_type (insn))
@@ -5742,6 +5787,7 @@ s390_issue_rate (void)
     case PROCESSOR_2817_Z196:
       return 3;
     case PROCESSOR_2097_Z10:
+    case PROCESSOR_2827_ZEC12:
       return 2;
     default:
       return 1;
@@ -10569,7 +10615,8 @@ s390_reorg (void)
 
   /* Walk over the insns and do some >=z10 specific changes.  */
   if (s390_tune == PROCESSOR_2097_Z10
-      || s390_tune == PROCESSOR_2817_Z196)
+      || s390_tune == PROCESSOR_2817_Z196
+      || s390_tune == PROCESSOR_2827_ZEC12)
     {
       rtx insn;
       bool insn_added_p = false;
@@ -10679,31 +10726,240 @@ s390_z10_prevent_earlyload_conflicts (rtx *ready, int *nready_p)
   ready[0] = tmp;
 }
 
+
+/* The s390_sched_state variable tracks the state of the current or
+   the last instruction group.
+
+   0,1,2 number of instructions scheduled in the current group
+   3     the last group is complete - normal insns
+   4     the last group was a cracked/expanded insn */
+
+static int s390_sched_state;
+
+#define S390_OOO_SCHED_STATE_NORMAL  3
+#define S390_OOO_SCHED_STATE_CRACKED 4
+
+#define S390_OOO_SCHED_ATTR_MASK_CRACKED    0x1
+#define S390_OOO_SCHED_ATTR_MASK_EXPANDED   0x2
+#define S390_OOO_SCHED_ATTR_MASK_ENDGROUP   0x4
+#define S390_OOO_SCHED_ATTR_MASK_GROUPALONE 0x8
+
+static unsigned int
+s390_get_sched_attrmask (rtx insn)
+{
+  unsigned int mask = 0;
+
+  if (get_attr_ooo_cracked (insn))
+    mask |= S390_OOO_SCHED_ATTR_MASK_CRACKED;
+  if (get_attr_ooo_expanded (insn))
+    mask |= S390_OOO_SCHED_ATTR_MASK_EXPANDED;
+  if (get_attr_ooo_endgroup (insn))
+    mask |= S390_OOO_SCHED_ATTR_MASK_ENDGROUP;
+  if (get_attr_ooo_groupalone (insn))
+    mask |= S390_OOO_SCHED_ATTR_MASK_GROUPALONE;
+  return mask;
+}
+
+/* Return the scheduling score for INSN.  The higher the score the
+   better.  The score is calculated from the OOO scheduling attributes
+   of INSN and the scheduling state s390_sched_state.  */
+static int
+s390_sched_score (rtx insn)
+{
+  unsigned int mask = s390_get_sched_attrmask (insn);
+  int score = 0;
+
+  switch (s390_sched_state)
+    {
+    case 0:
+      /* Try to put insns into the first slot which would otherwise
+	 break a group.  */
+      if ((mask & S390_OOO_SCHED_ATTR_MASK_CRACKED) != 0
+	  || (mask & S390_OOO_SCHED_ATTR_MASK_EXPANDED) != 0)
+	score += 5;
+      if ((mask & S390_OOO_SCHED_ATTR_MASK_GROUPALONE) != 0)
+	score += 10;
+    case 1:
+      /* Prefer not cracked insns while trying to put together a
+	 group.  */
+      if ((mask & S390_OOO_SCHED_ATTR_MASK_CRACKED) == 0
+	  && (mask & S390_OOO_SCHED_ATTR_MASK_EXPANDED) == 0
+	  && (mask & S390_OOO_SCHED_ATTR_MASK_GROUPALONE) == 0)
+	score += 10;
+      if ((mask & S390_OOO_SCHED_ATTR_MASK_ENDGROUP) == 0)
+	score += 5;
+      break;
+    case 2:
+      /* Prefer not cracked insns while trying to put together a
+	 group.  */
+      if ((mask & S390_OOO_SCHED_ATTR_MASK_CRACKED) == 0
+	  && (mask & S390_OOO_SCHED_ATTR_MASK_EXPANDED) == 0
+	  && (mask & S390_OOO_SCHED_ATTR_MASK_GROUPALONE) == 0)
+	score += 10;
+      /* Prefer endgroup insns in the last slot.  */
+      if ((mask & S390_OOO_SCHED_ATTR_MASK_ENDGROUP) != 0)
+	score += 10;
+      break;
+    case S390_OOO_SCHED_STATE_NORMAL:
+      /* Prefer not cracked insns if the last was not cracked.  */
+      if ((mask & S390_OOO_SCHED_ATTR_MASK_CRACKED) == 0
+	  && (mask & S390_OOO_SCHED_ATTR_MASK_EXPANDED) == 0)
+	score += 5;
+      if ((mask & S390_OOO_SCHED_ATTR_MASK_GROUPALONE) != 0)
+	score += 10;
+      break;
+    case S390_OOO_SCHED_STATE_CRACKED:
+      /* Try to keep cracked insns together to prevent them from
+	 interrupting groups.  */
+      if ((mask & S390_OOO_SCHED_ATTR_MASK_CRACKED) != 0
+	  || (mask & S390_OOO_SCHED_ATTR_MASK_EXPANDED) != 0)
+	score += 5;
+      break;
+    }
+  return score;
+}
+
 /* This function is called via hook TARGET_SCHED_REORDER before
-   issuing one insn from list READY which contains *NREADYP entries.
+   issueing one insn from list READY which contains *NREADYP entries.
    For target z10 it reorders load instructions to avoid early load
    conflicts in the floating point pipeline  */
 static int
-s390_sched_reorder (FILE *file ATTRIBUTE_UNUSED, int verbose ATTRIBUTE_UNUSED,
+s390_sched_reorder (FILE *file, int verbose,
 		    rtx *ready, int *nreadyp, int clock ATTRIBUTE_UNUSED)
 {
   if (s390_tune == PROCESSOR_2097_Z10)
     if (reload_completed && *nreadyp > 1)
       s390_z10_prevent_earlyload_conflicts (ready, nreadyp);
 
+  if (s390_tune == PROCESSOR_2827_ZEC12
+      && reload_completed
+      && *nreadyp > 1)
+    {
+      int i;
+      int last_index = *nreadyp - 1;
+      int max_index = -1;
+      int max_score = -1;
+      rtx tmp;
+
+      /* Just move the insn with the highest score to the top (the
+	 end) of the list.  A full sort is not needed since a conflict
+	 in the hazard recognition cannot happen.  So the top insn in
+	 the ready list will always be taken.  */
+      for (i = last_index; i >= 0; i--)
+	{
+	  int score;
+
+	  if (recog_memoized (ready[i]) < 0)
+	    continue;
+
+	  score = s390_sched_score (ready[i]);
+	  if (score > max_score)
+	    {
+	      max_score = score;
+	      max_index = i;
+	    }
+	}
+
+      if (max_index != -1)
+	{
+	  if (max_index != last_index)
+	    {
+	      tmp = ready[max_index];
+	      ready[max_index] = ready[last_index];
+	      ready[last_index] = tmp;
+
+	      if (verbose > 5)
+		fprintf (file,
+			 "move insn %d to the top of list\n",
+			 INSN_UID (ready[last_index]));
+	    }
+	  else if (verbose > 5)
+	    fprintf (file,
+		     "best insn %d already on top\n",
+		     INSN_UID (ready[last_index]));
+	}
+
+      if (verbose > 5)
+	{
+	  fprintf (file, "ready list ooo attributes - sched state: %d\n",
+		   s390_sched_state);
+
+	  for (i = last_index; i >= 0; i--)
+	    {
+	      if (recog_memoized (ready[i]) < 0)
+		continue;
+	      fprintf (file, "insn %d score: %d: ", INSN_UID (ready[i]),
+		       s390_sched_score (ready[i]));
+#define PRINT_OOO_ATTR(ATTR) fprintf (file, "%s ", get_attr_##ATTR (ready[i]) ? #ATTR : "!" #ATTR);
+	      PRINT_OOO_ATTR (ooo_cracked);
+	      PRINT_OOO_ATTR (ooo_expanded);
+	      PRINT_OOO_ATTR (ooo_endgroup);
+	      PRINT_OOO_ATTR (ooo_groupalone);
+#undef PRINT_OOO_ATTR
+	      fprintf (file, "\n");
+	    }
+	}
+    }
+
   return s390_issue_rate ();
 }
+
 
 /* This function is called via hook TARGET_SCHED_VARIABLE_ISSUE after
    the scheduler has issued INSN.  It stores the last issued insn into
    last_scheduled_insn in order to make it available for
    s390_sched_reorder.  */
 static int
-s390_sched_variable_issue (FILE *file ATTRIBUTE_UNUSED,
-                           int verbose ATTRIBUTE_UNUSED,
-                         rtx insn, int more)
+s390_sched_variable_issue (FILE *file, int verbose, rtx insn, int more)
 {
   last_scheduled_insn = insn;
+
+  if (s390_tune == PROCESSOR_2827_ZEC12
+      && reload_completed
+      && recog_memoized (insn) >= 0)
+    {
+      unsigned int mask = s390_get_sched_attrmask (insn);
+
+      if ((mask & S390_OOO_SCHED_ATTR_MASK_CRACKED) != 0
+	  || (mask & S390_OOO_SCHED_ATTR_MASK_EXPANDED) != 0)
+	s390_sched_state = S390_OOO_SCHED_STATE_CRACKED;
+      else if ((mask & S390_OOO_SCHED_ATTR_MASK_ENDGROUP) != 0
+	       || (mask & S390_OOO_SCHED_ATTR_MASK_GROUPALONE) != 0)
+	s390_sched_state = S390_OOO_SCHED_STATE_NORMAL;
+      else
+	{
+	  /* Only normal insns are left (mask == 0).  */
+	  switch (s390_sched_state)
+	    {
+	    case 0:
+	    case 1:
+	    case 2:
+	    case S390_OOO_SCHED_STATE_NORMAL:
+	      if (s390_sched_state == S390_OOO_SCHED_STATE_NORMAL)
+		s390_sched_state = 1;
+	      else
+		s390_sched_state++;
+
+	      break;
+	    case S390_OOO_SCHED_STATE_CRACKED:
+	      s390_sched_state = S390_OOO_SCHED_STATE_NORMAL;
+	      break;
+	    }
+	}
+      if (verbose > 5)
+	{
+	  fprintf (file, "insn %d: ", INSN_UID (insn));
+#define PRINT_OOO_ATTR(ATTR)						\
+	  fprintf (file, "%s ", get_attr_##ATTR (insn) ? #ATTR : "");
+	  PRINT_OOO_ATTR (ooo_cracked);
+	  PRINT_OOO_ATTR (ooo_expanded);
+	  PRINT_OOO_ATTR (ooo_endgroup);
+	  PRINT_OOO_ATTR (ooo_groupalone);
+#undef PRINT_OOO_ATTR
+	  fprintf (file, "\n");
+	  fprintf (file, "sched state: %d\n", s390_sched_state);
+	}
+    }
 
   if (GET_CODE (PATTERN (insn)) != USE
       && GET_CODE (PATTERN (insn)) != CLOBBER)
@@ -10718,6 +10974,7 @@ s390_sched_init (FILE *file ATTRIBUTE_UNUSED,
 		 int max_ready ATTRIBUTE_UNUSED)
 {
   last_scheduled_insn = NULL_RTX;
+  s390_sched_state = 0;
 }
 
 /* This function checks the whole of insn X for memory references. The
@@ -10748,7 +11005,9 @@ s390_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
   unsigned i;
   unsigned mem_count = 0;
 
-  if (s390_tune != PROCESSOR_2097_Z10 && s390_tune != PROCESSOR_2817_Z196)
+  if (s390_tune != PROCESSOR_2097_Z10
+      && s390_tune != PROCESSOR_2817_Z196
+      && s390_tune != PROCESSOR_2827_ZEC12)
     return nunroll;
 
   /* Count the number of memory references within the loop body.  */
