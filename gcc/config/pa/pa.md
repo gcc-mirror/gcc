@@ -2882,7 +2882,7 @@
 (define_insn "addhi3"
   [(set (match_operand:HI 0 "register_operand" "=r,r")
 	(plus:HI (match_operand:HI 1 "register_operand" "%r,r")
-		 (match_operand:HI 2 "arith14_operand" "r,J")))]
+		 (match_operand:HI 2 "arith_operand" "r,J")))]
   ""
   "@
    {addl|add,l} %1,%2,%0
