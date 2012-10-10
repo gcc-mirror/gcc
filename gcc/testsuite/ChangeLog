@@ -1,3 +1,8 @@
+2012-10-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/50478
+	* g++.dg/cpp0x/initlist67.C: New.
+
 2012-10-10  Dehao Chen  <dehao@google.com>
 
 	* g++.dg/debug/dwarf2/deallocator.C: Cover more deallocator cases.
