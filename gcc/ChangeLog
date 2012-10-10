@@ -1,3 +1,9 @@
+2012-10-10  Dehao Chen  <dehao@google.com>
+
+	* tree-eh.c (lower_try_finally_onedest): Set correct location for
+	deallocator.
+	* gimplify.c (gimplify_expr): Set correct location for TRY stmt.
+
 2012-10-10  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/52480
