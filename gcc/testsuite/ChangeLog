@@ -1,3 +1,13 @@
+2012-10-10  Venkataramanan Kumar  <venkataramanan.kumar@amd.com>
+
+	PR testsuite/53397
+	* gcc.dg/pr53397-1.c: Moved to gcc.target/i386.
+	* gcc.target/i386/pr53397-1.c: Add -msse2 to dg-options
+	and remove target info from dg-do compile.
+	* gcc.dg/pr53397-2.c: Moved to gcc.target/i386.
+	* gcc.target/i386/pr53397-2.c: Add -msse2 to dg-options
+	and remove target info from dg-do compile.
+
 2012-10-10  Greta Yorsh  <Greta.Yorsh@arm.com>
 
 	* gcc.dg/pr54782.c: Require target with pthread support.
