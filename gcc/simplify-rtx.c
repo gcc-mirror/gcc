@@ -668,7 +668,7 @@ simplify_truncation (enum machine_mode mode, rtx op,
       && CONST_INT_P (XEXP (op, 1))
       && GET_CODE (XEXP (op, 0)) == SIGN_EXTEND
       && GET_MODE (XEXP (XEXP (op, 0), 0)) == mode
-      && INTVAL (XEXP (op, 1)) < precision)
+      && UINTVAL (XEXP (op, 1)) < precision)
     return simplify_gen_binary (ASHIFTRT, mode,
 				XEXP (XEXP (op, 0), 0), XEXP (op, 1));
 
@@ -680,7 +680,7 @@ simplify_truncation (enum machine_mode mode, rtx op,
       && CONST_INT_P (XEXP (op, 1))
       && GET_CODE (XEXP (op, 0)) == ZERO_EXTEND
       && GET_MODE (XEXP (XEXP (op, 0), 0)) == mode
-      && INTVAL (XEXP (op, 1)) < precision)
+      && UINTVAL (XEXP (op, 1)) < precision)
     return simplify_gen_binary (LSHIFTRT, mode,
 				XEXP (XEXP (op, 0), 0), XEXP (op, 1));
 
@@ -692,7 +692,7 @@ simplify_truncation (enum machine_mode mode, rtx op,
       && (GET_CODE (XEXP (op, 0)) == ZERO_EXTEND
 	  || GET_CODE (XEXP (op, 0)) == SIGN_EXTEND)
       && GET_MODE (XEXP (XEXP (op, 0), 0)) == mode
-      && INTVAL (XEXP (op, 1)) < precision)
+      && UINTVAL (XEXP (op, 1)) < precision)
     return simplify_gen_binary (ASHIFT, mode,
 				XEXP (XEXP (op, 0), 0), XEXP (op, 1));
 
@@ -705,8 +705,7 @@ simplify_truncation (enum machine_mode mode, rtx op,
       && 2 * precision <= op_precision
       && CONST_INT_P (XEXP (op, 1))
       && (INTVAL (XEXP (op, 1)) & (precision - 1)) == 0
-      && INTVAL (XEXP (op, 1)) >= 0
-      && INTVAL (XEXP (op, 1)) < op_precision)
+      && UINTVAL (XEXP (op, 1)) < op_precision)
     {
       int byte = subreg_lowpart_offset (mode, op_mode);
       int shifted_bytes = INTVAL (XEXP (op, 1)) / BITS_PER_UNIT;
