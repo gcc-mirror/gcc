@@ -1,3 +1,7 @@
+2012-10-10  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* elf.c (elf_add_syminfo_data): Add casts to avoid warning.
+
 2012-10-09  Ian Lance Taylor  <iant@google.com>
 
 	* dwarf.c (dwarf_fileline): Add cast to avoid warning.
