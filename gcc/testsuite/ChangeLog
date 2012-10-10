@@ -1,3 +1,7 @@
+2012-10-10  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+	* gcc.dg/pr54782.c: Require target with pthread support.
+
 2012-10-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/53122
