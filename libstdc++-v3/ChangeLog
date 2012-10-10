@@ -1,3 +1,9 @@
+2012-10-10  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR libstdc++/54861
+	* include/bits/atomic_base.h (atomic_signal_fence): Call
+	__atomic_signal_fence instead of __atomic_thread_fence.
+
 2012-10-05 Pavel Chupin <pavel.v.chupin@intel.com>
  
 	        Fix missing gthr-default.h issue on separate libstdc++ configure

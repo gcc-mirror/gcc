@@ -73,7 +73,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   inline void
   atomic_signal_fence(memory_order __m) noexcept
-  { __atomic_thread_fence(__m); }
+  { __atomic_signal_fence(__m); }
 
   /// kill_dependency
   template<typename _Tp>
