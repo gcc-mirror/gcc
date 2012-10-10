@@ -1,3 +1,10 @@
+2012-10-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/54876
+	* ipa-prop.c (prune_expression_for_jf_1): New function.
+	(prune_expression_for_jf): Clear EXPR_LOCATION for all
+	sub-expressions as well.
+
 2012-10-10  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config.gcc: Enable zEC12 for with-arch and with-tune
