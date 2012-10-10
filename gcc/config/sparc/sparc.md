@@ -264,7 +264,7 @@
    fpcmp,
    fpmul,fpdivs,fpdivd,
    fpsqrts,fpsqrtd,
-   fga,fgm_pack,fgm_mul,fgm_pdist,edge,edgen,gsr,array,
+   fga,visl,vismv,fgm_pack,fgm_mul,pdist,pdistn,edge,edgen,gsr,array,
    cmove,
    ialuX,
    multi,savew,flushw,iflush,trap"
@@ -1457,7 +1457,7 @@
    st\t%1, %0
    fzeros\t%0
    fones\t%0"
-  [(set_attr "type" "*,*,load,store,*,*,fpmove,fpload,fpstore,fga,fga")
+  [(set_attr "type" "*,*,load,store,vismv,vismv,fpmove,fpload,fpstore,visl,visl")
    (set_attr "cpu_feature" "*,*,*,*,vis3,vis3,*,*,*,vis,vis")])
 
 (define_insn "*movsi_lo_sum"
@@ -1622,7 +1622,7 @@
    std\t%1, %0
    fzero\t%0
    fone\t%0"
-  [(set_attr "type" "store,store,store,load,*,*,*,*,fpstore,fpload,*,*,fpmove,*,*,*,fpload,fpstore,fga,fga")
+  [(set_attr "type" "store,store,store,load,*,*,*,*,fpstore,fpload,*,*,fpmove,*,*,*,fpload,fpstore,visl,visl")
    (set_attr "length" "*,2,*,*,2,2,2,2,*,*,2,2,*,2,2,2,*,*,*,*")
    (set_attr "fptype" "*,*,*,*,*,*,*,*,*,*,*,*,double,*,*,*,*,*,double,double")
    (set_attr "cpu_feature" "v9,*,*,*,*,*,*,*,fpu,fpu,fpu,fpu,v9,fpunotv9,vis3,vis3,fpu,fpu,vis,vis")])
@@ -1645,7 +1645,7 @@
    std\t%1, %0
    fzero\t%0
    fone\t%0"
-  [(set_attr "type" "*,*,load,store,*,*,fpmove,fpload,fpstore,fga,fga")
+  [(set_attr "type" "*,*,load,store,vismv,vismv,fpmove,fpload,fpstore,visl,visl")
    (set_attr "fptype" "*,*,*,*,*,*,double,*,*,double,double")
    (set_attr "cpu_feature" "*,*,*,*,vis3,vis3,*,*,*,vis,vis")])
 
@@ -2251,7 +2251,7 @@
       gcc_unreachable ();
     }
 }
-  [(set_attr "type" "fga,fga,fpmove,*,*,*,*,*,fpload,load,fpstore,store")
+  [(set_attr "type" "visl,visl,fpmove,*,*,*,vismv,vismv,fpload,load,fpstore,store")
    (set_attr "cpu_feature" "vis,vis,fpu,*,*,*,vis3,vis3,fpu,*,fpu,*")])
 
 ;; The following 3 patterns build SFmode constants in integer registers.
@@ -2323,7 +2323,7 @@
   #
   #
   #"
-  [(set_attr "type" "fga,fga,fpmove,*,*,*,fpload,store,fpstore,load,store,*,*,*,*")
+  [(set_attr "type" "visl,visl,fpmove,*,*,*,fpload,store,fpstore,load,store,*,*,*,*")
    (set_attr "length" "*,*,*,2,2,2,*,*,*,*,*,2,2,2,2")
    (set_attr "fptype" "double,double,double,*,*,*,*,*,*,*,*,*,*,*,*")
    (set_attr "cpu_feature" "vis,vis,v9,fpunotv9,vis3,vis3,fpu,v9,fpu,*,*,fpu,*,*,fpu")])
@@ -2346,7 +2346,7 @@
   ldx\t%1, %0
   stx\t%r1, %0
   #"
-  [(set_attr "type" "fga,fga,fpmove,*,*,load,store,*,load,store,*")
+  [(set_attr "type" "visl,visl,fpmove,vismv,vismv,load,store,*,load,store,*")
    (set_attr "length" "*,*,*,*,*,*,*,*,*,*,2")
    (set_attr "fptype" "double,double,double,double,double,*,*,*,*,*,*")
    (set_attr "cpu_feature" "vis,vis,fpu,vis3,vis3,fpu,fpu,*,*,*,*")])
@@ -7876,7 +7876,7 @@
   "@
   fzeros\t%0
   fones\t%0
-  fsrc1s\t%1, %0
+  fsrc2s\t%1, %0
   ld\t%1, %0
   st\t%1, %0
   st\t%r1, %0
@@ -7885,7 +7885,7 @@
   mov\t%1, %0
   movstouw\t%1, %0
   movwtos\t%1, %0"
-  [(set_attr "type" "fga,fga,fga,fpload,fpstore,store,load,store,*,*,*")
+  [(set_attr "type" "visl,visl,vismv,fpload,fpstore,store,load,store,*,vismv,vismv")
    (set_attr "cpu_feature" "vis,vis,vis,*,*,*,*,*,*,vis3,vis3")])
 
 (define_insn "*mov<VM64:mode>_insn_sp64"
@@ -7898,7 +7898,7 @@
   "@
   fzero\t%0
   fone\t%0
-  fsrc1\t%1, %0
+  fsrc2\t%1, %0
   ldd\t%1, %0
   std\t%1, %0
   stx\t%r1, %0
@@ -7907,7 +7907,7 @@
   movdtox\t%1, %0
   movxtod\t%1, %0
   mov\t%1, %0"
-  [(set_attr "type" "fga,fga,fga,fpload,fpstore,store,load,store,*,*,*")
+  [(set_attr "type" "visl,visl,vismv,fpload,fpstore,store,load,store,vismv,vismv,*")
    (set_attr "cpu_feature" "vis,vis,vis,*,*,*,*,*,vis3,vis3,*")])
 
 (define_insn "*mov<VM64:mode>_insn_sp32"
@@ -7920,7 +7920,7 @@
   "@
   fzero\t%0
   fone\t%0
-  fsrc1\t%1, %0
+  fsrc2\t%1, %0
   #
   #
   ldd\t%1, %0
@@ -7930,7 +7930,7 @@
   std\t%1, %0
   #
   #"
-  [(set_attr "type" "fga,fga,fga,*,*,fpload,fpstore,store,load,store,*,*")
+  [(set_attr "type" "visl,visl,vismv,*,*,fpload,fpstore,store,load,store,*,*")
    (set_attr "length" "*,*,*,2,2,*,*,*,*,*,2,2")
    (set_attr "cpu_feature" "vis,vis,vis,vis3,vis3,*,*,*,*,*,*,*")])
 
@@ -8025,7 +8025,7 @@
 		 (match_operand:VL 2 "register_operand" "<vconstr>")))]
   "TARGET_VIS"
   "f<vlinsn><vlsuf>\t%1, %2, %0"
-  [(set_attr "type" "fga")
+  [(set_attr "type" "visl")
    (set_attr "fptype" "<vfptype>")])
 
 (define_insn "*not_<code><mode>3"
@@ -8034,7 +8034,7 @@
 			 (match_operand:VL 2 "register_operand" "<vconstr>"))))]
   "TARGET_VIS"
   "f<vlninsn><vlsuf>\t%1, %2, %0"
-  [(set_attr "type" "fga")
+  [(set_attr "type" "visl")
    (set_attr "fptype" "<vfptype>")])
 
 ;; (ior (not (op1)) (not (op2))) is the canonical form of NAND.
@@ -8044,7 +8044,7 @@
 		(not:VL (match_operand:VL 2 "register_operand" "<vconstr>"))))]
   "TARGET_VIS"
   "fnand<vlsuf>\t%1, %2, %0"
-  [(set_attr "type" "fga")
+  [(set_attr "type" "visl")
    (set_attr "fptype" "<vfptype>")])
 
 (define_code_iterator vlnotop [ior and])
@@ -8055,7 +8055,7 @@
 		    (match_operand:VL 2 "register_operand" "<vconstr>")))]
   "TARGET_VIS"
   "f<vlinsn>not1<vlsuf>\t%1, %2, %0"
-  [(set_attr "type" "fga")
+  [(set_attr "type" "visl")
    (set_attr "fptype" "<vfptype>")])
 
 (define_insn "*<code>_not2<mode>_vis"
@@ -8064,7 +8064,7 @@
 		    (not:VL (match_operand:VL 2 "register_operand" "<vconstr>"))))]
   "TARGET_VIS"
   "f<vlinsn>not2<vlsuf>\t%1, %2, %0"
-  [(set_attr "type" "fga")
+  [(set_attr "type" "visl")
    (set_attr "fptype" "<vfptype>")])
 
 (define_insn "one_cmpl<mode>2"
@@ -8072,7 +8072,7 @@
 	(not:VL (match_operand:VL 1 "register_operand" "<vconstr>")))]
   "TARGET_VIS"
   "fnot1<vlsuf>\t%1, %0"
-  [(set_attr "type" "fga")
+  [(set_attr "type" "visl")
    (set_attr "fptype" "<vfptype>")])
 
 ;; Hard to generate VIS instructions.  We have builtins for these.
@@ -8351,7 +8351,7 @@
          UNSPEC_PDIST))]
   "TARGET_VIS"
   "pdist\t%1, %2, %0"
-  [(set_attr "type" "fgm_pdist")
+  [(set_attr "type" "pdist")
    (set_attr "fptype" "double")])
 
 ;; Edge instructions produce condition codes equivalent to a 'subcc'
@@ -8433,7 +8433,7 @@
 	 UNSPEC_FCMP))]
   "TARGET_VIS"
   "fcmp<code><GCM:gcm_name>\t%1, %2, %0"
-  [(set_attr "type" "fga")
+  [(set_attr "type" "visl")
    (set_attr "fptype" "double")])
 
 (define_expand "vcond<mode><mode>"
@@ -8674,7 +8674,7 @@
          UNSPEC_PDISTN))]
   "TARGET_VIS3"
   "pdistn\t%1, %2, %0"
-  [(set_attr "type" "fgm_pdist")
+  [(set_attr "type" "pdistn")
    (set_attr "fptype" "double")])
 
 (define_insn "fmean16_vis"
@@ -8724,7 +8724,7 @@
 	 UNSPEC_FUCMP))]
   "TARGET_VIS3"
   "fucmp<code>8\t%1, %2, %0"
-  [(set_attr "type" "fga")])
+  [(set_attr "type" "visl")])
 
 (define_insn "*naddsf3"
   [(set (match_operand:SF 0 "register_operand" "=f")

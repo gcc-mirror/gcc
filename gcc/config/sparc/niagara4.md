@@ -19,12 +19,14 @@
 
 (define_automaton "niagara4_0")
 
-(define_cpu_unit "n4_slot0,n4_slot1" "niagara4_0")
-(define_reservation "n4_single_issue" "n4_slot0 + n4_slot1")
+(define_cpu_unit "n4_slot0,n4_slot1,n4_slot2" "niagara4_0")
+(define_reservation "n4_single_issue" "n4_slot0 + n4_slot1 + n4_slot2")
+
+(define_cpu_unit "n4_load_store" "niagara4_0")
 
 (define_insn_reservation "n4_single" 1
   (and (eq_attr "cpu" "niagara4")
-    (eq_attr "type" "multi,savew,flushw,iflush,trap,gsr"))
+    (eq_attr "type" "multi,savew,flushw,iflush,trap"))
   "n4_single_issue")
 
 (define_insn_reservation "n4_integer" 1
@@ -35,22 +37,22 @@
 (define_insn_reservation "n4_imul" 12
   (and (eq_attr "cpu" "niagara4")
     (eq_attr "type" "imul"))
-  "(n4_slot0 | n4_slot1), nothing*11")
+  "n4_slot1, nothing*11")
 
 (define_insn_reservation "n4_idiv" 35
   (and (eq_attr "cpu" "niagara4")
     (eq_attr "type" "idiv"))
-  "(n4_slot0 | n4_slot1), nothing*34")
+  "n4_slot1, nothing*34")
 
 (define_insn_reservation "n4_load" 5
   (and (eq_attr "cpu" "niagara4")
     (eq_attr "type" "load,fpload,sload"))
-  "n4_slot0, nothing*4")
+  "(n4_slot0 + n4_load_store), nothing*4")
 
 (define_insn_reservation "n4_store" 1
   (and (eq_attr "cpu" "niagara4")
     (eq_attr "type" "store,fpstore"))
-  "n4_slot0")
+  "(n4_slot0 | n4_slot2) + n4_load_store")
 
 (define_insn_reservation "n4_cti" 2
   (and (eq_attr "cpu" "niagara4")
@@ -67,9 +69,38 @@
     (eq_attr "type" "array,edge,edgen"))
   "n4_slot1, nothing*11")
 
-(define_insn_reservation "n4_vis" 11
+(define_insn_reservation "n4_vis_move_1cycle" 1
   (and (eq_attr "cpu" "niagara4")
-    (eq_attr "type" "fga,fgm_pack,fgm_mul,fgm_pdist"))
+    (and (eq_attr "type" "vismv")
+      (eq_attr "fptype" "double")))
+  "n4_slot1")
+
+(define_insn_reservation "n4_vis_move_11cycle" 11
+  (and (eq_attr "cpu" "niagara4")
+    (and (eq_attr "type" "vismv")
+      (eq_attr "fptype" "single")))
+  "n4_slot1, nothing*10")
+
+(define_insn_reservation "n4_vis_logical" 3
+  (and (eq_attr "cpu" "niagara4")
+    (and (eq_attr "type" "visl,pdistn")
+      (eq_attr "fptype" "double")))
+  "n4_slot1, nothing*2")
+
+(define_insn_reservation "n4_vis_logical_11cycle" 11
+  (and (eq_attr "cpu" "niagara4")
+    (and (eq_attr "type" "visl")
+      (eq_attr "fptype" "single")))
+  "n4_slot1, nothing*10")
+
+(define_insn_reservation "n4_vis_fga" 11
+  (and (eq_attr "cpu" "niagara4")
+    (eq_attr "type" "fga,gsr"))
+  "n4_slot1, nothing*10")
+
+(define_insn_reservation "n4_vis_fgm" 11
+  (and (eq_attr "cpu" "niagara4")
+    (eq_attr "type" "fgm_pack,fgm_mul,pdist"))
   "n4_slot1, nothing*10")
 
 (define_insn_reservation "n4_fpdivs" 24

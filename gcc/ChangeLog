@@ -1,3 +1,28 @@
+2012-10-09  David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/sparc.md (type attribute): Add new types 'visl'
+	(VIS logical operation), 'vismv' (VIS move), and 'pdistn'.  Rename
+	'fgm_pdist' to 'pdist'.
+	(*movsi_insn): Use vismv and visl.
+	(*movdi_insn_sp64): Likewise.
+	(*movsf_insn): Likewise.
+	(*movdf_insn_sp64): Likewise.
+	(*mov<VM32:mode>_insn): Likewise, use 'fsrc2s' instead of 'fsrc1s'.
+	(*mov<VM64:mode>_insn_sp64): Likewise, use 'fsrc2s' instead of 'fsrc1s'.
+	(*mov<VM64:mode>_insn_sp32): Likewise, use 'fsrc2s' instead of 'fsrc1s'.
+	(VIS logical instructions): Mark as visl.
+	(pdist_vis): Use 'pdist'.
+	(pditsn<mode>_vis): Use 'pdistn'.
+	* config/sparc/ultra1_2.md: Adjust for new VIS attribute types.
+	* config/sparc/ultra3.md: Likewise.
+	* config/sparc/niagara.md: Likewise.
+	* config/sparc/niagara2.md: Likewise.
+	* config/sparc/niagara4.md: Add cpu units "n4_slot2" and
+	"n4_load_store" for special store scheduling.  Use them in load
+	and store reservations.  Integer divide and multiply can only
+	issue in slot-1.  Represent 1-cycle VIS moves and 3-cycle VIS
+	logic operations.
+
 2012-10-10  Dehao Chen  <dehao@google.com>
 
 	* tree-eh.c (lower_try_finally_onedest): Set correct location for

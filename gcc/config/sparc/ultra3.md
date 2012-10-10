@@ -176,7 +176,7 @@
 (define_insn_reservation "us3_fga"
   3
   (and (eq_attr "cpu" "ultrasparc3")
-       (eq_attr "type" "fga"))
+       (eq_attr "type" "fga,visl,vismv"))
   "us3_fpa + us3_slotany, nothing*2")
 
 (define_insn_reservation "us3_fgm"
@@ -188,7 +188,7 @@
 (define_insn_reservation "us3_pdist"
   4
   (and (eq_attr "cpu" "ultrasparc3")
-       (eq_attr "type" "fgm_pdist"))
+       (eq_attr "type" "pdist"))
   "us3_fpm + us3_slotany, nothing*3")
 
 (define_bypass 1 "us3_pdist" "us3_pdist")
